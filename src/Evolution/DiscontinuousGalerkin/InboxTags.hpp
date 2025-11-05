@@ -134,10 +134,9 @@ struct BoundaryCorrectionAndGhostCellsInbox {
   using type = tmpl::conditional_t<UseNodegroupDgElements, type_spsc, type_map>;
   using value_type = type;
 
-  template <typename ReceiveDataType>
-  static bool insert_into_inbox(const gsl::not_null<type_spsc*> inbox,
-                                const temporal_id& time_step_id,
-                                ReceiveDataType&& data) {
+  static bool insert_into_inbox(
+      const gsl::not_null<type_spsc*> inbox, const temporal_id& time_step_id,
+      std::pair<DirectionalId<Dim>, evolution::dg::BoundaryData<Dim>> data) {
     const DirectionalId<Dim>& neighbor_id = data.first;
     // Note: This assumes the neighbor_id is oriented into our (the element
     // whose inbox this is) frame.
@@ -162,17 +161,15 @@ struct BoundaryCorrectionAndGhostCellsInbox {
     return true;
   }
 
-  template <typename ReceiveDataType>
-  static bool insert_into_inbox(const gsl::not_null<type_map*> inbox,
-                                const temporal_id& time_step_id,
-                                ReceiveDataType&& data) {
+  static bool insert_into_inbox(
+      const gsl::not_null<type_map*> inbox, const temporal_id& time_step_id,
+      std::pair<DirectionalId<Dim>, evolution::dg::BoundaryData<Dim>> data) {
     auto& current_inbox = (*inbox)[time_step_id];
     if (auto it = current_inbox.find(data.first); it != current_inbox.end()) {
       merge_boundary_data(make_not_null(&it->second), std::move(data.second));
     } else {
       // We have not received ghost cells or fluxes at this time.
-      if (not current_inbox.insert(std::forward<ReceiveDataType>(data))
-                  .second) {
+      if (not current_inbox.insert(std::move(data)).second) {
         ERROR("Failed to insert data to receive at instance '"
               << time_step_id
               << "' with tag 'BoundaryCorrectionAndGhostCellsInbox'.\n");
