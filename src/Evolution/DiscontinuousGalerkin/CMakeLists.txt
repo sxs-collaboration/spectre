@@ -28,6 +28,7 @@ spectre_target_sources(
   PRIVATE
   AtomicInboxBoundaryData.cpp
   BoundaryData.cpp
+  InboxTags.cpp
   InterfaceDataPolicy.cpp
   InterpolatedBoundaryData.cpp
   MortarData.cpp
