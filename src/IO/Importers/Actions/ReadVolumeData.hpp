@@ -540,7 +540,7 @@ struct ReadAllVolumeDataAndDistribute {
       }
       // Reconstruct domain from volume data file
       const std::optional<std::vector<char>> serialized_domain =
-          volume_file.get_domain(observation_id);
+          volume_file.get_domain();
       if (serialized_domain.has_value()) {
         if (source_domain.has_value()) {
 #ifdef SPECTRE_DEBUG

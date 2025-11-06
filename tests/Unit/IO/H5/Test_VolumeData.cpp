@@ -332,7 +332,7 @@ void test() {
                    });
     CHECK(found_observation_ids == observation_ids);
   }
-
+  CHECK(volume_file.get_domain() == serialize(domain_creator.create_domain()));
   for (size_t i = 0; i < observation_ids.size(); ++i) {
     TestHelpers::io::VolumeData::check_volume_data(
         h5_file_name, version_number, "element_data"s, observation_ids[i],
@@ -341,8 +341,6 @@ void test() {
         {"S", "x-coord", "y-coord", "z-coord", "T_x", "T_y", "T_z"},
         {{0, 1, 2, 3, 4, 5, 6}, {1, 0, 5, 3, 6, 4, 2}}, {},
         observation_values[i]);
-    CHECK(volume_file.get_domain(observation_ids[i]) ==
-          serialize(domain_creator.create_domain()));
     CHECK(volume_file.get_functions_of_time(observation_ids[i]) ==
           serialize(domain_creator.functions_of_time()));
     const auto global_fot_buffer = volume_file.get_global_functions_of_time();
@@ -813,6 +811,7 @@ void test_cartoon() {
     CHECK(found_observation_ids == observation_ids);
   }
 
+  CHECK(volume_file.get_domain() == serialize(domain_creator.create_domain()));
   for (size_t i = 0; i < observation_ids.size(); ++i) {
     TestHelpers::io::VolumeData::check_volume_data(
         h5_file_name, version_number, "element_data"s, observation_ids[i],
@@ -820,8 +819,6 @@ void test_cartoon() {
         grid_names, written_bases, written_quadratures, {{2, 2}},
         {"S", "x-coord", "y-coord", "z-coord", "T_x", "T_y", "T_z"},
         {{0, 1, 2, 3, 4, 5, 6}}, {}, observation_values[i]);
-    CHECK(volume_file.get_domain(observation_ids[i]) ==
-          serialize(domain_creator.create_domain()));
     CHECK(volume_file.get_functions_of_time(observation_ids[i]) ==
           serialize(domain_creator.functions_of_time()));
   }

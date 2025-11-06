@@ -226,9 +226,7 @@ class TestCombineH5(unittest.TestCase):
         self.assertEqual(actual_obs_value, expected_obs_value)
 
         for obs_to_check in actual_obs_ids:
-            self.assertEqual(
-                output_vol.get_domain(obs_to_check), self.serialized_domain
-            )
+            self.assertEqual(output_vol.get_domain(), self.serialized_domain)
             self.assertEqual(
                 output_vol.get_functions_of_time(obs_to_check),
                 self.serialized_observation_fots[obs_to_check],

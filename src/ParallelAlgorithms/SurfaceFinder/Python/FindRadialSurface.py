@@ -86,7 +86,7 @@ def find_radial_surface(
     # Deserialize domain and functions of time
     for volfile in open_volfiles(h5_files, subfile_name, obs_id):
         dim = volfile.get_dimension()
-        domain = deserialize_domain[dim](volfile.get_domain(obs_id))
+        domain = deserialize_domain[dim](volfile.get_domain())
         time = volfile.get_observation_value(obs_id)
         functions_of_time = (
             deserialize_functions_of_time(volfile.get_functions_of_time(obs_id))

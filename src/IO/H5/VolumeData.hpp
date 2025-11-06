@@ -236,8 +236,7 @@ class VolumeData : public h5::Object {
   /*!
    * \brief Get the serialized domain if it was written.
    */
-  std::optional<std::vector<char>> get_domain(
-      std::optional<size_t> observation_id = std::nullopt) const;
+  std::optional<std::vector<char>> get_domain() const;
 
   /*!
    * \brief Get the observation-specific serialized functions of time at an \p

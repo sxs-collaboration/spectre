@@ -837,8 +837,7 @@ std::vector<std::vector<Spectral::Quadrature>> VolumeData::get_quadratures(
   return element_quadratures;
 }
 
-std::optional<std::vector<char>> VolumeData::get_domain(
-    const std::optional<size_t> observation_id) const {
+std::optional<std::vector<char>> VolumeData::get_domain() const {
   // we write the domain independently of the observation_id since a refactor
   if (contains_dataset_or_group(volume_data_group_.id(), "", "domain")) {
     return h5::read_data<1, std::vector<char>>(volume_data_group_.id(),

@@ -49,7 +49,7 @@ void bind_h5vol(py::module& m) {
       .def("get_quadratures", &h5::VolumeData::get_quadratures,
            py::arg("observation_id"))
       .def("get_bases", &h5::VolumeData::get_bases, py::arg("observation_id"))
-      .def("get_domain", &h5::VolumeData::get_domain, py::arg("observation_id"))
+      .def("get_domain", &h5::VolumeData::get_domain)
       .def("get_functions_of_time", &h5::VolumeData::get_functions_of_time,
            py::arg("observation_id"))
       .def("get_global_functions_of_time",

@@ -80,7 +80,6 @@ size_t get_number_of_elements(const std::vector<std::string>& input_filenames,
 
 std::optional<std::unordered_set<size_t>> get_block_numbers_to_use(
     const std::string& file_name, const std::string& subfile_name,
-    const size_t observation_id,
     const std::optional<std::vector<std::string>>& blocks_to_combine) {
   if (not blocks_to_combine.has_value() or blocks_to_combine.value().empty()) {
     return std::nullopt;
@@ -90,7 +89,7 @@ std::optional<std::unordered_set<size_t>> get_block_numbers_to_use(
   const auto& volume_file = original_file.get<h5::VolumeData>(subfile_name);
 
   const auto dim = volume_file.get_dimension();
-  auto serialized_domain = volume_file.get_domain(observation_id);
+  auto serialized_domain = volume_file.get_domain();
   if (not serialized_domain.has_value()) {
     ERROR("Could not read the domain the from file "
           << file_name << " and subfile " << subfile_name
@@ -194,9 +193,7 @@ void combine_h5_vol(
   }
 
   const std::optional<std::unordered_set<size_t>> blocks_to_use =
-      get_block_numbers_to_use(file_names[0], subfile_name,
-                               observation_ids_and_values[0].first,
-                               blocks_to_combine);
+      get_block_numbers_to_use(file_names[0], subfile_name, blocks_to_combine);
 
   // Loops over observation ids to write volume data by observation id
   for (size_t obs_index = 0; obs_index < observation_ids_and_values.size();
@@ -240,7 +237,7 @@ void combine_h5_vol(
       Parallel::printf("  Processing file: %s\n", file_name.c_str());
 
       const auto dim = original_volume_file.get_dimension();
-      serialized_domain = original_volume_file.get_domain(obs_id);
+      serialized_domain = original_volume_file.get_domain();
       serialized_observation_functions_of_time =
           original_volume_file.get_functions_of_time(obs_id);
       serialized_global_functions_of_time =

@@ -359,7 +359,7 @@ def render_1d_command(
     obs_value = volfiles[0].get_observation_value(obs_id)
 
     # For Lagrange interpolation
-    domain = deserialize_domain[1](volfiles[0].get_domain(obs_id))
+    domain = deserialize_domain[1](volfiles[0].get_domain())
     if domain.is_time_dependent():
         functions_of_time = deserialize_functions_of_time(
             volfiles[0].get_functions_of_time(obs_id)
