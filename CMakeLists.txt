@@ -60,6 +60,12 @@ if (CMAKE_VERSION VERSION_GREATER_EQUAL 3.25)
 else()
   set(SPECTRE_FETCHCONTENT_BASE_ARGS "")
 endif()
+# Enable position independent code when fetching dependencies because some of
+# them build static libs and these may be linked into shared libs
+if (SPECTRE_FETCH_MISSING_DEPS)
+  set(CMAKE_POSITION_INDEPENDENT_CODE ON CACHE BOOL
+      "Enable position independent code for all targets" FORCE)
+endif()
 
 # Define standard installation directories
 include(GNUInstallDirs)
