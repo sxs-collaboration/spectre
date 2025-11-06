@@ -5,15 +5,22 @@
 
 #include <atomic>
 #include <cstddef>
+#include <map>
+#include <tuple>
 
+#include "Domain/Structure/DirectionalId.hpp"
+#include "Domain/Structure/DirectionalIdMap.hpp"
 #include "Domain/Structure/MaxNumberOfNeighbors.hpp"
 #include "Evolution/DiscontinuousGalerkin/BoundaryData.hpp"
 #include "Parallel/StaticSpscQueue.hpp"
 #include "Time/TimeStepId.hpp"
 
 /// \cond
-template <size_t Dim>
-struct DirectionalId;
+template <size_t VolumeDim>
+class Element;
+namespace PUP {
+class er;
+}  // namespace PUP
 /// \endcond
 
 namespace evolution::dg {
@@ -74,6 +81,11 @@ struct AtomicInboxBoundaryData {
    */
   static size_t index(const DirectionalId<Dim>& directional_id);
 
+  /*!
+   * Moves data from the SPSC queues into the `messages` map.
+   */
+  void collect_messages(const Element<Dim>& element);
+
   void pup(PUP::er& p);
 
   // We use 20 entries in the SPSC under the assumption that each neighbor
@@ -84,6 +96,7 @@ struct AtomicInboxBoundaryData {
                  std::tuple<::TimeStepId, stored_type, DirectionalId<Dim>>, 20>,
              maximum_number_of_neighbors(Dim)>
       boundary_data_in_directions{};
+  std::map<TimeStepId, DirectionalIdMap<Dim, stored_type>> messages{};
   std::atomic_uint message_count{};
   std::atomic_uint number_of_neighbors{};
 };

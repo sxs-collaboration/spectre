@@ -103,47 +103,6 @@ struct TemporaryReference {
   using tag = Tag;
   using type = const Type&;
 };
-
-template <size_t Dim>
-void retrieve_boundary_data_spsc(
-    const gsl::not_null<std::map<
-        TimeStepId, DirectionalIdMap<Dim, evolution::dg::BoundaryData<Dim>>>*>
-        boundary_data_ptr,
-    const gsl::not_null<evolution::dg::AtomicInboxBoundaryData<Dim>*> inbox_ptr,
-    const Element<Dim>& element) {
-  for (const auto& [direction, neighbors] : element.neighbors()) {
-    for (const ElementId<Dim>& neighbor_element_id : neighbors) {
-      const size_t neighbor_index =
-          inbox_ptr->index(DirectionalId{direction, neighbor_element_id});
-      auto& spsc_in_direction =
-          gsl::at(inbox_ptr->boundary_data_in_directions, neighbor_index);
-      auto* data_in_direction = spsc_in_direction.front();
-      while (data_in_direction != nullptr) {
-        const auto& time_step_id = get<0>(*data_in_direction);
-        auto& data = get<1>(*data_in_direction);
-        auto& directional_element_id = get<2>(*data_in_direction);
-        auto& current_inbox = (*boundary_data_ptr)[time_step_id];
-        if (auto it = current_inbox.find(directional_element_id);
-            it != current_inbox.end()) {
-          merge_boundary_data(make_not_null(&it->second), std::move(data));
-        } else {
-          // We have not received ghost cells or fluxes at this time.
-          if (not current_inbox
-                      .emplace(std::move(directional_element_id),
-                               std::move(data))
-                      .second) {
-            ERROR("Failed to insert data to receive at instance '"
-                  << time_step_id
-                  << "' with tag 'BoundaryCorrectionAndGhostCellsInbox'.\n");
-          }
-        }
-
-        spsc_in_direction.pop();
-        data_in_direction = spsc_in_direction.front();
-      }  // while data_in_direction != nullptr
-    }    // for neighbor_element_id : neighbors
-  }      // for element.neighbors()
-}
 }  // namespace detail
 
 /// Receive boundary data for global time-stepping.  Returns true if
@@ -190,49 +149,31 @@ bool receive_boundary_data_global_time_stepping(
                     typename evolution::dg::Tags::
                         BoundaryCorrectionAndGhostCellsInbox<
                             volume_dim, UseNodegroupDgElements>::type>) {
-    bool have_all_data = false;
-    received_temporal_id_and_data =
-        db::mutate<evolution::dg::Tags::BoundaryData<volume_dim>>(
-            [&get_temporal_id_and_data_node](
-                const auto boundary_data_ptr,
-                const gsl::not_null<bool*> local_have_all_data,
-                const auto inbox_ptr, const Element<volume_dim>& element)
-                -> std::pair<typename NodeType::key_type,
-                             typename NodeType::mapped_type> {
-              if (inbox_ptr->message_count.load(std::memory_order_relaxed) <
-                  element.number_of_neighbors()) {
-                return {};
-              }
-              detail::retrieve_boundary_data_spsc(boundary_data_ptr, inbox_ptr,
-                                                  element);
-
-              NodeType node =
-                  get_temporal_id_and_data_node(boundary_data_ptr, element);
-              if (node.empty()) {
-                return {};
-              }
-              if (UNLIKELY(node.mapped().size() !=
-                           element.number_of_neighbors())) {
-                ERROR("Incorrect number of element neighbors");
-              }
-              *local_have_all_data = true;
-              // We only decrease the counter if we are done with the current
-              // time and we only decrease it by the number of neighbors at the
-              // current time.
-              inbox_ptr->message_count.fetch_sub(element.number_of_neighbors(),
-                                                 std::memory_order_acq_rel);
-
-              return std::pair{std::move(node.key()), std::move(node.mapped())};
-            },
-            box, make_not_null(&have_all_data),
-            make_not_null(
-                &tuples::get<
-                    evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<
-                        volume_dim, UseNodegroupDgElements>>(*inboxes)),
-            db::get<domain::Tags::Element<volume_dim>>(*box));
-    if (not have_all_data) {
+    auto& inbox =
+        tuples::get<evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<
+            volume_dim, UseNodegroupDgElements>>(*inboxes);
+    const auto& element = db::get<domain::Tags::Element<volume_dim>>(*box);
+    if (inbox.message_count.load(std::memory_order_relaxed) <
+        element.number_of_neighbors()) {
       return false;
     }
+    inbox.collect_messages(element);
+
+    NodeType node = get_temporal_id_and_data_node(&inbox.messages, element);
+    if (node.empty()) {
+      return false;
+    }
+    if (UNLIKELY(node.mapped().size() != element.number_of_neighbors())) {
+      ERROR("Incorrect number of element neighbors");
+    }
+    // We only decrease the counter if we are done with the current
+    // time and we only decrease it by the number of neighbors at the
+    // current time.
+    inbox.message_count.fetch_sub(element.number_of_neighbors(),
+                                  std::memory_order_acq_rel);
+
+    received_temporal_id_and_data =
+        std::pair{std::move(node.key()), std::move(node.mapped())};
   } else {
     // Scope to make sure the `node` can't be used later.
     NodeType node = get_temporal_id_and_data_node(
@@ -361,19 +302,11 @@ bool receive_boundary_data_local_time_stepping(
                                typename evolution::dg::Tags::
                                    BoundaryCorrectionAndGhostCellsInbox<
                                        Dim, UseNodegroupDgElements>::type>) {
-    inbox_ptr = db::mutate<evolution::dg::Tags::BoundaryData<Dim>>(
-        [](const auto boundary_data_ptr, const auto local_inbox_ptr,
-           const Element<Dim>& element) -> InboxMap* {
-          detail::retrieve_boundary_data_spsc(boundary_data_ptr,
-                                              local_inbox_ptr, element);
-
-          return boundary_data_ptr.get();
-        },
-        box,
-        make_not_null(&tuples::get<
-                      evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<
-                          Dim, UseNodegroupDgElements>>(*inboxes)),
-        db::get<domain::Tags::Element<Dim>>(*box));
+    auto& inbox =
+        tuples::get<evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<
+            Dim, UseNodegroupDgElements>>(*inboxes);
+    inbox.collect_messages(db::get<domain::Tags::Element<Dim>>(*box));
+    inbox_ptr = &inbox.messages;
   } else {
     inbox_ptr =
         &tuples::get<evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<

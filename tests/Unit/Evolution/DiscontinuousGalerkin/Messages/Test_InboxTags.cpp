@@ -346,8 +346,6 @@ template <size_t Dim>
 void test() {
   test_no_ghost_cells<Dim, false>();
   test_with_ghost_cells<Dim, false>();
-
-  TestHelpers::db::test_simple_tag<Tags::BoundaryData<Dim>>("BoundaryData");
 }
 }  // namespace
 
