@@ -14,6 +14,7 @@
 #include <optional>
 #include <ostream>
 #include <string>
+#include <string_view>
 #include <unordered_map>
 #include <vector>
 
@@ -49,6 +50,9 @@ namespace h5 {
 namespace {
 // Append the element extents and connectivity to the total extents and
 // connectivity
+constexpr const char* global_functions_of_time_observation_value_attr =
+    "global_functions_of_time_observation_value";
+
 void append_element_extents_and_connectivity(
     const gsl::not_null<std::vector<size_t>*> total_extents,
     const gsl::not_null<std::vector<int>*> total_connectivity,
@@ -169,7 +173,6 @@ void append_element_extents_and_connectivity(
     }
   }
 }
-
 }  // namespace
 
 VolumeData::VolumeData(const bool subfile_exists, detail::OpenGroup&& group,
@@ -214,7 +217,10 @@ void VolumeData::write_volume_data(
     const size_t observation_id, const double observation_value,
     const std::vector<ElementVolumeData>& elements,
     const std::optional<std::vector<char>>& serialized_domain,
-    const std::optional<std::vector<char>>& serialized_functions_of_time) {
+    const std::optional<std::vector<char>>&
+        serialized_observation_functions_of_time,
+    const std::optional<std::vector<char>>&
+        serialized_global_functions_of_time) {
   const std::string path = "ObservationId" + std::to_string(observation_id);
   detail::OpenGroup observation_group(volume_data_group_.id(), path,
                                       AccessType::ReadWrite);
@@ -401,15 +407,46 @@ void VolumeData::write_volume_data(
     h5::write_data(observation_group.id(), pole_connectivity,
                    {pole_connectivity.size()}, "pole_connectivity");
   }
-  // Write the serialized domain
-  if (serialized_domain.has_value()) {
-    h5::write_data(observation_group.id(), *serialized_domain,
+  // Store the serialized domain and functions of time at the subfile level
+  if (serialized_domain.has_value() and
+      not contains_dataset_or_group(volume_data_group_.id(), "", "domain")) {
+    h5::write_data(volume_data_group_.id(), *serialized_domain,
                    {serialized_domain->size()}, "domain");
   }
-  // Write the serialized functions of time
-  if (serialized_functions_of_time.has_value()) {
-    h5::write_data(observation_group.id(), *serialized_functions_of_time,
-                   {serialized_functions_of_time->size()}, "functions_of_time");
+  if (serialized_observation_functions_of_time.has_value()) {
+    h5::write_data(observation_group.id(),
+                   *serialized_observation_functions_of_time,
+                   {serialized_observation_functions_of_time->size()},
+                   "functions_of_time");
+  }
+  if (serialized_global_functions_of_time.has_value()) {
+    bool should_write_global_functions_of_time = true;
+    if (h5::contains_attribute(
+            volume_data_group_.id(), "",
+            global_functions_of_time_observation_value_attr)) {
+      const auto stored_observation_value = h5::read_value_attribute<double>(
+          volume_data_group_.id(),
+          global_functions_of_time_observation_value_attr);
+      should_write_global_functions_of_time =
+          observation_value > stored_observation_value;
+    }
+    if (should_write_global_functions_of_time) {
+      h5::write_data(volume_data_group_.id(),
+                     *serialized_global_functions_of_time,
+                     {serialized_global_functions_of_time->size()},
+                     "global_functions_of_time", true);
+      if (h5::contains_attribute(
+              volume_data_group_.id(), "",
+              global_functions_of_time_observation_value_attr)) {
+        CHECK_H5(H5Adelete(volume_data_group_.id(),
+                           global_functions_of_time_observation_value_attr),
+                 "Failed to delete existing attribute '"
+                     << global_functions_of_time_observation_value_attr << "'");
+      }
+      h5::write_to_attribute(volume_data_group_.id(),
+                             global_functions_of_time_observation_value_attr,
+                             observation_value);
+    }
   }
 }
 
@@ -459,14 +496,27 @@ void VolumeData::write_tensor_component(
                  overwrite_existing);
 }
 
+bool VolumeData::has_domain() const {
+  return contains_dataset_or_group(volume_data_group_.id(), "", "domain");
+}
+
+bool VolumeData::has_global_functions_of_time() const {
+  return contains_dataset_or_group(volume_data_group_.id(), "",
+                                   "global_functions_of_time");
+}
+
 std::vector<size_t> VolumeData::list_observation_ids() const {
   const auto names = get_group_names(volume_data_group_.id(), "");
-  const auto helper = [](const std::string& s) {
-    return std::stoul(s.substr(std::string("ObservationId").size()));
-  };
-  std::vector<size_t> obs_ids{
-      boost::make_transform_iterator(names.begin(), helper),
-      boost::make_transform_iterator(names.end(), helper)};
+  std::vector<size_t> obs_ids{};
+  obs_ids.reserve(names.size());
+  constexpr std::string_view observation_prefix{"ObservationId"};
+  for (const auto& name : names) {
+    if (name.size() <= observation_prefix.size() or
+        name.compare(0, observation_prefix.size(), observation_prefix) != 0) {
+      continue;
+    }
+    obs_ids.push_back(std::stoul(name.substr(observation_prefix.size())));
+  }
   // pre-compute the observation values as they are expensive to evaluate
   std::unordered_map<size_t, double> obs_values{obs_ids.size()};
   for (const auto& id : obs_ids) {
@@ -640,15 +690,7 @@ auto VolumeData::get_data_by_element(
     const std::optional<std::vector<std::string>>& components_to_retrieve) const
     -> std::vector<std::tuple<size_t, double, std::vector<ElementVolumeData>>> {
   // First get list of all observations we need to retrieve
-  const auto names = get_group_names(volume_data_group_.id(), "");
-  const auto get_observation_id_from_group_name = [](const std::string& s) {
-    return std::stoul(s.substr(std::string("ObservationId").size()));
-  };
-  std::vector<size_t> obs_ids{
-      boost::make_transform_iterator(names.begin(),
-                                     get_observation_id_from_group_name),
-      boost::make_transform_iterator(names.end(),
-                                     get_observation_id_from_group_name)};
+  const std::vector<size_t> obs_ids = list_observation_ids();
   std::vector<std::tuple<size_t, double, std::vector<ElementVolumeData>>>
       result{};
   result.reserve(obs_ids.size());
@@ -796,14 +838,26 @@ std::vector<std::vector<Spectral::Quadrature>> VolumeData::get_quadratures(
 }
 
 std::optional<std::vector<char>> VolumeData::get_domain(
-    const size_t observation_id) const {
+    const std::optional<size_t> observation_id) const {
+  // we write the domain independently of the observation_id since a refactor
+  if (contains_dataset_or_group(volume_data_group_.id(), "", "domain")) {
+    return h5::read_data<1, std::vector<char>>(volume_data_group_.id(),
+                                               "domain");
+  }
+  // default to old location
+  const auto& observation_ids = list_observation_ids();
+  if (observation_ids.empty()) {
+    return std::nullopt;
+  }
+  const size_t observation_id = observation_ids.back();
   const std::string path = "ObservationId" + std::to_string(observation_id);
   detail::OpenGroup observation_group(volume_data_group_.id(), path,
                                       AccessType::ReadOnly);
-  if (not contains_dataset_or_group(observation_group.id(), "", "domain")) {
-    return std::nullopt;
+  if (contains_dataset_or_group(observation_group.id(), "", "domain")) {
+    return h5::read_data<1, std::vector<char>>(observation_group.id(),
+                                               "domain");
   }
-  return h5::read_data<1, std::vector<char>>(observation_group.id(), "domain");
+  return std::nullopt;
 }
 
 std::optional<std::vector<char>> VolumeData::get_functions_of_time(
@@ -817,6 +871,21 @@ std::optional<std::vector<char>> VolumeData::get_functions_of_time(
   }
   return h5::read_data<1, std::vector<char>>(observation_group.id(),
                                              "functions_of_time");
+}
+
+std::optional<std::vector<char>> VolumeData::get_global_functions_of_time()
+    const {
+  if (contains_dataset_or_group(volume_data_group_.id(), "",
+                                "global_functions_of_time")) {
+    return h5::read_data<1, std::vector<char>>(volume_data_group_.id(),
+                                               "global_functions_of_time");
+  }
+  // fall back to old location if global not present
+  const auto& observation_ids = list_observation_ids();
+  if (observation_ids.empty()) {
+    return std::nullopt;
+  }
+  return get_functions_of_time(observation_ids.back());
 }
 
 template <size_t Dim>

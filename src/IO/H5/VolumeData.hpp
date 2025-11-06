@@ -106,17 +106,40 @@ class VolumeData : public h5::Object {
    */
   uint32_t get_version() const { return version_; }
 
-  /// Insert tensor components at `observation_id` with floating point value
-  /// `observation_value`. Optionally write a serialized representation of the
-  /// domain and the functions of time into the subfile as well.
-  ///
-  /// All `elements` must contain the same tensor components in the same order.
+  /*!
+   * \brief Write volume data at an observation id and observation value.
+   *
+   * \param observation_id The integral observation id at which the data is
+   * written.
+   * \param observation_value The floating point observation value (e.g. time)
+   * at which the data is written.
+   * \param elements The volume data to write, passed as a vector of
+   * ElementVolumeData structs.
+   * \param serialized_domain An optional serialized domain. It will only be
+   * written if there is not already a domain stored in the subfile.
+   * \param serialized_observation_functions_of_time An optional serialized
+   * observation-specific functions of time. It should be valid at the given
+   * observation value, but not contain the entire history to save space.
+   * \param serialized_global_functions_of_time An optional serialized global
+   * functions of time oject. It should be valid for the entire simulation. It
+   * will be used to overwrite the existing global functions of time iff the old
+   * object was written at a smaller observation_value (i.e. an earlier time).
+   */
   void write_volume_data(
       size_t observation_id, double observation_value,
       const std::vector<ElementVolumeData>& elements,
       const std::optional<std::vector<char>>& serialized_domain = std::nullopt,
-      const std::optional<std::vector<char>>& serialized_functions_of_time =
-          std::nullopt);
+      const std::optional<std::vector<char>>&
+          serialized_observation_functions_of_time = std::nullopt,
+      const std::optional<std::vector<char>>&
+          serialized_global_functions_of_time = std::nullopt);
+
+  /// \returns true if a serialized domain has been written to the subfile.
+  bool has_domain() const;
+
+  /// \returns true if serialized functions of time have been written to the
+  /// subfile.
+  bool has_global_functions_of_time() const;
 
   /// Overwrites the current connectivity dataset with a new one. This new
   /// connectivity dataset builds connectivity within each block in the domain
@@ -210,14 +233,24 @@ class VolumeData : public h5::Object {
   std::vector<std::vector<Spectral::Quadrature>> get_quadratures(
       size_t observation_id) const;
 
-  /// Get the serialized domain in the subfile at this observation ID, or
-  /// `std::nullopt` if no domain was written.
-  std::optional<std::vector<char>> get_domain(size_t observation_id) const;
+  /*!
+   * \brief Get the serialized domain if it was written.
+   */
+  std::optional<std::vector<char>> get_domain(
+      std::optional<size_t> observation_id = std::nullopt) const;
 
-  /// Get the serialized functions of time in the subfile at this observation
-  /// ID, or `std::nullopt` if none were written.
+  /*!
+   * \brief Get the observation-specific serialized functions of time at an \p
+   * observation_id if they were written.
+   */
   std::optional<std::vector<char>> get_functions_of_time(
       size_t observation_id) const;
+
+  /*!
+   * \brief Get the serialized global functions of time in the subfile if they
+   * were written.
+   */
+  std::optional<std::vector<char>> get_global_functions_of_time() const;
 
   const std::string& subfile_path() const override { return path_; }
 
