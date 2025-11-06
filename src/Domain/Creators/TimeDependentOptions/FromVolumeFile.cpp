@@ -36,17 +36,8 @@ std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime> get_function_of_time(
     const std::string& subfile_name, const std::optional<double>& time) {
   const h5::H5File<h5::AccessType::ReadOnly> h5_file{h5_filename};
   const auto& vol_file = h5_file.get<h5::VolumeData>(subfile_name);
-
-  const std::vector<size_t> obs_ids = vol_file.list_observation_ids();
-  if (obs_ids.empty()) {
-    ERROR_NO_TRACE(function_of_time_name
-                   << ": There are no observation IDs in the subfile "
-                   << subfile_name << " of H5 file " << h5_filename);
-  }
-  // Take last observation ID so we have all possible times available
   std::optional<std::vector<char>> serialized_functions_of_time =
-      vol_file.get_functions_of_time(obs_ids[obs_ids.size() - 1]);
-
+      vol_file.get_global_functions_of_time();
   if (not serialized_functions_of_time.has_value()) {
     ERROR_NO_TRACE(function_of_time_name
                    << ": There are no functions of time in the subfile "

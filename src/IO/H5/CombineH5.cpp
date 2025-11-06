@@ -219,7 +219,8 @@ void combine_h5_vol(
 
     double obs_val = 0.0;
     std::optional<std::vector<char>> serialized_domain{};
-    std::optional<std::vector<char>> serialized_functions_of_time{};
+    std::optional<std::vector<char>> serialized_observation_functions_of_time{};
+    std::optional<std::vector<char>> serialized_global_functions_of_time{};
 
     // Loops over input files to append element data into a single vector to be
     // stored in a single H5
@@ -232,7 +233,7 @@ void combine_h5_vol(
       obs_val = original_volume_file.get_observation_value(obs_id);
       if (not printed) {
         Parallel::printf(
-            "Processing obsevation ID %lo (%lo/%lo) with value %1.14e\n",
+            "Processing observation ID %lo (%lo/%lo) with value %1.14e\n",
             obs_id, obs_index, observation_ids_and_values.size(), obs_val);
         printed = true;
       }
@@ -240,9 +241,10 @@ void combine_h5_vol(
 
       const auto dim = original_volume_file.get_dimension();
       serialized_domain = original_volume_file.get_domain(obs_id);
-      serialized_functions_of_time =
+      serialized_observation_functions_of_time =
           original_volume_file.get_functions_of_time(obs_id);
-
+      serialized_global_functions_of_time =
+          original_volume_file.get_global_functions_of_time();
       // Get vector of element data for this `obs_id` and `file_name`
       std::vector<ElementVolumeData> data_by_element =
           std::move(std::get<2>(original_volume_file.get_data_by_element(
@@ -284,7 +286,9 @@ void combine_h5_vol(
     auto& new_volume_file = new_file.get<h5::VolumeData>(subfile_name);
     new_volume_file.write_volume_data(obs_id, obs_val, element_data,
                                       serialized_domain,
-                                      serialized_functions_of_time);
+                                      serialized_observation_functions_of_time,
+                                      serialized_global_functions_of_time);
+
     new_file.close_current_object();
   }
 }

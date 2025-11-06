@@ -80,7 +80,8 @@ void write_data_to_file(const std::string& h5_file_name) {
   size_t obs_id = 0;
   for (const double time : times) {
     volfile.write_volume_data(obs_id, time, element_volume_data,
-                              serialize(domain), serialize(functions_of_time));
+                              serialize(domain), serialize(functions_of_time),
+                              serialize(functions_of_time));
     ++obs_id;
   }
 }

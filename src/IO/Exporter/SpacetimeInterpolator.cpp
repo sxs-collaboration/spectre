@@ -24,36 +24,9 @@
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Overloader.hpp"
+#include "Utilities/Serialization/Serialize.hpp"
 
 namespace spectre::Exporter {
-
-namespace {
-
-auto load_observation_ids(const std::variant<std::vector<std::string>,
-                                             std::string>& volume_files_or_glob,
-                          const std::string& subfile_name) {
-  const std::vector<std::string> filenames =
-      std::visit(Overloader{[](const std::vector<std::string>& volume_files) {
-                              return volume_files;
-                            },
-                            [](const std::string& volume_files_glob) {
-                              return file_system::glob(volume_files_glob);
-                            }},
-                 volume_files_or_glob);
-  const h5::H5File<h5::AccessType::ReadOnly> first_h5file(filenames.front());
-  const auto& first_volfile = first_h5file.get<h5::VolumeData>(subfile_name);
-  const auto all_observation_ids = first_volfile.list_observation_ids();
-  std::vector<double> all_observation_values(all_observation_ids.size());
-  std::transform(all_observation_ids.begin(), all_observation_ids.end(),
-                 all_observation_values.begin(),
-                 [&first_volfile](const size_t obs_id) {
-                   return first_volfile.get_observation_value(obs_id);
-                 });
-  first_h5file.close();
-  return std::make_pair(all_observation_ids, all_observation_values);
-}
-
-}  // namespace
 
 template <size_t Dim, typename Frame>
 SpacetimeInterpolator<Dim, Frame>::SpacetimeInterpolator(
@@ -62,8 +35,26 @@ SpacetimeInterpolator<Dim, Frame>::SpacetimeInterpolator(
     : volume_files_or_glob_(std::move(volume_files_or_glob)),
       subfile_name_(std::move(subfile_name)),
       tensor_components_(std::move(tensor_components)) {
-  std::tie(all_observation_ids_, all_observation_values_) =
-      load_observation_ids(volume_files_or_glob_, subfile_name_);
+  const std::vector<std::string> filenames =
+      std::visit(Overloader{[](const std::vector<std::string>& volume_files) {
+                              return volume_files;
+                            },
+                            [](const std::string& volume_files_glob) {
+                              return file_system::glob(volume_files_glob);
+                            }},
+                 volume_files_or_glob_);
+  if (filenames.empty()) {
+    ERROR("No volume data files found.");
+  }
+  const h5::H5File<h5::AccessType::ReadOnly> first_h5file(filenames.front());
+  const auto& first_volfile = first_h5file.get<h5::VolumeData>(subfile_name_);
+  all_observation_ids_ = first_volfile.list_observation_ids();
+  all_observation_values_.resize(all_observation_ids_.size());
+  std::transform(all_observation_ids_.begin(), all_observation_ids_.end(),
+                 all_observation_values_.begin(),
+                 [&first_volfile](const size_t obs_id) {
+                   return first_volfile.get_observation_value(obs_id);
+                 });
   if (all_observation_ids_.empty()) {
     ERROR("No observation IDs found in the volume data files.");
   }
@@ -74,6 +65,12 @@ SpacetimeInterpolator<Dim, Frame>::SpacetimeInterpolator(
         << time_interpolation_order_ + 1 << "), but "
         << all_observation_ids_.size() << " observations were found.");
   }
+  auto serialized_fots = first_volfile.get_global_functions_of_time();
+  if (serialized_fots.has_value()) {
+    functions_of_time_ =
+        deserialize<domain::FunctionsOfTimeMap>(serialized_fots->data());
+  }
+  first_h5file.close();
 }
 
 template <size_t Dim, typename Frame>
@@ -243,8 +240,8 @@ void SpacetimeInterpolator<Dim, Frame>::interpolate_to_point(
   // yet.
   const auto& any_interpolator = *lower;
   const auto block_logical_coords = block_logical_coordinates_single_point(
-      target_point, any_interpolator.domain(), time,
-      any_interpolator.functions_of_time(), block_order);
+      target_point, any_interpolator.domain(), time, functions_of_time_,
+      block_order);
   if (not block_logical_coords.has_value()) {
     ERROR("Point is not in any block:\n" << target_point);
   }
