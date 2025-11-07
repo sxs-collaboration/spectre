@@ -99,9 +99,6 @@ void test_simple_tags() {
   TestHelpers::db::test_simple_tag<
       Ccz4::Tags::SpatialRicciTensor<DataType, Dim, Frame>>(
       "SpatialRicciTensor");
-  TestHelpers::db::test_simple_tag<
-      Ccz4::Tags::UpperSpatialZ4Contraint<DataType, Dim, Frame>>(
-      "UpperSpatialZ4Contraint");
 }
 
 SPECTRE_TEST_CASE("Unit.Evolution.Systems.Ccz4.TempTags", "[Unit][Evolution]") {

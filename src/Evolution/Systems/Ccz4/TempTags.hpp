@@ -329,15 +329,5 @@ struct SpatialRicciTensor : db::SimpleTag {
   using type = tnsr::ii<DataType, Dim, Frame>;
 };
 
-/*!
- * \brief The CCZ4 temporary expression \f$ Z^i \f$
- */
-template <typename DataType, size_t Dim, typename Frame>
-struct UpperSpatialZ4Contraint : db::SimpleTag {
-  using type = tnsr::I<DataType, Dim, Frame>;
-};
-
-
-
 }  // namespace Tags
 }  // namespace Ccz4
