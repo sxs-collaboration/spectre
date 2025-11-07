@@ -16,8 +16,6 @@
 #include "Time/TimeStepId.hpp"
 
 /// \cond
-template <size_t VolumeDim>
-class Element;
 namespace PUP {
 class er;
 }  // namespace PUP
@@ -84,7 +82,7 @@ struct AtomicInboxBoundaryData {
   /*!
    * Moves data from the SPSC queues into the `messages` map.
    */
-  void collect_messages(const Element<Dim>& element);
+  void collect_messages();
 
   void pup(PUP::er& p);
 

@@ -10,8 +10,6 @@
 #include <utility>
 
 #include "Domain/Structure/DirectionalId.hpp"
-#include "Domain/Structure/Element.hpp"
-#include "Domain/Structure/ElementId.hpp"
 #include "Domain/Structure/Side.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
@@ -79,40 +77,32 @@ size_t AtomicInboxBoundaryData<Dim>::index(
 }
 
 template <size_t Dim>
-void AtomicInboxBoundaryData<Dim>::collect_messages(
-    const Element<Dim>& element) {
-  for (const auto& [direction, neighbors] : element.neighbors()) {
-    for (const ElementId<Dim>& neighbor_element_id : neighbors) {
-      const size_t neighbor_index =
-          index(DirectionalId{direction, neighbor_element_id});
-      auto& spsc_in_direction =
-          gsl::at(boundary_data_in_directions, neighbor_index);
-      auto* data_in_direction = spsc_in_direction.front();
-      while (data_in_direction != nullptr) {
-        const auto& time_step_id = get<0>(*data_in_direction);
-        auto& data = get<1>(*data_in_direction);
-        auto& directional_element_id = get<2>(*data_in_direction);
-        auto& current_inbox = messages[time_step_id];
-        if (auto it = current_inbox.find(directional_element_id);
-            it != current_inbox.end()) {
-          merge_boundary_data(make_not_null(&it->second), std::move(data));
-        } else {
-          // We have not received ghost cells or fluxes at this time.
-          if (not current_inbox
-                      .emplace(std::move(directional_element_id),
-                               std::move(data))
-                      .second) {
-            ERROR("Failed to insert data to receive at instance '"
-                  << time_step_id
-                  << "' with tag 'BoundaryCorrectionAndGhostCellsInbox'.\n");
-          }
+void AtomicInboxBoundaryData<Dim>::collect_messages() {
+  for (auto& spsc_in_direction : boundary_data_in_directions) {
+    auto* data_in_direction = spsc_in_direction.front();
+    while (data_in_direction != nullptr) {
+      const auto& time_step_id = get<0>(*data_in_direction);
+      auto& data = get<1>(*data_in_direction);
+      auto& directional_element_id = get<2>(*data_in_direction);
+      auto& current_inbox = messages[time_step_id];
+      if (auto it = current_inbox.find(directional_element_id);
+          it != current_inbox.end()) {
+        merge_boundary_data(make_not_null(&it->second), std::move(data));
+      } else {
+        // We have not received ghost cells or fluxes at this time.
+        if (not current_inbox
+                    .emplace(std::move(directional_element_id), std::move(data))
+                    .second) {
+          ERROR("Failed to insert data to receive at instance '"
+                << time_step_id
+                << "' with tag 'BoundaryCorrectionAndGhostCellsInbox'.\n");
         }
+      }
 
-        spsc_in_direction.pop();
-        data_in_direction = spsc_in_direction.front();
-      }  // while data_in_direction != nullptr
-    }  // for neighbor_element_id : neighbors
-  }  // for element.neighbors()
+      spsc_in_direction.pop();
+      data_in_direction = spsc_in_direction.front();
+    }  // while data_in_direction != nullptr
+  }  //   for spsc_in_direction : boundary_data_in_directions
 }
 
 template <size_t Dim>

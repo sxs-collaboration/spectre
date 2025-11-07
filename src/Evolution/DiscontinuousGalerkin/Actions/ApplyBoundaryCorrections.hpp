@@ -157,7 +157,7 @@ bool receive_boundary_data_global_time_stepping(
         element.number_of_neighbors()) {
       return false;
     }
-    inbox.collect_messages(element);
+    inbox.collect_messages();
 
     NodeType node = get_temporal_id_and_data_node(&inbox.messages, element);
     if (node.empty()) {
@@ -305,7 +305,7 @@ bool receive_boundary_data_local_time_stepping(
     auto& inbox =
         tuples::get<evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<
             Dim, UseNodegroupDgElements>>(*inboxes);
-    inbox.collect_messages(db::get<domain::Tags::Element<Dim>>(*box));
+    inbox.collect_messages();
     inbox_ptr = &inbox.messages;
   } else {
     inbox_ptr =
