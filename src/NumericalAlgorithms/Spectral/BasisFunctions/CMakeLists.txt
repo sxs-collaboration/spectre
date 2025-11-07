@@ -6,7 +6,9 @@ spectre_target_sources(
   PRIVATE
   Chebyshev.cpp
   Fourier.cpp
+  Jacobi.cpp
   Legendre.cpp
+  Zernike.cpp
   )
 
 spectre_target_headers(
@@ -15,4 +17,6 @@ spectre_target_headers(
   HEADERS
   Chebyshev.hpp
   Fourier.hpp
+  Jacobi.hpp
+  Zernike.hpp
   )
