@@ -10,6 +10,7 @@ spectre_target_sources(
   PRIVATE
   Derivatives.cpp
   DummyReconstructor.cpp
+  Filter.cpp
   Reconstructor.cpp
   )
 
@@ -20,6 +21,7 @@ spectre_target_headers(
   BoundaryConditionGhostData.hpp
   Derivatives.hpp
   DummyReconstructor.hpp
+  Filter.hpp
   Reconstructor.hpp
   SoTimeDerivative.hpp
   System.hpp
