@@ -3,6 +3,7 @@
 
 #include "Framework/TestingFramework.hpp"
 
+#include <cstring>
 #include <filesystem>
 #include <fstream>
 #include <optional>
@@ -45,7 +46,7 @@ std::string symm_to_string() {
   return "";
 }
 
-template<typename TensorType>
+template <typename TensorType>
 struct MyTag : db::SimpleTag {
   using type = TensorType;
   static std::string name() {
@@ -86,10 +87,16 @@ void test_filter_vs_transforms(const size_t ell_max,
   const gsl::span<double> a_span(A.data(), A.size());
   gsl::span<double> b_span(B.data(), B.size());
   SimpleSparseMatrix cart_to_sphere;
-  ylm::TensorYlm::fill_cart_to_sphere<typename TensorType::structure>(
-      make_not_null(&cart_to_sphere), ell_max);
-  cart_to_sphere.increment_multiply_on_right(make_not_null(&b_span), 0, a_span,
-                                             0);
+  if constexpr (TensorType::structure::rank() == 0) {
+    // Rank zero doesn't have any difference between cartesian and spherical.
+    std::memcpy(B.data(), A.data(), A.size() * sizeof(double));
+  } else {
+    ylm::TensorYlm::fill_cart_to_sphere<typename TensorType::structure>(
+        make_not_null(&cart_to_sphere), ell_max);
+    cart_to_sphere.increment_multiply_on_right(make_not_null(&b_span), 0,
+                                               a_span, 0);
+  }
+
   // Apply the filter to B.
   static constexpr double alpha = 36.0;
   const auto lcutplus =
@@ -121,10 +128,15 @@ void test_filter_vs_transforms(const size_t ell_max,
   // Convert B to C
   gsl::span<double> c_span(C.data(), C.size());
   SimpleSparseMatrix sphere_to_cart;
-  ylm::TensorYlm::fill_sphere_to_cart<typename TensorType::structure>(
-      make_not_null(&sphere_to_cart), ell_max);
-  sphere_to_cart.increment_multiply_on_right(make_not_null(&c_span), 0, b_span,
-                                             0);
+  if constexpr (TensorType::structure::rank() == 0) {
+    // Rank zero doesn't have any difference between cartesian and spherical.
+    std::memcpy(C.data(), B.data(), B.size() * sizeof(double));
+  } else {
+    ylm::TensorYlm::fill_sphere_to_cart<typename TensorType::structure>(
+        make_not_null(&sphere_to_cart), ell_max);
+    sphere_to_cart.increment_multiply_on_right(make_not_null(&c_span), 0,
+                                               b_span, 0);
+  }
 
   // Apply the filter to A directly, output into D.
   // First set D equal to A (thus computing the delta term),
@@ -1195,5 +1207,7 @@ SPECTRE_TEST_CASE("Unit.SphericalHarmonics.TensorYlmFilter",
         ell_max, num_to_kill, half_power);
     test_filter_vs_transforms<typename tnsr::ijk<DataVector, 3>>(
         ell_max, num_to_kill, half_power);
+    test_filter_vs_transforms<Scalar<DataVector>>(ell_max, num_to_kill,
+                                                  half_power);
   }
 }
