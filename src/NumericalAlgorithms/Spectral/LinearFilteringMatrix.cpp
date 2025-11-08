@@ -58,4 +58,6 @@ template const Matrix& linear_filter_matrix<Basis::Legendre, Quadrature::Gauss>(
     size_t);
 template const Matrix&
     linear_filter_matrix<Basis::Legendre, Quadrature::GaussLobatto>(size_t);
+template const Matrix&
+linear_filter_matrix<Basis::Fourier, Quadrature::Equiangular>(size_t);
 }  // namespace Spectral

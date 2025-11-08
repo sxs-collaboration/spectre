@@ -12,7 +12,12 @@
 #include "NumericalAlgorithms/Spectral/BasisFunctionNormalizationSquare.hpp"
 #include "NumericalAlgorithms/Spectral/BasisFunctionValue.hpp"
 #include "NumericalAlgorithms/Spectral/CollocationPointsAndWeights.hpp"
+#include "NumericalAlgorithms/Spectral/DifferentiationMatrix.hpp"
+#include "NumericalAlgorithms/Spectral/InterpolationMatrix.hpp"
+#include "NumericalAlgorithms/Spectral/PrecomputedSpectralQuantity.hpp"
 #include "NumericalAlgorithms/Spectral/Quadrature.hpp"
+#include "Utilities/ContainerHelpers.hpp"
+#include "Utilities/EqualWithinRoundoff.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeWithValue.hpp"
 
@@ -92,19 +97,50 @@ Matrix Fourier::differentiation_matrix(const size_t num_points) {
   return result;
 }
 
-DataVector Fourier::interpolation_weights(const size_t num_points,
-                                          const double x_target) {
+template <typename T>
+Matrix Fourier::interpolation_matrix(const size_t num_points,
+                                     const T& target_points) {
+  const size_t num_target_points = get_size(target_points);
+  Matrix result(num_target_points, num_points,
+                1.0 / static_cast<double>(num_points));
+  const DataVector x_source = collocation_points(num_points);
   const bool n_is_even = num_points % 2 == 0;
-  DataVector result{num_points, 1.0 / static_cast<double>(num_points)};
-  const DataVector half_dx = 0.5 * (x_target - collocation_points(num_points));
-  if (n_is_even) {
-    result *= sin(static_cast<double>(num_points) * half_dx) * cos(half_dx) /
-              sin(half_dx);
-  } else {
-    result *= sin(static_cast<double>(num_points) * half_dx) / sin(half_dx);
+  for (size_t i = 0; i < num_target_points; ++i) {
+    const double x_target = get_element(target_points, i);
+    // Check where no interpolation is necessary since a target point
+    // matches the original collocation points
+    bool row_has_match = false;
+    for (size_t j = 0; j < num_points; j++) {
+      if (equal_within_roundoff(x_target, x_source[j])) {
+        result(i, j) = 1.0;
+        for (size_t m = 0; m < j; ++m) {
+          result(i, m) = 0.0;
+        }
+        for (size_t m = j + 1; m < num_points; ++m) {
+          result(i, m) = 0.0;
+        }
+        row_has_match = true;
+        break;
+      }
+    }
+    // Perform interpolation for non-matching points
+    if (not row_has_match) {
+      for (size_t j = 0; j < num_points; ++j) {
+        const double half_dx = 0.5 * (x_target - x_source[j]);
+        if (n_is_even) {
+          result(i, j) *= sin(static_cast<double>(num_points) * half_dx) *
+                          cos(half_dx) / sin(half_dx);
+        } else {
+          result(i, j) *=
+              sin(static_cast<double>(num_points) * half_dx) / sin(half_dx);
+        }
+      }
+    }
   }
   return result;
 }
+
+// Specializations of function templates defined in the Spectral directory
 
 template <>
 DataVector compute_basis_function_value<Basis::Fourier>(const size_t k,
@@ -131,5 +167,36 @@ compute_collocation_points_and_weights<Basis::Fourier, Quadrature::Equiangular>(
     const size_t num_points) {
   return std::make_pair(Fourier::collocation_points(num_points),
                         Fourier::quadrature_weights(num_points));
+}
+
+namespace {
+template <Basis BasisType, Quadrature QuadratureType>
+struct DifferentiationMatrixGenerator {
+  Matrix operator()(size_t num_points) const;
+};
+
+template <>
+Matrix DifferentiationMatrixGenerator<Basis::Fourier, Quadrature::Equiangular>::
+operator()(const size_t num_points) const {
+  return Fourier::differentiation_matrix(num_points);
+}
+}  // namespace
+
+PRECOMPUTED_SPECTRAL_QUANTITY(differentiation_matrix, Matrix,
+                              DifferentiationMatrixGenerator)
+
+template const Matrix& differentiation_matrix<
+    Basis::Fourier, Quadrature::Equiangular>(const size_t num_points);
+
+template <>
+Matrix interpolation_matrix<Basis::Fourier, Quadrature::Equiangular>(
+    const size_t num_points, const DataVector& target_points) {
+  return Fourier::interpolation_matrix(num_points, target_points);
+}
+
+template <>
+Matrix interpolation_matrix<Basis::Fourier, Quadrature::Equiangular>(
+    const size_t num_points, const double& target_points) {
+  return Fourier::interpolation_matrix(num_points, target_points);
 }
 }  // namespace Spectral

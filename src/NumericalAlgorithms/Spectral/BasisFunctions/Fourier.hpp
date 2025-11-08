@@ -150,12 +150,13 @@ class Fourier {
   static Matrix differentiation_matrix(size_t num_points);
 
   /*!
-   * \brief Interpolation weights \f$C_k(x)\f$ used to interpolate to
-   * \f$x_{target}\f$
+   * \brief %Matrix used to interpolate to the \p target_points.
    *
-   * \details The interpolation weights are given by:
+   * \details Each row of the matrix is given by the interpolation weights for
+   * interpolating to a particular target point \f$x\f$.  At each target point,
+   * \f$x\f$, the interpolation weights are given by:
    * \f{align*}{
-   *   C_k(x)
+   *   C_j(x)
    *   &=\begin{cases}
    *     \hfil \frac{1}{N} \sin \left[0.5 N(x - x_j)\right]
    *     \csc \left[0.5 (x - x_j)\right] \hfil & \text{if } N \text{ is odd} \\
@@ -163,7 +164,9 @@ class Fourier {
    *     \cot \left[0.5 (x - x_j)\right] \hfil & \text{if } N \text{ is even}
    *   \end{cases}
    * \f}
+   * where \f$x_j\f$ are the collocation_points.
    */
-  static DataVector interpolation_weights(size_t num_points, double x_target);
+  template <typename T>
+  static Matrix interpolation_matrix(size_t num_points, const T& target_points);
 };
 }  // namespace Spectral

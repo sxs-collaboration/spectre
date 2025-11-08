@@ -14,7 +14,6 @@ spectre_target_sources(
   BoundaryInterpolationTerm.cpp
   BoundaryLiftingTerm.cpp
   Cartoon.cpp
-  Chebyshev.cpp
   CollocationPoints.cpp
   CollocationPointsAndWeights.cpp
   DifferentiationMatrix.cpp
@@ -22,7 +21,6 @@ spectre_target_sources(
   FiniteDifference.cpp
   IntegrationMatrix.cpp
   InterpolationMatrix.cpp
-  Legendre.cpp
   LinearFilteringMatrix.cpp
   LogicalCoordinates.cpp
   Mesh.cpp
@@ -60,6 +58,7 @@ spectre_target_headers(
   Mesh.hpp
   MinimumNumberOfPoints.hpp
   ModalToNodalMatrix.hpp
+  Namespace.hpp
   NodalToModalMatrix.hpp
   PrecomputedSpectralQuantity.hpp
   Projection.hpp
