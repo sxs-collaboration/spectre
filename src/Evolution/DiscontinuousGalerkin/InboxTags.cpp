@@ -49,7 +49,7 @@ bool BoundaryCorrectionAndGhostCellsInbox<Dim, UseNodegroupDgElements>::
     insert_into_inbox(
         const gsl::not_null<type_map*> inbox, const temporal_id& time_step_id,
         std::pair<DirectionalId<Dim>, evolution::dg::BoundaryData<Dim>> data) {
-  auto& current_inbox = (*inbox)[time_step_id];
+  auto& current_inbox = inbox->messages[time_step_id];
   if (auto it = current_inbox.find(data.first); it != current_inbox.end()) {
     merge_boundary_data(make_not_null(&it->second), std::move(data.second));
   } else {
@@ -93,7 +93,7 @@ BoundaryCorrectionAndGhostCellsInbox<Dim, UseNodegroupDgElements>::output_inbox(
   ss << std::scientific << std::setprecision(16);
   ss << pad << "BoundaryCorrectionAndGhostCellInbox:\n";
 
-  for (const auto& [current_time_step_id, hash_map] : inbox) {
+  for (const auto& [current_time_step_id, hash_map] : inbox.messages) {
     ss << pad << " Current time: " << current_time_step_id << "\n";
     // We only care about the next time because that's important for deadlock
     // detection. The data itself isn't super important

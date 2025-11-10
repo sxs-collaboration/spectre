@@ -14,6 +14,7 @@
 #include "Domain/Structure/DirectionalIdMap.hpp"
 #include "Evolution/DiscontinuousGalerkin/AtomicInboxBoundaryData.hpp"
 #include "Evolution/DiscontinuousGalerkin/BoundaryData.hpp"
+#include "Evolution/DiscontinuousGalerkin/InboxBoundaryData.hpp"
 #include "Evolution/DiscontinuousGalerkin/Messages/BoundaryMessage.hpp"
 #include "Time/TimeStepId.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
@@ -112,7 +113,7 @@ struct BoundaryCorrectionAndGhostCellsInbox {
  public:
   using temporal_id = TimeStepId;
   // Used by array implementation
-  using type_map = std::map<TimeStepId, DirectionalIdMap<Dim, stored_type>>;
+  using type_map = evolution::dg::InboxBoundaryData<Dim>;
 
   // Used by nodegroup implementation
   using type_spsc = evolution::dg::AtomicInboxBoundaryData<Dim>;

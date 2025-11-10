@@ -101,8 +101,9 @@ void test_no_ghost_cells() {
   bc_tag::insert_into_inbox(make_not_null(&bc_inbox), time_step_id_a,
                             std::make_pair(nhbr_key, send_data_a));
   bm_tag::insert_into_inbox(make_not_null(&bm_inbox), boundary_message_a);
+  bc_inbox.collect_messages();
 
-  CHECK((bc_inbox.at(time_step_id_a).at(nhbr_key) == send_data_a));
+  CHECK((bc_inbox.messages.at(time_step_id_a).at(nhbr_key) == send_data_a));
   // Check the values, not the pointers
   CHECK(*(bm_inbox.at(time_step_id_a).at(nhbr_key).get()) ==
         *boundary_message_a_compare);
@@ -135,6 +136,7 @@ void test_no_ghost_cells() {
                             std::make_pair(nhbr_key, send_data_b));
   bm_tag::insert_into_inbox(make_not_null(&bm_inbox),
                             boundary_message_b_compare);
+  bc_inbox.collect_messages();
 
   const std::string inbox_output = bc_tag::output_inbox(bc_inbox, 1_st);
   const std::string expected_inbox_output =
@@ -148,24 +150,24 @@ void test_no_ghost_cells() {
                    << ", next time: " << time_step_id_c << "\n";
   CHECK(inbox_output == expected_inbox_output);
 
-  CHECK((bc_inbox.at(time_step_id_a).at(nhbr_key) == send_data_a));
-  CHECK((bc_inbox.at(time_step_id_b).at(nhbr_key) == send_data_b));
+  CHECK((bc_inbox.messages.at(time_step_id_a).at(nhbr_key) == send_data_a));
+  CHECK((bc_inbox.messages.at(time_step_id_b).at(nhbr_key) == send_data_b));
   CHECK(*(bm_inbox.at(time_step_id_a).at(nhbr_key).get()) ==
         *boundary_message_a_compare);
   CHECK(*(bm_inbox.at(time_step_id_b).at(nhbr_key).get()) ==
         *boundary_message_b_compare);
 
-  bc_inbox.erase(time_step_id_a);
+  bc_inbox.messages.erase(time_step_id_a);
   bm_inbox.erase(time_step_id_a);
-  CHECK(bc_inbox.count(time_step_id_a) == 0);
+  CHECK(bc_inbox.messages.count(time_step_id_a) == 0);
   CHECK(bm_inbox.count(time_step_id_a) == 0);
 
-  CHECK((bc_inbox.at(time_step_id_b).at(nhbr_key) == send_data_b));
+  CHECK((bc_inbox.messages.at(time_step_id_b).at(nhbr_key) == send_data_b));
   CHECK(*(bm_inbox.at(time_step_id_b).at(nhbr_key).get()) ==
         *boundary_message_b_compare);
-  bc_inbox.erase(time_step_id_b);
+  bc_inbox.messages.erase(time_step_id_b);
   bm_inbox.erase(time_step_id_b);
-  CHECK(bc_inbox.count(time_step_id_b) == 0);
+  CHECK(bc_inbox.messages.count(time_step_id_b) == 0);
   CHECK(bm_inbox.count(time_step_id_b) == 0);
 }
 
@@ -216,8 +218,9 @@ void test_with_ghost_cells() {
   bc_tag::insert_into_inbox(make_not_null(&bc_inbox), time_step_id_a,
                             std::make_pair(nhbr_key, send_data_a));
   bm_tag::insert_into_inbox(make_not_null(&bm_inbox), boundary_message_a);
+  bc_inbox.collect_messages();
 
-  CHECK((bc_inbox.at(time_step_id_a).at(nhbr_key) == send_data_a));
+  CHECK((bc_inbox.messages.at(time_step_id_a).at(nhbr_key) == send_data_a));
   // Check the values, not the pointers
   CHECK(*(bm_inbox.at(time_step_id_a).at(nhbr_key).get()) ==
         *boundary_message_a_compare);
@@ -245,25 +248,26 @@ void test_with_ghost_cells() {
   bc_tag::insert_into_inbox(make_not_null(&bc_inbox), time_step_id_b,
                             std::make_pair(nhbr_key, send_data_b));
   bm_tag::insert_into_inbox(make_not_null(&bm_inbox), boundary_message_b);
+  bc_inbox.collect_messages();
 
-  CHECK((bc_inbox.at(time_step_id_a).at(nhbr_key) == send_data_a));
-  CHECK((bc_inbox.at(time_step_id_b).at(nhbr_key) == send_data_b));
+  CHECK((bc_inbox.messages.at(time_step_id_a).at(nhbr_key) == send_data_a));
+  CHECK((bc_inbox.messages.at(time_step_id_b).at(nhbr_key) == send_data_b));
   CHECK(*(bm_inbox.at(time_step_id_a).at(nhbr_key).get()) ==
         *boundary_message_a_compare);
   CHECK(*(bm_inbox.at(time_step_id_b).at(nhbr_key).get()) ==
         *boundary_message_b_compare);
 
-  bc_inbox.erase(time_step_id_a);
+  bc_inbox.messages.erase(time_step_id_a);
   bm_inbox.erase(time_step_id_a);
-  CHECK(bc_inbox.count(time_step_id_a) == 0);
+  CHECK(bc_inbox.messages.count(time_step_id_a) == 0);
   CHECK(bm_inbox.count(time_step_id_a) == 0);
 
-  CHECK((bc_inbox.at(time_step_id_b).at(nhbr_key) == send_data_b));
+  CHECK((bc_inbox.messages.at(time_step_id_b).at(nhbr_key) == send_data_b));
   CHECK(*(bm_inbox.at(time_step_id_b).at(nhbr_key).get()) ==
         *boundary_message_b_compare);
-  bc_inbox.erase(time_step_id_b);
+  bc_inbox.messages.erase(time_step_id_b);
   bm_inbox.erase(time_step_id_b);
-  CHECK(bc_inbox.count(time_step_id_b) == 0);
+  CHECK(bc_inbox.messages.count(time_step_id_b) == 0);
   CHECK(bm_inbox.count(time_step_id_b) == 0);
 
   // Now send fluxes separately.
@@ -275,6 +279,7 @@ void test_with_ghost_cells() {
       send_data_a.ghost_cell_data, nullopt, send_data_a.tci_status,
       send_data_a.integration_order);
   bm_tag::insert_into_inbox(make_not_null(&bm_inbox), boundary_message_a);
+  bc_inbox.collect_messages();
 
   BcType send_flux_data_a;
   send_flux_data_a.volume_mesh_ghost_cell_data =
@@ -298,6 +303,7 @@ void test_with_ghost_cells() {
   bc_tag::insert_into_inbox(make_not_null(&bc_inbox), time_step_id_a,
                             std::make_pair(nhbr_key, send_flux_data_a));
   bm_tag::insert_into_inbox(make_not_null(&bm_inbox), flux_boundary_message_a);
+  bc_inbox.collect_messages();
 
   BcType send_all_data_a = send_data_a;
   send_all_data_a.boundary_correction_data =
@@ -312,7 +318,7 @@ void test_with_ghost_cells() {
       send_all_data_a.tci_status, send_all_data_a.integration_order);
   BoundaryMessage<Dim>* all_boundary_message_a_compare = all_boundary_message_a;
 
-  CHECK(bc_inbox.at(time_step_id_a).at(nhbr_key) == send_all_data_a);
+  CHECK(bc_inbox.messages.at(time_step_id_a).at(nhbr_key) == send_all_data_a);
   CHECK(*(bm_inbox.at(time_step_id_a).at(nhbr_key).get()) ==
         *all_boundary_message_a_compare);
 
@@ -336,8 +342,9 @@ void test_with_ghost_cells() {
   bc_tag::insert_into_inbox(make_not_null(&bc_inbox), time_step_id_b,
                             std::make_pair(nhbr_key, send_all_data_b));
   bm_tag::insert_into_inbox(make_not_null(&bm_inbox), all_boundary_message_b);
+  bc_inbox.collect_messages();
 
-  CHECK((bc_inbox.at(time_step_id_b).at(nhbr_key) == send_all_data_b));
+  CHECK((bc_inbox.messages.at(time_step_id_b).at(nhbr_key) == send_all_data_b));
   CHECK(*(bm_inbox.at(time_step_id_b).at(nhbr_key).get()) ==
         *all_boundary_message_b_compare);
 }

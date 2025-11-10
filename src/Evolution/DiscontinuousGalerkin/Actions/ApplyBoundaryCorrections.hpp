@@ -175,17 +175,28 @@ bool receive_boundary_data_global_time_stepping(
     received_temporal_id_and_data =
         std::pair{std::move(node.key()), std::move(node.mapped())};
   } else {
-    // Scope to make sure the `node` can't be used later.
-    NodeType node = get_temporal_id_and_data_node(
-        make_not_null(&tuples::get<
-                      evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<
-                          volume_dim, UseNodegroupDgElements>>(*inboxes)),
-        db::get<domain::Tags::Element<volume_dim>>(*box));
-    if (node.empty()) {
+    const auto number_of_neighbors =
+        db::get<domain::Tags::Element<volume_dim>>(*box).number_of_neighbors();
+
+    auto& inbox =
+        tuples::get<evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<
+            volume_dim, UseNodegroupDgElements>>(*inboxes);
+    inbox.collect_messages();
+    const auto received_record = inbox.messages.find(temporal_id);
+    if (received_record == inbox.messages.end()) {
       return false;
     }
-    received_temporal_id_and_data.first = std::move(node.key());
-    received_temporal_id_and_data.second = std::move(node.mapped());
+    auto& received_neighbor_data = received_record->second;
+    if (received_neighbor_data.size() != number_of_neighbors) {
+      ASSERT(received_neighbor_data.size() < number_of_neighbors,
+             "Received too many messages: " << received_neighbor_data);
+      return false;
+    }
+
+    received_temporal_id_and_data.first = temporal_id;
+    received_temporal_id_and_data.second = std::move(received_neighbor_data);
+
+    inbox.messages.erase(received_record);
   }
 
   // Move inbox contents into the DataBox
@@ -289,6 +300,10 @@ bool receive_boundary_data_local_time_stepping(
     }
   }();
 
+  auto& inbox =
+      tuples::get<evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<
+          Dim, UseNodegroupDgElements>>(*inboxes);
+
   // The boundary history coupling computation (which computes the _lifted_
   // boundary correction) returns a Variables<dt<EvolvedVars>> instead of
   // using the `NormalDotNumericalFlux` prefix tag. This is because the
@@ -297,23 +312,8 @@ bool receive_boundary_data_local_time_stepping(
   using InboxMap =
       std::map<TimeStepId,
                DirectionalIdMap<Dim, evolution::dg::BoundaryData<Dim>>>;
-  InboxMap* inbox_ptr = nullptr;
-  if constexpr (std::is_same_v<evolution::dg::AtomicInboxBoundaryData<Dim>,
-                               typename evolution::dg::Tags::
-                                   BoundaryCorrectionAndGhostCellsInbox<
-                                       Dim, UseNodegroupDgElements>::type>) {
-    auto& inbox =
-        tuples::get<evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<
-            Dim, UseNodegroupDgElements>>(*inboxes);
-    inbox.collect_messages();
-    inbox_ptr = &inbox.messages;
-  } else {
-    inbox_ptr =
-        &tuples::get<evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<
-            Dim, UseNodegroupDgElements>>(*inboxes);
-  }
-  ASSERT(inbox_ptr != nullptr, "The inbox pointer should not be null.");
-  InboxMap& inbox = *inbox_ptr;
+  inbox.collect_messages();
+  InboxMap& inbox_data = inbox.messages;
 
   const bool have_all_intermediate_messages = db::mutate<
       evolution::dg::Tags::MortarMesh<Dim>,
@@ -321,7 +321,7 @@ bool receive_boundary_data_local_time_stepping(
                                              typename dt_variables_tag::type>,
       evolution::dg::Tags::MortarNextTemporalId<Dim>,
       domain::Tags::NeighborMesh<Dim>>(
-      [&inbox, &needed_time](
+      [&inbox_data, &needed_time](
           const gsl::not_null<DirectionalIdMap<Dim, Mesh<Dim - 1>>*>
               mortar_meshes,
           const gsl::not_null<
@@ -347,8 +347,8 @@ bool receive_boundary_data_local_time_stepping(
           const Mesh<Dim - 1> face_mesh =
               volume_mesh.slice_away(sliced_away_dim);
           while (needed_time(mortar_next_time_step_id)) {
-            const auto time_entry = inbox.find(mortar_next_time_step_id);
-            if (time_entry == inbox.end()) {
+            const auto time_entry = inbox_data.find(mortar_next_time_step_id);
+            if (time_entry == inbox_data.end()) {
               return false;
             }
             const auto received_mortar_data =
@@ -402,7 +402,7 @@ bool receive_boundary_data_local_time_stepping(
                 received_mortar_data->second.validity_range;
             time_entry->second.erase(received_mortar_data);
             if (time_entry->second.empty()) {
-              inbox.erase(time_entry);
+              inbox_data.erase(time_entry);
             }
           }
         }
