@@ -144,25 +144,20 @@ struct CharacteristicSpeedsCompute : Tags::CharacteristicSpeeds,
   using return_type = std::array<DataVector, 9>;
 
   template <size_t ThermodynamicDim>
-  static constexpr void function(
-      const gsl::not_null<return_type*> result,
-      const Scalar<DataVector>& rest_mass_density,
-      const Scalar<DataVector>& /* electron_fraction */,
-      const Scalar<DataVector>& specific_internal_energy,
-      const Scalar<DataVector>& specific_enthalpy,
-      const tnsr::I<DataVector, 3, Frame::Inertial>& spatial_velocity,
-      const Scalar<DataVector>& lorentz_factor,
-      const tnsr::I<DataVector, 3, Frame::Inertial>& magnetic_field,
-      const Scalar<DataVector>& lapse, const tnsr::I<DataVector, 3>& shift,
-      const tnsr::ii<DataVector, 3, Frame::Inertial>& spatial_metric,
-      const tnsr::i<DataVector, 3>& unit_normal,
-      const EquationsOfState::EquationOfState<true, ThermodynamicDim>&
-          equation_of_state) {
-    characteristic_speeds<ThermodynamicDim>(
-        result, rest_mass_density, specific_internal_energy, specific_enthalpy,
-        spatial_velocity, lorentz_factor, magnetic_field, lapse, shift,
-        spatial_metric, unit_normal, equation_of_state);
-  }
+  void function(gsl::not_null<return_type*> result,
+                const Scalar<DataVector>& rest_mass_density,
+                const Scalar<DataVector>& /* electron_fraction */,
+                const Scalar<DataVector>& specific_internal_energy,
+                const Scalar<DataVector>& specific_enthalpy,
+                const tnsr::I<DataVector, 3, Frame::Inertial>& spatial_velocity,
+                const Scalar<DataVector>& lorentz_factor,
+                const tnsr::I<DataVector, 3, Frame::Inertial>& magnetic_field,
+                const Scalar<DataVector>& lapse,
+                const tnsr::I<DataVector, 3>& shift,
+                const tnsr::ii<DataVector, 3, Frame::Inertial>& spatial_metric,
+                const tnsr::i<DataVector, 3>& unit_normal,
+                const EquationsOfState::EquationOfState<true, ThermodynamicDim>&
+                    equation_of_state);
 };
 
 struct LargestCharacteristicSpeed : db::SimpleTag {
