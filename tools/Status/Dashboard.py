@@ -145,6 +145,9 @@ def _render_page(job):
                 ),
             )
 
+        if job["ErrorMessage"]:
+            st.error(job["ErrorMessage"])
+
         # Executable-specific dashboard
         executable_status.render_dashboard(job, input_file, metadata)
 

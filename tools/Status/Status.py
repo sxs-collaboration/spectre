@@ -197,6 +197,50 @@ def get_executable_name(
     return None
 
 
+def get_error_message(std_err: Optional[str], work_dir: str) -> Optional[str]:
+    """Determine the error message of a job.
+
+    Arguments:
+      std_err: The standard error output file path, can be relative to work_dir.
+      work_dir: The working directory of the job. If no std_err was given, we
+        look for a file named "spectre.out" in the work dir.
+
+    Returns: Error message, or None.
+    """
+    if std_err:
+        outfile = Path(work_dir) / std_err
+    else:
+        outfile = Path(work_dir) / "spectre.out"
+    if not outfile.exists():
+        logger.debug(f"No error output file found at '{outfile}'.")
+        return None
+    with open(outfile, "r") as open_outfile:
+        # Go through the file line by line and find the first error message
+        error_message = []
+        found_error = False
+        found_walltime = False
+        found_message = False
+        for line in open_outfile:
+            if "# ERROR #" in line:
+                if found_error:
+                    # Stop before the next error message
+                    break
+                else:
+                    found_error = True
+                    continue
+            if found_error and "Wall time:" in line:
+                found_walltime = True
+                continue
+            if found_walltime and line.strip() == "":
+                found_message = True
+                continue
+            if found_message and "Captured variables:" in line:
+                break
+            if found_message:
+                error_message.append(line)
+    return "\n".join(error_message).strip() if found_message else None
+
+
 def _state_order(state):
     order = [
         "RUNNING",
@@ -251,6 +295,8 @@ AVAILABLE_COLUMNS = {
     "NodeList": "NodeList",
     "WorkDir": "WorkDir",
     "Comment": "Comment",
+    "StdOut": "StdOut",
+    "StdErr": "StdErr",
 }
 
 DEFAULT_COLUMNS = [
@@ -378,6 +424,12 @@ def fetch_status(
         for comment, input_file in zip(
             job_data["Comment"], job_data["InputFile"]
         )
+    ]
+
+    # Get the error message corresponding to each job.
+    job_data["ErrorMessage"] = [
+        get_error_message(std_err, work_dir)
+        for std_err, work_dir in zip(job_data["StdErr"], job_data["WorkDir"])
     ]
 
     # Invalidate older jobs that ran in the same work dir because they would
