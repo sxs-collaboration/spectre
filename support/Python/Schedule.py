@@ -380,6 +380,9 @@ def schedule(
                 num_procs = None
         else:
             num_nodes = 1
+    # Update kwargs with resolved num_procs and num_nodes (used to build
+    # `context` below)
+    kwargs.update(num_procs=num_procs, num_nodes=num_nodes)
 
     # Set up template environment with basic configuration
     template_env = jinja2.Environment(
