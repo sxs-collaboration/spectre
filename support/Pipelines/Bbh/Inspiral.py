@@ -525,9 +525,9 @@ def start_inspiral(
         and scheduler_kwargs.get("num_procs") is None
         and scheduler_kwargs.get("num_nodes") is None
     ):
-        # Just run on 4 nodes for now, because 1 is surely not enough. We can
+        # By default just run on a fixed number of cores for now. We can
         # make this smarter later (e.g. scale with the number of elements).
-        scheduler_kwargs["num_nodes"] = 4
+        scheduler_kwargs["num_procs"] = 180
 
     # Schedule!
     return schedule(

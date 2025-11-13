@@ -359,6 +359,28 @@ def schedule(
                 logger.exception(f"Recursion for {key}={value_i} failed.")
         return
 
+    # Resolve number of cores, nodes, etc.
+    machine = this_machine(raise_exception=False)
+    num_procs = kwargs.get("num_procs")
+    num_nodes = kwargs.get("num_nodes")
+    if num_procs:
+        assert (
+            num_nodes is None or num_nodes == 1
+        ), "Specify either 'num_procs' or 'num_nodes', not both."
+        if machine:
+            # Approximately round up to nearest number of full nodes
+            cores_per_node = (
+                machine.DefaultTasksPerNode * machine.DefaultProcsPerTask
+            )
+            if num_procs <= cores_per_node:
+                num_nodes = 1
+            else:
+                num_nodes = int(np.ceil(num_procs / cores_per_node))
+                logger.info(f"Rounded up to run on {num_nodes} full node(s).")
+                num_procs = None
+        else:
+            num_nodes = 1
+
     # Set up template environment with basic configuration
     template_env = jinja2.Environment(
         undefined=jinja2.StrictUndefined,
@@ -405,21 +427,6 @@ def schedule(
     logger.info(f"Running with executable: {executable}")
     # Only set executable name because the path may change if we copy it later
     context.update(executable_name=executable.name)
-
-    # Resolve number of cores, nodes, etc.
-    num_procs = kwargs.get("num_procs")
-    num_nodes = kwargs.get("num_nodes")
-    if num_procs:
-        assert (
-            num_nodes is None or num_nodes == 1
-        ), "Specify either 'num_procs' or 'num_nodes', not both."
-        num_nodes = 1
-    # Set the context variables only if defined, so they don't print as "None"
-    # https://jinja.palletsprojects.com/en/3.0.x/templates/#jinja-filters.default
-    if num_procs:
-        context.update(num_procs=num_procs)
-    if num_nodes:
-        context.update(num_nodes=num_nodes)
 
     # Resolve job_name
     if job_name:
@@ -586,7 +593,6 @@ def schedule(
         logger.info(
             f"Run '{executable.name}' in '{run_dir}' on {provision_info}."
         )
-        machine = this_machine(raise_exception=False)
         run_command = (machine.launch_command if machine else []) + [
             str(executable),
             "--input-file",
