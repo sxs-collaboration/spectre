@@ -488,6 +488,7 @@ ControlSystems:
     RotationDecayTimescale: 60.0
   WriteDataToDisk: true
   MeasurementsPerUpdate: 4
+  DelayUpdate: true
   Verbosity: Silent
   Expansion: None
   Rotation:

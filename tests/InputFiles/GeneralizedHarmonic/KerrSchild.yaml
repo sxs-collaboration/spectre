@@ -283,6 +283,7 @@ Cce:
 ControlSystems:
   WriteDataToDisk: true
   MeasurementsPerUpdate: 4
+  DelayUpdate: true
   Verbosity: Silent
   Translation: None
   Shape: None

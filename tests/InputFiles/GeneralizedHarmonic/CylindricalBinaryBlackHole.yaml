@@ -369,6 +369,7 @@ Cce:
 ControlSystems:
   WriteDataToDisk: true
   MeasurementsPerUpdate: 4
+  DelayUpdate: true
   Verbosity: Silent
   Expansion:
     Averager:

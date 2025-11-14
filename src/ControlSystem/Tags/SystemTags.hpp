@@ -208,6 +208,21 @@ struct MeasurementsPerUpdate : db::SimpleTag {
 
 /// \ingroup DataBoxTagsGroup
 /// \ingroup ControlSystemGroup
+/// Tag that determines whether FunctionOfTime updates will be delayed
+/// by one measurement.  This will usually be stored in the global
+/// cache.
+struct DelayUpdate : db::SimpleTag {
+  using type = bool;
+
+  using option_tags = tmpl::list<OptionTags::DelayUpdate>;
+  static constexpr bool pass_metavariables = false;
+  static type create_from_options(const bool delay_update) {
+    return delay_update;
+  }
+};
+
+/// \ingroup DataBoxTagsGroup
+/// \ingroup ControlSystemGroup
 /// DataBox tag that keeps track of which measurement we are on.
 struct CurrentNumberOfMeasurements : db::SimpleTag {
   using type = int;
