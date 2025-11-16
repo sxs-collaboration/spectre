@@ -180,6 +180,18 @@ def inspiral_parameters(
     x_A = id_domain_creator["ObjectA"]["XCoord"]
     x_B = id_domain_creator["ObjectB"]["XCoord"]
     initial_separation = x_A - x_B
+    # Place the cutting plane such that it is at the point of contact of two
+    # spheres orbiting around their the Newtonian center-of-mass, scaling in
+    # size with decreasing separation between them.
+    cutting_plane_position = x_A * mass_b + x_B * mass_a
+    # The excision in the grid frame will grow during the inspiral by a factor
+    # of initial_separation / 2 due to the expansion map, so we have to make
+    # sure that the cubes are large enough to contain the excisions plus some
+    # buffer. The length of the cubes is the initial separation times the cube
+    # scale factor, and we find that for equal masses a scale factor of 1.2
+    # works well. To handle unequal masses, we scale the cube also with the
+    # excision radius, which is a factor of approx. 2 M_A = 2 q / (1 + q).
+    cube_scale = 1.2 * 2.0 * mass_a
 
     # Resolve subfile name in the H5 files
     id_file_glob = str(
@@ -213,9 +225,14 @@ def inspiral_parameters(
         # Domain geometry
         "ExcisionRadiusA": excision_radius_a,
         "ExcisionRadiusB": excision_radius_b,
-        "ObjectOuterRadius": initial_separation / 2.5,
+        # The object outer radius must be smaller than D * mass_{a,b} to ensure
+        # that the shell is contained within the cube.
+        "ObjectAOuterRadius": 0.8 * initial_separation * mass_a,
+        "ObjectBOuterRadius": 0.8 * initial_separation * mass_b,
         "XCoordA": x_A,
         "XCoordB": x_B,
+        "CubeScale": cube_scale,
+        "CuttingPlanePosition": cutting_plane_position,
         "CenterOfMassOffset_y": id_domain_creator["CenterOfMassOffset"][0],
         "CenterOfMassOffset_z": id_domain_creator["CenterOfMassOffset"][1],
         "EnvelopeRadius": 100.0 / 15.0 * initial_separation,
@@ -224,11 +241,14 @@ def inspiral_parameters(
         # may need to be ported over eventually. The CCE extraction radii may
         # also need to be adjusted to account for different outer shell radii.
         "OuterShellRadius": 600.0 / 15.0 * initial_separation,
-        # Extra resolution for unequal masses (to be replaced with AMR)
-        # This extra refinement was found through trial and error and allowed
-        # mass ratio 6 to evolve through inspiral stably.
-        "ExtraRadRef": round(mass_ratio / 2.0) - 1 if (mass_ratio > 2.0) else 0,
-        "ExtraRadPoints": round(mass_ratio / 5.0) if (mass_ratio > 5.0) else 0,
+        # Extra resolution for unequal masses (to be replaced with AMR).
+        # The distance from the center of the smaller black hole to the outer
+        # cube boundary grows as (2 - 1/q) with mass ratio due to the
+        # positioning of the cutting plane and the scaling of the cube with mass
+        # ratio. To compensate for this factor of 1.5 to 2 for mass ratios 2+,
+        # we add an extra radial refinement level.
+        "ExtraRadRef": 1 if round(mass_ratio) > 1 else 0,
+        "ExtraRadPoints": round(mass_ratio) if round(mass_ratio) > 1 else 0,
     }
 
     # Initial functions of time (set from ID or load from evolution data)
@@ -351,9 +371,12 @@ def inspiral_parameters_spec(
         # or about 0.9434 * horizon radius.
         "ExcisionRadiusA": id_params["ID_rExcA"] * 1.06,
         "ExcisionRadiusB": id_params["ID_rExcB"] * 1.06,
-        "ObjectOuterRadius": initial_separation / 2.5,
+        "ObjectAOuterRadius": 0.8 * initial_separation * mass_right,
+        "ObjectBOuterRadius": 0.8 * initial_separation * mass_left,
         "XCoordA": x_A,
         "XCoordB": x_B,
+        "CubeScale": 1.2 * 2.0 * mass_right,
+        "CuttingPlanePosition": x_A * mass_left + x_B * mass_right,
         # COM offset in y and z is the same for both objects
         "CenterOfMassOffset_y": id_params["ID_cA"][1],
         "CenterOfMassOffset_z": id_params["ID_cA"][2],
@@ -366,11 +389,8 @@ def inspiral_parameters_spec(
         # may need to be ported over eventually. The CCE extraction radii may
         # also need to be adjusted to account for different outer shell radii.
         "OuterShellRadius": 600.0 / 15.0 * initial_separation,
-        # Extra resolution for unequal masses (to be replaced with AMR)
-        # This extra refinement was found through trial and error and allowed
-        # mass ratio 6 to evolve through inspiral stably.
-        "ExtraRadRef": round(mass_ratio / 2.0) - 1 if (mass_ratio > 2.0) else 0,
-        "ExtraRadPoints": round(mass_ratio / 5.0) if (mass_ratio > 5.0) else 0,
+        "ExtraRadRef": 1 if round(mass_ratio) > 1 else 0,
+        "ExtraRadPoints": round(mass_ratio) if round(mass_ratio) > 1 else 0,
     }
 
     # Constraint damping parameters

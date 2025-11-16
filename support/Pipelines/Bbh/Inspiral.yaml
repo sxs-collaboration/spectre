@@ -76,9 +76,7 @@ DomainCreator:
   BinaryCompactObject:
     ObjectA:
       InnerRadius: &ExcisionRadiusA {{ ExcisionRadiusA }}
-      # Found that the max allowable value for the OuterRadius is 6.0. Higher
-      # values cause the constraints to blow up the cubes around each object.
-      OuterRadius: {{ ObjectOuterRadius }}
+      OuterRadius: {{ ObjectAOuterRadius }}
       XCoord: &XCoordA {{ XCoordA }}
       Interior:
         ExciseWithBoundaryCondition:
@@ -86,15 +84,13 @@ DomainCreator:
       UseLogarithmicMap: true
     ObjectB:
       InnerRadius: &ExcisionRadiusB {{ ExcisionRadiusB }}
-      # Found that the max allowable value for the OuterRadius is 6.0. Higher
-      # values cause the constraints to blow up the cubes around each object.
-      OuterRadius: {{ ObjectOuterRadius }}
+      OuterRadius: {{ ObjectBOuterRadius }}
       XCoord: &XCoordB {{ XCoordB }}
       Interior:
         ExciseWithBoundaryCondition:
           DemandOutgoingCharSpeeds:
       UseLogarithmicMap: true
-    CuttingPlanePosition: Auto
+    CuttingPlanePosition: {{ CuttingPlanePosition }}
     CenterOfMassOffset:
       - &YOffset {{ CenterOfMassOffset_y }}
       - &ZOffset {{ CenterOfMassOffset_z }}
@@ -114,24 +110,22 @@ DomainCreator:
         ConstraintPreservingBjorhus:
           Type: ConstraintPreservingPhysical
     UseEquiangularMap: True
-    # Found that a CubeScale of 1.2 worked well for equal mass non-spinning
-    # inspirals and allowed for more common horizon finds.
-    CubeScale: 1.2
+    CubeScale: {{ CubeScale }}
     # These values have been tested to be stable for full equal mass mergers
     # with constraints ~10^-7 for L=1, P=10
     InitialRefinement:
       ObjectAShell:   [{{ L + 1 }}, {{ L + 1 }}, {{ L + 1 }}]
-      ObjectACube:    [{{ L + 2 }}, {{ L + 2 }}, {{ L + 1 }}]
-      ObjectBShell:   [{{ L + 1 }}, {{ L + 1 }}, {{ L + 1 + ExtraRadRef }}]
-      ObjectBCube:    [{{ L + 2 }}, {{ L + 2 }}, {{ L + 1 }}]
+      ObjectACube:    [{{ L + 1 }}, {{ L + 1 }}, {{ L + 1 }}]
+      ObjectBShell:   [{{ L + 1 }}, {{ L + 1 }}, {{ L + 1 }}]
+      ObjectBCube:    [{{ L + 1 }}, {{ L + 1 }}, {{ L + 1 + ExtraRadRef }}]
       Envelope:       [{{ L + 1 }}, {{ L + 1 }}, {{ L + 1 }}]
       OuterShell0:    [{{ L     }}, {{ L     }}, {{ L + 2 }}]
     InitialGridPoints:
-      ObjectAShell:   [{{ P + 3 }}, {{ P + 3 }}, {{ P + 1 }}]
-      ObjectACube:    [{{ P     }}, {{ P     }}, {{ P - 1 }}]
-      ObjectBShell:   [{{ P + 3 }}, {{ P + 3 }}, {{ P + 1 + ExtraRadPoints }}]
-      ObjectBCube:    [{{ P     }}, {{ P     }}, {{ P - 1 }}]
-      Envelope:       [{{ P + 3 }}, {{ P + 3 }}, {{ P + 5 }}]
+      ObjectAShell:   [{{ P + 3 }}, {{ P + 3 }}, {{ P + 3 }}]
+      ObjectACube:    [{{ P + 3 }}, {{ P + 3 }}, {{ P + 1 }}]
+      ObjectBShell:   [{{ P + 3 }}, {{ P + 3 }}, {{ P + 3 }}]
+      ObjectBCube:    [{{ P + 3 }}, {{ P + 3 }}, {{ P + 1 + ExtraRadPoints }}]
+      Envelope:       [{{ P + 3 }}, {{ P + 3 }}, {{ P + 4 }}]
       OuterShell0:    [{{ P + 3 }}, {{ P + 3 }}, {{ P + 4 }}]
 {% if IdFromEvolution %}
     TimeDependentMaps:
@@ -410,6 +404,8 @@ EventsAndTriggersAtSlabs:
           SubfileName: VolumeData
           VariablesToObserve:
             - SpacetimeMetric
+            - Pi
+            - Phi
             # For diagnostics:
             - ConstraintEnergy
             - PointwiseL2Norm(GaugeConstraint)
@@ -419,11 +415,10 @@ EventsAndTriggersAtSlabs:
             - SpatialRicciScalar
             - Psi4Real
           InterpolateToMesh: None
-          # Save disk space by saving single precision data. This is enough
-          # for visualization.
           ProjectToMesh: None
-          CoordinatesFloatingPointType: Float
-          FloatingPointTypes: [Float]
+          # Double precision to enable power monitors and restarts
+          CoordinatesFloatingPointType: Double
+          FloatingPointTypes: [Double]
           BlocksToObserve: All
 # Trigger to find common horizon and gather volume data needed for ringdown.
   - Trigger:
