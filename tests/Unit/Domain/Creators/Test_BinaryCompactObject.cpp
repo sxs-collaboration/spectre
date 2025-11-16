@@ -886,9 +886,7 @@ void test_parse_errors() {
           Distribution::Projective, std::vector<double>{}, Distribution::Linear,
           120.0, std::nullopt, create_outer_boundary_condition(),
           Options::Context{false, {}, 1, 1}),
-      Catch::Matchers::ContainsSubstring(
-          "The cube length should be greater than or equal to the initial "
-          "separation between the two objects."));
+      Catch::Matchers::ContainsSubstring("The cube scale must be >= 1.0"));
   CHECK_THROWS_WITH(
       domain::creators::BinaryCompactObject(
           Object{0.3, 0.8, 1.0, {{create_inner_boundary_condition()}}, false},
@@ -918,8 +916,7 @@ void test_parse_errors() {
           120.0, std::nullopt, create_outer_boundary_condition(),
           Options::Context{false, {}, 1, 1}),
       Catch::Matchers::ContainsSubstring(
-          "ObjectA's outer radius is too large for the given separation,  try "
-          "using 0.8"));
+          "ObjectA's outer radius extends beyond the enclosing cube."));
   CHECK_THROWS_WITH(
       domain::creators::BinaryCompactObject(
           Object{0.3, 0.8, 1.0, {{create_inner_boundary_condition()}}, false},
@@ -929,8 +926,7 @@ void test_parse_errors() {
           120.0, std::nullopt, create_outer_boundary_condition(),
           Options::Context{false, {}, 1, 1}),
       Catch::Matchers::ContainsSubstring(
-          "ObjectB's outer radius is too large for the given separation,  try "
-          "using 0.8"));
+          "ObjectB's outer radius extends beyond the enclosing cube."));
   CHECK_THROWS_WITH(
       domain::creators::BinaryCompactObject(
           Object{0.3, 0.8, 1.0, {{create_inner_boundary_condition()}}, false},

@@ -114,15 +114,13 @@ BinaryCompactObject<UseWorldtube>::BinaryCompactObject(
           std::holds_alternative<CartesianCubeAtXCoord>(object_B_)),
       time_dependent_options_(std::move(time_dependent_options)),
       opening_angle_(M_PI * opening_angle_in_degrees / 180.0) {
-  // Determination of parameters for domain construction:
   const double tan_half_opening_angle = tan(0.5 * opening_angle_);
   translation_ = 0.5 * (x_coord_a_ + x_coord_b_);
-  length_inner_cube_ = cube_scale * (x_coord_a_ - x_coord_b_);
-  if (length_inner_cube_ < (x_coord_a_ - x_coord_b_)) {
-    PARSE_ERROR(
-        context,
-        "The cube length should be greater than or equal to the initial "
-        "separation between the two objects.");
+  const double separation = x_coord_a_ - x_coord_b_;
+  length_inner_cube_ = cube_scale * separation;
+  if (cube_scale < 1.0) {
+    PARSE_ERROR(context,
+                "The cube scale must be >= 1.0, but is " << cube_scale << ".");
   }
   length_outer_cube_ =
       2.0 * envelope_radius_ / sqrt(2.0 + square(tan_half_opening_angle));
@@ -134,10 +132,8 @@ BinaryCompactObject<UseWorldtube>::BinaryCompactObject(
     offset_x_coord_a_ = 0.0;
     offset_x_coord_b_ = 0.0;
   } else {
-    offset_x_coord_a_ =
-        x_coord_a_ - (x_coord_a_ + x_coord_b_ + length_inner_cube_) * 0.5;
-    offset_x_coord_b_ =
-        x_coord_b_ - (x_coord_a_ + x_coord_b_ - length_inner_cube_) * 0.5;
+    offset_x_coord_a_ = x_coord_a_ - translation_ - 0.5 * length_inner_cube_;
+    offset_x_coord_b_ = x_coord_b_ - translation_ + 0.5 * length_inner_cube_;
   }
 
   set_shell_distribution(make_not_null(&number_of_outer_shells_),
@@ -193,15 +189,15 @@ BinaryCompactObject<UseWorldtube>::BinaryCompactObject(
       PARSE_ERROR(context,
                   "ObjectA's inner radius must be less than its outer radius.");
     }
-    // The length of the cube surrounding each object is length_inner_cube_
-    // / 2.0, this checks to make sure that the shell is not touching the cube.
+    // Make sure that the shells don't extend beyond the enclosing cubes
     if (object_a.outer_radius >=
         (length_inner_cube_ / 2.0) + offset_x_coord_a_) {
-      PARSE_ERROR(
-          context,
-          "ObjectA's outer radius is too large for the given separation, "
-          " try using "
-              << length_inner_cube_ / (2.5 * cube_scale));
+      PARSE_ERROR(context,
+                  "ObjectA's outer radius extends beyond the enclosing cube. "
+                  "The radius is "
+                      << object_a.outer_radius
+                      << " but the maximum allowed value is "
+                      << (length_inner_cube_ / 2.0) + offset_x_coord_a_);
     }
     if (object_a.use_logarithmic_map and not object_a.is_excised()) {
       PARSE_ERROR(
@@ -231,15 +227,15 @@ BinaryCompactObject<UseWorldtube>::BinaryCompactObject(
       PARSE_ERROR(context,
                   "ObjectB's inner radius must be less than its outer radius.");
     }
-    // The length of the cube surrounding each object is length_inner_cube_
-    // / 2.0, this checks to make sure that the shell is not touching the cube.
+    // Make sure that the shells don't extend beyond the enclosing cubes
     if (object_b.outer_radius >=
         (length_inner_cube_ / 2.0) - offset_x_coord_b_) {
-      PARSE_ERROR(
-          context,
-          "ObjectB's outer radius is too large for the given separation, "
-          " try using "
-              << length_inner_cube_ / (2.5 * cube_scale));
+      PARSE_ERROR(context,
+                  "ObjectB's outer radius extends beyond the enclosing cube. "
+                  "The radius is "
+                      << object_b.outer_radius
+                      << " but the maximum allowed value is "
+                      << (length_inner_cube_ / 2.0) - offset_x_coord_b_);
     }
     if (object_b.use_logarithmic_map and not object_b.is_excised()) {
       PARSE_ERROR(
@@ -405,12 +401,12 @@ BinaryCompactObject<UseWorldtube>::BinaryCompactObject(
     // The reason we don't just always use half the inner cube length is to
     // avoid potential roundoff issues if there is no offset
     const std::optional<std::array<double, 3>> cube_A_center =
-        length_inner_cube_ == x_coord_a_ - x_coord_b_
+        equal_within_roundoff(cube_scale, 1.0)
             ? std::optional<std::array<double, 3>>{}
             : std::array{translation_ + 0.5 * length_inner_cube_,
                          center_of_mass_offset_[0], center_of_mass_offset_[1]};
     const std::optional<std::array<double, 3>> cube_B_center =
-        length_inner_cube_ == x_coord_a_ - x_coord_b_
+        equal_within_roundoff(cube_scale, 1.0)
             ? std::optional<std::array<double, 3>>{}
             : std::array{translation_ - 0.5 * length_inner_cube_,
                          center_of_mass_offset_[0], center_of_mass_offset_[1]};
