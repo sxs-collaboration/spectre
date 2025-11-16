@@ -112,6 +112,7 @@ DomainCreator:
             NegativeExpansion: None
             {% endif %}
       UseLogarithmicMap: True
+    CuttingPlanePosition: Auto
     CenterOfMassOffset: [*y_offset, *z_offset]
     Envelope:
       Radius: &outer_shell_inner_radius {{ EnvelopeRadius }}

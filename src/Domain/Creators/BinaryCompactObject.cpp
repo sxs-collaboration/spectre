@@ -77,6 +77,7 @@ bool BinaryCompactObject<UseWorldtube>::Object::is_excised() const {
 template <bool UseWorldtube>
 BinaryCompactObject<UseWorldtube>::BinaryCompactObject(
     typename ObjectA::type object_A, typename ObjectB::type object_B,
+    std::optional<double> cutting_plane_position,
     std::array<double, 2> center_of_mass_offset, const double envelope_radius,
     const double outer_radius, const double cube_scale,
     const typename InitialRefinement::type& initial_refinement,
@@ -115,7 +116,8 @@ BinaryCompactObject<UseWorldtube>::BinaryCompactObject(
       time_dependent_options_(std::move(time_dependent_options)),
       opening_angle_(M_PI * opening_angle_in_degrees / 180.0) {
   const double tan_half_opening_angle = tan(0.5 * opening_angle_);
-  translation_ = 0.5 * (x_coord_a_ + x_coord_b_);
+  translation_ =
+      cutting_plane_position.value_or(0.5 * (x_coord_a_ + x_coord_b_));
   const double separation = x_coord_a_ - x_coord_b_;
   length_inner_cube_ = cube_scale * separation;
   if (cube_scale < 1.0) {

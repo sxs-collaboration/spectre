@@ -338,6 +338,14 @@ class BinaryCompactObject : public DomainCreator<3> {
         "x-axis)."};
   };
 
+  struct CuttingPlanePosition {
+    using type = Options::Auto<double>;
+    static constexpr Options::String help = {
+        "Position of the cutting plane separating the two objects along the "
+        "x-axis. If set to 'Auto', the cutting plane is placed halfway between "
+        "the two objects, at (x_A + x_B) / 2."};
+  };
+
   struct CenterOfMassOffset {
     using type = std::array<double, 2>;
     static constexpr Options::String help = {
@@ -474,11 +482,11 @@ class BinaryCompactObject : public DomainCreator<3> {
 
   template <typename Metavariables>
   using options = tmpl::append<
-      tmpl::list<ObjectA, ObjectB, CenterOfMassOffset, EnvelopeRadius,
-                 OuterRadius, CubeScale, InitialRefinement, InitialGridPoints,
-                 UseEquiangularMap, RadialDistributionEnvelope,
-                 RadialPartitioningOuterShell, RadialDistributionOuterShell,
-                 OpeningAngle, TimeDependentMaps>,
+      tmpl::list<ObjectA, ObjectB, CuttingPlanePosition, CenterOfMassOffset,
+                 EnvelopeRadius, OuterRadius, CubeScale, InitialRefinement,
+                 InitialGridPoints, UseEquiangularMap,
+                 RadialDistributionEnvelope, RadialPartitioningOuterShell,
+                 RadialDistributionOuterShell, OpeningAngle, TimeDependentMaps>,
       tmpl::conditional_t<
           domain::BoundaryConditions::has_boundary_conditions_base_v<
               typename Metavariables::system>,
@@ -514,6 +522,7 @@ class BinaryCompactObject : public DomainCreator<3> {
 
   BinaryCompactObject(
       typename ObjectA::type object_A, typename ObjectB::type object_B,
+      std::optional<double> cutting_plane_position,
       std::array<double, 2> center_of_mass_offset, double envelope_radius,
       double outer_radius, double cube_scale,
       const typename InitialRefinement::type& initial_refinement,

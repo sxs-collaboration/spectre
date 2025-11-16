@@ -50,6 +50,7 @@ DomainCreator:
       XCoord: -7.683
       ExciseInterior: true
       UseLogarithmicMap: true
+    CuttingPlanePosition: Auto
     CenterOfMassOffset: [0., 0.]
     Envelope:
       Radius: 100.0

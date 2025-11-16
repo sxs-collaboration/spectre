@@ -94,6 +94,7 @@ DomainCreator:
         ExciseWithBoundaryCondition:
           DemandOutgoingCharSpeeds:
       UseLogarithmicMap: true
+    CuttingPlanePosition: Auto
     CenterOfMassOffset:
       - &YOffset {{ CenterOfMassOffset_y }}
       - &ZOffset {{ CenterOfMassOffset_z }}

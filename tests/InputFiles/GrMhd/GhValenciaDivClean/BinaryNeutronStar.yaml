@@ -59,6 +59,7 @@ DomainCreator:
       CartesianCubeAtXCoord: &XCoordA 14
     ObjectB:
       CartesianCubeAtXCoord: &XCoordB -14
+    CuttingPlanePosition: Auto
     CenterOfMassOffset: [0., 0.]
     Envelope:
       Radius: 50.0
