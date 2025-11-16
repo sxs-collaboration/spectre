@@ -171,14 +171,15 @@ def inspiral_parameters(
     # For unequal masses, this was found through trial and error that
     # decreasing the excision size of object b allowed the runs to evolve
     # without early incoming char speeds.
-    excision_radius_factor_a = 1.0 if id_from_evolution else 1.0385
-    excision_radius_factor_b = (
+    excision_radius_a = id_domain_creator["ObjectA"]["InnerRadius"] * (
+        1.0 if id_from_evolution else 1.0385
+    )
+    excision_radius_b = id_domain_creator["ObjectB"]["InnerRadius"] * (
         1.0 if (id_from_evolution or mass_ratio > 2.0) else 1.0385
     )
-    initial_separation = (
-        id_domain_creator["ObjectA"]["XCoord"]
-        - id_domain_creator["ObjectB"]["XCoord"]
-    )
+    x_A = id_domain_creator["ObjectA"]["XCoord"]
+    x_B = id_domain_creator["ObjectB"]["XCoord"]
+    initial_separation = x_A - x_B
 
     # Resolve subfile name in the H5 files
     id_file_glob = str(
@@ -210,17 +211,11 @@ def inspiral_parameters(
         "IdSubfile": id_subfile_name,
         "IdFromEvolution": id_from_evolution,
         # Domain geometry
-        "ExcisionRadiusA": (
-            id_domain_creator["ObjectA"]["InnerRadius"]
-            * excision_radius_factor_a
-        ),
-        "ExcisionRadiusB": (
-            id_domain_creator["ObjectB"]["InnerRadius"]
-            * excision_radius_factor_b
-        ),
+        "ExcisionRadiusA": excision_radius_a,
+        "ExcisionRadiusB": excision_radius_b,
         "ObjectOuterRadius": initial_separation / 2.5,
-        "XCoordA": id_domain_creator["ObjectA"]["XCoord"],
-        "XCoordB": id_domain_creator["ObjectB"]["XCoord"],
+        "XCoordA": x_A,
+        "XCoordB": x_B,
         "CenterOfMassOffset_y": id_domain_creator["CenterOfMassOffset"][0],
         "CenterOfMassOffset_z": id_domain_creator["CenterOfMassOffset"][1],
         "EnvelopeRadius": 100.0 / 15.0 * initial_separation,
@@ -344,6 +339,8 @@ def inspiral_parameters_spec(
     spin_magnitude_left = id_params["ID_chiBMagnitude"]
     spin_magnitude_right = id_params["ID_chiAMagnitude"]
     initial_separation = id_params["ID_d"]
+    x_A = id_params["ID_cA"][0]
+    x_B = id_params["ID_cB"][0]
 
     params = {
         # Initial data files
@@ -355,8 +352,8 @@ def inspiral_parameters_spec(
         "ExcisionRadiusA": id_params["ID_rExcA"] * 1.06,
         "ExcisionRadiusB": id_params["ID_rExcB"] * 1.06,
         "ObjectOuterRadius": initial_separation / 2.5,
-        "XCoordA": id_params["ID_cA"][0],
-        "XCoordB": id_params["ID_cB"][0],
+        "XCoordA": x_A,
+        "XCoordB": x_B,
         # COM offset in y and z is the same for both objects
         "CenterOfMassOffset_y": id_params["ID_cA"][1],
         "CenterOfMassOffset_z": id_params["ID_cA"][2],
