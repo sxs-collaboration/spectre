@@ -74,9 +74,9 @@
 #include "PointwiseFunctions/AnalyticSolutions/ForceFree/Factory.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
 #include "PointwiseFunctions/InitialDataUtilities/InitialData.hpp"
-#include "Time/Actions/AdvanceTime.hpp"
 #include "Time/Actions/CleanHistory.hpp"
 #include "Time/Actions/SelfStartActions.hpp"
+#include "Time/AdvanceTime.hpp"
 #include "Time/ChangeSlabSize/Action.hpp"
 #include "Time/ChangeTimeStepperOrder.hpp"
 #include "Time/RecordTimeStepperData.hpp"
@@ -285,7 +285,7 @@ struct EvolutionMetavars {
                   evolution::Actions::RunEventsAndTriggers<
                       Triggers::WhenToCheck::AtSlabs>,
                   Actions::ChangeSlabSize, dg_step_actions,
-                  Actions::AdvanceTime,
+                  Actions::MutateApply<AdvanceTime>,
                   PhaseControl::Actions::ExecutePhaseChange>>>>>;
 
   struct registration

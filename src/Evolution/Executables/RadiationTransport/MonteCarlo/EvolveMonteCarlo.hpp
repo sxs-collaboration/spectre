@@ -81,9 +81,9 @@
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
 #include "PointwiseFunctions/InitialDataUtilities/Tags/InitialData.hpp"
-#include "Time/Actions/AdvanceTime.hpp"
 #include "Time/Actions/CleanHistory.hpp"
 #include "Time/Actions/SelfStartActions.hpp"
+#include "Time/AdvanceTime.hpp"
 #include "Time/ChangeSlabSize/Action.hpp"
 #include "Time/StepChoosers/Factory.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"
@@ -236,7 +236,7 @@ struct EvolutionMetavars {
           Parallel::PhaseActions<
               Parallel::Phase::Evolve,
               tmpl::list<
-                  Actions::AdvanceTime,
+                  Actions::MutateApply<AdvanceTime>,
                   evolution::Actions::RunEventsAndTriggers<
                       Triggers::WhenToCheck::AtSlabs>,
                   // Monte-Carlo is only triggered at the end of a full time

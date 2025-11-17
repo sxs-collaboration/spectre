@@ -3,7 +3,6 @@
 
 set(LIBRARY_SOURCES
   ${LIBRARY_SOURCES}
-  Actions/Test_AdvanceTime.cpp
   Actions/Test_CleanHistory.cpp
   Actions/Test_SelfStartActions.cpp
   PARENT_SCOPE)

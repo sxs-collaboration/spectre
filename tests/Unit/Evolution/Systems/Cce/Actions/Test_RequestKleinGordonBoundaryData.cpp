@@ -15,8 +15,10 @@
 #include "Helpers/Evolution/Systems/Cce/Actions/WorldtubeBoundaryMocking.hpp"
 #include "Helpers/Evolution/Systems/Cce/KleinGordonBoundaryTestHelpers.hpp"
 #include "NumericalAlgorithms/Interpolation/BarycentricRationalSpanInterpolator.hpp"
+#include "ParallelAlgorithms/Actions/MutateApply.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
-#include "Time/Actions/AdvanceTime.hpp"
+#include "Time/AdvanceTime.hpp"
+#include "Time/Tags/StepperErrorEstimatesEnabled.hpp"
 #include "Time/TimeSteppers/AdamsBashforth.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeVector.hpp"
@@ -53,6 +55,8 @@ struct mock_kg_characteristic_evolution {
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = size_t;
+  using const_global_cache_tags =
+      tmpl::list<::Tags::StepperErrorEstimatesEnabled>;
 
   using initialize_action_list = tmpl::list<
       Actions::InitializeKleinGordonVariables<Metavariables>,
@@ -62,7 +66,7 @@ struct mock_kg_characteristic_evolution {
           typename Metavariables::evolved_swsh_tags, false>,
       // advance the time so that the current `TimeStepId` is valid without
       // having to perform self-start.
-      ::Actions::AdvanceTime, Parallel::Actions::TerminatePhase>;
+      ::Actions::MutateApply<AdvanceTime>, Parallel::Actions::TerminatePhase>;
 
   using simple_tags_from_options =
       Parallel::get_simple_tags_from_options<initialize_action_list>;
@@ -79,9 +83,6 @@ struct mock_kg_characteristic_evolution {
                      Actions::RequestNextBoundaryData<
                          KleinGordonH5WorldtubeBoundary<Metavariables>,
                          mock_kg_characteristic_evolution<Metavariables>>>>>;
-  using const_global_cache_tags =
-      Parallel::get_const_global_cache_tags_from_actions<
-          phase_dependent_action_list>;
 };
 
 struct test_metavariables : CharacteristicExtractDefaults<false> {
@@ -177,7 +178,7 @@ void test_klein_gordon_boundary_data(const gsl::not_null<Generator*> gen) {
 
   // tests start here
   ActionTesting::MockRuntimeSystem<test_metavariables> runner{
-      {l_max, extraction_radius,
+      {false, l_max, extraction_radius,
        Tags::EndTimeFromFile::create_from_options(end_time, filename, false),
        start_time, number_of_radial_points}};
 

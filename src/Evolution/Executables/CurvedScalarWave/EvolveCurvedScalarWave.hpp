@@ -96,9 +96,9 @@
 #include "PointwiseFunctions/InitialDataUtilities/Tags/InitialData.hpp"
 #include "PointwiseFunctions/MathFunctions/Factory.hpp"
 #include "PointwiseFunctions/MathFunctions/MathFunction.hpp"
-#include "Time/Actions/AdvanceTime.hpp"
 #include "Time/Actions/CleanHistory.hpp"
 #include "Time/Actions/SelfStartActions.hpp"
+#include "Time/AdvanceTime.hpp"
 #include "Time/ChangeSlabSize/Action.hpp"
 #include "Time/ChangeTimeStepperOrder.hpp"
 #include "Time/RecordTimeStepperData.hpp"
@@ -345,7 +345,8 @@ struct EvolutionMetavars {
                                      tmpl::list<>>,
                   evolution::Actions::RunEventsAndTriggers<
                       Triggers::WhenToCheck::AtSlabs>,
-                  Actions::ChangeSlabSize, step_actions, Actions::AdvanceTime,
+                  Actions::ChangeSlabSize, step_actions,
+                  Actions::MutateApply<AdvanceTime>,
                   PhaseControl::Actions::ExecutePhaseChange>>>>>;
 
   struct registration
