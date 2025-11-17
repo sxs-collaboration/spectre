@@ -4,33 +4,22 @@
 #pragma once
 
 #include <cstddef>
-#include <optional>
-#include <tuple>
-#include <utility>
 
-#include "DataStructures/DataBox/Access.hpp"
-#include "DataStructures/DataVector.hpp"
-#include "Domain/Structure/DirectionalIdMap.hpp"
-#include "Evolution/DiscontinuousGalerkin/BoundaryData.hpp"
-#include "NumericalAlgorithms/Spectral/Mesh.hpp"
-#include "Time/TimeStepId.hpp"
-#include "Utilities/Gsl.hpp"
+/// \cond
+namespace db {
+class Access;
+}  // namespace db
+namespace gsl {
+template <class T>
+class not_null;
+}  // namespace gsl
+/// \endcond
 
 namespace evolution::dg::subcell {
 /*!
  * \brief Invoked in directions where the neighbor is doing subcell, this
  * function computes the neighbor data on the mortar via reconstruction on
  * nearest neighbor subcells.
- *
- *
- * The data needed for reconstruction is copied over into
- * `subcell::Tags::GhostDataForReconstruction`.
- * Additionally, the max/min of the evolved variables from neighboring elements
- * that is used for the relaxed discrete maximum principle troubled-cell
- * indicator is combined with the data from the local element and stored in
- * `subcell::Tags::DataForRdmpTci`. We handle the RDMP
- * data now because it is sent in the same buffer as the data for
- * reconstruction.
  *
  * A list of all the directions that are doing subcell is created and then
  * passed to the mutator
@@ -49,10 +38,5 @@ namespace evolution::dg::subcell {
  * `Metavariables::SubcellOptions::DgComputeSubcellNeighborPackagedData::apply`.
  */
 template <size_t VolumeDim, typename DgComputeSubcellNeighborPackagedData>
-void neighbor_reconstructed_face_solution(
-    gsl::not_null<db::Access*> box,
-    gsl::not_null<std::pair<
-        TimeStepId,
-        DirectionalIdMap<VolumeDim, evolution::dg::BoundaryData<VolumeDim>>>*>
-        received_temporal_id_and_data);
+void neighbor_reconstructed_face_solution(gsl::not_null<db::Access*> box);
 }  // namespace evolution::dg::subcell

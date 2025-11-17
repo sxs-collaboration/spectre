@@ -77,17 +77,19 @@ namespace evolution::dg::subcell {
 // We use a forward declaration instead of including a header file to avoid
 // coupling to the DG-subcell libraries for executables that don't use subcell.
 template <size_t VolumeDim, typename DgComputeSubcellNeighborPackagedData>
-void neighbor_reconstructed_face_solution(
-    gsl::not_null<db::Access*> box,
-    gsl::not_null<std::pair<
-        TimeStepId,
-        DirectionalIdMap<VolumeDim, evolution::dg::BoundaryData<VolumeDim>>>*>
-        received_temporal_id_and_data);
+void neighbor_reconstructed_face_solution(gsl::not_null<db::Access*> box);
 template <size_t Dim>
 void neighbor_tci_decision(
     gsl::not_null<db::Access*> box,
     const std::pair<TimeStepId,
                     DirectionalIdMap<Dim, evolution::dg::BoundaryData<Dim>>>&
+        received_temporal_id_and_data);
+template <size_t VolumeDim>
+void receive_subcell_data_for_dg(
+    gsl::not_null<db::Access*> box,
+    const std::pair<
+        TimeStepId,
+        DirectionalIdMap<VolumeDim, evolution::dg::BoundaryData<VolumeDim>>>&
         received_temporal_id_and_data);
 }  // namespace evolution::dg::subcell
 /// \endcond
@@ -153,10 +155,8 @@ collect_messages:
 
   // Move inbox contents into the DataBox
   if constexpr (using_subcell_v<Metavariables>) {
-    evolution::dg::subcell::neighbor_reconstructed_face_solution<
-        volume_dim, typename Metavariables::SubcellOptions::
-                        DgComputeSubcellNeighborPackagedData>(
-        &db::as_access(*box), make_not_null(&received_temporal_id_and_data));
+    evolution::dg::subcell::receive_subcell_data_for_dg<volume_dim>(
+        &db::as_access(*box), received_temporal_id_and_data);
     evolution::dg::subcell::neighbor_tci_decision<volume_dim>(
         make_not_null(&db::as_access(*box)), received_temporal_id_and_data);
   }
@@ -196,6 +196,7 @@ collect_messages:
               mortar_id, received_mortar_data.second.volume_mesh);
           mortar_next_time_step_id->at(mortar_id) =
               received_mortar_data.second.validity_range;
+          mortar_data->at(mortar_id).neighbor().face_mesh = neighbor_face_mesh;
           ASSERT(using_subcell_v<Metavariables> or
                      received_mortar_data.second.boundary_correction_data
                          .has_value(),
@@ -204,14 +205,11 @@ collect_messages:
                      << mortar_id.direction() << "," << mortar_id.id()
                      << ") and TimeStepId is "
                      << received_temporal_id_and_data.first);
-          if (received_mortar_data.second.boundary_correction_data
-                  .has_value()) {
-            mortar_data->at(mortar_id).neighbor().face_mesh =
-                neighbor_face_mesh;
-            mortar_data->at(mortar_id).neighbor().mortar_mesh =
-                received_mortar_data.second.boundary_correction_mesh.value();
-            mortar_data->at(mortar_id).neighbor().mortar_data = std::move(
-                received_mortar_data.second.boundary_correction_data.value());
+          mortar_data->at(mortar_id).neighbor().mortar_mesh =
+              received_mortar_data.second.boundary_correction_mesh;
+          mortar_data->at(mortar_id).neighbor().mortar_data =
+              std::move(received_mortar_data.second.boundary_correction_data);
+          if (mortar_data->at(mortar_id).neighbor().mortar_data.has_value()) {
             p_project_mortar_data(
                 make_not_null(&mortar_data->at(mortar_id).neighbor()),
                 mortar_mesh);
@@ -219,6 +217,14 @@ collect_messages:
         }
       },
       box, db::get<domain::Tags::Mesh<volume_dim>>(*box));
+
+  if constexpr (using_subcell_v<Metavariables>) {
+    evolution::dg::subcell::neighbor_reconstructed_face_solution<
+        volume_dim, typename Metavariables::SubcellOptions::
+                        DgComputeSubcellNeighborPackagedData>(
+        &db::as_access(*box));
+  }
+
   return true;
 }
 

@@ -24,7 +24,6 @@
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
 #include "Evolution/DgSubcell/Tags/OnSubcellFaces.hpp"
 #include "Evolution/DiscontinuousGalerkin/Actions/PackageDataImpl.hpp"
-#include "Evolution/DiscontinuousGalerkin/BoundaryData.hpp"
 #include "Evolution/DiscontinuousGalerkin/NormalVectorTags.hpp"
 #include "Evolution/Systems/Burgers/BoundaryCorrections/Factory.hpp"
 #include "Evolution/Systems/Burgers/FiniteDifference/Factory.hpp"
@@ -145,8 +144,4 @@ DirectionalIdMap<1, DataVector> NeighborPackagedData::apply(
 }  // namespace Burgers::subcell
 
 template void evolution::dg::subcell::neighbor_reconstructed_face_solution<
-    1, Burgers::subcell::NeighborPackagedData>(
-    gsl::not_null<db::Access*> box,
-    gsl::not_null<std::pair<
-        TimeStepId, DirectionalIdMap<1, evolution::dg::BoundaryData<1>>>*>
-        received_temporal_id_and_data);
+    1, Burgers::subcell::NeighborPackagedData>(gsl::not_null<db::Access*> box);

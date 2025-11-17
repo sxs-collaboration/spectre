@@ -5,46 +5,35 @@
 
 #include <cstddef>
 #include <optional>
-#include <tuple>
 #include <utility>
 #include <vector>
 
 #include "DataStructures/DataBox/Access.hpp"
 #include "DataStructures/DataBox/DataBox.hpp"
-#include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "Domain/Structure/Direction.hpp"
+#include "Domain/Structure/DirectionalId.hpp"
 #include "Domain/Structure/DirectionalIdMap.hpp"
 #include "Domain/Structure/ElementId.hpp"
+#include "Domain/Structure/Side.hpp"
 #include "Domain/Tags.hpp"
 #include "Evolution/DgSubcell/GhostData.hpp"
 #include "Evolution/DgSubcell/NeighborReconstructedFaceSolution.hpp"
 #include "Evolution/DgSubcell/NeighborReconstructedFaceSolution.tpp"
-#include "Evolution/DgSubcell/RdmpTciData.hpp"
-#include "Evolution/DgSubcell/Tags/DataForRdmpTci.hpp"
 #include "Evolution/DgSubcell/Tags/GhostDataForReconstruction.hpp"
-#include "Evolution/DiscontinuousGalerkin/BoundaryData.hpp"
+#include "Evolution/DiscontinuousGalerkin/MortarDataHolder.hpp"
+#include "Evolution/DiscontinuousGalerkin/MortarTags.hpp"
+#include "NumericalAlgorithms/Spectral/Basis.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
-#include "Time/TimeStepId.hpp"
+#include "NumericalAlgorithms/Spectral/Quadrature.hpp"
 #include "Utilities/Gsl.hpp"
-#include "Utilities/StdHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace {
-struct VolumeDouble : db::SimpleTag {
-  using type = double;
-};
-
 template <size_t Dim>
 using GhostDataMap = DirectionalIdMap<Dim, evolution::dg::subcell::GhostData>;
 template <size_t Dim>
 using NeighborReconstructionMap = DirectionalIdMap<Dim, DataVector>;
-
-template <size_t Dim>
-using BoundaryData = evolution::dg::BoundaryData<Dim>;
-
-template <size_t Dim>
-using BoundaryDataMap = DirectionalIdMap<Dim, BoundaryData<Dim>>;
 
 template <size_t Dim>
 struct Metavariables {
@@ -77,107 +66,63 @@ void test() {
   CAPTURE(Dim);
   using metavars = Metavariables<Dim>;
 
-  evolution::dg::subcell::RdmpTciData rdmp_tci_data{};
-  rdmp_tci_data.max_variables_values = DataVector{1.0, 2.0};
-  rdmp_tci_data.min_variables_values = DataVector{-2.0, 0.1};
-  GhostDataMap<Dim> neighbor_data_map{};
+  GhostDataMap<Dim> ghost_data{};
   const Mesh<Dim> dg_volume_mesh{2 + 2 * Dim, Spectral::Basis::Legendre,
                                  Spectral::Quadrature::GaussLobatto};
-  auto box = db::create<
-      tmpl::list<domain::Tags::Mesh<Dim>,
-                 evolution::dg::subcell::Tags::MeshForGhostData<Dim>,
-                 evolution::dg::subcell::Tags::GhostDataForReconstruction<Dim>,
-                 evolution::dg::subcell::Tags::DataForRdmpTci, VolumeDouble>>(
-      dg_volume_mesh, DirectionalIdMap<Dim, Mesh<Dim>>{},
-      std::move(neighbor_data_map), std::move(rdmp_tci_data), 2.5);
+  const Mesh<Dim - 1> reconstructed_mesh = dg_volume_mesh.slice_away(0);
 
-  std::pair<TimeStepId, BoundaryDataMap<Dim>> mortar_data_from_neighbors{};
-  const Mesh<Dim> fd_volume_mesh{2 + 2 * Dim + 1,
-                                 Spectral::Basis::FiniteDifference,
-                                 Spectral::Quadrature::CellCentered};
   const Mesh<Dim - 1> mortar_mesh{2 + 2 * Dim + 1, Spectral::Basis::Legendre,
                                   Spectral::Quadrature::GaussLobatto};
+  DirectionalIdMap<Dim, evolution::dg::MortarDataHolder<Dim>> mortar_data_in{};
   for (size_t d = 0; d < Dim; ++d) {
-    DataVector fd_recons_and_rdmp_data(2 * Dim + 1 + 4, 4.0);
-    DataVector dg_recons_and_rdmp_data(2 * Dim + 1 + 4, 7.0);
-    for (size_t i = 0; i < 4; ++i) {
-      dg_recons_and_rdmp_data[2 * Dim + 1 + i] =
-          (i > 1 ? -1.0 : 1.0) * (d + 1.0) * 7.0 * (i + 5.0);
-      fd_recons_and_rdmp_data[2 * Dim + 1 + i] =
-          (i > 1 ? -1.0 : 1.0) * (d + 1.0) * 7.0 * (i + 50.0);
-    }
-    DataVector dg_flux_data(2 * Dim + 1);
-    if (d % 2 == 0) {
-      mortar_data_from_neighbors.second[DirectionalId<Dim>{
-          Direction<Dim>{d, Side::Upper}, ElementId<Dim>{2 * d}}] =
-          BoundaryData<Dim>{dg_volume_mesh,
-                            dg_volume_mesh,
-                            mortar_mesh,
-                            dg_recons_and_rdmp_data,
-                            dg_flux_data,
-                            {},
-                            1};
-      mortar_data_from_neighbors.second[DirectionalId<Dim>{
-          Direction<Dim>{d, Side::Lower}, ElementId<Dim>{2 * d + 1}}] =
-          BoundaryData<Dim>{dg_volume_mesh,
-                            fd_volume_mesh,
-                            std::nullopt,
-                            fd_recons_and_rdmp_data,
-                            std::nullopt,
-                            {},
-                            2};
-    } else {
-      mortar_data_from_neighbors.second[DirectionalId<Dim>{
-          Direction<Dim>{d, Side::Lower}, ElementId<Dim>{2 * d}}] =
-          BoundaryData<Dim>{dg_volume_mesh,
-                            dg_volume_mesh,
-                            mortar_mesh,
-                            dg_recons_and_rdmp_data,
-                            dg_flux_data,
-                            {},
-                            3};
-      mortar_data_from_neighbors.second[DirectionalId<Dim>{
-          Direction<Dim>{d, Side::Upper}, ElementId<Dim>{2 * d + 1}}] =
-          BoundaryData<Dim>{dg_volume_mesh,
-                            fd_volume_mesh,
-                            std::nullopt,
-                            fd_recons_and_rdmp_data,
-                            std::nullopt,
-                            {},
-                            4};
-    }
+    const bool d_is_odd = (d % 2 != 0);
+    const DirectionalId<Dim> dg_id{
+        Direction<Dim>{d, d_is_odd ? Side::Lower : Side::Upper},
+        ElementId<Dim>{2 * d}};
+    const DirectionalId<Dim> fd_id{
+        Direction<Dim>{d, d_is_odd ? Side::Upper : Side::Lower},
+        ElementId<Dim>{2 * d + 1}};
+    mortar_data_in[dg_id].neighbor().mortar_mesh = mortar_mesh;
+    mortar_data_in[dg_id].neighbor().mortar_data =
+        DataVector(2 * Dim + 1, static_cast<double>(d) + 7.0);
+    mortar_data_in[fd_id];
+    ghost_data[fd_id] = evolution::dg::subcell::GhostData{1};
+    ghost_data[fd_id].neighbor_ghost_data_for_reconstruction() =
+        DataVector(2 * Dim + 1, static_cast<double>(d) + 4.0);
   }
+
+  auto box = db::create<
+      tmpl::list<domain::Tags::Mesh<Dim>,
+                 evolution::dg::subcell::Tags::GhostDataForReconstruction<Dim>,
+                 evolution::dg::Tags::MortarData<Dim>>>(
+      dg_volume_mesh, std::move(ghost_data), std::move(mortar_data_in));
+
   evolution::dg::subcell::neighbor_reconstructed_face_solution<
       Dim,
       typename metavars::SubcellOptions::DgComputeSubcellNeighborPackagedData>(
-      make_not_null(&box), make_not_null(&mortar_data_from_neighbors));
-  const auto& ghost_meshes =
-      db::get<evolution::dg::subcell::Tags::MeshForGhostData<Dim>>(box);
+      make_not_null(&box));
+  const auto& mortar_data = db::get<evolution::dg::Tags::MortarData<Dim>>(box);
   for (size_t d = 0; d < Dim; ++d) {
     CAPTURE(d);
     const bool d_is_odd = (d % 2 != 0);
-    const DirectionalId<Dim> id{
+    const DirectionalId<Dim> dg_id{
+        Direction<Dim>{d, d_is_odd ? Side::Lower : Side::Upper},
+        ElementId<Dim>{2 * d}};
+    const DirectionalId<Dim> fd_id{
         Direction<Dim>{d, d_is_odd ? Side::Upper : Side::Lower},
         ElementId<Dim>{2 * d + 1}};
-    CAPTURE(id);
-    REQUIRE(mortar_data_from_neighbors.second.contains(id));
-    REQUIRE(
-        mortar_data_from_neighbors.second.at(id).ghost_cell_data.has_value());
-    REQUIRE(mortar_data_from_neighbors.second.at(id)
-                .boundary_correction_data.has_value());
-    CHECK(mortar_data_from_neighbors.second.at(id)
-              .boundary_correction_data.value() ==
-          (DataVector{
-              mortar_data_from_neighbors.second.at(id).ghost_cell_data->data(),
-              mortar_data_from_neighbors.second.at(id).ghost_cell_data->size() -
-                  4}));
-    REQUIRE(ghost_meshes.contains(id));
-    CHECK(ghost_meshes.at(id) == fd_volume_mesh);
-    if (d_is_odd) {
-      CHECK(mortar_data_from_neighbors.second.at(id).tci_status == 4);
-    } else {
-      CHECK(mortar_data_from_neighbors.second.at(id).tci_status == 2);
-    }
+    CAPTURE(dg_id);
+    CAPTURE(fd_id);
+    REQUIRE(mortar_data.contains(dg_id));
+    REQUIRE(mortar_data.contains(fd_id));
+    CHECK(mortar_data.at(dg_id).neighbor().mortar_data ==
+          std::optional(DataVector(2 * Dim + 1, static_cast<double>(d) + 7.0)));
+    CHECK(mortar_data.at(fd_id).neighbor().mortar_data ==
+          std::optional(DataVector(2 * Dim + 1, static_cast<double>(d) + 4.0)));
+    CHECK(mortar_data.at(dg_id).neighbor().mortar_mesh ==
+          std::optional(mortar_mesh));
+    CHECK(mortar_data.at(fd_id).neighbor().mortar_mesh ==
+          std::optional(reconstructed_mesh));
   }
 }
 }  // namespace

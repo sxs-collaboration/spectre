@@ -34,6 +34,7 @@ spectre_target_headers(
   Projection.hpp
   RdmpTci.hpp
   RdmpTciData.hpp
+  ReceiveSubcellDataForDg.hpp
   Reconstruction.hpp
   ReconstructionMethod.hpp
   ReconstructionOrder.hpp
@@ -62,6 +63,7 @@ spectre_target_sources(
   Projection.cpp
   RdmpTci.cpp
   RdmpTciData.cpp
+  ReceiveSubcellDataForDg.cpp
   Reconstruction.cpp
   ReconstructionMethod.cpp
   SliceData.cpp

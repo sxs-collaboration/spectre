@@ -7,7 +7,6 @@
 #include <cstddef>
 #include <optional>
 #include <type_traits>
-#include <utility>
 #include <vector>
 
 #include "DataStructures/DataBox/Access.hpp"
@@ -33,7 +32,6 @@
 #include "Evolution/DgSubcell/Tags/OnSubcellFaces.hpp"
 #include "Evolution/DgSubcell/Tags/SubcellOptions.hpp"
 #include "Evolution/DiscontinuousGalerkin/Actions/PackageDataImpl.hpp"
-#include "Evolution/DiscontinuousGalerkin/BoundaryData.hpp"
 #include "Evolution/DiscontinuousGalerkin/NormalVectorTags.hpp"
 #include "Evolution/Systems/ForceFree/BoundaryCorrections/Factory.hpp"
 #include "Evolution/Systems/ForceFree/FiniteDifference/Factory.hpp"
@@ -266,7 +264,4 @@ DirectionalIdMap<3, DataVector> NeighborPackagedData::apply(
 
 template void evolution::dg::subcell::neighbor_reconstructed_face_solution<
     3, ForceFree::subcell::NeighborPackagedData>(
-    gsl::not_null<db::Access*> box,
-    gsl::not_null<std::pair<
-        TimeStepId, DirectionalIdMap<3, evolution::dg::BoundaryData<3>>>*>
-        received_temporal_id_and_data);
+    gsl::not_null<db::Access*> box);
