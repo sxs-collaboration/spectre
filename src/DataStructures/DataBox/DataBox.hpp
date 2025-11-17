@@ -37,6 +37,7 @@
 #include "Utilities/NoSuchType.hpp"
 #include "Utilities/PrintHelpers.hpp"
 #include "Utilities/Serialization/Serialize.hpp"
+#include "Utilities/StdHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 #include "Utilities/TypeTraits.hpp"
@@ -1069,7 +1070,8 @@ const void* DataBox<tmpl::list<Tags...>>::get_item_by_name(
   ASSERT(tag_graphs_.tag_retrieval_functions.find(tag_name) !=
              tag_graphs_.tag_retrieval_functions.end(),
          "Tag with name " << tag_name
-                          << " is not found in the DataBox. Known tags are:\n");
+                          << " is not found in the DataBox. Known tags are:\n"
+                          << keys_of(tag_graphs_.tag_retrieval_functions));
   ASSERT(tag_graphs_.tag_retrieval_functions.at(tag_name) != nullptr,
          "Tag with name " << tag_name
                           << " is in the DataBox more than once and so "
@@ -1083,7 +1085,8 @@ void* DataBox<tmpl::list<Tags...>>::mutate_item_by_name(
     const std::string& tag_name) {
   ASSERT(tag_graphs_.tag_mutate_functions.find(tag_name) !=
              tag_graphs_.tag_mutate_functions.end(),
-         "Cannot mutate tag: " << tag_name);
+         "Cannot mutate tag: " << tag_name << ".  Known tags are:\n"
+                               << keys_of(tag_graphs_.tag_mutate_functions));
   return (this->*tag_graphs_.tag_mutate_functions.at(tag_name))();
 }
 
