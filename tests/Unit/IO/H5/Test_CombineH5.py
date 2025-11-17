@@ -5,6 +5,7 @@ import os
 import unittest
 
 import numpy as np
+import numpy.testing as npt
 from click.testing import CliRunner
 
 import spectre.IO.H5 as spectre_h5
@@ -235,13 +236,12 @@ class TestCombineH5(unittest.TestCase):
             ]
         )
         for i in range(len(expected_tensor_components)):
-            value = (
+            npt.assert_equal(
                 output_vol.get_tensor_component(
                     i, actual_tensor_component_names[i]
-                ).data
-                == expected_tensor_components[i]
+                ).data,
+                expected_tensor_components[i],
             )
-            self.assertEqual(value, True)
 
     def test_cli(self):
         # Checks if the CLI for CombineH5 runs properly
