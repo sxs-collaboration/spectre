@@ -44,6 +44,7 @@ void test_expansion_control_error() {
       "ControlSystems:\n"
       "  WriteDataToDisk: false\n"
       "  MeasurementsPerUpdate: 4\n"
+      "  DelayUpdate: true\n"
       "  Expansion:\n"
       "    Averager:\n"
       "      AverageTimescaleFraction: 0.25\n"
@@ -85,7 +86,7 @@ void test_expansion_control_error() {
   // global cache
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<metavars>;
   MockRuntimeSystem runner{
-      {"DummyFileName", std::move(domain), 4, false, ::Verbosity::Silent,
+      {"DummyFileName", std::move(domain), 4, true, false, ::Verbosity::Silent,
        std::move(is_active_map), std::move(grid_center_A),
        std::move(grid_center_B), std::move(system_to_combined_names)},
       {std::move(initial_functions_of_time),

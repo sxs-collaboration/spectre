@@ -9,6 +9,7 @@ spectre_target_sources(
   ${LIBRARY}
   PRIVATE
   AdaptiveSteppingDiagnostics.cpp
+  AdvanceTime.cpp
   ApproximateTime.cpp
   ChooseLtsStepSize.cpp
   History.cpp
@@ -31,6 +32,7 @@ spectre_target_headers(
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
   AdaptiveSteppingDiagnostics.hpp
+  AdvanceTime.hpp
   ApproximateTime.hpp
   BoundaryHistory.hpp
   ChangeStepSize.hpp

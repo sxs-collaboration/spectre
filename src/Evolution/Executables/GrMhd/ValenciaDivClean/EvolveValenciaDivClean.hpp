@@ -159,9 +159,9 @@
 #include "PointwiseFunctions/Hydro/QuadrupoleFormula.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
 #include "PointwiseFunctions/Hydro/TransportVelocity.hpp"
-#include "Time/Actions/AdvanceTime.hpp"
 #include "Time/Actions/CleanHistory.hpp"
 #include "Time/Actions/SelfStartActions.hpp"
+#include "Time/AdvanceTime.hpp"
 #include "Time/ChangeSlabSize/Action.hpp"
 #include "Time/ChangeTimeStepperOrder.hpp"
 #include "Time/RecordTimeStepperData.hpp"
@@ -582,23 +582,22 @@ struct EvolutionMetavars<tmpl::list<InterpolationTargetTags...>,
 
   using dg_element_array_component = DgElementArray<
       EvolutionMetavars,
-      tmpl::list<
-          Parallel::PhaseActions<Parallel::Phase::Initialization,
-                                 initialization_actions>,
+      tmpl::list<Parallel::PhaseActions<Parallel::Phase::Initialization,
+                                        initialization_actions>,
 
-          Parallel::PhaseActions<
-              Parallel::Phase::InitializeTimeStepperHistory,
-              SelfStart::self_start_procedure<step_actions, system>>,
+                 Parallel::PhaseActions<
+                     Parallel::Phase::InitializeTimeStepperHistory,
+                     SelfStart::self_start_procedure<step_actions, system>>,
 
-          Parallel::PhaseActions<
-              Parallel::Phase::Register,
-              tmpl::push_back<dg_registration_list,
-                              Parallel::Actions::TerminatePhase>>,
+                 Parallel::PhaseActions<
+                     Parallel::Phase::Register,
+                     tmpl::push_back<dg_registration_list,
+                                     Parallel::Actions::TerminatePhase>>,
 
-          Parallel::PhaseActions<
-              Parallel::Phase::Restart,
-              tmpl::push_back<dg_registration_list,
-                              Parallel::Actions::TerminatePhase>>,
+                 Parallel::PhaseActions<
+                     Parallel::Phase::Restart,
+                     tmpl::push_back<dg_registration_list,
+                                     Parallel::Actions::TerminatePhase>>,
 
           Parallel::PhaseActions<
               Parallel::Phase::WriteCheckpoint,
@@ -615,7 +614,8 @@ struct EvolutionMetavars<tmpl::list<InterpolationTargetTags...>,
                                      tmpl::list<>>,
                   evolution::Actions::RunEventsAndTriggers<
                       Triggers::WhenToCheck::AtSlabs>,
-                  Actions::ChangeSlabSize, step_actions, Actions::AdvanceTime,
+                  Actions::ChangeSlabSize, step_actions,
+                  Actions::MutateApply<AdvanceTime>,
                   PhaseControl::Actions::ExecutePhaseChange>>>,
           Parallel::PhaseActions<
               Parallel::Phase::PostFailureCleanup,

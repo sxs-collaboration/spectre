@@ -75,26 +75,27 @@ struct MeasurementTimescales : db::SimpleTag {
   using option_tags = tmpl::push_front<
       option_holders<Metavariables>,
       control_system::OptionTags::MeasurementsPerUpdate,
+      control_system::OptionTags::DelayUpdate,
       domain::OptionTags::DomainCreator<Metavariables::volume_dim>,
       ::OptionTags::InitialTime, ::OptionTags::InitialTimeStep>;
 
   template <typename Metavariables, typename... OptionHolders>
   static type create_from_options(
-      const int measurements_per_update,
+      const int measurements_per_update, const bool delay_update,
       const std::unique_ptr<::DomainCreator<Metavariables::volume_dim>>&
           domain_creator,
       const double initial_time, const double initial_time_step,
       const Options::Auto<OptionHolders,
                           Options::AutoLabel::None>&... option_holders) {
     return create_from_options<Metavariables>(
-        measurements_per_update, domain_creator, initial_time,
+        measurements_per_update, delay_update, domain_creator, initial_time,
         initial_time_step,
         static_cast<std::optional<OptionHolders>>(option_holders)...);
   }
 
   template <typename Metavariables, typename... OptionHolders>
   static type create_from_options(
-      const int measurements_per_update,
+      const int measurements_per_update, const bool delay_update,
       const std::unique_ptr<::DomainCreator<Metavariables::volume_dim>>&
           domain_creator,
       const double initial_time, const double initial_time_step,
@@ -126,7 +127,8 @@ struct MeasurementTimescales : db::SimpleTag {
 
     [[maybe_unused]] const auto combine_measurement_timescales =
         [&initial_time, &initial_time_step, &domain_creator,
-         &measurements_per_update, &map_of_names, &min_measurement_timescales,
+         &measurements_per_update, &delay_update, &map_of_names,
+         &min_measurement_timescales,
          &expiration_times](const auto& option_holder) {
           // This check is intentionally inside the lambda so that it will not
           // trigger for domains without control systems.
@@ -165,10 +167,10 @@ struct MeasurementTimescales : db::SimpleTag {
 
           if (min_measurement_timescales[combined_name] !=
               std::numeric_limits<double>::infinity()) {
-            const double expiration_time = measurement_expiration_time(
-                initial_time, DataVector{1_st, 0.0},
+            const double expiration_time = measurement_initial_expiration_time(
+                initial_time,
                 DataVector{1_st, min_measurement_timescales[combined_name]},
-                measurements_per_update);
+                measurements_per_update, delay_update);
             expiration_times[combined_name] =
                 std::min(expiration_times[combined_name], expiration_time);
           }

@@ -15,9 +15,10 @@
 #include "DataStructures/DataBox/TagName.hpp"
 #include "Parallel/AlgorithmExecution.hpp"
 #include "ParallelAlgorithms/Actions/Goto.hpp"
+#include "ParallelAlgorithms/Actions/MutateApply.hpp"
 #include "ParallelAlgorithms/Actions/TerminatePhase.hpp"
 #include "ParallelAlgorithms/Initialization/MutateAssign.hpp"
-#include "Time/Actions/AdvanceTime.hpp"
+#include "Time/AdvanceTime.hpp"
 #include "Time/Slab.hpp"
 #include "Time/Tags/HistoryEvolvedVariables.hpp"
 #include "Time/Tags/TimeStep.hpp"
@@ -39,6 +40,9 @@ template <typename StepperInterface>
 struct TimeStepper;
 }  // namespace Tags
 class TimeStepper;
+namespace TimeSteppers::Tags {
+struct FixedOrder;
+}  // namespace TimeSteppers::Tags
 /// \endcond
 
 /// \ingroup TimeGroup
@@ -452,13 +456,13 @@ using self_start_procedure = tmpl::flatten<tmpl::list<
     SelfStart::Actions::Initialize<System>,
     ::Actions::Label<detail::PhaseStart>,
     SelfStart::Actions::CheckForCompletion<detail::PhaseEnd, System>,
-    ::Actions::AdvanceTime,
+    ::Actions::MutateApply<AdvanceTime>,
     SelfStart::Actions::CheckForOrderIncrease,
     StepActions,
     ::Actions::Goto<detail::PhaseStart>,
     ::Actions::Label<detail::PhaseEnd>,
     SelfStart::Actions::Cleanup,
-    ::Actions::AdvanceTime,
+    ::Actions::MutateApply<AdvanceTime>,
     Parallel::Actions::TerminatePhase>>;
 // clang-format on
 }  // namespace SelfStart

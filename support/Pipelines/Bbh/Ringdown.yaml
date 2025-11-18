@@ -360,6 +360,7 @@ Cce:
 ControlSystems:
   WriteDataToDisk: false
   MeasurementsPerUpdate: 4
+  DelayUpdate: true
   Verbosity: Silent
   Translation:
     Averager:

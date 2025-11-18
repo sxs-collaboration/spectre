@@ -86,7 +86,7 @@ void test_shape_control(
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<Metavars>;
   // Excision centers aren't used so their values can be anything
   MockRuntimeSystem runner{
-      {"DummyFileName", std::move(domain), 4, false, ::Verbosity::Silent,
+      {"DummyFileName", std::move(domain), 4, true, false, ::Verbosity::Silent,
        std::move(is_active_map), std::move(grid_center_A),
        std::move(grid_center_B), std::move(system_to_combined_names)},
       {std::move(initial_functions_of_time),
@@ -256,6 +256,7 @@ void test_suite(const gsl::not_null<Generator*> generator, const size_t l_max,
       "ControlSystems:\n"
       "  WriteDataToDisk: false\n"
       "  MeasurementsPerUpdate: 4\n"
+      "  DelayUpdate: true\n"
       "  ShapeA:\n"
       "    Averager:\n"
       "      AverageTimescaleFraction: 0.25\n"

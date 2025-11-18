@@ -5,7 +5,6 @@ spectre_target_headers(
   ${LIBRARY}
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
-  AdvanceTime.hpp
   CleanHistory.hpp
   SelfStartActions.hpp
   )

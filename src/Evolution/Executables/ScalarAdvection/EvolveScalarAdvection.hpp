@@ -89,9 +89,9 @@
 #include "PointwiseFunctions/AnalyticSolutions/ScalarAdvection/Kuzmin.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/ScalarAdvection/Sinusoid.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
-#include "Time/Actions/AdvanceTime.hpp"
 #include "Time/Actions/CleanHistory.hpp"
 #include "Time/Actions/SelfStartActions.hpp"
+#include "Time/AdvanceTime.hpp"
 #include "Time/ChangeSlabSize/Action.hpp"
 #include "Time/RecordTimeStepperData.hpp"
 #include "Time/StepChoosers/Factory.hpp"
@@ -375,7 +375,8 @@ struct EvolutionMetavars {
                                      tmpl::list<>>,
                   evolution::Actions::RunEventsAndTriggers<
                       Triggers::WhenToCheck::AtSlabs>,
-                  Actions::ChangeSlabSize, step_actions, Actions::AdvanceTime,
+                  Actions::ChangeSlabSize, step_actions,
+                  Actions::MutateApply<AdvanceTime>,
                   PhaseControl::Actions::ExecutePhaseChange>>>>>;
 
   struct registration

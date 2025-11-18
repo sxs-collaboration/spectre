@@ -14,7 +14,10 @@
 #include "Helpers/Evolution/Systems/Cce/KleinGordonBoundaryTestHelpers.hpp"
 #include "IO/Observer/ObserverComponent.hpp"
 #include "NumericalAlgorithms/Interpolation/BarycentricRationalSpanInterpolator.hpp"
+#include "ParallelAlgorithms/Actions/MutateApply.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
+#include "Time/AdvanceTime.hpp"
+#include "Time/Tags/StepperErrorEstimatesEnabled.hpp"
 #include "Time/TimeSteppers/AdamsBashforth.hpp"
 #include "Utilities/FileSystem.hpp"
 #include "Utilities/Gsl.hpp"
@@ -75,6 +78,8 @@ struct mock_klein_gordon_characteristic_evolution {
       KleinGordonCharacteristicEvolution<Metavariables>;
   using replace_these_simple_actions = tmpl::list<>;
   using with_these_simple_actions = tmpl::list<>;
+  using const_global_cache_tags =
+      tmpl::list<::Tags::StepperErrorEstimatesEnabled>;
 
   using initialize_action_list = tmpl::list<
       Actions::InitializeKleinGordonVariables<Metavariables>,
@@ -84,7 +89,7 @@ struct mock_klein_gordon_characteristic_evolution {
           typename Metavariables::evolved_swsh_tags, false>,
       // advance the time so that the current `TimeStepId` is valid without
       // having to perform self-start.
-      ::Actions::AdvanceTime, Parallel::Actions::TerminatePhase>;
+      ::Actions::MutateApply<AdvanceTime>, Parallel::Actions::TerminatePhase>;
   using simple_tags_from_options =
       Parallel::get_simple_tags_from_options<initialize_action_list>;
 
@@ -111,9 +116,6 @@ struct mock_klein_gordon_characteristic_evolution {
               Actions::RequestNextBoundaryData<
                   KleinGordonH5WorldtubeBoundary<Metavariables>,
                   mock_klein_gordon_characteristic_evolution<Metavariables>>>>>;
-  using const_global_cache_tags =
-      Parallel::get_const_global_cache_tags_from_actions<
-          phase_dependent_action_list>;
 };
 
 struct test_metavariables : CharacteristicExtractDefaults<false> {
@@ -208,7 +210,7 @@ void test_klein_gordon_h5_boundary_communication(
 
   // tests start here
   ActionTesting::MockRuntimeSystem<test_metavariables> runner{
-      {l_max, extraction_radius,
+      {false, l_max, extraction_radius,
        Tags::EndTimeFromFile::create_from_options(std::nullopt, filename,
                                                   false),
        start_time, number_of_radial_points}};

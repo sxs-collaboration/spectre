@@ -52,6 +52,7 @@
 #include "ParallelAlgorithms/Actions/AddComputeTags.hpp"
 #include "ParallelAlgorithms/Actions/InitializeItems.hpp"
 #include "ParallelAlgorithms/Actions/MemoryMonitor/ContributeMemoryData.hpp"
+#include "ParallelAlgorithms/Actions/MutateApply.hpp"
 #include "ParallelAlgorithms/Actions/TerminatePhase.hpp"
 #include "ParallelAlgorithms/Amr/Actions/CollectDataFromChildren.hpp"
 #include "ParallelAlgorithms/Amr/Actions/Component.hpp"
@@ -72,7 +73,8 @@
 #include "ParallelAlgorithms/EventsAndTriggers/EventsAndTriggers.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/LogicalTriggers.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Trigger.hpp"
-#include "Time/Actions/AdvanceTime.hpp"
+#include "Time/AdvanceTime.hpp"
+#include "Time/Tags/StepperErrorTolerancesCompute.hpp"
 #include "Time/TimeSteppers/Factory.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"
 #include "Time/Triggers/SlabCompares.hpp"
@@ -346,7 +348,8 @@ struct Metavariables {
                   Initialization::Actions::AddComputeTags<tmpl::list<
                       ::domain::Tags::MinimumGridSpacingCompute<
                           Dim, Frame::Inertial>,
-                      ::domain::Tags::FlatLogicalMetricCompute<Dim>>>,
+                      ::domain::Tags::FlatLogicalMetricCompute<Dim>,
+                      ::Tags::StepperErrorEstimatesEnabledCompute<false>>>,
                   Parallel::Actions::TerminatePhase>>,
           Parallel::PhaseActions<
               Parallel::Phase::Register,
@@ -362,7 +365,8 @@ struct Metavariables {
           Parallel::PhaseActions<
               Parallel::Phase::Execute,
               tmpl::flatten<tmpl::list<
-                  Actions::AdvanceTime, Actions::ExportCoordinates<Dim>,
+                  Actions::MutateApply<AdvanceTime>,
+                  Actions::ExportCoordinates<Dim>,
                   Actions::FindGlobalMinimumGridSpacing,
                   std::conditional_t<local_time_stepping,
                                      evolution::Actions::RunEventsAndTriggers<
