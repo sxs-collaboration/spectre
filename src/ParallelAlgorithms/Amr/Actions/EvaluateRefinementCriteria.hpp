@@ -106,36 +106,48 @@ struct EvaluateRefinementCriteria {
     constexpr size_t volume_dim = Metavariables::volume_dim;
     auto overall_decision = make_array<volume_dim>(amr::Flag::Undefined);
 
-    using compute_tags = tmpl::remove_duplicates<tmpl::flatten<tmpl::transform<
-        tmpl::at<typename Metavariables::factory_creation::factory_classes,
-                 Criterion>,
-        detail::get_tags<tmpl::_1>>>>;
-    auto observation_box =
-        make_observation_box<compute_tags>(make_not_null(&box));
+    // Evaluate criteria on blocks that have AMR enabled, and "do nothing" on
+    // the other blocks.
+    // Note that blocks that do not have AMR enabled can still be refined to
+    // satisfy 2:1 balance. When this happens, they won't coarsen back since "do
+    // nothing" has higher priority than coarsening. This behavior can be
+    // changed if needed.
+    const auto& amr_blocks = db::get<amr::Tags::AmrBlocks<volume_dim>>(box);
+    if (not amr_blocks.has_value() or
+        amr_blocks->contains(element_id.block_id())) {
+      using compute_tags =
+          tmpl::remove_duplicates<tmpl::flatten<tmpl::transform<
+              tmpl::at<
+                  typename Metavariables::factory_creation::factory_classes,
+                  Criterion>,
+              detail::get_tags<tmpl::_1>>>>;
+      auto observation_box =
+          make_observation_box<compute_tags>(make_not_null(&box));
 
-    const auto& refinement_criteria =
-        db::get<amr::Criteria::Tags::Criteria>(box);
-    for (const auto& criterion : refinement_criteria) {
-      if (Metavariables::amr::p_refine_only_in_event and
-          criterion->type() == amr::Criteria::Type::p) {
-        continue;
+      const auto& refinement_criteria =
+          db::get<amr::Criteria::Tags::Criteria>(box);
+      for (const auto& criterion : refinement_criteria) {
+        if (Metavariables::amr::p_refine_only_in_event and
+            criterion->type() == amr::Criteria::Type::p) {
+          continue;
+        }
+        auto decision = criterion->evaluate(observation_box, cache, element_id);
+        if constexpr (Metavariables::amr::p_refine_only_in_event) {
+          ASSERT(alg::none_of(decision,
+                              [](amr::Flag flag) {
+                                return flag == amr::Flag::IncreaseResolution or
+                                       flag == amr::Flag::DecreaseResolution;
+                              }),
+                 "The criterion '"
+                     << typeid(*criterion).name()
+                     << "' requested p-refinement, but claims to be "
+                        "for h-refinement.");
+        }
+        for (size_t d = 0; d < volume_dim; ++d) {
+          overall_decision[d] = std::max(overall_decision[d], decision[d]);
+        }
       }
-      auto decision = criterion->evaluate(observation_box, cache, element_id);
-      if constexpr (Metavariables::amr::p_refine_only_in_event) {
-        ASSERT(alg::none_of(decision,
-                            [](amr::Flag flag) {
-                              return flag == amr::Flag::IncreaseResolution or
-                                     flag == amr::Flag::DecreaseResolution;
-                            }),
-               "The criterion '"
-                   << typeid(*criterion).name()
-                   << "' requested p-refinement, but claims to be "
-                      "for h-refinement.");
-      }
-      for (size_t d = 0; d < volume_dim; ++d) {
-        overall_decision[d] = std::max(overall_decision[d], decision[d]);
-      }
-    }
+    }  // amr_blocks.contains(element_id.block_id())
 
     // If no refinement criteria were called, then set flag to do nothing
     for (size_t d = 0; d < volume_dim; ++d) {

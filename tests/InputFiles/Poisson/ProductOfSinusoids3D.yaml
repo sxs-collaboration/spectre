@@ -122,6 +122,7 @@ EventsAndTriggersAtIterations:
 Amr:
   Verbosity: Quiet
   Criteria: []
+  EnableInBlocks: All
   Policies:
     EnforceTwoToOneBalanceInNormalDirection: true
     Isotropy: Anisotropic

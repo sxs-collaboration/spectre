@@ -53,6 +53,7 @@ Amr:
   Verbosity: Verbose
   Criteria:
     - IncreaseResolution
+  EnableInBlocks: All
   Policies:
     EnforceTwoToOneBalanceInNormalDirection: true
     Isotropy: Anisotropic

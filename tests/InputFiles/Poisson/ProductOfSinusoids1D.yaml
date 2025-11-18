@@ -82,6 +82,7 @@ Amr:
         # Second AMR iteration will increase num points from 4 to 5
         Target: [5]
         OscillationAtTarget: [DoNothing]
+  EnableInBlocks: All
   Policies:
     EnforceTwoToOneBalanceInNormalDirection: true
     Isotropy: Anisotropic

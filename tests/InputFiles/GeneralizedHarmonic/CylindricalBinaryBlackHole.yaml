@@ -159,6 +159,7 @@ Amr:
         Exponent: 4
         AbsoluteTolerance: 0
         CoarseningFactor: 0.1
+  EnableInBlocks: All
   Policies:
     EnforceTwoToOneBalanceInNormalDirection: true
     Isotropy: Anisotropic

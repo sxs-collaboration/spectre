@@ -8,6 +8,7 @@
 
 SPECTRE_TEST_CASE("Unit.ParallelAlgorithms.Amr.Tags",
                   "[ParallelAlgorithms][Unit]") {
+  TestHelpers::db::test_simple_tag<amr::Tags::AmrBlocks<1>>("AmrBlocks");
   TestHelpers::db::test_simple_tag<amr::Tags::AllElementIds<1>>(
       "AllElementIds");
   TestHelpers::db::test_simple_tag<amr::Tags::ParentId<1>>("ParentId");
