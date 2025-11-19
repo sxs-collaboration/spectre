@@ -3,44 +3,27 @@
 
 #pragma once
 
-#include <cmath>
 #include <cstddef>
-#include <iomanip>
-#include <iterator>
-#include <mutex>
+#include <limits>
 #include <string>
-#include <utility>
-#include <vector>
+#include <type_traits>
 
-#include "DataStructures/ComplexDataVector.hpp"
 #include "DataStructures/DataBox/DataBox.hpp"
-#include "DataStructures/DataBox/TagName.hpp"
+#include "DataStructures/DataVector.hpp"
+#include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
-#include "DataStructures/Variables.hpp"
-#include "DataStructures/VariablesTag.hpp"
 #include "Evolution/Systems/Cce/BoundaryData.hpp"
 #include "Evolution/Systems/Cce/OptionTags.hpp"
 #include "Evolution/Systems/Cce/Tags.hpp"
-#include "Evolution/Systems/Cce/WorldtubeModeRecorder.hpp"
-#include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
+#include "Evolution/Systems/GeneralizedHarmonic/TagsDeclarations.hpp"
 #include "IO/Observer/Actions/GetLockPointer.hpp"
 #include "IO/Observer/ObserverComponent.hpp"
-#include "IO/Observer/ReductionActions.hpp"
-#include "NumericalAlgorithms/SphericalHarmonics/AngularOrdering.hpp"
-#include "NumericalAlgorithms/SpinWeightedSphericalHarmonics/SwshCoefficients.hpp"
-#include "NumericalAlgorithms/SpinWeightedSphericalHarmonics/SwshCollocation.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
 #include "ParallelAlgorithms/Interpolation/InterpolationTargetDetail.hpp"
 #include "ParallelAlgorithms/Interpolation/Protocols/PostInterpolationCallback.hpp"
-#include "ParallelAlgorithms/Interpolation/Targets/Sphere.hpp"
-#include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
-#include "Utilities/ConstantExpressions.hpp"
-#include "Utilities/ErrorHandling/Assert.hpp"
-#include "Utilities/ErrorHandling/Error.hpp"
+#include "PointwiseFunctions/GeneralRelativity/TagsDeclarations.hpp"
 #include "Utilities/Gsl.hpp"
-#include "Utilities/MakeString.hpp"
-#include "Utilities/PrettyType.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -51,9 +34,41 @@ struct Pi;
 template <size_t SpatialDim>
 struct Phi;
 }  // namespace CurvedScalarWave::Tags
+namespace Parallel {
+class NodeLock;
+}  // namespace Parallel
+namespace intrp::OptionHolders {
+struct Sphere;
+}  // namespace intrp::OptionHolders
+namespace intrp::Tags {
+template <typename InterpolationTargetTag>
+struct Sphere;
+}  // namespace intrp::Tags
+namespace intrp::TargetPoints {
+template <typename InterpolationTargetTag, typename Frame>
+struct Sphere;
+}  // namespace intrp::TargetPoints
+namespace observers::Tags {
+struct H5FileLock;
+}  // namespace observers::Tags
 /// \endcond
 
 namespace intrp::callbacks {
+namespace DumpBondiSachsOnWorldtube_detail {
+template <bool IncludeKleinGordon>
+void apply_impl(
+    gsl::not_null<Parallel::NodeLock*> hdf5_lock, double time,
+    const OptionHolders::Sphere& sphere, const std::string& filename_prefix,
+    const tnsr::aa<DataVector, 3, ::Frame::Inertial>& all_spacetime_metric,
+    const tnsr::aa<DataVector, 3, ::Frame::Inertial>& all_pi,
+    const tnsr::iaa<DataVector, 3, ::Frame::Inertial>& all_phi,
+    const Scalar<DataVector>& all_csw_psi = {},
+    const Scalar<DataVector>& all_csw_pi = {},
+    const tnsr::i<DataVector, 3, ::Frame::Inertial>& all_csw_phi = {},
+    const Scalar<DataVector>& all_lapse = {},
+    const tnsr::I<DataVector, 3, ::Frame::Inertial>& all_shift = {});
+}  // namespace DumpBondiSachsOnWorldtube_detail
+
 /*!
  * \brief Post interpolation callback that dumps metric data in Bondi-Sachs form
  * on a number of extraction radii given by the `intrp::TargetPoints::Sphere`
@@ -125,14 +140,6 @@ struct DumpBondiSachsOnWorldtube
       typename InterpolationTargetTag::vars_to_interpolate_to_target;
 
   static_assert(
-      std::is_same_v<tmpl::list_difference<
-                         Cce::Tags::worldtube_boundary_tags_for_writing<
-                             Cce::Tags::BoundaryValue, include_klein_gordon>,
-                         cce_boundary_tags>,
-                     tmpl::list<>>,
-      "Cce tags to dump are not in the boundary tags.");
-
-  static_assert(
       tmpl::and_<
           std::is_same<tmpl::list_difference<gh_source_vars_from_interpolation,
                                              gh_source_vars_for_cce>,
@@ -157,140 +164,37 @@ struct DumpBondiSachsOnWorldtube
   static void apply(const db::DataBox<DbTags>& box,
                     Parallel::GlobalCache<Metavariables>& cache,
                     const TemporalId& temporal_id) {
+    // Even though no other cores should be writing to this file, we
+    // still need to get the h5 file lock so the system hdf5 doesn't get
+    // upset
+    auto* hdf5_lock = Parallel::local_synchronous_action<
+        observers::Actions::GetLockPointer<observers::Tags::H5FileLock>>(
+        Parallel::get_parallel_component<
+            observers::ObserverWriter<Metavariables>>(cache));
+
     const double time =
         intrp::InterpolationTarget_detail::get_temporal_id_value(temporal_id);
     const auto& sphere =
         Parallel::get<Tags::Sphere<InterpolationTargetTag>>(cache);
     const auto& filename_prefix = Parallel::get<Cce::Tags::FilePrefix>(cache);
-
-    if (sphere.angular_ordering != ylm::AngularOrdering::Cce) {
-      ERROR(
-          "To use the DumpBondiSachsOnWorldtube post interpolation callback, "
-          "the angular ordering of the Spheres must be Cce, not "
-          << sphere.angular_ordering);
-    }
-
-    const auto& radii = sphere.radii;
-    const size_t l_max = sphere.l_max;
-    const size_t num_points_single_sphere =
-        Spectral::Swsh::number_of_swsh_collocation_points(l_max);
-
-    const auto& all_gh_vars =
-        db::get<::Tags::Variables<gh_source_vars_from_interpolation>>(box);
-
     const auto& all_spacetime_metric =
-        get<gr::Tags::SpacetimeMetric<DataVector, 3>>(all_gh_vars);
-    const auto& all_pi = get<gh::Tags::Pi<DataVector, 3>>(all_gh_vars);
-    const auto& all_phi = get<gh::Tags::Phi<DataVector, 3>>(all_gh_vars);
-
-    const tnsr::aa<DataVector, 3, ::Frame::Inertial> spacetime_metric;
-    const tnsr::aa<DataVector, 3, ::Frame::Inertial> pi;
-    const tnsr::iaa<DataVector, 3, ::Frame::Inertial> phi;
-
-    const Scalar<DataVector> csw_psi;
-    const Scalar<DataVector> csw_pi;
-    const tnsr::i<DataVector, 3, ::Frame::Inertial> csw_phi;
-    const Scalar<DataVector> lapse;
-    const tnsr::I<DataVector, 3, ::Frame::Inertial> shift;
-
-    (void)csw_psi;
-    (void)csw_pi;
-    (void)csw_phi;
-    (void)lapse;
-    (void)shift;
-
-    // Bondi data
-    Variables<cce_boundary_tags> bondi_boundary_data{num_points_single_sphere};
-
-    // Even though no other cores should be writing to this file, we
-    // still need to get the h5 file lock so the system hdf5 doesn't get
-    // upset
-    auto* hdf5_lock = Parallel::local_branch(
-                          Parallel::get_parallel_component<
-                              observers::ObserverWriter<Metavariables>>(cache))
-                          ->template local_synchronous_action<
-                              observers::Actions::GetLockPointer<
-                                  observers::Tags::H5FileLock>>();
-
-    size_t offset = 0;
-    for (const auto& radius : radii) {
-      // Set data references so we don't copy data unnecessarily
-      for (size_t a = 0; a < 4; a++) {
-        for (size_t b = 0; b < 4; b++) {
-          make_const_view(make_not_null(&spacetime_metric.get(a, b)),
-                          all_spacetime_metric.get(a, b), offset,
-                          num_points_single_sphere);
-          make_const_view(make_not_null(&pi.get(a, b)), all_pi.get(a, b),
-                          offset, num_points_single_sphere);
-          for (size_t i = 0; i < 3; i++) {
-            make_const_view(make_not_null(&phi.get(i, a, b)),
-                            all_phi.get(i, a, b), offset,
-                            num_points_single_sphere);
-          }
-        }
-      }
-
-      {
-        auto non_klein_gordon_data =
-            bondi_boundary_data.template reference_subset<
-                Cce::Tags::characteristic_worldtube_boundary_tags<
-                    Cce::Tags::BoundaryValue>>();
-        Cce::create_bondi_boundary_data(make_not_null(&non_klein_gordon_data),
-                                        phi, pi, spacetime_metric, radius,
-                                        l_max);
-      }
-
-      if constexpr (include_klein_gordon) {
-        const auto& all_csw_psi = get<CurvedScalarWave::Tags::Psi>(all_gh_vars);
-        const auto& all_csw_pi = get<CurvedScalarWave::Tags::Pi>(all_gh_vars);
-        const auto& all_csw_phi =
-            get<CurvedScalarWave::Tags::Phi<3>>(all_gh_vars);
-        const auto& all_lapse = get<gr::Tags::Lapse<DataVector>>(all_gh_vars);
-        const auto& all_shift =
-            get<gr::Tags::Shift<DataVector, 3>>(all_gh_vars);
-
-        make_const_view(make_not_null(&csw_psi.get()), all_csw_psi.get(),
-                        offset, num_points_single_sphere);
-        make_const_view(make_not_null(&csw_pi.get()), all_csw_pi.get(), offset,
-                        num_points_single_sphere);
-        make_const_view(make_not_null(&lapse.get()), all_lapse.get(), offset,
-                        num_points_single_sphere);
-        for (size_t i = 0; i < 3; i++) {
-          make_const_view(make_not_null(&csw_phi.get(i)), all_csw_phi.get(i),
-                          offset, num_points_single_sphere);
-          make_const_view(make_not_null(&shift.get(i)), all_shift.get(i),
-                          offset, num_points_single_sphere);
-        }
-
-        Cce::create_klein_gordon_boundary_data(
-            make_not_null(&bondi_boundary_data), csw_phi, csw_pi, csw_psi,
-            lapse, shift);
-      }
-
-      offset += num_points_single_sphere;
-
-      const std::string filename =
-          MakeString{} << filename_prefix << "CceR" << std::setfill('0')
-                       << std::setw(4) << std::lround(radius) << ".h5";
-
-      // Lock now and it'll be unlocked for this radius after we finish writing
-      // the data to disk
-      const std::lock_guard lock(*hdf5_lock);
-      Cce::WorldtubeModeRecorder recorder{l_max, filename};
-
-      tmpl::for_each<Cce::Tags::worldtube_boundary_tags_for_writing<
-          Cce::Tags::BoundaryValue, include_klein_gordon>>(
-          [&](auto tag_v) {
-            using tag = tmpl::type_from<std::decay_t<decltype(tag_v)>>;
-            constexpr int spin = tag::tag::type::type::spin;
-
-            const ComplexDataVector& bondi_nodal_data =
-                get(get<tag>(bondi_boundary_data)).data();
-
-            recorder.append_modal_data<spin>(
-                Cce::dataset_label_for_tag<typename tag::tag>(), time,
-                bondi_nodal_data, l_max);
-          });
+        get<gr::Tags::SpacetimeMetric<DataVector, 3>>(box);
+    const auto& all_pi = get<gh::Tags::Pi<DataVector, 3>>(box);
+    const auto& all_phi = get<gh::Tags::Phi<DataVector, 3>>(box);
+    if constexpr (IncludeKleinGordon) {
+      const auto& all_csw_psi = get<CurvedScalarWave::Tags::Psi>(box);
+      const auto& all_csw_pi = get<CurvedScalarWave::Tags::Pi>(box);
+      const auto& all_csw_phi = get<CurvedScalarWave::Tags::Phi<3>>(box);
+      const auto& all_lapse = get<gr::Tags::Lapse<DataVector>>(box);
+      const auto& all_shift = get<gr::Tags::Shift<DataVector, 3>>(box);
+      DumpBondiSachsOnWorldtube_detail::apply_impl<IncludeKleinGordon>(
+          hdf5_lock, time, sphere, filename_prefix, all_spacetime_metric,
+          all_pi, all_phi, all_csw_psi, all_csw_pi, all_csw_phi, all_lapse,
+          all_shift);
+    } else {
+      DumpBondiSachsOnWorldtube_detail::apply_impl<IncludeKleinGordon>(
+          hdf5_lock, time, sphere, filename_prefix, all_spacetime_metric,
+          all_pi, all_phi);
     }
   }
 };
