@@ -17,7 +17,7 @@ class TestTensorData(unittest.TestCase):
     def test_tensor_component(self):
         # Set up Tensor Component
         tensor_component = TensorComponent(
-            "tensor component", DataVector([1.5, 1.1])
+            "tensor component", DataVector([6.7, 3.2])
         )
         # Test name
         self.assertEqual(tensor_component.name, "tensor component")
@@ -25,12 +25,9 @@ class TestTensorData(unittest.TestCase):
         self.assertEqual(tensor_component.name, "new tensor component")
         # Test data
         npt.assert_array_almost_equal(
-            np.array(tensor_component.data), np.array([1.5, 1.1])
+            tensor_component.data, np.array([6.7, 3.2])
         )
-        tensor_component.data = DataVector([6.7, 3.2])
-        npt.assert_array_almost_equal(
-            np.array(tensor_component.data), np.array([6.7, 3.2])
-        )
+        self.assertEqual(tensor_component.data.dtype, np.float64)
         # Test str, repr
         self.assertEqual(
             str(tensor_component), "(new tensor component, (6.7,3.2))"
