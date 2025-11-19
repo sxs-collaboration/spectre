@@ -68,6 +68,16 @@ struct Charge {
 };
 
 /*!
+ * \brief The dimensionless spin vector of the central black hole.
+ */
+struct Spin {
+  using type = std::array<double, 3>;
+  static constexpr Options::String help{
+      "The value of the scalar charge in units of the black hole mass M."};
+  using group = Worldtube;
+};
+
+/*!
  * \brief Options for the scalar self-force. Select `None` for a purely geodesic
  * evolution
  *
@@ -292,6 +302,19 @@ struct Charge : db::SimpleTag {
   using option_tags = tmpl::list<OptionTags::Charge>;
   static constexpr bool pass_metavariables = false;
   static double create_from_options(const double charge) { return charge; };
+};
+
+/*!
+ * \brief The dimensionless spin vector of the central black hole.
+ */
+struct Spin : db::SimpleTag {
+  using type = std::array<double, 3>;
+  using option_tags = tmpl::list<OptionTags::Spin>;
+  static constexpr bool pass_metavariables = false;
+  static std::array<double, 3> create_from_options(
+      const std::array<double, 3> spin) {
+    return spin;
+  };
 };
 
 /*!
