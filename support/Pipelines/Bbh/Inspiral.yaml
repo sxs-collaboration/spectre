@@ -112,7 +112,7 @@ DomainCreator:
     UseEquiangularMap: True
     CubeScale: {{ CubeScale }}
     # These values have been tested to be stable for full equal mass mergers
-    # with constraints ~10^-7 for L=1, P=10
+    # with constraint energy ~10^-11 for L=1, P=8 (Lev 1)
     InitialRefinement:
       ObjectAShell:   [{{ L + 1 }}, {{ L + 1 }}, {{ L + 1 }}]
       ObjectACube:    [{{ L + 1 }}, {{ L + 1 }}, {{ L + 1 }}]
@@ -121,12 +121,12 @@ DomainCreator:
       Envelope:       [{{ L + 1 }}, {{ L + 1 }}, {{ L + 1 }}]
       OuterShell0:    [{{ L     }}, {{ L     }}, {{ L + 2 }}]
     InitialGridPoints:
-      ObjectAShell:   [{{ P + 3 }}, {{ P + 3 }}, {{ P + 3 }}]
-      ObjectACube:    [{{ P + 3 }}, {{ P + 3 }}, {{ P + 1 }}]
-      ObjectBShell:   [{{ P + 3 }}, {{ P + 3 }}, {{ P + 3 }}]
-      ObjectBCube:    [{{ P + 3 }}, {{ P + 3 }}, {{ P + 1 + ExtraRadPoints }}]
-      Envelope:       [{{ P + 3 }}, {{ P + 3 }}, {{ P + 4 }}]
-      OuterShell0:    [{{ P + 3 }}, {{ P + 3 }}, {{ P + 4 }}]
+      ObjectAShell:   [{{ P + 2 }}, {{ P + 2 }}, {{ P + 2 }}]
+      ObjectACube:    [{{ P + 2 }}, {{ P + 2 }}, {{ P     }}]
+      ObjectBShell:   [{{ P + 2 }}, {{ P + 2 }}, {{ P + 2 }}]
+      ObjectBCube:    [{{ P + 2 }}, {{ P + 2 }}, {{ P     + ExtraRadPoints }}]
+      Envelope:       [{{ P + 2 }}, {{ P + 2 }}, {{ P + 3 }}]
+      OuterShell0:    [{{ P + 2 }}, {{ P + 2 }}, {{ P + 3 }}]
 {% if IdFromEvolution %}
     TimeDependentMaps:
       InitialTime: &InitialTime {{ InitialTime }}
