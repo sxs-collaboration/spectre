@@ -201,8 +201,14 @@ void test_impl(const std::string& filename_prefix,
   for (const auto& radius : radii) {
     CAPTURE(radius);
     // Have to create the bondi data for every radius individually
-    Cce::create_bondi_boundary_data(make_not_null(&bondi_boundary_data), phi,
-                                    pi, spacetime_metric, radius, l_max);
+    {
+      auto non_klein_gordon_data =
+          bondi_boundary_data.template reference_subset<
+              Cce::Tags::characteristic_worldtube_boundary_tags<
+                  Cce::Tags::BoundaryValue>>();
+      Cce::create_bondi_boundary_data(make_not_null(&non_klein_gordon_data),
+                                      phi, pi, spacetime_metric, radius, l_max);
+    }
     if constexpr (include_klein_gordon) {
       const auto& csw_psi =
           get<CurvedScalarWave::Tags::Psi>(single_spacetime_variables);
