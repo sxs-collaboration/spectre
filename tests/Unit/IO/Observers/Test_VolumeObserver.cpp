@@ -6,11 +6,14 @@
 #include <algorithm>
 #include <boost/iterator/transform_iterator.hpp>
 #include <boost/range/combine.hpp>
+#include <cmath>
 #include <cstddef>
 #include <functional>
+#include <limits>
 #include <string>
 #include <tuple>
 #include <type_traits>
+#include <unordered_map>
 #include <utility>
 #include <vector>
 
@@ -23,6 +26,7 @@
 #include "Domain/Creators/TimeDependence/RegisterDerivedWithCharm.hpp"
 #include "Domain/Creators/TimeDependence/UniformTranslation.hpp"
 #include "Domain/Domain.hpp"
+#include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
 #include "Domain/FunctionsOfTime/RegisterDerivedWithCharm.hpp"
 #include "Domain/FunctionsOfTime/Tags.hpp"
 #include "Domain/Structure/ElementId.hpp"
@@ -53,6 +57,7 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeString.hpp"
 #include "Utilities/Numeric.hpp"
+#include "Utilities/Serialization/Serialize.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
 // NOLINTNEXTLINE(google-build-using-namespace)
@@ -186,6 +191,9 @@ SPECTRE_TEST_CASE("Unit.IO.Observers.VolumeObserver", "[Unit][Observers]") {
       std::make_unique<
           domain::creators::time_dependence::UniformTranslation<3, 0>>(
           1., std::array<double, 3>{{2., 3., 4.}})};
+  const double initial_expiration_time = 100.0;
+  const std::unordered_map<std::string, double> initial_expiration_times{
+      {"Translation", initial_expiration_time}};
   domain::creators::register_derived_with_charm();
   domain::creators::time_dependence::register_derived_with_charm();
   domain::FunctionsOfTime::register_derived_with_charm();
@@ -193,7 +201,7 @@ SPECTRE_TEST_CASE("Unit.IO.Observers.VolumeObserver", "[Unit][Observers]") {
                       observers::Tags::VolumeFileName, domain::Tags::Domain<3>,
                       domain::Tags::FunctionsOfTimeInitialize>
       cache_data{"", output_file_prefix, domain_creator.create_domain(),
-                 domain_creator.functions_of_time()};
+                 domain_creator.functions_of_time(initial_expiration_times)};
   ActionTesting::MockRuntimeSystem<metavariables> runner{std::move(cache_data)};
   ActionTesting::emplace_group_component<obs_component>(&runner);
   for (size_t i = 0; i < 2; ++i) {
@@ -411,6 +419,41 @@ SPECTRE_TEST_CASE("Unit.IO.Observers.VolumeObserver", "[Unit][Observers]") {
       }
       points_processed += stride;
     }
+
+    const auto observation_fots =
+        volume_file.get_functions_of_time(temporal_id);
+    CHECK(observation_fots.has_value());
+    auto observation_functions_of_time =
+        deserialize<domain::FunctionsOfTimeMap>(
+            observation_fots.value().data());
+    auto original_functions_of_time =
+        domain_creator.functions_of_time(initial_expiration_times);
+    CHECK(observation_functions_of_time.size() ==
+          original_functions_of_time.size());
+    const double expected_observation_time = observation_id.value();
+    const double expected_expiration_time =
+        expected_observation_time +
+        100.0 * std::numeric_limits<double>::epsilon() *
+            std::max(std::abs(expected_observation_time), 1.0);
+    for (const auto& [name, fot_ptr] : observation_functions_of_time) {
+      CHECK(original_functions_of_time.count(name) == 1);
+      const auto observation_bounds = fot_ptr->time_bounds();
+      const auto original_bounds =
+          original_functions_of_time.at(name)->time_bounds();
+      CHECK(observation_bounds[0] == approx(expected_observation_time));
+      CHECK(observation_bounds[0] >= original_bounds[0]);
+      if (std::isfinite(expected_observation_time)) {
+        CHECK(observation_bounds[1] == approx(expected_expiration_time));
+        CHECK(observation_bounds[1] <= original_bounds[1]);
+      } else {
+        CHECK(observation_bounds[1] == expected_observation_time);
+      }
+    }
+    const auto global_fot_buffer = volume_file.get_global_functions_of_time();
+    CHECK(global_fot_buffer.has_value());
+    CHECK(
+        global_fot_buffer.value() ==
+        serialize(domain_creator.functions_of_time(initial_expiration_times)));
 
     if (file_system::check_if_file_exists(h5_file_name)) {
       file_system::rm(h5_file_name, true);

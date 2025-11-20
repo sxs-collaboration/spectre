@@ -1354,7 +1354,7 @@ void test_versioning() {
                                               "/Domain/SerializedDomain.h5"};
   const auto& volfile = h5file.get<h5::VolumeData>("/element_data");
   const size_t obs_id = volfile.list_observation_ids().front();
-  const auto serialized_domain = *volfile.get_domain(obs_id);
+  const auto serialized_domain = *volfile.get_domain();
   const auto domain = deserialize<Domain<3>>(serialized_domain.data());
   const Domain<3> expected_domain = create_serialized_domain();
   CHECK(domain == expected_domain);

@@ -362,7 +362,7 @@ def use_excision_as_horizon(
     # Deserialize domain and get the excision in the inertial frame
     for volfile in open_volfiles(h5_files, subfile_name, obs_id):
         dim = volfile.get_dimension()
-        domain = deserialize_domain[dim](volfile.get_domain(obs_id))
+        domain = deserialize_domain[dim](volfile.get_domain())
         if domain.is_time_dependent():
             functions_of_time = deserialize_functions_of_time(
                 volfile.get_functions_of_time(obs_id)

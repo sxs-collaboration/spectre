@@ -374,10 +374,7 @@ def plot_power_monitors_command(
     open_h5_file = spectre_h5.H5File(h5_files[0], "r")
     volfile = open_h5_file.get_vol(subfile_name)
     dim = volfile.get_dimension()
-    any_obs_id = (
-        obs_id if obs_id is not None else volfile.list_observation_ids()[0]
-    )
-    domain = deserialize_domain[dim](volfile.get_domain(any_obs_id))
+    domain = deserialize_domain[dim](volfile.get_domain())
     all_block_groups = list(domain.block_groups.keys())
     all_block_names = [block.name for block in domain.blocks]
     if list_blocks:

@@ -24,7 +24,8 @@ void bind_h5vol(py::module& m) {
       .def("write_volume_data", &h5::VolumeData::write_volume_data,
            py::arg("observation_id"), py::arg("observation_value"),
            py::arg("elements"), py::arg("serialized_domain") = std::nullopt,
-           py::arg("serialized_functions_of_time") = std::nullopt)
+           py::arg("serialized_observation_functions_of_time") = std::nullopt,
+           py::arg("serialized_global_functions_of_time") = std::nullopt)
       .def("write_tensor_component",
            py::overload_cast<size_t, const std::string&, const DataVector&,
                              bool>(&h5::VolumeData::write_tensor_component),
@@ -48,9 +49,11 @@ void bind_h5vol(py::module& m) {
       .def("get_quadratures", &h5::VolumeData::get_quadratures,
            py::arg("observation_id"))
       .def("get_bases", &h5::VolumeData::get_bases, py::arg("observation_id"))
-      .def("get_domain", &h5::VolumeData::get_domain, py::arg("observation_id"))
+      .def("get_domain", &h5::VolumeData::get_domain)
       .def("get_functions_of_time", &h5::VolumeData::get_functions_of_time,
            py::arg("observation_id"))
+      .def("get_global_functions_of_time",
+           &h5::VolumeData::get_global_functions_of_time)
       .def("get_data_by_element", &h5::VolumeData::get_data_by_element,
            py::arg("start_observation_value"), py::arg("end_observation_value"),
            py::arg("components_to_retrieve") = std::nullopt)

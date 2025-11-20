@@ -208,7 +208,7 @@ def iter_elements(
             ]
             # Deserialize domain and functions of time
             if not domain:
-                serialized_domain = volfile.get_domain(obs_id)
+                serialized_domain = volfile.get_domain()
                 if serialized_domain:
                     domain = deserialize_domain[dim](serialized_domain)
             time = volfile.get_observation_value(obs_id)

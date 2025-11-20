@@ -49,8 +49,8 @@ struct FromVolumeFile {
                  bool replay = false);
 
   /*!
-   * \brief Searches the last observation in the volume subfile and returns
-   * clones of all functions of time in \p function_of_time_names.
+   * \returns clones of all global functions of time
+   * in \p function_of_time_names
    *
    * \details If a value for \p time is specified, will ensure that \p time is
    * within the `domain::FunctionsOfTime::FunctionOfTime::time_bounds()` of each

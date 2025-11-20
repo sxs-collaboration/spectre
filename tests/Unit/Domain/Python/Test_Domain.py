@@ -40,7 +40,7 @@ class TestDomain(unittest.TestCase):
             volfile = open_h5_file.get_vol("/element_data")
             obs_id = volfile.list_observation_ids()[0]
             time = volfile.get_observation_value(obs_id)
-            serialized_domain = volfile.get_domain(obs_id)
+            serialized_domain = volfile.get_domain()
             serialized_fot = volfile.get_functions_of_time(obs_id)
 
         domain = deserialize_domain[3](serialized_domain)

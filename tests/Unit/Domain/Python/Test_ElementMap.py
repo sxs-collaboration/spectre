@@ -70,7 +70,7 @@ class TestElementMap(unittest.TestCase):
         with spectre_h5.H5File(volfile_name, "r") as open_h5_file:
             volfile = open_h5_file.get_vol("/element_data")
             obs_id = volfile.list_observation_ids()[0]
-            domain = deserialize_domain[3](volfile.get_domain(obs_id))
+            domain = deserialize_domain[3](volfile.get_domain())
             functions_of_time = deserialize_functions_of_time(
                 volfile.get_functions_of_time(obs_id)
             )

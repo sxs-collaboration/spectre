@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
+#include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
 #include "IO/Exporter/PointwiseInterpolator.hpp"
 #include "Utilities/Gsl.hpp"
 
@@ -125,6 +126,7 @@ struct SpacetimeInterpolator {
   constexpr static size_t time_interpolation_order_ = 3;  // must be odd
   constexpr static size_t num_ghost_slices_ =
       (time_interpolation_order_ + 1) / 2 - 1;
+  domain::FunctionsOfTimeMap functions_of_time_;
   // Metadata collected from data files
   std::vector<size_t> all_observation_ids_;
   std::vector<double> all_observation_values_;

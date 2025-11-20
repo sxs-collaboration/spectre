@@ -413,8 +413,7 @@ auto parse_volume_files(const std::variant<std::vector<std::string>,
       std::visit(SelectObservation{first_volfile}, observation);
   const double time = first_volfile.get_observation_value(obs_id);
   // Get domain, functions of time
-  auto domain =
-      deserialize<Domain<Dim>>(first_volfile.get_domain(obs_id)->data());
+  auto domain = deserialize<Domain<Dim>>(first_volfile.get_domain()->data());
   auto functions_of_time = [&first_volfile, &obs_id]() {
     const auto serialized_fot = first_volfile.get_functions_of_time(obs_id);
     if (not serialized_fot.has_value()) {

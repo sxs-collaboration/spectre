@@ -44,7 +44,7 @@ class TestBlockAndElementLogicalCoordinates(unittest.TestCase):
         with spectre_h5.H5File(volfile_name, "r") as open_h5_file:
             volfile = open_h5_file.get_vol("/element_data")
             obs_id = volfile.list_observation_ids()[0]
-            serialized_domain = volfile.get_domain(obs_id)
+            serialized_domain = volfile.get_domain()
             serialized_fot = volfile.get_functions_of_time(obs_id)
 
         # This domain is [0, 2 pi]^3
