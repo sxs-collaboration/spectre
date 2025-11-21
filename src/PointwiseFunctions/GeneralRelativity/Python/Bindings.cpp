@@ -14,6 +14,7 @@
 #include "PointwiseFunctions/GeneralRelativity/InverseSpacetimeMetric.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Lapse.hpp"
 #include "PointwiseFunctions/GeneralRelativity/ProjectionOperators.hpp"
+#include "PointwiseFunctions/GeneralRelativity/Psi4Imag.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Psi4Real.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Ricci.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Shift.hpp"
@@ -295,6 +296,15 @@ PYBIND11_MODULE(_Pybindings, m) {  // NOLINT
             const tnsr::ijj<DataVector, 3>&, const tnsr::ii<DataVector, 3>&,
             const tnsr::II<DataVector, 3>&, const tnsr::I<DataVector, 3>&)>(
             &::gr::psi_4_real),
+        py::arg("spatial_ricci"), py::arg("extrinsic_curvature"),
+        py::arg("cov_deriv_extrinsic_curvature"), py::arg("spatial_metric"),
+        py::arg("inverse_spatial_metric"), py::arg("inertial_coords"));
+  m.def("psi4imag",
+        static_cast<Scalar<DataVector> (*)(
+            const tnsr::ii<DataVector, 3>&, const tnsr::ii<DataVector, 3>&,
+            const tnsr::ijj<DataVector, 3>&, const tnsr::ii<DataVector, 3>&,
+            const tnsr::II<DataVector, 3>&, const tnsr::I<DataVector, 3>&)>(
+            &::gr::psi_4_imag),
         py::arg("spatial_ricci"), py::arg("extrinsic_curvature"),
         py::arg("cov_deriv_extrinsic_curvature"), py::arg("spatial_metric"),
         py::arg("inverse_spatial_metric"), py::arg("inertial_coords"));

@@ -142,6 +142,15 @@ class TestBindings(unittest.TestCase):
             inertial_coords,
         )
         npt.assert_allclose(psi_4_real, 0)
+        psi_4_imag = psi4imag(
+            spatial_ricci,
+            extrinsic_curvature,
+            cov_deriv_extrinsic_curvature,
+            flat_metric,
+            inverse_metric,
+            inertial_coords,
+        )
+        npt.assert_allclose(psi_4_imag, 0)
 
     def test_ricci(self):
         christoffel_second_kind = tnsr.Abb[DataVector, 3](

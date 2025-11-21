@@ -24,6 +24,7 @@ spectre_target_sources(
   MomentumConstraint.cpp
   ProjectionOperators.cpp
   Psi4.cpp
+  Psi4Imag.cpp
   Psi4Real.cpp
   QuadraticCurvatureScalars.cpp
   Ricci.cpp
@@ -64,6 +65,7 @@ spectre_target_headers(
   ProjectionOperators.hpp
   Ricci.hpp
   Psi4.hpp
+  Psi4Imag.hpp
   Psi4Real.hpp
   QuadraticCurvatureScalars.hpp
   Shift.hpp
