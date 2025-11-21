@@ -16,6 +16,7 @@ spectre_target_sources(
   DirectionalId.cpp
   Element.cpp
   ElementId.cpp
+  ElementSearchTree.cpp
   FaceType.cpp
   HasBoundary.cpp
   Hypercube.cpp

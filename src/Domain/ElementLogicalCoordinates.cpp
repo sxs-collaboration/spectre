@@ -60,9 +60,9 @@ element_logical_coordinates(
     return std::nullopt;
   }
   const auto& block_search_tree = block_search_tree_it->second;
-  const auto found_element_id = block_search_tree.qbegin(
-      boost::geometry::index::covers(block_logical_coords.data));
-  if (found_element_id == block_search_tree.qend()) {
+  const auto found_element_id =
+      block_search_tree.begin_covers(block_logical_coords.data);
+  if (found_element_id == block_search_tree.end_covers()) {
     return std::nullopt;
   }
   const auto& element_id = *found_element_id;
