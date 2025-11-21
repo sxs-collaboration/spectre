@@ -149,17 +149,8 @@ void test_impl(const std::string& filename_prefix,
   // Options for Sphere
   const ylm::AngularOrdering angular_ordering = ylm::AngularOrdering::Cce;
   const std::array<double, 3> center = {{0.05, 0.06, 0.07}};
-  intrp::OptionHolders::Sphere sphere_opts(l_max, center, radii,
-                                           angular_ordering);
 
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<metavars>;
-  MockRuntimeSystem runner{{std::move(sphere_opts), filename_prefix}};
-
-  ActionTesting::emplace_nodegroup_component_and_initialize<writer>(
-      make_not_null(&runner), {});
-
-  Parallel::GlobalCache<metavars>& cache =
-      ActionTesting::cache<writer>(runner, 0);
 
   // Only need variables in the box for this test
   using db_tags = tmpl::list<::Tags::Variables<spacetime_tags>>;
@@ -170,16 +161,31 @@ void test_impl(const std::string& filename_prefix,
       ([&box, &radii, &center, &filename_prefix]() {
         const ylm::AngularOrdering local_angular_ordering =
             ylm::AngularOrdering::Strahlkorper;
-        intrp::OptionHolders::Sphere local_sphere_opts(l_max, center, radii,
-                                                       local_angular_ordering);
-        Parallel::GlobalCache<metavars> local_cache{
-            {std::move(local_sphere_opts), filename_prefix}};
+        intrp::OptionHolders::Sphere sphere_opts(l_max, center, radii,
+                                                 local_angular_ordering);
+        MockRuntimeSystem runner{{std::move(sphere_opts), filename_prefix}};
 
-        callback::apply(box, local_cache, 0.1);
+        ActionTesting::emplace_nodegroup_component_and_initialize<writer>(
+            make_not_null(&runner), {});
+
+        Parallel::GlobalCache<metavars>& cache =
+            ActionTesting::cache<writer>(runner, 0);
+
+        callback::apply(box, cache, 0.1);
       })(),
       Catch::Matchers::ContainsSubstring(
           "To use the DumpBondiSachsOnWorldtube post interpolation callback, "
           "the angular ordering of the Spheres must be Cce"));
+
+  intrp::OptionHolders::Sphere sphere_opts(l_max, center, radii,
+                                           angular_ordering);
+  MockRuntimeSystem runner{{std::move(sphere_opts), filename_prefix}};
+
+  ActionTesting::emplace_nodegroup_component_and_initialize<writer>(
+      make_not_null(&runner), {});
+
+  Parallel::GlobalCache<metavars>& cache =
+      ActionTesting::cache<writer>(runner, 0);
 
   const std::vector<double> times{0.9, 1.3};
 
@@ -201,8 +207,14 @@ void test_impl(const std::string& filename_prefix,
   for (const auto& radius : radii) {
     CAPTURE(radius);
     // Have to create the bondi data for every radius individually
-    Cce::create_bondi_boundary_data(make_not_null(&bondi_boundary_data), phi,
-                                    pi, spacetime_metric, radius, l_max);
+    {
+      auto non_klein_gordon_data =
+          bondi_boundary_data.template reference_subset<
+              Cce::Tags::characteristic_worldtube_boundary_tags<
+                  Cce::Tags::BoundaryValue>>();
+      Cce::create_bondi_boundary_data(make_not_null(&non_klein_gordon_data),
+                                      phi, pi, spacetime_metric, radius, l_max);
+    }
     if constexpr (include_klein_gordon) {
       const auto& csw_psi =
           get<CurvedScalarWave::Tags::Psi>(single_spacetime_variables);

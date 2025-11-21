@@ -104,7 +104,6 @@ using spin_weighted_boundary_tags = tmpl::flatten<tmpl::list<
                Spectral::Swsh::Tags::Derivative<Tags::CauchyGaugeOmega,
                                                 Spectral::Swsh::Tags::Eth>,
                Tags::BondiUAtScri>,
-    Tags::characteristic_worldtube_boundary_tags<Tags::BoundaryValue>,
     Tags::characteristic_worldtube_boundary_tags<
         Tags::EvolutionGaugeBoundaryValue>>>;
 using coordinate_variables_tag = ::Tags::Variables<real_boundary_tags>;
@@ -131,14 +130,20 @@ auto create_cce_volume_box(const gsl::not_null<Generator*> generator,
 
   auto box = db::create<db::AddSimpleTags<
       VariationAmplitude, InertialVariationAmplitude, coordinate_variables_tag,
-      spin_weighted_variables_tag, volume_spin_weighted_variables_tag,
-      Tags::LMax, matching_variables_tag, Tags::NumberOfRadialPoints,
+      spin_weighted_variables_tag,
+      ::Tags::Variables<
+          Tags::characteristic_worldtube_boundary_tags<Tags::BoundaryValue>>,
+      volume_spin_weighted_variables_tag, Tags::LMax, matching_variables_tag,
+      Tags::NumberOfRadialPoints,
       Spectral::Swsh::Tags::SwshInterpolator<Tags::CauchyAngularCoords>,
       Spectral::Swsh::Tags::SwshInterpolator<
           Tags::PartiallyFlatAngularCoords>>>(
       0.0, 0.0,
       typename coordinate_variables_tag::type{number_of_angular_grid_points},
       typename spin_weighted_variables_tag::type{number_of_angular_grid_points},
+      Variables<
+          Tags::characteristic_worldtube_boundary_tags<Tags::BoundaryValue>>{
+          number_of_angular_grid_points},
       typename volume_spin_weighted_variables_tag::type{
           number_of_angular_grid_points * number_of_radial_grid_points},
       l_max,
@@ -193,12 +198,15 @@ auto create_cce_volume_box(const gsl::not_null<Generator*> generator,
       make_not_null(&dr_lapse_coefficients), solution, extraction_radius,
       amplitude, frequency, target_time, l_max, false);
 
-  db::mutate<spin_weighted_variables_tag>(
+  db::mutate<::Tags::Variables<
+      Tags::characteristic_worldtube_boundary_tags<Tags::BoundaryValue>>>(
       [&l_max, &spatial_metric_coefficients, &dt_spatial_metric_coefficients,
        &dr_spatial_metric_coefficients, &shift_coefficients,
        &dt_shift_coefficients, &dr_shift_coefficients, &lapse_coefficients,
        &dt_lapse_coefficients, &dr_lapse_coefficients, &extraction_radius](
-          const gsl::not_null<Variables<spin_weighted_boundary_tags>*>
+          const gsl::not_null<
+              Variables<Tags::characteristic_worldtube_boundary_tags<
+                  Tags::BoundaryValue>>*>
               spin_weighted_boundary_variables) {
         create_bondi_boundary_data(
             spin_weighted_boundary_variables, spatial_metric_coefficients,
