@@ -2,10 +2,6 @@
 @file
 @copyright Edouard Alligand and Joel Falcou 2015-2017
 (See accompanying file LICENSE.md or copy at http://boost.org/LICENSE_1_0.txt)
-
-Edits by SXS:
-- count_if, filter,  and remove_if have an explicit empty base-case for nvcc
-  support.
 */
 #ifndef BRIGAND_HPP_INCLUDED
 #define BRIGAND_HPP_INCLUDED
@@ -701,27 +697,38 @@ namespace lazy
     {
         using type = ::brigand::size_t<0>;
     };
-    template <template <typename...> class S, typename T, typename... Ts,
-              typename Pred>
-    struct count_if<S<T, Ts...>, Pred> {
-      static constexpr std::array<bool, 1 + sizeof...(Ts)> s_v{
-          {::brigand::apply<Pred, T>::value,
-           ::brigand::apply<Pred, Ts>::value...}};
-      using type = brigand::size_t<::brigand::detail::count_bools(s_v)>;
+    template <template <typename...> class S, typename... Ts, typename Pred>
+    struct count_if<S<Ts...>, Pred>
+    {
+#if __cplusplus >= 201402L
+        static constexpr std::array<bool, sizeof...(Ts)> s_v{{::brigand::apply<Pred, Ts>::value...}};
+        using type = brigand::size_t<::brigand::detail::count_bools(s_v)>;
+#else
+        static constexpr bool s_v[] = {::brigand::apply<Pred, Ts>::value...};
+        using type = brigand::size_t<::brigand::detail::count_bools(s_v, s_v + sizeof...(Ts), 0u)>;
+#endif
     };
-    template <template <typename...> class S, typename T, typename... Ts,
-              template <typename...> class F>
-    struct count_if<S<T, Ts...>, bind<F, _1>> {
-      static constexpr std::array<bool, sizeof...(Ts) + 1> s_v{
-          {F<T>::value, F<Ts>::value...}};
-      using type = brigand::size_t<::brigand::detail::count_bools(s_v)>;
+    template <template <typename...> class S, typename... Ts, template <typename...> class F>
+    struct count_if<S<Ts...>, bind<F, _1>>
+    {
+#if __cplusplus >= 201402L
+        static constexpr std::array<bool, sizeof...(Ts)> s_v{{F<Ts>::value...}};
+        using type = brigand::size_t<::brigand::detail::count_bools(s_v)>;
+#else
+        static constexpr bool s_v[] = {F<Ts>::value...};
+        using type = brigand::size_t<::brigand::detail::count_bools(s_v, s_v + sizeof...(Ts), 0u)>;
+#endif
     };
-    template <template <typename...> class S, typename T, typename... Ts,
-              template <typename...> class F>
-    struct count_if<S<T, Ts...>, F<_1>> {
-      static constexpr std::array<bool, sizeof...(Ts) + 1> s_v{
-          {F<T>::type::value, F<Ts>::type::value...}};
-      using type = brigand::size_t<::brigand::detail::count_bools(s_v)>;
+    template <template <typename...> class S, typename... Ts, template <typename...> class F>
+    struct count_if<S<Ts...>, F<_1>>
+    {
+#if __cplusplus >= 201402L
+        static constexpr std::array<bool, sizeof...(Ts)> s_v{{F<Ts>::type::value...}};
+        using type = brigand::size_t<::brigand::detail::count_bools(s_v)>;
+#else
+        static constexpr bool s_v[] = {F<Ts>::type::value...};
+        using type = brigand::size_t<::brigand::detail::count_bools(s_v, s_v + sizeof...(Ts), 0u)>;
+#endif
     };
 #else
 #if defined(BRIGAND_COMP_MSVC_2015)
@@ -1434,12 +1441,11 @@ template <class Sequence, class State, class Functor>
 using reverse_fold = typename ::brigand::lazy::reverse_fold<Sequence, State, Functor>::type;
 }
 #include <initializer_list>
-#include <functional>
 namespace brigand
 {
-  template<class F, class...Ts> F for_each_args(F f, Ts&&...a)
+  template<class F, class...Ts> constexpr F for_each_args(F f, Ts&&...a)
   {
-    (void)std::initializer_list<int>{((void)std::ref(f)(static_cast<Ts&&>(a)),0)...};
+    (void)std::initializer_list<int>{((void)f(static_cast<Ts&&>(a)),0)...};
     return f;
   }
 }
@@ -1449,12 +1455,12 @@ namespace brigand
   namespace detail
   {
     template<template<class...> class List, typename... Elements, typename Functor>
-    Functor for_each_impl( type_<List<Elements...>>&&, Functor f )
+    constexpr Functor for_each_impl( type_<List<Elements...>>&&, Functor f )
     {
       return for_each_args( std::move(f), type_<Elements>()... );
     }
   }
-  template<typename List, typename Functor> Functor for_each( Functor f )
+  template<typename List, typename Functor> constexpr Functor for_each( Functor f )
   {
     return detail::for_each_impl( type_<List>{}, std::move(f) );
   }
@@ -1652,36 +1658,25 @@ namespace lazy
 {
     template <typename L, typename Pred>
     struct remove_if;
-    template <template <class...> class L, typename Pred>
-    struct remove_if<L<>, Pred> {
-      using type = L<>;
+    template <template <class...> class L, typename... Ts, typename Pred>
+    struct remove_if<L<Ts...>, Pred>
+        : ::brigand::detail::append_impl<
+              L<>, typename std::conditional< ::brigand::apply<Pred, Ts>::value, list<>,
+                                             list<Ts>>::type...>
+    {
     };
-    template <template <class...> class L, typename T, typename... Ts,
-              typename Pred>
-    struct remove_if<L<T, Ts...>, Pred>
+    template <template <class...> class L, typename... Ts, template <typename...> class F>
+    struct remove_if<L<Ts...>, bind<F, _1>>
         : ::brigand::detail::append_impl<
-              L<>,
-              typename std::conditional<::brigand::apply<Pred, T>::value,
-                                        list<>, list<T>>::type,
-              typename std::conditional<::brigand::apply<Pred, Ts>::value,
-                                        list<>, list<Ts>>::type...> {};
-    template <template <class...> class L, typename T, typename... Ts,
-              template <typename...> class F>
-    struct remove_if<L<T, Ts...>, bind<F, _1>>
+              L<>, typename std::conditional<F<Ts>::value, list<>, list<Ts>>::type...>
+    {
+    };
+    template <template <class...> class L, typename... Ts, template <typename...> class F>
+    struct remove_if<L<Ts...>, F<_1>>
         : ::brigand::detail::append_impl<
-              L<>,
-              typename std::conditional<F<T>::value, list<>, list<T>>::type,
-              typename std::conditional<F<Ts>::value, list<>,
-                                        list<Ts>>::type...> {};
-    template <template <class...> class L, typename T, typename... Ts,
-              template <typename...> class F>
-    struct remove_if<L<T, Ts...>, F<_1>>
-        : ::brigand::detail::append_impl<
-              L<>,
-              typename std::conditional<F<T>::type::value, list<>,
-                                        list<T>>::type,
-              typename std::conditional<F<Ts>::type::value, list<>,
-                                        list<Ts>>::type...> {};
+              L<>, typename std::conditional<F<Ts>::type::value, list<>, list<Ts>>::type...>
+    {
+    };
 }
 namespace lazy
 {
@@ -1698,36 +1693,25 @@ namespace lazy
 {
     template <typename L, typename Pred>
     struct filter;
-    template <template <class...> class L, typename Pred>
-    struct filter<L<>, Pred> {
-      using type = L<>;
+    template <template <class...> class L, typename... Ts, typename Pred>
+    struct filter<L<Ts...>, Pred>
+        : ::brigand::detail::append_impl<
+              L<>, typename std::conditional< ::brigand::apply<Pred, Ts>::value, list<Ts>,
+                                             list<>>::type...>
+    {
     };
-    template <template <class...> class L, typename T, typename... Ts,
-              typename Pred>
-    struct filter<L<T, Ts...>, Pred>
+    template <template <class...> class L, typename... Ts, template <typename...> class F>
+    struct filter<L<Ts...>, bind<F, _1>>
         : ::brigand::detail::append_impl<
-              L<>,
-              typename std::conditional<::brigand::apply<Pred, T>::value,
-                                        list<T>, list<>>::type,
-              typename std::conditional<::brigand::apply<Pred, Ts>::value,
-                                        list<Ts>, list<>>::type...> {};
-    template <template <class...> class L, typename T, typename... Ts,
-              template <typename...> class F>
-    struct filter<L<T, Ts...>, bind<F, _1>>
+              L<>, typename std::conditional<F<Ts>::value, list<Ts>, list<>>::type...>
+    {
+    };
+    template <template <class...> class L, typename... Ts, template <typename...> class F>
+    struct filter<L<Ts...>, F<_1>>
         : ::brigand::detail::append_impl<
-              L<>,
-              typename std::conditional<F<T>::value, list<T>, list<>>::type,
-              typename std::conditional<F<Ts>::value, list<Ts>,
-                                        list<>>::type...> {};
-    template <template <class...> class L, typename T, typename... Ts,
-              template <typename...> class F>
-    struct filter<L<T, Ts...>, F<_1>>
-        : ::brigand::detail::append_impl<
-              L<>,
-              typename std::conditional<F<T>::type::value, list<T>,
-                                        list<>>::type,
-              typename std::conditional<F<Ts>::type::value, list<Ts>,
-                                        list<>>::type...> {};
+              L<>, typename std::conditional<F<Ts>::type::value, list<Ts>, list<>>::type...>
+    {
+    };
 }
 #else
 namespace detail
