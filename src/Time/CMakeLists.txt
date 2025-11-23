@@ -38,6 +38,8 @@ spectre_target_headers(
   ChangeStepSize.hpp
   ChangeTimeStepperOrder.hpp
   ChooseLtsStepSize.hpp
+  CleanHistory.hpp
+  CleanHistory.tpp
   EvolutionOrdering.hpp
   History.hpp
   LargestStepperError.hpp

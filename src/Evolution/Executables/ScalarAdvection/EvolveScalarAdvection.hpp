@@ -30,6 +30,7 @@
 #include "Evolution/DgSubcell/Tags/TciStatus.hpp"
 #include "Evolution/DiscontinuousGalerkin/Actions/ApplyBoundaryCorrections.hpp"
 #include "Evolution/DiscontinuousGalerkin/Actions/ComputeTimeDerivative.hpp"
+#include "Evolution/DiscontinuousGalerkin/CleanMortarHistory.hpp"
 #include "Evolution/DiscontinuousGalerkin/DgElementArray.hpp"
 #include "Evolution/DiscontinuousGalerkin/Initialization/Mortars.hpp"
 #include "Evolution/DiscontinuousGalerkin/Initialization/QuadratureTag.hpp"
@@ -89,10 +90,10 @@
 #include "PointwiseFunctions/AnalyticSolutions/ScalarAdvection/Kuzmin.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/ScalarAdvection/Sinusoid.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
-#include "Time/Actions/CleanHistory.hpp"
 #include "Time/Actions/SelfStartActions.hpp"
 #include "Time/AdvanceTime.hpp"
 #include "Time/ChangeSlabSize/Action.hpp"
+#include "Time/CleanHistory.hpp"
 #include "Time/RecordTimeStepperData.hpp"
 #include "Time/StepChoosers/Factory.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"
@@ -256,7 +257,11 @@ struct EvolutionMetavars {
       Actions::MutateApply<RecordTimeStepperData<system>>,
       evolution::Actions::RunEventsAndDenseTriggers<tmpl::list<>>,
       Actions::MutateApply<UpdateU<system, local_time_stepping>>,
-      Actions::CleanHistory<system, local_time_stepping>,
+      Actions::MutateApply<CleanHistory<system>>,
+      tmpl::conditional_t<
+          local_time_stepping,
+          Actions::MutateApply<evolution::dg::CleanMortarHistory<system>>,
+          tmpl::list<>>,
       Limiters::Actions::SendData<EvolutionMetavars>,
       Limiters::Actions::Limit<EvolutionMetavars>>>;
 
@@ -274,7 +279,11 @@ struct EvolutionMetavars {
       Actions::MutateApply<UpdateU<system, local_time_stepping>>,
       evolution::dg::subcell::Actions::TciAndRollback<
           ScalarAdvection::subcell::TciOnDgGrid<Dim>>,
-      Actions::CleanHistory<system, local_time_stepping>,
+      Actions::MutateApply<CleanHistory<system>>,
+      tmpl::conditional_t<
+          local_time_stepping,
+          Actions::MutateApply<evolution::dg::CleanMortarHistory<system>>,
+          tmpl::list<>>,
       Actions::Goto<evolution::dg::subcell::Actions::Labels::EndOfSolvers>,
       Actions::Label<evolution::dg::subcell::Actions::Labels::BeginSubcell>,
       evolution::dg::subcell::Actions::SendDataForReconstruction<
@@ -287,7 +296,11 @@ struct EvolutionMetavars {
           ScalarAdvection::subcell::TimeDerivative<volume_dim>>,
       Actions::MutateApply<RecordTimeStepperData<system>>,
       Actions::MutateApply<UpdateU<system, local_time_stepping>>,
-      Actions::CleanHistory<system, local_time_stepping>,
+      Actions::MutateApply<CleanHistory<system>>,
+      tmpl::conditional_t<
+          local_time_stepping,
+          Actions::MutateApply<evolution::dg::CleanMortarHistory<system>>,
+          tmpl::list<>>,
       evolution::dg::subcell::Actions::TciAndSwitchToDg<
           ScalarAdvection::subcell::TciOnFdGrid<volume_dim>>,
       Actions::Label<evolution::dg::subcell::Actions::Labels::EndOfSolvers>>>;

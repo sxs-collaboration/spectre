@@ -32,9 +32,9 @@
 #include "ParallelAlgorithms/Actions/InitializeItems.hpp"
 #include "ParallelAlgorithms/Actions/MutateApply.hpp"
 #include "ParallelAlgorithms/Actions/TerminatePhase.hpp"
-#include "Time/Actions/CleanHistory.hpp"
 #include "Time/Actions/SelfStartActions.hpp"
 #include "Time/AdvanceTime.hpp"
+#include "Time/CleanHistory.hpp"
 #include "Time/RecordTimeStepperData.hpp"
 #include "Time/SelfStart.hpp"
 #include "Time/UpdateU.hpp"
@@ -94,7 +94,7 @@ struct WorldtubeSingleton {
       ::Actions::MutateApply<UpdateAcceleration>,
       ::Actions::MutateApply<RecordTimeStepperData<worldtube_system>>,
       ::Actions::MutateApply<UpdateU<worldtube_system, local_time_stepping>>,
-      ::Actions::CleanHistory<worldtube_system, false>,
+      ::Actions::MutateApply<CleanHistory<worldtube_system>>,
       Actions::SendToElements<Metavariables>,
       domain::Actions::CheckFunctionsOfTimeAreReady<Dim>>;
   using phase_dependent_action_list = tmpl::list<

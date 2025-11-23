@@ -6,6 +6,7 @@ spectre_target_sources(
   PRIVATE
   Divergence.cpp
   Events.cpp
+  Mortars.cpp
   TimeStepping.cpp
   VolumeTerms.cpp
   )
