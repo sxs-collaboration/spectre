@@ -30,10 +30,11 @@ logger = logging.getLogger(__name__)
 
 def fetch_job_data(
     fields: Sequence[str],
-    user: Optional[str],
+    user: Optional[str] = None,
     allusers: bool = False,
     state: Optional[str] = None,
     starttime: Optional[str] = None,
+    jobid: Optional[str] = None,
 ) -> pd.DataFrame:
     """Query Slurm 'sacct' to get metadata of recent jobs on the machine.
 
@@ -48,6 +49,8 @@ def fetch_job_data(
         See documentation for 'sacct -s' for details.
       starttime: Fetch only jobs after this time.
         See documentation for 'sacct -S' for details.
+      jobid: Fetch only this job ID.
+        See documentation for 'sacct -j' for details.
 
     Returns: Pandas DataFrame with the job data.
     """
@@ -56,7 +59,8 @@ def fetch_job_data(
         + (["-u", user] if user else [])
         + (["-a"] if allusers else [])
         + (["-s", state] if state else [])
-        + (["-S", starttime] if starttime else []),
+        + (["-S", starttime] if starttime else [])
+        + (["-j", jobid] if jobid else []),
         capture_output=True,
         text=True,
     )
@@ -193,6 +197,50 @@ def get_executable_name(
     return None
 
 
+def get_error_message(std_err: Optional[str], work_dir: str) -> Optional[str]:
+    """Determine the error message of a job.
+
+    Arguments:
+      std_err: The standard error output file path, can be relative to work_dir.
+      work_dir: The working directory of the job. If no std_err was given, we
+        look for a file named "spectre.out" in the work dir.
+
+    Returns: Error message, or None.
+    """
+    if std_err:
+        outfile = Path(work_dir) / std_err
+    else:
+        outfile = Path(work_dir) / "spectre.out"
+    if not outfile.exists():
+        logger.debug(f"No error output file found at '{outfile}'.")
+        return None
+    with open(outfile, "r") as open_outfile:
+        # Go through the file line by line and find the first error message
+        error_message = []
+        found_error = False
+        found_walltime = False
+        found_message = False
+        for line in open_outfile:
+            if "# ERROR #" in line:
+                if found_error:
+                    # Stop before the next error message
+                    break
+                else:
+                    found_error = True
+                    continue
+            if found_error and "Wall time:" in line:
+                found_walltime = True
+                continue
+            if found_walltime and line.strip() == "":
+                found_message = True
+                continue
+            if found_message and "Captured variables:" in line:
+                break
+            if found_message:
+                error_message.append(line)
+    return "\n".join(error_message).strip() if found_message else None
+
+
 def _state_order(state):
     order = [
         "RUNNING",
@@ -247,6 +295,8 @@ AVAILABLE_COLUMNS = {
     "NodeList": "NodeList",
     "WorkDir": "WorkDir",
     "Comment": "Comment",
+    "StdOut": "StdOut",
+    "StdErr": "StdErr",
 }
 
 DEFAULT_COLUMNS = [
@@ -259,6 +309,15 @@ DEFAULT_COLUMNS = [
     "Cores",
     "Nodes",
 ]
+
+
+def fetch_job_data_from_run_dir(run_dir: str, fields: Sequence[str]) -> dict:
+    jobid_path = Path(run_dir) / "jobid.txt"
+    if jobid_path.exists():
+        jobid = jobid_path.read_text().strip()
+        return fetch_job_data(fields, jobid=jobid)
+    else:
+        return pd.DataFrame([dict(WorkDir=run_dir)])
 
 
 def input_column_callback(ctx, param, value):
@@ -278,6 +337,7 @@ def input_column_callback(ctx, param, value):
 def fetch_status(
     show_deleted=False,
     show_all_segments=False,
+    extra_run_dirs: Sequence[str] = [],
     **kwargs,
 ):
     """Fetches job data and processes it for display.
@@ -302,7 +362,13 @@ def fetch_status(
     job_data = fetch_job_data(
         columns_to_fetch,
         **kwargs,
-    )
+    ).convert_dtypes()
+
+    # Add extra run directories
+    for run_dir in extra_run_dirs:
+        extra_job_data = fetch_job_data_from_run_dir(run_dir, columns_to_fetch)
+        job_data = pd.concat([job_data, extra_job_data], ignore_index=True)
+    job_data.fillna({"Comment": "", "State": "N/A"}, inplace=True)
 
     # Do nothing if job list is empty
     if len(job_data) == 0:
@@ -358,6 +424,12 @@ def fetch_status(
         for comment, input_file in zip(
             job_data["Comment"], job_data["InputFile"]
         )
+    ]
+
+    # Get the error message corresponding to each job.
+    job_data["ErrorMessage"] = [
+        get_error_message(std_err, work_dir)
+        for std_err, work_dir in zip(job_data["StdErr"], job_data["WorkDir"])
     ]
 
     # Invalidate older jobs that ran in the same work dir because they would

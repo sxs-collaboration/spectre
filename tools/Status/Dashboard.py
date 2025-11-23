@@ -124,7 +124,8 @@ def _render_page(job):
         columns = list(DEFAULT_COLUMNS)
         columns.remove("User")
         columns.remove("JobName")
-        st.table(pd.DataFrame([job[columns]]).set_index("JobID"))
+        if pd.notna(job["JobID"]):
+            st.table(pd.DataFrame([job[columns]]).set_index("JobID"))
 
         # Render status metrics
         executable_status = match_executable_status(job["ExecutableName"])
@@ -144,15 +145,33 @@ def _render_page(job):
                 ),
             )
 
+        if job["ErrorMessage"]:
+            st.error(job["ErrorMessage"])
+
         # Executable-specific dashboard
         executable_status.render_dashboard(job, input_file, metadata)
 
+
+# Add runs at specific paths
+extra_run_dirs = st.session_state.get("extra_run_dirs", [])
+if "extra_run_dirs" not in st.session_state:
+    st.session_state["extra_run_dirs"] = extra_run_dirs
+add_run_dir = st.sidebar.text_input("Add extra run directory:", "")
+with st.sidebar.container():
+    if st.button("Add"):
+        if add_run_dir and add_run_dir not in extra_run_dirs:
+            extra_run_dirs.append(add_run_dir)
+            st.session_state["extra_run_dirs"] = extra_run_dirs
+    if st.button("Clear"):
+        extra_run_dirs.clear()
+        st.session_state["extra_run_dirs"] = extra_run_dirs
 
 # Fetch the job data
 job_data = fetch_status(
     user=None,
     allusers=st.sidebar.toggle("Show all users", False),
     starttime=st.sidebar.text_input("Start time", "now-1day"),
+    extra_run_dirs=extra_run_dirs,
 )
 if len(job_data) > 0:
     job_data.sort_values("JobID", inplace=True, ascending=False)
@@ -167,7 +186,7 @@ if st.sidebar.toggle("Auto-refresh", True):
 
 # Each job gets its own page. Jobs are grouped by user.
 pages = {}
-for username, user_data in job_data.groupby("User"):
+for username, user_data in job_data.groupby("User", dropna=False):
     pages_user = []
     for _, job in user_data.iterrows():
         # Get a somewhat descriptive title for the page. This can be improved.
@@ -178,20 +197,28 @@ for username, user_data in job_data.groupby("User"):
             if job["SegmentsDir"]
             else Path(job["WorkDir"])
         )
+        if pd.isna(job["JobName"]):
+            job["JobName"] = job["ExecutableName"]
         title = (
             job["JobName"]
             if job["JobName"] != job["ExecutableName"]
             else (display_dir.resolve().parent.name + " / " + display_dir.name)
         )
+        if pd.notna(job["JobID"]):
+            title += f" ({job['JobID']})"
         pages_user.append(
             st.Page(
                 partial(_render_page, job=job),
-                title=f"{title} ({job['JobID']})",
+                title=title,
                 icon=STATE_ICONS.get(job["State"]),
-                url_path=f"/{job['JobID']}",
+                url_path=str(
+                    job["JobID"]
+                    if pd.notna(job["JobID"])
+                    else hash(job["WorkDir"])
+                ),
             )
         )
-    pages[username] = pages_user
+    pages[username if pd.notna(username) else ""] = pages_user
 
 # Set up navigation
 if len(pages) > 0:

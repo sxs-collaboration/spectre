@@ -279,12 +279,12 @@ class EvolveGhBinaryBlackHole(EvolutionStatus):
                     )
                 else:
                     tmin, tmax = None, None
-                ecc, _, _ = eccentricity_control_params(
+                ecc_params = eccentricity_control_params(
                     reduction_files,
                     metadata["Next"]["With"]["id_input_file_path"],
                     tmin=tmin,
                     tmax=tmax,
                 )
-                st.metric("Eccentricity", f"{ecc:e}")
+                st.metric("Eccentricity", f"{ecc_params['Eccentricity']:e}")
 
         render_eccentricity()
