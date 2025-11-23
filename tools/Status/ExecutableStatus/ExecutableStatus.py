@@ -230,7 +230,9 @@ class EvolutionStatus(ExecutableStatus):
         raise ValueError
 
     def render_time_steps(self, input_file: dict, reduction_files: List[Path]):
+        import plotly.colors as pc
         import plotly.express as px
+        import plotly.graph_objects as go
         import streamlit as st
 
         if not reduction_files:
@@ -307,21 +309,21 @@ class EvolutionStatus(ExecutableStatus):
         st.plotly_chart(fig)
 
         # Plot simulation speed over calendar time
-        import plotly.graph_objects as go
-
         fig = go.Figure()
-        for reduction_file, time_steps in zip(reduction_files, all_time_steps):
+        for reduction_file, segment_time_steps in zip(
+            reduction_files, all_time_steps
+        ):
             spectre_out = reduction_file.parent / "spectre.out"
             start_time = get_start_time(spectre_out)
             if not start_time:
                 continue
             calendar_time = start_time + pd.to_timedelta(
-                time_steps["Maximum Walltime"], unit="s"
+                segment_time_steps["Maximum Walltime"], unit="s"
             )
             fig.add_trace(
                 go.Scatter(
                     x=calendar_time,
-                    y=time_steps.index,
+                    y=segment_time_steps.index,
                     mode="lines",
                     name=reduction_file.parent.name,
                 )
@@ -332,6 +334,84 @@ class EvolutionStatus(ExecutableStatus):
             showlegend=False,
         )
         st.plotly_chart(fig)
+
+        # Plot AMR stats if available
+        def get_amr_observations(reduction_files):
+            for reductions_file in reduction_files:
+                with h5py.File(reductions_file, "r") as open_h5file:
+                    if "Amr.dat" in open_h5file:
+                        yield to_dataframe(open_h5file["Amr.dat"]).set_index(
+                            "Time"
+                        )
+
+        all_amr_observations = list(get_amr_observations(reduction_files))
+        if len(all_amr_observations) > 0:
+            amr_stats = pd.concat(all_amr_observations)
+            st.subheader("AMR")
+
+            # Plot total num points over time
+            fig = px.line(time_steps["NumberOfPoints"])
+            fig.add_scatter(
+                x=amr_stats.index,
+                y=amr_stats["TotalNumPoints"],
+                mode="lines+markers",
+            )
+            fig.update_layout(
+                xaxis_title="Time [M]",
+                yaxis_title="Number of grid points",
+                showlegend=False,
+            )
+            st.plotly_chart(fig)
+
+            # Plot points per element per dimension over time
+            fig = go.Figure()
+            colors = pc.qualitative.Plotly
+            for dim in range((len(amr_stats.columns) - 3) // 3):
+                avg_p = (
+                    amr_stats[f"NumPointsPerDim_{dim}"]
+                    / amr_stats["NumElements"]
+                )
+                min_p = amr_stats[f"MinPointsPerDim_{dim}"]
+                max_p = amr_stats[f"MaxPointsPerDim_{dim}"]
+                color = colors[dim]
+                fig.add_scatter(
+                    x=amr_stats.index,
+                    y=avg_p,
+                    mode="lines",
+                    name=f"Avg points per element (d={dim})",
+                    line=dict(color=color),
+                )
+                fig.add_scatter(
+                    x=amr_stats.index,
+                    y=min_p,
+                    mode="lines",
+                    opacity=0.5,
+                    name=f"Min points per element (d={dim})",
+                    line=dict(color=color),
+                )
+                fig.add_scatter(
+                    x=amr_stats.index,
+                    y=max_p,
+                    mode="lines",
+                    opacity=0.5,
+                    name=f"Max points per element (d={dim})",
+                    line=dict(color=color),
+                    fill="tonexty",
+                )
+            fig.update_layout(
+                xaxis_title="Time [M]",
+                yaxis_title="Points per element",
+                showlegend=False,
+            )
+            st.plotly_chart(fig)
+        else:
+            fig = px.line(time_steps["NumberOfPoints"])
+            fig.update_layout(
+                xaxis_title="Time [M]",
+                yaxis_title="Number of grid points",
+                showlegend=False,
+            )
+            st.plotly_chart(fig)
 
     def render_dashboard(self, job: dict, input_file: dict, metadata: dict):
         return self.render_time_steps(
