@@ -71,6 +71,9 @@ struct GammaDriverParam;
 struct Kappa1;
 struct Kappa2;
 struct Kappa3;
+struct EvolveLapseAndShift;
+struct ConstrainedEvolution;
+struct KreissOligerEpsilon;
 
 // Temporary expressions for computing above quantities of interest
 template <typename DataType, size_t Dim, typename Frame = Frame::Inertial>
@@ -129,8 +132,6 @@ template <typename DataType, size_t Dim, typename Frame = Frame::Inertial>
 struct LapseTimesConformalMetric;
 template <typename DataType, size_t Dim, typename Frame = Frame::Inertial>
 struct SpatialRicciTensor;
-template <typename DataType, size_t Dim, typename Frame = Frame::Inertial>
-struct UpperSpatialZ4Contraint;
 }  // namespace Tags
 
 /// \brief Input option tags for the CCZ4 evolution system
