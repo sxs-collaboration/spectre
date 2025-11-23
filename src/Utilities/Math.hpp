@@ -155,7 +155,7 @@ DataType smoothstep_deriv(const double lower_edge, const double upper_edge,
       static_cast<DataType>((arg - lower_edge) / (upper_edge - lower_edge)), 0.,
       1.);
   constexpr auto coeff = (2 * N + 1) * binomial(2 * N, N);
-  return coeff * pow<N>(x - square(x));
+  return coeff * pow<N>(x - square(x)) / (upper_edge - lower_edge);
 }
 
 /// \ingroup UtilitiesGroup
