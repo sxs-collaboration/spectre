@@ -23,7 +23,7 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticSolutions.Burgers.Linear",
                   "[PointwiseFunctions][Unit]") {
   const double shock_time = 1.5;
   const Burgers::Solutions::Linear solution(shock_time);
-  const DataVector positions{-1., 0., 1., 2.5};
+  const DataVector positions{-1., 0., 1., 2.5, 3.5};
   check_burgers_solution(solution, positions, {-1., 0., 1., 2.5});
 
   // Check that the initial profile is correct.

@@ -26,7 +26,7 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticSolutions.Burgers.Step",
   const double initial_position = -0.5;
   const Burgers::Solutions::Step solution(left_value, right_value,
                                           initial_position);
-  const DataVector positions{-1., 0., 1., 2.5};
+  const DataVector positions{-1., 0., 1., 2.5, 3.5};
 
   // Check that the initial profile is correct.
   const DataVector expected_initial_profile =
