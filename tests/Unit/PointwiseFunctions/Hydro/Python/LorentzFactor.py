@@ -15,7 +15,7 @@ from spectre.DataStructures import DataVector
 from spectre.DataStructures.Tensor import Scalar, tnsr
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
-from TestFunctions import *
+from LorentzFactor import lorentz_factor
 
 
 class TestLorentzFactor(unittest.TestCase):

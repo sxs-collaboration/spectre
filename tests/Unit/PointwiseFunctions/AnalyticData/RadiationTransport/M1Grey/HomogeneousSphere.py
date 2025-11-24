@@ -4,7 +4,7 @@
 import numpy as np
 
 
-def homogen_sphere_m1_tildeE(
+def m1_tildeE(
     x, radius, emissivity_and_opacity, outer_opacity, boundary_roundess
 ):
     radii = np.linalg.norm(np.asarray(x))
@@ -21,7 +21,7 @@ def homogen_sphere_m1_tildeE(
     return e_tilde
 
 
-def homogen_sphere_m1_tildeS(
+def m1_tildeS(
     x, radius, emissivity_and_opacity, outer_opacity, boundary_roundess
 ):
     return np.asarray(x) * 0.0

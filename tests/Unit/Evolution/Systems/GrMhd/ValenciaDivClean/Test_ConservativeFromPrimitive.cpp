@@ -10,12 +10,12 @@
 
 SPECTRE_TEST_CASE("Unit.GrMhd.ValenciaDivClean.ConservativeFromPrimitive",
                   "[Unit][GrMhd]") {
-  pypp::SetupLocalPythonEnvironment local_python_env{
+  const pypp::SetupLocalPythonEnvironment local_python_env{
       "Evolution/Systems/GrMhd/ValenciaDivClean"};
 
   pypp::check_with_random_values<1>(
       &grmhd::ValenciaDivClean::ConservativeFromPrimitive::apply,
-      "TestFunctions",
+      "ConservativeFromPrimitive",
       {"tilde_d", "tilde_ye", "tilde_tau", "tilde_s", "tilde_b", "tilde_phi"},
       {{{0.0, 1.0}}}, DataVector{5});
 }

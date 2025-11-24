@@ -45,7 +45,7 @@ void test_time_derivative(const gsl::not_null<std::mt19937*> generator,
   const Scalar<DataVector> dudt_expected{number_of_pts, 0.0};
   const tnsr::I<DataVector, Dim, Frame::Inertial> flux_expected{
       pypp::call<tnsr::I<DataVector, Dim, Frame::Inertial>>(
-          "TestFunctions", "compute_flux", u, velocity_field)};
+          "Fluxes", "compute_flux", u, velocity_field)};
 
   // check values
   CHECK_ITERABLE_APPROX(dudt, dudt_expected);
@@ -56,7 +56,7 @@ void test_time_derivative(const gsl::not_null<std::mt19937*> generator,
 
 SPECTRE_TEST_CASE("Unit.Evolution.Systems.ScalarAdvection.TimeDerivative",
                   "[Unit][Evolution]") {
-  pypp::SetupLocalPythonEnvironment local_python_env{
+  const pypp::SetupLocalPythonEnvironment local_python_env{
       "Evolution/Systems/ScalarAdvection"};
   MAKE_GENERATOR(gen);
 

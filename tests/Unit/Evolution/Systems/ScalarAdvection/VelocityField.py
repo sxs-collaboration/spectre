@@ -4,12 +4,6 @@
 import numpy as np
 
 
-# Test function for computing flux
-def compute_flux(u, velocity_field):
-    return u * velocity_field
-
-
-# Test function for computing advection velocity field
 def velocity_field(coords):
     if len(coords) == 1:
         return np.ones(1)

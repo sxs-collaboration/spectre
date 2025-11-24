@@ -32,7 +32,7 @@ template <size_t VolumeDim, typename DataType, typename Fr>
 void test_pow_x_random(const DataType& used_for_size) {
   register_classes_with_charm<MathFunctions::PowX<VolumeDim, Fr>>();
 
-  MathFunctions::Sinusoid<VolumeDim, Fr> sinusoid{};
+  const MathFunctions::Sinusoid<VolumeDim, Fr> sinusoid{};
   for (int power = -5; power < 6; ++power) {
     MathFunctions::PowX<VolumeDim, Fr> pow_x{power};
 
@@ -43,7 +43,7 @@ void test_pow_x_random(const DataType& used_for_size) {
     auto pow_for_move = pow_x;
     test_move_semantics(std::move(pow_for_move), pow_x);
 
-    TestHelpers::MathFunctions::check(std::move(pow_x), "pow_x", used_for_size,
+    TestHelpers::MathFunctions::check(std::move(pow_x), "PowX", used_for_size,
                                       {{{-5.0, 5.0}}},
                                       static_cast<double>(power));
   }

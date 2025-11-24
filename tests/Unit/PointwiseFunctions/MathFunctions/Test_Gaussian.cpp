@@ -55,7 +55,7 @@ void test_gaussian_random(const DataType& used_for_size) {
   auto gauss_for_move = gauss;
   test_move_semantics(std::move(gauss_for_move), gauss);
 
-  TestHelpers::MathFunctions::check(std::move(gauss), "gaussian", used_for_size,
+  TestHelpers::MathFunctions::check(std::move(gauss), "Gaussian", used_for_size,
                                     {{{-1.0, 1.0}}}, amplitude, width, center);
 }
 }  // namespace

@@ -85,14 +85,14 @@ void test_create_from_options() {
 void test_move() {
   grmhd::Solutions::AlfvenWave wave(3.0, 2.1, 1.3, 0.1, 1.5, {{0.0, 0.0, 0.24}},
                                     {{0.01, 0.0, 0.0}});
-  grmhd::Solutions::AlfvenWave wave_copy(
+  const grmhd::Solutions::AlfvenWave wave_copy(
       3.0, 2.1, 1.3, 0.1, 1.5, {{0.0, 0.0, 0.24}}, {{0.01, 0.0, 0.0}});
   test_move_semantics(std::move(wave), wave_copy);  //  NOLINT
 }
 
 void test_serialize() {
-  grmhd::Solutions::AlfvenWave wave(3.0, 2.1, 1.3, 0.1, 1.5, {{0.0, 0.0, 0.24}},
-                                    {{0.01, 0.0, 0.0}});
+  const grmhd::Solutions::AlfvenWave wave(
+      3.0, 2.1, 1.3, 0.1, 1.5, {{0.0, 0.0, 0.24}}, {{0.01, 0.0, 0.0}});
   test_serialization(wave);
 }
 
@@ -116,10 +116,10 @@ void test_variables(const DataType& used_for_size) {
       AlfvenWaveProxy(wavenumber, pressure, rest_mass_density,
                       electron_fraction, adiabatic_index, bkgd_magnetic_field,
                       wave_magnetic_field),
-      "TestFunctions",
-      {"alfven_rest_mass_density", "alfven_electron_fraction",
-       "alfven_spatial_velocity", "alfven_specific_internal_energy",
-       "alfven_pressure", "alfven_lorentz_factor", "alfven_specific_enthalpy"},
+      "AlfvenWave",
+      {"rest_mass_density", "electron_fraction", "spatial_velocity",
+       "specific_internal_energy", "pressure", "lorentz_factor",
+       "specific_enthalpy"},
       {{{-15., 15.}}},
       std::make_tuple(wavenumber, pressure, rest_mass_density,
                       electron_fraction, adiabatic_index, bkgd_magnetic_field,
@@ -131,11 +131,10 @@ void test_variables(const DataType& used_for_size) {
       AlfvenWaveProxy(wavenumber, pressure, rest_mass_density,
                       electron_fraction, adiabatic_index, bkgd_magnetic_field,
                       wave_magnetic_field),
-      "TestFunctions",
-      {"alfven_rest_mass_density", "alfven_electron_fraction",
-       "alfven_spatial_velocity", "alfven_specific_internal_energy",
-       "alfven_pressure", "alfven_lorentz_factor", "alfven_specific_enthalpy",
-       "alfven_magnetic_field", "alfven_divergence_cleaning_field"},
+      "AlfvenWave",
+      {"rest_mass_density", "electron_fraction", "spatial_velocity",
+       "specific_internal_energy", "pressure", "lorentz_factor",
+       "specific_enthalpy", "magnetic_field", "divergence_cleaning_field"},
       {{{-15., 15.}}},
       std::make_tuple(wavenumber, pressure, rest_mass_density,
                       electron_fraction, adiabatic_index, bkgd_magnetic_field,
@@ -144,9 +143,9 @@ void test_variables(const DataType& used_for_size) {
 
   // Test a few of the GR components to make sure that the implementation
   // correctly forwards to the background solution. Not meant to be extensive.
-  grmhd::Solutions::AlfvenWave soln(wavenumber, pressure, rest_mass_density,
-                                    electron_fraction, adiabatic_index,
-                                    bkgd_magnetic_field, wave_magnetic_field);
+  const grmhd::Solutions::AlfvenWave soln(
+      wavenumber, pressure, rest_mass_density, electron_fraction,
+      adiabatic_index, bkgd_magnetic_field, wave_magnetic_field);
   const auto coords = make_with_value<tnsr::I<DataType, 3>>(used_for_size, 1.0);
   CHECK_ITERABLE_APPROX(
       make_with_value<Scalar<DataType>>(used_for_size, 1.0),
@@ -192,10 +191,10 @@ void test_solution() {
   const std::array<double, 3> x{{1.0, 2.3, -0.4}};
   const std::array<double, 3> dx{{1.e-4, 1.e-4, 1.e-4}};
 
-  domain::creators::Brick brick(x - dx, x + dx, {{0, 0, 0}}, {{5, 5, 5}},
-                                {{false, false, false}});
-  Mesh<3> mesh{brick.initial_extents()[0], Spectral::Basis::Legendre,
-               Spectral::Quadrature::GaussLobatto};
+  const domain::creators::Brick brick(x - dx, x + dx, {{0, 0, 0}}, {{5, 5, 5}},
+                                      {{false, false, false}});
+  const Mesh<3> mesh{brick.initial_extents()[0], Spectral::Basis::Legendre,
+                     Spectral::Quadrature::GaussLobatto};
   const auto domain = brick.create_domain();
   verify_grmhd_solution(solution, domain.blocks()[0], mesh, 1.e-10, 1.234,
                         1.e-4);
@@ -204,7 +203,7 @@ void test_solution() {
 
 SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticSolutions.GrMhd.AlfvenWave",
                   "[Unit][PointwiseFunctions]") {
-  pypp::SetupLocalPythonEnvironment local_python_env{
+  const pypp::SetupLocalPythonEnvironment local_python_env{
       "PointwiseFunctions/AnalyticSolutions/GrMhd"};
 
   test_create_from_options();

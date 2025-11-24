@@ -116,7 +116,7 @@ namespace hydro {
 
 SPECTRE_TEST_CASE("Unit.PointwiseFunctions.Hydro.ComovingMagneticField",
                   "[Unit][Hydro]") {
-  pypp::SetupLocalPythonEnvironment local_python_env(
+  const pypp::SetupLocalPythonEnvironment local_python_env(
       "PointwiseFunctions/Hydro/");
   const DataVector used_for_size(5);
   pypp::check_with_random_values<1>(
@@ -125,7 +125,7 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.Hydro.ComovingMagneticField",
           const Scalar<DataVector>&, const Scalar<DataVector>&,
           const tnsr::I<DataVector, 3>&, const Scalar<DataVector>&)>(
           &comoving_magnetic_field<DataVector>),
-      "TestFunctions", "comoving_magnetic_field", {{{0.0, 1.0}}},
+      "ComovingMagneticField", "comoving_magnetic_field", {{{0.0, 1.0}}},
       used_for_size);
   pypp::check_with_random_values<1>(
       static_cast<tnsr::a<DataVector, 3> (*)(
@@ -133,15 +133,15 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.Hydro.ComovingMagneticField",
           const Scalar<DataVector>&, const Scalar<DataVector>&,
           const tnsr::I<DataVector, 3>&, const Scalar<DataVector>&)>(
           &comoving_magnetic_field_one_form<DataVector>),
-      "TestFunctions", "comoving_magnetic_field_one_form", {{{0.0, 1.0}}},
-      used_for_size);
+      "ComovingMagneticField", "comoving_magnetic_field_one_form",
+      {{{0.0, 1.0}}}, used_for_size);
   pypp::check_with_random_values<1>(
       static_cast<Scalar<DataVector> (*)(const Scalar<DataVector>&,
                                          const Scalar<DataVector>&,
                                          const Scalar<DataVector>&)>(
           &comoving_magnetic_field_squared<DataVector>),
-      "TestFunctions", "comoving_magnetic_field_squared", {{{0.0, 1.0}}},
-      used_for_size);
+      "ComovingMagneticField", "comoving_magnetic_field_squared",
+      {{{0.0, 1.0}}}, used_for_size);
 
   consistency_check(used_for_size);
 }

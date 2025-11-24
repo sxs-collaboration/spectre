@@ -15,7 +15,7 @@ from spectre.DataStructures import DataVector
 from spectre.DataStructures.Tensor import Scalar, tnsr
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
-from TestFunctions import *
+from SpecificEnthalpy import relativistic_specific_enthalpy
 
 
 class TestSpecificEnthalpy(unittest.TestCase):

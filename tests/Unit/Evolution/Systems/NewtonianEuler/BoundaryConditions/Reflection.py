@@ -1,7 +1,7 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-import Evolution.Systems.NewtonianEuler.TestFunctions as TestFunctions
+import Evolution.Systems.NewtonianEuler.ConservativeFromPrimitive as ConservativeFromPrimitive
 import Evolution.Systems.NewtonianEuler.TimeDerivative as Flux
 import numpy as np
 
@@ -56,7 +56,7 @@ def momentum_density(
     int_specific_internal_energy,
     int_pressure,
 ):
-    return TestFunctions.momentum_density(
+    return ConservativeFromPrimitive.momentum_density(
         int_mass_density,
         velocity(
             face_mesh_velocity,
@@ -78,7 +78,7 @@ def energy_density(
     int_specific_internal_energy,
     int_pressure,
 ):
-    return TestFunctions.energy_density(
+    return ConservativeFromPrimitive.energy_density(
         int_mass_density,
         velocity(
             face_mesh_velocity,

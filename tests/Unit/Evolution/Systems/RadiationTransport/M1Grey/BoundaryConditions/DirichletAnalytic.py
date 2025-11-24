@@ -3,8 +3,8 @@
 
 import Evolution.Systems.RadiationTransport.M1Grey.Fluxes as fluxes
 import numpy as np
-import PointwiseFunctions.AnalyticData.RadiationTransport.M1Grey.TestFunctions as data
-import PointwiseFunctions.AnalyticSolutions.RadiationTransport.M1Grey.TestFunctions as soln
+import PointwiseFunctions.AnalyticData.RadiationTransport.M1Grey.HomogeneousSphere as data
+import PointwiseFunctions.AnalyticSolutions.RadiationTransport.M1Grey.ConstantM1 as soln
 
 
 def soln_error(
@@ -94,7 +94,7 @@ def soln_tilde_e_nue_const(
     time,
     dim,
 ):
-    return soln.constant_m1_tildeE(
+    return soln.tildeE(
         coords, time, _soln_mean_velocity, _soln_comoving_energy_density
     )
 
@@ -107,7 +107,7 @@ def soln_tilde_e_nue(
     time,
     dim,
 ):
-    return data.homogen_sphere_m1_tildeE(
+    return data.m1_tildeE(
         coords,
         _radius,
         _emissivity_and_opacity,
@@ -162,7 +162,7 @@ def soln_tilde_s_nue_const(
     time,
     dim,
 ):
-    return soln.constant_m1_tildeS(
+    return soln.tildeS(
         coords, time, _soln_mean_velocity, _soln_comoving_energy_density
     )
 
@@ -175,7 +175,7 @@ def soln_tilde_s_nue(
     time,
     dim,
 ):
-    return data.homogen_sphere_m1_tildeS(
+    return data.m1_tildeS(
         coords,
         _radius,
         _emissivity_and_opacity,

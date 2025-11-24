@@ -3,8 +3,6 @@
 
 import numpy as np
 
-# Functions for testing KerrHorizon.cpp
-
 
 def kerr_horizon_radius(
     theta, phi, mass, dimless_spin_magnitude, spin_theta, spin_phi
@@ -34,6 +32,3 @@ def kerr_horizon_radius(
         * (r_plus**2 + a_squared)
         / (r_plus**2 + np.dot(spin_a, n_hat) ** 2)
     )
-
-
-# End functions for testing KerrHorizon.cpp

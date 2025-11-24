@@ -14,7 +14,11 @@ from spectre.DataStructures import DataVector
 from spectre.DataStructures.Tensor import Scalar, tnsr
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
-from TestFunctions import *
+from ComovingMagneticField import (
+    comoving_magnetic_field,
+    comoving_magnetic_field_one_form,
+    comoving_magnetic_field_squared,
+)
 
 
 class TestCoMovingMF(unittest.TestCase):

@@ -110,9 +110,8 @@ void check_impl(
 
     pypp::check_with_random_values<1>(
         &decltype(damping_function_call_operator_helper)::operator(),
-        damping_function_call_operator_helper, "TestFunctions",
-        python_function_prefix + "_call_operator", random_value_bounds,
-        member_args_tuple, used_for_size);
+        damping_function_call_operator_helper, python_function_prefix,
+        "call_operator", random_value_bounds, member_args_tuple, used_for_size);
     INFO("Done testing call operator...");
     INFO("Done\n\n");
   };
@@ -126,12 +125,13 @@ void check_impl(
  * \ingroup TestingFrameworkGroup
  * \brief Test a DampingFunction by comparing to python functions
  *
- * The python functions must be added to TestFunctions.py in
- * tests/Unit/PointwiseFunctions/ConstraintDamping/Python.
- * Each python function for a corresponding DampingFunction should begin
- * with a prefix `python_function_prefix`. The prefix for each class of
- * DampingFunction is arbitrary, but should generally be descriptive (e.g.
- * 'gaussian_plus_constant') of the DampingFunction.
+ * The python functions must be added to modules under
+ * tests/Unit/PointwiseFunctions/ConstraintDamping/Python/ named for the
+ * `python_function_prefix` (for example, `constant`, `gaussian_plus_constant`).
+ * Each python function for a corresponding DampingFunction should be named
+ * `call_operator`. The prefix for each class of DampingFunction is arbitrary,
+ * but should generally be descriptive (e.g. 'gaussian_plus_constant') of the
+ * DampingFunction.
  *
  * The input parameter `function_of_time_name` is the name of the FunctionOfTime
  * that will be included in the FunctionsOfTime passed to the DampingFunction's

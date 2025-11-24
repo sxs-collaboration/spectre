@@ -98,21 +98,20 @@ void test_variables(const DataVector& used_for_size) {
   // Test M1 variables
   pypp::check_with_random_values<1>(
       &ConstantM1Proxy::m1_variables,
-      ConstantM1Proxy(mean_velocity, comoving_energy_density), "TestFunctions",
-      {"constant_m1_tildeE", "constant_m1_tildeS"}, {{{-15., 15.}}},
+      ConstantM1Proxy(mean_velocity, comoving_energy_density), "ConstantM1",
+      {"tildeE", "tildeS"}, {{{-15., 15.}}},
       std::make_tuple(mean_velocity, comoving_energy_density), used_for_size);
 
   // Test hydro variables
   pypp::check_with_random_values<1>(
       &ConstantM1Proxy::hydro_variables,
-      ConstantM1Proxy(mean_velocity, comoving_energy_density), "TestFunctions",
-      {"constant_m1_spatial_velocity", "constant_m1_lorentz_factor"},
-      {{{-15., 15.}}}, std::make_tuple(mean_velocity, comoving_energy_density),
-      used_for_size);
+      ConstantM1Proxy(mean_velocity, comoving_energy_density), "ConstantM1",
+      {"spatial_velocity", "lorentz_factor"}, {{{-15., 15.}}},
+      std::make_tuple(mean_velocity, comoving_energy_density), used_for_size);
 
   // Test a few of the GR components to make sure that the implementation
   // correctly forwards to the background solution. Not meant to be extensive.
-  RadiationTransport::M1Grey::Solutions::ConstantM1 soln(
+  const RadiationTransport::M1Grey::Solutions::ConstantM1 soln(
       mean_velocity, comoving_energy_density);
   const auto coords =
       make_with_value<tnsr::I<DataVector, 3>>(used_for_size, 1.0);
@@ -142,7 +141,7 @@ void test_variables(const DataVector& used_for_size) {
 SPECTRE_TEST_CASE(
     "Unit.PointwiseFunctions.AnalyticSolutions.M1Grey.ConstantM1",
     "[Unit][PointwiseFunctions]") {
-  pypp::SetupLocalPythonEnvironment local_python_env{
+  const pypp::SetupLocalPythonEnvironment local_python_env{
       "PointwiseFunctions/AnalyticSolutions/RadiationTransport/M1Grey/"};
 
   test_create_from_options();

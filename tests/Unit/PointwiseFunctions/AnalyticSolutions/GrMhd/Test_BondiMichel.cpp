@@ -76,12 +76,12 @@ void test_create_from_options() {
 
 void test_move() {
   grmhd::Solutions::BondiMichel flow(2.0, 3000.0, 1.3, 1.5, 0.24);
-  grmhd::Solutions::BondiMichel flow_copy(2.0, 3000.0, 1.3, 1.5, 0.24);
+  const grmhd::Solutions::BondiMichel flow_copy(2.0, 3000.0, 1.3, 1.5, 0.24);
   test_move_semantics(std::move(flow), flow_copy);  //  NOLINT
 }
 
 void test_serialize() {
-  grmhd::Solutions::BondiMichel flow(1.0, 3500.0, 1.3, 1.5, 0.24);
+  const grmhd::Solutions::BondiMichel flow(1.0, 3500.0, 1.3, 1.5, 0.24);
   test_serialization(flow);
 }
 
@@ -97,11 +97,10 @@ void test_variables(const DataType& used_for_size) {
       &BondiMichelProxy::hydro_variables<DataType>,
       BondiMichelProxy(mass, sonic_radius, sonic_density, polytropic_exponent,
                        mag_field_strength),
-      "TestFunctions",
-      {"bondi_michel_rest_mass_density", "bondi_michel_electron_fraction",
-       "bondi_michel_spatial_velocity", "bondi_michel_specific_internal_energy",
-       "bondi_michel_pressure", "bondi_michel_lorentz_factor",
-       "bondi_michel_specific_enthalpy"},
+      "BondiMichel",
+      {"rest_mass_density", "electron_fraction", "spatial_velocity",
+       "specific_internal_energy", "pressure", "lorentz_factor",
+       "specific_enthalpy"},
       {{{1.0, 20.0}}},
       std::make_tuple(mass, sonic_radius, sonic_density, polytropic_exponent,
                       mag_field_strength),
@@ -111,12 +110,10 @@ void test_variables(const DataType& used_for_size) {
       &BondiMichelProxy::grmhd_variables<DataType>,
       BondiMichelProxy(mass, sonic_radius, sonic_density, polytropic_exponent,
                        mag_field_strength),
-      "TestFunctions",
-      {"bondi_michel_rest_mass_density", "bondi_michel_electron_fraction",
-       "bondi_michel_spatial_velocity", "bondi_michel_specific_internal_energy",
-       "bondi_michel_pressure", "bondi_michel_lorentz_factor",
-       "bondi_michel_specific_enthalpy", "bondi_michel_magnetic_field",
-       "bondi_michel_divergence_cleaning_field"},
+      "BondiMichel",
+      {"rest_mass_density", "electron_fraction", "spatial_velocity",
+       "specific_internal_energy", "pressure", "lorentz_factor",
+       "specific_enthalpy", "magnetic_field", "divergence_cleaning_field"},
       {{{1.0, 20.0}}},
       std::make_tuple(mass, sonic_radius, sonic_density, polytropic_exponent,
                       mag_field_strength),
@@ -144,10 +141,10 @@ void test_solution() {
   const std::array<double, 3> x{{4.0, 4.0, 4.0}};
   const std::array<double, 3> dx{{1.e-3, 1.e-3, 1.e-3}};
 
-  domain::creators::Brick brick(x - dx, x + dx, {{0, 0, 0}}, {{4, 4, 4}},
-                                {{false, false, false}});
-  Mesh<3> mesh{brick.initial_extents()[0], Spectral::Basis::Legendre,
-               Spectral::Quadrature::GaussLobatto};
+  const domain::creators::Brick brick(x - dx, x + dx, {{0, 0, 0}}, {{4, 4, 4}},
+                                      {{false, false, false}});
+  const Mesh<3> mesh{brick.initial_extents()[0], Spectral::Basis::Legendre,
+                     Spectral::Quadrature::GaussLobatto};
   const auto domain = brick.create_domain();
   verify_grmhd_solution(solution, domain.blocks()[0], mesh, 1.e-10, 1.234,
                         1.e-4);
@@ -156,7 +153,7 @@ void test_solution() {
 
 SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticSolutions.GrMhd.BondiMichel",
                   "[Unit][PointwiseFunctions]") {
-  pypp::SetupLocalPythonEnvironment local_python_env{
+  const pypp::SetupLocalPythonEnvironment local_python_env{
       "PointwiseFunctions/AnalyticSolutions/GrMhd"};
 
   test_create_from_options();

@@ -1,7 +1,7 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-import Evolution.Systems.GeneralizedHarmonic.TestFunctions as ght
+import Evolution.Systems.GeneralizedHarmonic.Characteristics as ght
 import numpy as np
 
 

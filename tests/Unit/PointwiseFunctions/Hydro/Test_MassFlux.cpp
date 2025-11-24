@@ -27,13 +27,13 @@ void test_mass_flux(const DataType& used_for_size) {
           const Scalar<DataType>&, const Scalar<DataType>&,
           const tnsr::I<DataType, Dim, Frame>&, const Scalar<DataType>&)>(
           &mass_flux<DataType, Dim, Frame>),
-      "TestFunctions", "mass_flux", {{{-10.0, 10.0}}}, used_for_size);
+      "MassFlux", "mass_flux", {{{-10.0, 10.0}}}, used_for_size);
 }
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.PointwiseFunctions.Hydro.MassFlux",
                   "[Unit][Hydro]") {
-  pypp::SetupLocalPythonEnvironment local_python_env(
+  const pypp::SetupLocalPythonEnvironment local_python_env(
       "PointwiseFunctions/Hydro/");
   const DataVector dv(5);
   test_mass_flux<1, Frame::Inertial>(dv);

@@ -3,7 +3,8 @@
 
 import itertools as it
 
-import Evolution.Systems.GeneralizedHarmonic.TestFunctions as ght
+import Evolution.Systems.GeneralizedHarmonic.Characteristics as gh_characteristics
+import Evolution.Systems.GeneralizedHarmonic.Constraints as gh_constraints
 import numpy as np
 import PointwiseFunctions.GeneralRelativity.Christoffel as ch
 import PointwiseFunctions.GeneralRelativity.ComputeGhQuantities as gh
@@ -526,7 +527,7 @@ def compute_intermediate_vars(
         four_index_constraint[0, :, :] = d_phi[0, 1, :, :] - d_phi[1, 0, :, :]
         four_index_constraint[1, :, :] = -four_index_constraint[0, :, :]
     elif len(normal_covector) == 3:
-        four_index_constraint = ght.four_index_constraint(d_phi)
+        four_index_constraint = gh_constraints.four_index_constraint(d_phi)
 
     incoming_null_one_form = nn.interface_incoming_null_normal(
         spacetime_unit_normal_one_form, normal_covector, shift
@@ -560,7 +561,7 @@ def compute_intermediate_vars(
         unit_interface_normal_vector,
     )
 
-    char_projected_rhs_dt_v_psi = ght.char_field_upsi(
+    char_projected_rhs_dt_v_psi = gh_characteristics.char_field_upsi(
         gamma2,
         inverse_spatial_metric,
         dt_spacetime_metric,
@@ -568,7 +569,7 @@ def compute_intermediate_vars(
         dt_phi,
         normal_covector,
     )
-    char_projected_rhs_dt_v_zero = ght.char_field_uzero(
+    char_projected_rhs_dt_v_zero = gh_characteristics.char_field_uzero(
         gamma2,
         inverse_spatial_metric,
         dt_spacetime_metric,
@@ -576,7 +577,7 @@ def compute_intermediate_vars(
         dt_phi,
         normal_covector,
     )
-    char_projected_rhs_dt_v_plus = ght.char_field_uplus(
+    char_projected_rhs_dt_v_plus = gh_characteristics.char_field_uplus(
         gamma2,
         inverse_spatial_metric,
         dt_spacetime_metric,
@@ -584,7 +585,7 @@ def compute_intermediate_vars(
         dt_phi,
         normal_covector,
     )
-    char_projected_rhs_dt_v_minus = ght.char_field_uminus(
+    char_projected_rhs_dt_v_minus = gh_characteristics.char_field_uminus(
         gamma2,
         inverse_spatial_metric,
         dt_spacetime_metric,
@@ -593,7 +594,7 @@ def compute_intermediate_vars(
         normal_covector,
     )
 
-    two_index_constraint_ = ght.two_index_constraint(
+    two_index_constraint_ = gh_constraints.two_index_constraint(
         spacetime_deriv_gauge_source,
         spacetime_unit_normal_one_form,
         spacetime_unit_normal_vector,
@@ -606,7 +607,7 @@ def compute_intermediate_vars(
         gamma2,
         three_index_constraint,
     )
-    f_constraint_ = ght.f_constraint(
+    f_constraint_ = gh_constraints.f_constraint(
         gauge_source,
         spacetime_deriv_gauge_source,
         spacetime_unit_normal_one_form,
@@ -629,25 +630,33 @@ def compute_intermediate_vars(
 
     if face_mesh_velocity is not None:
         char_speeds = [
-            ght.char_speed_upsi_moving_mesh(
+            gh_characteristics.char_speed_upsi_moving_mesh(
                 gamma1, lapse, shift, normal_covector, face_mesh_velocity
             ),
-            ght.char_speed_uzero_moving_mesh(
+            gh_characteristics.char_speed_uzero_moving_mesh(
                 gamma1, lapse, shift, normal_covector, face_mesh_velocity
             ),
-            ght.char_speed_uplus_moving_mesh(
+            gh_characteristics.char_speed_uplus_moving_mesh(
                 gamma1, lapse, shift, normal_covector, face_mesh_velocity
             ),
-            ght.char_speed_uminus_moving_mesh(
+            gh_characteristics.char_speed_uminus_moving_mesh(
                 gamma1, lapse, shift, normal_covector, face_mesh_velocity
             ),
         ]
     else:
         char_speeds = [
-            ght.char_speed_upsi(gamma1, lapse, shift, normal_covector),
-            ght.char_speed_uzero(gamma1, lapse, shift, normal_covector),
-            ght.char_speed_uplus(gamma1, lapse, shift, normal_covector),
-            ght.char_speed_uminus(gamma1, lapse, shift, normal_covector),
+            gh_characteristics.char_speed_upsi(
+                gamma1, lapse, shift, normal_covector
+            ),
+            gh_characteristics.char_speed_uzero(
+                gamma1, lapse, shift, normal_covector
+            ),
+            gh_characteristics.char_speed_uplus(
+                gamma1, lapse, shift, normal_covector
+            ),
+            gh_characteristics.char_speed_uminus(
+                gamma1, lapse, shift, normal_covector
+            ),
         ]
 
     return (
@@ -1174,7 +1183,7 @@ def dt_pi_ConstraintPreservingGauge(
             d_phi,
         )
     )
-    return ght.evol_field_pi(
+    return gh_characteristics.evol_field_pi(
         gamma2, dt_v_psi, dt_v_zero, dt_v_plus, dt_v_minus, normal_covector
     )
 
@@ -1288,7 +1297,7 @@ def dt_pi_ConstraintPreservingGaugePhysical(
             d_phi,
         )
     )
-    return ght.evol_field_pi(
+    return gh_characteristics.evol_field_pi(
         gamma2, dt_v_psi, dt_v_zero, dt_v_plus, dt_v_minus, normal_covector
     )
 
@@ -1402,7 +1411,7 @@ def dt_phi_ConstraintPreservingGauge(
             d_phi,
         )
     )
-    return ght.evol_field_phi(
+    return gh_characteristics.evol_field_phi(
         gamma2, dt_v_psi, dt_v_zero, dt_v_plus, dt_v_minus, normal_covector
     )
 
@@ -1516,7 +1525,7 @@ def dt_phi_ConstraintPreservingGaugePhysical(
             d_phi,
         )
     )
-    return ght.evol_field_phi(
+    return gh_characteristics.evol_field_phi(
         gamma2, dt_v_psi, dt_v_zero, dt_v_plus, dt_v_minus, normal_covector
     )
 

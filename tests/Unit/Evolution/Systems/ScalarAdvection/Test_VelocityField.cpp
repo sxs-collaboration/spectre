@@ -47,7 +47,7 @@ void test_velocity_field(const gsl::not_null<std::mt19937*> gen) {
   // compute velocity field from python implementation
   const tnsr::I<DataVector, Dim, Frame::Inertial> velocity_field_test{
       pypp::call<tnsr::I<DataVector, Dim, Frame::Inertial>>(
-          "TestFunctions", "velocity_field", inertial_coords)};
+          "VelocityField", "velocity_field", inertial_coords)};
 
   // check values
   CHECK_ITERABLE_APPROX(velocity_field, velocity_field_test);
@@ -56,7 +56,7 @@ void test_velocity_field(const gsl::not_null<std::mt19937*> gen) {
 
 SPECTRE_TEST_CASE("Unit.Evolution.Systems.ScalarAdvection.VelocityField",
                   "[Unit][Evolution]") {
-  pypp::SetupLocalPythonEnvironment local_python_env{
+  const pypp::SetupLocalPythonEnvironment local_python_env{
       "Evolution/Systems/ScalarAdvection"};
   MAKE_GENERATOR(gen);
 
