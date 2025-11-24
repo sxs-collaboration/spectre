@@ -10,11 +10,13 @@ spectre_target_sources(
   PRIVATE
   AccelerationTermsOrder0.cpp
   AccelerationTermsOrder1.cpp
+  AccelerationTermsKerrOrder0.cpp
   KerrSchildDerivatives.cpp
   Tags.cpp
   PunctureField.cpp
   PunctureFieldOrder0.cpp
   PunctureFieldOrder1.cpp
+  PunctureFieldKerrOrder0.cpp
   RadiusFunctions.cpp
   SelfForce.cpp
   )
