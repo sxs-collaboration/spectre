@@ -194,9 +194,6 @@ void test_impl(
 
   CHECK(get_tag(evolution::dg::Tags::NormalCovectorAndMagnitude<Dim>{}) ==
         expected_normal_covector_quantities);
-
-  CHECK(get_tag(evolution::dg::Tags::BoundaryData<Dim>{}) ==
-        typename evolution::dg::Tags::BoundaryData<Dim>::type{});
 }
 
 template <size_t Dim, bool LocalTimeStepping>

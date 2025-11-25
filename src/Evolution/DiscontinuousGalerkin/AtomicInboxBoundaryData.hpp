@@ -1,19 +1,26 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
+// This file is tested in Test_InboxTags.cpp
+
 #pragma once
 
 #include <atomic>
 #include <cstddef>
+#include <map>
+#include <tuple>
 
+#include "Domain/Structure/DirectionalId.hpp"
+#include "Domain/Structure/DirectionalIdMap.hpp"
 #include "Domain/Structure/MaxNumberOfNeighbors.hpp"
 #include "Evolution/DiscontinuousGalerkin/BoundaryData.hpp"
 #include "Parallel/StaticSpscQueue.hpp"
 #include "Time/TimeStepId.hpp"
 
 /// \cond
-template <size_t Dim>
-struct DirectionalId;
+namespace PUP {
+class er;
+}  // namespace PUP
 /// \endcond
 
 namespace evolution::dg {
@@ -26,17 +33,9 @@ namespace evolution::dg {
  * an MPMC queue. This has significant performance improvements since it
  * drastically reduces contention.
  *
- * The uint message counter is used to count how many neighbors have contributed
- * for the next time. This is used to delay calling `perform_algorithm()` in
- * order to reduce the number of messages we send through the runtime
- * system. The `number_of_neighbors` is used to track the number of expected
- * messages. Note that some additional logic is needed also for supporting
- * local time stepping, since not every message entry "counts" since it
- * depends on the time level of neighboring elements.
- *
- * \warning Only `AtomicInboxBoundaryData` with zero messages can be move
- * constructed. A non-zero number of neighbors is allowed. This is necessary
- * in order to be able to serialize a
+ * \warning Only `AtomicInboxBoundaryData` with zero messages can be
+ * move constructed or serialized.  This is necessary in order to be
+ * able to serialize a
  * `std::unordered_map<Key,AtomicInboxBoundaryData>`.
  */
 template <size_t Dim>
@@ -74,6 +73,22 @@ struct AtomicInboxBoundaryData {
    */
   static size_t index(const DirectionalId<Dim>& directional_id);
 
+  /*!
+   * Moves data from the SPSC queues into the `messages` map.
+   */
+  void collect_messages();
+
+  /*!
+   * Set a lower bound on the number of messages required for the
+   * algorithm to make progress since the most recent call to
+   * `collect_messages`.  After that number of new messages have been
+   * received, `BoundaryCorrectionAndGhostCellsInbox` will restart
+   * the algorithm.
+   *
+   * \return whether enough messages have been received.
+   */
+  bool set_missing_messages(size_t count);
+
   void pup(PUP::er& p);
 
   // We use 20 entries in the SPSC under the assumption that each neighbor
@@ -84,8 +99,25 @@ struct AtomicInboxBoundaryData {
                  std::tuple<::TimeStepId, stored_type, DirectionalId<Dim>>, 20>,
              maximum_number_of_neighbors(Dim)>
       boundary_data_in_directions{};
-  std::atomic_uint message_count{};
-  std::atomic_uint number_of_neighbors{};
+  std::map<TimeStepId, DirectionalIdMap<Dim, stored_type>> messages{};
+  std::atomic_int missing_messages{};
+
+  // The number of messages in the SPSC queues is
+  // passed_missing_messages - missing_messages - processed_messages.
+  // The various manipulations change these fields as follows:
+  //
+  // New message => --missing_messages (by insert_into_inbox)
+  // collect_messages => processed_messages += num unqueued messages
+  // set_missing_messages(count) =>
+  //   missing_messages += count + processed_messages - passed_missing_messages
+  //   processed_messages = 0
+  //   passed_missing_messages = count
+  //
+  // The processed_messages field exists (rather than just including
+  // it in missing_messages) so that missing_messages is positive if
+  // and only if the element is blocked on messages in this queue.
+  int processed_messages{};
+  int passed_missing_messages{};
 };
 
 /// \brief `std::true` if `T` is a `AtomicInboxBoundaryData`

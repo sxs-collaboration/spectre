@@ -3,11 +3,15 @@
 
 #include "Evolution/DiscontinuousGalerkin/BoundaryData.hpp"
 
+#include <cstddef>
 #include <pup.h>
 #include <pup_stl.h>
+#include <utility>
 
 #include "Evolution/DiscontinuousGalerkin/InterpolatedBoundaryData.hpp"
+#include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
+#include "Utilities/Gsl.hpp"
 #include "Utilities/Serialization/PupStlCpp17.hpp"
 #include "Utilities/StdHelpers.hpp"
 
@@ -60,6 +64,50 @@ std::ostream& operator<<(std::ostream& os, const BoundaryData<Dim>& value) {
             << value.interpolated_boundary_data;
 }
 
+template <size_t Dim>
+void merge_boundary_data(const gsl::not_null<BoundaryData<Dim>*> destination,
+                         BoundaryData<Dim> source) {
+  auto& [volume_mesh, volume_mesh_ghost_cell_data, boundary_correction_mesh,
+         ghost_cell_data, boundary_correction_data, validity_range, tci_status,
+         integration_order, interpolated_boundary_data] = source;
+  (void)ghost_cell_data;
+  auto& [current_volume_mesh, current_volume_mesh_ghost_cell_data,
+         current_boundary_correction_mesh, current_ghost_cell_data,
+         current_boundary_correction_data, current_validity_range,
+         current_tci_status, current_integration_order,
+         current_interpolated_boundary_data] = *destination;
+  (void)current_volume_mesh_ghost_cell_data;  // Need to use when
+                                              // optimizing subcell
+  ASSERT(current_ghost_cell_data.has_value(),
+         "Have not yet received ghost cells, but the inbox entry already "
+         "exists. This is a bug in the ordering of the actions.");
+  ASSERT(not current_boundary_correction_data.has_value() and
+             not current_boundary_correction_mesh.has_value(),
+         "The fluxes have already been received. They are either being "
+         "received for a second time, there is a bug in the ordering of the "
+         "actions (though a different ASSERT should've caught that), or the "
+         "incorrect temporal ID is being sent.");
+
+  ASSERT(current_volume_mesh == volume_mesh,
+         "The mesh being received for the fluxes is different than the "
+         "mesh received for the ghost cells. Mesh for fluxes: "
+             << volume_mesh << " mesh for ghost cells " << current_volume_mesh);
+  ASSERT(current_volume_mesh_ghost_cell_data == volume_mesh_ghost_cell_data,
+         "The mesh being received for the ghost cell data is different "
+         "than the mesh received previously. Mesh for received when we got "
+         "fluxes: "
+             << volume_mesh_ghost_cell_data
+             << " mesh received when we got ghost cells "
+             << current_volume_mesh_ghost_cell_data);
+
+  current_boundary_correction_mesh = boundary_correction_mesh;
+  current_boundary_correction_data = std::move(boundary_correction_data);
+  current_validity_range = validity_range;
+  current_tci_status = tci_status;
+  current_integration_order = integration_order;
+  current_interpolated_boundary_data = std::move(interpolated_boundary_data);
+}
+
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 
 #define INSTANTIATION(r, data)                                        \
@@ -69,7 +117,10 @@ std::ostream& operator<<(std::ostream& os, const BoundaryData<Dim>& value) {
   template bool operator==(const BoundaryData<DIM(data)>& lhs,        \
                            const BoundaryData<DIM(data)>& rhs);       \
   template bool operator!=(const BoundaryData<DIM(data)>& lhs,        \
-                           const BoundaryData<DIM(data)>& rhs);
+                           const BoundaryData<DIM(data)>& rhs);       \
+  template void merge_boundary_data(                                  \
+      gsl::not_null<BoundaryData<DIM(data)>*> destination,            \
+      BoundaryData<DIM(data)> source);
 
 GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
 

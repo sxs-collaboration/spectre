@@ -1877,52 +1877,26 @@ void test_impl(const Spectral::Quadrature quadrature,
         compute_expected_mortar_data(mortar_id_east.direction(),
                                      mortar_id_east.id(), true));
   }
+  const auto& east_received_data =
+      ActionTesting::get_inbox_tag<
+          component<metavars>,
+          ::evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<
+              Dim, UseNodegroupDgElements>>(runner, mortar_id_east.id())
+          .messages.at(time_step_id)
+          .at(DirectionalId<Dim>{element.neighbors()
+                                     .at(mortar_id_east.direction())
+                                     .orientation(mortar_id_east.id())(
+                                         mortar_id_east.direction().opposite()),
+                                 element.id()});
   CHECK_ITERABLE_APPROX(
-      (ActionTesting::get_inbox_tag<
-           component<metavars>,
-           ::evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<
-               Dim, UseNodegroupDgElements>>(runner, mortar_id_east.id())
-           .at(time_step_id)
-           .at(DirectionalId<Dim>{
-               element.neighbors()
-                   .at(mortar_id_east.direction())
-                   .orientation(mortar_id_east.id())(
-                       mortar_id_east.direction().opposite()),
-               element.id()})
-           .boundary_correction_data.value()),
+      east_received_data.boundary_correction_data.value(),
       compute_expected_mortar_data(mortar_id_east.direction(),
                                    mortar_id_east.id(), false));
-
-  CHECK((ActionTesting::get_inbox_tag<
-             component<metavars>,
-             ::evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<
-                 Dim, UseNodegroupDgElements>>(runner, mortar_id_east.id())
-             .at(time_step_id)
-             .at(DirectionalId<Dim>{
-                 element.neighbors()
-                     .at(mortar_id_east.direction())
-                     .orientation(mortar_id_east.id())(
-                         mortar_id_east.direction().opposite()),
-                 element.id()})
-             .validity_range) ==
-        next_time_step_id);
+  CHECK(east_received_data.validity_range == next_time_step_id);
 
   if constexpr (Dim > 1) {
     const DirectionalId<Dim> mortar_id_south{Direction<Dim>::lower_eta(),
                                              south_id};
-    CHECK((ActionTesting::get_inbox_tag<
-               component<metavars>,
-               ::evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<
-                   Dim, UseNodegroupDgElements>>(runner, mortar_id_south.id())
-               .at(time_step_id)
-               .at(DirectionalId<Dim>{
-                   element.neighbors()
-                       .at(mortar_id_south.direction())
-                       .orientation(mortar_id_south.id())(
-                           mortar_id_south.direction().opposite()),
-                   element.id()})
-               .validity_range) ==
-          next_time_step_id);
 
     if (LocalTimeStepping) {
       const auto& south_mortar_data =
@@ -1956,8 +1930,9 @@ void test_impl(const Spectral::Quadrature quadrature,
             component<metavars>,
             ::evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<
                 Dim, UseNodegroupDgElements>>(runner, mortar_id_south.id())
-            .at(time_step_id)
+            .messages.at(time_step_id)
             .at(south_neighbor_mortar_id);
+    CHECK(south_received_data.validity_range == next_time_step_id);
     CHECK(south_received_data.volume_mesh == south_orientation(mesh));
     CHECK(south_received_data.boundary_correction_mesh.value() ==
           ::dg::mortar_mesh(

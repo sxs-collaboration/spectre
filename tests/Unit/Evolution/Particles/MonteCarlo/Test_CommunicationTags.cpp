@@ -468,16 +468,14 @@ void test_send_receive_actions() {
         DataVector{subcell_mesh.slice_away(0).number_of_grid_points() *
                    ghost_zone_size * number_of_vars};
     alg::iota(east_ghost_cells, 2.0);
-    const size_t items_in_inbox =
-        Particles::MonteCarlo::McGhostZoneDataInboxTag<
-            Dim, Particles::MonteCarlo::CommunicationStep::PreStep>::
-            insert_into_inbox(
-                make_not_null(&self_inbox_pre), time_step_id,
-                std::pair{
-                    DirectionalId<Dim>{Direction<Dim>::upper_xi(), east_id},
-                    Particles::MonteCarlo::McGhostZoneData<Dim>{
-                        east_ghost_cells, std::nullopt}});
-    CHECK(items_in_inbox == 1);
+    Particles::MonteCarlo::McGhostZoneDataInboxTag<
+        Dim, Particles::MonteCarlo::CommunicationStep::PreStep>::
+        insert_into_inbox(
+            make_not_null(&self_inbox_pre), time_step_id,
+            std::pair{DirectionalId<Dim>{Direction<Dim>::upper_xi(), east_id},
+                      Particles::MonteCarlo::McGhostZoneData<Dim>{
+                          east_ghost_cells, std::nullopt}});
+    CHECK(self_inbox_pre.at(time_step_id).size() == 1);
   }
   // NOLINTNEXTLINE(misc-const-correctness)
   [[maybe_unused]] DataVector south_ghost_cells{};
@@ -492,16 +490,14 @@ void test_send_receive_actions() {
                    ghost_zone_size * number_of_vars};
     alg::iota(south_ghost_cells, 10000.0);
     *std::prev(south_ghost_cells.end()) = -10.0;
-    const size_t items_in_inbox =
-        Particles::MonteCarlo::McGhostZoneDataInboxTag<
-            Dim, Particles::MonteCarlo::CommunicationStep::PreStep>::
-            insert_into_inbox(
-                make_not_null(&self_inbox_pre), time_step_id,
-                std::pair{
-                    DirectionalId<Dim>{Direction<Dim>::lower_eta(), south_id},
-                    Particles::MonteCarlo::McGhostZoneData<Dim>{
-                        south_ghost_cells, std::nullopt}});
-    CHECK(items_in_inbox == 2);
+    Particles::MonteCarlo::McGhostZoneDataInboxTag<
+        Dim, Particles::MonteCarlo::CommunicationStep::PreStep>::
+        insert_into_inbox(
+            make_not_null(&self_inbox_pre), time_step_id,
+            std::pair{DirectionalId<Dim>{Direction<Dim>::lower_eta(), south_id},
+                      Particles::MonteCarlo::McGhostZoneData<Dim>{
+                          south_ghost_cells, std::nullopt}});
+    CHECK(self_inbox_pre.at(time_step_id).size() == 2);
   }
 
   // Run the ReceiveDataForReconstruction action on self_id (PreStep)
@@ -733,16 +729,14 @@ void test_send_receive_actions() {
     const std::optional<std::vector<Particles::MonteCarlo::Packet>>
         packets_from_east =
             std::vector<Particles::MonteCarlo::Packet>{packet_east};
-    const size_t items_in_inbox =
-        Particles::MonteCarlo::McGhostZoneDataInboxTag<
-            Dim, Particles::MonteCarlo::CommunicationStep::PostStep>::
-            insert_into_inbox(
-                make_not_null(&self_inbox_post), time_step_id,
-                std::pair{
-                    DirectionalId<Dim>{Direction<Dim>::upper_xi(), east_id},
-                    Particles::MonteCarlo::McGhostZoneData<Dim>{
-                        east_ghost_cells_post, packets_from_east}});
-    CHECK(items_in_inbox == 1);
+    Particles::MonteCarlo::McGhostZoneDataInboxTag<
+        Dim, Particles::MonteCarlo::CommunicationStep::PostStep>::
+        insert_into_inbox(
+            make_not_null(&self_inbox_post), time_step_id,
+            std::pair{DirectionalId<Dim>{Direction<Dim>::upper_xi(), east_id},
+                      Particles::MonteCarlo::McGhostZoneData<Dim>{
+                          east_ghost_cells_post, packets_from_east}});
+    CHECK(self_inbox_post.at(time_step_id).size() == 1);
   }
   // Set up fake data coming from south neighbor
   // NOLINTNEXTLINE(misc-const-correctness)
@@ -760,16 +754,14 @@ void test_send_receive_actions() {
     const std::optional<std::vector<Particles::MonteCarlo::Packet>>
         packets_from_south =
             std::vector<Particles::MonteCarlo::Packet>{packet_south};
-    const size_t items_in_inbox =
-        Particles::MonteCarlo::McGhostZoneDataInboxTag<
-            Dim, Particles::MonteCarlo::CommunicationStep::PostStep>::
-            insert_into_inbox(
-                make_not_null(&self_inbox_post), time_step_id,
-                std::pair{
-                    DirectionalId<Dim>{Direction<Dim>::lower_eta(), south_id},
-                    Particles::MonteCarlo::McGhostZoneData<Dim>{
-                        south_ghost_cells_post, packets_from_south}});
-    CHECK(items_in_inbox == 2);
+    Particles::MonteCarlo::McGhostZoneDataInboxTag<
+        Dim, Particles::MonteCarlo::CommunicationStep::PostStep>::
+        insert_into_inbox(
+            make_not_null(&self_inbox_post), time_step_id,
+            std::pair{DirectionalId<Dim>{Direction<Dim>::lower_eta(), south_id},
+                      Particles::MonteCarlo::McGhostZoneData<Dim>{
+                          south_ghost_cells_post, packets_from_south}});
+    CHECK(self_inbox_post.at(time_step_id).size() == 2);
   }
   // Run the ReceiveDataForReconstruction action on self_id (PostStep)
   ActionTesting::next_action<comp>(make_not_null(&runner), self_id);

@@ -3,36 +3,24 @@
 
 #pragma once
 
-#include <atomic>
-#include <boost/functional/hash.hpp>
 #include <cstddef>
-#include <iomanip>
 #include <map>
 #include <memory>
-#include <optional>
-#include <sstream>
 #include <string>
-#include <type_traits>
 #include <utility>
 
 #include "DataStructures/DataBox/Tag.hpp"
-#include "DataStructures/FixedHashMap.hpp"
-#include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/DirectionalId.hpp"
 #include "Domain/Structure/DirectionalIdMap.hpp"
-#include "Domain/Structure/ElementId.hpp"
 #include "Evolution/DiscontinuousGalerkin/AtomicInboxBoundaryData.hpp"
 #include "Evolution/DiscontinuousGalerkin/BoundaryData.hpp"
+#include "Evolution/DiscontinuousGalerkin/InboxBoundaryData.hpp"
 #include "Evolution/DiscontinuousGalerkin/Messages/BoundaryMessage.hpp"
-#include "NumericalAlgorithms/Spectral/Mesh.hpp"
-#include "Parallel/InboxInserters.hpp"
-#include "Parallel/StaticSpscQueue.hpp"
 #include "Time/TimeStepId.hpp"
+#include "Utilities/ErrorHandling/Assert.hpp"
+#include "Utilities/ErrorHandling/Error.hpp"
+#include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
-
-/// \cond
-class DataVector;
-/// \endcond
 
 namespace evolution::dg::Tags {
 /*!
@@ -113,17 +101,6 @@ namespace evolution::dg::Tags {
  *   communication. Thus, one large communication is cheaper than several small
  *   communications.
  *
- * #### Return Values:
- * - In the case that the type is `type_map` the `insert_into_inbox` function
- *   returns the size of the inbox.
- * - In the case that the type is `type_spsc` the `insert_into_inbox` function
- *   returns the number of neighbor data contributions made that allow the
- *   element to take its next time step/needs a message called on it. When
- *   this number is equal to the number of neighbors, a Charm++ message must
- *   be sent to the element to have it continue the algorithm. This is so as
- *   to minimize the number of communications made through Charm++ and instead
- *   to move data atomically between neighbors whenever possible.
- *
  * #### DG Element Nodegroup Support
  * If you are using the `DgElementCollection` then you must set
  * `UseNodegroupDgElements` to `true`. The actions that use this tag check
@@ -136,7 +113,7 @@ struct BoundaryCorrectionAndGhostCellsInbox {
  public:
   using temporal_id = TimeStepId;
   // Used by array implementation
-  using type_map = std::map<TimeStepId, DirectionalIdMap<Dim, stored_type>>;
+  using type_map = evolution::dg::InboxBoundaryData<Dim>;
 
   // Used by nodegroup implementation
   using type_spsc = evolution::dg::AtomicInboxBoundaryData<Dim>;
@@ -145,161 +122,17 @@ struct BoundaryCorrectionAndGhostCellsInbox {
   using type = tmpl::conditional_t<UseNodegroupDgElements, type_spsc, type_map>;
   using value_type = type;
 
-  template <typename ReceiveDataType>
-  static size_t insert_into_inbox(const gsl::not_null<type_spsc*> inbox,
-                                  const temporal_id& time_step_id,
-                                  ReceiveDataType&& data) {
-    const DirectionalId<Dim>& neighbor_id = data.first;
-    // Note: This assumes the neighbor_id is oriented into our (the element
-    // whose inbox this is) frame.
-    const size_t neighbor_index = inbox->index(neighbor_id);
-    if (UNLIKELY(not gsl::at(inbox->boundary_data_in_directions, neighbor_index)
-                         .try_emplace(time_step_id, std::move(data.second),
-                                      std::move(data.first)))) {
-      ERROR(
-          "Failed to emplace data into inbox. neighbor_id: ("
-          << neighbor_id.direction() << ',' << neighbor_id.id()
-          << ") at TimeStepID: " << time_step_id << " the size of the inbox is "
-          << gsl::at(inbox->boundary_data_in_directions, neighbor_index).size()
-          << " the message count is " << inbox->message_count.load()
-          << " and the number of neighbors is "
-          << inbox->number_of_neighbors.load());
-    }
-    // Notes:
-    // 1. fetch_add does a post-increment.
-    // 2. We need thread synchronization here, so doing relaxed_order would be a
-    //    bug.
-    return inbox->message_count.fetch_add(1, std::memory_order_acq_rel) + 1;
-  }
+  static bool insert_into_inbox(
+      gsl::not_null<type_spsc*> inbox, const temporal_id& time_step_id,
+      std::pair<DirectionalId<Dim>, evolution::dg::BoundaryData<Dim>> data);
 
-  template <typename ReceiveDataType>
-  static size_t insert_into_inbox(const gsl::not_null<type_map*> inbox,
-                                  const temporal_id& time_step_id,
-                                  ReceiveDataType&& data) {
-    auto& current_inbox = (*inbox)[time_step_id];
-    if (auto it = current_inbox.find(data.first); it != current_inbox.end()) {
-      auto& [volume_mesh, volume_mesh_ghost_cell_data, boundary_correction_mesh,
-             ghost_cell_data, boundary_correction_data, validity_range,
-             tci_status, integration_order, interpolated_boundary_data] =
-          data.second;
-      (void)ghost_cell_data;
-      auto& [current_volume_mesh, current_volume_mesh_ghost_cell_data,
-             current_boundary_correction_mesh, current_ghost_cell_data,
-             current_boundary_correction_data, current_validity_range,
-             current_tci_status, current_integration_order,
-             current_interpolated_boundary_data] = it->second;
-      (void)current_volume_mesh_ghost_cell_data;  // Need to use when
-                                                  // optimizing subcell
-      // We have already received some data at this time. Receiving data twice
-      // at the same time should only occur when receiving fluxes after having
-      // previously received ghost cells. We sanity check that the data we
-      // already have is the ghost cells and that we have not yet received flux
-      // data.
-      //
-      // This is used if a 2-send implementation is used (which we don't right
-      // now!). We generally find that the number of communications is more
-      // important than the size of each communication, and so a single
-      // communication per time/sub step is preferred.
-      ASSERT(current_ghost_cell_data.has_value(),
-             "Have not yet received ghost cells at time step "
-                 << time_step_id
-                 << " but the inbox entry already exists. This is a bug in the "
-                    "ordering of the actions.");
-      ASSERT(not current_boundary_correction_data.has_value() and
-                 not current_boundary_correction_mesh.has_value(),
-             "The fluxes have already been received at time step "
-                 << time_step_id
-                 << ". They are either being received for a second time, there "
-                    "is a bug in the ordering of the actions (though a "
-                    "different ASSERT should've caught that), or the incorrect "
-                    "temporal ID is being sent.");
+  static bool insert_into_inbox(
+      gsl::not_null<type_map*> inbox, const temporal_id& time_step_id,
+      std::pair<DirectionalId<Dim>, evolution::dg::BoundaryData<Dim>> data);
 
-      ASSERT(current_volume_mesh == volume_mesh,
-             "The mesh being received for the fluxes is different than the "
-             "mesh received for the ghost cells. Mesh for fluxes: "
-                 << volume_mesh << " mesh for ghost cells "
-                 << current_volume_mesh);
-      ASSERT(current_volume_mesh_ghost_cell_data == volume_mesh_ghost_cell_data,
-             "The mesh being received for the ghost cell data is different "
-             "than the mesh received previously. Mesh for received when we got "
-             "fluxes: "
-                 << volume_mesh_ghost_cell_data
-                 << " mesh received when we got ghost cells "
-                 << current_volume_mesh_ghost_cell_data);
+  static std::string output_inbox(const type_spsc& inbox, size_t padding_size);
 
-      // We always move here since we take ownership of the data and moves
-      // implicitly decay to copies
-      current_boundary_correction_data = std::move(boundary_correction_data);
-      current_validity_range = validity_range;
-      current_tci_status = tci_status;
-      current_integration_order = integration_order;
-      current_interpolated_boundary_data = interpolated_boundary_data;
-    } else {
-      // We have not received ghost cells or fluxes at this time.
-      if (not current_inbox.insert(std::forward<ReceiveDataType>(data))
-                  .second) {
-        ERROR("Failed to insert data to receive at instance '"
-              << time_step_id
-              << "' with tag 'BoundaryCorrectionAndGhostCellsInbox'.\n");
-      }
-    }
-    return current_inbox.size();
-  }
-
-  static std::string output_inbox(const type_spsc& inbox,
-                                  const size_t padding_size) {
-    std::stringstream ss{};
-    const std::string pad(padding_size, ' ');
-    ss << std::scientific << std::setprecision(16);
-    ss << pad << "BoundaryCorrectionAndGhostCellInbox:\n";
-    ss << pad
-       << "Warning: Printing atomic state is not possible in general so data "
-          "printed is limited.\n";
-    for (size_t i = 0; i < inbox.boundary_data_in_directions.size(); ++i) {
-      const auto& data_in_direction =
-          gsl::at(inbox.boundary_data_in_directions, i);
-      ss << pad << "Id: "
-         << "Approximate size: " << data_in_direction.size() << "\n";
-    }
-
-    return ss.str();
-  }
-
-  static std::string output_inbox(const type_map& inbox,
-                                  const size_t padding_size) {
-    std::stringstream ss{};
-    const std::string pad(padding_size, ' ');
-    ss << std::scientific << std::setprecision(16);
-    ss << pad << "BoundaryCorrectionAndGhostCellInbox:\n";
-
-    for (const auto& [current_time_step_id, hash_map] : inbox) {
-      ss << pad << " Current time: " << current_time_step_id << "\n";
-      // We only care about the next time because that's important for deadlock
-      // detection. The data itself isn't super important
-      for (const auto& [key, boundary_data] : hash_map) {
-        ss << pad << "  Key: " << key
-           << ", next time: " << boundary_data.validity_range << "\n";
-      }
-    }
-
-    return ss.str();
-  }
-
-  void pup(PUP::er& /*p*/) {}
-};
-
-/*!
- * \brief Simple tag used to store inbox data in the DataBox.
- *
- * Since the inbox data can be received asynchronously and lockfree ordered
- * containers are slow and challenging to implement, we instead use an
- * unordered container for the inbox, then transfer the data into an ordered map
- * in the DataBox.
- */
-template <size_t Dim>
-struct BoundaryData : db::SimpleTag {
-  using type =
-      typename BoundaryCorrectionAndGhostCellsInbox<Dim, false>::type_map;
+  static std::string output_inbox(const type_map& inbox, size_t padding_size);
 };
 
 /*!
@@ -335,7 +168,7 @@ struct BoundaryMessageInbox {
   using message_type = BoundaryMessage<Dim>;
 
   template <typename Inbox>
-  static void insert_into_inbox(const gsl::not_null<Inbox*> inbox,
+  static bool insert_into_inbox(const gsl::not_null<Inbox*> inbox,
                                 BoundaryMessage<Dim>* boundary_message) {
     const auto& time_step_id = boundary_message->current_time_step_id;
     auto& current_inbox = (*inbox)[time_step_id];
@@ -416,6 +249,7 @@ struct BoundaryMessageInbox {
               << time_step_id << "' with tag 'BoundaryMessageInbox'.\n");
       }
     }
+    return true;
   }
 };
 }  // namespace evolution::dg::Tags

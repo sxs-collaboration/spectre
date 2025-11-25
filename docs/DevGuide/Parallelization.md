@@ -610,10 +610,15 @@ be stored in the `inboxes`.  The types are typically a
 `std::unordered_map<temporal_id, DATA>`.  In the discussed scenario of
 waiting for neighboring elements to send their data the `DATA` type
 would be a `std::unordered_map<TheElementId, DataSent>`.  Inbox tags
-must also specify a `static void insert_into_inbox()` function.  For
+must also specify a `static bool insert_into_inbox()` function.  For
 example,
 
 \snippet Test_AlgorithmParallel.cpp int_receive_tag
+
+The return value indicates whether `perform_algorithm()` should be called after
+insertion.  This exists primarily to allow the communication logic used with
+`DgElementArray` to match that used with `DgElementCollection` more closely.
+It is safe to always return `true`.
 
 For common types of `DATA`, such as a `map`, a data structure with an `insert`
 function, a data structure with a `push_back` function, or copy/move assignment
