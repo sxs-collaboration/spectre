@@ -5,6 +5,7 @@
 
 #include <cmath>
 #include <cstddef>
+#include <functional>
 #include <pup.h>
 #include <string>
 
@@ -13,6 +14,7 @@
 #include "ControlSystem/Tags/SystemTags.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "Domain/Structure/ObjectLabel.hpp"
+#include "NumericalAlgorithms/SphericalHarmonics/Spherepack.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/SpherepackIterator.hpp"
 #include "Options/String.hpp"
 #include "Parallel/GlobalCache.hpp"
@@ -119,17 +121,42 @@ struct Shape : tt::ConformsTo<protocols::ControlError> {
     const double lambda_00_coef =
         functions_of_time.at(detail::size_name<Object>())->func(time)[0][0];
 
+    const size_t spectral_size = lambda_lm_coefs.size();
+    // Note: l_max == m_max for the shape map, so the spectral size is
+    // always 2 * (l_max + 1) * (l_max + 1).
+    ASSERT(spectral_size % 2 == 0, "Spectral size "
+                                       << spectral_size << " should be even "
+                                       << " for shape map coefficients.");
+    const auto l_max_plus_one = static_cast<size_t>(
+        sqrt(static_cast<double>(spectral_size / 2)));  // NOLINT
+    ASSERT(2 * l_max_plus_one * l_max_plus_one == spectral_size,
+           "Shape map spectral size " << spectral_size
+                                      << " cannot be represented by a "
+                                      << "Spherepack with l_max == m_max.");
+    const size_t l_max = l_max_plus_one - 1;
+
     const auto& ah =
         get<control_system::QueueTags::Horizon<Frame::Distorted, Object>>(
             measurements);
+    if (UNLIKELY(ah.l_max() > l_max)) {
+      ERROR("Horizon " << ::domain::name(Object)
+                       << " has l_max = " << ah.l_max()
+                       << " but the shape map has l_max = " << l_max
+                       << ". The horizon l_max must be less than or equal to "
+                          "the shape map l_max.");
+    }
     const auto& ah_coefs = ah.coefficients();
 
-    ASSERT(lambda_lm_coefs.size() == ah_coefs.size(),
-           "Number of coefficients for shape map '"
-               << function_of_time_name << "' (" << lambda_lm_coefs.size()
-               << ") does not match the number of coefficients in the AH "
-                  "Strahlkorper ("
-               << ah_coefs.size() << ").");
+    const DataVector ah_coefs_ref{};
+    if (lambda_lm_coefs.size() != ah_coefs.size()) {
+      // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
+      const_cast<DataVector&>(ah_coefs_ref) =
+          ylm::Spherepack::prolong_or_restrict(ah_coefs, ah.l_max(), ah.m_max(),
+                                               l_max, l_max);
+    } else {
+      make_const_view(make_not_null(&ah_coefs_ref), ah_coefs, 0,
+                      ah_coefs.size());
+    }
 
     const auto& excision_spheres = domain.excision_spheres();
 
@@ -143,17 +170,17 @@ struct Shape : tt::ConformsTo<protocols::ControlError> {
         excision_spheres.at(detail::excision_sphere_name<Object>()).radius();
 
     const double Y00 = sqrt(0.25 / M_PI);
-    ylm::SpherepackIterator iter{ah.l_max(), ah.m_max()};
+    ylm::SpherepackIterator iter{l_max, l_max};
     // See above docs for why we have the sqrt(pi/2) in the denominator
     const double relative_size_factor =
         (radius_excision_sphere_grid_frame / Y00 - lambda_00_coef) /
-        (sqrt(0.5 * M_PI) * ah_coefs[iter.set(0, 0)()]);
+        (sqrt(0.5 * M_PI) * ah_coefs_ref[iter.set(0, 0)()]);
 
     // The map parameters are in terms of SPHEREPACK coefficients (just like
     // strahlkorper coefficients), *not* spherical harmonic coefficients, thus
     // the control error for each l,m is in terms of SPHEREPACK coefficients
     // and no extra factors of sqrt(2/pi) are needed
-    DataVector Q = -relative_size_factor * ah_coefs - lambda_lm_coefs;
+    DataVector Q = -relative_size_factor * ah_coefs_ref - lambda_lm_coefs;
 
     // Shape control is only for l > 1 so enforce that Q=0 for l=0,l=1. These
     // components of the control error won't be 0 automatically because the AH
