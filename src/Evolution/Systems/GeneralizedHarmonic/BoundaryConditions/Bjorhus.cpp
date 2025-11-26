@@ -299,11 +299,11 @@ std::optional<std::string> ConstraintPreservingBjorhus<Dim>::dg_time_derivative(
     return {};
   }
 
-  Bjorhus::constraint_preserving_bjorhus_corrections_dt_v_psi(
+  Bjorhus::constraint_preserving_corrections_dt_v_psi(
       make_not_null(&bc_dt_v_psi), unit_interface_normal_vector,
       three_index_constraint, char_speeds);
 
-  Bjorhus::constraint_preserving_bjorhus_corrections_dt_v_zero(
+  Bjorhus::constraint_preserving_corrections_dt_v_zero(
       make_not_null(&bc_dt_v_zero), unit_interface_normal_vector,
       four_index_constraint, char_speeds);
 
@@ -317,7 +317,7 @@ std::optional<std::string> ConstraintPreservingBjorhus<Dim>::dg_time_derivative(
   }
 
   if (type_ == detail::ConstraintPreservingBjorhusType::ConstraintPreserving) {
-    Bjorhus::constraint_preserving_gauge_bjorhus_corrections_dt_v_minus(
+    Bjorhus::constraint_preserving_gauge_corrections_dt_v_minus(
         make_not_null(&bc_dt_v_minus), gamma2, coords, incoming_null_one_form,
         outgoing_null_one_form, incoming_null_vector, outgoing_null_vector,
         projection_ab, projection_Ab, projection_AB,
@@ -325,17 +325,16 @@ std::optional<std::string> ConstraintPreservingBjorhus<Dim>::dg_time_derivative(
         constraint_char_zero_plus, constraint_char_zero_minus, char_speeds);
   } else if (type_ == detail::ConstraintPreservingBjorhusType::
                           ConstraintPreservingPhysical) {
-    Bjorhus::
-        constraint_preserving_gauge_physical_bjorhus_corrections_dt_v_minus(
-            make_not_null(&bc_dt_v_minus), gamma2, coords, normal_covector,
-            unit_interface_normal_vector, spacetime_unit_normal_vector,
-            incoming_null_one_form, outgoing_null_one_form,
-            incoming_null_vector, outgoing_null_vector, projection_ab,
-            projection_Ab, projection_AB, inverse_spatial_metric,
-            extrinsic_curvature, spacetime_metric, inverse_spacetime_metric,
-            three_index_constraint, char_projected_rhs_dt_v_psi,
-            char_projected_rhs_dt_v_minus, constraint_char_zero_plus,
-            constraint_char_zero_minus, phi, d_phi, d_pi, char_speeds);
+    Bjorhus::constraint_preserving_gauge_physical_corrections_dt_v_minus(
+        make_not_null(&bc_dt_v_minus), gamma2, coords, normal_covector,
+        unit_interface_normal_vector, spacetime_unit_normal_vector,
+        incoming_null_one_form, outgoing_null_one_form, incoming_null_vector,
+        outgoing_null_vector, projection_ab, projection_Ab, projection_AB,
+        inverse_spatial_metric, extrinsic_curvature, spacetime_metric,
+        inverse_spacetime_metric, three_index_constraint,
+        char_projected_rhs_dt_v_psi, char_projected_rhs_dt_v_minus,
+        constraint_char_zero_plus, constraint_char_zero_minus, phi, d_phi, d_pi,
+        char_speeds);
   } else {
     ERROR(
         "Failed to set dtVMinus. Input option must be one of "

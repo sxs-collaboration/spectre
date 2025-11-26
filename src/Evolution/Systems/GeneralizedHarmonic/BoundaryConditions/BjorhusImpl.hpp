@@ -38,7 +38,7 @@ namespace Bjorhus {
  * \f$v^{\psi}_{ab}\f$.
  */
 template <size_t VolumeDim, typename DataType>
-void constraint_preserving_bjorhus_corrections_dt_v_psi(
+void constraint_preserving_corrections_dt_v_psi(
     gsl::not_null<tnsr::aa<DataType, VolumeDim, Frame::Inertial>*> bc_dt_v_psi,
     const tnsr::I<DataType, VolumeDim, Frame::Inertial>&
         unit_interface_normal_vector,
@@ -69,7 +69,7 @@ void constraint_preserving_bjorhus_corrections_dt_v_psi(
  * C_{10ab}\f$, and in 1D \f$\hat{C}_{0ab} = 0\f$.
  */
 template <size_t VolumeDim, typename DataType>
-void constraint_preserving_bjorhus_corrections_dt_v_zero(
+void constraint_preserving_corrections_dt_v_zero(
     gsl::not_null<tnsr::iaa<DataType, VolumeDim, Frame::Inertial>*>
         bc_dt_v_zero,
     const tnsr::I<DataType, VolumeDim, Frame::Inertial>&
@@ -169,7 +169,7 @@ void constraint_preserving_bjorhus_corrections_dt_v_zero(
  * where \f$q^a\f$ is the future-directed spacetime normal vector.
  */
 template <size_t VolumeDim, typename DataType>
-void constraint_preserving_bjorhus_corrections_dt_v_minus(
+void constraint_preserving_corrections_dt_v_minus(
     gsl::not_null<tnsr::aa<DataType, VolumeDim, Frame::Inertial>*>
         bc_dt_v_minus,
     const tnsr::a<DataType, VolumeDim, Frame::Inertial>& outgoing_null_one_form,
@@ -187,7 +187,7 @@ void constraint_preserving_bjorhus_corrections_dt_v_minus(
     const std::array<DataType, 4>& char_speeds);
 
 template <size_t VolumeDim, typename DataType>
-void constraint_preserving_gauge_bjorhus_corrections_dt_v_minus(
+void constraint_preserving_gauge_corrections_dt_v_minus(
     gsl::not_null<tnsr::aa<DataType, VolumeDim, Frame::Inertial>*>
         bc_dt_v_minus,
     const Scalar<DataType>& gamma2,
@@ -210,7 +210,7 @@ void constraint_preserving_gauge_bjorhus_corrections_dt_v_minus(
     const std::array<DataType, 4>& char_speeds);
 
 template <size_t VolumeDim, typename DataType>
-void constraint_preserving_gauge_physical_bjorhus_corrections_dt_v_minus(
+void constraint_preserving_gauge_physical_corrections_dt_v_minus(
     gsl::not_null<tnsr::aa<DataType, VolumeDim, Frame::Inertial>*>
         bc_dt_v_minus,
     const Scalar<DataType>& gamma2,

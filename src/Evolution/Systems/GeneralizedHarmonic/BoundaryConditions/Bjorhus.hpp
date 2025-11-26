@@ -89,10 +89,10 @@ namespace gh::BoundaryConditions {
  * any physical gravitational waves from the outer boundary, in addition to
  * preventing the influx of constraint violations and gauge perturbations.
  *
- * We refer to `Bjorhus::constraint_preserving_bjorhus_corrections_dt_v_psi()`,
- * `Bjorhus::constraint_preserving_bjorhus_corrections_dt_v_zero()`,
- * `Bjorhus::constraint_preserving_gauge_bjorhus_corrections_dt_v_minus()`, and
- * `Bjorhus::constraint_preserving_gauge_physical_bjorhus_corrections_dt_v_minus()`
+ * We refer to `Bjorhus::constraint_preserving_corrections_dt_v_psi()`,
+ * `Bjorhus::constraint_preserving_corrections_dt_v_zero()`,
+ * `Bjorhus::constraint_preserving_gauge_corrections_dt_v_minus()`, and
+ * `Bjorhus::constraint_preserving_gauge_physical_corrections_dt_v_minus()`
  * for the further details on implementation.
  *
  * \note These boundary conditions assume a spherical outer boundary. Also, we

@@ -13,7 +13,7 @@ import PointwiseFunctions.GeneralRelativity.ProjectionOperators as proj
 import PointwiseFunctions.GeneralRelativity.WeylPropagating as wp
 
 
-def constraint_preserving_bjorhus_corrections_dt_v_psi(
+def constraint_preserving_corrections_dt_v_psi(
     unit_interface_normal_vector, three_index_constraint, char_speeds
 ):
     return char_speeds[0] * np.einsum(
@@ -21,7 +21,7 @@ def constraint_preserving_bjorhus_corrections_dt_v_psi(
     )
 
 
-def constraint_preserving_bjorhus_corrections_dt_v_zero(
+def constraint_preserving_corrections_dt_v_zero(
     unit_interface_normal_vector, four_index_constraint, char_speeds
 ):
     spatial_dim = len(unit_interface_normal_vector)
@@ -343,7 +343,7 @@ def add_physical_dof_terms_to_dt_v_minus(
     return t1_ + t2_
 
 
-def constraint_preserving_bjorhus_corrections_dt_v_minus(
+def constraint_preserving_corrections_dt_v_minus(
     outgoing_null_one_form,
     incoming_null_vector,
     outgoing_null_vector,
@@ -372,7 +372,7 @@ def constraint_preserving_bjorhus_corrections_dt_v_minus(
     )
 
 
-def constraint_preserving_gauge_bjorhus_corrections_dt_v_minus(
+def constraint_preserving_gauge_corrections_dt_v_minus(
     gamma2,
     inertial_coords,
     incoming_null_one_form,
@@ -415,7 +415,7 @@ def constraint_preserving_gauge_bjorhus_corrections_dt_v_minus(
     )
 
 
-def constraint_preserving_gauge_physical_bjorhus_corrections_dt_v_minus(
+def constraint_preserving_gauge_physical_corrections_dt_v_minus(
     gamma2,
     inertial_coords,
     unit_interface_normal_one_form,
@@ -813,14 +813,14 @@ def dt_corrs_ConstraintPreservingGauge(
         char_speeds[0] -= np.dot(normal_covector, face_mesh_velocity) * gamma1
     if np.amin(char_speeds) >= 0.0:
         return (pi * 0, phi * 0, pi * 0, pi * 0)
-    dt_v_psi = constraint_preserving_bjorhus_corrections_dt_v_psi(
+    dt_v_psi = constraint_preserving_corrections_dt_v_psi(
         unit_interface_normal_vector, three_index_constraint, char_speeds
     )
-    dt_v_zero = constraint_preserving_bjorhus_corrections_dt_v_zero(
+    dt_v_zero = constraint_preserving_corrections_dt_v_zero(
         unit_interface_normal_vector, four_index_constraint, char_speeds
     )
     dt_v_plus = -1.0 * char_projected_rhs_dt_v_plus
-    dt_v_minus = constraint_preserving_gauge_bjorhus_corrections_dt_v_minus(
+    dt_v_minus = constraint_preserving_gauge_corrections_dt_v_minus(
         gamma2,
         coords,
         incoming_null_one_form,
@@ -924,41 +924,39 @@ def dt_corrs_ConstraintPreservingGaugePhysical(
         char_speeds[0] -= np.dot(normal_covector, face_mesh_velocity) * gamma1
     if np.amin(char_speeds) >= 0.0:
         return (pi * 0, phi * 0, pi * 0, pi * 0)
-    dt_v_psi = constraint_preserving_bjorhus_corrections_dt_v_psi(
+    dt_v_psi = constraint_preserving_corrections_dt_v_psi(
         unit_interface_normal_vector, three_index_constraint, char_speeds
     )
-    dt_v_zero = constraint_preserving_bjorhus_corrections_dt_v_zero(
+    dt_v_zero = constraint_preserving_corrections_dt_v_zero(
         unit_interface_normal_vector, four_index_constraint, char_speeds
     )
     dt_v_plus = -1.0 * char_projected_rhs_dt_v_plus
-    dt_v_minus = (
-        constraint_preserving_gauge_physical_bjorhus_corrections_dt_v_minus(
-            gamma2,
-            coords,
-            normal_covector,
-            unit_interface_normal_vector,
-            spacetime_unit_normal_vector,
-            incoming_null_one_form,
-            outgoing_null_one_form,
-            incoming_null_vector,
-            outgoing_null_vector,
-            projection_ab,
-            projection_Ab,
-            projection_AB,
-            inverse_spatial_metric,
-            extrinsic_curvature,
-            spacetime_metric,
-            inverse_spacetime_metric,
-            three_index_constraint,
-            char_projected_rhs_dt_v_psi,
-            char_projected_rhs_dt_v_minus,
-            constraint_char_zero_plus,
-            constraint_char_zero_minus,
-            phi,
-            d_phi,
-            d_pi,
-            char_speeds,
-        )
+    dt_v_minus = constraint_preserving_gauge_physical_corrections_dt_v_minus(
+        gamma2,
+        coords,
+        normal_covector,
+        unit_interface_normal_vector,
+        spacetime_unit_normal_vector,
+        incoming_null_one_form,
+        outgoing_null_one_form,
+        incoming_null_vector,
+        outgoing_null_vector,
+        projection_ab,
+        projection_Ab,
+        projection_AB,
+        inverse_spatial_metric,
+        extrinsic_curvature,
+        spacetime_metric,
+        inverse_spacetime_metric,
+        three_index_constraint,
+        char_projected_rhs_dt_v_psi,
+        char_projected_rhs_dt_v_minus,
+        constraint_char_zero_plus,
+        constraint_char_zero_minus,
+        phi,
+        d_phi,
+        d_pi,
+        char_speeds,
     )
     dt_v_psi = set_bc_corr_zero_when_char_speed_is_positive(
         dt_v_psi, char_speeds[0]

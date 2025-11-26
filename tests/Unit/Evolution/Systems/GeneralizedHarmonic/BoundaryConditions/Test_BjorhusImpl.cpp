@@ -83,11 +83,9 @@ void test_constraint_preserving_bjorhus_v_psi_vs_spec_3d(
     }
 
     // Compute rhs value
-    gh::BoundaryConditions::Bjorhus::
-        constraint_preserving_bjorhus_corrections_dt_v_psi(
-            make_not_null(&local_bc_dt_v_psi),
-            local_unit_interface_normal_vector, local_three_index_constraint,
-            local_char_speeds);
+    gh::BoundaryConditions::Bjorhus::constraint_preserving_corrections_dt_v_psi(
+        make_not_null(&local_bc_dt_v_psi), local_unit_interface_normal_vector,
+        local_three_index_constraint, local_char_speeds);
     // Setting local_RhsVSpacetimeMetric
     for (size_t i = 0; i < slice_grid_points; ++i) {
       for (size_t a = 0; a <= VolumeDim; ++a) {
@@ -131,11 +129,9 @@ void test_constraint_preserving_bjorhus_v_psi_vs_spec_3d(
       local_unit_interface_normal_vector.get(2)[i] = 1.;
     }
     // Compute rhs value
-    gh::BoundaryConditions::Bjorhus::
-        constraint_preserving_bjorhus_corrections_dt_v_psi(
-            make_not_null(&local_bc_dt_v_psi),
-            local_unit_interface_normal_vector, local_three_index_constraint,
-            local_char_speeds);
+    gh::BoundaryConditions::Bjorhus::constraint_preserving_corrections_dt_v_psi(
+        make_not_null(&local_bc_dt_v_psi), local_unit_interface_normal_vector,
+        local_three_index_constraint, local_char_speeds);
     // Setting local_RhsVSpacetimeMetric
     for (size_t i = 0; i < slice_grid_points; ++i) {
       for (size_t a = 0; a <= VolumeDim; ++a) {
@@ -234,7 +230,7 @@ void test_constraint_preserving_bjorhus_v_zero_vs_spec_3d(
 
     // Compute rhs value
     gh::BoundaryConditions::Bjorhus::
-        constraint_preserving_bjorhus_corrections_dt_v_zero(
+        constraint_preserving_corrections_dt_v_zero(
             make_not_null(&local_bc_dt_v_zero),
             local_unit_interface_normal_vector, local_four_index_constraint,
             local_char_speeds);
@@ -291,7 +287,7 @@ void test_constraint_preserving_bjorhus_v_zero_vs_spec_3d(
     }
     // Compute rhs value
     gh::BoundaryConditions::Bjorhus::
-        constraint_preserving_bjorhus_corrections_dt_v_zero(
+        constraint_preserving_corrections_dt_v_zero(
             make_not_null(&local_bc_dt_v_zero),
             local_unit_interface_normal_vector, local_four_index_constraint,
             local_char_speeds);
@@ -767,7 +763,7 @@ void test_constraint_preserving_gauge_physical_bjorhus_v_minus_vs_spec_3d(
   {
     // Compute the new boundary corrections for dt<vminus>
     gh::BoundaryConditions::Bjorhus::
-        constraint_preserving_gauge_bjorhus_corrections_dt_v_minus(
+        constraint_preserving_gauge_corrections_dt_v_minus(
             make_not_null(&local_bc_dt_v_minus), local_constraint_gamma2,
             local_inertial_coords, local_incoming_null_one_form,
             local_outgoing_null_one_form, local_incoming_null_vector,
@@ -909,7 +905,7 @@ void test_constraint_preserving_gauge_physical_bjorhus_v_minus_vs_spec_3d(
 
   {  // Compute the new boundary corrections for dt<vminus>
     gh::BoundaryConditions::Bjorhus::
-        constraint_preserving_gauge_physical_bjorhus_corrections_dt_v_minus(
+        constraint_preserving_gauge_physical_corrections_dt_v_minus(
             make_not_null(&local_bc_dt_v_minus), local_constraint_gamma2,
             local_inertial_coords, local_unit_interface_normal_one_form,
             local_unit_interface_normal_vector,
@@ -1088,20 +1084,19 @@ tnsr::aa<DataVector, VolumeDim, Frame::Inertial> wrapper_func_v_psi(
   auto dt_v_psi =
       make_with_value<tnsr::aa<DataVector, VolumeDim, Frame::Inertial>>(
           interface_normal_vector, 0.);
-  gh::BoundaryConditions::Bjorhus::
-      constraint_preserving_bjorhus_corrections_dt_v_psi<VolumeDim, DataVector>(
-          make_not_null(&dt_v_psi), interface_normal_vector,
-          three_index_constraint, char_speed_array);
+  gh::BoundaryConditions::Bjorhus::constraint_preserving_corrections_dt_v_psi<
+      VolumeDim, DataVector>(make_not_null(&dt_v_psi), interface_normal_vector,
+                             three_index_constraint, char_speed_array);
   return dt_v_psi;
 }
 
 template <size_t VolumeDim>
-void test_constraint_preserving_bjorhus_corrections_dt_v_psi(
+void test_constraint_preserving_corrections_dt_v_psi(
     const size_t grid_size_each_dimension) {
   pypp::check_with_random_values<1>(
       &wrapper_func_v_psi<VolumeDim>,
       "Evolution.Systems.GeneralizedHarmonic.BoundaryConditions.Bjorhus",
-      "constraint_preserving_bjorhus_corrections_dt_v_psi", {{{-1., 1.}}},
+      "constraint_preserving_corrections_dt_v_psi", {{{-1., 1.}}},
       DataVector(grid_size_each_dimension));
 }
 
@@ -1118,21 +1113,19 @@ tnsr::iaa<DataVector, VolumeDim, Frame::Inertial> wrapper_func_v_zero(
   auto dt_v_zero =
       make_with_value<tnsr::iaa<DataVector, VolumeDim, Frame::Inertial>>(
           get<0>(interface_normal_vector), 0.);
-  gh::BoundaryConditions::Bjorhus::
-      constraint_preserving_bjorhus_corrections_dt_v_zero<VolumeDim,
-                                                          DataVector>(
-          make_not_null(&dt_v_zero), interface_normal_vector,
-          four_index_constraint, char_speed_array);
+  gh::BoundaryConditions::Bjorhus::constraint_preserving_corrections_dt_v_zero<
+      VolumeDim, DataVector>(make_not_null(&dt_v_zero), interface_normal_vector,
+                             four_index_constraint, char_speed_array);
   return dt_v_zero;
 }
 
 template <size_t VolumeDim>
-void test_constraint_preserving_bjorhus_corrections_dt_v_zero(
+void test_constraint_preserving_corrections_dt_v_zero(
     const size_t grid_size_each_dimension) {
   pypp::check_with_random_values<1>(
       &wrapper_func_v_zero<VolumeDim>,
       "Evolution.Systems.GeneralizedHarmonic.BoundaryConditions.Bjorhus",
-      "constraint_preserving_bjorhus_corrections_dt_v_zero", {{{-1., 1.}}},
+      "constraint_preserving_corrections_dt_v_zero", {{{-1., 1.}}},
       DataVector(grid_size_each_dimension));
 }
 
@@ -1158,14 +1151,12 @@ tnsr::aa<DataVector, VolumeDim, Frame::Inertial> wrapper_func_cp_v_minus(
   auto dt_v_minus =
       make_with_value<tnsr::aa<DataVector, VolumeDim, Frame::Inertial>>(
           get<0>(outgoing_null_one_form), 0.);
-  gh::BoundaryConditions::Bjorhus::
-      constraint_preserving_bjorhus_corrections_dt_v_minus<VolumeDim,
-                                                           DataVector>(
-          make_not_null(&dt_v_minus), outgoing_null_one_form,
-          incoming_null_vector, outgoing_null_vector, projection_ab,
-          projection_Ab, projection_AB, char_projected_rhs_dt_v_minus,
-          constraint_char_zero_plus, constraint_char_zero_minus,
-          char_speed_array);
+  gh::BoundaryConditions::Bjorhus::constraint_preserving_corrections_dt_v_minus<
+      VolumeDim, DataVector>(
+      make_not_null(&dt_v_minus), outgoing_null_one_form, incoming_null_vector,
+      outgoing_null_vector, projection_ab, projection_Ab, projection_AB,
+      char_projected_rhs_dt_v_minus, constraint_char_zero_plus,
+      constraint_char_zero_minus, char_speed_array);
   return dt_v_minus;
 }
 
@@ -1198,8 +1189,7 @@ tnsr::aa<DataVector, VolumeDim, Frame::Inertial> wrapper_func_cpg_v_minus(
       make_with_value<tnsr::aa<DataVector, VolumeDim, Frame::Inertial>>(
           get(gamma2), 0.);
   gh::BoundaryConditions::Bjorhus::
-      constraint_preserving_gauge_bjorhus_corrections_dt_v_minus<VolumeDim,
-                                                                 DataVector>(
+      constraint_preserving_gauge_corrections_dt_v_minus<VolumeDim, DataVector>(
           make_not_null(&dt_v_minus), gamma2, inertial_coords,
           incoming_null_one_form, outgoing_null_one_form, incoming_null_vector,
           outgoing_null_vector, projection_ab, projection_Ab, projection_AB,
@@ -1255,8 +1245,8 @@ tnsr::aa<DataVector, VolumeDim, Frame::Inertial> wrapper_func_cpgp_v_minus(
       make_with_value<tnsr::aa<DataVector, VolumeDim, Frame::Inertial>>(
           get(gamma2), 0.);
   gh::BoundaryConditions::Bjorhus::
-      constraint_preserving_gauge_physical_bjorhus_corrections_dt_v_minus<
-          VolumeDim, DataVector>(
+      constraint_preserving_gauge_physical_corrections_dt_v_minus<VolumeDim,
+                                                                  DataVector>(
           make_not_null(&dt_v_minus), gamma2, inertial_coords,
           unit_interface_normal_one_form, unit_interface_normal_vector,
           spacetime_unit_normal_vector, incoming_null_one_form,
@@ -1270,32 +1260,32 @@ tnsr::aa<DataVector, VolumeDim, Frame::Inertial> wrapper_func_cpgp_v_minus(
 }
 
 template <size_t VolumeDim>
-void test_constraint_preserving_bjorhus_corrections_dt_v_minus(
+void test_constraint_preserving_corrections_dt_v_minus(
     const size_t grid_size_each_dimension) {
   pypp::check_with_random_values<1>(
       &wrapper_func_cp_v_minus<VolumeDim>,
       "Evolution.Systems.GeneralizedHarmonic.BoundaryConditions.Bjorhus",
-      "constraint_preserving_bjorhus_corrections_dt_v_minus",
-      {{{-1., 1.}}}, DataVector(grid_size_each_dimension));
+      "constraint_preserving_corrections_dt_v_minus", {{{-1., 1.}}},
+      DataVector(grid_size_each_dimension));
 }
 
 template <size_t VolumeDim>
-void test_constraint_preserving_gauge_bjorhus_corrections_dt_v_minus(
+void test_constraint_preserving_gauge_corrections_dt_v_minus(
     const size_t grid_size_each_dimension) {
   pypp::check_with_random_values<1>(
       &wrapper_func_cpg_v_minus<VolumeDim>,
       "Evolution.Systems.GeneralizedHarmonic.BoundaryConditions.Bjorhus",
-      "constraint_preserving_gauge_bjorhus_corrections_dt_v_minus",
-      {{{-1., 1.}}}, DataVector(grid_size_each_dimension));
+      "constraint_preserving_gauge_corrections_dt_v_minus", {{{-1., 1.}}},
+      DataVector(grid_size_each_dimension));
 }
 
 template <size_t VolumeDim>
-void test_constraint_preserving_gauge_physical_bjorhus_corrections_dt_v_minus(
+void test_constraint_preserving_gauge_physical_corrections_dt_v_minus(
     const size_t grid_size_each_dimension) {
   pypp::check_with_random_values<1>(
       &wrapper_func_cpgp_v_minus<VolumeDim>,
       "Evolution.Systems.GeneralizedHarmonic.BoundaryConditions.Bjorhus",
-      "constraint_preserving_gauge_physical_bjorhus_corrections_dt_v_minus",
+      "constraint_preserving_gauge_physical_corrections_dt_v_minus",
       {{{-1., 1.}}}, DataVector(grid_size_each_dimension));
 }
 }  // namespace
@@ -1308,9 +1298,9 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.GeneralizedHarmonic.BCBjorhus.VPsi",
   const size_t grid_size = 3;
 
   // Python tests
-  test_constraint_preserving_bjorhus_corrections_dt_v_psi<1>(grid_size);
-  test_constraint_preserving_bjorhus_corrections_dt_v_psi<2>(grid_size);
-  test_constraint_preserving_bjorhus_corrections_dt_v_psi<3>(grid_size);
+  test_constraint_preserving_corrections_dt_v_psi<1>(grid_size);
+  test_constraint_preserving_corrections_dt_v_psi<2>(grid_size);
+  test_constraint_preserving_corrections_dt_v_psi<3>(grid_size);
 
   // Piece-wise tests with SpEC output in 3D
   test_constraint_preserving_bjorhus_v_psi_vs_spec_3d(grid_size);
@@ -1324,9 +1314,9 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.GeneralizedHarmonic.BCBjorhus.VZero",
   const size_t grid_size = 3;
 
   // Python tests
-  test_constraint_preserving_bjorhus_corrections_dt_v_zero<1>(grid_size);
-  test_constraint_preserving_bjorhus_corrections_dt_v_zero<2>(grid_size);
-  test_constraint_preserving_bjorhus_corrections_dt_v_zero<3>(grid_size);
+  test_constraint_preserving_corrections_dt_v_zero<1>(grid_size);
+  test_constraint_preserving_corrections_dt_v_zero<2>(grid_size);
+  test_constraint_preserving_corrections_dt_v_zero<3>(grid_size);
 
   // Piece-wise tests with SpEC output
   test_constraint_preserving_bjorhus_v_zero_vs_spec_3d(grid_size);
@@ -1339,17 +1329,17 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.GeneralizedHarmonic.BCBjorhus.VMinus",
   const size_t grid_size = 3;
 
   // Python tests
-  test_constraint_preserving_bjorhus_corrections_dt_v_minus<1>(grid_size);
-  test_constraint_preserving_bjorhus_corrections_dt_v_minus<2>(grid_size);
-  test_constraint_preserving_bjorhus_corrections_dt_v_minus<3>(grid_size);
-  test_constraint_preserving_gauge_bjorhus_corrections_dt_v_minus<1>(grid_size);
-  test_constraint_preserving_gauge_bjorhus_corrections_dt_v_minus<2>(grid_size);
-  test_constraint_preserving_gauge_bjorhus_corrections_dt_v_minus<3>(grid_size);
-  test_constraint_preserving_gauge_physical_bjorhus_corrections_dt_v_minus<1>(
+  test_constraint_preserving_corrections_dt_v_minus<1>(grid_size);
+  test_constraint_preserving_corrections_dt_v_minus<2>(grid_size);
+  test_constraint_preserving_corrections_dt_v_minus<3>(grid_size);
+  test_constraint_preserving_gauge_corrections_dt_v_minus<1>(grid_size);
+  test_constraint_preserving_gauge_corrections_dt_v_minus<2>(grid_size);
+  test_constraint_preserving_gauge_corrections_dt_v_minus<3>(grid_size);
+  test_constraint_preserving_gauge_physical_corrections_dt_v_minus<1>(
       grid_size);
-  test_constraint_preserving_gauge_physical_bjorhus_corrections_dt_v_minus<2>(
+  test_constraint_preserving_gauge_physical_corrections_dt_v_minus<2>(
       grid_size);
-  test_constraint_preserving_gauge_physical_bjorhus_corrections_dt_v_minus<3>(
+  test_constraint_preserving_gauge_physical_corrections_dt_v_minus<3>(
       grid_size);
 
   // Piece-wise tests with SpEC output in 3D
