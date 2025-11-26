@@ -32,6 +32,7 @@
 #include "Time/AdaptiveSteppingDiagnostics.hpp"
 #include "Time/ChangeStepSize.hpp"
 #include "Time/ChangeTimeStepperOrder.hpp"
+#include "Time/ChangeTimeStepperOrder.tpp"
 #include "Time/ChooseLtsStepSize.hpp"
 #include "Time/RecordTimeStepperData.hpp"
 #include "Time/RecordTimeStepperData.tpp"

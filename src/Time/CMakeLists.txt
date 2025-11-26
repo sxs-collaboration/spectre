@@ -37,6 +37,7 @@ spectre_target_headers(
   BoundaryHistory.hpp
   ChangeStepSize.hpp
   ChangeTimeStepperOrder.hpp
+  ChangeTimeStepperOrder.tpp
   ChooseLtsStepSize.hpp
   CleanHistory.hpp
   CleanHistory.tpp
