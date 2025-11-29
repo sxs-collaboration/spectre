@@ -1,7 +1,7 @@
 #!/bin/bash -
 #SBATCH -o spectre.stdout
 #SBATCH -e spectre.stderr
-#SBATCH --ntasks-per-node 128
+#SBATCH --ntasks-per-node {{ num_slurm_tasks | default(128) }}
 #SBATCH --mem=248G
 #SBATCH -J KerrSchild
 #SBATCH --nodes 2

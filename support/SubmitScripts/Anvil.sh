@@ -1,7 +1,7 @@
 #!/bin/bash -
 #SBATCH -o spectre.out
 #SBATCH -e spectre.out
-#SBATCH --ntasks-per-node 1
+#SBATCH --ntasks-per-node {{ num_slurm_tasks | default(1) }}
 #SBATCH --cpus-per-task=128
 #SBATCH --no-requeue
 #SBATCH -J SpectreJob
