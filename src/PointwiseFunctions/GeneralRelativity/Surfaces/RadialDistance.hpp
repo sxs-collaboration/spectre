@@ -24,9 +24,11 @@ namespace gr::surfaces {
  *
  * \details Computes the pointwise radial distance \f$r_a-r_b\f$ between two
  * Strahlkorpers `strahlkorper_a` and `strahlkorper_b` that have the same
- * center, first (if the Strahlkorpers' resolutions are unequal) prolonging the
- * lower-resolution Strahlkorper to the same resolution as the higher-resolution
- * Strahlkorper.
+ * center. If the Strahlkorpers' resolutions are unequal, the lower-resolution
+ * Strahlkorper is internally prolonged to match the higher-resolution
+ * Strahlkorper. The `radial_distance` DataVector must already have size
+ * consistent with the higher-resolution Strahlkorper's resolution (or the
+ * common size when the resolutions match); a mismatch triggers an error.
  */
 template <typename Frame>
 void radial_distance(gsl::not_null<Scalar<DataVector>*> radial_distance,

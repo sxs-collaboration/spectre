@@ -22,20 +22,40 @@ void radial_distance(const gsl::not_null<Scalar<DataVector>*> radial_distance,
         << strahlkorper_a.expansion_center() << " and "
         << strahlkorper_b.expansion_center());
   }
-  get(*radial_distance)
-      .destructive_resize(strahlkorper_a.ylm_spherepack().physical_size());
+  const auto physical_size_a = strahlkorper_a.ylm_spherepack().physical_size();
+  const auto physical_size_b = strahlkorper_b.ylm_spherepack().physical_size();
   if (strahlkorper_a.l_max() == strahlkorper_b.l_max() and
       strahlkorper_a.m_max() == strahlkorper_b.m_max()) {
+    if (UNLIKELY(get(*radial_distance).size() != physical_size_a)) {
+      ERROR("radial_distance has size "
+            << get(*radial_distance).size()
+            << " but both Strahlkorpers have physical_size " << physical_size_a
+            << ". Provide an output of the correct size.");
+    }
     get(*radial_distance) =
         get(ylm::radius(strahlkorper_a)) - get(ylm::radius(strahlkorper_b));
   } else if (strahlkorper_a.l_max() > strahlkorper_b.l_max() or
              (strahlkorper_a.l_max() == strahlkorper_b.l_max() and
               strahlkorper_a.m_max() > strahlkorper_b.m_max())) {
+    if (UNLIKELY(get(*radial_distance).size() != physical_size_a)) {
+      ERROR("radial_distance has size "
+            << get(*radial_distance).size()
+            << " but Strahlkorper a has higher resolution with physical_size "
+            << physical_size_a
+            << ". Provide an output matching the higher-resolution surface.");
+    }
     get(*radial_distance) =
         get(ylm::radius(strahlkorper_a)) -
         get(ylm::radius(ylm::Strahlkorper<Frame>(
             strahlkorper_a.l_max(), strahlkorper_a.m_max(), strahlkorper_b)));
   } else {
+    if (UNLIKELY(get(*radial_distance).size() != physical_size_b)) {
+      ERROR("radial_distance has size "
+            << get(*radial_distance).size()
+            << " but Strahlkorper b has higher resolution with physical_size "
+            << physical_size_b
+            << ". Provide an output matching the higher-resolution surface.");
+    }
     get(*radial_distance) =
         -get(ylm::radius(strahlkorper_b)) +
         get(ylm::radius(ylm::Strahlkorper<Frame>(

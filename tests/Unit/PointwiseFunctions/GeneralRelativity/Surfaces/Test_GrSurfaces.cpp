@@ -1286,6 +1286,34 @@ SPECTRE_TEST_CASE("Unit.GrSurfaces.RadialDistance",
       strahlkorper_a);
   CHECK_ITERABLE_APPROX(radial_dist, expected_radial_dist_b_minus_a);
 
+  Scalar<DataVector> wrong_size_radial_dist{
+      DataVector{strahlkorper_a.ylm_spherepack().physical_size() + 1}};
+  CHECK_THROWS_WITH(
+      (gr::surfaces::radial_distance(make_not_null(&wrong_size_radial_dist),
+                                     strahlkorper_a, strahlkorper_b)),
+      Catch::Matchers::ContainsSubstring(
+          "both Strahlkorpers have physical_size"));
+
+  Scalar<DataVector> too_small_for_a{
+      DataVector{strahlkorper_b.ylm_spherepack().physical_size() / 2}};
+  const ylm::Strahlkorper<Frame::Inertial> lower_res_b(
+      strahlkorper_b.l_max() - 1, strahlkorper_b.m_max() - 1, strahlkorper_b);
+  CHECK_THROWS_WITH(
+      (gr::surfaces::radial_distance(make_not_null(&too_small_for_a),
+                                     strahlkorper_a, lower_res_b)),
+      Catch::Matchers::ContainsSubstring(
+          "Strahlkorper a has higher resolution with physical_size"));
+
+  Scalar<DataVector> too_small_for_b{
+      DataVector{strahlkorper_a.ylm_spherepack().physical_size()}};
+  const ylm::Strahlkorper<Frame::Inertial> higher_res_b(
+      strahlkorper_b.l_max() + 1, strahlkorper_b.m_max() + 1, strahlkorper_b);
+  CHECK_THROWS_WITH(
+      (gr::surfaces::radial_distance(make_not_null(&too_small_for_b),
+                                     strahlkorper_a, higher_res_b)),
+      Catch::Matchers::ContainsSubstring(
+          "Strahlkorper b has higher resolution with physical_size"));
+
   CHECK_THROWS_WITH(
       ([&strahlkorper_a, &y11_amplitude, &radius, &radial_dist]() {
         const std::array<double, 3> different_center{{0.1, 0.4, 0.3}};
