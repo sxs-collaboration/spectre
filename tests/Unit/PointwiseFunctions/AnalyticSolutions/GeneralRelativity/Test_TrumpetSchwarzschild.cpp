@@ -184,7 +184,7 @@ SPECTRE_TEST_CASE(
       // random grid pts check
       test_trumpet_schwarzschild_random(
           solution, std::numeric_limits<double>::signaling_NaN(),
-          make_not_null(&generator), -1.e-4 * mass, -1.e-1 * mass, mass, n);
+          make_not_null(&generator), -1.e-1 * mass, -1.e-4 * mass, mass, n);
       test_trumpet_schwarzschild_random(
           solution, DataVector{1, std::numeric_limits<double>::signaling_NaN()},
           make_not_null(&generator), 1.e-1 * mass, 1. * mass, mass, n);
