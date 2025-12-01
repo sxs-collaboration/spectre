@@ -24,7 +24,7 @@
 
 namespace gh::BoundaryConditions::Bjorhus {
 template <size_t VolumeDim, typename DataType>
-void constraint_preserving_bjorhus_corrections_dt_v_psi(
+void constraint_preserving_corrections_dt_v_psi(
     const gsl::not_null<tnsr::aa<DataType, VolumeDim, Frame::Inertial>*>
         bc_dt_v_psi,
     const tnsr::I<DataType, VolumeDim, Frame::Inertial>&
@@ -47,7 +47,7 @@ void constraint_preserving_bjorhus_corrections_dt_v_psi(
 }
 
 template <size_t VolumeDim, typename DataType>
-void constraint_preserving_bjorhus_corrections_dt_v_zero(
+void constraint_preserving_corrections_dt_v_zero(
     const gsl::not_null<tnsr::iaa<DataType, VolumeDim, Frame::Inertial>*>
         bc_dt_v_zero,
     const tnsr::I<DataType, VolumeDim, Frame::Inertial>&
@@ -494,7 +494,36 @@ void add_physical_terms_to_dt_v_minus(
 }  // namespace detail
 
 template <size_t VolumeDim, typename DataType>
-void constraint_preserving_bjorhus_corrections_dt_v_minus(
+void constraint_preserving_corrections_dt_v_minus(
+    const gsl::not_null<tnsr::aa<DataType, VolumeDim, Frame::Inertial>*>
+        bc_dt_v_minus,
+    const tnsr::a<DataType, VolumeDim, Frame::Inertial>& outgoing_null_one_form,
+    const tnsr::A<DataType, VolumeDim, Frame::Inertial>& incoming_null_vector,
+    const tnsr::A<DataType, VolumeDim, Frame::Inertial>& outgoing_null_vector,
+    const tnsr::aa<DataType, VolumeDim, Frame::Inertial>& projection_ab,
+    const tnsr::Ab<DataType, VolumeDim, Frame::Inertial>& projection_Ab,
+    const tnsr::AA<DataType, VolumeDim, Frame::Inertial>& projection_AB,
+    const tnsr::aa<DataType, VolumeDim, Frame::Inertial>&
+        char_projected_rhs_dt_v_minus,
+    const tnsr::a<DataType, VolumeDim, Frame::Inertial>&
+        constraint_char_zero_plus,
+    const tnsr::a<DataType, VolumeDim, Frame::Inertial>&
+        constraint_char_zero_minus,
+    const std::array<DataType, 4>& char_speeds) {
+  for (size_t a = 0; a <= VolumeDim; ++a) {
+    for (size_t b = a; b <= VolumeDim; ++b) {
+      bc_dt_v_minus->get(a, b) = -char_projected_rhs_dt_v_minus.get(a, b);
+    }
+  }
+  detail::add_constraint_dependent_terms_to_dt_v_minus(
+      bc_dt_v_minus, outgoing_null_one_form, incoming_null_vector,
+      outgoing_null_vector, projection_ab, projection_Ab, projection_AB,
+      constraint_char_zero_plus, constraint_char_zero_minus,
+      char_projected_rhs_dt_v_minus, char_speeds);
+}
+
+template <size_t VolumeDim, typename DataType>
+void constraint_preserving_gauge_corrections_dt_v_minus(
     const gsl::not_null<tnsr::aa<DataType, VolumeDim, Frame::Inertial>*>
         bc_dt_v_minus,
     const Scalar<DataType>& gamma2,
@@ -532,7 +561,7 @@ void constraint_preserving_bjorhus_corrections_dt_v_minus(
 }
 
 template <size_t VolumeDim, typename DataType>
-void constraint_preserving_physical_bjorhus_corrections_dt_v_minus(
+void constraint_preserving_gauge_physical_corrections_dt_v_minus(
     const gsl::not_null<tnsr::aa<DataType, VolumeDim, Frame::Inertial>*>
         bc_dt_v_minus,
     const Scalar<DataType>& gamma2,
@@ -597,181 +626,204 @@ void constraint_preserving_physical_bjorhus_corrections_dt_v_minus(
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(1, data)
 
-#define INSTANTIATE(_, data)                                                  \
-  template void gh::BoundaryConditions::Bjorhus::                             \
-      constraint_preserving_bjorhus_corrections_dt_v_psi(                     \
-          const gsl::not_null<                                                \
-              tnsr::aa<DTYPE(data), DIM(data), Frame::Inertial>*>             \
-              bc_dt_v_psi,                                                    \
-          const tnsr::I<DTYPE(data), DIM(data), Frame::Inertial>&             \
-              unit_interface_normal_vector,                                   \
-          const tnsr::iaa<DTYPE(data), DIM(data), Frame::Inertial>&           \
-              three_index_constraint,                                         \
-          const std::array<DTYPE(data), 4>& char_speeds);                     \
-  template void gh::BoundaryConditions::Bjorhus::                             \
-      constraint_preserving_bjorhus_corrections_dt_v_zero(                    \
-          const gsl::not_null<                                                \
-              tnsr::iaa<DTYPE(data), DIM(data), Frame::Inertial>*>            \
-              bc_dt_v_zero,                                                   \
-          const tnsr::I<DTYPE(data), DIM(data), Frame::Inertial>&             \
-              unit_interface_normal_vector,                                   \
-          const tnsr::iaa<DTYPE(data), DIM(data), Frame::Inertial>&           \
-              four_index_constraint,                                          \
-          const std::array<DTYPE(data), 4>& char_speeds);                     \
-  template void gh::BoundaryConditions::Bjorhus::detail::                     \
-      add_gauge_sommerfeld_terms_to_dt_v_minus(                               \
-          const gsl::not_null<                                                \
-              tnsr::aa<DTYPE(data), DIM(data), Frame::Inertial>*>             \
-              bc_dt_v_minus,                                                  \
-          const Scalar<DTYPE(data)>& gamma2,                                  \
-          const tnsr::I<DTYPE(data), DIM(data), Frame::Inertial>&             \
-              inertial_coords,                                                \
-          const tnsr::a<DTYPE(data), DIM(data), Frame::Inertial>&             \
-              incoming_null_one_form,                                         \
-          const tnsr::a<DTYPE(data), DIM(data), Frame::Inertial>&             \
-              outgoing_null_one_form,                                         \
-          const tnsr::A<DTYPE(data), DIM(data), Frame::Inertial>&             \
-              incoming_null_vector,                                           \
-          const tnsr::A<DTYPE(data), DIM(data), Frame::Inertial>&             \
-              outgoing_null_vector,                                           \
-          const tnsr::Ab<DTYPE(data), DIM(data), Frame::Inertial>&            \
-              projection_Ab,                                                  \
-          const tnsr::aa<DTYPE(data), DIM(data), Frame::Inertial>&            \
-              char_projected_rhs_dt_v_psi);                                   \
-  template void gh::BoundaryConditions::Bjorhus::detail::                     \
-      add_constraint_dependent_terms_to_dt_v_minus(                           \
-          const gsl::not_null<                                                \
-              tnsr::aa<DTYPE(data), DIM(data), Frame::Inertial>*>             \
-              bc_dt_v_minus,                                                  \
-          const tnsr::a<DTYPE(data), DIM(data), Frame::Inertial>&             \
-              outgoing_null_one_form,                                         \
-          const tnsr::A<DTYPE(data), DIM(data), Frame::Inertial>&             \
-              incoming_null_vector,                                           \
-          const tnsr::A<DTYPE(data), DIM(data), Frame::Inertial>&             \
-              outgoing_null_vector,                                           \
-          const tnsr::aa<DTYPE(data), DIM(data), Frame::Inertial>&            \
-              projection_ab,                                                  \
-          const tnsr::Ab<DTYPE(data), DIM(data), Frame::Inertial>&            \
-              projection_Ab,                                                  \
-          const tnsr::AA<DTYPE(data), DIM(data), Frame::Inertial>&            \
-              projection_AB,                                                  \
-          const tnsr::a<DTYPE(data), DIM(data), Frame::Inertial>&             \
-              constraint_char_zero_plus,                                      \
-          const tnsr::a<DTYPE(data), DIM(data), Frame::Inertial>&             \
-              constraint_char_zero_minus,                                     \
-          const tnsr::aa<DTYPE(data), DIM(data), Frame::Inertial>&            \
-              char_projected_rhs_dt_v_minus,                                  \
-          const std::array<DTYPE(data), 4>& char_speeds);                     \
-  template void                                                               \
-  gh::BoundaryConditions::Bjorhus::detail::add_physical_terms_to_dt_v_minus(  \
-      const gsl::not_null<tnsr::aa<DTYPE(data), DIM(data), Frame::Inertial>*> \
-          bc_dt_v_minus,                                                      \
-      const Scalar<DTYPE(data)>& gamma2,                                      \
-      const tnsr::i<DTYPE(data), DIM(data), Frame::Inertial>&                 \
-          unit_interface_normal_one_form,                                     \
-      const tnsr::I<DTYPE(data), DIM(data), Frame::Inertial>&                 \
-          unit_interface_normal_vector,                                       \
-      const tnsr::A<DTYPE(data), DIM(data), Frame::Inertial>&                 \
-          spacetime_unit_normal_vector,                                       \
-      const tnsr::aa<DTYPE(data), DIM(data), Frame::Inertial>& projection_ab, \
-      const tnsr::Ab<DTYPE(data), DIM(data), Frame::Inertial>& projection_Ab, \
-      const tnsr::AA<DTYPE(data), DIM(data), Frame::Inertial>& projection_AB, \
-      const tnsr::II<DTYPE(data), DIM(data), Frame::Inertial>&                \
-          inverse_spatial_metric,                                             \
-      const tnsr::ii<DTYPE(data), DIM(data), Frame::Inertial>&                \
-          extrinsic_curvature,                                                \
-      const tnsr::aa<DTYPE(data), DIM(data), Frame::Inertial>&                \
-          spacetime_metric,                                                   \
-      const tnsr::AA<DTYPE(data), DIM(data), Frame::Inertial>&                \
-          inverse_spacetime_metric,                                           \
-      const tnsr::iaa<DTYPE(data), DIM(data), Frame::Inertial>&               \
-          three_index_constraint,                                             \
-      const tnsr::aa<DTYPE(data), DIM(data), Frame::Inertial>&                \
-          char_projected_rhs_dt_v_minus,                                      \
-      const tnsr::iaa<DTYPE(data), DIM(data), Frame::Inertial>& phi,          \
-      const tnsr::ijaa<DTYPE(data), DIM(data), Frame::Inertial>& d_phi,       \
-      const tnsr::iaa<DTYPE(data), DIM(data), Frame::Inertial>& d_pi,         \
-      const std::array<DTYPE(data), 4>& char_speeds);                         \
-  template void gh::BoundaryConditions::Bjorhus::                             \
-      constraint_preserving_bjorhus_corrections_dt_v_minus(                   \
-          const gsl::not_null<                                                \
-              tnsr::aa<DTYPE(data), DIM(data), Frame::Inertial>*>             \
-              bc_dt_v_minus,                                                  \
-          const Scalar<DTYPE(data)>& gamma2,                                  \
-          const tnsr::I<DTYPE(data), DIM(data), Frame::Inertial>&             \
-              inertial_coords,                                                \
-          const tnsr::a<DTYPE(data), DIM(data), Frame::Inertial>&             \
-              incoming_null_one_form,                                         \
-          const tnsr::a<DTYPE(data), DIM(data), Frame::Inertial>&             \
-              outgoing_null_one_form,                                         \
-          const tnsr::A<DTYPE(data), DIM(data), Frame::Inertial>&             \
-              incoming_null_vector,                                           \
-          const tnsr::A<DTYPE(data), DIM(data), Frame::Inertial>&             \
-              outgoing_null_vector,                                           \
-          const tnsr::aa<DTYPE(data), DIM(data), Frame::Inertial>&            \
-              projection_ab,                                                  \
-          const tnsr::Ab<DTYPE(data), DIM(data), Frame::Inertial>&            \
-              projection_Ab,                                                  \
-          const tnsr::AA<DTYPE(data), DIM(data), Frame::Inertial>&            \
-              projection_AB,                                                  \
-          const tnsr::aa<DTYPE(data), DIM(data), Frame::Inertial>&            \
-              char_projected_rhs_dt_v_psi,                                    \
-          const tnsr::aa<DTYPE(data), DIM(data), Frame::Inertial>&            \
-              char_projected_rhs_dt_v_minus,                                  \
-          const tnsr::a<DTYPE(data), DIM(data), Frame::Inertial>&             \
-              constraint_char_zero_plus,                                      \
-          const tnsr::a<DTYPE(data), DIM(data), Frame::Inertial>&             \
-              constraint_char_zero_minus,                                     \
-          const std::array<DTYPE(data), 4>& char_speeds);                     \
-  template void gh::BoundaryConditions::Bjorhus::                             \
-      constraint_preserving_physical_bjorhus_corrections_dt_v_minus(          \
-          const gsl::not_null<                                                \
-              tnsr::aa<DTYPE(data), DIM(data), Frame::Inertial>*>             \
-              bc_dt_v_minus,                                                  \
-          const Scalar<DTYPE(data)>& gamma2,                                  \
-          const tnsr::I<DTYPE(data), DIM(data), Frame::Inertial>&             \
-              inertial_coords,                                                \
-          const tnsr::i<DTYPE(data), DIM(data), Frame::Inertial>&             \
-              unit_interface_normal_one_form,                                 \
-          const tnsr::I<DTYPE(data), DIM(data), Frame::Inertial>&             \
-              unit_interface_normal_vector,                                   \
-          const tnsr::A<DTYPE(data), DIM(data), Frame::Inertial>&             \
-              spacetime_unit_normal_vector,                                   \
-          const tnsr::a<DTYPE(data), DIM(data), Frame::Inertial>&             \
-              incoming_null_one_form,                                         \
-          const tnsr::a<DTYPE(data), DIM(data), Frame::Inertial>&             \
-              outgoing_null_one_form,                                         \
-          const tnsr::A<DTYPE(data), DIM(data), Frame::Inertial>&             \
-              incoming_null_vector,                                           \
-          const tnsr::A<DTYPE(data), DIM(data), Frame::Inertial>&             \
-              outgoing_null_vector,                                           \
-          const tnsr::aa<DTYPE(data), DIM(data), Frame::Inertial>&            \
-              projection_ab,                                                  \
-          const tnsr::Ab<DTYPE(data), DIM(data), Frame::Inertial>&            \
-              projection_Ab,                                                  \
-          const tnsr::AA<DTYPE(data), DIM(data), Frame::Inertial>&            \
-              projection_AB,                                                  \
-          const tnsr::II<DTYPE(data), DIM(data), Frame::Inertial>&            \
-              inverse_spatial_metric,                                         \
-          const tnsr::ii<DTYPE(data), DIM(data), Frame::Inertial>&            \
-              extrinsic_curvature,                                            \
-          const tnsr::aa<DTYPE(data), DIM(data), Frame::Inertial>&            \
-              spacetime_metric,                                               \
-          const tnsr::AA<DTYPE(data), DIM(data), Frame::Inertial>&            \
-              inverse_spacetime_metric,                                       \
-          const tnsr::iaa<DTYPE(data), DIM(data), Frame::Inertial>&           \
-              three_index_constraint,                                         \
-          const tnsr::aa<DTYPE(data), DIM(data), Frame::Inertial>&            \
-              char_projected_rhs_dt_v_psi,                                    \
-          const tnsr::aa<DTYPE(data), DIM(data), Frame::Inertial>&            \
-              char_projected_rhs_dt_v_minus,                                  \
-          const tnsr::a<DTYPE(data), DIM(data), Frame::Inertial>&             \
-              constraint_char_zero_plus,                                      \
-          const tnsr::a<DTYPE(data), DIM(data), Frame::Inertial>&             \
-              constraint_char_zero_minus,                                     \
-          const tnsr::iaa<DTYPE(data), DIM(data), Frame::Inertial>& phi,      \
-          const tnsr::ijaa<DTYPE(data), DIM(data), Frame::Inertial>& d_phi,   \
-          const tnsr::iaa<DTYPE(data), DIM(data), Frame::Inertial>& d_pi,     \
+#define INSTANTIATE(_, data)                                                   \
+  template void                                                                \
+  gh::BoundaryConditions::Bjorhus::constraint_preserving_corrections_dt_v_psi( \
+      const gsl::not_null<tnsr::aa<DTYPE(data), DIM(data), Frame::Inertial>*>  \
+          bc_dt_v_psi,                                                         \
+      const tnsr::I<DTYPE(data), DIM(data), Frame::Inertial>&                  \
+          unit_interface_normal_vector,                                        \
+      const tnsr::iaa<DTYPE(data), DIM(data), Frame::Inertial>&                \
+          three_index_constraint,                                              \
+      const std::array<DTYPE(data), 4>& char_speeds);                          \
+  template void gh::BoundaryConditions::Bjorhus::                              \
+      constraint_preserving_corrections_dt_v_zero(                             \
+          const gsl::not_null<                                                 \
+              tnsr::iaa<DTYPE(data), DIM(data), Frame::Inertial>*>             \
+              bc_dt_v_zero,                                                    \
+          const tnsr::I<DTYPE(data), DIM(data), Frame::Inertial>&              \
+              unit_interface_normal_vector,                                    \
+          const tnsr::iaa<DTYPE(data), DIM(data), Frame::Inertial>&            \
+              four_index_constraint,                                           \
+          const std::array<DTYPE(data), 4>& char_speeds);                      \
+  template void gh::BoundaryConditions::Bjorhus::detail::                      \
+      add_gauge_sommerfeld_terms_to_dt_v_minus(                                \
+          const gsl::not_null<                                                 \
+              tnsr::aa<DTYPE(data), DIM(data), Frame::Inertial>*>              \
+              bc_dt_v_minus,                                                   \
+          const Scalar<DTYPE(data)>& gamma2,                                   \
+          const tnsr::I<DTYPE(data), DIM(data), Frame::Inertial>&              \
+              inertial_coords,                                                 \
+          const tnsr::a<DTYPE(data), DIM(data), Frame::Inertial>&              \
+              incoming_null_one_form,                                          \
+          const tnsr::a<DTYPE(data), DIM(data), Frame::Inertial>&              \
+              outgoing_null_one_form,                                          \
+          const tnsr::A<DTYPE(data), DIM(data), Frame::Inertial>&              \
+              incoming_null_vector,                                            \
+          const tnsr::A<DTYPE(data), DIM(data), Frame::Inertial>&              \
+              outgoing_null_vector,                                            \
+          const tnsr::Ab<DTYPE(data), DIM(data), Frame::Inertial>&             \
+              projection_Ab,                                                   \
+          const tnsr::aa<DTYPE(data), DIM(data), Frame::Inertial>&             \
+              char_projected_rhs_dt_v_psi);                                    \
+  template void gh::BoundaryConditions::Bjorhus::detail::                      \
+      add_constraint_dependent_terms_to_dt_v_minus(                            \
+          const gsl::not_null<                                                 \
+              tnsr::aa<DTYPE(data), DIM(data), Frame::Inertial>*>              \
+              bc_dt_v_minus,                                                   \
+          const tnsr::a<DTYPE(data), DIM(data), Frame::Inertial>&              \
+              outgoing_null_one_form,                                          \
+          const tnsr::A<DTYPE(data), DIM(data), Frame::Inertial>&              \
+              incoming_null_vector,                                            \
+          const tnsr::A<DTYPE(data), DIM(data), Frame::Inertial>&              \
+              outgoing_null_vector,                                            \
+          const tnsr::aa<DTYPE(data), DIM(data), Frame::Inertial>&             \
+              projection_ab,                                                   \
+          const tnsr::Ab<DTYPE(data), DIM(data), Frame::Inertial>&             \
+              projection_Ab,                                                   \
+          const tnsr::AA<DTYPE(data), DIM(data), Frame::Inertial>&             \
+              projection_AB,                                                   \
+          const tnsr::a<DTYPE(data), DIM(data), Frame::Inertial>&              \
+              constraint_char_zero_plus,                                       \
+          const tnsr::a<DTYPE(data), DIM(data), Frame::Inertial>&              \
+              constraint_char_zero_minus,                                      \
+          const tnsr::aa<DTYPE(data), DIM(data), Frame::Inertial>&             \
+              char_projected_rhs_dt_v_minus,                                   \
+          const std::array<DTYPE(data), 4>& char_speeds);                      \
+  template void                                                                \
+  gh::BoundaryConditions::Bjorhus::detail::add_physical_terms_to_dt_v_minus(   \
+      const gsl::not_null<tnsr::aa<DTYPE(data), DIM(data), Frame::Inertial>*>  \
+          bc_dt_v_minus,                                                       \
+      const Scalar<DTYPE(data)>& gamma2,                                       \
+      const tnsr::i<DTYPE(data), DIM(data), Frame::Inertial>&                  \
+          unit_interface_normal_one_form,                                      \
+      const tnsr::I<DTYPE(data), DIM(data), Frame::Inertial>&                  \
+          unit_interface_normal_vector,                                        \
+      const tnsr::A<DTYPE(data), DIM(data), Frame::Inertial>&                  \
+          spacetime_unit_normal_vector,                                        \
+      const tnsr::aa<DTYPE(data), DIM(data), Frame::Inertial>& projection_ab,  \
+      const tnsr::Ab<DTYPE(data), DIM(data), Frame::Inertial>& projection_Ab,  \
+      const tnsr::AA<DTYPE(data), DIM(data), Frame::Inertial>& projection_AB,  \
+      const tnsr::II<DTYPE(data), DIM(data), Frame::Inertial>&                 \
+          inverse_spatial_metric,                                              \
+      const tnsr::ii<DTYPE(data), DIM(data), Frame::Inertial>&                 \
+          extrinsic_curvature,                                                 \
+      const tnsr::aa<DTYPE(data), DIM(data), Frame::Inertial>&                 \
+          spacetime_metric,                                                    \
+      const tnsr::AA<DTYPE(data), DIM(data), Frame::Inertial>&                 \
+          inverse_spacetime_metric,                                            \
+      const tnsr::iaa<DTYPE(data), DIM(data), Frame::Inertial>&                \
+          three_index_constraint,                                              \
+      const tnsr::aa<DTYPE(data), DIM(data), Frame::Inertial>&                 \
+          char_projected_rhs_dt_v_minus,                                       \
+      const tnsr::iaa<DTYPE(data), DIM(data), Frame::Inertial>& phi,           \
+      const tnsr::ijaa<DTYPE(data), DIM(data), Frame::Inertial>& d_phi,        \
+      const tnsr::iaa<DTYPE(data), DIM(data), Frame::Inertial>& d_pi,          \
+      const std::array<DTYPE(data), 4>& char_speeds);                          \
+  template void gh::BoundaryConditions::Bjorhus::                              \
+      constraint_preserving_corrections_dt_v_minus(                            \
+          const gsl::not_null<                                                 \
+              tnsr::aa<DTYPE(data), DIM(data), Frame::Inertial>*>              \
+              bc_dt_v_minus,                                                   \
+          const tnsr::a<DTYPE(data), DIM(data), Frame::Inertial>&              \
+              outgoing_null_one_form,                                          \
+          const tnsr::A<DTYPE(data), DIM(data), Frame::Inertial>&              \
+              incoming_null_vector,                                            \
+          const tnsr::A<DTYPE(data), DIM(data), Frame::Inertial>&              \
+              outgoing_null_vector,                                            \
+          const tnsr::aa<DTYPE(data), DIM(data), Frame::Inertial>&             \
+              projection_ab,                                                   \
+          const tnsr::Ab<DTYPE(data), DIM(data), Frame::Inertial>&             \
+              projection_Ab,                                                   \
+          const tnsr::AA<DTYPE(data), DIM(data), Frame::Inertial>&             \
+              projection_AB,                                                   \
+          const tnsr::aa<DTYPE(data), DIM(data), Frame::Inertial>&             \
+              char_projected_rhs_dt_v_minus,                                   \
+          const tnsr::a<DTYPE(data), DIM(data), Frame::Inertial>&              \
+              constraint_char_zero_plus,                                       \
+          const tnsr::a<DTYPE(data), DIM(data), Frame::Inertial>&              \
+              constraint_char_zero_minus,                                      \
+          const std::array<DTYPE(data), 4>& char_speeds);                      \
+  template void gh::BoundaryConditions::Bjorhus::                              \
+      constraint_preserving_gauge_corrections_dt_v_minus(                      \
+          const gsl::not_null<                                                 \
+              tnsr::aa<DTYPE(data), DIM(data), Frame::Inertial>*>              \
+              bc_dt_v_minus,                                                   \
+          const Scalar<DTYPE(data)>& gamma2,                                   \
+          const tnsr::I<DTYPE(data), DIM(data), Frame::Inertial>&              \
+              inertial_coords,                                                 \
+          const tnsr::a<DTYPE(data), DIM(data), Frame::Inertial>&              \
+              incoming_null_one_form,                                          \
+          const tnsr::a<DTYPE(data), DIM(data), Frame::Inertial>&              \
+              outgoing_null_one_form,                                          \
+          const tnsr::A<DTYPE(data), DIM(data), Frame::Inertial>&              \
+              incoming_null_vector,                                            \
+          const tnsr::A<DTYPE(data), DIM(data), Frame::Inertial>&              \
+              outgoing_null_vector,                                            \
+          const tnsr::aa<DTYPE(data), DIM(data), Frame::Inertial>&             \
+              projection_ab,                                                   \
+          const tnsr::Ab<DTYPE(data), DIM(data), Frame::Inertial>&             \
+              projection_Ab,                                                   \
+          const tnsr::AA<DTYPE(data), DIM(data), Frame::Inertial>&             \
+              projection_AB,                                                   \
+          const tnsr::aa<DTYPE(data), DIM(data), Frame::Inertial>&             \
+              char_projected_rhs_dt_v_psi,                                     \
+          const tnsr::aa<DTYPE(data), DIM(data), Frame::Inertial>&             \
+              char_projected_rhs_dt_v_minus,                                   \
+          const tnsr::a<DTYPE(data), DIM(data), Frame::Inertial>&              \
+              constraint_char_zero_plus,                                       \
+          const tnsr::a<DTYPE(data), DIM(data), Frame::Inertial>&              \
+              constraint_char_zero_minus,                                      \
+          const std::array<DTYPE(data), 4>& char_speeds);                      \
+  template void gh::BoundaryConditions::Bjorhus::                              \
+      constraint_preserving_gauge_physical_corrections_dt_v_minus(             \
+          const gsl::not_null<                                                 \
+              tnsr::aa<DTYPE(data), DIM(data), Frame::Inertial>*>              \
+              bc_dt_v_minus,                                                   \
+          const Scalar<DTYPE(data)>& gamma2,                                   \
+          const tnsr::I<DTYPE(data), DIM(data), Frame::Inertial>&              \
+              inertial_coords,                                                 \
+          const tnsr::i<DTYPE(data), DIM(data), Frame::Inertial>&              \
+              unit_interface_normal_one_form,                                  \
+          const tnsr::I<DTYPE(data), DIM(data), Frame::Inertial>&              \
+              unit_interface_normal_vector,                                    \
+          const tnsr::A<DTYPE(data), DIM(data), Frame::Inertial>&              \
+              spacetime_unit_normal_vector,                                    \
+          const tnsr::a<DTYPE(data), DIM(data), Frame::Inertial>&              \
+              incoming_null_one_form,                                          \
+          const tnsr::a<DTYPE(data), DIM(data), Frame::Inertial>&              \
+              outgoing_null_one_form,                                          \
+          const tnsr::A<DTYPE(data), DIM(data), Frame::Inertial>&              \
+              incoming_null_vector,                                            \
+          const tnsr::A<DTYPE(data), DIM(data), Frame::Inertial>&              \
+              outgoing_null_vector,                                            \
+          const tnsr::aa<DTYPE(data), DIM(data), Frame::Inertial>&             \
+              projection_ab,                                                   \
+          const tnsr::Ab<DTYPE(data), DIM(data), Frame::Inertial>&             \
+              projection_Ab,                                                   \
+          const tnsr::AA<DTYPE(data), DIM(data), Frame::Inertial>&             \
+              projection_AB,                                                   \
+          const tnsr::II<DTYPE(data), DIM(data), Frame::Inertial>&             \
+              inverse_spatial_metric,                                          \
+          const tnsr::ii<DTYPE(data), DIM(data), Frame::Inertial>&             \
+              extrinsic_curvature,                                             \
+          const tnsr::aa<DTYPE(data), DIM(data), Frame::Inertial>&             \
+              spacetime_metric,                                                \
+          const tnsr::AA<DTYPE(data), DIM(data), Frame::Inertial>&             \
+              inverse_spacetime_metric,                                        \
+          const tnsr::iaa<DTYPE(data), DIM(data), Frame::Inertial>&            \
+              three_index_constraint,                                          \
+          const tnsr::aa<DTYPE(data), DIM(data), Frame::Inertial>&             \
+              char_projected_rhs_dt_v_psi,                                     \
+          const tnsr::aa<DTYPE(data), DIM(data), Frame::Inertial>&             \
+              char_projected_rhs_dt_v_minus,                                   \
+          const tnsr::a<DTYPE(data), DIM(data), Frame::Inertial>&              \
+              constraint_char_zero_plus,                                       \
+          const tnsr::a<DTYPE(data), DIM(data), Frame::Inertial>&              \
+              constraint_char_zero_minus,                                      \
+          const tnsr::iaa<DTYPE(data), DIM(data), Frame::Inertial>& phi,       \
+          const tnsr::ijaa<DTYPE(data), DIM(data), Frame::Inertial>& d_phi,    \
+          const tnsr::iaa<DTYPE(data), DIM(data), Frame::Inertial>& d_pi,      \
           const std::array<DTYPE(data), 4>& char_speeds);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (DataVector))
