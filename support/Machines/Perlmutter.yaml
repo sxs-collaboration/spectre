@@ -11,3 +11,5 @@ Machine:
   DefaultProcsPerTask: 32
   DefaultQueue: "regular"
   DefaultTimeLimit: "1-00:00:00"
+  LaunchCommandSingleNode: []
+  LaunchCommandLoginNode: []

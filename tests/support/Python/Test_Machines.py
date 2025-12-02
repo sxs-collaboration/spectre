@@ -25,7 +25,8 @@ class TestMachines(unittest.TestCase):
                         DefaultProcsPerTask=15,
                         DefaultQueue="production",
                         DefaultTimeLimit="1-00:00:00",
-                        LaunchCommandSingleNode=["mpirun", "-n", "1"],
+                        LaunchCommandSingleNode=["mpirun", "-n", "2"],
+                        LaunchCommandLoginNode=["mpirun", "-n", "1"],
                     )
                 ),
                 open_machinefile,
@@ -45,10 +46,15 @@ class TestMachines(unittest.TestCase):
         self.assertEqual(machine.DefaultProcsPerTask, 15)
         self.assertEqual(machine.DefaultQueue, "production")
         self.assertEqual(machine.DefaultTimeLimit, "1-00:00:00")
-        self.assertEqual(machine.LaunchCommandSingleNode, ["mpirun", "-n", "1"])
+        self.assertEqual(machine.LaunchCommandSingleNode, ["mpirun", "-n", "2"])
+        self.assertEqual(machine.LaunchCommandLoginNode, ["mpirun", "-n", "1"])
         self.assertEqual(
             machine.launch_command,
-            ["mpirun", "-n", "1"] if machine.on_compute_node() else [],
+            (
+                ["mpirun", "-n", "2"]
+                if machine.on_compute_node()
+                else ["mpirun", "-n", "1"]
+            ),
         )
 
 
