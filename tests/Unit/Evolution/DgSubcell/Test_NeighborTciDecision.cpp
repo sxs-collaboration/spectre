@@ -4,19 +4,15 @@
 #include "Framework/TestingFramework.hpp"
 
 #include <cstddef>
-#include <optional>
-#include <tuple>
 #include <utility>
 
 #include "DataStructures/DataBox/DataBox.hpp"
-#include "DataStructures/DataVector.hpp"
 #include "Domain/Structure/Direction.hpp"
-#include "Domain/Structure/DirectionalIdMap.hpp"
+#include "Domain/Structure/DirectionalId.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Evolution/DgSubcell/NeighborTciDecision.hpp"
 #include "Evolution/DgSubcell/Tags/TciStatus.hpp"
 #include "Evolution/DiscontinuousGalerkin/BoundaryData.hpp"
-#include "Time/TimeStepId.hpp"
 #include "Utilities/Gsl.hpp"
 
 namespace evolution::dg::subcell {
@@ -27,50 +23,23 @@ void test() {
   using Type = typename tag::type;
   auto box = db::create<db::AddSimpleTags<tag>>(Type{});
   using StorageType = evolution::dg::BoundaryData<Dim>;
-  std::pair<TimeStepId, DirectionalIdMap<Dim, StorageType>> neighbor_data{};
+  StorageType neighbor_data{};
   const DirectionalId<Dim> id_xi{Direction<Dim>::lower_xi(), ElementId<Dim>{0}};
-  neighbor_data.second.insert(std::pair{id_xi, StorageType{}});
-  neighbor_data.second.at(id_xi).tci_status = 10;
-  DirectionalId<Dim> id_eta;
-  DirectionalId<Dim> id_zeta;
-  if constexpr (Dim > 1) {
-    id_eta = DirectionalId<Dim>{Direction<Dim>::lower_eta(), ElementId<Dim>{2}};
-    neighbor_data.second.insert(std::pair{id_eta, StorageType{}});
-    neighbor_data.second.at(id_eta).tci_status = 12;
-  }
-  if constexpr (Dim > 2) {
-    id_zeta =
-        DirectionalId<Dim>{Direction<Dim>::lower_zeta(), ElementId<Dim>{5}};
-    neighbor_data.second.insert(std::pair{id_zeta, StorageType{}});
-    neighbor_data.second.at(id_zeta).tci_status = 15;
-  }
+  neighbor_data.tci_status = 10;
 #ifdef SPECTRE_DEBUG
   // check ASSERT for neighbors works
   CHECK_THROWS_WITH(
-      neighbor_tci_decision(make_not_null(&box), neighbor_data),
+      neighbor_tci_decision(make_not_null(&box), id_xi, neighbor_data),
       Catch::Matchers::ContainsSubstring(
           "The NeighborTciDecisions tag does not contain the neighbor"));
 #endif
   db::mutate<tag>(
-      [&id_xi, &id_eta, &id_zeta](const auto neighbor_decisions_ptr) {
-        (void)id_eta, (void)id_zeta;
+      [&id_xi](const auto neighbor_decisions_ptr) {
         neighbor_decisions_ptr->insert(std::pair{id_xi, 0});
-        if constexpr (Dim > 1) {
-          neighbor_decisions_ptr->insert(std::pair{id_eta, 0});
-        }
-        if constexpr (Dim > 2) {
-          neighbor_decisions_ptr->insert(std::pair{id_zeta, 0});
-        }
       },
       make_not_null(&box));
-  neighbor_tci_decision(make_not_null(&box), neighbor_data);
+  neighbor_tci_decision(make_not_null(&box), id_xi, neighbor_data);
   CHECK(db::get<tag>(box).at(id_xi) == 10);
-  if constexpr (Dim > 1) {
-    CHECK(db::get<tag>(box).at(id_eta) == 12);
-  }
-  if constexpr (Dim > 2) {
-    CHECK(db::get<tag>(box).at(id_zeta) == 15);
-  }
 }
 
 SPECTRE_TEST_CASE("Unit.Evolution.Subcell.NeighborTciDecision",

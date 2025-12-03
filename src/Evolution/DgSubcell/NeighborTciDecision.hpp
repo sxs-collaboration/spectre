@@ -4,17 +4,22 @@
 #pragma once
 
 #include <cstddef>
-#include <optional>
-#include <tuple>
-#include <utility>
 
-#include "DataStructures/DataBox/Access.hpp"
-#include "DataStructures/DataVector.hpp"
-#include "Domain/Structure/DirectionalIdMap.hpp"
-#include "Evolution/DiscontinuousGalerkin/BoundaryData.hpp"
-#include "NumericalAlgorithms/Spectral/Mesh.hpp"
-#include "Time/TimeStepId.hpp"
-#include "Utilities/Gsl.hpp"
+/// \cond
+template <size_t VolumeDim>
+class DirectionalId;
+namespace db {
+class Access;
+}  // namespace db
+namespace evolution::dg {
+template <size_t Dim>
+struct BoundaryData;
+}  // namespace evolution::dg
+namespace gsl {
+template <class T>
+class not_null;
+}  // namespace gsl
+/// \endcond
 
 namespace evolution::dg::subcell {
 /*!
@@ -24,7 +29,6 @@ namespace evolution::dg::subcell {
 template <size_t Dim>
 void neighbor_tci_decision(
     gsl::not_null<db::Access*> box,
-    const std::pair<TimeStepId,
-                    DirectionalIdMap<Dim, evolution::dg::BoundaryData<Dim>>>&
-        received_temporal_id_and_data);
+    const DirectionalId<Dim>& directional_element_id,
+    const evolution::dg::BoundaryData<Dim>& neighbor_data);
 }  // namespace evolution::dg::subcell

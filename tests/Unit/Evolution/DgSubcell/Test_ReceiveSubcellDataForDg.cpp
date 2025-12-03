@@ -13,7 +13,6 @@
 #include "Domain/Structure/DirectionalId.hpp"
 #include "Domain/Structure/DirectionalIdMap.hpp"
 #include "Domain/Structure/ElementId.hpp"
-#include "Domain/Structure/Side.hpp"
 #include "Evolution/DgSubcell/GhostData.hpp"
 #include "Evolution/DgSubcell/RdmpTciData.hpp"
 #include "Evolution/DgSubcell/ReceiveSubcellDataForDg.hpp"
@@ -24,7 +23,6 @@
 #include "NumericalAlgorithms/Spectral/Basis.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Quadrature.hpp"
-#include "Time/TimeStepId.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -56,73 +54,49 @@ void test() {
       DirectionalIdMap<Dim, Mesh<Dim>>{}, std::move(neighbor_data_map),
       std::move(rdmp_tci_data));
 
-  std::pair<TimeStepId, BoundaryDataMap<Dim>> mortar_data_from_neighbors{};
   const Mesh<Dim> fd_volume_mesh{2 + 2 * Dim + 1,
                                  Spectral::Basis::FiniteDifference,
                                  Spectral::Quadrature::CellCentered};
   const Mesh<Dim - 1> mortar_mesh{2 + 2 * Dim + 1, Spectral::Basis::Legendre,
                                   Spectral::Quadrature::GaussLobatto};
-  for (size_t d = 0; d < Dim; ++d) {
-    DataVector fd_recons_and_rdmp_data(2 * Dim + 1 + 4, 4.0);
-    DataVector dg_recons_and_rdmp_data(2 * Dim + 1 + 4, 7.0);
-    for (size_t i = 0; i < 4; ++i) {
-      dg_recons_and_rdmp_data[2 * Dim + 1 + i] = (i > 1 ? -1.0 : 1.0) *
-                                                 (d + 1.0) * 7.0 *
-                                                 (static_cast<double>(i) + 5.0);
-      fd_recons_and_rdmp_data[2 * Dim + 1 + i] =
-          (i > 1 ? -1.0 : 1.0) * (d + 1.0) * 7.0 *
-          (static_cast<double>(i) + 50.0);
-    }
-    expected_rdmp_tci_data.max_variables_values =
-        max(expected_rdmp_tci_data.max_variables_values,
-            DataVector(&fd_recons_and_rdmp_data[2 * Dim + 1], 2));
-    expected_rdmp_tci_data.min_variables_values =
-        min(expected_rdmp_tci_data.min_variables_values,
-            DataVector(&fd_recons_and_rdmp_data[2 * Dim + 3], 2));
-    DataVector dg_flux_data(2 * Dim + 1);
-    if (d % 2 == 0) {
-      mortar_data_from_neighbors.second[DirectionalId<Dim>{
-          Direction<Dim>{d, Side::Upper}, ElementId<Dim>{2 * d}}] =
-          BoundaryData<Dim>{dg_volume_mesh,
-                            dg_volume_mesh,
-                            mortar_mesh,
-                            dg_recons_and_rdmp_data,
-                            dg_flux_data,
-                            {},
-                            1};
-      mortar_data_from_neighbors.second[DirectionalId<Dim>{
-          Direction<Dim>{d, Side::Lower}, ElementId<Dim>{2 * d + 1}}] =
-          BoundaryData<Dim>{dg_volume_mesh,
-                            fd_volume_mesh,
-                            std::nullopt,
-                            fd_recons_and_rdmp_data,
-                            std::nullopt,
-                            {},
-                            2};
-    } else {
-      mortar_data_from_neighbors.second[DirectionalId<Dim>{
-          Direction<Dim>{d, Side::Lower}, ElementId<Dim>{2 * d}}] =
-          BoundaryData<Dim>{dg_volume_mesh,
-                            dg_volume_mesh,
-                            mortar_mesh,
-                            dg_recons_and_rdmp_data,
-                            dg_flux_data,
-                            {},
-                            3};
-      mortar_data_from_neighbors.second[DirectionalId<Dim>{
-          Direction<Dim>{d, Side::Upper}, ElementId<Dim>{2 * d + 1}}] =
-          BoundaryData<Dim>{dg_volume_mesh,
-                            fd_volume_mesh,
-                            std::nullopt,
-                            fd_recons_and_rdmp_data,
-                            std::nullopt,
-                            {},
-                            4};
-    }
+
+  const DirectionalId<Dim> dg_id{Direction<Dim>::upper_xi(), ElementId<Dim>{0}};
+  const DirectionalId<Dim> fd_id{Direction<Dim>::lower_xi(), ElementId<Dim>{1}};
+
+  DataVector fd_recons_and_rdmp_data(2 * Dim + 1 + 4, 4.0);
+  DataVector dg_recons_and_rdmp_data(2 * Dim + 1 + 4, 7.0);
+  for (size_t i = 0; i < 4; ++i) {
+    dg_recons_and_rdmp_data[2 * Dim + 1 + i] =
+        (i > 1 ? -1.0 : 1.0) * 7.0 * (static_cast<double>(i) + 5.0);
+    fd_recons_and_rdmp_data[2 * Dim + 1 + i] =
+        (i > 1 ? -1.0 : 1.0) * 7.0 * (static_cast<double>(i) + 50.0);
   }
+  expected_rdmp_tci_data.max_variables_values =
+      max(expected_rdmp_tci_data.max_variables_values,
+          DataVector(&fd_recons_and_rdmp_data[2 * Dim + 1], 2));
+  expected_rdmp_tci_data.min_variables_values =
+      min(expected_rdmp_tci_data.min_variables_values,
+          DataVector(&fd_recons_and_rdmp_data[2 * Dim + 3], 2));
+  DataVector dg_flux_data(2 * Dim + 1);
 
   evolution::dg::subcell::receive_subcell_data_for_dg<Dim>(
-      make_not_null(&box), mortar_data_from_neighbors);
+      make_not_null(&box), dg_id,
+      BoundaryData<Dim>{dg_volume_mesh,
+                        dg_volume_mesh,
+                        mortar_mesh,
+                        dg_recons_and_rdmp_data,
+                        dg_flux_data,
+                        {},
+                        1});
+  evolution::dg::subcell::receive_subcell_data_for_dg<Dim>(
+      make_not_null(&box), fd_id,
+      BoundaryData<Dim>{dg_volume_mesh,
+                        fd_volume_mesh,
+                        std::nullopt,
+                        fd_recons_and_rdmp_data,
+                        std::nullopt,
+                        {},
+                        2});
 
   CHECK(db::get<evolution::dg::subcell::Tags::DataForRdmpTci>(box) ==
         expected_rdmp_tci_data);
@@ -132,30 +106,23 @@ void test() {
   const auto& reconstruction_data =
       db::get<evolution::dg::subcell::Tags::GhostDataForReconstruction<Dim>>(
           box);
-  for (size_t d = 0; d < Dim; ++d) {
-    CAPTURE(d);
-    const bool d_is_odd = (d % 2 != 0);
-    const DirectionalId<Dim> dg_id{
-        Direction<Dim>{d, d_is_odd ? Side::Lower : Side::Upper},
-        ElementId<Dim>{2 * d}};
-    const DirectionalId<Dim> fd_id{
-        Direction<Dim>{d, d_is_odd ? Side::Upper : Side::Lower},
-        ElementId<Dim>{2 * d + 1}};
-    for (const auto& id : {dg_id, fd_id}) {
-      CAPTURE(id);
-      REQUIRE(reconstruction_data.contains(id));
-      CHECK(
-          reconstruction_data.at(id).neighbor_ghost_data_for_reconstruction() ==
-          (DataVector{
-              mortar_data_from_neighbors.second.at(id).ghost_cell_data->data(),
-              mortar_data_from_neighbors.second.at(id).ghost_cell_data->size() -
-                  4}));
-    }
-    REQUIRE(ghost_meshes.contains(dg_id));
-    CHECK(ghost_meshes.at(dg_id) == dg_volume_mesh);
-    REQUIRE(ghost_meshes.contains(fd_id));
-    CHECK(ghost_meshes.at(fd_id) == fd_volume_mesh);
-  }
+
+  REQUIRE(reconstruction_data.contains(dg_id));
+  CHECK(
+      reconstruction_data.at(dg_id).neighbor_ghost_data_for_reconstruction() ==
+      (DataVector{dg_recons_and_rdmp_data.data(),
+                  dg_recons_and_rdmp_data.size() - 4}));
+
+  REQUIRE(reconstruction_data.contains(fd_id));
+  CHECK(
+      reconstruction_data.at(fd_id).neighbor_ghost_data_for_reconstruction() ==
+      (DataVector{fd_recons_and_rdmp_data.data(),
+                  fd_recons_and_rdmp_data.size() - 4}));
+
+  REQUIRE(ghost_meshes.contains(dg_id));
+  CHECK(ghost_meshes.at(dg_id) == dg_volume_mesh);
+  REQUIRE(ghost_meshes.contains(fd_id));
+  CHECK(ghost_meshes.at(fd_id) == fd_volume_mesh);
 }
 }  // namespace
 

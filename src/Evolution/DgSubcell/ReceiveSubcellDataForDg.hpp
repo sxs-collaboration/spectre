@@ -7,9 +7,8 @@
 #include <utility>
 
 /// \cond
-template <size_t Dim, typename T>
-class DirectionalIdMap;
-class TimeStepId;
+template <size_t VolumeDim>
+class DirectionalId;
 namespace db {
 class Access;
 }  // namespace db
@@ -40,9 +39,6 @@ namespace evolution::dg::subcell {
  */
 template <size_t VolumeDim>
 void receive_subcell_data_for_dg(
-    gsl::not_null<db::Access*> box,
-    const std::pair<
-        TimeStepId,
-        DirectionalIdMap<VolumeDim, evolution::dg::BoundaryData<VolumeDim>>>&
-        received_temporal_id_and_data);
+    gsl::not_null<db::Access*> box, const DirectionalId<VolumeDim>& mortar_id,
+    const evolution::dg::BoundaryData<VolumeDim>& received_mortar_data);
 }  // namespace evolution::dg::subcell

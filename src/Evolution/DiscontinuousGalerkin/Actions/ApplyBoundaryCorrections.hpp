@@ -81,16 +81,12 @@ void neighbor_reconstructed_face_solution(gsl::not_null<db::Access*> box);
 template <size_t Dim>
 void neighbor_tci_decision(
     gsl::not_null<db::Access*> box,
-    const std::pair<TimeStepId,
-                    DirectionalIdMap<Dim, evolution::dg::BoundaryData<Dim>>>&
-        received_temporal_id_and_data);
+    const DirectionalId<Dim>& directional_element_id,
+    const evolution::dg::BoundaryData<Dim>& neighbor_data);
 template <size_t VolumeDim>
 void receive_subcell_data_for_dg(
-    gsl::not_null<db::Access*> box,
-    const std::pair<
-        TimeStepId,
-        DirectionalIdMap<VolumeDim, evolution::dg::BoundaryData<VolumeDim>>>&
-        received_temporal_id_and_data);
+    gsl::not_null<db::Access*> box, const DirectionalId<VolumeDim>& mortar_id,
+    const evolution::dg::BoundaryData<VolumeDim>& received_mortar_data);
 }  // namespace evolution::dg::subcell
 /// \endcond
 
@@ -155,10 +151,12 @@ collect_messages:
 
   // Move inbox contents into the DataBox
   if constexpr (using_subcell_v<Metavariables>) {
-    evolution::dg::subcell::receive_subcell_data_for_dg<volume_dim>(
-        &db::as_access(*box), received_temporal_id_and_data);
-    evolution::dg::subcell::neighbor_tci_decision<volume_dim>(
-        make_not_null(&db::as_access(*box)), received_temporal_id_and_data);
+    for (const auto& [mortar_id, data] : received_temporal_id_and_data.second) {
+      evolution::dg::subcell::receive_subcell_data_for_dg<volume_dim>(
+          &db::as_access(*box), mortar_id, data);
+      evolution::dg::subcell::neighbor_tci_decision<volume_dim>(
+          make_not_null(&db::as_access(*box)), mortar_id, data);
+    }
   }
 
   db::mutate<evolution::dg::Tags::MortarMesh<volume_dim>,
