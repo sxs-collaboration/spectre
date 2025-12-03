@@ -24,7 +24,6 @@
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Structure/Topology.hpp"
-#include "Domain/Structure/TrimMap.hpp"
 #include "Domain/Tags.hpp"
 #include "Domain/Tags/NeighborMesh.hpp"
 #include "Evolution/BoundaryCorrection.hpp"
@@ -293,10 +292,7 @@ bool receive_boundary_data_local_time_stepping(
                 mortar_next_time_step_ids,
             const gsl::not_null<DirectionalIdMap<Dim, Mesh<Dim>>*>
                 neighbor_mesh,
-            const Element<Dim>& element, const Mesh<Dim>& volume_mesh) {
-          // Remove neighbor meshes for neighbors that don't exist anymore
-          domain::remove_nonexistent_neighbors(neighbor_mesh, element);
-
+            const Mesh<Dim>& volume_mesh) {
           // Move received boundary data into boundary history.
           for (auto& [mortar_id, mortar_next_time_step_id] :
                *mortar_next_time_step_ids) {
@@ -370,8 +366,7 @@ bool receive_boundary_data_local_time_stepping(
             }
           }
         },
-        box, db::get<::domain::Tags::Element<Dim>>(*box),
-        db::get<domain::Tags::Mesh<Dim>>(*box));
+        box, db::get<domain::Tags::Mesh<Dim>>(*box));
 
     if (missing_messages == 0) {
       return true;
