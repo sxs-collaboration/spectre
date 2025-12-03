@@ -1168,6 +1168,39 @@ void test_tensorylm_filter_vs_spec(const size_t ell_max,
           approx(spec_matrix_elements[i]));
   }
 }
+
+void test(const std::optional<size_t>& half_power) {
+  const size_t ell_max = 8;
+  const size_t num_to_kill = 4;
+
+  test_tensorylm_filter_vs_spec<typename tnsr::i<DataVector, 3>::structure,
+                                SimpleSparseMatrix>(ell_max, num_to_kill,
+                                                    half_power);
+  test_tensorylm_filter_vs_spec<typename tnsr::ii<DataVector, 3>::structure,
+                                SimpleSparseMatrix>(ell_max, num_to_kill,
+                                                    half_power);
+  test_tensorylm_filter_vs_spec<typename tnsr::ij<DataVector, 3>::structure,
+                                SimpleSparseMatrix>(ell_max, num_to_kill,
+                                                    half_power);
+  test_tensorylm_filter_vs_spec<typename tnsr::ijj<DataVector, 3>::structure,
+                                SimpleSparseMatrix>(ell_max, num_to_kill,
+                                                    half_power);
+  test_tensorylm_filter_vs_spec<typename tnsr::ijk<DataVector, 3>::structure,
+                                SimpleSparseMatrix>(ell_max, num_to_kill,
+                                                    half_power);
+  test_filter_vs_transforms<typename tnsr::i<DataVector, 3>>(
+      ell_max, num_to_kill, half_power);
+  test_filter_vs_transforms<typename tnsr::ii<DataVector, 3>>(
+      ell_max, num_to_kill, half_power);
+  test_filter_vs_transforms<typename tnsr::ij<DataVector, 3>>(
+      ell_max, num_to_kill, half_power);
+  test_filter_vs_transforms<typename tnsr::ijj<DataVector, 3>>(
+      ell_max, num_to_kill, half_power);
+  test_filter_vs_transforms<typename tnsr::ijk<DataVector, 3>>(
+      ell_max, num_to_kill, half_power);
+  test_filter_vs_transforms<Scalar<DataVector>>(ell_max, num_to_kill,
+                                                half_power);
+}
 }  // namespace
 
 // For debug builds, test_tensorylm_filter_vs_spec is slow even for
@@ -1175,39 +1208,16 @@ void test_tensorylm_filter_vs_spec(const size_t ell_max,
 // timeout to 120.  Release builds are still under 10 seconds (barely).  The
 // function test_filter_vs_transforms is much slower than
 // test_tensorylm_filter_vs_spec, so we increase the timeout to 360.
-// [[TimeOut, 360]]
-SPECTRE_TEST_CASE("Unit.SphericalHarmonics.TensorYlmFilter",
-                  "[NumericalAlgorithms][Unit]") {
-  const size_t ell_max = 8;
-  const size_t num_to_kill = 4;
+// Test then split in half to allow running in parallel.
 
-  for (auto half_power : {std::optional<size_t>(), std::optional<size_t>(28)}) {
-    test_tensorylm_filter_vs_spec<typename tnsr::i<DataVector, 3>::structure,
-                                  SimpleSparseMatrix>(ell_max, num_to_kill,
-                                                      half_power);
-    test_tensorylm_filter_vs_spec<typename tnsr::ii<DataVector, 3>::structure,
-                                  SimpleSparseMatrix>(ell_max, num_to_kill,
-                                                      half_power);
-    test_tensorylm_filter_vs_spec<typename tnsr::ij<DataVector, 3>::structure,
-                                  SimpleSparseMatrix>(ell_max, num_to_kill,
-                                                      half_power);
-    test_tensorylm_filter_vs_spec<typename tnsr::ijj<DataVector, 3>::structure,
-                                  SimpleSparseMatrix>(ell_max, num_to_kill,
-                                                      half_power);
-    test_tensorylm_filter_vs_spec<typename tnsr::ijk<DataVector, 3>::structure,
-                                  SimpleSparseMatrix>(ell_max, num_to_kill,
-                                                      half_power);
-    test_filter_vs_transforms<typename tnsr::i<DataVector, 3>>(
-        ell_max, num_to_kill, half_power);
-    test_filter_vs_transforms<typename tnsr::ii<DataVector, 3>>(
-        ell_max, num_to_kill, half_power);
-    test_filter_vs_transforms<typename tnsr::ij<DataVector, 3>>(
-        ell_max, num_to_kill, half_power);
-    test_filter_vs_transforms<typename tnsr::ijj<DataVector, 3>>(
-        ell_max, num_to_kill, half_power);
-    test_filter_vs_transforms<typename tnsr::ijk<DataVector, 3>>(
-        ell_max, num_to_kill, half_power);
-    test_filter_vs_transforms<Scalar<DataVector>>(ell_max, num_to_kill,
-                                                  half_power);
-  }
+// [[TimeOut, 180]]
+SPECTRE_TEST_CASE("Unit.SphericalHarmonics.TensorYlmFilter1",
+                  "[NumericalAlgorithms][Unit]") {
+  test(std::optional<size_t>());
+}
+
+// [[TimeOut, 180]]
+SPECTRE_TEST_CASE("Unit.SphericalHarmonics.TensorYlmFilter2",
+                  "[NumericalAlgorithms][Unit]") {
+  test(std::optional<size_t>(28));
 }
