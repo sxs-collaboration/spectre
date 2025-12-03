@@ -519,7 +519,7 @@ ComputeTimeDerivative<Dim, EvolutionSystem, DgStepChoosers, LocalTimeStepping,
        DgPackagedDataVarsOnFace::number_of_independent_components) *
           num_face_temporary_grid_points;
   auto buffer = cpp20::make_unique_for_overwrite<double[]>(buffer_size);
-#ifdef SPECTRE_DEBUG
+#ifdef SPECTRE_NAN_INIT
   std::fill(&buffer[0], &buffer[buffer_size],
             std::numeric_limits<double>::signaling_NaN());
 #endif
