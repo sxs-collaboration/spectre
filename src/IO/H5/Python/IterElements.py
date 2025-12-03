@@ -208,7 +208,7 @@ def iter_elements(
             ]
             # Deserialize domain and functions of time
             if not domain:
-                serialized_domain = volfile.get_domain(obs_id)
+                serialized_domain = volfile.get_domain()
                 if serialized_domain:
                     domain = deserialize_domain[dim](serialized_domain)
             time = volfile.get_observation_value(obs_id)
@@ -221,12 +221,16 @@ def iter_elements(
             # Pre-load the tensor data because it's stored contiguously for all
             # grids in the file
             if tensor_components:
-                tensor_data = np.asarray(
-                    [
-                        volfile.get_tensor_component(obs_id, component).data
-                        for component in tensor_components
-                    ]
-                )
+                component_data = [
+                    volfile.get_tensor_component(obs_id, component).data
+                    for component in tensor_components
+                ]
+                # Ensure that all components have the same data type
+                for data in component_data:
+                    assert (
+                        data.dtype == component_data[0].dtype
+                    ), "Tensor components have different data types"
+                tensor_data = np.asarray(component_data)
             # Iterate elements in this file
             for grid_name, element_id, mesh in zip(
                 grid_names, element_ids, meshes

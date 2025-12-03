@@ -9,7 +9,7 @@ Machine:
     More information:
     Contact Geoffrey Lovelace for more information.
   DefaultTasksPerNode: 1
-  DefaultProcsPerTasks: 20
+  DefaultProcsPerTask: 20
   DefaultQueue: "orca-1"
   DefaultTimeLimit: "01-00:00:00"
   LaunchCommandSingleNode: []

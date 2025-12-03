@@ -103,11 +103,6 @@ void test_errors() {
   auto from_volume_file = TestHelpers::test_creation<FromVolumeFile>(
       "H5Filename: " + filename + "\nSubfileName: " + subfile_name);
 
-  CHECK_THROWS_WITH(
-      (from_volume_file.retrieve_function_of_time({"Expansion"}, 0.0)),
-      Catch::Matchers::ContainsSubstring(
-          "Expansion: There are no observation IDs in the subfile "));
-
   // Need new subfile to write to
   subfile_name += "0";
   TestHelpers::domain::creators::write_volume_data(filename, subfile_name);

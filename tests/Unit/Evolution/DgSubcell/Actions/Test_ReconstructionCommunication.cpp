@@ -466,9 +466,11 @@ void test(const bool use_cell_centered_flux) {
         std::prev(expected_east_data.end(),
                   static_cast<int>(rdmp_tci_data.min_variables_values.size())));
 
-    const auto& east_data = ActionTesting::get_inbox_tag<
-        comp, evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<
-                  Dim, UseNodegroupDgElements>>(runner, east_id);
+    const auto& east_data =
+        ActionTesting::get_inbox_tag<
+            comp, evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<
+                      Dim, UseNodegroupDgElements>>(runner, east_id)
+            .messages;
     CHECK_ITERABLE_APPROX(
         expected_east_data,
         east_data.at(time_step_id)
@@ -517,9 +519,11 @@ void test(const bool use_cell_centered_flux) {
         std::prev(expected_south_data.end(),
                   static_cast<int>(rdmp_tci_data.min_variables_values.size())));
 
-    const auto& south_data = ActionTesting::get_inbox_tag<
-        comp, evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<
-                  Dim, UseNodegroupDgElements>>(runner, south_id);
+    const auto& south_data =
+        ActionTesting::get_inbox_tag<
+            comp, evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<
+                      Dim, UseNodegroupDgElements>>(runner, south_id)
+            .messages;
     CHECK(
         expected_south_data ==
         south_data.at(time_step_id)
@@ -733,7 +737,7 @@ DataVector compute_expected_ghost_data(
         ActionTesting::get_inbox_tag<
             comp, evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<
                       Dim, UseNodegroupDgElements>>(runner, element_id)
-            .at(time_step_id)
+            .messages.at(time_step_id)
             .at(DirectionalId<Dim>{extender_direction, *extender_id})
             .ghost_cell_data.value();
 
@@ -1044,7 +1048,7 @@ void test_receive_and_send_data(const bool enable_extension,
         ActionTesting::get_inbox_tag<
             comp, evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<
                       Dim, UseNodegroupDgElements>>(runner, element_id)
-            .at(time_step_id)
+            .messages.at(time_step_id)
             .size();
     REQUIRE(received_data_size == (neighbor_size - extension_directions_size));
   }
@@ -1065,7 +1069,7 @@ void test_receive_and_send_data(const bool enable_extension,
         ActionTesting::get_inbox_tag<
             comp, evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<
                       Dim, UseNodegroupDgElements>>(runner, element_id)
-            .at(time_step_id)
+            .messages.at(time_step_id)
             .size();
     REQUIRE(received_data_size == neighbor_size);
 
@@ -1081,7 +1085,7 @@ void test_receive_and_send_data(const bool enable_extension,
           ActionTesting::get_inbox_tag<
               comp, evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<
                         Dim, UseNodegroupDgElements>>(runner, element_id)
-              .at(time_step_id)
+              .messages.at(time_step_id)
               .at(directional_id)
               .ghost_cell_data.value();
       const DataVector expected_ghost_data =

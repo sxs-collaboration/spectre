@@ -17,6 +17,8 @@ set(LIBRARY_SOURCES
   Test_BackgroundGrVars.cpp
   Test_BoundaryCorrectionsHelper.cpp
   Test_BoundaryData.cpp
+  Test_CleanMortarHistory.cpp
+  Test_InboxTags.cpp
   Test_InterfaceDataPolicy.cpp
   Test_InterpolatedBoundaryData.cpp
   Test_MortarData.cpp

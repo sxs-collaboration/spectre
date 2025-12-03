@@ -3390,6 +3390,28 @@ void test_exception_safety() {
   CHECK(db::get<vars2_tag>(box).data() == get(db::get<ScalarTag2>(box)).data());
   CHECK(db::get<ScalarTag2>(box) == Scalar<DataVector>(DataVector(1, 4.0)));
 }
+
+void test_access_errors() {
+  auto box = db::create<
+      db::AddSimpleTags<test_databox_tags::Tag0, test_databox_tags::Tag1>,
+      db::AddComputeTags<test_databox_tags::Tag4Compute>>();
+#ifdef SPECTRE_DEBUG
+  CHECK_THROWS_WITH(
+      db::get<test_databox_tags::Tag2>(db::as_access(box)),
+      Catch::Matchers::Matches("(.|\\n)*Tag2 is not found in the DataBox. "
+                               "Known tags are:\\n.*Tag1.*Tag4(.|\\n)*"));
+  CHECK_THROWS_WITH(
+      db::mutate<test_databox_tags::Tag2>([](const auto& /*unused*/) {},
+                                          &db::as_access(box)),
+      Catch::Matchers::Matches(
+          "(.|\\n)*Cannot mutate tag.*Tag2.*Known tags are:\\n.*Tag1(.|\\n)*"));
+  CHECK_THROWS_WITH(
+      db::mutate<test_databox_tags::Tag4>([](const auto& /*unused*/) {},
+                                          &db::as_access(box)),
+      Catch::Matchers::Matches(
+          "(.|\\n)*Cannot mutate tag.*Tag4.*Known tags are:\\n.*Tag1(.|\\n)*"));
+#endif  // SPECTRE_DEBUG
+}
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.DataStructures.DataBox", "[Unit][DataStructures]") {
@@ -3417,6 +3439,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox", "[Unit][DataStructures]") {
   test_get_mutable_reference();
   test_output();
   test_exception_safety();
+  test_access_errors();
 }
 
 // Test`tag_is_retrievable_v`

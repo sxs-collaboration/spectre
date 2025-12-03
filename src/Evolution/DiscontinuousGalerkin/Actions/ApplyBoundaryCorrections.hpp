@@ -103,105 +103,6 @@ struct TemporaryReference {
   using tag = Tag;
   using type = const Type&;
 };
-
-template <size_t Dim>
-void retrieve_boundary_data_spsc(
-    const gsl::not_null<std::map<
-        TimeStepId, DirectionalIdMap<Dim, evolution::dg::BoundaryData<Dim>>>*>
-        boundary_data_ptr,
-    const gsl::not_null<evolution::dg::AtomicInboxBoundaryData<Dim>*> inbox_ptr,
-    const Element<Dim>& element) {
-  for (const auto& [direction, neighbors] : element.neighbors()) {
-    for (const ElementId<Dim>& neighbor_element_id : neighbors) {
-      const size_t neighbor_index =
-          inbox_ptr->index(DirectionalId{direction, neighbor_element_id});
-      auto& spsc_in_direction =
-          gsl::at(inbox_ptr->boundary_data_in_directions, neighbor_index);
-      auto* data_in_direction = spsc_in_direction.front();
-      while (data_in_direction != nullptr) {
-        const auto& time_step_id = get<0>(*data_in_direction);
-        auto& data = get<1>(*data_in_direction);
-        auto& directional_element_id = get<2>(*data_in_direction);
-        auto& current_inbox = (*boundary_data_ptr)[time_step_id];
-        if (auto it = current_inbox.find(directional_element_id);
-            it != current_inbox.end()) {
-          auto& [volume_mesh, volume_mesh_ghost_cell_data,
-                 boundary_correction_mesh, ghost_cell_data,
-                 boundary_correction_data, validity_range, tci_status,
-                 integration_order, interpolated_boundary_data] = data;
-          (void)ghost_cell_data;
-          auto& [current_volume_mesh, current_volume_mesh_ghost_cell_data,
-                 current_boundary_correction_mesh, current_ghost_cell_data,
-                 current_boundary_correction_data, current_validity_range,
-                 current_tci_status, current_integration_order,
-                 current_interpolated_boundary_data] = it->second;
-          // Need to use when optimizing subcell
-          (void)current_volume_mesh_ghost_cell_data;
-          // We have already received some data at this time. Receiving
-          // data twice at the same time should only occur when
-          // receiving fluxes after having previously received ghost
-          // cells. We sanity check that the data we already have is the
-          // ghost cells and that we have not yet received flux data.
-          //
-          // This is used if a 2-send implementation is used (which we
-          // don't right now!). We generally find that the number of
-          // communications is more important than the size of each
-          // communication, and so a single communication per time/sub
-          // step is preferred.
-          ASSERT(current_ghost_cell_data.has_value(),
-                 "Have not yet received ghost cells at time step "
-                     << time_step_id
-                     << " but the inbox entry already exists. This is a bug in "
-                        "the ordering of the actions.");
-          ASSERT(not current_boundary_correction_data.has_value() and
-                     not current_boundary_correction_mesh.has_value(),
-                 "The fluxes have already been received at time step "
-                     << time_step_id
-                     << ". They are either being received for a second time, "
-                        "there is a bug in the ordering of the actions (though "
-                        "a different ASSERT should've caught that), or the "
-                        "incorrect temporal ID is being sent.");
-
-          ASSERT(current_volume_mesh == volume_mesh,
-                 "The mesh being received for the fluxes is different than the "
-                 "mesh received for the ghost cells. Mesh for fluxes: "
-                     << volume_mesh << " mesh for ghost cells "
-                     << current_volume_mesh);
-          ASSERT(current_volume_mesh_ghost_cell_data ==
-                     volume_mesh_ghost_cell_data,
-                 "The mesh being received for the ghost cell data is different "
-                 "than the mesh received previously. Mesh for received when we "
-                 "got fluxes: "
-                     << volume_mesh_ghost_cell_data
-                     << " mesh received when we got ghost cells "
-                     << current_volume_mesh_ghost_cell_data);
-
-          // We always move here since we take ownership of the data and
-          // moves implicitly decay to copies
-          current_boundary_correction_data =
-              std::move(boundary_correction_data);
-          current_validity_range = validity_range;
-          current_tci_status = tci_status;
-          current_integration_order = integration_order;
-          current_interpolated_boundary_data = interpolated_boundary_data;
-        } else {
-          // We have not received ghost cells or fluxes at this time.
-          if (not current_inbox
-                      .emplace(std::move(directional_element_id),
-                               std::move(data))
-                      .second) {
-            ERROR("Failed to insert data to receive at instance '"
-                  << time_step_id
-                  << "' with tag 'BoundaryCorrectionAndGhostCellsInbox'.\n");
-          }
-        }
-
-        spsc_in_direction.pop();
-        data_in_direction = spsc_in_direction.front();
-      }  // while data_in_direction != nullptr
-    }    // for neighbor_element_id : neighbors
-  }      // for element.neighbors()
-}
 }  // namespace detail
 
 /// Receive boundary data for global time-stepping.  Returns true if
@@ -214,96 +115,40 @@ bool receive_boundary_data_global_time_stepping(
   constexpr size_t volume_dim = Metavariables::system::volume_dim;
 
   const TimeStepId& temporal_id = get<::Tags::TimeStepId>(*box);
-  using Key = DirectionalId<volume_dim>;
-  using InboxMap = std::map<
-      TimeStepId,
-      DirectionalIdMap<volume_dim, evolution::dg::BoundaryData<volume_dim>>>;
-  using InboxMapValueType =
-      std::pair<typename InboxMap::key_type, typename InboxMap::mapped_type>;
-  using NodeType = typename InboxMap::node_type;
-  auto get_temporal_id_and_data_node =
-      [&temporal_id](const gsl::not_null<InboxMap*> map_ptr,
-                     const Element<volume_dim>& element,
-                     const auto&&...) -> NodeType {
-    const auto received_temporal_id_and_data = map_ptr->find(temporal_id);
-    if (received_temporal_id_and_data == map_ptr->end()) {
-      return NodeType{};
-    }
-    const auto& received_neighbor_data = received_temporal_id_and_data->second;
-    for (const auto& [direction, neighbors] : element.neighbors()) {
-      for (const auto& neighbor : neighbors) {
-        const auto neighbor_received =
-            received_neighbor_data.find(Key{direction, neighbor});
-        if (neighbor_received == received_neighbor_data.end()) {
-          return NodeType{};
-        }
-      }
-    }
-    return map_ptr->extract(received_temporal_id_and_data);
-  };
 
-  InboxMapValueType received_temporal_id_and_data{};
-  if constexpr (std::is_same_v<
-                    evolution::dg::AtomicInboxBoundaryData<volume_dim>,
-                    typename evolution::dg::Tags::
-                        BoundaryCorrectionAndGhostCellsInbox<
-                            volume_dim, UseNodegroupDgElements>::type>) {
-    bool have_all_data = false;
-    received_temporal_id_and_data =
-        db::mutate<evolution::dg::Tags::BoundaryData<volume_dim>>(
-            [&get_temporal_id_and_data_node](
-                const auto boundary_data_ptr,
-                const gsl::not_null<bool*> local_have_all_data,
-                const auto inbox_ptr, const Element<volume_dim>& element)
-                -> std::pair<typename NodeType::key_type,
-                             typename NodeType::mapped_type> {
-              if (inbox_ptr->message_count.load(std::memory_order_relaxed) <
-                  element.number_of_neighbors()) {
-                return {};
-              }
-              detail::retrieve_boundary_data_spsc(boundary_data_ptr, inbox_ptr,
-                                                  element);
+  const auto number_of_neighbors =
+      db::get<domain::Tags::Element<volume_dim>>(*box).number_of_neighbors();
 
-              NodeType node =
-                  get_temporal_id_and_data_node(boundary_data_ptr, element);
-              if (node.empty()) {
-                return {};
-              }
-              if (UNLIKELY(node.mapped().size() !=
-                           element.number_of_neighbors())) {
-                ERROR("Incorrect number of element neighbors");
-              }
-              *local_have_all_data = true;
-              // We only decrease the counter if we are done with the current
-              // time and we only decrease it by the number of neighbors at the
-              // current time.
-              inbox_ptr->message_count.fetch_sub(element.number_of_neighbors(),
-                                                 std::memory_order_acq_rel);
-
-              return std::pair{std::move(node.key()), std::move(node.mapped())};
-            },
-            box, make_not_null(&have_all_data),
-            make_not_null(
-                &tuples::get<
-                    evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<
-                        volume_dim, UseNodegroupDgElements>>(*inboxes)),
-            db::get<domain::Tags::Element<volume_dim>>(*box));
-    if (not have_all_data) {
-      return false;
+  auto& inbox =
+      tuples::get<evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<
+          volume_dim, UseNodegroupDgElements>>(*inboxes);
+collect_messages:
+  inbox.collect_messages();
+  const auto received_record = inbox.messages.find(temporal_id);
+  if (received_record == inbox.messages.end()) {
+    if (inbox.set_missing_messages(number_of_neighbors)) {
+      // We've received new messages while this function was running,
+      // so try again.
+      goto collect_messages;  // NOLINT(cppcoreguidelines-avoid-goto)
     }
-  } else {
-    // Scope to make sure the `node` can't be used later.
-    NodeType node = get_temporal_id_and_data_node(
-        make_not_null(&tuples::get<
-                      evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<
-                          volume_dim, UseNodegroupDgElements>>(*inboxes)),
-        db::get<domain::Tags::Element<volume_dim>>(*box));
-    if (node.empty()) {
-      return false;
-    }
-    received_temporal_id_and_data.first = std::move(node.key());
-    received_temporal_id_and_data.second = std::move(node.mapped());
+    return false;
   }
+  auto& received_neighbor_data = received_record->second;
+  if (received_neighbor_data.size() != number_of_neighbors) {
+    ASSERT(received_neighbor_data.size() < number_of_neighbors,
+           "Received too many messages: " << received_neighbor_data);
+    if (inbox.set_missing_messages(number_of_neighbors -
+                                   received_neighbor_data.size())) {
+      // We've received new messages while this function was running,
+      // so try again.
+      goto collect_messages;  // NOLINT(cppcoreguidelines-avoid-goto)
+    }
+    return false;
+  }
+
+  std::pair received_temporal_id_and_data{temporal_id,
+                                          std::move(received_neighbor_data)};
+  inbox.messages.erase(received_record);
 
   // Move inbox contents into the DataBox
   if constexpr (using_subcell_v<Metavariables>) {
@@ -361,8 +206,7 @@ bool receive_boundary_data_global_time_stepping(
           if (received_mortar_data.second.boundary_correction_data
                   .has_value()) {
             mortar_data->at(mortar_id).neighbor().face_mesh =
-                received_mortar_data.second.volume_mesh.slice_away(
-                    mortar_id.direction().dimension());
+                neighbor_face_mesh;
             mortar_data->at(mortar_id).neighbor().mortar_mesh =
                 received_mortar_data.second.boundary_correction_mesh.value();
             mortar_data->at(mortar_id).neighbor().mortar_data = std::move(
@@ -407,156 +251,128 @@ bool receive_boundary_data_local_time_stepping(
     }
   }();
 
-  // The boundary history coupling computation (which computes the _lifted_
-  // boundary correction) returns a Variables<dt<EvolvedVars>> instead of
-  // using the `NormalDotNumericalFlux` prefix tag. This is because the
-  // returned quantity is more a `dt` quantity than a
-  // `NormalDotNormalDotFlux` since it's been lifted to the volume.
-  using InboxMap =
-      std::map<TimeStepId,
-               DirectionalIdMap<Dim, evolution::dg::BoundaryData<Dim>>>;
-  InboxMap* inbox_ptr = nullptr;
-  if constexpr (std::is_same_v<evolution::dg::AtomicInboxBoundaryData<Dim>,
-                               typename evolution::dg::Tags::
-                                   BoundaryCorrectionAndGhostCellsInbox<
-                                       Dim, UseNodegroupDgElements>::type>) {
-    inbox_ptr = db::mutate<evolution::dg::Tags::BoundaryData<Dim>>(
-        [](const auto boundary_data_ptr, const auto local_inbox_ptr,
-           const Element<Dim>& element) -> InboxMap* {
-          detail::retrieve_boundary_data_spsc(boundary_data_ptr,
-                                              local_inbox_ptr, element);
+  auto& inbox =
+      tuples::get<evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<
+          Dim, UseNodegroupDgElements>>(*inboxes);
 
-          return boundary_data_ptr.get();
+  size_t missing_messages{};
+  do {
+    // The boundary history coupling computation (which computes the _lifted_
+    // boundary correction) returns a Variables<dt<EvolvedVars>> instead of
+    // using the `NormalDotNumericalFlux` prefix tag. This is because the
+    // returned quantity is more a `dt` quantity than a
+    // `NormalDotNormalDotFlux` since it's been lifted to the volume.
+    using InboxMap =
+        std::map<TimeStepId,
+                 DirectionalIdMap<Dim, evolution::dg::BoundaryData<Dim>>>;
+    inbox.collect_messages();
+    InboxMap& inbox_data = inbox.messages;
+
+    missing_messages = 0;
+
+    db::mutate<evolution::dg::Tags::MortarMesh<Dim>,
+               evolution::dg::Tags::MortarDataHistory<
+                   Dim, typename dt_variables_tag::type>,
+               evolution::dg::Tags::MortarNextTemporalId<Dim>,
+               domain::Tags::NeighborMesh<Dim>>(
+        [&inbox_data, &missing_messages, &needed_time](
+            const gsl::not_null<DirectionalIdMap<Dim, Mesh<Dim - 1>>*>
+                mortar_meshes,
+            const gsl::not_null<
+                DirectionalIdMap<Dim, TimeSteppers::BoundaryHistory<
+                                          evolution::dg::MortarData<Dim>,
+                                          evolution::dg::MortarData<Dim>,
+                                          typename dt_variables_tag::type>>*>
+                boundary_data_history,
+            const gsl::not_null<DirectionalIdMap<Dim, TimeStepId>*>
+                mortar_next_time_step_ids,
+            const gsl::not_null<DirectionalIdMap<Dim, Mesh<Dim>>*>
+                neighbor_mesh,
+            const Element<Dim>& element, const Mesh<Dim>& volume_mesh) {
+          // Remove neighbor meshes for neighbors that don't exist anymore
+          domain::remove_nonexistent_neighbors(neighbor_mesh, element);
+
+          // Move received boundary data into boundary history.
+          for (auto& [mortar_id, mortar_next_time_step_id] :
+               *mortar_next_time_step_ids) {
+            if (mortar_id.id() == ElementId<Dim>::external_boundary_id()) {
+              continue;
+            }
+            const size_t sliced_away_dim = mortar_id.direction().dimension();
+            const Mesh<Dim - 1> face_mesh =
+                volume_mesh.slice_away(sliced_away_dim);
+            while (needed_time(mortar_next_time_step_id)) {
+              const auto time_entry = inbox_data.find(mortar_next_time_step_id);
+              if (time_entry == inbox_data.end()) {
+                ++missing_messages;
+                break;
+              }
+              const auto received_mortar_data =
+                  time_entry->second.find(mortar_id);
+              if (received_mortar_data == time_entry->second.end()) {
+                ++missing_messages;
+                break;
+              }
+
+              const Mesh<Dim - 1> neighbor_face_mesh =
+                  received_mortar_data->second.volume_mesh.slice_away(
+                      sliced_away_dim);
+              const Mesh<Dim - 1> mortar_mesh =
+                  ::dg::mortar_mesh(face_mesh, neighbor_face_mesh);
+
+              const auto project_boundary_mortar_data =
+                  [&mortar_mesh](
+                      const TimeStepId& /*id*/,
+                      const gsl::not_null<::evolution::dg::MortarData<Dim>*>
+                          mortar_data) {
+                    return p_project_mortar_data(mortar_data, mortar_mesh);
+                  };
+
+              mortar_meshes->at(mortar_id) = mortar_mesh;
+              boundary_data_history->at(mortar_id).local().for_each(
+                  project_boundary_mortar_data);
+
+              MortarData<Dim> neighbor_mortar_data{};
+              // Insert:
+              // - the current TimeStepId of the neighbor
+              // - the current face mesh of the neighbor
+              // - the current boundary correction data of the neighbor
+              ASSERT(received_mortar_data->second.boundary_correction_data
+                         .has_value(),
+                     "Did not receive boundary correction data from the "
+                     "neighbor\nMortarId: "
+                         << mortar_id
+                         << "\nTimeStepId: " << mortar_next_time_step_id);
+              neighbor_mesh->insert_or_assign(
+                  mortar_id, received_mortar_data->second.volume_mesh);
+              neighbor_mortar_data.mortar_mesh =
+                  received_mortar_data->second.boundary_correction_mesh.value();
+              neighbor_mortar_data.mortar_data =
+                  std::move(received_mortar_data->second
+                                .boundary_correction_data.value());
+              boundary_data_history->at(mortar_id).remote().insert(
+                  time_entry->first,
+                  received_mortar_data->second.integration_order,
+                  std::move(neighbor_mortar_data));
+              boundary_data_history->at(mortar_id).remote().for_each(
+                  project_boundary_mortar_data);
+              mortar_next_time_step_id =
+                  received_mortar_data->second.validity_range;
+              time_entry->second.erase(received_mortar_data);
+              if (time_entry->second.empty()) {
+                inbox_data.erase(time_entry);
+              }
+            }
+          }
         },
-        box,
-        make_not_null(&tuples::get<
-                      evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<
-                          Dim, UseNodegroupDgElements>>(*inboxes)),
-        db::get<domain::Tags::Element<Dim>>(*box));
-  } else {
-    inbox_ptr =
-        &tuples::get<evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<
-            Dim, UseNodegroupDgElements>>(*inboxes);
-  }
-  ASSERT(inbox_ptr != nullptr, "The inbox pointer should not be null.");
-  InboxMap& inbox = *inbox_ptr;
+        box, db::get<::domain::Tags::Element<Dim>>(*box),
+        db::get<domain::Tags::Mesh<Dim>>(*box));
 
-  const bool have_all_intermediate_messages = db::mutate<
-      evolution::dg::Tags::MortarMesh<Dim>,
-      evolution::dg::Tags::MortarDataHistory<Dim,
-                                             typename dt_variables_tag::type>,
-      evolution::dg::Tags::MortarNextTemporalId<Dim>,
-      domain::Tags::NeighborMesh<Dim>>(
-      [&inbox, &needed_time](
-          const gsl::not_null<DirectionalIdMap<Dim, Mesh<Dim - 1>>*>
-              mortar_meshes,
-          const gsl::not_null<
-              DirectionalIdMap<Dim, TimeSteppers::BoundaryHistory<
-                                        evolution::dg::MortarData<Dim>,
-                                        evolution::dg::MortarData<Dim>,
-                                        typename dt_variables_tag::type>>*>
-              boundary_data_history,
-          const gsl::not_null<DirectionalIdMap<Dim, TimeStepId>*>
-              mortar_next_time_step_ids,
-          const gsl::not_null<DirectionalIdMap<Dim, Mesh<Dim>>*> neighbor_mesh,
-          const Element<Dim>& element, const Mesh<Dim>& volume_mesh) {
-        // Remove neighbor meshes for neighbors that don't exist anymore
-        domain::remove_nonexistent_neighbors(neighbor_mesh, element);
-
-        // Move received boundary data into boundary history.
-        for (auto& [mortar_id, mortar_next_time_step_id] :
-             *mortar_next_time_step_ids) {
-          if (mortar_id.id() == ElementId<Dim>::external_boundary_id()) {
-            continue;
-          }
-          const size_t sliced_away_dim = mortar_id.direction().dimension();
-          const Mesh<Dim - 1> face_mesh =
-              volume_mesh.slice_away(sliced_away_dim);
-          while (needed_time(mortar_next_time_step_id)) {
-            const auto time_entry = inbox.find(mortar_next_time_step_id);
-            if (time_entry == inbox.end()) {
-              return false;
-            }
-            const auto received_mortar_data =
-                time_entry->second.find(mortar_id);
-            if (received_mortar_data == time_entry->second.end()) {
-              return false;
-            }
-
-            const Mesh<Dim - 1> neighbor_face_mesh =
-                received_mortar_data->second.volume_mesh.slice_away(
-                    sliced_away_dim);
-            const Mesh<Dim - 1> mortar_mesh =
-                ::dg::mortar_mesh(face_mesh, neighbor_face_mesh);
-
-            const auto project_boundary_mortar_data =
-                [&mortar_mesh](
-                    const TimeStepId& /*id*/,
-                    const gsl::not_null<::evolution::dg::MortarData<Dim>*>
-                        mortar_data) {
-                  return p_project_mortar_data(mortar_data, mortar_mesh);
-                };
-
-            mortar_meshes->at(mortar_id) = mortar_mesh;
-            boundary_data_history->at(mortar_id).local().for_each(
-                project_boundary_mortar_data);
-            boundary_data_history->at(mortar_id).remote().for_each(
-                project_boundary_mortar_data);
-
-            MortarData<Dim> neighbor_mortar_data{};
-            // Insert:
-            // - the current TimeStepId of the neighbor
-            // - the current face mesh of the neighbor
-            // - the current boundary correction data of the neighbor
-            ASSERT(received_mortar_data->second.boundary_correction_data
-                       .has_value(),
-                   "Did not receive boundary correction data from the "
-                   "neighbor\nMortarId: "
-                       << mortar_id
-                       << "\nTimeStepId: " << mortar_next_time_step_id);
-            neighbor_mesh->insert_or_assign(
-                mortar_id, received_mortar_data->second.volume_mesh);
-            neighbor_mortar_data.mortar_mesh =
-                received_mortar_data->second.boundary_correction_mesh.value();
-            neighbor_mortar_data.mortar_data = std::move(
-                received_mortar_data->second.boundary_correction_data.value());
-            boundary_data_history->at(mortar_id).remote().insert(
-                time_entry->first,
-                received_mortar_data->second.integration_order,
-                std::move(neighbor_mortar_data));
-            boundary_data_history->at(mortar_id).remote().for_each(
-                project_boundary_mortar_data);
-            mortar_next_time_step_id =
-                received_mortar_data->second.validity_range;
-            time_entry->second.erase(received_mortar_data);
-            if (time_entry->second.empty()) {
-              inbox.erase(time_entry);
-            }
-          }
-        }
-        return true;
-      },
-      box, db::get<::domain::Tags::Element<Dim>>(*box),
-      db::get<domain::Tags::Mesh<Dim>>(*box));
-
-  if (not have_all_intermediate_messages) {
-    return false;
-  }
-
-  if constexpr (std::is_same_v<evolution::dg::AtomicInboxBoundaryData<Dim>,
-                               typename evolution::dg::Tags::
-                                   BoundaryCorrectionAndGhostCellsInbox<
-                                       Dim, UseNodegroupDgElements>::type>) {
-    // We only decrease the counter if we are done with the current time
-    // and we only decrease it by the number of neighbors at the current
-    // time.
-    tuples::get<evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<
-        Dim, UseNodegroupDgElements>>(*inboxes)
-        .message_count.fetch_sub(
-            db::get<domain::Tags::Element<Dim>>(*box).number_of_neighbors(),
-            std::memory_order_acq_rel);
-  }
-  return have_all_intermediate_messages;
+    if (missing_messages == 0) {
+      return true;
+    }
+  } while (inbox.set_missing_messages(missing_messages));
+  return false;
 }
 
 /// Apply corrections from boundary communication.

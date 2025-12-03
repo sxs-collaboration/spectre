@@ -40,6 +40,8 @@ void test_gauge_transforms_via_inverse_coordinate_map(
 
   auto inverse_transform_box = db::create<db::AddSimpleTags<
       coordinate_variables_tag, spin_weighted_variables_tag,
+      ::Tags::Variables<
+          Tags::characteristic_worldtube_boundary_tags<Tags::BoundaryValue>>,
       volume_spin_weighted_variables_tag, Tags::LMax,
       Tags::NumberOfRadialPoints,
       Spectral::Swsh::Tags::SwshInterpolator<Tags::CauchyAngularCoords>,
@@ -47,6 +49,9 @@ void test_gauge_transforms_via_inverse_coordinate_map(
           Tags::PartiallyFlatAngularCoords>>>(
       typename coordinate_variables_tag::type{number_of_angular_grid_points},
       typename spin_weighted_variables_tag::type{number_of_angular_grid_points},
+      Variables<
+          Tags::characteristic_worldtube_boundary_tags<Tags::BoundaryValue>>{
+          number_of_angular_grid_points},
       typename volume_spin_weighted_variables_tag::type{
           number_of_angular_grid_points * number_of_radial_grid_points},
       l_max, number_of_radial_grid_points, Spectral::Swsh::SwshInterpolator{},

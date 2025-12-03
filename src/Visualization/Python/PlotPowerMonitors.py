@@ -91,6 +91,7 @@ def plot_power_monitors(
         num_elements = np.zeros(num_cols, dtype=int)
         max_error = np.zeros((num_cols, domain.dim))
 
+    shown_dtype_warning_once = False
     for element, tensor_data in iter_elements(
         volfiles, obs_id, tensor_components, element_patterns=element_patterns
     ):
@@ -113,6 +114,14 @@ def plot_power_monitors(
             np.zeros(element.mesh.extents(d) - skip_filtered_modes)
             for d in range(element.dim)
         ]
+        if tensor_data.dtype != np.float64:
+            if not shown_dtype_warning_once:
+                logger.warning(
+                    "Tensor data is not double precision. Power monitors"
+                    " will be inaccurate below the precision of the data."
+                )
+                shown_dtype_warning_once = True
+            tensor_data = tensor_data.astype(np.float64)
         for component in tensor_data:
             modes = power_monitors(DataVector(component), element.mesh)
             for d, modes_dim in enumerate(modes):
@@ -365,10 +374,7 @@ def plot_power_monitors_command(
     open_h5_file = spectre_h5.H5File(h5_files[0], "r")
     volfile = open_h5_file.get_vol(subfile_name)
     dim = volfile.get_dimension()
-    any_obs_id = (
-        obs_id if obs_id is not None else volfile.list_observation_ids()[0]
-    )
-    domain = deserialize_domain[dim](volfile.get_domain(any_obs_id))
+    domain = deserialize_domain[dim](volfile.get_domain())
     all_block_groups = list(domain.block_groups.keys())
     all_block_names = [block.name for block in domain.blocks]
     if list_blocks:

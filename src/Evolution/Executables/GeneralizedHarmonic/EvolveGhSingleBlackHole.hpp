@@ -20,7 +20,6 @@
 #include "DataStructures/Tensor/IndexType.hpp"
 #include "Domain/Structure/ObjectLabel.hpp"
 #include "Evolution/Actions/RunEventsAndTriggers.hpp"
-#include "Evolution/DiscontinuousGalerkin/InboxTags.hpp"
 #include "Evolution/Executables/GeneralizedHarmonic/Deadlock.hpp"
 #include "Evolution/Executables/GeneralizedHarmonic/GeneralizedHarmonicBase.hpp"
 #include "Evolution/Systems/Cce/Callbacks/DumpBondiSachsOnWorldtube.hpp"
@@ -309,8 +308,7 @@ struct EvolutionMetavars : public GeneralizedHarmonicTemplateBase<3, UseLts> {
             evolution::dg::Tags::Quadrature,
             Tags::StepperErrors<typename system::variables_tag>,
             SelfStart::Tags::InitialValue<typename system::variables_tag>,
-            SelfStart::Tags::InitialValue<Tags::TimeStep>,
-            evolution::dg::Tags::BoundaryData<volume_dim>>,
+            SelfStart::Tags::InitialValue<Tags::TimeStep>>,
         ::amr::projectors::CopyFromCreatorOrLeaveAsIs<tmpl::push_back<
             tmpl::append<
                 typename control_system::Actions::InitializeMeasurements<

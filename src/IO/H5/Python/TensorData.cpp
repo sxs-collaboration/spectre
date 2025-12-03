@@ -3,6 +3,7 @@
 
 #include "IO/H5/Python/TensorData.hpp"
 
+#include <pybind11/numpy.h>
 #include <pybind11/operators.h>
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
@@ -27,7 +28,21 @@ void bind_tensordata(py::module& m) {
       .def(py::init<std::string, DataVector>(), py::arg("name"),
            py::arg("data"))
       .def_readwrite("name", &TensorComponent::name)
-      .def_readwrite("data", &TensorComponent::data)
+      .def_property_readonly(
+          "data",
+          [](TensorComponent& self) {
+            // Return a numpy array view of the data with the correct dtype
+            // (float32 for std::vector<float> and float64 for DataVector)
+            return std::visit(
+                [&self](auto& storage) -> py::array {
+                  using ValueType =
+                      typename std::decay_t<decltype(storage)>::value_type;
+                  return py::array_t<ValueType>(
+                      {static_cast<py::ssize_t>(storage.size())},
+                      storage.data(), py::cast(&self));
+                },
+                self.data);
+          })
       .def("__str__", get_output<TensorComponent>)
       .def("__repr__", get_output<TensorComponent>)
       // NOLINTNEXTLINE(misc-redundant-expression)

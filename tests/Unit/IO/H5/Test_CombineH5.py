@@ -5,11 +5,18 @@ import os
 import unittest
 
 import numpy as np
+import numpy.testing as npt
 from click.testing import CliRunner
 
 import spectre.IO.H5 as spectre_h5
 from spectre import Informer
 from spectre.DataStructures import DataVector
+from spectre.Domain import (
+    PiecewisePolynomial3,
+    serialize_domain,
+    serialize_functions_of_time,
+)
+from spectre.Domain.Creators import Brick
 from spectre.IO.H5 import ElementVolumeData, TensorComponent, combine_h5_vol
 from spectre.IO.H5.CombineH5 import combine_h5_command
 from spectre.Spectral import Basis, Quadrature
@@ -47,6 +54,37 @@ class TestCombineH5(unittest.TestCase):
         basis = Basis.Legendre
         quad = Quadrature.Gauss
         self.observation_ids = [0, 1]
+        domain_creator = Brick(
+            lower_bounds=[0.0, 0.0, 0.0],
+            upper_bounds=[1.0, 1.0, 1.0],
+            initial_refinement_levels=[0, 0, 0],
+            initial_num_points=[2, 2, 2],
+            is_periodic=[False, False, False],
+        )
+        self.serialized_domain = serialize_domain(
+            domain_creator.create_domain()
+        )
+
+        def make_translation_fot(fill_value, expiration):
+            coefficients = [
+                DataVector(size=3, fill=fill_value) for _ in range(4)
+            ]
+            return PiecewisePolynomial3(0.0, coefficients, expiration)
+
+        self.serialized_global_fots = serialize_functions_of_time(
+            {"Translation": make_translation_fot(0.0, 100.0)}
+        )
+        self.serialized_observation_fots = {
+            obs_id: serialize_functions_of_time(
+                {
+                    "Translation": make_translation_fot(
+                        observation_values[obs_id],
+                        observation_values[obs_id] + 0.01,
+                    )
+                }
+            )
+            for obs_id in self.observation_ids
+        }
 
         # Writing ElementVolume data and TensorComponent Data to first file
         self.h5_file1 = spectre_h5.H5File(file_name=self.file_name1, mode="a")
@@ -87,6 +125,9 @@ class TestCombineH5(unittest.TestCase):
                 [
                     self.element_vol_data_file_1[i],
                 ],
+                self.serialized_domain,
+                self.serialized_observation_fots[observation_id],
+                self.serialized_global_fots,
             )
 
         # Store initial connectivity data
@@ -135,6 +176,9 @@ class TestCombineH5(unittest.TestCase):
                 [
                     self.element_vol_data_file_2[i],
                 ],
+                self.serialized_domain,
+                self.serialized_observation_fots[observation_id],
+                self.serialized_global_fots,
             )
         self.h5_file2.close()
 
@@ -182,6 +226,17 @@ class TestCombineH5(unittest.TestCase):
 
         self.assertEqual(actual_obs_value, expected_obs_value)
 
+        for obs_to_check in actual_obs_ids:
+            self.assertEqual(output_vol.get_domain(), self.serialized_domain)
+            self.assertEqual(
+                output_vol.get_functions_of_time(obs_to_check),
+                self.serialized_observation_fots[obs_to_check],
+            )
+
+        self.assertEqual(
+            output_vol.get_global_functions_of_time(),
+            self.serialized_global_fots,
+        )
         # Test tensor components
 
         actual_tensor_component_names = output_vol.list_tensor_components(
@@ -235,13 +290,12 @@ class TestCombineH5(unittest.TestCase):
             ]
         )
         for i in range(len(expected_tensor_components)):
-            value = (
+            npt.assert_equal(
                 output_vol.get_tensor_component(
                     i, actual_tensor_component_names[i]
-                ).data
-                == expected_tensor_components[i]
+                ).data,
+                expected_tensor_components[i],
             )
-            self.assertEqual(value, True)
 
     def test_cli(self):
         # Checks if the CLI for CombineH5 runs properly

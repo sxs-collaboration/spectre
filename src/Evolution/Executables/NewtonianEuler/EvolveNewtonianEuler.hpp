@@ -32,6 +32,7 @@
 #include "Evolution/DgSubcell/Tags/TciStatus.hpp"
 #include "Evolution/DiscontinuousGalerkin/Actions/ApplyBoundaryCorrections.hpp"
 #include "Evolution/DiscontinuousGalerkin/Actions/ComputeTimeDerivative.hpp"
+#include "Evolution/DiscontinuousGalerkin/CleanMortarHistory.hpp"
 #include "Evolution/DiscontinuousGalerkin/DgElementArray.hpp"
 #include "Evolution/DiscontinuousGalerkin/Initialization/Mortars.hpp"
 #include "Evolution/DiscontinuousGalerkin/Initialization/QuadratureTag.hpp"
@@ -99,11 +100,11 @@
 #include "PointwiseFunctions/Hydro/EquationsOfState/Factory.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/RegisterDerivedWithCharm.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
-#include "Time/Actions/CleanHistory.hpp"
 #include "Time/Actions/SelfStartActions.hpp"
 #include "Time/AdvanceTime.hpp"
 #include "Time/ChangeSlabSize/Action.hpp"
 #include "Time/ChangeTimeStepperOrder.hpp"
+#include "Time/CleanHistory.hpp"
 #include "Time/RecordTimeStepperData.hpp"
 #include "Time/StepChoosers/Factory.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"
@@ -307,7 +308,11 @@ struct EvolutionMetavars {
               evolution::Actions::RunEventsAndDenseTriggers<
                   tmpl::list<typename system::primitive_from_conservative>>,
               Actions::MutateApply<UpdateU<system, local_time_stepping>>>>,
-      Actions::CleanHistory<system, local_time_stepping>,
+      Actions::MutateApply<CleanHistory<system>>,
+      tmpl::conditional_t<
+          local_time_stepping,
+          Actions::MutateApply<evolution::dg::CleanMortarHistory<system>>,
+          tmpl::list<>>,
       Limiters::Actions::SendData<EvolutionMetavars>,
       Limiters::Actions::Limit<EvolutionMetavars>,
       // Conservative `UpdatePrimitives` expects system to possess
@@ -351,7 +356,11 @@ struct EvolutionMetavars {
       // Note: The primitive variables are computed as part of the TCI.
       evolution::dg::subcell::Actions::TciAndRollback<
           NewtonianEuler::subcell::TciOnDgGrid<volume_dim>>,
-      Actions::CleanHistory<system, local_time_stepping>,
+      Actions::MutateApply<CleanHistory<system>>,
+      tmpl::conditional_t<
+          local_time_stepping,
+          Actions::MutateApply<evolution::dg::CleanMortarHistory<system>>,
+          tmpl::list<>>,
       Actions::Goto<evolution::dg::subcell::Actions::Labels::EndOfSolvers>,
 
       Actions::Label<evolution::dg::subcell::Actions::Labels::BeginSubcell>,
@@ -368,7 +377,11 @@ struct EvolutionMetavars {
           NewtonianEuler::subcell::TimeDerivative<volume_dim>>,
       Actions::MutateApply<RecordTimeStepperData<system>>,
       Actions::MutateApply<UpdateU<system, local_time_stepping>>,
-      Actions::CleanHistory<system, local_time_stepping>,
+      Actions::MutateApply<CleanHistory<system>>,
+      tmpl::conditional_t<
+          local_time_stepping,
+          Actions::MutateApply<evolution::dg::CleanMortarHistory<system>>,
+          tmpl::list<>>,
       Actions::MutateApply<typename system::primitive_from_conservative>,
       evolution::dg::subcell::Actions::TciAndSwitchToDg<
           NewtonianEuler::subcell::TciOnFdGrid<volume_dim>>,

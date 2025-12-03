@@ -422,20 +422,25 @@ struct ReceiveAndSendDataForReconstruction {
         box);
 
     const auto& current_time_step_id = db::get<::Tags::TimeStepId>(box);
-    std::map<TimeStepId,
-             DirectionalIdMap<Dim, evolution::dg::BoundaryData<Dim>>>& inbox =
+    auto& inbox =
         tuples::get<evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<
             Metavariables::volume_dim,
             Parallel::is_dg_element_collection_v<ParallelComponent>>>(inboxes);
-    const auto& received = inbox.find(current_time_step_id);
+    inbox.collect_messages();
+    const auto received = inbox.messages.find(current_time_step_id);
     // Check we have at least some data from correct time, and then check
     // we have received all data
-    if (received == inbox.end() or
-        not std::all_of(expected_keys.begin(), expected_keys.end(),
-                        [&received](const auto& key) {
-                          return received->second.find(key) !=
-                                 received->second.end();
-                        })) {
+    if (received == inbox.messages.end()) {
+      inbox.set_missing_messages(expected_keys.size());
+      return {Parallel::AlgorithmExecution::Retry, std::nullopt};
+    }
+    if (const auto missing = std::count_if(
+            expected_keys.begin(), expected_keys.end(),
+            [&received](const auto& key) {
+              return received->second.find(key) == received->second.end();
+            });
+        missing != 0) {
+      inbox.set_missing_messages(static_cast<size_t>(missing));
       return {Parallel::AlgorithmExecution::Retry, std::nullopt};
     }
 
@@ -673,23 +678,28 @@ struct ReceiveDataForReconstruction {
 
     using ::operator<<;
     const auto& current_time_step_id = db::get<::Tags::TimeStepId>(box);
-    std::map<TimeStepId,
-             DirectionalIdMap<Dim, evolution::dg::BoundaryData<Dim>>>& inbox =
+    auto& inbox =
         tuples::get<evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<
             Metavariables::volume_dim,
             Parallel::is_dg_element_collection_v<ParallelComponent>>>(inboxes);
-    const auto& received = inbox.find(current_time_step_id);
+    inbox.collect_messages();
+    const auto received = inbox.messages.find(current_time_step_id);
     // Check we have at least some data from correct time, and then check that
     // we have received all data
-    if (received == inbox.end() or
-        received->second.size() != number_of_expected_messages) {
+    if (received == inbox.messages.end()) {
+      inbox.set_missing_messages(number_of_expected_messages);
+      return {Parallel::AlgorithmExecution::Retry, std::nullopt};
+    }
+    if (received->second.size() != number_of_expected_messages) {
+      inbox.set_missing_messages(number_of_expected_messages -
+                                 received->second.size());
       return {Parallel::AlgorithmExecution::Retry, std::nullopt};
     }
 
     // Now that we have received all the data, copy it over as needed.
     DirectionalIdMap<Dim, evolution::dg::BoundaryData<Dim>> received_data =
-        std::move(inbox[current_time_step_id]);
-    inbox.erase(current_time_step_id);
+        std::move(received->second);
+    inbox.messages.erase(received);
 
     const Mesh<Dim>& subcell_mesh = db::get<Tags::Mesh<Dim>>(box);
     const auto& mortar_meshes = get<evolution::dg::Tags::MortarMesh<Dim>>(box);

@@ -36,8 +36,8 @@
 #include "Evolution/ComputeTags.hpp"
 #include "Evolution/DiscontinuousGalerkin/Actions/ApplyBoundaryCorrections.hpp"
 #include "Evolution/DiscontinuousGalerkin/Actions/ComputeTimeDerivative.hpp"
+#include "Evolution/DiscontinuousGalerkin/CleanMortarHistory.hpp"
 #include "Evolution/DiscontinuousGalerkin/DgElementArray.hpp"
-#include "Evolution/DiscontinuousGalerkin/InboxTags.hpp"
 #include "Evolution/DiscontinuousGalerkin/Initialization/Mortars.hpp"
 #include "Evolution/Executables/GeneralizedHarmonic/Deadlock.hpp"
 #include "Evolution/Initialization/DgDomain.hpp"
@@ -178,12 +178,12 @@
 #include "PointwiseFunctions/GeneralRelativity/WeylElectric.hpp"
 #include "PointwiseFunctions/GeneralRelativity/WeylTypeD1.hpp"
 #include "PointwiseFunctions/InitialDataUtilities/InitialData.hpp"
-#include "Time/Actions/CleanHistory.hpp"
 #include "Time/Actions/SelfStartActions.hpp"
 #include "Time/AdvanceTime.hpp"
 #include "Time/ChangeSlabSize/Action.hpp"
 #include "Time/ChangeSlabSize/Tags.hpp"
 #include "Time/ChangeTimeStepperOrder.hpp"
+#include "Time/CleanHistory.hpp"
 #include "Time/RecordTimeStepperData.hpp"
 #include "Time/StepChoosers/Factory.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"
@@ -589,7 +589,11 @@ struct EvolutionMetavars {
                       volume_dim>>>,
               control_system::Actions::LimitTimeStep<control_systems>,
               Actions::MutateApply<UpdateU<system, local_time_stepping>>>>,
-      Actions::CleanHistory<system, local_time_stepping>,
+      Actions::MutateApply<CleanHistory<system>>,
+      tmpl::conditional_t<
+          local_time_stepping,
+          Actions::MutateApply<evolution::dg::CleanMortarHistory<system>>,
+          tmpl::list<>>,
       dg::Actions::Filter<
           Filters::Exponential<0>,
           tmpl::list<gr::Tags::SpacetimeMetric<DataVector, volume_dim>,
@@ -712,8 +716,7 @@ struct EvolutionMetavars {
             evolution::dg::Tags::Quadrature,
             Tags::StepperErrors<typename system::variables_tag>,
             SelfStart::Tags::InitialValue<typename system::variables_tag>,
-            SelfStart::Tags::InitialValue<Tags::TimeStep>,
-            evolution::dg::Tags::BoundaryData<volume_dim>>,
+            SelfStart::Tags::InitialValue<Tags::TimeStep>>,
         ::amr::projectors::CopyFromCreatorOrLeaveAsIs<tmpl::push_back<
             tmpl::append<
                 typename control_system::Actions::InitializeMeasurements<

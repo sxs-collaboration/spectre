@@ -8,6 +8,7 @@ add_spectre_library(${LIBRARY})
 spectre_target_sources(
   ${LIBRARY}
   PRIVATE
+  ApplyFilter.cpp
   Derivatives.cpp
   DummyReconstructor.cpp
   Filter.cpp
@@ -18,6 +19,7 @@ spectre_target_headers(
   ${LIBRARY}
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
+  ApplyFilter.hpp
   BoundaryConditionGhostData.hpp
   Derivatives.hpp
   DummyReconstructor.hpp

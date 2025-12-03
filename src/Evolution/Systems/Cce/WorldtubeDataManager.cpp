@@ -15,7 +15,6 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/SpinWeighted.hpp"
 #include "Evolution/Systems/Cce/BoundaryData.hpp"
-#include "Evolution/Systems/Cce/SpecBoundaryData.hpp"
 #include "Evolution/Systems/Cce/Tags.hpp"
 #include "Evolution/Systems/Cce/WorldtubeBufferUpdater.hpp"
 #include "NumericalAlgorithms/Interpolation/SpanInterpolator.hpp"

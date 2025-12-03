@@ -6,11 +6,6 @@ See LICENSE.txt for details.
 
 \tableofcontents
 
-\note
-This document covers Brigand as of commit
-[66b3d9276ed95425ac919ac1841286d088b5f4b1](https://github.com/edouarda/brigand/commit/66b3d9276ed95425ac919ac1841286d088b5f4b1)
-in January 2022.
-
 \tableofcontents{HTML:2}
 
 [comment]: # (The \pars improve the spacing in the generated document when)
@@ -1775,13 +1770,6 @@ The examples in this section use the following definition:
 Calls `functor` on each of `arguments...`, in order.  Returns `functor`.
 \snippet Test_TMPLDocumentation.cpp tmpl::for_each_args:defs
 \snippet Test_TMPLDocumentation.cpp tmpl::for_each_args
-
-\par
-
-\note
-This uses a std::reference_wrapper internally, but I don't see a reason for
-that.  If it were removed then this function could be constexpr starting in
-C++14.
 
 
 \subsubsection for_each for_each<Sequence>(functor)

@@ -8,7 +8,10 @@ spectre_target_headers(
   AtomicInboxBoundaryData.hpp
   BackgroundGrVars.hpp
   BoundaryData.hpp
+  CleanMortarHistory.hpp
+  CleanMortarHistory.tpp
   DgElementArray.hpp
+  InboxBoundaryData.hpp
   InboxTags.hpp
   InterfaceDataPolicy.hpp
   InterpolatedBoundaryData.hpp
@@ -26,6 +29,8 @@ spectre_target_sources(
   PRIVATE
   AtomicInboxBoundaryData.cpp
   BoundaryData.cpp
+  InboxBoundaryData.cpp
+  InboxTags.cpp
   InterfaceDataPolicy.cpp
   InterpolatedBoundaryData.cpp
   MortarData.cpp

@@ -7,7 +7,6 @@
 #include <vector>
 
 #include "Evolution/Actions/RunEventsAndTriggers.hpp"
-#include "Evolution/DiscontinuousGalerkin/InboxTags.hpp"
 #include "Evolution/Executables/GeneralizedHarmonic/GeneralizedHarmonicBase.hpp"
 #include "Options/Protocols/FactoryCreation.hpp"
 #include "Options/String.hpp"
@@ -114,8 +113,7 @@ struct EvolutionMetavars
             evolution::dg::Tags::Quadrature,
             Tags::StepperErrors<typename system::variables_tag>,
             SelfStart::Tags::InitialValue<typename system::variables_tag>,
-            SelfStart::Tags::InitialValue<Tags::TimeStep>,
-            evolution::dg::Tags::BoundaryData<volume_dim>>,
+            SelfStart::Tags::InitialValue<Tags::TimeStep>>,
         ::amr::projectors::CopyFromCreatorOrLeaveAsIs<
             Tags::ChangeSlabSize::NumberOfExpectedMessages,
             Tags::ChangeSlabSize::NewSlabSize>>;

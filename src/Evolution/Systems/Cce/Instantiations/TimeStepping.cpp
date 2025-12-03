@@ -3,6 +3,8 @@
 
 #include "Evolution/Systems/Cce/KleinGordonSystem.hpp"
 #include "Evolution/Systems/Cce/System.hpp"
+#include "Time/ChangeTimeStepperOrder.tpp"
+#include "Time/CleanHistory.tpp"
 #include "Time/RecordTimeStepperData.tpp"
 #include "Time/UpdateU.tpp"
 #include "Utilities/GenerateInstantiations.hpp"
@@ -10,10 +12,15 @@
 #define EVOLVE_CCM(data) BOOST_PP_TUPLE_ELEM(0, data)
 
 #define INSTANTIATION(r, data)                                             \
+  template class ChangeTimeStepperOrder<                                   \
+      Cce::KleinGordonSystem<EVOLVE_CCM(data)>>;                           \
+  template class CleanHistory<Cce::KleinGordonSystem<EVOLVE_CCM(data)>>;   \
   template class RecordTimeStepperData<                                    \
       Cce::KleinGordonSystem<EVOLVE_CCM(data)>>;                           \
   template class UpdateU<Cce::KleinGordonSystem<EVOLVE_CCM(data)>, false>; \
   template class UpdateU<Cce::KleinGordonSystem<EVOLVE_CCM(data)>, true>;  \
+  template class ChangeTimeStepperOrder<Cce::System<EVOLVE_CCM(data)>>;    \
+  template class CleanHistory<Cce::System<EVOLVE_CCM(data)>>;              \
   template class RecordTimeStepperData<Cce::System<EVOLVE_CCM(data)>>;     \
   template class UpdateU<Cce::System<EVOLVE_CCM(data)>, false>;            \
   template class UpdateU<Cce::System<EVOLVE_CCM(data)>, true>;

@@ -168,10 +168,11 @@ struct BoundaryMessageReceiveTag {
   using message_type = BoundaryMessage<3>;
 
   template <typename Inbox>
-  static void insert_into_inbox(const gsl::not_null<Inbox*> inbox,
+  static bool insert_into_inbox(const gsl::not_null<Inbox*> inbox,
                                 BoundaryMessage<3>* message) {
     const int receiver_element = message->tci_status;
     (*inbox)[receiver_element] = std::unique_ptr<BoundaryMessage<3>>(message);
+    return true;
   }
 };
 // [charm message inbox tag]

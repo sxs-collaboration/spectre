@@ -27,6 +27,13 @@
 #include "Utilities/Literals.hpp"
 #include "Utilities/MakeArray.hpp"
 
+/// \cond
+namespace Tags {
+template <typename LhsTag, typename RhsTag>
+struct Multiplies;
+}  // namespace Tags
+/// \endcond
+
 namespace Cce {
 
 /*!

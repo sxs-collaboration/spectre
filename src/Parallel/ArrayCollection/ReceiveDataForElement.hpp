@@ -46,13 +46,14 @@ struct ReceiveDataForElement {
     ASSERT(
         element_collection.count(element_to_execute_on) == 1,
         "ElementId " << element_to_execute_on << " is not on node " << my_node);
-    ReceiveTag::insert_into_inbox(
+    const bool run_algorithm = ReceiveTag::insert_into_inbox(
         make_not_null(&tuples::get<ReceiveTag>(
             element_collection.at(element_to_execute_on).inboxes())),
         instance, std::move(receive_data));
-
-    apply_impl<ParallelComponent>(cache, element_to_execute_on,
-                                  make_not_null(&element_collection));
+    if (run_algorithm) {
+      apply_impl<ParallelComponent>(cache, element_to_execute_on,
+                                    make_not_null(&element_collection));
+    }
   }
 
   /// \brief Entry method call when receiving from same node.

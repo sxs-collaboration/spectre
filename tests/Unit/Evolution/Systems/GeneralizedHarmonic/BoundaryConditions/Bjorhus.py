@@ -13,7 +13,7 @@ import PointwiseFunctions.GeneralRelativity.ProjectionOperators as proj
 import PointwiseFunctions.GeneralRelativity.WeylPropagating as wp
 
 
-def constraint_preserving_bjorhus_corrections_dt_v_psi(
+def constraint_preserving_corrections_dt_v_psi(
     unit_interface_normal_vector, three_index_constraint, char_speeds
 ):
     return char_speeds[0] * np.einsum(
@@ -21,7 +21,7 @@ def constraint_preserving_bjorhus_corrections_dt_v_psi(
     )
 
 
-def constraint_preserving_bjorhus_corrections_dt_v_zero(
+def constraint_preserving_corrections_dt_v_zero(
     unit_interface_normal_vector, four_index_constraint, char_speeds
 ):
     spatial_dim = len(unit_interface_normal_vector)
@@ -113,7 +113,6 @@ def add_gauge_sommerfeld_terms_to_dt_v_minus(
 
 
 def add_constraint_dependent_terms_to_dt_v_minus(
-    incoming_null_one_form,
     outgoing_null_one_form,
     incoming_null_vector,
     outgoing_null_vector,
@@ -344,7 +343,36 @@ def add_physical_dof_terms_to_dt_v_minus(
     return t1_ + t2_
 
 
-def constraint_preserving_bjorhus_corrections_dt_v_minus(
+def constraint_preserving_corrections_dt_v_minus(
+    outgoing_null_one_form,
+    incoming_null_vector,
+    outgoing_null_vector,
+    projection_ab,
+    projection_Ab,
+    projection_AB,
+    char_projected_rhs_dt_v_minus,
+    constraint_char_zero_plus,
+    constraint_char_zero_minus,
+    char_speeds,
+):
+    return (
+        add_constraint_dependent_terms_to_dt_v_minus(
+            outgoing_null_one_form,
+            incoming_null_vector,
+            outgoing_null_vector,
+            projection_ab,
+            projection_Ab,
+            projection_AB,
+            constraint_char_zero_plus,
+            constraint_char_zero_minus,
+            char_projected_rhs_dt_v_minus,
+            char_speeds,
+        )
+        - char_projected_rhs_dt_v_minus
+    )
+
+
+def constraint_preserving_gauge_corrections_dt_v_minus(
     gamma2,
     inertial_coords,
     incoming_null_one_form,
@@ -362,7 +390,6 @@ def constraint_preserving_bjorhus_corrections_dt_v_minus(
 ):
     return (
         add_constraint_dependent_terms_to_dt_v_minus(
-            incoming_null_one_form,
             outgoing_null_one_form,
             incoming_null_vector,
             outgoing_null_vector,
@@ -388,7 +415,7 @@ def constraint_preserving_bjorhus_corrections_dt_v_minus(
     )
 
 
-def constraint_preserving_physical_bjorhus_corrections_dt_v_minus(
+def constraint_preserving_gauge_physical_corrections_dt_v_minus(
     gamma2,
     inertial_coords,
     unit_interface_normal_one_form,
@@ -417,7 +444,6 @@ def constraint_preserving_physical_bjorhus_corrections_dt_v_minus(
 ):
     return (
         add_constraint_dependent_terms_to_dt_v_minus(
-            incoming_null_one_form,
             outgoing_null_one_form,
             incoming_null_vector,
             outgoing_null_vector,
@@ -714,7 +740,7 @@ def set_bc_corr_zero_when_char_speed_is_positive(dt_v_corr, char_speeds):
     return dt_v_corr
 
 
-def dt_corrs_ConstraintPreserving(
+def dt_corrs_ConstraintPreservingGauge(
     face_mesh_velocity,
     normal_covector,
     normal_vector,
@@ -787,14 +813,14 @@ def dt_corrs_ConstraintPreserving(
         char_speeds[0] -= np.dot(normal_covector, face_mesh_velocity) * gamma1
     if np.amin(char_speeds) >= 0.0:
         return (pi * 0, phi * 0, pi * 0, pi * 0)
-    dt_v_psi = constraint_preserving_bjorhus_corrections_dt_v_psi(
+    dt_v_psi = constraint_preserving_corrections_dt_v_psi(
         unit_interface_normal_vector, three_index_constraint, char_speeds
     )
-    dt_v_zero = constraint_preserving_bjorhus_corrections_dt_v_zero(
+    dt_v_zero = constraint_preserving_corrections_dt_v_zero(
         unit_interface_normal_vector, four_index_constraint, char_speeds
     )
     dt_v_plus = -1.0 * char_projected_rhs_dt_v_plus
-    dt_v_minus = constraint_preserving_bjorhus_corrections_dt_v_minus(
+    dt_v_minus = constraint_preserving_gauge_corrections_dt_v_minus(
         gamma2,
         coords,
         incoming_null_one_form,
@@ -825,7 +851,7 @@ def dt_corrs_ConstraintPreserving(
     return dt_v_psi, dt_v_zero, dt_v_plus, dt_v_minus
 
 
-def dt_corrs_ConstraintPreservingPhysical(
+def dt_corrs_ConstraintPreservingGaugePhysical(
     face_mesh_velocity,
     normal_covector,
     normal_vector,
@@ -898,14 +924,14 @@ def dt_corrs_ConstraintPreservingPhysical(
         char_speeds[0] -= np.dot(normal_covector, face_mesh_velocity) * gamma1
     if np.amin(char_speeds) >= 0.0:
         return (pi * 0, phi * 0, pi * 0, pi * 0)
-    dt_v_psi = constraint_preserving_bjorhus_corrections_dt_v_psi(
+    dt_v_psi = constraint_preserving_corrections_dt_v_psi(
         unit_interface_normal_vector, three_index_constraint, char_speeds
     )
-    dt_v_zero = constraint_preserving_bjorhus_corrections_dt_v_zero(
+    dt_v_zero = constraint_preserving_corrections_dt_v_zero(
         unit_interface_normal_vector, four_index_constraint, char_speeds
     )
     dt_v_plus = -1.0 * char_projected_rhs_dt_v_plus
-    dt_v_minus = constraint_preserving_physical_bjorhus_corrections_dt_v_minus(
+    dt_v_minus = constraint_preserving_gauge_physical_corrections_dt_v_minus(
         gamma2,
         coords,
         normal_covector,
@@ -998,7 +1024,7 @@ def dt_spacetime_metric(
         d_phi,
     )
     (dt_v_psi, dt_v_zero, dt_v_plus, dt_v_minus) = (
-        dt_corrs_ConstraintPreserving(
+        dt_corrs_ConstraintPreservingGauge(
             face_mesh_velocity,
             normal_covector,
             normal_vector,
@@ -1076,7 +1102,7 @@ def dt_spacetime_metric_static_mesh(
     )
 
 
-def dt_pi_ConstraintPreserving(
+def dt_pi_ConstraintPreservingGauge(
     face_mesh_velocity,
     normal_covector,
     normal_vector,
@@ -1110,7 +1136,7 @@ def dt_pi_ConstraintPreserving(
         d_phi,
     )
     (dt_v_psi, dt_v_zero, dt_v_plus, dt_v_minus) = (
-        dt_corrs_ConstraintPreserving(
+        dt_corrs_ConstraintPreservingGauge(
             face_mesh_velocity,
             normal_covector,
             normal_vector,
@@ -1141,7 +1167,7 @@ def dt_pi_ConstraintPreserving(
     )
 
 
-def dt_pi_ConstraintPreserving_static_mesh(
+def dt_pi_ConstraintPreservingGauge_static_mesh(
     normal_covector,
     normal_vector,
     spacetime_metric,
@@ -1164,7 +1190,7 @@ def dt_pi_ConstraintPreserving_static_mesh(
     d_pi,
     d_phi,
 ):
-    return dt_pi_ConstraintPreserving(
+    return dt_pi_ConstraintPreservingGauge(
         0.0 * normal_vector,
         normal_covector,
         normal_vector,
@@ -1190,7 +1216,7 @@ def dt_pi_ConstraintPreserving_static_mesh(
     )
 
 
-def dt_pi_ConstraintPreservingPhysical(
+def dt_pi_ConstraintPreservingGaugePhysical(
     face_mesh_velocity,
     normal_covector,
     normal_vector,
@@ -1224,7 +1250,7 @@ def dt_pi_ConstraintPreservingPhysical(
         d_phi,
     )
     (dt_v_psi, dt_v_zero, dt_v_plus, dt_v_minus) = (
-        dt_corrs_ConstraintPreservingPhysical(
+        dt_corrs_ConstraintPreservingGaugePhysical(
             face_mesh_velocity,
             normal_covector,
             normal_vector,
@@ -1255,7 +1281,7 @@ def dt_pi_ConstraintPreservingPhysical(
     )
 
 
-def dt_pi_ConstraintPreservingPhysical_static_mesh(
+def dt_pi_ConstraintPreservingGaugePhysical_static_mesh(
     normal_covector,
     normal_vector,
     spacetime_metric,
@@ -1278,7 +1304,7 @@ def dt_pi_ConstraintPreservingPhysical_static_mesh(
     d_pi,
     d_phi,
 ):
-    return dt_pi_ConstraintPreservingPhysical(
+    return dt_pi_ConstraintPreservingGaugePhysical(
         0.0 * normal_vector,
         normal_covector,
         normal_vector,
@@ -1304,7 +1330,7 @@ def dt_pi_ConstraintPreservingPhysical_static_mesh(
     )
 
 
-def dt_phi_ConstraintPreserving(
+def dt_phi_ConstraintPreservingGauge(
     face_mesh_velocity,
     normal_covector,
     normal_vector,
@@ -1338,7 +1364,7 @@ def dt_phi_ConstraintPreserving(
         d_phi,
     )
     (dt_v_psi, dt_v_zero, dt_v_plus, dt_v_minus) = (
-        dt_corrs_ConstraintPreserving(
+        dt_corrs_ConstraintPreservingGauge(
             face_mesh_velocity,
             normal_covector,
             normal_vector,
@@ -1369,7 +1395,7 @@ def dt_phi_ConstraintPreserving(
     )
 
 
-def dt_phi_ConstraintPreserving_static_mesh(
+def dt_phi_ConstraintPreservingGauge_static_mesh(
     normal_covector,
     normal_vector,
     spacetime_metric,
@@ -1392,7 +1418,7 @@ def dt_phi_ConstraintPreserving_static_mesh(
     d_pi,
     d_phi,
 ):
-    return dt_phi_ConstraintPreserving(
+    return dt_phi_ConstraintPreservingGauge(
         0.0 * normal_vector,
         normal_covector,
         normal_vector,
@@ -1418,7 +1444,7 @@ def dt_phi_ConstraintPreserving_static_mesh(
     )
 
 
-def dt_phi_ConstraintPreservingPhysical(
+def dt_phi_ConstraintPreservingGaugePhysical(
     face_mesh_velocity,
     normal_covector,
     normal_vector,
@@ -1452,7 +1478,7 @@ def dt_phi_ConstraintPreservingPhysical(
         d_phi,
     )
     (dt_v_psi, dt_v_zero, dt_v_plus, dt_v_minus) = (
-        dt_corrs_ConstraintPreservingPhysical(
+        dt_corrs_ConstraintPreservingGaugePhysical(
             face_mesh_velocity,
             normal_covector,
             normal_vector,
@@ -1483,7 +1509,7 @@ def dt_phi_ConstraintPreservingPhysical(
     )
 
 
-def dt_phi_ConstraintPreservingPhysical_static_mesh(
+def dt_phi_ConstraintPreservingGaugePhysical_static_mesh(
     normal_covector,
     normal_vector,
     spacetime_metric,
@@ -1506,7 +1532,7 @@ def dt_phi_ConstraintPreservingPhysical_static_mesh(
     d_pi,
     d_phi,
 ):
-    return dt_phi_ConstraintPreservingPhysical(
+    return dt_phi_ConstraintPreservingGaugePhysical(
         0.0 * normal_vector,
         normal_covector,
         normal_vector,

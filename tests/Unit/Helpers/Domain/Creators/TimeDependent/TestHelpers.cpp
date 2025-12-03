@@ -30,6 +30,9 @@ void write_volume_data(
   h5::H5File<h5::AccessType::ReadWrite> h5_file{filename, true};
   auto& vol_file = h5_file.insert<h5::VolumeData>(subfile_name);
 
+  const auto serialized_fots =
+      functions_of_time.empty() ? std::nullopt
+                                : std::optional{serialize(functions_of_time)};
   // We don't care about the volume data here, just the functions of time
   vol_file.write_volume_data(
       0, 0.0,
@@ -38,8 +41,6 @@ void write_volume_data(
                          {3},
                          {Spectral::Basis::Legendre},
                          {Spectral::Quadrature::GaussLobatto}}},
-      std::nullopt,
-      functions_of_time.empty() ? std::nullopt
-                                : std::optional{serialize(functions_of_time)});
+      std::nullopt, serialized_fots, serialized_fots);
 }
 }  // namespace TestHelpers::domain::creators

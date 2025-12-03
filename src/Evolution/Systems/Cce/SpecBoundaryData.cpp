@@ -3,16 +3,20 @@
 
 #include "Evolution/Systems/Cce/SpecBoundaryData.hpp"
 
+#include <complex>
 #include <cstddef>
 
 #include "DataStructures/ComplexDataVector.hpp"
+#include "DataStructures/ComplexModalVector.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/SpinWeighted.hpp"
 #include "DataStructures/Tensor/EagerMath/DeterminantAndInverse.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
-#include "NumericalAlgorithms/SpinWeightedSphericalHarmonics/SwshCollocation.hpp"
+#include "Evolution/Systems/Cce/BoundaryDataTags.hpp"
 #include "NumericalAlgorithms/SpinWeightedSphericalHarmonics/SwshDerivatives.hpp"
+#include "NumericalAlgorithms/SpinWeightedSphericalHarmonics/SwshTags.hpp"
+#include "NumericalAlgorithms/SpinWeightedSphericalHarmonics/SwshTransform.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Math.hpp"

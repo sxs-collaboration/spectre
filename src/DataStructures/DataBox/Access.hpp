@@ -4,6 +4,7 @@
 #pragma once
 
 #include <string>
+#include <tuple>
 
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/DataBox/IsApplyCallable.hpp"
@@ -86,14 +87,24 @@ decltype(auto) mutate(Invokable&& invokable, const gsl::not_null<Access*> box,
 
   const CleanupRoutine unlock_box = [&box]() {
     box->unlock_box_after_mutate();
+  };
+
+  // Check that the arguments are fetchable before setting up the
+  // cleanup so we don't trigger an error during stack unwinding.
+  const std::tuple mutate_pointers{box->template mutate<MutateTags>()...};
+
+  const CleanupRoutine reset_post_mutate = [&box]() {
+    (void)box;
     EXPAND_PACK_LEFT_TO_RIGHT([&box]() {
       static const std::string tag_name = pretty_type::get_name<MutateTags>();
       box->mutate_mutable_subitems(tag_name);
       box->reset_compute_items_after_mutate(tag_name);
     }());
   };
-  return invokable(box->template mutate<MutateTags>()...,
-                   std::forward<Args>(args)...);
+  return std::apply(
+      invokable,
+      std::tuple_cat(mutate_pointers,
+                     std::forward_as_tuple(std::forward<Args>(args)...)));
 }
 
 namespace detail {

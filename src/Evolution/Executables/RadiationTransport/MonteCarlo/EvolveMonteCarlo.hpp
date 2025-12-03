@@ -81,7 +81,6 @@
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
 #include "PointwiseFunctions/InitialDataUtilities/Tags/InitialData.hpp"
-#include "Time/Actions/CleanHistory.hpp"
 #include "Time/Actions/SelfStartActions.hpp"
 #include "Time/AdvanceTime.hpp"
 #include "Time/ChangeSlabSize/Action.hpp"

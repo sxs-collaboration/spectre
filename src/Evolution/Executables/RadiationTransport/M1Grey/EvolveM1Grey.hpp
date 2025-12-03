@@ -16,6 +16,7 @@
 #include "Evolution/DiscontinuousGalerkin/Actions/ComputeTimeDerivative.hpp"
 #include "Evolution/DiscontinuousGalerkin/Actions/VolumeTermsImpl.tpp"
 #include "Evolution/DiscontinuousGalerkin/BackgroundGrVars.hpp"
+#include "Evolution/DiscontinuousGalerkin/CleanMortarHistory.hpp"
 #include "Evolution/DiscontinuousGalerkin/DgElementArray.hpp"
 #include "Evolution/DiscontinuousGalerkin/Initialization/Mortars.hpp"
 #include "Evolution/DiscontinuousGalerkin/Initialization/QuadratureTag.hpp"
@@ -78,11 +79,11 @@
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
 #include "PointwiseFunctions/InitialDataUtilities/InitialData.hpp"
-#include "Time/Actions/CleanHistory.hpp"
 #include "Time/Actions/SelfStartActions.hpp"
 #include "Time/AdvanceTime.hpp"
 #include "Time/ChangeSlabSize/Action.hpp"
 #include "Time/ChangeTimeStepperOrder.hpp"
+#include "Time/CleanHistory.hpp"
 #include "Time/RecordTimeStepperData.hpp"
 #include "Time/StepChoosers/Factory.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"
@@ -216,8 +217,12 @@ struct EvolutionMetavars {
                   tmpl::list<imex::ImplicitDenseOutput<system>>>,
               Actions::MutateApply<UpdateU<system, local_time_stepping>>>>,
       imex::Actions::DoImplicitStep<system>,
-      Actions::CleanHistory<system, local_time_stepping>,
+      Actions::MutateApply<CleanHistory<system>>,
       Actions::MutateApply<imex::CleanHistory<system>>,
+      tmpl::conditional_t<
+          local_time_stepping,
+          Actions::MutateApply<evolution::dg::CleanMortarHistory<system>>,
+          tmpl::list<>>,
       Limiters::Actions::SendData<EvolutionMetavars>,
       Limiters::Actions::Limit<EvolutionMetavars>,
       Actions::MutateApply<typename RadiationTransport::M1Grey::

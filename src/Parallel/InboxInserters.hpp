@@ -35,7 +35,7 @@ namespace InboxInserters {
 template <typename InboxTag>
 struct Map {
   template <typename Inbox, typename TemporalId, typename ReceiveDataType>
-  static void insert_into_inbox(const gsl::not_null<Inbox*> inbox,
+  static bool insert_into_inbox(const gsl::not_null<Inbox*> inbox,
                                 const TemporalId& temporal_id,
                                 ReceiveDataType&& data) {
     static_assert(std::is_same<std::decay_t<TemporalId>,
@@ -51,6 +51,7 @@ struct Map {
             << temporal_id << "' with tag '"
             << pretty_type::get_name<InboxTag>() << "'.\n");
     }
+    return true;
   }
 };
 
@@ -66,7 +67,7 @@ struct Map {
 template <typename InboxTag>
 struct MemberInsert {
   template <typename Inbox, typename TemporalId, typename ReceiveDataType>
-  static void insert_into_inbox(const gsl::not_null<Inbox*> inbox,
+  static bool insert_into_inbox(const gsl::not_null<Inbox*> inbox,
                                 const TemporalId& temporal_id,
                                 ReceiveDataType&& data) {
     static_assert(std::is_same<std::decay_t<TemporalId>,
@@ -74,6 +75,7 @@ struct MemberInsert {
                   "The temporal_id of the inbox tag does not match the "
                   "received temporal id.");
     (*inbox)[temporal_id].insert(std::forward<ReceiveDataType>(data));
+    return true;
   }
 };
 
@@ -85,7 +87,7 @@ struct MemberInsert {
 template <typename InboxTag>
 struct Value {
   template <typename Inbox, typename TemporalId, typename ReceiveDataType>
-  static void insert_into_inbox(const gsl::not_null<Inbox*> inbox,
+  static bool insert_into_inbox(const gsl::not_null<Inbox*> inbox,
                                 const TemporalId& temporal_id,
                                 ReceiveDataType&& data) {
     static_assert(std::is_same<std::decay_t<TemporalId>,
@@ -93,6 +95,7 @@ struct Value {
                   "The temporal_id of the inbox tag does not match the "
                   "received temporal id.");
     (*inbox)[temporal_id] = std::forward<ReceiveDataType>(data);
+    return true;
   }
 };
 
@@ -108,7 +111,7 @@ struct Value {
 template <typename InboxTag>
 struct Pushback {
   template <typename Inbox, typename TemporalId, typename ReceiveDataType>
-  static void insert_into_inbox(const gsl::not_null<Inbox*> inbox,
+  static bool insert_into_inbox(const gsl::not_null<Inbox*> inbox,
                                 const TemporalId& temporal_id,
                                 ReceiveDataType&& data) {
     static_assert(std::is_same<std::decay_t<TemporalId>,
@@ -116,6 +119,7 @@ struct Pushback {
                   "The temporal_id of the inbox tag does not match the "
                   "received temporal id.");
     (*inbox)[temporal_id].push_back(std::forward<ReceiveDataType>(data));
+    return true;
   }
 };
 }  // namespace InboxInserters

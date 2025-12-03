@@ -112,10 +112,11 @@ struct IntReceiveTag {
   using type = std::unordered_map<temporal_id, std::unordered_multiset<int>>;
 
   template <typename Inbox, typename ReceiveDataType>
-  static void insert_into_inbox(const gsl::not_null<Inbox*> inbox,
+  static bool insert_into_inbox(const gsl::not_null<Inbox*> inbox,
                                 const temporal_id& temporal_id_v,
                                 ReceiveDataType&& data) {
     (*inbox)[temporal_id_v].insert(std::forward<ReceiveDataType>(data));
+    return true;
   }
 
   static std::string output_inbox(const type& inbox,

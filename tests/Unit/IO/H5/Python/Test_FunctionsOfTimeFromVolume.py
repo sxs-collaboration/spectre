@@ -82,7 +82,7 @@ class TestFunctionsOfTimeFromVolume(unittest.TestCase):
                             quadrature=[Spectral.Quadrature.GaussLobatto],
                         )
                     ],
-                    serialized_functions_of_time=serialized_fots,
+                    serialized_observation_functions_of_time=serialized_fots,
                 )
 
     def tearDown(self):

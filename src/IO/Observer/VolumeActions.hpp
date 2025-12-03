@@ -3,8 +3,11 @@
 
 #pragma once
 
+#include <algorithm>
+#include <cmath>
 #include <cstddef>
 #include <iterator>
+#include <limits>
 #include <mutex>
 #include <optional>
 #include <string>
@@ -221,24 +224,40 @@ void write_combined_volume_data(
     // The domain is retrieved from the global cache using the standard
     // domain tag. If more flexibility is required here later, then the
     // domain can be passed along with the `ContributeVolumeData` action.
-    const auto serialized_domain = serialize(
-        Parallel::get<domain::Tags::Domain<Metavariables::volume_dim>>(cache));
-    const auto serialized_functions_of_time =
-        [&cache]() -> std::optional<std::vector<char>> {
-      // Functions-of-time are in the _mutable_ global cache, so they aren't
-      // accessible through the DataBox by default
-      if constexpr (Parallel::is_in_global_cache<
-                        Metavariables, domain::Tags::FunctionsOfTime>) {
-        return serialize(get<domain::Tags::FunctionsOfTime>(cache));
-      } else {
-        (void)cache;
-        return std::nullopt;
+    std::optional<std::vector<char>> serialized_domain{};
+    if (not volume_file.has_domain()) {
+      serialized_domain = serialize(
+          Parallel::get<domain::Tags::Domain<Metavariables::volume_dim>>(
+              cache));
+    }
+
+    std::optional<std::vector<char>> serialized_global_functions_of_time =
+        std::nullopt;
+    std::optional<std::vector<char>> serialized_observation_functions_of_time =
+        std::nullopt;
+    if constexpr (Parallel::is_in_global_cache<Metavariables,
+                                               domain::Tags::FunctionsOfTime>) {
+      const auto& functions_of_time = get<domain::Tags::FunctionsOfTime>(cache);
+      // NOLINTNEXTLINE(misc-const-correctness)
+      domain::FunctionsOfTimeMap observation_functions_of_time{};
+      const double obs_time = observation_id.value();
+      // create a new function of time, effectively truncating the history.
+      for (const auto& [name, fot_ptr] : functions_of_time) {
+        observation_functions_of_time[name] = fot_ptr->create_at_time(
+            obs_time, obs_time + 100.0 *
+                                     std::numeric_limits<double>::epsilon() *
+                                     std::max(std::abs(obs_time), 1.0));
       }
-    }();
+      serialized_global_functions_of_time = serialize(functions_of_time);
+      serialized_observation_functions_of_time =
+          serialize(observation_functions_of_time);
+    }
+
     // Write the data to the file
     volume_file.write_volume_data(observation_id.hash(), observation_id.value(),
                                   volume_data_to_write, serialized_domain,
-                                  serialized_functions_of_time);
+                                  serialized_observation_functions_of_time,
+                                  serialized_global_functions_of_time);
   }
 }
 }  // namespace VolumeActions_detail
