@@ -238,19 +238,28 @@ void write_combined_volume_data(
     if constexpr (Parallel::is_in_global_cache<Metavariables,
                                                domain::Tags::FunctionsOfTime>) {
       const auto& functions_of_time = get<domain::Tags::FunctionsOfTime>(cache);
+      serialized_global_functions_of_time = serialize(functions_of_time);
       // NOLINTNEXTLINE(misc-const-correctness)
       domain::FunctionsOfTimeMap observation_functions_of_time{};
       const double obs_time = observation_id.value();
-      // create a new function of time, effectively truncating the history.
-      for (const auto& [name, fot_ptr] : functions_of_time) {
-        observation_functions_of_time[name] = fot_ptr->create_at_time(
-            obs_time, obs_time + 100.0 *
-                                     std::numeric_limits<double>::epsilon() *
-                                     std::max(std::abs(obs_time), 1.0));
+      // Generally, the functions of time should be valid when we
+      // perform an observation.  The exception is when running in an
+      // AtCleanup event, in which case the observation time is a
+      // bogus value and we just skip writing the values.
+      if (alg::all_of(functions_of_time, [&](const auto& fot) {
+            const auto bounds = fot.second->time_bounds();
+            return bounds[0] <= obs_time and obs_time <= bounds[1];
+          })) {
+        // create a new function of time, effectively truncating the history.
+        for (const auto& [name, fot_ptr] : functions_of_time) {
+          observation_functions_of_time[name] = fot_ptr->create_at_time(
+              obs_time, obs_time + 100.0 *
+                                       std::numeric_limits<double>::epsilon() *
+                                       std::max(std::abs(obs_time), 1.0));
+        }
+        serialized_observation_functions_of_time =
+            serialize(observation_functions_of_time);
       }
-      serialized_global_functions_of_time = serialize(functions_of_time);
-      serialized_observation_functions_of_time =
-          serialize(observation_functions_of_time);
     }
 
     // Write the data to the file

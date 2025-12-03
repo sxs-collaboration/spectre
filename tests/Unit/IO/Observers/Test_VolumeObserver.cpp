@@ -246,14 +246,17 @@ SPECTRE_TEST_CASE("Unit.IO.Observers.VolumeObserver", "[Unit][Observers]") {
 
   // Test passing volume data. Last three arguments are only used if dependency
   // has a value
-  const auto test_volume_actions = [&](const std::optional<std::string>&
+  const auto test_volume_actions = [&](const double observation_time,
+                                       const bool should_have_observation_fots,
+                                       const std::optional<std::string>&
                                            dependency = std::nullopt,
                                        const bool write_volume_data = true,
                                        const bool
                                            send_dependency_before_elements =
                                                true,
                                        const bool test_error = false) {
-    const observers::ObservationId observation_id{3., "/element_data.vol"};
+    const observers::ObservationId observation_id{observation_time,
+                                                  "/element_data.vol"};
 
     CAPTURE(observation_id);
     CAPTURE(dependency);
@@ -422,31 +425,33 @@ SPECTRE_TEST_CASE("Unit.IO.Observers.VolumeObserver", "[Unit][Observers]") {
 
     const auto observation_fots =
         volume_file.get_functions_of_time(temporal_id);
-    CHECK(observation_fots.has_value());
-    auto observation_functions_of_time =
-        deserialize<domain::FunctionsOfTimeMap>(
-            observation_fots.value().data());
-    auto original_functions_of_time =
-        domain_creator.functions_of_time(initial_expiration_times);
-    CHECK(observation_functions_of_time.size() ==
-          original_functions_of_time.size());
-    const double expected_observation_time = observation_id.value();
-    const double expected_expiration_time =
-        expected_observation_time +
-        100.0 * std::numeric_limits<double>::epsilon() *
-            std::max(std::abs(expected_observation_time), 1.0);
-    for (const auto& [name, fot_ptr] : observation_functions_of_time) {
-      CHECK(original_functions_of_time.count(name) == 1);
-      const auto observation_bounds = fot_ptr->time_bounds();
-      const auto original_bounds =
-          original_functions_of_time.at(name)->time_bounds();
-      CHECK(observation_bounds[0] == approx(expected_observation_time));
-      CHECK(observation_bounds[0] >= original_bounds[0]);
-      if (std::isfinite(expected_observation_time)) {
-        CHECK(observation_bounds[1] == approx(expected_expiration_time));
-        CHECK(observation_bounds[1] <= original_bounds[1]);
-      } else {
-        CHECK(observation_bounds[1] == expected_observation_time);
+    CHECK(observation_fots.has_value() == should_have_observation_fots);
+    if (observation_fots.has_value()) {
+      auto observation_functions_of_time =
+          deserialize<domain::FunctionsOfTimeMap>(
+              observation_fots.value().data());
+      auto original_functions_of_time =
+          domain_creator.functions_of_time(initial_expiration_times);
+      CHECK(observation_functions_of_time.size() ==
+            original_functions_of_time.size());
+      const double expected_observation_time = observation_id.value();
+      const double expected_expiration_time =
+          expected_observation_time +
+          100.0 * std::numeric_limits<double>::epsilon() *
+              std::max(std::abs(expected_observation_time), 1.0);
+      for (const auto& [name, fot_ptr] : observation_functions_of_time) {
+        CHECK(original_functions_of_time.count(name) == 1);
+        const auto observation_bounds = fot_ptr->time_bounds();
+        const auto original_bounds =
+            original_functions_of_time.at(name)->time_bounds();
+        CHECK(observation_bounds[0] == approx(expected_observation_time));
+        CHECK(observation_bounds[0] >= original_bounds[0]);
+        if (std::isfinite(expected_observation_time)) {
+          CHECK(observation_bounds[1] == approx(expected_expiration_time));
+          CHECK(observation_bounds[1] <= original_bounds[1]);
+        } else {
+          CHECK(observation_bounds[1] == expected_observation_time);
+        }
       }
     }
     const auto global_fot_buffer = volume_file.get_global_functions_of_time();
@@ -460,13 +465,14 @@ SPECTRE_TEST_CASE("Unit.IO.Observers.VolumeObserver", "[Unit][Observers]") {
     }
   };
 
-  test_volume_actions();
+  test_volume_actions(3., true);
+  test_volume_actions(0.5, false);
   for (const auto& [write_volume_data, send_dependency_before_elements] :
        cartesian_product(std::array{true, false}, std::array{true, false})) {
-    test_volume_actions({"TestDependency"}, write_volume_data,
+    test_volume_actions(3., true, {"TestDependency"}, write_volume_data,
                         send_dependency_before_elements);
   }
-  test_volume_actions({"TestDependency"}, true, true, true);
+  test_volume_actions(3., true, {"TestDependency"}, true, true, true);
 
   check_write_volume_data<metavariables, obs_writer, element_comp>(
       make_not_null(&runner), element_ids[0], expected_tensor_names);
