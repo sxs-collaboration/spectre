@@ -3,77 +3,62 @@
 
 #pragma once
 
-#include <boost/geometry.hpp>
-#include <boost/geometry/index/rtree.hpp>
+#include <array>
 #include <cstddef>
+#include <iterator>
 #include <map>
-#include <utility>
+#include <memory>
+#include <vector>
 
-#include "DataStructures/Tensor/Tensor.hpp"
-#include "Domain/Structure/ElementId.hpp"
+#include "DataStructures/Tensor/TypeAliases.hpp"
 
-namespace boost::geometry::traits {
-// Make Tensor compatible with Boost.Geometry
-// This is needed to search for a block-logical coordinate given as a Tensor
-// in the `ElementSearchTree`.
-template <typename DataType, size_t Dim, typename Frame>
-struct tag<tnsr::I<DataType, Dim, Frame>> {
-  using type = boost::geometry::point_tag;
-};
-template <typename DataType, size_t Dim, typename Frame>
-struct coordinate_type<tnsr::I<DataType, Dim, Frame>> {
-  using type = DataType;
-};
-template <typename DataType, size_t Dim, typename Frame>
-struct coordinate_system<tnsr::I<DataType, Dim, Frame>> {
-  using type = boost::geometry::cs::cartesian;
-};
-template <typename DataType, size_t Dim, typename Frame>
-struct dimension<tnsr::I<DataType, Dim, Frame>>
-    : std::integral_constant<size_t, Dim> {};
-template <typename DataType, size_t Dim, typename Frame, size_t GetDimension>
-struct access<tnsr::I<DataType, Dim, Frame>, GetDimension> {
-  static constexpr DataType get(const tnsr::I<DataType, Dim, Frame>& point) {
-    return ::get<GetDimension>(point);
-  }
-  static void set(tnsr::I<DataType, Dim, Frame>& point, const DataType& value) {
-    ::get<GetDimension>(point) = value;
-  }
-};
-// Make ElementId compatible with Boost.Geometry
-// Each ElementId defines a bounding box in block-logical coordinates, which is
-// used to search for elements in the `ElementSearchTree`.
-template <size_t Dim>
-struct tag<ElementId<Dim>> {
-  using type = boost::geometry::box_tag;
-};
-template <size_t Dim>
-struct coordinate_type<ElementId<Dim>> {
-  using type = double;
-};
-template <size_t Dim>
-struct coordinate_system<ElementId<Dim>> {
-  using type = boost::geometry::cs::cartesian;
-};
-template <size_t Dim>
-struct dimension<ElementId<Dim>> : std::integral_constant<size_t, Dim> {};
-template <size_t Dim>
-struct point_type<ElementId<Dim>> {
-  using type = tnsr::I<double, Dim, ::Frame::BlockLogical>;
-};
-template <size_t Dim, size_t Index, size_t GetDimension>
-struct indexed_access<ElementId<Dim>, Index, GetDimension> {
-  static constexpr double get(const ElementId<Dim>& element_id) {
-    if constexpr (Index == 0) {
-      return element_id.segment_id(GetDimension).endpoint(Side::Lower);
-    } else {
-      return element_id.segment_id(GetDimension).endpoint(Side::Upper);
-    }
-  }
-};
-}  // namespace boost::geometry::traits
+/// \cond
+template <size_t VolumeDim>
+class ElementId;
+/// \endcond
 
 namespace domain {
+/// \cond
+template <size_t Dim>
+class ElementSearchTree;
+/// \endcond
+
+template <size_t Dim>
+class ElementSearchTreeIterator {
+ public:
+  using iterator_category = std::forward_iterator_tag;
+  using value_type = ElementId<Dim>;
+  using difference_type = std::ptrdiff_t;
+  using pointer = const ElementId<Dim>*;
+  using reference = const ElementId<Dim>&;
+
+  ElementSearchTreeIterator();
+  ElementSearchTreeIterator(ElementSearchTreeIterator&&);
+  ElementSearchTreeIterator(const ElementSearchTreeIterator&);
+  ElementSearchTreeIterator& operator=(ElementSearchTreeIterator&&);
+  ElementSearchTreeIterator& operator=(const ElementSearchTreeIterator&);
+  ~ElementSearchTreeIterator();
+
+  reference operator*() const;
+  pointer operator->() const;
+
+  ElementSearchTreeIterator& operator++();
+  ElementSearchTreeIterator operator++(int);
+
+ private:
+  friend class ElementSearchTree<Dim>;
+
+  template <typename T>
+  static ElementSearchTreeIterator from_impl(T impl);
+
+  template <size_t Dim2>
+  friend bool operator==(const ElementSearchTreeIterator<Dim2>& a,
+                         const ElementSearchTreeIterator<Dim2>& b);
+
+  // Use an array and manual construction rather than a simpler pimpl
+  // since iterators are constructed a lot.
+  std::array<char, 8> data_;
+};
 
 /*!
  * \brief Search tree for efficiently looking up elements by their bounding
@@ -96,9 +81,47 @@ namespace domain {
  * choices work well, but haven't been extensively tuned.
  */
 template <size_t Dim>
-using ElementSearchTree =
-    boost::geometry::index::rtree<ElementId<Dim>,
-                                  boost::geometry::index::quadratic<16>>;
+class ElementSearchTree {
+ public:
+  ElementSearchTree();
+  ElementSearchTree(ElementSearchTree&&);
+  ElementSearchTree& operator=(ElementSearchTree&&);
+  ElementSearchTree(const ElementSearchTree&) = delete;
+  ElementSearchTree& operator=(const ElementSearchTree&) = delete;
+  ~ElementSearchTree();
+
+  /// Construct a search tree containing the ids in `[begin, end)`.
+  template <typename Iter>
+  ElementSearchTree(Iter begin, const Iter end) : ElementSearchTree() {
+    insert(begin, end);
+  }
+
+  size_t size() const;
+  bool empty() const;
+  void clear();
+
+  void insert(const ElementId<Dim>& id);
+
+  /// Insert the ids in `[begin, end)`.
+  template <typename Iter>
+  void insert(Iter begin, const Iter end) {
+    while (begin != end) {
+      insert(*begin);
+      ++begin;
+    }
+  }
+
+  ElementSearchTreeIterator<Dim> begin_covers(
+      const tnsr::I<double, Dim, Frame::BlockLogical>& coords) const;
+
+  ElementSearchTreeIterator<Dim> end_covers() const;
+
+ private:
+  // Use a pimpl to keep all the boost::geometry stuff in a cpp file,
+  // because the boost headers are quite expensive to include.
+  struct Impl;
+  std::unique_ptr<Impl> impl_;
+};
 
 /*!
  * \brief Sorts element IDs into one `ElementSearchTree` per block for efficient
@@ -111,12 +134,5 @@ using ElementSearchTree =
  */
 template <size_t Dim>
 std::map<size_t, ElementSearchTree<Dim>> index_element_ids(
-    const std::vector<ElementId<Dim>>& element_ids) {
-  std::map<size_t, ElementSearchTree<Dim>> trees{};
-  for (const auto& element_id : element_ids) {
-    trees[element_id.block_id()].insert(element_id);
-  }
-  return trees;
-}
-
+    const std::vector<ElementId<Dim>>& element_ids);
 }  // namespace domain
