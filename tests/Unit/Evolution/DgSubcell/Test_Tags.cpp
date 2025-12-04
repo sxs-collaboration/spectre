@@ -27,6 +27,7 @@
 #include "Evolution/DgSubcell/Tags/DataForRdmpTci.hpp"
 #include "Evolution/DgSubcell/Tags/DidRollback.hpp"
 #include "Evolution/DgSubcell/Tags/GhostDataForReconstruction.hpp"
+#include "Evolution/DgSubcell/Tags/GhostZoneInverseJacobian.hpp"
 #include "Evolution/DgSubcell/Tags/Inactive.hpp"
 #include "Evolution/DgSubcell/Tags/Interpolators.hpp"
 #include "Evolution/DgSubcell/Tags/Jacobians.hpp"
@@ -72,6 +73,8 @@ void test(const bool moving_mesh) {
   TestHelpers::db::test_simple_tag<
       subcell::Tags::GhostDataForReconstruction<Dim>>(
       "GhostDataForReconstruction");
+  TestHelpers::db::test_simple_tag<
+      subcell::Tags::GhostZoneInverseJacobian<Dim>>("GhostZoneInverseJacobian");
   TestHelpers::db::test_simple_tag<subcell::Tags::NeighborTciDecisions<Dim>>(
       "NeighborTciDecisions");
   TestHelpers::db::test_simple_tag<subcell::Tags::DataForRdmpTci>(

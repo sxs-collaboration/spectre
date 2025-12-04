@@ -20,6 +20,7 @@ spectre_target_headers(
   GetActiveTag.hpp
   GetTciDecision.hpp
   GhostData.hpp
+  GhostZoneInverseJacobian.hpp
   GhostZoneLogicalCoordinates.hpp
   InitialTciData.hpp
   Matrices.hpp

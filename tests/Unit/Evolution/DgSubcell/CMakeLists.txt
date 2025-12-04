@@ -20,6 +20,7 @@ set(LIBRARY_SOURCES
   Test_GetActiveTag.cpp
   Test_GetTciDecision.cpp
   Test_GhostData.cpp
+  Test_GhostZoneInverseJacobian.cpp
   Test_GhostZoneLogicalCoordinates.cpp
   Test_InitialTciData.cpp
   Test_JacobianCompute.cpp
