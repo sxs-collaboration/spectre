@@ -450,6 +450,27 @@ SPECTRE_TEST_CASE("Unit.Domain.FunctionsOfTime.PiecewisePolynomial",
     f_of_t.update(2.0, {3.0, 4.0}, 2.1);
     CHECK(f_of_t.func(2.0)[0] == DataVector{1.0, 2.0});
   }
+  {
+    INFO("Test truncate_at_time");
+    constexpr size_t deriv_order = 3;
+    const std::array<DataVector, deriv_order + 1> init_func{
+        {{1.0, 1.0}, {3.0, 2.0}, {6.0, 2.0}, {6.0, 0.0}}};
+
+    FunctionsOfTime::PiecewisePolynomial<deriv_order> f_of_t(1.0, init_func,
+                                                             2.0);
+    f_of_t.update(2.0, {12.0, 0.0}, 2.1);
+    f_of_t.update(2.1, {8.0, 9.0}, 2.7);
+    f_of_t.update(2.7, {1.0, 6.0}, 3.5);
+
+    const double truncate_time = 2.5;
+    const auto old_value = f_of_t.func_and_deriv(truncate_time);
+    const auto old_bounds = f_of_t.time_bounds();
+    f_of_t.truncate_at_time(truncate_time);
+    CHECK(f_of_t.time_bounds()[0] > old_bounds[0]);
+    CHECK(f_of_t.time_bounds()[0] <= truncate_time);
+    CHECK(f_of_t.time_bounds()[1] == old_bounds[1]);
+    CHECK(f_of_t.func_and_deriv(truncate_time) == old_value);
+  }
 
   CHECK_THROWS_WITH(
       ([]() {

@@ -48,6 +48,8 @@ double FixedSpeedCubic::expiration_after(const double /*time*/) const {
   return std::numeric_limits<double>::infinity();
 }
 
+void FixedSpeedCubic::truncate_at_time(const double /*time*/) {}
+
 double FixedSpeedCubic::velocity() const { return velocity_; }
 
 double FixedSpeedCubic::decay_timescale() const {

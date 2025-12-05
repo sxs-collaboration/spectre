@@ -44,6 +44,8 @@ class TestFoT : public domain::FunctionsOfTime::FunctionOfTime {
 
   double expiration_after(const double /*time*/) const override { ERROR(""); }
 
+  void truncate_at_time(const double /*time*/) override { ERROR(""); }
+
   std::array<DataVector, 1> func(const double /*t*/) const override {
     ERROR("");
   }

@@ -52,6 +52,8 @@ double SettleToConstant::expiration_after(const double /*time*/) const {
   return std::numeric_limits<double>::infinity();
 }
 
+void SettleToConstant::truncate_at_time(const double /*time*/) {}
+
 template <size_t MaxDerivReturned>
 std::array<DataVector, MaxDerivReturned + 1> SettleToConstant::func_and_derivs(
     const double t) const {

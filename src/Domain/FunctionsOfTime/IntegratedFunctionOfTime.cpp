@@ -128,6 +128,10 @@ double IntegratedFunctionOfTime::expiration_after(const double time) const {
   return deriv_info_at_update_times_.expiration_after(time);
 }
 
+void IntegratedFunctionOfTime::truncate_at_time(const double time) {
+  deriv_info_at_update_times_.truncate_at_time(time);
+}
+
 void IntegratedFunctionOfTime::pup(PUP::er& p) {
   FunctionOfTime::pup(p);
   size_t version = 1;

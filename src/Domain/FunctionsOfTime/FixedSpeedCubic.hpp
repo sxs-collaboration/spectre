@@ -65,6 +65,8 @@ class FixedSpeedCubic : public FunctionOfTime {
 
   double expiration_after(double time) const override;
 
+  void truncate_at_time(double time) override;
+
   /// Returns the velocity that the function approaches
   double velocity() const;
 

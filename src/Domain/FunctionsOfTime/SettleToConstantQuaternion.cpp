@@ -90,6 +90,8 @@ double SettleToConstantQuaternion::expiration_after(
   return std::numeric_limits<double>::infinity();
 }
 
+void SettleToConstantQuaternion::truncate_at_time(const double /*time*/) {}
+
 template <size_t MaxDerivReturned>
 std::array<DataVector, MaxDerivReturned + 1>
 SettleToConstantQuaternion::func_and_derivs(const double t) const {

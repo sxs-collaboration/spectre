@@ -109,6 +109,8 @@ class QuaternionFunctionOfTime : public FunctionOfTime {
   void update(double time_of_update, DataVector updated_max_deriv,
               double next_expiration_time) override;
 
+  void truncate_at_time(double time) override;
+
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& p) override;
 

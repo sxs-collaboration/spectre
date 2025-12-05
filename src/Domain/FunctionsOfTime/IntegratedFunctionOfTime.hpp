@@ -72,6 +72,8 @@ class IntegratedFunctionOfTime : public FunctionOfTime {
 
   std::array<double, 2> time_bounds() const override;
 
+  void truncate_at_time(double time) override;
+
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& p) override;
 

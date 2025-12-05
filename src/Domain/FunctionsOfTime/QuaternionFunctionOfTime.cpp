@@ -249,6 +249,12 @@ void QuaternionFunctionOfTime<MaxDeriv>::update(
 }
 
 template <size_t MaxDeriv>
+void QuaternionFunctionOfTime<MaxDeriv>::truncate_at_time(const double time) {
+  stored_quaternions_and_times_.truncate_at_time(time);
+  angle_f_of_t_.truncate_at_time(time);
+}
+
+template <size_t MaxDeriv>
 void QuaternionFunctionOfTime<MaxDeriv>::solve_quaternion_ode(
     const gsl::not_null<boost::math::quaternion<double>*>
         quaternion_to_integrate,

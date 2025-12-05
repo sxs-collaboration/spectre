@@ -59,6 +59,8 @@ class SettleToConstant : public FunctionOfTime {
 
   double expiration_after(double time) const override;
 
+  void truncate_at_time(double time) override;
+
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& p) override;
 

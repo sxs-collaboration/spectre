@@ -208,6 +208,11 @@ double PiecewisePolynomial<MaxDeriv>::expiration_after(
 }
 
 template <size_t MaxDeriv>
+void PiecewisePolynomial<MaxDeriv>::truncate_at_time(const double time) {
+  deriv_info_at_update_times_.truncate_at_time(time);
+}
+
+template <size_t MaxDeriv>
 void PiecewisePolynomial<MaxDeriv>::pup(PUP::er& p) {
   FunctionOfTime::pup(p);
   size_t version = 5;
