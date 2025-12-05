@@ -30,6 +30,28 @@ std::unique_ptr<FunctionOfTime> SettleToConstant::get_clone() const {
   return std::make_unique<SettleToConstant>(*this);
 }
 
+std::array<DataVector, 1> SettleToConstant::func(const double t) const {
+  return func_and_derivs<0>(t);
+}
+
+std::array<DataVector, 2> SettleToConstant::func_and_deriv(
+    const double t) const {
+  return func_and_derivs<1>(t);
+}
+
+std::array<DataVector, 3> SettleToConstant::func_and_2_derivs(
+    const double t) const {
+  return func_and_derivs<2>(t);
+}
+
+std::array<double, 2> SettleToConstant::time_bounds() const {
+  return {{match_time_, std::numeric_limits<double>::infinity()}};
+}
+
+double SettleToConstant::expiration_after(const double /*time*/) const {
+  return std::numeric_limits<double>::infinity();
+}
+
 template <size_t MaxDerivReturned>
 std::array<DataVector, MaxDerivReturned + 1> SettleToConstant::func_and_derivs(
     const double t) const {

@@ -53,34 +53,24 @@ class FixedSpeedCubic : public FunctionOfTime {
   auto get_clone() const -> std::unique_ptr<FunctionOfTime> override;
 
   /// Returns the function at an arbitrary time `t`.
-  std::array<DataVector, 1> func(const double t) const override {
-    return func_and_derivs<0>(t);
-  }
+  std::array<DataVector, 1> func(double t) const override;
   /// Returns the function and its first derivative at an arbitrary time `t`.
-  std::array<DataVector, 2> func_and_deriv(const double t) const override {
-    return func_and_derivs<1>(t);
-  }
+  std::array<DataVector, 2> func_and_deriv(double t) const override;
   /// Returns the function and the first two derivatives at an arbitrary time
   /// `t`.
-  std::array<DataVector, 3> func_and_2_derivs(const double t) const override {
-    return func_and_derivs<2>(t);
-  }
+  std::array<DataVector, 3> func_and_2_derivs(double t) const override;
 
   /// Returns the domain of validity of the function.
-  std::array<double, 2> time_bounds() const override {
-    return {{initial_time_, std::numeric_limits<double>::infinity()}};
-  }
+  std::array<double, 2> time_bounds() const override;
 
-  double expiration_after(const double /*time*/) const override {
-    return std::numeric_limits<double>::infinity();
-  }
+  double expiration_after(double time) const override;
 
   /// Returns the velocity that the function approaches
-  double velocity() const { return velocity_; }
+  double velocity() const;
 
   /// Returns the timescale at which the function approaches a constant
   /// velocity.
-  double decay_timescale() const { return sqrt(squared_decay_timescale_); }
+  double decay_timescale() const;
 
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& p) override;

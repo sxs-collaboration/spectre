@@ -49,27 +49,17 @@ class SettleToConstantQuaternion : public FunctionOfTime {
   auto get_clone() const -> std::unique_ptr<FunctionOfTime> override;
 
   /// Returns the function at an arbitrary time `t`.
-  std::array<DataVector, 1> func(const double t) const override {
-    return func_and_derivs<0>(t);
-  }
+  std::array<DataVector, 1> func(double t) const override;
   /// Returns the function and its first derivative at an arbitrary time `t`.
-  std::array<DataVector, 2> func_and_deriv(const double t) const override {
-    return func_and_derivs<1>(t);
-  }
+  std::array<DataVector, 2> func_and_deriv(double t) const override;
   /// Returns the function and the first two derivatives at an arbitrary time
   /// `t`.
-  std::array<DataVector, 3> func_and_2_derivs(const double t) const override {
-    return func_and_derivs<2>(t);
-  }
+  std::array<DataVector, 3> func_and_2_derivs(double t) const override;
 
   /// Returns the domain of validity of the function.
-  std::array<double, 2> time_bounds() const override {
-    return {{match_time_, std::numeric_limits<double>::infinity()}};
-  }
+  std::array<double, 2> time_bounds() const override;
 
-  double expiration_after(const double /*time*/) const override {
-    return std::numeric_limits<double>::infinity();
-  }
+  double expiration_after(double time) const override;
 
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& p) override;

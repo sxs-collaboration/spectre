@@ -66,6 +66,30 @@ std::unique_ptr<FunctionOfTime> SettleToConstantQuaternion::get_clone() const {
   return std::make_unique<SettleToConstantQuaternion>(*this);
 }
 
+std::array<DataVector, 1> SettleToConstantQuaternion::func(
+    const double t) const {
+  return func_and_derivs<0>(t);
+}
+
+std::array<DataVector, 2> SettleToConstantQuaternion::func_and_deriv(
+    const double t) const {
+  return func_and_derivs<1>(t);
+}
+
+std::array<DataVector, 3> SettleToConstantQuaternion::func_and_2_derivs(
+    const double t) const {
+  return func_and_derivs<2>(t);
+}
+
+std::array<double, 2> SettleToConstantQuaternion::time_bounds() const {
+  return {{match_time_, std::numeric_limits<double>::infinity()}};
+}
+
+double SettleToConstantQuaternion::expiration_after(
+    const double /*time*/) const {
+  return std::numeric_limits<double>::infinity();
+}
+
 template <size_t MaxDerivReturned>
 std::array<DataVector, MaxDerivReturned + 1>
 SettleToConstantQuaternion::func_and_derivs(const double t) const {
