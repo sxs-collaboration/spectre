@@ -7,9 +7,11 @@
 #include <cstddef>
 #include <memory>
 #include <numeric>
+#include <optional>
 #include <pup.h>
 #include <string>
 #include <type_traits>
+#include <vector>
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/MetavariablesTag.hpp"
@@ -69,6 +71,7 @@ struct MockContributeVolumeData {
       const std::string& /*subfile_name*/,
       const Parallel::ArrayComponentId& /*array_component_id*/,
       ElementVolumeData&& /*received_volume_data*/,
+      const std::optional<std::vector<char>>& /*serialized_functions_of_time*/,
       const std::optional<std::string>& dependency = std::nullopt) {
     CHECK(dependency == std::optional{"InterpolationTargetA"});
   }

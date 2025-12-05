@@ -72,7 +72,7 @@ struct InitializeWriter {
                  Tags::InterpolatorTensorData,
                  Tags::NodesExpectedToContributeReductions,
                  Tags::NodesThatContributedReductions, Tags::H5FileLock,
-                 Tags::Dependencies>,
+                 Tags::SerializedFunctionsOfTime, Tags::Dependencies>,
       typename Metavariables::observed_reduction_data_tags,
       tmpl::transform<
           typename Metavariables::observed_reduction_data_tags,

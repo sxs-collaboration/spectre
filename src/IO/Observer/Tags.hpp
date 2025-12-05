@@ -108,6 +108,12 @@ struct InterpolatorTensorData : db::SimpleTag {
                                             std::vector<ElementVolumeData>>>;
 };
 
+/// Map of serialized FunctionOfTime data for volume data to be written.
+struct SerializedFunctionsOfTime : db::SimpleTag {
+  using type =
+      std::unordered_map<ObservationId, std::optional<std::vector<char>>>;
+};
+
 /// Map of ObservationIds that have dependencies for volume data to be written
 /// and whether or not the dependency has the volume data being written or
 /// discarded.
