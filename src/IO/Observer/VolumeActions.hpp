@@ -85,9 +85,8 @@ struct ContributeVolumeData {
                 ObservationId, std::unordered_set<Parallel::ArrayComponentId>>*>
                 contributed_volume_data_ids,
             const std::unordered_map<
-                ObservationKey,
-                std::unordered_set<Parallel::ArrayComponentId>>&
-                registered_array_component_ids) mutable {  // NOLINT(spectre-mutable)
+                ObservationKey, std::unordered_set<Parallel::ArrayComponentId>>&
+                registered_array_component_ids) {
           const ObservationKey& key{observation_id.observation_key()};
           if (UNLIKELY(registered_array_component_ids.find(key) ==
                        registered_array_component_ids.end())) {
