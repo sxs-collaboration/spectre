@@ -115,7 +115,7 @@ struct WorldtubeSingleton {
                      Parallel::Actions::TerminatePhase>>,
       Parallel::PhaseActions<
           Parallel::Phase::Evolve,
-          tmpl::list<step_actions, Actions::ObserveWorldtubeSolution,
+          tmpl::list<Actions::ObserveWorldtubeSolution, step_actions,
                      ::Actions::MutateApply<AdvanceTime>,
                      PhaseControl::Actions::ExecutePhaseChange>>>;
 
