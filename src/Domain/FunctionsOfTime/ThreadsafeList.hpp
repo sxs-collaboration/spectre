@@ -110,8 +110,8 @@ class ThreadsafeList {
   /// requested length.
   void truncate_to_length(size_t length);
 
-  /// Remove the oldest data in the list, retaining access to data
-  /// back to at least the interval containing \p time.
+  /// Remove the oldest data in the list, retaining data needed to
+  /// access at least as far back as \p time.
   ///
   /// If \p time is before `initial_time()`, the list is not modified.
   /// If \p time is after `expiration_time()`, the amount of removed

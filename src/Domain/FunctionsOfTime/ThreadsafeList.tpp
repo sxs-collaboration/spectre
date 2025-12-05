@@ -195,7 +195,7 @@ void ThreadsafeList<T>::truncate_at_time(const double time) {
     // expiration time of the previous interval can be accessed.
     // Removing it and setting the initial_time would violate the
     // thread-safety guarantees.
-    if (last_interval->expiration <= time) {
+    if (last_interval->expiration < time) {
       break;
     }
   }
