@@ -12,6 +12,8 @@
 #include <optional>
 #include <string>
 #include <unordered_map>
+#include <utility>
+#include <vector>
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/Index.hpp"
@@ -37,6 +39,7 @@
 #include "Utilities/Algorithm.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/MakeVector.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/Serialization/Serialize.hpp"
 #include "Utilities/StdHelpers.hpp"
@@ -612,4 +615,48 @@ struct WriteVolumeData {
   }
 };
 }  // namespace ThreadedActions
+
+/*!
+ * \brief Contribute volume data for observing from an element.
+ *
+ * \tparam UseObserverComponent Whether to first send data to the
+ * `observers::Observer` group component.  Generally should be true if
+ * using an implementation where elements are bound to cores, and
+ * false if they are only bound to nodes.
+ */
+template <bool UseObserverComponent, typename Metavariables>
+void contribute_volume_data(
+    Parallel::GlobalCache<Metavariables>& cache,
+    observers::ObservationId observation_id, std::string subfile_path,
+    const Parallel::ArrayComponentId& array_component_id,
+    ElementVolumeData element_volume_data,
+    std::optional<std::string> dependency = std::nullopt) {
+  if constexpr (UseObserverComponent) {
+    // Send data to volume observer
+    auto& local_observer = *Parallel::local_branch(
+        Parallel::get_parallel_component<observers::Observer<Metavariables>>(
+            cache));
+
+    Parallel::simple_action<observers::Actions::ContributeVolumeData>(
+        local_observer, std::move(observation_id), std::move(subfile_path),
+        array_component_id, std::move(element_volume_data),
+        std::move(dependency));
+  } else {
+    // Send data to reduction observer writer (nodegroup)
+    auto& local_observer = *Parallel::local_branch(
+        Parallel::get_parallel_component<
+            observers::ObserverWriter<Metavariables>>(cache));
+
+    std::unordered_map<Parallel::ArrayComponentId,
+                       std::vector<ElementVolumeData>>
+        data_to_send{};
+    data_to_send[array_component_id] =
+        make_vector(std::move(element_volume_data));
+    Parallel::threaded_action<
+        observers::ThreadedActions::ContributeVolumeDataToWriter>(
+        local_observer, std::move(observation_id), array_component_id,
+        std::move(subfile_path), std::move(data_to_send),
+        std::move(dependency));
+  }
+}
 }  // namespace observers

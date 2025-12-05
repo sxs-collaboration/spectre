@@ -49,6 +49,7 @@
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "Parallel/Protocols/RegistrationMetavariables.hpp"
 #include "Parallel/Reduction.hpp"
+#include "Parallel/TypeTraits.hpp"
 #include "ParallelAlgorithms/Actions/AddComputeTags.hpp"
 #include "ParallelAlgorithms/Actions/InitializeItems.hpp"
 #include "ParallelAlgorithms/Actions/MemoryMonitor/ContributeMemoryData.hpp"
@@ -211,12 +212,9 @@ struct ExportCoordinates {
           flat_logical_metric[i]);
     }
 
-    // Send data to volume observer
-    auto& local_observer = *Parallel::local_branch(
-        Parallel::get_parallel_component<observers::Observer<Metavariables>>(
-            cache));
-    Parallel::simple_action<observers::Actions::ContributeVolumeData>(
-        local_observer, observers::ObservationId(time, "ObserveCoords"),
+    observers::contribute_volume_data<
+        not Parallel::is_nodegroup_v<ParallelComponent>>(
+        cache, observers::ObservationId(time, "ObserveCoords"),
         std::string{"/element_data"},
         Parallel::make_array_component_id<ParallelComponent>(element_id),
         ElementVolumeData{element_id, std::move(components), mesh});

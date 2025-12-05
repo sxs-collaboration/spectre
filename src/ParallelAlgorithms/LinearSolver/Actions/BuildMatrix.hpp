@@ -25,7 +25,6 @@
 #include "IO/Logging/Verbosity.hpp"
 #include "IO/Observer/Actions/RegisterWithObservers.hpp"
 #include "IO/Observer/GetSectionObservationKey.hpp"
-#include "IO/Observer/ObserverComponent.hpp"
 #include "IO/Observer/VolumeActions.hpp"
 #include "NumericalAlgorithms/Convergence/Tags.hpp"
 #include "Parallel/AlgorithmExecution.hpp"
@@ -35,6 +34,7 @@
 #include "Parallel/Reduction.hpp"
 #include "Parallel/Section.hpp"
 #include "Parallel/Tags/Section.hpp"
+#include "Parallel/TypeTraits.hpp"
 #include "ParallelAlgorithms/Actions/Goto.hpp"
 #include "ParallelAlgorithms/Amr/Protocols/Projector.hpp"
 #include "ParallelAlgorithms/LinearSolver/Tags.hpp"
@@ -241,11 +241,10 @@ void observe_matrix_column(
       ++component_i;
     }
   });
-  auto& local_observer = *Parallel::local_branch(
-      Parallel::get_parallel_component<observers::Observer<Metavariables>>(
-          cache));
-  Parallel::simple_action<observers::Actions::ContributeVolumeData>(
-      local_observer,
+
+  observers::contribute_volume_data<
+      not Parallel::is_nodegroup_v<ParallelComponent>>(
+      cache,
       observers::ObservationId(static_cast<double>(column),
                                subfile_name + section_observation_key),
       "/" + subfile_name,
