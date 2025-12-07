@@ -11,6 +11,7 @@ spectre_target_sources(
   ApplyFilter.cpp
   Derivatives.cpp
   DummyReconstructor.cpp
+  EnforceConstrainedEvolution.cpp
   Filter.cpp
   Reconstructor.cpp
   )
@@ -23,6 +24,7 @@ spectre_target_headers(
   BoundaryConditionGhostData.hpp
   Derivatives.hpp
   DummyReconstructor.hpp
+  EnforceConstrainedEvolution.hpp
   Filter.hpp
   Reconstructor.hpp
   SoTimeDerivative.hpp

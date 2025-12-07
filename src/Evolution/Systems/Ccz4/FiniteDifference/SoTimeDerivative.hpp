@@ -194,9 +194,9 @@ static void apply(
                        (*inv_conformal_spatial_metric)(ti::I, ti::K) *
                        (*inv_conformal_spatial_metric)(ti::J, ti::L));
 
-  if (min(get(lapse)) <= 0.0) {
-    ERROR("The lapse must be positive when using 1+log slicing.");
-  }
+  ASSERT(min(get(lapse)) > 0.0,
+         "The lapse must be positive when using 1+log slicing but is: "
+             << get(lapse));
 
   // slicing_condition and d_slicing_condition is not used in SO-CCZ4
   // \alpha g(\alpha)  == 2
