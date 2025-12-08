@@ -32,6 +32,37 @@
 
 namespace domain::CoordinateMaps::TimeDependent {
 
+using ylm::Spherepack;
+using ylm::SpherepackIterator;
+
+size_t lmax_from_coefs(const DataVector& coefs) {
+  const size_t num_coefs = coefs.size();
+  const auto l_max =
+      static_cast<size_t>(sqrt(static_cast<double>(num_coefs) / 2) - 1);
+  ASSERT(square(l_max + 1) * 2 == num_coefs,
+         "Number of shape coefficients ("
+             << num_coefs << ") is not of valid size 2(l_max+1)(l_max+1).");
+  ASSERT(l_max >= 2, "l_max must be at least 2.");
+  return l_max;
+}
+
+DataVector truncate_coefs(const DataVector& coefs, SpherepackIterator iterator,
+                          SpherepackIterator truncated_iterator) {
+  DataVector truncated_coefs(truncated_iterator.spherepack_array_size(), 0.0);
+  for (truncated_iterator.reset(); truncated_iterator; ++truncated_iterator) {
+    const size_t l = truncated_iterator.l();
+    const size_t m = truncated_iterator.m();
+    // If the requested truncation order exceeds the available coefficients,
+    // leave the entry at zero.
+    if (l > iterator.l_max() or m > iterator.m_max()) {
+      continue;
+    }
+    iterator.set(l, m, truncated_iterator.coefficient_array());
+    truncated_coefs[truncated_iterator()] = coefs[iterator()];
+  }
+  return truncated_coefs;
+}
+
 template <typename T>
 std::array<T, 2> cartesian_to_spherical(const std::array<T, 3>& cartesian) {
   const auto& [x, y, z] = cartesian;
@@ -50,17 +81,16 @@ void Shape::jacobian_helper(
     gsl::not_null<tnsr::Ij<T, 3, Frame::NoFrame>*> result,
     const ylm::Spherepack::InterpolationInfo<T>& interpolation_info,
     const DataVector& extended_coefs, const std::array<T, 3>& centered_coords,
-    const T& radial_distortion, const T& transition_func) const {
-  const auto angular_gradient =
-      extended_ylm_.gradient_from_coefs(extended_coefs);
-
+    const T& radial_distortion, const T& transition_func,
+    const Spherepack& ylm) const {
+  const auto angular_gradient = ylm.gradient_from_coefs(extended_coefs);
   tnsr::i<DataVector, 3, Frame::Inertial> cartesian_gradient(
-      extended_ylm_.physical_size());
+      ylm.physical_size());
 
   std::array<DataVector, 2> collocation_theta_phis{};
   collocation_theta_phis[0].set_data_ref(&get<2>(cartesian_gradient));
   collocation_theta_phis[1].set_data_ref(&get<1>(cartesian_gradient));
-  collocation_theta_phis = extended_ylm_.theta_phi_points();
+  collocation_theta_phis = ylm.theta_phi_points();
 
   const auto& col_thetas = collocation_theta_phis[0];
   const auto& col_phis = collocation_theta_phis[1];
@@ -92,9 +122,8 @@ void Shape::jacobian_helper(
 
     // interpolate the cartesian gradient to the thetas and phis of the
     // `source_coords`
-    extended_ylm_.interpolate(make_not_null(&gsl::at(target_gradient, i)),
-                              cartesian_gradient.get(i).data(),
-                              interpolation_info);
+    ylm.interpolate(make_not_null(&gsl::at(target_gradient, i)),
+                    cartesian_gradient.get(i).data(), interpolation_info);
   }
 
   // G / r
@@ -119,7 +148,7 @@ void Shape::jacobian_helper(
 }
 
 Shape::Shape(
-    const std::array<double, 3>& center, const size_t l_max, const size_t m_max,
+    const std::array<double, 3>& center, const double truncation_limit,
     std::unique_ptr<ShapeMapTransitionFunctions::ShapeMapTransitionFunction>
         transition_func,
     std::string shape_function_of_time_name,
@@ -127,19 +156,12 @@ Shape::Shape(
     : shape_f_of_t_name_(std::move(shape_function_of_time_name)),
       size_f_of_t_name_(std::move(size_function_of_time_name)),
       center_(center),
-      l_max_(l_max),
-      m_max_(m_max),
-      ylm_(l_max, m_max),
-      extended_ylm_(l_max + 1, m_max + 1),
+      truncation_limit_(truncation_limit),
       transition_func_(std::move(transition_func)) {
   f_of_t_names_.insert(shape_f_of_t_name_);
   if (size_f_of_t_name_.has_value()) {
     f_of_t_names_.insert(size_f_of_t_name_.value());
   }
-  ASSERT(l_max >= 2, "The shape map requires l_max >= 2 but l_max = " << l_max);
-  ASSERT(m_max >= 2, "The shape map requires m_max >= 2 but m_max = " << m_max);
-  ASSERT(l_max >= m_max, "The shape map requires l_max >= m_max but l_max = "
-                             << l_max << ", m_max = " << m_max);
 }
 
 Shape& Shape::operator=(const Shape& rhs) {
@@ -148,10 +170,7 @@ Shape& Shape::operator=(const Shape& rhs) {
     size_f_of_t_name_ = rhs.size_f_of_t_name_;
     f_of_t_names_ = rhs.f_of_t_names_;
     center_ = rhs.center_;
-    l_max_ = rhs.l_max_;
-    m_max_ = rhs.m_max_;
-    ylm_ = rhs.ylm_;
-    extended_ylm_ = rhs.extended_ylm_;
+    truncation_limit_ = rhs.truncation_limit_;
     transition_func_ = rhs.transition_func_->get_clone();
   }
   return *this;
@@ -165,15 +184,24 @@ std::array<tt::remove_cvref_wrap_t<T>, 3> Shape::operator()(
     const FunctionsOfTimeMap& functions_of_time) const {
   const auto centered_coords = center_coordinates(source_coords);
   auto theta_phis = cartesian_to_spherical(centered_coords);
-  const auto interpolation_info = ylm_.set_up_interpolation_info(theta_phis);
-  DataVector coefs = functions_of_time.at(shape_f_of_t_name_)->func(time)[0];
-  check_size(make_not_null(&coefs), functions_of_time, time, false);
-  check_coefficients(coefs);
+  const auto [coefs, coef_derivs, coef_dderivs] =
+      functions_of_time.at(shape_f_of_t_name_)->func_and_2_derivs(time);
+  const size_t l_max = lmax_from_coefs(coefs);
+  const SpherepackIterator full_iterator{l_max, l_max};
+  const size_t truncated_l_max =
+      find_truncated_l_max(coefs, coef_derivs, coef_dderivs, full_iterator);
+  const SpherepackIterator truncated_iterator{truncated_l_max, truncated_l_max};
+  DataVector truncated_coefs =
+      truncate_coefs(coefs, full_iterator, truncated_iterator);
+  check_size(make_not_null(&truncated_coefs), functions_of_time, time, false);
+  const ylm::Spherepack ylm{truncated_l_max, truncated_l_max};
+
   // re-use allocation
   auto& radial_distortion = get<0>(theta_phis);
+  const auto interpolation_info = ylm.set_up_interpolation_info(theta_phis);
   // evaluate the spherical harmonic expansion at the angles of `source_coords`
-  ylm_.interpolate_from_coefs(make_not_null(&radial_distortion), coefs,
-                              interpolation_info);
+  ylm.interpolate_from_coefs(make_not_null(&radial_distortion), truncated_coefs,
+                             interpolation_info);
 
   // this should be taken care of by the control system but is very hard to
   // debug
@@ -204,11 +232,19 @@ std::optional<std::array<double, 3>> Shape::inverse(
       center_coordinates(target_coords);
   const std::array<double, 2> theta_phis =
       cartesian_to_spherical(centered_coords);
-  DataVector coefs = functions_of_time.at(shape_f_of_t_name_)->func(time)[0];
-  check_size(make_not_null(&coefs), functions_of_time, time, false);
-  check_coefficients(coefs);
+  const auto [coefs, coef_derivs, coef_dderivs] =
+      functions_of_time.at(shape_f_of_t_name_)->func_and_2_derivs(time);
+  const size_t l_max = lmax_from_coefs(coefs);
+  const SpherepackIterator full_iterator{l_max, l_max};
+  const size_t truncated_l_max =
+      find_truncated_l_max(coefs, coef_derivs, coef_dderivs, full_iterator);
+  const SpherepackIterator truncated_iterator{truncated_l_max, truncated_l_max};
+  DataVector truncated_coefs =
+      truncate_coefs(coefs, full_iterator, truncated_iterator);
+  check_size(make_not_null(&truncated_coefs), functions_of_time, time, false);
+  const ylm::Spherepack ylm{truncated_l_max, truncated_l_max};
   const double radial_distortion =
-      ylm_.interpolate_from_coefs(coefs, theta_phis);
+      ylm.interpolate_from_coefs(truncated_coefs, theta_phis);
   const std::optional<double> original_radius_over_radius =
       transition_func_->original_radius_over_radius(centered_coords,
                                                     radial_distortion);
@@ -224,15 +260,23 @@ std::array<tt::remove_cvref_wrap_t<T>, 3> Shape::frame_velocity(
     const FunctionsOfTimeMap& functions_of_time) const {
   const auto centered_coords = center_coordinates(source_coords);
   auto theta_phis = cartesian_to_spherical(centered_coords);
-  const auto interpolation_info = ylm_.set_up_interpolation_info(theta_phis);
-  DataVector coef_derivs =
-      functions_of_time.at(shape_f_of_t_name_)->func_and_deriv(time)[1];
-  check_size(make_not_null(&coef_derivs), functions_of_time, time, true);
-  check_coefficients(coef_derivs);
+  const auto [coefs, coef_derivs, coef_dderivs] =
+      functions_of_time.at(shape_f_of_t_name_)->func_and_2_derivs(time);
+  const size_t l_max = lmax_from_coefs(coefs);
+  const SpherepackIterator full_iterator{l_max, l_max};
+  const size_t truncated_l_max =
+      find_truncated_l_max(coefs, coef_derivs, coef_dderivs, full_iterator);
+  const SpherepackIterator truncated_iterator{truncated_l_max, truncated_l_max};
+  DataVector truncated_coef_derivs =
+      truncate_coefs(coef_derivs, full_iterator, truncated_iterator);
+  check_size(make_not_null(&truncated_coef_derivs), functions_of_time, time,
+             true);
+  const ylm::Spherepack ylm{truncated_l_max, truncated_l_max};
+  const auto interpolation_info = ylm.set_up_interpolation_info(theta_phis);
   // re-use allocation
   auto& radii_velocities = get<0>(theta_phis);
-  ylm_.interpolate_from_coefs(make_not_null(&radii_velocities), coef_derivs,
-                              interpolation_info);
+  ylm.interpolate_from_coefs(make_not_null(&radii_velocities),
+                             truncated_coef_derivs, interpolation_info);
   return -centered_coords * radii_velocities *
          transition_func_->operator()(centered_coords, std::nullopt);
 }
@@ -245,38 +289,25 @@ tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame> Shape::jacobian(
 
   // The distorted radii are calculated analogously to the call operator
   auto theta_phis = cartesian_to_spherical(centered_coords);
-
-  // The Cartesian gradient cannot be represented exactly by `l_max_` and
-  // `m_max_` which causes an aliasing error. We need an additional order to
-  // represent it. This is in theory not needed for the radial_distortion
-  // calculation but saves calculating the `interpolation_info` twice.
-  const auto interpolation_info =
-      extended_ylm_.set_up_interpolation_info(theta_phis);
-
-  const DataVector coefs =
-      functions_of_time.at(shape_f_of_t_name_)->func(time)[0];
-  check_coefficients(coefs);
-  DataVector extended_coefs(extended_ylm_.spectral_size(), 0.);
-
-  // Copy over the coefficients. The additional coefficients of order `l_max_
-  // +1` are zero and will only have an effect in the interpolation of the
-  // cartesian gradient.
-  ylm::SpherepackIterator extended_iter(l_max_ + 1, m_max_ + 1);
-  ylm::SpherepackIterator iter(l_max_, m_max_);
-  for (size_t l = 0; l <= l_max_; ++l) {
-    const int m_max = static_cast<int>(std::min(l, m_max_));
-    for (int m = -m_max; m <= m_max; ++m) {
-      iter.set(l, m);
-      extended_iter.set(l, m);
-      extended_coefs[extended_iter()] = coefs[iter()];
-    }
-  }
-  check_size(make_not_null(&extended_coefs), functions_of_time, time, false);
+  const auto [coefs, coef_derivs, coef_dderivs] =
+      functions_of_time.at(shape_f_of_t_name_)->func_and_2_derivs(time);
+  const size_t l_max = lmax_from_coefs(coefs);
+  const SpherepackIterator full_iterator{l_max, l_max};
+  size_t truncated_l_max =
+      find_truncated_l_max(coefs, coef_derivs, coef_dderivs, full_iterator);
+  // we need an additional l_max to compute the gradient without aliasing error
+  truncated_l_max += 1;
+  const SpherepackIterator truncated_iterator{truncated_l_max, truncated_l_max};
+  DataVector truncated_coefs =
+      truncate_coefs(coefs, full_iterator, truncated_iterator);
+  check_size(make_not_null(&truncated_coefs), functions_of_time, time, false);
+  const ylm::Spherepack ylm{truncated_l_max, truncated_l_max};
+  const auto interpolation_info = ylm.set_up_interpolation_info(theta_phis);
 
   // Re-use allocation
   auto& radial_distortion = get<0>(theta_phis);
-  extended_ylm_.interpolate_from_coefs(make_not_null(&radial_distortion),
-                                       extended_coefs, interpolation_info);
+  ylm.interpolate_from_coefs(make_not_null(&radial_distortion), truncated_coefs,
+                             interpolation_info);
 
   using ReturnType = tt::remove_cvref_wrap_t<T>;
   const ReturnType transition_func =
@@ -284,8 +315,8 @@ tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame> Shape::jacobian(
   tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame> result(
       get_size(centered_coords[0]));
 
-  jacobian_helper(make_not_null(&result), interpolation_info, extended_coefs,
-                  centered_coords, radial_distortion, transition_func);
+  jacobian_helper(make_not_null(&result), interpolation_info, truncated_coefs,
+                  centered_coords, radial_distortion, transition_func, ylm);
   return result;
 }
 
@@ -320,36 +351,30 @@ void Shape::coords_frame_velocity_jacobian(
   theta_phis[0].set_data_ref(&get<0, 0>(*jac));
   theta_phis[1].set_data_ref(&get<0, 1>(*jac));
   cartesian_to_spherical(make_not_null(&theta_phis), centered_coords);
-  const auto interpolation_info =
-      extended_ylm_.set_up_interpolation_info(theta_phis);
 
-  const auto [coefs, coef_derivs] =
-      functions_of_time.at(shape_f_of_t_name_)->func_and_deriv(time);
-  DataVector extended_coefs_derivs(extended_ylm_.spectral_size(), 0.);
-  DataVector extended_coefs(extended_ylm_.spectral_size(), 0.);
-
-  // Copy over the coefficients. The additional coefficients of order `l_max_
-  // +1` are zero and will only have an effect in the interpolation of the
-  // cartesian gradient.
-  ylm::SpherepackIterator extended_iter(l_max_ + 1, m_max_ + 1);
-  ylm::SpherepackIterator iter(l_max_, m_max_);
-  for (size_t l = 0; l <= l_max_; ++l) {
-    const int m_max = static_cast<int>(std::min(l, m_max_));
-    for (int m = -m_max; m <= m_max; ++m) {
-      iter.set(l, m);
-      extended_iter.set(l, m);
-      extended_coefs[extended_iter()] = coefs[iter()];
-      extended_coefs_derivs[extended_iter()] = coef_derivs[iter()];
-    }
-  }
-  check_size(make_not_null(&extended_coefs), functions_of_time, time, false);
-  check_size(make_not_null(&extended_coefs_derivs), functions_of_time, time,
+  const auto [coefs, coef_derivs, coef_dderivs] =
+      functions_of_time.at(shape_f_of_t_name_)->func_and_2_derivs(time);
+  const size_t l_max = lmax_from_coefs(coefs);
+  const SpherepackIterator full_iterator{l_max, l_max};
+  size_t truncated_l_max =
+      find_truncated_l_max(coefs, coef_derivs, coef_dderivs, full_iterator);
+  // we need an additional l_max to compute the gradient without aliasing error
+  truncated_l_max += 1;
+  const SpherepackIterator truncated_iterator{truncated_l_max, truncated_l_max};
+  DataVector truncated_coefs =
+      truncate_coefs(coefs, full_iterator, truncated_iterator);
+  DataVector truncated_coef_derivs =
+      truncate_coefs(coef_derivs, full_iterator, truncated_iterator);
+  check_size(make_not_null(&truncated_coefs), functions_of_time, time, false);
+  check_size(make_not_null(&truncated_coef_derivs), functions_of_time, time,
              true);
+  const ylm::Spherepack ylm{truncated_l_max, truncated_l_max};
+  const auto interpolation_info = ylm.set_up_interpolation_info(theta_phis);
   auto& radial_distortion = get(get<::Tags::TempScalar<0>>(temps));
   // evaluate the spherical harmonic expansion at the angles of
   // `source_coords`
-  extended_ylm_.interpolate_from_coefs(make_not_null(&radial_distortion),
-                                       extended_coefs, interpolation_info);
+  ylm.interpolate_from_coefs(make_not_null(&radial_distortion), truncated_coefs,
+                             interpolation_info);
 
   auto& transition_func = get(get<::Tags::TempScalar<1>>(temps));
   transition_func = transition_func_->operator()(centered_coords, std::nullopt);
@@ -357,14 +382,13 @@ void Shape::coords_frame_velocity_jacobian(
       center_ + centered_coords * (1. - radial_distortion * transition_func);
 
   auto& radii_velocities = get<0, 1>(*jac);
-  extended_ylm_.interpolate_from_coefs(make_not_null(&radii_velocities),
-                                       extended_coefs_derivs,
-                                       interpolation_info);
+  ylm.interpolate_from_coefs(make_not_null(&radii_velocities),
+                             truncated_coef_derivs, interpolation_info);
   *frame_vel = -centered_coords * radii_velocities * transition_func;
 
-  jacobian_helper<DataVector>(jac, interpolation_info, extended_coefs,
+  jacobian_helper<DataVector>(jac, interpolation_info, truncated_coefs,
                               centered_coords, radial_distortion,
-                              transition_func);
+                              transition_func, ylm);
 }
 
 template <typename T>
@@ -376,16 +400,24 @@ tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame> Shape::inv_jacobian(
       .second;
 }
 
-void Shape::check_coefficients([[maybe_unused]] const DataVector& coefs) const {
-#ifdef SPECTRE_DEBUG
-  // The expected format of the coefficients passed from the control system can
-  // be changed depending on what turns out to be most convenient for the
-  // control system
-  ASSERT(coefs.size() == ylm_.spectral_size(),
-         "Spectral coefficients are expected to be in ylm::Spherepack format "
-         "with size 2 * (l_max + 1) * (m_max + 1) = "
-             << ylm_.spectral_size() << ", but have size " << coefs.size());
-#endif  // SPECTRE_DEBUG
+size_t Shape::find_truncated_l_max(const DataVector& coefs,
+                                   const DataVector& coef_derivs,
+                                   const DataVector& coef_dderivs,
+                                   SpherepackIterator iterator) const {
+  const size_t l_max = iterator.l_max();
+  // we require at least l=2 because l=0 is size and l=1 is translation
+  for (size_t l = l_max; l > 2; --l) {
+    for (int m = static_cast<int>(l); m >= -static_cast<int>(l); --m) {
+      iterator.set(l, m);
+      const size_t current_index = iterator();
+      if (abs(coefs[current_index]) > truncation_limit_ or
+          abs(coef_derivs[current_index]) > truncation_limit_ or
+          abs(coef_dderivs[current_index]) > truncation_limit_) {
+        return l;
+      }
+    }
+  }
+  return 2;
 }
 
 void Shape::check_size(const gsl::not_null<DataVector*>& coefs,
@@ -420,8 +452,8 @@ void Shape::check_size(const gsl::not_null<DataVector*>& coefs,
 bool operator==(const Shape& lhs, const Shape& rhs) {
   return lhs.shape_f_of_t_name_ == rhs.shape_f_of_t_name_ and
          lhs.size_f_of_t_name_ == rhs.size_f_of_t_name_ and
-         lhs.center_ == rhs.center_ and lhs.l_max_ == rhs.l_max_ and
-         lhs.m_max_ == rhs.m_max_ and
+         lhs.center_ == rhs.center_ and
+         lhs.truncation_limit_ == rhs.truncation_limit_ and
          (lhs.transition_func_ == nullptr) ==
              (rhs.transition_func_ == nullptr) and
          ((lhs.transition_func_ == nullptr and
@@ -432,24 +464,31 @@ bool operator==(const Shape& lhs, const Shape& rhs) {
 bool operator!=(const Shape& lhs, const Shape& rhs) { return not(lhs == rhs); }
 
 void Shape::pup(PUP::er& p) {
-  size_t version = 0;
+  size_t version = 1;
   p | version;
   // Remember to increment the version number when making changes to this
   // function. Retain support for unpacking data written by previous versions
   // whenever possible. See `Domain` docs for details.
-  if (version >= 0) {
-    p | l_max_;
-    p | m_max_;
-    p | center_;
-    p | shape_f_of_t_name_;
-    p | size_f_of_t_name_;
-    p | transition_func_;
+  if (version == 0) {
+    size_t old_l_max = 0;
+    size_t old_m_max = 0;
+    p | old_l_max;
+    p | old_m_max;
+  }
+  p | center_;
+  p | shape_f_of_t_name_;
+  p | size_f_of_t_name_;
+  p | transition_func_;
+
+  if (version >= 1) {
+    p | truncation_limit_;
   }
 
   // No need to pup these because they are uniquely determined by other members
   if (p.isUnpacking()) {
-    ylm_ = ylm::Spherepack(l_max_, m_max_);
-    extended_ylm_ = ylm::Spherepack(l_max_ + 1, m_max_ + 1);
+    if (version == 0) {
+      truncation_limit_ = 0.;
+    }
     f_of_t_names_.clear();
     f_of_t_names_.insert(shape_f_of_t_name_);
     if (size_f_of_t_name_.has_value()) {

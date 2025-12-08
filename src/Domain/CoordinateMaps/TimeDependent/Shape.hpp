@@ -4,14 +4,17 @@
 #pragma once
 
 #include <cstddef>
+#include <limits>
 #include <memory>
 #include <optional>
 #include <string>
 #include <unordered_set>
 
+#include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/CoordinateMaps/TimeDependent/ShapeMapTransitionFunctions/ShapeMapTransitionFunction.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/Spherepack.hpp"
+#include "NumericalAlgorithms/SphericalHarmonics/SpherepackIterator.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TypeTraits/RemoveReferenceWrapper.hpp"
 
@@ -25,6 +28,12 @@ class er;
 /// \endcond
 
 namespace domain::CoordinateMaps::TimeDependent {
+
+size_t lmax_from_coefs(const DataVector& coefs);
+
+DataVector truncate_coefs(const DataVector& coefs,
+                          ylm::SpherepackIterator iterator,
+                          ylm::SpherepackIterator truncated_iterator);
 
 /*!
  * \ingroup CoordMapsTimeDependentGroup
@@ -210,7 +219,7 @@ class Shape {
       std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>;
 
   explicit Shape(
-      const std::array<double, 3>& center, size_t l_max, size_t m_max,
+      const std::array<double, 3>& center, double truncation_limit,
       std::unique_ptr<ShapeMapTransitionFunctions::ShapeMapTransitionFunction>
           transition_func,
       std::string shape_function_of_time_name,
@@ -275,10 +284,7 @@ class Shape {
   std::optional<std::string> size_f_of_t_name_;
   std::unordered_set<std::string> f_of_t_names_;
   std::array<double, 3> center_{};
-  size_t l_max_ = 2;
-  size_t m_max_ = 2;
-  ylm::Spherepack ylm_{2, 2};
-  ylm::Spherepack extended_ylm_{3, 3};
+  double truncation_limit_{0.};
   std::unique_ptr<ShapeMapTransitionFunctions::ShapeMapTransitionFunction>
       transition_func_;
 
@@ -303,15 +309,17 @@ class Shape {
       gsl::not_null<tnsr::Ij<T, 3, Frame::NoFrame>*> result,
       const ylm::Spherepack::InterpolationInfo<T>& interpolation_info,
       const DataVector& extended_coefs, const std::array<T, 3>& centered_coords,
-      const T& radial_distortion, const T& transition_func) const;
+      const T& radial_distortion, const T& transition_func,
+      const ylm::Spherepack& ylm) const;
 
   void check_size(const gsl::not_null<DataVector*>& coefs,
                   const FunctionsOfTimeMap& functions_of_time, double time,
                   bool use_deriv) const;
 
-  // Checks that the vector of coefficients has the right size and that the
-  // monopole and dipole coefficients are zero.
-  void check_coefficients(const DataVector& coefs) const;
+  size_t find_truncated_l_max(const DataVector& coefs,
+                              const DataVector& coef_derivs,
+                              const DataVector& coef_dderivs,
+                              ylm::SpherepackIterator iterator) const;
 
   friend bool operator==(const Shape& lhs, const Shape& rhs);
 };
