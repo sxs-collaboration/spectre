@@ -295,6 +295,10 @@ EventsAndTriggersAtSlabs:
         Value: {{ FinalTime }}
     Events:
       - Completion
+  # Discard old data to reduce memory use
+  - Trigger: Always
+    Events:
+      - CleanFunctionsOfTime
 
 EventsAndTriggersAtSteps:
 

@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "ControlSystem/Actions/InitializeMeasurements.hpp"
+#include "ControlSystem/CleanFunctionsOfTime.hpp"
 #include "ControlSystem/Component.hpp"
 #include "ControlSystem/ControlErrors/Size/Factory.hpp"
 #include "ControlSystem/ControlErrors/Size/State.hpp"
@@ -217,6 +218,7 @@ struct EvolutionMetavars : public ScalarTensorTemplateBase<EvolutionMetavars> {
                     3, BondiSachs, source_vars_no_deriv>,
                 control_system::metafunctions::control_system_events<
                     control_systems>,
+                control_system::CleanFunctionsOfTime,
                 intrp::Events::InterpolateWithoutInterpComponent<
                     volume_dim, ExcisionBoundaryA, ah::source_vars<volume_dim>>,
                 intrp::Events::InterpolateWithoutInterpComponent<
