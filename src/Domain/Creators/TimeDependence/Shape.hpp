@@ -135,6 +135,15 @@ class Shape final : public TimeDependence<3> {
     using type = std::array<double, 3>;
     static constexpr Options::String help = {"Center for the Shape map."};
   };
+  /// \brief Coefficients below this absolute value will be truncated from the
+  /// Shape map.
+  struct CoefficientTruncationLimit {
+    using type = double;
+    static constexpr Options::String help = {
+        "Coefficients below this absolute value will be truncated from the "
+        "Shape map. Set to 0.0 to disable truncation."};
+    static constexpr type default_value = 0.0;
+  };
   /// \brief The inner radius of the Shape map, the radius at which
   /// to begin applying the map.
   struct InnerRadius {
@@ -150,8 +159,9 @@ class Shape final : public TimeDependence<3> {
         "The outer radius of the Shape map."};
   };
 
-  using options = tmpl::list<InitialTime, LMax, Mass, Spin, Center, InnerRadius,
-                             OuterRadius>;
+  using options =
+      tmpl::list<InitialTime, LMax, Mass, Spin, Center,
+                 CoefficientTruncationLimit, InnerRadius, OuterRadius>;
 
   static constexpr Options::String help = {
       "Creates a Shape that conforms to a Kerr horizon of given mass and "
@@ -166,8 +176,8 @@ class Shape final : public TimeDependence<3> {
 
   Shape(double initial_time, size_t l_max, double mass,
         std::array<double, 3> spin, std::array<double, 3> center,
-        double inner_radius, double outer_radius,
-        const Options::Context& context = {});
+        double coefficient_truncation_limit, double inner_radius,
+        double outer_radius, const Options::Context& context = {});
 
   auto get_clone() const -> std::unique_ptr<TimeDependence<mesh_dim>> override;
 
@@ -211,6 +221,7 @@ class Shape final : public TimeDependence<3> {
       make_array<3>(std::numeric_limits<double>::signaling_NaN())};
   inline static const std::string function_of_time_name_{"Shape" +
                                                          get_output(Label)};
+  double coefficient_truncation_limit_{0.0};
   double inner_radius_{std::numeric_limits<double>::signaling_NaN()};
   double outer_radius_{std::numeric_limits<double>::signaling_NaN()};
   std::unique_ptr<TransitionFunction> transition_func_;

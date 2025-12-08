@@ -70,10 +70,12 @@ DomainCreator:
         InitialValues: [[0.0, 0.0, 0.0], [0.0, 0.0, 0.0], [0.0, 0.0, 0.0]]
       SkewMap: None
       ShapeMapA:
+        CoefficientTruncationLimit: 0.
         LMax: &LMax 10
         InitialValues: Spherical
         SizeInitialValues: [0.0, 0.0, 0.0]
       ShapeMapB:
+        CoefficientTruncationLimit: 0.
         LMax: *LMax
         InitialValues: Spherical
         SizeInitialValues: [0.0, 0.0, 0.0]

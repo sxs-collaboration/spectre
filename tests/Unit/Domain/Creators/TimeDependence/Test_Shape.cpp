@@ -57,16 +57,20 @@ template <typename SourceFrame, typename TargetFrame>
 ConcreteMapSimple<SourceFrame, TargetFrame> create_coord_map(
     const std::string& f_of_t_name, const size_t l_max,
     const std::array<double, 3>& center,
+    const double coefficient_truncation_limit,
     std::unique_ptr<domain::CoordinateMaps::ShapeMapTransitionFunctions::
                         ShapeMapTransitionFunction>
         transition_func) {
+  (void)l_max;
   if constexpr (std::is_same_v<SourceFrame, Frame::Grid>) {
-    return ConcreteMapSimple<SourceFrame, TargetFrame>{{ShapeMap{
-        center, l_max, l_max, transition_func->get_clone(), f_of_t_name}}};
+    return ConcreteMapSimple<SourceFrame, TargetFrame>{
+        {ShapeMap{center, coefficient_truncation_limit,
+                  transition_func->get_clone(), f_of_t_name}}};
   } else {
     (void)f_of_t_name;
     (void)l_max;
     (void)center;
+    (void)coefficient_truncation_limit;
     (void)transition_func;
     return ConcreteMapSimple<SourceFrame, TargetFrame>{Identity{}};
   }
@@ -75,11 +79,14 @@ ConcreteMapSimple<SourceFrame, TargetFrame> create_coord_map(
 ConcreteMapCombined create_coord_map_combined(
     const std::string& f_of_t_name, const size_t l_max,
     const std::array<double, 3>& center,
+    const double coefficient_truncation_limit,
     std::unique_ptr<domain::CoordinateMaps::ShapeMapTransitionFunctions::
                         ShapeMapTransitionFunction>
         transition_func) {
-  return ConcreteMapCombined{ShapeMap{
-      center, l_max, l_max, transition_func->get_clone(), f_of_t_name}};
+  (void)l_max;
+  return ConcreteMapCombined{ShapeMap{center, coefficient_truncation_limit,
+                                      transition_func->get_clone(),
+                                      f_of_t_name}};
 }
 
 template <typename Frame>
@@ -122,8 +129,7 @@ void test_r_theta_phi(const tnsr::I<double, 3, SourceFrame>& input,
   const double radius = magnitude(input_centered).get();
   const double transition_factor =
       std::make_unique<Transition>(Transition{inner_radius, outer_radius})
-          ->
-          operator()(std::array{radius, 0.0, 0.0}, std::nullopt);
+          ->operator()(std::array{radius, 0.0, 0.0}, std::nullopt);
   const double expected_output_centered_spherical =
       input_centered_spherical[0] *
       (1.0 + transition_factor * (kerr_schild_radius - inner_radius));
@@ -235,8 +241,9 @@ void test(const std::unique_ptr<TimeDependence<3>>& time_dep_unique_ptr,
           std::unique_ptr<domain::CoordinateMaps::ShapeMapTransitionFunctions::
                               ShapeMapTransitionFunction>
               transition_func,
-          const double inner_radius, const double outer_radius,
-          const double mass, const std::array<double, 3>& spin,
+          const double coefficient_truncation_limit, const double inner_radius,
+          const double outer_radius, const double mass,
+          const std::array<double, 3>& spin,
           const std::array<double, 3>& center) {
   MAKE_GENERATOR(gen);
   CAPTURE(initial_time);
@@ -259,7 +266,8 @@ void test(const std::unique_ptr<TimeDependence<3>>& time_dep_unique_ptr,
   const size_t num_blocks = dist_size_t(gen);
   CAPTURE(num_blocks);
   const auto expected_block_map_grid_to_inertial = create_coord_map_combined(
-      f_of_t_name, l_max, center, transition_func->get_clone());
+      f_of_t_name, l_max, center, coefficient_truncation_limit,
+      transition_func->get_clone());
   const auto block_maps_grid_to_inertial =
       time_dep_unique_ptr->block_maps_grid_to_inertial(num_blocks);
   for (const auto& block_map_unique_ptr : block_maps_grid_to_inertial) {
@@ -276,7 +284,8 @@ void test(const std::unique_ptr<TimeDependence<3>>& time_dep_unique_ptr,
 
   const auto expected_block_map_grid_to_distorted =
       create_coord_map<Frame::Grid, Frame::Distorted>(
-          f_of_t_name, l_max, center, transition_func->get_clone());
+          f_of_t_name, l_max, center, coefficient_truncation_limit,
+          transition_func->get_clone());
   const auto block_maps_grid_to_distorted =
       time_dep_unique_ptr->block_maps_grid_to_distorted(num_blocks);
   for (const auto& block_map_unique_ptr : block_maps_grid_to_distorted) {
@@ -294,7 +303,8 @@ void test(const std::unique_ptr<TimeDependence<3>>& time_dep_unique_ptr,
 
   const auto expected_block_map_distorted_to_inertial =
       create_coord_map<Frame::Distorted, Frame::Inertial>(
-          f_of_t_name, l_max, center, transition_func->get_clone());
+          f_of_t_name, l_max, center, coefficient_truncation_limit,
+          transition_func->get_clone());
   const auto block_maps_distorted_to_inertial =
       time_dep_unique_ptr->block_maps_distorted_to_inertial(num_blocks);
   for (const auto& block_map_unique_ptr : block_maps_distorted_to_inertial) {
@@ -340,6 +350,7 @@ void test_all() {
   // compare ylm output with analytic solution.
   constexpr size_t l_max{16};
   constexpr double mass{1.0};
+  constexpr double coefficient_truncation_limit{0.0};
   const std::array<double, 3> spin{{0.1, 0.4, -0.5}};
   const std::array<double, 3> center{{-0.02, 0.013, 0.024}};
   const double inner_radius = 2.0;
@@ -350,13 +361,16 @@ void test_all() {
 
   const std::unique_ptr<domain::creators::time_dependence::TimeDependence<3>>
       time_dep = std::make_unique<Shape>(initial_time, l_max, mass, spin,
-                                         center, inner_radius, outer_radius);
+                                         center, coefficient_truncation_limit,
+                                         inner_radius, outer_radius);
   test(time_dep, initial_time, f_of_t_name, l_max,
-       std::make_unique<Transition>(sphere_transition), inner_radius,
-       outer_radius, mass, spin, center);
+       std::make_unique<Transition>(sphere_transition),
+       coefficient_truncation_limit, inner_radius, outer_radius, mass, spin,
+       center);
   test(time_dep->get_clone(), initial_time, f_of_t_name, l_max,
-       std::make_unique<Transition>(sphere_transition), inner_radius,
-       outer_radius, mass, spin, center);
+       std::make_unique<Transition>(sphere_transition),
+       coefficient_truncation_limit, inner_radius, outer_radius, mass, spin,
+       center);
 
   test(TestHelpers::test_creation<std::unique_ptr<TimeDependence<3>>>(
            "Shape:\n"
@@ -365,11 +379,13 @@ void test_all() {
            "  Mass: 1.0\n"
            "  Spin: [0.1, 0.4, -0.5]\n"
            "  Center: [-0.02, 0.013, 0.024]\n"
+           "  CoefficientTruncationLimit: 0.0\n"
            "  InnerRadius: 2.0\n"
            "  OuterRadius: 100.0\n"),
        initial_time, f_of_t_name, l_max,
-       std::make_unique<Transition>(sphere_transition), inner_radius,
-       outer_radius, mass, spin, center);
+       std::make_unique<Transition>(sphere_transition),
+       coefficient_truncation_limit, inner_radius, outer_radius, mass, spin,
+       center);
 }
 
 void test_equivalence() {
@@ -381,15 +397,41 @@ void test_equivalence() {
   const double inner_radius = 1.0;
   const double outer_radius1 = 10.0;
   const double outer_radius2 = 20.0;
+  const double coefficient_truncation_limit1 = 0.0;
+  const double coefficient_truncation_limit2 = 1.0e-4;
 
-  Shape sc0{1.0, 4, mass, spin1, center1, inner_radius, outer_radius1};
-  Shape sc1{1.0, 4, mass, spin1, center1, inner_radius, outer_radius1};
-  Shape sc2{1.0, 4, mass, spin2, center1, inner_radius, outer_radius1};
-  Shape sc3{1.0, 4, mass, spin2, center1, inner_radius, outer_radius1};
-  Shape sc4{1.0, 4, mass, spin1, center2, inner_radius, outer_radius2};
-  Shape sc5{1.0, 4, mass, spin1, center2, inner_radius, outer_radius2};
-  Shape sc6{1.0, 4, mass, spin2, center2, inner_radius, outer_radius2};
-  Shape sc7{1.0, 4, mass, spin2, center2, inner_radius, outer_radius2};
+  Shape sc0{1.0,          4,
+            mass,         spin1,
+            center1,      coefficient_truncation_limit1,
+            inner_radius, outer_radius1};
+  Shape sc1{1.0,          4,
+            mass,         spin1,
+            center1,      coefficient_truncation_limit1,
+            inner_radius, outer_radius1};
+  Shape sc2{1.0,          4,
+            mass,         spin2,
+            center1,      coefficient_truncation_limit1,
+            inner_radius, outer_radius1};
+  Shape sc3{1.0,          4,
+            mass,         spin2,
+            center1,      coefficient_truncation_limit1,
+            inner_radius, outer_radius1};
+  Shape sc4{1.0,          4,
+            mass,         spin1,
+            center2,      coefficient_truncation_limit2,
+            inner_radius, outer_radius2};
+  Shape sc5{1.0,          4,
+            mass,         spin1,
+            center2,      coefficient_truncation_limit2,
+            inner_radius, outer_radius2};
+  Shape sc6{1.0,          4,
+            mass,         spin2,
+            center2,      coefficient_truncation_limit2,
+            inner_radius, outer_radius2};
+  Shape sc7{1.0,          4,
+            mass,         spin2,
+            center2,      coefficient_truncation_limit2,
+            inner_radius, outer_radius2};
 
   CHECK(sc0 == sc0);
   CHECK_FALSE(sc0 != sc0);
@@ -415,6 +457,7 @@ void test_errors() {
           "Shape:\n"
           "  InitialTime: 1.3\n"
           "  LMax: 4\n"
+          "  CoefficientTruncationLimit: 0.0\n"
           "  Mass: 1.0\n"
           "  Spin: [0.0, 1.0, 0.1]\n"
           "  Center: [-0.01, 0.02, 0.01]\n"
@@ -429,6 +472,7 @@ void test_errors() {
           "Shape:\n"
           "  InitialTime: 1.3\n"
           "  LMax: 4\n"
+          "  CoefficientTruncationLimit: 0.0\n"
           "  Mass: 1.0\n"
           "  Spin: [0.0, 1.0, 0.1]\n"
           "  Center: [-0.01, 0.02, 0.01]\n"
@@ -441,6 +485,7 @@ void test_errors() {
       TestHelpers::test_creation<std::unique_ptr<TimeDependence<3>>>(
           "Shape:\n"
           "  InitialTime: 1.3\n"
+          "  CoefficientTruncationLimit: 0.0\n"
           "  LMax: 4\n"
           "  Mass: -1.0\n"
           "  Spin: [0.0, 1.0, 0.1]\n"

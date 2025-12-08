@@ -410,8 +410,8 @@ void test_apparent_horizon(
       // excision is still inside the horizon but isn't spherical
       time_dependence = std::make_unique<
           domain::creators::time_dependence::Shape<domain::ObjectLabel::None>>(
-          0.0, l_max, mass, dimensionless_spin, std::array{0.0, 0.0, 0.0}, 1.9,
-          2.9);
+          0.0, l_max, mass, dimensionless_spin, std::array{0.0, 0.0, 0.0}, 0.,
+          1.9, 2.9);
     } else {
       time_dependence = std::make_unique<
           domain::creators::time_dependence::UniformTranslation<3>>(

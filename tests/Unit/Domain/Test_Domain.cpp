@@ -852,8 +852,7 @@ struct TestTimeDependentMapOptions {
         // Store the inner radii for creating functions of time
         gsl::at(inner_radii_, i) = radii[0];
 
-        const size_t initial_l_max = i == 0 ? shape_options_A_.value().l_max
-                                            : shape_options_B_.value().l_max;
+        const double coefficient_truncation_limit = 0.;
 
         std::unique_ptr<CoordinateMaps::ShapeMapTransitionFunctions::
                             ShapeMapTransitionFunction>
@@ -867,9 +866,9 @@ struct TestTimeDependentMapOptions {
               radii[0], radii[1]);
 
           gsl::at(shape_maps_, i) =
-              Shape{gsl::at(centers, i),     initial_l_max,
-                    initial_l_max,           std::move(transition_func),
-                    gsl::at(shape_names, i), gsl::at(size_names, i)};
+              Shape{gsl::at(centers, i), coefficient_truncation_limit,
+                    std::move(transition_func), gsl::at(shape_names, i),
+                    gsl::at(size_names, i)};
         } else {
           // These must match the order of orientations_for_sphere_wrappings()
           // in DomainHelpers.hpp
@@ -893,9 +892,9 @@ struct TestTimeDependentMapOptions {
                 gsl::at(axes, j));
 
             gsl::at(gsl::at(shape_maps_, i), j) =
-                Shape{gsl::at(centers, i),     initial_l_max,
-                      initial_l_max,           std::move(transition_func),
-                      gsl::at(shape_names, i), gsl::at(size_names, i)};
+                Shape{gsl::at(centers, i), coefficient_truncation_limit,
+                      std::move(transition_func), gsl::at(shape_names, i),
+                      gsl::at(size_names, i)};
           }
         }
 

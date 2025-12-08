@@ -36,6 +36,7 @@ std::string create_option_string(const std::optional<bool> use_non_zero_shape) {
          (use_non_zero_shape.has_value()
               ? "\n"
                 "  LMax: 8\n"
+                "  CoefficientTruncationLimit: 0.\n"
                 "  SizeInitialValues: Auto\n"
                 "  InitialValues:" +
                     (use_non_zero_shape.value() ? "\n"

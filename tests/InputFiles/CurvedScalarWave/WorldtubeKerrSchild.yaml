@@ -79,11 +79,13 @@ DomainCreator:
       SkewMap: None
       ShapeMapA:
         LMax: 8
+        CoefficientTruncationLimit: 0.
         InitialValues: Spherical
         SizeInitialValues: [0., 0., 0.]
         TransitionEndsAtCube: false
       ShapeMapB:
         LMax: 8
+        CoefficientTruncationLimit: 0.
         InitialValues: Spherical
         SizeInitialValues: [0., 0., 0.]
         TransitionEndsAtCube: false

@@ -198,6 +198,13 @@ struct TransitionEndsAtCube {
 template <ObjectLabel Object>
 struct FromVolumeFileShapeSize : public FromVolumeFile {
  public:
+  struct CoefficientTruncationLimit {
+    using type = double;
+    static constexpr Options::String help = {
+        "Coefficients below this absolute value will be truncated from the "
+        "Shape map. Set to 0.0 to disable truncation."};
+    static constexpr type default_value = 0.0;
+  };
   struct LMax {
     using type = Options::Auto<size_t>;
     static constexpr Options::String help = {
@@ -206,15 +213,18 @@ struct FromVolumeFileShapeSize : public FromVolumeFile {
         "function of time in the volume file."};
   };
   using options = tmpl::push_front<FromVolumeFile::options, LMax,
+                                   CoefficientTruncationLimit,
                                    detail::TransitionEndsAtCube>;
 
   FromVolumeFileShapeSize() = default;
   FromVolumeFileShapeSize(const std::optional<size_t>& l_max_in,
+                          double coefficient_truncation_limit_in,
                           bool transition_ends_at_cube_in,
                           std::string h5_filename, std::string subfile_name,
                           const Options::Context& context = {});
 
   size_t l_max{};
+  double coefficient_truncation_limit{0.0};
   bool transition_ends_at_cube{};
 
  private:
@@ -236,6 +246,13 @@ struct FromVolumeFileShapeSize : public FromVolumeFile {
  */
 template <bool IncludeTransitionEndsAtCube, domain::ObjectLabel Object>
 struct ShapeMapOptions {
+  struct CoefficientTruncationLimit {
+    using type = double;
+    static constexpr Options::String help = {
+        "Coefficients below this absolute value will be truncated from the "
+        "Shape map. Set to 0.0 to disable truncation."};
+    static constexpr type default_value = 0.0;
+  };
   using type = Options::Auto<
       std::variant<ShapeMapOptions<IncludeTransitionEndsAtCube, Object>,
                    FromVolumeFileShapeSize<Object>>,
@@ -271,7 +288,8 @@ struct ShapeMapOptions {
         "set the radius of the sphere in the grid frame (before deformation)."};
   };
 
-  using common_options = tmpl::list<LMax, InitialValues, SizeInitialValues>;
+  using common_options = tmpl::list<LMax, InitialValues, SizeInitialValues,
+                                    CoefficientTruncationLimit>;
 
   using options = tmpl::conditional_t<
       IncludeTransitionEndsAtCube,
@@ -284,10 +302,12 @@ struct ShapeMapOptions {
                       initial_values_in,
                   std::optional<std::array<double, 3>> initial_size_values_in =
                       std::nullopt,
+                  double coefficient_truncation_limit_in = 0.0,
                   bool transition_ends_at_cube_in = false)
       : l_max(l_max_in),
         initial_values(std::move(initial_values_in)),
         initial_size_values(initial_size_values_in),
+        coefficient_truncation_limit(coefficient_truncation_limit_in),
         transition_ends_at_cube(transition_ends_at_cube_in) {}
 
   size_t l_max{};
@@ -295,6 +315,7 @@ struct ShapeMapOptions {
       std::variant<KerrSchildFromBoyerLindquist, YlmsFromFile, YlmsFromSpEC>>
       initial_values;
   std::optional<std::array<double, 3>> initial_size_values;
+  double coefficient_truncation_limit{0.0};
   bool transition_ends_at_cube{false};
 };
 
@@ -304,6 +325,15 @@ struct ShapeMapOptions {
  */
 template <bool IncludeTransitionEndsAtCube, domain::ObjectLabel Object>
 size_t l_max_from_shape_options(
+    const std::variant<ShapeMapOptions<IncludeTransitionEndsAtCube, Object>,
+                       FromVolumeFileShapeSize<Object>>& shape_map_options);
+
+/*!
+ * \brief Helper function to get the coefficient truncation limit from the
+ * different variants that the shape map options could be.
+ */
+template <bool IncludeTransitionEndsAtCube, domain::ObjectLabel Object>
+double coefficient_truncation_limit_from_shape_options(
     const std::variant<ShapeMapOptions<IncludeTransitionEndsAtCube, Object>,
                        FromVolumeFileShapeSize<Object>>& shape_map_options);
 

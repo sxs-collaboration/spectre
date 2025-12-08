@@ -41,6 +41,7 @@ template <domain::ObjectLabel Label>
 Shape<Label>::Shape(const double initial_time, const size_t l_max,
                     const double mass, const std::array<double, 3> spin,
                     const std::array<double, 3> center,
+                    const double coefficient_truncation_limit,
                     const double inner_radius, const double outer_radius,
                     const Options::Context& context)
     : initial_time_(initial_time),
@@ -48,6 +49,7 @@ Shape<Label>::Shape(const double initial_time, const size_t l_max,
       mass_(mass),
       spin_(spin),
       center_(center),
+      coefficient_truncation_limit_(coefficient_truncation_limit),
       inner_radius_(inner_radius),
       outer_radius_(outer_radius),
       transition_func_(std::make_unique<SphereTransition>(
@@ -65,6 +67,11 @@ Shape<Label>::Shape(const double initial_time, const size_t l_max,
                 "the magnitude of the spin ("
                     << spin << ") is greater than one.");
   }
+  if (coefficient_truncation_limit_ < 0.0) {
+    PARSE_ERROR(context,
+                "CoefficientTruncationLimit must be non-negative, but is "
+                    << coefficient_truncation_limit_ << ".");
+  }
   // There is no PARSE_ERROR for the `inner_radius` < `outer_radius` condition
   // because the SphereTransition already checks for this condition.
 }
@@ -73,7 +80,8 @@ template <domain::ObjectLabel Label>
 std::unique_ptr<TimeDependence<Shape<Label>::mesh_dim>>
 Shape<Label>::get_clone() const {
   return std::make_unique<Shape<Label>>(initial_time_, l_max_, mass_, spin_,
-                                        center_, inner_radius_, outer_radius_);
+                                        center_, coefficient_truncation_limit_,
+                                        inner_radius_, outer_radius_);
 }
 
 template <domain::ObjectLabel Label>
@@ -189,14 +197,14 @@ Shape<Label>::functions_of_time(const std::unordered_map<std::string, double>&
 
 template <domain::ObjectLabel Label>
 auto Shape<Label>::grid_to_inertial_map() const -> GridToInertialMap {
-  return GridToInertialMap{ShapeMap{center_, l_max_, l_max_,
+  return GridToInertialMap{ShapeMap{center_, coefficient_truncation_limit_,
                                     transition_func_->get_clone(),
                                     function_of_time_name_}};
 }
 
 template <domain::ObjectLabel Label>
 auto Shape<Label>::grid_to_distorted_map() const -> GridToDistortedMap {
-  return GridToDistortedMap{ShapeMap{center_, l_max_, l_max_,
+  return GridToDistortedMap{ShapeMap{center_, coefficient_truncation_limit_,
                                      transition_func_->get_clone(),
                                      function_of_time_name_}};
 }
@@ -211,6 +219,8 @@ bool operator==(const Shape<Label>& lhs, const Shape<Label>& rhs) {
   return lhs.initial_time_ == rhs.initial_time_ and lhs.l_max_ == rhs.l_max_ and
          lhs.mass_ == rhs.mass_ and lhs.spin_ == rhs.spin_ and
          lhs.center_ == rhs.center_ and
+         lhs.coefficient_truncation_limit_ ==
+             rhs.coefficient_truncation_limit_ and
          lhs.inner_radius_ == rhs.inner_radius_ and
          lhs.outer_radius_ == rhs.outer_radius_;
 }

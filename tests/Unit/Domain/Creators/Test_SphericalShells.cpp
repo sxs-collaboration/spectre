@@ -71,6 +71,7 @@ std::string option_string(
                               "    ShapeMap:\n"
                               "      LMax: 10\n"
                               "      InitialValues: Spherical\n"
+                              "      CoefficientTruncationLimit: 0.0\n"
                               "      SizeInitialValues: Auto\n"
                               "    RotationMap: None\n"
                               "    ExpansionMap: None\n"
@@ -517,7 +518,7 @@ void test_shape_distortion() {
     // Time dependence
     time_dependent_options = std::make_unique<
         domain::creators::time_dependence::Shape<domain::ObjectLabel::None>>(
-        time, l_max, mass, spin, std::array<double, 3>{{0., 0., 0.}},
+        time, l_max, mass, spin, std::array<double, 3>{{0., 0., 0.}}, 0.0,
         inner_radius, 4.);
 
     test_shape_distortion_general(time, std::move(time_dependent_options),

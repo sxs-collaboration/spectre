@@ -65,6 +65,7 @@ YlmsFromSpEC::YlmsFromSpEC(std::string dat_filename_in,
 template <ObjectLabel Object>
 FromVolumeFileShapeSize<Object>::FromVolumeFileShapeSize(
     const std::optional<size_t>& l_max_in,
+    const double coefficient_truncation_limit_in,
     const bool transition_ends_at_cube_in, std::string h5_filename,
     std::string subfile_name, const Options::Context& context)
     : FromVolumeFile(std::move(h5_filename), std::move(subfile_name)),
@@ -89,6 +90,13 @@ FromVolumeFileShapeSize<Object>::FromVolumeFileShapeSize(
     // worrying about odd numbers or non-perfect squares
     l_max = -1 + sqrt(function[0].size() / 2);  // NOLINT
   }
+
+  if (coefficient_truncation_limit_in < 0.0) {
+    PARSE_ERROR(context,
+                "CoefficientTruncationLimit must be non-negative, but is "
+                    << coefficient_truncation_limit_in << ".");
+  }
+  coefficient_truncation_limit = coefficient_truncation_limit_in;
 }
 
 template <bool IncludeTransitionEndsAtCube, domain::ObjectLabel Object>
@@ -97,6 +105,15 @@ size_t l_max_from_shape_options(
                        FromVolumeFileShapeSize<Object>>& shape_map_options) {
   return std::visit([](auto variant) { return variant.l_max; },
                     shape_map_options);
+}
+
+template <bool IncludeTransitionEndsAtCube, domain::ObjectLabel Object>
+double coefficient_truncation_limit_from_shape_options(
+    const std::variant<ShapeMapOptions<IncludeTransitionEndsAtCube, Object>,
+                       FromVolumeFileShapeSize<Object>>& shape_map_options) {
+  return std::visit(
+      [](auto variant) { return variant.coefficient_truncation_limit; },
+      shape_map_options);
 }
 
 template <bool IncludeTransitionEndsAtCube, domain::ObjectLabel Object>
@@ -390,6 +407,10 @@ FunctionsOfTimeMap get_shape_and_size(
 
 #define INSTANTIATE(_, data)                                          \
   template size_t l_max_from_shape_options(                           \
+      const std::variant<                                             \
+          ShapeMapOptions<INCLUDETRANSITION(data), OBJECT(data)>,     \
+          FromVolumeFileShapeSize<OBJECT(data)>>& shape_map_options); \
+  template double coefficient_truncation_limit_from_shape_options(    \
       const std::variant<                                             \
           ShapeMapOptions<INCLUDETRANSITION(data), OBJECT(data)>,     \
           FromVolumeFileShapeSize<OBJECT(data)>>& shape_map_options); \

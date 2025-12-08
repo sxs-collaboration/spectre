@@ -101,6 +101,7 @@ DomainCreator:
       Shape:
         InitialTime: 0.
         LMax: 18
+        CoefficientTruncationLimit: 0.
         Mass: *KerrMass
         Spin: *KerrSpin
         Center: *KerrCenter

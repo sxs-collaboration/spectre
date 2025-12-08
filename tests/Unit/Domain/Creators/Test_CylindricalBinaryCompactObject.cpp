@@ -258,10 +258,12 @@ std::string create_option_string(
                              "    SkewMap: None\n"
                              "    ShapeMapA:\n"
                              "      LMax: 8\n"
+                             "      CoefficientTruncationLimit: 0.\n"
                              "      InitialValues: Spherical\n"
                              "      SizeInitialValues: [1.1, 0.0, 0.0]\n"
                              "    ShapeMapB:\n"
                              "      LMax: 8\n"
+                             "      CoefficientTruncationLimit: 0.\n"
                              "      InitialValues: Spherical\n"
                              "      SizeInitialValues: [1.2, 0.0, 0.0]\n")
                           : "  TimeDependentMaps: None\n"};

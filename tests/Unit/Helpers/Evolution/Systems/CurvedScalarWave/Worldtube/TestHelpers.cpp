@@ -78,11 +78,13 @@ std::unique_ptr<DomainCreator<3>> worldtube_binary_compact_object(
       "    SkewMap: None\n"
       "    ShapeMapA:\n"
       "      LMax: 2\n"
+      "      CoefficientTruncationLimit: 0.\n"
       "      InitialValues: Spherical\n"
       "      SizeInitialValues: [0.0, 0.0, 0.0]\n"
       "      TransitionEndsAtCube: false\n"
       "    ShapeMapB:\n"
       "      LMax: 2\n"
+      "      CoefficientTruncationLimit: 0.\n"
       "      InitialValues: Spherical\n"
       "      SizeInitialValues: [0.0, 0.0, 0.0]\n"
       "      TransitionEndsAtCube: false\n";

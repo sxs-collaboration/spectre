@@ -82,11 +82,13 @@ DomainCreator:
         InitialValuesY: [-0.4, 0.0, 0.0]
         InitialValuesZ: [-0.4, 0.0, 0.0]
       ShapeMapA:
+        CoefficientTruncationLimit: 0.
         LMax: 8
         InitialValues: Spherical
         SizeInitialValues: [0.0, 0.0, 0.0]
         TransitionEndsAtCube: true
       ShapeMapB:
+        CoefficientTruncationLimit: 0.
         LMax: 8
         InitialValues: Spherical
         SizeInitialValues: [0.0, 0.0, 0.0]
