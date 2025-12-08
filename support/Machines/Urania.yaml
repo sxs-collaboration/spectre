@@ -9,3 +9,4 @@ Machine:
   DefaultQueue: "p.urania"
   DefaultTimeLimit: "1-00:00:00"
   LaunchCommandSingleNode: ["srun", "-n", "1"]
+  LaunchCommandLoginNode: []

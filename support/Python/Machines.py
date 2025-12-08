@@ -57,6 +57,9 @@ class Machine(yaml.YAMLObject):
         to launch an executable in scheduled jobs, which can be found in the
         submit script instead. This is also not used on non-compute (login)
         nodes.
+      LaunchCommandLoginNode: Command to launch an executable on a the
+        login node. This is the counterpart to `LaunchCommandSingleNode` which
+        is to be used as a prefix for commands run on non-compute (login) nodes.
     """
 
     yaml_tag = "!Machine"
@@ -69,6 +72,7 @@ class Machine(yaml.YAMLObject):
     DefaultQueue: str
     DefaultTimeLimit: str
     LaunchCommandSingleNode: List[str]
+    LaunchCommandLoginNode: List[str]
 
     def on_compute_node(self) -> bool:
         """Determines whether or not we are running on a compute node."""
@@ -83,7 +87,7 @@ class Machine(yaml.YAMLObject):
         if self.on_compute_node():
             return self.LaunchCommandSingleNode
         else:
-            return []
+            return self.LaunchCommandLoginNode
 
 
 # Parse YAML machine files as Machine objects
