@@ -5,6 +5,7 @@ set(LIBRARY "Test_Ccz4")
 
 set(LIBRARY_SOURCES
   BoundaryConditions/Test_DirichletAnalytic.cpp
+  BoundaryConditions/Test_Sommerfeld.cpp
   FiniteDifference/Test_ApplyFilter.cpp
   FiniteDifference/Test_BoundaryConditionGhostData.cpp
   FiniteDifference/Test_Derivatives.cpp

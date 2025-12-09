@@ -33,6 +33,7 @@
 #include "Evolution/Systems/Ccz4/BoundaryConditions/BoundaryCondition.hpp"
 #include "Evolution/Systems/Ccz4/BoundaryConditions/DirichletAnalytic.hpp"
 #include "Evolution/Systems/Ccz4/BoundaryConditions/Factory.hpp"
+#include "Evolution/Systems/Ccz4/BoundaryConditions/Sommerfeld.hpp"
 #include "Evolution/Systems/Ccz4/FiniteDifference/BoundaryConditionGhostData.hpp"
 #include "Evolution/Systems/Ccz4/FiniteDifference/DummyReconstructor.hpp"
 #include "Evolution/Systems/Ccz4/FiniteDifference/System.hpp"
@@ -70,6 +71,32 @@ struct EvolutionMetaVars {
 
 using SolutionForTest = Solutions::Ccz4WrappedGr<gr::Solutions::Minkowski<3>>;
 
+using Vars = Variables<Ccz4::fd::Tags::spacetime_reconstruction_tags>;
+Vars set_polynomial(const tnsr::I<DataVector, 3, Frame::Inertial>& coords,
+                    const size_t max_degree) {
+  DataVector result_vector{get<0>(coords).size(), 0.0};
+  for (size_t degree_x = 0; degree_x <= max_degree; ++degree_x) {
+    for (size_t degree_y = 0; degree_y <= max_degree - degree_x; ++degree_y) {
+      for (size_t degree_z = 0; degree_z <= max_degree - degree_x - degree_y;
+           ++degree_z) {
+        result_vector += pow(get<0>(coords), degree_x) *
+                         pow(get<1>(coords), degree_y) *
+                         pow(get<2>(coords), degree_z);
+      }
+    }
+  }
+  Vars vars{get<0>(coords).size()};
+
+  tmpl::for_each<Ccz4::fd::System::variables_tag_list>(
+      [&]<typename Tag>(tmpl::type_<Tag> /*meta*/) {
+        for (auto& component : get<Tag>(vars)) {
+          component = result_vector;
+        }
+      });
+
+  return vars;
+}
+
 template <typename BoundaryConditionType>
 void test(const BoundaryConditionType& boundary_condition,
           const SolutionForTest& solution) {
@@ -97,7 +124,6 @@ void test(const BoundaryConditionType& boundary_condition,
                         Spectral::Quadrature::GaussLobatto};
   const Mesh<3> subcell_mesh = evolution::dg::subcell::fd::mesh(dg_mesh);
 
-  // use MC reconstruction for test
   using ReconstructorForTest = DummyReconstructor;
   const size_t ghost_zone_size{ReconstructorForTest{}.ghost_zone_size()};
 
@@ -108,6 +134,7 @@ void test(const BoundaryConditionType& boundary_condition,
   //  - element map
   //  - coordinate map
   //  - subcell logical coordinates
+  // -----------------------------------------
 
   const double time{0.5};
 
@@ -130,7 +157,34 @@ void test(const BoundaryConditionType& boundary_condition,
   typename evolution::dg::subcell::Tags::GhostDataForReconstruction<3>::type
       ghost_data{};
 
+  const auto direction = Direction<3>::upper_xi();
+
+  const auto ghost_logical_coords =
+      evolution::dg::subcell::fd::ghost_zone_logical_coordinates(
+          subcell_mesh, ghost_zone_size, direction);
+
+  const auto ghost_inertial_coords = (*grid_to_inertial_map)(
+      logical_to_grid_map(ghost_logical_coords), time, functions_of_time);
+
+  const auto interior_inertial_coords = (*grid_to_inertial_map)(
+      logical_to_grid_map(subcell_logical_coords), time, functions_of_time);
+
+  // interior evolved variables for extrapolating into the ghost zone of
+  // external boundary to compute derivatives for the Sommerfeld BC
+  const Vars interior_evolved_vars =
+      set_polynomial(interior_inertial_coords, 1);
+
+  auto& [conformal_metric, conformal_factor, a_tilde, trace_extrinsic_curvature,
+         theta, gamma_hat, lapse, shift, auxiliary_shift_b] =
+      interior_evolved_vars;
+
   auto box = db::create<db::AddSimpleTags<
+      Ccz4::Tags::ConformalMetric<DataVector, 3>, gr::Tags::Lapse<DataVector>,
+      gr::Tags::Shift<DataVector, 3>, Ccz4::Tags::ConformalFactor<DataVector>,
+      Ccz4::Tags::ATilde<DataVector, 3>,
+      gr::Tags::TraceExtrinsicCurvature<DataVector>,
+      Ccz4::Tags::Theta<DataVector>, Ccz4::Tags::GammaHat<DataVector, 3>,
+      Ccz4::Tags::AuxiliaryShiftB<DataVector, 3>,
       Parallel::Tags::MetavariablesImpl<EvolutionMetaVars>,
       domain::Tags::Domain<3>, domain::Tags::ExternalBoundaryConditions<3>,
       evolution::dg::subcell::Tags::Mesh<3>,
@@ -141,6 +195,8 @@ void test(const BoundaryConditionType& boundary_condition,
       domain::Tags::ElementMap<3, Frame::Grid>,
       domain::CoordinateMaps::Tags::CoordinateMap<3, Frame::Grid,
                                                   Frame::Inertial>>>(
+      conformal_metric, lapse, shift, conformal_factor, a_tilde,
+      trace_extrinsic_curvature, theta, gamma_hat, auxiliary_shift_b,
       EvolutionMetaVars{}, std::move(domain), std::move(boundary_conditions),
       subcell_mesh, subcell_logical_coords, ghost_data,
       std::unique_ptr<Ccz4::fd::Reconstructor>{
@@ -156,7 +212,6 @@ void test(const BoundaryConditionType& boundary_condition,
   // compute FD ghost data and retrieve the result
   fd::BoundaryConditionGhostData::apply(make_not_null(&box), element,
                                         ReconstructorForTest{});
-  const auto direction = Direction<3>::upper_xi();
   const DirectionalId<3> mortar_id = {direction,
                                       ElementId<3>::external_boundary_id()};
   const DataVector& fd_ghost_data =
@@ -164,28 +219,21 @@ void test(const BoundaryConditionType& boundary_condition,
           .at(mortar_id)
           .neighbor_ghost_data_for_reconstruction();
 
+  const size_t num_face_pts{
+      subcell_mesh.extents().slice_away(direction.dimension()).product()};
+  Variables<System::variables_tag_list> ghost_zone_vars{num_face_pts *
+                                                        ghost_zone_size};
+
+  std::copy(fd_ghost_data.begin(),
+            std::next(fd_ghost_data.begin(),
+                      static_cast<std::ptrdiff_t>(ghost_zone_vars.size())),
+            ghost_zone_vars.data());
+
   // now check values for each types of boundary conditions
   if (typeid(BoundaryConditionType) ==
       typeid(Ccz4::BoundaryConditions::DirichletAnalytic)) {
-    const size_t num_face_pts{
-        subcell_mesh.extents().slice_away(direction.dimension()).product()};
-    Variables<System::variables_tag_list> ghost_zone_vars{num_face_pts *
-                                                          ghost_zone_size};
-    std::copy(fd_ghost_data.begin(),
-              std::next(fd_ghost_data.begin(),
-                        static_cast<std::ptrdiff_t>(ghost_zone_vars.size())),
-              ghost_zone_vars.data());
-
-    const auto ghost_logical_coords =
-        evolution::dg::subcell::fd::ghost_zone_logical_coordinates(
-            subcell_mesh, ghost_zone_size, direction);
-
-    const auto ghost_inertial_coords = (*grid_to_inertial_map)(
-        logical_to_grid_map(ghost_logical_coords), time, functions_of_time);
-
     const auto& expected_ghost_vars = solution.variables(
         ghost_inertial_coords, time, typename System::variables_tag_list{});
-
     tmpl::for_each<System::variables_tag_list>([&]<typename Tag>(
                                                    tmpl::type_<Tag> /*meta*/) {
       const std::string tag_name = db::tag_name<Tag>();
@@ -193,6 +241,25 @@ void test(const BoundaryConditionType& boundary_condition,
       CAPTURE(ghost_inertial_coords);
       CHECK(tuples::get<Tag>(expected_ghost_vars) == get<Tag>(ghost_zone_vars));
     });
+
+  } else if (typeid(BoundaryConditionType) ==
+             typeid(Ccz4::BoundaryConditions::Sommerfeld)) {
+    const auto expected_ghost_vars = set_polynomial(ghost_inertial_coords, 1);
+    tmpl::for_each<Ccz4::fd::System::variables_tag_list>(
+        [&]<typename Tag>(tmpl::type_<Tag> /*meta*/) {
+          const std::string tag_name = db::tag_name<Tag>();
+          CAPTURE(tag_name);
+          for (auto expected_component = get<Tag>(expected_ghost_vars).cbegin(),
+                    component = get<Tag>(ghost_zone_vars).cbegin();
+               expected_component != get<Tag>(expected_ghost_vars).cend() and
+               component != get<Tag>(ghost_zone_vars).cend();
+               ++expected_component, ++component) {
+            CHECK_ITERABLE_APPROX(*component, *expected_component);
+          }
+        });
+
+  } else {
+    FAIL("Boundary condition type not handled in test");
   }
 }
 
@@ -200,6 +267,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Ccz4.Fd.BCondGhostData",
                   "[Unit][Evolution]") {
   const SolutionForTest solution{};
 
+  // test DirichletAnalytic BC
   test(TestHelpers::test_creation<Ccz4::BoundaryConditions::DirichletAnalytic,
                                   EvolutionMetaVars>("AnalyticPrescription:\n"
                                                      "  Ccz4(Minkowski)\n"),
@@ -207,6 +275,9 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Ccz4.Fd.BCondGhostData",
   test(Ccz4::BoundaryConditions::DirichletAnalytic{std::make_unique<
            Ccz4::Solutions::Ccz4WrappedGr<gr::Solutions::Minkowski<3>>>()},
        solution);
+
+  // test Sommerfeld BC; solution is unused
+  // test(Ccz4::BoundaryConditions::Sommerfeld{}, solution);
 
   // check that the periodic BC fails
 #ifdef SPECTRE_DEBUG
