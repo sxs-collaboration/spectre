@@ -78,11 +78,11 @@ bool minmod_limited_slopes(
 
     if (not u_needs_limiting) {
       // Skip the limiting step for this tensor component
-#ifdef SPECTRE_DEBUG
+#ifdef SPECTRE_NAN_INIT
       *u_mean = std::numeric_limits<double>::signaling_NaN();
       *u_limited_slopes =
           make_array<VolumeDim>(std::numeric_limits<double>::signaling_NaN());
-#endif  // ifdef SPECTRE_DEBUG
+#endif  // ifdef SPECTRE_NAN_INIT
       return false;
     }
   }  // end if LambdaPiN
@@ -162,7 +162,7 @@ bool minmod_limited_slopes(
     }
   }
 
-#ifdef SPECTRE_DEBUG
+#ifdef SPECTRE_NAN_INIT
   // Guard against incorrect use of returned (by reference) slopes in a
   // LambdaPiN limiter, by setting these to NaN when they should not be used.
   if (minmod_type == Limiters::MinmodType::LambdaPiN and
@@ -171,7 +171,7 @@ bool minmod_limited_slopes(
     *u_limited_slopes =
         make_array<VolumeDim>(std::numeric_limits<double>::signaling_NaN());
   }
-#endif  // ifdef SPECTRE_DEBUG
+#endif  // ifdef SPECTRE_NAN_INIT
 
   return slopes_need_reducing;
 }

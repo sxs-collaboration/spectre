@@ -130,9 +130,9 @@ constexpr size_t default_vector_impl_static_size = 0;
  *  vector types in math expressions.
  *
  * \note
- * - If either `SPECTRE_DEBUG` or `SPECTRE_NAN_INIT` are defined, then the
- *   `VectorImpl` is default initialized to `signaling_NaN()`. Otherwise, the
- *   vector is filled with uninitialized memory for performance.
+ * - If `SPECTRE_NAN_INIT` is defined, then the `VectorImpl` is default
+ *   initialized to `signaling_NaN()`. Otherwise, the vector is filled with
+ *   uninitialized memory for performance.
  */
 template <typename T, typename VectorType,
           size_t StaticSize = default_vector_impl_static_size>
@@ -184,10 +184,10 @@ class VectorImpl
   explicit VectorImpl(size_t set_size)
       : owned_data_(heap_alloc_if_necessary(set_size)) {
     reset_pointer_vector(set_size);
-#if defined(SPECTRE_DEBUG) || defined(SPECTRE_NAN_INIT)
+#if defined(SPECTRE_NAN_INIT)
     std::fill(data(), data() + set_size,
               std::numeric_limits<value_type>::signaling_NaN());
-#endif  // SPECTRE_DEBUG
+#endif  // SPECTRE_NAN_INIT
   }
 
   /// Create with the given size and value.

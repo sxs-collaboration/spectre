@@ -27,6 +27,14 @@ if(${SPECTRE_DEBUG})
     APPEND PROPERTY INTERFACE_COMPILE_DEFINITIONS SPECTRE_DEBUG)
 endif()
 
+option(SPECTRE_NAN_INIT "Initialize memory to NaN is various places"
+  ${SPECTRE_DEBUG})
+
+if(${SPECTRE_NAN_INIT})
+  set_property(TARGET SpectreFlags
+    APPEND PROPERTY INTERFACE_COMPILE_DEFINITIONS SPECTRE_NAN_INIT)
+endif()
+
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DSPECTRE_DEBUG")
 
 if(${SPECTRE_OPTIMIZE_SIZE})
@@ -176,3 +184,9 @@ else()
     SpectreFpExceptions
     )
 endif()
+
+file(APPEND
+  "${CMAKE_BINARY_DIR}/BuildInfo.txt"
+  "SPECTRE_DEBUG: ${SPECTRE_DEBUG}\n"
+  "SPECTRE_NAN_INIT: ${SPECTRE_NAN_INIT}\n"
+  )

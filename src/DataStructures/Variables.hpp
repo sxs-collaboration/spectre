@@ -84,8 +84,8 @@ class Variables;
  * performing one memory allocation for all the `Tensor`s. The advantage is that
  * memory allocations are quite expensive, especially in a parallel environment.
  *
- * In Debug mode, or if the macro `SPECTRE_NAN_INIT` is defined, the contents
- * are initialized with `NaN`s.
+ * If the macro `SPECTRE_NAN_INIT` is defined, the contents are
+ * initialized with `NaN`s.
  *
  * `Variables` stores the data it owns in a `std::unique_ptr<double[]>`
  * instead of a `std::vector` because `std::vector` value-initializes its
@@ -678,10 +678,10 @@ void Variables<tmpl::list<Tags...>>::initialize(
           cpp20::make_unique_for_overwrite<value_type[]>(size_);
     }
     add_reference_variable_data();
-#if defined(SPECTRE_DEBUG) || defined(SPECTRE_NAN_INIT)
+#if defined(SPECTRE_NAN_INIT)
     std::fill(variable_data_.data(), variable_data_.data() + size_,
               make_signaling_NaN<value_type>());
-#endif  // SPECTRE_DEBUG
+#endif  // SPECTRE_NAN_INIT
   }
 }
 

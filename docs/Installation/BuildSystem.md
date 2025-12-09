@@ -194,6 +194,10 @@ alphabetical order):
     and compiler optimizations. You cannot disable the checks in Debug builds,
     so this option has no effect in Debug builds.
     (default is `OFF` in release)
+- SPECTRE_NAN_INIT
+  - Defines `SPECTRE_NAN_INIT` macro to initialize memory to NaN in various
+    places to catch use of uninitialized values.
+    (default is the value of `SPECTRE_DEBUG`, or `ON` in Debug builds)
 - SPECTRE_OPTIMIZE_SIZE
   - Optimize for executable size instead of speed (adds the `-Oz` compiler
     flag). The default is `OFF`, unless on Apple Silicon machines, where the
