@@ -93,8 +93,8 @@ void test_filter_vs_transforms(const size_t ell_max,
   } else {
     ylm::TensorYlm::fill_cart_to_sphere<typename TensorType::structure>(
         make_not_null(&cart_to_sphere), ell_max);
-    cart_to_sphere.increment_multiply_on_right(make_not_null(&b_span), 0,
-                                               a_span, 0);
+    cart_to_sphere.increment_multiply_on_right(make_not_null(&b_span), 0, 1,
+                                               a_span, 0, 1);
   }
 
   // Apply the filter to B.
@@ -134,8 +134,8 @@ void test_filter_vs_transforms(const size_t ell_max,
   } else {
     ylm::TensorYlm::fill_sphere_to_cart<typename TensorType::structure>(
         make_not_null(&sphere_to_cart), ell_max);
-    sphere_to_cart.increment_multiply_on_right(make_not_null(&c_span), 0,
-                                               b_span, 0);
+    sphere_to_cart.increment_multiply_on_right(make_not_null(&c_span), 0, 1,
+                                               b_span, 0, 1);
   }
 
   // Apply the filter to A directly, output into D.
@@ -147,8 +147,8 @@ void test_filter_vs_transforms(const size_t ell_max,
   ylm::TensorYlm::fill_filter<typename TensorType::structure>(
       make_not_null(&filter_matrix), ell_max, number_of_ell_modes_to_kill,
       half_power);
-  filter_matrix.increment_multiply_on_right(make_not_null(&d_span), 0, a_span,
-                                            0);
+  filter_matrix.increment_multiply_on_right(make_not_null(&d_span), 0, 1,
+                                            a_span, 0, 1);
 
   // C should equal D.
   const auto& d_vector = get<MyTag<TensorType>>(D);
