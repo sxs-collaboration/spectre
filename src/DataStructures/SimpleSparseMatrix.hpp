@@ -64,9 +64,12 @@ class SimpleSparseMatrix {
   /// to access b[i] for b_offset <= i <= b_offset+max(column_indices).
   /// Assumes a points into contiguous storage that allows one
   /// to access a[i] for a_offset <= a <= a_offset+max(row_indices).
+  ///
+  /// Both source and destination are allowed to have a stride.
   template <typename T>
   void increment_multiply_on_right(gsl::not_null<T*> a, size_t a_offset,
-                                   const T& b, size_t b_offset) const;
+                                   size_t a_stride, const T& b, size_t b_offset,
+                                   size_t b_stride) const;
 
   /// Number of nonzero elements.
   size_t size() const { return matrix_elements_.size(); }

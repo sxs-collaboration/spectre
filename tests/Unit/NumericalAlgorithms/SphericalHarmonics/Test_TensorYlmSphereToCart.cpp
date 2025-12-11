@@ -84,16 +84,16 @@ void test_inverse(const size_t ell_max) {
   SimpleSparseMatrix cart_to_sphere;
   ylm::TensorYlm::fill_cart_to_sphere<typename TensorType::structure>(
       make_not_null(&cart_to_sphere), ell_max);
-  cart_to_sphere.increment_multiply_on_right(make_not_null(&b_span), 0, a_span,
-                                             0);
+  cart_to_sphere.increment_multiply_on_right(make_not_null(&b_span), 0, 1,
+                                             a_span, 0, 1);
 
   // Convert B to C
   gsl::span<double> c_span(C.data(), C.size());
   SimpleSparseMatrix sphere_to_cart;
   ylm::TensorYlm::fill_sphere_to_cart<typename TensorType::structure>(
       make_not_null(&sphere_to_cart), ell_max);
-  sphere_to_cart.increment_multiply_on_right(make_not_null(&c_span), 0, b_span,
-                                             0);
+  sphere_to_cart.increment_multiply_on_right(make_not_null(&c_span), 0, 1,
+                                             b_span, 0, 1);
   // C should equal A.
   const auto& a_vector = get<MyTag<TensorType>>(A);
   const auto& c_vector = get<MyTag<TensorType>>(C);

@@ -93,8 +93,8 @@ void SimpleSparseMatrix::fill(const std::vector<SparseMatrixElement>& data) {
 
 template <typename T>
 void SimpleSparseMatrix::increment_multiply_on_right(
-    const gsl::not_null<T*> a, const size_t a_offset, const T& b,
-    const size_t b_offset) const {
+    const gsl::not_null<T*> a, const size_t a_offset, const size_t a_stride,
+    const T& b, const size_t b_offset, const size_t b_stride) const {
   if (matrix_elements_.empty()) {
     // Nothing to do
     return;
@@ -128,11 +128,11 @@ void SimpleSparseMatrix::increment_multiply_on_right(
     std::advance(num_inner, 1);
     double sum = 0.0;
     while (num_comps_b-- > 0) {
-      sum += *mat * b[b_offset + *src_ind];
+      sum += *mat * b[b_offset + (*src_ind) * b_stride];
       std::advance(mat, 1);
       std::advance(src_ind, 1);
     }
-    (*a)[a_offset + *dest_ind] += sum;
+    (*a)[a_offset + (*dest_ind) * a_stride] += sum;
     std::advance(dest_ind, 1);
   }
 }
@@ -140,7 +140,9 @@ void SimpleSparseMatrix::increment_multiply_on_right(
 // Explicit instantiations
 template void SimpleSparseMatrix::increment_multiply_on_right(
     const gsl::not_null<std::vector<double>*> a, const size_t a_offset,
-    const std::vector<double>& b, const size_t b_offset) const;
+    const size_t a_stride, const std::vector<double>& b, const size_t b_offset,
+    const size_t b_stride) const;
 template void SimpleSparseMatrix::increment_multiply_on_right(
     const gsl::not_null<gsl::span<double>*> a, const size_t a_offset,
-    const gsl::span<double>& b, const size_t b_offset) const;
+    const size_t a_stride, const gsl::span<double>& b, const size_t b_offset,
+    const size_t b_stride) const;
