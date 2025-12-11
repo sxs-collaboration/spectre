@@ -24,7 +24,7 @@ namespace {
 SPECTRE_TEST_CASE("Unit.Evolution.Systems.Ccz4.Fd.GhostData",
                   "[Unit][Evolution]") {
   MAKE_GENERATOR(gen);
-  std::uniform_real_distribution<> dist(-1.0, 1.0);
+  const std::uniform_real_distribution<> dist(-1.0, 1.0);
 
   const size_t points_per_dimension = 5;
   const Mesh<3> subcell_mesh{points_per_dimension,
