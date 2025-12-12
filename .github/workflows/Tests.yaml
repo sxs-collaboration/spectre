@@ -506,6 +506,7 @@ jobs:
             install: ON
           # Test compiling with nvcc and CUDA
           - compiler: nvcc-12-6
+            SPECTRE_AUTODIFF: OFF
             CUDA: ON
             KOKKOS: ON
             # Compile for NVIDIA Ampere architecture. Can't run this on
@@ -726,6 +727,7 @@ ${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
           COVERAGE=${{ matrix.COVERAGE }}
           TEST_TIMEOUT_FACTOR=${{ matrix.TEST_TIMEOUT_FACTOR }}
           INPUT_FILE_MIN_PRIO=${{ matrix.input_file_tests_min_priority }}
+          SPECTRE_AUTODIFF=${{ matrix.SPECTRE_AUTODIFF }}
 
           cmake --version
 
@@ -764,7 +766,7 @@ ${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
           -D SPECTRE_PYTHON_TEST_TIMEOUT_FACTOR=${TEST_TIMEOUT_FACTOR:-'1'}
           -D CMAKE_INSTALL_PREFIX=/work/spectre_install
           -D BUILD_DOCS=OFF
-          -D SPECTRE_AUTODIFF=ON
+          -D SPECTRE_AUTODIFF=${SPECTRE_AUTODIFF:-'ON'}
           -D SPECTRE_FETCH_MISSING_DEPS=ON
           --warn-uninitialized
           $GITHUB_WORKSPACE 2>&1 | tee CMakeOutput.txt 2>&1
