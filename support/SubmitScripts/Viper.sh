@@ -29,8 +29,9 @@ spectre_load_modules
 {% endblock %}
 
 {% block run_command %}
-srun -n ${SLURM_NTASKS} ${SPECTRE_EXECUTABLE} \
-    --input-file ${SPECTRE_INPUT_FILE} \
+srun -n ${SLURM_NTASKS} \
+    ${SPECTRE_PROFILING_PREFIX} \
+    ${SPECTRE_EXECUTABLE} --input-file ${SPECTRE_INPUT_FILE} \
     ++ppn ${CHARM_PPN} +pemap 0-62,64-126 +commap 63,127 \
     ${SPECTRE_CHECKPOINT:+ +restart "${SPECTRE_CHECKPOINT}"}
 {% endblock %}

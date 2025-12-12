@@ -26,6 +26,7 @@
 
 {% block run_command %}
 mpirun -n ${SLURM_NTASKS} \
+  ${SPECTRE_PROFILING_PREFIX} \
   ${SPECTRE_EXECUTABLE} --input-file ${SPECTRE_INPUT_FILE} \
   ++ppn ${CHARM_PPN} +setcpuaffinity +no_isomalloc_sync \
   ${SPECTRE_CHECKPOINT:+ +restart "${SPECTRE_CHECKPOINT}"}
