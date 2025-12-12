@@ -52,9 +52,10 @@ void bind_shape_map_impl(py::module& m) {
                            KerrSchildFromBoyerLindquist,
                        domain::creators::time_dependent_options::YlmsFromFile,
                        domain::creators::time_dependent_options::YlmsFromSpEC>>,
-                   std::optional<std::array<double, 3>>, bool>(),
+                   std::optional<std::array<double, 3>>, double, bool>(),
           py::arg("l_max"), py::arg("initial_values"),
           py::arg("initial_size_values") = std::nullopt,
+          py::arg("coefficient_truncation_limit") = 0.0,
           py::arg("transition_ends_at_cube") = true);
 }
 }  // namespace

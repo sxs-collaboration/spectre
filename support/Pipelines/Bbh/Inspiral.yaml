@@ -148,11 +148,13 @@ DomainCreator:
         H5Filename: "{{ FotFilename }}"
         SubfileName: "{{ IdSubfile }}"
       ShapeMapA:
+        CoefficientTruncationLimit: 1e-16
         H5Filename: "{{ FotFilename }}"
         SubfileName: "{{ IdSubfile }}"
         LMax: Auto
         TransitionEndsAtCube: True
       ShapeMapB:
+        CoefficientTruncationLimit: 1e-16
         H5Filename: "{{ FotFilename }}"
         SubfileName: "{{ IdSubfile }}"
         LMax: Auto
@@ -174,6 +176,7 @@ DomainCreator:
         InitialValuesZ: [0.0, 0.0, 0.0]
       ShapeMapA:
         LMax: &ShapeLMax 10
+        CoefficientTruncationLimit: 1e-16
   {% if SpecDataDirectory is defined %}
         InitialValues: Spherical
   {% else %}
@@ -188,6 +191,7 @@ DomainCreator:
         TransitionEndsAtCube: true
       ShapeMapB:
         LMax: *ShapeLMax
+        CoefficientTruncationLimit: 1e-16
   {% if SpecDataDirectory is defined %}
         InitialValues: Spherical
   {% else %}

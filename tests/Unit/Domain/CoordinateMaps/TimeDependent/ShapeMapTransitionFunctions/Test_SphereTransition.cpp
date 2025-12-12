@@ -47,10 +47,10 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Shape.SphereTransition",
     sphere_transition_interior =
         serialize_and_deserialize(sphere_transition_interior);
     const domain::CoordinateMaps::TimeDependent::Shape shape_map{
-        std::array{0.0, 0.0, 0.0}, l_max, l_max,
+        std::array{0.0, 0.0, 0.0}, 0.0,
         std::make_unique<SphereTransition>(sphere_transition), "Shape"};
     const domain::CoordinateMaps::TimeDependent::Shape shape_map_interior{
-        std::array{0.0, 0.0, 0.0}, l_max, l_max,
+        std::array{0.0, 0.0, 0.0}, 0.0,
         std::make_unique<SphereTransition>(sphere_transition_interior),
         "Shape"};
 
@@ -91,7 +91,7 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Shape.SphereTransition",
     sphere_transition = serialize_and_deserialize(sphere_transition);
 
     const domain::CoordinateMaps::TimeDependent::Shape shape_map{
-        std::array{0.0, 0.0, 0.0}, 4, 4,
+        std::array{0.0, 0.0, 0.0}, 0.0,
         std::make_unique<SphereTransition>(sphere_transition), "Shape"};
 
     const std::vector<double> function_values{0.0, 0.0, 0.5 / 3.0, 0.25, 0.25};

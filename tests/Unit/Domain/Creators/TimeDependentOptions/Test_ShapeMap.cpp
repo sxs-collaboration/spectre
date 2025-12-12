@@ -84,6 +84,7 @@ void test_funcs(const gsl::not_null<Generator*> generator) {
     const auto shape_map_options = TestHelpers::test_option_tag<
         ShapeMapOptions<false, domain::ObjectLabel::None>>(
         "LMax: 8\n"
+        "CoefficientTruncationLimit: 0.0\n"
         "InitialValues: Spherical\n"
         "SizeInitialValues: Auto\n");
 
@@ -111,6 +112,7 @@ void test_funcs(const gsl::not_null<Generator*> generator) {
         domain::creators::time_dependent_options::ShapeMapOptions<
             false, domain::ObjectLabel::None>>(
         "LMax: 8\n"
+        "CoefficientTruncationLimit: 0.0\n"
         "InitialValues:\n"
         "  Mass: 1.0\n"
         "  Spin: [0.0, 0.0, 0.0]\n"
@@ -191,6 +193,7 @@ void test_funcs(const gsl::not_null<Generator*> generator) {
           domain::creators::time_dependent_options::ShapeMapOptions<
               true, domain::ObjectLabel::B>>(
           "LMax: 8\n"
+          "CoefficientTruncationLimit: 0.0\n"
           "InitialValues:\n"
           "  H5Filename: TotalEclipseOfTheHeart.h5\n"
           "  SubfileNames:\n"
@@ -262,6 +265,7 @@ void test_funcs(const gsl::not_null<Generator*> generator) {
           domain::creators::time_dependent_options::ShapeMapOptions<
               true, domain::ObjectLabel::B>>(
           "LMax: 8\n"
+          "CoefficientTruncationLimit: 0.0\n"
           "InitialValues:\n"
           "  H5Filename: TotalEclipseOfTheHeart.h5\n"
           "  SubfileNames:\n"
@@ -300,6 +304,7 @@ void test_funcs(const gsl::not_null<Generator*> generator) {
           domain::creators::time_dependent_options::ShapeMapOptions<
               false, domain::ObjectLabel::B>>(
           "LMax: 6\n"
+          "CoefficientTruncationLimit: 0.0\n"
           "TransitionEndsAtCube: false\n"
           "H5Filename: TotalEclipseOfTheHeart.h5\n"
           "SubfileName: VolumeData\n");
@@ -421,6 +426,7 @@ void test_funcs(const gsl::not_null<Generator*> generator) {
           domain::creators::time_dependent_options::ShapeMapOptions<
               false, domain::ObjectLabel::None>>(
           "LMax: 8\n"
+          "CoefficientTruncationLimit: 0.0\n"
           "InitialValues:\n"
           "  DatFilename: PartialEclipseOfTheHeart.dat\n"
           "  MatchTime: 2.7\n"
@@ -477,6 +483,7 @@ void test_funcs(const gsl::not_null<Generator*> generator) {
           domain::creators::time_dependent_options::ShapeMapOptions<
               false, domain::ObjectLabel::None>>(
           "LMax: 8\n"
+          "CoefficientTruncationLimit: 0.0\n"
           "InitialValues:\n"
           "  DatFilename: PartialEclipseOfTheHeart.dat\n"
           "  MatchTime: 10000.0\n"

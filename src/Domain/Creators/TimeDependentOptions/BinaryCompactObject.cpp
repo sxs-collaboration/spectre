@@ -353,15 +353,16 @@ void TimeDependentMapOptions<IsCylindrical>::build_maps(
     // Store the inner radii for creating functions of time
     gsl::at(deformed_radii_, i) = filled ? radii[1] : radii[0];
 
-    const size_t initial_l_max =
-        i == 0 ? time_dependent_options::l_max_from_shape_options(
-                     shape_options_A_.value())
-               : time_dependent_options::l_max_from_shape_options(
-                     shape_options_B_.value());
-
     std::unique_ptr<domain::CoordinateMaps::ShapeMapTransitionFunctions::
                         ShapeMapTransitionFunction>
         transition_func{};
+    const double coefficient_truncation_limit =
+        i == 0 ? time_dependent_options::
+                     coefficient_truncation_limit_from_shape_options(
+                         shape_options_A_.value())
+               : time_dependent_options::
+                     coefficient_truncation_limit_from_shape_options(
+                         shape_options_B_.value());
 
     // Currently, we don't support different transition functions for the
     // cylindrical domain
@@ -375,12 +376,10 @@ void TimeDependentMapOptions<IsCylindrical>::build_maps(
           std::make_unique<domain::CoordinateMaps::ShapeMapTransitionFunctions::
                                SphereTransition>(radii[0], radii[1]);
 
-      gsl::at(shape_maps_, i) = Shape{gsl::at(object_centers, i),
-                                      initial_l_max,
-                                      initial_l_max,
-                                      std::move(transition_func),
-                                      gsl::at(shape_names, i),
-                                      gsl::at(size_names, i)};
+      gsl::at(shape_maps_, i) =
+          Shape{gsl::at(object_centers, i), coefficient_truncation_limit,
+                std::move(transition_func), gsl::at(shape_names, i),
+                gsl::at(size_names, i)};
 
       transition_func =
           std::make_unique<domain::CoordinateMaps::ShapeMapTransitionFunctions::
@@ -389,11 +388,8 @@ void TimeDependentMapOptions<IsCylindrical>::build_maps(
 
       // Last two are the interior maps
       gsl::at(shape_maps_, shape_maps_.size() - 2 + i) =
-          Shape{gsl::at(object_centers, i),
-                initial_l_max,
-                initial_l_max,
-                std::move(transition_func),
-                gsl::at(shape_names, i),
+          Shape{gsl::at(object_centers, i), coefficient_truncation_limit,
+                std::move(transition_func), gsl::at(shape_names, i),
                 gsl::at(size_names, i)};
     } else {
       // These must match the order of orientations_for_sphere_wrappings() in
@@ -454,12 +450,10 @@ void TimeDependentMapOptions<IsCylindrical>::build_maps(
 
         // The shape map should be given the center of the excision always,
         // regardless of if it is offset or not
-        gsl::at(gsl::at(shape_maps_, i), j) = Shape{inner_center,
-                                                    initial_l_max,
-                                                    initial_l_max,
-                                                    std::move(transition_func),
-                                                    gsl::at(shape_names, i),
-                                                    gsl::at(size_names, i)};
+        gsl::at(gsl::at(shape_maps_, i), j) =
+            Shape{inner_center, coefficient_truncation_limit,
+                  std::move(transition_func), gsl::at(shape_names, i),
+                  gsl::at(size_names, i)};
       }
 
       // Add the interior maps if we are excised (aka not filled)
@@ -469,11 +463,8 @@ void TimeDependentMapOptions<IsCylindrical>::build_maps(
             outer_radius, outer_sphericity, Wedge::Axis::Interior);
 
         gsl::at(gsl::at(shape_maps_, i), gsl::at(shape_maps_, i).size() - 1) =
-            Shape{inner_center,
-                  initial_l_max,
-                  initial_l_max,
-                  std::move(transition_func),
-                  gsl::at(shape_names, i),
+            Shape{inner_center, coefficient_truncation_limit,
+                  std::move(transition_func), gsl::at(shape_names, i),
                   gsl::at(size_names, i)};
       }
     }

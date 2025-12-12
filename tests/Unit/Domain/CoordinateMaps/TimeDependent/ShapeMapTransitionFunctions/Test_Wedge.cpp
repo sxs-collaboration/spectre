@@ -416,7 +416,7 @@ void test_points_shape_map(
       inner_center, inner_radius, inner_sphericity, outer_center, outer_radius,
       outer_sphericity, static_cast<Wedge::Axis>(axis), reverse);
 
-  const TimeDependent::Shape shape{inner_center, l_max, l_max, std::move(wedge),
+  const TimeDependent::Shape shape{inner_center, 0.0, std::move(wedge),
                                    fot_name};
 
   // test_coordinate_map_argument_types creates its own DataVectors and we only

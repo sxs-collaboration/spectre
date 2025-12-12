@@ -51,6 +51,7 @@ DomainCreator:
       InitialTime: *InitialTime
       ShapeMap:
         LMax: &MaximumL {{ ShapeMapLMax }}
+        CoefficientTruncationLimit: 1e-12
         InitialValues:
           H5Filename: "{{ PathToAhCCoefsH5File }}"
           SubfileNames: ["{{ AhCCoefsSubfilePrefix }}AhC_Ylm",

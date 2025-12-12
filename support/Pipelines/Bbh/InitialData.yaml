@@ -148,12 +148,14 @@ DomainCreator:
       SkewMap: None
       ShapeMapA:
         LMax: {{ HorizonLMax }}
+        CoefficientTruncationLimit: 0.
         InitialValues:
           Mass: *mass_right
           Spin: *spin_right
         SizeInitialValues: Auto
         TransitionEndsAtCube: False
       ShapeMapB:
+        CoefficientTruncationLimit: 0.
         LMax: {{ HorizonLMax }}
         InitialValues:
           Mass: *mass_left

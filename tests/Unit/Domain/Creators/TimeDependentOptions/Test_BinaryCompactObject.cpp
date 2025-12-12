@@ -184,7 +184,7 @@ void test(const bool include_expansion, const bool include_rotation,
                                                              size_A_values}
             : time_dependent_options::ShapeMapOptions<not IsCylindrical,
                                                       domain::ObjectLabel::A>{
-                  l_max_A, std::nullopt, size_A_values,
+                  l_max_A, std::nullopt, size_A_values, 0.,
                   transition_ends_at_cube_A};
   }
 
@@ -199,7 +199,7 @@ void test(const bool include_expansion, const bool include_rotation,
                                                              size_B_values}
             : time_dependent_options::ShapeMapOptions<not IsCylindrical,
                                                       domain::ObjectLabel::B>{
-                  l_max_B, std::nullopt, size_B_values,
+                  l_max_B, std::nullopt, size_B_values, 0.,
                   transition_ends_at_cube_B};
   }
 
