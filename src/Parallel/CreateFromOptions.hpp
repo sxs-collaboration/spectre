@@ -3,14 +3,15 @@
 
 #pragma once
 
+#include "Parallel/InitializationTag.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 #include "Utilities/TypeTraits.hpp"
 
 namespace Parallel {
 namespace detail {
-template <typename Metavariables, typename Tag, typename... OptionTags,
-          Requires<Tag::pass_metavariables> = nullptr>
+template <typename Metavariables, templated_initialization_tag Tag,
+          typename... OptionTags>
 typename Tag::type create_initialization_item_from_options(
     const tuples::TaggedTuple<OptionTags...>& options) {
   return tuples::apply<typename Tag::template option_tags<Metavariables>>(
@@ -20,8 +21,8 @@ typename Tag::type create_initialization_item_from_options(
       options);
 }
 
-template <typename Metavariables, typename Tag, typename... OptionTags,
-          Requires<not Tag::pass_metavariables> = nullptr>
+template <typename Metavariables, untemplated_initialization_tag Tag,
+          typename... OptionTags>
 typename Tag::type create_initialization_item_from_options(
     const tuples::TaggedTuple<OptionTags...>& options) {
   return tuples::apply<typename Tag::option_tags>(
@@ -34,7 +35,8 @@ typename Tag::type create_initialization_item_from_options(
 /// \brief Given a list of tags and a tagged tuple containing items
 /// created from input options, return a tagged tuple of items constructed
 /// by calls to create_from_options for each tag in the list.
-template <typename Metavariables, typename... Tags, typename... OptionTags>
+template <typename Metavariables, initialization_tag... Tags,
+          typename... OptionTags>
 tuples::TaggedTuple<Tags...> create_from_options(
     const tuples::TaggedTuple<OptionTags...>& options,
     tmpl::list<Tags...> /*meta*/) {
