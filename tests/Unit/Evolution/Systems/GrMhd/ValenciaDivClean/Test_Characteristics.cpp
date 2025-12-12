@@ -31,8 +31,8 @@ void test_characteristic_speeds(const DataVector& /*used_for_size*/) {
   //  This bound helps to prevent that situation.
   // const double max_value = 1.0 / sqrt(3);
   // pypp::check_with_random_values<7>(
-  //     &grmhd::ValenciaDivClean::characteristic_speeds<3>, "TestFunctions",
-  //     "characteristic_speeds",
+  //     &grmhd::ValenciaDivClean::characteristic_speeds_approximate_mhd<3>,
+  //     "TestFunctions", "characteristic_speeds",
   //     {{{0.0, 1.0},
   //       {-1.0, 1.0},
   //       {-max_value, max_value},
@@ -97,7 +97,7 @@ void test_with_normal_along_coordinate_axes(const DataVector& used_for_size) {
         static_cast<const EquationsOfState::EquationOfState<true, 1>&>(eos);
     Approx custom_approx = Approx::custom().epsilon(1.0e-10);
     CHECK_ITERABLE_CUSTOM_APPROX(
-        grmhd::ValenciaDivClean::characteristic_speeds(
+        grmhd::ValenciaDivClean::characteristic_speeds_approximate_mhd(
             rest_mass_density, electron_fraction, specific_internal_energy,
             specific_enthalpy, spatial_velocity, lorentz_factor, magnetic_field,
             lapse, shift, spatial_metric, normal, eos_base),

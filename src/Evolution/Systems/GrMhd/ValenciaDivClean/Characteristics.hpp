@@ -87,7 +87,7 @@ namespace ValenciaDivClean {
  * Eulerian observer.
  */
 template <size_t ThermodynamicDim>
-std::array<DataVector, 9> characteristic_speeds(
+std::array<DataVector, 9> characteristic_speeds_approximate_mhd(
     const Scalar<DataVector>& rest_mass_density,
     const Scalar<DataVector>& electron_fraction,
     const Scalar<DataVector>& specific_internal_energy,
@@ -102,7 +102,7 @@ std::array<DataVector, 9> characteristic_speeds(
         equation_of_state);
 
 template <size_t ThermodynamicDim>
-void characteristic_speeds(
+void characteristic_speeds_approximate_mhd(
     gsl::not_null<std::array<DataVector, 9>*> char_speeds,
     const Scalar<DataVector>& rest_mass_density,
     const Scalar<DataVector>& electron_fraction,

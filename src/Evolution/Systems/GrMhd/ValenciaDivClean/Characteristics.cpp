@@ -18,7 +18,7 @@
 #include "Utilities/Gsl.hpp"
 
 namespace {
-void compute_characteristic_speeds(
+void compute_characteristic_speeds_approximate_mhd(
     const gsl::not_null<std::array<DataVector, 9>*> pchar_speeds,
     const Scalar<DataVector>& lapse, const tnsr::I<DataVector, 3>& shift,
     const tnsr::I<DataVector, 3>& spatial_velocity,
@@ -100,7 +100,7 @@ void compute_characteristic_speeds(
 
 namespace grmhd::ValenciaDivClean {
 template <size_t ThermodynamicDim>
-void characteristic_speeds(
+void characteristic_speeds_approximate_mhd(
     const gsl::not_null<std::array<DataVector, 9>*> char_speeds,
     const Scalar<DataVector>& rest_mass_density,
     const Scalar<DataVector>& electron_fraction,
@@ -201,13 +201,13 @@ void characteristic_speeds(
             rest_mass_density, temperature, electron_fraction));
   }
 
-  compute_characteristic_speeds(char_speeds, lapse, shift, spatial_velocity,
-                                spatial_velocity_squared, sound_speed_squared,
-                                alfven_speed_squared, unit_normal);
+  compute_characteristic_speeds_approximate_mhd(
+      char_speeds, lapse, shift, spatial_velocity, spatial_velocity_squared,
+      sound_speed_squared, alfven_speed_squared, unit_normal);
 }
 
 template <size_t ThermodynamicDim>
-std::array<DataVector, 9> characteristic_speeds(
+std::array<DataVector, 9> characteristic_speeds_approximate_mhd(
     const Scalar<DataVector>& rest_mass_density,
     const Scalar<DataVector>& electron_fraction,
     const Scalar<DataVector>& specific_internal_energy,
@@ -221,18 +221,19 @@ std::array<DataVector, 9> characteristic_speeds(
     const EquationsOfState::EquationOfState<true, ThermodynamicDim>&
         equation_of_state) {
   std::array<DataVector, 9> char_speeds{};
-  characteristic_speeds(make_not_null(&char_speeds), rest_mass_density,
-                        electron_fraction, specific_internal_energy,
-                        specific_enthalpy, spatial_velocity, lorentz_factor,
-                        magnetic_field, lapse, shift, spatial_metric,
-                        unit_normal, equation_of_state);
+  characteristic_speeds_approximate_mhd(
+      make_not_null(&char_speeds), rest_mass_density, electron_fraction,
+      specific_internal_energy, specific_enthalpy, spatial_velocity,
+      lorentz_factor, magnetic_field, lapse, shift, spatial_metric, unit_normal,
+      equation_of_state);
   return char_speeds;
 }
 
 #define GET_DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 
 #define INSTANTIATION(r, data)                                              \
-  template std::array<DataVector, 9> characteristic_speeds<GET_DIM(data)>(  \
+  template std::array<DataVector, 9>                                        \
+  characteristic_speeds_approximate_mhd<GET_DIM(data)>(                     \
       const Scalar<DataVector>& rest_mass_density,                          \
       const Scalar<DataVector>& electron_fraction,                          \
       const Scalar<DataVector>& specific_internal_energy,                   \
@@ -245,7 +246,7 @@ std::array<DataVector, 9> characteristic_speeds(
       const tnsr::i<DataVector, 3>& unit_normal,                            \
       const EquationsOfState::EquationOfState<true, GET_DIM(data)>&         \
           equation_of_state);                                               \
-  template void characteristic_speeds<GET_DIM(data)>(                       \
+  template void characteristic_speeds_approximate_mhd<GET_DIM(data)>(       \
       const gsl::not_null<std::array<DataVector, 9>*> char_speeds,          \
       const Scalar<DataVector>& rest_mass_density,                          \
       const Scalar<DataVector>& electron_fraction,                          \
