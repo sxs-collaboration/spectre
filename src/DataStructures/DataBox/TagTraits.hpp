@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include <concepts>
 #include <type_traits>
 
 /// \cond
@@ -130,4 +131,59 @@ struct is_tag
 /// \brief True if `Tag` is a DataBox tag.
 template <typename Tag>
 constexpr bool is_tag_v = is_tag<Tag>::value;
+
+/*!
+ * \ingroup DataBoxGroup
+ * Concept for a SimpleTag.
+ *
+ * \see is_simple_tag
+ */
+template <typename Tag>
+concept simple_tag = is_simple_tag_v<Tag>;
+
+/*!
+ * \ingroup DataBoxGroup
+ * Concept for a ComputeTag.
+ *
+ * \see is_compute_tag
+ */
+template <typename Tag>
+concept compute_tag = is_compute_tag_v<Tag>;
+
+/*!
+ * \ingroup DataBoxGroup
+ * Concept for a ReferenceTag.
+ *
+ * \see is_reference_tag
+ */
+template <typename Tag>
+concept reference_tag = is_reference_tag_v<Tag>;
+
+/*!
+ * \ingroup DataBoxGroup
+ * Concept for an immutable item tag.
+ *
+ * \see is_immutable_item_tag
+ */
+template <typename Tag>
+concept immutable_item_tag = reference_tag<Tag> or compute_tag<Tag>;
+
+/*!
+ * \ingroup DataBoxGroup
+ * Concept for a mutable item tag.
+ *
+ * \see is_mutable_item_tag
+ */
+template <typename Tag>
+concept mutable_item_tag = simple_tag<Tag>;
+
+/*!
+ * \ingroup DataBoxGroup
+ * Concept for a DataBox tag.
+ *
+ * \see is_tag
+ */
+template <typename Tag>
+concept tag = immutable_item_tag<Tag> or mutable_item_tag<Tag> or
+              std::same_as<Tag, Parallel::Tags::Metavariables>;
 }  // namespace db
