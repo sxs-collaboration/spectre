@@ -26,17 +26,17 @@ void test_smoothstep() {
       DataVector({0., 0., 0.5, 1., 1.}));
   if constexpr (N > 0) {
     INFO("Test smoothstep_deriv");
-    CHECK(smoothstep_deriv<N>(0., 1., 0.) == approx(0.));
-    CHECK(smoothstep_deriv<N>(0., 1., 1.) == approx(0.));
+    CHECK(smoothstep_deriv<N>(0., 2., 0.) == approx(0.));
+    CHECK(smoothstep_deriv<N>(0., 2., 2.) == approx(0.));
     const Approx custom_approx = Approx::custom().epsilon(1e-6).scale(1.0);
-    for (const double x : {-1., 0., 0.5, 1., 2.}) {
+    for (const double x : {-1., 0., 1., 2., 3.}) {
       CAPTURE(x);
       CHECK(numerical_derivative(
                 [](const std::array<double, 1>& x0) {
-                  return smoothstep<N>(0., 1., x0[0]);
+                  return smoothstep<N>(0., 2., x0[0]);
                 },
                 std::array<double, 1>{{x}}, 0,
-                1e-6) == custom_approx(smoothstep_deriv<N>(0., 1., x)));
+                1e-6) == custom_approx(smoothstep_deriv<N>(0., 2., x)));
     }
   }
 }
