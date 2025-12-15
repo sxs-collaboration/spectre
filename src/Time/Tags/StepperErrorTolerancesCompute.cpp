@@ -33,8 +33,8 @@ bool requests_any_tolerances(const StepChooser<StepChooserUse>& step_chooser) {
 }
 }  // namespace
 
-template <>
-void StepperErrorEstimatesEnabledCompute<true>::function(
+namespace StepperErrorEstimatesEnabledCompute_detail {
+void lts_function(
     const gsl::not_null<bool*> error_estimates_enabled,
     const ::EventsAndTriggers& events_and_triggers,
     const std::vector<std::unique_ptr<::StepChooser<StepChooserUse::LtsStep>>>&
@@ -79,10 +79,8 @@ void StepperErrorEstimatesEnabledCompute<true>::function(
   }
 }
 
-template <>
-void StepperErrorEstimatesEnabledCompute<false>::function(
-    const gsl::not_null<bool*> error_estimates_enabled,
-    const ::EventsAndTriggers& events_and_triggers) {
+void gts_function(const gsl::not_null<bool*> error_estimates_enabled,
+                  const ::EventsAndTriggers& events_and_triggers) {
   // In principle the slab size could be changed based on a dense
   // trigger, but it's not clear that there is ever a good reason to
   // do so, and it wouldn't make sense to use error control in that
@@ -106,6 +104,7 @@ void StepperErrorEstimatesEnabledCompute<false>::function(
     }
   });
 }
+}  // namespace StepperErrorEstimatesEnabledCompute_detail
 
 namespace StepperErrorTolerancesCompute_detail {
 namespace {

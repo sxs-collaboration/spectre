@@ -950,7 +950,7 @@ struct GhValenciaDivCleanTemplateBase<
                   evolution::Actions::RunEventsAndTriggers<
                       Triggers::WhenToCheck::AtSlabs>,
                   Actions::ChangeSlabSize, step_actions,
-                  Actions::MutateApply<AdvanceTime>,
+                  Actions::MutateApply<AdvanceTime<>>,
                   PhaseControl::Actions::ExecutePhaseChange>>>,
 
           tmpl::conditional_t<

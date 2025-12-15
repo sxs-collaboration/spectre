@@ -18,7 +18,6 @@
 #include "Time/Slab.hpp"
 #include "Time/Tags/AdaptiveSteppingDiagnostics.hpp"
 #include "Time/Tags/HistoryEvolvedVariables.hpp"
-#include "Time/Tags/StepChoosers.hpp"
 #include "Time/Tags/StepNumberWithinSlab.hpp"
 #include "Time/Tags/Time.hpp"
 #include "Time/Tags/TimeStep.hpp"
@@ -70,13 +69,12 @@ namespace Actions {
 template <typename EvolvedCoordinatesVariablesTag, typename EvolvedSwshTag,
           bool local_time_stepping>
 struct InitializeCharacteristicEvolutionTime {
-  using simple_tags_from_options = tmpl::flatten<tmpl::list<
-      Initialization::Tags::InitialSlabSize<local_time_stepping>,
-      Tags::CceEvolutionPrefix<::Tags::ConcreteTimeStepper<LtsTimeStepper>>,
-      Tags::CceEvolutionPrefix<::Tags::StepChoosers>,
-      ::Initialization::Tags::InitialTimeDelta>>;
+  using simple_tags_from_options =
+      tmpl::list<Initialization::Tags::InitialSlabSize<local_time_stepping>,
+                 ::Initialization::Tags::InitialTimeDelta>;
 
-  using const_global_cache_tags = tmpl::list<>;
+  using const_global_cache_tags = tmpl::list<
+      Tags::CceEvolutionPrefix<::Tags::ConcreteTimeStepper<LtsTimeStepper>>>;
 
   using evolved_swsh_variables_tag = ::Tags::Variables<EvolvedSwshTag>;
   using simple_tags = tmpl::list<
@@ -85,7 +83,9 @@ struct InitializeCharacteristicEvolutionTime {
       ::Tags::AdaptiveSteppingDiagnostics,
       ::Tags::HistoryEvolvedVariables<EvolvedCoordinatesVariablesTag>,
       ::Tags::HistoryEvolvedVariables<evolved_swsh_variables_tag>>;
-  using compute_tags = time_stepper_ref_tags<LtsTimeStepper>;
+  using compute_tags =
+      tmpl::transform<time_stepper_ref_tags<LtsTimeStepper>,
+                      tmpl::bind<Tags::CceEvolutionPrefix, tmpl::_1>>;
 
   template <typename DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
@@ -115,7 +115,9 @@ struct InitializeCharacteristicEvolutionTime {
       initial_time_step = initial_time.slab().duration();
     }
 
-    const auto& time_stepper = db::get<::Tags::TimeStepper<TimeStepper>>(box);
+    const auto& time_stepper =
+        db::get<Tags::CceEvolutionPrefix<::Tags::TimeStepper<TimeStepper>>>(
+            box);
 
     const size_t starting_order =
         visit(

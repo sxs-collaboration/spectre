@@ -30,7 +30,6 @@
 #include "Time/StepChoosers/StepChooser.hpp"
 #include "Time/Tags/AdaptiveSteppingDiagnostics.hpp"
 #include "Time/Tags/HistoryEvolvedVariables.hpp"
-#include "Time/Tags/StepChoosers.hpp"
 #include "Time/Tags/StepNumberWithinSlab.hpp"
 #include "Time/Tags/Time.hpp"
 #include "Time/Tags/TimeStep.hpp"
@@ -107,11 +106,8 @@ template <typename Metavariables, typename TimeStepperBase>
 struct TimeStepping {
   /// Tags for constant items added to the GlobalCache.  These items are
   /// initialized from input file options.
-  using const_global_cache_tags = tmpl::conditional_t<
-      TimeStepperBase::local_time_stepping,
-      tmpl::list<::Tags::ConcreteTimeStepper<TimeStepperBase>,
-                 ::Tags::StepChoosers>,
-      tmpl::list<::Tags::ConcreteTimeStepper<TimeStepperBase>>>;
+  using const_global_cache_tags =
+      tmpl::list<::Tags::ConcreteTimeStepper<TimeStepperBase>>;
 
   /// Tags for mutable items added to the GlobalCache.  These items are
   /// initialized from input file options.

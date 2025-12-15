@@ -71,7 +71,7 @@ void check(std::unique_ptr<TimeStepper> time_stepper,
             db::get<Tags::TimeStepId>(box).substep_time());
       CHECK(db::get<Tags::StepNumberWithinSlab>(box) ==
             step_number_within_slab);
-      db::mutate_apply<AdvanceTime>(make_not_null(&box));
+      db::mutate_apply<AdvanceTime<>>(make_not_null(&box));
     }
     if (current_slab_number ==
         db::get<Tags::AdaptiveSteppingDiagnostics>(box).number_of_slabs) {

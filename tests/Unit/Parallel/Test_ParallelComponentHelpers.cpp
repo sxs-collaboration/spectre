@@ -5,6 +5,7 @@
 
 #include <vector>
 
+#include "DataStructures/DataBox/Tag.hpp"
 #include "Options/ParseOptions.hpp"
 #include "Options/String.hpp"
 #include "Parallel/CreateFromOptions.hpp"
@@ -260,21 +261,21 @@ namespace Initialization {
 struct MetavariablesGreeting {};
 
 namespace Tags {
-struct Yards {
+struct Yards : db::SimpleTag {
   using option_tags = tmpl::list<OptionTags::Yards>;
   using type = double;
 
   static constexpr bool pass_metavariables = false;
   static double create_from_options(const double yards) { return yards; }
 };
-struct Feet {
+struct Feet : db::SimpleTag {
   using option_tags = tmpl::list<OptionTags::Yards>;
   using type = double;
 
   static constexpr bool pass_metavariables = false;
   static double create_from_options(const double yards) { return 3.0 * yards; }
 };
-struct Sides {
+struct Sides : db::SimpleTag {
   using option_tags = tmpl::list<OptionTags::Yards, OptionTags::Dim>;
   using type = std::vector<double>;
 
@@ -284,7 +285,7 @@ struct Sides {
     return std::vector<double>(dim, yards);
   }
 };
-struct FullGreeting {
+struct FullGreeting : db::SimpleTag {
   using type = std::string;
 
   static constexpr bool pass_metavariables = true;

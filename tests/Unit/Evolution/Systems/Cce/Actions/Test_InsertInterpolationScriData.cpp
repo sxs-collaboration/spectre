@@ -155,7 +155,7 @@ struct MockCharacteristicEvolution {
           typename Metavariables::evolved_swsh_tags, false>,
       // advance the time so that the current `TimeStepId` is valid without
       // having to perform self-start.
-      ::Actions::MutateApply<AdvanceTime>,
+      ::Actions::MutateApply<AdvanceTime<Tags::CceEvolutionPrefix>>,
       Actions::InitializeCharacteristicEvolutionScri<
           typename Metavariables::scri_values_to_observe,
           typename Metavariables::cce_boundary_component>,
@@ -186,7 +186,6 @@ struct test_metavariables {
   using evolved_swsh_tags = tmpl::list<Tags::BondiJ>;
   using evolved_swsh_dt_tags = tmpl::list<Tags::BondiH>;
   using cce_step_choosers = tmpl::list<>;
-  static constexpr bool local_time_stepping = false;
   using evolved_coordinates_variables_tag = ::Tags::Variables<
       tmpl::list<Tags::CauchyCartesianCoords, Tags::InertialRetardedTime>>;
   using cce_boundary_communication_tags =
@@ -259,6 +258,7 @@ SPECTRE_TEST_CASE(
     "[Unit][Cce]") {
   register_classes_with_charm<Cce::Solutions::RotatingSchwarzschild>();
   register_classes_with_charm<RotatingSchwarzschildWithNoninertialNews>();
+  register_classes_with_charm<TimeSteppers::AdamsBashforth>();
   using evolution_component = MockCharacteristicEvolution<test_metavariables>;
   using observation_component = MockObserver<test_metavariables>;
   MAKE_GENERATOR(gen);
@@ -279,16 +279,14 @@ SPECTRE_TEST_CASE(
       l_max, extraction_radius, analytic_solution.get_clone()};
   ActionTesting::MockRuntimeSystem<test_metavariables> runner{
       {start_time, false, l_max, l_max, number_of_radial_points,
+       static_cast<std::unique_ptr<LtsTimeStepper>>(
+           std::make_unique<::TimeSteppers::AdamsBashforth>(3)),
        scri_output_density, true}};
   runner.set_phase(Parallel::Phase::Initialization);
   // Serialize and deserialize to get around the lack of implicit copy
   // constructor.
   ActionTesting::emplace_component<evolution_component>(
-      &runner, 0, target_step_size,
-      static_cast<std::unique_ptr<LtsTimeStepper>>(
-          std::make_unique<::TimeSteppers::AdamsBashforth>(3)),
-      make_vector<std::unique_ptr<StepChooser<StepChooserUse::LtsStep>>>(),
-      target_step_size, buffer_size,
+      &runner, 0, target_step_size, target_step_size, buffer_size,
       serialize_and_deserialize(analytic_manager));
   ActionTesting::emplace_component<MockObserver<test_metavariables>>(&runner,
                                                                      0);

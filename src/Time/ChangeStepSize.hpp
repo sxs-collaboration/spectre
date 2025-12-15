@@ -7,12 +7,14 @@
 #include <cmath>
 #include <cstddef>
 #include <optional>
+#include <type_traits>
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "Time/AdaptiveSteppingDiagnostics.hpp"
 #include "Time/ChooseLtsStepSize.hpp"
 #include "Time/Tags/HistoryEvolvedVariables.hpp"
 #include "Time/Tags/MinimumTimeStep.hpp"
+#include "Time/Tags/StepChoosers.hpp"
 #include "Time/Time.hpp"
 #include "Time/TimeStepId.hpp"
 #include "Time/TimeStepRequest.hpp"
@@ -31,7 +33,6 @@ struct DataBox;
 struct FixedLtsRatio;
 template <typename Tag>
 struct Next;
-struct StepChoosers;
 struct TimeStep;
 struct TimeStepId;
 template <typename StepperInterface>
@@ -59,9 +60,12 @@ struct TimeStepper;
 /// indicates that any constructible step chooser may be used. This option is
 /// used when multiple components need to invoke `ChangeStepSize` with step
 /// choosers that may not be compatible with all components.
-template <typename StepChoosersToUse = AllStepChoosers>
+template <typename StepChoosersToUse = AllStepChoosers,
+          template <typename> typename CacheTagPrefix = std::type_identity_t>
 struct ChangeStepSize {
-  using const_global_cache_tags = tmpl::list<Tags::MinimumTimeStep>;
+  using const_global_cache_tags =
+      tmpl::list<CacheTagPrefix<Tags::MinimumTimeStep>,
+                 CacheTagPrefix<Tags::StepChoosers>>;
 
   using return_tags = tmpl::list<Tags::DataBox>;
   using argument_tags = tmpl::list<>;
@@ -74,8 +78,9 @@ struct ChangeStepSize {
     }
 
     const LtsTimeStepper& time_stepper =
-        db::get<Tags::TimeStepper<LtsTimeStepper>>(*box);
-    const auto& step_choosers = db::get<Tags::StepChoosers>(*box);
+        db::get<CacheTagPrefix<Tags::TimeStepper<LtsTimeStepper>>>(*box);
+    const auto& step_choosers =
+        db::get<CacheTagPrefix<Tags::StepChoosers>>(*box);
 
     using history_tags = ::Tags::get_all_history_tags<DbTags>;
     bool can_change_step_size = true;
@@ -125,13 +130,16 @@ struct ChangeStepSize {
     const double desired_step = step_requests.step_size(
         time_step_id.step_time().value(), current_step.value());
 
+    const auto& minimum_time_step =
+        db::get<CacheTagPrefix<::Tags::MinimumTimeStep>>(*box);
+
     // We do this check twice, first on the desired value, and then on
     // the actual chosen value, which is probably slightly smaller.
-    if (std::abs(desired_step) < db::get<::Tags::MinimumTimeStep>(*box)) {
+    if (std::abs(desired_step) < minimum_time_step) {
       ERROR_NO_TRACE(
           "Chosen step size "
           << desired_step << " is smaller than the MinimumTimeStep of "
-          << db::get<::Tags::MinimumTimeStep>(*box)
+          << minimum_time_step
           << ".\n"
              "\n"
              "This can indicate a flaw in the step chooser, the grid, or a "
@@ -150,11 +158,11 @@ struct ChangeStepSize {
       return;
     }
 
-    if (std::abs(new_step.value()) < db::get<::Tags::MinimumTimeStep>(*box)) {
+    if (std::abs(new_step.value()) < minimum_time_step) {
       ERROR_NO_TRACE(
           "Chosen step size after conversion to a fraction of a slab "
           << new_step << " is smaller than the MinimumTimeStep of "
-          << db::get<::Tags::MinimumTimeStep>(*box)
+          << minimum_time_step
           << ".\n"
              "\n"
              "This can indicate a flaw in the step chooser, the grid, or a "

@@ -43,6 +43,7 @@ spectre_target_headers(
   InboxInserters.hpp
   Info.hpp
   InitializationFunctions.hpp
+  InitializationTag.hpp
   Invoke.hpp
   Local.hpp
   Main.hpp

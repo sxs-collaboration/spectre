@@ -5,6 +5,7 @@
 
 #include <array>
 #include <optional>
+#include <type_traits>
 
 #include "Time/Tags/StepperErrorTolerancesCompute.hpp"
 #include "Time/Tags/StepperErrors.hpp"
@@ -44,24 +45,30 @@ class not_null;
 /// \brief Perform variable updates for one substep
 /// @{
 template <typename System, bool LocalTimeStepping,
+          template <typename> typename CacheTagPrefix = std::type_identity_t,
           typename = tmpl::conditional_t<
               tt::is_a_v<tmpl::list, typename System::variables_tag>,
               typename System::variables_tag,
               tmpl::list<typename System::variables_tag>>>
 struct UpdateU;
 
-template <typename System, bool LocalTimeStepping, typename... VariablesTags>
-struct UpdateU<System, LocalTimeStepping, tmpl::list<VariablesTags...>> {
+template <typename System, bool LocalTimeStepping,
+          template <typename> typename CacheTagPrefix,
+          typename... VariablesTags>
+struct UpdateU<System, LocalTimeStepping, CacheTagPrefix,
+               tmpl::list<VariablesTags...>> {
   using simple_tags = tmpl::list<::Tags::StepperErrors<VariablesTags>...>;
-  using compute_tags = tmpl::list<
-      Tags::StepperErrorEstimatesEnabledCompute<LocalTimeStepping>,
-      Tags::StepperErrorTolerancesCompute<VariablesTags, LocalTimeStepping>...>;
+  using compute_tags =
+      tmpl::list<Tags::StepperErrorEstimatesEnabledCompute<LocalTimeStepping,
+                                                           CacheTagPrefix>,
+                 Tags::StepperErrorTolerancesCompute<
+                     VariablesTags, LocalTimeStepping, CacheTagPrefix>...>;
 
   using return_tags =
       tmpl::list<VariablesTags..., Tags::StepperErrors<VariablesTags>...>;
   using argument_tags =
-      tmpl::list<Tags::TimeStepper<TimeStepper>, Tags::TimeStepId,
-                 Tags::Next<Tags::TimeStepId>, Tags::TimeStep,
+      tmpl::list<CacheTagPrefix<Tags::TimeStepper<TimeStepper>>,
+                 Tags::TimeStepId, Tags::Next<Tags::TimeStepId>, Tags::TimeStep,
                  Tags::StepperErrorEstimatesEnabled,
                  Tags::HistoryEvolvedVariables<VariablesTags>...,
                  Tags::StepperErrorTolerances<VariablesTags>...>;

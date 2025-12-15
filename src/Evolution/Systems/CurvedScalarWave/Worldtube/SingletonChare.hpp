@@ -116,7 +116,7 @@ struct WorldtubeSingleton {
       Parallel::PhaseActions<
           Parallel::Phase::Evolve,
           tmpl::list<Actions::ObserveWorldtubeSolution, step_actions,
-                     ::Actions::MutateApply<AdvanceTime>,
+                     ::Actions::MutateApply<AdvanceTime<>>,
                      PhaseControl::Actions::ExecutePhaseChange>>>;
 
   using simple_tags_from_options = Parallel::get_simple_tags_from_options<

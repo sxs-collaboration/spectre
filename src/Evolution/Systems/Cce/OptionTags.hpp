@@ -11,6 +11,8 @@
 #include "DataStructures/ComplexDataVector.hpp"
 #include "DataStructures/ComplexModalVector.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
+#include "DataStructures/DataBox/TagName.hpp"
+#include "DataStructures/DataBox/TagTraits.hpp"
 #include "Evolution/Systems/Cce/AnalyticBoundaryDataManager.hpp"
 #include "Evolution/Systems/Cce/AnalyticSolutions/WorldtubeData.hpp"
 #include "Evolution/Systems/Cce/ExtractionRadius.hpp"
@@ -22,8 +24,10 @@
 #include "NumericalAlgorithms/Interpolation/SpanInterpolator.hpp"
 #include "Options/Auto.hpp"
 #include "Options/String.hpp"
+#include "Parallel/InitializationTag.hpp"
 #include "Parallel/Printf/Printf.hpp"
 #include "Utilities/PrettyType.hpp"
+#include "Utilities/TMPL.hpp"
 
 namespace Cce {
 /// \brief %Option tags for CCE
@@ -257,25 +261,59 @@ struct FilePrefix : db::SimpleTag {
 
 /// Tag for duplicating functionality of another tag, but allows creation from
 /// options in the Cce::Evolution option group.
+/// @{
 template <typename Tag>
-struct CceEvolutionPrefix : Tag {
-  using base = Tag;
+struct CceEvolutionPrefix;
+
+template <db::simple_tag Tag>
+struct CceEvolutionPrefix<Tag> : db::SimpleTag {
+  using type = typename Tag::type;
+  static std::string name() { return db::tag_name<Tag>(); }
+};
+
+template <Parallel::untemplated_initialization_tag Tag>
+struct CceEvolutionPrefix<Tag> : db::SimpleTag {
   using type = typename Tag::type;
   using option_tags = db::wrap_tags_in<OptionTags::CceEvolutionPrefix,
                                        typename Tag::option_tags>;
-  static std::string name() { return pretty_type::name<Tag>(); }
+  static std::string name() { return db::tag_name<Tag>(); }
+
+  static constexpr bool pass_metavariables = Tag::pass_metavariables;
+  template <typename... Args>
+  static type create_from_options(const Args&... args) {
+    return Tag::create_from_options(args...);
+  }
+};
+
+template <Parallel::templated_initialization_tag Tag>
+struct CceEvolutionPrefix<Tag> : db::SimpleTag {
+  using type = typename Tag::type;
+  template <typename Metavariables>
+  using option_tags =
+      db::wrap_tags_in<OptionTags::CceEvolutionPrefix,
+                       typename Tag::template option_tags<Metavariables>>;
+  static std::string name() { return db::tag_name<Tag>(); }
 
   static constexpr bool pass_metavariables = Tag::pass_metavariables;
   template <typename Metavariables, typename... Args>
   static type create_from_options(const Args&... args) {
     return Tag::template create_from_options<Metavariables>(args...);
   }
+};
 
+template <db::reference_tag Tag>
+struct CceEvolutionPrefix<Tag> : CceEvolutionPrefix<typename Tag::base>,
+                                 db::ReferenceTag {
+  using base = CceEvolutionPrefix<typename Tag::base>;
+  using argument_tags =
+      tmpl::transform<typename Tag::argument_tags,
+                      tmpl::bind<CceEvolutionPrefix, tmpl::_1>>;
   template <typename... Args>
-  static type create_from_options(const Args&... args) {
-    return Tag::create_from_options(args...);
+  static const auto& get(const Args&... args) {
+    return Tag::get(args...);
   }
 };
+/// @}
 
 /// A tag that constructs a `MetricWorldtubeDataManager` or
 /// `BondiWorldtubeDataManager` from options

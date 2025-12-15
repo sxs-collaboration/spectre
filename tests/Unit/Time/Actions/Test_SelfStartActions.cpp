@@ -252,8 +252,15 @@ void emplace_component_and_initialize<true, true>(
        uint64_t{0}, Tags::AdaptiveSteppingDiagnostics::type{}});
 }
 
+template <typename T>
+struct is_initialize : std::false_type {};
+
+template <typename System, template <typename> typename CacheTagPrefix>
+struct is_initialize<SelfStart::Actions::Initialize<System, CacheTagPrefix>>
+    : std::true_type {};
+
 using not_self_start_action = std::negation<std::disjunction<
-    tt::is_a<SelfStart::Actions::Initialize, tmpl::_1>,
+    is_initialize<tmpl::_1>,
     tt::is_a<SelfStart::Actions::CheckForCompletion, tmpl::_1>,
     std::is_same<SelfStart::Actions::CheckForOrderIncrease, tmpl::_1>,
     std::is_same<SelfStart::Actions::Cleanup, tmpl::_1>>>;
@@ -315,8 +322,8 @@ void test_actions(const size_t order, const int step_denominator) {
   {
     INFO("Initialize");
     const bool jumped =
-        run_past<tt::is_a<SelfStart::Actions::Initialize, tmpl::_1>,
-                 not_self_start_action>(make_not_null(&runner));
+        run_past<is_initialize<tmpl::_1>, not_self_start_action>(
+            make_not_null(&runner));
     CHECK(not jumped);
     CHECK(ActionTesting::get_databox_tag<Component<Metavariables<>>,
                                          Tags::StepNumberWithinSlab>(runner,

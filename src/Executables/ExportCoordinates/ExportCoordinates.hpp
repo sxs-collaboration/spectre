@@ -365,7 +365,7 @@ struct Metavariables {
           Parallel::PhaseActions<
               Parallel::Phase::Execute,
               tmpl::flatten<tmpl::list<
-                  Actions::MutateApply<AdvanceTime>,
+                  Actions::MutateApply<AdvanceTime<>>,
                   Actions::ExportCoordinates<Dim>,
                   Actions::FindGlobalMinimumGridSpacing,
                   std::conditional_t<local_time_stepping,

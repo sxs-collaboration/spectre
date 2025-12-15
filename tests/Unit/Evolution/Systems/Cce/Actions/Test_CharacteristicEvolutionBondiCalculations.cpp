@@ -96,7 +96,7 @@ struct mock_characteristic_evolution {
           typename Metavariables::evolved_swsh_tags, false>,
       // advance the time so that the current `TimeStepId` is valid without
       // having to perform self-start.
-      ::Actions::MutateApply<AdvanceTime>,
+      ::Actions::MutateApply<AdvanceTime<Tags::CceEvolutionPrefix>>,
       Actions::ReceiveWorldtubeData<
           Metavariables,
           typename Metavariables::cce_boundary_communication_tags>,
@@ -211,6 +211,7 @@ SPECTRE_TEST_CASE(
     "Unit.Evolution.Systems.Cce.Actions.CharacteristicBondiCalculations",
     "[Unit][Cce]") {
   register_derived_classes_with_charm<InitializeJ::InitializeJ<false>>();
+  register_classes_with_charm<TimeSteppers::AdamsBashforth>();
   using component = mock_characteristic_evolution<metavariables>;
   const size_t number_of_radial_points = 10;
   const size_t l_max = 8;
@@ -240,18 +241,16 @@ SPECTRE_TEST_CASE(
 
   ActionTesting::MockRuntimeSystem<metavariables> runner{
       {start_time, std::make_unique<InitializeJ::InverseCubic<false>>(), false,
-       l_max, number_of_radial_points}};
+       l_max, number_of_radial_points,
+       static_cast<std::unique_ptr<LtsTimeStepper>>(
+           std::make_unique<::TimeSteppers::AdamsBashforth>(3))}};
 
   ActionTesting::set_phase(make_not_null(&runner),
                            Parallel::Phase::Initialization);
   ActionTesting::emplace_component_and_initialize<
       mock_observer_writer<metavariables>>(&runner, 0, {Parallel::NodeLock{}});
-  ActionTesting::emplace_component<component>(
-      &runner, 0, target_step_size,
-      static_cast<std::unique_ptr<LtsTimeStepper>>(
-          std::make_unique<::TimeSteppers::AdamsBashforth>(3)),
-      make_vector<std::unique_ptr<StepChooser<StepChooserUse::LtsStep>>>(),
-      target_step_size);
+  ActionTesting::emplace_component<component>(&runner, 0, target_step_size,
+                                              target_step_size);
 
   // this should run the initialization
   for(size_t i = 0; i < 2; ++i) {

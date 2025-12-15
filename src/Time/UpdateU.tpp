@@ -19,19 +19,23 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 
-template <typename System, bool LocalTimeStepping, typename... VariablesTags>
-void UpdateU<System, LocalTimeStepping, tmpl::list<VariablesTags...>>::apply(
-    const gsl::not_null<typename VariablesTags::type*>... vars,
-    const typename tmpl::has_type<
-        VariablesTags,
-        gsl::not_null<std::array<std::optional<StepperErrorEstimate>, 2>*>>::
-        type... errors,
-    const TimeStepper& time_stepper, const TimeStepId& time_step_id,
-    const TimeStepId& next_time_step_id, const TimeDelta& time_step,
-    const bool error_estimates_enabled,
-    const TimeSteppers::History<typename VariablesTags::type>&... histories,
-    const typename tmpl::has_type<
-        VariablesTags, StepperErrorTolerances>::type&... tolerances) {
+template <typename System, bool LocalTimeStepping,
+          template <typename> typename CacheTagPrefix,
+          typename... VariablesTags>
+void UpdateU<System, LocalTimeStepping, CacheTagPrefix,
+             tmpl::list<VariablesTags...>>::
+    apply(
+        const gsl::not_null<typename VariablesTags::type*>... vars,
+        const typename tmpl::has_type<
+            VariablesTags,
+            gsl::not_null<std::array<std::optional<StepperErrorEstimate>,
+                                     2>*>>::type... errors,
+        const TimeStepper& time_stepper, const TimeStepId& time_step_id,
+        const TimeStepId& next_time_step_id, const TimeDelta& time_step,
+        const bool error_estimates_enabled,
+        const TimeSteppers::History<typename VariablesTags::type>&... histories,
+        const typename tmpl::has_type<
+            VariablesTags, StepperErrorTolerances>::type&... tolerances) {
   if (::SelfStart::step_unused(time_step_id, next_time_step_id)) {
     return;
   }

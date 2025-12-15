@@ -19,10 +19,7 @@ OutputFileChecks:
 
 Evolution:
   InitialTimeStep: 0.1
-  MinimumTimeStep: 1e-7
   InitialSlabSize: 0.8
-  VariableOrderAlgorithm:
-    GoalOrder: 3
 
 ResourceInfo:
   AvoidGlobalProc0: false
@@ -56,6 +53,9 @@ Cce:
     TimeStepper:
       AdamsBashforth:
         Order: 3
+    VariableOrderAlgorithm:
+      GoalOrder: 3
+    MinimumTimeStep: 1e-7
     StepChoosers:
       - Constant: 0.4
       - LimitIncrease:

@@ -22,6 +22,7 @@
 #include "Time/TimeSteppers/AdamsBashforth.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeVector.hpp"
+#include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 
 namespace Cce {
 namespace Actions {
@@ -66,7 +67,8 @@ struct mock_kg_characteristic_evolution {
           typename Metavariables::evolved_swsh_tags, false>,
       // advance the time so that the current `TimeStepId` is valid without
       // having to perform self-start.
-      ::Actions::MutateApply<AdvanceTime>, Parallel::Actions::TerminatePhase>;
+      ::Actions::MutateApply<AdvanceTime<Tags::CceEvolutionPrefix>>,
+      Parallel::Actions::TerminatePhase>;
 
   using simple_tags_from_options =
       Parallel::get_simple_tags_from_options<initialize_action_list>;
@@ -142,6 +144,7 @@ void test_klein_gordon_boundary_data(const gsl::not_null<Generator*> gen) {
       mock_kg_characteristic_evolution<test_metavariables>;
   using worldtube_component =
       mock_klein_gordon_h5_worldtube_boundary<test_metavariables>;
+  register_classes_with_charm<TimeSteppers::AdamsBashforth>();
   const size_t number_of_radial_points = 10;
   const size_t l_max = 8;
 
@@ -180,7 +183,9 @@ void test_klein_gordon_boundary_data(const gsl::not_null<Generator*> gen) {
   ActionTesting::MockRuntimeSystem<test_metavariables> runner{
       {false, l_max, extraction_radius,
        Tags::EndTimeFromFile::create_from_options(end_time, filename, false),
-       start_time, number_of_radial_points}};
+       start_time, number_of_radial_points,
+       static_cast<std::unique_ptr<LtsTimeStepper>>(
+           std::make_unique<::TimeSteppers::AdamsBashforth>(3))}};
 
   ActionTesting::set_phase(make_not_null(&runner),
                            Parallel::Phase::Initialization);
@@ -188,11 +193,7 @@ void test_klein_gordon_boundary_data(const gsl::not_null<Generator*> gen) {
   // chosen step is a predictable value (not subject to roundoff
   // fluctuations in the generated value)
   ActionTesting::emplace_component<evolution_component>(
-      &runner, 0, target_step_size * 0.75,
-      static_cast<std::unique_ptr<LtsTimeStepper>>(
-          std::make_unique<::TimeSteppers::AdamsBashforth>(3)),
-      make_vector<std::unique_ptr<StepChooser<StepChooserUse::LtsStep>>>(),
-      target_step_size);
+      &runner, 0, target_step_size * 0.75, target_step_size);
   ActionTesting::emplace_component<worldtube_component>(
       &runner, 0,
       Tags::H5WorldtubeBoundaryDataManager::create_from_options(
