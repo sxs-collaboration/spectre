@@ -14,7 +14,6 @@
 #include "Domain/Structure/ElementId.hpp"
 #include "IO/H5/TensorData.hpp"
 #include "IO/Observer/ObservationId.hpp"
-#include "IO/Observer/ObserverComponent.hpp"
 #include "IO/Observer/VolumeActions.hpp"
 #include "NumericalAlgorithms/Spectral/Basis.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
@@ -22,8 +21,6 @@
 #include "Options/String.hpp"
 #include "Parallel/ArrayComponentId.hpp"
 #include "Parallel/ArrayIndex.hpp"
-#include "Parallel/Invoke.hpp"
-#include "Parallel/Local.hpp"
 #include "Parallel/TypeTraits.hpp"
 #include "ParallelAlgorithms/Actions/FunctionsOfTimeAreReady.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
@@ -172,29 +169,10 @@ void ObserveConstantsPerElement<VolumeDim>::observe(
   observers::ObservationId observation_id{observation_value.value,
                                           subfile_path_ + ".vol"};
 
-  auto& local_observer = *Parallel::local_branch(
-      Parallel::get_parallel_component<
-          tmpl::conditional_t<Parallel::is_nodegroup_v<ParallelComponent>,
-                              observers::ObserverWriter<Metavariables>,
-                              observers::Observer<Metavariables>>>(cache));
-
-  if constexpr (Parallel::is_nodegroup_v<ParallelComponent>) {
-    // Send data to reduction observer writer (nodegroup)
-    std::unordered_map<Parallel::ArrayComponentId,
-                       std::vector<ElementVolumeData>>
-        data_to_send{};
-    data_to_send[array_component_id] =
-        std::vector{std::move(element_volume_data)};
-    Parallel::threaded_action<
-        observers::ThreadedActions::ContributeVolumeDataToWriter>(
-        local_observer, std::move(observation_id), array_component_id,
-        subfile_path_, std::move(data_to_send));
-  } else {
-    // Send data to volume observer
-    Parallel::simple_action<observers::Actions::ContributeVolumeData>(
-        local_observer, std::move(observation_id), subfile_path_,
-        array_component_id, std::move(element_volume_data));
-  }
+  observers::contribute_volume_data<
+      not Parallel::is_nodegroup_v<ParallelComponent>>(
+      cache, std::move(observation_id), subfile_path_, array_component_id,
+      std::move(element_volume_data));
 }
 
 }  // namespace dg::Events

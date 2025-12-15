@@ -28,6 +28,11 @@ SPECTRE_TEST_CASE("Unit.IO.Observers.Tags", "[Unit][Observers]") {
   TestHelpers::db::test_simple_tag<ContributorsOfTensorData>(
       "ContributorsOfTensorData");
   TestHelpers::db::test_simple_tag<TensorData>("TensorData");
+  TestHelpers::db::test_simple_tag<InterpolatorTensorData>(
+      "InterpolatorTensorData");
+  TestHelpers::db::test_simple_tag<SerializedFunctionsOfTime>(
+      "SerializedFunctionsOfTime");
+  TestHelpers::db::test_simple_tag<Dependencies>("Dependencies");
   TestHelpers::db::test_simple_tag<ReductionData<double>>("ReductionData");
   TestHelpers::db::test_simple_tag<ReductionDataNames<double>>(
       "ReductionDataNames");

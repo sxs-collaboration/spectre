@@ -12,6 +12,8 @@
 #include <optional>
 #include <string>
 #include <unordered_map>
+#include <utility>
+#include <vector>
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/Index.hpp"
@@ -35,8 +37,10 @@
 #include "Parallel/NodeLock.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Utilities/Algorithm.hpp"
+#include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/MakeVector.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/Serialization/Serialize.hpp"
 #include "Utilities/StdHelpers.hpp"
@@ -72,10 +76,13 @@ struct ContributeVolumeData {
       const std::string& subfile_name,
       const Parallel::ArrayComponentId& sender_array_id,
       ElementVolumeData&& received_volume_data,
+      const std::optional<std::vector<char>>& serialized_functions_of_time =
+          std::nullopt,
       const std::optional<std::string>& dependency = std::nullopt) {
     db::mutate<Tags::TensorData, Tags::ContributorsOfTensorData>(
         [&array_index, &cache, &received_volume_data, &observation_id,
-         &sender_array_id, &subfile_name, &dependency](
+         &sender_array_id, &subfile_name, &serialized_functions_of_time,
+         &dependency](
             const gsl::not_null<std::unordered_map<
                 observers::ObservationId,
                 std::unordered_map<Parallel::ArrayComponentId,
@@ -85,9 +92,8 @@ struct ContributeVolumeData {
                 ObservationId, std::unordered_set<Parallel::ArrayComponentId>>*>
                 contributed_volume_data_ids,
             const std::unordered_map<
-                ObservationKey,
-                std::unordered_set<Parallel::ArrayComponentId>>&
-                registered_array_component_ids) mutable {  // NOLINT(spectre-mutable)
+                ObservationKey, std::unordered_set<Parallel::ArrayComponentId>>&
+                registered_array_component_ids) {
           const ObservationKey& key{observation_id.observation_key()};
           if (UNLIKELY(registered_array_component_ids.find(key) ==
                        registered_array_component_ids.end())) {
@@ -146,7 +152,7 @@ struct ContributeVolumeData {
                 Parallel::make_array_component_id<ParallelComponent>(
                     array_index),
                 subfile_name, std::move((*volume_data)[observation_id]),
-                dependency);
+                serialized_functions_of_time, dependency);
             volume_data->erase(observation_id);
             contributed_volume_data_ids->erase(observation_id);
           }
@@ -172,7 +178,9 @@ void write_combined_volume_data(
     const observers::ObservationId& observation_id,
     const VolumeDataAtObsId& volume_data,
     const gsl::not_null<Parallel::NodeLock*> volume_file_lock,
-    const std::string& subfile_name) {
+    const std::string& subfile_name,
+    const std::optional<std::vector<char>>&
+        serialized_observation_functions_of_time) {
   ASSERT(not volume_data.empty(),
          "Failed to populate volume_data before trying to write it.");
 
@@ -233,33 +241,10 @@ void write_combined_volume_data(
 
     std::optional<std::vector<char>> serialized_global_functions_of_time =
         std::nullopt;
-    std::optional<std::vector<char>> serialized_observation_functions_of_time =
-        std::nullopt;
     if constexpr (Parallel::is_in_global_cache<Metavariables,
                                                domain::Tags::FunctionsOfTime>) {
       const auto& functions_of_time = get<domain::Tags::FunctionsOfTime>(cache);
       serialized_global_functions_of_time = serialize(functions_of_time);
-      // NOLINTNEXTLINE(misc-const-correctness)
-      domain::FunctionsOfTimeMap observation_functions_of_time{};
-      const double obs_time = observation_id.value();
-      // Generally, the functions of time should be valid when we
-      // perform an observation.  The exception is when running in an
-      // AtCleanup event, in which case the observation time is a
-      // bogus value and we just skip writing the values.
-      if (alg::all_of(functions_of_time, [&](const auto& fot) {
-            const auto bounds = fot.second->time_bounds();
-            return bounds[0] <= obs_time and obs_time <= bounds[1];
-          })) {
-        // create a new function of time, effectively truncating the history.
-        for (const auto& [name, fot_ptr] : functions_of_time) {
-          observation_functions_of_time[name] = fot_ptr->create_at_time(
-              obs_time, obs_time + 100.0 *
-                                       std::numeric_limits<double>::epsilon() *
-                                       std::max(std::abs(obs_time), 1.0));
-        }
-        serialized_observation_functions_of_time =
-            serialize(observation_functions_of_time);
-      }
     }
 
     // Write the data to the file
@@ -291,10 +276,13 @@ struct ContributeVolumeDataToWriter {
       const std::string& subfile_name,
       std::unordered_map<Parallel::ArrayComponentId,
                          std::vector<ElementVolumeData>>&& received_volume_data,
+      const std::optional<std::vector<char>>& serialized_functions_of_time =
+          std::nullopt,
       const std::optional<std::string>& dependency = std::nullopt) {
     apply_impl<Tags::InterpolatorTensorData, ParallelComponent>(
         box, cache, node_lock, observation_id, observer_group_id, subfile_name,
-        std::move(received_volume_data), dependency);
+        std::move(received_volume_data), serialized_functions_of_time,
+        dependency);
   }
 
   template <typename ParallelComponent, typename DbTagsList,
@@ -308,10 +296,13 @@ struct ContributeVolumeDataToWriter {
       const std::string& subfile_name,
       std::unordered_map<Parallel::ArrayComponentId, ElementVolumeData>&&
           received_volume_data,
+      const std::optional<std::vector<char>>& serialized_functions_of_time =
+          std::nullopt,
       const std::optional<std::string>& dependency = std::nullopt) {
     apply_impl<Tags::TensorData, ParallelComponent>(
         box, cache, node_lock, observation_id, observer_group_id, subfile_name,
-        std::move(received_volume_data), dependency);
+        std::move(received_volume_data), serialized_functions_of_time,
+        dependency);
   }
 
  private:
@@ -324,7 +315,8 @@ struct ContributeVolumeDataToWriter {
       const observers::ObservationId& observation_id,
       Parallel::ArrayComponentId observer_group_id,
       const std::string& subfile_name, VolumeDataAtObsId received_volume_data,
-      const std::optional<std::string>& dependency = std::nullopt) {
+      const std::optional<std::vector<char>>& serialized_functions_of_time,
+      const std::optional<std::string>& dependency) {
     // The below gymnastics with pointers is done in order to minimize the
     // time spent locking the entire node, which is necessary because the
     // DataBox does not allow any function calls, either get and mutate, during
@@ -376,6 +368,9 @@ struct ContributeVolumeDataToWriter {
               make_not_null(&box));
       auto& all_volume_data =
           db::get_mutable_reference<TensorDataTag>(make_not_null(&box));
+      auto& all_serialized_functions_of_time =
+          db::get_mutable_reference<Tags::SerializedFunctionsOfTime>(
+              make_not_null(&box));
       auto& box_dependencies =
           db::get_mutable_reference<Tags::Dependencies>(make_not_null(&box));
 
@@ -395,9 +390,15 @@ struct ContributeVolumeDataToWriter {
         current_data.insert(
             std::make_move_iterator(received_volume_data.begin()),
             std::make_move_iterator(received_volume_data.end()));
+        ASSERT(all_serialized_functions_of_time.at(observation_id) ==
+                   serialized_functions_of_time,
+               "Got different serialized functions of time from different "
+               "elements.");
       } else {
         // We haven't been called before on this processing element.
         all_volume_data[observation_id] = std::move(received_volume_data);
+        all_serialized_functions_of_time[observation_id] =
+            serialized_functions_of_time;
       }
 
       // Check if we have received all "volume" data from the Observer
@@ -429,6 +430,7 @@ struct ContributeVolumeDataToWriter {
             // Whether or not we are writing data to disk, we clean up because
             // we have received both the volume data and the dependency
             all_volume_data.erase(observation_id);
+            all_serialized_functions_of_time.erase(observation_id);
             volume_observers_contributed.erase(observation_id);
             box_dependencies.erase(observation_id);
           }
@@ -436,6 +438,7 @@ struct ContributeVolumeDataToWriter {
           perform_write = true;
           volume_data = std::move(all_volume_data[observation_id]);
           all_volume_data.erase(observation_id);
+          all_serialized_functions_of_time.erase(observation_id);
           volume_observers_contributed.erase(observation_id);
         }
       }
@@ -444,7 +447,7 @@ struct ContributeVolumeDataToWriter {
     if (perform_write) {
       VolumeActions_detail::write_combined_volume_data<ParallelComponent>(
           cache, observation_id, volume_data, make_not_null(volume_file_lock),
-          subfile_name);
+          subfile_name, serialized_functions_of_time);
     }
   }
 };
@@ -487,6 +490,7 @@ struct ContributeDependency {
     bool perform_write = false;
     std::unordered_map<Parallel::ArrayComponentId, ElementVolumeData>
         volume_data{};
+    std::optional<std::vector<char>> serialized_functions_of_time{};
 
     // For now just hold the entire node. We can optimize with different locks
     // later on
@@ -509,6 +513,9 @@ struct ContributeDependency {
               make_not_null(&box));
       auto& all_volume_data =
           db::get_mutable_reference<Tags::TensorData>(make_not_null(&box));
+      auto& all_serialized_functions_of_time =
+          db::get_mutable_reference<Tags::SerializedFunctionsOfTime>(
+              make_not_null(&box));
       auto& box_dependencies =
           db::get_mutable_reference<Tags::Dependencies>(make_not_null(&box));
       const auto& expected_contributors =
@@ -535,9 +542,12 @@ struct ContributeDependency {
         if (write_volume_data) {
           perform_write = true;
           volume_data = std::move(all_volume_data.at(observation_id));
+          serialized_functions_of_time =
+              std::move(all_serialized_functions_of_time.at(observation_id));
         }
 
         all_volume_data.erase(observation_id);
+        all_serialized_functions_of_time.erase(observation_id);
         volume_observers_contributed.erase(observation_id);
         box_dependencies.erase(observation_id);
       }
@@ -546,7 +556,7 @@ struct ContributeDependency {
     if (perform_write) {
       VolumeActions_detail::write_combined_volume_data<ParallelComponent>(
           cache, observation_id, volume_data, make_not_null(volume_file_lock),
-          volume_subfile_name);
+          volume_subfile_name, serialized_functions_of_time);
     }
   }
 };
@@ -613,4 +623,77 @@ struct WriteVolumeData {
   }
 };
 }  // namespace ThreadedActions
+
+/*!
+ * \brief Contribute volume data for observing from an element.
+ *
+ * \tparam UseObserverComponent Whether to first send data to the
+ * `observers::Observer` group component.  Generally should be true if
+ * using an implementation where elements are bound to cores, and
+ * false if they are only bound to nodes.
+ */
+template <bool UseObserverComponent, typename Metavariables>
+void contribute_volume_data(
+    Parallel::GlobalCache<Metavariables>& cache,
+    observers::ObservationId observation_id, std::string subfile_path,
+    const Parallel::ArrayComponentId& array_component_id,
+    ElementVolumeData element_volume_data,
+    std::optional<std::string> dependency = std::nullopt) {
+  std::optional<std::vector<char>> serialized_observation_functions_of_time{};
+  if constexpr (Parallel::is_in_global_cache<Metavariables,
+                                             domain::Tags::FunctionsOfTime>) {
+    const auto& functions_of_time = get<domain::Tags::FunctionsOfTime>(cache);
+    // NOLINTNEXTLINE(misc-const-correctness)
+    domain::FunctionsOfTimeMap observation_functions_of_time{};
+    const double obs_time = observation_id.value();
+    // Generally, the functions of time should be valid when we
+    // perform an observation.  The exception is when running in an
+    // AtCleanup event, in which case the observation time is a
+    // bogus value and we just skip writing the values.
+    if (alg::all_of(functions_of_time, [&](const auto& fot) {
+          const auto bounds = fot.second->time_bounds();
+          return bounds[0] <= obs_time and obs_time <= bounds[1];
+        })) {
+      // create a new function of time, effectively truncating the history.
+      for (const auto& [name, fot_ptr] : functions_of_time) {
+        observation_functions_of_time[name] = fot_ptr->create_at_time(
+            obs_time, obs_time + 100.0 *
+                                     std::numeric_limits<double>::epsilon() *
+                                     std::max(std::abs(obs_time), 1.0));
+      }
+      serialized_observation_functions_of_time =
+          serialize(observation_functions_of_time);
+    }
+  }
+
+  if constexpr (UseObserverComponent) {
+    // Send data to volume observer
+    auto& local_observer = *Parallel::local_branch(
+        Parallel::get_parallel_component<observers::Observer<Metavariables>>(
+            cache));
+
+    Parallel::simple_action<observers::Actions::ContributeVolumeData>(
+        local_observer, std::move(observation_id), std::move(subfile_path),
+        array_component_id, std::move(element_volume_data),
+        std::move(serialized_observation_functions_of_time),
+        std::move(dependency));
+  } else {
+    // Send data to reduction observer writer (nodegroup)
+    auto& local_observer = *Parallel::local_branch(
+        Parallel::get_parallel_component<
+            observers::ObserverWriter<Metavariables>>(cache));
+
+    std::unordered_map<Parallel::ArrayComponentId,
+                       std::vector<ElementVolumeData>>
+        data_to_send{};
+    data_to_send[array_component_id] =
+        make_vector(std::move(element_volume_data));
+    Parallel::threaded_action<
+        observers::ThreadedActions::ContributeVolumeDataToWriter>(
+        local_observer, std::move(observation_id), array_component_id,
+        std::move(subfile_path), std::move(data_to_send),
+        std::move(serialized_observation_functions_of_time),
+        std::move(dependency));
+  }
+}
 }  // namespace observers

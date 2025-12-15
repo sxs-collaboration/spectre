@@ -283,11 +283,12 @@ SPECTRE_TEST_CASE("Unit.IO.Observers.VolumeObserver", "[Unit][Observers]") {
           Parallel::make_array_component_id<element_comp>(id);
 
       auto [mesh, fake_volume_data] = make_fake_volume_data(array_id);
-      ActionTesting::simple_action<obs_component,
-                                   observers::Actions::ContributeVolumeData>(
-          make_not_null(&runner), 0, observation_id,
+      observers::contribute_volume_data<true>(
+          ActionTesting::cache<obs_component>(runner, 0), observation_id,
           std::string{"/element_data"}, array_id,
           ElementVolumeData{id, std::move(fake_volume_data), mesh}, dependency);
+      ActionTesting::invoke_queued_simple_action<obs_component>(
+          make_not_null(&runner), 0);
     }
     // Invoke the simple action 'ContributeVolumeDataToWriter'
     // to move the volume data to the Writer parallel component.

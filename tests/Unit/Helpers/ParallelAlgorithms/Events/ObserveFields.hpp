@@ -57,6 +57,7 @@ struct MockContributeVolumeData {
     std::string subfile_name{};
     Parallel::ArrayComponentId array_component_id{};
     ElementVolumeData received_volume_data{};
+    std::optional<std::vector<char>> serialized_functions_of_time{};
     std::optional<std::string> dependency{};
   };
   static Results results;
@@ -71,11 +72,14 @@ struct MockContributeVolumeData {
       const std::string& subfile_name,
       const Parallel::ArrayComponentId& array_component_id,
       ElementVolumeData&& received_volume_data,
+      const std::optional<std::vector<char>>& serialized_functions_of_time =
+          std::nullopt,
       const std::optional<std::string>& dependency = std::nullopt) {
     results.observation_id = observation_id;
     results.subfile_name = subfile_name;
     results.array_component_id = array_component_id;
     results.received_volume_data = std::move(received_volume_data);
+    results.serialized_functions_of_time = serialized_functions_of_time;
     results.dependency = dependency;
   }
 };

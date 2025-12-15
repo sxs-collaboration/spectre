@@ -16,7 +16,6 @@
 #include "Domain/Tags.hpp"
 #include "IO/H5/TensorData.hpp"
 #include "IO/Observer/ObservationId.hpp"
-#include "IO/Observer/ObserverComponent.hpp"
 #include "IO/Observer/Tags.hpp"
 #include "IO/Observer/TypeOfObservation.hpp"
 #include "IO/Observer/VolumeActions.hpp"
@@ -24,8 +23,7 @@
 #include "Parallel/AlgorithmExecution.hpp"
 #include "Parallel/ArrayComponentId.hpp"
 #include "Parallel/GlobalCache.hpp"
-#include "Parallel/Invoke.hpp"
-#include "Parallel/Local.hpp"
+#include "Parallel/TypeTraits.hpp"
 #include "ParallelAlgorithms/Amr/Tags.hpp"
 #include "ParallelAlgorithms/LinearSolver/Multigrid/Tags.hpp"
 #include "Utilities/Algorithm.hpp"
@@ -111,15 +109,13 @@ struct ObserveVolumeData {
         });
 
     // Contribute tensor components to observer
-    auto& local_observer = *Parallel::local_branch(
-        Parallel::get_parallel_component<observers::Observer<Metavariables>>(
-            cache));
     const auto& level_observation_key =
         *db::get<observers::Tags::ObservationKey<::amr::Tags::GridIndex>>(box);
     const std::string subfile_path =
         "/" + pretty_type::name<OptionsGroup>() + level_observation_key;
-    Parallel::simple_action<observers::Actions::ContributeVolumeData>(
-        local_observer, observers::ObservationId(observation_id, subfile_path),
+    observers::contribute_volume_data<
+        not Parallel::is_nodegroup_v<ParallelComponent>>(
+        cache, observers::ObservationId(observation_id, subfile_path),
         subfile_path,
         Parallel::make_array_component_id<ParallelComponent>(element_id),
         ElementVolumeData{element_id, std::move(components), mesh});
