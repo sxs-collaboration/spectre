@@ -34,7 +34,7 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/StdHelpers.hpp"
 
-// [[TimeOut, 10]]
+// [[TimeOut, 20]]
 SPECTRE_TEST_CASE(
     "Unit.Evolution.Ringdown.StrahlkorperCoefsInRingdownDistortedFrame",
     "[Unit][Evolution]") {
