@@ -1,33 +1,33 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-set(LIBRARY ScalarSelfForce)
+set(LIBRARY ScalarSelfForceEvents)
 
 add_spectre_library(${LIBRARY})
 
 spectre_target_sources(
   ${LIBRARY}
   PRIVATE
-  Equations.cpp
+  ObserveSelfForce.cpp
   )
 
 spectre_target_headers(
   ${LIBRARY}
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
-  Equations.hpp
-  FirstOrderSystem.hpp
-  Tags.hpp
+  ObserveSelfForce.hpp
   )
 
 target_link_libraries(
   ${LIBRARY}
+  PRIVATE
+  Interpolation
   PUBLIC
   DataStructures
-  DomainStructure
-  ErrorHandling
+  Domain
+  Elliptic
+  Options
+  ScalarSelfForceAnalyticData
+  Serialization
   Utilities
   )
-
-add_subdirectory(BoundaryConditions)
-add_subdirectory(Events)

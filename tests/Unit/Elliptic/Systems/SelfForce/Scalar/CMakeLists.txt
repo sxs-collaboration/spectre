@@ -2,3 +2,4 @@
 # See LICENSE.txt for details.
 
 add_subdirectory(BoundaryConditions)
+add_subdirectory(Events)
