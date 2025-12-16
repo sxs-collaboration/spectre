@@ -6,6 +6,7 @@ spectre_target_sources(
   PRIVATE
   CartesianToSpherical.cpp
   FrameTransform.cpp
+  GramSchmidtOrthonormalize.cpp
   OrthonormalOneform.cpp
   RaiseOrLowerIndex.cpp
   Trace.cpp
@@ -21,6 +22,7 @@ spectre_target_headers(
   DeterminantAndInverse.hpp
   DotProduct.hpp
   FrameTransform.hpp
+  GramSchmidtOrthonormalize.hpp
   Magnitude.hpp
   Norms.hpp
   OrthonormalOneform.hpp
