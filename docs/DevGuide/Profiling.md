@@ -12,8 +12,8 @@ of analyzing performance using profilers. Instead, one should use a combination
 of the tools to discover and eliminate performance bottle necks. Common
 profilers are Charm++ Projections (tracing-based), HPCToolkit (sampling-based,
 very versatile), Linux perf (sampling-based, command line only), Intel VTune
-(sampling-based, works well on Intel hardware), and AMD uProf (similar to Intel
-VTune).
+(sampling-based, works well on Intel hardware), AMD uProf (similar to Intel
+VTune), and Score-P (sampling and tracing, with MPI and pthread interfacing).
 
 ## Profiling with HPCToolkit {#profiling_with_hpctoolkit}
 
@@ -187,3 +187,48 @@ making executable-specific renames. The Python executable is
 
 See the [Charm++ Projections manual](http://charm.cs.illinois.edu/manuals/html/projections/2.html)
 for details.
+
+## Profiling with Score-P {#profiling_with_scorep}
+
+See the
+[Score-P](https://www.vi-hps.org/projects/score-p/overview/overview.html)
+website for installation instructions specific to Score-P.
+
+To compile SpECTRE with Score-P you must invoke CMake with the environment
+variable `SCOREP_WRAPPER=off` (do NOT export this variable!) and the `scorep-`
+compiler wrappers. For example,
+```sh
+SCOREP_WRAPPER=off cmake -DCMAKE_C_COMPILER=scorep-gcc \
+    -DCMAKE_CXX_COMPILER=scorep-g++ -DCMAKE_Fortran_COMPILER=scorep-gfortran \
+    -D CMAKE_BUILD_TYPE=Release -D ENABLE_PROFILING=ON \
+    -D BUILD_DOCS=OFF -D BUILD_PYTHON_BINDINGS=OFF $SPECTRE_HOME
+```
+where `$SPECTRE_HOME` points to your spectre source tree. You can then compile
+the executable you want to profile. When running the executable you will need to
+make sure Score-P has enough memory to be able to function properly. For the
+EvolveGhSingleBlackHole, Score-P needs 1.5GB of memory. To enable profiling,
+disable tracing, and use 1.5GB of memory for Score-P, set the environment
+variables
+```sh
+SCOREP_ENABLE_PROFILING=1 \
+    SCOREP_ENABLE_TRACING=0 \
+    SCOREP_TOTAL_MEMORY=1536000000
+```
+We also need to use a filter file to keep the data at all manageable and to
+avoid some currently not understood interaction between Score-P and our option
+parser. The profile is in `support/Profiling/ScoreP` and named `spectre.flt`.
+The final command should look something like:
+```sh
+SCOREP_ENABLE_PROFILING=1 SCOREP_ENABLE_TRACING=0 \
+    SCOREP_TOTAL_MEMORY=1536000000 \
+    SCOREP_FILTERING_FILE=$SPECTRE_HOME/support/Profiling/ScoreP/spectre.flt \
+    mpirun -np 2 EvolveGhSingleBlackHole --input-file ./KerrSchild.yaml +ppn 91
+```
+Depending on your profile, you might also need to increase the callpath depth by
+setting
+```sh
+SCOREP_PROFILING_MAX_CALLPATH_DEPTH=150
+```
+Once you've successfully run the executable you should have a directory like
+`scorep-20251006_1732_65976792745157592`. Please see the Score-P documentation
+for how to analyze the output.
