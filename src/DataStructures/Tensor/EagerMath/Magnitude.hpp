@@ -45,7 +45,8 @@ void magnitude(const gsl::not_null<Scalar<DataType>*> magnitude,
  *
  * \details
  * Returns the square root of the input tensor contracted twice with the given
- * metric.
+ * metric. The absolute value is taken of the dot product to ensure a real
+ * result for spacetime (co-)vectors.
  */
 template <typename DataType, typename Index>
 Scalar<DataType> magnitude(
@@ -65,7 +66,13 @@ void magnitude(const gsl::not_null<Scalar<DataType>*> magnitude,
                             index_list<change_index_up_lo<Index>,
                                        change_index_up_lo<Index>>>& metric) {
   dot_product(magnitude, vector, vector, metric);
-  get(*magnitude) = sqrt(get(*magnitude));
+  if constexpr (Index::index_type == IndexType::Spacetime) {
+    // Spacetime dot product can be negative, so take the absolute value to
+    // define the magnitude
+    get(*magnitude) = sqrt(abs(get(*magnitude)));
+  } else {
+    get(*magnitude) = sqrt(get(*magnitude));
+  }
 }
 /// @}
 
