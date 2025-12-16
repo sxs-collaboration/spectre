@@ -181,3 +181,45 @@ cross_product(const Tensor<DataType, Symmetry<1>, index_list<Index>>& vector_a,
   }
   return cross_product;
 }
+
+/*!
+ * \brief Compute the cross product of three spacetime vectors or one forms
+ *
+ * \details
+ * Returns $\sqrt{g} g^{ed} A^a B^b C^c \epsilon_{abcd}$, where $\{A,B,C\}$ are
+ * the input vectors and $g^{ab}$ and $g$ are the inverse spacetime metric and
+ * the spacetime metric determinant. Or, returns $-\sqrt{g}^{-1} g_{ed} A_a B_b
+ * C_c \epsilon^{abcd}$, where $\{A,B,C\}$ are one forms and $g_{ab}$ and $g$
+ * are the spacetime metric and the spacetime metric determinant.
+ * See \cite Misner1973 page 202 for details.
+ *
+ * The output buffer must be sized correctly on entry.
+ */
+template <typename DataType, typename Index>
+void cross_product(
+    const gsl::not_null<Tensor<DataType, Symmetry<1>, index_list<Index>>*>
+        result,
+    const Tensor<DataType, Symmetry<1>, index_list<Index>>& vector_a,
+    const Tensor<DataType, Symmetry<1>, index_list<Index>>& vector_b,
+    const Tensor<DataType, Symmetry<1>, index_list<Index>>& vector_c,
+    const Tensor<DataType, Symmetry<1, 1>, index_list<Index, Index>>&
+        metric_or_inverse_metric,
+    const Scalar<DataType>& metric_determinant) {
+  static_assert(Index::dim == 4,
+                "cross_product vectors must have spacetime dimension 4");
+  static_assert(Index::index_type == IndexType::Spacetime,
+                "cross product of 3 vectors must be spacetime");
+  for (size_t i = 0; i < Index::dim; ++i) {
+    result->get(i) = 0.0;
+    for (LeviCivitaIterator<4> it; it; ++it) {
+      result->get(i) += it.sign() * vector_a.get(it[0]) * vector_b.get(it[1]) *
+                        vector_c.get(it[2]) *
+                        metric_or_inverse_metric.get(it[3], i);
+    }
+    if (Index::ul == UpLo::Up) {
+      result->get(i) *= sqrt(abs(get(metric_determinant)));
+    } else {
+      result->get(i) /= -sqrt(abs(get(metric_determinant)));
+    }
+  }
+}
