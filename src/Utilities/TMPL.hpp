@@ -476,12 +476,6 @@ using conditional_t = typename conditional<B>::template type<T, F>;
 }  // namespace brigand
 
 namespace brigand {
-template <typename List>
-using remove_duplicates =
-    fold<List, clear<List>,
-         if_<bind<none, _state, defer<std::is_same<_1, parent<_element>>>>,
-             bind<push_back, _state, _element>, _state>>;
-
 template <bool>
 struct branch_if;
 
@@ -629,6 +623,11 @@ constexpr bool list_contains_v = lazy::list_contains<Sequence, Item>::value;
 template <typename Sequence1, typename Sequence2>
 using list_difference =
     fold<Sequence2, Sequence1, lazy::remove<_state, _element>>;
+
+template <typename List>
+using remove_duplicates = fold<List, clear<List>,
+                               if_<lazy::list_contains<_state, _element>,
+                                   _state, bind<push_back, _state, _element>>>;
 
 namespace detail {
 template <typename List>
