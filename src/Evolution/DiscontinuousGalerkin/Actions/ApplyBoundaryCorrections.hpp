@@ -272,101 +272,105 @@ bool receive_boundary_data_local_time_stepping(
     inbox.collect_messages();
     InboxMap& inbox_data = inbox.messages;
 
+    const auto& element = db::get<domain::Tags::Element<Dim>>(*box);
+    const auto& volume_mesh = db::get<domain::Tags::Mesh<Dim>>(*box);
+
     missing_messages = 0;
 
-    db::mutate<evolution::dg::Tags::MortarMesh<Dim>,
-               evolution::dg::Tags::MortarDataHistory<
-                   Dim, typename dt_variables_tag::type>,
-               evolution::dg::Tags::MortarNextTemporalId<Dim>,
-               domain::Tags::NeighborMesh<Dim>>(
-        [&inbox_data, &missing_messages, &needed_time](
-            const gsl::not_null<DirectionalIdMap<Dim, Mesh<Dim - 1>>*>
-                mortar_meshes,
-            const gsl::not_null<
-                DirectionalIdMap<Dim, TimeSteppers::BoundaryHistory<
-                                          evolution::dg::MortarData<Dim>,
-                                          evolution::dg::MortarData<Dim>,
-                                          typename dt_variables_tag::type>>*>
-                boundary_data_history,
-            const gsl::not_null<DirectionalIdMap<Dim, TimeStepId>*>
-                mortar_next_time_step_ids,
-            const gsl::not_null<DirectionalIdMap<Dim, Mesh<Dim>>*>
-                neighbor_mesh,
-            const Mesh<Dim>& volume_mesh) {
-          // Move received boundary data into boundary history.
-          for (auto& [mortar_id, mortar_next_time_step_id] :
-               *mortar_next_time_step_ids) {
-            if (mortar_id.id() == ElementId<Dim>::external_boundary_id()) {
-              continue;
-            }
-            const size_t sliced_away_dim = mortar_id.direction().dimension();
-            const Mesh<Dim - 1> face_mesh =
-                volume_mesh.slice_away(sliced_away_dim);
-            while (needed_time(mortar_next_time_step_id)) {
-              const auto time_entry = inbox_data.find(mortar_next_time_step_id);
-              if (time_entry == inbox_data.end()) {
-                ++missing_messages;
-                break;
-              }
-              const auto received_mortar_data =
-                  time_entry->second.find(mortar_id);
-              if (received_mortar_data == time_entry->second.end()) {
-                ++missing_messages;
-                break;
-              }
-
-              const Mesh<Dim - 1> neighbor_face_mesh =
-                  received_mortar_data->second.volume_mesh.slice_away(
-                      sliced_away_dim);
-              const Mesh<Dim - 1> mortar_mesh =
-                  ::dg::mortar_mesh(face_mesh, neighbor_face_mesh);
-
-              const auto project_boundary_mortar_data =
-                  [&mortar_mesh](
-                      const TimeStepId& /*id*/,
-                      const gsl::not_null<::evolution::dg::MortarData<Dim>*>
-                          mortar_data) {
-                    return p_project_mortar_data(mortar_data, mortar_mesh);
-                  };
-
-              mortar_meshes->at(mortar_id) = mortar_mesh;
-              boundary_data_history->at(mortar_id).local().for_each(
-                  project_boundary_mortar_data);
-
-              MortarData<Dim> neighbor_mortar_data{};
-              // Insert:
-              // - the current TimeStepId of the neighbor
-              // - the current face mesh of the neighbor
-              // - the current boundary correction data of the neighbor
-              ASSERT(received_mortar_data->second.boundary_correction_data
-                         .has_value(),
-                     "Did not receive boundary correction data from the "
-                     "neighbor\nMortarId: "
-                         << mortar_id
-                         << "\nTimeStepId: " << mortar_next_time_step_id);
-              neighbor_mesh->insert_or_assign(
-                  mortar_id, received_mortar_data->second.volume_mesh);
-              neighbor_mortar_data.mortar_mesh =
-                  received_mortar_data->second.boundary_correction_mesh.value();
-              neighbor_mortar_data.mortar_data =
-                  std::move(received_mortar_data->second
-                                .boundary_correction_data.value());
-              boundary_data_history->at(mortar_id).remote().insert(
-                  time_entry->first,
-                  received_mortar_data->second.integration_order,
-                  std::move(neighbor_mortar_data));
-              boundary_data_history->at(mortar_id).remote().for_each(
-                  project_boundary_mortar_data);
-              mortar_next_time_step_id =
-                  received_mortar_data->second.validity_range;
-              time_entry->second.erase(received_mortar_data);
-              if (time_entry->second.empty()) {
-                inbox_data.erase(time_entry);
-              }
-            }
+    for (const auto& [direction, neighbors] : element.neighbors()) {
+      for (const auto& neighbor : neighbors) {
+        const DirectionalId mortar_id{direction, neighbor};
+        const size_t sliced_away_dim = direction.dimension();
+        const Mesh<Dim - 1> face_mesh = volume_mesh.slice_away(sliced_away_dim);
+        for (;;) {
+          const auto mortar_next_time_step_id =
+              db::get<evolution::dg::Tags::MortarNextTemporalId<Dim>>(*box).at(
+                  mortar_id);
+          if (not needed_time(mortar_next_time_step_id)) {
+            break;
           }
-        },
-        box, db::get<domain::Tags::Mesh<Dim>>(*box));
+          const auto time_entry = inbox_data.find(mortar_next_time_step_id);
+          if (time_entry == inbox_data.end()) {
+            ++missing_messages;
+            break;
+          }
+          const auto received_mortar_data = time_entry->second.find(mortar_id);
+          if (received_mortar_data == time_entry->second.end()) {
+            ++missing_messages;
+            break;
+          }
+
+          db::mutate<evolution::dg::Tags::MortarMesh<Dim>,
+                     evolution::dg::Tags::MortarDataHistory<
+                         Dim, typename dt_variables_tag::type>,
+                     evolution::dg::Tags::MortarNextTemporalId<Dim>,
+                     domain::Tags::NeighborMesh<Dim>>(
+              [&](const gsl::not_null<DirectionalIdMap<Dim, Mesh<Dim - 1>>*>
+                      mortar_meshes,
+                  const gsl::not_null<DirectionalIdMap<
+                      Dim, TimeSteppers::BoundaryHistory<
+                               evolution::dg::MortarData<Dim>,
+                               evolution::dg::MortarData<Dim>,
+                               typename dt_variables_tag::type>>*>
+                      boundary_data_history,
+                  const gsl::not_null<DirectionalIdMap<Dim, TimeStepId>*>
+                      mortar_next_time_step_ids,
+                  const gsl::not_null<DirectionalIdMap<Dim, Mesh<Dim>>*>
+                      neighbor_mesh) {
+                const Mesh<Dim - 1> neighbor_face_mesh =
+                    received_mortar_data->second.volume_mesh.slice_away(
+                        sliced_away_dim);
+                const Mesh<Dim - 1> mortar_mesh =
+                    ::dg::mortar_mesh(face_mesh, neighbor_face_mesh);
+
+                const auto project_boundary_mortar_data =
+                    [&mortar_mesh](
+                        const TimeStepId& /*id*/,
+                        const gsl::not_null<::evolution::dg::MortarData<Dim>*>
+                            mortar_data) {
+                      return p_project_mortar_data(mortar_data, mortar_mesh);
+                    };
+
+                mortar_meshes->at(mortar_id) = mortar_mesh;
+                boundary_data_history->at(mortar_id).local().for_each(
+                    project_boundary_mortar_data);
+
+                MortarData<Dim> neighbor_mortar_data{};
+                // Insert:
+                // - the current TimeStepId of the neighbor
+                // - the current face mesh of the neighbor
+                // - the current boundary correction data of the neighbor
+                ASSERT(received_mortar_data->second.boundary_correction_data
+                           .has_value(),
+                       "Did not receive boundary correction data from the "
+                       "neighbor\nMortarId: "
+                           << mortar_id
+                           << "\nTimeStepId: " << mortar_next_time_step_id);
+                neighbor_mesh->insert_or_assign(
+                    mortar_id, received_mortar_data->second.volume_mesh);
+                neighbor_mortar_data.mortar_mesh =
+                    received_mortar_data->second.boundary_correction_mesh
+                        .value();
+                neighbor_mortar_data.mortar_data =
+                    std::move(received_mortar_data->second
+                                  .boundary_correction_data.value());
+                boundary_data_history->at(mortar_id).remote().insert(
+                    time_entry->first,
+                    received_mortar_data->second.integration_order,
+                    std::move(neighbor_mortar_data));
+                boundary_data_history->at(mortar_id).remote().for_each(
+                    project_boundary_mortar_data);
+                mortar_next_time_step_ids->at(mortar_id) =
+                    received_mortar_data->second.validity_range;
+              },
+              box);
+          time_entry->second.erase(received_mortar_data);
+          if (time_entry->second.empty()) {
+            inbox_data.erase(time_entry);
+          }
+        }
+      }
+    }
 
     if (missing_messages == 0) {
       return true;
