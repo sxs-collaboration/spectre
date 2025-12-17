@@ -230,12 +230,13 @@ collect_messages:
 ///
 /// Setting \p DenseOutput to true receives data required for output
 /// at `::Tags::Time` instead of `::Tags::Next<::Tags::TimeStepId>`.
-template <bool UseNodegroupDgElements, typename System, size_t Dim,
-          bool DenseOutput, typename DbTagsList, typename... InboxTags>
+template <bool UseNodegroupDgElements, typename Metavariables, bool DenseOutput,
+          typename DbTagsList, typename... InboxTags>
 bool receive_boundary_data_local_time_stepping(
     const gsl::not_null<db::DataBox<DbTagsList>*> box,
     const gsl::not_null<tuples::TaggedTuple<InboxTags...>*> inboxes) {
-  using variables_tag = typename System::variables_tag;
+  constexpr size_t volume_dim = Metavariables::system::volume_dim;
+  using variables_tag = typename Metavariables::system::variables_tag;
   using dt_variables_tag = db::add_tag_prefix<::Tags::dt, variables_tag>;
 
   const auto needed_time = [&box]() {
@@ -257,7 +258,7 @@ bool receive_boundary_data_local_time_stepping(
 
   auto& inbox =
       tuples::get<evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<
-          Dim, UseNodegroupDgElements>>(*inboxes);
+          volume_dim, UseNodegroupDgElements>>(*inboxes);
 
   size_t missing_messages{};
   do {
@@ -266,14 +267,14 @@ bool receive_boundary_data_local_time_stepping(
     // using the `NormalDotNumericalFlux` prefix tag. This is because the
     // returned quantity is more a `dt` quantity than a
     // `NormalDotNormalDotFlux` since it's been lifted to the volume.
-    using InboxMap =
-        std::map<TimeStepId,
-                 DirectionalIdMap<Dim, evolution::dg::BoundaryData<Dim>>>;
+    using InboxMap = std::map<
+        TimeStepId,
+        DirectionalIdMap<volume_dim, evolution::dg::BoundaryData<volume_dim>>>;
     inbox.collect_messages();
     InboxMap& inbox_data = inbox.messages;
 
-    const auto& element = db::get<domain::Tags::Element<Dim>>(*box);
-    const auto& volume_mesh = db::get<domain::Tags::Mesh<Dim>>(*box);
+    const auto& element = db::get<domain::Tags::Element<volume_dim>>(*box);
+    const auto& volume_mesh = db::get<domain::Tags::Mesh<volume_dim>>(*box);
 
     missing_messages = 0;
 
@@ -281,11 +282,13 @@ bool receive_boundary_data_local_time_stepping(
       for (const auto& neighbor : neighbors) {
         const DirectionalId mortar_id{direction, neighbor};
         const size_t sliced_away_dim = direction.dimension();
-        const Mesh<Dim - 1> face_mesh = volume_mesh.slice_away(sliced_away_dim);
+        const Mesh<volume_dim - 1> face_mesh =
+            volume_mesh.slice_away(sliced_away_dim);
         for (;;) {
           const auto mortar_next_time_step_id =
-              db::get<evolution::dg::Tags::MortarNextTemporalId<Dim>>(*box).at(
-                  mortar_id);
+              db::get<evolution::dg::Tags::MortarNextTemporalId<volume_dim>>(
+                  *box)
+                  .at(mortar_id);
           if (not needed_time(mortar_next_time_step_id)) {
             break;
           }
@@ -300,34 +303,36 @@ bool receive_boundary_data_local_time_stepping(
             break;
           }
 
-          db::mutate<evolution::dg::Tags::MortarMesh<Dim>,
+          db::mutate<evolution::dg::Tags::MortarMesh<volume_dim>,
                      evolution::dg::Tags::MortarDataHistory<
-                         Dim, typename dt_variables_tag::type>,
-                     evolution::dg::Tags::MortarNextTemporalId<Dim>,
-                     domain::Tags::NeighborMesh<Dim>>(
-              [&](const gsl::not_null<DirectionalIdMap<Dim, Mesh<Dim - 1>>*>
+                         volume_dim, typename dt_variables_tag::type>,
+                     evolution::dg::Tags::MortarNextTemporalId<volume_dim>,
+                     domain::Tags::NeighborMesh<volume_dim>>(
+              [&](const gsl::not_null<
+                      DirectionalIdMap<volume_dim, Mesh<volume_dim - 1>>*>
                       mortar_meshes,
                   const gsl::not_null<DirectionalIdMap<
-                      Dim, TimeSteppers::BoundaryHistory<
-                               evolution::dg::MortarData<Dim>,
-                               evolution::dg::MortarData<Dim>,
-                               typename dt_variables_tag::type>>*>
+                      volume_dim, TimeSteppers::BoundaryHistory<
+                                      evolution::dg::MortarData<volume_dim>,
+                                      evolution::dg::MortarData<volume_dim>,
+                                      typename dt_variables_tag::type>>*>
                       boundary_data_history,
-                  const gsl::not_null<DirectionalIdMap<Dim, TimeStepId>*>
+                  const gsl::not_null<DirectionalIdMap<volume_dim, TimeStepId>*>
                       mortar_next_time_step_ids,
-                  const gsl::not_null<DirectionalIdMap<Dim, Mesh<Dim>>*>
+                  const gsl::not_null<
+                      DirectionalIdMap<volume_dim, Mesh<volume_dim>>*>
                       neighbor_mesh) {
-                const Mesh<Dim - 1> neighbor_face_mesh =
+                const Mesh<volume_dim - 1> neighbor_face_mesh =
                     received_mortar_data->second.volume_mesh.slice_away(
                         sliced_away_dim);
-                const Mesh<Dim - 1> mortar_mesh =
+                const Mesh<volume_dim - 1> mortar_mesh =
                     ::dg::mortar_mesh(face_mesh, neighbor_face_mesh);
 
                 const auto project_boundary_mortar_data =
-                    [&mortar_mesh](
-                        const TimeStepId& /*id*/,
-                        const gsl::not_null<::evolution::dg::MortarData<Dim>*>
-                            mortar_data) {
+                    [&mortar_mesh](const TimeStepId& /*id*/,
+                                   const gsl::not_null<
+                                       ::evolution::dg::MortarData<volume_dim>*>
+                                       mortar_data) {
                       return p_project_mortar_data(mortar_data, mortar_mesh);
                     };
 
@@ -335,7 +340,7 @@ bool receive_boundary_data_local_time_stepping(
                 boundary_data_history->at(mortar_id).local().for_each(
                     project_boundary_mortar_data);
 
-                MortarData<Dim> neighbor_mortar_data{};
+                MortarData<volume_dim> neighbor_mortar_data{};
                 // Insert:
                 // - the current TimeStepId of the neighbor
                 // - the current face mesh of the neighbor
@@ -522,8 +527,8 @@ struct ApplyBoundaryCorrections {
       const ParallelComponent* const /*component*/) {
     if constexpr (local_time_stepping) {
       return receive_boundary_data_local_time_stepping<
-          Parallel::is_dg_element_collection_v<ParallelComponent>, system,
-          VolumeDim, DenseOutput>(box, inboxes);
+          Parallel::is_dg_element_collection_v<ParallelComponent>,
+          Metavariables, DenseOutput>(box, inboxes);
     } else {
       return receive_boundary_data_global_time_stepping<
           Parallel::is_dg_element_collection_v<ParallelComponent>,
@@ -948,8 +953,8 @@ struct ActionImpl {
     if constexpr (LocalTimeStepping) {
       if (not receive_boundary_data_local_time_stepping<
               Parallel::is_dg_element_collection_v<ParallelComponent>,
-              typename Metavariables::system, VolumeDim, false>(
-              make_not_null(&box), make_not_null(&inboxes))) {
+              Metavariables, false>(make_not_null(&box),
+                                    make_not_null(&inboxes))) {
         return {Parallel::AlgorithmExecution::Retry, std::nullopt};
       }
     } else {
