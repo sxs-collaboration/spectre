@@ -1,6 +1,10 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
+if (NOT SPECTRE_AUTODIFF)
+  return()
+endif()
+
 set(LIBRARY "Test_Autodiff")
 
 set(LIBRARY_SOURCES

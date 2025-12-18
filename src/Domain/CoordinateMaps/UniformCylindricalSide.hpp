@@ -686,6 +686,8 @@ class UniformCylindricalSide {
 
   static bool is_identity() { return false; }
 
+  static constexpr bool supports_hessian{false};
+
  private:
   friend bool operator==(const UniformCylindricalSide& lhs,
                          const UniformCylindricalSide& rhs);

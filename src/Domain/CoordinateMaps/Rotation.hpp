@@ -83,6 +83,8 @@ class Rotation<2> {
 
   bool is_identity() const { return is_identity_; }
 
+  static constexpr bool supports_hessian{true};
+
  private:
   friend bool operator==(const Rotation<2>& lhs, const Rotation<2>& rhs);
 
@@ -156,6 +158,8 @@ class Rotation<3> {
   void pup(PUP::er& p);
 
   bool is_identity() const { return is_identity_; }
+
+  static constexpr bool supports_hessian{true};
 
  private:
   friend bool operator==(const Rotation<3>& lhs, const Rotation<3>& rhs);

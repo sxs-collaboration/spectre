@@ -16,12 +16,10 @@ spectre_target_headers(
   Simd.hpp
   )
 
-if (TARGET xsimd)
-  target_link_libraries(
-    ${LIBRARY}
-    INTERFACE
-    xsimd
-    )
+target_link_libraries(
+  ${LIBRARY}
+  INTERFACE
+  xsimd
+  )
 
   message(STATUS "Enabling simd support")
-endif()

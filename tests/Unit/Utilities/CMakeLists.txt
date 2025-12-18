@@ -55,9 +55,7 @@ set(LIBRARY_SOURCES
   Test_WrapText.cpp
   )
 
-if (SPECTRE_AUTODIFF)
-  add_subdirectory(Autodiff)
-endif()
+add_subdirectory(Autodiff)
 add_subdirectory(ErrorHandling)
 add_subdirectory(Kokkos)
 add_subdirectory(Protocols)

@@ -119,6 +119,8 @@ class SpecialMobius {
 
   bool is_identity() const { return is_identity_; }
 
+  static constexpr bool supports_hessian{true};
+
  private:
   template <typename T>
   std::array<tt::remove_cvref_wrap_t<T>, 3> mobius_distortion(

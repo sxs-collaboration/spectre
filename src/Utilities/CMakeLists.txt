@@ -1,9 +1,8 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-if (SPECTRE_AUTODIFF)
-  add_subdirectory(Autodiff)
-endif()
+
+add_subdirectory(Autodiff)
 add_subdirectory(Kokkos)
 add_subdirectory(Simd)
 
@@ -97,6 +96,7 @@ spectre_target_headers(
 target_link_libraries(
   ${LIBRARY}
   PUBLIC
+  Autodiff
   BLAS::BLAS
   Blaze
   Boost::boost

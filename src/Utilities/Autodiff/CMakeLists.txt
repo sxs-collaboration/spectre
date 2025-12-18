@@ -15,11 +15,19 @@ spectre_target_headers(
   Autodiff.hpp
   )
 
-target_link_libraries(
-  ${LIBRARY}
-  INTERFACE
-  autodiff::autodiff
-  Simd
-  )
+if (SPECTRE_AUTODIFF)
+  target_link_libraries(
+    ${LIBRARY}
+    INTERFACE
+    autodiff::autodiff
+    Simd
+    )
 
-message(STATUS "Enabling autodiff support")
+  target_compile_definitions(
+    ${LIBRARY}
+    INTERFACE
+    SPECTRE_AUTODIFF
+    )
+
+  message(STATUS "Enabling autodiff support")
+endif()

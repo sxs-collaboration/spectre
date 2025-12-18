@@ -7,6 +7,8 @@
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "Domain/CoordinateMaps/AutodiffInstantiationTypes.hpp"
+#include "Utilities/Autodiff/Autodiff.hpp"
 #include "Utilities/DereferenceWrapper.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/MakeWithValue.hpp"
@@ -93,9 +95,13 @@ bool operator==(const CoordinateMaps::Affine& lhs,
   template tnsr::Ij<tt::remove_cvref_wrap_t<DTYPE(data)>, 1, Frame::NoFrame> \
   Affine::inv_jacobian(const std::array<DTYPE(data), 1>& source_coords) const;
 
-GENERATE_INSTANTIATIONS(INSTANTIATE, (double, DataVector,
-                                      std::reference_wrapper<const double>,
-                                      std::reference_wrapper<const DataVector>))
+GENERATE_INSTANTIATIONS(
+    INSTANTIATE, (double, DataVector,
+                  std::reference_wrapper<const double>,
+                  std::reference_wrapper<const DataVector>))
+
+GENERATE_INSTANTIATIONS(INSTANTIATE, MAP_AUTODIFF_TYPES)
+
 #undef DTYPE
 #undef INSTANTIATE
 }  // namespace domain::CoordinateMaps

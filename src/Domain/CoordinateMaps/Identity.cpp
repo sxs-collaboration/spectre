@@ -4,6 +4,8 @@
 #include "Domain/CoordinateMaps/Identity.hpp"
 
 #include "DataStructures/Tensor/Identity.hpp"
+#include "Domain/CoordinateMaps/AutodiffInstantiationTypes.hpp"
+#include "Utilities/Autodiff/Autodiff.hpp"
 #include "Utilities/DereferenceWrapper.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/MakeArray.hpp"
@@ -58,10 +60,13 @@ template class Identity<3>;
   Identity<DIM(data)>::inv_jacobian(                                   \
       const std::array<DTYPE(data), DIM(data)>& source_coords) const;
 
-GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3),
-                        (double, DataVector,
-                         std::reference_wrapper<const double>,
-                         std::reference_wrapper<const DataVector>))
+GENERATE_INSTANTIATIONS(
+    INSTANTIATE, (1, 2, 3),
+    (double, DataVector,
+     std::reference_wrapper<const double>,
+     std::reference_wrapper<const DataVector>))
+
+GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), MAP_AUTODIFF_TYPES)
 
 #undef DIM
 #undef DTYPE

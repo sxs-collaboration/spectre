@@ -13,8 +13,10 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Matrix.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "Domain/CoordinateMaps/AutodiffInstantiationTypes.hpp"
 #include "Domain/CoordinateMaps/TimeDependent/RotationMatrixHelpers.hpp"
 #include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
+#include "Utilities/Autodiff/Autodiff.hpp"
 #include "Utilities/DereferenceWrapper.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/MakeWithValue.hpp"
@@ -215,10 +217,13 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (2, 3))
           std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&        \
           functions_of_time) const;
 
-GENERATE_INSTANTIATIONS(INSTANTIATE, (2, 3),
-                        (double, DataVector,
-                         std::reference_wrapper<const double>,
-                         std::reference_wrapper<const DataVector>))
+GENERATE_INSTANTIATIONS(
+    INSTANTIATE, (2, 3),
+    (double, DataVector,
+     std::reference_wrapper<const double>,
+     std::reference_wrapper<const DataVector>))
+
+GENERATE_INSTANTIATIONS(INSTANTIATE, (2, 3), MAP_AUTODIFF_TYPES)
 
 #undef DIM
 #undef DTYPE

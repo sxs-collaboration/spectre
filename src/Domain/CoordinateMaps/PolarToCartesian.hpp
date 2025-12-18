@@ -61,6 +61,8 @@ class PolarToCartesian {
   void pup(PUP::er& p);
 
   static constexpr bool is_identity() { return false; }
+
+  static constexpr bool supports_hessian{false};
 };
 
 bool operator==(const PolarToCartesian& lhs, const PolarToCartesian& rhs);

@@ -114,6 +114,8 @@ class CylindricalFlatEndcap {
 
   static bool is_identity() { return false; }
 
+  static constexpr bool supports_hessian{false};
+
  private:
   friend bool operator==(const CylindricalFlatEndcap& lhs,
                          const CylindricalFlatEndcap& rhs);

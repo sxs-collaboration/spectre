@@ -301,6 +301,8 @@ class Side {
 
   static bool is_identity() { return false; }
 
+  static constexpr bool supports_hessian{false};
+
  private:
   friend bool operator==(const Side& lhs, const Side& rhs);
   std::array<double, 3> center_{

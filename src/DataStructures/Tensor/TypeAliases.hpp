@@ -479,3 +479,34 @@ template <typename DataType, size_t Dim, typename SourceFrame,
 using Jacobian = Tensor<DataType, tmpl::integral_list<std::int32_t, 2, 1>,
                         index_list<SpatialIndex<Dim, UpLo::Up, TargetFrame>,
                                    SpatialIndex<Dim, UpLo::Lo, SourceFrame>>>;
+
+/*!
+ * \brief Inverse Hessian $(H^{-1})^\hat{i}_{jk} =
+ * \frac{\partial \xi^\hat{i}}{\partial x^j \partial x^k}$
+ *
+ * The first (upper) index is in the \p SourceFrame with coordinates
+ * $\xi^\hat{i}$ (often "logical"), and the second and third (lower) indices are
+ * in the \p TargetFrame with coordinates $x^j$ (often "inertial").
+ */
+template <typename DataType, size_t Dim, typename SourceFrame,
+          typename TargetFrame>
+using InverseHessian =
+    Tensor<DataType, tmpl::integral_list<std::int32_t, 2, 1, 1>,
+           index_list<SpatialIndex<Dim, UpLo::Up, SourceFrame>,
+                      SpatialIndex<Dim, UpLo::Lo, TargetFrame>,
+                      SpatialIndex<Dim, UpLo::Lo, TargetFrame>>>;
+
+/*!
+ * \brief Hessian $H^i_{\hat{j}\hat{k}} =
+ * \frac{\partial x^i}{\partial \xi^\hat{j} \partial \xi^\hat{k}}$
+ *
+ * The first (upper) index is in the \p TargetFrame with coordinates $x^i$
+ * (often "inertial"), and the second and third (lower) indices are in the
+ * \p SourceFrame with coordinates $\xi^\hat{j}$ (often "logical").
+ */
+template <typename DataType, size_t Dim, typename SourceFrame,
+          typename TargetFrame>
+using Hessian = Tensor<DataType, tmpl::integral_list<std::int32_t, 2, 1, 1>,
+                       index_list<SpatialIndex<Dim, UpLo::Up, TargetFrame>,
+                                  SpatialIndex<Dim, UpLo::Lo, SourceFrame>,
+                                  SpatialIndex<Dim, UpLo::Lo, SourceFrame>>>;

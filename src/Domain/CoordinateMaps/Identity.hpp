@@ -59,6 +59,8 @@ class Identity {
   void pup(PUP::er& /*p*/) {}
 
   bool is_identity() const { return true; }
+
+  static constexpr bool supports_hessian{true};
 };
 
 template <size_t Dim>
