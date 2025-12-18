@@ -261,22 +261,22 @@ class CoordinateMapBase : public PUP::able {
   /// @{
   /// Compute the mapped coordinates, frame velocity, Jacobian, and inverse
   /// Jacobian
-  virtual std::tuple<tnsr::I<double, Dim, TargetFrame>,
-                     InverseJacobian<double, Dim, SourceFrame, TargetFrame>,
-                     Jacobian<double, Dim, SourceFrame, TargetFrame>,
-                     tnsr::I<double, Dim, TargetFrame>>
-  coords_frame_velocity_jacobians(
+  virtual auto coords_frame_velocity_jacobians(
       tnsr::I<double, Dim, SourceFrame> source_point,
       double time = std::numeric_limits<double>::signaling_NaN(),
-      const FunctionsOfTimeMap& functions_of_time = {}) const = 0;
-  virtual std::tuple<tnsr::I<DataVector, Dim, TargetFrame>,
-                     InverseJacobian<DataVector, Dim, SourceFrame, TargetFrame>,
-                     Jacobian<DataVector, Dim, SourceFrame, TargetFrame>,
-                     tnsr::I<DataVector, Dim, TargetFrame>>
-  coords_frame_velocity_jacobians(
+      const FunctionsOfTimeMap& functions_of_time = {}) const
+      -> std::tuple<tnsr::I<double, Dim, TargetFrame>,
+                    InverseJacobian<double, Dim, SourceFrame, TargetFrame>,
+                    Jacobian<double, Dim, SourceFrame, TargetFrame>,
+                    tnsr::I<double, Dim, TargetFrame>> = 0;
+  virtual auto coords_frame_velocity_jacobians(
       tnsr::I<DataVector, Dim, SourceFrame> source_point,
       double time = std::numeric_limits<double>::signaling_NaN(),
-      const FunctionsOfTimeMap& functions_of_time = {}) const = 0;
+      const FunctionsOfTimeMap& functions_of_time = {}) const
+      -> std::tuple<tnsr::I<DataVector, Dim, TargetFrame>,
+                    InverseJacobian<DataVector, Dim, SourceFrame, TargetFrame>,
+                    Jacobian<DataVector, Dim, SourceFrame, TargetFrame>,
+                    tnsr::I<DataVector, Dim, TargetFrame>> = 0;
   /// @}
 
  private:
@@ -554,25 +554,25 @@ class CoordinateMap
   /// Jacobian. The inverse Jacobian is computed by numerically inverting the
   /// Jacobian as this was measured to be quicker than computing it directly for
   /// more complex map concatenations.
-  std::tuple<tnsr::I<double, dim, TargetFrame>,
-             InverseJacobian<double, dim, SourceFrame, TargetFrame>,
-             Jacobian<double, dim, SourceFrame, TargetFrame>,
-             tnsr::I<double, dim, TargetFrame>>
-  coords_frame_velocity_jacobians(
+  auto coords_frame_velocity_jacobians(
       tnsr::I<double, dim, SourceFrame> source_point,
       const double time = std::numeric_limits<double>::signaling_NaN(),
-      const FunctionsOfTimeMap& functions_of_time = {}) const override {
+      const FunctionsOfTimeMap& functions_of_time = {}) const
+      -> std::tuple<tnsr::I<double, dim, TargetFrame>,
+                    InverseJacobian<double, dim, SourceFrame, TargetFrame>,
+                    Jacobian<double, dim, SourceFrame, TargetFrame>,
+                    tnsr::I<double, dim, TargetFrame>> override {
     return coords_frame_velocity_jacobians_impl(std::move(source_point), time,
                                                 functions_of_time);
   }
-  std::tuple<tnsr::I<DataVector, dim, TargetFrame>,
-             InverseJacobian<DataVector, dim, SourceFrame, TargetFrame>,
-             Jacobian<DataVector, dim, SourceFrame, TargetFrame>,
-             tnsr::I<DataVector, dim, TargetFrame>>
-  coords_frame_velocity_jacobians(
+  auto coords_frame_velocity_jacobians(
       tnsr::I<DataVector, dim, SourceFrame> source_point,
       const double time = std::numeric_limits<double>::signaling_NaN(),
-      const FunctionsOfTimeMap& functions_of_time = {}) const override {
+      const FunctionsOfTimeMap& functions_of_time = {}) const
+      -> std::tuple<tnsr::I<DataVector, dim, TargetFrame>,
+                    InverseJacobian<DataVector, dim, SourceFrame, TargetFrame>,
+                    Jacobian<DataVector, dim, SourceFrame, TargetFrame>,
+                    tnsr::I<DataVector, dim, TargetFrame>> override {
     return coords_frame_velocity_jacobians_impl(std::move(source_point), time,
                                                 functions_of_time);
   }
