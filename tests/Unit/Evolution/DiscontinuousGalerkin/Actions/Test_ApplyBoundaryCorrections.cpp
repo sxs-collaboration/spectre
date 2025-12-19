@@ -244,26 +244,28 @@ struct SetLocalMortarData {
             },
             make_not_null(&box));
         ++count;
+
+        const TimeStepId past_time_step_id{true, 3,
+                                           Time{Slab{0.2, 3.4}, {1, 4}}};
+        // In LTS, pass an incorrect slab end for the east element to
+        // simulate the slab size changing.  This previously caused
+        // a bug when a slab-size change happened at a time only
+        // needed on the remote side.
+        const auto remote_past_time_step_id =
+            LocalTimeStepping
+                ? direction == Direction<Metavariables::volume_dim>::upper_xi()
+                      ? TimeStepId{true, 3, Time{Slab{0.2, 1.3}, {0, 4}}}
+                      : past_time_step_id
+                : time_step_id;
+        db::mutate<evolution::dg::Tags::MortarNextTemporalId<
+            Metavariables::volume_dim>>(
+            [&mortar_id, &remote_past_time_step_id](
+                const auto mortar_next_temporal_id_ptr) {
+              mortar_next_temporal_id_ptr->at(mortar_id) =
+                  remote_past_time_step_id;
+            },
+            make_not_null(&box));
         if (LocalTimeStepping) {
-          const TimeStepId past_time_step_id{true, 3,
-                                             Time{Slab{0.2, 3.4}, {1, 4}}};
-          // Pass an incorrect slab end for the east element to
-          // simulate the slab size changing.  This previously caused
-          // a bug when a slab-size change happened at a time only
-          // needed on the remote side.
-          const auto remote_past_time_step_id =
-              direction == Direction<Metavariables::volume_dim>::upper_xi()
-                  ? TimeStepId{true, 3, Time{Slab{0.2, 1.3}, {0, 4}}}
-                  : past_time_step_id;
-          // When doing local time stepping we need a past history.
-          db::mutate<evolution::dg::Tags::MortarNextTemporalId<
-              Metavariables::volume_dim>>(
-              [&mortar_id, &remote_past_time_step_id](
-                  const auto mortar_next_temporal_id_ptr) {
-                mortar_next_temporal_id_ptr->at(mortar_id) =
-                    remote_past_time_step_id;
-              },
-              make_not_null(&box));
           // We also need to set the local history one step back to get to 2nd
           // order in time.
           type_erased_boundary_data_on_mortar.destructive_resize(
@@ -755,10 +757,8 @@ void test_impl(const Spectral::Quadrature quadrature,
         REQUIRE(not ActionTesting::next_action_if_ready<comp>(
             make_not_null(&runner), self_id));
       }
-      insert_neighbor_data(
-          time_step_id,
-          UseLocalTimeStepping ? local_next_time_step_id : time_step_id,
-          common_integration_order);
+      insert_neighbor_data(time_step_id, local_next_time_step_id,
+                           common_integration_order);
     }
   }
   // Check expected inboxes
