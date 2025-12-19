@@ -400,7 +400,7 @@ struct GeneralizedHarmonicTemplateBase {
               Actions::MutateApply<ChangeTimeStepperOrder<system>>>,
           tmpl::list<
               evolution::dg::Actions::ApplyBoundaryCorrectionsToTimeDerivative<
-                  volume_dim, false, use_dg_element_collection>,
+                  volume_dim, use_dg_element_collection>,
               Actions::MutateApply<RecordTimeStepperData<system>>,
               evolution::Actions::RunEventsAndDenseTriggers<tmpl::list<>>,
               control_system::Actions::LimitTimeStep<ControlSystems>,

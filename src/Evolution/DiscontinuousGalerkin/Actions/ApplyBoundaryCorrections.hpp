@@ -884,7 +884,7 @@ namespace Actions {
  * \brief Computes the boundary corrections for global time-stepping
  * and adds them to the time derivative.
  */
-template <size_t VolumeDim, bool DenseOutput, bool UseNodegroupDgElements>
+template <size_t VolumeDim, bool UseNodegroupDgElements>
 struct ApplyBoundaryCorrectionsToTimeDerivative {
   using inbox_tags =
       tmpl::list<evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<
@@ -925,7 +925,7 @@ struct ApplyBoundaryCorrectionsToTimeDerivative {
     }
 
     db::mutate_apply<
-        ApplyBoundaryCorrections<false, Metavariables, VolumeDim, DenseOutput>>(
+        ApplyBoundaryCorrections<false, Metavariables, VolumeDim, false>>(
         make_not_null(&box));
     return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }

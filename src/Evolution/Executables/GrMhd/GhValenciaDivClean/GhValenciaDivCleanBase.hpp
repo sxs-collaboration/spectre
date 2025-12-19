@@ -765,7 +765,7 @@ struct GhValenciaDivCleanTemplateBase<
                      Actions::MutateApply<ChangeTimeStepperOrder<system>>>,
           tmpl::list<
               evolution::dg::Actions::ApplyBoundaryCorrectionsToTimeDerivative<
-                  volume_dim, false, use_dg_element_collection>,
+                  volume_dim, use_dg_element_collection>,
               Actions::MutateApply<RecordTimeStepperData<system>>,
               Actions::MutateApply<UpdateU<system, local_time_stepping>>>>,
       Actions::MutateApply<CleanHistory<system>>,
@@ -791,7 +791,7 @@ struct GhValenciaDivCleanTemplateBase<
           volume_dim, system, AllStepChoosers, local_time_stepping,
           use_dg_element_collection>,
       evolution::dg::Actions::ApplyBoundaryCorrectionsToTimeDerivative<
-          volume_dim, false, use_dg_element_collection>,
+          volume_dim, use_dg_element_collection>,
       tmpl::conditional_t<
           UseControlSystems,
           Actions::MutateApply<grmhd::GhValenciaDivClean::subcell::
