@@ -3,7 +3,13 @@
 
 set(LIBRARY ParallelAmr)
 
-add_spectre_library(${LIBRARY} INTERFACE)
+add_spectre_library(${LIBRARY})
+
+spectre_target_sources(
+  ${LIBRARY}
+  PRIVATE
+  Tags.cpp
+  )
 
 spectre_target_headers(
   ${LIBRARY}
@@ -14,12 +20,15 @@ spectre_target_headers(
 
 target_link_libraries(
   ${LIBRARY}
+  PUBLIC
+  DataStructures
+  Domain
+  DomainStructure
   INTERFACE
   Amr
   AmrCriteria
   AmrPolicies
   AmrProjectors
-  DataStructures
   Initialization
   Logging
   Printf

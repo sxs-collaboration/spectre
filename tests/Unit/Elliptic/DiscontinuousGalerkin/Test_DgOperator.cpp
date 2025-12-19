@@ -149,7 +149,9 @@ struct AmrComponent {
   using array_index = int;
   using component_being_mocked = ::amr::Component<Metavariables>;
   using const_global_cache_tags =
-      tmpl::list<::amr::Criteria::Tags::Criteria, ::amr::Tags::Policies,
+      tmpl::list<::amr::Criteria::Tags::Criteria,
+                 amr::Tags::AmrBlocks<Metavariables::volume_dim>,
+                 ::amr::Tags::Policies,
                  logging::Tags::Verbosity<amr::OptionTags::AmrGroup>>;
 
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
@@ -372,12 +374,13 @@ void test_dg_operator(
       ::elliptic::dg::Tags::PenaltyParameter, ::elliptic::dg::Tags::Massive,
       ::elliptic::dg::Tags::Quadrature, ::elliptic::dg::Tags::Formulation,
       ::Tags::AnalyticSolution<AnalyticSolution>,
-      ::amr::Criteria::Tags::Criteria, ::amr::Tags::Policies,
+      ::amr::Criteria::Tags::Criteria, amr::Tags::AmrBlocks<Dim>,
+      ::amr::Tags::Policies,
       logging::Tags::Verbosity<::amr::OptionTags::AmrGroup>>{
       std::move(domain), domain_creator.functions_of_time(),
       std::move(boundary_conditions), penalty_parameter,
       use_massive_dg_operator, quadrature, dg_formulation, analytic_solution,
-      std::move(amr_criteria),
+      std::move(amr_criteria), std::nullopt,
       ::amr::Policies{::amr::Isotropy::Anisotropic, ::amr::Limits{}, true,
                       true},
       ::Verbosity::Debug}};

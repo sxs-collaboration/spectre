@@ -22,6 +22,7 @@ Amr:
           Split: 2
           Join: 1
           DoNothing: 1
+  EnableInBlocks: All
   Policies:
     EnforceTwoToOneBalanceInNormalDirection: true
     Isotropy: Anisotropic

@@ -102,7 +102,8 @@ struct Component {
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = ElementId<volume_dim>;
   using const_global_cache_tags =
-      tmpl::list<amr::Criteria::Tags::Criteria, amr::Tags::Policies>;
+      tmpl::list<amr::Criteria::Tags::Criteria,
+                 amr::Tags::AmrBlocks<volume_dim>, amr::Tags::Policies>;
   using simple_tags =
       tmpl::list<domain::Tags::Element<volume_dim>,
                  domain::Tags::Mesh<volume_dim>, amr::Tags::Info<volume_dim>,
@@ -163,6 +164,7 @@ void evaluate_criteria(std::vector<std::unique_ptr<amr::Criterion>> criteria,
   const ElementId<1> lo_id(0, {{{1, 0}}});
   const ElementId<1> up_id(1, {{{1, 0}}});
   const ElementId<1> up_sibling_id(1, {{{1, 1}}});
+  const ElementId<1> disabled_block_id(2, {{{0, 0}}});
   const Mesh<1> self_mesh{2_st, Spectral::Basis::Legendre,
                           Spectral::Quadrature::GaussLobatto};
   const Mesh<1> lo_mesh{3_st, Spectral::Basis::Legendre,
@@ -180,9 +182,10 @@ void evaluate_criteria(std::vector<std::unique_ptr<amr::Criterion>> criteria,
 
   amr::Info<1> initial_info{std::array{amr::Flag::Undefined}, Mesh<1>{}};
   std::unordered_map<ElementId<1>, amr::Info<1>> initial_neighbor_info;
+  const std::unordered_set<size_t> amr_blocks{0, 1};
 
   ActionTesting::MockRuntimeSystem<metavariables> runner{
-      {std::move(criteria),
+      {std::move(criteria), amr_blocks,
        amr::Policies{amr::Isotropy::Anisotropic, amr::Limits{}, true, true}}};
 
   const Element<1> self(self_id,
@@ -208,11 +211,22 @@ void evaluate_criteria(std::vector<std::unique_ptr<amr::Criterion>> criteria,
       &runner, up_id, {up, up_mesh, initial_info, initial_neighbor_info});
 
   const Element<1> up_sibling(
-      up_sibling_id, {{{Direction<1>::lower_xi(),
-                        {{up_id}, OrientationMap<1>::create_aligned()}}}});
+      up_sibling_id,
+      {{{Direction<1>::lower_xi(),
+         {{up_id}, OrientationMap<1>::create_aligned()}},
+        {Direction<1>::upper_xi(),
+         {{disabled_block_id}, OrientationMap<1>::create_aligned()}}}});
   ActionTesting::emplace_component_and_initialize<my_component>(
       &runner, up_sibling_id,
       {up_sibling, up_sibling_mesh, initial_info, initial_neighbor_info});
+
+  const Element<1> disabled_block(
+      disabled_block_id,
+      {{{Direction<1>::lower_xi(),
+         {{up_sibling_id}, OrientationMap<1>::create_aligned()}}}});
+  ActionTesting::emplace_component_and_initialize<my_component>(
+      &runner, disabled_block_id,
+      {disabled_block, up_sibling_mesh, initial_info, initial_neighbor_info});
 
   runner.set_phase(Parallel::Phase::Testing);
 
@@ -297,6 +311,22 @@ void evaluate_criteria(std::vector<std::unique_ptr<amr::Criterion>> criteria,
     CHECK(ActionTesting::number_of_queued_simple_actions<my_component>(
               runner, id) == (id == self_id ? 2 : (id == lo_id ? 1 : 0)));
   }
+
+  // disabled block runs EvaluateAmrCriteria, which queues nothing
+  ActionTesting::simple_action<my_component,
+                               amr::Actions::EvaluateRefinementCriteria>(
+      make_not_null(&runner), disabled_block_id);
+  const amr::Info<1> disabled_block_info{
+      std::array<amr::Flag, 1>{amr::Flag::DoNothing}, up_sibling_mesh};
+  for (const auto& id : {disabled_block_id}) {
+    CHECK(ActionTesting::get_databox_tag<my_component, amr::Tags::Info<1>>(
+              runner, id) == disabled_block_info);
+    CHECK(ActionTesting::get_databox_tag<my_component,
+                                         amr::Tags::NeighborInfo<1>>(
+              runner, id) == initial_neighbor_info);
+    CHECK(ActionTesting::number_of_queued_simple_actions<my_component>(
+              runner, id) == 0);
+  }
 }
 
 void check_split_while_join_is_avoided() {
@@ -332,7 +362,7 @@ void check_split_while_join_is_avoided() {
   // But we do not allow an Element to simultaneously split and join so the
   // action should change the flags to (DoNothing, Split)
   ActionTesting::MockRuntimeSystem<metavariables> runner{
-      {std::move(criteria),
+      {std::move(criteria), std::nullopt,
        amr::Policies{amr::Isotropy::Anisotropic, amr::Limits{}, true, true}}};
 
   const Element<2> self(self_id, {});

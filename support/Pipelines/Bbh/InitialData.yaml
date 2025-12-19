@@ -167,6 +167,7 @@ DomainCreator:
 Amr:
   Verbosity: Verbose
   Criteria: []
+  EnableInBlocks: All
   Policies:
     EnforceTwoToOneBalanceInNormalDirection: true
     Isotropy: Anisotropic
