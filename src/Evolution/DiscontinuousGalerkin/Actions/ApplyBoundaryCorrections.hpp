@@ -103,136 +103,15 @@ struct TemporaryReference {
 };
 }  // namespace detail
 
-/// Receive boundary data for global time-stepping.  Returns true if
-/// all necessary data has been received.
-template <bool UseNodegroupDgElements, typename Metavariables,
-          typename DbTagsList, typename... InboxTags>
-bool receive_boundary_data_global_time_stepping(
-    const gsl::not_null<db::DataBox<DbTagsList>*> box,
-    const gsl::not_null<tuples::TaggedTuple<InboxTags...>*> inboxes) {
-  constexpr size_t volume_dim = Metavariables::system::volume_dim;
-
-  const TimeStepId& temporal_id = get<::Tags::TimeStepId>(*box);
-
-  const auto number_of_neighbors =
-      db::get<domain::Tags::Element<volume_dim>>(*box).number_of_neighbors();
-
-  auto& inbox =
-      tuples::get<evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<
-          volume_dim, UseNodegroupDgElements>>(*inboxes);
-collect_messages:
-  inbox.collect_messages();
-  const auto received_record = inbox.messages.find(temporal_id);
-  if (received_record == inbox.messages.end()) {
-    if (inbox.set_missing_messages(number_of_neighbors)) {
-      // We've received new messages while this function was running,
-      // so try again.
-      goto collect_messages;  // NOLINT(cppcoreguidelines-avoid-goto)
-    }
-    return false;
-  }
-  auto& received_neighbor_data = received_record->second;
-  if (received_neighbor_data.size() != number_of_neighbors) {
-    ASSERT(received_neighbor_data.size() < number_of_neighbors,
-           "Received too many messages: " << received_neighbor_data);
-    if (inbox.set_missing_messages(number_of_neighbors -
-                                   received_neighbor_data.size())) {
-      // We've received new messages while this function was running,
-      // so try again.
-      goto collect_messages;  // NOLINT(cppcoreguidelines-avoid-goto)
-    }
-    return false;
-  }
-
-  std::pair received_temporal_id_and_data{temporal_id,
-                                          std::move(received_neighbor_data)};
-  inbox.messages.erase(received_record);
-
-  // Move inbox contents into the DataBox
-  if constexpr (using_subcell_v<Metavariables>) {
-    for (const auto& [mortar_id, data] : received_temporal_id_and_data.second) {
-      evolution::dg::subcell::receive_subcell_data_for_dg<volume_dim>(
-          &db::as_access(*box), mortar_id, data);
-      evolution::dg::subcell::neighbor_tci_decision<volume_dim>(
-          make_not_null(&db::as_access(*box)), mortar_id, data);
-    }
-  }
-
-  db::mutate<evolution::dg::Tags::MortarMesh<volume_dim>,
-             evolution::dg::Tags::MortarData<volume_dim>,
-             evolution::dg::Tags::MortarNextTemporalId<volume_dim>,
-             domain::Tags::NeighborMesh<volume_dim>>(
-      [&received_temporal_id_and_data](
-          const gsl::not_null<
-              DirectionalIdMap<volume_dim, Mesh<volume_dim - 1>>*>
-              mortar_meshes,
-          const gsl::not_null<DirectionalIdMap<
-              volume_dim, evolution::dg::MortarDataHolder<volume_dim>>*>
-              mortar_data,
-          const gsl::not_null<DirectionalIdMap<volume_dim, TimeStepId>*>
-              mortar_next_time_step_id,
-          const gsl::not_null<DirectionalIdMap<volume_dim, Mesh<volume_dim>>*>
-              neighbor_mesh,
-          const Mesh<volume_dim>& volume_mesh) {
-        neighbor_mesh->clear();
-        for (auto& received_mortar_data :
-             received_temporal_id_and_data.second) {
-          const auto& mortar_id = received_mortar_data.first;
-          const size_t sliced_away_dim = mortar_id.direction().dimension();
-          const Mesh<volume_dim - 1> face_mesh =
-              volume_mesh.slice_away(sliced_away_dim);
-          const Mesh<volume_dim - 1> neighbor_face_mesh =
-              received_mortar_data.second.volume_mesh.slice_away(
-                  sliced_away_dim);
-          const Mesh<volume_dim - 1> mortar_mesh =
-              ::dg::mortar_mesh(face_mesh, neighbor_face_mesh);
-          mortar_meshes->at(mortar_id) = mortar_mesh;
-          p_project_mortar_data(
-              make_not_null(&mortar_data->at(mortar_id).local()), mortar_mesh);
-          neighbor_mesh->insert_or_assign(
-              mortar_id, received_mortar_data.second.volume_mesh);
-          mortar_next_time_step_id->at(mortar_id) =
-              received_mortar_data.second.validity_range;
-          mortar_data->at(mortar_id).neighbor().face_mesh = neighbor_face_mesh;
-          ASSERT(using_subcell_v<Metavariables> or
-                     received_mortar_data.second.boundary_correction_data
-                         .has_value(),
-                 "Must receive number boundary correction data when not using "
-                 "DG-subcell. Mortar ID is: ("
-                     << mortar_id.direction() << "," << mortar_id.id()
-                     << ") and TimeStepId is "
-                     << received_temporal_id_and_data.first);
-          mortar_data->at(mortar_id).neighbor().mortar_mesh =
-              received_mortar_data.second.boundary_correction_mesh;
-          mortar_data->at(mortar_id).neighbor().mortar_data =
-              std::move(received_mortar_data.second.boundary_correction_data);
-          if (mortar_data->at(mortar_id).neighbor().mortar_data.has_value()) {
-            p_project_mortar_data(
-                make_not_null(&mortar_data->at(mortar_id).neighbor()),
-                mortar_mesh);
-          }
-        }
-      },
-      box, db::get<domain::Tags::Mesh<volume_dim>>(*box));
-
-  if constexpr (using_subcell_v<Metavariables>) {
-    evolution::dg::subcell::neighbor_reconstructed_face_solution<
-        volume_dim, typename Metavariables::SubcellOptions::
-                        DgComputeSubcellNeighborPackagedData>(
-        &db::as_access(*box));
-  }
-
-  return true;
-}
-
-/// Receive boundary data for local time-stepping.  Returns true if
+/// Move boundary data from the inbox to the DataBox.  Returns true if
 /// all necessary data has been received.
 ///
 /// Setting \p DenseOutput to true receives data required for output
 /// at `::Tags::Time` instead of `::Tags::Next<::Tags::TimeStepId>`.
-template <bool UseNodegroupDgElements, typename Metavariables, bool DenseOutput,
-          typename DbTagsList, typename... InboxTags>
-bool receive_boundary_data_local_time_stepping(
+template <bool UseNodegroupDgElements, typename Metavariables,
+          bool LocalTimeStepping, bool DenseOutput, typename DbTagsList,
+          typename... InboxTags>
+bool receive_boundary_data(
     const gsl::not_null<db::DataBox<DbTagsList>*> box,
     const gsl::not_null<tuples::TaggedTuple<InboxTags...>*> inboxes) {
   constexpr size_t volume_dim = Metavariables::system::volume_dim;
@@ -240,25 +119,36 @@ bool receive_boundary_data_local_time_stepping(
   using dt_variables_tag = db::add_tag_prefix<::Tags::dt, variables_tag>;
 
   const auto needed_time = [&box]() {
-    const LtsTimeStepper& time_stepper =
-        db::get<::Tags::TimeStepper<LtsTimeStepper>>(*box);
-    if constexpr (DenseOutput) {
-      const auto& dense_output_time = db::get<::Tags::Time>(*box);
-      return [&dense_output_time, &time_stepper](const TimeStepId& id) {
-        return time_stepper.neighbor_data_required(dense_output_time, id);
-      };
+    if constexpr (LocalTimeStepping) {
+      const LtsTimeStepper& time_stepper =
+          db::get<::Tags::TimeStepper<LtsTimeStepper>>(*box);
+      if constexpr (DenseOutput) {
+        const auto& dense_output_time = db::get<::Tags::Time>(*box);
+        return [&dense_output_time, &time_stepper](const TimeStepId& id) {
+          return time_stepper.neighbor_data_required(dense_output_time, id);
+        };
+      } else {
+        const auto& next_temporal_id =
+            db::get<::Tags::Next<::Tags::TimeStepId>>(*box);
+        return [&next_temporal_id, &time_stepper](const TimeStepId& id) {
+          return time_stepper.neighbor_data_required(next_temporal_id, id);
+        };
+      }
     } else {
-      const auto& next_temporal_id =
-          db::get<::Tags::Next<::Tags::TimeStepId>>(*box);
-      return [&next_temporal_id, &time_stepper](const TimeStepId& id) {
-        return time_stepper.neighbor_data_required(next_temporal_id, id);
-      };
+      static_assert(not DenseOutput,
+                    "Should not be receiving data for dense output with GTS.");
+      const auto& current_id = db::get<::Tags::TimeStepId>(*box);
+      return [&current_id](const TimeStepId& id) { return id <= current_id; };
     }
   }();
 
   auto& inbox =
       tuples::get<evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<
           volume_dim, UseNodegroupDgElements>>(*inboxes);
+
+  const auto& element = db::get<domain::Tags::Element<volume_dim>>(*box);
+  const auto& volume_mesh = db::get<domain::Tags::Mesh<volume_dim>>(*box);
+  const auto& mortar_infos = db::get<Tags::MortarInfo<volume_dim>>(*box);
 
   size_t missing_messages{};
   do {
@@ -273,14 +163,29 @@ bool receive_boundary_data_local_time_stepping(
     inbox.collect_messages();
     InboxMap& inbox_data = inbox.messages;
 
-    const auto& element = db::get<domain::Tags::Element<volume_dim>>(*box);
-    const auto& volume_mesh = db::get<domain::Tags::Mesh<volume_dim>>(*box);
-
     missing_messages = 0;
 
     for (const auto& [direction, neighbors] : element.neighbors()) {
       for (const auto& neighbor : neighbors) {
         const DirectionalId mortar_id{direction, neighbor};
+
+        const auto& time_stepping_policy =
+            mortar_infos.at(mortar_id).time_stepping_policy();
+        switch (time_stepping_policy) {
+          case TimeSteppingPolicy::EqualRate:
+            if (LocalTimeStepping) {
+              continue;
+            }
+            break;
+          case TimeSteppingPolicy::Conservative:
+            if (not LocalTimeStepping) {
+              continue;
+            }
+            break;
+          default:
+            ERROR("Unhandled TimeSteppingPolicy: " << time_stepping_policy);
+        }
+
         const size_t sliced_away_dim = direction.dimension();
         const Mesh<volume_dim - 1> face_mesh =
             volume_mesh.slice_away(sliced_away_dim);
@@ -303,7 +208,19 @@ bool receive_boundary_data_local_time_stepping(
             break;
           }
 
+          if constexpr (using_subcell_v<Metavariables>) {
+            if (time_stepping_policy == TimeSteppingPolicy::EqualRate) {
+              evolution::dg::subcell::receive_subcell_data_for_dg<volume_dim>(
+                  &db::as_access(*box), mortar_id,
+                  received_mortar_data->second);
+              evolution::dg::subcell::neighbor_tci_decision<volume_dim>(
+                  make_not_null(&db::as_access(*box)), mortar_id,
+                  received_mortar_data->second);
+            }
+          }
+
           db::mutate<evolution::dg::Tags::MortarMesh<volume_dim>,
+                     evolution::dg::Tags::MortarData<volume_dim>,
                      evolution::dg::Tags::MortarDataHistory<
                          volume_dim, typename dt_variables_tag::type>,
                      evolution::dg::Tags::MortarNextTemporalId<volume_dim>,
@@ -311,6 +228,9 @@ bool receive_boundary_data_local_time_stepping(
               [&](const gsl::not_null<
                       DirectionalIdMap<volume_dim, Mesh<volume_dim - 1>>*>
                       mortar_meshes,
+                  const gsl::not_null<DirectionalIdMap<
+                      volume_dim, evolution::dg::MortarDataHolder<volume_dim>>*>
+                      gts_mortar_data,
                   const gsl::not_null<DirectionalIdMap<
                       volume_dim, TimeSteppers::BoundaryHistory<
                                       evolution::dg::MortarData<volume_dim>,
@@ -337,36 +257,62 @@ bool receive_boundary_data_local_time_stepping(
                     };
 
                 mortar_meshes->at(mortar_id) = mortar_mesh;
-                boundary_data_history->at(mortar_id).local().for_each(
-                    project_boundary_mortar_data);
+                switch (time_stepping_policy) {
+                  case TimeSteppingPolicy::EqualRate:
+                    p_project_mortar_data(
+                        make_not_null(&gts_mortar_data->at(mortar_id).local()),
+                        mortar_mesh);
+                    break;
+                  case TimeSteppingPolicy::Conservative:
+                    boundary_data_history->at(mortar_id).local().for_each(
+                        project_boundary_mortar_data);
+                    break;
+                  default:
+                    ERROR("Unhandled TimeSteppingPolicy: "
+                          << time_stepping_policy);
+                }
 
-                MortarData<volume_dim> neighbor_mortar_data{};
-                // Insert:
-                // - the current TimeStepId of the neighbor
-                // - the current face mesh of the neighbor
-                // - the current boundary correction data of the neighbor
-                ASSERT(received_mortar_data->second.boundary_correction_data
-                           .has_value(),
-                       "Did not receive boundary correction data from the "
-                       "neighbor\nMortarId: "
-                           << mortar_id
-                           << "\nTimeStepId: " << mortar_next_time_step_id);
                 neighbor_mesh->insert_or_assign(
                     mortar_id, received_mortar_data->second.volume_mesh);
-                neighbor_mortar_data.mortar_mesh =
-                    received_mortar_data->second.boundary_correction_mesh
-                        .value();
-                neighbor_mortar_data.mortar_data =
-                    std::move(received_mortar_data->second
-                                  .boundary_correction_data.value());
-                boundary_data_history->at(mortar_id).remote().insert(
-                    time_entry->first,
-                    received_mortar_data->second.integration_order,
-                    std::move(neighbor_mortar_data));
-                boundary_data_history->at(mortar_id).remote().for_each(
-                    project_boundary_mortar_data);
                 mortar_next_time_step_ids->at(mortar_id) =
                     received_mortar_data->second.validity_range;
+
+                ASSERT(using_subcell_v<Metavariables> or
+                           received_mortar_data->second.boundary_correction_data
+                               .has_value(),
+                       "Must receive neighbor boundary correction data when "
+                       "not using DG-subcell. Mortar ID is: ("
+                           << mortar_id.direction() << "," << mortar_id.id()
+                           << ") and TimeStepId is " << time_entry->first);
+                MortarData<volume_dim> neighbor_mortar_data{};
+                neighbor_mortar_data.face_mesh = neighbor_face_mesh;
+                neighbor_mortar_data.mortar_mesh =
+                    received_mortar_data->second.boundary_correction_mesh;
+                neighbor_mortar_data.mortar_data = std::move(
+                    received_mortar_data->second.boundary_correction_data);
+                switch (time_stepping_policy) {
+                  case TimeSteppingPolicy::EqualRate:
+                    if (neighbor_mortar_data.mortar_data.has_value()) {
+                      p_project_mortar_data(
+                          make_not_null(&neighbor_mortar_data), mortar_mesh);
+                    }
+                    gts_mortar_data->at(mortar_id).neighbor() =
+                        std::move(neighbor_mortar_data);
+                    break;
+                  case TimeSteppingPolicy::Conservative:
+                    ASSERT(neighbor_mortar_data.mortar_data.has_value(),
+                           "Did not receive mortar data for " << mortar_id);
+                    boundary_data_history->at(mortar_id).remote().insert(
+                        time_entry->first,
+                        received_mortar_data->second.integration_order,
+                        std::move(neighbor_mortar_data));
+                    boundary_data_history->at(mortar_id).remote().for_each(
+                        project_boundary_mortar_data);
+                    break;
+                  default:
+                    ERROR("Unhandled TimeSteppingPolicy: "
+                          << time_stepping_policy);
+                }
               },
               box);
           time_entry->second.erase(received_mortar_data);
@@ -378,6 +324,12 @@ bool receive_boundary_data_local_time_stepping(
     }
 
     if (missing_messages == 0) {
+      if constexpr (using_subcell_v<Metavariables>) {
+        evolution::dg::subcell::neighbor_reconstructed_face_solution<
+            volume_dim, typename Metavariables::SubcellOptions::
+                            DgComputeSubcellNeighborPackagedData>(
+            &db::as_access(*box));
+      }
       return true;
     }
   } while (inbox.set_missing_messages(missing_messages));
@@ -525,15 +477,9 @@ struct ApplyBoundaryCorrections {
       Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/,
       const ParallelComponent* const /*component*/) {
-    if constexpr (local_time_stepping) {
-      return receive_boundary_data_local_time_stepping<
-          Parallel::is_dg_element_collection_v<ParallelComponent>,
-          Metavariables, DenseOutput>(box, inboxes);
-    } else {
-      return receive_boundary_data_global_time_stepping<
-          Parallel::is_dg_element_collection_v<ParallelComponent>,
-          Metavariables>(box, inboxes);
-    }
+    return receive_boundary_data<
+        Parallel::is_dg_element_collection_v<ParallelComponent>, Metavariables,
+        local_time_stepping, DenseOutput>(box, inboxes);
   }
 
  private:
@@ -950,19 +896,11 @@ struct ActionImpl {
       return {Parallel::AlgorithmExecution::Continue, std::nullopt};
     }
 
-    if constexpr (LocalTimeStepping) {
-      if (not receive_boundary_data_local_time_stepping<
-              Parallel::is_dg_element_collection_v<ParallelComponent>,
-              Metavariables, false>(make_not_null(&box),
-                                    make_not_null(&inboxes))) {
-        return {Parallel::AlgorithmExecution::Retry, std::nullopt};
-      }
-    } else {
-      if (not receive_boundary_data_global_time_stepping<
-              Parallel::is_dg_element_collection_v<ParallelComponent>,
-              Metavariables>(make_not_null(&box), make_not_null(&inboxes))) {
-        return {Parallel::AlgorithmExecution::Retry, std::nullopt};
-      }
+    if (not receive_boundary_data<
+            Parallel::is_dg_element_collection_v<ParallelComponent>,
+            Metavariables, LocalTimeStepping, false>(make_not_null(&box),
+                                                     make_not_null(&inboxes))) {
+      return {Parallel::AlgorithmExecution::Retry, std::nullopt};
     }
 
     // LTS updates the evolved variables, so we can skip that if they

@@ -433,6 +433,13 @@ struct component {
       domain::Tags::DetInvJacobianCompute<
           Metavariables::volume_dim, Frame::ElementLogical, Frame::Inertial>>;
 
+  using lts_action = ::evolution::dg::Actions::ApplyLtsBoundaryCorrections<
+      Metavariables::volume_dim, false,
+      Metavariables::use_nodegroup_dg_elements>;
+  using gts_action =
+      ::evolution::dg::Actions::ApplyBoundaryCorrectionsToTimeDerivative<
+          Metavariables::volume_dim, Metavariables::use_nodegroup_dg_elements>;
+
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
           Parallel::Phase::Initialization,
@@ -443,15 +450,11 @@ struct component {
               SetLocalMortarData<local_time_stepping>>>,
       Parallel::PhaseActions<
           Parallel::Phase::Testing,
-          tmpl::list<tmpl::conditional_t<
-              local_time_stepping,
-              ::evolution::dg::Actions::ApplyLtsBoundaryCorrections<
-                  Metavariables::volume_dim, false,
-                  Metavariables::use_nodegroup_dg_elements>,
-              ::evolution::dg::Actions::
-                  ApplyBoundaryCorrectionsToTimeDerivative<
-                      Metavariables::volume_dim,
-                      Metavariables::use_nodegroup_dg_elements>>>>>;
+          tmpl::list<tmpl::conditional_t<local_time_stepping,
+                                         // Apply the incorrect action first to
+                                         // verify it doesn't do anything.
+                                         tmpl::list<gts_action, lts_action>,
+                                         tmpl::list<lts_action, gts_action>>>>>;
 };
 
 template <size_t Dim, TestHelpers::SystemType SystemType,
@@ -660,6 +663,11 @@ void test_impl(const Spectral::Quadrature quadrature,
     mortar_data_history = get_tag<evolution::dg::Tags::MortarDataHistory<
         Dim, typename dt_variables_tag::type>>(runner, self_id);
   }
+
+  // Check that the action for the wrong time-stepping mode runs
+  // successfully without any data having been received, and therefore
+  // presumably doesn't do anything.
+  ActionTesting::next_action<comp>(make_not_null(&runner), self_id);
 
   // "Send" mortar data to element
   const auto& mortar_meshes =
