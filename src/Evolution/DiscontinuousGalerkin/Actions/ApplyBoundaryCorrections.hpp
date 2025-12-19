@@ -880,12 +880,10 @@ struct ApplyBoundaryCorrections {
 };
 
 namespace Actions {
-/*!
- * \brief Computes the boundary corrections for global time-stepping
- * and adds them to the time derivative.
- */
-template <size_t VolumeDim, bool UseNodegroupDgElements>
-struct ApplyBoundaryCorrectionsToTimeDerivative {
+namespace ApplyBoundaryCorrections_detail {
+template <bool LocalTimeStepping, size_t VolumeDim, bool DenseOutput,
+          bool UseNodegroupDgElements>
+struct ActionImpl {
   using inbox_tags =
       tmpl::list<evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<
           VolumeDim, UseNodegroupDgElements>>;
@@ -903,12 +901,10 @@ struct ApplyBoundaryCorrectionsToTimeDerivative {
     static_assert(
         UseNodegroupDgElements ==
             Parallel::is_dg_element_collection_v<ParallelComponent>,
-        "The action ApplyBoundaryCorrectionsToTimeDerivative is told by the "
-        "template parameter UseNodegroupDgElements that it is being "
-        "used with a DgElementCollection, but the ParallelComponent "
-        "is not a DgElementCollection. You need to change the template "
-        "parameter on the ApplyBoundaryCorrectionsToTimeDerivative action "
-        "in your action list.");
+        "The action is told by the template parameter UseNodegroupDgElements "
+        "that it is being used with a DgElementCollection, but the "
+        "ParallelComponent is not a DgElementCollection. You need to change "
+        "the template parameter on the action in your action list.");
     constexpr size_t volume_dim = Metavariables::system::volume_dim;
     const Element<volume_dim>& element =
         db::get<domain::Tags::Element<volume_dim>>(box);
@@ -918,18 +914,47 @@ struct ApplyBoundaryCorrectionsToTimeDerivative {
       return {Parallel::AlgorithmExecution::Continue, std::nullopt};
     }
 
-    if (not receive_boundary_data_global_time_stepping<
-            Parallel::is_dg_element_collection_v<ParallelComponent>,
-            Metavariables>(make_not_null(&box), make_not_null(&inboxes))) {
-      return {Parallel::AlgorithmExecution::Retry, std::nullopt};
+    if constexpr (LocalTimeStepping) {
+      if (not receive_boundary_data_local_time_stepping<
+              Parallel::is_dg_element_collection_v<ParallelComponent>,
+              typename Metavariables::system, VolumeDim, false>(
+              make_not_null(&box), make_not_null(&inboxes))) {
+        return {Parallel::AlgorithmExecution::Retry, std::nullopt};
+      }
+    } else {
+      if (not receive_boundary_data_global_time_stepping<
+              Parallel::is_dg_element_collection_v<ParallelComponent>,
+              Metavariables>(make_not_null(&box), make_not_null(&inboxes))) {
+        return {Parallel::AlgorithmExecution::Retry, std::nullopt};
+      }
     }
 
-    db::mutate_apply<
-        ApplyBoundaryCorrections<false, Metavariables, VolumeDim, false>>(
+    // LTS updates the evolved variables, so we can skip that if they
+    // are unused.  GTS updates the derivatives, which are always
+    // needed to update the history.
+    if (LocalTimeStepping and
+        ::SelfStart::step_unused(
+            db::get<::Tags::TimeStepId>(box),
+            db::get<::Tags::Next<::Tags::TimeStepId>>(box))) {
+      return {Parallel::AlgorithmExecution::Continue, std::nullopt};
+    }
+
+    db::mutate_apply<ApplyBoundaryCorrections<LocalTimeStepping, Metavariables,
+                                              VolumeDim, DenseOutput>>(
         make_not_null(&box));
     return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
 };
+}  // namespace ApplyBoundaryCorrections_detail
+
+/*!
+ * \brief Computes the boundary corrections for global time-stepping
+ * and adds them to the time derivative.
+ */
+template <size_t VolumeDim, bool UseNodegroupDgElements>
+struct ApplyBoundaryCorrectionsToTimeDerivative
+    : ApplyBoundaryCorrections_detail::ActionImpl<false, VolumeDim, false,
+                                                  UseNodegroupDgElements> {};
 
 /*!
  * \brief Computes the boundary corrections for local time-stepping
@@ -943,57 +968,8 @@ struct ApplyBoundaryCorrectionsToTimeDerivative {
  * of the neighbor, along with the boundary correction data.
  */
 template <size_t VolumeDim, bool DenseOutput, bool UseNodegroupDgElements>
-struct ApplyLtsBoundaryCorrections {
-  using inbox_tags =
-      tmpl::list<evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<
-          VolumeDim, UseNodegroupDgElements>>;
-  using const_global_cache_tags =
-      tmpl::list<evolution::Tags::BoundaryCorrection, ::dg::Tags::Formulation>;
-
-  template <typename DbTagsList, typename... InboxTags, typename Metavariables,
-            typename ArrayIndex, typename ActionList,
-            typename ParallelComponent>
-  static Parallel::iterable_action_return_t apply(
-      db::DataBox<DbTagsList>& box, tuples::TaggedTuple<InboxTags...>& inboxes,
-      const Parallel::GlobalCache<Metavariables>& /*cache*/,
-      const ArrayIndex& /*array_index*/, ActionList /*meta*/,
-      const ParallelComponent* const /*meta*/) {
-    static_assert(
-        UseNodegroupDgElements ==
-            Parallel::is_dg_element_collection_v<ParallelComponent>,
-        "The action ApplyLtsBoundaryCorrections is told by the "
-        "template parameter UseNodegroupDgElements that it is being "
-        "used with a DgElementCollection, but the ParallelComponent "
-        "is not a DgElementCollection. You need to change the "
-        "template parameter on the ApplyLtsBoundaryCorrections action "
-        "in your action list.");
-    constexpr size_t volume_dim = Metavariables::system::volume_dim;
-    const Element<volume_dim>& element =
-        db::get<domain::Tags::Element<volume_dim>>(box);
-
-    if (UNLIKELY(element.number_of_neighbors() == 0)) {
-      // We have no neighbors, yay!
-      return {Parallel::AlgorithmExecution::Continue, std::nullopt};
-    }
-
-    if (not receive_boundary_data_local_time_stepping<
-            Parallel::is_dg_element_collection_v<ParallelComponent>,
-            typename Metavariables::system, VolumeDim, false>(
-            make_not_null(&box), make_not_null(&inboxes))) {
-      return {Parallel::AlgorithmExecution::Retry, std::nullopt};
-    }
-
-    if (::SelfStart::step_unused(
-            db::get<::Tags::TimeStepId>(box),
-            db::get<::Tags::Next<::Tags::TimeStepId>>(box))) {
-      return {Parallel::AlgorithmExecution::Continue, std::nullopt};
-    }
-
-    db::mutate_apply<
-        ApplyBoundaryCorrections<true, Metavariables, VolumeDim, DenseOutput>>(
-        make_not_null(&box));
-    return {Parallel::AlgorithmExecution::Continue, std::nullopt};
-  }
-};
+struct ApplyLtsBoundaryCorrections
+    : ApplyBoundaryCorrections_detail::ActionImpl<true, VolumeDim, DenseOutput,
+                                                  UseNodegroupDgElements> {};
 }  // namespace Actions
 }  // namespace evolution::dg
