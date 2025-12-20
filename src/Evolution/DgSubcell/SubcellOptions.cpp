@@ -31,7 +31,7 @@ SubcellOptions::SubcellOptions(
     ::fd::DerivativeOrder finite_difference_derivative_order,
     const size_t number_of_steps_between_tci_calls,
     const size_t min_tci_calls_after_rollback,
-    const size_t min_clear_tci_before_dg)
+    const size_t min_clear_tci_before_dg, const size_t fd_to_fd_interp_order)
     : persson_exponent_(persson_exponent),
       persson_num_highest_modes_(persson_num_highest_modes),
       rdmp_delta0_(rdmp_delta0),
@@ -44,7 +44,8 @@ SubcellOptions::SubcellOptions(
       finite_difference_derivative_order_(finite_difference_derivative_order),
       number_of_steps_between_tci_calls_(number_of_steps_between_tci_calls),
       min_tci_calls_after_rollback_(min_tci_calls_after_rollback),
-      min_clear_tci_before_dg_(min_clear_tci_before_dg) {
+      min_clear_tci_before_dg_(min_clear_tci_before_dg),
+      fd_to_fd_interp_order_(fd_to_fd_interp_order) {
   if (not only_dg_block_and_group_names_.has_value()) {
     only_dg_block_ids_ = std::vector<size_t>{};
   }
@@ -96,6 +97,7 @@ void SubcellOptions::pup(PUP::er& p) {
   p | use_halo_;
   p | only_dg_block_and_group_names_;
   p | only_dg_block_ids_;
+  p | fd_to_fd_interp_order_;
   p | finite_difference_derivative_order_;
   p | number_of_steps_between_tci_calls_;
   p | min_tci_calls_after_rollback_;
@@ -121,7 +123,8 @@ bool operator==(const SubcellOptions& lhs, const SubcellOptions& rhs) {
              rhs.number_of_steps_between_tci_calls_ and
          lhs.min_tci_calls_after_rollback_ ==
              rhs.min_tci_calls_after_rollback_ and
-         lhs.min_clear_tci_before_dg_ == rhs.min_clear_tci_before_dg_;
+         lhs.min_clear_tci_before_dg_ == rhs.min_clear_tci_before_dg_ and
+         lhs.fd_to_fd_interp_order_ == rhs.fd_to_fd_interp_order_;
 }
 
 bool operator!=(const SubcellOptions& lhs, const SubcellOptions& rhs) {

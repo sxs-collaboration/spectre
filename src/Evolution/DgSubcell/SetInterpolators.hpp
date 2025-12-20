@@ -285,14 +285,16 @@ struct SetInterpolators {
           const Mesh<Dim> new_mesh{new_extents, new_basis, new_quads};
           (*interpolators_fd_to_neighbor_fd_ptr)[DirectionalId<Dim>{
               direction, neighbor_id}] = intrp::Irregular<Dim>{
-              new_mesh, new_neighbor_logical_ghost_zone_coords};
+              new_mesh, new_neighbor_logical_ghost_zone_coords,
+              subcell_options.get_fd_to_fd_interp_order()};
           (*extension_direction_ptr)[direction] =
               interpolators_detail::ExtensionDirection<Dim>{
                   direction_to_extend.value()};
         } else {
           (*interpolators_fd_to_neighbor_fd_ptr)[DirectionalId<Dim>{
               direction, neighbor_id}] = intrp::Irregular<Dim>{
-              my_fd_mesh, neighbor_logical_ghost_zone_coords};
+              my_fd_mesh, neighbor_logical_ghost_zone_coords,
+              subcell_options.get_fd_to_fd_interp_order()};
         }
         // Set up interpolators for our local element to our neighbor's
         // ghost zones.

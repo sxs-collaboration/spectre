@@ -200,13 +200,24 @@ class SubcellOptions {
     using group = FdToDgTci;
   };
 
+  /// \brief FD to FD interpolation order.
+  ///
+  struct FdInterpolationOrder {
+    using type = size_t;
+    static constexpr Options::String help = {
+        "The interpolation order to use when interpolating from FD block to FD "
+        "block."};
+    static constexpr type lower_bound() { return 1; }
+    static constexpr type upper_bound() { return 3; }
+  };
+
   using options =
       tmpl::list<PerssonExponent, PerssonNumHighestModes, RdmpDelta0,
                  RdmpEpsilon, AlwaysUseSubcells, EnableExtensionDirections,
                  SubcellToDgReconstructionMethod, UseHalo,
                  OnlyDgBlocksAndGroups, FiniteDifferenceDerivativeOrder,
                  NumberOfStepsBetweenTciCalls, MinTciCallsAfterRollback,
-                 MinimumClearTcis>;
+                 MinimumClearTcis, FdInterpolationOrder>;
 
   static constexpr Options::String help{
       "System-agnostic options for the DG-subcell method."};
@@ -220,7 +231,8 @@ class SubcellOptions {
       std::optional<std::vector<std::string>> only_dg_block_and_group_names,
       ::fd::DerivativeOrder finite_difference_derivative_order,
       size_t number_of_steps_between_tci_calls,
-      size_t min_tci_calls_after_rollback, size_t min_clear_tci_before_dg);
+      size_t min_tci_calls_after_rollback, size_t min_clear_tci_before_dg,
+      size_t fd_to_fd_interp_order = 1_st);
 
   /// \brief Given an existing SubcellOptions that was created from block and
   /// group names, create one that stores block IDs.
@@ -266,6 +278,8 @@ class SubcellOptions {
            "set.");
     return only_dg_block_ids_.value();
   }
+
+  size_t get_fd_to_fd_interp_order() const { return fd_to_fd_interp_order_; }
 
   ::fd::DerivativeOrder finite_difference_derivative_order() const {
     return finite_difference_derivative_order_;
@@ -313,6 +327,7 @@ class SubcellOptions {
   size_t number_of_steps_between_tci_calls_{1};
   size_t min_tci_calls_after_rollback_{1};
   size_t min_clear_tci_before_dg_{0};
+  size_t fd_to_fd_interp_order_{};
 };
 
 bool operator!=(const SubcellOptions& lhs, const SubcellOptions& rhs);

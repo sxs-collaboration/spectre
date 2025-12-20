@@ -132,11 +132,11 @@ SPECTRE_TEST_CASE("Unit.Evolution.Subcell.SubcellOptions",
     test_impl(expected_values, i);
   }
 
-  const SubcellOptions options(
-      expected_values[0], static_cast<size_t>(expected_values[1]),
-      expected_values[2], expected_values[3], true, true,
-      fd::ReconstructionMethod::DimByDim, true, std::nullopt,
-      ::fd::DerivativeOrder::Four, 1, 1, 1);
+  SubcellOptions options(expected_values[0],
+                         static_cast<size_t>(expected_values[1]),
+                         expected_values[2], expected_values[3], true, true,
+                         fd::ReconstructionMethod::DimByDim, true, std::nullopt,
+                         ::fd::DerivativeOrder::Four, 1, 1, 1, 2);
   const SubcellOptions deserialized_options =
       serialize_and_deserialize(options);
   CHECK(options == deserialized_options);
@@ -158,7 +158,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.Subcell.SubcellOptions",
                        "  UseHalo: true\n"
                        "  OnlyDgBlocksAndGroups: None\n"
                        "SubcellToDgReconstructionMethod: DimByDim\n"
-                       "FiniteDifferenceDerivativeOrder: 4\n"));
+                       "FiniteDifferenceDerivativeOrder: 4\n"
+                       "FdInterpolationOrder: 2\n"));
 
   INFO("Test with block names and groups");
   const domain::creators::Cylinder cylinder{2.0,   10.0, 1.0,  8.0,
@@ -180,7 +181,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.Subcell.SubcellOptions",
       "  UseHalo: true\n";
   const std::string opts_end =
       "SubcellToDgReconstructionMethod: DimByDim\n"
-      "FiniteDifferenceDerivativeOrder: 4\n";
+      "FiniteDifferenceDerivativeOrder: 4\n"
+      "FdInterpolationOrder: 2\n";
   CHECK_THROWS_WITH(
       SubcellOptions(
           TestHelpers::test_option_tag<OptionTags::SubcellOptions>(
