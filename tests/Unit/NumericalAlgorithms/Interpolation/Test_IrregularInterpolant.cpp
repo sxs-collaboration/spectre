@@ -399,11 +399,13 @@ Variables<var_tags> polynomial(
   return result;
 }
 
-template <size_t Dim, size_t MaxDegree>
-void test_polynomial_interpolant(const std::array<size_t, Dim>& extents) {
+template <size_t Dim>
+void test_polynomial_interpolant(const std::array<size_t, Dim>& extents,
+                                 const size_t max_degree) {
   const size_t n_random_target_points = 10;
-
-  const auto domain = create_domain<Dim>(20.0 / 3.0, extents);
+  // use a small domain to avoid huge polynomial values for large max_degree
+  // which results in large absolute errors
+  const auto domain = create_domain<Dim>(1.3, extents);
   const auto& block = domain.blocks()[0];
   const ElementMap<Dim, Frame::Inertial> element_map{
       ElementId<Dim>{0}, block.stationary_map().get_clone()};
@@ -414,18 +416,22 @@ void test_polynomial_interpolant(const std::array<size_t, Dim>& extents) {
   const auto source_x = element_map(source_xi);
   const auto target_xi = create_target_points<Dim>(n_random_target_points);
   const auto target_x = element_map(target_xi);
-  intrp::Irregular irregular_interp{mesh, target_xi};
+  const intrp::Irregular irregular_interp{mesh, target_xi,
+                                    std::optional<size_t>{max_degree}};
 
-  for (size_t degree = 0; degree <= MaxDegree; ++degree) {
+  for (size_t degree = 0; degree <= max_degree; ++degree) {
     const auto source_vars = polynomial<Dim>(source_x, degree);
     const auto target_vars = irregular_interp.interpolate(source_vars);
     const auto expected_vars = polynomial<Dim>(target_x, degree);
+    CAPTURE(Dim);
+    CAPTURE(max_degree);
+    CAPTURE(degree);
     CHECK_VARIABLES_APPROX(target_vars, expected_vars);
   }
 }
 
-void test_tov() {
-  const std::array<size_t, 3> isotropic_extents{{11, 11, 11}};
+void test_tov(const size_t max_degree, const bool specified_interp_order) {
+  const std::array<size_t, 3> isotropic_extents{{15, 15, 15}};
   constexpr size_t n_resolutions = 4;
   auto errors =
       make_array<n_resolutions>(std::numeric_limits<double>::signaling_NaN());
@@ -450,8 +456,11 @@ void test_tov() {
         tov_star.variables(x, 0.0, tmpl::list<rho_tag>{}));
 
     const tnsr::I<DataVector, 3, Frame::ElementLogical> xi_target{1_st, -1.0};
-
     intrp::Irregular irregular_interp{mesh, xi_target};
+    if (specified_interp_order) {
+      irregular_interp =
+          intrp::Irregular{mesh, xi_target, std::optional<size_t>{max_degree}};
+    }
 
     const auto target_vars = irregular_interp.interpolate(vars);
     gsl::at(errors, i) =
@@ -466,7 +475,13 @@ void test_tov() {
 
   Approx custom_approx = Approx::custom().epsilon(1.e-2).scale(1.);
   for (size_t i = 1; i < n_resolutions; ++i) {
-    CHECK(4.0 == custom_approx(gsl::at(ratio_of_errors, i)));
+    CAPTURE(max_degree);
+    CAPTURE(i);
+    // since \rho is a symmetric function across the center, quadratic
+    // extrapolation has one order higher convergence rate at the center
+    CHECK((specified_interp_order
+               ? (max_degree == 2 ? 16.0 : two_to_the(max_degree + 1))
+               : 4.0) == custom_approx(gsl::at(ratio_of_errors, i)));
   }
 }
 
@@ -614,15 +629,19 @@ SPECTRE_TEST_CASE("Unit.Numerical.Interpolation.IrregularInterpolant",
   test_irregular_interpolant<Spectral::Basis::Legendre,
                              Spectral::Quadrature::Gauss>();
   test_irregular_interpolant_mixed_quadrature();
-  test_polynomial_interpolant<1, 1>({{11}});
-  test_polynomial_interpolant<2, 1>({{11, 11}});
-  test_polynomial_interpolant<2, 1>({{11, 9}});
-  test_polynomial_interpolant<3, 1>({{11, 11, 11}});
-  test_polynomial_interpolant<3, 1>({{11, 9, 11}});
-  test_polynomial_interpolant<3, 1>({{11, 11, 9}});
-  test_polynomial_interpolant<3, 1>({{11, 9, 9}});
-  test_polynomial_interpolant<3, 1>({{11, 9, 13}});
-  test_tov();
+  for (size_t max_degree = 1; max_degree <= 3; ++max_degree) {
+    test_polynomial_interpolant<1>({{11}}, max_degree);
+    test_polynomial_interpolant<2>({{11, 11}}, max_degree);
+    test_polynomial_interpolant<2>({{11, 9}}, max_degree);
+    test_polynomial_interpolant<3>({{11, 11, 11}}, max_degree);
+    test_polynomial_interpolant<3>({{11, 9, 11}}, max_degree);
+    test_polynomial_interpolant<3>({{11, 11, 9}}, max_degree);
+    test_polynomial_interpolant<3>({{11, 9, 9}}, max_degree);
+    test_polynomial_interpolant<3>({{11, 9, 13}}, max_degree);
+    for (const bool specified_interp_order : {false, true}) {
+      test_tov(max_degree, specified_interp_order);
+    }
+  }
   MAKE_GENERATOR(generator);
   test_2d_spherical(make_not_null(&generator));
   test_3d_spherical(make_not_null(&generator));
