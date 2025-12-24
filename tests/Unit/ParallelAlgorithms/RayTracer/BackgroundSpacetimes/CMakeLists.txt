@@ -4,6 +4,7 @@
 set(LIBRARY "Test_RayTracerBackgroundSpacetimes")
 
 set(LIBRARY_SOURCES
+  Test_NumericData.cpp
   Test_WrappedGr.cpp
   )
 
