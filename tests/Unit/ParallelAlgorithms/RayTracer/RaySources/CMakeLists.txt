@@ -5,6 +5,7 @@ set(LIBRARY "Test_RayTracerSources")
 
 set(LIBRARY_SOURCES
   Test_Camera.cpp
+  Test_ParallelRays.cpp
   )
 
 add_test_library(${LIBRARY} "${LIBRARY_SOURCES}")

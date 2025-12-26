@@ -5,6 +5,7 @@ spectre_target_sources(
   ${LIBRARY}
   PRIVATE
   Camera.cpp
+  ParallelRays.cpp
   )
 
 spectre_target_headers(
@@ -12,5 +13,7 @@ spectre_target_headers(
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
   Camera.hpp
+  Factory.hpp
+  ParallelRays.hpp
   RaySource.hpp
   )
