@@ -5,6 +5,13 @@ set(LIBRARY RayTracer)
 
 add_spectre_library(${LIBRARY})
 
+spectre_target_headers(
+  ${LIBRARY}
+  INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
+  HEADERS
+  Tags.hpp
+  )
+
 target_link_libraries(
   ${LIBRARY}
   PUBLIC
@@ -19,3 +26,4 @@ target_link_libraries(
   )
 
 add_subdirectory(BackgroundSpacetimes)
+add_subdirectory(RaySources)
