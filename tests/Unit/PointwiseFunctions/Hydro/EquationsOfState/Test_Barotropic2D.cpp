@@ -72,8 +72,6 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.EquationsOfState.Barotropic2D",
   {
     // double functions
     const Scalar<double> rest_mass_density{{1e-10}};
-    // temperature should be irrelevant
-    const Scalar<double> temperature{{1e-10}};
     const Scalar<double> specific_internal_energy =
         underlying_eos.specific_internal_energy_from_density(rest_mass_density);
     const Scalar<double> pressure =

@@ -52,7 +52,6 @@ void test_circular_orbit() {
   const double orbit_radius = 7.;
   const double orbit_speed = pow(orbit_radius, -1.5);
   const size_t num_points = 100;
-  const tnsr::I<double, 3, Frame::Inertial> wt_coords{{orbit_radius, 0., 0.}};
   std::uniform_real_distribution dist_around_wt(-3., 3.);
   auto sample_points =
       make_with_random_values<tnsr::I<DataVector, 3, Frame::Inertial>>(
