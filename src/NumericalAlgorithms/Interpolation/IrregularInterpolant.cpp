@@ -6,6 +6,8 @@
 #include <algorithm>
 #include <array>
 #include <iterator>
+#include <limits>
+#include <optional>
 #include <vector>
 
 #include "DataStructures/DataVector.hpp"
@@ -17,12 +19,18 @@
 #include "Utilities/ContainerHelpers.hpp"
 
 namespace {
+template <size_t Order>
+std::vector<double> fd_stencil(const DataVector& xi_source,
+                               double xi_target);
+
+// potential future optimization: use the barycentric formula
 
 // Just linear for now, can be extended to higher order...
 // Future optimization: it might be more efficient to use Blaze's sparse
 // matrices since the interpolation matrix is mostly zeros
-std::vector<double> fd_stencil(const DataVector& xi_source,
-                               const double xi_target) {
+template <>
+std::vector<double> fd_stencil<1>(const DataVector& xi_source,
+                                  const double xi_target) {
   ASSERT(std::is_sorted(std::begin(xi_source), std::end(xi_source)),
          "xi_source = " << xi_source);
   auto xi_u =
@@ -43,6 +51,165 @@ std::vector<double> fd_stencil(const DataVector& xi_source,
   return result;
 }
 
+// Quadratic (three-point) finite-difference interpolation stencil.
+// Returns a weight vector with exactly three non-zero entries corresponding
+// to a chosen triplet of consecutive grid points. For interior targets we pick
+// the more centered of the two possible triplets bracketing the target.
+// Edge targets (or outside) use the first or last 3 points, yielding
+// one-sided quadratic extrapolation.
+template <>
+std::vector<double> fd_stencil<2>(const DataVector& xi_source,
+                                  const double xi_target) {
+  ASSERT(std::is_sorted(std::begin(xi_source), std::end(xi_source)),
+         "xi_source = " << xi_source);
+  const size_t num_of_pts = xi_source.size();
+  ASSERT(num_of_pts >= 3,
+         "Need at least 3 points for quadratic interpolation (got "
+             << num_of_pts << ")");
+
+  auto xi_u =
+      std::upper_bound(std::begin(xi_source), std::end(xi_source), xi_target);
+
+  // Determine the three indices to use.
+  size_t i0{0};
+  size_t i1{0};
+  size_t i2{0};
+
+  if (xi_u == std::begin(xi_source)) {
+    // Target at/below first point
+    i0 = 0;
+    i1 = 1;
+    i2 = 2;
+  } else if (xi_u == std::end(xi_source)) {
+    // Target above last point
+    i0 = num_of_pts - 3;
+    i1 = num_of_pts - 2;
+    i2 = num_of_pts - 1;
+  } else {
+    const auto iu =
+        static_cast<size_t>(std::distance(std::begin(xi_source), xi_u));
+    const size_t il = iu - 1;  // lower bracket index
+
+    if (il == 0) {
+      // Near lower boundary
+      i0 = 0;
+      i1 = 1;
+      i2 = 2;
+    } else if (iu == num_of_pts - 1) {
+      // Near upper boundary (target between last two points)
+      i0 = num_of_pts - 3;
+      i1 = num_of_pts - 2;
+      i2 = num_of_pts - 1;
+    } else {
+      // Interior: choose centered triplet
+      // Option A: (il-1, il, iu)
+      // Option B: (il, iu, iu+1)
+      const double x_il = xi_source[il];
+      const double x_iu = xi_source[iu];
+      // Compare proximity to pick more centered set
+      if (xi_target - x_il < x_iu - xi_target) {
+        i0 = il - 1;
+        i1 = il;
+        i2 = iu;
+      } else {
+        i0 = il;
+        i1 = iu;
+        i2 = iu + 1;
+      }
+    }
+  }
+
+  // Compute Lagrange weights for the selected three nodes.
+  const double x0 = xi_source[i0];
+  const double x1 = xi_source[i1];
+  const double x2 = xi_source[i2];
+
+  const double denom0 = (x0 - x1) * (x0 - x2);
+  const double denom1 = (x1 - x0) * (x1 - x2);
+  const double denom2 = (x2 - x0) * (x2 - x1);
+
+  std::vector<double> w(num_of_pts, 0.0);
+  w[i0] = (xi_target - x1) * (xi_target - x2) / denom0;
+  w[i1] = (xi_target - x0) * (xi_target - x2) / denom1;
+  w[i2] = (xi_target - x0) * (xi_target - x1) / denom2;
+
+  return w;
+}
+
+// Cubic (four-point) finite-difference interpolation stencil.
+// Uses four consecutive grid points to build a degree-3 Lagrange interpolant.
+// Boundary/out-of-domain targets use the first/last 4 points (one-sided cubic
+// extrapolation). Interior targets: choose among candidate 4-point windows that
+// contain the bracketing pair to best center the target (minimizing distance to
+// the window's midpoint).
+template <>
+std::vector<double> fd_stencil<3>(const DataVector& xi_source,
+                                  const double xi_target) {
+  ASSERT(std::is_sorted(std::begin(xi_source), std::end(xi_source)),
+         "xi_source = " << xi_source);
+  const size_t num_of_pts = xi_source.size();
+  ASSERT(num_of_pts >= 4, "Need at least 4 points for cubic interpolation (got "
+                              << num_of_pts << ")");
+  auto xi_u =
+      std::upper_bound(std::begin(xi_source), std::end(xi_source), xi_target);
+
+  size_t start{0};  // start index of the 4-point window
+  if (xi_u == std::begin(xi_source)) {
+    // Below first point
+    start = 0;
+  } else if (xi_u == std::end(xi_source)) {
+    // Above last point
+    start = num_of_pts - 4;
+  } else {
+    const auto iu =
+        static_cast<size_t>(std::distance(std::begin(xi_source), xi_u));
+    const size_t il = iu - 1;  // lower bracket index
+    // Determine candidate window starts ensuring il >= s and iu <= s+3
+    const size_t min_start = (il >= 2 ? il - 2 : 0);
+    const size_t max_start = std::min(il, num_of_pts - 4);
+    // Collect candidates
+    double best_dist = std::numeric_limits<double>::max();
+    size_t best_start = min_start;
+    for (size_t s = min_start; s <= max_start; ++s) {
+      // Midpoint of inner two nodes (s+1, s+2) gives a reasonable center
+      const double mid = 0.5 * (xi_source[s + 1] + xi_source[s + 2]);
+      const double dist = std::abs(xi_target - mid);
+      if (dist < best_dist) {
+        best_dist = dist;
+        best_start = s;
+      }
+    }
+    start = best_start;
+  }
+
+  const size_t i0 = start;
+  const size_t i1 = start + 1;
+  const size_t i2 = start + 2;
+  const size_t i3 = start + 3;
+  const double x0 = xi_source[i0];
+  const double x1 = xi_source[i1];
+  const double x2 = xi_source[i2];
+  const double x3 = xi_source[i3];
+
+  // Compute Lagrange weights for 4 points.
+  auto lagrange_weight = [&](double xj, const std::array<double, 3>& others) {
+    double num = 1.0;
+    double denom = 1.0;
+    for (const double xo : others) {
+      num *= (xi_target - xo);
+      denom *= (xj - xo);
+    }
+    return num / denom;
+  };
+
+  std::vector<double> w(num_of_pts, 0.0);
+  w[i0] = lagrange_weight(x0, {x1, x2, x3});
+  w[i1] = lagrange_weight(x1, {x0, x2, x3});
+  w[i2] = lagrange_weight(x2, {x0, x1, x3});
+  w[i3] = lagrange_weight(x3, {x0, x1, x2});
+  return w;
+}
+
 template <size_t Dim, typename DataType>
 Matrix interpolation_matrix(
     const Mesh<Dim>& mesh,
@@ -51,7 +218,8 @@ Matrix interpolation_matrix(
 template <typename DataType>
 Matrix interpolation_matrix(
     const Mesh<1>& mesh,
-    const tnsr::I<DataType, 1, Frame::ElementLogical>& points) {
+    const tnsr::I<DataType, 1, Frame::ElementLogical>& points,
+    const std::optional<size_t>& fd_to_fd_interp_order) {
   if (mesh.basis()[0] == Spectral::Basis::FiniteDifference) {
     auto source_xi = logical_coordinates(mesh);
     const auto number_of_source_points = mesh.number_of_grid_points();
@@ -59,9 +227,28 @@ Matrix interpolation_matrix(
                                number_of_source_points);
     const size_t number_of_target_points = get_size(get<0>(points));
     Matrix result(number_of_target_points, number_of_source_points);
+    constexpr size_t default_order = 1;  // linear interpolation by default
     for (size_t p = 0; p < number_of_target_points; ++p) {
       const double xi_target = get_element(get<0>(points), p);
-      const auto stencil = fd_stencil(xi_source, xi_target);
+      std::vector<double> stencil;
+      switch (fd_to_fd_interp_order.value_or(default_order)) {
+        case 1: {
+          stencil = fd_stencil<1>(xi_source, xi_target);
+          break;
+        }
+        case 2: {
+          stencil = fd_stencil<2>(xi_source, xi_target);
+          break;
+        }
+        case 3: {
+          stencil = fd_stencil<3>(xi_source, xi_target);
+          break;
+        }
+        default:
+          ERROR("Unsupported fd_to_fd_interp_order: "
+            << fd_to_fd_interp_order.value_or(default_order)
+            << "; expected 1, 2, or 3.");
+      }
       for (size_t i = 0; i < number_of_source_points; ++i) {
         result(p, i) = stencil[i];
       }
@@ -70,13 +257,17 @@ Matrix interpolation_matrix(
   }
 
   // Not FD, so use spectral interpolation
+  ASSERT(
+      fd_to_fd_interp_order == std::nullopt,
+      "fd_to_fd_interp_order only applies to FD meshes. But Mesh is " << mesh);
   return Spectral::interpolation_matrix(mesh, get<0>(points));
 }
 
 template <typename DataType>
 Matrix interpolation_matrix(
     const Mesh<2>& mesh,
-    const tnsr::I<DataType, 2, Frame::ElementLogical>& points) {
+    const tnsr::I<DataType, 2, Frame::ElementLogical>& points,
+    const std::optional<size_t>& fd_to_fd_interp_order) {
   const auto number_of_target_points = get_size(get<0>(points));
   Matrix result(number_of_target_points, mesh.number_of_grid_points());
 
@@ -94,11 +285,33 @@ Matrix interpolation_matrix(
         eta_source[j] = get<1>(source_xi)[j * mesh.extents(0)];
       }
     }
+    constexpr size_t default_order = 1;  // linear interpolation by default
     for (size_t p = 0; p < number_of_target_points; ++p) {
       const double xi_target = get_element(get<0>(points), p);
       const double eta_target = get_element(get<1>(points), p);
-      const auto xi_stencil = fd_stencil(xi_source, xi_target);
-      const auto eta_stencil = fd_stencil(eta_source, eta_target);
+      std::vector<double> xi_stencil;
+      std::vector<double> eta_stencil;
+      switch (fd_to_fd_interp_order.value_or(default_order)) {
+        case 1: {
+          xi_stencil = fd_stencil<1>(xi_source, xi_target);
+          eta_stencil = fd_stencil<1>(eta_source, eta_target);
+          break;
+        }
+        case 2: {
+          xi_stencil = fd_stencil<2>(xi_source, xi_target);
+          eta_stencil = fd_stencil<2>(eta_source, eta_target);
+          break;
+        }
+        case 3: {
+          xi_stencil = fd_stencil<3>(xi_source, xi_target);
+          eta_stencil = fd_stencil<3>(eta_source, eta_target);
+          break;
+        }
+        default:
+          ERROR("Unsupported fd_to_fd_interp_order: "
+            << fd_to_fd_interp_order.value_or(default_order)
+            << "; expected 1, 2, or 3.");
+      }
       for (size_t j = 0, s = 0; j < mesh.extents(1); ++j) {
         for (size_t i = 0; i < mesh.extents(0); ++i) {
           result(p, s) = xi_stencil[i] * eta_stencil[j];
@@ -110,6 +323,9 @@ Matrix interpolation_matrix(
   } else if (mesh.basis()[0] == Spectral::Basis::SphericalHarmonic) {
     ASSERT(mesh.basis()[1] == Spectral::Basis::SphericalHarmonic,
            "Expected both dimensions to have spherical harmonic basis. Mesh = "
+               << mesh);
+    ASSERT(fd_to_fd_interp_order == std::nullopt,
+           "fd_to_fd_interp_order only applies to FD meshes. But Mesh is "
                << mesh);
     const intrp::Cardinal cardinal_interpolator(mesh, points);
     const auto [n_th, n_ph] = mesh.extents().indices();
@@ -127,6 +343,9 @@ Matrix interpolation_matrix(
   }
 
   // Not FD or special basis, so use 1D spectral interpolation matrices
+  ASSERT(
+      fd_to_fd_interp_order == std::nullopt,
+      "fd_to_fd_interp_order only applies to FD meshes. But Mesh is " << mesh);
   const std::array<Matrix, 2> matrices{
       {Spectral::interpolation_matrix(mesh.slice_through(0), get<0>(points)),
        Spectral::interpolation_matrix(mesh.slice_through(1), get<1>(points))}};
@@ -146,7 +365,8 @@ Matrix interpolation_matrix(
 template <typename DataType>
 Matrix interpolation_matrix(
     const Mesh<3>& mesh,
-    const tnsr::I<DataType, 3, Frame::ElementLogical>& points) {
+    const tnsr::I<DataType, 3, Frame::ElementLogical>& points,
+    const std::optional<size_t>& fd_to_fd_interp_order) {
   const auto number_of_target_points = get_size(get<0>(points));
   Matrix result(number_of_target_points, mesh.number_of_grid_points());
 
@@ -177,13 +397,38 @@ Matrix interpolation_matrix(
             get<2>(source_xi)[k * mesh.extents(0) * mesh.extents(1)];
       }
     }
+    constexpr size_t default_order = 1;  // linear interpolation by default
     for (size_t p = 0; p < number_of_target_points; ++p) {
       const double xi_target = get_element(get<0>(points), p);
       const double eta_target = get_element(get<1>(points), p);
       const double zeta_target = get_element(get<2>(points), p);
-      const auto xi_stencil = fd_stencil(xi_source, xi_target);
-      const auto eta_stencil = fd_stencil(eta_source, eta_target);
-      const auto zeta_stencil = fd_stencil(zeta_source, zeta_target);
+      std::vector<double> xi_stencil;
+      std::vector<double> eta_stencil;
+      std::vector<double> zeta_stencil;
+      switch (fd_to_fd_interp_order.value_or(default_order)) {
+        case 1: {
+          xi_stencil = fd_stencil<1>(xi_source, xi_target);
+          eta_stencil = fd_stencil<1>(eta_source, eta_target);
+          zeta_stencil = fd_stencil<1>(zeta_source, zeta_target);
+          break;
+        }
+        case 2: {
+          xi_stencil = fd_stencil<2>(xi_source, xi_target);
+          eta_stencil = fd_stencil<2>(eta_source, eta_target);
+          zeta_stencil = fd_stencil<2>(zeta_source, zeta_target);
+          break;
+        }
+        case 3: {
+          xi_stencil = fd_stencil<3>(xi_source, xi_target);
+          eta_stencil = fd_stencil<3>(eta_source, eta_target);
+          zeta_stencil = fd_stencil<3>(zeta_source, zeta_target);
+          break;
+        }
+        default:
+          ERROR("Unsupported fd_to_fd_interp_order: "
+            << fd_to_fd_interp_order.value_or(default_order)
+            << "; expected 1, 2, or 3.");
+      }
       for (size_t k = 0, s = 0; k < mesh.extents(2); ++k) {
         for (size_t j = 0; j < mesh.extents(1); ++j) {
           for (size_t i = 0; i < mesh.extents(0); ++i) {
@@ -195,6 +440,9 @@ Matrix interpolation_matrix(
     }
     return result;
   } else if (mesh.basis()[1] == Spectral::Basis::SphericalHarmonic) {
+    ASSERT(fd_to_fd_interp_order == std::nullopt,
+           "fd_to_fd_interp_order only applies to FD meshes. But Mesh is "
+               << mesh);
     ASSERT(mesh.basis()[2] == Spectral::Basis::SphericalHarmonic,
            "Expected last two dimensions to each have spherical harmonic "
            "basis. Mesh = "
@@ -219,6 +467,9 @@ Matrix interpolation_matrix(
   }
 
   // Not FD or special basis, so use 1D spectral interpolation matrices
+  ASSERT(
+      fd_to_fd_interp_order == std::nullopt,
+      "fd_to_fd_interp_order only applies to FD meshes. But Mesh is " << mesh);
   const std::array<Matrix, 3> matrices{
       {Spectral::interpolation_matrix(mesh.slice_through(0), get<0>(points)),
        Spectral::interpolation_matrix(mesh.slice_through(1), get<1>(points)),
@@ -248,14 +499,18 @@ Irregular<Dim>::Irregular() = default;
 template <size_t Dim>
 Irregular<Dim>::Irregular(
     const Mesh<Dim>& source_mesh,
-    const tnsr::I<DataVector, Dim, Frame::ElementLogical>& target_points)
-    : interpolation_matrix_(interpolation_matrix(source_mesh, target_points)) {}
+    const tnsr::I<DataVector, Dim, Frame::ElementLogical>& target_points,
+    const std::optional<size_t>& fd_to_fd_interp_order)
+    : interpolation_matrix_(interpolation_matrix(source_mesh, target_points,
+                                                 fd_to_fd_interp_order)) {}
 
 template <size_t Dim>
 Irregular<Dim>::Irregular(
     const Mesh<Dim>& source_mesh,
-    const tnsr::I<double, Dim, Frame::ElementLogical>& target_point)
-    : interpolation_matrix_(interpolation_matrix(source_mesh, target_point)) {}
+    const tnsr::I<double, Dim, Frame::ElementLogical>& target_point,
+    const std::optional<size_t>& fd_to_fd_interp_order)
+    : interpolation_matrix_(interpolation_matrix(source_mesh, target_point,
+                                                 fd_to_fd_interp_order)) {}
 
 template <size_t Dim>
 void Irregular<Dim>::pup(PUP::er& p) {

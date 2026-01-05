@@ -4,6 +4,7 @@
 #include "Framework/TestingFramework.hpp"
 
 #include <cstddef>
+#include <optional>
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
@@ -65,17 +66,17 @@ struct Reconstructor : db::SimpleTag {
 }  // namespace Tags
 
 template <size_t Dim>
-void test(const bool enable_extension) {
+void test(const bool enable_extension, const size_t fd_to_fd_interp_order) {
   // Domain setup:
   //   | lower_xi | element |
   //
   // No neighbors in upper xi or in eta/zeta.
   // We currently can only use enable_extension =true
   // with always_use_subcell = true.
-  const evolution::dg::subcell::SubcellOptions subcell_options(
+  evolution::dg::subcell::SubcellOptions subcell_options(
       4.0, 1, 2.0e-3, 2.0e-4, enable_extension, enable_extension,
       evolution::dg::subcell::fd::ReconstructionMethod::DimByDim, false,
-      std::nullopt, ::fd::DerivativeOrder::Two, 1, 1, 1);
+      std::nullopt, ::fd::DerivativeOrder::Two, 1, 1, 1, fd_to_fd_interp_order);
 
   const ::Mesh<Dim> dg_mesh{6, Spectral::Basis::Legendre,
                             Spectral::Quadrature::GaussLobatto};
@@ -307,8 +308,10 @@ void test(const bool enable_extension) {
 SPECTRE_TEST_CASE("Unit.Evolution.Subcell.SetInterpolators",
                   "[Evolution][Unit]") {
   for (const bool enable_extension : {false, true}) {
-    test<1>(enable_extension);
-    test<2>(enable_extension);
-    test<3>(enable_extension);
+    for (size_t fd_interp_order = 1; fd_interp_order <= 3; ++fd_interp_order) {
+      test<1>(enable_extension, fd_interp_order);
+      test<2>(enable_extension, fd_interp_order);
+      test<3>(enable_extension, fd_interp_order);
+    }
   }
 }

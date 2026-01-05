@@ -165,6 +165,7 @@ SpatialDiscretization:
         OnlyDgBlocksAndGroups: None
       SubcellToDgReconstructionMethod: DimByDim
       FiniteDifferenceDerivativeOrder: 6
+      FdInterpolationOrder: 1
     TciOptions:
       MinimumValueOfD: 1.0e-15
       MinimumValueOfYe: 1.0e-20

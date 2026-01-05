@@ -58,6 +58,7 @@ SpatialDiscretization:
         OnlyDgBlocksAndGroups: None
       SubcellToDgReconstructionMethod: DimByDim
       FiniteDifferenceDerivativeOrder: 2
+      FdInterpolationOrder: 1
     TciOptions:
       UCutoff: 1.0e-10
   SubcellSolver:

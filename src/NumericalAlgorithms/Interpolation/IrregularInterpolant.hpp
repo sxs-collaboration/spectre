@@ -38,10 +38,11 @@ class Irregular {
  public:
   Irregular(
       const Mesh<Dim>& source_mesh,
-      const tnsr::I<DataVector, Dim, Frame::ElementLogical>& target_points);
-  Irregular(
-      const Mesh<Dim>& source_mesh,
-      const tnsr::I<double, Dim, Frame::ElementLogical>& target_point);
+      const tnsr::I<DataVector, Dim, Frame::ElementLogical>& target_points,
+      const std::optional<size_t>& fd_to_fd_interp_order = std::nullopt);
+  Irregular(const Mesh<Dim>& source_mesh,
+            const tnsr::I<double, Dim, Frame::ElementLogical>& target_point,
+            const std::optional<size_t>& fd_to_fd_interp_order = std::nullopt);
   Irregular();
 
   /// Serialization for Charm++
