@@ -241,7 +241,7 @@ struct EvolutionMetavars {
                      Actions::MutateApply<ChangeTimeStepperOrder<system>>>,
           tmpl::list<
               evolution::dg::Actions::ApplyBoundaryCorrectionsToTimeDerivative<
-                  volume_dim, false, use_dg_element_collection>,
+                  volume_dim, use_dg_element_collection>,
               Actions::MutateApply<RecordTimeStepperData<system>>,
               evolution::Actions::RunEventsAndDenseTriggers<tmpl::list<>>,
               Actions::MutateApply<UpdateU<system, local_time_stepping>>>>,
@@ -260,7 +260,7 @@ struct EvolutionMetavars {
           volume_dim, system, AllStepChoosers, local_time_stepping,
           use_dg_element_collection>,
       evolution::dg::Actions::ApplyBoundaryCorrectionsToTimeDerivative<
-          volume_dim, false, use_dg_element_collection>,
+          volume_dim, use_dg_element_collection>,
       Actions::MutateApply<RecordTimeStepperData<system>>,
       evolution::Actions::RunEventsAndDenseTriggers<tmpl::list<>>,
       Actions::MutateApply<UpdateU<system, local_time_stepping>>,

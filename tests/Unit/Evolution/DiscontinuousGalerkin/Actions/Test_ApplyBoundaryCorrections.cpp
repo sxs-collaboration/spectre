@@ -448,7 +448,7 @@ struct component {
                   Metavariables::use_nodegroup_dg_elements>,
               ::evolution::dg::Actions::
                   ApplyBoundaryCorrectionsToTimeDerivative<
-                      Metavariables::volume_dim, false,
+                      Metavariables::volume_dim,
                       Metavariables::use_nodegroup_dg_elements>>>>>;
 };
 
