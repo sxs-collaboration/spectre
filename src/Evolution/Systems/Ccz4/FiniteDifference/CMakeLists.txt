@@ -13,6 +13,7 @@ spectre_target_sources(
   DummyReconstructor.cpp
   EnforceConstrainedEvolution.cpp
   Filter.cpp
+  GhostData.cpp
   Reconstructor.cpp
   )
 
@@ -26,6 +27,7 @@ spectre_target_headers(
   DummyReconstructor.hpp
   EnforceConstrainedEvolution.hpp
   Filter.hpp
+  GhostData.hpp
   Reconstructor.hpp
   SoTimeDerivative.hpp
   System.hpp
