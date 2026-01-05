@@ -8,6 +8,7 @@
 #include <iterator>
 #include <limits>
 #include <memory>
+#include <mutex>
 #include <optional>
 
 /// \cond
@@ -92,12 +93,14 @@ class ThreadsafeList {
   /// that no concurrent access or modification is performed.  The
   /// list is guaranteed to be empty afterwards.
   ///
-  /// Otherwise, it is the caller's responsibility to ensure that
-  /// there are no concurrent truncations and that, during this call,
-  /// no reader attempts to look up what will become the new oldest
-  /// interval.  Storing references to that interval's data is safe,
-  /// and lookups of that interval are safe if they are sequenced
-  /// after this call.  Concurrent insertions are safe.
+  /// Otherwise, it is the caller's responsibility to ensure that,
+  /// during this call, no reader attempts to look up what will become
+  /// the new oldest interval.  Storing references to that interval's
+  /// data is safe, and lookups of that interval are safe if they are
+  /// sequenced after this call.  Concurrent insertions are safe, and
+  /// concurrent access to newer intervals is safe.  Concurrent calls
+  /// to truncate functions and serialization are protected by
+  /// mutexes, but other concurrent calls are lock-free.
   ///
   /// If the list is initially shorter than \p length, it is left
   /// unchanged.  Otherwise, if concurrent insertions occur, the
@@ -107,8 +110,8 @@ class ThreadsafeList {
   /// requested length.
   void truncate_to_length(size_t length);
 
-  /// Remove the oldest data in the list, retaining access to data
-  /// back to at least the interval containing \p time.
+  /// Remove the oldest data in the list, retaining data needed to
+  /// access at least as far back as \p time.
   ///
   /// If \p time is before `initial_time()`, the list is not modified.
   /// If \p time is after `expiration_time()`, the amount of removed
@@ -117,8 +120,11 @@ class ThreadsafeList {
   /// The amount of removed data is approximate.  There may be
   /// slightly more data remaining after a call than requested.
   ///
-  /// It is the caller's responsibility to ensure that there are no
-  /// concurrent truncations.  Concurrent insertions are safe.
+  /// It is safe to insert and access data concurrently with
+  /// truncation, as long as the accessed times are not before the
+  /// truncation time.  Concurrent calls to truncate functions and
+  /// serialization are protected by mutexes, but other concurrent
+  /// calls are lock-free.
   void truncate_at_time(double time);
 
   /// Empty the list.  Equivalent to `truncate_to_length(0)`.  See
@@ -183,6 +189,10 @@ class ThreadsafeList {
   char
       unused_padding_most_recent_interval_[64 - (sizeof(most_recent_interval_) %
                                                  64)] = {};
+  // Mutex protecting methods that access the tail of the list, i.e.,
+  // truncation and serialization.  Other methods are assumed to be
+  // called with parameters that will not interact with truncation.
+  std::mutex truncation_mutex_{};
 };
 
 template <typename T>

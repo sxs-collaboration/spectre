@@ -86,6 +86,13 @@ class FunctionOfTime : public PUP::able {
     ERROR("Cannot update this FunctionOfTime.");
   }
 
+  /// Discards data only needed before the passed time, to reduce
+  /// memory use.
+  ///
+  /// It should be safe to call this method concurrently with update
+  /// and access of any data not before \p time.
+  virtual void truncate_at_time(double time) = 0;
+
   /// The DataVector can be of any size
   virtual std::array<DataVector, 1> func(double t) const = 0;
   /// The DataVector can be of any size

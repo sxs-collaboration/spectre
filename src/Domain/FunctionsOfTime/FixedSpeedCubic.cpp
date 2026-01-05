@@ -26,6 +26,36 @@ std::unique_ptr<FunctionOfTime> FixedSpeedCubic::get_clone() const {
   return std::make_unique<FixedSpeedCubic>(*this);
 }
 
+std::array<DataVector, 1> FixedSpeedCubic::func(const double t) const {
+  return func_and_derivs<0>(t);
+}
+
+std::array<DataVector, 2> FixedSpeedCubic::func_and_deriv(
+    const double t) const {
+  return func_and_derivs<1>(t);
+}
+
+std::array<DataVector, 3> FixedSpeedCubic::func_and_2_derivs(
+    const double t) const {
+  return func_and_derivs<2>(t);
+}
+
+std::array<double, 2> FixedSpeedCubic::time_bounds() const {
+  return {{initial_time_, std::numeric_limits<double>::infinity()}};
+}
+
+double FixedSpeedCubic::expiration_after(const double /*time*/) const {
+  return std::numeric_limits<double>::infinity();
+}
+
+void FixedSpeedCubic::truncate_at_time(const double /*time*/) {}
+
+double FixedSpeedCubic::velocity() const { return velocity_; }
+
+double FixedSpeedCubic::decay_timescale() const {
+  return sqrt(squared_decay_timescale_);
+}
+
 template <size_t MaxDerivReturned>
 std::array<DataVector, MaxDerivReturned + 1> FixedSpeedCubic::func_and_derivs(
     const double t) const {

@@ -7,6 +7,7 @@
 
 #include <atomic>
 #include <memory>
+#include <mutex>
 #include <pup.h>
 #include <pup_stl.h>
 #include <utility>
@@ -160,6 +161,7 @@ void ThreadsafeList<T>::truncate_to_length(const size_t length) {
     return;
   }
 
+  const std::lock_guard lock(truncation_mutex_);
   auto* last_interval = most_recent_interval_.load(std::memory_order_acquire);
   if (last_interval == nullptr or last_interval->previous == nullptr) {
     return;
@@ -177,6 +179,7 @@ void ThreadsafeList<T>::truncate_to_length(const size_t length) {
 
 template <typename T>
 void ThreadsafeList<T>::truncate_at_time(const double time) {
+  const std::lock_guard lock(truncation_mutex_);
   auto* last_interval = most_recent_interval_.load(std::memory_order_acquire);
   // For simplicity, never empty the list.  We don't guarantee exactness.
   if (last_interval == nullptr or last_interval->previous == nullptr) {
@@ -192,7 +195,7 @@ void ThreadsafeList<T>::truncate_at_time(const double time) {
     // expiration time of the previous interval can be accessed.
     // Removing it and setting the initial_time would violate the
     // thread-safety guarantees.
-    if (last_interval->expiration <= time) {
+    if (last_interval->expiration < time) {
       break;
     }
   }
@@ -225,6 +228,7 @@ void ThreadsafeList<T>::pup(PUP::er& p) {
     ERROR("Unrecognized version " << version);
   }
 
+  const std::lock_guard lock(truncation_mutex_);
   p | initial_time_;
   if (p.isUnpacking()) {
     bool empty{};

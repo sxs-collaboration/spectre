@@ -514,6 +514,31 @@ SPECTRE_TEST_CASE("Unit.Domain.FunctionsOfTime.QuaternionFunctionOfTime",
     }
   }
 
+  {
+    INFO("truncate_at_time");
+    const DataVector init_omega{0.0, 0.0, 3.78};
+    domain::FunctionsOfTime::QuaternionFunctionOfTime<2> qfot{
+        0.0, std::array<DataVector, 1>{DataVector{{1.0, 0.0, 0.0, 0.0}}},
+        std::array<DataVector, 3>{DataVector{3, 0.0}, init_omega,
+                                  DataVector{3, 0.0}},
+        0.6};
+    qfot.update(0.6, DataVector{3, 4.0}, 1.0);
+    qfot.update(1.0, DataVector{3, 6.0}, 1.8);
+    qfot.update(1.8, DataVector{3, 2.0}, 2.5);
+    qfot.update(2.5, DataVector{3, 1.0}, 3.5);
+
+    const double truncate_time = 2.0;
+    const auto old_value = qfot.func_and_deriv(truncate_time);
+    const auto old_angle = qfot.angle_func_and_deriv(truncate_time);
+    const auto old_bounds = qfot.time_bounds();
+    qfot.truncate_at_time(truncate_time);
+    CHECK(qfot.time_bounds()[0] > old_bounds[0]);
+    CHECK(qfot.time_bounds()[0] <= truncate_time);
+    CHECK(qfot.time_bounds()[1] == old_bounds[1]);
+    CHECK(qfot.func_and_deriv(truncate_time) == old_value);
+    CHECK(qfot.angle_func_and_deriv(truncate_time) == old_angle);
+  }
+
   test_serialization_versioning();
   test_out_of_order_update();
 }

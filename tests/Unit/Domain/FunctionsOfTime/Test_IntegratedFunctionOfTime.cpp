@@ -74,6 +74,14 @@ void test(const gsl::not_null<FunctionsOfTime::FunctionOfTime*> f_of_t,
                         f_of_t_derived->func_and_deriv(check_time));
   const auto t_bounds = copy_at_time->time_bounds();
   CHECK(t_bounds == std::array{new_time, new_expiration});
+
+  const auto old_value = f_of_t->func_and_deriv(new_time);
+  const auto old_bounds = f_of_t->time_bounds();
+  f_of_t->truncate_at_time(new_time);
+  CHECK(f_of_t->time_bounds()[0] > old_bounds[0]);
+  CHECK(f_of_t->time_bounds()[0] <= new_time);
+  CHECK(f_of_t->time_bounds()[1] == old_bounds[1]);
+  CHECK(f_of_t->func_and_deriv(new_time) == old_value);
 }
 
 void test_serialization_versioning() {
