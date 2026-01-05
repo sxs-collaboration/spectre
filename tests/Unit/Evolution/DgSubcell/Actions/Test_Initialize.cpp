@@ -39,6 +39,7 @@
 #include "Evolution/DgSubcell/Tags/DataForRdmpTci.hpp"
 #include "Evolution/DgSubcell/Tags/DidRollback.hpp"
 #include "Evolution/DgSubcell/Tags/GhostDataForReconstruction.hpp"
+#include "Evolution/DgSubcell/Tags/GhostZoneInverseJacobian.hpp"
 #include "Evolution/DgSubcell/Tags/Jacobians.hpp"
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
 #include "Evolution/DgSubcell/Tags/ReconstructionOrder.hpp"
@@ -530,6 +531,9 @@ void test(const bool always_use_subcell, const bool interior_element,
         comp, evolution::dg::subcell::Tags::TciGridHistory>(runner, self_id));
   CHECK(ActionTesting::tag_is_retrievable<
         comp, evolution::dg::subcell::Tags::GhostDataForReconstruction<Dim>>(
+      runner, self_id));
+  CHECK(ActionTesting::tag_is_retrievable<
+        comp, evolution::dg::subcell::Tags::GhostZoneInverseJacobian<Dim>>(
       runner, self_id));
   CHECK(ActionTesting::tag_is_retrievable<
         comp, evolution::dg::subcell::Tags::DataForRdmpTci>(runner, self_id));

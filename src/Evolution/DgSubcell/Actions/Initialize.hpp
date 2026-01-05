@@ -26,6 +26,7 @@
 #include "Evolution/DgSubcell/Tags/DataForRdmpTci.hpp"
 #include "Evolution/DgSubcell/Tags/DidRollback.hpp"
 #include "Evolution/DgSubcell/Tags/GhostDataForReconstruction.hpp"
+#include "Evolution/DgSubcell/Tags/GhostZoneInverseJacobian.hpp"
 #include "Evolution/DgSubcell/Tags/InitialTciData.hpp"
 #include "Evolution/DgSubcell/Tags/Interpolators.hpp"
 #include "Evolution/DgSubcell/Tags/Jacobians.hpp"
@@ -81,6 +82,7 @@ namespace evolution::dg::subcell::Actions {
  *   - `subcell::Tags::TciGridHistory`
  *   - `subcell::Tags::TciCallsSinceRollback`
  *   - `subcell::Tags::GhostDataForReconstruction<Dim>`
+ *   - `subcell::Tags::GhostZoneInverseJacobian<Dim>`
  *   - `subcell::Tags::TciDecision`
  *   - `subcell::Tags::DataForRdmpTci`
  *   - `subcell::fd::Tags::InverseJacobianLogicalToGrid<Dim>`
@@ -103,7 +105,8 @@ struct SetSubcellGrid {
       Tags::ActiveGrid, Tags::DidRollback, Tags::TciGridHistory,
       Tags::TciCallsSinceRollback, Tags::StepsSinceTciCall,
       evolution::dg::subcell::Tags::MeshForGhostData<Dim>,
-      Tags::GhostDataForReconstruction<Dim>, Tags::TciDecision,
+      Tags::GhostDataForReconstruction<Dim>,
+      Tags::GhostZoneInverseJacobian<Dim>, Tags::TciDecision,
       Tags::NeighborTciDecisions<Dim>, Tags::DataForRdmpTci,
       subcell::Tags::CellCenteredFlux<typename System::flux_variables, Dim>,
       subcell::Tags::ReconstructionOrder<Dim>,

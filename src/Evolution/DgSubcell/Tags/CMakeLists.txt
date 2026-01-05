@@ -13,6 +13,7 @@ spectre_target_headers(
   DataForRdmpTci.hpp
   DidRollback.hpp
   GhostDataForReconstruction.hpp
+  GhostZoneInverseJacobian.hpp
   Inactive.hpp
   InitialTciData.hpp
   Interpolators.hpp
