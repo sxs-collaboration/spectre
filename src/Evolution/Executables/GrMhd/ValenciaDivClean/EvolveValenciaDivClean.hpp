@@ -412,10 +412,12 @@ struct EvolutionMetavars<tmpl::list<InterpolationTargetTags...>,
       evolution::dg::Actions::ComputeTimeDerivative<
           volume_dim, system, AllStepChoosers, local_time_stepping,
           use_dg_element_collection>,
+      evolution::dg::Actions::ApplyBoundaryCorrectionsToTimeDerivative<
+          volume_dim, use_dg_element_collection>,
+      Actions::MutateApply<RecordTimeStepperData<system>>,
       tmpl::conditional_t<
           local_time_stepping,
           tmpl::list<
-              Actions::MutateApply<RecordTimeStepperData<system>>,
               evolution::Actions::RunEventsAndDenseTriggers<tmpl::list<
                   evolution::dg::ApplyBoundaryCorrections<
                       local_time_stepping, EvolutionMetavars, volume_dim, true>,
@@ -426,9 +428,6 @@ struct EvolutionMetavars<tmpl::list<InterpolationTargetTags...>,
                   volume_dim, false, use_dg_element_collection>,
               Actions::MutateApply<ChangeTimeStepperOrder<system>>>,
           tmpl::list<
-              evolution::dg::Actions::ApplyBoundaryCorrectionsToTimeDerivative<
-                  volume_dim, use_dg_element_collection>,
-              Actions::MutateApply<RecordTimeStepperData<system>>,
               evolution::Actions::RunEventsAndDenseTriggers<
                   tmpl::list<system::primitive_from_conservative<
                       ordered_list_of_primitive_recovery_schemes>>>,

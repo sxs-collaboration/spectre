@@ -581,10 +581,12 @@ struct EvolutionMetavars {
       evolution::dg::Actions::ComputeTimeDerivative<
           volume_dim, system, AllStepChoosers, local_time_stepping,
           use_dg_element_collection>,
+      evolution::dg::Actions::ApplyBoundaryCorrectionsToTimeDerivative<
+          volume_dim, use_dg_element_collection>,
+      Actions::MutateApply<RecordTimeStepperData<system>>,
       tmpl::conditional_t<
           local_time_stepping,
-          tmpl::list<Actions::MutateApply<RecordTimeStepperData<system>>,
-                     evolution::Actions::RunEventsAndDenseTriggers<tmpl::list<
+          tmpl::list<evolution::Actions::RunEventsAndDenseTriggers<tmpl::list<
                          ::domain::CheckFunctionsOfTimeAreReadyPostprocessor<
                              volume_dim>,
                          evolution::dg::ApplyBoundaryCorrections<
@@ -595,9 +597,6 @@ struct EvolutionMetavars {
                          volume_dim, false, use_dg_element_collection>,
                      Actions::MutateApply<ChangeTimeStepperOrder<system>>>,
           tmpl::list<
-              evolution::dg::Actions::ApplyBoundaryCorrectionsToTimeDerivative<
-                  volume_dim, use_dg_element_collection>,
-              Actions::MutateApply<RecordTimeStepperData<system>>,
               evolution::Actions::RunEventsAndDenseTriggers<tmpl::list<
                   ::domain::CheckFunctionsOfTimeAreReadyPostprocessor<
                       volume_dim>>>,
