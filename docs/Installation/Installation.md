@@ -222,8 +222,12 @@ The following dependencies will be fetched automatically if you set
   build and installation (as detailed in the [Catch2
   docs](https://github.com/catchorg/Catch2/blob/devel/docs/cmake-integration.md#installing-catch2-from-git-repository)).
   Compile with `CMAKE_POSITION_INDEPENDENT_CODE=ON`.
-* [LIBXSMM](https://github.com/libxsmm/libxsmm) version 1.16.1 or later.
-  \cite Libxsmm
+* [LIBXSMM](https://github.com/libxsmm/libxsmm) version 1.16.1 or later.  Some
+  configurations of LIBXSMM build incorrectly against pthreads, causing
+  ``undefined reference to 'pthread_yield'`` when building SpECTRE.  It is
+  unclear what conditions trigger the problem, but it is fixed in versions
+  newer than 1.17.  (As of this writing, there are no newer releases and
+  affected systems must build from git.) \cite Libxsmm
 * [yaml-cpp](https://github.com/jbeder/yaml-cpp) version 0.7.0 or later.
   Building with shared library support is recommended when installing from
   source. \cite Yamlcpp
