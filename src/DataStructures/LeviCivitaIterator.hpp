@@ -26,6 +26,10 @@
  * `std::array`, and the function `sign()` returns the sign of the
  * Levi-Civita symbol for this permutation.
  *
+ * Note that the Levi-Civita symbol in odd dimensions (like 3) is invariant
+ * under cyclic permutations of its indices, but in even dimensions (like 4)
+ * it changes sign under cyclic permutations.
+ *
  * \example
  * \snippet Test_LeviCivitaIterator.cpp levi_civita_iterator_example
  */
@@ -80,7 +84,7 @@ class LeviCivitaIterator {
 
     indexes[0] = index;
 
-    // cpp20::next_permutation generates the different permuations of index
+    // cpp20::next_permutation generates the different permutations of index
     // loop over them to fill in the rest of the permutations in indexes
     size_t permutation = 1;
     while (cpp20::next_permutation(index.begin(), index.end())) {

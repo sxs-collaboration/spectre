@@ -10,6 +10,7 @@ set(LIBRARY_SOURCES
   Test_DeterminantAndInverse.cpp
   Test_DotProduct.cpp
   Test_FrameTransform.cpp
+  Test_GramSchmidtOrthonormalize.cpp
   Test_Magnitude.cpp
   Test_Norms.cpp
   Test_OrthonormalOneform.cpp

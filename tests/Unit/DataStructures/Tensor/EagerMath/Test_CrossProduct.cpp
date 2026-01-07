@@ -8,6 +8,7 @@
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/EagerMath/CrossProduct.hpp"
+#include "DataStructures/Tensor/EagerMath/RaiseOrLowerIndex.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Framework/CheckWithRandomValues.hpp"
 #include "Framework/SetupLocalPythonEnvironment.hpp"
@@ -165,6 +166,47 @@ void check_cross_product(const DataType& used_for_size) {
       cross_product(curved_vector_y_hat, curved_covector_x_hat,
                     inverse_metric_simple, det_metric_simple),
       curved_covector_minus_z_hat);
+
+  // Test spacetime cross product (4D)
+  const tnsr::A<DataType, 3, Frame::Grid> spacetime_vector_t{
+      {{one, zero, zero, zero}}};
+  const tnsr::A<DataType, 3, Frame::Grid> spacetime_vector_x{
+      {{zero, one, zero, zero}}};
+  const tnsr::A<DataType, 3, Frame::Grid> spacetime_vector_y{
+      {{zero, zero, one, zero}}};
+  const tnsr::A<DataType, 3, Frame::Grid> spacetime_vector_z{
+      {{zero, zero, zero, one}}};
+
+  auto inverse_spacetime_metric =
+      make_with_value<tnsr::AA<DataType, 3, Frame::Grid>>(used_for_size, 0.0);
+  get<0, 0>(inverse_spacetime_metric) = -1.0;
+  get<1, 1>(inverse_spacetime_metric) = 1.0;
+  get<2, 2>(inverse_spacetime_metric) = 1.0;
+  get<3, 3>(inverse_spacetime_metric) = 1.0;
+  auto spacetime_metric =
+      make_with_value<tnsr::aa<DataType, 3, Frame::Grid>>(used_for_size, 0.0);
+  get<0, 0>(spacetime_metric) = -1.0;
+  get<1, 1>(spacetime_metric) = 1.0;
+  get<2, 2>(spacetime_metric) = 1.0;
+  get<3, 3>(spacetime_metric) = 1.0;
+  const auto spacetime_metric_determinant =
+      make_with_value<Scalar<DataType>>(used_for_size, -1.0);
+
+  auto result_up =
+      make_with_value<tnsr::A<DataType, 3, Frame::Grid>>(used_for_size, 0.0);
+  cross_product(make_not_null(&result_up), spacetime_vector_t,
+                spacetime_vector_x, spacetime_vector_y,
+                inverse_spacetime_metric, spacetime_metric_determinant);
+  CHECK_ITERABLE_APPROX(result_up, spacetime_vector_z);
+  auto result_lo =
+      make_with_value<tnsr::a<DataType, 3, Frame::Grid>>(used_for_size, 0.0);
+  cross_product(make_not_null(&result_lo),
+                raise_or_lower_index(spacetime_vector_t, spacetime_metric),
+                raise_or_lower_index(spacetime_vector_x, spacetime_metric),
+                raise_or_lower_index(spacetime_vector_y, spacetime_metric),
+                spacetime_metric, spacetime_metric_determinant);
+  CHECK_ITERABLE_APPROX(
+      result_lo, raise_or_lower_index(spacetime_vector_z, spacetime_metric));
 
   // Test c++ vs. python using random values
   pypp::check_with_random_values<1>(

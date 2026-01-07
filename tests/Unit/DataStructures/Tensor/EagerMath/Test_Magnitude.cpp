@@ -130,6 +130,21 @@ void test_magnitude() {
     }();
     CHECK(get(magnitude(three_d_covector, inv_g)) == sqrt(778.0));
   }
+
+  {
+    INFO("Spacetime vector magnitude");
+    const tnsr::A<double, 3> timelike_vector{{{1., 0., 0., 0.}}};
+    const tnsr::aa<double, 3> metric = []() {
+      tnsr::aa<double, 3> result{};
+      get<0, 0>(result) = -1.0;
+      get<1, 1>(result) = 1.0;
+      get<2, 2>(result) = 1.0;
+      get<3, 3>(result) = 1.0;
+      return result;
+    }();
+
+    CHECK(get(magnitude(timelike_vector, metric)) == 1.0);
+  }
 }
 
 struct Vector : db::SimpleTag {
