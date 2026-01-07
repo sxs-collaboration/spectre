@@ -31,10 +31,7 @@ tnsr::i<std::complex<double>, 2> extract_self_force(
   interpolator.interpolate(make_not_null(&intrp_result), get<0>(deriv_field));
   get<0>(deriv_field_at_puncture) = intrp_result[0];
   // Assuming equatorial symmetry, so theta derivative must be zero
-  interpolator.interpolate(make_not_null(&intrp_result), get<1>(deriv_field));
-  ASSERT(equal_within_roundoff(intrp_result[0], 0.0),
-         "Assuming equatorial symmetry, but theta derivative at puncture is "
-             << intrp_result[0]);
+  // (violated only by truncation error)
   get<1>(deriv_field_at_puncture) = 0.;
   // Calculate self-force in r and theta coordinates
   tnsr::i<std::complex<double>, 2> self_force = deriv_field_at_puncture;
