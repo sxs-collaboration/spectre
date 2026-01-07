@@ -22,8 +22,7 @@ humanize
 # Jinja2: To work with placeholders in input files and submit scripts
 Jinja2
 numpy
-# Newer version on macOS causes slow down in plotting utilities
-matplotlib <= 3.8.4
+matplotlib
 # Pandas: To work with columns of data. Need a sufficiently recent version
 # to do some fancy indexing in Status CLI
 pandas >= 1.5
