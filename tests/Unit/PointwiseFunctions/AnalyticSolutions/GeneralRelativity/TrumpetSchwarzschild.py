@@ -781,10 +781,9 @@ def trumpet_schwarzschild_variables(x, t, mass, n):
 
         def first_integral_above_threshold(mass, lapse_upper_bound, n):
             res = tanhsinh(
-                first_integrand_above_threshold,
+                lambda lapse: first_integrand_above_threshold(lapse, mass, n),
                 threshold_lapse,
                 lapse_upper_bound,
-                args=(mass, n),
             )
 
             return res.integral
@@ -877,10 +876,9 @@ def trumpet_schwarzschild_variables(x, t, mass, n):
 
         def first_integral_below_threshold(mass, lapse_lower_bound, n):
             res = tanhsinh(
-                first_integrand_below_threshold,
+                lambda lapse: first_integrand_below_threshold(lapse, mass, n),
                 lapse_lower_bound,
                 threshold_lapse,
-                args=(mass, n),
             )
 
             return res.integral
