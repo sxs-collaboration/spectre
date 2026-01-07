@@ -9,6 +9,7 @@
 
 #include "ControlSystem/Actions/InitializeMeasurements.hpp"
 #include "ControlSystem/Actions/LimitTimeStep.hpp"
+#include "ControlSystem/CleanFunctionsOfTime.hpp"
 #include "ControlSystem/Component.hpp"
 #include "ControlSystem/ControlErrors/Size/Factory.hpp"
 #include "ControlSystem/ControlErrors/Size/State.hpp"
@@ -502,6 +503,7 @@ struct EvolutionMetavars {
                            volume_dim, observe_fields, non_tensor_compute_tags>,
                        control_system::metafunctions::control_system_events<
                            control_systems>,
+                       control_system::CleanFunctionsOfTime,
                        Events::time_events<system>,
                        dg::Events::ObserveTimeStepVolume<system>,
                        amr::Events::RefineMesh,

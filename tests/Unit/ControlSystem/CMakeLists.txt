@@ -5,6 +5,7 @@ set(LIBRARY "Test_ControlSystem")
 
 set(LIBRARY_SOURCES
   Test_Averager.cpp
+  Test_CleanFunctionsOfTime.cpp
   Test_CombinedName.cpp
   Test_Controller.cpp
   Test_EventTriggerMetafunctions.cpp

@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "ControlSystem/Actions/InitializeMeasurements.hpp"
+#include "ControlSystem/CleanFunctionsOfTime.hpp"
 #include "ControlSystem/Component.hpp"
 #include "ControlSystem/ControlErrors/Size/Factory.hpp"
 #include "ControlSystem/ControlErrors/Size/State.hpp"
@@ -204,6 +205,7 @@ struct EvolutionMetavars : public GeneralizedHarmonicTemplateBase<3, UseLts> {
                        ah::Events::FindApparentHorizon<ApparentHorizon>,
                        control_system::metafunctions::control_system_events<
                            control_systems>,
+                       control_system::CleanFunctionsOfTime,
                        intrp::Events::InterpolateWithoutInterpComponent<
                            3, BondiSachs, source_vars_no_deriv>,
                        intrp::Events::InterpolateWithoutInterpComponent<
