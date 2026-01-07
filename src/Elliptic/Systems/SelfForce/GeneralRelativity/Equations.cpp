@@ -74,7 +74,8 @@ void Sources::apply(
     const tnsr::aaBB<ComplexDataVector, 3>& beta,
     const tnsr::aaBB<ComplexDataVector, 3>& gamma_rstar,
     const tnsr::aaBB<ComplexDataVector, 3>& gamma_theta,
-    const tnsr::aa<ComplexDataVector, 3>& field, const FluxTensorType& flux) {
+    const tnsr::aa<ComplexDataVector, 3>& field,
+    const GradTensorType& /*field_gradient*/, const FluxTensorType& flux) {
   add_sources(scalar_equation, beta, gamma_rstar, gamma_theta, field, flux);
 }
 

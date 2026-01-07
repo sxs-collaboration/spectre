@@ -101,6 +101,7 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.GrSelfForce.CircularOrbit",
     }
     GrSelfForce::Sources::apply(make_not_null(&scalar_eqn), beta, gamma_rstar,
                                 gamma_theta, singular_field,
+                                deriv_singular_field,
                                 flux_singular_field);
     for (size_t i = 0; i < scalar_eqn.size(); ++i) {
       CAPTURE(i);
