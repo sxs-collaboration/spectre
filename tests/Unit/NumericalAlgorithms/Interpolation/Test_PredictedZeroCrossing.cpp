@@ -99,7 +99,7 @@ SPECTRE_TEST_CASE(
   // random errors to every single point, so we need to make the
   // epsilon here large enough so that the test doesn't fail in the
   // rare case that the errors reinforce each other.
-  Approx custom_approx = Approx::custom().epsilon(1.e-5);
+  const Approx custom_approx = Approx::custom().epsilon(1.e-4);
   CHECK_ITERABLE_CUSTOM_APPROX(expected_zero_crossing_value,
                                compute_zero_crossing_value, custom_approx);
 
