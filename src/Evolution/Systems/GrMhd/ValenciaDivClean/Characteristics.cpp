@@ -14,7 +14,9 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Matrix.hpp"
 #include "DataStructures/Tags/TempTensor.hpp"
+#include "DataStructures/Tensor/EagerMath/DeterminantAndInverse.hpp"
 #include "DataStructures/Tensor/EagerMath/DotProduct.hpp"
+#include "DataStructures/Tensor/EagerMath/OrthonormalOneform.hpp"
 #include "DataStructures/Tensor/EagerMath/RaiseOrLowerIndex.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
@@ -328,7 +330,6 @@ void characteristic_speeds_hydro(
   (*char_speeds)[HydroSpeed::LambdaMinus] = get(first_term) - get(second_term);
 }
 
-
 template <size_t ThermodynamicDim>
 std::array<DataVector, 3> characteristic_speeds_hydro(
     const tnsr::I<DataVector, 3, Frame::Inertial>& spatial_velocity,
@@ -347,6 +348,356 @@ std::array<DataVector, 3> characteristic_speeds_hydro(
       specific_internal_energy, specific_enthalpy, electron_fraction,
       lorentz_factor, unit_normal, spatial_metric, equation_of_state);
   return char_speeds;
+}
+
+template <size_t ThermodynamicDim>
+void eigenvectors_hydro(
+    const gsl::not_null<std::array<tnsr::i<DataVector, 6, Frame::Inertial>,
+                                   6>*>& right_eigenvectors,
+    const gsl::not_null<std::array<tnsr::I<DataVector, 6, Frame::Inertial>,
+                                   6>*>& left_eigenvectors,
+    const tnsr::I<DataVector, 3, Frame::Inertial>& spatial_velocity,
+    const Scalar<DataVector>& rest_mass_density,
+    const Scalar<DataVector>& specific_internal_energy,
+    const Scalar<DataVector>& specific_enthalpy,
+    const Scalar<DataVector>& electron_fraction,
+    const Scalar<DataVector>& lorentz_factor, const Scalar<DataVector>& kappa,
+    const Scalar<DataVector>& zeta, const tnsr::i<DataVector, 3>& unit_normal,
+    const tnsr::ii<DataVector, 3, Frame::Inertial>& spatial_metric,
+    const EquationsOfState::EquationOfState<true, ThermodynamicDim>&
+        equation_of_state) {
+  const size_t num_grid_points = get(lorentz_factor).size();
+
+  auto allocate_and_zero = [num_grid_points](auto& vec_array) {
+    if (vec_array[0].get(0).size() != num_grid_points) {
+      for (auto& vec : vec_array) {
+        for (size_t a = 0; a < 6; ++a) {
+          vec.get(a) = DataVector(num_grid_points, 0.0);
+        }
+      }
+    } else {
+      for (auto& vec : vec_array) {
+        for (size_t a = 0; a < 6; ++a) {
+          vec.get(a) = 0.0;
+        }
+      }
+    }
+  };
+  allocate_and_zero(*right_eigenvectors);
+  allocate_and_zero(*left_eigenvectors);
+
+  // This is for the case for zeta = 0.
+  const double zeta_max_abs = max(abs(get(zeta)));
+
+  Scalar<DataVector> det_spatial_metric{num_grid_points};
+  tnsr::II<DataVector, 3, Frame::Inertial> inv_spatial_metric{num_grid_points};
+  determinant_and_inverse(make_not_null(&det_spatial_metric),
+                          make_not_null(&inv_spatial_metric), spatial_metric);
+
+  tnsr::i<DataVector, 3, Frame::Inertial> tangent_one_form_1{num_grid_points};
+  orthonormal_oneform(make_not_null(&tangent_one_form_1), unit_normal,
+                      inv_spatial_metric);
+
+  tnsr::i<DataVector, 3, Frame::Inertial> tangent_one_form_2{num_grid_points};
+  orthonormal_oneform(make_not_null(&tangent_one_form_2), unit_normal,
+                      tangent_one_form_1, spatial_metric, det_spatial_metric);
+
+  tnsr::I<DataVector, 3, Frame::Inertial> unit_normal_vector{num_grid_points};
+  raise_or_lower_index(make_not_null(&unit_normal_vector), unit_normal,
+                       inv_spatial_metric);
+
+  tnsr::I<DataVector, 3, Frame::Inertial> tangent_vector_1{num_grid_points};
+  raise_or_lower_index(make_not_null(&tangent_vector_1), tangent_one_form_1,
+                       inv_spatial_metric);
+
+  tnsr::I<DataVector, 3, Frame::Inertial> tangent_vector_2{num_grid_points};
+  raise_or_lower_index(make_not_null(&tangent_vector_2), tangent_one_form_2,
+                       inv_spatial_metric);
+
+  Scalar<DataVector> v_dot_tangent_1{num_grid_points};
+  dot_product(make_not_null(&v_dot_tangent_1), tangent_one_form_1,
+              spatial_velocity);
+
+  Scalar<DataVector> v_dot_tangent_2{num_grid_points};
+  dot_product(make_not_null(&v_dot_tangent_2), tangent_one_form_2,
+              spatial_velocity);
+
+  Scalar<DataVector> normal_velocity{num_grid_points};
+  dot_product(make_not_null(&normal_velocity), unit_normal, spatial_velocity);
+
+  const DataVector one_minus_normal_velocity_squared =
+      1.0 - get(normal_velocity) * get(normal_velocity);
+
+  tnsr::i<DataVector, 3, Frame::Inertial> spatial_velocity_one_form{
+      num_grid_points};
+  raise_or_lower_index(make_not_null(&spatial_velocity_one_form),
+                       spatial_velocity, spatial_metric);
+
+  Scalar<DataVector> spatial_velocity_squared{num_grid_points};
+  dot_product(make_not_null(&spatial_velocity_squared), spatial_velocity,
+              spatial_velocity_one_form);
+
+  Scalar<DataVector> sound_speed_squared{num_grid_points};
+  Scalar<DataVector> pressure{num_grid_points};
+
+  if constexpr (ThermodynamicDim == 1) {
+    get(sound_speed_squared) =
+        get(equation_of_state.chi_from_density(rest_mass_density)) +
+        get(equation_of_state.kappa_times_p_over_rho_squared_from_density(
+            rest_mass_density));
+    get(sound_speed_squared) /= get(specific_enthalpy);
+    get(pressure) =
+        get(equation_of_state.pressure_from_density(rest_mass_density));
+  } else if constexpr (ThermodynamicDim == 2) {
+    get(sound_speed_squared) =
+        get(equation_of_state.chi_from_density_and_energy(
+            rest_mass_density, specific_internal_energy)) +
+        get(equation_of_state
+                .kappa_times_p_over_rho_squared_from_density_and_energy(
+                    rest_mass_density, specific_internal_energy));
+    get(sound_speed_squared) /= get(specific_enthalpy);
+    get(pressure) = get(equation_of_state.pressure_from_density_and_energy(
+        rest_mass_density, specific_internal_energy));
+  } else if constexpr (ThermodynamicDim == 3) {
+    const auto temperature =
+        equation_of_state.temperature_from_density_and_energy(
+            rest_mass_density, specific_internal_energy, electron_fraction);
+    get(sound_speed_squared) =
+        get(equation_of_state.sound_speed_squared_from_density_and_temperature(
+            rest_mass_density, temperature, electron_fraction));
+    get(pressure) = get(equation_of_state.pressure_from_density_and_energy(
+        rest_mass_density, specific_internal_energy, electron_fraction));
+  }
+
+  const DataVector sound_speed = sqrt(get(sound_speed_squared));
+  const DataVector W_squared = square(get(lorentz_factor));
+
+  // Variables in the ordering (D, S_i, tau, DYe)
+  // RIGHT eigenvectors
+
+  // R1 and R2
+  for (size_t i = 0; i < 3; ++i) {
+    (*right_eigenvectors)[R1].get(i + 1) =
+        get(specific_enthalpy) *
+        (tangent_one_form_1.get(i) + 2.0 * W_squared * get(v_dot_tangent_1) *
+                                         spatial_velocity_one_form.get(i));
+
+    (*right_eigenvectors)[R2].get(i + 1) =
+        get(specific_enthalpy) *
+        (tangent_one_form_2.get(i) + 2.0 * W_squared * get(v_dot_tangent_2) *
+                                         spatial_velocity_one_form.get(i));
+  }
+
+  (*right_eigenvectors)[R1].get(0) = get(lorentz_factor) * get(v_dot_tangent_1);
+  (*right_eigenvectors)[R2].get(0) = get(lorentz_factor) * get(v_dot_tangent_2);
+
+  (*right_eigenvectors)[R1].get(4) =
+      get(lorentz_factor) *
+      (2.0 * get(specific_enthalpy) * get(lorentz_factor) - 1.0) *
+      get(v_dot_tangent_1);
+
+  (*right_eigenvectors)[R2].get(4) =
+      get(lorentz_factor) *
+      (2.0 * get(specific_enthalpy) * get(lorentz_factor) - 1.0) *
+      get(v_dot_tangent_2);
+
+  (*right_eigenvectors)[R1].get(5) =
+      get(electron_fraction) * (*right_eigenvectors)[R1].get(0);
+  (*right_eigenvectors)[R2].get(5) =
+      get(electron_fraction) * (*right_eigenvectors)[R2].get(0);
+
+  // R3
+  const DataVector common_R3 =
+      get(specific_enthalpy) * get(lorentz_factor) *
+      (get(kappa) - get(rest_mass_density) * get(sound_speed_squared));
+  for (size_t i = 0; i < 3; ++i) {
+    (*right_eigenvectors)[R3].get(i + 1) =
+        common_R3 * spatial_velocity_one_form.get(i);
+  }
+  (*right_eigenvectors)[R3].get(0) = get(kappa);
+  (*right_eigenvectors)[R3].get(4) = common_R3 - get(kappa);
+  (*right_eigenvectors)[R3].get(5) =
+      get(electron_fraction) * (*right_eigenvectors)[R3].get(0);
+
+  // R4
+  if (zeta_max_abs < 1e-14) {
+    (*right_eigenvectors)[R4].get(5) = 1.0;
+  } else {
+    for (size_t i = 0; i < 3; ++i) {
+      (*right_eigenvectors)[R4].get(i + 1) = spatial_velocity_one_form.get(i);
+    }
+    (*right_eigenvectors)[R4].get(4) = 1.0;
+    (*right_eigenvectors)[R4].get(5) =
+        -get(kappa) / (get(zeta) * get(lorentz_factor));
+  }
+
+  // R±
+  const DataVector denom =
+      get(lorentz_factor) *
+      sqrt(1.0 - get(spatial_velocity_squared) * get(sound_speed_squared) -
+           get(normal_velocity) * get(normal_velocity) *
+               (1.0 - get(sound_speed_squared)));
+
+  const DataVector sound_speed_over_denom = sound_speed / denom;
+
+  for (size_t i = 0; i < 3; ++i) {
+    (*right_eigenvectors)[Rplus].get(i + 1) =
+        get(specific_enthalpy) * get(lorentz_factor) *
+        (spatial_velocity_one_form.get(i) +
+         sound_speed_over_denom * unit_normal.get(i));
+
+    (*right_eigenvectors)[Rminus].get(i + 1) =
+        get(specific_enthalpy) * get(lorentz_factor) *
+        (spatial_velocity_one_form.get(i) -
+         sound_speed_over_denom * unit_normal.get(i));
+  }
+
+  (*right_eigenvectors)[Rplus].get(0) = 1.0;
+  (*right_eigenvectors)[Rminus].get(0) = 1.0;
+
+  (*right_eigenvectors)[Rplus].get(4) =
+      get(specific_enthalpy) * get(lorentz_factor) *
+          (1.0 + sound_speed * get(normal_velocity) / denom) -
+      1.0;
+
+  (*right_eigenvectors)[Rminus].get(4) =
+      get(specific_enthalpy) * get(lorentz_factor) *
+          (1.0 - sound_speed * get(normal_velocity) / denom) -
+      1.0;
+
+  (*right_eigenvectors)[Rplus].get(5) = get(electron_fraction);
+  (*right_eigenvectors)[Rminus].get(5) = get(electron_fraction);
+
+  // LEFT eigenvectors
+  const DataVector prefactor_L12 =
+      1.0 / (get(specific_enthalpy) * one_minus_normal_velocity_squared);
+
+  // L1
+  (*left_eigenvectors)[L1].get(0) = -get(v_dot_tangent_1) * prefactor_L12;
+  (*left_eigenvectors)[L1].get(4) = -get(v_dot_tangent_1) * prefactor_L12;
+  for (size_t i = 0; i < 3; ++i) {
+    (*left_eigenvectors)[L1].get(i + 1) =
+        (get(v_dot_tangent_1) * get(normal_velocity) *
+             unit_normal_vector.get(i) +
+         one_minus_normal_velocity_squared * tangent_vector_1.get(i)) *
+        prefactor_L12;
+  }
+
+  // L2
+  (*left_eigenvectors)[L2].get(0) = -get(v_dot_tangent_2) * prefactor_L12;
+  (*left_eigenvectors)[L2].get(4) = -get(v_dot_tangent_2) * prefactor_L12;
+  for (size_t i = 0; i < 3; ++i) {
+    (*left_eigenvectors)[L2].get(i + 1) =
+        (get(v_dot_tangent_2) * get(normal_velocity) *
+             unit_normal_vector.get(i) +
+         one_minus_normal_velocity_squared * tangent_vector_2.get(i)) *
+        prefactor_L12;
+  }
+
+  // L3
+  {
+    const DataVector prefactor_L3 =
+        1.0 / (get(rest_mass_density) * get(specific_enthalpy) *
+               get(sound_speed_squared));
+
+    const DataVector h_minus_one =
+        get(specific_internal_energy) + get(pressure) / get(rest_mass_density);
+
+    const DataVector W_minus_one = get(spatial_velocity_squared) *
+                                   square(get(lorentz_factor)) /
+                                   (get(lorentz_factor) + 1.0);
+
+    const DataVector h_minus_W = h_minus_one - W_minus_one;
+
+    (*left_eigenvectors)[L3].get(0) =
+        (h_minus_W + get(zeta) * get(electron_fraction) / get(kappa)) *
+        prefactor_L3;
+
+    for (size_t i = 0; i < 3; ++i) {
+      (*left_eigenvectors)[L3].get(i + 1) =
+          (get(lorentz_factor) * spatial_velocity.get(i)) * prefactor_L3;
+    }
+
+    (*left_eigenvectors)[L3].get(4) = (-get(lorentz_factor)) * prefactor_L3;
+    (*left_eigenvectors)[L3].get(5) = (-get(zeta) / get(kappa)) * prefactor_L3;
+  }
+
+  // L4
+  {
+    if (zeta_max_abs < 1e-14) {
+      (*left_eigenvectors)[L4].get(0) = -get(electron_fraction);
+      (*left_eigenvectors)[L4].get(5) = 1.0;
+    } else {
+      const DataVector prefactor_L4 =
+          get(zeta) * get(lorentz_factor) / get(kappa);
+      (*left_eigenvectors)[L4].get(0) = prefactor_L4 * get(electron_fraction);
+      (*left_eigenvectors)[L4].get(5) = -prefactor_L4;
+    }
+  }
+
+  // L±
+  {
+    const DataVector a =
+        square(get(lorentz_factor)) * one_minus_normal_velocity_squared *
+        (get(kappa) + get(rest_mass_density) * get(sound_speed_squared));
+
+    const DataVector c_plus = get(rest_mass_density) * sound_speed *
+                              (sound_speed + get(normal_velocity) * denom);
+    const DataVector c_minus = get(rest_mass_density) * sound_speed *
+                               (sound_speed - get(normal_velocity) * denom);
+
+    const DataVector b_plus = a - c_plus;
+    const DataVector b_minus = a - c_minus;
+
+    const DataVector k_term =
+        get(kappa) - get(rest_mass_density) * get(sound_speed_squared) +
+        get(zeta) * get(electron_fraction) / get(specific_enthalpy);
+
+    const DataVector prefactor_Lpm =
+        1.0 / (2.0 * get(rest_mass_density) * get(specific_enthalpy) *
+               get(lorentz_factor) * get(sound_speed_squared) *
+               one_minus_normal_velocity_squared);
+
+    // S_i
+    for (size_t i = 0; i < 3; ++i) {
+      (*left_eigenvectors)[Lplus].get(i + 1) =
+          (-a * spatial_velocity.get(i) +
+           get(rest_mass_density) * sound_speed *
+               (sound_speed * get(normal_velocity) + denom) *
+               unit_normal_vector.get(i)) *
+          prefactor_Lpm;
+
+      (*left_eigenvectors)[Lminus].get(i + 1) =
+          (-a * spatial_velocity.get(i) +
+           get(rest_mass_density) * sound_speed *
+               (sound_speed * get(normal_velocity) - denom) *
+               unit_normal_vector.get(i)) *
+          prefactor_Lpm;
+    }
+
+    // D
+    (*left_eigenvectors)[Lplus].get(0) =
+        (b_plus - get(specific_enthalpy) * get(lorentz_factor) * k_term *
+                      one_minus_normal_velocity_squared) *
+        prefactor_Lpm;
+
+    (*left_eigenvectors)[Lminus].get(0) =
+        (b_minus - get(specific_enthalpy) * get(lorentz_factor) * k_term *
+                       one_minus_normal_velocity_squared) *
+        prefactor_Lpm;
+
+    // tau
+    (*left_eigenvectors)[Lplus].get(4) = b_plus * prefactor_Lpm;
+    (*left_eigenvectors)[Lminus].get(4) = b_minus * prefactor_Lpm;
+
+    // DYe
+    (*left_eigenvectors)[Lplus].get(5) =
+        (get(zeta) * get(lorentz_factor) * one_minus_normal_velocity_squared) *
+        prefactor_Lpm;
+    (*left_eigenvectors)[Lminus].get(5) =
+        (get(zeta) * get(lorentz_factor) * one_minus_normal_velocity_squared) *
+        prefactor_Lpm;
+  }
 }
 
 namespace detail {
@@ -537,7 +888,6 @@ void flux_jacobian_hydro(
        get(normal_velocity)) /
       get(Z);
 }
-
 }  // namespace detail
 
 template <size_t ThermodynamicDim>
@@ -921,6 +1271,22 @@ GENERATE_INSTANTIATIONS(FUNCTION_INSTANTIATION, (1, 2, 3))
       const Scalar<DataVector>& specific_enthalpy,                             \
       const Scalar<DataVector>& electron_fraction,                             \
       const Scalar<DataVector>& lorentz_factor,                                \
+      const tnsr::i<DataVector, 3>& unit_normal,                               \
+      const tnsr::ii<DataVector, 3, Frame::Inertial>& spatial_metric,          \
+      const EquationsOfState::EquationOfState<true, GET_DIM(data)>&            \
+          equation_of_state);                                                  \
+  template void eigenvectors_hydro<GET_DIM(data)>(                             \
+      const gsl::not_null<std::array<tnsr::i<DataVector, 6, Frame::Inertial>,  \
+                                     6>*>& right_eigenvectors,                 \
+      const gsl::not_null<std::array<tnsr::I<DataVector, 6, Frame::Inertial>,  \
+                                     6>*>& left_eigenvectors,                  \
+      const tnsr::I<DataVector, 3, Frame::Inertial>& spatial_velocity,         \
+      const Scalar<DataVector>& rest_mass_density,                             \
+      const Scalar<DataVector>& specific_internal_energy,                      \
+      const Scalar<DataVector>& specific_enthalpy,                             \
+      const Scalar<DataVector>& electron_fraction,                             \
+      const Scalar<DataVector>& lorentz_factor,                                \
+      const Scalar<DataVector>& kappa, const Scalar<DataVector>& zeta,         \
       const tnsr::i<DataVector, 3>& unit_normal,                               \
       const tnsr::ii<DataVector, 3, Frame::Inertial>& spatial_metric,          \
       const EquationsOfState::EquationOfState<true, GET_DIM(data)>&            \

@@ -25,8 +25,7 @@ struct Normalized;
 }  // namespace Tags
 /// \endcond
 
-namespace grmhd {
-namespace ValenciaDivClean {
+namespace grmhd::ValenciaDivClean {
 /// @{
 /*!
  * \brief Compute the characteristic speeds for the Valencia formulation of
@@ -129,6 +128,23 @@ enum HydroSpeed : uint32_t {
   LambdaPlus = 1,
   LambdaMinus = 2
 };
+enum HydroVectorR : uint32_t {
+  R1 = 0,
+  R2 = 1,
+  R3 = 2,
+  R4 = 3,
+  Rplus = 4,
+  Rminus = 5,
+};
+
+enum HydroVectorL : uint32_t {
+  L1 = 0,
+  L2 = 1,
+  L3 = 2,
+  L4 = 3,
+  Lplus = 4,
+  Lminus = 5,
+};
 
 /// @{
 /*!
@@ -193,6 +209,143 @@ std::array<DataVector, 3> characteristic_speeds_hydro(
     const Scalar<DataVector>& electron_fraction,
     const Scalar<DataVector>& lorentz_factor,
     const tnsr::i<DataVector, 3>& unit_normal,
+    const tnsr::ii<DataVector, 3, Frame::Inertial>& spatial_metric,
+    const EquationsOfState::EquationOfState<true, ThermodynamicDim>&
+        equation_of_state);
+/// @}
+
+/// @{
+/*!
+ * \brief Compute the left and right characteristic eigenvectors for the
+ * relativistic hydrodynamics system in the Eulerian frame.
+ *
+ * These are the eigenvectors of the flux Jacobian projected along a spatial
+ * direction with unit normal \f$ s_i \f$, measured by an Eulerian observer.
+ * The eigenvectors correspond to the characteristic speeds returned by
+ * `characteristic_speeds_hydro`.
+ *
+ * The ordering of the conserved variables for the eigenvectors is
+ *
+ * \f[
+ *   (D,\; S_i,\; \tau,\; D Y_e).
+ * \f]
+ *
+ * The right eigenvectors are:
+ *
+ * \f{align*}
+ * \mathbf{R}_{1,2} &=
+ * \begin{pmatrix}
+ *   W v_{1,2} \\
+ *   h\left(t^{(1,2)}_i + 2 W^2 v_{1,2} v_i\right) \\
+ *   W(2hW - 1) v_{1,2} \\
+ *   W v_{1,2} Y_e
+ * \end{pmatrix}, \\
+ *
+ * \mathbf{R}_3 &=
+ * \begin{pmatrix}
+ *   \kappa \\
+ *   hW(\kappa - \rho c_s^2) v_i \\
+ *   hW(\kappa - \rho c_s^2) - \kappa \\
+ *   \kappa Y_e
+ * \end{pmatrix}, \\
+ *
+ * \mathbf{R}_\pm &=
+ * \begin{pmatrix}
+ *   1 \\
+ *   hW\left(v_i \pm \dfrac{c_s}{d} s_i\right) \\
+ *   hW\left(1 \pm \dfrac{c_s v_n}{d}\right) - 1 \\
+ *   Y_e
+ * \end{pmatrix},
+ * \f}
+ *
+ * where
+ *
+ * \f[
+ *   d \equiv W \sqrt{1 - v^2 c_s^2 - v_n^2 (1 - c_s^2)} .
+ * \f]
+ *
+ * The additional degenerate right eigenvector \f$ \mathbf{R}_4 \f$ corresponds
+ * to the electron fraction and reduces to
+ *
+ * \f[
+ *   \mathbf{R}_4 =
+ *   \begin{pmatrix}
+ *     0 \\ 0 \\ 1 \\ -\kappa / (\zeta W)
+ *   \end{pmatrix}
+ * \f]
+ *
+ * when \f$ \zeta \neq 0 \f$. In the limit \f$ \zeta \to 0 \f$, a regularized
+ * eigenvector is used with only a nonzero \f$ D Y_e \f$ component.
+ *
+ * The left eigenvectors are:
+ *
+ * \f{align*}
+ * \mathbf{L}_{1,2} &=
+ * \frac{1}{h(1 - v_n^2)}
+ * \begin{pmatrix}
+ *   -v_{1,2} \\
+ *   v_{1,2} v_n s^i + (1 - v_n^2)\,t_{(1,2)}^i \\
+ *   -v_{1,2} \\
+ *   0
+ * \end{pmatrix}, \\
+ *
+ * \mathbf{L}_3 &=
+ * \frac{1}{\rho h c_s^2}
+ * \begin{pmatrix}
+ *   h - W + \dfrac{\zeta Y_e}{\kappa} \\
+ *   W v^i \\
+ *   -W \\
+ *   -\dfrac{\zeta}{\kappa}
+ * \end{pmatrix}, \\
+ *
+ * \mathbf{L}_\pm &=
+ * \frac{1}{2 \rho h W c_s^2 (1 - v_n^2)}
+ * \begin{pmatrix}
+ *   b_\pm - hW\,k_\mathrm{term}(1 - v_n^2) \\
+ *   -a v^i + \rho c_s (c_s v_n \pm d)\,s^i \\
+ *   b_\pm \\
+ *   \zeta W(1 - v_n^2)
+ * \end{pmatrix},
+ * \f}
+ *
+ * where
+ *
+ * \f{align*}
+ * a &\equiv W^2(1 - v_n^2)(\kappa + \rho c_s^2),\\
+ * c_\pm &\equiv \rho c_s(c_s \pm v_n d),\\
+ * b_\pm &\equiv a - c_\pm,\\
+ * k_\mathrm{term} &\equiv \kappa - \rho c_s^2 + \frac{\zeta Y_e}{h}.
+ * \f}
+ *
+ * The additional degenerate left eigenvector is
+ *
+ * \f[
+ *   \mathbf{L}_4 =
+ *   \frac{\zeta W}{\kappa}
+ *   \begin{pmatrix}
+ *     -Y_e \\ 0 \\ 0 \\ 1
+ *   \end{pmatrix},
+ * \f]
+ *
+ * with a regularized form used in the limit \f$ \zeta \to 0 \f$.
+ *
+ * \note The transverse vectors \f$ t^{(1)}_i \f$ and \f$ t^{(2)}_i \f$ are
+ * constructed to be orthonormal to each other and to the unit normal
+ * \f$ s_i \f$.
+ */
+template <size_t ThermodynamicDim>
+void eigenvectors_hydro(
+    const gsl::not_null<std::array<tnsr::i<DataVector, 6, Frame::Inertial>,
+                                   6>*>& right_eigenvectors,
+    const gsl::not_null<std::array<tnsr::I<DataVector, 6, Frame::Inertial>,
+                                   6>*>& left_eigenvectors,
+    const tnsr::I<DataVector, 3, Frame::Inertial>& spatial_velocity,
+    const Scalar<DataVector>& rest_mass_density,
+    const Scalar<DataVector>& specific_internal_energy,
+    const Scalar<DataVector>& specific_enthalpy,
+    const Scalar<DataVector>& electron_fraction,
+    const Scalar<DataVector>& lorentz_factor, const Scalar<DataVector>& kappa,
+    const Scalar<DataVector>& zeta, const tnsr::i<DataVector, 3>& unit_normal,
     const tnsr::ii<DataVector, 3, Frame::Inertial>& spatial_metric,
     const EquationsOfState::EquationOfState<true, ThermodynamicDim>&
         equation_of_state);
@@ -337,5 +490,4 @@ struct ComputeLargestCharacteristicSpeed : db::ComputeTag,
   }
 };
 }  // namespace Tags
-}  // namespace ValenciaDivClean
-}  // namespace grmhd
+}  // namespace grmhd::ValenciaDivClean
