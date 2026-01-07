@@ -1,0 +1,196 @@
+# Distributed under the MIT License.
+# See LICENSE.txt for details.
+
+Executable: SolveScalarSelfForce
+Testing:
+  Check: parse;execute_check_output
+  Timeout: 10
+ExpectedOutput:
+  - ScalarSelfForceReductions.h5
+  - ScalarSelfForceVolume0.h5
+OutputFileChecks:
+  - Label: SelfForce
+    Subfile: SelfForce.dat
+    FileGlob: ScalarSelfForceReductions.h5
+    ExpectedData:
+      # Iteration | NumPoints | NumContributingElements
+      # | Re(SelfForce_r) | Im(SelfForce_r)
+      # | Re(SelfForce_theta) | Im(SelfForce_theta)
+      - [0, 240, 4, 0., 0., 0., 0.]
+      - [1, 240, 4, -1.365e-4, 9.138e-5, 0., 0.]
+      - [2, 663, 4, -1.365e-4, 9.138e-5, 0., 0.]
+    AbsoluteTolerance: 1.5e-4
+    RelativeTolerance: 0.
+
+---
+
+Background: &background
+  CircularOrbit:
+    BlackHoleMass: &bh_mass 1.
+    BlackHoleSpin: &bh_spin 0.5
+    OrbitalRadius: &orbital_radius 10.
+    MModeNumber: &m_mode_number 1
+    HyperboloidalSlicingTransitions: [-25., 0., 25.55188094366623, 50.]
+
+InitialGuess: *background
+
+RandomizeInitialGuess: None
+
+DomainCreator:
+  AlignedLattice:
+    # Order of dimensions is (r_*, cos(theta))
+    BlockBounds:
+      # Puncture position is at r_* = 12.775940471833115
+      - [-50., 0., 25.55188094366623, 350.] # r_*
+      - [-1., -0.5, 0.5, 1.]  # cos(theta)
+    InitialGridPoints: [4, 4]
+    InitialLevels: [0, 0]
+    RefinedGridPoints: []
+    BlocksToExclude: []
+    RefinedLevels:
+      # bottom row
+      - LowerCornerIndex: [0, 0] # bottom left
+        UpperCornerIndex: [1, 1]
+        Refinement: [0, 0]
+      - LowerCornerIndex: [1, 0] # bottom middle
+        UpperCornerIndex: [2, 1]
+        Refinement: [0, 0]
+      - LowerCornerIndex: [2, 0] # bottom right
+        UpperCornerIndex: [3, 1]
+        Refinement: [1, 0]
+      # middle row
+      - LowerCornerIndex: [0, 1] # middle left
+        UpperCornerIndex: [1, 2]
+        Refinement: [0, 0]
+      - LowerCornerIndex: [1, 1] # source region
+        UpperCornerIndex: [2, 2]
+        Refinement: [1, 1]
+      - LowerCornerIndex: [2, 1] # middle right
+        UpperCornerIndex: [3, 2]
+        Refinement: [1, 0]
+      # top row
+      - LowerCornerIndex: [0, 2] # top left
+        UpperCornerIndex: [1, 3]
+        Refinement: [0, 0]
+      - LowerCornerIndex: [1, 2] # top middle
+        UpperCornerIndex: [2, 3]
+        Refinement: [0, 0]
+      - LowerCornerIndex: [2, 2] # top right
+        UpperCornerIndex: [3, 3]
+        Refinement: [1, 0]
+    BoundaryConditions:
+      # Radial boundary conditions
+      - Lower:
+          Sommerfeld:
+            BlackHoleMass: *bh_mass
+            BlackHoleSpin: *bh_spin
+            OrbitalRadius: *orbital_radius
+            MModeNumber: *m_mode_number
+            HyperboloidalSlicing: True
+            Order: 1
+        Upper:
+          Sommerfeld:
+            BlackHoleMass: *bh_mass
+            BlackHoleSpin: *bh_spin
+            OrbitalRadius: *orbital_radius
+            MModeNumber: *m_mode_number
+            HyperboloidalSlicing: True
+            Order: 2
+      # Angular boundary conditions
+      - Angular:
+          MModeNumber: *m_mode_number
+
+Amr:
+  Verbosity: Quiet
+  Criteria:
+    - RefineAtPuncture
+    - IncreaseResolution
+  EnableInBlocks: All
+  Policies:
+    Isotropy: Anisotropic
+    EnforceTwoToOneBalanceInNormalDirection: True
+    Limits:
+      NumGridPoints: Auto
+      RefinementLevel: Auto
+      ErrorBeyondLimits: True
+    AllowCoarsening: True
+  MaxCoarseLevels: Auto
+  Iterations: 2
+
+PhaseChangeAndTriggers:
+  # Run AMR in every iteration, but not on the initial guess
+  - Trigger:
+      EveryNIterations:
+        N: 1
+        Offset: 1
+    PhaseChanges:
+      - VisitAndReturn(EvaluateAmrCriteria)
+      - VisitAndReturn(AdjustDomain)
+      - VisitAndReturn(UpdateSections)
+      - VisitAndReturn(CheckDomain)
+
+Discretization:
+  DiscontinuousGalerkin:
+    PenaltyParameter: 1.5
+    Massive: True
+    Quadrature: Gauss
+    Formulation: StrongInertial
+
+Observers:
+  VolumeFileName: "ScalarSelfForceVolume"
+  ReductionFileName: "ScalarSelfForceReductions"
+
+LinearSolver:
+  Gmres:
+    ConvergenceCriteria:
+      MaxIterations: 100
+      RelativeResidual: 0
+      AbsoluteResidual: 1.e-12
+    Verbosity: Quiet
+
+  Multigrid:
+    Iterations: 1
+    InitialCoarseLevels: 0
+    PreSmoothing: True
+    UseBottomSolver: True
+    PostSmoothingAtBottom: False
+    Verbosity: Silent
+    OutputVolumeData: False
+
+  SchwarzSmoother:
+    Iterations: 2
+    MaxOverlap: Auto
+    Verbosity: Silent
+    SubdomainSolver:
+      ExplicitInverse:
+        WriteMatrixToFile: None
+        ComplexShift: 0.0
+    ObservePerCoreReductions: False
+    OutputVolumeData: False
+
+EventsAndTriggersAtIterations:
+  - Trigger: Always
+    Events:
+      - ObserveSelfForce
+      - ObserveFields:
+          SubfileName: VolumeData
+          VariablesToObserve:
+            - MMode
+            - BoyerLindquistRadius
+          BlocksToObserve: All
+          InterpolateToMesh: None
+          ProjectToMesh: None
+          CoordinatesFloatingPointType: Double
+          FloatingPointTypes: [Double]
+
+BuildMatrix:
+  MatrixSubfileName: None
+  Verbosity: Silent
+  EnableDirectSolve: True
+
+Parallelization:
+  ElementDistribution: NumGridPoints
+
+ResourceInfo:
+  AvoidGlobalProc0: False
+  Singletons: Auto
