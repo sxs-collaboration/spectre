@@ -14,19 +14,11 @@ if (NOT LIBXSMM_FOUND)
   # https://libxsmm.readthedocs.io/en/latest/#rules-for-building-libxsmm
   include(FetchContent)
   # Need an unreleased version for Apple Silicon chips
-  if (APPLE AND ("${CMAKE_HOST_SYSTEM_PROCESSOR}" STREQUAL "arm64"
-                OR "${CMAKE_HOST_SYSTEM_PROCESSOR}" STREQUAL "aarch64"))
-    FetchContent_Declare(xsmm
-      GIT_REPOSITORY https://github.com/libxsmm/libxsmm.git
-      GIT_TAG 939f11042fc9ae4bbe975cedb2330d4f9f4bb26e
-      ${SPECTRE_FETCHCONTENT_BASE_ARGS}
-    )
-  else()
-    FetchContent_Declare(xsmm
-      URL https://github.com/libxsmm/libxsmm/archive/1.16.1.tar.gz
-      ${SPECTRE_FETCHCONTENT_BASE_ARGS}
-    )
-  endif()
+  FetchContent_Declare(xsmm
+    GIT_REPOSITORY https://github.com/libxsmm/libxsmm.git
+    GIT_TAG 939f11042fc9ae4bbe975cedb2330d4f9f4bb26e
+    ${SPECTRE_FETCHCONTENT_BASE_ARGS}
+  )
   FetchContent_GetProperties(xsmm)
   if(NOT xsmm_POPULATED)
     FetchContent_Populate(xsmm)
