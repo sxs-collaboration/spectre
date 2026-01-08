@@ -892,12 +892,23 @@ void Spherepack::fill_scalar_work_arrays() {
 }
 
 DataVector Spherepack::prolong_or_restrict(const DataVector& spectral_coefs,
-                                           const Spherepack& target) const {
-  ASSERT(spectral_coefs.size() == spectral_size(),
-         "Expecting " << spectral_size() << ", got " << spectral_coefs.size());
-  DataVector result(target.spectral_size(), 0.0);
-  SpherepackIterator src_it(l_max_, m_max_);
-  SpherepackIterator dest_it(target.l_max_, target.m_max_);
+                                           const size_t l_max_coefs,
+                                           const size_t m_max_coefs,
+                                           const size_t l_max_target,
+                                           const size_t m_max_target) {
+  if (l_max_coefs == l_max_target and m_max_coefs == m_max_target) {
+    return spectral_coefs;
+  }
+
+  ASSERT(spectral_coefs.size() ==
+             Spherepack::spectral_size(l_max_coefs, m_max_coefs),
+         "Expecting " << Spherepack::spectral_size(l_max_coefs, m_max_coefs)
+                      << ", got " << spectral_coefs.size());
+  const size_t spectral_size_target =
+      Spherepack::spectral_size(l_max_target, m_max_target);
+  DataVector result{spectral_size_target, 0.0};
+  SpherepackIterator src_it(l_max_coefs, m_max_coefs);
+  SpherepackIterator dest_it(l_max_target, m_max_target);
   for (; dest_it; ++dest_it) {
     if (dest_it.l() <= src_it.l_max() and dest_it.m() <= src_it.m_max()) {
       src_it.set(dest_it.l(), dest_it.m(), dest_it.coefficient_array());
@@ -905,6 +916,12 @@ DataVector Spherepack::prolong_or_restrict(const DataVector& spectral_coefs,
     }
   }
   return result;
+}
+
+DataVector Spherepack::prolong_or_restrict(const DataVector& spectral_coefs,
+                                           const Spherepack& target) const {
+  return prolong_or_restrict(spectral_coefs, l_max_, m_max_, target.l_max_,
+                             target.m_max_);
 }
 
 bool operator==(const Spherepack& lhs, const Spherepack& rhs) {

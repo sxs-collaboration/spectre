@@ -25,6 +25,7 @@
 #include "PointwiseFunctions/GeneralRelativity/Surfaces/AreaElement.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Surfaces/RadialDistance.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Surfaces/SurfaceIntegralOfScalar.hpp"
+#include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 
@@ -189,6 +190,17 @@ ErrorDiagnostics control_error(
       min(get(deriv_comoving_char_speed)) > 0.0;
 
   // Difference between horizon and excision boundary.
+  if (UNLIKELY(apparent_horizon.l_max() > excision_boundary.l_max() or
+               (apparent_horizon.l_max() == excision_boundary.l_max() and
+                apparent_horizon.m_max() > excision_boundary.m_max()))) {
+    ERROR(
+        "Size control assumes the excision boundary resolution is at least "
+        "as high as the horizon resolution, but the horizon has l_max = "
+        << apparent_horizon.l_max() << " and m_max = "
+        << apparent_horizon.m_max() << " while the excision boundary has "
+        << "l_max = " << excision_boundary.l_max()
+        << " and m_max = " << excision_boundary.m_max() << ".");
+  }
   gr::surfaces::radial_distance(make_not_null(&radial_distance),
                                 apparent_horizon, excision_boundary);
 

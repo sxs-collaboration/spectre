@@ -36,6 +36,7 @@
 #include "Framework/ActionTesting.hpp"
 #include "Helpers/ControlSystem/SystemHelpers.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
+#include "NumericalAlgorithms/SphericalHarmonics/Spherepack.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/SpherepackIterator.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/Strahlkorper.hpp"
 #include "Parallel/Phase.hpp"
@@ -56,30 +57,32 @@ using FoTMap = std::unordered_map<
     std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>;
 using Strahlkorper = ylm::Strahlkorper<Frame::Distorted>;
 
-void test_shape_control_error() {
-  constexpr size_t deriv_order = 2;
+constexpr size_t deriv_order = 2;
+
+void check_shape_control_error(const size_t ah_l_max, const size_t lambda_l_max,
+                               std::mt19937& generator) {
   using metavars =
       TestHelpers::control_system::MockMetavars<0, 0, 0, deriv_order>;
   using system = typename metavars::shape_system;
   using ControlError = system::control_error;
   using element_component = typename metavars::element_component;
 
-  MAKE_GENERATOR(generator);
-  domain::FunctionsOfTime::register_derived_with_charm();
-
   const tnsr::I<double, 3, Frame::Grid> origin{0.0};
   const double ah_radius = 1.5;
   const double initial_time = 0.0;
-  Strahlkorper fake_ah{10, 10, make_array<double, 3>(origin)};
+  Strahlkorper fake_ah{ah_l_max, ah_l_max, ah_radius,
+                       make_array<double, 3>(origin)};
   auto& fake_ah_coefs = fake_ah.coefficients();
+
+  const ylm::Spherepack lambda_spherepack{lambda_l_max, lambda_l_max};
 
   // Setup initial shape map coefficients. In the map the coefficients are
   // stored as the negative of the actual spherical harmonic coefficients
   // because that's just how the map is defined. But since these are random
   // numbers it doesn't matter for initial data
   auto initial_shape_func = make_array<deriv_order + 1, DataVector>(
-      DataVector{fake_ah_coefs.size(), 0.0});
-  ylm::SpherepackIterator iter{fake_ah.l_max(), fake_ah.m_max()};
+      DataVector{lambda_spherepack.spectral_size(), 0.0});
+  ylm::SpherepackIterator iter{lambda_l_max, lambda_l_max};
   std::uniform_real_distribution<double> coef_dist{-1.0, 1.0};
   for (size_t i = 0; i < initial_shape_func.size(); i++) {
     for (iter.reset(); iter; ++iter) {
@@ -187,10 +190,16 @@ void test_shape_control_error() {
   const auto lambda_lm_coefs =
       functions_of_time.at(shape_name)->func(check_time)[0];
 
+  const DataVector ah_coefs_for_expected =
+      lambda_lm_coefs.size() == measurement_coefs.size()
+          ? measurement_coefs
+          : fake_ah.ylm_spherepack().prolong_or_restrict(measurement_coefs,
+                                                         lambda_spherepack);
+
   DataVector expected_control_error =
       -(excision_radius / Y00 - lambda_00_coef) /
-          (sqrt(0.5 * M_PI) * measurement_coefs[iter.set(0, 0)()]) *
-          measurement_coefs -
+          (sqrt(0.5 * M_PI) * ah_coefs_for_expected[iter.set(0, 0)()]) *
+          ah_coefs_for_expected -
       lambda_lm_coefs;
   // We don't control l=0 or l=1 modes
   for (iter.reset(); iter; ++iter) {
@@ -204,7 +213,17 @@ void test_shape_control_error() {
 
 SPECTRE_TEST_CASE("Unit.ControlSystem.ControlErrors.Shape",
                   "[ControlSystem][Unit]") {
-  test_shape_control_error();
+  MAKE_GENERATOR(generator);
+  domain::FunctionsOfTime::register_derived_with_charm();
+
+  // ah_l_max < lambda_l_max (prolong), equal, and ah_l_max > lambda_l_max
+  check_shape_control_error(8, 10, generator);
+  check_shape_control_error(10, 10, generator);
+  CHECK_THROWS_WITH(
+      check_shape_control_error(12, 10, generator),
+      Catch::Matchers::ContainsSubstring(
+          "Horizon A has l_max = 12 but the shape map has l_max = 10. The "
+          "horizon l_max must be less than or equal to the shape map l_max."));
 }
 }  // namespace
 }  // namespace control_system

@@ -537,6 +537,10 @@ void test_prolong_restrict() {
     const auto u_coef_a2b2a = ylm_b.prolong_or_restrict(u_coef_a2b, ylm_a);
     const auto u_b_test = ylm_a.spec_to_phys(u_coef_a2b2a);
     CHECK_ITERABLE_APPROX(u_b, u_b_test);
+
+    const auto u_coef_a2b_direct = Spherepack::prolong_or_restrict(
+        u_coef_a, ylm_a.l_max(), ylm_a.m_max(), ylm_b.l_max(), ylm_b.m_max());
+    CHECK_ITERABLE_APPROX(u_coef_a2b, u_coef_a2b_direct);
   }
 
   {

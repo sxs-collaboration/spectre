@@ -90,6 +90,59 @@ void test_control_error_delta_r() {
   CHECK(control_error_delta_r == approx(-2.5));
 }
 
+void test_size_error_horizon_higher_res_than_excision() {
+  control_system::size::Info info{
+      std::make_unique<control_system::size::States::Initial>(),
+      0.1,
+      0.0,
+      0.0,
+      std::nullopt,
+      false};
+
+  intrp::ZeroCrossingPredictor predictor_char_speed;
+  intrp::ZeroCrossingPredictor predictor_comoving_char_speed;
+  intrp::ZeroCrossingPredictor predictor_delta_radius;
+  intrp::ZeroCrossingPredictor predictor_drift_limit_char_speed;
+  intrp::ZeroCrossingPredictor predictor_drift_limit_delta_radius;
+
+  const size_t horizon_l_max = 3;
+  const size_t excision_l_max = 2;
+  const std::array<double, 3> center{{0.0, 0.0, 0.0}};
+  const ylm::Strahlkorper<Frame::Distorted> horizon(horizon_l_max, 1.0, center);
+  const ylm::Strahlkorper<Frame::Distorted> excision_boundary(excision_l_max,
+                                                              0.9, center);
+
+  const size_t excision_size =
+      excision_boundary.ylm_spherepack().physical_size();
+
+  const Scalar<DataVector> lapse{DataVector(excision_size, 1.0)};
+  const tnsr::I<DataVector, 3, Frame::Distorted> frame_components_of_grid_shift{
+      excision_size, 0.0};
+  tnsr::ii<DataVector, 3, Frame::Distorted> spatial_metric{excision_size, 0.0};
+  tnsr::II<DataVector, 3, Frame::Distorted> inverse_spatial_metric{
+      excision_size, 0.0};
+  for (size_t i = 0; i < 3; ++i) {
+    spatial_metric.get(i, i) = DataVector(excision_size, 1.0);
+    inverse_spatial_metric.get(i, i) = DataVector(excision_size, 1.0);
+  }
+  const Scalar<DataVector> deriv_comoving_char_speed{
+      DataVector(excision_size, 0.0)};
+
+  CHECK_THROWS_WITH(
+      control_system::size::control_error(
+          make_not_null(&info), make_not_null(&predictor_char_speed),
+          make_not_null(&predictor_comoving_char_speed),
+          make_not_null(&predictor_delta_radius),
+          make_not_null(&predictor_drift_limit_char_speed),
+          make_not_null(&predictor_drift_limit_delta_radius), 0.0, 0.0,
+          std::nullopt, std::nullopt, std::nullopt, std::nullopt, std::nullopt,
+          horizon.coefficients()[0], 0.0, horizon, excision_boundary, lapse,
+          frame_components_of_grid_shift, spatial_metric,
+          inverse_spatial_metric, deriv_comoving_char_speed),
+      Catch::Matchers::ContainsSubstring(
+          "excision boundary resolution is at least as high"));
+}
+
 template <typename InitialState, typename FinalState>
 void test_size_error_one_step(
     const gsl::not_null<intrp::ZeroCrossingPredictor*> predictor_char_speed,
@@ -422,6 +475,7 @@ void test_size_error(const double grid_excision_boundary_radius,
 SPECTRE_TEST_CASE("Unit.ControlSystem.SizeError", "[Domain][Unit]") {
   control_system::size::register_derived_with_charm();
   test_control_error_delta_r();
+  test_size_error_horizon_higher_res_than_excision();
   // Should go to DeltaR state with error of zero, since ComovingMinCharSpeed
   // will be positive.
   test_size_error<control_system::size::States::Initial,

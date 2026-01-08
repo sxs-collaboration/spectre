@@ -468,6 +468,16 @@ class Spherepack {
   T interpolate_from_coefs(const DataVector& spectral_coefs,
                            const std::array<T, 2>& target_points) const;
 
+  /// Takes spectral coefficients compatible with a resolution given by
+  /// `l_max_coefs` and `m_max_coefs` and either prolongs them or restricts
+  /// them to be compatible with a resolution given by `l_max_target` and
+  /// `m_max_target`. This is done by truncation (restriction) or padding
+  /// with zeros (prolongation).
+  static DataVector prolong_or_restrict(const DataVector& spectral_coefs,
+                                        size_t l_max_coefs, size_t m_max_coefs,
+                                        size_t l_max_target,
+                                        size_t m_max_target);
+
   /// Takes spectral coefficients compatible with `*this`, and either
   /// prolongs them or restricts them to be compatible with `target`.
   /// This is done by truncation (restriction) or padding with zeros
