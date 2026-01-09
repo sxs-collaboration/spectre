@@ -233,6 +233,8 @@ class AlignedLattice : public DomainCreator<Dim> {
       Dim, std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>
   external_boundary_conditions() const override;
 
+  std::vector<std::string> block_names() const override;
+
   std::vector<std::array<size_t, Dim>> initial_extents() const override;
 
   std::vector<std::array<size_t, Dim>> initial_refinement_levels()

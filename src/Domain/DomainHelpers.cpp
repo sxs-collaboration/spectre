@@ -43,6 +43,7 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Literals.hpp"
 #include "Utilities/MakeArray.hpp"
+#include "Utilities/MakeString.hpp"
 #include "Utilities/Numeric.hpp"
 #include "Utilities/StdArrayHelpers.hpp"
 
@@ -1224,6 +1225,19 @@ auto indices_for_rectilinear_domains(
 }
 
 template <size_t VolumeDim>
+auto block_names_for_rectilinear_domains(
+    const Index<VolumeDim>& domain_extents,
+    const std::vector<Index<VolumeDim>>& block_indices_to_exclude)
+    -> std::vector<std::string> {
+  std::vector<std::string> names{};
+  for (const auto& index : indices_for_rectilinear_domains(
+           domain_extents, block_indices_to_exclude)) {
+    names.emplace_back(MakeString{} << "Block" << index);
+  }
+  return names;
+}
+
+template <size_t VolumeDim>
 std::vector<std::array<size_t, two_to_the(VolumeDim)>>
 corners_for_rectilinear_domains(
     const Index<VolumeDim>& domain_extents,
@@ -1433,9 +1447,12 @@ Domain<VolumeDim> rectilinear_domain(
   set_cartesian_periodic_boundaries<VolumeDim>(
       dimension_is_periodic, corners_of_all_blocks, rotations_of_all_blocks,
       &neighbors_of_all_blocks);
+  auto block_names = block_names_for_rectilinear_domains(
+      domain_extents, block_indices_to_exclude);
   for (size_t i = 0; i < corners_of_all_blocks.size(); i++) {
     blocks.emplace_back(std::move(maps[i]), i,
-                        std::move(neighbors_of_all_blocks[i]));
+                        std::move(neighbors_of_all_blocks[i]),
+                        std::move(block_names[i]));
   }
   return Domain<VolumeDim>(std::move(blocks));
 }
@@ -1555,6 +1572,10 @@ INSTANTIATE_MAPS_FUNCTIONS(((Affine2d), (Affine3d), (Equiangular3d),
       const Index<DIM(data)>& domain_extents,                               \
       const std::vector<Index<DIM(data)>>& block_indices_to_exclude)        \
       -> std::vector<Index<DIM(data)>>;                                     \
+  template auto block_names_for_rectilinear_domains(                        \
+      const Index<DIM(data)>& domain_extents,                               \
+      const std::vector<Index<DIM(data)>>& block_indices_to_exclude)        \
+      -> std::vector<std::string>;                                          \
   template std::vector<std::array<size_t, two_to_the(DIM(data))>>           \
   corners_for_rectilinear_domains(                                          \
       const Index<DIM(data)>& domain_extents,                               \

@@ -109,6 +109,14 @@ auto indices_for_rectilinear_domains(
     -> std::vector<Index<VolumeDim>>;
 
 /// \ingroup ComputationalDomainGroup
+/// \brief The block names for the individual Blocks in the lattice
+template <size_t VolumeDim>
+auto block_names_for_rectilinear_domains(
+    const Index<VolumeDim>& domain_extents,
+    const std::vector<Index<VolumeDim>>& block_indices_to_exclude = {})
+    -> std::vector<std::string>;
+
+/// \ingroup ComputationalDomainGroup
 /// \brief The corners for a rectilinear domain made of n-cubes.
 ///
 /// The `domain_extents` argument holds the number of blocks to have
