@@ -22,7 +22,9 @@
 #include "Evolution/DgSubcell/NeighborReconstructedFaceSolution.tpp"
 #include "Evolution/DgSubcell/Tags/GhostDataForReconstruction.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarDataHolder.hpp"
+#include "Evolution/DiscontinuousGalerkin/MortarInfo.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarTags.hpp"
+#include "Evolution/DiscontinuousGalerkin/TimeSteppingPolicy.hpp"
 #include "NumericalAlgorithms/Spectral/Basis.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Quadrature.hpp"
@@ -74,6 +76,7 @@ void test() {
   const Mesh<Dim - 1> mortar_mesh{2 + 2 * Dim + 1, Spectral::Basis::Legendre,
                                   Spectral::Quadrature::GaussLobatto};
   DirectionalIdMap<Dim, evolution::dg::MortarDataHolder<Dim>> mortar_data_in{};
+  DirectionalIdMap<Dim, evolution::dg::MortarInfo<Dim>> mortar_info_in{};
   for (size_t d = 0; d < Dim; ++d) {
     const bool d_is_odd = (d % 2 != 0);
     const DirectionalId<Dim> dg_id{
@@ -89,13 +92,21 @@ void test() {
     ghost_data[fd_id] = evolution::dg::subcell::GhostData{1};
     ghost_data[fd_id].neighbor_ghost_data_for_reconstruction() =
         DataVector(2 * Dim + 1, static_cast<double>(d) + 4.0);
+    mortar_info_in[dg_id].time_stepping_policy() =
+        d == 2 ? evolution::dg::TimeSteppingPolicy::Conservative
+               : evolution::dg::TimeSteppingPolicy::EqualRate;
+    mortar_info_in[fd_id].time_stepping_policy() =
+        d == 2 ? evolution::dg::TimeSteppingPolicy::Conservative
+               : evolution::dg::TimeSteppingPolicy::EqualRate;
   }
 
   auto box = db::create<
       tmpl::list<domain::Tags::Mesh<Dim>,
                  evolution::dg::subcell::Tags::GhostDataForReconstruction<Dim>,
-                 evolution::dg::Tags::MortarData<Dim>>>(
-      dg_volume_mesh, std::move(ghost_data), std::move(mortar_data_in));
+                 evolution::dg::Tags::MortarData<Dim>,
+                 evolution::dg::Tags::MortarInfo<Dim>>>(
+      dg_volume_mesh, std::move(ghost_data), std::move(mortar_data_in),
+      std::move(mortar_info_in));
 
   evolution::dg::subcell::neighbor_reconstructed_face_solution<
       Dim,
@@ -118,11 +129,13 @@ void test() {
     CHECK(mortar_data.at(dg_id).neighbor().mortar_data ==
           std::optional(DataVector(2 * Dim + 1, static_cast<double>(d) + 7.0)));
     CHECK(mortar_data.at(fd_id).neighbor().mortar_data ==
-          std::optional(DataVector(2 * Dim + 1, static_cast<double>(d) + 4.0)));
+          (d == 2 ? std::nullopt
+                  : std::optional(DataVector(2 * Dim + 1,
+                                             static_cast<double>(d) + 4.0))));
     CHECK(mortar_data.at(dg_id).neighbor().mortar_mesh ==
           std::optional(mortar_mesh));
     CHECK(mortar_data.at(fd_id).neighbor().mortar_mesh ==
-          std::optional(reconstructed_mesh));
+          (d == 2 ? std::nullopt : std::optional(reconstructed_mesh)));
   }
 }
 }  // namespace

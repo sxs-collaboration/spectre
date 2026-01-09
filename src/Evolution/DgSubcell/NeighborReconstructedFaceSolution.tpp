@@ -15,7 +15,9 @@
 #include "Domain/Structure/DirectionalIdMap.hpp"
 #include "Domain/Tags.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarDataHolder.hpp"
+#include "Evolution/DiscontinuousGalerkin/MortarInfo.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarTags.hpp"
+#include "Evolution/DiscontinuousGalerkin/TimeSteppingPolicy.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/Gsl.hpp"
@@ -26,10 +28,14 @@ void neighbor_reconstructed_face_solution(
     const gsl::not_null<db::Access*> box) {
   std::vector<DirectionalId<VolumeDim>> mortars_to_reconstruct_to{};
   {
+    const auto& mortar_infos =
+        db::get<evolution::dg::Tags::MortarInfo<VolumeDim>>(*box);
     const auto& mortar_data =
         db::get<evolution::dg::Tags::MortarData<VolumeDim>>(*box);
     for (const auto& [mortar_id, data] : mortar_data) {
-      if (not data.neighbor().mortar_data.has_value()) {
+      if (mortar_infos.at(mortar_id).time_stepping_policy() ==
+              TimeSteppingPolicy::EqualRate and
+          not data.neighbor().mortar_data.has_value()) {
         mortars_to_reconstruct_to.push_back(mortar_id);
       }
     }
