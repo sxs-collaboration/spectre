@@ -17,6 +17,7 @@ set(LIBRARY_SOURCES
   Test_CombineVolumeGhostData.cpp
   Test_ComputeBoundaryTerms.cpp
   Test_CorrectPackagedData.cpp
+  Test_DisableLts.cpp
   Test_GetActiveTag.cpp
   Test_GetTciDecision.cpp
   Test_GhostData.cpp

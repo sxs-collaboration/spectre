@@ -17,6 +17,7 @@ spectre_target_headers(
   ComputeBoundaryTerms.hpp
   CorrectPackagedData.hpp
   DgSubcell.hpp
+  DisableLts.hpp
   GetActiveTag.hpp
   GetTciDecision.hpp
   GhostData.hpp
@@ -52,6 +53,7 @@ spectre_target_sources(
   ActiveGrid.cpp
   CartesianFluxDivergence.cpp
   CombineVolumeGhostData.cpp
+  DisableLts.cpp
   GhostData.cpp
   GhostZoneLogicalCoordinates.cpp
   InitialTciData.cpp
