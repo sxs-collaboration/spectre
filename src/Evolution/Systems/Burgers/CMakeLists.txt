@@ -34,6 +34,7 @@ target_link_libraries(
   DomainBoundaryConditions
   ErrorHandling
   Events
+  Evolution
   FiniteDifference
   Options
   Parallel

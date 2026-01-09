@@ -37,6 +37,7 @@ target_link_libraries(
   Domain
   ErrorHandling
   Events
+  Evolution
   LinearOperators
   IO
   Importers

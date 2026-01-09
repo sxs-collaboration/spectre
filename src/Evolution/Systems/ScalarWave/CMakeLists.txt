@@ -41,6 +41,7 @@ target_link_libraries(
   DomainBoundaryConditions
   ErrorHandling
   Events
+  Evolution
   LinearOperators
   Options
   Utilities
