@@ -5,7 +5,7 @@ import numpy as np
 
 
 def poly(x, coeffs):
-    return np.sum(c * x**p for p, c in enumerate(coeffs))
+    return np.sum([c * x**p for p, c in enumerate(coeffs)])
 
 
 def field(x):

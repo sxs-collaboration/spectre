@@ -214,7 +214,12 @@ def plot_slice(
         time_label.set_text(f"t = {time:g}")
         if norm is None:
             cbar.update_normal(contours_filled)
-        return contours_filled.collections + contours.collections
+        try:
+            # Before matplotlib 3.8:
+            return contours_filled.collections + contours.collections
+        except AttributeError:
+            # Since matplotlib 3.8:
+            return [contours_filled, contours]
 
     # Plot a static slice and return early
     if not animate:
