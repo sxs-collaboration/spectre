@@ -146,6 +146,13 @@ SpatialDiscretization:
       AveragedUpwindPenalty:
       Rusanov:
 
+Filtering:
+  ExpFilter0:
+    Enable: false
+    Alpha: 64
+    HalfPower: 420
+    BlocksToFilter: All
+
 EventsAndTriggersAtCheckpoints:
 
 EventsAndTriggersAtSlabs:
