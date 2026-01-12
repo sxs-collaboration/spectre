@@ -51,8 +51,9 @@ Domain<Dim> test_domain_creator(const DomainCreator<Dim>& domain_creator,
   {
     CAPTURE(block_names);
     CHECK((block_names.empty() or (block_names.size() == blocks.size())));
-    for (size_t block_id = 0; block_id < block_names.size(); ++block_id) {
-      CHECK(blocks[block_id].name() == block_names[block_id]);
+    for (size_t block_id = 0; block_id < blocks.size(); ++block_id) {
+      CHECK(blocks[block_id].name() ==
+            (block_names.empty() ? "" : block_names[block_id]));
     }
     CHECK(domain.block_groups() == block_groups);
     {

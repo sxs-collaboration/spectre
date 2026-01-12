@@ -197,6 +197,16 @@ NonconformingSphericalShells::external_boundary_conditions() const {
   return boundary_conditions;
 }
 
+std::vector<std::string> NonconformingSphericalShells::block_names() const {
+  std::vector<std::string> names{};
+  names.reserve(7);
+  for (size_t i = 0; i < 6; ++i) {
+    names.emplace_back("Wedge" + std::to_string(i));
+  }
+  names.emplace_back("Shell");
+  return names;
+}
+
 std::vector<std::array<size_t, 3>>
 NonconformingSphericalShells::initial_extents() const {
   return initial_number_of_grid_points_;
