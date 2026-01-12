@@ -18,6 +18,7 @@ spectre_target_sources(
   QuadrupoleFormula.cpp
   SoundSpeedSquared.cpp
   SpecificEnthalpy.cpp
+  SpecificEntropy.cpp
   StressEnergy.cpp
   TransportVelocity.cpp
   )
@@ -36,6 +37,7 @@ spectre_target_headers(
   QuadrupoleFormula.hpp
   SoundSpeedSquared.hpp
   SpecificEnthalpy.hpp
+  SpecificEntropy.hpp
   StressEnergy.hpp
   Tags.hpp
   TagsDeclarations.hpp

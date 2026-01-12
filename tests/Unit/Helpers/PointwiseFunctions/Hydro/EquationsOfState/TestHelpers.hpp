@@ -169,8 +169,23 @@ void check_impl(
         python_file_name,
         python_function_prefix + "_temperature_from_density_and_energy",
         random_value_bounds, member_args_tuple, used_for_size);
-    INFO("Done\nTesting specific_int_energy_from_density_and_temperature...");
+    INFO("Done\nTesting specific_entropy_from_density_and_energy...");
+    pypp::check_with_random_values<2>(
+        func = &EoS::specific_entropy_from_density_and_energy, *eos,
+        python_file_name,
+        python_function_prefix + "_specific_entropy_from_density_and_energy",
+        random_value_bounds, member_args_tuple, used_for_size);
+    INFO("Done\nTesting specific_entropy_from_density_and_temperature...");
     Approx custom_approx = Approx::custom().epsilon(1.e-9);
+    CHECK_ITERABLE_CUSTOM_APPROX(
+        eos->specific_entropy_from_density_and_temperature(
+            rest_mass_density,
+            eos->temperature_from_density_and_energy(rest_mass_density,
+                                                     specific_internal_energy)),
+        eos->specific_entropy_from_density_and_energy(rest_mass_density,
+                                                      specific_internal_energy),
+        custom_approx);
+    INFO("Done\nTesting specific_int_energy_from_density_and_temperature...");
     CHECK_ITERABLE_CUSTOM_APPROX(
         specific_internal_energy,
         eos->specific_internal_energy_from_density_and_temperature(
@@ -247,6 +262,19 @@ void check_impl(
   const auto helper = [&](const std::unique_ptr<EoS>& eos) {
     // need func variable to work around GCC bug
     Function func{&EoS::temperature_from_density_and_energy};
+    INFO("Done\nTesting specific_entropy_from_density_and_energy...");
+    pypp::check_with_random_values<3>(
+        func = &EoS::specific_entropy_from_density_and_energy, *eos,
+        python_file_name,
+        python_function_prefix + "_specific_entropy_from_density_and_energy",
+        random_value_bounds, member_args_tuple, used_for_size);
+    INFO("Done\nTesting specific_entropy_from_density_and_temperature...");
+    pypp::check_with_random_values<3>(
+        func = &EoS::specific_entropy_from_density_and_temperature, *eos,
+        python_file_name,
+        python_function_prefix +
+            "_specific_entropy_from_density_and_temperature",
+        random_value_bounds, member_args_tuple, used_for_size);
     INFO("Done\nTesting specific_int_energy_from_density_and_temperature...");
     pypp::check_with_random_values<3>(
         func = &EoS::specific_internal_energy_from_density_and_temperature,

@@ -1,6 +1,8 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
+import math
+
 from PolytropicFluid import (
     polytropic_pressure_from_density,
     polytropic_specific_internal_energy_from_density,
@@ -13,6 +15,7 @@ def hybrid_polytrope_pressure_from_density_and_energy(
     polytropic_constant,
     polytropic_exponent,
     thermal_adiabatic_index,
+    minimum_temperature,
 ):
     p_c = polytropic_pressure_from_density(
         rest_mass_density, polytropic_constant, polytropic_exponent
@@ -31,6 +34,7 @@ def hybrid_polytrope_rel_pressure_from_density_and_enthalpy(
     polytropic_constant,
     polytropic_exponent,
     thermal_adiabatic_index,
+    minimum_temperature,
 ):
     p_c = polytropic_pressure_from_density(
         rest_mass_density, polytropic_constant, polytropic_exponent
@@ -52,6 +56,7 @@ def hybrid_polytrope_temperature_from_density_and_energy(
     polytropic_constant,
     polytropic_exponent,
     thermal_adiabatic_index,
+    minimum_temperature,
 ):
     eps_c = polytropic_specific_internal_energy_from_density(
         rest_mass_density, polytropic_constant, polytropic_exponent
@@ -67,6 +72,7 @@ def hybrid_polytrope_newt_pressure_from_density_and_enthalpy(
     polytropic_constant,
     polytropic_exponent,
     thermal_adiabatic_index,
+    minimum_temperature,
 ):
     p_c = polytropic_pressure_from_density(
         rest_mass_density, polytropic_constant, polytropic_exponent
@@ -88,6 +94,7 @@ def hybrid_polytrope_rel_specific_enthalpy_from_density_and_energy(
     polytropic_constant,
     polytropic_exponent,
     thermal_adiabatic_index,
+    minimum_temperature,
 ):
     p_c = polytropic_pressure_from_density(
         rest_mass_density, polytropic_constant, polytropic_exponent
@@ -109,6 +116,7 @@ def hybrid_polytrope_newt_specific_enthalpy_from_density_and_energy(
     polytropic_constant,
     polytropic_exponent,
     thermal_adiabatic_index,
+    minimum_temperature,
 ):
     p_c = polytropic_pressure_from_density(
         rest_mass_density, polytropic_constant, polytropic_exponent
@@ -123,12 +131,50 @@ def hybrid_polytrope_newt_specific_enthalpy_from_density_and_energy(
     )
 
 
+def hybrid_polytrope_specific_entropy_from_density_and_energy(
+    rest_mass_density,
+    specific_internal_energy,
+    polytropic_constant,
+    polytropic_exponent,
+    thermal_adiabatic_index,
+    minimum_temperature,
+):
+    eps_c = polytropic_specific_internal_energy_from_density(
+        rest_mass_density, polytropic_constant, polytropic_exponent
+    )
+    return math.log(
+        max(
+            specific_internal_energy - eps_c,
+            minimum_temperature / (thermal_adiabatic_index - 1.0),
+        )
+        / rest_mass_density ** (thermal_adiabatic_index - 1.0)
+    ) / (thermal_adiabatic_index - 1.0)
+
+
+def hybrid_polytrope_specific_entropy_from_density_and_temperature(
+    rest_mass_density,
+    temperature,
+    polytropic_constant,
+    polytropic_exponent,
+    thermal_adiabatic_index,
+    minimum_temperature,
+):
+    return math.log(
+        max(temperature, minimum_temperature)
+        / (
+            (thermal_adiabatic_index - 1.0)
+            * rest_mass_density ** (thermal_adiabatic_index - 1.0)
+        )
+    ) / (thermal_adiabatic_index - 1.0)
+
+
 def hybrid_polytrope_specific_internal_energy_from_density_and_pressure(
     rest_mass_density,
     pressure,
     polytropic_constant,
     polytropic_exponent,
     thermal_adiabatic_index,
+    minimum_temperature,
 ):
     p_c = polytropic_pressure_from_density(
         rest_mass_density, polytropic_constant, polytropic_exponent
@@ -150,6 +196,7 @@ def hybrid_polytrope_chi_from_density_and_energy(
     polytropic_constant,
     polytropic_exponent,
     thermal_adiabatic_index,
+    minimum_temperature,
 ):
     p_c = polytropic_pressure_from_density(
         rest_mass_density, polytropic_constant, polytropic_exponent
@@ -168,6 +215,7 @@ def hybrid_polytrope_kappa_times_p_over_rho_squared_from_density_and_energy(
     polytropic_constant,
     polytropic_exponent,
     thermal_adiabatic_index,
+    minimum_temperature,
 ):
     p_c = polytropic_pressure_from_density(
         rest_mass_density, polytropic_constant, polytropic_exponent

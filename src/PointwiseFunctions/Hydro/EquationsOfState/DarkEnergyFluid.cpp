@@ -92,6 +92,44 @@ DarkEnergyFluid<IsRelativistic>::pressure_from_density_and_enthalpy_impl(
 
 template <bool IsRelativistic>
 template <class DataType>
+Scalar<DataType>
+DarkEnergyFluid<IsRelativistic>::specific_entropy_from_density_and_energy_impl(
+    const Scalar<DataType>& rest_mass_density,
+    const Scalar<DataType>& specific_internal_energy) const {
+  if constexpr (std::is_same_v<DataType, double>) {
+    return Scalar<double>{specific_entropy_from_density_and_energy(
+        get(rest_mass_density), get(specific_internal_energy))};
+  } else if constexpr (std::is_same_v<DataType, DataVector>) {
+    auto result = make_with_value<Scalar<DataVector>>(rest_mass_density, 0.0);
+    for (size_t i = 0; i < get(result).size(); ++i) {
+      get(result)[i] = specific_entropy_from_density_and_energy(
+          get(rest_mass_density)[i], get(specific_internal_energy)[i]);
+    }
+    return result;
+  }
+}
+
+template <bool IsRelativistic>
+template <class DataType>
+Scalar<DataType> DarkEnergyFluid<IsRelativistic>::
+    specific_entropy_from_density_and_temperature_impl(
+        const Scalar<DataType>& rest_mass_density,
+        const Scalar<DataType>& temperature) const {
+  if constexpr (std::is_same_v<DataType, double>) {
+    return Scalar<double>{specific_entropy_from_density_and_energy(
+        get(rest_mass_density), get(temperature) / parameter_w_)};
+  } else if constexpr (std::is_same_v<DataType, DataVector>) {
+    auto result = make_with_value<Scalar<DataVector>>(rest_mass_density, 0.0);
+    for (size_t i = 0; i < get(result).size(); ++i) {
+      get(result)[i] = specific_entropy_from_density_and_energy(
+          get(rest_mass_density)[i], get(temperature)[i] / parameter_w_);
+    }
+    return result;
+  }
+}
+
+template <bool IsRelativistic>
+template <class DataType>
 Scalar<DataType> DarkEnergyFluid<IsRelativistic>::
     specific_internal_energy_from_density_and_pressure_impl(
         const Scalar<DataType>& rest_mass_density,
@@ -135,6 +173,23 @@ Scalar<DataType> DarkEnergyFluid<IsRelativistic>::
         const Scalar<DataType>& specific_internal_energy) const {
   return Scalar<DataType>{square(parameter_w_) *
                           (1.0 + get(specific_internal_energy))};
+}
+
+template <bool IsRelativistic>
+double
+DarkEnergyFluid<IsRelativistic>::specific_entropy_from_density_and_energy(
+    const double rest_mass_density,
+    const double specific_internal_energy) const {
+  // Note: Since specific internal energy has a lower bound of -1, entropy will
+  // be undefined for values smaller than 0 or w = 0. Since this equation of
+  // state is almost never used, this function is included as a framework for
+  // the calculation. However, more careful attention is needed for users who
+  // wish to use it.
+  ASSERT(specific_internal_energy > 0.0,
+         "Entropy is undefined for non-positive specific internal energy.");
+  ASSERT(parameter_w_ > 0.0, "Entropy is undefined for $w = 0$.");
+  return log(specific_internal_energy / pow(rest_mass_density, parameter_w_)) /
+         parameter_w_;
 }
 }  // namespace EquationsOfState
 

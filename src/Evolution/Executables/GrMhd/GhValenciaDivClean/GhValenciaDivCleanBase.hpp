@@ -208,6 +208,7 @@
 #include "PointwiseFunctions/Hydro/LowerSpatialFourVelocity.hpp"
 #include "PointwiseFunctions/Hydro/MassFlux.hpp"
 #include "PointwiseFunctions/Hydro/MassWeightedFluidItems.hpp"
+#include "PointwiseFunctions/Hydro/SpecificEntropy.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
 #include "PointwiseFunctions/Hydro/TransportVelocity.hpp"
 #include "PointwiseFunctions/InitialDataUtilities/Tags/InitialData.hpp"
@@ -496,6 +497,7 @@ struct GhValenciaDivCleanTemplateBase<
               ::Events::Tags::ObserverCoordinates<volume_dim, Frame::Inertial>,
               hydro::Tags::TransportVelocity<DataVector, volume_dim,
                                              Frame::Inertial>>,
+          hydro::Tags::SpecificEntropyCompute<DataVector>,
           gh::Tags::TimeDerivLapseCompute<volume_dim, Frame::Inertial>,
           gh::Tags::TimeDerivShiftCompute<volume_dim, Frame::Inertial>,
           ::Tags::dt<gh::Tags::Phi<DataVector, volume_dim, Frame::Inertial>>,

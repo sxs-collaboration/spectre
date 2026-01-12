@@ -147,6 +147,9 @@ class IdealFluid : public EquationOfState<IsRelativistic, 2> {
  private:
   EQUATION_OF_STATE_FORWARD_DECLARE_MEMBER_IMPLS(2)
 
+  double specific_entropy_from_density_and_energy(double density,
+                                                  double energy) const;
+
   double adiabatic_index_ = std::numeric_limits<double>::signaling_NaN();
   double min_temperature_ = std::numeric_limits<double>::signaling_NaN();
 };

@@ -223,6 +223,36 @@ class EquationOfState<IsRelativistic, 1> : public PUP::able {
 
   /// @{
   /*!
+   * Computes the specific entropy \f$s\f$ from the rest mass density
+   * \f$\rho\f$.
+   */
+  virtual Scalar<double> specific_entropy_from_density(
+      const Scalar<double>& /*rest_mass_density*/) const {
+    return Scalar<double>{0.0};
+  }
+  virtual Scalar<DataVector> specific_entropy_from_density(
+      const Scalar<DataVector>& rest_mass_density) const {
+    return make_with_value<Scalar<DataVector>>(rest_mass_density, 0.0);
+  }
+  /// @}
+
+  /// @{
+  /*!
+   * Computes the specific entropy \f$s\f$ from the specific internal energy
+   * \f$\epsilon\f$.
+   */
+  virtual Scalar<double> specific_entropy_from_specific_internal_energy(
+      const Scalar<double>& /*specific_internal_energy*/) const {
+    return Scalar<double>{0.0};
+  }
+  virtual Scalar<DataVector> specific_entropy_from_specific_internal_energy(
+      const Scalar<DataVector>& specific_internal_energy) const {
+    return make_with_value<Scalar<DataVector>>(specific_internal_energy, 0.0);
+  }
+  /// @}
+
+  /// @{
+  /*!
    * Computes the specific internal energy \f$\epsilon\f$ from the rest mass
    * density \f$\rho\f$.
    */
@@ -418,6 +448,34 @@ class EquationOfState<IsRelativistic, 2> : public PUP::able {
   virtual Scalar<DataVector> pressure_from_density_and_enthalpy(
       const Scalar<DataVector>& /*rest_mass_density*/,
       const Scalar<DataVector>& /*specific_enthalpy*/) const = 0;
+  /// @}
+
+  /// @{
+  /*!
+   * Computes the specific entropy \f$s\f$ from the rest mass density \f$\rho\f$
+   * and the specific internal energy \f$\epsilon\f$.
+   */
+  virtual Scalar<double> specific_entropy_from_density_and_energy(
+      const Scalar<double>& /*rest_mass_density*/,
+      const Scalar<double>& /*specific_internal_energy*/) const = 0;
+
+  virtual Scalar<DataVector> specific_entropy_from_density_and_energy(
+      const Scalar<DataVector>& /*rest_mass_density*/,
+      const Scalar<DataVector>& /*specific_internal_energy*/) const = 0;
+  /// @}
+
+  /// @{
+  /*!
+   * Computes the specific entropy \f$s\f$ from the rest mass density \f$\rho\f$
+   * and the temperature \f$T\f$.
+   */
+  virtual Scalar<double> specific_entropy_from_density_and_temperature(
+      const Scalar<double>& /*rest_mass_density*/,
+      const Scalar<double>& /*temperature*/) const = 0;
+
+  virtual Scalar<DataVector> specific_entropy_from_density_and_temperature(
+      const Scalar<DataVector>& /*rest_mass_density*/,
+      const Scalar<DataVector>& /*temperature*/) const = 0;
   /// @}
 
   /// @{
@@ -625,6 +683,39 @@ class EquationOfState<IsRelativistic, 3> : public PUP::able {
 
   /// @{
   /*!
+   * Computes the specific entropy \f$s\f$ from the rest mass density \f$\rho\f$
+   * and the specific internal energy \f$\epsilon\f$ and electron fraction
+   * \f$Y_e\f$.
+   */
+  virtual Scalar<double> specific_entropy_from_density_and_energy(
+      const Scalar<double>& /*rest_mass_density*/,
+      const Scalar<double>& /*specific_internal_energy*/,
+      const Scalar<double>& /*electron_fraction*/) const = 0;
+
+  virtual Scalar<DataVector> specific_entropy_from_density_and_energy(
+      const Scalar<DataVector>& /*rest_mass_density*/,
+      const Scalar<DataVector>& /*specific_internal_energy*/,
+      const Scalar<DataVector>& /*electron_fraction*/) const = 0;
+  /// @}
+
+  /// @{
+  /*!
+   * Computes the specific entropy \f$s\f$ from the rest mass density \f$\rho\f$
+   * and the temperature \f$T\f$ and electron fraction \f$Y_e\f$.
+   */
+  virtual Scalar<double> specific_entropy_from_density_and_temperature(
+      const Scalar<double>& /*rest_mass_density*/,
+      const Scalar<double>& /*temperature*/,
+      const Scalar<double>& /*electron_fraction*/) const = 0;
+
+  virtual Scalar<DataVector> specific_entropy_from_density_and_temperature(
+      const Scalar<DataVector>& /*rest_mass_density*/,
+      const Scalar<DataVector>& /*temperature*/,
+      const Scalar<DataVector>& /*electron_fraction*/) const = 0;
+  /// @}
+
+  /// @{
+  /*!
    * Computes the temperature \f$T\f$ from the rest mass
    * density \f$\rho\f$, the specific internal energy \f$\epsilon\f$,
    * and electron fraction \f$Y_e\f$.
@@ -783,6 +874,8 @@ bool operator!=(const EquationOfState<IsRelLhs, ThermoDimLhs>& lhs,
 
 #define EQUATION_OF_STATE_FUNCTIONS_2D                                   \
   (pressure_from_density_and_energy, pressure_from_density_and_enthalpy, \
+   specific_entropy_from_density_and_energy,                             \
+   specific_entropy_from_density_and_temperature,                        \
    specific_internal_energy_from_density_and_pressure,                   \
    temperature_from_density_and_energy,                                  \
    specific_internal_energy_from_density_and_temperature,                \
@@ -791,6 +884,8 @@ bool operator!=(const EquationOfState<IsRelLhs, ThermoDimLhs>& lhs,
 
 #define EQUATION_OF_STATE_FUNCTIONS_3D                                      \
   (pressure_from_density_and_energy, pressure_from_density_and_temperature, \
+   specific_entropy_from_density_and_energy,                                \
+   specific_entropy_from_density_and_temperature,                           \
    temperature_from_density_and_energy,                                     \
    specific_internal_energy_from_density_and_temperature,                   \
    sound_speed_squared_from_density_and_temperature)

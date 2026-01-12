@@ -3,6 +3,7 @@
 
 #include "PointwiseFunctions/Hydro/EquationsOfState/IdealFluid.hpp"
 
+#include <cmath>
 #include <limits>
 
 #include "DataStructures/DataVector.hpp"
@@ -98,6 +99,45 @@ Scalar<DataType> IdealFluid<false>::pressure_from_density_and_enthalpy_impl(
 
 template <bool IsRelativistic>
 template <class DataType>
+Scalar<DataType>
+IdealFluid<IsRelativistic>::specific_entropy_from_density_and_energy_impl(
+    const Scalar<DataType>& rest_mass_density,
+    const Scalar<DataType>& specific_internal_energy) const {
+  if constexpr (std::is_same_v<DataType, double>) {
+    return Scalar<double>{specific_entropy_from_density_and_energy(
+        get(rest_mass_density), get(specific_internal_energy))};
+  } else if constexpr (std::is_same_v<DataType, DataVector>) {
+    auto result = make_with_value<Scalar<DataVector>>(rest_mass_density, 0.0);
+    for (size_t i = 0; i < get(result).size(); ++i) {
+      get(result)[i] = specific_entropy_from_density_and_energy(
+          get(rest_mass_density)[i], get(specific_internal_energy)[i]);
+    }
+    return result;
+  }
+}
+
+template <bool IsRelativistic>
+template <class DataType>
+Scalar<DataType>
+IdealFluid<IsRelativistic>::specific_entropy_from_density_and_temperature_impl(
+    const Scalar<DataType>& rest_mass_density,
+    const Scalar<DataType>& temperature) const {
+  if constexpr (std::is_same_v<DataType, double>) {
+    return Scalar<double>{specific_entropy_from_density_and_energy(
+        get(rest_mass_density), get(temperature) / (adiabatic_index_ - 1.0))};
+  } else if constexpr (std::is_same_v<DataType, DataVector>) {
+    auto result = make_with_value<Scalar<DataVector>>(rest_mass_density, 0.0);
+    for (size_t i = 0; i < get(result).size(); ++i) {
+      get(result)[i] = specific_entropy_from_density_and_energy(
+          get(rest_mass_density)[i],
+          get(temperature)[i] / (adiabatic_index_ - 1.0));
+    }
+    return result;
+  }
+}
+
+template <bool IsRelativistic>
+template <class DataType>
 Scalar<DataType> IdealFluid<IsRelativistic>::
     specific_internal_energy_from_density_and_pressure_impl(
         const Scalar<DataType>& rest_mass_density,
@@ -154,6 +194,22 @@ double IdealFluid<IsRelativistic>::specific_internal_energy_upper_bound(
     return 1.0 / (adiabatic_index_ - 2.0);
   }
   return std::numeric_limits<double>::max();
+}
+
+template <bool IsRelativistic>
+double IdealFluid<IsRelativistic>::specific_entropy_from_density_and_energy(
+    const double rest_mass_density,
+    const double specific_internal_energy) const {
+  using std::max;
+  const double floored_specific_internal_energy =
+      max(specific_internal_energy_lower_bound(rest_mass_density),
+          specific_internal_energy);
+  ASSERT(floored_specific_internal_energy > 0.0,
+         "The entropy is only well defined for positive nonzero temperatures. "
+         "Try setting the minimum temperature to be greater than 0.");
+  return log(floored_specific_internal_energy /
+             pow(rest_mass_density, adiabatic_index_ - 1.0)) /
+         (adiabatic_index_ - 1.0);
 }
 }  // namespace EquationsOfState
 

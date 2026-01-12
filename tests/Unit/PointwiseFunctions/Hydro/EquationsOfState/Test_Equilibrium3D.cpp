@@ -186,7 +186,8 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.EquationsOfState.Equilibrium3D",
              "    ThermalAdiabaticIndex: 2.0\n"
              "    PolytropicFluid:\n"
              "      PolytropicConstant: 100.0\n"
-             "      PolytropicExponent: 2.0"}));
+             "      PolytropicExponent: 2.0\n"
+             "    MinTemperature: 0.0"}));
     const EoS::Equilibrium3D<EoS::HybridEos<EoS::PolytropicFluid<true>>>&
         deserialized_eos = dynamic_cast<const EoS::Equilibrium3D<
             EoS::HybridEos<EoS::PolytropicFluid<true>>>&>(*eos_pointer);

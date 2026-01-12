@@ -92,6 +92,30 @@ Equilibrium3D<EquilEos>::temperature_from_density_and_energy_impl(
 
 template <typename EquilEos>
 template <class DataType>
+Scalar<DataType>
+Equilibrium3D<EquilEos>::specific_entropy_from_density_and_energy_impl(
+    const Scalar<DataType>& rest_mass_density,
+    const Scalar<DataType>& specific_internal_energy,
+    const Scalar<DataType>& /*electron_fraction*/) const {
+  return underlying_eos_.specific_entropy_from_density_and_energy(
+      rest_mass_density, specific_internal_energy);
+}
+
+template <typename EquilEos>
+template <class DataType>
+Scalar<DataType>
+Equilibrium3D<EquilEos>::specific_entropy_from_density_and_temperature_impl(
+    const Scalar<DataType>& rest_mass_density,
+    const Scalar<DataType>& temperature,
+    const Scalar<DataType>& /*electron_fraction*/) const {
+  return underlying_eos_.specific_entropy_from_density_and_energy(
+      rest_mass_density,
+      underlying_eos_.specific_internal_energy_from_density_and_temperature(
+          rest_mass_density, temperature));
+}
+
+template <typename EquilEos>
+template <class DataType>
 Scalar<DataType> Equilibrium3D<EquilEos>::
     specific_internal_energy_from_density_and_temperature_impl(
         const Scalar<DataType>& rest_mass_density,
