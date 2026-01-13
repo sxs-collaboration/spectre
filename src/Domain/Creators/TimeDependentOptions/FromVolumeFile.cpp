@@ -37,7 +37,7 @@ FromVolumeFile::FromVolumeFile(std::string h5_filename,
 
 FunctionsOfTimeMap FromVolumeFile::retrieve_function_of_time(
     const std::unordered_set<std::string>& function_of_time_names,
-    const std::optional<double>& time) const {
+    const double time) const {
   const h5::H5File<h5::AccessType::ReadOnly> h5_file{h5_filename_};
   const auto& vol_file = h5_file.get<h5::VolumeData>(subfile_name_);
   std::optional<std::vector<char>> serialized_functions_of_time =
@@ -63,8 +63,7 @@ FunctionsOfTimeMap FromVolumeFile::retrieve_function_of_time(
     const auto& function_of_time = functions_of_time.at(function_of_time_name);
     const std::array<double, 2> time_bounds = function_of_time->time_bounds();
 
-    if (time.has_value() and
-        (time.value() < time_bounds[0] or time.value() > time_bounds[1])) {
+    if (time < time_bounds[0] or time > time_bounds[1]) {
       using ::operator<<;
       ERROR_NO_TRACE(function_of_time_name
                      << ": The requested time " << time

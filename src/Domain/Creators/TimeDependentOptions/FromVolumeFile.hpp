@@ -5,7 +5,6 @@
 
 #include <array>
 #include <memory>
-#include <optional>
 #include <string>
 
 #include "DataStructures/DataVector.hpp"
@@ -58,7 +57,7 @@ struct FromVolumeFile {
    */
   FunctionsOfTimeMap retrieve_function_of_time(
       const std::unordered_set<std::string>& function_of_time_names,
-      const std::optional<double>& time) const;
+      double time) const;
 
   /*!
    * \brief Whether the function of time from the volume file should just be

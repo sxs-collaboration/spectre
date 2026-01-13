@@ -156,11 +156,6 @@ void test_errors() {
           Catch::Matchers::ContainsSubstring(
               "is out of the range of the function of time"));
 
-  // Check that this is ok to call
-  const auto function_of_time =
-      from_volume_file.retrieve_function_of_time({"Expansion"}, std::nullopt);
-  (void)function_of_time;
-
   if (file_system::check_if_file_exists(filename)) {
     file_system::rm(filename, true);
   }
