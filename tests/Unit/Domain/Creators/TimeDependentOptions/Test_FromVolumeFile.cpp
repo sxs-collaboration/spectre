@@ -113,7 +113,7 @@ void test_errors() {
   CHECK_THROWS_WITH(
       (from_volume_file.retrieve_function_of_time({"Expansion"}, 0.0)),
       Catch::Matchers::ContainsSubstring(
-          "Expansion: There are no functions of time in the subfile "));
+          "There are no functions of time in the subfile "));
 
   subfile_name += "0";
   from_volume_file = TestHelpers::test_creation<FromVolumeFile>(
