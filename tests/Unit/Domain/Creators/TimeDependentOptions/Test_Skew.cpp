@@ -79,7 +79,7 @@ void test_skew_map_options() {
     }
 
     TestHelpers::domain::creators::write_volume_data(filename, subfile_name,
-                                                     functions_of_time);
+                                                     0.1, functions_of_time);
 
     const auto skew_map_options = TestHelpers::test_option_tag<
         domain::creators::time_dependent_options::SkewMapOptions>(

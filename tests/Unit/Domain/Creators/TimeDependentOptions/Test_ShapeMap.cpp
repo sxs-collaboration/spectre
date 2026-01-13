@@ -254,7 +254,7 @@ void test_funcs(const gsl::not_null<Generator*> generator) {
 
       // For the FromVolumeFile test later on
       TestHelpers::domain::creators::write_volume_data(
-          test_filename, volume_subfile_name, functions_of_time);
+          test_filename, volume_subfile_name, 0.2, functions_of_time);
     }
 
     // Already checked that shape funcs are correct. Here just check that size
