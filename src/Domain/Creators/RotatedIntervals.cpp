@@ -149,6 +149,10 @@ RotatedIntervals::external_boundary_conditions() const {
   return boundary_conditions;
 }
 
+std::vector<std::string> RotatedIntervals::block_names() const {
+  return block_names_for_rectilinear_domains(Index<1>{2});
+}
+
 std::vector<std::array<size_t, 1>> RotatedIntervals::initial_extents() const {
   return {{{initial_number_of_grid_points_in_x_[0][0]}},
           {{initial_number_of_grid_points_in_x_[0][1]}}};

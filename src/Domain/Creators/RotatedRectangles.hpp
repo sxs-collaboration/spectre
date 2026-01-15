@@ -158,6 +158,8 @@ class RotatedRectangles : public DomainCreator<2> {
       2, std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>
   external_boundary_conditions() const override;
 
+  std::vector<std::string> block_names() const override;
+
   std::vector<std::array<size_t, 2>> initial_extents() const override;
 
   std::vector<std::array<size_t, 2>> initial_refinement_levels() const override;

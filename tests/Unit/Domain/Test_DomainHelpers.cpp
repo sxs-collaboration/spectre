@@ -1211,6 +1211,53 @@ void test_indices_for_rectilinear_domains() {
         indices_for_a_rubiks_cube_with_hole);
 }
 
+void test_block_names_for_rectilinear_domains() {
+  const auto names_for_a_1d_road =
+      make_vector("Block(0)"s, "Block(1)"s, "Block(2)"s);
+  const auto names_for_a_2d_vertical_tower =
+      make_vector("Block(0,0)"s, "Block(0,1)"s, "Block(0,2)"s);
+  const auto names_for_a_2d_horizontal_wall =
+      make_vector("Block(0,0)"s, "Block(1,0)"s, "Block(2,0)"s);
+  const auto names_for_a_2d_field =
+      make_vector("Block(0,0)"s, "Block(1,0)"s, "Block(0,1)"s, "Block(1,1)"s);
+  const auto names_for_a_2d_net_of_a_cube =
+      make_vector("Block(1,0)"s, "Block(1,1)"s, "Block(0,2)"s, "Block(1,2)"s,
+                  "Block(2,2)"s, "Block(1,3)"s);
+  const auto names_for_a_3d_cube = make_vector(
+      "Block(0,0,0)"s, "Block(1,0,0)"s, "Block(0,1,0)"s, "Block(1,1,0)"s,
+      "Block(0,0,1)"s, "Block(1,0,1)"s, "Block(0,1,1)"s, "Block(1,1,1)"s);
+  const auto names_for_a_rubiks_cube_with_hole = make_vector(
+      "Block(0,0,0)"s, "Block(1,0,0)"s, "Block(2,0,0)"s, "Block(0,1,0)"s,
+      "Block(1,1,0)"s, "Block(2,1,0)"s, "Block(0,2,0)"s, "Block(1,2,0)"s,
+      "Block(2,2,0)"s, "Block(0,0,1)"s, "Block(1,0,1)"s, "Block(2,0,1)"s,
+      "Block(0,1,1)"s,
+      /*central block is skipped!*/
+      "Block(2,1,1)"s, "Block(0,2,1)"s, "Block(1,2,1)"s, "Block(2,2,1)"s,
+      "Block(0,0,2)"s, "Block(1,0,2)"s, "Block(2,0,2)"s, "Block(0,1,2)"s,
+      "Block(1,1,2)"s, "Block(2,1,2)"s, "Block(0,2,2)"s, "Block(1,2,2)"s,
+      "Block(2,2,2)"s);
+
+  CHECK(block_names_for_rectilinear_domains(Index<1>{3}) ==
+        names_for_a_1d_road);
+  CHECK(block_names_for_rectilinear_domains(Index<2>{1, 3}) ==
+        names_for_a_2d_vertical_tower);
+  CHECK(block_names_for_rectilinear_domains(Index<2>{3, 1}) ==
+        names_for_a_2d_horizontal_wall);
+  CHECK(block_names_for_rectilinear_domains(Index<2>{2, 2}) ==
+        names_for_a_2d_field);
+  CHECK(block_names_for_rectilinear_domains(
+            Index<2>{3, 4},
+            std::vector<Index<2>>{Index<2>{0, 0}, Index<2>{2, 0},
+                                  Index<2>{0, 1}, Index<2>{2, 1},
+                                  Index<2>{0, 3}, Index<2>{2, 3}}) ==
+        names_for_a_2d_net_of_a_cube);
+  CHECK(block_names_for_rectilinear_domains(Index<3>{2, 2, 2}) ==
+        names_for_a_3d_cube);
+  CHECK(block_names_for_rectilinear_domains(
+            Index<3>{3, 3, 3}, std::vector<Index<3>>{Index<3>{1, 1, 1}}) ==
+        names_for_a_rubiks_cube_with_hole);
+}
+
 void test_corners_for_rectilinear_domains() {
   std::vector<std::array<size_t, 2>> corners_for_a_1d_road{
       {{0, 1}}, {{1, 2}}, {{2, 3}}};
@@ -1629,6 +1676,7 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainHelpers", "[Domain][Unit]") {
   test_volume_corner_iterator();
   test_face_corner_iterator();
   test_indices_for_rectilinear_domains();
+  test_block_names_for_rectilinear_domains();
   test_corners_for_rectilinear_domains();
   test_discrete_rotation_corner_numbers();
   test_maps_for_rectilinear_domains();

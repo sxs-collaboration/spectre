@@ -7,6 +7,7 @@
 #include <boost/functional/hash.hpp>
 #include <cstddef>
 #include <memory>
+#include <sstream>
 #include <unordered_set>
 #include <utility>
 #include <vector>
@@ -27,6 +28,8 @@
 #include "Helpers/Domain/BoundaryConditions/BoundaryCondition.hpp"
 #include "Helpers/Domain/Creators/TestHelpers.hpp"
 #include "Helpers/Domain/DomainTestHelpers.hpp"
+#include "Utilities/EqualWithinRoundoff.hpp"
+#include "Utilities/MakeVector.hpp"
 #include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 
 namespace Frame {
@@ -73,6 +76,33 @@ auto make_domain_creator(std::string opt_string,
         opt_string);
   }
 }
+
+template <size_t Dim>
+void check_block_names(const Domain<Dim>& domain,
+                       const std::array<std::vector<double>, Dim>& bounds) {
+  const tnsr::I<double, Dim, Frame::BlockLogical> corner(make_array<Dim>(-1.0));
+  for (const auto& block : domain.blocks()) {
+    std::ostringstream expected_name{};
+    expected_name << "Block(";
+    const auto mapped_corner = block.stationary_map()(corner);
+    for (size_t d = 0; d < Dim; ++d) {
+      if (d > 0) {
+        expected_name << ",";
+      }
+      for (size_t i = 0; i < gsl::at(bounds, d).size(); ++i) {
+        if (equal_within_roundoff(mapped_corner.get(d),
+                                  gsl::at(bounds, d)[i])) {
+          expected_name << i;
+          break;
+        }
+      }
+    }
+    expected_name << ")";
+    CAPTURE(mapped_corner);
+    CAPTURE(bounds);
+    CHECK(block.name() == expected_name.str());
+  }
+}
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Domain.Creators.AlignedLattice", "[Domain][Unit]") {
@@ -98,6 +128,8 @@ SPECTRE_TEST_CASE("Unit.Domain.Creators.AlignedLattice", "[Domain][Unit]") {
     TestHelpers::domain::creators::test_domain_creator(
         *aligned_blocks_creator_1d, use_boundary_condition);
     CHECK(domain_creator_1d->grid_anchors().empty());
+    check_block_names(domain_creator_1d->create_domain(),
+                      {{{0.1, 2.6, 5.1, 5.2, 7.2}}});
 
     const auto domain_creator_2d = make_domain_creator<2>(
         "AlignedLattice:\n"
@@ -116,6 +148,8 @@ SPECTRE_TEST_CASE("Unit.Domain.Creators.AlignedLattice", "[Domain][Unit]") {
             domain_creator_2d.get());
     TestHelpers::domain::creators::test_domain_creator(
         *aligned_blocks_creator_2d, use_boundary_condition);
+    check_block_names(domain_creator_2d->create_domain(),
+                      {{{0.1, 2.6, 5.1}, {-0.4, 3.2, 6.2, 8.9}}});
 
     const auto domain_creator_3d = make_domain_creator<3>(
         "AlignedLattice:\n"
@@ -134,6 +168,8 @@ SPECTRE_TEST_CASE("Unit.Domain.Creators.AlignedLattice", "[Domain][Unit]") {
             domain_creator_3d.get());
     TestHelpers::domain::creators::test_domain_creator(
         *aligned_blocks_creator_3d, use_boundary_condition);
+    check_block_names(domain_creator_3d->create_domain(),
+                      {{{0.1, 2.6, 5.1}, {-0.4, 3.2, 6.2}, {-0.2, 3.2}}});
 
     const auto cubical_shell_domain = make_domain_creator<3>(
         "AlignedLattice:\n"
@@ -153,6 +189,9 @@ SPECTRE_TEST_CASE("Unit.Domain.Creators.AlignedLattice", "[Domain][Unit]") {
             cubical_shell_domain.get());
     TestHelpers::domain::creators::test_domain_creator(
         *cubical_shell_creator_3d, use_boundary_condition);
+    check_block_names(
+        cubical_shell_domain->create_domain(),
+        {{{0.1, 2.6, 5.1, 6.0}, {-0.4, 3.2, 6.2, 7.0}, {-0.2, 3.2, 4.0, 5.2}}});
 
     const auto unit_cubical_shell_domain = make_domain_creator<3>(
         "AlignedLattice:\n"
@@ -172,6 +211,10 @@ SPECTRE_TEST_CASE("Unit.Domain.Creators.AlignedLattice", "[Domain][Unit]") {
             unit_cubical_shell_domain.get());
     TestHelpers::domain::creators::test_domain_creator(
         *unit_cubical_shell_creator_3d, use_boundary_condition);
+    check_block_names(unit_cubical_shell_domain->create_domain(),
+                      {{{-1.5, -0.5, 0.5, 1.5},
+                        {-1.5, -0.5, 0.5, 1.5},
+                        {-1.5, -0.5, 0.5, 1.5}}});
   }
 
   const auto domain_creator_2d_periodic = TestHelpers::test_option_tag<
@@ -192,6 +235,8 @@ SPECTRE_TEST_CASE("Unit.Domain.Creators.AlignedLattice", "[Domain][Unit]") {
           domain_creator_2d_periodic.get());
   TestHelpers::domain::creators::test_domain_creator(
       *aligned_blocks_creator_2d_periodic, false, true);
+  check_block_names(domain_creator_2d_periodic->create_domain(),
+                    {{{0.1, 2.6, 5.1}, {-0.4, 3.2, 6.2, 8.9}}});
 
   const auto domain_creator_3d_periodic = TestHelpers::test_option_tag<
       domain::OptionTags::DomainCreator<3>,
@@ -211,6 +256,8 @@ SPECTRE_TEST_CASE("Unit.Domain.Creators.AlignedLattice", "[Domain][Unit]") {
           domain_creator_3d_periodic.get());
   TestHelpers::domain::creators::test_domain_creator(
       *aligned_blocks_creator_3d_periodic, false, true);
+  check_block_names(domain_creator_3d_periodic->create_domain(),
+                    {{{0.1, 2.6, 5.1}, {-0.4, 3.2, 6.2}, {-0.2, 3.2}}});
 
   {
     // Expected domain refinement:
@@ -263,6 +310,8 @@ SPECTRE_TEST_CASE("Unit.Domain.Creators.AlignedLattice", "[Domain][Unit]") {
     }
     CAPTURE(expected_blocks);
     CHECK(expected_blocks.empty());
+    check_block_names(domain,
+                      {{{70.0, 71.0, 72.0, 73}, {90.0, 91.0, 92.0, 93.0}}});
   }
 
   {
@@ -316,6 +365,8 @@ SPECTRE_TEST_CASE("Unit.Domain.Creators.AlignedLattice", "[Domain][Unit]") {
     }
     CAPTURE(expected_blocks);
     CHECK(expected_blocks.empty());
+    check_block_names(domain,
+                      {{{70.0, 71.0, 72.0, 73}, {90.0, 91.0, 92.0, 93.0}}});
   }
 
   CHECK_THROWS_WITH(

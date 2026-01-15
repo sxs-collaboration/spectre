@@ -190,6 +190,14 @@ AlignedLattice<Dim>::external_boundary_conditions() const {
   return boundary_conditions;
 }
 
+template <size_t Dim>
+std::vector<std::string> AlignedLattice<Dim>::block_names() const {
+  return block_names_for_rectilinear_domains(
+      number_of_blocks_by_dim_,
+      std::vector<Index<Dim>>(blocks_to_exclude_.begin(),
+                              blocks_to_exclude_.end()));
+}
+
 namespace {
 template <size_t Dim>
 std::vector<std::array<size_t, Dim>> apply_refinement_regions(

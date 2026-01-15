@@ -30,6 +30,7 @@
 #include "Helpers/Domain/BoundaryConditions/BoundaryCondition.hpp"
 #include "Helpers/Domain/Creators/TestHelpers.hpp"
 #include "Helpers/Domain/DomainTestHelpers.hpp"
+#include "Utilities/MakeVector.hpp"
 #include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 
 namespace domain {
@@ -61,6 +62,10 @@ void test_rotated_bricks_construction(
   CHECK(rotated_bricks.initial_extents() == expected_extents);
   CHECK(rotated_bricks.initial_refinement_levels() ==
         expected_refinement_level);
+  CHECK(rotated_bricks.block_names() ==
+        make_vector("Block(0,0,0)"s, "Block(1,0,0)"s, "Block(0,1,0)"s,
+                    "Block(1,1,0)"s, "Block(0,0,1)"s, "Block(1,0,1)"s,
+                    "Block(0,1,1)"s, "Block(1,1,1)"s));
 
   using Affine = CoordinateMaps::Affine;
   using Affine3D = CoordinateMaps::ProductOf3Maps<Affine, Affine, Affine>;

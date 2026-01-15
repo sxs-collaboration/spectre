@@ -118,6 +118,10 @@ RotatedRectangles::external_boundary_conditions() const {
   return boundary_conditions;
 }
 
+std::vector<std::string> RotatedRectangles::block_names() const {
+  return block_names_for_rectilinear_domains(Index<2>{2, 2});
+}
+
 std::vector<std::array<size_t, 2>> RotatedRectangles::initial_extents() const {
   const size_t& x_0 = initial_number_of_grid_points_in_xy_[0][0];
   const size_t& x_1 = initial_number_of_grid_points_in_xy_[0][1];

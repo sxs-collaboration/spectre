@@ -171,6 +171,8 @@ class RotatedIntervals : public DomainCreator<1> {
       1, std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>
   external_boundary_conditions() const override;
 
+  std::vector<std::string> block_names() const override;
+
   std::vector<std::array<size_t, 1>> initial_extents() const override;
 
   std::vector<std::array<size_t, 1>> initial_refinement_levels() const override;

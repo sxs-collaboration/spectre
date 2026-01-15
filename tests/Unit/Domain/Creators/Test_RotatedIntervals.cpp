@@ -67,6 +67,8 @@ void test_rotated_intervals_construction(
   CHECK(rotated_intervals.initial_extents() == expected_extents);
   CHECK(rotated_intervals.initial_refinement_levels() ==
         expected_refinement_level);
+  CHECK(rotated_intervals.block_names() ==
+        make_vector("Block(0)"s, "Block(1)"s));
 
   test_domain_construction(
       domain, expected_block_neighbors, expected_external_boundaries,
