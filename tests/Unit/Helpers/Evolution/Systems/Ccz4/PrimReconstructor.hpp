@@ -209,6 +209,9 @@ inline Element<3> set_element(const bool skip_last = false) {
   DirectionMap<3, Neighbors<3>> neighbors{};
   for (size_t i = 0; i < 6; ++i) {
     if (skip_last and i == 5) {
+      ASSERT(gsl::at(Direction<3>::all_directions(), i) ==
+                 Direction<3>::upper_zeta(),
+             "Last direction is not upper_zeta");
       break;
     }
     neighbors[gsl::at(Direction<3>::all_directions(), i)] = Neighbors<3>{
@@ -228,8 +231,8 @@ inline tnsr::I<DataVector, 3, Frame::ElementLogical> set_logical_coordinates(
 }
 
 namespace Minkowski {
-inline Variables<
-    ::Ccz4::fd::Tags::spacetime_reconstruction_tags>
+template <bool UsedForSommerfeldTest = false>
+inline Variables<::Ccz4::fd::Tags::spacetime_reconstruction_tags>
 compute_prim_solution_for_Minkowski(
     const tnsr::I<DataVector, 3, Frame::Inertial>& coords) {
   using FrameType = Frame::Inertial;
@@ -294,7 +297,12 @@ compute_prim_solution_for_Minkowski(
   get<::Ccz4::Tags::GammaHat<DataVector, 3>>(evolved_vars) =
       contracted_conformal_christoffel_second_kind;
 
-  const auto& lapse = get<gr::Tags::Lapse<DataVector>>(minkowski_vars);
+  Scalar<DataVector> lapse{};
+  if constexpr (UsedForSommerfeldTest) {
+    get(lapse) = get<0>(coords);
+  } else {
+    lapse = get<gr::Tags::Lapse<DataVector>>(minkowski_vars);
+  }
 
   get<gr::Tags::Lapse<DataVector>>(evolved_vars) = lapse;
 

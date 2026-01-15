@@ -18,6 +18,8 @@
 #include "Evolution/DgSubcell/Tags/GhostDataForReconstruction.hpp"
 #include "Evolution/DgSubcell/Tags/Jacobians.hpp"
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
+#include "Evolution/Systems/Ccz4/BoundaryConditions/BoundaryCondition.hpp"
+#include "Evolution/Systems/Ccz4/BoundaryConditions/Sommerfeld.hpp"
 #include "Evolution/Systems/Ccz4/Christoffel.hpp"
 #include "Evolution/Systems/Ccz4/DerivChristoffel.hpp"
 #include "Evolution/Systems/Ccz4/DerivLapse.hpp"
@@ -528,7 +530,9 @@ static void apply(
 
 /*!
  * \brief Compute the RHS of the second-order CCZ4 formulation of Einstein's
- * equations \cite Dumbser2017okk with finite differencing.
+ * equations \cite Dumbser2017okk with finite differencing. Also
+ * update the time derivative at outermost interior points in a sphere domain
+ * if Sommerfeld boundary conditions are applied.
  *
  * \details The evolution equations are equations 4(a) - 4(i) of
  * \cite Dumbser2017okk Equations 13 - 27 define identities
@@ -554,9 +558,9 @@ struct SoTimeDerivative {
     const Mesh<Dim>& subcell_mesh =
         db::get<evolution::dg::subcell::Tags::Mesh<Dim>>(*box);
     const size_t num_pts = subcell_mesh.number_of_grid_points();
-    Variables<db::wrap_tags_in<::Tags::deriv, gradients_tags, tmpl::size_t<Dim>,
-                               Frame::Inertial>>
-        cell_centered_Ccz4_derivs{num_pts};
+    using deriv_var_tag = db::wrap_tags_in<::Tags::deriv, gradients_tags,
+                                           tmpl::size_t<Dim>, Frame::Inertial>;
+    Variables<deriv_var_tag> cell_centered_Ccz4_derivs{num_pts};
     const auto& cell_centered_logical_to_inertial_inv_jacobian =
         db::get<evolution::dg::subcell::fd::Tags::
                     InverseJacobianLogicalToInertial<Dim>>(*box);
@@ -739,12 +743,11 @@ struct SoTimeDerivative {
     // variables
     using dt_variables_tag = db::add_tag_prefix<::Tags::dt, evolved_vars_tag>;
 
-    // resize here
-
     db::mutate<dt_variables_tag,
                ::Ccz4::Tags::SpatialZ4ConstraintUp<DataVector, Dim>>(
         [&](const auto dt_vars_ptr,
             const auto upper_spatial_z4_constraint_ptr) {
+          // resize here
           dt_vars_ptr->initialize(subcell_mesh.number_of_grid_points());
           auto& [conformal_factor_squared, det_conformal_spatial_metric,
                  inv_conformal_spatial_metric, inv_spatial_metric, inv_a_tilde,
@@ -902,6 +905,108 @@ struct SoTimeDerivative {
               std::move(upper_spatial_z4_constraint);
         },
         box);
+
+    // handling Sommerfeld BCs
+    // WARNING: We assume a complete sphere domain (all wedges)
+    if constexpr (not subcell_enabled_at_external_boundary) {
+      return;
+    }
+    if (element.external_boundaries().empty()) {
+      return;
+    }
+
+    const auto& external_bcs =
+        db::get<domain::Tags::ExternalBoundaryConditions<Dim>>(*box).at(
+            element.id().block_id());
+    for (const auto& direction : element.external_boundaries()) {
+      ASSERT(direction == Direction<Dim>::upper_zeta(),
+             "external bc direction is not upper_zeta but " << direction);
+      // this is potentially expensive; we should add a boolean flag for
+      // time-dependent bc. This should be done in a future PR.
+      if (dynamic_cast<const Ccz4::BoundaryConditions::Sommerfeld*>(
+              external_bcs.at(direction).get()) == nullptr) {
+        return;  // no need to check more, as we do not allow mixed BCs
+      }
+    }
+
+    db::mutate<dt_variables_tag>(
+        [&](const auto dt_vars_ptr, const auto& inertial_coords,
+            const auto& evolved_var) {
+          const size_t num_face_pts =
+              subcell_mesh.extents(0) * subcell_mesh.extents(1);
+
+          ASSERT(inertial_coords.get(0).size() ==
+                     subcell_mesh.number_of_grid_points() and
+                 inertial_coords.get(1).size() ==
+                     subcell_mesh.number_of_grid_points() and
+                 inertial_coords.get(2).size() ==
+                     subcell_mesh.number_of_grid_points(),
+                 "Inertial coords size ["
+                     << inertial_coords.get(0).size()
+                     << ", " << inertial_coords.get(1).size()
+                     << ", " << inertial_coords.get(2).size()
+                     << "] does not match number of subcell points "
+                     << subcell_mesh.number_of_grid_points());
+
+          std::array<DataVector, Dim> outermost_inertial_coords{};
+          for (size_t i = 0; i < Dim; ++i) {
+            make_const_view<DataVector>(
+                make_not_null(&outermost_inertial_coords.at(i)),
+                inertial_coords.get(i),
+                (subcell_mesh.extents(2) - 1) * num_face_pts, num_face_pts);
+          }
+          const DataVector outermost_radial_coords =
+              sqrt(square(outermost_inertial_coords[0]) +
+                   square(outermost_inertial_coords[1]) +
+                   square(outermost_inertial_coords[2]));
+
+          // modify the time derivatives at the outermost interior points
+          // per Sommerfeld BCs
+          tmpl::for_each<Ccz4::fd::System::variables_tag_list>(
+              [&]<typename Tag>(tmpl::type_<Tag> /*meta*/) {
+                const auto& var = get<Tag>(evolved_var);
+                const auto& d_var =
+                    get<::Tags::deriv<Tag, tmpl::size_t<Dim>, Frame::Inertial>>(
+                        cell_centered_Ccz4_derivs);
+                auto& dt_var = get<::Tags::dt<Tag>>(*dt_vars_ptr);
+
+                for (size_t tensor_index = 0; tensor_index < Tag::type::size();
+                     ++tensor_index) {
+                  DataVector outermost_var{};
+                  make_const_view<DataVector>(
+                      make_not_null(&outermost_var), var[tensor_index],
+                      (subcell_mesh.extents(2) - 1) * num_face_pts,
+                      num_face_pts);
+
+                  std::array<DataVector, Dim> outermost_d_var{};
+                  for (size_t i = 0; i < Dim; ++i) {
+                    make_const_view<DataVector>(
+                        make_not_null(&outermost_d_var.at(i)),
+                        d_var[Dim * tensor_index + i],
+                        (subcell_mesh.extents(2) - 1) * num_face_pts,
+                        num_face_pts);
+                  }
+
+                  const DataVector outermost_dr_var =
+                      (outermost_inertial_coords[0] * outermost_d_var[0] +
+                       outermost_inertial_coords[1] * outermost_d_var[1] +
+                       outermost_inertial_coords[2] * outermost_d_var[2]) /
+                      outermost_radial_coords;
+                  DataVector outermost_dt_var{};
+                  outermost_dt_var.set_data_ref(
+                      dt_var[tensor_index].data() +
+                          (subcell_mesh.extents(2) - 1) * num_face_pts,
+                      num_face_pts);
+                  outermost_dt_var =
+                      outermost_var * (-1.0 / outermost_radial_coords) -
+                      outermost_dr_var;
+                }
+              });
+        },
+        box,
+        db::get<evolution::dg::subcell::Tags::Coordinates<
+            Dim, Frame::Inertial>>(*box),
+        db::get<evolved_vars_tag>(*box));
   }
 };
 }  // namespace Ccz4::fd
