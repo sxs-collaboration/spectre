@@ -46,10 +46,6 @@ void check_exact() {
   const double polytropic_exponent_lo = 1.5;
   const double polytropic_exponent_hi = 2.0;
 
-  const Scalar<double> rest_mass_density_high{1.1 * transition_density};
-  const Scalar<double> rest_mass_density_transition{transition_density};
-  const Scalar<double> rest_mass_density_low{0.9 * transition_density};
-
   const auto eos = EquationsOfState::PiecewisePolytropicFluid<IsRelativistic>{
       transition_density, polytropic_constant_lo, polytropic_exponent_lo,
       polytropic_exponent_hi};

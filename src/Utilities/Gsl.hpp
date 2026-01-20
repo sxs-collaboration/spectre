@@ -129,15 +129,14 @@ SPECTRE_ALWAYS_INLINE constexpr T& at(std::array<T, N>& arr, Size index) {
 }
 
 template <class T, std::size_t N, typename Size>
-KOKKOS_FUNCTION SPECTRE_ALWAYS_INLINE constexpr T& at(cpp20::array<T, N>& arr,
-                                                      Size index) {
+SPECTRE_ALWAYS_INLINE constexpr T& at(cpp20::array<T, N>& arr, Size index) {
   Expects(index >= 0 and index < narrow_cast<Size>(N));
   return arr[static_cast<std::size_t>(index)];
 }
 
 template <class T, std::size_t N, typename Size>
-KOKKOS_FUNCTION SPECTRE_ALWAYS_INLINE constexpr const T& at(
-    const cpp20::array<T, N>& arr, Size index) {
+SPECTRE_ALWAYS_INLINE constexpr const T& at(const cpp20::array<T, N>& arr,
+                                            Size index) {
   Expects(index >= 0 and index < narrow_cast<Size>(N));
   return arr[static_cast<std::size_t>(index)];
 }

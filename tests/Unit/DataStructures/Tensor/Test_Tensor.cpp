@@ -15,7 +15,9 @@
 #include <vector>
 
 #include "DataStructures/ComplexDataVector.hpp"
+#include "DataStructures/ComplexModalVector.hpp"
 #include "DataStructures/DataVector.hpp"
+#include "DataStructures/ModalVector.hpp"
 #include "DataStructures/SpinWeighted.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Framework/TestHelpers.hpp"
@@ -879,8 +881,23 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.RankAndSize",
       }
     }
   }
-
 }
+
+namespace {
+constexpr size_t test_constexpr_tensor() {
+  const tnsr::aa<int, 3> tensor{1};
+  static_assert(tensor.size() == 10);
+  size_t num_components = 0;
+  for (const auto& component : tensor) {
+    (void)component;
+    num_components++;
+  }
+  return num_components;
+}
+
+static_assert(test_constexpr_tensor() == 10,
+              "Tensor iterators should work in constexpr context");
+}  // namespace
 
 SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.Indices",
                   "[DataStructures][Unit]") {
