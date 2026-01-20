@@ -165,6 +165,9 @@ SPECTRE_TEST_CASE("Unit.Evolution.Subcell.SubcellOptions",
   const domain::creators::Cylinder cylinder{2.0,   10.0, 1.0,  8.0,
                                             false, 0_st, 5_st, false};
   const std::string opts_no_blocks =
+      "SubcellToDgReconstructionMethod: DimByDim\n"
+      "FiniteDifferenceDerivativeOrder: 4\n"
+      "FdInterpolationOrder: 2\n"
       "TroubledCellIndicator:\n"
       "  PerssonTci:\n"
       "    Exponent: 4.0\n"
@@ -179,27 +182,22 @@ SPECTRE_TEST_CASE("Unit.Evolution.Subcell.SubcellOptions",
       "  AlwaysUseSubcells: true\n"
       "  EnableExtensionDirections: true\n"
       "  UseHalo: true\n";
-  const std::string opts_end =
-      "SubcellToDgReconstructionMethod: DimByDim\n"
-      "FiniteDifferenceDerivativeOrder: 4\n"
-      "FdInterpolationOrder: 2\n";
   CHECK_THROWS_WITH(
-      SubcellOptions(
-          TestHelpers::test_option_tag<OptionTags::SubcellOptions>(
-              opts_no_blocks + "  OnlyDgBlocksAndGroups: [blah]\n" + opts_end),
-          cylinder),
+      SubcellOptions(TestHelpers::test_option_tag<OptionTags::SubcellOptions>(
+                         opts_no_blocks + "  OnlyDgBlocksAndGroups: [blah]\n"),
+                     cylinder),
       Catch::Matchers::ContainsSubstring("The block or group 'blah'"));
 
-  CHECK(SubcellOptions{TestHelpers::test_option_tag<OptionTags::SubcellOptions>(
-                           opts_no_blocks +
-                           "  OnlyDgBlocksAndGroups: [InnerCube]\n" + opts_end),
-                       cylinder}
+  CHECK(SubcellOptions{
+            TestHelpers::test_option_tag<OptionTags::SubcellOptions>(
+                opts_no_blocks + "  OnlyDgBlocksAndGroups: [InnerCube]\n"),
+            cylinder}
             .only_dg_block_ids()
             .size() == 1);
-  CHECK(SubcellOptions{TestHelpers::test_option_tag<OptionTags::SubcellOptions>(
-                           opts_no_blocks +
-                           "  OnlyDgBlocksAndGroups: [Wedges]\n" + opts_end),
-                       cylinder}
+  CHECK(SubcellOptions{
+            TestHelpers::test_option_tag<OptionTags::SubcellOptions>(
+                opts_no_blocks + "  OnlyDgBlocksAndGroups: [Wedges]\n"),
+            cylinder}
             .only_dg_block_ids()
             .size() == 4);
 }
