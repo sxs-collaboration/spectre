@@ -3,6 +3,7 @@
 
 #include "Evolution/DgSubcell/SubcellOptions.hpp"
 
+#include <bit>
 #include <cstddef>
 #include <initializer_list>
 #include <optional>
@@ -31,7 +32,9 @@ SubcellOptions::SubcellOptions(
     ::fd::DerivativeOrder finite_difference_derivative_order,
     const size_t number_of_steps_between_tci_calls,
     const size_t min_tci_calls_after_rollback,
-    const size_t min_clear_tci_before_dg, const size_t fd_to_fd_interp_order)
+    const size_t min_clear_tci_before_dg, const size_t fd_to_fd_interp_order,
+    const std::optional<size_t>& lts_steps_per_slab,
+    const Options::Context& context)
     : persson_exponent_(persson_exponent),
       persson_num_highest_modes_(persson_num_highest_modes),
       rdmp_delta0_(rdmp_delta0),
@@ -45,7 +48,8 @@ SubcellOptions::SubcellOptions(
       number_of_steps_between_tci_calls_(number_of_steps_between_tci_calls),
       min_tci_calls_after_rollback_(min_tci_calls_after_rollback),
       min_clear_tci_before_dg_(min_clear_tci_before_dg),
-      fd_to_fd_interp_order_(fd_to_fd_interp_order) {
+      fd_to_fd_interp_order_(fd_to_fd_interp_order),
+      lts_steps_per_slab_(lts_steps_per_slab) {
   if (not only_dg_block_and_group_names_.has_value()) {
     only_dg_block_ids_ = std::vector<size_t>{};
   }
@@ -59,6 +63,10 @@ SubcellOptions::SubcellOptions(
     PARSE_ERROR(Options::Context{},
                 "The extension directions are only enabled when "
                 "always_use_subcells_ is true.");
+  }
+  if (lts_steps_per_slab_.has_value() and
+      std::popcount(*lts_steps_per_slab_) != 1) {
+    PARSE_ERROR(context, "LtsStepsPerSlab must be a power of 2");
   }
 }
 
@@ -89,6 +97,7 @@ void SubcellOptions::pup(PUP::er& p) {
   p | number_of_steps_between_tci_calls_;
   p | min_tci_calls_after_rollback_;
   p | min_clear_tci_before_dg_;
+  p | lts_steps_per_slab_;
 }
 
 bool operator==(const SubcellOptions& lhs, const SubcellOptions& rhs) {
@@ -111,7 +120,8 @@ bool operator==(const SubcellOptions& lhs, const SubcellOptions& rhs) {
          lhs.min_tci_calls_after_rollback_ ==
              rhs.min_tci_calls_after_rollback_ and
          lhs.min_clear_tci_before_dg_ == rhs.min_clear_tci_before_dg_ and
-         lhs.fd_to_fd_interp_order_ == rhs.fd_to_fd_interp_order_;
+         lhs.fd_to_fd_interp_order_ == rhs.fd_to_fd_interp_order_ and
+         lhs.lts_steps_per_slab_ == rhs.lts_steps_per_slab_;
 }
 
 bool operator!=(const SubcellOptions& lhs, const SubcellOptions& rhs) {
