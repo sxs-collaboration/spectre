@@ -46,6 +46,7 @@
 #include "Evolution/Initialization/NonconservativeSystem.hpp"
 #include "Evolution/Systems/Cce/Callbacks/DumpBondiSachsOnWorldtube.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Actions/SetInitialData.hpp"
+#include "Evolution/Systems/GeneralizedHarmonic/ApplyTensorYlmFilter.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Bbh/Callbacks/UpdateCompletionCriteria.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Bbh/CompletionCriteria.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Bbh/CompletionSingleton.hpp"
@@ -530,8 +531,8 @@ struct EvolutionMetavars {
         tmpl::pair<
             gh::gauges::GaugeCondition,
             tmpl::list<gh::gauges::DampedHarmonic, gh::gauges::Harmonic>>,
-        tmpl::pair<Filters::Filter,
-                   tmpl::list<Filters::Exponential<volume_dim>>>,
+        tmpl::pair<Filters::Filter, tmpl::list<Filters::Exponential<volume_dim>,
+                                               gh::TensorYlmFilter>>,
         // Restrict to monotonic time steppers in LTS to avoid control
         // systems deadlocking.
         tmpl::pair<LtsTimeStepper, TimeSteppers::monotonic_lts_time_steppers>,

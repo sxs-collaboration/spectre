@@ -125,6 +125,7 @@ struct Domain {
                                                         Frame::Inertial>>,
 
       ::domain::Tags::InertialFromGridCoordinatesCompute<dim>,
+      ::domain::Tags::GridToInertialInverseJacobian<dim>,
       ::domain::Tags::ElementToInertialInverseJacobian<dim>,
       ::domain::Tags::DetInvJacobianCompute<dim, Frame::ElementLogical,
                                             Frame::Inertial>,

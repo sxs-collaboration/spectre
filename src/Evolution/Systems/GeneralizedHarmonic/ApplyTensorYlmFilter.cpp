@@ -12,6 +12,7 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/Spherepack.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/SpherepackCache.hpp"
+#include "NumericalAlgorithms/SphericalHarmonics/TensorYlmFilter.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -353,6 +354,105 @@ void apply_tensor_ylm_filter(
   filter_detail::assemble_spacetime_vars_from_spatial_pieces(gh_vars,
                                                              gh_spatial_vars);
 }
+
+TensorYlmFilter::TensorYlmFilter() = default;
+
+TensorYlmFilter::TensorYlmFilter(CkMigrateMessage* msg)
+    : Filters::Filter(msg) {}
+
+TensorYlmFilter::TensorYlmFilter(const TensorYlmFilter& rhs)
+    : Filters::Filter(rhs),
+      num_modes_to_kill_(rhs.num_modes_to_kill_),
+      half_power_(rhs.half_power_) {}
+
+TensorYlmFilter& TensorYlmFilter::operator=(const TensorYlmFilter& rhs) {
+  if (this != &rhs) {
+    num_modes_to_kill_ = rhs.num_modes_to_kill_;
+    half_power_ = rhs.half_power_;
+  }
+  return *this;
+}
+
+TensorYlmFilter::TensorYlmFilter(TensorYlmFilter&& rhs)
+    : Filters::Filter(std::move(rhs)),
+      num_modes_to_kill_(rhs.num_modes_to_kill_),
+      half_power_(std::move(rhs.half_power_)) {}
+
+TensorYlmFilter& TensorYlmFilter::operator=(TensorYlmFilter&& rhs) {
+  if (this != &rhs) {
+    num_modes_to_kill_ = rhs.num_modes_to_kill_;
+    half_power_ = std::move(rhs.half_power_);
+  }
+  return *this;
+}
+
+TensorYlmFilter::TensorYlmFilter(const size_t num_modes_to_kill,
+                                 std::optional<size_t> half_power)
+    : num_modes_to_kill_(num_modes_to_kill), half_power_(half_power) {}
+
+void TensorYlmFilter::pup(PUP::er& p) {
+  Filters::Filter::pup(p);
+  p | num_modes_to_kill_;
+  p | half_power_;
+  // The filter matrices and temp storage are lazily initialized,
+  // so we don't pup them.
+}
+
+void TensorYlmFilter::operator()(
+    const gsl::not_null<Variables<filter_detail::gh_spacetime_vars_list>*>
+        gh_vars,
+    const Mesh<3>& mesh,
+    const InverseJacobian<DataVector, 3, Frame::Grid, Frame::Inertial>&
+        jac_grid_to_inertial) const {
+  if (mesh.basis(1) != Spectral::Basis::SphericalHarmonic) {
+    return;
+  }
+  ASSERT(mesh.basis(2) == Spectral::Basis::SphericalHarmonic,
+         "TensorYlmFilter requires spherical harmonic basis in both "
+         "angular directions.");
+  const size_t radial_extents = mesh.extents(0);
+  const size_t l_max = mesh.extents(1) - 1;
+
+  // Cache the filter matrices
+  if (cached_l_max_ != l_max) {
+    ylm::TensorYlm::fill_filter<Scalar<DataVector>::structure>(
+        make_not_null(&filter_matrix_scalar_), l_max, num_modes_to_kill_,
+        half_power_, normalization_);
+    ylm::TensorYlm::fill_filter<tnsr::i<DataVector, 3>::structure>(
+        make_not_null(&filter_matrix_i_), l_max, num_modes_to_kill_,
+        half_power_, normalization_);
+    ylm::TensorYlm::fill_filter<tnsr::ii<DataVector, 3>::structure>(
+        make_not_null(&filter_matrix_ii_), l_max, num_modes_to_kill_,
+        half_power_, normalization_);
+    ylm::TensorYlm::fill_filter<tnsr::ij<DataVector, 3>::structure>(
+        make_not_null(&filter_matrix_ij_), l_max, num_modes_to_kill_,
+        half_power_, normalization_);
+    ylm::TensorYlm::fill_filter<tnsr::ijj<DataVector, 3>::structure>(
+        make_not_null(&filter_matrix_kii_), l_max, num_modes_to_kill_,
+        half_power_, normalization_);
+    cached_l_max_ = l_max;
+  }
+
+  // Apply the filter
+  const auto jac_inertial_to_grid =
+      determinant_and_inverse(jac_grid_to_inertial).second;
+  apply_tensor_ylm_filter(gh_vars, make_not_null(&temp_storage_),
+                          jac_inertial_to_grid, jac_grid_to_inertial,
+                          filter_matrix_scalar_, filter_matrix_i_,
+                          filter_matrix_ii_, filter_matrix_ij_,
+                          filter_matrix_kii_, l_max, radial_extents);
+}
+
+bool operator==(const TensorYlmFilter& lhs, const TensorYlmFilter& rhs) {
+  return lhs.num_modes_to_kill_ == rhs.num_modes_to_kill_ and
+         lhs.half_power_ == rhs.half_power_;
+}
+
+bool operator!=(const TensorYlmFilter& lhs, const TensorYlmFilter& rhs) {
+  return not(lhs == rhs);
+}
+
+PUP::able::PUP_ID TensorYlmFilter::my_PUP_ID = 0;  // NOLINT
 
 // Explicit instantiations
 

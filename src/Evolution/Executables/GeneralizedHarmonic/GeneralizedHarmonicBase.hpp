@@ -27,6 +27,7 @@
 #include "Evolution/Initialization/Evolution.hpp"
 #include "Evolution/Initialization/NonconservativeSystem.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Actions/SetInitialData.hpp"
+#include "Evolution/Systems/GeneralizedHarmonic/ApplyTensorYlmFilter.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/BoundaryConditions/Factory.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/BoundaryCorrections/Factory.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Equations.hpp"
@@ -321,7 +322,11 @@ struct FactoryCreation : tt::ConformsTo<Options::protocols::FactoryCreation> {
       tmpl::pair<LtsTimeStepper, TimeSteppers::lts_time_steppers>,
       tmpl::pair<MathFunction<1, Frame::Inertial>,
                  MathFunctions::all_math_functions<1, Frame::Inertial>>,
-      tmpl::pair<Filters::Filter, tmpl::list<Filters::Exponential<volume_dim>>>,
+      tmpl::pair<Filters::Filter,
+                 tmpl::flatten<tmpl::list<
+                     Filters::Exponential<volume_dim>,
+                     tmpl::conditional_t<volume_dim == 3, gh::TensorYlmFilter,
+                                         tmpl::list<>>>>>,
       tmpl::pair<PhaseChange, PhaseControl::factory_creatable_classes>,
       tmpl::pair<StepChooser<StepChooserUse::LtsStep>,
                  StepChoosers::standard_step_choosers<system>>,

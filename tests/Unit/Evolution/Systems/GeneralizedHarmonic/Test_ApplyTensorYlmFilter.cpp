@@ -3,6 +3,7 @@
 
 #include "Framework/TestingFramework.hpp"
 
+#include <memory>
 #include <random>
 
 #include "DataStructures/DataVector.hpp"
@@ -11,19 +12,32 @@
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/ApplyTensorYlmFilter.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
+#include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/NumericalAlgorithms/SphericalHarmonics/Test_ApplyTensorYlmFilter.hpp"
+#include "NumericalAlgorithms/LinearOperators/Filter.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/ApplyTensorYlmFilter.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/Spherepack.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/SpherepackCache.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/SpherepackIterator.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/TensorYlmFilter.hpp"
+#include "Options/Protocols/FactoryCreation.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/ProtocolHelpers.hpp"
+#include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace gh {
 namespace {
+struct Metavariables {
+  struct factory_creation
+      : tt::ConformsTo<Options::protocols::FactoryCreation> {
+    using factory_classes =
+        tmpl::map<tmpl::pair<Filters::Filter, tmpl::list<TensorYlmFilter>>>;
+  };
+};
+
 void test_break_spacetime_vars_into_spatial_pieces() {
   constexpr size_t mesh_size = 10;
 
@@ -170,6 +184,22 @@ void test_modal_nodal_invertibility() {
 SPECTRE_TEST_CASE(
     "Unit.Evolution.Systems.GeneralizedHarmonic.ApplyTensorYlmFilter",
     "[NumericalAlgorithms][Unit]") {
+  register_factory_classes_with_charm<Metavariables>();
+
+  const auto created_filter = TestHelpers::test_creation<
+      std::unique_ptr<Filters::Filter>, Metavariables>(
+      "TensorYlmFilter:\n"
+      "  NumModesToKill: 2\n"
+      "  HalfPower: 5");
+  const auto& concrete_filter =
+      dynamic_cast<const TensorYlmFilter&>(*created_filter);
+  CHECK(concrete_filter == TensorYlmFilter{2, 5});
+  CHECK(concrete_filter.blocks_to_filter() == std::nullopt);
+
+  const auto deserialized_filter = serialize_and_deserialize(created_filter);
+  CHECK(dynamic_cast<const TensorYlmFilter&>(*deserialized_filter) ==
+        concrete_filter);
+
   test_break_spacetime_vars_into_spatial_pieces();
   test_transform_spatial_tensors_to_different_frame();
   test_modal_nodal_invertibility();

@@ -3,14 +3,24 @@
 
 #pragma once
 
+#include <cstddef>
+#include <optional>
+#include <unordered_set>
+
 #include "DataStructures/SimpleSparseMatrix.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "DataStructures/Variables.hpp"
+#include "Domain/Tags.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
+#include "NumericalAlgorithms/LinearOperators/Filter.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/ApplyTensorYlmFilter.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/TensorYlm.hpp"
+#include "Options/Auto.hpp"
+#include "Options/String.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/Serialization/CharmPupable.hpp"
+#include "Utilities/TMPL.hpp"
 
 /// \cond
 class DataVector;
@@ -207,4 +217,85 @@ void apply_tensor_ylm_filter(
     const SimpleSparseMatrix& filter_matrix_ij,
     const SimpleSparseMatrix& filter_matrix_kii, size_t ell_max,
     size_t radial_extents);
+
+/*!
+ * \brief DataBox mutator that applies a TensorYlm filter to the GH variables
+ * and caches the filter matrices.
+ */
+class TensorYlmFilter : public Filters::Filter {
+ public:
+  struct NumModesToKill {
+    using type = size_t;
+    static constexpr Options::String help =
+        "How many of the top ell modes to set to zero";
+  };
+  struct HalfPower {
+    using type = Options::Auto<size_t, Options::AutoLabel::None>;
+    static constexpr Options::String help =
+        "The half-power sigma for more complicated filtering. "
+        "If None, implements a Heaviside filter.";
+  };
+  using options = tmpl::list<NumModesToKill, HalfPower>;
+  static constexpr Options::String help = {"Tensor Ylm filter."};
+
+  TensorYlmFilter();
+  TensorYlmFilter(const TensorYlmFilter& rhs);
+  TensorYlmFilter& operator=(const TensorYlmFilter& rhs);
+  TensorYlmFilter(TensorYlmFilter&& rhs);
+  TensorYlmFilter& operator=(TensorYlmFilter&& rhs);
+  ~TensorYlmFilter() override = default;
+
+  TensorYlmFilter(size_t num_modes_to_kill, std::optional<size_t> half_power);
+
+  WRAPPED_PUPable_decl_template(TensorYlmFilter);  // NOLINT
+  explicit TensorYlmFilter(CkMigrateMessage* msg);
+
+  std::optional<std::unordered_set<std::string>> blocks_to_filter()
+      const override {
+    return std::nullopt;
+  }
+
+  // NOLINTNEXTLINE(google-runtime-references)
+  void pup(PUP::er& p) override;
+
+ public:  // DataBox-mutator protocol
+  using argument_tags = tmpl::list<
+      domain::Tags::Mesh<3>,
+      domain::Tags::InverseJacobian<3, Frame::Grid, Frame::Inertial>>;
+
+  void operator()(
+      gsl::not_null<Variables<filter_detail::gh_spacetime_vars_list>*> gh_vars,
+      const Mesh<3>& mesh,
+      const InverseJacobian<DataVector, 3, Frame::Grid, Frame::Inertial>&
+          jac_grid_to_inertial) const;
+
+ private:
+  friend bool operator==(const TensorYlmFilter& lhs,
+                         const TensorYlmFilter& rhs);
+
+  size_t num_modes_to_kill_{0};
+  std::optional<size_t> half_power_{std::nullopt};
+  // Use Spherepack normalization because the variables are stored as Spherepack
+  // modes
+  static constexpr ylm::TensorYlm::CoefficientNormalization normalization_ =
+      ylm::TensorYlm::CoefficientNormalization::Spherepack;
+  // Caches and memory buffers
+  // NOLINTNEXTLINE(spectre-mutable)
+  mutable size_t cached_l_max_{0};
+  // NOLINTNEXTLINE(spectre-mutable)
+  mutable SimpleSparseMatrix filter_matrix_scalar_{};
+  // NOLINTNEXTLINE(spectre-mutable)
+  mutable SimpleSparseMatrix filter_matrix_i_{};
+  // NOLINTNEXTLINE(spectre-mutable)
+  mutable SimpleSparseMatrix filter_matrix_ii_{};
+  // NOLINTNEXTLINE(spectre-mutable)
+  mutable SimpleSparseMatrix filter_matrix_ij_{};
+  // NOLINTNEXTLINE(spectre-mutable)
+  mutable SimpleSparseMatrix filter_matrix_kii_{};
+  // NOLINTNEXTLINE(spectre-mutable)
+  mutable Variables<filter_detail::gh_spacetime_vars_list> temp_storage_{};
+};
+
+bool operator!=(const TensorYlmFilter& lhs, const TensorYlmFilter& rhs);
+
 }  // namespace gh
