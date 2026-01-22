@@ -7,7 +7,16 @@ import unittest
 
 import numpy as np
 import numpy.testing as npt
-from scipy.special import sph_harm
+
+try:
+    from scipy.special import sph_harm_y
+except ImportError:
+    # SciPy < 1.15
+    from scipy.special import sph_harm
+
+    def sph_harm_y(n, m, theta, phi):
+        return sph_harm(m, n, phi, theta)
+
 
 from spectre.SphericalHarmonics import Spherepack, SpherepackIterator
 
@@ -58,14 +67,18 @@ class TestStrahlkorper(unittest.TestCase):
                     # conjugate: a*(l,m) = (-1)^m a(l,m)
                     sign = 1.0 if m % 2 == 0 else -1.0
                     scipy_collocation_values += (
-                        sign * coef.conjugate() * sph_harm(-m, l, phis, thetas)
+                        sign
+                        * coef.conjugate()
+                        * sph_harm_y(l, -m, thetas, phis)
                     )
 
                 iterator.set(l, m)
                 spherepack_coefs[iterator()] = convert_coef_to_spherepack(
                     coef, l, m
                 )
-                scipy_collocation_values += coef * sph_harm(m, l, phis, thetas)
+                scipy_collocation_values += coef * sph_harm_y(
+                    l, m, thetas, phis
+                )
 
         npt.assert_array_almost_equal(
             np.zeros_like(thetas), np.imag(scipy_collocation_values)
