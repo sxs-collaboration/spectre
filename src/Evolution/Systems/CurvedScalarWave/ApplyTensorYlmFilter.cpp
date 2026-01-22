@@ -60,10 +60,10 @@ void apply_tensor_ylm_filter(
       radial_extents * ylm.physical_size() == sw_vars->number_of_grid_points(),
       "Mismatch " << radial_extents * ylm.physical_size() << " must equal "
                   << sw_vars->number_of_grid_points());
-  ASSERT(radial_extents * ylm.spectral_size() <=
-             temp_storage->number_of_grid_points(),
-         "Mismatch " << radial_extents * ylm.spectral_size() << " must be <= "
-                     << temp_storage->number_of_grid_points());
+  if (temp_storage->number_of_grid_points() <=
+      radial_extents * ylm.spectral_size()) {
+    temp_storage->initialize(radial_extents * ylm.spectral_size());
+  }
 
   // Here we re-use the same memory multiple times.  Note that
   // 1. sw_vars_to_filter has the same number of components as
