@@ -26,7 +26,7 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticSolutions.Burgers.Bump",
   const double height = 3.;
   const double center = -8.;
   const Burgers::Solutions::Bump solution(half_width, height, center);
-  const DataVector positions{-11., -9., -8., -6.};
+  const DataVector positions{-11., -9., -8., -6., -4.};
   check_burgers_solution(solution, positions, {-0.5, 0., 0.1, 0.5});
 
   // Check that the initial profile is correct.

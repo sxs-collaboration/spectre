@@ -143,7 +143,7 @@ void test_option_creation() {
 SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticSolutions.Gr.Minkowski",
                   "[PointwiseFunctions][Unit]") {
   const double x = 1.2;
-  const DataVector x_dv{1., 2., 3.};
+  const DataVector x_dv{1., 2., 3., 4., 5.};
 
   test_minkowski<1>(x);
   test_minkowski<1>(x_dv);
