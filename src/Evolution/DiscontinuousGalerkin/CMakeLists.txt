@@ -21,6 +21,7 @@ spectre_target_headers(
   MortarTags.hpp
   NormalVectorTags.hpp
   TimeDerivativeDecisions.hpp
+  TimeSteppingPolicy.hpp
   UsingSubcell.hpp
   )
 
@@ -36,6 +37,7 @@ spectre_target_sources(
   MortarData.cpp
   MortarDataHolder.cpp
   MortarInfo.cpp
+  TimeSteppingPolicy.cpp
   )
 
 add_subdirectory(Actions)

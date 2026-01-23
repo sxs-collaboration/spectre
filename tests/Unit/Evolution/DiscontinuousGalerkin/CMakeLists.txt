@@ -26,6 +26,7 @@ set(LIBRARY_SOURCES
   Test_MortarInfo.cpp
   Test_MortarTags.cpp
   Test_NormalVectorTags.cpp
+  Test_TimeSteppingPolicy.cpp
   Test_UsingSubcell.cpp
   )
 
