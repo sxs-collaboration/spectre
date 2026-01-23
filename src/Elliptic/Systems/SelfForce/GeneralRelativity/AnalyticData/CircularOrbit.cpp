@@ -1,7 +1,7 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "PointwiseFunctions/AnalyticData/SelfForce/GeneralRelativity/CircularOrbit.hpp"
+#include "Elliptic/Systems/SelfForce/GeneralRelativity/AnalyticData/CircularOrbit.hpp"
 
 #include <complex>
 #include <cstddef>
@@ -13,9 +13,9 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "Elliptic/Systems/SelfForce/GeneralRelativity/AnalyticData/CircularOrbitCoeffs.hpp"
+#include "Elliptic/Systems/SelfForce/GeneralRelativity/AnalyticData/CircularOrbitConvertEffsource.hpp"
 #include "Elliptic/Systems/SelfForce/GeneralRelativity/Tags.hpp"
-#include "PointwiseFunctions/AnalyticData/SelfForce/GeneralRelativity/CircularOrbitCoeffs.hpp"
-#include "PointwiseFunctions/AnalyticData/SelfForce/GeneralRelativity/CircularOrbitConvertEffsource.hpp"
 #include "PointwiseFunctions/GeneralRelativity/TortoiseCoordinates.hpp"
 #include "Utilities/Gsl.hpp"
 

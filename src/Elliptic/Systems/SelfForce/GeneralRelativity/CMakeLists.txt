@@ -29,4 +29,5 @@ target_link_libraries(
   Utilities
   )
 
+add_subdirectory(AnalyticData)
 add_subdirectory(BoundaryConditions)

@@ -17,4 +17,5 @@ target_link_libraries(
   GrSelfForce
   )
 
+add_subdirectory(AnalyticData)
 add_subdirectory(BoundaryConditions)

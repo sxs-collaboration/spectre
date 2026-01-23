@@ -1,7 +1,7 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "PointwiseFunctions/AnalyticData/SelfForce/GeneralRelativity/CircularOrbitCoeffs.hpp"
+#include "Elliptic/Systems/SelfForce/GeneralRelativity/AnalyticData/CircularOrbitCoeffs.hpp"
 
 #include <cmath>
 
