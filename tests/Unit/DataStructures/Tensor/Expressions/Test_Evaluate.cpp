@@ -46,91 +46,101 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.Expression.Evaluate",
       DataVector{-3.1, 9.4, 0.0, -3.1, 2.4, 9.8});
 
   // Rank 1: double; spacetime
-  TestHelpers::tenex::test_evaluate_rank_1<double, SpacetimeIndex, ti::a>();
-  TestHelpers::tenex::test_evaluate_rank_1<double, SpacetimeIndex, ti::b>();
-  TestHelpers::tenex::test_evaluate_rank_1<double, SpacetimeIndex, ti::A>();
-  TestHelpers::tenex::test_evaluate_rank_1<double, SpacetimeIndex, ti::B>();
+  TestHelpers::tenex::test_evaluate_rank_1<double, SpacetimeIndex, ti::a,
+                                           Frame::Inertial>();
+  TestHelpers::tenex::test_evaluate_rank_1<double, SpacetimeIndex, ti::b,
+                                           Frame::Grid>();
+  TestHelpers::tenex::test_evaluate_rank_1<double, SpacetimeIndex, ti::A,
+                                           Frame::Grid>();
+  TestHelpers::tenex::test_evaluate_rank_1<double, SpacetimeIndex, ti::B,
+                                           Frame::Inertial>();
 
   // Rank 1: double; spatial
-  TestHelpers::tenex::test_evaluate_rank_1<double, SpatialIndex, ti::i>();
-  TestHelpers::tenex::test_evaluate_rank_1<double, SpatialIndex, ti::j>();
-  TestHelpers::tenex::test_evaluate_rank_1<double, SpatialIndex, ti::I>();
-  TestHelpers::tenex::test_evaluate_rank_1<double, SpatialIndex, ti::J>();
+  TestHelpers::tenex::test_evaluate_rank_1<double, SpatialIndex, ti::i,
+                                           Frame::Grid>();
+  TestHelpers::tenex::test_evaluate_rank_1<double, SpatialIndex, ti::j,
+                                           Frame::Inertial>();
+  TestHelpers::tenex::test_evaluate_rank_1<double, SpatialIndex, ti::I,
+                                           Frame::Inertial>();
+  TestHelpers::tenex::test_evaluate_rank_1<double, SpatialIndex, ti::J,
+                                           Frame::Grid>();
 
   // Rank 1: DataVector
-  TestHelpers::tenex::test_evaluate_rank_1<DataVector, SpatialIndex, ti::L>();
+  TestHelpers::tenex::test_evaluate_rank_1<DataVector, SpatialIndex, ti::L,
+                                           Frame::Inertial>();
 
   // Rank 2: double; nonsymmetric; spacetime only
   TestHelpers::tenex::test_evaluate_rank_2_no_symmetry<
-      double, SpacetimeIndex, SpacetimeIndex, ti::a, ti::b>();
+      double, SpacetimeIndex, SpacetimeIndex, ti::a, ti::b, Frame::Inertial>();
   TestHelpers::tenex::test_evaluate_rank_2_no_symmetry<
-      double, SpacetimeIndex, SpacetimeIndex, ti::A, ti::B>();
+      double, SpacetimeIndex, SpacetimeIndex, ti::A, ti::B, Frame::Grid>();
   TestHelpers::tenex::test_evaluate_rank_2_no_symmetry<
-      double, SpacetimeIndex, SpacetimeIndex, ti::d, ti::c>();
+      double, SpacetimeIndex, SpacetimeIndex, ti::d, ti::c, Frame::Distorted>();
   TestHelpers::tenex::test_evaluate_rank_2_no_symmetry<
-      double, SpacetimeIndex, SpacetimeIndex, ti::D, ti::C>();
+      double, SpacetimeIndex, SpacetimeIndex, ti::D, ti::C, Frame::NoFrame>();
   TestHelpers::tenex::test_evaluate_rank_2_no_symmetry<
-      double, SpacetimeIndex, SpacetimeIndex, ti::e, ti::F>();
+      double, SpacetimeIndex, SpacetimeIndex, ti::e, ti::F, Frame::Inertial>();
   TestHelpers::tenex::test_evaluate_rank_2_no_symmetry<
-      double, SpacetimeIndex, SpacetimeIndex, ti::F, ti::e>();
+      double, SpacetimeIndex, SpacetimeIndex, ti::F, ti::e, Frame::Grid>();
   TestHelpers::tenex::test_evaluate_rank_2_no_symmetry<
-      double, SpacetimeIndex, SpacetimeIndex, ti::g, ti::B>();
+      double, SpacetimeIndex, SpacetimeIndex, ti::g, ti::B, Frame::Distorted>();
   TestHelpers::tenex::test_evaluate_rank_2_no_symmetry<
-      double, SpacetimeIndex, SpacetimeIndex, ti::G, ti::b>();
+      double, SpacetimeIndex, SpacetimeIndex, ti::G, ti::b, Frame::NoFrame>();
 
   // Rank 2: double; nonsymmetric; spatial only
   TestHelpers::tenex::test_evaluate_rank_2_no_symmetry<
-      double, SpatialIndex, SpatialIndex, ti::i, ti::j>();
+      double, SpatialIndex, SpatialIndex, ti::i, ti::j, Frame::NoFrame>();
   TestHelpers::tenex::test_evaluate_rank_2_no_symmetry<
-      double, SpatialIndex, SpatialIndex, ti::I, ti::J>();
+      double, SpatialIndex, SpatialIndex, ti::I, ti::J, Frame::Distorted>();
   TestHelpers::tenex::test_evaluate_rank_2_no_symmetry<
-      double, SpatialIndex, SpatialIndex, ti::j, ti::i>();
+      double, SpatialIndex, SpatialIndex, ti::j, ti::i, Frame::Grid>();
   TestHelpers::tenex::test_evaluate_rank_2_no_symmetry<
-      double, SpatialIndex, SpatialIndex, ti::J, ti::I>();
+      double, SpatialIndex, SpatialIndex, ti::J, ti::I, Frame::Inertial>();
   TestHelpers::tenex::test_evaluate_rank_2_no_symmetry<
-      double, SpatialIndex, SpatialIndex, ti::i, ti::J>();
+      double, SpatialIndex, SpatialIndex, ti::i, ti::J, Frame::NoFrame>();
   TestHelpers::tenex::test_evaluate_rank_2_no_symmetry<
-      double, SpatialIndex, SpatialIndex, ti::I, ti::j>();
+      double, SpatialIndex, SpatialIndex, ti::I, ti::j, Frame::Distorted>();
   TestHelpers::tenex::test_evaluate_rank_2_no_symmetry<
-      double, SpatialIndex, SpatialIndex, ti::j, ti::I>();
+      double, SpatialIndex, SpatialIndex, ti::j, ti::I, Frame::Grid>();
   TestHelpers::tenex::test_evaluate_rank_2_no_symmetry<
-      double, SpatialIndex, SpatialIndex, ti::J, ti::i>();
+      double, SpatialIndex, SpatialIndex, ti::J, ti::i, Frame::Inertial>();
 
   // Rank 2: double; nonsymmetric; spacetime and spatial mixed
   TestHelpers::tenex::test_evaluate_rank_2_no_symmetry<
-      double, SpacetimeIndex, SpatialIndex, ti::c, ti::I>();
+      double, SpacetimeIndex, SpatialIndex, ti::c, ti::I, Frame::Inertial>();
   TestHelpers::tenex::test_evaluate_rank_2_no_symmetry<
-      double, SpacetimeIndex, SpatialIndex, ti::A, ti::i>();
+      double, SpacetimeIndex, SpatialIndex, ti::A, ti::i, Frame::Grid>();
   TestHelpers::tenex::test_evaluate_rank_2_no_symmetry<
-      double, SpatialIndex, SpacetimeIndex, ti::J, ti::a>();
+      double, SpatialIndex, SpacetimeIndex, ti::J, ti::a, Frame::Distorted>();
   TestHelpers::tenex::test_evaluate_rank_2_no_symmetry<
-      double, SpatialIndex, SpacetimeIndex, ti::i, ti::B>();
+      double, SpatialIndex, SpacetimeIndex, ti::i, ti::B, Frame::NoFrame>();
   TestHelpers::tenex::test_evaluate_rank_2_no_symmetry<
-      double, SpacetimeIndex, SpatialIndex, ti::e, ti::j>();
+      double, SpacetimeIndex, SpatialIndex, ti::e, ti::j, Frame::Inertial>();
   TestHelpers::tenex::test_evaluate_rank_2_no_symmetry<
-      double, SpatialIndex, SpacetimeIndex, ti::i, ti::d>();
+      double, SpatialIndex, SpacetimeIndex, ti::i, ti::d, Frame::Grid>();
   TestHelpers::tenex::test_evaluate_rank_2_no_symmetry<
-      double, SpacetimeIndex, SpatialIndex, ti::C, ti::I>();
+      double, SpacetimeIndex, SpatialIndex, ti::C, ti::I, Frame::Distorted>();
   TestHelpers::tenex::test_evaluate_rank_2_no_symmetry<
-      double, SpatialIndex, SpacetimeIndex, ti::J, ti::A>();
+      double, SpatialIndex, SpacetimeIndex, ti::J, ti::A, Frame::NoFrame>();
 
   // Rank 2: double; symmetric; spacetime
-  TestHelpers::tenex::test_evaluate_rank_2_symmetric<double, SpacetimeIndex,
-                                                     ti::a, ti::d>();
-  TestHelpers::tenex::test_evaluate_rank_2_symmetric<double, SpacetimeIndex,
-                                                     ti::G, ti::B>();
+  TestHelpers::tenex::test_evaluate_rank_2_symmetric<
+      double, SpacetimeIndex, ti::a, ti::d, Frame::Inertial>();
+  TestHelpers::tenex::test_evaluate_rank_2_symmetric<
+      double, SpacetimeIndex, ti::G, ti::B, Frame::Grid>();
 
   // Rank 2: double; symmetric; spatial
-  TestHelpers::tenex::test_evaluate_rank_2_symmetric<double, SpatialIndex,
-                                                     ti::j, ti::i>();
-  TestHelpers::tenex::test_evaluate_rank_2_symmetric<double, SpatialIndex,
-                                                     ti::I, ti::J>();
+  TestHelpers::tenex::test_evaluate_rank_2_symmetric<
+      double, SpatialIndex, ti::j, ti::i, Frame::Distorted>();
+  TestHelpers::tenex::test_evaluate_rank_2_symmetric<
+      double, SpatialIndex, ti::I, ti::J, Frame::NoFrame>();
 
   // Rank 2: DataVector; nonsymmetric
   TestHelpers::tenex::test_evaluate_rank_2_no_symmetry<
-      DataVector, SpacetimeIndex, SpacetimeIndex, ti::f, ti::G>();
+      DataVector, SpacetimeIndex, SpacetimeIndex, ti::f, ti::G,
+      Frame::Inertial>();
 
   // Rank 2: DataVector; symmetric
-  TestHelpers::tenex::test_evaluate_rank_2_symmetric<DataVector, SpatialIndex,
-                                                     ti::j, ti::i>();
+  TestHelpers::tenex::test_evaluate_rank_2_symmetric<
+      DataVector, SpatialIndex, ti::j, ti::i, Frame::Grid>();
 }

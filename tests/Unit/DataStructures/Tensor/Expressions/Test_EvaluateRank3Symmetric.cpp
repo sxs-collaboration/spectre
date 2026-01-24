@@ -17,33 +17,38 @@ SPECTRE_TEST_CASE(
     "[DataStructures][Unit]") {
   // Rank 3: double; first and second indices symmetric
   TestHelpers::tenex::test_evaluate_rank_3_ab_symmetry<
-      double, SpacetimeIndex, SpacetimeIndex, ti::b, ti::a, ti::C>();
+      double, SpacetimeIndex, SpacetimeIndex, ti::b, ti::a, ti::C,
+      Frame::Inertial>();
 
   // Rank 3: double; first and third indices symmetric
   TestHelpers::tenex::test_evaluate_rank_3_ac_symmetry<
-      double, SpatialIndex, SpacetimeIndex, ti::i, ti::f, ti::j>();
+      double, SpatialIndex, SpacetimeIndex, ti::i, ti::f, ti::j, Frame::Grid>();
 
   // Rank 3: double; second and third indices symmetric
   TestHelpers::tenex::test_evaluate_rank_3_bc_symmetry<
-      double, SpacetimeIndex, SpatialIndex, ti::d, ti::J, ti::I>();
+      double, SpacetimeIndex, SpatialIndex, ti::d, ti::J, ti::I,
+      Frame::Distorted>();
 
   // Rank 3: double; symmetric
-  TestHelpers::tenex::test_evaluate_rank_3_abc_symmetry<double, SpacetimeIndex,
-                                                        ti::f, ti::d, ti::a>();
+  TestHelpers::tenex::test_evaluate_rank_3_abc_symmetry<
+      double, SpacetimeIndex, ti::f, ti::d, ti::a, Frame::Inertial>();
 
   // Rank 3: DataVector; first and second indices symmetric
   TestHelpers::tenex::test_evaluate_rank_3_ab_symmetry<
-      DataVector, SpacetimeIndex, SpacetimeIndex, ti::b, ti::a, ti::C>();
+      DataVector, SpacetimeIndex, SpacetimeIndex, ti::b, ti::a, ti::C,
+      Frame::Grid>();
 
   // Rank 3: DataVector; first and third indices symmetric
   TestHelpers::tenex::test_evaluate_rank_3_ac_symmetry<
-      DataVector, SpatialIndex, SpacetimeIndex, ti::i, ti::f, ti::j>();
+      DataVector, SpatialIndex, SpacetimeIndex, ti::i, ti::f, ti::j,
+      Frame::Distorted>();
 
   // Rank 3: DataVector; second and third indices symmetric
   TestHelpers::tenex::test_evaluate_rank_3_bc_symmetry<
-      DataVector, SpacetimeIndex, SpatialIndex, ti::d, ti::J, ti::I>();
+      DataVector, SpacetimeIndex, SpatialIndex, ti::d, ti::J, ti::I,
+      Frame::Inertial>();
 
   // Rank 3: DataVector; symmetric
   TestHelpers::tenex::test_evaluate_rank_3_abc_symmetry<
-      DataVector, SpacetimeIndex, ti::f, ti::d, ti::a>();
+      DataVector, SpacetimeIndex, ti::f, ti::d, ti::a, Frame::Grid>();
 }
