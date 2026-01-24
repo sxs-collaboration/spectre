@@ -15,6 +15,7 @@
 #include "DataStructures/Variables.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace TestHelpers::tenex {
@@ -121,8 +122,8 @@ void test_evaluate_rank_2_impl() {
 /// We test nonsymmetric indices and symmetric indices across two functions to
 /// ensure that the code works correctly with symmetries. This function tests
 /// one of the following symmetries:
-/// - <2, 1> (`test_evaluate_rank_2_no_symmetry`)
-/// - <1, 1> (`test_evaluate_rank_2_symmetric`)
+/// - <2, 1>
+/// - <1, 1>
 ///
 /// \details `TensorIndexA` and `TensorIndexB` can be any type of TensorIndex
 /// and are not necessarily `ti::a` and `ti::b`. The "A" and "B" suffixes just
@@ -135,6 +136,7 @@ void test_evaluate_rank_2_impl() {
 /// and valence
 ///
 /// \tparam DataType the type of data being stored in the Tensors
+/// \tparam RhsSymmetry the ::Symmetry of the RHS Tensor
 /// \tparam TensorIndexTypeA the \ref SpacetimeIndex "TensorIndexType" of the
 /// first index of the RHS Tensor
 /// \tparam TensorIndexTypeB the \ref SpacetimeIndex "TensorIndexType" of the
@@ -156,7 +158,7 @@ void test_evaluate_rank_2() {
 
 #define CALL_TEST_EVALUATE_RANK_2_IMPL(_, data)                               \
   test_evaluate_rank_2_impl<                                                  \
-      DataType, Symmetry<2, 1>,                                               \
+      DataType, RhsSymmetry,                                                  \
       index_list<TensorIndexTypeA<DIM_A(data), TensorIndexA.valence, Frame>,  \
                  TensorIndexTypeB<DIM_B(data), TensorIndexB.valence, Frame>>, \
       TensorIndexA, TensorIndexB>();
@@ -170,16 +172,16 @@ void test_evaluate_rank_2() {
 }
 
 /// \ingroup TestingFrameworkGroup
-/// \copydoc test_evaluate_rank_2_no_symmetry()
-template <typename DataType,
+template <typename DataType, typename RhsSymmetry,
           template <size_t, UpLo, typename> class TensorIndexType,
-          auto& TensorIndexA, auto& TensorIndexB, typename Frame>
-void test_evaluate_rank_2_symmetric() {
+          auto& TensorIndexA, auto& TensorIndexB, typename Frame,
+          Requires<std::is_same_v<RhsSymmetry, Symmetry<1, 1>>> = nullptr>
+void test_evaluate_rank_2() {
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 
 #define CALL_TEST_EVALUATE_RANK_2_IMPL(_, data)                            \
   test_evaluate_rank_2_impl<                                               \
-      DataType, Symmetry<1, 1>,                                            \
+      DataType, RhsSymmetry,                                               \
       index_list<TensorIndexType<DIM(data), TensorIndexA.valence, Frame>,  \
                  TensorIndexType<DIM(data), TensorIndexB.valence, Frame>>, \
       TensorIndexA, TensorIndexB>();

@@ -16,6 +16,7 @@
 #include "DataStructures/Variables.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace TestHelpers::tenex {
@@ -269,11 +270,11 @@ void test_evaluate_rank_3_impl() {
 /// We test various different symmetries across several functions to ensure that
 /// the code works correctly with symmetries. This function tests one of the
 /// following symmetries:
-/// - <3, 2, 1> (`test_evaluate_rank_3_no_symmetry`)
-/// - <2, 2, 1> (`test_evaluate_rank_3_ab_symmetry`)
-/// - <2, 1, 2> (`test_evaluate_rank_3_ac_symmetry`)
-/// - <2, 1, 1> (`test_evaluate_rank_3_bc_symmetry`)
-/// - <1, 1, 1> (`test_evaluate_rank_3_abc_symmetry`)
+/// - <3, 2, 1>
+/// - <2, 2, 1>
+/// - <2, 1, 2>
+/// - <2, 1, 1>
+/// - <1, 1, 1>
 ///
 /// \details `TensorIndexA`, `TensorIndexB`, and `TensorIndexC` can be any type
 /// of TensorIndex and are not necessarily `ti::a`, `ti::b`, and `ti::c`. The
@@ -287,6 +288,7 @@ void test_evaluate_rank_3_impl() {
 /// "TensorIndexType" and valence
 ///
 /// \tparam DataType the type of data being stored in the Tensors
+/// \tparam RhsSymmetry the ::Symmetry of the RHS Tensor
 /// \tparam TensorIndexTypeA the \ref SpacetimeIndex "TensorIndexType" of the
 /// first index of the RHS Tensor
 /// \tparam TensorIndexTypeB the \ref SpacetimeIndex "TensorIndexType" of the
@@ -315,7 +317,7 @@ void test_evaluate_rank_3() {
 
 #define CALL_TEST_EVALUATE_RANK_3_IMPL(_, data)                               \
   test_evaluate_rank_3_impl<                                                  \
-      DataType, Symmetry<3, 2, 1>,                                            \
+      DataType, RhsSymmetry,                                                  \
       index_list<TensorIndexTypeA<DIM_A(data), TensorIndexA.valence, Frame>,  \
                  TensorIndexTypeB<DIM_B(data), TensorIndexB.valence, Frame>,  \
                  TensorIndexTypeC<DIM_C(data), TensorIndexC.valence, Frame>>, \
@@ -332,19 +334,19 @@ void test_evaluate_rank_3() {
 }
 
 /// \ingroup TestingFrameworkGroup
-/// \copydoc test_evaluate_rank_3_no_symmetry()
-template <typename DataType,
+template <typename DataType, typename RhsSymmetry,
           template <size_t, UpLo, typename> class TensorIndexTypeAB,
           template <size_t, UpLo, typename> class TensorIndexTypeC,
           auto& TensorIndexA, auto& TensorIndexB, auto& TensorIndexC,
-          typename Frame>
-void test_evaluate_rank_3_ab_symmetry() {
+          typename Frame,
+          Requires<std::is_same_v<RhsSymmetry, Symmetry<2, 2, 1>>> = nullptr>
+void test_evaluate_rank_3() {
 #define DIM_AB(data) BOOST_PP_TUPLE_ELEM(0, data)
 #define DIM_C(data) BOOST_PP_TUPLE_ELEM(1, data)
 
 #define CALL_TEST_EVALUATE_RANK_3_IMPL(_, data)                                \
   test_evaluate_rank_3_impl<                                                   \
-      DataType, Symmetry<2, 2, 1>,                                             \
+      DataType, RhsSymmetry,                                                   \
       index_list<TensorIndexTypeAB<DIM_AB(data), TensorIndexA.valence, Frame>, \
                  TensorIndexTypeAB<DIM_AB(data), TensorIndexB.valence, Frame>, \
                  TensorIndexTypeC<DIM_C(data), TensorIndexC.valence, Frame>>,  \
@@ -359,19 +361,19 @@ void test_evaluate_rank_3_ab_symmetry() {
 }
 
 /// \ingroup TestingFrameworkGroup
-/// \copydoc test_evaluate_rank_3_no_symmetry()
-template <typename DataType,
+template <typename DataType, typename RhsSymmetry,
           template <size_t, UpLo, typename> class TensorIndexTypeAC,
           template <size_t, UpLo, typename> class TensorIndexTypeB,
           auto& TensorIndexA, auto& TensorIndexB, auto& TensorIndexC,
-          typename Frame>
-void test_evaluate_rank_3_ac_symmetry() {
+          typename Frame,
+          Requires<std::is_same_v<RhsSymmetry, Symmetry<1, 2, 1>>> = nullptr>
+void test_evaluate_rank_3() {
 #define DIM_AC(data) BOOST_PP_TUPLE_ELEM(0, data)
 #define DIM_B(data) BOOST_PP_TUPLE_ELEM(1, data)
 
 #define CALL_TEST_EVALUATE_RANK_3_IMPL(_, data)                          \
   test_evaluate_rank_3_impl<                                             \
-      DataType, Symmetry<2, 1, 2>,                                       \
+      DataType, RhsSymmetry,                                             \
       index_list<                                                        \
           TensorIndexTypeAC<DIM_AC(data), TensorIndexA.valence, Frame>,  \
           TensorIndexTypeB<DIM_B(data), TensorIndexB.valence, Frame>,    \
@@ -387,18 +389,19 @@ void test_evaluate_rank_3_ac_symmetry() {
 }
 
 /// \ingroup TestingFrameworkGroup
-/// \copydoc test_evaluate_rank_3_no_symmetry()
-template <
-    typename DataType, template <size_t, UpLo, typename> class TensorIndexTypeA,
-    template <size_t, UpLo, typename> class TensorIndexTypeBC,
-    auto& TensorIndexA, auto& TensorIndexB, auto& TensorIndexC, typename Frame>
-void test_evaluate_rank_3_bc_symmetry() {
+template <typename DataType, typename RhsSymmetry,
+          template <size_t, UpLo, typename> class TensorIndexTypeA,
+          template <size_t, UpLo, typename> class TensorIndexTypeBC,
+          auto& TensorIndexA, auto& TensorIndexB, auto& TensorIndexC,
+          typename Frame,
+          Requires<std::is_same_v<RhsSymmetry, Symmetry<2, 1, 1>>> = nullptr>
+void test_evaluate_rank_3() {
 #define DIM_A(data) BOOST_PP_TUPLE_ELEM(0, data)
 #define DIM_BC(data) BOOST_PP_TUPLE_ELEM(1, data)
 
 #define CALL_TEST_EVALUATE_RANK_3_IMPL(_, data)                          \
   test_evaluate_rank_3_impl<                                             \
-      DataType, Symmetry<2, 1, 1>,                                       \
+      DataType, RhsSymmetry,                                             \
       index_list<                                                        \
           TensorIndexTypeA<DIM_A(data), TensorIndexA.valence, Frame>,    \
           TensorIndexTypeBC<DIM_BC(data), TensorIndexB.valence, Frame>,  \
@@ -414,16 +417,17 @@ void test_evaluate_rank_3_bc_symmetry() {
 }
 
 /// \ingroup TestingFrameworkGroup
-/// \copydoc test_evaluate_rank_3_no_symmetry()
-template <
-    typename DataType, template <size_t, UpLo, typename> class TensorIndexType,
-    auto& TensorIndexA, auto& TensorIndexB, auto& TensorIndexC, typename Frame>
-void test_evaluate_rank_3_abc_symmetry() {
+template <typename DataType, typename RhsSymmetry,
+          template <size_t, UpLo, typename> class TensorIndexType,
+          auto& TensorIndexA, auto& TensorIndexB, auto& TensorIndexC,
+          typename Frame,
+          Requires<std::is_same_v<RhsSymmetry, Symmetry<1, 1, 1>>> = nullptr>
+void test_evaluate_rank_3() {
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 
 #define CALL_TEST_EVALUATE_RANK_3_IMPL(_, data)                            \
   test_evaluate_rank_3_impl<                                               \
-      DataType, Symmetry<1, 1, 1>,                                         \
+      DataType, RhsSymmetry,                                               \
       index_list<TensorIndexType<DIM(data), TensorIndexA.valence, Frame>,  \
                  TensorIndexType<DIM(data), TensorIndexB.valence, Frame>,  \
                  TensorIndexType<DIM(data), TensorIndexC.valence, Frame>>, \
