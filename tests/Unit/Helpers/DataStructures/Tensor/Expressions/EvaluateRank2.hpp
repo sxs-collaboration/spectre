@@ -137,10 +137,7 @@ void test_evaluate_rank_2_impl() {
 ///
 /// \tparam DataType the type of data being stored in the Tensors
 /// \tparam RhsSymmetry the ::Symmetry of the RHS Tensor
-/// \tparam TensorIndexTypeA the \ref SpacetimeIndex "TensorIndexType" of the
-/// first index of the RHS Tensor
-/// \tparam TensorIndexTypeB the \ref SpacetimeIndex "TensorIndexType" of the
-/// second index of the RHS Tensor
+/// \tparam RhsIndexTypeList the RHS Tensor's integral list of `IndexType`s
 /// \tparam TensorIndexA the first TensorIndex used on the RHS of the
 /// TensorExpression, e.g. `ti::a`
 /// \tparam TensorIndexB the second TensorIndex used on the RHS of the
@@ -159,8 +156,11 @@ void test_evaluate_rank_2() {
 #define CALL_TEST_EVALUATE_RANK_2_IMPL(_, data)                               \
   test_evaluate_rank_2_impl<                                                  \
       DataType, RhsSymmetry,                                                  \
-      index_list<TensorIndexTypeA<DIM_A(data), TensorIndexA.valence, Frame>,  \
-                 TensorIndexTypeB<DIM_B(data), TensorIndexB.valence, Frame>>, \
+      index_list<                                                             \
+          ::Tensor_detail::TensorIndexType<DIM_A(data), TensorIndexA.valence, \
+                                           Frame, rhs_indextype_a>,           \
+          ::Tensor_detail::TensorIndexType<DIM_B(data), TensorIndexB.valence, \
+                                           Frame, rhs_indextype_b>>,          \
       TensorIndexA, TensorIndexB>();
 
   GENERATE_INSTANTIATIONS(CALL_TEST_EVALUATE_RANK_2_IMPL, (1, 2, 3), (1, 2, 3))
@@ -172,18 +172,23 @@ void test_evaluate_rank_2() {
 }
 
 /// \ingroup TestingFrameworkGroup
-template <typename DataType, typename RhsSymmetry,
-          template <size_t, UpLo, typename> class TensorIndexType,
+template <typename DataType, typename RhsSymmetry, typename RhsIndexTypeList,
           auto& TensorIndexA, auto& TensorIndexB, typename Frame,
           Requires<std::is_same_v<RhsSymmetry, Symmetry<1, 1>>> = nullptr>
 void test_evaluate_rank_2() {
+  constexpr IndexType rhs_indextype_a = tmpl::at_c<RhsIndexTypeList, 0>::value;
+  constexpr IndexType rhs_indextype_b = tmpl::at_c<RhsIndexTypeList, 1>::value;
+
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 
-#define CALL_TEST_EVALUATE_RANK_2_IMPL(_, data)                            \
-  test_evaluate_rank_2_impl<                                               \
-      DataType, RhsSymmetry,                                               \
-      index_list<TensorIndexType<DIM(data), TensorIndexA.valence, Frame>,  \
-                 TensorIndexType<DIM(data), TensorIndexB.valence, Frame>>, \
+#define CALL_TEST_EVALUATE_RANK_2_IMPL(_, data)                             \
+  test_evaluate_rank_2_impl<                                                \
+      DataType, RhsSymmetry,                                                \
+      index_list<                                                           \
+          ::Tensor_detail::TensorIndexType<DIM(data), TensorIndexA.valence, \
+                                           Frame, rhs_indextype_a>,         \
+          ::Tensor_detail::TensorIndexType<DIM(data), TensorIndexB.valence, \
+                                           Frame, rhs_indextype_b>>,        \
       TensorIndexA, TensorIndexB>();
 
   GENERATE_INSTANTIATIONS(CALL_TEST_EVALUATE_RANK_2_IMPL, (1, 2, 3))

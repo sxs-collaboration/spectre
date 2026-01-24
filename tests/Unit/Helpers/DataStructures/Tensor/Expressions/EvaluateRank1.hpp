@@ -72,19 +72,22 @@ void test_evaluate_rank_1_impl() {
 /// dimensions
 ///
 /// \tparam DataType the type of data being stored in the Tensors
-/// \tparam TensorIndexType the Tensors' \ref SpacetimeIndex "TensorIndexType"
+/// \tparam RhsIndexTypeList the RHS Tensor's integral list of `IndexType`s
 /// \tparam TensorIndex the TensorIndex used in the the TensorExpression,
 /// e.g. `ti::a`
 /// \tparam Frame the frame of the tensor index
 template <typename DataType, typename RhsIndexTypeList, auto& TensorIndex,
           typename Frame>
 void test_evaluate_rank_1() {
+  constexpr IndexType rhs_indextype = tmpl::at_c<RhsIndexTypeList, 0>::value;
+
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 
-#define CALL_TEST_EVALUATE_RANK_1_IMPL(_, data)                           \
-  test_evaluate_rank_1_impl<                                              \
-      DataType,                                                           \
-      index_list<TensorIndexType<DIM(data), TensorIndex.valence, Frame>>, \
+#define CALL_TEST_EVALUATE_RANK_1_IMPL(_, data)                   \
+  test_evaluate_rank_1_impl<                                      \
+      DataType,                                                   \
+      index_list<::Tensor_detail::TensorIndexType<                \
+          DIM(data), TensorIndex.valence, Frame, rhs_indextype>>, \
       TensorIndex>();
 
   GENERATE_INSTANTIATIONS(CALL_TEST_EVALUATE_RANK_1_IMPL, (1, 2, 3))
