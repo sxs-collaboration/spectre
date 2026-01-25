@@ -165,6 +165,7 @@ set(LIBRARY_SOURCES
   Test_DomainDiagnosticInfo.cpp
   Test_ExitCode.cpp
   Test_GlobalCacheDataBox.cpp
+  Test_FifoCache.cpp
   Test_InboxInserters.cpp
   Test_InitializationTag.cpp
   Test_MemoryMonitor.cpp

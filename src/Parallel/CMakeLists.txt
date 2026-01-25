@@ -37,6 +37,7 @@ spectre_target_headers(
   DomainDiagnosticInfo.hpp
   ElementRegistration.hpp
   ExitCode.hpp
+  FifoCache.hpp
   GetSection.hpp
   GlobalCache.hpp
   GlobalCacheDeclare.hpp
