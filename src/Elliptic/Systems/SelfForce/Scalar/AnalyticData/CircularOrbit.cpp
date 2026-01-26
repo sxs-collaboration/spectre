@@ -1,7 +1,7 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "PointwiseFunctions/AnalyticData/SelfForce/Scalar/CircularOrbit.hpp"
+#include "Elliptic/Systems/SelfForce/Scalar/AnalyticData/CircularOrbit.hpp"
 
 #include <complex>
 #include <cstddef>

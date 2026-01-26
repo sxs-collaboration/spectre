@@ -30,5 +30,6 @@ target_link_libraries(
   )
 
 add_subdirectory(AmrCriteria)
+add_subdirectory(AnalyticData)
 add_subdirectory(BoundaryConditions)
 add_subdirectory(Events)

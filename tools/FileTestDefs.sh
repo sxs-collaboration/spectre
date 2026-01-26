@@ -290,6 +290,8 @@ long_lines() {
               'docs/Tutorials/CCE.md' \
               'docs/Tutorials/ParallelExecutable/Tutorials.md' \
               'docs/config/MathJax.js' \
+              'CircularOrbitCoeffs.cpp$' \
+              'CircularOrbitConvertEffsource.cpp$' \
               'eos.*' \
               'RotatingStarId.dat$' \
               'RotatingStarId_Hybrid.dat$' \

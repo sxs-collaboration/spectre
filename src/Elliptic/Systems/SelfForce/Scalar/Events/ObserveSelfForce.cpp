@@ -8,10 +8,10 @@
 
 #include "DataStructures/ComplexDataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "Elliptic/Systems/SelfForce/Scalar/AnalyticData/CircularOrbit.hpp"
 #include "NumericalAlgorithms/Interpolation/IrregularInterpolant.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
-#include "PointwiseFunctions/AnalyticData/SelfForce/Scalar/CircularOrbit.hpp"
 
 namespace ScalarSelfForce::Events::detail {
 

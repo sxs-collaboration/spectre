@@ -11,8 +11,7 @@
 #include "Domain/BlockLogicalCoordinates.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/ElementLogicalCoordinates.hpp"
-#include "PointwiseFunctions/AnalyticData/SelfForce/Scalar/CircularOrbit.hpp"
-#include "PointwiseFunctions/InitialDataUtilities/Background.hpp"
+#include "Elliptic/Systems/SelfForce/Scalar/AnalyticData/CircularOrbit.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/MakeArray.hpp"
 
