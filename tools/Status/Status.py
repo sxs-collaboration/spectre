@@ -67,7 +67,32 @@ def fetch_job_data(
     try:
         completed_process.check_returncode()
     except subprocess.CalledProcessError as err:
-        raise ValueError(completed_process.stderr) from err
+        # Remove invalid fields and retry
+        match = re.search(
+            r'Invalid field requested: "(.*)"',
+            completed_process.stderr,
+        )
+        if match:
+            invalid_field = match.group(1)
+            logger.warning(
+                f"Field '{invalid_field}' is not valid for 'sacct --format'."
+                " Removing it and retrying. Some functionality may be"
+                " unavailable. Consider configuring Slurm to support this"
+                " field."
+            )
+            fields.remove(invalid_field)
+            job_data = fetch_job_data(
+                fields,
+                user=user,
+                allusers=allusers,
+                state=state,
+                starttime=starttime,
+                jobid=jobid,
+            )
+            job_data[invalid_field] = None
+            return job_data
+        else:
+            raise ValueError(completed_process.stderr) from err
     job_data = pd.read_table(
         StringIO(completed_process.stdout),
         sep="|",
