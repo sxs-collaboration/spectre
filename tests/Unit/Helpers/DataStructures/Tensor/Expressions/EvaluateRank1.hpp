@@ -68,31 +68,32 @@ void test_evaluate_rank_1_impl() {
 }
 
 /// \ingroup TestingFrameworkGroup
-/// \brief Iterate testing of evaluating single rank 1 Tensors on multiple Frame
-/// types and dimensions
+/// \brief Iterate testing of evaluating single rank 1 Tensors on multiple
+/// dimensions
 ///
 /// \tparam DataType the type of data being stored in the Tensors
-/// \tparam TensorIndexType the Tensors' \ref SpacetimeIndex "TensorIndexType"
-/// \tparam Valence the valence of the Tensors' index
+/// \tparam RhsIndexTypeList the RHS Tensor's integral list of `IndexType`s
 /// \tparam TensorIndex the TensorIndex used in the the TensorExpression,
 /// e.g. `ti::a`
-template <typename DataType,
-          template <size_t, UpLo, typename> class TensorIndexType, UpLo Valence,
-          auto& TensorIndex>
+/// \tparam Frame the frame of the tensor index
+template <typename DataType, typename RhsIndexTypeList, auto& TensorIndex,
+          typename Frame>
 void test_evaluate_rank_1() {
-#define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
-#define FRAME(data) BOOST_PP_TUPLE_ELEM(1, data)
+  constexpr IndexType rhs_indextype = tmpl::at_c<RhsIndexTypeList, 0>::value;
 
-#define CALL_TEST_EVALUATE_RANK_1_IMPL(_, data)                               \
-  test_evaluate_rank_1_impl<                                                  \
-      DataType, index_list<TensorIndexType<DIM(data), Valence, FRAME(data)>>, \
+#define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
+
+#define CALL_TEST_EVALUATE_RANK_1_IMPL(_, data)                   \
+  test_evaluate_rank_1_impl<                                      \
+      DataType,                                                   \
+      index_list<::Tensor_detail::TensorIndexType<                \
+          DIM(data), TensorIndex.valence, Frame, rhs_indextype>>, \
       TensorIndex>();
 
-  GENERATE_INSTANTIATIONS(CALL_TEST_EVALUATE_RANK_1_IMPL, (1, 2, 3),
-                          (Frame::Grid, Frame::Inertial))
+  GENERATE_INSTANTIATIONS(CALL_TEST_EVALUATE_RANK_1_IMPL, (1, 2, 3))
 
 #undef CALL_TEST_EVALUATE_RANK_1_IMPL
-#undef FRAME
+
 #undef DIM
 }
 
