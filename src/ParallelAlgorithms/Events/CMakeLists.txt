@@ -27,6 +27,7 @@ spectre_target_headers(
   ObserveDataBox.hpp
   ObserveAtExtremum.hpp
   ObserveFields.hpp
+  ObserveModalFields.hpp
   ObserveNorms.hpp
   ObserveTimeStep.hpp
   ObserveTimeStep.tpp
