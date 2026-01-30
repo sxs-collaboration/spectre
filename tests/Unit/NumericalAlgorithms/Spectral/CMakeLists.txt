@@ -22,6 +22,7 @@ set(LIBRARY_SOURCES
   Test_IndefiniteIntegral.cpp
   Test_IntegrationMatrix.cpp
   Test_InterpolationMatrix.cpp
+  Test_Legendre.cpp
   Test_LegendreGauss.cpp
   Test_LegendreGaussLobatto.cpp
   Test_LinearFilterMatrix.cpp
