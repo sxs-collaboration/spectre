@@ -7,6 +7,8 @@ set(LIBRARY_SOURCES
   Test_Christoffel.cpp
   Test_ComputeGhQuantities.cpp
   Test_ComputeSpacetimeQuantities.cpp
+  Test_CurvatureScalarComputeTags.cpp
+  Test_CurvatureScalars.cpp
   Test_GeodesicAcceleration.cpp
   Test_GeodesicEquation.cpp
   Test_InterfaceNullNormal.cpp
