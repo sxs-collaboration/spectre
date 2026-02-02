@@ -288,7 +288,8 @@ class EvolutionStatus(ExecutableStatus):
         )
         st.plotly_chart(fig)
         run_speed = (
-            time_steps.index.diff() / time_steps["Maximum Walltime"].diff()
+            time_steps.index.to_series().diff()
+            / time_steps["Maximum Walltime"].diff()
         ) * 3600
         avg_run_speed = run_speed.rolling(30, min_periods=1).mean()
 
