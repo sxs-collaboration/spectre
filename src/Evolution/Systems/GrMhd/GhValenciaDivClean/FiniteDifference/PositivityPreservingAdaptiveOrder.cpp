@@ -45,6 +45,7 @@
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
+#include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 
@@ -257,10 +258,6 @@ void PositivityPreservingAdaptiveOrderPrim<System>::reconstruct(
            : nullptr));
 }
 
-// The current implementation does not use positivity-preserving
-// reconstruction at Dg/Subcell boundary. PP should only be required
-// at shocks / surfaces, which should be within the subcell region
-// if the Dg/Subcell code is performing as expected.
 template <typename System>
 template <size_t ThermodynamicDim, typename TagsList>
 void PositivityPreservingAdaptiveOrderPrim<System>::reconstruct_fd_neighbor(
@@ -276,13 +273,55 @@ void PositivityPreservingAdaptiveOrderPrim<System>::reconstruct_fd_neighbor(
     const VariableFixing::FixToAtmosphere<dim>& fix_to_atmosphere,
     const Direction<dim> direction_to_reconstruct) const {
   using ::VariableFixing::FixReconstructedStateToAtmosphere;
-  using prim_tags_for_reconstruction =
-      grmhd::GhValenciaDivClean::Tags::primitive_grmhd_reconstruction_tags;
   using all_tags_for_reconstruction = grmhd::GhValenciaDivClean::Tags::
       primitive_grmhd_and_spacetime_reconstruction_tags;
-  reconstruct_fd_neighbor_work<Tags::spacetime_reconstruction_tags,
-                               prim_tags_for_reconstruction,
+  reconstruct_fd_neighbor_work<tmpl::list<>, positivity_preserving_tags,
                                all_tags_for_reconstruction>(
+      vars_on_face,
+      [this](const auto tensor_component_on_face_ptr,
+             const auto& tensor_component_volume,
+             const auto& tensor_component_neighbor,
+             const Index<dim>& subcell_extents,
+             const Index<dim>& ghost_data_extents,
+             const Direction<dim>& local_direction_to_reconstruct) {
+        pp_reconstruct_lower_neighbor_(
+            tensor_component_on_face_ptr, tensor_component_volume,
+            tensor_component_neighbor, subcell_extents, ghost_data_extents,
+            local_direction_to_reconstruct, four_to_the_alpha_5_,
+            six_to_the_alpha_7_.value_or(
+                std::numeric_limits<double>::signaling_NaN()),
+            eight_to_the_alpha_9_.value_or(
+                std::numeric_limits<double>::signaling_NaN()));
+      },
+      [](auto&&...) {
+        ERROR("Spacetime reconstruction should not happen here");
+      },
+      [this](const auto tensor_component_on_face_ptr,
+             const auto& tensor_component_volume,
+             const auto& tensor_component_neighbor,
+             const Index<dim>& subcell_extents,
+             const Index<dim>& ghost_data_extents,
+             const Direction<dim>& local_direction_to_reconstruct) {
+        pp_reconstruct_upper_neighbor_(
+            tensor_component_on_face_ptr, tensor_component_volume,
+            tensor_component_neighbor, subcell_extents, ghost_data_extents,
+            local_direction_to_reconstruct, four_to_the_alpha_5_,
+            six_to_the_alpha_7_.value_or(
+                std::numeric_limits<double>::signaling_NaN()),
+            eight_to_the_alpha_9_.value_or(
+                std::numeric_limits<double>::signaling_NaN()));
+      },
+      [](auto&&...) {
+        ERROR("Spacetime reconstruction should not happen here");
+      },
+      [](auto&&...) {
+        ERROR("Spacetime reconstruction should not happen here");
+      },
+      subcell_volume_prims, subcell_volume_spacetime_metric, eos, element,
+      ghost_data, subcell_mesh, direction_to_reconstruct, ghost_zone_size(),
+      false, reconstruct_rho_times_temperature(), nullptr);
+  reconstruct_fd_neighbor_work<Tags::spacetime_reconstruction_tags,
+                               non_positive_tags, all_tags_for_reconstruction>(
       vars_on_face,
       [this](const auto tensor_component_on_face_ptr,
              const auto& tensor_component_volume,
