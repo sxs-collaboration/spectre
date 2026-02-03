@@ -34,9 +34,5 @@
                              SINGLE_ARG(className))     // NOLINT
 
 /// Wraps the Charm++ macro, see the Charm++ documentation
-#define WRAPPED_PUPable_decl(className) \
-  PUPable_decl(SINGLE_ARG(className))  // NOLINT
-
-/// Wraps the Charm++ macro, see the Charm++ documentation
 #define WRAPPED_PUPable_abstract(className) \
   PUPable_abstract(SINGLE_ARG(className))  // NOLINT

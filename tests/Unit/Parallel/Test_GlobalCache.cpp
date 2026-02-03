@@ -215,14 +215,13 @@ struct TestMetavariables {
 // PerformAlgorithmCallback because they can be mocked.
 class UseCkCallbackAsCallback : public Parallel::Callback {
  public:
-  WRAPPED_PUPable_decl(UseCkCallbackAsCallback);
+  WRAPPED_PUPable_decl_template(UseCkCallbackAsCallback);
   UseCkCallbackAsCallback() = default;
   explicit UseCkCallbackAsCallback(CkMigrateMessage* msg)
       : Parallel::Callback(msg) {}
   explicit UseCkCallbackAsCallback(const CkCallback& callback,
                                    const size_t index)
       : callback_(callback), index_(index) {}
-  using PUP::able::register_constructor;
   void invoke() override { callback_.send(nullptr); }
   void pup(PUP::er& p) override { p | callback_; }
   // We shouldn't be pupping so registration doesn't matter
@@ -621,7 +620,7 @@ void Test_GlobalCache<Metavariables>::exit() {
 // --------- registration stuff below -------
 
 // clang-format off
-PUPable_def(UseCkCallbackAsCallback)
+PUP::able::PUP_ID UseCkCallbackAsCallback::my_PUP_ID = 0;
 // clang-tidy: possibly throwing constructor static storage
 // clang-tidy: false positive: redundant declaration
 PUP::able::PUP_ID Triangle::my_PUP_ID = 0;  // NOLINT
