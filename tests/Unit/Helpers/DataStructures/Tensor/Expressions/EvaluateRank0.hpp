@@ -3,11 +3,17 @@
 
 #pragma once
 
-#include <type_traits>
+#include <limits>
+#include <random>
 
 #include "DataStructures/Tags/TempTensor.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
+#include "DataStructures/VectorImpl.hpp"
+#include "Framework/TestHelpers.hpp"
+#include "Helpers/DataStructures/MakeWithRandomValues.hpp"
+#include "Helpers/DataStructures/Tensor/Expressions/ComponentPlaceholder.hpp"
+#include "Helpers/DataStructures/Tensor/Expressions/TestHelpers.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -18,29 +24,38 @@ namespace TestHelpers::tenex {
 /// single rank 0 tensor correctly assigns the data to the evaluated left hand
 /// side tensor
 ///
-/// \param data the data being stored in the Tensors
+/// \tparam DataType the type of data being stored in the Tensors
 template <typename DataType>
-void test_evaluate_rank_0(const DataType& data) {
-  const Tensor<DataType> R{{{data}}};
+void test_evaluate_rank_0() {
+  MAKE_GENERATOR(generator);
+  std::uniform_real_distribution<> distribution(-5.0, 5.0);
+  const size_t used_for_size = 3;
+  const auto R = make_with_random_values<Tensor<DataType>>(
+      make_not_null(&generator), distribution, used_for_size);
 
-  // Use explicit type (vs auto) so the compiler checks the return type of
-  // `evaluate`
-  const Tensor<DataType> L_returned = ::tenex::evaluate(R());
-  Tensor<DataType> L_filled{};
-  ::tenex::evaluate(make_not_null(&L_filled), R());
+  Scalar<DataType> L(used_for_size);
+  // component placeholder is used to detect if LHS scalar was not modified
+  std::fill(L.begin(), L.end(), component_placeholder_value<DataType>::value);
+  call_evaluate<true>(make_not_null(&L), R());
 
-  CHECK(L_returned.get() == data);
-  CHECK(L_filled.get() == data);
+  CHECK(L == R);  // check LHS evaluated correctly
 
-  // Test with TempTensor for LHS tensor
-  if constexpr (not std::is_same_v<DataType, double>) {
-    Variables<tmpl::list<::Tags::TempTensor<1, Tensor<DataType>>>> L_var{
-        data.size()};
-    Tensor<DataType>& L_temp =
-        get<::Tags::TempTensor<1, Tensor<DataType>>>(L_var);
-    ::tenex::evaluate(make_not_null(&L_temp), R());
+  // Test with Variables
+  if constexpr (is_derived_of_vector_impl_v<DataType>) {
+    Variables<tmpl::list<::Tags::TempTensor<0, Scalar<DataType>>,
+                         ::Tags::TempTensor<1, Scalar<DataType>>>>
+        vars(used_for_size, std::numeric_limits<double>::signaling_NaN());
 
-    CHECK(L_temp.get() == data);
+    Scalar<DataType>& R_temp =
+        get<::Tags::TempTensor<0, Scalar<DataType>>>(vars);
+    get(R_temp) = get(R);
+
+    Scalar<DataType>& L_temp =
+        get<::Tags::TempTensor<1, Scalar<DataType>>>(vars);
+    call_evaluate<true>(make_not_null(&L_temp), R());
+
+    CHECK(R_temp == R);  // check RHS wasn't modified
+    CHECK(L_temp == R);  // check LHS evaluated correctly
   }
 }
 

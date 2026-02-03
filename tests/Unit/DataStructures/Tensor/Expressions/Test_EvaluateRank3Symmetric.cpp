@@ -27,49 +27,49 @@ SPECTRE_TEST_CASE(
     "[DataStructures][Unit]") {
   // Rank 3: double; first and second indices symmetric
   TestHelpers::tenex::test_evaluate_rank_3<
-      double, Symmetry<2, 2, 1>,
+      true, double, Symmetry<2, 2, 1>,
       indextype_list<spacetime_index, spacetime_index, spacetime_index>, ti::b,
       ti::a, ti::C, Frame::Inertial>();
 
   // Rank 3: double; first and third indices symmetric
   TestHelpers::tenex::test_evaluate_rank_3<
-      double, Symmetry<1, 2, 1>,
+      true, double, Symmetry<1, 2, 1>,
       indextype_list<spatial_index, spacetime_index, spatial_index>, ti::i,
       ti::f, ti::j, Frame::Grid>();
 
   // Rank 3: double; second and third indices symmetric
   TestHelpers::tenex::test_evaluate_rank_3<
-      double, Symmetry<2, 1, 1>,
+      true, double, Symmetry<2, 1, 1>,
       indextype_list<spacetime_index, spatial_index, spatial_index>, ti::d,
       ti::J, ti::I, Frame::Distorted>();
 
   // Rank 3: double; symmetric
   TestHelpers::tenex::test_evaluate_rank_3<
-      double, Symmetry<1, 1, 1>,
+      true, double, Symmetry<1, 1, 1>,
       indextype_list<spacetime_index, spacetime_index, spacetime_index>, ti::f,
       ti::d, ti::a, Frame::Inertial>();
 
   // Rank 3: DataVector; first and second indices symmetric
   TestHelpers::tenex::test_evaluate_rank_3<
-      DataVector, Symmetry<2, 2, 1>,
+      true, DataVector, Symmetry<2, 2, 1>,
       indextype_list<spacetime_index, spacetime_index, spacetime_index>, ti::b,
       ti::a, ti::C, Frame::Grid>();
 
   // Rank 3: DataVector; first and third indices symmetric
   TestHelpers::tenex::test_evaluate_rank_3<
-      DataVector, Symmetry<1, 2, 1>,
+      true, DataVector, Symmetry<1, 2, 1>,
       indextype_list<spatial_index, spacetime_index, spatial_index>, ti::i,
       ti::f, ti::j, Frame::Distorted>();
 
   // Rank 3: DataVector; second and third indices symmetric
   TestHelpers::tenex::test_evaluate_rank_3<
-      DataVector, Symmetry<2, 1, 1>,
+      true, DataVector, Symmetry<2, 1, 1>,
       indextype_list<spacetime_index, spatial_index, spatial_index>, ti::d,
       ti::J, ti::I, Frame::Inertial>();
 
   // Rank 3: DataVector; symmetric
   TestHelpers::tenex::test_evaluate_rank_3<
-      DataVector, Symmetry<1, 1, 1>,
+      true, DataVector, Symmetry<1, 1, 1>,
       indextype_list<spacetime_index, spacetime_index, spacetime_index>, ti::f,
       ti::d, ti::a, Frame::Grid>();
 }

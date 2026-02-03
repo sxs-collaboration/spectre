@@ -27,13 +27,13 @@ SPECTRE_TEST_CASE(
     "[DataStructures][Unit]") {
   // Rank 3: double; nonsymmetric
   TestHelpers::tenex::test_evaluate_rank_3<
-      double, Symmetry<3, 2, 1>,
+      true, double, Symmetry<3, 2, 1>,
       indextype_list<spacetime_index, spatial_index, spacetime_index>, ti::D,
       ti::j, ti::B, Frame::Inertial>();
 
   // Rank 3: DataVector; nonsymmetric
   TestHelpers::tenex::test_evaluate_rank_3<
-      DataVector, Symmetry<3, 2, 1>,
+      true, DataVector, Symmetry<3, 2, 1>,
       indextype_list<spacetime_index, spatial_index, spacetime_index>, ti::D,
       ti::j, ti::B, Frame::Grid>();
 }

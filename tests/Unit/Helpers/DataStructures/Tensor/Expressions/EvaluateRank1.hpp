@@ -3,18 +3,22 @@
 
 #pragma once
 
+#include <algorithm>
 #include <cstddef>
-#include <iterator>
-#include <numeric>
-#include <type_traits>
+#include <random>
+#include <utility>
 
 #include "DataStructures/Tags/TempTensor.hpp"
-#include "DataStructures/Tensor/IndexType.hpp"
-#include "DataStructures/Tensor/Symmetry.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
+#include "DataStructures/VectorImpl.hpp"
+#include "Framework/TestHelpers.hpp"
+#include "Helpers/DataStructures/MakeWithRandomValues.hpp"
+#include "Helpers/DataStructures/Tensor/Expressions/ComponentPlaceholder.hpp"
+#include "Helpers/DataStructures/Tensor/Expressions/TestHelpers.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/MakeWithValue.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace TestHelpers::tenex {
@@ -24,46 +28,81 @@ namespace TestHelpers::tenex {
 /// single rank 1 tensor correctly assigns the data to the evaluated left hand
 /// side tensor
 ///
+/// \details See `test_evaluate_rank_3_impl` for general details.
+///
+/// \tparam ReturnLhsTensor whether to test tensor expression evaluation by
+/// returning the result tensor or not, which instead tests evaluation by
+/// assigning to the result tensor passed in as an argument
 /// \tparam DataType the type of data being stored in the Tensors
-/// \tparam TensorIndexTypeList the Tensors' typelist containing their
-/// \ref SpacetimeIndex "TensorIndexType"
+/// \tparam RhsTensorIndexTypeList the RHS Tensor's typelist of
+/// \ref SpacetimeIndex "TensorIndexType"s
 /// \tparam TensorIndex the TensorIndex used in the the TensorExpression,
 /// e.g. `ti::a`
-template <typename DataType, typename TensorIndexTypeList, auto& TensorIndex>
+/// \tparam LhsTensorIndexTypeList the LHS Tensor's typelist of
+/// \ref SpacetimeIndex "TensorIndexType"s
+template <bool ReturnLhsTensor, typename DataType,
+          typename RhsTensorIndexTypeList, auto& TensorIndex,
+          typename LhsTensorIndexTypeList = RhsTensorIndexTypeList>
 void test_evaluate_rank_1_impl() {
-  const size_t used_for_size = 5;
-  using tensor_type = Tensor<DataType, Symmetry<1>, TensorIndexTypeList>;
-  tensor_type R_a(used_for_size);
-  std::iota(R_a.begin(), R_a.end(), 0.0);
+  using symmetry = Symmetry<1>;
+  using L_a_type = Tensor<DataType, symmetry, LhsTensorIndexTypeList>;
+  using R_a_type = Tensor<DataType, symmetry, RhsTensorIndexTypeList>;
 
-  // L_a = R_a
-  // Use explicit type (vs auto) so the compiler checks return type of
-  // `evaluate`
-  const tensor_type L_a_returned =
-      ::tenex::evaluate<TensorIndex>(R_a(TensorIndex));
-  tensor_type L_a_filled{};
-  ::tenex::evaluate<TensorIndex>(make_not_null(&L_a_filled), R_a(TensorIndex));
+  MAKE_GENERATOR(generator);
+  std::uniform_real_distribution<> distribution(-5.0, 5.0);
+  const size_t used_for_size = 3;
+  const auto R_a = make_with_random_values<R_a_type>(
+      make_not_null(&generator), distribution, used_for_size);
+  auto expected_L_a =
+      ReturnLhsTensor
+          ? L_a_type{}
+          : make_with_value<L_a_type>(
+                used_for_size, component_placeholder_value<DataType>::value);
 
-  const size_t dim = tmpl::at_c<TensorIndexTypeList, 0>::dim;
+  using lhs_tensorindextype = tmpl::at_c<LhsTensorIndexTypeList, 0>;
+  using rhs_tensorindextype = tmpl::at_c<RhsTensorIndexTypeList, 0>;
 
-  // For L_a = R_a, check that L_i == R_i
-  for (size_t i = 0; i < dim; ++i) {
-    CHECK(L_a_returned.get(i) == R_a.get(i));
-    CHECK(L_a_filled.get(i) == R_a.get(i));
+  const std::pair<size_t, size_t> lhs_index_value_range =
+      get_index_value_range<lhs_tensorindextype, TensorIndex>();
+  const std::pair<size_t, size_t> rhs_index_value_range =
+      get_index_value_range<rhs_tensorindextype, TensorIndex>();
+
+  for (size_t lhs_a = lhs_index_value_range.first,
+              rhs_a = rhs_index_value_range.first;
+       lhs_a <= lhs_index_value_range.second; lhs_a++, rhs_a++) {
+    expected_L_a.get(lhs_a) = R_a.get(rhs_a);
   }
 
-  // Test with TempTensor for LHS tensor
-  if constexpr (not std::is_same_v<DataType, double>) {
-    // L_a = R_a
-    Variables<tmpl::list<::Tags::TempTensor<1, tensor_type>>> L_a_var{
-        used_for_size};
-    tensor_type& L_a_temp = get<::Tags::TempTensor<1, tensor_type>>(L_a_var);
-    ::tenex::evaluate<TensorIndex>(make_not_null(&L_a_temp), R_a(TensorIndex));
+  // L_a = R_a
+  L_a_type L_a(used_for_size);
+  // component placeholder is used to detect which components have incorrectly
+  // or correctly (in the case of using spatial or time indices for spacetime
+  // indices) not been modified by evaluation of the RHS expression
+  std::fill(L_a.begin(), L_a.end(),
+            component_placeholder_value<DataType>::value);
+  call_evaluate<ReturnLhsTensor, TensorIndex>(make_not_null(&L_a),
+                                              R_a(TensorIndex));
 
-    // For L_a = R_a, check that L_i == R_i
-    for (size_t i = 0; i < dim; ++i) {
-      CHECK(L_a_temp.get(i) == R_a.get(i));
-    }
+  CHECK(L_a == expected_L_a);  // check LHS evaluated correctly
+
+  // Test with Variables
+  if constexpr (is_derived_of_vector_impl_v<DataType>) {
+    Variables<tmpl::list<::Tags::TempTensor<0, R_a_type>,
+                         ::Tags::TempTensor<1, L_a_type>>>
+        vars(used_for_size, std::numeric_limits<double>::signaling_NaN());
+
+    R_a_type& R_a_temp = get<::Tags::TempTensor<0, R_a_type>>(vars);
+    R_a_temp = R_a;
+
+    // L_a = R_a
+    L_a_type& L_a_temp = get<::Tags::TempTensor<1, L_a_type>>(vars);
+    std::fill(L_a_temp.begin(), L_a_temp.end(),
+              component_placeholder_value<DataType>::value);
+    call_evaluate<ReturnLhsTensor, TensorIndex>(make_not_null(&L_a_temp),
+                                                R_a(TensorIndex));
+
+    CHECK(R_a_temp == R_a);           // check RHS wasn't modified
+    CHECK(L_a_temp == expected_L_a);  // check LHS evaluated correctly
   }
 }
 
@@ -71,24 +110,34 @@ void test_evaluate_rank_1_impl() {
 /// \brief Iterate testing of evaluating single rank 1 Tensors on multiple
 /// dimensions
 ///
+/// \details See `test_evaluate_rank_3_impl` for general details.
+///
+/// \tparam ReturnLhsTensor whether to test tensor expression evaluation by
+/// returning the result tensor or not, which instead tests evaluation by
+/// assigning to the result tensor passed in as an argument
 /// \tparam DataType the type of data being stored in the Tensors
 /// \tparam RhsIndexTypeList the RHS Tensor's integral list of `IndexType`s
 /// \tparam TensorIndex the TensorIndex used in the the TensorExpression,
 /// e.g. `ti::a`
 /// \tparam Frame the frame of the tensor index
-template <typename DataType, typename RhsIndexTypeList, auto& TensorIndex,
-          typename Frame>
+/// \tparam LhsIndexTypeList the LHS Tensor's integral list of `IndexType`s
+template <bool ReturnLhsTensor, typename DataType, typename RhsIndexTypeList,
+          auto& TensorIndex, typename Frame,
+          typename LhsIndexTypeList = RhsIndexTypeList>
 void test_evaluate_rank_1() {
   constexpr IndexType rhs_indextype = tmpl::at_c<RhsIndexTypeList, 0>::value;
+  constexpr IndexType lhs_indextype = tmpl::at_c<LhsIndexTypeList, 0>::value;
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 
 #define CALL_TEST_EVALUATE_RANK_1_IMPL(_, data)                   \
   test_evaluate_rank_1_impl<                                      \
-      DataType,                                                   \
+      ReturnLhsTensor, DataType,                                  \
       index_list<::Tensor_detail::TensorIndexType<                \
           DIM(data), TensorIndex.valence, Frame, rhs_indextype>>, \
-      TensorIndex>();
+      TensorIndex,                                                \
+      index_list<::Tensor_detail::TensorIndexType<                \
+          DIM(data), TensorIndex.valence, Frame, lhs_indextype>>>();
 
   GENERATE_INSTANTIATIONS(CALL_TEST_EVALUATE_RANK_1_IMPL, (1, 2, 3))
 
