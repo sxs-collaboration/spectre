@@ -99,6 +99,7 @@ EventsAndTriggersAtSlabs:
           SubfileName: Fields
           VariablesToObserve: [Psi]
           InterpolateToMesh: None
+          ProjectToMesh: None
           CoordinatesFloatingPointType: Double
           FloatingPointTypes: [Double]
           BlocksToObserve: All

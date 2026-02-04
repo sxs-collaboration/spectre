@@ -274,6 +274,7 @@ EventsAndTriggersAtIterations:
             - MomentumConstraint
             - RadiallyCompressedCoordinates
           InterpolateToMesh: None
+          ProjectToMesh: None
           CoordinatesFloatingPointType: Double
           FloatingPointTypes: [Double]
           BlocksToObserve: All

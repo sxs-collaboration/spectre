@@ -4,6 +4,7 @@
 #pragma once
 
 #include <cstddef>
+#include <optional>
 #include <pup.h>
 #include <string>
 #include <type_traits>
@@ -97,11 +98,12 @@ class FindCommonHorizon<
       const std::vector<std::string>& variables_to_observe,
       std::optional<std::vector<std::string>> active_block_or_block_groups = {},
       std::optional<Mesh<VolumeDim>> interpolation_mesh = {},
+      std::optional<Mesh<VolumeDim>> projection_mesh = {},
       const Options::Context& context = {})
       : observe_fields_event_(subfile_name, coordinates_floating_point_type,
                               floating_point_types, variables_to_observe,
                               active_block_or_block_groups, interpolation_mesh,
-                              {name()}, context),
+                              projection_mesh, std::nullopt, context),
         interpolate_event_(subfile_name) {}
 
   using compute_tags_for_observation_box = tmpl::remove_duplicates<tmpl::append<
@@ -219,11 +221,12 @@ class FindCommonHorizon<HorizonMetavars, tmpl::list<Tensors...>,
       const std::vector<std::string>& variables_to_observe,
       std::optional<std::vector<std::string>> active_block_or_block_groups = {},
       std::optional<Mesh<3>> interpolation_mesh = {},
+      std::optional<Mesh<3>> projection_mesh = {},
       const Options::Context& context = {})
       : observe_fields_event_(subfile_name, coordinates_floating_point_type,
                               floating_point_types, variables_to_observe,
                               active_block_or_block_groups, interpolation_mesh,
-                              {name()}, context),
+                              projection_mesh, std::nullopt, context),
         horizon_find_event_(subfile_name) {}
 
   using compute_tags_for_observation_box = tmpl::remove_duplicates<tmpl::append<

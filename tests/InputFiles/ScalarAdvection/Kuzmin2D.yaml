@@ -87,6 +87,7 @@ EventsAndTriggersAtSlabs:
           SubfileName: VolumeData
           VariablesToObserve: [U, TciStatus]
           InterpolateToMesh: None
+          ProjectToMesh: None
           CoordinatesFloatingPointType: Double
           FloatingPointTypes: [Float, Float]
           BlocksToObserve: All

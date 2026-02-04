@@ -388,6 +388,7 @@ EventsAndTriggersAtSlabs:
             - SpacetimeMetric
             - DetSpatialMetric
           InterpolateToMesh: None
+          ProjectToMesh: None
           CoordinatesFloatingPointType: Float
           FloatingPointTypes: [Float]
           BlocksToObserve: All
@@ -401,6 +402,7 @@ EventsAndTriggersAtSlabs:
             - MagneticField
             - DivergenceCleaningField
           InterpolateToMesh: None
+          ProjectToMesh: None
           CoordinatesFloatingPointType: Float
           FloatingPointTypes: [Float]
           BlocksToObserve: [ObjectA, ObjectB]
@@ -422,6 +424,7 @@ EventsAndTriggersAtSlabs:
             - PointwiseL2Norm(ThreeIndexConstraint)
             - TciStatus
           InterpolateToMesh: None
+          ProjectToMesh: None
           CoordinatesFloatingPointType: Float
           FloatingPointTypes: [Float]
           BlocksToObserve: All
@@ -478,6 +481,7 @@ EventsRunAtCleanup:
           - PointwiseL2Norm(ThreeIndexConstraint)
           - TciStatus
         InterpolateToMesh: None
+        ProjectToMesh: None
         CoordinatesFloatingPointType: Double
         FloatingPointTypes: [Double]
         BlocksToObserve: All

@@ -15,6 +15,7 @@
 #include <utility>
 #include <vector>
 
+#include "DataStructures/ApplyMatrices.hpp"
 #include "DataStructures/DataBox/ObservationBox.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/DataBox/TagName.hpp"
@@ -30,6 +31,8 @@
 #include "IO/Observer/Tags.hpp"
 #include "IO/Observer/VolumeActions.hpp"
 #include "NumericalAlgorithms/Interpolation/RegularGridInterpolant.hpp"
+#include "NumericalAlgorithms/Spectral/Mesh.hpp"
+#include "NumericalAlgorithms/Spectral/Projection.hpp"
 #include "Options/Auto.hpp"
 #include "Options/String.hpp"
 #include "Parallel/ArrayComponentId.hpp"
@@ -42,6 +45,7 @@
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
 #include "Utilities/Algorithm.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
+#include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Literals.hpp"
 #include "Utilities/MakeString.hpp"
 #include "Utilities/Numeric.hpp"
@@ -133,6 +137,17 @@ class ObserveFields<VolumeDim, tmpl::list<Tensors...>,
         "on a new mesh.";
   };
 
+  struct ProjectToMesh {
+    using type = Options::Auto<Mesh<VolumeDim>, Options::AutoLabel::None>;
+    static constexpr Options::String help =
+        "An optional mesh to which the variables are projected. This mesh "
+        "must use a Legendre basis (Gauss or Gauss-Lobatto quadrature). This "
+        "option is mutually exclusive with InterpolateToMesh. Projection "
+        "truncates the fields in modal space but works only between two "
+        "Legendre meshes, whereas interpolation works with any mesh but is not "
+        "a clean truncation and therefore picks up an aliasing error.";
+  };
+
   /// The floating point type/precision with which to write the data to disk.
   ///
   /// Must be specified once for all data or individually for each variable
@@ -167,9 +182,9 @@ class ObserveFields<VolumeDim, tmpl::list<Tensors...>,
         "A list of block and group names on which to observe."};
   };
 
-  using options =
-      tmpl::list<SubfileName, CoordinatesFloatingPointType, FloatingPointTypes,
-                 VariablesToObserve, BlocksToObserve, InterpolateToMesh>;
+  using options = tmpl::list<SubfileName, CoordinatesFloatingPointType,
+                             FloatingPointTypes, VariablesToObserve,
+                             BlocksToObserve, InterpolateToMesh, ProjectToMesh>;
 
   static constexpr Options::String help =
       "Observe volume tensor fields.\n"
@@ -188,6 +203,7 @@ class ObserveFields<VolumeDim, tmpl::list<Tensors...>,
       const std::vector<std::string>& variables_to_observe,
       std::optional<std::vector<std::string>> active_block_or_block_groups = {},
       std::optional<Mesh<VolumeDim>> interpolation_mesh = {},
+      std::optional<Mesh<VolumeDim>> projection_mesh = {},
       std::optional<std::string> dependency = {},
       const Options::Context& context = {});
 
@@ -198,11 +214,13 @@ class ObserveFields<VolumeDim, tmpl::list<Tensors...>,
       const std::vector<std::string>& variables_to_observe,
       std::optional<std::vector<std::string>> active_block_or_block_groups = {},
       std::optional<Mesh<VolumeDim>> interpolation_mesh = {},
+      std::optional<Mesh<VolumeDim>> projection_mesh = {},
       const Options::Context& context = {})
       : ObserveFields(subfile_name, coordinates_floating_point_type,
                       floating_point_types, variables_to_observe,
                       std::move(active_block_or_block_groups),
-                      std::move(interpolation_mesh), std::nullopt, context) {}
+                      std::move(interpolation_mesh), std::move(projection_mesh),
+                      std::nullopt, context) {}
 
   using compute_tags_for_observation_box =
       tmpl::list<Tensors..., NonTensorComputeTags...>;
@@ -230,9 +248,9 @@ class ObserveFields<VolumeDim, tmpl::list<Tensors...>,
       return;
     }
     call_operator_impl(subfile_path_ + *section_observation_key,
-                       variables_to_observe_, interpolation_mesh_, mesh, box,
-                       cache, array_index, component, observation_value,
-                       dependency_);
+                       variables_to_observe_, interpolation_mesh_,
+                       projection_mesh_, mesh, box, cache, array_index,
+                       component, observation_value, dependency_);
   }
 
   // We factor out the work into a static member function so it can  be shared
@@ -245,6 +263,7 @@ class ObserveFields<VolumeDim, tmpl::list<Tensors...>,
       const std::unordered_map<std::string, FloatingPointType>&
           variables_to_observe,
       const std::optional<Mesh<VolumeDim>>& interpolation_mesh,
+      const std::optional<Mesh<VolumeDim>>& projection_mesh,
       const Mesh<VolumeDim>& mesh,
       const ObservationBox<DataBoxType, ComputeTagsList>& box,
       Parallel::GlobalCache<Metavariables>& cache,
@@ -252,10 +271,33 @@ class ObserveFields<VolumeDim, tmpl::list<Tensors...>,
       const ParallelComponent* const /*meta*/,
       const ObservationValue& observation_value,
       const std::optional<std::string>& dependency) {
-    // if no interpolation_mesh is provided, the interpolation is essentially
+    const bool do_projection = projection_mesh.has_value();
+    const Mesh<VolumeDim>& target_mesh =
+        do_projection ? projection_mesh.value()
+                      : interpolation_mesh.value_or(mesh);
+    if (do_projection) {
+      for (size_t d = 0; d < VolumeDim; ++d) {
+        if (mesh.basis(d) != Spectral::Basis::Legendre or
+            target_mesh.basis(d) != Spectral::Basis::Legendre) {
+          ERROR("ProjectToMesh requires Legendre basis.");
+        }
+        if ((mesh.quadrature(d) != Spectral::Quadrature::Gauss and
+             mesh.quadrature(d) != Spectral::Quadrature::GaussLobatto) or
+            (target_mesh.quadrature(d) != Spectral::Quadrature::Gauss and
+             target_mesh.quadrature(d) != Spectral::Quadrature::GaussLobatto)) {
+          ERROR("ProjectToMesh requires Gauss or Gauss-Lobatto quadrature.");
+        }
+      }
+    }
+    // If no interpolation_mesh is provided, the interpolation is essentially
     // ignored by the RegularGridInterpolant except for a single copy.
-    const intrp::RegularGrid interpolant(mesh,
-                                         interpolation_mesh.value_or(mesh));
+    const intrp::RegularGrid interpolant(mesh, target_mesh);
+    const std::optional<
+        std::array<std::reference_wrapper<const Matrix>, VolumeDim>>
+        projection_matrices =
+            do_projection ? std::make_optional(Spectral::p_projection_matrices(
+                                mesh, target_mesh))
+                          : std::nullopt;
 
     // Remove tensor types, only storing individual components.
     std::vector<TensorComponent> components;
@@ -282,13 +324,17 @@ class ObserveFields<VolumeDim, tmpl::list<Tensors...>,
         };
 
     const auto record_tensor_components_impl =
-        [&record_tensor_component_impl, &interpolant](
-            const auto& tensor, const FloatingPointType floating_point_type,
-            const std::string& tag_name) {
+        [&record_tensor_component_impl, &interpolant, &projection_matrices,
+         &mesh, do_projection](const auto& tensor,
+                               const FloatingPointType floating_point_type,
+                               const std::string& tag_name) {
           using TensorType = std::decay_t<decltype(tensor)>;
           using VectorType = typename TensorType::type;
           for (size_t i = 0; i < tensor.size(); ++i) {
-            auto tensor_component = interpolant.interpolate(tensor[i]);
+            auto tensor_component =
+                do_projection ? apply_matrices(*projection_matrices, tensor[i],
+                                               mesh.extents())
+                              : interpolant.interpolate(tensor[i]);
             const std::string component_name =
                 tag_name + tensor.component_suffix(i);
             if constexpr (std::is_same_v<VectorType, ComplexDataVector>) {
@@ -330,7 +376,7 @@ class ObserveFields<VolumeDim, tmpl::list<Tensors...>,
         std::add_pointer_t<ParallelComponent>{nullptr},
         Parallel::ArrayIndex<ElementId<VolumeDim>>{element_id}};
     ElementVolumeData element_volume_data{element_id, std::move(components),
-                                          interpolation_mesh.value_or(mesh)};
+                                          target_mesh};
     observers::ObservationId observation_id{observation_value.value,
                                             subfile_path + ".vol"};
 
@@ -379,6 +425,7 @@ class ObserveFields<VolumeDim, tmpl::list<Tensors...>,
     p | variables_to_observe_;
     p | active_block_or_block_groups_;
     p | interpolation_mesh_;
+    p | projection_mesh_;
     p | dependency_;
   }
 
@@ -412,6 +459,7 @@ class ObserveFields<VolumeDim, tmpl::list<Tensors...>,
   std::unordered_map<std::string, FloatingPointType> variables_to_observe_{};
   std::optional<std::vector<std::string>> active_block_or_block_groups_{};
   std::optional<Mesh<VolumeDim>> interpolation_mesh_{};
+  std::optional<Mesh<VolumeDim>> projection_mesh_{};
   std::optional<std::string> dependency_;
 };
 
@@ -426,6 +474,7 @@ ObserveFields<VolumeDim, tmpl::list<Tensors...>,
         const std::vector<std::string>& variables_to_observe,
         std::optional<std::vector<std::string>> active_block_or_block_groups,
         std::optional<Mesh<VolumeDim>> interpolation_mesh,
+        std::optional<Mesh<VolumeDim>> projection_mesh,
         std::optional<std::string> dependency, const Options::Context& context)
     : subfile_path_("/" + subfile_name),
       variables_to_observe_([&context, &floating_point_types,
@@ -455,7 +504,26 @@ ObserveFields<VolumeDim, tmpl::list<Tensors...>,
       }()),
       active_block_or_block_groups_(std::move(active_block_or_block_groups)),
       interpolation_mesh_(interpolation_mesh),
+      projection_mesh_(projection_mesh),
       dependency_(std::move(dependency)) {
+  if (interpolation_mesh_.has_value() and projection_mesh_.has_value()) {
+    PARSE_ERROR(context,
+                "Specify only one of InterpolateToMesh or ProjectToMesh.");
+  }
+  if (projection_mesh_.has_value()) {
+    const auto& proj_mesh = projection_mesh_.value();
+    for (size_t d = 0; d < VolumeDim; ++d) {
+      if (proj_mesh.basis(d) != Spectral::Basis::Legendre) {
+        PARSE_ERROR(context, "ProjectToMesh requires Legendre basis.");
+      }
+      if (proj_mesh.quadrature(d) != Spectral::Quadrature::Gauss and
+          proj_mesh.quadrature(d) != Spectral::Quadrature::GaussLobatto) {
+        PARSE_ERROR(
+            context,
+            "ProjectToMesh requires Gauss or Gauss-Lobatto quadrature.");
+      }
+    }
+  }
   ASSERT(
       (... or (db::tag_name<Tensors>() == "InertialCoordinates")),
       "There is no tag with name 'InertialCoordinates' specified "

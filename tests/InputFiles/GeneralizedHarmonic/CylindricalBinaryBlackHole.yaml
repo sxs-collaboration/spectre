@@ -244,6 +244,7 @@ EventsAndTriggersAtSlabs:
             - PointwiseL2Norm(ThreeIndexConstraint)
             - PointwiseL2Norm(FourIndexConstraint)
           InterpolateToMesh: None
+          ProjectToMesh: None
           CoordinatesFloatingPointType: Double
           FloatingPointTypes: [Double]
           BlocksToObserve: All
@@ -274,6 +275,7 @@ EventsAndTriggersAtSlabs:
             - Pi
             - Phi
           InterpolateToMesh: None
+          ProjectToMesh: None
           # This volume data is for ringdown, so double precision is needed.
           CoordinatesFloatingPointType: Double
           FloatingPointTypes: [Double]
