@@ -54,3 +54,9 @@ SpacetimeInterpolator = {
     2: SpacetimeInterpolator2D,
     3: SpacetimeInterpolator3D,
 }
+
+ModalSpacetimeInterpolator = {
+    1: ModalSpacetimeInterpolator1D,
+    2: ModalSpacetimeInterpolator2D,
+    3: ModalSpacetimeInterpolator3D,
+}

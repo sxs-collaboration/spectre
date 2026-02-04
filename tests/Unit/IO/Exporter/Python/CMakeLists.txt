@@ -12,3 +12,11 @@ spectre_add_python_bindings_test(
   Test_SpacetimeInterpolator.py
   "unit;python"
   PyExporter)
+
+if(Boost_VERSION VERSION_GREATER_EQUAL 1.81.0)
+  spectre_add_python_bindings_test(
+    "Unit.IO.Exporter.Python.ModalSpacetimeInterpolator"
+    Test_ModalSpacetimeInterpolator.py
+    "unit;python"
+    PyExporter)
+endif()

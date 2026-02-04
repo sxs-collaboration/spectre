@@ -5,9 +5,13 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 
+#include <limits>
+
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "IO/Exporter/ModalSpacetimeInterpolator.hpp"
 #include "IO/Exporter/PointwiseInterpolator.hpp"
 #include "IO/Exporter/SpacetimeInterpolator.hpp"
+#include "IO/Logging/Verbosity.hpp"
 #include "Utilities/CloneUniquePtrs.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/ErrorHandling/SegfaultHandler.hpp"
@@ -93,6 +97,49 @@ void bind_spacetime_interpolator_impl(py::module& m) {
           py::arg("target_point"), py::arg("time"));
 }
 
+template <size_t Dim>
+void bind_modal_spacetime_interpolator_impl(py::module& m) {
+  using ModalSpacetimeInterpolator =
+      spectre::Exporter::ModalSpacetimeInterpolator<Dim, Frame::Inertial>;
+  py::class_<ModalSpacetimeInterpolator>(
+      m, ("ModalSpacetimeInterpolator" + std::to_string(Dim) + "D").c_str())
+      .def(py::init(
+               [](const std::variant<std::vector<std::string>, std::string>&
+                      volume_files_or_glob,
+                  const std::vector<std::string>& subfiles_coarsest_to_finest,
+                  const std::vector<std::string>& tensor_components,
+                  const double start_time, const double end_time) {
+                 return ModalSpacetimeInterpolator(
+                     volume_files_or_glob, subfiles_coarsest_to_finest,
+                     tensor_components, start_time, end_time, Verbosity::Quiet);
+               }),
+           py::arg("volume_files_or_glob"),
+           py::arg("subfiles_coarsest_to_finest"), py::arg("tensor_components"),
+           py::arg("start_time") = std::numeric_limits<double>::signaling_NaN(),
+           py::arg("end_time") = std::numeric_limits<double>::signaling_NaN())
+      .def(py::init([](const std::string& h5_filename,
+                       const std::string& group_path) {
+             return ModalSpacetimeInterpolator(h5_filename, group_path,
+                                               Verbosity::Quiet);
+           }),
+           py::arg("h5_filename"), py::arg("group_path"))
+      .def("write_to_h5", &ModalSpacetimeInterpolator::write_to_h5,
+           py::arg("h5_filename"), py::arg("group_path"))
+      .def("tensor_components", &ModalSpacetimeInterpolator::tensor_components)
+      .def("time_bounds", &ModalSpacetimeInterpolator::time_bounds)
+      .def(
+          "interpolate_to_point",
+          [](const ModalSpacetimeInterpolator& self,
+             const tnsr::I<double, Dim, Frame::Inertial>& target_point,
+             const double time) {
+            std::vector<double> result{};
+            self.interpolate_to_point(make_not_null(&result), target_point,
+                                      time);
+            return result;
+          },
+          py::arg("target_point"), py::arg("time"));
+}
+
 }  // namespace
 
 PYBIND11_MODULE(_Pybindings, m) {  // NOLINT
@@ -119,4 +166,7 @@ PYBIND11_MODULE(_Pybindings, m) {  // NOLINT
   bind_spacetime_interpolator_impl<1>(m);
   bind_spacetime_interpolator_impl<2>(m);
   bind_spacetime_interpolator_impl<3>(m);
+  bind_modal_spacetime_interpolator_impl<1>(m);
+  bind_modal_spacetime_interpolator_impl<2>(m);
+  bind_modal_spacetime_interpolator_impl<3>(m);
 }
