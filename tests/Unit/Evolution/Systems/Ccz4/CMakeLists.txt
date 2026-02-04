@@ -8,6 +8,7 @@ set(LIBRARY_SOURCES
   BoundaryConditions/Test_Sommerfeld.cpp
   FiniteDifference/Test_ApplyFilter.cpp
   FiniteDifference/Test_BoundaryConditionGhostData.cpp
+  FiniteDifference/Test_Characteristics.cpp
   FiniteDifference/Test_Derivatives.cpp
   FiniteDifference/Test_DummyReconstructor.cpp
   FiniteDifference/Test_EnforceConstrainedEvolution.cpp
@@ -34,6 +35,7 @@ target_link_libraries(
   ${LIBRARY}
   PRIVATE
   Ccz4
+  CoordinateMaps
   DataBoxTestHelpers
   DataStructures
   Domain
