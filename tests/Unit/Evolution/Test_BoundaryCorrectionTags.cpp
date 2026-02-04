@@ -24,7 +24,6 @@ struct BoundaryCorrection : public evolution::BoundaryCorrection {
   using options = tmpl::list<>;
   static constexpr Options::String help = {"Halp"};
 
-  explicit BoundaryCorrection(CkMigrateMessage* /*unused*/) {}
   using PUP::able::register_constructor;
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-function"

@@ -45,7 +45,6 @@ class NoSource : public Source<Dim> {
   ~NoSource() override = default;
 
   /// \cond
-  explicit NoSource(CkMigrateMessage* msg);
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(NoSource);
   /// \endcond

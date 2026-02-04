@@ -421,8 +421,6 @@ class SphericalKerrSchild : public AnalyticSolution<3_st>,
                       Center::type center,
                       const Options::Context& context = {});
 
-  explicit SphericalKerrSchild(CkMigrateMessage* /*unused*/);
-
   SphericalKerrSchild() = default;
   SphericalKerrSchild(const SphericalKerrSchild& /*rhs*/) = default;
   SphericalKerrSchild& operator=(const SphericalKerrSchild& /*rhs*/) = default;

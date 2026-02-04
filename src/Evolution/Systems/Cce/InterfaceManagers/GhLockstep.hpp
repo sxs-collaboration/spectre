@@ -45,8 +45,6 @@ class GhLockstep : public GhInterfaceManager {
 
   GhLockstep() = default;
 
-  explicit GhLockstep(CkMigrateMessage* /*unused*/) {}
-
   WRAPPED_PUPable_decl_template(GhLockstep);  // NOLINT
 
   std::unique_ptr<GhInterfaceManager> get_clone() const override;

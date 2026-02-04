@@ -105,8 +105,6 @@ struct CheckpointAndExitAfterWallclock : public PhaseChange {
   CheckpointAndExitAfterWallclock(const std::optional<double> wallclock_hours,
                                   const Options::Context& context = {});
 
-  explicit CheckpointAndExitAfterWallclock(CkMigrateMessage* msg);
-
   /// \cond
   CheckpointAndExitAfterWallclock() = default;
   using PUP::able::register_constructor;

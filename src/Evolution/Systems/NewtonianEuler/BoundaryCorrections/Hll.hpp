@@ -102,7 +102,6 @@ class Hll final : public evolution::BoundaryCorrection {
   ~Hll() override = default;
 
   /// \cond
-  explicit Hll(CkMigrateMessage* msg);
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(Hll);  // NOLINT
   /// \endcond

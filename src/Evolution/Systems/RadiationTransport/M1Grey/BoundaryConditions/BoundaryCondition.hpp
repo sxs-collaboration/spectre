@@ -21,9 +21,6 @@ class BoundaryCondition : public domain::BoundaryConditions::BoundaryCondition {
   BoundaryCondition& operator=(const BoundaryCondition&) = default;
   ~BoundaryCondition() override = default;
 
-  explicit BoundaryCondition(CkMigrateMessage* const msg)
-      : domain::BoundaryConditions::BoundaryCondition(msg) {}
-
   void pup(PUP::er& p) override {
     domain::BoundaryConditions::BoundaryCondition::pup(p);
   }

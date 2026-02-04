@@ -33,6 +33,5 @@ class DeltaR : public State {
       const ControlErrorArgs& control_error_args) const override;
 
   WRAPPED_PUPable_decl_template(DeltaR);  // NOLINT
-  explicit DeltaR(CkMigrateMessage* const /*msg*/) {}
 };
 }  // namespace control_system::size::States

@@ -42,7 +42,6 @@ struct TestAnalyticSolution : public MarkAsAnalyticSolution,
     return std::make_unique<TestAnalyticSolution>(*this);
   }
 
-  explicit TestAnalyticSolution(CkMigrateMessage* msg) : InitialData(msg) {}
   using PUP::able::register_constructor;
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-function"
@@ -71,8 +70,6 @@ struct TestAnalyticData : public MarkAsAnalyticData,
     return std::make_unique<TestAnalyticData>(*this);
   }
 
-  explicit TestAnalyticData(CkMigrateMessage* msg) : InitialData(msg) {}
-  using PUP::able::register_constructor;
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-function"
   WRAPPED_PUPable_decl_template(TestAnalyticData);

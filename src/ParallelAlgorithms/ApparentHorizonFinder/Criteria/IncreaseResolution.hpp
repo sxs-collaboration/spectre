@@ -29,7 +29,6 @@ class IncreaseResolution : public Criterion {
   IncreaseResolution() = default;
 
   /// \cond
-  explicit IncreaseResolution(CkMigrateMessage* msg);
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(IncreaseResolution);  // NOLINT
   /// \endcond

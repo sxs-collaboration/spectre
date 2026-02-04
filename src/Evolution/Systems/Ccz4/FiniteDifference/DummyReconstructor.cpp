@@ -5,9 +5,6 @@
 #include "Evolution/Systems/Ccz4/FiniteDifference/Reconstructor.hpp"
 
 namespace Ccz4::fd {
-DummyReconstructor::DummyReconstructor(CkMigrateMessage* const msg)
-    : Reconstructor(msg) {}
-
 std::unique_ptr<Reconstructor> DummyReconstructor::get_clone() const {
   return std::make_unique<DummyReconstructor>(*this);
 }

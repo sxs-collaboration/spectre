@@ -24,10 +24,6 @@ class FunctionOfTime;
 
 namespace ConstraintDamping {
 template <size_t VolumeDim, typename Fr>
-Constant<VolumeDim, Fr>::Constant(CkMigrateMessage* msg)
-    : DampingFunction<VolumeDim, Fr>(msg) {}
-
-template <size_t VolumeDim, typename Fr>
 Constant<VolumeDim, Fr>::Constant(const double value) : value_(value) {}
 
 template <size_t VolumeDim, typename Fr>
@@ -75,8 +71,6 @@ auto Constant<VolumeDim, Fr>::get_clone() const
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 #define FRAME(data) BOOST_PP_TUPLE_ELEM(1, data)
 #define INSTANTIATE(_, data)                                              \
-  template ConstraintDamping::Constant<DIM(data), FRAME(data)>::Constant( \
-      CkMigrateMessage* msg);                                             \
   template ConstraintDamping::Constant<DIM(data), FRAME(data)>::Constant( \
       const double value);                                                \
   template void ConstraintDamping::Constant<DIM(data), FRAME(data)>::pup( \

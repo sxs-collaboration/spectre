@@ -40,8 +40,6 @@ class PiecewisePolynomial : public FunctionOfTime {
       double t, std::array<DataVector, MaxDeriv + 1> initial_func_and_derivs,
       double expiration_time);
 
-  explicit PiecewisePolynomial(CkMigrateMessage* /*unused*/);
-
   auto get_clone() const -> std::unique_ptr<FunctionOfTime> override;
 
   std::unique_ptr<FunctionOfTime> create_at_time(

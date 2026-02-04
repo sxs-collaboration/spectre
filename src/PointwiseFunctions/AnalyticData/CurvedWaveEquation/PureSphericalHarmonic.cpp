@@ -44,9 +44,6 @@ PureSphericalHarmonic::get_clone() const {
   return std::make_unique<PureSphericalHarmonic>(*this);
 }
 
-PureSphericalHarmonic::PureSphericalHarmonic(CkMigrateMessage* msg)
-    : InitialData(msg) {}
-
 tuples::TaggedTuple<CurvedScalarWave::Tags::Psi, CurvedScalarWave::Tags::Pi,
                     CurvedScalarWave::Tags::Phi<3>>
 PureSphericalHarmonic::variables(const tnsr::I<DataVector, 3>& x,

@@ -31,9 +31,6 @@ Random<CriteriaType>::Random(
   }
 }
 
-template <Type CriteriaType>
-Random<CriteriaType>::Random(CkMigrateMessage* msg) : Criterion(msg) {}
-
 // NOLINTNEXTLINE(google-runtime-references)
 template <Type CriteriaType>
 void Random<CriteriaType>::pup(PUP::er& p) {

@@ -23,9 +23,6 @@ NumericInitialData::NumericInitialData(
           observation_value_epsilon.value_or(1.0e-12), enable_interpolation),
       selected_variables_(std::move(selected_variables)) {}
 
-NumericInitialData::NumericInitialData(CkMigrateMessage* msg)
-    : InitialData(msg) {}
-
 const importers::ImporterOptions& NumericInitialData::importer_options() const {
   return importer_options_;
 }

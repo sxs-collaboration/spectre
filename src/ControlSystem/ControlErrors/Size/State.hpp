@@ -197,6 +197,5 @@ class State : public PUP::able {
       const Info& info, const ControlErrorArgs& control_error_args) const = 0;
 
   WRAPPED_PUPable_abstract(State);  // NOLINT
-  explicit State(CkMigrateMessage* msg) : PUP::able(msg) {}
 };
 }  // namespace control_system::size

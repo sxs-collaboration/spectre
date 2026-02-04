@@ -39,7 +39,6 @@ class RefineAtPunctures : public amr::Criterion {
   RefineAtPunctures() = default;
 
   /// \cond
-  explicit RefineAtPunctures(CkMigrateMessage* msg) : Criterion(msg) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(RefineAtPunctures);  // NOLINT
   /// \endcond

@@ -309,8 +309,6 @@ CcsnCollapse::CcsnCollapse(std::string progenitor_filename,
   equation_of_state_.initialize(compose_eos);
 }
 
-CcsnCollapse::CcsnCollapse(CkMigrateMessage* msg) : InitialData(msg) {}
-
 std::unique_ptr<evolution::initial_data::InitialData> CcsnCollapse::get_clone()
     const {
   return std::make_unique<CcsnCollapse>(*this);

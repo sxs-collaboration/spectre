@@ -79,7 +79,6 @@ class ObserveTimeStepVolume
                 "Split variables systems not handled.");
 
   /// \cond
-  explicit ObserveTimeStepVolume(CkMigrateMessage* m);
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(ObserveTimeStepVolume);  // NOLINT
   /// \endcond

@@ -46,7 +46,6 @@ class Background : public virtual PUP::able {
   ~Background() override = default;
 
   /// \cond
-  explicit Background(CkMigrateMessage* msg) : PUP::able(msg) {}
   WRAPPED_PUPable_abstract(Background);
   /// \endcond
 };

@@ -52,8 +52,6 @@ class DirichletMinkowski final : public BoundaryCondition<Dim> {
   DirichletMinkowski& operator=(const DirichletMinkowski&) = default;
   ~DirichletMinkowski() override = default;
 
-  explicit DirichletMinkowski(CkMigrateMessage* msg);
-
   WRAPPED_PUPable_decl_base_template(
       domain::BoundaryConditions::BoundaryCondition, DirichletMinkowski);
 

@@ -34,6 +34,5 @@ class DeltaRDriftOutward : public State {
       const ControlErrorArgs& control_error_args) const override;
 
   WRAPPED_PUPable_decl_template(DeltaRDriftOutward);  // NOLINT
-  explicit DeltaRDriftOutward(CkMigrateMessage* const /*msg*/) {}
 };
 }  // namespace control_system::size::States

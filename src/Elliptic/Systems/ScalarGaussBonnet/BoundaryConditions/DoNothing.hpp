@@ -45,7 +45,6 @@ class DoNothing : public elliptic::BoundaryConditions::BoundaryCondition<3> {
   ~DoNothing() override = default;
 
   /// \cond
-  explicit DoNothing(CkMigrateMessage* m) : Base(m) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(DoNothing);
   /// \endcond

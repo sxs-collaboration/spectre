@@ -73,7 +73,6 @@ class PolarMagnetizedFmDisk
       -> std::unique_ptr<evolution::initial_data::InitialData> override;
 
   /// \cond
-  explicit PolarMagnetizedFmDisk(CkMigrateMessage* msg);
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(PolarMagnetizedFmDisk);
   /// \endcond

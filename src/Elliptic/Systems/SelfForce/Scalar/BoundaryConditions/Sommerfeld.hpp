@@ -95,7 +95,6 @@ class Sommerfeld : public elliptic::BoundaryConditions::BoundaryCondition<2> {
   int order() const { return order_; }
 
   /// \cond
-  explicit Sommerfeld(CkMigrateMessage* m);
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(Sommerfeld);
   /// \endcond

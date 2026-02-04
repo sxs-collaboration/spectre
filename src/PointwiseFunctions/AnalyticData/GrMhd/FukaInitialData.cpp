@@ -40,8 +40,6 @@ FukaInitialData::get_clone() const {
   return std::make_unique<FukaInitialData>(*this);
 }
 
-FukaInitialData::FukaInitialData(CkMigrateMessage* msg) : InitialData(msg) {}
-
 void FukaInitialData::pup(PUP::er& p) {
   InitialData::pup(p);
   p | info_filename_;

@@ -30,10 +30,6 @@ void AnalyticConstant<Dim>::pup(PUP::er& p) {
 }
 
 template <size_t Dim>
-AnalyticConstant<Dim>::AnalyticConstant(CkMigrateMessage* const msg)
-    : BoundaryCondition<Dim>(msg) {}
-
-template <size_t Dim>
 AnalyticConstant<Dim>::AnalyticConstant(const double amplitude)
     : amplitude_(amplitude) {}
 

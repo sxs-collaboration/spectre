@@ -116,8 +116,6 @@ class Reflective final : public BoundaryCondition {
 
   explicit Reflective(bool reflect_both);
 
-  explicit Reflective(CkMigrateMessage* msg);
-
   WRAPPED_PUPable_decl_base_template(
       domain::BoundaryConditions::BoundaryCondition, Reflective);
 

@@ -39,7 +39,6 @@ class FixedLtsRatio : public StepChooser<StepChooserUse::Slab> {
  public:
   /// \cond
   FixedLtsRatio() = default;
-  explicit FixedLtsRatio(CkMigrateMessage* /*unused*/) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(FixedLtsRatio);  // NOLINT
   /// \endcond

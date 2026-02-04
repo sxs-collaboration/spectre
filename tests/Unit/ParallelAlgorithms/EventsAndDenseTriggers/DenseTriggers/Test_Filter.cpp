@@ -34,7 +34,6 @@ namespace {
 class TestTrigger : public Trigger {
  public:
   TestTrigger() = default;
-  explicit TestTrigger(CkMigrateMessage* /*unused*/) {}
   using PUP::able::register_constructor;
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-function"

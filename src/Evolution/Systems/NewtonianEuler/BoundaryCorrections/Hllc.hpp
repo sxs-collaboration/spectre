@@ -197,7 +197,6 @@ class Hllc final : public evolution::BoundaryCorrection {
   ~Hllc() override = default;
 
   /// \cond
-  explicit Hllc(CkMigrateMessage* msg);
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(Hllc);  // NOLINT
   /// \endcond

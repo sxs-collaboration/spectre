@@ -62,7 +62,6 @@ class CriterionOne : public amr::Criterion {
   CriterionOne() = default;
   explicit CriterionOne(const double critical_value)
       : critical_value_(critical_value) {}
-  explicit CriterionOne(CkMigrateMessage* msg) : Criterion(msg) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(CriterionOne);  // NOLINT
 
@@ -108,7 +107,6 @@ class CriterionTwo : public amr::Criterion {
   CriterionTwo() = default;
   explicit CriterionTwo(const double target_value)
       : target_value_(target_value) {}
-  explicit CriterionTwo(CkMigrateMessage* /*msg*/) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(CriterionTwo);  // NOLINT
 

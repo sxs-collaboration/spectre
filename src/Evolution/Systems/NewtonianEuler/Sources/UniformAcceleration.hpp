@@ -76,7 +76,6 @@ class UniformAcceleration : public Source<Dim> {
       const std::array<double, Dim>& acceleration_field);
 
   /// \cond
-  explicit UniformAcceleration(CkMigrateMessage* msg);
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(UniformAcceleration);
   /// \endcond

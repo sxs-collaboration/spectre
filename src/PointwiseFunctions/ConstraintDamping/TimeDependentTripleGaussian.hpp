@@ -126,8 +126,6 @@ class TimeDependentTripleGaussian : public DampingFunction<3, Frame::Grid> {
       TimeDependentTripleGaussian);  // NOLINT
   /// \endcond
 
-  explicit TimeDependentTripleGaussian(CkMigrateMessage* msg);
-
   TimeDependentTripleGaussian(
       double constant, double amplitude_1, double width_1,
       const std::optional<std::array<double, 3>>& center_1, double amplitude_2,

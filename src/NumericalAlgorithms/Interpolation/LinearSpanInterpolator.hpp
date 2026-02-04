@@ -32,8 +32,6 @@ class LinearSpanInterpolator : public SpanInterpolator {
 
   WRAPPED_PUPable_decl_template(LinearSpanInterpolator);  // NOLINT
 
-  explicit LinearSpanInterpolator(CkMigrateMessage* /*unused*/) {}
-
   // clang-tidy: do not pass by non-const reference
   void pup(PUP::er& /*p*/) override {}
 

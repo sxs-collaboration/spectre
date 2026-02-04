@@ -49,9 +49,6 @@ PlaneWave<Dim>::get_clone() const {
 }
 
 template <size_t Dim>
-PlaneWave<Dim>::PlaneWave(CkMigrateMessage* msg) : InitialData(msg) {}
-
-template <size_t Dim>
 template <typename T>
 Scalar<T> PlaneWave<Dim>::psi(const tnsr::I<T, Dim>& x, const double t) const {
   return Scalar<T>(profile_->operator()(u(x, t)));

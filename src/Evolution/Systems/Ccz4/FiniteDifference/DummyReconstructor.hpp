@@ -27,8 +27,6 @@ class DummyReconstructor : public Reconstructor {
   DummyReconstructor& operator=(const DummyReconstructor&) = default;
   ~DummyReconstructor() override = default;
 
-  explicit DummyReconstructor(CkMigrateMessage* msg);
-
   WRAPPED_PUPable_decl_base_template(Reconstructor, DummyReconstructor);
 
   auto get_clone() const -> std::unique_ptr<Reconstructor> override;

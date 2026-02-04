@@ -56,9 +56,6 @@ MagneticFieldLoop::get_clone() const {
   return std::make_unique<MagneticFieldLoop>(*this);
 }
 
-MagneticFieldLoop::MagneticFieldLoop(CkMigrateMessage* msg)
-    : InitialData(msg) {}
-
 void MagneticFieldLoop::pup(PUP::er& p) {
   InitialData::pup(p);
   p | pressure_;

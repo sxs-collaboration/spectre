@@ -115,7 +115,6 @@ class AveragedUpwindPenalty final : public evolution::BoundaryCorrection {
   ~AveragedUpwindPenalty() override = default;
 
   /// \cond
-  explicit AveragedUpwindPenalty(CkMigrateMessage* msg);
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(AveragedUpwindPenalty);  // NOLINT
   /// \endcond

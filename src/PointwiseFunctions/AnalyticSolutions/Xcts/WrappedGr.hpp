@@ -296,8 +296,6 @@ class WrappedGr : public elliptic::analytic_data::AnalyticSolution {
   const GrSolution& gr_solution() const { return gr_solution_; }
 
   /// \cond
-  explicit WrappedGr(CkMigrateMessage* m)
-      : elliptic::analytic_data::AnalyticSolution(m) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(WrappedGr);
   std::unique_ptr<elliptic::analytic_data::AnalyticSolution> get_clone()

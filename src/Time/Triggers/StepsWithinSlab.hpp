@@ -30,7 +30,6 @@ class StepsWithinSlab : public Trigger {
  public:
   /// \cond
   StepsWithinSlab() = default;
-  explicit StepsWithinSlab(CkMigrateMessage* /*unused*/) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(StepsWithinSlab);  // NOLINT
   /// \endcond

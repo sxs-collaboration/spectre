@@ -66,11 +66,7 @@ class Trigger : public DenseTrigger {
 
  public:
   /// \cond
-  // LCOV_EXCL_START
-  explicit Trigger(CkMigrateMessage* const msg) : DenseTrigger(msg) {}
-  using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(Trigger);  // NOLINT
-  // LCOV_EXCL_STOP
   /// \endcond
 
   // This trigger is created during control system initialization, not

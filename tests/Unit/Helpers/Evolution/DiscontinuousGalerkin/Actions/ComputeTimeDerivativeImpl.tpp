@@ -509,7 +509,6 @@ struct BoundaryTerms final : public ::evolution::BoundaryCorrection {
   };
 
   /// \cond
-  explicit BoundaryTerms(CkMigrateMessage* /*unused*/) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(BoundaryTerms);  // NOLINT
   /// \endcond
@@ -793,8 +792,6 @@ class BoundaryCondition : public domain::BoundaryConditions::BoundaryCondition {
   BoundaryCondition(const BoundaryCondition&) = default;
   BoundaryCondition& operator=(const BoundaryCondition&) = default;
   ~BoundaryCondition() override = default;
-  explicit BoundaryCondition(CkMigrateMessage* msg)
-      : domain::BoundaryConditions::BoundaryCondition(msg) {}
 
   void pup(PUP::er& p) override {
     domain::BoundaryConditions::BoundaryCondition::pup(p);
@@ -811,9 +808,6 @@ class DemandOutgoingCharSpeeds : public BoundaryCondition<Dim> {
   DemandOutgoingCharSpeeds& operator=(const DemandOutgoingCharSpeeds&) =
       default;
   ~DemandOutgoingCharSpeeds() override = default;
-
-  explicit DemandOutgoingCharSpeeds(CkMigrateMessage* msg)
-      : BoundaryCondition<Dim>(msg) {}
 
   WRAPPED_PUPable_decl_base_template(
       domain::BoundaryConditions::BoundaryCondition, DemandOutgoingCharSpeeds);

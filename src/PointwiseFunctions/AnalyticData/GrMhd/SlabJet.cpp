@@ -83,8 +83,6 @@ std::unique_ptr<evolution::initial_data::InitialData> SlabJet::get_clone()
   return std::make_unique<SlabJet>(*this);
 }
 
-SlabJet::SlabJet(CkMigrateMessage* msg) : InitialData(msg) {}
-
 void SlabJet::pup(PUP::er& p) {
   InitialData::pup(p);
   p | equation_of_state_;

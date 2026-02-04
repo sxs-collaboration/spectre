@@ -79,10 +79,6 @@ MathFunction<Dim>::MathFunction(
     : math_function_(std::move(math_function)) {}
 
 template <size_t Dim>
-MathFunction<Dim>::MathFunction(CkMigrateMessage* m)
-    : elliptic::analytic_data::AnalyticSolution(m) {}
-
-template <size_t Dim>
 void MathFunction<Dim>::pup(PUP::er& p) {
   elliptic::analytic_data::AnalyticSolution::pup(p);
   p | math_function_;

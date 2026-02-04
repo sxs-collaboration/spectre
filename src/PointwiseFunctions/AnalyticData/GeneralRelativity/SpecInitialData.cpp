@@ -39,8 +39,6 @@ SpecInitialData::get_clone() const {
   return std::make_unique<SpecInitialData>(*this);
 }
 
-SpecInitialData::SpecInitialData(CkMigrateMessage* msg) : InitialData(msg) {}
-
 void SpecInitialData::pup(PUP::er& p) {
   InitialData::pup(p);
   p | data_directory_;

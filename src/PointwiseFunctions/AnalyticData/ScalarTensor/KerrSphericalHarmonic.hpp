@@ -118,7 +118,6 @@ class KerrSphericalHarmonic
       -> std::unique_ptr<evolution::initial_data::InitialData> override;
 
   /// \cond
-  explicit KerrSphericalHarmonic(CkMigrateMessage* msg);
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(KerrSphericalHarmonic);
   /// \endcond

@@ -49,7 +49,6 @@ class LinearSolver : public PUP::able {
   ~LinearSolver() override = default;
 
   /// \cond
-  explicit LinearSolver(CkMigrateMessage* m);
   WRAPPED_PUPable_abstract(LinearSolver);  // NOLINT
   /// \endcond
 
@@ -86,12 +85,6 @@ class LinearSolver : public PUP::able {
   /// operator.
   virtual void reset() = 0;
 };
-
-/// \cond
-template <typename LinearSolverRegistrars>
-LinearSolver<LinearSolverRegistrars>::LinearSolver(CkMigrateMessage* m)
-    : PUP::able(m) {}
-/// \endcond
 
 template <typename LinearSolverRegistrars>
 template <typename LinearOperator, typename VarsType, typename SourceType,
@@ -157,7 +150,6 @@ class PreconditionedLinearSolver : public LinearSolver<LinearSolverRegistrars> {
   ~PreconditionedLinearSolver() override = default;
 
   /// \cond
-  explicit PreconditionedLinearSolver(CkMigrateMessage* m);
   /// \endcond
 
   void pup(PUP::er& p) override {  // NOLINT
@@ -264,13 +256,6 @@ PreconditionedLinearSolver<Preconditioner, LinearSolverRegistrars>::operator=(
   }
   return *this;
 }
-
-/// \cond
-template <typename Preconditioner, typename LinearSolverRegistrars>
-PreconditionedLinearSolver<Preconditioner, LinearSolverRegistrars>::
-    PreconditionedLinearSolver(CkMigrateMessage* m)
-    : Base(m) {}
-/// \endcond
 
 template <typename Preconditioner, typename LinearSolverRegistrars>
 void PreconditionedLinearSolver<Preconditioner,

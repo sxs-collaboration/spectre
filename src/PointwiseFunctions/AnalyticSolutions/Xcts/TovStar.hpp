@@ -217,8 +217,6 @@ class TovStar : public elliptic::analytic_data::AnalyticSolution {
   }
 
   /// \cond
-  explicit TovStar(CkMigrateMessage* m)
-      : elliptic::analytic_data::AnalyticSolution(m) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(TovStar);
   std::unique_ptr<elliptic::analytic_data::AnalyticSolution> get_clone()

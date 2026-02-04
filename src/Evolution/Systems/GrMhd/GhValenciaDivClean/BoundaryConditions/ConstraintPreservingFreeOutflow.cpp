@@ -12,12 +12,6 @@ ConstraintPreservingFreeOutflow::ConstraintPreservingFreeOutflow(
     gh::BoundaryConditions::detail::ConstraintPreservingBjorhusType type)
     : constraint_preserving_(type) {}
 
-// LCOV_EXCL_START
-ConstraintPreservingFreeOutflow::ConstraintPreservingFreeOutflow(
-    CkMigrateMessage* const msg)
-    : BoundaryCondition(msg) {}
-// LCOV_EXCL_STOP
-
 std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
 ConstraintPreservingFreeOutflow::get_clone() const {
   return std::make_unique<ConstraintPreservingFreeOutflow>(*this);

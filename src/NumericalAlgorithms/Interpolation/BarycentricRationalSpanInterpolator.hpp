@@ -41,8 +41,6 @@ class BarycentricRationalSpanInterpolator : public SpanInterpolator {
   static constexpr Options::String help = {
       "Barycentric interpolator of option-defined maximum and minimum order."};
 
-  explicit BarycentricRationalSpanInterpolator(CkMigrateMessage* /*unused*/) {}
-
   WRAPPED_PUPable_decl_template(BarycentricRationalSpanInterpolator);  // NOLINT
 
   // clang-tidy: do not pass by non-const reference

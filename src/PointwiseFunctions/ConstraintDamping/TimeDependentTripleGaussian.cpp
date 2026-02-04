@@ -25,8 +25,6 @@
 #include "Utilities/SetNumberOfGridPoints.hpp"
 
 namespace ConstraintDamping {
-TimeDependentTripleGaussian::TimeDependentTripleGaussian(CkMigrateMessage* msg)
-    : DampingFunction<3, Frame::Grid>(msg) {}
 
 TimeDependentTripleGaussian::TimeDependentTripleGaussian(
     const double constant, const double amplitude_1, const double width_1,

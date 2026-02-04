@@ -124,8 +124,6 @@ class AdaptiveOrder : public Reconstructor {
                 FallbackReconstructorType low_order_reconstructor,
                 const Options::Context& context = {});
 
-  explicit AdaptiveOrder(CkMigrateMessage* msg);
-
   WRAPPED_PUPable_decl_base_template(Reconstructor, AdaptiveOrder);
 
   auto get_clone() const -> std::unique_ptr<Reconstructor> override;

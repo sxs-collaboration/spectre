@@ -61,8 +61,6 @@ std::unique_ptr<evolution::initial_data::InitialData> KhInstability::get_clone()
   return std::make_unique<KhInstability>(*this);
 }
 
-KhInstability::KhInstability(CkMigrateMessage* msg) : InitialData(msg) {}
-
 void KhInstability::pup(PUP::er& p) {
   InitialData::pup(p);
   p | adiabatic_index_;

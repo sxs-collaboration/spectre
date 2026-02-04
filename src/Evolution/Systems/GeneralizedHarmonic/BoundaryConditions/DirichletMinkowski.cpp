@@ -15,10 +15,6 @@
 
 namespace gh::BoundaryConditions {
 template <size_t Dim>
-DirichletMinkowski<Dim>::DirichletMinkowski(CkMigrateMessage* const msg)
-    : BoundaryCondition<Dim>(msg) {}
-
-template <size_t Dim>
 std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
 DirichletMinkowski<Dim>::get_clone() const {
   return std::make_unique<DirichletMinkowski>(*this);

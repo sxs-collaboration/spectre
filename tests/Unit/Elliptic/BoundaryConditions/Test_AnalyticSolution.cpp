@@ -74,8 +74,6 @@ struct TestSolution : elliptic::analytic_data::AnalyticSolution {
   TestSolution(TestSolution&&) = default;
   TestSolution& operator=(TestSolution&&) = default;
   ~TestSolution() override = default;
-  explicit TestSolution(CkMigrateMessage* m)
-      : elliptic::analytic_data::AnalyticSolution(m) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(TestSolution);  // NOLINT
 

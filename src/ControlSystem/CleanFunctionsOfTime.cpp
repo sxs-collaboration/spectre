@@ -23,9 +23,6 @@ void CleanFunctionsOfTimeAction::CleanFunc::apply(
   }
 }
 
-CleanFunctionsOfTime::CleanFunctionsOfTime(CkMigrateMessage* const m)
-    : Event(m) {}
-
 bool CleanFunctionsOfTime::needs_evolved_variables() const { return false; }
 
 PUP::able::PUP_ID CleanFunctionsOfTime::my_PUP_ID = 0;  // NOLINT

@@ -27,9 +27,6 @@
 
 namespace ForceFree::fd {
 
-MonotonisedCentral::MonotonisedCentral(CkMigrateMessage* const msg)
-    : Reconstructor(msg) {}
-
 std::unique_ptr<Reconstructor> MonotonisedCentral::get_clone() const {
   return std::make_unique<MonotonisedCentral>(*this);
 }

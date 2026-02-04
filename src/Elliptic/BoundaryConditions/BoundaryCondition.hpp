@@ -103,7 +103,6 @@ class BoundaryCondition : public domain::BoundaryConditions::BoundaryCondition {
   ~BoundaryCondition() override = default;
 
   /// \cond
-  explicit BoundaryCondition(CkMigrateMessage* m) : Base(m) {}
   WRAPPED_PUPable_abstract(BoundaryCondition);  // NOLINT
   /// \endcond
 

@@ -356,7 +356,6 @@ struct InitializeJ<true> : public PUP::able {
   using creatable_classes = tmpl::list<InverseCubic<true>>;
 
   InitializeJ() = default;
-  explicit InitializeJ(CkMigrateMessage* /*msg*/) {}
 
   WRAPPED_PUPable_abstract(InitializeJ);  // NOLINT
 
@@ -412,7 +411,6 @@ struct InitializeJ<false> : public PUP::able {
                                        NoIncomingRadiation, ZeroNonSmooth>;
 
   InitializeJ() = default;
-  explicit InitializeJ(CkMigrateMessage* /*msg*/) {}
 
   WRAPPED_PUPable_abstract(InitializeJ);  // NOLINT
 

@@ -80,7 +80,6 @@ class CircularOrbit : public elliptic::analytic_data::Background,
   CircularOrbit(double black_hole_mass, double black_hole_spin,
                 double orbital_radius, int m_mode_number);
 
-  explicit CircularOrbit(CkMigrateMessage* m);
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(CircularOrbit);
 

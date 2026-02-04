@@ -23,8 +23,6 @@ std::unique_ptr<evolution::initial_data::InitialData> Sinusoid::get_clone()
   return std::make_unique<Sinusoid>(*this);
 }
 
-Sinusoid::Sinusoid(CkMigrateMessage* msg) : InitialData(msg) {}
-
 tuples::TaggedTuple<Tags::U> Sinusoid::variables(
     const tnsr::I<DataVector, 1>& x, tmpl::list<Tags::U> /*meta*/) const {
   return {u(x)};

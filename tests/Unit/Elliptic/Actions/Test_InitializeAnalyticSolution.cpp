@@ -39,9 +39,7 @@ struct ScalarFieldTag : db::SimpleTag {
 #pragma GCC diagnostic ignored "-Wunused-function"
 struct NoAnalyticSolution : elliptic::analytic_data::Background {
   NoAnalyticSolution() = default;
-  explicit NoAnalyticSolution(CkMigrateMessage* m)
-      : elliptic::analytic_data::Background(m) {}
-  WRAPPED_PUPable_decl_template(NoAnalyticSolution);
+  WRAPPED_PUPable_decl_template(NoAnalyticSolution);  // NOLINT
 
   // Does _not_ provide variables for all system fields
 };
@@ -50,8 +48,6 @@ PUP::able::PUP_ID NoAnalyticSolution::my_PUP_ID = 0;  // NOLINT
 
 struct AnalyticSolution : elliptic::analytic_data::AnalyticSolution {
   AnalyticSolution() = default;
-  explicit AnalyticSolution(CkMigrateMessage* m)
-      : elliptic::analytic_data::AnalyticSolution(m) {}
   WRAPPED_PUPable_decl_template(AnalyticSolution);
   std::unique_ptr<elliptic::analytic_data::AnalyticSolution> get_clone()
       const override {

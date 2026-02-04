@@ -14,8 +14,6 @@ ObserveDataBox::ObserveDataBox(
     std::optional<std::string> file_name_for_tag_names)
     : file_name_for_tag_names_(std::move(file_name_for_tag_names)) {}
 
-ObserveDataBox::ObserveDataBox(CkMigrateMessage* m) : Event{m} {}
-
 void ObserveDataBox::pup(PUP::er& p) {
   Event::pup(p);
   p | file_name_for_tag_names_;

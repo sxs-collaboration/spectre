@@ -48,8 +48,6 @@ class BoundaryConditionBase
   BoundaryConditionBase& operator=(const BoundaryConditionBase&) = default;
   ~BoundaryConditionBase() override = default;
 
-  explicit BoundaryConditionBase(CkMigrateMessage* msg);
-
   void pup(PUP::er& p) override;
 
   static constexpr Options::String help = {"Boundary conditions for tests."};
@@ -67,7 +65,6 @@ class TestBoundaryCondition final : public BoundaryConditionBase<Dim> {
   TestBoundaryCondition(const TestBoundaryCondition&) = default;
   TestBoundaryCondition& operator=(const TestBoundaryCondition&) = default;
   ~TestBoundaryCondition() override = default;
-  explicit TestBoundaryCondition(CkMigrateMessage* const msg);
 
   struct DirectionOptionTag {
     using type = std::string;

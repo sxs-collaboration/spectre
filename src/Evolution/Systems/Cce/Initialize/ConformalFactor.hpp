@@ -153,7 +153,6 @@ struct ConformalFactor : InitializeJ<false> {
       "time variable approximately asymptotically inertial"};
 
   WRAPPED_PUPable_decl_template(ConformalFactor);  // NOLINT
-  explicit ConformalFactor(CkMigrateMessage* msg);
 
   ConformalFactor() = default;
   ConformalFactor(

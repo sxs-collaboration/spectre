@@ -46,8 +46,6 @@ class PowX<1, Fr> : public MathFunction<1, Fr> {
 
   explicit PowX(int power);
 
-  explicit PowX(CkMigrateMessage* /*unused*/) {}
-
   double operator()(const double& x) const override;
   DataVector operator()(const DataVector& x) const override;
 

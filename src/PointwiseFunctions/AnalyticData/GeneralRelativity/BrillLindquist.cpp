@@ -36,8 +36,6 @@ BrillLindquist::BrillLindquist(const double mass_a, const double mass_b,
   }
 }
 
-BrillLindquist::BrillLindquist(CkMigrateMessage* /*unused*/) {}
-
 void BrillLindquist::pup(PUP::er& p) {
   p | mass_a_;
   p | mass_b_;

@@ -40,7 +40,6 @@ class Random : public StepChooser<StepChooserUse::Slab>,
  public:
   /// \cond
   Random();
-  explicit Random(CkMigrateMessage* /*unused*/);
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(Random);  // NOLINT
   /// \endcond

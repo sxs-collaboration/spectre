@@ -48,9 +48,6 @@ std::unique_ptr<evolution::initial_data::InitialData> ShuOsherTube::get_clone()
   return std::make_unique<ShuOsherTube>(*this);
 }
 
-ShuOsherTube::ShuOsherTube(CkMigrateMessage* msg)
-    : evolution::initial_data::InitialData(msg) {}
-
 // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
 PUP::able::PUP_ID ShuOsherTube::my_PUP_ID = 0;
 

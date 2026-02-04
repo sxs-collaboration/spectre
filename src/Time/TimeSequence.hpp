@@ -64,7 +64,6 @@ class EvenlySpaced : public TimeSequence<T> {
  public:
   /// \cond
   EvenlySpaced() = default;
-  explicit EvenlySpaced(CkMigrateMessage* /*unused*/) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(EvenlySpaced);  // NOLINT
   /// \endcond
@@ -114,7 +113,6 @@ class Specified : public TimeSequence<T> {
  public:
   /// \cond
   Specified() = default;
-  explicit Specified(CkMigrateMessage* /*unused*/) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(Specified);  // NOLINT
   /// \endcond

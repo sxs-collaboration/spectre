@@ -84,7 +84,6 @@ class Krivodonova : public evolution::initial_data::InitialData,
   void pup(PUP::er& p) override;
 
   /// \cond
-  explicit Krivodonova(CkMigrateMessage* msg);
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(Krivodonova);
   /// \endcond

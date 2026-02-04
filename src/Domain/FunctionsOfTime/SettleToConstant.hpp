@@ -42,8 +42,6 @@ class SettleToConstant : public FunctionOfTime {
   // NOLINTNEXTLINE(google-runtime-references)
   WRAPPED_PUPable_decl_template(SettleToConstant);
 
-  explicit SettleToConstant(CkMigrateMessage* /*unused*/) {}
-
   auto get_clone() const -> std::unique_ptr<FunctionOfTime> override;
 
   /// Returns the function at an arbitrary time `t`.

@@ -67,7 +67,6 @@ bool contributed = false;
 
 struct TestPhaseChange : public PhaseChange {
   TestPhaseChange() = default;
-  explicit TestPhaseChange(CkMigrateMessage* /*unused*/) {}
   using PUP::able::register_constructor;
 
 #pragma GCC diagnostic push

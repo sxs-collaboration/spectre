@@ -24,11 +24,6 @@
 
 namespace NewtonianEuler::BoundaryConditions {
 template <size_t Dim>
-DemandOutgoingCharSpeeds<Dim>::DemandOutgoingCharSpeeds(
-    CkMigrateMessage* const msg)
-    : BoundaryCondition<Dim>(msg) {}
-
-template <size_t Dim>
 std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
 DemandOutgoingCharSpeeds<Dim>::get_clone() const {
   return std::make_unique<DemandOutgoingCharSpeeds>(*this);

@@ -40,9 +40,6 @@ BondiHoyleAccretion::get_clone() const {
   return std::make_unique<BondiHoyleAccretion>(*this);
 }
 
-BondiHoyleAccretion::BondiHoyleAccretion(CkMigrateMessage* msg)
-    : InitialData(msg) {}
-
 void BondiHoyleAccretion::pup(PUP::er& p) {
   InitialData::pup(p);
   p | bh_mass_;

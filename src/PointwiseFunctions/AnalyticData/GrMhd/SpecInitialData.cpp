@@ -70,8 +70,7 @@ SpecInitialData<ThermodynamicDim>::get_clone() const {
 }
 
 template <size_t ThermodynamicDim>
-SpecInitialData<ThermodynamicDim>::SpecInitialData(CkMigrateMessage* msg)
-    : InitialData(msg) {}
+: InitialData(msg) {}
 
 template <size_t ThermodynamicDim>
 void SpecInitialData<ThermodynamicDim>::pup(PUP::er& p) {

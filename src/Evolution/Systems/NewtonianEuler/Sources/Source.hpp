@@ -39,7 +39,6 @@ class Source : public PUP::able {
   ~Source() override = default;
 
   /// \cond
-  explicit Source(CkMigrateMessage* msg) : PUP::able(msg) {}
   WRAPPED_PUPable_abstract(Source);
   /// \endcond
 

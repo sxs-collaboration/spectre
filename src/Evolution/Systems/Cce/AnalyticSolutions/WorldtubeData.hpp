@@ -99,8 +99,6 @@ struct WorldtubeData : public PUP::able {
   explicit WorldtubeData(const double extraction_radius)
       : extraction_radius_{extraction_radius} {}
 
-  explicit WorldtubeData(CkMigrateMessage* msg) : PUP::able(msg) {}
-
   ~WorldtubeData() override = default;
 
   virtual std::unique_ptr<WorldtubeData> get_clone() const = 0;

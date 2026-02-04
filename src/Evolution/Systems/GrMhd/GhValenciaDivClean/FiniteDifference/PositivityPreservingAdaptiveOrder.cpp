@@ -51,11 +51,6 @@
 
 namespace grmhd::GhValenciaDivClean::fd {
 template <typename System>
-PositivityPreservingAdaptiveOrderPrim<
-    System>::PositivityPreservingAdaptiveOrderPrim(CkMigrateMessage* const msg)
-    : Reconstructor<System>(msg) {}
-
-template <typename System>
 PositivityPreservingAdaptiveOrderPrim<System>::
     PositivityPreservingAdaptiveOrderPrim(
         const double alpha_5, const std::optional<double> alpha_7,

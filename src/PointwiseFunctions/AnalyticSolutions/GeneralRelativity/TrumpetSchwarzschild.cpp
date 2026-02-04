@@ -446,8 +446,6 @@ namespace gr::Solutions {
 const tnsr::I<DataVector, 1, Frame::Inertial>
     TrumpetSchwarzschild::source_grid_ = set_source_grid();
 
-TrumpetSchwarzschild::TrumpetSchwarzschild(CkMigrateMessage* /*msg*/) {}
-
 TrumpetSchwarzschild::TrumpetSchwarzschild(const double mass, const double n,
                                            const Options::Context& context)
     : mass_(mass), n_(n) {

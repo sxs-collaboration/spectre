@@ -35,6 +35,5 @@ class DeltaRNoDrift : public State {
       const ControlErrorArgs& control_error_args) const override;
 
   WRAPPED_PUPable_decl_template(DeltaRNoDrift);  // NOLINT
-  explicit DeltaRNoDrift(CkMigrateMessage* const /*msg*/) {}
 };
 }  // namespace control_system::size::States

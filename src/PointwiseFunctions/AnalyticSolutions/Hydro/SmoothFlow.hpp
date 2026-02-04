@@ -58,8 +58,6 @@ class SmoothFlow : virtual public MarkAsAnalyticSolution {
   SmoothFlow& operator=(SmoothFlow&& /*rhs*/) = default;
   ~SmoothFlow() = default;
 
-  explicit SmoothFlow(CkMigrateMessage* /*unused*/);
-
   // clang-tidy: no runtime references
   void pup(PUP::er& /*p*/);  //  NOLINT
 

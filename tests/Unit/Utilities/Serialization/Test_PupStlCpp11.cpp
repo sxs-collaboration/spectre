@@ -36,7 +36,6 @@ struct DerivedInPupStlCpp11 : public Base {
   // clang-tidy: internal charm++ warnings
   WRAPPED_PUPable_decl_base_template(Base,  // NOLINT
                                      DerivedInPupStlCpp11);
-  explicit DerivedInPupStlCpp11(CkMigrateMessage* /* m */) {}
   void pup(PUP::er& p) override {
     Base::pup(p);
     p | vec_;

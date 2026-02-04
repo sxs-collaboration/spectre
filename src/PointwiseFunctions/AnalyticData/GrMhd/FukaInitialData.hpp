@@ -70,7 +70,6 @@ class FukaInitialData : public evolution::initial_data::InitialData,
       -> std::unique_ptr<evolution::initial_data::InitialData> override;
 
   /// \cond
-  explicit FukaInitialData(CkMigrateMessage* msg);
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(FukaInitialData);
   /// \endcond

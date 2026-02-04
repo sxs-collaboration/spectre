@@ -26,7 +26,6 @@ class TimeCompares : public Trigger {
  public:
   /// \cond
   TimeCompares() = default;
-  explicit TimeCompares(CkMigrateMessage* /*unused*/) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(TimeCompares);  // NOLINT
   /// \endcond

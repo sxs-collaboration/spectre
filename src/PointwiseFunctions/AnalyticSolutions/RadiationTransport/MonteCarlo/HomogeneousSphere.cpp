@@ -47,8 +47,6 @@ HomogeneousSphere::get_clone() const {
   return std::make_unique<HomogeneousSphere>(*this);
 }
 
-HomogeneousSphere::HomogeneousSphere(CkMigrateMessage* /*unused*/) {}
-
 HomogeneousSphere::HomogeneousSphere(const HomogeneousSphere& rhs)
     : evolution::initial_data::InitialData(rhs),
       radius_(rhs.radius_),

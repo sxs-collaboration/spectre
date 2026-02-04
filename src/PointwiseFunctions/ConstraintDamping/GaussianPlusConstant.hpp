@@ -70,7 +70,6 @@ class GaussianPlusConstant : public DampingFunction<VolumeDim, Fr> {
   WRAPPED_PUPable_decl_base_template(SINGLE_ARG(DampingFunction<VolumeDim, Fr>),
                                      GaussianPlusConstant);  // NOLINT
 
-  explicit GaussianPlusConstant(CkMigrateMessage* msg);
   /// \endcond
 
   GaussianPlusConstant(double constant, double amplitude, double width,

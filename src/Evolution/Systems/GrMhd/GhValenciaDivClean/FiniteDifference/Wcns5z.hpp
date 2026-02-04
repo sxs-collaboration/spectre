@@ -142,8 +142,6 @@ class Wcns5zPrim : public Reconstructor<System> {
                  fix_reconstructed_state_to_atmosphere,
              bool reconstruct_rho_times_temperature);
 
-  explicit Wcns5zPrim(CkMigrateMessage* msg);
-
   WRAPPED_PUPable_decl_base_template(Reconstructor<System>, Wcns5zPrim<System>);
 
   auto get_clone() const -> std::unique_ptr<Reconstructor<System>> override;

@@ -30,7 +30,6 @@ class StepToTimes : public StepChooser<StepChooserUse::Slab> {
  public:
   /// \cond
   StepToTimes() = default;
-  explicit StepToTimes(CkMigrateMessage* /*unused*/) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(StepToTimes);  // NOLINT
   /// \endcond

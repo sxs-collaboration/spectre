@@ -69,8 +69,6 @@ class Reflection final : public BoundaryCondition<Dim> {
   Reflection& operator=(const Reflection&) = default;
   ~Reflection() override = default;
 
-  explicit Reflection(CkMigrateMessage* msg);
-
   WRAPPED_PUPable_decl_base_template(
       domain::BoundaryConditions::BoundaryCondition, Reflection);
 

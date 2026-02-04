@@ -94,7 +94,6 @@ class VortexPerturbation : public Source<3> {
   ~VortexPerturbation() override = default;
 
   /// \cond
-  explicit VortexPerturbation(CkMigrateMessage* msg);
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(VortexPerturbation);
   /// \endcond

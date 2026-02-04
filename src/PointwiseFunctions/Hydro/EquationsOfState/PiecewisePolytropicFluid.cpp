@@ -106,11 +106,6 @@ PiecewisePolytropicFluid<IsRelativistic>::promote_to_2d_eos() const {
 }
 
 template <bool IsRelativistic>
-PiecewisePolytropicFluid<IsRelativistic>::PiecewisePolytropicFluid(
-    CkMigrateMessage* msg)
-    : EquationOfState<IsRelativistic, 1>(msg) {}
-
-template <bool IsRelativistic>
 void PiecewisePolytropicFluid<IsRelativistic>::pup(PUP::er& p) {
   EquationOfState<IsRelativistic, 1>::pup(p);
   p | transition_density_;

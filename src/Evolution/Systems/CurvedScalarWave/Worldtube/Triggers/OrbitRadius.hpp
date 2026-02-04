@@ -31,8 +31,6 @@ class OrbitRadius : public Trigger {
  public:
   /// \cond
   OrbitRadius() = default;
-  explicit OrbitRadius(CkMigrateMessage* /*unused*/) {}
-  using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(OrbitRadius);  // NOLINT
   /// \endcond
 

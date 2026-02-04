@@ -81,7 +81,6 @@ class AnalyticSolution<System, Dim, tmpl::list<FieldTags...>,
   ~AnalyticSolution() = default;
 
   /// \cond
-  explicit AnalyticSolution(CkMigrateMessage* m) : Base(m) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(AnalyticSolution);
   /// \endcond

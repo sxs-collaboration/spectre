@@ -87,7 +87,6 @@ class MonitorMemory : public Event {
                                funcl::ElementWise<funcl::Plus<>>>>;
 
  public:
-  explicit MonitorMemory(CkMigrateMessage* msg);
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(MonitorMemory);  // NOLINT
 
@@ -155,9 +154,6 @@ class MonitorMemory : public Event {
 };
 
 /// \cond
-template <size_t Dim>
-MonitorMemory<Dim>::MonitorMemory(CkMigrateMessage* msg) : Event(msg) {}
-
 template <size_t Dim>
 template <typename Metavariables>
 MonitorMemory<Dim>::MonitorMemory(

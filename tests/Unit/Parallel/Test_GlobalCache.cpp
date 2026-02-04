@@ -72,7 +72,6 @@ class Shape : public PUP::able {
 class Triangle : public Shape {
  public:
   Triangle() = default;
-  explicit Triangle(CkMigrateMessage* /*m*/) {}
   size_t number_of_sides() const final { return 3; }
   // clang-tidy: internal charm++ warnings
   WRAPPED_PUPable_decl_base_template(Shape,  // NOLINT
@@ -83,7 +82,6 @@ class Triangle : public Shape {
 class Square : public Shape {
  public:
   Square() = default;
-  explicit Square(CkMigrateMessage* /*m*/) {}
   size_t number_of_sides() const final { return 4; }
   // clang-tidy: internal charm++ warnings
   WRAPPED_PUPable_decl_base_template(Shape,  // NOLINT
@@ -104,7 +102,6 @@ class Arthropod : public Animal {
  public:
   Arthropod() = default;
   explicit Arthropod(const size_t num_legs) : number_of_legs_(num_legs){};
-  explicit Arthropod(CkMigrateMessage* /*m*/) {}
   size_t number_of_legs() const final { return number_of_legs_; }
   void set_number_of_legs(const size_t num_legs) final {
     number_of_legs_ = num_legs;
@@ -217,8 +214,6 @@ class UseCkCallbackAsCallback : public Parallel::Callback {
  public:
   WRAPPED_PUPable_decl_template(UseCkCallbackAsCallback);
   UseCkCallbackAsCallback() = default;
-  explicit UseCkCallbackAsCallback(CkMigrateMessage* msg)
-      : Parallel::Callback(msg) {}
   explicit UseCkCallbackAsCallback(const CkCallback& callback,
                                    const size_t index)
       : callback_(callback), index_(index) {}

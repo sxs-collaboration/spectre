@@ -53,8 +53,6 @@ Wcns5zPrim::Wcns5zPrim(const size_t nonlinear_weight_exponent,
           nonlinear_weight_exponent_, fallback_reconstructor_);
 }
 
-Wcns5zPrim::Wcns5zPrim(CkMigrateMessage* const msg) : Reconstructor(msg) {}
-
 std::unique_ptr<Reconstructor> Wcns5zPrim::get_clone() const {
   return std::make_unique<Wcns5zPrim>(*this);
 }

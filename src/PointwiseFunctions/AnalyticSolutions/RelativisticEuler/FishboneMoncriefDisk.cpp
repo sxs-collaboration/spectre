@@ -24,9 +24,6 @@
 
 namespace RelativisticEuler::Solutions {
 
-FishboneMoncriefDisk::FishboneMoncriefDisk(CkMigrateMessage* msg)
-    : InitialData(msg) {}
-
 FishboneMoncriefDisk::FishboneMoncriefDisk(const double bh_mass,
                                            const double bh_dimless_spin,
                                            const double inner_edge_radius,

@@ -91,8 +91,6 @@ class MonotonisedCentralPrim : public Reconstructor {
 
   explicit MonotonisedCentralPrim(bool reconstruct_rho_times_temperature);
 
-  explicit MonotonisedCentralPrim(CkMigrateMessage* msg);
-
   WRAPPED_PUPable_decl_base_template(Reconstructor, MonotonisedCentralPrim);
 
   auto get_clone() const -> std::unique_ptr<Reconstructor> override;

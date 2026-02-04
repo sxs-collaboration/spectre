@@ -45,8 +45,6 @@ class DgElementArrayMemberBase : PUP::able {
 
   WRAPPED_PUPable_abstract(DgElementArrayMemberBase);  // NOLINT
 
-  explicit DgElementArrayMemberBase(CkMigrateMessage* msg);
-
   /// Start execution of the phase-dependent action list in `next_phase`. If
   /// `next_phase` has already been visited, execution will resume at the point
   /// where the previous execution of the same phase left off.

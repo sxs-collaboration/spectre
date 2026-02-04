@@ -143,8 +143,6 @@ class PositivityPreservingAdaptiveOrderPrim : public Reconstructor {
       bool reconstruct_rho_times_temperature,
       const Options::Context& context = {});
 
-  explicit PositivityPreservingAdaptiveOrderPrim(CkMigrateMessage* msg);
-
   WRAPPED_PUPable_decl_base_template(Reconstructor,
                                      PositivityPreservingAdaptiveOrderPrim);
 

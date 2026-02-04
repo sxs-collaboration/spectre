@@ -40,7 +40,6 @@ class Filter : public DenseTrigger {
  public:
   /// \cond
   Filter() = default;
-  explicit Filter(CkMigrateMessage* const msg) : DenseTrigger(msg) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(Filter);  // NOLINT
   /// \endcond

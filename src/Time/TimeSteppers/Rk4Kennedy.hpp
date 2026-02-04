@@ -46,8 +46,6 @@ class Rk4Kennedy : public ImexRungeKutta {
 
   WRAPPED_PUPable_decl_template(Rk4Kennedy);  // NOLINT
 
-  explicit Rk4Kennedy(CkMigrateMessage* /*unused*/) {}
-
   const ButcherTableau& butcher_tableau() const override;
 
   const ImplicitButcherTableau& implicit_butcher_tableau() const override;

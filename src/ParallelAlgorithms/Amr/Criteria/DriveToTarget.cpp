@@ -39,10 +39,6 @@ DriveToTarget<Dim, CriteriaType>::DriveToTarget(
   }
 }
 
-template <size_t Dim, Type CriteriaType>
-DriveToTarget<Dim, CriteriaType>::DriveToTarget(CkMigrateMessage* msg)
-    : Criterion(msg) {}
-
 // NOLINTNEXTLINE(google-runtime-references)
 template <size_t Dim, Type CriteriaType>
 void DriveToTarget<Dim, CriteriaType>::pup(PUP::er& p) {

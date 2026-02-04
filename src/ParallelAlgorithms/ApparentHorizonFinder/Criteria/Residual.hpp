@@ -69,7 +69,6 @@ class Residual : public Criterion {
            const Options::Context& context = {});
 
   /// \cond
-  explicit Residual(CkMigrateMessage* msg);
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(Residual);  // NOLINT
   /// \endcond

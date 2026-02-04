@@ -38,9 +38,6 @@ NumericInitialData::NumericInitialData(
           observation_value_epsilon.value_or(1.0e-12), enable_interpolation,
           std::move(hydro_selected_variables)) {}
 
-NumericInitialData::NumericInitialData(CkMigrateMessage* msg)
-    : InitialData(msg) {}
-
 // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
 PUP::able::PUP_ID NumericInitialData::my_PUP_ID = 0;
 

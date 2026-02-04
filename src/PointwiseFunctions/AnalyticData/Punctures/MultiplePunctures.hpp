@@ -154,9 +154,6 @@ class MultiplePunctures : public elliptic::analytic_data::Background,
   MultiplePunctures(std::vector<Puncture> punctures)
       : punctures_(std::move(punctures)) {}
 
-  explicit MultiplePunctures(CkMigrateMessage* m)
-      : elliptic::analytic_data::Background(m),
-        elliptic::analytic_data::InitialGuess(m) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(MultiplePunctures);
 

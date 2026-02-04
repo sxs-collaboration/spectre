@@ -67,8 +67,6 @@ class ClassicalRungeKutta4 : public RungeKutta {
 
   WRAPPED_PUPable_decl_template(ClassicalRungeKutta4);  // NOLINT
 
-  explicit ClassicalRungeKutta4(CkMigrateMessage* /*unused*/) {}
-
   const ButcherTableau& butcher_tableau() const override;
 };
 

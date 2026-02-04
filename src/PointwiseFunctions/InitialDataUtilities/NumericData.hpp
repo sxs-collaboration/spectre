@@ -157,7 +157,6 @@ class NumericData : public elliptic::analytic_data::Background,
  public:
   using ::NumericData::NumericData;
 
-  explicit NumericData(CkMigrateMessage* m);
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(NumericData);
 
@@ -182,7 +181,6 @@ class NumericData : public evolution::initial_data::InitialData,
  public:
   using ::NumericData::NumericData;
 
-  explicit NumericData(CkMigrateMessage* m);
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(NumericData);
 

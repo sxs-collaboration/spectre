@@ -60,8 +60,6 @@ class Dirichlet final : public BoundaryCondition {
   Dirichlet& operator=(const Dirichlet&) = default;
   ~Dirichlet() override = default;
 
-  explicit Dirichlet(CkMigrateMessage* msg);
-
   WRAPPED_PUPable_decl_base_template(BoundaryCondition, Dirichlet);
 
   auto get_clone() const -> std::unique_ptr<

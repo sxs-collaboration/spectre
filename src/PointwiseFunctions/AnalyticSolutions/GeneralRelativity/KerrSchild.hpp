@@ -271,8 +271,6 @@ class KerrSchild : public AnalyticSolution<3_st>,
              const std::array<double, 3>& boost_velocity = {{0., 0., 0.}},
              const Options::Context& context = {});
 
-  explicit KerrSchild(CkMigrateMessage* /*msg*/);
-
   template <typename DataType, typename Frame = Frame::Inertial>
   using tags = tmpl::flatten<tmpl::list<
       AnalyticSolution<3_st>::tags<DataType, Frame>,

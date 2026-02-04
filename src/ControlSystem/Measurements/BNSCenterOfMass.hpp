@@ -114,11 +114,7 @@ template <typename ControlSystems>
 class BNSEvent : public ::Event {
  public:
   /// \cond
-  // LCOV_EXCL_START
-  explicit BNSEvent(CkMigrateMessage* /*unused*/) {}
-  using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(BNSEvent);  // NOLINT
-  // LCOV_EXCL_STOP
   /// \endcond
 
   // This event is created during control system initialization, not

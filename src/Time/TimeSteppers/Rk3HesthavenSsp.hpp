@@ -55,8 +55,6 @@ class Rk3HesthavenSsp : public TimeStepper {
 
   WRAPPED_PUPable_decl_template(Rk3HesthavenSsp);  // NOLINT
 
-  explicit Rk3HesthavenSsp(CkMigrateMessage* /*unused*/) {}
-
   variants::TaggedVariant<Tags::FixedOrder, Tags::VariableOrder> order()
       const override;
 

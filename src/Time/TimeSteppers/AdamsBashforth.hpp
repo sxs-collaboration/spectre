@@ -248,8 +248,6 @@ class AdamsBashforth : public LtsTimeStepper {
 
   WRAPPED_PUPable_decl_template(AdamsBashforth);  // NOLINT
 
-  explicit AdamsBashforth(CkMigrateMessage* /*unused*/) {}
-
   // clang-tidy: do not pass by non-const reference
   void pup(PUP::er& p) override;  // NOLINT
 

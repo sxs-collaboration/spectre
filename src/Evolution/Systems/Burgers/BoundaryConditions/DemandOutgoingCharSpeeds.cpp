@@ -18,9 +18,6 @@
 #include "Utilities/MakeString.hpp"
 
 namespace Burgers::BoundaryConditions {
-DemandOutgoingCharSpeeds::DemandOutgoingCharSpeeds(CkMigrateMessage* const msg)
-    : BoundaryCondition(msg) {}
-
 std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
 DemandOutgoingCharSpeeds::get_clone() const {
   return std::make_unique<DemandOutgoingCharSpeeds>(*this);

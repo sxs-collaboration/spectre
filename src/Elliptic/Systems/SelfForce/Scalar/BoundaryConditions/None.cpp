@@ -5,8 +5,6 @@
 
 namespace ScalarSelfForce::BoundaryConditions {
 
-None::None(CkMigrateMessage* m) : Base(m) {}
-
 std::unique_ptr<domain::BoundaryConditions::BoundaryCondition> None::get_clone()
     const {
   return std::make_unique<None>(*this);

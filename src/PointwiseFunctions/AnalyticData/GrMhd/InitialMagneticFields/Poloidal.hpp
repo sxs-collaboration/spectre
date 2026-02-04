@@ -137,7 +137,6 @@ class Poloidal : public InitialMagneticField {
   auto get_clone() const -> std::unique_ptr<InitialMagneticField> override;
 
   /// \cond
-  explicit Poloidal(CkMigrateMessage* msg);
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(Poloidal);
   /// \endcond

@@ -102,8 +102,6 @@ bool Spectral::is_equal(const EquationOfState<true, 1>& rhs) const {
   return derived_ptr != nullptr and *derived_ptr == *this;
 }
 
-Spectral::Spectral(CkMigrateMessage* msg) : EquationOfState<true, 1>(msg) {}
-
 void Spectral::pup(PUP::er& p) {
   EquationOfState<true, 1>::pup(p);
   p | reference_density_;

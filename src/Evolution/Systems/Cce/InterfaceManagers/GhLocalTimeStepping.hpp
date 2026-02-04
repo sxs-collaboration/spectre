@@ -75,8 +75,6 @@ class GhLocalTimeStepping : public GhInterfaceManager {
     return *this;
   }
 
-  explicit GhLocalTimeStepping(CkMigrateMessage* /*unused*/) {}
-
   WRAPPED_PUPable_decl_template(GhLocalTimeStepping);  // NOLINT
 
   std::unique_ptr<GhInterfaceManager> get_clone() const override;

@@ -76,8 +76,6 @@ class ObserveAmrCriteria
  public:
   static constexpr size_t volume_dim = Metavariables::volume_dim;
   /// \cond
-  explicit ObserveAmrCriteria(CkMigrateMessage* m)
-      : dg::Events::ObserveConstantsPerElement<volume_dim>(m) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(ObserveAmrCriteria);  // NOLINT
   /// \endcond

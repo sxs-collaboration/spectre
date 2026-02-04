@@ -55,10 +55,6 @@
 
 namespace grmhd::GhValenciaDivClean::BoundaryConditions {
 template <typename System>
-DirichletFreeOutflow<System>::DirichletFreeOutflow(CkMigrateMessage* const msg)
-    : BoundaryCondition(msg) {}
-// LCOV_EXCL_STOP
-template <typename System>
 DirichletFreeOutflow<System>::DirichletFreeOutflow(
     const DirichletFreeOutflow<System>& rhs)
     : BoundaryCondition{dynamic_cast<const BoundaryCondition&>(rhs)},

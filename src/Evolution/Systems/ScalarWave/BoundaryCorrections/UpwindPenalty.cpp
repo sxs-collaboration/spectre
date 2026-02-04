@@ -19,10 +19,6 @@
 
 namespace ScalarWave::BoundaryCorrections {
 template <size_t Dim>
-UpwindPenalty<Dim>::UpwindPenalty(CkMigrateMessage* msg)
-    : BoundaryCorrection(msg) {}
-
-template <size_t Dim>
 std::unique_ptr<evolution::BoundaryCorrection> UpwindPenalty<Dim>::get_clone()
     const {
   return std::make_unique<UpwindPenalty>(*this);

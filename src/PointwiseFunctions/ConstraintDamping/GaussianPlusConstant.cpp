@@ -25,10 +25,6 @@ class FunctionOfTime;
 
 namespace ConstraintDamping {
 template <size_t VolumeDim, typename Fr>
-GaussianPlusConstant<VolumeDim, Fr>::GaussianPlusConstant(CkMigrateMessage* msg)
-    : DampingFunction<VolumeDim, Fr>(msg) {}
-
-template <size_t VolumeDim, typename Fr>
 GaussianPlusConstant<VolumeDim, Fr>::GaussianPlusConstant(
     const double constant, const double amplitude, const double width,
     const std::array<double, VolumeDim>& center)
@@ -92,8 +88,6 @@ auto GaussianPlusConstant<VolumeDim, Fr>::get_clone() const
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 #define FRAME(data) BOOST_PP_TUPLE_ELEM(1, data)
 #define INSTANTIATE(_, data)                                                   \
-  template ConstraintDamping::GaussianPlusConstant<                            \
-      DIM(data), FRAME(data)>::GaussianPlusConstant(CkMigrateMessage* msg);    \
   template ConstraintDamping::GaussianPlusConstant<DIM(data), FRAME(data)>::   \
       GaussianPlusConstant(const double constant, const double amplitude,      \
                            const double width,                                 \

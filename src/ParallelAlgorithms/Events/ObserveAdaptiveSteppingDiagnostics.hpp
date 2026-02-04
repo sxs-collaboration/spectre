@@ -70,7 +70,6 @@ class ObserveAdaptiveSteppingDiagnostics : public Event {
   };
 
   /// \cond
-  explicit ObserveAdaptiveSteppingDiagnostics(CkMigrateMessage* /*unused*/) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(ObserveAdaptiveSteppingDiagnostics);  // NOLINT
   /// \endcond

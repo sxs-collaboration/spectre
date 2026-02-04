@@ -23,7 +23,6 @@ class BoundaryCondition : public PUP::able {
   BoundaryCondition(const BoundaryCondition&) = default;
   BoundaryCondition& operator=(const BoundaryCondition&) = default;
   ~BoundaryCondition() override = default;
-  explicit BoundaryCondition(CkMigrateMessage* const msg) : PUP::able(msg) {}
   WRAPPED_PUPable_abstract(BoundaryCondition);  // NOLINT
 
   virtual auto get_clone() const -> std::unique_ptr<BoundaryCondition> = 0;

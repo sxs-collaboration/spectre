@@ -26,7 +26,6 @@ class Maximum : public StepChooser<StepChooserUse::Slab>,
  public:
   /// \cond
   Maximum() = default;
-  explicit Maximum(CkMigrateMessage* /*unused*/) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(Maximum);  // NOLINT
   /// \endcond

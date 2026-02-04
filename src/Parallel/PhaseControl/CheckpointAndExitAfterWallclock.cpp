@@ -33,10 +33,6 @@ CheckpointAndExitAfterWallclock::CheckpointAndExitAfterWallclock(
   }
 }
 
-CheckpointAndExitAfterWallclock::CheckpointAndExitAfterWallclock(
-    CkMigrateMessage* msg)
-    : PhaseChange(msg) {}
-
 void CheckpointAndExitAfterWallclock::pup(PUP::er& p) {
   PhaseChange::pup(p);
   p | wallclock_hours_for_checkpoint_and_exit_;

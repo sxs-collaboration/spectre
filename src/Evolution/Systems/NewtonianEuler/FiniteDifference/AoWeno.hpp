@@ -89,8 +89,6 @@ class AoWeno53Prim : public Reconstructor<Dim> {
   AoWeno53Prim(double gamma_hi, double gamma_lo, double epsilon,
                size_t nonlinear_weight_exponent);
 
-  explicit AoWeno53Prim(CkMigrateMessage* msg);
-
   WRAPPED_PUPable_decl_base_template(Reconstructor<Dim>, AoWeno53Prim);
 
   auto get_clone() const -> std::unique_ptr<Reconstructor<Dim>> override;

@@ -105,7 +105,6 @@ class LaneEmdenGravitationalField : public Source<3> {
   ~LaneEmdenGravitationalField() override = default;
 
   /// \cond
-  explicit LaneEmdenGravitationalField(CkMigrateMessage* msg);
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(LaneEmdenGravitationalField);
   /// \endcond

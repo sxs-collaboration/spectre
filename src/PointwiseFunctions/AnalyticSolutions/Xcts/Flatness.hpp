@@ -49,8 +49,6 @@ class Flatness : public elliptic::analytic_data::AnalyticSolution {
   }
 
   /// \cond
-  explicit Flatness(CkMigrateMessage* m)
-      : elliptic::analytic_data::AnalyticSolution(m) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(Flatness);
   /// \endcond

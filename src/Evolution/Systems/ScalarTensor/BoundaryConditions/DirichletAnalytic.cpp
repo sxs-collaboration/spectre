@@ -43,9 +43,6 @@ DirichletAnalytic::DirichletAnalytic(
     : analytic_prescription_(std::move(analytic_prescription)),
       amplitude_(amplitude) {}
 
-DirichletAnalytic::DirichletAnalytic(CkMigrateMessage* const msg)
-    : BoundaryCondition(msg) {}
-
 std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
 DirichletAnalytic::get_clone() const {
   return std::make_unique<DirichletAnalytic>(*this);

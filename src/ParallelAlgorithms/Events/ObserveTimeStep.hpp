@@ -122,7 +122,6 @@ class ObserveTimeStep : public Event {
   };
 
   /// \cond
-  explicit ObserveTimeStep(CkMigrateMessage* /*m*/);
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(ObserveTimeStep);  // NOLINT
   /// \endcond

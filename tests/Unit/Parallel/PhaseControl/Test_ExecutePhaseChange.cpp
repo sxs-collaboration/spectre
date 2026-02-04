@@ -32,7 +32,6 @@ struct Request {
 template <PhaseControl::ArbitrationStrategy Strategy, size_t Index>
 struct TestPhaseChange : public PhaseChange {
   TestPhaseChange() = default;
-  explicit TestPhaseChange(CkMigrateMessage* /*unused*/) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(TestPhaseChange);  // NOLINT
   static std::string name() {

@@ -18,8 +18,6 @@ std::unique_ptr<InitialMagneticField> Toroidal::get_clone() const {
   return std::make_unique<Toroidal>(*this);
 }
 
-Toroidal::Toroidal(CkMigrateMessage* msg) : InitialMagneticField(msg) {}
-
 void Toroidal::pup(PUP::er& p) {
   InitialMagneticField::pup(p);
   p | pressure_exponent_;

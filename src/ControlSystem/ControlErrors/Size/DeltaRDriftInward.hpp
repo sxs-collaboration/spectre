@@ -35,7 +35,6 @@ class DeltaRDriftInward : public State {
       const ControlErrorArgs& control_error_args) const override;
 
   WRAPPED_PUPable_decl_template(DeltaRDriftInward);  // NOLINT
-  explicit DeltaRDriftInward(CkMigrateMessage* const /*msg*/) {}
 };
 
 // The following are helper functions that are used in many

@@ -41,11 +41,6 @@ ObserveConstantsPerElement<VolumeDim>::ObserveConstantsPerElement(
       floating_point_type_(floating_point_type) {}
 
 template <size_t VolumeDim>
-ObserveConstantsPerElement<VolumeDim>::ObserveConstantsPerElement(
-    CkMigrateMessage* msg)
-    : Event(msg) {}
-
-template <size_t VolumeDim>
 std::optional<
     std::pair<observers::TypeOfObservation, observers::ObservationKey>>
 ObserveConstantsPerElement<

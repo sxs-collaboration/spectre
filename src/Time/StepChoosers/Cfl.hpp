@@ -39,7 +39,6 @@ class Cfl : public StepChooser<StepChooserUse::Slab>,
  public:
   /// \cond
   Cfl() = default;
-  explicit Cfl(CkMigrateMessage* /*unused*/) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(Cfl);  // NOLINT
   /// \endcond

@@ -31,9 +31,6 @@ DirichletAnalytic::DirichletAnalytic(
     std::unique_ptr<evolution::initial_data::InitialData> analytic_prescription)
     : analytic_prescription_(std::move(analytic_prescription)) {}
 
-DirichletAnalytic::DirichletAnalytic(CkMigrateMessage* const msg)
-    : BoundaryCondition(msg) {}
-
 std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
 DirichletAnalytic::get_clone() const {
   return std::make_unique<DirichletAnalytic>(*this);

@@ -29,11 +29,6 @@ void DemandOutgoingCharSpeeds<Dim>::pup(PUP::er& p) {
 }
 
 template <size_t Dim>
-DemandOutgoingCharSpeeds<Dim>::DemandOutgoingCharSpeeds(
-    CkMigrateMessage* const msg)
-    : BoundaryCondition<Dim>(msg) {}
-
-template <size_t Dim>
 std::optional<std::string>
 DemandOutgoingCharSpeeds<Dim>::dg_demand_outgoing_char_speeds(
     const std::optional<tnsr::I<DataVector, Dim, Frame::Inertial>>&

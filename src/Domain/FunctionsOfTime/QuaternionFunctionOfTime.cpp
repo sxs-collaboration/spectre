@@ -71,10 +71,6 @@ QuaternionFunctionOfTime<MaxDeriv>::QuaternionFunctionOfTime(
 }
 
 template <size_t MaxDeriv>
-QuaternionFunctionOfTime<MaxDeriv>::QuaternionFunctionOfTime(
-    CkMigrateMessage* /*unused*/) {}
-
-template <size_t MaxDeriv>
 std::unique_ptr<FunctionOfTime> QuaternionFunctionOfTime<MaxDeriv>::get_clone()
     const {
   return std::make_unique<QuaternionFunctionOfTime>(*this);
@@ -460,4 +456,8 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (2, 3))
 
 #undef DIM
 #undef INSTANTIATE
+
+namespace FunctionOfTimeHelpers {
+template class ThreadsafeList<boost::math::quaternion<double>>;
+}  // namespace FunctionOfTimeHelpers
 }  // namespace domain::FunctionsOfTime

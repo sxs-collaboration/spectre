@@ -135,8 +135,6 @@ class CubicCrystal : public ConstitutiveRelation<3> {
   // clang-tidy: no runtime references
   void pup(PUP::er& /*p*/) override;  //  NOLINT
 
-  explicit CubicCrystal(CkMigrateMessage* /*unused*/) {}
-
   WRAPPED_PUPable_decl_base_template(  // NOLINT
       SINGLE_ARG(ConstitutiveRelation<3>), CubicCrystal);
 

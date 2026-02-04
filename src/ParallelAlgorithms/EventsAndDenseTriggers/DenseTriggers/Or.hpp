@@ -42,7 +42,6 @@ class Or : public DenseTrigger {
  public:
   /// \cond
   Or() = default;
-  explicit Or(CkMigrateMessage* const msg) : DenseTrigger(msg) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(Or);  // NOLINT
   /// \endcond

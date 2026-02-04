@@ -50,8 +50,6 @@ class NeutrinoInteractionTable : public PUP::able {
       std::vector<double> table_log_temperature_,
       std::vector<double> table_electron_fraction_);
 
-  explicit NeutrinoInteractionTable(CkMigrateMessage* msg) : PUP::able(msg) {}
-
   using PUP::able::register_constructor;
   void pup(PUP::er& p) override;
   WRAPPED_PUPable_decl_template(NeutrinoInteractionTable);

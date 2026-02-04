@@ -463,8 +463,6 @@ class Schwarzschild : public elliptic::analytic_data::AnalyticSolution,
   using SchwarzschildImpl::SchwarzschildImpl;
 
   /// \cond
-  explicit Schwarzschild(CkMigrateMessage* m)
-      : elliptic::analytic_data::AnalyticSolution(m) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(Schwarzschild);
   std::unique_ptr<elliptic::analytic_data::AnalyticSolution> get_clone()

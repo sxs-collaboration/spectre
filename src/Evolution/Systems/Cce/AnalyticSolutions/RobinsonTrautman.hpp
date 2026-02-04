@@ -106,8 +106,6 @@ struct RobinsonTrautman : public SphericalMetricData {
 
   WRAPPED_PUPable_decl_template(RobinsonTrautman);  // NOLINT
 
-  explicit RobinsonTrautman(CkMigrateMessage* msg) : SphericalMetricData(msg) {}
-
   RobinsonTrautman() = default;
 
   RobinsonTrautman(std::vector<std::complex<double>> initial_modes,

@@ -158,8 +158,6 @@ class TrumpetSchwarzschild : public MarkAsAnalyticSolution,
   TrumpetSchwarzschild& operator=(TrumpetSchwarzschild&& /*rhs*/) = default;
   ~TrumpetSchwarzschild() = default;
 
-  explicit TrumpetSchwarzschild(CkMigrateMessage* /*msg*/);
-
   template <typename DataType>
   using DerivLapse = ::Tags::deriv<gr::Tags::Lapse<DataType>,
                                    tmpl::size_t<volume_dim>, Frame::Inertial>;

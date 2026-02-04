@@ -15,10 +15,6 @@
 
 namespace gh::Solutions {
 template <typename SolutionType>
-WrappedGr<SolutionType>::WrappedGr(CkMigrateMessage* msg)
-    : InitialData(msg), SolutionType(msg) {}
-
-template <typename SolutionType>
 std::unique_ptr<evolution::initial_data::InitialData>
 WrappedGr<SolutionType>::get_clone() const {
   return std::make_unique<WrappedGr<SolutionType>>(*this);

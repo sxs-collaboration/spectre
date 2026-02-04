@@ -194,7 +194,6 @@ class ObserveNorms<tmpl::list<ObservableTensorTags...>,
         "List specifying each tensor to observe and how it is reduced."};
   };
 
-  explicit ObserveNorms(CkMigrateMessage* msg);
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(ObserveNorms);  // NOLINT
 
@@ -293,13 +292,6 @@ class ObserveNorms<tmpl::list<ObservableTensorTags...>,
 /// @}
 
 /// \cond
-template <typename... ObservableTensorTags, typename... NonTensorComputeTags,
-          typename ArraySectionIdTag, typename OptionName>
-ObserveNorms<tmpl::list<ObservableTensorTags...>,
-             tmpl::list<NonTensorComputeTags...>, ArraySectionIdTag,
-             OptionName>::ObserveNorms(CkMigrateMessage* msg)
-    : Event(msg) {}
-
 template <typename... ObservableTensorTags, typename... NonTensorComputeTags,
           typename ArraySectionIdTag, typename OptionName>
 ObserveNorms<tmpl::list<ObservableTensorTags...>,

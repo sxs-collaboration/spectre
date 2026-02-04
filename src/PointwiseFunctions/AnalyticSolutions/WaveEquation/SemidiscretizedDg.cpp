@@ -26,9 +26,6 @@ SemidiscretizedDg::get_clone() const {
   return std::make_unique<SemidiscretizedDg>(*this);
 }
 
-SemidiscretizedDg::SemidiscretizedDg(CkMigrateMessage* msg)
-    : InitialData(msg) {}
-
 namespace {
 struct Mode {
   std::complex<double> frequency;

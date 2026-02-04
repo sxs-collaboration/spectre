@@ -250,7 +250,6 @@ class FishboneMoncriefDisk
       -> std::unique_ptr<evolution::initial_data::InitialData> override;
 
   /// \cond
-  explicit FishboneMoncriefDisk(CkMigrateMessage* msg);
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(FishboneMoncriefDisk);
   /// \endcond

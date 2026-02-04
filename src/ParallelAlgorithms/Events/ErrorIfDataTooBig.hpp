@@ -64,7 +64,6 @@ template <size_t Dim, typename Tensors, typename NonTensorComputeTags>
 class ErrorIfDataTooBig : public Event {
  public:
   /// \cond
-  explicit ErrorIfDataTooBig(CkMigrateMessage* /*unused*/) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(ErrorIfDataTooBig);  // NOLINT
   /// \endcond

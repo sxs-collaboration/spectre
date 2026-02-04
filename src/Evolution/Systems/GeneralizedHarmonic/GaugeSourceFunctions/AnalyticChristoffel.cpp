@@ -42,9 +42,6 @@ AnalyticChristoffel::AnalyticChristoffel(
     std::unique_ptr<evolution::initial_data::InitialData> analytic_prescription)
     : analytic_prescription_(std::move(analytic_prescription)) {}
 
-AnalyticChristoffel::AnalyticChristoffel(CkMigrateMessage* const msg)
-    : GaugeCondition(msg) {}
-
 void AnalyticChristoffel::pup(PUP::er& p) {
   GaugeCondition::pup(p);
   p | analytic_prescription_;

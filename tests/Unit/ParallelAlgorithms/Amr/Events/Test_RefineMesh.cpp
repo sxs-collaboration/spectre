@@ -60,7 +60,6 @@ class BadCriterion : public amr::Criterion {
   using options = tmpl::list<>;
 
   BadCriterion() = default;
-  explicit BadCriterion(CkMigrateMessage* msg) : Criterion(msg) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(BadCriterion);  // NOLINT
 

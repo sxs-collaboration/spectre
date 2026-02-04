@@ -39,10 +39,6 @@ DirichletAnalytic<Dim>::DirichletAnalytic(
     : analytic_prescription_(std::move(analytic_prescription)) {}
 
 template <size_t Dim>
-DirichletAnalytic<Dim>::DirichletAnalytic(CkMigrateMessage* const msg)
-    : BoundaryCondition<Dim>(msg) {}
-
-template <size_t Dim>
 std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
 DirichletAnalytic<Dim>::get_clone() const {
   return std::make_unique<DirichletAnalytic>(*this);

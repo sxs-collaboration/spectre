@@ -58,7 +58,6 @@ class Random : public Criterion {
   explicit Random(std::unordered_map<amr::Flag, size_t> probability_weights);
 
   /// \cond
-  explicit Random(CkMigrateMessage* msg);
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(Random);  // NOLINT
   /// \endcond

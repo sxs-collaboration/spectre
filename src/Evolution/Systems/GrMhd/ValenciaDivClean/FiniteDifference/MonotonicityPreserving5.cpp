@@ -37,10 +37,6 @@ MonotonicityPreserving5Prim::MonotonicityPreserving5Prim(
       epsilon_(epsilon),
       reconstruct_rho_times_temperature_(reconstruct_rho_times_temperature) {}
 
-MonotonicityPreserving5Prim::MonotonicityPreserving5Prim(
-    CkMigrateMessage* const msg)
-    : Reconstructor(msg) {}
-
 std::unique_ptr<Reconstructor> MonotonicityPreserving5Prim::get_clone() const {
   return std::make_unique<MonotonicityPreserving5Prim>(*this);
 }

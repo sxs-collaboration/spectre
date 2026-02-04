@@ -499,9 +499,6 @@ DampedHarmonic::DampedHarmonic(const double width,
                                const std::array<int, 3>& exps)
     : spatial_decay_width_(width), amplitudes_(amps), exponents_(exps) {}
 
-DampedHarmonic::DampedHarmonic(CkMigrateMessage* const msg)
-    : GaugeCondition(msg) {}
-
 void DampedHarmonic::pup(PUP::er& p) {
   GaugeCondition::pup(p);
   p | spatial_decay_width_;

@@ -63,8 +63,6 @@ class WrappedGr : public BackgroundSpacetime {
   }
 
   /// \cond
-  explicit WrappedGr(CkMigrateMessage* msg) : BackgroundSpacetime(msg) {}
-  using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(WrappedGr);
   /// \endcond
 

@@ -84,7 +84,6 @@ class Shape : public Criterion {
         const Options::Context& context = {});
 
   /// \cond
-  explicit Shape(CkMigrateMessage* msg);
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(Shape);  // NOLINT
   /// \endcond

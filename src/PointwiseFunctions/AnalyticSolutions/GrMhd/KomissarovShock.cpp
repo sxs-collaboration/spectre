@@ -71,8 +71,6 @@ KomissarovShock::get_clone() const {
   return std::make_unique<KomissarovShock>(*this);
 }
 
-KomissarovShock::KomissarovShock(CkMigrateMessage* msg) : InitialData(msg) {}
-
 void KomissarovShock::pup(PUP::er& p) {
   InitialData::pup(p);
   p | adiabatic_index_;

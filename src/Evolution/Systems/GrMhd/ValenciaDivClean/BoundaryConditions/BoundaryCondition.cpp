@@ -9,9 +9,6 @@
 #include "Utilities/GenerateInstantiations.hpp"
 
 namespace grmhd::ValenciaDivClean::BoundaryConditions {
-BoundaryCondition::BoundaryCondition(CkMigrateMessage* const msg)
-    : domain::BoundaryConditions::BoundaryCondition(msg) {}
-
 void BoundaryCondition::pup(PUP::er& p) {
   domain::BoundaryConditions::BoundaryCondition::pup(p);
 }

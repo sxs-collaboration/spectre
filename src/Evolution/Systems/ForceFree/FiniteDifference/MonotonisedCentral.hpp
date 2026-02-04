@@ -82,8 +82,6 @@ class MonotonisedCentral : public Reconstructor {
   MonotonisedCentral& operator=(const MonotonisedCentral&) = default;
   ~MonotonisedCentral() override = default;
 
-  explicit MonotonisedCentral(CkMigrateMessage* msg);
-
   WRAPPED_PUPable_decl_base_template(Reconstructor, MonotonisedCentral);
 
   auto get_clone() const -> std::unique_ptr<Reconstructor> override;

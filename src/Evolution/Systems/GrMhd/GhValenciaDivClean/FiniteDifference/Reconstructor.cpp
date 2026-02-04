@@ -10,10 +10,6 @@
 #include "Utilities/GenerateInstantiations.hpp"
 namespace grmhd::GhValenciaDivClean::fd {
 template <typename System>
-Reconstructor<System>::Reconstructor(CkMigrateMessage* const msg)
-    : PUP::able(msg) {}
-
-template <typename System>
 void Reconstructor<System>::pup(PUP::er& p) {
   PUP::able::pup(p);
 }

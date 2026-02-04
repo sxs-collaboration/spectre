@@ -34,7 +34,6 @@ class Times : public Trigger {
  public:
   /// \cond
   Times() = default;
-  explicit Times(CkMigrateMessage* /*unused*/) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(Times);  // NOLINT
   /// \endcond

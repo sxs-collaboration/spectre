@@ -88,7 +88,6 @@ class NumericInitialData : public evolution::initial_data::InitialData,
   ~NumericInitialData() = default;
 
   /// \cond
-  explicit NumericInitialData(CkMigrateMessage* msg);
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(NumericInitialData);
   /// \endcond

@@ -44,7 +44,6 @@ class ElementSizeCfl : public StepChooser<StepChooserUse::Slab>,
  public:
   /// \cond
   ElementSizeCfl() = default;
-  explicit ElementSizeCfl(CkMigrateMessage* /*unused*/) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(ElementSizeCfl);  // NOLINT
   /// \endcond

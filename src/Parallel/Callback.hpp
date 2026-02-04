@@ -57,7 +57,6 @@ class Callback : public PUP::able {
   Callback(Callback&&) = default;
   Callback& operator=(Callback&&) = default;
   ~Callback() override = default;
-  explicit Callback(CkMigrateMessage* msg) : PUP::able(msg) {}
   virtual void invoke() = 0;
   virtual void register_with_charm() = 0;
   /*!
@@ -78,7 +77,6 @@ class SimpleActionCallback : public Callback {
   // NOLINTNEXTLINE(google-explicit-constructor)
   SimpleActionCallback(Proxy proxy, std::decay_t<Args>... args)
       : proxy_(proxy), args_(std::move(args)...) {}
-  explicit SimpleActionCallback(CkMigrateMessage* msg) : Callback(msg) {}
   using PUP::able::register_constructor;
   void invoke() override {
     std::apply(
@@ -135,7 +133,6 @@ class SimpleActionCallback<SimpleAction, Proxy> : public Callback {
   SimpleActionCallback() = default;
   // NOLINTNEXTLINE(google-explicit-constructor)
   SimpleActionCallback(Proxy proxy) : proxy_(proxy) {}
-  explicit SimpleActionCallback(CkMigrateMessage* msg) : Callback(msg) {}
   using PUP::able::register_constructor;
   void invoke() override { Parallel::simple_action<SimpleAction>(proxy_); }
 
@@ -181,7 +178,6 @@ class ThreadedActionCallback : public Callback {
   // NOLINTNEXTLINE(google-explicit-constructor)
   ThreadedActionCallback(Proxy proxy, std::decay_t<Args>... args)
       : proxy_(proxy), args_(std::move(args)...) {}
-  explicit ThreadedActionCallback(CkMigrateMessage* msg) : Callback(msg) {}
   using PUP::able::register_constructor;
   void invoke() override {
     std::apply(
@@ -239,7 +235,6 @@ class ThreadedActionCallback<ThreadedAction, Proxy> : public Callback {
   ThreadedActionCallback() = default;
   // NOLINTNEXTLINE(google-explicit-constructor)
   ThreadedActionCallback(Proxy proxy) : proxy_(proxy) {}
-  explicit ThreadedActionCallback(CkMigrateMessage* msg) : Callback(msg) {}
   using PUP::able::register_constructor;
   void invoke() override { Parallel::threaded_action<ThreadedAction>(proxy_); }
 
@@ -285,7 +280,6 @@ class PerformAlgorithmCallback : public Callback {
   PerformAlgorithmCallback() = default;
   // NOLINTNEXTLINE(google-explicit-constructor)
   PerformAlgorithmCallback(Proxy proxy) : proxy_(proxy) {}
-  explicit PerformAlgorithmCallback(CkMigrateMessage* msg) : Callback(msg) {}
   using PUP::able::register_constructor;
   void invoke() override { proxy_.perform_algorithm(); }
   void pup(PUP::er& p) override { p | proxy_; }

@@ -98,8 +98,6 @@ class HydroFreeOutflow final : public BoundaryCondition {
   HydroFreeOutflow& operator=(const HydroFreeOutflow&) = default;
   ~HydroFreeOutflow() override = default;
 
-  explicit HydroFreeOutflow(CkMigrateMessage* msg);
-
   WRAPPED_PUPable_decl_base_template(
       domain::BoundaryConditions::BoundaryCondition, HydroFreeOutflow);
 

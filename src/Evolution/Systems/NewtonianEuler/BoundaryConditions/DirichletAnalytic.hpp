@@ -62,8 +62,6 @@ class DirichletAnalytic final : public BoundaryCondition<Dim> {
   DirichletAnalytic& operator=(const DirichletAnalytic&);
   ~DirichletAnalytic() override = default;
 
-  explicit DirichletAnalytic(CkMigrateMessage* msg);
-
   explicit DirichletAnalytic(
       std::unique_ptr<evolution::initial_data::InitialData>
           analytic_prescription);

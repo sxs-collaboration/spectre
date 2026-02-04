@@ -53,10 +53,6 @@ IsentropicVortex<Dim>::get_clone() const {
 }
 
 template <size_t Dim>
-IsentropicVortex<Dim>::IsentropicVortex(CkMigrateMessage* msg)
-    : InitialData(msg) {}
-
-template <size_t Dim>
 // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
 PUP::able::PUP_ID IsentropicVortex<Dim>::my_PUP_ID = 0;
 

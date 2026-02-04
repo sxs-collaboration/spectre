@@ -17,8 +17,6 @@ std::unique_ptr<InitialMagneticField> Poloidal::get_clone() const {
   return std::make_unique<Poloidal>(*this);
 }
 
-Poloidal::Poloidal(CkMigrateMessage* msg) : InitialMagneticField(msg) {}
-
 void Poloidal::pup(PUP::er& p) {
   InitialMagneticField::pup(p);
   p | pressure_exponent_;

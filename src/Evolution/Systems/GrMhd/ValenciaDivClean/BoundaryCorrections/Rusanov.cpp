@@ -17,8 +17,6 @@
 #include "Utilities/Gsl.hpp"
 
 namespace grmhd::ValenciaDivClean::BoundaryCorrections {
-Rusanov::Rusanov(CkMigrateMessage* /*unused*/) {}
-
 std::unique_ptr<evolution::BoundaryCorrection> Rusanov::get_clone() const {
   return std::make_unique<Rusanov>(*this);
 }

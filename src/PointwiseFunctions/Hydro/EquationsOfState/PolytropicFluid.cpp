@@ -67,10 +67,6 @@ PolytropicFluid<IsRelativistic>::promote_to_2d_eos() const {
 }
 
 template <bool IsRelativistic>
-PolytropicFluid<IsRelativistic>::PolytropicFluid(CkMigrateMessage* msg)
-    : EquationOfState<IsRelativistic, 1>(msg) {}
-
-template <bool IsRelativistic>
 void PolytropicFluid<IsRelativistic>::pup(PUP::er& p) {
   EquationOfState<IsRelativistic, 1>::pup(p);
   p | polytropic_constant_;

@@ -41,8 +41,6 @@ class Rk5Tsitouras : public RungeKutta {
 
   WRAPPED_PUPable_decl_template(Rk5Tsitouras);  // NOLINT
 
-  explicit Rk5Tsitouras(CkMigrateMessage* /*msg*/);
-
   const ButcherTableau& butcher_tableau() const override;
 };
 

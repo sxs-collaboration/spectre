@@ -42,7 +42,6 @@ class CheckConstraintThresholds : public Event {
 
  public:
   /// \cond
-  explicit CheckConstraintThresholds(CkMigrateMessage* /*unused*/) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(CheckConstraintThresholds);  // NOLINT
   /// \endcond

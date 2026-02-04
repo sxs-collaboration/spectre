@@ -99,9 +99,6 @@ void only_vary_gauge_d_heuristic(
 }
 }  // namespace
 
-ConformalFactor::ConformalFactor(CkMigrateMessage* msg)
-    : InitializeJ<false>(msg) {}
-
 ConformalFactor::ConformalFactor(
     const double angular_coordinate_tolerance, const size_t max_iterations,
     const bool require_convergence, const bool optimize_l_0_mode,

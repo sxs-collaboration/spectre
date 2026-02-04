@@ -50,7 +50,6 @@ class Constant : public DampingFunction<VolumeDim, Fr> {
   WRAPPED_PUPable_decl_base_template(SINGLE_ARG(DampingFunction<VolumeDim, Fr>),
                                      Constant);  // NOLINT
 
-  explicit Constant(CkMigrateMessage* msg);
   /// \endcond
 
   Constant(double value);

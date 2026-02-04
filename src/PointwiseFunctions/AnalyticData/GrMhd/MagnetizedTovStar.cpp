@@ -64,8 +64,6 @@ MagnetizedTovStar::get_clone() const {
   return std::make_unique<MagnetizedTovStar>(*this);
 }
 
-MagnetizedTovStar::MagnetizedTovStar(CkMigrateMessage* msg) : tov_star(msg) {}
-
 void MagnetizedTovStar::pup(PUP::er& p) {
   tov_star::pup(p);
   p | magnetic_fields_;

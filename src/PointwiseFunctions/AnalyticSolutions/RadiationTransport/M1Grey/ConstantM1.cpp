@@ -19,8 +19,6 @@
 
 namespace RadiationTransport::M1Grey::Solutions {
 
-ConstantM1::ConstantM1(CkMigrateMessage* msg) : InitialData(msg) {}
-
 ConstantM1::ConstantM1(const std::array<double, 3>& mean_velocity,
                        const double comoving_energy_density)
     :  // clang-tidy: do not std::move trivial types.

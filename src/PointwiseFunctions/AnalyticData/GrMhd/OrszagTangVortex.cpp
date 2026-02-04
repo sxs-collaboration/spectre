@@ -24,8 +24,6 @@ OrszagTangVortex::get_clone() const {
   return std::make_unique<OrszagTangVortex>(*this);
 }
 
-OrszagTangVortex::OrszagTangVortex(CkMigrateMessage* msg) : InitialData(msg) {}
-
 void OrszagTangVortex::pup(PUP::er& p) {
   InitialData::pup(p);
   p | equation_of_state_;

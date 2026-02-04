@@ -80,7 +80,6 @@ class HomogeneousSphere : public virtual evolution::initial_data::InitialData,
       -> std::unique_ptr<evolution::initial_data::InitialData> override;
 
   /// \cond
-  explicit HomogeneousSphere(CkMigrateMessage* /*message*/) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(HomogeneousSphere);
   /// \endcond

@@ -68,7 +68,6 @@ struct ZeroNonSmooth : InitializeJ<false> {
       "(roughly a no incoming radiation condition)"};
 
   WRAPPED_PUPable_decl_template(ZeroNonSmooth);  // NOLINT
-  explicit ZeroNonSmooth(CkMigrateMessage* /*unused*/) {}
 
   ZeroNonSmooth(double angular_coordinate_tolerance, size_t max_iterations,
                 bool require_convergence = false);

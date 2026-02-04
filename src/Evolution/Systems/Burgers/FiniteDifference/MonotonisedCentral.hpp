@@ -72,7 +72,6 @@ class MonotonisedCentral : public Reconstructor {
   void pup(PUP::er& p) override;
 
   /// \cond
-  explicit MonotonisedCentral(CkMigrateMessage* msg);
   WRAPPED_PUPable_decl_base_template(Reconstructor, MonotonisedCentral);
   /// \endcond
 

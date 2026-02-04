@@ -61,8 +61,6 @@ class DormandPrince5 : public RungeKutta {
 
   WRAPPED_PUPable_decl_template(DormandPrince5);  // NOLINT
 
-  explicit DormandPrince5(CkMigrateMessage* /*unused*/) {}
-
   const ButcherTableau& butcher_tableau() const override;
 };
 

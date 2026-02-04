@@ -41,9 +41,6 @@ void Barotropic3D<ColdEquilEos>::pup(PUP::er& p) {
   EquationOfState<ColdEquilEos::is_relativistic, 3>::pup(p);
   p | underlying_eos_;
 }
-template <typename ColdEquilEos>
-Barotropic3D<ColdEquilEos>::Barotropic3D(CkMigrateMessage* msg)
-    : EquationOfState<ColdEquilEos::is_relativistic, 3>(msg) {}
 
 template <typename ColdEquilEos>
 bool Barotropic3D<ColdEquilEos>::operator==(

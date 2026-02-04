@@ -61,8 +61,6 @@ struct Periodic final : public SystemBoundaryConditionBaseClass,
   Periodic& operator=(const Periodic&) = default;
   ~Periodic() override = default;
 
-  explicit Periodic(CkMigrateMessage* msg);
-
   WRAPPED_PUPable_decl_base_template(
       domain::BoundaryConditions::BoundaryCondition, Periodic);
 
@@ -71,11 +69,6 @@ struct Periodic final : public SystemBoundaryConditionBaseClass,
 
   void pup(PUP::er& p) override;
 };
-
-template <typename SystemBoundaryConditionBaseClass>
-Periodic<SystemBoundaryConditionBaseClass>::Periodic(
-    CkMigrateMessage* const msg)
-    : SystemBoundaryConditionBaseClass(msg) {}
 
 template <typename SystemBoundaryConditionBaseClass>
 std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>

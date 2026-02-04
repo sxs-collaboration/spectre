@@ -31,9 +31,6 @@
 #include "Utilities/Gsl.hpp"
 
 namespace grmhd::ValenciaDivClean::BoundaryConditions {
-HydroFreeOutflow::HydroFreeOutflow(CkMigrateMessage* const msg)
-    : BoundaryCondition(msg) {}
-
 std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
 HydroFreeOutflow::get_clone() const {
   return std::make_unique<HydroFreeOutflow>(*this);

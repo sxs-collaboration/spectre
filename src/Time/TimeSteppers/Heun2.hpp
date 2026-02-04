@@ -63,8 +63,6 @@ class Heun2 : public ImexRungeKutta {
 
   WRAPPED_PUPable_decl_template(Heun2);  // NOLINT
 
-  explicit Heun2(CkMigrateMessage* /*unused*/) {}
-
   const ButcherTableau& butcher_tableau() const override;
 
   const ImplicitButcherTableau& implicit_butcher_tableau() const override;

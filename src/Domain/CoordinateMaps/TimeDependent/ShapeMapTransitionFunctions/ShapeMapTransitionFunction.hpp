@@ -130,6 +130,5 @@ class ShapeMapTransitionFunction : public PUP::able {
   virtual bool operator!=(const ShapeMapTransitionFunction& other) const = 0;
 
   WRAPPED_PUPable_abstract(ShapeMapTransitionFunction);
-  explicit ShapeMapTransitionFunction(CkMigrateMessage* m) : PUP::able(m) {}
 };
 }  // namespace domain::CoordinateMaps::ShapeMapTransitionFunctions

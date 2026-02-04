@@ -34,8 +34,6 @@ namespace grmhd::ValenciaDivClean::BoundaryConditions {
 
 Reflective::Reflective(bool reflect_both) : reflect_both_(reflect_both) {}
 
-Reflective::Reflective(CkMigrateMessage* const msg) : BoundaryCondition(msg) {}
-
 std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
 Reflective::get_clone() const {
   return std::make_unique<Reflective>(*this);

@@ -69,7 +69,6 @@ class ConstantM1 : public virtual evolution::initial_data::InitialData,
   auto get_clone() const
       -> std::unique_ptr<evolution::initial_data::InitialData> override;
 
-  explicit ConstantM1(CkMigrateMessage* msg);
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(ConstantM1);
 

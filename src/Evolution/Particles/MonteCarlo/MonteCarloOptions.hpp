@@ -31,8 +31,6 @@ class MonteCarloOptions : public PUP::able {
 
   using options = tmpl::list<InitialPacketEnergy>;
 
-  explicit MonteCarloOptions(CkMigrateMessage* msg) : PUP::able(msg) {}
-
   using PUP::able::register_constructor;
   void pup(PUP::er& p) override;
   WRAPPED_PUPable_decl_template(MonteCarloOptions);

@@ -23,9 +23,6 @@ template <size_t VolumeDim>
 Random<VolumeDim>::Random() = default;
 
 template <size_t VolumeDim>
-Random<VolumeDim>::Random(CkMigrateMessage* /*unused*/) {}
-
-template <size_t VolumeDim>
 Random<VolumeDim>::Random(const double minimum, const double maximum,
                           const size_t seed, const Options::Context& context)
     : minimum_(minimum), maximum_(maximum), seed_(seed) {

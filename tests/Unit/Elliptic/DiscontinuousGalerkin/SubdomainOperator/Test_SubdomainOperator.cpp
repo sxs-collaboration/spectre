@@ -212,8 +212,6 @@ struct InitializeRandomSubdomainData {
 template <size_t Dim>
 struct RandomBackground : elliptic::analytic_data::Background {
   RandomBackground() = default;
-  explicit RandomBackground(CkMigrateMessage* m)
-      : elliptic::analytic_data::Background(m) {}
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-function"
   WRAPPED_PUPable_decl_template(RandomBackground);  // NOLINT

@@ -20,7 +20,6 @@ class HasConverged : public Trigger {
  public:
   /// \cond
   HasConverged() = default;
-  explicit HasConverged(CkMigrateMessage* /*unused*/) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(HasConverged);  // NOLINT
   /// \endcond

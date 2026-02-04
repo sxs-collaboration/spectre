@@ -41,10 +41,6 @@ AoWeno53Prim<Dim>::AoWeno53Prim(const double gamma_hi, const double gamma_lo,
 }
 
 template <size_t Dim>
-AoWeno53Prim<Dim>::AoWeno53Prim(CkMigrateMessage* const msg)
-    : Reconstructor<Dim>(msg) {}
-
-template <size_t Dim>
 std::unique_ptr<Reconstructor<Dim>> AoWeno53Prim<Dim>::get_clone() const {
   return std::make_unique<AoWeno53Prim>(*this);
 }

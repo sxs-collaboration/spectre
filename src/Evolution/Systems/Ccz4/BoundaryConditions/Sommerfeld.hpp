@@ -69,8 +69,6 @@ class Sommerfeld final : public BoundaryCondition {
   Sommerfeld& operator=(const Sommerfeld&);
   ~Sommerfeld() override = default;
 
-  explicit Sommerfeld(CkMigrateMessage* msg);
-
   WRAPPED_PUPable_decl_base_template(
       domain::BoundaryConditions::BoundaryCondition, Sommerfeld);
 

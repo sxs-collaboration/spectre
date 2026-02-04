@@ -31,7 +31,6 @@ class Slabs : public Trigger {
  public:
   /// \cond
   Slabs() = default;
-  explicit Slabs(CkMigrateMessage* /*unused*/) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(Slabs);  // NOLINT
   /// \endcond

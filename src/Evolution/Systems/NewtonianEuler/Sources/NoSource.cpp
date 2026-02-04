@@ -13,9 +13,6 @@
 
 namespace NewtonianEuler::Sources {
 template <size_t Dim>
-NoSource<Dim>::NoSource(CkMigrateMessage* msg) : Source<Dim>{msg} {}
-
-template <size_t Dim>
 void NoSource<Dim>::pup(PUP::er& p) {
   Source<Dim>::pup(p);
 }

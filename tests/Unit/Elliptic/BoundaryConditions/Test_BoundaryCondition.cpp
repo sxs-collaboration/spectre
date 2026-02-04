@@ -56,7 +56,6 @@ class TestBoundaryCondition : public BoundaryCondition<1> {
   TestBoundaryCondition& operator=(const TestBoundaryCondition&) = default;
   TestBoundaryCondition& operator=(TestBoundaryCondition&&) = default;
   ~TestBoundaryCondition() override = default;
-  explicit TestBoundaryCondition(CkMigrateMessage* m) : Base(m) {}
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-function"
   WRAPPED_PUPable_decl_template(TestBoundaryCondition);

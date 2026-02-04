@@ -112,7 +112,6 @@ class ObserveSelfForce : public Event {
 
   ObserveSelfForce() = default;
 
-  explicit ObserveSelfForce(CkMigrateMessage* msg) : Event(msg) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(ObserveSelfForce);  // NOLINT
 

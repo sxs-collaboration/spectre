@@ -104,8 +104,6 @@ class MonotonisedCentralPrim : public Reconstructor<System> {
   MonotonisedCentralPrim& operator=(const MonotonisedCentralPrim&) = default;
   ~MonotonisedCentralPrim() override = default;
 
-  explicit MonotonisedCentralPrim(CkMigrateMessage* msg);
-
   WRAPPED_PUPable_decl_base_template(Reconstructor<System>,
                                      MonotonisedCentralPrim);
 

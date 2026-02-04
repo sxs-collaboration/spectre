@@ -86,8 +86,6 @@ std::unique_ptr<evolution::initial_data::InitialData> BlastWave::get_clone()
   return std::make_unique<BlastWave>(*this);
 }
 
-BlastWave::BlastWave(CkMigrateMessage* msg) : InitialData(msg) {}
-
 void BlastWave::pup(PUP::er& p) {
   InitialData::pup(p);
   p | inner_radius_;

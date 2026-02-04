@@ -66,8 +66,6 @@ class DirichletAnalytic final : public BoundaryCondition<Dim> {
       std::unique_ptr<evolution::initial_data::InitialData>
           analytic_prescription);
 
-  explicit DirichletAnalytic(CkMigrateMessage* msg);
-
   WRAPPED_PUPable_decl_base_template(
       domain::BoundaryConditions::BoundaryCondition, DirichletAnalytic);
 

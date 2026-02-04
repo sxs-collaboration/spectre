@@ -19,10 +19,6 @@ UniformAcceleration<Dim>::UniformAcceleration(
     : acceleration_field_(acceleration_field) {}
 
 template <size_t Dim>
-UniformAcceleration<Dim>::UniformAcceleration(CkMigrateMessage* msg)
-    : Source<Dim>{msg} {}
-
-template <size_t Dim>
 void UniformAcceleration<Dim>::pup(PUP::er& p) {
   Source<Dim>::pup(p);
   p | acceleration_field_;

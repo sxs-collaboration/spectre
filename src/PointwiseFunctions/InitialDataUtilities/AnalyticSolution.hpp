@@ -32,7 +32,6 @@ class AnalyticSolution : public elliptic::analytic_data::InitialGuess,
   ~AnalyticSolution() override = default;
 
   /// \cond
-  explicit AnalyticSolution(CkMigrateMessage* msg) : PUP::able(msg) {}
   WRAPPED_PUPable_abstract(AnalyticSolution);
   /// \endcond
 

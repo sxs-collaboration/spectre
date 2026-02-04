@@ -20,8 +20,6 @@ std::unique_ptr<evolution::initial_data::InitialData> Bump::get_clone() const {
   return std::make_unique<Bump>(*this);
 }
 
-Bump::Bump(CkMigrateMessage* msg) : InitialData(msg) {}
-
 template <typename T>
 Scalar<T> Bump::u(const tnsr::I<T, 1>& x, double t) const {
   const T center_distance = get<0>(x) - center_;

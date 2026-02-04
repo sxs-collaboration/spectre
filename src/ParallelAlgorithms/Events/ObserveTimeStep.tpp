@@ -25,10 +25,6 @@
 
 namespace Events {
 template <typename System>
-ObserveTimeStep<System>::ObserveTimeStep(CkMigrateMessage* const m)
-    : Event(m) {}
-
-template <typename System>
 ObserveTimeStep<System>::ObserveTimeStep() = default;
 
 template <typename System>

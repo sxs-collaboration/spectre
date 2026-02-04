@@ -15,8 +15,6 @@
 
 namespace ForceFree::Solutions {
 
-FastWave::FastWave(CkMigrateMessage* msg) : InitialData(msg) {}
-
 std::unique_ptr<evolution::initial_data::InitialData> FastWave::get_clone()
     const {
   return std::make_unique<FastWave>(*this);

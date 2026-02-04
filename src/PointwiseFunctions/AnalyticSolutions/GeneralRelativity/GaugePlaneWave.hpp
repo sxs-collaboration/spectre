@@ -117,8 +117,6 @@ class GaugePlaneWave : public AnalyticSolution<Dim>,
   GaugePlaneWave& operator=(GaugePlaneWave&&) = default;
   ~GaugePlaneWave() = default;
 
-  explicit GaugePlaneWave(CkMigrateMessage* /*msg*/);
-
   template <typename DataType>
   using DerivLapse = ::Tags::deriv<gr::Tags::Lapse<DataType>,
                                    tmpl::size_t<volume_dim>, Frame::Inertial>;

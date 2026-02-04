@@ -397,8 +397,6 @@ class MetricWorldtubeH5BufferUpdater
       WorldtubeBufferUpdater<cce_metric_input_tags<T>>,
       MetricWorldtubeH5BufferUpdater);
 
-  explicit MetricWorldtubeH5BufferUpdater(CkMigrateMessage* /*unused*/) {}
-
   /// \brief Update the `buffers`, `time_span_start`, and `time_span_end` with
   /// data (either Goldberg modal data or just nodal data depending on the
   /// template parameter to this class) and the start and end index in the
@@ -522,8 +520,6 @@ class BondiWorldtubeH5BufferUpdater
       SINGLE_ARG(WorldtubeBufferUpdater<tags_for_writing>),
       BondiWorldtubeH5BufferUpdater);
 
-  explicit BondiWorldtubeH5BufferUpdater(CkMigrateMessage* /*unused*/) {}
-
   /// update the `buffers`, `time_span_start`, and `time_span_end` with Goldberg
   /// modal data (either Goldberg modal data or complex nodal data depending on
   /// the template parameter to this class) and the start and end index in the
@@ -609,8 +605,6 @@ class KleinGordonWorldtubeH5BufferUpdater
       std::optional<double> extraction_radius = std::nullopt);
 
   WRAPPED_PUPable_decl_template(KleinGordonWorldtubeH5BufferUpdater);  // NOLINT
-
-  explicit KleinGordonWorldtubeH5BufferUpdater(CkMigrateMessage* /*unused*/) {}
 
   /// update the `buffers`, `time_span_start`, and `time_span_end` with Goldberg
   /// modal data and the start and end index in the member `time_buffer_`

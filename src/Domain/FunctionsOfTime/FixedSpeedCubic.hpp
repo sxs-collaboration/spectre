@@ -48,8 +48,6 @@ class FixedSpeedCubic : public FunctionOfTime {
   // NOLINTNEXTLINE(google-runtime-references)
   WRAPPED_PUPable_decl_template(FixedSpeedCubic);
 
-  explicit FixedSpeedCubic(CkMigrateMessage* /*unused*/) {}
-
   auto get_clone() const -> std::unique_ptr<FunctionOfTime> override;
 
   /// Returns the function at an arbitrary time `t`.

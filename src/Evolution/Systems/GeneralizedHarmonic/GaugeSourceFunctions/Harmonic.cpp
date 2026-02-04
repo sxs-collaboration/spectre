@@ -13,8 +13,6 @@
 #include "Utilities/Gsl.hpp"
 
 namespace gh::gauges {
-Harmonic::Harmonic(CkMigrateMessage* const msg) : GaugeCondition(msg) {}
-
 void Harmonic::pup(PUP::er& p) { GaugeCondition::pup(p); }
 
 std::unique_ptr<GaugeCondition> Harmonic::get_clone() const {

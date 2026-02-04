@@ -29,9 +29,6 @@ RegularSphericalWave::get_clone() const {
   return std::make_unique<RegularSphericalWave>(*this);
 }
 
-RegularSphericalWave::RegularSphericalWave(CkMigrateMessage* msg)
-    : InitialData(msg) {}
-
 RegularSphericalWave::RegularSphericalWave(const RegularSphericalWave& other)
     : evolution::initial_data::InitialData(other),
       profile_(other.profile_->get_clone()) {}

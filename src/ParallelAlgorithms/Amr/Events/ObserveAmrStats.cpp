@@ -38,9 +38,6 @@ template <size_t Dim>
 ObserveAmrStats<Dim>::ObserveAmrStats() = default;
 
 template <size_t Dim>
-ObserveAmrStats<Dim>::ObserveAmrStats(CkMigrateMessage* m) : Event(m) {}
-
-template <size_t Dim>
 ObserveAmrStats<Dim>::ObserveAmrStats(bool print_to_terminal,
                                       bool observe_per_core)
     : print_to_terminal_(print_to_terminal),

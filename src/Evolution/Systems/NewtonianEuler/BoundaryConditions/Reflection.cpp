@@ -23,10 +23,6 @@
 
 namespace NewtonianEuler::BoundaryConditions {
 template <size_t Dim>
-Reflection<Dim>::Reflection(CkMigrateMessage* const msg)
-    : BoundaryCondition<Dim>(msg) {}
-
-template <size_t Dim>
 std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
 Reflection<Dim>::get_clone() const {
   return std::make_unique<Reflection>(*this);

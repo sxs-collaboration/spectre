@@ -15,9 +15,6 @@
 
 namespace Ccz4::BoundaryConditions {
 
-// LCOV_EXCL_START
-Sommerfeld::Sommerfeld(CkMigrateMessage* const msg) : BoundaryCondition(msg) {}
-// LCOV_EXCL_STOP
 Sommerfeld::Sommerfeld(const Sommerfeld& rhs)
     : BoundaryCondition{dynamic_cast<const BoundaryCondition&>(rhs)} {}
 

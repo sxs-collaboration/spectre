@@ -29,8 +29,6 @@ AlfvenWave::AlfvenWave(const double wave_speed, const Options::Context& context)
   lorentz_factor_ = 1.0 / sqrt(1.0 - square(wave_speed_));
 }
 
-AlfvenWave::AlfvenWave(CkMigrateMessage* msg) : InitialData(msg) {}
-
 std::unique_ptr<evolution::initial_data::InitialData> AlfvenWave::get_clone()
     const {
   return std::make_unique<AlfvenWave>(*this);

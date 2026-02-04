@@ -95,7 +95,6 @@ class InterpolateWithoutInterpComponent<VolumeDim, InterpolationTargetTag,
 
  public:
   /// \cond
-  explicit InterpolateWithoutInterpComponent(CkMigrateMessage* /*unused*/) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(InterpolateWithoutInterpComponent);  // NOLINT
   /// \endcond

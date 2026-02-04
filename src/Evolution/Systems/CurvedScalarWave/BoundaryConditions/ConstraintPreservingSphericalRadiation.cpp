@@ -31,11 +31,6 @@ void ConstraintPreservingSphericalRadiation<Dim>::pup(PUP::er& p) {
 }
 
 template <size_t Dim>
-ConstraintPreservingSphericalRadiation<
-    Dim>::ConstraintPreservingSphericalRadiation(CkMigrateMessage* const msg)
-    : BoundaryCondition<Dim>(msg) {}
-
-template <size_t Dim>
 std::optional<std::string>
 ConstraintPreservingSphericalRadiation<Dim>::dg_time_derivative(
     const gsl::not_null<Scalar<DataVector>*> dt_psi_correction,

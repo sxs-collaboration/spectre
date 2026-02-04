@@ -34,8 +34,6 @@ class CubicSpanInterpolator : public SpanInterpolator {
   CubicSpanInterpolator& operator=(CubicSpanInterpolator&&) = default;
   ~CubicSpanInterpolator() override = default;
 
-  explicit CubicSpanInterpolator(CkMigrateMessage* /*unused*/) {}
-
   WRAPPED_PUPable_decl_template(CubicSpanInterpolator);  // NOLINT
 
   // clang-tidy: do not pass by non-const reference

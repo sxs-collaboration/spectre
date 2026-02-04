@@ -61,10 +61,6 @@ bool DarkEnergyFluid<IsRelativistic>::operator!=(
 }
 
 template <bool IsRelativistic>
-DarkEnergyFluid<IsRelativistic>::DarkEnergyFluid(CkMigrateMessage* msg)
-    : EquationOfState<IsRelativistic, 2>(msg) {}
-
-template <bool IsRelativistic>
 void DarkEnergyFluid<IsRelativistic>::pup(PUP::er& p) {
   EquationOfState<IsRelativistic, 2>::pup(p);
   p | parameter_w_;

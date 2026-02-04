@@ -18,10 +18,6 @@
 namespace CurvedScalarWave::BoundaryConditions {
 
 template <size_t Dim>
-Worldtube<Dim>::Worldtube(CkMigrateMessage* const msg)
-    : BoundaryCondition<Dim>(msg) {}
-
-template <size_t Dim>
 std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
 Worldtube<Dim>::get_clone() const {
   return std::make_unique<Worldtube>(*this);

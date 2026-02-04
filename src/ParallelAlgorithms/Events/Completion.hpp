@@ -22,7 +22,6 @@ namespace Events {
 class Completion : public Event {
  public:
   /// \cond
-  explicit Completion(CkMigrateMessage* /*unused*/) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(Completion);  // NOLINT
   /// \endcond

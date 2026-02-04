@@ -27,7 +27,6 @@ class SlabCompares : public Trigger {
  public:
   /// \cond
   SlabCompares() = default;
-  explicit SlabCompares(CkMigrateMessage* /*unused*/) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(SlabCompares);  // NOLINT
   /// \endcond

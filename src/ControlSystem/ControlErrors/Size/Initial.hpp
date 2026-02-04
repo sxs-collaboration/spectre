@@ -31,6 +31,5 @@ class Initial : public State {
       const ControlErrorArgs& control_error_args) const override;
 
   WRAPPED_PUPable_decl_template(Initial);  // NOLINT
-  explicit Initial(CkMigrateMessage* const /*msg*/) {}
 };
 }  // namespace control_system::size::States

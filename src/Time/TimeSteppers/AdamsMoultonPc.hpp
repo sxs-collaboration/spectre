@@ -153,8 +153,6 @@ class AdamsMoultonPc : public LtsTimeStepper {
 
   WRAPPED_PUPable_decl_template(AdamsMoultonPc);  // NOLINT
 
-  explicit AdamsMoultonPc(CkMigrateMessage* /*unused*/) {}
-
   void pup(PUP::er& p) override;
 
  private:

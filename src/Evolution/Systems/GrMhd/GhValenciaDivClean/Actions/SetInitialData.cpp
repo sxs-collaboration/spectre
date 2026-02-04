@@ -27,9 +27,6 @@ NumericInitialData::NumericInitialData(
           observation_value_epsilon.value_or(1.0e-12), enable_interpolation,
           std::move(hydro_selected_variables), density_cutoff) {}
 
-NumericInitialData::NumericInitialData(CkMigrateMessage* msg)
-    : InitialData(msg) {}
-
 PUP::able::PUP_ID NumericInitialData::my_PUP_ID = 0;
 
 size_t NumericInitialData::volume_data_id() const {

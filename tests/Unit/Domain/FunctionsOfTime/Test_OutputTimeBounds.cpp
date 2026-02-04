@@ -29,8 +29,6 @@ class TestFoT : public domain::FunctionsOfTime::FunctionOfTime {
   WRAPPED_PUPable_decl_template(TestFoT);  // NOLINT
 #pragma GCC diagnostic pop
 
-  explicit TestFoT(CkMigrateMessage* /*unused*/) {}
-
   auto get_clone() const -> std::unique_ptr<FunctionOfTime> override {
     return std::make_unique<TestFoT>(*this);
   }

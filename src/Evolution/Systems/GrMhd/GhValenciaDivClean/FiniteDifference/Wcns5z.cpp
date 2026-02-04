@@ -65,10 +65,6 @@ Wcns5zPrim<System>::Wcns5zPrim(
 }
 
 template <typename System>
-Wcns5zPrim<System>::Wcns5zPrim(CkMigrateMessage* const msg)
-    : Reconstructor<System>(msg) {}
-
-template <typename System>
 std::unique_ptr<Reconstructor<System>> Wcns5zPrim<System>::get_clone() const {
   return std::make_unique<Wcns5zPrim<System>>(*this);
 }

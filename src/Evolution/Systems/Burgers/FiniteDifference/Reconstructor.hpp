@@ -31,7 +31,6 @@ class Reconstructor : public PUP::able {
   void pup(PUP::er& p) override;
 
   /// \cond
-  explicit Reconstructor(CkMigrateMessage* msg);
   WRAPPED_PUPable_abstract(Reconstructor);  // NOLINT
   /// \endcond
 

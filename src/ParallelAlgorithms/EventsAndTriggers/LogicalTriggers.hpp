@@ -19,7 +19,6 @@ namespace Triggers {
 class Always : public Trigger {
  public:
   /// \cond
-  explicit Always(CkMigrateMessage* /*unused*/) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(Always);  // NOLINT
   /// \endcond
@@ -40,7 +39,6 @@ class Not : public Trigger {
  public:
   /// \cond
   Not() = default;
-  explicit Not(CkMigrateMessage* /*unused*/) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(Not);  // NOLINT
   /// \endcond
@@ -70,7 +68,6 @@ class And : public Trigger {
  public:
   /// \cond
   And() = default;
-  explicit And(CkMigrateMessage* /*unused*/) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(And);  // NOLINT
   /// \endcond
@@ -106,7 +103,6 @@ class Or : public Trigger {
  public:
   /// \cond
   Or() = default;
-  explicit Or(CkMigrateMessage* /*unused*/) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(Or);  // NOLINT
   /// \endcond

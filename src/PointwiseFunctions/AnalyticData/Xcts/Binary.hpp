@@ -389,9 +389,6 @@ class Binary : public elliptic::analytic_data::Background,
     }
   }
 
-  explicit Binary(CkMigrateMessage* m)
-      : elliptic::analytic_data::Background(m),
-        elliptic::analytic_data::InitialGuess(m) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(Binary);
 

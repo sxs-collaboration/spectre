@@ -158,7 +158,6 @@ class MagnetizedFmDisk : public virtual evolution::initial_data::InitialData,
       -> std::unique_ptr<evolution::initial_data::InitialData> override;
 
   /// \cond
-  explicit MagnetizedFmDisk(CkMigrateMessage* msg);
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(MagnetizedFmDisk);
   /// \endcond

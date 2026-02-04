@@ -80,7 +80,6 @@ class Kuzmin : public evolution::initial_data::InitialData,
   void pup(PUP::er& p) override;
 
   /// \cond
-  explicit Kuzmin(CkMigrateMessage* msg);
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(Kuzmin);
   /// \endcond

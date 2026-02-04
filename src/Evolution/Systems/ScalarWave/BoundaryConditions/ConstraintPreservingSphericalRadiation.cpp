@@ -43,11 +43,6 @@ ConstraintPreservingSphericalRadiation<Dim>::
     : type_(type) {}
 
 template <size_t Dim>
-ConstraintPreservingSphericalRadiation<
-    Dim>::ConstraintPreservingSphericalRadiation(CkMigrateMessage* const msg)
-    : BoundaryCondition<Dim>(msg) {}
-
-template <size_t Dim>
 std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
 ConstraintPreservingSphericalRadiation<Dim>::get_clone() const {
   return std::make_unique<ConstraintPreservingSphericalRadiation>(*this);

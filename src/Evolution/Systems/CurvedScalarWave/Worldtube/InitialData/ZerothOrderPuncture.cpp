@@ -42,9 +42,6 @@ ZerothOrderPuncture::get_clone() const {
   return std::make_unique<ZerothOrderPuncture>(*this);
 }
 
-ZerothOrderPuncture::ZerothOrderPuncture(CkMigrateMessage* msg)
-    : InitialData(msg) {}
-
 tuples::TaggedTuple<CurvedScalarWave::Tags::Psi, CurvedScalarWave::Tags::Pi,
                     CurvedScalarWave::Tags::Phi<3>>
 ZerothOrderPuncture::variables(const tnsr::I<DataVector, 3>& x,

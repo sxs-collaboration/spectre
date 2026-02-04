@@ -160,7 +160,6 @@ class ApparentHorizon
   ~ApparentHorizon() = default;
 
   /// \cond
-  explicit ApparentHorizon(CkMigrateMessage* m) : Base(m) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(ApparentHorizon);
   /// \endcond

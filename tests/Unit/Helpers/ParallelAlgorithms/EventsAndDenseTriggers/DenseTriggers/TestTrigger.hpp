@@ -31,7 +31,6 @@ class TestTrigger : public DenseTrigger {
  public:
   /// \cond
   TestTrigger() = default;
-  explicit TestTrigger(CkMigrateMessage* const msg) : DenseTrigger(msg) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(TestTrigger);  // NOLINT
   /// \endcond
@@ -99,8 +98,6 @@ class BoxTrigger : public DenseTrigger {
  public:
   /// \cond
   BoxTrigger() = default;
-  explicit BoxTrigger(CkMigrateMessage* const msg) : DenseTrigger(msg) {}
-  using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(BoxTrigger);  // NOLINT
   /// \endcond
 

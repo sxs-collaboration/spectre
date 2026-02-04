@@ -57,8 +57,6 @@ class Sinusoid<1, Fr> : public MathFunction<1, Fr> {
   WRAPPED_PUPable_decl_base_template(SINGLE_ARG(MathFunction<1, Fr>),
                                      Sinusoid);  // NOLINT
 
-  explicit Sinusoid(CkMigrateMessage* /*unused*/) {}
-
   double operator()(const double& x) const override;
   DataVector operator()(const DataVector& x) const override;
 

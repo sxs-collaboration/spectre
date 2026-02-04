@@ -123,8 +123,6 @@ class Wcns5zPrim : public Reconstructor {
              size_t max_number_of_extrema,
              bool reconstruct_rho_times_temperature);
 
-  explicit Wcns5zPrim(CkMigrateMessage* msg);
-
   WRAPPED_PUPable_decl_base_template(Reconstructor, Wcns5zPrim);
 
   auto get_clone() const -> std::unique_ptr<Reconstructor> override;

@@ -34,10 +34,6 @@ SmoothFlow<Dim>::get_clone() const {
 }
 
 template <size_t Dim>
-SmoothFlow<Dim>::SmoothFlow(CkMigrateMessage* msg)
-    : InitialData(msg), smooth_flow(msg) {}
-
-template <size_t Dim>
 template <typename DataType>
 tuples::TaggedTuple<hydro::Tags::MagneticField<DataType, Dim>>
 SmoothFlow<Dim>::variables(

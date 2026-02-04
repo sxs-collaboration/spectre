@@ -46,7 +46,6 @@ struct InverseCubic<true> : InitializeJ<true> {
       "worldtube"};
 
   WRAPPED_PUPable_decl_template(InverseCubic);  // NOLINT
-  explicit InverseCubic(CkMigrateMessage* /*unused*/) {}
 
   InverseCubic() = default;
 
@@ -97,7 +96,6 @@ struct InverseCubic<false> : InitializeJ<false> {
       "worldtube"};
 
   WRAPPED_PUPable_decl_template(InverseCubic);  // NOLINT
-  explicit InverseCubic(CkMigrateMessage* /*unused*/) {}
 
   InverseCubic() = default;
 

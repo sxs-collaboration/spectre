@@ -24,9 +24,9 @@ struct NonFactoryCreatableWrapper : public FactoryCreatableClass {
   using factory_creatable_class = FactoryCreatableClass;
 
   /// \cond
-  explicit NonFactoryCreatableWrapper(CkMigrateMessage* /*unused*/) {}
-  using PUP::able::register_constructor;
-  WRAPPED_PUPable_decl_template(NonFactoryCreatableWrapper);  // NOLINT
+  WRAPPED_PUPable_decl_base_template(  // NOLINT
+      NonFactoryCreatableWrapper,
+      NonFactoryCreatableWrapper<FactoryCreatableClass>);
   /// \endcond
 };
 

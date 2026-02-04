@@ -91,7 +91,6 @@ template <Parallel::Phase TargetPhase>
 struct VisitAndReturn : public PhaseChange {
   /// \cond
   VisitAndReturn() = default;
-  explicit VisitAndReturn(CkMigrateMessage* /*unused*/) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(VisitAndReturn);  // NOLINT
   /// \endcond

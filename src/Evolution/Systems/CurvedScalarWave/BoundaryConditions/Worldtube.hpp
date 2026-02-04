@@ -62,7 +62,6 @@ class Worldtube final : public BoundaryConditions::BoundaryCondition<Dim> {
       "preserving boundary conditions on the time derivative."};
 
   Worldtube() = default;
-  explicit Worldtube(CkMigrateMessage* msg);
 
   WRAPPED_PUPable_decl_base_template(
       domain::BoundaryConditions::BoundaryCondition, Worldtube);

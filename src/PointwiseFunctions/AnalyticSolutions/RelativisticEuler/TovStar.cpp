@@ -17,8 +17,6 @@
 
 namespace RelativisticEuler::Solutions {
 
-TovStar::TovStar(CkMigrateMessage* msg) : InitialData(msg) {}
-
 TovStar::TovStar(
     const double central_rest_mass_density,
     std::unique_ptr<EquationsOfState::EquationOfState<true, 1>>

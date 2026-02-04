@@ -26,7 +26,6 @@ class Constant : public StepChooser<StepChooserUse::Slab>,
  public:
   /// \cond
   Constant() = default;
-  explicit Constant(CkMigrateMessage* /*unused*/) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(Constant);  // NOLINT
   /// \endcond

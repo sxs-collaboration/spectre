@@ -51,8 +51,6 @@ class SomeEvent : public Event {
   SomeEvent() = default;
   explicit SomeEvent(std::string subfile_path)
       : subfile_path_(std::move(subfile_path)) {}
-
-  explicit SomeEvent(CkMigrateMessage* /*unused*/) {}
   using PUP::able::register_constructor;
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-function"

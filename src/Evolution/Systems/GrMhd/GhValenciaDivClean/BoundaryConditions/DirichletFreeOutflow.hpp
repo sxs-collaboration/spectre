@@ -82,8 +82,6 @@ class DirichletFreeOutflow final : public BoundaryCondition {
   DirichletFreeOutflow& operator=(const DirichletFreeOutflow&);
   ~DirichletFreeOutflow() override = default;
 
-  explicit DirichletFreeOutflow(CkMigrateMessage* msg);
-
   explicit DirichletFreeOutflow(
       std::unique_ptr<evolution::initial_data::InitialData>
           analytic_prescription);

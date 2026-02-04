@@ -19,9 +19,6 @@ LaneEmdenGravitationalField::LaneEmdenGravitationalField(
     : central_mass_density_(central_mass_density),
       polytropic_constant_(polytropic_constant) {}
 
-LaneEmdenGravitationalField::LaneEmdenGravitationalField(CkMigrateMessage* msg)
-    : Source{msg} {}
-
 void LaneEmdenGravitationalField::pup(PUP::er& p) { Source::pup(p); }
 
 auto LaneEmdenGravitationalField::get_clone() const

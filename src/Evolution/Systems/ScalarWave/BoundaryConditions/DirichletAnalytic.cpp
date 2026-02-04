@@ -29,10 +29,6 @@ DirichletAnalytic<Dim>& DirichletAnalytic<Dim>::operator=(
 }
 
 template <size_t Dim>
-DirichletAnalytic<Dim>::DirichletAnalytic(CkMigrateMessage* const msg)
-    : BoundaryCondition<Dim>(msg) {}
-
-template <size_t Dim>
 DirichletAnalytic<Dim>::DirichletAnalytic(
     std::unique_ptr<evolution::initial_data::InitialData> analytic_prescription)
     : analytic_prescription_(std::move(analytic_prescription)) {}

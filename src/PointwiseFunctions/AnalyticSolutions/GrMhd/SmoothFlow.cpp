@@ -24,9 +24,6 @@ std::unique_ptr<evolution::initial_data::InitialData> SmoothFlow::get_clone()
   return std::make_unique<SmoothFlow>(*this);
 }
 
-SmoothFlow::SmoothFlow(CkMigrateMessage* msg)
-    : RelativisticEuler::Solutions::SmoothFlow<3>(msg) {}
-
 void SmoothFlow::pup(PUP::er& p) {
   RelativisticEuler::Solutions::SmoothFlow<3>::pup(p);
 }

@@ -60,10 +60,6 @@ PositivityPreservingAdaptiveOrderPrim::PositivityPreservingAdaptiveOrderPrim(
   set_function_pointers();
 }
 
-PositivityPreservingAdaptiveOrderPrim::PositivityPreservingAdaptiveOrderPrim(
-    CkMigrateMessage* const msg)
-    : Reconstructor(msg) {}
-
 std::unique_ptr<Reconstructor>
 PositivityPreservingAdaptiveOrderPrim::get_clone() const {
   return std::make_unique<PositivityPreservingAdaptiveOrderPrim>(*this);

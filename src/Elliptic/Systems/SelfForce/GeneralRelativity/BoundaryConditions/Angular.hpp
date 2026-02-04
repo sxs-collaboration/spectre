@@ -63,7 +63,6 @@ class Angular : public elliptic::BoundaryConditions::BoundaryCondition<2> {
   int m_mode_number() const { return m_mode_number_; }
 
   /// \cond
-  explicit Angular(CkMigrateMessage* m);
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(Angular);
   /// \endcond

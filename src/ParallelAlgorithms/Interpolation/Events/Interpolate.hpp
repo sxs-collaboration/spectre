@@ -57,7 +57,6 @@ class Interpolate<VolumeDim, InterpolationTargetTag,
                   tmpl::list<InterpolatorSourceVarTags...>> : public Event {
  public:
   /// \cond
-  explicit Interpolate(CkMigrateMessage* /*unused*/) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(Interpolate);  // NOLINT
   /// \endcond

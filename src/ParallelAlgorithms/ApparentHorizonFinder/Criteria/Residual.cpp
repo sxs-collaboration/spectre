@@ -42,7 +42,5 @@ bool Residual::is_equal(const Criterion& other) const {
          min_resolution_l_ == other_residual->min_resolution_l_;
 }
 
-Residual::Residual(CkMigrateMessage* msg) : Criterion(msg) {}
-
 PUP::able::PUP_ID ah::Criteria::Residual::my_PUP_ID = 0;  // NOLINT
 }  // namespace ah::Criteria

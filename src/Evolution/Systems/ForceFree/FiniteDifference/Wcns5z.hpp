@@ -117,8 +117,6 @@ class Wcns5z : public Reconstructor {
          FallbackReconstructorType fallback_reconstructor,
          size_t max_number_of_extrema);
 
-  explicit Wcns5z(CkMigrateMessage* msg);
-
   WRAPPED_PUPable_decl_base_template(Reconstructor, Wcns5z);
 
   auto get_clone() const -> std::unique_ptr<Reconstructor> override;

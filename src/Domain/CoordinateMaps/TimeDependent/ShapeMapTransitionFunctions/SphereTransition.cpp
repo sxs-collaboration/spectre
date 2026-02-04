@@ -308,9 +308,6 @@ void SphereTransition::pup(PUP::er& p) {
   }
 }
 
-SphereTransition::SphereTransition(CkMigrateMessage* const msg)
-    : ShapeMapTransitionFunction(msg) {}
-
 PUP::able::PUP_ID SphereTransition::my_PUP_ID = 0;  // NOLINT
 
 }  // namespace domain::CoordinateMaps::ShapeMapTransitionFunctions

@@ -30,7 +30,6 @@ class PreventRapidIncrease : public StepChooser<StepChooserUse::Slab>,
  public:
   /// \cond
   PreventRapidIncrease() = default;
-  explicit PreventRapidIncrease(CkMigrateMessage* /*unused*/) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(PreventRapidIncrease);  // NOLINT
   /// \endcond

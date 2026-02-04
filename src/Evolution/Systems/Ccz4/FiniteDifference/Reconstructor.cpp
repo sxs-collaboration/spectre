@@ -6,7 +6,5 @@
 #include <pup.h>
 
 namespace Ccz4::fd {
-Reconstructor::Reconstructor(CkMigrateMessage* const msg) : PUP::able(msg) {}
-
 void Reconstructor::pup(PUP::er& p) { PUP::able::pup(p); }
 }  // namespace Ccz4::fd

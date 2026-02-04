@@ -42,9 +42,7 @@ struct DummyDecisionTag2 {
 
 template <size_t Val>
 struct TestCreatable : public PhaseChange {
-
   TestCreatable() = default;
-  explicit TestCreatable(CkMigrateMessage* /*unused*/) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(TestCreatable);  // NOLINT
 

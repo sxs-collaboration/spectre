@@ -83,7 +83,6 @@ class InitialMagneticField : public PUP::able {
   virtual bool is_equal(const InitialMagneticField& rhs) const = 0;
 
   /// \cond
-  explicit InitialMagneticField(CkMigrateMessage* msg) : PUP::able(msg) {}
   WRAPPED_PUPable_abstract(InitialMagneticField);
   /// \endcond
 };

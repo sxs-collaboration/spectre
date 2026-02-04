@@ -60,8 +60,6 @@ struct None final : public SystemBoundaryConditionBaseClass, public MarkAsNone {
   None& operator=(const None&) = default;
   ~None() override = default;
 
-  explicit None(CkMigrateMessage* msg);
-
   WRAPPED_PUPable_decl_base_template(
       domain::BoundaryConditions::BoundaryCondition, None);
 
@@ -70,10 +68,6 @@ struct None final : public SystemBoundaryConditionBaseClass, public MarkAsNone {
 
   void pup(PUP::er& p) override;
 };
-
-template <typename SystemBoundaryConditionBaseClass>
-None<SystemBoundaryConditionBaseClass>::None(CkMigrateMessage* const msg)
-    : SystemBoundaryConditionBaseClass(msg) {}
 
 template <typename SystemBoundaryConditionBaseClass>
 std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>

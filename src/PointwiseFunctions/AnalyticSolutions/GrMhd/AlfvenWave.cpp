@@ -77,8 +77,6 @@ std::unique_ptr<evolution::initial_data::InitialData> AlfvenWave::get_clone()
   return std::make_unique<AlfvenWave>(*this);
 }
 
-AlfvenWave::AlfvenWave(CkMigrateMessage* msg) : InitialData(msg) {}
-
 void AlfvenWave::pup(PUP::er& p) {
   InitialData::pup(p);
   p | wavenumber_;

@@ -132,7 +132,6 @@ class ObserveAtExtremum<tmpl::list<ObservableTensorTags...>,
         "and other tensors to observe at that extremum."};
   };
 
-  explicit ObserveAtExtremum(CkMigrateMessage* msg);
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(ObserveAtExtremum);  // NOLINT
 
@@ -209,13 +208,6 @@ class ObserveAtExtremum<tmpl::list<ObservableTensorTags...>,
 /// @}
 
 /// \cond
-template <typename... ObservableTensorTags, typename... NonTensorComputeTags,
-          typename ArraySectionIdTag>
-ObserveAtExtremum<tmpl::list<ObservableTensorTags...>,
-                  tmpl::list<NonTensorComputeTags...>,
-                  ArraySectionIdTag>::ObserveAtExtremum(CkMigrateMessage* msg)
-    : Event(msg) {}
-
 template <typename... ObservableTensorTags, typename... NonTensorComputeTags,
           typename ArraySectionIdTag>
 ObserveAtExtremum<

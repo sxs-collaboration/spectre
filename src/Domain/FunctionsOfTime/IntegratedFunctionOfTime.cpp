@@ -28,8 +28,6 @@ auto IntegratedFunctionOfTime::operator=(IntegratedFunctionOfTime&&)
 auto IntegratedFunctionOfTime::operator=(const IntegratedFunctionOfTime&)
     -> IntegratedFunctionOfTime& = default;
 IntegratedFunctionOfTime::~IntegratedFunctionOfTime() = default;
-IntegratedFunctionOfTime::IntegratedFunctionOfTime(
-    CkMigrateMessage* /*unused*/) {}
 
 IntegratedFunctionOfTime::IntegratedFunctionOfTime(
     const double t, std::array<double, 2> initial_func_and_derivs,

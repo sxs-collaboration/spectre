@@ -101,8 +101,6 @@ class SphericalRadiation final : public BoundaryCondition<Dim> {
   SphericalRadiation& operator=(const SphericalRadiation&) = default;
   ~SphericalRadiation() override = default;
 
-  explicit SphericalRadiation(CkMigrateMessage* msg);
-
   WRAPPED_PUPable_decl_base_template(
       domain::BoundaryConditions::BoundaryCondition, SphericalRadiation);
 

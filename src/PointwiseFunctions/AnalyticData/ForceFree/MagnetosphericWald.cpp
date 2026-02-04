@@ -26,9 +26,6 @@ MagnetosphericWald::MagnetosphericWald(const double spin,
   }
 }
 
-MagnetosphericWald::MagnetosphericWald(CkMigrateMessage* msg)
-    : InitialData(msg) {}
-
 std::unique_ptr<evolution::initial_data::InitialData>
 MagnetosphericWald::get_clone() const {
   return std::make_unique<MagnetosphericWald>(*this);

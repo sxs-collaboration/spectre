@@ -33,9 +33,6 @@ MonotonisedCentralPrim::MonotonisedCentralPrim(
     const bool reconstruct_rho_times_temperature)
     : reconstruct_rho_times_temperature_(reconstruct_rho_times_temperature) {}
 
-MonotonisedCentralPrim::MonotonisedCentralPrim(CkMigrateMessage* const msg)
-    : Reconstructor(msg) {}
-
 std::unique_ptr<Reconstructor> MonotonisedCentralPrim::get_clone() const {
   return std::make_unique<MonotonisedCentralPrim>(*this);
 }

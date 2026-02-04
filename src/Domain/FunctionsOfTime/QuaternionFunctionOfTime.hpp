@@ -79,10 +79,6 @@ class QuaternionFunctionOfTime : public FunctionOfTime {
       std::array<DataVector, MaxDeriv + 1> initial_angle_func,
       double expiration_time);
 
-  // LCOV_EXCL_START
-  explicit QuaternionFunctionOfTime(CkMigrateMessage* /*unused*/);
-  // LCOV_EXCL_STOP
-
   auto get_clone() const -> std::unique_ptr<FunctionOfTime> override;
 
   std::unique_ptr<FunctionOfTime> create_at_time(

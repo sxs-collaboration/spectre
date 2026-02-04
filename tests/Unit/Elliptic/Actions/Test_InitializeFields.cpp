@@ -49,8 +49,6 @@ struct System {
 
 struct InitialGuess : elliptic::analytic_data::InitialGuess {
   InitialGuess() = default;
-  explicit InitialGuess(CkMigrateMessage* m)
-      : elliptic::analytic_data::InitialGuess(m) {}
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-function"
   WRAPPED_PUPable_decl_template(InitialGuess);  // NOLINT

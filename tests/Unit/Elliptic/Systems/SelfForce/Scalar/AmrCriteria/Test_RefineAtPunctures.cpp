@@ -47,7 +47,6 @@ struct Metavariables {
 struct OtherBackground : elliptic::analytic_data::Background,
                          elliptic::analytic_data::InitialGuess {
   OtherBackground() = default;
-  explicit OtherBackground(CkMigrateMessage* /*m*/) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(OtherBackground);
 };

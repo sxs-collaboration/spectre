@@ -45,8 +45,6 @@ struct SphericalMetricData : public WorldtubeData {
 
   SphericalMetricData() = default;
 
-  explicit SphericalMetricData(CkMigrateMessage* msg) : WorldtubeData(msg) {}
-
   explicit SphericalMetricData(const double extraction_radius)
       : WorldtubeData{extraction_radius} {}
 

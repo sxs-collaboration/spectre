@@ -19,8 +19,6 @@ std::unique_ptr<evolution::initial_data::InitialData> Linear::get_clone()
   return std::make_unique<Linear>(*this);
 }
 
-Linear::Linear(CkMigrateMessage* msg) : InitialData(msg) {}
-
 template <typename T>
 Scalar<T> Linear::u(const tnsr::I<T, 1>& x, double t) const {
   Scalar<T> result(get<0>(x));

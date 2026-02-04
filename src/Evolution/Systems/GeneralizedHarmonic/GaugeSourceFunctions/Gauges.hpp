@@ -29,8 +29,6 @@ class GaugeCondition : public PUP::able {
   GaugeCondition& operator=(GaugeCondition&&) = default;
   ~GaugeCondition() override = default;
 
-  explicit GaugeCondition(CkMigrateMessage* msg);
-
   WRAPPED_PUPable_abstract(GaugeCondition);  // NOLINT
 
   virtual std::unique_ptr<GaugeCondition> get_clone() const = 0;

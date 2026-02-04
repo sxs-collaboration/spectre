@@ -128,7 +128,6 @@ class ExplicitInverse : public LinearSolver<LinearSolverRegistrars> {
         complex_shift_(complex_shift) {}
 
   /// \cond
-  explicit ExplicitInverse(CkMigrateMessage* m) : Base(m) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(ExplicitInverse);  // NOLINT
   /// \endcond

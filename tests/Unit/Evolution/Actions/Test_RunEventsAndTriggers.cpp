@@ -38,7 +38,6 @@
 namespace {
 struct TestEvent : public Event {
  public:
-  explicit TestEvent(CkMigrateMessage* /*unused*/) {}
   using PUP::able::register_constructor;
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-function"

@@ -16,8 +16,6 @@
 #include "Utilities/Gsl.hpp"
 
 namespace Burgers::BoundaryCorrections {
-Hll::Hll(CkMigrateMessage* msg) : BoundaryCorrection(msg) {}
-
 std::unique_ptr<evolution::BoundaryCorrection> Hll::get_clone() const {
   return std::make_unique<Hll>(*this);
 }

@@ -50,8 +50,6 @@ SphericalKerrSchild::SphericalKerrSchild(
   }
 }
 
-SphericalKerrSchild::SphericalKerrSchild(CkMigrateMessage* /*unused*/) {}
-
 void SphericalKerrSchild::pup(PUP::er& p) {
   p | mass_;
   p | dimensionless_spin_;

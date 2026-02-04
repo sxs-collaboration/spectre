@@ -131,8 +131,6 @@ class ConstraintPreservingBjorhus final : public BoundaryCondition<Dim> {
   /// \endcond
   ~ConstraintPreservingBjorhus() override = default;
 
-  explicit ConstraintPreservingBjorhus(CkMigrateMessage* msg);
-
   WRAPPED_PUPable_decl_base_template(
       domain::BoundaryConditions::BoundaryCondition,
       ConstraintPreservingBjorhus);

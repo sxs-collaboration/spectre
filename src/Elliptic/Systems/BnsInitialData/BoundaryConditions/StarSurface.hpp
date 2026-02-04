@@ -55,7 +55,6 @@ class StarSurface : public elliptic::BoundaryConditions::BoundaryCondition<3> {
   ~StarSurface() override = default;
 
   /// \cond
-  explicit StarSurface(CkMigrateMessage* m) : Base(m) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(StarSurface);
   /// \endcond

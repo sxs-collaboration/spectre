@@ -23,8 +23,6 @@ namespace ForceFree::Solutions {
 ExactWald::ExactWald(const double magnetic_field_amplitude)
     : magnetic_field_amplitude_(magnetic_field_amplitude) {}
 
-ExactWald::ExactWald(CkMigrateMessage* msg) : InitialData(msg) {}
-
 std::unique_ptr<evolution::initial_data::InitialData> ExactWald::get_clone()
     const {
   return std::make_unique<ExactWald>(*this);

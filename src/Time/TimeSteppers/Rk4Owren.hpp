@@ -57,8 +57,6 @@ class Rk4Owren : public RungeKutta {
 
   WRAPPED_PUPable_decl_template(Rk4Owren);  // NOLINT
 
-  explicit Rk4Owren(CkMigrateMessage* /*msg*/);
-
   const ButcherTableau& butcher_tableau() const override;
 };
 

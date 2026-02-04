@@ -42,8 +42,6 @@ class DemandOutgoingCharSpeeds final : public BoundaryCondition<Dim> {
       default;
   ~DemandOutgoingCharSpeeds() override = default;
 
-  explicit DemandOutgoingCharSpeeds(CkMigrateMessage* msg);
-
   WRAPPED_PUPable_decl_base_template(
       domain::BoundaryConditions::BoundaryCondition, DemandOutgoingCharSpeeds);
 

@@ -109,7 +109,6 @@ class ObserveDataBox : public Event {
 
  public:
   /// \cond
-  explicit ObserveDataBox(CkMigrateMessage* m);
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(ObserveDataBox);  // NOLINT
   /// \endcond

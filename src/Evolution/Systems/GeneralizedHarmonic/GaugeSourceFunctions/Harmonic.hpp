@@ -38,7 +38,6 @@ class Harmonic final : public GaugeCondition {
   ~Harmonic() override = default;
 
   /// \cond
-  explicit Harmonic(CkMigrateMessage* msg);
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(Harmonic);  // NOLINT
   /// \endcond

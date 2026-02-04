@@ -54,7 +54,6 @@ class Flatness : public elliptic::BoundaryConditions::BoundaryCondition<3> {
   ~Flatness() = default;
 
   /// \cond
-  explicit Flatness(CkMigrateMessage* m) : Base(m) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(Flatness);
   /// \endcond

@@ -493,7 +493,6 @@ class Wedge final : public ShapeMapTransitionFunction {
       const std::array<DataVector, 3>& source_coords) const override;
 
   WRAPPED_PUPable_decl_template(Wedge);
-  explicit Wedge(CkMigrateMessage* msg);
   void pup(PUP::er& p) override;
 
   std::unique_ptr<ShapeMapTransitionFunction> get_clone() const override {

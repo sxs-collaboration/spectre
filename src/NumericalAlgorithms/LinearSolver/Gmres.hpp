@@ -239,7 +239,6 @@ class Gmres final : public PreconditionedLinearSolver<Preconditioner,
   }
 
   /// \cond
-  explicit Gmres(CkMigrateMessage* m);
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(Gmres);  // NOLINT
   /// \endcond
@@ -362,14 +361,6 @@ Gmres<VarsType, Preconditioner, LinearSolverRegistrars>::operator=(
   initialize();
   return *this;
 }
-
-/// \cond
-template <typename VarsType, typename Preconditioner,
-          typename LinearSolverRegistrars>
-Gmres<VarsType, Preconditioner, LinearSolverRegistrars>::Gmres(
-    CkMigrateMessage* m)
-    : Base(m) {}
-/// \endcond
 
 template <typename VarsType, typename Preconditioner,
           typename LinearSolverRegistrars>

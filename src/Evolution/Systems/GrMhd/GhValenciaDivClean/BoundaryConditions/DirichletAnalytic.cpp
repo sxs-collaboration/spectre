@@ -54,11 +54,6 @@
 
 namespace grmhd::GhValenciaDivClean::BoundaryConditions {
 
-// LCOV_EXCL_START
-template <typename System>
-DirichletAnalytic<System>::DirichletAnalytic(CkMigrateMessage* const msg)
-    : BoundaryCondition(msg) {}
-// LCOV_EXCL_STOP
 template <typename System>
 DirichletAnalytic<System>::DirichletAnalytic(
     const DirichletAnalytic<System>& rhs)

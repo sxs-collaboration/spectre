@@ -73,7 +73,6 @@ class AnalyticChristoffel final : public GaugeCondition {
           analytic_prescription);
 
   /// \cond
-  explicit AnalyticChristoffel(CkMigrateMessage* msg);
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(AnalyticChristoffel);  // NOLINT
   /// \endcond

@@ -26,10 +26,6 @@
 
 namespace NewtonianEuler::fd {
 template <size_t Dim>
-MonotonisedCentralPrim<Dim>::MonotonisedCentralPrim(CkMigrateMessage* const msg)
-    : Reconstructor<Dim>(msg) {}
-
-template <size_t Dim>
 std::unique_ptr<Reconstructor<Dim>> MonotonisedCentralPrim<Dim>::get_clone()
     const {
   return std::make_unique<MonotonisedCentralPrim>(*this);

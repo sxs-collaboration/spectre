@@ -9,10 +9,6 @@
 
 namespace NewtonianEuler::fd {
 template <size_t Dim>
-Reconstructor<Dim>::Reconstructor(CkMigrateMessage* const msg)
-    : PUP::able(msg) {}
-
-template <size_t Dim>
 void Reconstructor<Dim>::pup(PUP::er& p) {
   PUP::able::pup(p);
 }

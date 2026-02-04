@@ -118,8 +118,6 @@ MagnetizedFmDisk::get_clone() const {
   return std::make_unique<MagnetizedFmDisk>(*this);
 }
 
-MagnetizedFmDisk::MagnetizedFmDisk(CkMigrateMessage* msg) : fm_disk_(msg) {}
-
 void MagnetizedFmDisk::pup(PUP::er& p) {
   p | fm_disk_;
   p | threshold_density_;

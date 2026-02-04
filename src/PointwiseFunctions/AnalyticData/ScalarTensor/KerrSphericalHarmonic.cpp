@@ -42,9 +42,6 @@ KerrSphericalHarmonic::get_clone() const {
   return std::make_unique<KerrSphericalHarmonic>(*this);
 }
 
-KerrSphericalHarmonic::KerrSphericalHarmonic(CkMigrateMessage* msg)
-    : InitialData(msg) {}
-
 void KerrSphericalHarmonic::pup(PUP::er& p) {
   InitialData::pup(p);
   p | mass_;

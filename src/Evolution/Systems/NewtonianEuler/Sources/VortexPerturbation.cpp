@@ -22,8 +22,6 @@ namespace NewtonianEuler::Sources {
 VortexPerturbation::VortexPerturbation(const double perturbation_amplitude)
     : perturbation_amplitude_(perturbation_amplitude) {}
 
-VortexPerturbation::VortexPerturbation(CkMigrateMessage* msg) : Source{msg} {}
-
 void VortexPerturbation::pup(PUP::er& p) {
   Source::pup(p);
   p | perturbation_amplitude_;

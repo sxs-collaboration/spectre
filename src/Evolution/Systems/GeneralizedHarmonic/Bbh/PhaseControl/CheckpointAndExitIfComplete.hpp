@@ -59,7 +59,6 @@ struct ExitAfterWriteCheckpoint {
 struct CheckpointAndExitIfComplete : public PhaseChange {
   /// \cond
   CheckpointAndExitIfComplete() = default;
-  explicit CheckpointAndExitIfComplete(CkMigrateMessage* /*unused*/) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(CheckpointAndExitIfComplete);  // NOLINT
   /// \endcond

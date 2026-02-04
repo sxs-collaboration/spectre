@@ -27,10 +27,6 @@
 
 namespace gh::BoundaryCorrections {
 template <size_t Dim>
-AveragedUpwindPenalty<Dim>::AveragedUpwindPenalty(CkMigrateMessage* msg)
-    : BoundaryCorrection(msg) {}
-
-template <size_t Dim>
 std::unique_ptr<evolution::BoundaryCorrection>
 AveragedUpwindPenalty<Dim>::get_clone() const {
   return std::make_unique<AveragedUpwindPenalty>(*this);

@@ -14,8 +14,6 @@ namespace Parallel {
 NodeLock::NodeLock()
     : lock_(std::make_unique<typename decltype(lock_)::element_type>()) {}
 
-NodeLock::NodeLock(CkMigrateMessage* /*message*/) {}
-
 NodeLock::NodeLock(NodeLock&& moved_lock) noexcept
     : lock_(std::move(moved_lock.lock_)) {
   moved_lock.lock_ = nullptr;

@@ -100,8 +100,6 @@ class ProductOfSinusoids : public elliptic::analytic_data::AnalyticSolution {
   }
 
   /// \cond
-  explicit ProductOfSinusoids(CkMigrateMessage* m)
-      : elliptic::analytic_data::AnalyticSolution(m) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(ProductOfSinusoids);  // NOLINT
   /// \endcond

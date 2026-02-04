@@ -4,9 +4,6 @@
 #include "ParallelAlgorithms/ApparentHorizonFinder/Criteria/IncreaseResolution.hpp"
 
 namespace ah::Criteria {
-IncreaseResolution::IncreaseResolution(CkMigrateMessage* msg)
-    : Criterion(msg) {}
-
 bool IncreaseResolution::is_equal(const Criterion& other) const {
   return dynamic_cast<const IncreaseResolution*>(&other) != nullptr;
 }

@@ -60,8 +60,6 @@ class ConstraintPreserving final : public BoundaryCondition {
   ConstraintPreserving& operator=(const ConstraintPreserving&) = default;
   ~ConstraintPreserving() override = default;
 
-  explicit ConstraintPreserving(CkMigrateMessage* msg);
-
   WRAPPED_PUPable_decl_base_template(
       domain::BoundaryConditions::BoundaryCondition, ConstraintPreserving);
 

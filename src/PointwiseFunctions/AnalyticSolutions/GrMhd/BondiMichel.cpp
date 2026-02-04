@@ -80,8 +80,6 @@ std::unique_ptr<evolution::initial_data::InitialData> BondiMichel::get_clone()
   return std::make_unique<BondiMichel>(*this);
 }
 
-BondiMichel::BondiMichel(CkMigrateMessage* msg) : InitialData(msg) {}
-
 void BondiMichel::pup(PUP::er& p) {
   InitialData::pup(p);
   p | mass_;

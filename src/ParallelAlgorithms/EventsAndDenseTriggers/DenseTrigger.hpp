@@ -54,7 +54,6 @@ class DenseTrigger : public PUP::able {
   ~DenseTrigger() override = default;
 
   /// \cond
-  explicit DenseTrigger(CkMigrateMessage* const msg) : PUP::able(msg) {}
   WRAPPED_PUPable_abstract(DenseTrigger);  // NOLINT
   /// \endcond
 

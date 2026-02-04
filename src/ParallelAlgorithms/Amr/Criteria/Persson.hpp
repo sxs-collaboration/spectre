@@ -137,7 +137,6 @@ class Persson : public Criterion {
           const Options::Context& context = {});
 
   /// \cond
-  explicit Persson(CkMigrateMessage* msg);
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(Persson);  // NOLINT
   /// \endcond
@@ -182,9 +181,6 @@ Persson<Dim, TensorTags>::Persson(std::vector<std::string> vars_to_monitor,
       coarsening_factor_(coarsening_factor) {
   db::validate_selection<TensorTags>(vars_to_monitor_, context);
 }
-
-template <size_t Dim, typename TensorTags>
-Persson<Dim, TensorTags>::Persson(CkMigrateMessage* msg) : Criterion(msg) {}
 
 template <size_t Dim, typename TensorTags>
 template <typename DbTagsList, typename Metavariables>

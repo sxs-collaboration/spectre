@@ -51,8 +51,6 @@ class AnalyticConstant final : public BoundaryCondition<Dim> {
   /// \endcond
   ~AnalyticConstant() override = default;
 
-  explicit AnalyticConstant(CkMigrateMessage* msg);
-
   WRAPPED_PUPable_decl_base_template(
       domain::BoundaryConditions::BoundaryCondition, AnalyticConstant);
 

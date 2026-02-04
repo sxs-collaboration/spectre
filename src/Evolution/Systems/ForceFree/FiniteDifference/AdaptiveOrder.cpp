@@ -42,9 +42,6 @@ AdaptiveOrder::AdaptiveOrder(
   set_function_pointers();
 }
 
-AdaptiveOrder::AdaptiveOrder(CkMigrateMessage* const msg)
-    : Reconstructor(msg) {}
-
 std::unique_ptr<Reconstructor> AdaptiveOrder::get_clone() const {
   return std::make_unique<AdaptiveOrder>(*this);
 }

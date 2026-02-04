@@ -48,7 +48,6 @@ template <typename HorizonMetavars>
 class FindApparentHorizon : public Event {
  public:
   /// \cond
-  explicit FindApparentHorizon(CkMigrateMessage* /*unused*/) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(FindApparentHorizon);  // NOLINT
   /// \endcond

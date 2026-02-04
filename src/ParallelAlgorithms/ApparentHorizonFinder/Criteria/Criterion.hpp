@@ -47,7 +47,6 @@ class Criterion : public PUP::able {
   /// \endcond
  public:
   ~Criterion() override = default;
-  explicit Criterion(CkMigrateMessage* msg) : PUP::able(msg) {}
 
   WRAPPED_PUPable_abstract(Criterion);
 

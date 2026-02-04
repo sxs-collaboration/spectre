@@ -114,8 +114,6 @@ class DgElementArrayMember<Dim, Metavariables,
 
   WRAPPED_PUPable_decl_base_template(  // NOLINT
       SINGLE_ARG(DgElementArrayMemberBase<Dim>), DgElementArrayMember);
-
-  explicit DgElementArrayMember(CkMigrateMessage* msg);
   /// \endcond
 
   /// Start execution of the phase-dependent action list in `next_phase`. If
@@ -199,13 +197,6 @@ class DgElementArrayMember<Dim, Metavariables,
 };
 
 /// \cond
-template <size_t Dim, typename Metavariables,
-          typename... PhaseDepActionListsPack, typename SimpleTagsFromOptions>
-DgElementArrayMember<
-    Dim, Metavariables, tmpl::list<PhaseDepActionListsPack...>,
-    SimpleTagsFromOptions>::DgElementArrayMember(CkMigrateMessage* msg)
-    : DgElementArrayMemberBase<Dim>(msg) {}
-
 template <size_t Dim, typename Metavariables,
           typename... PhaseDepActionListsPack, typename SimpleTagsFromOptions>
 template <class... InitializationTags>

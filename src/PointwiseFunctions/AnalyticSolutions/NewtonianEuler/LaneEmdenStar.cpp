@@ -33,8 +33,6 @@ std::unique_ptr<evolution::initial_data::InitialData> LaneEmdenStar::get_clone()
   return std::make_unique<LaneEmdenStar>(*this);
 }
 
-LaneEmdenStar::LaneEmdenStar(CkMigrateMessage* msg) : InitialData(msg) {}
-
 // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
 PUP::able::PUP_ID LaneEmdenStar::my_PUP_ID = 0;
 

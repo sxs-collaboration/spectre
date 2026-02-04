@@ -55,11 +55,6 @@ MonotonisedCentralPrim<System>::MonotonisedCentralPrim(
       reconstruct_rho_times_temperature_(reconstruct_rho_times_temperature) {}
 
 template <typename System>
-MonotonisedCentralPrim<System>::MonotonisedCentralPrim(
-    CkMigrateMessage* const msg)
-    : Reconstructor<System>(msg) {}
-
-template <typename System>
 std::unique_ptr<Reconstructor<System>>
 MonotonisedCentralPrim<System>::get_clone() const {
   return std::make_unique<MonotonisedCentralPrim>(*this);

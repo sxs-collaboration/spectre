@@ -41,8 +41,6 @@ class None : public elliptic::BoundaryConditions::BoundaryCondition<2> {
   ~None() override = default;
 
   /// \cond
-  explicit None(CkMigrateMessage* m);
-  using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(None);
   /// \endcond
 

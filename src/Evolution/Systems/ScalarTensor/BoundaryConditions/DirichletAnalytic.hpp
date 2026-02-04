@@ -64,8 +64,6 @@ class DirichletAnalytic final : public BoundaryCondition {
                         analytic_prescription,
                     double amplitude);
 
-  explicit DirichletAnalytic(CkMigrateMessage* msg);
-
   WRAPPED_PUPable_decl_base_template(
       domain::BoundaryConditions::BoundaryCondition, DirichletAnalytic);
 

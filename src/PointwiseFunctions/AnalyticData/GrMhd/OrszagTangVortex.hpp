@@ -84,7 +84,6 @@ class OrszagTangVortex
       -> std::unique_ptr<evolution::initial_data::InitialData> override;
 
   /// \cond
-  explicit OrszagTangVortex(CkMigrateMessage* msg);
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(OrszagTangVortex);
   /// \endcond

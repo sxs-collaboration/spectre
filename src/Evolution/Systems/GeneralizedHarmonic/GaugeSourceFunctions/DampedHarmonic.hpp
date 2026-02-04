@@ -247,7 +247,6 @@ class DampedHarmonic final : public GaugeCondition {
   ~DampedHarmonic() override = default;
 
   /// \cond
-  explicit DampedHarmonic(CkMigrateMessage* msg);
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(DampedHarmonic);  // NOLINT
   /// \endcond

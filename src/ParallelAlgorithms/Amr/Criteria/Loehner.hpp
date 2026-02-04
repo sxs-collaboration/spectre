@@ -173,7 +173,6 @@ class Loehner : public Criterion {
           const Options::Context& context = {});
 
   /// \cond
-  explicit Loehner(CkMigrateMessage* msg);
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(Loehner);  // NOLINT
   /// \endcond
@@ -220,9 +219,6 @@ Loehner<Dim, TensorTags>::Loehner(std::vector<std::string> vars_to_monitor,
         "Must specify non-zero RelativeTolerance, AbsoluteTolerance, or both.");
   }
 }
-
-template <size_t Dim, typename TensorTags>
-Loehner<Dim, TensorTags>::Loehner(CkMigrateMessage* msg) : Criterion(msg) {}
 
 template <size_t Dim, typename TensorTags>
 template <typename DbTagsList, typename Metavariables>

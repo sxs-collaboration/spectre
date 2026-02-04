@@ -6,7 +6,6 @@
 #include <pup.h>
 #include <utility>
 
-
 namespace grmhd::AnalyticData {
 
 PolarMagnetizedFmDisk::PolarMagnetizedFmDisk(
@@ -17,9 +16,6 @@ std::unique_ptr<evolution::initial_data::InitialData>
 PolarMagnetizedFmDisk::get_clone() const {
   return std::make_unique<PolarMagnetizedFmDisk>(*this);
 }
-
-PolarMagnetizedFmDisk::PolarMagnetizedFmDisk(CkMigrateMessage* msg)
-    : fm_disk_(msg) {}
 
 void PolarMagnetizedFmDisk::pup(PUP::er& p) {
   p | fm_disk_;

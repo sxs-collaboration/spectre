@@ -59,8 +59,6 @@ class Rk3Pareschi : public ImexRungeKutta {
 
   WRAPPED_PUPable_decl_template(Rk3Pareschi);  // NOLINT
 
-  explicit Rk3Pareschi(CkMigrateMessage* /*unused*/) {}
-
   const ButcherTableau& butcher_tableau() const override;
 
   const ImplicitButcherTableau& implicit_butcher_tableau() const override;

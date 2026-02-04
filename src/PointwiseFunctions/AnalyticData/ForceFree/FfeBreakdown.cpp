@@ -15,8 +15,6 @@
 
 namespace ForceFree::AnalyticData {
 
-FfeBreakdown::FfeBreakdown(CkMigrateMessage* msg) : InitialData(msg) {}
-
 std::unique_ptr<evolution::initial_data::InitialData> FfeBreakdown::get_clone()
     const {
   return std::make_unique<FfeBreakdown>(*this);

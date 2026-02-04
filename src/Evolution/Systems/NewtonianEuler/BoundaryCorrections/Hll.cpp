@@ -21,9 +21,6 @@
 
 namespace NewtonianEuler::BoundaryCorrections {
 template <size_t Dim>
-Hll<Dim>::Hll(CkMigrateMessage* msg) : BoundaryCorrection(msg) {}
-
-template <size_t Dim>
 std::unique_ptr<evolution::BoundaryCorrection> Hll<Dim>::get_clone() const {
   return std::make_unique<Hll>(*this);
 }

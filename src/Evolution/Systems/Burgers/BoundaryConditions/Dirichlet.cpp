@@ -16,8 +16,6 @@
 namespace Burgers::BoundaryConditions {
 Dirichlet::Dirichlet(const double u_value) : u_value_(u_value) {}
 
-Dirichlet::Dirichlet(CkMigrateMessage* const msg) : BoundaryCondition(msg) {}
-
 std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
 Dirichlet::get_clone() const {
   return std::make_unique<Dirichlet>(*this);

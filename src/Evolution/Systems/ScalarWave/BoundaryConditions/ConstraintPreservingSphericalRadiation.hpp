@@ -206,8 +206,6 @@ class ConstraintPreservingSphericalRadiation final
   /// \endcond
   ~ConstraintPreservingSphericalRadiation() override = default;
 
-  explicit ConstraintPreservingSphericalRadiation(CkMigrateMessage* msg);
-
   WRAPPED_PUPable_decl_base_template(
       domain::BoundaryConditions::BoundaryCondition,
       ConstraintPreservingSphericalRadiation);

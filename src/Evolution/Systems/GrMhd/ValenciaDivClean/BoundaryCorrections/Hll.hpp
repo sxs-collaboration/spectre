@@ -124,7 +124,6 @@ class Hll final : public evolution::BoundaryCorrection {
       double light_speed_density_cutoff);
 
   /// \cond
-  explicit Hll(CkMigrateMessage* /*unused*/);
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(Hll);  // NOLINT
   /// \endcond

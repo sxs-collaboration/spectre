@@ -149,7 +149,6 @@ class Constraints : public Criterion {
               double coarsening_factor, const Options::Context& context = {});
 
   /// \cond
-  explicit Constraints(CkMigrateMessage* msg);
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(Constraints);  // NOLINT
   /// \endcond
@@ -193,10 +192,6 @@ Constraints<Dim, TensorTags>::Constraints(
       coarsening_factor_(coarsening_factor) {
   db::validate_selection<TensorTags>(vars_to_monitor_, context);
 }
-
-template <size_t Dim, typename TensorTags>
-Constraints<Dim, TensorTags>::Constraints(CkMigrateMessage* msg)
-    : Criterion(msg) {}
 
 template <size_t Dim, typename TensorTags>
 template <typename ComputeTagsList, typename DataBoxType,

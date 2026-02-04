@@ -200,7 +200,6 @@ class UpwindPenalty final : public evolution::BoundaryCorrection {
   ~UpwindPenalty() override = default;
 
   /// \cond
-  explicit UpwindPenalty(CkMigrateMessage* msg);
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(UpwindPenalty);  // NOLINT
   /// \endcond

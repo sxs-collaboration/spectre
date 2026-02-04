@@ -19,8 +19,6 @@ class BoundaryCondition : public domain::BoundaryConditions::BoundaryCondition {
   BoundaryCondition& operator=(const BoundaryCondition&) = default;
   ~BoundaryCondition() override = default;
 
-  explicit BoundaryCondition(CkMigrateMessage* msg);
-
   void pup(PUP::er& p) override;
 };
 }  // namespace Ccz4::BoundaryConditions

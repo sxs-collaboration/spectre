@@ -75,7 +75,6 @@ struct ComponentBeta;
 
 struct RegisterTrigger : public Trigger {
   RegisterTrigger() = default;
-  explicit RegisterTrigger(CkMigrateMessage* /*unused*/) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(RegisterTrigger);  // NOLINT
 
@@ -89,7 +88,6 @@ struct RegisterTrigger : public Trigger {
 
 struct SolveTrigger : public Trigger {
   SolveTrigger() = default;
-  explicit SolveTrigger(CkMigrateMessage* /*unused*/) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(SolveTrigger);  // NOLINT
 

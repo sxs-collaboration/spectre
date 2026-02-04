@@ -93,7 +93,6 @@ class ObserveConstantsPerElement : public Event {
       ::FloatingPointType floating_point_type);
 
   /// \cond
-  explicit ObserveConstantsPerElement(CkMigrateMessage* /*unused*/);
   /// \endcond
 
   using observation_registration_tags = tmpl::list<>;

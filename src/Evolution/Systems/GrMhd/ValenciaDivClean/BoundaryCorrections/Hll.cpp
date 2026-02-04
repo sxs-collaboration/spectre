@@ -28,8 +28,6 @@ Hll::Hll(const double magnetic_field_magnitude_for_hydro,
     : magnetic_field_magnitude_for_hydro_(magnetic_field_magnitude_for_hydro),
       light_speed_density_cutoff_(light_speed_density_cutoff) {}
 
-Hll::Hll(CkMigrateMessage* /*unused*/) {}
-
 std::unique_ptr<evolution::BoundaryCorrection> Hll::get_clone() const {
   return std::make_unique<Hll>(*this);
 }

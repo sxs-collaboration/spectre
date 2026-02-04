@@ -582,8 +582,6 @@ class CoordinateMap
       SINGLE_ARG(CoordinateMapBase<SourceFrame, TargetFrame, dim>),
       CoordinateMap);
 
-  explicit CoordinateMap(CkMigrateMessage* /*unused*/) {}
-
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& p) override {
     size_t version = 0;

@@ -102,7 +102,6 @@ class TruncationError : public Criterion {
                   const Options::Context& context = {});
 
   /// \cond
-  explicit TruncationError(CkMigrateMessage* msg);
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(TruncationError);  // NOLINT
   /// \endcond
@@ -141,10 +140,6 @@ TruncationError<Dim, TensorTags>::TruncationError(
       target_rel_truncation_error_(target_rel_truncation_error) {
   db::validate_selection<TensorTags>(vars_to_monitor_, context);
 }
-
-template <size_t Dim, typename TensorTags>
-TruncationError<Dim, TensorTags>::TruncationError(CkMigrateMessage* msg)
-    : Criterion(msg) {}
 
 template <size_t Dim, typename TensorTags>
 template <typename DbTagsList, typename Metavariables>

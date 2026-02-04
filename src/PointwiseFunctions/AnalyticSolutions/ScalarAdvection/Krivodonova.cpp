@@ -85,8 +85,6 @@ tuples::TaggedTuple<ScalarAdvection::Tags::U> Krivodonova::variables(
 
 void Krivodonova::pup(PUP::er& p) { InitialData::pup(p); }
 
-Krivodonova::Krivodonova(CkMigrateMessage* msg) : InitialData(msg) {}
-
 PUP::able::PUP_ID Krivodonova::my_PUP_ID = 0;
 
 bool operator==(const Krivodonova& /*lhs*/, const Krivodonova& /*rhs*/) {

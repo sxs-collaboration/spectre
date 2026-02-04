@@ -28,9 +28,6 @@ void Equilibrium3D<EquilEos>::pup(PUP::er& p) {
   EquationOfState<EquilEos::is_relativistic, 3>::pup(p);
   p | underlying_eos_;
 }
-template <typename EquilEos>
-Equilibrium3D<EquilEos>::Equilibrium3D(CkMigrateMessage* msg)
-    : EquationOfState<EquilEos::is_relativistic, 3>(msg) {}
 
 template <typename EquilEos>
 std::unique_ptr<EquationOfState<EquilEos::is_relativistic, 3>>

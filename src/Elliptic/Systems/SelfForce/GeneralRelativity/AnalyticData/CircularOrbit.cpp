@@ -30,10 +30,6 @@ CircularOrbit::CircularOrbit(const double black_hole_mass,
       orbital_radius_(orbital_radius),
       m_mode_number_(m_mode_number) {}
 
-CircularOrbit::CircularOrbit(CkMigrateMessage* m)
-    : elliptic::analytic_data::Background(m),
-      elliptic::analytic_data::InitialGuess(m) {}
-
 tnsr::I<double, 2> CircularOrbit::puncture_position() const {
   const double M = black_hole_mass_;
   const double r_plus = M * (1. + sqrt(1. - square(black_hole_spin_)));

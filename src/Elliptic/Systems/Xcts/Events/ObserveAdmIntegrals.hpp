@@ -104,7 +104,6 @@ class ObserveAdmIntegrals : public Event {
 
  public:
   /// \cond
-  explicit ObserveAdmIntegrals(CkMigrateMessage* msg) : Event(msg) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(ObserveAdmIntegrals);  // NOLINT
   /// \endcond

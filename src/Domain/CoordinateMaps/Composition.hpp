@@ -118,7 +118,6 @@ struct Composition<Frames, Dim, std::index_sequence<Is...>>
   }
 
   /// \cond
-  explicit Composition(CkMigrateMessage* /*m*/) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(Composition);  // NOLINT
   /// \endcond

@@ -47,8 +47,6 @@ RotatingDipole::RotatingDipole(const double vector_potential_amplitude,
   }
 }
 
-RotatingDipole::RotatingDipole(CkMigrateMessage* msg) : InitialData(msg) {}
-
 std::unique_ptr<evolution::initial_data::InitialData>
 RotatingDipole::get_clone() const {
   return std::make_unique<RotatingDipole>(*this);

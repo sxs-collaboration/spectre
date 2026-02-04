@@ -6,7 +6,6 @@
 #include "DataStructures/TaggedVariant.hpp"
 
 namespace TimeSteppers {
-Rk5Tsitouras::Rk5Tsitouras(CkMigrateMessage* /*msg*/) {}
 
 variants::TaggedVariant<Tags::FixedOrder, Tags::VariableOrder>
 Rk5Tsitouras::order() const {

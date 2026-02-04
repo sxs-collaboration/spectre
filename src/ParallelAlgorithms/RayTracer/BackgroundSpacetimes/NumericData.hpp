@@ -77,8 +77,6 @@ class NumericData : public BackgroundSpacetime {
   }
 
   /// \cond
-  explicit NumericData(CkMigrateMessage* msg) : BackgroundSpacetime(msg) {}
-  using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(NumericData);
   /// \endcond
 

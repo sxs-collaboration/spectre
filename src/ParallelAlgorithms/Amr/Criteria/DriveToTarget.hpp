@@ -65,7 +65,6 @@ class DriveToTarget : public Criterion {
                 const std::array<Flag, Dim>& flags_at_target);
 
   /// \cond
-  explicit DriveToTarget(CkMigrateMessage* msg);
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(DriveToTarget);  // NOLINT
   /// \endcond

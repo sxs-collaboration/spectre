@@ -51,7 +51,6 @@ class Ccz4WrappedGr : public virtual evolution::initial_data::InitialData,
       -> std::unique_ptr<evolution::initial_data::InitialData> override;
 
   /// \cond
-  explicit Ccz4WrappedGr(CkMigrateMessage* msg);
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(Ccz4WrappedGr);
   /// \endcond

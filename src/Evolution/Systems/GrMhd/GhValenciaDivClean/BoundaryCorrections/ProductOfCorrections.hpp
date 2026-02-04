@@ -216,8 +216,6 @@ class ProductOfCorrections final : public evolution::BoundaryCorrection {
   ~ProductOfCorrections() override = default;
 
   /// \cond
-  explicit ProductOfCorrections(CkMigrateMessage* msg)
-      : BoundaryCorrection(msg) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(ProductOfCorrections);  // NOLINT
   /// \endcond

@@ -14,10 +14,6 @@
 
 namespace Ccz4::BoundaryConditions {
 
-// LCOV_EXCL_START
-DirichletAnalytic::DirichletAnalytic(CkMigrateMessage* const msg)
-    : BoundaryCondition(msg) {}
-// LCOV_EXCL_STOP
 DirichletAnalytic::DirichletAnalytic(const DirichletAnalytic& rhs)
     : BoundaryCondition{dynamic_cast<const BoundaryCondition&>(rhs)},
       analytic_prescription_(rhs.analytic_prescription_->get_clone()) {}

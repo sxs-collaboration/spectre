@@ -74,8 +74,6 @@ struct SystemAnalyticSolution : public MarkAsAnalyticSolution,
   SystemAnalyticSolution() = default;
   ~SystemAnalyticSolution() override = default;
 
-  explicit SystemAnalyticSolution(CkMigrateMessage* msg)
-      : evolution::initial_data::InitialData(msg) {}
   using PUP::able::register_constructor;
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-function"
@@ -152,8 +150,6 @@ struct SystemAnalyticData : public MarkAsAnalyticData,
   SystemAnalyticData() = default;
   ~SystemAnalyticData() override = default;
 
-  explicit SystemAnalyticData(CkMigrateMessage* msg)
-      : evolution::initial_data::InitialData(msg) {}
   using PUP::able::register_constructor;
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-function"

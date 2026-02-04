@@ -51,7 +51,6 @@ class Criterion : public PUP::able {
 
  public:
   ~Criterion() override = default;
-  explicit Criterion(CkMigrateMessage* msg) : PUP::able(msg) {}
 
   WRAPPED_PUPable_abstract(Criterion);  // NOLINT
 

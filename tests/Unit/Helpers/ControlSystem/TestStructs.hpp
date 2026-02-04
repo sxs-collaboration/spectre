@@ -57,7 +57,6 @@ class TestEvent : public ::Event {
  public:
   /// \cond
   // LCOV_EXCL_START
-  explicit TestEvent(CkMigrateMessage* /*unused*/) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(TestEvent);  // NOLINT
   // LCOV_EXCL_STOP

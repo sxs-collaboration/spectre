@@ -82,8 +82,6 @@ class CleanFunctionsOfTime : public Event {
 
  public:
   /// \cond
-  explicit CleanFunctionsOfTime(CkMigrateMessage* m);
-  using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(CleanFunctionsOfTime);  // NOLINT
   /// \endcond
 

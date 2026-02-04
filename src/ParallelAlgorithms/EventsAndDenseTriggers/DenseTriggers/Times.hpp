@@ -35,7 +35,6 @@ class Times : public DenseTrigger {
  public:
   /// \cond
   Times() = default;
-  explicit Times(CkMigrateMessage* const msg) : DenseTrigger(msg) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(Times);  // NOLINT
   /// \endcond

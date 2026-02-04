@@ -174,7 +174,6 @@ class MinusLaplacian
   }
 
   /// \cond
-  explicit MinusLaplacian(CkMigrateMessage* m) : Base(m) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(MinusLaplacian);  // NOLINT
   /// \endcond

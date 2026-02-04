@@ -10,10 +10,6 @@
 
 namespace ScalarWave::BoundaryConditions {
 template <size_t Dim>
-BoundaryCondition<Dim>::BoundaryCondition(CkMigrateMessage* const msg)
-    : domain::BoundaryConditions::BoundaryCondition(msg) {}
-
-template <size_t Dim>
 void BoundaryCondition<Dim>::pup(PUP::er& p) {
   domain::BoundaryConditions::BoundaryCondition::pup(p);
 }

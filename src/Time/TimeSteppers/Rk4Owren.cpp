@@ -6,7 +6,6 @@
 #include "DataStructures/TaggedVariant.hpp"
 
 namespace TimeSteppers {
-Rk4Owren::Rk4Owren(CkMigrateMessage* /*msg*/) {}
 
 variants::TaggedVariant<Tags::FixedOrder, Tags::VariableOrder> Rk4Owren::order()
     const {

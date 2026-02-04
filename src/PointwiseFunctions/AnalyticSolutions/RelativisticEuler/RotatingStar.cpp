@@ -451,8 +451,6 @@ RotatingStar& RotatingStar::operator=(const RotatingStar& rhs) {
   return *this;
 }
 
-RotatingStar::RotatingStar(CkMigrateMessage* msg) : InitialData(msg) {}
-
 std::unique_ptr<evolution::initial_data::InitialData> RotatingStar::get_clone()
     const {
   return std::make_unique<RotatingStar>(*this);

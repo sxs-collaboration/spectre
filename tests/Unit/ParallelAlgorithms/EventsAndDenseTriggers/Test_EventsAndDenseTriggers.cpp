@@ -55,7 +55,6 @@ struct EventCount : db::SimpleTag {
 template <typename Label>
 class TestEvent : public Event {
  public:
-  explicit TestEvent(CkMigrateMessage* /*unused*/) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(TestEvent);  // NOLINT
 
@@ -344,7 +343,6 @@ void do_test(const bool time_runs_forward, const bool add_event) {
 class MutatingTrigger : public DenseTrigger {
  public:
   MutatingTrigger() = default;
-  explicit MutatingTrigger(CkMigrateMessage* const msg) : DenseTrigger(msg) {}
   using PUP::able::register_constructor;
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-function"

@@ -78,7 +78,6 @@ class Robin : public elliptic::BoundaryConditions::BoundaryCondition<3> {
   ~Robin() override = default;
 
   /// \cond
-  explicit Robin(CkMigrateMessage* m) : Base(m) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(Robin);
   /// \endcond

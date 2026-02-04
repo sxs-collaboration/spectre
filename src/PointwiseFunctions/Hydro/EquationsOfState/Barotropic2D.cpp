@@ -48,9 +48,6 @@ void Barotropic2D<ColdEos>::pup(PUP::er& p) {
   EquationOfState<ColdEos::is_relativistic, 2>::pup(p);
   p | underlying_eos_;
 }
-template <typename ColdEos>
-Barotropic2D<ColdEos>::Barotropic2D(CkMigrateMessage* msg)
-    : EquationOfState<ColdEos::is_relativistic, 2>(msg) {}
 
 template <typename ColdEos>
 bool Barotropic2D<ColdEos>::operator==(const Barotropic2D<ColdEos>& rhs) const {

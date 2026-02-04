@@ -38,7 +38,6 @@ class ByBlock : public StepChooser<StepChooserUse::Slab>,
  public:
   /// \cond
   ByBlock() = default;
-  explicit ByBlock(CkMigrateMessage* /*unused*/) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(ByBlock);  // NOLINT
   /// \endcond

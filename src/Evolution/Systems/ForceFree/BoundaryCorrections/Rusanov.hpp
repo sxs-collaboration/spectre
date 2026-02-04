@@ -82,8 +82,6 @@ class Rusanov final : public evolution::BoundaryCorrection {
   ~Rusanov() override = default;
 
   /// \cond
-  explicit Rusanov(CkMigrateMessage* /*unused*/);
-  using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(Rusanov);  // NOLINT
   /// \endcond
   void pup(PUP::er& p) override;  // NOLINT

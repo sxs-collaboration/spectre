@@ -22,8 +22,6 @@ class BoundaryCorrection : public PUP::able {
   BoundaryCorrection& operator=(BoundaryCorrection&&) = default;
   ~BoundaryCorrection() override = default;
 
-  explicit BoundaryCorrection(CkMigrateMessage* msg) : PUP::able(msg) {}
-
   /// \cond
   WRAPPED_PUPable_abstract(BoundaryCorrection);  // NOLINT
   /// \endcond

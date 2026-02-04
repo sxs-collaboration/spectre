@@ -24,9 +24,6 @@ DemandOutgoingCharSpeeds::get_clone() const {
 
 void DemandOutgoingCharSpeeds::pup(PUP::er& p) { BoundaryCondition::pup(p); }
 
-DemandOutgoingCharSpeeds::DemandOutgoingCharSpeeds(CkMigrateMessage* const msg)
-    : BoundaryCondition(msg) {}
-
 std::optional<std::string>
 DemandOutgoingCharSpeeds::dg_demand_outgoing_char_speeds(
     const std::optional<tnsr::I<DataVector, 3, Frame::Inertial>>&

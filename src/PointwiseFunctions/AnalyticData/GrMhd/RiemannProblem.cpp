@@ -45,8 +45,6 @@ RiemannProblem::get_clone() const {
   return std::make_unique<RiemannProblem>(*this);
 }
 
-RiemannProblem::RiemannProblem(CkMigrateMessage* msg) : InitialData(msg) {}
-
 void RiemannProblem::pup(PUP::er& p) {
   InitialData::pup(p);
   p | equation_of_state_;

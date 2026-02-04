@@ -24,7 +24,6 @@ class LimitIncrease : public StepChooser<StepChooserUse::Slab>,
  public:
   /// \cond
   LimitIncrease() = default;
-  explicit LimitIncrease(CkMigrateMessage* /*unused*/) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(LimitIncrease);  // NOLINT
   /// \endcond

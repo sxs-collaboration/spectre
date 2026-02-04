@@ -58,8 +58,6 @@ class Gaussian<1, Fr> : public MathFunction<1, Fr> {
   WRAPPED_PUPable_decl_base_template(SINGLE_ARG(MathFunction<1, Fr>),
                                      Gaussian);  // NOLINT
 
-  explicit Gaussian(CkMigrateMessage* /*unused*/) {}
-
   Gaussian(double amplitude, double width, double center);
   Gaussian(double amplitude, double width, const std::array<double, 1>& center);
 
@@ -141,8 +139,6 @@ class Gaussian : public MathFunction<VolumeDim, Fr> {
 
   WRAPPED_PUPable_decl_base_template(SINGLE_ARG(MathFunction<VolumeDim, Fr>),
                                      Gaussian);  // NOLINT
-
-  explicit Gaussian(CkMigrateMessage* /*unused*/) {}
 
   Gaussian(double amplitude, double width,
            const std::array<double, VolumeDim>& center);
