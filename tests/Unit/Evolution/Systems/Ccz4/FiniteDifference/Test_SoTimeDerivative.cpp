@@ -315,7 +315,9 @@ void test_kerrschild(const bool evolve_lapse_and_shift) {
       Approx::custom().epsilon(1.0e-9).scale(*std::max_element(
           evolved_vars.data(), evolved_vars.data() + evolved_vars.size() - 1));
 
-  tmpl::for_each<Ccz4::fd::System::variables_tag_list>(
+  // Remove dt_b from the list, which will be checked separately below
+  tmpl::for_each<tmpl::remove<Ccz4::fd::System::variables_tag_list,
+    ::Ccz4::Tags::AuxiliaryShiftB<DataVector, SpatialDim>>>(
       [&]<typename Tag>(tmpl::type_<Tag> /*meta*/) {
         const std::string tag_name = db::tag_name<::Tags::dt<Tag>>();
         CAPTURE(tag_name);
