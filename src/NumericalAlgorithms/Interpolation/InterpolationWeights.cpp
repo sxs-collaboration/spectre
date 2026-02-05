@@ -10,6 +10,7 @@
 #include "DataStructures/Matrix.hpp"
 #include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
+#include "Utilities/Gsl.hpp"
 
 namespace intrp {
 template <typename TargetDataType>
@@ -37,6 +38,49 @@ Matrix fornberg_interpolation_matrix(const TargetDataType& x_target,
     }
   }
   return result;
+}
+
+template <size_t MaxOrder>
+void fornberg_derivative_interpolation_weights(
+    const gsl::not_null<std::array<DataVector, MaxOrder + 1>*> result,
+    const double x_target, const DataVector& x_source) {
+  auto& c = *result;
+
+  // Using convention that n is the index of the last point
+  const size_t n = x_source.size() - 1;
+
+  // Assign c and fill with zeros
+  for (size_t i = 0; i < MaxOrder + 1; ++i) {
+    gsl::at(c, i) = DataVector(n + 1, 0.0);
+  }
+
+  double c1 = 1.0;
+  double c4 = x_source[0] - x_target;
+  c[0][0] = 1.0;
+  for (size_t i = 1; i <= n; ++i) {
+    const size_t mn = (i < MaxOrder ? i : MaxOrder);
+    double c2 = 1.0;
+    const double c5 = c4;
+    c4 = x_source[i] - x_target;
+    for (size_t j = 0; j < i; ++j) {
+      const double c3 = x_source[i] - x_source[j];
+      c2 *= c3;
+      if (j == i - 1) {
+        for (size_t k = mn; k > 0; --k) {
+          gsl::at(c, k)[i] =
+              c1 * (k * gsl::at(c, k - 1)[i - 1] - c5 * gsl::at(c, k)[i - 1]) /
+              c2;
+        }
+        c[0][i] = -c1 * c5 * c[0][i - 1] / c2;
+      }
+      for (size_t k = mn; k > 0; --k) {
+        gsl::at(c, k)[j] =
+            (c4 * gsl::at(c, k)[j] - k * gsl::at(c, k - 1)[j]) / c3;
+      }
+      c[0][j] = c4 * c[0][j] / c3;
+    }
+    c1 = c2;
+  }
 }
 
 template <typename TargetDataType>
@@ -83,6 +127,18 @@ Matrix fourier_interpolation_matrix(const TargetDataType& x_target,
                                                const size_t n_source_points);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (double, DataVector))
+
+#undef DTYPE
+#undef INSTANTIATE
+
+#define DNUM(data) BOOST_PP_TUPLE_ELEM(0, data)
+
+#define INSTANTIATE(_, data)                                               \
+  template void fornberg_derivative_interpolation_weights<DNUM(data)>(     \
+      const gsl::not_null<std::array<DataVector, DNUM(data) + 1>*> result, \
+      const double x_target, const DataVector& x_source);
+
+GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3, 4))
 
 #undef DTYPE
 #undef INSTANTIATE
