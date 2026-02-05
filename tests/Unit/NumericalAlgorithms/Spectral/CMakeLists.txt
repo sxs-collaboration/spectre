@@ -10,6 +10,7 @@ set(LIBRARY_SOURCES
   BasisFunctions/Test_Fourier.cpp
   BasisFunctions/Test_Jacobi.cpp
   BasisFunctions/Test_Legendre.cpp
+  BasisFunctions/Test_Zernike.cpp
   Test_Basis.cpp
   Test_BasisFunctionNormalizationSquare.cpp
   Test_Cartoon.cpp
