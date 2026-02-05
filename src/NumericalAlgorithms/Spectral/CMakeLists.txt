@@ -26,6 +26,7 @@ spectre_target_sources(
   Mesh.cpp
   ModalToNodalMatrix.cpp
   NodalToModalMatrix.cpp
+  Parity.cpp
   Projection.cpp
   Quadrature.cpp
   QuadratureWeights.cpp
@@ -60,6 +61,7 @@ spectre_target_headers(
   ModalToNodalMatrix.hpp
   Namespace.hpp
   NodalToModalMatrix.hpp
+  Parity.hpp
   PrecomputedSpectralQuantity.hpp
   Projection.hpp
   Quadrature.hpp
