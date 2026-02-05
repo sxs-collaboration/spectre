@@ -223,7 +223,8 @@ class KleinGordonWorldtubeH5BufferUpdater;
  *  times at each of the rows of the time-series data.
  */
 template <typename BufferTags>
-class WorldtubeBufferUpdater : public PUP::able {
+class WorldtubeBufferUpdater
+    : public SPECTRE_CHARM_PUPable(WorldtubeBufferUpdater<BufferTags>) {
  public:
   using creatable_classes =
       tmpl::list<MetricWorldtubeH5BufferUpdater<ComplexModalVector>,

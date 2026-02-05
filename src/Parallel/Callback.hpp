@@ -48,7 +48,7 @@ bool tuple_equal(const std::tuple<Args...>& tuple_1,
 /// An abstract base class, whose derived class holds a function that
 /// can be invoked at a later time.  The function is intended to be
 /// invoked only once.
-class Callback : public PUP::able {
+class Callback : public SPECTRE_CHARM_PUPable(Callback) {
  public:
   WRAPPED_PUPable_abstract(Callback);  // NOLINT
   Callback() = default;

@@ -67,7 +67,8 @@ namespace domain::CoordinateMaps::ShapeMapTransitionFunctions {
  * the shape map does not need to hold a `unique_ptr` but can hold the
  * transition function directly as a member.
  */
-class ShapeMapTransitionFunction : public PUP::able {
+class ShapeMapTransitionFunction
+    : public SPECTRE_CHARM_PUPable(ShapeMapTransitionFunction) {
  public:
   ShapeMapTransitionFunction() = default;
 

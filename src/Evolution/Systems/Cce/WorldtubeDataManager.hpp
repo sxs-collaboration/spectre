@@ -80,7 +80,8 @@ class KleinGordonWorldtubeDataManager;
  *   and size of the buffer updates.
  */
 template <typename BoundaryTags>
-class WorldtubeDataManager : public PUP::able {
+class WorldtubeDataManager
+    : public SPECTRE_CHARM_PUPable(WorldtubeDataManager<BoundaryTags>) {
  public:
   using creatable_classes =
       tmpl::list<MetricWorldtubeDataManager, BondiWorldtubeDataManager,

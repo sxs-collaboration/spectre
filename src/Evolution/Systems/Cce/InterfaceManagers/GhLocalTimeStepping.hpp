@@ -54,7 +54,8 @@ class GhLocalTimeStepping : public GhInterfaceManager {
 
   GhLocalTimeStepping() = default;
   GhLocalTimeStepping(const GhLocalTimeStepping& rhs)
-      : gh_data_{rhs.gh_data_},
+      : PUP::able(rhs),
+        gh_data_{rhs.gh_data_},
         requests_{rhs.requests_},
         latest_removed_{rhs.latest_removed_} {
     if (rhs.interpolator_.get() != nullptr) {

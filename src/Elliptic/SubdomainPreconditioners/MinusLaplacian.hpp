@@ -163,7 +163,8 @@ class MinusLaplacian
   MinusLaplacian& operator=(MinusLaplacian&& /*rhs*/) = default;
   ~MinusLaplacian() = default;
   MinusLaplacian(const MinusLaplacian& rhs)
-      : Base(rhs),
+      : PUP::able(rhs),
+        Base(rhs),
         solver_(rhs.clone_solver()),
         boundary_condition_type_(rhs.boundary_condition_type_) {}
   MinusLaplacian& operator=(const MinusLaplacian& rhs) {

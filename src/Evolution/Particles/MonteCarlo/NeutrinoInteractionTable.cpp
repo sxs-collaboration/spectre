@@ -247,7 +247,9 @@ NeutrinoInteractionTable<EnergyBins, NeutrinoSpecies>::NeutrinoInteractionTable(
 
 template <size_t EnergyBins, size_t NeutrinoSpecies>
 void NeutrinoInteractionTable<EnergyBins, NeutrinoSpecies>::pup(PUP::er& p) {
+#if defined(SPECTRE_USE_CHARM)
   PUP::able::pup(p);
+#endif  // SPECTRE_USE_CHARM
   p | table_data;
   p | table_neutrino_energies;
   p | table_log_density;

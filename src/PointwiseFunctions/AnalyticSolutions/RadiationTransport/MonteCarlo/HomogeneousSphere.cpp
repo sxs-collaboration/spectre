@@ -48,7 +48,8 @@ HomogeneousSphere::get_clone() const {
 }
 
 HomogeneousSphere::HomogeneousSphere(const HomogeneousSphere& rhs)
-    : evolution::initial_data::InitialData(rhs),
+    : PUP::able(rhs),
+      evolution::initial_data::InitialData(rhs),
       radius_(rhs.radius_),
       densities_(rhs.densities_),
       temperatures_(rhs.temperatures_),

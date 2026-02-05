@@ -16,7 +16,8 @@
 
 namespace Burgers::BoundaryConditions {
 DirichletAnalytic::DirichletAnalytic(const DirichletAnalytic& rhs)
-    : BoundaryCondition{dynamic_cast<const BoundaryCondition&>(rhs)},
+    : PUP::able(rhs),
+      BoundaryCondition{dynamic_cast<const BoundaryCondition&>(rhs)},
       analytic_prescription_(rhs.analytic_prescription_->get_clone()) {}
 
 DirichletAnalytic& DirichletAnalytic::operator=(const DirichletAnalytic& rhs) {

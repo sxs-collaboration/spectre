@@ -26,7 +26,8 @@
 
 namespace gh::gauges {
 AnalyticChristoffel::AnalyticChristoffel(const AnalyticChristoffel& rhs)
-    : GaugeCondition{dynamic_cast<const GaugeCondition&>(rhs)},
+    : PUP::able(rhs),
+      GaugeCondition{dynamic_cast<const GaugeCondition&>(rhs)},
       analytic_prescription_(rhs.analytic_prescription_->get_clone()) {}
 
 AnalyticChristoffel& AnalyticChristoffel::operator=(

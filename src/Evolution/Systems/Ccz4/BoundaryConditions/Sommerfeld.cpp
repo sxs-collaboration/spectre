@@ -16,7 +16,8 @@
 namespace Ccz4::BoundaryConditions {
 
 Sommerfeld::Sommerfeld(const Sommerfeld& rhs)
-    : BoundaryCondition{dynamic_cast<const BoundaryCondition&>(rhs)} {}
+    : PUP::able(rhs),
+      BoundaryCondition{dynamic_cast<const BoundaryCondition&>(rhs)} {}
 
 Sommerfeld& Sommerfeld::operator=(const Sommerfeld& /*rhs*/) { return *this; }
 

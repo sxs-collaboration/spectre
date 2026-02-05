@@ -31,7 +31,7 @@ namespace Sources {
  * \brief Source terms base class.
  */
 template <size_t Dim>
-class Source : public PUP::able {
+class Source : public SPECTRE_CHARM_PUPable(Source) {
  protected:
   Source() = default;
 

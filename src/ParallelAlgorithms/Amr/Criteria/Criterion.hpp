@@ -39,7 +39,7 @@ namespace amr {
 ///
 /// \example
 /// \snippet Amr/Criteria/Test_Criterion.cpp criterion_examples
-class Criterion : public PUP::able {
+class Criterion : public SPECTRE_CHARM_PUPable(Criterion) {
  protected:
   /// \cond
   Criterion() = default;

@@ -161,7 +161,7 @@ struct ControlErrorArgs {
  * that logic would depend not only on the current state, but also on
  * the previous state.
  */
-class State : public PUP::able {
+class State : public SPECTRE_CHARM_PUPable(State) {
  public:
   State() = default;
   State(const State& /*rhs*/) = default;

@@ -30,7 +30,8 @@ RegularSphericalWave::get_clone() const {
 }
 
 RegularSphericalWave::RegularSphericalWave(const RegularSphericalWave& other)
-    : evolution::initial_data::InitialData(other),
+    : PUP::able(other),
+      evolution::initial_data::InitialData(other),
       profile_(other.profile_->get_clone()) {}
 
 RegularSphericalWave& RegularSphericalWave::operator=(

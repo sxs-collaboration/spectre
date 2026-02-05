@@ -23,7 +23,7 @@ namespace Test_Classes {
 struct DerivedInPupStlCpp11;
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-function"
-struct Base : public PUP::able {
+struct Base : public SPECTRE_CHARM_PUPable(Base) {
   using creatable_classes = tmpl::list<Test_Classes::DerivedInPupStlCpp11>;
   // clang-tidy: internal charm++ warnings
   WRAPPED_PUPable_abstract(Base);  // NOLINT

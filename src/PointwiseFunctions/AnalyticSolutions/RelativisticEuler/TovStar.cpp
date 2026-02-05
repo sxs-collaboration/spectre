@@ -29,7 +29,8 @@ TovStar::TovStar(
                        coordinate_system_) {}
 
 TovStar::TovStar(const TovStar& rhs)
-    : evolution::initial_data::InitialData(rhs),
+    : PUP::able(rhs),
+      evolution::initial_data::InitialData(rhs),
       central_rest_mass_density_(rhs.central_rest_mass_density_),
       equation_of_state_(rhs.equation_of_state_->get_clone()),
       coordinate_system_(rhs.coordinate_system_),

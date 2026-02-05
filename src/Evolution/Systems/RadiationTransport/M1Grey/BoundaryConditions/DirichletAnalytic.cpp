@@ -19,7 +19,8 @@ namespace RadiationTransport::M1Grey::BoundaryConditions {
 template <typename... NeutrinoSpecies>
 DirichletAnalytic<tmpl::list<NeutrinoSpecies...>>::DirichletAnalytic(
     const DirichletAnalytic& rhs)
-    : BoundaryCondition<tmpl::list<NeutrinoSpecies...>>{dynamic_cast<
+    : PUP::able(rhs),
+      BoundaryCondition<tmpl::list<NeutrinoSpecies...>>{dynamic_cast<
           const BoundaryCondition<tmpl::list<NeutrinoSpecies...>>&>(rhs)},
       analytic_prescription_(rhs.analytic_prescription_->get_clone()) {}
 

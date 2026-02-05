@@ -31,7 +31,8 @@ namespace Parallel {
  * serialization.
  */
 template <size_t Dim>
-class DgElementArrayMemberBase : PUP::able {
+class DgElementArrayMemberBase
+    : public SPECTRE_CHARM_PUPable(DgElementArrayMemberBase<Dim>) {
  public:
   DgElementArrayMemberBase() = default;
 

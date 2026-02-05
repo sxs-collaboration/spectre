@@ -27,7 +27,7 @@ namespace elliptic::analytic_data {
  *   solved for. For this purpose it can be convenient to template the function
  *   on the set of requested tags.
  */
-class InitialGuess : public virtual PUP::able {
+class InitialGuess : public SPECTRE_CHARM_PUPable(InitialGuess) {
  protected:
   InitialGuess() = default;
 

@@ -38,7 +38,8 @@ class TimeDependentTripleGaussian;
  * Gamma1, or Gamma2).
  */
 template <size_t VolumeDim, typename Fr>
-class DampingFunction : public PUP::able {
+class DampingFunction
+    : public SPECTRE_CHARM_PUPable(SINGLE_ARG(DampingFunction<VolumeDim, Fr>)) {
  public:
   using creatable_classes = tmpl::conditional_t<
       (VolumeDim == 3 and std::is_same<Fr, Frame::Grid>::value),

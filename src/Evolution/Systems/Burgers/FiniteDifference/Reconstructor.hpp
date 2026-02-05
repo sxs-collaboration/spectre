@@ -18,7 +18,7 @@ class MonotonisedCentral;
 /*!
  * \brief The base class from which all reconstruction schemes must inherit
  */
-class Reconstructor : public PUP::able {
+class Reconstructor : public SPECTRE_CHARM_PUPable(Reconstructor) {
  public:
   Reconstructor() = default;
   Reconstructor(const Reconstructor&) = default;

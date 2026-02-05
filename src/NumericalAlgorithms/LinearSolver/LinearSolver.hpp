@@ -35,7 +35,8 @@ namespace Registrars {}
  * other factor-creatable linear solver as preconditioner.
  */
 template <typename LinearSolverRegistrars>
-class LinearSolver : public PUP::able {
+class LinearSolver
+    : public SPECTRE_CHARM_PUPable(LinearSolver<LinearSolverRegistrars>) {
  protected:
   /// \cond
   LinearSolver() = default;
@@ -153,7 +154,9 @@ class PreconditionedLinearSolver : public LinearSolver<LinearSolverRegistrars> {
   /// \endcond
 
   void pup(PUP::er& p) override {  // NOLINT
+#if defined(SPECTRE_USE_CHARM)
     PUP::able::pup(p);
+#endif  // SPECTRE_USE_CHARM
     if constexpr (not std::is_same_v<Preconditioner, NoPreconditioner>) {
       p | preconditioner_;
     }
@@ -241,7 +244,7 @@ PreconditionedLinearSolver<Preconditioner, LinearSolverRegistrars>::
 template <typename Preconditioner, typename LinearSolverRegistrars>
 PreconditionedLinearSolver<Preconditioner, LinearSolverRegistrars>::
     PreconditionedLinearSolver(const PreconditionedLinearSolver& rhs)
-    : Base(rhs) {
+    : PUP::able(rhs), Base(rhs) {
   if constexpr (not std::is_same_v<Preconditioner, NoPreconditioner>) {
     preconditioner_ = rhs.clone_preconditioner();
   }

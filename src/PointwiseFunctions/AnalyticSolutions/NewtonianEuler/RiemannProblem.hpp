@@ -288,7 +288,7 @@ class RiemannProblem : public evolution::initial_data::InitialData,
   void pup(PUP::er& /*p*/) override;
 
   // Retrieve these member variables for testing purposes.
-  constexpr std::array<double, 2> diagnostic_star_region_values() const {
+  std::array<double, 2> diagnostic_star_region_values() const {
     return make_array(pressure_star_, velocity_star_);
   }
 

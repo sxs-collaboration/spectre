@@ -40,7 +40,7 @@ namespace DenseTriggers {}
 /// steps or slabs, such as the step size, may have the values from
 /// times off by one step.  The evolved variables will be in an
 /// unspecified state.
-class DenseTrigger : public PUP::able {
+class DenseTrigger : public SPECTRE_CHARM_PUPable(DenseTrigger) {
  protected:
   /// \cond
   DenseTrigger() = default;

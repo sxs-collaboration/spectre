@@ -38,7 +38,7 @@ namespace elliptic::analytic_data {
  *   It must support being called with a `tmpl::list` of all background tags. It
  *   may use the `mesh` and `inv_jacobian` to compute numerical derivatives.
  */
-class Background : public virtual PUP::able {
+class Background : public SPECTRE_CHARM_PUPable(Background) {
  protected:
   Background() = default;
 

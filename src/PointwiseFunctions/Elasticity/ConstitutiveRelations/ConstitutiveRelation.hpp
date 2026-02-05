@@ -45,7 +45,8 @@ namespace ConstitutiveRelations {
  * \note We assume a Euclidean metric in Cartesian coordinates here (for now).
  */
 template <size_t Dim>
-class ConstitutiveRelation : public PUP::able {
+class ConstitutiveRelation
+    : public SPECTRE_CHARM_PUPable(ConstitutiveRelation<Dim>) {
  public:
   static constexpr size_t volume_dim = Dim;
 

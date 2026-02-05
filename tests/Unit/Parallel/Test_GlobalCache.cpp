@@ -61,7 +61,7 @@ struct email {
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-function"
-class Shape : public PUP::able {
+class Shape : public SPECTRE_CHARM_PUPable(Shape) {
  public:
   Shape() = default;
   virtual size_t number_of_sides() const = 0;
@@ -89,7 +89,7 @@ class Square : public Shape {
   void pup(PUP::er& p) override { Shape::pup(p); }
 };
 
-class Animal : public PUP::able {
+class Animal : public SPECTRE_CHARM_PUPable(Animal) {
  public:
   Animal() = default;
   virtual size_t number_of_legs() const = 0;

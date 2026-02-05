@@ -13,7 +13,7 @@ namespace evolution {
  * \brief The base class used to create boundary corrections from input files
  * and store them in the global cache.
  */
-class BoundaryCorrection : public PUP::able {
+class BoundaryCorrection : public SPECTRE_CHARM_PUPable(BoundaryCorrection) {
  public:
   BoundaryCorrection() = default;
   BoundaryCorrection(const BoundaryCorrection&) = default;

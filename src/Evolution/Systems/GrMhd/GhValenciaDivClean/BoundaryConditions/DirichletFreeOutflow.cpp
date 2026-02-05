@@ -57,7 +57,8 @@ namespace grmhd::GhValenciaDivClean::BoundaryConditions {
 template <typename System>
 DirichletFreeOutflow<System>::DirichletFreeOutflow(
     const DirichletFreeOutflow<System>& rhs)
-    : BoundaryCondition{dynamic_cast<const BoundaryCondition&>(rhs)},
+    : PUP::able(rhs),
+      BoundaryCondition{dynamic_cast<const BoundaryCondition&>(rhs)},
       analytic_prescription_(rhs.analytic_prescription_->get_clone()) {}
 
 template <typename System>

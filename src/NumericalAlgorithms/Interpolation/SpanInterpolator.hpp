@@ -29,7 +29,7 @@ class BarycentricRationalSpanInterpolator;
 /// this base class, which calls the real version for each component. If it is
 /// possible to make a specialized complex version that avoids allocations, that
 /// is probably more efficient.
-class SpanInterpolator : public PUP::able {
+class SpanInterpolator : public SPECTRE_CHARM_PUPable(SpanInterpolator) {
  public:
   using creatable_classes =
       tmpl::list<LinearSpanInterpolator, CubicSpanInterpolator,

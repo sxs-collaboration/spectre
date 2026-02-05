@@ -70,7 +70,7 @@ class TeukolskyWave;
  * intermediate steps to avoid repeating potentially expensive tensor
  * calculations.
  */
-struct WorldtubeData : public PUP::able {
+struct WorldtubeData : public SPECTRE_CHARM_PUPable(WorldtubeData) {
   using creatable_classes =
       tmpl::list<BouncingBlackHole, GaugeWave, LinearizedBondiSachs,
                  RobinsonTrautman, RotatingSchwarzschild, TeukolskyWave>;
@@ -90,7 +90,9 @@ struct WorldtubeData : public PUP::able {
       ::Tags::dt<gr::Tags::Lapse<DataVector>>,
       Tags::Dr<gr::Tags::Lapse<DataVector>>, Tags::News>;
 
+#if defined(SPECTRE_USE_CHARM)
   WRAPPED_PUPable_abstract(WorldtubeData);  // NOLINT
+#endif                                      // SPECTRE_USE_CHARM
 
   // clang doesn't manage to use = default correctly in this case
   // NOLINTNEXTLINE(modernize-use-equals-default)
@@ -121,7 +123,8 @@ struct WorldtubeData : public PUP::able {
     return {cache_or_compute<Tags>(output_l_max, time)...};
   }
 
-  void pup(PUP::er& p) override;
+  SPECTRE_FINDUS_VIRTUAL()
+  void pup(PUP::er& p) SPECTRE_CHARM_OVERRIDE();
 
   virtual std::unique_ptr<Cce::InitializeJ::InitializeJ<false>>
   get_initialize_j(const double /*start_time*/) const {

@@ -38,7 +38,7 @@ namespace FunctionsOfTime {
 /// is, when evaluated at a time when the function was updated, they
 /// return the values just before the update, ignoring the updated
 /// value.
-class FunctionOfTime : public PUP::able {
+class FunctionOfTime : public SPECTRE_CHARM_PUPable(FunctionOfTime) {
  public:
   FunctionOfTime() = default;
   FunctionOfTime(FunctionOfTime&&) = default;

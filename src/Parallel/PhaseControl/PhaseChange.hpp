@@ -137,7 +137,7 @@ enum ArbitrationStrategy {
  *   state of that sequential process can be recorded in
  *   `phase_change_decision_data`.
  */
-struct PhaseChange : public PUP::able {
+struct PhaseChange : public SPECTRE_CHARM_PUPable(PhaseChange) {
  protected:
   /// \cond
   PhaseChange() = default;

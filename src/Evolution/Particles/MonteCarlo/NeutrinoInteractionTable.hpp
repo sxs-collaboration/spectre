@@ -24,7 +24,9 @@ namespace Particles::MonteCarlo {
 /// Class responsible for reading neutrino-matter interaction
 /// tables.
 template <size_t EnergyBins, size_t NeutrinoSpecies>
-class NeutrinoInteractionTable : public PUP::able {
+class NeutrinoInteractionTable
+    : public SPECTRE_CHARM_PUPable(
+          SINGLE_ARG(NeutrinoInteractionTable<EnergyBins, NeutrinoSpecies>)) {
  public:
   /// Read table from disk and stores interaction rates.
   explicit NeutrinoInteractionTable(const std::string& filename);
@@ -51,7 +53,8 @@ class NeutrinoInteractionTable : public PUP::able {
       std::vector<double> table_electron_fraction_);
 
   using PUP::able::register_constructor;
-  void pup(PUP::er& p) override;
+  SPECTRE_FINDUS_VIRTUAL()
+  void pup(PUP::er& p) SPECTRE_CHARM_OVERRIDE();
   WRAPPED_PUPable_decl_template(NeutrinoInteractionTable);
 
   /// Interpolate interaction rates to given values of density,

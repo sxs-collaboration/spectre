@@ -107,7 +107,7 @@ struct Composition<Frames, Dim, std::index_sequence<Is...>>
   using Base::operator();
 
   Composition() = default;
-  Composition(const Composition& rhs) { *this = rhs; }
+  Composition(const Composition& rhs) : PUP::able(rhs) { *this = rhs; }
   Composition& operator=(const Composition& rhs);
   Composition(Composition&& /*rhs*/) = default;
   Composition& operator=(Composition&& /*rhs*/) = default;

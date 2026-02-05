@@ -94,7 +94,7 @@ struct System : public InverseSpatialMetric<Dim, CurvedBackground> {
   using compute_volume_time_derivative_terms = TimeDerivativeTerms;
 };
 
-struct CorrectionBase : public PUP::able {
+struct CorrectionBase : public SPECTRE_CHARM_PUPable(CorrectionBase) {
   CorrectionBase() = default;
   CorrectionBase(const CorrectionBase&) = default;
   CorrectionBase& operator=(const CorrectionBase&) = default;

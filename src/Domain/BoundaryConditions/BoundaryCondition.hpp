@@ -15,7 +15,7 @@ namespace domain::BoundaryConditions {
 /*!
  * \brief Base class from which all system-specific base classes must inherit.
  */
-class BoundaryCondition : public PUP::able {
+class BoundaryCondition : public SPECTRE_CHARM_PUPable(BoundaryCondition) {
  public:
   BoundaryCondition() = default;
   BoundaryCondition(BoundaryCondition&&) = default;

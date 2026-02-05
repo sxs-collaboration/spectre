@@ -18,7 +18,7 @@ namespace initial_data {
  * \brief The abstract base class for initial data of evolution systems. All
  * analytic solutions and analytic data must virtually inherit from this class.
  */
-class InitialData : public PUP::able {
+class InitialData : public SPECTRE_CHARM_PUPable(InitialData) {
  protected:
   InitialData() = default;
 

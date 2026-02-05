@@ -24,7 +24,8 @@
 
 namespace ScalarTensor::BoundaryConditions {
 DirichletAnalytic::DirichletAnalytic(const DirichletAnalytic& rhs)
-    : BoundaryCondition{dynamic_cast<const BoundaryCondition&>(rhs)},
+    : PUP::able(rhs),
+      BoundaryCondition{dynamic_cast<const BoundaryCondition&>(rhs)},
       analytic_prescription_(rhs.analytic_prescription_->get_clone()),
       amplitude_(rhs.amplitude_) {}
 

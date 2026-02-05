@@ -111,7 +111,9 @@ std::string get_unsupported_autodiff_maps_error() {
  * \brief Abstract base class for CoordinateMap
  */
 template <typename SourceFrame, typename TargetFrame, size_t Dim>
-class CoordinateMapBase : public PUP::able {
+class CoordinateMapBase
+    : public SPECTRE_CHARM_PUPable(
+          SINGLE_ARG(CoordinateMapBase<SourceFrame, TargetFrame, Dim>)) {
  public:
   static constexpr size_t dim = Dim;
   using source_frame = SourceFrame;

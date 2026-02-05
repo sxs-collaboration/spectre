@@ -27,7 +27,8 @@ PlaneWave<Dim>::PlaneWave(
 
 template <size_t Dim>
 PlaneWave<Dim>::PlaneWave(const PlaneWave& other)
-    : evolution::initial_data::InitialData(other),
+    : PUP::able(other),
+      evolution::initial_data::InitialData(other),
       wave_vector_(other.wave_vector_),
       center_(other.center_),
       profile_(other.profile_->get_clone()),

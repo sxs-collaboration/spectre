@@ -30,7 +30,7 @@ class MonotonisedCentralPrim;
  * a runtime argument to the individual reconstruction schemes.
  */
 template <size_t Dim>
-class Reconstructor : public PUP::able {
+class Reconstructor : public SPECTRE_CHARM_PUPable(Reconstructor) {
  public:
   Reconstructor() = default;
   Reconstructor(const Reconstructor&) = default;

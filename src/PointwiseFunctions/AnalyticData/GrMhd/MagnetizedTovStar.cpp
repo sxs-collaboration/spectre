@@ -44,7 +44,8 @@ MagnetizedTovStar::MagnetizedTovStar(
       magnetic_fields_(std::move(magnetic_fields)) {}
 
 MagnetizedTovStar::MagnetizedTovStar(const MagnetizedTovStar& rhs)
-    : evolution::initial_data::InitialData{rhs},
+    : PUP::able(rhs),
+      evolution::initial_data::InitialData{rhs},
       RelativisticEuler::Solutions::TovStar(
           static_cast<const RelativisticEuler::Solutions::TovStar&>(rhs)),
       magnetic_fields_(clone_unique_ptrs(rhs.magnetic_fields_)) {}

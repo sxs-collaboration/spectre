@@ -36,7 +36,7 @@ namespace ah {
  * - A FastFlow::IterInfo corresponding to the horizon find that found the
  *   Strahlkorper
  */
-class Criterion : public PUP::able {
+class Criterion : public SPECTRE_CHARM_PUPable(Criterion) {
  protected:
   /// \cond
   Criterion() = default;

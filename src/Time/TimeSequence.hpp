@@ -19,7 +19,7 @@
 /// of simulation times or std::uint64_t for a sequence of slab
 /// numbers.
 template <typename T>
-class TimeSequence : public PUP::able {
+class TimeSequence : public SPECTRE_CHARM_PUPable(TimeSequence<T>) {
  protected:
   /// \cond HIDDEN_SYMBOLS
   TimeSequence() = default;
