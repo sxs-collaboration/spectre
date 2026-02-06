@@ -146,6 +146,7 @@ EventsAndTriggersAtSlabs:
           SubfileName: VolumePsiPiPhiEvery50Slabs
           VariablesToObserve: ["Psi", "Pi", "Phi"]
           InterpolateToMesh: None
+          ProjectToMesh: None
           CoordinatesFloatingPointType: Double
           FloatingPointTypes: [Double, Float, Float]
           BlocksToObserve: All

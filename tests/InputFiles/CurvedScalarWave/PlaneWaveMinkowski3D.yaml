@@ -102,6 +102,7 @@ EventsAndTriggersAtSlabs:
           SubfileName: VolumePsi0And25
           VariablesToObserve: ["Psi"]
           InterpolateToMesh: None
+          ProjectToMesh: None
           CoordinatesFloatingPointType: Double
           FloatingPointTypes: [Double]
           BlocksToObserve: All
@@ -119,6 +120,7 @@ EventsAndTriggersAtSlabs:
             - Phi
             - PointwiseL2Norm(OneIndexConstraint)
           InterpolateToMesh: None
+          ProjectToMesh: None
           CoordinatesFloatingPointType: Double
           FloatingPointTypes: [Double]
           BlocksToObserve: All

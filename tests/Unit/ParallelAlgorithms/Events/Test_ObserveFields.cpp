@@ -13,6 +13,7 @@
 #include <utility>
 #include <vector>
 
+#include "DataStructures/ApplyMatrices.hpp"
 #include "DataStructures/ComplexDataVector.hpp"
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/MetavariablesTag.hpp"
@@ -39,6 +40,7 @@
 #include "IO/Observer/Tags.hpp"
 #include "NumericalAlgorithms/Interpolation/RegularGridInterpolant.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
+#include "NumericalAlgorithms/Spectral/Projection.hpp"
 #include "Parallel/ArrayComponentId.hpp"
 #include "Parallel/ArrayIndex.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
@@ -98,6 +100,7 @@ template <typename System, typename ArraySectionIdTag = void,
 void test_observe(
     const std::unique_ptr<ObserveEvent> observe,
     const std::optional<Mesh<System::volume_dim>>& interpolating_mesh,
+    const std::optional<Mesh<System::volume_dim>>& projection_mesh,
     const bool has_analytic_solutions, const bool test_specific_blocks,
     const std::optional<std::string>& section = std::nullopt,
     const std::optional<std::string>& dependency = std::nullopt) {
@@ -122,7 +125,17 @@ void test_observe(
   const Mesh<volume_dim> mesh(5, Spectral::Basis::Legendre,
                               Spectral::Quadrature::GaussLobatto);
 
-  const intrp::RegularGrid interpolant(mesh, interpolating_mesh.value_or(mesh));
+  const bool do_projection = projection_mesh.has_value();
+  const Mesh<volume_dim>& target_mesh = do_projection
+                                            ? projection_mesh.value()
+                                            : interpolating_mesh.value_or(mesh);
+  const intrp::RegularGrid interpolant(mesh, target_mesh);
+  const std::optional<
+      std::array<std::reference_wrapper<const Matrix>, volume_dim>>
+      projection_matrices =
+          do_projection ? std::make_optional(Spectral::p_projection_matrices(
+                              mesh, target_mesh))
+                        : std::nullopt;
   const double observation_time = 2.0;
   Variables<typename System::variables_tag::tags_list> vars(
       mesh.number_of_grid_points());
@@ -231,13 +244,13 @@ void test_observe(
   CHECK(results.received_volume_data.extents.size() == volume_dim);
   CHECK(std::equal(results.received_volume_data.extents.begin(),
                    results.received_volume_data.extents.end(),
-                   interpolating_mesh.value_or(mesh).extents().begin()));
+                   target_mesh.extents().begin()));
   CHECK(std::equal(results.received_volume_data.basis.begin(),
                    results.received_volume_data.basis.end(),
-                   interpolating_mesh.value_or(mesh).basis().begin()));
+                   target_mesh.basis().begin()));
   CHECK(std::equal(results.received_volume_data.quadrature.begin(),
                    results.received_volume_data.quadrature.end(),
-                   interpolating_mesh.value_or(mesh).quadrature().begin()));
+                   target_mesh.quadrature().begin()));
 
   size_t num_components_observed = 0;
   // gcc 6.4.0 gets confused if we try to capture tensor_data by
@@ -246,11 +259,14 @@ void test_observe(
   const auto check_component_impl =
       [&num_components_observed,
        tensor_data = &results.received_volume_data.tensor_components,
-       &interpolant](const std::string& component, const DataVector& expected) {
+       &interpolant, &projection_matrices, &mesh, do_projection](
+          const std::string& component, const DataVector& expected) {
         CAPTURE(*tensor_data);
         CAPTURE(component);
         const DataVector interpolated_expected =
-            interpolant.interpolate(expected);
+            do_projection
+                ? apply_matrices(*projection_matrices, expected, mesh.extents())
+                : interpolant.interpolate(expected);
         const auto it =
             alg::find_if(*tensor_data, [&component](const TensorComponent& tc) {
               return tc.name == component;
@@ -327,6 +343,7 @@ template <typename System>
 void test_system(
     const std::string& mesh_creation_string,
     const std::optional<Mesh<System::volume_dim>>& interpolating_mesh = {},
+    const std::optional<Mesh<System::volume_dim>>& projection_mesh = {},
     const bool has_analytic_solutions = true,
     const std::optional<std::string>& section = std::nullopt,
     const std::optional<std::string>& dependency = std::nullopt) {
@@ -341,10 +358,10 @@ void test_system(
   for (const bool test_specific_blocks : {false, true}) {
     test_observe<System, ArraySectionIdTag>(
         std::make_unique<typename System::ObserveEvent>(
-            System::make_test_object(interpolating_mesh, std::nullopt,
-                                     dependency)),
-        interpolating_mesh, has_analytic_solutions, test_specific_blocks,
-        section, dependency);
+            System::make_test_object(interpolating_mesh, projection_mesh,
+                                     std::nullopt, dependency)),
+        interpolating_mesh, projection_mesh, has_analytic_solutions,
+        test_specific_blocks, section, dependency);
     INFO("create/serialize");
     register_factory_classes_with_charm<metavariables>();
     {
@@ -356,7 +373,7 @@ void test_system(
       auto serialized_event = serialize_and_deserialize(factory_event);
       // No dependency from factory creation
       test_observe<System, ArraySectionIdTag>(
-          std::move(serialized_event), interpolating_mesh,
+          std::move(serialized_event), interpolating_mesh, projection_mesh,
           has_analytic_solutions, test_specific_blocks, section, std::nullopt);
     }
   }
@@ -366,23 +383,28 @@ void test_system(
 SPECTRE_TEST_CASE("Unit.Evolution.dG.ObserveFields", "[Unit][Evolution]") {
   {
     INFO("No Interpolation");
-    const std::string interpolating_mesh_str = "  InterpolateToMesh: None\n";
+    const std::string interpolating_mesh_str =
+        "  InterpolateToMesh: None\n"
+        "  ProjectToMesh: None\n";
     using system_no_section = ScalarSystem<dg::Events::ObserveFields, void>;
     using system_with_section =
         ScalarSystem<dg::Events::ObserveFields, TestSectionIdTag>;
     using system_complex =
         ScalarSystem<dg::Events::ObserveFields, void, ComplexDataVector>;
     INVOKE_TEST_FUNCTION(
-        test_system, (interpolating_mesh_str, std::nullopt, true, std::nullopt),
+        test_system,
+        (interpolating_mesh_str, std::nullopt, std::nullopt, true,
+         std::nullopt),
         (system_no_section, system_with_section, system_complex,
          ComplicatedSystem<dg::Events::ObserveFields>));
     INVOKE_TEST_FUNCTION(
-        test_system, (interpolating_mesh_str, std::nullopt, true, "Section0"),
+        test_system,
+        (interpolating_mesh_str, std::nullopt, std::nullopt, true, "Section0"),
         (system_no_section, system_with_section,
          ComplicatedSystem<dg::Events::ObserveFields>));
     INVOKE_TEST_FUNCTION(test_system,
-                         (interpolating_mesh_str, std::nullopt, false,
-                          std::nullopt, "TestDependency"),
+                         (interpolating_mesh_str, std::nullopt, std::nullopt,
+                          false, std::nullopt, "TestDependency"),
                          (ScalarSystem<dg::Events::ObserveFields>,
                           ComplicatedSystem<dg::Events::ObserveFields>));
   }
@@ -393,15 +415,18 @@ SPECTRE_TEST_CASE("Unit.Evolution.dG.ObserveFields", "[Unit][Evolution]") {
         "  InterpolateToMesh:\n"
         "    Extents: 12\n"
         "    Basis: Legendre\n"
-        "    Quadrature: GaussLobatto";
+        "    Quadrature: GaussLobatto\n"
+        "  ProjectToMesh: None";
     const Mesh<1> interpolating_mesh_1d{12, Spectral::Basis::Legendre,
                                         Spectral::Quadrature::GaussLobatto};
-    INVOKE_TEST_FUNCTION(test_system,
-                         (interpolating_mesh_str, interpolating_mesh_1d, true),
-                         (ScalarSystem<dg::Events::ObserveFields>));
-    INVOKE_TEST_FUNCTION(test_system,
-                         (interpolating_mesh_str, interpolating_mesh_1d, false),
-                         (ScalarSystem<dg::Events::ObserveFields>));
+    INVOKE_TEST_FUNCTION(
+        test_system,
+        (interpolating_mesh_str, interpolating_mesh_1d, std::nullopt, true),
+        (ScalarSystem<dg::Events::ObserveFields>));
+    INVOKE_TEST_FUNCTION(
+        test_system,
+        (interpolating_mesh_str, interpolating_mesh_1d, std::nullopt, false),
+        (ScalarSystem<dg::Events::ObserveFields>));
     const Mesh<2> interpolating_mesh_2d{12, Spectral::Basis::Legendre,
                                         Spectral::Quadrature::GaussLobatto};
     test_system<ComplicatedSystem<dg::Events::ObserveFields>>(
@@ -414,7 +439,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.dG.ObserveFields", "[Unit][Evolution]") {
         "  InterpolateToMesh:\n"
         "    Extents: 3\n"
         "    Basis: Legendre\n"
-        "    Quadrature: GaussLobatto";
+        "    Quadrature: GaussLobatto\n"
+        "  ProjectToMesh: None";
     const Mesh<1> interpolating_mesh_1{3, Spectral::Basis::Legendre,
                                        Spectral::Quadrature::GaussLobatto};
     const Mesh<2> interpolating_mesh_2{3, Spectral::Basis::Legendre,
@@ -431,7 +457,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.dG.ObserveFields", "[Unit][Evolution]") {
         "  InterpolateToMesh:\n"
         "    Extents: 5\n"
         "    Basis: Chebyshev\n"
-        "    Quadrature: GaussLobatto";
+        "    Quadrature: GaussLobatto\n"
+        "  ProjectToMesh: None";
     const Mesh<1> interpolating_mesh_1{5, Spectral::Basis::Chebyshev,
                                        Spectral::Quadrature::GaussLobatto};
     const Mesh<2> interpolating_mesh_2{5, Spectral::Basis::Chebyshev,
@@ -448,7 +475,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.dG.ObserveFields", "[Unit][Evolution]") {
         "  InterpolateToMesh:\n"
         "    Extents: 5\n"
         "    Basis: Legendre\n"
-        "    Quadrature: Gauss";
+        "    Quadrature: Gauss\n"
+        "  ProjectToMesh: None";
     const Mesh<1> interpolating_mesh_1{5, Spectral::Basis::Legendre,
                                        Spectral::Quadrature::Gauss};
     const Mesh<2> interpolating_mesh_2{5, Spectral::Basis::Legendre,
@@ -465,7 +493,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.dG.ObserveFields", "[Unit][Evolution]") {
         "  InterpolateToMesh:\n"
         "    Extents: 8\n"
         "    Basis: FiniteDifference\n"
-        "    Quadrature: CellCentered";
+        "    Quadrature: CellCentered\n"
+        "  ProjectToMesh: None";
     const Mesh<1> interpolating_mesh_1{8, Spectral::Basis::FiniteDifference,
                                        Spectral::Quadrature::CellCentered};
     const Mesh<2> interpolating_mesh_2{8, Spectral::Basis::FiniteDifference,
@@ -474,6 +503,24 @@ SPECTRE_TEST_CASE("Unit.Evolution.dG.ObserveFields", "[Unit][Evolution]") {
                                                          interpolating_mesh_1);
     test_system<ComplicatedSystem<dg::Events::ObserveFields>>(
         interpolating_mesh_str, interpolating_mesh_2);
+  }
+
+  {
+    INFO("Project to coarser mesh");
+    const std::string projecting_mesh_str =
+        "  ProjectToMesh:\n"
+        "    Extents: 3\n"
+        "    Basis: Legendre\n"
+        "    Quadrature: GaussLobatto\n"
+        "  InterpolateToMesh: None";
+    const Mesh<1> projection_mesh_1{3, Spectral::Basis::Legendre,
+                                    Spectral::Quadrature::GaussLobatto};
+    const Mesh<2> projection_mesh_2{3, Spectral::Basis::Legendre,
+                                    Spectral::Quadrature::GaussLobatto};
+    test_system<ScalarSystem<dg::Events::ObserveFields>>(
+        projecting_mesh_str, std::nullopt, projection_mesh_1);
+    test_system<ComplicatedSystem<dg::Events::ObserveFields>>(
+        projecting_mesh_str, std::nullopt, projection_mesh_2);
   }
 
   {
@@ -487,8 +534,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.dG.ObserveFields", "[Unit][Evolution]") {
         std::make_unique<typename ComplicatedSystem<
             dg::Events::ObserveFields>::ObserveEvent>(
             ComplicatedSystem<dg::Events::ObserveFields>::make_test_object(
-                interpolating_mesh)),
-        interpolating_mesh, true, false);
+                interpolating_mesh, std::nullopt)),
+        interpolating_mesh, std::nullopt, true, false);
   }
   CHECK_THROWS_WITH(
       TestHelpers::test_creation<
@@ -498,8 +545,27 @@ SPECTRE_TEST_CASE("Unit.Evolution.dG.ObserveFields", "[Unit][Evolution]") {
           "VariablesToObserve: [NotAVar]\n"
           "FloatingPointTypes: [Double]\n"
           "InterpolateToMesh: None\n"
+          "ProjectToMesh: None\n"
           "BlocksToObserve: All\n"),
       Catch::Matchers::ContainsSubstring("Invalid selection: NotAVar"));
+  CHECK_THROWS_WITH(
+      TestHelpers::test_creation<
+          typename ScalarSystem<dg::Events::ObserveFields>::ObserveEvent>(
+          "SubfileName: VolumeData\n"
+          "CoordinatesFloatingPointType: Double\n"
+          "VariablesToObserve: [Scalar]\n"
+          "FloatingPointTypes: [Double]\n"
+          "InterpolateToMesh:\n"
+          "  Extents: 5\n"
+          "  Basis: Legendre\n"
+          "  Quadrature: Gauss\n"
+          "ProjectToMesh:\n"
+          "  Extents: 3\n"
+          "  Basis: Legendre\n"
+          "  Quadrature: GaussLobatto\n"
+          "BlocksToObserve: All\n"),
+      Catch::Matchers::ContainsSubstring(
+          "Specify only one of InterpolateToMesh or ProjectToMesh."));
 
   CHECK_THROWS_WITH(
       TestHelpers::test_creation<
@@ -509,6 +575,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.dG.ObserveFields", "[Unit][Evolution]") {
           "VariablesToObserve: [Scalar, Scalar]\n"
           "FloatingPointTypes: [Double]\n"
           "InterpolateToMesh: None\n"
+          "ProjectToMesh: None\n"
           "BlocksToObserve: All\n"),
       Catch::Matchers::ContainsSubstring("Scalar specified multiple times"));
 }

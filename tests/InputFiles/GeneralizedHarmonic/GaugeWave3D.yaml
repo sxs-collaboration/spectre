@@ -141,6 +141,7 @@ EventsAndTriggersAtSlabs:
             - PointwiseL2Norm(ThreeIndexConstraint)
             - PointwiseL2Norm(FourIndexConstraint)
           InterpolateToMesh: None
+          ProjectToMesh: None
           CoordinatesFloatingPointType: Double
           FloatingPointTypes: [Double]
           BlocksToObserve: All

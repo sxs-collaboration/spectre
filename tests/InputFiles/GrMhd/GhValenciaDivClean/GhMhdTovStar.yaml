@@ -256,6 +256,7 @@ EventsAndTriggersAtSlabs:
             - MagneticField
             - PointwiseL2Norm(GaugeConstraint)
           InterpolateToMesh: None
+          ProjectToMesh: None
           CoordinatesFloatingPointType: Double
           FloatingPointTypes: [Double, Double, Double, Double, Double]
           BlocksToObserve: All

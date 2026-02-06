@@ -159,6 +159,7 @@ EventsAndTriggersAtIterations:
             - Stress
             - PotentialEnergyDensity
           InterpolateToMesh: None
+          ProjectToMesh: None
           CoordinatesFloatingPointType: Float
           FloatingPointTypes: [Float]
           BlocksToObserve: All

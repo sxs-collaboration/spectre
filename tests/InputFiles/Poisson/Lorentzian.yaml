@@ -137,6 +137,7 @@ EventsAndTriggersAtIterations:
             - RadiallyCompressedCoordinates
             - FixedSource(Field)
           InterpolateToMesh: None
+          ProjectToMesh: None
           CoordinatesFloatingPointType: Double
           FloatingPointTypes: [Double]
           BlocksToObserve: All

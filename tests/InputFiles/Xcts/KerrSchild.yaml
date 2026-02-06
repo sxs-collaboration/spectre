@@ -245,6 +245,7 @@ EventsAndTriggersAtIterations:
             - Error(LapseTimesConformalFactorMinusOne)
             - Error(ShiftExcess)
           InterpolateToMesh: None
+          ProjectToMesh: None
           CoordinatesFloatingPointType: Double
           FloatingPointTypes: [Double]
           BlocksToObserve: All

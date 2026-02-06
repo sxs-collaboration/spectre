@@ -109,6 +109,7 @@ EventsAndTriggersAtIterations:
             - Displacement
             - PotentialEnergyDensity
           InterpolateToMesh: None
+          ProjectToMesh: None
           CoordinatesFloatingPointType: Double
           FloatingPointTypes: [Double]
           BlocksToObserve: All

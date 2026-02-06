@@ -238,6 +238,7 @@ struct ScalarSystem {
       "  BlocksToObserve: All\n";
   static ObserveEvent make_test_object(
       const std::optional<Mesh<volume_dim>>& interpolating_mesh,
+      const std::optional<Mesh<volume_dim>>& projection_mesh,
       std::optional<std::vector<std::string>> active_block_or_block_groups =
           std::nullopt,
       std::optional<std::string> dependency = std::nullopt) {
@@ -248,6 +249,7 @@ struct ScalarSystem {
         {"Scalar", "ScalarVarTimesTwo", "ScalarVarTimesThree", "Error(Scalar)"},
         std::move(active_block_or_block_groups),
         interpolating_mesh,
+        projection_mesh,
         std::move(dependency)};
   }
 };
@@ -367,6 +369,7 @@ struct ComplicatedSystem {
 
   static ObserveEvent make_test_object(
       const std::optional<Mesh<volume_dim>>& interpolating_mesh,
+      const std::optional<Mesh<volume_dim>>& projection_mesh,
       std::optional<std::vector<std::string>> active_block_or_block_groups =
           std::nullopt,
       std::optional<std::string> dependency = std::nullopt) {
@@ -379,7 +382,7 @@ struct ComplicatedSystem {
         {"Scalar", "ScalarVarTimesTwo", "ScalarVarTimesThree", "Vector",
          "Tensor", "Tensor2", "Error(Vector)", "Error(Tensor2)"},
         std::move(active_block_or_block_groups), interpolating_mesh,
-        std::move(dependency));
+        projection_mesh, std::move(dependency));
   }
 };
 }  // namespace TestHelpers::dg::Events::ObserveFields
