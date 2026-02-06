@@ -4,6 +4,7 @@
 #pragma once
 
 #include <cstddef>
+#include "Utilities/Gsl.hpp"
 
 /// \cond
 class DataVector;
@@ -29,9 +30,35 @@ Matrix fornberg_interpolation_matrix(const TargetDataType& x_target,
                                      const DataVector& x_source);
 
 /*!
- * \brief Computes the matrix for interpolating a periodic function known at the
- * set of \f$n\f$ equally spaced points on the periodic domain \f$[0, 2 \pi]\f$
- * to the set of points \f$x_{target}\f$
+ * \brief Computes the weights for polynomial interpolation of a non-periodic
+ * function known at the set of points \f$x_{source}\f$ to the point
+ * \f$x_{target}\f$
+ *
+ * \details The algorithm is from \cite Fornberg1998. The DataVectors in the
+ * array will be set to the size of \f$x_{source}\f$, where the first index
+ * of the array holds the weights to interpolate a function from the grid
+ * \f$x_{source}\f$ to \f$x_{target}\f$, the second index of the array holds
+ * the weights to interpolate the first derivative of a function, and
+ * so on.
+ *
+ * Calculating for the \f$n\f$-th derivative will yield all lower order
+ * derivatives as well. If you just want the interpolation coefficients, use
+ * `fornberg_interpolation_matrix`.
+ *
+ *
+ * \note The accuracy of the interpolation will depend upon the number and
+ * distribution of the source points.  It is strongly suggested that you
+ * carefully investigate the accuracy for your use case.
+ */
+template <size_t MaxOrder>
+void fornberg_derivative_interpolation_weights(
+    gsl::not_null<std::array<DataVector, MaxOrder + 1>*> result,
+    double x_target, const DataVector& x_source);
+
+/*!
+ * \brief Computes the matrix for interpolating a periodic function known at
+ * the set of \f$n\f$ equally spaced points on the periodic domain \f$[0, 2
+ * \pi]\f$ to the set of points \f$x_{target}\f$
  *
  * \details The returned matrix \f$M\f$ will have \f$n_{target}\f$ rows and
  * \f$n_{source}\f$ columns so that \f$f_{target} = M f_{source}\f$

@@ -13,9 +13,11 @@
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
 #include "NumericalAlgorithms/Interpolation/InterpolationWeights.hpp"
+#include "NumericalAlgorithms/Spectral/Basis.hpp"
 #include "NumericalAlgorithms/Spectral/InterpolationMatrix.hpp"
 #include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
+#include "NumericalAlgorithms/Spectral/Quadrature.hpp"
 #include "Utilities/Blas.hpp"
 #include "Utilities/Gsl.hpp"
 
@@ -48,6 +50,37 @@ void test_fornberg_matrix(const gsl::not_null<std::mt19937*> generator) {
                       x_target[0], get<0>(xi)) == fornberg_matrix);
           }
         }
+      }
+    }
+  }
+}
+
+void test_fornberg_derivative_coefficients(
+    const gsl::not_null<std::mt19937*> generator) {
+  std::uniform_real_distribution<> xi_distribution(-1.0, 1.0);
+  const size_t max_derivative = 4;
+  std::array<DataVector, max_derivative + 1> fornberg_weights{};
+  const size_t n_target_points = 5;
+  const auto x_targets = make_with_random_values<DataVector>(
+      generator, make_not_null(&xi_distribution), n_target_points);
+  for (size_t n_source_points = 3; n_source_points < 5; ++n_source_points) {
+    const Mesh<1> mesh{n_source_points, Spectral::Basis::Legendre,
+                       Spectral::Quadrature::Gauss};
+    const auto xi = logical_coordinates(mesh);
+    for (auto x_target : x_targets) {
+      intrp::fornberg_derivative_interpolation_weights<max_derivative>(
+          make_not_null(&fornberg_weights), x_target, get<0>(xi));
+      double coefficient = 1.0;
+      auto power = static_cast<int>(n_source_points - 1);
+      for (size_t derivative = 0; derivative <= n_source_points; ++derivative) {
+        const DataVector function = pow(get<0>(xi), power);
+        const double result = std::inner_product(
+            function.begin(), function.end(),
+            gsl::at(fornberg_weights, derivative).begin(), 0.0);
+        CHECK(
+            approx(result) ==
+            coefficient * pow(x_target, power - static_cast<int>(derivative)));
+        coefficient *= power - static_cast<int>(derivative);
       }
     }
   }
@@ -87,5 +120,6 @@ SPECTRE_TEST_CASE("Unit.Numerical.Interpolation.Weights",
                   "[Unit][NumericalAlgorithms]") {
   MAKE_GENERATOR(generator);
   test_fornberg_matrix(make_not_null(&generator));
+  test_fornberg_derivative_coefficients(make_not_null(&generator));
   test_fourier_matrix(make_not_null(&generator));
 }
