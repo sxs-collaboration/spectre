@@ -45,6 +45,12 @@ echo
 module list
 {% endblock %}
 
+# Disable multithreading so our executables have control over the
+# parallelization
+export OMP_NUM_THREADS=1
+export OPENBLAS_NUM_THREADS=1
+export MKL_NUM_THREADS=1
+
 ############################################################################
 # Set desired permissions for files created with this script
 umask 0022
