@@ -200,8 +200,10 @@ struct contract_first_n_indices_impl<
     tenex::detail::evaluate_impl<
         evaluate_subtrees,
         TensorIndex<result_tensor_index_values[ResultInts]>...>(
-        lhs_tensor, tensor1(TensorIndex<tensor_index_values1[Ints1]>{}...) *
-                        tensor2(TensorIndex<tensor_index_values2[Ints2]>{}...));
+        lhs_tensor,
+        tensor1(TensorIndex<tensor_index_values1[Ints1]>{}...) *
+            tensor2(TensorIndex<tensor_index_values2[Ints2]>{}...),
+        std::make_index_sequence<NumResultIndices>{});
   }
 
   // \brief Contract first N indices by evaluating a `TensorExpression`
