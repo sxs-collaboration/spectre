@@ -85,7 +85,7 @@ void test_assignment_to_single_term(const gsl::not_null<Generator*> generator,
   check_values_equal(get(L2), get(R2));
 
   // assign Tensor<LhsDataType, ...> to Tensor<RhsDataType, ...>
-  const auto R3 = make_with_random_values<tnsr::ij<RhsDataType, 3>>(
+  const auto R3 = make_with_random_values<tnsr::ii<RhsDataType, 3>>(
       generator, distribution, used_for_size_rhs);
   tnsr::ii<LhsDataType, 3> L3{used_for_size_lhs};
   tenex::evaluate<ti::j, ti::i>(make_not_null(&L3), R3(ti::i, ti::j));
