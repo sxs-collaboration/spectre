@@ -58,8 +58,13 @@ struct not_null;
  * corresponding to the Legendre Gauss points of \f$\cos \theta\f$ (and thus
  * have no points at the poles), while the azimuth has Equiangular quadrature
  * which are distributed uniformly including the left endpoint, but not the
- * right.  For the Cartoon basis, only one logical coordinate is allowed and it
- * is never used for computations.
+ * right. For the Cartoon basis, only one logical coordinate is allowed and it
+ * is never used for computations. The Zernike bases have the radial basis
+ * implemented such that the logical coordinates are \f$[-1, 1]\f$, while
+ * an affine map is internally used to go to \f$[0, 1]\f$, where these bases are
+ * defined. Being a scaled one-sided Jacobi polynomial, the gridpoint are
+ * shifted to upper \f$r\f$, and GaussRadauUpper quadrature has been implemented
+ * such that the lower edge does not have an end point but the upper does.
  *
  * \example
  * \snippet Test_LogicalCoordinates.cpp logical_coordinates_example

@@ -38,6 +38,38 @@ void test() {
     }
   }
 }
+
+template <Basis basis>
+void test_radial_zernike() {
+  // Needs its own test because radial zernike has two indices
+  // Second index m must match parity of k, and satisfy m <= k
+  // Checking \int_0^1 Q^m_n Q^m_{n'} \propto \delta_{n,n'} (no constraint on m)
+  const auto quadrature = Quadrature::GaussRadauUpper;
+  CAPTURE(basis);
+  CAPTURE(quadrature);
+  const Approx custom_approx = Approx::custom().epsilon(1.e-12).scale(1.0);
+  for (size_t n = minimum_number_of_points<basis, quadrature>;
+       n <= maximum_number_of_points<basis>; ++n) {
+    CAPTURE(n);
+    const auto& [xi, w] =
+        compute_collocation_points_and_weights<basis, quadrature>(n);
+    const size_t k_max = n - 1;
+    CAPTURE(k_max);
+    for (size_t k = 1; k <= k_max; ++k) {
+      CAPTURE(k);
+      for (size_t j = k % 2; j < k; j += 2) {
+        CAPTURE(j);
+        for (size_t m = k % 2; m <= j; m += 2) {
+          CAPTURE(m);
+          const auto f_m_k = compute_basis_function_value<basis>(k, m, xi);
+          const auto f_m_j = compute_basis_function_value<basis>(j, m, xi);
+          const double should_be_zero = sum(f_m_j * f_m_k * w);
+          CHECK_ITERABLE_CUSTOM_APPROX(should_be_zero, 0.0, custom_approx);
+        }
+      }
+    }
+  }
+}
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Numerical.Spectral.CollocationPointsAndWeights",
@@ -47,5 +79,8 @@ SPECTRE_TEST_CASE("Unit.Numerical.Spectral.CollocationPointsAndWeights",
   test<Basis::Chebyshev, Quadrature::Gauss>();
   test<Basis::Chebyshev, Quadrature::GaussLobatto>();
   test<Basis::Fourier, Quadrature::Equiangular>();
+  test_radial_zernike<Basis::ZernikeB1>();
+  test_radial_zernike<Basis::ZernikeB2>();
+  test_radial_zernike<Basis::ZernikeB3>();
 }
 }  // namespace Spectral

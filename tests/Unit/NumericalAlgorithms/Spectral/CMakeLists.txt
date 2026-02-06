@@ -39,6 +39,7 @@ set(LIBRARY_SOURCES
   Test_QuadratureWeights.cpp
   Test_SegmentSize.cpp
   Test_Spectral.cpp
+  Test_ZernikeGaussRadauUpper.cpp
   )
 
 add_test_library(${LIBRARY} "${LIBRARY_SOURCES}")

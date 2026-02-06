@@ -55,5 +55,11 @@ template const DataVector&
     barycentric_weights<Basis::Legendre, Quadrature::Gauss>(size_t);
 template const DataVector&
     barycentric_weights<Basis::Legendre, Quadrature::GaussLobatto>(size_t);
+template const DataVector&
+    barycentric_weights<Basis::ZernikeB1, Quadrature::GaussRadauUpper>(size_t);
+template const DataVector&
+    barycentric_weights<Basis::ZernikeB2, Quadrature::GaussRadauUpper>(size_t);
+template const DataVector&
+    barycentric_weights<Basis::ZernikeB3, Quadrature::GaussRadauUpper>(size_t);
 }  // namespace detail
 }  // namespace Spectral

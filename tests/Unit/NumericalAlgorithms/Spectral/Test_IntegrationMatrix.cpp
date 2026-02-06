@@ -49,6 +49,7 @@ SPECTRE_TEST_CASE("Unit.Numerical.Spectral.IntegrationMatrix",
   test<Basis::Legendre, Quadrature::GaussLobatto>();
   test<Basis::Chebyshev, Quadrature::Gauss>();
   test<Basis::Chebyshev, Quadrature::GaussLobatto>();
+  // no known form of an integraion matrix for Zernike
   // there is no integration matrix for Fourier
 }
 }  // namespace Spectral

@@ -37,4 +37,10 @@ template struct CollocationPointsAndWeightsGenerator<Basis::FiniteDifference,
                                                      Quadrature::FaceCentered>;
 template struct CollocationPointsAndWeightsGenerator<Basis::Fourier,
                                                      Quadrature::Equiangular>;
+template struct CollocationPointsAndWeightsGenerator<
+    Basis::ZernikeB1, Quadrature::GaussRadauUpper>;
+template struct CollocationPointsAndWeightsGenerator<
+    Basis::ZernikeB2, Quadrature::GaussRadauUpper>;
+template struct CollocationPointsAndWeightsGenerator<
+    Basis::ZernikeB3, Quadrature::GaussRadauUpper>;
 }  // namespace Spectral::detail
