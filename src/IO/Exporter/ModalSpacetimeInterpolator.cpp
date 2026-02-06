@@ -53,7 +53,9 @@ namespace {
 
 // NOLINTNEXTLINE(clang-diagnostic-missing-noreturn)
 void check_boost_version() {
-  if (BOOST_VERSION < 108100) {
+  // volatile to avoid unused variable warning here and in constructors
+  const volatile int boost_version = BOOST_VERSION;
+  if (boost_version < 108100) {
     ERROR("ModalSpacetimeInterpolator requires Boost 1.81 or newer, but found "
           << BOOST_LIB_VERSION << ".");
   }
