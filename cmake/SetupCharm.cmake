@@ -56,6 +56,12 @@ if(CHARM_TRACE_PROJECTIONS OR CHARM_TRACE_PROJECTIONS)
     )
 endif()
 
+set_property(TARGET SpectreFlags
+  APPEND PROPERTY
+  INTERFACE_COMPILE_OPTIONS
+  -DSPECTRE_USE_CHARM
+)
+
 file(APPEND
   "${CMAKE_BINARY_DIR}/BuildInfo.txt"
   "Charm++ version: ${CHARM_VERSION}\n"
