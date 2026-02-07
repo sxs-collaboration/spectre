@@ -174,8 +174,11 @@ class Equilibrium3D : public EquationOfState<EquilEos::is_relativistic, 3> {
   EQUATION_OF_STATE_FORWARD_DECLARE_MEMBER_IMPLS(3)
   EquilEos underlying_eos_;
 };
+
+#if defined(SPECTRE_USE_CHARM)
 /// \cond
 template <typename EquilEos>
 PUP::able::PUP_ID EquationsOfState::Equilibrium3D<EquilEos>::my_PUP_ID = 0;
 /// \endcond
+#endif  // SPECTRE_USE_CHARM
 }  // namespace EquationsOfState

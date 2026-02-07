@@ -65,9 +65,11 @@ SodExplosion<Dim>::get_clone() const {
   return std::make_unique<SodExplosion>(*this);
 }
 
+#if defined(SPECTRE_USE_CHARM)
 template <size_t Dim>
 // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
 PUP::able::PUP_ID SodExplosion<Dim>::my_PUP_ID = 0;
+#endif  // SPECTRE_USE_CHARM
 
 template <size_t Dim>
 void SodExplosion<Dim>::pup(PUP::er& p) {

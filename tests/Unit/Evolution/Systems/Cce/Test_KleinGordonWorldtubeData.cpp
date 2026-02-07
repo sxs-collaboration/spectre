@@ -130,8 +130,10 @@ class KleinGordonDummyBufferUpdater
   size_t l_max_ = 0;
 };
 
+#if defined(SPECTRE_USE_CHARM)
 // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
 PUP::able::PUP_ID Cce::KleinGordonDummyBufferUpdater::my_PUP_ID = 0;
+#endif  // SPECTRE_USE_CHARM
 
 namespace {
 

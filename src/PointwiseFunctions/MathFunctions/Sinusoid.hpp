@@ -94,7 +94,9 @@ class Sinusoid<1, Fr> : public MathFunction<1, Fr> {
 
 }  // namespace MathFunctions
 
+#if defined(SPECTRE_USE_CHARM)
 /// \cond
 template <typename Fr>
 PUP::able::PUP_ID MathFunctions::Sinusoid<1, Fr>::my_PUP_ID = 0;  // NOLINT
 /// \endcond
+#endif  // SPECTRE_USE_CHARM

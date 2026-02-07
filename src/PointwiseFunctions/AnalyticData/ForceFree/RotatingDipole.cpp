@@ -62,7 +62,9 @@ void RotatingDipole::pup(PUP::er& p) {
   p | background_spacetime_;
 }
 
+#if defined(SPECTRE_USE_CHARM)
 PUP::able::PUP_ID RotatingDipole::my_PUP_ID = 0;
+#endif  // SPECTRE_USE_CHARM
 
 tuples::TaggedTuple<Tags::TildeE> RotatingDipole::variables(
     const tnsr::I<DataVector, 3>& coords, tmpl::list<Tags::TildeE> /*meta*/) {

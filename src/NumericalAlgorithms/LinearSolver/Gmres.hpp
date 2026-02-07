@@ -475,6 +475,7 @@ Gmres<VarsType, Preconditioner, LinearSolverRegistrars>::solve(
   return has_converged;
 }
 
+#if defined(SPECTRE_USE_CHARM)
 /// \cond
 template <typename VarsType, typename Preconditioner,
           typename LinearSolverRegistrars>
@@ -482,6 +483,6 @@ template <typename VarsType, typename Preconditioner,
 PUP::able::PUP_ID
     Gmres<VarsType, Preconditioner, LinearSolverRegistrars>::my_PUP_ID = 0;
 /// \endcond
-
+#endif  // SPECTRE_USE_CHARM
 }  // namespace Serial
 }  // namespace LinearSolver

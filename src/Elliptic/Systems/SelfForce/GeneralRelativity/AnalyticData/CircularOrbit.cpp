@@ -299,6 +299,8 @@ bool operator!=(const CircularOrbit& lhs, const CircularOrbit& rhs) {
   return not(lhs == rhs);
 }
 
+#if defined(SPECTRE_USE_CHARM)
 PUP::able::PUP_ID CircularOrbit::my_PUP_ID = 0;  // NOLINT
+#endif                                           // SPECTRE_USE_CHARM
 
 }  // namespace GrSelfForce::AnalyticData

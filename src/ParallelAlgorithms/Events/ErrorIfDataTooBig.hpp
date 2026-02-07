@@ -165,10 +165,12 @@ class ErrorIfDataTooBig : public Event {
   double threshold_ = std::numeric_limits<double>::signaling_NaN();
 };
 
+#if defined(SPECTRE_USE_CHARM)
 /// \cond
 template <size_t Dim, typename Tensors, typename NonTensorComputeTags>
 PUP::able::PUP_ID
     ErrorIfDataTooBig<Dim, Tensors,
                       NonTensorComputeTags>::my_PUP_ID = 0;  // NOLINT
 /// \endcond
+#endif  // SPECTRE_USE_CHARM
 }  // namespace Events

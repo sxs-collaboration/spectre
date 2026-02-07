@@ -275,10 +275,12 @@ class ObserveAdmIntegrals : public Event {
 };
 /// @}
 
+#if defined(SPECTRE_USE_CHARM)
 /// \cond
 template <typename ArraySectionIdTag>
 PUP::able::PUP_ID ObserveAdmIntegrals<ArraySectionIdTag>::my_PUP_ID =
     0;  // NOLINT
 /// \endcond
+#endif  // SPECTRE_USE_CHARM
 
 }  // namespace Events

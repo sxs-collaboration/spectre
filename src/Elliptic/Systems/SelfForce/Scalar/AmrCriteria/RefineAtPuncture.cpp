@@ -43,6 +43,8 @@ std::array<amr::Flag, 2> RefineAtPuncture::impl(
   return make_array<2>(amr::Flag::Split);
 }
 
+#if defined(SPECTRE_USE_CHARM)
 PUP::able::PUP_ID RefineAtPuncture::my_PUP_ID = 0;  // NOLINT
+#endif                                              // SPECTRE_USE_CHARM
 
 }  // namespace ScalarSelfForce::AmrCriteria

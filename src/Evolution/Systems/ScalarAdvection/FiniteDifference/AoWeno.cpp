@@ -64,8 +64,10 @@ void AoWeno53<Dim>::pup(PUP::er& p) {
   }
 }
 
+#if defined(SPECTRE_USE_CHARM)
 template <size_t Dim>
 PUP::able::PUP_ID AoWeno53<Dim>::my_PUP_ID = 0;
+#endif  // SPECTRE_USE_CHARM
 
 template <size_t Dim>
 template <typename TagsList>

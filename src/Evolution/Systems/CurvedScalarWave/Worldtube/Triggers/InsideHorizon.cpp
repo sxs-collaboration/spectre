@@ -27,5 +27,7 @@ bool InsideHorizon::operator()(
   return orbit_radius + wt_radius_inertial < 1.99;
 }
 
+#if defined(SPECTRE_USE_CHARM)
 PUP::able::PUP_ID InsideHorizon::my_PUP_ID = 0;  // NOLINT
+#endif                                           // SPECTRE_USE_CHARM
 }  // namespace Triggers

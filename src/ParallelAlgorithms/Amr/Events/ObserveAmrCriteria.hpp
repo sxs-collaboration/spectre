@@ -140,8 +140,10 @@ class ObserveAmrCriteria
   }
 };
 
+#if defined(SPECTRE_USE_CHARM)
 /// \cond
 template <typename Metavariables>
 PUP::able::PUP_ID ObserveAmrCriteria<Metavariables>::my_PUP_ID = 0;  // NOLINT
 /// \endcond
+#endif  // SPECTRE_USE_CHARM
 }  // namespace amr::Events

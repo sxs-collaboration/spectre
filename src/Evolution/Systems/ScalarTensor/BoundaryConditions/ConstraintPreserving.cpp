@@ -199,6 +199,8 @@ std::optional<std::string> ConstraintPreserving::dg_time_derivative(
   return gh_string.value() + ";" + scalar_string.value();
 }
 
+#if defined(SPECTRE_USE_CHARM)
 // NOLINTNEXTLINE
 PUP::able::PUP_ID ConstraintPreserving::my_PUP_ID = 0;
+#endif  // SPECTRE_USE_CHARM
 }  // namespace ScalarTensor::BoundaryConditions

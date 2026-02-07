@@ -147,7 +147,9 @@ ConstantDensityStar::variables(
   return {compute_piecewise(magnitude(x), radius_, density_, 0.)};
 }
 
+#if defined(SPECTRE_USE_CHARM)
 PUP::able::PUP_ID ConstantDensityStar::my_PUP_ID = 0;  // NOLINT
+#endif                                                 // SPECTRE_USE_CHARM
 
 bool operator==(const ConstantDensityStar& lhs,
                 const ConstantDensityStar& rhs) {

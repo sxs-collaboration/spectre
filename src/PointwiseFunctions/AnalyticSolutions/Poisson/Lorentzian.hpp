@@ -142,10 +142,12 @@ class Lorentzian : public elliptic::analytic_data::AnalyticSolution {
   double complex_phase_ = std::numeric_limits<double>::signaling_NaN();
 };
 
+#if defined(SPECTRE_USE_CHARM)
 /// \cond
 template <size_t Dim, typename DataType>
 PUP::able::PUP_ID Lorentzian<Dim, DataType>::my_PUP_ID = 0;  // NOLINT
 /// \endcond
+#endif  // SPECTRE_USE_CHARM
 
 template <size_t Dim, typename DataType>
 bool operator==(const Lorentzian<Dim, DataType>& lhs,

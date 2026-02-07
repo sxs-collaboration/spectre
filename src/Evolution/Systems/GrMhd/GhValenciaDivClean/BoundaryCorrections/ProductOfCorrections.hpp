@@ -256,10 +256,12 @@ class ProductOfCorrections final : public evolution::BoundaryCorrection {
   DerivedValenciaCorrection derived_valencia_correction_;
 };
 
+#if defined(SPECTRE_USE_CHARM)
 /// \cond
 template <typename DerivedGhCorrection, typename DerivedValenciaCorrection>
 PUP::able::PUP_ID ProductOfCorrections<DerivedGhCorrection,
                                        DerivedValenciaCorrection>::my_PUP_ID =
     0;  // NOLINT
 /// \endcond
+#endif  // SPECTRE_USE_CHARM
 }  // namespace grmhd::GhValenciaDivClean::BoundaryCorrections

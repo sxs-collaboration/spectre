@@ -61,7 +61,9 @@ void Step::pup(PUP::er& p) {
   p | initial_shock_position_;
 }
 
+#if defined(SPECTRE_USE_CHARM)
 PUP::able::PUP_ID Step::my_PUP_ID = 0;
+#endif  // SPECTRE_USE_CHARM
 }  // namespace Burgers::Solutions
 
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(0, data)

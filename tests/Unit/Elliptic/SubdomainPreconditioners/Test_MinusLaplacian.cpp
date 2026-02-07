@@ -76,8 +76,10 @@ struct BoundaryCondition
   std::vector<elliptic::BoundaryConditionType> bc_types_;
 };
 
+#if defined(SPECTRE_USE_CHARM)
 template <size_t Dim>
 PUP::able::PUP_ID BoundaryCondition<Dim>::my_PUP_ID = 0;  // NOLINT
+#endif                                                    // SPECTRE_USE_CHARM
 
 // We don't actually solve the subdomain operator in this test, because it is
 // implemented and tested elsewhere. Instead, we test the solver is invoked

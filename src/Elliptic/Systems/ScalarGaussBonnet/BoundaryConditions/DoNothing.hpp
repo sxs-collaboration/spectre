@@ -84,8 +84,9 @@ inline bool operator!=(const DoNothing& /*lhs*/, const DoNothing& /*rhs*/) {
   return false;
 }
 
+#if defined(SPECTRE_USE_CHARM)
 /// \cond
 PUP::able::PUP_ID DoNothing::my_PUP_ID = 0;  // NOLINT
 /// \endcond
-
+#endif  // SPECTRE_USE_CHARM
 }  // namespace sgb::BoundaryConditions

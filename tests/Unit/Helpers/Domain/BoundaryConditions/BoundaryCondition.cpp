@@ -83,8 +83,10 @@ bool operator!=(const TestBoundaryCondition<Dim>& lhs,
   return not(lhs == rhs);
 }
 
+#if defined(SPECTRE_USE_CHARM)
 template <size_t Dim>
 PUP::able::PUP_ID TestBoundaryCondition<Dim>::my_PUP_ID = 0;  // NOLINT
+#endif  // SPECTRE_USE_CHARM
 
 template <size_t Dim>
 void test_boundary_conditions(

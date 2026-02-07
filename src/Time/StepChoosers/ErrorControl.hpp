@@ -226,10 +226,13 @@ class ErrorControl : public StepChooser<StepChooserUse>,
   double min_factor_ = std::numeric_limits<double>::signaling_NaN();
   double safety_factor_ = std::numeric_limits<double>::signaling_NaN();
 };
+
+#if defined(SPECTRE_USE_CHARM)
 /// \cond
 template <typename StepChooserUse, typename EvolvedVariableTag,
           typename ErrorControlSelector>
 PUP::able::PUP_ID ErrorControl<StepChooserUse, EvolvedVariableTag,
                                ErrorControlSelector>::my_PUP_ID = 0;  // NOLINT
 /// \endcond
+#endif
 }  // namespace StepChoosers

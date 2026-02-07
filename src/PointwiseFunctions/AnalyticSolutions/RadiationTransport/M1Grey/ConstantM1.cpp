@@ -36,8 +36,10 @@ void ConstantM1::pup(PUP::er& p) {
   p | comoving_energy_density_;
   p | background_spacetime_;
 }
+#if defined(SPECTRE_USE_CHARM)
 // NOLINTNEXTLINE
 PUP::able::PUP_ID ConstantM1::my_PUP_ID = 0;
+#endif  // SPECTRE_USE_CHARM
 
 // Variables templated on neutrino species.
 template <typename NeutrinoSpecies>

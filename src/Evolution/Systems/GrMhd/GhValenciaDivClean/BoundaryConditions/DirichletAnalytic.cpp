@@ -86,9 +86,11 @@ void DirichletAnalytic<System>::pup(PUP::er& p) {
   BoundaryCondition::pup(p);
   p | analytic_prescription_;
 }
+#if defined(SPECTRE_USE_CHARM)
 template <typename System>
 // NOLINTNEXTLINE
 PUP::able::PUP_ID DirichletAnalytic<System>::my_PUP_ID = 0;
+#endif  // SPECTRE_USE_CHARM
 
 template <typename System>
 std::optional<std::string> DirichletAnalytic<System>::dg_ghost(

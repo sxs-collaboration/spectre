@@ -218,10 +218,12 @@ class FindApparentHorizon : public Event {
   std::string name_ = name();
 };
 
+#if defined(SPECTRE_USE_CHARM)
 /// \cond
 // NOLINTBEGIN
 template <typename HorizonMetavars>
 PUP::able::PUP_ID FindApparentHorizon<HorizonMetavars>::my_PUP_ID = 0;
 // NOLINTEND
 /// \endcond
+#endif  // SPECTRE_USE_CHARM
 }  // namespace ah::Events

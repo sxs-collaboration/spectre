@@ -46,7 +46,9 @@ void FukaInitialData::pup(PUP::er& p) {
   p | electron_fraction_;
 }
 
+#if defined(SPECTRE_USE_CHARM)
 // NOLINTNEXTLINE
 PUP::able::PUP_ID FukaInitialData::my_PUP_ID = 0;
+#endif  // SPECTRE_USE_CHARM
 
 }  // namespace grmhd::AnalyticData

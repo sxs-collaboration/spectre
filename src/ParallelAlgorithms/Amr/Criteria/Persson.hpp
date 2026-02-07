@@ -229,8 +229,10 @@ void Persson<Dim, TensorTags>::pup(PUP::er& p) {
   p | coarsening_factor_;
 }
 
+#if defined(SPECTRE_USE_CHARM)
 template <size_t Dim, typename TensorTags>
 PUP::able::PUP_ID Persson<Dim, TensorTags>::my_PUP_ID = 0;  // NOLINT
+#endif                                                      // SPECTRE_USE_CHARM
 /// \endcond
 
 }  // namespace amr::Criteria

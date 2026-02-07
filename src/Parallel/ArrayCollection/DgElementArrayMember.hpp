@@ -557,11 +557,13 @@ void DgElementArrayMember<Dim, Metavariables,
   }
 }
 
+#if defined(SPECTRE_USE_CHARM)
 template <size_t Dim, typename Metavariables,
           typename... PhaseDepActionListsPack, typename SimpleTagsFromOptions>
 PUP::able::PUP_ID DgElementArrayMember<
     Dim, Metavariables, tmpl::list<PhaseDepActionListsPack...>,
     SimpleTagsFromOptions>::my_PUP_ID =  // NOLINT
     0;
+#endif  // SPECTRE_USE_CHARM
 /// \endcond
 }  // namespace Parallel

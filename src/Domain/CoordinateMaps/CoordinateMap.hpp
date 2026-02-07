@@ -741,10 +741,12 @@ template <typename SourceFrame, typename TargetFrame, typename... Maps,
 CoordinateMap<SourceFrame, TargetFrame, NewMap, Maps...> push_front(
     CoordinateMap<SourceFrame, TargetFrame, Maps...> old_map, NewMap new_map);
 
+#if defined(SPECTRE_USE_CHARM)
 /// \cond
 template <typename SourceFrame, typename TargetFrame, typename... Maps>
 PUP::able::PUP_ID
     CoordinateMap<SourceFrame, TargetFrame, Maps...>::my_PUP_ID =  // NOLINT
     0;
 /// \endcond
+#endif  // SPECTRE_USE_CHARM
 }  // namespace domain

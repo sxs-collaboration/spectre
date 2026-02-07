@@ -461,5 +461,7 @@ void RobinsonTrautman::pup(PUP::er& p) {
   }
 }
 
+#if defined(SPECTRE_USE_CHARM)
 PUP::able::PUP_ID RobinsonTrautman::my_PUP_ID = 0;
+#endif  // SPECTRE_USE_CHARM
 }  // namespace Cce::Solutions

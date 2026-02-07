@@ -74,6 +74,8 @@ tnsr::I<DataVector, 3> LaneEmdenGravitationalField::gravitational_field(
   return gravitational_field_result;
 }
 
+#if defined(SPECTRE_USE_CHARM)
 // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
 PUP::able::PUP_ID LaneEmdenGravitationalField::my_PUP_ID = 0;
+#endif  // SPECTRE_USE_CHARM
 }  // namespace NewtonianEuler::Sources

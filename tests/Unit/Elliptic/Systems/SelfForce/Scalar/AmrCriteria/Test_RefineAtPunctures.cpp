@@ -51,7 +51,9 @@ struct OtherBackground : elliptic::analytic_data::Background,
   WRAPPED_PUPable_decl_template(OtherBackground);
 };
 
+#if defined(SPECTRE_USE_CHARM)
 PUP::able::PUP_ID OtherBackground::my_PUP_ID = 0;  // NOLINT
+#endif                                             // SPECTRE_USE_CHARM
 #pragma GCC diagnostic pop
 
 void test_criterion(

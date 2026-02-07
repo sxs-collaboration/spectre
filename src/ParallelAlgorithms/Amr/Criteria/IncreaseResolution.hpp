@@ -50,9 +50,10 @@ class IncreaseResolution : public Criterion {
   }
 };
 
+#if defined(SPECTRE_USE_CHARM)
 /// \cond
 template <size_t Dim>
 PUP::able::PUP_ID IncreaseResolution<Dim>::my_PUP_ID = 0;  // NOLINT
 /// \endcond
-
+#endif  // SPECTRE_USE_CHARM
 }  // namespace amr::Criteria

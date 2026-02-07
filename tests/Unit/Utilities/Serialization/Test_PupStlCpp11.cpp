@@ -126,6 +126,8 @@ SPECTRE_TEST_CASE("Unit.Serialization.PupStlCpp11", "[Serialization][Unit]") {
   }
 }
 
+#if defined(SPECTRE_USE_CHARM)
 // clang-tidy: possibly throwing constructor static storage
 // clang-tidy: false positive: redundant declaration
 PUP::able::PUP_ID Test_Classes::DerivedInPupStlCpp11::my_PUP_ID = 0;  // NOLINT
+#endif  // SPECTRE_USE_CHARM

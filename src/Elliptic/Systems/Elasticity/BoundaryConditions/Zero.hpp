@@ -110,9 +110,10 @@ bool operator!=(const Zero<Dim, BoundaryConditionType>& lhs,
   return not(lhs == rhs);
 }
 
+#if defined(SPECTRE_USE_CHARM)
 /// \cond
 template <size_t Dim, elliptic::BoundaryConditionType BoundaryConditionType>
 PUP::able::PUP_ID Zero<Dim, BoundaryConditionType>::my_PUP_ID = 0;  // NOLINT
 /// \endcond
-
+#endif  // SPECTRE_USE_CHARM
 }  // namespace Elasticity::BoundaryConditions

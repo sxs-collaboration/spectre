@@ -105,10 +105,12 @@ class Moustache : public elliptic::analytic_data::AnalyticSolution {
   }
 };
 
+#if defined(SPECTRE_USE_CHARM)
 /// \cond
 template <size_t Dim>
 PUP::able::PUP_ID Moustache<Dim>::my_PUP_ID = 0;  // NOLINT
 /// \endcond
+#endif  // SPECTRE_USE_CHARM
 
 template <size_t Dim>
 constexpr bool operator==(const Moustache<Dim>& /*lhs*/,

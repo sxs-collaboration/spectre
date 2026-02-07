@@ -169,8 +169,10 @@ bool operator!=(const KhInstability<Dim>& lhs, const KhInstability<Dim>& rhs) {
   return not(lhs == rhs);
 }
 
+#if defined(SPECTRE_USE_CHARM)
 template <size_t Dim>
 PUP::able::PUP_ID KhInstability<Dim>::my_PUP_ID = 0;  // NOLINT
+#endif                                                // SPECTRE_USE_CHARM
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(1, data)

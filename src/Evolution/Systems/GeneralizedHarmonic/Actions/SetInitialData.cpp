@@ -62,7 +62,9 @@ NumericInitialData::NumericInitialData(
           observation_value_epsilon.value_or(1.0e-12), enable_interpolation),
       selected_variables_(std::move(selected_variables)) {}
 
+#if defined(SPECTRE_USE_CHARM)
 PUP::able::PUP_ID NumericInitialData::my_PUP_ID = 0;
+#endif  // SPECTRE_USE_CHARM
 
 size_t NumericInitialData::volume_data_id() const {
   size_t hash = 0;

@@ -614,6 +614,7 @@ void Test_GlobalCache<Metavariables>::exit() {
 
 // --------- registration stuff below -------
 
+#if defined(SPECTRE_USE_CHARM)
 // clang-format off
 PUP::able::PUP_ID UseCkCallbackAsCallback::my_PUP_ID = 0;
 // clang-tidy: possibly throwing constructor static storage
@@ -622,6 +623,7 @@ PUP::able::PUP_ID Triangle::my_PUP_ID = 0;  // NOLINT
 PUP::able::PUP_ID Square::my_PUP_ID = 0;        // NOLINT
 PUP::able::PUP_ID Arthropod::my_PUP_ID = 0;     // NOLINT
 // clang-format on
+#endif  // SPECTRE_USE_CHARM
 
 extern "C" void CkRegisterMainModule() {
   using charmxx_main_component = Test_GlobalCache<TestMetavariables>;

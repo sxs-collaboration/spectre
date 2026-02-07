@@ -313,6 +313,7 @@ class PerformAlgorithmCallback : public Callback {
   std::decay_t<Proxy> proxy_{};
 };
 
+#if defined(SPECTRE_USE_CHARM)
 /// \cond
 template <typename Proxy>
 // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
@@ -336,5 +337,6 @@ template <typename ThreadedAction, typename Proxy>
 PUP::able::PUP_ID ThreadedActionCallback<ThreadedAction, Proxy>::my_PUP_ID =
     0;  // NOLINT
 /// \endcond
+#endif  // SPECTRE_USE_CHARM
 
 }  // namespace Parallel

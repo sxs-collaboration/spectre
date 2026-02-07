@@ -82,7 +82,9 @@ tuples::TaggedTuple<ScalarAdvection::Tags::U> Kuzmin::variables(
 
 void Kuzmin::pup(PUP::er& p) { InitialData::pup(p); }
 
+#if defined(SPECTRE_USE_CHARM)
 PUP::able::PUP_ID Kuzmin::my_PUP_ID = 0;
+#endif  // SPECTRE_USE_CHARM
 
 bool operator==(const Kuzmin& /*lhs*/, const Kuzmin& /*rhs*/) { return true; }
 

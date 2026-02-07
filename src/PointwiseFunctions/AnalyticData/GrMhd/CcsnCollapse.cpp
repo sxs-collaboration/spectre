@@ -848,7 +848,9 @@ auto CcsnCollapse::variables(
   return {make_with_value<tnsr::ii<DataType, 3, Frame::Inertial>>(x, 0.0)};
 }
 
+#if defined(SPECTRE_USE_CHARM)
 PUP::able::PUP_ID CcsnCollapse::my_PUP_ID = 0;
+#endif  // SPECTRE_USE_CHARM
 
 bool operator==(const CcsnCollapse& lhs, const CcsnCollapse& rhs) {
   // The equation of state and progenitor solution aren't explicitly checked.

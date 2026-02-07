@@ -25,7 +25,9 @@ void FastWave::pup(PUP::er& p) {
   p | background_spacetime_;
 }
 
+#if defined(SPECTRE_USE_CHARM)
 PUP::able::PUP_ID FastWave::my_PUP_ID = 0;
+#endif  // SPECTRE_USE_CHARM
 
 DataVector FastWave::initial_profile(const DataVector& coords) {
   // Compute the initial functional form of B_y(=E_z)

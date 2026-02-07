@@ -38,8 +38,10 @@ HydroFreeOutflow::get_clone() const {
 
 void HydroFreeOutflow::pup(PUP::er& p) { BoundaryCondition::pup(p); }
 
+#if defined(SPECTRE_USE_CHARM)
 // NOLINTNEXTLINE
 PUP::able::PUP_ID HydroFreeOutflow::my_PUP_ID = 0;
+#endif  // SPECTRE_USE_CHARM
 
 std::optional<std::string> HydroFreeOutflow::dg_ghost(
     const gsl::not_null<Scalar<DataVector>*> tilde_d,

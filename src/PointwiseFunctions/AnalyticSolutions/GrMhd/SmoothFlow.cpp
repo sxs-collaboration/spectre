@@ -44,7 +44,9 @@ SmoothFlow::variables(
   return {make_with_value<Scalar<DataType>>(x, 0.0)};
 }
 
+#if defined(SPECTRE_USE_CHARM)
 PUP::able::PUP_ID SmoothFlow::my_PUP_ID = 0;
+#endif  // SPECTRE_USE_CHARM
 
 bool operator==(const SmoothFlow& lhs, const SmoothFlow& rhs) {
   using smooth_flow = RelativisticEuler::Solutions::SmoothFlow<3>;

@@ -556,6 +556,8 @@ ObserveFields::ObserveFields(
 }
 
 /// \cond
+#if defined(SPECTRE_USE_CHARM)
 PUP::able::PUP_ID ObserveFields::my_PUP_ID = 0;  // NOLINT
+#endif                                           // SPECTRE_USE_CHARM
 /// \endcond
 }  // namespace Cce::Events

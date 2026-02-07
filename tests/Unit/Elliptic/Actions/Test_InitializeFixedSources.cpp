@@ -65,7 +65,9 @@ struct Background : elliptic::analytic_data::Background {
   // NOLINTEND(readability-convert-member-functions-to-static)
 };
 
+#if defined(SPECTRE_USE_CHARM)
 PUP::able::PUP_ID Background::my_PUP_ID = 0;  // NOLINT
+#endif                                        // SPECTRE_USE_CHARM
 
 template <typename Metavariables>
 struct ElementArray {

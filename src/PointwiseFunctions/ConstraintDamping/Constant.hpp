@@ -100,9 +100,11 @@ bool operator!=(const Constant<VolumeDim, Fr>& lhs,
 }
 }  // namespace ConstraintDamping
 
+#if defined(SPECTRE_USE_CHARM)
 /// \cond
 template <size_t VolumeDim, typename Fr>
 // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
 PUP::able::PUP_ID ConstraintDamping::Constant<VolumeDim, Fr>::my_PUP_ID =
     0;  // NOLINT
 /// \endcond
+#endif  // SPECTRE_USE_CHARM

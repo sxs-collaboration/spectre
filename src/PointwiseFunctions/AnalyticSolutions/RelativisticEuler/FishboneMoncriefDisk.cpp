@@ -383,7 +383,9 @@ void FishboneMoncriefDisk::variables_impl(
   }
 }
 
+#if defined(SPECTRE_USE_CHARM)
 PUP::able::PUP_ID FishboneMoncriefDisk::my_PUP_ID = 0;
+#endif  // SPECTRE_USE_CHARM
 
 bool operator==(const FishboneMoncriefDisk& lhs,
                 const FishboneMoncriefDisk& rhs) {

@@ -168,9 +168,11 @@ class HybridEos
       std::numeric_limits<double>::signaling_NaN();
 };
 
+#if defined(SPECTRE_USE_CHARM)
 /// \cond
 template <typename ColdEquationOfState>
 PUP::able::PUP_ID EquationsOfState::HybridEos<ColdEquationOfState>::my_PUP_ID =
     0;
 /// \endcond
+#endif  // SPECTRE_USE_CHARM
 }  // namespace EquationsOfState

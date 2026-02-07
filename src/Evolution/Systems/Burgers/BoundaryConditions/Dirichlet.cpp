@@ -42,6 +42,8 @@ void Dirichlet::fd_ghost(const gsl::not_null<Scalar<DataVector>*> u,
   get(*u) = u_value_;
 }
 
+#if defined(SPECTRE_USE_CHARM)
 // NOLINTNEXTLINE
 PUP::able::PUP_ID Dirichlet::my_PUP_ID = 0;
+#endif  // SPECTRE_USE_CHARM
 }  // namespace Burgers::BoundaryConditions

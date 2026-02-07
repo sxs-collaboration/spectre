@@ -11,6 +11,8 @@ std::unique_ptr<Reconstructor> DummyReconstructor::get_clone() const {
 
 void DummyReconstructor::pup(PUP::er& p) { Reconstructor::pup(p); }
 
+#if defined(SPECTRE_USE_CHARM)
 // NOLINTNEXTLINE
 PUP::able::PUP_ID DummyReconstructor::my_PUP_ID = 0;
+#endif  // SPECTRE_USE_CHARM
 }  // namespace Ccz4::fd

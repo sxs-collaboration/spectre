@@ -117,8 +117,10 @@ void AnalyticChristoffel::gauge_and_spacetime_derivative_impl(
   }
 }
 
+#if defined(SPECTRE_USE_CHARM)
 // NOLINTNEXTLINE
 PUP::able::PUP_ID AnalyticChristoffel::my_PUP_ID = 0;
+#endif  // SPECTRE_USE_CHARM
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 

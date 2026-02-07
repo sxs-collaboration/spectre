@@ -54,6 +54,8 @@ void VortexPerturbation::operator()(
                                  get(dvz_by_dz);
 }
 
+#if defined(SPECTRE_USE_CHARM)
 // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
 PUP::able::PUP_ID VortexPerturbation::my_PUP_ID = 0;
+#endif  // SPECTRE_USE_CHARM
 }  // namespace NewtonianEuler::Sources

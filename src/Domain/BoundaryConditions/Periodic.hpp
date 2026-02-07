@@ -81,11 +81,13 @@ void Periodic<SystemBoundaryConditionBaseClass>::pup(PUP::er& p) {
   BoundaryCondition::pup(p);
 }
 
+#if defined(SPECTRE_USE_CHARM)
 /// \cond
 template <typename SystemBoundaryConditionBaseClass>
 // NOLINTNEXTLINE
 PUP::able::PUP_ID Periodic<SystemBoundaryConditionBaseClass>::my_PUP_ID = 0;
 /// \endcond
+#endif  // SPECTRE_USE_CHARM
 
 /// Check if a boundary condition inherits from `MarkAsPeriodic`, which
 /// constitutes as it being marked as a periodic boundary condition.

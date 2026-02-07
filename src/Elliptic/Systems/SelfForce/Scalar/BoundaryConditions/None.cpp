@@ -29,6 +29,8 @@ bool operator==(const None& /*lhs*/, const None& /*rhs*/) { return true; }
 
 bool operator!=(const None& lhs, const None& rhs) { return not(lhs == rhs); }
 
+#if defined(SPECTRE_USE_CHARM)
 PUP::able::PUP_ID None::my_PUP_ID = 0;  // NOLINT
+#endif                                  // SPECTRE_USE_CHARM
 
 }  // namespace ScalarSelfForce::BoundaryConditions

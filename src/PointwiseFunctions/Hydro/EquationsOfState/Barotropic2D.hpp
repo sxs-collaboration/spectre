@@ -165,9 +165,11 @@ class Barotropic2D : public EquationOfState<ColdEos::is_relativistic, 2> {
   EQUATION_OF_STATE_FORWARD_DECLARE_MEMBER_IMPLS(2)
   ColdEos underlying_eos_;
 };
+#if defined(SPECTRE_USE_CHARM)
 /// \cond
 template <typename ColdEos>
 // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
 PUP::able::PUP_ID EquationsOfState::Barotropic2D<ColdEos>::my_PUP_ID = 0;
 /// \endcond
+#endif  // SPECTRE_USE_CHARM
 }  // namespace EquationsOfState

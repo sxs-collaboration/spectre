@@ -157,8 +157,9 @@ double DeltaRDriftInward::control_error(
   return control_error_args.control_error_delta_r + info.target_char_speed;
 }
 
-// cppcoreguidelines-avoid-non-const-global-variables
+#if defined(SPECTRE_USE_CHARM)
 PUP::able::PUP_ID DeltaRDriftInward::my_PUP_ID = 0;  // NOLINT
+#endif                                               // SPECTRE_USE_CHARM
 
 double target_speed_for_inward_drift(
     const double avg_distorted_normal_dot_unit_coord_vector,

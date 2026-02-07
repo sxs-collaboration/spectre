@@ -417,6 +417,7 @@ class InterpolateWithoutInterpComponent<VolumeDim, InterpolationTargetTag,
   bool needs_evolved_variables() const override { return true; }
 };
 
+#if defined(SPECTRE_USE_CHARM)
 /// \cond
 template <size_t VolumeDim, typename InterpolationTargetTag,
           typename... SourceVarTags>
@@ -425,5 +426,6 @@ PUP::able::PUP_ID
                                       tmpl::list<SourceVarTags...>>::my_PUP_ID =
         0;  // NOLINT
 /// \endcond
+#endif  // SPECTRE_USE_CHARM
 
 }  // namespace intrp::Events

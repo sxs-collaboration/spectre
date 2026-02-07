@@ -188,10 +188,12 @@ class BNSEvent : public ::Event {
   bool needs_evolved_variables() const override { return true; }
 };
 
+#if defined(SPECTRE_USE_CHARM)
 /// \cond
 template <typename ControlSystems>
 PUP::able::PUP_ID BNSEvent<ControlSystems>::my_PUP_ID = 0;  // NOLINT
 /// \endcond
+#endif  // SPECTRE_USE_CHARM
 
 namespace measurements {
 namespace Tags {

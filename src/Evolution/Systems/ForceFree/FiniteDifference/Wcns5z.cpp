@@ -52,8 +52,10 @@ void Wcns5z::pup(PUP::er& p) {
   }
 }
 
+#if defined(SPECTRE_USE_CHARM)
 // NOLINTNEXTLINE
 PUP::able::PUP_ID Wcns5z::my_PUP_ID = 0;
+#endif  // SPECTRE_USE_CHARM
 
 void Wcns5z::reconstruct(
     const gsl::not_null<std::array<Variables<recons_tags>, dim>*>

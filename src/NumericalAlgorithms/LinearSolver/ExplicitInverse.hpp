@@ -272,6 +272,7 @@ ExplicitInverse<ValueType, LinearSolverRegistrars>::solve(
   return {0, 0};
 }
 
+#if defined(SPECTRE_USE_CHARM)
 /// \cond
 // NOLINTBEGIN
 template <typename ValueType, typename LinearSolverRegistrars>
@@ -279,5 +280,6 @@ PUP::able::PUP_ID
     ExplicitInverse<ValueType, LinearSolverRegistrars>::my_PUP_ID = 0;
 // NOLINTEND
 /// \endcond
+#endif  // SPECTRE_USE_CHARM
 
 }  // namespace LinearSolver::Serial

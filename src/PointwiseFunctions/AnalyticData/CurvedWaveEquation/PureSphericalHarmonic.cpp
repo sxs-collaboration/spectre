@@ -70,8 +70,10 @@ void PureSphericalHarmonic::pup(PUP::er& p) {
   p | mode_;
 }
 
+#if defined(SPECTRE_USE_CHARM)
 // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
 PUP::able::PUP_ID PureSphericalHarmonic::my_PUP_ID = 0;
+#endif  // SPECTRE_USE_CHARM
 
 bool operator==(const PureSphericalHarmonic& lhs,
                 const PureSphericalHarmonic& rhs) {

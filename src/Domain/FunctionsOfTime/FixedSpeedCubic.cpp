@@ -122,7 +122,9 @@ bool operator!=(const FixedSpeedCubic& lhs, const FixedSpeedCubic& rhs) {
   return not(lhs == rhs);
 }
 
+#if defined(SPECTRE_USE_CHARM)
 PUP::able::PUP_ID FixedSpeedCubic::my_PUP_ID = 0;  // NOLINT
+#endif                                             // SPECTRE_USE_CHARM
 
 #define DERIV(data) BOOST_PP_TUPLE_ELEM(0, data)
 

@@ -658,8 +658,10 @@ void ApparentHorizon<ConformalGeometry>::pup(PUP::er& p) {
   p | solution_for_negative_expansion_;
 }
 
+#if defined(SPECTRE_USE_CHARM)
 template <Xcts::Geometry ConformalGeometry>
 PUP::able::PUP_ID ApparentHorizon<ConformalGeometry>::my_PUP_ID = 0;  // NOLINT
+#endif  // SPECTRE_USE_CHARM
 
 template class ApparentHorizon<Xcts::Geometry::FlatCartesian>;
 template class ApparentHorizon<Xcts::Geometry::Curved>;

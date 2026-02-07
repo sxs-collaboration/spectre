@@ -288,8 +288,10 @@ struct RandomBackground : elliptic::analytic_data::Background {
   }
 };
 
+#if defined(SPECTRE_USE_CHARM)
 template <size_t Dim>
 PUP::able::PUP_ID RandomBackground<Dim>::my_PUP_ID = 0;  // NOLINT
+#endif                                                   // SPECTRE_USE_CHARM
 
 template <typename SubdomainOperator, typename Fields>
 struct ApplySubdomainOperator {

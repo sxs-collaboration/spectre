@@ -353,6 +353,8 @@ bool operator==(const Hll& lhs, const Hll& rhs) {
 }
 bool operator!=(const Hll& lhs, const Hll& rhs) { return not(lhs == rhs); }
 
+#if defined(SPECTRE_USE_CHARM)
 // NOLINTNEXTLINE
 PUP::able::PUP_ID Hll::my_PUP_ID = 0;
+#endif  // SPECTRE_USE_CHARM
 }  // namespace grmhd::ValenciaDivClean::BoundaryCorrections

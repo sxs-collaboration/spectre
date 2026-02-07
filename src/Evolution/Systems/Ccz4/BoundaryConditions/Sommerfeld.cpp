@@ -27,8 +27,10 @@ Sommerfeld::get_clone() const {
 }
 
 void Sommerfeld::pup(PUP::er& p) { BoundaryCondition::pup(p); }
+#if defined(SPECTRE_USE_CHARM)
 // NOLINTNEXTLINE
 PUP::able::PUP_ID Sommerfeld::my_PUP_ID = 0;
+#endif  // SPECTRE_USE_CHARM
 
 void Sommerfeld::fd_ghost(
     const gsl::not_null<tnsr::ii<DataVector, 3, Frame::Inertial>*>

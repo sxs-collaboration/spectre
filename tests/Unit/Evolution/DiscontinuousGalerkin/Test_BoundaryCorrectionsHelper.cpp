@@ -270,8 +270,10 @@ struct Correction final : public CorrectionBase {
   }
 };
 
+#if defined(SPECTRE_USE_CHARM)
 template <size_t Dim, typename VolumeDoubleType>
 PUP::able::PUP_ID Correction<Dim, VolumeDoubleType>::my_PUP_ID = 0;
+#endif  // SPECTRE_USE_CHARM
 
 template <size_t Dim, bool CurvedBackground, typename VolumeDoubleType>
 void test_impl(const gsl::not_null<std::mt19937*> gen) {

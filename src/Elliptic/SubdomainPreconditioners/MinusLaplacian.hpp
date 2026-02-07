@@ -531,6 +531,7 @@ MinusLaplacian<Dim, OptionsGroup, Solver, LinearSolverRegistrars>::solve(
   return {0, 0};
 }
 
+#if defined(SPECTRE_USE_CHARM)
 /// \cond
 template <size_t Dim, typename OptionsGroup, typename Solver,
           typename LinearSolverRegistrars>
@@ -538,5 +539,6 @@ template <size_t Dim, typename OptionsGroup, typename Solver,
 PUP::able::PUP_ID MinusLaplacian<Dim, OptionsGroup, Solver,
                                  LinearSolverRegistrars>::my_PUP_ID = 0;
 /// \endcond
+#endif  // SPECTRE_USE_CHARM
 
 }  // namespace elliptic::subdomain_preconditioners

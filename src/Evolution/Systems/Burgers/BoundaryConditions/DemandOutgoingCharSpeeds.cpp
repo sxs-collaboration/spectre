@@ -91,6 +91,8 @@ void DemandOutgoingCharSpeeds::fd_demand_outgoing_char_speeds(
   }
 }
 
+#if defined(SPECTRE_USE_CHARM)
 // NOLINTNEXTLINE
 PUP::able::PUP_ID DemandOutgoingCharSpeeds::my_PUP_ID = 0;
+#endif  // SPECTRE_USE_CHARM
 }  // namespace Burgers::BoundaryConditions

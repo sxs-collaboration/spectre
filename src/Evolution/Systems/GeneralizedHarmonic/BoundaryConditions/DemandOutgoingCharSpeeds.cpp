@@ -65,9 +65,11 @@ DemandOutgoingCharSpeeds<Dim>::dg_demand_outgoing_char_speeds(
   return std::nullopt;
 }
 
+#if defined(SPECTRE_USE_CHARM)
 // NOLINTNEXTLINE
 template <size_t Dim>
 PUP::able::PUP_ID DemandOutgoingCharSpeeds<Dim>::my_PUP_ID = 0;
+#endif  // SPECTRE_USE_CHARM
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 

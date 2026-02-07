@@ -44,8 +44,10 @@ void Reflective::pup(PUP::er& p) {
   p | reflect_both_;
 }
 
+#if defined(SPECTRE_USE_CHARM)
 // NOLINTNEXTLINE
 PUP::able::PUP_ID Reflective::my_PUP_ID = 0;
+#endif  // SPECTRE_USE_CHARM
 
 std::optional<std::string> Reflective::dg_ghost(
     const gsl::not_null<Scalar<DataVector>*> tilde_d,

@@ -119,7 +119,9 @@ OrszagTangVortex::variables(
       get<density_tag>(data), get<energy_tag>(data), get<pressure_tag>(data));
 }
 
+#if defined(SPECTRE_USE_CHARM)
 PUP::able::PUP_ID OrszagTangVortex::my_PUP_ID = 0;
+#endif  // SPECTRE_USE_CHARM
 
 bool operator==(const OrszagTangVortex& /*lhs*/,
                 const OrszagTangVortex& /*rhs*/) {

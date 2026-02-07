@@ -164,9 +164,11 @@ RiemannProblem<Dim>::get_clone() const {
   return std::make_unique<RiemannProblem>(*this);
 }
 
+#if defined(SPECTRE_USE_CHARM)
 template <size_t Dim>
 // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
 PUP::able::PUP_ID RiemannProblem<Dim>::my_PUP_ID = 0;
+#endif  // SPECTRE_USE_CHARM
 
 template <size_t Dim>
 void RiemannProblem<Dim>::pup(PUP::er& p) {

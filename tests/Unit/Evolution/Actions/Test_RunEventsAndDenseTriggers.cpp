@@ -164,7 +164,9 @@ class TestTrigger : public DenseTrigger {
   std::optional<double> next_trigger_{};
 };
 
+#if defined(SPECTRE_USE_CHARM)
 PUP::able::PUP_ID TestTrigger::my_PUP_ID = 0;  // NOLINT
+#endif                                         // SPECTRE_USE_CHARM
 
 struct TestEvent : public Event {
   TestEvent() = default;
@@ -256,7 +258,9 @@ struct TestEvent : public Event {
 
 std::vector<DataTuple> TestEvent::calls{};
 
+#if defined(SPECTRE_USE_CHARM)
 PUP::able::PUP_ID TestEvent::my_PUP_ID = 0;  // NOLINT
+#endif                                       // SPECTRE_USE_CHARM
 
 struct System {
   using variables_tag = Tags::Variables<tmpl::list<EvolvedVar>>;

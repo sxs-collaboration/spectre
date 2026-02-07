@@ -97,8 +97,10 @@ auto ObserveTimeStep<System>::assemble_data(
           std::move(reduction_data), std::move(formatter)};
 }
 
+  #if defined(SPECTRE_USE_CHARM)
 /// \cond
 template <typename System>
 PUP::able::PUP_ID ObserveTimeStep<System>::my_PUP_ID = 0;  // NOLINT
 /// \endcond
+ #endif                                // SPECTRE_USE_CHARM
 }  // namespace Events

@@ -130,6 +130,7 @@ bool operator!=(const GaussianPlusConstant<VolumeDim, Fr>& lhs,
 }
 }  // namespace ConstraintDamping
 
+#if defined(SPECTRE_USE_CHARM)
 /// \cond
 template <size_t VolumeDim, typename Fr>
 PUP::able::PUP_ID
@@ -137,3 +138,4 @@ PUP::able::PUP_ID
     ConstraintDamping::GaussianPlusConstant<VolumeDim, Fr>::my_PUP_ID =
         0;  // NOLINT
 /// \endcond
+#endif  // SPECTRE_USE_CHARM

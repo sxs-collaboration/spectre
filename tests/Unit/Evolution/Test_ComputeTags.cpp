@@ -57,7 +57,9 @@ struct TestAnalyticSolution : public MarkAsAnalyticSolution,
   void pup(PUP::er& p) override { InitialData::pup(p); }
 };
 
-PUP::able::PUP_ID TestAnalyticSolution::my_PUP_ID = 0;
+#if defined(SPECTRE_USE_CHARM)
+PUP::able::PUP_ID TestAnalyticSolution::my_PUP_ID = 0;  // NOLINT
+#endif                                                  // SPECTRE_USE_CHARM
 
 struct TestAnalyticData : public MarkAsAnalyticData,
                           public evolution::initial_data::InitialData {
@@ -83,8 +85,10 @@ struct TestAnalyticData : public MarkAsAnalyticData,
   void pup(PUP::er& p) override { InitialData::pup(p); }
 };
 
+#if defined(SPECTRE_USE_CHARM)
 // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
 PUP::able::PUP_ID TestAnalyticData::my_PUP_ID = 0;
+#endif  // SPECTRE_USE_CHARM
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Evolution.ComputeTags", "[Unit][Evolution]") {

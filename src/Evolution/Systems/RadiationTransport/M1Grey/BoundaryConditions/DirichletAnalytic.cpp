@@ -191,10 +191,12 @@ DirichletAnalytic<tmpl::list<NeutrinoSpecies...>>::dg_ghost(
   return {};
 }
 
+#if defined(SPECTRE_USE_CHARM)
 template <typename... NeutrinoSpecies>
 // NOLINTNEXTLINE
 PUP::able::PUP_ID DirichletAnalytic<tmpl::list<NeutrinoSpecies...>>::my_PUP_ID =
     0;
+#endif  // SPECTRE_USE_CHARM
 
 template class DirichletAnalytic<tmpl::list<neutrinos::ElectronNeutrinos<1>>>;
 

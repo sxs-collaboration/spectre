@@ -252,9 +252,11 @@ class Tabulated3D : public EquationOfState<IsRelativistic, 3> {
   static constexpr double upper_bound_tolerance_ = 0.9999;
 };
 
+#if defined(SPECTRE_USE_CHARM)
 /// \cond
 template <bool IsRelativistic>
 PUP::able::PUP_ID EquationsOfState::Tabulated3D<IsRelativistic>::my_PUP_ID = 0;
 /// \endcond
+#endif  // SPECTRE_USE_CHARM
 
 }  // namespace EquationsOfState

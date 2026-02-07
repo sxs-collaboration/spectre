@@ -26,8 +26,10 @@ void Poloidal::pup(PUP::er& p) {
   p | max_distance_from_center_;
 }
 
+#if defined(SPECTRE_USE_CHARM)
 // NOLINTNEXTLINE
 PUP::able::PUP_ID Poloidal::my_PUP_ID = 0;
+#endif  // SPECTRE_USE_CHARM
 
 Poloidal::Poloidal(const size_t pressure_exponent, const double cutoff_pressure,
                    const double vector_potential_amplitude,

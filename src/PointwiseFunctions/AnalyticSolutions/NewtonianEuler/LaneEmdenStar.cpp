@@ -33,8 +33,10 @@ std::unique_ptr<evolution::initial_data::InitialData> LaneEmdenStar::get_clone()
   return std::make_unique<LaneEmdenStar>(*this);
 }
 
+#if defined(SPECTRE_USE_CHARM)
 // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
 PUP::able::PUP_ID LaneEmdenStar::my_PUP_ID = 0;
+#endif  // SPECTRE_USE_CHARM
 
 void LaneEmdenStar::pup(PUP::er& p) {
   InitialData::pup(p);

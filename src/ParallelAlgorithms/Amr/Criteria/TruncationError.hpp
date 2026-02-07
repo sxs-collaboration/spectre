@@ -181,8 +181,10 @@ void TruncationError<Dim, TensorTags>::pup(PUP::er& p) {
   p | target_rel_truncation_error_;
 }
 
+#if defined(SPECTRE_USE_CHARM)
 template <size_t Dim, typename TensorTags>
 PUP::able::PUP_ID TruncationError<Dim, TensorTags>::my_PUP_ID = 0;  // NOLINT
+#endif  // SPECTRE_USE_CHARM
 /// \endcond
 
 }  // namespace amr::Criteria

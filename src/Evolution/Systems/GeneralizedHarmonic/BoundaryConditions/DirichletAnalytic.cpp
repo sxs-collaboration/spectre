@@ -116,9 +116,11 @@ void DirichletAnalytic<Dim>::lapse_shift_and_inv_spatial_metric(
   gr::lapse(lapse, *shift, spacetime_metric);
 }
 
+#if defined(SPECTRE_USE_CHARM)
 template <size_t Dim>
 // NOLINTNEXTLINE
 PUP::able::PUP_ID DirichletAnalytic<Dim>::my_PUP_ID = 0;
+#endif  // SPECTRE_USE_CHARM
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 

@@ -50,8 +50,10 @@ void DirichletAnalytic::pup(PUP::er& p) {
   p | analytic_prescription_;
 }
 
+#if defined(SPECTRE_USE_CHARM)
 // NOLINTNEXTLINE
 PUP::able::PUP_ID DirichletAnalytic::my_PUP_ID = 0;
+#endif  // SPECTRE_USE_CHARM
 
 std::optional<std::string> DirichletAnalytic::dg_ghost(
     const gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*> tilde_e,

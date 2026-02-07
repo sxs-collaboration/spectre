@@ -89,8 +89,10 @@ void ZerothOrderPuncture::pup(PUP::er& p) {
   p | kerr_schild_;
 }
 
+#if defined(SPECTRE_USE_CHARM)
 // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
 PUP::able::PUP_ID ZerothOrderPuncture::my_PUP_ID = 0;
+#endif  // SPECTRE_USE_CHARM
 
 bool operator==(const ZerothOrderPuncture& lhs,
                 const ZerothOrderPuncture& rhs) {

@@ -88,8 +88,10 @@ class Cfl : public StepChooser<StepChooserUse::Slab>,
   double safety_factor_ = std::numeric_limits<double>::signaling_NaN();
 };
 
+#if defined(SPECTRE_USE_CHARM)
 /// \cond
 template <typename Frame, typename System>
 PUP::able::PUP_ID Cfl<Frame, System>::my_PUP_ID = 0;  // NOLINT
 /// \endcond
+#endif  // SPECTRE_USE_CHARM
 }  // namespace StepChoosers

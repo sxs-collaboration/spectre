@@ -4,5 +4,7 @@
 #include "Time/Triggers/SlabCompares.hpp"
 
 namespace Triggers {
+#if defined(SPECTRE_USE_CHARM)
 PUP::able::PUP_ID SlabCompares::my_PUP_ID = 0;  // NOLINT
+#endif                                          // SPECTRE_USE_CHARM
 }  // namespace Triggers

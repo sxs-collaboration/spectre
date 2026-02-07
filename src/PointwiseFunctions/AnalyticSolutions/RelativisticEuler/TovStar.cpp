@@ -759,7 +759,9 @@ void TovVariables<DataType, Region>::operator()(
 #endif  // defined(__GNUC__) && !defined(__clang__)
 }  // namespace tov_detail
 
+#if defined(SPECTRE_USE_CHARM)
 PUP::able::PUP_ID TovStar::my_PUP_ID = 0;
+#endif  // SPECTRE_USE_CHARM
 
 bool operator==(const TovStar& lhs, const TovStar& rhs) {
   return lhs.central_rest_mass_density_ == rhs.central_rest_mass_density_ and

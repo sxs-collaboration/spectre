@@ -165,10 +165,12 @@ template <size_t Dim>
 bool operator!=(const IsotropicHomogeneous<Dim>& lhs,
                 const IsotropicHomogeneous<Dim>& rhs);
 
+#if defined(SPECTRE_USE_CHARM)
 /// \cond
 template <size_t Dim>
 PUP::able::PUP_ID IsotropicHomogeneous<Dim>::my_PUP_ID = 0;
 /// \endcond
+#endif  // SPECTRE_USE_CHARM
 
 }  // namespace ConstitutiveRelations
 }  // namespace Elasticity

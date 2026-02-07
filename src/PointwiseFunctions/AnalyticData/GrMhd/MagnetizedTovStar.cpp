@@ -95,7 +95,9 @@ void MagnetizedTovVariables<DataType, Region>::operator()(
 }
 }  // namespace magnetized_tov_detail
 
+#if defined(SPECTRE_USE_CHARM)
 PUP::able::PUP_ID MagnetizedTovStar::my_PUP_ID = 0;
+#endif  // SPECTRE_USE_CHARM
 
 bool operator==(const MagnetizedTovStar& lhs, const MagnetizedTovStar& rhs) {
   bool equal =

@@ -533,6 +533,7 @@ ObserveFields<VolumeDim, tmpl::list<Tensors...>,
       coordinates_floating_point_type;
 }
 
+#if defined(SPECTRE_USE_CHARM)
 /// \cond
 template <size_t VolumeDim, typename... Tensors,
           typename... NonTensorComputeTags, typename ArraySectionIdTag>
@@ -540,5 +541,6 @@ PUP::able::PUP_ID ObserveFields<VolumeDim, tmpl::list<Tensors...>,
                                 tmpl::list<NonTensorComputeTags...>,
                                 ArraySectionIdTag>::my_PUP_ID = 0;  // NOLINT
 /// \endcond
+#endif  // SPECTRE_USE_CHARM
 }  // namespace Events
 }  // namespace dg

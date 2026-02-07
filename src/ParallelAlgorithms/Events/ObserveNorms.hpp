@@ -532,6 +532,7 @@ void ObserveNorms<tmpl::list<ObservableTensorTags...>,
   p | tensor_components_;
 }
 
+#if defined(SPECTRE_USE_CHARM)
 // NOLINTBEGIN(cppcoreguidelines-avoid-non-const-global-variables)
 template <typename... ObservableTensorTags, typename... NonTensorComputeTags,
           typename ArraySectionIdTag, typename OptionName>
@@ -539,5 +540,6 @@ PUP::able::PUP_ID ObserveNorms<tmpl::list<ObservableTensorTags...>,
                                tmpl::list<NonTensorComputeTags...>,
                                ArraySectionIdTag, OptionName>::my_PUP_ID = 0;
 // NOLINTEND(cppcoreguidelines-avoid-non-const-global-variables)
+#endif  // SPECTRE_USE_CHARM
 /// \endcond
 }  // namespace Events

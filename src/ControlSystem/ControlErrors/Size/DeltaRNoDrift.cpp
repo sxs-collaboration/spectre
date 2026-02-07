@@ -120,6 +120,7 @@ double DeltaRNoDrift::control_error(
   return control_error_args.control_error_delta_r;
 }
 
-// cppcoreguidelines-avoid-non-const-global-variables
+#if defined(SPECTRE_USE_CHARM)
 PUP::able::PUP_ID DeltaRNoDrift::my_PUP_ID = 0; // NOLINT
+#endif                                          // SPECTRE_USE_CHARM
 }  // namespace control_system::size::States

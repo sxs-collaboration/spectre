@@ -536,8 +536,11 @@ double Enthalpy<LowDensityEoS>::rest_mass_density_from_enthalpy(
                                1.0e-15);
   }
 }
+
+#if defined(SPECTRE_USE_CHARM)
 template <typename LowDensityEoS>
 PUP::able::PUP_ID EquationsOfState::Enthalpy<LowDensityEoS>::my_PUP_ID = 0;
+#endif  // SPECTRE_USE_CHARM
 
 template class EquationsOfState::Enthalpy<Spectral>;
 template class EquationsOfState::Enthalpy<PolytropicFluid<true>>;

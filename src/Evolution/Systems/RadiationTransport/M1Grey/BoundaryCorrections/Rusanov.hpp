@@ -201,10 +201,10 @@ class Rusanov<tmpl::list<NeutrinoSpecies...>> final
   }
 };
 
-/// \cond
+#if defined(SPECTRE_USE_CHARM)
 template <typename... NeutrinoSpecies>
 // NOLINTNEXTLINE
 PUP::able::PUP_ID Rusanov<tmpl::list<NeutrinoSpecies...>>::my_PUP_ID = 0;
-/// \endcond
+#endif  // SPECTRE_USE_CHARM
 
 }  // namespace RadiationTransport::M1Grey::BoundaryCorrections

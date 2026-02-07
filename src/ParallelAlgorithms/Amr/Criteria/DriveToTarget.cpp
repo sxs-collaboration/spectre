@@ -80,8 +80,10 @@ std::array<Flag, Dim> DriveToTarget<Dim, CriteriaType>::impl(
   return result;
 }
 
+#if defined(SPECTRE_USE_CHARM)
 template <size_t Dim, Type CriteriaType>
 PUP::able::PUP_ID DriveToTarget<Dim, CriteriaType>::my_PUP_ID = 0;  // NOLINT
+#endif  // SPECTRE_USE_CHARM
 
 template class DriveToTarget<1, Type::h>;
 template class DriveToTarget<2, Type::h>;

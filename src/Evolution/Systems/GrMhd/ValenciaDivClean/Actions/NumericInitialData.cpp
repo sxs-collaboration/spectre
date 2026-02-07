@@ -25,7 +25,9 @@ NumericInitialData::NumericInitialData(
       selected_variables_(std::move(selected_variables)),
       density_cutoff_(density_cutoff) {}
 
+#if defined(SPECTRE_USE_CHARM)
 PUP::able::PUP_ID NumericInitialData::my_PUP_ID = 0;
+#endif  // SPECTRE_USE_CHARM
 
 size_t NumericInitialData::volume_data_id() const {
   size_t hash = 0;

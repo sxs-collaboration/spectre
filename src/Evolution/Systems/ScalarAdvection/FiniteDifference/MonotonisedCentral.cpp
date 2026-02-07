@@ -39,8 +39,10 @@ void MonotonisedCentral<Dim>::pup(PUP::er& p) {
   Reconstructor<Dim>::pup(p);
 }
 
+#if defined(SPECTRE_USE_CHARM)
 template <size_t Dim>
 PUP::able::PUP_ID MonotonisedCentral<Dim>::my_PUP_ID = 0;
+#endif  // SPECTRE_USE_CHARM
 
 template <size_t Dim>
 template <typename TagsList>

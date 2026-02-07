@@ -96,7 +96,9 @@ class CriterionOne : public ah::Criterion {
   double target_value_{std::numeric_limits<double>::signaling_NaN()};
 };
 
+#if defined(SPECTRE_USE_CHARM)
 PUP::able::PUP_ID CriterionOne::my_PUP_ID = 0;  // NOLINT
+#endif                                          // SPECTRE_USE_CHARM
 
 class CriterionTwo : public ah::Criterion {
  public:
@@ -149,7 +151,9 @@ class CriterionTwo : public ah::Criterion {
   double target_value_{std::numeric_limits<double>::signaling_NaN()};
 };
 
+#if defined(SPECTRE_USE_CHARM)
 PUP::able::PUP_ID CriterionTwo::my_PUP_ID = 0;  // NOLINT
+#endif                                          // SPECTRE_USE_CHARM
 #pragma GCC diagnostic pop
 
 struct Metavariables {

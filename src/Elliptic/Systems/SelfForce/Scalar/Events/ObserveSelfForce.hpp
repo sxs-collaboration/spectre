@@ -219,10 +219,12 @@ class ObserveSelfForce : public Event {
   bool needs_evolved_variables() const override { return false; }
 };
 
+#if defined(SPECTRE_USE_CHARM)
 /// \cond
 // NOLINTBEGIN(cppcoreguidelines-avoid-non-const-global-variables)
 template <typename ArraySectionIdTag>
 PUP::able::PUP_ID ObserveSelfForce<ArraySectionIdTag>::my_PUP_ID = 0;
 // NOLINTEND(cppcoreguidelines-avoid-non-const-global-variables)
 /// \endcond
+#endif  // SPECTRE_USE_CHARM
 }  // namespace ScalarSelfForce::Events

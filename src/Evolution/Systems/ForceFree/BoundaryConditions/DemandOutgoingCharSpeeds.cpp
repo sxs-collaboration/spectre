@@ -27,8 +27,10 @@ DemandOutgoingCharSpeeds::get_clone() const {
 
 void DemandOutgoingCharSpeeds::pup(PUP::er& p) { BoundaryCondition::pup(p); }
 
+#if defined(SPECTRE_USE_CHARM)
 // NOLINTNEXTLINE
 PUP::able::PUP_ID DemandOutgoingCharSpeeds::my_PUP_ID = 0;
+#endif  // SPECTRE_USE_CHARM
 
 std::optional<std::string>
 DemandOutgoingCharSpeeds::dg_demand_outgoing_char_speeds(

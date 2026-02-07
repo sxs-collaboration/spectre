@@ -92,7 +92,9 @@ void BentBeamVariables<DataType>::operator()(
 
 }  // namespace detail
 
+#if defined(SPECTRE_USE_CHARM)
 PUP::able::PUP_ID BentBeam::my_PUP_ID = 0;  // NOLINT
+#endif                                      // SPECTRE_USE_CHARM
 
 bool operator==(const BentBeam& lhs, const BentBeam& rhs) {
   return lhs.length() == rhs.length() and lhs.height() == rhs.height() and

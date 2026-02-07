@@ -80,11 +80,13 @@ void None<SystemBoundaryConditionBaseClass>::pup(PUP::er& p) {
   BoundaryCondition::pup(p);
 }
 
+#if defined(SPECTRE_USE_CHARM)
 /// \cond
 template <typename SystemBoundaryConditionBaseClass>
 // NOLINTNEXTLINE
 PUP::able::PUP_ID None<SystemBoundaryConditionBaseClass>::my_PUP_ID = 0;
 /// \endcond
+#endif  // SPECTRE_USE_CHARM
 
 /// Check if a boundary condition inherits from `MarkAsNone`, which
 /// constitutes as it being marked as a none boundary condition.

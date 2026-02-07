@@ -163,6 +163,7 @@ class FindCommonHorizon<
   InterpolateEvent interpolate_event_;
 };
 
+#if defined(SPECTRE_USE_CHARM)
 /// \cond
 // NOLINTBEGIN
 template <size_t VolumeDim, typename InterpolationTargetTag,
@@ -173,6 +174,7 @@ PUP::able::PUP_ID FindCommonHorizon<
     tmpl::list<Tensors...>, tmpl::list<NonTensorComputeTags...>>::my_PUP_ID = 0;
 // NOLINTEND
 /// \endcond
+#endif  // SPECTRE_USE_CHARM
 }  // namespace intrp::Events
 
 namespace ah::Events {
@@ -291,6 +293,7 @@ class FindCommonHorizon<HorizonMetavars, tmpl::list<Tensors...>,
   HorizonFindEvent horizon_find_event_;
 };
 
+#if defined(SPECTRE_USE_CHARM)
 /// \cond
 // NOLINTBEGIN
 template <typename HorizonMetavars, typename... Tensors,
@@ -300,4 +303,5 @@ PUP::able::PUP_ID
                       tmpl::list<NonTensorComputeTags...>>::my_PUP_ID = 0;
 // NOLINTEND
 /// \endcond
+#endif  // SPECTRE_USE_CHARM
 }  // namespace ah::Events

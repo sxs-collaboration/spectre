@@ -99,8 +99,10 @@ struct SolveTrigger : public Trigger {
   bool operator()(const size_t step) const { return step % 3 == 0; }
 };
 
+#if defined(SPECTRE_USE_CHARM)
 PUP::able::PUP_ID SolveTrigger::my_PUP_ID = 0;
 PUP::able::PUP_ID RegisterTrigger::my_PUP_ID = 0;
+#endif  // SPECTRE_USE_CHARM
 
 template <typename Metavariables>
 struct ComponentAlpha {

@@ -243,8 +243,10 @@ void Ccz4WrappedGr<SolutionType>::pup(PUP::er& p) {
   SolutionType::pup(p);
 }
 
+#if defined(SPECTRE_USE_CHARM)
 template <typename SolutionType>
 PUP::able::PUP_ID Ccz4WrappedGr<SolutionType>::my_PUP_ID = 0;
+#endif  // SPECTRE_USE_CHARM
 
 template <typename SolutionType>
 bool operator==(const Ccz4WrappedGr<SolutionType>& lhs,

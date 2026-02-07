@@ -66,7 +66,9 @@ class TestFoT : public domain::FunctionsOfTime::FunctionOfTime {
   double upper_bound_{};
 };
 
+#if defined(SPECTRE_USE_CHARM)
 PUP::able::PUP_ID TestFoT::my_PUP_ID = 0;  // NOLINT
+#endif                                     // SPECTRE_USE_CHARM
 
 SPECTRE_TEST_CASE("Unit.Domain.FunctionsOfTime.OutputTimeBounds",
                   "[Unit][Domain]") {

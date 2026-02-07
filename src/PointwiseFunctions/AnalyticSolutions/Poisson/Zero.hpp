@@ -62,10 +62,12 @@ class Zero : public elliptic::analytic_data::AnalyticSolution {
   }
 };
 
+#if defined(SPECTRE_USE_CHARM)
 /// \cond
 template <size_t Dim, typename DataType>
 PUP::able::PUP_ID Zero<Dim, DataType>::my_PUP_ID = 0;  // NOLINT
 /// \endcond
+#endif  // SPECTRE_USE_CHARM
 
 template <size_t Dim, typename DataType>
 bool operator==(const Zero<Dim, DataType>& /*lhs*/,

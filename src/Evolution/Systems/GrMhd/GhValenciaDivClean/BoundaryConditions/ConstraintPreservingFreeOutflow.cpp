@@ -196,6 +196,8 @@ std::optional<std::string> ConstraintPreservingFreeOutflow::dg_time_derivative(
       logical_dt_phi, d_spacetime_metric, d_pi, d_phi);
 }
 
+#if defined(SPECTRE_USE_CHARM)
 // NOLINTNEXTLINE
 PUP::able::PUP_ID ConstraintPreservingFreeOutflow::my_PUP_ID = 0;
+#endif  // SPECTRE_USE_CHARM
 }  // namespace grmhd::GhValenciaDivClean::BoundaryConditions

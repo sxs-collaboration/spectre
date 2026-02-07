@@ -68,8 +68,10 @@ void Random<VolumeDim>::pup(PUP::er& p) {
   p | seed_;
 }
 
+#if defined(SPECTRE_USE_CHARM)
 template <size_t VolumeDim>
 PUP::able::PUP_ID Random<VolumeDim>::my_PUP_ID = 0;  // NOLINT
+#endif                                               // SPECTRE_USE_CHARM
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 

@@ -92,5 +92,7 @@ double DeltaRDriftOutward::control_error(
       std::numeric_limits<double>::signaling_NaN());
 }
 
+#if defined(SPECTRE_USE_CHARM)
 PUP::able::PUP_ID DeltaRDriftOutward::my_PUP_ID = 0;
+#endif  // SPECTRE_USE_CHARM
 }  // namespace control_system::size::States

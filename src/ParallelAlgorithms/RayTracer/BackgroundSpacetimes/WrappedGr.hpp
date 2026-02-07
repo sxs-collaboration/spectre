@@ -111,8 +111,10 @@ bool operator!=(const WrappedGr<SolutionType>& lhs,
 }
 
 /// \cond
+#if defined(SPECTRE_USE_CHARM)
 template <typename SolutionType>
 PUP::able::PUP_ID WrappedGr<SolutionType>::my_PUP_ID = 0;  // NOLINT
+#endif                                                     // SPECTRE_USE_CHARM
 /// \endcond
 
 }  // namespace ray_tracing

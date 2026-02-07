@@ -260,9 +260,11 @@ void NeutrinoInteractionTable<EnergyBins, NeutrinoSpecies>::pup(PUP::er& p) {
   }
 }
 
+#if defined(SPECTRE_USE_CHARM)
 template <size_t EnergyBins, size_t NeutrinoSpecies>
 PUP::able::PUP_ID NeutrinoInteractionTable<EnergyBins,
   NeutrinoSpecies>::my_PUP_ID = 0;  // NOLINT
+#endif                              // SPECTRE_USE_CHARM
 
 template <size_t EnergyBins, size_t NeutrinoSpecies>
 void NeutrinoInteractionTable<EnergyBins,

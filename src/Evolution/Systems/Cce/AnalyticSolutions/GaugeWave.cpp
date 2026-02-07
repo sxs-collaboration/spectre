@@ -205,5 +205,7 @@ void GaugeWave::pup(PUP::er& p) {
   p | duration_;
 }
 
+#if defined(SPECTRE_USE_CHARM)
 PUP::able::PUP_ID GaugeWave::my_PUP_ID = 0;
+#endif  // SPECTRE_USE_CHARM
 }  // namespace Cce::Solutions

@@ -69,8 +69,10 @@ std::vector<TensorComponent> ObserveTimeStepVolume<System>::assemble_data(
   return components;
 }
 
+  #if defined(SPECTRE_USE_CHARM)
 /// \cond
 template <typename System>
 PUP::able::PUP_ID ObserveTimeStepVolume<System>::my_PUP_ID = 0;  // NOLINT
 /// \endcond
+  #endif // SPECTRE_USE_CHARM
 }  // namespace dg::Events

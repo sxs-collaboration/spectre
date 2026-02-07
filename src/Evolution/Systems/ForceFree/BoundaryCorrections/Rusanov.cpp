@@ -23,8 +23,10 @@ std::unique_ptr<evolution::BoundaryCorrection> Rusanov::get_clone() const {
 
 void Rusanov::pup(PUP::er& p) { BoundaryCorrection::pup(p); }
 
+#if defined(SPECTRE_USE_CHARM)
 // NOLINTNEXTLINE
 PUP::able::PUP_ID Rusanov::my_PUP_ID = 0;
+#endif  // SPECTRE_USE_CHARM
 
 double Rusanov::dg_package_data(
     const gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*>

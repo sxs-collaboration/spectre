@@ -102,9 +102,11 @@ std::optional<std::string> SphericalRadiation<Dim>::dg_ghost(
   return {};
 }
 
+#if defined(SPECTRE_USE_CHARM)
 template <size_t Dim>
 // NOLINTNEXTLINE
 PUP::able::PUP_ID SphericalRadiation<Dim>::my_PUP_ID = 0;
+#endif  // SPECTRE_USE_CHARM
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 

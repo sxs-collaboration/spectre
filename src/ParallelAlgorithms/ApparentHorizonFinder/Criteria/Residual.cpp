@@ -42,5 +42,7 @@ bool Residual::is_equal(const Criterion& other) const {
          min_resolution_l_ == other_residual->min_resolution_l_;
 }
 
+#if defined(SPECTRE_USE_CHARM)
 PUP::able::PUP_ID ah::Criteria::Residual::my_PUP_ID = 0;  // NOLINT
+#endif                                                    // SPECTRE_USE_CHARM
 }  // namespace ah::Criteria

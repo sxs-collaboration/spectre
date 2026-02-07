@@ -78,7 +78,9 @@ class SomeEvent : public Event {
   std::string subfile_path_;
 };
 
+#if defined(SPECTRE_USE_CHARM)
 PUP::able::PUP_ID SomeEvent::my_PUP_ID = 0;  // NOLINT
+#endif                                       // SPECTRE_USE_CHARM
 
 template <typename Metavariables>
 struct Component {

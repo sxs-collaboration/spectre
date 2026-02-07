@@ -170,7 +170,9 @@ struct VisitAndReturn : public PhaseChange {
 };
 }  // namespace PhaseControl
 
+#if defined(SPECTRE_USE_CHARM)
 /// \cond
 template <Parallel::Phase TargetPhase>
 PUP::able::PUP_ID PhaseControl::VisitAndReturn<TargetPhase>::my_PUP_ID = 0;
 /// \endcond
+#endif  // SPECTRE_USE_CHARM

@@ -398,11 +398,13 @@ void ObserveAtExtremum<tmpl::list<ObservableTensorTags...>,
   p | additional_tensor_names_;
 }
 
+#if defined(SPECTRE_USE_CHARM)
 template <typename... ObservableTensorTags, typename... NonTensorComputeTags,
           typename ArraySectionIdTag>
 PUP::able::PUP_ID ObserveAtExtremum<tmpl::list<ObservableTensorTags...>,
                                     tmpl::list<NonTensorComputeTags...>,
                                     ArraySectionIdTag>::my_PUP_ID =
     0;  // NOLINT
+#endif  // SPECTRE_USE_CHARM
 /// \endcond
 }  // namespace Events

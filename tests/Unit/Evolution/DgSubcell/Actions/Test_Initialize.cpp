@@ -103,8 +103,10 @@ struct SystemAnalyticSolution : public MarkAsAnalyticSolution,
   void pup(PUP::er& /*p*/) override {}  // NOLINT
 };
 
+#if defined(SPECTRE_USE_CHARM)
 // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
 PUP::able::PUP_ID SystemAnalyticSolution::my_PUP_ID = 0;
+#endif  // SPECTRE_USE_CHARM
 
 template <size_t Dim>
 struct System {

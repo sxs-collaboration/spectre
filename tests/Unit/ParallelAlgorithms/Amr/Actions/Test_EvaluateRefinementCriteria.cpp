@@ -90,8 +90,10 @@ class BadCriterion : public amr::Criterion {
   void pup(PUP::er& p) override { Criterion::pup(p); }
 };
 
+#if defined(SPECTRE_USE_CHARM)
 template <size_t Dim>
 PUP::able::PUP_ID BadCriterion<Dim>::my_PUP_ID = 0;  // NOLINT
+#endif                                               // SPECTRE_USE_CHARM
 #pragma GCC diagnostic pop
 
 template <typename Metavariables>

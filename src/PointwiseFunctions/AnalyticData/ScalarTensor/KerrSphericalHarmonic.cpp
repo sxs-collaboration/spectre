@@ -88,7 +88,9 @@ KerrSphericalHarmonic::variables(
   return pi;
 }
 
+#if defined(SPECTRE_USE_CHARM)
 PUP::able::PUP_ID KerrSphericalHarmonic::my_PUP_ID = 0;
+#endif  // SPECTRE_USE_CHARM
 
 bool operator==(const KerrSphericalHarmonic& lhs,
                 const KerrSphericalHarmonic& rhs) {

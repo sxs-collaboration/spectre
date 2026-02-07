@@ -197,7 +197,9 @@ KhInstability::variables(
           variables(x, tmpl::list<hydro::Tags::Pressure<DataType>>{})));
 }
 
+#if defined(SPECTRE_USE_CHARM)
 PUP::able::PUP_ID KhInstability::my_PUP_ID = 0;
+#endif  // SPECTRE_USE_CHARM
 
 bool operator==(const KhInstability& lhs, const KhInstability& rhs) {
   // No comparison for equation_of_state_. Comparing adiabatic_index_ should

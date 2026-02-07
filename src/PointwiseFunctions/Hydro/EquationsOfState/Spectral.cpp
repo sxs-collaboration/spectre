@@ -309,6 +309,8 @@ double Spectral::rest_mass_density_from_enthalpy(
   }
 }
 
+#if defined(SPECTRE_USE_CHARM)
 PUP::able::PUP_ID EquationsOfState::Spectral::my_PUP_ID = 0;
+#endif  // SPECTRE_USE_CHARM
 
 }  // namespace EquationsOfState

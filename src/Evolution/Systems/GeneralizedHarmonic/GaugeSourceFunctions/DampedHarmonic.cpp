@@ -539,8 +539,10 @@ void DampedHarmonic::gauge_and_spacetime_derivative(
                   spatial_decay_width_);
 }
 
+#if defined(SPECTRE_USE_CHARM)
 // NOLINTNEXTLINE
 PUP::able::PUP_ID DampedHarmonic::my_PUP_ID = 0;
+#endif  // SPECTRE_USE_CHARM
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 

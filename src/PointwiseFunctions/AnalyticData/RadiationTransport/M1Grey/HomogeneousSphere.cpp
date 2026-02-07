@@ -140,8 +140,11 @@ void HomogeneousSphere::pup(PUP::er& p) {
   p | outer_opacity_;
   p | boundary_roundness_;
 }
+
+#if defined(SPECTRE_USE_CHARM)
 // NOLINTNEXTLINE
 PUP::able::PUP_ID HomogeneousSphere::my_PUP_ID = 0;
+#endif  // SPECTRE_USE_CHARM
 
 bool operator!=(const HomogeneousSphere& lhs, const HomogeneousSphere& rhs) {
   return not(lhs == rhs);

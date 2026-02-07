@@ -127,5 +127,7 @@ void ZeroNonSmooth::pup(PUP::er& p) {
   p | max_iterations_;
 }
 
+#if defined(SPECTRE_USE_CHARM)
 PUP::able::PUP_ID ZeroNonSmooth::my_PUP_ID = 0;
+#endif  // SPECTRE_USE_CHARM
 }  // namespace Cce::InitializeJ

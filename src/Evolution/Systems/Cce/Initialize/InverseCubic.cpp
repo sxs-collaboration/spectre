@@ -114,6 +114,8 @@ void InverseCubic<false>::operator()(
 void InverseCubic<true>::pup(PUP::er& /*p*/) {}
 void InverseCubic<false>::pup(PUP::er& /*p*/) {}
 
+#if defined(SPECTRE_USE_CHARM)
 PUP::able::PUP_ID InverseCubic<true>::my_PUP_ID = 0;
 PUP::able::PUP_ID InverseCubic<false>::my_PUP_ID = 0;
+#endif  // SPECTRE_USE_CHARM
 }  // namespace Cce::InitializeJ

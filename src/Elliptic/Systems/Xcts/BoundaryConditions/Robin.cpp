@@ -189,8 +189,10 @@ bool operator!=(const Robin<EnabledEquations>& lhs,
   return not(lhs == rhs);
 }
 
+#if defined(SPECTRE_USE_CHARM)
 template <Xcts::Equations EnabledEquations>
 PUP::able::PUP_ID Robin<EnabledEquations>::my_PUP_ID = 0;  // NOLINT
+#endif                                                     // SPECTRE_USE_CHARM
 
 #define EQNS(data) BOOST_PP_TUPLE_ELEM(0, data)
 

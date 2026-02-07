@@ -713,12 +713,14 @@ struct BoundaryTerms final : public evolution::BoundaryCorrection {
   double sign_of_normal_{0.0};
 };
 
+#if defined(SPECTRE_USE_CHARM)
 template <size_t Dim, bool HasPrims, SystemType SysType,
           bool HasInverseSpatialMetric>
 PUP::able::PUP_ID
     // NOLINTNEXTLINE
     BoundaryTerms<Dim, HasPrims, SysType, HasInverseSpatialMetric>::my_PUP_ID =
         0;
+#endif  // SPECTRE_USE_CHARM
 
 // Forward declare different boundary conditions.
 //
@@ -905,9 +907,11 @@ class DemandOutgoingCharSpeeds : public BoundaryCondition<System> {
   bool mesh_is_moving_{false};
 };
 
+#if defined(SPECTRE_USE_CHARM)
 template <typename System>
 // NOLINTNEXTLINE
 PUP::able::PUP_ID DemandOutgoingCharSpeeds<System>::my_PUP_ID = 0;
+#endif  // SPECTRE_USE_CHARM
 
 template <typename System>
 class Ghost : public BoundaryCondition<System> {
@@ -1339,9 +1343,11 @@ class Ghost : public BoundaryCondition<System> {
   bool mesh_is_moving_{false};
 };
 
+#if defined(SPECTRE_USE_CHARM)
 template <typename System>
 // NOLINTNEXTLINE
 PUP::able::PUP_ID Ghost<System>::my_PUP_ID = 0;
+#endif  // SPECTRE_USE_CHARM
 
 template <typename System>
 class TimeDerivative : public BoundaryCondition<System> {
@@ -1646,9 +1652,11 @@ class TimeDerivative : public BoundaryCondition<System> {
   double expected_dt_var1_{std::numeric_limits<double>::signaling_NaN()};
 };
 
+#if defined(SPECTRE_USE_CHARM)
 template <typename System>
 // NOLINTNEXTLINE
 PUP::able::PUP_ID TimeDerivative<System>::my_PUP_ID = 0;
+#endif  // SPECTRE_USE_CHARM
 
 template <typename System>
 class GhostAndTimeDerivative : public BoundaryCondition<System> {
@@ -2028,9 +2036,11 @@ class GhostAndTimeDerivative : public BoundaryCondition<System> {
   TimeDerivative<System> time_derivative_;
 };
 
+#if defined(SPECTRE_USE_CHARM)
 template <typename System>
 // NOLINTNEXTLINE
 PUP::able::PUP_ID GhostAndTimeDerivative<System>::my_PUP_ID = 0;
+#endif  // SPECTRE_USE_CHARM
 
 template <bool AddTypeAlias, size_t Dim>
 struct InverseSpatialMetricTagImpl {

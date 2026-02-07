@@ -60,8 +60,10 @@ class EveryNIterations : public Trigger {
   uint64_t offset_{0};
 };
 
+#if defined(SPECTRE_USE_CHARM)
 /// \cond
 template <typename Label>
 PUP::able::PUP_ID EveryNIterations<Label>::my_PUP_ID = 0;  // NOLINT
 /// \endcond
+#endif  // SPECTRE_USE_CHARM
 }  // namespace elliptic::Triggers

@@ -58,5 +58,7 @@ void GhLockstep::pup(PUP::er& p) {
   p | requests_;
 }
 
+#if defined(SPECTRE_USE_CHARM)
 PUP::able::PUP_ID GhLockstep::my_PUP_ID = 0;
+#endif  // SPECTRE_USE_CHARM
 }  // namespace Cce::InterfaceManagers

@@ -172,8 +172,11 @@ class Barotropic3D : public EquationOfState<ColdEquilEos::is_relativistic, 3> {
   EQUATION_OF_STATE_FORWARD_DECLARE_MEMBER_IMPLS(3)
   ColdEquilEos underlying_eos_;
 };
+
+#if defined(SPECTRE_USE_CHARM)
 /// \cond
 template <typename ColdEquilEos>
 PUP::able::PUP_ID EquationsOfState::Barotropic3D<ColdEquilEos>::my_PUP_ID = 0;
 /// \endcond
+#endif  // SPECTRE_USE_CHARM
 }  // namespace EquationsOfState

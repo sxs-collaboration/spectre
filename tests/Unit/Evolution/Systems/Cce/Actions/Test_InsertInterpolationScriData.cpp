@@ -78,7 +78,9 @@ struct RotatingSchwarzschildWithNoninertialNews
   }
 };
 
+#if defined(SPECTRE_USE_CHARM)
 PUP::able::PUP_ID RotatingSchwarzschildWithNoninertialNews::my_PUP_ID = 0;
+#endif  // SPECTRE_USE_CHARM
 
 struct SetRandomBoundaryValues {
   template <typename DbTags, typename... InboxTags, typename Metavariables,

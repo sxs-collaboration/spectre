@@ -173,9 +173,11 @@ class PiecewisePolytropicFluid : public EquationOfState<IsRelativistic, 1> {
   double polytropic_exponent_hi_ = std::numeric_limits<double>::signaling_NaN();
 };
 
+#if defined(SPECTRE_USE_CHARM)
 /// \cond
 template <bool IsRelativistic>
 PUP::able::PUP_ID
     EquationsOfState::PiecewisePolytropicFluid<IsRelativistic>::my_PUP_ID = 0;
 /// \endcond
+#endif  // SPECTRE_USE_CHARM
 }  // namespace EquationsOfState

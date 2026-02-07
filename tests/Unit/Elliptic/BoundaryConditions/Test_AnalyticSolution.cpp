@@ -92,8 +92,10 @@ struct TestSolution : elliptic::analytic_data::AnalyticSolution {
   }
 };
 
+#if defined(SPECTRE_USE_CHARM)
 template <size_t Dim>
 PUP::able::PUP_ID TestSolution<Dim>::my_PUP_ID = 0;  // NOLINT
+#endif                                               // SPECTRE_USE_CHARM
 
 template <size_t Dim>
 struct Metavariables {

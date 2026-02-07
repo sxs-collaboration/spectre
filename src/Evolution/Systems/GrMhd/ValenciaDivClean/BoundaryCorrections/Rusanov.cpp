@@ -225,6 +225,8 @@ bool operator!=(const Rusanov& lhs, const Rusanov& rhs) {
   return not(lhs == rhs);
 }
 
+#if defined(SPECTRE_USE_CHARM)
 // NOLINTNEXTLINE
 PUP::able::PUP_ID Rusanov::my_PUP_ID = 0;
+#endif  // SPECTRE_USE_CHARM
 }  // namespace grmhd::ValenciaDivClean::BoundaryCorrections

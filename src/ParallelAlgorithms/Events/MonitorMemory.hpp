@@ -322,8 +322,10 @@ void MonitorMemory<Dim>::pup(PUP::er& p) {
   p | components_to_monitor_;
 }
 
+#if defined(SPECTRE_USE_CHARM)
 template <size_t Dim>
 PUP::able::PUP_ID MonitorMemory<Dim>::my_PUP_ID = 0;  // NOLINT
+#endif                                                // SPECTRE_USE_CHARM
 /// \endcond
 
 }  // namespace Events

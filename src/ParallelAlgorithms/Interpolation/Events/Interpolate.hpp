@@ -151,6 +151,7 @@ class Interpolate<VolumeDim, InterpolationTargetTag,
   std::optional<std::string> dependency_;
 };
 
+#if defined(SPECTRE_USE_CHARM)
 /// \cond
 template <size_t VolumeDim, typename InterpolationTargetTag,
           typename... InterpolatorSourceVarTags>
@@ -159,6 +160,7 @@ PUP::able::PUP_ID
                 tmpl::list<InterpolatorSourceVarTags...>>::my_PUP_ID =
         0;  // NOLINT
 /// \endcond
+#endif  // SPECTRE_USE_CHARM
 
 }  // namespace Events
 }  // namespace intrp

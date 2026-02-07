@@ -110,6 +110,8 @@ void DirichletAnalytic::flux_impl(
   Burgers::Fluxes::apply(flux, u_analytic);
 }
 
+#if defined(SPECTRE_USE_CHARM)
 // NOLINTNEXTLINE
 PUP::able::PUP_ID DirichletAnalytic::my_PUP_ID = 0;
+#endif  // SPECTRE_USE_CHARM
 }  // namespace Burgers::BoundaryConditions

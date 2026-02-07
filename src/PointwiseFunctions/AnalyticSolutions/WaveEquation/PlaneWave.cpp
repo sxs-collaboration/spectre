@@ -163,8 +163,10 @@ T PlaneWave<Dim>::u(const tnsr::I<T, Dim>& x, const double t) const {
   return result;
 }
 
+#if defined(SPECTRE_USE_CHARM)
 template <size_t Dim>
 PUP::able::PUP_ID PlaneWave<Dim>::my_PUP_ID = 0;
+#endif  // SPECTRE_USE_CHARM
 }  // namespace ScalarWave::Solutions
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)

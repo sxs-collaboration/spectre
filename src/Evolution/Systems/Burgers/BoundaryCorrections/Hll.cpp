@@ -69,5 +69,7 @@ void Hll::dg_boundary_terms(
 }
 }  // namespace Burgers::BoundaryCorrections
 
+#if defined(SPECTRE_USE_CHARM)
 // NOLINTNEXTLINE
 PUP::able::PUP_ID Burgers::BoundaryCorrections::Hll::my_PUP_ID = 0;
+#endif  // SPECTRE_USE_CHARM

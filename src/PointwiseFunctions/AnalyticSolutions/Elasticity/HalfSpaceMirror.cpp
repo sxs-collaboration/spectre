@@ -237,7 +237,9 @@ void HalfSpaceMirrorVariables<DataType>::operator()(
 
 }  // namespace detail
 
+#if defined(SPECTRE_USE_CHARM)
 PUP::able::PUP_ID HalfSpaceMirror::my_PUP_ID = 0;  // NOLINT
+#endif                                             // SPECTRE_USE_CHARM
 
 bool operator==(const HalfSpaceMirror& lhs, const HalfSpaceMirror& rhs) {
   return lhs.beam_width() == rhs.beam_width() and

@@ -131,6 +131,8 @@ std::optional<std::string> DirichletAnalytic::dg_ghost(
   return {};
 }
 
+#if defined(SPECTRE_USE_CHARM)
 // NOLINTNEXTLINE
 PUP::able::PUP_ID DirichletAnalytic::my_PUP_ID = 0;
+#endif  // SPECTRE_USE_CHARM
 }  // namespace ScalarTensor::BoundaryConditions

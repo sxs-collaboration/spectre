@@ -60,4 +60,6 @@ Rk3Pareschi::implicit_butcher_tableau() const {
 }
 }  // namespace TimeSteppers
 
+#if defined(SPECTRE_USE_CHARM)
 PUP::able::PUP_ID TimeSteppers::Rk3Pareschi::my_PUP_ID = 0;  // NOLINT
+#endif  // SPECTRE_USE_CHARM

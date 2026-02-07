@@ -265,7 +265,9 @@ MagnetizedFmDisk::variables(
   return result;
 }
 
+#if defined(SPECTRE_USE_CHARM)
 PUP::able::PUP_ID MagnetizedFmDisk::my_PUP_ID = 0;
+#endif  // SPECTRE_USE_CHARM
 
 bool operator==(const MagnetizedFmDisk& lhs, const MagnetizedFmDisk& rhs) {
   return lhs.fm_disk_ == rhs.fm_disk_ and

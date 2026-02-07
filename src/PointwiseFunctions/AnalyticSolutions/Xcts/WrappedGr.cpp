@@ -441,8 +441,10 @@ template class WrappedGrVariables<DataVector, true>;
 
 }  // namespace detail
 
+#if defined(SPECTRE_USE_CHARM)
 template <typename GrSolution, bool HasMhd>
 PUP::able::PUP_ID WrappedGr<GrSolution, HasMhd>::my_PUP_ID = 0;  // NOLINT
+#endif  // SPECTRE_USE_CHARM
 
 }  // namespace Xcts::Solutions
 

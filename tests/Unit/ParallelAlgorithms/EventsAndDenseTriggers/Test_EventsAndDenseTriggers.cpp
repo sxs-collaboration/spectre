@@ -122,8 +122,10 @@ template <typename Label>
 std::optional<double> TestEvent<Label>::previous_time_during_event =
     std::nullopt;
 
+#if defined(SPECTRE_USE_CHARM)
 template <typename Label>
 PUP::able::PUP_ID TestEvent<Label>::my_PUP_ID = 0;  // NOLINT
+#endif                                              // SPECTRE_USE_CHARM
 
 namespace EventLabels {
 struct A {
@@ -373,7 +375,9 @@ class MutatingTrigger : public DenseTrigger {
   }
 };
 
+#if defined(SPECTRE_USE_CHARM)
 PUP::able::PUP_ID MutatingTrigger::my_PUP_ID = 0;  // NOLINT
+#endif                                             // SPECTRE_USE_CHARM
 
 struct MutatingMetavariables {
   using component_list = tmpl::list<>;

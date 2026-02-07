@@ -995,7 +995,9 @@ auto RotatingStar::variables(
           variables(vars, x, tmpl::list<DerivSpatialMetric<DataType>>{})));
 }
 
+#if defined(SPECTRE_USE_CHARM)
 PUP::able::PUP_ID RotatingStar::my_PUP_ID = 0;
+#endif  // SPECTRE_USE_CHARM
 
 bool operator==(const RotatingStar& lhs, const RotatingStar& rhs) {
   return lhs.rot_ns_filename_ == rhs.rot_ns_filename_ and

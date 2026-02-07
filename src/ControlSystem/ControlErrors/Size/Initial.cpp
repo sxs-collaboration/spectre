@@ -108,5 +108,7 @@ double Initial::control_error(
          control_error_args.time_deriv_of_lambda_00;
 }
 
-PUP::able::PUP_ID Initial::my_PUP_ID = 0;
+#if defined(SPECTRE_USE_CHARM)
+PUP::able::PUP_ID Initial::my_PUP_ID = 0;  // NOLINT
+#endif                                     // SPECTRE_USE_CHARM
 }  // namespace control_system::size::States

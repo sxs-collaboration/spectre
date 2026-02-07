@@ -43,5 +43,7 @@ bool OrbitRadius::operator()(
 // NOLINTNEXTLINE(google-runtime-references)
 void OrbitRadius::pup(PUP::er& p) { p | radii_; }
 
+#if defined(SPECTRE_USE_CHARM)
 PUP::able::PUP_ID OrbitRadius::my_PUP_ID = 0;  // NOLINT
+#endif                                         // SPECTRE_USE_CHARM
 }  // namespace Triggers

@@ -106,8 +106,10 @@ struct TestPhaseChange : public PhaseChange {
   void pup(PUP::er& /*p*/) override {}  // NOLINT
 };
 
+#if defined(SPECTRE_USE_CHARM)
 template <PhaseControl::ArbitrationStrategy Strategy, size_t Index>
 PUP::able::PUP_ID TestPhaseChange<Strategy, Index>::my_PUP_ID = 0;
+#endif  // SPECTRE_USE_CHARM
 
 struct Metavariables {
   using component_list = tmpl::list<>;

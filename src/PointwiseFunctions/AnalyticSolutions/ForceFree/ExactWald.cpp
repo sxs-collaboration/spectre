@@ -34,8 +34,10 @@ void ExactWald::pup(PUP::er& p) {
   p | magnetic_field_amplitude_;
 }
 
+#if defined(SPECTRE_USE_CHARM)
 // NOLINTNEXTLINE
 PUP::able::PUP_ID ExactWald::my_PUP_ID = 0;
+#endif  // SPECTRE_USE_CHARM
 
 tuples::TaggedTuple<Tags::TildeE> ExactWald::variables(
     const tnsr::I<DataVector, 3>& x, double /*t*/,

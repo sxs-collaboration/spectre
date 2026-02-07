@@ -289,10 +289,12 @@ Composition(std::unique_ptr<FirstMap>, std::unique_ptr<Maps>... maps)
                               typename Maps::target_frame...>,
                    FirstMap::dim>;
 
+#if defined(SPECTRE_USE_CHARM)
 /// \cond
 template <typename Frames, size_t Dim, size_t... Is>
 PUP::able::PUP_ID
     Composition<Frames, Dim, std::index_sequence<Is...>>::my_PUP_ID = 0;
 /// \endcond
+#endif  // SPECTRE_USE_CHARM
 
 }  // namespace domain::CoordinateMaps

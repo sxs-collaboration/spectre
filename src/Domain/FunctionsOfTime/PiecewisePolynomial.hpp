@@ -125,9 +125,11 @@ template <size_t MaxDeriv>
 bool operator!=(const PiecewisePolynomial<MaxDeriv>& lhs,
                 const PiecewisePolynomial<MaxDeriv>& rhs);
 
+#if defined(SPECTRE_USE_CHARM)
 /// \cond
 template <size_t MaxDeriv>
 PUP::able::PUP_ID PiecewisePolynomial<MaxDeriv>::my_PUP_ID = 0;  // NOLINT
 /// \endcond
+#endif  // SPECTRE_USE_CHARM
 }  // namespace FunctionsOfTime
 }  // namespace domain

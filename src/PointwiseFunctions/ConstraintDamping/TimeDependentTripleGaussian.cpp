@@ -208,6 +208,9 @@ bool operator!=(const TimeDependentTripleGaussian& lhs,
   return not(lhs == rhs);
 }
 }  // namespace ConstraintDamping
+
+#if defined(SPECTRE_USE_CHARM)
 // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
 PUP::able::PUP_ID ConstraintDamping::TimeDependentTripleGaussian::my_PUP_ID =
     0;  // NOLINT
+#endif  // SPECTRE_USE_CHARM

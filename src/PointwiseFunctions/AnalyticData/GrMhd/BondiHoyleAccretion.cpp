@@ -212,7 +212,9 @@ BondiHoyleAccretion::variables(
       get<density_tag>(data), get<energy_tag>(data), get<pressure_tag>(data));
 }
 
+#if defined(SPECTRE_USE_CHARM)
 PUP::able::PUP_ID BondiHoyleAccretion::my_PUP_ID = 0;
+#endif  // SPECTRE_USE_CHARM
 
 bool operator==(const BondiHoyleAccretion& lhs,
                 const BondiHoyleAccretion& rhs) {

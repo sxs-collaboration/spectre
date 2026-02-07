@@ -30,6 +30,7 @@ struct NonFactoryCreatableWrapper : public FactoryCreatableClass {
   /// \endcond
 };
 
+#if defined(SPECTRE_USE_CHARM)
 /// \cond
 // NOLINTBEGIN
 template <typename FactoryCreatableClass>
@@ -37,3 +38,4 @@ PUP::able::PUP_ID NonFactoryCreatableWrapper<FactoryCreatableClass>::my_PUP_ID =
     0;
 // NOLINTEND
 /// \endcond
+#endif  // SPECTRE_USE_CHARM

@@ -77,8 +77,10 @@ class PreventRapidIncrease : public StepChooser<StepChooserUse::Slab>,
   }
 };
 
+#if defined(SPECTRE_USE_CHARM)
 /// \cond
 template <typename VariablesTag>
 PUP::able::PUP_ID PreventRapidIncrease<VariablesTag>::my_PUP_ID = 0;  // NOLINT
 /// \endcond
+#endif  // SPECTRE_USE_CHARM
 }  // namespace StepChoosers
