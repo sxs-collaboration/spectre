@@ -616,7 +616,7 @@ void Test_GlobalCache<Metavariables>::exit() {
 
 #if defined(SPECTRE_USE_CHARM)
 // clang-format off
-PUP::able::PUP_ID UseCkCallbackAsCallback::my_PUP_ID = 0;
+PUP::able::PUP_ID UseCkCallbackAsCallback::my_PUP_ID = 0; // NOLINT
 // clang-tidy: possibly throwing constructor static storage
 // clang-tidy: false positive: redundant declaration
 PUP::able::PUP_ID Triangle::my_PUP_ID = 0;  // NOLINT
