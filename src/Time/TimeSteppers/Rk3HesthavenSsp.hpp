@@ -40,7 +40,14 @@ namespace TimeSteppers {
 /// \note The time stepper is only strong-stability-preserving for
 /// time steps not exceeding 1.0, i.e., slightly less than 0.8 times
 /// the stable step.
-class Rk3HesthavenSsp : public TimeStepper {
+class Rk3HesthavenSsp
+    : public TimeStepper
+#if defined(SPECTRE_USE_FINDUS)
+    ,
+      public virtual findus::serialize::SerializableDerived<Rk3HesthavenSsp,
+                                                            TimeStepper>
+#endif
+{
  public:
   using options = tmpl::list<>;
   static constexpr Options::String help = {

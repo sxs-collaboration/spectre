@@ -96,7 +96,8 @@ struct FormatTimeOutput
  * evolutions.
  */
 template <typename System>
-class ObserveTimeStep : public Event {
+class ObserveTimeStep
+    : public SPECTRE_CHARM_DERIVED(SINGLE_ARG(ObserveTimeStep<System>), Event) {
  private:
   using ReductionData = Events::detail::ObserveTimeStepReductionData;
 

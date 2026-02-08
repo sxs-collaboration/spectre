@@ -105,7 +105,10 @@ template <size_t Dim, typename OptionsGroup,
           typename LinearSolverRegistrars =
               tmpl::list<Registrars::MinusLaplacian<Dim, OptionsGroup, Solver>>>
 class MinusLaplacian
-    : public LinearSolver::Serial::LinearSolver<LinearSolverRegistrars> {
+    : public SPECTRE_CHARM_DERIVED(
+          SINGLE_ARG(MinusLaplacian<Dim, OptionsGroup, Solver,
+                                    LinearSolverRegistrars>),
+          LinearSolver::Serial::LinearSolver<LinearSolverRegistrars>) {
  private:
   using Base = LinearSolver::Serial::LinearSolver<LinearSolverRegistrars>;
   using StoredSolverType = tmpl::conditional_t<std::is_abstract_v<Solver>,

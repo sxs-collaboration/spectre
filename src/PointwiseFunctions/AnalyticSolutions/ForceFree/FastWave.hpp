@@ -55,7 +55,13 @@ namespace ForceFree::Solutions {
  *
  */
 class FastWave : public evolution::initial_data::InitialData,
-                 public MarkAsAnalyticSolution {
+                 public MarkAsAnalyticSolution
+#if defined(SPECTRE_USE_FINDUS)
+    ,
+                 public virtual findus::serialize::SerializableDerived<
+                     FastWave, evolution::initial_data::InitialData>
+#endif
+{
  public:
   using options = tmpl::list<>;
   static constexpr Options::String help{

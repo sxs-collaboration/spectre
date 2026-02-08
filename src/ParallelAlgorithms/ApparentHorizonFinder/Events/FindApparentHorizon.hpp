@@ -45,7 +45,9 @@ namespace ah::Events {
  *
  */
 template <typename HorizonMetavars>
-class FindApparentHorizon : public Event {
+class FindApparentHorizon
+    : public SPECTRE_CHARM_DERIVED(
+          SINGLE_ARG(FindApparentHorizon<HorizonMetavars>), Event) {
  public:
   /// \cond
   using PUP::able::register_constructor;

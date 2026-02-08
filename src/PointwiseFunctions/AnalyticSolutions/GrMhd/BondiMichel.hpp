@@ -166,7 +166,13 @@ namespace grmhd::Solutions {
  */
 class BondiMichel : public virtual evolution::initial_data::InitialData,
                     public AnalyticSolution,
-                    public MarkAsAnalyticSolution {
+                    public MarkAsAnalyticSolution
+#if defined(SPECTRE_USE_FINDUS)
+    ,
+                    public virtual findus::serialize::SerializableDerived<
+                        BondiMichel, evolution::initial_data::InitialData>
+#endif
+{
  protected:
   template <typename DataType>
   struct IntermediateVars;

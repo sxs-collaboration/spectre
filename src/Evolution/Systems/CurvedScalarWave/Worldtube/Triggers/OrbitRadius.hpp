@@ -27,7 +27,7 @@ namespace Triggers {
  * The trigger only approximates whether the particle might cross during the
  * next time step and may therefore fire twice.
  */
-class OrbitRadius : public Trigger {
+class OrbitRadius : public SPECTRE_CHARM_DERIVED(OrbitRadius, Trigger) {
  public:
   /// \cond
   OrbitRadius() = default;

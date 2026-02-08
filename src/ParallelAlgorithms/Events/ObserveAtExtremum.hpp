@@ -67,7 +67,11 @@ template <typename... ObservableTensorTags, typename... NonTensorComputeTags,
           typename ArraySectionIdTag>
 class ObserveAtExtremum<tmpl::list<ObservableTensorTags...>,
                         tmpl::list<NonTensorComputeTags...>, ArraySectionIdTag>
-    : public Event {
+    : public SPECTRE_CHARM_DERIVED(
+          SINGLE_ARG(ObserveAtExtremum<tmpl::list<ObservableTensorTags...>,
+                                       tmpl::list<NonTensorComputeTags...>,
+                                       ArraySectionIdTag>),
+          Event) {
  private:
   /// Reduction data will contain the time, and either the maximum
   /// or the minimum of a function
@@ -132,8 +136,10 @@ class ObserveAtExtremum<tmpl::list<ObservableTensorTags...>,
         "and other tensors to observe at that extremum."};
   };
 
+  /// \cond
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(ObserveAtExtremum);  // NOLINT
+  /// \endcond
 
   using options = tmpl::list<SubfileName, TensorsToObserve>;
 

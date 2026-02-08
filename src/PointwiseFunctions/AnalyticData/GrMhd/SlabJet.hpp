@@ -60,7 +60,13 @@ namespace grmhd::AnalyticData {
 class SlabJet : public evolution::initial_data::InitialData,
                 public MarkAsAnalyticData,
                 public AnalyticDataBase,
-                public hydro::TemperatureInitialization<SlabJet> {
+                public hydro::TemperatureInitialization<SlabJet>
+#if defined(SPECTRE_USE_FINDUS)
+    ,
+                public virtual findus::serialize::SerializableDerived<
+                    SlabJet, evolution::initial_data::InitialData>
+#endif
+{
  public:
   using equation_of_state_type = EquationsOfState::IdealFluid<true>;
 

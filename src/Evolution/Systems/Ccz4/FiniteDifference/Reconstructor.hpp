@@ -26,16 +26,20 @@ class Reconstructor : public SPECTRE_CHARM_PUPable(Reconstructor) {
   Reconstructor& operator=(Reconstructor&&) = default;
   ~Reconstructor() override = default;
 
+  SPECTRE_FINDUS_VIRTUAL()
+  // NOLINTNEXTLINE(google-runtime-references)
+  void pup(PUP::er& p) SPECTRE_CHARM_OVERRIDE();
+
+#if defined(SPECTRE_USE_CHARM)
   /// \cond
   WRAPPED_PUPable_abstract(Reconstructor);  // NOLINT
   /// \endcond
+#endif  // SPECTRE_USE_CHARM
 
   using creatable_classes = tmpl::list<DummyReconstructor>;
 
   virtual std::unique_ptr<Reconstructor> get_clone() const = 0;
 
   virtual size_t ghost_zone_size() const = 0;
-
-  void pup(PUP::er& p) override;
 };
 }  // namespace Ccz4::fd

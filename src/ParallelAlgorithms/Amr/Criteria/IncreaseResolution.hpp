@@ -21,7 +21,8 @@ namespace amr::Criteria {
  * h-refinement criterion.
  */
 template <size_t Dim>
-class IncreaseResolution : public Criterion {
+class IncreaseResolution
+    : public SPECTRE_CHARM_DERIVED(IncreaseResolution<Dim>, Criterion) {
  public:
   using options = tmpl::list<>;
 

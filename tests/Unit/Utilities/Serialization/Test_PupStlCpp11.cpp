@@ -30,7 +30,8 @@ struct Base : public SPECTRE_CHARM_PUPable(Base) {
 };
 #pragma GCC diagnostic pop
 
-struct DerivedInPupStlCpp11 : public Base {
+struct DerivedInPupStlCpp11
+    : public SPECTRE_CHARM_DERIVED(DerivedInPupStlCpp11, Base) {
   explicit DerivedInPupStlCpp11(std::vector<double> vec)
       : vec_(std::move(vec)) {}
   // clang-tidy: internal charm++ warnings

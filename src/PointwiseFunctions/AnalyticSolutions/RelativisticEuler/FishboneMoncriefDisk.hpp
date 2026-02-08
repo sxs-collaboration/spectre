@@ -168,7 +168,13 @@ class FishboneMoncriefDisk
     : public virtual evolution::initial_data::InitialData,
       public MarkAsAnalyticSolution,
       public AnalyticSolution<3>,
-      public hydro::TemperatureInitialization<FishboneMoncriefDisk> {
+      public hydro::TemperatureInitialization<FishboneMoncriefDisk>
+#if defined(SPECTRE_USE_FINDUS)
+    ,
+      public virtual findus::serialize::SerializableDerived<
+          FishboneMoncriefDisk, evolution::initial_data::InitialData>
+#endif
+{
  protected:
   template <typename DataType>
   struct IntermediateVariables;

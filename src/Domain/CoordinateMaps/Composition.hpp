@@ -96,7 +96,10 @@ struct Composition;
 
 template <typename Frames, size_t Dim, size_t... Is>
 struct Composition<Frames, Dim, std::index_sequence<Is...>>
-    : public CoordinateMapBase<tmpl::front<Frames>, tmpl::back<Frames>, Dim> {
+    : public SPECTRE_CHARM_DERIVED(
+          SINGLE_ARG(Composition<Frames, Dim, std::index_sequence<Is...>>),
+          SINGLE_ARG(CoordinateMapBase<tmpl::front<Frames>, tmpl::back<Frames>,
+                                       Dim>)) {
   using frames = Frames;
   using SourceFrame = tmpl::front<Frames>;
   using TargetFrame = tmpl::back<Frames>;

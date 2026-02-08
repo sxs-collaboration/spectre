@@ -17,7 +17,9 @@ namespace elliptic::Triggers {
 /// Trigger every N iterations of the solver identifid by the `Label`, after a
 /// given offset.
 template <typename Label>
-class EveryNIterations : public Trigger {
+class EveryNIterations
+    : public SPECTRE_CHARM_DERIVED(SINGLE_ARG(EveryNIterations<Label>),
+                                   Trigger) {
  public:
   /// \cond
   EveryNIterations() = default;

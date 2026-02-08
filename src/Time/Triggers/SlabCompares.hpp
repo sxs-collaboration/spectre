@@ -23,7 +23,7 @@ namespace Triggers {
 /// \ingroup EventsAndTriggersGroup
 /// \ingroup TimeGroup
 /// Trigger based on a comparison with the slab number.
-class SlabCompares : public Trigger {
+class SlabCompares : public SPECTRE_CHARM_DERIVED(SlabCompares, Trigger) {
  public:
   /// \cond
   SlabCompares() = default;

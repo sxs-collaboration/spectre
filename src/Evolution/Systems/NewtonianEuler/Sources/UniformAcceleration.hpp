@@ -52,7 +52,8 @@ namespace NewtonianEuler::Sources {
  * and \f$e\f$ is the energy density.
  */
 template <size_t Dim>
-class UniformAcceleration : public Source<Dim> {
+class UniformAcceleration
+    : public SPECTRE_CHARM_DERIVED(UniformAcceleration<Dim>, Source<Dim>) {
  public:
   /// The applied acceleration
   struct Acceleration {

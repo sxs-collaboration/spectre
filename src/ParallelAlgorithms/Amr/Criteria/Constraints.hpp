@@ -113,7 +113,9 @@ void max_over_components(
  * index that originates from a derivative.
  */
 template <size_t Dim, typename TensorTags>
-class Constraints : public Criterion {
+class Constraints
+    : public SPECTRE_CHARM_DERIVED(SINGLE_ARG(Constraints<Dim, TensorTags>),
+                                   Criterion) {
  public:
   struct ConstraintsToMonitor {
     using type = std::vector<std::string>;

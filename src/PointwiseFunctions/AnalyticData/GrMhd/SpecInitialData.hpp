@@ -50,7 +50,14 @@ namespace grmhd::AnalyticData {
 template <size_t ThermodynamicDim>
 class SpecInitialData : public evolution::initial_data::InitialData,
                         public evolution::NumericInitialData,
-                        public AnalyticDataBase {
+                        public AnalyticDataBase
+#if defined(SPECTRE_USE_FINDUS)
+    ,
+                        public virtual findus::serialize::SerializableDerived<
+                            SpecInitialData<ThermodynamicDim>,
+                            evolution::initial_data::InitialData>
+#endif
+{
  private:
   struct FromEos {};
 

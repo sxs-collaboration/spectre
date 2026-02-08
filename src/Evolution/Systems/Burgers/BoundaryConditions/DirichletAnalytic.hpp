@@ -52,7 +52,11 @@ namespace Burgers::BoundaryConditions {
  * \brief Sets Dirichlet boundary conditions using the analytic solution or
  * analytic data.
  */
-class DirichletAnalytic final : public BoundaryCondition {
+class DirichletAnalytic final
+    : public BoundaryCondition
+      SPECTRE_FINDUS_DERIVED(
+          SINGLE_ARG(DirichletAnalytic),
+          SINGLE_ARG(domain::BoundaryConditions::BoundaryCondition)) {
  private:
   using flux_tag =
       ::Tags::Flux<Burgers::Tags::U, tmpl::size_t<1>, Frame::Inertial>;

@@ -27,7 +27,7 @@ namespace Triggers {
 /// \ingroup EventsAndTriggersGroup
 /// \ingroup TimeGroup
 /// Trigger at specified numbers of slabs after the simulation start.
-class Slabs : public Trigger {
+class Slabs : public SPECTRE_CHARM_DERIVED(Slabs, Trigger) {
  public:
   /// \cond
   Slabs() = default;

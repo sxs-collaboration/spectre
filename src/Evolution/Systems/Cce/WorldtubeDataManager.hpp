@@ -114,8 +114,10 @@ class WorldtubeDataManager
  * function that handles buffer updating and boundary computation.
  */
 class MetricWorldtubeDataManager
-    : public WorldtubeDataManager<
-          Tags::characteristic_worldtube_boundary_tags<Tags::BoundaryValue>> {
+    : public SPECTRE_CHARM_DERIVED(
+          MetricWorldtubeDataManager,
+          WorldtubeDataManager<Tags::characteristic_worldtube_boundary_tags<
+              Tags::BoundaryValue>>) {
   using input_tags = cce_metric_input_tags<ComplexModalVector>;
 
  public:
@@ -207,8 +209,10 @@ class MetricWorldtubeDataManager
  * set of 9 scalars is a far leaner (factor of ~4) data storage format.
  */
 class BondiWorldtubeDataManager
-    : public WorldtubeDataManager<
-          Tags::characteristic_worldtube_boundary_tags<Tags::BoundaryValue>> {
+    : public SPECTRE_CHARM_DERIVED(
+          BondiWorldtubeDataManager,
+          WorldtubeDataManager<Tags::characteristic_worldtube_boundary_tags<
+              Tags::BoundaryValue>>) {
  public:
   // charm needs an empty constructor.
   BondiWorldtubeDataManager() = default;
@@ -289,7 +293,9 @@ class BondiWorldtubeDataManager
 };
 
 class KleinGordonWorldtubeDataManager
-    : public WorldtubeDataManager<Tags::klein_gordon_worldtube_boundary_tags> {
+    : public SPECTRE_CHARM_DERIVED(
+          KleinGordonWorldtubeDataManager,
+          WorldtubeDataManager<Tags::klein_gordon_worldtube_boundary_tags>) {
  public:
   // charm needs an empty constructor.
   KleinGordonWorldtubeDataManager() = default;

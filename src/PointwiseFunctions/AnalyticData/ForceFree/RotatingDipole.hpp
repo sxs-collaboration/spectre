@@ -81,7 +81,13 @@ namespace ForceFree::AnalyticData {
  *
  */
 class RotatingDipole : public evolution::initial_data::InitialData,
-                       public MarkAsAnalyticData {
+                       public MarkAsAnalyticData
+#if defined(SPECTRE_USE_FINDUS)
+    ,
+                       public virtual findus::serialize::SerializableDerived<
+                           RotatingDipole, evolution::initial_data::InitialData>
+#endif
+{
  public:
   struct VectorPotentialAmplitude {
     using type = double;

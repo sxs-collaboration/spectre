@@ -12,7 +12,8 @@ namespace NewtonianEuler {
 namespace BoundaryConditions {
 /// \brief The base class off of which all boundary conditions must inherit
 template <size_t Dim>
-class BoundaryCondition : public domain::BoundaryConditions::BoundaryCondition {
+class BoundaryCondition
+    : public virtual domain::BoundaryConditions::BoundaryCondition {
  public:
   BoundaryCondition() = default;
   BoundaryCondition(BoundaryCondition&&) = default;

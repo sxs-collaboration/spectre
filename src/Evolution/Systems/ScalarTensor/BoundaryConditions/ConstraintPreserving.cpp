@@ -18,7 +18,9 @@ ConstraintPreserving::get_clone() const {
 }
 
 void ConstraintPreserving::pup(PUP::er& p) {
+#if defined(SPECTRE_USE_CHARM)
   BoundaryCondition::pup(p);
+#endif  // SPECTRE_USE_CHARM
   p | constraint_preserving_;
   p | csw_constraint_preserving_;
 }

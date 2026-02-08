@@ -65,7 +65,9 @@ void max_over_components(
  * \tparam TensorTags List of tags of the tensors to be monitored
  */
 template <size_t Dim, typename TensorTags>
-class TruncationError : public Criterion {
+class TruncationError
+    : public SPECTRE_CHARM_DERIVED(SINGLE_ARG(TruncationError<Dim, TensorTags>),
+                                   Criterion) {
  public:
   struct VariablesToMonitor {
     using type = std::vector<std::string>;

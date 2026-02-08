@@ -77,7 +77,9 @@ void local_adm_integrals(
  * - Center of mass
  */
 template <typename ArraySectionIdTag = void>
-class ObserveAdmIntegrals : public Event {
+class ObserveAdmIntegrals
+    : public SPECTRE_CHARM_DERIVED(
+          SINGLE_ARG(ObserveAdmIntegrals<ArraySectionIdTag>), Event) {
  private:
   using ReductionData = Parallel::ReductionData<
       // Number of points

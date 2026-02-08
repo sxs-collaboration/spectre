@@ -41,8 +41,15 @@ namespace CurvedScalarWave::AnalyticData {
  * behavior and late-time tails in different background spacetimes.
  */
 
-class PureSphericalHarmonic : public evolution::initial_data::InitialData,
-                              public MarkAsAnalyticData {
+class PureSphericalHarmonic
+    : public evolution::initial_data::InitialData,
+      public MarkAsAnalyticData
+#if defined(SPECTRE_USE_FINDUS)
+    ,
+      public virtual findus::serialize::SerializableDerived<
+          PureSphericalHarmonic, evolution::initial_data::InitialData>
+#endif
+{
  public:
   struct Radius {
     using type = double;

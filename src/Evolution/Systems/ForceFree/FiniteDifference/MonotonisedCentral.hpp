@@ -54,7 +54,8 @@ namespace ForceFree::fd {
  * ::fd::reconstruction::monotonised_central() for details.
  */
 
-class MonotonisedCentral : public Reconstructor {
+class MonotonisedCentral
+    : public SPECTRE_CHARM_DERIVED(MonotonisedCentral, Reconstructor) {
  private:
   using TildeE = ForceFree::Tags::TildeE;
   using TildeB = ForceFree::Tags::TildeB;

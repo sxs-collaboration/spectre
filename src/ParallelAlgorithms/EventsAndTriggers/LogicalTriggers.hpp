@@ -16,7 +16,7 @@
 namespace Triggers {
 /// \ingroup EventsAndTriggersGroup
 /// Always triggers.
-class Always : public Trigger {
+class Always : public SPECTRE_CHARM_DERIVED(Always, Trigger) {
  public:
   /// \cond
   using PUP::able::register_constructor;
@@ -35,7 +35,7 @@ class Always : public Trigger {
 
 /// \ingroup EventsAndTriggersGroup
 /// Negates another trigger.
-class Not : public Trigger {
+class Not : public SPECTRE_CHARM_DERIVED(Not, Trigger) {
  public:
   /// \cond
   Not() = default;
@@ -64,7 +64,7 @@ class Not : public Trigger {
 
 /// \ingroup EventsAndTriggersGroup
 /// Short-circuiting logical AND of other triggers.
-class And : public Trigger {
+class And : public SPECTRE_CHARM_DERIVED(And, Trigger) {
  public:
   /// \cond
   And() = default;
@@ -99,7 +99,7 @@ class And : public Trigger {
 
 /// \ingroup EventsAndTriggersGroup
 /// Short-circuiting logical OR of other triggers.
-class Or : public Trigger {
+class Or : public SPECTRE_CHARM_DERIVED(Or, Trigger) {
  public:
   /// \cond
   Or() = default;

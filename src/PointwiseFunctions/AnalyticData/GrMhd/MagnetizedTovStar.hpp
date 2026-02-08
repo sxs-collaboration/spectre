@@ -114,9 +114,16 @@ struct MagnetizedTovVariables
  * Note that the magnetic field strength goes as \f$A_b\f$ so any desired value
  * can be achieved by a linear scaling.
  */
-class MagnetizedTovStar : public virtual evolution::initial_data::InitialData,
-                          public MarkAsAnalyticData,
-                          private RelativisticEuler::Solutions::TovStar {
+class MagnetizedTovStar
+    : public virtual evolution::initial_data::InitialData,
+      public MarkAsAnalyticData,
+      protected RelativisticEuler::Solutions::TovStar
+#if defined(SPECTRE_USE_FINDUS)
+    ,
+      public virtual findus::serialize::SerializableDerived<
+          MagnetizedTovStar, evolution::initial_data::InitialData>
+#endif
+{
  private:
   using tov_star = RelativisticEuler::Solutions::TovStar;
 
@@ -180,6 +187,9 @@ class MagnetizedTovStar : public virtual evolution::initial_data::InitialData,
                          const MagnetizedTovStar& rhs);
 
  protected:
+  FINDUS_OVERRIDE_SERIALIZATION_ID(MagnetizedTovStar,
+                                   evolution::initial_data::InitialData)
+
   std::vector<std::unique_ptr<
       grmhd::AnalyticData::InitialMagneticFields::InitialMagneticField>>
       magnetic_fields_{};

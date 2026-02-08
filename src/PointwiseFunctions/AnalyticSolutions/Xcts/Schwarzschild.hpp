@@ -451,7 +451,15 @@ struct SchwarzschildVariables
  * systems and for the solution variables in the respective coordinates.
  */
 class Schwarzschild : public elliptic::analytic_data::AnalyticSolution,
-                      public detail::SchwarzschildImpl {
+                      public detail::SchwarzschildImpl
+#if defined(SPECTRE_USE_FINDUS)
+    ,
+                      public virtual findus::serialize::SerializableDerived<
+                          Schwarzschild, elliptic::analytic_data::InitialGuess>,
+                      public virtual findus::serialize::SerializableDerived<
+                          Schwarzschild, elliptic::analytic_data::Background>
+#endif
+{
  public:
   Schwarzschild() = default;
   Schwarzschild(const Schwarzschild&) = default;

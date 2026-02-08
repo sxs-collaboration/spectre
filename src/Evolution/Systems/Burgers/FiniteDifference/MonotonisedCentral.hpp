@@ -50,7 +50,8 @@ namespace Burgers::fd {
  * \brief Monotonised central reconstruction. See
  * ::fd::reconstruction::monotonised_central() for details.
  */
-class MonotonisedCentral : public Reconstructor {
+class MonotonisedCentral
+    : public SPECTRE_CHARM_DERIVED(MonotonisedCentral, Reconstructor) {
  private:
   using face_vars_tags = tmpl::list<
       Burgers::Tags::U,

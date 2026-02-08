@@ -27,7 +27,8 @@ namespace FunctionsOfTime {
 /// of \f$\tau\f$. The resultant
 /// function is \f[ g(t) = A + (B+C(t-t_0)) e^{-(t-t_0)/\tau} \f]
 /// where \f$\tau\f$=`decay_time` and \f$t_0\f$=`match_time`.
-class SettleToConstant : public FunctionOfTime {
+class SettleToConstant
+    : public SPECTRE_CHARM_DERIVED(SettleToConstant, FunctionOfTime) {
  public:
   SettleToConstant() = default;
   SettleToConstant(const std::array<DataVector, 3>& initial_func_and_derivs,

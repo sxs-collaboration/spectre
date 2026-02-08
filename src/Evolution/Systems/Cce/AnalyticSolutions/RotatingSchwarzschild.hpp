@@ -34,7 +34,11 @@ namespace Cce::Solutions {
  * Schwarzschild metric in transformed coordinates given by \f$\phi\rightarrow
  * \phi + \omega u\f$, where \f$u\f$ is the retarded time.
  */
-struct RotatingSchwarzschild : public SphericalMetricData {
+struct RotatingSchwarzschild
+    : public virtual SPECTRE_CHARM_DERIVED(RotatingSchwarzschild,
+                                           SphericalMetricData),
+      public virtual SPECTRE_CHARM_DERIVED(RotatingSchwarzschild,
+                                           WorldtubeData) {
   struct ExtractionRadius {
     using type = double;
     static constexpr Options::String help{

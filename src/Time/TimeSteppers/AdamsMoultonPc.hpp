@@ -95,7 +95,15 @@ namespace TimeSteppers {
  * </table>
  */
 template <bool Monotonic>
-class AdamsMoultonPc : public LtsTimeStepper {
+class AdamsMoultonPc : public LtsTimeStepper
+#if defined(SPECTRE_USE_FINDUS)
+    ,
+                       public virtual findus::serialize::SerializableDerived<
+                           AdamsMoultonPc<Monotonic>, TimeStepper>,
+                       public virtual findus::serialize::SerializableDerived<
+                           AdamsMoultonPc<Monotonic>, LtsTimeStepper>
+#endif
+{
  public:
   static std::string name() {
     return Monotonic ? "AdamsMoultonPcMonotonic" : "AdamsMoultonPc";

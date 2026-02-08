@@ -101,7 +101,9 @@ struct CheckpointAndExitRequested {
  * WallclockHours can be changed to None to disable further restarts.
  * \endparblock
  */
-struct CheckpointAndExitAfterWallclock : public PhaseChange {
+struct CheckpointAndExitAfterWallclock
+    : public SPECTRE_CHARM_DERIVED(CheckpointAndExitAfterWallclock,
+                                   PhaseChange) {
   CheckpointAndExitAfterWallclock(const std::optional<double> wallclock_hours,
                                   const Options::Context& context = {});
 

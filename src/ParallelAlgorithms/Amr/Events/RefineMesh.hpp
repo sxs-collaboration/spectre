@@ -67,7 +67,7 @@ struct get_tags {
 ///
 /// \warning This does not communicate the new Mesh to its neighbors, nor does
 /// it update ::domain::Tags::NeighborMesh
-class RefineMesh : public Event {
+class RefineMesh : public SPECTRE_CHARM_DERIVED(RefineMesh, Event) {
  public:
   /// \cond
   using PUP::able::register_constructor;

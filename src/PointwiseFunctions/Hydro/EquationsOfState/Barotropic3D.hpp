@@ -42,7 +42,10 @@ namespace EquationsOfState {
  * zero temperature and in beta equalibrium.
  */
 template <typename ColdEquilEos>
-class Barotropic3D : public EquationOfState<ColdEquilEos::is_relativistic, 3> {
+class Barotropic3D
+    : public SPECTRE_CHARM_DERIVED(
+          SINGLE_ARG(Barotropic3D<ColdEquilEos>),
+          SINGLE_ARG(EquationOfState<ColdEquilEos::is_relativistic, 3>)) {
  public:
   static constexpr size_t thermodynamic_dim = 3;
   static constexpr bool is_relativistic = ColdEquilEos::is_relativistic;
@@ -118,7 +121,7 @@ class Barotropic3D : public EquationOfState<ColdEquilEos::is_relativistic, 3> {
 
   WRAPPED_PUPable_decl_base_template(  // NOLINT
       SINGLE_ARG(EquationOfState<ColdEquilEos::is_relativistic, 3>),
-      Barotropic3D);
+      SINGLE_ARG(Barotropic3D<ColdEquilEos>));
 
   /// The lower bound of the electron fraction that is valid for this EOS
   double electron_fraction_lower_bound() const override { return 0.0; }

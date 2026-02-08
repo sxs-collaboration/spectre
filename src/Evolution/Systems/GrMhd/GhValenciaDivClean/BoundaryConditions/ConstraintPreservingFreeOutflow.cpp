@@ -18,7 +18,9 @@ ConstraintPreservingFreeOutflow::get_clone() const {
 }
 
 void ConstraintPreservingFreeOutflow::pup(PUP::er& p) {
+#if defined(SPECTRE_USE_CHARM)
   BoundaryCondition::pup(p);
+#endif  // SPECTRE_USE_CHARM
   p | constraint_preserving_;
 }
 

@@ -187,7 +187,9 @@ void assign_du_components_from_l_factors(
 LinearizedBondiSachs::LinearizedBondiSachs(
     const std::array<std::complex<double>, 2>& mode_constants,
     const double extraction_radius, const double frequency)
-    : SphericalMetricData{extraction_radius}, frequency_{frequency} {
+    : WorldtubeData{extraction_radius},
+      SphericalMetricData{extraction_radius},
+      frequency_{frequency} {
   c_2a_ = mode_constants[0];
   c_3a_ = mode_constants[1];
   c_2b_ = 3.0 * c_2a_ / square(frequency_);

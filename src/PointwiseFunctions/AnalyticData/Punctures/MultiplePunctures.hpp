@@ -133,8 +133,11 @@ struct MultiplePuncturesVariables {
  *
  * \see ::Punctures
  */
-class MultiplePunctures : public elliptic::analytic_data::Background,
-                          public elliptic::analytic_data::InitialGuess {
+class MultiplePunctures
+    : public SPECTRE_CHARM_DERIVED(MultiplePunctures,
+                                   elliptic::analytic_data::Background),
+      public SPECTRE_CHARM_DERIVED(MultiplePunctures,
+                                   elliptic::analytic_data::InitialGuess) {
  public:
   struct Punctures {
     static constexpr Options::String help =

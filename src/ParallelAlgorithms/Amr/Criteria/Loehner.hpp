@@ -122,7 +122,9 @@ void max_over_components(
  * \see amr::Criteria::loehner_smoothness_indicator
  */
 template <size_t Dim, typename TensorTags>
-class Loehner : public Criterion {
+class Loehner
+    : public SPECTRE_CHARM_DERIVED(SINGLE_ARG(Loehner<Dim, TensorTags>),
+                                   Criterion) {
  public:
   struct VariablesToMonitor {
     using type = std::vector<std::string>;

@@ -23,7 +23,7 @@ namespace gh::gauges {
 /*!
  * \brief Imposes the harmonic gauge condition, \f$H_a=0\f$.
  */
-class Harmonic final : public GaugeCondition {
+class Harmonic final : public SPECTRE_CHARM_DERIVED(Harmonic, GaugeCondition) {
  public:
   using options = tmpl::list<>;
 

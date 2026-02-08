@@ -48,7 +48,9 @@ namespace Burgers::BoundaryCorrections {
  * \note In the strong form the `dg_boundary_terms` function returns
  * \f$G - F_\text{int}\f$
  */
-class Rusanov final : public evolution::BoundaryCorrection {
+class Rusanov final
+    : public SPECTRE_CHARM_DERIVED(Rusanov,
+                                   SINGLE_ARG(evolution::BoundaryCorrection)) {
  private:
   struct AbsCharSpeed : db::SimpleTag {
     using type = Scalar<DataVector>;

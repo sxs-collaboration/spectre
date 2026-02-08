@@ -70,7 +70,10 @@ class Callback : public SPECTRE_CHARM_PUPable(Callback) {
 /// Wraps a call to a simple action and its arguments.
 /// Can be invoked only once.
 template <typename SimpleAction, typename Proxy, typename... Args>
-class SimpleActionCallback : public Callback {
+class SimpleActionCallback
+    : public SPECTRE_CHARM_DERIVED(
+          SINGLE_ARG(SimpleActionCallback<SimpleAction, Proxy, Args...>),
+          Callback) {
  public:
   WRAPPED_PUPable_decl_template(SimpleActionCallback);  // NOLINT
   SimpleActionCallback() = default;
@@ -171,7 +174,10 @@ class SimpleActionCallback<SimpleAction, Proxy> : public Callback {
 /// Wraps a call to a threaded action and its arguments.
 /// Can be invoked only once.
 template <typename ThreadedAction, typename Proxy, typename... Args>
-class ThreadedActionCallback : public Callback {
+class ThreadedActionCallback
+    : public SPECTRE_CHARM_DERIVED(
+          SINGLE_ARG(ThreadedActionCallback<ThreadedAction, Proxy, Args...>),
+          Callback) {
  public:
   WRAPPED_PUPable_decl_template(ThreadedActionCallback);  // NOLINT
   ThreadedActionCallback() = default;
@@ -274,7 +280,9 @@ class ThreadedActionCallback<ThreadedAction, Proxy> : public Callback {
 
 /// Wraps a call to perform_algorithm.
 template <typename Proxy>
-class PerformAlgorithmCallback : public Callback {
+class PerformAlgorithmCallback
+    : public SPECTRE_CHARM_DERIVED(SINGLE_ARG(PerformAlgorithmCallback<Proxy>),
+                                   Callback) {
  public:
   WRAPPED_PUPable_decl_template(PerformAlgorithmCallback);  // NOLINT
   PerformAlgorithmCallback() = default;

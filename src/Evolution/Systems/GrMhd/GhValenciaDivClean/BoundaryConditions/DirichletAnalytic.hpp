@@ -59,7 +59,11 @@ namespace grmhd::GhValenciaDivClean::BoundaryConditions {
  */
 // template on System instead
 template <typename System>
-class DirichletAnalytic final : public BoundaryCondition {
+class DirichletAnalytic final
+    : public BoundaryCondition
+      SPECTRE_FINDUS_DERIVED(
+          SINGLE_ARG(DirichletAnalytic<System>),
+          SINGLE_ARG(domain::BoundaryConditions::BoundaryCondition)) {
  public:
   /// \brief What analytic solution/data to prescribe.
   struct AnalyticPrescription {

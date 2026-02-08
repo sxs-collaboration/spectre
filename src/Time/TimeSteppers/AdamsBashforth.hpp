@@ -197,7 +197,16 @@ namespace TimeSteppers {
  * is the \f$j\f$th coefficient for an Adams-Bashforth step over the
  * union times from step \f$n\f$ to step \f$n+1\f$.
  */
-class AdamsBashforth : public LtsTimeStepper {
+class AdamsBashforth
+    : public LtsTimeStepper
+#if defined(SPECTRE_USE_FINDUS)
+    ,
+      public virtual findus::serialize::SerializableDerived<AdamsBashforth,
+                                                            TimeStepper>,
+      public virtual findus::serialize::SerializableDerived<AdamsBashforth,
+                                                            LtsTimeStepper>
+#endif
+{
  public:
   static constexpr const size_t minimum_order = 1;
   static constexpr const size_t maximum_order = 8;

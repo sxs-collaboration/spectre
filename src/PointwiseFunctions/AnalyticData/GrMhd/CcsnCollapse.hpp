@@ -137,7 +137,13 @@ class ProgenitorProfile {
 class CcsnCollapse : public virtual evolution::initial_data::InitialData,
                      public MarkAsAnalyticData,
                      public AnalyticDataBase,
-                     public hydro::TemperatureInitialization<CcsnCollapse> {
+                     public hydro::TemperatureInitialization<CcsnCollapse>
+#if defined(SPECTRE_USE_FINDUS)
+    ,
+                     public virtual findus::serialize::SerializableDerived<
+                         CcsnCollapse, evolution::initial_data::InitialData>
+#endif
+{
   template <typename DataType>
   struct IntermediateVariables {
     IntermediateVariables(

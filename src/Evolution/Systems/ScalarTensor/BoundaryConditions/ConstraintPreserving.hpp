@@ -40,7 +40,11 @@ namespace ScalarTensor::BoundaryConditions {
  * tensor on the metric.
  *
  */
-class ConstraintPreserving final : public BoundaryCondition {
+class ConstraintPreserving final
+    : public BoundaryCondition
+      SPECTRE_FINDUS_DERIVED(
+          SINGLE_ARG(ConstraintPreserving),
+          SINGLE_ARG(domain::BoundaryConditions::BoundaryCondition)) {
  public:
   using options = tmpl::push_back<
       typename gh::BoundaryConditions::ConstraintPreservingBjorhus<3>::options>;

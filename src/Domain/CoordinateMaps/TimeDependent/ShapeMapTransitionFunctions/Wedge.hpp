@@ -407,7 +407,8 @@ namespace domain::CoordinateMaps::ShapeMapTransitionFunctions {
  * which can then be substituted into Eqn. $\ref{eq:x_1_grad}$ to get the
  * gradient of $|\vec x_1 - \vec P|$.
  */
-class Wedge final : public ShapeMapTransitionFunction {
+class Wedge final
+    : public SPECTRE_CHARM_DERIVED(Wedge, ShapeMapTransitionFunction) {
   struct Surface {
     std::array<double, 3> center{};
     double radius{};

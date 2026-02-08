@@ -60,7 +60,10 @@ namespace Xcts::BoundaryConditions {
  * \tparam EnabledEquations The subset of XCTS equations that are being solved
  */
 template <Xcts::Equations EnabledEquations>
-class Robin : public elliptic::BoundaryConditions::BoundaryCondition<3> {
+class Robin
+    : public elliptic::BoundaryConditions::BoundaryCondition<3>
+      SPECTRE_FINDUS_DERIVED(Robin<EnabledEquations>,
+                             domain::BoundaryConditions::BoundaryCondition) {
  private:
   using Base = elliptic::BoundaryConditions::BoundaryCondition<3>;
 

@@ -111,7 +111,8 @@ void center_of_mass_integral_on_element(
  * event.
  */
 template <typename ControlSystems>
-class BNSEvent : public ::Event {
+class BNSEvent : public ::Event SPECTRE_FINDUS_DERIVED(BNSEvent<ControlSystems>,
+                                                       ::Event) {
  public:
   /// \cond
   WRAPPED_PUPable_decl_template(BNSEvent);  // NOLINT

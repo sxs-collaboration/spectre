@@ -99,7 +99,9 @@ namespace EquationsOfState {
  *
  */
 template <typename LowDensityEoS>
-class Enthalpy : public EquationOfState<true, 1> {
+class Enthalpy
+    : public SPECTRE_CHARM_DERIVED(SINGLE_ARG(Enthalpy<LowDensityEoS>),
+                                   SINGLE_ARG(EquationOfState<true, 1>)) {
  private:
   struct Coefficients {
     std::vector<double> polynomial_coefficients;
@@ -238,7 +240,8 @@ class Enthalpy : public EquationOfState<true, 1> {
   EQUATION_OF_STATE_FORWARD_DECLARE_MEMBERS(Enthalpy, 1)
 
   WRAPPED_PUPable_decl_base_template(  // NOLINT
-      SINGLE_ARG(EquationOfState<true, 1>), Enthalpy);
+      SINGLE_ARG(EquationOfState<true, 1>),
+      SINGLE_ARG(Enthalpy<LowDensityEoS>));
 
   /// The lower bound of the rest mass density that is valid for this EOS
   double rest_mass_density_lower_bound() const override { return 0.0; }

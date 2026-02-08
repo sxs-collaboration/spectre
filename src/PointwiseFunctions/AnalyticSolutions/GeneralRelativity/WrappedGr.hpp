@@ -36,8 +36,15 @@ namespace Solutions {
  * and `gh::Tags::Phi`
  */
 template <typename SolutionType>
-class WrappedGr : public virtual evolution::initial_data::InitialData,
-                  public SolutionType {
+class WrappedGr
+    : public virtual evolution::initial_data::InitialData,
+      public SolutionType
+#if defined(SPECTRE_USE_FINDUS)
+    ,
+      public virtual findus::serialize::SerializableDerived<
+          WrappedGr<SolutionType>, evolution::initial_data::InitialData>
+#endif
+{
  public:
   using SolutionType::SolutionType;
 
@@ -132,6 +139,10 @@ class WrappedGr : public virtual evolution::initial_data::InitialData,
 
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& p) override;
+
+ protected:
+  FINDUS_OVERRIDE_SERIALIZATION_ID(WrappedGr<SolutionType>,
+                                   evolution::initial_data::InitialData)
 
  private:
   // Preprocessor logic to avoid declaring variables() functions for

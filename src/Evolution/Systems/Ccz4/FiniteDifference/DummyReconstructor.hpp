@@ -13,7 +13,8 @@ namespace Ccz4::fd {
  * This class is needed to use the SetInterpolators action in
  * dg-subcell infrastructure.
  */
-class DummyReconstructor : public Reconstructor {
+class DummyReconstructor
+    : public SPECTRE_CHARM_DERIVED(DummyReconstructor, Reconstructor) {
  public:
   using options = tmpl::list<>;
 

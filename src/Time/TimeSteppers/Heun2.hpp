@@ -39,7 +39,15 @@ namespace TimeSteppers {
  *
  * The CFL factor/stable step size is 1.0.
  */
-class Heun2 : public ImexRungeKutta {
+class Heun2
+    : public ImexRungeKutta
+#if defined(SPECTRE_USE_FINDUS)
+    ,
+      public virtual findus::serialize::SerializableDerived<Heun2, TimeStepper>,
+      public virtual findus::serialize::SerializableDerived<Heun2,
+                                                            ImexTimeStepper>
+#endif
+{
  public:
   using options = tmpl::list<>;
   static constexpr Options::String help = {

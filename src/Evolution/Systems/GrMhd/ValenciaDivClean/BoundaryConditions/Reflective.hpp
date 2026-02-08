@@ -63,7 +63,11 @@ namespace grmhd::ValenciaDivClean::BoundaryConditions {
  *  - Divergence cleaning scalar field \f$\Phi\f$ is set to zero in ghost zone.
  *
  */
-class Reflective final : public BoundaryCondition {
+class Reflective final
+    : public BoundaryCondition
+      SPECTRE_FINDUS_DERIVED(
+          SINGLE_ARG(Reflective),
+          SINGLE_ARG(domain::BoundaryConditions::BoundaryCondition)) {
  private:
   bool reflect_both_{false};
 
@@ -273,5 +277,5 @@ class Reflective final : public BoundaryCondition {
       const tnsr::I<DataVector, 3, Frame::Inertial>& interior_shift,
 
       size_t ghost_zone_size, bool need_tags_for_fluxes) const;
-  };
+};
 }  // namespace grmhd::ValenciaDivClean::BoundaryConditions

@@ -77,7 +77,9 @@ void max_over_components(gsl::not_null<std::array<Flag, Dim>*> result,
  * \see persson_smoothness_indicator
  */
 template <size_t Dim, typename TensorTags>
-class Persson : public Criterion {
+class Persson
+    : public SPECTRE_CHARM_DERIVED(SINGLE_ARG(Persson<Dim, TensorTags>),
+                                   Criterion) {
  public:
   struct VariablesToMonitor {
     using type = std::vector<std::string>;

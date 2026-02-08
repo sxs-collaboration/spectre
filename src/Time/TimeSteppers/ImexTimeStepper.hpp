@@ -63,7 +63,13 @@
  * IMEX_TIME_STEPPER_DEFINE_OVERLOADS(derived_class), which must be
  * placed in the cpp file.
  */
-class ImexTimeStepper : public virtual TimeStepper {
+class ImexTimeStepper
+    : public virtual TimeStepper
+#if defined(SPECTRE_USE_FINDUS)
+    ,
+      public virtual findus::serialize::SerializableBase<ImexTimeStepper>
+#endif
+{
  public:
   static constexpr bool imex = true;
   using provided_time_stepper_interfaces =

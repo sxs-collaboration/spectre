@@ -59,7 +59,13 @@ class SmoothFlow : public evolution::initial_data::InitialData,
                    virtual public MarkAsAnalyticSolution,
                    public AnalyticSolution<Dim>,
                    public hydro::TemperatureInitialization<SmoothFlow<Dim>>,
-                   private hydro::Solutions::SmoothFlow<Dim, true> {
+                   private hydro::Solutions::SmoothFlow<Dim, true>
+#if defined(SPECTRE_USE_FINDUS)
+    ,
+                   public virtual findus::serialize::SerializableDerived<
+                       SmoothFlow<Dim>, evolution::initial_data::InitialData>
+#endif
+{
   using smooth_flow = hydro::Solutions::SmoothFlow<Dim, true>;
 
  public:

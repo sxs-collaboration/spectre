@@ -36,7 +36,9 @@ namespace ConstraintDamping {
  * the dimension of the spatial volume.
  */
 template <size_t VolumeDim, typename Fr>
-class Constant : public DampingFunction<VolumeDim, Fr> {
+class Constant
+    : public SPECTRE_CHARM_DERIVED(SINGLE_ARG(Constant<VolumeDim, Fr>),
+                                   SINGLE_ARG(DampingFunction<VolumeDim, Fr>)) {
  public:
   struct Value {
     using type = double;

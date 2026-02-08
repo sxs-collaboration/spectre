@@ -50,7 +50,10 @@ namespace Elasticity::BoundaryConditions {
  * See also `Elasticity::Solutions::HalfSpaceMirror` for
  * an analytic solution that involves this boundary condition.
  */
-class LaserBeam : public elliptic::BoundaryConditions::BoundaryCondition<3> {
+class LaserBeam
+    : public elliptic::BoundaryConditions::BoundaryCondition<3>
+      SPECTRE_FINDUS_DERIVED(LaserBeam,
+                             domain::BoundaryConditions::BoundaryCondition) {
  private:
   using Base = elliptic::BoundaryConditions::BoundaryCondition<3>;
 

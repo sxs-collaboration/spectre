@@ -126,8 +126,15 @@ namespace NewtonianEuler::Solutions {
  * speed of the contact discontinuity (\f$u_*\f$).
  */
 template <size_t Dim>
-class RiemannProblem : public evolution::initial_data::InitialData,
-                       public MarkAsAnalyticSolution {
+class RiemannProblem
+    : public evolution::initial_data::InitialData,
+      public MarkAsAnalyticSolution
+#if defined(SPECTRE_USE_FINDUS)
+    ,
+      public virtual findus::serialize::SerializableDerived<
+          RiemannProblem<Dim>, evolution::initial_data::InitialData>
+#endif
+{
   enum class Side { Left, Right };
   enum PropagationAxis { X = 0, Y = 1, Z = 2 };
 

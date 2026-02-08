@@ -77,7 +77,9 @@ DirichletAnalytic::get_clone() const {
 }
 
 void DirichletAnalytic::pup(PUP::er& p) {
+#if defined(SPECTRE_USE_CHARM)
   BoundaryCondition::pup(p);
+#endif  // SPECTRE_USE_CHARM
   p | analytic_prescription_;
 }
 #if defined(SPECTRE_USE_CHARM)

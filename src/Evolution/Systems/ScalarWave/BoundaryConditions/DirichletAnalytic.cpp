@@ -16,7 +16,8 @@ namespace ScalarWave::BoundaryConditions {
 template <size_t Dim>
 DirichletAnalytic<Dim>::DirichletAnalytic(const DirichletAnalytic& rhs)
     : PUP::able(rhs),
-      BoundaryCondition<Dim>{dynamic_cast<const BoundaryCondition<Dim>&>(rhs)},
+      BoundaryConditions::BoundaryCondition<Dim>{dynamic_cast<
+          const BoundaryConditions::BoundaryCondition<Dim>&>(rhs)},
       analytic_prescription_(rhs.analytic_prescription_->get_clone()) {}
 
 template <size_t Dim>
@@ -42,7 +43,9 @@ DirichletAnalytic<Dim>::get_clone() const {
 
 template <size_t Dim>
 void DirichletAnalytic<Dim>::pup(PUP::er& p) {
-  BoundaryCondition<Dim>::pup(p);
+#if defined(SPECTRE_USE_CHARM)
+  BoundaryConditions::BoundaryCondition<Dim>::pup(p);
+#endif  // SPECTRE_USE_CHARM
   p | analytic_prescription_;
 }
 

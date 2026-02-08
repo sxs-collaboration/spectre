@@ -40,7 +40,13 @@ namespace grmhd::AnalyticData {
 class PolarMagnetizedFmDisk
     : public virtual evolution::initial_data::InitialData,
       public MarkAsAnalyticData,
-      public AnalyticDataBase {
+      public AnalyticDataBase
+#if defined(SPECTRE_USE_FINDUS)
+    ,
+      public virtual findus::serialize::SerializableDerived<
+          PolarMagnetizedFmDisk, evolution::initial_data::InitialData>
+#endif
+{
  public:
   struct DiskParameters {
     using type = MagnetizedFmDisk;

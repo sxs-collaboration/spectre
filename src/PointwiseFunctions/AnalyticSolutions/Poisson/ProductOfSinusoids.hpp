@@ -66,7 +66,18 @@ struct ProductOfSinusoidsVariables {
  * use this solution for the complex Poisson equation.
  */
 template <size_t Dim, typename DataType = DataVector>
-class ProductOfSinusoids : public elliptic::analytic_data::AnalyticSolution {
+class ProductOfSinusoids
+    : public elliptic::analytic_data::AnalyticSolution
+#if defined(SPECTRE_USE_FINDUS)
+    ,
+      public virtual findus::serialize::SerializableDerived<
+          ProductOfSinusoids<Dim, DataType>,
+          elliptic::analytic_data::InitialGuess>,
+      public virtual findus::serialize::SerializableDerived<
+          ProductOfSinusoids<Dim, DataType>,
+          elliptic::analytic_data::Background>
+#endif
+{
  public:
   struct WaveNumbers {
     using type = std::array<double, Dim>;

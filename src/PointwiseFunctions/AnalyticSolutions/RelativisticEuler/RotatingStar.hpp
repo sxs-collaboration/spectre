@@ -316,7 +316,13 @@ class CstSolution {
 class RotatingStar : public virtual evolution::initial_data::InitialData,
                      public MarkAsAnalyticSolution,
                      public AnalyticSolution<3>,
-                     public hydro::TemperatureInitialization<RotatingStar> {
+                     public hydro::TemperatureInitialization<RotatingStar>
+#if defined(SPECTRE_USE_FINDUS)
+    ,
+                     public virtual findus::serialize::SerializableDerived<
+                         RotatingStar, evolution::initial_data::InitialData>
+#endif
+{
   template <typename DataType>
   struct IntermediateVariables {
     IntermediateVariables(

@@ -35,8 +35,15 @@ namespace RadiationTransport::MonteCarlo::Solutions {
  * in Minkowski spacetime.
  *
  */
-class HomogeneousSphere : public evolution::initial_data::InitialData,
-                          public MarkAsAnalyticSolution {
+class HomogeneousSphere
+    : public evolution::initial_data::InitialData,
+      public MarkAsAnalyticSolution
+#if defined(SPECTRE_USE_FINDUS)
+    ,
+      public virtual findus::serialize::SerializableDerived<
+          HomogeneousSphere, evolution::initial_data::InitialData>
+#endif
+{
  public:
   constexpr static bool IsRelativistic = true;
   using equation_of_state_type =

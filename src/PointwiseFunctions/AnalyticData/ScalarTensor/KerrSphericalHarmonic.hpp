@@ -51,7 +51,13 @@ namespace ScalarTensor::AnalyticData {
 class KerrSphericalHarmonic
     : public virtual evolution::initial_data::InitialData,
       public MarkAsAnalyticData,
-      public AnalyticDataBase {
+      public AnalyticDataBase
+#if defined(SPECTRE_USE_FINDUS)
+    ,
+      public virtual findus::serialize::SerializableDerived<
+          KerrSphericalHarmonic, evolution::initial_data::InitialData>
+#endif
+{
  public:
   /// The mass of the black hole.
   struct Mass {

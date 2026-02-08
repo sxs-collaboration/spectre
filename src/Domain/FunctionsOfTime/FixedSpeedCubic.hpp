@@ -33,7 +33,8 @@ namespace FunctionsOfTime {
  * \f$t_0\f$, and \f$v\f$ is the velocity that \f$f^\prime(t)\f$ approaches on a
  * timescale of \f$\tau\f$.
  */
-class FixedSpeedCubic : public FunctionOfTime {
+class FixedSpeedCubic
+    : public SPECTRE_CHARM_DERIVED(FixedSpeedCubic, FunctionOfTime) {
  public:
   FixedSpeedCubic() = default;
   FixedSpeedCubic(double initial_function_value, double initial_time,

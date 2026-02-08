@@ -32,7 +32,9 @@ class Gaussian;
  *  the same type as the input type.
  */
 template <typename Fr>
-class Gaussian<1, Fr> : public MathFunction<1, Fr> {
+class Gaussian<1, Fr>
+    : public SPECTRE_CHARM_DERIVED(SINGLE_ARG(Gaussian<1, Fr>),
+                                   SINGLE_ARG(MathFunction<1, Fr>)) {
  public:
   struct Amplitude {
     using type = double;
@@ -114,7 +116,9 @@ class Gaussian<1, Fr> : public MathFunction<1, Fr> {
  * VolumeDim == 1 is handled specially by Gaussian<1, T, Frame::Inertial>.)
  */
 template <size_t VolumeDim, typename Fr>
-class Gaussian : public MathFunction<VolumeDim, Fr> {
+class Gaussian
+    : public SPECTRE_CHARM_DERIVED(SINGLE_ARG(Gaussian<VolumeDim, Fr>),
+                                   SINGLE_ARG(MathFunction<VolumeDim, Fr>)) {
  public:
   struct Amplitude {
     using type = double;

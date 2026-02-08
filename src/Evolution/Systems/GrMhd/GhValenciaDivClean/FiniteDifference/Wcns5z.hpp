@@ -64,7 +64,8 @@ namespace grmhd::GhValenciaDivClean::fd {
  */
 // template on System instead
 template <typename System>
-class Wcns5zPrim : public Reconstructor<System> {
+class Wcns5zPrim : public SPECTRE_CHARM_DERIVED(SINGLE_ARG(Wcns5zPrim<System>),
+                                                Reconstructor<System>) {
  private:
   using prims_to_reconstruct_tags =
       tmpl::list<hydro::Tags::RestMassDensity<DataVector>,

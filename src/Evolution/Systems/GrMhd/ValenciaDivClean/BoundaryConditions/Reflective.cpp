@@ -40,7 +40,9 @@ Reflective::get_clone() const {
 }
 
 void Reflective::pup(PUP::er& p) {
+#if defined(SPECTRE_USE_CHARM)
   BoundaryCondition::pup(p);
+#endif  // SPECTRE_USE_CHARM
   p | reflect_both_;
 }
 

@@ -68,7 +68,11 @@ template <size_t Dim, typename Metavariables,
 class DgElementArrayMember<Dim, Metavariables,
                            tmpl::list<PhaseDepActionListsPack...>,
                            SimpleTagsFromOptions>
-    : public DgElementArrayMemberBase<Dim> {
+    : public SPECTRE_CHARM_DERIVED(
+          SINGLE_ARG(DgElementArrayMember<
+                     Dim, Metavariables, tmpl::list<PhaseDepActionListsPack...>,
+                     SimpleTagsFromOptions>),
+          DgElementArrayMemberBase<Dim>) {
  public:
   using ParallelComponent =
       DgElementCollection<Dim, Metavariables,

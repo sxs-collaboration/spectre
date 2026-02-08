@@ -20,8 +20,10 @@ template <typename... NeutrinoSpecies>
 DirichletAnalytic<tmpl::list<NeutrinoSpecies...>>::DirichletAnalytic(
     const DirichletAnalytic& rhs)
     : PUP::able(rhs),
-      BoundaryCondition<tmpl::list<NeutrinoSpecies...>>{dynamic_cast<
-          const BoundaryCondition<tmpl::list<NeutrinoSpecies...>>&>(rhs)},
+      BoundaryConditions::BoundaryCondition<
+          tmpl::list<NeutrinoSpecies...>>{dynamic_cast<
+          const BoundaryConditions::BoundaryCondition<
+              tmpl::list<NeutrinoSpecies...>>&>(rhs)},
       analytic_prescription_(rhs.analytic_prescription_->get_clone()) {}
 
 template <typename... NeutrinoSpecies>
@@ -42,7 +44,9 @@ DirichletAnalytic<tmpl::list<NeutrinoSpecies...>>::DirichletAnalytic(
 
 template <typename... NeutrinoSpecies>
 void DirichletAnalytic<tmpl::list<NeutrinoSpecies...>>::pup(PUP::er& p) {
-  BoundaryCondition<tmpl::list<NeutrinoSpecies...>>::pup(p);
+#if defined(SPECTRE_USE_CHARM)
+  BoundaryConditions::BoundaryCondition<tmpl::list<NeutrinoSpecies...>>::pup(p);
+#endif  // SPECTRE_USE_CHARM
   p | analytic_prescription_;
 }
 

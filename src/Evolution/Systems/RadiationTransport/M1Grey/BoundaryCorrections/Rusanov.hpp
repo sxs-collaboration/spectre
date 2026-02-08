@@ -96,7 +96,9 @@ class Rusanov;
  */
 template <typename... NeutrinoSpecies>
 class Rusanov<tmpl::list<NeutrinoSpecies...>> final
-    : public evolution::BoundaryCorrection {
+    : public SPECTRE_CHARM_DERIVED(
+          SINGLE_ARG(Rusanov<tmpl::list<NeutrinoSpecies...>>),
+          SINGLE_ARG(evolution::BoundaryCorrection)) {
  public:
   using options = tmpl::list<>;
   static constexpr Options::String help = {

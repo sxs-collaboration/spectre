@@ -58,7 +58,13 @@ namespace Solutions {
  * direction, going over cycles in the domain every 2.0 time unit.
  */
 class Krivodonova : public evolution::initial_data::InitialData,
-                    public MarkAsAnalyticSolution {
+                    public MarkAsAnalyticSolution
+#if defined(SPECTRE_USE_FINDUS)
+    ,
+                    public virtual findus::serialize::SerializableDerived<
+                        Krivodonova, evolution::initial_data::InitialData>
+#endif
+{
  public:
   using options = tmpl::list<>;
   static constexpr Options::String help{

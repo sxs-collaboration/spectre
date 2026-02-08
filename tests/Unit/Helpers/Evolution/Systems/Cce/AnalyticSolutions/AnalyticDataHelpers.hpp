@@ -44,7 +44,13 @@ struct SphericalSolutionWrapper : public SphericalSolution {
                  ::Tags::dt<gr::Tags::SpacetimeMetric<
                      DataVector, 3, ::Frame::Spherical<::Frame::Inertial>>>,
                  Tags::News>;
-  using SphericalSolution::SphericalSolution;
+  // Inherited constructors do not propagate virtual base initialization, so
+  // we must explicitly forward extraction_radius to WorldtubeData.
+  template <typename... Args>
+  explicit SphericalSolutionWrapper(double extraction_radius, Args&&... args)
+      : WorldtubeData{extraction_radius},
+        SphericalSolution{extraction_radius, std::forward<Args>(args)...} {}
+  SphericalSolutionWrapper() = default;
 
   template <typename... Args>
   void test_spherical_metric(const std::string python_file, const size_t l_max,

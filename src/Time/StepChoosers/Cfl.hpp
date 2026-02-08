@@ -34,8 +34,12 @@ struct MinimumGridSpacing;
 namespace StepChoosers {
 /// Sets a goal based on the CFL stability criterion.
 template <typename Frame, typename System>
-class Cfl : public StepChooser<StepChooserUse::Slab>,
-            public StepChooser<StepChooserUse::LtsStep> {
+class Cfl : public SPECTRE_CHARM_DERIVED(
+                SINGLE_ARG(Cfl<Frame, System>),
+                SINGLE_ARG(StepChooser<StepChooserUse::Slab>)),
+            public SPECTRE_CHARM_DERIVED(
+                SINGLE_ARG(Cfl<Frame, System>),
+                SINGLE_ARG(StepChooser<StepChooserUse::LtsStep>)) {
  public:
   /// \cond
   Cfl() = default;

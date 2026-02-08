@@ -23,7 +23,10 @@ namespace ScalarSelfForce::BoundaryConditions {
  * regularity at the horizon in horizon-penetrating coordinates or at
  * angular boundaries.
  */
-class None : public elliptic::BoundaryConditions::BoundaryCondition<2> {
+class None
+    : public elliptic::BoundaryConditions::BoundaryCondition<2>
+      SPECTRE_FINDUS_DERIVED(None,
+                             domain::BoundaryConditions::BoundaryCondition) {
  private:
   using Base = elliptic::BoundaryConditions::BoundaryCondition<2>;
 

@@ -206,7 +206,8 @@ void damped_harmonic(
  *
  * \see `damped_harmonic()`
  */
-class DampedHarmonic final : public GaugeCondition {
+class DampedHarmonic final
+    : public SPECTRE_CHARM_DERIVED(DampedHarmonic, GaugeCondition) {
  public:
   /// The width of the Gaussian for the spatial decay of the damped harmonic
   /// gauge.

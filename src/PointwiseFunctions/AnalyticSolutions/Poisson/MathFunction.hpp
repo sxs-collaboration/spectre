@@ -51,7 +51,16 @@ struct MathFunctionVariables {
 }  // namespace detail
 
 template <size_t Dim>
-class MathFunction : public elliptic::analytic_data::AnalyticSolution {
+class MathFunction
+    : public elliptic::analytic_data::AnalyticSolution
+#if defined(SPECTRE_USE_FINDUS)
+    ,
+      public virtual findus::serialize::SerializableDerived<
+          MathFunction<Dim>, elliptic::analytic_data::InitialGuess>,
+      public virtual findus::serialize::SerializableDerived<
+          MathFunction<Dim>, elliptic::analytic_data::Background>
+#endif
+{
  public:
   struct Function {
     using type = std::unique_ptr<::MathFunction<Dim, Frame::Inertial>>;

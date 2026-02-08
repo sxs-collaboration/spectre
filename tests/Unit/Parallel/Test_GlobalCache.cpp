@@ -69,7 +69,7 @@ class Shape : public SPECTRE_CHARM_PUPable(Shape) {
   WRAPPED_PUPable_abstract(Shape);  // NOLINT
 };
 
-class Triangle : public Shape {
+class Triangle : public SPECTRE_CHARM_DERIVED(Triangle, Shape) {
  public:
   Triangle() = default;
   size_t number_of_sides() const final { return 3; }
@@ -79,7 +79,7 @@ class Triangle : public Shape {
   void pup(PUP::er& p) override { Shape::pup(p); }
 };
 
-class Square : public Shape {
+class Square : public SPECTRE_CHARM_DERIVED(Square, Shape) {
  public:
   Square() = default;
   size_t number_of_sides() const final { return 4; }
@@ -98,7 +98,7 @@ class Animal : public SPECTRE_CHARM_PUPable(Animal) {
   WRAPPED_PUPable_abstract(Animal);  // NOLINT
 };
 
-class Arthropod : public Animal {
+class Arthropod : public SPECTRE_CHARM_DERIVED(Arthropod, Animal) {
  public:
   Arthropod() = default;
   explicit Arthropod(const size_t num_legs) : number_of_legs_(num_legs){};

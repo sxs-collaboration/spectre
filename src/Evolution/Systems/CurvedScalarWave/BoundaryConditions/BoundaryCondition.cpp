@@ -10,8 +10,10 @@
 
 namespace CurvedScalarWave::BoundaryConditions {
 template <size_t Dim>
-void BoundaryCondition<Dim>::pup(PUP::er& p) {
+void BoundaryCondition<Dim>::pup([[maybe_unused]] PUP::er& p) {
+#if defined(SPECTRE_USE_CHARM)
   domain::BoundaryConditions::BoundaryCondition::pup(p);
+#endif  // SPECTRE_USE_CHARM
 }
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)

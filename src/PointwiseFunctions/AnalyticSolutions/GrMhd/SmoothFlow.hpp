@@ -37,7 +37,13 @@ namespace grmhd::Solutions {
  * \f}
  */
 class SmoothFlow : virtual public MarkAsAnalyticSolution,
-                   public RelativisticEuler::Solutions::SmoothFlow<3> {
+                   public RelativisticEuler::Solutions::SmoothFlow<3>
+#if defined(SPECTRE_USE_FINDUS)
+    ,
+                   public virtual findus::serialize::SerializableDerived<
+                       SmoothFlow, evolution::initial_data::InitialData>
+#endif
+{
   using smooth_flow = RelativisticEuler::Solutions::SmoothFlow<3>;
 
  public:

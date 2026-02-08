@@ -50,7 +50,9 @@ ConstraintPreservingSphericalRadiation<Dim>::get_clone() const {
 
 template <size_t Dim>
 void ConstraintPreservingSphericalRadiation<Dim>::pup(PUP::er& p) {
-  BoundaryCondition<Dim>::pup(p);
+#if defined(SPECTRE_USE_CHARM)
+  BoundaryConditions::BoundaryCondition<Dim>::pup(p);
+#endif  // SPECTRE_USE_CHARM
   p | type_;
 }
 

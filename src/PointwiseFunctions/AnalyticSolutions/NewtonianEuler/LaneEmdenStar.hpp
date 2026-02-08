@@ -43,7 +43,13 @@ namespace NewtonianEuler::Solutions {
  * where \f$\alpha = \sqrt{\kappa / (2 \pi)}\f$ and \f$G=1\f$.
  */
 class LaneEmdenStar : public evolution::initial_data::InitialData,
-                      public MarkAsAnalyticSolution {
+                      public MarkAsAnalyticSolution
+#if defined(SPECTRE_USE_FINDUS)
+    ,
+                      public virtual findus::serialize::SerializableDerived<
+                          LaneEmdenStar, evolution::initial_data::InitialData>
+#endif
+{
  public:
   using equation_of_state_type = EquationsOfState::PolytropicFluid<false>;
 

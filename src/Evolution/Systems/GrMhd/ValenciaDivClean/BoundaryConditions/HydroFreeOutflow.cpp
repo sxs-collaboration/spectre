@@ -36,7 +36,11 @@ HydroFreeOutflow::get_clone() const {
   return std::make_unique<HydroFreeOutflow>(*this);
 }
 
-void HydroFreeOutflow::pup(PUP::er& p) { BoundaryCondition::pup(p); }
+void HydroFreeOutflow::pup([[maybe_unused]] PUP::er& p) {
+#if defined(SPECTRE_USE_CHARM)
+  BoundaryCondition::pup(p);
+#endif  // SPECTRE_USE_CHARM
+}
 
 #if defined(SPECTRE_USE_CHARM)
 // NOLINTNEXTLINE

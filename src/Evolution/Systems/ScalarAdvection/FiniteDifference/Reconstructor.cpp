@@ -10,8 +10,10 @@
 
 namespace ScalarAdvection::fd {
 template <size_t Dim>
-void Reconstructor<Dim>::pup(PUP::er& p) {
+void Reconstructor<Dim>::pup([[maybe_unused]] PUP::er& p) {
+#if defined(SPECTRE_USE_CHARM)
   PUP::able::pup(p);
+#endif  // SPECTRE_USE_CHARM
 }
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)

@@ -37,7 +37,11 @@ namespace NewtonianEuler::BoundaryConditions {
  * condition.
  */
 template <size_t Dim>
-class DemandOutgoingCharSpeeds final : public BoundaryCondition<Dim> {
+class DemandOutgoingCharSpeeds final
+    : public BoundaryCondition<Dim>
+      SPECTRE_FINDUS_DERIVED(
+          SINGLE_ARG(DemandOutgoingCharSpeeds<Dim>),
+          SINGLE_ARG(domain::BoundaryConditions::BoundaryCondition)) {
  public:
   using options = tmpl::list<>;
   static constexpr Options::String help{

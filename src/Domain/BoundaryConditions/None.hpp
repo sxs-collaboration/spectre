@@ -45,7 +45,15 @@ class MarkAsNone {
  * one, not use `None.
  */
 template <typename SystemBoundaryConditionBaseClass>
-struct None final : public SystemBoundaryConditionBaseClass, public MarkAsNone {
+struct None final : public SystemBoundaryConditionBaseClass,
+                    public MarkAsNone
+#if defined(SPECTRE_USE_FINDUS)
+    ,
+                    public virtual findus::serialize::SerializableDerived<
+                        None<SystemBoundaryConditionBaseClass>,
+                        domain::BoundaryConditions::BoundaryCondition>
+#endif
+{
  public:
   using options = tmpl::list<>;
   static constexpr Options::String help{

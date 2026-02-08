@@ -104,7 +104,7 @@ struct ContributeDataBoxSize {
 /// `/DataBoxSizeInMb/` group. The name of each file is the `pretty_type::name`
 /// of each parallel component.  There will be a column for each item in the
 /// DataBox that is not a subitem or reference item.
-class ObserveDataBox : public Event {
+class ObserveDataBox : public SPECTRE_CHARM_DERIVED(ObserveDataBox, Event) {
   struct DoNotWrite {};
 
  public:

@@ -35,7 +35,11 @@ namespace Burgers::BoundaryConditions {
  * \brief Dirichlet boundary condition setting the value of U to a
  * time-independent constant.
  */
-class Dirichlet final : public BoundaryCondition {
+class Dirichlet final
+    : public BoundaryCondition
+      SPECTRE_FINDUS_DERIVED(
+          SINGLE_ARG(Dirichlet),
+          SINGLE_ARG(domain::BoundaryConditions::BoundaryCondition)) {
  private:
   using flux_tag =
       ::Tags::Flux<Burgers::Tags::U, tmpl::size_t<1>, Frame::Inertial>;

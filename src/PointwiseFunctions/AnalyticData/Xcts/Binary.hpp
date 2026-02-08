@@ -306,8 +306,13 @@ struct BinaryVariables
  * \cite Ossokine2015yla).
  */
 template <typename IsolatedObjectBase, typename IsolatedObjectClasses>
-class Binary : public elliptic::analytic_data::Background,
-               public elliptic::analytic_data::InitialGuess {
+class Binary
+    : public SPECTRE_CHARM_DERIVED(
+          SINGLE_ARG(Binary<IsolatedObjectBase, IsolatedObjectClasses>),
+          elliptic::analytic_data::Background),
+      public SPECTRE_CHARM_DERIVED(
+          SINGLE_ARG(Binary<IsolatedObjectBase, IsolatedObjectClasses>),
+          elliptic::analytic_data::InitialGuess) {
  public:
   struct XCoords {
     static constexpr Options::String help =

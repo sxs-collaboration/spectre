@@ -33,7 +33,8 @@ namespace ScalarSelfForce::AmrCriteria {
  * For more generic orbits, the refinement needs to happen not only at a single
  * point but along the trajectory of the puncture.
  */
-class RefineAtPuncture : public amr::Criterion {
+class RefineAtPuncture : public amr::Criterion SPECTRE_FINDUS_DERIVED(
+                             RefineAtPuncture, amr::Criterion) {
  public:
   using options = tmpl::list<>;
 

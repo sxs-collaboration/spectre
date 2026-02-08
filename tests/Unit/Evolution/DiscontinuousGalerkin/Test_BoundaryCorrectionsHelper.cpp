@@ -111,7 +111,9 @@ struct CorrectionBase : public SPECTRE_CHARM_PUPable(CorrectionBase) {
 };
 
 template <size_t Dim, typename VolumeDoubleType>
-struct Correction final : public CorrectionBase {
+struct Correction final
+    : public SPECTRE_CHARM_DERIVED(
+          SINGLE_ARG(Correction<Dim, VolumeDoubleType>), CorrectionBase) {
  private:
   struct AbsCharSpeed : db::SimpleTag {
     using type = Scalar<DataVector>;

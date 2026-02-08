@@ -46,7 +46,9 @@ namespace EquationsOfState {
  * \f]
  */
 template <bool IsRelativistic>
-class DarkEnergyFluid : public EquationOfState<IsRelativistic, 2> {
+class DarkEnergyFluid : public SPECTRE_CHARM_DERIVED(
+                            SINGLE_ARG(DarkEnergyFluid<IsRelativistic>),
+                            SINGLE_ARG(EquationOfState<IsRelativistic, 2>)) {
  public:
   static constexpr size_t thermodynamic_dim = 2;
   static constexpr bool is_relativistic = IsRelativistic;
@@ -98,7 +100,8 @@ class DarkEnergyFluid : public EquationOfState<IsRelativistic, 2> {
   EQUATION_OF_STATE_FORWARD_DECLARE_MEMBERS(DarkEnergyFluid, 2)
 
   WRAPPED_PUPable_decl_base_template(  // NOLINT
-      SINGLE_ARG(EquationOfState<IsRelativistic, 2>), DarkEnergyFluid);
+      SINGLE_ARG(EquationOfState<IsRelativistic, 2>),
+      SINGLE_ARG(DarkEnergyFluid<IsRelativistic>));
 
   /// The lower bound of the rest mass density that is valid for this EOS
   double rest_mass_density_lower_bound() const override { return 0.0; }

@@ -55,7 +55,13 @@ namespace Solutions {
  * the periodic boundary condition for evolving this problem.
  */
 class Kuzmin : public evolution::initial_data::InitialData,
-               public MarkAsAnalyticSolution {
+               public MarkAsAnalyticSolution
+#if defined(SPECTRE_USE_FINDUS)
+    ,
+               public virtual findus::serialize::SerializableDerived<
+                   Kuzmin, evolution::initial_data::InitialData>
+#endif
+{
  public:
   using options = tmpl::list<>;
   static constexpr Options::String help{

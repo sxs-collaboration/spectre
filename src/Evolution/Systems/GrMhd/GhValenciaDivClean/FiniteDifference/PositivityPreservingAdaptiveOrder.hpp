@@ -70,7 +70,10 @@ namespace grmhd::GhValenciaDivClean::fd {
  * element also needs to solve for the metric variables.
  */
 template <typename System>
-class PositivityPreservingAdaptiveOrderPrim : public Reconstructor<System> {
+class PositivityPreservingAdaptiveOrderPrim
+    : public SPECTRE_CHARM_DERIVED(
+          SINGLE_ARG(PositivityPreservingAdaptiveOrderPrim<System>),
+          Reconstructor<System>) {
  private:
   using positivity_preserving_tags =
       tmpl::list<hydro::Tags::RestMassDensity<DataVector>,

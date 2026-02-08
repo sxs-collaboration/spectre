@@ -56,7 +56,9 @@ struct ExitAfterWriteCheckpoint {
  * including final volume data writes, as specified by
  * `EventsAndTriggersAtCheckpoints`.
  */
-struct CheckpointAndExitIfComplete : public PhaseChange {
+struct CheckpointAndExitIfComplete : public PhaseChange SPECTRE_FINDUS_DERIVED(
+                                         CheckpointAndExitIfComplete,
+                                         PhaseChange) {
   /// \cond
   CheckpointAndExitIfComplete() = default;
   using PUP::able::register_constructor;

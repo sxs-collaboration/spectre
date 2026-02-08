@@ -37,7 +37,13 @@ namespace Burgers::Solutions {
  * h}\f$.
  */
 class Bump : public evolution::initial_data::InitialData,
-             public MarkAsAnalyticSolution {
+             public MarkAsAnalyticSolution
+#if defined(SPECTRE_USE_FINDUS)
+    ,
+             public virtual findus::serialize::SerializableDerived<
+                 Bump, evolution::initial_data::InitialData>
+#endif
+{
  public:
   struct HalfWidth {
     using type = double;

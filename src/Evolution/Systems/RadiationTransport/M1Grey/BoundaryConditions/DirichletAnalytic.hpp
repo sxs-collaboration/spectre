@@ -52,7 +52,10 @@ class DirichletAnalytic;
  */
 template <typename... NeutrinoSpecies>
 class DirichletAnalytic<tmpl::list<NeutrinoSpecies...>> final
-    : public BoundaryCondition<tmpl::list<NeutrinoSpecies...>> {
+    : public virtual BoundaryCondition<tmpl::list<NeutrinoSpecies...>>,
+      public virtual SPECTRE_CHARM_DERIVED(
+          SINGLE_ARG(DirichletAnalytic<tmpl::list<NeutrinoSpecies...>>),
+          SINGLE_ARG(domain::BoundaryConditions::BoundaryCondition)) {
  public:
   /// \brief What analytic solution/data to prescribe.
   struct AnalyticPrescription {

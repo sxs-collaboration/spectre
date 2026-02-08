@@ -43,7 +43,10 @@ struct ZeroHelpString<elliptic::BoundaryConditionType::Neumann> {
 
 /// Impose zero Dirichlet ("fixed") or Neumann ("free") boundary conditions.
 template <size_t Dim, elliptic::BoundaryConditionType BoundaryConditionType>
-class Zero : public elliptic::BoundaryConditions::BoundaryCondition<Dim> {
+class Zero
+    : public elliptic::BoundaryConditions::BoundaryCondition<Dim>
+      SPECTRE_FINDUS_DERIVED(SINGLE_ARG(Zero<Dim, BoundaryConditionType>),
+                             domain::BoundaryConditions::BoundaryCondition) {
  private:
   using Base = elliptic::BoundaryConditions::BoundaryCondition<Dim>;
 

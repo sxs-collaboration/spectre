@@ -34,7 +34,11 @@ namespace Burgers::BoundaryConditions {
  * are directed out of the domain; no boundary data is altered by this boundary
  * condition.
  */
-class DemandOutgoingCharSpeeds final : public BoundaryCondition {
+class DemandOutgoingCharSpeeds final
+    : public BoundaryCondition
+      SPECTRE_FINDUS_DERIVED(
+          SINGLE_ARG(DemandOutgoingCharSpeeds),
+          SINGLE_ARG(domain::BoundaryConditions::BoundaryCondition)) {
  public:
   using options = tmpl::list<>;
   static constexpr Options::String help{

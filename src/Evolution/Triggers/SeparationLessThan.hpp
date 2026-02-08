@@ -73,7 +73,10 @@ namespace Triggers {
  * `domain::FunctionsOfTime::SettleToConstantQuaternion`.
  */
 template <bool UseGridCentersFunctionOfTime>
-class SeparationLessThan : public Trigger {
+class SeparationLessThan
+    : public SPECTRE_CHARM_DERIVED(
+          SINGLE_ARG(SeparationLessThan<UseGridCentersFunctionOfTime>),
+          Trigger) {
  public:
   /// \cond
   SeparationLessThan() = default;

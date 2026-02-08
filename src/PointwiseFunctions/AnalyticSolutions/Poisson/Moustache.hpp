@@ -70,7 +70,15 @@ struct MoustacheVariables {
  * This solution is taken from \cite Stamm2010.
  */
 template <size_t Dim>
-class Moustache : public elliptic::analytic_data::AnalyticSolution {
+class Moustache : public elliptic::analytic_data::AnalyticSolution
+#if defined(SPECTRE_USE_FINDUS)
+    ,
+                  public virtual findus::serialize::SerializableDerived<
+                      Moustache<Dim>, elliptic::analytic_data::InitialGuess>,
+                  public virtual findus::serialize::SerializableDerived<
+                      Moustache<Dim>, elliptic::analytic_data::Background>
+#endif
+{
  public:
   using options = tmpl::list<>;
   static constexpr Options::String help{

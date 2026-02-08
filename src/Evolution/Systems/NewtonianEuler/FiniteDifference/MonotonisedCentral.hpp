@@ -52,7 +52,9 @@ namespace NewtonianEuler::fd {
  * `::fd::reconstruction::monotonised_central()` for details.
  */
 template <size_t Dim>
-class MonotonisedCentralPrim : public Reconstructor<Dim> {
+class MonotonisedCentralPrim
+    : public SPECTRE_CHARM_DERIVED(SINGLE_ARG(MonotonisedCentralPrim<Dim>),
+                                   Reconstructor<Dim>) {
  private:
   // Conservative vars tags
   using MassDensityCons = NewtonianEuler::Tags::MassDensityCons;

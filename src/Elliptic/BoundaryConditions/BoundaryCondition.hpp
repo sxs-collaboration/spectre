@@ -88,7 +88,8 @@ namespace BoundaryConditions {
  * performed for.
  */
 template <size_t Dim>
-class BoundaryCondition : public domain::BoundaryConditions::BoundaryCondition {
+class BoundaryCondition
+    : public virtual domain::BoundaryConditions::BoundaryCondition {
  private:
   using Base = domain::BoundaryConditions::BoundaryCondition;
 

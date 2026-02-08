@@ -26,7 +26,8 @@ namespace Cce::Solutions {
 
 TeukolskyWave::TeukolskyWave(const double extraction_radius,
                              const double amplitude, const double duration)
-    : SphericalMetricData{extraction_radius},
+    : WorldtubeData{extraction_radius},
+      SphericalMetricData{extraction_radius},
       amplitude_{amplitude},
       duration_{duration} {}
 

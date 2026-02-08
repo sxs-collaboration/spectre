@@ -80,7 +80,7 @@ namespace grmhd::AnalyticData::InitialMagneticFields {
  * multiple magnetic fields can be superposed. Each magnetic field
  * configuration does a `+=` to make this possible.
  */
-class Poloidal : public InitialMagneticField {
+class Poloidal : public SPECTRE_CHARM_DERIVED(Poloidal, InitialMagneticField) {
  public:
   struct PressureExponent {
     using type = size_t;

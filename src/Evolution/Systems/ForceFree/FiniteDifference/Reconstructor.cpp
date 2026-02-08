@@ -6,5 +6,9 @@
 #include <pup.h>
 
 namespace ForceFree::fd {
-void Reconstructor::pup(PUP::er& p) { PUP::able::pup(p); }
+void Reconstructor::pup([[maybe_unused]] PUP::er& p) {
+#if defined(SPECTRE_USE_CHARM)
+  PUP::able::pup(p);
+#endif  // SPECTRE_USE_CHARM
+}
 }  // namespace ForceFree::fd

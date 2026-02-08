@@ -84,7 +84,13 @@ namespace ForceFree::Solutions {
  *
  */
 class ExactWald : public evolution::initial_data::InitialData,
-                  public MarkAsAnalyticSolution {
+                  public MarkAsAnalyticSolution
+#if defined(SPECTRE_USE_FINDUS)
+    ,
+                  public virtual findus::serialize::SerializableDerived<
+                      ExactWald, evolution::initial_data::InitialData>
+#endif
+{
  public:
   struct MagneticFieldAmplitude {
     using type = double;

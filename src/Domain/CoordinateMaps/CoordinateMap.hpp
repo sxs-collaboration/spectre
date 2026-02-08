@@ -312,8 +312,10 @@ class CoordinateMapBase
  */
 template <typename SourceFrame, typename TargetFrame, typename... Maps>
 class CoordinateMap
-    : public CoordinateMapBase<SourceFrame, TargetFrame,
-                               CoordinateMaps::map_dim<Maps...>> {
+    : public SPECTRE_CHARM_DERIVED(
+          SINGLE_ARG(CoordinateMap<SourceFrame, TargetFrame, Maps...>),
+          SINGLE_ARG(CoordinateMapBase<SourceFrame, TargetFrame,
+                                       CoordinateMaps::map_dim<Maps...>>)) {
   static_assert(sizeof...(Maps) > 0, "Must have at least one map");
   static_assert(
       tmpl::all<tmpl::integral_list<size_t, Maps::dim...>,

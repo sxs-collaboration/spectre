@@ -29,7 +29,9 @@ class Sinusoid;
  *  \details Input file options are: Amplitude, Phase, and Wavenumber
  */
 template <typename Fr>
-class Sinusoid<1, Fr> : public MathFunction<1, Fr> {
+class Sinusoid<1, Fr>
+    : public SPECTRE_CHARM_DERIVED(SINGLE_ARG(Sinusoid<1, Fr>),
+                                   SINGLE_ARG(MathFunction<1, Fr>)) {
  public:
   struct Amplitude {
     using type = double;

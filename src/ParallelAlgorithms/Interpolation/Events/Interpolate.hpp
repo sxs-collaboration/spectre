@@ -54,7 +54,11 @@ class Interpolate;
 template <size_t VolumeDim, typename InterpolationTargetTag,
           typename... InterpolatorSourceVarTags>
 class Interpolate<VolumeDim, InterpolationTargetTag,
-                  tmpl::list<InterpolatorSourceVarTags...>> : public Event {
+                  tmpl::list<InterpolatorSourceVarTags...>>
+    : public SPECTRE_CHARM_DERIVED(
+          SINGLE_ARG(Interpolate<VolumeDim, InterpolationTargetTag,
+                                 tmpl::list<InterpolatorSourceVarTags...>>),
+          Event) {
  public:
   /// \cond
   using PUP::able::register_constructor;

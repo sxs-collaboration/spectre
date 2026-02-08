@@ -88,7 +88,9 @@ struct TemporaryPhaseRequested {
  *   the first `VisitAndReturn`.
  */
 template <Parallel::Phase TargetPhase>
-struct VisitAndReturn : public PhaseChange {
+struct VisitAndReturn
+    : public SPECTRE_CHARM_DERIVED(SINGLE_ARG(VisitAndReturn<TargetPhase>),
+                                   PhaseChange) {
   /// \cond
   VisitAndReturn() = default;
   using PUP::able::register_constructor;

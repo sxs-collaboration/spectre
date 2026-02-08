@@ -26,7 +26,11 @@ Sommerfeld::get_clone() const {
   return std::make_unique<Sommerfeld>(*this);
 }
 
-void Sommerfeld::pup(PUP::er& p) { BoundaryCondition::pup(p); }
+void Sommerfeld::pup([[maybe_unused]] PUP::er& p) {
+#if defined(SPECTRE_USE_CHARM)
+  BoundaryCondition::pup(p);
+#endif  // SPECTRE_USE_CHARM
+}
 #if defined(SPECTRE_USE_CHARM)
 // NOLINTNEXTLINE
 PUP::able::PUP_ID Sommerfeld::my_PUP_ID = 0;

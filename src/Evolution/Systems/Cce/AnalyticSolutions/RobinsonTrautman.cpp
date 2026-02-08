@@ -35,7 +35,8 @@ RobinsonTrautman::RobinsonTrautman(
     std::vector<std::complex<double>> initial_modes,
     const double extraction_radius, const size_t l_max, const double tolerance,
     const double start_time, const Options::Context& context)
-    : SphericalMetricData{extraction_radius},
+    : WorldtubeData{extraction_radius},
+      SphericalMetricData{extraction_radius},
       dense_output_rt_scalar_{
           Spectral::Swsh::number_of_swsh_collocation_points(l_max)},
       dense_output_du_rt_scalar_{

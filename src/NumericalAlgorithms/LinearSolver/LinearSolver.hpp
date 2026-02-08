@@ -119,7 +119,11 @@ struct NoPreconditioner {};
  * preconditioning.
  */
 template <typename Preconditioner, typename LinearSolverRegistrars>
-class PreconditionedLinearSolver : public LinearSolver<LinearSolverRegistrars> {
+class PreconditionedLinearSolver
+    : public SPECTRE_CHARM_DERIVED(
+          SINGLE_ARG(PreconditionedLinearSolver<Preconditioner,
+                                                LinearSolverRegistrars>),
+          LinearSolver<LinearSolverRegistrars>) {
  private:
   using Base = LinearSolver<LinearSolverRegistrars>;
 

@@ -24,8 +24,10 @@ Worldtube<Dim>::get_clone() const {
 }
 
 template <size_t Dim>
-void Worldtube<Dim>::pup(PUP::er& p) {
-  BoundaryCondition<Dim>::pup(p);
+void Worldtube<Dim>::pup([[maybe_unused]] PUP::er& p) {
+#if defined(SPECTRE_USE_CHARM)
+  BoundaryConditions::BoundaryCondition<Dim>::pup(p);
+#endif  // SPECTRE_USE_CHARM
 }
 
 #if defined(SPECTRE_USE_CHARM)

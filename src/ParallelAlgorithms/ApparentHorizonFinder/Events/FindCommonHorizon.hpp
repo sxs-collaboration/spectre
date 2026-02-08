@@ -64,7 +64,12 @@ template <size_t VolumeDim, typename InterpolationTargetTag,
 class FindCommonHorizon<
     VolumeDim, InterpolationTargetTag, tmpl::list<InterpolatorSourceVarTags...>,
     tmpl::list<Tensors...>, tmpl::list<NonTensorComputeTags...>>
-    : public Event {
+    : public SPECTRE_CHARM_DERIVED(
+          SINGLE_ARG(FindCommonHorizon<VolumeDim, InterpolationTargetTag,
+                                       tmpl::list<InterpolatorSourceVarTags...>,
+                                       tmpl::list<Tensors...>,
+                                       tmpl::list<NonTensorComputeTags...>>),
+          Event) {
   using ObserveFieldsEvent =
       dg::Events::ObserveFields<VolumeDim, tmpl::list<Tensors...>,
                                 tmpl::list<NonTensorComputeTags...>>;
@@ -192,7 +197,11 @@ class FindCommonHorizon;
 template <typename HorizonMetavars, typename... Tensors,
           typename... NonTensorComputeTags>
 class FindCommonHorizon<HorizonMetavars, tmpl::list<Tensors...>,
-                        tmpl::list<NonTensorComputeTags...>> : public Event {
+                        tmpl::list<NonTensorComputeTags...>>
+    : public SPECTRE_CHARM_DERIVED(
+          SINGLE_ARG(FindCommonHorizon<HorizonMetavars, tmpl::list<Tensors...>,
+                                       tmpl::list<NonTensorComputeTags...>>),
+          Event) {
   using ObserveFieldsEvent =
       dg::Events::ObserveFields<3, tmpl::list<Tensors...>,
                                 tmpl::list<NonTensorComputeTags...>>;

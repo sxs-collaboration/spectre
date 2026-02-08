@@ -25,7 +25,8 @@ namespace ray_tracing {
 
 /// Analytic background spacetime from a GR or GRMHD solution.
 template <typename SolutionType>
-class WrappedGr : public BackgroundSpacetime {
+class WrappedGr : public BackgroundSpacetime SPECTRE_FINDUS_DERIVED(
+                      WrappedGr<SolutionType>, BackgroundSpacetime) {
  public:
   using options = typename SolutionType::options;
   static constexpr Options::String help = SolutionType::help;

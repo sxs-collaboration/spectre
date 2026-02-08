@@ -24,7 +24,8 @@ namespace domain::FunctionsOfTime {
  * step, it returns the function and first derivative at that time step. It
  * therefore needs to be updated every time step with its current values.
  */
-class IntegratedFunctionOfTime : public FunctionOfTime {
+class IntegratedFunctionOfTime
+    : public SPECTRE_CHARM_DERIVED(IntegratedFunctionOfTime, FunctionOfTime) {
  public:
   IntegratedFunctionOfTime();
   IntegratedFunctionOfTime(IntegratedFunctionOfTime&&);

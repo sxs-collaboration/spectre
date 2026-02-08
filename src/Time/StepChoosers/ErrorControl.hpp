@@ -97,8 +97,12 @@ namespace StepChoosers {
  */
 template <typename StepChooserUse, typename EvolvedVariableTag,
           typename ErrorControlSelector = NoSuchType>
-class ErrorControl : public StepChooser<StepChooserUse>,
-                     public RequestsStepperErrorTolerances {
+class ErrorControl
+    : public SPECTRE_CHARM_DERIVED(
+          SINGLE_ARG(ErrorControl<StepChooserUse, EvolvedVariableTag,
+                                  ErrorControlSelector>),
+          SINGLE_ARG(StepChooser<StepChooserUse>)),
+      public RequestsStepperErrorTolerances {
  public:
   /// \cond
   ErrorControl() = default;

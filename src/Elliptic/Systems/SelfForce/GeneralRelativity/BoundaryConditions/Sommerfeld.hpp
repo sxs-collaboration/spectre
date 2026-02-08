@@ -32,7 +32,10 @@ namespace GrSelfForce::BoundaryConditions {
  *
  * These boundary conditions currently assume a circular equatorial orbit.
  */
-class Sommerfeld : public elliptic::BoundaryConditions::BoundaryCondition<2> {
+class Sommerfeld
+    : public elliptic::BoundaryConditions::BoundaryCondition<2>
+      SPECTRE_FINDUS_DERIVED(Sommerfeld,
+                             domain::BoundaryConditions::BoundaryCondition) {
  private:
   using Base = elliptic::BoundaryConditions::BoundaryCondition<2>;
   using GradTensorType =

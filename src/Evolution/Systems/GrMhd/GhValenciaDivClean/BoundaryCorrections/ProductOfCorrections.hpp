@@ -136,7 +136,11 @@ struct ProductOfCorrectionsImpl<
  * application is inconsequential.
  */
 template <typename DerivedGhCorrection, typename DerivedValenciaCorrection>
-class ProductOfCorrections final : public evolution::BoundaryCorrection {
+class ProductOfCorrections final
+    : public SPECTRE_CHARM_DERIVED(
+          SINGLE_ARG(ProductOfCorrections<DerivedGhCorrection,
+                                          DerivedValenciaCorrection>),
+          SINGLE_ARG(evolution::BoundaryCorrection)) {
  public:
   using dg_package_field_tags =
       tmpl::append<typename DerivedGhCorrection::dg_package_field_tags,

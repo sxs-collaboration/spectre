@@ -32,7 +32,8 @@ namespace InitializeJ {
  * iterative procedure are determined by options
  * `AngularCoordinateTolerance` and `MaxIterations`.
  */
-struct NoIncomingRadiation : InitializeJ<false> {
+struct NoIncomingRadiation
+    : public SPECTRE_CHARM_DERIVED(NoIncomingRadiation, InitializeJ<false>) {
   struct AngularCoordinateTolerance {
     using type = double;
     static std::string name() { return "AngularCoordTolerance"; }

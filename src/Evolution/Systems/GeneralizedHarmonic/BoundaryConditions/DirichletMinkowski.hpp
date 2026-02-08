@@ -37,7 +37,11 @@ namespace gh::BoundaryConditions {
  * \brief Sets Dirichlet boundary conditions to a Minkowski spacetime.
  */
 template <size_t Dim>
-class DirichletMinkowski final : public BoundaryCondition<Dim> {
+class DirichletMinkowski final
+    : public BoundaryCondition<Dim>
+      SPECTRE_FINDUS_DERIVED(
+          SINGLE_ARG(DirichletMinkowski<Dim>),
+          SINGLE_ARG(domain::BoundaryConditions::BoundaryCondition)) {
  public:
   using options = tmpl::list<>;
   static constexpr Options::String help{

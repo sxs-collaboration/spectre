@@ -21,7 +21,9 @@ namespace intrp {
 /// length, so that buffers that adjust length based on
 /// `required_points_before_and_after()` can be forced to use an interpolator of
 /// a target order.
-class BarycentricRationalSpanInterpolator : public SpanInterpolator {
+class BarycentricRationalSpanInterpolator
+    : public SPECTRE_CHARM_DERIVED(BarycentricRationalSpanInterpolator,
+                                   SpanInterpolator) {
  public:
   struct MinOrder {
     using type = size_t;

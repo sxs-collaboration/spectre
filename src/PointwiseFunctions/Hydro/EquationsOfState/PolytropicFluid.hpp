@@ -46,7 +46,9 @@ namespace EquationsOfState {
  * \f}
  */
 template <bool IsRelativistic>
-class PolytropicFluid : public EquationOfState<IsRelativistic, 1> {
+class PolytropicFluid : public SPECTRE_CHARM_DERIVED(
+                            SINGLE_ARG(PolytropicFluid<IsRelativistic>),
+                            SINGLE_ARG(EquationOfState<IsRelativistic, 1>)) {
  public:
   static constexpr size_t thermodynamic_dim = 1;
   static constexpr bool is_relativistic = IsRelativistic;
@@ -99,7 +101,8 @@ class PolytropicFluid : public EquationOfState<IsRelativistic, 1> {
   EQUATION_OF_STATE_FORWARD_DECLARE_MEMBERS(PolytropicFluid, 1)
 
   WRAPPED_PUPable_decl_base_template(  // NOLINT
-      SINGLE_ARG(EquationOfState<IsRelativistic, 1>), PolytropicFluid);
+      SINGLE_ARG(EquationOfState<IsRelativistic, 1>),
+      SINGLE_ARG(PolytropicFluid<IsRelativistic>));
 
   /// The lower bound of the rest mass density that is valid for this EOS
   double rest_mass_density_lower_bound() const override { return 0.0; }

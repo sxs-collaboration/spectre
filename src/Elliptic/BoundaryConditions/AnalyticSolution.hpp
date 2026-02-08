@@ -48,7 +48,10 @@ template <typename System, size_t Dim, typename... FieldTags,
           typename... FluxTags>
 class AnalyticSolution<System, Dim, tmpl::list<FieldTags...>,
                        tmpl::list<FluxTags...>>
-    : public BoundaryCondition<Dim> {
+    : public SPECTRE_CHARM_DERIVED(
+          SINGLE_ARG(AnalyticSolution<System, Dim, tmpl::list<FieldTags...>,
+                                      tmpl::list<FluxTags...>>),
+          BoundaryCondition<Dim>) {
  private:
   using Base = BoundaryCondition<Dim>;
 

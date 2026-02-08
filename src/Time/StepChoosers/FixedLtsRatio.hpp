@@ -35,7 +35,9 @@ namespace StepChoosers {
 /// `standard_step_choosers` list.  Executables using the feature must
 /// include it explicitly in the `factory_creation` struct and add the
 /// `::Tags::FixedLtsRatio` tag to the element DataBox.
-class FixedLtsRatio : public StepChooser<StepChooserUse::Slab> {
+class FixedLtsRatio
+    : public SPECTRE_CHARM_DERIVED(
+          FixedLtsRatio, SINGLE_ARG(StepChooser<StepChooserUse::Slab>)) {
  public:
   /// \cond
   FixedLtsRatio() = default;

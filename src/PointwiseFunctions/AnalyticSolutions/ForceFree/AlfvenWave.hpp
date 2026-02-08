@@ -85,7 +85,13 @@ namespace ForceFree::Solutions {
  *
  */
 class AlfvenWave : public evolution::initial_data::InitialData,
-                   public MarkAsAnalyticSolution {
+                   public MarkAsAnalyticSolution
+#if defined(SPECTRE_USE_FINDUS)
+    ,
+                   public virtual findus::serialize::SerializableDerived<
+                       AlfvenWave, evolution::initial_data::InitialData>
+#endif
+{
  public:
   /// The wave speed
   struct WaveSpeed {

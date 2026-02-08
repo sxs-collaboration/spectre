@@ -36,9 +36,16 @@ namespace gr::AnalyticData {
  * - "Nid_N": lapse
  * - "Nid_Shift": (upper) shift
  */
-class SpecInitialData : public evolution::initial_data::InitialData,
-                        public MarkAsAnalyticData,
-                        public AnalyticDataBase<3> {
+class SpecInitialData
+    : public evolution::initial_data::InitialData,
+      public MarkAsAnalyticData,
+      public AnalyticDataBase<3>
+#if defined(SPECTRE_USE_FINDUS)
+    ,
+      public virtual findus::serialize::SerializableDerived<
+          SpecInitialData, evolution::initial_data::InitialData>
+#endif
+{
  public:
   template <typename DataType>
   using tags =

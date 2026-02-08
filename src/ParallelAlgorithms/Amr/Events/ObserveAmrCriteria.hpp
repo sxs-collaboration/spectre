@@ -72,7 +72,8 @@ struct get_compute_tags {
 /// - 2.0 is for splitting the element
 template <typename Metavariables>
 class ObserveAmrCriteria
-    : public dg::Events::ObserveConstantsPerElement<Metavariables::volume_dim> {
+    : public dg::Events::ObserveConstantsPerElement<Metavariables::volume_dim>
+      SPECTRE_FINDUS_DERIVED(ObserveAmrCriteria<Metavariables>, ::Event) {
  public:
   static constexpr size_t volume_dim = Metavariables::volume_dim;
   /// \cond

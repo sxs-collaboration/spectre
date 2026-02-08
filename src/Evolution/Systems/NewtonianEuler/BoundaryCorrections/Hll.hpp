@@ -80,7 +80,9 @@ namespace NewtonianEuler::BoundaryCorrections {
  *   signal/characteristic speeds
  */
 template <size_t Dim>
-class Hll final : public evolution::BoundaryCorrection {
+class Hll final
+    : public SPECTRE_CHARM_DERIVED(SINGLE_ARG(Hll<Dim>),
+                                   SINGLE_ARG(evolution::BoundaryCorrection)) {
  public:
   struct LargestOutgoingCharSpeed : db::SimpleTag {
     using type = Scalar<DataVector>;

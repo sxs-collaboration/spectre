@@ -58,7 +58,9 @@ namespace grmhd::ValenciaDivClean::fd {
  *
  * The rest mass density, electron fraction, and the pressure are kept positive.
  */
-class PositivityPreservingAdaptiveOrderPrim : public Reconstructor {
+class PositivityPreservingAdaptiveOrderPrim
+    : public SPECTRE_CHARM_DERIVED(PositivityPreservingAdaptiveOrderPrim,
+                                   Reconstructor) {
  private:
   using prims_to_reconstruct_tags =
       tmpl::list<hydro::Tags::RestMassDensity<DataVector>,

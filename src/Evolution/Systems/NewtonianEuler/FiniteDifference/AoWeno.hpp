@@ -28,7 +28,8 @@ namespace NewtonianEuler::fd {
  * ::fd::reconstruction::aoweno_53() for details.
  */
 template <size_t Dim>
-class AoWeno53Prim : public Reconstructor<Dim> {
+class AoWeno53Prim : public SPECTRE_CHARM_DERIVED(SINGLE_ARG(AoWeno53Prim<Dim>),
+                                                  Reconstructor<Dim>) {
  private:
   // Conservative vars tags
   using MassDensityCons = NewtonianEuler::Tags::MassDensityCons;

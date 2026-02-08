@@ -39,9 +39,10 @@ namespace Solutions {
  * `WorldtubeData::get_clone()`, `WorldtubeData::variables_impl()` for tag
  * `Cce::Tags::News`, and `WorldtubeData::prepare_solution()`.
  */
-struct SphericalMetricData : public WorldtubeData {
-
+struct SphericalMetricData : public virtual WorldtubeData {
+#if defined(SPECTRE_USE_CHARM)
   WRAPPED_PUPable_abstract(SphericalMetricData);  // NOLINT
+#endif                                            // SPECTRE_USE_CHARM
 
   SphericalMetricData() = default;
 

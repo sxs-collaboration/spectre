@@ -100,7 +100,9 @@ namespace Xcts::BoundaryConditions {
  */
 template <Xcts::Geometry ConformalGeometry>
 class ApparentHorizon
-    : public elliptic::BoundaryConditions::BoundaryCondition<3> {
+    : public elliptic::BoundaryConditions::BoundaryCondition<3>
+      SPECTRE_FINDUS_DERIVED(ApparentHorizon<ConformalGeometry>,
+                             domain::BoundaryConditions::BoundaryCondition) {
  private:
   using Base = elliptic::BoundaryConditions::BoundaryCondition<3>;
 

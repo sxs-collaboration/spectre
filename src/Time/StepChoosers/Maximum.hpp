@@ -21,8 +21,10 @@ class er;
 namespace StepChoosers {
 
 /// Limits the step size to a constant.
-class Maximum : public StepChooser<StepChooserUse::Slab>,
-                public StepChooser<StepChooserUse::LtsStep> {
+class Maximum : public SPECTRE_CHARM_DERIVED(
+                    Maximum, SINGLE_ARG(StepChooser<StepChooserUse::Slab>)),
+                public SPECTRE_CHARM_DERIVED(
+                    Maximum, SINGLE_ARG(StepChooser<StepChooserUse::LtsStep>)) {
  public:
   /// \cond
   Maximum() = default;

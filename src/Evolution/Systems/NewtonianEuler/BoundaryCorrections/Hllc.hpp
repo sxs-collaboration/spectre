@@ -167,7 +167,9 @@ namespace NewtonianEuler::BoundaryCorrections {
  *   signal/characteristic speeds.
  */
 template <size_t Dim>
-class Hllc final : public evolution::BoundaryCorrection {
+class Hllc final
+    : public SPECTRE_CHARM_DERIVED(SINGLE_ARG(Hllc<Dim>),
+                                   SINGLE_ARG(evolution::BoundaryCorrection)) {
  private:
   struct InterfaceUnitNormal : db::SimpleTag {
     using type = tnsr::i<DataVector, Dim, Frame::Inertial>;

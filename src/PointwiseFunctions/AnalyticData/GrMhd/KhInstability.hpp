@@ -79,7 +79,13 @@ namespace grmhd::AnalyticData {
 class KhInstability : public evolution::initial_data::InitialData,
                       public MarkAsAnalyticData,
                       public AnalyticDataBase,
-                      public hydro::TemperatureInitialization<KhInstability> {
+                      public hydro::TemperatureInitialization<KhInstability>
+#if defined(SPECTRE_USE_FINDUS)
+    ,
+                      public virtual findus::serialize::SerializableDerived<
+                          KhInstability, evolution::initial_data::InitialData>
+#endif
+{
  public:
   using equation_of_state_type = EquationsOfState::IdealFluid<true>;
 

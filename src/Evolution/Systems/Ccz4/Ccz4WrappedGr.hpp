@@ -33,8 +33,15 @@ namespace Ccz4::Solutions {
  * Specifically, see `Ccz4::fd::System`.
  */
 template <typename SolutionType>
-class Ccz4WrappedGr : public virtual evolution::initial_data::InitialData,
-                      public SolutionType {
+class Ccz4WrappedGr
+    : public virtual evolution::initial_data::InitialData,
+      public SolutionType
+#if defined(SPECTRE_USE_FINDUS)
+    ,
+      public virtual findus::serialize::SerializableDerived<
+          Ccz4WrappedGr<SolutionType>, evolution::initial_data::InitialData>
+#endif
+{
  public:
   using SolutionType::SolutionType;
 

@@ -36,7 +36,7 @@ namespace DenseTriggers {
 /// For example, to trigger every 10 starting at 100, one could use
 ///
 /// \snippet DenseTriggers/Test_Filter.cpp example
-class Filter : public DenseTrigger {
+class Filter : public SPECTRE_CHARM_DERIVED(Filter, DenseTrigger) {
  public:
   /// \cond
   Filter() = default;

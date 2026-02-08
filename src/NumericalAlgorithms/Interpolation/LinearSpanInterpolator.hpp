@@ -18,7 +18,8 @@ namespace intrp {
 
 /// \brief Performs a linear interpolation; this class can be chosen via the
 /// options factory mechanism as a possible `SpanInterpolator`
-class LinearSpanInterpolator : public SpanInterpolator {
+class LinearSpanInterpolator
+    : public SPECTRE_CHARM_DERIVED(LinearSpanInterpolator, SpanInterpolator) {
  public:
   using options = tmpl::list<>;
   static constexpr Options::String help = {"Linear interpolator."};

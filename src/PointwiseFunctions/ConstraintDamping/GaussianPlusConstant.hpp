@@ -38,7 +38,10 @@ namespace ConstraintDamping {
  * the dimension of the spatial volume.
  */
 template <size_t VolumeDim, typename Fr>
-class GaussianPlusConstant : public DampingFunction<VolumeDim, Fr> {
+class GaussianPlusConstant
+    : public SPECTRE_CHARM_DERIVED(
+          SINGLE_ARG(GaussianPlusConstant<VolumeDim, Fr>),
+          SINGLE_ARG(DampingFunction<VolumeDim, Fr>)) {
  public:
   struct Constant {
     using type = double;

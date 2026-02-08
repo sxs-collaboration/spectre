@@ -67,7 +67,13 @@ namespace grmhd::AnalyticData {
 class MagneticRotor : public evolution::initial_data::InitialData,
                       public MarkAsAnalyticData,
                       public AnalyticDataBase,
-                      public hydro::TemperatureInitialization<MagneticRotor> {
+                      public hydro::TemperatureInitialization<MagneticRotor>
+#if defined(SPECTRE_USE_FINDUS)
+    ,
+                      public virtual findus::serialize::SerializableDerived<
+                          MagneticRotor, evolution::initial_data::InitialData>
+#endif
+{
  public:
   using equation_of_state_type = EquationsOfState::IdealFluid<true>;
 

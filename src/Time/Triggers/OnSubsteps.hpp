@@ -44,7 +44,7 @@ namespace Triggers {
  *       Always:
  * ```
  */
-class OnSubsteps : public Trigger {
+class OnSubsteps : public SPECTRE_CHARM_DERIVED(OnSubsteps, Trigger) {
  public:
   /// \cond
   OnSubsteps() = default;

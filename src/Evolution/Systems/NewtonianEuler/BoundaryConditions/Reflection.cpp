@@ -29,8 +29,10 @@ Reflection<Dim>::get_clone() const {
 }
 
 template <size_t Dim>
-void Reflection<Dim>::pup(PUP::er& p) {
-  BoundaryCondition<Dim>::pup(p);
+void Reflection<Dim>::pup([[maybe_unused]] PUP::er& p) {
+#if defined(SPECTRE_USE_CHARM)
+  BoundaryConditions::BoundaryCondition<Dim>::pup(p);
+#endif  // SPECTRE_USE_CHARM
 }
 
 template <size_t Dim>

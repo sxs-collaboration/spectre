@@ -156,7 +156,7 @@ std::string name() {
  * `/<SubgroupName>/OneMinusY.vol` with the elements in the same order as the
  * radial index order for the spin weighted quantities above.
  */
-class ObserveFields : public Event {
+class ObserveFields : public SPECTRE_CHARM_DERIVED(ObserveFields, Event) {
   template <typename Tag, bool IncludeSecondDeriv = true>
   // clang-format off
   using zero_one_two_radial_derivs = tmpl::flatten<tmpl::list<

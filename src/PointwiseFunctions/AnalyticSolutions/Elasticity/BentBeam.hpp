@@ -105,7 +105,15 @@ struct BentBeamVariables {
  * \int_{-L/2}^{L/2} \int_{-H/2}^{H/2} U dy\,dx = \frac{6M^2}{EH^3}L \text{.}
  * \f]
  */
-class BentBeam : public elliptic::analytic_data::AnalyticSolution {
+class BentBeam : public elliptic::analytic_data::AnalyticSolution
+#if defined(SPECTRE_USE_FINDUS)
+    ,
+                 public virtual findus::serialize::SerializableDerived<
+                     BentBeam, elliptic::analytic_data::InitialGuess>,
+                 public virtual findus::serialize::SerializableDerived<
+                     BentBeam, elliptic::analytic_data::Background>
+#endif
+{
  public:
   using constitutive_relation_type =
       Elasticity::ConstitutiveRelations::IsotropicHomogeneous<2>;

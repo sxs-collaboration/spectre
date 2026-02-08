@@ -70,7 +70,8 @@ namespace NewtonianEuler::Sources {
  *
  * Currently \f$v_z(z)=sin(z)\f$ is hard-coded.
  */
-class VortexPerturbation : public Source<3> {
+class VortexPerturbation
+    : public SPECTRE_CHARM_DERIVED(VortexPerturbation, Source<3>) {
  public:
   /// The perturbation amplitude
   struct PerturbationAmplitude {

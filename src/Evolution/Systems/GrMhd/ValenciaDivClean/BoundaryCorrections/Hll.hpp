@@ -87,7 +87,9 @@ namespace grmhd::ValenciaDivClean::BoundaryCorrections {
  *   fluid part of the system in order to make the flux less dissipative for
  *   those variables.
  */
-class Hll final : public evolution::BoundaryCorrection {
+class Hll final
+    : public SPECTRE_CHARM_DERIVED(Hll,
+                                   SINGLE_ARG(evolution::BoundaryCorrection)) {
  public:
   struct LargestOutgoingCharSpeed : db::SimpleTag {
     using type = Scalar<DataVector>;

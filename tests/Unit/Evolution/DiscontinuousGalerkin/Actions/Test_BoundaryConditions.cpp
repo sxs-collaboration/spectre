@@ -736,7 +736,8 @@ template <typename System>
 class GhostAndTimeDerivative;
 
 template <typename System>
-class BoundaryCondition : public domain::BoundaryConditions::BoundaryCondition {
+class BoundaryCondition
+    : public virtual domain::BoundaryConditions::BoundaryCondition {
  public:
   BoundaryCondition() = default;
   BoundaryCondition(BoundaryCondition&&) = default;

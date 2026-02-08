@@ -71,7 +71,8 @@ namespace Elasticity::ConstitutiveRelations {
  * material (see `Elasticity::ConstitutiveRelations::IsotropicHomogeneous`).
  */
 
-class CubicCrystal : public ConstitutiveRelation<3> {
+class CubicCrystal
+    : public SPECTRE_CHARM_DERIVED(CubicCrystal, ConstitutiveRelation<3>) {
  public:
   static constexpr size_t volume_dim = 3;
 

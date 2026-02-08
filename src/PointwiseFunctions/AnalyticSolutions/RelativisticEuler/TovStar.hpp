@@ -324,7 +324,13 @@ struct TovVariables {
 
 class TovStar : public virtual evolution::initial_data::InitialData,
                 public MarkAsAnalyticSolution,
-                public AnalyticSolution<3> {
+                public AnalyticSolution<3>
+#if defined(SPECTRE_USE_FINDUS)
+    ,
+                public virtual findus::serialize::SerializableDerived<
+                    TovStar, evolution::initial_data::InitialData>
+#endif
+{
  public:
   using equation_of_state_type = EquationsOfState::EquationOfState<true, 1>;
 

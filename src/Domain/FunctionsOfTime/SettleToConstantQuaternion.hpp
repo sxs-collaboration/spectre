@@ -27,7 +27,8 @@ namespace domain::FunctionsOfTime {
 /// initialized from \f$\mathbf{f}(t)\f$ and its first two derivatives at the
 /// matching time, but then ensuring that \f$\mathbf{g}(t)\f$ remains
 /// a unit quaternion.
-class SettleToConstantQuaternion : public FunctionOfTime {
+class SettleToConstantQuaternion
+    : public SPECTRE_CHARM_DERIVED(SettleToConstantQuaternion, FunctionOfTime) {
  public:
   SettleToConstantQuaternion() = default;
   SettleToConstantQuaternion(

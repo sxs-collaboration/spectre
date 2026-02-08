@@ -20,7 +20,8 @@ namespace ah::Criteria {
  * Useful to force the horizon finder to adopt the maximum allowed resolution
  * and as a simple criterion for testing.
  */
-class IncreaseResolution : public Criterion {
+class IncreaseResolution
+    : public SPECTRE_CHARM_DERIVED(IncreaseResolution, Criterion) {
  public:
   using options = tmpl::list<>;
   static constexpr Options::String help = {

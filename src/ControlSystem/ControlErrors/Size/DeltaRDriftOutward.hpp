@@ -13,7 +13,8 @@
 #include "Utilities/TMPL.hpp"
 
 namespace control_system::size::States {
-class DeltaRDriftOutward : public State {
+class DeltaRDriftOutward
+    : public SPECTRE_CHARM_DERIVED(DeltaRDriftOutward, State) {
  public:
   using options = tmpl::list<>;
   static constexpr Options::String help{

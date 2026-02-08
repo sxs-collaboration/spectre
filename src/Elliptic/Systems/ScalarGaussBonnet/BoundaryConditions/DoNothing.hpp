@@ -26,7 +26,10 @@ namespace sgb::BoundaryConditions {
 /// Do not apply a boundary condition, used exclusively for singular boundary
 /// value problems.
 
-class DoNothing : public elliptic::BoundaryConditions::BoundaryCondition<3> {
+class DoNothing
+    : public elliptic::BoundaryConditions::BoundaryCondition<3>
+      SPECTRE_FINDUS_DERIVED(DoNothing,
+                             domain::BoundaryConditions::BoundaryCondition) {
  private:
   using Base = elliptic::BoundaryConditions::BoundaryCondition<3>;
 

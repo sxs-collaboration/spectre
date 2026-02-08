@@ -59,7 +59,8 @@ namespace ForceFree::fd {
  * positive.
  *
  */
-class AdaptiveOrder : public Reconstructor {
+class AdaptiveOrder
+    : public SPECTRE_CHARM_DERIVED(AdaptiveOrder, Reconstructor) {
  private:
   using TildeE = ForceFree::Tags::TildeE;
   using TildeB = ForceFree::Tags::TildeB;

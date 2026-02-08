@@ -171,7 +171,9 @@ namespace ScalarWave::BoundaryCorrections {
  * \f}
  */
 template <size_t Dim>
-class UpwindPenalty final : public evolution::BoundaryCorrection {
+class UpwindPenalty final
+    : public SPECTRE_CHARM_DERIVED(SINGLE_ARG(UpwindPenalty<Dim>),
+                                   SINGLE_ARG(evolution::BoundaryCorrection)) {
  private:
   struct NormalTimesVPlus : db::SimpleTag {
     using type = tnsr::i<DataVector, Dim, Frame::Inertial>;

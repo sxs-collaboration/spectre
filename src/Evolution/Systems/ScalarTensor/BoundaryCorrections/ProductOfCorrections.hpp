@@ -63,7 +63,18 @@ class ProductOfCorrections<DerivedGhCorrection, DerivedScalarCorrection,
                            tmpl::list<ScalarDgPackageDataVolumeTags...>,
                            tmpl::list<GhDgBoundaryTermsVolumeTags...>,
                            tmpl::list<ScalarDgBoundaryTermsVolumeTags...>>
-    final : public evolution::BoundaryCorrection {
+    final : public SPECTRE_CHARM_DERIVED(
+                SINGLE_ARG(ProductOfCorrections<
+                           DerivedGhCorrection, DerivedScalarCorrection,
+                           tmpl::list<GhDgPackagedFieldTags...>,
+                           tmpl::list<ScalarDgPackagedFieldTags...>,
+                           tmpl::list<GhDgPackageDataTemporaryTags...>,
+                           tmpl::list<ScalarDgPackageDataTemporaryTags...>,
+                           tmpl::list<GhDgPackageDataVolumeTags...>,
+                           tmpl::list<ScalarDgPackageDataVolumeTags...>,
+                           tmpl::list<GhDgBoundaryTermsVolumeTags...>,
+                           tmpl::list<ScalarDgBoundaryTermsVolumeTags...>>),
+                SINGLE_ARG(evolution::BoundaryCorrection)) {
  public:
   static constexpr size_t dim = 3;
   using dg_package_field_tags =

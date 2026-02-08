@@ -22,7 +22,7 @@ namespace Triggers {
 /// \ingroup EventsAndTriggersGroup
 /// \ingroup TimeGroup
 /// Trigger based on a comparison with the time.
-class TimeCompares : public Trigger {
+class TimeCompares : public SPECTRE_CHARM_DERIVED(TimeCompares, Trigger) {
  public:
   /// \cond
   TimeCompares() = default;

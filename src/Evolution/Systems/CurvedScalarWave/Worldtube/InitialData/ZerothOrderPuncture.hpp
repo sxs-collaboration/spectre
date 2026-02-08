@@ -34,8 +34,15 @@ namespace CurvedScalarWave::AnalyticData {
  * space.
  */
 
-class ZerothOrderPuncture : public evolution::initial_data::InitialData,
-                            public MarkAsAnalyticData {
+class ZerothOrderPuncture
+    : public evolution::initial_data::InitialData,
+      public MarkAsAnalyticData
+#if defined(SPECTRE_USE_FINDUS)
+    ,
+      public virtual findus::serialize::SerializableDerived<
+          ZerothOrderPuncture, evolution::initial_data::InitialData>
+#endif
+{
  public:
   struct ParticlePosition {
     using type = std::array<double, 3>;

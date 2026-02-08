@@ -273,7 +273,16 @@ template <typename GrSolution, bool HasMhd = false>
 class WrappedGr;
 
 template <typename GrSolution, bool HasMhd>
-class WrappedGr : public elliptic::analytic_data::AnalyticSolution {
+class WrappedGr
+    : public elliptic::analytic_data::AnalyticSolution
+#if defined(SPECTRE_USE_FINDUS)
+    ,
+      public virtual findus::serialize::SerializableDerived<
+          WrappedGr<GrSolution, HasMhd>, elliptic::analytic_data::InitialGuess>,
+      public virtual findus::serialize::SerializableDerived<
+          WrappedGr<GrSolution, HasMhd>, elliptic::analytic_data::Background>
+#endif
+{
  public:
   static constexpr size_t Dim = 3;
 

@@ -57,7 +57,9 @@ namespace control_system {
 /// input file.  The `control_system::control_system_triggers`
 /// metafunction provides the list of triggers to include.
 template <typename ControlSystems>
-class Trigger : public DenseTrigger {
+class Trigger
+    : public SPECTRE_CHARM_DERIVED(SINGLE_ARG(Trigger<ControlSystems>),
+                                   DenseTrigger) {
   static_assert(tmpl::size<ControlSystems>::value > 0);
   using measurement = typename tmpl::front<ControlSystems>::measurement;
   static_assert(tmpl::all<ControlSystems,

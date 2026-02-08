@@ -27,7 +27,8 @@ namespace Cce::Solutions {
 GaugeWave::GaugeWave(const double extraction_radius, const double mass,
                      const double frequency, const double amplitude,
                      const double peak_time, const double duration)
-    : SphericalMetricData{extraction_radius},
+    : WorldtubeData{extraction_radius},
+      SphericalMetricData{extraction_radius},
       mass_{mass},
       frequency_{frequency},
       amplitude_{amplitude},

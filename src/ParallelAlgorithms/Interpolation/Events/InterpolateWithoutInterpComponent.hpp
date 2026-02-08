@@ -89,7 +89,10 @@ template <size_t VolumeDim, typename InterpolationTargetTag,
           typename... SourceVarTags>
 class InterpolateWithoutInterpComponent<VolumeDim, InterpolationTargetTag,
                                         tmpl::list<SourceVarTags...>>
-    : public Event {
+    : public SPECTRE_CHARM_DERIVED(SINGLE_ARG(InterpolateWithoutInterpComponent<
+                                              VolumeDim, InterpolationTargetTag,
+                                              tmpl::list<SourceVarTags...>>),
+                                   Event) {
  private:
   using frame = typename InterpolationTargetTag::compute_target_points::frame;
 

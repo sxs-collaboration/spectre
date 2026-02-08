@@ -65,7 +65,9 @@ namespace domain::FunctionsOfTime {
  * `Parallel::GlobalCache` for objects held by mutable global cache tags.
  */
 template <size_t MaxDeriv>
-class QuaternionFunctionOfTime : public FunctionOfTime {
+class QuaternionFunctionOfTime
+    : public SPECTRE_CHARM_DERIVED(
+          SINGLE_ARG(QuaternionFunctionOfTime<MaxDeriv>), FunctionOfTime) {
  public:
   QuaternionFunctionOfTime();
   QuaternionFunctionOfTime(QuaternionFunctionOfTime&&);

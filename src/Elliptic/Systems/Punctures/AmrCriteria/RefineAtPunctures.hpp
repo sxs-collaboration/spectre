@@ -29,7 +29,8 @@ namespace Punctures::AmrCriteria {
  * This refinement scheme is expected to yield exponential convergence, despite
  * the presence of the C^2 punctures.
  */
-class RefineAtPunctures : public amr::Criterion {
+class RefineAtPunctures : public amr::Criterion SPECTRE_FINDUS_DERIVED(
+                              RefineAtPunctures, amr::Criterion) {
  public:
   using options = tmpl::list<>;
 

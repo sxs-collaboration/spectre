@@ -142,8 +142,11 @@ namespace ScalarSelfForce::AnalyticData {
  * transition, and (2) we can more easily support the 2nd order self-force
  * source.
  */
-class CircularOrbit : public elliptic::analytic_data::Background,
-                      public elliptic::analytic_data::InitialGuess {
+class CircularOrbit
+    : public SPECTRE_CHARM_DERIVED(CircularOrbit,
+                                   elliptic::analytic_data::Background),
+      public SPECTRE_CHARM_DERIVED(CircularOrbit,
+                                   elliptic::analytic_data::InitialGuess) {
  public:
   struct BlackHoleMass {
     static constexpr Options::String help =

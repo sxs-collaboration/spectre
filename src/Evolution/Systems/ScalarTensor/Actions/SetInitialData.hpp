@@ -46,8 +46,15 @@ namespace ScalarTensor {
 /*!
  * \brief Numeric initial data loaded from volume data files
  */
-class NumericInitialData : public evolution::initial_data::InitialData,
-                           public evolution::NumericInitialData {
+class NumericInitialData
+    : public evolution::initial_data::InitialData,
+      public evolution::NumericInitialData
+#if defined(SPECTRE_USE_FINDUS)
+    ,
+      public virtual findus::serialize::SerializableDerived<
+          NumericInitialData, evolution::initial_data::InitialData>
+#endif
+{
  private:
   using GhNumericId = gh::NumericInitialData;
   using ScalarNumericId = CurvedScalarWave::NumericInitialData;

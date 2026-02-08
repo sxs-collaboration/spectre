@@ -53,7 +53,10 @@ namespace ConstraintDamping {
  * sholud be used for BNS simulations where the coordinate centers of the two
  * stars is tracked separately and there is no expansion control system.
  */
-class TimeDependentTripleGaussian : public DampingFunction<3, Frame::Grid> {
+class TimeDependentTripleGaussian
+    : public SPECTRE_CHARM_DERIVED(
+          TimeDependentTripleGaussian,
+          SINGLE_ARG(DampingFunction<3, Frame::Grid>)) {
  private:
   enum class MovementMethods { ExpansionFactor, ObjectCenters };
 

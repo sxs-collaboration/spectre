@@ -27,7 +27,8 @@
 namespace ray_tracing {
 
 /// Numeric data from volume data files.
-class NumericData : public BackgroundSpacetime {
+class NumericData : public BackgroundSpacetime SPECTRE_FINDUS_DERIVED(
+                        NumericData, BackgroundSpacetime) {
  public:
   NumericData() = default;
   NumericData(const NumericData& /*rhs*/);

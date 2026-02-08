@@ -64,7 +64,10 @@ namespace EquationsOfState {
  */
 template <typename ColdEquationOfState>
 class HybridEos
-    : public EquationOfState<ColdEquationOfState::is_relativistic, 2> {
+    : public SPECTRE_CHARM_DERIVED(
+          SINGLE_ARG(HybridEos<ColdEquationOfState>),
+          SINGLE_ARG(
+              EquationOfState<ColdEquationOfState::is_relativistic, 2>)) {
  public:
   static constexpr size_t thermodynamic_dim = 2;
   static constexpr bool is_relativistic = ColdEquationOfState::is_relativistic;
@@ -106,7 +109,8 @@ class HybridEos
   EQUATION_OF_STATE_FORWARD_DECLARE_MEMBERS(HybridEos, 2)
 
   WRAPPED_PUPable_decl_base_template(  // NOLINT
-      SINGLE_ARG(EquationOfState<is_relativistic, 2>), HybridEos);
+      SINGLE_ARG(EquationOfState<is_relativistic, 2>),
+      SINGLE_ARG(HybridEos<ColdEquationOfState>));
 
   std::unique_ptr<EquationOfState<is_relativistic, 2>> get_clone()
       const override;

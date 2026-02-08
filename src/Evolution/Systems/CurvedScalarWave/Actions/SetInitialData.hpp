@@ -44,7 +44,10 @@ namespace CurvedScalarWave {
 /*!
  * \brief Numeric initial data loaded from volume data files
  */
-class NumericInitialData : public evolution::initial_data::InitialData {
+class NumericInitialData
+    : public evolution::initial_data::InitialData
+      SPECTRE_FINDUS_DERIVED(NumericInitialData,
+                             evolution::initial_data::InitialData) {
  public:
   template <typename Tag>
   struct VarName {

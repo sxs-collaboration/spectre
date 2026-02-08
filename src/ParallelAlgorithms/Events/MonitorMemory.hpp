@@ -76,7 +76,8 @@ namespace Events {
  */
 
 template <size_t Dim>
-class MonitorMemory : public Event {
+class MonitorMemory
+    : public SPECTRE_CHARM_DERIVED(SINGLE_ARG(MonitorMemory<Dim>), Event) {
  private:
   // Reduction data for arrays
   using ReductionData = Parallel::ReductionData<

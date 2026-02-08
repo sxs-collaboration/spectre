@@ -56,7 +56,11 @@ namespace NewtonianEuler::BoundaryConditions {
  *
  */
 template <size_t Dim>
-class Reflection final : public BoundaryCondition<Dim> {
+class Reflection final
+    : public BoundaryCondition<Dim>
+      SPECTRE_FINDUS_DERIVED(
+          SINGLE_ARG(Reflection<Dim>),
+          SINGLE_ARG(domain::BoundaryConditions::BoundaryCondition)) {
  public:
   using options = tmpl::list<>;
   static constexpr Options::String help{

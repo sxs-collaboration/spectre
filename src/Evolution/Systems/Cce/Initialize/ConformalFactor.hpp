@@ -71,7 +71,8 @@ enum class ConformalFactorIterationHeuristic {
  * are chosen to match the boundary value of \f$J\f$ and \f$\partial_r J\f$ on
  * the worldtube boundary in the new coordinates.
  */
-struct ConformalFactor : InitializeJ<false> {
+struct ConformalFactor
+    : public SPECTRE_CHARM_DERIVED(ConformalFactor, InitializeJ<false>) {
   struct AngularCoordinateTolerance {
     using type = double;
     static std::string name() { return "AngularCoordTolerance"; }

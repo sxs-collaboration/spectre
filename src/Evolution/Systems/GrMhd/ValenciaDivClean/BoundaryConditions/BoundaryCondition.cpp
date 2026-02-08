@@ -10,6 +10,8 @@
 
 namespace grmhd::ValenciaDivClean::BoundaryConditions {
 void BoundaryCondition::pup(PUP::er& p) {
+#if defined(SPECTRE_USE_CHARM)
   domain::BoundaryConditions::BoundaryCondition::pup(p);
+#endif  // SPECTRE_USE_CHARM
 }
 }  // namespace grmhd::ValenciaDivClean::BoundaryConditions

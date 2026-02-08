@@ -35,7 +35,9 @@ namespace amr::Criteria {
  * \note This criterion is primarily for testing the mechanics of refinement.
  */
 template <size_t Dim, Type CriteriaType>
-class DriveToTarget : public Criterion {
+class DriveToTarget
+    : public SPECTRE_CHARM_DERIVED(SINGLE_ARG(DriveToTarget<Dim, CriteriaType>),
+                                   Criterion) {
  public:
   /// The target (number of grid points or refinement level) in each dimension
   struct Target {

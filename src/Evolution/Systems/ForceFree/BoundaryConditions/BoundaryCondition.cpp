@@ -9,7 +9,9 @@
 #include "Utilities/GenerateInstantiations.hpp"
 
 namespace ForceFree::BoundaryConditions {
-void BoundaryCondition::pup(PUP::er& p) {
+void BoundaryCondition::pup([[maybe_unused]] PUP::er& p) {
+#if defined(SPECTRE_USE_CHARM)
   domain::BoundaryConditions::BoundaryCondition::pup(p);
+#endif  // SPECTRE_USE_CHARM
 }
 }  // namespace ForceFree::BoundaryConditions

@@ -53,9 +53,11 @@ class DenseTrigger : public SPECTRE_CHARM_PUPable(DenseTrigger) {
  public:
   ~DenseTrigger() override = default;
 
+#if defined(SPECTRE_USE_CHARM)
   /// \cond
   WRAPPED_PUPable_abstract(DenseTrigger);  // NOLINT
   /// \endcond
+#endif  // SPECTRE_USE_CHARM
 
   /// Check whether the trigger fires.  Returns std::nullopt if
   /// insufficient data is available to make the decision.  The
@@ -133,7 +135,8 @@ class DenseTrigger : public SPECTRE_CHARM_PUPable(DenseTrigger) {
     return previous_trigger_time_;
   }
 
-  void pup(PUP::er& p) override {
+  SPECTRE_FINDUS_VIRTUAL()
+  void pup(PUP::er& p) SPECTRE_CHARM_OVERRIDE() {
     p | next_previous_trigger_time_;
     p | previous_trigger_time_;
   }

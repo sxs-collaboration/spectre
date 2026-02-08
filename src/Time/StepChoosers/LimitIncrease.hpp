@@ -19,8 +19,11 @@ class er;
 
 namespace StepChoosers {
 /// Limits step increase to a constant ratio.
-class LimitIncrease : public StepChooser<StepChooserUse::Slab>,
-                      public StepChooser<StepChooserUse::LtsStep> {
+class LimitIncrease
+    : public SPECTRE_CHARM_DERIVED(
+          LimitIncrease, SINGLE_ARG(StepChooser<StepChooserUse::Slab>)),
+      public SPECTRE_CHARM_DERIVED(
+          LimitIncrease, SINGLE_ARG(StepChooser<StepChooserUse::LtsStep>)) {
  public:
   /// \cond
   LimitIncrease() = default;

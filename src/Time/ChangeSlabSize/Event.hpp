@@ -72,7 +72,7 @@ struct StoreNewSlabSize {
 /// integration.  With local time-stepping this controls the interval
 /// between times when the sequences of steps on all elements are
 /// forced to align.
-class ChangeSlabSize : public Event {
+class ChangeSlabSize : public SPECTRE_CHARM_DERIVED(ChangeSlabSize, Event) {
   using ReductionData = Parallel::ReductionData<
       Parallel::ReductionDatum<int64_t, funcl::AssertEqual<>>,
       Parallel::ReductionDatum<TimeStepRequestProcessor, funcl::Plus<>>>;

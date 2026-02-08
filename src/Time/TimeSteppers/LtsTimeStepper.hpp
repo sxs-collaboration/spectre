@@ -38,7 +38,13 @@ class TimeStepId;
 /// private section of the class body, and
 /// LTS_TIME_STEPPER_DEFINE_OVERLOADS(derived_class), which must be
 /// placed in the cpp file.
-class LtsTimeStepper : public virtual TimeStepper {
+class LtsTimeStepper
+    : public virtual TimeStepper
+#if defined(SPECTRE_USE_FINDUS)
+    ,
+      public virtual findus::serialize::SerializableBase<LtsTimeStepper>
+#endif
+{
  public:
   static constexpr bool local_time_stepping = true;
   using provided_time_stepper_interfaces =

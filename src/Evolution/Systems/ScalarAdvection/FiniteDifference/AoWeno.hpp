@@ -54,7 +54,8 @@ namespace ScalarAdvection::fd {
  * ::fd::reconstruction::aoweno_53() for details.
  */
 template <size_t Dim>
-class AoWeno53 : public Reconstructor<Dim> {
+class AoWeno53 : public SPECTRE_CHARM_DERIVED(SINGLE_ARG(AoWeno53<Dim>),
+                                              Reconstructor<Dim>) {
  private:
   using face_vars_tags =
       tmpl::list<ScalarAdvection::Tags::U,

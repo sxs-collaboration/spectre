@@ -160,7 +160,10 @@ namespace CurvedScalarWave::BoundaryConditions {
  */
 template <size_t Dim>
 class ConstraintPreservingSphericalRadiation final
-    : public BoundaryCondition<Dim> {
+    : public BoundaryCondition<Dim>
+      SPECTRE_FINDUS_DERIVED(
+          SINGLE_ARG(ConstraintPreservingSphericalRadiation<Dim>),
+          SINGLE_ARG(domain::BoundaryConditions::BoundaryCondition)) {
  public:
   using options = tmpl::list<>;
   static constexpr Options::String help{

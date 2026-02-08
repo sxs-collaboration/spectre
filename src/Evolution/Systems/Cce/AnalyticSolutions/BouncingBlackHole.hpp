@@ -33,7 +33,8 @@ namespace Cce::Solutions {
  * produce zero news. The solution is a coordinate transform applied to the
  * Schwarzschild solution in Kerr-Schild coordinates.
  */
-struct BouncingBlackHole : public WorldtubeData {
+struct BouncingBlackHole
+    : public SPECTRE_CHARM_DERIVED(BouncingBlackHole, WorldtubeData) {
   struct Amplitude {
     using type = double;
     static constexpr Options::String help{

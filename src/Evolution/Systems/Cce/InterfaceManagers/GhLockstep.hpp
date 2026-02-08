@@ -34,7 +34,8 @@ namespace Cce::InterfaceManagers {
  * current implementations involving dense output and local time-stepping, this
  * interface manager can only be used during self-start.
  */
-class GhLockstep : public GhInterfaceManager {
+class GhLockstep
+    : public SPECTRE_CHARM_DERIVED(GhLockstep, GhInterfaceManager) {
  public:
   using GhInterfaceManager::gh_variables;
 

@@ -28,7 +28,13 @@ namespace Burgers::Solutions {
 ///
 /// \f$u(x, t) = x / (t - t_0)\f$ where \f$t_0\f$ is the shock time.
 class Linear : public evolution::initial_data::InitialData,
-               public MarkAsAnalyticSolution {
+               public MarkAsAnalyticSolution
+#if defined(SPECTRE_USE_FINDUS)
+    ,
+               public virtual findus::serialize::SerializableDerived<
+                   Linear, evolution::initial_data::InitialData>
+#endif
+{
  public:
   struct ShockTime {
     using type = double;

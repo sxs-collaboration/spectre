@@ -44,7 +44,10 @@ class MarkAsPeriodic {
  * conditions since they may not make sense.
  */
 template <typename SystemBoundaryConditionBaseClass>
-struct Periodic final : public SystemBoundaryConditionBaseClass,
+struct Periodic final : public virtual SystemBoundaryConditionBaseClass,
+                        public virtual SPECTRE_CHARM_DERIVED(
+                            Periodic<SystemBoundaryConditionBaseClass>,
+                            domain::BoundaryConditions::BoundaryCondition),
                         public MarkAsPeriodic {
  public:
   using options = tmpl::list<>;
@@ -77,8 +80,11 @@ Periodic<SystemBoundaryConditionBaseClass>::get_clone() const {
 }
 
 template <typename SystemBoundaryConditionBaseClass>
-void Periodic<SystemBoundaryConditionBaseClass>::pup(PUP::er& p) {
+void Periodic<SystemBoundaryConditionBaseClass>::pup(
+    [[maybe_unused]] PUP::er& p) {
+#if defined(SPECTRE_USE_CHARM)
   BoundaryCondition::pup(p);
+#endif  // SPECTRE_USE_CHARM
 }
 
 #if defined(SPECTRE_USE_CHARM)
