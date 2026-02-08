@@ -38,3 +38,10 @@
 /// Wraps the Charm++ macro, see the Charm++ documentation
 #define WRAPPED_PUPable_abstract(className) \
   PUPable_abstract(SINGLE_ARG(className))  // NOLINT
+
+/// \brief Used for the base class to inherit from.
+#define SPECTRE_CHARM_PUPable(className) virtual PUP::able
+
+/// \brief Used to inherit from the correct base classes when building with
+/// Charm++
+#define SPECTRE_CHARM_DERIVED(derivedName, baseName) baseName
