@@ -20,6 +20,9 @@ constexpr size_t minimum_number_of_points(const Basis /*basis*/,
   } else if (quadrature == Quadrature::GaussLobatto) {
     return 2;
     // NOLINTNEXTLINE(bugprone-branch-clone)
+  } else if (quadrature == Quadrature::GaussRadauUpper) {
+    return 1;
+    // NOLINTNEXTLINE(bugprone-branch-clone)
   } else if (quadrature == Quadrature::CellCentered) {
     return 1;
     // NOLINTNEXTLINE(bugprone-branch-clone)

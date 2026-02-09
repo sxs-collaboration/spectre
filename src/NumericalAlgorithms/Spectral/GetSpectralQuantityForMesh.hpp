@@ -75,6 +75,36 @@ decltype(auto) get_spectral_quantity_for_mesh(F&& f, const Mesh<1>& mesh) {
         default:
           ERROR("Missing quadrature case for spectral quantity");
       }
+    case Basis::ZernikeB1:
+      switch (mesh.quadrature(0)) {
+        case Quadrature::GaussRadauUpper:
+          return f(
+              std::integral_constant<Basis, Basis::ZernikeB1>{},
+              std::integral_constant<Quadrature, Quadrature::GaussRadauUpper>{},
+              num_points);
+        default:
+          ERROR("Missing quadrature case for spectral quantity");
+      }
+    case Basis::ZernikeB2:
+      switch (mesh.quadrature(0)) {
+        case Quadrature::GaussRadauUpper:
+          return f(
+              std::integral_constant<Basis, Basis::ZernikeB2>{},
+              std::integral_constant<Quadrature, Quadrature::GaussRadauUpper>{},
+              num_points);
+        default:
+          ERROR("Missing quadrature case for spectral quantity");
+      }
+    case Basis::ZernikeB3:
+      switch (mesh.quadrature(0)) {
+        case Quadrature::GaussRadauUpper:
+          return f(
+              std::integral_constant<Basis, Basis::ZernikeB3>{},
+              std::integral_constant<Quadrature, Quadrature::GaussRadauUpper>{},
+              num_points);
+        default:
+          ERROR("Missing quadrature case for spectral quantity");
+      }
     case Basis::FiniteDifference:
       switch (mesh.quadrature(0)) {
         case Quadrature::CellCentered:
@@ -102,4 +132,50 @@ decltype(auto) get_spectral_quantity_for_mesh(F&& f, const Mesh<1>& mesh) {
             << mesh.basis(0));
   }
 }
+
+template <typename F>
+decltype(auto) get_two_indexed_spectral_quantity_for_mesh(F&& f,
+                                                          const Mesh<1>& mesh,
+                                                          const size_t m,
+                                                          const size_t N) {
+  const auto num_points = mesh.extents(0);
+  switch (mesh.basis(0)) {
+    case Basis::ZernikeB1:
+      switch (mesh.quadrature(0)) {
+        case Quadrature::GaussRadauUpper:
+          return f(
+              std::integral_constant<Basis, Basis::ZernikeB1>{},
+              std::integral_constant<Quadrature, Quadrature::GaussRadauUpper>{},
+              num_points, m, N);
+        default:
+          ERROR("Missing quadrature case for two-indexed spectral quantity");
+      }
+    case Basis::ZernikeB2:
+      switch (mesh.quadrature(0)) {
+        case Quadrature::GaussRadauUpper:
+          return f(
+              std::integral_constant<Basis, Basis::ZernikeB2>{},
+              std::integral_constant<Quadrature, Quadrature::GaussRadauUpper>{},
+              num_points, m, N);
+        default:
+          ERROR("Missing quadrature case for two-indexed spectral quantity");
+      }
+    case Basis::ZernikeB3:
+      switch (mesh.quadrature(0)) {
+        case Quadrature::GaussRadauUpper:
+          return f(
+              std::integral_constant<Basis, Basis::ZernikeB3>{},
+              std::integral_constant<Quadrature, Quadrature::GaussRadauUpper>{},
+              num_points, m, N);
+        default:
+          ERROR("Missing quadrature case for two-indexed spectral quantity");
+      }
+    default:
+      ERROR(
+          "Missing basis case for two-indexed spectral quantity. The "
+          "missing basis is: "
+          << mesh.basis(0));
+  }
+}
+
 }  // namespace Spectral::detail
