@@ -15,6 +15,7 @@
 #include "Evolution/Systems/Cce/BoundaryData.hpp"
 #include "Evolution/Systems/Cce/OptionTags.hpp"
 #include "Evolution/Systems/Cce/Tags.hpp"
+#include "Evolution/Systems/CurvedScalarWave/TagsDeclarations.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/TagsDeclarations.hpp"
 #include "IO/Observer/Actions/GetLockPointer.hpp"
 #include "IO/Observer/ObserverComponent.hpp"
@@ -28,12 +29,6 @@
 #include "Utilities/TMPL.hpp"
 
 /// \cond
-namespace CurvedScalarWave::Tags {
-struct Psi;
-struct Pi;
-template <size_t SpatialDim>
-struct Phi;
-}  // namespace CurvedScalarWave::Tags
 namespace Parallel {
 class NodeLock;
 }  // namespace Parallel

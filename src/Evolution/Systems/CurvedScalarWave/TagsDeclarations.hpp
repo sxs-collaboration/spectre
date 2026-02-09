@@ -5,13 +5,14 @@
 
 #include <cstddef>
 
+#include "DataStructures/Tensor/IndexType.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 
 /// \brief Tags for the curved scalar wave system
 namespace CurvedScalarWave::Tags {
 struct Psi;
 struct Pi;
-template <size_t Dim>
+template <size_t Dim, typename Frame = Frame::Inertial>
 struct Phi;
 
 struct ConstraintGamma1;
