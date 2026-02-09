@@ -3,6 +3,10 @@
 
 set(SPECTRE_REQUIRED_CHARM_VERSION 7.0.0)
 
+if (NOT ("${SPECTRE_PARALLEL_LIB}" STREQUAL "charm"))
+  return()
+endif()
+
 option(USE_SCOTCH_LB "Use the charm++ ScotchLB module" OFF)
 
 set(SCOTCHLB_COMPONENT "")
@@ -83,6 +87,13 @@ add_interface_lib_headers(
   pup.h
   pup_stl.h
   )
+
+set_property(TARGET SpectreFlags
+  APPEND PROPERTY
+  INTERFACE_COMPILE_OPTIONS
+  -DSPECTRE_USE_CHARM
+)
+
 set_property(
   GLOBAL APPEND PROPERTY SPECTRE_THIRD_PARTY_LIBS
   Charmxx::charmxx Charmxx::pup

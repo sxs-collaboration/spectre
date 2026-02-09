@@ -133,6 +133,17 @@ include(StripSymbols)
 include(SetupBoost)
 include(SetupInformer)
 include(SetupCCache)
+set(SPECTRE_PARALLEL_LIB "Charm" CACHE STRING
+  "Parallelization library to use. Either Charm or findus.")
+string(TOLOWER "${SPECTRE_PARALLEL_LIB}" SPECTRE_PARALLEL_LIB)
+if("${SPECTRE_PARALLEL_LIB}" STREQUAL "")
+  set(SPECTRE_PARALLEL_LIB "charm")
+endif()
+if(NOT (SPECTRE_PARALLEL_LIB STREQUAL "charm" OR
+      SPECTRE_PARALLEL_LIB STREQUAL "findus"))
+  message(FATAL_ERROR "SPECTRE_PARALLEL_LIB must be 'charm' or 'findus' \
+(any casing), but got '${SPECTRE_PARALLEL_LIB}' after making it lower case.")
+endif()
 include(SetupCharm)
 include(EnableWarnings)
 include(SetupGoldOrLldLinker)
