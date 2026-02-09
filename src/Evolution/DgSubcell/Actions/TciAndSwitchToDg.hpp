@@ -173,9 +173,7 @@ struct TciAndSwitchToDg {
 
     // This should never be run if we are prohibited from using subcell on this
     // element.
-    ASSERT(not std::binary_search(
-               subcell_options.only_dg_block_ids().begin(),
-               subcell_options.only_dg_block_ids().end(),
+    ASSERT(not subcell_options.only_dg_block_ids().contains(
                db::get<domain::Tags::Element<Dim>>(box).id().block_id()),
            "Should never use subcell on element "
                << db::get<domain::Tags::Element<Dim>>(box).id());
