@@ -58,7 +58,7 @@ class GhLocalTimeStepping : public GhInterfaceManager {
         gh_data_{rhs.gh_data_},
         requests_{rhs.requests_},
         latest_removed_{rhs.latest_removed_} {
-    if (rhs.interpolator_.get() != nullptr) {
+    if (rhs.interpolator_ != nullptr) {
       interpolator_ = rhs.interpolator_->get_clone();
     }
   }
@@ -67,7 +67,7 @@ class GhLocalTimeStepping : public GhInterfaceManager {
       std::unique_ptr<intrp::SpanInterpolator> interpolator)
       : interpolator_{std::move(interpolator)} {}
   GhLocalTimeStepping& operator=(const GhLocalTimeStepping& rhs) {
-    if (rhs.interpolator_.get() != nullptr) {
+    if (rhs.interpolator_ != nullptr) {
       interpolator_ = rhs.interpolator_->get_clone();
     }
     gh_data_ = rhs.gh_data_;
@@ -75,6 +75,7 @@ class GhLocalTimeStepping : public GhInterfaceManager {
     latest_removed_ = rhs.latest_removed_;
     return *this;
   }
+  ~GhLocalTimeStepping() override = default;
 
   WRAPPED_PUPable_decl_template(GhLocalTimeStepping);  // NOLINT
 

@@ -73,7 +73,7 @@ class ObserveTimeStep : public Event {
 
   ObserveTimeStep() = default;
   explicit ObserveTimeStep(const std::string& subfile_name,
-                           const bool output_time);
+                           bool output_time);
 
   using observed_reduction_data_tags = tmpl::list<>;
 
@@ -128,9 +128,9 @@ class ObserveTimeStep : public Event {
   }
 
  private:
-  std::string subfile_path_;
-  bool output_time_;
-  std::vector<std::string> legend_;
+  std::string subfile_path_{};
+  bool output_time_{false};
+  std::vector<std::string> legend_{};
 };
 
 ObserveTimeStep::ObserveTimeStep(const std::string& subfile_name,
