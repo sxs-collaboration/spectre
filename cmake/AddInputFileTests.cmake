@@ -273,12 +273,3 @@ configure_file(
   ${CMAKE_SOURCE_DIR}/cmake/RunInputFileTest.sh
   ${PROJECT_BINARY_DIR}/tmp/RunInputFileTest.sh
   @ONLY)
-
-# These paths should be relative to the input file directory passed to
-# `add_input_file_tests`
-set(INPUT_FILE_WHITELIST
-    "PreprocessCceWorldtube/PreprocessCceWorldtube.yaml"
-    "PreprocessCceWorldtube/AdmFirstOrderDriverPreprocessCceWorldtube.yaml"
-    "PreprocessCceWorldtube/AdmSecondOrderDriverPreprocessCceWorldtube.yaml")
-
-add_input_file_tests("${CMAKE_SOURCE_DIR}/tests/InputFiles/" "${INPUT_FILE_WHITELIST}")
