@@ -145,6 +145,7 @@ if(NOT (SPECTRE_PARALLEL_LIB STREQUAL "charm" OR
 (any casing), but got '${SPECTRE_PARALLEL_LIB}' after making it lower case.")
 endif()
 include(SetupCharm)
+include(SetupFindus)
 include(EnableWarnings)
 include(SetupGoldOrLldLinker)
 
