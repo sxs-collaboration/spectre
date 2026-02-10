@@ -107,7 +107,7 @@ void test_divide_double_numerator(const gsl::not_null<Generator*> generator,
   // Use explicit type (vs auto) for LHS Tensor so the compiler checks the
   // return type of `evaluate`
   const Scalar<DataType> result1 = tenex::evaluate(2.1 / S());
-  CHECK(get(result1) == 2.1 / get(S));
+  CHECK_ITERABLE_APPROX(get(result1), 2.1 / get(S));
 
   // \f$L = R / \sqrt{T^j{}_j}\f$
   const Scalar<DataType> result2 =
@@ -125,7 +125,7 @@ void test_divide_double_numerator(const gsl::not_null<Generator*> generator,
   // \f$L = 1.0 / (R + R + R + R + R + R + R + R + R)\f$
   tenex::evaluate(make_not_null(&result3),
                   1.0 / (R() + R() + R() + R() + R() + R() + R() + R() + R()));
-  CHECK(get(result3) == 1.0 / (9.0 * get(R)));
+  CHECK_ITERABLE_APPROX(get(result3), 1.0 / (9.0 * get(R)));
 }
 
 // \brief Test the division of a tensor expression over a rank 0 tensor
@@ -162,7 +162,7 @@ void test_divide_rank0_denominator(const gsl::not_null<Generator*> generator,
 
   for (size_t i = 0; i < dim; i++) {
     for (size_t j = 0; j < dim; j++) {
-      CHECK(result1.get(j, i) == S.get(i, j) / get(R));
+      CHECK_ITERABLE_APPROX(result1.get(j, i), S.get(i, j) / get(R));
     }
   }
 
