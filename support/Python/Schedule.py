@@ -644,7 +644,13 @@ def schedule(
         logger.debug(f"Run command: {run_command}")
         if submit is False:
             return
-        process = subprocess.Popen(run_command, cwd=run_dir)
+        env = os.environ.copy()
+        # Disable multithreading so our executables have control over the
+        # parallelization
+        env["OMP_NUM_THREADS"] = "1"
+        env["OPENBLAS_NUM_THREADS"] = "1"
+        env["MKL_NUM_THREADS"] = "1"
+        process = subprocess.Popen(run_command, cwd=run_dir, env=env)
         # Realtime streaming of _captured_ stdout and stderr to the console
         # doesn't seem to work reliably, so we just let the process stream
         # directly to the console and wait for it to complete.
