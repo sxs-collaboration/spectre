@@ -25,8 +25,8 @@ void bind_sphere(py::module& m) {
                        const std::optional<double>& inner_cube_sphericity) {
              if (excise.has_value() == inner_cube_sphericity.has_value() or
                  (excise.has_value() and not excise.value())) {
-               throw std::runtime_error(
-                   "Specify either 'inner_cube_sphericity' or 'excise=True'.");
+               throw std::runtime_error{
+                   "Specify either 'inner_cube_sphericity' or 'excise=True'."};
              }
              auto interior = [&inner_cube_sphericity]()
                  -> std::variant<Sphere::Excision, Sphere::InnerCube> {

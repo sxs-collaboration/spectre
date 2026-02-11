@@ -77,7 +77,7 @@ template <typename ExceptionTypeToThrow, typename F>
 #define ERROR(m)                                                             \
   do {                                                                       \
     if (__builtin_is_constant_evaluated()) {                                 \
-      throw std::runtime_error("Failed");                                    \
+      throw std::runtime_error{"Failed"};                                    \
     } else {                                                                 \
       Error_detail::abort_without_fpes<SpectreError>(                        \
           __FILE__, __LINE__, static_cast<const char*>(__PRETTY_FUNCTION__), \
@@ -111,7 +111,7 @@ template <typename ExceptionTypeToThrow, typename F>
 #define ERROR_AS(m, EXCEPTION_TYPE)                                          \
   do {                                                                       \
     if (__builtin_is_constant_evaluated()) {                                 \
-      throw std::runtime_error("Failed");                                    \
+      throw std::runtime_error{"Failed"};                                    \
     } else {                                                                 \
       Error_detail::abort_without_fpes<EXCEPTION_TYPE>(                      \
           __FILE__, __LINE__, static_cast<const char*>(__PRETTY_FUNCTION__), \
@@ -142,7 +142,7 @@ template <typename ExceptionTypeToThrow, typename F>
 #define ERROR_NO_TRACE(m)                                                    \
   do {                                                                       \
     if (__builtin_is_constant_evaluated()) {                                 \
-      throw std::runtime_error("Failed");                                    \
+      throw std::runtime_error{"Failed"};                                    \
     } else {                                                                 \
       const ScopedFpeState disable_fpes_ERROR(false);                        \
       abort_with_error_message_no_trace(                                     \

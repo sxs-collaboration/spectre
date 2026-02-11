@@ -63,28 +63,31 @@ const Matrix& zero_lowest_modes(const Mesh<1>& mesh,
     case Basis::Legendre:
       switch (mesh.quadrature(0)) {
         case Spectral::Quadrature::GaussLobatto: {
-          constexpr size_t max_num_points =
-              Spectral::maximum_number_of_points<Spectral::Basis::Legendre>;
-          constexpr size_t min_num_points = Spectral::minimum_number_of_points<
-              Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto>;
-          const auto cache =
-              make_static_cache<CacheRange<min_num_points, max_num_points + 1>,
-                                CacheRange<0_st, max_num_points>>(
-                  ZeroLowestModesImpl<Spectral::Basis::Legendre,
-                                      Spectral::Quadrature::GaussLobatto>{});
+          const auto cache = make_static_cache<
+              CacheRange<Spectral::minimum_number_of_points<
+                             Spectral::Basis::Legendre,
+                             Spectral::Quadrature::GaussLobatto>,
+                         Spectral::maximum_number_of_points<
+                             Spectral::Basis::Legendre> +
+                             1>,
+              CacheRange<0_st, Spectral::maximum_number_of_points<
+                                   Spectral::Basis::Legendre>>>(
+              ZeroLowestModesImpl<Spectral::Basis::Legendre,
+                                  Spectral::Quadrature::GaussLobatto>{});
           return cache(mesh.number_of_grid_points(), number_of_modes_to_zero);
         }
         case Spectral::Quadrature::Gauss: {
-          constexpr size_t max_num_points =
-              Spectral::maximum_number_of_points<Spectral::Basis::Legendre>;
-          constexpr size_t min_num_points =
-              Spectral::minimum_number_of_points<Spectral::Basis::Legendre,
-                                                 Spectral::Quadrature::Gauss>;
-          const auto cache =
-              make_static_cache<CacheRange<min_num_points, max_num_points + 1>,
-                                CacheRange<0_st, max_num_points>>(
-                  ZeroLowestModesImpl<Spectral::Basis::Legendre,
-                                      Spectral::Quadrature::Gauss>{});
+          const auto cache = make_static_cache<
+              CacheRange<
+                  Spectral::minimum_number_of_points<
+                      Spectral::Basis::Legendre, Spectral::Quadrature::Gauss>,
+                  Spectral::maximum_number_of_points<
+                      Spectral::Basis::Legendre> +
+                      1>,
+              CacheRange<0_st, Spectral::maximum_number_of_points<
+                                   Spectral::Basis::Legendre>>>(
+              ZeroLowestModesImpl<Spectral::Basis::Legendre,
+                                  Spectral::Quadrature::Gauss>{});
           return cache(mesh.number_of_grid_points(), number_of_modes_to_zero);
         }
         default:
@@ -94,28 +97,31 @@ const Matrix& zero_lowest_modes(const Mesh<1>& mesh,
     case Basis::Chebyshev:
       switch (mesh.quadrature(0)) {
         case Spectral::Quadrature::GaussLobatto: {
-          constexpr size_t max_num_points =
-              Spectral::maximum_number_of_points<Spectral::Basis::Chebyshev>;
-          constexpr size_t min_num_points = Spectral::minimum_number_of_points<
-              Spectral::Basis::Chebyshev, Spectral::Quadrature::GaussLobatto>;
-          const auto cache =
-              make_static_cache<CacheRange<min_num_points, max_num_points + 1>,
-                                CacheRange<0_st, max_num_points>>(
-                  ZeroLowestModesImpl<Spectral::Basis::Chebyshev,
-                                      Spectral::Quadrature::GaussLobatto>{});
+          const auto cache = make_static_cache<
+              CacheRange<Spectral::minimum_number_of_points<
+                             Spectral::Basis::Chebyshev,
+                             Spectral::Quadrature::GaussLobatto>,
+                         Spectral::maximum_number_of_points<
+                             Spectral::Basis::Chebyshev> +
+                             1>,
+              CacheRange<0_st, Spectral::maximum_number_of_points<
+                                   Spectral::Basis::Chebyshev>>>(
+              ZeroLowestModesImpl<Spectral::Basis::Chebyshev,
+                                  Spectral::Quadrature::GaussLobatto>{});
           return cache(mesh.number_of_grid_points(), number_of_modes_to_zero);
         }
         case Spectral::Quadrature::Gauss: {
-          constexpr size_t max_num_points =
-              Spectral::maximum_number_of_points<Spectral::Basis::Chebyshev>;
-          constexpr size_t min_num_points =
-              Spectral::minimum_number_of_points<Spectral::Basis::Chebyshev,
-                                                 Spectral::Quadrature::Gauss>;
-          const auto cache =
-              make_static_cache<CacheRange<min_num_points, max_num_points + 1>,
-                                CacheRange<0_st, max_num_points>>(
-                  ZeroLowestModesImpl<Spectral::Basis::Chebyshev,
-                                      Spectral::Quadrature::Gauss>{});
+          const auto cache = make_static_cache<
+              CacheRange<
+                  Spectral::minimum_number_of_points<
+                      Spectral::Basis::Chebyshev, Spectral::Quadrature::Gauss>,
+                  Spectral::maximum_number_of_points<
+                      Spectral::Basis::Chebyshev> +
+                      1>,
+              CacheRange<0_st, Spectral::maximum_number_of_points<
+                                   Spectral::Basis::Chebyshev>>>(
+              ZeroLowestModesImpl<Spectral::Basis::Chebyshev,
+                                  Spectral::Quadrature::Gauss>{});
           return cache(mesh.number_of_grid_points(), number_of_modes_to_zero);
         }
         default:

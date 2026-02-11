@@ -87,7 +87,7 @@ class Index {
     for (size_t i = d + 1; i < Dim; ++i) {
       gsl::at(t, i - 1) = gsl::at(indices_, i);
     }
-    return Index<Dim - 1>(t);
+    return Index<Dim - 1>{t};
   }
 
   /// \cond

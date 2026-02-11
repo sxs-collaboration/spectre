@@ -357,11 +357,11 @@ struct ContainerPackAndUnpack<std::optional<T>, ConversionClassList,
          std::is_same_v<
              packed_type,
              ComplexDataVector>)and UNLIKELY(not static_cast<bool>(unpacked))) {
-      throw std::runtime_error(
+      throw std::runtime_error{
           "Returned type is None in one element of the std::optional's "
           "packed type (DataVector or ComplexDataVector). We can't support "
           "this because we can't just make one element of the packed type be "
-          "an invalid optional.");
+          "an invalid optional."};
     }
     ContainerPackAndUnpack<T, ConversionClassList>::pack(
         make_not_null(&*packed), unpacked, grid_point_index);

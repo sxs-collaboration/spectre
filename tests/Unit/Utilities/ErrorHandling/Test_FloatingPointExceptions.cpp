@@ -35,7 +35,7 @@ namespace {
   volatile double invalid = sqrt(x);
   static_cast<void>(invalid);
   asm("");
-  throw std::runtime_error("wrong");
+  throw std::runtime_error{"wrong"};
 }
 
 [[noreturn]] __attribute__((noinline)) void throw_overflow() {
@@ -43,7 +43,7 @@ namespace {
   overflow = overflow * 1.0e300;
   (void)overflow;
   asm("");
-  throw std::runtime_error("wrong");
+  throw std::runtime_error{"wrong"};
 }
 
 [[noreturn]] __attribute__((noinline)) void throw_div_by_zero() {
@@ -51,7 +51,7 @@ namespace {
   div_by_zero = div_by_zero / 0.0;
   (void)div_by_zero;
   asm("");
-  throw std::runtime_error("wrong");
+  throw std::runtime_error{"wrong"};
 }
 }  // namespace
 #endif

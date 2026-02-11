@@ -22,7 +22,7 @@ std::ostream& operator<<(std::ostream& os, const PrefetchTo cache_location) {
     case PrefetchTo::WriteL2Cache:
       return os << "WriteL2Cache";
     default:
-      throw std::runtime_error("Unknown value of cache_location");
+      throw std::runtime_error{"Unknown value of cache_location"};
   };
 }
 }  // namespace sys

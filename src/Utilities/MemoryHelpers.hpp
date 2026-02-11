@@ -25,13 +25,13 @@ struct unique_type<T[Bound]> { struct invalid_type { }; };
 
 template <typename T, typename... Args>
 typename detail::unique_type<T>::single_object make_unique_for_overwrite() {
-  return std::unique_ptr<T>(new T);
+  return std::unique_ptr<T>{new T};
 }
 
 template <typename T>
 typename detail::unique_type<T>::array make_unique_for_overwrite(
     const size_t num) {
-  return std::unique_ptr<T>(new std::remove_extent_t<T>[num]);
+  return std::unique_ptr<T>{new std::remove_extent_t<T>[num]};
 }
 
 template <typename T, typename... Args>

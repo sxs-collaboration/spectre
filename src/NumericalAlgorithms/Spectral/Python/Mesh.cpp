@@ -80,7 +80,7 @@ void bind_mesh_impl(py::module& m) {  // NOLINT
           },
           [](const py::tuple& state) {
             if (state.size() != 3) {
-              throw std::runtime_error("Invalid state for mesh!");
+              throw std::runtime_error{"Invalid state for mesh!"};
             }
             return Mesh<Dim>(
                 state[0].cast<std::array<size_t, Dim>>(),
