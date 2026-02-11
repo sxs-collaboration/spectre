@@ -16,12 +16,14 @@
 #include "DataStructures/Tensor/Expressions/DataTypeSupport.hpp"
 #include "DataStructures/Tensor/Expressions/IndexPropertyCheck.hpp"
 #include "DataStructures/Tensor/Expressions/LhsTensorSymmAndIndices.hpp"
+#include "DataStructures/Tensor/Expressions/SpatialSpacetimeIndex.hpp"
 #include "DataStructures/Tensor/Expressions/TensorExpression.hpp"
 #include "DataStructures/Tensor/Expressions/TensorIndex.hpp"
 #include "DataStructures/Tensor/Expressions/TensorIndexTransformation.hpp"
 #include "DataStructures/Tensor/Expressions/TimeIndex.hpp"
 #include "DataStructures/Tensor/Structure.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "Utilities/Algorithm.hpp"
 #include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/Gsl.hpp"
@@ -103,6 +105,224 @@ struct CheckNoLhsAntiSymmetries<SymmList<Symm...>> {
   static constexpr bool value = (... and (Symm::value > 0));
 };
 
+/// \brief Given a tensor and its list of tensor indices, return the
+/// canonicalized order of the tensor indices according to the tensor's symmetry
+///
+/// \details
+/// The canonical ordering of a `Tensor`'s `TensorIndex`s
+/// (e.g. `ti::a`, `ti::b`, ti::c) is relevant to sets of indices that are
+/// symmetric. Within each set of symmetric indices, the `TensorIndex` used for
+/// each index can be freely reordered. Given a set of symmetric indices, this
+/// function defines the canonical order of the `TensorIndex`s assigned to them
+/// to be such that the lowest index positions take any generic spatial tensor
+/// indices (e.g. `ti::i`, `ti::j`), the next lowest index positions take any
+/// generic spacetime indices (e.g. `ti::a`, `ti::b`), and the highest index
+/// positions take any concrete time indices (e.g. `ti::t`, `ti::T`). We can
+/// imagine the canonical ordering of symmetric indices to look generally like:
+/// `[spatial indices ... | spacetime indices... | time indices...]`.
+///
+/// Within the subsets of spatial, spacetime, and time indices, the
+/// `TensorIndex`s in each will be ordered such that lowercase indices come
+/// before uppercase, where both are ordered alphabetically. Another way of
+/// saying this is that if we had a rank N `Tensor` that was fully symmetric,
+/// its canonical ordering would take the following form:
+///
+/// ```
+/// [ti::i, ti::j, ti::k, ..., ti::I, ti::J, ti::K, ...,  // spatial
+///  ti::a, ti::b, ti::c, ..., ti::A, ti::B, ti::C, ...,  // spacetime
+///  ti::t, ti::t, ti::t, ..., ti::T, ti::T, ti::T, ...]  // time
+/// ```
+///
+/// Here are some examples:
+///
+/// ```
+/// symmetry: <1, 1, 1>
+/// set of `TensorIndex`s: {ti::t, ti::i, ti::a}
+/// canonical ordering: [ti::i, ti::a, ti::t]
+///
+/// symmetry: <1, 1, 1>
+/// set of `TensorIndex`s: {ti::A, ti::a, ti::b}
+/// canonical ordering: [ti::a, ti::b, ti::A]
+/// ```
+///
+/// When a `Tensor` is not fully symmetric, the `TensorIndex` labels for any
+/// indices that do not have symmetry with any other will simply keep their
+/// label because it cannot be swapped:
+///
+/// ```
+/// symmetry: <1, 2, 1>
+/// set of `TensorIndex`s: {ti::a, ti::b, ti::i}
+/// canonical ordering: [ti::i, ti::b, ti::a]
+///
+/// symmetry: <2, 1, 1>
+/// set of `TensorIndex`s: {ti::t, ti::k, ti::j}
+/// canonical ordering: [ti::t, ti::j, ti::k]
+/// ```
+///
+/// If there is more than one set of symmetric indices, each of the subsets are
+/// individually reordered:
+///
+/// ```
+/// symmetry: <1, 2, 2, 1>
+/// set of `TensorIndex`s: {ti::a, ti::b, ti::t, ti::i}
+/// canonical ordering: [ti::i, ti::b, ti::t, ti::a]
+/// ```
+///
+/// The motivation for this specific canonical reordering is to quickly assess
+/// which components to assign to and which ones to skip when generic spatial
+/// and/or concrete time indices are used for symmetric spacetime indices in the
+/// resulting left hand side tensor when using `TensorExpression`s.
+///
+/// Let's take the spacetime metric \f$g_{ab}\f$ as our motivating example. This
+/// tensor has symmetric spacetime indices, and let's say we only want to assign
+/// to \f$g_{ti}\f$. We want to loop over all 10 independent components of
+/// \f$g_{ab}\f$ and skip components outside of \f$g_{ti}\f$, e.g. \f$g_{xy}\f$
+/// (or \f$g_{12}\f$) and \f$g_{tt}\f$ (or \f$g_{00}\f$). To do so, when we see
+/// a multi-index like `{2, 1}` in our loop, we align `{2, 1}` with `{t, i}` and
+/// ask if the `2` is a valid index for `t` and if the `1` is a valid index for
+/// `i`. `1` is valid for `i`, but `2` is not valid for `t`, so we correctly
+/// skip over `{2, 1}` and don't assign to this component.
+///
+/// However, this simple logic can lead to false positives or negatives when the
+/// indices are symmetric. What if the multi-index we're asking about is
+/// `{0, 1}` (\f$g_{01}\f$ or \f$g_{tx}\f$)? This logic would correctly
+/// determine that this is one of the components we want to assign to. But what
+/// if the multi-index was `{1, 0}`? The logic would incorrectly say to skip
+/// over and not assign to this multi-index because `1` is not a valid index for
+/// `t` and `0` is not valid for `i`. However, because \f$g_{ab}\f$ is
+/// symmetric, both `{0, 1}` and `{1, 0}` should give the same result, but
+/// `{1, 0}` gives us a false negative. Moreover and more generally, assigning
+/// to \f$g_{ti}\f$ and \f$g_{it}\f$ should yield the same behavior (assign to
+/// the same set of components).
+///
+/// One way to address this would be to check the multi-indices for all
+/// permutations of symmetric index values, e.g. is `{0, 1}` *or* `{1, 0}`
+/// valid? And if so, then evaluate it. However, this adds work at runtime and
+/// the number of permutations to check increases as we increase the number of
+/// symmetric indices.
+///
+/// The canonical reordering done by *this* function solves this problem by
+/// reordering the `TensorIndex`s to align nicely with the canonical multi-index
+/// ordering implemented by
+/// `::Tensor_detail::Structure::get_canonical_tensor_index`.
+/// `get_canonical_tensor_index` takes a storage index (which corresponds to an
+/// independent tensor component) and returns a canonical multi-index. This
+/// canonical multi-index is such that index values for symmetric indices will
+/// be ordered to increase from right to left. For example, for a rank 2
+/// symmetric tensor, `{1, 0}` is the canonical multi-index corresponding to the
+/// dependent multi-indices `{0, 1}` and `{1, 0}`. Therefore, `{1, 0}` would be
+/// the multi-index returned by `get_canonical_tensor_index` that corresponds to
+/// the single independent component. In other words, when we loop over the
+/// independent canonical multi-indices, we are looping over the multi-index
+/// permutations that are in the lower triangle of the N-dimensional matrix
+/// containing all multi-index permutations. The canonical reordering of LHS
+/// `TensorIndex`s for symmetric indices that is done by *this* function is
+/// implemented to match this: by making time indices the rightmost, then
+/// spacetime the next rightmost, and then spatial indices leftmost, we
+/// guarantee that looping over the lower triangle permutations given by
+/// `get_canonical_tensor_index` will not produce false positives or negatives
+/// using the earlier simple logic to check for valid multi-indices.
+///
+/// We can use the spacetime metric as an example to demonstrate this. The
+/// lower triangle multi-indices that are looped over are ordered with index
+/// values increasing right to left, e.g. `{0, 0}`, `{1, 0}`, `{2, 0}`,
+/// `{2, 1}`, etc. If a user wants to  assign to \f$g_{ti}\f$, then after this
+/// function internally reorders the LHS indices to \f$g_{it}\f$, when we loop
+/// and encounter `{1, 0}`, we correctly get that we should evaluate this
+/// component without having to check its other permutation. Likewise, if a user
+/// wants to assign to \f$g_{it}\f$, no reordering is done and we get the same
+/// correct behavior.
+///
+/// This function works in general because:
+/// - any `0`s in the symmetric indices will "first be dealt" to any time
+///   `TensorIndex`s in the rightmost index positions and then any spacetime
+///   `TensorIndex`s, where `0` is correctly valid for both, but
+/// - if there are more `0`s than time + spacetime `TensorIndex`s, they will be
+///   "dealt" to spatial indices, which is always correctly invalid, and
+/// - if there are more time `TensorIndex`s than `0`s, values `> 0` will be
+///   "dealt" to time indices, which is also always correctly invalid.
+///
+/// In this way, we don't ever have to check other permutations of sets of
+/// symmetric index values.
+///
+/// \tparam LhsTensorIndices the `TensorIndex`s of the `Tensor`, e.g. `ti::a`,
+/// `ti::b`, `ti::c`
+/// \param canonical_symmetry the canonicalized symmetry values of the tensor
+/// (see `Symmetry` for definition of the canonical ordering of symmetry values)
+/// \return reordered values of `LhsTensorIndices::value...`
+template <typename... LhsTensorIndices, size_t NumIndices>
+constexpr std::array<size_t, NumIndices> get_reordered_tensorindex_values(
+    const std::array<std::int32_t, NumIndices>& canonical_symmetry) {
+  constexpr std::array<size_t, NumIndices> lhs_tensorindex_values = {
+      {LhsTensorIndices::value...}};
+  if constexpr (NumIndices < 2) {
+    return lhs_tensorindex_values;
+  } else {
+    const auto compare = [](const size_t tensorindex_value1,
+                            const size_t tensorindex_value2) {
+      // clang-tidy thinks these two branches are the same but they aren't:
+      //   if (tensorindex_value2 == ti::T.value)
+      //   if (tensorindex_value2 == ti::t.value)
+      // NOLINTNEXTLINE (clang-tidy: bugprone-branch-clone)
+      if (tensorindex_value2 == ti::T.value) {
+        return false;
+      } else if (is_time_index_value(tensorindex_value1)) {
+        return true;
+      } else if (tensorindex_value2 == ti::t.value) {
+        return false;
+      }
+
+      return (is_generic_spacetime_index_value(tensorindex_value1) and
+              is_generic_spatial_index_value(tensorindex_value2)) or
+             (tensorindex_value1 > tensorindex_value2 and
+              is_generic_spacetime_index_value(tensorindex_value1) ==
+                  is_generic_spacetime_index_value(tensorindex_value2));
+    };
+
+    std::array<size_t, NumIndices> reordered_lhs_tensorindex_values =
+        lhs_tensorindex_values;
+
+    std::int32_t max_symm_value = *alg::max_element(canonical_symmetry);
+    std::int32_t symm_value_to_find = 1;
+    while (symm_value_to_find <= max_symm_value) {
+      size_t i = NumIndices - 1;
+      while (true) {
+        // skip forward until we get to the position with the value we want
+        while (i > 0 and canonical_symmetry[i] != symm_value_to_find) {
+          i--;
+        }
+        if (i == 0) {
+          break;
+        }
+
+        size_t max_tensorindex_value = reordered_lhs_tensorindex_values[i];
+        size_t max_index = i;
+
+        size_t j = i - 1;
+        // note: because we need to hit 0 and size_t wraps around to max size_t
+        while (j < NumIndices) {
+          const std::int32_t compare_symm_value = canonical_symmetry[j];
+          const size_t compare_tensorindex_value =
+              reordered_lhs_tensorindex_values[j];
+          if (compare_symm_value == symm_value_to_find and
+              compare(compare_tensorindex_value, max_tensorindex_value)) {
+            max_tensorindex_value = compare_tensorindex_value;
+            max_index = j;
+          }
+          j--;
+        }
+        reordered_lhs_tensorindex_values[max_index] =
+            reordered_lhs_tensorindex_values[i];
+        reordered_lhs_tensorindex_values[i] = max_tensorindex_value;
+        i--;
+      }
+      symm_value_to_find++;
+    }
+
+    return reordered_lhs_tensorindex_values;
+  }
+}
+
 /*!
  * \ingroup TensorExpressionsGroup
  * \brief Evaluate subtrees of the RHS expression or the RHS expression as a
@@ -146,13 +366,15 @@ struct CheckNoLhsAntiSymmetries<SymmList<Symm...>> {
 template <bool EvaluateSubtrees, typename... LhsTensorIndices,
           typename LhsDataType, typename LhsSymmetry, typename LhsIndexList,
           typename Derived, typename RhsDataType, typename RhsSymmetry,
-          typename RhsIndexList, typename... RhsTensorIndices>
+          typename RhsIndexList, typename... RhsTensorIndices,
+          size_t... LhsInts>
 void evaluate_impl(
     const gsl::not_null<Tensor<LhsDataType, LhsSymmetry, LhsIndexList>*>
         lhs_tensor,
     const TensorExpression<Derived, RhsDataType, RhsSymmetry, RhsIndexList,
                            tmpl::list<RhsTensorIndices...>>&
-        rhs_tensorexpression) {
+        rhs_tensorexpression,
+    const std::index_sequence<LhsInts...>& /*lhs_ints*/) {
   constexpr size_t num_lhs_indices = sizeof...(LhsTensorIndices);
   constexpr size_t num_rhs_indices = sizeof...(RhsTensorIndices);
 
@@ -247,15 +469,22 @@ void evaluate_impl(
     }
   }
 
+  constexpr std::array<std::int32_t, num_lhs_indices> lhs_symmetry = {
+      {tmpl::at_c<LhsSymmetry, LhsInts>::value...}};
+  constexpr std::array<size_t, num_lhs_indices> reordered_tensorindex_values =
+      get_reordered_tensorindex_values<LhsTensorIndices...>(lhs_symmetry);
+  using reordered_lhs_tensorindex_list =
+      tmpl::list<TensorIndex<reordered_tensorindex_values[LhsInts]>...>;
+
   constexpr std::array<size_t, num_rhs_indices> index_transformation =
       compute_tensorindex_transformation<num_lhs_indices, num_rhs_indices>(
-          {{LhsTensorIndices::value...}}, {{RhsTensorIndices::value...}});
+          reordered_tensorindex_values, {{RhsTensorIndices::value...}});
 
   // positions of indices in LHS tensor where generic spatial indices are used
   // for spacetime indices
   constexpr auto lhs_spatial_spacetime_index_positions =
       get_spatial_spacetime_index_positions<LhsIndexList,
-                                            lhs_tensorindex_list>();
+                                            reordered_lhs_tensorindex_list>();
   // positions of indices in RHS tensor where generic spatial indices are used
   // for spacetime indices
   constexpr auto rhs_spatial_spacetime_index_positions =
@@ -264,7 +493,7 @@ void evaluate_impl(
 
   // positions of indices in LHS tensor where concrete time indices are used
   constexpr auto lhs_time_index_positions =
-      get_time_index_positions<lhs_tensorindex_list>();
+      get_time_index_positions<reordered_lhs_tensorindex_list>();
 
   using rhs_expression_type =
       typename std::decay_t<decltype(~rhs_tensorexpression)>;
@@ -329,10 +558,11 @@ void evaluate_impl(
  * @param rhs_value the RHS value to assigned
  */
 template <typename... LhsTensorIndices, typename X, typename LhsSymmetry,
-          typename LhsIndexList, typename NumberType>
+          typename LhsIndexList, typename NumberType, size_t... LhsInts>
 void evaluate_impl(
     const gsl::not_null<Tensor<X, LhsSymmetry, LhsIndexList>*> lhs_tensor,
-    const NumberType& rhs_value) {
+    const NumberType& rhs_value,
+    const std::index_sequence<LhsInts...>& /*lhs_ints*/) {
   using lhs_tensor_type = typename std::decay_t<decltype(*lhs_tensor)>;
   constexpr size_t num_lhs_indices = sizeof...(LhsTensorIndices);
   using lhs_tensorindex_list = tmpl::list<LhsTensorIndices...>;
@@ -376,15 +606,23 @@ void evaluate_impl(
            "\n\tgsl::not_null<Tensor<VectorType, ...>*>, number).");
   }
 
+  constexpr std::array<std::int32_t, num_lhs_indices> lhs_symmetry = {
+      {tmpl::at_c<LhsSymmetry, LhsInts>::value...}};
+  constexpr std::array<size_t, num_lhs_indices> reordered_tensorindex_values =
+      get_reordered_tensorindex_values<LhsTensorIndices...>(lhs_symmetry);
+  (void)reordered_tensorindex_values;  // silence false unused variable warning
+  using reordered_lhs_tensorindex_list =
+      tmpl::list<TensorIndex<reordered_tensorindex_values[LhsInts]>...>;
+
   // positions of indices in LHS tensor where generic spatial indices are used
   // for spacetime indices
   constexpr auto lhs_spatial_spacetime_index_positions =
       get_spatial_spacetime_index_positions<LhsIndexList,
-                                            lhs_tensorindex_list>();
+                                            reordered_lhs_tensorindex_list>();
 
   // positions of indices in LHS tensor where concrete time indices are used
   constexpr auto lhs_time_index_positions =
-      get_time_index_positions<lhs_tensorindex_list>();
+      get_time_index_positions<reordered_lhs_tensorindex_list>();
 
   for (size_t i = 0; i < lhs_tensor_type::size(); i++) {
     auto lhs_multi_index =
@@ -455,7 +693,8 @@ void evaluate(
       rhs_expression_type::primary_subtree_contains_primary_start;
   detail::evaluate_impl<evaluate_subtrees,
                         std::decay_t<decltype(LhsTensorIndices)>...>(
-      lhs_tensor, rhs_tensorexpression);
+      lhs_tensor, rhs_tensorexpression,
+      std::make_index_sequence<sizeof...(LhsTensorIndices)>{});
 }
 
 /// @{
@@ -485,16 +724,18 @@ template <auto&... LhsTensorIndices, typename X, typename LhsSymmetry,
 void evaluate(
     const gsl::not_null<Tensor<X, LhsSymmetry, LhsIndexList>*> lhs_tensor,
     const N rhs_value) {
-  detail::evaluate_impl<std::decay_t<decltype(LhsTensorIndices)>...>(lhs_tensor,
-                                                                     rhs_value);
+  detail::evaluate_impl<std::decay_t<decltype(LhsTensorIndices)>...>(
+      lhs_tensor, rhs_value,
+      std::make_index_sequence<sizeof...(LhsTensorIndices)>{});
 }
 template <auto&... LhsTensorIndices, typename X, typename LhsSymmetry,
           typename LhsIndexList, typename N>
 void evaluate(
     const gsl::not_null<Tensor<X, LhsSymmetry, LhsIndexList>*> lhs_tensor,
     const std::complex<N>& rhs_value) {
-  detail::evaluate_impl<std::decay_t<decltype(LhsTensorIndices)>...>(lhs_tensor,
-                                                                     rhs_value);
+  detail::evaluate_impl<std::decay_t<decltype(LhsTensorIndices)>...>(
+      lhs_tensor, rhs_value,
+      std::make_index_sequence<sizeof...(LhsTensorIndices)>{});
 }
 /// @}
 
@@ -563,6 +804,7 @@ auto evaluate(const RhsTE& rhs_tensorexpression) {
   Tensor<typename RhsTE::type, typename lhs_tensor_symm_and_indices::symmetry,
          typename lhs_tensor_symm_and_indices::tensorindextype_list>
       lhs_tensor{};
+
   evaluate<LhsTensorIndices...>(make_not_null(&lhs_tensor),
                                 rhs_tensorexpression);
   return lhs_tensor;
@@ -626,6 +868,7 @@ void update(
           lhs_tensor);
 
   detail::evaluate_impl<false, std::decay_t<decltype(LhsTensorIndices)>...>(
-      lhs_tensor, rhs_tensorexpression);
+      lhs_tensor, rhs_tensorexpression,
+      std::make_index_sequence<sizeof...(LhsTensorIndices)>{});
 }
 }  // namespace tenex
