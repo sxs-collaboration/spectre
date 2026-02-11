@@ -39,7 +39,6 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Literals.hpp"
 #include "Utilities/MakeSignalingNan.hpp"
-#include "Utilities/MemoryHelpers.hpp"
 #include "Utilities/PrettyType.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/SetNumberOfGridPoints.hpp"
@@ -86,10 +85,6 @@ class Variables;
  *
  * If the macro `SPECTRE_NAN_INIT` is defined, the contents are
  * initialized with `NaN`s.
- *
- * `Variables` stores the data it owns in a `std::unique_ptr<double[]>`
- * instead of a `std::vector` because `std::vector` value-initializes its
- * contents, which is very slow.
  */
 template <typename... Tags>
 class Variables<tmpl::list<Tags...>> {
@@ -211,7 +206,7 @@ class Variables<tmpl::list<Tags...>> {
   }
 
   void set_data_ref(pointer const start, const size_t size) {
-    variable_data_impl_dynamic_.reset();
+    variable_data_impl_dynamic_.clear();
     if (start == nullptr) {
       variable_data_ = pointer_type{};
       size_ = 0;
@@ -573,13 +568,20 @@ class Variables<tmpl::list<Tags...>> {
 
   std::array<value_type, number_of_independent_components>
       variable_data_impl_static_;
-  std::unique_ptr<value_type[]> variable_data_impl_dynamic_{};
+  vector_type variable_data_impl_dynamic_{};
   bool owning_{true};
   size_t size_ = 0;
   size_t number_of_grid_points_ = 0;
 
   pointer_type variable_data_;
   tuples::TaggedTuple<Tags...> reference_variable_data_;
+
+#if defined(__GNUC__) and not defined(__clang__) and __GNUC__ < 13
+  // This works around a linker error with old GCC versions producing
+  // undefined references to unique_ptr constructors.  (10 and 11 are
+  // known affected, 12 is untested.)
+  std::unique_ptr<value_type[]> unused_gcc_bug_{};
+#endif
 };
 
 // The above Variables implementation doesn't work for an empty parameter pack,
@@ -655,7 +657,7 @@ template <typename... Tags>
 void Variables<tmpl::list<Tags...>>::initialize(
     const size_t number_of_grid_points) {
   if (number_of_grid_points_ == 0) {
-    variable_data_impl_dynamic_.reset();
+    variable_data_impl_dynamic_.clear();
     size_ = 0;
     number_of_grid_points_ = 0;
   }
@@ -672,10 +674,9 @@ void Variables<tmpl::list<Tags...>>::initialize(
   size_ = number_of_grid_points * number_of_independent_components;
   if (size_ > 0) {
     if (number_of_grid_points_ == 1) {
-      variable_data_impl_dynamic_.reset();
+      variable_data_impl_dynamic_.clear();
     } else {
-      variable_data_impl_dynamic_ =
-          cpp20::make_unique_for_overwrite<value_type[]>(size_);
+      variable_data_impl_dynamic_.destructive_resize(size_);
     }
     add_reference_variable_data();
 #if defined(SPECTRE_NAN_INIT)
@@ -725,7 +726,7 @@ Variables<tmpl::list<Tags...>>::Variables(Variables<tmpl::list<Tags...>>&& rhs)
   if (number_of_grid_points_ == 1) {
     variable_data_impl_static_ = std::move(rhs.variable_data_impl_static_);
   }
-  rhs.variable_data_impl_dynamic_.reset();
+  rhs.variable_data_impl_dynamic_.clear();
   rhs.owning_ = true;
   rhs.size_ = 0;
   rhs.number_of_grid_points_ = 0;
@@ -747,7 +748,7 @@ Variables<tmpl::list<Tags...>>& Variables<tmpl::list<Tags...>>::operator=(
     variable_data_impl_static_ = std::move(rhs.variable_data_impl_static_);
   }
 
-  rhs.variable_data_impl_dynamic_.reset();
+  rhs.variable_data_impl_dynamic_.clear();
   rhs.owning_ = true;
   rhs.size_ = 0;
   rhs.number_of_grid_points_ = 0;
@@ -806,7 +807,7 @@ Variables<tmpl::list<Tags...>>::Variables(
   if (number_of_grid_points_ == 1) {
     variable_data_impl_static_ = std::move(rhs.variable_data_impl_static_);
   }
-  rhs.variable_data_impl_dynamic_.reset();
+  rhs.variable_data_impl_dynamic_.clear();
   rhs.size_ = 0;
   rhs.owning_ = true;
   rhs.number_of_grid_points_ = 0;
@@ -832,7 +833,7 @@ Variables<tmpl::list<Tags...>>& Variables<tmpl::list<Tags...>>::operator=(
     variable_data_impl_static_ = std::move(rhs.variable_data_impl_static_);
   }
 
-  rhs.variable_data_impl_dynamic_.reset();
+  rhs.variable_data_impl_dynamic_.clear();
   rhs.size_ = 0;
   rhs.owning_ = true;
   rhs.number_of_grid_points_ = 0;
@@ -924,7 +925,7 @@ void Variables<tmpl::list<Tags...>>::add_reference_variable_data() {
     if (number_of_grid_points_ == 1) {
       variable_data_.reset(variable_data_impl_static_.data(), size_);
     } else {
-      variable_data_.reset(variable_data_impl_dynamic_.get(), size_);
+      variable_data_.reset(variable_data_impl_dynamic_.data(), size_);
     }
   }
   ASSERT(variable_data_.size() == size_ and
