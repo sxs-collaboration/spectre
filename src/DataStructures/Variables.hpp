@@ -155,6 +155,9 @@ class Variables<tmpl::list<Tags...>> {
   /// `number_of_grid_points * Variables::number_of_independent_components`
   Variables(pointer start, size_t size);
 
+  /// Construct an owning Variables using the storage from an existing vector.
+  explicit Variables(vector_type vector);
+
   Variables(Variables&& rhs);
   Variables& operator=(Variables&& rhs);
 
@@ -241,6 +244,11 @@ class Variables<tmpl::list<Tags...>> {
   pointer data() { return variable_data_.data(); }
   const_pointer data() const { return variable_data_.data(); }
   /// @}
+
+  /// Take ownership of the data used by this Variables as a DataVector or
+  /// similar type.  The Variables must be owning.  This performs no
+  /// allocations or copies unless `number_of_grid_points()` is 1.
+  vector_type release() &&;
 
   /// \cond HIDDEN_SYMBOLS
   /// Needed because of limitations and inconsistency between compiler
@@ -845,6 +853,39 @@ template <typename... Tags>
 Variables<tmpl::list<Tags...>>::Variables(const pointer start,
                                           const size_t size) {
   set_data_ref(start, size);
+}
+
+template <typename... Tags>
+Variables<tmpl::list<Tags...>>::Variables(vector_type vector)
+    : variable_data_impl_dynamic_(std::move(vector)),
+      size_(variable_data_impl_dynamic_.size()),
+      number_of_grid_points_(size_ / number_of_independent_components) {
+  ASSERT(variable_data_impl_dynamic_.is_owning(),
+         "Cannot use a non-owning vector as Variables storage.  To create "
+         "a non-owning variables, use the (pointer, size) constructor.");
+  ASSERT(size_ % number_of_independent_components == 0,
+         "The data size ("
+             << size_
+             << ") must be a multiple of the number of independent components ("
+             << number_of_independent_components << ").");
+  if (number_of_grid_points_ == 1) {
+    std::copy(variable_data_impl_dynamic_.begin(),
+              variable_data_impl_dynamic_.end(),
+              variable_data_impl_static_.begin());
+    variable_data_impl_dynamic_.clear();
+  }
+  add_reference_variable_data();
+}
+
+template <typename... Tags>
+auto Variables<tmpl::list<Tags...>>::release() && -> vector_type {
+  ASSERT(is_owning(), "Cannot release storage from a non-owning Variables.");
+  auto result = std::move(variable_data_impl_dynamic_);
+  if (number_of_grid_points_ == 1) {
+    result = decltype(result)(variable_data_impl_static_);
+  }
+  initialize(0);
+  return result;
 }
 
 template <typename... Tags>

@@ -1349,6 +1349,98 @@ void test_set_number_of_grid_points() {
   CHECK(resized_vector.size() == num_points);
 }
 
+template <typename VectorType>
+void test_vector_ownership() {
+  INFO(pretty_type::short_name<VectorType>());
+  using value_type = typename VectorType::value_type;
+  using Vars = Variables<tmpl::list<TestHelpers::Tags::Vector<VectorType>,
+                                    TestHelpers::Tags::Scalar<VectorType>>>;
+  MAKE_GENERATOR(gen);
+  UniformCustomDistribution<tt::get_fundamental_type_t<value_type>> dist{-100.0,
+                                                                         100.0};
+  {
+    UniformCustomDistribution<size_t> sdist{2, 5};
+    const size_t num_points = sdist(gen);
+    auto vars = make_with_random_values<Vars>(make_not_null(&gen),
+                                              make_not_null(&dist), num_points);
+    const auto orig_scalar = get<TestHelpers::Tags::Scalar<VectorType>>(vars);
+    const auto* const data = vars.data();
+    VectorType transferred = std::move(vars).release();
+    CHECK(transferred.is_owning());
+    CHECK(transferred.data() == data);
+    CHECK(vars.size() == 0);  // NOLINT(bugprone-use-after-move)
+    const Vars transferred_back(std::move(transferred));
+    CHECK(transferred_back.is_owning());
+    CHECK(transferred_back.data() == data);
+    CHECK(transferred_back.number_of_grid_points() == num_points);
+    CHECK(transferred_back.size() ==
+          num_points * Vars::number_of_independent_components);
+    CHECK(get<TestHelpers::Tags::Scalar<VectorType>>(transferred_back) ==
+          orig_scalar);
+  }
+  {
+    INFO("One point");
+    auto vars = make_with_random_values<Vars>(make_not_null(&gen),
+                                              make_not_null(&dist), 1_st);
+    const auto orig_scalar = get<TestHelpers::Tags::Scalar<VectorType>>(vars);
+    const auto* const data = vars.data();
+    std::array<value_type, Vars::number_of_independent_components> copy{};
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+    std::copy(data, data + Vars::number_of_independent_components, copy.data());
+    VectorType transferred = std::move(vars).release();
+    CHECK(transferred.is_owning());
+    CHECK(transferred.size() == Vars::number_of_independent_components);
+    const auto* const transferred_data = transferred.data();
+    CHECK(transferred_data != data);
+    CHECK(std::equal(transferred.begin(), transferred.end(), copy.begin(),
+                     copy.end()));
+    CHECK(vars.size() == 0);  // NOLINT(bugprone-use-after-move)
+    const Vars transferred_back(std::move(transferred));
+    CHECK(transferred_back.is_owning());
+    CHECK(transferred_back.data() != transferred_data);
+    CHECK(transferred_back.number_of_grid_points() == 1);
+    CHECK(transferred_back.size() == Vars::number_of_independent_components);
+    CHECK(get<TestHelpers::Tags::Scalar<VectorType>>(transferred_back) ==
+          orig_scalar);
+  }
+  {
+    INFO("Zero points");
+    Vars vars{};
+    VectorType transferred = std::move(vars).release();
+    CHECK(transferred.is_owning());
+    CHECK(transferred.size() == 0);
+    CHECK(vars.size() == 0);  // NOLINT(bugprone-use-after-move)
+    const Vars transferred_back(std::move(transferred));
+    CHECK(transferred_back.is_owning());
+    CHECK(transferred_back.number_of_grid_points() == 0);
+    CHECK(transferred_back.size() == 0);
+  }
+#ifdef SPECTRE_DEBUG
+  CHECK_THROWS_WITH(
+      ([] {
+        VectorType vector(Vars::number_of_independent_components);
+        VectorType non_owning_vector(vector.data(), vector.size());
+        Vars{std::move(non_owning_vector)};
+      }()),
+      Catch::Matchers::ContainsSubstring(
+          "Cannot use a non-owning vector as Variables storage."));
+  CHECK_THROWS_WITH(
+      ([] {
+        VectorType vector(Vars::number_of_independent_components + 1);
+        Vars{std::move(vector)};
+      }()),
+      Catch::Matchers::ContainsSubstring(
+          "must be a multiple of the number of independent components"));
+  CHECK_THROWS_WITH(([] {
+                      VectorType vector(Vars::number_of_independent_components);
+                      Vars vars{vector.data(), vector.size()};
+                      std::move(vars).release();
+                    }()),
+                    Catch::Matchers::ContainsSubstring(
+                        "Cannot release storage from a non-owning Variables."));
+#endif  // defined(SPECTRE_DEBUG)
+}
+
 void test_asserts() {
 #ifdef SPECTRE_DEBUG
   CHECK_THROWS_WITH(
@@ -1524,6 +1616,14 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Variables", "[DataStructures][Unit]") {
     test_set_number_of_grid_points<ComplexModalVector>();
     test_set_number_of_grid_points<DataVector>();
     test_set_number_of_grid_points<ModalVector>();
+  }
+
+  {
+    INFO("Test transferring ownership with vectors");
+    test_vector_ownership<ComplexDataVector>();
+    test_vector_ownership<ComplexModalVector>();
+    test_vector_ownership<DataVector>();
+    test_vector_ownership<ModalVector>();
   }
 
   TestHelpers::db::test_simple_tag<Tags::TempScalar<1>>("TempTensor1");
