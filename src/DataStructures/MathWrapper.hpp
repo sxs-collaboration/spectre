@@ -7,6 +7,7 @@
 #include <complex>
 #include <cstddef>
 #include <type_traits>
+#include <utility>
 
 #include "DataStructures/ComplexDataVector.hpp"
 #include "DataStructures/DataVector.hpp"
@@ -182,3 +183,27 @@ template <typename T>
 using math_wrapper_type = typename decltype(make_math_wrapper(
     std::declval<tmpl::conditional_t<std::is_const_v<T>, const T&,
                                      gsl::not_null<T*>>>()))::value_type;
+
+/// \ingroup DataStructuresGroup
+/// A fundamental overload for owning type-erasure.  Returns its argument
+/// unchanged.
+///
+/// Additional overloads should always return the `math_wrapper_type`
+/// of their argument, and should be implemented to avoid allocations
+/// and copying whenever possible.
+/// @{
+inline double into_math_wrapper_type(double&& data) { return data; }
+
+inline std::complex<double> into_math_wrapper_type(
+    std::complex<double>&& data) {
+  return data;
+}
+
+inline DataVector into_math_wrapper_type(DataVector&& data) {
+  return std::move(data);
+}
+
+inline ComplexDataVector into_math_wrapper_type(ComplexDataVector&& data) {
+  return std::move(data);
+}
+/// @}

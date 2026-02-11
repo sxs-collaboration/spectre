@@ -1303,6 +1303,28 @@ void test_math_wrapper() {
 }
 
 template <typename VectorType>
+void test_into_math_wrapper_type() {
+  INFO(pretty_type::short_name<VectorType>());
+  MAKE_GENERATOR(gen);
+  using value_type = typename VectorType::value_type;
+  UniformCustomDistribution<tt::get_fundamental_type_t<value_type>> value_dist{
+      -10.0, 10.0};
+  UniformCustomDistribution<size_t> sdist{2, 5};
+  const size_t num_points = sdist(gen);
+  using Vars = Variables<tmpl::list<TestHelpers::Tags::Vector<VectorType>,
+                                    TestHelpers::Tags::Scalar<VectorType>>>;
+  const auto vars = make_with_random_values<Vars>(
+      make_not_null(&gen), make_not_null(&value_dist), num_points);
+  auto copy = vars;
+  const auto* const data = copy.data();
+  auto type_erased = into_math_wrapper_type(std::move(copy));
+  static_assert(std::is_same_v<decltype(type_erased), math_wrapper_type<Vars>>);
+  CHECK(type_erased.data() == data);
+  CHECK(std::equal(type_erased.begin(), type_erased.end(), vars.data(),
+                   vars.data() + vars.size()));
+}
+
+template <typename VectorType>
 void test_contains_allocations() {
   INFO(pretty_type::short_name<VectorType>());
   using Vars = Variables<tmpl::list<TestHelpers::Tags::Vector<VectorType>,
@@ -1592,6 +1614,15 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Variables", "[DataStructures][Unit]") {
     test_math_wrapper<ComplexModalVector>();
     test_math_wrapper<DataVector>();
     test_math_wrapper<ModalVector>();
+  }
+
+  {
+    INFO("Test into_math_wrapper_type");
+    // Only implemented for nodal data.
+    test_into_math_wrapper_type<ComplexDataVector>();
+    // test_math_wrapper<ComplexModalVector>();
+    test_into_math_wrapper_type<DataVector>();
+    // test_math_wrapper<ModalVector>();
   }
 
   {

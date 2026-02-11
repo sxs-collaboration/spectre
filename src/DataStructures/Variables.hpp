@@ -1244,6 +1244,11 @@ auto make_math_wrapper(const Variables<Tags>& data) {
   return make_math_wrapper(referencing);
 }
 
+template <typename Tags>
+auto into_math_wrapper_type(Variables<Tags>&& data) {
+  return into_math_wrapper_type(std::move(data).release());
+}
+
 /// \cond
 template <size_t I, class... Tags>
 inline constexpr typename tmpl::at_c<tmpl::list<Tags...>, I>::type&& get(
