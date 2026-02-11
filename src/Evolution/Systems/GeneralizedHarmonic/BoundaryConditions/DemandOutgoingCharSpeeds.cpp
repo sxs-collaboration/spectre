@@ -52,18 +52,9 @@ DemandOutgoingCharSpeeds<Dim>::dg_demand_outgoing_char_speeds(
   const auto char_speeds = characteristic_speeds(
       gamma_1, lapse, shift, outward_directed_normal_covector,
       face_mesh_velocity);
-  Scalar<DataVector> normal_dot_mesh_velocity;
-  if (face_mesh_velocity.has_value()) {
-    normal_dot_mesh_velocity = dot_product(outward_directed_normal_covector,
-                                           face_mesh_velocity.value());
-  }
   double min_speed = std::numeric_limits<double>::signaling_NaN();
   for (size_t i = 0; i < char_speeds.size(); ++i) {
-    if (face_mesh_velocity.has_value()) {
-      min_speed = min(gsl::at(char_speeds, i) - get(normal_dot_mesh_velocity));
-    } else {
-      min_speed = min(gsl::at(char_speeds, i));
-    }
+    min_speed = min(gsl::at(char_speeds, i));
     if (min_speed < 0.0) {
       return {MakeString{}
               << "DemandOutgoingCharSpeeds boundary condition violated with "

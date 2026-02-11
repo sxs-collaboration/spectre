@@ -623,12 +623,28 @@ def compute_intermediate_vars(
         "i,ia->a", unit_interface_normal_vector, two_index_constraint_
     )
 
-    char_speeds = [
-        ght.char_speed_upsi(gamma1, lapse, shift, normal_covector),
-        ght.char_speed_uzero(gamma1, lapse, shift, normal_covector),
-        ght.char_speed_uplus(gamma1, lapse, shift, normal_covector),
-        ght.char_speed_uminus(gamma1, lapse, shift, normal_covector),
-    ]
+    if face_mesh_velocity is not None:
+        char_speeds = [
+            ght.char_speed_upsi_moving_mesh(
+                gamma1, lapse, shift, normal_covector, face_mesh_velocity
+            ),
+            ght.char_speed_uzero_moving_mesh(
+                gamma1, lapse, shift, normal_covector, face_mesh_velocity
+            ),
+            ght.char_speed_uplus_moving_mesh(
+                gamma1, lapse, shift, normal_covector, face_mesh_velocity
+            ),
+            ght.char_speed_uminus_moving_mesh(
+                gamma1, lapse, shift, normal_covector, face_mesh_velocity
+            ),
+        ]
+    else:
+        char_speeds = [
+            ght.char_speed_upsi(gamma1, lapse, shift, normal_covector),
+            ght.char_speed_uzero(gamma1, lapse, shift, normal_covector),
+            ght.char_speed_uplus(gamma1, lapse, shift, normal_covector),
+            ght.char_speed_uminus(gamma1, lapse, shift, normal_covector),
+        ]
 
     return (
         unit_interface_normal_vector,
@@ -720,8 +736,6 @@ def error(
             d_phi,
             d_spacetime_metric,
         )
-        char_speeds = char_speeds - np.dot(normal_covector, face_mesh_velocity)
-        char_speeds[0] -= np.dot(normal_covector, face_mesh_velocity) * gamma1
         if (np.amin(char_speeds) < 0.0) and (
             np.dot(face_mesh_velocity, normal_covector) > 0.0
         ):
@@ -808,9 +822,6 @@ def dt_corrs_ConstraintPreservingGauge(
         d_phi,
         d_spacetime_metric,
     )
-    if face_mesh_velocity is not None:
-        char_speeds = char_speeds - np.dot(normal_covector, face_mesh_velocity)
-        char_speeds[0] -= np.dot(normal_covector, face_mesh_velocity) * gamma1
     if np.amin(char_speeds) >= 0.0:
         return (pi * 0, phi * 0, pi * 0, pi * 0)
     dt_v_psi = constraint_preserving_corrections_dt_v_psi(
@@ -919,9 +930,6 @@ def dt_corrs_ConstraintPreservingGaugePhysical(
         d_phi,
         d_spacetime_metric,
     )
-    if face_mesh_velocity is not None:
-        char_speeds = char_speeds - np.dot(normal_covector, face_mesh_velocity)
-        char_speeds[0] -= np.dot(normal_covector, face_mesh_velocity) * gamma1
     if np.amin(char_speeds) >= 0.0:
         return (pi * 0, phi * 0, pi * 0, pi * 0)
     dt_v_psi = constraint_preserving_corrections_dt_v_psi(

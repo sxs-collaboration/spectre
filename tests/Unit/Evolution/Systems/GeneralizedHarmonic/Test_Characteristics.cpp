@@ -60,14 +60,14 @@ Scalar<DataVector> speed_with_index(
       gh::characteristic_speeds(gamma_1, lapse, shift, normal, {})[Index]};
 }
 
-template <size_t Dim, typename Frame>
-Scalar<DataVector> char_speed_upsi_with_moving_mesh(
+template <size_t Index, size_t Dim, typename Frame>
+Scalar<DataVector> char_speed_with_moving_mesh(
     const Scalar<DataVector>& gamma_1, const Scalar<DataVector>& lapse,
     const tnsr::I<DataVector, Dim, Frame>& shift,
     const tnsr::i<DataVector, Dim, Frame>& normal,
     const tnsr::I<DataVector, Dim, Frame>& mesh_velocity) {
   return Scalar<DataVector>{gh::characteristic_speeds(
-      gamma_1, lapse, shift, normal, {mesh_velocity})[0]};
+      gamma_1, lapse, shift, normal, {mesh_velocity})[Index]};
 }
 
 template <size_t Dim, typename Frame>
@@ -89,8 +89,17 @@ void test_characteristic_speeds() {
                                     {{{-2.0, 2.0}}}, used_for_size);
 
   pypp::check_with_random_values<1>(
-      char_speed_upsi_with_moving_mesh<Dim, Frame>, "TestFunctions",
+      char_speed_with_moving_mesh<0, Dim, Frame>, "TestFunctions",
       "char_speed_upsi_moving_mesh", {{{-2.0, 2.0}}}, used_for_size);
+  pypp::check_with_random_values<1>(
+      char_speed_with_moving_mesh<1, Dim, Frame>, "TestFunctions",
+      "char_speed_uzero_moving_mesh", {{{-2.0, 2.0}}}, used_for_size);
+  pypp::check_with_random_values<1>(
+      char_speed_with_moving_mesh<2, Dim, Frame>, "TestFunctions",
+      "char_speed_uplus_moving_mesh", {{{-2.0, 2.0}}}, used_for_size);
+  pypp::check_with_random_values<1>(
+      char_speed_with_moving_mesh<3, Dim, Frame>, "TestFunctions",
+      "char_speed_uminus_moving_mesh", {{{-2.0, 2.0}}}, used_for_size);
 }
 
 template <size_t Dim, typename Frame>
@@ -116,8 +125,17 @@ void test_characteristic_speeds_on_strahlkorper() {
                                     {{{-2.0, 2.0}}}, used_for_size);
 
   pypp::check_with_random_values<1>(
-      char_speed_upsi_with_moving_mesh<Dim, Frame>, "TestFunctions",
+      char_speed_with_moving_mesh<0, Dim, Frame>, "TestFunctions",
       "char_speed_upsi_moving_mesh", {{{-2.0, 2.0}}}, used_for_size);
+  pypp::check_with_random_values<1>(
+      char_speed_with_moving_mesh<1, Dim, Frame>, "TestFunctions",
+      "char_speed_uzero_moving_mesh", {{{-2.0, 2.0}}}, used_for_size);
+  pypp::check_with_random_values<1>(
+      char_speed_with_moving_mesh<3, Dim, Frame>, "TestFunctions",
+      "char_speed_uminus_moving_mesh", {{{-2.0, 2.0}}}, used_for_size);
+  pypp::check_with_random_values<1>(
+      char_speed_with_moving_mesh<2, Dim, Frame>, "TestFunctions",
+      "char_speed_uplus_moving_mesh", {{{-2.0, 2.0}}}, used_for_size);
 }
 
 // Test return-by-reference GH char speeds by comparing to Kerr-Schild
