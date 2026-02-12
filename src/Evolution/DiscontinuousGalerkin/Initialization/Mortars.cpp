@@ -27,7 +27,8 @@
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/MakeString.hpp"
 
-namespace evolution::dg::Initialization::detail {
+namespace evolution::dg::Initialization {
+namespace detail {
 
 template <size_t Dim>
 ::dg::MortarMap<Dim, evolution::dg::MortarDataHolder<Dim>> empty_mortar_data(
@@ -340,4 +341,193 @@ GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
 
 #undef INSTANTIATION
 #undef DIM
-}  // namespace evolution::dg::Initialization::detail
+}  // namespace detail
+
+template <size_t Dim, bool LocalTimeStepping>
+void ProjectMortars<Dim, LocalTimeStepping>::apply(
+    const gsl::not_null<
+        ::dg::MortarMap<Dim, evolution::dg::MortarDataHolder<Dim>>*>
+        mortar_data,
+    const gsl::not_null<::dg::MortarMap<Dim, Mesh<Dim - 1>>*> mortar_mesh,
+    const gsl::not_null<::dg::MortarMap<Dim, MortarInfo<Dim>>*> mortar_infos,
+    const gsl::not_null<::dg::MortarMap<Dim, TimeStepId>*>
+        mortar_next_temporal_id,
+    const gsl::not_null<
+        DirectionMap<Dim, std::optional<magnitude_and_normal_type>>*>
+        normal_covector_and_magnitude,
+    const gsl::not_null<mortar_data_history_type*> mortar_data_history,
+    const Domain<Dim>& domain, const Mesh<Dim>& new_mesh,
+    const Element<Dim>& new_element,
+    const ::dg::MortarMap<Dim, Mesh<Dim>>& neighbor_mesh,
+    const TimeStepId& current_temporal_id,
+    const std::pair<Mesh<Dim>, Element<Dim>>& old_mesh_and_element) {
+  const auto& [old_mesh, old_element] = old_mesh_and_element;
+  ASSERT(old_element.id() == new_element.id(),
+         "p-refinement should not have changed the element id");
+
+  const bool mesh_changed = old_mesh != new_mesh;
+
+  auto new_mortar_infos = detail::mortar_infos(
+      domain, new_element, new_mesh, neighbor_mesh, LocalTimeStepping);
+
+  // The old mortars must be removed from the MortarMaps before the
+  // new ones can be added to avoid potentially exceeding the
+  // MortarMap capacity, so we collect the new data and add it at
+  // the end.
+  using NewMortarEntry =
+      std::tuple<DirectionalId<Dim>, Mesh<Dim - 1>,
+                 std::optional<typename mortar_data_history_type::mapped_type>>;
+  std::vector<NewMortarEntry> new_mortars{};
+
+  for (const auto& [direction, neighbors] : new_element.neighbors()) {
+    const auto sliced_away_dimension = direction.dimension();
+    const auto old_face_mesh = old_mesh.slice_away(sliced_away_dimension);
+    const auto new_face_mesh = new_mesh.slice_away(sliced_away_dimension);
+    const bool face_mesh_changed = old_face_mesh != new_face_mesh;
+    if (face_mesh_changed) {
+      (*normal_covector_and_magnitude)[direction] = std::nullopt;
+    }
+    for (const auto& neighbor : neighbors) {
+      const DirectionalId<Dim> mortar_id{direction, neighbor};
+      const auto& new_neighbor_mesh = neighbor_mesh.at(mortar_id);
+      const auto new_mortar_mesh = ::dg::mortar_mesh(
+          new_face_mesh, new_neighbor_mesh.slice_away(sliced_away_dimension));
+      if (mortar_mesh->contains(mortar_id)) {
+        // Set the mortar mesh, but do not project any existing mesh
+        // data.  The mesh needs to have a valid value in order to
+        // project data when we send to our neighbors.  If the mesh
+        // resolution needs to be changed afterwards because of a
+        // change in the neighbor, that's fine, because
+        // element-to-mortar projections are lossless.  Projecting
+        // existing data would be bad, because we might erroneously
+        // decrease the mesh resolution, losing the high-order
+        // modes.
+        mortar_mesh->at(mortar_id) = new_mortar_mesh;
+        // mortar_data does not need projecting as it has already been used
+        // and will be resized automatically
+        if (mesh_changed and not mortar_data_history->empty()) {
+          auto& boundary_history = mortar_data_history->at(mortar_id);
+          auto local_history = boundary_history.local();
+          const auto project_local_boundary_data =
+              [&new_face_mesh, &new_mesh](
+                  const TimeStepId& /* id */,
+                  const gsl::not_null<::evolution::dg::MortarData<Dim>*> data) {
+                return p_project_geometric_data(data, new_face_mesh, new_mesh);
+              };
+          local_history.for_each(project_local_boundary_data);
+        }
+      } else {
+        const auto& new_mortar_size =
+            new_mortar_infos.at(mortar_id).mortar_size();
+
+        std::optional<typename mortar_data_history_type::mapped_type>
+            new_history{};
+        for (const auto& [old_mortar_id, old_history] : *mortar_data_history) {
+          if (old_mortar_id.direction() != direction or
+              not overlapping(old_mortar_id.id(), neighbor)) {
+            continue;
+          }
+          const auto& old_mortar_size =
+              mortar_infos->at(old_mortar_id).mortar_size();
+          if (not new_history.has_value()) {
+            new_history.emplace(old_history);
+            new_history->remote().clear();
+            auto local_history = new_history->local();
+            if (mesh_changed) {
+              const auto project_face_data =
+                  [&new_face_mesh, &new_mesh](
+                      const TimeStepId& /* id */,
+                      const gsl::not_null<::evolution::dg::MortarData<Dim>*>
+                          data) {
+                    return p_project_geometric_data(data, new_face_mesh,
+                                                    new_mesh);
+                  };
+              local_history.for_each(project_face_data);
+            }
+            const auto project_mortar_data =
+                [&new_mortar_mesh, &new_mortar_size, &old_mortar_size](
+                    const TimeStepId& /* id */,
+                    const gsl::not_null<::evolution::dg::MortarData<Dim>*>
+                        data) {
+                  const auto& old_mortar_mesh = data->mortar_mesh.value();
+                  const auto mortar_projection_matrices =
+                      Spectral::projection_matrices(
+                          old_mortar_mesh, new_mortar_mesh, old_mortar_size,
+                          new_mortar_size);
+                  DataVector& vars = data->mortar_data.value();
+                  vars = apply_matrices(mortar_projection_matrices, vars,
+                                        old_mortar_mesh.extents());
+                  data->mortar_mesh = new_mortar_mesh;
+                  return true;
+                };
+            local_history.for_each(project_mortar_data);
+          } else {
+            auto local_history = new_history->local();
+            const auto old_local_history = old_history.local();
+            const auto project_local_mortar_data =
+                [&new_mortar_mesh, &new_mortar_size, &old_local_history,
+                 &old_mortar_size](
+                    const TimeStepId& id,
+                    const gsl::not_null<::evolution::dg::MortarData<Dim>*>
+                        data) {
+                  const auto& old_data = old_local_history.data(id);
+                  const auto& old_mortar_mesh = old_data.mortar_mesh.value();
+                  const auto mortar_projection_matrices =
+                      Spectral::projection_matrices(
+                          old_mortar_mesh, new_mortar_mesh, old_mortar_size,
+                          new_mortar_size);
+                  data->mortar_data.value() += apply_matrices(
+                      mortar_projection_matrices, old_data.mortar_data.value(),
+                      old_mortar_mesh.extents());
+                  return true;
+                };
+            local_history.for_each(project_local_mortar_data);
+          }
+        }
+
+        new_mortars.emplace_back(mortar_id, new_mortar_mesh, new_history);
+      }
+    }
+  }
+
+  if (not new_mortars.empty()) {
+    domain::remove_nonexistent_neighbors(mortar_mesh, new_element);
+    domain::remove_nonexistent_neighbors(mortar_next_temporal_id, new_element);
+    domain::remove_nonexistent_neighbors(mortar_data_history, new_element);
+    for (auto& [mortar_id, new_mortar_mesh, new_history] : new_mortars) {
+      mortar_mesh->emplace(mortar_id, std::move(new_mortar_mesh));
+      // We only do h refinement at a slab boundary, so we know all
+      // the neighbors are aligned with us temporally.
+      mortar_next_temporal_id->emplace(mortar_id, current_temporal_id);
+      if (new_history.has_value()) {
+        mortar_data_history->emplace(mortar_id, *new_history);
+      }
+    }
+  }
+
+  *mortar_data = detail::empty_mortar_data(new_element);
+  *mortar_infos = std::move(new_mortar_infos);
+
+  for (const auto& direction : new_element.external_boundaries()) {
+    const auto sliced_away_dimension = direction.dimension();
+    const auto old_face_mesh = old_mesh.slice_away(sliced_away_dimension);
+    const auto new_face_mesh = new_mesh.slice_away(sliced_away_dimension);
+    const bool face_mesh_changed = old_face_mesh != new_face_mesh;
+    if (face_mesh_changed) {
+      (*normal_covector_and_magnitude)[direction] = std::nullopt;
+    }
+  }
+}
+
+#define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
+#define LTS(data) BOOST_PP_TUPLE_ELEM(1, data)
+
+#define INSTANTIATION(r, data) \
+  template struct ProjectMortars<DIM(data), LTS(data)>;
+
+GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3), (true, false))
+
+#undef INSTANTIATION
+#undef LTS
+#undef DIM
+}  // namespace evolution::dg::Initialization

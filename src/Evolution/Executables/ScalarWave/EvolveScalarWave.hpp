@@ -338,7 +338,8 @@ struct EvolutionMetavars {
                                             typename system::variables_tag>,
         ::amr::projectors::ProjectTensors<volume_dim,
                                           ::ScalarWave::Tags::ConstraintGamma2>,
-        evolution::dg::Initialization::ProjectMortars<EvolutionMetavars>,
+        evolution::dg::Initialization::ProjectMortars<volume_dim,
+                                                      local_time_stepping>,
         Initialization::ProjectTimeStepperHistory<EvolutionMetavars>,
         evolution::Actions::ProjectRunEventsAndDenseTriggers,
         ::amr::projectors::DefaultInitialize<

@@ -665,9 +665,9 @@ void test_p_refine(
       std::move(mortar_next_temporal_id),
       std::move(normal_covector_and_magnitude), std::move(mortar_data_history));
 
-  db::mutate_apply<evolution::dg::Initialization::ProjectMortars<
-      Metavariables<Dim, UsingLts>>>(make_not_null(&box),
-                                     std::make_pair(old_mesh, old_element));
+  db::mutate_apply<
+      evolution::dg::Initialization::ProjectMortars<Dim, UsingLts>>(
+      make_not_null(&box), std::make_pair(old_mesh, old_element));
 
   CHECK(db::get<Tags::MortarData<Dim>>(box) == expected_mortar_data);
   CHECK(db::get<Tags::MortarMesh<Dim>>(box) == expected_mortar_mesh);
@@ -1344,8 +1344,8 @@ void test_h_refinement() {
         },
         make_not_null(&box));
 
-    db::mutate_apply<evolution::dg::Initialization::ProjectMortars<
-        Metavariables<2, LocalTimeStepping>>>(
+    db::mutate_apply<
+        evolution::dg::Initialization::ProjectMortars<2, LocalTimeStepping>>(
         make_not_null(&box),
         std::pair(get<domain::Tags::Mesh<2>>(orig_single_items),
                   get<domain::Tags::Element<2>>(orig_single_items)));
@@ -1402,8 +1402,8 @@ void test_h_refinement() {
         },
         make_not_null(&box));
 
-    db::mutate_apply<evolution::dg::Initialization::ProjectMortars<
-        Metavariables<2, LocalTimeStepping>>>(
+    db::mutate_apply<
+        evolution::dg::Initialization::ProjectMortars<2, LocalTimeStepping>>(
         make_not_null(&box),
         std::pair(get<domain::Tags::Mesh<2>>(orig_single_items),
                   get<domain::Tags::Element<2>>(orig_single_items)));
@@ -1546,9 +1546,9 @@ void test_h_refinement() {
         {id_sw, {temporal_id, std::move(history_sw)}},
         {id_se, {temporal_id, std::move(history_se)}}};
 
-    db::mutate_apply<evolution::dg::Initialization::ProjectMortars<
-        Metavariables<2, LocalTimeStepping>>>(make_not_null(&box),
-                                              children_items);
+    db::mutate_apply<
+        evolution::dg::Initialization::ProjectMortars<2, LocalTimeStepping>>(
+        make_not_null(&box), children_items);
 
     const ::dg::MortarMap<2, Mesh<1>> expected_mortar_meshes{
         {mortar_id_a, lgl_mesh<1>(4)},
@@ -1611,9 +1611,9 @@ void test_h_refinement() {
         },
         make_not_null(&box));
 
-    db::mutate_apply<evolution::dg::Initialization::ProjectMortars<
-        Metavariables<2, LocalTimeStepping>>>(make_not_null(&box),
-                                              orig_single_items);
+    db::mutate_apply<
+        evolution::dg::Initialization::ProjectMortars<2, LocalTimeStepping>>(
+        make_not_null(&box), orig_single_items);
 
     const ::dg::MortarMap<2, Mesh<1>> expected_mortar_meshes{
         {mortar_id_a, lgl_mesh<1>(4)},
@@ -1696,9 +1696,9 @@ void test_h_refinement() {
         },
         make_not_null(&box));
 
-    db::mutate_apply<evolution::dg::Initialization::ProjectMortars<
-        Metavariables<2, LocalTimeStepping>>>(make_not_null(&box),
-                                              orig_single_items);
+    db::mutate_apply<
+        evolution::dg::Initialization::ProjectMortars<2, LocalTimeStepping>>(
+        make_not_null(&box), orig_single_items);
 
     const ::dg::MortarMap<2, Mesh<1>> expected_mortar_meshes{
         {mortar_id_a, lgl_mesh<1>(4)},
@@ -1781,9 +1781,9 @@ void test_h_refinement() {
         },
         make_not_null(&box));
 
-    db::mutate_apply<evolution::dg::Initialization::ProjectMortars<
-        Metavariables<2, LocalTimeStepping>>>(make_not_null(&box),
-                                              orig_single_items);
+    db::mutate_apply<
+        evolution::dg::Initialization::ProjectMortars<2, LocalTimeStepping>>(
+        make_not_null(&box), orig_single_items);
 
     const ::dg::MortarMap<2, Mesh<1>> expected_mortar_meshes{
         {mortar_id_sw_nw, lgl_mesh<1>(3)},
@@ -1863,9 +1863,9 @@ void test_h_refinement() {
         },
         make_not_null(&box));
 
-    db::mutate_apply<evolution::dg::Initialization::ProjectMortars<
-        Metavariables<2, LocalTimeStepping>>>(make_not_null(&box),
-                                              orig_single_items);
+    db::mutate_apply<
+        evolution::dg::Initialization::ProjectMortars<2, LocalTimeStepping>>(
+        make_not_null(&box), orig_single_items);
 
     const ::dg::MortarMap<2, Mesh<1>> expected_mortar_meshes{
         {mortar_id_se_ne, lgl_mesh<1>(3)},
@@ -2008,8 +2008,7 @@ void test_h_refinement_mortar_sizes_local_impl(
       std::move(normal_covector_and_magnitude), std::move(mortar_data_history),
       mesh, std::move(element), std::move(neighbor_meshes), time_step_id);
 
-  db::mutate_apply<
-      evolution::dg::Initialization::ProjectMortars<Metavariables<3, true>>>(
+  db::mutate_apply<evolution::dg::Initialization::ProjectMortars<3, true>>(
       make_not_null(&box), std::pair(mesh, old_element));
 
   check_boundary_histories(db::get<mortar_data_history_tag>(box),
@@ -2145,8 +2144,7 @@ void test_h_refinement_mortar_sizes_remote_impl_split(
       mortar_data_history_tag::type{}, mesh, std::move(element),
       std::move(neighbor_meshes), time_step_id);
 
-  db::mutate_apply<
-      evolution::dg::Initialization::ProjectMortars<Metavariables<3, true>>>(
+  db::mutate_apply<evolution::dg::Initialization::ProjectMortars<3, true>>(
       make_not_null(&box), parent_items);
 
   check_boundary_histories(db::get<mortar_data_history_tag>(box),
@@ -2245,8 +2243,7 @@ void test_h_refinement_mortar_sizes_remote_impl_join(
       mortar_data_history_tag::type{}, mesh, std::move(element),
       std::move(neighbor_meshes), time_step_id);
 
-  db::mutate_apply<
-      evolution::dg::Initialization::ProjectMortars<Metavariables<3, true>>>(
+  db::mutate_apply<evolution::dg::Initialization::ProjectMortars<3, true>>(
       make_not_null(&box), children_items);
 
   check_boundary_histories(db::get<mortar_data_history_tag>(box),
@@ -2310,10 +2307,9 @@ SPECTRE_TEST_CASE("Unit.Evolution.DG.Initialization.Mortars",
   domain::creators::register_derived_with_charm();
   test_nonconforming_blocks<false>();
 
-  static_assert(
-      tt::assert_conforms_to_v<evolution::dg::Initialization::ProjectMortars<
-                                   Metavariables<1, false>>,
-                               amr::protocols::Projector>);
+  static_assert(tt::assert_conforms_to_v<
+                evolution::dg::Initialization::ProjectMortars<1, false>,
+                amr::protocols::Projector>);
   test_p_refine_gts<1>();
   test_p_refine_gts<2>();
   test_p_refine_gts<3>();
