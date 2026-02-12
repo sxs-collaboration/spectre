@@ -13,10 +13,10 @@
 #include "DataStructures/DataVector.hpp"
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/DirectionalId.hpp"
+#include "Domain/Structure/DirectionalIdMap.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Structure/Side.hpp"
 #include "Evolution/DiscontinuousGalerkin/CleanMortarHistory.hpp"
-#include "Evolution/DiscontinuousGalerkin/CleanMortarHistory.tpp"
 #include "Evolution/DiscontinuousGalerkin/MortarData.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarInfo.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarTags.hpp"
@@ -30,15 +30,6 @@
 #include "Utilities/Gsl.hpp"
 
 namespace {
-struct Var : db::SimpleTag {
-  using type = double;
-};
-
-struct System {
-  static constexpr size_t volume_dim = 2;
-  using variables_tag = Var;
-};
-
 SPECTRE_TEST_CASE("Unit.Evolution.DG.CleanMortarHistory", "[Unit][Evolution]") {
   const Slab slab(1., 3.);
 
@@ -76,8 +67,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.DG.CleanMortarHistory", "[Unit][Evolution]") {
               std::make_unique<TimeSteppers::AdamsBashforth>(2)),
           std::move(mortar_histories), std::move(mortar_infos));
 
-  db::mutate_apply<evolution::dg::CleanMortarHistory<System>>(
-      make_not_null(&box));
+  db::mutate_apply<evolution::dg::CleanMortarHistory<2>>(make_not_null(&box));
 
   for (const auto& mortar : lts_mortars) {
     CHECK(db::get<evolution::dg::Tags::MortarDataHistory<2>>(box)

@@ -775,7 +775,7 @@ struct GhValenciaDivCleanTemplateBase<
       Actions::MutateApply<CleanHistory<system>>,
       tmpl::conditional_t<
           local_time_stepping,
-          Actions::MutateApply<evolution::dg::CleanMortarHistory<system>>,
+          Actions::MutateApply<evolution::dg::CleanMortarHistory<volume_dim>>,
           tmpl::list<>>,
       Limiters::Actions::SendData<derived_metavars>,
       Limiters::Actions::Limit<derived_metavars>,
@@ -813,7 +813,7 @@ struct GhValenciaDivCleanTemplateBase<
       Actions::MutateApply<CleanHistory<system>>,
       tmpl::conditional_t<
           local_time_stepping,
-          Actions::MutateApply<evolution::dg::CleanMortarHistory<system>>,
+          Actions::MutateApply<evolution::dg::CleanMortarHistory<volume_dim>>,
           tmpl::list<>>,
       parameterized_deleptonization,
       VariableFixing::Actions::FixVariables<
@@ -847,7 +847,7 @@ struct GhValenciaDivCleanTemplateBase<
       Actions::MutateApply<CleanHistory<system>>,
       tmpl::conditional_t<
           local_time_stepping,
-          Actions::MutateApply<evolution::dg::CleanMortarHistory<system>>,
+          Actions::MutateApply<evolution::dg::CleanMortarHistory<volume_dim>>,
           tmpl::list<>>,
       Actions::MutateApply<
           grmhd::GhValenciaDivClean::subcell::FixConservativesAndComputePrims<

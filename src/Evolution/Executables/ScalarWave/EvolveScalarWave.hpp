@@ -255,7 +255,7 @@ struct EvolutionMetavars {
       Actions::MutateApply<CleanHistory<system>>,
       tmpl::conditional_t<
           local_time_stepping,
-          Actions::MutateApply<evolution::dg::CleanMortarHistory<system>>,
+          Actions::MutateApply<evolution::dg::CleanMortarHistory<volume_dim>>,
           tmpl::list<>>,
       tmpl::conditional_t<
           use_filtering,

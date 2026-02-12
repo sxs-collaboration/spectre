@@ -6,6 +6,5 @@ spectre_target_sources(
   PRIVATE
   Events.cpp
   Imex.cpp
-  Mortars.cpp
   TimeStepping.cpp
   )

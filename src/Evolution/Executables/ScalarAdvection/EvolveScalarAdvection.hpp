@@ -260,7 +260,7 @@ struct EvolutionMetavars {
       Actions::MutateApply<CleanHistory<system>>,
       tmpl::conditional_t<
           local_time_stepping,
-          Actions::MutateApply<evolution::dg::CleanMortarHistory<system>>,
+          Actions::MutateApply<evolution::dg::CleanMortarHistory<volume_dim>>,
           tmpl::list<>>,
       Limiters::Actions::SendData<EvolutionMetavars>,
       Limiters::Actions::Limit<EvolutionMetavars>>>;
@@ -282,7 +282,7 @@ struct EvolutionMetavars {
       Actions::MutateApply<CleanHistory<system>>,
       tmpl::conditional_t<
           local_time_stepping,
-          Actions::MutateApply<evolution::dg::CleanMortarHistory<system>>,
+          Actions::MutateApply<evolution::dg::CleanMortarHistory<volume_dim>>,
           tmpl::list<>>,
       Actions::Goto<evolution::dg::subcell::Actions::Labels::EndOfSolvers>,
       Actions::Label<evolution::dg::subcell::Actions::Labels::BeginSubcell>,
@@ -299,7 +299,7 @@ struct EvolutionMetavars {
       Actions::MutateApply<CleanHistory<system>>,
       tmpl::conditional_t<
           local_time_stepping,
-          Actions::MutateApply<evolution::dg::CleanMortarHistory<system>>,
+          Actions::MutateApply<evolution::dg::CleanMortarHistory<volume_dim>>,
           tmpl::list<>>,
       evolution::dg::subcell::Actions::TciAndSwitchToDg<
           ScalarAdvection::subcell::TciOnFdGrid<volume_dim>>,

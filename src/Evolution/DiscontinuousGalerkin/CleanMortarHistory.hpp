@@ -44,21 +44,19 @@ class not_null;
 namespace evolution::dg {
 /// Mutator to remove old entries from the mortar histories in a
 /// local-time-stepping DG evolution.
-template <typename System>
+template <size_t Dim>
 struct CleanMortarHistory {
-  static constexpr size_t dim = System::volume_dim;
-
-  using return_tags = tmpl::list<evolution::dg::Tags::MortarDataHistory<dim>>;
+  using return_tags = tmpl::list<evolution::dg::Tags::MortarDataHistory<Dim>>;
   using argument_tags =
-      tmpl::list<::Tags::TimeStepper<LtsTimeStepper>, Tags::MortarInfo<dim>>;
+      tmpl::list<::Tags::TimeStepper<LtsTimeStepper>, Tags::MortarInfo<Dim>>;
 
   static void apply(
       gsl::not_null<DirectionalIdMap<
-          dim, TimeSteppers::BoundaryHistory<::evolution::dg::MortarData<dim>,
-                                             ::evolution::dg::MortarData<dim>,
+          Dim, TimeSteppers::BoundaryHistory<::evolution::dg::MortarData<Dim>,
+                                             ::evolution::dg::MortarData<Dim>,
                                              DataVector>>*>
           history,
       const LtsTimeStepper& time_stepper,
-      const DirectionalIdMap<dim, MortarInfo<dim>>& mortar_info);
+      const DirectionalIdMap<Dim, MortarInfo<Dim>>& mortar_info);
 };
 }  // namespace evolution::dg
