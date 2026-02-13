@@ -59,6 +59,7 @@ std::string registration_name() {
 template <typename... Registrants>
 void register_classes_with_charm(
     const tmpl::list<Registrants...> /*meta*/ = {}) {
+#if defined(SPECTRE_USE_CHARM)
   const auto helper = [](auto class_v) {
     using class_to_register = typename decltype(class_v)::type;
     // We use PUPable_reg2 because this takes as a second argument the name of
@@ -69,6 +70,7 @@ void register_classes_with_charm(
   };
   (void)helper;
   EXPAND_PACK_LEFT_TO_RIGHT(helper(tmpl::type_<Registrants>{}));
+#endif
 }
 
 /// Register derived classes of the `Base` class
