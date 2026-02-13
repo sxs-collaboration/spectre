@@ -35,6 +35,7 @@ spectre_target_headers(
   AdvanceTime.hpp
   ApproximateTime.hpp
   BoundaryHistory.hpp
+  BoundaryHistory.tpp
   ChangeStepSize.hpp
   ChangeTimeStepperOrder.hpp
   ChangeTimeStepperOrder.tpp

@@ -32,6 +32,7 @@ spectre_target_sources(
   CleanMortarHistory.cpp
   InboxBoundaryData.cpp
   InboxTags.cpp
+  InstantiateBoundaryHistory.cpp
   InterfaceDataPolicy.cpp
   InterpolatedBoundaryData.cpp
   MortarData.cpp

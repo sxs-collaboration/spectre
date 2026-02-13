@@ -17,6 +17,7 @@
 #include "DataStructures/DataVector.hpp"
 #include "Helpers/Time/TimeSteppers/TimeStepperTestUtils.hpp"
 #include "Time/BoundaryHistory.hpp"
+#include "Time/BoundaryHistory.tpp"
 #include "Time/EvolutionOrdering.hpp"
 #include "Time/History.hpp"
 #include "Time/Slab.hpp"

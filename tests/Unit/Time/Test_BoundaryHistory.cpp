@@ -16,6 +16,7 @@
 
 #include "Framework/TestHelpers.hpp"
 #include "Time/BoundaryHistory.hpp"
+#include "Time/BoundaryHistory.tpp"
 #include "Time/Slab.hpp"
 #include "Time/TimeStepId.hpp"
 #include "Utilities/GetOutput.hpp"
