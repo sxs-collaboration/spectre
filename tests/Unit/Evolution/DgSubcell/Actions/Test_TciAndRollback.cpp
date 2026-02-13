@@ -341,12 +341,11 @@ void test_impl(const bool rdmp_fails, const bool tci_fails,
       [&subcell_options](const auto& direction_and_neighbor) {
         const size_t first_block_id =
             direction_and_neighbor.second.ids().begin()->block_id();
-        return alg::found(subcell_options.only_dg_block_ids(), first_block_id);
+        return subcell_options.only_dg_block_ids().contains(first_block_id);
       });
 
-  const bool self_block_dg_only = std::binary_search(
-      subcell_options.only_dg_block_ids().begin(),
-      subcell_options.only_dg_block_ids().end(), element.id().block_id());
+  const bool self_block_dg_only =
+      subcell_options.only_dg_block_ids().contains(element.id().block_id());
 
   // assign value of passed in variable.  Used as a test in apply() above
   metavars::expected_evolve_on_dg_after_tci_failure =

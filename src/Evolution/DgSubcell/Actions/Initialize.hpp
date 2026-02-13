@@ -167,15 +167,12 @@ struct SetSubcellGrid {
         [&subcell_options](const auto& direction_and_neighbor) {
           const size_t first_block_id =
               direction_and_neighbor.second.ids().begin()->block_id();
-          return std::binary_search(subcell_options.only_dg_block_ids().begin(),
-                                    subcell_options.only_dg_block_ids().end(),
-                                    first_block_id);
+          return subcell_options.only_dg_block_ids().contains(first_block_id);
         });
 
     const bool subcell_allowed_in_element =
-        not std::binary_search(subcell_options.only_dg_block_ids().begin(),
-                               subcell_options.only_dg_block_ids().end(),
-                               element.id().block_id()) and
+        not subcell_options.only_dg_block_ids().contains(
+            element.id().block_id()) and
         not bordering_dg_block;
     const bool cell_is_not_on_external_boundary =
         db::get<::domain::Tags::Element<Dim>>(box)
