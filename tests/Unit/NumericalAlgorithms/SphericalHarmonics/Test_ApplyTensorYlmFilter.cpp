@@ -163,6 +163,7 @@ void test_modal_nodal_invertibility() {
       });
 }
 
+template<typename VarsList>
 void test_apply_filter(const size_t num_to_kill) {
   constexpr size_t radial_extents = 2;
   constexpr size_t ell_max = 9;
@@ -173,12 +174,12 @@ void test_apply_filter(const size_t num_to_kill) {
 
   // Fill modal variables with random numbers in each mode.
   // Note that we fill only valid modes in the storage.
-  Variables<filter_detail::gh_spacetime_vars_list> inertial_modal_vars(
+  Variables<VarsList> inertial_modal_vars(
       spectral_mesh_size, 0.0);
   MAKE_GENERATOR(generator);
   std::uniform_real_distribution<double> dist{-1.0, 1.0};
   ylm::SpherepackIterator it(ell_max, ell_max, radial_extents, true);
-  tmpl::for_each<filter_detail::gh_spacetime_vars_list>(
+  tmpl::for_each<VarsList>(
       [&inertial_modal_vars, &it, &dist,
        &generator]<class Tag>(const tmpl::type_<Tag> /*meta*/) {
         auto& tensor = get<Tag>(inertial_modal_vars);
@@ -197,13 +198,13 @@ void test_apply_filter(const size_t num_to_kill) {
       });
 
   // Do modal to nodal.
-  Variables<filter_detail::gh_spacetime_vars_list> inertial_nodal_vars(
+  Variables<VarsList> inertial_nodal_vars(
       physical_mesh_size);
   filter_detail::modal_to_nodal_ylm(make_not_null(&inertial_nodal_vars),
                                     inertial_modal_vars, ylm, radial_extents);
 
   // Save a copy of the modal vars
-  const Variables<filter_detail::gh_spacetime_vars_list>
+  const Variables<VarsList>
       test_inertial_modal_vars(inertial_modal_vars);
 
   // Even if num_to_kill is zero, the filter does
@@ -220,12 +221,15 @@ void test_apply_filter(const size_t num_to_kill) {
       make_not_null(&filter_matrix_scalar), ell_max, num_to_kill, std::nullopt);
   fill_filter<tnsr::i<DataVector, 3>::structure>(
       make_not_null(&filter_matrix_i), ell_max, num_to_kill, std::nullopt);
-  fill_filter<tnsr::ii<DataVector, 3>::structure>(
-      make_not_null(&filter_matrix_ii), ell_max, num_to_kill, std::nullopt);
-  fill_filter<tnsr::ij<DataVector, 3>::structure>(
-      make_not_null(&filter_matrix_ij), ell_max, num_to_kill, std::nullopt);
-  fill_filter<tnsr::ijj<DataVector, 3>::structure>(
-      make_not_null(&filter_matrix_kii), ell_max, num_to_kill, std::nullopt);
+  if constexpr (std::is_same_v<
+                    VarsList, typename filter_detail::gh_spacetime_vars_list>) {
+    fill_filter<tnsr::ii<DataVector, 3>::structure>(
+        make_not_null(&filter_matrix_ii), ell_max, num_to_kill, std::nullopt);
+    fill_filter<tnsr::ij<DataVector, 3>::structure>(
+        make_not_null(&filter_matrix_ij), ell_max, num_to_kill, std::nullopt);
+    fill_filter<tnsr::ijj<DataVector, 3>::structure>(
+        make_not_null(&filter_matrix_kii), ell_max, num_to_kill, std::nullopt);
+  }
 
   // Make up bogus jacobians with random numbers, and make
   // them diagonally dominant so that they are invertible.
@@ -249,18 +253,28 @@ void test_apply_filter(const size_t num_to_kill) {
 
   // Now carry out the entire filtering algorithm,
   // using inertial_modal_vars as temporary storage.
-  apply_tensor_ylm_filter(
-      make_not_null(&inertial_nodal_vars), make_not_null(&inertial_modal_vars),
-      jac_inertial_to_grid, jac_grid_to_inertial, filter_matrix_scalar,
-      filter_matrix_i, filter_matrix_ii, filter_matrix_ij, filter_matrix_kii,
-      ell_max, radial_extents);
+  if constexpr (std::is_same_v<
+                    VarsList, typename filter_detail::gh_spacetime_vars_list>) {
+    apply_tensor_ylm_filter(make_not_null(&inertial_nodal_vars),
+                            make_not_null(&inertial_modal_vars),
+                            jac_inertial_to_grid, jac_grid_to_inertial,
+                            filter_matrix_scalar, filter_matrix_i,
+                            filter_matrix_ii, filter_matrix_ij,
+                            filter_matrix_kii, ell_max, radial_extents);
+  } else {
+    apply_tensor_ylm_filter(make_not_null(&inertial_nodal_vars),
+                            make_not_null(&inertial_modal_vars),
+                            jac_inertial_to_grid, jac_grid_to_inertial,
+                            filter_matrix_scalar, filter_matrix_i, ell_max,
+                            radial_extents);
+  }
 
   // Do nodal to modal of the result (for comparison).
   filter_detail::nodal_to_modal_ylm(make_not_null(&inertial_modal_vars),
                                     inertial_nodal_vars, ylm, radial_extents);
 
   // We should get back the original modal vars, to roundoff.
-  tmpl::for_each<filter_detail::gh_spacetime_vars_list>(
+  tmpl::for_each<VarsList>(
       [&inertial_modal_vars, &test_inertial_modal_vars, &ell_max, &num_to_kill,
        &it]<class Tag>(const tmpl::type_<Tag> /*meta*/) {
         constexpr size_t num_independent_components =
@@ -319,8 +333,10 @@ SPECTRE_TEST_CASE("Unit.SphericalHarmonics.ApplyTensorYlmFilter",
   test_break_spacetime_vars_into_spatial_pieces();
   test_transform_spatial_tensors_to_different_frame();
   test_modal_nodal_invertibility();
-  test_apply_filter(0);
-  test_apply_filter(5);
+  test_apply_filter<filter_detail::gh_spacetime_vars_list>(0);
+  test_apply_filter<filter_detail::gh_spacetime_vars_list>(5);
+  test_apply_filter<filter_detail::sw_vars_list<Frame::Inertial>>(0);
+  test_apply_filter<filter_detail::sw_vars_list<Frame::Inertial>>(5);
 }
 }  // namespace
 }  // namespace ylm::TensorYlm
