@@ -69,6 +69,7 @@ spectre_target_headers(
 target_link_libraries(
   ${LIBRARY}
   PRIVATE
+  Autodiff
   Boost::boost
   PUBLIC
   DataStructures

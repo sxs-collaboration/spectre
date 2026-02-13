@@ -87,6 +87,8 @@ class Equiangular {
 
   static bool is_identity() { return false; }
 
+  static constexpr bool supports_hessian{true};
+
  private:
   friend bool operator==(const Equiangular& lhs, const Equiangular& rhs);
 

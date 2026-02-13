@@ -966,6 +966,8 @@ class Wedge {
 
   static constexpr bool is_identity() { return false; }
 
+  static constexpr bool supports_hessian{true};
+
  private:
   // maps between 2D and 3D choices for coordinate axis orientations
   static constexpr size_t radial_coord =

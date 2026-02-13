@@ -265,6 +265,8 @@ class FlatSide {
 
   static bool is_identity() { return false; }
 
+  static constexpr bool supports_hessian{false};
+
  private:
   friend bool operator==(const FlatSide& lhs, const FlatSide& rhs);
   std::array<double, 3> center_{};

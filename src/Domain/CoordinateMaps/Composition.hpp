@@ -18,6 +18,8 @@
 #include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
 #include "Utilities/Serialization/CharmPupable.hpp"
 #include "Utilities/TMPL.hpp"
+#include "Utilities/Autodiff/Autodiff.hpp"
+#include "Utilities/Simd/Simd.hpp"
 
 namespace domain::CoordinateMaps {
 
@@ -59,6 +61,34 @@ namespace domain::CoordinateMaps {
  * `Frames`. For example, if `Frames = tmpl::list<Frame::ElementLogical,
  * Frame::BlockLogical, Frame::Inertial>`, then the composition has two maps:
  * ElementLogical -> BlockLogical and BlockLogical -> Inertial.
+ *
+ * ## Note on inverse Hessian computation
+ * Below we work out the algebra for computing the inverse Hessian
+ * used in this struct (if SPECTRE_AUTODIFF=ON). Suppose we have
+ * a composition of maps \f$ \xi^i \longrightarrow \cdots \longrightarrow x^i
+ * \longrightarrow y^i \f$, where \f$ \xi^i \f$ are the source coordinates, \f$
+ * x^i \f$ are some intermediate coordinates, and \f$ y^i \f$ are the final
+ * target coordinates,  We compute inverse Hessian by first
+ * propagating autodiff dual types through the composed `call_impl` function to
+ * automatically get the Hessian \f$ \frac{\partial^2 y^i}{\partial\xi^j
+ * \partial\xi^k} \f$ Then the inverse Hessian is computed by the identity
+ * \f[ \frac{\partial^2\xi^i}{\partial y^m \partial y^n} =
+ * -\frac{\partial\xi^i}{\partial y^j}\frac{\partial\xi^k}{\partial y^m}
+ * \frac{\partial\xi^l}{\partial y^n}\frac{\partial^2 y^j}{\partial\xi^k
+ * \partial\xi^l}, \f] where the inverse Jacobian is passed in as a function
+ * argument.
+ *
+ * See Test_Composition.cpp for a different implementation. The current
+ * implementation is chosen in production as it is faster when we have
+ * the inverse Jacobian already, and in most cases we do.
+ *
+ * ## Note on auto differentiation
+ * We use forward mode autodiff here as it is simpler to implement and
+ * has better optimization than the reverse mode. Reverse mode in
+ * the [Autodiff](https://github.com/autodiff/autodiff) library
+ * has higher cost per propagation and does not support taping.
+ * Also see this
+ * [github issue](https://github.com/autodiff/autodiff/issues/332).
  */
 template <typename Frames, size_t Dim,
           typename Is = std::make_index_sequence<tmpl::size<Frames>::value - 1>>
@@ -74,6 +104,7 @@ struct Composition<Frames, Dim, std::index_sequence<Is...>>
   using Base = CoordinateMapBase<SourceFrame, TargetFrame, Dim>;
   using FuncOfTimeMap = std::unordered_map<
       std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>;
+  using Base::operator();
 
   Composition() = default;
   Composition(const Composition& rhs) { *this = rhs; }
@@ -121,6 +152,8 @@ struct Composition<Frames, Dim, std::index_sequence<Is...>>
     return function_of_time_names_;
   }
 
+  bool supports_hessian() const override;
+
   tnsr::I<double, Dim, TargetFrame> operator()(
       tnsr::I<double, Dim, SourceFrame> source_point,
       double time = std::numeric_limits<double>::signaling_NaN(),
@@ -145,6 +178,30 @@ struct Composition<Frames, Dim, std::index_sequence<Is...>>
       tnsr::I<DataVector, Dim, SourceFrame> source_point,
       double time = std::numeric_limits<double>::signaling_NaN(),
       const FuncOfTimeMap& functions_of_time = {}) const override;
+
+#ifdef SPECTRE_AUTODIFF
+  InverseJacobian<autodiff::HigherOrderDual<2, double>, Dim, SourceFrame,
+                  TargetFrame>
+  inv_jacobian(tnsr::I<autodiff::HigherOrderDual<2, double>, Dim, SourceFrame>
+                   source_point,
+               double time = std::numeric_limits<double>::signaling_NaN(),
+               const FuncOfTimeMap& functions_of_time = {}) const override;
+
+  // Compute inverse hessian by calling operator()
+  InverseHessian<double, Dim, SourceFrame, TargetFrame> inv_hessian(
+      tnsr::I<double, Dim, SourceFrame> source_point,
+      const InverseJacobian<double, Dim, SourceFrame, TargetFrame>& inverse_jac,
+      double time = std::numeric_limits<double>::signaling_NaN(),
+      const FuncOfTimeMap& functions_of_time = {}) const override;
+
+  // Compute inverse hessian by calling operator()
+  InverseHessian<DataVector, Dim, SourceFrame, TargetFrame> inv_hessian(
+      tnsr::I<DataVector, Dim, SourceFrame> source_point,
+      const InverseJacobian<DataVector, Dim, SourceFrame, TargetFrame>&
+          inverse_jac,
+      double time = std::numeric_limits<double>::signaling_NaN(),
+      const FuncOfTimeMap& functions_of_time = {}) const override;
+#endif  // SPECTRE_AUTODIFF
 
   Jacobian<double, Dim, SourceFrame, TargetFrame> jacobian(
       tnsr::I<double, Dim, SourceFrame> source_point,
@@ -186,25 +243,33 @@ struct Composition<Frames, Dim, std::index_sequence<Is...>>
   template <typename DataType>
   tnsr::I<DataType, Dim, TargetFrame> call_impl(
       tnsr::I<DataType, Dim, SourceFrame> source_point,
-      const double time = std::numeric_limits<double>::signaling_NaN(),
+      double time = std::numeric_limits<double>::signaling_NaN(),
       const FuncOfTimeMap& functions_of_time = {}) const;
 
   template <typename DataType>
   std::optional<tnsr::I<DataType, Dim, SourceFrame>> inverse_impl(
       tnsr::I<DataType, Dim, TargetFrame> target_point,
-      const double time = std::numeric_limits<double>::signaling_NaN(),
+      double time = std::numeric_limits<double>::signaling_NaN(),
       const FuncOfTimeMap& functions_of_time = {}) const;
 
   template <typename DataType>
   InverseJacobian<DataType, Dim, SourceFrame, TargetFrame> inv_jacobian_impl(
       tnsr::I<DataType, Dim, SourceFrame> source_point,
-      const double time = std::numeric_limits<double>::signaling_NaN(),
+      double time = std::numeric_limits<double>::signaling_NaN(),
+      const FuncOfTimeMap& functions_of_time = {}) const;
+
+  template <typename DataType>
+  InverseHessian<DataType, Dim, SourceFrame, TargetFrame> inv_hessian_impl(
+      tnsr::I<DataType, Dim, SourceFrame> source_point,
+      const ::InverseJacobian<DataType, Dim, SourceFrame, TargetFrame>&
+          inverse_jac,
+      double time = std::numeric_limits<double>::signaling_NaN(),
       const FuncOfTimeMap& functions_of_time = {}) const;
 
   template <typename DataType>
   Jacobian<DataType, Dim, SourceFrame, TargetFrame> jacobian_impl(
       tnsr::I<DataType, Dim, SourceFrame> source_point,
-      const double time = std::numeric_limits<double>::signaling_NaN(),
+      double time = std::numeric_limits<double>::signaling_NaN(),
       const FuncOfTimeMap& functions_of_time = {}) const;
 
   bool is_equal_to(const CoordinateMapBase<SourceFrame, TargetFrame, Dim>&

@@ -273,6 +273,7 @@ class Shape {
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& p);
   static bool is_identity() { return false; }
+  static constexpr bool supports_hessian{false};
   static constexpr size_t dim = 3;
 
   const std::unordered_set<std::string>& function_of_time_names() const {

@@ -31,6 +31,7 @@
 #include "DataStructures/Tensor/IndexType.hpp"
 #include "DataStructures/Tensor/Structure.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
+#include "Utilities/Autodiff/Autodiff.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/ForceInline.hpp"
 #include "Utilities/Gsl.hpp"
@@ -605,6 +606,30 @@ struct MakeWithValueImpl<Tensor<std::complex<double>, Structure...>, T> {
     return Tensor<std::complex<double>, Structure...>(value);
   }
 };
+
+#ifdef SPECTRE_AUTODIFF
+template <typename... Structure, typename T>
+struct MakeWithValueImpl<
+    Tensor<autodiff::HigherOrderDual<2, double>, Structure...>, T> {
+  static SPECTRE_ALWAYS_INLINE
+      Tensor<autodiff::HigherOrderDual<2, double>, Structure...>
+      apply(const T& /*input*/, const double value) {
+    return Tensor<autodiff::HigherOrderDual<2, double>, Structure...>(value);
+  }
+};
+
+template <typename... Structure, typename T>
+struct MakeWithValueImpl<
+    Tensor<autodiff::HigherOrderDual<2, simd::batch<double>>, Structure...>,
+    T> {
+  static SPECTRE_ALWAYS_INLINE
+      Tensor<autodiff::HigherOrderDual<2, simd::batch<double>>, Structure...>
+      apply(const T& /*input*/, const double value) {
+    return Tensor<autodiff::HigherOrderDual<2, simd::batch<double>>,
+                  Structure...>(simd::batch<double>::broadcast(value));
+  }
+};
+#endif  // SPECTRE_AUTODIFF
 }  // namespace MakeWithValueImpls
 
 template <typename T, typename... Structure>

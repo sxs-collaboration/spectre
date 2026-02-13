@@ -31,6 +31,7 @@
 #include "Domain/CoordinateMaps/TimeDependent/CubicScale.hpp"
 #include "Domain/CoordinateMaps/TimeDependent/ProductMaps.hpp"
 #include "Domain/CoordinateMaps/TimeDependent/ProductMaps.tpp"
+#include "Domain/CoordinateMaps/TimeDependent/Rotation.hpp"
 #include "Domain/CoordinateMaps/TimeDependent/Shape.hpp"
 #include "Domain/CoordinateMaps/TimeDependent/Translation.hpp"
 #include "Domain/CoordinateMaps/Wedge.hpp"
@@ -47,6 +48,64 @@
 
 namespace domain {
 namespace {
+#ifdef SPECTRE_AUTODIFF
+// This test helper function computes the inverse Hessian by
+// auto-differentiating through the inv_jacobian function, which gives the
+// derivatives of inv_jacobian with respect to the source coordinates, i.e.
+// \frac{\partial}{\partial\xi^k}\left(\frac{\partial\xi^i}{\partial
+// x^j}\right). The inverse Hessian is then given by the chain rule
+// \frac{\partial^2\xi^i}{\partial x^j \partial x^k} =
+// \frac{\partial\xi^l}{\partial x^k} *
+// \frac{\partial}{\partial\xi^l}\left(\frac{\partial\xi^i}{\partial
+// x^j}\right).
+template <size_t Dim, typename SourceFrame, typename TargetFrame = Frame::Grid,
+          typename Map>
+auto inv_hessian_helper(const Map& coordinate_map,
+                        const tnsr::I<double, Dim, SourceFrame>& source_point)
+    -> InverseHessian<double, Dim, SourceFrame, TargetFrame> {
+  using SecondOrderDualNum = autodiff::HigherOrderDual<2, double>;
+
+  const size_t num_pts = 1;
+
+  InverseHessian<double, Dim, SourceFrame, TargetFrame> inverse_hessian{
+      num_pts};
+
+  for (size_t pts_index = 0; pts_index < num_pts; ++pts_index) {
+    tnsr::I<SecondOrderDualNum, Dim, SourceFrame> dual_source_coords;
+
+    [&]<std::size_t... Is>(std::index_sequence<Is...>) {
+      ((get<Is>(dual_source_coords) = get<Is>(source_point)), ...);
+    }
+    (std::make_index_sequence<Dim>{});
+
+    for (size_t k = 0; k < Dim; ++k) {
+      for (size_t i = 0; i < Dim; ++i) {
+        for (size_t j = i; j < Dim; ++j) {
+          double inv_hessian_kij{0.0};
+
+          for (size_t l = 0; l < Dim; ++l) {
+            autodiff::seed<1>(dual_source_coords.get(l), 1.0);
+            for (size_t n = 1; n < Dim; ++n) {
+              autodiff::seed<1>(dual_source_coords.get((l + n) % Dim), 0.0);
+            }
+
+            const auto dual_inverse_jac =
+                coordinate_map.inv_jacobian(dual_source_coords);
+            const auto inv_jac_lj = autodiff::val(dual_inverse_jac.get(l, j));
+            const auto deriv_kli =
+                autodiff::derivative<1>(dual_inverse_jac.get(k, i));
+            inv_hessian_kij += inv_jac_lj * deriv_kli;
+            inverse_hessian.get(k, i, j) = inv_hessian_kij;
+          }
+        }
+      }
+    }
+  }
+
+  return inverse_hessian;
+}
+#endif  // SPECTRE_AUTODIFF
+
 template <typename Map1, typename Map2, typename DataType, size_t Dim>
 auto compose_jacobians(const Map1& map1, const Map2& map2,
                        const std::array<DataType, Dim>& point) {
@@ -139,6 +198,16 @@ void test_single_coordinate_map() {
     }
     CHECK_ITERABLE_APPROX(map_base->inv_jacobian(local_source_points),
                           local_expected_inv_jac);
+
+#ifdef SPECTRE_AUTODIFF
+    const auto local_expected_inv_hessian = make_with_value<
+        InverseHessian<double, dim, Frame::BlockLogical, Frame::Grid>>(
+        get<0>(local_source_points), 0.0);
+    CHECK_ITERABLE_APPROX(
+        map_base->inv_hessian(local_source_points,
+                              map_base->inv_jacobian(local_source_points)),
+        local_expected_inv_hessian);
+#endif  // SPECTRE_AUTODIFF
 
     const auto coords_jacs_velocity =
         map_base->coords_frame_velocity_jacobians(local_source_points);
@@ -346,8 +415,12 @@ void test_coordinate_map_with_affine_map() {
           approx(map.inverse(tnsr::I<double, 1, Frame::Grid>{1.0 / i + -0.5})
                      .value()[0]));
 
-    CHECK(approx(map.inv_jacobian(source_points).get(0, 0)) == 2.0);
+    const auto inv_jac = map.inv_jacobian(source_points);
+    CHECK(approx(inv_jac.get(0, 0)) == 2.0);
     CHECK(approx(map.jacobian(source_points).get(0, 0)) == 0.5);
+#ifdef SPECTRE_AUTODIFF
+    CHECK(approx(map.inv_hessian(source_points, inv_jac).get(0, 0, 0)) == 0.0);
+#endif  // SPECTRE_AUTODIFF
 
     const auto coords_jacs_velocity =
         map.coords_frame_velocity_jacobians(source_points);
@@ -398,6 +471,13 @@ void test_coordinate_map_with_affine_map() {
     CHECK(0.0 == approx(get<1, 0>(jac)));
     CHECK(0.0 == approx(get<0, 1>(jac)));
     CHECK(4.0 == approx(get<1, 1>(jac)));
+
+#ifdef SPECTRE_AUTODIFF
+    auto inv_hessian = prod_map2d.inv_hessian(source_points, inv_jac);
+    for (auto& component : inv_hessian) {
+      CHECK(0.0 == approx(component));
+    }
+#endif  // SPECTRE_AUTODIFF
 
     const auto coords_jacs_velocity =
         prod_map2d.coords_frame_velocity_jacobians(source_points);
@@ -466,6 +546,13 @@ void test_coordinate_map_with_affine_map() {
     CHECK(0.0 == approx(get<2, 1>(jac)));
     CHECK(10.0 == approx(get<2, 2>(jac)));
 
+#ifdef SPECTRE_AUTODIFF
+    auto inv_hessian = prod_map3d.inv_hessian(source_points, inv_jac);
+    for (auto& component : inv_hessian) {
+      CHECK(0.0 == approx(component));
+    }
+#endif  // SPECTRE_AUTODIFF
+
     const auto coords_jacs_velocity =
         prod_map3d.coords_frame_velocity_jacobians(source_points);
     CHECK_ITERABLE_APPROX(std::get<0>(coords_jacs_velocity),
@@ -521,6 +608,13 @@ void test_coordinate_map_with_rotation_map() {
         first_rotated2d, second_rotated2d, gsl::at(coords2d, i));
     CHECK_ITERABLE_APPROX(inv_jac, expected_inv_jac);
 
+#ifdef SPECTRE_AUTODIFF
+    auto inv_hessian = double_rotated2d.inv_hessian(source_points, inv_jac);
+    for (auto& component : inv_hessian) {
+      CHECK(0.0 == approx(component));
+    }
+#endif  // SPECTRE_AUTODIFF
+
     const auto coords_jacs_velocity =
         double_rotated2d.coords_frame_velocity_jacobians(source_points);
     CHECK_ITERABLE_APPROX(std::get<0>(coords_jacs_velocity),
@@ -569,6 +663,13 @@ void test_coordinate_map_with_rotation_map() {
     const auto expected_inv_jac = compose_inv_jacobians(
         first_rotated3d, second_rotated3d, gsl::at(coords3d, i));
     CHECK_ITERABLE_APPROX(inv_jac, expected_inv_jac);
+
+#ifdef SPECTRE_AUTODIFF
+    auto inv_hessian = double_rotated3d.inv_hessian(source_points, inv_jac);
+    for (auto& component : inv_hessian) {
+      CHECK(0.0 == approx(component));
+    }
+#endif  // SPECTRE_AUTODIFF
 
     const auto coords_jacs_velocity =
         double_rotated3d.coords_frame_velocity_jacobians(source_points);
@@ -620,6 +721,14 @@ void test_coordinate_map_with_rotation_map_datavector() {
     const auto expected_inv_jac = compose_inv_jacobians(
         first_rotated2d, second_rotated2d, coords2d_array);
     CHECK_ITERABLE_APPROX(inv_jac, expected_inv_jac);
+
+#ifdef SPECTRE_AUTODIFF
+    const DataVector expected_zero{get<0>(coords2d).size(), 0.0};
+    auto inv_hessian = double_rotated2d.inv_hessian(coords2d, inv_jac);
+    for (auto& component : inv_hessian) {
+      CHECK_ITERABLE_APPROX(component, expected_zero);
+    }
+#endif  // SPECTRE_AUTODIFF
 
     const auto coords_jacs_velocity =
         double_rotated2d.coords_frame_velocity_jacobians(coords2d);
@@ -675,6 +784,14 @@ void test_coordinate_map_with_rotation_map_datavector() {
         first_rotated3d, second_rotated3d, coords3d_array);
     CHECK_ITERABLE_APPROX(inv_jac, expected_inv_jac);
 
+#ifdef SPECTRE_AUTODIFF
+    const DataVector expected_zero{get<0>(coords3d).size(), 0.0};
+    auto inv_hessian = double_rotated3d.inv_hessian(coords3d, inv_jac);
+    for (auto& component : inv_hessian) {
+      CHECK_ITERABLE_APPROX(component, expected_zero);
+    }
+#endif  // SPECTRE_AUTODIFF
+
     // Check inequivalence operator
     CHECK_FALSE(double_rotated3d_full != double_rotated3d_full);
     test_serialization(double_rotated3d_full);
@@ -726,6 +843,18 @@ void test_coordinate_map_with_rotation_wedge() {
   const auto expected_inv_jac =
       compose_inv_jacobians(first_map, second_map, test_point_array);
   CHECK_ITERABLE_APPROX(inv_jac, expected_inv_jac);
+
+#ifdef SPECTRE_AUTODIFF
+  const auto inv_hessian = composed_map.inv_hessian(test_point_vector, inv_jac);
+
+  const auto alt_inv_hessian =
+      inv_hessian_helper(composed_map, test_point_vector);
+
+  CHECK_ITERABLE_APPROX(inv_hessian, alt_inv_hessian);
+  for (auto& component : inv_hessian) {
+    CHECK_FALSE(0.0 == approx(component));
+  }
+#endif  // SPECTRE_AUTODIFF
 
   const auto coords_jacs_velocity =
       composed_map.coords_frame_velocity_jacobians(test_point_vector);
@@ -1180,19 +1309,18 @@ void test_time_dependent_map() {
   CHECK(time_dependent_map_first
             .jacobian(tnsr_double_logical, final_time, functions_of_time)
             .get(0, 0) == 1.5);
-  CHECK(time_dependent_map_first
-            .inv_jacobian(tnsr_double_logical, final_time, functions_of_time)
-            .get(0, 0) == 2. / 3.);
+  const auto inv_jac_double = time_dependent_map_first.inv_jacobian(
+      tnsr_double_logical, final_time, functions_of_time);
+  CHECK(inv_jac_double.get(0, 0) == 2. / 3.);
   CHECK_ITERABLE_APPROX(
       time_dependent_map_first
           .jacobian(tnsr_datavector_logical, final_time, functions_of_time)
           .get(0, 0),
       (DataVector{1.5, 1.5, 1.5}));
-  CHECK_ITERABLE_APPROX(
-      time_dependent_map_first
-          .inv_jacobian(tnsr_datavector_logical, final_time, functions_of_time)
-          .get(0, 0),
-      (DataVector{2. / 3., 2. / 3., 2. / 3.}));
+  const auto inv_jac_datavector = time_dependent_map_first.inv_jacobian(
+      tnsr_datavector_logical, final_time, functions_of_time);
+  CHECK_ITERABLE_APPROX(inv_jac_datavector.get(0, 0),
+                        (DataVector{2. / 3., 2. / 3., 2. / 3.}));
 
   test_serialization(time_dependent_map_first);
 
@@ -1272,6 +1400,77 @@ void test_time_dependent_map() {
                               1.5 * velocity[velocity.size() - 1]}}));
   }
 }
+
+#ifdef SPECTRE_AUTODIFF
+void test_time_dependent_map_for_hessian() {
+  INFO("Time dependent CoordinateMap for hessian");
+  // define vars for FunctionOfTime::PiecewisePolynomial f(t) = t**2.
+  const double initial_time = -1.;
+  const double final_time = 4.4;
+  constexpr size_t deriv_order = 3;
+
+  const std::array<DataVector, deriv_order + 1> init_func{
+      {{1.0}, {-2.0}, {2.0}, {0.0}}};
+  using Polynomial = domain::FunctionsOfTime::PiecewisePolynomial<deriv_order>;
+  std::unordered_map<std::string,
+                     std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>
+      functions_of_time{};
+  functions_of_time["Rotation"] =
+      std::make_unique<Polynomial>(initial_time, init_func, final_time);
+
+  const CoordinateMaps::TimeDependent::Rotation<2> rot_map{"Rotation"};
+
+  // affine(x) = x, affine(y) = y + 1
+  using Affine = CoordinateMaps::Affine;
+  using Affine2D = CoordinateMaps::ProductOf2Maps<CoordinateMaps::Affine,
+                                                  CoordinateMaps::Affine>;
+  const auto affine_map =
+      Affine2D{Affine{-1.0, 1.0, -1.0, 1.0}, Affine{-1.0, 1.0, 0.0, 2.0}};
+
+  const auto time_dependent_map_first =
+      make_coordinate_map<Frame::BlockLogical, Frame::Inertial>(rot_map,
+                                                                affine_map);
+
+  const tnsr::I<double, 2, Frame::BlockLogical> tnsr_double_logical{
+      {{3.2, -4.3}}};
+  const tnsr::I<DataVector, 2, Frame::BlockLogical> tnsr_datavector_logical{
+      {{{0.1, -4.3, 10.0}, {1.2, 10.1, -3.5}}}};
+
+  const auto inv_jac_double = time_dependent_map_first.inv_jacobian(
+      tnsr_double_logical, final_time, functions_of_time);
+  const auto inv_jac_datavector = time_dependent_map_first.inv_jacobian(
+      tnsr_datavector_logical, final_time, functions_of_time);
+
+  auto inv_hessian_double = time_dependent_map_first.inv_hessian(
+      tnsr_double_logical, inv_jac_double, final_time, functions_of_time);
+  for (const auto& component : inv_hessian_double) {
+    CHECK(component == 0.0);
+  }
+  auto inv_hessian_datavector = time_dependent_map_first.inv_hessian(
+      tnsr_datavector_logical, inv_jac_datavector, final_time,
+      functions_of_time);
+  for (const auto& component : inv_hessian_datavector) {
+    CHECK_ITERABLE_APPROX(component, (DataVector{0.0, 0.0, 0.0}));
+  }
+
+  test_serialization(time_dependent_map_first);
+
+  const auto serialized_map =
+      serialize_and_deserialize(time_dependent_map_first);
+
+  inv_hessian_double = serialized_map.inv_hessian(
+      tnsr_double_logical, inv_jac_double, final_time, functions_of_time);
+  for (const auto& component : inv_hessian_double) {
+    CHECK(component == 0.0);
+  }
+  inv_hessian_datavector =
+      serialized_map.inv_hessian(tnsr_datavector_logical, inv_jac_datavector,
+                                 final_time, functions_of_time);
+  for (const auto& component : inv_hessian_datavector) {
+    CHECK_ITERABLE_APPROX(component, (DataVector{0.0, 0.0, 0.0}));
+  }
+}
+#endif // SPECTRE_AUTODIFF
 
 void test_push_back() {
   INFO("Coordinate map with affine map");
@@ -1522,6 +1721,9 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMap", "[Domain][Unit]") {
   test_make_vector_coordinate_map_base();
   test_coordinate_maps_are_identity();
   test_time_dependent_map();
+  #ifdef SPECTRE_AUTODIFF
+  test_time_dependent_map_for_hessian();
+  #endif
   test_push_back();
   test_jacobian_is_time_dependent();
   test_coords_frame_velocity_jacobians();

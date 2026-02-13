@@ -21,6 +21,7 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Expressions/TensorExpression.hpp"
 #include "DataStructures/VectorImpl.hpp"
+#include "Utilities/Autodiff/Autodiff.hpp"
 #include "Utilities/NoSuchType.hpp"
 
 namespace tenex {
@@ -62,6 +63,10 @@ template <typename X>
 struct is_supported_tensor_datatype
     : std::disjunction<
           std::is_same<X, double>, std::is_same<X, std::complex<double>>,
+#ifdef SPECTRE_AUTODIFF
+          std::is_same<X, autodiff::HigherOrderDual<2, simd::batch<double>>>,
+          std::is_same<X, autodiff::HigherOrderDual<2, double>>,
+#endif
           std::is_same<X, DataVector>, std::is_same<X, ComplexDataVector>> {};
 
 template <typename X>

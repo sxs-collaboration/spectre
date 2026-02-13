@@ -348,6 +348,8 @@ class FocallyLiftedMap {
 
   static bool is_identity() { return false; }
 
+  static constexpr bool supports_hessian{false};
+
  private:
   friend bool operator==<InnerMap>(const FocallyLiftedMap<InnerMap>& lhs,
                                    const FocallyLiftedMap<InnerMap>& rhs);

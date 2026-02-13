@@ -11,9 +11,11 @@
 
 #include "DataStructures/Tensor/EagerMath/Determinant.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "Domain/CoordinateMaps/AutodiffInstantiationTypes.hpp"
 #include "Domain/CoordinateMaps/Distribution.hpp"
 #include "Domain/Structure/OrientationMap.hpp"
 #include "Utilities/Algorithm.hpp"
+#include "Utilities/Autodiff/Autodiff.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/DereferenceWrapper.hpp"
 #include "Utilities/EqualWithinRoundoff.hpp"
@@ -1031,10 +1033,14 @@ bool operator!=(const Wedge<Dim>& lhs, const Wedge<Dim>& rhs) {
       const std::array<DTYPE(data), DIM(data)>& source_coords) const;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE_DIM, (2, 3))
-GENERATE_INSTANTIATIONS(INSTANTIATE_DTYPE, (2, 3),
-                        (double, DataVector,
-                         std::reference_wrapper<const double>,
-                         std::reference_wrapper<const DataVector>))
+
+GENERATE_INSTANTIATIONS(
+    INSTANTIATE_DTYPE, (2, 3),
+    (double, DataVector,
+     std::reference_wrapper<const double>,
+     std::reference_wrapper<const DataVector>))
+
+GENERATE_INSTANTIATIONS(INSTANTIATE_DTYPE, (2, 3), MAP_AUTODIFF_TYPES)
 
 #undef DIM
 #undef DTYPE

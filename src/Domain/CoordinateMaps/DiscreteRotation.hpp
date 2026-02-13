@@ -65,6 +65,8 @@ class DiscreteRotation {
 
   bool is_identity() const { return is_identity_; }
 
+  static constexpr bool supports_hessian{true};
+
  private:
   friend bool operator==(const DiscreteRotation& lhs,
                          const DiscreteRotation& rhs) {

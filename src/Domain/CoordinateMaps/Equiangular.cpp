@@ -8,6 +8,8 @@
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "Domain/CoordinateMaps/AutodiffInstantiationTypes.hpp"
+#include "Utilities/Autodiff/Autodiff.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/DereferenceWrapper.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
@@ -123,9 +125,12 @@ bool operator==(const CoordinateMaps::Equiangular& lhs,
   Equiangular::inv_jacobian(const std::array<DTYPE(data), 1>& source_coords) \
       const;
 
-GENERATE_INSTANTIATIONS(INSTANTIATE, (double, DataVector,
-                                      std::reference_wrapper<const double>,
-                                      std::reference_wrapper<const DataVector>))
+GENERATE_INSTANTIATIONS(
+    INSTANTIATE, (double, DataVector,
+                  std::reference_wrapper<const double>,
+                  std::reference_wrapper<const DataVector>))
+
+GENERATE_INSTANTIATIONS(INSTANTIATE, MAP_AUTODIFF_TYPES)
 
 #undef DTYPE
 #undef INSTANTIATE

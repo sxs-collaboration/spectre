@@ -68,6 +68,9 @@ class ProductOf2Maps {
 
   bool is_identity() const { return is_identity_; }
 
+  static constexpr bool supports_hessian{Map1::supports_hessian and
+                                          Map2::supports_hessian};
+
  private:
   friend bool operator==(const ProductOf2Maps& lhs, const ProductOf2Maps& rhs) {
     return lhs.map1_ == rhs.map1_ and lhs.map2_ == rhs.map2_ and
@@ -116,6 +119,10 @@ class ProductOf3Maps {
   void pup(PUP::er& p);
 
   bool is_identity() const { return is_identity_; }
+
+  static constexpr bool supports_hessian{Map1::supports_hessian and
+                                          Map2::supports_hessian and
+                                          Map3::supports_hessian};
 
  private:
   friend bool operator==(const ProductOf3Maps& lhs, const ProductOf3Maps& rhs) {

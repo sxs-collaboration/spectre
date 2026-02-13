@@ -103,6 +103,8 @@ class KerrHorizonConforming {
     return spin_parameter_ == std::array<double, 3>{0., 0., 0.};
   }
 
+  static constexpr bool supports_hessian{false};
+
   friend bool operator==(const KerrHorizonConforming& lhs,
                          const KerrHorizonConforming& rhs);
 

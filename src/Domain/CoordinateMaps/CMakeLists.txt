@@ -47,6 +47,7 @@ spectre_target_headers(
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
   Affine.hpp
+  AutodiffInstantiationTypes.hpp
   BulgedCube.hpp
   Composition.hpp
   CoordinateMap.hpp

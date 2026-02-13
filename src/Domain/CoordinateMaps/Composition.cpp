@@ -8,9 +8,36 @@
 
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.tpp"
+#include "Utilities/Autodiff/Autodiff.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
+#include "Utilities/PrettyType.hpp"
 
 namespace domain::CoordinateMaps {
+
+namespace Composition_detail {
+// Helper function to generate error message for unsupported autodiff maps
+template <typename Frames, size_t Dim, size_t... Is>
+std::string get_unsupported_autodiff_maps_error(
+    const std::tuple<std::unique_ptr<
+        CoordinateMapBase<tmpl::at<Frames, tmpl::size_t<Is>>,
+                          tmpl::at<Frames, tmpl::size_t<Is + 1>>, Dim>>...>&
+        maps) {
+  std::string unsupported_maps;
+  const auto check_map = [&unsupported_maps, &maps](const auto index_v) {
+    constexpr size_t index = decltype(index_v)::value;
+    if (not get<index>(maps)->supports_hessian()) {
+      if (not unsupported_maps.empty()) {
+        unsupported_maps += ", ";
+      }
+      unsupported_maps +=
+          "Map " + std::to_string(index) + " (" +
+          pretty_type::get_runtime_type_name(*get<index>(maps)) + ")";
+    }
+  };
+  EXPAND_PACK_LEFT_TO_RIGHT(check_map(tmpl::size_t<Is>{}));
+  return unsupported_maps;
+}
+}  // namespace Composition_detail
 
 template <typename Frames, size_t Dim, size_t... Is>
 Composition<Frames, Dim, std::index_sequence<Is...>>::Composition(
@@ -35,6 +62,12 @@ bool Composition<Frames, Dim, std::index_sequence<Is...>>::is_identity() const {
   EXPAND_PACK_LEFT_TO_RIGHT(
       (result = result and get<Is>(maps_)->is_identity()));
   return result;
+}
+
+template <typename Frames, size_t Dim, size_t... Is>
+bool Composition<Frames, Dim, std::index_sequence<Is...>>::supports_hessian()
+    const {
+  return (... and get<Is>(maps_)->supports_hessian());
 }
 
 template <typename Frames, size_t Dim, size_t... Is>
@@ -96,6 +129,57 @@ Composition<Frames, Dim, std::index_sequence<Is...>>::inv_jacobian(
     const FuncOfTimeMap& functions_of_time) const {
   return inv_jacobian_impl(std::move(source_point), time, functions_of_time);
 }
+
+#ifdef SPECTRE_AUTODIFF
+template <typename Frames, size_t Dim, size_t... Is>
+InverseJacobian<autodiff::HigherOrderDual<2, double>, Dim, tmpl::front<Frames>,
+                tmpl::back<Frames>>
+Composition<Frames, Dim, std::index_sequence<Is...>>::inv_jacobian(
+    tnsr::I<autodiff::HigherOrderDual<2, double>, Dim, SourceFrame>
+        source_point,
+    const double time, const FuncOfTimeMap& functions_of_time) const {
+  if (supports_hessian()) {
+    return inv_jacobian_impl(std::move(source_point), time, functions_of_time);
+  } else {
+    ERROR("At least one of the Maps does not support autodiff: "
+          << (Composition_detail::get_unsupported_autodiff_maps_error<
+                 Frames, Dim, Is...>(maps_)));
+  }
+}
+
+template <typename Frames, size_t Dim, size_t... Is>
+InverseHessian<double, Dim, tmpl::front<Frames>, tmpl::back<Frames>>
+Composition<Frames, Dim, std::index_sequence<Is...>>::inv_hessian(
+    tnsr::I<double, Dim, SourceFrame> source_point,
+    const InverseJacobian<double, Dim, SourceFrame, TargetFrame>& inverse_jac,
+    const double time, const FuncOfTimeMap& functions_of_time) const {
+  if (supports_hessian()) {
+    return inv_hessian_impl(std::move(source_point), inverse_jac, time,
+                            functions_of_time);
+  } else {
+    ERROR("At least one of the Maps does not support autodiff: "
+          << (Composition_detail::get_unsupported_autodiff_maps_error<
+                 Frames, Dim, Is...>(maps_)));
+  }
+}
+
+template <typename Frames, size_t Dim, size_t... Is>
+InverseHessian<DataVector, Dim, tmpl::front<Frames>, tmpl::back<Frames>>
+Composition<Frames, Dim, std::index_sequence<Is...>>::inv_hessian(
+    tnsr::I<DataVector, Dim, SourceFrame> source_point,
+    const InverseJacobian<DataVector, Dim, SourceFrame, TargetFrame>&
+        inverse_jac,
+    const double time, const FuncOfTimeMap& functions_of_time) const {
+  if (supports_hessian()) {
+    return inv_hessian_impl(std::move(source_point), inverse_jac, time,
+                            functions_of_time);
+  } else {
+    ERROR("At least one of the Maps does not support autodiff: "
+          << (Composition_detail::get_unsupported_autodiff_maps_error<
+                 Frames, Dim, Is...>(maps_)));
+  }
+}
+#endif  // SPECTRE_AUTODIFF
 
 template <typename Frames, size_t Dim, size_t... Is>
 Jacobian<double, Dim, tmpl::front<Frames>, tmpl::back<Frames>>
@@ -298,6 +382,109 @@ Composition<Frames, Dim, std::index_sequence<Is...>>::inv_jacobian_impl(
   return get<InverseJacobian<DataType, Dim, SourceFrame, TargetFrame>>(
       inv_jacobians);
 }
+
+#ifdef SPECTRE_AUTODIFF
+template <typename Frames, size_t Dim, size_t... Is>
+template <typename DataType>
+InverseHessian<DataType, Dim, tmpl::front<Frames>, tmpl::back<Frames>>
+Composition<Frames, Dim, std::index_sequence<Is...>>::inv_hessian_impl(
+    tnsr::I<DataType, Dim, SourceFrame> source_point,
+    const ::InverseJacobian<DataType, Dim, SourceFrame, TargetFrame>&
+        inverse_jac,
+    const double time, const FuncOfTimeMap& functions_of_time) const {
+  // first compute hessian
+  using BatchType = simd::batch<double>;
+  using SecondOrderDual = autodiff::HigherOrderDual<2, BatchType>;
+  using SecondOrderDualNum = autodiff::HigherOrderDual<2, double>;
+
+  // NOLINTNEXTLINE(misc-const-correctness)
+  size_t num_pts = 1;
+  // NOLINTNEXTLINE(misc-const-correctness)
+  size_t vec_end = 0;
+  if constexpr (std::is_same_v<DataType, DataVector>) {
+    num_pts = get<0>(source_point).size();
+    vec_end = (num_pts / BatchType::size) * BatchType::size;
+  }
+  ::Hessian<DataType, Dim, SourceFrame, TargetFrame> hessian{num_pts};
+  ::InverseHessian<DataType, Dim, SourceFrame, TargetFrame> inverse_hessian{
+      num_pts};
+
+  // manual vectorization with xsimd
+  if constexpr (std::is_same_v<DataType, DataVector>) {
+    for (size_t pts_index = 0; pts_index < vec_end;
+         pts_index += BatchType::size) {
+      for (size_t i = 0; i < Dim; ++i) {
+        for (size_t j = i; j < Dim; ++j) {
+          tnsr::I<SecondOrderDual, Dim, SourceFrame> dual_source_coords;
+
+          [&]<std::size_t... Ins>(std::index_sequence<Ins...>) {
+            ((get<Ins>(dual_source_coords) = BatchType::load_unaligned(
+                  &(get<Ins>(source_point))[pts_index])),
+             ...);
+          }
+          (std::make_index_sequence<Dim>{});
+
+          autodiff::seed<1>(dual_source_coords.get(i), 1.0);
+          autodiff::seed<2>(dual_source_coords.get(j), 1.0);
+
+          const auto dual_target_coords =
+              call_impl(std::move(dual_source_coords), time, functions_of_time);
+          for (size_t k = 0; k < Dim; ++k) {
+            const auto deriv_kij =
+                autodiff::derivative<2>(dual_target_coords.get(k));
+            deriv_kij.store_unaligned(&hessian.get(k, i, j)[pts_index]);
+          }
+        }
+      }
+    }
+  }
+  // dealing with the tail
+  for (size_t pts_index = vec_end; pts_index < num_pts; ++pts_index) {
+    for (size_t i = 0; i < Dim; ++i) {
+      for (size_t j = i; j < Dim; ++j) {
+        tnsr::I<SecondOrderDualNum, Dim, SourceFrame> dual_source_coords;
+
+        if constexpr (std::is_same_v<DataType, double>) {
+          [&]<std::size_t... Ins>(std::index_sequence<Ins...>) {
+            ((get<Ins>(dual_source_coords) = get<Ins>(source_point)), ...);
+          }
+          (std::make_index_sequence<Dim>{});
+        } else {
+          [&]<std::size_t... Ins>(std::index_sequence<Ins...>) {
+            ((get<Ins>(dual_source_coords) =
+                  gsl::at(get<Ins>(source_point), pts_index)),
+             ...);
+          }
+          (std::make_index_sequence<Dim>{});
+        }
+
+        autodiff::seed<1>(dual_source_coords.get(i), 1.0);
+        autodiff::seed<2>(dual_source_coords.get(j), 1.0);
+
+        const auto dual_target_coords =
+            call_impl(std::move(dual_source_coords), time, functions_of_time);
+        for (size_t k = 0; k < Dim; ++k) {
+          if constexpr (std::is_same_v<DataType, double>) {
+            hessian.get(k, i, j) =
+                autodiff::derivative<2>(dual_target_coords.get(k));
+          } else {
+            hessian.get(k, i, j)[pts_index] =
+                autodiff::derivative<2>(dual_target_coords.get(k));
+          }
+        }
+      }
+    }
+  }
+
+  // piece together the inverse hessian from hessian and inverse jacobian
+  ::tenex::evaluate<ti::I, ti::m, ti::n>(
+      make_not_null(&inverse_hessian),
+      -1.0 * inverse_jac(ti::I, ti::j) * inverse_jac(ti::K, ti::m) *
+          inverse_jac(ti::L, ti::n) * hessian(ti::J, ti::k, ti::l));
+
+  return inverse_hessian;
+}
+#endif  // SPECTRE_AUTODIFF
 
 template <typename Frames, size_t Dim, size_t... Is>
 template <typename DataType>

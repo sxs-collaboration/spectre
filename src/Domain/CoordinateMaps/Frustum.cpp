@@ -11,12 +11,14 @@
 #include "DataStructures/Tensor/EagerMath/Determinant.hpp"
 #include "DataStructures/Tensor/EagerMath/DeterminantAndInverse.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "Domain/CoordinateMaps/AutodiffInstantiationTypes.hpp"
 #include "Domain/CoordinateMaps/Interval.hpp"
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/OrientationMap.hpp"
 #include "Domain/Structure/Side.hpp"
 #include "IO/Logging/Verbosity.hpp"
 #include "NumericalAlgorithms/RootFinding/GslMultiRoot.hpp"
+#include "Utilities/Autodiff/Autodiff.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/DereferenceWrapper.hpp"
 #include "Utilities/EqualWithinRoundoff.hpp"
@@ -706,9 +708,13 @@ bool operator!=(const Frustum& lhs, const Frustum& rhs) {
   Frustum::inv_jacobian(const std::array<DTYPE(data), 3>& source_coords)      \
       const;
 
-GENERATE_INSTANTIATIONS(INSTANTIATE, (double, DataVector,
-                                      std::reference_wrapper<const double>,
-                                      std::reference_wrapper<const DataVector>))
+GENERATE_INSTANTIATIONS(
+    INSTANTIATE, (double, DataVector,
+                  std::reference_wrapper<const double>,
+                  std::reference_wrapper<const DataVector>))
+
+GENERATE_INSTANTIATIONS(INSTANTIATE, MAP_AUTODIFF_TYPES)
+
 #undef DTYPE
 #undef INSTANTIATE
 }  // namespace domain::CoordinateMaps

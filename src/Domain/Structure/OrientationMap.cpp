@@ -13,6 +13,9 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/Structure/SegmentId.hpp"
 #include "Utilities/Algorithm.hpp"
+#ifdef SPECTRE_AUTODIFF
+#include "Utilities/Autodiff/Autodiff.hpp"
+#endif
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 
@@ -310,16 +313,31 @@ GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
       const OrientationMap<DIM(data)>& rotation,                       \
       std::array<DTYPE(data), DIM(data)> source_coords);
 
-GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3),
-                        (double, DataVector, const double, const DataVector,
-                         std::reference_wrapper<double>,
-                         std::reference_wrapper<DataVector>,
-                         std::reference_wrapper<const double>,
-                         std::reference_wrapper<const DataVector>,
-                         std::reference_wrapper<double> const,
-                         std::reference_wrapper<DataVector> const,
-                         std::reference_wrapper<const double> const,
-                         std::reference_wrapper<const DataVector> const))
+GENERATE_INSTANTIATIONS(
+    INSTANTIATION, (1, 2, 3),
+    (double, DataVector, const double, const DataVector,
+     std::reference_wrapper<double>, std::reference_wrapper<DataVector>,
+     std::reference_wrapper<const double>,
+     std::reference_wrapper<const DataVector>,
+     std::reference_wrapper<double> const,
+     std::reference_wrapper<DataVector> const,
+     std::reference_wrapper<const double> const,
+     std::reference_wrapper<const DataVector> const))
+
+#ifdef SPECTRE_AUTODIFF
+GENERATE_INSTANTIATIONS(
+    INSTANTIATION, (1, 2, 3),
+    (autodiff::SecondOrderDual, autodiff::SecondOrderDualNum,
+     const autodiff::SecondOrderDual, const autodiff::SecondOrderDualNum,
+     std::reference_wrapper<autodiff::SecondOrderDual>,
+     std::reference_wrapper<autodiff::SecondOrderDualNum>,
+     std::reference_wrapper<const autodiff::SecondOrderDual>,
+     std::reference_wrapper<const autodiff::SecondOrderDualNum>,
+     std::reference_wrapper<autodiff::SecondOrderDual> const,
+     std::reference_wrapper<autodiff::SecondOrderDualNum> const,
+     std::reference_wrapper<const autodiff::SecondOrderDual> const,
+     std::reference_wrapper<const autodiff::SecondOrderDualNum> const))
+#endif  // SPECTRE_AUTODIFF
 
 #undef INSTANTIATION
 #undef DTYPE

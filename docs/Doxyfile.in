@@ -188,7 +188,8 @@ SEARCH_INCLUDES        = YES
 
 PREDEFINED             = SPECTRE_ALWAYS_INLINE= \
                          OVERLOADER_CONSTEXPR= \
-                         SPECTRE_DOXYGEN_INVOKED
+                         SPECTRE_DOXYGEN_INVOKED \
+                         SPECTRE_AUTODIFF
 
 #---------------------------------------------------------------------------
 # Configuration::additions related to external references

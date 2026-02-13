@@ -220,6 +220,8 @@ class Translation {
 
   static bool is_identity() { return false; }
 
+  static constexpr bool supports_hessian{false};
+
   const std::unordered_set<std::string>& function_of_time_names() const {
     return f_of_t_names_;
   }

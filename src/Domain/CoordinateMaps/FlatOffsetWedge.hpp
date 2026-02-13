@@ -272,6 +272,8 @@ class FlatOffsetWedge {
 
   static bool is_identity() { return false; }
 
+  static constexpr bool supports_hessian{false};
+
  private:
   friend bool operator==(const FlatOffsetWedge& lhs,
                          const FlatOffsetWedge& rhs);

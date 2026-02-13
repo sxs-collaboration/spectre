@@ -318,6 +318,110 @@ auto CoordinateMap<SourceFrame, TargetFrame, Maps...>::inv_jacobian_impl(
   return inv_jac;
 }
 
+#ifdef SPECTRE_AUTODIFF
+template <typename SourceFrame, typename TargetFrame, typename... Maps>
+template <typename T>
+auto CoordinateMap<SourceFrame, TargetFrame, Maps...>::inv_hessian_impl(
+    tnsr::I<T, dim, SourceFrame>&& source_point,
+    const ::InverseJacobian<T, dim, SourceFrame, TargetFrame>& inverse_jac,
+    const double time, const FunctionsOfTimeMap& functions_of_time) const
+    -> InverseHessian<T, dim, SourceFrame, TargetFrame> {
+  // first compute hessian
+  using BatchType = simd::batch<double>;
+  using SecondOrderDual = autodiff::HigherOrderDual<2, BatchType>;
+  using SecondOrderDualNum = autodiff::HigherOrderDual<2, double>;
+
+  size_t num_pts = 1;
+  size_t vec_end = 0;
+  if constexpr (std::is_same_v<T, DataVector>) {
+    num_pts = get<0>(source_point).size();
+    vec_end = (num_pts / BatchType::size) * BatchType::size;
+  }
+  ::Hessian<T, dim, SourceFrame, TargetFrame> hessian{num_pts};
+  ::InverseHessian<T, dim, SourceFrame, TargetFrame> inverse_hessian{num_pts};
+
+  // manual vectorization with xsimd
+  if constexpr (std::is_same_v<T, DataVector>) {
+    for (size_t pts_index = 0; pts_index < vec_end;
+         pts_index += BatchType::size) {
+      tnsr::I<SecondOrderDual, dim, SourceFrame> dual_source_coords;
+
+      for (size_t i = 0; i < dim; ++i) {
+        for (size_t j = i; j < dim; ++j) {
+          [&]<std::size_t... Is>(std::index_sequence<Is...>) {
+            ((get<Is>(dual_source_coords) =
+                  BatchType::load_unaligned(
+                    &(get<Is>(source_point))[pts_index])),
+             ...);
+          }(std::make_index_sequence<dim>{});
+
+          // In forward mode, we use seed to initialize the variable
+          // w.r.t. to which we want to differentiate. Seeding
+          // both first and second order duals computes
+          // second derivatives, which can be extracted by derivative<2>.
+          // For minimal examples, see Test_Autodiff.cpp.
+          autodiff::seed<1>(dual_source_coords.get(i), 1.0);
+          autodiff::seed<2>(dual_source_coords.get(j), 1.0);
+
+          const auto dual_target_coords =
+              call_impl(std::move(dual_source_coords), time, functions_of_time,
+                        std::make_index_sequence<sizeof...(Maps)>{});
+          for (size_t k = 0; k < dim; ++k) {
+            const auto deriv_kij =
+                autodiff::derivative<2>(dual_target_coords.get(k));
+            deriv_kij.store_unaligned(&hessian.get(k, i, j)[pts_index]);
+          }
+        }
+      }
+    }
+  }
+  // dealing with the tail
+  for (size_t pts_index = vec_end; pts_index < num_pts; ++pts_index) {
+    tnsr::I<SecondOrderDualNum, dim, SourceFrame> dual_source_coords;
+
+    for (size_t i = 0; i < dim; ++i) {
+      for (size_t j = i; j < dim; ++j) {
+        if constexpr (std::is_same_v<T, double>) {
+          [&]<std::size_t... Is>(std::index_sequence<Is...>) {
+            ((get<Is>(dual_source_coords) = get<Is>(source_point)), ...);
+          }(std::make_index_sequence<dim>{});
+        } else {
+          [&]<std::size_t... Is>(std::index_sequence<Is...>) {
+            ((get<Is>(dual_source_coords) =
+                  gsl::at(get<Is>(source_point), pts_index)),
+             ...);
+          }(std::make_index_sequence<dim>{});
+        }
+
+        autodiff::seed<1>(dual_source_coords.get(i), 1.0);
+        autodiff::seed<2>(dual_source_coords.get(j), 1.0);
+
+        const auto dual_target_coords =
+            call_impl(std::move(dual_source_coords), time, functions_of_time,
+                      std::make_index_sequence<sizeof...(Maps)>{});
+        for (size_t k = 0; k < dim; ++k) {
+          if constexpr (std::is_same_v<T, double>) {
+            hessian.get(k, i, j) =
+                autodiff::derivative<2>(dual_target_coords.get(k));
+          } else {
+            hessian.get(k, i, j)[pts_index] =
+                autodiff::derivative<2>(dual_target_coords.get(k));
+          }
+        }
+      }
+    }
+  }
+
+  // piece together the inverse hessian from hessian and inverse jacobian
+  ::tenex::evaluate<ti::I, ti::m, ti::n>(
+      make_not_null(&inverse_hessian),
+      -1.0 * inverse_jac(ti::I, ti::j) * inverse_jac(ti::K, ti::m) *
+          inverse_jac(ti::L, ti::n) * hessian(ti::J, ti::k, ti::l));
+
+  return inverse_hessian;
+}
+#endif  // SPECTRE_AUTODIFF
+
 template <typename SourceFrame, typename TargetFrame, typename... Maps>
 template <typename T>
 auto CoordinateMap<SourceFrame, TargetFrame, Maps...>::jacobian_impl(
