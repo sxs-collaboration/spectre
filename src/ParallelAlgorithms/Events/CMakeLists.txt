@@ -8,6 +8,7 @@ add_spectre_library(${LIBRARY})
 spectre_target_sources(
   ${LIBRARY}
   PRIVATE
+  Completion.cpp
   ObserveAdaptiveSteppingDiagnostics.cpp
   ObserveConstantsPerElement.cpp
   ObserveDataBox.cpp
@@ -19,6 +20,7 @@ spectre_target_headers(
   ${LIBRARY}
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
+  Completion.hpp
   ErrorIfDataTooBig.hpp
   Factory.hpp
   MonitorMemory.hpp

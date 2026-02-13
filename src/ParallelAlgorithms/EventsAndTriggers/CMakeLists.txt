@@ -8,7 +8,6 @@ add_spectre_library(${LIBRARY})
 spectre_target_sources(
   ${LIBRARY}
   PRIVATE
-  Completion.cpp
   EventsAndTriggers.cpp
   LogicalTriggers.cpp
   WhenToCheck.cpp
@@ -18,7 +17,6 @@ spectre_target_headers(
   ${LIBRARY}
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
-  Completion.hpp
   Event.hpp
   EventsAndTriggers.hpp
   LogicalTriggers.hpp

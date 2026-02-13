@@ -4,6 +4,7 @@
 set(LIBRARY "Test_ParallelAlgorithmsEvents")
 
 set(LIBRARY_SOURCES
+  Test_Completion.cpp
   Test_ErrorIfDataTooBig.cpp
   Test_ObserveAdaptiveSteppingDiagnostics.cpp
   Test_ObserveAtExtremum.cpp
