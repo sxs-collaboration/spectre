@@ -22,7 +22,6 @@
 #include "Utilities/Literals.hpp"
 #include "Utilities/Serialization/PupBoost.hpp"
 #include "Utilities/StdHelpers.hpp"
-#include "Utilities/TMPL.hpp"
 
 namespace TimeSteppers {
 namespace BoundaryHistory_detail {
@@ -52,187 +51,111 @@ template <typename Data>
 bool operator<(const StepData<Data>& a, const TimeStepId& b) {
   return a.substeps.front().id < b;
 }
-}  // namespace BoundaryHistory_detail
 
-template <typename LocalData, typename RemoteData,
-          typename UntypedCouplingResult>
-template <bool Local, bool Mutable>
-size_t BoundaryHistory<LocalData, RemoteData, UntypedCouplingResult>::
-    SideAccessCommon<Local, Mutable>::size() const {
-  return parent_data().size();
-}
-
-template <typename LocalData, typename RemoteData,
-          typename UntypedCouplingResult>
-template <bool Local, bool Mutable>
-const TimeStepId&
-BoundaryHistory<LocalData, RemoteData, UntypedCouplingResult>::SideAccessCommon<
-    Local, Mutable>::operator[](const size_t n) const {
-  return (*this)[{n, 0}];
-}
-
-template <typename LocalData, typename RemoteData,
-          typename UntypedCouplingResult>
-template <bool Local, bool Mutable>
-const TimeStepId&
-BoundaryHistory<LocalData, RemoteData, UntypedCouplingResult>::SideAccessCommon<
-    Local, Mutable>::operator[](const std::pair<size_t, size_t>&
-                                    step_and_substep) const {
-  return entry(step_and_substep).id;
-}
-
-template <typename LocalData, typename RemoteData,
-          typename UntypedCouplingResult>
-template <bool Local, bool Mutable>
-size_t BoundaryHistory<LocalData, RemoteData, UntypedCouplingResult>::
-    SideAccessCommon<Local, Mutable>::integration_order(const size_t n) const {
-  return parent_data()[n].integration_order;
-}
-
-template <typename LocalData, typename RemoteData,
-          typename UntypedCouplingResult>
-template <bool Local, bool Mutable>
-size_t
-BoundaryHistory<LocalData, RemoteData, UntypedCouplingResult>::SideAccessCommon<
-    Local, Mutable>::integration_order(const TimeStepId& id) const {
-  return step_data(id).integration_order;
-}
-
-template <typename LocalData, typename RemoteData,
-          typename UntypedCouplingResult>
-template <bool Local, bool Mutable>
-size_t BoundaryHistory<LocalData, RemoteData, UntypedCouplingResult>::
-    SideAccessCommon<Local, Mutable>::number_of_substeps(const size_t n) const {
-  return parent_data()[n].substeps.size();
-}
-
-template <typename LocalData, typename RemoteData,
-          typename UntypedCouplingResult>
-template <bool Local, bool Mutable>
-size_t
-BoundaryHistory<LocalData, RemoteData, UntypedCouplingResult>::SideAccessCommon<
-    Local, Mutable>::number_of_substeps(const TimeStepId& id) const {
-  return step_data(id).substeps.size();
-}
-
-template <typename LocalData, typename RemoteData,
-          typename UntypedCouplingResult>
-template <bool Local, bool Mutable>
-auto BoundaryHistory<LocalData, RemoteData, UntypedCouplingResult>::
-    SideAccessCommon<Local, Mutable>::data(const size_t n) const -> Data& {
-  return parent_data()[n].substeps.front().data;
-}
-
-template <typename LocalData, typename RemoteData,
-          typename UntypedCouplingResult>
-template <bool Local, bool Mutable>
-auto BoundaryHistory<LocalData, RemoteData, UntypedCouplingResult>::
-    SideAccessCommon<Local, Mutable>::data(const TimeStepId& id) const
-    -> Data& {
-  return entry(id).data;
-}
-
-template <typename LocalData, typename RemoteData,
-          typename UntypedCouplingResult>
-template <bool Local, bool Mutable>
-auto BoundaryHistory<LocalData, RemoteData, UntypedCouplingResult>::
-    SideAccessCommon<Local, Mutable>::parent_data() const
-    -> tmpl::conditional_t<
-        Mutable, CircularDeque<BoundaryHistory_detail::StepData<MutableData>>&,
-        const CircularDeque<BoundaryHistory_detail::StepData<MutableData>>&> {
-  if constexpr (Local) {
-    return parent_->local_data_;
-  } else {
-    return parent_->remote_data_;
-  }
-}
-
-template <typename LocalData, typename RemoteData,
-          typename UntypedCouplingResult>
-template <bool Local, bool Mutable>
-auto& BoundaryHistory<LocalData, RemoteData, UntypedCouplingResult>::
-    SideAccessCommon<Local, Mutable>::step_data(const TimeStepId& id) const {
-  auto entry = std::upper_bound(parent_data().begin(), parent_data().end(), id);
-  ASSERT(entry != parent_data().begin(), "Id " << id << " not present.");
+template <typename ParentData>
+auto& step_data(const gsl::not_null<ParentData*> parent_data,
+                const TimeStepId& id) {
+  auto entry = std::upper_bound(parent_data->begin(), parent_data->end(), id);
+  ASSERT(entry != parent_data->begin(), "Id " << id << " not present.");
   --entry;
   ASSERT(id.substep() < entry->substeps.size() and
              entry->substeps[id.substep()].id == id,
          "Id " << id << " not present.");
   return *entry;
 }
+}  // namespace BoundaryHistory_detail
 
-template <typename LocalData, typename RemoteData,
-          typename UntypedCouplingResult>
-template <bool Local, bool Mutable>
-auto& BoundaryHistory<LocalData, RemoteData, UntypedCouplingResult>::
-    SideAccessCommon<Local, Mutable>::entry(const TimeStepId& id) const {
-  // Bounds and consistency are checked in step_data()
-  return step_data(id).substeps[id.substep()];
+template <typename Data>
+size_t ConstBoundaryHistorySide<Data>::size() const {
+  return parent_data().size();
 }
 
-template <typename LocalData, typename RemoteData,
-          typename UntypedCouplingResult>
-template <bool Local, bool Mutable>
-auto& BoundaryHistory<LocalData, RemoteData, UntypedCouplingResult>::
-    SideAccessCommon<Local, Mutable>::entry(
-        const std::pair<size_t, size_t>& step_and_substep) const {
+template <typename Data>
+const TimeStepId& ConstBoundaryHistorySide<Data>::operator[](
+    const size_t n) const {
+  return (*this)[{n, 0}];
+}
+
+template <typename Data>
+const TimeStepId& ConstBoundaryHistorySide<Data>::operator[](
+    const std::pair<size_t, size_t>& step_and_substep) const {
   ASSERT(step_and_substep.first < parent_data().size(),
          "Step out of range: " << step_and_substep.first);
   auto& substeps = parent_data()[step_and_substep.first].substeps;
   ASSERT(step_and_substep.second < substeps.size(),
          "Substep out of range: " << step_and_substep.second);
-  return substeps[step_and_substep.second];
+  return substeps[step_and_substep.second].id;
 }
 
-template <typename LocalData, typename RemoteData,
-          typename UntypedCouplingResult>
-template <bool Local, bool Mutable>
-BoundaryHistory<LocalData, RemoteData, UntypedCouplingResult>::SideAccessCommon<
-    Local, Mutable>::SideAccessCommon(const gsl::not_null<StoredHistory*>
-                                          parent)
-    : parent_(parent) {}
+template <typename Data>
+size_t ConstBoundaryHistorySide<Data>::integration_order(const size_t n) const {
+  return parent_data()[n].integration_order;
+}
 
-template <typename LocalData, typename RemoteData,
-          typename UntypedCouplingResult>
-template <bool Local>
-BoundaryHistory<LocalData, RemoteData, UntypedCouplingResult>::
-    MutableSideAccess<Local>::MutableSideAccess(
-        const gsl::not_null<BoundaryHistory*> parent)
-    : SideAccessCommon<Local, true>(parent) {}
+template <typename Data>
+size_t ConstBoundaryHistorySide<Data>::integration_order(
+    const TimeStepId& id) const {
+  return BoundaryHistory_detail::step_data(make_not_null(&parent_data()), id)
+      .integration_order;
+}
+
+template <typename Data>
+size_t ConstBoundaryHistorySide<Data>::number_of_substeps(
+    const size_t n) const {
+  return parent_data()[n].substeps.size();
+}
+
+template <typename Data>
+size_t ConstBoundaryHistorySide<Data>::number_of_substeps(
+    const TimeStepId& id) const {
+  return BoundaryHistory_detail::step_data(make_not_null(&parent_data()), id)
+      .substeps.size();
+}
+
+template <typename Data>
+const Data& ConstBoundaryHistorySide<Data>::data(const size_t n) const {
+  return parent_data()[n].substeps.front().data;
+}
+
+template <typename Data>
+const Data& ConstBoundaryHistorySide<Data>::data(const TimeStepId& id) const {
+  // Bounds and consistency are checked in step_data()
+  return BoundaryHistory_detail::step_data(make_not_null(&parent_data()), id)
+      .substeps[id.substep()]
+      .data;
+}
+
+template <typename Data>
+Data& MutableBoundaryHistorySide<Data>::data(const size_t n) const {
+  return parent_data()[n].substeps.front().data;
+}
+
+template <typename Data>
+Data& MutableBoundaryHistorySide<Data>::data(const TimeStepId& id) const {
+  // Bounds and consistency are checked in step_data()
+  return BoundaryHistory_detail::step_data(make_not_null(&parent_data()), id)
+      .substeps[id.substep()]
+      .data;
+}
 
 template <typename LocalData, typename RemoteData,
           typename UntypedCouplingResult>
 template <bool Local>
 BoundaryHistory<LocalData, RemoteData, UntypedCouplingResult>::ConstSideAccess<
     Local>::ConstSideAccess(const gsl::not_null<const BoundaryHistory*> parent)
-    : SideAccessCommon<Local, false>(parent) {}
+    : parent_(parent) {}
 
 template <typename LocalData, typename RemoteData,
           typename UntypedCouplingResult>
-auto BoundaryHistory<LocalData, RemoteData, UntypedCouplingResult>::local()
-    -> MutableSideAccess<true> {
-  return MutableSideAccess<true>(this);
-}
-
-template <typename LocalData, typename RemoteData,
-          typename UntypedCouplingResult>
-auto BoundaryHistory<LocalData, RemoteData, UntypedCouplingResult>::local()
-    const -> ConstSideAccess<true> {
-  return ConstSideAccess<true>(this);
-}
-
-template <typename LocalData, typename RemoteData,
-          typename UntypedCouplingResult>
-auto BoundaryHistory<LocalData, RemoteData, UntypedCouplingResult>::remote()
-    -> MutableSideAccess<false> {
-  return MutableSideAccess<false>(this);
-}
-
-template <typename LocalData, typename RemoteData,
-          typename UntypedCouplingResult>
-auto BoundaryHistory<LocalData, RemoteData, UntypedCouplingResult>::remote()
-    const -> ConstSideAccess<false> {
-  return ConstSideAccess<false>(this);
+template <bool Local>
+auto BoundaryHistory<LocalData, RemoteData, UntypedCouplingResult>::
+    ConstSideAccess<Local>::parent_data() const
+    -> const CircularDeque<BoundaryHistory_detail::StepData<Data>>& {
+  if constexpr (Local) {
+    return parent_->local_data_;
+  } else {
+    return parent_->remote_data_;
+  }
 }
 
 template <typename LocalData, typename RemoteData,
@@ -304,6 +227,63 @@ void BoundaryHistory<LocalData, RemoteData, UntypedCouplingResult>::
     this->parent_->insert_initial_remote(id, integration_order,
                                          std::move(data));
   }
+}
+
+template <typename LocalData, typename RemoteData,
+          typename UntypedCouplingResult>
+template <bool Local>
+BoundaryHistory<LocalData, RemoteData, UntypedCouplingResult>::
+    MutableSideAccess<Local>::MutableSideAccess(
+        const gsl::not_null<BoundaryHistory*> parent)
+    : parent_(parent) {}
+
+template <typename LocalData, typename RemoteData,
+          typename UntypedCouplingResult>
+template <bool Local>
+auto BoundaryHistory<LocalData, RemoteData, UntypedCouplingResult>::
+    MutableSideAccess<Local>::parent_data() const
+    -> CircularDeque<BoundaryHistory_detail::StepData<Data>>& {
+  if constexpr (Local) {
+    return parent_->local_data_;
+  } else {
+    return parent_->remote_data_;
+  }
+}
+
+template <typename LocalData, typename RemoteData,
+          typename UntypedCouplingResult>
+template <bool Local>
+void BoundaryHistory<LocalData, RemoteData, UntypedCouplingResult>::
+    MutableSideAccess<Local>::clear_coupling_cache() const {
+  parent_->clear_coupling_cache();
+}
+
+template <typename LocalData, typename RemoteData,
+          typename UntypedCouplingResult>
+auto BoundaryHistory<LocalData, RemoteData, UntypedCouplingResult>::local()
+    -> MutableSideAccess<true> {
+  return MutableSideAccess<true>(this);
+}
+
+template <typename LocalData, typename RemoteData,
+          typename UntypedCouplingResult>
+auto BoundaryHistory<LocalData, RemoteData, UntypedCouplingResult>::local()
+    const -> ConstSideAccess<true> {
+  return ConstSideAccess<true>(this);
+}
+
+template <typename LocalData, typename RemoteData,
+          typename UntypedCouplingResult>
+auto BoundaryHistory<LocalData, RemoteData, UntypedCouplingResult>::remote()
+    -> MutableSideAccess<false> {
+  return MutableSideAccess<false>(this);
+}
+
+template <typename LocalData, typename RemoteData,
+          typename UntypedCouplingResult>
+auto BoundaryHistory<LocalData, RemoteData, UntypedCouplingResult>::remote()
+    const -> ConstSideAccess<false> {
+  return ConstSideAccess<false>(this);
 }
 
 template <typename LocalData, typename RemoteData,
@@ -522,27 +502,23 @@ std::ostream& operator<<(
 }
 }  // namespace TimeSteppers
 
-#define INSTANTIATE_BOUNDARY_HISTORY(...)                                      \
-  template class TimeSteppers::BoundaryHistory<__VA_ARGS__>;                   \
-  template class TimeSteppers::BoundaryHistory<__VA_ARGS__>::ConstSideAccess<  \
-      false>;                                                                  \
-  template class TimeSteppers::BoundaryHistory<__VA_ARGS__>::ConstSideAccess<  \
-      true>;                                                                   \
-  template class TimeSteppers::BoundaryHistory<                                \
-      __VA_ARGS__>::MutableSideAccess<false>;                                  \
-  template class TimeSteppers::BoundaryHistory<                                \
-      __VA_ARGS__>::MutableSideAccess<true>;                                   \
-  template class TimeSteppers::BoundaryHistory<__VA_ARGS__>::SideAccessCommon< \
-      false, false>;                                                           \
-  template class TimeSteppers::BoundaryHistory<__VA_ARGS__>::SideAccessCommon< \
-      false, true>;                                                            \
-  template class TimeSteppers::BoundaryHistory<__VA_ARGS__>::SideAccessCommon< \
-      true, false>;                                                            \
-  template class TimeSteppers::BoundaryHistory<__VA_ARGS__>::SideAccessCommon< \
-      true, true>;                                                             \
-  template std::ostream&                                                       \
-  TimeSteppers::BoundaryHistory<__VA_ARGS__>::print<false>(                    \
-      std::ostream & os, const size_t padding_size) const;                     \
-  template std::ostream&                                                       \
-  TimeSteppers::BoundaryHistory<__VA_ARGS__>::print<true>(                     \
+#define INSTANTIATE_BOUNDARY_HISTORY_SIDE(...)                        \
+  template class TimeSteppers::ConstBoundaryHistorySide<__VA_ARGS__>; \
+  template class TimeSteppers::MutableBoundaryHistorySide<__VA_ARGS__>;
+
+#define INSTANTIATE_BOUNDARY_HISTORY(...)                                     \
+  template class TimeSteppers::BoundaryHistory<__VA_ARGS__>;                  \
+  template class TimeSteppers::BoundaryHistory<__VA_ARGS__>::ConstSideAccess< \
+      false>;                                                                 \
+  template class TimeSteppers::BoundaryHistory<__VA_ARGS__>::ConstSideAccess< \
+      true>;                                                                  \
+  template class TimeSteppers::BoundaryHistory<                               \
+      __VA_ARGS__>::MutableSideAccess<false>;                                 \
+  template class TimeSteppers::BoundaryHistory<                               \
+      __VA_ARGS__>::MutableSideAccess<true>;                                  \
+  template std::ostream&                                                      \
+  TimeSteppers::BoundaryHistory<__VA_ARGS__>::print<false>(                   \
+      std::ostream & os, const size_t padding_size) const;                    \
+  template std::ostream&                                                      \
+  TimeSteppers::BoundaryHistory<__VA_ARGS__>::print<true>(                    \
       std::ostream & os, const size_t padding_size) const;
