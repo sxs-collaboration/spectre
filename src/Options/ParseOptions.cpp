@@ -50,6 +50,30 @@ YAML::Node load_and_check_yaml(const std::string& options,
                                const bool require_metadata) {
   std::vector<YAML::Node> yaml_docs = YAML::LoadAll(options);
   if (yaml_docs.empty()) {
+    // yaml-cpp v 0.9.0 returns immediately on an empty root, so need to
+    // handle this
+    if (require_metadata) {
+      const size_t pos = options.find("---\n---\n");
+      if (pos == std::string::npos) {
+        throw std::runtime_error(
+            "Missing metadata in input file. YAML input files begin with a "
+            "metadata section terminated by '---':\n\n"
+            "# Metadata here\n\n"
+            "---\n\n"
+            "# Options start here\n\n"
+            "The metadata section may also be empty:\n\n"
+            "---\n"
+            "---\n\n"
+            "# Options start here\n\n"
+            "See option parsing documentation for details.");
+      } else {
+        std::string options_after_empty_metadata = options;
+        options_after_empty_metadata.erase(pos, 8);
+        std::vector<YAML::Node> yaml_docs_after_metadata =
+            YAML::LoadAll(options_after_empty_metadata);
+        return yaml_docs_after_metadata[0];
+      }
+    }
     return {};
   } else if (yaml_docs.size() == 1) {
     if (require_metadata) {
