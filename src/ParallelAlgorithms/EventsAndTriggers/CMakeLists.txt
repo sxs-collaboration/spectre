@@ -32,7 +32,6 @@ target_link_libraries(
   ErrorHandling
   PUBLIC
   Options
-  Parallel
   Serialization
   Utilities
   )

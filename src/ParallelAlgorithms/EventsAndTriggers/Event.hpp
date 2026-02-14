@@ -7,10 +7,16 @@
 
 #include "DataStructures/DataBox/MetavariablesTag.hpp"
 #include "DataStructures/DataBox/ObservationBox.hpp"
-#include "Parallel/GlobalCache.hpp"
 #include "Utilities/CallWithDynamicType.hpp"
 #include "Utilities/Serialization/CharmPupable.hpp"
 #include "Utilities/TMPL.hpp"
+
+/// \cond
+namespace Parallel {
+template <typename Metavariables>
+class GlobalCache;
+}  // namespace Parallel
+/// \endcond
 
 /// \ingroup EventsAndTriggersGroup
 namespace Events {}
