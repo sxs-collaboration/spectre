@@ -9,6 +9,7 @@ spectre_target_sources(
   ${LIBRARY}
   PRIVATE
   Angular.cpp
+  None.cpp
   Sommerfeld.cpp
   )
 
@@ -18,6 +19,7 @@ spectre_target_headers(
   HEADERS
   Factory.hpp
   Angular.hpp
+  None.hpp
   Sommerfeld.hpp
   )
 
