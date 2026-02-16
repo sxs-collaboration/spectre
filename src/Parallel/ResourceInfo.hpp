@@ -20,7 +20,6 @@
 #include "Options/Context.hpp"
 #include "Options/ParseError.hpp"
 #include "Options/String.hpp"
-#include "Parallel/Algorithms/AlgorithmSingletonDeclarations.hpp"
 #include "Parallel/Info.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/Printf/Printf.hpp"
