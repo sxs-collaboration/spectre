@@ -386,8 +386,8 @@ def generate_xdmf(
         GridType="Collection",
         CollectionType="Temporal",
     )
-    # Collect timesteps in a hash map before inserting into XML so we can insert
-    # grids while stepping through H5 files
+    # Collect timestep records from all input files so stride can be applied
+    # globally rather than independently per file.
     timesteps = dict()
 
     for h5file, filename in h5files:
@@ -427,26 +427,34 @@ def generate_xdmf(
             key=lambda key_and_time: key_and_time[1],
         )
 
-        # Stride through timesteps
-        for temporal_id, time in temporal_ids_and_values[::stride]:
-            # Filter by start and end time
-            if start_time is not None and time < start_time:
-                continue
-            if stop_time is not None and time > stop_time:
-                break
+        for temporal_id, time in temporal_ids_and_values:
+            timestep_key = (time, temporal_id)
+            if timestep_key not in timesteps:
+                timesteps[timestep_key] = []
+            timesteps[timestep_key].append(
+                (vol_subfile, topo_dim, filename_in_output)
+            )
 
-            # A timestep is represented by a collection of grids. We store the
-            # grid collection in a hash map so each H5 file can insert grids.
-            if temporal_id in timesteps:
-                xmf_timestep_grid = timesteps[temporal_id]
-            else:
-                xmf_timestep_grid = ET.SubElement(
-                    xmf_timesteps, "Grid", Name="Grids", GridType="Collection"
-                )
-                # The time is stored as a `Time` tag in the grid collection
-                ET.SubElement(xmf_timestep_grid, "Time", Value=f"{time:.14e}")
-                timesteps[temporal_id] = xmf_timestep_grid
+    # Sort timesteps globally by time and apply stride to the global sequence.
+    sorted_timestep_items = sorted(
+        timesteps.items(), key=lambda item: (item[0][0], item[0][1])
+    )
+    for (time, temporal_id), timestep_records in sorted_timestep_items[
+        ::stride
+    ]:
+        # Filter by start and end time
+        if start_time is not None and time < start_time:
+            continue
+        if stop_time is not None and time > stop_time:
+            break
 
+        xmf_timestep_grid = ET.SubElement(
+            xmf_timesteps, "Grid", Name="Grids", GridType="Collection"
+        )
+        # The time is stored as a `Time` tag in the grid collection
+        ET.SubElement(xmf_timestep_grid, "Time", Value=f"{time:.14e}")
+
+        for vol_subfile, topo_dim, filename_in_output in timestep_records:
             # Construct the grid for this observation
             observation = vol_subfile[temporal_id]
             xmf_timestep_grid.append(
