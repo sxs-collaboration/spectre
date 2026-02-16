@@ -45,3 +45,9 @@
 /// \brief Used to inherit from the correct base classes when building with
 /// Charm++
 #define SPECTRE_CHARM_DERIVED(derivedName, baseName) baseName
+
+/// \brief Only used for multi-inheritance auto-registration of derived classes
+/// for serialization by findus. Empty in Charm++ mode.
+///
+/// \note findus supplies this macro directly.
+#define FINDUS_OVERRIDE_SERIALIZATION_ID(Derived, Base)
