@@ -168,7 +168,7 @@ class State : public SPECTRE_CHARM_PUPable(State) {
   State& operator=(const State& /*rhs*/) = default;
   State(State&& /*rhs*/) = default;
   State& operator=(State&& /*rhs*/) = default;
-  virtual ~State() override = default;
+  ~State() override = default;
 
   /// Name of this state
   virtual std::string name() const = 0;
@@ -189,7 +189,7 @@ class State : public SPECTRE_CHARM_PUPable(State) {
    * the `control_system::Tags::Verbosity` flag).
    */
   virtual std::string update(
-      const gsl::not_null<Info*> info, const StateUpdateArgs& update_args,
+      gsl::not_null<Info*> info, const StateUpdateArgs& update_args,
       const CrossingTimeInfo& crossing_time_info) const = 0;
   /// Returns the control signal, but does not modify the state or any
   /// parameters.
