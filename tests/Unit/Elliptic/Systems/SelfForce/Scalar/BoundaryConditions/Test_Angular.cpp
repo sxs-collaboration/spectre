@@ -59,9 +59,10 @@ SPECTRE_TEST_CASE("Unit.ScalarSelfForce.BoundaryConditions.Angular",
     const tnsr::i<ComplexDataVector, 2> deriv_field{
         used_for_size.size(), std::numeric_limits<double>::signaling_NaN()};
     const auto box = db::create<db::AddSimpleTags<>>();
-    elliptic::apply_boundary_condition<false, void,
-                                       standard_boundary_conditions>(
-        boundary_condition, box, Direction<1>::lower_xi(),
+    using local_angular_list = tmpl::list<Angular>;
+    elliptic::apply_boundary_condition<
+        false, void, local_angular_list>(
+        boundary_condition, box, Direction<2>::lower_xi(),
         make_not_null(&field), make_not_null(&n_dot_field_gradient),
         deriv_field);
     const ComplexDataVector expected_value(used_for_size.size(), 0.);

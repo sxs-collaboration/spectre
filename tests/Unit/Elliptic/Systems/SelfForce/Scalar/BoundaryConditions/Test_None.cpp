@@ -45,8 +45,9 @@ SPECTRE_TEST_CASE("Unit.ScalarSelfForce.BoundaryConditions.None",
     const tnsr::i<ComplexDataVector, 2> deriv_field{
         used_for_size.size(), 5.6};
     const auto box = db::create<db::AddSimpleTags<>>();
+    using local_none_list = tmpl::list<None>;
     elliptic::apply_boundary_condition<
-        false, void, standard_boundary_conditions>(
+        false, void, local_none_list>(
         boundary_condition, box, Direction<2>::lower_xi(),
         make_not_null(&field), make_not_null(&n_dot_field_gradient),
         deriv_field);
