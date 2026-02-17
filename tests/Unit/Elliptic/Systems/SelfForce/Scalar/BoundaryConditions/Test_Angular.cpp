@@ -11,11 +11,15 @@
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "Domain/Structure/DirectionMap.hpp"
+#include "Domain/Tags.hpp"
+#include "Domain/Tags/Faces.hpp"
 #include "Elliptic/BoundaryConditions/ApplyBoundaryCondition.hpp"
 #include "Elliptic/BoundaryConditions/BoundaryCondition.hpp"
 #include "Elliptic/BoundaryConditions/BoundaryConditionType.hpp"
 #include "Elliptic/Systems/SelfForce/Scalar/BoundaryConditions/Angular.hpp"
 #include "Elliptic/Systems/SelfForce/Scalar/BoundaryConditions/Factory.hpp"
+#include "Elliptic/Systems/SelfForce/Scalar/Tags.hpp"
 #include "Framework/CheckWithRandomValues.hpp"
 #include "Framework/Pypp.hpp"
 #include "Framework/SetupLocalPythonEnvironment.hpp"
@@ -51,6 +55,7 @@ SPECTRE_TEST_CASE("Unit.ScalarSelfForce.BoundaryConditions.Angular",
   }
   {
     INFO("Apply boundary condition");
+    const Direction<2> direction = Direction<2>::lower_xi();
     const DataVector used_for_size(5);
     auto field = make_with_value<Scalar<ComplexDataVector>>(
         used_for_size, std::numeric_limits<double>::signaling_NaN());
@@ -58,10 +63,27 @@ SPECTRE_TEST_CASE("Unit.ScalarSelfForce.BoundaryConditions.Angular",
         used_for_size, std::numeric_limits<double>::signaling_NaN());
     const tnsr::i<ComplexDataVector, 2> deriv_field{
         used_for_size.size(), std::numeric_limits<double>::signaling_NaN()};
-    const auto box = db::create<db::AddSimpleTags<>>();
+    const tnsr::I<DataVector, 2> coords{used_for_size.size(), 0.0};
+    const Scalar<ComplexDataVector> beta{used_for_size.size(), 0.0};
+    const tnsr::i<ComplexDataVector, 2> gamma{used_for_size.size(), 0.0};
+
+    const DirectionMap<2, tnsr::I<DataVector, 2>> coords_map{
+        {direction, coords}};
+    const DirectionMap<2, Scalar<ComplexDataVector>> beta_map{
+        {direction, beta}};
+    const DirectionMap<2, tnsr::i<ComplexDataVector, 2>> gamma_map{
+        {direction, gamma}};
+
+    const auto box = db::create<db::AddSimpleTags<
+        domain::Tags::Faces<2, domain::Tags::Coordinates<2, Frame::Inertial>>,
+        domain::Tags::Faces<2, Tags::Beta>,
+        domain::Tags::Faces<2, Tags::Gamma>>>(
+            std::move(coords_map),
+            std::move(beta_map),
+            std::move(gamma_map));
     elliptic::apply_boundary_condition<false, void,
                                        standard_boundary_conditions>(
-        boundary_condition, box, Direction<1>::lower_xi(),
+        boundary_condition, box, direction,
         make_not_null(&field), make_not_null(&n_dot_field_gradient),
         deriv_field);
     const ComplexDataVector expected_value(used_for_size.size(), 0.);
