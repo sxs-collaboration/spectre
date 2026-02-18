@@ -313,6 +313,12 @@ Amr:
   Verbosity: Quiet
 
 PhaseChangeAndTriggers:
+  - Trigger:
+      SeparationLessThan:
+        Value: &CommonHorizonActivationSeparation 2.38
+    PhaseChanges:
+      # Terminal completion path: Evolve -> WriteCheckpoint -> Exit.
+      - BbhCheckpointAndExitIfComplete
 {% if segments_dir is defined %}
   - Trigger:
       Slabs:
@@ -427,12 +433,13 @@ EventsAndTriggersAtSlabs:
 # Trigger to find common horizon and gather volume data needed for ringdown.
   - Trigger:
       SeparationLessThan:
-        Value: 2.38 # for q=1, spin=0, quasicircular
+        Value: *CommonHorizonActivationSeparation
     Events:
       - ChangeSlabSize:
           DelayChange: 0
           StepChoosers:
             - Constant: 0.01
+      - BbhCheckConstraintThresholds
       - ObservationAhC:
           SubfileName: ForContinuation
           VariablesToObserve:
@@ -445,13 +452,6 @@ EventsAndTriggersAtSlabs:
           CoordinatesFloatingPointType: Double
           FloatingPointTypes: [Double]
           BlocksToObserve: All
-  # This separation has enough common horizon finds to start ringdown for q=1,
-  # spin=0, quasicircular
-  - Trigger:
-      SeparationLessThan:
-        Value: 2.138
-    Events:
-      - Completion
 {% if eccentricity_control %}
   # If running eccentricity control, only run short inspiral
   - Trigger:
@@ -509,6 +509,14 @@ EventsRunAtCleanup:
 
 Interpolator:
   Verbosity: Silent
+
+BbhCompletionCriteria:
+  MinCommonHorizonSuccessesBeforeChecks: 8
+  MaxCommonHorizonSuccesses: 100
+  GaugeConstraintLinfThreshold: 1.0
+  ThreeIndexConstraintLinfThreshold: 1.0
+  CommonHorizonLMaxThreshold: 8
+  ConstraintCheckVerbose: false
 
 ApparentHorizons:
   LMax: 33
