@@ -14,7 +14,6 @@
 #include "Framework/TestCreation.hpp"
 #include "Helpers/DataStructures/DataBox/TestHelpers.hpp"
 #include "Options/Protocols/FactoryCreation.hpp"
-#include "ParallelAlgorithms/EventsAndTriggers/Completion.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/EventsAndTriggers.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/LogicalTriggers.hpp"
@@ -40,11 +39,54 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Literals.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
+#include "Utilities/Serialization/CharmPupable.hpp"
 #include "Utilities/TMPL.hpp"
 
 class DataVector;
+namespace Parallel {
+template <typename Metavariables>
+class GlobalCache;
+}  // namespace Parallel
 
 namespace {
+class OtherEvent : public Event {
+ public:
+  explicit OtherEvent(CkMigrateMessage* /*unused*/) {}
+  using PUP::able::register_constructor;
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-function"
+  WRAPPED_PUPable_decl_template(OtherEvent);  // NOLINT
+#pragma GCC diagnostic pop
+
+  using compute_tags_for_observation_box = tmpl::list<>;
+  using options = tmpl::list<>;
+  static constexpr Options::String help = {""};
+
+  OtherEvent() = default;
+
+  using return_tags = tmpl::list<>;
+  using argument_tags = tmpl::list<>;
+
+  template <typename Metavariables, typename ArrayIndex, typename Component>
+  void operator()(Parallel::GlobalCache<Metavariables>& /*cache*/,
+                  const ArrayIndex& /*array_index*/,
+                  const Component* const /*meta*/,
+                  const ObservationValue& /*observation_value*/) const {}
+
+  using is_ready_argument_tags = tmpl::list<>;
+
+  template <typename Metavariables, typename ArrayIndex, typename Component>
+  bool is_ready(Parallel::GlobalCache<Metavariables>& /*cache*/,
+                const ArrayIndex& /*array_index*/,
+                const Component* const /*meta*/) const {
+    return true;
+  }
+
+  bool needs_evolved_variables() const override { return false; }
+};
+
+PUP::able::PUP_ID OtherEvent::my_PUP_ID = 0;  // NOLINT
+
 struct EvolvedVar1 : db::SimpleTag {
   using type = Scalar<DataVector>;
 };
@@ -77,8 +119,7 @@ struct Metavariables {
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
     using factory_classes = tmpl::map<
-        tmpl::pair<Event,
-                   tmpl::list<Events::ChangeSlabSize, Events::Completion>>,
+        tmpl::pair<Event, tmpl::list<Events::ChangeSlabSize, OtherEvent>>,
         tmpl::pair<StepChooser<StepChooserUse::LtsStep>,
                    step_choosers<StepChooserUse::LtsStep>>,
         tmpl::pair<StepChooser<StepChooserUse::Slab>,
@@ -255,10 +296,10 @@ SPECTRE_TEST_CASE("Unit.Time.Tags.StepperErrorTolerancesCompute",
                 TestHelpers::test_creation<EventsAndTriggers, Metavariables>(
                     "- Trigger: Always\n"
                     "  Events:\n"
-                    "    - Completion\n"
+                    "    - OtherEvent\n"
                     "- Trigger: Always\n"
                     "  Events:\n"
-                    "    - Completion\n"
+                    "    - OtherEvent\n"
                     "    - ChangeSlabSize:\n"
                     "        DelayChange: 0\n"
                     "        StepChoosers:\n"
@@ -285,10 +326,10 @@ SPECTRE_TEST_CASE("Unit.Time.Tags.StepperErrorTolerancesCompute",
                 TestHelpers::test_creation<EventsAndTriggers, Metavariables>(
                     "- Trigger: Always\n"
                     "  Events:\n"
-                    "    - Completion\n"
+                    "    - OtherEvent\n"
                     "- Trigger: Always\n"
                     "  Events:\n"
-                    "    - Completion\n"
+                    "    - OtherEvent\n"
                     "    - ChangeSlabSize:\n"
                     "        DelayChange: 0\n"
                     "        StepChoosers:\n"
@@ -376,10 +417,10 @@ SPECTRE_TEST_CASE("Unit.Time.Tags.StepperErrorTolerancesCompute",
               TestHelpers::test_creation<EventsAndTriggers, Metavariables>(
                   "- Trigger: Always\n"
                   "  Events:\n"
-                  "    - Completion\n"
+                  "    - OtherEvent\n"
                   "- Trigger: Always\n"
                   "  Events:\n"
-                  "    - Completion\n"
+                  "    - OtherEvent\n"
                   "    - ChangeSlabSize:\n"
                   "        DelayChange: 0\n"
                   "        StepChoosers:\n"
@@ -409,10 +450,10 @@ SPECTRE_TEST_CASE("Unit.Time.Tags.StepperErrorTolerancesCompute",
               TestHelpers::test_creation<EventsAndTriggers, Metavariables>(
                   "- Trigger: Always\n"
                   "  Events:\n"
-                  "    - Completion\n"
+                  "    - OtherEvent\n"
                   "- Trigger: Always\n"
                   "  Events:\n"
-                  "    - Completion\n"
+                  "    - OtherEvent\n"
                   "    - ChangeSlabSize:\n"
                   "        DelayChange: 0\n"
                   "        StepChoosers:\n"
@@ -433,10 +474,10 @@ SPECTRE_TEST_CASE("Unit.Time.Tags.StepperErrorTolerancesCompute",
               TestHelpers::test_creation<EventsAndTriggers, Metavariables>(
                   "- Trigger: Always\n"
                   "  Events:\n"
-                  "    - Completion\n"
+                  "    - OtherEvent\n"
                   "- Trigger: Always\n"
                   "  Events:\n"
-                  "    - Completion");
+                  "    - OtherEvent");
         },
         make_not_null(&box));
     CHECK_FALSE(db::get<Tags::StepperErrorEstimatesEnabled>(box));

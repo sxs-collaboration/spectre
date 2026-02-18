@@ -6,13 +6,15 @@
 
 #pragma once
 
-#include <vector>
 #include <memory>
+#include <pup_stl.h>
+#include <vector>
 
 #include "DataStructures/DataBox/Tag.hpp"
 #include "Options/String.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/EventsAndTriggers.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/WhenToCheck.hpp"
+#include "Utilities/GetOutput.hpp"
 #include "Utilities/Serialization/Serialize.hpp"
 #include "Utilities/TMPL.hpp"
 

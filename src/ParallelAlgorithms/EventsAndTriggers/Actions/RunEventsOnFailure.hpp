@@ -10,7 +10,6 @@
 #include "DataStructures/DataBox/ObservationBox.hpp"
 #include "DataStructures/DataBox/TagName.hpp"
 #include "Parallel/AlgorithmExecution.hpp"
-#include "Parallel/GlobalCache.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Tags.hpp"
 #include "Utilities/CloneUniquePtrs.hpp"
@@ -18,6 +17,13 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
+
+/// \cond
+namespace Parallel {
+template <typename Metavariables>
+class GlobalCache;
+}  // namespace Parallel
+/// \endcond
 
 namespace Actions {
 /*!
