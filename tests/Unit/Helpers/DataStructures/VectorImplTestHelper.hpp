@@ -502,6 +502,14 @@ void vector_test_construct_and_assign(
                                 VectorType(size, ValueType{}));
       CHECK(resize_from_vector.size() == size);
     }
+
+    // Check that clearing by copy-assignment works
+    {
+      VectorType vec(size, generated_value1);
+      const VectorType empty{};
+      vec = empty;
+      CHECK(vec.size() == 0);
+    }
   }
 }
 
