@@ -57,7 +57,6 @@ void Sommerfeld::apply(
   if (order_ == 1) {
     get(*n_dot_field_gradient) = std::complex<double>(0.0, k) * get(*field);
   } else if (order_ == 2) {
-    // get(*n_dot_field_gradient) -= 1. / get<0>(x) * get(*field);
     get(*n_dot_field_gradient) =
         (square(k) - get(beta)) /
         (get<0>(gamma) - std::complex<double>(0.0, 2. * k)) * get(*field);
