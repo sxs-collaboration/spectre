@@ -8,6 +8,7 @@ add_spectre_library(${LIBRARY})
 spectre_target_sources(
   ${LIBRARY}
   PRIVATE
+  ApplyTensorYlmFilter.cpp
   Characteristics.cpp
   Constraints.cpp
   TimeDerivative.cpp
@@ -18,6 +19,7 @@ spectre_target_headers(
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
   Actions.hpp
+  ApplyTensorYlmFilter.hpp
   BackgroundSpacetime.hpp
   Characteristics.hpp
   CalculateGrVars.hpp
