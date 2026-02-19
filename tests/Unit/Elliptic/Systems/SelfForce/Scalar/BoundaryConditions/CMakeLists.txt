@@ -6,6 +6,7 @@ set(LIBRARY "Test_ScalarSelfForceBoundaryConditions")
 set(LIBRARY_SOURCES
   Test_Angular.cpp
   Test_Sommerfeld.cpp
+  Test_None.cpp
   )
 
 add_test_library(${LIBRARY} "${LIBRARY_SOURCES}")
