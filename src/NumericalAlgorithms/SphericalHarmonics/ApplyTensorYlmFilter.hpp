@@ -6,6 +6,7 @@
 #include "DataStructures/SimpleSparseMatrix.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "DataStructures/Variables.hpp"
+#include "Evolution/Systems/CurvedScalarWave/Tags.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/TensorYlm.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
@@ -80,6 +81,7 @@ template <typename DataType, size_t Dim, typename Frame>
 struct Phikij : db::SimpleTag {
   using type = tnsr::ijj<DataType, Dim, Frame>;
 };
+
 }  // namespace Tags
 
 using gh_spacetime_vars_list =
@@ -94,6 +96,11 @@ using gh_spatial_vars_list = tmpl::list<
     Tags::Pik0<DataVector, 3, Frame>, Tags::Pikj<DataVector, 3, Frame>,
     Tags::Phik00<DataVector, 3, Frame>, Tags::Phiki0<DataVector, 3, Frame>,
     Tags::Phikij<DataVector, 3, Frame>>;
+
+template <typename Frame>
+using sw_vars_list =
+    tmpl::list<::CurvedScalarWave::Tags::Psi, ::CurvedScalarWave::Tags::Pi,
+               ::CurvedScalarWave::Tags::Phi<3, Frame>>;
 
 /*!
  * \brief Does a nodal to modal transform on I1xS2, only in the S2 direction.
@@ -232,6 +239,54 @@ void apply_tensor_ylm_filter(
     const SimpleSparseMatrix& filter_matrix_ii,
     const SimpleSparseMatrix& filter_matrix_ij,
     const SimpleSparseMatrix& filter_matrix_kii, size_t ell_max,
+    size_t radial_extents);
+
+/*!
+ * \brief Applies TensorYlm filter in place to Curved Scalar Wave variables.
+ *
+ * When radial_extents is 1, sw_vars and temp_storage are assumed to
+ * be defined on a spherical slice, with number of grid points
+ * corresponding to a spherical-harmonic grid of ell_max, and the
+ * filter happens only on that slice.
+ *
+ * When radial_extents is > 1, sw_vars and temp_storage are assumed to
+ * be defined on a spherical shell of topology I1 x S2. The filter
+ * happens in the entire volume, internally iterating over each
+ * spherical slice at a time.
+ *
+ * For performance reasons, apply_tensor_ylm_filter does not allocate
+ * or deallocate memory, but it does take a temp_storage buffer.  The
+ * size of temp_storage should at least
+ * radial_extents*spectral_size*num_components, where num_components
+ * is the total number of independent components in the SW variable
+ * list (i.e. 5), and spectral_size is the size of the S2 Spherepack
+ * spectral coefficient array for ell_max, as obtained from the member
+ * function ylm::Spherepack::spectral_size().  Note that for S2 on
+ * Spherepack, the number of collocation points is different than the
+ * number of spectral coefficients, and both are different than the
+ * size of the Spherepack storage array.
+ *
+ * \param sw_vars Scalar wave variables at collocation points.
+ * \param temp_storage Temporary storage for scalar wave variables,
+ *   allocated outside apply_tensor_ylm_filter. See above for size requirements.
+ * \param jac_inertial_to_grid Jacobian taking V_x from inertial to grid.
+ * \param jac_grid_to_inertial Jacobian taking V_x from grid to inertial.
+ * \param filter_matrix_scalar The scalar filter matrix computed by fill_filter.
+ * \param filter_matrix_i The Rank-1 matrix computed by fill_filter.
+ * \param ell_max The maximum ylm ell.
+ * \param radial_extents The number of radial grid points, can be 1 for slices.
+ */
+void apply_tensor_ylm_filter(
+    gsl::not_null<Variables<filter_detail::sw_vars_list<Frame::Inertial>>*>
+        sw_vars,
+    gsl::not_null<Variables<filter_detail::sw_vars_list<Frame::Inertial>>*>
+        temp_storage,
+    const InverseJacobian<DataVector, 3, Frame::Inertial, Frame::Grid>&
+        jac_inertial_to_grid,
+    const InverseJacobian<DataVector, 3, Frame::Grid, Frame::Inertial>&
+        jac_grid_to_inertial,
+    const SimpleSparseMatrix& filter_matrix_scalar,
+    const SimpleSparseMatrix& filter_matrix_i, size_t ell_max,
     size_t radial_extents);
 
 }  // namespace ylm::TensorYlm

@@ -56,9 +56,9 @@ struct Pi : db::SimpleTag {
  * \details If \f$\Psi\f$ is the scalar field then we define
  * \f$\Phi_{i} = \partial_i \Psi\f$
  */
-template <size_t SpatialDim>
+template <size_t SpatialDim, typename Frame>
 struct Phi : db::SimpleTag {
-  using type = tnsr::i<DataVector, SpatialDim>;
+  using type = tnsr::i<DataVector, SpatialDim, Frame>;
 };
 
 struct ConstraintGamma1 : db::SimpleTag {
