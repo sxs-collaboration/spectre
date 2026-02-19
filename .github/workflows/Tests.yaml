@@ -1007,16 +1007,10 @@ ${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
     strategy:
       fail-fast: false
       matrix:
-        include:
-          # The number of cores is given at:
-          # https://docs.github.com/en/actions/using-github-hosted-runners/about-github-hosted-runners/about-github-hosted-runners#supported-runners-and-hardware-resources
-          - arch: x86
-            macos-version: 13  # Intel
-            NUM_CORES: 4
-          - arch: arm64
-            macos-version: 14  # Apple Silicon
-            NUM_CORES: 3
-    runs-on: macos-${{ matrix.macos-version }}
+        os:
+          - macos-15-intel
+          - macos-15
+    runs-on: ${{ matrix.os }}
     env:
       # We install some low-level dependencies with Homebrew. They get picked up
       # by `spack external find`.
@@ -1039,6 +1033,12 @@ ${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
         id: start
         run: |
           echo "time=$(date +%s)" >> "$GITHUB_OUTPUT"
+      - name: Get CPU cores
+        id: get_cores
+        run: |
+          CORES=$(sysctl -n hw.ncpu)
+          echo "NUM_CORES=$CORES" >> $GITHUB_ENV
+          echo "Detect $CORES cores"
       - name: Checkout repository
         uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -1055,7 +1055,7 @@ ${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
         uses: actions/cache/restore@v4
         id: restore-dependencies
         env:
-          CACHE_KEY_PREFIX: "dependencies-macos-${{ matrix.macos-version }}"
+          CACHE_KEY_PREFIX: "dependencies-${{ matrix.os }}"
         with:
           path: ~/dependencies
           key: "${{ env.CACHE_KEY_PREFIX }}-${{ github.run_id }}"
@@ -1133,7 +1133,7 @@ ${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
         uses: actions/cache/restore@v4
         id: restore-ccache
         env:
-          CACHE_KEY_PREFIX: "ccache-macos-${{ matrix.macos-version }}"
+          CACHE_KEY_PREFIX: "ccache-${{ matrix.os }}"
         with:
           path: ~/ccache
           key: "${{ env.CACHE_KEY_PREFIX }}-${{ github.run_id }}"

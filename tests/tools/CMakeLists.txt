@@ -17,7 +17,8 @@ spectre_add_python_bindings_test(
   "tools.Status"
   Test_Status.py
   "Python"
-  None)
+  None
+  TIMEOUT 30)
 
 spectre_add_python_bindings_test(
   "tools.ValidateInputFile"
