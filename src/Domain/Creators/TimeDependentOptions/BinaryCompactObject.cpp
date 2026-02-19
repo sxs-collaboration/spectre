@@ -66,23 +66,6 @@ TimeDependentMapOptions<IsCylindrical>::TimeDependentMapOptions(
                 "'None' for the TimeDependentMapOptions. If you want time "
                 "dependent maps, specify options for at least one map.");
   }
-
-  const auto check_l_max = [&context](const auto& shape_option,
-                                      const domain::ObjectLabel label) {
-    if (shape_option.has_value() and
-        time_dependent_options::l_max_from_shape_options(
-            shape_option.value()) <= 1) {
-      PARSE_ERROR(context,
-                  "Initial LMax for object "
-                      << label << " must be 2 or greater but is "
-                      << time_dependent_options::l_max_from_shape_options(
-                             shape_option.value())
-                      << " instead.");
-    }
-  };
-
-  check_l_max(shape_options_A_, domain::ObjectLabel::A);
-  check_l_max(shape_options_B_, domain::ObjectLabel::B);
 }
 
 template <bool IsCylindrical>
