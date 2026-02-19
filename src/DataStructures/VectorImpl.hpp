@@ -325,6 +325,7 @@ class VectorImpl
   // neither owned_data_ or static_owned_data_ actually has the data we want.
   SPECTRE_ALWAYS_INLINE void reset_pointer_vector(const size_t set_size) {
     if (set_size == 0) {
+      BaseType::clear();
       return;
     }
     if (owned_data_ == nullptr and set_size > StaticSize) {
