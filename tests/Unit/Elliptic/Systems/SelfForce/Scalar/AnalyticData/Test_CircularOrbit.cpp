@@ -25,6 +25,8 @@ namespace ScalarSelfForce::AnalyticData {
 
 SPECTRE_TEST_CASE("Unit.PointwiseFunctions.ScalarSelfForce.CircularOrbit",
                   "[PointwiseFunctions][Unit]") {
+
+  SECTION("Original Source and Equation Test") {
   // This test checks both the self-force equations and the effective source
   // computation in a very robust way: it ensures that the elliptic operator
   // applied to the singular field gives the effective source.
@@ -101,6 +103,46 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.ScalarSelfForce.CircularOrbit",
     // acting on the singular part.
     CHECK_ITERABLE_CUSTOM_APPROX(get(scalar_eqn), -get(effective_source),
                                  custom_approx);
+    }
+    }
+
+  SECTION("Hyperboloidal Slicing Test"){
+  // This test verifies that the hyperboloidal slicing transformation is
+  // correctly applied to the background shift (Beta)
+  // with boost function of order 2
+  const double r_0 = 10.0;
+  const double a = 0.5;
+  const double omega = 1. / (a + sqrt(cube(r_0) / 1.0));
+  const int m_mode_number = 2;
+  const double k = m_mode_number * omega;
+  const std::array<double, 4> transitions{{-25., -5., 20., 40.}};
+  const double r_star_test = 30.0;
+
+  const auto circular_orbit =
+        CircularOrbit{1.0, a, r_0 , m_mode_number, transitions};
+  const CircularOrbit base_orbit{1.0, a, r_0, m_mode_number, std::nullopt};
+  const tnsr::I<DataVector, 2, Frame::Inertial> x{
+    {{DataVector{r_star_test}, DataVector{0.0}}}};
+
+  const auto base_bg = base_orbit.variables(
+    x, CircularOrbit::background_tags{});
+  const auto& base_gamma = get<0>(get<Tags::Gamma>(base_bg));
+  const auto& base_beta = get(get<Tags::Beta>(base_bg));
+
+  const auto background = circular_orbit.variables(
+    x, CircularOrbit::background_tags{});
+  const auto& shifted_beta = get(get<Tags::Beta>(background));
+  const auto H = 0.5;
+  const auto dH = 1.875 / (transitions[3] - transitions[2]);
+  const double expected_re_delta_beta =
+        square(k) * square(H) - k * H * imag(base_gamma[0]);
+  const double expected_im_delta_beta =
+        -k * dH + k * H * real(base_gamma[0]);
+  const double re_delta_beta = real(shifted_beta[0]) - real(base_beta[0]);
+  const double im_delta_beta = imag(shifted_beta[0]) - imag(base_beta[0]);
+
+  CHECK(re_delta_beta == approx(expected_re_delta_beta));
+  CHECK(im_delta_beta == approx(expected_im_delta_beta));
   }
 }
 

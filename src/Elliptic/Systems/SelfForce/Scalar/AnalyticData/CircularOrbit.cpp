@@ -23,15 +23,18 @@
 namespace ScalarSelfForce::AnalyticData {
 
 namespace {
+template <size_t Order>
 std::pair<DataVector, DataVector> boost_function_and_deriv(
     const DataVector& r_star, const std::array<double, 4>& transition_points) {
   return {
-      smoothstep<1>(transition_points[0], transition_points[1], r_star) +
-          smoothstep<1>(transition_points[2], transition_points[3], r_star) -
+      smoothstep<Order>(transition_points[0], transition_points[1], r_star) +
+          smoothstep<Order>(transition_points[2], transition_points[3],
+                            r_star) -
           1.0,
-      smoothstep_deriv<1>(transition_points[0], transition_points[1], r_star) +
-          smoothstep_deriv<1>(transition_points[2], transition_points[3],
-                              r_star)};
+      smoothstep_deriv<Order>(transition_points[0], transition_points[1],
+                              r_star) +
+          smoothstep_deriv<Order>(transition_points[2], transition_points[3],
+                                  r_star)};
 }
 }  // namespace
 
@@ -102,7 +105,7 @@ CircularOrbit::variables(
   get(alpha) *= sin_theta_squared;
   // Hyperboloidal slicing
   if (hyperboloidal_slicing_transitions_.has_value()) {
-    const auto [H, dH] = boost_function_and_deriv(
+    const auto [H, dH] = boost_function_and_deriv<2>(
         r_star, hyperboloidal_slicing_transitions_.value());
     const double k = m_mode_number_ * omega;
     get(beta) += std::complex<double>(0., -k) * dH + square(k) * square(H) +
