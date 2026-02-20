@@ -414,19 +414,13 @@ struct ApplyBoundaryCorrections {
       local_time_stepping,
       evolution::dg::Tags::MortarDataHistory<volume_dim, DtVariables>,
       evolution::dg::Tags::MortarData<volume_dim>>;
-  using MortarDataType =
-      tmpl::conditional_t<DenseOutput, const typename mortar_data_tag::type,
-                          typename mortar_data_tag::type>;
 
-  using return_tags =
-      tmpl::conditional_t<DenseOutput, tmpl::list<tag_to_update>,
-                          tmpl::list<tag_to_update, mortar_data_tag>>;
+  using return_tags = tmpl::list<tag_to_update>;
   using argument_tags = tmpl::append<
       tmpl::flatten<tmpl::list<
-          tmpl::conditional_t<DenseOutput, mortar_data_tag, tmpl::list<>>,
-          domain::Tags::Mesh<volume_dim>, domain::Tags::Element<volume_dim>,
-          Tags::MortarMesh<volume_dim>, Tags::MortarInfo<volume_dim>,
-          ::dg::Tags::Formulation,
+          mortar_data_tag, domain::Tags::Mesh<volume_dim>,
+          domain::Tags::Element<volume_dim>, Tags::MortarMesh<volume_dim>,
+          Tags::MortarInfo<volume_dim>, ::dg::Tags::Formulation,
           evolution::dg::Tags::NormalCovectorAndMagnitude<volume_dim>,
           ::Tags::TimeStepper<TimeStepperType>,
           evolution::Tags::BoundaryCorrection,
@@ -440,7 +434,7 @@ struct ApplyBoundaryCorrections {
   template <typename... VolumeArgs>
   static void apply(
       const gsl::not_null<typename tag_to_update::type*> vars_to_update,
-      const gsl::not_null<MortarDataType*> mortar_data,
+      const typename mortar_data_tag::type& mortar_data,
       const Mesh<volume_dim>& volume_mesh, const Element<volume_dim>& element,
       const typename Tags::MortarMesh<volume_dim>::type& mortar_meshes,
       const typename Tags::MortarInfo<volume_dim>::type& mortar_infos,
@@ -465,7 +459,7 @@ struct ApplyBoundaryCorrections {
   template <typename... VolumeArgs>
   static void apply(
       const gsl::not_null<typename tag_to_update::type*> vars_to_update,
-      const gsl::not_null<MortarDataType*> mortar_data,
+      const typename mortar_data_tag::type& mortar_data,
       const Mesh<volume_dim>& volume_mesh, const Element<volume_dim>& element,
       const typename Tags::MortarMesh<volume_dim>::type& mortar_meshes,
       const typename Tags::MortarInfo<volume_dim>::type& mortar_infos,
@@ -489,8 +483,8 @@ struct ApplyBoundaryCorrections {
   template <typename... VolumeArgs>
   static void apply(
       const gsl::not_null<typename variables_tag::type*> vars_to_update,
-      const MortarDataType& mortar_data, const Mesh<volume_dim>& volume_mesh,
-      const Element<volume_dim>& element,
+      const typename mortar_data_tag::type& mortar_data,
+      const Mesh<volume_dim>& volume_mesh, const Element<volume_dim>& element,
       const typename Tags::MortarMesh<volume_dim>::type& mortar_meshes,
       const typename Tags::MortarInfo<volume_dim>::type& mortar_infos,
       const ::dg::Formulation dg_formulation,
@@ -502,11 +496,10 @@ struct ApplyBoundaryCorrections {
       const LtsTimeStepper& time_stepper,
       const evolution::BoundaryCorrection& boundary_correction,
       const double dense_output_time, const VolumeArgs&... volume_args) {
-    apply_impl(vars_to_update, &mortar_data, volume_mesh, element,
-               mortar_meshes, mortar_infos, dg_formulation,
-               face_normal_covector_and_magnitude, time_stepper,
-               boundary_correction, TimeDelta{}, dense_output_time, {},
-               volume_args...);
+    apply_impl(vars_to_update, mortar_data, volume_mesh, element, mortar_meshes,
+               mortar_infos, dg_formulation, face_normal_covector_and_magnitude,
+               time_stepper, boundary_correction, TimeDelta{},
+               dense_output_time, {}, volume_args...);
   }
 
   template <typename DbTagsList, typename... InboxTags, typename ArrayIndex,
@@ -532,7 +525,7 @@ struct ApplyBoundaryCorrections {
   template <typename... VolumeArgs>
   static void apply_impl(
       const gsl::not_null<typename tag_to_update::type*> vars_to_update,
-      const gsl::not_null<MortarDataType*> mortar_data,
+      const typename mortar_data_tag::type& mortar_data,
       const Mesh<volume_dim>& volume_mesh, const Element<volume_dim>& element,
       const typename Tags::MortarMesh<volume_dim>::type& mortar_meshes,
       const typename Tags::MortarInfo<volume_dim>::type& mortar_infos,
@@ -626,7 +619,7 @@ struct ApplyBoundaryCorrections {
           Variables<mortar_tags_list> local_data_on_mortar{};
           Variables<mortar_tags_list> neighbor_data_on_mortar{};
 
-          for (auto& mortar_id_and_data : *mortar_data) {
+          for (const auto& mortar_id_and_data : mortar_data) {
             const auto& mortar_id = mortar_id_and_data.first;
             if (not mortars_to_act_on.contains(mortar_id)) {
               continue;
@@ -830,7 +823,7 @@ struct ApplyBoundaryCorrections {
                 lifted_data.initialize(face_mesh.number_of_grid_points(), 0.0);
               }
 
-              auto& mortar_data_history = mortar_id_and_data.second;
+              const auto& mortar_data_history = mortar_id_and_data.second;
               if constexpr (DenseOutput) {
                 (void)time_step;
                 time_stepper.boundary_dense_output(
