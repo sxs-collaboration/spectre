@@ -33,6 +33,7 @@
 #include "Evolution/DiscontinuousGalerkin/MortarInfo.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarTags.hpp"
 #include "Evolution/DiscontinuousGalerkin/NormalVectorTags.hpp"
+#include "Evolution/DiscontinuousGalerkin/TimeSteppingPolicy.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/MortarHelpers.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/SegmentSize.hpp"
@@ -168,8 +169,9 @@ struct Mortars {
         Dim, typename db::add_tag_prefix<
                  ::Tags::dt, typename System::variables_tag>::type>::type
         boundary_data_history{};
-    if (Metavariables::local_time_stepping) {
-      for (const auto& mortar_id_and_data : mortar_data) {
+    for (const auto& mortar_id_and_data : mortar_data) {
+      if (mortar_infos.at(mortar_id_and_data.first).time_stepping_policy() ==
+          TimeSteppingPolicy::Conservative) {
         // default initialize data
         boundary_data_history[mortar_id_and_data.first];
       }
@@ -443,52 +445,53 @@ struct ProjectMortars : tt::ConformsTo<amr::protocols::Projector> {
         neighbor_mesh, get<::Tags::TimeStepId>(parent_items),
         Metavariables::local_time_stepping);
 
-    if (Metavariables::local_time_stepping) {
-      const auto& old_element = get<domain::Tags::Element<dim>>(parent_items);
-      const auto& old_histories = get<mortar_data_history_tag>(parent_items);
-      for (const auto& [direction, neighbors] : new_element.neighbors()) {
-        for (const auto& neighbor : neighbors) {
-          const DirectionalId<dim> mortar_id{direction, neighbor};
-          if (const auto old_history = old_histories.find(mortar_id);
-              old_history != old_histories.end()) {
-            // The neighbor did not h-refine, so we have to project
-            // its mortar data from our parent.
-            auto& new_history =
-                mortar_data_history->emplace(mortar_id, old_history->second)
-                    .first->second;
-            new_history.local().clear();
-            auto remote_history = new_history.remote();
-            const auto& new_mortar_mesh = mortar_mesh->at(mortar_id);
-            const auto& orientation = neighbors.orientation(neighbor);
-            const auto new_mortar_size = domain::child_size(
-                ::dg::mortar_segments(new_element.id(), neighbor,
-                                      direction.dimension(), orientation),
-                ::dg::mortar_segments(old_element.id(), neighbor,
-                                      direction.dimension(), orientation));
-            const auto project_mortar_data =
-                [&new_mortar_mesh, &new_mortar_size](
-                    const TimeStepId& /* id */,
-                    const gsl::not_null<::evolution::dg::MortarData<dim>*>
-                        data) {
-                  const auto& old_mortar_mesh = data->mortar_mesh.value();
-                  const auto mortar_projection_matrices =
-                      Spectral::projection_matrices(
-                          old_mortar_mesh, new_mortar_mesh,
-                          make_array<dim - 1>(Spectral::SegmentSize::Full),
-                          new_mortar_size);
-                  DataVector& vars = data->mortar_data.value();
-                  vars = apply_matrices(mortar_projection_matrices, vars,
-                                        old_mortar_mesh.extents());
-                  data->mortar_mesh = new_mortar_mesh;
-                  return true;
-                };
-            remote_history.for_each(project_mortar_data);
-          } else {
-            // Neither this element nor the neighbor existed before
-            // refinement.
-            mortar_data_history->emplace(
-                mortar_id, typename mortar_data_history_type::mapped_type{});
-          }
+    const auto& old_element = get<domain::Tags::Element<dim>>(parent_items);
+    const auto& old_histories = get<mortar_data_history_tag>(parent_items);
+    for (const auto& [direction, neighbors] : new_element.neighbors()) {
+      for (const auto& neighbor : neighbors) {
+        const DirectionalId<dim> mortar_id{direction, neighbor};
+        if (mortar_infos->at(mortar_id).time_stepping_policy() !=
+            TimeSteppingPolicy::Conservative) {
+          continue;
+        }
+        if (const auto old_history = old_histories.find(mortar_id);
+            old_history != old_histories.end()) {
+          // The neighbor did not h-refine, so we have to project
+          // its mortar data from our parent.
+          auto& new_history =
+              mortar_data_history->emplace(mortar_id, old_history->second)
+                  .first->second;
+          new_history.local().clear();
+          auto remote_history = new_history.remote();
+          const auto& new_mortar_mesh = mortar_mesh->at(mortar_id);
+          const auto& orientation = neighbors.orientation(neighbor);
+          const auto new_mortar_size = domain::child_size(
+              ::dg::mortar_segments(new_element.id(), neighbor,
+                                    direction.dimension(), orientation),
+              ::dg::mortar_segments(old_element.id(), neighbor,
+                                    direction.dimension(), orientation));
+          const auto project_mortar_data =
+              [&new_mortar_mesh, &new_mortar_size](
+                  const TimeStepId& /* id */,
+                  const gsl::not_null<::evolution::dg::MortarData<dim>*> data) {
+                const auto& old_mortar_mesh = data->mortar_mesh.value();
+                const auto mortar_projection_matrices =
+                    Spectral::projection_matrices(
+                        old_mortar_mesh, new_mortar_mesh,
+                        make_array<dim - 1>(Spectral::SegmentSize::Full),
+                        new_mortar_size);
+                DataVector& vars = data->mortar_data.value();
+                vars = apply_matrices(mortar_projection_matrices, vars,
+                                      old_mortar_mesh.extents());
+                data->mortar_mesh = new_mortar_mesh;
+                return true;
+              };
+          remote_history.for_each(project_mortar_data);
+        } else {
+          // Neither this element nor the neighbor existed before
+          // refinement.
+          mortar_data_history->emplace(
+              mortar_id, typename mortar_data_history_type::mapped_type{});
         }
       }
     }
@@ -519,81 +522,83 @@ struct ProjectMortars : tt::ConformsTo<amr::protocols::Projector> {
         neighbor_mesh, get<::Tags::TimeStepId>(children_items.begin()->second),
         Metavariables::local_time_stepping);
 
-    if (Metavariables::local_time_stepping) {
-      for (const auto& [direction, neighbors] : new_element.neighbors()) {
-        for (const auto& neighbor : neighbors) {
-          const DirectionalId<dim> mortar_id{direction, neighbor};
-          std::optional<typename mortar_data_history_type::mapped_type>
-              new_history{};
-          for (const auto& [child, child_items] : children_items) {
-            const auto& old_histories =
-                get<mortar_data_history_tag>(child_items);
-            if (const auto old_history = old_histories.find(mortar_id);
-                old_history != old_histories.end()) {
-              // The neighbor did not h-refine, so we have to project
-              // its mortar data from our children.
-              const auto& new_mortar_mesh = mortar_mesh->at(mortar_id);
-              const auto& orientation = neighbors.orientation(neighbor);
-              const auto old_mortar_size = domain::child_size(
-                  ::dg::mortar_segments(child, neighbor, direction.dimension(),
-                                        orientation),
-                  ::dg::mortar_segments(new_element.id(), neighbor,
-                                        direction.dimension(), orientation));
-              if (not new_history.has_value()) {
-                new_history.emplace(old_history->second);
-                new_history->local().clear();
-                auto remote_history = new_history->remote();
-                const auto project_mortar_data =
-                    [&new_mortar_mesh, &old_mortar_size](
-                        const TimeStepId& /* id */,
-                        const gsl::not_null<::evolution::dg::MortarData<dim>*>
-                            data) {
-                      const auto& old_mortar_mesh = data->mortar_mesh.value();
-                      const auto mortar_projection_matrices =
-                          Spectral::projection_matrices(
-                              old_mortar_mesh, new_mortar_mesh, old_mortar_size,
-                              make_array<dim - 1>(Spectral::SegmentSize::Full));
-                      DataVector& vars = data->mortar_data.value();
-                      vars = apply_matrices(mortar_projection_matrices, vars,
-                                            old_mortar_mesh.extents());
-                      data->mortar_mesh = new_mortar_mesh;
-                      return true;
-                    };
-                remote_history.for_each(project_mortar_data);
-              } else {
-                auto remote_history = new_history->remote();
-                const auto old_remote_history = old_history->second.remote();
-                const auto project_mortar_data =
-                    [&new_mortar_mesh, &old_mortar_size, &old_remote_history](
-                        const TimeStepId& id,
-                        const gsl::not_null<::evolution::dg::MortarData<dim>*>
-                            data) {
-                      const auto& old_data = old_remote_history.data(id);
-                      const auto& old_mortar_mesh =
-                          old_data.mortar_mesh.value();
-                      const auto mortar_projection_matrices =
-                          Spectral::projection_matrices(
-                              old_mortar_mesh, new_mortar_mesh, old_mortar_size,
-                              make_array<dim - 1>(Spectral::SegmentSize::Full));
-                      data->mortar_data.value() +=
-                          apply_matrices(mortar_projection_matrices,
-                                         old_data.mortar_data.value(),
-                                         old_mortar_mesh.extents());
-                      return true;
-                    };
-                remote_history.for_each(project_mortar_data);
-              }
+    for (const auto& [direction, neighbors] : new_element.neighbors()) {
+      for (const auto& neighbor : neighbors) {
+        const DirectionalId<dim> mortar_id{direction, neighbor};
+        if (mortar_infos->at(mortar_id).time_stepping_policy() !=
+            TimeSteppingPolicy::Conservative) {
+          continue;
+        }
+        std::optional<typename mortar_data_history_type::mapped_type>
+            new_history{};
+        for (const auto& [child, child_items] : children_items) {
+          const auto& old_histories =
+              get<mortar_data_history_tag>(child_items);
+          if (const auto old_history = old_histories.find(mortar_id);
+              old_history != old_histories.end()) {
+            // The neighbor did not h-refine, so we have to project
+            // its mortar data from our children.
+            const auto& new_mortar_mesh = mortar_mesh->at(mortar_id);
+            const auto& orientation = neighbors.orientation(neighbor);
+            const auto old_mortar_size = domain::child_size(
+                ::dg::mortar_segments(child, neighbor, direction.dimension(),
+                                      orientation),
+                ::dg::mortar_segments(new_element.id(), neighbor,
+                                      direction.dimension(), orientation));
+            if (not new_history.has_value()) {
+              new_history.emplace(old_history->second);
+              new_history->local().clear();
+              auto remote_history = new_history->remote();
+              const auto project_mortar_data =
+                  [&new_mortar_mesh, &old_mortar_size](
+                      const TimeStepId& /* id */,
+                      const gsl::not_null<::evolution::dg::MortarData<dim>*>
+                          data) {
+                    const auto& old_mortar_mesh = data->mortar_mesh.value();
+                    const auto mortar_projection_matrices =
+                        Spectral::projection_matrices(
+                            old_mortar_mesh, new_mortar_mesh, old_mortar_size,
+                            make_array<dim - 1>(Spectral::SegmentSize::Full));
+                    DataVector& vars = data->mortar_data.value();
+                    vars = apply_matrices(mortar_projection_matrices, vars,
+                                          old_mortar_mesh.extents());
+                    data->mortar_mesh = new_mortar_mesh;
+                    return true;
+                  };
+              remote_history.for_each(project_mortar_data);
+            } else {
+              auto remote_history = new_history->remote();
+              const auto old_remote_history = old_history->second.remote();
+              const auto project_mortar_data =
+                  [&new_mortar_mesh, &old_mortar_size, &old_remote_history](
+                      const TimeStepId& id,
+                      const gsl::not_null<::evolution::dg::MortarData<dim>*>
+                          data) {
+                    const auto& old_data = old_remote_history.data(id);
+                    const auto& old_mortar_mesh =
+                        old_data.mortar_mesh.value();
+                    const auto mortar_projection_matrices =
+                        Spectral::projection_matrices(
+                            old_mortar_mesh, new_mortar_mesh, old_mortar_size,
+                            make_array<dim - 1>(Spectral::SegmentSize::Full));
+                    data->mortar_data.value() +=
+                        apply_matrices(mortar_projection_matrices,
+                                       old_data.mortar_data.value(),
+                                       old_mortar_mesh.extents());
+                    return true;
+                  };
+              remote_history.for_each(project_mortar_data);
             }
           }
+        }
 
-          if (new_history.has_value()) {
-            mortar_data_history->emplace(mortar_id, std::move(*new_history));
-          } else {
-            // Neither this element nor the neighbor existed before
-            // refinement.
-            mortar_data_history->emplace(
-                mortar_id, typename mortar_data_history_type::mapped_type{});
-          }
+        if (new_history.has_value()) {
+          mortar_data_history->emplace(mortar_id, std::move(*new_history));
+        } else {
+          // Neither this element nor the neighbor existed before
+          // refinement.
+          mortar_data_history->emplace(
+              mortar_id, typename mortar_data_history_type::mapped_type{});
         }
       }
     }

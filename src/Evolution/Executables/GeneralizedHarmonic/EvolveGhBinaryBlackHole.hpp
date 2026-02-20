@@ -705,10 +705,10 @@ struct EvolutionMetavars {
     using projectors = tmpl::list<
         Initialization::ProjectTimeStepping<volume_dim>,
         evolution::dg::Initialization::ProjectDomain<volume_dim>,
-        Initialization::ProjectTimeStepperHistory<EvolutionMetavars>,
         ::amr::projectors::ProjectVariables<volume_dim,
                                             typename system::variables_tag>,
         evolution::dg::Initialization::ProjectMortars<EvolutionMetavars>,
+        Initialization::ProjectTimeStepperHistory<EvolutionMetavars>,
         evolution::Actions::ProjectRunEventsAndDenseTriggers,
         ::amr::projectors::DefaultInitialize<
             Initialization::Tags::InitialTimeDelta,

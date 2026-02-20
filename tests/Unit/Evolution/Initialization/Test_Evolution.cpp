@@ -26,12 +26,18 @@
 #include "Domain/Amr/Info.hpp"
 #include "Domain/Amr/Tags/Flags.hpp"
 #include "Domain/Structure/DirectionMap.hpp"
+#include "Domain/Structure/DirectionalId.hpp"
+#include "Domain/Structure/DirectionalIdMap.hpp"
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Structure/Neighbors.hpp"
+#include "Domain/Structure/OrientationMap.hpp"
 #include "Domain/Structure/SegmentId.hpp"
 #include "Domain/Structure/Side.hpp"
 #include "Domain/Tags.hpp"
+#include "Evolution/DiscontinuousGalerkin/MortarInfo.hpp"
+#include "Evolution/DiscontinuousGalerkin/MortarTags.hpp"
+#include "Evolution/DiscontinuousGalerkin/TimeSteppingPolicy.hpp"
 #include "Evolution/Initialization/Evolution.hpp"
 #include "Evolution/Initialization/Tags.hpp"
 #include "Framework/TestHelpers.hpp"
@@ -68,6 +74,7 @@
 #include "Time/TimeSteppers/LtsTimeStepper.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"
 #include "Utilities/ConstantExpressions.hpp"
+#include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/Rational.hpp"
@@ -475,6 +482,26 @@ void check_history(
 }
 
 template <size_t Dim>
+DirectionalIdMap<Dim, evolution::dg::MortarInfo<Dim>> make_mortar_info(
+    const Element<Dim>& element, const bool local_time_stepping) {
+  DirectionalIdMap<Dim, evolution::dg::MortarInfo<Dim>> info{};
+  for (const auto& [direction, neighbors] : element.neighbors()) {
+    for (const auto& neighbor : neighbors) {
+      info.emplace(
+          DirectionalId{direction, neighbor},
+          evolution::dg::MortarInfo<Dim>{
+              {.time_stepping_policy =
+                   local_time_stepping
+                       ? evolution::dg::TimeSteppingPolicy::Conservative
+                       : evolution::dg::TimeSteppingPolicy::EqualRate}});
+    }
+  }
+  ASSERT(not(local_time_stepping and info.empty()),
+         "Can't do LTS with no neighbors");
+  return info;
+}
+
+template <size_t Dim>
 void check(const TimeSteppers::History<VariablesType>& original_history,
            const TimeSteppers::History<VariablesType>& expected_history,
            const Mesh<Dim>& new_mesh, const ElementId<Dim>& element_id,
@@ -483,6 +510,7 @@ void check(const TimeSteppers::History<VariablesType>& original_history,
   const auto original_time_step = Slab(1.2, 3.4).duration();
   auto time_step = original_time_step;
   const TimeSteppers::AdamsBashforth time_stepper(4);
+  const auto mortar_info = make_mortar_info(element, false);
   const TimeStepId original_next_time_step_id(true, 7,
                                               time_step.slab().start());
   auto next_time_step_id = original_next_time_step_id;
@@ -490,7 +518,7 @@ void check(const TimeSteppers::History<VariablesType>& original_history,
   Initialization::ProjectTimeStepperHistory<TestMetavariables<Dim>>::apply(
       make_not_null(&dt_vars), make_not_null(&history),
       make_not_null(&next_time_step_id), make_not_null(&time_step), new_mesh,
-      element_id, time_stepper, std::make_pair(old_mesh, element));
+      element_id, time_stepper, mortar_info, std::make_pair(old_mesh, element));
   CHECK(dt_vars.size() == new_mesh.number_of_grid_points());
   CHECK(time_step == original_time_step);
   CHECK(next_time_step_id == original_next_time_step_id);
@@ -498,7 +526,7 @@ void check(const TimeSteppers::History<VariablesType>& original_history,
   Initialization::ProjectTimeStepperHistory<TestMetavariables<Dim>>::apply(
       make_not_null(&dt_vars), make_not_null(&history),
       make_not_null(&next_time_step_id), make_not_null(&time_step), old_mesh,
-      element_id, time_stepper, std::make_pair(new_mesh, element));
+      element_id, time_stepper, mortar_info, std::make_pair(new_mesh, element));
   CHECK(dt_vars.size() == old_mesh.number_of_grid_points());
   CHECK(time_step == original_time_step);
   CHECK(next_time_step_id == original_next_time_step_id);
@@ -564,17 +592,15 @@ void test_p_refine() {
   check(history, expected_history, new_mesh, element_id, old_mesh, element);
 }
 
-template <bool LocalTimeStepping>
 struct Metavariables {
   static constexpr size_t volume_dim = 3;
-  static constexpr bool local_time_stepping = LocalTimeStepping;
   struct system {
     using variables_tag =
         Tags::Variables<tmpl::list<TestHelpers::Tags::Vector<DataVector>>>;
   };
 };
 
-using variables_tag = Metavariables<false>::system::variables_tag;
+using variables_tag = Metavariables::system::variables_tag;
 using dt_variables_tag = db::add_tag_prefix<Tags::dt, variables_tag>;
 
 template <size_t Label>
@@ -587,15 +613,26 @@ struct HistoryDeriv : db::SimpleTag {
   using type = dt_variables_tag::type;
 };
 
-using ElementData =
-    tuples::TaggedTuple<domain::Tags::Element<3>, domain::Tags::Mesh<3>,
-                        Tags::HistoryEvolvedVariables<variables_tag>,
-                        HistoryEntry<0>, HistoryDeriv<0>, HistoryDeriv<1>>;
+using ElementData = tuples::TaggedTuple<
+    domain::Tags::Element<3>, evolution::dg::Tags::MortarInfo<3>,
+    domain::Tags::Mesh<3>, Tags::TimeStepId, Tags::TimeStep,
+    Tags::HistoryEvolvedVariables<variables_tag>, HistoryEntry<0>,
+    HistoryDeriv<0>, HistoryDeriv<1>, Tags::StepperErrors<variables_tag>>;
 
-ElementData element_data(gsl::not_null<std::mt19937*> gen,
-                         const ElementId<3>& element_id, const Mesh<3>& mesh,
-                         const TimeStepId& time_step_id0,
-                         const TimeStepId& time_step_id1) {
+// Data for elements for GTS tests
+ElementData element_data(
+    const gsl::not_null<std::mt19937*> gen, const ElementId<3>& element_id,
+    const std::optional<std::pair<Direction<3>, ElementId<3>>>& neighbor,
+    const Mesh<3>& mesh, const TimeStepId& time_step_id0,
+    const TimeStepId& time_step_id1) {
+  DirectionMap<3, Neighbors<3>> neighbors{};
+  if (neighbor.has_value()) {
+    neighbors.emplace(
+        neighbor->first,
+        Neighbors<3>({neighbor->second}, OrientationMap<3>::create_aligned()));
+  }
+  Element<3> element(element_id, std::move(neighbors));
+  auto mortar_info = make_mortar_info(element, false);
   std::uniform_real_distribution<double> dist(-1.0, 1.0);
   auto value0 = make_with_random_values<variables_tag::type>(
       gen, make_not_null(&dist), mesh.number_of_grid_points());
@@ -606,9 +643,11 @@ ElementData element_data(gsl::not_null<std::mt19937*> gen,
   TimeSteppers::History<variables_tag::type> history(4);
   history.insert(time_step_id0, value0, deriv0);
   history.insert(time_step_id1, decltype(history)::no_value, deriv1);
-  return {Element<3>(element_id, {}), mesh,
-          std::move(history),         std::move(value0),
-          std::move(deriv0),          std::move(deriv1)};
+  return {std::move(element), std::move(mortar_info), mesh, time_step_id1,
+          time_step_id1.step_size(), std::move(history), std::move(value0),
+          std::move(deriv0), std::move(deriv1),
+          // Not used in GTS
+          Tags::StepperErrors<variables_tag>::type{}};
 }
 
 void compare_p_refine() {
@@ -625,28 +664,28 @@ void compare_p_refine() {
   const Mesh<3> new_mesh(5, Spectral::Basis::Legendre,
                          Spectral::Quadrature::GaussLobatto);
 
-  const auto old_data =
-      element_data(&gen, element_id, old_mesh, time_step_id0, time_step_id1);
+  const auto old_data = element_data(&gen, element_id, std::nullopt, old_mesh,
+                                     time_step_id0, time_step_id1);
   auto box = db::create<
       db::AddSimpleTags<::Tags::ConcreteTimeStepper<TimeStepper>,
                         Parallel::Tags::ArrayIndex<ElementId<3>>,
                         domain::Tags::Element<3>, domain::Tags::Mesh<3>,
-                        dt_variables_tag, ::Tags::Next<::Tags::TimeStepId>,
-                        ::Tags::TimeStep,
+                        evolution::dg::Tags::MortarInfo<3>, dt_variables_tag,
+                        ::Tags::Next<::Tags::TimeStepId>, ::Tags::TimeStep,
                         Tags::HistoryEvolvedVariables<variables_tag>,
                         HistoryEntry<0>, HistoryDeriv<0>, HistoryDeriv<1>>,
       time_stepper_ref_tags<TimeStepper>>(
       static_cast<std::unique_ptr<TimeStepper>>(
           std::make_unique<TimeSteppers::AdamsBashforth>(4)),
       element_id, get<domain::Tags::Element<3>>(old_data), new_mesh,
+      get<evolution::dg::Tags::MortarInfo<3>>(old_data),
       dt_variables_tag::type{}, next_time_step_id, time_step,
       get<Tags::HistoryEvolvedVariables<variables_tag>>(old_data),
       get<HistoryEntry<0>>(old_data), get<HistoryDeriv<0>>(old_data),
       get<HistoryDeriv<1>>(old_data));
 
   // Compare with the Variables projector
-  db::mutate_apply<
-      Initialization::ProjectTimeStepperHistory<Metavariables<false>>>(
+  db::mutate_apply<Initialization::ProjectTimeStepperHistory<Metavariables>>(
       make_not_null(&box),
       std::pair(old_mesh, get<domain::Tags::Element<3>>(old_data)));
   db::mutate_apply<amr::projectors::ProjectVariables<
@@ -684,34 +723,36 @@ void compare_h_refine() {
   const Mesh<3> mesh(4, Spectral::Basis::Legendre,
                      Spectral::Quadrature::GaussLobatto);
 
-  const auto parent_data =
-      element_data(&gen, parent_id, mesh, time_step_id0, time_step_id1);
+  const auto parent_data = element_data(&gen, parent_id, std::nullopt, mesh,
+                                        time_step_id0, time_step_id1);
   const auto child0_data =
-      element_data(&gen, child0_id, mesh, time_step_id0, time_step_id1);
+      element_data(&gen, child0_id, {{Direction<3>::upper_eta(), child1_id}},
+                   mesh, time_step_id0, time_step_id1);
   const auto child1_data =
-      element_data(&gen, child1_id, mesh, time_step_id0, time_step_id1);
+      element_data(&gen, child1_id, {{Direction<3>::lower_eta(), child0_id}},
+                   mesh, time_step_id0, time_step_id1);
 
   {
     auto box = db::create<
         db::AddSimpleTags<::Tags::ConcreteTimeStepper<TimeStepper>,
                           Parallel::Tags::ArrayIndex<ElementId<3>>,
                           domain::Tags::Element<3>, domain::Tags::Mesh<3>,
-                          dt_variables_tag, ::Tags::Next<::Tags::TimeStepId>,
-                          ::Tags::TimeStep,
+                          evolution::dg::Tags::MortarInfo<3>, dt_variables_tag,
+                          ::Tags::Next<::Tags::TimeStepId>, ::Tags::TimeStep,
                           Tags::HistoryEvolvedVariables<variables_tag>,
                           HistoryEntry<0>, HistoryDeriv<0>, HistoryDeriv<1>>,
         time_stepper_ref_tags<TimeStepper>>(
         static_cast<std::unique_ptr<TimeStepper>>(
             std::make_unique<TimeSteppers::AdamsBashforth>(4)),
         child0_id, get<domain::Tags::Element<3>>(child0_data), mesh,
+        get<evolution::dg::Tags::MortarInfo<3>>(child0_data),
         dt_variables_tag::type{}, next_time_step_id, time_step,
         Tags::HistoryEvolvedVariables<variables_tag>::type{},
         HistoryEntry<0>::type{}, HistoryDeriv<0>::type{},
         HistoryDeriv<1>::type{});
 
     // Compare with the Variables projector
-    db::mutate_apply<
-        Initialization::ProjectTimeStepperHistory<Metavariables<false>>>(
+    db::mutate_apply<Initialization::ProjectTimeStepperHistory<Metavariables>>(
         make_not_null(&box), parent_data);
     db::mutate_apply<amr::projectors::ProjectVariables<
         3, HistoryEntry<0>, HistoryDeriv<0>, HistoryDeriv<1>>>(
@@ -738,14 +779,15 @@ void compare_h_refine() {
         db::AddSimpleTags<::Tags::ConcreteTimeStepper<TimeStepper>,
                           Parallel::Tags::ArrayIndex<ElementId<3>>,
                           domain::Tags::Element<3>, domain::Tags::Mesh<3>,
-                          dt_variables_tag, ::Tags::Next<::Tags::TimeStepId>,
-                          ::Tags::TimeStep,
+                          evolution::dg::Tags::MortarInfo<3>, dt_variables_tag,
+                          ::Tags::Next<::Tags::TimeStepId>, ::Tags::TimeStep,
                           Tags::HistoryEvolvedVariables<variables_tag>,
                           HistoryEntry<0>, HistoryDeriv<0>, HistoryDeriv<1>>,
         time_stepper_ref_tags<TimeStepper>>(
         static_cast<std::unique_ptr<TimeStepper>>(
             std::make_unique<TimeSteppers::AdamsBashforth>(4)),
         parent_id, get<domain::Tags::Element<3>>(parent_data), mesh,
+        get<evolution::dg::Tags::MortarInfo<3>>(parent_data),
         dt_variables_tag::type{}, next_time_step_id, time_step,
         Tags::HistoryEvolvedVariables<variables_tag>::type{},
         HistoryEntry<0>::type{}, HistoryDeriv<0>::type{},
@@ -756,8 +798,7 @@ void compare_h_refine() {
     children_data.emplace(child1_id, child1_data);
 
     // Compare with the Variables projector
-    db::mutate_apply<
-        Initialization::ProjectTimeStepperHistory<Metavariables<false>>>(
+    db::mutate_apply<Initialization::ProjectTimeStepperHistory<Metavariables>>(
         make_not_null(&box), children_data);
     db::mutate_apply<amr::projectors::ProjectVariables<
         3, HistoryEntry<0>, HistoryDeriv<0>, HistoryDeriv<1>>>(
@@ -797,25 +838,28 @@ void compare_nonuniform_join() {
                             Spectral::Quadrature::GaussLobatto);
   const auto& parent_mesh = child0_mesh;
 
-  const auto parent_data =
-      element_data(&gen, parent_id, parent_mesh, time_step_id0, time_step_id1);
+  const auto parent_data = element_data(
+      &gen, parent_id, std::nullopt, parent_mesh, time_step_id0, time_step_id1);
   const auto child0_data =
-      element_data(&gen, child0_id, child0_mesh, time_step_id0, time_step_id1);
+      element_data(&gen, child0_id, {{Direction<3>::upper_eta(), child1_id}},
+                   child0_mesh, time_step_id0, time_step_id1);
   const auto child1_data =
-      element_data(&gen, child1_id, child1_mesh, time_step_id0, time_step_id1);
+      element_data(&gen, child1_id, {{Direction<3>::lower_eta(), child0_id}},
+                   child1_mesh, time_step_id0, time_step_id1);
 
   auto box = db::create<
       db::AddSimpleTags<::Tags::ConcreteTimeStepper<TimeStepper>,
                         Parallel::Tags::ArrayIndex<ElementId<3>>,
                         domain::Tags::Element<3>, domain::Tags::Mesh<3>,
-                        dt_variables_tag, ::Tags::Next<::Tags::TimeStepId>,
-                        ::Tags::TimeStep,
+                        evolution::dg::Tags::MortarInfo<3>, dt_variables_tag,
+                        ::Tags::Next<::Tags::TimeStepId>, ::Tags::TimeStep,
                         Tags::HistoryEvolvedVariables<variables_tag>,
                         HistoryEntry<0>, HistoryDeriv<0>, HistoryDeriv<1>>,
       time_stepper_ref_tags<TimeStepper>>(
       static_cast<std::unique_ptr<TimeStepper>>(
           std::make_unique<TimeSteppers::AdamsBashforth>(4)),
       parent_id, get<domain::Tags::Element<3>>(parent_data), parent_mesh,
+      get<evolution::dg::Tags::MortarInfo<3>>(parent_data),
       dt_variables_tag::type{}, next_time_step_id, time_step,
       Tags::HistoryEvolvedVariables<variables_tag>::type{},
       HistoryEntry<0>::type{}, HistoryDeriv<0>::type{},
@@ -826,8 +870,7 @@ void compare_nonuniform_join() {
   children_data.emplace(child1_id, child1_data);
 
   // Compare with the Variables projector
-  db::mutate_apply<
-      Initialization::ProjectTimeStepperHistory<Metavariables<false>>>(
+  db::mutate_apply<Initialization::ProjectTimeStepperHistory<Metavariables>>(
       make_not_null(&box), children_data);
   db::mutate_apply<amr::projectors::ProjectVariables<
       3, HistoryEntry<0>, HistoryDeriv<0>, HistoryDeriv<1>>>(
@@ -849,12 +892,18 @@ void compare_nonuniform_join() {
                          db::get<HistoryDeriv<1>>(box));
 }
 
-tuples::TaggedTuple<::Tags::HistoryEvolvedVariables<variables_tag>,
-                    ::Tags::TimeStepId, ::Tags::TimeStep,
-                    ::Tags::StepperErrors<variables_tag>>
-old_h_refinement_items(const TimeStepId& time_step_id, const size_t order,
-                       const TimeDelta& time_step,
-                       const std::optional<double>& first_order_error) {
+// Data for old elements for LTS tests
+template <size_t Dim>
+tuples::TaggedTuple<
+    domain::Tags::Element<Dim>, evolution::dg::Tags::MortarInfo<Dim>,
+    domain::Tags::Mesh<Dim>, ::Tags::HistoryEvolvedVariables<variables_tag>,
+    ::Tags::TimeStepId, ::Tags::TimeStep, ::Tags::StepperErrors<variables_tag>>
+old_h_refinement_items(
+    const ElementId<Dim>& element_id,
+    const std::optional<std::pair<Direction<Dim>, ElementId<Dim>>>& neighbor,
+    const Mesh<Dim>& mesh, const TimeStepId& time_step_id, const size_t order,
+    const TimeDelta& time_step,
+    const std::optional<double>& first_order_error) {
   ::Tags::HistoryEvolvedVariables<variables_tag>::type old_history{order};
   old_history.insert(time_step_id, variables_tag::type{},
                      dt_variables_tag::type{});
@@ -864,7 +913,20 @@ old_h_refinement_items(const TimeStepId& time_step_id, const size_t order,
                            std::numeric_limits<double>::signaling_NaN());
     error_estimate->errors[0] = first_order_error;
   }
-  return {std::move(old_history), time_step_id, time_step,
+  DirectionMap<Dim, Neighbors<Dim>> neighbors{};
+  if (neighbor.has_value()) {
+    neighbors.emplace(neighbor->first,
+                      Neighbors<Dim>({neighbor->second},
+                                     OrientationMap<Dim>::create_aligned()));
+  }
+  Element<Dim> element(element_id, std::move(neighbors));
+  auto mortar_info = make_mortar_info(element, neighbor.has_value());
+  return {std::move(element),
+          std::move(mortar_info),
+          mesh,
+          std::move(old_history),
+          time_step_id,
+          time_step,
           std::array<std::optional<StepperErrorEstimate>, 2>{
               {std::nullopt, std::move(error_estimate)}}};
 }
@@ -875,6 +937,11 @@ TimeDelta test_h_refine_lts_split(
     const std::optional<double>& first_order_error) {
   const ElementId<3> parent_id(3, {});
   const ElementId<3> child_id = parent_id.id_of_child(1, Side::Lower);
+  DirectionMap<3, Neighbors<3>> child_neighbors{};
+  child_neighbors.emplace(Direction<3>::upper_eta(),
+                          Neighbors<3>(parent_id.id_of_child(1, Side::Upper),
+                                       OrientationMap<3>::create_aligned()));
+  const Element<3> child_element{child_id, std::move(child_neighbors)};
   const Mesh<3> mesh(5, Spectral::Basis::Legendre,
                      Spectral::Quadrature::GaussLobatto);
   const TimeStepId time_step_id(true, 5, old_time_step.slab().start());
@@ -885,20 +952,21 @@ TimeDelta test_h_refine_lts_split(
   auto box = db::create<
       db::AddSimpleTags<
           domain::Tags::Mesh<3>, Parallel::Tags::ArrayIndex<ElementId<3>>,
-          ::Tags::ConcreteTimeStepper<TimeStepper>, dt_variables_tag,
-          history_tag, ::Tags::Next<::Tags::TimeStepId>, ::Tags::TimeStep>,
+          ::Tags::ConcreteTimeStepper<TimeStepper>,
+          evolution::dg::Tags::MortarInfo<3>, dt_variables_tag, history_tag,
+          ::Tags::Next<::Tags::TimeStepId>, ::Tags::TimeStep>,
       time_stepper_ref_tags<TimeStepper>>(
       mesh, child_id,
       static_cast<std::unique_ptr<TimeStepper>>(
           std::make_unique<TimeSteppers::AdamsBashforth>(time_stepper)),
-      dt_variables_tag::type{}, history_tag::type{}, old_next_id,
-      old_time_step);
+      make_mortar_info(child_element, true), dt_variables_tag::type{},
+      history_tag::type{}, old_next_id, old_time_step);
 
-  const auto parent_items = old_h_refinement_items(
-      time_step_id, old_order, old_time_step, first_order_error);
+  const auto parent_items =
+      old_h_refinement_items<3>(parent_id, std::nullopt, mesh, time_step_id,
+                                old_order, old_time_step, first_order_error);
 
-  db::mutate_apply<
-      Initialization::ProjectTimeStepperHistory<Metavariables<true>>>(
+  db::mutate_apply<Initialization::ProjectTimeStepperHistory<Metavariables>>(
       make_not_null(&box), parent_items);
 
   CHECK(db::get<dt_variables_tag>(box).number_of_grid_points() ==
@@ -919,6 +987,7 @@ TimeDelta test_h_refine_lts_join(
     const TimeDelta& old_time_step1,
     const std::optional<double>& first_order_error1) {
   const ElementId<3> parent_id(3, {});
+  const Element<3> parent_element(parent_id, {});
   const ElementId<3> child0_id = parent_id.id_of_child(1, Side::Lower);
   const ElementId<3> child1_id = parent_id.id_of_child(1, Side::Upper);
   const Mesh<3> mesh(5, Spectral::Basis::Legendre,
@@ -934,25 +1003,27 @@ TimeDelta test_h_refine_lts_join(
   auto box = db::create<
       db::AddSimpleTags<
           domain::Tags::Mesh<3>, Parallel::Tags::ArrayIndex<ElementId<3>>,
-          ::Tags::ConcreteTimeStepper<TimeStepper>, dt_variables_tag,
-          history_tag, ::Tags::Next<::Tags::TimeStepId>, ::Tags::TimeStep>,
+          ::Tags::ConcreteTimeStepper<TimeStepper>,
+          evolution::dg::Tags::MortarInfo<3>, dt_variables_tag, history_tag,
+          ::Tags::Next<::Tags::TimeStepId>, ::Tags::TimeStep>,
       time_stepper_ref_tags<TimeStepper>>(
       mesh, parent_id,
       static_cast<std::unique_ptr<TimeStepper>>(
           std::make_unique<TimeSteppers::AdamsBashforth>(time_stepper)),
-      dt_variables_tag::type{}, history_tag::type{}, next_time_step_id,
-      old_min_time_step);
+      make_mortar_info(parent_element, false), dt_variables_tag::type{},
+      history_tag::type{}, next_time_step_id, old_min_time_step);
 
-  auto child0_items = old_h_refinement_items(
-      time_step_id, old_order0, old_time_step0, first_order_error0);
-  auto child1_items = old_h_refinement_items(
-      time_step_id, old_order1, old_time_step1, first_order_error1);
+  auto child0_items = old_h_refinement_items<3>(
+      child0_id, {{Direction<3>::upper_eta(), child1_id}}, mesh, time_step_id,
+      old_order0, old_time_step0, first_order_error0);
+  auto child1_items = old_h_refinement_items<3>(
+      child1_id, {{Direction<3>::lower_eta(), child0_id}}, mesh, time_step_id,
+      old_order1, old_time_step1, first_order_error1);
   std::unordered_map<ElementId<3>, decltype(child0_items)> children_items{};
   children_items.emplace(child0_id, std::move(child0_items));
   children_items.emplace(child1_id, std::move(child1_items));
 
-  db::mutate_apply<
-      Initialization::ProjectTimeStepperHistory<Metavariables<true>>>(
+  db::mutate_apply<Initialization::ProjectTimeStepperHistory<Metavariables>>(
       make_not_null(&box), children_items);
 
   CHECK(db::get<dt_variables_tag>(box).number_of_grid_points() ==

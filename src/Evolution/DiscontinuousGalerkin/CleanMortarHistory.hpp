@@ -24,10 +24,14 @@ class BoundaryHistory;
 namespace evolution::dg {
 template <size_t Dim>
 struct MortarData;
+template <size_t Dim>
+class MortarInfo;
 }  // namespace evolution::dg
 namespace evolution::dg::Tags {
 template <size_t Dim, typename CouplingResult>
 struct MortarDataHistory;
+template <size_t Dim>
+struct MortarInfo;
 }  // namespace evolution::dg::Tags
 namespace gsl {
 template <class T>
@@ -47,7 +51,8 @@ struct CleanMortarHistory {
 
   using return_tags =
       tmpl::list<evolution::dg::Tags::MortarDataHistory<dim, CouplingResult>>;
-  using argument_tags = tmpl::list<::Tags::TimeStepper<LtsTimeStepper>>;
+  using argument_tags =
+      tmpl::list<::Tags::TimeStepper<LtsTimeStepper>, Tags::MortarInfo<dim>>;
 
   static void apply(
       gsl::not_null<DirectionalIdMap<
@@ -55,6 +60,7 @@ struct CleanMortarHistory {
                                              ::evolution::dg::MortarData<dim>,
                                              CouplingResult>>*>
           history,
-      const LtsTimeStepper& time_stepper);
+      const LtsTimeStepper& time_stepper,
+      const DirectionalIdMap<dim, MortarInfo<dim>>& mortar_info);
 };
 }  // namespace evolution::dg

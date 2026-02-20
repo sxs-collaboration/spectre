@@ -56,6 +56,8 @@
 #include "Evolution/DgSubcell/Tags/TciStatus.hpp"
 #include "Evolution/DiscontinuousGalerkin/BoundaryData.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarDataHolder.hpp"
+#include "Evolution/DiscontinuousGalerkin/MortarInfo.hpp"
+#include "Evolution/DiscontinuousGalerkin/TimeSteppingPolicy.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
@@ -114,6 +116,7 @@ struct component {
       evolution::dg::subcell::Tags::NeighborTciDecisions<Dim>,
       ::Tags::Variables<tmpl::list<Var1>>,
       ::Tags::HistoryEvolvedVariables<::Tags::Variables<tmpl::list<Var1>>>,
+      evolution::dg::Tags::MortarInfo<Dim>,
       evolution::dg::Tags::MortarMesh<Dim>,
       evolution::dg::Tags::MortarData<Dim>,
       evolution::dg::Tags::MortarNextTemporalId<Dim>,
@@ -141,7 +144,7 @@ struct component {
                                       Dim, Tags::Reconstructor>>>,
                               tmpl::list<>>,
           tmpl::list<evolution::dg::subcell::Actions::SendDataForReconstruction<
-                         Dim, typename Metavariables::GhostDataMutator, false,
+                         Dim, typename Metavariables::GhostDataMutator,
                          UseNodegroupDgElements>,
                      evolution::dg::subcell::Actions::
                          ReceiveAndSendDataForReconstruction<
@@ -310,19 +313,25 @@ void test(const bool use_cell_centered_flux) {
     }
   }
 
+  using MortarInfo = typename evolution::dg::Tags::MortarInfo<Dim>::type;
   using MortarData = typename evolution::dg::Tags::MortarData<Dim>::type;
   using MortarMesh = typename evolution::dg::Tags::MortarMesh<Dim>::type;
   using MortarNextId =
       typename evolution::dg::Tags::MortarNextTemporalId<Dim>::type;
+  MortarInfo mortar_info{};
   MortarData mortar_data{};
   MortarMesh mortar_mesh{};
   MortarNextId mortar_next_id{};
+  mortar_info[east_neighbor_id] = evolution::dg::MortarInfo<Dim>{
+      {.time_stepping_policy = evolution::dg::TimeSteppingPolicy::EqualRate}};
   mortar_data[east_neighbor_id] = {};
   mortar_mesh[east_neighbor_id] = {dg_mesh.slice_away(0)};
   mortar_next_id[east_neighbor_id] = {};
   if constexpr (Dim > 1) {
     const DirectionalId<Dim> south_neighbor_id{Direction<Dim>::lower_eta(),
                                                south_id};
+    mortar_info[south_neighbor_id] = evolution::dg::MortarInfo<Dim>{
+        {.time_stepping_policy = evolution::dg::TimeSteppingPolicy::EqualRate}};
     mortar_data[south_neighbor_id] = {};
     mortar_mesh[south_neighbor_id] = {dg_mesh.slice_away(1)};
     mortar_next_id[south_neighbor_id] = {};
@@ -356,6 +365,7 @@ void test(const bool use_cell_centered_flux) {
                Dim>::type{},
            Variables<evolved_vars_tags>{},
            time_stepper_history,
+           MortarInfo{},
            MortarMesh{},
            MortarData{},
            MortarNextId{},
@@ -385,7 +395,7 @@ void test(const bool use_cell_centered_flux) {
        evolution::dg::subcell::RdmpTciData{{max(get(get<Var1>(evolved_vars)))},
                                            {min(get(get<Var1>(evolved_vars)))}},
        self_tci_decision, neighbor_decision, evolved_vars, time_stepper_history,
-       mortar_mesh, mortar_data, mortar_next_id,
+       mortar_info, mortar_mesh, mortar_data, mortar_next_id,
        typename domain::Tags::NeighborMesh<Dim>::type{},
        typename evolution::dg::subcell::Tags::MeshForGhostData<Dim>::type{},
        cell_centered_flux, fd_to_neighbor_fd_interpolants,
@@ -931,6 +941,7 @@ void test_receive_and_send_data(const bool enable_extension,
   const TimeStepId next_time_step_id{true, 1, Time{Slab{1.0, 2.0}, {1, 10}}};
   const evolution::dg::subcell::ActiveGrid active_grid =
       evolution::dg::subcell::ActiveGrid::Subcell;
+  using MortarInfo = typename evolution::dg::Tags::MortarInfo<Dim>::type;
   using MortarData = typename evolution::dg::Tags::MortarData<Dim>::type;
   using MortarMesh = typename evolution::dg::Tags::MortarMesh<Dim>::type;
   using MortarNextId =
@@ -969,21 +980,23 @@ void test_receive_and_send_data(const bool enable_extension,
     typename evolution::dg::subcell::Tags::NeighborTciDecisions<Dim>::type
         neighbor_decision{};
 
+    MortarInfo mortar_info{};
     MortarData mortar_data{};
     MortarMesh mortar_mesh{};
     MortarNextId mortar_next_id{};
 
     for (const auto& [direction, neighbors] : element->neighbors()) {
       for (const auto& neighbor_id : neighbors.ids()) {
-        neighbor_data[DirectionalId<Dim>{direction, neighbor_id}] =
-            evolution::dg::subcell::GhostData{};
-        neighbor_decision.insert(
-            std::pair{DirectionalId<Dim>{direction, neighbor_id}, 100});
+        const DirectionalId<Dim> mortar_id{direction, neighbor_id};
+        neighbor_data[mortar_id] = evolution::dg::subcell::GhostData{};
+        neighbor_decision.insert(std::pair{mortar_id, 100});
 
-        mortar_data[DirectionalId<Dim>{direction, neighbor_id}] = {};
-        mortar_mesh[DirectionalId<Dim>{direction, neighbor_id}] =
-            dg_mesh.slice_away(direction.dimension());
-        mortar_next_id[DirectionalId<Dim>{direction, neighbor_id}] = {};
+        mortar_info[mortar_id] = evolution::dg::MortarInfo<Dim>{
+            {.time_stepping_policy =
+                 evolution::dg::TimeSteppingPolicy::EqualRate}};
+        mortar_data[mortar_id] = {};
+        mortar_mesh[mortar_id] = dg_mesh.slice_away(direction.dimension());
+        mortar_next_id[mortar_id] = {};
       }
     }
 
@@ -999,8 +1012,8 @@ void test_receive_and_send_data(const bool enable_extension,
              {max(get(get<Var1>(evolved_vars)))},
              {min(get(get<Var1>(evolved_vars)))}},
          self_tci_decision, neighbor_decision, evolved_vars,
-         time_stepper_history, mortar_mesh, mortar_data, mortar_next_id,
-         typename domain::Tags::NeighborMesh<Dim>::type{},
+         time_stepper_history, mortar_info, mortar_mesh, mortar_data,
+         mortar_next_id, typename domain::Tags::NeighborMesh<Dim>::type{},
          typename evolution::dg::subcell::Tags::MeshForGhostData<Dim>::type{},
          cell_centered_flux, fd_to_neighbor_fd_interpolants,
          neighbor_dg_to_fd_interpolants, dg_to_neighbor_fd_interpolants,
