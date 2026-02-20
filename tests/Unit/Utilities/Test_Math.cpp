@@ -87,7 +87,22 @@ SPECTRE_TEST_CASE("Unit.Utilities.Math", "[Unit][Utilities]") {
         DataVector({0., 0., 0., 0., 0., 0., 1.605224609375e-02, 1.03515625e-01,
                     0.5, 8.96484375e-01, 1.}));
   }
+  {
+    INFO("Test smoothstep with equal edges");
+    const double edge = 1.5;
+    CHECK(smoothstep<2>(edge, edge, 1.0) == approx(0.0));
+    CHECK(smoothstep<2>(edge, edge, 1.5) == approx(1.0));
+    CHECK(smoothstep<2>(edge, edge, 2.0) == approx(1.0));
 
+    INFO("Test smoothstep_deriv with equal edges");
+    CHECK(smoothstep_deriv<2>(edge, edge, 1.0) == approx(0.0));
+    CHECK(smoothstep_deriv<2>(edge, edge, 1.5) == approx(0.0));
+    CHECK(smoothstep_deriv<2>(edge, edge, 2.0) == approx(0.0));
+
+    CHECK_ITERABLE_APPROX(
+        smoothstep_deriv<2>(edge, edge, DataVector({1.0, 1.5, 2.0})),
+        DataVector({0.0, 0.0, 0.0}));
+  }
   {
     INFO("Test inverse roots and step_function");
     CHECK(step_function(1.0) == 1.0);

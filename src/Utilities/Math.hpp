@@ -109,10 +109,16 @@ constexpr T step_function(const T& arg) {
  *
  * This function is $C^N$ continuous at the edges, i.e. the first $N$
  * derivatives are continuous at the edges.
+ *
+ * If `lower_edge` and `upper_edge` are equal, this function reduces to the
+ * step function $\Theta(x - x_0)$.
  */
 template <size_t N, typename DataType>
 DataType smoothstep(const double lower_edge, const double upper_edge,
                     const DataType& arg) {
+  if (lower_edge == upper_edge) {
+    return step_function(arg - lower_edge);
+  }
   ASSERT(lower_edge < upper_edge,
          "Requires lower_edge < upper_edge, but lower_edge="
              << lower_edge << " and upper_edge=" << upper_edge);
@@ -143,10 +149,17 @@ DataType smoothstep(const double lower_edge, const double upper_edge,
  *
  * Since the smoothstep function is $C^N$ continuous at the edges, this
  * function is $C^{N-1}$ continuous at the edges.
+ *
+ * If `lower_edge` and `upper_edge` are equal, this function reduces to the
+ * derivative of the step function, which is zero everywhere except at the edge
+ * where it is not defined. We define it to be zero in this case as well.
  */
 template <size_t N, typename DataType>
 DataType smoothstep_deriv(const double lower_edge, const double upper_edge,
                           const DataType& arg) {
+  if (lower_edge == upper_edge) {
+    return make_with_value<DataType>(arg, 0.);
+  }
   ASSERT(lower_edge < upper_edge,
          "Requires lower_edge < upper_edge, but lower_edge="
              << lower_edge << " and upper_edge=" << upper_edge);
