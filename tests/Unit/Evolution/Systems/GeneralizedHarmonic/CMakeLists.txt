@@ -15,6 +15,7 @@ set(LIBRARY_SOURCES
   BoundaryConditions/Test_Periodic.cpp
   BoundaryCorrections/Test_AveragedUpwindPenalty.cpp
   BoundaryCorrections/Test_UpwindPenalty.cpp
+  Test_ApplyTensorYlmFilter.cpp
   Test_Characteristics.cpp
   Test_Constraints.cpp
   Test_DuDt.cpp
