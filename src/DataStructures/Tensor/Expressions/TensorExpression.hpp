@@ -300,12 +300,10 @@ struct Expression {};
 /// \tparam IndexList the list of \ref SpacetimeIndex "TensorIndexType"s
 /// \tparam Args typelist of the tensor indices, e.g. types of `ti::a` and
 /// `ti::b` in `F(ti::a, ti::b)`
-/// \cond HIDDEN_SYMBOLS
 template <typename Derived, typename DataType, typename Symm,
           typename IndexList, typename Args = tmpl::list<>,
           typename ReducedArgs = tmpl::list<>>
 struct TensorExpression;
-/// \endcond
 
 template <typename Derived, typename DataType, typename Symm,
           typename... Indices, template <typename...> class ArgsList,
