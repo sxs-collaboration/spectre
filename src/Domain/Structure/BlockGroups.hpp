@@ -6,7 +6,6 @@
 
 #pragma once
 
-#include <set>
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
@@ -38,21 +37,6 @@ bool block_is_in_group(
  * names from that group are included. Overlaps between groups are allowed.
  */
 std::unordered_set<std::string> expand_block_groups_to_block_names(
-    const std::vector<std::string>& block_or_group_names,
-    const std::vector<std::string>& all_block_names,
-    const std::unordered_map<std::string, std::unordered_set<std::string>>&
-        block_groups);
-
-/*!
- * \brief Get the block IDs corresponding to the given block or group names.
- *
- * \param block_or_group_names Block names to get the IDs of. Any block groups
- * in this list are expanded.
- * \param all_block_names All block names in the domain.
- * \param block_groups Block groups used to expand the names.
- * \return std::set<size_t> Set of block IDs.
- */
-std::set<size_t> block_ids_from_names(
     const std::vector<std::string>& block_or_group_names,
     const std::vector<std::string>& all_block_names,
     const std::unordered_map<std::string, std::unordered_set<std::string>>&
