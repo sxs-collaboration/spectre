@@ -78,7 +78,7 @@ size_t get_number_of_elements(const std::vector<std::string>& input_filenames,
   return total_elements;
 }
 
-std::optional<std::unordered_set<size_t>> get_block_numbers_to_use(
+std::optional<std::vector<size_t>> get_block_numbers_to_use(
     const std::string& file_name, const std::string& subfile_name,
     const std::optional<std::vector<std::string>>& blocks_to_combine) {
   if (not blocks_to_combine.has_value() or blocks_to_combine.value().empty()) {
@@ -96,51 +96,31 @@ std::optional<std::unordered_set<size_t>> get_block_numbers_to_use(
           << ". This means we cannot filter based on block names. You can "
              "still combine the files but will need to use all blocks.");
   }
-  std::unordered_set<std::string> block_names_to_combine{};
-  std::vector<std::string> block_names_in_domain{};
   switch (dim) {
     case 1: {
       const auto domain =
           deserialize<Domain<1>>(serialized_domain.value().data());
-      block_names_in_domain = domain.block_names();
-      block_names_to_combine = domain::expand_block_groups_to_block_names(
-          blocks_to_combine.value(), domain.block_names(),
-          domain.block_groups());
-      break;
+      return domain::block_ids_from_names(blocks_to_combine.value(),
+                                          domain.block_names(),
+                                          domain.block_groups());
     }
     case 2: {
       const auto domain =
           deserialize<Domain<2>>(serialized_domain.value().data());
-      block_names_in_domain = domain.block_names();
-      block_names_to_combine = domain::expand_block_groups_to_block_names(
-          blocks_to_combine.value(), domain.block_names(),
-          domain.block_groups());
-      break;
+      return domain::block_ids_from_names(blocks_to_combine.value(),
+                                          domain.block_names(),
+                                          domain.block_groups());
     }
     case 3: {
       const auto domain =
           deserialize<Domain<3>>(serialized_domain.value().data());
-      block_names_in_domain = domain.block_names();
-      block_names_to_combine = domain::expand_block_groups_to_block_names(
-          blocks_to_combine.value(), domain.block_names(),
-          domain.block_groups());
-      break;
+      return domain::block_ids_from_names(blocks_to_combine.value(),
+                                          domain.block_names(),
+                                          domain.block_groups());
     }
     default:
       ERROR("Only can handle 1, 2, or 3d domains not " << dim);
   };
-
-  std::unordered_set<size_t> blocks_to_use{};
-  for (const std::string& block_to_combine : block_names_to_combine) {
-    auto location_it = alg::find(block_names_in_domain, block_to_combine);
-    if (location_it == block_names_in_domain.end()) {
-      ERROR("Block name " << block_to_combine << " not found.");
-    }
-    blocks_to_use.insert(static_cast<size_t>(
-        std::distance(block_names_in_domain.begin(), location_it)));
-  }
-
-  return blocks_to_use;
 }
 }  // namespace
 
@@ -192,7 +172,7 @@ void combine_h5_vol(
     ERROR("No observation IDs found in subfile" << subfile_name);
   }
 
-  const std::optional<std::unordered_set<size_t>> blocks_to_use =
+  const std::optional<std::vector<size_t>> blocks_to_use =
       get_block_numbers_to_use(file_names[0], subfile_name, blocks_to_combine);
 
   // Loops over observation ids to write volume data by observation id
@@ -257,13 +237,16 @@ void combine_h5_vol(
             [&blocks_to_use, &dim](const ElementVolumeData& element) -> bool {
               switch (dim) {
                 case 1:
-                  return not blocks_to_use->contains(
+                  return not alg::found(
+                      blocks_to_use.value(),
                       ElementId<1>{element.element_name}.block_id());
                 case 2:
-                  return not blocks_to_use->contains(
+                  return not alg::found(
+                      blocks_to_use.value(),
                       ElementId<2>{element.element_name}.block_id());
                 case 3:
-                  return not blocks_to_use->contains(
+                  return not alg::found(
+                      blocks_to_use.value(),
                       ElementId<3>{element.element_name}.block_id());
                 default:
                   ERROR("Only can handle 1, 2, or 3d domains but got " << dim);

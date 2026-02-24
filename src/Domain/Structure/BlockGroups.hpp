@@ -29,6 +29,9 @@ bool block_is_in_group(
 /*!
  * \brief Expand a list of block or group names into a list of block names
  *
+ * Throws a `std::invalid_argument` exception if any of the input names are not
+ * in \p all_block_names or \p block_groups.
+ *
  * \param block_or_group_names Block or group names to expand
  * \param all_block_names All block names in the domain
  * \param block_groups Block groups used to expand the names
@@ -37,6 +40,24 @@ bool block_is_in_group(
  * names from that group are included. Overlaps between groups are allowed.
  */
 std::unordered_set<std::string> expand_block_groups_to_block_names(
+    const std::vector<std::string>& block_or_group_names,
+    const std::vector<std::string>& all_block_names,
+    const std::unordered_map<std::string, std::unordered_set<std::string>>&
+        block_groups);
+
+/*!
+ * \brief Sorted block IDs corresponding to the given block or group names.
+ *
+ * Throws a `std::invalid_argument` exception if any of the input names are not
+ * in \p all_block_names or \p block_groups.
+ *
+ * \param block_or_group_names Block names to get the IDs of. Any block groups
+ * in this list are expanded.
+ * \param all_block_names All block names in the domain.
+ * \param block_groups Block groups used to expand the names.
+ * \return std::vector<size_t> Sorted list of block IDs.
+ */
+std::vector<size_t> block_ids_from_names(
     const std::vector<std::string>& block_or_group_names,
     const std::vector<std::string>& all_block_names,
     const std::unordered_map<std::string, std::unordered_set<std::string>>&
