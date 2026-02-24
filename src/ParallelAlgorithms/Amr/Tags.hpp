@@ -73,7 +73,7 @@ struct MaxCoarseLevels : db::SimpleTag {
 /// enabled in all blocks.
 template <size_t Dim>
 struct AmrBlocks : db::SimpleTag {
-  using type = std::optional<std::unordered_set<size_t>>;
+  using type = std::optional<std::vector<size_t>>;
   static constexpr bool pass_metavariables = false;
   using option_tags = tmpl::list<OptionTags::AmrBlocks,
                                  ::domain::OptionTags::DomainCreator<Dim>>;

@@ -182,7 +182,7 @@ void evaluate_criteria(std::vector<std::unique_ptr<amr::Criterion>> criteria,
 
   amr::Info<1> initial_info{std::array{amr::Flag::Undefined}, Mesh<1>{}};
   std::unordered_map<ElementId<1>, amr::Info<1>> initial_neighbor_info;
-  const std::unordered_set<size_t> amr_blocks{0, 1};
+  const std::vector<size_t> amr_blocks{0, 1};
 
   ActionTesting::MockRuntimeSystem<metavariables> runner{
       {std::move(criteria), amr_blocks,
