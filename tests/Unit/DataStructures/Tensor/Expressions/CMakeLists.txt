@@ -17,6 +17,7 @@ set(LIBRARY_SOURCES
   Test_EvaluateSpatialAndTimeSpacetimeIndex.cpp
   Test_EvaluateSpatialSpacetimeIndex.cpp
   Test_EvaluateTimeIndex.cpp
+  Test_Examples.cpp
   Test_MixedOperations.cpp
   Test_Negate.cpp
   Test_Product.cpp
@@ -34,5 +35,7 @@ target_link_libraries(
   ${LIBRARY}
   PRIVATE
   DataStructures
+  GeneralRelativity
+  GeneralRelativityHelpers
   Utilities
   )
