@@ -8,6 +8,8 @@
 
 #include "DataStructures/ComplexDataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "Domain/BlockLogicalCoordinates.hpp"
+#include "Domain/ElementLogicalCoordinates.hpp"
 #include "Elliptic/Systems/SelfForce/Scalar/AnalyticData/CircularOrbit.hpp"
 #include "NumericalAlgorithms/Interpolation/IrregularInterpolant.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
@@ -15,14 +17,28 @@
 
 namespace ScalarSelfForce::Events::detail {
 
-tnsr::i<std::complex<double>, 2> extract_self_force(
-    const tnsr::I<double, 2, Frame::ElementLogical>& puncture_logical_coords,
+std::optional<tnsr::i<std::complex<double>, 2>> extract_self_force(
+    const Domain<2>& domain, const ElementId<2>& element_id,
     const AnalyticData::CircularOrbit& circular_orbit,
     const Scalar<ComplexDataVector>& field, const Mesh<2>& mesh,
     const InverseJacobian<DataVector, 2, Frame::ElementLogical,
                           Frame::Inertial>& inv_jacobian) {
+  // Get element-logical coords of puncture
+  const auto puncture_position = circular_orbit.puncture_position();
+  const auto& block = domain.blocks()[element_id.block_id()];
+  const auto block_logical_coords =
+      block_logical_coordinates_single_point(puncture_position, block);
+  if (not block_logical_coords.has_value()) {
+    return std::nullopt;
+  }
+  const auto puncture_logical_coords =
+      element_logical_coordinates(block_logical_coords.value(), element_id);
+  if (not puncture_logical_coords.has_value()) {
+    return std::nullopt;
+  }
+  // Interpolate field and its derivatives to puncture location
   const auto deriv_field = partial_derivative(field, mesh, inv_jacobian);
-  const intrp::Irregular<2> interpolator(mesh, puncture_logical_coords);
+  const intrp::Irregular<2> interpolator(mesh, puncture_logical_coords.value());
   ComplexDataVector intrp_result{1_st};
   Scalar<std::complex<double>> field_at_puncture{};
   interpolator.interpolate(make_not_null(&intrp_result), get(field));

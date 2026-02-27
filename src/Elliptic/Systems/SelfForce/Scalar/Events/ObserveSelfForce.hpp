@@ -16,9 +16,7 @@
 #include "DataStructures/DataBox/TagName.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
-#include "Domain/BlockLogicalCoordinates.hpp"
 #include "Domain/Creators/Tags/Domain.hpp"
-#include "Domain/ElementLogicalCoordinates.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Tags.hpp"
 #include "Elliptic/Systems/SelfForce/Scalar/AnalyticData/CircularOrbit.hpp"
@@ -51,8 +49,8 @@
 namespace ScalarSelfForce::Events {
 
 namespace detail {
-tnsr::i<std::complex<double>, 2> extract_self_force(
-    const tnsr::I<double, 2, Frame::ElementLogical>& puncture_logical_coords,
+std::optional<tnsr::i<std::complex<double>, 2>> extract_self_force(
+    const Domain<2>& domain, const ElementId<2>& element_id,
     const AnalyticData::CircularOrbit& circular_orbit,
     const Scalar<ComplexDataVector>& field, const Mesh<2>& mesh,
     const InverseJacobian<DataVector, 2, Frame::ElementLogical,
@@ -65,7 +63,8 @@ tnsr::i<std::complex<double>, 2> extract_self_force(
  * \details This event interpolates the scalar m-mode field and its derivatives
  * to the position of the scalar charge (puncture) and computes the m-mode
  * contribution to the self-force acting on the charge. The self-force is then
- * written to a reduction file.
+ * written to a reduction file. If multiple elements contain the puncture, their
+ * contributions are averaged (they should only differ by truncation error).
  *
  * The self-force is computed in the Boyer-Lindquist `r` and `theta`
  * coordinates (for scalar charge $q=1$) following Eq. (3.10) in
@@ -87,6 +86,26 @@ tnsr::i<std::complex<double>, 2> extract_self_force(
 template <typename ArraySectionIdTag = void>
 class ObserveSelfForce : public Event {
  public:
+  using ReductionData = Parallel::ReductionData<
+      // Observation value
+      Parallel::ReductionDatum<double, funcl::AssertEqual<>>,
+      // Number of grid points
+      Parallel::ReductionDatum<size_t, funcl::Plus<>>,
+      // Num contributing elements
+      Parallel::ReductionDatum<size_t, funcl::Plus<>>,
+      // Re(SelfForce_r)
+      Parallel::ReductionDatum<double, funcl::Plus<>, funcl::Divides<>,
+                               std::index_sequence<2>>,
+      // Im(SelfForce_r)
+      Parallel::ReductionDatum<double, funcl::Plus<>, funcl::Divides<>,
+                               std::index_sequence<2>>,
+      // Re(SelfForce_theta)
+      Parallel::ReductionDatum<double, funcl::Plus<>, funcl::Divides<>,
+                               std::index_sequence<2>>,
+      // Im(SelfForce_theta)
+      Parallel::ReductionDatum<double, funcl::Plus<>, funcl::Divides<>,
+                               std::index_sequence<2>>>;
+
   static constexpr Options::String help =
       "Observe the self-force at the position of the scalar charge.";
   using options = tmpl::list<>;
@@ -98,6 +117,8 @@ class ObserveSelfForce : public Event {
   WRAPPED_PUPable_decl_template(ObserveSelfForce);  // NOLINT
 
   using compute_tags_for_observation_box = tmpl::list<>;
+  using observed_reduction_data_tags =
+      observers::make_reduction_data_tags<tmpl::list<ReductionData>>;
 
   using return_tags = tmpl::list<>;
   using argument_tags = tmpl::list<::Tags::ObservationBox>;
@@ -118,44 +139,56 @@ class ObserveSelfForce : public Event {
     if (not section_observation_key.has_value()) {
       return;
     }
+    // Extract self-force
     const auto& background = get<BackgroundTag>(box);
     const auto& circular_orbit =
         dynamic_cast<const AnalyticData::CircularOrbit&>(background);
-    // Get element-logical coords of puncture
-    const auto& domain = get<domain::Tags::Domain<2>>(box);
-    const auto puncture_position = circular_orbit.puncture_position();
-    const auto& block = domain.blocks()[element_id.block_id()];
-    const auto block_logical_coords =
-        block_logical_coordinates_single_point(puncture_position, block);
-    if (not block_logical_coords.has_value()) {
-      return;
-    }
-    const auto puncture_logical_coords =
-        element_logical_coordinates(block_logical_coords.value(), element_id);
-    if (not puncture_logical_coords.has_value()) {
-      return;
-    }
-    // Extract self-force
-    const auto& field = get<Tags::MMode>(box);
     const auto& mesh = get<domain::Tags::Mesh<2>>(box);
-    const auto& inv_jacobian =
+    const size_t num_points = mesh.number_of_grid_points();
+    const auto self_force = detail::extract_self_force(
+        get<domain::Tags::Domain<2>>(box), element_id, circular_orbit,
+        get<Tags::MMode>(box), mesh,
         get<domain::Tags::InverseJacobian<2, Frame::ElementLogical,
-                                          Frame::Inertial>>(box);
-    const auto self_force =
-        detail::extract_self_force(puncture_logical_coords.value(),
-                                   circular_orbit, field, mesh, inv_jacobian);
-    // Write result to file
-    auto& reduction_writer = Parallel::get_parallel_component<
-        observers::ObserverWriter<Metavariables>>(cache);
-    Parallel::threaded_action<
-        observers::ThreadedActions::WriteReductionDataRow>(
-        reduction_writer[0], std::string{"/SelfForce"},
-        std::vector<std::string>{"IterationId", "NumberOfGridPoints",
-                                 "Re(SelfForce_r)", "Im(SelfForce_r)",
-                                 "Re(SelfForce_theta)", "Im(SelfForce_theta)"},
-        std::make_tuple(observation_value.value, mesh.number_of_grid_points(),
-                        get<0>(self_force).real(), get<0>(self_force).imag(),
-                        get<1>(self_force).real(), get<1>(self_force).imag()));
+                                          Frame::Inertial>>(box));
+    // Send data to reduction observer
+    auto& local_observer = *Parallel::local_branch(
+        Parallel::get_parallel_component<
+            tmpl::conditional_t<Parallel::is_nodegroup_v<ParallelComponent>,
+                                observers::ObserverWriter<Metavariables>,
+                                observers::Observer<Metavariables>>>(cache));
+    const std::string subfile_name = "SelfForce";
+    observers::ObservationId observation_id{observation_value.value,
+                                            subfile_name + ".dat"};
+    Parallel::ArrayComponentId array_component_id{
+        std::add_pointer_t<ParallelComponent>{nullptr},
+        Parallel::ArrayIndex<ElementId<2>>(element_id)};
+    ReductionData reduction_data =
+        self_force.has_value()
+            ? ReductionData{observation_value.value,
+                            num_points,
+                            1_st,
+                            get<0>(*self_force).real(),
+                            get<0>(*self_force).imag(),
+                            get<1>(*self_force).real(),
+                            get<1>(*self_force).imag()}
+            : ReductionData{
+                  observation_value.value, num_points, 0_st, 0., 0., 0., 0.};
+    std::vector<std::string> legend{
+        "IterationId",        "NumGridPoints",   "NumContributingElements",
+        "Re(SelfForce_r)",    "Im(SelfForce_r)", "Re(SelfForce_theta)",
+        "Im(SelfForce_theta)"};
+    if constexpr (Parallel::is_nodegroup_v<ParallelComponent>) {
+      Parallel::threaded_action<
+          observers::ThreadedActions::CollectReductionDataOnNode>(
+          local_observer, std::move(observation_id),
+          std::move(array_component_id), subfile_name + ".dat",
+          std::move(legend), std::move(reduction_data));
+    } else {
+      Parallel::simple_action<observers::Actions::ContributeReductionData>(
+          local_observer, std::move(observation_id),
+          std::move(array_component_id), subfile_name + ".dat",
+          std::move(legend), std::move(reduction_data));
+    }
   }
 
   using observation_registration_tags = tmpl::list<::Tags::DataBox>;
@@ -170,10 +203,9 @@ class ObserveSelfForce : public Event {
     if (not section_observation_key.has_value()) {
       return std::nullopt;
     }
-    return {
-        {observers::TypeOfObservation::Reduction,
-         observers::ObservationKey("ObserveSelfForce" +
-                                   section_observation_key.value() + ".dat")}};
+    return {{observers::TypeOfObservation::Reduction,
+             observers::ObservationKey(
+                 "SelfForce" + section_observation_key.value() + ".dat")}};
   }
 
   using is_ready_argument_tags = tmpl::list<>;
