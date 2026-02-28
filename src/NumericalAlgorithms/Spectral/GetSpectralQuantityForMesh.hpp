@@ -65,6 +65,16 @@ decltype(auto) get_spectral_quantity_for_mesh(F&& f, const Mesh<1>& mesh) {
               "Only Axial and Spherical Symmetry quadratures are allowed for "
               "a Cartoon basis.");
       }
+    case Basis::Fourier:
+      switch (mesh.quadrature(0)) {
+        case Quadrature::Equiangular:
+          return f(
+              std::integral_constant<Basis, Basis::Fourier>{},
+              std::integral_constant<Quadrature, Quadrature::Equiangular>{},
+              num_points);
+        default:
+          ERROR("Missing quadrature case for spectral quantity");
+      }
     case Basis::FiniteDifference:
       switch (mesh.quadrature(0)) {
         case Quadrature::CellCentered:

@@ -4,6 +4,7 @@
 #include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
 
 #include <array>
+#include <numbers>
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/IndexIterator.hpp"
@@ -62,6 +63,23 @@ void logical_coordinates(
             ERROR(
                 "Quadrature must be Gauss or Equiangular for Basis "
                 "SphericalHarmonic");
+        }
+        break;
+      }
+      case Spectral::Basis::Fourier: {
+        switch (mesh.quadrature(d)) {
+          case Spectral::Quadrature::Equiangular: {
+            const size_t n_phi = mesh.extents(d);
+            const double two_pi_over_n_phi = 2.0 * std::numbers::pi / n_phi;
+            for (IndexIterator<VolumeDim> index(mesh.extents()); index;
+                 ++index) {
+              logical_coords->get(d)[index.collapsed_index()] =
+                  two_pi_over_n_phi * index()[d];
+            }
+            break;
+          }
+          default:
+            ERROR("Quadrature must be Equiangular for Basis Fourier");
         }
         break;
       }

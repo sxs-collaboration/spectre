@@ -9,6 +9,7 @@
 #include "DataStructures/Matrix.hpp"
 #include "NumericalAlgorithms/Spectral/BarycentricWeights.hpp"
 #include "NumericalAlgorithms/Spectral/Basis.hpp"
+#include "NumericalAlgorithms/Spectral/BasisFunctions/Fourier.hpp"
 #include "NumericalAlgorithms/Spectral/CollocationPoints.hpp"
 #include "NumericalAlgorithms/Spectral/GetSpectralQuantityForMesh.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
@@ -338,6 +339,8 @@ struct DifferentiationMatrixGenerator {
           diff_matrix(i, j) *= inv_delta;
         }
       }
+    } else if constexpr (BasisType == Spectral::Basis::Fourier) {
+      diff_matrix = Fourier::differentiation_matrix(num_points);
     } else {
       const DataVector& bary_weights =
           detail::barycentric_weights<BasisType, QuadratureType>(num_points);
@@ -418,6 +421,8 @@ template const Matrix&
     differentiation_matrix<Basis::Chebyshev, Quadrature::Gauss>(size_t);
 template const Matrix&
     differentiation_matrix<Basis::Chebyshev, Quadrature::GaussLobatto>(size_t);
+template const Matrix&
+    differentiation_matrix<Basis::Fourier, Quadrature::Equiangular>(size_t);
 template const Matrix&
     differentiation_matrix<Basis::Legendre, Quadrature::Gauss>(size_t);
 template const Matrix&

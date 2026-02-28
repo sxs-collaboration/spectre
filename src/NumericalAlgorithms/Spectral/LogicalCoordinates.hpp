@@ -50,7 +50,8 @@ struct not_null;
  * coordinates are again in the interval \f$[-1, 1]\f$.  This basis may have
  * either FaceCentered or CellCentered quadrature, which are uniformly
  * distributed, and either include (FaceCentered) or do not include
- * (CellCentered) the end points.  The SphericalHarmonic basis corresponds to
+ * (CellCentered) the end points. The Fourier basis has logical coordinates
+ * in the interval \f$[0, 2 \pi]\f$. The SphericalHarmonic basis corresponds to
  * the spherical coordinates \f$(\theta, \phi)\f$ where the polar angle
  * \f$\theta\f$ is in the interval \f$[0, \pi]\f$ and the azimuth \f$\phi\f$ is
  * in the interval \f$[0, 2 \pi]\f$.  The polar angle has Gauss quadrature
