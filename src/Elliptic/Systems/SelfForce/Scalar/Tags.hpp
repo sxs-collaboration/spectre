@@ -128,4 +128,18 @@ struct BoyerLindquistRadius : db::SimpleTag {
   using type = Scalar<DataVector>;
 };
 
+/*!
+ * \brief The hyperboloidal boost function $H(r_*)$.
+ */
+struct BoostFunction : db::SimpleTag {
+  using type = Scalar<ComplexDataVector>;
+};
+
+/*!
+ * \brief The radial derivative of the boost function, $H'(r_*)$.
+ */
+struct BoostFunctionDeriv : db::SimpleTag {
+  using type = Scalar<ComplexDataVector>;
+};
+
 }  // namespace ScalarSelfForce::Tags
