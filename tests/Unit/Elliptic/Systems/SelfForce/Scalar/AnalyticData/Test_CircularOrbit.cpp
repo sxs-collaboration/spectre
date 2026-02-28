@@ -91,7 +91,8 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.ScalarSelfForce.CircularOrbit",
     auto scalar_eqn = divergence(flux_singular_field, mesh, inv_jacobian);
     get(scalar_eqn) *= -1.;
     ScalarSelfForce::Sources::apply(make_not_null(&scalar_eqn), beta, gamma,
-                                    singular_field, flux_singular_field);
+                                    singular_field, deriv_singular_field,
+                                    flux_singular_field);
     // Minus sign is from the definition of the effective source:
     //   \psi = \psi_R + \psi_P = 0
     // where \psi_R is the regular part and \psi_P is the singular part

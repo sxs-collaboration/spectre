@@ -83,6 +83,7 @@ void Sources::apply(
         log_deriv_lapse_times_density_over_specific_enthalpy,
     const tnsr::i<DataVector, 3>& christoffel_contracted,
     const Scalar<DataVector>& /*velocity_potential*/,
+    const tnsr::i<DataVector, 3>& /*gradient_for_potential*/,
     const tnsr::I<DataVector, 3>& flux_for_potential) {
   add_potential_sources(equation_for_potential,
                         log_deriv_lapse_times_density_over_specific_enthalpy,

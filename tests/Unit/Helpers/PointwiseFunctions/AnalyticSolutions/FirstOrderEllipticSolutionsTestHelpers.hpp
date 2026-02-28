@@ -103,6 +103,8 @@ void verify_solution_impl(
               make_not_null(&get<Tags::OperatorAppliedTo<PrimalFields>>(
                   operator_applied_to_fields))...,
               expanded_sources_args..., get<PrimalFields>(solution_fields)...,
+              get<::Tags::deriv<PrimalFields, tmpl::size_t<Dim>,
+              Frame::Inertial>>(solution_fields)...,
               get<PrimalFluxes>(fluxes)...);
         },
         sources_args);

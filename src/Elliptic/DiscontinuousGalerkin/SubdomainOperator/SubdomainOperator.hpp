@@ -621,7 +621,7 @@ struct SubdomainOperator
           elliptic::dg::apply_operator<System, linearized>(
               make_not_null(&result->element_data),
               make_not_null(&central_mortar_data_), operand.element_data,
-              central_primal_fluxes_, args...);
+              central_deriv_vars_, central_primal_fluxes_, args...);
         },
         box, temporal_id, fluxes_args_on_faces, sources_args, data_is_zero);
     // Apply on neighbors
@@ -656,6 +656,7 @@ struct SubdomainOperator
                   make_not_null(&extended_results_[overlap_id]),
                   make_not_null(&neighbors_mortar_data_.at(overlap_id)),
                   extended_operand_vars_.at(overlap_id),
+                  neighbors_deriv_vars_.at(overlap_id),
                   neighbors_primal_fluxes_.at(overlap_id), args...);
             },
             box, overlap_id, temporal_id, fluxes_args_on_overlap_faces,

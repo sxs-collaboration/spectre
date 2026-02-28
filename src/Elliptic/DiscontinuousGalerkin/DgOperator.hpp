@@ -237,14 +237,14 @@ struct DgOperatorImpl<System, Linearized, tmpl::list<PrimalFields...>,
   static constexpr auto full_mortar_size =
       make_array<Dim - 1>(Spectral::SegmentSize::Full);
 
-  template <bool AllDataIsZero, typename... DerivTags, typename... PrimalVars,
+  template <bool AllDataIsZero, typename... DerivVars, typename... PrimalVars,
             typename... PrimalFluxesVars, typename... PrimalMortarVars,
             typename... PrimalMortarFluxes, typename TemporalId,
             typename ApplyBoundaryCondition, typename... FluxesArgs,
             typename DataIsZero = NoDataIsZero,
             typename DirectionsPredicate = AllDirections>
   static void prepare_mortar_data(
-      const gsl::not_null<Variables<tmpl::list<DerivTags...>>*> deriv_vars,
+      const gsl::not_null<Variables<tmpl::list<DerivVars...>>*> deriv_vars,
       const gsl::not_null<Variables<tmpl::list<PrimalFluxesVars...>>*>
           primal_fluxes,
       const gsl::not_null<::dg::MortarMap<
@@ -305,6 +305,7 @@ struct DgOperatorImpl<System, Linearized, tmpl::list<PrimalFields...>,
     // of the fluxes in the `apply_operator` function below to compute the full
     // elliptic equation -div(F) + S = f(x).
     if (AllDataIsZero or local_data_is_zero) {
+      deriv_vars->initialize(num_points, 0.);
       primal_fluxes->initialize(num_points, 0.);
     } else {
       // Compute partial derivatives of the variables
@@ -319,13 +320,13 @@ struct DgOperatorImpl<System, Linearized, tmpl::list<PrimalFields...>,
                   make_not_null(&get<PrimalFluxesVars>(*primal_fluxes))...,
                   expanded_fluxes_args..., element_id,
                   get<PrimalVars>(primal_vars)...,
-                  get<DerivTags>(*deriv_vars)...);
+                  get<DerivVars>(*deriv_vars)...);
             } else {
               (void)element_id;
               FluxesComputer::apply(
                   make_not_null(&get<PrimalFluxesVars>(*primal_fluxes))...,
                   expanded_fluxes_args..., get<PrimalVars>(primal_vars)...,
-                  get<DerivTags>(*deriv_vars)...);
+                  get<DerivVars>(*deriv_vars)...);
             }
           },
           fluxes_args);
@@ -456,7 +457,7 @@ struct DgOperatorImpl<System, Linearized, tmpl::list<PrimalFields...>,
         // the boundary conditions is taken from the "interior" side of the
         // boundary, i.e. with a normal vector that points _out_ of the
         // computational domain.
-        Variables<tmpl::list<DerivTags...>> deriv_vars_on_boundary{};
+        Variables<tmpl::list<DerivVars...>> deriv_vars_on_boundary{};
         if (AllDataIsZero or local_data_is_zero) {
           deriv_vars_on_boundary.initialize(face_num_points, 0.);
         } else {
@@ -470,7 +471,7 @@ struct DgOperatorImpl<System, Linearized, tmpl::list<PrimalFields...>,
             make_not_null(&get<PrimalMortarVars>(boundary_data.field_data))...,
             make_not_null(&get<::Tags::NormalDotFlux<PrimalMortarVars>>(
                 boundary_data.field_data))...,
-            get<DerivTags>(deriv_vars_on_boundary)...);
+            get<DerivVars>(deriv_vars_on_boundary)...);
 
         // Invert the sign of the fluxes to account for the inverted normal on
         // exterior faces. Also multiply by 2 and add the interior fluxes to
@@ -518,10 +519,10 @@ struct DgOperatorImpl<System, Linearized, tmpl::list<PrimalFields...>,
   // --- This is essentially a break to communicate the mortar data ---
 
   template <typename... OperatorTags, typename... PrimalVars,
-            typename... PrimalFluxesVars, typename... PrimalMortarVars,
-            typename... PrimalMortarFluxes, typename TemporalId,
-            typename... FluxesArgs, typename... SourcesArgs,
-            typename DataIsZero = NoDataIsZero,
+            typename... DerivVars, typename... PrimalFluxesVars,
+            typename... PrimalMortarVars, typename... PrimalMortarFluxes,
+            typename TemporalId, typename... FluxesArgs,
+            typename... SourcesArgs, typename DataIsZero = NoDataIsZero,
             typename DirectionsPredicate = AllDirections>
   static void apply_operator(
       const gsl::not_null<Variables<tmpl::list<OperatorTags...>>*>
@@ -531,6 +532,7 @@ struct DgOperatorImpl<System, Linearized, tmpl::list<PrimalFields...>,
                           tmpl::list<PrimalMortarFluxes...>>>*>
           all_mortar_data,
       const Variables<tmpl::list<PrimalVars...>>& primal_vars,
+      const Variables<tmpl::list<DerivVars...>>& deriv_vars,
       // Taking the primal fluxes computed in the `prepare_mortar_data` function
       // by const-ref here because other code might use them and so we don't
       // want to modify them by adding boundary corrections. E.g. linearized
@@ -656,11 +658,12 @@ struct DgOperatorImpl<System, Linearized, tmpl::list<PrimalFields...>,
       if constexpr (not std::is_same_v<SourcesComputer, void>) {
         Variables<tmpl::list<OperatorTags...>> sources{num_points, 0.};
         std::apply(
-            [&sources, &primal_vars,
+            [&sources, &primal_vars, &deriv_vars,
              &primal_fluxes](const auto&... expanded_sources_args) {
               SourcesComputer::apply(
                   make_not_null(&get<OperatorTags>(sources))...,
                   expanded_sources_args..., get<PrimalVars>(primal_vars)...,
+                  get<DerivVars>(deriv_vars)...,
                   get<PrimalFluxesVars>(primal_fluxes)...);
             },
             sources_args);
@@ -1035,7 +1038,7 @@ struct DgOperatorImpl<System, Linearized, tmpl::list<PrimalFields...>,
     Variables<tmpl::list<PrimalFluxes...>> primal_fluxes_buffer{num_points};
     Variables<tmpl::list<
         ::Tags::deriv<PrimalFields, tmpl::size_t<Dim>, Frame::Inertial>...>>
-        unused_deriv_vars_buffer{};
+        zero_deriv_vars{num_points, 0.};
     Variables<tmpl::list<FixedSourcesTags...>> operator_applied_to_zero_vars{
         num_points};
     // Set up data on mortars
@@ -1044,12 +1047,11 @@ struct DgOperatorImpl<System, Linearized, tmpl::list<PrimalFields...>,
         all_mortar_data{};
     constexpr size_t temporal_id = std::numeric_limits<size_t>::max();
     // Apply the operator to the zero variables, skipping internal boundaries
-    prepare_mortar_data<true>(make_not_null(&unused_deriv_vars_buffer),
-                              make_not_null(&primal_fluxes_buffer),
-                              make_not_null(&all_mortar_data), zero_primal_vars,
-                              element, mesh, inv_jacobian, face_normals,
-                              all_mortar_meshes, all_mortar_sizes, temporal_id,
-                              apply_boundary_condition, fluxes_args);
+    prepare_mortar_data<true>(
+        make_not_null(&zero_deriv_vars), make_not_null(&primal_fluxes_buffer),
+        make_not_null(&all_mortar_data), zero_primal_vars, element, mesh,
+        inv_jacobian, face_normals, all_mortar_meshes, all_mortar_sizes,
+        temporal_id, apply_boundary_condition, fluxes_args);
     // Modify internal boundary data if needed, e.g. to transform from one
     // variable to another when crossing element boundaries. This is a nonlinear
     // operation in the sense that feeding zero through the operator is nonzero,
@@ -1088,15 +1090,15 @@ struct DgOperatorImpl<System, Linearized, tmpl::list<PrimalFields...>,
         }
       }
     }
-    apply_operator(make_not_null(&operator_applied_to_zero_vars),
-                   make_not_null(&all_mortar_data), zero_primal_vars,
-                   primal_fluxes_buffer, element, mesh, inv_jacobian,
-                   det_inv_jacobian, det_jacobian, det_times_inv_jacobian,
-                   face_normals, face_normal_vectors, face_normal_magnitudes,
-                   face_jacobians, face_jacobian_times_inv_jacobians,
-                   all_mortar_meshes, all_mortar_sizes, mortar_jacobians,
-                   penalty_factors, massive, formulation, temporal_id,
-                   fluxes_args_on_faces, sources_args);
+    apply_operator(
+        make_not_null(&operator_applied_to_zero_vars),
+        make_not_null(&all_mortar_data), zero_primal_vars, zero_deriv_vars,
+        primal_fluxes_buffer, element, mesh, inv_jacobian, det_inv_jacobian,
+        det_jacobian, det_times_inv_jacobian, face_normals, face_normal_vectors,
+        face_normal_magnitudes, face_jacobians,
+        face_jacobian_times_inv_jacobians, all_mortar_meshes, all_mortar_sizes,
+        mortar_jacobians, penalty_factors, massive, formulation, temporal_id,
+        fluxes_args_on_faces, sources_args);
     // Impose the nonlinear (constant) boundary contribution as fixed sources on
     // the RHS of the equations
     *fixed_sources -= operator_applied_to_zero_vars;

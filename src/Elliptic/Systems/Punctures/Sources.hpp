@@ -54,6 +54,7 @@ struct Sources {
                     const Scalar<DataVector>& alpha,
                     const Scalar<DataVector>& beta,
                     const Scalar<DataVector>& field,
+                    const tnsr::i<DataVector, 3>& /*field_gradient*/,
                     const tnsr::I<DataVector, 3>& field_flux);
 };
 
@@ -69,6 +70,7 @@ struct LinearizedSources {
       const Scalar<DataVector>& alpha, const Scalar<DataVector>& beta,
       const Scalar<DataVector>& field,
       const Scalar<DataVector>& field_correction,
+      const tnsr::i<DataVector, 3>& /*field_gradient_correction*/,
       const tnsr::I<DataVector, 3>& field_flux_correction);
 };
 

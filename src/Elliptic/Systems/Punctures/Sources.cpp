@@ -33,6 +33,7 @@ void Sources::apply(const gsl::not_null<Scalar<DataVector>*> puncture_equation,
                     const Scalar<DataVector>& alpha,
                     const Scalar<DataVector>& beta,
                     const Scalar<DataVector>& field,
+                    const tnsr::i<DataVector, 3>& /*field_gradient*/,
                     const tnsr::I<DataVector, 3>& /*field_flux*/) {
   add_sources(puncture_equation, alpha, beta, field);
 }
@@ -41,6 +42,7 @@ void LinearizedSources::apply(
     const gsl::not_null<Scalar<DataVector>*> linearized_puncture_equation,
     const Scalar<DataVector>& alpha, const Scalar<DataVector>& beta,
     const Scalar<DataVector>& field, const Scalar<DataVector>& field_correction,
+    const tnsr::i<DataVector, 3>& /*field_gradient_correction*/,
     const tnsr::I<DataVector, 3>& /*field_flux_correction*/) {
   add_linearized_sources(linearized_puncture_equation, alpha, beta, field,
                          field_correction);
