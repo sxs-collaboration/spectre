@@ -5,6 +5,9 @@
 
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
+#include "Domain/Creators/DomainCreator.hpp"
+#include "Domain/Creators/OptionTags.hpp"
+#include "Domain/Structure/BlockGroups.hpp"
 
 /// \cond
 class ComplexDataVector;
@@ -18,10 +21,27 @@ class DataVector;
  *
  * \see ScalarSelfForce::FirstOrderSystem
  */
-namespace ScalarSelfForce {}
+namespace ScalarSelfForce {
+
+namespace OptionTags {
+
+struct OptionGroup {
+  static std::string name() { return "ScalarSelfForce"; }
+  static constexpr Options::String help =
+      "Options for the scalar self-force system";
+};
+
+struct NullSlicingBlocks {
+  using group = OptionGroup;
+  using type = std::vector<std::string>;
+  static constexpr Options::String help =
+      "The blocks in which to use null slicing (vtu-slicing).";
+};
+
+}  // namespace OptionTags
 
 /// Tags for the ScalarSelfForce system.
-namespace ScalarSelfForce::Tags {
+namespace Tags {
 
 /*!
  * \brief The complex m-mode field $\Psi_m$.
@@ -129,6 +149,23 @@ struct BoyerLindquistRadius : db::SimpleTag {
 };
 
 /*!
+ * \brief Blocks in which we use null slicing (vtu-slicing).
+ */
+struct NullSlicingBlocks : db::SimpleTag {
+  using type = std::set<size_t>;
+  using option_tags = tmpl::list<OptionTags::NullSlicingBlocks,
+                                 domain::OptionTags::DomainCreator<2>>;
+  static constexpr bool pass_metavariables = false;
+  static type create_from_options(
+      const std::vector<std::string>& null_slicing_blocks,
+      const std::unique_ptr<DomainCreator<2>>& domain_creator) {
+    return domain::block_ids_from_names(null_slicing_blocks,
+                                        domain_creator->block_names(),
+                                        domain_creator->block_groups());
+  }
+};
+
+/*!
  * \brief The hyperboloidal boost function $H(r_*)$.
  */
 struct BoostFunction : db::SimpleTag {
@@ -142,4 +179,5 @@ struct BoostFunctionDeriv : db::SimpleTag {
   using type = Scalar<ComplexDataVector>;
 };
 
-}  // namespace ScalarSelfForce::Tags
+}  // namespace Tags
+}  // namespace ScalarSelfForce
