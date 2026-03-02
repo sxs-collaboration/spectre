@@ -32,8 +32,13 @@ def projection_operator_transverse_to_interface(
     spacetime_metric_or_its_inverse,
     normal_vector_or_one_form,
     interface_normal_vector_or_one_form,
+    shift=None,
 ):
     interface_normal = np.zeros(1 + len(interface_normal_vector_or_one_form))
+    if shift is not None:
+        interface_normal[0] = np.einsum(
+            "i,i->", interface_normal_vector_or_one_form, shift
+        )
     interface_normal[1:] = interface_normal_vector_or_one_form
     return (
         spacetime_metric_or_its_inverse
@@ -49,10 +54,14 @@ def projection_operator_transverse_to_interface_mixed(
     normal_one_form,
     interface_normal_vector,
     interface_normal_one_form,
+    shift,
 ):
     interface_normal_vec = np.zeros(1 + len(interface_normal_vector))
     interface_normal_1form = np.zeros(1 + len(interface_normal_one_form))
     interface_normal_vec[1:] = interface_normal_vector
+    interface_normal_1form[0] = np.einsum(
+        "i,i->", interface_normal_one_form, shift
+    )
     interface_normal_1form[1:] = interface_normal_one_form
     return (
         np.eye(np.shape(normal_vector)[0])

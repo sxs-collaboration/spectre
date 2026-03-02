@@ -5,6 +5,7 @@
 
 #include <cmath>
 
+#include "DataStructures/Tensor/EagerMath/DotProduct.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
@@ -15,7 +16,7 @@ template <typename DataType, size_t VolumeDim, typename Frame>
 tnsr::a<DataType, VolumeDim, Frame> interface_null_normal(
     const tnsr::a<DataType, VolumeDim, Frame>& spacetime_normal_one_form,
     const tnsr::i<DataType, VolumeDim, Frame>& interface_unit_normal_one_form,
-    const double sign) {
+    const tnsr::I<DataType, VolumeDim, Frame>& shift, const double sign) {
   ASSERT((sign == 1.) or (sign == -1.),
          "Calculation of interface null normal accepts only +1/-1 to indicate "
          "whether the outgoing/incoming normal is needed.");
@@ -23,7 +24,7 @@ tnsr::a<DataType, VolumeDim, Frame> interface_null_normal(
       get_size(get<0>(spacetime_normal_one_form)));
   interface_null_normal(make_not_null(&null_one_form),
                         spacetime_normal_one_form,
-                        interface_unit_normal_one_form, sign);
+                        interface_unit_normal_one_form, shift, sign);
   return null_one_form;
 }
 
@@ -32,13 +33,18 @@ void interface_null_normal(
     gsl::not_null<tnsr::a<DataType, VolumeDim, Frame>*> null_one_form,
     const tnsr::a<DataType, VolumeDim, Frame>& spacetime_normal_one_form,
     const tnsr::i<DataType, VolumeDim, Frame>& interface_unit_normal_one_form,
-    const double sign) {
+    const tnsr::I<DataType, VolumeDim, Frame>& shift, const double sign) {
   ASSERT((sign == 1.) or (sign == -1.),
          "Calculation of interface null normal accepts only +1/-1 to indicate "
          "whether the outgoing/incoming normal is needed.");
 
+  const auto interface_unit_normal_time_component =
+      dot_product(interface_unit_normal_one_form, shift);
+  const auto& interface_unit_normal_time =
+      get(interface_unit_normal_time_component);
   const double one_by_sqrt_2 = 1. / sqrt(2.);
-  get<0>(*null_one_form) = one_by_sqrt_2 * get<0>(spacetime_normal_one_form);
+  get<0>(*null_one_form) = one_by_sqrt_2 * (get<0>(spacetime_normal_one_form) +
+                                            sign * interface_unit_normal_time);
   for (size_t a = 1; a < VolumeDim + 1; ++a) {
     null_one_form->get(a) =
         one_by_sqrt_2 * (spacetime_normal_one_form.get(a) +
@@ -92,6 +98,7 @@ void interface_null_normal(
           spacetime_normal_one_form,                                     \
       const tnsr::i<DTYPE(data), DIM(data), FRAME(data)>&                \
           interface_unit_normal_one_form,                                \
+      const tnsr::I<DTYPE(data), DIM(data), FRAME(data)>& shift,         \
       const double sign);                                                \
   template void gr::interface_null_normal(                               \
       const gsl::not_null<tnsr::a<DTYPE(data), DIM(data), FRAME(data)>*> \
@@ -100,6 +107,7 @@ void interface_null_normal(
           spacetime_normal_one_form,                                     \
       const tnsr::i<DTYPE(data), DIM(data), FRAME(data)>&                \
           interface_unit_normal_one_form,                                \
+      const tnsr::I<DTYPE(data), DIM(data), FRAME(data)>& shift,         \
       const double sign);                                                \
   template tnsr::A<DTYPE(data), DIM(data), FRAME(data)>                  \
   gr::interface_null_normal(                                             \

@@ -487,10 +487,10 @@ void ConstraintPreservingBjorhus<Dim>::compute_intermediate_vars(
 
   gr::interface_null_normal(incoming_null_one_form,
                             spacetime_unit_normal_one_form, normal_covector,
-                            -1.);
+                            shift, -1.);
   gr::interface_null_normal(outgoing_null_one_form,
                             spacetime_unit_normal_one_form, normal_covector,
-                            1.);
+                            shift, 1.);
   gr::interface_null_normal(incoming_null_vector, spacetime_unit_normal_vector,
                             *unit_interface_normal_vector, -1.);
   gr::interface_null_normal(outgoing_null_vector, spacetime_unit_normal_vector,
@@ -498,11 +498,11 @@ void ConstraintPreservingBjorhus<Dim>::compute_intermediate_vars(
 
   gr::transverse_projection_operator(projection_ab, spacetime_metric,
                                      spacetime_unit_normal_one_form,
-                                     normal_covector);
+                                     normal_covector, shift);
   gr::transverse_projection_operator(
       projection_Ab, spacetime_unit_normal_vector,
       spacetime_unit_normal_one_form, *unit_interface_normal_vector,
-      normal_covector);
+      normal_covector, shift);
   gr::transverse_projection_operator(projection_AB, inverse_spacetime_metric,
                                      spacetime_unit_normal_vector,
                                      *unit_interface_normal_vector);

@@ -56,8 +56,12 @@ class TestBindings(unittest.TestCase):
         interface_unit_normal_one_form = tnsr.i[DataVector, 3](
             num_points=1, fill=1.0
         )
+        shift_ = tnsr.I[DataVector, 3](num_points=1, fill=1.0)
         inter_null_norm = interface_null_normal(
-            spacetime_normal_one_form, interface_unit_normal_one_form, sign=1.0
+            spacetime_normal_one_form,
+            interface_unit_normal_one_form,
+            shift_,
+            sign=1.0,
         )
 
     def test_lapse_shift_normals(self):
@@ -80,6 +84,7 @@ class TestBindings(unittest.TestCase):
         # tnsr.Ij
         transverse_projection_operator(normal_vector, normal_one_form)
         spacetime_metric = tnsr.aa[DataVector, 3](num_points=1, fill=1.0)
+        shift = tnsr.I[DataVector, 3](num_points=1, fill=1.0)
         spacetime_normal_one_form = tnsr.a[DataVector, 3](
             num_points=1, fill=1.0
         )
@@ -91,6 +96,7 @@ class TestBindings(unittest.TestCase):
             spacetime_metric,
             spacetime_normal_one_form,
             interface_unit_normal_one_form,
+            shift,
         )
         inverse_spacetime_metric = tnsr.AA[DataVector, 3](
             num_points=1, fill=1.0
@@ -111,6 +117,7 @@ class TestBindings(unittest.TestCase):
             spacetime_normal_one_form,
             interface_unit_normal_vector,
             interface_unit_normal_one_form,
+            shift,
         )
 
     def test_psi4(self):
