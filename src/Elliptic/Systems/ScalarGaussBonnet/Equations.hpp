@@ -138,6 +138,7 @@ struct Sources {
       const tnsr::i<DataVector, 3>& conformal_factor_deriv, const double& eps2,
       const double& eps4, const Scalar<DataVector>& weyl_electric,
       const Scalar<DataVector>& weyl_magnetic, const Scalar<DataVector>& field,
+      const tnsr::i<DataVector, 3>& /*field_gradient*/,
       const tnsr::I<DataVector, 3>& field_flux);
 };
 
@@ -170,6 +171,7 @@ struct LinearizedSources {
       const Scalar<DataVector>& weyl_electric,
       const Scalar<DataVector>& weyl_magnetic,
       const Scalar<DataVector>& field_correction,
+      const tnsr::i<DataVector, 3>& /*field_gradient_correction*/,
       const tnsr::I<DataVector, 3>& field_flux_correction);
 };
 

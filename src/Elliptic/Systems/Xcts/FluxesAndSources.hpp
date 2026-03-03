@@ -225,6 +225,7 @@ struct Sources<Equations::Hamiltonian, Geometry::FlatCartesian,
       const Scalar<DataVector>&
           longitudinal_shift_minus_dt_conformal_metric_over_lapse_square,
       const Scalar<DataVector>& conformal_factor_minus_one,
+      const tnsr::i<DataVector, 3>& /*conformal_factor_gradient*/,
       const tnsr::I<DataVector, 3>& conformal_factor_flux);
 };
 
@@ -245,6 +246,7 @@ struct Sources<Equations::Hamiltonian, Geometry::Curved, ConformalMatterScale> {
       const tnsr::i<DataVector, 3>& conformal_christoffel_contracted,
       const Scalar<DataVector>& conformal_ricci_scalar,
       const Scalar<DataVector>& conformal_factor_minus_one,
+      const tnsr::i<DataVector, 3>& /*conformal_factor_gradient*/,
       const tnsr::I<DataVector, 3>& conformal_factor_flux);
 };
 
@@ -273,6 +275,9 @@ struct Sources<Equations::HamiltonianAndLapse, Geometry::FlatCartesian,
       const Scalar<DataVector>& shift_dot_deriv_extrinsic_curvature_trace,
       const Scalar<DataVector>& conformal_factor_minus_one,
       const Scalar<DataVector>& lapse_times_conformal_factor_minus_one,
+      const tnsr::i<DataVector, 3>& /*conformal_factor_gradient*/,
+      const tnsr::i<DataVector, 3>&
+      /*lapse_times_conformal_factor_gradient*/,
       const tnsr::I<DataVector, 3>& conformal_factor_flux,
       const tnsr::I<DataVector, 3>& lapse_times_conformal_factor_flux);
 };
@@ -300,6 +305,9 @@ struct Sources<Equations::HamiltonianAndLapse, Geometry::Curved,
       const Scalar<DataVector>& conformal_ricci_scalar,
       const Scalar<DataVector>& conformal_factor_minus_one,
       const Scalar<DataVector>& lapse_times_conformal_factor_minus_one,
+      const tnsr::i<DataVector, 3>& /*conformal_factor_gradient*/,
+      const tnsr::i<DataVector, 3>&
+      /*lapse_times_conformal_factor_gradient*/,
       const tnsr::I<DataVector, 3>& conformal_factor_flux,
       const tnsr::I<DataVector, 3>& lapse_times_conformal_factor_flux);
 };
@@ -342,6 +350,10 @@ struct Sources<Equations::HamiltonianLapseAndShift, Geometry::FlatCartesian,
       const Scalar<DataVector>& conformal_factor_minus_one,
       const Scalar<DataVector>& lapse_times_conformal_factor_minus_one,
       const tnsr::I<DataVector, 3>& shift_excess,
+      const tnsr::i<DataVector, 3>& /*conformal_factor_gradient*/,
+      const tnsr::i<DataVector, 3>&
+      /*lapse_times_conformal_factor_gradient*/,
+      const tnsr::iJ<DataVector, 3>& /*deriv_shift_excess*/,
       const tnsr::I<DataVector, 3>& conformal_factor_flux,
       const tnsr::I<DataVector, 3>& lapse_times_conformal_factor_flux,
       const tnsr::II<DataVector, 3>& longitudinal_shift_excess);
@@ -385,6 +397,10 @@ struct Sources<Equations::HamiltonianLapseAndShift, Geometry::Curved,
       const Scalar<DataVector>& conformal_factor_minus_one,
       const Scalar<DataVector>& lapse_times_conformal_factor_minus_one,
       const tnsr::I<DataVector, 3>& shift_excess,
+      const tnsr::i<DataVector, 3>& /*conformal_factor_gradient*/,
+      const tnsr::i<DataVector, 3>&
+      /*lapse_times_conformal_factor_gradient*/,
+      const tnsr::iJ<DataVector, 3>& /*deriv_shift_excess*/,
       const tnsr::I<DataVector, 3>& conformal_factor_flux,
       const tnsr::I<DataVector, 3>& lapse_times_conformal_factor_flux,
       const tnsr::II<DataVector, 3>& longitudinal_shift_excess);
@@ -416,6 +432,7 @@ struct LinearizedSources<Equations::Hamiltonian, Geometry::FlatCartesian,
           longitudinal_shift_minus_dt_conformal_metric_over_lapse_square,
       const Scalar<DataVector>& conformal_factor_minus_one,
       const Scalar<DataVector>& conformal_factor_correction,
+      const tnsr::i<DataVector, 3>& /*conformal_factor_gradient_correction*/,
       const tnsr::I<DataVector, 3>&
       /*conformal_factor_flux_correction*/);
 };
@@ -438,6 +455,7 @@ struct LinearizedSources<Equations::Hamiltonian, Geometry::Curved,
       const Scalar<DataVector>& conformal_ricci_scalar,
       const Scalar<DataVector>& conformal_factor_minus_one,
       const Scalar<DataVector>& conformal_factor_correction,
+      const tnsr::i<DataVector, 3>& /*conformal_factor_gradient_correction*/,
       const tnsr::I<DataVector, 3>& conformal_factor_flux_correction);
 };
 
@@ -464,6 +482,9 @@ struct LinearizedSources<Equations::HamiltonianAndLapse,
       const Scalar<DataVector>& lapse_times_conformal_factor_minus_one,
       const Scalar<DataVector>& conformal_factor_correction,
       const Scalar<DataVector>& lapse_times_conformal_factor_correction,
+      const tnsr::i<DataVector, 3>& /*conformal_factor_gradient_correction*/,
+      const tnsr::i<DataVector, 3>&
+      /*lapse_times_conformal_factor_gradient_correction*/,
       const tnsr::I<DataVector, 3>& /*conformal_factor_flux_correction*/,
       const tnsr::I<DataVector, 3>&
           lapse_times_conformal_factor_flux_correction);
@@ -494,6 +515,9 @@ struct LinearizedSources<Equations::HamiltonianAndLapse, Geometry::Curved,
       const Scalar<DataVector>& lapse_times_conformal_factor_minus_one,
       const Scalar<DataVector>& conformal_factor_correction,
       const Scalar<DataVector>& lapse_times_conformal_factor_correction,
+      const tnsr::i<DataVector, 3>& /*conformal_factor_gradient_correction*/,
+      const tnsr::i<DataVector, 3>&
+      /*lapse_times_conformal_factor_gradient_correction*/,
       const tnsr::I<DataVector, 3>& conformal_factor_flux_correction,
       const tnsr::I<DataVector, 3>&
           lapse_times_conformal_factor_flux_correction);
@@ -539,6 +563,10 @@ struct LinearizedSources<Equations::HamiltonianLapseAndShift,
       const Scalar<DataVector>& conformal_factor_correction,
       const Scalar<DataVector>& lapse_times_conformal_factor_correction,
       const tnsr::I<DataVector, 3>& shift_excess_correction,
+      const tnsr::i<DataVector, 3>& /*conformal_factor_gradient_correction*/,
+      const tnsr::i<DataVector, 3>&
+      /*lapse_times_conformal_factor_gradient_correction*/,
+      const tnsr::iJ<DataVector, 3>& /*deriv_shift_excess_correction*/,
       const tnsr::I<DataVector, 3>& conformal_factor_flux_correction,
       const tnsr::I<DataVector, 3>&
           lapse_times_conformal_factor_flux_correction,
@@ -590,6 +618,10 @@ struct LinearizedSources<Equations::HamiltonianLapseAndShift, Geometry::Curved,
       const Scalar<DataVector>& conformal_factor_correction,
       const Scalar<DataVector>& lapse_times_conformal_factor_correction,
       const tnsr::I<DataVector, 3>& shift_excess_correction,
+      const tnsr::i<DataVector, 3>& /*conformal_factor_gradient_correction*/,
+      const tnsr::i<DataVector, 3>&
+      /*lapse_times_conformal_factor_gradient_correction*/,
+      const tnsr::iJ<DataVector, 3>& /*deriv_shift_excess_correction*/,
       const tnsr::I<DataVector, 3>& conformal_factor_flux_correction,
       const tnsr::I<DataVector, 3>&
           lapse_times_conformal_factor_flux_correction,

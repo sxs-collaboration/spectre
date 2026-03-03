@@ -119,7 +119,7 @@ void test_first_order_fluxes_computer_impl(
     FluxesComputer::apply(make_not_null(&get<PrimalFluxes>(fluxes_on_face))...,
                           get<FluxesArgsTags>(fluxes_args)..., face_normal,
                           face_normal_vector, get<PrimalFields>(vars)...);
-  CHECK_VARIABLES_APPROX(fluxes_on_face, expected_fluxes);
+    CHECK_VARIABLES_APPROX(fluxes_on_face, expected_fluxes);
   }
 }
 
@@ -151,13 +151,17 @@ void test_first_order_sources_computer_impl(
     const DataVector& used_for_size, tmpl::list<PrimalFields...> /*meta*/,
     tmpl::list<PrimalFluxes...> /*meta*/,
     tmpl::list<SourcesArgsTags...> /*meta*/) {
+  static constexpr size_t Dim = tmpl::front<
+      typename tmpl::front<tmpl::list<PrimalFluxes...>>::type::index_list>::dim;
   using vars_tag = ::Tags::Variables<tmpl::list<PrimalFields...>>;
   using VarsType = typename vars_tag::type;
   using fluxes_tag = ::Tags::Variables<tmpl::list<PrimalFluxes...>>;
   using FluxesType = typename fluxes_tag::type;
   using sources_tag = db::add_tag_prefix<::Tags::Source, vars_tag>;
   using SourcesType = typename sources_tag::type;
-
+  using deriv_vars_tag = db::add_tag_prefix<::Tags::deriv, vars_tag,
+                                            tmpl::size_t<Dim>, Frame::Inertial>;
+  using DerivVarsType = typename deriv_vars_tag::type;
   MAKE_GENERATOR(generator);
   std::uniform_real_distribution<> dist(0.5, 2.);
 
@@ -169,6 +173,8 @@ void test_first_order_sources_computer_impl(
       make_not_null(&generator), make_not_null(&dist), used_for_size);
   const auto fluxes = make_with_random_values<FluxesType>(
       make_not_null(&generator), make_not_null(&dist), used_for_size);
+  const auto deriv_vars = make_with_random_values<DerivVarsType>(
+      make_not_null(&generator), make_not_null(&dist), used_for_size);
 
   // Generate sources from the variables with random arguments
   tuples::TaggedTuple<SourcesArgsTags...> sources_args{
@@ -177,23 +183,27 @@ void test_first_order_sources_computer_impl(
   // Silence unused variable warning when sources args is empty
   (void)sources_args;
   SourcesType expected_sources{used_for_size.size(), 0.};
+
   SourcesComputer::apply(
       make_not_null(&get<::Tags::Source<PrimalFields>>(expected_sources))...,
       get<SourcesArgsTags>(sources_args)..., get<PrimalFields>(vars)...,
+      get<::Tags::deriv<PrimalFields, tmpl::size_t<Dim>, Frame::Inertial>>(
+          deriv_vars)...,
       get<PrimalFluxes>(fluxes)...);
-
   // Create a DataBox
-  auto box = db::create<
-      db::AddSimpleTags<vars_tag, fluxes_tag, sources_tag, SourcesArgsTags...>>(
-      vars, fluxes,
+  auto box = db::create<db::AddSimpleTags<vars_tag, deriv_vars_tag, fluxes_tag,
+                                          sources_tag, SourcesArgsTags...>>(
+      vars, deriv_vars, fluxes,
       make_with_value<typename sources_tag::type>(used_for_size, 0.),
       get<SourcesArgsTags>(sources_args)...);
 
   // Apply the sources computer to the DataBox
-  db::mutate_apply<
-      tmpl::list<::Tags::Source<PrimalFields>...>,
-      tmpl::list<SourcesArgsTags..., PrimalFields..., PrimalFluxes...>>(
-      SourcesComputer{}, make_not_null(&box));
+  db::mutate_apply<tmpl::list<::Tags::Source<PrimalFields>...>,
+                   tmpl::list<SourcesArgsTags..., PrimalFields...,
+                              ::Tags::deriv<PrimalFields, tmpl::size_t<Dim>,
+                                            Frame::Inertial>...,
+                              PrimalFluxes...>>(SourcesComputer{},
+                                                make_not_null(&box));
   CHECK(expected_sources == get<sources_tag>(box));
 }
 

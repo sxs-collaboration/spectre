@@ -392,8 +392,11 @@ struct Solver {
       typename schwarz_smoother::amr_projectors,
       typename build_matrix::amr_projectors,
       ::amr::projectors::DefaultInitialize<tmpl::append<
-          tmpl::list<domain::Tags::InitialExtents<volume_dim>,
-                     domain::Tags::InitialRefinementLevels<volume_dim>>,
+          tmpl::list<
+              domain::Tags::InitialExtents<volume_dim>,
+              domain::Tags::InitialRefinementLevels<volume_dim>,
+              db::add_tag_prefix<::Tags::deriv, fields_tag,
+                                 tmpl::size_t<volume_dim>, Frame::Inertial>>,
           // Tags communicated on subdomain overlaps. No need to project
           // these during AMR because they will be communicated.
           db::wrap_tags_in<

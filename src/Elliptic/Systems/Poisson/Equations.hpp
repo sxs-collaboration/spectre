@@ -131,6 +131,7 @@ struct Sources<Dim, Geometry::Curved, DataType> {
   static void apply(gsl::not_null<Scalar<DataType>*> equation_for_field,
                     const tnsr::i<DataVector, Dim>& christoffel_contracted,
                     const Scalar<DataType>& field,
+                    const tnsr::i<DataType, Dim>& /*field_gradient*/,
                     const tnsr::I<DataType, Dim>& field_flux);
 };
 

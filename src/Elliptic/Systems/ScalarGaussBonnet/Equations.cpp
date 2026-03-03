@@ -123,6 +123,7 @@ void Sources::apply(
     const tnsr::i<DataVector, 3>& conformal_factor_deriv, const double& eps2,
     const double& eps4, const Scalar<DataVector>& weyl_electric,
     const Scalar<DataVector>& weyl_magnetic, const Scalar<DataVector>& field,
+    const tnsr::i<DataVector, 3>& /*field_gradient*/,
     const tnsr::I<DataVector, 3>& field_flux) {
   add_curved_sources(equation_for_field, conformal_christoffel_contracted,
                      field_flux, deriv_lapse, lapse, conformal_factor,
@@ -141,6 +142,7 @@ void LinearizedSources::apply(
     const Scalar<DataVector>& weyl_electric,
     const Scalar<DataVector>& weyl_magnetic,
     const Scalar<DataVector>& field_correction,
+    const tnsr::i<DataVector, 3>& /*field_gradient_correction*/,
     const tnsr::I<DataVector, 3>& field_flux_correction) {
   add_curved_sources(linearized_equation_for_field,
                      conformal_christoffel_contracted, field_flux_correction,

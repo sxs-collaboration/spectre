@@ -92,6 +92,7 @@ void Sources<Dim, Geometry::Curved, DataType>::apply(
     const gsl::not_null<Scalar<DataType>*> equation_for_field,
     const tnsr::i<DataVector, Dim>& christoffel_contracted,
     const Scalar<DataType>& /*field*/,
+    const tnsr::i<DataType, Dim>& /*field_gradient*/,
     const tnsr::I<DataType, Dim>& field_flux) {
   add_curved_sources(equation_for_field, christoffel_contracted, field_flux);
 }

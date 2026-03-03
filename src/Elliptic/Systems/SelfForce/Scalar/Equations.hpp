@@ -74,6 +74,7 @@ struct Sources {
                     const Scalar<ComplexDataVector>& beta,
                     const tnsr::i<ComplexDataVector, 2>& gamma,
                     const Scalar<ComplexDataVector>& field,
+                    const tnsr::i<ComplexDataVector, 2>& /*field_gradient*/,
                     const tnsr::I<ComplexDataVector, 2>& flux);
 };
 
