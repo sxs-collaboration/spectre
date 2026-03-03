@@ -26,11 +26,11 @@ namespace intrp {
  * \details The one-dimensional matrices used to do the interpolation depend
  * upon the Spectral::Basis used in each dimension:
  * - For a Chebyshev or Legendre basis, the matrices are given by
- * intrp::fornberg_interpolation_matrix at the quadrature points of the
+ * Spectral::fornberg_interpolation_matrix at the quadrature points of the
  * source_mesh.  (These are equivalent to those returned by
  * Spectral::interpolation_matrix.)
  * - For a Fourier basis, the matrix is given by
- * intrp::fourier_interpolation_matrix at the quadrature points of the
+ * Spectral::fourier_interpolation_matrix at the quadrature points of the
  * source_mesh
  *
  */

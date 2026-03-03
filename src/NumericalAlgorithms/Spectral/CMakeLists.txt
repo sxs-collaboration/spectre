@@ -20,6 +20,7 @@ spectre_target_sources(
   Filtering.cpp
   FiniteDifference.cpp
   IntegrationMatrix.cpp
+  InterpolationWeights.cpp
   InterpolationMatrix.cpp
   LinearFilteringMatrix.cpp
   LogicalCoordinates.cpp
@@ -51,6 +52,7 @@ spectre_target_headers(
   Filtering.hpp
   GetSpectralQuantityForMesh.hpp
   IntegrationMatrix.hpp
+  InterpolationWeights.hpp
   InterpolationMatrix.hpp
   InverseWeightFunctionValues.hpp
   Legendre.hpp
