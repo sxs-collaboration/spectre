@@ -51,6 +51,7 @@
 #include "Time/Tags/TimeStepId.hpp"
 #include "Time/Time.hpp"
 #include "Time/TimeStepId.hpp"
+#include "Utilities/Algorithm.hpp"
 #include "Utilities/CartesianProduct.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Gsl.hpp"
@@ -344,9 +345,8 @@ void test_impl(const bool rdmp_fails, const bool tci_fails,
         return alg::found(subcell_options.only_dg_block_ids(), first_block_id);
       });
 
-  const bool self_block_dg_only = std::binary_search(
-      subcell_options.only_dg_block_ids().begin(),
-      subcell_options.only_dg_block_ids().end(), element.id().block_id());
+  const bool self_block_dg_only =
+      alg::found(subcell_options.only_dg_block_ids(), element.id().block_id());
 
   // assign value of passed in variable.  Used as a test in apply() above
   metavars::expected_evolve_on_dg_after_tci_failure =

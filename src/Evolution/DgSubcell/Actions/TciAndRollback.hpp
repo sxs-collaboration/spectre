@@ -48,6 +48,7 @@
 #include "ParallelAlgorithms/Actions/Goto.hpp"
 #include "Time/Actions/SelfStartActions.hpp"
 #include "Time/History.hpp"
+#include "Utilities/Algorithm.hpp"
 #include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/TMPL.hpp"
@@ -150,18 +151,16 @@ struct TciAndRollback {
         [&subcell_options](const auto& direction_and_neighbor) {
           const size_t first_block_id =
               direction_and_neighbor.second.ids().begin()->block_id();
-          return std::binary_search(subcell_options.only_dg_block_ids().begin(),
-                                    subcell_options.only_dg_block_ids().end(),
-                                    first_block_id);
+          return alg::found(subcell_options.only_dg_block_ids(),
+                            first_block_id);
         });
 
     // Subcell is allowed in the element if 2 conditions are met:
     // (i)  The current element block id is not marked as DG only
     // (ii) The current element is not bordering a DG only block.
     const bool subcell_allowed_in_element =
-        not std::binary_search(subcell_options.only_dg_block_ids().begin(),
-                               subcell_options.only_dg_block_ids().end(),
-                               element.id().block_id()) and
+        not alg::found(subcell_options.only_dg_block_ids(),
+                       element.id().block_id()) and
         not bordering_dg_block;
 
     // The reason we pass in the persson_exponent explicitly instead of
