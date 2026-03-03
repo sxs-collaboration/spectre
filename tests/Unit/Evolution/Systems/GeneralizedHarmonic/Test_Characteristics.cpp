@@ -13,12 +13,14 @@
 #include <pup.h>
 #include <random>
 
+#include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/EagerMath/DeterminantAndInverse.hpp"
 #include "DataStructures/Tensor/EagerMath/DotProduct.hpp"
 #include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
 #include "DataStructures/Tensor/EagerMath/RaiseOrLowerIndex.hpp"
+#include "DataStructures/Tensor/IndexType.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Domain/CoordinateMaps/Affine.hpp"
@@ -136,6 +138,130 @@ void test_characteristic_speeds_on_strahlkorper() {
   pypp::check_with_random_values<1>(
       char_speed_with_moving_mesh<2, Dim, Frame>, "TestFunctions",
       "char_speed_uplus_moving_mesh", {{{-2.0, 2.0}}}, used_for_size);
+}
+
+template <size_t Dim, typename TargetFrame>
+void test_characteristic_speed_vectors() {
+  using SourceFrame = Frame::ElementLogical;
+  TestHelpers::db::test_simple_tag<
+      gh::Tags::VSpacetimeMetricSpeed<DataVector, Dim>>(
+      "VSpacetimeMetricSpeed");
+  TestHelpers::db::test_simple_tag<gh::Tags::VZeroSpeed<DataVector, Dim>>(
+      "VZeroSpeed");
+  TestHelpers::db::test_simple_tag<gh::Tags::VPlusSpeed<DataVector, Dim>>(
+      "VPlusSpeed");
+  TestHelpers::db::test_simple_tag<gh::Tags::VMinusSpeed<DataVector, Dim>>(
+      "VMinusSpeed");
+
+  TestHelpers::db::test_compute_tag<
+      gh::Tags::VSpacetimeMetricSpeedCompute<Dim, TargetFrame, SourceFrame>>(
+      "VSpacetimeMetricSpeed");
+  TestHelpers::db::test_compute_tag<
+      gh::Tags::VZeroSpeedCompute<Dim, TargetFrame, SourceFrame>>("VZeroSpeed");
+  TestHelpers::db::test_compute_tag<
+      gh::Tags::VPlusSpeedCompute<Dim, TargetFrame, SourceFrame>>("VPlusSpeed");
+  TestHelpers::db::test_compute_tag<
+      gh::Tags::VMinusSpeedCompute<Dim, TargetFrame, SourceFrame>>(
+      "VMinusSpeed");
+
+  MAKE_GENERATOR(gen);
+  const DataVector used_for_size(5);
+  std::uniform_real_distribution<> unit_dist(-1.0, 1.0);
+  std::uniform_real_distribution<> reals_dist(-2.0, 2.0);
+  const auto gamma_1 = make_with_random_values<Scalar<DataVector>>(
+      make_not_null(&gen), make_not_null(&reals_dist), used_for_size);
+  const auto lapse = TestHelpers::gr::random_lapse(&gen, used_for_size);
+  const auto shift =
+      make_with_random_values<tnsr::I<DataVector, Dim, TargetFrame>>(
+          make_not_null(&gen), make_not_null(&unit_dist), used_for_size);
+  const auto spatial_metric =
+      TestHelpers::gr::random_spatial_metric<Dim>(&gen, used_for_size);
+  tnsr::II<DataVector, Dim, TargetFrame> inverse_spatial_metric{};
+  for (size_t i = 0; i < Dim; ++i) {
+    for (size_t j = 0; j < Dim; ++j) {
+      inverse_spatial_metric.get(i, j) = spatial_metric.get(i, j);
+    }
+  }
+  const auto mesh_velocity_non_optional =
+      make_with_random_values<tnsr::I<DataVector, Dim, TargetFrame>>(
+          make_not_null(&gen), make_not_null(&reals_dist), used_for_size);
+  const auto mesh_velocity =
+      std::make_optional(std::move(mesh_velocity_non_optional));
+  // Almost certain to be non-singular
+  const auto inverse_jacobian = make_with_random_values<
+      InverseJacobian<DataVector, Dim, Frame::ElementLogical, TargetFrame>>(
+      make_not_null(&gen), make_not_null(&reals_dist), used_for_size);
+
+  InverseJacobian<DataVector, Dim, Frame::ElementLogical, TargetFrame>
+      normalized_inv_jacobian{get_size(get<0, 0>(inverse_jacobian))};
+  DataVector magnitude{get_size(get<0, 0>(inverse_jacobian))};
+  for (size_t i_hat = 0; i_hat < Dim; ++i_hat) {
+    magnitude = 0.;
+    for (size_t j = 0; j < Dim; ++j) {
+      for (size_t k = 0; k < Dim; ++k) {
+        magnitude += inverse_jacobian.get(i_hat, j) *
+                     inverse_spatial_metric.get(j, k) *
+                     inverse_jacobian.get(i_hat, k);
+      }
+    }
+    ASSERT(min(magnitude) > 0,
+           "Trying to normalize inverse jacobian with a negative magnitude: "
+               << magnitude);
+    magnitude = sqrt(magnitude);
+    for (size_t j = 0; j < Dim; ++j) {
+      normalized_inv_jacobian.get(i_hat, j) =
+          inverse_jacobian.get(i_hat, j) / magnitude;
+    }
+  }
+  for (const bool use_mesh : {true, false}) {
+    auto box = db::create<
+        db::AddSimpleTags<
+            ::gh::Tags::ConstraintGamma1, gr::Tags::Lapse<DataVector>,
+            gr::Tags::Shift<DataVector, Dim, TargetFrame>,
+            domain::Tags::InverseJacobian<Dim, Frame::ElementLogical,
+                                          TargetFrame>,
+            gr::Tags::InverseSpatialMetric<DataVector, Dim, TargetFrame>,
+            domain::Tags::MeshVelocity<Dim, TargetFrame>>,
+        db::AddComputeTags<::gh::Tags::VSpacetimeMetricSpeedCompute<
+                               Dim, TargetFrame, Frame::ElementLogical>,
+                           ::gh::Tags::VZeroSpeedCompute<Dim, TargetFrame,
+                                                         Frame::ElementLogical>,
+                           ::gh::Tags::VPlusSpeedCompute<Dim, TargetFrame,
+                                                         Frame::ElementLogical>,
+                           ::gh::Tags::VMinusSpeedCompute<
+                               Dim, TargetFrame, Frame::ElementLogical>>>(
+        gamma_1, lapse, shift, inverse_jacobian, inverse_spatial_metric,
+        use_mesh ? mesh_velocity : std::nullopt);
+
+    const auto& vspacetime_tensor =
+        db::get<::gh::Tags::VSpacetimeMetricSpeed<DataVector, Dim,
+                                                  Frame::ElementLogical>>(box);
+    const auto& vzero_tensor =
+        db::get<::gh::Tags::VZeroSpeed<DataVector, Dim, Frame::ElementLogical>>(
+            box);
+    const auto& vplus_tensor =
+        db::get<::gh::Tags::VPlusSpeed<DataVector, Dim, Frame::ElementLogical>>(
+            box);
+    const auto& vminus_tensor = db::get<
+        ::gh::Tags::VMinusSpeed<DataVector, Dim, Frame::ElementLogical>>(box);
+
+    tnsr::i<DataVector, Dim, TargetFrame> normal{};
+    for (size_t i = 0; i < Dim; ++i) {
+      CAPTURE(i);
+      for (size_t j = 0; j < Dim; ++j) {
+        normal.get(j) = normalized_inv_jacobian.get(i, j);
+      }
+      const auto [vspacetime_scalar, vzero_scalar, vplus_scalar,
+                  vminus_scalar] =
+          gh::characteristic_speeds(gamma_1, lapse, shift, normal,
+                                    use_mesh ? mesh_velocity : std::nullopt);
+
+      CHECK_ITERABLE_APPROX(vspacetime_scalar, vspacetime_tensor.get(i));
+      CHECK_ITERABLE_APPROX(vzero_scalar, vzero_tensor.get(i));
+      CHECK_ITERABLE_APPROX(vplus_scalar, vplus_tensor.get(i));
+      CHECK_ITERABLE_APPROX(vminus_scalar, vminus_tensor.get(i));
+    }
+  }
 }
 
 // Test return-by-reference GH char speeds by comparing to Kerr-Schild
@@ -590,6 +716,13 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.GeneralizedHarmonic.Characteristics",
   test_characteristic_speeds_on_strahlkorper<1, Frame::Inertial>();
   test_characteristic_speeds_on_strahlkorper<2, Frame::Inertial>();
   test_characteristic_speeds_on_strahlkorper<3, Frame::Inertial>();
+
+  test_characteristic_speed_vectors<1, Frame::Grid>();
+  test_characteristic_speed_vectors<2, Frame::Grid>();
+  test_characteristic_speed_vectors<3, Frame::Grid>();
+  test_characteristic_speed_vectors<1, Frame::Inertial>();
+  test_characteristic_speed_vectors<2, Frame::Inertial>();
+  test_characteristic_speed_vectors<3, Frame::Inertial>();
 
   // Test GH characteristic speeds against Kerr Schild
   const double mass = 2.;
