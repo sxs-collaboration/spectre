@@ -35,6 +35,7 @@ set(LIBRARY_SOURCES
   Test_Projection.cpp
   Test_RdmpTci.cpp
   Test_RdmpTciData.cpp
+  Test_ReceiveSubcellDataForDg.cpp
   Test_Reconstruction.cpp
   Test_ReconstructionMethod.cpp
   Test_ReconstructionOrder.cpp

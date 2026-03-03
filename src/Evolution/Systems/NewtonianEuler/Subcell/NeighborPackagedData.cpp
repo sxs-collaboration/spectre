@@ -35,7 +35,6 @@
 #include "Evolution/DgSubcell/Tags/SubcellOptions.hpp"
 #include "Evolution/DiscontinuousGalerkin/Actions/NormalCovectorAndMagnitude.hpp"
 #include "Evolution/DiscontinuousGalerkin/Actions/PackageDataImpl.hpp"
-#include "Evolution/DiscontinuousGalerkin/BoundaryData.hpp"
 #include "Evolution/Systems/NewtonianEuler/BoundaryCorrections/Factory.hpp"
 #include "Evolution/Systems/NewtonianEuler/FiniteDifference/Factory.hpp"
 #include "Evolution/Systems/NewtonianEuler/FiniteDifference/Reconstructor.hpp"
@@ -224,14 +223,10 @@ GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
 #undef INSTANTIATION
 }  // namespace NewtonianEuler::subcell
 
-#define INSTANTIATION(r, data)                                                 \
-  template void evolution::dg::subcell::neighbor_reconstructed_face_solution<  \
-      DIM(data), NewtonianEuler::subcell::NeighborPackagedData>(               \
-      gsl::not_null<db::Access*> box,                                          \
-      gsl::not_null<std::pair<                                                 \
-          TimeStepId, DirectionalIdMap<DIM(data), evolution::dg::BoundaryData< \
-                                                      DIM(data)>>>*>           \
-          received_temporal_id_and_data);
+#define INSTANTIATION(r, data)                                                \
+  template void evolution::dg::subcell::neighbor_reconstructed_face_solution< \
+      DIM(data), NewtonianEuler::subcell::NeighborPackagedData>(              \
+      gsl::not_null<db::Access*> box);
 
 GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
 

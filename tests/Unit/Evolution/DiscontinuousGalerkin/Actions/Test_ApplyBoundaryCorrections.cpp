@@ -244,26 +244,28 @@ struct SetLocalMortarData {
             },
             make_not_null(&box));
         ++count;
+
+        const TimeStepId past_time_step_id{true, 3,
+                                           Time{Slab{0.2, 3.4}, {1, 4}}};
+        // In LTS, pass an incorrect slab end for the east element to
+        // simulate the slab size changing.  This previously caused
+        // a bug when a slab-size change happened at a time only
+        // needed on the remote side.
+        const auto remote_past_time_step_id =
+            LocalTimeStepping
+                ? direction == Direction<Metavariables::volume_dim>::upper_xi()
+                      ? TimeStepId{true, 3, Time{Slab{0.2, 1.3}, {0, 4}}}
+                      : past_time_step_id
+                : time_step_id;
+        db::mutate<evolution::dg::Tags::MortarNextTemporalId<
+            Metavariables::volume_dim>>(
+            [&mortar_id, &remote_past_time_step_id](
+                const auto mortar_next_temporal_id_ptr) {
+              mortar_next_temporal_id_ptr->at(mortar_id) =
+                  remote_past_time_step_id;
+            },
+            make_not_null(&box));
         if (LocalTimeStepping) {
-          const TimeStepId past_time_step_id{true, 3,
-                                             Time{Slab{0.2, 3.4}, {1, 4}}};
-          // Pass an incorrect slab end for the east element to
-          // simulate the slab size changing.  This previously caused
-          // a bug when a slab-size change happened at a time only
-          // needed on the remote side.
-          const auto remote_past_time_step_id =
-              direction == Direction<Metavariables::volume_dim>::upper_xi()
-                  ? TimeStepId{true, 3, Time{Slab{0.2, 1.3}, {0, 4}}}
-                  : past_time_step_id;
-          // When doing local time stepping we need a past history.
-          db::mutate<evolution::dg::Tags::MortarNextTemporalId<
-              Metavariables::volume_dim>>(
-              [&mortar_id, &remote_past_time_step_id](
-                  const auto mortar_next_temporal_id_ptr) {
-                mortar_next_temporal_id_ptr->at(mortar_id) =
-                    remote_past_time_step_id;
-              },
-              make_not_null(&box));
           // We also need to set the local history one step back to get to 2nd
           // order in time.
           type_erased_boundary_data_on_mortar.destructive_resize(
@@ -431,6 +433,13 @@ struct component {
       domain::Tags::DetInvJacobianCompute<
           Metavariables::volume_dim, Frame::ElementLogical, Frame::Inertial>>;
 
+  using lts_action = ::evolution::dg::Actions::ApplyLtsBoundaryCorrections<
+      Metavariables::volume_dim, false,
+      Metavariables::use_nodegroup_dg_elements>;
+  using gts_action =
+      ::evolution::dg::Actions::ApplyBoundaryCorrectionsToTimeDerivative<
+          Metavariables::volume_dim, Metavariables::use_nodegroup_dg_elements>;
+
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
           Parallel::Phase::Initialization,
@@ -441,15 +450,11 @@ struct component {
               SetLocalMortarData<local_time_stepping>>>,
       Parallel::PhaseActions<
           Parallel::Phase::Testing,
-          tmpl::list<tmpl::conditional_t<
-              local_time_stepping,
-              ::evolution::dg::Actions::ApplyLtsBoundaryCorrections<
-                  Metavariables::volume_dim, false,
-                  Metavariables::use_nodegroup_dg_elements>,
-              ::evolution::dg::Actions::
-                  ApplyBoundaryCorrectionsToTimeDerivative<
-                      Metavariables::volume_dim,
-                      Metavariables::use_nodegroup_dg_elements>>>>>;
+          tmpl::list<tmpl::conditional_t<local_time_stepping,
+                                         // Apply the incorrect action first to
+                                         // verify it doesn't do anything.
+                                         tmpl::list<gts_action, lts_action>,
+                                         tmpl::list<lts_action, gts_action>>>>>;
 };
 
 template <size_t Dim, TestHelpers::SystemType SystemType,
@@ -659,6 +664,11 @@ void test_impl(const Spectral::Quadrature quadrature,
         Dim, typename dt_variables_tag::type>>(runner, self_id);
   }
 
+  // Check that the action for the wrong time-stepping mode runs
+  // successfully without any data having been received, and therefore
+  // presumably doesn't do anything.
+  ActionTesting::next_action<comp>(make_not_null(&runner), self_id);
+
   // "Send" mortar data to element
   const auto& mortar_meshes =
       get_tag<evolution::dg::Tags::MortarMesh<Dim>>(runner, self_id);
@@ -755,10 +765,8 @@ void test_impl(const Spectral::Quadrature quadrature,
         REQUIRE(not ActionTesting::next_action_if_ready<comp>(
             make_not_null(&runner), self_id));
       }
-      insert_neighbor_data(
-          time_step_id,
-          UseLocalTimeStepping ? local_next_time_step_id : time_step_id,
-          common_integration_order);
+      insert_neighbor_data(time_step_id, local_next_time_step_id,
+                           common_integration_order);
     }
   }
   // Check expected inboxes

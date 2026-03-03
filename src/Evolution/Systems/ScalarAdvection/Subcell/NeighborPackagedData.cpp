@@ -31,7 +31,6 @@
 #include "Evolution/DgSubcell/Tags/OnSubcellFaces.hpp"
 #include "Evolution/DgSubcell/Tags/SubcellOptions.hpp"
 #include "Evolution/DiscontinuousGalerkin/Actions/PackageDataImpl.hpp"
-#include "Evolution/DiscontinuousGalerkin/BoundaryData.hpp"
 #include "Evolution/DiscontinuousGalerkin/NormalVectorTags.hpp"
 #include "Evolution/Systems/ScalarAdvection/BoundaryCorrections/Factory.hpp"
 #include "Evolution/Systems/ScalarAdvection/FiniteDifference/Factory.hpp"
@@ -221,14 +220,10 @@ GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2))
 
 }  // namespace ScalarAdvection::subcell
 
-#define INSTANTIATION(r, data)                                                 \
-  template void evolution::dg::subcell::neighbor_reconstructed_face_solution<  \
-      DIM(data), ScalarAdvection::subcell::NeighborPackagedData>(              \
-      gsl::not_null<db::Access*> box,                                          \
-      gsl::not_null<std::pair<                                                 \
-          TimeStepId, DirectionalIdMap<DIM(data), evolution::dg::BoundaryData< \
-                                                      DIM(data)>>>*>           \
-          received_temporal_id_and_data);
+#define INSTANTIATION(r, data)                                                \
+  template void evolution::dg::subcell::neighbor_reconstructed_face_solution< \
+      DIM(data), ScalarAdvection::subcell::NeighborPackagedData>(             \
+      gsl::not_null<db::Access*> box);
 
 GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2))
 
