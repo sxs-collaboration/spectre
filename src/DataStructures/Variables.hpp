@@ -638,16 +638,7 @@ inline std::ostream& operator<<(std::ostream& os,
 
 template <typename... Tags>
 Variables<tmpl::list<Tags...>>::Variables() {
-  // This makes an assertion trigger if one tries to assign to
-  // components of a default-constructed Variables.
-  const auto set_refs = [](auto& var) {
-    for (auto& dv : var) {
-      dv.set_data_ref(nullptr, 0);
-    }
-    return 0;
-  };
-  (void)set_refs;
-  expand_pack(set_refs(tuples::get<Tags>(reference_variable_data_))...);
+  add_reference_variable_data();
 }
 
 template <typename... Tags>
@@ -664,11 +655,6 @@ Variables<tmpl::list<Tags...>>::Variables(const size_t number_of_grid_points,
 template <typename... Tags>
 void Variables<tmpl::list<Tags...>>::initialize(
     const size_t number_of_grid_points) {
-  if (number_of_grid_points_ == 0) {
-    variable_data_impl_dynamic_.clear();
-    size_ = 0;
-    number_of_grid_points_ = 0;
-  }
   if (number_of_grid_points_ == number_of_grid_points) {
     return;
   }
@@ -680,18 +666,16 @@ void Variables<tmpl::list<Tags...>>::initialize(
   }
   number_of_grid_points_ = number_of_grid_points;
   size_ = number_of_grid_points * number_of_independent_components;
-  if (size_ > 0) {
-    if (number_of_grid_points_ == 1) {
-      variable_data_impl_dynamic_.clear();
-    } else {
-      variable_data_impl_dynamic_.destructive_resize(size_);
-    }
-    add_reference_variable_data();
-#if defined(SPECTRE_NAN_INIT)
-    std::fill(variable_data_.data(), variable_data_.data() + size_,
-              make_signaling_NaN<value_type>());
-#endif  // SPECTRE_NAN_INIT
+  if (number_of_grid_points_ <= 1) {
+    variable_data_impl_dynamic_.clear();
+  } else {
+    variable_data_impl_dynamic_.destructive_resize(size_);
   }
+  add_reference_variable_data();
+#if defined(SPECTRE_NAN_INIT)
+  std::fill(variable_data_.data(), variable_data_.data() + size_,
+            make_signaling_NaN<value_type>());
+#endif  // SPECTRE_NAN_INIT
 }
 
 template <typename... Tags>
@@ -959,11 +943,10 @@ Variables<tmpl::list<Tags...>>& Variables<tmpl::list<Tags...>>::operator=(
 /// \cond HIDDEN_SYMBOLS
 template <typename... Tags>
 void Variables<tmpl::list<Tags...>>::add_reference_variable_data() {
-  if (size_ == 0) {
-    return;
-  }
   if (is_owning()) {
-    if (number_of_grid_points_ == 1) {
+    if (number_of_grid_points_ == 0) {
+      variable_data_.clear();
+    } else if (number_of_grid_points_ == 1) {
       variable_data_.reset(variable_data_impl_static_.data(), size_);
     } else {
       variable_data_.reset(variable_data_impl_dynamic_.data(), size_);
@@ -981,9 +964,13 @@ void Variables<tmpl::list<Tags...>>::add_reference_variable_data() {
     using Tag = tmpl::type_from<decltype(tag_v)>;
     auto& var = tuples::get<Tag>(reference_variable_data_);
     for (size_t i = 0; i < Tag::type::size(); ++i) {
-      var[i].set_data_ref(
-          &variable_data_[variable_offset++ * number_of_grid_points_],
-          number_of_grid_points_);
+      if (LIKELY(number_of_grid_points_ != 0)) {
+        var[i].set_data_ref(
+            &variable_data_[variable_offset++ * number_of_grid_points_],
+            number_of_grid_points_);
+      } else {
+        var[i].set_data_ref(nullptr, 0);
+      }
     }
   });
 }

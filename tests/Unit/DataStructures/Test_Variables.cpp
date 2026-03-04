@@ -1463,6 +1463,37 @@ void test_vector_ownership() {
 #endif  // defined(SPECTRE_DEBUG)
 }
 
+template <typename VectorType>
+void test_clear() {
+  INFO(pretty_type::short_name<VectorType>());
+  using value_type = typename VectorType::value_type;
+  using Vars = Variables<tmpl::list<TestHelpers::Tags::Vector<VectorType>,
+                                    TestHelpers::Tags::Scalar<VectorType>>>;
+  MAKE_GENERATOR(gen);
+  UniformCustomDistribution<tt::get_fundamental_type_t<value_type>> dist{-100.0,
+                                                                         100.0};
+  const auto test = [&dist, &gen](const size_t num_points) {
+    auto vars = make_with_random_values<Vars>(make_not_null(&gen),
+                                              make_not_null(&dist), num_points);
+    CHECK(vars.number_of_grid_points() == num_points);
+    CHECK(vars.size() == num_points * Vars::number_of_independent_components);
+    CHECK(get<1>(get<TestHelpers::Tags::Vector<VectorType>>(vars)).size() ==
+          num_points);
+    CHECK(get(get<TestHelpers::Tags::Scalar<VectorType>>(vars)).size() ==
+          num_points);
+    CHECK((vars * 1.0).size() == vars.size());
+    vars.initialize(0);
+    CHECK(vars.number_of_grid_points() == 0);
+    CHECK(vars.size() == 0);
+    CHECK(get<1>(get<TestHelpers::Tags::Vector<VectorType>>(vars)).size() == 0);
+    CHECK(get(get<TestHelpers::Tags::Scalar<VectorType>>(vars)).size() == 0);
+    CHECK((vars * 1.0).size() == vars.size());
+  };
+  UniformCustomDistribution<size_t> sdist{2, 5};
+  test(sdist(gen));
+  test(1);
+}
+
 void test_asserts() {
 #ifdef SPECTRE_DEBUG
   CHECK_THROWS_WITH(
@@ -1655,6 +1686,14 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Variables", "[DataStructures][Unit]") {
     test_vector_ownership<ComplexModalVector>();
     test_vector_ownership<DataVector>();
     test_vector_ownership<ModalVector>();
+  }
+
+  {
+    INFO("Test clearing");
+    test_clear<ComplexDataVector>();
+    test_clear<ComplexModalVector>();
+    test_clear<DataVector>();
+    test_clear<ModalVector>();
   }
 
   TestHelpers::db::test_simple_tag<Tags::TempScalar<1>>("TempTensor1");
