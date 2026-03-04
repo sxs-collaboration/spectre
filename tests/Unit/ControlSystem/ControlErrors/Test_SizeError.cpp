@@ -136,9 +136,9 @@ void test_size_error_horizon_higher_res_than_excision() {
           make_not_null(&predictor_drift_limit_char_speed),
           make_not_null(&predictor_drift_limit_delta_radius), 0.0, 0.0,
           std::nullopt, std::nullopt, std::nullopt, std::nullopt, std::nullopt,
-          horizon.coefficients()[0], 0.0, horizon, excision_boundary, lapse,
-          frame_components_of_grid_shift, spatial_metric,
-          inverse_spatial_metric, deriv_comoving_char_speed),
+          std::nullopt, horizon.coefficients()[0], 0.0, horizon,
+          excision_boundary, lapse, frame_components_of_grid_shift,
+          spatial_metric, inverse_spatial_metric, deriv_comoving_char_speed),
       Catch::Matchers::ContainsSubstring(
           "excision boundary resolution is at least as high"));
 }
@@ -168,6 +168,7 @@ void test_size_error_one_step(
   const double initial_damping_time = 0.1;
   const double initial_target_drift_velocity = 0.0;
   const double initial_suggested_time_scale = 0.0;
+  const std::optional<double> approx_max_relative_delta_r{};
   // Set max_allowed_radial_distance so that State::DeltaRDriftOutward
   // does not transition to DeltaR with the chosen radial_distance of 0.5
   // below. This is fine-tuned.
@@ -298,12 +299,12 @@ void test_size_error_one_step(
       make_not_null(&info), predictor_char_speed, predictor_comoving_char_speed,
       predictor_delta_radius, predictor_drift_limit_char_speed,
       predictor_drift_limit_delta_radius, time, control_error_delta_r,
-      control_error_delta_r_outward, max_allowed_radial_distance,
-      inward_drift_velocity, min_allowed_radial_distance,
-      min_allowed_char_speed, horizon.coefficients()[0],
-      time_deriv_horizon.coefficients()[0], horizon, excision_boundary, lapse,
-      shifty_quantity, spatial_metric, inverse_spatial_metric,
-      deriv_comoving_char_speed);
+      control_error_delta_r_outward, approx_max_relative_delta_r,
+      max_allowed_radial_distance, inward_drift_velocity,
+      min_allowed_radial_distance, min_allowed_char_speed,
+      horizon.coefficients()[0], time_deriv_horizon.coefficients()[0], horizon,
+      excision_boundary, lapse, shifty_quantity, spatial_metric,
+      inverse_spatial_metric, deriv_comoving_char_speed);
 
   // Check error and parts of info.
   //
@@ -332,6 +333,7 @@ void test_size_error_one_step(
         "SmoothAvgTimescaleFraction: 0.25\n"
         "DeltaRDriftOutwardOptions: None\n"
         "DeltaRDriftInwardOptions: None\n"
+        "ApproxMaxRelativeDeltaR: None\n"
         "InitialState: Initial\n"
         "SmootherTuner:\n"
         "  InitialTimescales: 0.2\n"

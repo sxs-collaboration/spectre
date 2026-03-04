@@ -441,6 +441,7 @@ ControlSystems:
       SmoothAvgTimescaleFraction: 0.25
       DeltaRDriftOutwardOptions: None
       DeltaRDriftInwardOptions: None
+      ApproxMaxRelativeDeltaR: None
       InitialState: Initial
       SmootherTuner:
         InitialTimescales: [0.2]

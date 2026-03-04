@@ -44,11 +44,13 @@ namespace ControlErrors {
 template <size_t DerivOrder, ::domain::ObjectLabel Horizon>
 Size<DerivOrder, Horizon>::Size(
     const int max_times, const double smooth_avg_timescale_frac,
+    const std::optional<double> approx_max_relative_delta_r,
     TimescaleTuner<true> smoother_tuner,
     std::unique_ptr<size::State> initial_state,
     std::optional<DeltaRDriftOutwardOptions> delta_r_drift_outward_options,
     std::optional<DeltaRDriftInwardOptions> delta_r_drift_inward_options)
     : smoother_tuner_(std::move(smoother_tuner)),
+      approx_max_relative_delta_r_(approx_max_relative_delta_r),
       delta_r_drift_outward_options_(delta_r_drift_outward_options),
       delta_r_drift_inward_options_(delta_r_drift_inward_options) {
   if (not smoother_tuner_.timescales_have_been_set()) {
@@ -104,6 +106,7 @@ Size<DerivOrder, Horizon>& Size<DerivOrder, Horizon>::operator=(
   smoother_tuner_ = rhs.smoother_tuner_;
   horizon_coef_averager_ = rhs.horizon_coef_averager_;
   info_ = rhs.info_;
+  approx_max_relative_delta_r_ = rhs.approx_max_relative_delta_r_;
   char_speed_predictor_ = rhs.char_speed_predictor_;
   comoving_char_speed_predictor_ = rhs.comoving_char_speed_predictor_;
   delta_radius_predictor_ = rhs.delta_radius_predictor_;
@@ -147,6 +150,7 @@ void Size<DerivOrder, Horizon>::pup(PUP::er& p) {
   p | smoother_tuner_;
   p | horizon_coef_averager_;
   p | info_;
+  p | approx_max_relative_delta_r_;
   p | char_speed_predictor_;
   p | comoving_char_speed_predictor_;
   p | delta_radius_predictor_;

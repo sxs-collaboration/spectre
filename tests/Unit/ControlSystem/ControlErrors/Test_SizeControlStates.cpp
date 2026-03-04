@@ -42,6 +42,7 @@ struct TestParams {
   double min_char_speed{0.01};
   double min_comoving_char_speed{-0.02};
   double control_err_delta_r{0.03};
+  std::optional<double> approx_max_relative_delta_r{};
   std::optional<double> max_allowed_radial_distance{1.e100};
   // By default here we turn off state DeltaRDriftInward
   // by setting the following two options to nullopt.
@@ -70,6 +71,8 @@ void do_test(const TestParams& test_params,
   CAPTURE(test_params.min_char_speed);
   CAPTURE(test_params.min_comoving_char_speed);
   CAPTURE(test_params.control_err_delta_r);
+  CAPTURE(test_params.approx_max_relative_delta_r);
+  CAPTURE(test_params.average_radial_distance);
   CAPTURE(test_params.max_allowed_radial_distance);
   CAPTURE(test_params.min_allowed_radial_distance);
   CAPTURE(test_params.min_allowed_char_speed);
@@ -96,6 +99,7 @@ void do_test(const TestParams& test_params,
       test_params.control_err_delta_r,
       test_params.average_radial_distance,
       test_params.max_allowed_radial_distance,
+      test_params.approx_max_relative_delta_r,
       test_params.avg_distorted_normal_dot_unit_coord_vector,
       test_params.inward_drift_velocity,
       test_params.min_allowed_radial_distance,
@@ -140,7 +144,13 @@ void do_test(const TestParams& test_params,
   CHECK(info.damping_time == test_params.damping_time);
   CHECK(info.target_char_speed == expected_target_char_speed);
   CHECK(info.target_drift_velocity == target_drift_velocity);
-  CHECK(info.suggested_time_scale == expected_suggested_time_scale);
+  if(info.suggested_time_scale.has_value()
+     and expected_suggested_time_scale.has_value()) {
+    CHECK(info.suggested_time_scale.value() ==
+          approx(expected_suggested_time_scale.value()));
+  } else {
+    CHECK(info.suggested_time_scale == expected_suggested_time_scale);
+  }
   CHECK(info.discontinuous_change_has_occurred ==
         expected_discontinuous_change_has_occurred);
 
@@ -420,6 +430,41 @@ void test_size_control_update() {
           control_system::size::States::DeltaR>(
       test_params, false, 0.99 * test_params.damping_time,
       test_params.original_target_char_speed);
+
+  // Should change suggested time scale but to the value of
+  // min_time_scale_for_delta_radius_expanding_too_far in DeltaR.cpp
+  const double min_time_scale_for_delta_radius_expanding_too_far = 1.0;
+  const double allowed_violation = 0.05;
+  test_params.approx_max_relative_delta_r = 0.001;
+  test_params.damping_time = 10.0;
+  do_test<control_system::size::States::DeltaR,
+          control_system::size::States::DeltaR>(
+      test_params, false, min_time_scale_for_delta_radius_expanding_too_far,
+      test_params.original_target_char_speed);
+
+  // Should change suggested time scale but to the value of
+  // 0.5*min_time_scale_for_delta_radius_expanding_too_far in DeltaR.cpp
+  //
+  // This complicated formula comes from solving the expression in DeltaR.cpp
+  // for the approx_max_relative_delta_r that will give a timescale of
+  // 0.5 * test_params.damping_time
+  // The 2.01 comes from the excision boundary radius in the grid frame
+  // as specified in test_params above.
+  test_params.approx_max_relative_delta_r =
+      test_params.average_radial_distance.value() /
+      (2.01 *
+       (allowed_violation +
+        (1.0 - allowed_violation) *
+            (0.5 * test_params.damping_time - 0.99 * test_params.damping_time) /
+            (min_time_scale_for_delta_radius_expanding_too_far -
+             0.99 * test_params.damping_time)));
+  do_test<control_system::size::States::DeltaR,
+          control_system::size::States::DeltaR>(
+      test_params, false, 0.5 * test_params.damping_time,
+      test_params.original_target_char_speed);
+  // Restore old values
+  test_params.approx_max_relative_delta_r = std::nullopt;
+  test_params.damping_time = 0.1;
 
   // Should do nothing
   test_params.control_err_delta_r = 1.e-4;
