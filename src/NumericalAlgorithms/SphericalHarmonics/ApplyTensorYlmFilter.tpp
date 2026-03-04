@@ -47,4 +47,15 @@ void modal_to_nodal_ylm(const gsl::not_null<Variables<VarsList>*> nodal,
     }
   });
 }
+
+// Helper for explicit instantiations
+#define YLM_TENSORYLM_INSTANTIATE_MODAL_NODAL_TRANSFORMS(VARS_LIST)    \
+  template void nodal_to_modal_ylm<VARS_LIST>(                         \
+      gsl::not_null<Variables<VARS_LIST>*> modal,                      \
+      const Variables<VARS_LIST>& nodal, const ::ylm::Spherepack& ylm, \
+      size_t radial_extents);                                          \
+  template void modal_to_nodal_ylm<VARS_LIST>(                         \
+      gsl::not_null<Variables<VARS_LIST>*> nodal,                      \
+      const Variables<VARS_LIST>& modal, const ::ylm::Spherepack& ylm, \
+      size_t radial_extents)
 }  // namespace ylm::TensorYlm::filter_detail

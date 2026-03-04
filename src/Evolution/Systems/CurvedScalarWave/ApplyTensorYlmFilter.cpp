@@ -17,7 +17,7 @@
 
 #include "NumericalAlgorithms/SphericalHarmonics/ApplyTensorYlmFilter.tpp"
 
-namespace ylm::TensorYlm {
+namespace CurvedScalarWave {
 
 namespace filter_detail {
 template <typename SrcFrame, typename DestFrame>
@@ -110,8 +110,8 @@ void apply_tensor_ylm_filter(
   // 2. Nodal to modal transformation.
   // src: temp_grid_vars
   // dest: sw_spectral_vars
-  filter_detail::nodal_to_modal_ylm(make_not_null(&sw_spectral_vars),
-                                    temp_grid_vars, ylm, radial_extents);
+  ylm::TensorYlm::filter_detail::nodal_to_modal_ylm(
+      make_not_null(&sw_spectral_vars), temp_grid_vars, ylm, radial_extents);
 
   // 3. Filter
   // src: sw_spectral_vars
@@ -182,8 +182,8 @@ void apply_tensor_ylm_filter(
   // 4. Modal to nodal transformation.
   // src: sw_spectral_vars
   // dest: temp_grid_vars
-  filter_detail::modal_to_nodal_ylm(make_not_null(&temp_grid_vars),
-                                    sw_spectral_vars, ylm, radial_extents);
+  ylm::TensorYlm::filter_detail::modal_to_nodal_ylm(
+      make_not_null(&temp_grid_vars), sw_spectral_vars, ylm, radial_extents);
 
   // 4a. Copy
   // src: temp_grid_vars
@@ -202,27 +202,6 @@ void apply_tensor_ylm_filter(
 // Explicit instantiations
 
 namespace filter_detail {
-
-template void nodal_to_modal_ylm<sw_vars_list<Frame::Grid>>(
-    gsl::not_null<Variables<sw_vars_list<Frame::Grid>>*> modal,
-    const Variables<sw_vars_list<Frame::Grid>>& nodal,
-    const ::ylm::Spherepack& ylm, size_t radial_extents);
-
-template void nodal_to_modal_ylm<sw_vars_list<Frame::Inertial>>(
-    gsl::not_null<Variables<sw_vars_list<Frame::Inertial>>*> modal,
-    const Variables<sw_vars_list<Frame::Inertial>>& nodal,
-    const ::ylm::Spherepack& ylm, size_t radial_extents);
-
-template void modal_to_nodal_ylm<sw_vars_list<Frame::Grid>>(
-    gsl::not_null<Variables<sw_vars_list<Frame::Grid>>*> modal,
-    const Variables<sw_vars_list<Frame::Grid>>& nodal,
-    const ::ylm::Spherepack& ylm, size_t radial_extents);
-
-template void modal_to_nodal_ylm<sw_vars_list<Frame::Inertial>>(
-    gsl::not_null<Variables<sw_vars_list<Frame::Inertial>>*> modal,
-    const Variables<sw_vars_list<Frame::Inertial>>& nodal,
-    const ::ylm::Spherepack& ylm, size_t radial_extents);
-
 template void transform_spatial_tensors_to_different_frame_without_hessians<
     Frame::Grid, Frame::Inertial>(
     gsl::not_null<Variables<sw_vars_list<Frame::Inertial>>*> dest,
@@ -235,4 +214,11 @@ template void transform_spatial_tensors_to_different_frame_without_hessians<
     const Variables<sw_vars_list<Frame::Inertial>>& src,
     const InverseJacobian<DataVector, 3, Frame::Inertial, Frame::Grid>& jac);
 }  // namespace filter_detail
-}  // namespace ylm::TensorYlm
+}  // namespace CurvedScalarWave
+
+namespace ylm::TensorYlm::filter_detail {
+YLM_TENSORYLM_INSTANTIATE_MODAL_NODAL_TRANSFORMS(
+    CurvedScalarWave::filter_detail::sw_vars_list<Frame::Grid>);
+YLM_TENSORYLM_INSTANTIATE_MODAL_NODAL_TRANSFORMS(
+    CurvedScalarWave::filter_detail::sw_vars_list<Frame::Inertial>);
+}  // namespace ylm::TensorYlm::filter_detail

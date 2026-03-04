@@ -18,16 +18,14 @@ class Spherepack;
 }  // namespace ylm
 /// \endcond
 
-namespace ylm::TensorYlm {
+namespace CurvedScalarWave {
 
 /// Defines tags and functions used internally in filtering, but
 /// tested independently in the unit tests.
 namespace filter_detail {
 
 template <typename Frame>
-using sw_vars_list =
-    tmpl::list<::CurvedScalarWave::Tags::Psi, ::CurvedScalarWave::Tags::Pi,
-               ::CurvedScalarWave::Tags::Phi<3, Frame>>;
+using sw_vars_list = tmpl::list<Tags::Psi, Tags::Pi, Tags::Phi<3, Frame>>;
 
 /*!
  * \brief Transforms spatial tensors into a different frame, ignoring hessians.
@@ -104,4 +102,4 @@ void apply_tensor_ylm_filter(
     const SimpleSparseMatrix& filter_matrix_i, size_t ell_max,
     size_t radial_extents);
 
-}  // namespace ylm::TensorYlm
+}  // namespace CurvedScalarWave

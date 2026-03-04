@@ -17,7 +17,7 @@
 
 #include "NumericalAlgorithms/SphericalHarmonics/ApplyTensorYlmFilter.tpp"
 
-namespace ylm::TensorYlm {
+namespace gh {
 
 namespace filter_detail {
 
@@ -245,8 +245,9 @@ void apply_tensor_ylm_filter(
   // 3. Nodal to modal transformation.
   // src: temp_spatial_vars
   // dest: gh_spatial_spectral_vars
-  filter_detail::nodal_to_modal_ylm(make_not_null(&gh_spatial_spectral_vars),
-                                    temp_spatial_vars, ylm, radial_extents);
+  ylm::TensorYlm::filter_detail::nodal_to_modal_ylm(
+      make_not_null(&gh_spatial_spectral_vars), temp_spatial_vars, ylm,
+      radial_extents);
 
   // 4. Filter
   // src: gh_spatial_spectral_vars
@@ -335,9 +336,9 @@ void apply_tensor_ylm_filter(
   // 5. Modal to nodal transformation.
   // src: gh_spatial_spectral_vars
   // dest: temp_spatial_vars
-  filter_detail::modal_to_nodal_ylm(make_not_null(&temp_spatial_vars),
-                                    gh_spatial_spectral_vars, ylm,
-                                    radial_extents);
+  ylm::TensorYlm::filter_detail::modal_to_nodal_ylm(
+      make_not_null(&temp_spatial_vars), gh_spatial_spectral_vars, ylm,
+      radial_extents);
 
   // 6. Multiply by Jacobians to get back into inertial frame.
   // src: temp_spatial_vars
@@ -356,27 +357,6 @@ void apply_tensor_ylm_filter(
 // Explicit instantiations
 
 namespace filter_detail {
-
-template void nodal_to_modal_ylm<gh_spatial_vars_list<Frame::Grid>>(
-    gsl::not_null<Variables<gh_spatial_vars_list<Frame::Grid>>*> modal,
-    const Variables<gh_spatial_vars_list<Frame::Grid>>& nodal,
-    const ::ylm::Spherepack& ylm, size_t radial_extents);
-
-template void modal_to_nodal_ylm<gh_spatial_vars_list<Frame::Grid>>(
-    gsl::not_null<Variables<gh_spatial_vars_list<Frame::Grid>>*> modal,
-    const Variables<gh_spatial_vars_list<Frame::Grid>>& nodal,
-    const ::ylm::Spherepack& ylm, size_t radial_extents);
-
-template void nodal_to_modal_ylm<gh_spacetime_vars_list>(
-    gsl::not_null<Variables<gh_spacetime_vars_list>*> modal,
-    const Variables<gh_spacetime_vars_list>& nodal,
-    const ::ylm::Spherepack& ylm, size_t radial_extents);
-
-template void modal_to_nodal_ylm<gh_spacetime_vars_list>(
-    gsl::not_null<Variables<gh_spacetime_vars_list>*> modal,
-    const Variables<gh_spacetime_vars_list>& nodal,
-    const ::ylm::Spherepack& ylm, size_t radial_extents);
-
 template void transform_spatial_tensors_to_different_frame_without_hessians<
     Frame::Grid, Frame::Inertial>(
     gsl::not_null<Variables<gh_spatial_vars_list<Frame::Inertial>>*> dest,
@@ -389,4 +369,11 @@ template void transform_spatial_tensors_to_different_frame_without_hessians<
     const Variables<gh_spatial_vars_list<Frame::Inertial>>& src,
     const InverseJacobian<DataVector, 3, Frame::Inertial, Frame::Grid>& jac);
 }  // namespace filter_detail
-}  // namespace ylm::TensorYlm
+}  // namespace gh
+
+namespace ylm::TensorYlm::filter_detail {
+YLM_TENSORYLM_INSTANTIATE_MODAL_NODAL_TRANSFORMS(
+    gh::filter_detail::gh_spatial_vars_list<Frame::Grid>);
+YLM_TENSORYLM_INSTANTIATE_MODAL_NODAL_TRANSFORMS(
+    gh::filter_detail::gh_spacetime_vars_list);
+}  // namespace ylm::TensorYlm::filter_detail

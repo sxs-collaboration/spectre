@@ -22,7 +22,7 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 
-namespace ylm::TensorYlm {
+namespace gh {
 namespace {
 void test_break_spacetime_vars_into_spatial_pieces() {
   constexpr size_t mesh_size = 10;
@@ -137,12 +137,12 @@ void test_modal_nodal_invertibility() {
   // i.e. arbitrary nodal values are not necessarily representable as modes.
   Variables<filter_detail::gh_spatial_vars_list<Frame::Grid>> nodal_vars(
       physical_mesh_size);
-  filter_detail::modal_to_nodal_ylm(make_not_null(&nodal_vars), modal_vars, ylm,
-                                    radial_extents);
+  ylm::TensorYlm::filter_detail::modal_to_nodal_ylm(
+      make_not_null(&nodal_vars), modal_vars, ylm, radial_extents);
   Variables<filter_detail::gh_spatial_vars_list<Frame::Grid>> test_modal_vars(
       spectral_mesh_size, 0.0);
-  filter_detail::nodal_to_modal_ylm(make_not_null(&test_modal_vars), nodal_vars,
-                                    ylm, radial_extents);
+  ylm::TensorYlm::filter_detail::nodal_to_modal_ylm(
+      make_not_null(&test_modal_vars), nodal_vars, ylm, radial_extents);
 
   // We should get (modulo roundoff) what we started with.
   tmpl::for_each<filter_detail::gh_spatial_vars_list<Frame::Grid>>(
@@ -173,8 +173,22 @@ SPECTRE_TEST_CASE(
   test_break_spacetime_vars_into_spatial_pieces();
   test_transform_spatial_tensors_to_different_frame();
   test_modal_nodal_invertibility();
-  test_apply_filter<filter_detail::gh_spacetime_vars_list>(0);
-  test_apply_filter<filter_detail::gh_spacetime_vars_list>(5);
+
+  const auto apply_filter = [](const auto vars_nodal, const auto vars_storage,
+                               const auto& jac_inertial_to_grid,
+                               const auto& jac_grid_to_inertial,
+                               const auto& filter_matrices,
+                               const size_t ell_max,
+                               const size_t radial_extents) {
+    apply_tensor_ylm_filter(
+        vars_nodal, vars_storage, jac_inertial_to_grid, jac_grid_to_inertial,
+        filter_matrices.scalar, filter_matrices.i, filter_matrices.ii,
+        filter_matrices.ij, filter_matrices.kii, ell_max, radial_extents);
+  };
+  ylm::TensorYlm::test_apply_filter<filter_detail::gh_spacetime_vars_list,
+                                    true>(0, apply_filter);
+  ylm::TensorYlm::test_apply_filter<filter_detail::gh_spacetime_vars_list,
+                                    true>(5, apply_filter);
 }
 }  // namespace
-}  // namespace ylm::TensorYlm
+}  // namespace gh

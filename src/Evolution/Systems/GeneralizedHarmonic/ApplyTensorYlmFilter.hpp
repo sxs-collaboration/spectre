@@ -19,7 +19,7 @@ class Spherepack;
 }  // namespace ylm
 /// \endcond
 
-namespace ylm::TensorYlm {
+namespace gh {
 
 /// Defines tags and functions used internally in filtering, but
 /// tested independently in the unit tests.
@@ -207,4 +207,4 @@ void apply_tensor_ylm_filter(
     const SimpleSparseMatrix& filter_matrix_ij,
     const SimpleSparseMatrix& filter_matrix_kii, size_t ell_max,
     size_t radial_extents);
-}  // namespace ylm::TensorYlm
+}  // namespace gh
