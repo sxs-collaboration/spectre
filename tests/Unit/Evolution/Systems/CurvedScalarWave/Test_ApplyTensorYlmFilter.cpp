@@ -3,15 +3,49 @@
 
 #include "Framework/TestingFramework.hpp"
 
+#include <memory>
+
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Evolution/Systems/CurvedScalarWave/ApplyTensorYlmFilter.hpp"
+#include "Framework/TestCreation.hpp"
+#include "Framework/TestHelpers.hpp"
 #include "Helpers/NumericalAlgorithms/SphericalHarmonics/Test_ApplyTensorYlmFilter.hpp"
+#include "NumericalAlgorithms/LinearOperators/Filter.hpp"
+#include "Options/Protocols/FactoryCreation.hpp"
+#include "Utilities/ProtocolHelpers.hpp"
+#include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
+#include "Utilities/TMPL.hpp"
 
 namespace CurvedScalarWave {
+namespace {
+struct Metavariables {
+  struct factory_creation
+      : tt::ConformsTo<Options::protocols::FactoryCreation> {
+    using factory_classes =
+        tmpl::map<tmpl::pair<Filters::Filter, tmpl::list<TensorYlmFilter>>>;
+  };
+};
+}  // namespace
 
 SPECTRE_TEST_CASE(
     "Unit.Evolution.Systems.CurvedScalarWave.ApplyTensorYlmFilter",
     "[NumericalAlgorithms][Unit]") {
+  register_factory_classes_with_charm<Metavariables>();
+
+  const auto created_filter = TestHelpers::test_creation<
+      std::unique_ptr<Filters::Filter>, Metavariables>(
+      "TensorYlmFilter:\n"
+      "  NumModesToKill: 2\n"
+      "  HalfPower: 5");
+  const auto& concrete_filter =
+      dynamic_cast<const TensorYlmFilter&>(*created_filter);
+  CHECK(concrete_filter == TensorYlmFilter{2, 5});
+  CHECK(concrete_filter.blocks_to_filter() == std::nullopt);
+
+  const auto deserialized_filter = serialize_and_deserialize(created_filter);
+  CHECK(dynamic_cast<const TensorYlmFilter&>(*deserialized_filter) ==
+        concrete_filter);
+
   const auto apply_filter =
       [](const auto vars_nodal, const auto vars_storage,
          const auto& jac_inertial_to_grid, const auto& jac_grid_to_inertial,

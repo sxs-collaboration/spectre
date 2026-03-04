@@ -29,6 +29,7 @@
 #include "Evolution/Initialization/Evolution.hpp"
 #include "Evolution/Initialization/NonconservativeSystem.hpp"
 #include "Evolution/Initialization/SetVariables.hpp"
+#include "Evolution/Systems/CurvedScalarWave/ApplyTensorYlmFilter.hpp"
 #include "Evolution/Systems/CurvedScalarWave/BackgroundSpacetime.hpp"
 #include "Evolution/Systems/CurvedScalarWave/BoundaryConditions/Factory.hpp"
 #include "Evolution/Systems/CurvedScalarWave/BoundaryConditions/Worldtube.hpp"
@@ -227,7 +228,8 @@ struct EvolutionMetavars {
         tmpl::pair<MathFunction<1, Frame::Inertial>,
                    MathFunctions::all_math_functions<1, Frame::Inertial>>,
         tmpl::pair<Filters::Filter,
-                   tmpl::list<Filters::Exponential<volume_dim>>>,
+                   tmpl::list<Filters::Exponential<volume_dim>,
+                              CurvedScalarWave::TensorYlmFilter>>,
         tmpl::pair<PhaseChange,
                    tmpl::list<PhaseControl::VisitAndReturn<
                                   Parallel::Phase::LoadBalancing>,
