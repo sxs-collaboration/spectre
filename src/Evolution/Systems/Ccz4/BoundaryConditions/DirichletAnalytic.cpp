@@ -9,7 +9,7 @@
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
-#include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/Factory.hpp"
+#include "Evolution/Systems/Ccz4/Solutions/Factory.hpp"
 #include "Utilities/CallWithDynamicType.hpp"
 
 namespace Ccz4::BoundaryConditions {

@@ -45,7 +45,7 @@
 #include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Options/Protocols/FactoryCreation.hpp"
-#include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/Factory.hpp"
+#include "Evolution/Systems/Ccz4/Solutions/Factory.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/Minkowski.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
 #include "Time/Tags/Time.hpp"

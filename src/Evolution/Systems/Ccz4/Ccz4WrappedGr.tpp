@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/Ccz4WrappedGr.hpp"
+#include "Evolution/Systems/Ccz4/Ccz4WrappedGr.hpp"
 
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/DataVector.hpp"

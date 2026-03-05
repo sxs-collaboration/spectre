@@ -8,7 +8,6 @@ add_spectre_library(${LIBRARY})
 spectre_target_sources(
   ${LIBRARY}
   PRIVATE
-  Ccz4WrappedGr.cpp
   GaugeWave.cpp
   GaugePlaneWave.cpp
   HarmonicSchwarzschild.cpp
@@ -23,8 +22,6 @@ spectre_target_headers(
   ${LIBRARY}
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
-  Ccz4WrappedGr.hpp
-  Ccz4WrappedGr.tpp
   Factory.hpp
   GaugeWave.hpp
   GaugePlaneWave.hpp
@@ -42,7 +39,6 @@ target_link_libraries(
   ${LIBRARY}
   PUBLIC
   Boost::boost
-  Ccz4
   DataStructures
   ErrorHandling
   GeneralRelativity

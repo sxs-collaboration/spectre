@@ -17,7 +17,7 @@
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
-#include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/Ccz4WrappedGr.hpp"
+#include "Evolution/Systems/Ccz4/Ccz4WrappedGr.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/GaugePlaneWave.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/GaugeWave.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/Minkowski.hpp"
@@ -223,8 +223,8 @@ void test_gauge_plane_wave() {
 }  // namespace
 
 // [[TimeOut, 40]]
-SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticSolutions.Gr.Ccz4WrappedGr",
-                  "[PointwiseFunctions][Unit]") {
+SPECTRE_TEST_CASE("Unit.Evolution.Systems.Ccz4.Ccz4WrappedGr",
+                  "[Evolution][Unit]") {
   const double amplitude = 0.24;
   const double wavelength = 4.4;
   const gr::Solutions::GaugeWave<3> gauge_wave_solution{amplitude, wavelength};

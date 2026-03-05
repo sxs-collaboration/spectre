@@ -44,7 +44,6 @@ target_link_libraries(
   DgSubcell
   FiniteDifference
   GeneralRelativity
-  GeneralRelativitySolutions
   Options
   Spectral
   Utilities
