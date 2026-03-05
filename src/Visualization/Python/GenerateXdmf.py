@@ -31,6 +31,8 @@ def _list_tensor_components(observation):
     components.remove("connectivity")
     if "pole_connectivity" in components:
         components.remove("pole_connectivity")
+    if "disk_connectivity" in components:
+        components.remove("disk_connectivity")
     if "tetrahedral_connectivity" in components:
         components.remove("tetrahedral_connectivity")
     components.remove("total_extents")
@@ -164,6 +166,7 @@ def _xmf_grid(
     temporal_id: str,
     coordinates: str,
     filling_poles: bool = False,
+    filling_disk_center: bool = False,
     use_tetrahedral_connectivity: bool = False,
 ) -> ET.Element:
     # Make sure the coordinates are found in the file. We assume there should
@@ -221,20 +224,27 @@ def _xmf_grid(
                 grid_path=grid_path,
             )
     else:
-        # Cover volume
-        if use_tetrahedral_connectivity:
-            topology_type = {3: "Tetrahedron", 2: "Triangle"}[topo_dim]
-            connectivity_name = "tetrahedral_connectivity"
+        if filling_disk_center:
+            xmf_topology = _xmf_topology(
+                observation,
+                topology_type="Triangle",
+                connectivity_name="disk_connectivity",
+                grid_path=grid_path,
+            )
         else:
-            topology_type = {3: "Hexahedron", 2: "Quadrilateral"}[topo_dim]
-            connectivity_name = "connectivity"
-
-        xmf_topology = _xmf_topology(
-            observation,
-            topology_type=topology_type,
-            connectivity_name=connectivity_name,
-            grid_path=grid_path,
-        )
+            # Cover volume
+            if use_tetrahedral_connectivity:
+                topology_type = {3: "Tetrahedron", 2: "Triangle"}[topo_dim]
+                connectivity_name = "tetrahedral_connectivity"
+            else:
+                topology_type = {3: "Hexahedron", 2: "Quadrilateral"}[topo_dim]
+                connectivity_name = "connectivity"
+            xmf_topology = _xmf_topology(
+                observation,
+                topology_type=topology_type,
+                connectivity_name=connectivity_name,
+                grid_path=grid_path,
+            )
     xmf_grid.append(xmf_topology)
 
     # Write geometry
@@ -479,6 +489,22 @@ def generate_xdmf(
                         temporal_id=temporal_id,
                         coordinates=coordinates,
                         filling_poles=True,
+                        use_tetrahedral_connectivity=(
+                            use_tetrahedral_connectivity
+                        ),
+                    )
+                )
+            # Fill disk center if disk_connectivity is present
+            if "disk_connectivity" in observation:
+                xmf_timestep_grid.append(
+                    _xmf_grid(
+                        observation,
+                        topo_dim=topo_dim,
+                        filename=filename_in_output,
+                        subfile_name=subfile_name,
+                        temporal_id=temporal_id,
+                        coordinates=coordinates,
+                        filling_disk_center=True,
                         use_tetrahedral_connectivity=(
                             use_tetrahedral_connectivity
                         ),
