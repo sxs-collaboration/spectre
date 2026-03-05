@@ -136,7 +136,7 @@ void test_rotation_map_options() {
     }
 
     TestHelpers::domain::creators::write_volume_data(filename, subfile_name,
-                                                     functions_of_time);
+                                                     0.3, functions_of_time);
 
     const auto rotation_map_options =
         TestHelpers::test_option_tag<RotationMapOptions<false>>(
@@ -173,7 +173,7 @@ void test_rotation_map_options() {
             0.0, 100.0);
 
     TestHelpers::domain::creators::write_volume_data(filename, subfile_name,
-                                                     functions_of_time);
+                                                     0.3, functions_of_time);
 
     const auto rotation_map_options =
         TestHelpers::test_option_tag<RotationMapOptions<true>>(

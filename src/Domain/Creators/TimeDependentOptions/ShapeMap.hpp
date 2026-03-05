@@ -223,7 +223,7 @@ struct FromVolumeFileShapeSize : public FromVolumeFile {
                           std::string h5_filename, std::string subfile_name,
                           const Options::Context& context = {});
 
-  size_t l_max{};
+  std::optional<size_t> l_max{};
   double coefficient_truncation_limit{0.0};
   bool transition_ends_at_cube{};
 
@@ -303,12 +303,15 @@ struct ShapeMapOptions {
                   std::optional<std::array<double, 3>> initial_size_values_in =
                       std::nullopt,
                   double coefficient_truncation_limit_in = 0.0,
-                  bool transition_ends_at_cube_in = false)
-      : l_max(l_max_in),
-        initial_values(std::move(initial_values_in)),
-        initial_size_values(initial_size_values_in),
-        coefficient_truncation_limit(coefficient_truncation_limit_in),
-        transition_ends_at_cube(transition_ends_at_cube_in) {}
+                  const Options::Context& context = {});
+  ShapeMapOptions(size_t l_max_in,
+                  std::optional<std::variant<KerrSchildFromBoyerLindquist,
+                                             YlmsFromFile, YlmsFromSpEC>>
+                      initial_values_in,
+                  std::optional<std::array<double, 3>> initial_size_values_in,
+                  double coefficient_truncation_limit_in,
+                  bool transition_ends_at_cube_in,
+                  const Options::Context& context = {});
 
   size_t l_max{};
   std::optional<
@@ -318,15 +321,6 @@ struct ShapeMapOptions {
   double coefficient_truncation_limit{0.0};
   bool transition_ends_at_cube{false};
 };
-
-/*!
- * \brief Helper function to get LMax from the different variants that the shape
- * map options could be.
- */
-template <bool IncludeTransitionEndsAtCube, domain::ObjectLabel Object>
-size_t l_max_from_shape_options(
-    const std::variant<ShapeMapOptions<IncludeTransitionEndsAtCube, Object>,
-                       FromVolumeFileShapeSize<Object>>& shape_map_options);
 
 /*!
  * \brief Helper function to get the coefficient truncation limit from the

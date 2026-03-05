@@ -685,7 +685,7 @@ void test_errors() {
           time_dependent_options::ShapeMapOptions<
               not IsCylindrical, domain::ObjectLabel::B>{8, {}},
           std::nullopt}),
-      Catch::Matchers::ContainsSubstring("Initial LMax for object"));
+      Catch::Matchers::ContainsSubstring("Initial LMax must be 2 or greater"));
   CHECK_THROWS_WITH(
       (TimeDependentMapOptions<IsCylindrical>{
           1.0, std::nullopt, std::nullopt, std::nullopt, std::nullopt,
@@ -694,7 +694,7 @@ void test_errors() {
           time_dependent_options::ShapeMapOptions<
               not IsCylindrical, domain::ObjectLabel::B>{0, {}},
           std::nullopt}),
-      Catch::Matchers::ContainsSubstring("Initial LMax for object"));
+      Catch::Matchers::ContainsSubstring("Initial LMax must be 2 or greater"));
   CHECK_THROWS_WITH(
       (TimeDependentMapOptions<IsCylindrical>{
           1.0, std::nullopt, std::nullopt, std::nullopt, std::nullopt,

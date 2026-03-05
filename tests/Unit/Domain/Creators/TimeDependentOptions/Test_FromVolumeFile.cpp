@@ -48,10 +48,10 @@ void test(const std::string& function_of_time_name) {
                      DataVector{3, 0.0}},
           100.0);
 
-  TestHelpers::domain::creators::write_volume_data(filename, subfile_name,
-                                                   functions_of_time);
-
   const double time = 50.0;
+
+  TestHelpers::domain::creators::write_volume_data(filename, subfile_name, time,
+                                                   functions_of_time);
 
   const auto from_volume_file = TestHelpers::test_creation<
       domain::creators::time_dependent_options::FromVolumeFile>(
@@ -105,7 +105,7 @@ void test_errors() {
 
   // Need new subfile to write to
   subfile_name += "0";
-  TestHelpers::domain::creators::write_volume_data(filename, subfile_name);
+  TestHelpers::domain::creators::write_volume_data(filename, subfile_name, 0.0);
 
   from_volume_file = TestHelpers::test_creation<FromVolumeFile>(
       "H5Filename: " + filename + "\nSubfileName: " + subfile_name);
@@ -113,7 +113,7 @@ void test_errors() {
   CHECK_THROWS_WITH(
       (from_volume_file.retrieve_function_of_time({"Expansion"}, 0.0)),
       Catch::Matchers::ContainsSubstring(
-          "Expansion: There are no functions of time in the subfile "));
+          "There are no functions of time in the subfile "));
 
   subfile_name += "0";
   from_volume_file = TestHelpers::test_creation<FromVolumeFile>(
@@ -128,9 +128,12 @@ void test_errors() {
                      DataVector{3, 0.0}},
           100.0);
 
-  TestHelpers::domain::creators::write_volume_data(filename, subfile_name,
+  TestHelpers::domain::creators::write_volume_data(filename, subfile_name, 0.0,
                                                    functions_of_time);
 
+  CHECK_THROWS_WITH(
+      (from_volume_file.retrieve_function_of_time({"Expansion"}, 1.0)),
+      Catch::Matchers::ContainsSubstring("No observation with value "));
   CHECK_THROWS_WITH(
       (from_volume_file.retrieve_function_of_time({"Expansion"}, 0.0)),
       Catch::Matchers::ContainsSubstring(
@@ -147,7 +150,7 @@ void test_errors() {
                      DataVector{3, 0.0}},
           1.0);
 
-  TestHelpers::domain::creators::write_volume_data(filename, subfile_name,
+  TestHelpers::domain::creators::write_volume_data(filename, subfile_name, 10.0,
                                                    functions_of_time);
 
   CHECK_THROWS_WITH(
@@ -155,11 +158,6 @@ void test_errors() {
       Catch::Matchers::ContainsSubstring("Expansion: The requested time") and
           Catch::Matchers::ContainsSubstring(
               "is out of the range of the function of time"));
-
-  // Check that this is ok to call
-  const auto function_of_time =
-      from_volume_file.retrieve_function_of_time({"Expansion"}, std::nullopt);
-  (void)function_of_time;
 
   if (file_system::check_if_file_exists(filename)) {
     file_system::rm(filename, true);

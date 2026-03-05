@@ -163,7 +163,7 @@ void test_expansion_map_options() {
     }
 
     TestHelpers::domain::creators::write_volume_data(filename, subfile_name,
-                                                     functions_of_time);
+                                                     0.3, functions_of_time);
 
     const auto expansion_map_options =
         TestHelpers::test_option_tag<ExpansionMapOptions<false>>(
@@ -217,7 +217,7 @@ void test_expansion_map_options() {
             100.0);
 
     TestHelpers::domain::creators::write_volume_data(filename, subfile_name,
-                                                     functions_of_time);
+                                                     0.3, functions_of_time);
 
     const auto expansion_map_options =
         TestHelpers::test_option_tag<ExpansionMapOptions<true>>(

@@ -23,6 +23,7 @@
 namespace TestHelpers::domain::creators {
 void write_volume_data(
     const std::string& filename, const std::string& subfile_name,
+    const double time,
     const std::unordered_map<
         std::string,
         std::unique_ptr<::domain::FunctionsOfTime::FunctionOfTime>>&
@@ -35,7 +36,7 @@ void write_volume_data(
                                 : std::optional{serialize(functions_of_time)};
   // We don't care about the volume data here, just the functions of time
   vol_file.write_volume_data(
-      0, 0.0,
+      0, time,
       {ElementVolumeData{"blah",
                          {TensorComponent{"RandomTensor", DataVector{3, 0.0}}},
                          {3},

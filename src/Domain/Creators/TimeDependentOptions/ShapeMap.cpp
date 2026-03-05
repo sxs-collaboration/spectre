@@ -69,26 +69,16 @@ FromVolumeFileShapeSize<Object>::FromVolumeFileShapeSize(
     const bool transition_ends_at_cube_in, std::string h5_filename,
     std::string subfile_name, const Options::Context& context)
     : FromVolumeFile(std::move(h5_filename), std::move(subfile_name)),
+      l_max(l_max_in),
       transition_ends_at_cube(transition_ends_at_cube_in) {
   if (this->replay() and l_max_in.has_value()) {
     PARSE_ERROR(context,
                 "Cannot supply LMax for shape map while also replaying.");
   }
 
-  if (l_max_in.has_value()) {
-    l_max = l_max_in.value();
-  } else {
-    const auto shape_fot_map = this->retrieve_function_of_time(
-        {std::string{"Shape" + name(Object)}}, std::nullopt);
-    const auto& shape_fot = shape_fot_map.at("Shape" + name(Object));
-
-    const double initial_time = shape_fot->time_bounds()[0];
-    const auto function = shape_fot->func(initial_time);
-
-    // num_components = 2 * (l_max + 1)**2 if l_max == m_max which it is for the
-    // shape map. This is why we can divide by 2 and take the sqrt without
-    // worrying about odd numbers or non-perfect squares
-    l_max = -1 + sqrt(function[0].size() / 2);  // NOLINT
+  if (l_max.has_value() and *l_max <= 1) {
+    PARSE_ERROR(context, "Initial LMax must be 2 or greater but is "
+                             << *l_max << " instead.");
   }
 
   if (coefficient_truncation_limit_in < 0.0) {
@@ -100,11 +90,36 @@ FromVolumeFileShapeSize<Object>::FromVolumeFileShapeSize(
 }
 
 template <bool IncludeTransitionEndsAtCube, domain::ObjectLabel Object>
-size_t l_max_from_shape_options(
-    const std::variant<ShapeMapOptions<IncludeTransitionEndsAtCube, Object>,
-                       FromVolumeFileShapeSize<Object>>& shape_map_options) {
-  return std::visit([](auto variant) { return variant.l_max; },
-                    shape_map_options);
+ShapeMapOptions<IncludeTransitionEndsAtCube, Object>::ShapeMapOptions(
+    const size_t l_max_in,
+    std::optional<
+        std::variant<KerrSchildFromBoyerLindquist, YlmsFromFile, YlmsFromSpEC>>
+        initial_values_in,
+    std::optional<std::array<double, 3>> initial_size_values_in,
+    const double coefficient_truncation_limit_in,
+    const Options::Context& context)
+    : ShapeMapOptions(l_max_in, std::move(initial_values_in),
+                      std::move(initial_size_values_in),
+                      coefficient_truncation_limit_in, false, context) {}
+
+template <bool IncludeTransitionEndsAtCube, domain::ObjectLabel Object>
+ShapeMapOptions<IncludeTransitionEndsAtCube, Object>::ShapeMapOptions(
+    const size_t l_max_in,
+    std::optional<
+        std::variant<KerrSchildFromBoyerLindquist, YlmsFromFile, YlmsFromSpEC>>
+        initial_values_in,
+    std::optional<std::array<double, 3>> initial_size_values_in,
+    const double coefficient_truncation_limit_in,
+    const bool transition_ends_at_cube_in, const Options::Context& context)
+    : l_max(l_max_in),
+      initial_values(std::move(initial_values_in)),
+      initial_size_values(initial_size_values_in),
+      coefficient_truncation_limit(coefficient_truncation_limit_in),
+      transition_ends_at_cube(transition_ends_at_cube_in) {
+  if (l_max <= 1) {
+    PARSE_ERROR(context, "Initial LMax must be 2 or greater but is "
+                             << l_max << " instead.");
+  }
 }
 
 template <bool IncludeTransitionEndsAtCube, domain::ObjectLabel Object>
@@ -131,9 +146,6 @@ FunctionsOfTimeMap get_shape_and_size(
                        FromVolumeFileShapeSize<Object>>& shape_map_options,
     const double initial_time, const double shape_expiration_time,
     const double size_expiration_time, const double deformed_radius) {
-  const size_t l_max = l_max_from_shape_options(shape_map_options);
-  const DataVector shape_zeros{ylm::Spherepack::spectral_size(l_max, l_max),
-                               0.0};
   const std::string shape_name = "Shape" + name(Object);
   const std::string size_name = "Size" + name(Object);
 
@@ -168,26 +180,32 @@ FunctionsOfTimeMap get_shape_and_size(
       auto temporary_shape_fot =
           volume_fots.at(shape_name)
               ->create_at_time(initial_time, shape_expiration_time);
-      const auto shape_funcs =
-          temporary_shape_fot->func_and_2_derivs(initial_time);
+      if (from_vol_file.l_max.has_value()) {
+        const size_t l_max = *from_vol_file.l_max;
+        const auto shape_funcs =
+            temporary_shape_fot->func_and_2_derivs(initial_time);
 
-      const size_t file_l_max = -1 + sqrt(shape_funcs[0].size() / 2);  // NOLINT
+        const size_t file_l_max =
+            -1 + sqrt(shape_funcs[0].size() / 2);  // NOLINT
 
-      // Prolong or restrict if necessary, otherwise just use the exact function
-      // of time from the volume file
-      if (file_l_max != l_max) {
-        std::array<DataVector, 3> new_shape_funcs{};
-        const ylm::Spherepack file_spherepack{file_l_max, file_l_max};
-        const ylm::Spherepack new_spherepack{l_max, l_max};
-        for (size_t i = 0; i < shape_funcs.size(); i++) {
-          gsl::at(new_shape_funcs, i) = file_spherepack.prolong_or_restrict(
-              gsl::at(shape_funcs, i), new_spherepack);
+        // Prolong or restrict if necessary, otherwise just use the
+        // exact function of time from the volume file
+        if (file_l_max != l_max) {
+          std::array<DataVector, 3> new_shape_funcs{};
+          const ylm::Spherepack file_spherepack{file_l_max, file_l_max};
+          const ylm::Spherepack new_spherepack{l_max, l_max};
+          for (size_t i = 0; i < shape_funcs.size(); i++) {
+            gsl::at(new_shape_funcs, i) = file_spherepack.prolong_or_restrict(
+                gsl::at(shape_funcs, i), new_spherepack);
+          }
+
+          result[shape_name] =
+              std::make_unique<domain::FunctionsOfTime::PiecewisePolynomial<2>>(
+                  initial_time, std::move(new_shape_funcs),
+                  shape_expiration_time);
+        } else {
+          result[shape_name] = std::move(temporary_shape_fot);
         }
-
-        result[shape_name] =
-            std::make_unique<domain::FunctionsOfTime::PiecewisePolynomial<2>>(
-                initial_time, std::move(new_shape_funcs),
-                shape_expiration_time);
       } else {
         result[shape_name] = std::move(temporary_shape_fot);
       }
@@ -212,6 +230,10 @@ FunctionsOfTimeMap get_shape_and_size(
   const auto& hard_coded_options =
       std::get<ShapeMapOptions<IncludeTransitionEndsAtCube, Object>>(
           shape_map_options);
+
+  const size_t l_max = hard_coded_options.l_max;
+  const DataVector shape_zeros{ylm::Spherepack::spectral_size(l_max, l_max),
+                               0.0};
 
   std::array<DataVector, 3> shape_funcs =
       make_array<3, DataVector>(shape_zeros);
@@ -405,29 +427,26 @@ FunctionsOfTimeMap get_shape_and_size(
 #define OBJECT(data) BOOST_PP_TUPLE_ELEM(0, data)
 #define INCLUDETRANSITION(data) BOOST_PP_TUPLE_ELEM(1, data)
 
-#define INSTANTIATE(_, data)                                          \
-  template size_t l_max_from_shape_options(                           \
-      const std::variant<                                             \
-          ShapeMapOptions<INCLUDETRANSITION(data), OBJECT(data)>,     \
-          FromVolumeFileShapeSize<OBJECT(data)>>& shape_map_options); \
-  template double coefficient_truncation_limit_from_shape_options(    \
-      const std::variant<                                             \
-          ShapeMapOptions<INCLUDETRANSITION(data), OBJECT(data)>,     \
-          FromVolumeFileShapeSize<OBJECT(data)>>& shape_map_options); \
-  template bool transition_ends_at_cube_from_shape_options(           \
-      const std::variant<                                             \
-          ShapeMapOptions<INCLUDETRANSITION(data), OBJECT(data)>,     \
-          FromVolumeFileShapeSize<OBJECT(data)>>& shape_map_options); \
-  template FunctionsOfTimeMap get_shape_and_size(                     \
-      const std::variant<                                             \
-          ShapeMapOptions<INCLUDETRANSITION(data), OBJECT(data)>,     \
-          FromVolumeFileShapeSize<OBJECT(data)>>& shape_map_options,  \
-      double initial_time, double shape_expiration_time,              \
+#define INSTANTIATE(_, data)                                              \
+  template struct ShapeMapOptions<INCLUDETRANSITION(data), OBJECT(data)>; \
+  template double coefficient_truncation_limit_from_shape_options(        \
+      const std::variant<                                                 \
+          ShapeMapOptions<INCLUDETRANSITION(data), OBJECT(data)>,         \
+          FromVolumeFileShapeSize<OBJECT(data)>>& shape_map_options);     \
+  template bool transition_ends_at_cube_from_shape_options(               \
+      const std::variant<                                                 \
+          ShapeMapOptions<INCLUDETRANSITION(data), OBJECT(data)>,         \
+          FromVolumeFileShapeSize<OBJECT(data)>>& shape_map_options);     \
+  template FunctionsOfTimeMap get_shape_and_size(                         \
+      const std::variant<                                                 \
+          ShapeMapOptions<INCLUDETRANSITION(data), OBJECT(data)>,         \
+          FromVolumeFileShapeSize<OBJECT(data)>>& shape_map_options,      \
+      double initial_time, double shape_expiration_time,                  \
       double size_expiration_time, double deformed_radius);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE,
                         (domain::ObjectLabel::A, domain::ObjectLabel::B,
-                         domain::ObjectLabel::None),
+                         domain::ObjectLabel::C, domain::ObjectLabel::None),
                         (true, false))
 
 #undef INCLUDETRANSITION
