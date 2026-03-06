@@ -47,7 +47,7 @@ SubcellOptions::SubcellOptions(
       min_clear_tci_before_dg_(min_clear_tci_before_dg),
       fd_to_fd_interp_order_(fd_to_fd_interp_order) {
   if (not only_dg_block_and_group_names_.has_value()) {
-    only_dg_block_ids_ = std::set<size_t>{};
+    only_dg_block_ids_ = std::vector<size_t>{};
   }
   ASSERT(number_of_steps_between_tci_calls_ > 0,
          "number_of_steps_between_tci_calls_ must be greater than zero.");

@@ -114,7 +114,7 @@ struct EvaluateRefinementCriteria {
     // changed if needed.
     const auto& amr_blocks = db::get<amr::Tags::AmrBlocks<volume_dim>>(box);
     if (not amr_blocks.has_value() or
-        amr_blocks->contains(element_id.block_id())) {
+        alg::found(amr_blocks.value(), element_id.block_id())) {
       using compute_tags =
           tmpl::remove_duplicates<tmpl::flatten<tmpl::transform<
               tmpl::at<

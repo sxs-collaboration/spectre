@@ -43,6 +43,7 @@
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Parallel/AlgorithmExecution.hpp"
 #include "Parallel/GlobalCache.hpp"
+#include "Utilities/Algorithm.hpp"
 #include "Utilities/CallWithDynamicType.hpp"
 #include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
@@ -167,12 +168,13 @@ struct SetSubcellGrid {
         [&subcell_options](const auto& direction_and_neighbor) {
           const size_t first_block_id =
               direction_and_neighbor.second.ids().begin()->block_id();
-          return subcell_options.only_dg_block_ids().contains(first_block_id);
+          return alg::found(subcell_options.only_dg_block_ids(),
+                            first_block_id);
         });
 
     const bool subcell_allowed_in_element =
-        not subcell_options.only_dg_block_ids().contains(
-            element.id().block_id()) and
+        not alg::found(subcell_options.only_dg_block_ids(),
+                       element.id().block_id()) and
         not bordering_dg_block;
     const bool cell_is_not_on_external_boundary =
         db::get<::domain::Tags::Element<Dim>>(box)

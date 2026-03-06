@@ -152,7 +152,7 @@ struct BoyerLindquistRadius : db::SimpleTag {
  * \brief Blocks in which we use null slicing (vtu-slicing).
  */
 struct NullSlicingBlocks : db::SimpleTag {
-  using type = std::set<size_t>;
+  using type = std::vector<size_t>;
   using option_tags = tmpl::list<OptionTags::NullSlicingBlocks,
                                  domain::OptionTags::DomainCreator<2>>;
   static constexpr bool pass_metavariables = false;

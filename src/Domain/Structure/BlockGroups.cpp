@@ -9,6 +9,7 @@
 #include <unordered_set>
 #include <vector>
 
+#include "Utilities/Algorithm.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/StdHelpers.hpp"
 
@@ -58,20 +59,24 @@ std::unordered_set<std::string> expand_block_groups_to_block_names(
   return expanded_block_names;
 }
 
-std::set<size_t> block_ids_from_names(
+std::vector<size_t> block_ids_from_names(
     const std::vector<std::string>& block_or_group_names,
     const std::vector<std::string>& all_block_names,
     const std::unordered_map<std::string, std::unordered_set<std::string>>&
         block_groups) {
-  std::set<size_t> result{};
+  const auto block_names = expand_block_groups_to_block_names(
+      block_or_group_names, all_block_names, block_groups);
+  std::vector<size_t> result{};
+  result.reserve(block_names.size());
   // Get the block ID of each block name
-  for (const auto& block_name : expand_block_groups_to_block_names(
-           block_or_group_names, all_block_names, block_groups)) {
-    result.insert(static_cast<size_t>(
+  for (const auto& block_name : block_names) {
+    result.push_back(static_cast<size_t>(
         std::distance(all_block_names.begin(),
                       std::find(all_block_names.begin(), all_block_names.end(),
                                 block_name))));
   }
+  // Sort the block IDs just so they're easier to deal with.
+  alg::sort(result);
   return result;
 }
 

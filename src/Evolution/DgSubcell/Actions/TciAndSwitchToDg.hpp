@@ -39,6 +39,7 @@
 #include "Parallel/AlgorithmExecution.hpp"
 #include "Time/History.hpp"
 #include "Time/TimeStepId.hpp"
+#include "Utilities/Algorithm.hpp"
 #include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/Gsl.hpp"
@@ -173,8 +174,9 @@ struct TciAndSwitchToDg {
 
     // This should never be run if we are prohibited from using subcell on this
     // element.
-    ASSERT(not subcell_options.only_dg_block_ids().contains(
-               db::get<domain::Tags::Element<Dim>>(box).id().block_id()),
+    ASSERT(not alg::found(
+               subcell_options.only_dg_block_ids(),
+               db::get<::domain::Tags::Element<Dim>>(box).id().block_id()),
            "Should never use subcell on element "
                << db::get<domain::Tags::Element<Dim>>(box).id());
 

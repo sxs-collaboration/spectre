@@ -89,7 +89,8 @@ struct SetInterpolators {
       const ElementMap<Dim, Frame::Grid>& element_map,
       const ReconstructorType& reconstructor,
       const evolution::dg::subcell::SubcellOptions& subcell_options) {
-    if (subcell_options.only_dg_block_ids().contains(element.id().block_id())) {
+    if (alg::found(subcell_options.only_dg_block_ids(),
+                   element.id().block_id())) {
       return;
     }
     const bool enable_extension_directions =

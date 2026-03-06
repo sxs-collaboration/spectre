@@ -41,10 +41,11 @@ struct ZeroMhdTimeDerivatives {
         [&subcell_options](const auto& direction_and_neighbor) {
           const size_t first_block_id =
               direction_and_neighbor.second.ids().begin()->block_id();
-          return subcell_options.only_dg_block_ids().contains(first_block_id);
+          return alg::found(subcell_options.only_dg_block_ids(),
+                            first_block_id);
         });
-    const bool in_dg_only_zone =
-        subcell_options.only_dg_block_ids().contains(element.id().block_id());
+    const bool in_dg_only_zone = alg::found(subcell_options.only_dg_block_ids(),
+                                            element.id().block_id());
     if (bordering_dg_block and not in_dg_only_zone) {
       tmpl::for_each<
           typename grmhd::ValenciaDivClean::System::variables_tag::tags_list>(
