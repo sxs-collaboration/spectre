@@ -134,6 +134,13 @@ block_logical_coordinates_single_point(
       if (abs(logical_point->get(d)) > 1.0) {
         return std::nullopt;
       }
+      // Also snap the center of the block to exactly 0.0 in case it is slightly
+      // off due to roundoff error. This is important for the case of a point
+      // that is exactly at the center of a block, e.g. for deterministic
+      // interpolation.
+      if (equal_within_roundoff(logical_point->get(d), 0.)) {
+        logical_point->get(d) = 0.;
+      }
     }
   }
 
