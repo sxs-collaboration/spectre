@@ -44,6 +44,9 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Ccz4.FiniteDifference.Derivatives",
   for (size_t i = 0; i < 3; ++i) {
     cell_centered_logical_to_inertial_inv_jacobian.get(i, i) = 1.0;
   }
+  const InverseHessian<DataVector, 3, Frame::ElementLogical, Frame::Inertial>
+      cell_centered_logical_to_inertial_inv_hessian{
+          subcell_mesh.number_of_grid_points(), 0.0};
 
   const Element<3> element = TestHelpers::Ccz4::fd::detail::set_element();
 
@@ -266,7 +269,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Ccz4.FiniteDifference.Derivatives",
   ::Ccz4::fd::second_spacetime_derivatives(
       make_not_null(&second_deriv_of_Ccz4_vars), volume_evolved_vars,
       all_ghost_data, fd_deriv_order, subcell_mesh,
-      cell_centered_logical_to_inertial_inv_jacobian);
+      cell_centered_logical_to_inertial_inv_jacobian,
+      cell_centered_logical_to_inertial_inv_hessian);
 
   Variables<db::wrap_tags_in<::Tags::second_deriv,
                              typename Ccz4::fd::System::gradients_tags,
@@ -397,6 +401,9 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Ccz4.FiniteDifference.Derivatives",
   for (size_t i = 0; i < 3; ++i) {
     for (size_t j = 0; j < 3; ++j) {
       expected_second_d_lapse.get(i, j) = i == j ? 2 : 0.0;
+      if ((i == 0 and j == 2) or (i == 2 and j == 0)) {
+        expected_second_d_lapse.get(i, j) += 1.0;
+      }
     }
   }
 
@@ -467,7 +474,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Ccz4.FiniteDifference.Derivatives",
         Ccz4::fd::second_spacetime_derivatives(
             make_not_null(&second_deriv_of_Ccz4_vars), volume_evolved_vars,
             bad_ghost_data, fd_deriv_order, subcell_mesh,
-            cell_centered_logical_to_inertial_inv_jacobian),
+            cell_centered_logical_to_inertial_inv_jacobian,
+            cell_centered_logical_to_inertial_inv_hessian),
         Catch::Matchers::ContainsSubstring(match_string));
   }
 #endif  // SPECTRE_DEBUG

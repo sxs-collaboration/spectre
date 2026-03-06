@@ -105,11 +105,18 @@ void test_minkowski(const bool evolve_lapse_and_shift) {
                   Frame::Inertial>
       cell_centered_logical_to_inertial_inv_jacobian{
           subcell_mesh.number_of_grid_points(), 0.0};
-
   for (size_t i = 0; i < SpatialDim; ++i) {
     cell_centered_logical_to_inertial_inv_jacobian.get(i, i) =
         2.0 / gsl::at(coords_range, i);
   }
+
+  // We use a trivial inverse hessian here as this test is testing the time
+  // derivative. The only place where the inverse hessian is used in time
+  // derivative is in second_spacetime_derivatives, which is already tested in
+  // Test_Derivatives.cpp.
+  InverseHessian<DataVector, SpatialDim, Frame::ElementLogical, Frame::Inertial>
+      cell_centered_logical_to_inertial_inv_hessian{
+          subcell_mesh.number_of_grid_points(), 0.0};
 
   const Element<SpatialDim> element =
       TestHelpers::Ccz4::fd::detail::set_element();
@@ -155,6 +162,8 @@ void test_minkowski(const bool evolve_lapse_and_shift) {
       evolution::dg::subcell::Tags::Mesh<SpatialDim>,
       evolution::dg::subcell::fd::Tags::InverseJacobianLogicalToInertial<
           SpatialDim>,
+      evolution::dg::subcell::fd::Tags::InverseHessianLogicalToInertial<
+          SpatialDim>,
       evolution::dg::subcell::Tags::GhostDataForReconstruction<SpatialDim>,
       domain::Tags::ExternalBoundaryConditions<SpatialDim>,
       evolution::dg::subcell::Tags::Coordinates<SpatialDim, Frame::Inertial>>>(
@@ -166,7 +175,7 @@ void test_minkowski(const bool evolve_lapse_and_shift) {
       Variables<typename dt_variables_tag::tags_list>{
           subcell_mesh.number_of_grid_points()},
       subcell_mesh, cell_centered_logical_to_inertial_inv_jacobian,
-      all_ghost_data,
+      cell_centered_logical_to_inertial_inv_hessian, all_ghost_data,
       std::vector<DirectionMap<
           SpatialDim,
           std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>{},
@@ -226,6 +235,14 @@ void test_kerrschild(const bool evolve_lapse_and_shift) {
     cell_centered_logical_to_inertial_inv_jacobian.get(i, i) =
         2.0 / gsl::at(coords_range, i);
   }
+
+  // We use a trivial inverse hessian here as this test is testing the time
+  // derivative. The only place where the inverse hessian is used in time
+  // derivative is in second_spacetime_derivatives, which is already tested in
+  // Test_Derivatives.cpp.
+  InverseHessian<DataVector, SpatialDim, Frame::ElementLogical, Frame::Inertial>
+      cell_centered_logical_to_inertial_inv_hessian{
+          subcell_mesh.number_of_grid_points(), 0.0};
 
   const Element<SpatialDim> element =
       TestHelpers::Ccz4::fd::detail::set_element();
@@ -291,10 +308,11 @@ void test_kerrschild(const bool evolve_lapse_and_shift) {
       evolution::dg::subcell::Tags::Mesh<SpatialDim>,
       evolution::dg::subcell::fd::Tags::InverseJacobianLogicalToInertial<
           SpatialDim>,
+      evolution::dg::subcell::fd::Tags::InverseHessianLogicalToInertial<
+          SpatialDim>,
       evolution::dg::subcell::Tags::GhostDataForReconstruction<SpatialDim>,
       domain::Tags::ExternalBoundaryConditions<SpatialDim>,
-        evolution::dg::subcell::Tags::Coordinates<
-            SpatialDim, Frame::Inertial>>>(
+      evolution::dg::subcell::Tags::Coordinates<SpatialDim, Frame::Inertial>>>(
       kappa_1, kappa_2, kappa_3, evolve_lapse_and_shift, element,
       std::unique_ptr<Ccz4::fd::Reconstructor>{
           std::make_unique<std::decay_t<decltype(recons)>>(recons)},
@@ -303,7 +321,7 @@ void test_kerrschild(const bool evolve_lapse_and_shift) {
       Variables<typename dt_variables_tag::tags_list>{
           subcell_mesh.number_of_grid_points()},
       subcell_mesh, cell_centered_logical_to_inertial_inv_jacobian,
-      all_ghost_data,
+      cell_centered_logical_to_inertial_inv_hessian, all_ghost_data,
       std::vector<DirectionMap<
           SpatialDim,
           std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>{},
@@ -383,6 +401,14 @@ void test_gauge_plane_wave(
         2.0 / gsl::at(coords_range, i);
   }
 
+  // We use a trivial inverse hessian here as this test is testing the time
+  // derivative. The only place where the inverse hessian is used in time
+  // derivative is in second_spacetime_derivatives, which is already tested in
+  // Test_Derivatives.cpp.
+  InverseHessian<DataVector, SpatialDim, Frame::ElementLogical, Frame::Inertial>
+      cell_centered_logical_to_inertial_inv_hessian{
+          subcell_mesh.number_of_grid_points(), 0.0};
+
   double omega = 0.0;
   for (const auto& k : wave_vector) {
     omega += square(k);
@@ -453,10 +479,11 @@ void test_gauge_plane_wave(
       evolution::dg::subcell::Tags::Mesh<SpatialDim>,
       evolution::dg::subcell::fd::Tags::InverseJacobianLogicalToInertial<
           SpatialDim>,
+      evolution::dg::subcell::fd::Tags::InverseHessianLogicalToInertial<
+          SpatialDim>,
       evolution::dg::subcell::Tags::GhostDataForReconstruction<SpatialDim>,
       domain::Tags::ExternalBoundaryConditions<SpatialDim>,
-        evolution::dg::subcell::Tags::Coordinates<
-            SpatialDim, Frame::Inertial>>>(
+      evolution::dg::subcell::Tags::Coordinates<SpatialDim, Frame::Inertial>>>(
       kappa_1, kappa_2, kappa_3, evolve_lapse_and_shift, element,
       std::unique_ptr<Ccz4::fd::Reconstructor>{
           std::make_unique<std::decay_t<decltype(recons)>>(recons)},
@@ -465,7 +492,7 @@ void test_gauge_plane_wave(
       Variables<typename dt_variables_tag::tags_list>{
           subcell_mesh.number_of_grid_points()},
       subcell_mesh, cell_centered_logical_to_inertial_inv_jacobian,
-      all_ghost_data,
+      cell_centered_logical_to_inertial_inv_hessian, all_ghost_data,
       std::vector<DirectionMap<
           SpatialDim,
           std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>{},
@@ -735,6 +762,14 @@ void test_sommerfeld_bc(const bool evolve_lapse_and_shift) {
         2.0 / gsl::at(coords_range, i);
   }
 
+  // We use a trivial inverse hessian here as this test is testing the time
+  // derivative. The only place where the inverse hessian is used in time
+  // derivative is in second_spacetime_derivatives, which is already tested in
+  // Test_Derivatives.cpp.
+  InverseHessian<DataVector, SpatialDim, Frame::ElementLogical, Frame::Inertial>
+      cell_centered_logical_to_inertial_inv_hessian{
+          subcell_mesh.number_of_grid_points(), 0.0};
+
   // Ghost data from interior neighbors (none for the external face, which is
   // set by BCs)
   const DirectionalIdMap<SpatialDim, evolution::dg::subcell::GhostData>
@@ -792,11 +827,12 @@ void test_sommerfeld_bc(const bool evolve_lapse_and_shift) {
       evolution::dg::subcell::Tags::Mesh<SpatialDim>,
       evolution::dg::subcell::fd::Tags::InverseJacobianLogicalToInertial<
           SpatialDim>,
+      evolution::dg::subcell::fd::Tags::InverseHessianLogicalToInertial<
+          SpatialDim>,
       evolution::dg::subcell::Tags::GhostDataForReconstruction<SpatialDim>,
       domain::Tags::ExternalBoundaryConditions<SpatialDim>,
       evolution::dg::subcell::Tags::Coordinates<SpatialDim, Frame::Inertial>,
-      ::Tags::Time,
-      domain::Tags::FunctionsOfTime,
+      ::Tags::Time, domain::Tags::FunctionsOfTime,
       domain::Tags::ElementMap<SpatialDim, Frame::Grid>,
       domain::CoordinateMaps::Tags::CoordinateMap<SpatialDim, Frame::Grid,
                                                   Frame::Inertial>>>(
@@ -808,9 +844,9 @@ void test_sommerfeld_bc(const bool evolve_lapse_and_shift) {
       Variables<typename dt_variables_tag::tags_list>{
           subcell_mesh.number_of_grid_points()},
       subcell_mesh, cell_centered_logical_to_inertial_inv_jacobian,
-      all_ghost_data, std::move(external_bcs_per_block), x, 0.0,
-      std::move(functions_of_time), std::move(element_map),
-      grid_to_inertial_map.get_clone());
+      cell_centered_logical_to_inertial_inv_hessian, all_ghost_data,
+      std::move(external_bcs_per_block), x, 0.0, std::move(functions_of_time),
+      std::move(element_map), grid_to_inertial_map.get_clone());
 
   ::Ccz4::fd::SoTimeDerivative::apply(make_not_null(&box));
 
@@ -1016,6 +1052,14 @@ void test_dirichlet_analytic_bc(const bool evolve_lapse_and_shift) {
         2.0 / gsl::at(coords_range, i);
   }
 
+  // We use a trivial inverse hessian here as this test is testing the time
+  // derivative. The only place where the inverse hessian is used in time
+  // derivative is in second_spacetime_derivatives, which is already tested in
+  // Test_Derivatives.cpp.
+  InverseHessian<DataVector, SpatialDim, Frame::ElementLogical, Frame::Inertial>
+      cell_centered_logical_to_inertial_inv_hessian{
+          subcell_mesh.number_of_grid_points(), 0.0};
+
   // Ghost data from interior neighbors (none for the external face, which is
   // set by BCs)
   const DirectionalIdMap<SpatialDim, evolution::dg::subcell::GhostData>
@@ -1076,11 +1120,12 @@ void test_dirichlet_analytic_bc(const bool evolve_lapse_and_shift) {
       evolution::dg::subcell::Tags::Mesh<SpatialDim>,
       evolution::dg::subcell::fd::Tags::InverseJacobianLogicalToInertial<
           SpatialDim>,
+      evolution::dg::subcell::fd::Tags::InverseHessianLogicalToInertial<
+          SpatialDim>,
       evolution::dg::subcell::Tags::GhostDataForReconstruction<SpatialDim>,
       domain::Tags::ExternalBoundaryConditions<SpatialDim>,
       evolution::dg::subcell::Tags::Coordinates<SpatialDim, Frame::Inertial>,
-      ::Tags::Time,
-      domain::Tags::FunctionsOfTime,
+      ::Tags::Time, domain::Tags::FunctionsOfTime,
       domain::Tags::ElementMap<SpatialDim, Frame::Grid>,
       domain::CoordinateMaps::Tags::CoordinateMap<SpatialDim, Frame::Grid,
                                                   Frame::Inertial>>>(
@@ -1092,9 +1137,9 @@ void test_dirichlet_analytic_bc(const bool evolve_lapse_and_shift) {
       Variables<typename dt_variables_tag::tags_list>{
           subcell_mesh.number_of_grid_points()},
       subcell_mesh, cell_centered_logical_to_inertial_inv_jacobian,
-      all_ghost_data, std::move(external_bcs_per_block), x, 0.0,
-      std::move(functions_of_time), std::move(element_map),
-      grid_to_inertial_map.get_clone());
+      cell_centered_logical_to_inertial_inv_hessian, all_ghost_data,
+      std::move(external_bcs_per_block), x, 0.0, std::move(functions_of_time),
+      std::move(element_map), grid_to_inertial_map.get_clone());
 
   ::Ccz4::fd::SoTimeDerivative::apply(make_not_null(&box));
 

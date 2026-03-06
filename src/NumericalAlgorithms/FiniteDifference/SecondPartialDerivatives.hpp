@@ -82,9 +82,6 @@ void second_logical_partial_derivatives(
  * First and second logical partial derivatives are first computed using the
  * `fd::logical_partial_derivatives()` and
  * `fd::second_logical_partial_derivatives()` function.
- *
- * \note The `inverse_hessian` has not been implemented, so currently inertial
- * coordinates cannot mix logical coordinates.
  */
 template <typename DerivativeTags, size_t Dim, typename DerivativeFrame>
 void second_partial_derivatives(
@@ -94,8 +91,9 @@ void second_partial_derivatives(
         second_partial_derivatives,
     const gsl::span<const double>& volume_vars,
     const DirectionMap<Dim, gsl::span<const double>>& ghost_cell_vars,
-    const Mesh<Dim>& volume_mesh, size_t number_of_variables,
-    size_t fd_order,
+    const Mesh<Dim>& volume_mesh, size_t number_of_variables, size_t fd_order,
     const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
-                          DerivativeFrame>& inverse_jacobian);
+                          DerivativeFrame>& inverse_jacobian,
+    const InverseHessian<DataVector, Dim, Frame::ElementLogical,
+                         DerivativeFrame>& inverse_hessian);
 }  // namespace fd

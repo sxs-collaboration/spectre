@@ -270,6 +270,11 @@ void test(const size_t points_per_dimension, const size_t fd_order) {
   inverse_jacobian.get(2, 0) = -0.5 / logical_coords.get(0);
   inverse_jacobian.get(2, 2) = 1.0;
 
+  InverseHessian<DataVector, Dim, Frame::ElementLogical, Frame::Inertial>
+      inverse_hessian(mesh.number_of_grid_points(), 0.0);
+  inverse_hessian.get(0, 0, 0) = -0.25 / pow<3>(logical_coords.get(0));
+  inverse_hessian.get(2, 0, 0) = 0.25 / pow<3>(logical_coords.get(0));
+
   using derivative_tags =
       tmpl::list<Tags::Tempi<0, Dim, Frame::Inertial, DataVector>,
                  Tags::TempScalar<1, DataVector>>;
@@ -344,7 +349,7 @@ void test(const size_t points_per_dimension, const size_t fd_order) {
       gsl::make_span(volume_vars_for_tensor.data(),
                      volume_vars_for_tensor.size()),
       ghost_cell_vars, mesh, number_of_independent_components, 4,
-      inverse_jacobian);
+      inverse_jacobian, inverse_hessian);
 
   Variables<db::wrap_tags_in<Tags::second_deriv, derivative_tags,
                              tmpl::size_t<Dim>, Frame::Inertial>>
@@ -354,7 +359,12 @@ void test(const size_t points_per_dimension, const size_t fd_order) {
   gsl::at(expected_pure_second_d_var1, 0) =
       (1 + 2 * logical_coords.get(0) + logical_coords.get(1) +
        2 * logical_coords.get(2)) /
-      (2 * square(logical_coords.get(0)));
+          (2 * square(logical_coords.get(0))) +
+      // the only non-zero contribution from inverse_hessian
+      (0.25 * (logical_coords.get(2) - logical_coords.get(0)) *
+       (1 + 2 * logical_coords.get(0) + logical_coords.get(1) +
+        2 * logical_coords.get(2))) /
+          (pow<3>(logical_coords.get(0)));
   gsl::at(expected_pure_second_d_var1, 1) =
       2 * (1 + logical_coords.get(0) + 3 * logical_coords.get(1) +
            logical_coords.get(2));
@@ -364,7 +374,12 @@ void test(const size_t points_per_dimension, const size_t fd_order) {
   gsl::at(expected_pure_second_d_var2, 0) =
       (1 + 2 * logical_coords.get(0) + logical_coords.get(1) +
        2 * logical_coords.get(2)) /
-      (2 * square(logical_coords.get(0)));
+          (2 * square(logical_coords.get(0))) +
+      // the only non-zero contribution from inverse_hessian
+      (0.25 * (logical_coords.get(2) - logical_coords.get(0)) *
+       (1 + 2 * logical_coords.get(0) + logical_coords.get(1) +
+        2 * logical_coords.get(2))) /
+          (pow<3>(logical_coords.get(0)));
   gsl::at(expected_pure_second_d_var2, 1) =
       2 * (1 + logical_coords.get(0) + 3 * logical_coords.get(1) +
            logical_coords.get(2));
