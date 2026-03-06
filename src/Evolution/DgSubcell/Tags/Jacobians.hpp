@@ -58,6 +58,32 @@ struct InverseJacobianLogicalToInertial : db::SimpleTag {
                                  Frame::Inertial>;
 };
 
+/// \brief The inverse Hessian from the element logical frame to the grid frame
+/// at the cell centers.
+///
+/// Specifically, \f$\partial^2 x^{\bar{i}} / {\partial x^i \partial x^j}\f$,
+/// where \f$\bar{i}\f$ denotes the element logical frame and \f$i\f$ denotes
+/// the grid frame.
+template <size_t Dim>
+struct InverseHessianLogicalToGrid : db::SimpleTag {
+  static std::string name() { return "InverseHessian(Logical,Grid)"; }
+  using type =
+      ::InverseHessian<DataVector, Dim, Frame::ElementLogical, Frame::Grid>;
+};
+
+/// \brief The inverse Hessian from the element logical frame to the inertial
+/// frame at the cell centers.
+///
+/// Specifically, \f$\partial^2 x^{\bar{i}} / {\partial x^i \partial x^j}\f$,
+/// where \f$\bar{i}\f$ denotes the element logical frame and \f$i\f$ denotes
+/// the inertial frame.
+template <size_t Dim>
+struct InverseHessianLogicalToInertial : db::SimpleTag {
+  static std::string name() { return "InverseHessian(Logical,Inertial)"; }
+  using type =
+      ::InverseHessian<DataVector, Dim, Frame::ElementLogical, Frame::Inertial>;
+};
+
 /// Compute item for the inverse jacobian matrix from logical to
 /// grid coordinates
 template <typename MapTagLogicalToGrid, size_t Dim>
@@ -190,4 +216,103 @@ struct DetInverseJacobianLogicalToInertialCompute
     }
   }
 };
+
+#ifdef SPECTRE_AUTODIFF
+/// Compute item for the inverse hessian matrix from logical to
+/// grid coordinates
+template <typename MapTagLogicalToGrid, size_t Dim>
+struct InverseHessianLogicalToGridCompute : InverseHessianLogicalToGrid<Dim>,
+                                            db::ComputeTag {
+  static constexpr size_t dim = Dim;
+  using base = InverseHessianLogicalToGrid<Dim>;
+  using return_type = typename base::type;
+  using argument_tags = tmpl::list<
+      MapTagLogicalToGrid,
+      evolution::dg::subcell::Tags::Coordinates<dim, Frame::ElementLogical>>;
+  static void function(
+      const gsl::not_null<return_type*> inverse_hessian_logical_to_grid,
+      const ElementMap<Dim, Frame::Grid>& logical_to_grid_map,
+      const tnsr::I<DataVector, dim, Frame::ElementLogical>& logical_coords) {
+    *inverse_hessian_logical_to_grid =
+        logical_to_grid_map.inv_hessian(logical_coords);
+  }
+};
+
+/// Compute item for the inverse hessian matrix from logical to
+/// inertial coordinates
+template <typename MapTagGridToInertial, size_t Dim>
+struct InverseHessianLogicalToInertialCompute
+    : InverseHessianLogicalToInertial<Dim>,
+      db::ComputeTag {
+  static constexpr size_t dim = Dim;
+  using base = InverseHessianLogicalToInertial<Dim>;
+  using return_type = typename base::type;
+  using argument_tags =
+      tmpl::list<MapTagGridToInertial,
+                 evolution::dg::subcell::Tags::Coordinates<dim, Frame::Grid>,
+                 ::Tags::Time, ::domain::Tags::FunctionsOfTime,
+                 InverseJacobianLogicalToGrid<Dim>,
+                 InverseHessianLogicalToGrid<Dim>>;
+  static void function(
+      const gsl::not_null<return_type*> inverse_hessian_logical_to_inertial,
+      const ::domain::CoordinateMapBase<Frame::Grid, Frame::Inertial, dim>&
+          grid_to_inertial_map,
+      const tnsr::I<DataVector, dim, Frame::Grid>& grid_coords,
+      const double time,
+      const std::unordered_map<
+          std::string,
+          std::unique_ptr<::domain::FunctionsOfTime::FunctionOfTime>>&
+          functions_of_time,
+      const ::InverseJacobian<DataVector, Dim, Frame::ElementLogical,
+                              Frame::Grid>& inverse_jacobian_logical_to_grid,
+      const ::InverseHessian<DataVector, Dim, Frame::ElementLogical,
+                             Frame::Grid>& inverse_hessian_logical_to_grid) {
+    if (grid_to_inertial_map.is_identity()) {
+      // Optimization for time-independent maps; we just point to the
+      // logical-to-grid inverse hessian.
+      const size_t num_pts = inverse_hessian_logical_to_grid[0].size();
+      for (size_t storage_index = 0;
+           storage_index < inverse_hessian_logical_to_grid.size();
+           ++storage_index) {
+        make_const_view(
+            make_not_null(&std::as_const(
+                (*inverse_hessian_logical_to_inertial)[storage_index])),
+            inverse_hessian_logical_to_grid[storage_index], 0, num_pts);
+      }
+    } else {
+      set_number_of_grid_points(inverse_hessian_logical_to_inertial,
+                                get<0>(grid_coords).size());
+      // Get grid to inertial inverse jacobian
+      const auto& inverse_jacobian_grid_to_inertial =
+          grid_to_inertial_map.inv_jacobian(grid_coords, time,
+                                            functions_of_time);
+      // Get grid to inertial inverse hessian
+      const auto& inverse_hessian_grid_to_inertial =
+          grid_to_inertial_map.inv_hessian(grid_coords,
+                                           inverse_jacobian_grid_to_inertial,
+                                           time, functions_of_time);
+      for (size_t i = 0; i < Dim; i++) {
+        for (size_t j = 0; j < Dim; j++) {
+          for (size_t k = j; k < Dim; k++) {
+            auto& inv_hessian_component =
+                inverse_hessian_logical_to_inertial->get(i, j, k);
+            inv_hessian_component = 0.;
+            for (size_t n = 0; n < Dim; n++) {
+              inv_hessian_component +=
+                  inverse_hessian_grid_to_inertial.get(n, j, k) *
+                  inverse_jacobian_logical_to_grid.get(i, n);
+              for (size_t m = 0; m < Dim; m++) {
+                inv_hessian_component +=
+                    inverse_jacobian_grid_to_inertial.get(n, k) *
+                    inverse_hessian_logical_to_grid.get(i, m, n) *
+                    inverse_jacobian_grid_to_inertial.get(m, j);
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+};
+#endif  // SPECTRE_AUTODIFF
 }  // namespace evolution::dg::subcell::fd::Tags

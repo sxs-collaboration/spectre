@@ -57,33 +57,44 @@ void test() {
   const Mesh<3> subcell_mesh{2, Spectral::Basis::FiniteDifference,
                              Spectral::Quadrature::CellCentered};
 
+  using compute_tags = tmpl::list<
+      evolution::dg::subcell::Tags::LogicalCoordinatesCompute<3>,
+      ::domain::Tags::MappedCoordinates<
+          ::domain::Tags::ElementMap<3, Frame::Grid>,
+          evolution::dg::subcell::Tags::Coordinates<3, Frame::ElementLogical>,
+          evolution::dg::subcell::Tags::Coordinates>,
+      evolution::dg::subcell::fd::Tags::InverseJacobianLogicalToGridCompute<
+          ::domain::Tags::ElementMap<3, Frame::Grid>, 3>,
+      evolution::dg::subcell::fd::Tags::InverseJacobianLogicalToInertialCompute<
+          ::domain::CoordinateMaps::Tags::CoordinateMap<3, Frame::Grid,
+                                                        Frame::Inertial>,
+          3>,
+      evolution::dg::subcell::fd::Tags::DetInverseJacobianLogicalToGridCompute<
+          3>,
+      evolution::dg::subcell::fd::Tags::
+          DetInverseJacobianLogicalToInertialCompute<
+              ::domain::CoordinateMaps::Tags::CoordinateMap<3, Frame::Grid,
+                                                            Frame::Inertial>,
+              3>>;
+#ifdef SPECTRE_AUTODIFF
+  using hessian_compute_tags = tmpl::list<
+      evolution::dg::subcell::fd::Tags::InverseHessianLogicalToGridCompute<
+          ::domain::Tags::ElementMap<3, Frame::Grid>, 3>,
+      evolution::dg::subcell::fd::Tags::InverseHessianLogicalToInertialCompute<
+          ::domain::CoordinateMaps::Tags::CoordinateMap<3, Frame::Grid,
+                                                        Frame::Inertial>,
+          3>>;
+#else
+  using hessian_compute_tags = tmpl::list<>;
+#endif  // SPECTRE_AUTODIFF
+
   auto box = db::create<
       db::AddSimpleTags<evolution::dg::subcell::Tags::Mesh<3>,
                         domain::Tags::ElementMap<3, Frame::Grid>,
                         domain::CoordinateMaps::Tags::CoordinateMap<
                             3, Frame::Grid, Frame::Inertial>,
                         ::Tags::Time, domain::Tags::FunctionsOfTimeInitialize>,
-      db::AddComputeTags<
-          evolution::dg::subcell::Tags::LogicalCoordinatesCompute<3>,
-          ::domain::Tags::MappedCoordinates<
-              ::domain::Tags::ElementMap<3, Frame::Grid>,
-              evolution::dg::subcell::Tags::Coordinates<3,
-                                                        Frame::ElementLogical>,
-              evolution::dg::subcell::Tags::Coordinates>,
-          evolution::dg::subcell::fd::Tags::InverseJacobianLogicalToGridCompute<
-              ::domain::Tags::ElementMap<3, Frame::Grid>, 3>,
-          evolution::dg::subcell::fd::Tags::
-              InverseJacobianLogicalToInertialCompute<
-                  ::domain::CoordinateMaps::Tags::CoordinateMap<
-                      3, Frame::Grid, Frame::Inertial>,
-                  3>,
-          evolution::dg::subcell::fd::Tags::
-              DetInverseJacobianLogicalToGridCompute<3>,
-          evolution::dg::subcell::fd::Tags::
-              DetInverseJacobianLogicalToInertialCompute<
-                  ::domain::CoordinateMaps::Tags::CoordinateMap<
-                      3, Frame::Grid, Frame::Inertial>,
-                  3>>>(
+      db::AddComputeTags<tmpl::append<compute_tags, hessian_compute_tags>>>(
       subcell_mesh, std::move(element_map),
       domain::make_coordinate_map_base<Frame::Grid, Frame::Inertial>(
           domain::CoordinateMaps::Identity<3>{}),
@@ -106,6 +117,17 @@ void test() {
               ::domain::CoordinateMaps::Tags::CoordinateMap<3, Frame::Grid,
                                                             Frame::Inertial>,
               3>>("Det(InverseJacobian(Logical,Inertial))");
+#ifdef SPECTRE_AUTODIFF
+  TestHelpers::db::test_compute_tag<
+      evolution::dg::subcell::fd::Tags::InverseHessianLogicalToGridCompute<
+          ::domain::Tags::ElementMap<3, Frame::Grid>, 3>>(
+      "InverseHessian(Logical,Grid)");
+  TestHelpers::db::test_compute_tag<
+      evolution::dg::subcell::fd::Tags::InverseHessianLogicalToInertialCompute<
+          ::domain::CoordinateMaps::Tags::CoordinateMap<3, Frame::Grid,
+                                                        Frame::Inertial>,
+          3>>("InverseHessian(Logical,Inertial)");
+#endif  // SPECTRE_AUTODIFF
 
   const auto& inv_jac_grid = db::get<
       evolution::dg::subcell::fd::Tags::InverseJacobianLogicalToGrid<3>>(box);
@@ -127,6 +149,23 @@ void test() {
       evolution::dg::subcell::fd::Tags::DetInverseJacobianLogicalToInertial>(
       box);
   CHECK_ITERABLE_APPROX(get(det_inv_jac_inertial), get(det_inv_jac_grid));
+
+#ifdef SPECTRE_AUTODIFF
+  const auto& inv_hess_grid =
+      db::get<evolution::dg::subcell::fd::Tags::InverseHessianLogicalToGrid<3>>(
+          box);
+  const auto& inv_hess_inertial = db::get<
+      evolution::dg::subcell::fd::Tags::InverseHessianLogicalToInertial<3>>(
+      box);
+
+  // Check that the two hessians in frames connected by an identity map are
+  // identical
+  for (size_t storage_index = 0; storage_index < inv_hess_inertial.size();
+       ++storage_index) {
+    CHECK_ITERABLE_APPROX(inv_hess_inertial[storage_index],
+                          inv_hess_grid[storage_index]);
+  }
+#endif  // SPECTRE_AUTODIFF
 }
 
 SPECTRE_TEST_CASE("Unit.Evolution.DgSubcell.JacobianCompute",
