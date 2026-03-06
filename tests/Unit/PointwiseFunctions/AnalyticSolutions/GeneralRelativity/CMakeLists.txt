@@ -4,7 +4,6 @@
 set(LIBRARY "Test_GeneralRelativitySolutions")
 
 set(LIBRARY_SOURCES
-  Test_Ccz4WrappedGr.cpp
   Test_GaugeWave.cpp
   Test_GaugePlaneWave.cpp
   Test_HarmonicSchwarzschild.cpp
@@ -20,7 +19,6 @@ add_test_library(${LIBRARY} "${LIBRARY_SOURCES}")
 target_link_libraries(
   ${LIBRARY}
   PRIVATE
-  Ccz4
   DataStructures
   Domain
   GeneralRelativity

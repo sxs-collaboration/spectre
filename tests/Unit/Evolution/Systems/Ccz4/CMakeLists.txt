@@ -16,6 +16,7 @@ set(LIBRARY_SOURCES
   FiniteDifference/Test_SoTimeDerivative.cpp
   FiniteDifference/Test_Tags.cpp
   Test_ATilde.cpp
+  Test_Ccz4WrappedGr.cpp
   Test_Christoffel.cpp
   Test_DerivChristoffel.cpp
   Test_DerivLapse.cpp

@@ -5,7 +5,6 @@
 
 #include <cstddef>
 
-#include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/Ccz4WrappedGr.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/GaugePlaneWave.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/GaugeWave.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/HarmonicSchwarzschild.hpp"
@@ -31,15 +30,3 @@ using all_solutions =
                                 WrappedGr<gr::Solutions::TrumpetSchwarzschild>>,
                      tmpl::list<>>>;
 }  // namespace gh::Solutions
-
-namespace Ccz4::Solutions {
-/// \brief List of all Ccz4 analytic solutions
-/// Right now it only makes sense to do TrumpetSchwarzschild or time-independent
-/// solutions because we can either use 1+log slicing with Gamma-driver
-/// or not evolve the lapse and shift at all. We will allow analytic
-/// lapse and shift in the future.
-using all_solutions =
-    tmpl::list<Ccz4WrappedGr<gr::Solutions::KerrSchild>,
-               Ccz4WrappedGr<gr::Solutions::Minkowski<3>>,
-               Ccz4WrappedGr<gr::Solutions::TrumpetSchwarzschild>>;
-}  // namespace Ccz4::Solutions

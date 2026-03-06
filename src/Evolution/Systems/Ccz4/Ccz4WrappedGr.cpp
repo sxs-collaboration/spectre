@@ -1,9 +1,9 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/Ccz4WrappedGr.hpp"
+#include "Evolution/Systems/Ccz4/Ccz4WrappedGr.hpp"
 
-#include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/Ccz4WrappedGr.tpp"
+#include "Evolution/Systems/Ccz4/Ccz4WrappedGr.tpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/GaugePlaneWave.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/GaugeWave.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"

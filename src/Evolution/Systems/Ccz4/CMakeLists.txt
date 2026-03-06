@@ -9,6 +9,7 @@ spectre_target_sources(
   ${LIBRARY}
   PRIVATE
   ATilde.cpp
+  Ccz4WrappedGr.cpp
   Christoffel.cpp
   DerivChristoffel.cpp
   DerivLapse.cpp
@@ -23,6 +24,8 @@ spectre_target_headers(
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
   ATilde.hpp
+  Ccz4WrappedGr.hpp
+  Ccz4WrappedGr.tpp
   Christoffel.hpp
   DerivChristoffel.hpp
   DerivLapse.hpp
@@ -47,7 +50,9 @@ target_link_libraries(
   ErrorHandling
   FiniteDifference
   GeneralRelativity
+  GeneralRelativitySolutions
   Options
+  Serialization
   Spectral
   Utilities
   INTERFACE
