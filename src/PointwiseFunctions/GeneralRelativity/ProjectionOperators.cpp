@@ -3,10 +3,12 @@
 
 #include "PointwiseFunctions/GeneralRelativity/ProjectionOperators.hpp"
 
+#include "DataStructures/Tensor/EagerMath/DotProduct.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/MakeWithValue.hpp"
 
 namespace gr {
 template <typename DataType, size_t VolumeDim, typename Frame>
@@ -127,12 +129,13 @@ template <typename DataType, size_t VolumeDim, typename Frame>
 tnsr::aa<DataType, VolumeDim, Frame> transverse_projection_operator(
     const tnsr::aa<DataType, VolumeDim, Frame>& spacetime_metric,
     const tnsr::a<DataType, VolumeDim, Frame>& spacetime_normal_one_form,
-    const tnsr::i<DataType, VolumeDim, Frame>& interface_unit_normal_one_form) {
-  tnsr::aa<DataType, VolumeDim, Frame> projection_tensor(
-      get_size(get<0>(spacetime_normal_one_form)));
+    const tnsr::i<DataType, VolumeDim, Frame>& interface_unit_normal_one_form,
+    const tnsr::I<DataType, VolumeDim, Frame>& shift) {
+  tnsr::aa<DataType, VolumeDim, Frame> projection_tensor{
+      get_size(get<0>(spacetime_normal_one_form))};
   transverse_projection_operator(make_not_null(&projection_tensor),
                                  spacetime_metric, spacetime_normal_one_form,
-                                 interface_unit_normal_one_form);
+                                 interface_unit_normal_one_form, shift);
   return projection_tensor;
 }
 
@@ -142,19 +145,25 @@ void transverse_projection_operator(
         projection_tensor,
     const tnsr::aa<DataType, VolumeDim, Frame>& spacetime_metric,
     const tnsr::a<DataType, VolumeDim, Frame>& spacetime_normal_one_form,
-    const tnsr::i<DataType, VolumeDim, Frame>& interface_unit_normal_one_form) {
-  for (size_t a = 0, b = 0; b < VolumeDim + 1; ++b) {
-    projection_tensor->get(a, b) =
-        spacetime_metric.get(a, b) +
-        spacetime_normal_one_form.get(a) * spacetime_normal_one_form.get(b);
-  }
-  for (size_t a = 1; a < VolumeDim + 1; ++a) {
+    const tnsr::i<DataType, VolumeDim, Frame>& interface_unit_normal_one_form,
+    const tnsr::I<DataType, VolumeDim, Frame>& shift) {
+  const auto interface_unit_normal_time_component =
+      dot_product(interface_unit_normal_one_form, shift);
+  const auto& interface_unit_normal_time =
+      get(interface_unit_normal_time_component);
+
+  for (size_t a = 0; a < VolumeDim + 1; ++a) {
+    const auto& interface_unit_normal_a =
+        (a == 0 ? interface_unit_normal_time
+                : interface_unit_normal_one_form.get(a - 1));
     for (size_t b = a; b < VolumeDim + 1; ++b) {
+      const auto& interface_unit_normal_b =
+          (b == 0 ? interface_unit_normal_time
+                  : interface_unit_normal_one_form.get(b - 1));
       projection_tensor->get(a, b) =
           spacetime_metric.get(a, b) +
           spacetime_normal_one_form.get(a) * spacetime_normal_one_form.get(b) -
-          interface_unit_normal_one_form.get(a - 1) *
-              interface_unit_normal_one_form.get(b - 1);
+          interface_unit_normal_a * interface_unit_normal_b;
     }
   }
 }
@@ -164,13 +173,14 @@ tnsr::Ab<DataType, VolumeDim, Frame> transverse_projection_operator(
     const tnsr::A<DataType, VolumeDim, Frame>& spacetime_normal_vector,
     const tnsr::a<DataType, VolumeDim, Frame>& spacetime_normal_one_form,
     const tnsr::I<DataType, VolumeDim, Frame>& interface_unit_normal_vector,
-    const tnsr::i<DataType, VolumeDim, Frame>& interface_unit_normal_one_form) {
-  tnsr::Ab<DataType, VolumeDim, Frame> projection_tensor(
-      get_size(get<0>(spacetime_normal_vector)));
+    const tnsr::i<DataType, VolumeDim, Frame>& interface_unit_normal_one_form,
+    const tnsr::I<DataType, VolumeDim, Frame>& shift) {
+  tnsr::Ab<DataType, VolumeDim, Frame> projection_tensor{
+      get_size(get<0>(spacetime_normal_vector))};
   transverse_projection_operator(
       make_not_null(&projection_tensor), spacetime_normal_vector,
       spacetime_normal_one_form, interface_unit_normal_vector,
-      interface_unit_normal_one_form);
+      interface_unit_normal_one_form, shift);
   return projection_tensor;
 }
 
@@ -181,23 +191,30 @@ void transverse_projection_operator(
     const tnsr::A<DataType, VolumeDim, Frame>& spacetime_normal_vector,
     const tnsr::a<DataType, VolumeDim, Frame>& spacetime_normal_one_form,
     const tnsr::I<DataType, VolumeDim, Frame>& interface_unit_normal_vector,
-    const tnsr::i<DataType, VolumeDim, Frame>& interface_unit_normal_one_form) {
-  for (size_t a = 0, b = 0; b < VolumeDim + 1; ++b) {
-    projection_tensor->get(a, b) =
-        spacetime_normal_vector.get(a) * spacetime_normal_one_form.get(b);
-    projection_tensor->get(b, a) =
-        spacetime_normal_vector.get(b) * spacetime_normal_one_form.get(a);
-  }
-  get<0, 0>(*projection_tensor) += 1.;
+    const tnsr::i<DataType, VolumeDim, Frame>& interface_unit_normal_one_form,
+    const tnsr::I<DataType, VolumeDim, Frame>& shift) {
+  const auto interface_unit_normal_time_component =
+      dot_product(interface_unit_normal_one_form, shift);
+  const auto& interface_unit_normal_time =
+      get(interface_unit_normal_time_component);
+  const auto interface_unit_normal_vector_time =
+      make_with_value<DataType>(interface_unit_normal_vector.get(0), 0.0);
 
-  for (size_t a = 1; a < VolumeDim + 1; ++a) {
-    for (size_t b = 1; b < VolumeDim + 1; ++b) {
+  for (size_t a = 0; a < VolumeDim + 1; ++a) {
+    const auto& interface_unit_normal_a =
+        (a == 0 ? interface_unit_normal_vector_time
+                : interface_unit_normal_vector.get(a - 1));
+    for (size_t b = 0; b < VolumeDim + 1; ++b) {
+      const auto& interface_unit_normal_b =
+          (b == 0 ? interface_unit_normal_time
+                  : interface_unit_normal_one_form.get(b - 1));
       projection_tensor->get(a, b) =
           spacetime_normal_vector.get(a) * spacetime_normal_one_form.get(b) -
-          interface_unit_normal_vector.get(a - 1) *
-              interface_unit_normal_one_form.get(b - 1);
+          interface_unit_normal_a * interface_unit_normal_b;
+      if (a == b) {
+        projection_tensor->get(a, b) += 1.;
+      }
     }
-    projection_tensor->get(a, a) += 1.;
   }
 }
 }  // namespace gr
@@ -250,7 +267,8 @@ void transverse_projection_operator(
       const tnsr::a<DTYPE(data), DIM(data), FRAME(data)>&                    \
           spacetime_normal_one_form,                                         \
       const tnsr::i<DTYPE(data), DIM(data), FRAME(data)>&                    \
-          interface_unit_normal_one_form);                                   \
+          interface_unit_normal_one_form,                                    \
+      const tnsr::I<DTYPE(data), DIM(data), FRAME(data)>& shift);            \
   template tnsr::Ab<DTYPE(data), DIM(data), FRAME(data)>                     \
   gr::transverse_projection_operator(                                        \
       const tnsr::A<DTYPE(data), DIM(data), FRAME(data)>&                    \
@@ -260,7 +278,8 @@ void transverse_projection_operator(
       const tnsr::I<DTYPE(data), DIM(data), FRAME(data)>&                    \
           interface_unit_normal_vector,                                      \
       const tnsr::i<DTYPE(data), DIM(data), FRAME(data)>&                    \
-          interface_unit_normal_one_form);                                   \
+          interface_unit_normal_one_form,                                    \
+      const tnsr::I<DTYPE(data), DIM(data), FRAME(data)>& shift);            \
   template void gr::transverse_projection_operator(                          \
       const gsl::not_null<tnsr::AA<DTYPE(data), DIM(data), FRAME(data)>*>    \
           projection_tensor,                                                 \
@@ -277,7 +296,8 @@ void transverse_projection_operator(
       const tnsr::a<DTYPE(data), DIM(data), FRAME(data)>&                    \
           spacetime_normal_one_form,                                         \
       const tnsr::i<DTYPE(data), DIM(data), FRAME(data)>&                    \
-          interface_unit_normal_one_form);                                   \
+          interface_unit_normal_one_form,                                    \
+      const tnsr::I<DTYPE(data), DIM(data), FRAME(data)>& shift);            \
   template void gr::transverse_projection_operator(                          \
       const gsl::not_null<tnsr::Ab<DTYPE(data), DIM(data), FRAME(data)>*>    \
           projection_tensor,                                                 \
@@ -288,7 +308,8 @@ void transverse_projection_operator(
       const tnsr::I<DTYPE(data), DIM(data), FRAME(data)>&                    \
           interface_unit_normal_vector,                                      \
       const tnsr::i<DTYPE(data), DIM(data), FRAME(data)>&                    \
-          interface_unit_normal_one_form);
+          interface_unit_normal_one_form,                                    \
+      const tnsr::I<DTYPE(data), DIM(data), FRAME(data)>& shift);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (double, DataVector),
                         (Frame::Grid, Frame::Inertial))

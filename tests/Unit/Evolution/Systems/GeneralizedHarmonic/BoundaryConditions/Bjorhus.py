@@ -529,10 +529,10 @@ def compute_intermediate_vars(
         four_index_constraint = ght.four_index_constraint(d_phi)
 
     incoming_null_one_form = nn.interface_incoming_null_normal(
-        spacetime_unit_normal_one_form, normal_covector
+        spacetime_unit_normal_one_form, normal_covector, shift
     )
     outgoing_null_one_form = nn.interface_outgoing_null_normal(
-        spacetime_unit_normal_one_form, normal_covector
+        spacetime_unit_normal_one_form, normal_covector, shift
     )
     incoming_null_vector = nn.interface_incoming_null_normal(
         spacetime_unit_normal_vector, unit_interface_normal_vector
@@ -542,13 +542,17 @@ def compute_intermediate_vars(
     )
 
     projection_ab = proj.projection_operator_transverse_to_interface(
-        spacetime_metric, spacetime_unit_normal_one_form, normal_covector
+        spacetime_metric,
+        spacetime_unit_normal_one_form,
+        normal_covector,
+        shift,
     )
     projection_Ab = proj.projection_operator_transverse_to_interface_mixed(
         spacetime_unit_normal_vector,
         spacetime_unit_normal_one_form,
         unit_interface_normal_vector,
         normal_covector,
+        shift,
     )
     projection_AB = proj.projection_operator_transverse_to_interface(
         inverse_spacetime_metric,

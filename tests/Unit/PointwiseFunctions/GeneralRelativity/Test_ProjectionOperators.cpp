@@ -3,29 +3,104 @@
 
 #include "Framework/TestingFramework.hpp"
 
+#include <cmath>
 #include <cstddef>
 #include <random>
 
 #include "DataStructures/DataVector.hpp"
+#include "DataStructures/Tensor/EagerMath/DeterminantAndInverse.hpp"
+#include "DataStructures/Tensor/EagerMath/DotProduct.hpp"
+#include "DataStructures/Tensor/EagerMath/RaiseOrLowerIndex.hpp"
+#include "DataStructures/Tensor/Expressions/Evaluate.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
-#include "Domain/CoordinateMaps/Affine.hpp"
-#include "Domain/CoordinateMaps/CoordinateMap.hpp"
-#include "Domain/CoordinateMaps/CoordinateMap.tpp"
-#include "Domain/CoordinateMaps/ProductMaps.hpp"
-#include "Domain/CoordinateMaps/ProductMaps.tpp"
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/Side.hpp"
 #include "Domain/Tags.hpp"
 #include "Framework/CheckWithRandomValues.hpp"
 #include "Framework/SetupLocalPythonEnvironment.hpp"
 #include "Helpers/DataStructures/DataBox/TestHelpers.hpp"
-#include "Helpers/DataStructures/MakeWithRandomValues.hpp"
-#include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
+#include "Helpers/DataStructures/RandomUnitNormal.hpp"
+#include "Helpers/PointwiseFunctions/GeneralRelativity/TestHelpers.hpp"
+#include "PointwiseFunctions/GeneralRelativity/InterfaceNullNormal.hpp"
+#include "PointwiseFunctions/GeneralRelativity/InverseSpacetimeMetric.hpp"
 #include "PointwiseFunctions/GeneralRelativity/ProjectionOperators.hpp"
+#include "PointwiseFunctions/GeneralRelativity/SpacetimeMetric.hpp"
+#include "PointwiseFunctions/GeneralRelativity/SpacetimeNormalOneForm.hpp"
+#include "PointwiseFunctions/GeneralRelativity/SpacetimeNormalVector.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "PointwiseFunctions/GeneralRelativity/TagsDeclarations.hpp"
+#include "Utilities/MakeWithValue.hpp"
 
 namespace {
+const Approx custom_approx = Approx::custom().epsilon(1.e-12).scale(1.0);
+
+template <size_t SpatialDim, typename DataType>
+tnsr::A<DataType, SpatialDim, Frame::Inertial>
+extend_spatial_vector_to_spacetime(
+    const tnsr::I<DataType, SpatialDim, Frame::Inertial>& spatial_vector,
+    const DataType& used_for_size) {
+  auto spacetime_vector =
+      make_with_value<tnsr::A<DataType, SpatialDim, Frame::Inertial>>(
+          used_for_size, 0.0);
+  for (size_t i = 0; i < SpatialDim; ++i) {
+    spacetime_vector.get(i + 1) = spatial_vector.get(i);
+  }
+  return spacetime_vector;
+}
+
+template <size_t SpatialDim, typename DataType>
+tnsr::a<DataType, SpatialDim, Frame::Inertial>
+extend_spatial_one_form_to_spacetime(
+    const tnsr::i<DataType, SpatialDim, Frame::Inertial>& spatial_one_form,
+    const tnsr::I<DataType, SpatialDim, Frame::Inertial>& shift,
+    const DataType& used_for_size) {
+  auto spacetime_one_form =
+      make_with_value<tnsr::a<DataType, SpatialDim, Frame::Inertial>>(
+          used_for_size, 0.0);
+  for (size_t i = 0; i < SpatialDim; ++i) {
+    spacetime_one_form.get(i + 1) = spatial_one_form.get(i);
+  }
+  spacetime_one_form.get(0) = get(dot_product(shift, spatial_one_form));
+  return spacetime_one_form;
+}
+
+template <size_t SpatialDim, typename DataType>
+void check_aa_orthogonality(
+    const tnsr::aa<DataType, SpatialDim, Frame::Inertial>& projection_aa,
+    const tnsr::A<DataType, SpatialDim, Frame::Inertial>&
+        spacetime_normal_vector) {
+  const auto right_contraction = tenex::evaluate<ti::a>(
+      projection_aa(ti::a, ti::b) * spacetime_normal_vector(ti::B));
+  const auto left_contraction = tenex::evaluate<ti::b>(
+      spacetime_normal_vector(ti::A) * projection_aa(ti::a, ti::b));
+  const auto zero =
+      make_with_value<tnsr::a<DataType, SpatialDim, Frame::Inertial>>(
+          get_size(get<0, 0>(projection_aa)), 0.0);
+  CHECK_ITERABLE_CUSTOM_APPROX(right_contraction, zero, custom_approx);
+  CHECK_ITERABLE_CUSTOM_APPROX(left_contraction, zero, custom_approx);
+}
+
+template <size_t SpatialDim, typename DataType>
+void check_ab_orthogonality(
+    const tnsr::Ab<DataType, SpatialDim, Frame::Inertial>& projection_ab,
+    const tnsr::a<DataType, SpatialDim, Frame::Inertial>&
+        spacetime_normal_one_form,
+    const tnsr::A<DataType, SpatialDim, Frame::Inertial>&
+        spacetime_normal_vector) {
+  const auto lower_contraction = tenex::evaluate<ti::b>(
+      spacetime_normal_one_form(ti::a) * projection_ab(ti::A, ti::b));
+  const auto upper_contraction = tenex::evaluate<ti::A>(
+      projection_ab(ti::A, ti::b) * spacetime_normal_vector(ti::B));
+  const auto zero_one_form =
+      make_with_value<tnsr::a<DataType, SpatialDim, Frame::Inertial>>(
+          get_size(get<0, 0>(projection_ab)), 0.0);
+  const auto zero_vector =
+      make_with_value<tnsr::A<DataType, SpatialDim, Frame::Inertial>>(
+          get_size(get<0, 0>(projection_ab)), 0.0);
+  CHECK_ITERABLE_CUSTOM_APPROX(lower_contraction, zero_one_form, custom_approx);
+  CHECK_ITERABLE_CUSTOM_APPROX(upper_contraction, zero_vector, custom_approx);
+}
+
 template <size_t SpatialDim, typename DataType>
 void test_projection_operator(const DataType& used_for_size) {
   {
@@ -78,7 +153,8 @@ void test_projection_operator(const DataType& used_for_size) {
     tnsr::aa<DataType, SpatialDim, Frame::Inertial> (*f)(
         const tnsr::aa<DataType, SpatialDim, Frame::Inertial>&,
         const tnsr::a<DataType, SpatialDim, Frame::Inertial>&,
-        const tnsr::i<DataType, SpatialDim, Frame::Inertial>&) =
+        const tnsr::i<DataType, SpatialDim, Frame::Inertial>&,
+        const tnsr::I<DataType, SpatialDim, Frame::Inertial>&) =
         &gr::transverse_projection_operator<DataType, SpatialDim,
                                             Frame::Inertial>;
     pypp::check_with_random_values<1>(
@@ -91,7 +167,8 @@ void test_projection_operator(const DataType& used_for_size) {
         const tnsr::A<DataType, SpatialDim, Frame::Inertial>&,
         const tnsr::a<DataType, SpatialDim, Frame::Inertial>&,
         const tnsr::I<DataType, SpatialDim, Frame::Inertial>&,
-        const tnsr::i<DataType, SpatialDim, Frame::Inertial>&) =
+        const tnsr::i<DataType, SpatialDim, Frame::Inertial>&,
+        const tnsr::I<DataType, SpatialDim, Frame::Inertial>&) =
         &gr::transverse_projection_operator<DataType, SpatialDim,
                                             Frame::Inertial>;
     pypp::check_with_random_values<1>(
@@ -99,34 +176,276 @@ void test_projection_operator(const DataType& used_for_size) {
         "projection_operator_transverse_to_interface_mixed", {{{-1., 1.}}},
         used_for_size);
   }
+
+  const auto data_size = get_size(used_for_size);
+  MAKE_GENERATOR(generator);
+  const auto lapse =
+      TestHelpers::gr::random_lapse(make_not_null(&generator), used_for_size);
+  const auto shift = TestHelpers::gr::random_shift<SpatialDim>(
+      make_not_null(&generator), used_for_size);
+  const auto spatial_metric =
+      TestHelpers::gr::random_spatial_metric<SpatialDim>(
+          make_not_null(&generator), used_for_size);
+  const auto inverse_spatial_metric =
+      determinant_and_inverse(spatial_metric).second;
+
+  const auto spacetime_metric =
+      gr::spacetime_metric(lapse, shift, spatial_metric);
+  const auto inverse_spacetime_metric =
+      gr::inverse_spacetime_metric(lapse, shift, inverse_spatial_metric);
+  const auto spacetime_normal_one_form =
+      gr::spacetime_normal_one_form<DataType, SpatialDim, Frame::Inertial>(
+          lapse);
+  const auto spacetime_normal_vector =
+      gr::spacetime_normal_vector(lapse, shift);
+
+  const auto interface_unit_normal_vector =
+      random_unit_normal(make_not_null(&generator), spatial_metric);
+  auto interface_unit_normal_one_form =
+      make_with_value<tnsr::i<DataType, SpatialDim, Frame::Inertial>>(
+          used_for_size, 0.0);
+  raise_or_lower_index(make_not_null(&interface_unit_normal_one_form),
+                       interface_unit_normal_vector, spatial_metric);
+
+  const auto projection_aa = gr::transverse_projection_operator(
+      spacetime_metric, spacetime_normal_one_form,
+      interface_unit_normal_one_form, shift);
+  check_aa_orthogonality(projection_aa, spacetime_normal_vector);
+
+  tnsr::aa<DataType, SpatialDim, Frame::Inertial> projection_aa_not_null(
+      data_size);
+  gr::transverse_projection_operator(
+      make_not_null(&projection_aa_not_null), spacetime_metric,
+      spacetime_normal_one_form, interface_unit_normal_one_form, shift);
+  check_aa_orthogonality(projection_aa_not_null, spacetime_normal_vector);
+
+  const auto projection_ab = gr::transverse_projection_operator(
+      spacetime_normal_vector, spacetime_normal_one_form,
+      interface_unit_normal_vector, interface_unit_normal_one_form, shift);
+  check_ab_orthogonality(projection_ab, spacetime_normal_one_form,
+                         spacetime_normal_vector);
+
+  tnsr::Ab<DataType, SpatialDim, Frame::Inertial> projection_ab_not_null(
+      data_size);
+  gr::transverse_projection_operator(
+      make_not_null(&projection_ab_not_null), spacetime_normal_vector,
+      spacetime_normal_one_form, interface_unit_normal_vector,
+      interface_unit_normal_one_form, shift);
+  check_ab_orthogonality(projection_ab_not_null, spacetime_normal_one_form,
+                         spacetime_normal_vector);
+
+  const auto outgoing_null_one_form =
+      gr::interface_null_normal<DataType, SpatialDim, Frame::Inertial>(
+          spacetime_normal_one_form, interface_unit_normal_one_form, shift,
+          1.0);
+  const auto incoming_null_one_form =
+      gr::interface_null_normal<DataType, SpatialDim, Frame::Inertial>(
+          spacetime_normal_one_form, interface_unit_normal_one_form, shift,
+          -1.0);
+  const auto outgoing_null_vector =
+      gr::interface_null_normal<DataType, SpatialDim, Frame::Inertial>(
+          spacetime_normal_vector, interface_unit_normal_vector, 1.0);
+  const auto incoming_null_vector =
+      gr::interface_null_normal<DataType, SpatialDim, Frame::Inertial>(
+          spacetime_normal_vector, interface_unit_normal_vector, -1.0);
+
+  const auto contract_aa_right = [&](const auto& vector) {
+    return tenex::evaluate<ti::a>(projection_aa(ti::a, ti::b) * vector(ti::B));
+  };
+  const auto contract_aa_left = [&](const auto& vector) {
+    return tenex::evaluate<ti::b>(vector(ti::A) * projection_aa(ti::a, ti::b));
+  };
+  const auto contract_ab_left = [&](const auto& one_form) {
+    return tenex::evaluate<ti::b>(one_form(ti::a) *
+                                  projection_ab(ti::A, ti::b));
+  };
+  const auto zero_spacetime_one_form =
+      make_with_value<tnsr::a<DataType, SpatialDim, Frame::Inertial>>(data_size,
+                                                                      0.0);
+
+  CHECK_ITERABLE_CUSTOM_APPROX(contract_aa_right(outgoing_null_vector),
+                               zero_spacetime_one_form, custom_approx);
+  CHECK_ITERABLE_CUSTOM_APPROX(contract_aa_right(incoming_null_vector),
+                               zero_spacetime_one_form, custom_approx);
+  CHECK_ITERABLE_CUSTOM_APPROX(contract_aa_left(outgoing_null_vector),
+                               zero_spacetime_one_form, custom_approx);
+  CHECK_ITERABLE_CUSTOM_APPROX(contract_aa_left(incoming_null_vector),
+                               zero_spacetime_one_form, custom_approx);
+
+  CHECK_ITERABLE_CUSTOM_APPROX(contract_ab_left(outgoing_null_one_form),
+                               zero_spacetime_one_form, custom_approx);
+  CHECK_ITERABLE_CUSTOM_APPROX(contract_ab_left(incoming_null_one_form),
+                               zero_spacetime_one_form, custom_approx);
+
+  const auto interface_normal_one_form = extend_spatial_one_form_to_spacetime(
+      interface_unit_normal_one_form, shift, used_for_size);
+  const auto interface_normal_vector = extend_spatial_vector_to_spacetime(
+      interface_unit_normal_vector, used_for_size);
+
+  CHECK_ITERABLE_CUSTOM_APPROX(contract_aa_right(interface_normal_vector),
+                               zero_spacetime_one_form, custom_approx);
+  CHECK_ITERABLE_CUSTOM_APPROX(contract_aa_left(interface_normal_vector),
+                               zero_spacetime_one_form, custom_approx);
+  CHECK_ITERABLE_CUSTOM_APPROX(contract_ab_left(interface_normal_one_form),
+                               zero_spacetime_one_form, custom_approx);
+
+  const auto trace_aa = tenex::evaluate(inverse_spacetime_metric(ti::A, ti::B) *
+                                        projection_aa(ti::a, ti::b));
+  const auto trace_ab = tenex::evaluate(projection_ab(ti::A, ti::a));
+  const auto expected_trace =
+      make_with_value<Scalar<DataType>>(used_for_size, SpatialDim - 1.0);
+  CHECK_ITERABLE_CUSTOM_APPROX(trace_aa, expected_trace, custom_approx);
+  CHECK_ITERABLE_CUSTOM_APPROX(trace_ab, expected_trace, custom_approx);
+
+  const auto raised_projection_aa = tenex::evaluate<ti::A, ti::b>(
+      inverse_spacetime_metric(ti::A, ti::C) * projection_aa(ti::c, ti::b));
+  CHECK_ITERABLE_CUSTOM_APPROX(raised_projection_aa, projection_ab,
+                               custom_approx);
+
+  const auto idempotent_projection_ab = tenex::evaluate<ti::A, ti::b>(
+      projection_ab(ti::A, ti::c) * projection_ab(ti::C, ti::b));
+  CHECK_ITERABLE_CUSTOM_APPROX(idempotent_projection_ab, projection_ab,
+                               custom_approx);
+
+  CHECK_ITERABLE_CUSTOM_APPROX(
+      get(dot_product(outgoing_null_one_form, outgoing_null_one_form,
+                      inverse_spacetime_metric)),
+      make_with_value<DataType>(used_for_size, 0.0), custom_approx);
+  CHECK_ITERABLE_CUSTOM_APPROX(
+      get(dot_product(incoming_null_one_form, incoming_null_one_form,
+                      inverse_spacetime_metric)),
+      make_with_value<DataType>(used_for_size, 0.0), custom_approx);
+  CHECK_ITERABLE_CUSTOM_APPROX(
+      get(dot_product(outgoing_null_vector, outgoing_null_vector,
+                      spacetime_metric)),
+      make_with_value<DataType>(used_for_size, 0.0), custom_approx);
+  CHECK_ITERABLE_CUSTOM_APPROX(
+      get(dot_product(incoming_null_vector, incoming_null_vector,
+                      spacetime_metric)),
+      make_with_value<DataType>(used_for_size, 0.0), custom_approx);
+}
+
+template <size_t SpatialDim, typename DataType>
+void test_projection_operator_spatial(const DataType& used_for_size) {
+  MAKE_GENERATOR(generator);
+  const auto spatial_metric =
+      TestHelpers::gr::random_spatial_metric<SpatialDim>(
+          make_not_null(&generator), used_for_size);
+  const auto inverse_spatial_metric =
+      determinant_and_inverse(spatial_metric).second;
+
+  const auto interface_unit_normal_vector =
+      random_unit_normal(make_not_null(&generator), spatial_metric);
+  auto interface_unit_normal_one_form =
+      make_with_value<tnsr::i<DataType, SpatialDim, Frame::Inertial>>(
+          used_for_size, 0.0);
+  raise_or_lower_index(make_not_null(&interface_unit_normal_one_form),
+                       interface_unit_normal_vector, spatial_metric);
+
+  const auto projection_II = gr::transverse_projection_operator(
+      inverse_spatial_metric, interface_unit_normal_vector);
+  const auto projection_ii = gr::transverse_projection_operator(
+      spatial_metric, interface_unit_normal_one_form);
+  const auto projection_Ij = gr::transverse_projection_operator(
+      interface_unit_normal_vector, interface_unit_normal_one_form);
+
+  auto projection_II_not_null =
+      make_with_value<tnsr::II<DataType, SpatialDim, Frame::Inertial>>(
+          used_for_size, 0.0);
+  gr::transverse_projection_operator(make_not_null(&projection_II_not_null),
+                                     inverse_spatial_metric,
+                                     interface_unit_normal_vector);
+  CHECK_ITERABLE_CUSTOM_APPROX(projection_II_not_null, projection_II,
+                               custom_approx);
+
+  auto projection_ii_not_null =
+      make_with_value<tnsr::ii<DataType, SpatialDim, Frame::Inertial>>(
+          used_for_size, 0.0);
+  gr::transverse_projection_operator(make_not_null(&projection_ii_not_null),
+                                     spatial_metric,
+                                     interface_unit_normal_one_form);
+  CHECK_ITERABLE_CUSTOM_APPROX(projection_ii_not_null, projection_ii,
+                               custom_approx);
+
+  auto projection_Ij_not_null =
+      make_with_value<tnsr::Ij<DataType, SpatialDim, Frame::Inertial>>(
+          used_for_size, 0.0);
+  gr::transverse_projection_operator(make_not_null(&projection_Ij_not_null),
+                                     interface_unit_normal_vector,
+                                     interface_unit_normal_one_form);
+  CHECK_ITERABLE_CUSTOM_APPROX(projection_Ij_not_null, projection_Ij,
+                               custom_approx);
+
+  const auto zero_vector =
+      make_with_value<tnsr::I<DataType, SpatialDim, Frame::Inertial>>(
+          used_for_size, 0.0);
+  const auto zero_one_form =
+      make_with_value<tnsr::i<DataType, SpatialDim, Frame::Inertial>>(
+          used_for_size, 0.0);
+
+  CHECK_ITERABLE_CUSTOM_APPROX(
+      tenex::evaluate<ti::I>(projection_II(ti::I, ti::J) *
+                             interface_unit_normal_one_form(ti::j)),
+      zero_vector, custom_approx);
+  CHECK_ITERABLE_CUSTOM_APPROX(
+      tenex::evaluate<ti::J>(interface_unit_normal_one_form(ti::i) *
+                             projection_II(ti::I, ti::J)),
+      zero_vector, custom_approx);
+
+  CHECK_ITERABLE_CUSTOM_APPROX(
+      tenex::evaluate<ti::i>(projection_ii(ti::i, ti::j) *
+                             interface_unit_normal_vector(ti::J)),
+      zero_one_form, custom_approx);
+  CHECK_ITERABLE_CUSTOM_APPROX(
+      tenex::evaluate<ti::j>(interface_unit_normal_vector(ti::I) *
+                             projection_ii(ti::i, ti::j)),
+      zero_one_form, custom_approx);
+
+  CHECK_ITERABLE_CUSTOM_APPROX(
+      tenex::evaluate<ti::I>(projection_Ij(ti::I, ti::j) *
+                             interface_unit_normal_vector(ti::J)),
+      zero_vector, custom_approx);
+  CHECK_ITERABLE_CUSTOM_APPROX(
+      tenex::evaluate<ti::j>(interface_unit_normal_one_form(ti::i) *
+                             projection_Ij(ti::I, ti::j)),
+      zero_one_form, custom_approx);
+
+  const auto trace_II = tenex::evaluate(spatial_metric(ti::i, ti::j) *
+                                        projection_II(ti::I, ti::J));
+  const auto trace_ii = tenex::evaluate(inverse_spatial_metric(ti::I, ti::J) *
+                                        projection_ii(ti::i, ti::j));
+  const auto trace_Ij = tenex::evaluate(projection_Ij(ti::I, ti::i));
+  const auto expected_trace =
+      make_with_value<Scalar<DataType>>(used_for_size, SpatialDim - 1.0);
+  CHECK_ITERABLE_CUSTOM_APPROX(trace_II, expected_trace, custom_approx);
+  CHECK_ITERABLE_CUSTOM_APPROX(trace_ii, expected_trace, custom_approx);
+  CHECK_ITERABLE_CUSTOM_APPROX(trace_Ij, expected_trace, custom_approx);
+
+  const auto idempotent_projection_Ij = tenex::evaluate<ti::I, ti::j>(
+      projection_Ij(ti::I, ti::k) * projection_Ij(ti::K, ti::j));
+  CHECK_ITERABLE_CUSTOM_APPROX(idempotent_projection_Ij, projection_Ij,
+                               custom_approx);
+
+  const auto raised_projection_ii = tenex::evaluate<ti::I, ti::j>(
+      inverse_spatial_metric(ti::I, ti::K) * projection_ii(ti::k, ti::j));
+  CHECK_ITERABLE_CUSTOM_APPROX(raised_projection_ii, projection_Ij,
+                               custom_approx);
 }
 }  // namespace
 
 namespace {
-using Affine = domain::CoordinateMaps::Affine;
-using Affine3D = domain::CoordinateMaps::ProductOf3Maps<Affine, Affine, Affine>;
 using frame = Frame::Inertial;
 constexpr size_t SpatialDim = 3;
 
-// Test projection operators by comparing to values from SpEC
-void test_spatial_projection_tensors_3D(
-    const size_t grid_size_each_dimension,
-    const std::array<double, 3>& lower_bound,
-    const std::array<double, 3>& upper_bound) {
+// Compare with fixed reference values from SpEC on a
+// 3D mesh with 3x3x3 grid points.
+void compare_spatial_projection_tensors_with_spec() {
+  constexpr size_t grid_size_each_dimension = 3;
+  const std::array<double, 3> lower_bound{{299., -0.5, -0.5}};
   // Setup grid
   Mesh<SpatialDim> mesh{grid_size_each_dimension, Spectral::Basis::Legendre,
                         Spectral::Quadrature::GaussLobatto};
-  const auto coord_map =
-      domain::make_coordinate_map<Frame::ElementLogical, Frame::Inertial>(
-          Affine3D{
-              Affine{-1., 1., lower_bound[0], upper_bound[0]},
-              Affine{-1., 1., lower_bound[1], upper_bound[1]},
-              Affine{-1., 1., lower_bound[2], upper_bound[2]},
-          });
-
   // Setup coordinates
-  const auto x_logical = logical_coordinates(mesh);
-  const auto x = coord_map(x_logical);
   const Direction<SpatialDim> direction(1, Side::Upper);  // +y direction
   const size_t slice_grid_points =
       mesh.extents().slice_away(direction.dimension()).product();
@@ -190,8 +509,8 @@ void test_spatial_projection_tensors_3D(
   }
 
   // Compare values returned to those from SpEC
-  CHECK_ITERABLE_APPROX(local_spatial_projection_IJ,
-                        spec_spatial_projection_IJ);
+  CHECK_ITERABLE_CUSTOM_APPROX(local_spatial_projection_IJ,
+                               spec_spatial_projection_IJ, custom_approx);
 
   // 2. Projection ij
   auto local_spatial_metric =
@@ -236,8 +555,8 @@ void test_spatial_projection_tensors_3D(
   }
 
   // Compare values returned to those from SpEC
-  CHECK_ITERABLE_APPROX(local_spatial_projection_ij,
-                        spec_spatial_projection_ij);
+  CHECK_ITERABLE_CUSTOM_APPROX(local_spatial_projection_ij,
+                               spec_spatial_projection_ij, custom_approx);
 
   // 3. Projection Ij
   auto local_spatial_projection_Ij =
@@ -265,8 +584,8 @@ void test_spatial_projection_tensors_3D(
   }
 
   // Compare values returned to those from SpEC
-  CHECK_ITERABLE_APPROX(local_spatial_projection_Ij,
-                        spec_spatial_projection_Ij);
+  CHECK_ITERABLE_CUSTOM_APPROX(local_spatial_projection_Ij,
+                               spec_spatial_projection_Ij, custom_approx);
 }
 }  // namespace
 
@@ -278,10 +597,8 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.GeneralRelativity.ProjectionOps",
   GENERATE_UNINITIALIZED_DOUBLE_AND_DATAVECTOR;
 
   CHECK_FOR_DOUBLES_AND_DATAVECTORS(test_projection_operator, (1, 2, 3));
+  CHECK_FOR_DOUBLES_AND_DATAVECTORS(test_projection_operator_spatial,
+                                    (1, 2, 3));
 
-  const size_t grid_size = 3;
-  const std::array<double, 3> lower_bound{{299., -0.5, -0.5}};
-  const std::array<double, 3> upper_bound{{300., 0.5, 0.5}};
-
-  test_spatial_projection_tensors_3D(grid_size, lower_bound, upper_bound);
+  compare_spatial_projection_tensors_with_spec();
 }
