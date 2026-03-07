@@ -1392,6 +1392,7 @@ ${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
       - name: Install compiler
         run: |
           apt-get update -y
+          apt-get install --reinstall ca-certificates
           if [[ $COMPILER_ID = gcc ]]; then
             apt-get install -y $CC $CXX $FC
           else
@@ -1400,7 +1401,7 @@ ${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
       - name: Install Intel SDE
         working-directory: /work
         run: |
-          wget -O sde-external.tar.xz https://downloadmirror.intel.com/813591/sde-external-9.33.0-2024-01-07-lin.tar.xz
+          wget -O sde-external.tar.xz https://downloadmirror.intel.com/913594/sde-external-10.7.0-2026-02-18-lin.tar.xz
           tar -xJf sde-external.tar.xz
           mv sde-external-* sde
           rm sde-*
