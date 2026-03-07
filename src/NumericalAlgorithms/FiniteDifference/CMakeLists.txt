@@ -14,6 +14,7 @@ spectre_target_sources(
   Filter.cpp
   Minmod.cpp
   MonotonicityPreserving5.cpp
+  Ppm.cpp
   MonotonisedCentral.cpp
   NonUniform1D.cpp
   PartialDerivatives.cpp
@@ -41,6 +42,7 @@ spectre_target_headers(
   PartialDerivatives.hpp
   PartialDerivatives.tpp
   PositivityPreservingAdaptiveOrder.hpp
+  Ppm.hpp
   Reconstruct.hpp
   Reconstruct.tpp
   SecondPartialDerivatives.hpp
