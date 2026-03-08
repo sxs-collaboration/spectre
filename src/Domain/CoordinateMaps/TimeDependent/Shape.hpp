@@ -15,6 +15,7 @@
 #include "Domain/CoordinateMaps/TimeDependent/ShapeMapTransitionFunctions/ShapeMapTransitionFunction.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/Spherepack.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/SpherepackIterator.hpp"
+#include "Parallel/FifoCache.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TypeTraits/RemoveReferenceWrapper.hpp"
 
@@ -212,6 +213,11 @@ DataVector truncate_coefs(const DataVector& coefs,
  * caching could be done with member variables. Care must be taken that
  * `jacobian` currently calculates the `interpolation_info` with an order
  * higher.
+ *
+ * \warning The Shape map uses a mutable spherepack cache that can be read and
+ * mutated concurrently. It is up to the user to guarantee that
+ * the cache is in a valid state while threads are calling the map methods.
+ * Special care needs to be taken when using move and copy assignment.
  */
 class Shape {
  public:
@@ -227,10 +233,10 @@ class Shape {
 
   Shape() = default;
   ~Shape() = default;
-  Shape(Shape&&) = default;
-  Shape& operator=(Shape&&) = default;
   Shape(const Shape& rhs);
   Shape& operator=(const Shape& rhs);
+  Shape(Shape&& rhs);
+  Shape& operator=(Shape&& rhs);
 
   template <typename T>
   std::array<tt::remove_cvref_wrap_t<T>, 3> operator()(
@@ -289,6 +295,14 @@ class Shape {
   std::unique_ptr<ShapeMapTransitionFunctions::ShapeMapTransitionFunction>
       transition_func_;
 
+  using SpherepackEntry = std::pair<ylm::SpherepackIterator, ylm::Spherepack>;
+  using SpherepackCache = Parallel::FifoCache<std::unique_ptr<SpherepackEntry>>;
+  using CachedItem = SpherepackCache::Cached;
+  static constexpr size_t cache_capacity_ = 5;
+
+  // NOLINTNEXTLINE(spectre-mutable)
+  mutable SpherepackCache spherepack_cache_{cache_capacity_};
+
   template <typename T>
   std::array<tt::remove_cvref_wrap_t<T>, 3> center_coordinates(
       const std::array<T, 3>& coords) const {
@@ -321,6 +335,8 @@ class Shape {
                               const DataVector& coef_derivs,
                               const DataVector& coef_dderivs,
                               ylm::SpherepackIterator iterator) const;
+
+  CachedItem get_spherepack_cache_entry(size_t l_max) const;
 
   friend bool operator==(const Shape& lhs, const Shape& rhs);
 };

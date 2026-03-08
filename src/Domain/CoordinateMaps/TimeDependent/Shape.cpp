@@ -7,6 +7,7 @@
 #include <cmath>
 #include <cstddef>
 #include <memory>
+#include <new>
 #include <optional>
 #include <pup.h>
 #include <pup_stl.h>
@@ -171,12 +172,54 @@ Shape& Shape::operator=(const Shape& rhs) {
     f_of_t_names_ = rhs.f_of_t_names_;
     center_ = rhs.center_;
     truncation_limit_ = rhs.truncation_limit_;
-    transition_func_ = rhs.transition_func_->get_clone();
+    transition_func_ = rhs.transition_func_ != nullptr
+                           ? rhs.transition_func_->get_clone()
+                           : nullptr;
+    // we manually call the destructor and constructor here in case the cache
+    // needs to be resized. It is up to the user to guarantee that no thread is
+    // accessing the cache at this point.
+    spherepack_cache_.~SpherepackCache();
+    new (&spherepack_cache_) SpherepackCache{cache_capacity_};
   }
   return *this;
 }
 
-Shape::Shape(const Shape& rhs) { *this = rhs; }
+Shape::Shape(const Shape& rhs)
+    : shape_f_of_t_name_(rhs.shape_f_of_t_name_),
+      size_f_of_t_name_(rhs.size_f_of_t_name_),
+      f_of_t_names_(rhs.f_of_t_names_),
+      center_(rhs.center_),
+      truncation_limit_(rhs.truncation_limit_),
+      transition_func_(rhs.transition_func_ != nullptr
+                           ? rhs.transition_func_->get_clone()
+                           : nullptr),
+      spherepack_cache_(cache_capacity_) {}
+
+Shape::Shape(Shape&& rhs)
+    : shape_f_of_t_name_(std::move(rhs.shape_f_of_t_name_)),
+      size_f_of_t_name_(std::move(rhs.size_f_of_t_name_)),
+      f_of_t_names_(std::move(rhs.f_of_t_names_)),
+      center_(std::move(rhs.center_)),
+      truncation_limit_(rhs.truncation_limit_),
+      transition_func_(std::move(rhs.transition_func_)),
+      spherepack_cache_(cache_capacity_) {}
+
+Shape& Shape::operator=(Shape&& rhs) {
+  if (this != &rhs) {
+    shape_f_of_t_name_ = std::move(rhs.shape_f_of_t_name_);
+    size_f_of_t_name_ = std::move(rhs.size_f_of_t_name_);
+    f_of_t_names_ = std::move(rhs.f_of_t_names_);
+    center_ = std::move(rhs.center_);
+    truncation_limit_ = rhs.truncation_limit_;
+    transition_func_ = std::move(rhs.transition_func_);
+    // we manually call the destructor and constructor here in case the cache
+    // needs to be resized. It is up to the user to guarantee that no thread is
+    // accessing the cache at this point.
+    spherepack_cache_.~SpherepackCache();
+    new (&spherepack_cache_) SpherepackCache{cache_capacity_};
+  }
+  return *this;
+}
 
 template <typename T>
 std::array<tt::remove_cvref_wrap_t<T>, 3> Shape::operator()(
@@ -190,16 +233,16 @@ std::array<tt::remove_cvref_wrap_t<T>, 3> Shape::operator()(
   const SpherepackIterator full_iterator{l_max, l_max};
   const size_t truncated_l_max =
       find_truncated_l_max(coefs, coef_derivs, coef_dderivs, full_iterator);
-  const SpherepackIterator truncated_iterator{truncated_l_max, truncated_l_max};
+  const auto cached_item = get_spherepack_cache_entry(truncated_l_max);
+  const auto& [truncated_iterator, ylm] = *cached_item.value();
   DataVector truncated_coefs =
       truncate_coefs(coefs, full_iterator, truncated_iterator);
   check_size(make_not_null(&truncated_coefs), functions_of_time, time, false);
-  const ylm::Spherepack ylm{truncated_l_max, truncated_l_max};
-
   // re-use allocation
-  auto& radial_distortion = get<0>(theta_phis);
   const auto interpolation_info = ylm.set_up_interpolation_info(theta_phis);
-  // evaluate the spherical harmonic expansion at the angles of `source_coords`
+  auto& radial_distortion = get<0>(theta_phis);
+  // evaluate the spherical harmonic expansion at the angles of
+  // `source_coords`
   ylm.interpolate_from_coefs(make_not_null(&radial_distortion), truncated_coefs,
                              interpolation_info);
 
@@ -238,13 +281,16 @@ std::optional<std::array<double, 3>> Shape::inverse(
   const SpherepackIterator full_iterator{l_max, l_max};
   const size_t truncated_l_max =
       find_truncated_l_max(coefs, coef_derivs, coef_dderivs, full_iterator);
-  const SpherepackIterator truncated_iterator{truncated_l_max, truncated_l_max};
-  DataVector truncated_coefs =
-      truncate_coefs(coefs, full_iterator, truncated_iterator);
-  check_size(make_not_null(&truncated_coefs), functions_of_time, time, false);
-  const ylm::Spherepack ylm{truncated_l_max, truncated_l_max};
-  const double radial_distortion =
-      ylm.interpolate_from_coefs(truncated_coefs, theta_phis);
+  double radial_distortion = 0.0;
+  // extra guard to minimize lifetime of cached_item which has a lock
+  {
+    const auto cached_item = get_spherepack_cache_entry(truncated_l_max);
+    const auto& [truncated_iterator, ylm] = *cached_item.value();
+    DataVector truncated_coefs =
+        truncate_coefs(coefs, full_iterator, truncated_iterator);
+    check_size(make_not_null(&truncated_coefs), functions_of_time, time, false);
+    radial_distortion = ylm.interpolate_from_coefs(truncated_coefs, theta_phis);
+  }
   const std::optional<double> original_radius_over_radius =
       transition_func_->original_radius_over_radius(centered_coords,
                                                     radial_distortion);
@@ -266,12 +312,12 @@ std::array<tt::remove_cvref_wrap_t<T>, 3> Shape::frame_velocity(
   const SpherepackIterator full_iterator{l_max, l_max};
   const size_t truncated_l_max =
       find_truncated_l_max(coefs, coef_derivs, coef_dderivs, full_iterator);
-  const SpherepackIterator truncated_iterator{truncated_l_max, truncated_l_max};
+  const auto cached_item = get_spherepack_cache_entry(truncated_l_max);
+  const auto& [truncated_iterator, ylm] = *cached_item.value();
   DataVector truncated_coef_derivs =
       truncate_coefs(coef_derivs, full_iterator, truncated_iterator);
   check_size(make_not_null(&truncated_coef_derivs), functions_of_time, time,
              true);
-  const ylm::Spherepack ylm{truncated_l_max, truncated_l_max};
   const auto interpolation_info = ylm.set_up_interpolation_info(theta_phis);
   // re-use allocation
   auto& radii_velocities = get<0>(theta_phis);
@@ -297,11 +343,12 @@ tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame> Shape::jacobian(
       find_truncated_l_max(coefs, coef_derivs, coef_dderivs, full_iterator);
   // we need an additional l_max to compute the gradient without aliasing error
   truncated_l_max += 1;
-  const SpherepackIterator truncated_iterator{truncated_l_max, truncated_l_max};
+  const auto cached_item = get_spherepack_cache_entry(truncated_l_max);
+  const auto& [truncated_iterator, ylm] = *cached_item.value();
+
   DataVector truncated_coefs =
       truncate_coefs(coefs, full_iterator, truncated_iterator);
   check_size(make_not_null(&truncated_coefs), functions_of_time, time, false);
-  const ylm::Spherepack ylm{truncated_l_max, truncated_l_max};
   const auto interpolation_info = ylm.set_up_interpolation_info(theta_phis);
 
   // Re-use allocation
@@ -360,7 +407,8 @@ void Shape::coords_frame_velocity_jacobian(
       find_truncated_l_max(coefs, coef_derivs, coef_dderivs, full_iterator);
   // we need an additional l_max to compute the gradient without aliasing error
   truncated_l_max += 1;
-  const SpherepackIterator truncated_iterator{truncated_l_max, truncated_l_max};
+  const auto cached_item = get_spherepack_cache_entry(truncated_l_max);
+  const auto& [truncated_iterator, ylm] = *cached_item.value();
   DataVector truncated_coefs =
       truncate_coefs(coefs, full_iterator, truncated_iterator);
   DataVector truncated_coef_derivs =
@@ -368,7 +416,6 @@ void Shape::coords_frame_velocity_jacobian(
   check_size(make_not_null(&truncated_coefs), functions_of_time, time, false);
   check_size(make_not_null(&truncated_coef_derivs), functions_of_time, time,
              true);
-  const ylm::Spherepack ylm{truncated_l_max, truncated_l_max};
   const auto interpolation_info = ylm.set_up_interpolation_info(theta_phis);
   auto& radial_distortion = get(get<::Tags::TempScalar<0>>(temps));
   // evaluate the spherical harmonic expansion at the angles of
@@ -449,6 +496,26 @@ void Shape::check_size(const gsl::not_null<DataVector*>& coefs,
   }
 }
 
+Shape::CachedItem Shape::get_spherepack_cache_entry(const size_t l_max) const {
+  auto predicate =
+      [&l_max](
+          const std::unique_ptr<Shape::SpherepackEntry>& cached_entry) -> bool {
+    return cached_entry->first.l_max() == l_max;
+  };
+  // we expect few cache misses, so use find first to avoid locking the cache
+  auto cached_entry = spherepack_cache_.find(predicate);
+  if (cached_entry.has_value()) {
+    return cached_entry;
+  }
+  auto compute_new_entry = [&l_max]() {
+    return std::make_unique<Shape::SpherepackEntry>(
+        Shape::SpherepackEntry{{l_max, l_max}, {l_max, l_max}});
+  };
+  auto new_entry = spherepack_cache_.push(compute_new_entry, predicate);
+  ASSERT(new_entry.has_value(), "FifoCache push failed to return a value.");
+  return new_entry;
+}
+
 bool operator==(const Shape& lhs, const Shape& rhs) {
   return lhs.shape_f_of_t_name_ == rhs.shape_f_of_t_name_ and
          lhs.size_f_of_t_name_ == rhs.size_f_of_t_name_ and
@@ -484,7 +551,8 @@ void Shape::pup(PUP::er& p) {
     p | truncation_limit_;
   }
 
-  // No need to pup these because they are uniquely determined by other members
+  // No need to pup these because they are uniquely determined by other
+  // members
   if (p.isUnpacking()) {
     if (version == 0) {
       truncation_limit_ = 0.;
