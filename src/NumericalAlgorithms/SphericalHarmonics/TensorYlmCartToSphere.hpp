@@ -15,10 +15,15 @@ namespace ylm::TensorYlm {
  * \brief Fills a sparse matrix that does a TensorYlm Cartesian
  * to Spherical operation.
  *
- * Assumes that the input, $T^{\tilde A}_{\ell' m'}$, is stored in a
+ * If the CoefficientNormalization parameter is set to Standard, then
+ * assumes that the input, $T^{\tilde A}_{\ell' m'}$, is stored in a
  * Tensor<DataVector>.  Multiplying the resulting
  * sparse matrix by the Tensor<DataVector> is equivalent to
  * evaluating the right-hand side of Eq. $(\ref{eq:C2S})$.
+ * If the CoefficientNormalization parameter is set to Spherepack, then
+ * assumes the matrix will multiply a Tensor<DataVector> containing
+ * ${\breve T}^{\tilde A}_{\ell' m'}$ and the transform operation is
+ * equivalent to Eq. $(\ref{eq:C2SSpherepack})$.
  *
  * We assume that the independent components of the Tensor<DataVector>
  * are stored contiguously in memory, in order of the `storage_index` of
@@ -175,10 +180,12 @@ namespace ylm::TensorYlm {
  *
  * \param matrix The sparse matrix to fill
  * \param ell_max The maximum ylm ell value
+ * \param coefficient_normalization Describes the normalization of coefficients.
  *
  */
 template <typename TensorStructure, typename SparseMatrixType>
 void fill_cart_to_sphere(gsl::not_null<SparseMatrixType*> matrix,
-                         size_t ell_max);
+                         size_t ell_max,
+                         CoefficientNormalization coefficient_normalization);
 
 }  // namespace ylm::TensorYlm

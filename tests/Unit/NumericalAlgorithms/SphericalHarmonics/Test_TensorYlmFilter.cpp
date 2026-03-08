@@ -57,9 +57,10 @@ struct MyTag : db::SimpleTag {
 // Tests that applying the filter matrix is equivalent to doing a
 // cart-to-sphere, then a truncation filter, then a sphere-to-cart.
 template <typename TensorType>
-void test_filter_vs_transforms(const size_t ell_max,
-                               const size_t number_of_ell_modes_to_kill,
-                               const std::optional<size_t> half_power) {
+void test_filter_vs_transforms(
+    const size_t ell_max, const size_t number_of_ell_modes_to_kill,
+    const std::optional<size_t> half_power,
+    const ylm::TensorYlm::CoefficientNormalization coefficient_normalization) {
   ylm::SpherepackIterator it(ell_max, ell_max, 1, false);
   const size_t spectral_size = it.spherepack_array_size();
 
@@ -92,7 +93,7 @@ void test_filter_vs_transforms(const size_t ell_max,
     std::memcpy(B.data(), A.data(), A.size() * sizeof(double));
   } else {
     ylm::TensorYlm::fill_cart_to_sphere<typename TensorType::structure>(
-        make_not_null(&cart_to_sphere), ell_max);
+        make_not_null(&cart_to_sphere), ell_max, coefficient_normalization);
     cart_to_sphere.increment_multiply_on_right(make_not_null(&b_span), 0, 1,
                                                a_span, 0, 1);
   }
@@ -133,7 +134,7 @@ void test_filter_vs_transforms(const size_t ell_max,
     std::memcpy(C.data(), B.data(), B.size() * sizeof(double));
   } else {
     ylm::TensorYlm::fill_sphere_to_cart<typename TensorType::structure>(
-        make_not_null(&sphere_to_cart), ell_max);
+        make_not_null(&sphere_to_cart), ell_max, coefficient_normalization);
     sphere_to_cart.increment_multiply_on_right(make_not_null(&c_span), 0, 1,
                                                b_span, 0, 1);
   }
@@ -146,7 +147,7 @@ void test_filter_vs_transforms(const size_t ell_max,
   SimpleSparseMatrix filter_matrix;
   ylm::TensorYlm::fill_filter<typename TensorType::structure>(
       make_not_null(&filter_matrix), ell_max, number_of_ell_modes_to_kill,
-      half_power);
+      half_power, coefficient_normalization);
   filter_matrix.increment_multiply_on_right(make_not_null(&d_span), 0, 1,
                                             a_span, 0, 1);
 
@@ -168,9 +169,10 @@ void test_filter_vs_transforms(const size_t ell_max,
 }
 
 template <typename TensorStructure, typename SparseMatrixType>
-void test_tensorylm_filter_vs_spec(const size_t ell_max,
-                                   const size_t number_of_ell_modes_to_kill,
-                                   const std::optional<size_t> half_power) {
+void test_tensorylm_filter_vs_spec(
+    const size_t ell_max, const size_t number_of_ell_modes_to_kill,
+    const std::optional<size_t> half_power,
+    const ylm::TensorYlm::CoefficientNormalization coefficient_normalization) {
   // There are two "modes" for this test.  If test_all_elements is
   // true, it tests all the matrix elements vs SpEC, reading .txt
   // files that were output by SpEC. This test was done by Mark
@@ -1158,48 +1160,87 @@ void test_tensorylm_filter_vs_spec(const size_t ell_max,
 
   SparseMatrixType matrix;
   ylm::TensorYlm::fill_filter<TensorStructure>(
-      make_not_null(&matrix), ell_max, number_of_ell_modes_to_kill, half_power);
+      make_not_null(&matrix), ell_max, number_of_ell_modes_to_kill, half_power,
+      coefficient_normalization);
 
-  // Loop over spec_matrix_elements and make sure all the cases agree.
-  for (size_t i = 0; i < spec_matrix_elements.size(); ++i) {
-    CAPTURE(spec_dest_indices[i]);
-    CAPTURE(spec_src_indices[i]);
-    CHECK(matrix(spec_dest_indices[i], spec_src_indices[i]) ==
-          approx(spec_matrix_elements[i]));
+  // Loop over spec_matrix_elements and make sure all the cases agree
+  if (coefficient_normalization ==
+      ylm::TensorYlm::CoefficientNormalization::Standard) {
+    for (size_t i = 0; i < spec_matrix_elements.size(); ++i) {
+      CAPTURE(spec_dest_indices[i]);
+      CAPTURE(spec_src_indices[i]);
+      CHECK(matrix(spec_dest_indices[i], spec_src_indices[i]) ==
+            approx(spec_matrix_elements[i]));
+    }
+  } else {
+    CHECK(coefficient_normalization ==
+          ylm::TensorYlm::CoefficientNormalization::Spherepack);
+    // Here the expected coefficients are off by a factor of (-1)^{m+m'),
+    // So we must multiply the matrix elements by this factor.
+    // Most of the logic below is for recovering m and m' from the
+    // SparseMatrix indices.
+    ylm::SpherepackIterator src_iter(ell_max, ell_max, 1, false);
+    ylm::SpherepackIterator dest_iter(ell_max, ell_max, 1, false);
+    for (size_t i = 0; i < spec_matrix_elements.size(); ++i) {
+      CAPTURE(spec_dest_indices[i]);
+      CAPTURE(spec_src_indices[i]);
+      // We need to recover the azimuthal index m from the
+      // SparseMatrix indices.
+      //
+      // First compute offsets into arrays.
+      // The SparseMatrices are indexed by
+      // k = iter() + component_index*iter.spherepack_array_size()
+      // where iter is a SpherepackIterator.
+      // The offset is the value returned by iter().
+      const size_t dest_offset =
+          spec_dest_indices[i] % dest_iter.spherepack_array_size();
+      const size_t src_offset =
+          spec_src_indices[i] % src_iter.spherepack_array_size();
+      // Reset the iterators so we can query them for m and m'.
+      src_iter.set(src_iter.compact_index(src_offset).value());
+      dest_iter.set(dest_iter.compact_index(dest_offset).value());
+      // factor is (-1)^{m+m'}
+      const double factor =
+          ((src_iter.m() + dest_iter.m()) % 2 == 0 ? 1.0 : -1.0);
+      CHECK(matrix(spec_dest_indices[i], spec_src_indices[i]) ==
+            approx(factor * spec_matrix_elements[i]));
+    }
   }
 }
 
-void test(const std::optional<size_t>& half_power) {
+void test(
+    const std::optional<size_t>& half_power,
+    const ylm::TensorYlm::CoefficientNormalization coefficient_normalization) {
   const size_t ell_max = 8;
   const size_t num_to_kill = 4;
 
   test_tensorylm_filter_vs_spec<typename tnsr::i<DataVector, 3>::structure,
-                                SimpleSparseMatrix>(ell_max, num_to_kill,
-                                                    half_power);
+                                SimpleSparseMatrix>(
+      ell_max, num_to_kill, half_power, coefficient_normalization);
   test_tensorylm_filter_vs_spec<typename tnsr::ii<DataVector, 3>::structure,
-                                SimpleSparseMatrix>(ell_max, num_to_kill,
-                                                    half_power);
+                                SimpleSparseMatrix>(
+      ell_max, num_to_kill, half_power, coefficient_normalization);
   test_tensorylm_filter_vs_spec<typename tnsr::ij<DataVector, 3>::structure,
-                                SimpleSparseMatrix>(ell_max, num_to_kill,
-                                                    half_power);
+                                SimpleSparseMatrix>(
+      ell_max, num_to_kill, half_power, coefficient_normalization);
   test_tensorylm_filter_vs_spec<typename tnsr::ijj<DataVector, 3>::structure,
-                                SimpleSparseMatrix>(ell_max, num_to_kill,
-                                                    half_power);
+                                SimpleSparseMatrix>(
+      ell_max, num_to_kill, half_power, coefficient_normalization);
   test_tensorylm_filter_vs_spec<typename tnsr::ijk<DataVector, 3>::structure,
-                                SimpleSparseMatrix>(ell_max, num_to_kill,
-                                                    half_power);
+                                SimpleSparseMatrix>(
+      ell_max, num_to_kill, half_power, coefficient_normalization);
   test_filter_vs_transforms<typename tnsr::i<DataVector, 3>>(
-      ell_max, num_to_kill, half_power);
+      ell_max, num_to_kill, half_power, coefficient_normalization);
   test_filter_vs_transforms<typename tnsr::ii<DataVector, 3>>(
-      ell_max, num_to_kill, half_power);
+      ell_max, num_to_kill, half_power, coefficient_normalization);
   test_filter_vs_transforms<typename tnsr::ij<DataVector, 3>>(
-      ell_max, num_to_kill, half_power);
+      ell_max, num_to_kill, half_power, coefficient_normalization);
   test_filter_vs_transforms<typename tnsr::ijj<DataVector, 3>>(
-      ell_max, num_to_kill, half_power);
+      ell_max, num_to_kill, half_power, coefficient_normalization);
   test_filter_vs_transforms<typename tnsr::ijk<DataVector, 3>>(
-      ell_max, num_to_kill, half_power);
-  test_filter_vs_transforms<Scalar<DataVector>>(ell_max, num_to_kill,
-                                                half_power);
+      ell_max, num_to_kill, half_power, coefficient_normalization);
+  test_filter_vs_transforms<Scalar<DataVector>>(
+      ell_max, num_to_kill, half_power, coefficient_normalization);
 }
 }  // namespace
 
@@ -1208,16 +1249,32 @@ void test(const std::optional<size_t>& half_power) {
 // timeout to 120.  Release builds are still under 10 seconds (barely).  The
 // function test_filter_vs_transforms is much slower than
 // test_tensorylm_filter_vs_spec, so we increase the timeout to 360.
-// Test then split in half to allow running in parallel.
+// Test then split in fourths to allow running in parallel.
 
 // [[TimeOut, 180]]
 SPECTRE_TEST_CASE("Unit.SphericalHarmonics.TensorYlmFilter1",
                   "[NumericalAlgorithms][Unit]") {
-  test(std::optional<size_t>());
+  test(std::optional<size_t>(),
+       ylm::TensorYlm::CoefficientNormalization::Standard);
 }
 
 // [[TimeOut, 180]]
 SPECTRE_TEST_CASE("Unit.SphericalHarmonics.TensorYlmFilter2",
                   "[NumericalAlgorithms][Unit]") {
-  test(std::optional<size_t>(28));
+  test(std::optional<size_t>(28),
+       ylm::TensorYlm::CoefficientNormalization::Standard);
+}
+
+// [[TimeOut, 180]]
+SPECTRE_TEST_CASE("Unit.SphericalHarmonics.TensorYlmFilter3",
+                  "[NumericalAlgorithms][Unit]") {
+  test(std::optional<size_t>(),
+       ylm::TensorYlm::CoefficientNormalization::Spherepack);
+}
+
+// [[TimeOut, 180]]
+SPECTRE_TEST_CASE("Unit.SphericalHarmonics.TensorYlmFilter4",
+                  "[NumericalAlgorithms][Unit]") {
+  test(std::optional<size_t>(28),
+       ylm::TensorYlm::CoefficientNormalization::Spherepack);
 }

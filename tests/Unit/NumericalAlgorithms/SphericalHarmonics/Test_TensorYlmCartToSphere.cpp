@@ -12,6 +12,7 @@
 #include "DataStructures/Tensor/Structure.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
+#include "NumericalAlgorithms/SphericalHarmonics/SpherepackIterator.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/TensorYlmCartToSphere.hpp"
 #include "Utilities/Gsl.hpp"
 
@@ -39,7 +40,9 @@ std::string symm_to_string() {
 }
 
 template <typename TensorStructure, typename SparseMatrixType>
-void test_tensorylm_cart_to_sphere_vs_spec(const size_t ell_max) {
+void test_tensorylm_cart_to_sphere_vs_spec(
+    const size_t ell_max,
+    const ylm::TensorYlm::CoefficientNormalization coefficient_normalization) {
   // There are two "modes" for this test.  If test_all_elements is
   // true, it tests all the matrix elements vs SpEC, reading .txt
   // files that were output by SpEC. This test was done by Mark
@@ -436,37 +439,82 @@ void test_tensorylm_cart_to_sphere_vs_spec(const size_t ell_max) {
   }
 
   SparseMatrixType matrix;
-  ylm::TensorYlm::fill_cart_to_sphere<TensorStructure>(make_not_null(&matrix),
-                                                       ell_max);
+  ylm::TensorYlm::fill_cart_to_sphere<TensorStructure>(
+      make_not_null(&matrix), ell_max, coefficient_normalization);
+
   CAPTURE(matrix.size());
 
   // Loop over spec_matrix_elements and make sure all the cases agree.
-  for (size_t i = 0; i < spec_matrix_elements.size(); ++i) {
-    CAPTURE(spec_dest_indices[i]);
-    CAPTURE(spec_src_indices[i]);
-    CHECK(matrix(spec_dest_indices[i], spec_src_indices[i]) ==
-          approx(spec_matrix_elements[i]));
+  if (coefficient_normalization ==
+      ylm::TensorYlm::CoefficientNormalization::Standard) {
+    for (size_t i = 0; i < spec_matrix_elements.size(); ++i) {
+      CAPTURE(spec_dest_indices[i]);
+      CAPTURE(spec_src_indices[i]);
+      CHECK(matrix(spec_dest_indices[i], spec_src_indices[i]) ==
+            approx(spec_matrix_elements[i]));
+    }
+  } else {
+    CHECK(coefficient_normalization ==
+          ylm::TensorYlm::CoefficientNormalization::Spherepack);
+    // Here the expected coefficients are off by a factor of (-1)^{m+m'),
+    // So we must multiply the matrix elements by this factor.
+    // Most of the logic below is for recovering m and m' from the
+    // SparseMatrix indices.
+    ylm::SpherepackIterator src_iter(ell_max, ell_max, 1, false);
+    ylm::SpherepackIterator dest_iter(ell_max, ell_max, 1, false);
+    for (size_t i = 0; i < spec_matrix_elements.size(); ++i) {
+      CAPTURE(spec_dest_indices[i]);
+      CAPTURE(spec_src_indices[i]);
+      // We need to recover the azimuthal index m from the
+      // SparseMatrix indices.
+      //
+      // First compute offsets into arrays.
+      // The SparseMatrices are indexed by
+      // k = iter() + component_index*iter.spherepack_array_size()
+      // where iter is a SpherepackIterator.
+      // The offset is the value returned by iter().
+      const size_t dest_offset =
+          spec_dest_indices[i] % dest_iter.spherepack_array_size();
+      const size_t src_offset =
+          spec_src_indices[i] % src_iter.spherepack_array_size();
+      // Reset the iterators so we can query them for m and m'.
+      src_iter.set(src_iter.compact_index(src_offset).value());
+      dest_iter.set(dest_iter.compact_index(dest_offset).value());
+      // factor is (-1)^{m+m'}
+      const double factor =
+          ((src_iter.m() + dest_iter.m()) % 2 == 0 ? 1.0 : -1.0);
+      CHECK(matrix(spec_dest_indices[i], spec_src_indices[i]) ==
+            approx(factor * spec_matrix_elements[i]));
+    }
   }
 }
 }  // namespace
 
 // For debug builds this test sometimes times out if you don't increase
 // the timeout.
-// [[TimeOut, 20]]
+// [[TimeOut, 40]]
 SPECTRE_TEST_CASE("Unit.SphericalHarmonics.TensorYlmCartToSphere",
                   "[NumericalAlgorithms][Unit]") {
   const size_t ell_max = 8;
 
-  test_tensorylm_cart_to_sphere_vs_spec<
-      typename tnsr::i<DataVector, 3>::structure, SimpleSparseMatrix>(ell_max);
-  test_tensorylm_cart_to_sphere_vs_spec<
-      typename tnsr::ii<DataVector, 3>::structure, SimpleSparseMatrix>(ell_max);
-  test_tensorylm_cart_to_sphere_vs_spec<
-      typename tnsr::ij<DataVector, 3>::structure, SimpleSparseMatrix>(ell_max);
-  test_tensorylm_cart_to_sphere_vs_spec<
-      typename tnsr::ijj<DataVector, 3>::structure, SimpleSparseMatrix>(
-      ell_max);
-  test_tensorylm_cart_to_sphere_vs_spec<
-      typename tnsr::ijk<DataVector, 3>::structure, SimpleSparseMatrix>(
-      ell_max);
+  for (const auto norm :
+       std::vector<ylm::TensorYlm::CoefficientNormalization>{
+           {ylm::TensorYlm::CoefficientNormalization::Standard,
+            ylm::TensorYlm::CoefficientNormalization::Spherepack}}) {
+    test_tensorylm_cart_to_sphere_vs_spec<
+        typename tnsr::i<DataVector, 3>::structure, SimpleSparseMatrix>(ell_max,
+                                                                        norm);
+    test_tensorylm_cart_to_sphere_vs_spec<
+        typename tnsr::ii<DataVector, 3>::structure, SimpleSparseMatrix>(
+        ell_max, norm);
+    test_tensorylm_cart_to_sphere_vs_spec<
+        typename tnsr::ij<DataVector, 3>::structure, SimpleSparseMatrix>(
+        ell_max, norm);
+    test_tensorylm_cart_to_sphere_vs_spec<
+        typename tnsr::ijj<DataVector, 3>::structure, SimpleSparseMatrix>(
+        ell_max, norm);
+    test_tensorylm_cart_to_sphere_vs_spec<
+        typename tnsr::ijk<DataVector, 3>::structure, SimpleSparseMatrix>(
+        ell_max, norm);
+  }
 }

@@ -33,7 +33,8 @@ void inner_loops_one(SparseMatrixFiller& filler, SpherepackIterator& iter_src,
                      const int mj, const std::complex<double> kj,
                      WignerThreeJ& threej_m, WignerThreeJ& threej_s,
                      const int sign_m_dest, const int sign_delta_sb,
-                     const int sign_delta_sb_conj) {
+                     const int sign_delta_sb_conj,
+                     const CoefficientNormalization coefficient_normalization) {
   const auto add_element = [&filler, &iter_src, &iter_dest, dest_comp_index,
                             src_comp_index](const double element) {
     const size_t indx_dest =
@@ -43,6 +44,8 @@ void inner_loops_one(SparseMatrixFiller& filler, SpherepackIterator& iter_src,
     filler.add(element, indx_dest, indx_src);
   };
   const int m_src = m_dest - mj;
+  const auto sign_m =
+      helpers::sign_m<int>(m_src + m_dest, coefficient_normalization);
   for (size_t l_src =
            std::max(static_cast<size_t>(abs(m_src)), threej_s.l1_min());
        (l_src <= threej_s.l1_max() and l_src <= ell_max); ++l_src) {
@@ -52,8 +55,8 @@ void inner_loops_one(SparseMatrixFiller& filler, SpherepackIterator& iter_src,
     const int sign_conjA =
         ((static_cast<int>(l_src + l_dest) + 1 - scheck + m_src) % 2 == 0 ? 1
                                                                           : -1);
-    const int sign_plus_msrc_term = sign_m_dest * sign_delta_sb;
-    const int sign_min_msrc_term = sign_delta_sb_conj * sign_conjA;
+    const int sign_plus_msrc_term = sign_m_dest * sign_m * sign_delta_sb;
+    const int sign_min_msrc_term = sign_delta_sb_conj * sign_m * sign_conjA;
     if (m_src >= 0) {
       // Main term.
       if (kj.imag() == 0) {
@@ -135,7 +138,8 @@ void inner_loops_two(SparseMatrixFiller& filler, SpherepackIterator& iter_src,
                      const std::array<helpers::BasisVector, 2>& dest_bvs,
                      std::vector<WignerThreeJ>& threej_pqs,
                      const double threej_ones_sbar_val, const int sign_sbar,
-                     const int sign_delta_sb, const int sign_delta_sb_conj) {
+                     const int sign_delta_sb, const int sign_delta_sb_conj,
+                     const CoefficientNormalization coefficient_normalization) {
   const auto add_element = [&filler, &iter_src, &iter_dest, src_comp_index,
                             dest_comp_index](const double element) {
     const size_t indx_dest =
@@ -149,6 +153,8 @@ void inner_loops_two(SparseMatrixFiller& filler, SpherepackIterator& iter_src,
     for (int q = -1; q <= 1; q += 2, ++mbar_indx) {
       if (static_cast<size_t>(std::abs(mbars[mbar_indx])) <= lbar) {
         const int m_src = m_dest - mbars[mbar_indx];
+        const auto sign_m =
+            helpers::sign_m<double>(m_src + m_dest, coefficient_normalization);
         const int sign_m_src = (m_src % 2 == 0 ? 1 : -1);
         const std::complex<double> kj =
             helpers::bv_to_k(dest_bvs[0], p) * helpers::bv_to_k(dest_bvs[1], q);
@@ -164,7 +170,7 @@ void inner_loops_two(SparseMatrixFiller& filler, SpherepackIterator& iter_src,
               sign_m_src * sign_delta_sb * sign_sbar;
           const int sign_min_msrc_term = sign_delta_sb_conj * sign_toprow;
           const double coef_without_kj =
-              sqterm * threej_ells_sbar(l_src) * threej_ones_sbar_val *
+              sign_m * sqterm * threej_ells_sbar(l_src) * threej_ones_sbar_val *
               threej_mbars[mbar_indx].value()(l_src) *
               threej_pqs[mbar_indx](lbar) * symm_factor *
               static_cast<double>(2 * lbar + 1);
@@ -243,23 +249,22 @@ void inner_loops_two(SparseMatrixFiller& filler, SpherepackIterator& iter_src,
 // the main function, making the main function and this function more
 // readable.
 template <typename Symm>
-void inner_loops_three(SparseMatrixFiller& filler, SpherepackIterator& iter_src,
-                       SpherepackIterator& iter_dest,
-                       const size_t src_comp_index,
-                       const size_t dest_comp_index, const size_t ell_max,
-                       const size_t l_dest, const int m_dest,
-                       const size_t lcheck, const int mcheck, const int sbar,
-                       const int scheck,
-                       std::vector<WignerThreeJ>& threej_ones_sbars,
-                       WignerThreeJ& threej_ssum, WignerThreeJ& threej_msdc,
-                       std::vector<std::optional<WignerThreeJ>>& threej_sb0s,
-                       std::vector<WignerThreeJ>& threej_pqs,
-                       std::vector<std::optional<WignerThreeJ>>& threej_rs,
-                       const std::vector<int>& mbars,
-                       const std::array<helpers::BasisVector, 3>& src_bvs,
-                       const std::array<helpers::BasisVector, 3>& dest_bvs,
-                       const size_t src_multiplicity, const int sign_all_s,
-                       const int sign_delta_sb, const int sign_delta_sb_conj) {
+void inner_loops_three(
+    SparseMatrixFiller& filler, SpherepackIterator& iter_src,
+    SpherepackIterator& iter_dest, const size_t src_comp_index,
+    const size_t dest_comp_index, const size_t ell_max, const size_t l_dest,
+    const int m_dest, const size_t lcheck, const int mcheck, const int sbar,
+    const int scheck, std::vector<WignerThreeJ>& threej_ones_sbars,
+    WignerThreeJ& threej_ssum, WignerThreeJ& threej_msdc,
+    std::vector<std::optional<WignerThreeJ>>& threej_sb0s,
+    std::vector<WignerThreeJ>& threej_pqs,
+    std::vector<std::optional<WignerThreeJ>>& threej_rs,
+    const std::vector<int>& mbars,
+    const std::array<helpers::BasisVector, 3>& src_bvs,
+    const std::array<helpers::BasisVector, 3>& dest_bvs,
+    const size_t src_multiplicity, const int sign_all_s,
+    const int sign_delta_sb, const int sign_delta_sb_conj,
+    const CoefficientNormalization coefficient_normalization) {
   const auto add_element = [&filler, &iter_src, &iter_dest, src_comp_index,
                             dest_comp_index](const double element) {
     const size_t indx_dest =
@@ -294,6 +299,8 @@ void inner_loops_three(SparseMatrixFiller& filler, SpherepackIterator& iter_src,
             if (mcheck == mbars[mbar_indx] + mr) {
               const int m_src = m_dest - mcheck;
               const int sign_m_src = (m_src % 2 == 0 ? 1 : -1);
+              const auto sign_m = helpers::sign_m<double>(
+                  m_src + m_dest, coefficient_normalization);
               const std::complex<double> kj =
                   helpers::bv_to_k(dest_bvs[0], r) * kj12;
               const double threej_r_val =
@@ -316,7 +323,7 @@ void inner_loops_three(SparseMatrixFiller& filler, SpherepackIterator& iter_src,
                 const int sign_toprow =
                     ((l_src + l_dest + 1) % 2 == 0 ? 1 : -1);
                 const double coef_without_kj =
-                    sqterm * threej_ones_sbar_val * threej_ssum_val *
+                    sign_m * sqterm * threej_ones_sbar_val * threej_ssum_val *
                     threej_pq_val * threej_r_val * threej_sb0_val *
                     threej_msdc_val * symm_factor * lbar_term;
                 const int sign_plus_msrc_term =
@@ -405,8 +412,9 @@ void inner_loops_three(SparseMatrixFiller& filler, SpherepackIterator& iter_src,
 }  // namespace
 
 template <typename TensorStructure, typename SparseMatrixType>
-void fill_sphere_to_cart(const gsl::not_null<SparseMatrixType*> matrix,
-                      const size_t ell_max) {
+void fill_sphere_to_cart(
+    const gsl::not_null<SparseMatrixType*> matrix, const size_t ell_max,
+    const CoefficientNormalization coefficient_normalization) {
   static constexpr size_t num_independent_components = TensorStructure::size();
   static constexpr size_t rank = TensorStructure::rank();
   static constexpr auto tensor_index_list =
@@ -586,7 +594,8 @@ void fill_sphere_to_cart(const gsl::not_null<SparseMatrixType*> matrix,
             inner_loops_one(filler, iter_src, iter_dest, src_comp_index,
                             dest_comp_index, ell_max, l_dest, m_dest, scheck,
                             mj, kj, threej_m, threej_s, sign_m_dest,
-                            sign_delta_sb, sign_delta_sb_conj);
+                            sign_delta_sb, sign_delta_sb_conj,
+                            coefficient_normalization);
           }
         } else if constexpr (rank == 2) {
           (void)scheck;  // unused for rank 2
@@ -618,7 +627,7 @@ void fill_sphere_to_cart(const gsl::not_null<SparseMatrixType*> matrix,
                               mbars, threej_mbars, threej_ells_sbar,
                               symm_factor, dest_bvs, threej_pqs,
                               threej_ones_sbar_val, sign_sbar, sign_delta_sb,
-                              sign_delta_sb_conj);
+                              sign_delta_sb_conj, coefficient_normalization);
             }
           }
         } else if constexpr (rank == 3) {
@@ -638,7 +647,7 @@ void fill_sphere_to_cart(const gsl::not_null<SparseMatrixType*> matrix,
                   threej_ones_sbars, threej_ssum, threej_msdc, threej_sb0s,
                   threej_pqs, threej_rs, mbars, src_bvs, dest_bvs,
                   src_multiplicity, sign_all_s, sign_delta_sb,
-                  sign_delta_sb_conj);
+                  sign_delta_sb_conj, coefficient_normalization);
             }
           }
         }
@@ -654,12 +663,13 @@ void fill_sphere_to_cart(const gsl::not_null<SparseMatrixType*> matrix,
 #define INSTANTIATE(_, data)                                             \
   template void fill_sphere_to_cart<typename TSTRUCT(data) < DataVector, \
                                     3>::structure >                      \
-      (gsl::not_null<SimpleSparseMatrix*> matrix, size_t ell_max);       \
+      (gsl::not_null<SimpleSparseMatrix*> matrix, size_t ell_max,        \
+       CoefficientNormalization coefficient_normalization);              \
   template void fill_sphere_to_cart<typename TSTRUCT(data) < DataVector, \
                                     3>::structure >                      \
       (gsl::not_null<blaze::CompressedMatrix<double, blaze::rowMajor>*>  \
            matrix,                                                       \
-       size_t ell_max);
+       size_t ell_max, CoefficientNormalization coefficient_normalization);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE,
                         (tnsr::i, tnsr::ii, tnsr::ij, tnsr::ijk, tnsr::ijj))

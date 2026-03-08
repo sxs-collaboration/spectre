@@ -16,10 +16,15 @@ namespace ylm::TensorYlm {
 /*!
  * \brief Fills a sparse matrix that does a TensorYlm filter operation.
  *
- * Assumes that $T^{\tilde A}_{\ell' m'}$ is stored in a
+ * If the CoefficientNormalization parameter is set to Standard, then
+ * assumes that $T^{\tilde A}_{\ell' m'}$ is stored in a
  * Tensor<DataVector>.  Multiplying (one plus) the resulting
  * sparse matrix by the Tensor<DataVector> is equivalent to
  * evaluating the right-hand side of Eq. $(\ref{eq:Filter})$.
+ * If the CoefficientNormalization parameter is set to Spherepack, then
+ * assumes the matrix will multiply a Tensor<DataVector> containing
+ * ${\breve T}^{\tilde A}_{\ell' m'}$ and the filter operation is equivalent to
+ * Eq. $(\ref{eq:FilterSpherepack})$.
  *
  * We assume that the independent components of the Tensor<DataVector>
  * are stored contiguously in memory, in order of the storage_index of
@@ -215,6 +220,7 @@ namespace ylm::TensorYlm {
  * \param ell_max The maximum ylm ell value.
  * \param number_of_ell_modes_to_kill How many top ell modes to set to zero.
  * \param half_power The half power $\sigma$ for more complicated filtering.
+ * \param coefficient_normalization Describes the normalization of coefficients.
  *
  *  If half_power is std::nullopt, implements a Heaviside filter.
  *  Otherwise, the filter is the more complicated one described in the
@@ -226,6 +232,7 @@ namespace ylm::TensorYlm {
 template <typename TensorStructure, typename SparseMatrixType>
 void fill_filter(gsl::not_null<SparseMatrixType*> matrix, size_t ell_max,
                  size_t number_of_ell_modes_to_kill,
-                 std::optional<size_t> half_power);
+                 std::optional<size_t> half_power,
+                 CoefficientNormalization coefficient_normalization);
 
 }  // namespace ylm::TensorYlm

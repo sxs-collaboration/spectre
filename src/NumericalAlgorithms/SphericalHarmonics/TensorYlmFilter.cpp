@@ -130,7 +130,8 @@ void inner_loops_two(SparseMatrixFiller& filler, SpherepackIterator& iter_src,
                      const std::array<helpers::BasisVector, 2>& dest_bvs,
                      const double symm_factor, const double sign_y,
                      std::vector<WignerThreeJ>& threej_pqs,
-                     std::vector<WignerThreeJ>& threej_uvs) {
+                     std::vector<WignerThreeJ>& threej_uvs,
+                     const CoefficientNormalization coefficient_normalization) {
   const auto add_element = [&filler, &iter_src, &iter_dest, src_comp_index,
                             dest_comp_index](const double element) {
     const size_t indx_dest =
@@ -158,8 +159,10 @@ void inner_loops_two(SparseMatrixFiller& filler, SpherepackIterator& iter_src,
                       helpers::bv_to_k(src_bvs[1], v) *
                       helpers::bv_to_k(dest_bvs[1], q);
                   const int m_src = mprime - mtilde;
+                  const auto sign_m = helpers::sign_m<double>(
+                      m_src + m_dest, coefficient_normalization);
                   const std::complex<double> coef3j =
-                      -coeflprime * coeflbar * sign_y * k_coefs;
+                      -coeflprime * coeflbar * sign_y * sign_m * k_coefs;
                   for (size_t l_dest = std::max(
                            std::max(static_cast<size_t>(
                                         abs(static_cast<int>(lprime) -
@@ -282,7 +285,8 @@ void inner_loops_three(
     const size_t src_multiplicity, std::vector<WignerThreeJ>& threej_pqs,
     std::vector<WignerThreeJ>& threej_uvs,
     std::vector<std::optional<WignerThreeJ>>& threej_ws,
-    std::vector<std::optional<WignerThreeJ>>& threej_rs, const double sign_y) {
+    std::vector<std::optional<WignerThreeJ>>& threej_rs, const double sign_y,
+    const CoefficientNormalization coefficient_normalization) {
   const auto add_element = [&filler, &iter_src, &iter_dest, src_comp_index,
                             dest_comp_index](const double element) {
     const size_t indx_dest =
@@ -326,9 +330,12 @@ void inner_loops_three(
                                        abs(mw - mtildes[mtilde_indx])))) and
                   lhat <= lbar + 1) {
                 const int m_src = mprime - mhat;
+                const auto sign_m = helpers::sign_m<double>(
+                    m_src + m_dest, coefficient_normalization);
                 const double sign_mtilde =
-                    ((mtildes[mtilde_indx] - mbars[mbar_indx]) % 2 == 0 ? 1.0
-                                                                        : -1.0);
+                    sign_m * ((mtildes[mtilde_indx] - mbars[mbar_indx]) % 2 == 0
+                                  ? 1.0
+                                  : -1.0);
                 const double coeflhat = 0.5 * static_cast<double>(2 * lhat + 1);
                 const double coeflbar = 0.5 * static_cast<double>(2 * lbar + 1);
                 const std::complex<double> k_coefs =
@@ -440,7 +447,8 @@ void inner_loops_three(
 template <typename TensorStructure, typename SparseMatrixType>
 void fill_filter(const gsl::not_null<SparseMatrixType*> matrix,
                  const size_t ell_max, const size_t number_of_ell_modes_to_kill,
-                 const std::optional<size_t> half_power) {
+                 const std::optional<size_t> half_power,
+                 const CoefficientNormalization coefficient_normalization) {
   static constexpr size_t num_independent_components = TensorStructure::size();
   static constexpr size_t rank = TensorStructure::rank();
   static constexpr double alpha = 36.0;
@@ -653,7 +661,9 @@ void fill_filter(const gsl::not_null<SparseMatrixType*> matrix,
                   std::complex<double> coefjp =
                       -coeflprime * helpers::bv_to_k(src_bvs[0], j) *
                       helpers::bv_to_k(dest_bvs[0], p) * sign_y;
-                  if ((mdest + msrc) % 2 != 0) {
+                  if (coefficient_normalization ==
+                          CoefficientNormalization::Standard and
+                      (mdest + msrc) % 2 != 0) {
                     coefjp *= -1.0;
                   }
                   inner_loops_one(filler, iter_src, iter_dest, src_comp_index,
@@ -682,7 +692,8 @@ void fill_filter(const gsl::not_null<SparseMatrixType*> matrix,
                                     lbar, mbar, mtilde, coeflbar, coeflprime,
                                     threej_lbar, threej_ltilde, mbars, mtildes,
                                     src_bvs, dest_bvs, symm_factor, sign_y,
-                                    threej_pqs, threej_uvs);
+                                    threej_pqs, threej_uvs,
+                                    coefficient_normalization);
                   }
                 }
               }
@@ -711,7 +722,7 @@ void fill_filter(const gsl::not_null<SparseMatrixType*> matrix,
                               threej_mcheck, mbar_indx, p, q, r, mr, mbars,
                               mtildes, src_bvs, dest_bvs, src_multiplicity,
                               threej_pqs, threej_uvs, threej_ws, threej_rs,
-                              sign_y);
+                              sign_y, coefficient_normalization);
                         }
                       }
                     }
@@ -730,17 +741,19 @@ void fill_filter(const gsl::not_null<SparseMatrixType*> matrix,
 // Explicit instantiations
 #define TSTRUCT(data) BOOST_PP_TUPLE_ELEM(0, data)
 
-#define INSTANTIATE(_, data)                                                  \
-  template void                                                               \
-          fill_filter<typename TSTRUCT(data) < DataVector, 3>::structure >    \
-      (gsl::not_null<SimpleSparseMatrix*> matrix, size_t ell_max,             \
-       size_t number_of_ell_modes_to_kill, std::optional<size_t> half_power); \
-  template void                                                               \
-          fill_filter<typename TSTRUCT(data) < DataVector, 3>::structure >    \
-      (gsl::not_null<blaze::CompressedMatrix<double, blaze::rowMajor>*>       \
-           matrix,                                                            \
-       size_t ell_max, size_t number_of_ell_modes_to_kill,                    \
-       std::optional<size_t> half_power);
+#define INSTANTIATE(_, data)                                                 \
+  template void                                                              \
+          fill_filter<typename TSTRUCT(data) < DataVector, 3>::structure >   \
+      (gsl::not_null<SimpleSparseMatrix*> matrix, size_t ell_max,            \
+       size_t number_of_ell_modes_to_kill, std::optional<size_t> half_power, \
+       CoefficientNormalization coefficient_normalization);                  \
+  template void                                                              \
+          fill_filter<typename TSTRUCT(data) < DataVector, 3>::structure >   \
+      (gsl::not_null<blaze::CompressedMatrix<double, blaze::rowMajor>*>      \
+           matrix,                                                           \
+       size_t ell_max, size_t number_of_ell_modes_to_kill,                   \
+       std::optional<size_t> half_power,                                     \
+       CoefficientNormalization coefficient_normalization);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE,
                         (tnsr::i, tnsr::ii, tnsr::ij, tnsr::ijk, tnsr::ijj))
@@ -751,6 +764,7 @@ GENERATE_INSTANTIATIONS(INSTANTIATE,
 // Instantiation for scalars.
 template void fill_filter<typename Scalar<DataVector>::structure>(
     gsl::not_null<SimpleSparseMatrix*> matrix, size_t ell_max,
-    size_t number_of_ell_modes_to_kill, std::optional<size_t> half_power);
+    size_t number_of_ell_modes_to_kill, std::optional<size_t> half_power,
+    CoefficientNormalization coefficient_normalization);
 
 }  // namespace ylm::TensorYlm
