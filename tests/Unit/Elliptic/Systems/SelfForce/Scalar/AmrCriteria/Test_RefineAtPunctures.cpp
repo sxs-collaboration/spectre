@@ -108,7 +108,7 @@ SPECTRE_TEST_CASE("Unit.ScalarSelfForce.AmrCriteria.RefineAtPuncture",
   register_factory_classes_with_charm<Metavariables>();
   test_criterion(std::make_unique<ScalarSelfForce::AnalyticData::CircularOrbit>(
       // Only orbital radius is relevant for the test
-      1.0, 0.5, /* orbital radius */ 10.0, 2, std::nullopt));
+      1.0, 0.5, /* orbital radius */ 10.0, 2, std::nullopt, false));
   CHECK_THROWS_WITH(test_criterion(std::make_unique<OtherBackground>()),
                     Catch::Matchers::ContainsSubstring(
                         "RefineAtPuncture only works with 'CircularOrbit'."));

@@ -32,7 +32,7 @@ namespace ScalarSelfForce::AnalyticData {
  * defining the background fields $\alpha$, $\beta$, and $\gamma_i$ in the
  * general form of the equations
  * \begin{equation}
- * -\partial_i F^i + \beta \Psi_m + \gamma_i F^i = S_m
+ * -\partial_i F^i + \beta \Psi_m + \gamma_i \partial_i \Psi_m  = S_m
  * \text{.}
  * \end{equation}
  * with the flux
@@ -40,19 +40,41 @@ namespace ScalarSelfForce::AnalyticData {
  * F^i = \{\partial_{r_\star}, \alpha \partial_{\cos\theta}\} \Psi_m
  * \text{.}
  * \end{equation}
- * Note that we use $\cos\theta$ as angular coordinate but \cite Osburn:2022bby
- * uses $\theta$. We also multiply Eq. (2.9) by the factor $\Sigma^2 / (r^2 +
- * a^2)^2$ so we can easily write it in first-order flux form. The resulting
- * factors in the equation are:
+ * We make the following changes compared to \cite Osburn:2022bby :
  *
+ * - Multiply by the factor $\Sigma^2 / (r^2 + a^2)^2$ so that we can easily
+ *   write the equations in first-order flux form.
+ * - Use $\cos\theta$ as angular coordinate instead of $\theta$. This avoids
+ *   the $\cot\theta$ term by rewriting the angular derivatives as:
+ *   \f[
+ *   \partial_\theta^2+\cot\theta\partial_\theta =
+ *   \partial_{\cos\theta}\sin^2\theta\partial_{\cos\theta}
+ *   \f]
+ * - Decompose $\Psi_m = \sin(\theta)^m u_m(r_\star, \theta)$. This avoids the
+ *   $m^2/\sin^2\theta$ term by factoring out the singular behavior at the
+ *   poles. The equations transform as:
+ *   \f[
+ *   -\partial_{\cos\theta}\sin^2\theta\partial_{\cos\theta} \Psi_m +
+ *   \frac{m^2}{\sin^2\theta}\Psi_m = \sin(\theta)^m \left( m(m+1)
+ *   + 2m \cos\theta \partial_{\cos\theta}
+ *   - \partial_{\cos\theta}\sin^2\theta\partial_{\cos\theta} \right) u_m
+ *   \f]
+ *   We divide by $\sin(\theta)^m$ to get the equations for $u_m$.
+ *
+ * Written this way, the equations are regular at the poles and converge
+ * exponentially. We also don't have to apply angular boundary conditions
+ * because regularity at the poles is automatically enforced by the
+ * $\sin^2\theta$ factor in the flux.
+ *
+ * The resulting factors in the equation are:
  * \begin{align}
  * &\alpha = \frac{\Delta}{(r^2 + a^2)^2} \sin^2\theta \\
  * &\beta = \left(-m^2\Omega^2 \Sigma^2 + 4a m^2 \Omega M r + \Delta \left[
- *   \frac{m^2}{\sin^2\theta} + \frac{2M}{r}(1-\frac{a^2}{Mr}) + \frac{2iam}{r}
+ *   m (m + 1) + \frac{2M}{r}(1-\frac{a^2}{Mr}) + \frac{2iam}{r}
  *   \right]\right) \frac{1}{(r^2 + a^2)^2} \\
  * &\gamma_{r_\star} = -\frac{2iam}{r^2+a^2} + \frac{2a^2}{r}
  *   \frac{\alpha}{\sin^2\theta} \\
- * &\gamma_{\cos\theta} = 0
+ * &\gamma_{\cos\theta} = 2 m \cos(\theta) \frac{\Delta}{(r^2 + a^2)^2}
  * \end{align}
  *
  * This class also provides the effective source $S_m^\mathrm{eff} = \Delta_m
@@ -71,6 +93,22 @@ namespace ScalarSelfForce::AnalyticData {
  * \end{align}
  * where $\Delta\phi = \frac{a}{r_+ - r_-} \ln(\frac{r-r_+}{r-r_-})$ (Eq. (2.7)
  * in \cite Osburn:2022bby ).
+ * We also divide by $\sin(\theta)^m$ to account for the change of variable from
+ * $\Psi_m$ to $u_m$ described above.
+ *
+ * \par Impose equatorial symmetry
+ * Since this work is restricted to equatorial orbits, we can enforce equatorial
+ * symmetry by reformulating the equations in terms of the coordinate
+ * $z^2 = \cos^2\theta$ instead of $z = \cos\theta$. This transform the factors
+ * of first-order flux formulation as:
+ * \begin{equation}
+ * F^{\cos^2\theta}  = 4 \cos^2\theta F^{\cos\theta}
+ * \text{.}
+ * \end{equation}
+ * \begin{equation}
+ * \gamma_{\cos^2\theta} = 2 \cos\theta \gamma_{\cos\theta} + 2 \alpha
+ * \text{.}
+ * \end{equation}
  *
  * \par Hyperboloidal slicing
  * Transforming to a hyperboloidal time coordinate $s = t - h(r_*)$ can simplify
@@ -137,8 +175,16 @@ class CircularOrbit : public elliptic::analytic_data::Background,
         "the second and third points.";
     using type = Options::Auto<std::array<double, 4>, Options::AutoLabel::None>;
   };
-  using options = tmpl::list<BlackHoleMass, BlackHoleSpin, OrbitalRadius,
-                             MModeNumber, HyperboloidalSlicingTransitions>;
+  struct ImposeEquatorialSymmetry {
+    static constexpr Options::String help =
+        "Impose symmetry across the equatorial plane by using cos(theta)^2 "
+        "as the angular coordinate instead of cos(theta). This means the "
+        "domain should span [0, 1] instead of [-1, 1].";
+    using type = bool;
+  };
+  using options =
+      tmpl::list<BlackHoleMass, BlackHoleSpin, OrbitalRadius, MModeNumber,
+                 HyperboloidalSlicingTransitions, ImposeEquatorialSymmetry>;
   static constexpr Options::String help =
       "Quasicircular orbit of a scalar point charge in Kerr spacetime";
 
@@ -152,7 +198,8 @@ class CircularOrbit : public elliptic::analytic_data::Background,
   CircularOrbit(
       double black_hole_mass, double black_hole_spin, double orbital_radius,
       int m_mode_number,
-      std::optional<std::array<double, 4>> hyperboloidal_slicing_transitions);
+      std::optional<std::array<double, 4>> hyperboloidal_slicing_transitions,
+      bool impose_equatorial_symmetry);
 
   explicit CircularOrbit(CkMigrateMessage* m);
   using PUP::able::register_constructor;
@@ -166,6 +213,9 @@ class CircularOrbit : public elliptic::analytic_data::Background,
   std::optional<std::array<double, 4>> hyperboloidal_slicing_transitions()
       const {
     return hyperboloidal_slicing_transitions_;
+  }
+  bool impose_equatorial_symmetry() const {
+    return impose_equatorial_symmetry_;
   }
 
   using background_tags = tmpl::list<Tags::Alpha, Tags::Beta, Tags::Gamma>;
@@ -206,6 +256,7 @@ class CircularOrbit : public elliptic::analytic_data::Background,
   double orbital_radius_{std::numeric_limits<double>::signaling_NaN()};
   int m_mode_number_{};
   std::optional<std::array<double, 4>> hyperboloidal_slicing_transitions_{};
+  bool impose_equatorial_symmetry_{false};
 };
 
 bool operator!=(const CircularOrbit& lhs, const CircularOrbit& rhs);

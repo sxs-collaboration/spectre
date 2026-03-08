@@ -58,51 +58,59 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.ScalarSelfForce.CircularOrbit",
   CAPTURE(max(cos_theta));
 
   // Get the analytic fields
-  for (int m_mode_number = 0; m_mode_number < 3; ++m_mode_number) {
-    CAPTURE(m_mode_number);
-    const auto circular_orbit =
-        CircularOrbit{1., 0.9, 6., m_mode_number, {{-25., -5., 20., 40.}}};
-    CAPTURE(circular_orbit.puncture_position());
-    const auto background =
-        circular_orbit.variables(x, CircularOrbit::background_tags{});
-    const auto& alpha = get<Tags::Alpha>(background);
-    const auto& beta = get<Tags::Beta>(background);
-    const auto& gamma = get<Tags::Gamma>(background);
-    const auto vars = circular_orbit.variables(x, CircularOrbit::source_tags{});
-    const auto& singular_field = get<Tags::SingularField>(vars);
-    const auto& deriv_singular_field = get<
-        ::Tags::deriv<Tags::SingularField, tmpl::size_t<2>, Frame::Inertial>>(
-        vars);
-    const auto& effective_source = get<::Tags::FixedSource<Tags::MMode>>(vars);
+  for (const bool impose_equatorial_symmetry : {true, false}) {
+    CAPTURE(impose_equatorial_symmetry);
+    for (int m_mode_number = 0; m_mode_number < 3; ++m_mode_number) {
+      CAPTURE(m_mode_number);
+      const auto circular_orbit = CircularOrbit{1.,
+                                                0.9,
+                                                6.,
+                                                m_mode_number,
+                                                {{-25., -5., 20., 40.}},
+                                                impose_equatorial_symmetry};
+      CAPTURE(circular_orbit.puncture_position());
+      const auto background =
+          circular_orbit.variables(x, CircularOrbit::background_tags{});
+      const auto& alpha = get<Tags::Alpha>(background);
+      const auto& beta = get<Tags::Beta>(background);
+      const auto& gamma = get<Tags::Gamma>(background);
+      const auto vars =
+          circular_orbit.variables(x, CircularOrbit::source_tags{});
+      const auto& singular_field = get<Tags::SingularField>(vars);
+      const auto& deriv_singular_field = get<
+          ::Tags::deriv<Tags::SingularField, tmpl::size_t<2>, Frame::Inertial>>(
+          vars);
+      const auto& effective_source =
+          get<::Tags::FixedSource<Tags::MMode>>(vars);
 
-    // Take numeric derivative
-    const auto numeric_deriv_singular_field =
-        partial_derivative(singular_field, mesh, inv_jacobian);
-    const Approx custom_approx = Approx::custom().epsilon(1.e-10).scale(1.);
-    for (size_t i = 0; i < deriv_singular_field.size(); ++i) {
-      CAPTURE(i);
-      CHECK_ITERABLE_CUSTOM_APPROX(numeric_deriv_singular_field[i],
-                                   deriv_singular_field[i], custom_approx);
+      // Take numeric derivative
+      const auto numeric_deriv_singular_field =
+          partial_derivative(singular_field, mesh, inv_jacobian);
+      const Approx custom_approx = Approx::custom().epsilon(1.e-10).scale(1.);
+      for (size_t i = 0; i < deriv_singular_field.size(); ++i) {
+        CAPTURE(i);
+        CHECK_ITERABLE_CUSTOM_APPROX(numeric_deriv_singular_field[i],
+                                     deriv_singular_field[i], custom_approx);
+      }
+
+      tnsr::I<ComplexDataVector, 2> flux_singular_field{};
+      ScalarSelfForce::Fluxes::apply(make_not_null(&flux_singular_field), alpha,
+                                     {}, deriv_singular_field);
+      auto scalar_eqn = divergence(flux_singular_field, mesh, inv_jacobian);
+      get(scalar_eqn) *= -1.;
+      ScalarSelfForce::Sources::apply(make_not_null(&scalar_eqn), beta, gamma,
+                                      singular_field, deriv_singular_field,
+                                      flux_singular_field);
+      // Minus sign is from the definition of the effective source:
+      //   \psi = \psi_R + \psi_P = 0
+      // where \psi_R is the regular part and \psi_P is the singular part
+      //   => -\Delta \psi_R = \Delta \psi_P = S_eff
+      // where -Delta represents the elliptic operator. So the effective source
+      // for the regular part is is the negative of the elliptic operator
+      // acting on the singular part.
+      CHECK_ITERABLE_CUSTOM_APPROX(get(scalar_eqn), -get(effective_source),
+                                   custom_approx);
     }
-
-    tnsr::I<ComplexDataVector, 2> flux_singular_field{};
-    ScalarSelfForce::Fluxes::apply(make_not_null(&flux_singular_field), alpha,
-                                   {}, deriv_singular_field);
-    auto scalar_eqn = divergence(flux_singular_field, mesh, inv_jacobian);
-    get(scalar_eqn) *= -1.;
-    ScalarSelfForce::Sources::apply(make_not_null(&scalar_eqn), beta, gamma,
-                                    singular_field, deriv_singular_field,
-                                    flux_singular_field);
-    // Minus sign is from the definition of the effective source:
-    //   \psi = \psi_R + \psi_P = 0
-    // where \psi_R is the regular part and \psi_P is the singular part
-    //   => -\Delta \psi_R = \Delta \psi_P = S_eff
-    // where -Delta represents the elliptic operator. So the effective source
-    // for the regular part is is the negative of the elliptic operator
-    // acting on the singular part.
-    CHECK_ITERABLE_CUSTOM_APPROX(get(scalar_eqn), -get(effective_source),
-                                 custom_approx);
   }
 }
-
 }  // namespace ScalarSelfForce::AnalyticData

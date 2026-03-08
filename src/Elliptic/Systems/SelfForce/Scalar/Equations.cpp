@@ -33,9 +33,10 @@ void add_sources(const gsl::not_null<Scalar<ComplexDataVector>*> source,
                  const Scalar<ComplexDataVector>& beta,
                  const tnsr::i<ComplexDataVector, 2>& gamma,
                  const Scalar<ComplexDataVector>& field,
-                 const tnsr::I<ComplexDataVector, 2>& flux) {
-  get(*source) += get(beta) * get(field) + get<0>(gamma) * get<0>(flux) +
-                  get<1>(gamma) * get<1>(flux);
+                 const tnsr::i<ComplexDataVector, 2>& field_gradient) {
+  get(*source) += get(beta) * get(field) +
+                  get<0>(gamma) * get<0>(field_gradient) +
+                  get<1>(gamma) * get<1>(field_gradient);
 }
 
 void Fluxes::apply(const gsl::not_null<tnsr::I<ComplexDataVector, 2>*> flux,
@@ -58,9 +59,9 @@ void Sources::apply(
     const Scalar<ComplexDataVector>& beta,
     const tnsr::i<ComplexDataVector, 2>& gamma,
     const Scalar<ComplexDataVector>& field,
-    const tnsr::i<ComplexDataVector, 2>& /*field_gradient*/,
-    const tnsr::I<ComplexDataVector, 2>& flux) {
-  add_sources(scalar_equation, beta, gamma, field, flux);
+    const tnsr::i<ComplexDataVector, 2>& field_gradient,
+    const tnsr::I<ComplexDataVector, 2>& /*flux*/) {
+  add_sources(scalar_equation, beta, gamma, field, field_gradient);
 }
 
 void ModifyBoundaryData::apply(

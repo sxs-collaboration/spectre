@@ -31,6 +31,7 @@ Background: &background
     OrbitalRadius: &orbital_radius 10.
     MModeNumber: &m_mode_number 1
     HyperboloidalSlicingTransitions: [-25., 0., 25.55188094366623, 50.]
+    ImposeEquatorialSymmetry: False
 
 InitialGuess: *background
 
@@ -97,8 +98,7 @@ DomainCreator:
             HyperboloidalSlicing: True
             Order: 2
       # Angular boundary conditions
-      - Angular:
-          MModeNumber: *m_mode_number
+      - None
 
 Amr:
   Verbosity: Quiet

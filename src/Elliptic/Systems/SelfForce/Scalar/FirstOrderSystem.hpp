@@ -25,7 +25,8 @@ namespace ScalarSelfForce {
  *
  * We write the equations in generic first-order flux form
  * \begin{equation}
- * -\Delta_m \Psi_m = -\partial_i F^i + \beta \Psi_m + \gamma_i F^i = 0
+ * -\Delta_m \Psi_m = -\partial_i F^i + \beta \Psi_m + \gamma_i \partial_i
+ * \Psi_m = 0
  * \end{equation}
  * with the flux
  * \begin{equation}

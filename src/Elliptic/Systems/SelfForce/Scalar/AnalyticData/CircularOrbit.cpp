@@ -9,6 +9,7 @@
 #include <gsl/gsl_errno.h>
 #include <utility>
 
+#include "DataStructures/Blaze/IntegerPow.hpp"
 #include "DataStructures/ComplexDataVector.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/DataVector.hpp"
@@ -40,12 +41,14 @@ CircularOrbit::CircularOrbit(const double black_hole_mass,
                              const double orbital_radius,
                              const int m_mode_number,
                              const std::optional<std::array<double, 4>>
-                                 hyperboloidal_slicing_transitions)
+                                 hyperboloidal_slicing_transitions,
+                             const bool impose_equatorial_symmetry)
     : black_hole_mass_(black_hole_mass),
       black_hole_spin_(black_hole_spin),
       orbital_radius_(orbital_radius),
       m_mode_number_(m_mode_number),
-      hyperboloidal_slicing_transitions_(hyperboloidal_slicing_transitions) {}
+      hyperboloidal_slicing_transitions_(hyperboloidal_slicing_transitions),
+      impose_equatorial_symmetry_(impose_equatorial_symmetry) {}
 
 CircularOrbit::CircularOrbit(CkMigrateMessage* m)
     : elliptic::analytic_data::Background(m),
@@ -72,7 +75,14 @@ CircularOrbit::variables(
   const double r_0 = orbital_radius_;
   const double omega = 1. / (a + sqrt(cube(r_0) / M));
   const auto& r_star = get<0>(x);
-  const auto& cos_theta = get<1>(x);
+  const auto& cos_theta_or_sq = get<1>(x);
+  DataVector cos_theta_sq;
+  if (impose_equatorial_symmetry_) {
+    // NOLINTNEXTLINE
+    cos_theta_sq.set_data_ref(const_cast<DataVector*>(&cos_theta_or_sq));
+  } else {
+    cos_theta_sq = square(cos_theta_or_sq);
+  }
   const DataVector r_minus_r_plus =
       gr::boyer_lindquist_radius_minus_r_plus_from_tortoise(r_star, M,
                                                             black_hole_spin_);
@@ -80,7 +90,7 @@ CircularOrbit::variables(
   const DataVector delta = r_minus_r_plus * (r - r_minus);
   const DataVector r_sq_plus_a_sq = square(r) + square(a);
   const DataVector r_sq_plus_a_sq_sq = square(r_sq_plus_a_sq);
-  const DataVector sin_theta_squared = 1. - square(cos_theta);
+  const DataVector sin_theta_squared = 1. - cos_theta_sq;
   const DataVector sigma_squared =
       r_sq_plus_a_sq_sq - square(a) * delta * sin_theta_squared;
   tuples::TaggedTuple<Tags::Alpha, Tags::Beta, Tags::Gamma> result{};
@@ -92,14 +102,21 @@ CircularOrbit::variables(
       1. / r * std::complex<double>(0., 2. * a * m_mode_number_);
   get(beta) = (-square(m_mode_number_ * omega) * sigma_squared +
                4. * a * square(m_mode_number_) * omega * M * r +
-               delta * (square(m_mode_number_) / sin_theta_squared +
+               delta * (m_mode_number_ * (m_mode_number_ + 1) +
                         2. * M / r * (1. - square(a) / M / r) + temp1)) /
               r_sq_plus_a_sq_sq;
   get<0>(gamma) =
       -1. / r_sq_plus_a_sq * std::complex<double>(0., 2. * a * m_mode_number_) +
       2. * square(a) * get(alpha) / r;
-  get<1>(gamma) = ComplexDataVector{cos_theta.size(), 0.};
+  get<1>(gamma) = 2. * m_mode_number_ * cos_theta_or_sq * get(alpha);
+  if (impose_equatorial_symmetry_) {
+    get<1>(gamma) += sin_theta_squared * get(alpha);
+    get<1>(gamma) *= 2.0;
+  }
   get(alpha) *= sin_theta_squared;
+  if (impose_equatorial_symmetry_) {
+    get(alpha) *= 4. * cos_theta_sq;
+  }
   // Hyperboloidal slicing
   if (hyperboloidal_slicing_transitions_.has_value()) {
     const auto [H, dH] = boost_function_and_deriv(
@@ -166,7 +183,18 @@ CircularOrbit::variables(
         << "], but was requested in the range [" << min(r_star) << ", "
         << max(r_star) << "]");
   }
-  const auto& cos_theta = get<1>(x);
+  const auto& cos_theta_or_sq = get<1>(x);
+  DataVector cos_theta;
+  DataVector cos_theta_sq;
+  if (impose_equatorial_symmetry_) {
+    // NOLINTNEXTLINE
+    cos_theta_sq.set_data_ref(const_cast<DataVector*>(&cos_theta_or_sq));
+    cos_theta = sqrt(cos_theta_or_sq);
+  } else {
+    // NOLINTNEXTLINE
+    cos_theta.set_data_ref(const_cast<DataVector*>(&cos_theta_or_sq));
+    cos_theta_sq = square(cos_theta_or_sq);
+  }
   const DataVector r_minus_r_plus =
       gr::boyer_lindquist_radius_minus_r_plus_from_tortoise(r_star, M,
                                                             black_hole_spin_);
@@ -174,6 +202,9 @@ CircularOrbit::variables(
   const DataVector delta = r_minus_r_plus * (r - r_minus);
   const DataVector r_sq_plus_a_sq = square(r) + square(a);
   const DataVector r_sq_plus_a_sq_sq = square(r_sq_plus_a_sq);
+  const DataVector sin_theta_sq = 1. - cos_theta_sq;
+  const DataVector sin_theta = sqrt(sin_theta_sq);
+  const DataVector sin_theta_pow_m = integer_pow(sin_theta, m_mode_number_);
   const DataVector delta_phi = m_mode_number_ * a / (r_plus - r_minus) *
                                log((r - r_plus) / (r - r_minus));
   const ComplexDataVector rotation =
@@ -221,16 +252,30 @@ CircularOrbit::variables(
   get(effective_source) *= rotation * 0.5 * r / M_PI;
   // Factor Delta * (r^2 + a^2 cos^2(theta)) / Sigma^2
   // Factor Sigma^2 / (r^2 + a^2)^2 from first-order formulation
-  get(effective_source) *=
-      delta * (square(r) + square(a * cos_theta)) / r_sq_plus_a_sq_sq;
-  get(singular_field) *= rotation * 0.5 * r / M_PI;
-  get<0>(deriv_singular_field) *= rotation * 0.5 * r / M_PI;
+  // Factor 1/sin(theta)^m from change of variables
+  get(effective_source) *= delta * (square(r) + square(a) * cos_theta_sq) /
+                           r_sq_plus_a_sq_sq / sin_theta_pow_m;
+  get(singular_field) *= rotation * 0.5 * r / M_PI / sin_theta_pow_m;
+  get<0>(deriv_singular_field) *= rotation * 0.5 * r / M_PI / sin_theta_pow_m;
   get<0>(deriv_singular_field) +=
       get(singular_field) / r - std::complex<double>(0., a * m_mode_number_) /
                                     delta * get(singular_field);
   get<0>(deriv_singular_field) *= delta / r_sq_plus_a_sq;
-  get<1>(deriv_singular_field) *= rotation * 0.5 * r / M_PI;
-  get<1>(deriv_singular_field) /= -sqrt(1. - square(cos_theta));
+  get<1>(deriv_singular_field) *= rotation * 0.5 * r / M_PI / sin_theta_pow_m;
+  get<1>(deriv_singular_field) /= -sin_theta;
+  if (impose_equatorial_symmetry_) {
+    get<1>(deriv_singular_field) /= 2. * cos_theta;
+  }
+  {
+    ComplexDataVector add_term =
+        m_mode_number_ * get(singular_field) / sin_theta_sq;
+    if (impose_equatorial_symmetry_) {
+      add_term *= 0.5;
+    } else {
+      add_term *= cos_theta;
+    }
+    get<1>(deriv_singular_field) += add_term;
+  }
   return result;
 }
 
@@ -242,6 +287,7 @@ void CircularOrbit::pup(PUP::er& p) {
   p | orbital_radius_;
   p | m_mode_number_;
   p | hyperboloidal_slicing_transitions_;
+  p | impose_equatorial_symmetry_;
 }
 
 bool operator==(const CircularOrbit& lhs, const CircularOrbit& rhs) {
@@ -250,7 +296,8 @@ bool operator==(const CircularOrbit& lhs, const CircularOrbit& rhs) {
          lhs.orbital_radius_ == rhs.orbital_radius_ and
          lhs.m_mode_number_ == rhs.m_mode_number_ and
          lhs.hyperboloidal_slicing_transitions_ ==
-             rhs.hyperboloidal_slicing_transitions_;
+             rhs.hyperboloidal_slicing_transitions_ and
+         lhs.impose_equatorial_symmetry_ == rhs.impose_equatorial_symmetry_;
 }
 
 bool operator!=(const CircularOrbit& lhs, const CircularOrbit& rhs) {

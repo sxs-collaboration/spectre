@@ -68,7 +68,7 @@ struct MMode : db::SimpleTag {
  * This is the factor $\alpha$ that defines the principal part of the equations
  * and allows to write it in first-order flux form given by
  * \begin{equation}
- * -\partial_i F^i + \beta \Psi_m + \gamma_i F^i = S_m
+ * -\partial_i F^i + \beta \Psi_m + \gamma_i \partial_i \Psi_m = S_m
  * \end{equation}
  * with the flux
  * \begin{equation}
@@ -87,7 +87,7 @@ struct Alpha : db::SimpleTag {
  *
  * This is the factor $\beta$ in the general form of the equations
  * \begin{equation}
- * -\partial_i F^i + \beta \Psi_m + \gamma_i F^i = S_m
+ * -\partial_i F^i + \beta \Psi_m + \gamma_i \partial_i \Psi_m = S_m
  * \text{.}
  * \end{equation}
  * This factor is set by the analytic data class (see
@@ -102,7 +102,7 @@ struct Beta : db::SimpleTag {
  *
  * This is the factor $\gamma_i$ in the general form of the equations
  * \begin{equation}
- * -\partial_i F^i + \beta \Psi_m + \gamma_i F^i = S_m
+ * -\partial_i F^i + \beta \Psi_m + \gamma_i \partial_i \Psi_m = S_m
  * \text{.}
  * \end{equation}
  * This factor is set by the analytic data class (see
