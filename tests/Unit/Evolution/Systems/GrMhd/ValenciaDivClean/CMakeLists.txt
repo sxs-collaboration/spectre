@@ -16,6 +16,7 @@ set(LIBRARY_SOURCES
   FiniteDifference/Test_MonotonicityPreserving5.cpp
   FiniteDifference/Test_MonotonisedCentral.cpp
   FiniteDifference/Test_PositivityPreservingAdaptiveOrder.cpp
+  FiniteDifference/Test_Ppm.cpp
   FiniteDifference/Test_Tag.cpp
   FiniteDifference/Test_Wcns5z.cpp
   Subcell/Test_ComputeFluxes.cpp
