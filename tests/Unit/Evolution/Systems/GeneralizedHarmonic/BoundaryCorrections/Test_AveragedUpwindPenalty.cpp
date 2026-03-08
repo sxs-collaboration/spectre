@@ -221,13 +221,6 @@ void test(const gsl::not_null<std::mt19937*> gen, const size_t num_pts) {
         get<gh::Tags::ConstraintGamma1>(average_fields), lapse, shift,
         unit_normal_one_form,
         std::optional{get<MeshVelocity<Dim>>(average_fields)});
-    // Add mesh advection terms
-    const auto advection_speed =
-        tenex::evaluate(unit_normal_one_form(ti::i) *
-                        get<MeshVelocity<Dim>>(average_fields)(ti::I));
-    for (auto& speed : speeds) {
-      speed -= get(advection_speed);
-    }
 
     using CharacteristicFields = Variables<
         tmpl::list<gh::Tags::VSpacetimeMetric<DataVector, Dim, Frame::Inertial>,

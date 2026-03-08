@@ -50,9 +50,6 @@ DemandOutgoingCharSpeeds::dg_demand_outgoing_char_speeds(
     for (auto& char_speed : csw_char_speeds) {
       char_speed -= get(face_speed);
     }
-    for (auto& char_speed : gh_char_speeds) {
-      char_speed -= get(face_speed);
-    }
   }
   for (size_t i = 0; i < csw_char_speeds.size(); ++i) {
     if (min(csw_char_speeds[i]) < 0.) {

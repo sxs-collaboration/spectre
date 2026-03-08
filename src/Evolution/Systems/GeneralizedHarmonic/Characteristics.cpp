@@ -27,16 +27,20 @@ void characteristic_speeds(
     const tnsr::I<DataVector, Dim, Frame>& shift,
     const tnsr::i<DataVector, Dim, Frame>& unit_normal_one_form,
     const std::optional<tnsr::I<DataVector, Dim, Frame>>& mesh_velocity) {
-  const auto shift_dot_normal = get(dot_product(shift, unit_normal_one_form));
+  auto shift_dot_normal = dot_product(shift, unit_normal_one_form);
   (*char_speeds)[0] =
-      -(1. + get(gamma_1)) * shift_dot_normal;  // lambda(VSpacetimeMetric)
+      -(1. + get(gamma_1)) * get(shift_dot_normal);  // lambda(VSpacetimeMetric)
+  (*char_speeds)[1] = -get(shift_dot_normal);        // lambda(VZero)
+  (*char_speeds)[2] = -get(shift_dot_normal) + get(lapse);  // lambda(VPlus)
+  (*char_speeds)[3] = -get(shift_dot_normal) - get(lapse);  // lambda(VMinus)
   if (mesh_velocity.has_value()) {
-    (*char_speeds)[0] -=
-        get(gamma_1) * get(dot_product((*mesh_velocity), unit_normal_one_form));
+    dot_product(make_not_null(&shift_dot_normal), *mesh_velocity,
+                unit_normal_one_form);
+    (*char_speeds)[0] -= (1. + get(gamma_1)) * get(shift_dot_normal);
+    (*char_speeds)[1] -= get(shift_dot_normal);
+    (*char_speeds)[2] -= get(shift_dot_normal);
+    (*char_speeds)[3] -= get(shift_dot_normal);
   }
-  (*char_speeds)[1] = -shift_dot_normal;        // lambda(VZero)
-  (*char_speeds)[2] = -shift_dot_normal + get(lapse);  // lambda(VPlus)
-  (*char_speeds)[3] = -shift_dot_normal - get(lapse);  // lambda(VMinus)
 }
 
 template <size_t Dim, typename Frame>

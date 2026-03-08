@@ -281,15 +281,6 @@ std::optional<std::string> ConstraintPreservingBjorhus<Dim>::dg_time_derivative(
       three_index_constraint, gauge_source, spacetime_deriv_gauge_source, dt_pi,
       dt_phi, dt_spacetime_metric, d_pi, d_phi, d_spacetime_metric);
 
-  // Account for moving mesh: char speeds -> cher speeds - n_i v^i_g
-  if (face_mesh_velocity.has_value()) {
-    const auto radial_mesh_velocity =
-        get(dot_product(normal_covector, *face_mesh_velocity));
-    for (size_t a = 0; a < 4; ++a) {
-      char_speeds.at(a) -= radial_mesh_velocity;
-    }
-  }
-
   // If no point on the boundary has any incoming characteristic, return here
   if (min_characteristic_speed(char_speeds) >= 0.) {
     std::fill(dt_spacetime_metric_correction->begin(),
