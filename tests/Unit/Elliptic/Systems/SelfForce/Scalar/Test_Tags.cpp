@@ -49,6 +49,8 @@ SPECTRE_TEST_CASE("Unit.Elliptic.Systems.ScalarSelfForce.Tags",
   TestHelpers::db::test_simple_tag<Tags::BoostFunction>("BoostFunction");
   TestHelpers::db::test_simple_tag<Tags::BoostFunctionDeriv>(
       "BoostFunctionDeriv");
+  TestHelpers::db::test_simple_tag<Tags::NullSlicingBlocks>(
+      "NullSlicingBlocks");
 
   test_null_slicing_tag_logic();
 }

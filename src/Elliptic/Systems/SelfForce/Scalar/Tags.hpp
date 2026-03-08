@@ -3,6 +3,8 @@
 
 #pragma once
 
+#include <string>
+
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Domain/Creators/DomainCreator.hpp"
