@@ -155,6 +155,17 @@ SPECTRE_TEST_CASE("Unit.IO.Exporter.SpacetimeInterpolator", "[Unit]") {
     interpolator.load_time_bounds({{4.0, 7.0}});
     CHECK(interpolator.time_bounds() == std::array<double, 2>{{4.0, 7.0}});
     test_time_interpolation(interpolator);
+    {
+      INFO("Test move constructor");
+      const SpacetimeInterpolator<3, Frame::Inertial> moved_interpolator{
+          std::move(interpolator)};
+      CHECK(moved_interpolator.max_time_bounds() ==
+            std::array<double, 2>{{1.0, 8.0}});
+      CHECK(moved_interpolator.num_loaded_slices() == 6);
+      CHECK(moved_interpolator.time_bounds() ==
+            std::array<double, 2>{{4.0, 7.0}});
+      test_time_interpolation(moved_interpolator);
+    }
   }
 
   // Delete the test file
