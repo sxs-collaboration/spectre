@@ -13,5 +13,14 @@ add_test_library(${LIBRARY} "${LIBRARY_SOURCES}")
 target_link_libraries(
   ${LIBRARY}
   PRIVATE
+  Domain
+  DomainCreators
+  DomainStructure
+  Framework
+  GeneralRelativity
+  GeneralRelativitySolutions
+  H5
   RayTracer
+  Spectral
+  Utilities
   )
