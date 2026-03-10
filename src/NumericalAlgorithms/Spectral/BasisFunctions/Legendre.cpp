@@ -6,18 +6,25 @@
 #include <limits>
 #include <type_traits>
 #include <utility>
+#include <vector>
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Matrix.hpp"
+#include "DataStructures/ModalVector.hpp"
+#include "DataStructures/Tensor/Tensor.hpp"
+#include "DataStructures/Tensor/TypeAliases.hpp"
 #include "NumericalAlgorithms/RootFinding/TOMS748.hpp"
 #include "NumericalAlgorithms/Spectral/Basis.hpp"
 #include "NumericalAlgorithms/Spectral/BasisFunctionNormalizationSquare.hpp"
 #include "NumericalAlgorithms/Spectral/BasisFunctionValue.hpp"
 #include "NumericalAlgorithms/Spectral/CollocationPointsAndWeights.hpp"
 #include "NumericalAlgorithms/Spectral/InverseWeightFunctionValues.hpp"
+#include "NumericalAlgorithms/Spectral/Legendre.hpp"
+#include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Quadrature.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
+#include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeWithValue.hpp"
 
@@ -263,4 +270,74 @@ Matrix spectral_indefinite_integral_matrix<Basis::Legendre>(
   return constant * indef_int;
 }
 
+namespace {
+double evaluate_legendre_segment(gsl::span<const double> coefficients,
+                                 const double x) {
+  if (coefficients.empty()) {
+    return 0.0;
+  }
+  if (coefficients.size() == 1) {
+    return gsl::at(coefficients, 0);
+  }
+  const size_t n = coefficients.size() - 1;
+  double b_k_plus_two = 0.0;
+  double b_k_plus_one = 0.0;
+  for (int k = static_cast<int>(n); k >= 0; --k) {
+    const auto k_double = static_cast<double>(k);
+    const double a_k = (2.0 * k_double + 1.0) / (k_double + 1.0) * x;
+    const double b_kp1 = -(k_double + 1.0) / (k_double + 2.0);
+    const double b_k_current =
+        gsl::at(coefficients, k) + a_k * b_k_plus_one + b_kp1 * b_k_plus_two;
+    b_k_plus_two = b_k_plus_one;
+    b_k_plus_one = b_k_current;
+  }
+  return b_k_plus_one;
+}
+}  // namespace
+
+template <size_t Dim>
+double evaluate_legendre_series(
+    const ModalVector& coefficients, const Mesh<Dim>& mesh,
+    const tnsr::I<double, Dim, Frame::ElementLogical>& logical_coords) {
+  ASSERT(mesh.number_of_grid_points() == coefficients.size(),
+         "Mesh and coefficient sizes do not match: mesh has "
+             << mesh.number_of_grid_points() << " points but coefficients hold "
+             << coefficients.size() << " entries.");
+  for (size_t d = 0; d < Dim; ++d) {
+    ASSERT(mesh.basis(d) == Basis::Legendre,
+           "evaluate_legendre_series only supports Legendre bases. Found "
+               << mesh.basis(d) << " in dimension " << d << ".");
+  }
+  std::vector<double> working(coefficients.begin(), coefficients.end());
+  size_t current_size = working.size();
+  for (size_t dim = 0; dim < Dim; ++dim) {
+    const size_t extent = mesh.extents(dim);
+    ASSERT(extent > 0, "Mesh extent must be non-zero.");
+    const size_t num_slices = current_size / extent;
+    const double x_dim = logical_coords.get(dim);
+    const gsl::span<const double> working_view(working);
+    for (size_t slice = 0; slice < num_slices; ++slice) {
+      const auto slice_view = working_view.subspan(slice * extent, extent);
+      working[slice] = evaluate_legendre_segment(slice_view, x_dim);
+    }
+    current_size = num_slices;
+  }
+  ASSERT(current_size == 1,
+         "After evaluating all dimensions there should be a single value.");
+  return working.front();
+}
+
 }  // namespace Spectral
+
+#define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
+
+#define INSTANTIATE(_, data)                                        \
+  template double Spectral::evaluate_legendre_series<DIM(data)>(    \
+      const ModalVector& coefficients, const Mesh<DIM(data)>& mesh, \
+      const tnsr::I<double, DIM(data), Frame::ElementLogical>&      \
+          logical_coords);
+
+GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
+
+#undef INSTANTIATE
+#undef DIM
