@@ -50,9 +50,9 @@ namespace gh {
  * term used in SpEC and SpECTRE but not published anywhere:
  *
  * \f{align*}
- * v_{\psi} =& -(1 + \gamma_1) n_k \beta^k - \gamma_1 n_k v^k_g \\
- * v_{0} =& -n_k \beta^k \\
- * v_{\pm} =& -n_k \beta^k \pm \alpha
+ * v_{\psi} =& -(1 + \gamma_1) n_k \beta^k - (1 + \gamma_1) n_k v^k_g \\
+ * v_{0} =& -n_k \beta^k - n_k v^k_g\\
+ * v_{\pm} =& -n_k \beta^k \pm \alpha - n_k v^k_g
  * \f}
  *
  * where \f$\alpha, \beta^k\f$ are the lapse and shift respectively,
