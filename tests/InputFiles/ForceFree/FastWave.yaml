@@ -62,11 +62,7 @@ Limiter:
     DisableForDebugging: false
 
 Filtering:
-  ExpFilter0:
-    Alpha: 36
-    HalfPower: 50
-    Enable: false
-    BlocksToFilter: All
+  FilterEvolvedVariables: []
 
 Observers:
   VolumeFileName: "ForceFreeFastWaveVolume"

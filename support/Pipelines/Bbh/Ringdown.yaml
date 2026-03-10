@@ -158,11 +158,11 @@ EvolutionSystem:
         MovementMethod: ExpansionFactor
 
 Filtering:
-  ExpFilter0:
-    Alpha: 64.0
-    HalfPower: 210
-    Enable: true
-    BlocksToFilter: All
+  FilterEvolvedVariables:
+    - ExponentialFilter:
+        Alpha: 64.0
+        HalfPower: 210
+        BlocksToFilter: All
 
 SpatialDiscretization:
   BoundaryCorrection:

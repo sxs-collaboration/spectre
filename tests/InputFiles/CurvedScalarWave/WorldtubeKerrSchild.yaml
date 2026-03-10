@@ -174,11 +174,11 @@ InterpolationTargets:
     AngularOrdering: Strahlkorper
 
 Filtering:
-  ExpFilter0:
-    Alpha: 12
-    HalfPower: 32
-    Enable: true
-    BlocksToFilter: All
+  FilterEvolvedVariables:
+    - ExponentialFilter:
+        Alpha: 12
+        HalfPower: 32
+        BlocksToFilter: All
 
 EventsAndDenseTriggers:
 

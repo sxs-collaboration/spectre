@@ -96,13 +96,8 @@ SpatialDiscretization:
     Formulation: StrongInertial
     Quadrature: GaussLobatto
 
-# If filtering is enabled in the executable the filter can be controlled using:
-# Filtering:
-#   ExpFilter0:
-#     Alpha: 36
-#     HalfPower: 128
-#     Enable: false
-#     BlocksToFilter: All
+Filtering:
+  FilterEvolvedVariables: []
 
 EventsAndTriggersAtSlabs:
   - Trigger:

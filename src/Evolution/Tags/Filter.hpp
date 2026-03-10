@@ -5,17 +5,21 @@
 
 #include <cstddef>
 #include <memory>
+#include <pup_stl.h>
 #include <string>
 #include <unordered_set>
+#include <vector>
 
 #include "DataStructures/DataBox/Tag.hpp"
 #include "Domain/Creators/DomainCreator.hpp"
 #include "Domain/Creators/OptionTags.hpp"
 #include "Domain/Domain.hpp"
+#include "NumericalAlgorithms/LinearOperators/Filter.hpp"
 #include "Options/String.hpp"
 #include "Utilities/Algorithm.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/PrettyType.hpp"
+#include "Utilities/Serialization/Serialize.hpp"
 #include "Utilities/StdHelpers.hpp"
 
 namespace OptionTags {
@@ -30,43 +34,44 @@ struct FilteringGroup {
 
 /*!
  * \ingroup OptionTagsGroup
- * \brief The option tag that retrieves the parameters for the filter
- * from the input file
+ * \brief Option tag that constructs a list of filters from the input file.
  */
-template <typename FilterType>
-struct Filter {
-  static std::string name() { return pretty_type::name<FilterType>(); }
-  static constexpr Options::String help = "Options for the filter";
-  using type = FilterType;
+template <typename ListLabel>
+struct FilterList {
+  static std::string name() { return pretty_type::short_name<ListLabel>(); }
+  static constexpr Options::String help =
+      "A list of filters applied in the order specified.";
+  using type = std::vector<std::unique_ptr<::Filters::Filter>>;
   using group = FilteringGroup;
 };
 }  // namespace OptionTags
 
-namespace Filters {
-namespace Tags {
+namespace Filters::Tags {
 /*!
- * \brief The global cache tag for the filter
+ * \brief The DataBox tag for a list of filters.
  *
  * Also checks if the specified blocks are actually in the domain.
  */
-template <typename FilterType>
-struct Filter : db::SimpleTag {
-  using type = FilterType;
+template <typename ListLabel>
+struct FilterList : db::SimpleTag {
+  using type = std::vector<std::unique_ptr<::Filters::Filter>>;
   template <typename Metavariables>
   using option_tags =
-      tmpl::list<::OptionTags::Filter<FilterType>,
+      tmpl::list<::OptionTags::FilterList<ListLabel>,
                  domain::OptionTags::DomainCreator<Metavariables::volume_dim>>;
 
   static constexpr bool pass_metavariables = true;
   template <typename Metavariables>
-  static FilterType create_from_options(
-      const FilterType& filter,
+  static type create_from_options(
+      const type& filters_in,
       const std::unique_ptr<DomainCreator<Metavariables::volume_dim>>&
           domain_creator) {
-    const auto& blocks_to_filter = filter.blocks_to_filter();
-
-    // If this is nullopt, then we use all blocks
-    if (blocks_to_filter.has_value()) {
+    auto filters = deserialize<type>(serialize<type>(filters_in).data());
+    for (const auto& filter : filters) {
+      const auto& blocks_to_filter = filter->blocks_to_filter();
+      if (not blocks_to_filter.has_value()) {
+        continue;
+      }
       const auto& block_names = domain_creator->block_names();
       const auto& block_groups = domain_creator->block_groups();
 
@@ -90,9 +95,7 @@ struct Filter : db::SimpleTag {
         }
       }
     }
-
-    return filter;
+    return filters;
   }
 };
-}  // namespace Tags
-}  // namespace Filters
+}  // namespace Filters::Tags

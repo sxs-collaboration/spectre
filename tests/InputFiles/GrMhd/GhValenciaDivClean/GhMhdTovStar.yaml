@@ -179,12 +179,11 @@ SpatialDiscretization:
       SpacetimeDissipation: 0.1
 
 Filtering:
-  ExpFilter0:
-    Alpha: 36
-    HalfPower: 64
-    Enable: true
-    BlocksToFilter: All
-
+  FilterGhVariables:
+    - ExponentialFilter:
+        Alpha: 36
+        HalfPower: 64
+        BlocksToFilter: All
 
 EventsAndTriggersAtCheckpoints:
 

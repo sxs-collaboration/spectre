@@ -226,6 +226,8 @@ struct EvolutionMetavars {
         tmpl::pair<evolution::initial_data::InitialData, solutions_and_data>,
         tmpl::pair<MathFunction<1, Frame::Inertial>,
                    MathFunctions::all_math_functions<1, Frame::Inertial>>,
+        tmpl::pair<Filters::Filter,
+                   tmpl::list<Filters::Exponential<volume_dim>>>,
         tmpl::pair<PhaseChange,
                    tmpl::list<PhaseControl::VisitAndReturn<
                                   Parallel::Phase::LoadBalancing>,
@@ -246,7 +248,7 @@ struct EvolutionMetavars {
   };
   using observed_reduction_data_tags = observers::collect_reduction_data_tags<
       tmpl::at<typename factory_creation::factory_classes, Event>>;
-  static constexpr bool use_filtering = true;
+  struct FilterEvolvedVariables {};
 
   using step_actions = tmpl::flatten<tmpl::list<
       CurvedScalarWave::Actions::CalculateGrVars<system, true>,
@@ -266,14 +268,8 @@ struct EvolutionMetavars {
           local_time_stepping,
           Actions::MutateApply<evolution::dg::CleanMortarHistory<volume_dim>>,
           tmpl::list<>>,
-      tmpl::conditional_t<
-          use_filtering,
-          dg::Actions::Filter<
-              Filters::Exponential<0>,
-              tmpl::list<CurvedScalarWave::Tags::Psi,
-                         CurvedScalarWave::Tags::Pi,
-                         CurvedScalarWave::Tags::Phi<volume_dim>>>,
-          tmpl::list<>>>>;
+      dg::Actions::Filter<FilterEvolvedVariables,
+                          typename system::variables_tag::tags_list>>>;
 
   using const_global_cache_tags = tmpl::list<
       CurvedScalarWave::Tags::BackgroundSpacetime<BackgroundSpacetime>,
@@ -297,6 +293,7 @@ struct EvolutionMetavars {
       Initialization::Actions::InitializeItems<
           Initialization::TimeStepping<EvolutionMetavars, TimeStepperBase>,
           evolution::dg::Initialization::Domain<EvolutionMetavars>,
+          dg::Actions::InitializeFilters<FilterEvolvedVariables>,
           Initialization::TimeStepperHistory<EvolutionMetavars>>,
       Initialization::Actions::NonconservativeSystem<system>,
       CurvedScalarWave::Actions::CalculateGrVars<system, false>,

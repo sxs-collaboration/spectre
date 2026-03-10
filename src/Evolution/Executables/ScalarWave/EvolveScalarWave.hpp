@@ -200,6 +200,8 @@ struct EvolutionMetavars {
         tmpl::pair<LtsTimeStepper, TimeSteppers::lts_time_steppers>,
         tmpl::pair<MathFunction<1, Frame::Inertial>,
                    MathFunctions::all_math_functions<1, Frame::Inertial>>,
+        tmpl::pair<Filters::Filter,
+                   tmpl::list<Filters::Exponential<volume_dim>>>,
         tmpl::pair<PhaseChange, PhaseControl::factory_creatable_classes>,
         tmpl::pair<
             ScalarWave::BoundaryConditions::BoundaryCondition<volume_dim>,
@@ -226,10 +228,11 @@ struct EvolutionMetavars {
           tmpl::at<typename factory_creation::factory_classes, Event>>>>;
 
   // The scalar wave system generally does not require filtering, except
-  // possibly on certain deformed domains.  Here a filter is added in 2D for
+  // possibly on certain deformed domains.  We nevertheless add filtering for
   // testing purposes.  When performing numerical experiments with the scalar
-  // wave system, the user should determine whether this filter can be removed.
-  static constexpr bool use_filtering = (2 == volume_dim);
+  // wave system, the user should determine whether the filters can be removed
+  // from input files.
+  struct FilterEvolvedVariables {};
 
   using step_actions = tmpl::flatten<tmpl::list<
       evolution::dg::Actions::ComputeTimeDerivative<
@@ -256,13 +259,8 @@ struct EvolutionMetavars {
           local_time_stepping,
           Actions::MutateApply<evolution::dg::CleanMortarHistory<volume_dim>>,
           tmpl::list<>>,
-      tmpl::conditional_t<
-          use_filtering,
-          dg::Actions::Filter<
-              Filters::Exponential<0>,
-              tmpl::list<ScalarWave::Tags::Psi, ScalarWave::Tags::Pi,
-                         ScalarWave::Tags::Phi<Dim>>>,
-          tmpl::list<>>>>;
+      dg::Actions::Filter<FilterEvolvedVariables,
+                          typename system::variables_tag::tags_list>>>;
 
   using const_global_cache_tags =
       tmpl::list<evolution::initial_data::Tags::InitialData>;
@@ -274,6 +272,7 @@ struct EvolutionMetavars {
       Initialization::Actions::InitializeItems<
           Initialization::TimeStepping<EvolutionMetavars, TimeStepperBase>,
           evolution::dg::Initialization::Domain<EvolutionMetavars>,
+          dg::Actions::InitializeFilters<FilterEvolvedVariables>,
           ::amr::Initialization::Initialize<volume_dim, EvolutionMetavars>,
           Initialization::TimeStepperHistory<EvolutionMetavars>>,
       Initialization::Actions::NonconservativeSystem<system>,
@@ -339,6 +338,7 @@ struct EvolutionMetavars {
                                           ::ScalarWave::Tags::ConstraintGamma2>,
         evolution::dg::Initialization::ProjectMortars<volume_dim,
                                                       local_time_stepping>,
+        dg::Actions::InitializeFilters<FilterEvolvedVariables>,
         Initialization::ProjectTimeStepperHistory<EvolutionMetavars>,
         evolution::Actions::ProjectRunEventsAndDenseTriggers,
         ::amr::projectors::DefaultInitialize<

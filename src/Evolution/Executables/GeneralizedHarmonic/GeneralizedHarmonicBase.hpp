@@ -321,6 +321,7 @@ struct FactoryCreation : tt::ConformsTo<Options::protocols::FactoryCreation> {
       tmpl::pair<LtsTimeStepper, TimeSteppers::lts_time_steppers>,
       tmpl::pair<MathFunction<1, Frame::Inertial>,
                  MathFunctions::all_math_functions<1, Frame::Inertial>>,
+      tmpl::pair<Filters::Filter, tmpl::list<Filters::Exponential<volume_dim>>>,
       tmpl::pair<PhaseChange, PhaseControl::factory_creatable_classes>,
       tmpl::pair<StepChooser<StepChooserUse::LtsStep>,
                  StepChoosers::standard_step_choosers<system>>,
@@ -357,6 +358,8 @@ struct GeneralizedHarmonicTemplateBase {
   using observed_reduction_data_tags =
       observers::collect_reduction_data_tags<tmpl::push_back<
           tmpl::at<typename factory_creation::factory_classes, Event>>>;
+
+  struct FilterEvolvedVariables {};
 
   using initialize_initial_data_dependent_quantities_actions =
       tmpl::list<gh::gauges::SetPiAndPhiFromConstraints<
@@ -417,11 +420,8 @@ struct GeneralizedHarmonicTemplateBase {
           local_time_stepping,
           Actions::MutateApply<evolution::dg::CleanMortarHistory<volume_dim>>,
           tmpl::list<>>,
-      dg::Actions::Filter<
-          Filters::Exponential<0>,
-          tmpl::list<gr::Tags::SpacetimeMetric<DataVector, volume_dim>,
-                     gh::Tags::Pi<DataVector, volume_dim>,
-                     gh::Tags::Phi<DataVector, volume_dim>>>>;
+      dg::Actions::Filter<FilterEvolvedVariables,
+                          typename system::variables_tag::tags_list>>;
 
   template <typename DerivedMetavars, bool UseControlSystems>
   using initialization_actions = tmpl::list<
@@ -429,6 +429,7 @@ struct GeneralizedHarmonicTemplateBase {
           Initialization::TimeStepping<DerivedMetavars, TimeStepperBase>,
           evolution::dg::Initialization::Domain<DerivedMetavars,
                                                 UseControlSystems>,
+          dg::Actions::InitializeFilters<FilterEvolvedVariables>,
           ::amr::Initialization::Initialize<volume_dim, DerivedMetavars>,
           Initialization::TimeStepperHistory<DerivedMetavars>>,
       Initialization::Actions::NonconservativeSystem<system>,

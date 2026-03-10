@@ -130,11 +130,11 @@ EvolutionSystem:
         Center: [0.0, 0.0, 0.0]
 
 Filtering:
-  ExpFilter0:
-    Alpha: 36.0
-    HalfPower: 64
-    Enable: true
-    BlocksToFilter: All
+  FilterEvolvedVariables:
+    - ExponentialFilter:
+        Alpha: 36.0
+        HalfPower: 64
+        BlocksToFilter: All
 
 SpatialDiscretization:
   BoundaryCorrection:

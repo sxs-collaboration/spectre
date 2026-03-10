@@ -162,6 +162,8 @@ struct EvolutionMetavars {
             evolution::BoundaryCorrection,
             ForceFree::BoundaryCorrections::standard_boundary_corrections>,
         tmpl::pair<evolution::initial_data::InitialData, initial_data_list>,
+        tmpl::pair<Filters::Filter,
+                   tmpl::list<Filters::Exponential<volume_dim>>>,
         tmpl::pair<LtsTimeStepper, TimeSteppers::lts_time_steppers>,
         tmpl::pair<PhaseChange,
                    tmpl::list<PhaseControl::VisitAndReturn<
@@ -184,6 +186,7 @@ struct EvolutionMetavars {
   using observed_reduction_data_tags =
       observers::collect_reduction_data_tags<tmpl::flatten<tmpl::list<
           tmpl::at<typename factory_creation::factory_classes, Event>>>>;
+  struct FilterEvolvedVariables {};
 
   using dg_step_actions = tmpl::flatten<tmpl::list<
       Actions::MutateApply<
@@ -213,14 +216,8 @@ struct EvolutionMetavars {
           tmpl::list<>>,
       Limiters::Actions::SendData<EvolutionMetavars>,
       Limiters::Actions::Limit<EvolutionMetavars>,
-
-      dg::Actions::Filter<
-          Filters::Exponential<0>,
-          tmpl::list<ForceFree::Tags::TildeE, ForceFree::Tags::TildeB,
-                     ForceFree::Tags::TildePsi, ForceFree::Tags::TildePhi,
-                     ForceFree::Tags::TildeQ>>
-
-      >>;
+      dg::Actions::Filter<FilterEvolvedVariables,
+                          typename system::variables_tag::tags_list>>>;
 
   using const_global_cache_tags =
       tmpl::list<evolution::initial_data::Tags::InitialData,
@@ -234,6 +231,7 @@ struct EvolutionMetavars {
       Initialization::Actions::InitializeItems<
           Initialization::TimeStepping<EvolutionMetavars, TimeStepperBase>,
           evolution::dg::Initialization::Domain<EvolutionMetavars>,
+          dg::Actions::InitializeFilters<FilterEvolvedVariables>,
           Initialization::TimeStepperHistory<EvolutionMetavars>>,
       Initialization::Actions::AddSimpleTags<
           evolution::dg::BackgroundGrVars<system, EvolutionMetavars>>,

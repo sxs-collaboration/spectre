@@ -670,6 +670,8 @@ struct GhValenciaDivCleanTemplateBase<
             tmpl::conditional_t<use_control_systems,
                                 TimeSteppers::monotonic_lts_time_steppers,
                                 TimeSteppers::lts_time_steppers>>,
+        tmpl::pair<Filters::Filter,
+                   tmpl::list<Filters::Exponential<volume_dim>>>,
         tmpl::pair<PhaseChange, PhaseControl::factory_creatable_classes>,
         tmpl::pair<StepChooser<StepChooserUse::LtsStep>,
                    StepChoosers::standard_step_choosers<system>>,
@@ -698,6 +700,7 @@ struct GhValenciaDivCleanTemplateBase<
 
   using observed_reduction_data_tags = observers::collect_reduction_data_tags<
       tmpl::at<typename factory_creation::factory_classes, Event>>;
+  struct FilterGhVariables {};
 
   using const_global_cache_tags = tmpl::flatten<tmpl::list<
       tmpl::conditional_t<
@@ -770,10 +773,8 @@ struct GhValenciaDivCleanTemplateBase<
               ordered_list_of_primitive_recovery_schemes, system>>>;
 
   using dg_step_actions = tmpl::flatten<tmpl::list<
-      dg::Actions::Filter<::Filters::Exponential<0>,
-                          tmpl::list<gr::Tags::SpacetimeMetric<DataVector, 3>,
-                                     gh::Tags::Pi<DataVector, 3>,
-                                     gh::Tags::Phi<DataVector, 3>>>,
+      dg::Actions::Filter<FilterGhVariables,
+                          typename system::gh_system::variables_tag::tags_list>,
       evolution::dg::Actions::ComputeTimeDerivative<
           volume_dim, system, AllStepChoosers, local_time_stepping,
           use_dg_element_collection>,
@@ -895,6 +896,7 @@ struct GhValenciaDivCleanTemplateBase<
           Initialization::TimeStepping<derived_metavars, TimeStepperBase>,
           evolution::dg::Initialization::Domain<derived_metavars,
                                                 use_control_systems>,
+          dg::Actions::InitializeFilters<FilterGhVariables>,
           Initialization::TimeStepperHistory<derived_metavars>>,
       Initialization::Actions::ConservativeSystem<system>,
       // This conditional is untested and probably doesn't work if

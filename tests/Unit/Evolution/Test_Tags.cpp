@@ -6,10 +6,8 @@
 #include "Evolution/Tags/Filter.hpp"
 #include "Helpers/DataStructures/DataBox/TestHelpers.hpp"
 
-namespace {
-struct SomeType {};
-}  // namespace
-
 SPECTRE_TEST_CASE("Unit.Evolution.Tags", "[Unit][Evolution]") {
-  TestHelpers::db::test_simple_tag<Filters::Tags::Filter<SomeType>>("Filter");
+  struct FilterListTag;
+  TestHelpers::db::test_simple_tag<Filters::Tags::FilterList<FilterListTag>>(
+      "FilterList");
 }

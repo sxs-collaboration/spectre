@@ -371,6 +371,7 @@ struct FactoryCreation : tt::ConformsTo<Options::protocols::FactoryCreation> {
           evolution::initial_data::InitialData,
           tmpl::push_back<initial_data_list, ScalarTensor::NumericInitialData>>,
       tmpl::pair<LtsTimeStepper, TimeSteppers::lts_time_steppers>,
+      tmpl::pair<Filters::Filter, tmpl::list<Filters::Exponential<volume_dim>>>,
       tmpl::pair<PhaseChange, PhaseControl::factory_creatable_classes>,
       tmpl::pair<StepChooser<StepChooserUse::LtsStep>,
                  StepChoosers::standard_step_choosers<system>>,
@@ -407,6 +408,8 @@ struct ScalarTensorTemplateBase {
   using observed_reduction_data_tags =
       observers::collect_reduction_data_tags<tmpl::push_back<
           tmpl::at<typename factory_creation::factory_classes, Event>>>;
+  struct FilterGhVariables {};
+  struct FilterScalarVariables {};
 
   using initialize_initial_data_dependent_quantities_actions = tmpl::list<
       ScalarTensor::Actions::InitializeGhAnd3Plus1Variables,
@@ -464,9 +467,9 @@ struct ScalarTensorTemplateBase {
           Actions::MutateApply<evolution::dg::CleanMortarHistory<volume_dim>>,
           tmpl::list<>>,
       // We allow for separate filtering of the system variables
-      dg::Actions::Filter<Filters::Exponential<0>,
+      dg::Actions::Filter<FilterGhVariables,
                           system::gh_system::variables_tag::tags_list>,
-      dg::Actions::Filter<Filters::Exponential<1>,
+      dg::Actions::Filter<FilterScalarVariables,
                           system::scalar_system::variables_tag::tags_list>>;
 
   template <bool UseControlSystems>
@@ -475,6 +478,8 @@ struct ScalarTensorTemplateBase {
           Initialization::TimeStepping<derived_metavars, TimeStepperBase>,
           evolution::dg::Initialization::Domain<derived_metavars,
                                                 UseControlSystems>,
+          dg::Actions::InitializeFilters<FilterGhVariables>,
+          dg::Actions::InitializeFilters<FilterScalarVariables>,
           Initialization::TimeStepperHistory<derived_metavars>>,
       Initialization::Actions::NonconservativeSystem<system>,
       Initialization::Actions::AddComputeTags<::Tags::DerivCompute<

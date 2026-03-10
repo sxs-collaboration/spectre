@@ -83,6 +83,9 @@ SpatialDiscretization:
     Formulation: StrongInertial
     Quadrature: GaussLobatto
 
+Filtering:
+  FilterEvolvedVariables: []
+
 EventsAndDenseTriggers:
 
 EventsAndTriggersAtCheckpoints:

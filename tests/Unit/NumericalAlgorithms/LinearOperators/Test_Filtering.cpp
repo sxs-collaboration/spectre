@@ -6,8 +6,10 @@
 #include <array>
 #include <cmath>
 #include <cstddef>
+#include <memory>
 #include <string>
 #include <unordered_set>
+#include <vector>
 
 #include "DataStructures/ApplyMatrices.hpp"
 #include "DataStructures/DataBox/DataBox.hpp"
@@ -34,13 +36,15 @@
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/MinimumNumberOfPoints.hpp"
 #include "NumericalAlgorithms/Spectral/Quadrature.hpp"
+#include "Options/Protocols/FactoryCreation.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "ParallelAlgorithms/Actions/FilterAction.hpp"
+#include "ParallelAlgorithms/Actions/InitializeItems.hpp"
 #include "Utilities/GetOutput.hpp"
 #include "Utilities/Gsl.hpp"
-#include "Utilities/Requires.hpp"
+#include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 #include "Utilities/StdArrayHelpers.hpp"
 #include "Utilities/TMPL.hpp"
@@ -48,6 +52,9 @@
 namespace {
 // Blocks 0-2 do filtering (if enabled). Block 3 doesn't
 constexpr size_t num_blocks = 4;
+struct FilterEvolvedVariables {};
+struct FilterScalarVariables {};
+struct FilterVectorVariables {};
 
 namespace Tags {
 struct ScalarVar : db::SimpleTag {
@@ -82,20 +89,30 @@ struct Component {
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
           Parallel::Phase::Initialization,
-          tmpl::list<ActionTesting::InitializeDataBox<simple_tags>>>,
+          tmpl::list<
+              ActionTesting::InitializeDataBox<simple_tags>,
+              Initialization::Actions::InitializeItems<tmpl::conditional_t<
+                  metavariables::filter_individually,
+                  tmpl::list<
+                      dg::Actions::InitializeFilters<FilterScalarVariables>,
+                      dg::Actions::InitializeFilters<FilterVectorVariables>>,
+                  tmpl::list<dg::Actions::InitializeFilters<
+                      FilterEvolvedVariables>>>>>>,
       // [action_list_example]
       Parallel::PhaseActions<
           Parallel::Phase::Testing,
           tmpl::conditional_t<
               metavariables::filter_individually,
-              tmpl::list<dg::Actions::Filter<Filters::Exponential<0>,
+              tmpl::list<dg::Actions::Filter<FilterScalarVariables,
                                              tmpl::list<Tags::ScalarVar>>,
-                         dg::Actions::Filter<Filters::Exponential<1>,
+                         dg::Actions::Filter<FilterVectorVariables,
                                              tmpl::list<Tags::VectorVar<dim>>>>,
               tmpl::list<dg::Actions::Filter<
-                  Filters::Exponential<0>,
+                  FilterEvolvedVariables,
                   tmpl::list<Tags::VectorVar<dim>, Tags::ScalarVar>>>>>>;
   // [action_list_example]
+  using simple_tags_from_options = Parallel::get_simple_tags_from_options<
+      Parallel::get_initialization_actions_list<phase_dependent_action_list>>;
 };
 
 template <size_t Dim, bool FilterIndividually>
@@ -105,6 +122,11 @@ struct Metavariables {
 
   using system = System<Dim>;
   static constexpr bool local_time_stepping = true;
+  struct factory_creation
+      : tt::ConformsTo<Options::protocols::FactoryCreation> {
+    using factory_classes = tmpl::map<
+        tmpl::pair<Filters::Filter, tmpl::list<Filters::Exponential<Dim>>>>;
+  };
   using component_list = tmpl::list<Component<Metavariables>>;
 };
 
@@ -149,25 +171,31 @@ std::optional<std::vector<std::string>> get_block_names() {
   return names;
 }
 
-template <typename Metavariables,
-          Requires<Metavariables::filter_individually> = nullptr>
-typename ActionTesting::MockRuntimeSystem<Metavariables>::CacheTuple
-create_cache_tuple(const double alpha, const unsigned half_power,
-                   const bool enable) {
-  return {make_domain<Metavariables::dim>(),
-          Filters::Exponential<0>{alpha, half_power, enable, get_block_names()},
-          Filters::Exponential<1>{2.0 * alpha, 2 * half_power, enable,
-                                  get_block_names()}};
-}
-
-template <typename Metavariables,
-          Requires<not Metavariables::filter_individually> = nullptr>
-typename ActionTesting::MockRuntimeSystem<Metavariables>::CacheTuple
-create_cache_tuple(const double alpha, const unsigned half_power,
-                   const bool enable) {
-  return {
-      make_domain<Metavariables::dim>(),
-      Filters::Exponential<0>{alpha, half_power, enable, get_block_names()}};
+template <typename Metavariables>
+auto create_filters(const double alpha, const unsigned half_power,
+                    const bool enable) {
+  constexpr size_t dim = Metavariables::system::volume_dim;
+  if constexpr (Metavariables::filter_individually) {
+    if (not enable) {
+      return std::make_tuple(std::vector<std::unique_ptr<Filters::Filter>>{},
+                             std::vector<std::unique_ptr<Filters::Filter>>{});
+    }
+    std::vector<std::unique_ptr<Filters::Filter>> scalar_filters{};
+    scalar_filters.emplace_back(std::make_unique<Filters::Exponential<dim>>(
+        alpha, half_power, get_block_names()));
+    std::vector<std::unique_ptr<Filters::Filter>> vector_filters{};
+    vector_filters.emplace_back(std::make_unique<Filters::Exponential<dim>>(
+        2.0 * alpha, 2 * half_power, get_block_names()));
+    return std::make_tuple(std::move(scalar_filters),
+                           std::move(vector_filters));
+  } else {
+    std::vector<std::unique_ptr<Filters::Filter>> filters{};
+    if (enable) {
+      filters.emplace_back(std::make_unique<Filters::Exponential<dim>>(
+          alpha, half_power, get_block_names()));
+    }
+    return std::make_tuple(std::move(filters));
+  }
 }
 
 template <size_t Dim, Spectral::Basis BasisType,
@@ -184,6 +212,7 @@ void test_exponential_filter_action(const double alpha,
 
   using metavariables = Metavariables<Dim, FilterIndividually>;
   using component = Component<metavariables>;
+  register_factory_classes_with_charm<metavariables>();
 
   // Division by Dim to reduce time of test
   const size_t max_pts =
@@ -206,12 +235,18 @@ void test_exponential_filter_action(const double alpha,
       }
     }
 
-    ActionTesting::MockRuntimeSystem<metavariables> runner(
-        create_cache_tuple<metavariables>(alpha, half_power, enable));
+    ActionTesting::MockRuntimeSystem<metavariables> runner{
+        {make_domain<Dim>()}};
     for (size_t block = 0; block < num_blocks; block++) {
-      ActionTesting::emplace_component_and_initialize<component>(
-          &runner, block,
-          {mesh, Element{ElementId<Dim>{block}, {}}, initial_vars});
+      auto filters = create_filters<metavariables>(alpha, half_power, enable);
+      std::apply(
+          [&runner, &mesh, &initial_vars, block](auto&&... local_filters) {
+            ActionTesting::emplace_component_and_initialize<component>(
+                &runner, block,
+                {mesh, Element{ElementId<Dim>{block}, {}}, initial_vars},
+                std::move(local_filters)...);
+          },
+          std::move(filters));
     }
     ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Testing);
 
@@ -330,120 +365,125 @@ class TestCreator : public DomainCreator<Dim> {
 template <size_t Dim>
 struct Metavars {
   static constexpr size_t volume_dim = Dim;
-  struct factory_creation {
+  struct factory_creation
+      : tt::ConformsTo<Options::protocols::FactoryCreation> {
     using factory_classes = tmpl::map<
+        tmpl::pair<Filters::Filter, tmpl::list<Filters::Exponential<Dim>>>,
         tmpl::pair<::DomainCreator<Dim>, tmpl::list<TestCreator<Dim>>>>;
   };
 };
 
 template <size_t Dim>
 void test_exponential_filter_creation() {
-  using Filter = Filters::Exponential<0>;
-  using AnotherFilter = Filters::Exponential<1>;
+  using Filter = Filters::Exponential<Dim>;
+  using AnotherFilter = Filters::Exponential<Dim>;
+  register_factory_classes_with_charm<Metavars<Dim>>();
 
-  using tags =
-      tmpl::list<OptionTags::Filter<Filter>, OptionTags::Filter<AnotherFilter>,
-                 domain::OptionTags::DomainCreator<Dim>>;
+  using tags = tmpl::list<OptionTags::FilterList<FilterScalarVariables>,
+                          OptionTags::FilterList<FilterVectorVariables>,
+                          domain::OptionTags::DomainCreator<Dim>>;
   Options::Parser<tags> options("");
   options.parse(
       "DomainCreator:\n"
       "  TestCreator\n"
       // [multiple_exponential_filters]
       "Filtering:\n"
-      "  ExpFilter0:\n"
-      "    Alpha: 36\n"
-      "    HalfPower: 32\n"
-      "    Enable: True\n"
-      "    BlocksToFilter: All\n"
-      "  ExpFilter1:\n"
-      "    Alpha: 36\n"
-      "    HalfPower: 12\n"
-      "    Enable: True\n"
-      "    BlocksToFilter:\n"
-      "      - Block0\n"
-      "      - BlockGroup1\n"
+      "  FilterScalarVariables:\n"
+      "    - ExponentialFilter:\n"
+      "        Alpha: 36\n"
+      "        HalfPower: 32\n"
+      "        BlocksToFilter: All\n"
+      "  FilterVectorVariables:\n"
+      "    - ExponentialFilter:\n"
+      "        Alpha: 36\n"
+      "        HalfPower: 12\n"
+      "        BlocksToFilter:\n"
+      "          - Block0\n"
+      "          - Group1\n"
       // [multiple_exponential_filters]
   );
-  const auto filter =
-      options.template get<OptionTags::Filter<Filter>, Metavars<Dim>>();
+  const auto& filters =
+      options.template get<OptionTags::FilterList<FilterScalarVariables>,
+                           Metavars<Dim>>();
+  REQUIRE(filters.size() == 1);
+  const auto* filter = dynamic_cast<const Filter*>(filters[0].get());
+  REQUIRE(filter != nullptr);
+  CHECK(*filter == Filter{36.0, 32, {}});
 
-  CHECK(filter == Filter{36.0, 32, true, {}});
-  CHECK_FALSE(filter == Filter{35.0, 32, true, {}});
-  CHECK_FALSE(filter == Filter{36.0, 33, true, {}});
-  CHECK_FALSE(filter == Filter{36.0, 32, false, {}});
-  CHECK_FALSE(filter == Filter{36.0, 32, true, {{"Block0"}}});
-
-  CHECK_FALSE(filter != Filter{36.0, 32, true, {}});
-  CHECK(filter != Filter{35.0, 32, true, {}});
-  CHECK(filter != Filter{36.0, 33, true, {}});
-  CHECK(filter != Filter{36.0, 32, false, {}});
-  CHECK(filter != Filter{36.0, 32, true, {{"Block0"}}});
-
-  const auto another_filter =
-      options.template get<OptionTags::Filter<AnotherFilter>, Metavars<Dim>>();
-
-  CHECK(another_filter ==
-        AnotherFilter{36.0, 12, true, {{"Block0", "BlockGroup1"}}});
-  CHECK_FALSE(another_filter !=
-              AnotherFilter{36.0, 12, true, {{"Block0", "BlockGroup1"}}});
-
-  CHECK_FALSE(another_filter == AnotherFilter{36.0, 12, true, {}});
-  CHECK(another_filter != AnotherFilter{36.0, 12, true, {}});
+  const auto& another_filters =
+      options.template get<OptionTags::FilterList<FilterVectorVariables>,
+                           Metavars<Dim>>();
+  REQUIRE(another_filters.size() == 1);
+  const auto* another_filter =
+      dynamic_cast<const AnotherFilter*>(another_filters[0].get());
+  REQUIRE(another_filter != nullptr);
+  CHECK(*another_filter == AnotherFilter{36.0, 12, {{"Block0", "Group1"}}});
 
   {
-    Options::Parser<tmpl::pop_front<tags>> error_options("");
+    Options::Parser<tmpl::list<OptionTags::FilterList<FilterVectorVariables>,
+                               domain::OptionTags::DomainCreator<Dim>>>
+        error_options("");
     error_options.parse(
         "DomainCreator:\n"
         "  TestCreator\n"
         "Filtering:\n"
-        "  ExpFilter1:\n"
-        "    Alpha: 36\n"
-        "    HalfPower: 12\n"
-        "    Enable: True\n"
-        "    BlocksToFilter:\n"
-        "      - Block0\n"
-        "      - Block0\n");
+        "  FilterVectorVariables:\n"
+        "    - ExponentialFilter:\n"
+        "        Alpha: 36\n"
+        "        HalfPower: 12\n"
+        "        BlocksToFilter:\n"
+        "          - Block0\n"
+        "          - Block0\n");
 
     CHECK_THROWS_WITH(
-        (error_options
-             .template get<OptionTags::Filter<AnotherFilter>, Metavars<Dim>>()),
+        (error_options.template get<
+            OptionTags::FilterList<FilterVectorVariables>, Metavars<Dim>>()),
         Catch::Matchers::ContainsSubstring("Duplicate block name"));
 
+    std::vector<std::unique_ptr<Filters::Filter>> invalid_filter{};
+    invalid_filter.emplace_back(std::make_unique<AnotherFilter>(
+        36.0, 12, std::vector<std::string>{"BlockGroup1"}));
     CHECK_THROWS_WITH(
-        (Filters::Tags::Filter<AnotherFilter>::create_from_options<
-            Metavars<Dim>>(another_filter,
-                           std::make_unique<TestCreator<Dim>>())),
+        (Filters::Tags::FilterList<FilterVectorVariables>::
+             template create_from_options<Metavars<Dim>>(
+                 invalid_filter, std::make_unique<TestCreator<Dim>>())),
         Catch::Matchers::ContainsSubstring(
             "is not a block name or a block group. Existing blocks are"));
 
-    // These two are to check that we can pass just a block name or just a block
-    // group and the tag will create things correctly
+    // These two checks ensure both block names and block groups validate.
+    std::vector<std::unique_ptr<Filters::Filter>> block_name_filter{};
+    block_name_filter.emplace_back(
+        std::make_unique<Filter>(26.0, 23, std::vector<std::string>{"Block0"}));
     CHECK_NOTHROW(
-        (Filters::Tags::Filter<Filter>::create_from_options<Metavars<Dim>>(
-            Filter{26.0, 23, true, {{"Block0"}}},
-            std::make_unique<TestCreator<Dim>>())));
+        (Filters::Tags::FilterList<FilterScalarVariables>::
+             template create_from_options<Metavars<Dim>>(
+                 block_name_filter, std::make_unique<TestCreator<Dim>>())));
+
+    std::vector<std::unique_ptr<Filters::Filter>> block_group_filter{};
+    block_group_filter.emplace_back(
+        std::make_unique<Filter>(26.0, 23, std::vector<std::string>{"Group1"}));
     CHECK_NOTHROW(
-        (Filters::Tags::Filter<Filter>::create_from_options<Metavars<Dim>>(
-            Filter{26.0, 23, true, {{"Group1"}}},
-            std::make_unique<TestCreator<Dim>>())));
+        (Filters::Tags::FilterList<FilterScalarVariables>::
+             template create_from_options<Metavars<Dim>>(
+                 block_group_filter, std::make_unique<TestCreator<Dim>>())));
 
     CHECK_THROWS_WITH(
-        (Filters::Tags::Filter<AnotherFilter>::create_from_options<
-            Metavars<Dim>>(another_filter,
-                           std::make_unique<TestCreator<Dim>>(false))),
+        (Filters::Tags::FilterList<FilterVectorVariables>::
+             template create_from_options<Metavars<Dim>>(
+                 another_filters, std::make_unique<TestCreator<Dim>>(false))),
         Catch::Matchers::ContainsSubstring(
             "The domain chosen doesn't use block names"));
   }
 }
 
 void test_cartoon_exponential_filter() {
-  const auto filter = Filters::Exponential<8>{0, 0, true, {}};
-  CHECK(filter.filter_matrix(
-            {1, Spectral::Basis::Cartoon,
-             Spectral::Quadrature::AxialSymmetry}) == Matrix(1, 1, 1.0));
-  CHECK(filter.filter_matrix(
-            {1, Spectral::Basis::Cartoon,
-             Spectral::Quadrature::SphericalSymmetry}) == Matrix(1, 1, 1.0));
+  const auto filter = Filters::Exponential<1>{0, 0, {}};
+  CHECK(filter.filter_matrix({1, Spectral::Basis::Cartoon,
+                              Spectral::Quadrature::AxialSymmetry}) ==
+        Matrix(1, 1, 1.0));
+  CHECK(filter.filter_matrix({1, Spectral::Basis::Cartoon,
+                              Spectral::Quadrature::SphericalSymmetry}) ==
+        Matrix(1, 1, 1.0));
 }
 }  // namespace
 

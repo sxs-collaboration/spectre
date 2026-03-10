@@ -4,14 +4,21 @@
 #pragma once
 
 #include <cstddef>
+#include <functional>
 #include <optional>
 #include <pup.h>
 #include <string>
+#include <tuple>
 #include <unordered_set>
 
+#include "DataStructures/ApplyMatrices.hpp"
+#include "Domain/Tags.hpp"
+#include "NumericalAlgorithms/LinearOperators/Filter.hpp"
 #include "Options/Auto.hpp"
 #include "Options/String.hpp"
+#include "Utilities/Serialization/CharmPupable.hpp"
 #include "Utilities/TMPL.hpp"
+#include "Utilities/TypeTraits/IsA.hpp"
 
 /// \cond
 class Matrix;
@@ -45,19 +52,9 @@ namespace Filters {
  * \f$\alpha_{\mathrm{ef}}\f$ and \f$\beta_{\mathrm{ef}}\f$ are used in each
  * logical direction. For a discussion of filtering see section 5.3 of
  * \cite HesthavenWarburton.
- *
- * #### Design decision:
- *
- * - The reason for the `size_t` template parameter is to allow for different
- * `Alpha` and `HalfPower` parameters for different tensors while still being
- * able to cache the matrices.   If different `Alpha` or `HalfPower` parameters
- * are desired for filtering different tensors, then multiple filters must be
- * inserted into the GlobalCache with different `FilterIndex` values. In
- * the input file these will be specified as `ExpFilterFILTER_INDEX`, e.g.
- * \snippet LinearOperators/Test_Filtering.cpp multiple_exponential_filters
  */
-template <size_t FilterIndex>
-class Exponential {
+template <size_t Dim>
+class Exponential : public Filter {
  public:
   /// \brief The value of `exp(-alpha)` is what the highest modal coefficient is
   /// rescaled by.
@@ -82,12 +79,6 @@ class Exponential {
     static type lower_bound() { return 1; }
   };
 
-  /// \brief Turn the filter off
-  struct Enable {
-    using type = bool;
-    static constexpr Options::String help = {"Enable the filter"};
-  };
-
   struct BlocksToFilter {
     using type =
         Options::Auto<std::vector<std::string>, Options::AutoLabel::All>;
@@ -97,48 +88,82 @@ class Exponential {
         "filtering in all blocks of the domain."};
   };
 
-  using options = tmpl::list<Alpha, HalfPower, Enable, BlocksToFilter>;
+  using options = tmpl::list<Alpha, HalfPower, BlocksToFilter>;
   static constexpr Options::String help = {"An exponential filter."};
-  static std::string name() {
-    return "ExpFilter" + std::to_string(FilterIndex);
-  }
+  static std::string name() { return "ExponentialFilter"; }
 
   Exponential() = default;
 
-  Exponential(double alpha, unsigned half_power, bool enable,
+  Exponential(double alpha, unsigned half_power,
               const std::optional<std::vector<std::string>>& blocks_to_filter,
               const Options::Context& context = {});
+
+  WRAPPED_PUPable_decl_template(Exponential);  // NOLINT
+  explicit Exponential(CkMigrateMessage* msg) : Filter(msg) {}
 
   /// A cached matrix used to apply the filter to the given mesh
   const Matrix& filter_matrix(const Mesh<1>& mesh) const;
 
-  bool enable() const { return enable_; }
-
-  const std::optional<std::unordered_set<std::string>>& blocks_to_filter()
-      const {
+  std::optional<std::unordered_set<std::string>> blocks_to_filter()
+      const override {
     return blocks_to_filter_;
   }
 
   // NOLINTNEXTLINE(google-runtime-references)
-  void pup(PUP::er& p);
+  void pup(PUP::er& p) override;
+
+ public:
+  using argument_tags = tmpl::list<domain::Tags::Mesh<Dim>>;
+
+  template <typename TagsList>
+  void operator()(const gsl::not_null<Variables<TagsList>*> vars,
+                  const Mesh<Dim>& mesh) const {
+    *vars = apply_matrices(filter_matrices(mesh), *vars, mesh.extents());
+  }
+
+  template <typename... TensorTypes>
+    requires((not tt::is_a_v<Variables, std::decay_t<TensorTypes>>) and ...)
+  void operator()(const std::tuple<gsl::not_null<TensorTypes*>...>& tensors,
+                  const Mesh<Dim>& mesh) const {
+    const auto filter = filter_matrices(mesh);
+    std::apply(
+        [&filter, extents = mesh.extents()](const auto... tensor_ptrs) {
+          (
+              [&filter, &extents](const auto tensor_ptr) {
+                for (auto& component : *tensor_ptr) {
+                  component = apply_matrices(filter, component, extents);
+                }
+              }(tensor_ptrs),
+              ...);
+        },
+        tensors);
+  }
 
  private:
-  template <size_t LocalFilterIndex>
+  std::array<std::reference_wrapper<const Matrix>, Dim> filter_matrices(
+      const Mesh<Dim>& mesh) const;
+
+  template <size_t LocalDim>
   // NOLINTNEXTLINE(readability-redundant-declaration)
-  friend bool operator==(const Exponential<LocalFilterIndex>& lhs,
-                         const Exponential<LocalFilterIndex>& rhs);
+  friend bool operator==(const Exponential<LocalDim>& lhs,
+                         const Exponential<LocalDim>& rhs);
 
   double alpha_{36.0};
   unsigned half_power_{16};
-  bool enable_{true};
   std::optional<std::unordered_set<std::string>> blocks_to_filter_{};
 };
 
-template <size_t LocalFilterIndex>
-bool operator==(const Exponential<LocalFilterIndex>& lhs,
-                const Exponential<LocalFilterIndex>& rhs);
+template <size_t LocalDim>
+bool operator==(const Exponential<LocalDim>& lhs,
+                const Exponential<LocalDim>& rhs);
 
-template <size_t FilterIndex>
-bool operator!=(const Exponential<FilterIndex>& lhs,
-                const Exponential<FilterIndex>& rhs);
+template <size_t LocalDim>
+bool operator!=(const Exponential<LocalDim>& lhs,
+                const Exponential<LocalDim>& rhs);
+
+/// \cond
+template <size_t Dim>
+PUP::able::PUP_ID Exponential<Dim>::my_PUP_ID = 0;  // NOLINT
+/// \endcond
+
 }  // namespace Filters
