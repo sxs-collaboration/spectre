@@ -115,6 +115,26 @@ class AlignedLattice : public DomainCreator<Dim> {
         "Coordinates of block boundaries in each dimension."};
   };
 
+  struct Distributions {
+    using type =
+        std::array<std::vector<domain::CoordinateMaps::Distribution>, Dim>;
+    static constexpr Options::String help = {
+        "Grid point distribution in each dimension."};
+    static type default_value() {
+      return make_array<Dim>(
+          std::vector<domain::CoordinateMaps::Distribution>{});
+    }
+  };
+
+  struct SingularityPositions {
+    using type = std::array<std::vector<double>, Dim>;
+    static constexpr Options::String help = {
+        "Singularity positions in each dimension."};
+    static type default_value() {
+      return make_array<Dim>(std::vector<double>{});
+    }
+  };
+
   struct IsPeriodicIn {
     using type = std::array<bool, Dim>;
     static constexpr Options::String help = {
@@ -153,8 +173,8 @@ class AlignedLattice : public DomainCreator<Dim> {
 
   template <typename Metavariables>
   using options = tmpl::list<
-      BlockBounds, InitialLevels, InitialGridPoints, RefinedLevels,
-      RefinedGridPoints, BlocksToExclude,
+      BlockBounds, Distributions, SingularityPositions, InitialLevels,
+      InitialGridPoints, RefinedLevels, RefinedGridPoints, BlocksToExclude,
       tmpl::conditional_t<
           domain::BoundaryConditions::has_boundary_conditions_base_v<
               typename Metavariables::system>,
@@ -175,17 +195,24 @@ class AlignedLattice : public DomainCreator<Dim> {
       "will trigger an error, as periodic boundary\n"
       "conditions for this domain with holes is not supported."};
 
-  AlignedLattice(std::array<std::vector<double>, Dim> block_bounds,
-                 std::array<size_t, Dim> initial_refinement_levels,
-                 std::array<size_t, Dim> initial_number_of_grid_points,
-                 std::vector<RefinementRegion<Dim>> refined_refinement,
-                 std::vector<RefinementRegion<Dim>> refined_grid_points,
-                 std::vector<std::array<size_t, Dim>> blocks_to_exclude,
-                 std::array<bool, Dim> is_periodic_in = make_array<Dim>(false),
-                 const Options::Context& context = {});
+  AlignedLattice(
+      std::array<std::vector<double>, Dim> block_bounds,
+      std::array<std::vector<domain::CoordinateMaps::Distribution>, Dim>
+          distributions,
+      std::array<std::vector<double>, Dim> singularity_positions,
+      std::array<size_t, Dim> initial_refinement_levels,
+      std::array<size_t, Dim> initial_number_of_grid_points,
+      std::vector<RefinementRegion<Dim>> refined_refinement,
+      std::vector<RefinementRegion<Dim>> refined_grid_points,
+      std::vector<std::array<size_t, Dim>> blocks_to_exclude,
+      std::array<bool, Dim> is_periodic_in = make_array<Dim>(false),
+      const Options::Context& context = {});
 
   AlignedLattice(
       std::array<std::vector<double>, Dim> block_bounds,
+      std::array<std::vector<domain::CoordinateMaps::Distribution>, Dim>
+          distributions,
+      std::array<std::vector<double>, Dim> singularity_positions,
       std::array<size_t, Dim> initial_refinement_levels,
       std::array<size_t, Dim> initial_number_of_grid_points,
       std::vector<RefinementRegion<Dim>> refined_refinement,
@@ -201,6 +228,9 @@ class AlignedLattice : public DomainCreator<Dim> {
   template <typename BoundaryConditionsBase>
   AlignedLattice(
       std::array<std::vector<double>, Dim> block_bounds,
+      std::array<std::vector<domain::CoordinateMaps::Distribution>, Dim>
+          distributions,
+      std::array<std::vector<double>, Dim> singularity_positions,
       std::array<size_t, Dim> initial_refinement_levels,
       std::array<size_t, Dim> initial_number_of_grid_points,
       std::vector<RefinementRegion<Dim>> refined_refinement,
@@ -213,9 +243,11 @@ class AlignedLattice : public DomainCreator<Dim> {
                  Dim>
           boundary_conditions,
       const Options::Context& context = {})
-      : AlignedLattice(std::move(block_bounds), initial_refinement_levels,
-                       initial_number_of_grid_points, refined_refinement,
-                       refined_grid_points, blocks_to_exclude,
+      : AlignedLattice(std::move(block_bounds), std::move(distributions),
+                       std::move(singularity_positions),
+                       initial_refinement_levels, initial_number_of_grid_points,
+                       refined_refinement, refined_grid_points,
+                       blocks_to_exclude,
                        Rectilinear<Dim>::transform_boundary_conditions(
                            std::move(boundary_conditions)),
                        context) {}
@@ -243,6 +275,9 @@ class AlignedLattice : public DomainCreator<Dim> {
  private:
   std::array<std::vector<double>, Dim> block_bounds_{
       make_array<Dim, std::vector<double>>({})};
+  std::array<std::vector<domain::CoordinateMaps::Distribution>, Dim>
+      distributions_{};
+  std::array<std::vector<std::optional<double>>, Dim> singularity_positions_{};
   std::array<bool, Dim> is_periodic_in_{make_array<Dim>(false)};
   std::array<size_t, Dim> initial_refinement_levels_{
       make_array<Dim>(std::numeric_limits<size_t>::max())};

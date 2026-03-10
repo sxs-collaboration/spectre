@@ -22,7 +22,9 @@ void test_null_slicing_tag_logic() {
   const std::unique_ptr<DomainCreator<2>> lattice =
       std::make_unique<domain::creators::AlignedLattice<2>>(
           std::array<std::vector<double>, 2>{{{0., 0.25, 0.5}, {0., 0.5}}},
-          std::array<size_t, 2>{{0, 0}}, std::array<size_t, 2>{{3, 2}},
+          std::array<std::vector<domain::CoordinateMaps::Distribution>, 2>{},
+          std::array<std::vector<double>, 2>{}, std::array<size_t, 2>{{0, 0}},
+          std::array<size_t, 2>{{3, 2}},
           std::vector<Region>{Region{{0, 0}, {1, 1}, {0, 1}}},
           std::vector<Region>{}, std::vector<std::array<size_t, 2>>{},
           std::array<bool, 2>{{false, false}}, Options::Context{});

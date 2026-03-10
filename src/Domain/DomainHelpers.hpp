@@ -393,6 +393,10 @@ auto maps_for_rectilinear_domains(
     const std::vector<Index<VolumeDim>>& block_indices_to_exclude = {},
     const std::vector<OrientationMap<VolumeDim>>& orientations_of_all_blocks =
         {},
+    const std::array<std::vector<domain::CoordinateMaps::Distribution>,
+                     VolumeDim>& distributions = {},
+    const std::array<std::vector<std::optional<double>>, VolumeDim>&
+        singularity_positions = {},
     bool use_equiangular_map = false)
     -> std::vector<std::unique_ptr<domain::CoordinateMapBase<
         Frame::BlockLogical, TargetFrame, VolumeDim>>>;
@@ -426,6 +430,10 @@ Domain<VolumeDim> rectilinear_domain(
     const std::array<bool, VolumeDim>& dimension_is_periodic =
         make_array<VolumeDim>(false),
     const std::vector<PairOfFaces>& identifications = {},
+    const std::array<std::vector<domain::CoordinateMaps::Distribution>,
+                     VolumeDim>& distributions = {},
+    const std::array<std::vector<std::optional<double>>, VolumeDim>&
+        singularity_positions = {},
     bool use_equiangular_map = false);
 
 /// \ingroup ComputationalDomainGroup

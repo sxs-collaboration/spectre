@@ -83,7 +83,7 @@ SPECTRE_TEST_CASE("Unit.ScalarSelfForce.Actions.InitializeEffectiveSource",
   domain::creators::register_derived_with_charm();
   register_factory_classes_with_charm<Metavariables>();
   const domain::creators::AlignedLattice<2> domain_creator{
-      {{{-20., 0., 20.}, {-1., 1.}}}, {{2, 2}}, {{4, 4}}, {}, {}, {}};
+      {{{-20., 0., 20.}, {-1., 1.}}}, {}, {}, {{2, 2}}, {{4, 4}}, {}, {}, {}};
   const auto element_regularized =
       ElementId<2>{1, {{SegmentId{2, 0}, SegmentId{2, 1}}}};
   const auto element_unregularized =

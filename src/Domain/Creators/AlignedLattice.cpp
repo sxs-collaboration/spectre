@@ -34,6 +34,9 @@ std::ostream& operator<<(std::ostream& /*s*/,
 template <size_t Dim>
 AlignedLattice<Dim>::AlignedLattice(
     std::array<std::vector<double>, Dim> block_bounds,
+    std::array<std::vector<domain::CoordinateMaps::Distribution>, Dim>
+        distributions,
+    std::array<std::vector<double>, Dim> singularity_positions,
     std::array<size_t, Dim> initial_refinement_levels,
     std::array<size_t, Dim> initial_number_of_grid_points,
     std::vector<RefinementRegion<Dim>> refined_refinement,
@@ -41,6 +44,7 @@ AlignedLattice<Dim>::AlignedLattice(
     std::vector<std::array<size_t, Dim>> blocks_to_exclude,
     std::array<bool, Dim> is_periodic_in, const Options::Context& context)
     : block_bounds_(std::move(block_bounds)),
+      distributions_(std::move(distributions)),
       is_periodic_in_(is_periodic_in),
       initial_refinement_levels_(initial_refinement_levels),
       initial_number_of_grid_points_(initial_number_of_grid_points),
@@ -50,6 +54,18 @@ AlignedLattice<Dim>::AlignedLattice(
       number_of_blocks_by_dim_{map_array(
           block_bounds_,
           [](const std::vector<double>& v) { return v.size() - 1; })} {
+  for (size_t d = 0; d < Dim; ++d) {
+    if (gsl::at(singularity_positions, d).empty()) {
+      gsl::at(singularity_positions_, d) = {};
+      continue;
+    }
+    std::vector<std::optional<double>> singularity_positions_in_dim;
+    for (const double position : gsl::at(singularity_positions, d)) {
+      singularity_positions_in_dim.emplace_back(position);
+    }
+    gsl::at(singularity_positions_, d) =
+        std::move(singularity_positions_in_dim);
+  }
   if (not blocks_to_exclude_.empty() and
       alg::any_of(is_periodic_in_, [](const bool t) { return t; })) {
     PARSE_ERROR(context,
@@ -81,6 +97,9 @@ AlignedLattice<Dim>::AlignedLattice(
 template <size_t Dim>
 AlignedLattice<Dim>::AlignedLattice(
     std::array<std::vector<double>, Dim> block_bounds,
+    std::array<std::vector<domain::CoordinateMaps::Distribution>, Dim>
+        distributions,
+    std::array<std::vector<double>, Dim> singularity_positions,
     std::array<size_t, Dim> initial_refinement_levels,
     std::array<size_t, Dim> initial_number_of_grid_points,
     std::vector<RefinementRegion<Dim>> refined_refinement,
@@ -93,7 +112,8 @@ AlignedLattice<Dim>::AlignedLattice(
         boundary_conditions,
     const Options::Context& context)
     : AlignedLattice(
-          std::move(block_bounds), initial_refinement_levels,
+          std::move(block_bounds), std::move(distributions),
+          std::move(singularity_positions), initial_refinement_levels,
           initial_number_of_grid_points, std::move(refined_refinement),
           std::move(refined_grid_points), std::move(blocks_to_exclude),
           make_array<Dim>(false), context) {
@@ -154,7 +174,7 @@ Domain<Dim> AlignedLattice<Dim>::create_domain() const {
       number_of_blocks_by_dim_, block_bounds_,
       {std::vector<Index<Dim>>(blocks_to_exclude_.begin(),
                                blocks_to_exclude_.end())},
-      {}, is_periodic_in_, {}, false);
+      {}, is_periodic_in_, {}, distributions_, singularity_positions_);
 }
 
 template <size_t Dim>

@@ -113,7 +113,9 @@ SPECTRE_TEST_CASE("Unit.Domain.Creators.AlignedLattice", "[Domain][Unit]") {
     CAPTURE(use_boundary_condition);
     const auto domain_creator_1d = make_domain_creator<1>(
         "AlignedLattice:\n"
-        "  BlockBounds: [[0.1, 2.6, 5.1, 5.2, 7.2]]\n" +
+        "  BlockBounds: [[0.1, 2.6, 5.1, 5.2, 7.2]]\n"
+        "  Distributions: [[Inverse]]\n"
+        "  SingularityPositions: [[0.0]]\n" +
             std::string{use_boundary_condition ? ""
                                                : "  IsPeriodicIn: [false]\n"} +
             "  InitialGridPoints: [3]\n"
@@ -133,7 +135,9 @@ SPECTRE_TEST_CASE("Unit.Domain.Creators.AlignedLattice", "[Domain][Unit]") {
 
     const auto domain_creator_2d = make_domain_creator<2>(
         "AlignedLattice:\n"
-        "  BlockBounds: [[0.1, 2.6, 5.1], [-0.4, 3.2, 6.2, 8.9]]\n" +
+        "  BlockBounds: [[0.1, 2.6, 5.1], [-0.4, 3.2, 6.2, 8.9]]\n"
+        "  Distributions: [[Inverse], [Linear]]\n"
+        "  SingularityPositions: [[0.0], []]\n" +
             std::string{use_boundary_condition
                             ? ""
                             : "  IsPeriodicIn: [false, false]\n"} +
@@ -153,7 +157,9 @@ SPECTRE_TEST_CASE("Unit.Domain.Creators.AlignedLattice", "[Domain][Unit]") {
 
     const auto domain_creator_3d = make_domain_creator<3>(
         "AlignedLattice:\n"
-        "  BlockBounds: [[0.1, 2.6, 5.1], [-0.4, 3.2, 6.2], [-0.2, 3.2]]\n" +
+        "  BlockBounds: [[0.1, 2.6, 5.1], [-0.4, 3.2, 6.2], [-0.2, 3.2]]\n"
+        "  Distributions: [[], [], []]\n"
+        "  SingularityPositions: [[], [], []]\n" +
             std::string{use_boundary_condition
                             ? ""
                             : "  IsPeriodicIn: [false, false, false]\n"} +
@@ -174,7 +180,9 @@ SPECTRE_TEST_CASE("Unit.Domain.Creators.AlignedLattice", "[Domain][Unit]") {
     const auto cubical_shell_domain = make_domain_creator<3>(
         "AlignedLattice:\n"
         "  BlockBounds: [[0.1, 2.6, 5.1, 6.0], [-0.4, 3.2, 6.2, 7.0], "
-        "[-0.2, 3.2, 4.0, 5.2]]\n" +
+        "[-0.2, 3.2, 4.0, 5.2]]\n"
+        "  Distributions: [[], [], []]\n"
+        "  SingularityPositions: [[], [], []]\n" +
             std::string{use_boundary_condition
                             ? ""
                             : "  IsPeriodicIn: [false, false, false]\n"} +
@@ -196,7 +204,9 @@ SPECTRE_TEST_CASE("Unit.Domain.Creators.AlignedLattice", "[Domain][Unit]") {
     const auto unit_cubical_shell_domain = make_domain_creator<3>(
         "AlignedLattice:\n"
         "  BlockBounds: [[-1.5, -0.5, 0.5, 1.5], [-1.5, -0.5, 0.5, 1.5], "
-        "[-1.5, -0.5, 0.5, 1.5]]\n" +
+        "[-1.5, -0.5, 0.5, 1.5]]\n"
+        "  Distributions: [[], [], []]\n"
+        "  SingularityPositions: [[], [], []]\n" +
             std::string{use_boundary_condition
                             ? ""
                             : "  IsPeriodicIn: [false, false, false]\n"} +
@@ -224,6 +234,8 @@ SPECTRE_TEST_CASE("Unit.Domain.Creators.AlignedLattice", "[Domain][Unit]") {
               2, domain::creators::AlignedLattice<2>>>(
       "AlignedLattice:\n"
       "  BlockBounds: [[0.1, 2.6, 5.1], [-0.4, 3.2, 6.2, 8.9]]\n"
+      "  Distributions: [[], []]\n"
+      "  SingularityPositions: [[], []]\n"
       "  IsPeriodicIn: [false, true]\n"
       "  InitialGridPoints: [3, 4]\n"
       "  InitialLevels: [2, 1]\n"
@@ -245,6 +257,8 @@ SPECTRE_TEST_CASE("Unit.Domain.Creators.AlignedLattice", "[Domain][Unit]") {
               3, domain::creators::AlignedLattice<3>>>(
       "AlignedLattice:\n"
       "  BlockBounds: [[0.1, 2.6, 5.1], [-0.4, 3.2, 6.2], [-0.2, 3.2]]\n"
+      "  Distributions: [[], [], []]\n"
+      "  SingularityPositions: [[], [], []]\n"
       "  IsPeriodicIn: [false, true, false]\n"
       "  InitialGridPoints: [3, 4, 5]\n"
       "  InitialLevels: [2, 1, 0]\n"
@@ -271,6 +285,8 @@ SPECTRE_TEST_CASE("Unit.Domain.Creators.AlignedLattice", "[Domain][Unit]") {
                 2, domain::creators::AlignedLattice<2>>>(
         "AlignedLattice:\n"
         "  BlockBounds: [[70, 71, 72, 73], [90, 91, 92, 93]]\n"
+        "  Distributions: [[], []]\n"
+        "  SingularityPositions: [[], []]\n"
         "  IsPeriodicIn: [false, false]\n"
         "  InitialGridPoints: [2, 3]\n"
         "  InitialLevels: [0, 0]\n"
@@ -326,6 +342,8 @@ SPECTRE_TEST_CASE("Unit.Domain.Creators.AlignedLattice", "[Domain][Unit]") {
                 2, domain::creators::AlignedLattice<2>>>(
         "AlignedLattice:\n"
         "  BlockBounds: [[70, 71, 72, 73], [90, 91, 92, 93]]\n"
+        "  Distributions: [[], []]\n"
+        "  SingularityPositions: [[], []]\n"
         "  IsPeriodicIn: [false, false]\n"
         "  InitialGridPoints: [10, 10]\n"
         "  InitialLevels: [2, 5]\n"
@@ -373,8 +391,9 @@ SPECTRE_TEST_CASE("Unit.Domain.Creators.AlignedLattice", "[Domain][Unit]") {
       creators::AlignedLattice<3>({{{{-1.5, -0.5, 0.5, 1.5}},
                                     {{1.5, -0.5, 0.5, 1.5}},
                                     {{-1.5, -0.5, 0.5, 1.5}}}},
-                                  {{1, 1, 1}}, {{5, 5, 5}}, {}, {},
-                                  {{{{1, 1, 1}}}}, {{true, false, false}},
+                                  {{{}, {}, {}}}, {{{}, {}, {}}}, {{1, 1, 1}},
+                                  {{5, 5, 5}}, {}, {}, {{{{1, 1, 1}}}},
+                                  {{true, false, false}},
                                   Options::Context{false, {}, 1, 1}),
       Catch::Matchers::ContainsSubstring(
           "Cannot exclude blocks as well as have periodic boundary"));
@@ -382,8 +401,9 @@ SPECTRE_TEST_CASE("Unit.Domain.Creators.AlignedLattice", "[Domain][Unit]") {
       creators::AlignedLattice<3>({{{{-1.5, -0.5, 0.5, 1.5}},
                                     {{1.5, -0.5, 0.5, 1.5}},
                                     {{-1.5, -0.5, 0.5, 1.5}}}},
-                                  {{1, 1, 1}}, {{5, 5, 5}}, {}, {},
-                                  {{{{1, 1, 1}}}}, {{false, true, false}},
+                                  {{{}, {}, {}}}, {{{}, {}, {}}}, {{1, 1, 1}},
+                                  {{5, 5, 5}}, {}, {}, {{{{1, 1, 1}}}},
+                                  {{false, true, false}},
                                   Options::Context{false, {}, 1, 1}),
       Catch::Matchers::ContainsSubstring(
           "Cannot exclude blocks as well as have periodic boundary"));
@@ -391,8 +411,9 @@ SPECTRE_TEST_CASE("Unit.Domain.Creators.AlignedLattice", "[Domain][Unit]") {
       creators::AlignedLattice<3>({{{{-1.5, -0.5, 0.5, 1.5}},
                                     {{1.5, -0.5, 0.5, 1.5}},
                                     {{-1.5, -0.5, 0.5, 1.5}}}},
-                                  {{1, 1, 1}}, {{5, 5, 5}}, {}, {},
-                                  {{{{1, 1, 1}}}}, {{true, false, true}},
+                                  {{{}, {}, {}}}, {{{}, {}, {}}}, {{1, 1, 1}},
+                                  {{5, 5, 5}}, {}, {}, {{{{1, 1, 1}}}},
+                                  {{true, false, true}},
                                   Options::Context{false, {}, 1, 1}),
       Catch::Matchers::ContainsSubstring(
           "Cannot exclude blocks as well as have periodic boundary"));
