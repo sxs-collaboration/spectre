@@ -68,6 +68,10 @@ Exponential<Dim>::filter_matrices(const Mesh<Dim>& mesh) const {
   std::array<std::reference_wrapper<const Matrix>, Dim> filter =
       make_array<Dim>(std::cref(empty));
   for (size_t d = 0; d < Dim; d++) {
+    // Skip Ylm basis dimensions, but allow radial dimensions
+    if (mesh.basis(d) == Spectral::Basis::SphericalHarmonic) {
+      continue;
+    }
     gsl::at(filter, d) = std::cref(filter_matrix(mesh.slice_through(d)));
   }
   return filter;

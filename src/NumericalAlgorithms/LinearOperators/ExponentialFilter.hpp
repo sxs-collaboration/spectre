@@ -52,6 +52,10 @@ namespace Filters {
  * \f$\alpha_{\mathrm{ef}}\f$ and \f$\beta_{\mathrm{ef}}\f$ are used in each
  * logical direction. For a discussion of filtering see section 5.3 of
  * \cite HesthavenWarburton.
+ *
+ * This filter is skipped for mesh dimensions with basis `SphericalHarmonic`,
+ * since Ylm filtering should be done for those. However, radial filtering is
+ * done in this case (and can be disabled by specifying the blocks to filter).
  */
 template <size_t Dim>
 class Exponential : public Filter {
