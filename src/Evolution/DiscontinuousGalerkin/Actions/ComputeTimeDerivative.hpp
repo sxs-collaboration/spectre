@@ -14,6 +14,7 @@
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/DataVector.hpp"
+#include "DataStructures/MathWrapper.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
 #include "DataStructures/VariablesTag.hpp"
@@ -827,11 +828,11 @@ void ComputeTimeDerivative<Dim, EvolutionSystem, DgStepChoosers,
             const gsl::not_null<
                 DirectionalIdMap<Dim, evolution::dg::MortarDataHolder<Dim>>*>
                 mortar_data,
-            const gsl::not_null<
-                DirectionalIdMap<Dim, TimeSteppers::BoundaryHistory<
-                                          evolution::dg::MortarData<Dim>,
-                                          evolution::dg::MortarData<Dim>,
-                                          typename dt_variables_tag::type>>*>
+            const gsl::not_null<DirectionalIdMap<
+                Dim, TimeSteppers::BoundaryHistory<
+                         evolution::dg::MortarData<Dim>,
+                         evolution::dg::MortarData<Dim>,
+                         math_wrapper_type<typename dt_variables_tag::type>>>*>
                 boundary_data_history,
             const DirectionMap<Dim,
                                std::optional<Variables<tmpl::list<

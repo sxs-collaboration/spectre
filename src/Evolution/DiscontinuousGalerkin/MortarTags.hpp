@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "DataStructures/DataBox/Tag.hpp"
+#include "DataStructures/MathWrapper.hpp"
 
 /// \cond
 template <size_t Dim, typename T>
@@ -25,7 +26,8 @@ class MortarInfo;
 }  // namespace evolution::dg
 class TimeStepId;
 namespace TimeSteppers {
-template <typename LocalData, typename RemoteData, typename CouplingResult>
+template <typename LocalData, typename RemoteData,
+          typename UntypedCouplingResult>
 class BoundaryHistory;
 }  // namespace TimeSteppers
 /// \endcond
@@ -54,7 +56,7 @@ struct MortarDataHistory : db::SimpleTag {
   using type = DirectionalIdMap<
       Dim, TimeSteppers::BoundaryHistory<::evolution::dg::MortarData<Dim>,
                                          ::evolution::dg::MortarData<Dim>,
-                                         CouplingResult>>;
+                                         math_wrapper_type<CouplingResult>>>;
 };
 
 /// Mesh on the mortars, indexed by (Direction, ElementId) pairs

@@ -18,6 +18,7 @@
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
+#include "DataStructures/MathWrapper.hpp"
 #include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
 #include "Domain/FaceNormal.hpp"
 #include "Domain/Structure/DirectionalIdMap.hpp"
@@ -232,10 +233,11 @@ bool receive_boundary_data(
                       volume_dim, evolution::dg::MortarDataHolder<volume_dim>>*>
                       gts_mortar_data,
                   const gsl::not_null<DirectionalIdMap<
-                      volume_dim, TimeSteppers::BoundaryHistory<
-                                      evolution::dg::MortarData<volume_dim>,
-                                      evolution::dg::MortarData<volume_dim>,
-                                      typename dt_variables_tag::type>>*>
+                      volume_dim,
+                      TimeSteppers::BoundaryHistory<
+                          evolution::dg::MortarData<volume_dim>,
+                          evolution::dg::MortarData<volume_dim>,
+                          math_wrapper_type<typename dt_variables_tag::type>>>*>
                       boundary_data_history,
                   const gsl::not_null<DirectionalIdMap<volume_dim, TimeStepId>*>
                       mortar_next_time_step_ids,

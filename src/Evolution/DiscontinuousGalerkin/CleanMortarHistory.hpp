@@ -7,6 +7,7 @@
 
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
+#include "DataStructures/MathWrapper.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
@@ -18,7 +19,8 @@ template <typename StepperInterface>
 struct TimeStepper;
 }  // namespace Tags
 namespace TimeSteppers {
-template <typename LocalData, typename RemoteData, typename CouplingResult>
+template <typename LocalData, typename RemoteData,
+          typename UntypedCouplingResult>
 class BoundaryHistory;
 }  // namespace TimeSteppers
 namespace evolution::dg {
@@ -56,9 +58,10 @@ struct CleanMortarHistory {
 
   static void apply(
       gsl::not_null<DirectionalIdMap<
-          dim, TimeSteppers::BoundaryHistory<::evolution::dg::MortarData<dim>,
-                                             ::evolution::dg::MortarData<dim>,
-                                             CouplingResult>>*>
+          dim,
+          TimeSteppers::BoundaryHistory<::evolution::dg::MortarData<dim>,
+                                        ::evolution::dg::MortarData<dim>,
+                                        math_wrapper_type<CouplingResult>>>*>
           history,
       const LtsTimeStepper& time_stepper,
       const DirectionalIdMap<dim, MortarInfo<dim>>& mortar_info);

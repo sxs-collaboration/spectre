@@ -14,7 +14,6 @@
 #include <utility>
 #include <vector>
 
-#include "DataStructures/MathWrapper.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Time/BoundaryHistory.hpp"
 #include "Time/Slab.hpp"
@@ -172,7 +171,7 @@ size_t check_coupling_evaluation(const BoundaryHistoryType& hist) {
 
   size_t coupling_calls = 0;
   coupling_return = 3.5;
-  const double result = *evaluator(hist.local().front(), hist.remote().front());
+  const double result = evaluator(hist.local().front(), hist.remote().front());
   if (local_arg.empty()) {
     CHECK(remote_arg.empty());
     // In one case this should use a cached result generated from the
@@ -188,7 +187,7 @@ size_t check_coupling_evaluation(const BoundaryHistoryType& hist) {
   remote_arg.clear();
 
   coupling_return = 6.5;
-  CHECK(6.5 == *evaluator(hist.local()[3], hist.remote()[2]));
+  CHECK(6.5 == evaluator(hist.local()[3], hist.remote()[2]));
   if (local_arg.empty()) {
     CHECK(remote_arg.empty());
   } else {
@@ -379,90 +378,18 @@ void test_boundary_history() {
   }
 }
 
-struct CacheCheck {
-  static void add(const std::pair<double, double>& entry) { ++entries[entry]; }
-
-  static void remove(const std::pair<double, double>& entry) {
-    --entries[entry];
-    if (entries[entry] == 0) {
-      entries.erase(entry);
-    }
-  }
-
-  static size_t count() {
-    size_t result = 0;
-    for (const auto& entry : entries) {
-      result += entry.second;
-    }
-    return result;
-  }
-
-  // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
-  static std::map<std::pair<double, double>, size_t> entries;
-};
-
-// NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
-std::map<std::pair<double, double>, size_t> CacheCheck::entries{};
-
-struct CacheCheckEntry {
-  std::pair<double, double> value;
-
-  CacheCheckEntry() = delete;
-
-  CacheCheckEntry(const CacheCheckEntry& other) : value(other.value) {
-    CacheCheck::add(value);
-  }
-
-  CacheCheckEntry& operator=(const CacheCheckEntry& other) {
-    CacheCheck::remove(value);
-    value = other.value;
-    CacheCheck::add(value);
-    return *this;
-  }
-
-  ~CacheCheckEntry() { CacheCheck::remove(value); }
-
-  CacheCheckEntry(const double local, const double remote)
-      : value(local, remote) {
-    CacheCheck::add(value);
-  }
-};
-
-#if defined(__GNUC__) and not defined(__clang__)
-#pragma GCC diagnostic push
-// Warns about missing definition.  Function only used in unevaluated context.
-#pragma GCC diagnostic ignored "-Wunused-function"
-#endif
-#if defined(__clang__) and __clang__ < 17
-#pragma GCC diagnostic push
-// Warning is broken.  See various LLVM bugs.
-#pragma GCC diagnostic ignored "-Wunneeded-internal-declaration"
-#endif
-MathWrapper<double> make_math_wrapper(gsl::not_null<CacheCheckEntry*> entry);
-#if defined(__clang__) and __clang__ < 17
-#pragma GCC diagnostic pop
-#endif
-#if defined(__GNUC__) and not defined(__clang__)
-#pragma GCC diagnostic pop
-#endif
-
-MathWrapper<const double> make_math_wrapper(const CacheCheckEntry& entry) {
-  // Doesn't matter.  Result never used.
-  return ::make_math_wrapper(entry.value.first);
-}
-
 // The template parameter has no particular meaning, it just swaps the
 // fairly arbitrary choices of which side to operator on in each
 // place.
 template <bool SwapSides>
 void test_substeps() {
   struct Coupling {
-    CacheCheckEntry operator()(double a, double b) const {
+    double operator()(double a, double b) const {
       if (SwapSides) {
         std::swap(a, b);
       }
       call.emplace(a, b);
-      return {a, b};
+      return a;
     }
 
     // NOLINTNEXTLINE(spectre-mutable)
@@ -470,7 +397,7 @@ void test_substeps() {
   };
 
   Coupling coupling{};
-  TimeSteppers::BoundaryHistory<double, double, CacheCheckEntry> history{};
+  TimeSteppers::BoundaryHistory<double, double, double> history{};
   auto [side1, side2] = [&history]() {
     if constexpr (SwapSides) {
       return std::pair{history.remote(), history.local()};
@@ -529,9 +456,7 @@ void test_substeps() {
   CHECK(not coupling.call.has_value());
   coupling.call.reset();
 
-  CHECK(CacheCheck::count() == 4);
   side1.pop_front();
-  CHECK(CacheCheck::count() == 1);
 
   {
     const std::string expected_1_without_data =
@@ -593,10 +518,7 @@ void test_substeps() {
   CHECK(coupling.call == std::pair{2.5, 1.5});
   coupling.call.reset();
 
-  CHECK(CacheCheck::count() == 4);
   side2.clear_substeps(1);
-  CHECK(CacheCheck::count() == 1);
-  CHECK(CacheCheck::entries.at({2.0, 1.0}) == 1);
 }
 
 template <bool Local, bool Modified>
