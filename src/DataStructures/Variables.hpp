@@ -39,7 +39,6 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Literals.hpp"
 #include "Utilities/MakeSignalingNan.hpp"
-#include "Utilities/MemoryHelpers.hpp"
 #include "Utilities/PrettyType.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/SetNumberOfGridPoints.hpp"
@@ -86,10 +85,6 @@ class Variables;
  *
  * If the macro `SPECTRE_NAN_INIT` is defined, the contents are
  * initialized with `NaN`s.
- *
- * `Variables` stores the data it owns in a `std::unique_ptr<double[]>`
- * instead of a `std::vector` because `std::vector` value-initializes its
- * contents, which is very slow.
  */
 template <typename... Tags>
 class Variables<tmpl::list<Tags...>> {
@@ -160,6 +155,9 @@ class Variables<tmpl::list<Tags...>> {
   /// `number_of_grid_points * Variables::number_of_independent_components`
   Variables(pointer start, size_t size);
 
+  /// Construct an owning Variables using the storage from an existing vector.
+  explicit Variables(vector_type vector);
+
   Variables(Variables&& rhs);
   Variables& operator=(Variables&& rhs);
 
@@ -211,7 +209,7 @@ class Variables<tmpl::list<Tags...>> {
   }
 
   void set_data_ref(pointer const start, const size_t size) {
-    variable_data_impl_dynamic_.reset();
+    variable_data_impl_dynamic_.clear();
     if (start == nullptr) {
       variable_data_ = pointer_type{};
       size_ = 0;
@@ -246,6 +244,11 @@ class Variables<tmpl::list<Tags...>> {
   pointer data() { return variable_data_.data(); }
   const_pointer data() const { return variable_data_.data(); }
   /// @}
+
+  /// Take ownership of the data used by this Variables as a DataVector or
+  /// similar type.  The Variables must be owning.  This performs no
+  /// allocations or copies unless `number_of_grid_points()` is 1.
+  vector_type release() &&;
 
   /// \cond HIDDEN_SYMBOLS
   /// Needed because of limitations and inconsistency between compiler
@@ -573,13 +576,20 @@ class Variables<tmpl::list<Tags...>> {
 
   std::array<value_type, number_of_independent_components>
       variable_data_impl_static_;
-  std::unique_ptr<value_type[]> variable_data_impl_dynamic_{};
+  vector_type variable_data_impl_dynamic_{};
   bool owning_{true};
   size_t size_ = 0;
   size_t number_of_grid_points_ = 0;
 
   pointer_type variable_data_;
   tuples::TaggedTuple<Tags...> reference_variable_data_;
+
+#if defined(__GNUC__) and not defined(__clang__) and __GNUC__ < 13
+  // This works around a linker error with old GCC versions producing
+  // undefined references to unique_ptr constructors.  (10 and 11 are
+  // known affected, 12 is untested.)
+  std::unique_ptr<value_type[]> unused_gcc_bug_{};
+#endif
 };
 
 // The above Variables implementation doesn't work for an empty parameter pack,
@@ -628,16 +638,7 @@ inline std::ostream& operator<<(std::ostream& os,
 
 template <typename... Tags>
 Variables<tmpl::list<Tags...>>::Variables() {
-  // This makes an assertion trigger if one tries to assign to
-  // components of a default-constructed Variables.
-  const auto set_refs = [](auto& var) {
-    for (auto& dv : var) {
-      dv.set_data_ref(nullptr, 0);
-    }
-    return 0;
-  };
-  (void)set_refs;
-  expand_pack(set_refs(tuples::get<Tags>(reference_variable_data_))...);
+  add_reference_variable_data();
 }
 
 template <typename... Tags>
@@ -654,11 +655,6 @@ Variables<tmpl::list<Tags...>>::Variables(const size_t number_of_grid_points,
 template <typename... Tags>
 void Variables<tmpl::list<Tags...>>::initialize(
     const size_t number_of_grid_points) {
-  if (number_of_grid_points_ == 0) {
-    variable_data_impl_dynamic_.reset();
-    size_ = 0;
-    number_of_grid_points_ = 0;
-  }
   if (number_of_grid_points_ == number_of_grid_points) {
     return;
   }
@@ -670,19 +666,16 @@ void Variables<tmpl::list<Tags...>>::initialize(
   }
   number_of_grid_points_ = number_of_grid_points;
   size_ = number_of_grid_points * number_of_independent_components;
-  if (size_ > 0) {
-    if (number_of_grid_points_ == 1) {
-      variable_data_impl_dynamic_.reset();
-    } else {
-      variable_data_impl_dynamic_ =
-          cpp20::make_unique_for_overwrite<value_type[]>(size_);
-    }
-    add_reference_variable_data();
-#if defined(SPECTRE_NAN_INIT)
-    std::fill(variable_data_.data(), variable_data_.data() + size_,
-              make_signaling_NaN<value_type>());
-#endif  // SPECTRE_NAN_INIT
+  if (number_of_grid_points_ <= 1) {
+    variable_data_impl_dynamic_.clear();
+  } else {
+    variable_data_impl_dynamic_.destructive_resize(size_);
   }
+  add_reference_variable_data();
+#if defined(SPECTRE_NAN_INIT)
+  std::fill(variable_data_.data(), variable_data_.data() + size_,
+            make_signaling_NaN<value_type>());
+#endif  // SPECTRE_NAN_INIT
 }
 
 template <typename... Tags>
@@ -725,7 +718,7 @@ Variables<tmpl::list<Tags...>>::Variables(Variables<tmpl::list<Tags...>>&& rhs)
   if (number_of_grid_points_ == 1) {
     variable_data_impl_static_ = std::move(rhs.variable_data_impl_static_);
   }
-  rhs.variable_data_impl_dynamic_.reset();
+  rhs.variable_data_impl_dynamic_.clear();
   rhs.owning_ = true;
   rhs.size_ = 0;
   rhs.number_of_grid_points_ = 0;
@@ -747,7 +740,7 @@ Variables<tmpl::list<Tags...>>& Variables<tmpl::list<Tags...>>::operator=(
     variable_data_impl_static_ = std::move(rhs.variable_data_impl_static_);
   }
 
-  rhs.variable_data_impl_dynamic_.reset();
+  rhs.variable_data_impl_dynamic_.clear();
   rhs.owning_ = true;
   rhs.size_ = 0;
   rhs.number_of_grid_points_ = 0;
@@ -806,7 +799,7 @@ Variables<tmpl::list<Tags...>>::Variables(
   if (number_of_grid_points_ == 1) {
     variable_data_impl_static_ = std::move(rhs.variable_data_impl_static_);
   }
-  rhs.variable_data_impl_dynamic_.reset();
+  rhs.variable_data_impl_dynamic_.clear();
   rhs.size_ = 0;
   rhs.owning_ = true;
   rhs.number_of_grid_points_ = 0;
@@ -832,7 +825,7 @@ Variables<tmpl::list<Tags...>>& Variables<tmpl::list<Tags...>>::operator=(
     variable_data_impl_static_ = std::move(rhs.variable_data_impl_static_);
   }
 
-  rhs.variable_data_impl_dynamic_.reset();
+  rhs.variable_data_impl_dynamic_.clear();
   rhs.size_ = 0;
   rhs.owning_ = true;
   rhs.number_of_grid_points_ = 0;
@@ -844,6 +837,39 @@ template <typename... Tags>
 Variables<tmpl::list<Tags...>>::Variables(const pointer start,
                                           const size_t size) {
   set_data_ref(start, size);
+}
+
+template <typename... Tags>
+Variables<tmpl::list<Tags...>>::Variables(vector_type vector)
+    : variable_data_impl_dynamic_(std::move(vector)),
+      size_(variable_data_impl_dynamic_.size()),
+      number_of_grid_points_(size_ / number_of_independent_components) {
+  ASSERT(variable_data_impl_dynamic_.is_owning(),
+         "Cannot use a non-owning vector as Variables storage.  To create "
+         "a non-owning variables, use the (pointer, size) constructor.");
+  ASSERT(size_ % number_of_independent_components == 0,
+         "The data size ("
+             << size_
+             << ") must be a multiple of the number of independent components ("
+             << number_of_independent_components << ").");
+  if (number_of_grid_points_ == 1) {
+    std::copy(variable_data_impl_dynamic_.begin(),
+              variable_data_impl_dynamic_.end(),
+              variable_data_impl_static_.begin());
+    variable_data_impl_dynamic_.clear();
+  }
+  add_reference_variable_data();
+}
+
+template <typename... Tags>
+auto Variables<tmpl::list<Tags...>>::release() && -> vector_type {
+  ASSERT(is_owning(), "Cannot release storage from a non-owning Variables.");
+  auto result = std::move(variable_data_impl_dynamic_);
+  if (number_of_grid_points_ == 1) {
+    result = decltype(result)(variable_data_impl_static_);
+  }
+  initialize(0);
+  return result;
 }
 
 template <typename... Tags>
@@ -917,14 +943,13 @@ Variables<tmpl::list<Tags...>>& Variables<tmpl::list<Tags...>>::operator=(
 /// \cond HIDDEN_SYMBOLS
 template <typename... Tags>
 void Variables<tmpl::list<Tags...>>::add_reference_variable_data() {
-  if (size_ == 0) {
-    return;
-  }
   if (is_owning()) {
-    if (number_of_grid_points_ == 1) {
+    if (number_of_grid_points_ == 0) {
+      variable_data_.clear();
+    } else if (number_of_grid_points_ == 1) {
       variable_data_.reset(variable_data_impl_static_.data(), size_);
     } else {
-      variable_data_.reset(variable_data_impl_dynamic_.get(), size_);
+      variable_data_.reset(variable_data_impl_dynamic_.data(), size_);
     }
   }
   ASSERT(variable_data_.size() == size_ and
@@ -939,9 +964,13 @@ void Variables<tmpl::list<Tags...>>::add_reference_variable_data() {
     using Tag = tmpl::type_from<decltype(tag_v)>;
     auto& var = tuples::get<Tag>(reference_variable_data_);
     for (size_t i = 0; i < Tag::type::size(); ++i) {
-      var[i].set_data_ref(
-          &variable_data_[variable_offset++ * number_of_grid_points_],
-          number_of_grid_points_);
+      if (LIKELY(number_of_grid_points_ != 0)) {
+        var[i].set_data_ref(
+            &variable_data_[variable_offset++ * number_of_grid_points_],
+            number_of_grid_points_);
+      } else {
+        var[i].set_data_ref(nullptr, 0);
+      }
     }
   });
 }
@@ -1200,6 +1229,11 @@ auto make_math_wrapper(const Variables<Tags>& data) {
   const Vector referencing(
       const_cast<typename Vector::value_type*>(data.data()), data.size());
   return make_math_wrapper(referencing);
+}
+
+template <typename Tags>
+auto into_math_wrapper_type(Variables<Tags>&& data) {
+  return into_math_wrapper_type(std::move(data).release());
 }
 
 /// \cond
