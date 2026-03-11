@@ -52,6 +52,27 @@
  * These quantities will be used in explicit formulas for transformations
  * between expansion coefficients.
  *
+ * ### Spherepack coefficients
+ *
+ * Instead of using the actual spherical-harmonic or
+ * spin-weighted spherical-harmonic coefficients $T^{B}_{\ell' m'}$ and
+ * $T^{\tilde A}_{\ell'm'}$, we often work with
+ * coefficients computed by Spherepack, which have a different normalization
+ * and phase than the standard coefficients.  While Spherepack internally
+ * stores real matrices it calls $a_{lm}$ and $b_{lm}$ (see Spherepack
+ * documentation for details), we simplify things by defining
+ * complex Spherepack coefficients
+ * ${\breve T}^{B}_{\ell' m'}$ and ${\breve T}^{\tilde A}_{\ell'm'}$ that
+ * have Spherepack normalization. These are related to the standard coefficients
+ * by
+ * \begin{align}
+ *  {\breve T}^{A}_{\ell m} &= (-1)^m \sqrt{\frac{2}{\pi}} T^{B}_{\ell m},\\
+ *  {\breve T}^{\tilde A}_{\ell m} &= (-1)^m \sqrt{\frac{2}{\pi}}
+ *  T^{\tilde A}_{\ell m}.
+ * \end{align}
+ * Some of the formulas below are slightly different when acting on
+ * Spherepack coefficients compared to standard coefficients.
+ *
  * ## Transformations
  *
  * We can define the following transformations between the expansion
@@ -98,7 +119,24 @@
  *
  * The functions FillCartToSphere and FillSphereToCart fill
  * sparse matrices that encode Eqs. $(\ref{eq:C2S})$ and
- * $(\ref{eq:S2C})$.
+ * $(\ref{eq:S2C})$. When working on Spherepack coefficients, the functions
+ * FillCartToSphere and FillSphereToCart instead
+ * fill sparse matrices that encode
+ * \begin{align}
+ *  {\breve T}^{\tilde B}_{\ell m} &= (-1)^m\sum_{A, \ell',m'\geq 0}(-1)^{m'}
+ *                  \left[
+ *              C_{\ell m A}^{\ell' m'\tilde{B}} T^A_{\ell' m'}
+ *               +{\hat C}_{\ell m A}^{\ell' m'\tilde{B}}
+ *                {\breve T}^A_{\ell' m'}{}^\star
+ *                \right]\label{eq:S2CSpherepack},\\
+ *  {\breve T}^{B}_{\ell m} &= (-1)^m\sum_{\tilde{A},\ell',m'\geq 0}(-1)^{m'}
+ *                  \left[
+ *                  C_{\ell m\tilde{A}}^{\ell' m' B}
+ *                  T^{\tilde A}_{\ell' m'}
+ *                  +{\hat C}_{\ell m\tilde{A}}^{\ell' m' B}
+ *                  {\breve T}^{\tilde A}_{\ell' m'}{}^\star
+ *                  \right]\label{eq:C2SSpherepack}.
+ * \end{align}
  *
  * ## Filtering
  *
@@ -154,6 +192,33 @@
  *                 (-1)^{m'}.
  * \end{align}
  *
- * The function FillFilter encapsulates Eq. $(\ref{eq:Filter})$.
+ * When filtering Spherepack coefficients, the expression is
+ * \begin{align}
+ * {\breve T}^{\tilde B}_{\ell m} &=
+ *           (-1)^m\sum_{{\tilde A}, \ell',m'\geq 0}(-1)^{m'}
+ *                  \left[
+ *              F_{\ell m {\tilde A}}^{\ell' m'\tilde{B}}
+ *                {\breve T}^{\tilde A}_{\ell' m'}
+ *               +{\hat F}_{\ell m {\tilde A}}^{\ell' m'\tilde{B}}
+ *               {\breve T}^{\tilde A}_{\ell' m'}{}^\star
+ *                \right]\label{eq:FilterSpherepack}.
+ * \end{align}
+ *
+ * The function FillFilter encapsulates Eq. $(\ref{eq:Filter})$ or
+ * Eq. $(\ref{eq:FilterSpherepack})$,
+ * depending what type of coefficients are being filtered.
  */
-namespace ylm::TensorYlm {}  // namespace ylm::TensorYlm
+namespace ylm::TensorYlm {
+
+/// Instances of this class are passed to FillFilter,
+/// FillCartToSphere, and FillSphereToCart to identify how the
+/// coefficients are normalized.  This makes a difference because the
+/// normalization is not just a constant factor.
+enum class CoefficientNormalization {
+  /// The standard normalization of the spherical-harmonic coefficients.
+  Standard,
+  /// The Spherepack normalization. Spherepack coefficients are standard
+  /// coefficients multiplied by $(-1)^m \sqrt{2/\pi}$.
+  Spherepack
+};
+}  // namespace ylm::TensorYlm

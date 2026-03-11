@@ -18,6 +18,7 @@
 #include "NumericalAlgorithms/SphericalHarmonics/Spherepack.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/SpherepackCache.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/SpherepackIterator.hpp"
+#include "NumericalAlgorithms/SphericalHarmonics/TensorYlm.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/TensorYlmFilter.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Utilities/Gsl.hpp"
@@ -77,17 +78,22 @@ void test_apply_filter(const size_t num_to_kill) {
   SimpleSparseMatrix filter_matrix_ij;
   SimpleSparseMatrix filter_matrix_kii;
   fill_filter<Scalar<DataVector>::structure>(
-      make_not_null(&filter_matrix_scalar), ell_max, num_to_kill, std::nullopt);
+      make_not_null(&filter_matrix_scalar), ell_max, num_to_kill, std::nullopt,
+      CoefficientNormalization::Spherepack);
   fill_filter<tnsr::i<DataVector, 3>::structure>(
-      make_not_null(&filter_matrix_i), ell_max, num_to_kill, std::nullopt);
+      make_not_null(&filter_matrix_i), ell_max, num_to_kill, std::nullopt,
+      CoefficientNormalization::Spherepack);
   if constexpr (std::is_same_v<
                     VarsList, typename filter_detail::gh_spacetime_vars_list>) {
     fill_filter<tnsr::ii<DataVector, 3>::structure>(
-        make_not_null(&filter_matrix_ii), ell_max, num_to_kill, std::nullopt);
+        make_not_null(&filter_matrix_ii), ell_max, num_to_kill, std::nullopt,
+        CoefficientNormalization::Spherepack);
     fill_filter<tnsr::ij<DataVector, 3>::structure>(
-        make_not_null(&filter_matrix_ij), ell_max, num_to_kill, std::nullopt);
+        make_not_null(&filter_matrix_ij), ell_max, num_to_kill, std::nullopt,
+        CoefficientNormalization::Spherepack);
     fill_filter<tnsr::ijj<DataVector, 3>::structure>(
-        make_not_null(&filter_matrix_kii), ell_max, num_to_kill, std::nullopt);
+        make_not_null(&filter_matrix_kii), ell_max, num_to_kill, std::nullopt,
+        CoefficientNormalization::Spherepack);
   }
 
   // Make up bogus jacobians with random numbers, and make
