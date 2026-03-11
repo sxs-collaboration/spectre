@@ -660,9 +660,9 @@ struct EvolutionMetavars<tmpl::list<InterpolationTargetTags...>,
           tmpl::list<
               grmhd::ValenciaDivClean::fd::Tags::Reconstructor,
               ::Tags::VariableFixer<grmhd::ValenciaDivClean::FixConservatives>,
-              grmhd::ValenciaDivClean::Tags::PrimitiveFromConservativeOptions,
               grmhd::ValenciaDivClean::subcell::Tags::TciOptions>,
           tmpl::list<>>,
+      grmhd::ValenciaDivClean::Tags::PrimitiveFromConservativeOptions,
       equation_of_state_tag, initial_data_tag,
       grmhd::ValenciaDivClean::Tags::ConstraintDampingParameter>;
 
