@@ -113,19 +113,33 @@ void test_zero_bc() {
   }
 }
 
-void test_cartoon() {
-  const Mesh<3> mesh_3d(
-      {{2, 2, 1}},
-      {{Spectral::Basis::Legendre, Spectral::Basis::Legendre,
-        Spectral::Basis::Cartoon}},
-      {{Spectral::Quadrature::GaussLobatto, Spectral::Quadrature::GaussLobatto,
-        Spectral::Quadrature::AxialSymmetry}});
-  const auto cords_3d = logical_coordinates((mesh_3d));
-  CHECK_THROWS_WITH(
-      (indefinite_integral(DataVector{mesh_3d.number_of_grid_points(), 1.0},
-                           mesh_3d, 2)),
-      Catch::Matchers::ContainsSubstring(
-          "An indefinite integral cannot be preformed on a Cartoon basis."));
+void test_failing() {
+  {
+    INFO("Testing Cartoon throws error");
+    const Mesh<3> mesh(
+        {2, 2, 1},
+        {Spectral::Basis::Legendre, Spectral::Basis::Legendre,
+         Spectral::Basis::Cartoon},
+        {Spectral::Quadrature::GaussLobatto, Spectral::Quadrature::GaussLobatto,
+         Spectral::Quadrature::AxialSymmetry});
+    CHECK_THROWS_WITH(
+        (indefinite_integral(DataVector{mesh.number_of_grid_points(), 1.0},
+                             mesh, 2)),
+        Catch::Matchers::ContainsSubstring(
+            "An indefinite integral cannot be preformed on a Cartoon basis."));
+  }
+  {
+    INFO("Testing Fourier throws error");
+    const Mesh<2> mesh({2, 5},
+                       {Spectral::Basis::Legendre, Spectral::Basis::Fourier},
+                       {Spectral::Quadrature::GaussLobatto,
+                        Spectral::Quadrature::Equiangular});
+    CHECK_THROWS_WITH(
+        (indefinite_integral(DataVector{mesh.number_of_grid_points(), 1.0},
+                             mesh, 1)),
+        Catch::Matchers::ContainsSubstring(
+            "Indefinite integral matrix is not implemented for Fourier basis"));
+  }
 }
 }  // namespace
 
@@ -139,5 +153,5 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.IndefiniteIntegral",
                Spectral::Quadrature::GaussLobatto>();
   test_zero_bc<ComplexDataVector, Spectral::Basis::Legendre,
                Spectral::Quadrature::GaussLobatto>();
-  test_cartoon();
+  test_failing();
 }

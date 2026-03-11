@@ -140,6 +140,13 @@ Matrix Fourier::interpolation_matrix(const size_t num_points,
   return result;
 }
 
+template Matrix Fourier::interpolation_matrix(size_t num_points,
+                                              const double& target_points);
+template Matrix Fourier::interpolation_matrix(size_t num_points,
+                                              const DataVector& target_points);
+template Matrix Fourier::interpolation_matrix(
+    size_t num_points, const std::vector<double>& target_points);
+
 // Specializations of function templates defined in the Spectral directory
 
 template <>
@@ -169,34 +176,22 @@ compute_collocation_points_and_weights<Basis::Fourier, Quadrature::Equiangular>(
                         Fourier::quadrature_weights(num_points));
 }
 
-namespace {
-template <Basis BasisType, Quadrature QuadratureType>
-struct DifferentiationMatrixGenerator {
-  Matrix operator()(size_t num_points) const;
-};
+template <Basis BasisType>
+Matrix spectral_indefinite_integral_matrix(size_t num_points);
+
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wsuggest-attribute=noreturn"
+#endif
 
 template <>
-Matrix DifferentiationMatrixGenerator<Basis::Fourier, Quadrature::Equiangular>::
-operator()(const size_t num_points) const {
-  return Fourier::differentiation_matrix(num_points);
-}
-}  // namespace
-
-PRECOMPUTED_SPECTRAL_QUANTITY(differentiation_matrix, Matrix,
-                              DifferentiationMatrixGenerator)
-
-template const Matrix& differentiation_matrix<
-    Basis::Fourier, Quadrature::Equiangular>(const size_t num_points);
-
-template <>
-Matrix interpolation_matrix<Basis::Fourier, Quadrature::Equiangular>(
-    const size_t num_points, const DataVector& target_points) {
-  return Fourier::interpolation_matrix(num_points, target_points);
+Matrix spectral_indefinite_integral_matrix<Basis::Fourier>(
+    size_t /*num_points*/) {
+  ERROR("Indefinite integral matrix is not implemented for Fourier basis");
 }
 
-template <>
-Matrix interpolation_matrix<Basis::Fourier, Quadrature::Equiangular>(
-    const size_t num_points, const double& target_points) {
-  return Fourier::interpolation_matrix(num_points, target_points);
-}
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
+
 }  // namespace Spectral

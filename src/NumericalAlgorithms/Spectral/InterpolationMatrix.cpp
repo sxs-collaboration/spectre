@@ -10,6 +10,7 @@
 #include "DataStructures/Matrix.hpp"
 #include "NumericalAlgorithms/Spectral/BarycentricWeights.hpp"
 #include "NumericalAlgorithms/Spectral/Basis.hpp"
+#include "NumericalAlgorithms/Spectral/BasisFunctions/Fourier.hpp"
 #include "NumericalAlgorithms/Spectral/CollocationPoints.hpp"
 #include "NumericalAlgorithms/Spectral/GetSpectralQuantityForMesh.hpp"
 #include "NumericalAlgorithms/Spectral/MaximumNumberOfPoints.hpp"
@@ -35,6 +36,8 @@ Matrix interpolation_matrix(const size_t num_points, const T& target_points) {
       interp_matrix(k, 0) = 1.0;
     }
     return interp_matrix;
+  } else if constexpr (BasisType == Spectral::Basis::Fourier) {
+    return Fourier::interpolation_matrix(num_points, target_points);
   }
   constexpr size_t max_num_points =
       Spectral::maximum_number_of_points<BasisType>;
@@ -98,6 +101,8 @@ template Matrix interpolation_matrix<Basis::Chebyshev, Quadrature::Gauss>(
 template Matrix
 interpolation_matrix<Basis::Chebyshev, Quadrature::GaussLobatto>(
     size_t, const std::vector<double>&);
+template Matrix interpolation_matrix<Basis::Fourier, Quadrature::Equiangular>(
+    size_t, const std::vector<double>&);
 template Matrix interpolation_matrix<Basis::Legendre, Quadrature::Gauss>(
     size_t, const std::vector<double>&);
 template Matrix interpolation_matrix<Basis::Legendre, Quadrature::GaussLobatto>(
@@ -106,10 +111,14 @@ template Matrix interpolation_matrix<Basis::Chebyshev, Quadrature::Gauss>(
     size_t, const DataVector&);
 template Matrix interpolation_matrix<
     Basis::Chebyshev, Quadrature::GaussLobatto>(size_t, const DataVector&);
+template Matrix interpolation_matrix<Basis::Fourier, Quadrature::Equiangular>(
+    size_t, const DataVector&);
 template Matrix interpolation_matrix<Basis::Legendre, Quadrature::Gauss>(
     size_t, const DataVector&);
 template Matrix interpolation_matrix<Basis::Legendre, Quadrature::GaussLobatto>(
     size_t, const DataVector&);
+template Matrix interpolation_matrix<Basis::Fourier, Quadrature::Equiangular>(
+    size_t, const double&);
 template Matrix Spectral::interpolation_matrix(const Mesh<1>&,
                                                const DataVector&);
 template Matrix Spectral::interpolation_matrix(const Mesh<1>&,

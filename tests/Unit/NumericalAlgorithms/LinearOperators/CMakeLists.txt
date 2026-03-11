@@ -30,6 +30,7 @@ target_link_libraries(
   LinearOperators
   MathFunctions
   Spectral
+  SpectralHelpers
   SphericalHarmonics
   SphericalHarmonicsHelpers
   Utilities

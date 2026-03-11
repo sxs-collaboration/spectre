@@ -7,6 +7,7 @@
 #include <cstddef>
 #include <limits>
 #include <memory>
+#include <numbers>
 #include <optional>
 #include <pup.h>
 #include <random>
@@ -31,6 +32,7 @@
 #include "Domain/Structure/ElementId.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
+#include "Helpers/NumericalAlgorithms/Spectral/FourierTestFunctions.hpp"
 #include "Helpers/NumericalAlgorithms/SphericalHarmonics/YlmTestFunctions.hpp"
 #include "NumericalAlgorithms/Interpolation/IrregularInterpolant.hpp"
 #include "NumericalAlgorithms/Spectral/Basis.hpp"
@@ -561,6 +563,93 @@ void test_3d_spherical(const gsl::not_null<std::mt19937*> generator) {
   }
 }
 
+void test_2d_hollow_disk(const gsl::not_null<std::mt19937*> generator) {
+  std::uniform_real_distribution<> xi_distribution(-1.0, 1.0);
+  std::uniform_real_distribution<> phi_distribution(0.0,
+                                                    2.0 * std::numbers::pi);
+  for (size_t n_target_points = 1; n_target_points < 13;
+       n_target_points += 11) {
+    tnsr::I<DataVector, 2, Frame::ElementLogical> xi_target{n_target_points};
+    get<0>(xi_target) = make_with_random_values<DataVector>(
+        generator, make_not_null(&xi_distribution), xi_target);
+    get<1>(xi_target) = make_with_random_values<DataVector>(
+        generator, make_not_null(&phi_distribution), xi_target);
+    for (size_t n_r = 2; n_r < 4; ++n_r) {
+      CAPTURE(n_r);
+      for (size_t n_y = 0; n_y < 4; ++n_y) {
+        CAPTURE(n_y);
+        for (size_t n_x = 0; n_x < 4; ++n_x) {
+          CAPTURE(n_x);
+          const Mesh<2> source_mesh{
+              std::array{n_r, 2 * (n_x + n_y) + 1},
+              std::array{Spectral::Basis::Legendre, Spectral::Basis::Fourier},
+              std::array{Spectral::Quadrature::GaussLobatto,
+                         Spectral::Quadrature::Equiangular}};
+          const Polynomial f_r{n_r - 1, 1.5, 2.0};
+          const FourierTestFunctions::ProductOfPolynomials f_m{n_x, n_y};
+          const auto xi_source = logical_coordinates(source_mesh);
+          const DataVector f_source =
+              f_r(get<0>(xi_source)) * f_m(get<1>(xi_source));
+          const DataVector f_expected =
+              f_r(get<0>(xi_target)) * f_m(get<1>(xi_target));
+          const intrp::Irregular<2> interpolator(source_mesh, xi_target);
+          const DataVector f_interpolated = interpolator.interpolate(f_source);
+          CHECK_ITERABLE_APPROX(f_interpolated, f_expected);
+        }
+      }
+    }
+  }
+}
+
+void test_3d_hollow_cylinder(const gsl::not_null<std::mt19937*> generator) {
+  std::uniform_real_distribution<> xi_distribution(-1.0, 1.0);
+  std::uniform_real_distribution<> phi_distribution(0.0,
+                                                    2.0 * std::numbers::pi);
+  for (size_t n_target_points = 1; n_target_points < 13;
+       n_target_points += 11) {
+    tnsr::I<DataVector, 3, Frame::ElementLogical> xi_target{n_target_points};
+    get<0>(xi_target) = make_with_random_values<DataVector>(
+        generator, make_not_null(&xi_distribution), xi_target);
+    get<1>(xi_target) = make_with_random_values<DataVector>(
+        generator, make_not_null(&phi_distribution), xi_target);
+    get<2>(xi_target) = make_with_random_values<DataVector>(
+        generator, make_not_null(&xi_distribution), xi_target);
+    for (size_t n_r = 2; n_r < 4; ++n_r) {
+      CAPTURE(n_r);
+      for (size_t n_y = 0; n_y < 4; ++n_y) {
+        CAPTURE(n_y);
+        for (size_t n_x = 0; n_x < 4; ++n_x) {
+          CAPTURE(n_x);
+          for (size_t n_z = 2; n_z < 4; ++n_z) {
+            CAPTURE(n_z);
+            const Mesh<3> source_mesh{
+                std::array{n_r, 2 * (n_x + n_y) + 1, n_z},
+                std::array{Spectral::Basis::Legendre, Spectral::Basis::Fourier,
+                           Spectral::Basis::Legendre},
+                std::array{Spectral::Quadrature::GaussLobatto,
+                           Spectral::Quadrature::Equiangular,
+                           Spectral::Quadrature::GaussLobatto}};
+            const Polynomial f_r{n_r - 1, 1.5, 2.0};
+            const Polynomial f_z{n_z - 1, 1.6, 2.0};
+            const FourierTestFunctions::ProductOfPolynomials f_m{n_x, n_y};
+            const auto xi_source = logical_coordinates(source_mesh);
+            const DataVector f_source = f_r(get<0>(xi_source)) *
+                                        f_m(get<1>(xi_source)) *
+                                        f_z(get<2>(xi_source));
+            const DataVector f_expected = f_r(get<0>(xi_target)) *
+                                          f_m(get<1>(xi_target)) *
+                                          f_z(get<2>(xi_target));
+            const intrp::Irregular<3> interpolator(source_mesh, xi_target);
+            const DataVector f_interpolated =
+                interpolator.interpolate(f_source);
+            CHECK_ITERABLE_APPROX(f_interpolated, f_expected);
+          }
+        }
+      }
+    }
+  }
+}
+
 void test_cartoon_spherical(const gsl::not_null<std::mt19937*> generator) {
   std::uniform_real_distribution<> xi_distribution(-1.0, 1.0);
 
@@ -622,6 +711,7 @@ void test_cartoon_axial(const gsl::not_null<std::mt19937*> generator) {
 }
 }  // namespace
 
+// [[TimeOut, 10]]
 SPECTRE_TEST_CASE("Unit.Numerical.Interpolation.IrregularInterpolant",
                   "[Unit][NumericalAlgorithms]") {
   test_irregular_interpolant<Spectral::Basis::Legendre,
@@ -645,6 +735,8 @@ SPECTRE_TEST_CASE("Unit.Numerical.Interpolation.IrregularInterpolant",
   MAKE_GENERATOR(generator);
   test_2d_spherical(make_not_null(&generator));
   test_3d_spherical(make_not_null(&generator));
+  test_2d_hollow_disk(make_not_null(&generator));
+  test_3d_hollow_cylinder(make_not_null(&generator));
   test_cartoon_spherical(make_not_null(&generator));
   test_cartoon_axial(make_not_null(&generator));
 }
