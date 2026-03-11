@@ -46,6 +46,11 @@
 #include "Evolution/Initialization/NonconservativeSystem.hpp"
 #include "Evolution/Systems/Cce/Callbacks/DumpBondiSachsOnWorldtube.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Actions/SetInitialData.hpp"
+#include "Evolution/Systems/GeneralizedHarmonic/Bbh/Callbacks/UpdateCompletionCriteria.hpp"
+#include "Evolution/Systems/GeneralizedHarmonic/Bbh/CompletionCriteria.hpp"
+#include "Evolution/Systems/GeneralizedHarmonic/Bbh/CompletionSingleton.hpp"
+#include "Evolution/Systems/GeneralizedHarmonic/Bbh/Events/CheckConstraintThresholds.hpp"
+#include "Evolution/Systems/GeneralizedHarmonic/Bbh/PhaseControl/CheckpointAndExitIfComplete.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/BoundaryConditions/Bjorhus.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/BoundaryConditions/DemandOutgoingCharSpeeds.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/BoundaryConditions/DirichletMinkowski.hpp"
@@ -264,7 +269,8 @@ struct EvolutionMetavars {
     using horizon_find_callbacks = tmpl::append<
         tmpl::conditional_t<
             Horizon == ::domain::ObjectLabel::C,
-            tmpl::list<ah::callbacks::SendDependencyToObserverWriter<Ah, true>>,
+            tmpl::list<ah::callbacks::SendDependencyToObserverWriter<Ah, true>,
+                       gh::bbh::callbacks::UpdateCompletionCriteria<Ah>>,
             tmpl::list<>>,
         tmpl::list<ah::callbacks::ObserveFieldsOnHorizon<
                        ::ah::surface_tags_for_observing, Ah>,
@@ -492,6 +498,7 @@ struct EvolutionMetavars {
                        ah::Events::FindApparentHorizon<AhB>,
                        ah::Events::FindCommonHorizon<AhC, observe_fields,
                                                      non_tensor_compute_tags>,
+                       gh::bbh::Events::CheckConstraintThresholds,
                        intrp::Events::InterpolateWithoutInterpComponent<
                            3, BondiSachs, source_vars_no_deriv>,
                        intrp::Events::InterpolateWithoutInterpComponent<
@@ -526,7 +533,10 @@ struct EvolutionMetavars {
         // Restrict to monotonic time steppers in LTS to avoid control
         // systems deadlocking.
         tmpl::pair<LtsTimeStepper, TimeSteppers::monotonic_lts_time_steppers>,
-        tmpl::pair<PhaseChange, PhaseControl::factory_creatable_classes>,
+        tmpl::pair<PhaseChange,
+                   tmpl::push_back<
+                       PhaseControl::factory_creatable_classes,
+                       gh::bbh::phase_control::CheckpointAndExitIfComplete>>,
         tmpl::pair<StepChooser<StepChooserUse::LtsStep>,
                    StepChoosers::standard_step_choosers<system>>,
         tmpl::pair<
@@ -550,6 +560,8 @@ struct EvolutionMetavars {
                  gh::Tags::DampingFunctionGamma0<volume_dim, Frame::Grid>,
                  gh::Tags::DampingFunctionGamma1<volume_dim, Frame::Grid>,
                  gh::Tags::DampingFunctionGamma2<volume_dim, Frame::Grid>>;
+
+  using mutable_global_cache_tags = tmpl::list<>;
 
   using dg_registration_list =
       tmpl::list<observers::Actions::RegisterEventsWithObservers>;
@@ -619,6 +631,8 @@ struct EvolutionMetavars {
       Initialization::Actions::AddComputeTags<
           tmpl::push_back<StepChoosers::step_chooser_compute_tags<
               EvolutionMetavars, local_time_stepping>>>,
+      Initialization::Actions::AddSimpleTags<
+          gh::bbh::Actions::InitializeElementCompletionRequested>,
       ::evolution::dg::Initialization::Mortars<volume_dim, system>,
       intrp::Actions::ElementInitInterpPoints<volume_dim,
                                               interpolation_target_tags>,
@@ -729,6 +743,7 @@ struct EvolutionMetavars {
                             interpolation_target_tags>,
                     tmpl::bind<intrp::Tags::PointInfo, tmpl::_1,
                                tmpl::pin<tmpl::size_t<volume_dim>>>>>,
+            gh::bbh::Tags::ElementCompletionRequested,
             Tags::ChangeSlabSize::NumberOfExpectedMessages,
             Tags::ChangeSlabSize::NewSlabSize>>>;
     static constexpr bool keep_coarse_grids = false;
@@ -741,6 +756,7 @@ struct EvolutionMetavars {
       observers::ObserverWriter<EvolutionMetavars>,
       importers::ElementDataReader<EvolutionMetavars>,
       mem_monitor::MemoryMonitor<EvolutionMetavars>,
+      gh::bbh::CompletionSingleton<EvolutionMetavars>,
       ah::Component<EvolutionMetavars, AhA>,
       ah::Component<EvolutionMetavars, AhB>,
       ah::Component<EvolutionMetavars, AhC>,
