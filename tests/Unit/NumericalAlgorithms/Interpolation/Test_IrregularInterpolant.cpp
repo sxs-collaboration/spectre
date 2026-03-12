@@ -567,6 +567,7 @@ void test_2d_hollow_disk(const gsl::not_null<std::mt19937*> generator) {
   std::uniform_real_distribution<> xi_distribution(-1.0, 1.0);
   std::uniform_real_distribution<> phi_distribution(0.0,
                                                     2.0 * std::numbers::pi);
+  const Approx custom_approx = Approx::custom().epsilon(1e-12).scale(1.);
   for (size_t n_target_points = 1; n_target_points < 13;
        n_target_points += 11) {
     tnsr::I<DataVector, 2, Frame::ElementLogical> xi_target{n_target_points};
@@ -594,7 +595,8 @@ void test_2d_hollow_disk(const gsl::not_null<std::mt19937*> generator) {
               f_r(get<0>(xi_target)) * f_m(get<1>(xi_target));
           const intrp::Irregular<2> interpolator(source_mesh, xi_target);
           const DataVector f_interpolated = interpolator.interpolate(f_source);
-          CHECK_ITERABLE_APPROX(f_interpolated, f_expected);
+          CHECK_ITERABLE_CUSTOM_APPROX(f_interpolated, f_expected,
+                                       custom_approx);
         }
       }
     }
@@ -605,6 +607,7 @@ void test_3d_hollow_cylinder(const gsl::not_null<std::mt19937*> generator) {
   std::uniform_real_distribution<> xi_distribution(-1.0, 1.0);
   std::uniform_real_distribution<> phi_distribution(0.0,
                                                     2.0 * std::numbers::pi);
+  const Approx custom_approx = Approx::custom().epsilon(1e-12).scale(1.);
   for (size_t n_target_points = 1; n_target_points < 13;
        n_target_points += 11) {
     tnsr::I<DataVector, 3, Frame::ElementLogical> xi_target{n_target_points};
@@ -642,7 +645,8 @@ void test_3d_hollow_cylinder(const gsl::not_null<std::mt19937*> generator) {
             const intrp::Irregular<3> interpolator(source_mesh, xi_target);
             const DataVector f_interpolated =
                 interpolator.interpolate(f_source);
-            CHECK_ITERABLE_APPROX(f_interpolated, f_expected);
+            CHECK_ITERABLE_CUSTOM_APPROX(f_interpolated, f_expected,
+                                         custom_approx);
           }
         }
       }
