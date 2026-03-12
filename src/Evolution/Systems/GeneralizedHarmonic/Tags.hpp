@@ -125,6 +125,30 @@ struct CharacteristicSpeeds : db::SimpleTag {
   using type = std::array<DataType, 4>;
 };
 
+/*!
+ * \brief Characterisic speed as type `tnsr::I`, for use in observing in
+ * `ElementLogical` frame in terms of logical directions.
+ */
+template <typename DataType, size_t SpatialDim, typename Frame>
+struct VSpacetimeMetricSpeed : db::SimpleTag {
+  using type = tnsr::I<DataType, SpatialDim, Frame>;
+};
+/// \copydoc VSpacetimeMetricSpeed
+template <typename DataType, size_t SpatialDim, typename Frame>
+struct VZeroSpeed : db::SimpleTag {
+  using type = tnsr::I<DataType, SpatialDim, Frame>;
+};
+/// \copydoc VSpacetimeMetricSpeed
+template <typename DataType, size_t SpatialDim, typename Frame>
+struct VPlusSpeed : db::SimpleTag {
+  using type = tnsr::I<DataType, SpatialDim, Frame>;
+};
+/// \copydoc VSpacetimeMetricSpeed
+template <typename DataType, size_t SpatialDim, typename Frame>
+struct VMinusSpeed : db::SimpleTag {
+  using type = tnsr::I<DataType, SpatialDim, Frame>;
+};
+
 template <typename DataType, size_t Dim, typename Frame>
 struct CharacteristicFields : db::SimpleTag {
   using type = Variables<tmpl::list<

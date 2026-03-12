@@ -29,6 +29,263 @@ struct Normalized;
 /// \endcond
 
 namespace gh {
+
+/// @{
+/*!
+ * \brief Computes the spacetime metric characteristic speed in `SourceFrame`.
+ *
+ * This function is meant to be used for observing, as it is not optimized and
+ * computations that are redundant across other characteristic speed
+ * functions.
+ *
+ * It computes
+ * \f[
+ * v_\psi^{\hat{\imath}} = -(1 + \gamma_1) \beta^{\hat{\imath}}
+ *                           -(1 + \gamma_1) v^{\hat{\imath}},
+ * \f]
+ * where \f$\hat{\imath}\f$ is in `SourceFrame`.
+ *
+ * \see VSpacetimeMetricSpeed
+ */
+template <size_t Dim, typename Frame, typename SourceFrame>
+void vspacetimemetric_speed(
+    gsl::not_null<tnsr::I<DataVector, Dim, SourceFrame>*> char_speed,
+    const Scalar<DataVector>& gamma_1,
+    const tnsr::I<DataVector, Dim, Frame>& shift,
+    const InverseJacobian<DataVector, Dim, SourceFrame, Frame>&
+        inverse_jacobian,
+    const tnsr::II<DataVector, Dim, Frame>& inverse_spatial_metric,
+    const std::optional<tnsr::I<DataVector, Dim, Frame>>& mesh_velocity);
+template <size_t Dim, typename Frame, typename SourceFrame>
+tnsr::I<DataVector, Dim, SourceFrame> vspacetimemetric_speed(
+    const Scalar<DataVector>& gamma_1,
+    const tnsr::I<DataVector, Dim, Frame>& shift,
+    const InverseJacobian<DataVector, Dim, SourceFrame, Frame>&
+        inverse_jacobian,
+    const tnsr::II<DataVector, Dim, Frame>& inverse_spatial_metric,
+    const std::optional<tnsr::I<DataVector, Dim, Frame>>& mesh_velocity);
+/// @}
+
+/// @{
+/*!
+ * \brief Computes the zero characteristic speed in `SourceFrame`.
+ *
+ * This function is meant to be used for observing, as it is not optimized and
+ * shares computations that are redundant across other characteristic speed
+ * functions.
+ *
+ * It computes
+ * \f[
+ * (v_0)^{\hat{\imath}} = -\beta^{\hat{\imath}} - v^{\hat{\imath}},
+ * \f]
+ * where \f$\hat{\imath}\f$ is in `SourceFrame`.
+ *
+ * \see VZeroSpeed
+ */
+template <size_t Dim, typename Frame, typename SourceFrame>
+void vzero_speed(
+    gsl::not_null<tnsr::I<DataVector, Dim, SourceFrame>*> char_speed,
+    const Scalar<DataVector>& lapse,
+    const tnsr::I<DataVector, Dim, Frame>& shift,
+    const InverseJacobian<DataVector, Dim, SourceFrame, Frame>&
+        inverse_jacobian,
+    const tnsr::II<DataVector, Dim, Frame>& inverse_spatial_metric,
+    const std::optional<tnsr::I<DataVector, Dim, Frame>>& mesh_velocity);
+template <size_t Dim, typename Frame, typename SourceFrame>
+tnsr::I<DataVector, Dim, SourceFrame> vzero_speed(
+    const Scalar<DataVector>& lapse,
+    const tnsr::I<DataVector, Dim, Frame>& shift,
+    const InverseJacobian<DataVector, Dim, SourceFrame, Frame>&
+        inverse_jacobian,
+    const tnsr::II<DataVector, Dim, Frame>& inverse_spatial_metric,
+    const std::optional<tnsr::I<DataVector, Dim, Frame>>& mesh_velocity);
+/// @}
+
+/// @{
+/*!
+ * \brief Computes the plus characteristic speed in `SourceFrame`.
+ *
+ * This function is meant to be used for observing, as it is not optimized and
+ * shares computations that are redundant across other characteristic speed
+ * functions.
+ *
+ * It computes
+ * \f[
+ * v_{+}^{\hat{\imath}} = \alpha -\beta^{\hat{\imath}} - v^{\hat{\imath}},
+ * \f]
+ * where \f$\hat{\imath}\f$ is in `SourceFrame`.
+ *
+ * \see VPlusSpeed
+*/
+template <size_t Dim, typename Frame, typename SourceFrame>
+void vplus_speed(
+    gsl::not_null<tnsr::I<DataVector, Dim, SourceFrame>*> char_speed,
+    const Scalar<DataVector>& lapse,
+    const tnsr::I<DataVector, Dim, Frame>& shift,
+    const InverseJacobian<DataVector, Dim, SourceFrame, Frame>&
+        inverse_jacobian,
+    const tnsr::II<DataVector, Dim, Frame>& inverse_spatial_metric,
+    const std::optional<tnsr::I<DataVector, Dim, Frame>>& mesh_velocity);
+template <size_t Dim, typename Frame, typename SourceFrame>
+tnsr::I<DataVector, Dim, SourceFrame> vplus_speed(
+    const Scalar<DataVector>& lapse,
+    const tnsr::I<DataVector, Dim, Frame>& shift,
+    const InverseJacobian<DataVector, Dim, SourceFrame, Frame>&
+        inverse_jacobian,
+    const tnsr::II<DataVector, Dim, Frame>& inverse_spatial_metric,
+    const std::optional<tnsr::I<DataVector, Dim, Frame>>& mesh_velocity);
+/// @}
+
+/// @{
+/*!
+ * \brief Computes the minus characteristic speed in `SourceFrame`.
+ *
+ * This function is meant to be used for observing, as it is not optimized and
+ * shares computations that are redundant across other characteristic speed
+ * functions.
+ *
+ * It computes
+ * \f[
+ * v_{-}^{\hat{\imath}} = -\alpha -\beta^{\hat{\imath}} - v^{\hat{\imath}},
+ * \f]
+ * where \f$\hat{\imath}\f$ is in `SourceFrame`.
+ *
+ * \see VMinusSpeed
+ */
+template <size_t Dim, typename Frame, typename SourceFrame>
+void vminus_speed(
+    gsl::not_null<tnsr::I<DataVector, Dim, SourceFrame>*> char_speed,
+    const Scalar<DataVector>& lapse,
+    const tnsr::I<DataVector, Dim, Frame>& shift,
+    const InverseJacobian<DataVector, Dim, SourceFrame, Frame>&
+        inverse_jacobian,
+    const tnsr::II<DataVector, Dim, Frame>& inverse_spatial_metric,
+    const std::optional<tnsr::I<DataVector, Dim, Frame>>& mesh_velocity);
+template <size_t Dim, typename Frame, typename SourceFrame>
+tnsr::I<DataVector, Dim, SourceFrame> vminus_speed(
+    const Scalar<DataVector>& lapse,
+    const tnsr::I<DataVector, Dim, Frame>& shift,
+    const InverseJacobian<DataVector, Dim, SourceFrame, Frame>&
+        inverse_jacobian,
+    const tnsr::II<DataVector, Dim, Frame>& inverse_spatial_metric,
+    const std::optional<tnsr::I<DataVector, Dim, Frame>>& mesh_velocity);
+/// @}
+
+namespace Tags {
+/*!
+ * \brief Computes the spacetimemetric characteristic speed in `SourceFrame`.
+ *
+ * \see vspacetimemetric_speed()
+ */
+template <size_t Dim, typename Frame, typename SourceFrame>
+struct VSpacetimeMetricSpeedCompute
+    : VSpacetimeMetricSpeed<DataVector, Dim, SourceFrame>,
+      db::ComputeTag {
+  using argument_tags =
+      tmpl::list<::gh::Tags::ConstraintGamma1,
+                 gr::Tags::Shift<DataVector, Dim, Frame>,
+                 domain::Tags::InverseJacobian<Dim, SourceFrame, Frame>,
+                 gr::Tags::InverseSpatialMetric<DataVector, Dim, Frame>,
+                 domain::Tags::MeshVelocity<Dim, Frame>>;
+
+  using return_type = tnsr::I<DataVector, Dim, SourceFrame>;
+
+  static constexpr auto function = static_cast<void (*)(
+      gsl::not_null<tnsr::I<DataVector, Dim, SourceFrame>*>,
+      const Scalar<DataVector>&, const tnsr::I<DataVector, Dim, Frame>&,
+      const InverseJacobian<DataVector, Dim, SourceFrame, Frame>&,
+      const tnsr::II<DataVector, Dim, Frame>&,
+      const std::optional<tnsr::I<DataVector, Dim, Frame>>&)>(
+      &vspacetimemetric_speed<Dim, Frame, SourceFrame>);
+
+  using base = VSpacetimeMetricSpeed<DataVector, Dim, SourceFrame>;
+};
+
+/*!
+ * \brief Computes the zero characteristic speed in `SourceFrame`.
+ *
+ * \see vzero_speed()
+ */
+template <size_t Dim, typename Frame, typename SourceFrame>
+struct VZeroSpeedCompute : VZeroSpeed<DataVector, Dim, SourceFrame>,
+                           db::ComputeTag {
+  using argument_tags =
+      tmpl::list<gr::Tags::Lapse<DataVector>,
+                 gr::Tags::Shift<DataVector, Dim, Frame>,
+                 domain::Tags::InverseJacobian<Dim, SourceFrame, Frame>,
+                 gr::Tags::InverseSpatialMetric<DataVector, Dim, Frame>,
+                 domain::Tags::MeshVelocity<Dim, Frame>>;
+
+  using return_type = tnsr::I<DataVector, Dim, SourceFrame>;
+
+  static constexpr auto function = static_cast<void (*)(
+      gsl::not_null<tnsr::I<DataVector, Dim, SourceFrame>*>,
+      const Scalar<DataVector>&, const tnsr::I<DataVector, Dim, Frame>&,
+      const InverseJacobian<DataVector, Dim, SourceFrame, Frame>&,
+      const tnsr::II<DataVector, Dim, Frame>&,
+      const std::optional<tnsr::I<DataVector, Dim, Frame>>&)>(
+      &vzero_speed<Dim, Frame, SourceFrame>);
+
+  using base = VZeroSpeed<DataVector, Dim, SourceFrame>;
+};
+
+/*!
+ * \brief Computes the plus characteristic speed in `SourceFrame`.
+ *
+ * \see vplus_speed()
+ */
+template <size_t Dim, typename Frame, typename SourceFrame>
+struct VPlusSpeedCompute : VPlusSpeed<DataVector, Dim, SourceFrame>,
+                           db::ComputeTag {
+  using argument_tags =
+      tmpl::list<gr::Tags::Lapse<DataVector>,
+                 gr::Tags::Shift<DataVector, Dim, Frame>,
+                 domain::Tags::InverseJacobian<Dim, SourceFrame, Frame>,
+                 gr::Tags::InverseSpatialMetric<DataVector, Dim, Frame>,
+                 domain::Tags::MeshVelocity<Dim, Frame>>;
+
+  using return_type = tnsr::I<DataVector, Dim, SourceFrame>;
+
+  static constexpr auto function = static_cast<void (*)(
+      gsl::not_null<tnsr::I<DataVector, Dim, SourceFrame>*>,
+      const Scalar<DataVector>&, const tnsr::I<DataVector, Dim, Frame>&,
+      const InverseJacobian<DataVector, Dim, SourceFrame, Frame>&,
+      const tnsr::II<DataVector, Dim, Frame>&,
+      const std::optional<tnsr::I<DataVector, Dim, Frame>>&)>(
+      &vplus_speed<Dim, Frame, SourceFrame>);
+
+  using base = VPlusSpeed<DataVector, Dim, SourceFrame>;
+};
+
+/*!
+ * \brief Computes the minus characteristic speed in `SourceFrame`.
+ *
+ * \see vminus_speed()
+ */
+template <size_t Dim, typename Frame, typename SourceFrame>
+struct VMinusSpeedCompute : VMinusSpeed<DataVector, Dim, SourceFrame>,
+                            db::ComputeTag {
+  using argument_tags =
+      tmpl::list<gr::Tags::Lapse<DataVector>,
+                 gr::Tags::Shift<DataVector, Dim, Frame>,
+                 domain::Tags::InverseJacobian<Dim, SourceFrame, Frame>,
+                 gr::Tags::InverseSpatialMetric<DataVector, Dim, Frame>,
+                 domain::Tags::MeshVelocity<Dim, Frame>>;
+
+  using return_type = tnsr::I<DataVector, Dim, SourceFrame>;
+
+  static constexpr auto function = static_cast<void (*)(
+      gsl::not_null<tnsr::I<DataVector, Dim, SourceFrame>*>,
+      const Scalar<DataVector>&, const tnsr::I<DataVector, Dim, Frame>&,
+      const InverseJacobian<DataVector, Dim, SourceFrame, Frame>&,
+      const tnsr::II<DataVector, Dim, Frame>&,
+      const std::optional<tnsr::I<DataVector, Dim, Frame>>&)>(
+      &vminus_speed<Dim, Frame, SourceFrame>);
+
+  using base = VMinusSpeed<DataVector, Dim, SourceFrame>;
+};
+}  // namespace Tags
+
 /// @{
 /*!
  * \brief Compute the characteristic speeds for the generalized harmonic system.

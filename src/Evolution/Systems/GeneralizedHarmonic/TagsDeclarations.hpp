@@ -34,6 +34,19 @@ struct VPlus;
 template <typename DataType, size_t Dim, typename Frame = Frame::Inertial>
 struct VMinus;
 
+template <typename DataType, size_t SpatialDim,
+          typename Frame = Frame::ElementLogical>
+struct VSpacetimeMetricSpeed;
+template <typename DataType, size_t SpatialDim,
+          typename Frame = Frame::ElementLogical>
+struct VZeroSpeed;
+template <typename DataType, size_t SpatialDim,
+          typename Frame = Frame::ElementLogical>
+struct VPlusSpeed;
+template <typename DataType, size_t SpatialDim,
+          typename Frame = Frame::ElementLogical>
+struct VMinusSpeed;
+
 template <typename DataType, size_t Dim, typename Frame = Frame::Inertial>
 struct CharacteristicSpeeds;
 template <typename DataType, size_t Dim, typename Frame = Frame::Inertial>

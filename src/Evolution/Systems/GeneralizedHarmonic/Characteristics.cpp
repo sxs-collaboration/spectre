@@ -18,7 +18,200 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeWithValue.hpp"
 
+namespace {
+template <size_t Dim, typename SourceFrame, typename TargetFrame>
+InverseJacobian<DataVector, Dim, SourceFrame, TargetFrame>
+normalize_inverse_jacobian(
+    const InverseJacobian<DataVector, Dim, SourceFrame, TargetFrame>&
+        inverse_jacobian,
+    const tnsr::II<DataVector, Dim, TargetFrame>& inverse_spatial_metric) {
+  // Normalizing the first index wrt the spatial metric
+  InverseJacobian<DataVector, Dim, SourceFrame, TargetFrame>
+      scaled_inv_jacobian{get_size(get<0, 0>(inverse_jacobian))};
+  DataVector magnitude{get_size(get<0, 0>(inverse_jacobian))};
+  for (size_t i_hat = 0; i_hat < Dim; ++i_hat) {
+    magnitude = 0.;
+    for (size_t j = 0; j < Dim; ++j) {
+      for (size_t k = 0; k < Dim; ++k) {
+        magnitude += inverse_jacobian.get(i_hat, j) *
+                     inverse_spatial_metric.get(j, k) *
+                     inverse_jacobian.get(i_hat, k);
+      }
+    }
+    ASSERT(min(magnitude) > 0,
+           "Trying to normalize inverse jacobian with a negative magnitude: "
+               << magnitude);
+    magnitude = sqrt(magnitude);
+    for (size_t j = 0; j < Dim; ++j) {
+      scaled_inv_jacobian.get(i_hat, j) =
+          inverse_jacobian.get(i_hat, j) / magnitude;
+    }
+  }
+  return scaled_inv_jacobian;
+}
+
+template <size_t Dim, typename Frame, typename SourceFrame>
+void v_zero_plus_minus_speed_impl(
+    const gsl::not_null<tnsr::I<DataVector, Dim, SourceFrame>*> char_speed,
+    const Scalar<DataVector>& lapse,
+    const tnsr::I<DataVector, Dim, Frame>& shift,
+    const InverseJacobian<DataVector, Dim, SourceFrame, Frame>&
+        inverse_jacobian,
+    const tnsr::II<DataVector, Dim, Frame>& inverse_spatial_metric,
+    const std::optional<tnsr::I<DataVector, Dim, Frame>>& mesh_velocity,
+    const int sign) {
+  const auto normalized_inverse_jacobian =
+      normalize_inverse_jacobian(inverse_jacobian, inverse_spatial_metric);
+  for (size_t i = 0; i < Dim; ++i) {
+    (*char_speed).get(i) = static_cast<double>(sign) * get(lapse) -
+                           normalized_inverse_jacobian.get(i, 0) * shift.get(0);
+    for (size_t j = 1; j < Dim; ++j) {
+      (*char_speed).get(i) +=
+          -normalized_inverse_jacobian.get(i, j) * shift.get(j);
+    }
+  }
+  if (mesh_velocity.has_value()) {
+    for (size_t i = 0; i < Dim; ++i) {
+      for (size_t j = 0; j < Dim; ++j) {
+        (*char_speed).get(i) -=
+            normalized_inverse_jacobian.get(i, j) * (*mesh_velocity).get(j);
+      }
+    }
+  }
+}
+}  // namespace
+
 namespace gh {
+template <size_t Dim, typename Frame, typename SourceFrame>
+void vspacetimemetric_speed(
+    const gsl::not_null<tnsr::I<DataVector, Dim, SourceFrame>*> char_speed,
+    const Scalar<DataVector>& gamma_1,
+    const tnsr::I<DataVector, Dim, Frame>& shift,
+    const InverseJacobian<DataVector, Dim, SourceFrame, Frame>&
+        inverse_jacobian,
+    const tnsr::II<DataVector, Dim, Frame>& inverse_spatial_metric,
+    const std::optional<tnsr::I<DataVector, Dim, Frame>>& mesh_velocity) {
+  const auto normalized_inverse_jacobian =
+      normalize_inverse_jacobian(inverse_jacobian, inverse_spatial_metric);
+  for (size_t i = 0; i < Dim; ++i) {
+    (*char_speed).get(i) = -(1. + get(gamma_1)) *
+                           normalized_inverse_jacobian.get(i, 0) * shift.get(0);
+    for (size_t j = 1; j < Dim; ++j) {
+      (*char_speed).get(i) += -(1. + get(gamma_1)) *
+                              normalized_inverse_jacobian.get(i, j) *
+                              shift.get(j);
+    }
+  }
+  if (mesh_velocity.has_value()) {
+    for (size_t i = 0; i < Dim; ++i) {
+      for (size_t j = 0; j < Dim; ++j) {
+        (*char_speed).get(i) -= (1. + get(gamma_1)) *
+                                normalized_inverse_jacobian.get(i, j) *
+                                (*mesh_velocity).get(j);
+      }
+    }
+  }
+}
+
+template <size_t Dim, typename Frame, typename SourceFrame>
+tnsr::I<DataVector, Dim, SourceFrame> vspacetimemetric_speed(
+    const Scalar<DataVector>& gamma_1,
+    const tnsr::I<DataVector, Dim, Frame>& shift,
+    const InverseJacobian<DataVector, Dim, SourceFrame, Frame>&
+        inverse_jacobian,
+    const tnsr::II<DataVector, Dim, Frame>& inverse_spatial_metric,
+    const std::optional<tnsr::I<DataVector, Dim, Frame>>& mesh_velocity) {
+  auto char_speed =
+      make_with_value<tnsr::I<DataVector, Dim, SourceFrame>>(get<0>(shift), 0.);
+  vspacetimemetric_speed(make_not_null(&char_speed), gamma_1, shift,
+                         inverse_jacobian, inverse_spatial_metric,
+                         mesh_velocity);
+  return char_speed;
+}
+
+template <size_t Dim, typename Frame, typename SourceFrame>
+void vzero_speed(
+    const gsl::not_null<tnsr::I<DataVector, Dim, SourceFrame>*> char_speed,
+    const Scalar<DataVector>& lapse,
+    const tnsr::I<DataVector, Dim, Frame>& shift,
+    const InverseJacobian<DataVector, Dim, SourceFrame, Frame>&
+        inverse_jacobian,
+    const tnsr::II<DataVector, Dim, Frame>& inverse_spatial_metric,
+    const std::optional<tnsr::I<DataVector, Dim, Frame>>& mesh_velocity) {
+  v_zero_plus_minus_speed_impl(char_speed, lapse, shift, inverse_jacobian,
+                               inverse_spatial_metric, mesh_velocity, 0);
+}
+
+template <size_t Dim, typename Frame, typename SourceFrame>
+tnsr::I<DataVector, Dim, SourceFrame> vzero_speed(
+    const Scalar<DataVector>& lapse,
+    const tnsr::I<DataVector, Dim, Frame>& shift,
+    const InverseJacobian<DataVector, Dim, SourceFrame, Frame>&
+        inverse_jacobian,
+    const tnsr::II<DataVector, Dim, Frame>& inverse_spatial_metric,
+    const std::optional<tnsr::I<DataVector, Dim, Frame>>& mesh_velocity) {
+  auto char_speed =
+      make_with_value<tnsr::I<DataVector, Dim, SourceFrame>>(get<0>(shift), 0.);
+  vzero_speed(make_not_null(&char_speed), lapse, shift, inverse_jacobian,
+              inverse_spatial_metric, mesh_velocity);
+  return char_speed;
+}
+
+template <size_t Dim, typename Frame, typename SourceFrame>
+void vplus_speed(
+    const gsl::not_null<tnsr::I<DataVector, Dim, SourceFrame>*> char_speed,
+    const Scalar<DataVector>& lapse,
+    const tnsr::I<DataVector, Dim, Frame>& shift,
+    const InverseJacobian<DataVector, Dim, SourceFrame, Frame>&
+        inverse_jacobian,
+    const tnsr::II<DataVector, Dim, Frame>& inverse_spatial_metric,
+    const std::optional<tnsr::I<DataVector, Dim, Frame>>& mesh_velocity) {
+  v_zero_plus_minus_speed_impl(char_speed, lapse, shift, inverse_jacobian,
+                               inverse_spatial_metric, mesh_velocity, 1);
+}
+
+template <size_t Dim, typename Frame, typename SourceFrame>
+tnsr::I<DataVector, Dim, SourceFrame> vplus_speed(
+    const Scalar<DataVector>& lapse,
+    const tnsr::I<DataVector, Dim, Frame>& shift,
+    const InverseJacobian<DataVector, Dim, SourceFrame, Frame>&
+        inverse_jacobian,
+    const tnsr::II<DataVector, Dim, Frame>& inverse_spatial_metric,
+    const std::optional<tnsr::I<DataVector, Dim, Frame>>& mesh_velocity) {
+  auto char_speed =
+      make_with_value<tnsr::I<DataVector, Dim, SourceFrame>>(get<0>(shift), 0.);
+  vplus_speed(make_not_null(&char_speed), lapse, shift, inverse_jacobian,
+              inverse_spatial_metric, mesh_velocity);
+  return char_speed;
+}
+
+template <size_t Dim, typename Frame, typename SourceFrame>
+void vminus_speed(
+    const gsl::not_null<tnsr::I<DataVector, Dim, SourceFrame>*> char_speed,
+    const Scalar<DataVector>& lapse,
+    const tnsr::I<DataVector, Dim, Frame>& shift,
+    const InverseJacobian<DataVector, Dim, SourceFrame, Frame>&
+        inverse_jacobian,
+    const tnsr::II<DataVector, Dim, Frame>& inverse_spatial_metric,
+    const std::optional<tnsr::I<DataVector, Dim, Frame>>& mesh_velocity) {
+      v_zero_plus_minus_speed_impl(char_speed, lapse, shift, inverse_jacobian,
+                                   inverse_spatial_metric, mesh_velocity, -1);
+}
+
+template <size_t Dim, typename Frame, typename SourceFrame>
+tnsr::I<DataVector, Dim, SourceFrame> vminus_speed(
+    const Scalar<DataVector>& lapse,
+    const tnsr::I<DataVector, Dim, Frame>& shift,
+    const InverseJacobian<DataVector, Dim, SourceFrame, Frame>&
+        inverse_jacobian,
+    const tnsr::II<DataVector, Dim, Frame>& inverse_spatial_metric,
+    const std::optional<tnsr::I<DataVector, Dim, Frame>>& mesh_velocity) {
+  auto char_speed =
+      make_with_value<tnsr::I<DataVector, Dim, SourceFrame>>(get<0>(shift), 0.);
+  vminus_speed(make_not_null(&char_speed), lapse, shift, inverse_jacobian,
+               inverse_spatial_metric, mesh_velocity);
+  return char_speed;
+}
 
 template <size_t Dim, typename Frame>
 void characteristic_speeds(
@@ -269,7 +462,96 @@ void Tags::ComputeLargestCharacteristicSpeed<Dim, Frame>::function(
   template struct gh::EvolvedFieldsFromCharacteristicFieldsCompute<            \
       DIM(data), FRAME(data)>;                                                 \
   template struct gh::Tags::ComputeLargestCharacteristicSpeed<DIM(data),       \
-                                                              FRAME(data)>;
+                                                              FRAME(data)>;    \
+  template void gh::vspacetimemetric_speed(                                    \
+      const gsl::not_null<                                                     \
+          tnsr::I<DataVector, DIM(data), Frame::ElementLogical>*>              \
+          char_speed,                                                          \
+      const Scalar<DataVector>& gamma_1,                                       \
+      const tnsr::I<DataVector, DIM(data), FRAME(data)>& shift,                \
+      const InverseJacobian<DataVector, DIM(data), Frame::ElementLogical,      \
+                            FRAME(data)>& inverse_jacobian,                    \
+      const tnsr::II<DataVector, DIM(data), FRAME(data)>&                      \
+          inverse_spatial_metric,                                              \
+      const std::optional<tnsr::I<DataVector, DIM(data), FRAME(data)>>&        \
+          mesh_velocity);                                                      \
+  template void gh::vzero_speed(                                               \
+      const gsl::not_null<                                                     \
+          tnsr::I<DataVector, DIM(data), Frame::ElementLogical>*>              \
+          char_speed,                                                          \
+      const Scalar<DataVector>& lapse,                                         \
+      const tnsr::I<DataVector, DIM(data), FRAME(data)>& shift,                \
+      const InverseJacobian<DataVector, DIM(data), Frame::ElementLogical,      \
+                            FRAME(data)>& inverse_jacobian,                    \
+      const tnsr::II<DataVector, DIM(data), FRAME(data)>&                      \
+          inverse_spatial_metric,                                              \
+      const std::optional<tnsr::I<DataVector, DIM(data), FRAME(data)>>&        \
+          mesh_velocity);                                                      \
+  template void gh::vplus_speed(                                               \
+      const gsl::not_null<                                                     \
+          tnsr::I<DataVector, DIM(data), Frame::ElementLogical>*>              \
+          char_speed,                                                          \
+      const Scalar<DataVector>& lapse,                                         \
+      const tnsr::I<DataVector, DIM(data), FRAME(data)>& shift,                \
+      const InverseJacobian<DataVector, DIM(data), Frame::ElementLogical,      \
+                            FRAME(data)>& inverse_jacobian,                    \
+      const tnsr::II<DataVector, DIM(data), FRAME(data)>&                      \
+          inverse_spatial_metric,                                              \
+      const std::optional<tnsr::I<DataVector, DIM(data), FRAME(data)>>&        \
+          mesh_velocity);                                                      \
+  template void gh::vminus_speed(                                              \
+      const gsl::not_null<                                                     \
+          tnsr::I<DataVector, DIM(data), Frame::ElementLogical>*>              \
+          char_speed,                                                          \
+      const Scalar<DataVector>& lapse,                                         \
+      const tnsr::I<DataVector, DIM(data), FRAME(data)>& shift,                \
+      const InverseJacobian<DataVector, DIM(data), Frame::ElementLogical,      \
+                            FRAME(data)>& inverse_jacobian,                    \
+      const tnsr::II<DataVector, DIM(data), FRAME(data)>&                      \
+          inverse_spatial_metric,                                              \
+      const std::optional<tnsr::I<DataVector, DIM(data), FRAME(data)>>&        \
+          mesh_velocity);                                                      \
+                                                                               \
+  template tnsr::I<DataVector, DIM(data), Frame::ElementLogical>               \
+  gh::vspacetimemetric_speed(                                                  \
+      const Scalar<DataVector>& gamma_1,                                       \
+      const tnsr::I<DataVector, DIM(data), FRAME(data)>& shift,                \
+      const InverseJacobian<DataVector, DIM(data), Frame::ElementLogical,      \
+                            FRAME(data)>& inverse_jacobian,                    \
+      const tnsr::II<DataVector, DIM(data), FRAME(data)>&                      \
+          inverse_spatial_metric,                                              \
+      const std::optional<tnsr::I<DataVector, DIM(data), FRAME(data)>>&        \
+          mesh_velocity);                                                      \
+  template tnsr::I<DataVector, DIM(data), Frame::ElementLogical>               \
+  gh::vzero_speed(                                                             \
+      const Scalar<DataVector>& lapse,                                         \
+      const tnsr::I<DataVector, DIM(data), FRAME(data)>& shift,                \
+      const InverseJacobian<DataVector, DIM(data), Frame::ElementLogical,      \
+                            FRAME(data)>& inverse_jacobian,                    \
+      const tnsr::II<DataVector, DIM(data), FRAME(data)>&                      \
+          inverse_spatial_metric,                                              \
+      const std::optional<tnsr::I<DataVector, DIM(data), FRAME(data)>>&        \
+          mesh_velocity);                                                      \
+  template tnsr::I<DataVector, DIM(data), Frame::ElementLogical>               \
+  gh::vplus_speed(                                                             \
+      const Scalar<DataVector>& lapse,                                         \
+      const tnsr::I<DataVector, DIM(data), FRAME(data)>& shift,                \
+      const InverseJacobian<DataVector, DIM(data), Frame::ElementLogical,      \
+                            FRAME(data)>& inverse_jacobian,                    \
+      const tnsr::II<DataVector, DIM(data), FRAME(data)>&                      \
+          inverse_spatial_metric,                                              \
+      const std::optional<tnsr::I<DataVector, DIM(data), FRAME(data)>>&        \
+          mesh_velocity);                                                      \
+  template tnsr::I<DataVector, DIM(data), Frame::ElementLogical>               \
+  gh::vminus_speed(                                                            \
+      const Scalar<DataVector>& lapse,                                         \
+      const tnsr::I<DataVector, DIM(data), FRAME(data)>& shift,                \
+      const InverseJacobian<DataVector, DIM(data), Frame::ElementLogical,      \
+                            FRAME(data)>& inverse_jacobian,                    \
+      const tnsr::II<DataVector, DIM(data), FRAME(data)>&                      \
+          inverse_spatial_metric,                                              \
+      const std::optional<tnsr::I<DataVector, DIM(data), FRAME(data)>>&        \
+          mesh_velocity);
 
 GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3),
                         (Frame::Inertial, Frame::Grid))
