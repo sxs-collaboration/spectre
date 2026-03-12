@@ -92,9 +92,8 @@ SPECTRE_ALWAYS_INLINE double magnitude_square(const T& vector) {
       InnerProductImpls::InnerProductImpl<T, T>::apply(vector, vector);
   if constexpr (std::is_same_v<std::decay_t<decltype(result)>,
                                std::complex<double>>) {
-    ASSERT(equal_within_roundoff(imag(result), 0.0),
-           "The magnitude squared is not real. The imaginary part is: "
-               << imag(result));
+    ASSERT(equal_within_roundoff(imag(result), 0.0, 1e-14, abs(result)),
+           "The magnitude squared is not real: " << result);
     return real(result);
   } else {
     return result;

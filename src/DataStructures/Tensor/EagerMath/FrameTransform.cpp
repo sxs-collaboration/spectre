@@ -428,6 +428,27 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (Frame::ElementLogical),
                          ComplexDataVector),
                         (I, II, Ij, IJ, Iaa))
 
+template void transform::first_index_to_different_frame(
+    gsl::not_null<TensorMetafunctions::prepend_spatial_index<
+        tnsr::aa<ComplexDataVector, 3, Frame::Inertial>, 2, UpLo::Up,
+        Frame::ElementLogical>*>
+        result,
+    const TensorMetafunctions::prepend_spatial_index<
+        tnsr::aa<ComplexDataVector, 3, Frame::Inertial>, 2, UpLo::Up,
+        Frame::Inertial>& input,
+    const InverseJacobian<DataVector, 2, Frame::ElementLogical,
+                          Frame::Inertial>& inv_jacobian);
+
+template auto transform::first_index_to_different_frame(
+    const TensorMetafunctions::prepend_spatial_index<
+        tnsr::aa<ComplexDataVector, 3, Frame::Inertial>, 2, UpLo::Up,
+        Frame::Inertial>& input,
+    const InverseJacobian<DataVector, 2, Frame::ElementLogical,
+                          Frame::Inertial>& inv_jacobian)
+    -> TensorMetafunctions::prepend_spatial_index<
+        tnsr::aa<ComplexDataVector, 3, Frame::Inertial>, 2, UpLo::Up,
+        Frame::ElementLogical>;
+
 #undef DIM
 #undef SRCFRAME
 #undef DESTFRAME

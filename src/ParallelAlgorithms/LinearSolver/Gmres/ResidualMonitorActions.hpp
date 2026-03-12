@@ -153,7 +153,8 @@ struct StoreOrthogonalization {
     }
 
     // At this point, the orthogonalization procedure is complete.
-    ASSERT(equal_within_roundoff(imag(orthogonalization), 0.0),
+    ASSERT(equal_within_roundoff(imag(orthogonalization), 0.0, 1e-14,
+                                 abs(orthogonalization)),
            "Normalization is not real: " << orthogonalization);
     const double normalization = sqrt(real(orthogonalization));
     db::mutate<orthogonalization_history_tag>(

@@ -58,4 +58,16 @@ GENERATE_INSTANTIATIONS(INSTANTIATION_SCALAR, (DataVector, ComplexDataVector),
 GENERATE_INSTANTIATIONS(INSTANTIATION_TENSOR, (DataVector, ComplexDataVector),
                         (1, 2, 3), (i, I, aa))
 
-#undef INSTANTIATION
+template void logical_weak_divergence(
+    const gsl::not_null<tnsr::aa<ComplexDataVector, 3, Frame::Inertial>*>
+        div_flux,
+    const TensorMetafunctions::prepend_spatial_index<
+        tnsr::aa<ComplexDataVector, 3, Frame::Inertial>, 2, UpLo::Up,
+        Frame::ElementLogical>& flux,
+    const Mesh<2>& mesh);
+
+#undef INSTANTIATION_SCALAR
+#undef INSTANTIATION_TENSOR
+#undef DTYPE
+#undef DIM
+#undef TENSOR
