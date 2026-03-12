@@ -5,7 +5,7 @@
 
 #include "Evolution/DiscontinuousGalerkin/CleanMortarHistory.hpp"
 
-#include "DataStructures/MathWrapper.hpp"
+#include "DataStructures/DataVector.hpp"
 #include "Domain/Structure/DirectionalIdMap.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarData.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarInfo.hpp"
@@ -21,7 +21,7 @@ void CleanMortarHistory<System>::apply(
     const gsl::not_null<DirectionalIdMap<
         dim, TimeSteppers::BoundaryHistory<::evolution::dg::MortarData<dim>,
                                            ::evolution::dg::MortarData<dim>,
-                                           math_wrapper_type<CouplingResult>>>*>
+                                           DataVector>>*>
         history,
     const LtsTimeStepper& time_stepper,
     const DirectionalIdMap<dim, MortarInfo<dim>>& mortar_info) {

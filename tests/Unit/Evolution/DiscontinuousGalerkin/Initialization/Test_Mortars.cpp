@@ -84,10 +84,9 @@ struct component {
       Parallel::PhaseActions<Parallel::Phase::Initialization,
                              tmpl::list<ActionTesting::InitializeDataBox<
                                  simple_tags, compute_tags>>>,
-      Parallel::PhaseActions<
-          Parallel::Phase::Testing,
-          tmpl::list<evolution::dg::Initialization::Mortars<
-              Metavariables::volume_dim, typename Metavariables::system>>>>;
+      Parallel::PhaseActions<Parallel::Phase::Testing,
+                             tmpl::list<evolution::dg::Initialization::Mortars<
+                                 Metavariables::volume_dim>>>>;
 };
 
 struct Var1 : db::SimpleTag {
@@ -112,13 +111,7 @@ struct Metavariables {
 };
 
 template <size_t Dim>
-using dt_variables_tag =
-    typename db::add_tag_prefix<::Tags::dt,
-                                ::Tags::Variables<tmpl::list<Var1, Var2<Dim>>>>;
-
-template <size_t Dim>
-using mortar_data_history_type = typename Tags::MortarDataHistory<
-    Dim, typename dt_variables_tag<Dim>::type>::type;
+using mortar_data_history_type = typename Tags::MortarDataHistory<Dim>::type;
 
 template <bool LocalTimeStepping, size_t Dim>
 void test_impl(
@@ -171,11 +164,7 @@ void test_impl(
   const auto& mortar_infos = get_tag(Tags::MortarInfo<Dim>{});
   CHECK(mortar_infos == expected_mortar_infos);
   const auto& mortar_data = get_tag(Tags::MortarData<Dim>{});
-  const auto& boundary_data_history = get_tag(
-      Tags::MortarDataHistory<
-          Dim,
-          typename db::add_tag_prefix<
-              ::Tags::dt, typename metavars::system::variables_tag>::type>{});
+  const auto& boundary_data_history = get_tag(Tags::MortarDataHistory<Dim>{});
   for (const auto& mortar_id_and_mesh : expected_mortar_meshes) {
     // Just make sure this exists, it is not expected to hold any data
     CHECK(mortar_data.find(mortar_id_and_mesh.first) != mortar_data.end());
@@ -601,16 +590,16 @@ void check_mortar_data(const MortarData<Dim>& projected,
   }
 }
 
-template <size_t Dim, typename CouplingResult>
+template <size_t Dim>
 void check_boundary_histories(
     const ::dg::MortarMap<
         Dim, TimeSteppers::BoundaryHistory<::evolution::dg::MortarData<Dim>,
                                            ::evolution::dg::MortarData<Dim>,
-                                           CouplingResult>>& value,
+                                           DataVector>>& value,
     const ::dg::MortarMap<
         Dim, TimeSteppers::BoundaryHistory<::evolution::dg::MortarData<Dim>,
                                            ::evolution::dg::MortarData<Dim>,
-                                           CouplingResult>>& expected) {
+                                           DataVector>>& expected) {
   using HistMap = std::decay_t<decltype(value)>;
   const auto compare_entries = [](const HistMap& a, const HistMap& b) {
     for (const auto& [mortar, history_a] : a) {
@@ -669,7 +658,7 @@ void test_p_refine(
       ::Tags::TimeStepId, Tags::MortarData<Dim>, Tags::MortarMesh<Dim>,
       Tags::MortarInfo<Dim>, Tags::MortarNextTemporalId<Dim>,
       evolution::dg::Tags::NormalCovectorAndMagnitude<Dim>,
-      Tags::MortarDataHistory<Dim, typename dt_variables_tag<Dim>::type>>>(
+      Tags::MortarDataHistory<Dim>>>(
       Domain<Dim>{}, std::move(new_mesh), std::move(new_element),
       std::move(neighbor_meshes), temporal_id, std::move(mortar_data),
       std::move(mortar_mesh), std::move(mortar_infos),
@@ -687,11 +676,8 @@ void test_p_refine(
         expected_mortar_next_temporal_id);
   CHECK(db::get<evolution::dg::Tags::NormalCovectorAndMagnitude<Dim>>(box) ==
         expected_normal_covector_and_magnitude);
-  check_boundary_histories(
-      db::get<
-          Tags::MortarDataHistory<Dim, typename dt_variables_tag<Dim>::type>>(
-          box),
-      expected_mortar_data_history);
+  check_boundary_histories(db::get<Tags::MortarDataHistory<Dim>>(box),
+                           expected_mortar_data_history);
 }
 
 template <size_t Dim>
@@ -1127,15 +1113,14 @@ boundary_history_type<Dim> make_boundary_history(
 }
 
 template <size_t NumMortars>
-Tags::MortarDataHistory<2, dt_variables_tag<2>::type>::type
-make_boundary_histories(
+Tags::MortarDataHistory<2>::type make_boundary_histories(
     const std::array<DirectionalId<2>, NumMortars>& mortar_ids,
     const Mesh<2>& volume_mesh,
     const ::dg::MortarMap<2, Mesh<1>>& mortar_meshes,
     const std::array<Spectral::SegmentSize, 2>& element_size,
     const ::dg::MortarMap<2, MortarInfo<2>>& mortar_infos,
     const bool include_local, const bool include_remote) {
-  Tags::MortarDataHistory<2, dt_variables_tag<2>::type>::type histories{};
+  Tags::MortarDataHistory<2>::type histories{};
   for (const auto& mortar_id : mortar_ids) {
     histories.emplace(
         mortar_id, make_boundary_history(
@@ -1173,8 +1158,7 @@ void test_h_refinement() {
   using NormalVars =
       Variables<tmpl::list<evolution::dg::Tags::MagnitudeOfNormal,
                            evolution::dg::Tags::NormalCovector<2>>>;
-  using mortar_data_history_tag =
-      Tags::MortarDataHistory<2, dt_variables_tag<2>::type>;
+  using mortar_data_history_tag = Tags::MortarDataHistory<2>;
 
   const DirectionalId<2> mortar_id_a(Direction<2>::upper_eta(),
                                      ElementId<2>(0));
@@ -1939,8 +1923,7 @@ void test_h_refinement_mortar_sizes_local_impl(
   using NormalVars =
       Variables<tmpl::list<evolution::dg::Tags::MagnitudeOfNormal,
                            evolution::dg::Tags::NormalCovector<3>>>;
-  using mortar_data_history_tag =
-      Tags::MortarDataHistory<3, dt_variables_tag<3>::type>;
+  using mortar_data_history_tag = Tags::MortarDataHistory<3>;
 
   const ElementId<3> self_id(1, {{{1, 0}, {1, 0}, {0, 0}}});
   const auto direction = Direction<3>::upper_zeta();
@@ -2072,8 +2055,7 @@ void test_h_refinement_mortar_sizes_local() {
 void test_h_refinement_mortar_sizes_remote_impl_split(
     const SegmentId& pre_xi, const SegmentId& pre_eta, const SegmentId& post_xi,
     const SegmentId& post_eta, const OrientationMap<3>& orientation) {
-  using mortar_data_history_tag =
-      Tags::MortarDataHistory<3, dt_variables_tag<3>::type>;
+  using mortar_data_history_tag = Tags::MortarDataHistory<3>;
 
   const auto direction = Direction<3>::upper_zeta();
   const Mesh<3> mesh = lgl_mesh<3>(4);
@@ -2175,8 +2157,7 @@ void test_h_refinement_mortar_sizes_remote_impl_join(
     const std::vector<SegmentId>& pre_xi, const std::vector<SegmentId>& pre_eta,
     const SegmentId& post_xi, const SegmentId& post_eta,
     const OrientationMap<3>& orientation) {
-  using mortar_data_history_tag =
-      Tags::MortarDataHistory<3, dt_variables_tag<3>::type>;
+  using mortar_data_history_tag = Tags::MortarDataHistory<3>;
 
   const auto direction = Direction<3>::upper_zeta();
   const Mesh<3> mesh = lgl_mesh<3>(4);

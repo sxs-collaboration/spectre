@@ -14,7 +14,6 @@
 #include "DataStructures/ApplyMatrices.hpp"
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/DataBoxTag.hpp"
-#include "DataStructures/DataBox/PrefixHelpers.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Domain/Creators/Tags/Domain.hpp"
@@ -128,19 +127,17 @@ void h_refine_structure(
  * - Removes: nothing
  * - Modifies: nothing
  */
-template <size_t Dim, typename System>
+template <size_t Dim>
 struct Mortars {
  public:
   using const_global_cache_tags = tmpl::list<domain::Tags::Domain<Dim>>;
   using simple_tags_from_options = tmpl::list<>;
 
-  using simple_tags = tmpl::list<
-      Tags::MortarData<Dim>, Tags::MortarMesh<Dim>, Tags::MortarInfo<Dim>,
-      Tags::MortarNextTemporalId<Dim>,
-      evolution::dg::Tags::NormalCovectorAndMagnitude<Dim>,
-      Tags::MortarDataHistory<
-          Dim, typename db::add_tag_prefix<
-                   ::Tags::dt, typename System::variables_tag>::type>>;
+  using simple_tags =
+      tmpl::list<Tags::MortarData<Dim>, Tags::MortarMesh<Dim>,
+                 Tags::MortarInfo<Dim>, Tags::MortarNextTemporalId<Dim>,
+                 evolution::dg::Tags::NormalCovectorAndMagnitude<Dim>,
+                 Tags::MortarDataHistory<Dim>>;
   using compute_tags = tmpl::list<>;
 
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
@@ -165,10 +162,7 @@ struct Mortars {
             element, db::get<::Tags::Next<::Tags::TimeStepId>>(box),
             db::get<::domain::Tags::Mesh<Dim>>(box),
             db::get<::domain::Tags::NeighborMesh<Dim>>(box));
-    typename Tags::MortarDataHistory<
-        Dim, typename db::add_tag_prefix<
-                 ::Tags::dt, typename System::variables_tag>::type>::type
-        boundary_data_history{};
+    typename Tags::MortarDataHistory<Dim>::type boundary_data_history{};
     for (const auto& mortar_id_and_data : mortar_data) {
       if (mortar_infos.at(mortar_id_and_data.first).time_stepping_policy() ==
           TimeSteppingPolicy::Conservative) {
@@ -193,7 +187,7 @@ struct Mortars {
 ///   - Tags::MortarInfo<dim>
 ///   - Tags::MortarNextTemporalId<dim>
 ///   - evolution::dg::Tags::NormalCovectorAndMagnitude<dim>
-///   - Tags::MortarDataHistory<dim, typename dt_variables_tag::type>>
+///   - Tags::MortarDataHistory<dim>>
 ///
 /// For p-refined interfaces:
 ///   - Regenerates MortarData and MortarInfo (should have no effect)
@@ -224,17 +218,14 @@ struct ProjectMortars : tt::ConformsTo<amr::protocols::Projector> {
 
  public:
   static constexpr size_t dim = Metavariables::volume_dim;
-  using dt_variables_tag = typename db::add_tag_prefix<
-      ::Tags::dt, typename Metavariables::system::variables_tag>;
-  using mortar_data_history_tag =
-      Tags::MortarDataHistory<dim, typename dt_variables_tag::type>;
+  using mortar_data_history_tag = Tags::MortarDataHistory<dim>;
   using mortar_data_history_type = typename mortar_data_history_tag::type;
 
   using return_tags =
       tmpl::list<Tags::MortarData<dim>, Tags::MortarMesh<dim>,
                  Tags::MortarInfo<dim>, Tags::MortarNextTemporalId<dim>,
                  evolution::dg::Tags::NormalCovectorAndMagnitude<dim>,
-                 Tags::MortarDataHistory<dim, typename dt_variables_tag::type>>;
+                 Tags::MortarDataHistory<dim>>;
   using argument_tags =
       tmpl::list<domain::Tags::Domain<dim>, domain::Tags::Mesh<dim>,
                  domain::Tags::Element<dim>, domain::Tags::NeighborMesh<dim>,

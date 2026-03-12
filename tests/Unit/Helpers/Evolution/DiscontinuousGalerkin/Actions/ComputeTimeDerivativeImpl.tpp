@@ -960,7 +960,7 @@ struct component {
           tmpl::flatten<tmpl::list<
               ActionTesting::InitializeDataBox<simple_tags, compute_tags>,
               ::evolution::dg::Initialization::Mortars<
-                  Metavariables::volume_dim, typename Metavariables::system>>>>,
+                  Metavariables::volume_dim>>>>,
       Parallel::PhaseActions<
           Parallel::Phase::Testing,
           tmpl::list<::evolution::dg::Actions::ComputeTimeDerivative<
@@ -1045,7 +1045,6 @@ void test_impl(const Spectral::Quadrature quadrature,
   using flux_variables_tag = ::Tags::Variables<flux_variables>;
   using fluxes_tag = db::add_tag_prefix<::Tags::Flux, flux_variables_tag,
                                         tmpl::size_t<Dim>, Frame::Inertial>;
-  using dt_variables_tag = db::add_tag_prefix<::Tags::dt, variables_tag>;
   // The reference element in 2d denoted by X below:
   // ^ eta
   // +-+-+> xi
@@ -1791,13 +1790,11 @@ void test_impl(const Spectral::Quadrature quadrature,
   };
   if (LocalTimeStepping) {
     const auto& east_mortar_data =
-        get_tag(::evolution::dg::Tags::MortarDataHistory<
-                    Dim, typename dt_variables_tag::type>{})
+        get_tag(::evolution::dg::Tags::MortarDataHistory<Dim>{})
             .at(mortar_id_east)
             .local()
             .data(time_step_id);
-    CHECK(get_tag(::evolution::dg::Tags::MortarDataHistory<
-                      Dim, typename dt_variables_tag::type>{})
+    CHECK(get_tag(::evolution::dg::Tags::MortarDataHistory<Dim>{})
               .at(mortar_id_east)
               .local()
               .integration_order(time_step_id) == 1);
@@ -1834,13 +1831,11 @@ void test_impl(const Spectral::Quadrature quadrature,
 
     if (LocalTimeStepping) {
       const auto& south_mortar_data =
-          get_tag(::evolution::dg::Tags::MortarDataHistory<
-                      Dim, typename dt_variables_tag::type>{})
+          get_tag(::evolution::dg::Tags::MortarDataHistory<Dim>{})
               .at(mortar_id_south)
               .local()
               .data(time_step_id);
-      CHECK(get_tag(::evolution::dg::Tags::MortarDataHistory<
-                        Dim, typename dt_variables_tag::type>{})
+      CHECK(get_tag(::evolution::dg::Tags::MortarDataHistory<Dim>{})
                 .at(mortar_id_south)
                 .local()
                 .integration_order(time_step_id) == 1);

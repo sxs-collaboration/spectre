@@ -7,10 +7,10 @@
 
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
-#include "DataStructures/MathWrapper.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
+class DataVector;
 template <size_t Dim, typename T>
 class DirectionalIdMap;
 class LtsTimeStepper;
@@ -30,7 +30,7 @@ template <size_t Dim>
 class MortarInfo;
 }  // namespace evolution::dg
 namespace evolution::dg::Tags {
-template <size_t Dim, typename CouplingResult>
+template <size_t Dim>
 struct MortarDataHistory;
 template <size_t Dim>
 struct MortarInfo;
@@ -47,21 +47,16 @@ namespace evolution::dg {
 template <typename System>
 struct CleanMortarHistory {
   static constexpr size_t dim = System::volume_dim;
-  using dt_variables_tag =
-      db::add_tag_prefix<::Tags::dt, typename System::variables_tag>;
-  using CouplingResult = typename dt_variables_tag::type;
 
-  using return_tags =
-      tmpl::list<evolution::dg::Tags::MortarDataHistory<dim, CouplingResult>>;
+  using return_tags = tmpl::list<evolution::dg::Tags::MortarDataHistory<dim>>;
   using argument_tags =
       tmpl::list<::Tags::TimeStepper<LtsTimeStepper>, Tags::MortarInfo<dim>>;
 
   static void apply(
       gsl::not_null<DirectionalIdMap<
-          dim,
-          TimeSteppers::BoundaryHistory<::evolution::dg::MortarData<dim>,
-                                        ::evolution::dg::MortarData<dim>,
-                                        math_wrapper_type<CouplingResult>>>*>
+          dim, TimeSteppers::BoundaryHistory<::evolution::dg::MortarData<dim>,
+                                             ::evolution::dg::MortarData<dim>,
+                                             DataVector>>*>
           history,
       const LtsTimeStepper& time_stepper,
       const DirectionalIdMap<dim, MortarInfo<dim>>& mortar_info);

@@ -7,9 +7,9 @@
 #include <memory>
 
 #include "DataStructures/DataBox/Tag.hpp"
-#include "DataStructures/MathWrapper.hpp"
 
 /// \cond
+class DataVector;
 template <size_t Dim, typename T>
 class DirectionalIdMap;
 template <size_t Dim>
@@ -46,17 +46,12 @@ struct MortarData : db::SimpleTag {
 /// used by the linear multistep local time stepping code.
 ///
 /// The `Dim` is the volume dimension, not the face dimension.
-///
-/// `CouplingResult` is the result of calling a functor of type `Coupling` used
-/// in `TimeSteppers::BoundaryHistory`. It is also the result of
-/// `LtsTimeStepper::compute_boundary_delta()`, which again has a `Coupling`
-/// template parameter.
-template <size_t Dim, typename CouplingResult>
+template <size_t Dim>
 struct MortarDataHistory : db::SimpleTag {
-  using type = DirectionalIdMap<
-      Dim, TimeSteppers::BoundaryHistory<::evolution::dg::MortarData<Dim>,
-                                         ::evolution::dg::MortarData<Dim>,
-                                         math_wrapper_type<CouplingResult>>>;
+  using type =
+      DirectionalIdMap<Dim, TimeSteppers::BoundaryHistory<
+                                ::evolution::dg::MortarData<Dim>,
+                                ::evolution::dg::MortarData<Dim>, DataVector>>;
 };
 
 /// Mesh on the mortars, indexed by (Direction, ElementId) pairs

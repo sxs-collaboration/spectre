@@ -10,6 +10,7 @@
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
+#include "DataStructures/DataVector.hpp"
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/DirectionalId.hpp"
 #include "Domain/Structure/ElementId.hpp"
@@ -42,13 +43,13 @@ SPECTRE_TEST_CASE("Unit.Evolution.DG.CleanMortarHistory", "[Unit][Evolution]") {
   const Slab slab(1., 3.);
 
   TimeSteppers::BoundaryHistory<evolution::dg::MortarData<2>,
-                                evolution::dg::MortarData<2>, double>
+                                evolution::dg::MortarData<2>, DataVector>
       boundary_history{};
   boundary_history.local().insert(TimeStepId(true, 0, slab.start()), 2, {});
   boundary_history.local().insert(TimeStepId(true, 0, slab.end()), 2, {});
   boundary_history.remote().insert(TimeStepId(true, 0, slab.start()), 2, {});
   boundary_history.remote().insert(TimeStepId(true, 0, slab.end()), 2, {});
-  evolution::dg::Tags::MortarDataHistory<2, double>::type mortar_histories{};
+  evolution::dg::Tags::MortarDataHistory<2>::type mortar_histories{};
   evolution::dg::Tags::MortarInfo<2>::type mortar_infos{};
   const std::array lts_mortars{
       DirectionalId<2>{{Direction<2>::Axis::Xi, Side::Lower}, ElementId<2>{}},
@@ -66,26 +67,26 @@ SPECTRE_TEST_CASE("Unit.Evolution.DG.CleanMortarHistory", "[Unit][Evolution]") {
     mortar_histories[mortar];
   }
 
-  auto box = db::create<
-      db::AddSimpleTags<Tags::ConcreteTimeStepper<LtsTimeStepper>,
-                        evolution::dg::Tags::MortarDataHistory<2, double>,
-                        evolution::dg::Tags::MortarInfo<2>>,
-      time_stepper_ref_tags<LtsTimeStepper>>(
-      static_cast<std::unique_ptr<LtsTimeStepper>>(
-          std::make_unique<TimeSteppers::AdamsBashforth>(2)),
-      std::move(mortar_histories), std::move(mortar_infos));
+  auto box =
+      db::create<db::AddSimpleTags<Tags::ConcreteTimeStepper<LtsTimeStepper>,
+                                   evolution::dg::Tags::MortarDataHistory<2>,
+                                   evolution::dg::Tags::MortarInfo<2>>,
+                 time_stepper_ref_tags<LtsTimeStepper>>(
+          static_cast<std::unique_ptr<LtsTimeStepper>>(
+              std::make_unique<TimeSteppers::AdamsBashforth>(2)),
+          std::move(mortar_histories), std::move(mortar_infos));
 
   db::mutate_apply<evolution::dg::CleanMortarHistory<System>>(
       make_not_null(&box));
 
   for (const auto& mortar : lts_mortars) {
-    CHECK(db::get<evolution::dg::Tags::MortarDataHistory<2, double>>(box)
+    CHECK(db::get<evolution::dg::Tags::MortarDataHistory<2>>(box)
               .at(mortar)
               .local()
               .size() == 1);
   }
   for (const auto& mortar : gts_mortars) {
-    CHECK(db::get<evolution::dg::Tags::MortarDataHistory<2, double>>(box)
+    CHECK(db::get<evolution::dg::Tags::MortarDataHistory<2>>(box)
               .at(mortar)
               .local()
               .empty());
