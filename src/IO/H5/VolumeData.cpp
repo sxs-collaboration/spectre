@@ -57,6 +57,7 @@ void append_element_extents_and_connectivity(
     const gsl::not_null<std::vector<size_t>*> total_extents,
     const gsl::not_null<std::vector<int>*> total_connectivity,
     const gsl::not_null<std::vector<int>*> pole_connectivity,
+    const gsl::not_null<std::vector<int>*> disk_connectivity,
     const gsl::not_null<int*> total_points_so_far, const size_t dim,
     const ElementVolumeData& element) {
   // Process the element extents
@@ -115,62 +116,103 @@ void append_element_extents_and_connectivity(
   // If element is 2D and the bases are both SphericalHarmonic,
   // then add extra connections to close the surface.
   if (dim == 2) {
-    if (not(element.basis[0] == Spectral::Basis::SphericalHarmonic and
-            element.basis[1] == Spectral::Basis::SphericalHarmonic)) {
-      return;
+    if (element.basis[0] == Spectral::Basis::SphericalHarmonic and
+        element.basis[1] == Spectral::Basis::SphericalHarmonic) {
+      // Extents are (l+1, 2l+1)
+      const int l = static_cast<int>(element.extents[0] - 1);
+
+      // Connect max(phi) and min(phi) by adding more quads
+      // to total_connectivity
+      for (int j = 0; j < l; ++j) {
+        total_connectivity->push_back(j);
+        total_connectivity->push_back(j + 1);
+        total_connectivity->push_back(2 * l * (l + 1) + j + 1);
+        total_connectivity->push_back((2 * l) * (l + 1) + j);
+      }
+
+      // Add a new connectivity output for filling the poles
+      // First, get the points at min(theta), which define the
+      // boundary of the top pole to fill, and the points at
+      // max(theta), which define the boundary of the bottom
+      // pole to fill. Note: points are stored with theta
+      // varying faster than phi.
+      std::vector<int> top_pole_points{};
+      std::vector<int> bottom_pole_points{};
+      for (int k = 0; k < (2 * l + 1); ++k) {
+        top_pole_points.push_back(k * (l + 1));
+        bottom_pole_points.push_back(k * (l + 1) + l);
+      }
+
+      const size_t number_of_pole_points = top_pole_points.size();
+      if (number_of_pole_points < 3) {
+        ERROR_NO_TRACE(
+            "Cannot write a 2D surface to file with l=0. Must have at least "
+            "l=1.");
+      }
+
+      // Fill poles with triangles in a fan pattern. Choose the root point that
+      // is common with all triangles to be the first point for each pole
+      const int top_root_point = top_pole_points[0];
+      const int bottom_root_point = bottom_pole_points[0];
+
+      // We end such that the last triangle we make has indices (0, N-2, N-1)
+      // given number_of_pole_points = N
+      for (size_t i = 1; i <= number_of_pole_points - 2; i++) {
+        const int top_second_point = gsl::at(top_pole_points, i);
+        const int top_third_point = gsl::at(top_pole_points, i + 1);
+        const int bottom_second_point = gsl::at(bottom_pole_points, i);
+        const int bottom_third_point = gsl::at(bottom_pole_points, i + 1);
+
+        pole_connectivity->push_back(top_root_point);
+        pole_connectivity->push_back(top_second_point);
+        pole_connectivity->push_back(top_third_point);
+        pole_connectivity->push_back(bottom_root_point);
+        pole_connectivity->push_back(bottom_second_point);
+        pole_connectivity->push_back(bottom_third_point);
+      }
+    } else if (element.basis[0] == Spectral::Basis::ZernikeB2 and
+               element.basis[1] == Spectral::Basis::ZernikeB2) {
+      const auto n_r = static_cast<int>(element.extents[0]);
+      const auto n_ph = static_cast<int>(element.extents[1]);
+
+      // Connect max(phi) and min(phi) by adding more quads
+      // to total_connectivity
+      for (int j = 0; j < n_r - 1; ++j) {
+        total_connectivity->push_back(j);
+        total_connectivity->push_back(j + 1);
+        total_connectivity->push_back((n_ph - 1) * n_r + j + 1);
+        total_connectivity->push_back((n_ph - 1) * n_r + j);
+      }
+
+      std::vector<int> inner_ring_points{};
+      inner_ring_points.reserve(static_cast<size_t>(n_ph));
+      for (int k = 0; k < n_ph; ++k) {
+        inner_ring_points.push_back(k * n_r);  // r = 0 for each phi slice
+      }
+
+      std::vector<int> new_points;
+      while (inner_ring_points.size() >= 3) {
+        new_points.clear();
+        new_points.push_back(inner_ring_points[0]);
+        for (size_t i = 0; i < inner_ring_points.size() - 2; i += 2) {
+          disk_connectivity->push_back(inner_ring_points[i]);
+          disk_connectivity->push_back(inner_ring_points[i + 1]);
+          disk_connectivity->push_back(inner_ring_points[i + 2]);
+          new_points.push_back(inner_ring_points[i + 2]);
+        }
+        if (inner_ring_points.size() % 2 == 0) {
+          // Add triangle closing the ring: connects last two points back to
+          // first
+          disk_connectivity->push_back(
+              inner_ring_points[inner_ring_points.size() - 2]);
+          disk_connectivity->push_back(
+              inner_ring_points[inner_ring_points.size() - 1]);
+          disk_connectivity->push_back(inner_ring_points[0]);
+        }
+        inner_ring_points = std::move(new_points);
+      }
     }
-    // Extents are (l+1, 2l+1)
-    const int l = static_cast<int>(element.extents[0] - 1);
-
-    // Connect max(phi) and min(phi) by adding more quads
-    // to total_connectivity
-    for (int j = 0; j < l; ++j) {
-      total_connectivity->push_back(j);
-      total_connectivity->push_back(j + 1);
-      total_connectivity->push_back(2 * l * (l + 1) + j + 1);
-      total_connectivity->push_back((2 * l) * (l + 1) + j);
-    }
-
-    // Add a new connectivity output for filling the poles
-    // First, get the points at min(theta), which define the
-    // boundary of the top pole to fill, and the points at
-    // max(theta), which define the boundary of the bottom
-    // pole to fill. Note: points are stored with theta
-    // varying faster than phi.
-    std::vector<int> top_pole_points{};
-    std::vector<int> bottom_pole_points{};
-    for (int k = 0; k < (2 * l + 1); ++k) {
-      top_pole_points.push_back(k * (l + 1));
-      bottom_pole_points.push_back(k * (l + 1) + l);
-    }
-
-    const size_t number_of_pole_points = top_pole_points.size();
-    if (number_of_pole_points < 3) {
-      ERROR_NO_TRACE(
-          "Cannot write a 2D surface to file with l=0. Must have at least "
-          "l=1.");
-    }
-
-    // Fill poles with triangles in a fan pattern. Choose the root point that is
-    // common with all triangles to be the first point for each pole
-    const int top_root_point = top_pole_points[0];
-    const int bottom_root_point = bottom_pole_points[0];
-
-    // We end such that the last triangle we make has indices (0, N-2, N-1)
-    // given number_of_pole_points = N
-    for (size_t i = 1; i <= number_of_pole_points - 2; i++) {
-      int top_second_point = gsl::at(top_pole_points, i);
-      int top_third_point = gsl::at(top_pole_points, i + 1);
-      int bottom_second_point = gsl::at(bottom_pole_points, i);
-      int bottom_third_point = gsl::at(bottom_pole_points, i + 1);
-
-      pole_connectivity->push_back(top_root_point);
-      pole_connectivity->push_back(top_second_point);
-      pole_connectivity->push_back(top_third_point);
-      pole_connectivity->push_back(bottom_root_point);
-      pole_connectivity->push_back(bottom_second_point);
-      pole_connectivity->push_back(bottom_third_point);
-    }
+    // generically do nothing if not a sphere or disk
   }
 }
 }  // namespace
@@ -272,6 +314,7 @@ void VolumeData::write_volume_data(
   std::string grid_names;
   std::vector<int> total_connectivity;
   std::vector<int> pole_connectivity{};
+  std::vector<int> disk_connectivity{};
   std::vector<int> quadratures;
   std::vector<int> bases;
   // Keep a running count of the number of points so far to use as a global
@@ -292,7 +335,7 @@ void VolumeData::write_volume_data(
     const auto fill_and_write_contiguous_tensor_data =
         [&bases, &component_name, &dim, &elements, &grid_names, i,
          &observation_group, &quadratures, &total_connectivity,
-         &pole_connectivity, &total_extents,
+         &pole_connectivity, &disk_connectivity, &total_extents,
          &total_points_so_far](const auto contiguous_tensor_data_ptr) {
           for (const auto& element : elements) {
             if (UNLIKELY(i == 0)) {
@@ -327,7 +370,7 @@ void VolumeData::write_volume_data(
 
               append_element_extents_and_connectivity(
                   &total_extents, &total_connectivity, &pole_connectivity,
-                  &total_points_so_far, dim, element);
+                  &disk_connectivity, &total_points_so_far, dim, element);
             }
             using type_from_variant = tmpl::conditional_t<
                 std::is_same_v<
@@ -406,6 +449,10 @@ void VolumeData::write_volume_data(
   if (not pole_connectivity.empty()) {
     h5::write_data(observation_group.id(), pole_connectivity,
                    {pole_connectivity.size()}, "pole_connectivity");
+  }
+  if (not disk_connectivity.empty()) {
+    h5::write_data(observation_group.id(), disk_connectivity,
+                   {disk_connectivity.size()}, "disk_connectivity");
   }
   // Store the serialized domain and functions of time at the subfile level
   if (serialized_domain.has_value() and
@@ -576,9 +623,15 @@ std::vector<std::string> VolumeData::list_tensor_components(
                       "ObservationId" + std::to_string(observation_id));
   // Remove names that are not tensor components
   const std::unordered_set<std::string> non_tensor_components{
-      "connectivity", "pole_connectivity", "total_extents",
-      "grid_names",   "quadratures",       "bases",
-      "domain",       "functions_of_time"};
+      "connectivity",
+      "pole_connectivity",
+      "disk_connectivity",
+      "total_extents",
+      "grid_names",
+      "quadratures",
+      "bases",
+      "domain",
+      "functions_of_time"};
   tensor_components.erase(
       alg::remove_if(tensor_components,
                      [&non_tensor_components](const std::string& name) {

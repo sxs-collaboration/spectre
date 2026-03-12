@@ -694,6 +694,101 @@ void test_extend_connectivity_data() {
   }
 }
 
+void test_disk() {
+  // The disk has some extra connectivity: one being to close the angular
+  // edges, the other to fill in the inner circle
+  const std::string h5_file_name("Unit.IO.H5.VolumeData.Disk.h5");
+  const uint32_t version_number = 4;
+  if (file_system::check_if_file_exists(h5_file_name)) {
+    file_system::rm(h5_file_name, true);
+  }
+  const std::string grid_name{"Disk"};
+  const std::vector<size_t> observation_ids{12354};
+  const std::vector<double> observation_values{1.1};
+  const std::vector<Spectral::Basis> bases{2, Spectral::Basis::ZernikeB2};
+  const std::vector<Spectral::Quadrature> quadratures{
+      {Spectral::Quadrature::GaussRadauUpper,
+       Spectral::Quadrature::Equiangular}};
+  const std::vector<size_t> extents{2, 7};
+
+  // Not using values, just checking connectivity
+  const std::vector<DataVector> tensor_and_coord_data{
+      {14, 0.0}, {14, 0.0}, {14, 0.0}};
+  const std::vector<TensorComponent> tensor_components{
+      {"InertialCoordinates_x", tensor_and_coord_data[0]},
+      {"InertialCoordinates_y", tensor_and_coord_data[1]},
+      {"TestScalar", tensor_and_coord_data[2]}};
+
+  {
+    h5::H5File<h5::AccessType::ReadWrite> disk_file{h5_file_name};
+    auto& volume_file =
+        disk_file.insert<h5::VolumeData>("/element_data", version_number);
+    volume_file.write_volume_data(
+        observation_ids[0], observation_values[0],
+        std::vector<ElementVolumeData>{
+            {grid_name, tensor_components, extents, bases, quadratures}});
+    disk_file.close_current_object();
+
+    // Open the read volume file and check that the observation id and values
+    // are correct.
+    const auto& volume_file_read =
+        disk_file.get<h5::VolumeData>("/element_data", version_number);
+    const auto read_observation_ids = volume_file_read.list_observation_ids();
+    CHECK(read_observation_ids == std::vector<size_t>{12354});
+    CHECK(volume_file_read.get_observation_value(observation_ids[0]) ==
+          observation_values[0]);
+  }
+
+  // Check pole connectivity
+  DataVector connectivity_data{};
+  {
+    const h5::H5File<h5::AccessType::ReadOnly> disk_file{h5_file_name};
+    const auto& volume_file =
+        disk_file.get<h5::VolumeData>("/element_data", version_number);
+    const auto h5_connectivity =
+        volume_file.get_tensor_component(12354, "disk_connectivity").data;
+    connectivity_data = get<0>(h5_connectivity);
+    disk_file.close_current_object();
+  }
+  // clang-format off
+  DataVector expected_connectivity = {{
+      0.,  2.,  4.,
+      4.,  6.,  8.,
+      8., 10., 12.,
+      0.,  4.,  8.,
+      8., 12.,  0.}};
+  // clang-format on
+
+  CHECK(connectivity_data == expected_connectivity);
+
+  // Check angular-side connectivity
+  {
+    const h5::H5File<h5::AccessType::ReadOnly> disk_file{h5_file_name};
+    const auto& volume_file =
+        disk_file.get<h5::VolumeData>("/element_data", version_number);
+    const auto h5_connectivity =
+        volume_file.get_tensor_component(12354, "connectivity").data;
+    connectivity_data = get<0>(h5_connectivity);
+    disk_file.close_current_object();
+  }
+  // clang-format off
+  expected_connectivity = DataVector{
+     0.,  1.,  3.,  2.,
+     2.,  3.,  5.,  4.,
+     4.,  5.,  7.,  6.,
+     6.,  7.,  9.,  8.,
+     8.,  9., 11., 10.,
+    10., 11., 13., 12.,
+     0.,  1., 13., 12.};
+  // clang-format on
+
+  CHECK(connectivity_data == expected_connectivity);
+
+  if (file_system::check_if_file_exists(h5_file_name)) {
+    file_system::rm(h5_file_name, true);
+  }
+}
+
 void test_cartoon() {
   // For a 2D computational domain Cartoon-basis evolution, we only want to
   // write 2D data despite the simulation being 3D. This tests the appropriate
@@ -869,6 +964,7 @@ SPECTRE_TEST_CASE("Unit.IO.H5.VolumeData", "[Unit][IO][H5]") {
   test<std::vector<float>>();
   test_cartoon();
   test_strahlkorper();
+  test_disk();
   test_extend_connectivity_data<1>();
   test_extend_connectivity_data<2>();
   test_extend_connectivity_data<3>();
