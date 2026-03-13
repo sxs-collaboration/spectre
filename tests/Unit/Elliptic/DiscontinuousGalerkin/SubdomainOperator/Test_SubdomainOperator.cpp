@@ -419,12 +419,13 @@ struct ElementArray {
 
   using background_tag =
       elliptic::Tags::Background<elliptic::analytic_data::Background>;
+  using null_slicing_tag = ScalarSelfForce::Tags::NullSlicingBlocks<Dim>;
 
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = ElementId<Dim>;
   using const_global_cache_tags =
-      tmpl::list<domain::Tags::Domain<Dim>, background_tag>;
+      tmpl::list<domain::Tags::Domain<Dim>, background_tag, null_slicing_tag>;
 
   // These tags are communicated on subdomain overlaps to initialize the
   // subdomain geometry. AMR updates these tags, so we have to communicate them
@@ -624,6 +625,7 @@ void test_subdomain_operator(
         domain::Tags::Domain<Dim>, domain::Tags::FunctionsOfTimeInitialize,
         domain::Tags::ExternalBoundaryConditions<Dim>,
         elliptic::Tags::Background<elliptic::analytic_data::Background>,
+        ScalarSelfForce::Tags::NullSlicingBlocks<Dim>,
         LinearSolver::Schwarz::Tags::MaxOverlap<DummyOptionsGroup>,
         logging::Tags::Verbosity<DummyOptionsGroup>,
         elliptic::dg::Tags::PenaltyParameter, elliptic::dg::Tags::Massive,
@@ -634,6 +636,7 @@ void test_subdomain_operator(
         std::move(domain), domain_creator.functions_of_time(),
         std::move(boundary_conditions),
         std::make_unique<RandomBackground<Dim>>(),
+        std::vector<size_t>{},
         max_overlap.has_value() ? std::optional<size_t>(overlap) : std::nullopt,
         ::Verbosity::Verbose, penalty_parameter, use_massive_dg_operator,
         quadrature, ::dg::Formulation::StrongInertial, std::move(amr_criteria),

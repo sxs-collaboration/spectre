@@ -60,6 +60,13 @@ tnsr::I<double, 2> CircularOrbit::puncture_position() const {
   return tnsr::I<double, 2>{{{r_star, 0.}}};
 }
 
+double CircularOrbit::omega() const {
+  const double M = black_hole_mass_;
+  const double a = black_hole_spin_ * M;
+  const double r_0 = orbital_radius_;
+  return 1. / (a + sqrt(cube(r_0) / M));
+}
+
 // Background
 tuples::TaggedTuple<Tags::Alpha, Tags::Beta, Tags::Gamma>
 CircularOrbit::variables(
@@ -69,8 +76,7 @@ CircularOrbit::variables(
   const double M = black_hole_mass_;
   const double r_plus = M * (1. + sqrt(1. - square(black_hole_spin_)));
   const double r_minus = M * (1. - sqrt(1. - square(black_hole_spin_)));
-  const double r_0 = orbital_radius_;
-  const double omega = 1. / (a + sqrt(cube(r_0) / M));
+  const double omega = this->omega();
   const auto& r_star = get<0>(x);
   const auto& cos_theta = get<1>(x);
   const DataVector r_minus_r_plus =

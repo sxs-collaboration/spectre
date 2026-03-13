@@ -298,18 +298,21 @@ template <typename System, bool Linearized, typename TemporalIdTag,
           typename FluxesArgsTags =
               elliptic::get_fluxes_argument_tags<System, Linearized>,
           typename SourcesArgsTags =
-              elliptic::get_sources_argument_tags<System, Linearized>>
+              elliptic::get_sources_argument_tags<System, Linearized>,
+          typename ModifyBoundaryDataArgsTags =
+              elliptic::get_modify_boundary_data_args_tags<System, Linearized>>
 struct ReceiveMortarDataAndApplyOperator;
 
 template <typename System, bool Linearized, typename TemporalIdTag,
           typename PrimalFieldsTag, typename PrimalFluxesTag,
           typename OperatorAppliedToFieldsTag, typename PrimalMortarFieldsTag,
           typename PrimalMortarFluxesTag, typename... FluxesArgsTags,
-          typename... SourcesArgsTags>
+          typename... SourcesArgsTags, typename... ModifyBoundaryDataArgsTags>
 struct ReceiveMortarDataAndApplyOperator<
     System, Linearized, TemporalIdTag, PrimalFieldsTag, PrimalFluxesTag,
     OperatorAppliedToFieldsTag, PrimalMortarFieldsTag, PrimalMortarFluxesTag,
-    tmpl::list<FluxesArgsTags...>, tmpl::list<SourcesArgsTags...>> {
+    tmpl::list<FluxesArgsTags...>, tmpl::list<SourcesArgsTags...>,
+    tmpl::list<ModifyBoundaryDataArgsTags...>> {
  private:
   static constexpr size_t Dim = System::volume_dim;
   using all_mortar_data_tag = ::Tags::Mortars<
@@ -416,7 +419,8 @@ struct ReceiveMortarDataAndApplyOperator<
         db::get<elliptic::dg::Tags::Massive>(box),
         db::get<elliptic::dg::Tags::Formulation>(box), temporal_id,
         fluxes_args_on_faces,
-        std::forward_as_tuple(db::get<SourcesArgsTags>(box)...));
+        std::forward_as_tuple(db::get<SourcesArgsTags>(box)...),
+        std::forward_as_tuple(db::get<ModifyBoundaryDataArgsTags>(box)...));
 
     // Increment temporal ID
     db::mutate<TemporalIdTag>(
@@ -552,7 +556,7 @@ template <typename System, typename FixedSourcesTag,
           typename SourcesArgsTags =
               elliptic::get_sources_argument_tags<System, false>,
           typename ModifyBoundaryDataArgsTags =
-              elliptic::get_modify_boundary_data_args_tags<System>>
+              elliptic::get_modify_boundary_data_args_tags<System, false>>
 struct ImposeInhomogeneousBoundaryConditionsOnSource;
 
 /// \cond

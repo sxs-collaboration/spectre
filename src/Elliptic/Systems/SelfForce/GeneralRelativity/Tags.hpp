@@ -7,6 +7,9 @@
 
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
+#include "Domain/Creators/DomainCreator.hpp"
+#include "Domain/Creators/OptionTags.hpp"
+#include "Domain/Structure/BlockGroups.hpp"
 
 /// \cond
 class ComplexDataVector;
@@ -20,10 +23,27 @@ class DataVector;
  *
  * \see GrSelfForce::FirstOrderSystem
  */
-namespace GrSelfForce {}
+namespace GrSelfForce {
+
+namespace OptionTags {
+
+struct OptionGroup {
+  static std::string name() { return "GrSelfForce:"; }
+  static constexpr Options::String help =
+      "Options for the GR self-force system";
+};
+
+struct NullSlicingBlocks {
+  using group = OptionGroup;
+  using type = std::vector<std::string>;
+  static constexpr Options::String help =
+      "The blocks in which to use null slicing (vtu-slicing).";
+};
+
+}  // namespace OptionTags
 
 /// Tags for the GrSelfForce system.
-namespace GrSelfForce::Tags {
+namespace Tags {
 
 /*!
  * \brief The complex m-mode field $(\Psi_m)_{ab}$.
@@ -123,5 +143,25 @@ struct SingularField : db::SimpleTag {
 struct BoyerLindquistRadius : db::SimpleTag {
   using type = Scalar<DataVector>;
 };
+/*!
+ * \brief Blocks in which we use null slicing (vtu-slicing).
+ */
+template <size_t Dim>
+struct NullSlicingBlocks : db::SimpleTag {
+  using type = std::vector<size_t>;
+  using option_tags = tmpl::list<OptionTags::NullSlicingBlocks,
+                                 domain::OptionTags::DomainCreator<Dim>>;
+  static constexpr bool pass_metavariables = false;
+  static type create_from_options(
+      const std::vector<std::string>& null_slicing_blocks,
+      const std::unique_ptr<DomainCreator<Dim>>& domain_creator) {
+    const auto ids_set = domain::block_ids_from_names(
+        null_slicing_blocks, domain_creator->block_names(),
+        domain_creator->block_groups());
+    return {ids_set.begin(), ids_set.end()};
+  }
+};
 
-}  // namespace GrSelfForce::Tags
+
+}  // namespace Tags
+}  // namespace GrSelfForce

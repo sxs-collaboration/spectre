@@ -3,6 +3,7 @@
 
 #include "Elliptic/Systems/SelfForce/Scalar/Equations.hpp"
 
+#include <algorithm>
 #include <cstddef>
 
 #include "DataStructures/ComplexDataVector.hpp"
@@ -11,6 +12,8 @@
 #include "DataStructures/Variables.hpp"
 #include "Domain/Structure/DirectionalId.hpp"
 #include "Domain/Structure/DirectionalIdMap.hpp"
+#include "Elliptic/Systems/SelfForce/Scalar/AnalyticData/CircularOrbit.hpp"
+#include "Utilities/Algorithm.hpp"
 
 namespace ScalarSelfForce {
 
@@ -84,6 +87,34 @@ void ModifyBoundaryData::apply(
           singular_vars_on_mortars.at(mortar_id));
   get(*field) += sign * get(singular_field);
   get(*n_dot_flux) -= sign * get(singular_field_n_dot_flux);
+}
+
+void ModifyBoundaryData::apply_linearized(
+    const gsl::not_null<Scalar<ComplexDataVector>*> /*field_remote*/,
+    const gsl::not_null<
+        Scalar<ComplexDataVector>*> n_dot_field_gradient_remote,
+    const gsl::not_null<Scalar<ComplexDataVector>*> /*field_local*/,
+    const gsl::not_null<
+        Scalar<ComplexDataVector>*> /*n_dot_field_gradient_local*/,
+    const Scalar<ComplexDataVector>& avg_field,
+    const DirectionalId<Dim>& mortar_id, const Element<Dim>& element,
+    const std::vector<size_t>& null_slicing_blocks,
+    const elliptic::analytic_data::Background& background) {
+  if (alg::found(null_slicing_blocks, element.id().block_id()) ==
+      alg::found(null_slicing_blocks, mortar_id.id().block_id())) {
+    // Both elements use the same slicing. Nothing to do.
+    return;
+  }
+  // Apply the jump in the field gradient across the boundary to handle
+  // vtu-slicing. The signs are all the same (on both sides of the boundary and
+  // at both transition points).
+  const auto& circular_orbit =
+      dynamic_cast<const ScalarSelfForce::AnalyticData::CircularOrbit&>(
+          background);
+  const double omega = circular_orbit.omega();
+  const double m_mode_number = circular_orbit.m_mode_number();
+  get(*n_dot_field_gradient_remote) -=
+      std::complex<double>(0.0, m_mode_number * omega) * get(avg_field);
 }
 
 }  // namespace ScalarSelfForce

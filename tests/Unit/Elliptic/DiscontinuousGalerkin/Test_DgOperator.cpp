@@ -166,6 +166,7 @@ struct ProjectMetavars : tt::ConformsTo<::amr::protocols::Projector> {
       // correctly by the testing framework
       Parallel::Tags::GlobalCache<Metavariables>>;
   using argument_tags = tmpl::list<>;
+  using argument_tags_linearized = tmpl::list<>;
   template <typename... AmrData>
   static void apply(
       const gsl::not_null<Parallel::GlobalCache<Metavariables>**> /*cache*/,
@@ -227,6 +228,7 @@ struct ModifiedPoissonSystem
     using argument_tags = tmpl::list<
         domain::Tags::Element<Dim>,
         ::Tags::Mortars<domain::Tags::Coordinates<Dim, Frame::Inertial>, Dim>>;
+    using argument_tags_linearized = tmpl::list<>;
     static void apply(
         const gsl::not_null<Scalar<DataVector>*> field,
         const gsl::not_null<Scalar<DataVector>*> normal_dot_flux,
@@ -254,6 +256,14 @@ struct ModifiedPoissonSystem
       // computed using the neighbor's face normal
       get(*normal_dot_flux) -= sign * singular_normal_dot_flux;
     }
+    static void apply_linearized(
+        const gsl::not_null<Scalar<DataVector>*> /*field_remote*/,
+        const gsl::not_null<
+            Scalar<DataVector>*> /*n_dot_field_gradient_remote*/,
+        const gsl::not_null<Scalar<DataVector>*> /*field_local*/,
+        const gsl::not_null<Scalar<DataVector>*> /*n_dot_field_gradient_local*/,
+        const Scalar<DataVector>& /*avg_field*/,
+        const DirectionalId<Dim>& /*mortar_id*/, const auto&... /*args*/) {}
   };
 };
 

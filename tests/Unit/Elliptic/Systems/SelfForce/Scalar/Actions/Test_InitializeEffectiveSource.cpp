@@ -41,7 +41,9 @@ struct ElementArray {
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = ElementId<2>;
-  using const_global_cache_tags = tmpl::list<domain::Tags::Domain<2>>;
+  using const_global_cache_tags =
+      tmpl::list<domain::Tags::Domain<2>,
+                 ScalarSelfForce::Tags::NullSlicingBlocks<2>>;
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
           Parallel::Phase::Initialization,
@@ -93,11 +95,12 @@ SPECTRE_TEST_CASE("Unit.ScalarSelfForce.Actions.InitializeEffectiveSource",
       tuples::TaggedTuple<background_tag, domain::Tags::Domain<2>,
                           domain::Tags::FunctionsOfTimeInitialize,
                           elliptic::dg::Tags::Massive,
-                          elliptic::dg::Tags::Quadrature>{
+                          elliptic::dg::Tags::Quadrature,
+                          ScalarSelfForce::Tags::NullSlicingBlocks<2>>{
           std::make_unique<ScalarSelfForce::AnalyticData::CircularOrbit>(
               1.0, 0.0, 6.0, 1, std::nullopt),
           domain_creator.create_domain(), domain_creator.functions_of_time(),
-          false, Spectral::Quadrature::GaussLobatto}};
+          false, Spectral::Quadrature::GaussLobatto, std::vector<size_t>{}}};
   const ::Tags::Mortars<domain::Tags::Coordinates<2, Frame::Inertial>, 2>::type
       empty_mortar_coords{};
   ActionTesting::emplace_component_and_initialize<element_array>(

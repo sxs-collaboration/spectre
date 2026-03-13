@@ -162,6 +162,7 @@ class CircularOrbit : public elliptic::analytic_data::Background,
   double black_hole_mass() const { return black_hole_mass_; }
   double black_hole_spin() const { return black_hole_spin_; }
   double orbital_radius() const { return orbital_radius_; }
+  double omega() const;
   int m_mode_number() const { return m_mode_number_; }
   std::optional<std::array<double, 4>> hyperboloidal_slicing_transitions()
       const {
