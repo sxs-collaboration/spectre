@@ -85,4 +85,11 @@ template const Matrix& nodal_to_modal_matrix<Basis::FiniteDifference,
                                              Quadrature::CellCentered>(size_t);
 template const Matrix& nodal_to_modal_matrix<Basis::FiniteDifference,
                                              Quadrature::FaceCentered>(size_t);
+template const Matrix& nodal_to_modal_matrix<
+    Basis::ZernikeB1, Quadrature::GaussRadauUpper>(size_t);
+template const Matrix& nodal_to_modal_matrix<
+    Basis::ZernikeB2, Quadrature::GaussRadauUpper>(size_t);
+template const Matrix& nodal_to_modal_matrix<
+    Basis::ZernikeB3, Quadrature::GaussRadauUpper>(size_t);
+
 }  // namespace Spectral

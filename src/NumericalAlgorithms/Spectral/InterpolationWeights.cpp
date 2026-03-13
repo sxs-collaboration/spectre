@@ -1,7 +1,7 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "NumericalAlgorithms/Interpolation/InterpolationWeights.hpp"
+#include "NumericalAlgorithms/Spectral/InterpolationWeights.hpp"
 
 #include <cmath>
 #include <cstddef>
@@ -12,7 +12,7 @@
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 
-namespace intrp {
+namespace Spectral {
 template <typename TargetDataType>
 Matrix fornberg_interpolation_matrix(const TargetDataType& x_target,
                                      const DataVector& x_source) {
@@ -132,15 +132,18 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (double, DataVector))
 #undef INSTANTIATE
 
 #define DNUM(data) BOOST_PP_TUPLE_ELEM(0, data)
+#define DNUM_PLUS_ONE(data) BOOST_PP_ADD(BOOST_PP_TUPLE_ELEM(0, data), 1)
 
-#define INSTANTIATE(_, data)                                               \
-  template void fornberg_derivative_interpolation_weights<DNUM(data)>(     \
-      const gsl::not_null<std::array<DataVector, DNUM(data) + 1>*> result, \
+#define INSTANTIATE(_, data)                                            \
+  template void fornberg_derivative_interpolation_weights<DNUM(data)>(  \
+      const gsl::not_null<std::array<DataVector, DNUM_PLUS_ONE(data)>*> \
+          result,                                                       \
       const double x_target, const DataVector& x_source);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3, 4))
 
-#undef DTYPE
+#undef DNUM
+#undef DNUM_PLUS_ONE
 #undef INSTANTIATE
 
-}  // namespace intrp
+}  // namespace Spectral

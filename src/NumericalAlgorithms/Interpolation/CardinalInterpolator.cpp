@@ -9,8 +9,8 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Matrix.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
-#include "NumericalAlgorithms/Interpolation/InterpolationWeights.hpp"
 #include "NumericalAlgorithms/Spectral/Basis.hpp"
+#include "NumericalAlgorithms/Spectral/InterpolationWeights.hpp"
 #include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Quadrature.hpp"
@@ -37,7 +37,7 @@ std::array<Matrix, Dim> interpolation_matrices_impl(
         const DataVector xi =
             get<0>(logical_coordinates(source_mesh.slice_through(d)));
         gsl::at(interpolation_matrices, d) =
-            fornberg_interpolation_matrix(target_points.get(d), xi);
+            Spectral::fornberg_interpolation_matrix(target_points.get(d), xi);
         break;
       }
       case Spectral::Basis::SphericalHarmonic: {
@@ -47,7 +47,7 @@ std::array<Matrix, Dim> interpolation_matrices_impl(
                 get<0>(logical_coordinates(source_mesh.slice_through(d)));
             const DataVector cos_theta_source = cos(theta);
             const DataType cos_theta_target = cos(target_points.get(d));
-            const Matrix theta_matrix = fornberg_interpolation_matrix(
+            const Matrix theta_matrix = Spectral::fornberg_interpolation_matrix(
                 cos_theta_target, cos_theta_source);
             const size_t n_th = source_mesh.extents(d);
             gsl::at(interpolation_matrices, d)
@@ -76,8 +76,9 @@ std::array<Matrix, Dim> interpolation_matrices_impl(
               extended_phi_target[2 * k + 1] =
                   get_element(phi_target, k) + M_PI;
             }
-            gsl::at(interpolation_matrices, d) = fourier_interpolation_matrix(
-                extended_phi_target, source_mesh.extents(d));
+            gsl::at(interpolation_matrices, d) =
+                Spectral::fourier_interpolation_matrix(extended_phi_target,
+                                                       source_mesh.extents(d));
             break;
           }
           default:

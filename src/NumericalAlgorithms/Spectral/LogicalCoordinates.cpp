@@ -97,6 +97,12 @@ void logical_coordinates(
         [[fallthrough]];
       case Spectral::Basis::Legendre:
         [[fallthrough]];
+      case Spectral::Basis::ZernikeB1:
+        [[fallthrough]];
+      case Spectral::Basis::ZernikeB2:
+        [[fallthrough]];
+      case Spectral::Basis::ZernikeB3:
+        [[fallthrough]];
       case Spectral::Basis::FiniteDifference: {
         const auto& collocation_points_in_this_dim =
             Spectral::collocation_points(mesh.slice_through(d));

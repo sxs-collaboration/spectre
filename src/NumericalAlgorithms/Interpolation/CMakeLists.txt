@@ -13,7 +13,6 @@ spectre_target_sources(
   CardinalInterpolator.cpp
   CubicSpanInterpolator.cpp
   CubicSpline.cpp
-  InterpolationWeights.cpp
   IrregularInterpolant.cpp
   LinearLeastSquares.cpp
   LinearRegression.cpp
@@ -34,7 +33,6 @@ spectre_target_headers(
   CardinalInterpolator.hpp
   CubicSpanInterpolator.hpp
   CubicSpline.hpp
-  InterpolationWeights.hpp
   IrregularInterpolant.hpp
   LagrangePolynomial.hpp
   LinearLeastSquares.hpp

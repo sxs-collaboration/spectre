@@ -10,9 +10,12 @@
 #include "NumericalAlgorithms/Spectral/BarycentricWeights.hpp"
 #include "NumericalAlgorithms/Spectral/Basis.hpp"
 #include "NumericalAlgorithms/Spectral/BasisFunctions/Fourier.hpp"
+#include "NumericalAlgorithms/Spectral/BasisFunctions/Zernike.hpp"
 #include "NumericalAlgorithms/Spectral/CollocationPoints.hpp"
 #include "NumericalAlgorithms/Spectral/GetSpectralQuantityForMesh.hpp"
+#include "NumericalAlgorithms/Spectral/InterpolationWeights.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
+#include "NumericalAlgorithms/Spectral/Parity.hpp"
 #include "NumericalAlgorithms/Spectral/PrecomputedSpectralQuantity.hpp"
 #include "NumericalAlgorithms/Spectral/Quadrature.hpp"
 #include "NumericalAlgorithms/Spectral/QuadratureWeights.hpp"
@@ -372,6 +375,25 @@ struct DifferentiationMatrixTransposeGenerator {
 };
 
 template <Basis BasisType, Quadrature QuadratureType>
+struct ParityBasedDifferentiationMatrixGenerator {
+  Matrix operator()(const size_t num_points, const Parity parity) const {
+    // We intentionally do not instantiate "normal" derivatives for Zernike
+    // bases due to their large errors
+    if constexpr (BasisType == Spectral::Basis::ZernikeB1) {
+      return Zernike<1>::differentiation_matrix(num_points, parity);
+    } else if constexpr (BasisType == Spectral::Basis::ZernikeB2) {
+      return Zernike<2>::differentiation_matrix(num_points, parity);
+    } else if constexpr (BasisType == Spectral::Basis::ZernikeB3) {
+      return Zernike<3>::differentiation_matrix(num_points, parity);
+    } else {
+      ERROR(
+          "Calling ParityBasedDifferentiationMatrixGenerator with a "
+          "non-Zernike basis: call non-parity generator");
+    }
+  }
+};
+
+template <Basis BasisType, Quadrature QuadratureType>
 struct WeakFluxDifferentiationMatrixGenerator {
   Matrix operator()(const size_t num_points) const {
     if (BasisType != Basis::Legendre) {
@@ -407,6 +429,11 @@ PRECOMPUTED_SPECTRAL_QUANTITY(weak_flux_differentiation_matrix, Matrix,
 
 #undef PRECOMPUTED_SPECTRAL_QUANTITY
 
+PRECOMPUTED_SPECTRAL_QUANTITY_WITH_PARITY(
+    differentiation_matrix, Matrix, ParityBasedDifferentiationMatrixGenerator)
+
+#undef PRECOMPUTED_SPECTRAL_QUANTITY_WITH_PARITY
+
 SPECTRAL_QUANTITY_FOR_MESH(differentiation_matrix, Matrix)
 SPECTRAL_QUANTITY_FOR_MESH(differentiation_matrix_transpose, Matrix)
 SPECTRAL_QUANTITY_FOR_MESH(weak_flux_differentiation_matrix, Matrix)
@@ -427,6 +454,14 @@ template const Matrix&
     differentiation_matrix<Basis::Legendre, Quadrature::Gauss>(size_t);
 template const Matrix&
     differentiation_matrix<Basis::Legendre, Quadrature::GaussLobatto>(size_t);
+
+template const Matrix& differentiation_matrix<
+    Basis::ZernikeB1, Quadrature::GaussRadauUpper>(size_t, Parity);
+template const Matrix& differentiation_matrix<
+    Basis::ZernikeB2, Quadrature::GaussRadauUpper>(size_t, Parity);
+template const Matrix& differentiation_matrix<
+    Basis::ZernikeB3, Quadrature::GaussRadauUpper>(size_t, Parity);
+
 template const Matrix& weak_flux_differentiation_matrix<
     Basis::Chebyshev, Quadrature::Gauss>(size_t);
 template const Matrix& weak_flux_differentiation_matrix<

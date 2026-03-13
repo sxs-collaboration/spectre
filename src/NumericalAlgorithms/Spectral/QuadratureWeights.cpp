@@ -56,21 +56,27 @@ SPECTRAL_QUANTITY_FOR_MESH(quadrature_weights, DataVector)
 #undef SPECTRAL_QUANTITY_FOR_MESH
 
 template const DataVector&
-quadrature_weights<Basis::Cartoon, Quadrature::AxialSymmetry>(size_t);
+    quadrature_weights<Basis::Cartoon, Quadrature::AxialSymmetry>(size_t);
 template const DataVector&
-quadrature_weights<Basis::Cartoon, Quadrature::SphericalSymmetry>(size_t);
+    quadrature_weights<Basis::Cartoon, Quadrature::SphericalSymmetry>(size_t);
 template const DataVector&
-quadrature_weights<Basis::Chebyshev, Quadrature::Gauss>(size_t);
+    quadrature_weights<Basis::Chebyshev, Quadrature::Gauss>(size_t);
 template const DataVector&
-quadrature_weights<Basis::Chebyshev, Quadrature::GaussLobatto>(size_t);
+    quadrature_weights<Basis::Chebyshev, Quadrature::GaussLobatto>(size_t);
 template const DataVector&
-quadrature_weights<Basis::Legendre, Quadrature::Gauss>(size_t);
+    quadrature_weights<Basis::Legendre, Quadrature::Gauss>(size_t);
 template const DataVector&
-quadrature_weights<Basis::Legendre, Quadrature::GaussLobatto>(size_t);
+    quadrature_weights<Basis::Legendre, Quadrature::GaussLobatto>(size_t);
 template const DataVector&
-quadrature_weights<Basis::FiniteDifference, Quadrature::CellCentered>(size_t);
+    quadrature_weights<Basis::ZernikeB1, Quadrature::GaussRadauUpper>(size_t);
 template const DataVector&
-quadrature_weights<Basis::FiniteDifference, Quadrature::FaceCentered>(size_t);
+    quadrature_weights<Basis::ZernikeB2, Quadrature::GaussRadauUpper>(size_t);
 template const DataVector&
-quadrature_weights<Basis::Fourier, Quadrature::Equiangular>(size_t);
+    quadrature_weights<Basis::ZernikeB3, Quadrature::GaussRadauUpper>(size_t);
+template const DataVector& quadrature_weights<Basis::FiniteDifference,
+                                              Quadrature::CellCentered>(size_t);
+template const DataVector& quadrature_weights<Basis::FiniteDifference,
+                                              Quadrature::FaceCentered>(size_t);
+template const DataVector&
+    quadrature_weights<Basis::Fourier, Quadrature::Equiangular>(size_t);
 }  // namespace Spectral

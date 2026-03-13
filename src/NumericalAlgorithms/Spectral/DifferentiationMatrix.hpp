@@ -12,6 +12,7 @@ class Mesh;
 namespace Spectral {
 enum class Basis : uint8_t;
 enum class Quadrature : uint8_t;
+enum class Parity : uint8_t;
 }  // namespace Spectral
 /// \endcond
 
@@ -37,6 +38,22 @@ const Matrix& differentiation_matrix(size_t num_points);
 template <Basis BasisType, Quadrature QuadratureType>
 const Matrix& differentiation_matrix_transpose(size_t num_points);
 /// @}
+
+/*!
+ * \brief %Matrix used to compute the derivative of a function of known parity
+ *
+ * \details For the Zernike basis, defined on \f$[0,1]\f$, `GaussRadauUpper`
+ * quadratrue shifts the collocation points to the upper side, which
+ * contributes to inaccurate differentiation at the lower side due to the low
+ * density of points. By knowing the parity of functions in this basis as it
+ * has two indices, we can extend the function to the negative \f$r\f$,
+ * greatly reducing errors.
+ *
+ * \param num_points The number of collocation points
+ * \param parity The Parity of the function
+ */
+template <Basis BasisType, Quadrature QuadratureType>
+const Matrix& differentiation_matrix(size_t num_points, Parity parity);
 
 /// @{
 /*!

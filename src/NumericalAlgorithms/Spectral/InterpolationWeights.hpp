@@ -4,6 +4,7 @@
 #pragma once
 
 #include <cstddef>
+
 #include "Utilities/Gsl.hpp"
 
 /// \cond
@@ -11,7 +12,7 @@ class DataVector;
 class Matrix;
 /// \endcond
 
-namespace intrp {
+namespace Spectral {
 /*!
  * \brief Computes the matrix for polynomial interpolation of a non-periodic
  * function known at the set of points \f$x_{source}\f$ to the set of points
@@ -72,4 +73,4 @@ void fornberg_derivative_interpolation_weights(
 template <typename TargetDataType>
 Matrix fourier_interpolation_matrix(const TargetDataType& x_target,
                                     size_t n_source_points);
-}  // namespace intrp
+}  // namespace Spectral

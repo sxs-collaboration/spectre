@@ -18,4 +18,11 @@ namespace Spectral {
  */
 template <Basis BasisType, typename T>
 T compute_basis_function_value(size_t k, const T& x);
+
+/*!
+ * \brief Compute the function values of the basis function \f$\Phi^m_k(x)\f$
+ * (zero-indexed).
+ */
+template <Basis BasisType, typename T>
+T compute_basis_function_value(size_t k, size_t m, const T& x);
 }  // namespace Spectral

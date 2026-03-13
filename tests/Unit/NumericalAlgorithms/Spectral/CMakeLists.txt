@@ -24,6 +24,7 @@ set(LIBRARY_SOURCES
   Test_IndefiniteIntegral.cpp
   Test_IntegrationMatrix.cpp
   Test_InterpolationMatrix.cpp
+  Test_InterpolationWeights.cpp
   Test_Legendre.cpp
   Test_LegendreGauss.cpp
   Test_LegendreGaussLobatto.cpp
@@ -38,6 +39,7 @@ set(LIBRARY_SOURCES
   Test_QuadratureWeights.cpp
   Test_SegmentSize.cpp
   Test_Spectral.cpp
+  Test_ZernikeGaussRadauUpper.cpp
   )
 
 add_test_library(${LIBRARY} "${LIBRARY_SOURCES}")

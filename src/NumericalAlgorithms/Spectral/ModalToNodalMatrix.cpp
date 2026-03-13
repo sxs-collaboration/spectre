@@ -21,6 +21,9 @@ namespace {
 template <Basis BasisType, Quadrature QuadratureType>
 struct ModalToNodalMatrixGenerator {
   Matrix operator()(const size_t num_points) const {
+    ASSERT(BasisType != Basis::ZernikeB1 and BasisType != Basis::ZernikeB2 and
+               BasisType != Basis::ZernikeB3,
+           "Zernike basis should not call one-indexed ModalToNodal matrix");
     // To obtain the Vandermonde matrix we need to compute the basis function
     // values at the collocation points. Constructing the matrix proceeds
     // the same for any basis.
@@ -67,4 +70,10 @@ template const Matrix& modal_to_nodal_matrix<Basis::FiniteDifference,
                                              Quadrature::CellCentered>(size_t);
 template const Matrix& modal_to_nodal_matrix<Basis::FiniteDifference,
                                              Quadrature::FaceCentered>(size_t);
+template const Matrix& modal_to_nodal_matrix<
+    Basis::ZernikeB1, Quadrature::GaussRadauUpper>(size_t);
+template const Matrix& modal_to_nodal_matrix<
+    Basis::ZernikeB2, Quadrature::GaussRadauUpper>(size_t);
+template const Matrix& modal_to_nodal_matrix<
+    Basis::ZernikeB3, Quadrature::GaussRadauUpper>(size_t);
 }  // namespace Spectral

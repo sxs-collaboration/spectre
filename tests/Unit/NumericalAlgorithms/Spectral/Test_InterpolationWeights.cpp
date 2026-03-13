@@ -12,9 +12,9 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
-#include "NumericalAlgorithms/Interpolation/InterpolationWeights.hpp"
 #include "NumericalAlgorithms/Spectral/Basis.hpp"
 #include "NumericalAlgorithms/Spectral/InterpolationMatrix.hpp"
+#include "NumericalAlgorithms/Spectral/InterpolationWeights.hpp"
 #include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Quadrature.hpp"
@@ -41,12 +41,12 @@ void test_fornberg_matrix(const gsl::not_null<std::mt19937*> generator) {
           const Matrix spectral_matrix =
               Spectral::interpolation_matrix(mesh, x_target);
           const Matrix fornberg_matrix =
-              intrp::fornberg_interpolation_matrix(x_target, get<0>(xi));
+              Spectral::fornberg_interpolation_matrix(x_target, get<0>(xi));
           CHECK(fornberg_matrix.rows() == n_target_points);
           CHECK(fornberg_matrix.columns() == n_source_points);
           CHECK(spectral_matrix == fornberg_matrix);
           if (n_target_points == 1) {
-            CHECK(intrp::fornberg_interpolation_matrix(
+            CHECK(Spectral::fornberg_interpolation_matrix(
                       x_target[0], get<0>(xi)) == fornberg_matrix);
           }
         }
@@ -68,7 +68,7 @@ void test_fornberg_derivative_coefficients(
                        Spectral::Quadrature::Gauss};
     const auto xi = logical_coordinates(mesh);
     for (auto x_target : x_targets) {
-      intrp::fornberg_derivative_interpolation_weights<max_derivative>(
+      Spectral::fornberg_derivative_interpolation_weights<max_derivative>(
           make_not_null(&fornberg_weights), x_target, get<0>(xi));
       double coefficient = 1.0;
       auto power = static_cast<int>(n_source_points - 1);
@@ -77,9 +77,9 @@ void test_fornberg_derivative_coefficients(
         const double result = std::inner_product(
             function.begin(), function.end(),
             gsl::at(fornberg_weights, derivative).begin(), 0.0);
-        CHECK(
-            approx(result) ==
-            coefficient * pow(x_target, power - static_cast<int>(derivative)));
+        CHECK(approx(result) ==
+              coefficient *
+                  pow(x_target, power - static_cast<int>(derivative)));
         coefficient *= power - static_cast<int>(derivative);
       }
     }
@@ -101,7 +101,7 @@ void test_fourier_matrix(const gsl::not_null<std::mt19937*> generator) {
         generator, make_not_null(&phi_distribution), n_target_points);
     const DataVector f_target = f_periodic(x_target);
     const Matrix m =
-        intrp::fourier_interpolation_matrix(x_target, n_source_points);
+        Spectral::fourier_interpolation_matrix(x_target, n_source_points);
     DataVector f_interp{n_target_points};
     dgemv_('N', n_target_points, n_source_points, 1.0, m.data(),
            n_target_points, f_source.data(), 1, 0.0, f_interp.data(), 1);
@@ -109,8 +109,8 @@ void test_fourier_matrix(const gsl::not_null<std::mt19937*> generator) {
       CHECK_THAT(f_interp[k], Catch::Matchers::WithinAbs(f_target[k], 1.e-13));
     }
     if (n_target_points == 1) {
-      CHECK(intrp::fourier_interpolation_matrix(x_target[0], n_source_points) ==
-            m);
+      CHECK(Spectral::fourier_interpolation_matrix(x_target[0],
+                                                   n_source_points) == m);
     }
   }
 }

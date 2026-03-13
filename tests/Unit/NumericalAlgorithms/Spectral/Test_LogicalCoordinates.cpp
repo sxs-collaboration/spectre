@@ -44,9 +44,27 @@ void test_spherical_logical_coords() {
   }
 }
 
+void test_radial_zernike_logical_coords() {
+  for (const auto& basis :
+       {Spectral::Basis::ZernikeB1, Spectral::Basis::ZernikeB2,
+        Spectral::Basis::ZernikeB3}) {
+    for (size_t n = 2; n < 5; ++n) {
+      const Mesh<1> mesh{n, basis, Spectral::Quadrature::GaussRadauUpper};
+      const auto xi = logical_coordinates(mesh);
+      CHECK(get<0>(xi)[n - 1] == approx(1.0));
+      if (n >= 4) {
+        // logical coordinates in [-1, 1] (with the mapping to [0, 1]
+        // internally taken care of)
+        CHECK(get<0>(xi)[0] < 0.0);
+      }
+    }
+  }
+}
+
 SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Spectral.LogicalCoordinates",
                   "[Domain][Unit]") {
   test_spherical_logical_coords();
+  test_radial_zernike_logical_coords();
   using Affine2d =
       domain::CoordinateMaps::ProductOf2Maps<domain::CoordinateMaps::Affine,
                                              domain::CoordinateMaps::Affine>;
