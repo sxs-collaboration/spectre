@@ -31,7 +31,9 @@ void test() {
       gh::BoundaryConditions::DemandOutgoingCharSpeeds<Dim>,
       gh::BoundaryConditions::BoundaryCondition<Dim>, gh::System<Dim>,
       tmpl::list<gh::BoundaryCorrections::UpwindPenalty<Dim>>>(
-      make_not_null(&gen), "DemandOutgoingCharSpeeds",
+      make_not_null(&gen),
+      "Evolution.Systems.GeneralizedHarmonic.BoundaryConditions."
+      "DemandOutgoingCharSpeeds",
       tuples::TaggedTuple<helpers::Tags::PythonFunctionForErrorMessage<>>{
           "error"},
       "DemandOutgoingCharSpeeds:\n", Index<Dim - 1>{Dim == 1 ? 0 : 5},
@@ -43,8 +45,7 @@ void test() {
 SPECTRE_TEST_CASE(
     "Unit.GeneralizedHarmonic.BoundaryConditions.DemandOutgoingCharSpeeds",
     "[Unit][Evolution]") {
-  pypp::SetupLocalPythonEnvironment local_python_env{
-      "Evolution/Systems/GeneralizedHarmonic/BoundaryConditions/"};
+  const pypp::SetupLocalPythonEnvironment local_python_env{""};
   test<1>();
   test<2>();
   test<3>();
