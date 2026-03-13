@@ -31,7 +31,7 @@ void test_null_slicing_tag_logic() {
 
   const std::vector<std::string> blocks{"Block(0,0)", "Block(1,0)"};
   const std::vector<size_t> result =
-      Tags::NullSlicingBlocks::create_from_options(blocks, lattice);
+      Tags::NullSlicingBlocks<2>::create_from_options(blocks, lattice);
   const std::vector<size_t> expected{0, 1};
   CHECK(result == expected);
 }

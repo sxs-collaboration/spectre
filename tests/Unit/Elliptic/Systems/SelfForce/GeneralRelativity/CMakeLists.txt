@@ -14,6 +14,9 @@ target_link_libraries(
   PRIVATE
   DataStructures
   DataStructuresHelpers
+  DomainCreators
+  DomainStructure
+  Options
   GrSelfForce
   )
 

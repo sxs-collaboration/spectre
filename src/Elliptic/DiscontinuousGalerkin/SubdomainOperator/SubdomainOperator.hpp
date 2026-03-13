@@ -30,6 +30,7 @@
 #include "Elliptic/DiscontinuousGalerkin/SubdomainOperator/Tags.hpp"
 #include "Elliptic/DiscontinuousGalerkin/Tags.hpp"
 #include "Elliptic/Systems/GetFluxesComputer.hpp"
+#include "Elliptic/Systems/GetModifyBoundaryData.hpp"
 #include "Elliptic/Systems/GetSourcesComputer.hpp"
 #include "Elliptic/Utilities/ApplyAt.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/MortarHelpers.hpp"
@@ -182,7 +183,8 @@ struct SubdomainOperator
       elliptic::get_fluxes_argument_tags<System, linearized>;
   using sources_args_tags =
       elliptic::get_sources_argument_tags<System, linearized>;
-
+  using modify_boundary_data_args_tags =
+      elliptic::get_modify_boundary_data_args_tags<System, linearized>;
   // We need the fluxes args also on interfaces (internal and external). The
   // volume tags are the subset that don't have to be taken from interfaces.
   using fluxes_args_volume_tags =
@@ -190,10 +192,13 @@ struct SubdomainOperator
 
   // These tags can be taken directly from the central element's DataBox, even
   // when evaluating neighbors
-  using args_tags_from_center = tmpl::remove_duplicates<tmpl::push_back<
+  using args_tags_from_center = tmpl::remove_duplicates<tmpl::append<
       elliptic::get_fluxes_const_global_cache_tags<System, linearized>,
       elliptic::get_sources_const_global_cache_tags<System, linearized>,
-      elliptic::dg::Tags::Massive, elliptic::dg::Tags::Formulation>>;
+      elliptic::get_modify_boundary_data_const_global_cache_tags<System,
+                                                                 linearized>,
+      tmpl::list<elliptic::dg::Tags::Massive,
+                 elliptic::dg::Tags::Formulation>>>;
 
   // Data on neighbors is stored in the central element's DataBox in
   // `LinearSolver::Schwarz::Tags::Overlaps` maps, so we wrap the argument tags
@@ -210,6 +215,8 @@ struct SubdomainOperator
       tmpl::transform<fluxes_args_tags, make_overlap_tag>;
   using sources_args_tags_overlap =
       tmpl::transform<sources_args_tags, make_overlap_tag>;
+  using modify_boundary_data_args_tags_overlap =
+      tmpl::transform<modify_boundary_data_args_tags, make_overlap_tag>;
   using fluxes_args_tags_overlap_faces = tmpl::transform<
       domain::make_faces_tags<Dim, fluxes_args_tags, fluxes_args_volume_tags>,
       make_overlap_tag>;
@@ -279,6 +286,8 @@ struct SubdomainOperator
         db::apply<tags_to_retrieve>(get_items, box);
     const auto fluxes_args = db::apply<fluxes_args_tags>(get_items, box);
     const auto sources_args = db::apply<sources_args_tags>(get_items, box);
+    const auto modify_boundary_data_args =
+        db::apply<modify_boundary_data_args_tags>(get_items, box);
     using FluxesArgs = std::decay_t<decltype(fluxes_args)>;
     DirectionMap<Dim, FluxesArgs> fluxes_args_on_faces{};
     for (const auto& direction : Direction<Dim>::all_directions()) {
@@ -623,7 +632,8 @@ struct SubdomainOperator
               make_not_null(&central_mortar_data_), operand.element_data,
               central_deriv_vars_, central_primal_fluxes_, args...);
         },
-        box, temporal_id, fluxes_args_on_faces, sources_args, data_is_zero);
+        box, temporal_id, fluxes_args_on_faces, sources_args,
+        modify_boundary_data_args, data_is_zero);
     // Apply on neighbors
     for (const auto& [direction, neighbors] : central_element.neighbors()) {
       for (const auto& neighbor_id : neighbors) {
@@ -661,6 +671,9 @@ struct SubdomainOperator
             },
             box, overlap_id, temporal_id, fluxes_args_on_overlap_faces,
             elliptic::util::apply_at<sources_args_tags_overlap,
+                                     args_tags_from_center>(get_items, box,
+                                                            overlap_id),
+            elliptic::util::apply_at<modify_boundary_data_args_tags_overlap,
                                      args_tags_from_center>(get_items, box,
                                                             overlap_id),
             data_is_zero);
