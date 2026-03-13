@@ -64,6 +64,7 @@ DomainCreator:
       RadialPartitioning: []
       RadialDistribution: &outer_shell_distribution Inverse
       OpeningAngle: 90.0
+      UseSphericalHarmonics: false
       BoundaryCondition: Flatness
     UseEquiangularMap: True
     CubeScale: 1.0

@@ -27,9 +27,11 @@
 #include "Domain/CoordinateMaps/Distribution.hpp"
 #include "Domain/CoordinateMaps/Equiangular.hpp"
 #include "Domain/CoordinateMaps/Frustum.hpp"
+#include "Domain/CoordinateMaps/Identity.hpp"
 #include "Domain/CoordinateMaps/Interval.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.tpp"
+#include "Domain/CoordinateMaps/SphericalToCartesianPfaffian.hpp"
 #include "Domain/CoordinateMaps/Wedge.hpp"
 #include "Domain/Creators/DomainCreator.hpp"
 #include "Domain/Creators/ExpandOverBlocks.hpp"
@@ -42,9 +44,15 @@
 #include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
 #include "Domain/FunctionsOfTime/PiecewisePolynomial.hpp"
 #include "Domain/FunctionsOfTime/QuaternionFunctionOfTime.hpp"
+#include "Domain/Structure/BlockNeighbors.hpp"
+#include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/ObjectLabel.hpp"
+#include "Domain/Structure/OrientationMap.hpp"
+#include "Domain/Structure/Topology.hpp"
+#include "NumericalAlgorithms/SphericalHarmonics/Spherepack.hpp"
 #include "Options/ParseError.hpp"
 #include "Utilities/EqualWithinRoundoff.hpp"
+#include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeArray.hpp"
 
@@ -87,6 +95,7 @@ BinaryCompactObject<UseWorldtube>::BinaryCompactObject(
     const typename RadialDistributionOuterShell::type&
         radial_distribution_outer_shell,
     const double opening_angle_in_degrees,
+    const bool spherical_harmonics_in_wavezone,
     std::optional<bco::TimeDependentMapOptions<false>> time_dependent_options,
     std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
         outer_boundary_condition,
@@ -113,7 +122,8 @@ BinaryCompactObject<UseWorldtube>::BinaryCompactObject(
       use_single_block_b_(
           std::holds_alternative<CartesianCubeAtXCoord>(object_B_)),
       time_dependent_options_(std::move(time_dependent_options)),
-      opening_angle_(M_PI * opening_angle_in_degrees / 180.0) {
+      opening_angle_(M_PI * opening_angle_in_degrees / 180.0),
+      spherical_harmonics_in_wavezone_(spherical_harmonics_in_wavezone) {
   // Determination of parameters for domain construction:
   const double tan_half_opening_angle = tan(0.5 * opening_angle_);
   translation_ = 0.5 * (x_coord_a_ + x_coord_b_);
@@ -146,10 +156,115 @@ BinaryCompactObject<UseWorldtube>::BinaryCompactObject(
                          radial_distribution_outer_shell, envelope_radius_,
                          outer_radius_, "envelope", "outer", context);
 
+  // Build the set of spherical-harmonic outer-shell block names so the
+  // validation loops below can distinguish spherical-harmonic blocks from
+  // wedge blocks.
+  std::unordered_set<std::string> spherical_harmonic_shell_names{};
+  if (spherical_harmonics_in_wavezone_) {
+    for (size_t shell = 0; shell < number_of_outer_shells_; ++shell) {
+      spherical_harmonic_shell_names.insert("OuterShell" +
+                                            std::to_string(shell));
+    }
+  }
+
+  // Validate InitialGridPoints map entries.
+  // When SphericalHarmonicsInWavezone is enabled: spherical-harmonic shell
+  // entries must use array<2> {radial, L_max}; non-spherical-harmonic entries
+  // must use array<3>.
+  // When SphericalHarmonicsInWavezone is disabled: array<2> is not accepted
+  // anywhere.
+  if (std::holds_alternative<
+          std::unordered_map<std::string, std::variant<std::array<size_t, 3>,
+                                                       std::array<size_t, 2>>>>(
+          initial_number_of_grid_points)) {
+    const auto& grid_points_map = std::get<
+        std::unordered_map<std::string, std::variant<std::array<size_t, 3>,
+                                                     std::array<size_t, 2>>>>(
+        initial_number_of_grid_points);
+    for (const auto& [block_name, extents] : grid_points_map) {
+      const bool is_spherical_harmonic_block =
+          spherical_harmonic_shell_names.contains(block_name);
+      if (is_spherical_harmonic_block) {
+        if (std::holds_alternative<std::array<size_t, 3>>(extents)) {
+          PARSE_ERROR(context, "Block '"
+                                   << block_name
+                                   << "' is a spherical-harmonic outer-shell "
+                                      "block. Specify its grid points as "
+                                      "[radial_points, L_max], not array<3>.");
+        }
+      } else {
+        if (std::holds_alternative<std::array<size_t, 2>>(extents)) {
+          if (spherical_harmonics_in_wavezone_) {
+            PARSE_ERROR(context,
+                        "Specifying 2 grid points for block '"
+                            << block_name
+                            << "' is only valid for spherical-harmonic "
+                               "outer-shell blocks (OuterShell0, etc.).");
+          } else {
+            PARSE_ERROR(
+                context,
+                "Specifying 2 grid points (block '"
+                    << block_name
+                    << "') is only valid when SphericalHarmonicsInWavezone "
+                       "is enabled.");
+          }
+        }
+      }
+    }
+  }
+  // Validate InitialRefinement map entries.
+  // When SphericalHarmonicsInWavezone is enabled: spherical-harmonic shell
+  // entries must use size_t (radial only); array<3> is rejected on
+  // spherical-harmonic blocks even if angular components are zero.
+  // Non-spherical-harmonic entries must use array<3>.
+  // When SphericalHarmonicsInWavezone is disabled: size_t is not accepted
+  // anywhere.
+  if (std::holds_alternative<std::unordered_map<
+          std::string, std::variant<std::array<size_t, 3>, size_t>>>(
+          initial_refinement)) {
+    const auto& refinement_map = std::get<std::unordered_map<
+        std::string, std::variant<std::array<size_t, 3>, size_t>>>(
+        initial_refinement);
+    for (const auto& [block_name, ref] : refinement_map) {
+      const bool is_spherical_harmonic_block =
+          spherical_harmonic_shell_names.contains(block_name);
+      if (is_spherical_harmonic_block) {
+        if (std::holds_alternative<std::array<size_t, 3>>(ref)) {
+          PARSE_ERROR(context,
+                      "Block '"
+                          << block_name
+                          << "' is a spherical-harmonic outer-shell block. "
+                             "Specify its refinement as a single number "
+                             "(radial only), not array<3>. Angular "
+                             "h-refinement is not supported for these blocks.");
+        }
+      } else {
+        if (std::holds_alternative<size_t>(ref)) {
+          if (spherical_harmonics_in_wavezone_) {
+            PARSE_ERROR(context,
+                        "Per-block single-number refinement for block '"
+                            << block_name
+                            << "' is only valid for spherical-harmonic "
+                               "outer-shell blocks (OuterShell0, etc.).");
+          } else {
+            PARSE_ERROR(
+                context,
+                "Per-block single-number refinement in map syntax (block '"
+                    << block_name
+                    << "') is only valid when SphericalHarmonicsInWavezone "
+                       "is enabled.");
+          }
+        }
+      }
+    }
+  }
+
   // Calculate number of blocks
   // Object cubes and shells have 6 blocks each, for a total for 24 blocks.
-  // The envelope and each outer shell have another 10 blocks each.
-  number_of_blocks_ = 34 + 10 * number_of_outer_shells_;
+  // The envelope has 10 blocks. Each outer shell has 10 blocks in the standard
+  // wedge basis, or 1 block in the spherical-harmonic basis.
+  number_of_blocks_ = 34 + (spherical_harmonics_in_wavezone_ ? 1 : 10) *
+                               number_of_outer_shells_;
   // For each object whose interior is not excised, add 1 block
   if ((not use_single_block_a_) and (not is_excised_a_)) {
     number_of_blocks_++;
@@ -296,7 +411,7 @@ BinaryCompactObject<UseWorldtube>::BinaryCompactObject(
                                           center_of_mass_offset_[1]});
 
   // Create block names and groups
-  static std::array<std::string, 6> wedge_directions{
+  static const std::array<std::string, 6> wedge_directions{
       "UpperZ", "LowerZ", "UpperY", "LowerY", "UpperX", "LowerX"};
   const auto add_object_region = [this](const std::string& object_name,
                                         const std::string& region_name) {
@@ -354,8 +469,27 @@ BinaryCompactObject<UseWorldtube>::BinaryCompactObject(
   }
   add_outer_region("Envelope");  // 10 blocks
   first_outer_shell_block_ += 10;
-  for (size_t shell = 0; shell < number_of_outer_shells_; shell++) {
-    add_outer_region("OuterShell" + std::to_string(shell));  // 10 blocks
+  if (spherical_harmonics_in_wavezone_) {
+    for (size_t shell = 0; shell < number_of_outer_shells_; shell++) {
+      // spherical harmonic wavezone: 1 block per shell, named e.g.
+      // "OuterShell0". We intentionally do NOT add these to block_groups_. For
+      // the wedge outer shells, add_outer_region("OuterShell0") creates 10
+      // blocks with suffixed names ("OuterShell0UpperZLeft", etc.) and a group
+      // "OuterShell0" whose members are those suffixed names -- so the group
+      // name is distinct from all member block names. Here there is only one
+      // block, so the natural group would have name "OuterShell0" containing
+      // only "OuterShell0": group-name == block-name. ExpandOverBlocks would
+      // then see the user- supplied key "OuterShell0", recognize it as a group,
+      // expand it to its sole member "OuterShell0", and try to insert that into
+      // value_per_block -- but the key is already there from the original
+      // input, triggering the duplicate-detection error. Users can target
+      // these blocks directly by block name instead.
+      block_names_.emplace_back("OuterShell" + std::to_string(shell));
+    }
+  } else {
+    for (size_t shell = 0; shell < number_of_outer_shells_; shell++) {
+      add_outer_region("OuterShell" + std::to_string(shell));  // 10 blocks
+    }
   }
 
   if ((not use_single_block_a_) and (not is_excised_a_)) {
@@ -375,15 +509,117 @@ BinaryCompactObject<UseWorldtube>::BinaryCompactObject(
       block_names_, block_groups_};
 
   try {
-    initial_refinement_ = std::visit(expand_over_blocks, initial_refinement);
+    initial_refinement_ = std::visit(
+        [&expand_over_blocks]<typename V>(
+            const V& v) -> std::vector<std::array<size_t, 3>> {
+          if constexpr (std::is_same_v<
+                            V,
+                            std::unordered_map<
+                                std::string,
+                                std::variant<std::array<size_t, 3>, size_t>>>) {
+            // Convert size_t entries to {r, 0, 0} for spherical harmonic
+            // blocks; array<3> entries are used unchanged.
+            const auto converted = [&v]() {
+              std::unordered_map<std::string, std::array<size_t, 3>> result;
+              for (const auto& [name, val] : v) {
+                if (std::holds_alternative<size_t>(val)) {
+                  const size_t r = std::get<size_t>(val);
+                  result[name] = {r, 0, 0};
+                } else {
+                  result[name] = std::get<std::array<size_t, 3>>(val);
+                }
+              }
+              return result;
+            }();
+            return expand_over_blocks(converted);
+          } else {
+            return expand_over_blocks(v);
+          }
+        },
+        initial_refinement);
   } catch (const std::exception& error) {
     PARSE_ERROR(context, "Invalid 'InitialRefinement': " << error.what());
   }
   try {
-    initial_number_of_grid_points_ =
-        std::visit(expand_over_blocks, initial_number_of_grid_points);
+    initial_number_of_grid_points_ = std::visit(
+        [&expand_over_blocks]<typename V>(
+            const V& v) -> std::vector<std::array<size_t, 3>> {
+          if constexpr (std::is_same_v<
+                            V, std::unordered_map<
+                                   std::string,
+                                   std::variant<std::array<size_t, 3>,
+                                                std::array<size_t, 2>>>>) {
+            // Convert array<2>{r, L_max} entries to {r, l_max, m_max} =
+            // {r, L_max, L_max} for spherical harmonic blocks; array<3> entries
+            // are used unchanged. We store the (l_max, m_max) of the shell
+            // directly because ell is clear and unambiguous, whereas the number
+            // of collocation points implied by ell depends on the spectral
+            // implementation. The conversion to the number of collocation
+            // points is applied in initial_extents().
+            const auto converted = [&v]() {
+              std::unordered_map<std::string, std::array<size_t, 3>> result;
+              for (const auto& [name, val] : v) {
+                if (std::holds_alternative<std::array<size_t, 2>>(val)) {
+                  const auto& a2 = std::get<std::array<size_t, 2>>(val);
+                  result[name] = {a2[0], a2[1], a2[1]};
+                } else {
+                  result[name] = std::get<std::array<size_t, 3>>(val);
+                }
+              }
+              return result;
+            }();
+            return expand_over_blocks(converted);
+          } else {
+            return expand_over_blocks(v);
+          }
+        },
+        initial_number_of_grid_points);
   } catch (const std::exception& error) {
     PARSE_ERROR(context, "Invalid 'InitialGridPoints': " << error.what());
+  }
+  // Validate resolved grid points and refinement for spherical-harmonic
+  // outer-shell blocks.
+  if (spherical_harmonics_in_wavezone_) {
+    for (size_t shell = 0; shell < number_of_outer_shells_; ++shell) {
+      const size_t index = first_outer_shell_block_ + shell;
+      const std::string shell_name = "OuterShell" + std::to_string(shell);
+      if (initial_refinement_[index][1] != 0 or
+          initial_refinement_[index][2] != 0) {
+        PARSE_ERROR(context,
+                    "Block '"
+                        << shell_name
+                        << "': angular h-refinement is not supported for "
+                           "spherical-harmonic outer-shell blocks. Specify "
+                           "refinement as a single number (radial only), e.g. '"
+                        << shell_name << ": " << initial_refinement_[index][0]
+                        << "'.");
+      }
+      const size_t l_max = initial_number_of_grid_points_[index][1];
+      const size_t m_max = initial_number_of_grid_points_[index][2];
+      // A spherical-harmonic shell is fully specified by a single ell, so
+      // l_max must equal m_max. These can only differ if a global array<3> was
+      // supplied (a per-block array<3> on a spherical-harmonic block is
+      // rejected above).
+      if (l_max != m_max) {
+        PARSE_ERROR(context,
+                    "Block '"
+                        << shell_name
+                        << "': spherical-harmonic outer-shell blocks are "
+                           "specified by a single ell. Specify grid points as "
+                           "[radial_points, L_max], e.g. '"
+                        << shell_name << ": ["
+                        << initial_number_of_grid_points_[index][0] << ", "
+                        << l_max << "]'.");
+      }
+      if (l_max < 6) {
+        PARSE_ERROR(
+            context,
+            "Must have at least ell=6 in the spherical harmonic shells "
+            "since otherwise (almost) all modes are filtered as part of the "
+            "tensor Ylm filtering. Received "
+                << l_max);
+      }
+    }
   }
 
   // Build time-dependent maps
@@ -425,6 +661,26 @@ BinaryCompactObject<UseWorldtube>::BinaryCompactObject(
         radii_A, radii_B, not is_excised_a_, not is_excised_b_,
         envelope_radius_, outer_radius_);
   }
+}
+
+template <bool UseWorldtube>
+std::vector<std::array<size_t, 3>>
+BinaryCompactObject<UseWorldtube>::initial_extents() const {
+  if (not spherical_harmonics_in_wavezone_) {
+    return initial_number_of_grid_points_;
+  }
+  // For spherical-harmonic outer-shell blocks, initial_number_of_grid_points_
+  // stores {n_radial, l_max, m_max}. Convert (l_max, m_max) to the number of
+  // collocation points the spherical-harmonic basis uses in each angular
+  // direction.
+  auto extents = initial_number_of_grid_points_;
+  for (size_t shell = 0; shell < number_of_outer_shells_; ++shell) {
+    const size_t index = first_outer_shell_block_ + shell;
+    const std::array<size_t, 3> stored = extents[index];
+    extents[index] = {stored[0], ylm::Spherepack::n_theta_points(stored[1]),
+                      ylm::Spherepack::n_phi_points(stored[2])};
+  }
+  return extents;
 }
 
 template <bool UseWorldtube>
@@ -577,14 +833,16 @@ Domain<3> BinaryCompactObject<UseWorldtube>::create_domain() const {
   std::move(maps_frustums.begin(), maps_frustums.end(),
             std::back_inserter(maps));
 
-  // --- Outer spherical shell (10*num_outer_shells blocks) ---
-  Maps maps_outer_shell = domain::make_vector_coordinate_map_base<
-      Frame::BlockLogical, Frame::Inertial, 3>(sph_wedge_coordinate_maps(
-      envelope_radius_, outer_radius_, 1.0, 1.0, use_equiangular_map_,
-      std::nullopt, true, radial_partitioning_outer_shell_,
-      radial_distribution_outer_shell_, ShellWedges::All, opening_angle_));
-  std::move(maps_outer_shell.begin(), maps_outer_shell.end(),
-            std::back_inserter(maps));
+  if (not spherical_harmonics_in_wavezone_) {
+    // --- Outer spherical shell (10*num_outer_shells blocks) ---
+    Maps maps_outer_shell = domain::make_vector_coordinate_map_base<
+        Frame::BlockLogical, Frame::Inertial, 3>(sph_wedge_coordinate_maps(
+        envelope_radius_, outer_radius_, 1.0, 1.0, use_equiangular_map_,
+        std::nullopt, true, radial_partitioning_outer_shell_,
+        radial_distribution_outer_shell_, ShellWedges::All, opening_angle_));
+    std::move(maps_outer_shell.begin(), maps_outer_shell.end(),
+              std::back_inserter(maps));
+  }
 
   // --- (Optional) object centers (0 to 2 blocks) ---
   //
@@ -685,9 +943,141 @@ Domain<3> BinaryCompactObject<UseWorldtube>::create_domain() const {
     }
   }
 
-  // Have corners determined automatically
-  Domain<3> domain{std::move(maps), std::move(excision_spheres), block_names_,
-                   block_groups_};
+  // Construct domain
+  Domain<3> domain;
+  if (spherical_harmonics_in_wavezone_) {
+    // --- Spherical harmonic wavezone: build from explicit Block objects ---
+    //
+    // `maps` at this point contains the inner (non-spherical harmonic) maps in
+    // order:
+    //   [objA (1 or 12 blocks), objB (1 or 12 blocks), envelope (10 blocks),
+    //    interior cubes (0-2 blocks)]
+    // Total = first_outer_shell_block_ + n_interior_cubes entries.
+    //
+    // We determine auto-topology neighbors for these inner maps, then re-index
+    // the neighbor block IDs to account for the spherical harmonic shell blocks
+    // being inserted at positions [first_outer_shell_block_,
+    // first_outer_shell_block_ + number_of_outer_shells_ - 1].
+    std::vector<DirectionMap<3, BlockNeighbors<3>>> inner_neighbors;
+    set_internal_boundaries<3>(make_not_null(&inner_neighbors), maps);
+
+    // Interior cube entries in maps (if any) have indices >=
+    // first_outer_shell_block_, but in the final block ordering those blocks
+    // live at map_index_to_block_id(j) = j + number_of_outer_shells_, because
+    // the spherical harmonic shell blocks occupy the [first_outer_shell_block_,
+    // ...) range.
+    const auto map_index_to_block_id =
+        [this](const size_t map_index) -> size_t {
+      return map_index < first_outer_shell_block_
+                 ? map_index
+                 : map_index + number_of_outer_shells_;
+    };
+    for (auto& direction_and_neighbors : inner_neighbors) {
+      DirectionMap<3, BlockNeighbors<3>> updated;
+      for (const auto& [dir, block_neighbor] : direction_and_neighbors) {
+        ASSERT(block_neighbor.ids().size() == 1,
+               "Expected exactly 1 neighbor id in internal-boundary entry, "
+               "got "
+                   << block_neighbor.ids().size());
+        const size_t old_id = *block_neighbor.ids().begin();
+        updated.emplace(dir,
+                        BlockNeighbors<3>{map_index_to_block_id(old_id),
+                                          block_neighbor.orientation(old_id)});
+      }
+      direction_and_neighbors = std::move(updated);
+    }
+
+    // Connect the 10 envelope blocks' upper_zeta faces to the first spherical
+    // harmonic shell.
+    const size_t first_envelope = first_outer_shell_block_ - 10;
+    // Orientation between the spherical harmonic shell (lower_xi) and envelope
+    // frustums (upper_zeta). Shell's xi = frustum's zeta (radial); angular axes
+    // use self() (no rotation).
+    const OrientationMap<3> shell_to_frustum{
+        {{Direction<3>::upper_zeta(), Direction<3>::self(),
+          Direction<3>::self()}}};
+    const auto frustum_to_shell = shell_to_frustum.inverse_map();
+    const auto aligned = OrientationMap<3>::create_aligned();
+    for (size_t j = first_envelope; j < first_outer_shell_block_; ++j) {
+      inner_neighbors[j].emplace(
+          Direction<3>::upper_zeta(),
+          BlockNeighbors<3>{{first_outer_shell_block_},
+                            {{first_outer_shell_block_, frustum_to_shell}},
+                            false});
+    }
+
+    // Build blocks in final order.
+    std::vector<Block<3>> blocks;
+    blocks.reserve(number_of_blocks_);
+
+    // (a) Inner blocks before spherical harmonic shells.
+    for (size_t j = 0; j < first_outer_shell_block_; ++j) {
+      blocks.emplace_back(std::move(maps[j]), j, std::move(inner_neighbors[j]),
+                          block_names_[j]);
+    }
+
+    // (b) spherical harmonic outer shell blocks.
+    for (size_t shell = 0; shell < number_of_outer_shells_; ++shell) {
+      const size_t block_id = first_outer_shell_block_ + shell;
+      const double r_in = shell == 0
+                              ? envelope_radius_
+                              : radial_partitioning_outer_shell_[shell - 1];
+      const double r_out = shell < number_of_outer_shells_ - 1
+                               ? radial_partitioning_outer_shell_[shell]
+                               : outer_radius_;
+      auto shell_map =
+          make_coordinate_map_base<Frame::BlockLogical, Frame::Inertial>(
+              CoordinateMaps::ProductOf2Maps<CoordinateMaps::Interval,
+                                             CoordinateMaps::Identity<2>>{
+                  CoordinateMaps::Interval{
+                      -1.0, 1.0, r_in, r_out,
+                      radial_distribution_outer_shell_[shell], 0.0},
+                  CoordinateMaps::Identity<2>{}},
+              CoordinateMaps::SphericalToCartesianPfaffian{});
+      DirectionMap<3, BlockNeighbors<3>> shell_neighbors;
+      if (shell == 0) {
+        // lower_xi -> all 10 envelope blocks (non-conforming, multi-neighbor).
+        std::unordered_set<size_t> envelope_ids;
+        std::unordered_map<size_t, OrientationMap<3>> envelope_orientations;
+        for (size_t j = first_envelope; j < first_outer_shell_block_; ++j) {
+          envelope_ids.insert(j);
+          envelope_orientations.emplace(j, shell_to_frustum);
+        }
+        shell_neighbors.emplace(
+            Direction<3>::lower_xi(),
+            BlockNeighbors<3>{std::move(envelope_ids),
+                              std::move(envelope_orientations), false});
+      } else {
+        // lower_xi -> previous spherical harmonic shell (conforming, single
+        // neighbor).
+        shell_neighbors.emplace(Direction<3>::lower_xi(),
+                                BlockNeighbors<3>{block_id - 1, aligned});
+      }
+      if (shell < number_of_outer_shells_ - 1) {
+        shell_neighbors.emplace(Direction<3>::upper_xi(),
+                                BlockNeighbors<3>{block_id + 1, aligned});
+      }
+      blocks.emplace_back(std::move(shell_map), block_id,
+                          std::move(shell_neighbors), block_names_[block_id],
+                          domain::topologies::spherical_shell);
+    }
+
+    // (c) Interior cube blocks (after spherical harmonic shells in final
+    // ordering).
+    for (size_t j = first_outer_shell_block_; j < maps.size(); ++j) {
+      const size_t block_id = map_index_to_block_id(j);
+      blocks.emplace_back(std::move(maps[j]), block_id,
+                          std::move(inner_neighbors[j]),
+                          block_names_[block_id]);
+    }
+
+    domain = Domain<3>{std::move(blocks), std::move(excision_spheres),
+                       block_groups_};
+  } else {
+    // Have corners determined automatically
+    domain = Domain<3>{std::move(maps), std::move(excision_spheres),
+                       block_names_, block_groups_};
+  }
 
   // Inject the hard-coded time-dependence
   if (time_dependent_options_.has_value()) {
@@ -736,7 +1126,7 @@ Domain<3> BinaryCompactObject<UseWorldtube>::create_domain() const {
               ->grid_to_inertial_map<domain::ObjectLabel::None>(std::nullopt,
                                                                 true);
     }
-    size_t final_block_envelope = first_outer_shell_block_ - 1;
+    const size_t final_block_envelope = first_outer_shell_block_ - 1;
 
     grid_to_inertial_block_maps[final_block_envelope] =
         time_dependent_options_
@@ -871,14 +1261,23 @@ BinaryCompactObject<UseWorldtube>::external_boundary_conditions() const {
     }
   }
   // Outer boundary
-  const size_t offset_outer_blocks =
-      ((use_single_block_a_ and use_single_block_b_)
-           ? 12
-           : ((use_single_block_a_ or use_single_block_b_) ? 23 : 34)) +
-      10 * (number_of_outer_shells_ - 1);
-  for (size_t i = 0; i < 10; ++i) {
-    boundary_conditions[i + offset_outer_blocks][Direction<3>::upper_zeta()] =
+  if (spherical_harmonics_in_wavezone_) {
+    // Spherical harmonic mode: outer boundary is upper_xi of the last spherical
+    // harmonic shell block.
+    const size_t last_sh_block =
+        first_outer_shell_block_ + number_of_outer_shells_ - 1;
+    boundary_conditions[last_sh_block][Direction<3>::upper_xi()] =
         outer_boundary_condition_->get_clone();
+  } else {
+    const size_t offset_outer_blocks =
+        ((use_single_block_a_ and use_single_block_b_)
+             ? 12
+             : ((use_single_block_a_ or use_single_block_b_) ? 23 : 34)) +
+        10 * (number_of_outer_shells_ - 1);
+    for (size_t i = 0; i < 10; ++i) {
+      boundary_conditions[i + offset_outer_blocks][Direction<3>::upper_zeta()] =
+          outer_boundary_condition_->get_clone();
+    }
   }
   return boundary_conditions;
 }

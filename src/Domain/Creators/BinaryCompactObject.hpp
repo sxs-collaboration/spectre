@@ -37,10 +37,12 @@ class Affine;
 class Equiangular;
 template <size_t VolumeDim>
 class Identity;
+class Interval;
 template <typename Map1, typename Map2>
 class ProductOf2Maps;
 template <typename Map1, typename Map2, typename Map3>
 class ProductOf3Maps;
+class SphericalToCartesianPfaffian;
 template <size_t Dim>
 class Wedge;
 template <size_t VolumeDim>
@@ -151,6 +153,12 @@ create_grid_anchors(const std::array<double, 3>& center_a,
  * template parameter of `false` to
  * `domain::creators::bco::TimeDependentMapOptions`.
  *
+ * The wavezone can support using spherical harmonic shells by setting
+ * `SphericalHarmonicsInWavezone` to `true`. In this case you cannot set an
+ * angular h-refinement level in the angular directions, and you can only choose
+ * the \f$\ell\f$ of the shells since having an \f$m_{\max}\f$ below the maximum
+ * allowed from the \f$\ell\f$ can drive simulations unstable.
+ *
  * The `UseWorldtube` template parameter is set to false by default. When set to
  * true, some of the functions of time will be `IntegratedFunctionOfTime` used
  * to control the orbit of the worldtube.
@@ -194,6 +202,12 @@ class BinaryCompactObject : public DomainCreator<3> {
                             Affine3D>,
       domain::CoordinateMap<Frame::BlockLogical, Frame::Inertial,
                             CoordinateMaps::Wedge<3>, Affine3D>,
+      domain::CoordinateMap<
+          Frame::BlockLogical, Frame::Inertial,
+          domain::CoordinateMaps::ProductOf2Maps<
+              domain::CoordinateMaps::Interval,
+              domain::CoordinateMaps::Identity<2>>,
+          domain::CoordinateMaps::SphericalToCartesianPfaffian>,
       bco::TimeDependentMapOptions<false>::maps_list>>;
 
   /// Options for an excision region in the domain
@@ -409,6 +423,20 @@ class BinaryCompactObject : public DomainCreator<3> {
         " outer shell into six Blocks of equal angular size."};
   };
 
+  struct SphericalHarmonicsInWavezone {
+    using group = OuterShell;
+    static std::string name() { return "UseSphericalHarmonics"; }
+    using type = bool;
+    static bool suggested_value() { return false; }
+    static constexpr Options::String help = {
+        "Use a spherical-harmonic basis for the outer wavezone shell(s) "
+        "instead of the default 10-wedge Cartesian basis. When enabled, "
+        "InitialGridPoints for wavezone blocks must be specified as "
+        "array<size_t, 2> = {radial_points, L_max}, and InitialRefinement "
+        "as a scalar or single-element value (angular refinement is fixed at "
+        "0). "};
+  };
+
   struct CubeScale {
     using type = double;
     static constexpr Options::String help = {
@@ -420,20 +448,22 @@ class BinaryCompactObject : public DomainCreator<3> {
   };
 
   struct InitialRefinement {
-    using type =
-        std::variant<size_t, std::array<size_t, 3>,
-                     std::vector<std::array<size_t, 3>>,
-                     std::unordered_map<std::string, std::array<size_t, 3>>>;
+    using type = std::variant<
+        size_t, std::array<size_t, 3>, std::vector<std::array<size_t, 3>>,
+        std::unordered_map<std::string, std::array<size_t, 3>>,
+        std::unordered_map<std::string,
+                           std::variant<std::array<size_t, 3>, size_t>>>;
     static constexpr Options::String help = {
         "Initial refinement level in each block of the domain. See main help "
         "text for details."};
   };
 
   struct InitialGridPoints {
-    using type =
-        std::variant<size_t, std::array<size_t, 3>,
-                     std::vector<std::array<size_t, 3>>,
-                     std::unordered_map<std::string, std::array<size_t, 3>>>;
+    using type = std::variant<
+        size_t, std::array<size_t, 3>, std::vector<std::array<size_t, 3>>,
+        std::unordered_map<std::string, std::array<size_t, 3>>,
+        std::unordered_map<std::string, std::variant<std::array<size_t, 3>,
+                                                     std::array<size_t, 2>>>>;
     static constexpr Options::String help = {
         "Initial number of grid points in the elements of each block of the "
         "domain. See main help text for details."};
@@ -478,7 +508,7 @@ class BinaryCompactObject : public DomainCreator<3> {
                  OuterRadius, CubeScale, InitialRefinement, InitialGridPoints,
                  UseEquiangularMap, RadialDistributionEnvelope,
                  RadialPartitioningOuterShell, RadialDistributionOuterShell,
-                 OpeningAngle, TimeDependentMaps>,
+                 OpeningAngle, SphericalHarmonicsInWavezone, TimeDependentMaps>,
       tmpl::conditional_t<
           domain::BoundaryConditions::has_boundary_conditions_base_v<
               typename Metavariables::system>,
@@ -526,6 +556,7 @@ class BinaryCompactObject : public DomainCreator<3> {
           radial_distribution_outer_shell =
               CoordinateMaps::Distribution::Linear,
       double opening_angle_in_degrees = 90.0,
+      bool spherical_harmonics_in_wavezone = false,
       std::optional<bco::TimeDependentMapOptions<false>>
           time_dependent_options = std::nullopt,
       std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
@@ -550,9 +581,7 @@ class BinaryCompactObject : public DomainCreator<3> {
       3, std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>
   external_boundary_conditions() const override;
 
-  std::vector<std::array<size_t, 3>> initial_extents() const override {
-    return initial_number_of_grid_points_;
-  }
+  std::vector<std::array<size_t, 3>> initial_extents() const override;
 
   std::vector<std::array<size_t, 3>> initial_refinement_levels()
       const override {
@@ -579,6 +608,13 @@ class BinaryCompactObject : public DomainCreator<3> {
   double envelope_radius_ = std::numeric_limits<double>::signaling_NaN();
   double outer_radius_ = std::numeric_limits<double>::signaling_NaN();
   std::vector<std::array<size_t, 3>> initial_refinement_;
+  // For most blocks this stores the number of grid points in each logical
+  // direction. For spherical-harmonic shell blocksthe angular entries instead
+  // store the spherical-harmonic degrees {n_radial, l_max, m_max}, because
+  // ell is unambiguous whereas the implied number of collocation points
+  // depends on the spectral implementation. The conversion of (l_max, m_max)
+  // to the actual number of collocation points is applied in
+  // `initial_extents()`.
   std::vector<std::array<size_t, 3>> initial_number_of_grid_points_;
   bool use_equiangular_map_ = true;
   CoordinateMaps::Distribution radial_distribution_envelope_ =
@@ -611,5 +647,6 @@ class BinaryCompactObject : public DomainCreator<3> {
   bool use_single_block_b_ = false;
   std::optional<bco::TimeDependentMapOptions<false>> time_dependent_options_;
   double opening_angle_ = std::numeric_limits<double>::signaling_NaN();
+  bool spherical_harmonics_in_wavezone_ = false;
 };
 }  // namespace domain::creators

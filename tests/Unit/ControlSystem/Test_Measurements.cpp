@@ -351,6 +351,7 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.FindTwoCenters",
       std::vector<double>{},
       domain::CoordinateMaps::Distribution::Linear,
       90.0,
+      false,
       time_dep_opts};
 
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<Metavariables>;
@@ -368,7 +369,7 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.FindTwoCenters",
   ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Testing);
   auto& cache = ActionTesting::cache<control_system_component>(runner, 0);
 
-  LinkedMessageId<double> measurement_id{1.0, 0.0};
+  const LinkedMessageId<double> measurement_id{1.0, 0.0};
   const ElementId<3> unused_element_id{};
 
   using ControlSystems = tmpl::list<MockControlSystem>;

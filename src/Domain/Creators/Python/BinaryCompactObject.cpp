@@ -34,6 +34,7 @@ void bind_binary_compact_object(py::module& m) {
                   const bool use_equiangular_map,
                   const std::vector<double>& radial_partitioning_outer_shell,
                   const double opening_angle_in_degrees,
+                  const bool spherical_harmonics_in_wavezone,
                   std::optional<bco::TimeDependentMapOptions<false>>
                       time_dependent_options) {
                  return domain::creators::BinaryCompactObject<false>{
@@ -54,6 +55,7 @@ void bind_binary_compact_object(py::module& m) {
                      radial_partitioning_outer_shell,
                      domain::CoordinateMaps::Distribution::Linear,
                      opening_angle_in_degrees,
+                     spherical_harmonics_in_wavezone,
                      std::move(time_dependent_options)};
                }),
            py::arg("inner_radius_a"), py::arg("outer_radius_a"),
@@ -67,6 +69,7 @@ void bind_binary_compact_object(py::module& m) {
            py::arg("use_equiangular_map"),
            py::arg("radial_partitioning_outer_shell") = std::vector<double>{},
            py::arg("opening_angle_in_degrees") = 120,
+           py::arg("spherical_harmonics_in_wavezone") = false,
            py::arg("time_dependent_options"));
 }
 }  // namespace domain::creators::py_bindings

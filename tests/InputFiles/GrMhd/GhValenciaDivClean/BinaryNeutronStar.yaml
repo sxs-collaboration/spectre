@@ -73,6 +73,7 @@ DomainCreator:
       RadialDistribution: [Linear, Linear, Linear]
       RadialPartitioning: [80.0, 125.0]
       OpeningAngle: 120.0
+      UseSphericalHarmonics: false
       BoundaryCondition:
         ConstraintPreservingFreeOutflow:
           Type: ConstraintPreservingPhysical

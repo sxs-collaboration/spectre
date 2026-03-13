@@ -27,6 +27,7 @@ SourceDomainCreator:
       RadialPartitioning: []
       RadialDistribution: Inverse
       OpeningAngle: 90.0
+      UseSphericalHarmonics: false
     UseEquiangularMap: True
     CubeScale: 1.0
     InitialRefinement: 1
@@ -56,6 +57,7 @@ TargetDomainCreator:
       RadialPartitioning: []
       RadialDistribution: Linear
       OpeningAngle: 90.0
+      UseSphericalHarmonics: false
     UseEquiangularMap: True
     CubeScale: 1.0
     InitialRefinement: 0

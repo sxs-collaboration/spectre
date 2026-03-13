@@ -210,6 +210,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Ringdown.StrahlkorperCoefsAndCenters",
       std::vector<double>{},
       domain::CoordinateMaps::Distribution::Inverse,
       120.,
+      false,
       time_dependent_map_options_bco};
   const auto domain_bco = domain_creator_bco.create_domain();
   const auto functions_of_time_bco = domain_creator_bco.functions_of_time();
