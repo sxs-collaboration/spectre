@@ -58,6 +58,7 @@ void append_element_extents_and_connectivity(
     const gsl::not_null<std::vector<int>*> total_connectivity,
     const gsl::not_null<std::vector<int>*> pole_connectivity,
     const gsl::not_null<std::vector<int>*> disk_connectivity,
+    const gsl::not_null<std::vector<int>*> cylinder_connectivity,
     const gsl::not_null<int*> total_points_so_far, const size_t dim,
     const ElementVolumeData& element) {
   // Process the element extents
@@ -109,12 +110,14 @@ void append_element_extents_and_connectivity(
     }
     return local_connectivity;
   }();
+  const int element_start = *total_points_so_far;
   *total_points_so_far += element_num_points;
   total_connectivity->insert(total_connectivity->end(), connectivity.begin(),
                              connectivity.end());
 
-  // If element is 2D and the bases are both SphericalHarmonic,
-  // then add extra connections to close the surface.
+  // 2D elements may require extra connections to close periodic/angular
+  // boundaries and fill any degenerate central region based on basis;
+  // generically do nothing
   if (dim == 2) {
     if (element.basis[0] == Spectral::Basis::SphericalHarmonic and
         element.basis[1] == Spectral::Basis::SphericalHarmonic) {
@@ -170,49 +173,151 @@ void append_element_extents_and_connectivity(
         pole_connectivity->push_back(bottom_second_point);
         pole_connectivity->push_back(bottom_third_point);
       }
-    } else if (element.basis[0] == Spectral::Basis::ZernikeB2 and
-               element.basis[1] == Spectral::Basis::ZernikeB2) {
-      const auto n_r = static_cast<int>(element.extents[0]);
-      const auto n_ph = static_cast<int>(element.extents[1]);
+    } else if ((element.basis[0] == Spectral::Basis::ZernikeB2 and
+                element.basis[1] == Spectral::Basis::ZernikeB2) or
+               element.basis[1] == Spectral::Basis::Fourier) {
+      ASSERT(element.basis[0] == Spectral::Basis::ZernikeB2 or
+                 (element.basis[0] == Spectral::Basis::Legendre or
+                  element.basis[0] == Spectral::Basis::Chebyshev),
+             "Adding connectivity for Fourier in the second dimension requires "
+             "the first dimension to be Legendre or Chebychev, got "
+                 << element.basis[0]);
+      const auto n_r = static_cast<int>(extents[0]);
+      const auto n_ph = static_cast<int>(extents[1]);
 
       // Connect max(phi) and min(phi) by adding more quads
       // to total_connectivity
       for (int j = 0; j < n_r - 1; ++j) {
-        total_connectivity->push_back(j);
-        total_connectivity->push_back(j + 1);
-        total_connectivity->push_back((n_ph - 1) * n_r + j + 1);
-        total_connectivity->push_back((n_ph - 1) * n_r + j);
+        total_connectivity->push_back(element_start + j);
+        total_connectivity->push_back(element_start + j + 1);
+        total_connectivity->push_back(element_start + (n_ph - 1) * n_r + j + 1);
+        total_connectivity->push_back(element_start + (n_ph - 1) * n_r + j);
       }
 
-      std::vector<int> inner_ring_points{};
-      inner_ring_points.reserve(static_cast<size_t>(n_ph));
-      for (int k = 0; k < n_ph; ++k) {
-        inner_ring_points.push_back(k * n_r);  // r = 0 for each phi slice
-      }
+      // For a filled disk (ZernikeB2), also fill the central hole with
+      // triangles using a recursive fan pattern over the minimum r ring points.
+      if (element.basis[0] == Spectral::Basis::ZernikeB2) {
+        std::vector<int> inner_ring_points{};
+        inner_ring_points.reserve(static_cast<size_t>(n_ph));
+        for (int k = 0; k < n_ph; ++k) {
+          // minimum r for each phi slice
+          inner_ring_points.push_back(element_start + k * n_r);
+        }
 
-      std::vector<int> new_points;
-      while (inner_ring_points.size() >= 3) {
-        new_points.clear();
-        new_points.push_back(inner_ring_points[0]);
-        for (size_t i = 0; i < inner_ring_points.size() - 2; i += 2) {
-          disk_connectivity->push_back(inner_ring_points[i]);
-          disk_connectivity->push_back(inner_ring_points[i + 1]);
-          disk_connectivity->push_back(inner_ring_points[i + 2]);
-          new_points.push_back(inner_ring_points[i + 2]);
+        std::vector<int> new_points;
+        while (inner_ring_points.size() >= 3) {
+          new_points.clear();
+          new_points.push_back(inner_ring_points[0]);
+          for (size_t i = 0; i < inner_ring_points.size() - 2; i += 2) {
+            disk_connectivity->push_back(inner_ring_points[i]);
+            disk_connectivity->push_back(inner_ring_points[i + 1]);
+            disk_connectivity->push_back(inner_ring_points[i + 2]);
+            new_points.push_back(inner_ring_points[i + 2]);
+          }
+          if (inner_ring_points.size() % 2 == 0) {
+            // Add triangle closing the ring: connects last two points back to
+            // first
+            disk_connectivity->push_back(
+                inner_ring_points[inner_ring_points.size() - 2]);
+            disk_connectivity->push_back(
+                inner_ring_points[inner_ring_points.size() - 1]);
+            disk_connectivity->push_back(inner_ring_points[0]);
+          }
+          inner_ring_points = std::move(new_points);
         }
-        if (inner_ring_points.size() % 2 == 0) {
-          // Add triangle closing the ring: connects last two points back to
-          // first
-          disk_connectivity->push_back(
-              inner_ring_points[inner_ring_points.size() - 2]);
-          disk_connectivity->push_back(
-              inner_ring_points[inner_ring_points.size() - 1]);
-          disk_connectivity->push_back(inner_ring_points[0]);
-        }
-        inner_ring_points = std::move(new_points);
       }
     }
-    // generically do nothing if not a sphere or disk
+  } else if (dim == 3) {
+    if ((element.basis[0] == Spectral::Basis::ZernikeB2 and
+         element.basis[1] == Spectral::Basis::ZernikeB2) or
+        element.basis[1] == Spectral::Basis::Fourier) {
+      ASSERT(element.basis[0] == Spectral::Basis::ZernikeB2 or
+                 ((element.basis[0] == Spectral::Basis::Legendre or
+                   element.basis[0] == Spectral::Basis::Chebyshev) and
+                  (element.basis[2] == Spectral::Basis::Legendre or
+                   element.basis[2] == Spectral::Basis::Chebyshev)),
+             "Adding connectivity for Fourier in the second dimension requires "
+             "the first and third dimensions to be Legendre or Chebychev, got "
+                 << element.basis[0] << ", " << element.basis[2]);
+      const auto n_r = static_cast<int>(extents[0]);
+      const auto n_ph = static_cast<int>(extents[1]);
+      const auto n_z = static_cast<int>(extents[2]);
+
+      // Helper: global point index for (i_r, i_phi, i_z)
+      const auto global_index = [&](int index_radius, int index_phi,
+                                    int index_z) {
+        return element_start + index_radius + n_r * index_phi +
+               n_r * n_ph * index_z;
+      };
+
+      // Close the phi seam: connect last phi strip (i_ph = n_ph-1) back to
+      // first (i_ph = 0) with hexahedra.
+      for (int j_r = 0; j_r < n_r - 1; ++j_r) {
+        for (int j_z = 0; j_z < n_z - 1; ++j_z) {
+          total_connectivity->push_back(global_index(j_r, n_ph - 1, j_z));
+          total_connectivity->push_back(global_index(j_r + 1, n_ph - 1, j_z));
+          total_connectivity->push_back(global_index(j_r + 1, 0, j_z));
+          total_connectivity->push_back(global_index(j_r, 0, j_z));
+          total_connectivity->push_back(global_index(j_r, n_ph - 1, j_z + 1));
+          total_connectivity->push_back(
+              global_index(j_r + 1, n_ph - 1, j_z + 1));
+          total_connectivity->push_back(global_index(j_r + 1, 0, j_z + 1));
+          total_connectivity->push_back(global_index(j_r, 0, j_z + 1));
+        }
+      }
+
+      // For a filled cylinder (ZernikeB2), fill the central hole with
+      // wedges between consecutive z layers.
+      if (element.basis[0] == Spectral::Basis::ZernikeB2) {
+        std::vector<int> ring_lo{};
+        std::vector<int> ring_hi{};
+        ring_lo.reserve(static_cast<size_t>(n_ph));
+        ring_hi.reserve(static_cast<size_t>(n_ph));
+        std::vector<int> new_lo{};
+        std::vector<int> new_hi{};
+        for (int j_z = 0; j_z < n_z - 1; ++j_z) {
+          ring_lo.clear();
+          ring_hi.clear();
+          // Collect the minimum r ring points in this z layer and the next
+          for (int k = 0; k < n_ph; ++k) {
+            ring_lo.push_back(global_index(0, k, j_z));
+            ring_hi.push_back(global_index(0, k, j_z + 1));
+          }
+
+          // Build wedge prisms using the same recursive fan as the 2D case,
+          // extruded between ring_lo and ring_hi.
+          while (ring_lo.size() >= 3) {
+            new_lo.clear();
+            new_hi.clear();
+            new_lo.push_back(ring_lo[0]);
+            new_hi.push_back(ring_hi[0]);
+            for (size_t i = 0; i < ring_lo.size() - 2; i += 2) {
+              // Wedge (triangular prism): bottom triangle (ring_lo) + top
+              // triangle (ring_hi), each 3 vertices = 6 total.
+              cylinder_connectivity->push_back(ring_lo[i]);
+              cylinder_connectivity->push_back(ring_lo[i + 1]);
+              cylinder_connectivity->push_back(ring_lo[i + 2]);
+              cylinder_connectivity->push_back(ring_hi[i]);
+              cylinder_connectivity->push_back(ring_hi[i + 1]);
+              cylinder_connectivity->push_back(ring_hi[i + 2]);
+              new_lo.push_back(ring_lo[i + 2]);
+              new_hi.push_back(ring_hi[i + 2]);
+            }
+            if (ring_lo.size() % 2 == 0) {
+              // Closing wedge connecting last two points back to first
+              cylinder_connectivity->push_back(ring_lo[ring_lo.size() - 2]);
+              cylinder_connectivity->push_back(ring_lo[ring_lo.size() - 1]);
+              cylinder_connectivity->push_back(ring_lo[0]);
+              cylinder_connectivity->push_back(ring_hi[ring_hi.size() - 2]);
+              cylinder_connectivity->push_back(ring_hi[ring_hi.size() - 1]);
+              cylinder_connectivity->push_back(ring_hi[0]);
+            }
+            ring_lo = std::move(new_lo);
+            ring_hi = std::move(new_hi);
+          }
+        }
+      }
+    }
   }
 }
 }  // namespace
@@ -315,6 +420,7 @@ void VolumeData::write_volume_data(
   std::vector<int> total_connectivity;
   std::vector<int> pole_connectivity{};
   std::vector<int> disk_connectivity{};
+  std::vector<int> cylinder_connectivity{};
   std::vector<int> quadratures;
   std::vector<int> bases;
   // Keep a running count of the number of points so far to use as a global
@@ -335,7 +441,8 @@ void VolumeData::write_volume_data(
     const auto fill_and_write_contiguous_tensor_data =
         [&bases, &component_name, &dim, &elements, &grid_names, i,
          &observation_group, &quadratures, &total_connectivity,
-         &pole_connectivity, &disk_connectivity, &total_extents,
+         &pole_connectivity, &disk_connectivity, &cylinder_connectivity,
+         &total_extents,
          &total_points_so_far](const auto contiguous_tensor_data_ptr) {
           for (const auto& element : elements) {
             if (UNLIKELY(i == 0)) {
@@ -370,7 +477,8 @@ void VolumeData::write_volume_data(
 
               append_element_extents_and_connectivity(
                   &total_extents, &total_connectivity, &pole_connectivity,
-                  &disk_connectivity, &total_points_so_far, dim, element);
+                  &disk_connectivity, &cylinder_connectivity,
+                  &total_points_so_far, dim, element);
             }
             using type_from_variant = tmpl::conditional_t<
                 std::is_same_v<
@@ -453,6 +561,10 @@ void VolumeData::write_volume_data(
   if (not disk_connectivity.empty()) {
     h5::write_data(observation_group.id(), disk_connectivity,
                    {disk_connectivity.size()}, "disk_connectivity");
+  }
+  if (not cylinder_connectivity.empty()) {
+    h5::write_data(observation_group.id(), cylinder_connectivity,
+                   {cylinder_connectivity.size()}, "cylinder_connectivity");
   }
   // Store the serialized domain and functions of time at the subfile level
   if (serialized_domain.has_value() and
@@ -626,6 +738,7 @@ std::vector<std::string> VolumeData::list_tensor_components(
       "connectivity",
       "pole_connectivity",
       "disk_connectivity",
+      "cylinder_connectivity",
       "total_extents",
       "grid_names",
       "quadratures",
