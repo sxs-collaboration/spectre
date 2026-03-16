@@ -11,11 +11,10 @@
 #include <vector>
 
 #include "DataStructures/Tensor/Tensor.hpp"
-#include "Domain/Block.hpp"
-#include "Domain/CoordinateMaps/Affine.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.tpp"
 #include "Domain/CoordinateMaps/DiscreteRotation.hpp"
+#include "Domain/CoordinateMaps/Interval.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.tpp"
 #include "Domain/CoordinateMaps/TimeDependent/Translation.hpp"
@@ -73,38 +72,42 @@ void test_rotated_rectangles_construction(
       rotated_rectangles.block_names() ==
       make_vector("Block(0,0)"s, "Block(1,0)"s, "Block(0,1)"s, "Block(1,1)"s));
 
-  using Affine = CoordinateMaps::Affine;
-  using Affine2D = CoordinateMaps::ProductOf2Maps<Affine, Affine>;
+  using Interval = CoordinateMaps::Interval;
+  using Interval2D = CoordinateMaps::ProductOf2Maps<Interval, Interval>;
   using DiscreteRotation2D = CoordinateMaps::DiscreteRotation<2>;
   using TargetFrame =
       tmpl::conditional_t<sizeof...(FuncsOfTime) == 0, Frame::Inertial,
                           Frame::Grid>;
 
-  const Affine lower_x_map(-1.0, 1.0, lower_bound[0], midpoint[0]);
-  const Affine upper_x_map(-1.0, 1.0, midpoint[0], upper_bound[0]);
-  const Affine lower_y_map(-1.0, 1.0, lower_bound[1], midpoint[1]);
-  const Affine upper_y_map(-1.0, 1.0, midpoint[1], upper_bound[1]);
+  const Interval lower_x_map(-1.0, 1.0, lower_bound[0], midpoint[0],
+                              CoordinateMaps::Distribution::Linear);
+  const Interval upper_x_map(-1.0, 1.0, midpoint[0], upper_bound[0],
+                              CoordinateMaps::Distribution::Linear);
+  const Interval lower_y_map(-1.0, 1.0, lower_bound[1], midpoint[1],
+                              CoordinateMaps::Distribution::Linear);
+  const Interval upper_y_map(-1.0, 1.0, midpoint[1], upper_bound[1],
+                              CoordinateMaps::Distribution::Linear);
   std::vector<std::unique_ptr<
       CoordinateMapBase<Frame::BlockLogical, TargetFrame, 2>>>
       coord_maps;
   coord_maps.emplace_back(
       make_coordinate_map_base<Frame::BlockLogical, TargetFrame>(
-          Affine2D(lower_x_map, lower_y_map)));
+          Interval2D(lower_x_map, lower_y_map)));
   coord_maps.emplace_back(
       make_coordinate_map_base<Frame::BlockLogical, TargetFrame>(
           DiscreteRotation2D{OrientationMap<2>{std::array<Direction<2>, 2>{
               {Direction<2>::lower_xi(), Direction<2>::lower_eta()}}}},
-          Affine2D(upper_x_map, lower_y_map)));
+          Interval2D(upper_x_map, lower_y_map)));
   coord_maps.emplace_back(
       make_coordinate_map_base<Frame::BlockLogical, TargetFrame>(
           DiscreteRotation2D{OrientationMap<2>{std::array<Direction<2>, 2>{
               {Direction<2>::lower_eta(), Direction<2>::upper_xi()}}}},
-          Affine2D(lower_x_map, upper_y_map)));
+          Interval2D(lower_x_map, upper_y_map)));
   coord_maps.emplace_back(
       make_coordinate_map_base<Frame::BlockLogical, TargetFrame>(
           DiscreteRotation2D{OrientationMap<2>{std::array<Direction<2>, 2>{
               {Direction<2>::upper_eta(), Direction<2>::lower_xi()}}}},
-          Affine2D(upper_x_map, upper_y_map)));
+          Interval2D(upper_x_map, upper_y_map)));
   test_domain_construction(domain, expected_block_neighbors,
                            expected_external_boundaries, coord_maps, 10.0,
                            rotated_rectangles.functions_of_time(),

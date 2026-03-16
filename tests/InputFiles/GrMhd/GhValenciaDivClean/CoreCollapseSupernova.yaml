@@ -46,6 +46,8 @@ DomainCreator:
     BlockBounds: [[0.0, 33.853, 13541.2],
                   [-1.0, 1.0],
                   [-1.0, 1.0]]
+    Distributions: [[], [], []]
+    SingularityPositions: [[], [], []]
     InitialGridPoints: [1, 1, 1]
     InitialLevels: [1, 0, 0]
     RefinedLevels:

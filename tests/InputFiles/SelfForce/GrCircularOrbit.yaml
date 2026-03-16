@@ -26,9 +26,19 @@ DomainCreator:
     # Order of dimensions is (r_*, theta)
     BlockBounds:
       # Puncture position is at r_* = 12.775940471833115
-      - [-50., 0., 25.55188094366623, 350.] # r_*
+      - [-50., 0., &worldtube_right 25.55188094366623, &outer_radius 350.] # r_*
       # theta
       - [0., 1., 2.1415926536, 3.1415926536]
+    Distributions:
+      # r_*
+      - [Linear, Linear, &outer_shell_distribution Inverse]
+      # theta
+      - [Linear, Linear, Linear]
+    SingularityPositions:
+      # r_*
+      - [-51., -51., 0.]
+      # theta
+      - [-1., 0., 0.]
     InitialGridPoints: [4, 4]
     InitialLevels: [0, 0]
     RefinedGridPoints: []
@@ -151,11 +161,17 @@ EventsAndTriggersAtIterations:
           VariablesToObserve:
             - MMode
             - BoyerLindquistRadius
+            - RadiallyCompressedCoordinates
           BlocksToObserve: All
           InterpolateToMesh: None
           ProjectToMesh: None
           CoordinatesFloatingPointType: Double
           FloatingPointTypes: [Double]
+
+RadiallyCompressedCoordinates:
+  InnerRadius: *worldtube_right
+  OuterRadius: *outer_radius
+  Compression: *outer_shell_distribution
 
 BuildMatrix:
   MatrixSubfileName: None

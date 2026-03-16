@@ -365,7 +365,7 @@ void test_1d_rectilinear_domains() {
             {{Direction<1>::lower_xi()}}, {}, {{Direction<1>::upper_xi()}}};
     const auto domain = rectilinear_domain<1>(
         Index<1>{3}, std::array<std::vector<double>, 1>{{{0.0, 1.0, 2.0, 3.0}}},
-        {}, {}, {{false}}, {}, true);
+        {}, {}, {{false}}, {}, {}, {}, true);
     const OrientationMap<1> aligned = OrientationMap<1>::create_aligned();
     std::vector<DirectionMap<1, BlockNeighbors<1>>> expected_block_neighbors{
         {{Direction<1>::upper_xi(), {1, aligned}}},
@@ -391,7 +391,7 @@ void test_1d_rectilinear_domains() {
     const auto domain = rectilinear_domain<1>(
         Index<1>{3}, std::array<std::vector<double>, 1>{{{0.0, 1.0, 2.0, 3.0}}},
         {}, std::vector<OrientationMap<1>>{aligned, antialigned, aligned},
-        {{false}}, {}, true);
+        {{false}}, {}, {}, {}, true);
     std::vector<DirectionMap<1, BlockNeighbors<1>>> expected_block_neighbors{
         {{Direction<1>::upper_xi(), {1, antialigned}}},
         {{Direction<1>::lower_xi(), {2, antialigned}},

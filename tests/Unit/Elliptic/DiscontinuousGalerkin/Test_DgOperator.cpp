@@ -1126,6 +1126,8 @@ SPECTRE_TEST_CASE("Unit.Elliptic.DG.Operator", "[Unit][Elliptic]") {
       const domain::creators::AlignedLattice<2> domain_creator{
           // Start with 2 unrefined blocks
           {{{0., 0.25, 0.5}, {0., 0.5}}},
+          {},
+          {},
           {{0, 0}},
           {{3, 2}},
           // Refine once in eta in left block in sketch above
@@ -1230,6 +1232,8 @@ SPECTRE_TEST_CASE("Unit.Elliptic.DG.Operator", "[Unit][Elliptic]") {
               elliptic::BoundaryConditionType::Dirichlet};
       const domain::creators::AlignedLattice<2> domain_creator{
           {{{0., 0.25, 0.5}, {0., 0.5}}},
+          {},
+          {},
           {{1, 1}},
           {{12, 12}},
           {{{{0, 0}}, {{1, 1}}, {{1, 2}}}},
@@ -1268,6 +1272,8 @@ SPECTRE_TEST_CASE("Unit.Elliptic.DG.Operator", "[Unit][Elliptic]") {
             elliptic::BoundaryConditionType::Dirichlet};
     const domain::creators::AlignedLattice<2> domain_creator{
         {{{0., 0.25, 0.5}, {0., 0.5}}},
+        {},
+        {},
         {{1, 1}},
         {{12, 12}},
         {{{{0, 0}}, {{1, 1}}, {{1, 2}}}},
@@ -1483,6 +1489,8 @@ SPECTRE_TEST_CASE("Unit.Elliptic.DG.Operator", "[Unit][Elliptic]") {
     // solve for u_R.
     const domain::creators::AlignedLattice<2> domain_creator{
         {{{0., 0.5, 1.}, {0., 1.}}},
+        {},
+        {},
         {{1, 1}},
         {{12, 12}},
         {},

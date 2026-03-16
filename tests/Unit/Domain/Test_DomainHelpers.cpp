@@ -13,13 +13,13 @@
 
 #include "DataStructures/Index.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
-#include "Domain/CoordinateMaps/Affine.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.tpp"
 #include "Domain/CoordinateMaps/EquatorialCompression.hpp"
 #include "Domain/CoordinateMaps/Equiangular.hpp"
 #include "Domain/CoordinateMaps/Frustum.hpp"
 #include "Domain/CoordinateMaps/Identity.hpp"
+#include "Domain/CoordinateMaps/Interval.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.tpp"
 #include "Domain/CoordinateMaps/Wedge.hpp"
@@ -1374,9 +1374,10 @@ void test_discrete_rotation_corner_numbers() {
 }
 
 void test_maps_for_rectilinear_domains() {
-  using Affine = CoordinateMaps::Affine;
-  using Affine2D = CoordinateMaps::ProductOf2Maps<Affine, Affine>;
-  using Affine3D = CoordinateMaps::ProductOf3Maps<Affine, Affine, Affine>;
+  using Interval = CoordinateMaps::Interval;
+  using Interval2D = CoordinateMaps::ProductOf2Maps<Interval, Interval>;
+  using Interval3D =
+      CoordinateMaps::ProductOf3Maps<Interval, Interval, Interval>;
   using Equiangular = CoordinateMaps::Equiangular;
   using Equiangular2D =
       CoordinateMaps::ProductOf2Maps<Equiangular, Equiangular>;
@@ -1385,15 +1386,19 @@ void test_maps_for_rectilinear_domains() {
 
   const std::vector<std::unique_ptr<
       CoordinateMapBase<Frame::BlockLogical, Frame::Inertial, 1>>>
-      affine_maps_1d = maps_for_rectilinear_domains<Frame::Inertial>(
+      interval_maps_1d = maps_for_rectilinear_domains<Frame::Inertial>(
           Index<1>{3},
           std::array<std::vector<double>, 1>{{{0.0, 0.5, 1.7, 2.0}}},
-          {Index<1>{0}}, {}, false);
-  const auto expected_affine_maps_1d =
+          {Index<1>{0}}, {}, {}, {}, false);
+  const auto expected_interval_maps_1d =
       make_vector_coordinate_map_base<Frame::BlockLogical, Frame::Inertial>(
-          Affine{-1., 1., 0.5, 1.7}, Affine{-1., 1., 1.7, 2.0});
-  for (size_t i = 0; i < affine_maps_1d.size(); i++) {
-    CHECK(*affine_maps_1d[i] == *expected_affine_maps_1d[i]);
+          Interval{-1., 1., 0.5, 1.7,
+                   domain::CoordinateMaps::Distribution::Linear},
+          Interval{-1., 1., 1.7, 2.0,
+                   domain::CoordinateMaps::Distribution::Linear});
+
+  for (size_t i = 0; i < interval_maps_1d.size(); i++) {
+    CHECK(*interval_maps_1d[i] == *expected_interval_maps_1d[i]);
   }
 
   const std::vector<std::unique_ptr<
@@ -1401,7 +1406,7 @@ void test_maps_for_rectilinear_domains() {
       equiangular_maps_1d = maps_for_rectilinear_domains<Frame::Inertial>(
           Index<1>{3},
           std::array<std::vector<double>, 1>{{{0.0, 0.5, 1.7, 2.0}}},
-          {Index<1>{1}}, {}, true);
+          {Index<1>{1}}, {}, {}, {}, true);
   const auto expected_equiangular_maps_1d =
       make_vector_coordinate_map_base<Frame::BlockLogical, Frame::Inertial>(
           Equiangular{-1., 1., 0.0, 0.5}, Equiangular{-1., 1., 1.7, 2.0});
@@ -1411,21 +1416,40 @@ void test_maps_for_rectilinear_domains() {
 
   const std::vector<std::unique_ptr<
       CoordinateMapBase<Frame::BlockLogical, Frame::Inertial, 2>>>
-      affine_maps_2d = maps_for_rectilinear_domains<Frame::Inertial>(
+      interval_maps_2d = maps_for_rectilinear_domains<Frame::Inertial>(
           Index<2>{3, 2},
           std::array<std::vector<double>, 2>{
               {{0.0, 0.5, 1.7, 2.0}, {0.0, 1.0, 2.0}}},
-          {Index<2>{}}, {}, false);
-  const auto expected_affine_maps_2d =
+          {Index<2>{}}, {}, {}, {}, false);
+  const auto expected_interval_maps_2d =
       make_vector_coordinate_map_base<Frame::BlockLogical, Frame::Inertial>(
-          Affine2D{Affine{-1., 1., 0.0, 0.5}, Affine{-1., 1., 0.0, 1.0}},
-          Affine2D{Affine{-1., 1., 0.5, 1.7}, Affine{-1., 1., 0.0, 1.0}},
-          Affine2D{Affine{-1., 1., 1.7, 2.0}, Affine{-1., 1., 0.0, 1.0}},
-          Affine2D{Affine{-1., 1., 0.0, 0.5}, Affine{-1., 1., 1.0, 2.0}},
-          Affine2D{Affine{-1., 1., 0.5, 1.7}, Affine{-1., 1., 1.0, 2.0}},
-          Affine2D{Affine{-1., 1., 1.7, 2.0}, Affine{-1., 1., 1.0, 2.0}});
-  for (size_t i = 0; i < affine_maps_2d.size(); i++) {
-    CHECK(*affine_maps_2d[i] == *expected_affine_maps_2d[i]);
+          Interval2D{Interval{-1., 1., 0.0, 0.5,
+                              domain::CoordinateMaps::Distribution::Linear},
+                     Interval{-1., 1., 0.0, 1.0,
+                              domain::CoordinateMaps::Distribution::Linear}},
+          Interval2D{Interval{-1., 1., 0.5, 1.7,
+                              domain::CoordinateMaps::Distribution::Linear},
+                     Interval{-1., 1., 0.0, 1.0,
+                              domain::CoordinateMaps::Distribution::Linear}},
+          Interval2D{Interval{-1., 1., 1.7, 2.0,
+                              domain::CoordinateMaps::Distribution::Linear},
+                     Interval{-1., 1., 0.0, 1.0,
+                              domain::CoordinateMaps::Distribution::Linear}},
+          Interval2D{Interval{-1., 1., 0.0, 0.5,
+                              domain::CoordinateMaps::Distribution::Linear},
+                     Interval{-1., 1., 1.0, 2.0,
+                              domain::CoordinateMaps::Distribution::Linear}},
+          Interval2D{Interval{-1., 1., 0.5, 1.7,
+                              domain::CoordinateMaps::Distribution::Linear},
+                     Interval{-1., 1., 1.0, 2.0,
+                              domain::CoordinateMaps::Distribution::Linear}},
+          Interval2D{Interval{-1., 1., 1.7, 2.0,
+                              domain::CoordinateMaps::Distribution::Linear},
+                     Interval{-1., 1., 1.0, 2.0,
+                              domain::CoordinateMaps::Distribution::Linear}});
+
+  for (size_t i = 0; i < interval_maps_2d.size(); i++) {
+    CHECK(*interval_maps_2d[i] == *expected_interval_maps_2d[i]);
   }
 
   const std::vector<std::unique_ptr<
@@ -1434,7 +1458,7 @@ void test_maps_for_rectilinear_domains() {
           Index<2>{3, 2},
           std::array<std::vector<double>, 2>{
               {{0.0, 0.5, 1.7, 2.0}, {0.0, 1.0, 2.0}}},
-          {Index<2>{2, 1}}, {}, true);
+          {Index<2>{2, 1}}, {}, {}, {}, true);
   const auto expected_equiangular_maps_2d =
       make_vector_coordinate_map_base<Frame::BlockLogical, Frame::Inertial>(
           Equiangular2D{Equiangular{-1., 1., 0.0, 0.5},
@@ -1454,24 +1478,41 @@ void test_maps_for_rectilinear_domains() {
   // [show_maps_for_rectilinear_domains]
   const std::vector<std::unique_ptr<
       CoordinateMapBase<Frame::BlockLogical, Frame::Inertial, 3>>>
-      affine_maps_3d = maps_for_rectilinear_domains<Frame::Inertial>(
+      interval_maps_3d = maps_for_rectilinear_domains<Frame::Inertial>(
           Index<3>{2, 2, 1},
           std::array<std::vector<double>, 3>{
               {{0.0, 0.5, 2.0}, {0.0, 1.0, 2.0}, {-0.4, 0.3}}},
-          {Index<3>{}}, {}, false);
+          {Index<3>{}}, {}, {}, {}, false);
   // [show_maps_for_rectilinear_domains]
-  const auto expected_affine_maps_3d =
+  const auto expected_interval_maps_3d =
       make_vector_coordinate_map_base<Frame::BlockLogical, Frame::Inertial>(
-          Affine3D{Affine{-1., 1., 0.0, 0.5}, Affine{-1., 1., 0.0, 1.0},
-                   Affine{-1., 1., -0.4, 0.3}},
-          Affine3D{Affine{-1., 1., 0.5, 2.0}, Affine{-1., 1., 0.0, 1.0},
-                   Affine{-1., 1., -0.4, 0.3}},
-          Affine3D{Affine{-1., 1., 0.0, 0.5}, Affine{-1., 1., 1.0, 2.0},
-                   Affine{-1., 1., -0.4, 0.3}},
-          Affine3D{Affine{-1., 1., 0.5, 2.0}, Affine{-1., 1., 1.0, 2.0},
-                   Affine{-1., 1., -0.4, 0.3}});
-  for (size_t i = 0; i < affine_maps_3d.size(); i++) {
-    CHECK(*affine_maps_3d[i] == *expected_affine_maps_3d[i]);
+          Interval3D{Interval{-1., 1., 0.0, 0.5,
+                              domain::CoordinateMaps::Distribution::Linear},
+                     Interval{-1., 1., 0.0, 1.0,
+                              domain::CoordinateMaps::Distribution::Linear},
+                     Interval{-1., 1., -0.4, 0.3,
+                              domain::CoordinateMaps::Distribution::Linear}},
+          Interval3D{Interval{-1., 1., 0.5, 2.0,
+                              domain::CoordinateMaps::Distribution::Linear},
+                     Interval{-1., 1., 0.0, 1.0,
+                              domain::CoordinateMaps::Distribution::Linear},
+                     Interval{-1., 1., -0.4, 0.3,
+                              domain::CoordinateMaps::Distribution::Linear}},
+          Interval3D{Interval{-1., 1., 0.0, 0.5,
+                              domain::CoordinateMaps::Distribution::Linear},
+                     Interval{-1., 1., 1.0, 2.0,
+                              domain::CoordinateMaps::Distribution::Linear},
+                     Interval{-1., 1., -0.4, 0.3,
+                              domain::CoordinateMaps::Distribution::Linear}},
+          Interval3D{Interval{-1., 1., 0.5, 2.0,
+                              domain::CoordinateMaps::Distribution::Linear},
+                     Interval{-1., 1., 1.0, 2.0,
+                              domain::CoordinateMaps::Distribution::Linear},
+                     Interval{-1., 1., -0.4, 0.3,
+                              domain::CoordinateMaps::Distribution::Linear}});
+
+  for (size_t i = 0; i < interval_maps_3d.size(); i++) {
+    CHECK(*interval_maps_3d[i] == *expected_interval_maps_3d[i]);
   }
 
   const std::vector<std::unique_ptr<
@@ -1480,7 +1521,7 @@ void test_maps_for_rectilinear_domains() {
           Index<3>{2, 2, 1},
           std::array<std::vector<double>, 3>{
               {{0.0, 0.5, 2.0}, {0.0, 1.0, 2.0}, {-0.4, 0.3}}},
-          {Index<3>{0, 0, 0}}, {}, true);
+          {Index<3>{0, 0, 0}}, {}, {}, {}, true);
   const auto expected_equiangular_maps_3d =
       make_vector_coordinate_map_base<Frame::BlockLogical, Frame::Inertial>(
           Equiangular3D{Equiangular{-1., 1., 0.5, 2.0},
@@ -1579,7 +1620,7 @@ void test_set_cartesian_periodic_boundaries_2() {
       Index<2>{2, 2},
       std::array<std::vector<double>, 2>{{{0.0, 1.0, 2.0}, {0.0, 1.0, 2.0}}},
       {}, orientations_of_all_blocks, std::array<bool, 2>{{true, false}}, {},
-      false);
+      {}, {}, false);
 
   const std::vector<std::unique_ptr<
       CoordinateMapBase<Frame::BlockLogical, Frame::Inertial, 2>>>
@@ -1587,7 +1628,7 @@ void test_set_cartesian_periodic_boundaries_2() {
           Index<2>{2, 2},
           std::array<std::vector<double>, 2>{
               {{0.0, 1.0, 2.0}, {0.0, 1.0, 2.0}}},
-          {}, orientations_of_all_blocks, false);
+          {}, orientations_of_all_blocks, {}, {}, false);
 
   for (size_t i = 0; i < domain.blocks().size(); i++) {
     CAPTURE(i);
@@ -1615,8 +1656,8 @@ void test_set_cartesian_periodic_boundaries_3() {
   const auto domain = rectilinear_domain<2>(
       Index<2>{2, 2},
       std::array<std::vector<double>, 2>{{{0.0, 1.0, 2.0}, {0.0, 1.0, 2.0}}},
-      {}, orientations_of_all_blocks, std::array<bool, 2>{{true, true}}, {},
-      false);
+      {}, orientations_of_all_blocks, std::array<bool, 2>{{true, true}}, {}, {},
+      {}, false);
 
   const std::vector<DirectionMap<2, BlockNeighbors<2>>>
       expected_block_neighbors{
@@ -1642,7 +1683,7 @@ void test_set_cartesian_periodic_boundaries_3() {
           Index<2>{2, 2},
           std::array<std::vector<double>, 2>{
               {{0.0, 1.0, 2.0}, {0.0, 1.0, 2.0}}},
-          {}, orientations_of_all_blocks, false);
+          {}, orientations_of_all_blocks, {}, {}, false);
 
   for (size_t i = 0; i < domain.blocks().size(); i++) {
     CAPTURE(i);

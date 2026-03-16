@@ -22,7 +22,7 @@
 /// \cond
 namespace domain {
 namespace CoordinateMaps {
-class Affine;
+class Interval;
 template <size_t VolumeDim>
 class DiscreteRotation;
 template <typename Map1, typename Map2>
@@ -56,13 +56,13 @@ class RotatedRectangles : public DomainCreator<2> {
   using maps_list =
       tmpl::list<domain::CoordinateMap<
                      Frame::BlockLogical, Frame::Inertial,
-                     CoordinateMaps::ProductOf2Maps<CoordinateMaps::Affine,
-                                                    CoordinateMaps::Affine>>,
+                     CoordinateMaps::ProductOf2Maps<CoordinateMaps::Interval,
+                                                    CoordinateMaps::Interval>>,
                  domain::CoordinateMap<
                      Frame::BlockLogical, Frame::Inertial,
                      CoordinateMaps::DiscreteRotation<2>,
-                     CoordinateMaps::ProductOf2Maps<CoordinateMaps::Affine,
-                                                    CoordinateMaps::Affine>>>;
+                     CoordinateMaps::ProductOf2Maps<CoordinateMaps::Interval,
+                                                    CoordinateMaps::Interval>>>;
 
   struct LowerBound {
     using type = std::array<double, 2>;
