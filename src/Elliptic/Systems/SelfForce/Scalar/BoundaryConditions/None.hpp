@@ -20,7 +20,8 @@ namespace ScalarSelfForce::BoundaryConditions {
 
 /*!
  * \brief Applies no boundary condition at all. Used to impose nothing but
- * regularity at the horizon in horizon-penetrating coordinates.
+ * regularity at the horizon in horizon-penetrating coordinates or at
+ * angular boundaries.
  */
 class None : public elliptic::BoundaryConditions::BoundaryCondition<2> {
  private:

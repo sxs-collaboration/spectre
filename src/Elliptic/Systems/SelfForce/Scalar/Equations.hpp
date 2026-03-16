@@ -38,13 +38,13 @@ void fluxes_on_face(gsl::not_null<tnsr::I<ComplexDataVector, 2>*> flux,
                     const Scalar<ComplexDataVector>& field);
 
 /*!
- * \brief The source term $\beta \Psi_m + \gamma_i F^i$.
+ * \brief The source term $\beta \Psi_m + \gamma_i \partial_i \Psi_m$.
  */
 void add_sources(gsl::not_null<Scalar<ComplexDataVector>*> source,
                  const Scalar<ComplexDataVector>& beta,
                  const tnsr::i<ComplexDataVector, 2>& gamma,
                  const Scalar<ComplexDataVector>& field,
-                 const tnsr::I<ComplexDataVector, 2>& flux);
+                 const tnsr::i<ComplexDataVector, 2>& field_gradient);
 
 /// Fluxes $F^i$ for the scalar self-force system.
 /// \see ScalarSelfForce::FirstOrderSystem
@@ -74,7 +74,7 @@ struct Sources {
                     const Scalar<ComplexDataVector>& beta,
                     const tnsr::i<ComplexDataVector, 2>& gamma,
                     const Scalar<ComplexDataVector>& field,
-                    const tnsr::i<ComplexDataVector, 2>& /*field_gradient*/,
+                    const tnsr::i<ComplexDataVector, 2>& field_gradient,
                     const tnsr::I<ComplexDataVector, 2>& flux);
 };
 

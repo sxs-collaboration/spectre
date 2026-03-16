@@ -134,7 +134,7 @@ struct Metavariables {
 SPECTRE_TEST_CASE("Unit.ScalarSelfForce.Events.ObserveSelfForce",
                   "[Unit][Elliptic]") {
   const ScalarSelfForce::AnalyticData::CircularOrbit circular_orbit{
-      1.0, 0.0, 10.0, 2, std::nullopt};
+      1.0, 0.0, 10.0, 2, std::nullopt, false};
 
   const double puncture_r_star = get<0>(circular_orbit.puncture_position());
   const domain::creators::Rectilinear<2> domain_creator{
