@@ -64,5 +64,14 @@ std::vector<CellInTopology> compute_cells(const Index<Dim>& extents);
 
 std::vector<CellInTopology> compute_cells(const std::vector<size_t>& extents);
 /// @}
+
+/*!
+ * \brief Return the XDMF 3.0 integer type tag for a given topology.
+ *
+ * The mapping is: Line=2, Triangle=4, Quad=5, Hexahedron=9.
+ * Used when writing mixed-topology connectivity arrays to HDF5 files.
+ */
+int xdmf_topology_type(Topology topology);
+
 }  // namespace detail
 }  // namespace vis
