@@ -17,8 +17,10 @@
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/ProjectToBoundary.hpp"
+#include "NumericalAlgorithms/Spectral/Basis.hpp"
 #include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
+#include "NumericalAlgorithms/Spectral/Quadrature.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -56,7 +58,13 @@ void test(const Spectral::Quadrature quadrature) {
   MAKE_GENERATOR(gen);
   UniformCustomDistribution<size_t> sdist{5, 10};
 
-  Mesh<Dim> volume_mesh{sdist(gen), Spectral::Basis::Legendre, quadrature};
+  const bool using_zernike =
+      quadrature == Spectral::Quadrature::GaussRadauUpper;
+
+  const Mesh<Dim> volume_mesh{
+      sdist(gen),
+      using_zernike ? Spectral::Basis::ZernikeB2 : Spectral::Basis::Legendre,
+      quadrature};
   Index<Dim> powers{};
   for (size_t i = 0; i < Dim; ++i) {
     powers[i] = volume_mesh.extents(i) - 2 - i;
@@ -72,6 +80,9 @@ void test(const Spectral::Quadrature quadrature) {
       get<Var2>(volume_data);
 
   for (const auto& direction : Direction<Dim>::all_directions()) {
+    if (using_zernike and direction.side() != Side::Upper) {
+      continue;
+    }
     const size_t sliced_dim = direction.dimension();
     const size_t fixed_index = direction.side() == Side::Upper
                                    ? volume_mesh.extents(sliced_dim) - 1
@@ -140,6 +151,21 @@ void test(const Spectral::Quadrature quadrature) {
     CHECK_ITERABLE_APPROX(var2_face, get<Var2>(expected_face_values));
   }
 }
+
+void test_asserts() {
+#ifdef SPECTRE_DEBUG
+  const Mesh<1> mesh(5, Spectral::Basis::ZernikeB2,
+                     Spectral::Quadrature::GaussRadauUpper);
+  Variables<tmpl::list<Var1>> face{mesh.number_of_grid_points(), 0.0};
+  const Variables<tmpl::list<Var1>> volume{mesh.number_of_grid_points(), 0.0};
+
+  CHECK_THROWS_WITH(
+      ::dg::project_tensors_to_boundary<tmpl::list<Var1>>(
+          make_not_null(&face), volume, mesh, Direction<1>::lower_xi()),
+      Catch::Matchers::ContainsSubstring(
+          "Got quadrature without boundary collocation point at"));
+#endif  // SPECTRE_DEBUG
+}
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.DiscontinuousGalerkin.ProjectToBoundary",
@@ -150,4 +176,6 @@ SPECTRE_TEST_CASE("Unit.DiscontinuousGalerkin.ProjectToBoundary",
     test<2>(quadrature);
     test<3>(quadrature);
   }
+  test<1>(Spectral::Quadrature::GaussRadauUpper);
+  test_asserts();
 }
