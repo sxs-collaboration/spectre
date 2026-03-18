@@ -20,7 +20,7 @@ namespace detail {
 /*!
  * \brief A list of all topologies for which we can compute the number of cells
  */
-enum class Topology { Line, Quad, Hexahedron };
+enum class Topology { Line, Triangle, Quad, Hexahedron };
 
 std::ostream& operator<<(std::ostream& os, const Topology& topology);
 

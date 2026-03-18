@@ -8,6 +8,7 @@
 
 SPECTRE_TEST_CASE("Unit.IO.Connectivity", "[Unit][IO][H5]") {
   CHECK(get_output(vis::detail::Topology::Line) == "Line"s);
+  CHECK(get_output(vis::detail::Topology::Triangle) == "Triangle"s);
   CHECK(get_output(vis::detail::Topology::Quad) == "Quad"s);
   CHECK(get_output(vis::detail::Topology::Hexahedron) == "Hexahedron"s);
 }

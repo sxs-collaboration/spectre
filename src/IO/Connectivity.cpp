@@ -13,6 +13,8 @@ std::ostream& operator<<(std::ostream& os, const Topology& topology) {
   switch (topology) {
     case Topology::Line:
       return os << "Line";
+    case Topology::Triangle:
+      return os << "Triangle";
     case Topology::Quad:
       return os << "Quad";
     case Topology::Hexahedron:
