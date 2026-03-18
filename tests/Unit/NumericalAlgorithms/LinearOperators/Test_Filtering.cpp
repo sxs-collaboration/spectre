@@ -186,10 +186,13 @@ void test_exponential_filter_action(const double alpha,
   using component = Component<metavariables>;
 
   // Division by Dim to reduce time of test
+  const size_t max_pts =
+      BasisType == Spectral::Basis::Fourier
+          ? Spectral::maximum_number_of_points<BasisType> / (3 * Dim)
+          : Spectral::maximum_number_of_points<BasisType> / Dim;
   for (size_t num_pts =
            Spectral::minimum_number_of_points<BasisType, QuadratureType>;
-       num_pts < Spectral::maximum_number_of_points<BasisType> / Dim;
-       ++num_pts) {
+       num_pts < max_pts; ++num_pts) {
     CAPTURE(num_pts);
     const Mesh<Dim> mesh(num_pts, BasisType, QuadratureType);
 
@@ -276,6 +279,9 @@ void invoke_test_exponential_filter_action(const double alpha,
                                  FilterIndividually>(alpha, half_power, enable);
   test_exponential_filter_action<Dim, Spectral::Basis::Chebyshev,
                                  Spectral::Quadrature::Gauss,
+                                 FilterIndividually>(alpha, half_power, enable);
+  test_exponential_filter_action<Dim, Spectral::Basis::Fourier,
+                                 Spectral::Quadrature::Equiangular,
                                  FilterIndividually>(alpha, half_power, enable);
 }
 

@@ -58,6 +58,13 @@ const Matrix& Exponential<FilterIndex>::filter_matrix(
              << ".\nUse a different FilterIndex if you need a filter with new "
                 "parameters\n");
 
+  const auto compute_filter = [alpha = alpha_, half_power = half_power_](
+                                  const size_t extents,
+                                  const Spectral::Basis basis,
+                                  const Spectral::Quadrature quadrature) {
+    return Spectral::filtering::exponential_filter(
+        Mesh<1>{extents, basis, quadrature}, alpha, half_power);
+  };
   const static auto cache = make_static_cache<
       CacheRange<1_st,
                  Spectral::maximum_number_of_points<Spectral::Basis::Legendre> +
@@ -68,12 +75,16 @@ const Matrix& Exponential<FilterIndex>::filter_matrix(
                        Spectral::Quadrature::GaussLobatto,
                        Spectral::Quadrature::AxialSymmetry,
                        Spectral::Quadrature::SphericalSymmetry>>(
-      [alpha = alpha_, half_power = half_power_](
-          const size_t extents, const Spectral::Basis basis,
-          const Spectral::Quadrature quadrature) {
-        return Spectral::filtering::exponential_filter(
-            Mesh<1>{extents, basis, quadrature}, alpha, half_power);
+      compute_filter);
+  const static auto fourier_cache = make_static_cache<CacheRange<
+      1_st, Spectral::maximum_number_of_points<Spectral::Basis::Fourier> + 1>>(
+      [compute_filter](const size_t extents) {
+        return compute_filter(extents, Spectral::Basis::Fourier,
+                              Spectral::Quadrature::Equiangular);
       });
+  if (mesh.basis(0) == Spectral::Basis::Fourier) {
+    return fourier_cache(mesh.extents(0));
+  }
   return cache(mesh.extents(0), mesh.basis(0), mesh.quadrature(0));
 }
 
