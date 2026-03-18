@@ -2287,8 +2287,7 @@ void test_1d(const bool moving_mesh, const dg::Formulation formulation,
     }
   }
 
-  const auto expected_ghost_dt_correction = [&box, &formulation, &mesh,
-                                             &quadrature](
+  const auto expected_ghost_dt_correction = [&box, &formulation, &mesh](
                                                 const auto& ghost_direction) {
     Variables<tmpl::list<::Tags::dt<Tags::Var1>, ::Tags::dt<Tags::Var2<Dim>>>>
         expected_on_boundary{mesh.slice_away(ghost_direction.dimension())
@@ -2310,7 +2309,8 @@ void test_1d(const bool moving_mesh, const dg::Formulation formulation,
         get<evolution::dg::Tags::MagnitudeOfNormal>(
             *db::get<evolution::dg::Tags::NormalCovectorAndMagnitude<Dim>>(box)
                  .at(ghost_direction));
-    if (quadrature == Spectral::Quadrature::Gauss) {
+    if (mesh.quadrature(ghost_direction.dimension()) ==
+        Spectral::Quadrature::Gauss) {
       Scalar<DataVector> face_det_inv_jacobian{
           mesh.slice_away(ghost_direction.dimension()).number_of_grid_points()};
       const Matrix identity{};
@@ -2333,7 +2333,8 @@ void test_1d(const bool moving_mesh, const dg::Formulation formulation,
     } else {
       ::dg::lift_flux(make_not_null(&expected_on_boundary),
                       mesh.extents(ghost_direction.dimension()),
-                      magnitude_of_interior_face_normal);
+                      magnitude_of_interior_face_normal,
+                      mesh.basis(ghost_direction.dimension()));
       add_slice_to_data(make_not_null(&expected_dt_volume_correction),
                         expected_on_boundary, mesh.extents(),
                         ghost_direction.dimension(),
@@ -2389,7 +2390,7 @@ void test_1d(const bool moving_mesh, const dg::Formulation formulation,
   // Ghost +xi, DemandOutgoingCharSpeeds -xi
   check_outgoing_and_ghost(Direction<Dim>::lower_xi());
 
-  const auto expected_time_derivative_dt_correction = [&mesh, &quadrature](
+  const auto expected_time_derivative_dt_correction = [&mesh](
                                                           const auto&
                                                               dt_direction) {
     Variables<tmpl::list<::Tags::dt<Tags::Var1>, ::Tags::dt<Tags::Var2<Dim>>>>
@@ -2409,7 +2410,8 @@ void test_1d(const bool moving_mesh, const dg::Formulation formulation,
       get<::Tags::dt<Tags::Var2<Dim>>>(dt_correction_gl)
           .get(i)[boundary_index] += offset_boundary_condition + 1.0 + i;
     }
-    if (quadrature == Spectral::Quadrature::GaussLobatto) {
+    if (mesh.quadrature(dt_direction.dimension()) ==
+        Spectral::Quadrature::GaussLobatto) {
       expected_dt_volume_correction += dt_correction_gl;
     } else {
       // Interpolate to Gauss mesh
