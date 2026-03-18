@@ -804,9 +804,16 @@ std::vector<std::string> VolumeData::list_tensor_components(
                       "ObservationId" + std::to_string(observation_id));
   // Remove names that are not tensor components
   const std::unordered_set<std::string> non_tensor_components{
-      "connectivity", "pole_connectivity", "total_extents",
-      "grid_names",   "quadratures",       "bases",
-      "domain",       "functions_of_time", "ElementId",
+      "connectivity",
+      "pole_connectivity",
+      "tetrahedral_connectivity",
+      "total_extents",
+      "grid_names",
+      "quadratures",
+      "bases",
+      "domain",
+      "functions_of_time",
+      "ElementId",
       "BlockId"};
   tensor_components.erase(
       alg::remove_if(tensor_components,
