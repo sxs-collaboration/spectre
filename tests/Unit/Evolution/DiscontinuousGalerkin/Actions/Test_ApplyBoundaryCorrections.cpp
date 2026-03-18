@@ -289,7 +289,8 @@ struct SetLocalMortarData {
                         10 * static_cast<unsigned long>(direction.side()) +
                         100 * count + 100000);
           past_mortar_data.face_normal_magnitude = local_face_normal_magnitude;
-          if (volume_mesh.quadrature(0) == Spectral::Quadrature::Gauss) {
+          if (volume_mesh.quadrature(direction.dimension()) ==
+              Spectral::Quadrature::Gauss) {
             Scalar<DataVector> local_face_det_jacobian{
                 face_mesh.number_of_grid_points()};
             alg::iota(get(local_face_det_jacobian),
@@ -333,11 +334,9 @@ struct SetLocalMortarData {
                         *normal_covector_and_magnitude.at(
                             mortar_id.direction()));
 
-                const bool using_gauss_points =
-                    mesh.quadrature() == make_array<Metavariables::volume_dim>(
-                                             Spectral::Quadrature::Gauss);
                 local_mortar_data.face_normal_magnitude = face_normal_magnitude;
-                if (using_gauss_points) {
+                if (mesh.quadrature(mortar_id.direction().dimension()) ==
+                    Spectral::Quadrature::Gauss) {
                   const Scalar<DataVector> det_jacobian{
                       DataVector{1.0 / get(det_inv_jacobian)}};
                   Scalar<DataVector> face_det_jacobian{
@@ -806,7 +805,7 @@ void test_impl(const Spectral::Quadrature quadrature,
       [&det_inv_jacobian, &dg_formulation, &dt_boundary_correction_on_mortar,
        &dt_boundary_correction_projected_onto_face,
        &expected_dt_variables_volume, &mesh, &mortar_id_ptr, &mortar_meshes,
-       &mortar_infos, &quadrature, &runner,
+       &mortar_infos, &runner,
        &self_id](const evolution::dg::MortarData<Dim>& local_mortar_data,
                  const evolution::dg::MortarData<Dim>& neighbor_mortar_data)
       -> Variables<db::wrap_tags_in<::Tags::dt, variables_tags>> {
@@ -815,7 +814,10 @@ void test_impl(const Spectral::Quadrature quadrature,
     const auto& mortar_mesh = mortar_meshes.at(mortar_id);
     const size_t dimension = direction.dimension();
 
-    if (UseLocalTimeStepping and quadrature == Spectral::Quadrature::Gauss) {
+    const bool using_points_on_face =
+        mesh.quadrature(dimension) == Spectral::Quadrature::GaussLobatto or
+        mesh.quadrature(dimension) == Spectral::Quadrature::GaussRadauUpper;
+    if (UseLocalTimeStepping and not using_points_on_face) {
       // This needs to be updated every call because the Jacobian may be
       // time-dependent. In the case of time-independent maps and local
       // time stepping we could first perform the integral on the
@@ -888,11 +890,12 @@ void test_impl(const Spectral::Quadrature quadrature,
                .at(direction));
     }
 
-    if (quadrature == Spectral::Quadrature::GaussLobatto) {
+    if (using_points_on_face) {
       // The lift_flux function lifts only on the slice, it does not add
       // the contribution to the volume.
       ::dg::lift_flux(make_not_null(&dt_boundary_correction),
-                      mesh.extents(dimension), magnitude_of_face_normal);
+                      mesh.extents(dimension), magnitude_of_face_normal,
+                      mesh.basis(dimension));
       if (UseLocalTimeStepping) {
         return dt_boundary_correction;
       } else {
@@ -961,14 +964,19 @@ void test_impl(const Spectral::Quadrature quadrature,
             return p_project_mortar_data(data, mortar_mesh);
           });
       mortar_id_ptr = &mortar_id;
+      const bool direction_uses_points_on_face =
+          mesh.quadrature(direction.dimension()) ==
+              Spectral::Quadrature::GaussLobatto or
+          mesh.quadrature(direction.dimension()) ==
+              Spectral::Quadrature::GaussRadauUpper;
       Variables<variables_tags> lifted_volume_data{
-          quadrature == Spectral::Quadrature::GaussLobatto
+          direction_uses_points_on_face
               ? mesh.slice_away(direction.dimension()).number_of_grid_points()
               : mesh.number_of_grid_points(),
           0.0};
       time_stepper.add_boundary_delta(&lifted_volume_data, mortar_data_hist,
                                       time_step, compute_correction_coupling);
-      if (quadrature == Spectral::Quadrature::GaussLobatto) {
+      if (direction_uses_points_on_face) {
         // Add the flux contribution to the volume data
         add_slice_to_data(make_not_null(&expected_evolved_variables),
                           lifted_volume_data, mesh.extents(),

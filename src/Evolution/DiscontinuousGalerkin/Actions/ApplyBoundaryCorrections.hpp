@@ -525,13 +525,18 @@ struct ApplyBoundaryCorrections {
                 make_array<volume_dim>(volume_mesh.quadrature(0)) or
             element.topologies() != domain::topologies::hypercube<volume_dim>,
         "Must have isotropic quadrature, but got volume mesh: " << volume_mesh);
-    const bool using_gauss_lobatto_points =
-        volume_mesh.quadrature(0) == Spectral::Quadrature::GaussLobatto;
-
     Scalar<DataVector> volume_det_inv_jacobian{};
     Scalar<DataVector> volume_det_jacobian{};
     if constexpr (not local_time_stepping) {
-      if (not using_gauss_lobatto_points) {
+      // Need volume Jacobian for any face whose normal direction uses Gauss
+      // points (i.e. not GaussLobatto or GaussRadauUpper). This means
+      // mixed-quadrature non-hypercube elements (e.g. full_cylinder) where
+      // some directions have collocated face points and others do not.
+      const bool any_direction_uses_gauss = alg::any_of(
+          volume_mesh.quadrature(), [](const Spectral::Quadrature q) {
+            return q == Spectral::Quadrature::Gauss;
+          });
+      if (any_direction_uses_gauss) {
         get(volume_det_inv_jacobian)
             .set_data_ref(make_not_null(
                 // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
@@ -546,11 +551,11 @@ struct ApplyBoundaryCorrections {
         "final.");
     call_with_dynamic_type<void, derived_boundary_corrections>(
         &boundary_correction,
-        [&dense_output_time, &dg_formulation,
+        [&dense_output_time, &dg_formulation, &element,
          &face_normal_covector_and_magnitude, &mortar_data, &mortar_meshes,
          &mortar_infos, &mortars_to_act_on, &time_step, &time_stepper,
-         using_gauss_lobatto_points, &vars_to_update, &volume_args_tuple,
-         &volume_det_jacobian, &volume_det_inv_jacobian,
+         &vars_to_update, &volume_args_tuple, &volume_det_jacobian,
+         &volume_det_inv_jacobian,
          &volume_mesh](auto* typed_boundary_correction) {
           using BcType = std::decay_t<decltype(*typed_boundary_correction)>;
           // Compute internal boundary quantities on the mortar for sides of
@@ -588,23 +593,44 @@ struct ApplyBoundaryCorrections {
                      "instead. You may have unintentionally added external "
                      "mortars in one of the initialization actions.");
             }
+            if (volume_mesh.basis(direction.dimension()) ==
+                    Spectral::Basis::ZernikeB2 and
+                volume_mesh.quadrature(direction.dimension()) ==
+                    Spectral::Quadrature::GaussRadauUpper and
+                direction.side() != Side::Upper) {
+              ERROR(
+                  "Trying to use ZernikeB2 basis with GaussRadauUpper "
+                  "quadrature on the lower side: there is not a boundary here. "
+                  "volume mesh: "
+                  << volume_mesh << ", element ID " << element.id());
+            }
 
             const Mesh<volume_dim - 1> face_mesh =
                 volume_mesh.slice_away(direction.dimension());
+
+            // Whether the mesh has a collocation point on this face. True for
+            // GaussLobatto (points on both faces) and GaussRadauUpper (point
+            // on the upper face only). When true, lifting is done via
+            // lift_flux on the slice; otherwise the full Gauss-point lifting
+            // path is used.
+            const bool using_points_on_face =
+                volume_mesh.quadrature(direction.dimension()) ==
+                    Spectral::Quadrature::GaussLobatto or
+                volume_mesh.quadrature(direction.dimension()) ==
+                    Spectral::Quadrature::GaussRadauUpper;
 
             const auto compute_correction_coupling =
                 [&typed_boundary_correction, &direction, dg_formulation,
                  &dt_boundary_correction_on_mortar, &face_det_jacobian,
                  &face_mesh, &face_normal_covector_and_magnitude,
                  &local_data_on_mortar, &mortar_id, &mortar_meshes,
-                 &mortar_infos, &neighbor_data_on_mortar,
-                 using_gauss_lobatto_points, &volume_args_tuple,
-                 &volume_det_jacobian, &volume_det_inv_jacobian,
-                 &volume_dt_correction, &volume_mesh](
+                 &mortar_infos, &neighbor_data_on_mortar, using_points_on_face,
+                 &volume_args_tuple, &volume_det_jacobian,
+                 &volume_det_inv_jacobian, &volume_dt_correction, &volume_mesh](
                     const MortarData<volume_dim>& local_mortar_data,
                     const MortarData<volume_dim>& neighbor_mortar_data)
                 -> DtVariables {
-              if (local_time_stepping and not using_gauss_lobatto_points) {
+              if (local_time_stepping and not using_points_on_face) {
                 // This needs to be updated every call because the Jacobian
                 // may be time-dependent. In the case of time-independent maps
                 // and local time stepping we could first perform the integral
@@ -707,12 +733,13 @@ struct ApplyBoundaryCorrections {
                                 direction))))));
               }
 
-              if (using_gauss_lobatto_points) {
+              if (using_points_on_face) {
                 // The lift_flux function lifts only on the slice, it does not
                 // add the contribution to the volume.
                 ::dg::lift_flux(make_not_null(&dt_boundary_correction),
                                 volume_mesh.extents(direction.dimension()),
-                                magnitude_of_face_normal);
+                                magnitude_of_face_normal,
+                                volume_mesh.basis(direction.dimension()));
                 return std::move(dt_boundary_correction);
               } else {
                 // We are using Gauss points.
@@ -767,10 +794,10 @@ struct ApplyBoundaryCorrections {
             };
 
             if constexpr (local_time_stepping) {
-              typename variables_tag::type lgl_lifted_data{};
-              auto& lifted_data = using_gauss_lobatto_points ? lgl_lifted_data
-                                                             : *vars_to_update;
-              if (using_gauss_lobatto_points) {
+              typename variables_tag::type boundary_lifted_data{};
+              auto& lifted_data =
+                  using_points_on_face ? boundary_lifted_data : *vars_to_update;
+              if (using_points_on_face) {
                 lifted_data.initialize(face_mesh.number_of_grid_points(), 0.0);
               }
 
@@ -787,7 +814,7 @@ struct ApplyBoundaryCorrections {
                                                 compute_correction_coupling);
               }
 
-              if (using_gauss_lobatto_points) {
+              if (using_points_on_face) {
                 // Add the flux contribution to the volume data
                 add_slice_to_data(
                     vars_to_update, lifted_data, volume_mesh.extents(),
@@ -807,14 +834,14 @@ struct ApplyBoundaryCorrections {
               // similar because the LTS code always stores the result
               // in the history and so sometimes benefits from moving
               // into the return value of compute_correction_coupling.
-              auto& lifted_data = using_gauss_lobatto_points
+              auto& lifted_data = using_points_on_face
                                       ? dt_boundary_correction_on_mortar
                                       : volume_dt_correction;
               lifted_data = compute_correction_coupling(
                   mortar_id_and_data.second.local(),
                   mortar_id_and_data.second.neighbor());
 
-              if (using_gauss_lobatto_points) {
+              if (using_points_on_face) {
                 // Add the flux contribution to the volume data
                 add_slice_to_data(
                     vars_to_update, lifted_data, volume_mesh.extents(),
