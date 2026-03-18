@@ -29,6 +29,56 @@
 #include "Utilities/StaticCache.hpp"
 
 namespace Spectral {
+namespace {
+void verify_meshes(const Mesh<1>& parent_mesh, const Mesh<1>& child_mesh,
+                   const SegmentSize size) {
+  constexpr size_t max_points_l = maximum_number_of_points<Basis::Legendre>;
+  constexpr size_t max_points_f = maximum_number_of_points<Basis::Fourier>;
+
+  // Legendre with Legendre (any segment size)
+  const bool both_legendre = parent_mesh.basis(0) == Basis::Legendre and
+                             child_mesh.basis(0) == Basis::Legendre;
+
+  // Fourier with Fourier (full segment only)
+  const bool both_fourier = parent_mesh.basis(0) == Basis::Fourier and
+                            child_mesh.basis(0) == Basis::Fourier and
+                            size == SegmentSize::Full;
+
+  // ZernikeB2 Equiangular with ZernikeB2 Equiangular (full segment only)
+  const bool both_zernike =
+      parent_mesh.basis(0) == Basis::ZernikeB2 and
+      parent_mesh.quadrature(0) == Quadrature::Equiangular and
+      child_mesh.basis(0) == Basis::ZernikeB2 and
+      child_mesh.quadrature(0) == Quadrature::Equiangular and
+      size == SegmentSize::Full;
+
+  // Fourier with ZernikeB2 Equiangular (full segment only)
+  const bool fourier_zernike =
+      parent_mesh.basis(0) == Basis::Fourier and
+      child_mesh.basis(0) == Basis::ZernikeB2 and
+      child_mesh.quadrature(0) == Quadrature::Equiangular and
+      size == SegmentSize::Full;
+
+  // ZernikeB2 Equiangular with Fourier (full segment only)
+  const bool zernike_fourier =
+      parent_mesh.basis(0) == Basis::ZernikeB2 and
+      parent_mesh.quadrature(0) == Quadrature::Equiangular and
+      child_mesh.basis(0) == Basis::Fourier and size == SegmentSize::Full;
+
+  ASSERT(both_legendre or both_fourier or both_zernike or fourier_zernike or
+             zernike_fourier,
+         "Unsupported projection combination. Supported: Legendre <-> Legendre "
+         "or Fourier <-> Fourier (where ZernikeB2 with Equiangular quadrature "
+         "also works) with no h-refinement (size must be Full). Got parent: "
+             << parent_mesh << ", child: " << child_mesh << ", size: " << size);
+
+  ASSERT((both_legendre and (parent_mesh.extents(0) <= max_points_l and
+                             child_mesh.extents(0) <= max_points_l)) or
+             (parent_mesh.extents(0) <= max_points_f and
+              child_mesh.extents(0) <= max_points_f),
+         "Mesh has more points than supported by its quadrature.");
+}
+}  // namespace
 
 template <size_t Dim>
 bool needs_projection(const Mesh<Dim>& mesh1, const Mesh<Dim>& mesh2,
@@ -45,13 +95,9 @@ const Matrix& projection_matrix_child_to_parent(const Mesh<1>& child_mesh,
                                                 const Mesh<1>& parent_mesh,
                                                 const SegmentSize size,
                                                 const bool operand_is_massive) {
-  constexpr size_t max_points = maximum_number_of_points<Basis::Legendre>;
-  ASSERT(parent_mesh.basis(0) == Basis::Legendre and
-             child_mesh.basis(0) == Basis::Legendre,
-         "Projections only implemented on Legendre basis");
-  ASSERT(parent_mesh.extents(0) <= max_points and
-             child_mesh.extents(0) <= max_points,
-         "Mesh has more points than supported by its quadrature.");
+  constexpr size_t max_points_l = maximum_number_of_points<Basis::Legendre>;
+  constexpr size_t max_points_f = maximum_number_of_points<Basis::Fourier>;
+  verify_meshes(parent_mesh, child_mesh, size);
 
   if (operand_is_massive) {
     ASSERT(parent_mesh.extents(0) <= child_mesh.extents(0),
@@ -60,78 +106,121 @@ const Matrix& projection_matrix_child_to_parent(const Mesh<1>& child_mesh,
                << parent_mesh.extents(0) << ")");
     // The restriction operator for massive quantities is just the interpolation
     // transpose
-    const static auto cache = make_static_cache<
+    const auto compute_matrix =
+        [](const Basis parent_basis, const Quadrature parent_quadrature,
+           const size_t parent_extent, const Basis child_basis,
+           const Quadrature child_quadrature, const size_t child_extent,
+           const SegmentSize local_child_size) -> Matrix {
+      const auto& prolongation_operator = projection_matrix_parent_to_child(
+          {parent_extent, parent_basis, parent_quadrature},
+          {child_extent, child_basis, child_quadrature}, local_child_size);
+      return blaze::trans(prolongation_operator);
+    };
+    const static auto cache_legendre = make_static_cache<
         CacheEnumeration<Quadrature, Quadrature::Gauss,
                          Quadrature::GaussLobatto>,
-        CacheRange<2_st, max_points + 1>,
+        CacheRange<2_st, max_points_l + 1>,
         CacheEnumeration<Quadrature, Quadrature::Gauss,
                          Quadrature::GaussLobatto>,
-        CacheRange<2_st, max_points + 1>,
+        CacheRange<2_st, max_points_l + 1>,
         CacheEnumeration<SegmentSize, SegmentSize::Full, SegmentSize::UpperHalf,
                          SegmentSize::LowerHalf>>(
-        [](const Quadrature child_quadrature, const size_t child_extent,
-           const Quadrature parent_quadrature, const size_t parent_extent,
-           const SegmentSize local_child_size) -> Matrix {
-          const auto& prolongation_operator = projection_matrix_parent_to_child(
-              {parent_extent, Spectral::Basis::Legendre, parent_quadrature},
-              {child_extent, Spectral::Basis::Legendre, child_quadrature},
-              local_child_size);
-          return blaze::trans(prolongation_operator);
+        [compute_matrix](const Quadrature q_parent, const size_t n_parent,
+                         const Quadrature q_child, const size_t n_child,
+                         const SegmentSize local_child_size) {
+          return compute_matrix(Basis::Legendre, q_parent, n_parent,
+                                Basis::Legendre, q_child, n_child,
+                                local_child_size);
         });
-    return cache(child_mesh.quadrature(0), child_mesh.extents(0),
-                 parent_mesh.quadrature(0), parent_mesh.extents(0), size);
+    const static auto cache_fourier =
+        make_static_cache<CacheRange<2_st, max_points_f + 1>,
+                          CacheRange<2_st, max_points_f + 1>>(
+            [compute_matrix](const size_t n_parent, const size_t n_child) {
+              return compute_matrix(Basis::Fourier, Quadrature::Equiangular,
+                                    n_parent, Basis::Fourier,
+                                    Quadrature::Equiangular, n_child,
+                                    SegmentSize::Full);
+            });
+    if (parent_mesh.basis(0) == Basis::Legendre) {
+      return cache_legendre(parent_mesh.quadrature(0), parent_mesh.extents(0),
+                            child_mesh.quadrature(0), child_mesh.extents(0),
+                            size);
+    } else {
+      // Both Fourier and ZernikeB2 get here
+      // In terms of angular interpolation, ZernikeB2 with Equiangular
+      // quadrature is identical to Fourier with Equiangular quadrature, so the
+      // matrices do not make a distinction
+      return cache_fourier(parent_mesh.extents(0), child_mesh.extents(0));
+    }
   }
 
   switch (size) {
     case SegmentSize::Full: {
-      const static auto cache =
+      const auto compute_matrix =
+          [](const Basis basis_element, const Quadrature quadrature_element,
+             const size_t extents_element, const Basis basis_mortar,
+             const Quadrature quadrature_mortar, const size_t extents_mortar) {
+            const Mesh<1> mesh_element(extents_element, basis_element,
+                                       quadrature_element);
+            const Mesh<1> mesh_mortar(extents_mortar, basis_mortar,
+                                      quadrature_mortar);
+
+            // The projection in spectral space is just a truncation
+            // of the modes.
+            const auto& spectral_to_grid_element =
+                modal_to_nodal_matrix(mesh_element);
+            const auto& grid_to_spectral_mortar =
+                nodal_to_modal_matrix(mesh_mortar);
+            const auto num_modes = std::min(extents_element, extents_mortar);
+            Matrix projection(extents_element, extents_mortar, 0.);
+            for (size_t i = 0; i < extents_element; ++i) {
+              for (size_t j = 0; j < extents_mortar; ++j) {
+                for (size_t k = 0; k < num_modes; ++k) {
+                  projection(i, j) += spectral_to_grid_element(i, k) *
+                                      grid_to_spectral_mortar(k, j);
+                }
+              }
+            }
+
+            return projection;
+          };
+      const static auto cache_legendre =
           make_static_cache<CacheEnumeration<Quadrature, Quadrature::Gauss,
                                              Quadrature::GaussLobatto>,
-                            CacheRange<2_st, max_points + 1>,
+                            CacheRange<2_st, max_points_l + 1>,
                             CacheEnumeration<Quadrature, Quadrature::Gauss,
                                              Quadrature::GaussLobatto>,
-                            CacheRange<2_st, max_points + 1>>(
-              [](const Quadrature quadrature_element,
-                 const size_t extents_element,
-                 const Quadrature quadrature_mortar,
-                 const size_t extents_mortar) {
-                const Mesh<1> mesh_element(extents_element, Basis::Legendre,
-                                           quadrature_element);
-                const Mesh<1> mesh_mortar(extents_mortar, Basis::Legendre,
-                                          quadrature_mortar);
-
-                // The projection in spectral space is just a truncation
-                // of the modes.
-                const auto& spectral_to_grid_element =
-                    modal_to_nodal_matrix(mesh_element);
-                const auto& grid_to_spectral_mortar =
-                    nodal_to_modal_matrix(mesh_mortar);
-                const auto num_modes =
-                    std::min(extents_element, extents_mortar);
-                Matrix projection(extents_element, extents_mortar, 0.);
-                for (size_t i = 0; i < extents_element; ++i) {
-                  for (size_t j = 0; j < extents_mortar; ++j) {
-                    for (size_t k = 0; k < num_modes; ++k) {
-                      projection(i, j) += spectral_to_grid_element(i, k) *
-                                          grid_to_spectral_mortar(k, j);
-                    }
-                  }
-                }
-
-                return projection;
+                            CacheRange<2_st, max_points_l + 1>>(
+              [compute_matrix](const Quadrature q_parent, const size_t n_parent,
+                               const Quadrature q_child, const size_t n_child) {
+                return compute_matrix(Basis::Legendre, q_parent, n_parent,
+                                      Basis::Legendre, q_child, n_child);
               });
-      return cache(parent_mesh.quadrature(0), parent_mesh.extents(0),
-                   child_mesh.quadrature(0), child_mesh.extents(0));
+      const static auto cache_fourier =
+          make_static_cache<CacheRange<2_st, max_points_f + 1>,
+                            CacheRange<2_st, max_points_f + 1>>(
+              [compute_matrix](const size_t n_parent, const size_t n_child) {
+                return compute_matrix(Basis::Fourier, Quadrature::Equiangular,
+                                      n_parent, Basis::Fourier,
+                                      Quadrature::Equiangular, n_child);
+              });
+      if (parent_mesh.basis(0) == Basis::Legendre) {
+        return cache_legendre(parent_mesh.quadrature(0), parent_mesh.extents(0),
+                              child_mesh.quadrature(0), child_mesh.extents(0));
+      } else {
+        // Both Fourier and ZernikeB2 get here
+        return cache_fourier(parent_mesh.extents(0), child_mesh.extents(0));
+      }
     }
 
     case SegmentSize::UpperHalf: {
       const static auto cache = make_static_cache<
           CacheEnumeration<Quadrature, Quadrature::Gauss,
                            Quadrature::GaussLobatto>,
-          CacheRange<2_st, max_points + 1>,
+          CacheRange<2_st, max_points_l + 1>,
           CacheEnumeration<Quadrature, Quadrature::Gauss,
                            Quadrature::GaussLobatto>,
-          CacheRange<2_st, max_points + 1>>(
+          CacheRange<2_st, max_points_l + 1>>(
           [](const Quadrature quadrature_element, const size_t extents_element,
              const Quadrature quadrature_mortar, const size_t extents_mortar) {
             const Mesh<1> mesh_element(extents_element, Basis::Legendre,
@@ -163,7 +252,8 @@ const Matrix& projection_matrix_child_to_parent(const Mesh<1>& child_mesh,
 
               for (size_t i = 1; i <= large_index - small_index; ++i) {
                 result *=
-                    1. + static_cast<double>(large_index + small_index + 1) / i;
+                    1. + static_cast<double>(large_index + small_index + 1) /
+                             static_cast<double>(i);
               }
               result /= pow(2., static_cast<int>(large_index) + 1);
               return result;
@@ -207,10 +297,10 @@ const Matrix& projection_matrix_child_to_parent(const Mesh<1>& child_mesh,
       const static auto cache =
           make_static_cache<CacheEnumeration<Quadrature, Quadrature::Gauss,
                                              Quadrature::GaussLobatto>,
-                            CacheRange<2_st, max_points + 1>,
+                            CacheRange<2_st, max_points_l + 1>,
                             CacheEnumeration<Quadrature, Quadrature::Gauss,
                                              Quadrature::GaussLobatto>,
-                            CacheRange<2_st, max_points + 1>>(
+                            CacheRange<2_st, max_points_l + 1>>(
               [](const Quadrature quadrature_element,
                  const size_t extents_element,
                  const Quadrature quadrature_mortar,
@@ -259,6 +349,11 @@ projection_matrix_child_to_parent(
     const auto child_mesh_slice = gsl::at(child_mesh_slices, d);
     const auto parent_mesh_slice = gsl::at(parent_mesh_slices, d);
     const auto child_size = gsl::at(child_sizes, d);
+    ASSERT(child_mesh_slice.basis(0) == Basis::Legendre or
+               child_size == SegmentSize::Full,
+           "The Fourier basis does not support h-refinement: SegmentSize must "
+           "be Full in dimension "
+               << d << ", but got " << child_size);
     if (child_size == SegmentSize::Full and
         child_mesh_slice == parent_mesh_slice) {
       // No projection necessary, keep matrix the identity in this dimension
@@ -273,22 +368,24 @@ projection_matrix_child_to_parent(
 const Matrix& projection_matrix_parent_to_child(const Mesh<1>& parent_mesh,
                                                 const Mesh<1>& child_mesh,
                                                 const SegmentSize size) {
-  constexpr size_t max_points = maximum_number_of_points<Basis::Legendre>;
-  ASSERT(child_mesh.basis(0) == Basis::Legendre and
-             parent_mesh.basis(0) == Basis::Legendre,
-         "Projections only implemented on Legendre basis");
-  ASSERT(child_mesh.extents(0) <= max_points and
-             parent_mesh.extents(0) <= max_points,
-         "Mesh has more points than supported by its quadrature. Has "
-             << child_mesh.extents(0) << " and max allowed is " << (max_points)
-             << " for the mortar mesh, while for the element mesh has "
-             << parent_mesh.extents(0) << " points.");
+  constexpr size_t max_points_l = maximum_number_of_points<Basis::Legendre>;
+  verify_meshes(parent_mesh, child_mesh, size);
+
+  // For Fourier with SegmentSize::Full, the element-to-mortar projection is
+  // the same spectral truncation/zero-padding as child_to_parent with roles
+  // swapped. Delegate to avoid duplicating the cached computation.
+  if (parent_mesh.basis(0) == Basis::Fourier or
+      parent_mesh.basis(0) == Basis::ZernikeB2) {
+    return projection_matrix_child_to_parent(parent_mesh, child_mesh,
+                                             SegmentSize::Full);
+  }
+
   ASSERT(child_mesh.extents(0) >= parent_mesh.extents(0),
          "Requested projection matrix to mortar with fewer points ("
              << child_mesh.extents(0) << ") than the element ("
              << parent_mesh.extents(0) << ")");
 
-  // Element-to-mortar projections are always interpolations.
+  // Element-to-mortar projections on Legendre meshes are interpolations.
   const auto make_interpolators = [](auto interval_transform) {
     return [interval_transform = std::move(interval_transform)](
                const Quadrature quadrature_mortar, const size_t extents_mortar,
@@ -311,10 +408,10 @@ const Matrix& projection_matrix_parent_to_child(const Mesh<1>& parent_mesh,
       const static auto cache =
           make_static_cache<CacheEnumeration<Quadrature, Quadrature::Gauss,
                                              Quadrature::GaussLobatto>,
-                            CacheRange<2_st, max_points + 1>,
+                            CacheRange<2_st, max_points_l + 1>,
                             CacheEnumeration<Quadrature, Quadrature::Gauss,
                                              Quadrature::GaussLobatto>,
-                            CacheRange<2_st, max_points + 1>>(
+                            CacheRange<2_st, max_points_l + 1>>(
               make_interpolators([](const DataVector& x) { return x; }));
       return cache(child_mesh.quadrature(0), child_mesh.extents(0),
                    parent_mesh.quadrature(0), parent_mesh.extents(0));
@@ -324,10 +421,10 @@ const Matrix& projection_matrix_parent_to_child(const Mesh<1>& parent_mesh,
       const static auto cache =
           make_static_cache<CacheEnumeration<Quadrature, Quadrature::Gauss,
                                              Quadrature::GaussLobatto>,
-                            CacheRange<2_st, max_points + 1>,
+                            CacheRange<2_st, max_points_l + 1>,
                             CacheEnumeration<Quadrature, Quadrature::Gauss,
                                              Quadrature::GaussLobatto>,
-                            CacheRange<2_st, max_points + 1>>(
+                            CacheRange<2_st, max_points_l + 1>>(
               make_interpolators([](const DataVector& x) {
                 return DataVector(0.5 * (x + 1.));
               }));
@@ -339,10 +436,10 @@ const Matrix& projection_matrix_parent_to_child(const Mesh<1>& parent_mesh,
       const static auto cache =
           make_static_cache<CacheEnumeration<Quadrature, Quadrature::Gauss,
                                              Quadrature::GaussLobatto>,
-                            CacheRange<2_st, max_points + 1>,
+                            CacheRange<2_st, max_points_l + 1>,
                             CacheEnumeration<Quadrature, Quadrature::Gauss,
                                              Quadrature::GaussLobatto>,
-                            CacheRange<2_st, max_points + 1>>(
+                            CacheRange<2_st, max_points_l + 1>>(
               make_interpolators([](const DataVector& x) {
                 return DataVector(0.5 * (x - 1.));
               }));
@@ -368,6 +465,11 @@ projection_matrix_parent_to_child(
     const auto child_mesh_slice = gsl::at(child_mesh_slices, d);
     const auto parent_mesh_slice = gsl::at(parent_mesh_slices, d);
     const auto child_size = gsl::at(child_sizes, d);
+    ASSERT(child_mesh_slice.basis(0) == Basis::Legendre or
+               child_size == SegmentSize::Full,
+           "The Fourier basis does not support h-refinement: SegmentSize must "
+           "be Full in dimension "
+               << d << ", but got " << child_size);
     if (child_size == SegmentSize::Full and
         child_mesh_slice == parent_mesh_slice) {
       // No projection necessary, keep matrix the identity in this dimension

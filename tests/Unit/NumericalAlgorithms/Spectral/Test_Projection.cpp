@@ -8,9 +8,11 @@
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Matrix.hpp"
+#include "Helpers/NumericalAlgorithms/Spectral/FourierTestFunctions.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/ApplyMassMatrix.hpp"
 #include "NumericalAlgorithms/LinearOperators/DefiniteIntegral.hpp"
 #include "NumericalAlgorithms/Spectral/Basis.hpp"
+#include "NumericalAlgorithms/Spectral/BasisFunctionValue.hpp"
 #include "NumericalAlgorithms/Spectral/CollocationPoints.hpp"
 #include "NumericalAlgorithms/Spectral/InterpolationMatrix.hpp"
 #include "NumericalAlgorithms/Spectral/MaximumNumberOfPoints.hpp"
@@ -601,6 +603,195 @@ void test_projection_matrices() {
   }
 }
 
+void test_fourier_p_projections() {
+  // Test both child_to_parent and parent_to_child projections for Fourier basis
+  // For Fourier basis, SegmentSize::Full only--Fourier does not support
+  // h-refinement
+  INFO("Fourier p-projections");
+  const auto local_approx = Approx::custom().scale(1.0).epsilon(1.0e-14);
+  constexpr size_t max_points_f =
+      Spectral::maximum_number_of_points<Spectral::Basis::Fourier>;
+  const std::vector<std::pair<unsigned, unsigned>> test_funcs = {
+      {1_st, 0_st}, {0_st, 1_st}, {1_st, 1_st}, {5_st, 4_st}, {13_st, 15_st}};
+
+  // source <= dest (prolongation)
+  constexpr size_t stride = 5;
+  for (size_t num_points_source = 2; num_points_source <= max_points_f;
+       num_points_source += stride) {
+    const Mesh<1> mesh_source(num_points_source, Spectral::Basis::Fourier,
+                              Spectral::Quadrature::Equiangular);
+    const auto& points_source = Spectral::collocation_points(mesh_source);
+    CAPTURE(mesh_source);
+    for (size_t num_points_dest = num_points_source + stride;
+         num_points_dest <= std::min(3 * num_points_source, max_points_f);
+         num_points_dest += stride) {
+      const Mesh<1> mesh_dest(num_points_dest, Spectral::Basis::Fourier,
+                              Spectral::Quadrature::Equiangular);
+      const auto& points_dest = Spectral::collocation_points(mesh_dest);
+      CAPTURE(mesh_dest);
+
+      // Test child_to_parent (mortar to element)
+      const auto& projection_child_to_parent =
+          projection_matrix_child_to_parent(mesh_source, mesh_dest,
+                                            Spectral::SegmentSize::Full);
+      // Test parent_to_child (element to mortar)
+      const auto& projection_parent_to_child =
+          projection_matrix_parent_to_child(mesh_source, mesh_dest,
+                                            Spectral::SegmentSize::Full);
+
+      // For Fourier with SegmentSize::Full, these should be the same matrix
+      CHECK(&projection_child_to_parent == &projection_parent_to_child);
+
+      for (const auto& [pow_nx, pow_ny] : test_funcs) {
+        const size_t required_modes = pow_nx + pow_ny;
+        if (required_modes >= num_points_source / 2) {
+          continue;
+        }
+        CAPTURE(pow_nx);
+        CAPTURE(pow_ny);
+        const FourierTestFunctions::ProductOfPolynomials func(pow_nx, pow_ny);
+
+        const DataVector projected_data_ctp =
+            apply_matrix(projection_child_to_parent, func(points_source));
+        CHECK_ITERABLE_CUSTOM_APPROX(projected_data_ctp, func(points_dest),
+                                     local_approx);
+      }
+    }
+  }
+
+  // source > dest (restriction)
+  for (size_t num_points_dest = 2; num_points_dest <= max_points_f;
+       num_points_dest += stride) {
+    const Mesh<1> mesh_dest(num_points_dest, Spectral::Basis::Fourier,
+                            Spectral::Quadrature::Equiangular);
+    CAPTURE(mesh_dest);
+    for (size_t num_points_source = num_points_dest + stride;
+         num_points_source <= std::min(3 * num_points_dest, max_points_f);
+         num_points_source += stride) {
+      const Mesh<1> mesh_source(num_points_source, Spectral::Basis::Fourier,
+                                Spectral::Quadrature::Equiangular);
+      const auto& points_source = Spectral::collocation_points(mesh_source);
+      CAPTURE(mesh_source);
+
+      // Test both projection functions
+      const auto& projection_child_to_parent =
+          projection_matrix_child_to_parent(mesh_source, mesh_dest,
+                                            Spectral::SegmentSize::Full);
+      const auto& projection_parent_to_child =
+          projection_matrix_parent_to_child(mesh_source, mesh_dest,
+                                            Spectral::SegmentSize::Full);
+
+      // For Fourier with SegmentSize::Full, these should be the same matrix
+      CHECK(&projection_child_to_parent == &projection_parent_to_child);
+
+      for (const auto& [pow_nx, pow_ny] : test_funcs) {
+        const size_t required_modes = pow_nx + pow_ny;
+        if (required_modes >= num_points_source / 2) {
+          continue;
+        }
+        CAPTURE(pow_nx);
+        CAPTURE(pow_ny);
+        const FourierTestFunctions::ProductOfPolynomials func(pow_nx, pow_ny);
+        const DataVector projected_data =
+            apply_matrix(projection_child_to_parent, func(points_source));
+        // Interpolate projected result back to the fine grid and measure the
+        // truncation error.
+        const DataVector interpolated_projected_data = apply_matrix(
+            Spectral::interpolation_matrix(mesh_dest, points_source),
+            projected_data);
+        const DataVector error =
+            interpolated_projected_data - func(points_source);
+        // The error must be L2-orthogonal to every basis function that fits
+        // in the destination mesh
+        for (size_t index = 0; index < num_points_dest; ++index) {
+          CAPTURE(index);
+          const DataVector basis_func_values =
+              Spectral::compute_basis_function_value<Spectral::Basis::Fourier>(
+                  index, points_source);
+          CHECK(definite_integral(error * basis_func_values, mesh_source) ==
+                local_approx(0.0));
+        }
+      }
+    }
+  }
+}
+
+void test_zernike_b2_fourier_equivalence() {
+  INFO("ZernikeB2-Fourier equivalence");
+  // Test that ZernikeB2 with Equiangular behaves identically to Fourier
+  const size_t parent_size = 5;
+  const size_t child_size = 9;
+  const Mesh<1> fourier_parent(parent_size, Spectral::Basis::Fourier,
+                               Spectral::Quadrature::Equiangular);
+  const Mesh<1> fourier_child(child_size, Spectral::Basis::Fourier,
+                              Spectral::Quadrature::Equiangular);
+  const Mesh<1> zernike_parent(parent_size, Spectral::Basis::ZernikeB2,
+                               Spectral::Quadrature::Equiangular);
+  const Mesh<1> zernike_child(child_size, Spectral::Basis::ZernikeB2,
+                              Spectral::Quadrature::Equiangular);
+
+  const auto& f_to_f_child_to_parent = projection_matrix_child_to_parent(
+      fourier_child, fourier_parent, Spectral::SegmentSize::Full);
+  const auto& f_to_z_child_to_parent = projection_matrix_child_to_parent(
+      fourier_child, zernike_parent, Spectral::SegmentSize::Full);
+  CHECK(&f_to_f_child_to_parent == &f_to_z_child_to_parent);
+  const auto& z_to_z_child_to_parent = projection_matrix_child_to_parent(
+      zernike_child, zernike_parent, Spectral::SegmentSize::Full);
+  CHECK(&f_to_f_child_to_parent == &z_to_z_child_to_parent);
+
+  const auto& f_to_f_parent_to_child = projection_matrix_child_to_parent(
+      fourier_parent, fourier_child, Spectral::SegmentSize::Full);
+  const auto& f_to_z_parent_to_child = projection_matrix_child_to_parent(
+      fourier_parent, zernike_child, Spectral::SegmentSize::Full);
+  CHECK(&f_to_f_parent_to_child == &f_to_z_parent_to_child);
+  const auto& z_to_z_parent_to_child = projection_matrix_child_to_parent(
+      zernike_parent, zernike_child, Spectral::SegmentSize::Full);
+  CHECK(&f_to_f_parent_to_child == &z_to_z_parent_to_child);
+}
+
+#ifdef SPECTRE_DEBUG
+void test_fourier_and_zernikeb2_asserts() {
+  {
+    INFO("Fourier h-refinement asserts");
+    const Mesh<1> mesh(5, Spectral::Basis::Fourier,
+                       Spectral::Quadrature::Equiangular);
+    CHECK_THROWS_WITH(projection_matrix_child_to_parent(
+                          mesh, mesh, Spectral::SegmentSize::UpperHalf),
+                      Catch::Matchers::ContainsSubstring(
+                          "Unsupported projection combination"));
+    CHECK_THROWS_WITH(projection_matrix_child_to_parent(
+                          mesh, mesh, Spectral::SegmentSize::LowerHalf),
+                      Catch::Matchers::ContainsSubstring(
+                          "Unsupported projection combination"));
+  }
+  {
+    INFO("ZernikeB2 projection asserts");
+
+    // Test that ZernikeB2 without Equiangular quadrature is rejected
+    const Mesh<1> zernike_gauss{4, Basis::ZernikeB2, Quadrature::Gauss};
+    const Mesh<1> fourier_mesh{4, Basis::Fourier, Quadrature::Equiangular};
+
+    CHECK_THROWS_WITH(projection_matrix_child_to_parent(
+                          zernike_gauss, fourier_mesh, SegmentSize::Full),
+                      Catch::Matchers::ContainsSubstring(
+                          "Unsupported projection combination"));
+
+    // Test that ZernikeB2 with h-refinement is rejected
+    const Mesh<1> zernike_equi{4, Basis::ZernikeB2, Quadrature::Equiangular};
+
+    CHECK_THROWS_WITH(projection_matrix_child_to_parent(
+                          zernike_equi, zernike_equi, SegmentSize::UpperHalf),
+                      Catch::Matchers::ContainsSubstring(
+                          "Unsupported projection combination"));
+
+    CHECK_THROWS_WITH(projection_matrix_child_to_parent(
+                          zernike_equi, zernike_equi, SegmentSize::LowerHalf),
+                      Catch::Matchers::ContainsSubstring(
+                          "Unsupported projection combination"));
+  }
+}
+#endif  // SPECTRE_DEBUG
+
 void test_hash() {
   CHECK(Spectral::MortarSizeHash<1>{}({}) == 0);
 
@@ -655,6 +846,14 @@ SPECTRE_TEST_CASE("Unit.Numerical.Spectral.Projection",
   test_p_projection_matrices<1>();
   test_p_projection_matrices<2>();
   test_p_projection_matrices<3>();
+  test_projection_matrices<1>();
+  test_projection_matrices<2>();
+  test_projection_matrices<3>();
+  test_fourier_p_projections();
+  test_zernike_b2_fourier_equivalence();
+#ifdef SPECTRE_DEBUG
+  test_fourier_and_zernikeb2_asserts();
+#endif  // SPECTRE_DEBUG
   test_hash();
 }
 
