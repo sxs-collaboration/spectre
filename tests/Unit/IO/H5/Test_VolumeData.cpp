@@ -1576,6 +1576,206 @@ void test_annulus_disk_mixed() {
     file_system::rm(h5_file_name, true);
   }
 }
+// Test disk connectivity with minimum n_phi=3 (edge case).
+// extents {2,3}: 2 standard quads + 1 wrapping quad + 1 center triangle = 4
+// cells.
+void test_disk_min_phi() {
+  const std::string h5_file_name("Unit.IO.H5.VolumeData.DiskMinPhi.h5");
+  const uint32_t version_number = 4;
+  if (file_system::check_if_file_exists(h5_file_name)) {
+    file_system::rm(h5_file_name, true);
+  }
+  const std::string grid_name{"DiskMin"};
+  const std::vector<Spectral::Basis> bases{2, Spectral::Basis::ZernikeB2};
+  const std::vector<Spectral::Quadrature> quadratures{
+      {Spectral::Quadrature::GaussRadauUpper,
+       Spectral::Quadrature::Equiangular}};
+  const std::vector<size_t> extents{2, 3};  // n_r=2, n_phi=3
+  // 2*3 = 6 points
+  const std::vector<TensorComponent> tensor_components{
+      {"InertialCoordinates_x", DataVector(6, 0.0)},
+      {"InertialCoordinates_y", DataVector(6, 0.0)}};
+
+  {
+    h5::H5File<h5::AccessType::ReadWrite> disk_file{h5_file_name};
+    auto& volume_file =
+        disk_file.insert<h5::VolumeData>("/element_data", version_number);
+    volume_file.write_volume_data(
+        99999, 0.5,
+        std::vector<ElementVolumeData>{
+            {grid_name, tensor_components, extents, bases, quadratures}});
+    disk_file.close_current_object();
+  }
+
+  // clang-format off
+  // 2 standard quads + 1 wrapping quad (type=5) + 1 disk triangle (type=4)
+  DataVector expected_connectivity = {
+     5.,  0.,  1.,  3.,  2.,   // Quad (phi=0→1)
+     5.,  2.,  3.,  5.,  4.,   // Quad (phi=1→2)
+     5.,  0.,  1.,  5.,  4.,   // wrapping Quad
+     4.,  0.,  2.,  4.};       // Triangle (center)
+  // clang-format on
+
+  {
+    const h5::H5File<h5::AccessType::ReadOnly> disk_file{h5_file_name};
+    const auto& volume_file =
+        disk_file.get<h5::VolumeData>("/element_data", version_number);
+    const auto h5_connectivity =
+        volume_file.get_tensor_component(99999, "connectivity").data;
+    const auto& conn = get<0>(h5_connectivity);
+    CHECK(conn == expected_connectivity);
+
+    // Verify element_id/block_id: 4 cells, all from "DiskMin"
+    const auto element_id_var =
+        volume_file.get_tensor_component(99999, "ElementId").data;
+    const auto& element_id = get<0>(element_id_var);
+    CHECK(element_id.size() == 4);
+    const auto block_id_var =
+        volume_file.get_tensor_component(99999, "BlockId").data;
+    const auto& block_id = get<0>(block_id_var);
+    CHECK(block_id.size() == 4);
+    disk_file.close_current_object();
+  }
+
+  if (file_system::check_if_file_exists(h5_file_name)) {
+    file_system::rm(h5_file_name, true);
+  }
+}
+
+// Test disk with two elements having different extents.
+// Element "Disk0": {2,5} → 4+1+3=8 cells.
+// Element "Disk1": {3,9} → 16+2+7=25 cells.
+// Total: 33 cells.
+void test_disk_multi_element() {
+  const std::string h5_file_name("Unit.IO.H5.VolumeData.DiskMulti.h5");
+  const uint32_t version_number = 4;
+  if (file_system::check_if_file_exists(h5_file_name)) {
+    file_system::rm(h5_file_name, true);
+  }
+
+  const std::string name0 = "Disk0";  // block_id = 0
+  const std::string name1 = "Disk1";  // block_id = 0
+  const std::vector<Spectral::Basis> bases{2, Spectral::Basis::ZernikeB2};
+  const std::vector<Spectral::Quadrature> quadratures{
+      {Spectral::Quadrature::GaussRadauUpper,
+       Spectral::Quadrature::Equiangular}};
+
+  h5::H5File<h5::AccessType::ReadWrite> h5_file(h5_file_name);
+  auto& volume_file =
+      h5_file.insert<h5::VolumeData>("/element_data", version_number);
+  // Element 0: {2,5} → 10 points
+  volume_file.write_volume_data(
+      1000, 1.0,
+      {{name0,
+        {TensorComponent{"InertialCoordinates_x", DataVector(10, 0.0)},
+         TensorComponent{"InertialCoordinates_y", DataVector(10, 0.0)}},
+        {2, 5},
+        bases,
+        quadratures},
+       {name1,
+        {TensorComponent{"InertialCoordinates_x", DataVector(27, 0.0)},
+         TensorComponent{"InertialCoordinates_y", DataVector(27, 0.0)}},
+        {3, 9},
+        bases,
+        quadratures}});
+  h5_file.close_current_object();
+
+  const auto& volume_file_read = h5_file.get<h5::VolumeData>("/element_data");
+
+  // Element 0: (2-1)*(5-1) + (2-1) + 3 = 4+1+3 = 8 cells
+  // Element 1: (3-1)*(9-1) + (3-1) + 7 = 16+2+7 = 25 cells
+  constexpr size_t num_cells_0 = 8;
+  constexpr size_t num_cells_1 = 25;
+  constexpr size_t total_cells = num_cells_0 + num_cells_1;
+
+  const auto element_id_var =
+      volume_file_read.get_tensor_component(1000, "ElementId").data;
+  const auto block_id_var =
+      volume_file_read.get_tensor_component(1000, "BlockId").data;
+  const auto& element_id = get<0>(element_id_var);
+  const auto& block_id = get<0>(block_id_var);
+  CHECK(element_id.size() == total_cells);
+  CHECK(block_id.size() == total_cells);
+
+  const auto expected_eid0 =
+      static_cast<double>(std::hash<std::string>{}(name0));
+  const auto expected_eid1 =
+      static_cast<double>(std::hash<std::string>{}(name1));
+  // First num_cells_0 cells belong to Disk0
+  for (size_t i = 0; i < num_cells_0; ++i) {
+    CHECK(element_id[i] == approx(expected_eid0));
+    CHECK(block_id[i] == 0.0);
+  }
+  // Next num_cells_1 cells belong to Disk1
+  for (size_t i = num_cells_0; i < total_cells; ++i) {
+    CHECK(element_id[i] == approx(expected_eid1));
+    CHECK(block_id[i] == 0.0);
+  }
+
+  // Connectivity size:
+  // Disk0 {2,5}: 4 quads×5 + 1 wrap×5 + 3 tri×4 = 20+5+12 = 37
+  // Disk1 {3,9}: 16 quads×5 + 2 wrap×5 + 7 tri×4 = 80+10+28 = 118
+  // Total: 37 + 118 = 155
+  const auto connectivity_var =
+      volume_file_read.get_tensor_component(1000, "connectivity").data;
+  const auto& connectivity = get<0>(connectivity_var);
+
+  // clang-format off
+  // Disk0: n_r=2, n_phi=5, element_start=0, 10 points (indices 0-9)
+  // point(ir, iphi) = iphi * 2 + ir
+  // Disk1: n_r=3, n_phi=9, element_start=10, 27 points (indices 10-36)
+  // point(ir, iphi) = 10 + iphi * 3 + ir
+  const DataVector expected_connectivity = {
+    // --- Disk0 standard quads (ir=0, jphi=0..3) ---
+    5.,  0.,  1.,  3.,  2.,
+    5.,  2.,  3.,  5.,  4.,
+    5.,  4.,  5.,  7.,  6.,
+    5.,  6.,  7.,  9.,  8.,
+    // --- Disk0 wrapping quad (j=0) ---
+    5.,  0.,  1.,  9.,  8.,
+    // --- Disk0 center triangles (ring [0,2,4,6,8]) ---
+    4.,  0.,  2.,  4.,
+    4.,  4.,  6.,  8.,
+    4.,  0.,  4.,  8.,
+    // --- Disk1 standard quads (ir=0, jphi=0..7) ---
+    5., 10., 11., 14., 13.,
+    5., 13., 14., 17., 16.,
+    5., 16., 17., 20., 19.,
+    5., 19., 20., 23., 22.,
+    5., 22., 23., 26., 25.,
+    5., 25., 26., 29., 28.,
+    5., 28., 29., 32., 31.,
+    5., 31., 32., 35., 34.,
+    // --- Disk1 standard quads (ir=1, jphi=0..7) ---
+    5., 11., 12., 15., 14.,
+    5., 14., 15., 18., 17.,
+    5., 17., 18., 21., 20.,
+    5., 20., 21., 24., 23.,
+    5., 23., 24., 27., 26.,
+    5., 26., 27., 30., 29.,
+    5., 29., 30., 33., 32.,
+    5., 32., 33., 36., 35.,
+    // --- Disk1 wrapping quads (j=0,1) ---
+    5., 10., 11., 35., 34.,
+    5., 11., 12., 36., 35.,
+    // --- Disk1 center triangles (ring [10,13,16,19,22,25,28,31,34]) ---
+    4., 10., 13., 16.,
+    4., 16., 19., 22.,
+    4., 22., 25., 28.,
+    4., 28., 31., 34.,
+    4., 10., 16., 22.,
+    4., 22., 28., 34.,
+    4., 10., 22., 34.};
+  // clang-format on
+
+  CHECK(connectivity == expected_connectivity);
+
+  if (file_system::check_if_file_exists(h5_file_name)) {
+    file_system::rm(h5_file_name, true);
+  }
+}
+
+
 }  // namespace
 
 // [[TimeOut, 20]]
@@ -1587,6 +1787,8 @@ SPECTRE_TEST_CASE("Unit.IO.H5.VolumeData", "[Unit][IO][H5]") {
   test_disk();
   test_cylinder(true);
   test_cylinder(false);
+  test_disk_min_phi();
+  test_disk_multi_element();
   test_annulus();
   test_annulus_disk_mixed();
   test_extend_connectivity_data<1>();

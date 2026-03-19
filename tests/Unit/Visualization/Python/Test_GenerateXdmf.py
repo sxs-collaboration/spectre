@@ -299,6 +299,115 @@ class TestGenerateXdmf(unittest.TestCase):
             if attr.attrib["Name"] == "Phi":
                 self.assertEqual(attr.attrib.get("Center"), "Node")
 
+    def write_disk_h5_file(self, filename):
+        """Create a minimal new-format 2D disk H5 file for testing.
+
+        One disk element with extents [2, 3] (6 nodes). Mixed connectivity:
+        2 standard quads + 1 wrapping quad + 1 center triangle = 4 cells.
+        """
+        with h5py.File(filename, "w") as f:
+            vol = f.create_group("DiskData.vol")
+            vol.attrs["dimension"] = 2
+            obs = vol.create_group("ObservationId0")
+            obs.attrs["observation_value"] = 0.5
+            # total_extents: n_r=2, n_phi=3
+            obs.create_dataset(
+                "total_extents", data=np.array([2, 3], dtype=np.int32)
+            )
+            obs.create_dataset("grid_names", data=np.array([b"DiskMin"]))
+            obs.create_dataset(
+                "bases",
+                data=np.array([8, 8], dtype=np.int32),  # ZernikeB2 = 8
+            )
+            obs.create_dataset(
+                "quadratures",
+                data=np.array(
+                    [3, 4], dtype=np.int32
+                ),  # GaussRadauUpper, Equiangular
+            )
+            # Mixed connectivity: 2 quads + 1 wrapping quad + 1 triangle
+            # type 5 = Quad (4 verts), type 4 = Triangle (3 verts)
+            obs.create_dataset(
+                "connectivity",
+                data=np.array(
+                    [
+                        5,
+                        0,
+                        1,
+                        3,
+                        2,  # Quad phi=0→1
+                        5,
+                        2,
+                        3,
+                        5,
+                        4,  # Quad phi=1→2
+                        5,
+                        0,
+                        1,
+                        5,
+                        4,  # wrapping Quad
+                        4,
+                        0,
+                        2,
+                        4,
+                    ],  # center Triangle
+                    dtype=np.int32,
+                ),
+            )
+            coords = np.linspace(0.0, 1.0, 6)
+            obs.create_dataset("InertialCoordinates_x", data=coords)
+            obs.create_dataset("InertialCoordinates_y", data=coords)
+            obs.create_dataset("InertialCoordinates_z", data=coords)
+            obs.create_dataset(
+                "ElementId",
+                data=np.array([42, 42, 42, 42], dtype=np.uint64),
+            )
+            obs.create_dataset(
+                "BlockId",
+                data=np.array([0, 0, 0, 0], dtype=np.uint64),
+            )
+            obs.create_dataset("Phi", data=coords)
+
+    def test_disk_generate_xdmf(self):
+        h5_file = os.path.join(self.test_dir, "DiskData.h5")
+        self.write_disk_h5_file(h5_file)
+        output_filename = os.path.join(self.test_dir, "Test_Disk_output")
+        generate_xdmf(
+            h5files=[h5_file],
+            output=output_filename,
+            subfile_name="DiskData",
+            start_time=0.0,
+            stop_time=1.0,
+            stride=1,
+            coordinates="InertialCoordinates",
+        )
+        self.assertTrue(os.path.isfile(output_filename + ".xmf"))
+        xmf_root = ET.parse(output_filename + ".xmf").getroot()
+
+        # Should be exactly one Uniform grid
+        uniform_grids = xmf_root.findall(".//Grid[@GridType='Uniform']")
+        self.assertEqual(len(uniform_grids), 1)
+
+        grid = uniform_grids[0]
+        topo = grid.find("Topology")
+        self.assertIsNotNone(topo)
+        self.assertEqual(topo.attrib.get("TopologyType"), "Mixed")
+        self.assertEqual(topo.attrib.get("NumberOfElements"), "4")
+
+        attr_names = {a.attrib["Name"] for a in grid.findall("Attribute")}
+        self.assertIn("ElementId", attr_names)
+        self.assertIn("BlockId", attr_names)
+        self.assertIn("Phi", attr_names)
+
+        # ElementId and BlockId should be Cell-centered
+        for attr in grid.findall("Attribute"):
+            if attr.attrib["Name"] in ("ElementId", "BlockId"):
+                self.assertEqual(attr.attrib.get("Center"), "Cell")
+        # Phi should be Node-centered
+        for attr in grid.findall("Attribute"):
+            if attr.attrib["Name"] == "Phi":
+                self.assertEqual(attr.attrib.get("Center"), "Node")
+
     def test_subfile_not_found(self):
         data_files = glob.glob(os.path.join(self.data_dir, "VolTestData*.h5"))
         output_filename = os.path.join(
