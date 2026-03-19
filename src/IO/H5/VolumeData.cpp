@@ -59,7 +59,6 @@ constexpr const char* global_functions_of_time_observation_value_attr =
 size_t append_element_extents_and_connectivity(
     const gsl::not_null<std::vector<size_t>*> total_extents,
     const gsl::not_null<std::vector<int>*> total_connectivity,
-    const gsl::not_null<std::vector<int>*> pole_connectivity,
     const gsl::not_null<int*> total_points_so_far, const size_t dim,
     const ElementVolumeData& element) {
   size_t cell_count = 0;
@@ -175,16 +174,18 @@ size_t append_element_extents_and_connectivity(
         const int bottom_second_point = gsl::at(bottom_pole_points, i);
         const int bottom_third_point = gsl::at(bottom_pole_points, i + 1);
 
-        pole_connectivity->push_back(
+        total_connectivity->push_back(
             vis::detail::xdmf_topology_type(vis::detail::Topology::Triangle));
-        pole_connectivity->push_back(top_root_point);
-        pole_connectivity->push_back(top_second_point);
-        pole_connectivity->push_back(top_third_point);
-        pole_connectivity->push_back(
+        ++cell_count;
+        total_connectivity->push_back(top_root_point);
+        total_connectivity->push_back(top_second_point);
+        total_connectivity->push_back(top_third_point);
+        total_connectivity->push_back(
             vis::detail::xdmf_topology_type(vis::detail::Topology::Triangle));
-        pole_connectivity->push_back(bottom_root_point);
-        pole_connectivity->push_back(bottom_second_point);
-        pole_connectivity->push_back(bottom_third_point);
+        ++cell_count;
+        total_connectivity->push_back(bottom_root_point);
+        total_connectivity->push_back(bottom_second_point);
+        total_connectivity->push_back(bottom_third_point);
       }
     } else if ((element.basis[0] == Spectral::Basis::ZernikeB2 and
                 element.basis[1] == Spectral::Basis::ZernikeB2) or
@@ -452,7 +453,6 @@ void VolumeData::write_volume_data(
   std::vector<size_t> total_extents;
   std::string grid_names;
   std::vector<int> total_connectivity;
-  std::vector<int> pole_connectivity{};
   std::vector<int> quadratures;
   std::vector<int> bases;
   std::vector<uint64_t> element_ids;
@@ -475,7 +475,7 @@ void VolumeData::write_volume_data(
     const auto fill_and_write_contiguous_tensor_data =
         [&bases, &block_ids, &component_name, &dim, &element_ids, &elements,
          &grid_names, i, &observation_group, &quadratures, &total_connectivity,
-         &pole_connectivity, &total_extents,
+         &total_extents,
          &total_points_so_far](const auto contiguous_tensor_data_ptr) {
           for (const auto& element : elements) {
             if (UNLIKELY(i == 0)) {
@@ -510,7 +510,7 @@ void VolumeData::write_volume_data(
 
               const size_t number_of_cells =
                   append_element_extents_and_connectivity(
-                      &total_extents, &total_connectivity, &pole_connectivity,
+                      &total_extents, &total_connectivity,
                       &total_points_so_far, dim, element);
 
               // Element ID: hash of the element name string
@@ -614,15 +614,6 @@ void VolumeData::write_volume_data(
   if (not total_connectivity.empty()) {
     h5::write_data(observation_group.id(), total_connectivity,
                    {total_connectivity.size()}, "connectivity");
-  }
-  // Note: pole_connectivity stores extra connections that define triangles to
-  // fill in the poles on a Strahlkorper and is empty if not outputting
-  // Strahlkorper surface data. Because these connections define triangles
-  // and not quadrilaterals, they are stored separately instead of just being
-  // included in total_connectivity.
-  if (not pole_connectivity.empty()) {
-    h5::write_data(observation_group.id(), pole_connectivity,
-                   {pole_connectivity.size()}, "pole_connectivity");
   }
   // Write cell-centered element_id and block_id datasets for the mixed
   // topology format. element_id is the hash of the element name; block_id is

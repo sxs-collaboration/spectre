@@ -121,43 +121,65 @@ void test_strahlkorper() {
         {{0, 1, 2, 3}}, {}, observation_values[0]);
   }
 
-  // Check pole connectivity
-  DataVector connectivity_data{};
+  // Check that pole triangles are now merged into the main connectivity.
+  // l_max=8 → extents=(9,17), regular quads=8*16=128, wrapping quads=8,
+  // pole triangles = 2*(2*8-1) = 30.  Total cells = 166.
+  // The pole triangle entries (4 ints each: tag=4, root, p2, p3) should appear
+  // at the tail of the connectivity array after the quads (5 ints each).
+  // clang-format off
+  const std::vector<int> expected_pole_entries = {
+      4, 0, 9,   18,    4, 8, 17,  26,
+      4, 0, 18,  27,    4, 8, 26,  35,
+      4, 0, 27,  36,    4, 8, 35,  44,
+      4, 0, 36,  45,    4, 8, 44,  53,
+      4, 0, 45,  54,    4, 8, 53,  62,
+      4, 0, 54,  63,    4, 8, 62,  71,
+      4, 0, 63,  72,    4, 8, 71,  80,
+      4, 0, 72,  81,    4, 8, 80,  89,
+      4, 0, 81,  90,    4, 8, 89,  98,
+      4, 0, 90,  99,    4, 8, 98,  107,
+      4, 0, 99,  108,   4, 8, 107, 116,
+      4, 0, 108, 117,   4, 8, 116, 125,
+      4, 0, 117, 126,   4, 8, 125, 134,
+      4, 0, 126, 135,   4, 8, 134, 143,
+      4, 0, 135, 144,   4, 8, 143, 152};
+  // clang-format on
+
   {
     h5::H5File<h5::AccessType::ReadOnly> strahlkorper_file{h5_file_name};
     const auto& volume_file =
         strahlkorper_file.get<h5::VolumeData>("/element_data", version_number);
     const auto h5_connectivity =
-        volume_file.get_tensor_component(4444, "pole_connectivity").data;
-    connectivity_data = get<0>(h5_connectivity);
+        volume_file.get_tensor_component(4444, "connectivity").data;
+    const auto& conn = get<0>(h5_connectivity);
+    // Verify that the tail of the connectivity matches the expected pole
+    // entries
+    REQUIRE(conn.size() >= expected_pole_entries.size());
+    const size_t tail_start = conn.size() - expected_pole_entries.size();
+    for (size_t k = 0; k < expected_pole_entries.size(); ++k) {
+      CHECK(static_cast<int>(conn[tail_start + k]) == expected_pole_entries[k]);
+    }
+    // 128 regular quads × (1+4) + 8 wrapping quads × (1+4) +
+    // 30 pole triangles × (1+3) = 640 + 40 + 120 = 800
+    CHECK(conn.size() == 800);
     strahlkorper_file.close_current_object();
   }
 
-  // Every group of 4 numbers is: type_tag=4 (Triangle), root, second, third
-  // clang-format off
-  const DataVector expected_connectivity = {{
-      4., 0., 9.,   18.,    4., 8., 17.,  26.,
-      4., 0., 18.,  27.,    4., 8., 26.,  35.,
-      4., 0., 27.,  36.,    4., 8., 35.,  44.,
-      4., 0., 36.,  45.,    4., 8., 44.,  53.,
-      4., 0., 45.,  54.,    4., 8., 53.,  62.,
-      4., 0., 54.,  63.,    4., 8., 62.,  71.,
-      4., 0., 63.,  72.,    4., 8., 71.,  80.,
-      4., 0., 72.,  81.,    4., 8., 80.,  89.,
-      4., 0., 81.,  90.,    4., 8., 89.,  98.,
-      4., 0., 90.,  99.,    4., 8., 98.,  107.,
-      4., 0., 99.,  108.,   4., 8., 107., 116.,
-      4., 0., 108., 117.,   4., 8., 116., 125.,
-      4., 0., 117., 126.,   4., 8., 125., 134.,
-      4., 0., 126., 135.,   4., 8., 134., 143.,
-      4., 0., 135., 144.,   4., 8., 143., 152.}};
-  // clang-format on
-
-  CHECK(connectivity_data == expected_connectivity);
+  // Verify that pole_connectivity is NOT written as a separate dataset
+  {
+    const h5::H5File<h5::AccessType::ReadOnly> strahlkorper_file{h5_file_name};
+    const auto& volume_file =
+        strahlkorper_file.get<h5::VolumeData>("/element_data", version_number);
+    CHECK_THROWS_WITH(
+        volume_file.get_tensor_component(4444, "pole_connectivity"),
+        Catch::Matchers::ContainsSubstring("pole_connectivity"));
+    strahlkorper_file.close_current_object();
+  }
 
   // Verify element_id/block_id lengths match the total cell count, including
-  // the l wrapping quads that close the phi boundary.
-  // l_max=8 → extents=(9,17), regular quads=8*16=128, wrapping quads=8 → 136
+  // wrapping quads and pole triangles.
+  // l_max=8 → extents=(9,17), regular quads=128, wrapping quads=8,
+  // pole triangles=30 → 166 total cells.
   {
     const h5::H5File<h5::AccessType::ReadOnly> strahlkorper_file{h5_file_name};
     const auto& volume_file =
@@ -165,9 +187,14 @@ void test_strahlkorper() {
     const auto element_id_var =
         volume_file.get_tensor_component(4444, "ElementId").data;
     const auto& element_id = get<0>(element_id_var);
+    // 128 regular + 8 wrapping + 2*(2*8-1) pole triangles = 166
     constexpr size_t expected_num_cells =
-        (l_max) * (2 * l_max) + l_max;  // 128 + 8 = 136
+        (l_max) * (2 * l_max) + l_max + 2 * (2 * l_max - 1);
     CHECK(element_id.size() == expected_num_cells);
+    const auto block_id_var =
+        volume_file.get_tensor_component(4444, "BlockId").data;
+    const auto& block_id = get<0>(block_id_var);
+    CHECK(block_id.size() == expected_num_cells);
   }
 
   if (file_system::check_if_file_exists(h5_file_name)) {

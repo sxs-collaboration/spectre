@@ -172,6 +172,116 @@ class TestGenerateXdmf(unittest.TestCase):
         # details, we should refactor the script into smaller units.
         self.assertTrue(os.path.isfile(output_filename + ".xmf"))
 
+    def write_test_surface_file(self, filename):
+        """Create a minimal new-format 2D surface H5 file for testing.
+
+        One spectral element with extents [3, 4] (12 nodes). Mixed
+        connectivity: 3 quads (type 5) + 2 triangles (type 4) = 5 cells.
+        element_id and block_id mark this as the new mixed-topology format.
+        """
+        with h5py.File(filename, "w") as f:
+            vol = f.create_group("SurfaceData.vol")
+            vol.attrs["dimension"] = 2
+            obs = vol.create_group("ObservationId0")
+            obs.attrs["observation_value"] = 1.0
+            # total_extents for 1 element in 2D: [3, 4] → num_points = 12
+            obs.create_dataset(
+                "total_extents", data=np.array([3, 4], dtype=np.int32)
+            )
+            obs.create_dataset(
+                "grid_names", data=np.array([b"[B0,(L0I0,L0I0)]"])
+            )
+            obs.create_dataset("bases", data=np.array([0, 0], dtype=np.int32))
+            obs.create_dataset(
+                "quadratures", data=np.array([0, 0], dtype=np.int32)
+            )
+            # Mixed connectivity: 3 quads + 2 triangles = 5 cells
+            # tag 5=Quad (4 verts), tag 4=Triangle (3 verts)
+            obs.create_dataset(
+                "connectivity",
+                data=np.array(
+                    [
+                        5,
+                        0,
+                        1,
+                        4,
+                        3,
+                        5,
+                        1,
+                        2,
+                        5,
+                        4,
+                        5,
+                        3,
+                        4,
+                        7,
+                        6,
+                        4,
+                        4,
+                        5,
+                        8,
+                        4,
+                        6,
+                        7,
+                        9,
+                    ],
+                    dtype=np.int32,
+                ),
+            )
+            coords = np.linspace(0.0, 1.0, 12)
+            obs.create_dataset("InertialCoordinates_x", data=coords)
+            obs.create_dataset("InertialCoordinates_y", data=coords)
+            obs.create_dataset("InertialCoordinates_z", data=coords)
+            obs.create_dataset(
+                "ElementId",
+                data=np.array([10, 11, 12, 13, 14], dtype=np.uint64),
+            )
+            obs.create_dataset(
+                "BlockId",
+                data=np.array([0, 0, 0, 0, 0], dtype=np.uint64),
+            )
+            obs.create_dataset("Phi", data=coords)
+
+    def test_new_format_surface_generate_xdmf(self):
+        h5_file = os.path.join(self.test_dir, "NewSurface.h5")
+        self.write_test_surface_file(h5_file)
+        output_filename = os.path.join(self.test_dir, "Test_NewSurface_output")
+        generate_xdmf(
+            h5files=[h5_file],
+            output=output_filename,
+            subfile_name="SurfaceData",
+            start_time=0.0,
+            stop_time=2.0,
+            stride=1,
+            coordinates="InertialCoordinates",
+        )
+        self.assertTrue(os.path.isfile(output_filename + ".xmf"))
+        xmf_root = ET.parse(output_filename + ".xmf").getroot()
+
+        # Should be exactly one Uniform grid (no separate pole grid)
+        uniform_grids = xmf_root.findall(".//Grid[@GridType='Uniform']")
+        self.assertEqual(len(uniform_grids), 1)
+
+        grid = uniform_grids[0]
+        topo = grid.find("Topology")
+        self.assertIsNotNone(topo)
+        self.assertEqual(topo.attrib.get("TopologyType"), "Mixed")
+        self.assertEqual(topo.attrib.get("NumberOfElements"), "5")
+
+        attr_names = {a.attrib["Name"] for a in grid.findall("Attribute")}
+        self.assertIn("ElementId", attr_names)
+        self.assertIn("BlockId", attr_names)
+        self.assertIn("Phi", attr_names)
+
+        # ElementId and BlockId should be Cell centered
+        for attr in grid.findall("Attribute"):
+            if attr.attrib["Name"] in ("ElementId", "BlockId"):
+                self.assertEqual(attr.attrib.get("Center"), "Cell")
+        # Phi should be Node centered
+        for attr in grid.findall("Attribute"):
+            if attr.attrib["Name"] == "Phi":
+                self.assertEqual(attr.attrib.get("Center"), "Node")
+
     def test_subfile_not_found(self):
         data_files = glob.glob(os.path.join(self.data_dir, "VolTestData*.h5"))
         output_filename = os.path.join(

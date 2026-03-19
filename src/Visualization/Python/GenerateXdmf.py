@@ -251,7 +251,6 @@ def _xmf_grid(
     dim = sum((coordinates + "_" + xyz) in observation for xyz in "xyz")
 
     if filling_poles:
-        # Filling poles is currently supported for a 2D surface embedded in 3D
         assert "pole_connectivity" in observation and topo_dim == 2 and dim == 3
 
     xmf_grid = ET.Element("Grid", Name=filename, GridType="Uniform")
@@ -274,7 +273,6 @@ def _xmf_grid(
     if topo_dim == 2 and dim == 3:
         # 2D surface embedded in 3D space
         if filling_poles:
-            # Cover poles with triangles
             if is_new_format:
                 xmf_topology = _xmf_mixed_topology(
                     observation,
@@ -288,21 +286,19 @@ def _xmf_grid(
                     connectivity_name="pole_connectivity",
                     grid_path=grid_path,
                 )
+        elif is_new_format:
+            xmf_topology = _xmf_mixed_topology(
+                observation,
+                connectivity_name="connectivity",
+                grid_path=grid_path,
+            )
         else:
-            # Cover 2D surface
-            if is_new_format:
-                xmf_topology = _xmf_mixed_topology(
-                    observation,
-                    connectivity_name="connectivity",
-                    grid_path=grid_path,
-                )
-            else:
-                xmf_topology = _xmf_topology(
-                    observation,
-                    topology_type="Quadrilateral",
-                    connectivity_name="connectivity",
-                    grid_path=grid_path,
-                )
+            xmf_topology = _xmf_topology(
+                observation,
+                topology_type="Quadrilateral",
+                connectivity_name="connectivity",
+                grid_path=grid_path,
+            )
     else:
         # Cover volume
         if use_tetrahedral_connectivity:
@@ -370,8 +366,8 @@ def _xmf_grid(
                 )
             )
 
-    # For new-format volume data (not pole-filling), add cell-centered
-    # element_id and block_id attributes.
+    # For new-format volume data, add cell-centered element_id and block_id
+    # attributes (not for the pole-filling grid, which uses pole_connectivity).
     if is_new_format and not filling_poles:
         number_of_cells = _count_cells_in_mixed_connectivity(
             observation["connectivity"][:]
@@ -575,7 +571,8 @@ def generate_xdmf(
                     use_tetrahedral_connectivity=use_tetrahedral_connectivity,
                 )
             )
-            # Connect poles if the data is a 2D surface in 3D
+            # Backwards compatibility: old files have a separate
+            # 'pole_connectivity' dataset with Triangle cells to fill the poles.
             if "pole_connectivity" in observation:
                 xmf_timestep_grid.append(
                     _xmf_grid(
