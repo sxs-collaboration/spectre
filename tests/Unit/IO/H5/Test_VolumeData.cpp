@@ -967,6 +967,28 @@ void test_disk() {
     disk_file.close_current_object();
   }
 
+  // Verify get_data_by_element roundtrip
+  {
+    const h5::H5File<h5::AccessType::ReadOnly> disk_file{h5_file_name};
+    const auto& volume_file =
+        disk_file.get<h5::VolumeData>("/element_data", version_number);
+    const auto all_data = volume_file.get_data_by_element(
+        std::nullopt, std::nullopt,
+        std::vector<std::string>{"InertialCoordinates_x",
+                                 "InertialCoordinates_y", "TestScalar"});
+    REQUIRE(all_data.size() == 1);
+    const auto& [obs_id_rt, obs_val_rt, elements] = all_data[0];
+    CHECK(obs_val_rt == approx(1.1));
+    REQUIRE(elements.size() == 1);
+    const auto& elem = elements[0];
+    CHECK(elem.element_name == grid_name);
+    CHECK(elem.extents == extents);
+    CHECK(elem.basis == bases);
+    CHECK(elem.quadrature == quadratures);
+    REQUIRE(elem.tensor_components.size() == 3);
+    disk_file.close_current_object();
+  }
+
   if (file_system::check_if_file_exists(h5_file_name)) {
     file_system::rm(h5_file_name, true);
   }
