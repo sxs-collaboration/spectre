@@ -9,6 +9,7 @@ spectre_target_sources(
   ${LIBRARY}
   PRIVATE
   AlignedLattice.cpp
+  AngularDisk.cpp
   BinaryCompactObject.cpp
   CartoonCylinder.cpp
   CartoonSphere1D.cpp
@@ -34,6 +35,7 @@ spectre_target_headers(
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
   AlignedLattice.hpp
+  AngularDisk.hpp
   BinaryCompactObject.hpp
   CartoonCylinder.hpp
   CartoonSphere1D.hpp

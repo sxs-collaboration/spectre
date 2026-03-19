@@ -6,6 +6,7 @@
 #include <cstddef>
 
 #include "Domain/Creators/AlignedLattice.hpp"
+#include "Domain/Creators/AngularDisk.hpp"
 #include "Domain/Creators/Disk.hpp"
 #include "Domain/Creators/Factory.hpp"
 #include "Domain/Creators/Rectilinear.hpp"
@@ -16,7 +17,8 @@ namespace DomainCreators_detail {
 template <>
 struct domain_creators<2> {
   using type = tmpl::list<domain::creators::AlignedLattice<2>,
-                          domain::creators::Disk, domain::creators::Rectangle,
+                          domain::creators::AngularDisk, domain::creators::Disk,
+                          domain::creators::Rectangle,
                           domain::creators::RotatedRectangles>;
 };
 }  // namespace DomainCreators_detail
