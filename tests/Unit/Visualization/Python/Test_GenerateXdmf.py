@@ -16,6 +16,7 @@ from click.testing import CliRunner
 import spectre.Informer as spectre_informer
 from spectre.support.Logging import configure_logging
 from spectre.Visualization.GenerateXdmf import (
+    _count_cells_in_mixed_connectivity,
     generate_xdmf,
     generate_xdmf_command,
 )
@@ -406,6 +407,179 @@ class TestGenerateXdmf(unittest.TestCase):
         # Phi should be Node-centered
         for attr in grid.findall("Attribute"):
             if attr.attrib["Name"] == "Phi":
+                self.assertEqual(attr.attrib.get("Center"), "Node")
+
+    def test_count_cells_empty(self):
+        self.assertEqual(
+            _count_cells_in_mixed_connectivity(np.array([], dtype=np.int32)), 0
+        )
+
+    def test_count_cells_single_wedge(self):
+        # Single Wedge: tag 8 + 6 vertex indices = 7 ints → 1 cell
+        conn = np.array([8, 0, 1, 2, 3, 4, 5], dtype=np.int32)
+        self.assertEqual(_count_cells_in_mixed_connectivity(conn), 1)
+
+    def test_count_cells_mixed_hex_wedge_triangle(self):
+        # 2 Hex (tag 9, 8 verts each) + 3 Wedge (tag 8, 6 verts each)
+        # + 1 Triangle (tag 4, 3 verts) = 6 cells
+        conn = np.array(
+            [
+                9,
+                0,
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,  # Hex 1
+                9,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,  # Hex 2
+                8,
+                0,
+                1,
+                2,
+                4,
+                5,
+                6,  # Wedge 1
+                8,
+                1,
+                2,
+                3,
+                5,
+                6,
+                7,  # Wedge 2
+                8,
+                2,
+                3,
+                4,
+                6,
+                7,
+                8,  # Wedge 3
+                4,
+                0,
+                1,
+                2,  # Triangle
+            ],
+            dtype=np.int32,
+        )
+        self.assertEqual(_count_cells_in_mixed_connectivity(conn), 6)
+
+    def test_count_cells_invalid_type_tag(self):
+        conn = np.array([99, 0, 1, 2], dtype=np.int32)
+        with self.assertRaises(ValueError):
+            _count_cells_in_mixed_connectivity(conn)
+
+    def write_wedge_h5_file(self, filename):
+        """Create an H5 file with mixed Hex+Wedge connectivity."""
+        with h5py.File(filename, "w") as f:
+            vol = f.create_group("WedgeData.vol")
+            vol.attrs["dimension"] = 3
+            obs = vol.create_group("ObservationId0")
+            obs.attrs["observation_value"] = 0.0
+            # 6 nodes for a Wedge + 8 for a Hex = 14 nodes
+            # Mixed: 1 Hex (tag 9, 8 verts) + 1 Wedge (tag 8, 6 verts)
+            obs.create_dataset(
+                "connectivity",
+                data=np.array(
+                    [
+                        9,
+                        0,
+                        1,
+                        2,
+                        3,
+                        4,
+                        5,
+                        6,
+                        7,  # Hex (tag 9, 8 verts)
+                        8,
+                        8,
+                        9,
+                        10,
+                        11,
+                        12,
+                        13,  # Wedge (tag 8, 6 verts)
+                    ],
+                    dtype=np.int32,
+                ),
+            )
+            obs.create_dataset(
+                "total_extents", data=np.array([2, 2, 2], dtype=np.int32)
+            )
+            obs.create_dataset(
+                "grid_names", data=np.array([b"[B0,(L0I0,L0I0,L0I0)]"])
+            )
+            obs.create_dataset(
+                "bases", data=np.array([0, 0, 0], dtype=np.int32)
+            )
+            obs.create_dataset(
+                "quadratures", data=np.array([0, 0, 0], dtype=np.int32)
+            )
+            coords = np.linspace(0.0, 1.0, 14)
+            obs.create_dataset("InertialCoordinates_x", data=coords)
+            obs.create_dataset("InertialCoordinates_y", data=coords)
+            obs.create_dataset("InertialCoordinates_z", data=coords)
+            # 2 cells total
+            obs.create_dataset(
+                "ElementId", data=np.array([1, 2], dtype=np.uint64)
+            )
+            obs.create_dataset(
+                "BlockId", data=np.array([0, 0], dtype=np.uint64)
+            )
+            obs.create_dataset("Psi", data=coords)
+
+    def test_wedge_generate_xdmf(self):
+        h5_file = os.path.join(self.test_dir, "WedgeData.h5")
+        self.write_wedge_h5_file(h5_file)
+        output_filename = os.path.join(self.test_dir, "Test_Wedge_output")
+        generate_xdmf(
+            h5files=[h5_file],
+            output=output_filename,
+            subfile_name="WedgeData",
+            start_time=0.0,
+            stop_time=1.0,
+            stride=1,
+            coordinates="InertialCoordinates",
+        )
+        self.assertTrue(os.path.isfile(output_filename + ".xmf"))
+        xmf_root = ET.parse(output_filename + ".xmf").getroot()
+
+        uniform_grids = xmf_root.findall(".//Grid[@GridType='Uniform']")
+        self.assertEqual(len(uniform_grids), 1)
+
+        grid = uniform_grids[0]
+        topo = grid.find("Topology")
+        self.assertIsNotNone(topo)
+        self.assertEqual(topo.attrib.get("TopologyType"), "Mixed")
+        # 1 Hex + 1 Wedge = 2 cells
+        self.assertEqual(topo.attrib.get("NumberOfElements"), "2")
+        # Connectivity array length: (1+8) + (1+6) = 16 ints
+        data_item = topo.find("DataItem")
+        self.assertIsNotNone(data_item)
+        self.assertEqual(data_item.attrib.get("Dimensions"), "16")
+
+        attr_names = {a.attrib["Name"] for a in grid.findall("Attribute")}
+        self.assertIn("ElementId", attr_names)
+        self.assertIn("BlockId", attr_names)
+        self.assertIn("Psi", attr_names)
+
+        # ElementId and BlockId should be Cell-centered with 2 entries
+        for attr in grid.findall("Attribute"):
+            if attr.attrib["Name"] in ("ElementId", "BlockId"):
+                self.assertEqual(attr.attrib.get("Center"), "Cell")
+                di = attr.find("DataItem")
+                self.assertIsNotNone(di)
+                self.assertEqual(di.attrib.get("Dimensions"), "2")
+        # Psi should be Node-centered
+        for attr in grid.findall("Attribute"):
+            if attr.attrib["Name"] == "Psi":
                 self.assertEqual(attr.attrib.get("Center"), "Node")
 
     def test_subfile_not_found(self):

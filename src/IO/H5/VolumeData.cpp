@@ -115,6 +115,9 @@ size_t append_element_extents_and_connectivity(
     }
     return local_connectivity;
   }();
+  // Capture the point offset for this element before incrementing. All
+  // extra connectivity added below (for special element types) must add
+  // this offset to convert local point indices to global ones.
   const int element_start = *total_points_so_far;
   *total_points_so_far += element_num_points;
   total_connectivity->insert(total_connectivity->end(), connectivity.begin(),
@@ -135,10 +138,10 @@ size_t append_element_extents_and_connectivity(
         total_connectivity->push_back(
             vis::detail::xdmf_topology_type(vis::detail::Topology::Quad));
         ++cell_count;
-        total_connectivity->push_back(j);
-        total_connectivity->push_back(j + 1);
-        total_connectivity->push_back(2 * l * (l + 1) + j + 1);
-        total_connectivity->push_back((2 * l) * (l + 1) + j);
+        total_connectivity->push_back(element_start + j);
+        total_connectivity->push_back(element_start + j + 1);
+        total_connectivity->push_back(element_start + 2 * l * (l + 1) + j + 1);
+        total_connectivity->push_back(element_start + (2 * l) * (l + 1) + j);
       }
 
       // Add a new connectivity output for filling the poles
@@ -150,8 +153,8 @@ size_t append_element_extents_and_connectivity(
       std::vector<int> top_pole_points{};
       std::vector<int> bottom_pole_points{};
       for (int k = 0; k < (2 * l + 1); ++k) {
-        top_pole_points.push_back(k * (l + 1));
-        bottom_pole_points.push_back(k * (l + 1) + l);
+        top_pole_points.push_back(element_start + k * (l + 1));
+        bottom_pole_points.push_back(element_start + k * (l + 1) + l);
       }
 
       const size_t number_of_pole_points = top_pole_points.size();
@@ -353,6 +356,102 @@ size_t append_element_extents_and_connectivity(
         }
       }
     }
+    // If element is a 3D spherical shell (SphericalHarmonic in theta and phi
+    // directions), add phi-wrapping hexahedra and pole-cap wedges.
+    if (element.basis[1] == Spectral::Basis::SphericalHarmonic and
+        element.basis[2] == Spectral::Basis::SphericalHarmonic) {
+      const auto n_r = static_cast<int>(element.extents[0]);
+      const auto n_theta = static_cast<int>(element.extents[1]);
+      const auto n_phi = static_cast<int>(element.extents[2]);
+      // Global point index: local index (r fastest, then theta, then phi)
+      // plus the offset for this element's first point.
+      const auto idx = [&n_r, &n_theta, &element_start](
+                           const int ir, const int it, const int ip) -> int {
+        return element_start + ir + n_r * it + n_r * n_theta * ip;
+      };
+
+      // Step 1: Add phi-wrapping hexahedra to close the phi=2*pi boundary
+      for (int it = 0; it < n_theta - 1; ++it) {
+        for (int ir = 0; ir < n_r - 1; ++ir) {
+          total_connectivity->push_back(vis::detail::xdmf_topology_type(
+              vis::detail::Topology::Hexahedron));
+          ++cell_count;
+          total_connectivity->push_back(idx(ir, it, n_phi - 1));
+          total_connectivity->push_back(idx(ir + 1, it, n_phi - 1));
+          total_connectivity->push_back(idx(ir + 1, it + 1, n_phi - 1));
+          total_connectivity->push_back(idx(ir, it + 1, n_phi - 1));
+          total_connectivity->push_back(idx(ir, it, 0));
+          total_connectivity->push_back(idx(ir + 1, it, 0));
+          total_connectivity->push_back(idx(ir + 1, it + 1, 0));
+          total_connectivity->push_back(idx(ir, it + 1, 0));
+        }
+      }
+
+      // Step 2: Add pole-cap wedges using recursive halving of the pole ring.
+      // For each pole (theta=0 and theta=n_theta-1) and each radial layer, the
+      // ring of n_phi points at fixed (ir, it_pole) is recursively halved to
+      // produce Wedge cells (bottom tri at ir, top tri at ir+1).
+      //
+      // Winding order: phi increases CCW when viewed from the north (+z). For
+      // the top pole (it_pole=0) the forward ring order gives an
+      // outward-pointing bottom-triangle normal (positive signed volume). For
+      // the bottom pole (it_pole=n_theta-1) the same phi order produces an
+      // inward-pointing normal, so we reverse the ring to keep consistent
+      // winding and positive signed volume for all wedges.
+      for (const int it_pole : {0, n_theta - 1}) {
+        const bool reverse_ring = (it_pole == n_theta - 1);
+        for (int ir = 0; ir < n_r - 1; ++ir) {
+          std::vector<int> bottom_ring;
+          std::vector<int> top_ring;
+          bottom_ring.reserve(static_cast<size_t>(n_phi));
+          top_ring.reserve(static_cast<size_t>(n_phi));
+          for (int ip = 0; ip < n_phi; ++ip) {
+            bottom_ring.push_back(idx(ir, it_pole, ip));
+            top_ring.push_back(idx(ir + 1, it_pole, ip));
+          }
+          if (reverse_ring) {
+            std::reverse(bottom_ring.begin(), bottom_ring.end());
+            std::reverse(top_ring.begin(), top_ring.end());
+          }
+          std::vector<int> new_bottom;
+          std::vector<int> new_top;
+          while (bottom_ring.size() >= 3) {
+            new_bottom.clear();
+            new_top.clear();
+            new_bottom.push_back(bottom_ring[0]);
+            new_top.push_back(top_ring[0]);
+            for (size_t i = 0; i < bottom_ring.size() - 2; i += 2) {
+              total_connectivity->push_back(vis::detail::xdmf_topology_type(
+                  vis::detail::Topology::Wedge));
+              ++cell_count;
+              total_connectivity->push_back(bottom_ring[i]);
+              total_connectivity->push_back(bottom_ring[i + 1]);
+              total_connectivity->push_back(bottom_ring[i + 2]);
+              total_connectivity->push_back(top_ring[i]);
+              total_connectivity->push_back(top_ring[i + 1]);
+              total_connectivity->push_back(top_ring[i + 2]);
+              new_bottom.push_back(bottom_ring[i + 2]);
+              new_top.push_back(top_ring[i + 2]);
+            }
+            if (bottom_ring.size() % 2 == 0) {
+              const size_t sz = bottom_ring.size();
+              total_connectivity->push_back(vis::detail::xdmf_topology_type(
+                  vis::detail::Topology::Wedge));
+              ++cell_count;
+              total_connectivity->push_back(bottom_ring[sz - 2]);
+              total_connectivity->push_back(bottom_ring[sz - 1]);
+              total_connectivity->push_back(bottom_ring[0]);
+              total_connectivity->push_back(top_ring[sz - 2]);
+              total_connectivity->push_back(top_ring[sz - 1]);
+              total_connectivity->push_back(top_ring[0]);
+            }
+            bottom_ring = std::move(new_bottom);
+            top_ring = std::move(new_top);
+          }
+        }
+      }
+    }
+    // generically do nothing if not a cylinder or spherical shell
   }
   return cell_count;
 }

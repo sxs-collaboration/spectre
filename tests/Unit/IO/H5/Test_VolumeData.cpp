@@ -1797,6 +1797,329 @@ void test_disk_multi_element() {
   }
 }
 
+void test_spherical_shell() {
+  // 3D spherical shell: n_r=2, n_theta=3, n_phi=5
+  // Basis: {Legendre, SphericalHarmonic, SphericalHarmonic}
+  // Quadrature: {GaussLobatto, Gauss, Equiangular}
+  // Standard hexahedra: (n_r-1)*(n_theta-1)*(n_phi-1) = 1*2*4 = 8
+  // Phi-wrapping hexahedra: (n_r-1)*(n_theta-1) = 2
+  // Pole wedges: 2 poles * 1 layer * 3 wedges/layer = 6
+  // Total cells: 16
+  const std::string h5_file_name("Unit.IO.H5.VolumeData.SphericalShell.h5");
+  const uint32_t version_number = 4;
+  if (file_system::check_if_file_exists(h5_file_name)) {
+    file_system::rm(h5_file_name, true);
+  }
+  const std::string grid_name{"Shell"};
+  const std::vector<Spectral::Basis> bases{Spectral::Basis::Legendre,
+                                           Spectral::Basis::SphericalHarmonic,
+                                           Spectral::Basis::SphericalHarmonic};
+  const std::vector<Spectral::Quadrature> quadratures{
+      Spectral::Quadrature::GaussLobatto, Spectral::Quadrature::Gauss,
+      Spectral::Quadrature::Equiangular};
+  const std::vector<size_t> extents{2, 3, 5};  // n_r=2, n_theta=3, n_phi=5
+  // 2*3*5 = 30 points
+  const std::vector<TensorComponent> tensor_components{
+      {"InertialCoordinates_x", DataVector(30, 0.0)},
+      {"InertialCoordinates_y", DataVector(30, 0.0)},
+      {"InertialCoordinates_z", DataVector(30, 0.0)}};
+
+  {
+    h5::H5File<h5::AccessType::ReadWrite> h5_file{h5_file_name};
+    auto& volume_file =
+        h5_file.insert<h5::VolumeData>("/element_data", version_number);
+    volume_file.write_volume_data(
+        11111, 2.5,
+        std::vector<ElementVolumeData>{
+            {grid_name, tensor_components, extents, bases, quadratures}});
+    h5_file.close_current_object();
+  }
+
+  // clang-format off
+  // idx(ir, it, ip) = ir + 2*it + 6*ip  (n_r=2, n_theta=3)
+  // 8 standard hexahedra (type=9, 9 values each)
+  // 2 phi-wrapping hexahedra (type=9, 9 values each)
+  // 3 top-pole wedges (type=8, 7 values each)
+  // 3 bottom-pole wedges (type=8, 7 values each)
+  DataVector expected_connectivity = {
+    // Standard hexahedra (it=0, ip=0..3)
+    9.,  0.,  1.,  3.,  2.,  6.,  7.,  9.,  8.,
+    9.,  6.,  7.,  9.,  8., 12., 13., 15., 14.,
+    9., 12., 13., 15., 14., 18., 19., 21., 20.,
+    9., 18., 19., 21., 20., 24., 25., 27., 26.,
+    // Standard hexahedra (it=1, ip=0..3)
+    9.,  2.,  3.,  5.,  4.,  8.,  9., 11., 10.,
+    9.,  8.,  9., 11., 10., 14., 15., 17., 16.,
+    9., 14., 15., 17., 16., 20., 21., 23., 22.,
+    9., 20., 21., 23., 22., 26., 27., 29., 28.,
+    // Phi-wrapping hexahedra (it=0, it=1): ip=n_phi-1 to ip=0
+    9., 24., 25., 27., 26.,  0.,  1.,  3.,  2.,
+    9., 26., 27., 29., 28.,  2.,  3.,  5.,  4.,
+    // Top-pole wedges (it_pole=0, ir=0): halving of ring [0,6,12,18,24]
+    8.,  0.,  6., 12.,  1.,  7., 13.,
+    8., 12., 18., 24., 13., 19., 25.,
+    8.,  0., 12., 24.,  1., 13., 25.,
+    // Bottom-pole wedges (it_pole=2, ir=0): reversed ring [28,22,16,10,4]
+    8., 28., 22., 16., 29., 23., 17.,
+    8., 16., 10.,  4., 17., 11.,  5.,
+    8., 28., 16.,  4., 29., 17.,  5.};
+  // clang-format on
+
+  {
+    const h5::H5File<h5::AccessType::ReadOnly> h5_file{h5_file_name};
+    const auto& volume_file =
+        h5_file.get<h5::VolumeData>("/element_data", version_number);
+    const auto h5_connectivity =
+        volume_file.get_tensor_component(11111, "connectivity").data;
+    const auto& conn = get<0>(h5_connectivity);
+    CHECK(conn == expected_connectivity);
+
+    // Verify element_id and block_id: 16 cells
+    constexpr size_t expected_num_cells = 16;
+    const auto element_id_var =
+        volume_file.get_tensor_component(11111, "ElementId").data;
+    const auto& element_id = get<0>(element_id_var);
+    CHECK(element_id.size() == expected_num_cells);
+
+    const auto block_id_var =
+        volume_file.get_tensor_component(11111, "BlockId").data;
+    const auto& block_id = get<0>(block_id_var);
+    CHECK(block_id.size() == expected_num_cells);
+
+    const auto expected_eid = static_cast<double>(
+        static_cast<uint64_t>(std::hash<std::string>{}(grid_name)));
+    for (size_t i = 0; i < expected_num_cells; ++i) {
+      CHECK(element_id[i] == expected_eid);
+      CHECK(block_id[i] == 0.0);
+    }
+    h5_file.close_current_object();
+  }
+
+  // Verify get_data_by_element roundtrip
+  {
+    const h5::H5File<h5::AccessType::ReadOnly> h5_file{h5_file_name};
+    const auto& volume_file =
+        h5_file.get<h5::VolumeData>("/element_data", version_number);
+    const auto all_data = volume_file.get_data_by_element(
+        std::nullopt, std::nullopt,
+        std::vector<std::string>{"InertialCoordinates_x",
+                                 "InertialCoordinates_y",
+                                 "InertialCoordinates_z"});
+    REQUIRE(all_data.size() == 1);
+    const auto& [obs_id_rt, obs_val_rt, elements] = all_data[0];
+    CHECK(obs_val_rt == approx(2.5));
+    REQUIRE(elements.size() == 1);
+    const auto& elem = elements[0];
+    CHECK(elem.element_name == grid_name);
+    CHECK(elem.extents == extents);
+    CHECK(elem.basis == bases);
+    CHECK(elem.quadrature == quadratures);
+    REQUIRE(elem.tensor_components.size() == 3);
+    h5_file.close_current_object();
+  }
+
+  if (file_system::check_if_file_exists(h5_file_name)) {
+    file_system::rm(h5_file_name, true);
+  }
+}
+
+void test_spherical_shell_min_phi() {
+  // 3D spherical shell: n_r=2, n_theta=3, n_phi=3 (minimum phi)
+  // Standard hexahedra: (n_r-1)*(n_theta-1)*(n_phi-1) = 1*2*2 = 4
+  // Phi-wrapping hexahedra: (n_r-1)*(n_theta-1) = 2
+  // Pole wedges: 2 poles * 1 layer * 1 wedge/layer = 2
+  // Total cells: 8
+  const std::string h5_file_name(
+      "Unit.IO.H5.VolumeData.SphericalShellMinPhi.h5");
+  const uint32_t version_number = 4;
+  if (file_system::check_if_file_exists(h5_file_name)) {
+    file_system::rm(h5_file_name, true);
+  }
+  const std::string grid_name{"ShellMin"};
+  const std::vector<Spectral::Basis> bases{Spectral::Basis::Legendre,
+                                           Spectral::Basis::SphericalHarmonic,
+                                           Spectral::Basis::SphericalHarmonic};
+  const std::vector<Spectral::Quadrature> quadratures{
+      Spectral::Quadrature::GaussLobatto, Spectral::Quadrature::Gauss,
+      Spectral::Quadrature::Equiangular};
+  const std::vector<size_t> extents{2, 3, 3};  // n_r=2, n_theta=3, n_phi=3
+  // 2*3*3 = 18 points
+  const std::vector<TensorComponent> tensor_components{
+      {"InertialCoordinates_x", DataVector(18, 0.0)},
+      {"InertialCoordinates_y", DataVector(18, 0.0)},
+      {"InertialCoordinates_z", DataVector(18, 0.0)}};
+
+  {
+    h5::H5File<h5::AccessType::ReadWrite> h5_file{h5_file_name};
+    auto& volume_file =
+        h5_file.insert<h5::VolumeData>("/element_data", version_number);
+    volume_file.write_volume_data(
+        22222, 3.0,
+        std::vector<ElementVolumeData>{
+            {grid_name, tensor_components, extents, bases, quadratures}});
+    h5_file.close_current_object();
+  }
+
+  // clang-format off
+  // idx(ir, it, ip) = ir + 2*it + 6*ip  (n_r=2, n_theta=3)
+  DataVector expected_connectivity = {
+    // Standard hexahedra
+    9.,  0.,  1.,  3.,  2.,  6.,  7.,  9.,  8.,
+    9.,  6.,  7.,  9.,  8., 12., 13., 15., 14.,
+    9.,  2.,  3.,  5.,  4.,  8.,  9., 11., 10.,
+    9.,  8.,  9., 11., 10., 14., 15., 17., 16.,
+    // Phi-wrapping hexahedra
+    9., 12., 13., 15., 14.,  0.,  1.,  3.,  2.,
+    9., 14., 15., 17., 16.,  2.,  3.,  5.,  4.,
+    // Top-pole wedge (it_pole=0, ir=0): ring [0,6,12]
+    8.,  0.,  6., 12.,  1.,  7., 13.,
+    // Bottom-pole wedge (it_pole=2, ir=0): reversed ring [16,10,4]
+    8., 16., 10.,  4., 17., 11.,  5.};
+  // clang-format on
+
+  {
+    const h5::H5File<h5::AccessType::ReadOnly> h5_file{h5_file_name};
+    const auto& volume_file =
+        h5_file.get<h5::VolumeData>("/element_data", version_number);
+    const auto h5_connectivity =
+        volume_file.get_tensor_component(22222, "connectivity").data;
+    const auto& conn = get<0>(h5_connectivity);
+    CHECK(conn == expected_connectivity);
+
+    // Verify element_id/block_id: 8 cells
+    const auto element_id_var =
+        volume_file.get_tensor_component(22222, "ElementId").data;
+    const auto& element_id = get<0>(element_id_var);
+    CHECK(element_id.size() == 8);
+    const auto block_id_var =
+        volume_file.get_tensor_component(22222, "BlockId").data;
+    const auto& block_id = get<0>(block_id_var);
+    CHECK(block_id.size() == 8);
+    h5_file.close_current_object();
+  }
+
+  if (file_system::check_if_file_exists(h5_file_name)) {
+    file_system::rm(h5_file_name, true);
+  }
+}
+
+void test_spherical_shell_multi_element() {
+  // Regression test: when a SphericalHarmonic shell element is NOT the first
+  // element in an observation (non-zero point offset), the extra connectivity
+  // (phi-wrapping hexahedra and pole-cap wedges) must use global point indices.
+  // Prior to the fix, local indices (0-based) were used, which caused the extra
+  // cells to reference points from previous elements instead of the shell.
+  //
+  // Element 0: Legendre {2,2,2} = 8 points, offset=0
+  // Element 1: SphericalHarmonic shell {2,3,3} = 18 points, offset=8
+  const std::string h5_file_name(
+      "Unit.IO.H5.VolumeData.SphericalShellMulti.h5");
+  const uint32_t version_number = 4;
+  if (file_system::check_if_file_exists(h5_file_name)) {
+    file_system::rm(h5_file_name, true);
+  }
+
+  const std::string name0 = "[B0,(L0I0,L0I0,L0I0)]";  // Legendre block 0
+  const std::string name1 = "[B1,(L0I0,L0I0,L0I0)]";  // SH shell block 1
+
+  const std::vector<Spectral::Basis> leg_bases{3, Spectral::Basis::Legendre};
+  const std::vector<Spectral::Quadrature> leg_quads{
+      3, Spectral::Quadrature::GaussLobatto};
+  const std::vector<size_t> leg_extents{2, 2, 2};
+
+  const std::vector<Spectral::Basis> sh_bases{
+      Spectral::Basis::Legendre, Spectral::Basis::SphericalHarmonic,
+      Spectral::Basis::SphericalHarmonic};
+  const std::vector<Spectral::Quadrature> sh_quads{
+      Spectral::Quadrature::GaussLobatto, Spectral::Quadrature::Gauss,
+      Spectral::Quadrature::Equiangular};
+  const std::vector<size_t> sh_extents{2, 3, 3};
+
+  {
+    h5::H5File<h5::AccessType::ReadWrite> h5_file{h5_file_name};
+    auto& volume_file =
+        h5_file.insert<h5::VolumeData>("/element_data", version_number);
+    volume_file.write_volume_data(
+        55555, 5.0,
+        std::vector<ElementVolumeData>{
+            {name0,
+             {TensorComponent{"InertialCoordinates_x", DataVector(8, 0.0)},
+              TensorComponent{"InertialCoordinates_y", DataVector(8, 0.0)},
+              TensorComponent{"InertialCoordinates_z", DataVector(8, 0.0)}},
+             leg_extents,
+             leg_bases,
+             leg_quads},
+            {name1,
+             {TensorComponent{"InertialCoordinates_x", DataVector(18, 0.0)},
+              TensorComponent{"InertialCoordinates_y", DataVector(18, 0.0)},
+              TensorComponent{"InertialCoordinates_z", DataVector(18, 0.0)}},
+             sh_extents,
+             sh_bases,
+             sh_quads}});
+    h5_file.close_current_object();
+  }
+
+  // clang-format off
+  // Element 0: Legendre {2,2,2}, idx_leg = ir + 2*it + 4*ip, offset=0
+  //   1 hex × 9 values = 9 values
+  // Element 1: SH {2,3,3}, idx_sh = 8 + ir + 2*it + 6*ip, offset=8
+  //   compute_cells order: it outer, ip inner (theta outer, phi inner)
+  //   4 std hex + 2 wrap hex + 1 top wedge + 1 bot wedge = 8 cells
+  //   4×9 + 2×9 + 1×7 + 1×7 = 68 values
+  // Total: 9 + 68 = 77 values, 9 cells
+  DataVector expected_connectivity = {
+    // Legendre hex (ir=0,it=0,ip=0)
+    9.,  0., 1., 3., 2., 4., 5., 7., 6.,
+    // SH standard hexahedra: it outer (0..1), ip inner (0..1), +8 offset
+    // it=0,ip=0: (8,9,11,10,14,15,17,16)
+    9.,  8.,  9., 11., 10., 14., 15., 17., 16.,
+    // it=0,ip=1: (14,15,17,16,20,21,23,22)
+    9., 14., 15., 17., 16., 20., 21., 23., 22.,
+    // it=1,ip=0: (10,11,13,12,16,17,19,18)
+    9., 10., 11., 13., 12., 16., 17., 19., 18.,
+    // it=1,ip=1: (16,17,19,18,22,23,25,24)
+    9., 16., 17., 19., 18., 22., 23., 25., 24.,
+    // SH phi-wrapping hexahedra (ip=2 -> ip=0)
+    9., 20., 21., 23., 22.,  8.,  9., 11., 10.,
+    9., 22., 23., 25., 24., 10., 11., 13., 12.,
+    // SH top-pole wedge (it_pole=0): ring [8,14,20] / [9,15,21]
+    8.,  8., 14., 20.,  9., 15., 21.,
+    // SH bottom-pole wedge (it_pole=2, reversed): ring [24,18,12] / [25,19,13]
+    8., 24., 18., 12., 25., 19., 13.};
+  // clang-format on
+
+  {
+    const h5::H5File<h5::AccessType::ReadOnly> h5_file{h5_file_name};
+    const auto& volume_file =
+        h5_file.get<h5::VolumeData>("/element_data", version_number);
+    const auto h5_connectivity =
+        volume_file.get_tensor_component(55555, "connectivity").data;
+    const auto& conn = get<0>(h5_connectivity);
+    CHECK(conn == expected_connectivity);
+
+    // Verify element_id/block_id: 9 cells total
+    const auto element_id_var =
+        volume_file.get_tensor_component(55555, "ElementId").data;
+    const auto& element_id = get<0>(element_id_var);
+    CHECK(element_id.size() == 9);
+
+    const auto block_id_var =
+        volume_file.get_tensor_component(55555, "BlockId").data;
+    const auto& block_id = get<0>(block_id_var);
+    CHECK(block_id.size() == 9);
+    // First cell belongs to block 0 (Legendre)
+    CHECK(block_id[0] == 0.0);
+    // Cells 1..8 belong to block 1 (SH shell)
+    for (size_t i = 1; i < 9; ++i) {
+      CHECK(block_id[i] == 1.0);
+    }
+    h5_file.close_current_object();
+  }
+
+  if (file_system::check_if_file_exists(h5_file_name)) {
+    file_system::rm(h5_file_name, true);
+  }
+}
 
 }  // namespace
 
@@ -1813,6 +2136,9 @@ SPECTRE_TEST_CASE("Unit.IO.H5.VolumeData", "[Unit][IO][H5]") {
   test_disk_multi_element();
   test_annulus();
   test_annulus_disk_mixed();
+  test_spherical_shell();
+  test_spherical_shell_min_phi();
+  test_spherical_shell_multi_element();
   test_extend_connectivity_data<1>();
   test_extend_connectivity_data<2>();
   test_extend_connectivity_data<3>();
