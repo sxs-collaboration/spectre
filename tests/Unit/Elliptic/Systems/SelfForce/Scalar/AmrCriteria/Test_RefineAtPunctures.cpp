@@ -99,6 +99,38 @@ void test_criterion(
       }
     }
   }
+  {
+    INFO("Evaluate_roundoff");
+    using background_tag =
+        elliptic::Tags::Background<elliptic::analytic_data::Background>;
+    const double offset = 1e-11;
+    const domain::creators::Rectangle domain_creator_for_roundoff{
+        {{10., -1.0 + offset}},
+        {{15., 1.0 + offset}},
+        {{1, 1}},
+        {{3, 3}},
+        {{false, false}}};
+    auto databox_for_roundoff =
+        db::create<tmpl::list<background_tag, domain::Tags::Domain<2>>>(
+            std::unique_ptr<elliptic::analytic_data::Background>{
+                std::make_unique<ScalarSelfForce::AnalyticData::CircularOrbit>(
+                    1.0, 0.0, 10.0, 2, std::nullopt, false)},
+            domain_creator_for_roundoff.create_domain());
+    const ObservationBox<
+        tmpl::list<>,
+        db::DataBox<tmpl::list<background_tag, domain::Tags::Domain<2>>>>
+        box2{make_not_null(&databox_for_roundoff)};
+    Parallel::GlobalCache<Metavariables> empty_cache{};
+    {
+      INFO("Verify both elements share the puncture");
+      const auto expected_flags = make_array<2>(amr::Flag::Split);
+      for (const auto& element_id : {ElementId<2>{0, {{{1, 1}, {1, 0}}}},
+                                     ElementId<2>{0, {{{1, 1}, {1, 1}}}}}) {
+        auto flags = criterion.evaluate(box2, empty_cache, element_id);
+        CHECK(flags == expected_flags);
+      }
+    }
+  }
 }
 
 }  // namespace

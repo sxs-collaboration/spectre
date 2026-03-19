@@ -37,6 +37,11 @@ std::array<amr::Flag, 2> RefineAtPuncture::impl(
   if (not block_logical_coords.has_value()) {
     return make_array<2>(amr::Flag::DoNothing);
   }
+  for (size_t d=0; d<2; ++d) {
+    if (abs(block_logical_coords->get(d)) < 1e-10) {
+      block_logical_coords->get(d) = 0.;
+    }
+  }
   if (not element_logical_coordinates(*block_logical_coords, element_id)) {
     return make_array<2>(amr::Flag::DoNothing);
   }
