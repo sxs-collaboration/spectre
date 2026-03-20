@@ -9,6 +9,7 @@
 #include "DataStructures/Index.hpp"
 #include "DataStructures/IndexIterator.hpp"
 #include "Framework/TestHelpers.hpp"
+#include "Helpers/NumericalAlgorithms/Spectral/DiskTestFunctions.hpp"
 #include "Helpers/NumericalAlgorithms/Spectral/FourierTestFunctions.hpp"
 #include "Helpers/NumericalAlgorithms/SphericalHarmonics/YlmTestFunctions.hpp"
 #include "NumericalAlgorithms/LinearOperators/DefiniteIntegral.hpp"
@@ -133,6 +134,63 @@ void test_definite_integral_spherical_shell(const size_t n_r, const size_t L) {
         const DataVector integrand =
             r * f(get<1>(xi_vector), get<2>(xi_vector));
         CHECK(4.0 * f.definite_integral() ==
+              approx(definite_integral(integrand, mesh)));
+      }
+    }
+  }
+}
+
+void test_definite_integral_disk(const size_t n_r, const size_t n_ph) {
+  CAPTURE(n_r);
+  CAPTURE(n_ph);
+  const Mesh<2> mesh{{n_r, n_ph},
+                     {Spectral::Basis::ZernikeB2, Spectral::Basis::ZernikeB2},
+                     {Spectral::Quadrature::GaussRadauUpper,
+                      Spectral::Quadrature::Equiangular}};
+  const size_t M = n_ph / 2;
+  const auto xi_vector = logical_coordinates(mesh);
+  const DataVector r = 0.5 * (get<0>(xi_vector) + 1.0);
+  const DataVector& phi = get<1>(xi_vector);
+  for (size_t pow_nx = 0; pow_nx <= M; ++pow_nx) {
+    CAPTURE(pow_nx);
+    for (size_t pow_ny = 0; pow_ny <= M - pow_nx; ++pow_ny) {
+      CAPTURE(pow_ny);
+      const DiskTestFunctions::ProductOfPolynomials f{pow_nx, pow_ny};
+      const DataVector integrand = r * f(r, phi);
+      CHECK(f.definite_integral() ==
+            approx(definite_integral(integrand, mesh)));
+    }
+  }
+}
+
+void test_definite_integral_cylinder(const size_t n_r, const size_t n_ph,
+                                     const size_t n_z) {
+  CAPTURE(n_r);
+  CAPTURE(n_ph);
+  CAPTURE(n_z);
+  const Mesh<3> mesh{
+      {n_r, n_ph, n_z},
+      {Spectral::Basis::ZernikeB2, Spectral::Basis::ZernikeB2,
+       Spectral::Basis::Legendre},
+      {Spectral::Quadrature::GaussRadauUpper, Spectral::Quadrature::Equiangular,
+       Spectral::Quadrature::GaussLobatto}};
+  const size_t M = n_ph / 2;
+  const auto xi_vector = logical_coordinates(mesh);
+  const DataVector r = 0.5 * (get<0>(xi_vector) + 1.0);
+  const DataVector& phi = get<1>(xi_vector);
+  const DataVector& z = get<2>(xi_vector);
+  for (size_t pow_nx = 0; pow_nx <= M; ++pow_nx) {
+    CAPTURE(pow_nx);
+    for (size_t pow_ny = 0; pow_ny <= M - pow_nx; ++pow_ny) {
+      CAPTURE(pow_ny);
+      const DiskTestFunctions::ProductOfPolynomials f{pow_nx, pow_ny};
+      const double disk_integral = f.definite_integral();
+      for (size_t pow_nz = 0; pow_nz < n_z; ++pow_nz) {
+        CAPTURE(pow_nz);
+        const DataVector integrand = r * f(r, phi) * pow(z, pow_nz);
+        const double z_integral =
+            (0 == pow_nz % 2) ? 2.0 / (static_cast<double>(pow_nz) + 1.0) : 0.0;
+        CHECK(disk_integral * z_integral ==
               approx(definite_integral(integrand, mesh)));
       }
     }
@@ -294,6 +352,18 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.DefiniteIntegral",
   for (size_t n_r = 2; n_r < 5; ++n_r) {
     for (size_t L = 2; L < 9; ++L) {
       test_definite_integral_spherical_shell(n_r, L);
+    }
+  }
+
+  for (size_t n_r = 1; n_r < 9; ++n_r) {
+    for (size_t n_ph = 3; n_ph < 15; n_ph += 2) {
+      // We enforce these restrictions for the disk
+      if (n_ph / 2 <= 2 * n_r - 2) {
+        test_definite_integral_disk(n_r, n_ph);
+        for (size_t n_z = 2; n_z < 5; ++n_z) {
+          test_definite_integral_cylinder(n_r, n_ph, n_z);
+        }
+      }
     }
   }
 
