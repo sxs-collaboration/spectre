@@ -33,6 +33,8 @@ def _list_tensor_components(observation):
         components.remove("pole_connectivity")
     if "disk_connectivity" in components:
         components.remove("disk_connectivity")
+    if "cylinder_connectivity" in components:
+        components.remove("cylinder_connectivity")
     if "tetrahedral_connectivity" in components:
         components.remove("tetrahedral_connectivity")
     components.remove("total_extents")
@@ -62,6 +64,7 @@ def _xmf_topology(
         "Quadrilateral": 4,
         "Tetrahedron": 4,
         "Triangle": 3,
+        "Wedge": 6,
     }[topology_type]
     num_cells = len(observation[connectivity_name]) // num_vertices
     xmf_topology = ET.Element(
@@ -167,6 +170,7 @@ def _xmf_grid(
     coordinates: str,
     filling_poles: bool = False,
     filling_disk_center: bool = False,
+    filling_cylinder_center: bool = False,
     use_tetrahedral_connectivity: bool = False,
 ) -> ET.Element:
     # Make sure the coordinates are found in the file. We assume there should
@@ -190,6 +194,16 @@ def _xmf_grid(
     if filling_poles:
         # Filling poles is currently supported for a 2D surface embedded in 3D
         assert "pole_connectivity" in observation and topo_dim == 2 and dim == 3
+
+    if filling_disk_center:
+        assert "disk_connectivity" in observation and topo_dim == 2 and dim == 2
+
+    if filling_cylinder_center:
+        assert (
+            "cylinder_connectivity" in observation
+            and topo_dim == 3
+            and dim == 3
+        )
 
     xmf_grid = ET.Element("Grid", Name=filename, GridType="Uniform")
 
@@ -229,6 +243,13 @@ def _xmf_grid(
                 observation,
                 topology_type="Triangle",
                 connectivity_name="disk_connectivity",
+                grid_path=grid_path,
+            )
+        elif filling_cylinder_center:
+            xmf_topology = _xmf_topology(
+                observation,
+                topology_type="Wedge",
+                connectivity_name="cylinder_connectivity",
                 grid_path=grid_path,
             )
         else:
@@ -505,6 +526,22 @@ def generate_xdmf(
                         temporal_id=temporal_id,
                         coordinates=coordinates,
                         filling_disk_center=True,
+                        use_tetrahedral_connectivity=(
+                            use_tetrahedral_connectivity
+                        ),
+                    )
+                )
+            # Fill cylinder center if cylinder_connectivity is present
+            if "cylinder_connectivity" in observation:
+                xmf_timestep_grid.append(
+                    _xmf_grid(
+                        observation,
+                        topo_dim=topo_dim,
+                        filename=filename_in_output,
+                        subfile_name=subfile_name,
+                        temporal_id=temporal_id,
+                        coordinates=coordinates,
+                        filling_cylinder_center=True,
                         use_tetrahedral_connectivity=(
                             use_tetrahedral_connectivity
                         ),

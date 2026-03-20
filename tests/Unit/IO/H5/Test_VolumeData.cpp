@@ -694,6 +694,99 @@ void test_extend_connectivity_data() {
   }
 }
 
+void test_cylinder(const bool filled) {
+  // filled = true -> cylinder with ZernikeB2, close the angular edges with
+  // hexahedra, fill in the inner circle with wedges
+  // filled = false -> hollow cylinder with Fourier, just close the angular
+  // edges
+  const std::string h5_file_name("Unit.IO.H5.VolumeData.Cylinder.h5");
+  const uint32_t version_number = 4;
+  if (file_system::check_if_file_exists(h5_file_name)) {
+    file_system::rm(h5_file_name, true);
+  }
+  const std::string grid_name{"Cylinder"};
+  const std::vector<size_t> observation_ids{99901};
+  const std::vector<double> observation_values{2.2};
+  const auto bases =
+      filled ? std::vector<Spectral::Basis>{Spectral::Basis::ZernikeB2,
+                                            Spectral::Basis::ZernikeB2,
+                                            Spectral::Basis::Legendre}
+             : std::vector<Spectral::Basis>{Spectral::Basis::Legendre,
+                                            Spectral::Basis::Fourier,
+                                            Spectral::Basis::Legendre};
+  const std::vector<Spectral::Quadrature> quadratures{
+      filled ? Spectral::Quadrature::GaussRadauUpper
+             : Spectral::Quadrature::GaussLobatto,
+      Spectral::Quadrature::Equiangular, Spectral::Quadrature::GaussLobatto};
+  const std::vector<size_t> extents{2, 7, 2};
+
+  // Not using values, just checking connectivity
+  const std::vector<DataVector> tensor_and_coord_data{
+      {28, 0.0}, {28, 0.0}, {28, 0.0}, {28, 0.0}};
+  const std::vector<TensorComponent> tensor_components{
+      {"InertialCoordinates_x", tensor_and_coord_data[0]},
+      {"InertialCoordinates_y", tensor_and_coord_data[1]},
+      {"InertialCoordinates_z", tensor_and_coord_data[2]},
+      {"TestScalar", tensor_and_coord_data[3]}};
+
+  {
+    h5::H5File<h5::AccessType::ReadWrite> cyl_file{h5_file_name};
+    auto& volume_file =
+        cyl_file.insert<h5::VolumeData>("/element_data", version_number);
+    volume_file.write_volume_data(
+        observation_ids[0], observation_values[0],
+        std::vector<ElementVolumeData>{
+            {grid_name, tensor_components, extents, bases, quadratures}});
+    cyl_file.close_current_object();
+  }
+
+  {
+    const h5::H5File<h5::AccessType::ReadOnly> cyl_file{h5_file_name};
+    const auto& volume_file =
+        cyl_file.get<h5::VolumeData>("/element_data", version_number);
+    const auto h5_connectivity =
+        volume_file.get_tensor_component(99901, "connectivity").data;
+    const DataVector connectivity_data = get<0>(h5_connectivity);
+    cyl_file.close_current_object();
+
+    // clang-format off
+    const DataVector expected_connectivity{
+         0.,  1.,  3.,  2., 14., 15., 17., 16.,
+         2.,  3.,  5.,  4., 16., 17., 19., 18.,
+         4.,  5.,  7.,  6., 18., 19., 21., 20.,
+         6.,  7.,  9.,  8., 20., 21., 23., 22.,
+         8.,  9., 11., 10., 22., 23., 25., 24.,
+        10., 11., 13., 12., 24., 25., 27., 26.,
+        12., 13.,  1.,  0., 26., 27., 15., 14.};
+    // clang-format on
+    CHECK(connectivity_data == expected_connectivity);
+  }
+
+  if (filled) {
+    const h5::H5File<h5::AccessType::ReadOnly> cyl_file{h5_file_name};
+    const auto& volume_file =
+        cyl_file.get<h5::VolumeData>("/element_data", version_number);
+    const auto h5_wedge =
+        volume_file.get_tensor_component(99901, "cylinder_connectivity").data;
+    const DataVector wedge_data = get<0>(h5_wedge);
+    cyl_file.close_current_object();
+
+    // clang-format off
+    const DataVector expected_wedge{
+         0.,  2.,  4., 14., 16., 18.,
+         4.,  6.,  8., 18., 20., 22.,
+         8., 10., 12., 22., 24., 26.,
+         0.,  4.,  8., 14., 18., 22.,
+         8., 12.,  0., 22., 26., 14.};
+    // clang-format on
+    CHECK(wedge_data == expected_wedge);
+  }
+
+  if (file_system::check_if_file_exists(h5_file_name)) {
+    file_system::rm(h5_file_name, true);
+  }
+}
+
 void test_disk() {
   // The disk has some extra connectivity: one being to close the angular
   // edges, the other to fill in the inner circle
@@ -965,6 +1058,8 @@ SPECTRE_TEST_CASE("Unit.IO.H5.VolumeData", "[Unit][IO][H5]") {
   test_cartoon();
   test_strahlkorper();
   test_disk();
+  test_cylinder(true);
+  test_cylinder(false);
   test_extend_connectivity_data<1>();
   test_extend_connectivity_data<2>();
   test_extend_connectivity_data<3>();
