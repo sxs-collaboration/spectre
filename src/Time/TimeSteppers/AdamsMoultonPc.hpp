@@ -47,8 +47,8 @@ namespace TimeSteppers {
 /*!
  * \ingroup TimeSteppersGroup
  *
- * An \f$N\$th order Adams-Moulton predictor-corrector method using an
- * \$(N - 1)\$th order Adams-Bashforth predictor.
+ * An $N$th order Adams-Moulton predictor-corrector method using an
+ * $(N - 1)$th order Adams-Bashforth predictor.
  *
  * If \p Monotonic is true, dense output is performed using the
  * predictor stage, otherwise the corrector is used.  The corrector
