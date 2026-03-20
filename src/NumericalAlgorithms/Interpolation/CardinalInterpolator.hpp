@@ -33,6 +33,10 @@ namespace intrp {
  * Spectral::fourier_interpolation_matrix at the quadrature points of the
  * source_mesh
  *
+ * For multidimensional bases such as the SphericalHarmonic or ZernikeB2, the
+ * matrices used for interpolating cannot be applied per dimension but must
+ * be handled specially.
+ *
  */
 template <size_t Dim>
 class Cardinal {
@@ -40,9 +44,8 @@ class Cardinal {
   Cardinal(
       const Mesh<Dim>& source_mesh,
       const tnsr::I<DataVector, Dim, Frame::ElementLogical>& target_points);
-  Cardinal(
-      const Mesh<Dim>& source_mesh,
-      const tnsr::I<double, Dim, Frame::ElementLogical>& target_point);
+  Cardinal(const Mesh<Dim>& source_mesh,
+           const tnsr::I<double, Dim, Frame::ElementLogical>& target_point);
 
   Cardinal();
 
@@ -57,10 +60,25 @@ class Cardinal {
   void pup(PUP::er& p);
 
  private:
-  size_t n_target_points_;
-  Mesh<Dim> source_mesh_;
-  std::array<Matrix, Dim> interpolation_matrices_;
+  /// Precomputes `zernike_weights_`, which is all the work independent of
+  /// `f_source`, to avoid redundant computations. This is only needed when
+  /// the source mesh has a B2 basis
+  void set_zernike_b2_weights();
+
+  /// General routine called by `interpolate()` for a mesh using B2 bases
+  DataVector interpolate_zernike_b2(const DataVector& f_source) const;
+
+  template <size_t LocalDim>
+  // NOLINTNEXTILNE(readability-redundant-declaration)
+  friend bool operator==(const Cardinal<LocalDim>& lhs,
+                         const Cardinal<LocalDim>& rhs);
+
+  size_t n_target_points_ = 0;
+  Mesh<Dim> source_mesh_{};
+  std::array<Matrix, Dim> interpolation_matrices_{};
   bool using_spherical_harmonics_{false};
+  bool using_zernike_b2_{false};
+  Matrix zernike_weights_{};
 };
 
 template <size_t Dim>
