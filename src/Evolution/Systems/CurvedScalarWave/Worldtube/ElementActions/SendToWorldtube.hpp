@@ -62,7 +62,7 @@ namespace CurvedScalarWave::Worldtube::Actions {
  *    - `tags_to_slice_on_face`
  *    - `Worldtube::Tags::ExpansionOrder`
  *    - `Worldtube::Tags::FaceCoordinates<Dim, Frame::Inertial, true>`
- *    - `Worldtube::Tags::PunctureField`
+ *    - `Worldtube::Tags::GeodesicPunctureField`
  *    - `Worldtube::Tags::ExcisionSphere`
  *    - `Tags::TimeStepId`
  */
@@ -117,7 +117,7 @@ struct SendToWorldtube {
     const auto& puncture_field =
         db::get<Tags::CurrentIteration>(box) > 0
             ? db::get<Tags::IteratedPunctureField<Dim>>(box).value()
-            : db::get<Tags::PunctureField<Dim>>(box).value();
+            : db::get<Tags::GeodesicPunctureField<Dim>>(box).value();
     const auto& psi_puncture = get<CurvedScalarWave::Tags::Psi>(puncture_field);
     const auto& dt_psi_puncture =
         get<::Tags::dt<CurvedScalarWave::Tags::Psi>>(puncture_field);

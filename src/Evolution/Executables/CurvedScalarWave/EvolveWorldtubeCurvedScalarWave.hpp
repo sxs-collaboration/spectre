@@ -278,6 +278,7 @@ struct EvolutionMetavars {
       CurvedScalarWave::Tags::BackgroundSpacetime<BackgroundSpacetime>,
       evolution::initial_data::Tags::InitialData,
       CurvedScalarWave::Worldtube::Tags::ExcisionSphere<volume_dim>,
+      CurvedScalarWave::Worldtube::Tags::PunctureFieldConfig,
       CurvedScalarWave::Worldtube::Tags::ExpansionOrder,
       CurvedScalarWave::Worldtube::Tags::WorldtubeRadiusParameters,
       CurvedScalarWave::Worldtube::Tags::BlackHoleRadiusParameters,
@@ -317,7 +318,8 @@ struct EvolutionMetavars {
           CurvedScalarWave::Worldtube::Tags::FaceCoordinatesCompute<
               volume_dim, Frame::Inertial, true>,
           CurvedScalarWave::Worldtube::Tags::GeodesicAccelerationCompute<3>,
-          CurvedScalarWave::Worldtube::Tags::PunctureFieldCompute<volume_dim>,
+          CurvedScalarWave::Worldtube::Tags::GeodesicPunctureFieldCompute<
+              volume_dim>,
           CurvedScalarWave::Worldtube::Tags::FaceQuantitiesCompute,
           ::domain::Tags::GridToInertialInverseJacobian<volume_dim>>>,
       ::evolution::dg::Initialization::Mortars<volume_dim>,

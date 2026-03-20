@@ -25,6 +25,7 @@
 #include "Domain/Tags.hpp"
 #include "Evolution/Systems/CurvedScalarWave/BackgroundSpacetime.hpp"
 #include "Evolution/Systems/CurvedScalarWave/Tags.hpp"
+#include "Evolution/Systems/CurvedScalarWave/Worldtube/PunctureField.hpp"
 #include "IO/Logging/Verbosity.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
 #include "Options/Auto.hpp"
@@ -229,15 +230,10 @@ struct ObserveCoefficientsTrigger {
   using group = Worldtube;
 };
 
-/*!
- * \brief The internal expansion order of the worldtube solution.
- */
-struct ExpansionOrder {
-  using type = size_t;
+struct PunctureField {
+  using type = CurvedScalarWave::Worldtube::PunctureField;
   static constexpr Options::String help{
-      "The internal expansion order of the worldtube solution. Currently "
-      "orders 0 and 1 are implemented"};
-  static size_t upper_bound() { return 1; }
+      "Options controlling puncture-field evaluation."};
   using group = Worldtube;
 };
 
@@ -711,13 +707,29 @@ struct FaceQuantitiesCompute : FaceQuantities, db::ComputeTag {
 /// @}
 
 /*!
+ * \brief Configuration and dispatch object for puncture-field expressions.
+ */
+struct PunctureFieldConfig : db::SimpleTag {
+  using type = CurvedScalarWave::Worldtube::PunctureField;
+  static constexpr bool pass_metavariables = false;
+  using option_tags = tmpl::list<OptionTags::PunctureField>;
+  static type create_from_options(
+      const CurvedScalarWave::Worldtube::PunctureField& puncture_field) {
+    return puncture_field;
+  }
+};
+
+/*!
  * \brief The internal expansion order of the worldtube solution.
  */
 struct ExpansionOrder : db::SimpleTag {
   using type = size_t;
   static constexpr bool pass_metavariables = false;
-  using option_tags = tmpl::list<OptionTags::ExpansionOrder>;
-  static size_t create_from_options(const size_t order) { return order; }
+  using option_tags = tmpl::list<OptionTags::PunctureField>;
+  static size_t create_from_options(
+      const CurvedScalarWave::Worldtube::PunctureField& puncture_field) {
+    return puncture_field.expansion_order();
+  }
 };
 
 /// @{
@@ -727,7 +739,7 @@ struct ExpansionOrder : db::SimpleTag {
  * worldtube this holds a std::nullopt.
  */
 template <size_t Dim>
-struct PunctureField : db::SimpleTag {
+struct GeodesicPunctureField : db::SimpleTag {
   using type = std::optional<Variables<tmpl::list<
       CurvedScalarWave::Tags::Psi, ::Tags::dt<CurvedScalarWave::Tags::Psi>,
       ::Tags::deriv<CurvedScalarWave::Tags::Psi, tmpl::size_t<3>,
@@ -735,12 +747,13 @@ struct PunctureField : db::SimpleTag {
 };
 
 template <size_t Dim>
-struct PunctureFieldCompute : PunctureField<Dim>, db::ComputeTag {
-  using base = PunctureField<Dim>;
+struct GeodesicPunctureFieldCompute : GeodesicPunctureField<Dim>,
+                                      db::ComputeTag {
+  using base = GeodesicPunctureField<Dim>;
   using argument_tags =
       tmpl::list<FaceCoordinates<Dim, Frame::Inertial, true>,
                  ParticlePositionVelocity<Dim>, GeodesicAcceleration<Dim>,
-                 Charge, ExpansionOrder>;
+                 Charge, PunctureFieldConfig>;
   using return_type = std::optional<Variables<tmpl::list<
       CurvedScalarWave::Tags::Psi, ::Tags::dt<CurvedScalarWave::Tags::Psi>,
       ::Tags::deriv<CurvedScalarWave::Tags::Psi, tmpl::size_t<3>,
@@ -752,7 +765,7 @@ struct PunctureFieldCompute : PunctureField<Dim>, db::ComputeTag {
       const std::array<tnsr::I<double, Dim, ::Frame::Inertial>, 2>&
           particle_position_velocity,
       const tnsr::I<double, Dim>& particle_acceleration, double charge,
-      const size_t expansion_order);
+      const CurvedScalarWave::Worldtube::PunctureField& puncture_field);
 };
 /// @}
 
