@@ -32,6 +32,7 @@
 #include "Domain/Structure/ElementId.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
+#include "Helpers/NumericalAlgorithms/Spectral/DiskTestFunctions.hpp"
 #include "Helpers/NumericalAlgorithms/Spectral/FourierTestFunctions.hpp"
 #include "Helpers/NumericalAlgorithms/SphericalHarmonics/YlmTestFunctions.hpp"
 #include "NumericalAlgorithms/Interpolation/IrregularInterpolant.hpp"
@@ -419,7 +420,7 @@ void test_polynomial_interpolant(const std::array<size_t, Dim>& extents,
   const auto target_xi = create_target_points<Dim>(n_random_target_points);
   const auto target_x = element_map(target_xi);
   const intrp::Irregular irregular_interp{mesh, target_xi,
-                                    std::optional<size_t>{max_degree}};
+                                          std::optional<size_t>{max_degree}};
 
   for (size_t degree = 0; degree <= max_degree; ++degree) {
     const auto source_vars = polynomial<Dim>(source_x, degree);
@@ -557,6 +558,85 @@ void test_3d_spherical(const gsl::not_null<std::mt19937*> generator) {
                 interpolator.interpolate(f_source);
             CHECK_ITERABLE_APPROX(f_interpolated, f_expected);
           }
+        }
+      }
+    }
+  }
+}
+
+void test_2d_disk(const gsl::not_null<std::mt19937*> generator) {
+  std::uniform_real_distribution<> xi_distribution(-1.0, 1.0);
+  std::uniform_real_distribution<> phi_distribution(0.0, 2.0 * M_PI);
+  for (size_t n_target_points = 1; n_target_points < 13;
+       n_target_points += 11) {
+    tnsr::I<DataVector, 2, Frame::ElementLogical> xi_target{n_target_points};
+    get<0>(xi_target) = make_with_random_values<DataVector>(
+        generator, make_not_null(&xi_distribution), xi_target);
+    get<1>(xi_target) = make_with_random_values<DataVector>(
+        generator, make_not_null(&phi_distribution), xi_target);
+    for (size_t n_y = 0; n_y < 4; ++n_y) {
+      CAPTURE(n_y);
+      for (size_t n_x = 0; n_x < 4; ++n_x) {
+        CAPTURE(n_x);
+        const Mesh<2> source_mesh{
+            n_x + n_y == 0 ? std::array{1_st, 1_st}
+                           : std::array{n_x + n_y + 1, 2 * (n_x + n_y) + 1},
+            std::array{Spectral::Basis::ZernikeB2, Spectral::Basis::ZernikeB2},
+            std::array{Spectral::Quadrature::GaussRadauUpper,
+                       Spectral::Quadrature::Equiangular}};
+        const DiskTestFunctions::ProductOfPolynomials f{n_x, n_y};
+        const auto xi_source = logical_coordinates(source_mesh);
+        const DataVector f_source =
+            f(0.5 * (get<0>(xi_source) + 1.0), get<1>(xi_source));
+        const DataVector f_expected =
+            f(0.5 * (get<0>(xi_target) + 1.0), get<1>(xi_target));
+        const intrp::Irregular<2> interpolator(source_mesh, xi_target);
+        const DataVector f_interpolated = interpolator.interpolate(f_source);
+        CHECK_ITERABLE_APPROX(f_interpolated, f_expected);
+      }
+    }
+  }
+}
+
+void test_3d_cylinder(const gsl::not_null<std::mt19937*> generator) {
+  std::uniform_real_distribution<> xi_distribution(-1.0, 1.0);
+  std::uniform_real_distribution<> phi_distribution(0.0, 2.0 * M_PI);
+  for (size_t n_target_points = 1; n_target_points < 13;
+       n_target_points += 11) {
+    tnsr::I<DataVector, 3, Frame::ElementLogical> xi_target{n_target_points};
+    get<0>(xi_target) = make_with_random_values<DataVector>(
+        generator, make_not_null(&xi_distribution), xi_target);
+    get<1>(xi_target) = make_with_random_values<DataVector>(
+        generator, make_not_null(&phi_distribution), xi_target);
+    get<2>(xi_target) = make_with_random_values<DataVector>(
+        generator, make_not_null(&xi_distribution), xi_target);
+    for (size_t n_z = 2; n_z < 4; ++n_z) {
+      CAPTURE(n_z);
+      for (size_t n_y = 0; n_y < 4; ++n_y) {
+        CAPTURE(n_y);
+        for (size_t n_x = 0; n_x < 4; ++n_x) {
+          CAPTURE(n_x);
+          const Mesh<3> source_mesh{
+              n_x + n_y == 0
+                  ? std::array{1_st, 1_st, n_z}
+                  : std::array{n_x + n_y + 1, 2 * (n_x + n_y) + 1, n_z},
+              std::array{Spectral::Basis::ZernikeB2, Spectral::Basis::ZernikeB2,
+                         Spectral::Basis::Legendre},
+              std::array{Spectral::Quadrature::GaussRadauUpper,
+                         Spectral::Quadrature::Equiangular,
+                         Spectral::Quadrature::GaussLobatto}};
+          const DiskTestFunctions::ProductOfPolynomials f{n_x, n_y};
+          const Polynomial f_z{n_z - 1, 1.5, 2.0};
+          const auto xi_source = logical_coordinates(source_mesh);
+          const DataVector f_source =
+              f(0.5 * (get<0>(xi_source) + 1.0), get<1>(xi_source)) *
+              f_z(get<2>(xi_source));
+          const DataVector f_expected =
+              f(0.5 * (get<0>(xi_target) + 1.0), get<1>(xi_target)) *
+              f_z(get<2>(xi_target));
+          const intrp::Irregular<3> interpolator(source_mesh, xi_target);
+          const DataVector f_interpolated = interpolator.interpolate(f_source);
+          CHECK_ITERABLE_APPROX(f_interpolated, f_expected);
         }
       }
     }
@@ -713,6 +793,114 @@ void test_cartoon_axial(const gsl::not_null<std::mt19937*> generator) {
     }
   }
 }
+
+#ifdef SPECTRE_DEBUG
+void test_errors() {
+  const tnsr::I<DataVector, 2, Frame::ElementLogical> target_coords_2d{
+      {{{0.5, 1.0}, {0.0, 1.5}}}};
+  const tnsr::I<DataVector, 3, Frame::ElementLogical> target_coords_3d{
+      {{{0.5, 1.0}, {0.0, 1.5}, {0.1, 0.8}}}};
+  {
+    INFO("Testing SphericalHarmonic basis consistency assertion for 2D");
+    CHECK_THROWS_WITH(
+        (intrp::Irregular<2>{
+            Mesh<2>{
+                {3, 5},
+                {Spectral::Basis::SphericalHarmonic, Spectral::Basis::Legendre},
+                {Spectral::Quadrature::Gauss, Spectral::Quadrature::Gauss}},
+            target_coords_2d}),
+        Catch::Matchers::ContainsSubstring(
+            "Expected both dimensions to have spherical harmonic basis"));
+  }
+  {
+    INFO("Testing ZernikeB2 basis consistency assertion for 2D");
+    CHECK_THROWS_WITH(
+        (intrp::Irregular<2>{
+            Mesh<2>{{3, 3},
+                    {Spectral::Basis::ZernikeB2, Spectral::Basis::Legendre},
+                    {Spectral::Quadrature::GaussRadauUpper,
+                     Spectral::Quadrature::Gauss}},
+            target_coords_2d}),
+        Catch::Matchers::ContainsSubstring("Unexpected basis combination"));
+  }
+  {
+    INFO("Testing SphericalHarmonic basis consistency assertion for 3D");
+    CHECK_THROWS_WITH(
+        (intrp::Irregular<3>{
+            Mesh<3>{
+                {3, 3, 5},
+                {Spectral::Basis::Legendre, Spectral::Basis::SphericalHarmonic,
+                 Spectral::Basis::Legendre},
+                {Spectral::Quadrature::Gauss, Spectral::Quadrature::Gauss,
+                 Spectral::Quadrature::Gauss}},
+            target_coords_3d}),
+        Catch::Matchers::ContainsSubstring(
+            "Expected last two dimensions to each have spherical harmonic "
+            "basis"));
+  }
+  {
+    INFO("Testing ZernikeB2 basis consistency assertion for 3D");
+    CHECK_THROWS_WITH(
+        (intrp::Irregular<3>{
+            Mesh<3>{{3, 3, 3},
+                    {Spectral::Basis::ZernikeB2, Spectral::Basis::Legendre,
+                     Spectral::Basis::Legendre},
+                    {Spectral::Quadrature::GaussRadauUpper,
+                     Spectral::Quadrature::Gauss, Spectral::Quadrature::Gauss}},
+            target_coords_3d}),
+        Catch::Matchers::ContainsSubstring("Unexpected basis combination"));
+  }
+  {
+    INFO("Testing N_phi odd assertion for ZernikeB2");
+    CHECK_THROWS_WITH(
+        (intrp::Irregular<2>{
+            Mesh<2>{{3, 4},
+                    {Spectral::Basis::ZernikeB2, Spectral::Basis::ZernikeB2},
+                    {Spectral::Quadrature::GaussRadauUpper,
+                     Spectral::Quadrature::Equiangular}},
+            target_coords_2d}),
+        Catch::Matchers::ContainsSubstring(
+            "Need N_phi to be odd for stability"));
+  }
+  {
+    INFO("Testing mixed FD and DG bases assertion for 2D");
+    CHECK_THROWS_WITH(
+        (intrp::Irregular<2>{Mesh<2>{{3, 3},
+                                     {Spectral::Basis::FiniteDifference,
+                                      Spectral::Basis::Legendre},
+                                     {Spectral::Quadrature::FaceCentered,
+                                      Spectral::Quadrature::Gauss}},
+                             target_coords_2d}),
+        Catch::Matchers::ContainsSubstring(
+            "Mixed FD and DG bases are not supported"));
+  }
+  {
+    INFO("Testing fd_to_fd_interp_order nullopt assertion for non-FD mesh");
+    CHECK_THROWS_WITH(
+        (intrp::Irregular<2>{
+            Mesh<2>{{3, 3},
+                    {Spectral::Basis::Legendre, Spectral::Basis::Legendre},
+                    {Spectral::Quadrature::Gauss, Spectral::Quadrature::Gauss}},
+            target_coords_2d, std::optional<size_t>{2}}),
+        Catch::Matchers::ContainsSubstring(
+            "fd_to_fd_interp_order only applies to FD meshes"));
+  }
+  {
+    INFO("Testing mixed FD and DG bases assertion for 3D");
+    CHECK_THROWS_WITH(
+        (intrp::Irregular<3>{Mesh<3>{{3, 3, 3},
+                                     {Spectral::Basis::FiniteDifference,
+                                      Spectral::Basis::FiniteDifference,
+                                      Spectral::Basis::Legendre},
+                                     {Spectral::Quadrature::FaceCentered,
+                                      Spectral::Quadrature::FaceCentered,
+                                      Spectral::Quadrature::Gauss}},
+                             target_coords_3d}),
+        Catch::Matchers::ContainsSubstring(
+            "Mixed FD and DG bases are not supported"));
+  }
+}
+#endif
 }  // namespace
 
 // [[TimeOut, 10]]
@@ -739,8 +927,13 @@ SPECTRE_TEST_CASE("Unit.Numerical.Interpolation.IrregularInterpolant",
   MAKE_GENERATOR(generator);
   test_2d_spherical(make_not_null(&generator));
   test_3d_spherical(make_not_null(&generator));
+  test_2d_disk(make_not_null(&generator));
+  test_3d_cylinder(make_not_null(&generator));
   test_2d_hollow_disk(make_not_null(&generator));
   test_3d_hollow_cylinder(make_not_null(&generator));
   test_cartoon_spherical(make_not_null(&generator));
   test_cartoon_axial(make_not_null(&generator));
+#ifdef SPECTRE_DEBUG
+  test_errors();
+#endif
 }

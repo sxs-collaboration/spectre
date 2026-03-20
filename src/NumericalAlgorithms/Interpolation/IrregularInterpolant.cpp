@@ -11,17 +11,141 @@
 #include <vector>
 
 #include "DataStructures/DataVector.hpp"
+#include "DataStructures/Tensor/IndexType.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "NumericalAlgorithms/Interpolation/CardinalInterpolator.hpp"
+#include "NumericalAlgorithms/Spectral/BasisFunctions/Zernike.hpp"
 #include "NumericalAlgorithms/Spectral/InterpolationMatrix.hpp"
 #include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
+#include "NumericalAlgorithms/Spectral/NodalToModalMatrix.hpp"
+#include "NumericalAlgorithms/Spectral/Quadrature.hpp"
+#include "Utilities/Blas.hpp"
 #include "Utilities/ContainerHelpers.hpp"
 
 namespace {
+template <size_t Dim>
+void compute_zernikeb2_interpolation(
+    gsl::not_null<Matrix*> result, const Mesh<Dim>& mesh,
+    const std::array<Matrix, Dim>& interpolation_matrices,
+    const size_t number_of_target_points) {
+  static_assert(Dim == 2 or Dim == 3,
+                "ZernikeB2 interpolation only supports 2D and 3D");
+
+  const size_t n_r = mesh.extents(0);
+  const size_t n_phi = mesh.extents(1);
+  const size_t n_z = Dim == 3 ? mesh.extents(2) : 1;
+
+  ASSERT(n_phi % 2 == 1, "Need N_phi to be odd for stability, got " << n_phi);
+
+  Matrix identity{};
+  const Matrix& m_r = interpolation_matrices[0];
+  const Matrix& m_ph = interpolation_matrices[1];
+  const Matrix& m_z = [&interpolation_matrices, &identity]() {
+    if constexpr (Dim == 3) {
+      (void)identity;
+      return interpolation_matrices[2];
+    } else {
+      (void)interpolation_matrices;
+      return identity;
+    }
+  }();
+
+  const Matrix& nodal_to_modal =
+      Spectral::nodal_to_modal_matrix<Spectral::Basis::Fourier,
+                                      Spectral::Quadrature::Equiangular>(n_phi);
+
+  // Pre-compute angular (and z for 3D) weights in interleaved format
+  const size_t combined_dim = n_phi * n_z;  // n_z=1 for 2D case
+  Matrix zernike_weights(2 * number_of_target_points, combined_dim);
+
+  for (size_t k = 0; k < number_of_target_points; ++k) {
+    // Initialize
+    for (size_t idx = 0; idx < combined_dim; ++idx) {
+      zernike_weights(2 * k, idx) = 0.0;      // even (radial_offset=0)
+      zernike_weights(2 * k + 1, idx) = 0.0;  // odd (radial_offset=n_r)
+    }
+
+    // m=0 mode (always uses radial_offset = 0)
+    for (size_t i_phi = 0; i_phi < n_phi; ++i_phi) {
+      const double angular_weight = m_ph(k, 0) * nodal_to_modal(0, i_phi);
+      if constexpr (Dim == 2) {
+        zernike_weights(2 * k, i_phi) += angular_weight;
+      } else {  // Dim == 3
+        for (size_t i_z = 0; i_z < n_z; ++i_z) {
+          const size_t idx = i_z * n_phi + i_phi;
+          zernike_weights(2 * k, idx) +=
+              Dim == 3 ? angular_weight * m_z(k, i_z) : angular_weight;
+        }
+      }
+    }
+
+    // m>0 modes: group by radial_offset
+    for (size_t i_m = 1; i_m < n_phi; ++i_m) {
+      const size_t m = (i_m + 1) / 2;
+      const size_t radial_offset = (m % 2) * n_r;
+
+      for (size_t i_phi = 0; i_phi < n_phi; ++i_phi) {
+        const double angular_weight = m_ph(k, i_m) * nodal_to_modal(i_m, i_phi);
+        if constexpr (Dim == 2) {
+          if (radial_offset == 0) {
+            zernike_weights(2 * k, i_phi) += angular_weight;
+          } else {
+            zernike_weights(2 * k + 1, i_phi) += angular_weight;
+          }
+        } else {  // Dim == 3
+          for (size_t i_z = 0; i_z < n_z; ++i_z) {
+            const size_t idx = i_z * n_phi + i_phi;
+            const double combined_weight =
+                Dim == 3 ? angular_weight * m_z(k, i_z) : angular_weight;
+            if (radial_offset == 0) {
+              zernike_weights(2 * k, idx) += combined_weight;
+            } else {
+              zernike_weights(2 * k + 1, idx) += combined_weight;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  // Now fill the result matrix using the pre-computed weights
+  for (size_t k = 0; k < number_of_target_points; ++k) {
+    for (size_t s = 0; s < mesh.number_of_grid_points(); ++s) {
+      if constexpr (Dim == 2) {
+        const size_t i_phi = s / n_r;  // NOLINT(clang-analyzer-core.DivideZero)
+        const size_t i_r = s % n_r;
+
+        // Even contribution (radial_offset=0)
+        (*result)(k, s) = m_r(k, i_r) * zernike_weights(2 * k, i_phi);
+
+        // Odd contribution (radial_offset=n_r)
+        if (i_r + n_r < m_r.columns()) {
+          (*result)(k, s) +=
+              m_r(k, i_r + n_r) * zernike_weights(2 * k + 1, i_phi);
+        }
+      } else {  // Dim == 3
+        // NOLINTNEXTLINE(clang-analyzer-core.DivideZero)
+        const size_t i_z = s / (n_phi * n_r);
+        const size_t i_phi = (s % (n_phi * n_r)) / n_r;
+        const size_t i_r = s % n_r;
+        const size_t idx = i_z * n_phi + i_phi;
+
+        // Even contribution (radial_offset=0)
+        (*result)(k, s) = m_r(k, i_r) * zernike_weights(2 * k, idx);
+
+        // Odd contribution (radial_offset=n_r)
+        if (i_r + n_r < m_r.columns()) {
+          (*result)(k, s) +=
+              m_r(k, i_r + n_r) * zernike_weights(2 * k + 1, idx);
+        }
+      }
+    }
+  }
+}
+
 template <size_t Order>
-std::vector<double> fd_stencil(const DataVector& xi_source,
-                               double xi_target);
+std::vector<double> fd_stencil(const DataVector& xi_source, double xi_target);
 
 // potential future optimization: use the barycentric formula
 
@@ -246,8 +370,8 @@ Matrix interpolation_matrix(
         }
         default:
           ERROR("Unsupported fd_to_fd_interp_order: "
-            << fd_to_fd_interp_order.value_or(default_order)
-            << "; expected 1, 2, or 3.");
+                << fd_to_fd_interp_order.value_or(default_order)
+                << "; expected 1, 2, or 3.");
       }
       for (size_t i = 0; i < number_of_source_points; ++i) {
         result(p, i) = stencil[i];
@@ -270,6 +394,11 @@ Matrix interpolation_matrix(
     const std::optional<size_t>& fd_to_fd_interp_order) {
   const auto number_of_target_points = get_size(get<0>(points));
   Matrix result(number_of_target_points, mesh.number_of_grid_points());
+
+  ASSERT(
+      mesh.basis()[0] == Spectral::Basis::FiniteDifference or
+          fd_to_fd_interp_order == std::nullopt,
+      "fd_to_fd_interp_order only applies to FD meshes. But Mesh is " << mesh);
 
   if (mesh.basis()[0] == Spectral::Basis::FiniteDifference) {
     ASSERT(mesh.basis()[1] == Spectral::Basis::FiniteDifference,
@@ -309,8 +438,8 @@ Matrix interpolation_matrix(
         }
         default:
           ERROR("Unsupported fd_to_fd_interp_order: "
-            << fd_to_fd_interp_order.value_or(default_order)
-            << "; expected 1, 2, or 3.");
+                << fd_to_fd_interp_order.value_or(default_order)
+                << "; expected 1, 2, or 3.");
       }
       for (size_t j = 0, s = 0; j < mesh.extents(1); ++j) {
         for (size_t i = 0; i < mesh.extents(0); ++i) {
@@ -323,9 +452,6 @@ Matrix interpolation_matrix(
   } else if (mesh.basis()[0] == Spectral::Basis::SphericalHarmonic) {
     ASSERT(mesh.basis()[1] == Spectral::Basis::SphericalHarmonic,
            "Expected both dimensions to have spherical harmonic basis. Mesh = "
-               << mesh);
-    ASSERT(fd_to_fd_interp_order == std::nullopt,
-           "fd_to_fd_interp_order only applies to FD meshes. But Mesh is "
                << mesh);
     const intrp::Cardinal cardinal_interpolator(mesh, points);
     const auto [n_th, n_ph] = mesh.extents().indices();
@@ -340,12 +466,19 @@ Matrix interpolation_matrix(
       }
     }
     return result;
+  } else if (mesh.basis()[0] == Spectral::Basis::ZernikeB2) {
+    ASSERT(mesh.basis()[1] == Spectral::Basis::ZernikeB2,
+           "Unexpected basis combination: " << mesh.basis());
+    const intrp::Cardinal cardinal_interpolator(mesh, points);
+    const auto& interpolation_matrices =
+        cardinal_interpolator.interpolation_matrices();
+    compute_zernikeb2_interpolation<2>(make_not_null(&result), mesh,
+                                       interpolation_matrices,
+                                       number_of_target_points);
+    return result;
   }
 
   // Not FD or special basis, so use 1D spectral interpolation matrices
-  ASSERT(
-      fd_to_fd_interp_order == std::nullopt,
-      "fd_to_fd_interp_order only applies to FD meshes. But Mesh is " << mesh);
   const std::array<Matrix, 2> matrices{
       {Spectral::interpolation_matrix(mesh.slice_through(0), get<0>(points)),
        Spectral::interpolation_matrix(mesh.slice_through(1), get<1>(points))}};
@@ -369,6 +502,11 @@ Matrix interpolation_matrix(
     const std::optional<size_t>& fd_to_fd_interp_order) {
   const auto number_of_target_points = get_size(get<0>(points));
   Matrix result(number_of_target_points, mesh.number_of_grid_points());
+
+  ASSERT(
+      mesh.basis()[0] == Spectral::Basis::FiniteDifference or
+          fd_to_fd_interp_order == std::nullopt,
+      "fd_to_fd_interp_order only applies to FD meshes. But Mesh is " << mesh);
 
   if (mesh.basis()[0] == Spectral::Basis::FiniteDifference) {
     ASSERT(mesh.basis()[1] == Spectral::Basis::FiniteDifference and
@@ -426,8 +564,8 @@ Matrix interpolation_matrix(
         }
         default:
           ERROR("Unsupported fd_to_fd_interp_order: "
-            << fd_to_fd_interp_order.value_or(default_order)
-            << "; expected 1, 2, or 3.");
+                << fd_to_fd_interp_order.value_or(default_order)
+                << "; expected 1, 2, or 3.");
       }
       for (size_t k = 0, s = 0; k < mesh.extents(2); ++k) {
         for (size_t j = 0; j < mesh.extents(1); ++j) {
@@ -440,9 +578,6 @@ Matrix interpolation_matrix(
     }
     return result;
   } else if (mesh.basis()[1] == Spectral::Basis::SphericalHarmonic) {
-    ASSERT(fd_to_fd_interp_order == std::nullopt,
-           "fd_to_fd_interp_order only applies to FD meshes. But Mesh is "
-               << mesh);
     ASSERT(mesh.basis()[2] == Spectral::Basis::SphericalHarmonic,
            "Expected last two dimensions to each have spherical harmonic "
            "basis. Mesh = "
@@ -464,12 +599,19 @@ Matrix interpolation_matrix(
       }
     }
     return result;
+  } else if (mesh.basis()[0] == Spectral::Basis::ZernikeB2) {
+    ASSERT(mesh.basis()[1] == Spectral::Basis::ZernikeB2,
+           "Unexpected basis combination: " << mesh.basis());
+    const intrp::Cardinal cardinal_interpolator(mesh, points);
+    const auto& interpolation_matrices =
+        cardinal_interpolator.interpolation_matrices();
+    compute_zernikeb2_interpolation<3>(make_not_null(&result), mesh,
+                                       interpolation_matrices,
+                                       number_of_target_points);
+    return result;
   }
 
   // Not FD or special basis, so use 1D spectral interpolation matrices
-  ASSERT(
-      fd_to_fd_interp_order == std::nullopt,
-      "fd_to_fd_interp_order only applies to FD meshes. But Mesh is " << mesh);
   const std::array<Matrix, 3> matrices{
       {Spectral::interpolation_matrix(mesh.slice_through(0), get<0>(points)),
        Spectral::interpolation_matrix(mesh.slice_through(1), get<1>(points)),
