@@ -92,6 +92,14 @@ decltype(auto) get_spectral_quantity_for_mesh(F&& f, const Mesh<1>& mesh) {
               std::integral_constant<Basis, Basis::ZernikeB2>{},
               std::integral_constant<Quadrature, Quadrature::GaussRadauUpper>{},
               num_points);
+        case Quadrature::Equiangular:
+          // While ZernikeB2 with Equiangular is treated differently in
+          // operators (e.g. partial derivatives, interpolation), in terms of
+          // its spectral quantities it is Fourier with Equiangular
+          return f(
+              std::integral_constant<Basis, Basis::Fourier>{},
+              std::integral_constant<Quadrature, Quadrature::Equiangular>{},
+              num_points);
         default:
           ERROR("Missing quadrature case for spectral quantity");
       }
