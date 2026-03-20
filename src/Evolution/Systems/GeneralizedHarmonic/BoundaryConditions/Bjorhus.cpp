@@ -66,8 +66,42 @@ convert_constraint_preserving_bjorhus_type_from_yaml(
 
 template <size_t Dim>
 ConstraintPreservingBjorhus<Dim>::ConstraintPreservingBjorhus(
-    const detail::ConstraintPreservingBjorhusType type)
-    : type_(type) {}
+    const detail::ConstraintPreservingBjorhusType type,
+    std::optional<std::unique_ptr<::MathFunction<1, Frame::Inertial>>>
+        incoming_wave_profile)
+    : type_(type),
+      incoming_wave_profile_(incoming_wave_profile.has_value()
+                                 ? std::move(incoming_wave_profile.value())
+                                 : nullptr) {
+  if constexpr (Dim < 3) {
+    if (incoming_wave_profile_ != nullptr) {
+      ERROR("IncomingWaveProfile can only be used for "
+            "ConstraintPreservingBjorhus in 3 spatial dimensions.");
+    }
+  }
+}
+
+template <size_t Dim>
+ConstraintPreservingBjorhus<Dim>::ConstraintPreservingBjorhus(
+    const ConstraintPreservingBjorhus& rhs)
+    : BoundaryCondition<Dim>{dynamic_cast<const BoundaryCondition<Dim>&>(rhs)},
+      type_(rhs.type_),
+      incoming_wave_profile_(rhs.incoming_wave_profile_ != nullptr
+                                 ? rhs.incoming_wave_profile_->get_clone()
+                                 : nullptr) {}
+
+template <size_t Dim>
+ConstraintPreservingBjorhus<Dim>& ConstraintPreservingBjorhus<Dim>::operator=(
+    const ConstraintPreservingBjorhus& rhs) {
+  if (&rhs == this) {
+    return *this;
+  }
+  type_ = rhs.type_;
+  incoming_wave_profile_ = rhs.incoming_wave_profile_ != nullptr
+                               ? rhs.incoming_wave_profile_->get_clone()
+                               : nullptr;
+  return *this;
+}
 
 template <size_t Dim>
 ConstraintPreservingBjorhus<Dim>::ConstraintPreservingBjorhus(
@@ -84,6 +118,7 @@ template <size_t Dim>
 void ConstraintPreservingBjorhus<Dim>::pup(PUP::er& p) {
   BoundaryCondition<Dim>::pup(p);
   p | type_;
+  p | incoming_wave_profile_;
 }
 
 template <size_t Dim>
@@ -122,7 +157,8 @@ std::optional<std::string> ConstraintPreservingBjorhus<Dim>::dg_time_derivative(
     // c.f. dg_interior_deriv_vars_tags
     const tnsr::iaa<DataVector, Dim, Frame::Inertial>& d_spacetime_metric,
     const tnsr::iaa<DataVector, Dim, Frame::Inertial>& d_pi,
-    const tnsr::ijaa<DataVector, Dim, Frame::Inertial>& d_phi) const {
+    const tnsr::ijaa<DataVector, Dim, Frame::Inertial>& d_phi,
+    const double time) const {
   TempBuffer<tmpl::list<::Tags::TempI<0, Dim, Frame::Inertial, DataVector>,
                         ::Tags::Tempiaa<1, Dim, Frame::Inertial, DataVector>,
                         ::Tags::TempII<0, Dim, Frame::Inertial, DataVector>,
@@ -317,7 +353,7 @@ std::optional<std::string> ConstraintPreservingBjorhus<Dim>::dg_time_derivative(
   } else if (type_ == detail::ConstraintPreservingBjorhusType::
                           ConstraintPreservingPhysical) {
     Bjorhus::constraint_preserving_gauge_physical_corrections_dt_v_minus(
-        make_not_null(&bc_dt_v_minus), gamma2, coords, normal_covector,
+        make_not_null(&bc_dt_v_minus), gamma2, coords, time, normal_covector,
         unit_interface_normal_vector, spacetime_unit_normal_vector,
         incoming_null_one_form, outgoing_null_one_form, incoming_null_vector,
         outgoing_null_vector, projection_ab, projection_Ab, projection_AB,
@@ -325,7 +361,7 @@ std::optional<std::string> ConstraintPreservingBjorhus<Dim>::dg_time_derivative(
         inverse_spacetime_metric, three_index_constraint,
         char_projected_rhs_dt_v_psi, char_projected_rhs_dt_v_minus,
         constraint_char_zero_plus, constraint_char_zero_minus, phi, d_phi, d_pi,
-        char_speeds);
+        char_speeds, incoming_wave_profile_.get());
   } else {
     ERROR(
         "Failed to set dtVMinus. Input option must be one of "

@@ -17,10 +17,12 @@
 #include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/Ricci.hpp"
 #include "PointwiseFunctions/GeneralRelativity/ProjectionOperators.hpp"
 #include "PointwiseFunctions/GeneralRelativity/WeylPropagating.hpp"
+#include "PointwiseFunctions/MathFunctions/MathFunction.hpp"
 #include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/MakeWithValue.hpp"
 
 namespace gh::BoundaryConditions::Bjorhus {
 template <size_t VolumeDim, typename DataType>
@@ -247,7 +249,8 @@ void add_physical_terms_to_dt_v_minus(
     const tnsr::iaa<DataType, VolumeDim, Frame::Inertial>& phi,
     const tnsr::ijaa<DataType, VolumeDim, Frame::Inertial>& d_phi,
     const tnsr::iaa<DataType, VolumeDim, Frame::Inertial>& d_pi,
-    const std::array<DataType, 4>& char_speeds) {
+    const std::array<DataType, 4>& char_speeds, const double time,
+    const MathFunction<1, Frame::Inertial>* const incoming_wave_profile) {
   // hard-coded value from SpEC Bbh input file Mu = MuPhys = 0
   constexpr double mu_phys = 0.;
   constexpr bool adjust_phys_using_c4 = true;
@@ -257,12 +260,15 @@ void add_physical_terms_to_dt_v_minus(
   // https://arxiv.org/pdf/gr-qc/0105031.pdf.
   TempBuffer<tmpl::list<::Tags::Tempaa<0, VolumeDim, Frame::Inertial, DataType>,
                         ::Tags::Tempaa<1, VolumeDim, Frame::Inertial, DataType>,
+                        ::Tags::Tempaa<2, VolumeDim, Frame::Inertial, DataType>,
                         ::Tags::TempScalar<0, DataType>>>
       u3_buffer(get_size(get<0>(unit_interface_normal_vector)), 0.);
   auto& U3p =
       get<::Tags::Tempaa<0, VolumeDim, Frame::Inertial, DataType>>(u3_buffer);
   auto& U3m =
       get<::Tags::Tempaa<1, VolumeDim, Frame::Inertial, DataType>>(u3_buffer);
+  auto& injected_wave =
+      get<::Tags::Tempaa<2, VolumeDim, Frame::Inertial, DataType>>(u3_buffer);
 
   {
     TempBuffer<
@@ -428,11 +434,21 @@ void add_physical_terms_to_dt_v_minus(
     }
   }
 
+  if (incoming_wave_profile != nullptr) {
+    if constexpr (VolumeDim == 3) {
+      const double injected_wave_profile_value = (*incoming_wave_profile)(time);
+      injected_wave.get(1, 1) = injected_wave_profile_value;
+      injected_wave.get(2, 2) = injected_wave_profile_value;
+      injected_wave.get(3, 3) = -2. * injected_wave_profile_value;
+    } else {
+      ERROR("IncomingWaveProfile can only be used in 3 spatial dimensions.");
+    }
+  }
+
   // Add physical boundary corrections
   if (gamma2_in_phys) {
     auto& normal_dot_three_index_constraint_gamma2 =
         get(get<::Tags::TempScalar<0, DataType>>(u3_buffer));
-
     for (size_t a = 0; a <= VolumeDim; ++a) {
       for (size_t b = a; b <= VolumeDim; ++b) {
         for (size_t c = 0; c <= VolumeDim; ++c) {
@@ -452,7 +468,7 @@ void add_physical_terms_to_dt_v_minus(
                   (projection_Ab.get(c, a) * projection_Ab.get(d, b) -
                    0.5 * projection_ab.get(a, b) * projection_AB.get(c, d)) *
                   (char_projected_rhs_dt_v_minus.get(c, d) +
-                   char_speeds[3] * (U3m.get(c, d) -
+                   char_speeds[3] * (U3m.get(c, d) - injected_wave.get(c, d) -
                                      normal_dot_three_index_constraint_gamma2));
             } else {
               bc_dt_v_minus->get(a, b) +=
@@ -566,6 +582,7 @@ void constraint_preserving_gauge_physical_corrections_dt_v_minus(
         bc_dt_v_minus,
     const Scalar<DataType>& gamma2,
     const tnsr::I<DataType, VolumeDim, Frame::Inertial>& inertial_coords,
+    const double time,
     const tnsr::i<DataType, VolumeDim, Frame::Inertial>&
         unit_interface_normal_one_form,
     const tnsr::I<DataType, VolumeDim, Frame::Inertial>&
@@ -598,7 +615,8 @@ void constraint_preserving_gauge_physical_corrections_dt_v_minus(
     const tnsr::iaa<DataType, VolumeDim, Frame::Inertial>& phi,
     const tnsr::ijaa<DataType, VolumeDim, Frame::Inertial>& d_phi,
     const tnsr::iaa<DataType, VolumeDim, Frame::Inertial>& d_pi,
-    const std::array<DataType, 4>& char_speeds) {
+    const std::array<DataType, 4>& char_speeds,
+    const MathFunction<1, Frame::Inertial>* const incoming_wave_profile) {
   for (size_t a = 0; a <= VolumeDim; ++a) {
     for (size_t b = a; b <= VolumeDim; ++b) {
       bc_dt_v_minus->get(a, b) = -char_projected_rhs_dt_v_minus.get(a, b);
@@ -614,7 +632,8 @@ void constraint_preserving_gauge_physical_corrections_dt_v_minus(
       unit_interface_normal_vector, spacetime_unit_normal_vector, projection_ab,
       projection_Ab, projection_AB, inverse_spatial_metric, extrinsic_curvature,
       spacetime_metric, inverse_spacetime_metric, three_index_constraint,
-      char_projected_rhs_dt_v_minus, phi, d_phi, d_pi, char_speeds);
+      char_projected_rhs_dt_v_minus, phi, d_phi, d_pi, char_speeds, time,
+      incoming_wave_profile);
   detail::add_gauge_sommerfeld_terms_to_dt_v_minus(
       bc_dt_v_minus, gamma2, inertial_coords, incoming_null_one_form,
       outgoing_null_one_form, incoming_null_vector, outgoing_null_vector,
@@ -719,7 +738,8 @@ void constraint_preserving_gauge_physical_corrections_dt_v_minus(
       const tnsr::iaa<DTYPE(data), DIM(data), Frame::Inertial>& phi,           \
       const tnsr::ijaa<DTYPE(data), DIM(data), Frame::Inertial>& d_phi,        \
       const tnsr::iaa<DTYPE(data), DIM(data), Frame::Inertial>& d_pi,          \
-      const std::array<DTYPE(data), 4>& char_speeds);                          \
+      const std::array<DTYPE(data), 4>& char_speeds, const double time,        \
+      const MathFunction<1, Frame::Inertial>* incoming_wave_profile);          \
   template void gh::BoundaryConditions::Bjorhus::                              \
       constraint_preserving_corrections_dt_v_minus(                            \
           const gsl::not_null<                                                 \
@@ -783,6 +803,7 @@ void constraint_preserving_gauge_physical_corrections_dt_v_minus(
           const Scalar<DTYPE(data)>& gamma2,                                   \
           const tnsr::I<DTYPE(data), DIM(data), Frame::Inertial>&              \
               inertial_coords,                                                 \
+          const double time,                                                   \
           const tnsr::i<DTYPE(data), DIM(data), Frame::Inertial>&              \
               unit_interface_normal_one_form,                                  \
           const tnsr::I<DTYPE(data), DIM(data), Frame::Inertial>&              \
@@ -824,7 +845,8 @@ void constraint_preserving_gauge_physical_corrections_dt_v_minus(
           const tnsr::iaa<DTYPE(data), DIM(data), Frame::Inertial>& phi,       \
           const tnsr::ijaa<DTYPE(data), DIM(data), Frame::Inertial>& d_phi,    \
           const tnsr::iaa<DTYPE(data), DIM(data), Frame::Inertial>& d_pi,      \
-          const std::array<DTYPE(data), 4>& char_speeds);
+          const std::array<DTYPE(data), 4>& char_speeds,                       \
+          const MathFunction<1, Frame::Inertial>* incoming_wave_profile);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (DataVector))
 

@@ -695,6 +695,7 @@ def error(
     d_spacetime_metric,
     d_pi,
     d_phi,
+    time=0.0,
 ):
     if face_mesh_velocity is not None:
         (
@@ -1025,6 +1026,7 @@ def dt_spacetime_metric(
     d_spacetime_metric,
     d_pi,
     d_phi,
+    time=0.0,
 ):
     subtract_mesh_velocity(
         face_mesh_velocity,
@@ -1087,6 +1089,7 @@ def dt_spacetime_metric_static_mesh(
     d_spacetime_metric,
     d_pi,
     d_phi,
+    time=0.0,
 ):
     return dt_spacetime_metric(
         0.0 * normal_vector,
@@ -1137,6 +1140,7 @@ def dt_pi_ConstraintPreservingGauge(
     d_spacetime_metric,
     d_pi,
     d_phi,
+    time=0.0,
 ):
     subtract_mesh_velocity(
         face_mesh_velocity,
@@ -1201,6 +1205,7 @@ def dt_pi_ConstraintPreservingGauge_static_mesh(
     d_spacetime_metric,
     d_pi,
     d_phi,
+    time=0.0,
 ):
     return dt_pi_ConstraintPreservingGauge(
         0.0 * normal_vector,
@@ -1251,6 +1256,7 @@ def dt_pi_ConstraintPreservingGaugePhysical(
     d_spacetime_metric,
     d_pi,
     d_phi,
+    time=0.0,
 ):
     subtract_mesh_velocity(
         face_mesh_velocity,
@@ -1315,6 +1321,7 @@ def dt_pi_ConstraintPreservingGaugePhysical_static_mesh(
     d_spacetime_metric,
     d_pi,
     d_phi,
+    time=0.0,
 ):
     return dt_pi_ConstraintPreservingGaugePhysical(
         0.0 * normal_vector,
@@ -1365,6 +1372,7 @@ def dt_phi_ConstraintPreservingGauge(
     d_spacetime_metric,
     d_pi,
     d_phi,
+    time=0.0,
 ):
     subtract_mesh_velocity(
         face_mesh_velocity,
@@ -1429,6 +1437,7 @@ def dt_phi_ConstraintPreservingGauge_static_mesh(
     d_spacetime_metric,
     d_pi,
     d_phi,
+    time=0.0,
 ):
     return dt_phi_ConstraintPreservingGauge(
         0.0 * normal_vector,
@@ -1479,6 +1488,7 @@ def dt_phi_ConstraintPreservingGaugePhysical(
     d_spacetime_metric,
     d_pi,
     d_phi,
+    time=0.0,
 ):
     subtract_mesh_velocity(
         face_mesh_velocity,
@@ -1543,6 +1553,7 @@ def dt_phi_ConstraintPreservingGaugePhysical_static_mesh(
     d_spacetime_metric,
     d_pi,
     d_phi,
+    time=0.0,
 ):
     return dt_phi_ConstraintPreservingGaugePhysical(
         0.0 * normal_vector,

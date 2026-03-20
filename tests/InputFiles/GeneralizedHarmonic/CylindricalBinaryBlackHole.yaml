@@ -58,6 +58,7 @@ DomainCreator:
       OuterBoundary:
         ConstraintPreservingBjorhus:
           Type: ConstraintPreservingPhysical
+          IncomingWaveProfile: None
     TimeDependentMaps:
       InitialTime: 0.0
       ExpansionMap:

@@ -7,8 +7,10 @@
 #include <cmath>
 #include <cstddef>
 #include <limits>
+#include <memory>
 
 #include "DataStructures/DataVector.hpp"
+#include "DataStructures/Tensor/IndexType.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/Side.hpp"
@@ -17,6 +19,7 @@
 #include "Framework/CheckWithRandomValues.hpp"
 #include "Framework/SetupLocalPythonEnvironment.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
+#include "PointwiseFunctions/MathFunctions/Sinusoid.hpp"
 #include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Gsl.hpp"
@@ -907,7 +910,7 @@ void test_constraint_preserving_gauge_physical_bjorhus_v_minus_vs_spec_3d(
     gh::BoundaryConditions::Bjorhus::
         constraint_preserving_gauge_physical_corrections_dt_v_minus(
             make_not_null(&local_bc_dt_v_minus), local_constraint_gamma2,
-            local_inertial_coords, local_unit_interface_normal_one_form,
+            local_inertial_coords, 0., local_unit_interface_normal_one_form,
             local_unit_interface_normal_vector,
             local_spacetime_unit_normal_vector, local_incoming_null_one_form,
             local_outgoing_null_one_form, local_incoming_null_vector,
@@ -918,7 +921,7 @@ void test_constraint_preserving_gauge_physical_bjorhus_v_minus_vs_spec_3d(
             local_three_index_constraint, local_char_projected_rhs_dt_v_psi,
             local_char_projected_rhs_dt_v_minus,
             local_constraint_char_zero_plus, local_constraint_char_zero_minus,
-            local_phi, local_d_phi, local_d_pi, local_char_speeds);
+            local_phi, local_d_phi, local_d_pi, local_char_speeds, nullptr);
     // Add in the current boundary value to get corrected values for dt<vminus>
     for (size_t a = 0; a <= VolumeDim; ++a) {
       for (size_t b = a; b <= VolumeDim; ++b) {
@@ -1247,7 +1250,7 @@ tnsr::aa<DataVector, VolumeDim, Frame::Inertial> wrapper_func_cpgp_v_minus(
   gh::BoundaryConditions::Bjorhus::
       constraint_preserving_gauge_physical_corrections_dt_v_minus<VolumeDim,
                                                                   DataVector>(
-          make_not_null(&dt_v_minus), gamma2, inertial_coords,
+          make_not_null(&dt_v_minus), gamma2, inertial_coords, 0.,
           unit_interface_normal_one_form, unit_interface_normal_vector,
           spacetime_unit_normal_vector, incoming_null_one_form,
           outgoing_null_one_form, incoming_null_vector, outgoing_null_vector,
@@ -1255,8 +1258,300 @@ tnsr::aa<DataVector, VolumeDim, Frame::Inertial> wrapper_func_cpgp_v_minus(
           extrinsic_curvature, spacetime_metric, inverse_spacetime_metric,
           three_index_constraint, char_projected_rhs_dt_v_psi,
           char_projected_rhs_dt_v_minus, constraint_char_zero_plus,
-          constraint_char_zero_minus, phi, d_phi, d_pi, char_speed_array);
+          constraint_char_zero_minus, phi, d_phi, d_pi, char_speed_array,
+          nullptr);
   return dt_v_minus;
+}
+
+void test_incoming_wave_profile_uses_profile_value_in_3d() {
+  constexpr size_t local_volume_dim = 3;
+  const size_t num_points = 2;
+  const double time = 0.37;
+
+  auto gamma2 = make_with_value<Scalar<DataVector>>(num_points, 0.5);
+  auto inertial_coords =
+      make_with_value<tnsr::I<DataVector, local_volume_dim, frame>>(get(gamma2),
+                                                                    1.0);
+  inertial_coords.get(0) = DataVector{2.0, 2.5};
+  inertial_coords.get(1) = DataVector{1.0, 1.5};
+  inertial_coords.get(2) = DataVector{0.8, 1.2};
+
+  auto unit_interface_normal_one_form =
+      make_with_value<tnsr::i<DataVector, local_volume_dim, frame>>(get(gamma2),
+                                                                    0.0);
+  auto unit_interface_normal_vector =
+      make_with_value<tnsr::I<DataVector, local_volume_dim, frame>>(get(gamma2),
+                                                                    0.0);
+  unit_interface_normal_one_form.get(0) = 1.0;
+  unit_interface_normal_vector.get(0) = 1.0;
+
+  auto spacetime_unit_normal_vector =
+      make_with_value<tnsr::A<DataVector, local_volume_dim, frame>>(get(gamma2),
+                                                                    0.0);
+  spacetime_unit_normal_vector.get(0) = 1.0;
+
+  auto incoming_null_one_form =
+      make_with_value<tnsr::a<DataVector, local_volume_dim, frame>>(get(gamma2),
+                                                                    0.0);
+  auto outgoing_null_one_form =
+      make_with_value<tnsr::a<DataVector, local_volume_dim, frame>>(get(gamma2),
+                                                                    0.0);
+  auto incoming_null_vector =
+      make_with_value<tnsr::A<DataVector, local_volume_dim, frame>>(get(gamma2),
+                                                                    0.0);
+  auto outgoing_null_vector =
+      make_with_value<tnsr::A<DataVector, local_volume_dim, frame>>(get(gamma2),
+                                                                    0.0);
+  incoming_null_one_form.get(0) = 1.0;
+  outgoing_null_one_form.get(0) = 1.0;
+  incoming_null_vector.get(0) = 1.0;
+  outgoing_null_vector.get(0) = 1.0;
+
+  auto projection_ab =
+      make_with_value<tnsr::aa<DataVector, local_volume_dim, frame>>(
+          get(gamma2), 0.0);
+  auto projection_Ab =
+      make_with_value<tnsr::Ab<DataVector, local_volume_dim, frame>>(
+          get(gamma2), 0.0);
+  auto projection_AB =
+      make_with_value<tnsr::AA<DataVector, local_volume_dim, frame>>(
+          get(gamma2), 0.0);
+  for (size_t a = 0; a <= local_volume_dim; ++a) {
+    projection_ab.get(a, a) = 1.0;
+    projection_AB.get(a, a) = 1.0;
+    projection_Ab.get(a, a) = 1.0;
+  }
+
+  auto inverse_spatial_metric =
+      make_with_value<tnsr::II<DataVector, local_volume_dim, frame>>(
+          get(gamma2), 0.0);
+  auto extrinsic_curvature =
+      make_with_value<tnsr::ii<DataVector, local_volume_dim, frame>>(
+          get(gamma2), 0.0);
+  for (size_t i = 0; i < local_volume_dim; ++i) {
+    inverse_spatial_metric.get(i, i) = 1.0;
+  }
+
+  auto spacetime_metric =
+      make_with_value<tnsr::aa<DataVector, local_volume_dim, frame>>(
+          get(gamma2), 0.0);
+  auto inverse_spacetime_metric =
+      make_with_value<tnsr::AA<DataVector, local_volume_dim, frame>>(
+          get(gamma2), 0.0);
+  for (size_t a = 0; a <= local_volume_dim; ++a) {
+    spacetime_metric.get(a, a) = (a == 0 ? -1.0 : 1.0);
+    inverse_spacetime_metric.get(a, a) = (a == 0 ? -1.0 : 1.0);
+  }
+
+  auto three_index_constraint =
+      make_with_value<tnsr::iaa<DataVector, local_volume_dim, frame>>(
+          get(gamma2), 0.0);
+  auto char_projected_rhs_dt_v_psi =
+      make_with_value<tnsr::aa<DataVector, local_volume_dim, frame>>(
+          get(gamma2), 0.0);
+  auto char_projected_rhs_dt_v_minus =
+      make_with_value<tnsr::aa<DataVector, local_volume_dim, frame>>(
+          get(gamma2), 0.0);
+  auto constraint_char_zero_plus =
+      make_with_value<tnsr::a<DataVector, local_volume_dim, frame>>(get(gamma2),
+                                                                    0.0);
+  auto constraint_char_zero_minus =
+      make_with_value<tnsr::a<DataVector, local_volume_dim, frame>>(get(gamma2),
+                                                                    0.0);
+  auto phi = make_with_value<tnsr::iaa<DataVector, local_volume_dim, frame>>(
+      get(gamma2), 0.0);
+  auto d_phi = make_with_value<tnsr::ijaa<DataVector, local_volume_dim, frame>>(
+      get(gamma2), 0.0);
+  auto d_pi = make_with_value<tnsr::iaa<DataVector, local_volume_dim, frame>>(
+      get(gamma2), 0.0);
+  const std::array<DataVector, 4> char_speeds{
+      DataVector(num_points, 0.0), DataVector(num_points, 0.0),
+      DataVector(num_points, 0.0), DataVector{-0.7, -1.1}};
+
+  auto dt_v_minus_no_profile =
+      make_with_value<tnsr::aa<DataVector, local_volume_dim, frame>>(
+          get(gamma2), 0.0);
+  auto dt_v_minus_with_profile =
+      make_with_value<tnsr::aa<DataVector, local_volume_dim, frame>>(
+          get(gamma2), 0.0);
+
+  auto incoming_wave_profile =
+      std::make_unique<MathFunctions::Sinusoid<1, Frame::Inertial>>(1.4, 0.7,
+                                                                    0.2);
+  const double profile_value = incoming_wave_profile->operator()(time);
+  const double profile_derivative = incoming_wave_profile->first_deriv(time);
+  CHECK(std::abs(profile_value - profile_derivative) > 1.0e-3);
+
+  gh::BoundaryConditions::Bjorhus::
+      constraint_preserving_gauge_physical_corrections_dt_v_minus<
+          local_volume_dim, DataVector>(
+          make_not_null(&dt_v_minus_no_profile), gamma2, inertial_coords, time,
+          unit_interface_normal_one_form, unit_interface_normal_vector,
+          spacetime_unit_normal_vector, incoming_null_one_form,
+          outgoing_null_one_form, incoming_null_vector, outgoing_null_vector,
+          projection_ab, projection_Ab, projection_AB, inverse_spatial_metric,
+          extrinsic_curvature, spacetime_metric, inverse_spacetime_metric,
+          three_index_constraint, char_projected_rhs_dt_v_psi,
+          char_projected_rhs_dt_v_minus, constraint_char_zero_plus,
+          constraint_char_zero_minus, phi, d_phi, d_pi, char_speeds, nullptr);
+  gh::BoundaryConditions::Bjorhus::
+      constraint_preserving_gauge_physical_corrections_dt_v_minus<
+          local_volume_dim, DataVector>(
+          make_not_null(&dt_v_minus_with_profile), gamma2, inertial_coords,
+          time, unit_interface_normal_one_form, unit_interface_normal_vector,
+          spacetime_unit_normal_vector, incoming_null_one_form,
+          outgoing_null_one_form, incoming_null_vector, outgoing_null_vector,
+          projection_ab, projection_Ab, projection_AB, inverse_spatial_metric,
+          extrinsic_curvature, spacetime_metric, inverse_spacetime_metric,
+          three_index_constraint, char_projected_rhs_dt_v_psi,
+          char_projected_rhs_dt_v_minus, constraint_char_zero_plus,
+          constraint_char_zero_minus, phi, d_phi, d_pi, char_speeds,
+          incoming_wave_profile.get());
+
+  auto delta = dt_v_minus_with_profile;
+  for (size_t a = 0; a <= local_volume_dim; ++a) {
+    for (size_t b = a; b <= local_volume_dim; ++b) {
+      delta.get(a, b) -= dt_v_minus_no_profile.get(a, b);
+    }
+  }
+
+  auto expected_delta =
+      make_with_value<tnsr::aa<DataVector, local_volume_dim, frame>>(
+          get(gamma2), 0.0);
+  auto injected_wave =
+      make_with_value<tnsr::aa<DataVector, local_volume_dim, frame>>(
+          get(gamma2), 0.0);
+  auto char_speed_3 =
+      make_with_value<Scalar<DataVector>>(get(gamma2), 0.0);
+  get(char_speed_3) = char_speeds[3];
+  injected_wave.get(1, 1) = profile_value;
+  injected_wave.get(2, 2) = profile_value;
+  injected_wave.get(3, 3) = -2.0 * profile_value;
+  tenex::evaluate<ti::a, ti::b>(
+      make_not_null(&expected_delta),
+      (projection_Ab(ti::C, ti::a) * projection_Ab(ti::D, ti::b) -
+       0.5 * projection_ab(ti::a, ti::b) * projection_AB(ti::C, ti::D)) *
+          char_speed_3() * (-injected_wave(ti::c, ti::d)));
+
+  CHECK_ITERABLE_APPROX(delta, expected_delta);
+}
+
+template <size_t LocalVolumeDim>
+void test_incoming_wave_profile_throws_for_non_3d() {
+  static_assert(LocalVolumeDim < 3);
+  const size_t num_points = 1;
+
+  auto gamma2 =
+      make_with_value<Scalar<DataVector>>(DataVector(num_points), 0.5);
+  auto inertial_coords =
+      make_with_value<tnsr::I<DataVector, LocalVolumeDim, frame>>(get(gamma2),
+                                                                  1.0);
+  auto unit_interface_normal_one_form =
+      make_with_value<tnsr::i<DataVector, LocalVolumeDim, frame>>(get(gamma2),
+                                                                  0.0);
+  auto unit_interface_normal_vector =
+      make_with_value<tnsr::I<DataVector, LocalVolumeDim, frame>>(get(gamma2),
+                                                                  0.0);
+  unit_interface_normal_one_form.get(0) = 1.0;
+  unit_interface_normal_vector.get(0) = 1.0;
+
+  auto spacetime_unit_normal_vector =
+      make_with_value<tnsr::A<DataVector, LocalVolumeDim, frame>>(get(gamma2),
+                                                                  0.0);
+  spacetime_unit_normal_vector.get(0) = 1.0;
+  auto incoming_null_one_form =
+      make_with_value<tnsr::a<DataVector, LocalVolumeDim, frame>>(get(gamma2),
+                                                                  0.0);
+  auto outgoing_null_one_form =
+      make_with_value<tnsr::a<DataVector, LocalVolumeDim, frame>>(get(gamma2),
+                                                                  0.0);
+  auto incoming_null_vector =
+      make_with_value<tnsr::A<DataVector, LocalVolumeDim, frame>>(get(gamma2),
+                                                                  0.0);
+  auto outgoing_null_vector =
+      make_with_value<tnsr::A<DataVector, LocalVolumeDim, frame>>(get(gamma2),
+                                                                  0.0);
+  auto projection_ab =
+      make_with_value<tnsr::aa<DataVector, LocalVolumeDim, frame>>(get(gamma2),
+                                                                   0.0);
+  auto projection_Ab =
+      make_with_value<tnsr::Ab<DataVector, LocalVolumeDim, frame>>(get(gamma2),
+                                                                   0.0);
+  auto projection_AB =
+      make_with_value<tnsr::AA<DataVector, LocalVolumeDim, frame>>(get(gamma2),
+                                                                   0.0);
+  for (size_t a = 0; a <= LocalVolumeDim; ++a) {
+    projection_ab.get(a, a) = 1.0;
+    projection_AB.get(a, a) = 1.0;
+    projection_Ab.get(a, a) = 1.0;
+  }
+  auto inverse_spatial_metric =
+      make_with_value<tnsr::II<DataVector, LocalVolumeDim, frame>>(get(gamma2),
+                                                                   0.0);
+  auto extrinsic_curvature =
+      make_with_value<tnsr::ii<DataVector, LocalVolumeDim, frame>>(get(gamma2),
+                                                                   0.0);
+  auto spacetime_metric =
+      make_with_value<tnsr::aa<DataVector, LocalVolumeDim, frame>>(get(gamma2),
+                                                                   0.0);
+  auto inverse_spacetime_metric =
+      make_with_value<tnsr::AA<DataVector, LocalVolumeDim, frame>>(get(gamma2),
+                                                                   0.0);
+  for (size_t i = 0; i < LocalVolumeDim; ++i) {
+    inverse_spatial_metric.get(i, i) = 1.0;
+  }
+  for (size_t a = 0; a <= LocalVolumeDim; ++a) {
+    spacetime_metric.get(a, a) = (a == 0 ? -1.0 : 1.0);
+    inverse_spacetime_metric.get(a, a) = (a == 0 ? -1.0 : 1.0);
+  }
+  auto three_index_constraint =
+      make_with_value<tnsr::iaa<DataVector, LocalVolumeDim, frame>>(get(gamma2),
+                                                                    0.0);
+  auto char_projected_rhs_dt_v_psi =
+      make_with_value<tnsr::aa<DataVector, LocalVolumeDim, frame>>(get(gamma2),
+                                                                   0.0);
+  auto char_projected_rhs_dt_v_minus =
+      make_with_value<tnsr::aa<DataVector, LocalVolumeDim, frame>>(get(gamma2),
+                                                                   0.0);
+  auto constraint_char_zero_plus =
+      make_with_value<tnsr::a<DataVector, LocalVolumeDim, frame>>(get(gamma2),
+                                                                  0.0);
+  auto constraint_char_zero_minus =
+      make_with_value<tnsr::a<DataVector, LocalVolumeDim, frame>>(get(gamma2),
+                                                                  0.0);
+  auto phi = make_with_value<tnsr::iaa<DataVector, LocalVolumeDim, frame>>(
+      get(gamma2), 0.0);
+  auto d_phi = make_with_value<tnsr::ijaa<DataVector, LocalVolumeDim, frame>>(
+      get(gamma2), 0.0);
+  auto d_pi = make_with_value<tnsr::iaa<DataVector, LocalVolumeDim, frame>>(
+      get(gamma2), 0.0);
+  const std::array<DataVector, 4> char_speeds{
+      DataVector(num_points, 0.0), DataVector(num_points, 0.0),
+      DataVector(num_points, 0.0), DataVector(num_points, -1.0)};
+  auto bc_dt_v_minus =
+      make_with_value<tnsr::aa<DataVector, LocalVolumeDim, frame>>(get(gamma2),
+                                                                   0.0);
+
+  auto incoming_wave_profile =
+      std::make_unique<MathFunctions::Sinusoid<1, Frame::Inertial>>(1.0, 0.7,
+                                                                    0.2);
+  CHECK_THROWS_WITH(
+      (gh::BoundaryConditions::Bjorhus::
+           constraint_preserving_gauge_physical_corrections_dt_v_minus<
+               LocalVolumeDim, DataVector>(
+               make_not_null(&bc_dt_v_minus), gamma2, inertial_coords, 0.0,
+               unit_interface_normal_one_form, unit_interface_normal_vector,
+               spacetime_unit_normal_vector, incoming_null_one_form,
+               outgoing_null_one_form, incoming_null_vector,
+               outgoing_null_vector, projection_ab, projection_Ab,
+               projection_AB, inverse_spatial_metric, extrinsic_curvature,
+               spacetime_metric, inverse_spacetime_metric,
+               three_index_constraint, char_projected_rhs_dt_v_psi,
+               char_projected_rhs_dt_v_minus, constraint_char_zero_plus,
+               constraint_char_zero_minus, phi, d_phi, d_pi, char_speeds,
+               incoming_wave_profile.get())),
+      Catch::Matchers::ContainsSubstring(
+          "IncomingWaveProfile can only be used in 3 spatial dimensions."));
 }
 
 template <size_t VolumeDim>
@@ -1341,6 +1636,9 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.GeneralizedHarmonic.BCBjorhus.VMinus",
       grid_size);
   test_constraint_preserving_gauge_physical_corrections_dt_v_minus<3>(
       grid_size);
+  test_incoming_wave_profile_uses_profile_value_in_3d();
+  test_incoming_wave_profile_throws_for_non_3d<1>();
+  test_incoming_wave_profile_throws_for_non_3d<2>();
 
   // Piece-wise tests with SpEC output in 3D
   const std::array<double, 3> lower_bound{{299., -0.5, -0.5}};

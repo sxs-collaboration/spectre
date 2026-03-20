@@ -184,6 +184,8 @@
 #include "PointwiseFunctions/GeneralRelativity/WeylElectric.hpp"
 #include "PointwiseFunctions/GeneralRelativity/WeylTypeD1.hpp"
 #include "PointwiseFunctions/InitialDataUtilities/InitialData.hpp"
+#include "PointwiseFunctions/MathFunctions/Factory.hpp"
+#include "PointwiseFunctions/MathFunctions/MathFunction.hpp"
 #include "Time/Actions/SelfStartActions.hpp"
 #include "Time/AdvanceTime.hpp"
 #include "Time/ChangeSlabSize/Action.hpp"
@@ -530,6 +532,8 @@ struct EvolutionMetavars {
         tmpl::pair<
             gh::gauges::GaugeCondition,
             tmpl::list<gh::gauges::DampedHarmonic, gh::gauges::Harmonic>>,
+        tmpl::pair<MathFunction<1, Frame::Inertial>,
+                   MathFunctions::all_math_functions<1, Frame::Inertial>>,
         // Restrict to monotonic time steppers in LTS to avoid control
         // systems deadlocking.
         tmpl::pair<LtsTimeStepper, TimeSteppers::monotonic_lts_time_steppers>,

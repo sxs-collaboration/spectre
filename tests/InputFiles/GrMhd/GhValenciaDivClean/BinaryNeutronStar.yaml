@@ -75,6 +75,7 @@ DomainCreator:
       BoundaryCondition:
         ConstraintPreservingFreeOutflow:
           Type: ConstraintPreservingPhysical
+          IncomingWaveProfile: None
     UseEquiangularMap: True
     CubeScale: 1.0
     InitialRefinement:
