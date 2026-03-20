@@ -627,8 +627,8 @@ void test_face_quantities_compute() {
 void test_puncture_field() {
   INFO("test_puncture_field");
   static constexpr size_t Dim = 3;
-  ::TestHelpers::db::test_compute_tag<Tags::PunctureFieldCompute<Dim>>(
-      "PunctureField");
+  ::TestHelpers::db::test_compute_tag<Tags::GeodesicPunctureFieldCompute<Dim>>(
+      "GeodesicPunctureField");
   MAKE_GENERATOR(gen);
   std::uniform_real_distribution<> dist(-1., 1.);
   const tnsr::I<double, Dim, Frame::Inertial> charge_pos{{7.1, 0., 0.}};
@@ -643,18 +643,21 @@ void test_puncture_field() {
           make_not_null(&gen), dist, DataVector(50));
   random_points.get(0) += charge_pos.get(0);
 
-  const size_t order = 1;
+  const auto puncture_field_options =
+      CurvedScalarWave::Worldtube::PunctureField{
+          CurvedScalarWave::Worldtube::PunctureField::Schwarzschild{1, 1.}};
   const auto box_abutting = db::create<
       db::AddSimpleTags<Tags::FaceCoordinates<Dim, Frame::Inertial, true>,
                         Tags::ParticlePositionVelocity<Dim>,
-                        Tags::GeodesicAcceleration<Dim>, Tags::ExpansionOrder,
-                        Tags::Charge>,
-      db::AddComputeTags<Tags::PunctureFieldCompute<Dim>>>(
+                        Tags::GeodesicAcceleration<Dim>,
+                        Tags::PunctureFieldConfig, Tags::Charge>,
+      db::AddComputeTags<Tags::GeodesicPunctureFieldCompute<Dim>>>(
       std::make_optional<tnsr::I<DataVector, Dim, Frame::Inertial>>(
           random_points),
-      pos_vel, charge_acc, order, charge);
+      pos_vel, charge_acc, puncture_field_options, charge);
 
-  const auto singular_field = get<Tags::PunctureField<Dim>>(box_abutting);
+  const auto singular_field =
+      get<Tags::GeodesicPunctureField<Dim>>(box_abutting);
 
   CHECK(singular_field.has_value());
   Variables<tmpl::list<CurvedScalarWave::Tags::Psi,
@@ -662,21 +665,57 @@ void test_puncture_field() {
                        ::Tags::deriv<CurvedScalarWave::Tags::Psi,
                                      tmpl::size_t<3>, Frame::Inertial>>>
       expected{};
-  puncture_field(make_not_null(&expected), random_points, charge_pos,
-                 charge_vel, charge_acc, 1., order);
+  puncture_field_options.apply_puncture(make_not_null(&expected), random_points,
+                                        charge_pos, charge_vel, charge_acc);
   expected *= charge;
   CHECK_VARIABLES_APPROX(singular_field.value(), expected);
   std::optional<tnsr::I<DataVector, Dim, Frame::Inertial>> nullopt{};
   const auto box_not_abutting = db::create<
       db::AddSimpleTags<Tags::FaceCoordinates<Dim, Frame::Inertial, true>,
                         Tags::ParticlePositionVelocity<Dim>,
-                        Tags::GeodesicAcceleration<Dim>, Tags::ExpansionOrder,
-                        Tags::Charge>,
-      db::AddComputeTags<Tags::PunctureFieldCompute<Dim>>>(
-      nullopt, pos_vel, charge_acc, order, charge);
+                        Tags::GeodesicAcceleration<Dim>,
+                        Tags::PunctureFieldConfig, Tags::Charge>,
+      db::AddComputeTags<Tags::GeodesicPunctureFieldCompute<Dim>>>(
+      nullopt, pos_vel, charge_acc, puncture_field_options, charge);
   const auto puncture_field_nullopt =
-      get<Tags::PunctureField<Dim>>(box_not_abutting);
+      get<Tags::GeodesicPunctureField<Dim>>(box_not_abutting);
   CHECK(not puncture_field_nullopt.has_value());
+}
+
+void test_puncture_field_options() {
+  INFO("test_puncture_field_options");
+  {
+    const auto options =
+        TestHelpers::test_creation<CurvedScalarWave::Worldtube::PunctureField>(
+            "Schwarzschild:\n"
+            "  ExpansionOrder: 1\n"
+            "  BlackHoleMass: 2.0\n");
+    CHECK(options.type() ==
+          CurvedScalarWave::Worldtube::PunctureField::Type::Schwarzschild);
+    CHECK(options.expansion_order() == 1);
+    CHECK(options.black_hole_mass() == 2.0);
+    CHECK(options.spin_along_z_axis() == 0.0);
+  }
+  {
+    const auto options =
+        TestHelpers::test_creation<CurvedScalarWave::Worldtube::PunctureField>(
+            "Kerr:\n"
+            "  ExpansionOrder: 1\n"
+            "  BlackHoleMass: 1.2345\n"
+            "  SpinAlongZAxis: 0.7\n");
+    CHECK(options.type() ==
+          CurvedScalarWave::Worldtube::PunctureField::Type::Kerr);
+    CHECK(options.expansion_order() == 1);
+    CHECK(options.black_hole_mass() == 1.2345);
+    CHECK(options.spin_along_z_axis() == 0.7);
+  }
+  CHECK_THROWS_WITH(
+      TestHelpers::test_creation<CurvedScalarWave::Worldtube::PunctureField>(
+          "Schwarzschild:\n"
+          "  ExpansionOrder: 1\n"
+          "  BlackHoleMass: 1.0\n"
+          "  SpinAlongZAxis: 0.1\n"),
+      Catch::Matchers::ContainsSubstring("SpinAlongZAxis"));
 }
 
 void test_self_force_options() {
@@ -728,8 +767,6 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.CurvedScalarWave.Worldtube.Tags",
   CHECK(TestHelpers::test_option_tag<OptionTags::ExcisionSphere>("Worldtube") ==
         "Worldtube");
   CHECK(TestHelpers::test_option_tag<
-            CurvedScalarWave::Worldtube::OptionTags::ExpansionOrder>("0") == 0);
-  CHECK(TestHelpers::test_option_tag<
             CurvedScalarWave::Worldtube::OptionTags::Charge>("1.") == 1.);
   CHECK(TestHelpers::test_option_tag<
             CurvedScalarWave::Worldtube::OptionTags::Spin>("[0., 0., 0.5]") ==
@@ -738,6 +775,9 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.CurvedScalarWave.Worldtube.Tags",
 
   TestHelpers::db::test_simple_tag<
       CurvedScalarWave::Worldtube::Tags::ExpansionOrder>("ExpansionOrder");
+  TestHelpers::db::test_simple_tag<
+      CurvedScalarWave::Worldtube::Tags::PunctureFieldConfig>(
+      "PunctureFieldConfig");
   TestHelpers::db::test_simple_tag<CurvedScalarWave::Worldtube::Tags::Charge>(
       "Charge");
   TestHelpers::db::test_simple_tag<CurvedScalarWave::Worldtube::Tags::Spin>(
@@ -778,7 +818,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.CurvedScalarWave.Worldtube.Tags",
       "ParticlePositionVelocity");
   TestHelpers::db::test_simple_tag<Tags::EvolvedPosition<3>>("EvolvedPosition");
   TestHelpers::db::test_simple_tag<Tags::EvolvedVelocity<3>>("EvolvedVelocity");
-  TestHelpers::db::test_simple_tag<Tags::PunctureField<3>>("PunctureField");
+  TestHelpers::db::test_simple_tag<Tags::GeodesicPunctureField<3>>(
+      "GeodesicPunctureField");
   TestHelpers::db::test_simple_tag<Tags::IteratedPunctureField<3>>(
       "IteratedPunctureField");
   TestHelpers::db::test_simple_tag<Tags::ObserveCoefficientsTrigger>(
@@ -794,6 +835,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.CurvedScalarWave.Worldtube.Tags",
   TestHelpers::db::test_simple_tag<Tags::Verbosity>("Verbosity");
   test_excision_sphere_tag();
   test_self_force_options();
+  test_puncture_field_options();
   test_radius_options();
   test_initial_position_velocity_tag();
   test_compute_face_coordinates_grid();

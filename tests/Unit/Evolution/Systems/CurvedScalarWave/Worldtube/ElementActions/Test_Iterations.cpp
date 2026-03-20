@@ -73,10 +73,10 @@ struct MockElementArray {
               db::AddSimpleTags<
                   domain::Tags::Element<Dim>, domain::Tags::Mesh<Dim>,
                   domain::Tags::Coordinates<Dim, Frame::Inertial>,
-                  Tags::PunctureField<Dim>, gr::Tags::Shift<DataVector, Dim>,
-                  gr::Tags::Lapse<DataVector>, ::Tags::TimeStepId,
-                  Tags::ParticlePositionVelocity<Dim>, Tags::FaceQuantities,
-                  Tags::CurrentIteration>,
+                  Tags::GeodesicPunctureField<Dim>,
+                  gr::Tags::Shift<DataVector, Dim>, gr::Tags::Lapse<DataVector>,
+                  ::Tags::TimeStepId, Tags::ParticlePositionVelocity<Dim>,
+                  Tags::FaceQuantities, Tags::CurrentIteration>,
               db::AddComputeTags<
                   Tags::FaceCoordinatesCompute<Dim, Frame::Inertial, true>>>>>,
       Parallel::PhaseActions<
@@ -124,9 +124,10 @@ struct MockMetavariables {
   using const_global_cache_tags = tmpl::list<
       domain::Tags::Domain<Dim>,
       CurvedScalarWave::Tags::BackgroundSpacetime<gr::Solutions::KerrSchild>,
-      Tags::ExcisionSphere<Dim>, Tags::WorldtubeRadius, Tags::ExpansionOrder,
-      Tags::MaxIterations, Tags::Charge, Tags::Mass, ::Tags::Time,
-      Tags::SelfForceTurnOnTime, Tags::SelfForceTurnOnInterval>;
+      Tags::ExcisionSphere<Dim>, Tags::WorldtubeRadius,
+      Tags::PunctureFieldConfig, Tags::ExpansionOrder, Tags::MaxIterations,
+      Tags::Charge, Tags::Mass, ::Tags::Time, Tags::SelfForceTurnOnTime,
+      Tags::SelfForceTurnOnInterval>;
 };
 
 void test_iterations(const size_t max_iterations) {
@@ -172,16 +173,22 @@ void test_iterations(const size_t max_iterations) {
     // before self force is turned on
     const double time = 1.;
     const double turn_on_time = 2.;
+    const auto puncture_field_options =
+        CurvedScalarWave::Worldtube::PunctureField{
+            CurvedScalarWave::Worldtube::PunctureField::Schwarzschild{
+                expansion_order, 1.}};
     tuples::TaggedTuple<
         domain::Tags::Domain<Dim>,
         CurvedScalarWave::Tags::BackgroundSpacetime<gr::Solutions::KerrSchild>,
-        Tags::ExcisionSphere<Dim>, Tags::WorldtubeRadius, Tags::ExpansionOrder,
-        Tags::MaxIterations, Tags::Charge, Tags::Mass, ::Tags::Time,
-        Tags::SelfForceTurnOnTime, Tags::SelfForceTurnOnInterval>
+        Tags::ExcisionSphere<Dim>, Tags::WorldtubeRadius,
+        Tags::PunctureFieldConfig, Tags::ExpansionOrder, Tags::MaxIterations,
+        Tags::Charge, Tags::Mass, ::Tags::Time, Tags::SelfForceTurnOnTime,
+        Tags::SelfForceTurnOnInterval>
         tuple_of_opts{shell.create_domain(),
                       kerr_schild,
                       excision_sphere,
                       excision_sphere.radius(),
+                      puncture_field_options,
                       expansion_order,
                       max_iterations,
                       charge,

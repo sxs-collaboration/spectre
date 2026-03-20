@@ -27,6 +27,11 @@ using deriv_psi_tag =
 using puncture_vars =
     Variables<tmpl::list<Tags::Psi, ::Tags::dt<Tags::Psi>, deriv_psi_tag>>;
 
+Worldtube::PunctureField make_schwarzschild_puncture_field(const size_t order) {
+  return Worldtube::PunctureField{
+      Worldtube::PunctureField::Schwarzschild{order, 1.2345}};
+}
+
 std::array<tnsr::I<double, 3>, 3> get_circular_orbit_pos_vel_acc(
     const double orbit_radius, const double time) {
   const double angular_velocity = 1. / (sqrt(orbit_radius) * orbit_radius);
@@ -67,10 +72,10 @@ void test_circular_orbit() {
       get_circular_orbit_pos_vel_acc(orbit_radius, time_1);
   for (size_t order = 0; order <= 1; ++order) {
     CAPTURE(order);
+    const auto puncture_field = make_schwarzschild_puncture_field(order);
     puncture_vars puncture_t0{num_points};
-    Worldtube::puncture_field(make_not_null(&puncture_t0), sample_points,
-                              position_t0, velocity_t0, acceleration_t0, 1.,
-                              order);
+    puncture_field.apply_puncture(make_not_null(&puncture_t0), sample_points,
+                                  position_t0, velocity_t0, acceleration_t0);
     // rotate the sample points and check that the values don't change
     tnsr::I<DataVector, 3, Frame::Inertial> sample_points_rotated(num_points,
                                                                   0.);
@@ -82,9 +87,9 @@ void test_circular_orbit() {
         sample_points.get(1) * cos(orbit_speed * time_1);
     sample_points_rotated.get(2) = sample_points.get(2);
     puncture_vars puncture_t1{num_points};
-    Worldtube::puncture_field(make_not_null(&puncture_t1),
-                              sample_points_rotated, position_t1, velocity_t1,
-                              acceleration_t1, 1., order);
+    puncture_field.apply_puncture(make_not_null(&puncture_t1),
+                                  sample_points_rotated, position_t1,
+                                  velocity_t1, acceleration_t1);
     Approx local_approx = Approx::custom().epsilon(1.e-11).scale(1.);
     CHECK_ITERABLE_CUSTOM_APPROX(get<Tags::Psi>(puncture_t0).get(),
                                  get<Tags::Psi>(puncture_t1).get(),
@@ -119,6 +124,7 @@ void test_derivative() {
   const double wt_radius = 0.1;
   for (size_t order = 0; order <= 1; ++order) {
     CAPTURE(order);
+    const auto puncture_field = make_schwarzschild_puncture_field(order);
     const auto random_position =
         make_with_random_values<tnsr::I<double, 3, Frame::Inertial>>(
             make_not_null(&gen), make_not_null(&pos_dist), 1);
@@ -128,19 +134,19 @@ void test_derivative() {
     const auto random_acceleration =
         make_with_random_values<tnsr::I<double, 3, Frame::Inertial>>(
             make_not_null(&gen), make_not_null(&vel_acc_dist), 1);
-    const auto helper_func = [&random_position, &random_velocity,
-                              &random_acceleration,
-                              &order](const std::array<double, 3>& point) {
-      tnsr::I<DataVector, 3, Frame::Inertial> tensor_point(size_t(1));
-      tensor_point.get(0) = point.at(0);
-      tensor_point.get(1) = point.at(1);
-      tensor_point.get(2) = point.at(2);
-      puncture_vars singular_field{1};
-      Worldtube::puncture_field(make_not_null(&singular_field), tensor_point,
-                                random_position, random_velocity,
-                                random_acceleration, 1., order);
-      return get<Tags::Psi>(singular_field).get()[0];
-    };
+    const auto helper_func =
+        [&random_position, &random_velocity, &random_acceleration,
+         &puncture_field](const std::array<double, 3>& point) {
+          tnsr::I<DataVector, 3, Frame::Inertial> tensor_point(size_t(1));
+          tensor_point.get(0) = point.at(0);
+          tensor_point.get(1) = point.at(1);
+          tensor_point.get(2) = point.at(2);
+          puncture_vars singular_field{1};
+          puncture_field.apply_puncture(make_not_null(&singular_field),
+                                        tensor_point, random_position,
+                                        random_velocity, random_acceleration);
+          return get<Tags::Psi>(singular_field).get()[0];
+        };
     for (size_t i = 0; i < 20; ++i) {
       const auto theta = theta_dist(gen);
       const auto phi = phi_dist(gen);
@@ -154,9 +160,9 @@ void test_derivative() {
       }
       const double dx = 1e-4;
       puncture_vars singular_field{1};
-      Worldtube::puncture_field(make_not_null(&singular_field), tensor_point,
-                                random_position, random_velocity,
-                                random_acceleration, 1., order);
+      puncture_field.apply_puncture(make_not_null(&singular_field),
+                                    tensor_point, random_position,
+                                    random_velocity, random_acceleration);
       const auto& di_psi = get<deriv_psi_tag>(singular_field);
       for (size_t j = 0; j < 3; ++j) {
         const auto numerical_deriv_j =
@@ -167,10 +173,26 @@ void test_derivative() {
   }
 }
 
+void test_kerr() {
+  const auto puncture_field =
+      Worldtube::PunctureField{Worldtube::PunctureField::Kerr{1, 1., 0.5}};
+  puncture_vars singular_field{1};
+  const tnsr::I<DataVector, 3, Frame::Inertial> tensor_point(size_t{1}, 0.);
+  const tnsr::I<double, 3, Frame::Inertial> particle_position(0.);
+  const tnsr::I<double, 3, Frame::Inertial> particle_velocity(0.);
+  const tnsr::I<double, 3, Frame::Inertial> particle_acceleration(0.);
+  CHECK_THROWS_WITH(
+      puncture_field.apply_puncture(make_not_null(&singular_field),
+                                    tensor_point, particle_position,
+                                    particle_velocity, particle_acceleration),
+      Catch::Matchers::ContainsSubstring("Kerr puncture not implemented yet"));
+}
+
 SPECTRE_TEST_CASE("Unit.Evolution.Systems.CurvedScalarWave.PunctureField",
                   "[Unit][Evolution]") {
   test_circular_orbit();
   test_derivative();
+  test_kerr();
 }
 }  // namespace
 }  // namespace CurvedScalarWave

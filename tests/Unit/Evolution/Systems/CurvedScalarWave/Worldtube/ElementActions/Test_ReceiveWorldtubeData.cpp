@@ -62,7 +62,8 @@ struct MockElementArray {
           tmpl::list<ActionTesting::InitializeDataBox<
               db::AddSimpleTags<
                   domain::Tags::Element<Dim>, domain::Tags::Mesh<Dim>,
-                  Tags::PunctureField<Dim>, Tags::IteratedPunctureField<Dim>,
+                  Tags::GeodesicPunctureField<Dim>,
+                  Tags::IteratedPunctureField<Dim>,
                   gr::Tags::Shift<DataVector, Dim>, gr::Tags::Lapse<DataVector>,
                   ::Tags::TimeStepId, Tags::WorldtubeSolution<Dim>,
                   Tags::FaceCoordinates<Dim, Frame::Inertial, true>>,
