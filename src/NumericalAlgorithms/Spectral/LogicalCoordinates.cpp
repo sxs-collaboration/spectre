@@ -23,6 +23,24 @@ void logical_coordinates(
         logical_coords,
     const Mesh<VolumeDim>& mesh) {
   set_number_of_grid_points(logical_coords, mesh.number_of_grid_points());
+
+  const auto I1 = [&logical_coords, &mesh](const size_t dim) {
+    const auto& collocation_points_in_this_dim =
+        Spectral::collocation_points(mesh.slice_through(dim));
+    for (IndexIterator<VolumeDim> index(mesh.extents()); index; ++index) {
+      logical_coords->get(dim)[index.collapsed_index()] =
+          collocation_points_in_this_dim[index()[dim]];
+    }
+  };
+  const auto S1 = [&logical_coords, &mesh](const size_t dim) {
+    const size_t n_phi = mesh.extents(dim);
+    const double two_pi_over_n_phi = 2.0 * std::numbers::pi / n_phi;
+    for (IndexIterator<VolumeDim> index(mesh.extents()); index; ++index) {
+      logical_coords->get(dim)[index.collapsed_index()] =
+          two_pi_over_n_phi * index()[dim];
+    }
+  };
+
   for (size_t d = 0; d < VolumeDim; ++d) {
     switch (mesh.basis(d)) {
       case Spectral::Basis::SphericalHarmonic: {
@@ -50,13 +68,7 @@ void logical_coordinates(
             break;
           }
           case Spectral::Quadrature::Equiangular: {
-            const size_t n_phi = mesh.extents(d);
-            const double two_pi_over_n_phi = 2.0 * M_PI / n_phi;
-            for (IndexIterator<VolumeDim> index(mesh.extents()); index;
-                 ++index) {
-              logical_coords->get(d)[index.collapsed_index()] =
-                  two_pi_over_n_phi * index()[d];
-            }
+            S1(d);
             break;
           }
           default:
@@ -69,17 +81,28 @@ void logical_coordinates(
       case Spectral::Basis::Fourier: {
         switch (mesh.quadrature(d)) {
           case Spectral::Quadrature::Equiangular: {
-            const size_t n_phi = mesh.extents(d);
-            const double two_pi_over_n_phi = 2.0 * std::numbers::pi / n_phi;
-            for (IndexIterator<VolumeDim> index(mesh.extents()); index;
-                 ++index) {
-              logical_coords->get(d)[index.collapsed_index()] =
-                  two_pi_over_n_phi * index()[d];
-            }
+            S1(d);
             break;
           }
           default:
             ERROR("Quadrature must be Equiangular for Basis Fourier");
+        }
+        break;
+      }
+      case Spectral::Basis::ZernikeB2: {
+        switch (mesh.quadrature(d)) {
+          case Spectral::Quadrature::GaussRadauUpper: {
+            I1(d);
+            break;
+          }
+          case Spectral::Quadrature::Equiangular: {
+            S1(d);
+            break;
+          }
+          default:
+            ERROR(
+                "Quadrature must be GaussRadauUpper or Equiangular for Basis "
+                "ZernikeB2");
         }
         break;
       }
@@ -99,17 +122,10 @@ void logical_coordinates(
         [[fallthrough]];
       case Spectral::Basis::ZernikeB1:
         [[fallthrough]];
-      case Spectral::Basis::ZernikeB2:
-        [[fallthrough]];
       case Spectral::Basis::ZernikeB3:
         [[fallthrough]];
       case Spectral::Basis::FiniteDifference: {
-        const auto& collocation_points_in_this_dim =
-            Spectral::collocation_points(mesh.slice_through(d));
-        for (IndexIterator<VolumeDim> index(mesh.extents()); index; ++index) {
-          logical_coords->get(d)[index.collapsed_index()] =
-              collocation_points_in_this_dim[index()[d]];
-        }
+        I1(d);
         break;
       }
       default:

@@ -125,6 +125,13 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Spectral.LogicalCoordinates",
   CHECK(x_3d[2][0] == -32.0);
   CHECK(x_3d[2][15] == 74.0);
 
+  const Mesh<1> mesh_fourier{51, Spectral::Basis::Fourier,
+                             Spectral::Quadrature::Equiangular};
+  const Mesh<1> mesh_zernikeB2_equiangular{51, Spectral::Basis::ZernikeB2,
+                                           Spectral::Quadrature::Equiangular};
+  CHECK(logical_coordinates(mesh_fourier) ==
+        logical_coordinates(mesh_zernikeB2_equiangular));
+
   const Mesh<3> mesh_spherical{
       {3, 1, 1},
       {Spectral::Basis::Legendre, Spectral::Basis::Cartoon,
