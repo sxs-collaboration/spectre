@@ -17,6 +17,9 @@
 #include "NumericalAlgorithms/Spectral/Basis.hpp"
 #include "NumericalAlgorithms/Spectral/DifferentiationMatrix.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
+#include "NumericalAlgorithms/Spectral/ModalToNodalMatrix.hpp"
+#include "NumericalAlgorithms/Spectral/NodalToModalMatrix.hpp"
+#include "NumericalAlgorithms/Spectral/Parity.hpp"
 #include "NumericalAlgorithms/Spectral/Quadrature.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/Spherepack.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/SpherepackCache.hpp"
@@ -27,6 +30,7 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeArray.hpp"
 #include "Utilities/MemoryHelpers.hpp"
+#include "Utilities/SetNumberOfGridPoints.hpp"
 #include "Utilities/StdArrayHelpers.hpp"
 
 namespace partial_derivatives_detail {
@@ -824,25 +828,232 @@ struct LogicalImpl<2, VariableTags, DerivativeTags> {
         Variables<DerivativeTags>::number_of_independent_components <=
             Variables<T>::number_of_independent_components,
         "Temporary buffer in logical partial derivatives is too small");
-    auto& logical_partial_derivatives_of_u = *logical_du;
+    if (mesh.basis(0) == Spectral::Basis::ZernikeB2) {
+      if constexpr (std::is_same_v<ValueType, double>) {
+        disk_apply(logical_du, partial_u_wrt_eta, u_eta_fastest, u, mesh);
+      } else {
+        ERROR(
+            "Support for complex numbers with a disk is not yet "
+            "implemented for logical_partial_derivative.");
+      }
+    } else {
+      auto& logical_partial_derivatives_of_u = *logical_du;
+      const size_t deriv_size =
+          Variables<DerivativeTags>::number_of_independent_components *
+          u.number_of_grid_points();
+      const Matrix& differentiation_matrix_xi =
+          Spectral::differentiation_matrix(mesh.slice_through(0));
+      const size_t num_components_times_xi_slices =
+          deriv_size / mesh.extents(0);
+      apply_matrix_in_first_dim(logical_partial_derivatives_of_u[0], u.data(),
+                                differentiation_matrix_xi, deriv_size);
+      transpose<Variables<VariableTags>, Variables<DerivativeTags>>(
+          make_not_null(u_eta_fastest), u, mesh.extents(0),
+          num_components_times_xi_slices);
+      const Matrix& differentiation_matrix_eta =
+          Spectral::differentiation_matrix(mesh.slice_through(1));
+      apply_matrix_in_first_dim(partial_u_wrt_eta->data(),
+                                u_eta_fastest->data(),
+                                differentiation_matrix_eta, deriv_size);
+      raw_transpose(make_not_null(logical_partial_derivatives_of_u[1]),
+                    partial_u_wrt_eta->data(), num_components_times_xi_slices,
+                    mesh.extents(0));
+    }
+  }
+
+  template <typename T, typename ValueType = typename Variables<T>::value_type>
+  static void disk_apply(
+      const gsl::not_null<std::array<ValueType*, Dim>*> logical_du,
+      Variables<T>* const partial_u_wrt_eta,
+      Variables<DerivativeTags>* const u_eta_fastest,
+      const Variables<VariableTags>& u, const Mesh<2>& mesh) {
+    ASSERT(mesh.basis(0) == Spectral::Basis::ZernikeB2 and
+               mesh.basis(1) == Spectral::Basis::ZernikeB2,
+           "Unexpected basis combination: " << mesh.basis());
+    const auto [n_r, n_phi] = mesh.extents().indices();
+    const size_t n_r_max = 2 * n_r - 2;
+    ASSERT(n_phi % 2 == 1,
+           "Fourier with an even number of grid points can be unstable due to "
+           "the top derivative not being representable");
+    ASSERT(n_phi / 2 <= n_r_max,
+           "Zernike & Fourier on a disk have angular resolution limited by "
+           "extents in both dimensions. We choose to enforce the restriction "
+           "that the Fourier modal space is not larger than the Zernike "
+           "angular capabilities (which would waste space and be physically "
+           "ill-motivated).\nn_phi / 2 = "
+               << n_phi / 2 << ", Maximum from Zernike = " << n_r_max);
+
+    const Matrix& diff_matrix_r_even =
+        Spectral::differentiation_matrix<Spectral::Basis::ZernikeB2,
+                                         Spectral::Quadrature::GaussRadauUpper>(
+            n_r, Spectral::Parity::Even);
+    const Matrix& diff_matrix_r_odd =
+        Spectral::differentiation_matrix<Spectral::Basis::ZernikeB2,
+                                         Spectral::Quadrature::GaussRadauUpper>(
+            n_r, Spectral::Parity::Odd);
+    const Matrix& diff_matrix_phi = Spectral::differentiation_matrix<
+        Spectral::Basis::Fourier, Spectral::Quadrature::Equiangular>(n_phi);
+
+    const Matrix& nodal_to_modal_phi = Spectral::nodal_to_modal_matrix<
+        Spectral::Basis::Fourier, Spectral::Quadrature::Equiangular>(n_phi);
+    const Matrix& modal_to_nodal_phi = Spectral::modal_to_nodal_matrix<
+        Spectral::Basis::Fourier, Spectral::Quadrature::Equiangular>(n_phi);
+
+    const size_t local_buffer_size =
+        Variables<DerivativeTags>::number_of_independent_components *
+        u.number_of_grid_points();
+    // These just point to the passed buffers but it gets confusing to read when
+    // they are used for radial purposes that don't match their names
+    Variables<DerivativeTags> local_buffer1{};
+    Variables<DerivativeTags> local_buffer2{};
+    local_buffer1.set_data_ref(partial_u_wrt_eta->data(), local_buffer_size);
+    local_buffer2.set_data_ref(u_eta_fastest->data(), local_buffer_size);
+
     const size_t deriv_size =
         Variables<DerivativeTags>::number_of_independent_components *
         u.number_of_grid_points();
-    const Matrix& differentiation_matrix_xi =
-        Spectral::differentiation_matrix(mesh.slice_through(0));
     const size_t num_components_times_xi_slices = deriv_size / mesh.extents(0);
-    apply_matrix_in_first_dim(logical_partial_derivatives_of_u[0], u.data(),
-                              differentiation_matrix_xi, deriv_size);
+
+    // phi derivative
     transpose<Variables<VariableTags>, Variables<DerivativeTags>>(
         make_not_null(u_eta_fastest), u, mesh.extents(0),
         num_components_times_xi_slices);
-    const Matrix& differentiation_matrix_eta =
-        Spectral::differentiation_matrix(mesh.slice_through(1));
     apply_matrix_in_first_dim(partial_u_wrt_eta->data(), u_eta_fastest->data(),
-                              differentiation_matrix_eta, deriv_size);
-    raw_transpose(make_not_null(logical_partial_derivatives_of_u[1]),
-                  partial_u_wrt_eta->data(), num_components_times_xi_slices,
-                  mesh.extents(0));
+                              diff_matrix_phi, deriv_size);
+    raw_transpose(make_not_null((*logical_du)[1]), partial_u_wrt_eta->data(),
+                  num_components_times_xi_slices, mesh.extents(0));
+
+    // There are a few ways to achieve the task of applying the appropriate even
+    // or odd radial differentiation matrices.
+    // Testing showed that manual looping to apply the matrices on contiguous
+    // even/odd subsets was moderately slower than reworking the data to only
+    // apply 2 BLAS calls on the full even/odd subsets.
+    // One can rework the data two ways to get the subsets:
+    //  (1) copy the even and odd columns so the different components are split
+    // in two different buffers
+    //  (2) copy the entire data and then mask with zeros where appropriate.
+    // Option (1) uses less space for the BLAS calls as they act on truly dense
+    // matrices, whereas option (2) maintains the structure of the columns by
+    // adding zeros. Option (1) uses more copies but smaller BLAS operations,
+    // which testing showed to be slightly faster.
+
+    // reuse transposed data to go to angular spectral space
+    apply_matrix_in_first_dim((*logical_du)[0], u_eta_fastest->data(),
+                              nodal_to_modal_phi, deriv_size);
+    // (*logical_du)[0] holds transposed angular modal rep
+
+    raw_transpose(make_not_null(local_buffer1.data()), (*logical_du)[0],
+                  num_components_times_xi_slices, mesh.extents(0));
+    // local_buffer 1 holds angular modal rep
+
+    // Copy even/odd subsets to compact regions
+    const size_t n_even_cols =
+        (1 + 2 * ((n_phi - 1) / 4)) *
+        Variables<DerivativeTags>::number_of_independent_components;
+    const size_t n_odd_cols =
+        (2 * ((n_phi + 1) / 4)) *
+        Variables<DerivativeTags>::number_of_independent_components;
+
+    // Use local_buffer2 for initial compact storage
+    const size_t even_size = n_even_cols * n_r;
+    const size_t odd_size = n_odd_cols * n_r;
+    ValueType* even_data = local_buffer2.data();
+    ValueType* odd_data = local_buffer2.data() + even_size;
+
+    size_t even_col = 0;
+    size_t odd_col = 0;
+    for (size_t i = 0;
+         i <
+         Variables<DerivativeTags>::number_of_independent_components * n_phi;
+         ++i) {
+      if (i % n_phi == 0) {
+        // m = 0 (even) - copy single column
+        std::copy(local_buffer1.data() + i * n_r,
+                  local_buffer1.data() + (i + 1) * n_r,
+                  even_data + even_col * n_r);
+        ++even_col;
+      } else if ((i % n_phi - 1) / 2 % 2 == 1) {
+        // Even m with cos/sin pair - copy two columns
+        std::copy(local_buffer1.data() + i * n_r,
+                  local_buffer1.data() + (i + 2) * n_r,
+                  even_data + even_col * n_r);
+        even_col += 2;
+        ++i;
+      } else {
+        // Odd m with cos/sin pair - copy two columns
+        std::copy(local_buffer1.data() + i * n_r,
+                  local_buffer1.data() + (i + 2) * n_r,
+                  odd_data + odd_col * n_r);
+        odd_col += 2;
+        ++i;
+      }
+    }
+
+    // Use local_buffer1 for differentiated compact storage
+    ValueType* even_result = local_buffer1.data();
+    ValueType* odd_result = local_buffer1.data() + even_size;
+
+    apply_matrix_in_first_dim(even_result, even_data, diff_matrix_r_even,
+                              even_size, false);
+
+    // Copy even derivative components back to interleaved regions
+    even_col = 0;
+    for (size_t i = 0;
+         i <
+         Variables<DerivativeTags>::number_of_independent_components * n_phi;
+         ++i) {
+      if (i % n_phi == 0) {
+        // m = 0 (even) - copy single column back
+        std::copy(even_result + even_col * n_r,
+                  even_result + (even_col + 1) * n_r,
+                  (*logical_du)[0] + i * n_r);
+        ++even_col;
+      } else if ((i % n_phi - 1) / 2 % 2 == 1) {
+        // Even m with cos/sin pair - copy two columns back
+        std::copy(even_result + even_col * n_r,
+                  even_result + (even_col + 2) * n_r,
+                  (*logical_du)[0] + i * n_r);
+        even_col += 2;
+        ++i;
+      } else {
+        ++i;
+      }
+    }
+
+    apply_matrix_in_first_dim(odd_result, odd_data, diff_matrix_r_odd, odd_size,
+                              false);
+
+    // Copy odd derivative components back to interleaved regions
+    odd_col = 0;
+    for (size_t i = 0;
+         i <
+         Variables<DerivativeTags>::number_of_independent_components * n_phi;
+         ++i) {
+      if (i % n_phi == 0) {
+        // m = 0 (even) - skip
+      } else if ((i % n_phi - 1) / 2 % 2 == 1) {
+        // Even m - skip
+        ++i;
+      } else {
+        // Odd m with cos/sin pair - copy both columns
+        std::copy(odd_result + odd_col * n_r, odd_result + (odd_col + 2) * n_r,
+                  (*logical_du)[0] + i * n_r);
+        odd_col += 2;
+        ++i;
+      }
+    }
+    // (*logical_du)[0] holds the radial derivative in angular modal rep
+
+    raw_transpose(make_not_null(local_buffer1.data()), (*logical_du)[0],
+                  mesh.extents(0), num_components_times_xi_slices);
+    // local_buffer1 holds transposed radial derivative in angular modal rep
+
+    apply_matrix_in_first_dim(local_buffer2.data(), local_buffer1.data(),
+                              modal_to_nodal_phi, deriv_size);
+    // local_buffer2 holds transposed radial derivative in angular nodal rep
+
+    raw_transpose(make_not_null((*logical_du)[0]), local_buffer2.data(),
+                  num_components_times_xi_slices, mesh.extents(0));
   }
 };
 
@@ -861,6 +1072,15 @@ struct LogicalImpl<3, VariableTags, DerivativeTags> {
       } else {
         ERROR(
             "Support for complex numbers with spherical harmonics is not yet "
+            "implemented for logical_partial_derivative.");
+      }
+    } else if (mesh.basis(0) == Spectral::Basis::ZernikeB2) {
+      if constexpr (std::is_same_v<ValueType, double>) {
+        cylinder_apply(logical_du, partial_u_wrt_eta_or_zeta,
+                       u_eta_or_zeta_fastest, u, mesh);
+      } else {
+        ERROR(
+            "Support for complex numbers with the cylinder is not yet "
             "implemented for logical_partial_derivative.");
       }
     } else {
@@ -925,6 +1145,209 @@ struct LogicalImpl<3, VariableTags, DerivativeTags> {
       ylm.gradient_all_offsets(du, make_not_null(u.data() + offset),
                                mesh.extents(0));
     }
+  }
+
+  template <typename T, typename ValueType = typename Variables<T>::value_type>
+  static void cylinder_apply(
+      const gsl::not_null<std::array<ValueType*, Dim>*> logical_du,
+      Variables<T>* const partial_u_wrt_eta_or_zeta,
+      Variables<DerivativeTags>* const u_eta_or_zeta_fastest,
+      const Variables<VariableTags>& u, const Mesh<3>& mesh) {
+    ASSERT(mesh.basis(0) == Spectral::Basis::ZernikeB2 and
+               mesh.basis(1) == Spectral::Basis::ZernikeB2,
+           "Unexpected basis combination: " << mesh.basis());
+    const auto [n_r, n_phi, n_zeta] = mesh.extents().indices();
+    ASSERT(n_phi % 2 == 1,
+           "Fourier with an even number of grid points can be unstable due to "
+           "the top derivative not being representable");
+    ASSERT(n_phi / 2 <= 2 * n_r - 2,
+           "Zernike & Fourier on a disk have angular resolution limited by "
+           "extents in both dimensions. We choose to enforce the restriction "
+           "that the Fourier modal space is not larger than the Zernike "
+           "angular capabilities (which would waste space and be physically "
+           "ill-motivated).\nn_phi / 2 = "
+               << n_phi / 2 << ", Maximum from Zernike = " << 2 * n_r - 2);
+
+    const Matrix& diff_matrix_r_even =
+        Spectral::differentiation_matrix<Spectral::Basis::ZernikeB2,
+                                         Spectral::Quadrature::GaussRadauUpper>(
+            n_r, Spectral::Parity::Even);
+    const Matrix& diff_matrix_r_odd =
+        Spectral::differentiation_matrix<Spectral::Basis::ZernikeB2,
+                                         Spectral::Quadrature::GaussRadauUpper>(
+            n_r, Spectral::Parity::Odd);
+    const Matrix& diff_matrix_phi = Spectral::differentiation_matrix<
+        Spectral::Basis::Fourier, Spectral::Quadrature::Equiangular>(n_phi);
+    const Matrix& differentiation_matrix_zeta =
+        Spectral::differentiation_matrix(mesh.slice_through(2));
+
+    const Matrix& nodal_to_modal_phi = Spectral::nodal_to_modal_matrix<
+        Spectral::Basis::Fourier, Spectral::Quadrature::Equiangular>(n_phi);
+    const Matrix& modal_to_nodal_phi = Spectral::modal_to_nodal_matrix<
+        Spectral::Basis::Fourier, Spectral::Quadrature::Equiangular>(n_phi);
+
+    const size_t local_buffer_size =
+        Variables<DerivativeTags>::number_of_independent_components *
+        u.number_of_grid_points();
+    // These just point to the passed buffers but it gets confusing to read when
+    // they are used for radial purposes that don't match their names
+    Variables<DerivativeTags> local_buffer1{};
+    Variables<DerivativeTags> local_buffer2{};
+    local_buffer1.set_data_ref(partial_u_wrt_eta_or_zeta->data(),
+                               local_buffer_size);
+    local_buffer2.set_data_ref(u_eta_or_zeta_fastest->data(),
+                               local_buffer_size);
+
+    const size_t deriv_size =
+        Variables<DerivativeTags>::number_of_independent_components *
+        u.number_of_grid_points();
+    const size_t num_components_times_xi_slices = deriv_size / mesh.extents(0);
+
+    // phi derivative
+    transpose<Variables<VariableTags>, Variables<DerivativeTags>>(
+        make_not_null(u_eta_or_zeta_fastest), u, mesh.extents(0),
+        num_components_times_xi_slices);
+    apply_matrix_in_first_dim(partial_u_wrt_eta_or_zeta->data(),
+                              u_eta_or_zeta_fastest->data(), diff_matrix_phi,
+                              deriv_size);
+    raw_transpose(make_not_null((*logical_du)[1]),
+                  partial_u_wrt_eta_or_zeta->data(),
+                  num_components_times_xi_slices, mesh.extents(0));
+
+    // See comments in disk_apply() for why the following choices were made
+
+    // reuse transposed data to go to angular spectral space
+    apply_matrix_in_first_dim((*logical_du)[0], u_eta_or_zeta_fastest->data(),
+                              nodal_to_modal_phi, deriv_size);
+    // (*logical_du)[0] holds transposed angular modal rep
+
+    raw_transpose(make_not_null(local_buffer1.data()), (*logical_du)[0],
+                  num_components_times_xi_slices, mesh.extents(0));
+    std::copy(local_buffer1.data(), local_buffer1.data() + local_buffer_size,
+              local_buffer2.data());
+    // local_buffer 1 and local_buffer2 hold angular modal rep
+
+    // Copy even/odd subsets to compact regions for 3D cylinder
+    const size_t n_even_cols =
+        (1 + 2 * ((n_phi - 1) / 4)) *
+        Variables<DerivativeTags>::number_of_independent_components;
+    const size_t n_odd_cols =
+        (2 * ((n_phi + 1) / 4)) *
+        Variables<DerivativeTags>::number_of_independent_components;
+
+    // Use local_buffer2 for compact storage
+    const size_t total_even_size = n_even_cols * n_r * n_zeta;
+    const size_t total_odd_size = n_odd_cols * n_r * n_zeta;
+
+    ValueType* even_data = local_buffer2.data();
+    ValueType* odd_data = local_buffer2.data() + total_even_size;
+
+    size_t even_col = 0;
+    size_t odd_col = 0;
+    for (size_t i = 0;
+         i < Variables<DerivativeTags>::number_of_independent_components *
+                 n_phi * n_zeta;
+         ++i) {
+      if (i % n_phi == 0) {
+        // m = 0 (even) - copy single column
+        std::copy(local_buffer1.data() + i * n_r,
+                  local_buffer1.data() + (i + 1) * n_r,
+                  even_data + even_col * n_r);
+        ++even_col;
+      } else if ((i % n_phi - 1) / 2 % 2 == 1) {
+        // Even m with cos/sin pair - copy two columns
+        std::copy(local_buffer1.data() + i * n_r,
+                  local_buffer1.data() + (i + 2) * n_r,
+                  even_data + even_col * n_r);
+        even_col += 2;
+        ++i;
+      } else {
+        // Odd m with cos/sin pair - copy two columns
+        std::copy(local_buffer1.data() + i * n_r,
+                  local_buffer1.data() + (i + 2) * n_r,
+                  odd_data + odd_col * n_r);
+        odd_col += 2;
+        ++i;
+      }
+    }
+
+    // Use local_buffer1 for temporary storage since it's no longer needed
+    ValueType* even_result = local_buffer1.data();
+    ValueType* odd_result = local_buffer1.data() + total_even_size;
+
+    apply_matrix_in_first_dim(even_result, even_data, diff_matrix_r_even,
+                              total_even_size, false);
+
+    // Copy even derivative components back to interleaved regions
+    even_col = 0;
+    for (size_t i = 0;
+         i < Variables<DerivativeTags>::number_of_independent_components *
+                 n_phi * n_zeta;
+         ++i) {
+      if (i % n_phi == 0) {
+        // m = 0 (even) - copy single column back
+        std::copy(even_result + even_col * n_r,
+                  even_result + (even_col + 1) * n_r,
+                  (*logical_du)[0] + i * n_r);
+        ++even_col;
+      } else if ((i % n_phi - 1) / 2 % 2 == 1) {
+        // Even m with cos/sin pair - copy two columns back
+        std::copy(even_result + even_col * n_r,
+                  even_result + (even_col + 2) * n_r,
+                  (*logical_du)[0] + i * n_r);
+        even_col += 2;
+        ++i;
+      } else {
+        ++i;
+      }
+    }
+
+    apply_matrix_in_first_dim(odd_result, odd_data, diff_matrix_r_odd,
+                              total_odd_size, false);
+
+    // Copy odd derivative components back to interleaved regions
+    odd_col = 0;
+    for (size_t i = 0;
+         i < Variables<DerivativeTags>::number_of_independent_components *
+                 n_phi * n_zeta;
+         ++i) {
+      if (i % n_phi == 0) {
+        // m = 0 (even) - skip
+      } else if ((i % n_phi - 1) / 2 % 2 == 1) {
+        // Even m - skip
+        ++i;
+      } else {
+        // Odd m with cos/sin pair - copy both columns
+        std::copy(odd_result + odd_col * n_r, odd_result + (odd_col + 2) * n_r,
+                  (*logical_du)[0] + i * n_r);
+        odd_col += 2;
+        ++i;
+      }
+    }
+    // (*logical_du)[0] holds the radial derivative in angular modal rep
+
+    raw_transpose(make_not_null(local_buffer1.data()), (*logical_du)[0],
+                  mesh.extents(0), num_components_times_xi_slices);
+    // local_buffer1 holds transposed radial derivative in angular modal rep
+
+    apply_matrix_in_first_dim(local_buffer2.data(), local_buffer1.data(),
+                              modal_to_nodal_phi, deriv_size);
+    // local_buffer2 holds transposed radial derivative in angular nodal rep
+
+    raw_transpose(make_not_null((*logical_du)[0]), local_buffer2.data(),
+                  num_components_times_xi_slices, mesh.extents(0));
+
+    // zeta derivative
+    const size_t chunk_size = mesh.extents(0) * mesh.extents(1);
+    const size_t number_of_chunks = deriv_size / chunk_size;
+    transpose(make_not_null(u_eta_or_zeta_fastest), u, chunk_size,
+              number_of_chunks);
+    apply_matrix_in_first_dim(partial_u_wrt_eta_or_zeta->data(),
+                              u_eta_or_zeta_fastest->data(),
+                              differentiation_matrix_zeta, deriv_size);
+    raw_transpose(make_not_null((*logical_du)[2]),
+                  partial_u_wrt_eta_or_zeta->data(), number_of_chunks,
+                  chunk_size);
   }
 };
 }  // namespace partial_derivatives_detail

@@ -17,6 +17,9 @@
 #include "Domain/Tags.hpp"
 #include "NumericalAlgorithms/Spectral/DifferentiationMatrix.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
+#include "NumericalAlgorithms/Spectral/ModalToNodalMatrix.hpp"
+#include "NumericalAlgorithms/Spectral/NodalToModalMatrix.hpp"
+#include "NumericalAlgorithms/Spectral/Parity.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/Spherepack.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/SpherepackCache.hpp"
 #include "Utilities/Blas.hpp"
@@ -125,6 +128,238 @@ void logical_partial_derivative(
       ERROR(
           "Support for complex numbers with spherical harmonics is not yet "
           "implemented for logical_partial_derivative.");
+    }
+  } else if (Dim == 2 and mesh.basis(0) == Spectral::Basis::ZernikeB2) {
+    if constexpr (std::is_same_v<typename DataType::value_type, double>) {
+      ASSERT(mesh.basis(0) == Spectral::Basis::ZernikeB2 and
+                 mesh.basis(1) == Spectral::Basis::ZernikeB2,
+             "Unexpected basis combination: " << mesh.basis());
+      const size_t n_r = mesh.extents(0);
+      const size_t n_phi = mesh.extents(1);
+      const size_t n_r_max = 2 * n_r - 2;
+      ASSERT(
+          n_phi % 2 == 1,
+          "Fourier with an even number of grid points can be unstable due to "
+          "the top derivative not being representable");
+      ASSERT(n_phi / 2 <= n_r_max,
+             "Zernike & Fourier on a disk have angular resolution limited by "
+             "extents in both dimensions. We choose to enforce the restriction "
+             "that the Fourier modal space is not larger than the Zernike "
+             "angular capabilities (which would waste space and be physically "
+             "ill-motivated).\nn_phi / 2 = "
+                 << n_phi / 2 << ", Maximum from Zernike = " << n_r_max);
+      const size_t M = n_phi / 2;
+
+      const Matrix& diff_matrix_r_even = Spectral::differentiation_matrix<
+          Spectral::Basis::ZernikeB2, Spectral::Quadrature::GaussRadauUpper>(
+          n_r, Spectral::Parity::Even);
+      const Matrix& diff_matrix_r_odd = Spectral::differentiation_matrix<
+          Spectral::Basis::ZernikeB2, Spectral::Quadrature::GaussRadauUpper>(
+          n_r, Spectral::Parity::Odd);
+      const Matrix& diff_matrix_phi = Spectral::differentiation_matrix<
+          Spectral::Basis::Fourier, Spectral::Quadrature::Equiangular>(n_phi);
+
+      const Matrix& nodal_to_modal_phi = Spectral::nodal_to_modal_matrix<
+          Spectral::Basis::Fourier, Spectral::Quadrature::Equiangular>(n_phi);
+      const Matrix& modal_to_nodal_phi = Spectral::modal_to_nodal_matrix<
+          Spectral::Basis::Fourier, Spectral::Quadrature::Equiangular>(n_phi);
+
+      for (size_t storage_index = 0; storage_index < u.size();
+           ++storage_index) {
+        const auto u_tensor_index = u.get_tensor_index(storage_index);
+        const auto r_deriv_tensor_index = prepend(u_tensor_index, 0_st);
+        const auto phi_deriv_tensor_index = prepend(u_tensor_index, 1_st);
+
+        // Do phi derivative
+        dgemm_<true>(
+            'N',
+            'T',  // transpose differentiation matrix to act on rows of data
+            n_r, n_phi, n_phi, 1.0, u[storage_index].data(), n_r,
+            diff_matrix_phi.data(), diff_matrix_phi.spacing(), 0.0,
+            // NOLINTNEXTLINE(readability-redundant-smartptr-get)
+            logical_derivative_of_u->get(phi_deriv_tensor_index).data(), n_r);
+
+        // Get u in terms of r and m index
+        dgemm_<true>('N', 'T', n_r, n_phi, n_phi, 1.0, u[storage_index].data(),
+                     n_r, nodal_to_modal_phi.data(),
+                     nodal_to_modal_phi.spacing(), 0.0,
+                     // NOLINTNEXTLINE(readability-redundant-smartptr-get)
+                     logical_derivative_of_u->get(r_deriv_tensor_index).data(),
+                     n_r);  // C and ldc
+
+        // Do radial derivative
+        // m = 0
+        dgemv_('N', n_r, n_r, 1.0, diff_matrix_r_even.data(),
+               diff_matrix_r_even.spacing(),
+               // NOLINTNEXTLINE(readability-redundant-smartptr-get)
+               logical_derivative_of_u->get(r_deriv_tensor_index).data(), 1,
+               0.0,  // beta = 0.0
+               (*buffer).data(), 1);
+        // j is index into Fourier modal vector
+        // {u_0, u_1, u_{-1}, u_2, u_{-2}, ... , u_M, u_{-M}}
+        size_t j = 1;
+        for (size_t m = 1; m <= M; ++m) {
+          const Matrix& diff_r =
+              m % 2 == 0 ? diff_matrix_r_even : diff_matrix_r_odd;
+          dgemm_<true>(
+              'N', 'N', n_r, 2, n_r, 1.0, diff_r.data(), diff_r.spacing(),
+              // NOLINTNEXTLINE(readability-redundant-smartptr-get)
+              logical_derivative_of_u->get(r_deriv_tensor_index).data() +
+                  j * n_r,
+              n_r,
+              0.0,  // beta = 0.0
+              // NOLINTNEXTLINE
+              (*buffer).data() + j * n_r, n_r);
+          j += 2;
+        }
+        // Transform from m back to phi
+        dgemm_<true>(
+            'N', 'T', n_r, n_phi, n_phi, 1.0, (*buffer).data(), n_r,
+            modal_to_nodal_phi.data(), modal_to_nodal_phi.spacing(), 0.0,
+            // NOLINTNEXTLINE(readability-redundant-smartptr-get)
+            logical_derivative_of_u->get(r_deriv_tensor_index).data(), n_r);
+      }
+    } else {
+      ERROR(
+          "Support for complex numbers with disk is not yet implemented for "
+          "logical_partial_derivative.");
+    }
+  } else if (Dim == 3 and mesh.basis(0) == Spectral::Basis::ZernikeB2) {
+    if constexpr (std::is_same_v<typename DataType::value_type, double>) {
+      ASSERT(mesh.basis(0) == Spectral::Basis::ZernikeB2 and
+                 mesh.basis(1) == Spectral::Basis::ZernikeB2,
+             "Unexpected basis combination: " << mesh.basis());
+      const size_t n_r = mesh.extents(0);
+      const size_t n_phi = mesh.extents(1);
+      const size_t n_z = mesh.extents(2);
+      const size_t n_r_max = 2 * n_r - 2;
+      ASSERT(
+          n_phi % 2 == 1,
+          "Fourier with an even number of grid points can be unstable due to "
+          "the top derivative not being representable");
+      ASSERT(n_phi / 2 <= n_r_max,
+             "Zernike & Fourier on a disk have angular resolution limited by "
+             "extents in both dimensions. We choose to enforce the restriction "
+             "that the Fourier modal space is not larger than the Zernike "
+             "angular capabilities (which would waste space and be physically "
+             "ill-motivated).\nn_phi / 2 = "
+                 << n_phi / 2 << ", Maximum from Zernike = " << n_r_max);
+
+      const Matrix& diff_matrix_r_even = Spectral::differentiation_matrix<
+          Spectral::Basis::ZernikeB2, Spectral::Quadrature::GaussRadauUpper>(
+          n_r, Spectral::Parity::Even);
+      const Matrix& diff_matrix_r_odd = Spectral::differentiation_matrix<
+          Spectral::Basis::ZernikeB2, Spectral::Quadrature::GaussRadauUpper>(
+          n_r, Spectral::Parity::Odd);
+      const Matrix& diff_matrix_phi = Spectral::differentiation_matrix<
+          Spectral::Basis::Fourier, Spectral::Quadrature::Equiangular>(n_phi);
+      const Matrix& diff_matrix_z =
+          Spectral::differentiation_matrix(mesh.slice_through(2));
+
+      const Matrix& nodal_to_modal_phi = Spectral::nodal_to_modal_matrix<
+          Spectral::Basis::Fourier, Spectral::Quadrature::Equiangular>(n_phi);
+      const Matrix& modal_to_nodal_phi = Spectral::modal_to_nodal_matrix<
+          Spectral::Basis::Fourier, Spectral::Quadrature::Equiangular>(n_phi);
+
+      for (size_t storage_index = 0; storage_index < u.size();
+           ++storage_index) {
+        const DataType& u_component = u[storage_index];
+        const auto u_tensor_index = u.get_tensor_index(storage_index);
+        const auto r_deriv_tensor_index = prepend(u_tensor_index, 0_st);
+        DataType& r_deriv_component =
+            logical_derivative_of_u->get(r_deriv_tensor_index);
+        const auto phi_deriv_tensor_index = prepend(u_tensor_index, 1_st);
+        DataType& phi_deriv_component =
+            logical_derivative_of_u->get(phi_deriv_tensor_index);
+        const auto z_deriv_tensor_index = prepend(u_tensor_index, 2_st);
+        DataType& z_deriv_component =
+            logical_derivative_of_u->get(z_deriv_tensor_index);
+
+        // phi derivative
+        raw_transpose(make_not_null(z_deriv_component.data()),
+                      u_component.data(), n_r, n_phi * n_z);
+        partial_derivatives_detail::apply_matrix_in_first_dim(
+            buffer->data(), z_deriv_component.data(), diff_matrix_phi,
+            num_grid_points);
+        raw_transpose(make_not_null(phi_deriv_component.data()), buffer->data(),
+                      n_phi * n_z, n_r);
+
+        // See comments in disk_apply() in the .tpp for considerations about
+        // the following code. For this function, we don't have enough buffer
+        // space to cleanly use the approach in the .tpp, so we use the
+        // masking approach instead. Note that timing shows this to only be a
+        // few percent slower
+
+        // reuse transposed data to go to angular spectral space
+        partial_derivatives_detail::apply_matrix_in_first_dim(
+            r_deriv_component.data(), z_deriv_component.data(),
+            nodal_to_modal_phi, num_grid_points);
+        // r_deriv_component holds transposed angular modal rep
+
+        raw_transpose(make_not_null(buffer->data()), r_deriv_component.data(),
+                      n_phi * n_z, n_r);
+        std::copy(buffer->data(), buffer->data() + num_grid_points,
+                  z_deriv_component.data());
+        // buffer and z_deriv_component hold angular modal rep
+
+        // buffer stores even components, z_deriv_component stores odd
+        for (size_t k = 0; k < n_z; ++k) {
+          size_t offset = k * n_phi * n_r;
+          for (size_t i = 0; i < n_phi; ++i) {
+            if (i == 0) {
+              // This is an even column -> zero odd vals
+              std::fill(z_deriv_component.data() + offset,
+                        z_deriv_component.data() + offset + n_r, 0.0);
+            } else {
+              if ((i - 1) / 2 % 2 == 1) {
+                // This is an even column with even next to it -> zero odd vals
+                std::fill(z_deriv_component.data() + offset,
+                          z_deriv_component.data() + offset + 2 * n_r, 0.0);
+              } else {
+                // This is an even column with odd next to it -> zero even vals
+                std::fill(buffer->data() + offset,
+                          buffer->data() + offset + 2 * n_r, 0.0);
+              }
+              ++i;
+              offset += n_r;
+            }
+            offset += n_r;
+          }
+        }
+        partial_derivatives_detail::apply_matrix_in_first_dim(
+            r_deriv_component.data(), buffer->data(), diff_matrix_r_even,
+            num_grid_points, false);
+        partial_derivatives_detail::apply_matrix_in_first_dim(
+            r_deriv_component.data(), z_deriv_component.data(),
+            diff_matrix_r_odd, num_grid_points, true);
+        // r_deriv_component holds the radial derivative in angular modal rep
+
+        raw_transpose(make_not_null(buffer->data()), r_deriv_component.data(),
+                      n_r, n_phi * n_z);
+        // buffer holds transposed radial derivative in angular modal rep
+
+        partial_derivatives_detail::apply_matrix_in_first_dim(
+            z_deriv_component.data(), buffer->data(), modal_to_nodal_phi,
+            num_grid_points);
+        // z_deriv_component holds transposed radial derivative in angular nodal
+        // rep
+
+        raw_transpose(make_not_null(r_deriv_component.data()),
+                      z_deriv_component.data(), n_phi * n_z, n_r);
+
+        // z derivative
+        raw_transpose(make_not_null(z_deriv_component.data()),
+                      u_component.data(), n_r * n_phi, n_z);
+        partial_derivatives_detail::apply_matrix_in_first_dim(
+            buffer->data(), z_deriv_component.data(), diff_matrix_z,
+            num_grid_points);
+        raw_transpose(make_not_null(z_deriv_component.data()), buffer->data(),
+                      n_z, n_r * n_phi);
+      }
+    } else {
+      ERROR(
+          "Support for complex numbers with cylinder is not yet implemented "
+          "for logical_partial_derivative.");
     }
   } else {
     const Matrix empty_matrix{};
