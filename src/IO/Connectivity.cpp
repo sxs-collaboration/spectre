@@ -17,6 +17,8 @@ std::ostream& operator<<(std::ostream& os, const Topology& topology) {
       return os << "Triangle";
     case Topology::Quad:
       return os << "Quad";
+    case Topology::Wedge:
+      return os << "Wedge";
     case Topology::Hexahedron:
       return os << "Hexahedron";
     // LCOV_EXCL_START
@@ -143,6 +145,8 @@ int xdmf_topology_type(const Topology topology) {
       return 4;
     case Topology::Quad:
       return 5;
+    case Topology::Wedge:
+      return 8;
     case Topology::Hexahedron:
       return 9;
     // LCOV_EXCL_START
