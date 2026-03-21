@@ -438,8 +438,8 @@ class StaticCache {
 /// Create a StaticCache, inferring the cached type from the generator.
 template <typename... Ranges, typename Generator>
 auto make_static_cache(Generator&& generator) {
-  using CachedType = std::remove_cv_t<decltype(generator(
+  using CachedType = std::remove_cvref_t<decltype(generator(
       std::declval<typename Ranges::value_type>()...))>;
-  return StaticCache<std::remove_cv_t<Generator>, CachedType, Ranges...>(
+  return StaticCache<std::remove_cvref_t<Generator>, CachedType, Ranges...>(
       std::forward<Generator>(generator));
 }

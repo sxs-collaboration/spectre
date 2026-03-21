@@ -208,4 +208,30 @@ SPECTRE_TEST_CASE("Unit.Utilities.StaticCache", "[Utilities][Unit]") {
           5)),
       Catch::Matchers::ContainsSubstring("Index out of range: 3 <= 5 < 5"));
 #endif
+
+  // Test that the passed callable is stored, so we don't get a
+  // dangling reference in the usual case that the cache outlives its
+  // calling scope.
+  {
+    struct StoreTest {
+      int value{};
+      int operator()() const { return value; }
+    };
+
+    StoreTest callable{5};
+    const auto cache_from_lvalue = make_static_cache(callable);
+    callable.value = 8;
+    CHECK(cache_from_lvalue() == 5);
+  }
+
+  // Test that the cache caches values, even if the callable returns
+  // by reference
+  {
+    int value = 5;
+    const auto cache_returned_ref =
+        make_static_cache([&value]() -> const int& { return value; });
+    CHECK(cache_returned_ref() == 5);
+    value = 8;
+    CHECK(cache_returned_ref() == 5);
+  }
 }
