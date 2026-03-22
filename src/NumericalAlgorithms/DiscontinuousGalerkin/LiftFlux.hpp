@@ -13,6 +13,7 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
+#include "NumericalAlgorithms/Spectral/Basis.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -36,6 +37,9 @@ namespace dg {
 /// diagonalization of the mass matrix and its implications,
 /// \cite Teukolsky2015ega, especially Section 3.
 ///
+/// This function is implemented to handle Legendre, Chebyshev, and Zernike
+/// bases.
+///
 /// \note The result is still provided only on the boundary grid.  The
 /// values away from the boundary are zero and are not stored.
 template <typename... BoundaryCorrectionTags>
@@ -43,33 +47,81 @@ void lift_flux(
     const gsl::not_null<Variables<tmpl::list<BoundaryCorrectionTags...>>*>
         boundary_correction_terms,
     const size_t extent_perpendicular_to_boundary,
-    const Scalar<DataVector>& magnitude_of_face_normal) {
-  // For an Nth degree basis (i.e., one with N+1 basis functions), the LGL
-  // weights are:
-  //   w_i = 2 / ((N + 1) * N * (P_{N}(xi_i))^2)
-  // and so at the end points (xi = +/- 1) we get:
-  //   w_0 = 2 / ((N + 1) * N)
-  //   w_N = 2 / ((N + 1) * N)
-  // The negative sign comes from bringing the boundary correction over to the
-  // RHS of the equal sign (e.g. `du/dt=Source - div Flux - boundary corr`),
-  // while the magnitude of the normal vector above accounts for the ratios of
-  // spatial metrics and Jacobians.
-  *boundary_correction_terms *=
-      -0.5 *
-      static_cast<double>((extent_perpendicular_to_boundary *
-                           (extent_perpendicular_to_boundary - 1))) *
-      get(magnitude_of_face_normal);
+    const Scalar<DataVector>& magnitude_of_face_normal,
+    const Spectral::Basis basis = Spectral::Basis::Legendre) {
+  if (basis == Spectral::Basis::Legendre) {
+    // For an Nth degree basis (i.e., one with N+1 basis functions), the LGL
+    // weights are:
+    //   w_i = 2 / ((N + 1) * N * (P_{N}(xi_i))^2)
+    // and so at the end points (xi = +/- 1) we get:
+    //   w_0 = 2 / ((N + 1) * N)
+    //   w_N = 2 / ((N + 1) * N)
+    // The negative sign comes from bringing the boundary correction over to the
+    // RHS of the equal sign (e.g. `du/dt=Source - div Flux - boundary corr`),
+    // while the magnitude of the normal vector above accounts for the ratios of
+    // spatial metrics and Jacobians.
+    *boundary_correction_terms *=
+        -0.5 *
+        static_cast<double>((extent_perpendicular_to_boundary *
+                             (extent_perpendicular_to_boundary - 1))) *
+        get(magnitude_of_face_normal);
+  } else if (basis == Spectral::Basis::Chebyshev) {
+    // Chebyshev with GaussLobotto, with N grid points, has the weight at
+    // the upper and lower sides
+    // w_0 = 1 / ((N - 1)^2 - a)
+    // w_N = 1 / ((N - 1)^2 - a)
+    // where a = 0 if N is even, else it is 1
+    // The negative sign follows from the Legendre discussion
+    *boundary_correction_terms *=
+        -static_cast<double>((extent_perpendicular_to_boundary - 1) *
+                                 (extent_perpendicular_to_boundary - 1) -
+                             extent_perpendicular_to_boundary % 2) *
+        get(magnitude_of_face_normal);
+  } else if (basis == Spectral::Basis::ZernikeB1) {
+    // ZernikeB1 with GaussRadauUpper, with N grid points, has the weight at
+    // the upper side
+    // w_N = 1 / (N * (2 * N - 1))
+    // The negative sign follows from the Legendre discussion
+    *boundary_correction_terms *=
+        -1.0 *
+        static_cast<double>((extent_perpendicular_to_boundary *
+                             (2 * extent_perpendicular_to_boundary - 1))) *
+        get(magnitude_of_face_normal);
+  } else if (basis == Spectral::Basis::ZernikeB2) {
+    // ZernikeB2 with GaussRadauUpper, with N grid points, has the weight at
+    // the upper side
+    // w_N = 1 / (2 * N^2)
+    // The negative sign follows from the Legendre discussion
+    *boundary_correction_terms *=
+        -1.0 *
+        static_cast<double>((2 * extent_perpendicular_to_boundary *
+                             extent_perpendicular_to_boundary)) *
+        get(magnitude_of_face_normal);
+  } else if (basis == Spectral::Basis::ZernikeB3) {
+    // ZernikeB3 with GaussRadauUpper, with N grid points, has the weight at
+    // the upper side
+    // w_N = 1 / (N * (2 * N + 1))
+    // The negative sign follows from the Legendre discussion
+    *boundary_correction_terms *=
+        -1.0 *
+        static_cast<double>((extent_perpendicular_to_boundary *
+                             (2 * extent_perpendicular_to_boundary + 1))) *
+        get(magnitude_of_face_normal);
+  } else {
+    ERROR("Got unexpected basis " << basis);
+  }
 }
 
 template <typename... FluxTags>
 auto lift_flux(Variables<tmpl::list<FluxTags...>> flux,
                const size_t extent_perpendicular_to_boundary,
-               const Scalar<DataVector>& magnitude_of_face_normal)
+               const Scalar<DataVector>& magnitude_of_face_normal,
+               const Spectral::Basis basis = Spectral::Basis::Legendre)
     -> Variables<tmpl::list<db::remove_tag_prefix<FluxTags>...>> {
   Variables<tmpl::list<db::remove_tag_prefix<FluxTags>...>> lifted_data(
       std::move(flux));
   lift_flux(make_not_null(&lifted_data), extent_perpendicular_to_boundary,
-            magnitude_of_face_normal);
+            magnitude_of_face_normal, basis);
   return lifted_data;
 }
 /// @}
