@@ -35,7 +35,7 @@ template <size_t Dim>
 void test_derivatives(const size_t num_points) {
   const Approx custom_approx =
       num_points > 9 ? Approx::custom().epsilon(1.0e-12).scale(1.0)
-                      : Approx::custom().epsilon(1.0e-13).scale(1.0);
+                     : Approx::custom().epsilon(1.0e-13).scale(1.0);
   // Testing differeniation for polynomials exactly representable, so
   // up to power = num_points
   constexpr Spectral::Basis basis = Dim == 1   ? Spectral::Basis::ZernikeB1
@@ -79,6 +79,50 @@ void test_derivatives(const size_t num_points) {
                               : apply_matrix(diff_matrix_odd, my_function));
     CHECK_ITERABLE_CUSTOM_APPROX(evaluated_derivative, expected_derivative,
                                  custom_approx);
+  }
+}
+
+template <size_t Dim>
+void test_transform_identity() {
+  static_assert(Dim == 1 or Dim == 2 or Dim == 3);
+  const Spectral::Quadrature quadrature{Spectral::Quadrature::GaussRadauUpper};
+  constexpr Spectral::Basis basis = Dim == 1   ? Spectral::Basis::ZernikeB1
+                                    : Dim == 2 ? Spectral::Basis::ZernikeB2
+                                               : Spectral::Basis::ZernikeB3;
+  CAPTURE(basis);
+  const Approx custom_approx = Approx::custom().epsilon(2.0e-12).scale(1.0);
+  for (size_t n = 2; n <= Spectral::maximum_number_of_points<basis> / 2; ++n) {
+    for (size_t N = 0; N < 2 * n - 1; ++N) {
+      CAPTURE(N);
+      const DataVector xi = Spectral::collocation_points<basis, quadrature>(n);
+      CAPTURE(0.5 * (xi + 1.0));
+      for (size_t m = 0; m < N; ++m) {
+        CAPTURE(m);
+        // Note the integer division
+        const size_t spectral_size = (N - m) / 2 + 1;
+        Matrix identity(spectral_size, spectral_size, 0.0);
+        for (size_t i = 0; i < spectral_size; ++i) {
+          identity(i, i) = 1.0;
+        }
+        const Matrix modal_to_nodal =
+            Spectral::modal_to_nodal_matrix<basis, quadrature>(n, m, N);
+        const Matrix nodal_to_modal =
+            Spectral::nodal_to_modal_matrix<basis, quadrature>(n, m, N);
+        // Going from M->N->N is the identity as a matrix
+        CHECK_ITERABLE_CUSTOM_APPROX(nodal_to_modal * modal_to_nodal, identity,
+                                     custom_approx);
+        for (size_t k = m; k <= N; k += 2) {
+          CAPTURE(k);
+          const auto f =
+              Spectral::compute_basis_function_value<basis>(k, m, xi);
+          // Going from N->M->N is the identity operation, but not is not the
+          // identity when viewed as a matrix, so testing bases are invariant
+          CHECK_ITERABLE_CUSTOM_APPROX(
+              apply_matrix(modal_to_nodal, apply_matrix(nodal_to_modal, f)), f,
+              custom_approx);
+        }
+      }
+    }
   }
 }
 
@@ -127,4 +171,13 @@ SPECTRE_TEST_CASE(
   test_weight_at_upper<1>();
   test_weight_at_upper<2>();
   test_weight_at_upper<3>();
+}
+
+// [[TimeOut, 30]]
+SPECTRE_TEST_CASE(
+    "Unit.Numerical.Spectral.ZernikeGaussRadauUpper.SpectralTransforms",
+    "[NumericalAlgorithms][Spectral][Unit]") {
+  test_transform_identity<1>();
+  test_transform_identity<2>();
+  test_transform_identity<3>();
 }
