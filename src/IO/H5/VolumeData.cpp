@@ -197,7 +197,7 @@ size_t append_element_extents_and_connectivity(
              "the first dimension to be Legendre or Chebychev, got "
                  << element.basis[0]);
       const auto n_r = static_cast<int>(extents[0]);
-      const auto n_ph = static_cast<int>(extents[1]);
+      const auto n_phi = static_cast<int>(extents[1]);
 
       // Connect max(phi) and min(phi) by adding more quads
       // to total_connectivity
@@ -207,16 +207,17 @@ size_t append_element_extents_and_connectivity(
         ++cell_count;
         total_connectivity->push_back(element_start + j);
         total_connectivity->push_back(element_start + j + 1);
-        total_connectivity->push_back(element_start + (n_ph - 1) * n_r + j + 1);
-        total_connectivity->push_back(element_start + (n_ph - 1) * n_r + j);
+        total_connectivity->push_back(element_start + (n_phi - 1) * n_r + j +
+                                      1);
+        total_connectivity->push_back(element_start + (n_phi - 1) * n_r + j);
       }
 
       // For a filled disk (ZernikeB2), also fill the central hole with
       // triangles using a recursive fan pattern over the minimum r ring points.
       if (element.basis[0] == Spectral::Basis::ZernikeB2) {
         std::vector<int> inner_ring_points{};
-        inner_ring_points.reserve(static_cast<size_t>(n_ph));
-        for (int k = 0; k < n_ph; ++k) {
+        inner_ring_points.reserve(static_cast<size_t>(n_phi));
+        for (int k = 0; k < n_phi; ++k) {
           // minimum r for each phi slice
           inner_ring_points.push_back(element_start + k * n_r);
         }
