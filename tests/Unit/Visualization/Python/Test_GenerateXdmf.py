@@ -172,6 +172,23 @@ class TestGenerateXdmf(unittest.TestCase):
         # details, we should refactor the script into smaller units.
         self.assertTrue(os.path.isfile(output_filename + ".xmf"))
 
+        # Also make sure that the output doesn't change. This has caught
+        # many bugs.
+        # - Compare canonicalized XML with stripped whitespace. Pretty
+        #   indentation was only added in Python 3.9.
+        self.assertEqual(
+            ET.canonicalize(
+                from_file=output_filename + ".xmf", strip_text=True
+            ),
+            ET.canonicalize(
+                from_file=os.path.join(self.data_dir, "SurfaceTestData.xmf"),
+                strip_text=True,
+            ).replace(
+                "SurfaceTestData.h5",
+                os.path.relpath(data_files[0], self.test_dir),
+            ),
+        )
+
     def write_test_surface_file(self, filename):
         """Create a minimal new-format 2D surface H5 file for testing.
 
@@ -356,6 +373,18 @@ class TestGenerateXdmf(unittest.TestCase):
             for time_element in xmf_root.findall(".//Time")
         ]
         self.assertEqual(found_times, [0.0, 2000.0, 3000.0, 4000.0, 4800.0])
+
+        # All grids should use Mixed topology
+        uniform_grids = xmf_root.findall(".//Grid[@GridType='Uniform']")
+        self.assertEqual(len(uniform_grids), 5)
+        for grid in uniform_grids:
+            topo = grid.find("Topology")
+            self.assertIsNotNone(topo)
+            self.assertEqual(topo.attrib.get("TopologyType"), "Mixed")
+            self.assertEqual(topo.attrib.get("NumberOfElements"), "1")
+            attr_names = {a.attrib["Name"] for a in grid.findall("Attribute")}
+            self.assertIn("ElementId", attr_names)
+            self.assertIn("BlockId", attr_names)
 
 
 if __name__ == "__main__":

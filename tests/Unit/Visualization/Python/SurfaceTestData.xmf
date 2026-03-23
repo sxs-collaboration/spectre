@@ -1,0 +1,123 @@
+<?xml version="1.0" ?>
+<Xdmf Version="3.0">
+  <Domain>
+    <Grid Name="Evolution" GridType="Collection" CollectionType="Temporal">
+      <Grid Name="Grids" GridType="Collection">
+        <Time Value="0.00000000000000e+00" />
+        <Grid Name="SurfaceTestData.h5" GridType="Uniform">
+          <Topology TopologyType="Quadrilateral" NumberOfElements="300">
+            <DataItem Dimensions="300 4" NumberType="Int" Format="HDF5">SurfaceTestData.h5:/AhA.vol/ObservationId17090282476338361099/connectivity</DataItem>
+          </Topology>
+          <Geometry GeometryType="X_Y_Z">
+            <DataItem Dimensions="325" NumberType="Double" Precision="8" Format="HDF5">SurfaceTestData.h5:/AhA.vol/ObservationId17090282476338361099/InertialCoordinates_x</DataItem>
+            <DataItem Dimensions="325" NumberType="Double" Precision="8" Format="HDF5">SurfaceTestData.h5:/AhA.vol/ObservationId17090282476338361099/InertialCoordinates_y</DataItem>
+            <DataItem Dimensions="325" NumberType="Double" Precision="8" Format="HDF5">SurfaceTestData.h5:/AhA.vol/ObservationId17090282476338361099/InertialCoordinates_z</DataItem>
+          </Geometry>
+          <Attribute Name="RicciScalar" AttributeType="Scalar" Center="Node">
+            <DataItem Dimensions="325" NumberType="Double" Precision="8" Format="HDF5">SurfaceTestData.h5:/AhA.vol/ObservationId17090282476338361099/RicciScalar</DataItem>
+          </Attribute>
+        </Grid>
+        <Grid Name="SurfaceTestData.h5" GridType="Uniform">
+          <Topology TopologyType="Triangle" NumberOfElements="78">
+            <DataItem Dimensions="78 3" NumberType="Int" Format="HDF5">SurfaceTestData.h5:/AhA.vol/ObservationId17090282476338361099/pole_connectivity</DataItem>
+          </Topology>
+          <Geometry GeometryType="X_Y_Z">
+            <DataItem Dimensions="325" NumberType="Double" Precision="8" Format="HDF5">SurfaceTestData.h5:/AhA.vol/ObservationId17090282476338361099/InertialCoordinates_x</DataItem>
+            <DataItem Dimensions="325" NumberType="Double" Precision="8" Format="HDF5">SurfaceTestData.h5:/AhA.vol/ObservationId17090282476338361099/InertialCoordinates_y</DataItem>
+            <DataItem Dimensions="325" NumberType="Double" Precision="8" Format="HDF5">SurfaceTestData.h5:/AhA.vol/ObservationId17090282476338361099/InertialCoordinates_z</DataItem>
+          </Geometry>
+          <Attribute Name="RicciScalar" AttributeType="Scalar" Center="Node">
+            <DataItem Dimensions="325" NumberType="Double" Precision="8" Format="HDF5">SurfaceTestData.h5:/AhA.vol/ObservationId17090282476338361099/RicciScalar</DataItem>
+          </Attribute>
+        </Grid>
+      </Grid>
+      <Grid Name="Grids" GridType="Collection">
+        <Time Value="1.00000000000000e-02" />
+        <Grid Name="SurfaceTestData.h5" GridType="Uniform">
+          <Topology TopologyType="Quadrilateral" NumberOfElements="300">
+            <DataItem Dimensions="300 4" NumberType="Int" Format="HDF5">SurfaceTestData.h5:/AhA.vol/ObservationId1772359879832060641/connectivity</DataItem>
+          </Topology>
+          <Geometry GeometryType="X_Y_Z">
+            <DataItem Dimensions="325" NumberType="Double" Precision="8" Format="HDF5">SurfaceTestData.h5:/AhA.vol/ObservationId1772359879832060641/InertialCoordinates_x</DataItem>
+            <DataItem Dimensions="325" NumberType="Double" Precision="8" Format="HDF5">SurfaceTestData.h5:/AhA.vol/ObservationId1772359879832060641/InertialCoordinates_y</DataItem>
+            <DataItem Dimensions="325" NumberType="Double" Precision="8" Format="HDF5">SurfaceTestData.h5:/AhA.vol/ObservationId1772359879832060641/InertialCoordinates_z</DataItem>
+          </Geometry>
+          <Attribute Name="RicciScalar" AttributeType="Scalar" Center="Node">
+            <DataItem Dimensions="325" NumberType="Double" Precision="8" Format="HDF5">SurfaceTestData.h5:/AhA.vol/ObservationId1772359879832060641/RicciScalar</DataItem>
+          </Attribute>
+        </Grid>
+        <Grid Name="SurfaceTestData.h5" GridType="Uniform">
+          <Topology TopologyType="Triangle" NumberOfElements="78">
+            <DataItem Dimensions="78 3" NumberType="Int" Format="HDF5">SurfaceTestData.h5:/AhA.vol/ObservationId1772359879832060641/pole_connectivity</DataItem>
+          </Topology>
+          <Geometry GeometryType="X_Y_Z">
+            <DataItem Dimensions="325" NumberType="Double" Precision="8" Format="HDF5">SurfaceTestData.h5:/AhA.vol/ObservationId1772359879832060641/InertialCoordinates_x</DataItem>
+            <DataItem Dimensions="325" NumberType="Double" Precision="8" Format="HDF5">SurfaceTestData.h5:/AhA.vol/ObservationId1772359879832060641/InertialCoordinates_y</DataItem>
+            <DataItem Dimensions="325" NumberType="Double" Precision="8" Format="HDF5">SurfaceTestData.h5:/AhA.vol/ObservationId1772359879832060641/InertialCoordinates_z</DataItem>
+          </Geometry>
+          <Attribute Name="RicciScalar" AttributeType="Scalar" Center="Node">
+            <DataItem Dimensions="325" NumberType="Double" Precision="8" Format="HDF5">SurfaceTestData.h5:/AhA.vol/ObservationId1772359879832060641/RicciScalar</DataItem>
+          </Attribute>
+        </Grid>
+      </Grid>
+      <Grid Name="Grids" GridType="Collection">
+        <Time Value="2.00000000000000e-02" />
+        <Grid Name="SurfaceTestData.h5" GridType="Uniform">
+          <Topology TopologyType="Quadrilateral" NumberOfElements="300">
+            <DataItem Dimensions="300 4" NumberType="Int" Format="HDF5">SurfaceTestData.h5:/AhA.vol/ObservationId12301658324951520897/connectivity</DataItem>
+          </Topology>
+          <Geometry GeometryType="X_Y_Z">
+            <DataItem Dimensions="325" NumberType="Double" Precision="8" Format="HDF5">SurfaceTestData.h5:/AhA.vol/ObservationId12301658324951520897/InertialCoordinates_x</DataItem>
+            <DataItem Dimensions="325" NumberType="Double" Precision="8" Format="HDF5">SurfaceTestData.h5:/AhA.vol/ObservationId12301658324951520897/InertialCoordinates_y</DataItem>
+            <DataItem Dimensions="325" NumberType="Double" Precision="8" Format="HDF5">SurfaceTestData.h5:/AhA.vol/ObservationId12301658324951520897/InertialCoordinates_z</DataItem>
+          </Geometry>
+          <Attribute Name="RicciScalar" AttributeType="Scalar" Center="Node">
+            <DataItem Dimensions="325" NumberType="Double" Precision="8" Format="HDF5">SurfaceTestData.h5:/AhA.vol/ObservationId12301658324951520897/RicciScalar</DataItem>
+          </Attribute>
+        </Grid>
+        <Grid Name="SurfaceTestData.h5" GridType="Uniform">
+          <Topology TopologyType="Triangle" NumberOfElements="78">
+            <DataItem Dimensions="78 3" NumberType="Int" Format="HDF5">SurfaceTestData.h5:/AhA.vol/ObservationId12301658324951520897/pole_connectivity</DataItem>
+          </Topology>
+          <Geometry GeometryType="X_Y_Z">
+            <DataItem Dimensions="325" NumberType="Double" Precision="8" Format="HDF5">SurfaceTestData.h5:/AhA.vol/ObservationId12301658324951520897/InertialCoordinates_x</DataItem>
+            <DataItem Dimensions="325" NumberType="Double" Precision="8" Format="HDF5">SurfaceTestData.h5:/AhA.vol/ObservationId12301658324951520897/InertialCoordinates_y</DataItem>
+            <DataItem Dimensions="325" NumberType="Double" Precision="8" Format="HDF5">SurfaceTestData.h5:/AhA.vol/ObservationId12301658324951520897/InertialCoordinates_z</DataItem>
+          </Geometry>
+          <Attribute Name="RicciScalar" AttributeType="Scalar" Center="Node">
+            <DataItem Dimensions="325" NumberType="Double" Precision="8" Format="HDF5">SurfaceTestData.h5:/AhA.vol/ObservationId12301658324951520897/RicciScalar</DataItem>
+          </Attribute>
+        </Grid>
+      </Grid>
+      <Grid Name="Grids" GridType="Collection">
+        <Time Value="3.00000000000000e-02" />
+        <Grid Name="SurfaceTestData.h5" GridType="Uniform">
+          <Topology TopologyType="Quadrilateral" NumberOfElements="300">
+            <DataItem Dimensions="300 4" NumberType="Int" Format="HDF5">SurfaceTestData.h5:/AhA.vol/ObservationId15295492191823427363/connectivity</DataItem>
+          </Topology>
+          <Geometry GeometryType="X_Y_Z">
+            <DataItem Dimensions="325" NumberType="Double" Precision="8" Format="HDF5">SurfaceTestData.h5:/AhA.vol/ObservationId15295492191823427363/InertialCoordinates_x</DataItem>
+            <DataItem Dimensions="325" NumberType="Double" Precision="8" Format="HDF5">SurfaceTestData.h5:/AhA.vol/ObservationId15295492191823427363/InertialCoordinates_y</DataItem>
+            <DataItem Dimensions="325" NumberType="Double" Precision="8" Format="HDF5">SurfaceTestData.h5:/AhA.vol/ObservationId15295492191823427363/InertialCoordinates_z</DataItem>
+          </Geometry>
+          <Attribute Name="RicciScalar" AttributeType="Scalar" Center="Node">
+            <DataItem Dimensions="325" NumberType="Double" Precision="8" Format="HDF5">SurfaceTestData.h5:/AhA.vol/ObservationId15295492191823427363/RicciScalar</DataItem>
+          </Attribute>
+        </Grid>
+        <Grid Name="SurfaceTestData.h5" GridType="Uniform">
+          <Topology TopologyType="Triangle" NumberOfElements="78">
+            <DataItem Dimensions="78 3" NumberType="Int" Format="HDF5">SurfaceTestData.h5:/AhA.vol/ObservationId15295492191823427363/pole_connectivity</DataItem>
+          </Topology>
+          <Geometry GeometryType="X_Y_Z">
+            <DataItem Dimensions="325" NumberType="Double" Precision="8" Format="HDF5">SurfaceTestData.h5:/AhA.vol/ObservationId15295492191823427363/InertialCoordinates_x</DataItem>
+            <DataItem Dimensions="325" NumberType="Double" Precision="8" Format="HDF5">SurfaceTestData.h5:/AhA.vol/ObservationId15295492191823427363/InertialCoordinates_y</DataItem>
+            <DataItem Dimensions="325" NumberType="Double" Precision="8" Format="HDF5">SurfaceTestData.h5:/AhA.vol/ObservationId15295492191823427363/InertialCoordinates_z</DataItem>
+          </Geometry>
+          <Attribute Name="RicciScalar" AttributeType="Scalar" Center="Node">
+            <DataItem Dimensions="325" NumberType="Double" Precision="8" Format="HDF5">SurfaceTestData.h5:/AhA.vol/ObservationId15295492191823427363/RicciScalar</DataItem>
+          </Attribute>
+        </Grid>
+      </Grid>
+    </Grid>
+  </Domain>
+</Xdmf>
