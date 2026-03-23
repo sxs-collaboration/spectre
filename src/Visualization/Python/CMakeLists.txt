@@ -7,6 +7,7 @@ spectre_python_add_module(
   Visualization
   PYTHON_FILES
   __init__.py
+  ElementIdToParaview.py
   GenerateTetrahedralConnectivity.py
   GenerateXdmf.py
   Plot.py
