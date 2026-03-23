@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "IO/Connectivity.hpp"
 #include "IO/H5/VolumeData.hpp"
 #include "NumericalAlgorithms/Spectral/Basis.hpp"
 #include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
@@ -466,16 +467,35 @@ std::vector<int> extend_connectivity(
     }
   }
 
+  // Account for XDMF type tag (1 extra int per cell) in the reservation.
+  // Each cell has 2^SpatialDim vertices plus 1 type tag.
+  constexpr size_t vertices_per_cell = 1 << SpatialDim;
+  total_expected_connectivity =
+      total_expected_connectivity / vertices_per_cell * (vertices_per_cell + 1);
   std::vector<int> new_connectivity;
   new_connectivity.reserve(total_expected_connectivity);
 
+  // XDMF topology type tag via shared helper (Line=2, Quad=5, Hexahedron=9)
+  constexpr vis::detail::Topology cell_topology =
+      SpatialDim == 1 ? vis::detail::Topology::Line
+                      : (SpatialDim == 2 ? vis::detail::Topology::Quad
+                                         : vis::detail::Topology::Hexahedron);
+  const int xdmf_type_tag = vis::detail::xdmf_topology_type(cell_topology);
   for (size_t j = 0; j < block_logical_coordinates_by_block.size(); ++j) {
     auto block_number = j;
     auto connectivity_of_keys = generate_new_connectivity<SpatialDim>(
         block_logical_coordinates_by_block[j], block_number);
+    size_t vertices_in_cell = 0;
     for (const std::pair<size_t, std::array<double, SpatialDim>>& it :
          connectivity_of_keys) {
+      if (vertices_in_cell == 0) {
+        new_connectivity.push_back(xdmf_type_tag);
+      }
       new_connectivity.push_back(block_and_grid_point_map[it]);
+      ++vertices_in_cell;
+      if (vertices_in_cell == vertices_per_cell) {
+        vertices_in_cell = 0;
+      }
     }
   }
 

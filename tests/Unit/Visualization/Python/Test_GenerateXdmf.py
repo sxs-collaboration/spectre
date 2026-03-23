@@ -47,14 +47,17 @@ class TestGenerateXdmf(unittest.TestCase):
                     f"ObservationId{observation_id}"
                 )
                 observation.attrs["observation_value"] = observation_value
+                # New mixed-topology format: type tag 9 (Hexahedron) followed
+                # by 8 vertex indices for a single 2x2x2 hex cell.
                 observation.create_dataset(
-                    "connectivity", data=np.arange(8, dtype=np.int32)
+                    "connectivity",
+                    data=np.array([9, 0, 1, 3, 2, 4, 5, 7, 6], dtype=np.int32),
                 )
                 observation.create_dataset(
                     "total_extents", data=np.array([2, 2, 2], dtype=np.int32)
                 )
                 observation.create_dataset(
-                    "grid_names", data=np.array([b"Element0"])
+                    "grid_names", data=np.array([b"[B0,(L0I0,L0I0,L0I0)]"])
                 )
                 observation.create_dataset(
                     "bases", data=np.array([0, 0, 0], dtype=np.int32)
@@ -73,6 +76,13 @@ class TestGenerateXdmf(unittest.TestCase):
                 observation.create_dataset(
                     "InertialCoordinates_z",
                     data=np.array([0, 0, 0, 0, 1, 1, 1, 1], dtype=float),
+                )
+                # Cell-centered datasets for new mixed-topology format
+                observation.create_dataset(
+                    "ElementId", data=np.array([42], dtype=np.uint64)
+                )
+                observation.create_dataset(
+                    "BlockId", data=np.array([0], dtype=np.uint64)
                 )
                 observation.create_dataset(
                     "Psi",

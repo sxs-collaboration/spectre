@@ -8,6 +8,8 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/iterator/transform_iterator.hpp>
 #include <cstddef>
+#include <cstdint>
+#include <functional>
 #include <hdf5.h>
 #include <limits>
 #include <memory>
@@ -19,6 +21,7 @@
 #include <vector>
 
 #include "DataStructures/DataVector.hpp"
+#include "Domain/Structure/ElementId.hpp"
 #include "IO/Connectivity.hpp"
 #include "IO/H5/AccessType.hpp"
 #include "IO/H5/ExtendConnectivityHelpers.hpp"
@@ -53,14 +56,13 @@ namespace {
 constexpr const char* global_functions_of_time_observation_value_attr =
     "global_functions_of_time_observation_value";
 
-void append_element_extents_and_connectivity(
+size_t append_element_extents_and_connectivity(
     const gsl::not_null<std::vector<size_t>*> total_extents,
     const gsl::not_null<std::vector<int>*> total_connectivity,
     const gsl::not_null<std::vector<int>*> pole_connectivity,
-    const gsl::not_null<std::vector<int>*> disk_connectivity,
-    const gsl::not_null<std::vector<int>*> cylinder_connectivity,
     const gsl::not_null<int*> total_points_so_far, const size_t dim,
     const ElementVolumeData& element) {
+  size_t cell_count = 0;
   // Process the element extents
   // `dim` is the dimension of the computation except when we are doing Cartoon
   // method with a 2D computational domain. In such a case, the true dimension
@@ -100,9 +102,13 @@ void append_element_extents_and_connectivity(
   // Generate the connectivity data for the element
   // Possible optimization: local_connectivity.reserve(BLAH) if we can figure
   // out size without computing all the connectivities.
-  const std::vector<int> connectivity = [&extents, &total_points_so_far]() {
+  const std::vector<int> connectivity = [&extents, &total_points_so_far,
+                                         &cell_count]() {
     std::vector<int> local_connectivity;
     for (const auto& cell : vis::detail::compute_cells(extents)) {
+      local_connectivity.emplace_back(
+          vis::detail::xdmf_topology_type(cell.topology));
+      ++cell_count;
       for (const auto& bounding_indices : cell.bounding_indices) {
         local_connectivity.emplace_back(*total_points_so_far +
                                         static_cast<int>(bounding_indices));
@@ -127,6 +133,9 @@ void append_element_extents_and_connectivity(
       // Connect max(phi) and min(phi) by adding more quads
       // to total_connectivity
       for (int j = 0; j < l; ++j) {
+        total_connectivity->push_back(
+            vis::detail::xdmf_topology_type(vis::detail::Topology::Quad));
+        ++cell_count;
         total_connectivity->push_back(j);
         total_connectivity->push_back(j + 1);
         total_connectivity->push_back(2 * l * (l + 1) + j + 1);
@@ -166,9 +175,13 @@ void append_element_extents_and_connectivity(
         const int bottom_second_point = gsl::at(bottom_pole_points, i);
         const int bottom_third_point = gsl::at(bottom_pole_points, i + 1);
 
+        pole_connectivity->push_back(
+            vis::detail::xdmf_topology_type(vis::detail::Topology::Triangle));
         pole_connectivity->push_back(top_root_point);
         pole_connectivity->push_back(top_second_point);
         pole_connectivity->push_back(top_third_point);
+        pole_connectivity->push_back(
+            vis::detail::xdmf_topology_type(vis::detail::Topology::Triangle));
         pole_connectivity->push_back(bottom_root_point);
         pole_connectivity->push_back(bottom_second_point);
         pole_connectivity->push_back(bottom_third_point);
@@ -188,6 +201,9 @@ void append_element_extents_and_connectivity(
       // Connect max(phi) and min(phi) by adding more quads
       // to total_connectivity
       for (int j = 0; j < n_r - 1; ++j) {
+        total_connectivity->push_back(
+            vis::detail::xdmf_topology_type(vis::detail::Topology::Quad));
+        ++cell_count;
         total_connectivity->push_back(element_start + j);
         total_connectivity->push_back(element_start + j + 1);
         total_connectivity->push_back(element_start + (n_ph - 1) * n_r + j + 1);
@@ -209,24 +225,31 @@ void append_element_extents_and_connectivity(
           new_points.clear();
           new_points.push_back(inner_ring_points[0]);
           for (size_t i = 0; i < inner_ring_points.size() - 2; i += 2) {
-            disk_connectivity->push_back(inner_ring_points[i]);
-            disk_connectivity->push_back(inner_ring_points[i + 1]);
-            disk_connectivity->push_back(inner_ring_points[i + 2]);
+            total_connectivity->push_back(vis::detail::xdmf_topology_type(
+                vis::detail::Topology::Triangle));
+            ++cell_count;
+            total_connectivity->push_back(inner_ring_points[i]);
+            total_connectivity->push_back(inner_ring_points[i + 1]);
+            total_connectivity->push_back(inner_ring_points[i + 2]);
             new_points.push_back(inner_ring_points[i + 2]);
           }
           if (inner_ring_points.size() % 2 == 0) {
             // Add triangle closing the ring: connects last two points back to
             // first
-            disk_connectivity->push_back(
+            total_connectivity->push_back(vis::detail::xdmf_topology_type(
+                vis::detail::Topology::Triangle));
+            ++cell_count;
+            total_connectivity->push_back(
                 inner_ring_points[inner_ring_points.size() - 2]);
-            disk_connectivity->push_back(
+            total_connectivity->push_back(
                 inner_ring_points[inner_ring_points.size() - 1]);
-            disk_connectivity->push_back(inner_ring_points[0]);
+            total_connectivity->push_back(inner_ring_points[0]);
           }
           inner_ring_points = std::move(new_points);
         }
       }
     }
+    // generically do nothing if not a sphere, disk, or annulus
   } else if (dim == 3) {
     if ((element.basis[0] == Spectral::Basis::ZernikeB2 and
          element.basis[1] == Spectral::Basis::ZernikeB2) or
@@ -237,23 +260,26 @@ void append_element_extents_and_connectivity(
                   (element.basis[2] == Spectral::Basis::Legendre or
                    element.basis[2] == Spectral::Basis::Chebyshev)),
              "Adding connectivity for Fourier in the second dimension requires "
-             "the first and third dimensions to be Legendre or Chebychev, got "
+             "the first and third dimensions to be Legendre or Chebyshev, got "
                  << element.basis[0] << ", " << element.basis[2]);
       const auto n_r = static_cast<int>(extents[0]);
       const auto n_ph = static_cast<int>(extents[1]);
       const auto n_z = static_cast<int>(extents[2]);
 
-      // Helper: global point index for (i_r, i_phi, i_z)
-      const auto global_index = [&](int index_radius, int index_phi,
-                                    int index_z) {
+      // Helper: global point index for (index_r, index_phi, index_z)
+      const auto global_index = [&](const int index_radius, const int index_phi,
+                                    const int index_z) -> int {
         return element_start + index_radius + n_r * index_phi +
                n_r * n_ph * index_z;
       };
 
-      // Close the phi seam: connect last phi strip (i_ph = n_ph-1) back to
-      // first (i_ph = 0) with hexahedra.
+      // Close the phi seam: connect last phi strip (index_ph = n_ph-1) back to
+      // first (index_ph = 0) with hexahedra.
       for (int j_r = 0; j_r < n_r - 1; ++j_r) {
         for (int j_z = 0; j_z < n_z - 1; ++j_z) {
+          total_connectivity->push_back(vis::detail::xdmf_topology_type(
+              vis::detail::Topology::Hexahedron));
+          ++cell_count;
           total_connectivity->push_back(global_index(j_r, n_ph - 1, j_z));
           total_connectivity->push_back(global_index(j_r + 1, n_ph - 1, j_z));
           total_connectivity->push_back(global_index(j_r + 1, 0, j_z));
@@ -294,23 +320,30 @@ void append_element_extents_and_connectivity(
             for (size_t i = 0; i < ring_lo.size() - 2; i += 2) {
               // Wedge (triangular prism): bottom triangle (ring_lo) + top
               // triangle (ring_hi), each 3 vertices = 6 total.
-              cylinder_connectivity->push_back(ring_lo[i]);
-              cylinder_connectivity->push_back(ring_lo[i + 1]);
-              cylinder_connectivity->push_back(ring_lo[i + 2]);
-              cylinder_connectivity->push_back(ring_hi[i]);
-              cylinder_connectivity->push_back(ring_hi[i + 1]);
-              cylinder_connectivity->push_back(ring_hi[i + 2]);
+              total_connectivity->push_back(vis::detail::xdmf_topology_type(
+                  vis::detail::Topology::Wedge));
+              ++cell_count;
+              total_connectivity->push_back(ring_lo[i]);
+              total_connectivity->push_back(ring_lo[i + 1]);
+              total_connectivity->push_back(ring_lo[i + 2]);
+              total_connectivity->push_back(ring_hi[i]);
+              total_connectivity->push_back(ring_hi[i + 1]);
+              total_connectivity->push_back(ring_hi[i + 2]);
               new_lo.push_back(ring_lo[i + 2]);
               new_hi.push_back(ring_hi[i + 2]);
             }
             if (ring_lo.size() % 2 == 0) {
               // Closing wedge connecting last two points back to first
-              cylinder_connectivity->push_back(ring_lo[ring_lo.size() - 2]);
-              cylinder_connectivity->push_back(ring_lo[ring_lo.size() - 1]);
-              cylinder_connectivity->push_back(ring_lo[0]);
-              cylinder_connectivity->push_back(ring_hi[ring_hi.size() - 2]);
-              cylinder_connectivity->push_back(ring_hi[ring_hi.size() - 1]);
-              cylinder_connectivity->push_back(ring_hi[0]);
+              const size_t size = ring_lo.size();
+              total_connectivity->push_back(vis::detail::xdmf_topology_type(
+                  vis::detail::Topology::Wedge));
+              ++cell_count;
+              total_connectivity->push_back(ring_lo[size - 2]);
+              total_connectivity->push_back(ring_lo[size - 1]);
+              total_connectivity->push_back(ring_lo[0]);
+              total_connectivity->push_back(ring_hi[size - 2]);
+              total_connectivity->push_back(ring_hi[size - 1]);
+              total_connectivity->push_back(ring_hi[0]);
             }
             ring_lo = std::move(new_lo);
             ring_hi = std::move(new_hi);
@@ -319,6 +352,7 @@ void append_element_extents_and_connectivity(
       }
     }
   }
+  return cell_count;
 }
 }  // namespace
 
@@ -419,10 +453,10 @@ void VolumeData::write_volume_data(
   std::string grid_names;
   std::vector<int> total_connectivity;
   std::vector<int> pole_connectivity{};
-  std::vector<int> disk_connectivity{};
-  std::vector<int> cylinder_connectivity{};
   std::vector<int> quadratures;
   std::vector<int> bases;
+  std::vector<uint64_t> element_ids;
+  std::vector<uint64_t> block_ids;
   // Keep a running count of the number of points so far to use as a global
   // index for the connectivity
   int total_points_so_far = 0;
@@ -439,10 +473,9 @@ void VolumeData::write_volume_data(
     }
 
     const auto fill_and_write_contiguous_tensor_data =
-        [&bases, &component_name, &dim, &elements, &grid_names, i,
-         &observation_group, &quadratures, &total_connectivity,
-         &pole_connectivity, &disk_connectivity, &cylinder_connectivity,
-         &total_extents,
+        [&bases, &block_ids, &component_name, &dim, &element_ids, &elements,
+         &grid_names, i, &observation_group, &quadratures, &total_connectivity,
+         &pole_connectivity, &total_extents,
          &total_points_so_far](const auto contiguous_tensor_data_ptr) {
           for (const auto& element : elements) {
             if (UNLIKELY(i == 0)) {
@@ -475,10 +508,43 @@ void VolumeData::write_volume_data(
                     return static_cast<int>(t);
                   });
 
-              append_element_extents_and_connectivity(
-                  &total_extents, &total_connectivity, &pole_connectivity,
-                  &disk_connectivity, &cylinder_connectivity,
-                  &total_points_so_far, dim, element);
+              const size_t number_of_cells =
+                  append_element_extents_and_connectivity(
+                      &total_extents, &total_connectivity, &pole_connectivity,
+                      &total_points_so_far, dim, element);
+
+              // Element ID: hash of the element name string
+              if (element.element_name.size() >= 3 and
+                  element.element_name[0] == '[' and
+                  element.element_name[1] == 'B') {
+                if (dim == 1) {
+                  const ElementId<1> element_id{element.element_name};
+                  element_ids.insert(element_ids.end(), number_of_cells,
+                                     element_id.to_short_id());
+                  block_ids.insert(block_ids.end(), number_of_cells,
+                                   element_id.block_id());
+                } else if (dim == 2) {
+                  const ElementId<2> element_id{element.element_name};
+                  element_ids.insert(element_ids.end(), number_of_cells,
+                                     element_id.to_short_id());
+                  block_ids.insert(block_ids.end(), number_of_cells,
+                                   element_id.block_id());
+                } else if (dim == 3) {
+                  const ElementId<3> element_id{element.element_name};
+                  element_ids.insert(element_ids.end(), number_of_cells,
+                                     element_id.to_short_id());
+                  block_ids.insert(block_ids.end(), number_of_cells,
+                                   element_id.block_id());
+                } else {
+                  ERROR("Can only encode ElementID when dim is 1, 2, or 3, got "
+                        << dim);
+                }
+              } else {
+                element_ids.insert(
+                    element_ids.end(), number_of_cells,
+                    std::hash<std::string>{}(element.element_name));
+                block_ids.insert(block_ids.end(), number_of_cells, 0);
+              }
             }
             using type_from_variant = tmpl::conditional_t<
                 std::is_same_v<
@@ -558,13 +624,16 @@ void VolumeData::write_volume_data(
     h5::write_data(observation_group.id(), pole_connectivity,
                    {pole_connectivity.size()}, "pole_connectivity");
   }
-  if (not disk_connectivity.empty()) {
-    h5::write_data(observation_group.id(), disk_connectivity,
-                   {disk_connectivity.size()}, "disk_connectivity");
+  // Write cell-centered element_id and block_id datasets for the mixed
+  // topology format. element_id is the hash of the element name; block_id is
+  // parsed from the "[B<N>,..." element name pattern.
+  if (not element_ids.empty()) {
+    h5::write_data(observation_group.id(), element_ids, {element_ids.size()},
+                   "ElementId");
   }
-  if (not cylinder_connectivity.empty()) {
-    h5::write_data(observation_group.id(), cylinder_connectivity,
-                   {cylinder_connectivity.size()}, "cylinder_connectivity");
+  if (not block_ids.empty()) {
+    h5::write_data(observation_group.id(), block_ids, {block_ids.size()},
+                   "BlockId");
   }
   // Store the serialized domain and functions of time at the subfile level
   if (serialized_domain.has_value() and
@@ -735,16 +804,10 @@ std::vector<std::string> VolumeData::list_tensor_components(
                       "ObservationId" + std::to_string(observation_id));
   // Remove names that are not tensor components
   const std::unordered_set<std::string> non_tensor_components{
-      "connectivity",
-      "pole_connectivity",
-      "disk_connectivity",
-      "cylinder_connectivity",
-      "total_extents",
-      "grid_names",
-      "quadratures",
-      "bases",
-      "domain",
-      "functions_of_time"};
+      "connectivity", "pole_connectivity", "total_extents",
+      "grid_names",   "quadratures",       "bases",
+      "domain",       "functions_of_time", "ElementId",
+      "BlockId"};
   tensor_components.erase(
       alg::remove_if(tensor_components,
                      [&non_tensor_components](const std::string& name) {
@@ -781,8 +844,7 @@ TensorComponent VolumeData::get_tensor_component(
   const auto rank =
       static_cast<size_t>(H5Sget_simple_extent_ndims(dataspace_id));
   h5::close_dataspace(dataspace_id);
-  const bool use_float =
-      h5::types_equal(H5Dget_type(dataset_id), h5::h5_type<float>());
+  const auto h5_data_type = H5Dget_type(dataset_id);
   h5::close_dataset(dataset_id);
 
   const auto get_data = [&observation_group, &rank,
@@ -803,10 +865,29 @@ TensorComponent VolumeData::get_tensor_component(
     }
   };
 
-  if (use_float) {
+  if (h5::types_equal(h5_data_type, h5::h5_type<float>())) {
     return {tensor_component, get_data(tmpl::type_<std::vector<float>>{})};
-  } else {
+  } else if (h5::types_equal(h5_data_type, h5::h5_type<double>())) {
     return {tensor_component, get_data(tmpl::type_<DataVector>{})};
+  } else if (h5::types_equal(h5_data_type, h5::h5_type<int>())) {
+    const std::vector<int> stored = get_data(tmpl::type_<std::vector<int>>{});
+    DataVector result{stored.size()};
+    std::ranges::copy(stored.begin(), stored.end(), result.begin());
+    return {tensor_component, result};
+  } else if (h5::types_equal(h5_data_type, h5::h5_type<unsigned int>())) {
+    const std::vector<unsigned int> stored =
+        get_data(tmpl::type_<std::vector<unsigned int>>{});
+    DataVector result{stored.size()};
+    std::ranges::copy(stored.begin(), stored.end(), result.begin());
+    return {tensor_component, result};
+  } else if (h5::types_equal(h5_data_type, h5::h5_type<unsigned long>())) {
+    const std::vector<unsigned long> stored =
+        get_data(tmpl::type_<std::vector<unsigned long>>{});
+    DataVector result{stored.size()};
+    std::ranges::copy(stored.begin(), stored.end(), result.begin());
+    return {tensor_component, result};
+  } else {
+    ERROR("Unknown H5 type " << h5_data_type);
   }
 }
 
