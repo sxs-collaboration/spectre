@@ -81,3 +81,7 @@ Explanations for TMP concepts and patterns known to the greater C++ community
 can be found here.
 - \subpage sfinae "SFINAE"
 - \subpage brigand "The Brigand TMP library"
+
+### Writing Tensor Equations
+- \subpage writing_tensorexpressions
+  "Writing Tensor Equations with TensorExpressions"
