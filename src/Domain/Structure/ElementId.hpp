@@ -103,6 +103,15 @@ class alignas(int[2]) ElementId {  // NOLINT(modernize-avoid-c-arrays)
   /// which does not correspond to the Id of an actual element.
   static ElementId<VolumeDim> external_boundary_id();
 
+  /*!
+   * \brief Returns a compact ID containing only the segment ID bits,
+   * with block_id, grid_index, and direction bits stripped.
+   *
+   * This is useful for identifying elements in visualization tools
+   * like ParaView.
+   */
+  size_t to_short_id() const;
+
   /// Returns the number of block boundaries the element has.
   size_t number_of_block_boundaries() const;
 
