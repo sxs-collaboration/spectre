@@ -28,11 +28,11 @@ void bind_matrix(py::module& m) {
              py::buffer_info info = buffer.request();
              // Sanity-check the buffer
              if (info.format != py::format_descriptor<double>::format()) {
-               throw std::runtime_error(
-                   "Incompatible format: expected a double array.");
+               throw std::runtime_error{
+                   "Incompatible format: expected a double array."};
              }
              if (info.ndim != 2) {
-               throw std::runtime_error("Incompatible dimension.");
+               throw std::runtime_error{"Incompatible dimension."};
              }
              const auto rows = static_cast<size_t>(info.shape[0]);
              const auto columns = static_cast<size_t>(info.shape[1]);

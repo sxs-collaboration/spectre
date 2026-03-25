@@ -34,11 +34,11 @@ void bind_modalvector(py::module& m) {
              py::buffer_info info = buffer.request();
              // Sanity-check the buffer
              if (info.format != py::format_descriptor<double>::format()) {
-               throw std::runtime_error(
-                   "Incompatible format: expected a double array.");
+               throw std::runtime_error{
+                   "Incompatible format: expected a double array."};
              }
              if (info.ndim != 1) {
-               throw std::runtime_error("Incompatible dimension.");
+               throw std::runtime_error{"Incompatible dimension."};
              }
              const auto size = static_cast<size_t>(info.shape[0]);
              auto data = static_cast<double*>(info.ptr);

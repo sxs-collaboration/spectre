@@ -650,9 +650,9 @@ struct FromPyObject<tuples::TaggedTuple<Tags...>, std::nullptr_t> {
         PyObject* python_keys = PyDict_Keys(p);
         const auto keys = from_py_object<std::vector<std::string>>(python_keys);
         Py_DECREF(python_keys);
-        throw std::runtime_error("Could not find tag " + tag_name +
+        throw std::runtime_error{"Could not find tag " + tag_name +
                                  " in dictionary. Known keys are " +
-                                 std::string{MakeString{} << keys});
+                                 std::string{MakeString{} << keys}};
       }
       try {
         get<Tags>(result) = from_py_object<typename Tags::type>(tag_value);

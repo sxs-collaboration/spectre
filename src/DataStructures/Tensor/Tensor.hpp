@@ -99,6 +99,7 @@ class Tensor<X, Symm, IndexList<Indices...>> {
                 "If you are sure you need rank 5 or higher Tensor's please "
                 "file an issue on GitHub or discuss with a core developer of "
                 "SpECTRE.");
+
  public:
   /// The type of the sequence that holds the data
   using storage_type =
@@ -408,7 +409,7 @@ class Tensor<X, Symm, IndexList<Indices...>> {
   static std::string component_name(
       const std::array<T, rank()>& tensor_index = std::array<T, rank()>{},
       const std::array<std::string, rank()>& axis_labels =
-          make_array<rank()>(std::string(""))) {
+          make_array<rank()>(std::string{""})) {
     return structure::component_name(tensor_index, axis_labels);
   }
   /// @}
@@ -431,7 +432,7 @@ class Tensor<X, Symm, IndexList<Indices...>> {
       const std::array<IndexType, rank()>& tensor_index =
           std::array<IndexType, rank()>{},
       const std::array<std::string, rank()>& axis_labels =
-          make_array<rank()>(std::string(""))) {
+          make_array<rank()>(std::string{""})) {
     return rank() == 0 ? "" : "_" + component_name(tensor_index, axis_labels);
   }
 
@@ -480,7 +481,7 @@ __attribute__((noinline)) __attribute__((used)) std::string
 Tensor<X, Symm, IndexList<Indices...>>::component_suffix(
     const size_t storage_index) {
   return component_suffix(get_tensor_index(storage_index),
-                          make_array<rank()>(std::string("")));
+                          make_array<rank()>(std::string{""}));
 }
 
 template <typename X, typename Symm, template <typename...> class IndexList,
@@ -587,7 +588,7 @@ struct MakeWithSize<Tensor<T, Structure...>> {
   template <typename U>
   static SPECTRE_ALWAYS_INLINE Tensor<T, Structure...> apply(const size_t size,
                                                              const U value) {
-    return Tensor<T, Structure...>(make_with_value<T>(size, value));
+    return Tensor<T, Structure...>{make_with_value<T>(size, value)};
   }
 };
 
@@ -595,7 +596,7 @@ template <typename... Structure, typename T>
 struct MakeWithValueImpl<Tensor<double, Structure...>, T> {
   static SPECTRE_ALWAYS_INLINE Tensor<double, Structure...> apply(
       const T& /*input*/, const double value) {
-    return Tensor<double, Structure...>(value);
+    return Tensor<double, Structure...>{value};
   }
 };
 
@@ -603,7 +604,7 @@ template <typename... Structure, typename T>
 struct MakeWithValueImpl<Tensor<std::complex<double>, Structure...>, T> {
   static SPECTRE_ALWAYS_INLINE Tensor<std::complex<double>, Structure...> apply(
       const T& /*input*/, const std::complex<double> value) {
-    return Tensor<std::complex<double>, Structure...>(value);
+    return Tensor<std::complex<double>, Structure...>{value};
   }
 };
 

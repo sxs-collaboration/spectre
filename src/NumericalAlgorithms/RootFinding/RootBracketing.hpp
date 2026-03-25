@@ -70,7 +70,7 @@ auto bracket_by_contracting(const std::vector<double>& x,
           "root.  The points we are checking are "
        << x.size() << " almost-evenly-spaced points from " << x.front()
        << " to " << x.back() << " with difference " << x.back()-x.front();
-    throw std::runtime_error(ss.str());
+    throw std::runtime_error{ss.str()};
   }
 
   // First check if we have any valid points.
@@ -296,7 +296,7 @@ void bracket_possibly_undefined_function_in_interval(
         ss << "bracket_by_contracting: Cannot bracket root between "
            << *lower_bound << " and " << *upper_bound
            << ". Internal error message is: '" << e.what() << "'";
-        throw std::runtime_error(ss.str());
+        throw std::runtime_error{ss.str()};
       }
     }
   }

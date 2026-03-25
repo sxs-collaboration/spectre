@@ -32,7 +32,7 @@
 template <typename T,
           Requires<tt::is_integer_v<T> and std::is_unsigned_v<T>> = nullptr>
 SPECTRE_ALWAYS_INLINE constexpr T two_to_the(T n) {
-  return T(1) << n;
+  return T{1} << n;
 }
 
 /// \ingroup ConstantExpressionsGroup

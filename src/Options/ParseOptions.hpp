@@ -94,7 +94,7 @@ T Option::parse_as() const {
       return Options_detail::unwrap_create_types(std::move(result));
     }
     // clang-tidy: thrown exception is not nothrow copy constructible
-    throw YAML::BadConversion(node().Mark());  // NOLINT
+    throw YAML::BadConversion{node().Mark()};  // NOLINT
   } catch (const YAML::BadConversion& e) {
     // This happens when trying to parse an empty value as a container
     // with no entries.
@@ -1147,7 +1147,7 @@ struct create_from_yaml<Options::Options_detail::variant_parse_error<T...>> {
   template <typename Metavariables>
   [[noreturn]] static Options::Options_detail::variant_parse_error<T...> create(
       const Option& options) {
-    throw YAML::BadConversion(options.node().Mark());
+    throw YAML::BadConversion{options.node().Mark()};
   }
 };
 
@@ -1270,8 +1270,8 @@ struct create_from_yaml<std::variant<T...>> {
           options.parse_as<Options_detail::variant_parse_error<T...>,
                            Metavariables>();
         } catch (const Options::detail::propagate_context& e) {
-          throw Options::detail::propagate_context(
-              e.message() + "\n\nPossible errors:" + errors);
+          throw Options::detail::propagate_context{
+              e.message() + "\n\nPossible errors:" + errors};
         }
       }
       return result;
