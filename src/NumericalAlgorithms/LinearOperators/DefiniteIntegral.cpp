@@ -4,9 +4,13 @@
 #include "NumericalAlgorithms/LinearOperators/DefiniteIntegral.hpp"
 
 #include <array>  // Used for mesh.slices
+#include <numbers>
 #include <ostream>
 
 #include "DataStructures/DataVector.hpp"
+#include "NumericalAlgorithms/Spectral/Basis.hpp"
+#include "NumericalAlgorithms/Spectral/CollocationPoints.hpp"
+#include "NumericalAlgorithms/Spectral/CollocationPointsAndWeights.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Quadrature.hpp"
 #include "NumericalAlgorithms/Spectral/QuadratureWeights.hpp"
@@ -56,22 +60,42 @@ double definite_integral<2>(const DataVector& integrand, const Mesh<2>& mesh) {
   const size_t x_size = sliced_meshes[0].number_of_grid_points();
   const size_t x_last_unrolled = x_size - x_size % 2;
   const size_t y_size = sliced_meshes[1].number_of_grid_points();
-  const double* const w_x =
-      Spectral::quadrature_weights(sliced_meshes[0]).data();
-  const double* const w_y =
-      Spectral::quadrature_weights(sliced_meshes[1]).data();
-
   double result = 0.0;
-  for (size_t j = 0; j < y_size; ++j) {
-    const size_t offset = j * x_size;
-    for (size_t i = 0; i < x_last_unrolled; i += 2) {
-      // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-      result += w_y[j] * w_x[i] * integrand[i + offset] +
-                w_y[j] * w_x[i + 1] * integrand[i + 1 + offset];  // NOLINT
+  if (mesh.basis(0) == Spectral::Basis::ZernikeB2) {
+    const DataVector w_radial =
+        Spectral::quadrature_weights(sliced_meshes[0]) * 2.0 /
+        (Spectral::collocation_points(sliced_meshes[0]) + 1.0);
+    const double* const w_r = w_radial.data();
+    // Fourier weights are constant 2 \pi / n_\phi, no need to fetch
+    for (size_t j = 0; j < y_size; ++j) {
+      const size_t offset = j * x_size;
+      for (size_t i = 0; i < x_last_unrolled; i += 2) {
+        result += (w_r[i] * integrand[i + offset] +          // NOLINT
+                   w_r[i + 1] * integrand[i + 1 + offset]);  // NOLINT
+      }
+      for (size_t i = x_last_unrolled; i < x_size; ++i) {
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+        result += w_r[i] * integrand[i + offset];
+      }
     }
-    for (size_t i = x_last_unrolled; i < x_size; ++i) {
-      // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-      result += w_y[j] * w_x[i] * integrand[i + offset];
+    result *= (2 * std::numbers::pi / static_cast<double>(y_size));
+  } else {
+    const double* const w_x =
+        Spectral::quadrature_weights(sliced_meshes[0]).data();
+    const double* const w_y =
+        Spectral::quadrature_weights(sliced_meshes[1]).data();
+
+    for (size_t j = 0; j < y_size; ++j) {
+      const size_t offset = j * x_size;
+      for (size_t i = 0; i < x_last_unrolled; i += 2) {
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+        result += w_y[j] * w_x[i] * integrand[i + offset] +
+                  w_y[j] * w_x[i + 1] * integrand[i + 1 + offset];  // NOLINT
+      }
+      for (size_t i = x_last_unrolled; i < x_size; ++i) {
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+        result += w_y[j] * w_x[i] * integrand[i + offset];
+      }
     }
   }
   return result;
@@ -126,6 +150,34 @@ double definite_integral<3>(const DataVector& integrand, const Mesh<3>& mesh) {
         result += w_ylm[j] * w_x[i] * integrand[i + offset];
       }
     }
+  } else if (mesh.basis(0) == Spectral::Basis::ZernikeB2) {
+    const size_t y_size = sliced_meshes[1].number_of_grid_points();
+    const size_t z_size = sliced_meshes[2].number_of_grid_points();
+    const DataVector w_radial =
+        Spectral::quadrature_weights(sliced_meshes[0]) * 2.0 /
+        (Spectral::collocation_points(sliced_meshes[0]) + 1.0);
+    const double* const w_r = w_radial.data();
+    // Fourier weights are constant 2 \pi / n_\phi, no need to fetch
+    const double* const w_z =
+        Spectral::quadrature_weights(sliced_meshes[2]).data();
+
+    for (size_t k = 0; k < z_size; ++k) {
+      for (size_t j = 0; j < y_size; ++j) {
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+        const double z_contribution = w_z[k];
+        const size_t offset = x_size * (j + y_size * k);
+        for (size_t i = 0; i < x_last_unrolled; i += 2) {
+          result += z_contribution * w_r[i] * integrand[i + offset] +  // NOLINT
+                    z_contribution * w_r[i + 1] *                      // NOLINT
+                        integrand[i + 1 + offset];                     // NOLINT
+        }
+        for (size_t i = x_last_unrolled; i < x_size; ++i) {
+          // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+          result += z_contribution * w_r[i] * integrand[i + offset];
+        }
+      }
+    }
+    result *= 2 * std::numbers::pi / static_cast<double>(y_size);
   } else {
     const size_t y_size = sliced_meshes[1].number_of_grid_points();
     const size_t z_size = sliced_meshes[2].number_of_grid_points();
