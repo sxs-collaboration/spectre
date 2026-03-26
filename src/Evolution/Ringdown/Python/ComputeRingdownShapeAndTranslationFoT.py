@@ -14,7 +14,12 @@ from rich.pretty import pretty_repr
 import spectre.Evolution.Ringdown as Ringdown
 import spectre.IO.H5 as spectre_h5
 from spectre.DataStructures import ModalVector
-from spectre.SphericalHarmonics import Frame, Strahlkorper, ylm_legend_and_data
+from spectre.SphericalHarmonics import (
+    Frame,
+    Strahlkorper,
+    read_surface_ylm,
+    ylm_legend_and_data,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -67,7 +72,9 @@ def fit_to_a_cubic(times, coefs, match_time, zero_coefs_eps):
     return fit_ahc, fit_dt_ahc, fit_dt2_ahc
 
 
-def compute_ahc_coefs_in_ringdown_distorted_frame(
+def compute_ringdown_shape_and_translation_fot(
+    path_to_volume_data,
+    volume_subfile_name,
     ahc_reductions_path,
     ahc_subfile,
     evaluated_fot_dict,
@@ -76,11 +83,15 @@ def compute_ahc_coefs_in_ringdown_distorted_frame(
     settling_timescale,
     zero_coefs_eps,
 ):
-    """Computes the AhC Ylm Coefficients in the Ringdown distorted frame
-    using the functions of time and the AhC coefficients in the Inspiral
-    inertial frame.
+    """Computes the AhC Ylm Coefficients in the Ringdown distorted frame and
+    translation function of time that will be used for the Ringdown using the
+    functions of time and the Inertial-frame AhC strahlkorper measured from the
+    inspiral.
 
-    Arugments:
+    Arguments:
+    path_to_volume_data: The full path to any volume data containing the
+    functions of time at the time of AhC finds.
+    volume_subfile_name: Subfile containing volume data at times of AhC finds.
     ahc_reductions_path: Path to reduction file where AhC Coefficients will be
     written.
     ahc_subfile: The subfile of the reductions file where AhC coefficients will
@@ -99,56 +110,40 @@ def compute_ahc_coefs_in_ringdown_distorted_frame(
     """
 
     ahc_times = []
-    ahc_center = []
     ahc_lmax = 0
     with spectre_h5.H5File(ahc_reductions_path, "r") as h5file:
         datfile = h5file.get_dat(ahc_subfile)
         datfile_np = np.array(datfile.get_data())
         ahc_times = datfile_np[:, 0]
-        ahc_center = [datfile_np[0][1], datfile_np[0][2], datfile_np[0][3]]
         ahc_lmax = int(datfile_np[0][4])
 
     # Transform AhC coefs to ringdown distorted frame and get other data
     # needed to start a ringdown, such as initial values for functions of time
-    coefs_at_different_times = np.array(
-        Ringdown.strahlkorper_coefs_in_ringdown_distorted_frame(
-            ahc_reductions_path,
-            ahc_subfile,
-            number_of_ahc_finds_for_fit,
-            match_time,
-            settling_timescale,
-            evaluated_fot_dict["Expansion"],
-            evaluated_fot_dict["ExpansionOuterBoundary"],
-            evaluated_fot_dict["Rotation"],
-            None,
-        )
+    shape_and_translation_coefs = Ringdown.strahlkorper_coefs_and_centers(
+        path_to_volume_data=str(path_to_volume_data),
+        volume_subfile_name=volume_subfile_name,
+        path_to_horizons_h5=ahc_reductions_path,
+        surface_subfile_name=ahc_subfile,
+        requested_number_of_times_from_end=number_of_ahc_finds_for_fit,
+        match_time=match_time,
+        settling_timescale=settling_timescale,
+        exp_func_and_2_derivs=evaluated_fot_dict["Expansion"],
+        exp_outer_bdry_func_and_2_derivs=evaluated_fot_dict[
+            "ExpansionOuterBoundary"
+        ],
+        rot_func_and_2_derivs=evaluated_fot_dict["Rotation"],
+        trans_func_and_2_derivs=evaluated_fot_dict["Translation"],
     )
 
-    # Do not include AhCs at times greater than the match time. Errors tend
-    # to grow as time increases, so fit derivatives using the match time
-    # and earlier times, to get a more accurate fit.
+    shape_coefs_at_different_times_for_fit = np.array(
+        shape_and_translation_coefs[0]
+    )
+    ahc_inertial_centers_for_fit = np.array(shape_and_translation_coefs[1])
     ahc_times_for_fit_list = []
-    coefs_at_different_times_for_fit_list = []
     for i, time in enumerate(ahc_times[-number_of_ahc_finds_for_fit:]):
         if time <= match_time:
             ahc_times_for_fit_list.append(time)
-            coefs_at_different_times_for_fit_list.append(
-                coefs_at_different_times[i]
-            )
     ahc_times_for_fit = np.array(ahc_times_for_fit_list)
-    coefs_at_different_times_for_fit = np.array(
-        coefs_at_different_times_for_fit_list
-    )
-    if ahc_times_for_fit.shape[0] == 0:
-        logger.warning(
-            "No available AhC times before selected match time; using all"
-            " available AhC times, even though numerical errors are likely"
-            " larger after the match time"
-        )
-        ahc_times_for_fit = ahc_times[-number_of_ahc_finds_for_fit:]
-        coefs_at_different_times_for_fit = coefs_at_different_times[
-            -number_of_ahc_finds_for_fit:
-        ]
 
     logger.debug("AhC times available: " + str(ahc_times.shape[0]))
     logger.debug(
@@ -165,34 +160,38 @@ def compute_ahc_coefs_in_ringdown_distorted_frame(
         + str(np.max(ahc_times_for_fit))
     )
     logger.debug(
-        "Coef times available: " + str(coefs_at_different_times.shape[0])
-    )
-    logger.debug(
-        "Coef times used: " + str(coefs_at_different_times_for_fit.shape[0])
+        "Coef times used: "
+        + str(shape_coefs_at_different_times_for_fit.shape[0])
     )
 
     fit_ahc_coefs, fit_ahc_dt_coefs, fit_ahc_dt2_coefs = fit_to_a_cubic(
         ahc_times_for_fit,
-        coefs_at_different_times_for_fit,
+        shape_coefs_at_different_times_for_fit,
+        match_time,
+        zero_coefs_eps,
+    )
+    ahc_translation_fot = fit_to_a_cubic(
+        ahc_times_for_fit,
+        ahc_inertial_centers_for_fit,
         match_time,
         zero_coefs_eps,
     )
 
-    # Note: assumes no translation, so inertial and distorted centers are the
-    # same, i.e. both are at the origin. A future update will incorporate
-    # translation.
-
+    # Sets the AhC Strahlkorper center to the center point at the match time.
     fit_ahc_coef_mv = ModalVector(fit_ahc_coefs)
     fit_ahc_dt_coef_mv = ModalVector(fit_ahc_dt_coefs)
     fit_ahc_dt2_coef_mv = ModalVector(fit_ahc_dt2_coefs)
     fit_ahc_strahlkorper = Strahlkorper[Frame.Inertial](
-        ahc_lmax, ahc_lmax, fit_ahc_coef_mv, ahc_center
+        ahc_lmax, ahc_lmax, fit_ahc_coef_mv, ahc_inertial_centers_for_fit[-1]
     )
     fit_ahc_dt_strahlkorper = Strahlkorper[Frame.Inertial](
-        ahc_lmax, ahc_lmax, fit_ahc_dt_coef_mv, ahc_center
+        ahc_lmax, ahc_lmax, fit_ahc_dt_coef_mv, ahc_inertial_centers_for_fit[-1]
     )
     fit_ahc_dt2_strahlkorper = Strahlkorper[Frame.Inertial](
-        ahc_lmax, ahc_lmax, fit_ahc_dt2_coef_mv, ahc_center
+        ahc_lmax,
+        ahc_lmax,
+        fit_ahc_dt2_coef_mv,
+        ahc_inertial_centers_for_fit[-1],
     )
     legend_ahc, fit_ahc_ylm_coefs_to_write = ylm_legend_and_data(
         fit_ahc_strahlkorper, match_time, ahc_lmax
@@ -216,4 +215,8 @@ def compute_ahc_coefs_in_ringdown_distorted_frame(
         legend_ahc_dt[i] = legend_ahc_dt[i].replace("Inertial", "Distorted")
         legend_ahc_dt2[i] = legend_ahc_dt2[i].replace("Inertial", "Distorted")
 
-    return ringdown_ylm_coefs, ringdown_ylm_legend
+    return (
+        ringdown_ylm_coefs,
+        ringdown_ylm_legend,
+        ahc_translation_fot,
+    )

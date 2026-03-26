@@ -2,8 +2,8 @@
 # See LICENSE.txt for details.
 
 spectre_add_python_bindings_test(
-    "Evolution.Ringdown.ComputeAhCCoefs"
-    Test_ComputeAhCCoefsInRingdownDistortedFrame.py
+    "Evolution.Ringdown.ComputeShapeAndTranslationFoT"
+    Test_ComputeRingdownShapeAndTranslationFoT.py
     "Python"
     None
 )

@@ -15,9 +15,18 @@ import spectre.IO.H5 as spectre_h5
 from spectre import Spectral
 from spectre.DataStructures import DataVector
 from spectre.Domain import (
+    PiecewisePolynomial2,
     PiecewisePolynomial3,
     QuaternionFunctionOfTime,
+    serialize_domain,
     serialize_functions_of_time,
+)
+from spectre.Domain.Creators import BinaryCompactObject
+from spectre.Domain.Creators.TimeDependentOptions import (
+    BinaryCompactObjectTimeDependentOptions,
+    ExpansionMapOptions,
+    RotationMapOptions,
+    TranslationMapOptions,
 )
 from spectre.Informer import unit_test_build_path
 from spectre.IO.H5 import ElementVolumeData, TensorComponent
@@ -128,24 +137,75 @@ class TestInitialData(unittest.TestCase):
 
         # Making volume data for functions of time to be extracted
         rotation_fot = QuaternionFunctionOfTime(
-            0.0,
+            times[0],
             [DataVector(size=4, fill=1.0)],
             4 * [DataVector(size=3, fill=0.0)],
             math.inf,
         )
         expansion_fot = PiecewisePolynomial3(
-            0.0, 4 * [DataVector(size=1, fill=1.0)], math.inf
+            times[0], 4 * [DataVector(size=1, fill=1.0)], math.inf
         )
         expansion_outer_fot = PiecewisePolynomial3(
-            0.0, 4 * [DataVector(size=1, fill=1.0)], math.inf
+            times[0], 4 * [DataVector(size=1, fill=1.0)], math.inf
+        )
+        translation_fot = PiecewisePolynomial2(
+            times[0],
+            [
+                DataVector([1.0, -1.0, 0.5]),
+                DataVector([0.1, -0.4, -0.3]),
+                DataVector([0.0, 0.0, 0.0]),
+            ],
+            math.inf,
         )
         serialized_fots = serialize_functions_of_time(
             {
                 "Expansion": expansion_fot,
                 "ExpansionOuterBoundary": expansion_outer_fot,
                 "Rotation": rotation_fot,
+                "Translation": translation_fot,
             }
         )
+
+        expansion_map = ExpansionMapOptions([1.0, 1e-4, 0.0], 100.0, 1e-6)
+        rotation_map = RotationMapOptions([[0.0, 0.0, 0.0, 1.0]], 100.0)
+        translation_map = TranslationMapOptions(
+            [[1.0, -1.0, 0.5], [0.1, -0.4, -0.3], [0.0, 0.0, 0.0]]
+        )
+        bco_time_dependent_options = BinaryCompactObjectTimeDependentOptions(
+            4990.0,
+            expansion_map,
+            rotation_map,
+            translation_map,
+            None,
+            None,
+            None,
+            None,
+        )
+
+        bco_domain = BinaryCompactObject(
+            inner_radius_a=0.5,
+            outer_radius_a=1.0,
+            x_coord_a=2.0,
+            excise_a=True,
+            use_logarithmic_map_a=True,
+            inner_radius_b=0.5,
+            outer_radius_b=1.0,
+            x_coord_b=-2.0,
+            excise_b=True,
+            use_logarithmic_map_b=True,
+            center_of_mass_offset=[0.1, 0.2],
+            envelope_radius=50.0,
+            outer_radius=600.0,
+            cube_scale=1.2,
+            initial_refinement=1,
+            initial_number_of_grid_points=5,
+            use_equiangular_map=True,
+            radial_partitioning_outer_shell=[],
+            opening_angle_in_degrees=120.0,
+            time_dependent_options=bco_time_dependent_options,
+        ).create_domain()
+        serialized_binary_domain = serialize_domain(bco_domain)
+
         self.inspiral_volume_data = self.inspiral_dir / "BbhVolume0.h5"
         obs_values = [4990.0, 4992.0, 4994.0, 4996.0, 4998.0, 5000.0]
         with spectre_h5.H5File(self.inspiral_volume_data, "w") as volume_file:
@@ -168,6 +228,7 @@ class TestInitialData(unittest.TestCase):
                             quadrature=[Spectral.Quadrature.GaussLobatto],
                         )
                     ],
+                    serialized_domain=serialized_binary_domain,
                     serialized_observation_functions_of_time=serialized_fots,
                 )
 

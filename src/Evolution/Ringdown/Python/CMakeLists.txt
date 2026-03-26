@@ -11,7 +11,7 @@ spectre_python_add_module(
     Bindings.cpp
     PYTHON_FILES
     __init__.py
-    ComputeAhCCoefsInRingdownDistortedFrame.py
+    ComputeRingdownShapeAndTranslationFoT.py
 )
 
 spectre_python_headers(
