@@ -8,7 +8,6 @@
 #include <string>
 
 #include "DataStructures/DataBox/DataBox.hpp"
-#include "DataStructures/DataBox/PrefixHelpers.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "Evolution/DiscontinuousGalerkin/InboxTags.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarTags.hpp"
@@ -125,11 +124,7 @@ struct PrintElementInfo {
 
       if constexpr (Metavariables::local_time_stepping) {
         const auto& mortar_data_history =
-            db::get<evolution::dg::Tags::MortarDataHistory<
-                3, typename db::add_tag_prefix<
-                       ::Tags::dt,
-                       typename Metavariables::system::variables_tag>::type>>(
-                box);
+            db::get<evolution::dg::Tags::MortarDataHistory<3>>(box);
         ss << "  MortarDataHistory:\n";
 
         for (const auto& [key, history] : mortar_data_history) {

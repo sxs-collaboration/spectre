@@ -17,6 +17,7 @@
 #include "DataStructures/DataVector.hpp"
 #include "Time/ApproximateTime.hpp"
 #include "Time/BoundaryHistory.hpp"
+#include "Time/BoundaryHistory.tpp"
 #include "Time/Slab.hpp"
 #include "Time/Time.hpp"
 #include "Time/TimeStepId.hpp"

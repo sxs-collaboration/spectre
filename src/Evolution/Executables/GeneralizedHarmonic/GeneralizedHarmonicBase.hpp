@@ -416,7 +416,7 @@ struct GeneralizedHarmonicTemplateBase {
       Actions::MutateApply<CleanHistory<system>>,
       tmpl::conditional_t<
           local_time_stepping,
-          Actions::MutateApply<evolution::dg::CleanMortarHistory<system>>,
+          Actions::MutateApply<evolution::dg::CleanMortarHistory<volume_dim>>,
           tmpl::list<>>,
       dg::Actions::Filter<
           Filters::Exponential<0>,
@@ -442,7 +442,7 @@ struct GeneralizedHarmonicTemplateBase {
       Initialization::Actions::AddComputeTags<
           tmpl::push_back<StepChoosers::step_chooser_compute_tags<
               GeneralizedHarmonicTemplateBase, local_time_stepping>>>,
-      ::evolution::dg::Initialization::Mortars<volume_dim, system>,
+      ::evolution::dg::Initialization::Mortars<volume_dim>,
       evolution::Actions::InitializeRunEventsAndDenseTriggers,
       Parallel::Actions::TerminatePhase>;
 };

@@ -793,7 +793,6 @@ void ComputeTimeDerivative<Dim, EvolutionSystem, DgStepChoosers,
   }
 
   if (not mortar_history_directions.empty()) {
-    using dt_variables_tag = db::add_tag_prefix<::Tags::dt, variables_tag>;
     // We assume isotropic quadrature, i.e. the quadrature is the same in
     // all directions.
     const bool using_gauss_points =
@@ -819,19 +818,17 @@ void ComputeTimeDerivative<Dim, EvolutionSystem, DgStepChoosers,
     // returned quantity is more a `dt` quantity than a
     // `NormalDotNormalDotFlux` since it's been lifted to the volume.
     db::mutate<evolution::dg::Tags::MortarData<Dim>,
-               evolution::dg::Tags::MortarDataHistory<
-                   Dim, typename dt_variables_tag::type>>(
+               evolution::dg::Tags::MortarDataHistory<Dim>>(
         [&element, integration_order, &mortar_history_directions, &mortar_info,
          &time_step_id, using_gauss_points, &volume_det_inv_jacobian,
          &volume_mesh](
             const gsl::not_null<
                 DirectionalIdMap<Dim, evolution::dg::MortarDataHolder<Dim>>*>
                 mortar_data,
-            const gsl::not_null<
-                DirectionalIdMap<Dim, TimeSteppers::BoundaryHistory<
-                                          evolution::dg::MortarData<Dim>,
-                                          evolution::dg::MortarData<Dim>,
-                                          typename dt_variables_tag::type>>*>
+            const gsl::not_null<DirectionalIdMap<
+                Dim, TimeSteppers::BoundaryHistory<
+                         evolution::dg::MortarData<Dim>,
+                         evolution::dg::MortarData<Dim>, DataVector>>*>
                 boundary_data_history,
             const DirectionMap<Dim,
                                std::optional<Variables<tmpl::list<

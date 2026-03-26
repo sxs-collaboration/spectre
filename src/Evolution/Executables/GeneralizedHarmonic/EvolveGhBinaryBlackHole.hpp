@@ -606,7 +606,7 @@ struct EvolutionMetavars {
       Actions::MutateApply<CleanHistory<system>>,
       tmpl::conditional_t<
           local_time_stepping,
-          Actions::MutateApply<evolution::dg::CleanMortarHistory<system>>,
+          Actions::MutateApply<evolution::dg::CleanMortarHistory<volume_dim>>,
           tmpl::list<>>,
       dg::Actions::Filter<
           Filters::Exponential<0>,
@@ -633,7 +633,7 @@ struct EvolutionMetavars {
               EvolutionMetavars, local_time_stepping>>>,
       Initialization::Actions::AddSimpleTags<
           gh::bbh::Actions::InitializeElementCompletionRequested>,
-      ::evolution::dg::Initialization::Mortars<volume_dim, system>,
+      ::evolution::dg::Initialization::Mortars<volume_dim>,
       intrp::Actions::ElementInitInterpPoints<volume_dim,
                                               interpolation_target_tags>,
       evolution::Actions::InitializeRunEventsAndDenseTriggers,
@@ -721,7 +721,8 @@ struct EvolutionMetavars {
         evolution::dg::Initialization::ProjectDomain<volume_dim>,
         ::amr::projectors::ProjectVariables<volume_dim,
                                             typename system::variables_tag>,
-        evolution::dg::Initialization::ProjectMortars<EvolutionMetavars>,
+        evolution::dg::Initialization::ProjectMortars<volume_dim,
+                                                      local_time_stepping>,
         Initialization::ProjectTimeStepperHistory<EvolutionMetavars>,
         evolution::Actions::ProjectRunEventsAndDenseTriggers,
         ::amr::projectors::DefaultInitialize<

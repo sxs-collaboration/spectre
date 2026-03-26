@@ -115,8 +115,6 @@ bool receive_boundary_data(
     const gsl::not_null<db::DataBox<DbTagsList>*> box,
     const gsl::not_null<tuples::TaggedTuple<InboxTags...>*> inboxes) {
   constexpr size_t volume_dim = Metavariables::system::volume_dim;
-  using variables_tag = typename Metavariables::system::variables_tag;
-  using dt_variables_tag = db::add_tag_prefix<::Tags::dt, variables_tag>;
 
   const auto needed_time = [&box]() {
     if constexpr (LocalTimeStepping) {
@@ -221,8 +219,7 @@ bool receive_boundary_data(
 
           db::mutate<evolution::dg::Tags::MortarMesh<volume_dim>,
                      evolution::dg::Tags::MortarData<volume_dim>,
-                     evolution::dg::Tags::MortarDataHistory<
-                         volume_dim, typename dt_variables_tag::type>,
+                     evolution::dg::Tags::MortarDataHistory<volume_dim>,
                      evolution::dg::Tags::MortarNextTemporalId<volume_dim>,
                      domain::Tags::NeighborMesh<volume_dim>>(
               [&](const gsl::not_null<
@@ -232,10 +229,10 @@ bool receive_boundary_data(
                       volume_dim, evolution::dg::MortarDataHolder<volume_dim>>*>
                       gts_mortar_data,
                   const gsl::not_null<DirectionalIdMap<
-                      volume_dim, TimeSteppers::BoundaryHistory<
-                                      evolution::dg::MortarData<volume_dim>,
-                                      evolution::dg::MortarData<volume_dim>,
-                                      typename dt_variables_tag::type>>*>
+                      volume_dim,
+                      TimeSteppers::BoundaryHistory<
+                          evolution::dg::MortarData<volume_dim>,
+                          evolution::dg::MortarData<volume_dim>, DataVector>>*>
                       boundary_data_history,
                   const gsl::not_null<DirectionalIdMap<volume_dim, TimeStepId>*>
                       mortar_next_time_step_ids,
@@ -370,10 +367,10 @@ struct ApplyBoundaryCorrections {
 
   using tag_to_update =
       tmpl::conditional_t<local_time_stepping, variables_tag, dt_variables_tag>;
-  using mortar_data_tag = tmpl::conditional_t<
-      local_time_stepping,
-      evolution::dg::Tags::MortarDataHistory<volume_dim, DtVariables>,
-      evolution::dg::Tags::MortarData<volume_dim>>;
+  using mortar_data_tag =
+      tmpl::conditional_t<local_time_stepping,
+                          evolution::dg::Tags::MortarDataHistory<volume_dim>,
+                          evolution::dg::Tags::MortarData<volume_dim>>;
 
   using return_tags = tmpl::list<tag_to_update>;
   using argument_tags = tmpl::append<

@@ -255,7 +255,7 @@ struct EvolutionMetavars {
       Actions::MutateApply<CleanHistory<system>>,
       tmpl::conditional_t<
           local_time_stepping,
-          Actions::MutateApply<evolution::dg::CleanMortarHistory<system>>,
+          Actions::MutateApply<evolution::dg::CleanMortarHistory<volume_dim>>,
           tmpl::list<>>,
       tmpl::conditional_t<
           use_filtering,
@@ -284,7 +284,7 @@ struct EvolutionMetavars {
       Initialization::Actions::AddComputeTags<
           StepChoosers::step_chooser_compute_tags<EvolutionMetavars,
                                                   local_time_stepping>>,
-      ::evolution::dg::Initialization::Mortars<volume_dim, system>,
+      ::evolution::dg::Initialization::Mortars<volume_dim>,
       evolution::Actions::InitializeRunEventsAndDenseTriggers,
       Parallel::Actions::TerminatePhase>;
 
@@ -338,7 +338,8 @@ struct EvolutionMetavars {
                                             typename system::variables_tag>,
         ::amr::projectors::ProjectTensors<volume_dim,
                                           ::ScalarWave::Tags::ConstraintGamma2>,
-        evolution::dg::Initialization::ProjectMortars<EvolutionMetavars>,
+        evolution::dg::Initialization::ProjectMortars<volume_dim,
+                                                      local_time_stepping>,
         Initialization::ProjectTimeStepperHistory<EvolutionMetavars>,
         evolution::Actions::ProjectRunEventsAndDenseTriggers,
         ::amr::projectors::DefaultInitialize<

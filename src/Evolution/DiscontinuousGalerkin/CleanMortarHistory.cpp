@@ -1,10 +1,9 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#pragma once
-
 #include "Evolution/DiscontinuousGalerkin/CleanMortarHistory.hpp"
 
+#include "DataStructures/DataVector.hpp"
 #include "Domain/Structure/DirectionalIdMap.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarData.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarInfo.hpp"
@@ -12,18 +11,19 @@
 #include "Time/BoundaryHistory.hpp"
 #include "Time/TimeSteppers/LtsTimeStepper.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
+#include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 
 namespace evolution::dg {
-template <typename System>
-void CleanMortarHistory<System>::apply(
+template <size_t Dim>
+void CleanMortarHistory<Dim>::apply(
     const gsl::not_null<DirectionalIdMap<
-        dim, TimeSteppers::BoundaryHistory<::evolution::dg::MortarData<dim>,
-                                           ::evolution::dg::MortarData<dim>,
-                                           CouplingResult>>*>
+        Dim, TimeSteppers::BoundaryHistory<::evolution::dg::MortarData<Dim>,
+                                           ::evolution::dg::MortarData<Dim>,
+                                           DataVector>>*>
         history,
     const LtsTimeStepper& time_stepper,
-    const DirectionalIdMap<dim, MortarInfo<dim>>& mortar_info) {
+    const DirectionalIdMap<Dim, MortarInfo<Dim>>& mortar_info) {
   for (auto& [mortar_id, hist] : *history) {
     const auto time_stepping_policy =
         mortar_info.at(mortar_id).time_stepping_policy();
@@ -38,4 +38,13 @@ void CleanMortarHistory<System>::apply(
     }
   }
 }
+
+#define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
+
+#define INSTANTIATION(r, data) template struct CleanMortarHistory<DIM(data)>;
+
+GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
+
+#undef INSTANTIATION
+#undef DIM
 }  // namespace evolution::dg

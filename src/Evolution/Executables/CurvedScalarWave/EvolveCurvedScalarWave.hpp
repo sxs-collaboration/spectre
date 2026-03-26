@@ -277,7 +277,7 @@ struct EvolutionMetavars {
       Actions::MutateApply<CleanHistory<system>>,
       tmpl::conditional_t<
           local_time_stepping,
-          Actions::MutateApply<evolution::dg::CleanMortarHistory<system>>,
+          Actions::MutateApply<evolution::dg::CleanMortarHistory<volume_dim>>,
           tmpl::list<>>,
       tmpl::conditional_t<
           use_filtering,
@@ -307,7 +307,7 @@ struct EvolutionMetavars {
       Initialization::Actions::AddComputeTags<
           tmpl::flatten<tmpl::list<StepChoosers::step_chooser_compute_tags<
               EvolutionMetavars, local_time_stepping>>>>,
-      ::evolution::dg::Initialization::Mortars<volume_dim, system>,
+      ::evolution::dg::Initialization::Mortars<volume_dim>,
       intrp::Actions::ElementInitInterpPoints<volume_dim,
                                               interpolation_target_tags>,
       evolution::Actions::InitializeRunEventsAndDenseTriggers,

@@ -13,8 +13,7 @@ namespace {
 template <size_t Dim>
 void test() {
   TestHelpers::db::test_simple_tag<Tags::MortarData<Dim>>("MortarData");
-  // can use any CouplingResult in MortarDataHistory, just use double for now.
-  TestHelpers::db::test_simple_tag<Tags::MortarDataHistory<Dim, double>>(
+  TestHelpers::db::test_simple_tag<Tags::MortarDataHistory<Dim>>(
       "MortarDataHistory");
   TestHelpers::db::test_simple_tag<Tags::MortarMesh<Dim>>("MortarMesh");
   TestHelpers::db::test_simple_tag<Tags::MortarInfo<Dim>>("MortarInfo");

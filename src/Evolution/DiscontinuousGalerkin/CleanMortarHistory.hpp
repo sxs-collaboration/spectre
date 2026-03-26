@@ -10,6 +10,7 @@
 #include "Utilities/TMPL.hpp"
 
 /// \cond
+class DataVector;
 template <size_t Dim, typename T>
 class DirectionalIdMap;
 class LtsTimeStepper;
@@ -18,7 +19,8 @@ template <typename StepperInterface>
 struct TimeStepper;
 }  // namespace Tags
 namespace TimeSteppers {
-template <typename LocalData, typename RemoteData, typename CouplingResult>
+template <typename LocalData, typename RemoteData,
+          typename UntypedCouplingResult>
 class BoundaryHistory;
 }  // namespace TimeSteppers
 namespace evolution::dg {
@@ -28,7 +30,7 @@ template <size_t Dim>
 class MortarInfo;
 }  // namespace evolution::dg
 namespace evolution::dg::Tags {
-template <size_t Dim, typename CouplingResult>
+template <size_t Dim>
 struct MortarDataHistory;
 template <size_t Dim>
 struct MortarInfo;
@@ -42,25 +44,19 @@ class not_null;
 namespace evolution::dg {
 /// Mutator to remove old entries from the mortar histories in a
 /// local-time-stepping DG evolution.
-template <typename System>
+template <size_t Dim>
 struct CleanMortarHistory {
-  static constexpr size_t dim = System::volume_dim;
-  using dt_variables_tag =
-      db::add_tag_prefix<::Tags::dt, typename System::variables_tag>;
-  using CouplingResult = typename dt_variables_tag::type;
-
-  using return_tags =
-      tmpl::list<evolution::dg::Tags::MortarDataHistory<dim, CouplingResult>>;
+  using return_tags = tmpl::list<evolution::dg::Tags::MortarDataHistory<Dim>>;
   using argument_tags =
-      tmpl::list<::Tags::TimeStepper<LtsTimeStepper>, Tags::MortarInfo<dim>>;
+      tmpl::list<::Tags::TimeStepper<LtsTimeStepper>, Tags::MortarInfo<Dim>>;
 
   static void apply(
       gsl::not_null<DirectionalIdMap<
-          dim, TimeSteppers::BoundaryHistory<::evolution::dg::MortarData<dim>,
-                                             ::evolution::dg::MortarData<dim>,
-                                             CouplingResult>>*>
+          Dim, TimeSteppers::BoundaryHistory<::evolution::dg::MortarData<Dim>,
+                                             ::evolution::dg::MortarData<Dim>,
+                                             DataVector>>*>
           history,
       const LtsTimeStepper& time_stepper,
-      const DirectionalIdMap<dim, MortarInfo<dim>>& mortar_info);
+      const DirectionalIdMap<Dim, MortarInfo<Dim>>& mortar_info);
 };
 }  // namespace evolution::dg

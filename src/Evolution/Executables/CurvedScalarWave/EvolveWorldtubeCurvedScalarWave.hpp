@@ -264,7 +264,7 @@ struct EvolutionMetavars {
       Actions::MutateApply<CleanHistory<system>>,
       tmpl::conditional_t<
           local_time_stepping,
-          Actions::MutateApply<evolution::dg::CleanMortarHistory<system>>,
+          Actions::MutateApply<evolution::dg::CleanMortarHistory<volume_dim>>,
           tmpl::list<>>,
       tmpl::conditional_t<
           use_filtering,
@@ -321,7 +321,7 @@ struct EvolutionMetavars {
           CurvedScalarWave::Worldtube::Tags::PunctureFieldCompute<volume_dim>,
           CurvedScalarWave::Worldtube::Tags::FaceQuantitiesCompute,
           ::domain::Tags::GridToInertialInverseJacobian<volume_dim>>>,
-      ::evolution::dg::Initialization::Mortars<volume_dim, system>,
+      ::evolution::dg::Initialization::Mortars<volume_dim>,
       intrp::Actions::ElementInitInterpPoints<volume_dim,
                                               interpolation_target_tags>,
       evolution::Actions::InitializeRunEventsAndDenseTriggers,

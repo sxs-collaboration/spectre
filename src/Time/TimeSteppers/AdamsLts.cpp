@@ -151,7 +151,7 @@ void apply_coefficients(const gsl::not_null<T*> result,
                         const LtsCoefficients& coefficients,
                         const BoundaryHistoryEvaluator<T>& coupling) {
   for (const auto& term : coefficients) {
-    *result += get<2>(term) * *coupling(get<0>(term), get<1>(term));
+    *result += get<2>(term) * coupling(get<0>(term), get<1>(term));
   }
 }
 

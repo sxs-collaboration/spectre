@@ -307,13 +307,9 @@ struct SetLocalMortarData {
             past_mortar_data.volume_mesh = volume_mesh;
             past_mortar_data.face_det_jacobian = local_face_det_jacobian;
           }
-          using dt_variables_tag =
-              db::add_tag_prefix<::Tags::dt,
-                                 typename Metavariables::system::variables_tag>;
-          db::mutate<
-              evolution::dg::Tags::MortarData<Metavariables::volume_dim>,
-              evolution::dg::Tags::MortarDataHistory<
-                  Metavariables::volume_dim, typename dt_variables_tag::type>>(
+          db::mutate<evolution::dg::Tags::MortarData<Metavariables::volume_dim>,
+                     evolution::dg::Tags::MortarDataHistory<
+                         Metavariables::volume_dim>>(
               [&det_inv_jacobian, &mortar_id, &volume_mesh, &past_mortar_data,
                &past_time_step_id, &time_step_id](
                   const auto mortar_data_ptr,
@@ -446,7 +442,7 @@ struct component {
           tmpl::list<
               ActionTesting::InitializeDataBox<simple_tags, compute_tags>,
               ::evolution::dg::Initialization::Mortars<
-                  Metavariables::volume_dim, typename Metavariables::system>,
+                  Metavariables::volume_dim>,
               SetLocalMortarData<local_time_stepping>>>,
       Parallel::PhaseActions<
           Parallel::Phase::Testing,
@@ -656,12 +652,12 @@ void test_impl(const Spectral::Quadrature quadrature,
   // Make a copy of the mortar data so we can check against it locally
   auto all_mortar_data =
       get_tag<evolution::dg::Tags::MortarData<Dim>>(runner, self_id);
-  typename evolution::dg::Tags::MortarDataHistory<
-      Dim, typename dt_variables_tag::type>::type mortar_data_history{};
+  typename evolution::dg::Tags::MortarDataHistory<Dim>::type
+      mortar_data_history{};
   if (UseLocalTimeStepping) {
     // Copy local mortar data from all_mortar_data to mortar_data_history
-    mortar_data_history = get_tag<evolution::dg::Tags::MortarDataHistory<
-        Dim, typename dt_variables_tag::type>>(runner, self_id);
+    mortar_data_history =
+        get_tag<evolution::dg::Tags::MortarDataHistory<Dim>>(runner, self_id);
   }
 
   // Check that the action for the wrong time-stepping mode runs
