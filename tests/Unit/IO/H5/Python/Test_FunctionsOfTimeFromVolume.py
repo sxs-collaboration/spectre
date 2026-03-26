@@ -30,7 +30,7 @@ from spectre.support.Logging import configure_logging
 class TestFunctionsOfTimeFromVolume(unittest.TestCase):
     def setUp(self):
         self.test_dir = Path(
-            unit_test_build_path(), "support/Pipelines/Bbh/Ringdown"
+            unit_test_build_path(), "IO/H5/Python/FunctionsOfTimeFromVolume"
         )
         shutil.rmtree(self.test_dir, ignore_errors=True)
         self.test_dir.mkdir(parents=True, exist_ok=True)
