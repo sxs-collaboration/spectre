@@ -856,6 +856,41 @@ check_dox_groups_test() {
 }
 standard_checks+=(check_dox_groups)
 
+# Check for Doxygen conditionals that are not in Doxygen comments.  We
+# assume these only occur in one-line comments.
+check_dox_conditionals() {
+    is_c++ "$1" && staged_grep -E '\\(end)?cond' "$1" \
+            | grep -v -E -q '(///|/\*\*)\s*\\(end)?cond'
+}
+check_dox_conditionals_report() {
+    echo "Found a Doxygen conditional that is not in a single-line /// or /**"
+    echo "comment, which is the style preferred in SpECTRE."
+    if [[ $1 =~ \.cpp$ ]]; then
+        echo "cpp files are not processed with Doxygen, so this conditional"
+        echo "can be removed."
+    fi
+    pretty_grep -E '.*\\(end)?cond' "$1" \
+        | grep -v -E '(///|/\*\*)\s*\\(end)?cond'
+}
+check_dox_conditionals_test() {
+    test_check pass foo.hpp '/// \cond'
+    test_check pass foo.hpp '/// \endcond'
+    test_check pass foo.hpp '/// \cond NAME'
+    test_check pass foo.hpp '///   \cond'
+    # Form appearing in macros
+    test_check pass foo.hpp '  /** \cond */ \'
+    test_check pass foo.hpp '  /** \endcond */ \'
+    test_check pass foo.hpp '// condition'
+    test_check pass foo.md '\cond'
+    test_check pass foo.md '\endcond'
+    test_check pass foo.md '   \cond NAME'
+    test_check fail foo.hpp '// \cond'
+    test_check fail foo.hpp '// \endcond'
+    test_check fail foo.hpp '// \cond NAME'
+    test_check fail foo.hpp '  /* \cond */'
+}
+standard_checks+=(check_dox_conditionals)
+
 # Check for uses of `proxy.ckLocal()`, prefer `Parallel::local(proxy)`
 prevent_cklocal() {
     is_c++ "$1" && \
