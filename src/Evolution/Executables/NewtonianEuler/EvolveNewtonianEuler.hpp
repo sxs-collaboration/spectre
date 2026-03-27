@@ -23,6 +23,7 @@
 #include "Evolution/DgSubcell/Actions/TakeTimeStep.hpp"
 #include "Evolution/DgSubcell/Actions/TciAndRollback.hpp"
 #include "Evolution/DgSubcell/Actions/TciAndSwitchToDg.hpp"
+#include "Evolution/DgSubcell/DisableLts.hpp"
 #include "Evolution/DgSubcell/GetTciDecision.hpp"
 #include "Evolution/DgSubcell/NeighborReconstructedFaceSolution.hpp"
 #include "Evolution/DgSubcell/NeighborTciDecision.hpp"
@@ -103,10 +104,12 @@
 #include "Time/Actions/SelfStartActions.hpp"
 #include "Time/AdvanceTime.hpp"
 #include "Time/ChangeSlabSize/Action.hpp"
+#include "Time/ChangeStepSize.hpp"
 #include "Time/ChangeTimeStepperOrder.hpp"
 #include "Time/CleanHistory.hpp"
 #include "Time/RecordTimeStepperData.hpp"
 #include "Time/StepChoosers/Factory.hpp"
+#include "Time/StepChoosers/FixedLtsRatio.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"
 #include "Time/Tags/Time.hpp"
 #include "Time/Tags/TimeStepId.hpp"
@@ -229,9 +232,13 @@ struct EvolutionMetavars {
         tmpl::pair<PhaseChange, PhaseControl::factory_creatable_classes>,
         tmpl::pair<StepChooser<StepChooserUse::LtsStep>,
                    StepChoosers::standard_step_choosers<system>>,
-        tmpl::pair<
-            StepChooser<StepChooserUse::Slab>,
-            StepChoosers::standard_slab_choosers<system, local_time_stepping>>,
+        tmpl::pair<StepChooser<StepChooserUse::Slab>,
+                   tmpl::append<StepChoosers::standard_slab_choosers<
+                                    system, local_time_stepping>,
+                                tmpl::conditional_t<
+                                    use_dg_subcell and local_time_stepping,
+                                    tmpl::list<StepChoosers::FixedLtsRatio>,
+                                    tmpl::list<>>>>,
         tmpl::pair<TimeSequence<double>,
                    TimeSequences::all_time_sequences<double>>,
         tmpl::pair<TimeSequence<std::uint64_t>,
@@ -282,42 +289,62 @@ struct EvolutionMetavars {
           StepChoosers::step_chooser_compute_tags<EvolutionMetavars,
                                                   local_time_stepping>>,
       ::evolution::dg::Initialization::Mortars<volume_dim>,
-      Initialization::Actions::Minmod<Dim>,
+      tmpl::conditional_t<use_dg_subcell and local_time_stepping,
+                          Initialization::Actions::InitializeItems<
+                              evolution::dg::subcell::DisableLts<Dim>>,
+                          tmpl::list<>>,
+      tmpl::conditional_t<use_dg_subcell, tmpl::list<>,
+                          Initialization::Actions::Minmod<Dim>>,
       evolution::Actions::InitializeRunEventsAndDenseTriggers,
       Parallel::Actions::TerminatePhase>>;
+
+  using events_and_dense_triggers_postprocessors = tmpl::list<
+      AlwaysReadyPostprocessor<typename system::primitive_from_conservative>>;
 
   using dg_step_actions = tmpl::flatten<tmpl::list<
       evolution::dg::Actions::ComputeTimeDerivative<
           volume_dim, system, AllStepChoosers, local_time_stepping,
           use_dg_element_collection>,
+      evolution::dg::Actions::ApplyBoundaryCorrectionsToTimeDerivative<
+          volume_dim, use_dg_element_collection>,
+      Actions::MutateApply<RecordTimeStepperData<system>>,
       tmpl::conditional_t<
           local_time_stepping,
-          tmpl::list<Actions::MutateApply<RecordTimeStepperData<system>>,
-                     evolution::Actions::RunEventsAndDenseTriggers<tmpl::list<
-                         evolution::dg::ApplyBoundaryCorrections<
-                             local_time_stepping, system, volume_dim, true>,
-                         typename system::primitive_from_conservative>>,
-                     Actions::MutateApply<UpdateU<system, local_time_stepping>>,
-                     evolution::dg::Actions::ApplyLtsBoundaryCorrections<
-                         volume_dim, false, use_dg_element_collection>,
-                     Actions::MutateApply<ChangeTimeStepperOrder<system>>>,
           tmpl::list<
-              evolution::dg::Actions::ApplyBoundaryCorrectionsToTimeDerivative<
-                  volume_dim, use_dg_element_collection>,
-              Actions::MutateApply<RecordTimeStepperData<system>>,
               evolution::Actions::RunEventsAndDenseTriggers<
-                  tmpl::list<typename system::primitive_from_conservative>>,
+                  tmpl::push_front<events_and_dense_triggers_postprocessors,
+                                   evolution::dg::ApplyBoundaryCorrections<
+                                       local_time_stepping, EvolutionMetavars,
+                                       volume_dim, true>>>,
+              Actions::MutateApply<UpdateU<system, local_time_stepping>>,
+              evolution::dg::Actions::ApplyLtsBoundaryCorrections<
+                  volume_dim, false, use_dg_element_collection>,
+              Actions::MutateApply<ChangeTimeStepperOrder<system>>>,
+          tmpl::list<
+              evolution::Actions::RunEventsAndDenseTriggers<
+                  events_and_dense_triggers_postprocessors>,
               Actions::MutateApply<UpdateU<system, local_time_stepping>>>>,
+      tmpl::conditional_t<use_dg_subcell,
+                          // Note: The primitive variables are computed as part
+                          // of the TCI.
+                          evolution::dg::subcell::Actions::TciAndRollback<
+                              NewtonianEuler::subcell::TciOnDgGrid<volume_dim>>,
+                          tmpl::list<>>,
       Actions::MutateApply<CleanHistory<system>>,
       tmpl::conditional_t<
           local_time_stepping,
           Actions::MutateApply<evolution::dg::CleanMortarHistory<volume_dim>>,
           tmpl::list<>>,
-      Limiters::Actions::SendData<EvolutionMetavars>,
-      Limiters::Actions::Limit<EvolutionMetavars>,
-      // Conservative `UpdatePrimitives` expects system to possess
-      // list of recovery schemes so we use `MutateApply` instead.
-      Actions::MutateApply<typename system::primitive_from_conservative>>>;
+      tmpl::conditional_t<
+          use_dg_subcell,
+          tmpl::list<>,
+          tmpl::list<Limiters::Actions::SendData<EvolutionMetavars>,
+                     Limiters::Actions::Limit<EvolutionMetavars>,
+                     // Conservative `UpdatePrimitives` expects system to
+                     // possess list of recovery schemes so we use
+                     // `MutateApply` instead.
+                     Actions::MutateApply<
+                         typename system::primitive_from_conservative>>>>>;
 
   struct SubcellOptions {
     static constexpr bool subcell_enabled = use_dg_subcell;
@@ -345,25 +372,15 @@ struct EvolutionMetavars {
       evolution::dg::subcell::Actions::SelectNumericalMethod,
 
       Actions::Label<evolution::dg::subcell::Actions::Labels::BeginDg>,
-      evolution::dg::Actions::ComputeTimeDerivative<
-          volume_dim, system, AllStepChoosers, local_time_stepping,
-          use_dg_element_collection>,
-      evolution::dg::Actions::ApplyBoundaryCorrectionsToTimeDerivative<
-          volume_dim, use_dg_element_collection>,
-      Actions::MutateApply<RecordTimeStepperData<system>>,
-      Actions::MutateApply<UpdateU<system, local_time_stepping>>,
-      Actions::MutateApply<typename system::primitive_from_conservative>,
-      // Note: The primitive variables are computed as part of the TCI.
-      evolution::dg::subcell::Actions::TciAndRollback<
-          NewtonianEuler::subcell::TciOnDgGrid<volume_dim>>,
-      Actions::MutateApply<CleanHistory<system>>,
-      tmpl::conditional_t<
-          local_time_stepping,
-          Actions::MutateApply<evolution::dg::CleanMortarHistory<volume_dim>>,
-          tmpl::list<>>,
+      dg_step_actions,
       Actions::Goto<evolution::dg::subcell::Actions::Labels::EndOfSolvers>,
 
       Actions::Label<evolution::dg::subcell::Actions::Labels::BeginSubcell>,
+      tmpl::conditional_t<local_time_stepping,
+                          // This is just to adjust for FixedLtsRatio, so we
+                          // can pass an empty list of StepChoosers.
+                          Actions::MutateApply<ChangeStepSize<tmpl::list<>>>,
+                          tmpl::list<>>,
       evolution::dg::subcell::Actions::SendDataForReconstruction<
           volume_dim,
           NewtonianEuler::subcell::PrimitiveGhostVariables<volume_dim>,
@@ -376,6 +393,8 @@ struct EvolutionMetavars {
       evolution::dg::subcell::fd::Actions::TakeTimeStep<
           NewtonianEuler::subcell::TimeDerivative<volume_dim>>,
       Actions::MutateApply<RecordTimeStepperData<system>>,
+      evolution::Actions::RunEventsAndDenseTriggers<
+          events_and_dense_triggers_postprocessors>,
       Actions::MutateApply<UpdateU<system, local_time_stepping>>,
       Actions::MutateApply<CleanHistory<system>>,
       tmpl::conditional_t<

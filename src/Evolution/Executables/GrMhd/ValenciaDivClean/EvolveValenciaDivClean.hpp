@@ -26,6 +26,7 @@
 #include "Evolution/DgSubcell/CellCenteredFlux.hpp"
 #include "Evolution/DgSubcell/ComputeBoundaryTerms.hpp"
 #include "Evolution/DgSubcell/CorrectPackagedData.hpp"
+#include "Evolution/DgSubcell/DisableLts.hpp"
 #include "Evolution/DgSubcell/GetTciDecision.hpp"
 #include "Evolution/DgSubcell/NeighborReconstructedFaceSolution.hpp"
 #include "Evolution/DgSubcell/NeighborTciDecision.hpp"
@@ -163,10 +164,12 @@
 #include "Time/Actions/SelfStartActions.hpp"
 #include "Time/AdvanceTime.hpp"
 #include "Time/ChangeSlabSize/Action.hpp"
+#include "Time/ChangeStepSize.hpp"
 #include "Time/ChangeTimeStepperOrder.hpp"
 #include "Time/CleanHistory.hpp"
 #include "Time/RecordTimeStepperData.hpp"
 #include "Time/StepChoosers/Factory.hpp"
+#include "Time/StepChoosers/FixedLtsRatio.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"
 #include "Time/Tags/Time.hpp"
 #include "Time/Tags/TimeStepId.hpp"
@@ -355,9 +358,13 @@ struct EvolutionMetavars<tmpl::list<InterpolationTargetTags...>,
         tmpl::pair<PhaseChange, PhaseControl::factory_creatable_classes>,
         tmpl::pair<StepChooser<StepChooserUse::LtsStep>,
                    StepChoosers::standard_step_choosers<system>>,
-        tmpl::pair<
-            StepChooser<StepChooserUse::Slab>,
-            StepChoosers::standard_slab_choosers<system, local_time_stepping>>,
+        tmpl::pair<StepChooser<StepChooserUse::Slab>,
+                   tmpl::append<StepChoosers::standard_slab_choosers<
+                                    system, local_time_stepping>,
+                                tmpl::conditional_t<
+                                    use_dg_subcell and local_time_stepping,
+                                    tmpl::list<StepChoosers::FixedLtsRatio>,
+                                    tmpl::list<>>>>,
         tmpl::pair<TimeSequence<double>,
                    TimeSequences::all_time_sequences<double>>,
         tmpl::pair<TimeSequence<std::uint64_t>,
@@ -401,6 +408,10 @@ struct EvolutionMetavars<tmpl::list<InterpolationTargetTags...>,
         grmhd::ValenciaDivClean::subcell::PrimitiveGhostVariables;
   };
 
+  using events_and_dense_triggers_dg_postprocessors =
+      tmpl::list<AlwaysReadyPostprocessor<system::primitive_from_conservative<
+          ordered_list_of_primitive_recovery_schemes>>>;
+
   using events_and_dense_triggers_subcell_postprocessors =
       tmpl::list<AlwaysReadyPostprocessor<
           grmhd::ValenciaDivClean::subcell::FixConservativesAndComputePrims<
@@ -412,36 +423,45 @@ struct EvolutionMetavars<tmpl::list<InterpolationTargetTags...>,
       evolution::dg::Actions::ComputeTimeDerivative<
           volume_dim, system, AllStepChoosers, local_time_stepping,
           use_dg_element_collection>,
+      evolution::dg::Actions::ApplyBoundaryCorrectionsToTimeDerivative<
+          volume_dim, use_dg_element_collection>,
+      Actions::MutateApply<RecordTimeStepperData<system>>,
       tmpl::conditional_t<
           local_time_stepping,
           tmpl::list<
-              Actions::MutateApply<RecordTimeStepperData<system>>,
-              evolution::Actions::RunEventsAndDenseTriggers<tmpl::list<
-                  evolution::dg::ApplyBoundaryCorrections<
-                      local_time_stepping, EvolutionMetavars, volume_dim, true>,
-                  system::primitive_from_conservative<
-                      ordered_list_of_primitive_recovery_schemes>>>,
+              evolution::Actions::RunEventsAndDenseTriggers<
+                  tmpl::push_front<events_and_dense_triggers_dg_postprocessors,
+                                   evolution::dg::ApplyBoundaryCorrections<
+                                       local_time_stepping, EvolutionMetavars,
+                                       volume_dim, true>>>,
               Actions::MutateApply<UpdateU<system, local_time_stepping>>,
               evolution::dg::Actions::ApplyLtsBoundaryCorrections<
                   volume_dim, false, use_dg_element_collection>,
               Actions::MutateApply<ChangeTimeStepperOrder<system>>>,
           tmpl::list<
-              evolution::dg::Actions::ApplyBoundaryCorrectionsToTimeDerivative<
-                  volume_dim, use_dg_element_collection>,
-              Actions::MutateApply<RecordTimeStepperData<system>>,
               evolution::Actions::RunEventsAndDenseTriggers<
-                  tmpl::list<system::primitive_from_conservative<
-                      ordered_list_of_primitive_recovery_schemes>>>,
+                  events_and_dense_triggers_dg_postprocessors>,
               Actions::MutateApply<UpdateU<system, local_time_stepping>>>>,
+      tmpl::conditional_t<
+          use_dg_subcell,
+          // Note: The primitive variables are computed as part of the TCI.
+          evolution::dg::subcell::Actions::TciAndRollback<
+              grmhd::ValenciaDivClean::subcell::TciOnDgGrid<
+                  tmpl::front<ordered_list_of_primitive_recovery_schemes>>>,
+          tmpl::list<>>,
       Actions::MutateApply<CleanHistory<system>>,
       tmpl::conditional_t<
           local_time_stepping,
           Actions::MutateApply<evolution::dg::CleanMortarHistory<volume_dim>>,
           tmpl::list<>>,
-      Limiters::Actions::SendData<EvolutionMetavars>,
-      Limiters::Actions::Limit<EvolutionMetavars>,
-      VariableFixing::Actions::FixVariables<grmhd::ValenciaDivClean::Flattener<
-          ordered_list_of_primitive_recovery_schemes>>,
+      tmpl::conditional_t<
+          use_dg_subcell,
+          tmpl::list<>,
+          tmpl::list<Limiters::Actions::SendData<EvolutionMetavars>,
+                     Limiters::Actions::Limit<EvolutionMetavars>,
+                     VariableFixing::Actions::FixVariables<
+                         grmhd::ValenciaDivClean::Flattener<
+                             ordered_list_of_primitive_recovery_schemes>>>>,
       parameterized_deleptonization,
       VariableFixing::Actions::FixVariables<
           VariableFixing::FixToAtmosphere<volume_dim>>,
@@ -451,33 +471,15 @@ struct EvolutionMetavars<tmpl::list<InterpolationTargetTags...>,
       evolution::dg::subcell::Actions::SelectNumericalMethod,
 
       Actions::Label<evolution::dg::subcell::Actions::Labels::BeginDg>,
-      Actions::MutateApply<
-          evolution::dg::BackgroundGrVars<system, EvolutionMetavars>>,
-      evolution::dg::Actions::ComputeTimeDerivative<
-          volume_dim, system, AllStepChoosers, local_time_stepping,
-          use_dg_element_collection>,
-      evolution::dg::Actions::ApplyBoundaryCorrectionsToTimeDerivative<
-          volume_dim, use_dg_element_collection>,
-      Actions::MutateApply<RecordTimeStepperData<system>>,
-      evolution::Actions::RunEventsAndDenseTriggers<
-          events_and_dense_triggers_subcell_postprocessors>,
-      Actions::MutateApply<UpdateU<system, local_time_stepping>>,
-      // Note: The primitive variables are computed as part of the TCI.
-      evolution::dg::subcell::Actions::TciAndRollback<
-          grmhd::ValenciaDivClean::subcell::TciOnDgGrid<
-              tmpl::front<ordered_list_of_primitive_recovery_schemes>>>,
-      Actions::MutateApply<CleanHistory<system>>,
-      tmpl::conditional_t<
-          local_time_stepping,
-          Actions::MutateApply<evolution::dg::CleanMortarHistory<volume_dim>>,
-          tmpl::list<>>,
-      parameterized_deleptonization,
-      VariableFixing::Actions::FixVariables<
-          VariableFixing::FixToAtmosphere<volume_dim>>,
-      Actions::UpdateConservatives,
+      dg_step_actions,
       Actions::Goto<evolution::dg::subcell::Actions::Labels::EndOfSolvers>,
 
       Actions::Label<evolution::dg::subcell::Actions::Labels::BeginSubcell>,
+      tmpl::conditional_t<local_time_stepping,
+                          // This is just to adjust for FixedLtsRatio, so we
+                          // can pass an empty list of StepChoosers.
+                          Actions::MutateApply<ChangeStepSize<tmpl::list<>>>,
+                          tmpl::list<>>,
       Actions::MutateApply<evolution::dg::subcell::BackgroundGrVars<
           system, EvolutionMetavars, false>>,
       Actions::MutateApply<evolution::dg::subcell::fd::CellCenteredFlux<
@@ -587,7 +589,12 @@ struct EvolutionMetavars<tmpl::list<InterpolationTargetTags...>,
           StepChoosers::step_chooser_compute_tags<EvolutionMetavars,
                                                   local_time_stepping>>,
       ::evolution::dg::Initialization::Mortars<volume_dim>,
-      Initialization::Actions::Minmod<3>,
+      tmpl::conditional_t<use_dg_subcell and local_time_stepping,
+                          Initialization::Actions::InitializeItems<
+                              evolution::dg::subcell::DisableLts<3>>,
+                          tmpl::list<>>,
+      tmpl::conditional_t<use_dg_subcell, tmpl::list<>,
+                          Initialization::Actions::Minmod<3>>,
       evolution::Actions::InitializeRunEventsAndDenseTriggers,
       intrp::Actions::ElementInitInterpPoints<volume_dim,
                                               interpolation_target_tags>,
@@ -653,9 +660,9 @@ struct EvolutionMetavars<tmpl::list<InterpolationTargetTags...>,
           tmpl::list<
               grmhd::ValenciaDivClean::fd::Tags::Reconstructor,
               ::Tags::VariableFixer<grmhd::ValenciaDivClean::FixConservatives>,
-              grmhd::ValenciaDivClean::Tags::PrimitiveFromConservativeOptions,
               grmhd::ValenciaDivClean::subcell::Tags::TciOptions>,
           tmpl::list<>>,
+      grmhd::ValenciaDivClean::Tags::PrimitiveFromConservativeOptions,
       equation_of_state_tag, initial_data_tag,
       grmhd::ValenciaDivClean::Tags::ConstraintDampingParameter>;
 
