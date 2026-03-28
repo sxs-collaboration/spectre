@@ -166,6 +166,7 @@ class RotatedRectangles final : public DomainCreator<2> {
 
  private:
   Domain<2> build_domain(const Options::Context& context) const;
+  Domain<2> domain_{};
   typename LowerBound::type lower_xy_{
       {std::numeric_limits<double>::signaling_NaN()}};
   typename Midpoint::type midpoint_xy_{

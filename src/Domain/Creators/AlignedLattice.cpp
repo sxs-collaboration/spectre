@@ -76,11 +76,7 @@ AlignedLattice<Dim>::AlignedLattice(
       }
     }
   }
-  if (context != Options::Context{}) {
-    // Run create_domain for non-default contexts to validate the constructed
-    // domain.
-    (void)build_domain(context);
-  }
+  domain_ = build_domain(context);
 }
 
 template <size_t Dim>
@@ -165,7 +161,7 @@ Domain<Dim> AlignedLattice<Dim>::create_domain(
 
 template <size_t Dim>
 Domain<Dim> AlignedLattice<Dim>::create_domain() const {
-  return build_domain(Options::Context{});
+  return domain_;
 }
 
 template <size_t Dim>

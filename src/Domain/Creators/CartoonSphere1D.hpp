@@ -190,6 +190,7 @@ class CartoonSphere1D final : public DomainCreator<3> {
 
  private:
   Domain<3> build_domain(const Options::Context& context) const;
+  Domain<3> domain_{};
   double inner_bound_{};
   double outer_bound_{};
   std::vector<size_t> initial_refinement_levels_{};

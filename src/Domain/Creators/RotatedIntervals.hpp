@@ -185,6 +185,7 @@ class RotatedIntervals final : public DomainCreator<1> {
 
  private:
   Domain<1> build_domain(const Options::Context& context) const;
+  Domain<1> domain_{};
   std::array<double, 1> lower_x_{
       {std::numeric_limits<double>::signaling_NaN()}};
   std::array<double, 1> midpoint_x_{

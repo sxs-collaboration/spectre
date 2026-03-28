@@ -122,11 +122,7 @@ CartoonSphere1D::CartoonSphere1D(
     block_names_.emplace_back(block_name);
     block_groups_[block_name].insert(block_name);
   }
-  if (context != Options::Context{}) {
-    // Run create_domain for non-default contexts to validate the constructed
-    // domain.
-    (void)build_domain(context);
-  }
+  domain_ = build_domain(context);
 }
 
 Domain<3> CartoonSphere1D::create_domain(
@@ -204,9 +200,7 @@ CartoonSphere1D::external_boundary_conditions() const {
   return boundary_conditions;
 }
 
-Domain<3> CartoonSphere1D::create_domain() const {
-  return build_domain(Options::Context{});
-}
+Domain<3> CartoonSphere1D::create_domain() const { return domain_; }
 
 std::vector<std::array<size_t, 3>> CartoonSphere1D::initial_extents() const {
   std::vector<std::array<size_t, 3>> output;

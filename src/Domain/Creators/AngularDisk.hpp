@@ -173,6 +173,7 @@ class AngularDisk final : public DomainCreator<2> {
 
  private:
   Domain<2> build_domain(const Options::Context& context) const;
+  Domain<2> domain_{};
   typename OuterRadius::type outer_radius_{};
   typename RadialPartitioning::type radial_partitioning_{};
   typename InitialDiskThetaGridPoints::type initial_disk_grid_points_{};

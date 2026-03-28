@@ -214,6 +214,7 @@ class RotatedBricks final : public DomainCreator<3> {
 
  private:
   Domain<3> build_domain(const Options::Context& context) const;
+  Domain<3> domain_{};
   typename LowerBound::type lower_xyz_{
       {std::numeric_limits<double>::signaling_NaN()}};
   typename Midpoint::type midpoint_xyz_{

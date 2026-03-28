@@ -105,11 +105,7 @@ CartoonCylinder::CartoonCylinder(
       is_periodic_in_y_ = is_periodic(lower_bc);
     }
   }
-  if (context != Options::Context{}) {
-    // Run create_domain for non-default contexts to validate the constructed
-    // domain.
-    (void)build_domain(context);
-  }
+  domain_ = build_domain(context);
 }
 
 Domain<3> CartoonCylinder::create_domain(
@@ -189,9 +185,7 @@ CartoonCylinder::external_boundary_conditions() const {
   return boundary_conditions;
 }
 
-Domain<3> CartoonCylinder::create_domain() const {
-  return build_domain(Options::Context{});
-}
+Domain<3> CartoonCylinder::create_domain() const { return domain_; }
 
 std::vector<std::array<size_t, 3>> CartoonCylinder::initial_extents() const {
   // cartoon bases always have extents set to 1

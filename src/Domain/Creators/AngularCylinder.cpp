@@ -227,6 +227,7 @@ AngularCylinder::AngularCylinder(
                       << initial_refinement_in_z_.size() << ".");
     }
   }
+  domain_ = build_domain(context);
 }
 
 AngularCylinder::AngularCylinder(
@@ -318,6 +319,7 @@ AngularCylinder::AngularCylinder(
                   "is probably a mistake");
     }
   }
+  domain_ = build_domain(context);
 }
 
 Domain<3> AngularCylinder::build_domain(
@@ -441,9 +443,7 @@ Domain<3> AngularCylinder::build_domain(
   return domain;
 }
 
-Domain<3> AngularCylinder::create_domain() const {
-  return build_domain(Options::Context{});
-}
+Domain<3> AngularCylinder::create_domain() const { return domain_; }
 
 std::vector<DirectionMap<
     3, std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>

@@ -198,6 +198,7 @@ Cylinder::Cylinder(
     central_cube_refinement[0] = central_cube_refinement[1];
     central_cube_grid_points[0] = central_cube_grid_points[1];
   }
+  domain_ = build_domain(context);
 }
 
 Cylinder::Cylinder(
@@ -260,11 +261,7 @@ Cylinder::Cylinder(
                 "constructor to specify 'is_periodic_in_z' instead of boundary "
                 "conditions.");
   }
-  if (context != Options::Context{}) {
-    // Run create_domain for non-default contexts to validate the constructed
-    // domain.
-    (void)build_domain(context);
-  }
+  domain_ = build_domain(context);
 }
 
 Domain<3> Cylinder::build_domain(const Options::Context& context) const {
@@ -352,9 +349,7 @@ Cylinder::external_boundary_conditions() const {
   return boundary_conditions;
 }
 
-Domain<3> Cylinder::create_domain() const {
-  return build_domain(Options::Context{});
-}
+Domain<3> Cylinder::create_domain() const { return domain_; }
 
 std::vector<std::array<size_t, 3>> Cylinder::initial_extents() const {
   return initial_number_of_grid_points_;

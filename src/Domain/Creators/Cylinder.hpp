@@ -294,6 +294,7 @@ class Cylinder final : public DomainCreator<3> {
 
  private:
   Domain<3> build_domain(const Options::Context& context) const;
+  Domain<3> domain_{};
   double inner_radius_{std::numeric_limits<double>::signaling_NaN()};
   double outer_radius_{std::numeric_limits<double>::signaling_NaN()};
   double lower_z_bound_{std::numeric_limits<double>::signaling_NaN()};

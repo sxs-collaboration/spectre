@@ -169,11 +169,7 @@ CartoonSphere2D::CartoonSphere2D(
     block_names_.emplace_back(shell + "_HalfSquare");
     block_groups_[shell].insert(shell + "_HalfSquare");
   }
-  if (context != Options::Context{}) {
-    // Run create_domain for non-default contexts to validate the constructed
-    // domain.
-    (void)build_domain(context);
-  }
+  domain_ = build_domain(context);
 }
 
 Domain<3> CartoonSphere2D::create_domain(
@@ -418,9 +414,7 @@ CartoonSphere2D::external_boundary_conditions() const {
   return boundary_conditions;
 }
 
-Domain<3> CartoonSphere2D::create_domain() const {
-  return build_domain(Options::Context{});
-}
+Domain<3> CartoonSphere2D::create_domain() const { return domain_; }
 
 std::vector<std::array<size_t, 3>> CartoonSphere2D::initial_extents() const {
   std::vector<std::array<size_t, 3>> extended;

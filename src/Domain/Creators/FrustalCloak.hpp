@@ -157,6 +157,7 @@ class FrustalCloak final : public DomainCreator<3> {
 
  private:
   Domain<3> build_domain(const Options::Context& context) const;
+  Domain<3> domain_{};
   typename InitialRefinement::type initial_refinement_level_{};
   typename InitialGridPoints::type initial_number_of_grid_points_{};
   typename UseEquiangularMap::type use_equiangular_map_ = false;

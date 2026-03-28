@@ -18,6 +18,7 @@
 #include "Domain/Creators/DomainCreator.hpp"
 #include "Domain/Creators/TimeDependence/TimeDependence.hpp"
 #include "Domain/Creators/TimeDependentOptions/Sphere.hpp"
+#include "Domain/Domain.hpp"
 #include "Options/Auto.hpp"
 #include "Options/Context.hpp"
 #include "Options/String.hpp"
@@ -26,8 +27,6 @@
 /// \cond
 template <size_t Dim, typename T>
 class DirectionMap;
-template <size_t Dim>
-class Domain;
 namespace domain {
 namespace CoordinateMaps {
 template <size_t Dim>
@@ -244,6 +243,7 @@ class SphericalShells final : public DomainCreator<3> {
 
  private:
   Domain<3> build_domain(const Options::Context& context) const;
+  Domain<3> domain_{};
   double inner_radius_{};
   double outer_radius_{};
   size_t initial_radial_refinement_{};

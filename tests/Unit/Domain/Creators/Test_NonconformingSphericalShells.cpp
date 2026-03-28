@@ -155,14 +155,10 @@ void test_parse_errors() {
           "None boundary condition is not supported. If you would like "
           "an outflow-type boundary condition, you must use that."));
   CHECK_THROWS_WITH(
-      [&]() {
-        const auto invalid_shell =
-            domain::creators::NonconformingSphericalShells(
-                0.0, interface_radius, outer_radius, radial_refinement,
-                angular_refinement, radial_extents, l, angular_extents, nullptr,
-                nullptr, Options::Context{false, {}, 1, 1});
-        invalid_shell.create_domain();
-      }(),
+      domain::creators::NonconformingSphericalShells(
+          0.0, interface_radius, outer_radius, radial_refinement,
+          angular_refinement, radial_extents, l, angular_extents, nullptr,
+          nullptr, Options::Context{false, {}, 1, 1}),
       Catch::Matchers::ContainsSubstring(
           "The radius of the inner surface must be greater than zero."));
 }

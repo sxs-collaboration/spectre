@@ -113,11 +113,7 @@ SphericalShells::SphericalShells(
                       radial_partitioning_, outer_radius_);
     }
   }
-  if (context != Options::Context{}) {
-    // Run create_domain for non-default contexts to validate the constructed
-    // domain.
-    (void)build_domain(context);
-  }
+  domain_ = build_domain(context);
 }
 
 Domain<3> SphericalShells::create_domain(
@@ -244,9 +240,7 @@ std::vector<std::array<size_t, 3>> SphericalShells::initial_extents() const {
                                 2 * initial_spherical_harmonic_l_ + 1}};
 }
 
-Domain<3> SphericalShells::create_domain() const {
-  return build_domain(Options::Context{});
-}
+Domain<3> SphericalShells::create_domain() const { return domain_; }
 
 std::vector<std::array<size_t, 3>> SphericalShells::initial_refinement_levels()
     const {

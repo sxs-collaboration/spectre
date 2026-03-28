@@ -329,6 +329,7 @@ class AngularCylinder final : public DomainCreator<3> {
 
  private:
   Domain<3> build_domain(const Options::Context& context) const;
+  Domain<3> domain_{};
   typename OuterRadius::type outer_radius_{};
   typename LowerZBound::type lower_z_bound_{};
   typename UpperZBound::type upper_z_bound_{};

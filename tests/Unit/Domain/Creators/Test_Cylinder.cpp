@@ -1232,25 +1232,19 @@ void test_cylinder_wedge_parse_errors() {
       domain::CoordinateMaps::Distribution::Linear};
 
   CHECK_THROWS_WITH(
-      [&]() {
-        auto invalid_cylinder = creators::Cylinder(
-            0.0, 1.0, lower_z_bound, upper_z_bound, false, refinement_level,
-            grid_points, false, radial_partitioning, partitioning_in_z,
-            radial_distribution, distribution_in_z,
-            Options::Context{false, {}, 1, 1});
-        invalid_cylinder.create_domain();
-      }(),
+      creators::Cylinder(0.0, 1.0, lower_z_bound, upper_z_bound, false,
+                         refinement_level, grid_points, false,
+                         radial_partitioning, partitioning_in_z,
+                         radial_distribution, distribution_in_z,
+                         Options::Context{false, {}, 1, 1}),
       Catch::Matchers::ContainsSubstring(
           "The radius of the inner surface must be greater than zero."));
   CHECK_THROWS_WITH(
-      [&]() {
-        auto invalid_cylinder = creators::Cylinder(
-            1.0, 1.0, lower_z_bound, upper_z_bound, false, refinement_level,
-            grid_points, false, radial_partitioning, partitioning_in_z,
-            radial_distribution, distribution_in_z,
-            Options::Context{false, {}, 1, 1});
-        invalid_cylinder.create_domain();
-      }(),
+      creators::Cylinder(1.0, 1.0, lower_z_bound, upper_z_bound, false,
+                         refinement_level, grid_points, false,
+                         radial_partitioning, partitioning_in_z,
+                         radial_distribution, distribution_in_z,
+                         Options::Context{false, {}, 1, 1}),
       Catch::Matchers::ContainsSubstring(
           "The radius of the outer surface must be greater than the radius of "
           "the inner surface."));
@@ -1264,14 +1258,11 @@ void test_cylinder_wedge_parse_errors() {
         distribution_in_z_extra_shell{
             domain::CoordinateMaps::Distribution::Linear};
     CHECK_THROWS_WITH(
-        [&]() {
-          auto invalid_cylinder = creators::Cylinder(
-              1.0, 2.0, lower_z_bound, upper_z_bound, false, refinement_level,
-              grid_points, false, radial_partitioning_extra_shell,
-              partitioning_in_z_extra_shell, radial_distribution_missing,
-              distribution_in_z_extra_shell, Options::Context{false, {}, 1, 1});
-          invalid_cylinder.create_domain();
-        }(),
+        creators::Cylinder(
+            1.0, 2.0, lower_z_bound, upper_z_bound, false, refinement_level,
+            grid_points, false, radial_partitioning_extra_shell,
+            partitioning_in_z_extra_shell, radial_distribution_missing,
+            distribution_in_z_extra_shell, Options::Context{false, {}, 1, 1}),
         Catch::Matchers::ContainsSubstring(
             "Specify a 'RadialDistribution' for every cylindrical shell."));
   }
@@ -1286,14 +1277,11 @@ void test_cylinder_wedge_parse_errors() {
         distribution_in_z_extra_shell{
             domain::CoordinateMaps::Distribution::Linear};
     CHECK_THROWS_WITH(
-        [&]() {
-          auto invalid_cylinder = creators::Cylinder(
-              1.0, 2.0, lower_z_bound, upper_z_bound, false, refinement_level,
-              grid_points, false, radial_partitioning_extra_shell,
-              partitioning_in_z_extra_shell, radial_distribution_non_linear,
-              distribution_in_z_extra_shell, Options::Context{false, {}, 1, 1});
-          invalid_cylinder.create_domain();
-        }(),
+        creators::Cylinder(
+            1.0, 2.0, lower_z_bound, upper_z_bound, false, refinement_level,
+            grid_points, false, radial_partitioning_extra_shell,
+            partitioning_in_z_extra_shell, radial_distribution_non_linear,
+            distribution_in_z_extra_shell, Options::Context{false, {}, 1, 1}),
         Catch::Matchers::ContainsSubstring(
             "The 'RadialDistribution' must be 'Linear' for the innermost "
             "shell because it changes in circularity."));

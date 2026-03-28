@@ -36,7 +36,9 @@ RotatedBricks::RotatedBricks(
           std::move(initial_refinement_level_xyz)),          // NOLINT
       initial_number_of_grid_points_in_xyz_(                 // NOLINT
           std::move(initial_number_of_grid_points_in_xyz)),  // NOLINT
-      boundary_condition_(nullptr) {}
+      boundary_condition_(nullptr) {
+  domain_ = build_domain({});
+}
 
 RotatedBricks::RotatedBricks(
     const typename LowerBound::type lower_xyz,
@@ -70,11 +72,7 @@ RotatedBricks::RotatedBricks(
     is_periodic_in_[1] = true;
     is_periodic_in_[2] = true;
   }
-  if (context != Options::Context{}) {
-    // Run create_domain for non-default contexts to validate the constructed
-    // domain.
-    (void)build_domain(context);
-  }
+  domain_ = build_domain(context);
 }
 
 Domain<3> RotatedBricks::create_domain(
@@ -154,9 +152,7 @@ std::vector<std::string> RotatedBricks::block_names() const {
   return block_names_for_rectilinear_domains(Index<3>{2, 2, 2});
 }
 
-Domain<3> RotatedBricks::create_domain() const {
-  return build_domain(Options::Context{});
-}
+Domain<3> RotatedBricks::create_domain() const { return domain_; }
 
 std::vector<std::array<size_t, 3>> RotatedBricks::initial_extents() const {
   const size_t& x_0 = initial_number_of_grid_points_in_xyz_[0][0];

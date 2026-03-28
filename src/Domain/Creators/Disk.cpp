@@ -71,11 +71,7 @@ Disk::Disk(typename InnerRadius::type inner_radius,
   }
   block_names_.emplace_back("CenterSquare");
   block_groups_["CenterSquare"].insert("CenterSquare");
-  if (context != Options::Context{}) {
-    // Run create_domain for non-default contexts to validate the constructed
-    // domain.
-    (void)build_domain(context);
-  }
+  domain_ = build_domain(context);
 }
 
 Domain<2> Disk::build_domain(const Options::Context& context) const {
@@ -175,9 +171,7 @@ Disk::external_boundary_conditions() const {
   return boundary_conditions;
 }
 
-Domain<2> Disk::create_domain() const {
-  return build_domain(Options::Context{});
-}
+Domain<2> Disk::create_domain() const { return domain_; }
 
 std::vector<std::array<size_t, 2>> Disk::initial_extents() const {
   return {

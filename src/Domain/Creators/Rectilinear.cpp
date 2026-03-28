@@ -72,11 +72,7 @@ Rectilinear<Dim>::Rectilinear(
                                << gsl::at(upper_bounds_, d) << "].");
     }
   }
-  if (context != Options::Context{}) {
-    // Run create_domain for non-default contexts to validate the constructed
-    // domain.
-    (void)build_domain(context);
-  }
+  domain_ = build_domain(context);
 }
 
 template <size_t Dim>
@@ -119,6 +115,7 @@ Rectilinear<Dim>::Rectilinear(
       gsl::at(is_periodic_, d) = true;
     }
   }
+  domain_ = build_domain(context);
 }
 
 template <size_t Dim>
@@ -229,7 +226,7 @@ Rectilinear<Dim>::external_boundary_conditions() const {
 
 template <size_t Dim>
 Domain<Dim> Rectilinear<Dim>::create_domain() const {
-  return build_domain(Options::Context{});
+  return domain_;
 }
 
 template <size_t Dim>

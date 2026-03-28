@@ -37,7 +37,9 @@ RotatedRectangles::RotatedRectangles(
           std::move(initial_refinement_level_xy)),          // NOLINT
       initial_number_of_grid_points_in_xy_(                 // NOLINT
           std::move(initial_number_of_grid_points_in_xy)),  // NOLINT
-      boundary_condition_(nullptr) {}
+      boundary_condition_(nullptr) {
+  domain_ = build_domain({});
+}
 
 RotatedRectangles::RotatedRectangles(
     const typename LowerBound::type lower_xy,
@@ -67,11 +69,7 @@ RotatedRectangles::RotatedRectangles(
     is_periodic_in_[0] = true;
     is_periodic_in_[1] = true;
   }
-  if (context != Options::Context{}) {
-    // Run create_domain for non-default contexts to validate the constructed
-    // domain.
-    (void)build_domain(context);
-  }
+  domain_ = build_domain(context);
 }
 
 Domain<2> RotatedRectangles::create_domain(
@@ -128,9 +126,7 @@ std::vector<std::string> RotatedRectangles::block_names() const {
   return block_names_for_rectilinear_domains(Index<2>{2, 2});
 }
 
-Domain<2> RotatedRectangles::create_domain() const {
-  return build_domain(Options::Context{});
-}
+Domain<2> RotatedRectangles::create_domain() const { return domain_; }
 
 std::vector<std::array<size_t, 2>> RotatedRectangles::initial_extents() const {
   const size_t& x_0 = initial_number_of_grid_points_in_xy_[0][0];

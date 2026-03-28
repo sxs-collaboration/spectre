@@ -574,6 +574,7 @@ class BinaryCompactObject final : public DomainCreator<3> {
 
  private:
   Domain<3> build_domain(const Options::Context& context) const;
+  Domain<3> domain_{};
   typename ObjectA::type object_A_{};
   typename ObjectB::type object_B_{};
   std::array<double, 2> center_of_mass_offset_{};

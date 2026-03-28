@@ -252,6 +252,7 @@ class CartoonSphere2D final : public DomainCreator<3> {
 
  private:
   Domain<3> build_domain(const Options::Context& context) const;
+  Domain<3> domain_{};
   double inner_radius_{};
   double outer_radius_{};
   std::vector<std::array<size_t, 2>> initial_refinement_{};

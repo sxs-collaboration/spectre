@@ -46,6 +46,7 @@ RotatedIntervals::RotatedIntervals(
     time_dependence_ =
         std::make_unique<domain::creators::time_dependence::None<1>>();
   }
+  domain_ = build_domain({});
 }
 
 RotatedIntervals::RotatedIntervals(
@@ -100,11 +101,7 @@ RotatedIntervals::RotatedIntervals(
   if (is_periodic(lower_boundary_condition_)) {
     is_periodic_in_[0] = true;
   }
-  if (context != Options::Context{}) {
-    // Run create_domain for non-default contexts to validate the constructed
-    // domain.
-    (void)build_domain(context);
-  }
+  domain_ = build_domain(context);
 }
 
 Domain<1> RotatedIntervals::create_domain(
@@ -159,9 +156,7 @@ std::vector<std::string> RotatedIntervals::block_names() const {
   return block_names_for_rectilinear_domains(Index<1>{2});
 }
 
-Domain<1> RotatedIntervals::create_domain() const {
-  return build_domain(Options::Context{});
-}
+Domain<1> RotatedIntervals::create_domain() const { return domain_; }
 
 std::vector<std::array<size_t, 1>> RotatedIntervals::initial_extents() const {
   return {{{initial_number_of_grid_points_in_x_[0][0]}},

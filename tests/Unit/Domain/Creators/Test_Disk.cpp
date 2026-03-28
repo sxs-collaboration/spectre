@@ -252,21 +252,13 @@ void test_disk_boundaries_equidistant() {
           "None boundary condition is not supported. If you would like an "
           "outflow-type boundary condition, you must use that."));
   CHECK_THROWS_WITH(
-      [&]() {
-        auto invalid_disk =
-            creators::Disk(0.0, outer_radius, refinement_level, grid_points,
-                           false, nullptr, Options::Context{false, {}, 1, 1});
-        invalid_disk.create_domain();
-      }(),
+      creators::Disk(0.0, outer_radius, refinement_level, grid_points, false,
+                     nullptr, Options::Context{false, {}, 1, 1}),
       Catch::Matchers::ContainsSubstring(
           "The radius of the inner surface must be greater than zero."));
   CHECK_THROWS_WITH(
-      [&]() {
-        auto invalid_disk = creators::Disk(
-            inner_radius, inner_radius, refinement_level, grid_points, false,
-            nullptr, Options::Context{false, {}, 1, 1});
-        invalid_disk.create_domain();
-      }(),
+      creators::Disk(inner_radius, inner_radius, refinement_level, grid_points,
+                     false, nullptr, Options::Context{false, {}, 1, 1}),
       Catch::Matchers::ContainsSubstring(
           "The radius of the outer surface must be greater than the radius of "
           "the inner surface."));
@@ -324,58 +316,50 @@ void test_disk_option_errors() {
       "the inner surface.");
   CHECK_THROWS_WITH(
       ([&]() {
-        const auto disk =
-            TestHelpers::test_option_tag<domain::OptionTags::DomainCreator<2>,
-                                         DiskMetavars>(
-                "Disk:\n"
-                "  InnerRadius: 0\n"
-                "  OuterRadius: 3\n"
-                "  InitialRefinement: 2\n"
-                "  InitialGridPoints: [2,2]\n"
-                "  UseEquiangularMap: true\n");
-        dynamic_cast<const creators::Disk&>(*disk).create_domain();
+        TestHelpers::test_option_tag<domain::OptionTags::DomainCreator<2>,
+                                     DiskMetavars>(
+            "Disk:\n"
+            "  InnerRadius: 0\n"
+            "  OuterRadius: 3\n"
+            "  InitialRefinement: 2\n"
+            "  InitialGridPoints: [2,2]\n"
+            "  UseEquiangularMap: true\n");
       }()),
       inner_surface_error);
   CHECK_THROWS_WITH(
       ([&]() {
-        const auto disk =
-            TestHelpers::test_option_tag<domain::OptionTags::DomainCreator<2>,
-                                         DiskMetavars>(
-                "Disk:\n"
-                "  InnerRadius: 1\n"
-                "  OuterRadius: 1\n"
-                "  InitialRefinement: 2\n"
-                "  InitialGridPoints: [2,2]\n"
-                "  UseEquiangularMap: true\n");
-        dynamic_cast<const creators::Disk&>(*disk).create_domain();
+        TestHelpers::test_option_tag<domain::OptionTags::DomainCreator<2>,
+                                     DiskMetavars>(
+            "Disk:\n"
+            "  InnerRadius: 1\n"
+            "  OuterRadius: 1\n"
+            "  InitialRefinement: 2\n"
+            "  InitialGridPoints: [2,2]\n"
+            "  UseEquiangularMap: true\n");
       }()),
       outer_surface_error);
   CHECK_THROWS_WITH(
       ([&]() {
-        const auto disk =
-            TestHelpers::test_option_tag<domain::OptionTags::DomainCreator<2>,
-                                         DiskMetavars>(
-                "Disk:\n"
-                "  InnerRadius: 0\n"
-                "  OuterRadius: 3\n"
-                "  InitialRefinement: 2\n"
-                "  InitialGridPoints: [2,2]\n"
-                "  UseEquiangularMap: false\n");
-        dynamic_cast<const creators::Disk&>(*disk).create_domain();
+        TestHelpers::test_option_tag<domain::OptionTags::DomainCreator<2>,
+                                     DiskMetavars>(
+            "Disk:\n"
+            "  InnerRadius: 0\n"
+            "  OuterRadius: 3\n"
+            "  InitialRefinement: 2\n"
+            "  InitialGridPoints: [2,2]\n"
+            "  UseEquiangularMap: false\n");
       }()),
       inner_surface_error);
   CHECK_THROWS_WITH(
       ([&]() {
-        const auto disk =
-            TestHelpers::test_option_tag<domain::OptionTags::DomainCreator<2>,
-                                         DiskMetavars>(
-                "Disk:\n"
-                "  InnerRadius: 1\n"
-                "  OuterRadius: 1\n"
-                "  InitialRefinement: 2\n"
-                "  InitialGridPoints: [2,2]\n"
-                "  UseEquiangularMap: false\n");
-        dynamic_cast<const creators::Disk&>(*disk).create_domain();
+        TestHelpers::test_option_tag<domain::OptionTags::DomainCreator<2>,
+                                     DiskMetavars>(
+            "Disk:\n"
+            "  InnerRadius: 1\n"
+            "  OuterRadius: 1\n"
+            "  InitialRefinement: 2\n"
+            "  InitialGridPoints: [2,2]\n"
+            "  UseEquiangularMap: false\n");
       }()),
       outer_surface_error);
 }

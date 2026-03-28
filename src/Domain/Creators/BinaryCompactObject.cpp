@@ -425,11 +425,7 @@ BinaryCompactObject<UseWorldtube>::BinaryCompactObject(
         radii_A, radii_B, not is_excised_a_, not is_excised_b_,
         envelope_radius_, outer_radius_);
   }
-  if (context != Options::Context{}) {
-    // Run create_domain for non-default contexts to validate the constructed
-    // domain.
-    (void)build_domain(context);
-  }
+  domain_ = build_domain(context);
 }
 
 template <bool UseWorldtube>
@@ -905,7 +901,7 @@ BinaryCompactObject<UseWorldtube>::functions_of_time(
 
 template <bool UseWorldtube>
 Domain<3> BinaryCompactObject<UseWorldtube>::create_domain() const {
-  return build_domain(Options::Context{});
+  return domain_;
 }
 
 template class BinaryCompactObject<true>;

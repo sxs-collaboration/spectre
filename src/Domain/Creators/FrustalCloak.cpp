@@ -68,11 +68,7 @@ FrustalCloak::FrustalCloak(
         context,
         "Cannot have periodic boundary conditions with a frustal cloak");
   }
-  if (context != Options::Context{}) {
-    // Run create_domain for non-default contexts to validate the constructed
-    // domain.
-    (void)build_domain(context);
-  }
+  domain_ = build_domain(context);
 }
 
 Domain<3> FrustalCloak::create_domain(
@@ -109,9 +105,7 @@ FrustalCloak::external_boundary_conditions() const {
   return boundary_conditions;
 }
 
-Domain<3> FrustalCloak::create_domain() const {
-  return build_domain(Options::Context{});
-}
+Domain<3> FrustalCloak::create_domain() const { return domain_; }
 
 std::vector<std::array<size_t, 3>> FrustalCloak::initial_extents() const {
   return {

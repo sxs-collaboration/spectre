@@ -242,6 +242,7 @@ class AlignedLattice final : public DomainCreator<Dim> {
 
  private:
   Domain<Dim> build_domain(const Options::Context& context) const;
+  Domain<Dim> domain_{};
   std::array<std::vector<double>, Dim> block_bounds_{
       make_array<Dim, std::vector<double>>({})};
   std::array<bool, Dim> is_periodic_in_{make_array<Dim>(false)};
