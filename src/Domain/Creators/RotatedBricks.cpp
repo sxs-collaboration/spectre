@@ -70,6 +70,11 @@ RotatedBricks::RotatedBricks(
     is_periodic_in_[1] = true;
     is_periodic_in_[2] = true;
   }
+  if (context != Options::Context{}) {
+    // Run create_domain for non-default contexts to validate the constructed
+    // domain.
+    (void)create_domain(context);
+  }
 }
 
 Domain<3> RotatedBricks::create_domain(

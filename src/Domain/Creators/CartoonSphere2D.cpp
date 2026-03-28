@@ -168,6 +168,11 @@ CartoonSphere2D::CartoonSphere2D(
     block_names_.emplace_back(shell + "_HalfSquare");
     block_groups_[shell].insert(shell + "_HalfSquare");
   }
+  if (context != Options::Context{}) {
+    // Run create_domain for non-default contexts to validate the constructed
+    // domain.
+    (void)create_domain(context);
+  }
 }
 
 Domain<3> CartoonSphere2D::create_domain(

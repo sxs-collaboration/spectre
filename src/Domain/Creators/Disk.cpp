@@ -71,6 +71,11 @@ Disk::Disk(typename InnerRadius::type inner_radius,
   }
   block_names_.emplace_back("CenterSquare");
   block_groups_["CenterSquare"].insert("CenterSquare");
+  if (context != Options::Context{}) {
+    // Run create_domain for non-default contexts to validate the constructed
+    // domain.
+    (void)create_domain(context);
+  }
 }
 
 Domain<2> Disk::create_domain(const Options::Context& /*context*/) const {

@@ -105,6 +105,11 @@ CartoonCylinder::CartoonCylinder(
       is_periodic_in_y_ = is_periodic(lower_bc);
     }
   }
+  if (context != Options::Context{}) {
+    // Run create_domain for non-default contexts to validate the constructed
+    // domain.
+    (void)create_domain(context);
+  }
 }
 
 Domain<3> CartoonCylinder::create_domain(

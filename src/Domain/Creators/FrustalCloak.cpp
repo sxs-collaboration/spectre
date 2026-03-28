@@ -68,6 +68,11 @@ FrustalCloak::FrustalCloak(
         context,
         "Cannot have periodic boundary conditions with a frustal cloak");
   }
+  if (context != Options::Context{}) {
+    // Run create_domain for non-default contexts to validate the constructed
+    // domain.
+    (void)create_domain(context);
+  }
 }
 
 Domain<3> FrustalCloak::create_domain(

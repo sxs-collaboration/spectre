@@ -122,6 +122,11 @@ NonconformingSphericalShells::NonconformingSphericalShells(
                                         initial_spherical_harmonic_l_ + 1,
                                         2 * initial_spherical_harmonic_l_ + 1}};
   initial_refinement_levels_[6] = {{initial_radial_refinement_, 0_st, 0_st}};
+  if (context != Options::Context{}) {
+    // Run create_domain for non-default contexts to validate the constructed
+    // domain.
+    (void)create_domain(context);
+  }
 }
 
 Domain<3> NonconformingSphericalShells::create_domain(

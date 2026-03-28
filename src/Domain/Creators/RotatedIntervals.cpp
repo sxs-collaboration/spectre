@@ -100,6 +100,11 @@ RotatedIntervals::RotatedIntervals(
   if (is_periodic(lower_boundary_condition_)) {
     is_periodic_in_[0] = true;
   }
+  if (context != Options::Context{}) {
+    // Run create_domain for non-default contexts to validate the constructed
+    // domain.
+    (void)create_domain(context);
+  }
 }
 
 Domain<1> RotatedIntervals::create_domain(

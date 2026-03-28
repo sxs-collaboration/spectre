@@ -426,6 +426,11 @@ CylindricalBinaryCompactObject::CylindricalBinaryCompactObject(
         std::array{radius_B_, outer_radius_B_}, false, false,
         inner_common_radius, outer_radius_);
   }
+  if (context != Options::Context{}) {
+    // Run create_domain for non-default contexts to validate the constructed
+    // domain.
+    (void)create_domain(context);
+  }
 }
 
 Domain<3> CylindricalBinaryCompactObject::create_domain(

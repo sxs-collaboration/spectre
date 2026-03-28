@@ -122,6 +122,11 @@ CartoonSphere1D::CartoonSphere1D(
     block_names_.emplace_back(block_name);
     block_groups_[block_name].insert(block_name);
   }
+  if (context != Options::Context{}) {
+    // Run create_domain for non-default contexts to validate the constructed
+    // domain.
+    (void)create_domain(context);
+  }
 }
 
 Domain<3> CartoonSphere1D::create_domain(

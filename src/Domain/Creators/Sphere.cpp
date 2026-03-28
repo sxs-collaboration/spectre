@@ -210,6 +210,11 @@ Sphere::Sphere(
                       radial_partitioning_, outer_radius_);
     }
   }
+  if (context != Options::Context{}) {
+    // Run create_domain for non-default contexts to validate the constructed
+    // domain.
+    (void)create_domain(context);
+  }
 }
 
 Domain<3> Sphere::create_domain(const Options::Context& /*context*/) const {

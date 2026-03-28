@@ -72,6 +72,11 @@ Rectilinear<Dim>::Rectilinear(
                                << gsl::at(upper_bounds_, d) << "].");
     }
   }
+  if (context != Options::Context{}) {
+    // Run create_domain for non-default contexts to validate the constructed
+    // domain.
+    (void)create_domain(context);
+  }
 }
 
 template <size_t Dim>

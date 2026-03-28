@@ -260,6 +260,11 @@ Cylinder::Cylinder(
                 "constructor to specify 'is_periodic_in_z' instead of boundary "
                 "conditions.");
   }
+  if (context != Options::Context{}) {
+    // Run create_domain for non-default contexts to validate the constructed
+    // domain.
+    (void)create_domain(context);
+  }
 }
 
 Domain<3> Cylinder::create_domain(const Options::Context& /*context*/) const {

@@ -67,6 +67,11 @@ RotatedRectangles::RotatedRectangles(
     is_periodic_in_[0] = true;
     is_periodic_in_[1] = true;
   }
+  if (context != Options::Context{}) {
+    // Run create_domain for non-default contexts to validate the constructed
+    // domain.
+    (void)create_domain(context);
+  }
 }
 
 Domain<2> RotatedRectangles::create_domain(
