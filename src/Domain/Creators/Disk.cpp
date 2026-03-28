@@ -78,13 +78,29 @@ Disk::Disk(typename InnerRadius::type inner_radius,
   }
 }
 
-Domain<2> Disk::create_domain(const Options::Context& /*context*/) const {
+Domain<2> Disk::create_domain(const Options::Context& context) const {
   using Wedge2DMap = CoordinateMaps::Wedge<2>;
   using Affine = CoordinateMaps::Affine;
   using Affine2D = CoordinateMaps::ProductOf2Maps<Affine, Affine>;
   using Equiangular = CoordinateMaps::Equiangular;
   using Equiangular2D =
       CoordinateMaps::ProductOf2Maps<Equiangular, Equiangular>;
+  const std::array<double, 1> opening_angles{M_PI_2};
+  const auto make_wedge = [&](OrientationMap<2> orientation,
+                              Wedge2DMap::WedgeHalves halves =
+                                  Wedge2DMap::WedgeHalves::Both) {
+    return Wedge2DMap{inner_radius_,
+                      outer_radius_,
+                      0.0,
+                      1.0,
+                      orientation,
+                      use_equiangular_map_,
+                      halves,
+                      domain::CoordinateMaps::Distribution::Linear,
+                      opening_angles,
+                      true,
+                      context};
+  };
 
   std::array<size_t, 4> block0_corners{{1, 5, 3, 7}};  //+x wedge
   std::array<size_t, 4> block1_corners{{3, 7, 2, 6}};  //+y wedge
@@ -96,24 +112,16 @@ Domain<2> Disk::create_domain(const Options::Context& /*context*/) const {
                                              block2_corners, block3_corners,
                                              block4_corners};
 
-  auto coord_maps = make_vector_coordinate_map_base<Frame::BlockLogical,
-                                                    Frame::Inertial>(
-      Wedge2DMap{inner_radius_, outer_radius_, 0.0, 1.0,
-                 OrientationMap<2>{std::array<Direction<2>, 2>{
-                     {Direction<2>::upper_xi(), Direction<2>::upper_eta()}}},
-                 use_equiangular_map_},
-      Wedge2DMap{inner_radius_, outer_radius_, 0.0, 1.0,
-                 OrientationMap<2>{std::array<Direction<2>, 2>{
-                     {Direction<2>::lower_eta(), Direction<2>::upper_xi()}}},
-                 use_equiangular_map_},
-      Wedge2DMap{inner_radius_, outer_radius_, 0.0, 1.0,
-                 OrientationMap<2>{std::array<Direction<2>, 2>{
-                     {Direction<2>::lower_xi(), Direction<2>::lower_eta()}}},
-                 use_equiangular_map_},
-      Wedge2DMap{inner_radius_, outer_radius_, 0.0, 1.0,
-                 OrientationMap<2>{std::array<Direction<2>, 2>{
-                     {Direction<2>::upper_eta(), Direction<2>::lower_xi()}}},
-                 use_equiangular_map_});
+  auto coord_maps =
+      make_vector_coordinate_map_base<Frame::BlockLogical, Frame::Inertial>(
+          make_wedge(OrientationMap<2>{std::array<Direction<2>, 2>{
+              {Direction<2>::upper_xi(), Direction<2>::upper_eta()}}}),
+          make_wedge(OrientationMap<2>{std::array<Direction<2>, 2>{
+              {Direction<2>::lower_eta(), Direction<2>::upper_xi()}}}),
+          make_wedge(OrientationMap<2>{std::array<Direction<2>, 2>{
+              {Direction<2>::lower_xi(), Direction<2>::lower_eta()}}}),
+          make_wedge(OrientationMap<2>{std::array<Direction<2>, 2>{
+              {Direction<2>::upper_eta(), Direction<2>::lower_xi()}}}));
 
   if (use_equiangular_map_) {
     coord_maps.emplace_back(

@@ -312,6 +312,45 @@ void test_disk_factory_equidistant() {
       inner_radius, outer_radius, grid_points,
       {5, make_array<2>(refinement_level)}, false, true);
 }
+
+void test_disk_option_errors() {
+  INFO("Disk option Wedge errors");
+  using DiskMetavars = TestHelpers::domain::BoundaryConditions::
+      MetavariablesWithoutBoundaryConditions<2, domain::creators::Disk>;
+  const auto inner_surface_error = Catch::Matchers::ContainsSubstring(
+      "The radius of the inner surface must be greater than zero.");
+  const auto outer_surface_error = Catch::Matchers::ContainsSubstring(
+      "The radius of the outer surface must be greater than the radius of "
+      "the inner surface.");
+  CHECK_THROWS_WITH(
+      ([&]() {
+        const auto disk =
+            TestHelpers::test_option_tag<domain::OptionTags::DomainCreator<2>,
+                                         DiskMetavars>(
+                "Disk:\n"
+                "  InnerRadius: 0\n"
+                "  OuterRadius: 3\n"
+                "  InitialRefinement: 2\n"
+                "  InitialGridPoints: [2,2]\n"
+                "  UseEquiangularMap: true\n");
+        dynamic_cast<const creators::Disk&>(*disk).create_domain();
+      }()),
+      inner_surface_error);
+  CHECK_THROWS_WITH(
+      ([&]() {
+        const auto disk =
+            TestHelpers::test_option_tag<domain::OptionTags::DomainCreator<2>,
+                                         DiskMetavars>(
+                "Disk:\n"
+                "  InnerRadius: 1\n"
+                "  OuterRadius: 1\n"
+                "  InitialRefinement: 2\n"
+                "  InitialGridPoints: [2,2]\n"
+                "  UseEquiangularMap: true\n");
+        dynamic_cast<const creators::Disk&>(*disk).create_domain();
+      }()),
+      outer_surface_error);
+}
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Domain.Creators.Disk", "[Domain][Unit]") {
@@ -319,5 +358,6 @@ SPECTRE_TEST_CASE("Unit.Domain.Creators.Disk", "[Domain][Unit]") {
   test_disk_factory_equiangular();
   test_disk_boundaries_equidistant();
   test_disk_factory_equidistant();
+  test_disk_option_errors();
 }
 }  // namespace domain
