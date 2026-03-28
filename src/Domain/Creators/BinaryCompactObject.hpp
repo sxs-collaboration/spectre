@@ -156,7 +156,7 @@ create_grid_anchors(const std::array<double, 3>& center_a,
  * to control the orbit of the worldtube.
  */
 template <bool UseWorldtube = false>
-class BinaryCompactObject : public DomainCreator<3> {
+class BinaryCompactObject final : public DomainCreator<3> {
  private:
   // Time-independent maps
   using Affine = CoordinateMaps::Affine;

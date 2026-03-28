@@ -49,7 +49,7 @@ namespace domain::creators {
 /// then repeats this pattern for all layers bottom to top.
 ///
 /// \image html Cylinder.png "The Cylinder Domain."
-class Cylinder : public DomainCreator<3> {
+class Cylinder final : public DomainCreator<3> {
  public:
   using maps_list =
       tmpl::list<domain::CoordinateMap<

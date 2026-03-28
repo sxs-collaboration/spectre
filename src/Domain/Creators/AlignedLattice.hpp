@@ -95,7 +95,7 @@ template <size_t Dim>
 /// number of Block%s that your problem needs.  More initial Element%s can be
 /// created by specifying a larger `InitialRefinement`.
 template <size_t Dim>
-class AlignedLattice : public DomainCreator<Dim> {
+class AlignedLattice final : public DomainCreator<Dim> {
  public:
   using maps_list = tmpl::list<
       domain::CoordinateMap<Frame::BlockLogical, Frame::Inertial,

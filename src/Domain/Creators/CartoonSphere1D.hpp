@@ -38,7 +38,7 @@ namespace domain::creators {
 /// Create a 3D Domain that is topologically a line. The 2nd and 3rd
 /// dimensions use Cartoon bases with Killing vectors along the \f$\theta\f$ and
 /// \f$\phi\f$ directions.
-class CartoonSphere1D : public DomainCreator<3> {
+class CartoonSphere1D final : public DomainCreator<3> {
  public:
   using maps_list = tmpl::list<domain::CoordinateMap<
       Frame::BlockLogical, Frame::Inertial,

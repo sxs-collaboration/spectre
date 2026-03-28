@@ -50,7 +50,7 @@ namespace creators {
 ///
 /// This DomainCreator is useful for testing code that deals with
 /// unaligned blocks.
-class RotatedRectangles : public DomainCreator<2> {
+class RotatedRectangles final : public DomainCreator<2> {
  public:
   using maps_list =
       tmpl::list<domain::CoordinateMap<

@@ -40,7 +40,7 @@ namespace creators {
 /// The left block has its logical \f$\xi\f$-axis aligned with the grid x-axis.
 /// The right block has its logical \f$\xi\f$-axis opposite to the grid x-axis.
 /// This is useful for testing code that deals with unaligned blocks.
-class RotatedIntervals : public DomainCreator<1> {
+class RotatedIntervals final : public DomainCreator<1> {
  public:
   using maps_list = tmpl::list<domain::CoordinateMap<
       Frame::BlockLogical, Frame::Inertial,

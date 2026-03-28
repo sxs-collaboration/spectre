@@ -39,7 +39,7 @@ namespace creators {
  *
  * \image html FrustalCloak.png "A slice through the frustal cloak."
  */
-class FrustalCloak : public DomainCreator<3> {
+class FrustalCloak final : public DomainCreator<3> {
  public:
   using maps_list =
       tmpl::list<domain::CoordinateMap<Frame::BlockLogical, Frame::Inertial,

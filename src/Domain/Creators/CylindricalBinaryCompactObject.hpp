@@ -150,7 +150,7 @@ namespace domain::creators {
  * template parameter of `true` to
  * `domain::creators::bco::TimeDependentMapOptions`.
  */
-class CylindricalBinaryCompactObject : public DomainCreator<3> {
+class CylindricalBinaryCompactObject final : public DomainCreator<3> {
  public:
   using maps_list = tmpl::flatten<
       tmpl::list<domain::CoordinateMap<

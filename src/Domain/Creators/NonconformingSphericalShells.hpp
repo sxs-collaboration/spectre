@@ -51,7 +51,7 @@ namespace domain::creators {
  * This domain creator offers one grid anchor "Center" at the origin.
  *
  */
-class NonconformingSphericalShells : public DomainCreator<3> {
+class NonconformingSphericalShells final : public DomainCreator<3> {
  public:
   using maps_list =
       tmpl::list<domain::CoordinateMap<

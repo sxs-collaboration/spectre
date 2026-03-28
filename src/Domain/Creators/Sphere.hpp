@@ -170,7 +170,7 @@ namespace domain::creators {
  * `TimeDependentMaps: None`.
  *
  */
-class Sphere : public DomainCreator<3> {
+class Sphere final : public DomainCreator<3> {
  private:
   using Affine = CoordinateMaps::Affine;
   using Affine3D = CoordinateMaps::ProductOf3Maps<Affine, Affine, Affine>;

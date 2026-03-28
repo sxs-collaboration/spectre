@@ -98,7 +98,7 @@ namespace creators {
 ///
 /// This DomainCreator is useful for testing code that deals with
 /// unaligned blocks.
-class RotatedBricks : public DomainCreator<3> {
+class RotatedBricks final : public DomainCreator<3> {
  public:
   using maps_list = tmpl::list<
       domain::CoordinateMap<Frame::BlockLogical, Frame::Inertial,

@@ -78,7 +78,7 @@ namespace domain::creators {
 /// To not have any time dependent maps, pass a `std::nullopt` as the
 /// appropriate argument in the constructor. In the input file, simply have
 /// `TimeDependentMaps: None`.
-class SphericalShells : public DomainCreator<3> {
+class SphericalShells final : public DomainCreator<3> {
  public:
   using maps_list =
       tmpl::append<tmpl::list<domain::CoordinateMap<

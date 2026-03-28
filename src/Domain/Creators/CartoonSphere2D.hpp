@@ -70,7 +70,7 @@ namespace domain::creators {
 /// Create a 3D Domain with a half-disk computational domain employing axial
 /// symmetry. The third dimension uses a Cartoon basis with Killing vector
 /// along the $\phi$ direction.
-class CartoonSphere2D : public DomainCreator<3> {
+class CartoonSphere2D final : public DomainCreator<3> {
  public:
   using maps_list = tmpl::list<
       domain::CoordinateMap<

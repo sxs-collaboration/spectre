@@ -38,7 +38,7 @@ namespace domain::creators {
 /// Create a 3D Domain with its computational domain being the\f$x-y\f$
 /// plane. The third dimension uses a Cartoon basis with Killing vector along
 /// the \f$\phi\f$ direction.
-class CartoonCylinder : public DomainCreator<3> {
+class CartoonCylinder final : public DomainCreator<3> {
  public:
   using maps_list = tmpl::list<domain::CoordinateMap<
       Frame::BlockLogical, Frame::Inertial,

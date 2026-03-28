@@ -40,7 +40,7 @@ namespace domain {
 namespace creators {
 /// Create a 2D Domain in the shape of a disk from a square surrounded by four
 /// wedges.
-class Disk : public DomainCreator<2> {
+class Disk final : public DomainCreator<2> {
  public:
   using maps_list =
       tmpl::list<domain::CoordinateMap<

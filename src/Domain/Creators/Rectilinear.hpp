@@ -43,7 +43,7 @@ namespace domain::creators {
 
 /// Create a domain consisting of a single Block in `Dim` dimensions.
 template <size_t Dim>
-class Rectilinear : public DomainCreator<Dim> {
+class Rectilinear final : public DomainCreator<Dim> {
  private:
   static_assert(Dim == 1 or Dim == 2 or Dim == 3,
                 "Rectilinear domain is only implemented in 1, 2, or 3 "
