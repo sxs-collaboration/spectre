@@ -130,7 +130,7 @@ NonconformingSphericalShells::NonconformingSphericalShells(
 }
 
 Domain<3> NonconformingSphericalShells::create_domain(
-    const Options::Context& /*context*/) const {
+    const Options::Context& context) const {
   std::vector<Block<3>> blocks;
   blocks.reserve(7);
   const std::vector<std::array<size_t, 8>> corners_of_wedges =
@@ -160,7 +160,7 @@ Domain<3> NonconformingSphericalShells::create_domain(
   auto wedge_coord_maps =
       make_vector_coordinate_map_base<Frame::BlockLogical, Frame::Inertial, 3>(
           sph_wedge_coordinate_maps(inner_radius_, interface_radius_, 1.0, 1.0,
-                                    true));
+                                    true, context));
   auto sphere_map =
       make_coordinate_map_base<Frame::BlockLogical, Frame::Inertial>(
           CoordinateMaps::ProductOf2Maps<CoordinateMaps::Affine,

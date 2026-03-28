@@ -33,6 +33,7 @@
 #include "Domain/Structure/DirectionMap.hpp"
 #include "Domain/Structure/OrientationMap.hpp"
 #include "Domain/Structure/Side.hpp"
+#include "Options/Context.hpp"
 #include "Options/Options.hpp"
 #include "Options/ParseOptions.hpp"
 #include "Utilities/Algorithm.hpp"
@@ -600,7 +601,7 @@ size_t which_wedge_index(const ShellWedges& which_wedges) {
 std::vector<domain::CoordinateMaps::Wedge<3>> sph_wedge_coordinate_maps(
     const double inner_radius, const double outer_radius,
     const double inner_sphericity, const double outer_sphericity,
-    const bool use_equiangular_map,
+    const bool use_equiangular_map, const Options::Context& options_context,
     const std::optional<std::pair<double, std::array<double, 3>>>&
         offset_options,
     const bool use_half_wedges, const std::vector<double>& radial_partitioning,
@@ -647,7 +648,7 @@ std::vector<domain::CoordinateMaps::Wedge<3>> sph_wedge_coordinate_maps(
               temp_inner_radius, optional_outer_radius,
               offset_options.value().first, offset_options.value().second,
               gsl::at(wedge_orientations, face_j), use_equiangular_map,
-              Halves::Both, radial_distribution_this_layer);
+              Halves::Both, radial_distribution_this_layer, options_context);
         }
       } else {
         for (size_t i = 0; i < 4; i++) {
@@ -655,23 +656,25 @@ std::vector<domain::CoordinateMaps::Wedge<3>> sph_wedge_coordinate_maps(
               temp_inner_radius, optional_outer_radius,
               offset_options.value().first, offset_options.value().second,
               gsl::at(wedge_orientations, i), use_equiangular_map,
-              Halves::LowerOnly, radial_distribution_this_layer);
+              Halves::LowerOnly, radial_distribution_this_layer,
+              options_context);
           wedges_for_this_layer.emplace_back(
               temp_inner_radius, optional_outer_radius,
               offset_options.value().first, offset_options.value().second,
               gsl::at(wedge_orientations, i), use_equiangular_map,
-              Halves::UpperOnly, radial_distribution_this_layer);
+              Halves::UpperOnly, radial_distribution_this_layer,
+              options_context);
         }
         wedges_for_this_layer.emplace_back(
             temp_inner_radius, optional_outer_radius,
             offset_options.value().first, offset_options.value().second,
             gsl::at(wedge_orientations, 4), use_equiangular_map, Halves::Both,
-            radial_distribution_this_layer);
+            radial_distribution_this_layer, options_context);
         wedges_for_this_layer.emplace_back(
             temp_inner_radius, optional_outer_radius,
             offset_options.value().first, offset_options.value().second,
             gsl::at(wedge_orientations, 5), use_equiangular_map, Halves::Both,
-            radial_distribution_this_layer);
+            radial_distribution_this_layer, options_context);
       }
       for (const auto& wedge : wedges_for_this_layer) {
         wedges_for_all_layers.push_back(wedge);
@@ -696,7 +699,7 @@ std::vector<domain::CoordinateMaps::Wedge<3>> sph_wedge_coordinate_maps(
               temp_inner_radius, temp_outer_radius, temp_inner_sphericity,
               outer_sphericity, gsl::at(wedge_orientations, face_j),
               use_equiangular_map, Halves::Both, radial_distribution_this_layer,
-              std::array<double, 2>({{M_PI_2, M_PI_2}}));
+              std::array<double, 2>({{M_PI_2, M_PI_2}}), true, options_context);
         }
       } else {
         for (size_t i = 0; i < 4; i++) {
@@ -705,13 +708,15 @@ std::vector<domain::CoordinateMaps::Wedge<3>> sph_wedge_coordinate_maps(
               outer_sphericity, gsl::at(wedge_orientations, i),
               use_equiangular_map, Halves::LowerOnly,
               radial_distribution_this_layer,
-              std::array<double, 2>({{opening_angle, M_PI_2}}));
+              std::array<double, 2>({{opening_angle, M_PI_2}}), true,
+              options_context);
           wedges_for_this_layer.emplace_back(
               temp_inner_radius, temp_outer_radius, temp_inner_sphericity,
               outer_sphericity, gsl::at(wedge_orientations, i),
               use_equiangular_map, Halves::UpperOnly,
               radial_distribution_this_layer,
-              std::array<double, 2>({{opening_angle, M_PI_2}}));
+              std::array<double, 2>({{opening_angle, M_PI_2}}), true,
+              options_context);
         }
         const double endcap_opening_angle = M_PI - opening_angle;
         const std::array<double, 2> endcap_opening_angles = {
@@ -720,12 +725,12 @@ std::vector<domain::CoordinateMaps::Wedge<3>> sph_wedge_coordinate_maps(
             temp_inner_radius, temp_outer_radius, temp_inner_sphericity,
             outer_sphericity, gsl::at(wedge_orientations, 4),
             use_equiangular_map, Halves::Both, radial_distribution_this_layer,
-            endcap_opening_angles, false);
+            endcap_opening_angles, false, options_context);
         wedges_for_this_layer.emplace_back(
             temp_inner_radius, temp_outer_radius, temp_inner_sphericity,
             outer_sphericity, gsl::at(wedge_orientations, 5),
             use_equiangular_map, Halves::Both, radial_distribution_this_layer,
-            endcap_opening_angles, false);
+            endcap_opening_angles, false, options_context);
       }
       for (const auto& wedge : wedges_for_this_layer) {
         wedges_for_all_layers.push_back(wedge);
@@ -1053,7 +1058,8 @@ std::vector<domain::CoordinateMaps::ProductOf2Maps<
 cyl_wedge_coord_map_surrounding_blocks(
     const double inner_radius, const double outer_radius,
     const double lower_z_bound, const double upper_z_bound,
-    const bool use_equiangular_map, const double inner_circularity,
+    const bool use_equiangular_map, const Options::Context& options_context,
+    const double inner_circularity,
     const std::vector<double>& radial_partitioning,
     const std::vector<double>& partitioning_in_z,
     const std::vector<domain::CoordinateMaps::Distribution>&
@@ -1116,7 +1122,8 @@ cyl_wedge_coord_map_surrounding_blocks(
             Wedge2D{temp_inner_radius, temp_outer_radius,
                     temp_inner_circularity, 1.0, cardinal_direction,
                     use_equiangular_map, use_both_halves,
-                    radial_distribution.at(shell)},
+                    radial_distribution.at(shell),
+                    std::array<double, 1>{{M_PI_2}}, true, options_context},
             z_map});
       }
       temp_inner_circularity = 1.;
@@ -1137,7 +1144,7 @@ std::vector<std::unique_ptr<
 cyl_wedge_coordinate_maps(
     const double inner_radius, const double outer_radius,
     const double lower_z_bound, const double upper_z_bound,
-    const bool use_equiangular_map,
+    const bool use_equiangular_map, const Options::Context& options_context,
     const std::vector<double>& radial_partitioning,
     const std::vector<double>& partitioning_in_z,
     const std::vector<domain::CoordinateMaps::Distribution>&
@@ -1149,8 +1156,8 @@ cyl_wedge_coordinate_maps(
       cylinder_mapping;
   const auto maps_surrounding = cyl_wedge_coord_map_surrounding_blocks(
       inner_radius, outer_radius, lower_z_bound, upper_z_bound,
-      use_equiangular_map, 0.0, radial_partitioning, partitioning_in_z,
-      radial_distribution, distribution_in_z,
+      use_equiangular_map, options_context, 0.0, radial_partitioning,
+      partitioning_in_z, radial_distribution, distribution_in_z,
       CylindricalDomainParityFlip::none);
 
   // add_to_cylinder_mapping adds the maps for individual blocks in
@@ -1492,7 +1499,7 @@ template std::vector<std::unique_ptr<
 cyl_wedge_coordinate_maps(
     const double inner_radius, const double outer_radius,
     const double lower_z_bound, const double upper_z_bound,
-    const bool use_equiangular_map,
+    const bool use_equiangular_map, const Options::Context& options_context,
     const std::vector<double>& radial_partitioning,
     const std::vector<double>& partitioning_in_z,
     const std::vector<domain::CoordinateMaps::Distribution>&
@@ -1503,7 +1510,7 @@ template std::vector<std::unique_ptr<
 cyl_wedge_coordinate_maps(
     const double inner_radius, const double outer_radius,
     const double lower_z_bound, const double upper_z_bound,
-    const bool use_equiangular_map,
+    const bool use_equiangular_map, const Options::Context& options_context,
     const std::vector<double>& radial_partitioning,
     const std::vector<double>& partitioning_in_z,
     const std::vector<domain::CoordinateMaps::Distribution>&

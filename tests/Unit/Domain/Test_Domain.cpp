@@ -58,6 +58,7 @@
 #include "IO/H5/VolumeData.hpp"
 #include "Informer/InfoFromBuild.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/Spherepack.hpp"
+#include "Options/Context.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/GetOutput.hpp"
 #include "Utilities/MakeVector.hpp"
@@ -1167,19 +1168,20 @@ Domain<3> create_serialized_domain() {
       Affine{-1.0, 1.0, -1.0 + x_coord_a, 1.0 + x_coord_a}, Identity2D{}};
   const Translation translation_B{
       Affine{-1.0, 1.0, -1.0 + x_coord_b, 1.0 + x_coord_b}, Identity2D{}};
+  const Options::Context context{};
 
   Maps maps_center_A =
       make_vector_coordinate_map_base<Frame::BlockLogical, Frame::Inertial, 3>(
-          sph_wedge_coordinate_maps(object_A.inner_radius,
-                                    object_A.outer_radius, inner_sphericity_A,
-                                    1.0, use_equiangular_map, std::nullopt,
-                                    false, {}, radial_distribution),
+          sph_wedge_coordinate_maps(
+              object_A.inner_radius, object_A.outer_radius, inner_sphericity_A,
+              1.0, use_equiangular_map, context, std::nullopt, false, {},
+              radial_distribution),
           translation_A);
   Maps maps_cube_A =
       make_vector_coordinate_map_base<Frame::BlockLogical, Frame::Inertial, 3>(
           sph_wedge_coordinate_maps(object_A.outer_radius,
                                     sqrt(3.0) * 0.5 * length_inner_cube, 1.0,
-                                    0.0, use_equiangular_map),
+                                    0.0, use_equiangular_map, context),
           translation_A);
   std::move(maps_center_A.begin(), maps_center_A.end(),
             std::back_inserter(maps));
@@ -1187,16 +1189,16 @@ Domain<3> create_serialized_domain() {
 
   Maps maps_center_B =
       make_vector_coordinate_map_base<Frame::BlockLogical, Frame::Inertial, 3>(
-          sph_wedge_coordinate_maps(object_B.inner_radius,
-                                    object_B.outer_radius, inner_sphericity_B,
-                                    1.0, use_equiangular_map, std::nullopt,
-                                    false, {}, radial_distribution),
+          sph_wedge_coordinate_maps(
+              object_B.inner_radius, object_B.outer_radius, inner_sphericity_B,
+              1.0, use_equiangular_map, context, std::nullopt, false, {},
+              radial_distribution),
           translation_B);
   Maps maps_cube_B =
       make_vector_coordinate_map_base<Frame::BlockLogical, Frame::Inertial, 3>(
           sph_wedge_coordinate_maps(object_B.outer_radius,
                                     sqrt(3.0) * 0.5 * length_inner_cube, 1.0,
-                                    0.0, use_equiangular_map),
+                                    0.0, use_equiangular_map, context),
           translation_B);
   std::move(maps_center_B.begin(), maps_center_B.end(),
             std::back_inserter(maps));
@@ -1219,8 +1221,8 @@ Domain<3> create_serialized_domain() {
   Maps maps_outer_shell =
       make_vector_coordinate_map_base<Frame::BlockLogical, Frame::Inertial, 3>(
           sph_wedge_coordinate_maps(envelope_radius, outer_radius, 1.0, 1.0,
-                                    use_equiangular_map, std::nullopt, true, {},
-                                    {radial_distribution_outer_shell},
+                                    use_equiangular_map, context, std::nullopt,
+                                    true, {}, {radial_distribution_outer_shell},
                                     ShellWedges::All, opening_angle));
   std::move(maps_outer_shell.begin(), maps_outer_shell.end(),
             std::back_inserter(maps));

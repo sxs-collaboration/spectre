@@ -350,6 +350,34 @@ void test_disk_option_errors() {
         dynamic_cast<const creators::Disk&>(*disk).create_domain();
       }()),
       outer_surface_error);
+  CHECK_THROWS_WITH(
+      ([&]() {
+        const auto disk =
+            TestHelpers::test_option_tag<domain::OptionTags::DomainCreator<2>,
+                                         DiskMetavars>(
+                "Disk:\n"
+                "  InnerRadius: 0\n"
+                "  OuterRadius: 3\n"
+                "  InitialRefinement: 2\n"
+                "  InitialGridPoints: [2,2]\n"
+                "  UseEquiangularMap: false\n");
+        dynamic_cast<const creators::Disk&>(*disk).create_domain();
+      }()),
+      inner_surface_error);
+  CHECK_THROWS_WITH(
+      ([&]() {
+        const auto disk =
+            TestHelpers::test_option_tag<domain::OptionTags::DomainCreator<2>,
+                                         DiskMetavars>(
+                "Disk:\n"
+                "  InnerRadius: 1\n"
+                "  OuterRadius: 1\n"
+                "  InitialRefinement: 2\n"
+                "  InitialGridPoints: [2,2]\n"
+                "  UseEquiangularMap: false\n");
+        dynamic_cast<const creators::Disk&>(*disk).create_domain();
+      }()),
+      outer_surface_error);
 }
 }  // namespace
 

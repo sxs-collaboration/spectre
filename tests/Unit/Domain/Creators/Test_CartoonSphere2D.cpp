@@ -635,6 +635,8 @@ void test_sphere_option_wedge_errors() {
                                              domain::creators::CartoonSphere2D>;
   const auto inner_surface_error = Catch::Matchers::ContainsSubstring(
       "The radius of the inner surface must be greater than zero.");
+  const auto outer_surface_error = Catch::Matchers::ContainsSubstring(
+      "Inner radius must be smaller than outer radius");
   CHECK_THROWS_WITH(
       ([&]() {
         const auto sphere =
@@ -655,6 +657,26 @@ void test_sphere_option_wedge_errors() {
         dynamic_cast<const creators::CartoonSphere2D&>(*sphere).create_domain();
       }()),
       inner_surface_error);
+  CHECK_THROWS_WITH(
+      ([&]() {
+        const auto sphere =
+            TestHelpers::test_option_tag<domain::OptionTags::DomainCreator<3>,
+                                         SphereMetavars>(
+                "CartoonSphere2D:\n"
+                "  InnerRadius: 1.0\n"
+                "  OuterRadius: 1.0\n"
+                "  InitialRefinement:\n"
+                "    - [2, 2]\n"
+                "    - [2, 2]\n"
+                "  InitialGridPoints: [2,3]\n"
+                "  RadialPartitioning: [1.5]\n"
+                "  UseEquiangularMap: true\n"
+                "  Interior:\n"
+                "    FillWithSphericity: 0.0\n"
+                "  TimeDependence: None\n");
+        dynamic_cast<const creators::CartoonSphere2D&>(*sphere).create_domain();
+      }()),
+      outer_surface_error);
 }
 
 void test_sphere_errors() {

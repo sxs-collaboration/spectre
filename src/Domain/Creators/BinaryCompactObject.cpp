@@ -434,7 +434,7 @@ BinaryCompactObject<UseWorldtube>::BinaryCompactObject(
 
 template <bool UseWorldtube>
 Domain<3> BinaryCompactObject<UseWorldtube>::create_domain(
-    const Options::Context& /*context*/) const {
+    const Options::Context& context) const {
   const double inner_sphericity_A = is_excised_a_ ? 1.0 : 0.0;
   const double inner_sphericity_B = is_excised_b_ ? 1.0 : 0.0;
 
@@ -503,7 +503,7 @@ Domain<3> BinaryCompactObject<UseWorldtube>::create_domain(
                                                 Frame::Inertial, 3>(
             sph_wedge_coordinate_maps(
                 object_a.inner_radius, object_a.outer_radius,
-                inner_sphericity_A, 1.0, use_equiangular_map_,
+                inner_sphericity_A, 1.0, use_equiangular_map_, context,
                 offset_a_optional, false, {}, object_A_radial_distribution),
             translation_A);
     Maps maps_cube_A =
@@ -511,7 +511,7 @@ Domain<3> BinaryCompactObject<UseWorldtube>::create_domain(
                                                 Frame::Inertial, 3>(
             sph_wedge_coordinate_maps(
                 object_a.outer_radius, sqrt(3.0) * 0.5 * length_inner_cube_,
-                1.0, 0.0, use_equiangular_map_, offset_a_optional),
+                1.0, 0.0, use_equiangular_map_, context, offset_a_optional),
             translation_A);
     std::move(maps_center_A.begin(), maps_center_A.end(),
               std::back_inserter(maps));
@@ -546,7 +546,7 @@ Domain<3> BinaryCompactObject<UseWorldtube>::create_domain(
                                                 Frame::Inertial, 3>(
             sph_wedge_coordinate_maps(
                 object_b.inner_radius, object_b.outer_radius,
-                inner_sphericity_B, 1.0, use_equiangular_map_,
+                inner_sphericity_B, 1.0, use_equiangular_map_, context,
                 offset_b_optional, false, {}, object_B_radial_distribution),
             translation_B);
     Maps maps_cube_B =
@@ -554,7 +554,7 @@ Domain<3> BinaryCompactObject<UseWorldtube>::create_domain(
                                                 Frame::Inertial, 3>(
             sph_wedge_coordinate_maps(
                 object_b.outer_radius, sqrt(3.0) * 0.5 * length_inner_cube_,
-                1.0, 0.0, use_equiangular_map_, offset_b_optional),
+                1.0, 0.0, use_equiangular_map_, context, offset_b_optional),
             translation_B);
     std::move(maps_center_B.begin(), maps_center_B.end(),
               std::back_inserter(maps));
@@ -586,7 +586,7 @@ Domain<3> BinaryCompactObject<UseWorldtube>::create_domain(
   // --- Outer spherical shell (10*num_outer_shells blocks) ---
   Maps maps_outer_shell = domain::make_vector_coordinate_map_base<
       Frame::BlockLogical, Frame::Inertial, 3>(sph_wedge_coordinate_maps(
-      envelope_radius_, outer_radius_, 1.0, 1.0, use_equiangular_map_,
+      envelope_radius_, outer_radius_, 1.0, 1.0, use_equiangular_map_, context,
       std::nullopt, true, radial_partitioning_outer_shell_,
       radial_distribution_outer_shell_, ShellWedges::All, opening_angle_));
   std::move(maps_outer_shell.begin(), maps_outer_shell.end(),

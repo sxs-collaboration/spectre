@@ -31,6 +31,7 @@
 #include "Domain/Structure/OrientationMap.hpp"
 #include "Domain/Structure/Side.hpp"
 #include "Helpers/Domain/CoordinateMaps/TestMapHelpers.hpp"
+#include "Options/Context.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/GetOutput.hpp"
 #include "Utilities/Gsl.hpp"
@@ -305,9 +306,10 @@ void test_wedge_map_generation_against_domain_helpers(
   const auto expected_coord_maps = test_wedge_map_generation(
       inner_radius, outer_radius, inner_sphericity, outer_sphericity,
       use_equiangular_map, offset_options, use_half_wedges);
+  const Options::Context context{};
   const auto maps = sph_wedge_coordinate_maps(
       inner_radius, outer_radius, inner_sphericity, outer_sphericity,
-      use_equiangular_map, offset_options, use_half_wedges);
+      use_equiangular_map, context, offset_options, use_half_wedges);
   CHECK(maps == expected_coord_maps);
 }
 
@@ -324,9 +326,10 @@ void test_wedge_errors() {
             radial_distribution{
                 domain::CoordinateMaps::Distribution::Logarithmic};
         const ShellWedges which_wedges = ShellWedges::FourOnEquator;
+        const Options::Context context{};
         static_cast<void>(sph_wedge_coordinate_maps(
             inner_radius, outer_radius, inner_sphericity, outer_sphericity,
-            use_equiangular_map, std::nullopt, use_half_wedges, {},
+            use_equiangular_map, context, std::nullopt, use_half_wedges, {},
             radial_distribution, which_wedges));
       }()),
       Catch::Matchers::ContainsSubstring(

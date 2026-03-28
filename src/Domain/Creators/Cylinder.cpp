@@ -267,7 +267,7 @@ Cylinder::Cylinder(
   }
 }
 
-Domain<3> Cylinder::create_domain(const Options::Context& /*context*/) const {
+Domain<3> Cylinder::create_domain(const Options::Context& context) const {
   const size_t number_of_shells = 1 + radial_partitioning_.size();
   const size_t number_of_layers = 1 + partitioning_in_z_.size();
   std::vector<PairOfFaces> pairs_of_faces{};
@@ -302,8 +302,8 @@ Domain<3> Cylinder::create_domain(const Options::Context& /*context*/) const {
   return Domain<3>{
       cyl_wedge_coordinate_maps<Frame::Inertial>(
           inner_radius_, outer_radius_, lower_z_bound_, upper_z_bound_,
-          use_equiangular_map_, radial_partitioning_, partitioning_in_z_,
-          radial_distribution_, distribution_in_z_),
+          use_equiangular_map_, context, radial_partitioning_,
+          partitioning_in_z_, radial_distribution_, distribution_in_z_),
       corners_for_cylindrical_layered_domains(number_of_shells,
                                               number_of_layers),
       pairs_of_faces,
