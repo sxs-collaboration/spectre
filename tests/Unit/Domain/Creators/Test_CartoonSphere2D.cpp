@@ -711,6 +711,16 @@ void test_sphere_errors() {
           Options::Context{false, {}, 1, 1}),
       Catch::Matchers::ContainsSubstring(
           "Cannot have periodic boundary conditions on a 2D sphere."));
+  CHECK_THROWS_WITH(
+      [&]() {
+        auto invalid_cartoon = creators::CartoonSphere2D(
+            0.0, outer_radius, refinement_level_vec, grid_points_vec,
+            radial_partitioning, false, fill_center, nullptr, nullptr, nullptr,
+            Options::Context{false, {}, 1, 1});
+        invalid_cartoon.create_domain();
+      }(),
+      Catch::Matchers::ContainsSubstring(
+          "The radius of the inner surface must be greater than zero."));
 }
 }  // namespace
 

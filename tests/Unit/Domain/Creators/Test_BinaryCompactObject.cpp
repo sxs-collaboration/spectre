@@ -981,6 +981,36 @@ void test_parse_errors() {
           std::vector<double>{}, Distribution::Linear, 120.0, std::nullopt,
           create_outer_boundary_condition(), Options::Context{false, {}, 1, 1}),
       Catch::Matchers::ContainsSubstring("Invalid 'InitialGridPoints'"));
+  CHECK_THROWS_WITH(
+      [&]() {
+        auto invalid_bco = domain::creators::BinaryCompactObject(
+            Object{0.0, 0.8, 1.0, {{create_inner_boundary_condition()}}, false},
+            Object{
+                0.3, 0.8, -1.0, {{create_inner_boundary_condition()}}, false},
+            std::array<double, 2>{{0.1, 0.2}}, 25.5, 32.4, 1.0, 2_st, 6_st,
+            true, Distribution::Projective, std::vector<double>{},
+            Distribution::Linear, 120.0, std::nullopt,
+            create_outer_boundary_condition(),
+            Options::Context{false, {}, 1, 1});
+        invalid_bco.create_domain();
+      }(),
+      Catch::Matchers::ContainsSubstring(
+          "The radius of the inner surface must be greater than zero."));
+  CHECK_THROWS_WITH(
+      [&]() {
+        auto invalid_bco = domain::creators::BinaryCompactObject(
+            Object{0.3, 0.8, 1.0, {{create_inner_boundary_condition()}}, false},
+            Object{
+                0.0, 0.8, -1.0, {{create_inner_boundary_condition()}}, false},
+            std::array<double, 2>{{0.1, 0.2}}, 25.5, 32.4, 1.0, 2_st, 6_st,
+            true, Distribution::Projective, std::vector<double>{},
+            Distribution::Linear, 120.0, std::nullopt,
+            create_outer_boundary_condition(),
+            Options::Context{false, {}, 1, 1});
+        invalid_bco.create_domain();
+      }(),
+      Catch::Matchers::ContainsSubstring(
+          "The radius of the inner surface must be greater than zero."));
   // Note: the boundary condition-related parse errors are checked in the
   // test_connectivity function.
 }

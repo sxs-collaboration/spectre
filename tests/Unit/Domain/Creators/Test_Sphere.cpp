@@ -433,6 +433,17 @@ void test_parse_errors() {
   const ShellWedges which_wedges = ShellWedges::All;
 
   CHECK_THROWS_WITH(
+      [&]() {
+        auto invalid_sphere = creators::Sphere(
+            0.0, outer_radius, inner_cube, refinement, initial_extents,
+            use_equiangular_map, equatorial_compression, radial_partitioning,
+            radial_distribution, which_wedges, std::nullopt, nullptr,
+            Options::Context{false, {}, 1, 1});
+        invalid_sphere.create_domain();
+      }(),
+      Catch::Matchers::ContainsSubstring(
+          "The radius of the inner surface must be greater than zero."));
+  CHECK_THROWS_WITH(
       creators::Sphere(inner_radius, 0.5 * inner_radius, inner_cube, refinement,
                        initial_extents, use_equiangular_map,
                        equatorial_compression, radial_partitioning,

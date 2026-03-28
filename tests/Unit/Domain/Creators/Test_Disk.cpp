@@ -251,6 +251,25 @@ void test_disk_boundaries_equidistant() {
       Catch::Matchers::ContainsSubstring(
           "None boundary condition is not supported. If you would like an "
           "outflow-type boundary condition, you must use that."));
+  CHECK_THROWS_WITH(
+      [&]() {
+        auto invalid_disk =
+            creators::Disk(0.0, outer_radius, refinement_level, grid_points,
+                           false, nullptr, Options::Context{false, {}, 1, 1});
+        invalid_disk.create_domain();
+      }(),
+      Catch::Matchers::ContainsSubstring(
+          "The radius of the inner surface must be greater than zero."));
+  CHECK_THROWS_WITH(
+      [&]() {
+        auto invalid_disk = creators::Disk(
+            inner_radius, inner_radius, refinement_level, grid_points, false,
+            nullptr, Options::Context{false, {}, 1, 1});
+        invalid_disk.create_domain();
+      }(),
+      Catch::Matchers::ContainsSubstring(
+          "The radius of the outer surface must be greater than the radius of "
+          "the inner surface."));
 }
 
 void test_disk_factory_equidistant() {
