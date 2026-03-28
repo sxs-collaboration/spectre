@@ -191,8 +191,9 @@ Domain<3> CartoonSphere2D::build_domain(const Options::Context& context) const {
       fill_interior_ ? std::get<InnerSquare>(interior_).sphericity
                      : std::numeric_limits<double>::signaling_NaN();
   if (fill_interior_ and inner_square_sphericity != 0.0) {
-    ERROR("CartoonSphere2D cannot have a non-zero inner sphericity, "
-          << "got " << inner_square_sphericity << ".");
+    PARSE_ERROR(context,
+                "CartoonSphere2D cannot have a non-zero inner sphericity, "
+                    << "got " << inner_square_sphericity << ".");
   }
 
   const auto aligned = OrientationMap<3>::create_aligned();

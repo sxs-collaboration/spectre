@@ -290,10 +290,11 @@ Domain<3> Sphere::build_domain(const Options::Context& context) const {
 
   Domain<3> domain{std::move(coord_maps),       corners,      {},
                    std::move(excision_spheres), block_names_, block_groups_};
-  ASSERT(domain.blocks().size() == num_blocks_,
-         "Unexpected number of blocks. Expected "
-             << num_blocks_ << " but created " << domain.blocks().size()
-             << ".");
+  if (domain.blocks().size() != num_blocks_) {
+    PARSE_ERROR(context, "Unexpected number of blocks. Expected "
+                             << num_blocks_ << " but created "
+                             << domain.blocks().size() << ".");
+  }
 
   if (time_dependent_options_.has_value()) {
     std::vector<std::unique_ptr<

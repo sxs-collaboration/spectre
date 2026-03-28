@@ -896,9 +896,11 @@ Domain<3> CylindricalBinaryCompactObject::build_domain(
                    block_names_, block_groups_};
 
   if (time_dependent_options_.has_value()) {
-    ASSERT(include_inner_sphere_A_ and include_inner_sphere_B_,
-           "When using time dependent maps for the CylindricalBBH domain, you "
-           "must include both inner spheres.");
+    if (not(include_inner_sphere_A_ and include_inner_sphere_B_)) {
+      PARSE_ERROR(context,
+                  "When using time dependent maps for the CylindricalBBH "
+                  "domain, you must include both inner spheres.");
+    }
     // Default initialize everything to nullptr so that we only need to set the
     // appropriate block maps for the specific frames
     std::vector<std::unique_ptr<
