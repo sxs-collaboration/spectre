@@ -49,20 +49,33 @@ namespace Events {
 /*!
  * \brief Compute norms of tensors in the DataBox and write them to disk.
  *
- * The L2 norm is computed as the RMS, so
+ * The L1 norm is computed as the mean absolute value, so
  *
  * \f{align*}{
- * L_2(u)=\sqrt{\frac{1}{N}\sum_{i=0}^{N} u_i^2}
+ * L_1(u)=\frac{1}{N}\sum_{i=0}^{N-1} |u_i|
  * \f}
  *
  * where \f$N\f$ is the number of grid points.
  *
- * The norm can be taken for each individual component, or summed over
- * components. For the max/min it is then the max/min over all components, while
- * for the L2 norm we have (for a 3d vector, 2d and 1d are similar)
+ * The L2 norm is computed as the RMS, so
  *
  * \f{align*}{
- * L_2(v^k)=\sqrt{\frac{1}{N}\sum_{i=0}^{N} \left[(v^x_i)^2 + (v^y_i)^2
+ * L_2(u)=\sqrt{\frac{1}{N}\sum_{i=0}^{N-1} u_i^2}
+ * \f}
+ *
+ * The norm can be taken for each individual component, or summed over
+ * components. For the max/min it is then the max/min over all components, while
+ * for the L1 norm we have (for a 3d vector, 2d and 1d are similar)
+ *
+ * \f{align*}{
+ * L_1(v^k)=\frac{1}{N}\sum_{i=0}^{N-1} \left[|v^x_i| + |v^y_i|
+ *          + |v^z_i|\right]
+ * \f}
+ *
+ * and for the L2 norm
+ *
+ * \f{align*}{
+ * L_2(v^k)=\sqrt{\frac{1}{N}\sum_{i=0}^{N-1} \left[(v^x_i)^2 + (v^y_i)^2
  *          + (v^z_i)^2\right]}
  * \f}
  *
@@ -122,7 +135,7 @@ class ObserveNorms<tmpl::list<ObservableTensorTags...>,
     struct NormType {
       using type = std::string;
       static constexpr Options::String help = {
-          "The type of norm to use. Must be one of Max, Min, L2Norm, "
+          "The type of norm to use. Must be one of Max, Min, L1Norm, L2Norm, "
           "L2IntegralNorm, or VolumeIntegral."};
     };
     struct Components {
@@ -157,6 +170,10 @@ class ObserveNorms<tmpl::list<ObservableTensorTags...>,
       // Min
       Parallel::ReductionDatum<std::vector<double>,
                                funcl::ElementWise<funcl::Min<>>>,
+      // L1Norm
+      Parallel::ReductionDatum<
+          std::vector<double>, funcl::ElementWise<funcl::Plus<>>,
+          funcl::ElementWise<funcl::Divides<>>, std::index_sequence<1>>,
       // L2Norm
       Parallel::ReductionDatum<
           std::vector<double>, funcl::ElementWise<funcl::Plus<>>,
@@ -169,7 +186,7 @@ class ObserveNorms<tmpl::list<ObservableTensorTags...>,
           std::index_sequence<2>>,
       // VolumeIntegral
       Parallel::ReductionDatum<std::vector<double>,
-                             funcl::ElementWise<funcl::Plus<>>>>;
+                               funcl::ElementWise<funcl::Plus<>>>>;
 
  public:
   static std::string name() {
@@ -215,6 +232,7 @@ class ObserveNorms<tmpl::list<ObservableTensorTags...>,
       " * Volume = total volume of the domain in inertial coordinates\n"
       " * Max values\n"
       " * Min values\n"
+      " * L1-norm values\n"
       " * L2-norm values\n"
       " * L2 integral norm values\n"
       " * Volume integral values\n";
@@ -336,12 +354,14 @@ ObserveNorms<
                      << tensor << "' is not known. Known tensors are: "
                      << ((db::tag_name<ObservableTensorTags>() + ",") + ...));
   }
-  if (norm_type != "Max" and norm_type != "Min" and norm_type != "L2Norm" and
-      norm_type != "L2IntegralNorm" and norm_type != "VolumeIntegral") {
+  if (norm_type != "Max" and norm_type != "Min" and norm_type != "L1Norm" and
+      norm_type != "L2Norm" and norm_type != "L2IntegralNorm" and
+      norm_type != "VolumeIntegral") {
     PARSE_ERROR(
         context,
-        "NormType must be one of Max, Min, L2Norm, L2IntegralNorm, or "
-            "VolumeIntegral not " << norm_type);
+        "NormType must be one of Max, Min, L1Norm, L2Norm, L2IntegralNorm, or "
+        "VolumeIntegral not "
+            << norm_type);
   }
   if (components != "Individual" and components != "Sum") {
     PARSE_ERROR(context,
@@ -482,6 +502,8 @@ operator()(const ObservationBox<ComputeTagsList, DataBoxType>& box,
                 norm_values_and_names["Max"].second.end());
   legend.insert(legend.end(), norm_values_and_names["Min"].second.begin(),
                 norm_values_and_names["Min"].second.end());
+  legend.insert(legend.end(), norm_values_and_names["L1Norm"].second.begin(),
+                norm_values_and_names["L1Norm"].second.end());
   legend.insert(legend.end(), norm_values_and_names["L2Norm"].second.begin(),
                 norm_values_and_names["L2Norm"].second.end());
   legend.insert(legend.end(),
@@ -510,6 +532,7 @@ operator()(const ObservationBox<ComputeTagsList, DataBoxType>& box,
       local_volume,
       std::move(norm_values_and_names["Max"].first),
       std::move(norm_values_and_names["Min"].first),
+      std::move(norm_values_and_names["L1Norm"].first),
       std::move(norm_values_and_names["L2Norm"].first),
       std::move(norm_values_and_names["L2IntegralNorm"].first),
       std::move(norm_values_and_names["VolumeIntegral"].first)};
