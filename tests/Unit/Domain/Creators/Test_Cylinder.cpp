@@ -1255,41 +1255,43 @@ void test_cylinder_wedge_parse_errors() {
           "The radius of the outer surface must be greater than the radius of "
           "the inner surface."));
   {
-    const std::vector<double> radial_partitioning_more{1.5};
-    const std::vector<double> partitioning_in_z_more{};
+    const std::vector<double> radial_partitioning_extra_shell{1.5};
+    const std::vector<double> partitioning_in_z_extra_shell{};
     const std::vector<domain::CoordinateMaps::Distribution>
         radial_distribution_missing{
             domain::CoordinateMaps::Distribution::Linear};
     const std::vector<domain::CoordinateMaps::Distribution>
-        distribution_in_z_more{domain::CoordinateMaps::Distribution::Linear};
+        distribution_in_z_extra_shell{
+            domain::CoordinateMaps::Distribution::Linear};
     CHECK_THROWS_WITH(
         [&]() {
           auto invalid_cylinder = creators::Cylinder(
               1.0, 2.0, lower_z_bound, upper_z_bound, false, refinement_level,
-              grid_points, false, radial_partitioning_more,
-              partitioning_in_z_more, radial_distribution_missing,
-              distribution_in_z_more, Options::Context{false, {}, 1, 1});
+              grid_points, false, radial_partitioning_extra_shell,
+              partitioning_in_z_extra_shell, radial_distribution_missing,
+              distribution_in_z_extra_shell, Options::Context{false, {}, 1, 1});
           invalid_cylinder.create_domain();
         }(),
         Catch::Matchers::ContainsSubstring(
             "Specify a 'RadialDistribution' for every cylindrical shell."));
   }
   {
-    const std::vector<double> radial_partitioning_more{1.5};
-    const std::vector<double> partitioning_in_z_more{};
+    const std::vector<double> radial_partitioning_extra_shell{1.5};
+    const std::vector<double> partitioning_in_z_extra_shell{};
     const std::vector<domain::CoordinateMaps::Distribution>
         radial_distribution_non_linear{
             domain::CoordinateMaps::Distribution::Logarithmic,
             domain::CoordinateMaps::Distribution::Linear};
     const std::vector<domain::CoordinateMaps::Distribution>
-        distribution_in_z_more{domain::CoordinateMaps::Distribution::Linear};
+        distribution_in_z_extra_shell{
+            domain::CoordinateMaps::Distribution::Linear};
     CHECK_THROWS_WITH(
         [&]() {
           auto invalid_cylinder = creators::Cylinder(
               1.0, 2.0, lower_z_bound, upper_z_bound, false, refinement_level,
-              grid_points, false, radial_partitioning_more,
-              partitioning_in_z_more, radial_distribution_non_linear,
-              distribution_in_z_more, Options::Context{false, {}, 1, 1});
+              grid_points, false, radial_partitioning_extra_shell,
+              partitioning_in_z_extra_shell, radial_distribution_non_linear,
+              distribution_in_z_extra_shell, Options::Context{false, {}, 1, 1});
           invalid_cylinder.create_domain();
         }(),
         Catch::Matchers::ContainsSubstring(
