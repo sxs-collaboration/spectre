@@ -49,7 +49,7 @@ namespace domain::creators {
  * B2/I1 filled cylinder at the center and Fourier hollow cylinders surrounding
  * it.
  */
-class AngularCylinder : public DomainCreator<3> {
+class AngularCylinder final : public DomainCreator<3> {
  public:
   using maps_list = tmpl::list<domain::CoordinateMap<
       Frame::BlockLogical, Frame::Inertial,
@@ -310,7 +310,7 @@ class AngularCylinder : public DomainCreator<3> {
   AngularCylinder& operator=(AngularCylinder&&) = default;
   ~AngularCylinder() override = default;
 
-  Domain<3> create_domain() const override;
+  const Domain<3>& domain() const override;
 
   std::vector<DirectionMap<
       3, std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>
@@ -328,6 +328,8 @@ class AngularCylinder : public DomainCreator<3> {
   }
 
  private:
+  Domain<3> build_domain(const Options::Context& context) const;
+  Domain<3> domain_{};
   typename OuterRadius::type outer_radius_{};
   typename LowerZBound::type lower_z_bound_{};
   typename UpperZBound::type upper_z_bound_{};

@@ -14,7 +14,7 @@ namespace domain::Tags {
 template <size_t VolumeDim>
 ::Domain<VolumeDim> Domain<VolumeDim>::create_from_options(
     const std::unique_ptr<::DomainCreator<VolumeDim>>& domain_creator) {
-  return domain_creator->create_domain();
+  return domain_creator->domain();
 }
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)

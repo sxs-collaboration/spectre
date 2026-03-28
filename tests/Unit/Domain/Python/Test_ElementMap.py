@@ -32,7 +32,7 @@ class TestElementMap(unittest.TestCase):
             is_periodic=[False],
             initial_refinement_levels=[1],
             initial_num_points=[3],
-        ).create_domain()
+        ).domain()
         # Element is [0, 1]
         element_id = ElementId[1]("[B0,(L1I0)]")
         element_map = ElementMap(element_id, domain)

@@ -40,7 +40,7 @@ namespace domain {
 namespace creators {
 /// Create a 2D Domain in the shape of a disk from a square surrounded by four
 /// wedges.
-class Disk : public DomainCreator<2> {
+class Disk final : public DomainCreator<2> {
  public:
   using maps_list =
       tmpl::list<domain::CoordinateMap<
@@ -131,7 +131,7 @@ class Disk : public DomainCreator<2> {
   Disk& operator=(Disk&&) = default;
   ~Disk() override = default;
 
-  Domain<2> create_domain() const override;
+  const Domain<2>& domain() const override;
 
   std::vector<DirectionMap<
       2, std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>
@@ -149,6 +149,8 @@ class Disk : public DomainCreator<2> {
   }
 
  private:
+  Domain<2> build_domain(const Options::Context& context) const;
+  Domain<2> domain_{};
   typename InnerRadius::type inner_radius_{};
   typename OuterRadius::type outer_radius_{};
   typename InitialRefinement::type initial_refinement_{};

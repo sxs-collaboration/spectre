@@ -221,7 +221,7 @@ void common_horizon_event() {
       {0.0, 0.0, 0.0}, {1.0, 1.0, 1.0}, {0, 0, 0}, {5, 5, 5}};
   const auto block_names = brick.block_names();
   ActionTesting::MockRuntimeSystem<metavars> runner{
-      {brick.create_domain(),
+      {brick.domain(),
        std::unordered_map<std::string, std::unordered_set<std::string>>{
            {"InterpolationTargetA", {block_names.begin(), block_names.end()}}},
        ::Verbosity::Silent}};
@@ -395,7 +395,7 @@ void common_horizon_event() {
       {0.0, 0.0, 0.0}, {1.0, 1.0, 1.0}, {0, 0, 0}, {5, 5, 5}};
   const auto block_names = brick.block_names();
   ActionTesting::MockRuntimeSystem<metavars> runner{
-      {brick.create_domain(),
+      {brick.domain(),
        std::unordered_map<std::string, std::unordered_set<std::string>>{
            {"MockHorizonMetavars", {block_names.begin(), block_names.end()}}}},
       {ah::Storage::LockedPreviousSurface<Frame::Grid>{}}};

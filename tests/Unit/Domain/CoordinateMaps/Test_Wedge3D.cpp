@@ -821,7 +821,6 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Wedge3D.Map", "[Domain][Unit]") {
   test_wedge3d_large_radius();
   CHECK(not Wedge3D{}.is_identity());
 
-#ifdef SPECTRE_DEBUG
   // centered wedge checks
   CHECK_THROWS_WITH(
       Wedge3D(-0.2, 4.0, 0.0, 1.0, OrientationMap<3>::create_aligned(), true),
@@ -908,6 +907,5 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Wedge3D.Map", "[Domain][Unit]") {
           "offset must not pierce the cube of length 2 * cube_half_length_ "
           "centered at the origin. See the Wedge class documentation for a "
           "visual representation of this sphere and cube."));
-#endif
 }
 }  // namespace domain

@@ -13,4 +13,13 @@ std::ostream& operator<<(std::ostream& s, const Context& c) {
   }
   return s;
 }
+
+bool operator==(const Context& lhs, const Context& rhs) {
+  return lhs.top_level == rhs.top_level and lhs.context == rhs.context and
+         lhs.line == rhs.line and lhs.column == rhs.column;
+}
+
+bool operator!=(const Context& lhs, const Context& rhs) {
+  return not(lhs == rhs);
+}
 }  // namespace Options

@@ -210,7 +210,7 @@ void test_solution() {
                                 {{false, false, false}});
   Mesh<3> mesh{brick.initial_extents()[0], Spectral::Basis::Legendre,
                Spectral::Quadrature::GaussLobatto};
-  const auto domain = brick.create_domain();
+  const auto domain = brick.domain();
   verify_grmhd_solution(solution, domain.blocks()[0], mesh, 1.e-9, 1.234,
                         1.e-1);
 }

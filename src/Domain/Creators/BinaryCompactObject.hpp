@@ -156,7 +156,7 @@ create_grid_anchors(const std::array<double, 3>& center_a,
  * to control the orbit of the worldtube.
  */
 template <bool UseWorldtube = false>
-class BinaryCompactObject : public DomainCreator<3> {
+class BinaryCompactObject final : public DomainCreator<3> {
  private:
   // Time-independent maps
   using Affine = CoordinateMaps::Affine;
@@ -539,7 +539,7 @@ class BinaryCompactObject : public DomainCreator<3> {
   BinaryCompactObject& operator=(BinaryCompactObject&&) = default;
   ~BinaryCompactObject() override = default;
 
-  Domain<3> create_domain() const override;
+  const Domain<3>& domain() const override;
 
   std::unordered_map<std::string, tnsr::I<double, 3, Frame::Grid>>
   grid_anchors() const override {
@@ -573,6 +573,8 @@ class BinaryCompactObject : public DomainCreator<3> {
           std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>> override;
 
  private:
+  Domain<3> build_domain(const Options::Context& context) const;
+  Domain<3> domain_{};
   typename ObjectA::type object_A_{};
   typename ObjectB::type object_B_{};
   std::array<double, 2> center_of_mass_offset_{};

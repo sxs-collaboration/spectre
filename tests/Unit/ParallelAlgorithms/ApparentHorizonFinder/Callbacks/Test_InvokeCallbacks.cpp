@@ -115,7 +115,7 @@ void run_test() {
       0.9, 2.0, domain::creators::Sphere::Excision{nullptr}, 0_st, 4_st, true};
 
   Parallel::GlobalCache<Metavariables<Fr>> cache{
-      {sphere_creator.create_domain()},
+      {sphere_creator.domain()},
       {sphere_creator.functions_of_time(),
        ah::Storage::LockedPreviousSurface<Fr>{}}};
 

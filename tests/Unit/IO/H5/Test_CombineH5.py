@@ -61,9 +61,7 @@ class TestCombineH5(unittest.TestCase):
             initial_num_points=[2, 2, 2],
             is_periodic=[False, False, False],
         )
-        self.serialized_domain = serialize_domain(
-            domain_creator.create_domain()
-        )
+        self.serialized_domain = serialize_domain(domain_creator.domain())
 
         def make_translation_fot(fill_value, expiration):
             coefficients = [

@@ -289,9 +289,9 @@ template <size_t Dim>
 class TestCreator : public DomainCreator<Dim> {
  public:
   TestCreator(const bool use_block_names = true)
-      : use_block_names_(use_block_names) {}
+      : use_block_names_(use_block_names), domain_{make_domain<Dim>()} {}
 
-  Domain<Dim> create_domain() const override { return make_domain<Dim>(); }
+  const Domain<Dim>& domain() const override { return domain_; }
   std::vector<std::string> block_names() const override {
     return use_block_names_ ? domain_block_names() : std::vector<std::string>{};
   }
@@ -325,6 +325,7 @@ class TestCreator : public DomainCreator<Dim> {
 
  private:
   bool use_block_names_;
+  Domain<Dim> domain_;
 };
 
 template <size_t Dim>

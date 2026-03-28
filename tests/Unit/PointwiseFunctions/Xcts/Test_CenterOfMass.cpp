@@ -51,7 +51,7 @@ void test_infinite_surface_integral(const double distance,
       /* equatorial_compression */ {},
       /* radial_partitioning */ {},
       /* radial_distribution */ domain::CoordinateMaps::Distribution::Inverse};
-  const auto shell_domain = shell.create_domain();
+  const auto shell_domain = shell.domain();
   const auto& blocks = shell_domain.blocks();
   const auto& initial_ref_levels = shell.initial_refinement_levels();
   const auto element_ids = initial_element_ids(initial_ref_levels);
@@ -145,7 +145,7 @@ void test_infinite_volume_integral(const double distance,
       /* equatorial_compression */ {},
       /* radial_partitioning */ {},
       /* radial_distribution */ domain::CoordinateMaps::Distribution::Inverse};
-  const auto shell_domain = shell.create_domain();
+  const auto shell_domain = shell.domain();
   const auto& blocks = shell_domain.blocks();
   const auto& initial_ref_levels = shell.initial_refinement_levels();
   const auto element_ids = initial_element_ids(initial_ref_levels);

@@ -880,14 +880,14 @@ void test_receive_and_send_data(const bool enable_extension,
                               domain::CoordinateMaps::Distribution::Linear,
                               ShellWedges::All,
                               std::nullopt};
-  auto domain = domain_creator.create_domain();
+  auto domain = domain_creator.domain();
 
   using metavars = Metavariables<Dim, UseNodegroupDgElements, true>;
   metavars::ghost_zone_size_invoked = false;
   metavars::ghost_data_mutator_invoked = false;
   using comp = component<Dim, metavars, UseNodegroupDgElements, true>;
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<metavars>;
-  MockRuntimeSystem runner{{std::move(domain_creator.create_domain())}};
+  MockRuntimeSystem runner{{domain_creator.domain()}};
 
   const std::vector<Block<3>>& blocks = domain.blocks();
   // Create the elements that we will use in the test.

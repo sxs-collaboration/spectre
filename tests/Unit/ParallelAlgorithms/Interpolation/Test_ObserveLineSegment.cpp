@@ -287,7 +287,7 @@ void run_test(gsl::not_null<Generator*> generator,
           std::unordered_map<std::string, std::unordered_set<std::string>>{
               {"LineA", {block_names.begin(), block_names.end()}},
               {"LineB", {block_names.begin(), block_names.end()}}},
-          domain_creator.create_domain()};
+          domain_creator.domain()};
 
   // Three mock nodes, with 2, 1, and 4 mock cores.
   ActionTesting::MockRuntimeSystem<metavars> runner{
@@ -323,7 +323,7 @@ void run_test(gsl::not_null<Generator*> generator,
 
   Slab slab(0.0, 1.0);
   TimeStepId temporal_id(true, 0, Time(slab, 0));
-  const auto domain = domain_creator.create_domain();
+  const auto domain = domain_creator.domain();
 
   // Create element_ids.
   std::vector<ElementId<Dim>> element_ids{};

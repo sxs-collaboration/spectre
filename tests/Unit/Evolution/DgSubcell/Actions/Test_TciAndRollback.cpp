@@ -237,7 +237,8 @@ Element<Dim> create_element(const bool with_neighbors) {
 
 template <size_t Dim>
 class TestCreator : public DomainCreator<Dim> {
-  Domain<Dim> create_domain() const override { return Domain<Dim>{}; }
+  const Domain<Dim>& domain() const override { return domain_; }
+  Domain<Dim> domain_{};
   std::vector<DirectionMap<
       Dim, std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>
   external_boundary_conditions() const override {

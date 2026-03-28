@@ -92,7 +92,7 @@ void test(const BoundaryConditionType& boundary_condition) {
   const auto interval = domain::creators::Interval(
       lower_x, upper_x, refinement_level_x, number_of_grid_points_in_x,
       {{{{boundary_condition.get_clone(), boundary_condition.get_clone()}}}});
-  auto domain = interval.create_domain();
+  auto domain = interval.domain();
   auto boundary_conditions = interval.external_boundary_conditions();
   const auto element = domain::create_initial_element(
       ElementId<1>{0, {SegmentId{0, 0}}}, domain.blocks(),

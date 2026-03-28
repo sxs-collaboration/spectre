@@ -13,6 +13,7 @@
 #include "Domain/BoundaryConditions/BoundaryCondition.hpp"
 #include "Domain/BoundaryConditions/GetBoundaryConditionsBase.hpp"
 #include "Domain/Creators/DomainCreator.hpp"
+#include "Domain/Domain.hpp"
 #include "Options/Context.hpp"
 #include "Options/String.hpp"
 #include "Utilities/TMPL.hpp"
@@ -20,8 +21,6 @@
 /// \cond
 template <size_t Dim, typename T>
 class DirectionMap;
-template <size_t Dim>
-class Domain;
 namespace domain {
 namespace CoordinateMaps {
 class Affine;
@@ -51,7 +50,7 @@ namespace domain::creators {
  * This domain creator offers one grid anchor "Center" at the origin.
  *
  */
-class NonconformingSphericalShells : public DomainCreator<3> {
+class NonconformingSphericalShells final : public DomainCreator<3> {
  public:
   using maps_list =
       tmpl::list<domain::CoordinateMap<
@@ -174,7 +173,7 @@ class NonconformingSphericalShells : public DomainCreator<3> {
       default;
   ~NonconformingSphericalShells() override = default;
 
-  Domain<3> create_domain() const override;
+  const Domain<3>& domain() const override;
 
   std::unordered_map<std::string, tnsr::I<double, 3, Frame::Grid>>
   grid_anchors() const override;
@@ -189,6 +188,8 @@ class NonconformingSphericalShells : public DomainCreator<3> {
 
   std::vector<std::array<size_t, 3>> initial_refinement_levels() const override;
  private:
+  Domain<3> build_domain(const Options::Context& context) const;
+  Domain<3> domain_{};
   double inner_radius_{};
   double interface_radius_{};
   double outer_radius_{};

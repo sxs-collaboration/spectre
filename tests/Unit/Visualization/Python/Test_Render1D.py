@@ -34,7 +34,7 @@ class TestRender1D(unittest.TestCase):
             initial_refinement_levels=[1],
             initial_num_points=[4],
             is_periodic=[False],
-        ).create_domain()
+        ).domain()
         serialized_domain = serialize_domain(domain)
         mesh = Mesh[1](4, Basis.Legendre, Quadrature.GaussLobatto)
         self.h5file = os.path.join(self.test_dir, "voldata.h5")

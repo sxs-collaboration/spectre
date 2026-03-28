@@ -72,6 +72,7 @@ Rectilinear<Dim>::Rectilinear(
                                << gsl::at(upper_bounds_, d) << "].");
     }
   }
+  domain_ = build_domain(context);
 }
 
 template <size_t Dim>
@@ -114,10 +115,12 @@ Rectilinear<Dim>::Rectilinear(
       gsl::at(is_periodic_, d) = true;
     }
   }
+  domain_ = build_domain(context);
 }
 
 template <size_t Dim>
-Domain<Dim> Rectilinear<Dim>::create_domain() const {
+Domain<Dim> Rectilinear<Dim>::build_domain(
+    const Options::Context& /*context*/) const {
   // Handle periodicity by identifying faces
   std::vector<PairOfFaces> identifications{};
   if constexpr (Dim == 1) {
@@ -219,6 +222,11 @@ Rectilinear<Dim>::external_boundary_conditions() const {
     }
   }
   return boundary_conditions;
+}
+
+template <size_t Dim>
+const Domain<Dim>& Rectilinear<Dim>::domain() const {
+  return domain_;
 }
 
 template <size_t Dim>

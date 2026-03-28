@@ -127,7 +127,7 @@ SPECTRE_TEST_CASE(
       domain::CoordinateMaps::Distribution::Linear,
       ShellWedges::All,
       time_dependent_map_options};
-  const auto temporary_domain = domain_creator.create_domain();
+  const auto temporary_domain = domain_creator.domain();
   const auto functions_of_time = domain_creator.functions_of_time();
 
   // For each Strahlkorper, transform from distorted -> inertial using

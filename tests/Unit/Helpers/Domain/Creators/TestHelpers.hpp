@@ -36,7 +36,7 @@ Domain<Dim> test_domain_creator(const DomainCreator<Dim>& domain_creator,
                                     std::numeric_limits<double>::quiet_NaN()}) {
   INFO("Test domain creator consistency");
   CAPTURE(Dim);
-  auto domain = domain_creator.create_domain();
+  auto domain = domain_creator.domain();
   const auto block_names = domain_creator.block_names();
   const auto block_groups = domain_creator.block_groups();
   const auto all_boundary_conditions =
@@ -172,7 +172,7 @@ void test_creation(const std::string& option_string, const Creator& rhs,
   // Check equality of domain creators by comparing the subset of properties
   // that support comparison
   const auto& lhs = *created;
-  CHECK(lhs.create_domain() == rhs.create_domain());
+  CHECK(lhs.domain() == rhs.domain());
   CHECK(lhs.initial_extents() == rhs.initial_extents());
   CHECK(lhs.initial_refinement_levels() == rhs.initial_refinement_levels());
 }

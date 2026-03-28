@@ -70,7 +70,7 @@ namespace domain::creators {
 /// Create a 3D Domain with a half-disk computational domain employing axial
 /// symmetry. The third dimension uses a Cartoon basis with Killing vector
 /// along the $\phi$ direction.
-class CartoonSphere2D : public DomainCreator<3> {
+class CartoonSphere2D final : public DomainCreator<3> {
  public:
   using maps_list = tmpl::list<
       domain::CoordinateMap<
@@ -227,7 +227,7 @@ class CartoonSphere2D : public DomainCreator<3> {
   CartoonSphere2D& operator=(CartoonSphere2D&&) = default;
   ~CartoonSphere2D() override = default;
 
-  Domain<3> create_domain() const override;
+  const Domain<3>& domain() const override;
 
   std::vector<DirectionMap<
       3, std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>
@@ -251,6 +251,8 @@ class CartoonSphere2D : public DomainCreator<3> {
           std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>> override;
 
  private:
+  Domain<3> build_domain(const Options::Context& context) const;
+  Domain<3> domain_{};
   double inner_radius_{};
   double outer_radius_{};
   std::vector<std::array<size_t, 2>> initial_refinement_{};

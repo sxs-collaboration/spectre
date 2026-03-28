@@ -39,7 +39,7 @@ class TestPlotPowerMonitors(unittest.TestCase):
             initial_refinement=1,
             initial_number_of_grid_points=[3, 4, 5],
             use_equiangular_map=True,
-        ).create_domain()
+        ).domain()
         self.assertEqual(
             find_block_or_group(0, ["BlockyBlock", "InnerCube"], domain), 1
         )

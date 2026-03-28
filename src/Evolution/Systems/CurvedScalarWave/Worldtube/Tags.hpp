@@ -268,7 +268,7 @@ struct ExcisionSphere : db::SimpleTag {
   static ::ExcisionSphere<Dim> create_from_options(
       const std::unique_ptr<::DomainCreator<Dim>>& domain_creator,
       const std::string& excision_sphere) {
-    const auto domain = domain_creator->create_domain();
+    const auto domain = domain_creator->domain();
     const auto& excision_spheres = domain.excision_spheres();
     if (excision_spheres.count(excision_sphere) == 0) {
       ERROR("Specified excision sphere '"
@@ -443,7 +443,7 @@ struct InitialPositionAndVelocity : db::SimpleTag {
       const std::string& excision_sphere_name, const double initial_time) {
     // only evaluated at initial time, so expiration times don't matter
     const auto initial_fot = domain_creator->functions_of_time();
-    const auto domain = domain_creator->create_domain();
+    const auto domain = domain_creator->domain();
     const auto& excision_sphere =
         domain.excision_spheres().at(excision_sphere_name);
     ASSERT(excision_sphere.is_time_dependent(),

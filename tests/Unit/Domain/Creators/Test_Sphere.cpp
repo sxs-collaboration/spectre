@@ -433,6 +433,14 @@ void test_parse_errors() {
   const ShellWedges which_wedges = ShellWedges::All;
 
   CHECK_THROWS_WITH(
+      creators::Sphere(0.0, outer_radius, inner_cube, refinement,
+                       initial_extents, use_equiangular_map,
+                       equatorial_compression, radial_partitioning,
+                       radial_distribution, which_wedges, std::nullopt, nullptr,
+                       Options::Context{false, {}, 1, 1}),
+      Catch::Matchers::ContainsSubstring(
+          "The radius of the inner surface must be greater than zero."));
+  CHECK_THROWS_WITH(
       creators::Sphere(inner_radius, 0.5 * inner_radius, inner_cube, refinement,
                        initial_extents, use_equiangular_map,
                        equatorial_compression, radial_partitioning,
@@ -665,7 +673,7 @@ void test_shape_distortion_general(
       domain::CoordinateMaps::Distribution::Linear,
       ShellWedges::All,
       std::move(time_dependent_options)};
-  const auto domain = domain_creator.create_domain();
+  const auto domain = domain_creator.domain();
   const auto functions_of_time = domain_creator.functions_of_time();
   // Map the coordinates through the domain. They should lie at the lower zeta
   // boundary of their block.

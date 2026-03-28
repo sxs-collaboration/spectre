@@ -67,7 +67,7 @@ void test_1d() {
   const auto expected_block_coord_holders = [&domain_creator]() {
     tnsr::I<DataVector, 1, Frame::Inertial> points;
     get<0>(points) = DataVector({{1.0, 0.3}});
-    return block_logical_coordinates(domain_creator.create_domain(), points);
+    return block_logical_coordinates(domain_creator.domain(), points);
   }();
 
   TestHelpers::db::test_simple_tag<
@@ -100,7 +100,7 @@ void test_2d() {
     tnsr::I<DataVector, 2, Frame::Inertial> points;
     get<0>(points) = DataVector({{0.0, -0.2, 0.3}});
     get<1>(points) = DataVector({{1.0, 0.1, 1.9}});
-    return block_logical_coordinates(domain_creator.create_domain(), points);
+    return block_logical_coordinates(domain_creator.domain(), points);
   }();
 
   TestHelpers::db::test_simple_tag<
@@ -138,7 +138,7 @@ void test_3d() {
     get<0>(points) = DataVector({{0.0, 1.0, -0.8, 0.0}});
     get<1>(points) = DataVector({{0.0, -0.3, 1.6, 1.0}});
     get<2>(points) = DataVector({{0.0, 0.2, 2.4, 0.0}});
-    return block_logical_coordinates(domain_creator.create_domain(), points);
+    return block_logical_coordinates(domain_creator.domain(), points);
   }();
 
   TestHelpers::db::test_simple_tag<

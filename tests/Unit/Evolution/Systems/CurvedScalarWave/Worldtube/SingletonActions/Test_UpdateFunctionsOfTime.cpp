@@ -86,7 +86,7 @@ void test_particle_motion() {
           true>(6., initial_worldtube_radius, 0.1);
   domain::FunctionsOfTime::register_derived_with_charm();
 
-  const auto domain = bco_domain_creator->create_domain();
+  const auto domain = bco_domain_creator->domain();
   const auto wt_excision_sphere =
       domain.excision_spheres().at("ExcisionSphereA");
   const auto bh_excision_sphere =
@@ -99,7 +99,7 @@ void test_particle_motion() {
   ActionTesting::MockRuntimeSystem<metavars> runner{
       {
           wt_excision_sphere,
-          bco_domain_creator->create_domain(),
+          bco_domain_creator->domain(),
           wt_radius_options,
           bh_radius_options,
       },

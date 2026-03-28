@@ -84,7 +84,7 @@ void test_compute_excision_boundary_volume_quantities() {
                               number_of_grid_points},
         std::array<bool, 3>{false, false, false});
   }
-  const auto domain = domain_creator.create_domain();
+  const auto domain = domain_creator.domain();
   ASSERT(domain.blocks().size() == 1, "Expected a Domain with one block");
   const Block<3>& block = domain.blocks()[0];
   const auto functions_of_time = domain_creator.functions_of_time();

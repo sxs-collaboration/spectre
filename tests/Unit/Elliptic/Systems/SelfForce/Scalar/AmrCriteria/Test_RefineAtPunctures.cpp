@@ -73,7 +73,7 @@ void test_criterion(
         {{10., 0.}}, {{15., 1.}}, {{2, 2}}, {{3, 3}}, {{false, false}}};
     auto databox =
         db::create<tmpl::list<background_tag, domain::Tags::Domain<2>>>(
-            std::move(background), domain_creator.create_domain());
+            std::move(background), domain_creator.domain());
     const ObservationBox<
         tmpl::list<>,
         db::DataBox<tmpl::list<background_tag, domain::Tags::Domain<2>>>>

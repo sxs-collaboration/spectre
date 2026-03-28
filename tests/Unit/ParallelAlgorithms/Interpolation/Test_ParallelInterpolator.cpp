@@ -338,7 +338,7 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.Integration",
                {block_names.begin(), block_names.end()}},
               {"InterpolationTargetC",
                {block_names.begin(), block_names.end()}}},
-          domain_creator.create_domain(), std::move(line_segment_opts_B),
+          domain_creator.domain(), std::move(line_segment_opts_B),
           kerr_horizon_opts_C, ::Verbosity::Silent);
 
   // 3 mock nodes, with 2, 3, and 1 mocked core respectively.
@@ -372,7 +372,7 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.Integration",
 
   Slab slab(0.0, 1.0);
   TimeStepId temporal_id(true, 0, Time(slab, 0));
-  const auto domain = domain_creator.create_domain();
+  const auto domain = domain_creator.domain();
 
   // Create Element_ids.
   std::vector<ElementId<3>> element_ids{};

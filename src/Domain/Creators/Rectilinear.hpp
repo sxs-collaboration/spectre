@@ -43,7 +43,7 @@ namespace domain::creators {
 
 /// Create a domain consisting of a single Block in `Dim` dimensions.
 template <size_t Dim>
-class Rectilinear : public DomainCreator<Dim> {
+class Rectilinear final : public DomainCreator<Dim> {
  private:
   static_assert(Dim == 1 or Dim == 2 or Dim == 3,
                 "Rectilinear domain is only implemented in 1, 2, or 3 "
@@ -229,7 +229,7 @@ class Rectilinear : public DomainCreator<Dim> {
   Rectilinear& operator=(Rectilinear&&) = default;
   ~Rectilinear() override = default;
 
-  Domain<Dim> create_domain() const override;
+  const Domain<Dim>& domain() const override;
 
   std::vector<DirectionMap<
       Dim, std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>
@@ -269,6 +269,8 @@ class Rectilinear : public DomainCreator<Dim> {
           Dim>;
 
  private:
+  Domain<Dim> build_domain(const Options::Context& context) const;
+  Domain<Dim> domain_{};
   std::array<double, Dim> lower_bounds_{};
   std::array<double, Dim> upper_bounds_{};
   std::array<CoordinateMaps::DistributionAndSingularityPosition, Dim>

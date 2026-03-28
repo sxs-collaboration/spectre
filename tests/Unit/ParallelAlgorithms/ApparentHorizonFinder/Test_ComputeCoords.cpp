@@ -44,7 +44,7 @@ void test_compute_points() {
       1.0,          3.0,  domain::creators::Sphere::Excision{nullptr},
       0_st,         2_st, true,
       std::nullopt, {2.0}};
-  const Domain<3> domain = sphere.create_domain();
+  const Domain<3> domain = sphere.domain();
   const domain::FunctionsOfTimeMap functions_of_time =
       sphere.functions_of_time();
 
@@ -265,7 +265,7 @@ void test_compute_points_different_resolutions() {
       1.0,          3.0,  domain::creators::Sphere::Excision{nullptr},
       0_st,         2_st, true,
       std::nullopt, {2.0}};
-  const Domain<3> domain = sphere.create_domain();
+  const Domain<3> domain = sphere.domain();
   const domain::FunctionsOfTimeMap functions_of_time =
       sphere.functions_of_time();
 

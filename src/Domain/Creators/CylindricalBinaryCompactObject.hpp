@@ -150,7 +150,7 @@ namespace domain::creators {
  * template parameter of `true` to
  * `domain::creators::bco::TimeDependentMapOptions`.
  */
-class CylindricalBinaryCompactObject : public DomainCreator<3> {
+class CylindricalBinaryCompactObject final : public DomainCreator<3> {
  public:
   using maps_list = tmpl::flatten<
       tmpl::list<domain::CoordinateMap<
@@ -336,7 +336,7 @@ class CylindricalBinaryCompactObject : public DomainCreator<3> {
       default;
   ~CylindricalBinaryCompactObject() override = default;
 
-  Domain<3> create_domain() const override;
+  const Domain<3>& domain() const override;
 
   std::unordered_map<std::string, tnsr::I<double, 3, Frame::Grid>>
   grid_anchors() const override {
@@ -365,6 +365,8 @@ class CylindricalBinaryCompactObject : public DomainCreator<3> {
   }
 
  private:
+  Domain<3> build_domain(const Options::Context& context) const;
+  Domain<3> domain_{};
   // Note that center_A_ and center_B_ are rotated with respect to the
   // input centers (which are in the grid frame), so that we can
   // construct the map in a frame where the centers are offset in the

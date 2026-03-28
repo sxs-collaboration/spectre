@@ -68,9 +68,11 @@ FrustalCloak::FrustalCloak(
         context,
         "Cannot have periodic boundary conditions with a frustal cloak");
   }
+  domain_ = build_domain(context);
 }
 
-Domain<3> FrustalCloak::create_domain() const {
+Domain<3> FrustalCloak::build_domain(
+    const Options::Context& /*context*/) const {
   std::vector<std::unique_ptr<
       CoordinateMapBase<Frame::BlockLogical, Frame::Inertial, 3>>>
       coord_maps = domain::make_vector_coordinate_map_base<Frame::BlockLogical,
@@ -102,6 +104,8 @@ FrustalCloak::external_boundary_conditions() const {
   }
   return boundary_conditions;
 }
+
+const Domain<3>& FrustalCloak::domain() const { return domain_; }
 
 std::vector<std::array<size_t, 3>> FrustalCloak::initial_extents() const {
   return {

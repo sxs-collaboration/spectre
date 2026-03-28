@@ -628,6 +628,53 @@ void test_sphere_factory() {
       time_map_vec, initial_expiration_times);
 }
 
+void test_sphere_option_wedge_errors() {
+  INFO("CartoonSphere2D option wedge errors");
+  using SphereMetavars = TestHelpers::domain::BoundaryConditions::
+      MetavariablesWithoutBoundaryConditions<3,
+                                             domain::creators::CartoonSphere2D>;
+  const auto inner_surface_error = Catch::Matchers::ContainsSubstring(
+      "The radius of the inner surface must be greater than zero.");
+  const auto outer_surface_error = Catch::Matchers::ContainsSubstring(
+      "Inner radius must be smaller than outer radius");
+  CHECK_THROWS_WITH(
+      ([&]() {
+        TestHelpers::test_option_tag<domain::OptionTags::DomainCreator<3>,
+                                     SphereMetavars>(
+            "CartoonSphere2D:\n"
+            "  InnerRadius: 0.0\n"
+            "  OuterRadius: 3.0\n"
+            "  InitialRefinement:\n"
+            "    - [2, 2]\n"
+            "    - [2, 2]\n"
+            "  InitialGridPoints: [2,3]\n"
+            "  RadialPartitioning: [1.5]\n"
+            "  UseEquiangularMap: true\n"
+            "  Interior:\n"
+            "    FillWithSphericity: 0.0\n"
+            "  TimeDependence: None\n");
+      }()),
+      inner_surface_error);
+  CHECK_THROWS_WITH(
+      ([&]() {
+        TestHelpers::test_option_tag<domain::OptionTags::DomainCreator<3>,
+                                     SphereMetavars>(
+            "CartoonSphere2D:\n"
+            "  InnerRadius: 1.0\n"
+            "  OuterRadius: 1.0\n"
+            "  InitialRefinement:\n"
+            "    - [2, 2]\n"
+            "    - [2, 2]\n"
+            "  InitialGridPoints: [2,3]\n"
+            "  RadialPartitioning: [1.5]\n"
+            "  UseEquiangularMap: true\n"
+            "  Interior:\n"
+            "    FillWithSphericity: 0.0\n"
+            "  TimeDependence: None\n");
+      }()),
+      outer_surface_error);
+}
+
 void test_sphere_errors() {
   INFO("CartoonSphere2D testing errors");
   const double inner_radius = 1.0;
@@ -711,12 +758,20 @@ void test_sphere_errors() {
           Options::Context{false, {}, 1, 1}),
       Catch::Matchers::ContainsSubstring(
           "Cannot have periodic boundary conditions on a 2D sphere."));
+  CHECK_THROWS_WITH(
+      creators::CartoonSphere2D(0.0, outer_radius, refinement_level_vec,
+                                grid_points_vec, radial_partitioning, false,
+                                fill_center, nullptr, nullptr, nullptr,
+                                Options::Context{false, {}, 1, 1}),
+      Catch::Matchers::ContainsSubstring(
+          "The radius of the inner surface must be greater than zero."));
 }
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Domain.Creators.CartoonSphere2D", "[Domain][Unit]") {
   test_sphere_boundaries();
   test_sphere_factory();
+  test_sphere_option_wedge_errors();
   test_sphere_errors();
 }
 }  // namespace domain

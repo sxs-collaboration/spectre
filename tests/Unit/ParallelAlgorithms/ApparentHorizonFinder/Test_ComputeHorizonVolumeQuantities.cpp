@@ -68,7 +68,7 @@ void test_compute_horizon_volume_quantities() {
                               number_of_grid_points},
         std::array<bool, 3>{false, false, false});
   }
-  const auto domain = domain_creator.create_domain();
+  const auto domain = domain_creator.domain();
   ASSERT(domain.blocks().size() == 1, "Expected a Domain with one block");
 
   const auto element_ids = initial_element_ids(

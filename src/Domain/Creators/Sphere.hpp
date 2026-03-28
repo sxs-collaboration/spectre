@@ -170,7 +170,7 @@ namespace domain::creators {
  * `TimeDependentMaps: None`.
  *
  */
-class Sphere : public DomainCreator<3> {
+class Sphere final : public DomainCreator<3> {
  private:
   using Affine = CoordinateMaps::Affine;
   using Affine3D = CoordinateMaps::ProductOf3Maps<Affine, Affine, Affine>;
@@ -384,7 +384,7 @@ class Sphere : public DomainCreator<3> {
   Sphere& operator=(Sphere&&) = default;
   ~Sphere() override = default;
 
-  Domain<3> create_domain() const override;
+  const Domain<3>& domain() const override;
 
   std::unordered_map<std::string, tnsr::I<double, 3, Frame::Grid>>
   grid_anchors() const override {
@@ -418,6 +418,8 @@ class Sphere : public DomainCreator<3> {
           std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>> override;
 
  private:
+  Domain<3> build_domain(const Options::Context& context) const;
+  Domain<3> domain_{};
   double inner_radius_{};
   double outer_radius_{};
   std::variant<Excision, InnerCube> interior_{};

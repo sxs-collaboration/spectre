@@ -3,6 +3,7 @@
 
 #include "Domain/Creators/CartoonSphere2D.hpp"
 
+#include <array>
 #include <cmath>
 #include <cstddef>
 #include <iterator>
@@ -168,9 +169,10 @@ CartoonSphere2D::CartoonSphere2D(
     block_names_.emplace_back(shell + "_HalfSquare");
     block_groups_[shell].insert(shell + "_HalfSquare");
   }
+  domain_ = build_domain(context);
 }
 
-Domain<3> CartoonSphere2D::create_domain() const {
+Domain<3> CartoonSphere2D::build_domain(const Options::Context& context) const {
   using Affine = CoordinateMaps::Affine;
   using Equiangular = CoordinateMaps::Equiangular;
   using Affine2D = CoordinateMaps::ProductOf2Maps<Affine, Affine>;
@@ -189,8 +191,9 @@ Domain<3> CartoonSphere2D::create_domain() const {
       fill_interior_ ? std::get<InnerSquare>(interior_).sphericity
                      : std::numeric_limits<double>::signaling_NaN();
   if (fill_interior_ and inner_square_sphericity != 0.0) {
-    ERROR("CartoonSphere2D cannot have a non-zero inner sphericity, "
-          << "got " << inner_square_sphericity << ".");
+    PARSE_ERROR(context,
+                "CartoonSphere2D cannot have a non-zero inner sphericity, "
+                    << "got " << inner_square_sphericity << ".");
   }
 
   const auto aligned = OrientationMap<3>::create_aligned();
@@ -216,40 +219,44 @@ Domain<3> CartoonSphere2D::create_domain() const {
         i == 0 ? outer_radius_
                : radial_partitioning_[radial_partitioning_.size() - i];
     const double inner_sphericity = has_square ? inner_square_sphericity : 1.0;
+    const std::array<double, 1> opening_angles{M_PI_2};
+    const auto make_wedge = [&](const OrientationMap<2>& orientation,
+                                Wedge2DMap::WedgeHalves halves =
+                                    Wedge2DMap::WedgeHalves::Both) {
+      return Wedge2DMap{
+          inner_radius,     outer_radius,
+          inner_sphericity, 1.0,
+          orientation,      use_equiangular_map_,
+          halves,           domain::CoordinateMaps::Distribution::Linear,
+          opening_angles,   true,
+          context};
+    };
     // this is a half-wedge, -y
     auto coord_maps = make_vector_coordinate_map_base<Frame::BlockLogical,
                                                       Frame::Inertial, 3>(
         std::vector<Rotation3D>{Rotation3D{turn_ccw}},
-        Wedge3DPrism{
-            Wedge2DMap{
-                inner_radius, outer_radius, inner_sphericity, 1.0,
-                OrientationMap<2>{std::array<Direction<2>, 2>{
-                    {Direction<2>::upper_eta(), Direction<2>::lower_xi()}}},
-                use_equiangular_map_,
-                domain::CoordinateMaps::Wedge<2>::WedgeHalves::UpperOnly},
-            Identity1D{}});
+        Wedge3DPrism{make_wedge(OrientationMap<2>{std::array<Direction<2>, 2>{
+                                    {Direction<2>::upper_eta(),
+                                     Direction<2>::lower_xi()}}},
+                                Wedge2DMap::WedgeHalves::UpperOnly),
+                     Identity1D{}});
     // this is a full wedge, +x
     coord_maps.emplace_back(
         make_coordinate_map_base<Frame::BlockLogical, Frame::Inertial>(
             Rotation3D{turn_cw},
             Wedge3DPrism{
-                Wedge2DMap{
-                    inner_radius, outer_radius, inner_sphericity, 1.0,
-                    OrientationMap<2>{std::array<Direction<2>, 2>{
-                        {Direction<2>::upper_xi(), Direction<2>::upper_eta()}}},
-                    use_equiangular_map_},
+                make_wedge(OrientationMap<2>{std::array<Direction<2>, 2>{
+                    {Direction<2>::upper_xi(), Direction<2>::upper_eta()}}}),
                 Identity1D{}}));
     // this is a half-wedge, +y
     coord_maps.emplace_back(
         make_coordinate_map_base<Frame::BlockLogical, Frame::Inertial>(
             Rotation3D{turn_cw},
             Wedge3DPrism{
-                Wedge2DMap{
-                    inner_radius, outer_radius, inner_sphericity, 1.0,
+                make_wedge(
                     OrientationMap<2>{std::array<Direction<2>, 2>{
                         {Direction<2>::lower_eta(), Direction<2>::upper_xi()}}},
-                    use_equiangular_map_,
-                    domain::CoordinateMaps::Wedge<2>::WedgeHalves::LowerOnly},
+                    Wedge2DMap::WedgeHalves::LowerOnly),
                 Identity1D{}}));
     if (has_square) {
       if (use_equiangular_map_) {
@@ -406,6 +413,8 @@ CartoonSphere2D::external_boundary_conditions() const {
   }
   return boundary_conditions;
 }
+
+const Domain<3>& CartoonSphere2D::domain() const { return domain_; }
 
 std::vector<std::array<size_t, 3>> CartoonSphere2D::initial_extents() const {
   std::vector<std::array<size_t, 3>> extended;

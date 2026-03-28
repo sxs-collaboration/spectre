@@ -41,7 +41,7 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.ScalarSelfForce.CircularOrbit",
       {{0, 0}},
       {{npoints, npoints}},
       {{false, false}}};
-  const auto domain = domain_creator.create_domain();
+  const auto domain = domain_creator.domain();
   const auto& block = domain.blocks()[0];
   const ElementId<2> element_id{0};
   const ElementMap<2, Frame::Inertial> element_map{element_id, block};

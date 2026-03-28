@@ -18,6 +18,7 @@
 #include "Domain/CoordinateMaps/Distribution.hpp"
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/Side.hpp"
+#include "Options/Context.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeArray.hpp"
@@ -173,6 +174,7 @@ size_t which_wedge_index(const ShellWedges& which_wedges);
  * of the cube that would form the outer boundary and the second being the
  * offset to apply to the wedges.
  * \param use_equiangular_map Toggles the equiangular map of the Wedge map.
+ * \param options_context Used by the input file parser.
  * \param use_half_wedges When `true`, the wedges in the +z,-z,+y,-y directions
  * are cut in half along their xi-axes. The resulting ten CoordinateMaps are
  * used for the outermost Blocks of the BBH Domain.
@@ -190,6 +192,7 @@ size_t which_wedge_index(const ShellWedges& which_wedges);
 std::vector<domain::CoordinateMaps::Wedge<3>> sph_wedge_coordinate_maps(
     double inner_radius, double outer_radius, double inner_sphericity,
     double outer_sphericity, bool use_equiangular_map,
+    const Options::Context& options_context,
     const std::optional<std::pair<double, std::array<double, 3>>>&
         offset_options = std::nullopt,
     bool use_half_wedges = false,
@@ -291,6 +294,7 @@ template <typename TargetFrame>
 auto cyl_wedge_coordinate_maps(
     double inner_radius, double outer_radius, double lower_z_bound,
     double upper_z_bound, bool use_equiangular_map,
+    const Options::Context& options_context,
     const std::vector<double>& radial_partitioning = {},
     const std::vector<double>& partitioning_in_z = {},
     const std::vector<domain::CoordinateMaps::Distribution>&
@@ -342,7 +346,8 @@ auto cyl_wedge_coord_map_center_blocks(
 /// be composed with other maps later.
 auto cyl_wedge_coord_map_surrounding_blocks(
     double inner_radius, double outer_radius, double lower_z_bound,
-    double upper_z_bound, bool use_equiangular_map, double inner_circularity,
+    double upper_z_bound, bool use_equiangular_map,
+    const Options::Context& options_context, double inner_circularity,
     const std::vector<double>& radial_partitioning = {},
     const std::vector<double>& partitioning_in_z = {},
     const std::vector<domain::CoordinateMaps::Distribution>&

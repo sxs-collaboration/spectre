@@ -347,7 +347,7 @@ Domain<3> create_domain<3>(const double length,
                                         {{0, 0, 0}},
                                         extents,
                                         {{false, false, false}}};
-  return creator.create_domain();
+  return creator.domain();
 }
 
 template <>
@@ -355,14 +355,14 @@ Domain<2> create_domain<2>(const double length,
                            const std::array<size_t, 2>& extents) {
   const domain::creators::Rectangle creator{
       {{0.0, 0.0}}, {{length, length}}, {{0, 0}}, extents, {{false, false}}};
-  return creator.create_domain();
+  return creator.domain();
 }
 
 template <>
 Domain<1> create_domain<1>(const double length,
                            const std::array<size_t, 1>& extents) {
   const domain::creators::Interval creator{{{0.0}}, {{length}}, {{0}}, extents};
-  return creator.create_domain();
+  return creator.domain();
 }
 
 template <size_t Dim>

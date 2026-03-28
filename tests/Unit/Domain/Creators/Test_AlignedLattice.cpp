@@ -128,7 +128,7 @@ SPECTRE_TEST_CASE("Unit.Domain.Creators.AlignedLattice", "[Domain][Unit]") {
     TestHelpers::domain::creators::test_domain_creator(
         *aligned_blocks_creator_1d, use_boundary_condition);
     CHECK(domain_creator_1d->grid_anchors().empty());
-    check_block_names(domain_creator_1d->create_domain(),
+    check_block_names(domain_creator_1d->domain(),
                       {{{0.1, 2.6, 5.1, 5.2, 7.2}}});
 
     const auto domain_creator_2d = make_domain_creator<2>(
@@ -148,7 +148,7 @@ SPECTRE_TEST_CASE("Unit.Domain.Creators.AlignedLattice", "[Domain][Unit]") {
             domain_creator_2d.get());
     TestHelpers::domain::creators::test_domain_creator(
         *aligned_blocks_creator_2d, use_boundary_condition);
-    check_block_names(domain_creator_2d->create_domain(),
+    check_block_names(domain_creator_2d->domain(),
                       {{{0.1, 2.6, 5.1}, {-0.4, 3.2, 6.2, 8.9}}});
 
     const auto domain_creator_3d = make_domain_creator<3>(
@@ -168,7 +168,7 @@ SPECTRE_TEST_CASE("Unit.Domain.Creators.AlignedLattice", "[Domain][Unit]") {
             domain_creator_3d.get());
     TestHelpers::domain::creators::test_domain_creator(
         *aligned_blocks_creator_3d, use_boundary_condition);
-    check_block_names(domain_creator_3d->create_domain(),
+    check_block_names(domain_creator_3d->domain(),
                       {{{0.1, 2.6, 5.1}, {-0.4, 3.2, 6.2}, {-0.2, 3.2}}});
 
     const auto cubical_shell_domain = make_domain_creator<3>(
@@ -190,7 +190,7 @@ SPECTRE_TEST_CASE("Unit.Domain.Creators.AlignedLattice", "[Domain][Unit]") {
     TestHelpers::domain::creators::test_domain_creator(
         *cubical_shell_creator_3d, use_boundary_condition);
     check_block_names(
-        cubical_shell_domain->create_domain(),
+        cubical_shell_domain->domain(),
         {{{0.1, 2.6, 5.1, 6.0}, {-0.4, 3.2, 6.2, 7.0}, {-0.2, 3.2, 4.0, 5.2}}});
 
     const auto unit_cubical_shell_domain = make_domain_creator<3>(
@@ -211,7 +211,7 @@ SPECTRE_TEST_CASE("Unit.Domain.Creators.AlignedLattice", "[Domain][Unit]") {
             unit_cubical_shell_domain.get());
     TestHelpers::domain::creators::test_domain_creator(
         *unit_cubical_shell_creator_3d, use_boundary_condition);
-    check_block_names(unit_cubical_shell_domain->create_domain(),
+    check_block_names(unit_cubical_shell_domain->domain(),
                       {{{-1.5, -0.5, 0.5, 1.5},
                         {-1.5, -0.5, 0.5, 1.5},
                         {-1.5, -0.5, 0.5, 1.5}}});
@@ -235,7 +235,7 @@ SPECTRE_TEST_CASE("Unit.Domain.Creators.AlignedLattice", "[Domain][Unit]") {
           domain_creator_2d_periodic.get());
   TestHelpers::domain::creators::test_domain_creator(
       *aligned_blocks_creator_2d_periodic, false, true);
-  check_block_names(domain_creator_2d_periodic->create_domain(),
+  check_block_names(domain_creator_2d_periodic->domain(),
                     {{{0.1, 2.6, 5.1}, {-0.4, 3.2, 6.2, 8.9}}});
 
   const auto domain_creator_3d_periodic = TestHelpers::test_option_tag<
@@ -256,7 +256,7 @@ SPECTRE_TEST_CASE("Unit.Domain.Creators.AlignedLattice", "[Domain][Unit]") {
           domain_creator_3d_periodic.get());
   TestHelpers::domain::creators::test_domain_creator(
       *aligned_blocks_creator_3d_periodic, false, true);
-  check_block_names(domain_creator_3d_periodic->create_domain(),
+  check_block_names(domain_creator_3d_periodic->domain(),
                     {{{0.1, 2.6, 5.1}, {-0.4, 3.2, 6.2}, {-0.2, 3.2}}});
 
   {

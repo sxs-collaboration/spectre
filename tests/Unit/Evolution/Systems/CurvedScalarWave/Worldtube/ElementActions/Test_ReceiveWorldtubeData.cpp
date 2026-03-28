@@ -134,7 +134,7 @@ SPECTRE_TEST_CASE("Unit.CurvedScalarWave.Worldtube.ReceiveWorldtubeData",
                                          initial_refinement,
                                          initial_extent,
                                          true};
-    const auto shell_domain = shell.create_domain();
+    const auto shell_domain = shell.domain();
     const auto excision_sphere =
         shell_domain.excision_spheres().at("ExcisionSphere");
 

@@ -38,8 +38,8 @@ SPECTRE_TEST_CASE(
 
   const domain::creators::Sphere sphere(
       10.0, 80.0, domain::creators::Sphere::InnerCube{0.0}, 3_st, 8_st, false);
-  REQUIRE(sphere.create_domain().blocks().size() == 7);
-  REQUIRE(sphere.create_domain().block_names().at(6) == "InnerCube");
+  REQUIRE(sphere.domain().blocks().size() == 7);
+  REQUIRE(sphere.domain().block_names().at(6) == "InnerCube");
 
   const SubcellOptions subcell_options{
       SubcellOptions{4.0, 1, 1.0e-4, 1.0e-4, false, false,

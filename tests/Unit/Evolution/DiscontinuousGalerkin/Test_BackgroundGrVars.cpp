@@ -127,7 +127,7 @@ void test(const gsl::not_null<std::mt19937*> gen) {
       return create_a_brick<false>(num_dg_pts, initial_time);
     }
   }();
-  const auto domain = brick.create_domain();
+  const auto domain = brick.domain();
   const auto element_id = ElementId<3>{0};
   Element<3> element = domain::create_initial_element(
       element_id, domain.blocks(),
@@ -182,9 +182,8 @@ void test(const gsl::not_null<std::mt19937*> gen) {
         ::Tags::Time, domain::Tags::Domain<3>, domain::Tags::Element<3>,
         domain::Tags::Mesh<3>, domain::Tags::Coordinates<3, Frame::Inertial>,
         gr_variables_tag, evolution::initial_data::Tags::InitialData>>(
-        initial_time, brick.create_domain(), element, mesh,
-        initial_inertial_coords, typename gr_variables_tag::type{},
-        solution.get_clone());
+        initial_time, brick.domain(), element, mesh, initial_inertial_coords,
+        typename gr_variables_tag::type{}, solution.get_clone());
   }();
 
   // Apply the mutator for initialization phase, and check that it has put

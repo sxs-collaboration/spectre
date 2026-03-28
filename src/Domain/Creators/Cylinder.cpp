@@ -198,6 +198,7 @@ Cylinder::Cylinder(
     central_cube_refinement[0] = central_cube_refinement[1];
     central_cube_grid_points[0] = central_cube_grid_points[1];
   }
+  domain_ = build_domain(context);
 }
 
 Cylinder::Cylinder(
@@ -260,9 +261,10 @@ Cylinder::Cylinder(
                 "constructor to specify 'is_periodic_in_z' instead of boundary "
                 "conditions.");
   }
+  domain_ = build_domain(context);
 }
 
-Domain<3> Cylinder::create_domain() const {
+Domain<3> Cylinder::build_domain(const Options::Context& context) const {
   const size_t number_of_shells = 1 + radial_partitioning_.size();
   const size_t number_of_layers = 1 + partitioning_in_z_.size();
   std::vector<PairOfFaces> pairs_of_faces{};
@@ -297,8 +299,8 @@ Domain<3> Cylinder::create_domain() const {
   return Domain<3>{
       cyl_wedge_coordinate_maps<Frame::Inertial>(
           inner_radius_, outer_radius_, lower_z_bound_, upper_z_bound_,
-          use_equiangular_map_, radial_partitioning_, partitioning_in_z_,
-          radial_distribution_, distribution_in_z_),
+          use_equiangular_map_, context, radial_partitioning_,
+          partitioning_in_z_, radial_distribution_, distribution_in_z_),
       corners_for_cylindrical_layered_domains(number_of_shells,
                                               number_of_layers),
       pairs_of_faces,
@@ -346,6 +348,8 @@ Cylinder::external_boundary_conditions() const {
   }
   return boundary_conditions;
 }
+
+const Domain<3>& Cylinder::domain() const { return domain_; }
 
 std::vector<std::array<size_t, 3>> Cylinder::initial_extents() const {
   return initial_number_of_grid_points_;

@@ -981,6 +981,26 @@ void test_parse_errors() {
           std::vector<double>{}, Distribution::Linear, 120.0, std::nullopt,
           create_outer_boundary_condition(), Options::Context{false, {}, 1, 1}),
       Catch::Matchers::ContainsSubstring("Invalid 'InitialGridPoints'"));
+  CHECK_THROWS_WITH(
+      domain::creators::BinaryCompactObject(
+          Object{0.0, 0.8, 1.0, {{create_inner_boundary_condition()}}, false},
+          Object{0.3, 0.8, -1.0, {{create_inner_boundary_condition()}}, false},
+          std::array<double, 2>{{0.1, 0.2}}, 25.5, 32.4, 1.0, 2_st, 6_st, true,
+          Distribution::Projective, std::vector<double>{}, Distribution::Linear,
+          120.0, std::nullopt, create_outer_boundary_condition(),
+          Options::Context{false, {}, 1, 1}),
+      Catch::Matchers::ContainsSubstring(
+          "The radius of the inner surface must be greater than zero."));
+  CHECK_THROWS_WITH(
+      domain::creators::BinaryCompactObject(
+          Object{0.3, 0.8, 1.0, {{create_inner_boundary_condition()}}, false},
+          Object{0.0, 0.8, -1.0, {{create_inner_boundary_condition()}}, false},
+          std::array<double, 2>{{0.1, 0.2}}, 25.5, 32.4, 1.0, 2_st, 6_st, true,
+          Distribution::Projective, std::vector<double>{}, Distribution::Linear,
+          120.0, std::nullopt, create_outer_boundary_condition(),
+          Options::Context{false, {}, 1, 1}),
+      Catch::Matchers::ContainsSubstring(
+          "The radius of the inner surface must be greater than zero."));
   // Note: the boundary condition-related parse errors are checked in the
   // test_connectivity function.
 }
@@ -1027,7 +1047,7 @@ void test_kerr_horizon_conforming() {
               32_st, domain::creators::time_dependent_options::
                          KerrSchildFromBoyerLindquist{mass_B, spin_B}},
           std::nullopt}};
-  const auto domain = domain_creator.create_domain();
+  const auto domain = domain_creator.domain();
   const auto functions_of_time = domain_creator.functions_of_time();
   // Set up coordinates on an ellipsoid of constant Boyer-Lindquist radius
   const size_t num_points = 10;

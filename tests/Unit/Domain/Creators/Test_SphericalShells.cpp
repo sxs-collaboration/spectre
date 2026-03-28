@@ -475,7 +475,7 @@ void test_shape_distortion_general(
       {4.},
       domain::CoordinateMaps::Distribution::Linear,
       std::move(time_dependent_options)};
-  const auto domain = domain_creator.create_domain();
+  const auto domain = domain_creator.domain();
   const auto functions_of_time = domain_creator.functions_of_time();
   // Map the coordinates through the domain. They should lie at the lower xi
   // boundary of their block.

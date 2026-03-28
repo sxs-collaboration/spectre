@@ -1218,6 +1218,76 @@ void test_refined_cylinder_periodic_boundaries(const bool use_equiangular_map) {
                            expected_external_boundaries, coord_maps);
 }
 
+void test_cylinder_wedge_parse_errors() {
+  INFO("Cylinder wedge parse errors");
+  const double lower_z_bound = -1.0;
+  const double upper_z_bound = 1.0;
+  const size_t refinement_level = 2;
+  const std::array<size_t, 3> grid_points{{4, 4, 4}};
+  const std::vector<double> radial_partitioning{};
+  const std::vector<double> partitioning_in_z{};
+  const std::vector<domain::CoordinateMaps::Distribution> radial_distribution{
+      domain::CoordinateMaps::Distribution::Linear};
+  const std::vector<domain::CoordinateMaps::Distribution> distribution_in_z{
+      domain::CoordinateMaps::Distribution::Linear};
+
+  CHECK_THROWS_WITH(
+      creators::Cylinder(0.0, 1.0, lower_z_bound, upper_z_bound, false,
+                         refinement_level, grid_points, false,
+                         radial_partitioning, partitioning_in_z,
+                         radial_distribution, distribution_in_z,
+                         Options::Context{false, {}, 1, 1}),
+      Catch::Matchers::ContainsSubstring(
+          "The radius of the inner surface must be greater than zero."));
+  CHECK_THROWS_WITH(
+      creators::Cylinder(1.0, 1.0, lower_z_bound, upper_z_bound, false,
+                         refinement_level, grid_points, false,
+                         radial_partitioning, partitioning_in_z,
+                         radial_distribution, distribution_in_z,
+                         Options::Context{false, {}, 1, 1}),
+      Catch::Matchers::ContainsSubstring(
+          "The radius of the outer surface must be greater than the radius of "
+          "the inner surface."));
+  {
+    const std::vector<double> radial_partitioning_extra_shell{1.5};
+    const std::vector<double> partitioning_in_z_extra_shell{};
+    const std::vector<domain::CoordinateMaps::Distribution>
+        radial_distribution_missing{
+            domain::CoordinateMaps::Distribution::Linear};
+    const std::vector<domain::CoordinateMaps::Distribution>
+        distribution_in_z_extra_shell{
+            domain::CoordinateMaps::Distribution::Linear};
+    CHECK_THROWS_WITH(
+        creators::Cylinder(
+            1.0, 2.0, lower_z_bound, upper_z_bound, false, refinement_level,
+            grid_points, false, radial_partitioning_extra_shell,
+            partitioning_in_z_extra_shell, radial_distribution_missing,
+            distribution_in_z_extra_shell, Options::Context{false, {}, 1, 1}),
+        Catch::Matchers::ContainsSubstring(
+            "Specify a 'RadialDistribution' for every cylindrical shell."));
+  }
+  {
+    const std::vector<double> radial_partitioning_extra_shell{1.5};
+    const std::vector<double> partitioning_in_z_extra_shell{};
+    const std::vector<domain::CoordinateMaps::Distribution>
+        radial_distribution_non_linear{
+            domain::CoordinateMaps::Distribution::Logarithmic,
+            domain::CoordinateMaps::Distribution::Linear};
+    const std::vector<domain::CoordinateMaps::Distribution>
+        distribution_in_z_extra_shell{
+            domain::CoordinateMaps::Distribution::Linear};
+    CHECK_THROWS_WITH(
+        creators::Cylinder(
+            1.0, 2.0, lower_z_bound, upper_z_bound, false, refinement_level,
+            grid_points, false, radial_partitioning_extra_shell,
+            partitioning_in_z_extra_shell, radial_distribution_non_linear,
+            distribution_in_z_extra_shell, Options::Context{false, {}, 1, 1}),
+        Catch::Matchers::ContainsSubstring(
+            "The 'RadialDistribution' must be 'Linear' for the innermost "
+            "shell because it changes in circularity."));
+  }
+}
+
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Domain.Creators.Cylinder", "[Domain][Unit]") {
@@ -1264,5 +1334,6 @@ SPECTRE_TEST_CASE("Unit.Domain.Creators.Cylinder", "[Domain][Unit]") {
     test_refined_cylinder_periodic_boundaries(true);
     test_refined_cylinder_periodic_boundaries(false);
   }
+  test_cylinder_wedge_parse_errors();
 }
 }  // namespace domain

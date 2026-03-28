@@ -150,7 +150,7 @@ void test_interpolation_target_kerr_horizon(
         }
       }
     }
-    return block_logical_coordinates(domain_creator.create_domain(), points);
+    return block_logical_coordinates(domain_creator.domain(), points);
   }();
 
   TestHelpers::db::test_simple_tag<

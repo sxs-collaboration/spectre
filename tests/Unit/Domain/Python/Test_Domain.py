@@ -27,7 +27,7 @@ class TestDomain(unittest.TestCase):
             initial_refinement_levels=[1],
             initial_num_points=[4],
             is_periodic=[False],
-        ).create_domain()
+        ).domain()
         self.assertEqual(
             deserialize_domain[1](serialize_domain(domain)), domain
         )

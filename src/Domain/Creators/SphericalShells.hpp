@@ -18,6 +18,7 @@
 #include "Domain/Creators/DomainCreator.hpp"
 #include "Domain/Creators/TimeDependence/TimeDependence.hpp"
 #include "Domain/Creators/TimeDependentOptions/Sphere.hpp"
+#include "Domain/Domain.hpp"
 #include "Options/Auto.hpp"
 #include "Options/Context.hpp"
 #include "Options/String.hpp"
@@ -26,8 +27,6 @@
 /// \cond
 template <size_t Dim, typename T>
 class DirectionMap;
-template <size_t Dim>
-class Domain;
 namespace domain {
 namespace CoordinateMaps {
 template <size_t Dim>
@@ -78,7 +77,7 @@ namespace domain::creators {
 /// To not have any time dependent maps, pass a `std::nullopt` as the
 /// appropriate argument in the constructor. In the input file, simply have
 /// `TimeDependentMaps: None`.
-class SphericalShells : public DomainCreator<3> {
+class SphericalShells final : public DomainCreator<3> {
  public:
   using maps_list =
       tmpl::append<tmpl::list<domain::CoordinateMap<
@@ -213,7 +212,7 @@ class SphericalShells : public DomainCreator<3> {
   SphericalShells& operator=(SphericalShells&&) = default;
   ~SphericalShells() override = default;
 
-  Domain<3> create_domain() const override;
+  const Domain<3>& domain() const override;
 
   /// A single grid anchor "Center" at the origin.
   std::unordered_map<std::string, tnsr::I<double, 3, Frame::Grid>>
@@ -243,6 +242,8 @@ class SphericalShells : public DomainCreator<3> {
           std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>> override;
 
  private:
+  Domain<3> build_domain(const Options::Context& context) const;
+  Domain<3> domain_{};
   double inner_radius_{};
   double outer_radius_{};
   size_t initial_radial_refinement_{};

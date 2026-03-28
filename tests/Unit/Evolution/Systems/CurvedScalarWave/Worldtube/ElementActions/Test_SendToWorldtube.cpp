@@ -163,7 +163,7 @@ SPECTRE_TEST_CASE("Unit.CurvedScalarWave.Worldtube.SendToWorldtube", "[Unit]") {
                                          initial_refinement,
                                          initial_extent,
                                          true};
-    const auto shell_domain = shell.create_domain();
+    const auto shell_domain = shell.domain();
     const auto excision_sphere =
         shell_domain.excision_spheres().at("ExcisionSphere");
 
@@ -175,7 +175,7 @@ SPECTRE_TEST_CASE("Unit.CurvedScalarWave.Worldtube.SendToWorldtube", "[Unit]") {
                         Tags::MaxIterations, Tags::Charge, Tags::Mass,
                         ::Tags::Time, Tags::SelfForceTurnOnTime,
                         Tags::SelfForceTurnOnInterval>
-        tuple_of_opts{shell.create_domain(),
+        tuple_of_opts{shell.domain(),
                       excision_sphere,
                       excision_sphere.radius(),
                       expansion_order,

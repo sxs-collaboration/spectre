@@ -95,7 +95,7 @@ template <size_t Dim>
 /// number of Block%s that your problem needs.  More initial Element%s can be
 /// created by specifying a larger `InitialRefinement`.
 template <size_t Dim>
-class AlignedLattice : public DomainCreator<Dim> {
+class AlignedLattice final : public DomainCreator<Dim> {
  public:
   using maps_list = tmpl::list<
       domain::CoordinateMap<Frame::BlockLogical, Frame::Inertial,
@@ -227,7 +227,7 @@ class AlignedLattice : public DomainCreator<Dim> {
   AlignedLattice& operator=(AlignedLattice&&) = default;
   ~AlignedLattice() override = default;
 
-  Domain<Dim> create_domain() const override;
+  const Domain<Dim>& domain() const override;
 
   std::vector<DirectionMap<
       Dim, std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>
@@ -241,6 +241,8 @@ class AlignedLattice : public DomainCreator<Dim> {
       const override;
 
  private:
+  Domain<Dim> build_domain(const Options::Context& context) const;
+  Domain<Dim> domain_{};
   std::array<std::vector<double>, Dim> block_bounds_{
       make_array<Dim, std::vector<double>>({})};
   std::array<bool, Dim> is_periodic_in_{make_array<Dim>(false)};

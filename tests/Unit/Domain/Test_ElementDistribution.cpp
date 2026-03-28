@@ -35,7 +35,7 @@ void test_uniform_cost_function() {
       {{{{{1, 0}}, {{3, 2}}, {{3, 5}}}, {{{2, 1}}, {{3, 3}}, {{4, 6}}}}},
       {{{{{1, 0}}, {{3, 2}}, {{4, 5}}}, {{{2, 1}}, {{3, 3}}, {{6, 7}}}}}, {});
 
-  const auto domain = domain_creator.create_domain();
+  const auto domain = domain_creator.domain();
   const auto& blocks = domain.blocks();
 
   const auto costs = domain::get_element_costs(
@@ -54,7 +54,7 @@ void test_weighted_cost_function(const domain::ElementWeight element_weight) {
   const auto domain_creator1 = domain::creators::AlignedLattice<3>(
       {{{{0.0, 1.0, 2.0}}, {{0.0, 1.0}}, {{0.0, 1.0}}}}, {{2, 1, 0}},
       {{4, 4, 4}}, {}, {}, {});
-  const auto domain1 = domain_creator1.create_domain();
+  const auto domain1 = domain_creator1.domain();
   const auto& blocks1 = domain1.blocks();
 
   // Block size and grid points are the same as blocks in `domain1`, but
@@ -62,7 +62,7 @@ void test_weighted_cost_function(const domain::ElementWeight element_weight) {
   const auto domain_creator2 = domain::creators::AlignedLattice<3>(
       {{{{0.0, 1.0}}, {{0.0, 1.0}}, {{0.0, 1.0}}}}, {{2, 3, 2}}, {{4, 4, 4}},
       {}, {}, {});
-  const auto domain2 = domain_creator2.create_domain();
+  const auto domain2 = domain_creator2.domain();
   const auto& blocks2 = domain2.blocks();
 
   // Block size and refinement levels are the same as blocks in `domain1`, but
@@ -70,7 +70,7 @@ void test_weighted_cost_function(const domain::ElementWeight element_weight) {
   const auto domain_creator3 = domain::creators::AlignedLattice<3>(
       {{{{0.0, 1.0}}, {{0.0, 1.0}}, {{0.0, 1.0}}}}, {{2, 1, 0}}, {{4, 3, 2}},
       {}, {}, {});
-  const auto domain3 = domain_creator3.create_domain();
+  const auto domain3 = domain_creator3.domain();
   const auto& blocks3 = domain2.blocks();
 
   const auto costs1 = domain::get_element_costs(
@@ -148,7 +148,7 @@ void test_uniform_element_distribution_construction(
     const DomainCreator<Dim>& domain_creator,
     const size_t number_of_procs_with_elements,
     const std::unordered_set<size_t>& global_procs_to_ignore = {}) {
-  const auto domain = domain_creator.create_domain();
+  const auto domain = domain_creator.domain();
   const auto& blocks = domain.blocks();
   const auto initial_refinement_levels =
       domain_creator.initial_refinement_levels();
@@ -241,7 +241,7 @@ void test_weighted_element_distribution_construction(
     const DomainCreator<Dim>& domain_creator,
     const size_t number_of_procs_with_elements,
     const std::unordered_set<size_t>& global_procs_to_ignore = {}) {
-  const auto domain = domain_creator.create_domain();
+  const auto domain = domain_creator.domain();
   const auto& blocks = domain.blocks();
   const auto initial_refinement_levels =
       domain_creator.initial_refinement_levels();
@@ -430,7 +430,7 @@ void test_proc_retrieval(
     const DomainCreator<Dim>& domain_creator,
     const size_t number_of_procs_with_elements,
     const std::unordered_set<size_t>& global_procs_to_ignore = {}) {
-  const auto domain = domain_creator.create_domain();
+  const auto domain = domain_creator.domain();
   const auto& blocks = domain.blocks();
   const auto initial_refinement_levels =
       domain_creator.initial_refinement_levels();

@@ -1024,6 +1024,32 @@ void test_options_option_context_default_stream() {
   CHECK(get_output(Options::Context{}).empty());
 }
 
+void test_options_context_comparison() {
+  Options::Context default_context{};
+  Options::Context same_context = default_context;
+  CHECK(default_context == same_context);
+  CHECK_FALSE(default_context != same_context);
+
+  Options::Context region_context = default_context;
+  region_context.context = "Region";
+  CHECK(region_context != default_context);
+
+  region_context.context = default_context.context;
+  region_context.line = 5;
+  CHECK(region_context != default_context);
+
+  region_context.line = default_context.line;
+  region_context.column = 12;
+  CHECK(region_context != default_context);
+
+  region_context.column = default_context.column;
+  region_context.top_level = false;
+  CHECK(region_context != default_context);
+
+  Options::Context copy = region_context;
+  CHECK(copy == region_context);
+}
+
 // Use formatted inner types to make sure nested formatting works
 template <typename T>
 using In = std::array<T, 0>;
@@ -1712,6 +1738,7 @@ SPECTRE_TEST_CASE("Unit.Options", "[Unit][Options]") {
   test_options_invalid_calls();
   test_options_apply();
   test_options_option_context_default_stream();
+  test_options_context_comparison();
   test_options_format();
   test_options_explicit_constructor();
   test_options_input_source();

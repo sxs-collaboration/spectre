@@ -142,7 +142,7 @@ SPECTRE_TEST_CASE("Unit.ScalarSelfForce.Events.ObserveSelfForce",
       {{puncture_r_star + 1.0, 0.5}},
       {{0, 0}},
       {{4, 4}}};
-  const auto domain = domain_creator.create_domain();
+  const auto domain = domain_creator.domain();
   const Mesh<2> mesh{4_st, Spectral::Basis::Legendre,
                      Spectral::Quadrature::Gauss};
   const ElementId<2> element_id_a{0, {{{1, 0}, {0, 0}}}};
@@ -174,7 +174,7 @@ SPECTRE_TEST_CASE("Unit.ScalarSelfForce.Events.ObserveSelfForce",
         std::unique_ptr<elliptic::analytic_data::Background>(
             std::make_unique<ScalarSelfForce::AnalyticData::CircularOrbit>(
                 circular_orbit)),
-        domain_creator.create_domain(), mesh, inv_jacobian, field);
+        domain_creator.domain(), mesh, inv_jacobian, field);
     auto obs_box =
         make_observation_box<db::AddComputeTags<>>(make_not_null(&box));
     event.run(make_not_null(&obs_box),

@@ -249,8 +249,7 @@ void test_apparent_horizon(
           : std::nullopt);
 
   {
-    const Domain<3> domain_for_block_selection =
-        domain_creator->create_domain();
+    const Domain<3> domain_for_block_selection = domain_creator->domain();
     std::unordered_set<std::string> blocks_to_use{};
     for (const auto& block : domain_for_block_selection.blocks()) {
       if constexpr (std::is_same_v<Fr, ::Frame::Distorted>) {
@@ -268,7 +267,7 @@ void test_apparent_horizon(
       std::max(l_max, static_cast<size_t>(12));
 
   ActionTesting::MockRuntimeSystem<metavars> runner{
-      {domain_creator->create_domain(), std::move(apparent_horizon_opts),
+      {domain_creator->domain(), std::move(apparent_horizon_opts),
        max_resolution_and_output_l, blocks_for_interpolation},
       {domain_creator->functions_of_time(),
        ah::Storage::LockedPreviousSurface<Fr>{}}};
@@ -294,7 +293,7 @@ void test_apparent_horizon(
 
   // Create element_ids.
   std::vector<ElementId<3>> element_ids{};
-  const Domain<3> domain = domain_creator->create_domain();
+  const Domain<3> domain = domain_creator->domain();
   const auto& blocks_to_use =
       blocks_for_interpolation.at("TestingHorizonMetavars");
   const domain::FunctionsOfTimeMap functions_of_time =

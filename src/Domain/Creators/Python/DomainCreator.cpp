@@ -23,7 +23,7 @@ template <size_t Dim>
 void bind_domain_creator_impl(py::module& m) {  // NOLINT
   py::class_<DomainCreator<Dim>>(
       m, ("DomainCreator" + get_output(Dim) + "D").c_str())
-      .def("create_domain", &DomainCreator<Dim>::create_domain)
+      .def("domain", &DomainCreator<Dim>::domain)
       .def("block_names", &DomainCreator<Dim>::block_names)
       .def("block_groups", &DomainCreator<Dim>::block_groups)
       .def("initial_extents", &DomainCreator<Dim>::initial_extents)

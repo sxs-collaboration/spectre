@@ -568,7 +568,7 @@ void test_nonconforming_blocks() {
 
   const auto creator = domain::creators::NonconformingSphericalShells(
       2.0, 3.0, 4.0, 0, 0, 5, 7, 11, nullptr, nullptr);
-  auto domain = creator.create_domain();
+  auto domain = creator.domain();
   const auto initial_refinement = creator.initial_refinement_levels();
   const auto initial_extents = creator.initial_extents();
   const ElementId<3> shell_id{6};

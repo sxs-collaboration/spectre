@@ -141,9 +141,10 @@ AngularDisk::AngularDisk(
       block_groups_["Shells"].insert(shell);
     }
   }
+  domain_ = build_domain(context);
 }
 
-Domain<2> AngularDisk::create_domain() const {
+Domain<2> AngularDisk::build_domain(const Options::Context& /*context*/) const {
   using Identity = CoordinateMaps::Identity<1>;
   using Affine = CoordinateMaps::Affine;
   const auto aligned = OrientationMap<2>::create_aligned();
@@ -204,6 +205,8 @@ Domain<2> AngularDisk::create_domain() const {
   }
   return domain;
 }
+
+const Domain<2>& AngularDisk::domain() const { return domain_; }
 
 std::vector<DirectionMap<
     2, std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>

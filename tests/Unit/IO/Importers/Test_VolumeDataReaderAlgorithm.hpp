@@ -136,7 +136,7 @@ struct Domain : db::SimpleTag {
   static constexpr bool pass_metavariables = false;
   static ::Domain<Dim> create_from_options(
       const std::unique_ptr<::DomainCreator<Dim>>& domain_creator) {
-    return domain_creator->create_domain();
+    return domain_creator->domain();
   }
 };
 

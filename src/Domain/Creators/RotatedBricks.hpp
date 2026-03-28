@@ -98,7 +98,7 @@ namespace creators {
 ///
 /// This DomainCreator is useful for testing code that deals with
 /// unaligned blocks.
-class RotatedBricks : public DomainCreator<3> {
+class RotatedBricks final : public DomainCreator<3> {
  public:
   using maps_list = tmpl::list<
       domain::CoordinateMap<Frame::BlockLogical, Frame::Inertial,
@@ -200,7 +200,7 @@ class RotatedBricks : public DomainCreator<3> {
   RotatedBricks& operator=(RotatedBricks&&) = default;
   ~RotatedBricks() override = default;
 
-  Domain<3> create_domain() const override;
+  const Domain<3>& domain() const override;
 
   std::vector<DirectionMap<
       3, std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>
@@ -213,6 +213,8 @@ class RotatedBricks : public DomainCreator<3> {
   std::vector<std::array<size_t, 3>> initial_refinement_levels() const override;
 
  private:
+  Domain<3> build_domain(const Options::Context& context) const;
+  Domain<3> domain_{};
   typename LowerBound::type lower_xyz_{
       {std::numeric_limits<double>::signaling_NaN()}};
   typename Midpoint::type midpoint_xyz_{

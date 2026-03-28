@@ -160,7 +160,7 @@ void test(const gsl::not_null<std::mt19937*> gen, const bool did_rollback) {
     }
   }();
 
-  const auto domain = brick.create_domain();
+  const auto domain = brick.domain();
   const auto element_id = ElementId<3>{0};
   Element<3> element = domain::create_initial_element(
       element_id, domain.blocks(),
@@ -260,7 +260,7 @@ void test(const gsl::not_null<std::mt19937*> gen, const bool did_rollback) {
         subcell_face_gr_variables_tag,
         evolution::dg::subcell::Tags::DidRollback,
         evolution::initial_data::Tags::InitialData>>(
-        initial_time, brick.create_domain(), element,
+        initial_time, brick.domain(), element,
         ElementMap<3, Frame::Grid>{
             element_id,
             block.is_time_dependent()

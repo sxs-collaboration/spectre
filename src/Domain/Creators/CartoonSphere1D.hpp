@@ -38,7 +38,7 @@ namespace domain::creators {
 /// Create a 3D Domain that is topologically a line. The 2nd and 3rd
 /// dimensions use Cartoon bases with Killing vectors along the \f$\theta\f$ and
 /// \f$\phi\f$ directions.
-class CartoonSphere1D : public DomainCreator<3> {
+class CartoonSphere1D final : public DomainCreator<3> {
  public:
   using maps_list = tmpl::list<domain::CoordinateMap<
       Frame::BlockLogical, Frame::Inertial,
@@ -163,7 +163,7 @@ class CartoonSphere1D : public DomainCreator<3> {
   CartoonSphere1D& operator=(CartoonSphere1D&&) = default;
   ~CartoonSphere1D() override = default;
 
-  Domain<3> create_domain() const override;
+  const Domain<3>& domain() const override;
 
   std::vector<DirectionMap<
       3, std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>
@@ -189,6 +189,8 @@ class CartoonSphere1D : public DomainCreator<3> {
           std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>> override;
 
  private:
+  Domain<3> build_domain(const Options::Context& context) const;
+  Domain<3> domain_{};
   double inner_bound_{};
   double outer_bound_{};
   std::vector<size_t> initial_refinement_levels_{};

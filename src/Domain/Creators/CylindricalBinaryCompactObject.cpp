@@ -426,9 +426,11 @@ CylindricalBinaryCompactObject::CylindricalBinaryCompactObject(
         std::array{radius_B_, outer_radius_B_}, false, false,
         inner_common_radius, outer_radius_);
   }
+  domain_ = build_domain(context);
 }
 
-Domain<3> CylindricalBinaryCompactObject::create_domain() const {
+Domain<3> CylindricalBinaryCompactObject::build_domain(
+    const Options::Context& context) const {
   std::vector<std::unique_ptr<
       domain::CoordinateMapBase<Frame::BlockLogical, Frame::Inertial, 3>>>
       coordinate_maps{};
@@ -485,7 +487,7 @@ Domain<3> CylindricalBinaryCompactObject::create_domain() const {
   const auto logical_to_cylinder_surrounding_maps =
       cyl_wedge_coord_map_surrounding_blocks(
           cylinder_inner_radius, cylinder_outer_radius, cylinder_lower_bound_z,
-          cylinder_upper_bound_z, use_equiangular_map_, 0.0);
+          cylinder_upper_bound_z, use_equiangular_map_, context, 0.0);
 
   // Lambda that takes a UniformCylindricalEndcap map and a
   // DiscreteRotation map, composes it with the logical-to-cylinder
@@ -561,7 +563,7 @@ Domain<3> CylindricalBinaryCompactObject::create_domain() const {
       cyl_wedge_coord_map_surrounding_blocks(
           cylindrical_shell_inner_radius, cylindrical_shell_outer_radius,
           cylindrical_shell_lower_bound_z, cylindrical_shell_upper_bound_z,
-          use_equiangular_map_, 1.0);
+          use_equiangular_map_, context, 1.0);
 
   // Lambda that takes a UniformCylindricalSide map and a DiscreteRotation
   // map, composes it with the logical-to-cylinder maps, and adds it
@@ -894,9 +896,11 @@ Domain<3> CylindricalBinaryCompactObject::create_domain() const {
                    block_names_, block_groups_};
 
   if (time_dependent_options_.has_value()) {
-    ASSERT(include_inner_sphere_A_ and include_inner_sphere_B_,
-           "When using time dependent maps for the CylindricalBBH domain, you "
-           "must include both inner spheres.");
+    if (not(include_inner_sphere_A_ and include_inner_sphere_B_)) {
+      PARSE_ERROR(context,
+                  "When using time dependent maps for the CylindricalBBH "
+                  "domain, you must include both inner spheres.");
+    }
     // Default initialize everything to nullptr so that we only need to set the
     // appropriate block maps for the specific frames
     std::vector<std::unique_ptr<
@@ -1110,6 +1114,10 @@ CylindricalBinaryCompactObject::external_boundary_conditions() const {
     }
   }
   return boundary_conditions;
+}
+
+const Domain<3>& CylindricalBinaryCompactObject::domain() const {
+  return domain_;
 }
 
 std::vector<std::array<size_t, 3>>

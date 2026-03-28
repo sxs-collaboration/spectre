@@ -89,7 +89,7 @@ void test_r_theta_lgl() {
         }
       }
     }
-    return block_logical_coordinates(domain_creator.create_domain(), points);
+    return block_logical_coordinates(domain_creator.domain(), points);
   }();
 
   InterpTargetTestHelpers::test_interpolation_target<
@@ -125,7 +125,7 @@ void test_r_theta_uniform() {
         }
       }
     }
-    return block_logical_coordinates(domain_creator.create_domain(), points);
+    return block_logical_coordinates(domain_creator.domain(), points);
   }();
 
   TestHelpers::db::test_simple_tag<

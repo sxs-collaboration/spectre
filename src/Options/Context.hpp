@@ -27,6 +27,14 @@ struct Context {
   void append(const std::string& c) { context += c + ":\n"; }
 };
 
+/// \ingroup OptionParsingGroup
+/// \brief Equivalence operator for Options::Context
+bool operator==(const Context& lhs, const Context& rhs);
+
+/// \ingroup OptionParsingGroup
+/// \brief Inequivalence operator for Options::Context
+bool operator!=(const Context& lhs, const Context& rhs);
+
 std::ostream& operator<<(std::ostream& s, const Context& c);
 
 }  // namespace Options

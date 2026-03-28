@@ -163,7 +163,7 @@ void test_iterations(const size_t max_iterations) {
                                          initial_refinement,
                                          initial_extent,
                                          true};
-    const auto shell_domain = shell.create_domain();
+    const auto shell_domain = shell.domain();
     const auto excision_sphere =
         shell_domain.excision_spheres().at("ExcisionSphere");
 
@@ -178,7 +178,7 @@ void test_iterations(const size_t max_iterations) {
         Tags::ExcisionSphere<Dim>, Tags::WorldtubeRadius, Tags::ExpansionOrder,
         Tags::MaxIterations, Tags::Charge, Tags::Mass, ::Tags::Time,
         Tags::SelfForceTurnOnTime, Tags::SelfForceTurnOnInterval>
-        tuple_of_opts{shell.create_domain(),
+        tuple_of_opts{shell.domain(),
                       kerr_schild,
                       excision_sphere,
                       excision_sphere.radius(),

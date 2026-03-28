@@ -23,6 +23,7 @@
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.tpp"
 #include "Domain/CoordinateMaps/Wedge.hpp"
+#include "Domain/CoordinateMaps/Interval.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/DomainHelpers.hpp"
 #include "Domain/Structure/BlockNeighbors.hpp"
@@ -31,6 +32,7 @@
 #include "Domain/Structure/OrientationMap.hpp"
 #include "Domain/Structure/Side.hpp"
 #include "Helpers/Domain/CoordinateMaps/TestMapHelpers.hpp"
+#include "Options/Context.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/GetOutput.hpp"
 #include "Utilities/Gsl.hpp"
@@ -305,9 +307,10 @@ void test_wedge_map_generation_against_domain_helpers(
   const auto expected_coord_maps = test_wedge_map_generation(
       inner_radius, outer_radius, inner_sphericity, outer_sphericity,
       use_equiangular_map, offset_options, use_half_wedges);
+  const Options::Context context{};
   const auto maps = sph_wedge_coordinate_maps(
       inner_radius, outer_radius, inner_sphericity, outer_sphericity,
-      use_equiangular_map, offset_options, use_half_wedges);
+      use_equiangular_map, context, offset_options, use_half_wedges);
   CHECK(maps == expected_coord_maps);
 }
 
@@ -324,14 +327,66 @@ void test_wedge_errors() {
             radial_distribution{
                 domain::CoordinateMaps::Distribution::Logarithmic};
         const ShellWedges which_wedges = ShellWedges::FourOnEquator;
+        const Options::Context context{};
         static_cast<void>(sph_wedge_coordinate_maps(
             inner_radius, outer_radius, inner_sphericity, outer_sphericity,
-            use_equiangular_map, std::nullopt, use_half_wedges, {},
+            use_equiangular_map, context, std::nullopt, use_half_wedges, {},
             radial_distribution, which_wedges));
       }()),
       Catch::Matchers::ContainsSubstring(
           "If we are using half wedges we must also be using "
           "ShellWedges::All."));
+}
+
+void test_cyl_wedge_surrounding_blocks_radial_distribution_size_error() {
+  INFO("cyl wedge radial distribution size parse error");
+  const Options::Context context{false, "CylWedge.CylindricalShell.DistSize"};
+  const double inner_radius = 0.4;
+  const double outer_radius = 1.2;
+  const double lower_z_bound = -0.8;
+  const double upper_z_bound = 0.8;
+  const std::vector<double> radial_partitioning{0.9};
+  const std::vector<double> partitioning_in_z{};
+  const std::vector<domain::CoordinateMaps::Distribution> radial_distribution{
+      domain::CoordinateMaps::Distribution::Linear};
+  const std::vector<domain::CoordinateMaps::Distribution> distribution_in_z{
+      domain::CoordinateMaps::Distribution::Linear};
+  CHECK_THROWS_WITH(
+      ([&]() {
+        static_cast<void>(cyl_wedge_coord_map_surrounding_blocks(
+            inner_radius, outer_radius, lower_z_bound, upper_z_bound, false,
+            context, 0.0, radial_partitioning, partitioning_in_z,
+            radial_distribution, distribution_in_z,
+            CylindricalDomainParityFlip::none));
+      }()),
+      Catch::Matchers::ContainsSubstring(
+          "Specify a radial distribution for every cylindrical shell"));
+}
+
+void test_cyl_wedge_surrounding_blocks_radial_distribution_linear_error() {
+  INFO("cyl wedge radial distribution linear parse error");
+  const Options::Context context{false, "CylWedge.CylindricalShell.Linear"};
+  const double inner_radius = 0.4;
+  const double outer_radius = 1.2;
+  const double lower_z_bound = -0.8;
+  const double upper_z_bound = 0.8;
+  const std::vector<double> radial_partitioning{0.9};
+  const std::vector<double> partitioning_in_z{};
+  const std::vector<domain::CoordinateMaps::Distribution> radial_distribution{
+      domain::CoordinateMaps::Distribution::Logarithmic,
+      domain::CoordinateMaps::Distribution::Linear};
+  const std::vector<domain::CoordinateMaps::Distribution> distribution_in_z{
+      domain::CoordinateMaps::Distribution::Linear};
+  CHECK_THROWS_WITH(
+      ([&]() {
+        static_cast<void>(cyl_wedge_coord_map_surrounding_blocks(
+            inner_radius, outer_radius, lower_z_bound, upper_z_bound, false,
+            context, 0.0, radial_partitioning, partitioning_in_z,
+            radial_distribution, distribution_in_z,
+            CylindricalDomainParityFlip::none));
+      }()),
+      Catch::Matchers::ContainsSubstring(
+          "The innermost shell must have a 'Linear' radial distribution"));
 }
 
 void test_six_wedge_directions_equiangular() {
@@ -1665,6 +1720,8 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainHelpers", "[Domain][Unit]") {
   test_periodic_different_blocks();
   test_wedge_map_generation();
   test_wedge_errors();
+  test_cyl_wedge_surrounding_blocks_radial_distribution_size_error();
+  test_cyl_wedge_surrounding_blocks_radial_distribution_linear_error();
   test_all_frustum_directions();
   test_frustrum_errors();
   test_shell_graph();

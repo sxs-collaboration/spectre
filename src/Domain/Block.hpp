@@ -63,9 +63,9 @@ class Block {
 
   Block() = default;
   ~Block() = default;
-  Block(const Block&) = delete;
+  Block(const Block& rhs);
   Block(Block&&) = default;
-  Block& operator=(const Block&) = delete;
+  Block& operator=(const Block& rhs);
   Block& operator=(Block&&) = default;
 
   /// \brief The map used when the coordinate map is time-independent.

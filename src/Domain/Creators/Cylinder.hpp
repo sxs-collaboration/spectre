@@ -49,7 +49,7 @@ namespace domain::creators {
 /// then repeats this pattern for all layers bottom to top.
 ///
 /// \image html Cylinder.png "The Cylinder Domain."
-class Cylinder : public DomainCreator<3> {
+class Cylinder final : public DomainCreator<3> {
  public:
   using maps_list =
       tmpl::list<domain::CoordinateMap<
@@ -275,7 +275,7 @@ class Cylinder : public DomainCreator<3> {
   Cylinder& operator=(Cylinder&&) = default;
   ~Cylinder() override = default;
 
-  Domain<3> create_domain() const override;
+  const Domain<3>& domain() const override;
 
   std::vector<DirectionMap<
       3, std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>
@@ -293,6 +293,8 @@ class Cylinder : public DomainCreator<3> {
   }
 
  private:
+  Domain<3> build_domain(const Options::Context& context) const;
+  Domain<3> domain_{};
   double inner_radius_{std::numeric_limits<double>::signaling_NaN()};
   double outer_radius_{std::numeric_limits<double>::signaling_NaN()};
   double lower_z_bound_{std::numeric_limits<double>::signaling_NaN()};

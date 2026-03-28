@@ -414,7 +414,7 @@ void test(const bool dump_vol_data) {
   // Make an InterpolatedVarsHolders containing the target points.
   const auto domain_creator = domain::creators::Sphere(
       0.9, 4.9, domain::creators::Sphere::Excision{}, 1_st, 7_st, false);
-  const auto domain = domain_creator.create_domain();
+  const auto domain = domain_creator.domain();
   const auto block_names = domain_creator.block_names();
   Slab slab(0.0, 1.0);
   TimeStepId temporal_id(true, 0, Time(slab, Rational(11, 15)));
@@ -451,8 +451,7 @@ void test(const bool dump_vol_data) {
       {std::unordered_map<std::string, std::unordered_set<std::string>>{
            {"InterpolationTargetA", {block_names.begin(), block_names.end()}},
            {"InterpolationTargetB", {block_names.begin(), block_names.end()}}},
-       domain_creator.create_domain(), dump_vol_data, ::Verbosity::Silent,
-       filename}};
+       domain_creator.domain(), dump_vol_data, ::Verbosity::Silent, filename}};
   ActionTesting::emplace_group_component_and_initialize<interp_component>(
       &runner,
       {std::unordered_map<std::string, std::unordered_set<ElementId<3>>>{},

@@ -39,7 +39,7 @@ namespace creators {
  *
  * \image html FrustalCloak.png "A slice through the frustal cloak."
  */
-class FrustalCloak : public DomainCreator<3> {
+class FrustalCloak final : public DomainCreator<3> {
  public:
   using maps_list =
       tmpl::list<domain::CoordinateMap<Frame::BlockLogical, Frame::Inertial,
@@ -145,7 +145,7 @@ class FrustalCloak : public DomainCreator<3> {
   FrustalCloak& operator=(FrustalCloak&&) = default;
   ~FrustalCloak() override = default;
 
-  Domain<3> create_domain() const override;
+  const Domain<3>& domain() const override;
 
   std::vector<DirectionMap<
       3, std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>
@@ -156,6 +156,8 @@ class FrustalCloak : public DomainCreator<3> {
   std::vector<std::array<size_t, 3>> initial_refinement_levels() const override;
 
  private:
+  Domain<3> build_domain(const Options::Context& context) const;
+  Domain<3> domain_{};
   typename InitialRefinement::type initial_refinement_level_{};
   typename InitialGridPoints::type initial_number_of_grid_points_{};
   typename UseEquiangularMap::type use_equiangular_map_ = false;

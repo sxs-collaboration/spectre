@@ -128,7 +128,7 @@ void test() {
           {domain::CoordinateMaps::Distribution::Linear,
            domain::CoordinateMaps::Distribution::Linear}},
       {}, time_dep_opts);
-  const Domain<3> domain = domain_creator.create_domain();
+  const Domain<3> domain = domain_creator.domain();
 
   Parallel::GlobalCache<Metavars> cache{{domain_creator.functions_of_time()}};
 

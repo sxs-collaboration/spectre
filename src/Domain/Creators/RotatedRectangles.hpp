@@ -50,7 +50,7 @@ namespace creators {
 ///
 /// This DomainCreator is useful for testing code that deals with
 /// unaligned blocks.
-class RotatedRectangles : public DomainCreator<2> {
+class RotatedRectangles final : public DomainCreator<2> {
  public:
   using maps_list =
       tmpl::list<domain::CoordinateMap<
@@ -152,7 +152,7 @@ class RotatedRectangles : public DomainCreator<2> {
   RotatedRectangles& operator=(RotatedRectangles&&) = default;
   ~RotatedRectangles() override = default;
 
-  Domain<2> create_domain() const override;
+  const Domain<2>& domain() const override;
 
   std::vector<DirectionMap<
       2, std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>
@@ -165,6 +165,8 @@ class RotatedRectangles : public DomainCreator<2> {
   std::vector<std::array<size_t, 2>> initial_refinement_levels() const override;
 
  private:
+  Domain<2> build_domain(const Options::Context& context) const;
+  Domain<2> domain_{};
   typename LowerBound::type lower_xy_{
       {std::numeric_limits<double>::signaling_NaN()}};
   typename Midpoint::type midpoint_xy_{

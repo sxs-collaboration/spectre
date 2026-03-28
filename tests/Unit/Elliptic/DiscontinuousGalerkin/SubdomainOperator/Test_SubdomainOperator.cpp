@@ -603,7 +603,7 @@ void test_subdomain_operator(
 
     // Re-create the domain in every iteration of this loop because it's not
     // copyable
-    auto domain = domain_creator.create_domain();
+    auto domain = domain_creator.domain();
     auto boundary_conditions = domain_creator.external_boundary_conditions();
     const auto initial_ref_levs = domain_creator.initial_refinement_levels();
     const auto initial_extents = domain_creator.initial_extents();

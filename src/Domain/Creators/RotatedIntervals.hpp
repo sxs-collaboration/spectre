@@ -40,7 +40,7 @@ namespace creators {
 /// The left block has its logical \f$\xi\f$-axis aligned with the grid x-axis.
 /// The right block has its logical \f$\xi\f$-axis opposite to the grid x-axis.
 /// This is useful for testing code that deals with unaligned blocks.
-class RotatedIntervals : public DomainCreator<1> {
+class RotatedIntervals final : public DomainCreator<1> {
  public:
   using maps_list = tmpl::list<domain::CoordinateMap<
       Frame::BlockLogical, Frame::Inertial,
@@ -165,7 +165,7 @@ class RotatedIntervals : public DomainCreator<1> {
   RotatedIntervals& operator=(RotatedIntervals&&) = default;
   ~RotatedIntervals() override = default;
 
-  Domain<1> create_domain() const override;
+  const Domain<1>& domain() const override;
 
   std::vector<DirectionMap<
       1, std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>
@@ -184,6 +184,8 @@ class RotatedIntervals : public DomainCreator<1> {
           std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>> override;
 
  private:
+  Domain<1> build_domain(const Options::Context& context) const;
+  Domain<1> domain_{};
   std::array<double, 1> lower_x_{
       {std::numeric_limits<double>::signaling_NaN()}};
   std::array<double, 1> midpoint_x_{

@@ -38,7 +38,7 @@ namespace domain::creators {
 /// Create a 3D Domain with its computational domain being the\f$x-y\f$
 /// plane. The third dimension uses a Cartoon basis with Killing vector along
 /// the \f$\phi\f$ direction.
-class CartoonCylinder : public DomainCreator<3> {
+class CartoonCylinder final : public DomainCreator<3> {
  public:
   using maps_list = tmpl::list<domain::CoordinateMap<
       Frame::BlockLogical, Frame::Inertial,
@@ -183,7 +183,7 @@ class CartoonCylinder : public DomainCreator<3> {
   CartoonCylinder& operator=(CartoonCylinder&&) = default;
   ~CartoonCylinder() override = default;
 
-  Domain<3> create_domain() const override;
+  const Domain<3>& domain() const override;
 
   std::vector<DirectionMap<
       3, std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>
@@ -222,6 +222,8 @@ class CartoonCylinder : public DomainCreator<3> {
           2>;
 
  private:
+  Domain<3> build_domain(const Options::Context& context) const;
+  Domain<3> domain_{};
   std::array<double, 2> lower_bounds_{};
   std::array<double, 2> upper_bounds_{};
   std::array<size_t, 2> initial_refinement_levels_{};

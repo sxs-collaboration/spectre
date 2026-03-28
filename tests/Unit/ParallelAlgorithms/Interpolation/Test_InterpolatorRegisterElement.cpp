@@ -107,7 +107,7 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.RegisterElement",
       {std::unordered_map<std::string, std::unordered_set<std::string>>{
            {"MockTargetTag", {block_names.begin(), block_names.end()}}},
        ah::OptionHolders::ApparentHorizon<Frame::Inertial>{},
-       domain_creator.create_domain(), ::Verbosity::Silent}};
+       domain_creator.domain(), ::Verbosity::Silent}};
   ActionTesting::set_phase(make_not_null(&runner),
                            Parallel::Phase::Initialization);
   ActionTesting::emplace_group_component<interp_component>(&runner);

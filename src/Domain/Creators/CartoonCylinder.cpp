@@ -105,9 +105,11 @@ CartoonCylinder::CartoonCylinder(
       is_periodic_in_y_ = is_periodic(lower_bc);
     }
   }
+  domain_ = build_domain(context);
 }
 
-Domain<3> CartoonCylinder::create_domain() const {
+Domain<3> CartoonCylinder::build_domain(
+    const Options::Context& /*context*/) const {
   using Interval = CoordinateMaps::Interval;
   using Identity1D = CoordinateMaps::Identity<1>;
   using cartoon_cylinder_map =
@@ -182,6 +184,8 @@ CartoonCylinder::external_boundary_conditions() const {
   }
   return boundary_conditions;
 }
+
+const Domain<3>& CartoonCylinder::domain() const { return domain_; }
 
 std::vector<std::array<size_t, 3>> CartoonCylinder::initial_extents() const {
   // cartoon bases always have extents set to 1

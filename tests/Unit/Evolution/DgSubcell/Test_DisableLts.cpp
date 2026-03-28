@@ -43,7 +43,7 @@ void test(const size_t block, const size_t segment) {
   const domain::creators::AlignedLattice<Dim> domain_creator(
       make_array<Dim>(make_vector(0.0, 1.0, 2.0)), make_array<Dim>(1_st),
       make_array<Dim>(6_st), {}, {}, {});
-  const auto domain = domain_creator.create_domain();
+  const auto domain = domain_creator.domain();
   const auto element = domain::create_initial_element(
       id, domain.blocks(), domain_creator.initial_refinement_levels());
 
