@@ -165,6 +165,7 @@ class RotatedRectangles final : public DomainCreator<2> {
   std::vector<std::array<size_t, 2>> initial_refinement_levels() const override;
 
  private:
+  Domain<2> create_domain(const Options::Context& context) const;
   typename LowerBound::type lower_xy_{
       {std::numeric_limits<double>::signaling_NaN()}};
   typename Midpoint::type midpoint_xy_{

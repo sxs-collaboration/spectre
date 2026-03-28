@@ -170,7 +170,8 @@ CartoonSphere2D::CartoonSphere2D(
   }
 }
 
-Domain<3> CartoonSphere2D::create_domain() const {
+Domain<3> CartoonSphere2D::create_domain(
+    const Options::Context& /*context*/) const {
   using Affine = CoordinateMaps::Affine;
   using Equiangular = CoordinateMaps::Equiangular;
   using Affine2D = CoordinateMaps::ProductOf2Maps<Affine, Affine>;
@@ -405,6 +406,10 @@ CartoonSphere2D::external_boundary_conditions() const {
         excision_boundary_condition->get_clone();
   }
   return boundary_conditions;
+}
+
+Domain<3> CartoonSphere2D::create_domain() const {
+  return create_domain(Options::Context{});
 }
 
 std::vector<std::array<size_t, 3>> CartoonSphere2D::initial_extents() const {

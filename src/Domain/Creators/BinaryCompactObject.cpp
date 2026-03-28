@@ -428,7 +428,8 @@ BinaryCompactObject<UseWorldtube>::BinaryCompactObject(
 }
 
 template <bool UseWorldtube>
-Domain<3> BinaryCompactObject<UseWorldtube>::create_domain() const {
+Domain<3> BinaryCompactObject<UseWorldtube>::create_domain(
+    const Options::Context& /*context*/) const {
   const double inner_sphericity_A = is_excised_a_ ? 1.0 : 0.0;
   const double inner_sphericity_B = is_excised_b_ ? 1.0 : 0.0;
 
@@ -895,6 +896,11 @@ BinaryCompactObject<UseWorldtube>::functions_of_time(
              : std::unordered_map<
                    std::string,
                    std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>{};
+}
+
+template <bool UseWorldtube>
+Domain<3> BinaryCompactObject<UseWorldtube>::create_domain() const {
+  return create_domain(Options::Context{});
 }
 
 template class BinaryCompactObject<true>;

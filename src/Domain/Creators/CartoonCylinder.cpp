@@ -107,7 +107,8 @@ CartoonCylinder::CartoonCylinder(
   }
 }
 
-Domain<3> CartoonCylinder::create_domain() const {
+Domain<3> CartoonCylinder::create_domain(
+    const Options::Context& /*context*/) const {
   using Interval = CoordinateMaps::Interval;
   using Identity1D = CoordinateMaps::Identity<1>;
   using cartoon_cylinder_map =
@@ -181,6 +182,10 @@ CartoonCylinder::external_boundary_conditions() const {
     }
   }
   return boundary_conditions;
+}
+
+Domain<3> CartoonCylinder::create_domain() const {
+  return create_domain(Options::Context{});
 }
 
 std::vector<std::array<size_t, 3>> CartoonCylinder::initial_extents() const {

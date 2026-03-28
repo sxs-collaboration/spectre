@@ -212,7 +212,7 @@ Sphere::Sphere(
   }
 }
 
-Domain<3> Sphere::create_domain() const {
+Domain<3> Sphere::create_domain(const Options::Context& /*context*/) const {
   std::vector<std::array<size_t, 8>> corners =
       corners_for_radially_layered_domains(num_shells_, fill_interior_,
                                            {{1, 2, 3, 4, 5, 6, 7, 8}},
@@ -400,6 +400,10 @@ Sphere::external_boundary_conditions() const {
     }
   }
   return boundary_conditions;
+}
+
+Domain<3> Sphere::create_domain() const {
+  return create_domain(Options::Context{});
 }
 
 std::unordered_map<std::string,

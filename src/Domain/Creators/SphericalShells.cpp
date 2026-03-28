@@ -115,7 +115,8 @@ SphericalShells::SphericalShells(
   }
 }
 
-Domain<3> SphericalShells::create_domain() const {
+Domain<3> SphericalShells::create_domain(
+    const Options::Context& /*context*/) const {
   std::vector<Block<3>> blocks;
   blocks.reserve(num_blocks_);
   const auto aligned = OrientationMap<3>::create_aligned();
@@ -236,6 +237,10 @@ std::vector<std::array<size_t, 3>> SphericalShells::initial_extents() const {
                      std::array{initial_number_of_radial_grid_points_,
                                 initial_spherical_harmonic_l_ + 1,
                                 2 * initial_spherical_harmonic_l_ + 1}};
+}
+
+Domain<3> SphericalShells::create_domain() const {
+  return create_domain(Options::Context{});
 }
 
 std::vector<std::array<size_t, 3>> SphericalShells::initial_refinement_levels()

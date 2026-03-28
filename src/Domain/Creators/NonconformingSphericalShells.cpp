@@ -124,7 +124,8 @@ NonconformingSphericalShells::NonconformingSphericalShells(
   initial_refinement_levels_[6] = {{initial_radial_refinement_, 0_st, 0_st}};
 }
 
-Domain<3> NonconformingSphericalShells::create_domain() const {
+Domain<3> NonconformingSphericalShells::create_domain(
+    const Options::Context& /*context*/) const {
   std::vector<Block<3>> blocks;
   blocks.reserve(7);
   const std::vector<std::array<size_t, 8>> corners_of_wedges =
@@ -172,6 +173,10 @@ Domain<3> NonconformingSphericalShells::create_domain() const {
                       std::move(neighbors_of_shell), "Shell",
                       domain::topologies::spherical_shell);
   return Domain(std::move(blocks));
+}
+
+Domain<3> NonconformingSphericalShells::create_domain() const {
+  return create_domain(Options::Context{});
 }
 
 std::unordered_map<std::string, tnsr::I<double, 3, Frame::Grid>>

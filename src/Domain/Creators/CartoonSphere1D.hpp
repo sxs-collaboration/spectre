@@ -189,6 +189,7 @@ class CartoonSphere1D final : public DomainCreator<3> {
           std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>> override;
 
  private:
+  Domain<3> create_domain(const Options::Context& context) const;
   double inner_bound_{};
   double outer_bound_{};
   std::vector<size_t> initial_refinement_levels_{};

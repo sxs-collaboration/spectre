@@ -72,7 +72,8 @@ RotatedBricks::RotatedBricks(
   }
 }
 
-Domain<3> RotatedBricks::create_domain() const {
+Domain<3> RotatedBricks::create_domain(
+    const Options::Context& /*context*/) const {
   return rectilinear_domain<3>(
       Index<3>{2, 2, 2},
       std::array<std::vector<double>, 3>{
@@ -146,6 +147,10 @@ RotatedBricks::external_boundary_conditions() const {
 
 std::vector<std::string> RotatedBricks::block_names() const {
   return block_names_for_rectilinear_domains(Index<3>{2, 2, 2});
+}
+
+Domain<3> RotatedBricks::create_domain() const {
+  return create_domain(Options::Context{});
 }
 
 std::vector<std::array<size_t, 3>> RotatedBricks::initial_extents() const {

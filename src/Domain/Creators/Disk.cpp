@@ -73,7 +73,7 @@ Disk::Disk(typename InnerRadius::type inner_radius,
   block_groups_["CenterSquare"].insert("CenterSquare");
 }
 
-Domain<2> Disk::create_domain() const {
+Domain<2> Disk::create_domain(const Options::Context& /*context*/) const {
   using Wedge2DMap = CoordinateMaps::Wedge<2>;
   using Affine = CoordinateMaps::Affine;
   using Affine2D = CoordinateMaps::ProductOf2Maps<Affine, Affine>;
@@ -160,6 +160,10 @@ Disk::external_boundary_conditions() const {
         boundary_condition_->get_clone();
   }
   return boundary_conditions;
+}
+
+Domain<2> Disk::create_domain() const {
+  return create_domain(Options::Context{});
 }
 
 std::vector<std::array<size_t, 2>> Disk::initial_extents() const {

@@ -156,6 +156,7 @@ class FrustalCloak final : public DomainCreator<3> {
   std::vector<std::array<size_t, 3>> initial_refinement_levels() const override;
 
  private:
+  Domain<3> create_domain(const Options::Context& context) const;
   typename InitialRefinement::type initial_refinement_level_{};
   typename InitialGridPoints::type initial_number_of_grid_points_{};
   typename UseEquiangularMap::type use_equiangular_map_ = false;

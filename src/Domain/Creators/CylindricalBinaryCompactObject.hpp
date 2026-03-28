@@ -365,6 +365,7 @@ class CylindricalBinaryCompactObject final : public DomainCreator<3> {
   }
 
  private:
+  Domain<3> create_domain(const Options::Context& context) const;
   // Note that center_A_ and center_B_ are rotated with respect to the
   // input centers (which are in the grid frame), so that we can
   // construct the map in a frame where the centers are offset in the

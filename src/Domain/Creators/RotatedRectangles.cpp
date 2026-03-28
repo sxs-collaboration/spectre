@@ -69,7 +69,8 @@ RotatedRectangles::RotatedRectangles(
   }
 }
 
-Domain<2> RotatedRectangles::create_domain() const {
+Domain<2> RotatedRectangles::create_domain(
+    const Options::Context& /*context*/) const {
   return rectilinear_domain<2>(
       Index<2>{2, 2},
       std::array<std::vector<double>, 2>{
@@ -120,6 +121,10 @@ RotatedRectangles::external_boundary_conditions() const {
 
 std::vector<std::string> RotatedRectangles::block_names() const {
   return block_names_for_rectilinear_domains(Index<2>{2, 2});
+}
+
+Domain<2> RotatedRectangles::create_domain() const {
+  return create_domain(Options::Context{});
 }
 
 std::vector<std::array<size_t, 2>> RotatedRectangles::initial_extents() const {

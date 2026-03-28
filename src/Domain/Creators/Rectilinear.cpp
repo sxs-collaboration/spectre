@@ -117,7 +117,8 @@ Rectilinear<Dim>::Rectilinear(
 }
 
 template <size_t Dim>
-Domain<Dim> Rectilinear<Dim>::create_domain() const {
+Domain<Dim> Rectilinear<Dim>::create_domain(
+    const Options::Context& /*context*/) const {
   // Handle periodicity by identifying faces
   std::vector<PairOfFaces> identifications{};
   if constexpr (Dim == 1) {
@@ -219,6 +220,11 @@ Rectilinear<Dim>::external_boundary_conditions() const {
     }
   }
   return boundary_conditions;
+}
+
+template <size_t Dim>
+Domain<Dim> Rectilinear<Dim>::create_domain() const {
+  return create_domain(Options::Context{});
 }
 
 template <size_t Dim>

@@ -149,12 +149,18 @@ AlignedLattice<Dim>::AlignedLattice(
 }
 
 template <size_t Dim>
-Domain<Dim> AlignedLattice<Dim>::create_domain() const {
+Domain<Dim> AlignedLattice<Dim>::create_domain(
+    const Options::Context& /*context*/) const {
   return rectilinear_domain<Dim>(
       number_of_blocks_by_dim_, block_bounds_,
       {std::vector<Index<Dim>>(blocks_to_exclude_.begin(),
                                blocks_to_exclude_.end())},
       {}, is_periodic_in_, {}, false);
+}
+
+template <size_t Dim>
+Domain<Dim> AlignedLattice<Dim>::create_domain() const {
+  return create_domain(Options::Context{});
 }
 
 template <size_t Dim>

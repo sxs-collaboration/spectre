@@ -189,6 +189,7 @@ class NonconformingSphericalShells final : public DomainCreator<3> {
 
   std::vector<std::array<size_t, 3>> initial_refinement_levels() const override;
  private:
+  Domain<3> create_domain(const Options::Context& context) const;
   double inner_radius_{};
   double interface_radius_{};
   double outer_radius_{};

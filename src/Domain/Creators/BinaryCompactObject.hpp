@@ -573,6 +573,7 @@ class BinaryCompactObject final : public DomainCreator<3> {
           std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>> override;
 
  private:
+  Domain<3> create_domain(const Options::Context& context) const;
   typename ObjectA::type object_A_{};
   typename ObjectB::type object_B_{};
   std::array<double, 2> center_of_mass_offset_{};

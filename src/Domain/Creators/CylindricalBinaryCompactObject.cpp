@@ -428,7 +428,8 @@ CylindricalBinaryCompactObject::CylindricalBinaryCompactObject(
   }
 }
 
-Domain<3> CylindricalBinaryCompactObject::create_domain() const {
+Domain<3> CylindricalBinaryCompactObject::create_domain(
+    const Options::Context& /*context*/) const {
   std::vector<std::unique_ptr<
       domain::CoordinateMapBase<Frame::BlockLogical, Frame::Inertial, 3>>>
       coordinate_maps{};
@@ -1110,6 +1111,10 @@ CylindricalBinaryCompactObject::external_boundary_conditions() const {
     }
   }
   return boundary_conditions;
+}
+
+Domain<3> CylindricalBinaryCompactObject::create_domain() const {
+  return create_domain(Options::Context{});
 }
 
 std::vector<std::array<size_t, 3>>

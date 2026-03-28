@@ -262,7 +262,7 @@ Cylinder::Cylinder(
   }
 }
 
-Domain<3> Cylinder::create_domain() const {
+Domain<3> Cylinder::create_domain(const Options::Context& /*context*/) const {
   const size_t number_of_shells = 1 + radial_partitioning_.size();
   const size_t number_of_layers = 1 + partitioning_in_z_.size();
   std::vector<PairOfFaces> pairs_of_faces{};
@@ -345,6 +345,10 @@ Cylinder::external_boundary_conditions() const {
         mantle_boundary_condition_->get_clone();
   }
   return boundary_conditions;
+}
+
+Domain<3> Cylinder::create_domain() const {
+  return create_domain(Options::Context{});
 }
 
 std::vector<std::array<size_t, 3>> Cylinder::initial_extents() const {
