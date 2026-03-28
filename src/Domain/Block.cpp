@@ -21,6 +21,51 @@
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/StdHelpers.hpp"
 
+namespace {
+template <typename Map>
+std::unique_ptr<Map> clone_map(const std::unique_ptr<Map>& map) {
+  return map == nullptr ? nullptr : map->get_clone();
+}
+}  // namespace
+
+template <size_t VolumeDim>
+Block<VolumeDim>::Block(const Block<VolumeDim>& rhs)
+    : stationary_map_(clone_map(rhs.stationary_map_)),
+      moving_mesh_logical_to_grid_map_(
+          clone_map(rhs.moving_mesh_logical_to_grid_map_)),
+      moving_mesh_grid_to_inertial_map_(
+          clone_map(rhs.moving_mesh_grid_to_inertial_map_)),
+      moving_mesh_grid_to_distorted_map_(
+          clone_map(rhs.moving_mesh_grid_to_distorted_map_)),
+      moving_mesh_distorted_to_inertial_map_(
+          clone_map(rhs.moving_mesh_distorted_to_inertial_map_)),
+      id_(rhs.id_),
+      neighbors_(rhs.neighbors_),
+      external_boundaries_(rhs.external_boundaries_),
+      name_(rhs.name_),
+      topologies_(rhs.topologies_) {}
+
+template <size_t VolumeDim>
+Block<VolumeDim>& Block<VolumeDim>::operator=(const Block<VolumeDim>& rhs) {
+  if (this != &rhs) {
+    stationary_map_ = clone_map(rhs.stationary_map_);
+    moving_mesh_logical_to_grid_map_ =
+        clone_map(rhs.moving_mesh_logical_to_grid_map_);
+    moving_mesh_grid_to_inertial_map_ =
+        clone_map(rhs.moving_mesh_grid_to_inertial_map_);
+    moving_mesh_grid_to_distorted_map_ =
+        clone_map(rhs.moving_mesh_grid_to_distorted_map_);
+    moving_mesh_distorted_to_inertial_map_ =
+        clone_map(rhs.moving_mesh_distorted_to_inertial_map_);
+    id_ = rhs.id_;
+    neighbors_ = rhs.neighbors_;
+    external_boundaries_ = rhs.external_boundaries_;
+    name_ = rhs.name_;
+    topologies_ = rhs.topologies_;
+  }
+  return *this;
+}
+
 template <size_t VolumeDim>
 Block<VolumeDim>::Block(
     std::unique_ptr<domain::CoordinateMapBase<

@@ -179,9 +179,9 @@ class Domain {
 
   Domain() = default;
   ~Domain() = default;
-  Domain(const Domain&) = delete;
+  Domain(const Domain&);
   Domain(Domain&&) = default;
-  Domain<VolumeDim>& operator=(const Domain<VolumeDim>&) = delete;
+  Domain<VolumeDim>& operator=(const Domain<VolumeDim>&);
   Domain<VolumeDim>& operator=(Domain<VolumeDim>&&) = default;
 
   void inject_time_dependent_map_for_block(

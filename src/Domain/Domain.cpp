@@ -90,6 +90,22 @@ Domain<VolumeDim>::Domain(
 }
 
 template <size_t VolumeDim>
+Domain<VolumeDim>::Domain(const Domain<VolumeDim>& rhs)
+    : blocks_(rhs.blocks_),
+      excision_spheres_(rhs.excision_spheres_),
+      block_groups_(rhs.block_groups_) {}
+
+template <size_t VolumeDim>
+Domain<VolumeDim>& Domain<VolumeDim>::operator=(const Domain<VolumeDim>& rhs) {
+  if (this != &rhs) {
+    blocks_ = rhs.blocks_;
+    excision_spheres_ = rhs.excision_spheres_;
+    block_groups_ = rhs.block_groups_;
+  }
+  return *this;
+}
+
+template <size_t VolumeDim>
 void Domain<VolumeDim>::inject_time_dependent_map_for_block(
     const size_t block_id,
     std::unique_ptr<
