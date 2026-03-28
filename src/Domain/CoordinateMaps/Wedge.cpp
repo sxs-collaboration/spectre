@@ -14,6 +14,7 @@
 #include "Domain/CoordinateMaps/AutodiffInstantiationTypes.hpp"
 #include "Domain/CoordinateMaps/Distribution.hpp"
 #include "Domain/Structure/OrientationMap.hpp"
+#include "Options/ParseError.hpp"
 #include "Utilities/Algorithm.hpp"
 #include "Utilities/Autodiff/Autodiff.hpp"
 #include "Utilities/ConstantExpressions.hpp"
@@ -33,36 +34,50 @@ void run_shared_asserts(const double radius_inner,
                         const double sphericity_outer,
                         const Distribution radial_distribution,
                         const OrientationMap<Dim>& orientation_of_wedge,
-                        const std::array<double, Dim>& focal_offset) {
+                        const std::array<double, Dim>& focal_offset,
+                        const Options::Context& context) {
   const double sqrt_dim = sqrt(Dim);
   const bool zero_offset = (focal_offset == make_array<Dim, double>(0.0));
 
-  ASSERT(radius_inner > 0.0,
-         "The radius of the inner surface must be greater than zero.");
+  if (radius_inner <= 0.0) {
+    PARSE_ERROR(context,
+                "The radius of the inner surface must be greater than zero.");
+  }
   if (radius_outer.has_value()) {
     // radius_outer should have a value
-    ASSERT(radius_outer.value() > radius_inner,
-           "The radius of the outer surface must be greater than the radius of "
-           "the inner surface.");
+    if (radius_outer.value() <= radius_inner) {
+      PARSE_ERROR(
+          context,
+          "The radius of the outer surface must be greater than the radius of "
+          "the inner surface.");
+    }
   }
-  ASSERT(radial_distribution == Distribution::Linear or
-             (sphericity_inner == 1.0 and sphericity_outer == 1.0),
-         "Only the 'Linear' radial distribution is supported for non-spherical "
-         "wedges.");
+  if (radial_distribution != Distribution::Linear and
+      (sphericity_inner != 1.0 or sphericity_outer != 1.0)) {
+    PARSE_ERROR(context,
+                "Only the 'Linear' radial distribution is supported for "
+                "non-spherical wedges.");
+  }
   if (zero_offset) {
     // radius_outer should have a value
-    ASSERT(radius_outer.value() *
-                   ((1.0 - sphericity_outer) / sqrt_dim + sphericity_outer) >
-               radius_inner *
-                   ((1.0 - sphericity_inner) / sqrt_dim + sphericity_inner),
-           "The arguments passed into the constructor for Wedge result in an "
-           "object where the outer surface is pierced by the inner surface.");
+    if (radius_outer.value() *
+            ((1.0 - sphericity_outer) / sqrt_dim + sphericity_outer) <=
+        radius_inner *
+            ((1.0 - sphericity_inner) / sqrt_dim + sphericity_inner)) {
+      PARSE_ERROR(
+          context,
+          "The arguments passed into the constructor for Wedge result in an "
+          "object where the outer surface is pierced by the inner surface.");
+    }
   }
-  ASSERT(
-      get(determinant(discrete_rotation_jacobian(orientation_of_wedge))) > 0.0,
-      "Wedge rotations must be done in such a manner that the sign of "
-      "the determinant of the discrete rotation is positive. This is to "
-      "preserve handedness of the coordinates.");
+  if (get(determinant(discrete_rotation_jacobian(orientation_of_wedge))) <=
+      0.0) {
+    PARSE_ERROR(
+        context,
+        "Wedge rotations must be done in such a manner that the sign of "
+        "the determinant of the discrete rotation is positive. This is to "
+        "preserve handedness of the coordinates.");
+  }
 }
 }  // namespace
 
@@ -74,7 +89,8 @@ Wedge<Dim>::Wedge(const double radius_inner, const double radius_outer,
                   const WedgeHalves halves_to_use,
                   const Distribution radial_distribution,
                   const std::array<double, Dim - 1>& opening_angles,
-                  const bool with_adapted_equiangular_map)
+                  const bool with_adapted_equiangular_map,
+                  const Options::Context& context)
     : radius_inner_(radius_inner),
       radius_outer_(radius_outer),
       sphericity_inner_(sphericity_inner),
@@ -86,17 +102,23 @@ Wedge<Dim>::Wedge(const double radius_inner, const double radius_outer,
       halves_to_use_(halves_to_use),
       radial_distribution_(radial_distribution),
       opening_angles_(opening_angles) {
-  ASSERT(sphericity_inner >= 0.0 and sphericity_inner <= 1.0,
-         "Sphericity of the inner surface must be between 0 and 1");
-  ASSERT(sphericity_outer >= 0.0 and sphericity_outer <= 1.0,
-         "Sphericity of the outer surface must be between 0 and 1");
+  if (sphericity_inner < 0.0 or sphericity_inner > 1.0) {
+    PARSE_ERROR(context,
+                "Sphericity of the inner surface must be between 0 and 1");
+  }
+  if (sphericity_outer < 0.0 or sphericity_outer > 1.0) {
+    PARSE_ERROR(context,
+                "Sphericity of the outer surface must be between 0 and 1");
+  }
   run_shared_asserts(radius_inner_, radius_outer_, sphericity_inner_,
                      sphericity_outer_, radial_distribution_,
-                     orientation_of_wedge_, focal_offset_);
-  ASSERT(opening_angles_ != make_array<Dim - 1>(M_PI_2) ? with_equiangular_map
-                                                        : true,
-         "If using opening angles other than pi/2, then the "
-         "equiangular map option must be turned on.");
+                     orientation_of_wedge_, focal_offset_, context);
+  if (opening_angles_ != make_array<Dim - 1>(M_PI_2) and
+      not with_equiangular_map_) {
+    PARSE_ERROR(context,
+                "If using opening angles other than pi/2, then the "
+                "equiangular map option must be turned on.");
+  }
 
   if (radial_distribution_ == Distribution::Linear) {
     const double sqrt_dim = sqrt(double{Dim});
@@ -140,7 +162,8 @@ Wedge<Dim>::Wedge(
     const double radius_inner, const std::optional<double> radius_outer,
     const double cube_half_length, const std::array<double, Dim> focal_offset,
     OrientationMap<Dim> orientation_of_wedge, const bool with_equiangular_map,
-    const WedgeHalves halves_to_use, const Distribution radial_distribution)
+    const WedgeHalves halves_to_use, const Distribution radial_distribution,
+    const Options::Context& context)
     : radius_inner_(radius_inner),
       radius_outer_((focal_offset == make_array<Dim>(0.0))
                         ? radius_outer.value_or(sqrt(Dim) * cube_half_length)
@@ -166,16 +189,21 @@ Wedge<Dim>::Wedge(
               : std::nullopt) {
   run_shared_asserts(radius_inner_, radius_outer_, sphericity_inner_,
                      sphericity_outer_, radial_distribution_,
-                     orientation_of_wedge_, focal_offset_);
+                     orientation_of_wedge_, focal_offset_, context);
 
   const bool zero_offset = (focal_offset_ == make_array<Dim, double>(0.0));
   if (not zero_offset) {
     // Do checks specific to an offset Wedge
-    ASSERT(sphericity_inner_ == 1.0,
-           "Focal offsets are not supported for inner sphericity < 1.0");
-    ASSERT(sphericity_outer_ == 0.0 or sphericity_outer_ == 1.0,  // NOLINT
-           "Focal offsets are only supported for wedges with outer sphericity "
-           "of 1.0 or 0.0");
+    if (sphericity_inner_ != 1.0) {
+      PARSE_ERROR(context,
+                  "Focal offsets are not supported for inner sphericity < 1.0");
+    }
+    if (sphericity_outer_ != 0.0 and sphericity_outer_ != 1.0) {
+      PARSE_ERROR(
+          context,
+          "Focal offsets are only supported for wedges with outer sphericity "
+          "of 1.0 or 0.0");
+    }
 
     // coord of focal_offset_ with largest magnitude
     const double max_abs_focal_offset_coord = *alg::max_element(
@@ -185,28 +213,33 @@ Wedge<Dim>::Wedge(
     if (radius_outer_.has_value()) {
       // note: this assert may be more restrictive than we need, can be revisted
       // if needed
-      ASSERT(
-          max_abs_focal_offset_coord + radius_outer_.value() < cube_half_length,
-          "For a spherical focally offset Wedge, the sum of the outer radius "
-          "and the coordinate of the focal offset with the largest magnitude "
-          "must be less than the cube half length. In other words, the "
-          "spherical surface at the given outer radius centered at the focal "
-          "offset must not pierce the cube of length 2 * cube_half_length_ "
-          "centered at the origin. See the Wedge class documentation for a "
-          "visual representation of this sphere and cube.");
+      if (max_abs_focal_offset_coord + radius_outer_.value() >=
+          cube_half_length) {
+        PARSE_ERROR(
+            context,
+            "For a spherical focally offset Wedge, the sum of the outer radius "
+            "and the coordinate of the focal offset with the largest magnitude "
+            "must be less than the cube half length. In other words, the "
+            "spherical surface at the given outer radius centered at the focal "
+            "offset must not pierce the cube of length 2 * cube_half_length_ "
+            "centered at the origin. See the Wedge class documentation for a "
+            "visual representation of this sphere and cube.");
+      }
 
     } else {
       // if sphericity_outer_= 0.0, the outer surface of the Wedge is the parent
       // surface
-      ASSERT(
-          max_abs_focal_offset_coord + radius_inner_ < cube_half_length,
-          "For a cubical focally offset Wedge, the sum of the inner radius "
-          "and the coordinate of the focal offset with the largest magnitude "
-          "must be less than the cube half length. In other words, the "
-          "spherical surface at the given inner radius centered at the focal "
-          "offset must not pierce the cube of length 2 * cube_half_length_ "
-          "centered at the origin. See the Wedge class documentation for a "
-          "visual representation of this sphere and cube.");
+      if (max_abs_focal_offset_coord + radius_inner_ >= cube_half_length) {
+        PARSE_ERROR(
+            context,
+            "For a cubical focally offset Wedge, the sum of the inner radius "
+            "and the coordinate of the focal offset with the largest magnitude "
+            "must be less than the cube half length. In other words, the "
+            "spherical surface at the given inner radius centered at the focal "
+            "offset must not pierce the cube of length 2 * cube_half_length_ "
+            "centered at the origin. See the Wedge class documentation for a "
+            "visual representation of this sphere and cube.");
+      }
     }
   }
 

@@ -11,6 +11,7 @@
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Domain/CoordinateMaps/Distribution.hpp"
 #include "Domain/Structure/OrientationMap.hpp"
+#include "Options/Context.hpp"
 #include "Utilities/TypeTraits/RemoveReferenceWrapper.hpp"
 
 /// \cond
@@ -852,6 +853,7 @@ class Wedge {
    * `true`, angular distances are proportional to logical distances. Note
    * that it is not possible to use adapted maps in every Wedge of a Sphere
    * unless each Wedge has the same size along both angular directions.
+   * \param context Used by the input file parser.
    */
   Wedge(double radius_inner, double radius_outer, double sphericity_inner,
         double sphericity_outer, OrientationMap<Dim> orientation_of_wedge,
@@ -860,7 +862,8 @@ class Wedge {
         Distribution radial_distribution = Distribution::Linear,
         const std::array<double, Dim - 1>& opening_angles =
             make_array<Dim - 1>(M_PI_2),
-        bool with_adapted_equiangular_map = true);
+        bool with_adapted_equiangular_map = true,
+        const Options::Context& context = {});
 
   /*!
    * \brief Constructs a wedge with a focal offset
@@ -920,12 +923,14 @@ class Wedge {
    * \param radial_distribution Determines how to distribute gridpoints along
    * the radial direction. For wedges that are not exactly spherical, only
    * `Distribution::Linear` is currently supported.
+   * \param context Used by the input file parser.
    */
   Wedge(double radius_inner, std::optional<double> radius_outer,
         double cube_half_length, std::array<double, Dim> focal_offset,
         OrientationMap<Dim> orientation_of_wedge, bool with_equiangular_map,
         WedgeHalves halves_to_use = WedgeHalves::Both,
-        Distribution radial_distribution = Distribution::Linear);
+        Distribution radial_distribution = Distribution::Linear,
+        const Options::Context& context = {});
 
   Wedge() = default;
   ~Wedge() = default;
