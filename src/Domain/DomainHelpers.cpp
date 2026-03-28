@@ -1070,15 +1070,20 @@ cyl_wedge_coord_map_surrounding_blocks(
   using Wedge2D = domain::CoordinateMaps::Wedge<2>;
   using Wedge3DPrism =
       domain::CoordinateMaps::ProductOf2Maps<Wedge2D, Interval>;
-  ASSERT(radial_distribution.size() == 1 + radial_partitioning.size(),
-         "Specify a radial distribution for every cylindrical shell. You "
-         "specified "
-             << radial_distribution.size() << " items, but the domain has "
-             << 1 + radial_partitioning.size() << " shells.");
-  ASSERT(radial_distribution.front() ==
-             domain::CoordinateMaps::Distribution::Linear,
-         "The innermost shell must have a 'Linear' radial distribution because "
-         "it changes in circularity.");
+  if (radial_distribution.size() != 1 + radial_partitioning.size()) {
+    PARSE_ERROR(
+        options_context,
+        "Specify a radial distribution for every cylindrical shell. You "
+        "specified "
+            << radial_distribution.size() << " items, but the domain has "
+            << 1 + radial_partitioning.size() << " shells.");
+  }
+  if (radial_distribution.front() !=
+      domain::CoordinateMaps::Distribution::Linear) {
+    PARSE_ERROR(options_context,
+                "The innermost shell must have a 'Linear' radial distribution "
+                "because it changes in circularity.");
+  }
   std::vector<Wedge3DPrism> maps{};
   double temp_inner_circularity{};
   double temp_inner_radius{};
