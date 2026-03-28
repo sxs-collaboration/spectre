@@ -106,6 +106,7 @@ struct MockContributeReductionData {
     std::vector<double> max_values;
     std::vector<double> min_values;
     std::vector<double> l1_norm_values;
+    std::vector<double> l1_integral_norm_values;
     std::vector<double> l2_norm_values;
     std::vector<double> l2_integral_norm_values;
     std::vector<double> volume_integral_values;
@@ -133,9 +134,10 @@ struct MockContributeReductionData {
     results.max_values = std::get<3>(reduction_data.data());
     results.min_values = std::get<4>(reduction_data.data());
     results.l1_norm_values = std::get<5>(reduction_data.data());
-    results.l2_norm_values = std::get<6>(reduction_data.data());
-    results.l2_integral_norm_values = std::get<7>(reduction_data.data());
-    results.volume_integral_values = std::get<8>(reduction_data.data());
+    results.l1_integral_norm_values = std::get<6>(reduction_data.data());
+    results.l2_norm_values = std::get<7>(reduction_data.data());
+    results.l2_integral_norm_values = std::get<8>(reduction_data.data());
+    results.volume_integral_values = std::get<9>(reduction_data.data());
   }
 };
 
@@ -290,21 +292,33 @@ void test(const std::unique_ptr<ObserveEvent> observe,
   CHECK(results.l1_norm_values[2] == approx(68.0));
   CHECK(results.l1_norm_values[3] == approx(95.0));
 
+  // Check L1 integral norms
+  CHECK(results.reduction_names[15] == "L1IntegralNorm(Var1)");
+  CHECK(results.reduction_names[16] == "L1IntegralNorm(Var1_x)");
+  CHECK(results.reduction_names[17] == "L1IntegralNorm(Var1_y)");
+  CHECK(results.reduction_names[18] == "L1IntegralNorm(Var1_z)");
+  // All Var1 values are positive, so L1IntegralNorm equals the volume integral
+  // divided by the volume (which is 1), giving the same values as L1Norm.
+  for (size_t i = 0; i < 4; i++) {
+    CHECK(results.l1_integral_norm_values[i] ==
+          approx(results.l1_norm_values[i]));
+  }
+
   // Check L2 norms
-  CHECK(results.reduction_names[15] == "L2Norm(Var1)");
-  CHECK(results.reduction_names[16] == "L2Norm(Var1_x)");
-  CHECK(results.reduction_names[17] == "L2Norm(Var1_y)");
-  CHECK(results.reduction_names[18] == "L2Norm(Var1_z)");
+  CHECK(results.reduction_names[19] == "L2Norm(Var1)");
+  CHECK(results.reduction_names[20] == "L2Norm(Var1_x)");
+  CHECK(results.reduction_names[21] == "L2Norm(Var1_y)");
+  CHECK(results.reduction_names[22] == "L2Norm(Var1_z)");
   CHECK(results.l2_norm_values[0] == approx(124.5471798155221137));
   CHECK(results.l2_norm_values[1] == approx(41.73328008516305232));
   CHECK(results.l2_norm_values[2] == approx(68.44462481938714404));
   CHECK(results.l2_norm_values[3] == approx(95.3187634554008838));
 
   // Check L2 integral norms
-  CHECK(results.reduction_names[19] == "L2IntegralNorm(Var1)");
-  CHECK(results.reduction_names[20] == "L2IntegralNorm(Var1_x)");
-  CHECK(results.reduction_names[21] == "L2IntegralNorm(Var1_y)");
-  CHECK(results.reduction_names[22] == "L2IntegralNorm(Var1_z)");
+  CHECK(results.reduction_names[23] == "L2IntegralNorm(Var1)");
+  CHECK(results.reduction_names[24] == "L2IntegralNorm(Var1_x)");
+  CHECK(results.reduction_names[25] == "L2IntegralNorm(Var1_y)");
+  CHECK(results.reduction_names[26] == "L2IntegralNorm(Var1_z)");
   if (basis != Spectral::Basis::FiniteDifference) {
     CHECK(results.l2_integral_norm_values[0] == approx(124.18131904598212145));
     CHECK(results.l2_integral_norm_values[1] == approx(41.36826480931165406));
@@ -318,10 +332,10 @@ void test(const std::unique_ptr<ObserveEvent> observe,
   }
 
   // Check volume integral norms
-  CHECK(results.reduction_names[23] == "VolumeIntegral(Var1)");
-  CHECK(results.reduction_names[24] == "VolumeIntegral(Var1_x)");
-  CHECK(results.reduction_names[25] == "VolumeIntegral(Var1_y)");
-  CHECK(results.reduction_names[26] == "VolumeIntegral(Var1_z)");
+  CHECK(results.reduction_names[27] == "VolumeIntegral(Var1)");
+  CHECK(results.reduction_names[28] == "VolumeIntegral(Var1_x)");
+  CHECK(results.reduction_names[29] == "VolumeIntegral(Var1_y)");
+  CHECK(results.reduction_names[30] == "VolumeIntegral(Var1_z)");
   CHECK(results.volume_integral_values[0] == approx(204.0));
   CHECK(results.volume_integral_values[1] == approx(41.0));
   CHECK(results.volume_integral_values[2] == approx(68.0));
@@ -427,48 +441,77 @@ void test_cartoon(const std::unique_ptr<ObserveEvent> observe,
   CHECK(results.reduction_names[2] == "Volume");
   CHECK(results.volume == approx(expected_volume));
 
-  // Check L2 integral norms
-  CHECK(results.reduction_names[3] == "L2IntegralNorm(Var1)");
-  CHECK(results.reduction_names[4] == "L2IntegralNorm(Var1_x)");
-  CHECK(results.reduction_names[5] == "L2IntegralNorm(Var1_y)");
-  CHECK(results.reduction_names[6] == "L2IntegralNorm(Var1_z)");
-
   const auto integrate = [&mesh, &det_inv_jacobian](
                              const DataVector& a,
                              const DataVector& coord_jacobian) -> double {
     const DataVector integrand = a * coord_jacobian / get<>(det_inv_jacobian);
     return definite_integral(integrand, mesh);
   };
-  const auto normalize = [&expected_volume](const double a) -> double {
+  const auto normalize_l1 = [&expected_volume](const double a) -> double {
+    return a / expected_volume;
+  };
+  const auto normalize_l2 = [&expected_volume](const double a) -> double {
     return sqrt(a / expected_volume);
   };
 
+  // Check L1 integral norms
+  // Var1 = inertial_coords; all non-z components are >= 0 in the test domain,
+  // so abs(Var1_x) = Var1_x, abs(Var1_y) = Var1_y, abs(Var1_z) = 0.
+  CHECK(results.reduction_names[3] == "L1IntegralNorm(Var1)");
+  CHECK(results.reduction_names[4] == "L1IntegralNorm(Var1_x)");
+  CHECK(results.reduction_names[5] == "L1IntegralNorm(Var1_y)");
+  CHECK(results.reduction_names[6] == "L1IntegralNorm(Var1_z)");
   if constexpr (Spherical) {
-    const double result = normalize(integrate(square(get<0>(get<Var1>(vars))),
-                                              square(get<0>(inertial_coords))));
+    const double l1_result = normalize_l1(
+        integrate(get<0>(get<Var1>(vars)), square(get<0>(inertial_coords))));
+    CHECK(results.l1_integral_norm_values[0] == approx(l1_result));
+    CHECK(results.l1_integral_norm_values[1] == approx(l1_result));
+    CHECK(results.l1_integral_norm_values[2] == approx(0.0));
+  } else {
+    CHECK(results.l1_integral_norm_values[0] ==
+          approx(normalize_l1(
+              integrate(get<0>(get<Var1>(vars)), get<0>(inertial_coords)) +
+              integrate(get<1>(get<Var1>(vars)), get<0>(inertial_coords)))));
+    CHECK(results.l1_integral_norm_values[1] ==
+          approx(normalize_l1(
+              integrate(get<0>(get<Var1>(vars)), get<0>(inertial_coords)))));
+    CHECK(results.l1_integral_norm_values[2] ==
+          approx(normalize_l1(
+              integrate(get<1>(get<Var1>(vars)), get<0>(inertial_coords)))));
+  }
+  CHECK(results.l1_integral_norm_values[3] == approx(0.0));
+
+  // Check L2 integral norms
+  CHECK(results.reduction_names[7] == "L2IntegralNorm(Var1)");
+  CHECK(results.reduction_names[8] == "L2IntegralNorm(Var1_x)");
+  CHECK(results.reduction_names[9] == "L2IntegralNorm(Var1_y)");
+  CHECK(results.reduction_names[10] == "L2IntegralNorm(Var1_z)");
+  if constexpr (Spherical) {
+    const double result = normalize_l2(integrate(
+        square(get<0>(get<Var1>(vars))), square(get<0>(inertial_coords))));
     CHECK(results.l2_integral_norm_values[0] == approx(result));
     CHECK(results.l2_integral_norm_values[1] == approx(result));
     CHECK(results.l2_integral_norm_values[2] == approx(0.0));
   } else {
     CHECK(results.l2_integral_norm_values[0] ==
-          approx(normalize(integrate(square(get<0>(get<Var1>(vars))),
-                                     get<0>(inertial_coords)) +
-                           integrate(square(get<1>(get<Var1>(vars))),
-                                     get<0>(inertial_coords)))));
+          approx(normalize_l2(integrate(square(get<0>(get<Var1>(vars))),
+                                        get<0>(inertial_coords)) +
+                              integrate(square(get<1>(get<Var1>(vars))),
+                                        get<0>(inertial_coords)))));
     CHECK(results.l2_integral_norm_values[1] ==
-          approx(normalize(integrate(square(get<0>(get<Var1>(vars))),
-                                     get<0>(inertial_coords)))));
+          approx(normalize_l2(integrate(square(get<0>(get<Var1>(vars))),
+                                        get<0>(inertial_coords)))));
     CHECK(results.l2_integral_norm_values[2] ==
-          approx(normalize(integrate(square(get<1>(get<Var1>(vars))),
-                                     get<0>(inertial_coords)))));
+          approx(normalize_l2(integrate(square(get<1>(get<Var1>(vars))),
+                                        get<0>(inertial_coords)))));
   }
   CHECK(results.l2_integral_norm_values[3] == approx(0.0));
 
   // Check volume integral norms
-  CHECK(results.reduction_names[7] == "VolumeIntegral(Var1)");
-  CHECK(results.reduction_names[8] == "VolumeIntegral(Var1_x)");
-  CHECK(results.reduction_names[9] == "VolumeIntegral(Var1_y)");
-  CHECK(results.reduction_names[10] == "VolumeIntegral(Var1_z)");
+  CHECK(results.reduction_names[11] == "VolumeIntegral(Var1)");
+  CHECK(results.reduction_names[12] == "VolumeIntegral(Var1_x)");
+  CHECK(results.reduction_names[13] == "VolumeIntegral(Var1_y)");
+  CHECK(results.reduction_names[14] == "VolumeIntegral(Var1_z)");
   if constexpr (Spherical) {
     const double result =
         integrate(get<0>(get<Var1>(vars)), square(get<0>(inertial_coords)));
@@ -498,10 +541,12 @@ SPECTRE_TEST_CASE("Unit.Evolution.ObserveNorms", "[Unit][Evolution]") {
                                   {"Var0TimesTwo", "Max", "Individual"},
                                   {"Var0TimesThree", "Max", "Individual"},
                                   {"Var1", "L1Norm", "Sum"},
+                                  {"Var1", "L1IntegralNorm", "Sum"},
                                   {"Var1", "L2Norm", "Sum"},
                                   {"Var1", "L2IntegralNorm", "Sum"},
                                   {"Var1", "VolumeIntegral", "Sum"},
                                   {"Var1", "L1Norm", "Individual"},
+                                  {"Var1", "L1IntegralNorm", "Individual"},
                                   {"Var1", "L2Norm", "Individual"},
                                   {"Var1", "L2IntegralNorm", "Individual"},
                                   {"Var1", "VolumeIntegral", "Individual"},
@@ -537,6 +582,9 @@ SPECTRE_TEST_CASE("Unit.Evolution.ObserveNorms", "[Unit][Evolution]") {
       NormType: L1Norm
       Components: Sum
     - Name: Var1
+      NormType: L1IntegralNorm
+      Components: Sum
+    - Name: Var1
       NormType: L2Norm
       Components: Sum
     - Name: Var1
@@ -547,6 +595,9 @@ SPECTRE_TEST_CASE("Unit.Evolution.ObserveNorms", "[Unit][Evolution]") {
       Components: Sum
     - Name: Var1
       NormType: L1Norm
+      Components: Individual
+    - Name: Var1
+      NormType: L1IntegralNorm
       Components: Individual
     - Name: Var1
       NormType: L2Norm
@@ -589,10 +640,12 @@ SPECTRE_TEST_CASE("Unit.Evolution.ObserveNorms", "[Unit][Evolution]") {
                   {"Var0TimesTwo", "Max", "Individual"},
                   {"Var0TimesThree", "Max", "Individual"},
                   {"Var1", "L1Norm", "Sum"},
+                  {"Var1", "L1IntegralNorm", "Sum"},
                   {"Var1", "L2Norm", "Sum"},
                   {"Var1", "L2IntegralNorm", "Sum"},
                   {"Var1", "VolumeIntegral", "Sum"},
                   {"Var1", "L1Norm", "Individual"},
+                  {"Var1", "L1IntegralNorm", "Individual"},
                   {"Var1", "L2Norm", "Individual"},
                   {"Var1", "L2IntegralNorm", "Individual"},
                   {"Var1", "VolumeIntegral", "Individual"},
@@ -636,9 +689,10 @@ SPECTRE_TEST_CASE("Unit.Evolution.ObserveNorms", "[Unit][Evolution]") {
         metavariables{}, mesh, det_inv_jacobian, vars,
         std::optional<std::string>{std::nullopt});
 
-    const auto observe =
-        std::make_unique<ObserveNormsEvent<void>>(ObserveNormsEvent<void>{
-            "reduction0", {{"Var0", "L1Norm", "Individual"}}});
+    const auto observe = std::make_unique<ObserveNormsEvent<void>>(
+        ObserveNormsEvent<void>{"reduction0",
+                                {{"Var0", "L1Norm", "Individual"},
+                                 {"Var0", "L1IntegralNorm", "Individual"}}});
 
     auto obs_box = make_observation_box<tmpl::filter<
         typename ObserveNormsEvent<void>::compute_tags_for_observation_box,
@@ -656,6 +710,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.ObserveNorms", "[Unit][Evolution]") {
     // by num_points). L1IntegralNorm = integral(|u|)/V = 1.0 (since all |-1|=1
     // and V=1). Both should be 1.0, not -1.0, proving abs() is applied.
     CHECK(results.l1_norm_values[0] == approx(1.0));
+    CHECK(results.l1_integral_norm_values[0] == approx(1.0));
   }
 
   // varrying `Spherical` to test both spherical and axial symmetry, as well
@@ -663,33 +718,41 @@ SPECTRE_TEST_CASE("Unit.Evolution.ObserveNorms", "[Unit][Evolution]") {
   test_cartoon<true, void>(
       std::make_unique<ObserveNormsEvent<void>>(
           ObserveNormsEvent<void>{"reduction0",
-                                  {{"Var1", "VolumeIntegral", "Sum"},
-                                   {"Var1", "VolumeIntegral", "Individual"},
+                                  {{"Var1", "L1IntegralNorm", "Sum"},
+                                   {"Var1", "L1IntegralNorm", "Individual"},
                                    {"Var1", "L2IntegralNorm", "Sum"},
-                                   {"Var1", "L2IntegralNorm", "Individual"}}}),
+                                   {"Var1", "L2IntegralNorm", "Individual"},
+                                   {"Var1", "VolumeIntegral", "Sum"},
+                                   {"Var1", "VolumeIntegral", "Individual"}}}),
       std::nullopt, 0.0);
   test_cartoon<true, void>(
       std::make_unique<ObserveNormsEvent<void>>(
           ObserveNormsEvent<void>{"reduction0",
-                                  {{"Var1", "VolumeIntegral", "Sum"},
-                                   {"Var1", "VolumeIntegral", "Individual"},
+                                  {{"Var1", "L1IntegralNorm", "Sum"},
+                                   {"Var1", "L1IntegralNorm", "Individual"},
                                    {"Var1", "L2IntegralNorm", "Sum"},
-                                   {"Var1", "L2IntegralNorm", "Individual"}}}),
+                                   {"Var1", "L2IntegralNorm", "Individual"},
+                                   {"Var1", "VolumeIntegral", "Sum"},
+                                   {"Var1", "VolumeIntegral", "Individual"}}}),
       std::nullopt, 0.5);
   test_cartoon<false, void>(
       std::make_unique<ObserveNormsEvent<void>>(
           ObserveNormsEvent<void>{"reduction0",
-                                  {{"Var1", "VolumeIntegral", "Sum"},
-                                   {"Var1", "VolumeIntegral", "Individual"},
+                                  {{"Var1", "L1IntegralNorm", "Sum"},
+                                   {"Var1", "L1IntegralNorm", "Individual"},
                                    {"Var1", "L2IntegralNorm", "Sum"},
-                                   {"Var1", "L2IntegralNorm", "Individual"}}}),
+                                   {"Var1", "L2IntegralNorm", "Individual"},
+                                   {"Var1", "VolumeIntegral", "Sum"},
+                                   {"Var1", "VolumeIntegral", "Individual"}}}),
       std::nullopt, 0.0);
   test_cartoon<false, void>(
       std::make_unique<ObserveNormsEvent<void>>(
           ObserveNormsEvent<void>{"reduction0",
-                                  {{"Var1", "VolumeIntegral", "Sum"},
-                                   {"Var1", "VolumeIntegral", "Individual"},
+                                  {{"Var1", "L1IntegralNorm", "Sum"},
+                                   {"Var1", "L1IntegralNorm", "Individual"},
                                    {"Var1", "L2IntegralNorm", "Sum"},
-                                   {"Var1", "L2IntegralNorm", "Individual"}}}),
+                                   {"Var1", "L2IntegralNorm", "Individual"},
+                                   {"Var1", "VolumeIntegral", "Sum"},
+                                   {"Var1", "VolumeIntegral", "Individual"}}}),
       std::nullopt, 1.5);
 }

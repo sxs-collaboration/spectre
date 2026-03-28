@@ -63,6 +63,9 @@ void fill_norm_values_and_names(
         values.push_back(min(components[storage_index]));
       } else if (tensor_norm_type == "L1Norm") {
         values.push_back(alg::accumulate(abs(components[storage_index]), 0.0));
+      } else if (tensor_norm_type == "L1IntegralNorm") {
+        values.push_back(definite_integral(
+            abs(components[storage_index]) * det_jacobian, mesh));
       } else if (tensor_norm_type == "L2Norm") {
         values.push_back(
             alg::accumulate(square(components[storage_index]), 0.0));
@@ -95,6 +98,9 @@ void fill_norm_values_and_names(
         value = std::min(value, min(components[storage_index]));
       } else if (tensor_norm_type == "L1Norm") {
         value += alg::accumulate(abs(components[storage_index]), 0.0);
+      } else if (tensor_norm_type == "L1IntegralNorm") {
+        value += definite_integral(
+            abs(components[storage_index]) * det_jacobian, mesh);
       } else if (tensor_norm_type == "L2Norm") {
         value += alg::accumulate(square(components[storage_index]), 0.0);
       } else if (tensor_norm_type == "L2IntegralNorm") {
