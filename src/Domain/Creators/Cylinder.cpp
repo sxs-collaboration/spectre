@@ -349,7 +349,7 @@ Cylinder::external_boundary_conditions() const {
   return boundary_conditions;
 }
 
-Domain<3> Cylinder::create_domain() const { return domain_; }
+const Domain<3>& Cylinder::domain() const { return domain_; }
 
 std::vector<std::array<size_t, 3>> Cylinder::initial_extents() const {
   return initial_number_of_grid_points_;

@@ -117,7 +117,7 @@ void test_sphere_integral() {
     domain::creators::Sphere shell{
         inner_radius, 3.,    domain::creators::Sphere::Excision{},
         ref_level,    10_st, true};
-    const auto shell_domain = shell.create_domain();
+    const auto shell_domain = shell.domain();
     const auto& blocks = shell_domain.blocks();
     const auto& initial_ref_levels = shell.initial_refinement_levels();
     const auto element_ids = initial_element_ids(initial_ref_levels);
@@ -170,7 +170,7 @@ void test_kerr_area() {
                                    ref_level,
                                    size_t(10),
                                    true};
-    const auto shell_domain = shell.create_domain();
+    const auto shell_domain = shell.domain();
     const auto& blocks = shell_domain.blocks();
     const auto& initial_ref_levels = shell.initial_refinement_levels();
     const auto element_ids = initial_element_ids(initial_ref_levels);

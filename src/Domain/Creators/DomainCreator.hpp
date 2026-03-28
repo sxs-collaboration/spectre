@@ -49,7 +49,7 @@ class DomainCreator {
   DomainCreator<VolumeDim>& operator=(DomainCreator<VolumeDim>&&) = default;
   virtual ~DomainCreator() = default;
 
-  virtual Domain<VolumeDim> create_domain() const = 0;
+  virtual const Domain<VolumeDim>& domain() const = 0;
 
   /// A set of named coordinates in the grid frame, like the center of the
   /// domain or the positions of specific objects in a domain

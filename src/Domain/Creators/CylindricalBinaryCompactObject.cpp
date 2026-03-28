@@ -429,7 +429,7 @@ CylindricalBinaryCompactObject::CylindricalBinaryCompactObject(
   domain_ = build_domain(context);
 }
 
-Domain<3> CylindricalBinaryCompactObject::create_domain(
+Domain<3> CylindricalBinaryCompactObject::build_domain(
     const Options::Context& context) const {
   std::vector<std::unique_ptr<
       domain::CoordinateMapBase<Frame::BlockLogical, Frame::Inertial, 3>>>
@@ -1114,7 +1114,7 @@ CylindricalBinaryCompactObject::external_boundary_conditions() const {
   return boundary_conditions;
 }
 
-Domain<3> CylindricalBinaryCompactObject::create_domain() const {
+const Domain<3>& CylindricalBinaryCompactObject::domain() const {
   return domain_;
 }
 

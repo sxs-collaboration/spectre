@@ -131,7 +131,7 @@ class Disk final : public DomainCreator<2> {
   Disk& operator=(Disk&&) = default;
   ~Disk() override = default;
 
-  Domain<2> create_domain() const override;
+  const Domain<2>& domain() const override;
 
   std::vector<DirectionMap<
       2, std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>

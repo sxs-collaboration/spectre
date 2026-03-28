@@ -36,7 +36,7 @@ void test_initialize_element_faces_coordinates_map(
     const DomainCreator<3>& domain_creator,
     const Spectral::Quadrature& quadrature) {
   static constexpr size_t Dim = 3;
-  const auto domain = domain_creator.create_domain();
+  const auto domain = domain_creator.domain();
   const auto& excision_spheres = domain.excision_spheres();
   const auto& initial_refinements = domain_creator.initial_refinement_levels();
   const auto& initial_extents = domain_creator.initial_extents();
@@ -46,7 +46,7 @@ void test_initialize_element_faces_coordinates_map(
         ::domain::Tags::InitialRefinementLevels<Dim>,
         evolution::dg::Tags::Quadrature, Tags::ExcisionSphere<Dim>,
         Tags::ElementFacesGridCoordinates<Dim>>>(
-        domain_creator.create_domain(), initial_extents, initial_refinements,
+        domain_creator.domain(), initial_extents, initial_refinements,
         quadrature, excision_sphere,
         std::unordered_map<ElementId<3>,
                            tnsr::I<DataVector, Dim, Frame::Grid>>{});

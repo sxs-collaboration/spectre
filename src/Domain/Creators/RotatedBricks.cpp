@@ -75,7 +75,7 @@ RotatedBricks::RotatedBricks(
   domain_ = build_domain(context);
 }
 
-Domain<3> RotatedBricks::create_domain(
+Domain<3> RotatedBricks::build_domain(
     const Options::Context& /*context*/) const {
   return rectilinear_domain<3>(
       Index<3>{2, 2, 2},
@@ -152,7 +152,7 @@ std::vector<std::string> RotatedBricks::block_names() const {
   return block_names_for_rectilinear_domains(Index<3>{2, 2, 2});
 }
 
-Domain<3> RotatedBricks::create_domain() const { return domain_; }
+const Domain<3>& RotatedBricks::domain() const { return domain_; }
 
 std::vector<std::array<size_t, 3>> RotatedBricks::initial_extents() const {
   const size_t& x_0 = initial_number_of_grid_points_in_xyz_[0][0];

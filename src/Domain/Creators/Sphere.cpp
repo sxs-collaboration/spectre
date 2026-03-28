@@ -403,7 +403,7 @@ Sphere::external_boundary_conditions() const {
   return boundary_conditions;
 }
 
-Domain<3> Sphere::create_domain() const { return domain_; }
+const Domain<3>& Sphere::domain() const { return domain_; }
 
 std::unordered_map<std::string,
                    std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>

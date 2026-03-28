@@ -15,7 +15,7 @@ class TestBrick(unittest.TestCase):
             initial_refinement_levels=[1, 0, 1],
             initial_num_points=[3, 4, 2],
         )
-        domain = brick.create_domain()
+        domain = brick.domain()
         self.assertFalse(domain.is_time_dependent())
         self.assertEqual(brick.block_names(), ["Brick"])
         self.assertEqual(brick.block_groups(), {"Brick": {"Brick"}})

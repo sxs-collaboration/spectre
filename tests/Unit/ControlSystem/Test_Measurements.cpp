@@ -362,7 +362,7 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.FindTwoCenters",
   using obs_writer = MockObserverWriter<Metavariables>;
 
   MockRuntimeSystem runner{
-      {true, ::Verbosity::Silent, binary_compact_object.create_domain()},
+      {true, ::Verbosity::Silent, binary_compact_object.domain()},
       {binary_compact_object.functions_of_time()}};
   ActionTesting::emplace_singleton_component<control_system_component>(
       make_not_null(&runner), ActionTesting::NodeId{0},

@@ -171,7 +171,7 @@ void test_interpolation_target_sphere(
         }
       }
     }
-    return block_logical_coordinates(domain_creator.create_domain(), points);
+    return block_logical_coordinates(domain_creator.domain(), points);
   }();
 
   InterpTargetTestHelpers::test_interpolation_target<

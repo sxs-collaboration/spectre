@@ -113,7 +113,7 @@ void test_abutting_direction_shell() {
     shells.push_back(std::move(shell_plain));
     shells.push_back(std::move(shell_partitioned));
     for (const auto& shell : shells) {
-      const auto shell_domain = shell.create_domain();
+      const auto shell_domain = shell.domain();
       const auto& blocks = shell_domain.blocks();
       const auto& initial_ref_levels = shell.initial_refinement_levels();
       const auto element_ids = initial_element_ids(initial_ref_levels);

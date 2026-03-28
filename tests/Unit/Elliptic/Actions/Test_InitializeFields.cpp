@@ -116,7 +116,7 @@ SPECTRE_TEST_CASE("Unit.Elliptic.Actions.InitializeFields",
 
   using element_array = ElementArray<Metavariables>;
   ActionTesting::MockRuntimeSystem<Metavariables> runner{
-      {std::make_unique<InitialGuess>(), domain_creator.create_domain(),
+      {std::make_unique<InitialGuess>(), domain_creator.domain(),
        domain_creator.functions_of_time(), Spectral::Quadrature::GaussLobatto}};
   ActionTesting::emplace_component_and_initialize<element_array>(
       &runner, element_id,

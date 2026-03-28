@@ -430,7 +430,7 @@ void test_apparent_horizon(
         domain::Tags::Domain<3>, ah::Tags::BlocksForInterpolation,
         typename ::ah::Tags::ApparentHorizon<typename metavars::AhA, Frame>,
         intrp::Tags::Verbosity>
-        tuple_of_opts{std::move(domain_creator->create_domain()),
+        tuple_of_opts{domain_creator->domain(),
                       std::move(blocks_for_interpolation),
                       std::move(apparent_horizon_opts), ::Verbosity::Silent};
     runner_ptr = std::make_unique<ActionTesting::MockRuntimeSystem<metavars>>(
@@ -448,7 +448,7 @@ void test_apparent_horizon(
         domain::Tags::Domain<3>, ah::Tags::BlocksForInterpolation,
         typename ::ah::Tags::ApparentHorizon<typename metavars::AhA, Frame>,
         intrp::Tags::Verbosity>
-        tuple_of_opts{std::move(domain_creator->create_domain()),
+        tuple_of_opts{domain_creator->domain(),
                       std::move(blocks_for_interpolation),
                       std::move(apparent_horizon_opts), ::Verbosity::Silent};
 
@@ -487,7 +487,7 @@ void test_apparent_horizon(
 
   // Create element_ids.
   std::vector<ElementId<3>> element_ids{};
-  Domain<3> domain = domain_creator->create_domain();
+  Domain<3> domain = domain_creator->domain();
   for (const auto& block : domain.blocks()) {
     const auto initial_ref_levs =
         domain_creator->initial_refinement_levels()[block.id()];

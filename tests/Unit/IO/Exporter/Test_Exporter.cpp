@@ -106,7 +106,7 @@ SPECTRE_TEST_CASE("Unit.IO.Exporter", "[Unit]") {
     INFO("Single-precision volume data");
     const domain::creators::Rectangle domain_creator{
         {{-1., -1.}}, {{1., 1.}}, {{0, 0}}, {{4, 4}}, {{false, false}}};
-    const auto domain = domain_creator.create_domain();
+    const auto domain = domain_creator.domain();
     const ElementId<2> element_id{0};
     const Mesh<2> mesh{4, Spectral::Basis::Legendre,
                        Spectral::Quadrature::GaussLobatto};
@@ -170,7 +170,7 @@ SPECTRE_TEST_CASE("Unit.IO.Exporter", "[Unit]") {
         std::vector<double>{},
         domain::CoordinateMaps::Distribution::Inverse,
         120.};
-    const auto domain = domain_creator.create_domain();
+    const auto domain = domain_creator.domain();
     const auto functions_of_time = domain_creator.functions_of_time();
     const double time = 1.0;
     const auto element_ids =

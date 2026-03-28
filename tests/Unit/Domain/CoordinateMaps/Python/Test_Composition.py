@@ -23,7 +23,7 @@ class TestComposition(unittest.TestCase):
             initial_number_of_grid_points=5,
             use_equiangular_map=True,
             excise=True,
-        ).create_domain()
+        ).domain()
         element_id = ElementId[3](0)
         element_map = ElementMap(element_id, domain)
         self.assertIsInstance(

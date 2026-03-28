@@ -270,7 +270,7 @@ void test() {
                {2, 2, 2},
                bases.back(),
                quadratures.back()}},
-          serialize(domain_creator.create_domain()),
+          serialize(domain_creator.domain()),
           serialize(domain_creator.functions_of_time()),
           serialize(domain_creator.functions_of_time()));
       // Write another tensor component separately
@@ -332,7 +332,7 @@ void test() {
                    });
     CHECK(found_observation_ids == observation_ids);
   }
-  CHECK(volume_file.get_domain() == serialize(domain_creator.create_domain()));
+  CHECK(volume_file.get_domain() == serialize(domain_creator.domain()));
   for (size_t i = 0; i < observation_ids.size(); ++i) {
     TestHelpers::io::VolumeData::check_volume_data(
         h5_file_name, version_number, "element_data"s, observation_ids[i],
@@ -400,7 +400,7 @@ void test() {
           Spectral::Basis::Legendre},
          {Spectral::Quadrature::Gauss, Spectral::Quadrature::Gauss,
           Spectral::Quadrature::Gauss}}};
-    const auto serialized_domain = serialize(domain_creator.create_domain());
+    const auto serialized_domain = serialize(domain_creator.domain());
     const auto make_serialized_functions_of_time =
         [](const double expiration_time) {
           domain::FunctionsOfTimeMap map{};
@@ -971,7 +971,7 @@ void test_cartoon() {
                {2, 2, 1},
                bases.front(),
                quadratures.front()}},
-          serialize(domain_creator.create_domain()),
+          serialize(domain_creator.domain()),
           serialize(domain_creator.functions_of_time()));
     };
     for (size_t i = 0; i < observation_ids.size(); ++i) {
@@ -999,7 +999,7 @@ void test_cartoon() {
     CHECK(found_observation_ids == observation_ids);
   }
 
-  CHECK(volume_file.get_domain() == serialize(domain_creator.create_domain()));
+  CHECK(volume_file.get_domain() == serialize(domain_creator.domain()));
   for (size_t i = 0; i < observation_ids.size(); ++i) {
     TestHelpers::io::VolumeData::check_volume_data(
         h5_file_name, version_number, "element_data"s, observation_ids[i],

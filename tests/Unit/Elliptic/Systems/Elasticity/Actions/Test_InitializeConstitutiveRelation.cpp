@@ -103,7 +103,7 @@ SPECTRE_TEST_CASE("Unit.Elasticity.Actions.InitializeConstitutiveRelation",
       tuples::TaggedTuple<domain::Tags::Domain<Dim>,
                           Tags::ConstitutiveRelationPerBlock<Dim>,
                           Tags::MaterialBlockGroups<Dim>>{
-          domain_creator->create_domain(), std::move(material_per_block),
+          domain_creator->domain(), std::move(material_per_block),
           std::move(material_block_groups)}};
   for (const auto& element_id : {element_id_layer1, element_id_layer2}) {
     ActionTesting::emplace_component_and_initialize<element_array>(

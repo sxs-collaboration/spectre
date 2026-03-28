@@ -73,7 +73,7 @@ void test() {
         points.get(d)[i] = 1.0 + 0.1 * i;  // Worked out by hand.
       }
     }
-    return block_logical_coordinates(domain_creator.create_domain(), points);
+    return block_logical_coordinates(domain_creator.domain(), points);
   }();
 
   TestHelpers::db::test_simple_tag<

@@ -46,7 +46,7 @@ void test_coords_to_different_frame() {
           0.0, std::array<double, 3>({{0.0, 0.0, 0.0}}),
           std::array<double, 3>({{0.01, 0.02, 0.03}}))};
 
-  const Domain<3> domain = domain_creator.create_domain();
+  const Domain<3> domain = domain_creator.domain();
   const auto functions_of_time = domain_creator.functions_of_time();
 
   const double time = 0.5;

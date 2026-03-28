@@ -299,7 +299,7 @@ void test_interpolate_on_element(
     }
   }();
   const DomainCreator<3>& domain_creator = *domain_creator_ptr;
-  const auto domain = domain_creator.create_domain();
+  const auto domain = domain_creator.domain();
   const double x_center = OffCenter ? -4.0 : 0.0;
 
   Slab slab(0.0, 1.0);
@@ -342,8 +342,7 @@ void test_interpolate_on_element(
       tmpl::list<domain::Tags::Domain<3>, intrp::Tags::Verbosity>>>
       init_tuple{};
 
-  tuples::get<domain::Tags::Domain<3>>(init_tuple) =
-      std::move(domain_creator.create_domain());
+  tuples::get<domain::Tags::Domain<3>>(init_tuple) = domain_creator.domain();
   tuples::get<intrp::Tags::Verbosity>(init_tuple) = ::Verbosity::Silent;
 
   if constexpr (is_sphere) {

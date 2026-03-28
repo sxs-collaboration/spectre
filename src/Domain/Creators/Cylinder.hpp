@@ -275,7 +275,7 @@ class Cylinder final : public DomainCreator<3> {
   Cylinder& operator=(Cylinder&&) = default;
   ~Cylinder() override = default;
 
-  Domain<3> create_domain() const override;
+  const Domain<3>& domain() const override;
 
   std::vector<DirectionMap<
       3, std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>

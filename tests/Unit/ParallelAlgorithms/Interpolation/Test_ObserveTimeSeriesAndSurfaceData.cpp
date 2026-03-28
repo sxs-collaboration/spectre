@@ -611,7 +611,7 @@ void run_test() {
               {"SurfaceC", {block_names.begin(), block_names.end()}},
               {"SurfaceD", {block_names.begin(), block_names.end()}},
               {"SurfaceE", {block_names.begin(), block_names.end()}}},
-          domain_creator.create_domain(),
+          domain_creator.domain(),
           kerr_horizon_opts_B,
           kerr_horizon_opts_C,
           kerr_horizon_opts_D,
@@ -667,7 +667,7 @@ void run_test() {
 
   Slab slab(0.0, 1.0);
   TimeStepId temporal_id(true, 0, Time(slab, 0));
-  const auto domain = domain_creator.create_domain();
+  const auto domain = domain_creator.domain();
 
   // Create element_ids.
   std::vector<ElementId<3>> element_ids{};

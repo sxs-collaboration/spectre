@@ -1047,7 +1047,7 @@ void test_kerr_horizon_conforming() {
               32_st, domain::creators::time_dependent_options::
                          KerrSchildFromBoyerLindquist{mass_B, spin_B}},
           std::nullopt}};
-  const auto domain = domain_creator.create_domain();
+  const auto domain = domain_creator.domain();
   const auto functions_of_time = domain_creator.functions_of_time();
   // Set up coordinates on an ellipsoid of constant Boyer-Lindquist radius
   const size_t num_points = 10;

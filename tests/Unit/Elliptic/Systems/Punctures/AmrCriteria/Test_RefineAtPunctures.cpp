@@ -83,7 +83,7 @@ SPECTRE_TEST_CASE("Unit.Punctures.AmrCriteria.RefineAtPunctures",
             std::unique_ptr<elliptic::analytic_data::Background>(
                 std::make_unique<MultiplePunctures>(
                     std::vector<Puncture>{puncture_within, puncture_boundary})),
-            domain_creator.create_domain());
+            domain_creator.domain());
     ObservationBox<
         tmpl::list<>,
         db::DataBox<tmpl::list<background_tag, domain::Tags::Domain<3>>>>

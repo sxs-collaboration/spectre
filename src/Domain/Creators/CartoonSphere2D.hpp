@@ -227,7 +227,7 @@ class CartoonSphere2D final : public DomainCreator<3> {
   CartoonSphere2D& operator=(CartoonSphere2D&&) = default;
   ~CartoonSphere2D() override = default;
 
-  Domain<3> create_domain() const override;
+  const Domain<3>& domain() const override;
 
   std::vector<DirectionMap<
       3, std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>

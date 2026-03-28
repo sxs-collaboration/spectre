@@ -163,7 +163,7 @@ class CartoonSphere1D final : public DomainCreator<3> {
   CartoonSphere1D& operator=(CartoonSphere1D&&) = default;
   ~CartoonSphere1D() override = default;
 
-  Domain<3> create_domain() const override;
+  const Domain<3>& domain() const override;
 
   std::vector<DirectionMap<
       3, std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>

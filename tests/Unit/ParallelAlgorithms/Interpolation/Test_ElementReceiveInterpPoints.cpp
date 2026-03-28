@@ -147,8 +147,8 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.ElementReceivePoints",
                       domain::Tags::Domain<metavars::volume_dim>,
                       intrp::Tags::Verbosity>
       tuple_of_opts{std::move(line_segment_opts_a),
-                    std::move(line_segment_opts_b),
-                    domain_creator.create_domain(), ::Verbosity::Silent};
+                    std::move(line_segment_opts_b), domain_creator.domain(),
+                    ::Verbosity::Silent};
 
   // Initialization
   ActionTesting::MockRuntimeSystem<metavars> runner{std::move(tuple_of_opts)};

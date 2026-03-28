@@ -125,7 +125,7 @@ NonconformingSphericalShells::NonconformingSphericalShells(
   domain_ = build_domain(context);
 }
 
-Domain<3> NonconformingSphericalShells::create_domain(
+Domain<3> NonconformingSphericalShells::build_domain(
     const Options::Context& context) const {
   std::vector<Block<3>> blocks;
   blocks.reserve(7);
@@ -176,7 +176,7 @@ Domain<3> NonconformingSphericalShells::create_domain(
   return Domain(std::move(blocks));
 }
 
-Domain<3> NonconformingSphericalShells::create_domain() const {
+const Domain<3>& NonconformingSphericalShells::domain() const {
   return domain_;
 }
 

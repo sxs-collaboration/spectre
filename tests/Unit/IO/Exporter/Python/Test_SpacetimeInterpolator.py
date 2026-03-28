@@ -35,7 +35,7 @@ class TestSpacetimeInterpolator(unittest.TestCase):
             initial_refinement_levels=[0, 0, 0],
             initial_num_points=[4, 4, 4],
             is_periodic=[False, False, False],
-        ).create_domain()
+        ).domain()
         serialized_domain = serialize_domain(domain)
         mesh = Mesh[3](4, Basis.Legendre, Quadrature.GaussLobatto)
         with spectre_h5.H5File(self.h5_filename, "w") as open_h5file:

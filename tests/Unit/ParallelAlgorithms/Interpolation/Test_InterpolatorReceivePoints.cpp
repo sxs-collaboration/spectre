@@ -241,13 +241,13 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.ReceivePoints",
       std::array{0.0, 0.0, 0.0}, std::array{1.0, 1.0, 1.0},
       std::array{1_st, 2_st, 0_st}, std::array{2_st, 2_st, 2_st},
       std::array{false, false, false}};
-  const Domain<3> domain = domain_creator.create_domain();
+  const Domain<3> domain = domain_creator.domain();
   const auto block_names = domain_creator.block_names();
 
   ActionTesting::MockRuntimeSystem<metavars> runner{
       {std::unordered_map<std::string, std::unordered_set<std::string>>{
            {"InterpolationTargetA", {block_names.begin(), block_names.end()}}},
-       domain_creator.create_domain(), ::Verbosity::Silent},
+       domain_creator.domain(), ::Verbosity::Silent},
       {},
       std::vector<std::size_t>{2_st}};
   ActionTesting::set_phase(make_not_null(&runner),

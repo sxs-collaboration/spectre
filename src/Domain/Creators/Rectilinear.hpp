@@ -229,7 +229,7 @@ class Rectilinear final : public DomainCreator<Dim> {
   Rectilinear& operator=(Rectilinear&&) = default;
   ~Rectilinear() override = default;
 
-  Domain<Dim> create_domain() const override;
+  const Domain<Dim>& domain() const override;
 
   std::vector<DirectionMap<
       Dim, std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>

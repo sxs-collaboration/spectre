@@ -147,7 +147,7 @@ SPECTRE_TEST_CASE("Unit.ParallelAlgorithms.SurfaceFinder.SurfaceFinder",
   static constexpr size_t dim = 3;
   const domain::creators::Sphere sphere{
       1., 5., domain::creators::Sphere::InnerCube{0.}, 0_st, 12_st, false};
-  const auto domain = sphere.create_domain();
+  const auto domain = sphere.domain();
   const auto refinement_levels = sphere.initial_refinement_levels();
   const auto extents = sphere.initial_extents();
   const ElementId<dim> id{0};

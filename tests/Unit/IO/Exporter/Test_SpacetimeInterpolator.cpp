@@ -49,7 +49,7 @@ void write_data_to_file(const std::string& h5_file_name) {
       domain::CoordinateMaps::Distribution::Linear,
       ShellWedges::All,
       time_dependence.get_clone()};
-  const auto domain = domain_creator.create_domain();
+  const auto domain = domain_creator.domain();
   const auto functions_of_time = domain_creator.functions_of_time();
 
   // Generate some volume data in the grid frame
@@ -179,7 +179,7 @@ SPECTRE_TEST_CASE("Unit.IO.Exporter.SpacetimeInterpolator", "[Unit]") {
         {{0.0, 0.0, 0.0}},
         {{1.0, 1.0, 1.0}},
         {{0, 0, 0}},
-        {{4, 4, 4}}}.create_domain();
+        {{4, 4, 4}}}.domain();
     const Mesh<3> mesh{4, Spectral::Basis::Legendre,
                        Spectral::Quadrature::GaussLobatto};
 

@@ -104,7 +104,7 @@ RotatedIntervals::RotatedIntervals(
   domain_ = build_domain(context);
 }
 
-Domain<1> RotatedIntervals::create_domain(
+Domain<1> RotatedIntervals::build_domain(
     const Options::Context& /*context*/) const {
   std::vector<DirectionMap<
       1, std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>
@@ -156,7 +156,7 @@ std::vector<std::string> RotatedIntervals::block_names() const {
   return block_names_for_rectilinear_domains(Index<1>{2});
 }
 
-Domain<1> RotatedIntervals::create_domain() const { return domain_; }
+const Domain<1>& RotatedIntervals::domain() const { return domain_; }
 
 std::vector<std::array<size_t, 1>> RotatedIntervals::initial_extents() const {
   return {{{initial_number_of_grid_points_in_x_[0][0]}},

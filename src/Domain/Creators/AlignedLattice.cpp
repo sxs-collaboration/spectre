@@ -150,7 +150,7 @@ AlignedLattice<Dim>::AlignedLattice(
 }
 
 template <size_t Dim>
-Domain<Dim> AlignedLattice<Dim>::create_domain(
+Domain<Dim> AlignedLattice<Dim>::build_domain(
     const Options::Context& /*context*/) const {
   return rectilinear_domain<Dim>(
       number_of_blocks_by_dim_, block_bounds_,
@@ -160,7 +160,7 @@ Domain<Dim> AlignedLattice<Dim>::create_domain(
 }
 
 template <size_t Dim>
-Domain<Dim> AlignedLattice<Dim>::create_domain() const {
+const Domain<Dim>& AlignedLattice<Dim>::domain() const {
   return domain_;
 }
 
@@ -180,7 +180,7 @@ AlignedLattice<Dim>::external_boundary_conditions() const {
   }
   // Set boundary conditions by using the computed domain's external
   // boundaries
-  const auto domain = create_domain();
+  const auto& domain = domain_;
   const auto& blocks = domain.blocks();
   std::vector<DirectionMap<
       Dim, std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>

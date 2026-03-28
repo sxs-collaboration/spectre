@@ -121,7 +121,7 @@ SPECTRE_TEST_CASE(
         ++s;
       }
     }
-    return block_logical_coordinates(domain_creator.create_domain(), points);
+    return block_logical_coordinates(domain_creator.domain(), points);
   }();
 
   TestHelpers::db::test_simple_tag<

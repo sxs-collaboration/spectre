@@ -60,7 +60,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.DG.MortarInfo", "[Unit][Evolution]") {
   test<2>({{Spectral::SegmentSize::Full}}, std::nullopt);
   const auto creator = domain::creators::NonconformingSphericalShells(
       2.0, 3.0, 4.0, 0, 0, 5, 8, 11, nullptr, nullptr);
-  const auto domain = creator.create_domain();
+  const auto domain = creator.domain();
   test<3>(
       {{Spectral::SegmentSize::UpperHalf, Spectral::SegmentSize::LowerHalf}},
       ::dg::MortarInterpolator{

@@ -443,7 +443,7 @@ Domain<3> AngularCylinder::build_domain(
   return domain;
 }
 
-Domain<3> AngularCylinder::create_domain() const { return domain_; }
+const Domain<3>& AngularCylinder::domain() const { return domain_; }
 
 std::vector<DirectionMap<
     3, std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>

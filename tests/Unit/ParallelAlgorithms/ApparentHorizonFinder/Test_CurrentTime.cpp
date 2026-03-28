@@ -263,7 +263,7 @@ void test_check_current_time() {
   using component = MockComponent<MockMetavariables>;
 
   ActionTesting::MockRuntimeSystem<MockMetavariables> runner{
-      {domain_creator.create_domain()},
+      {domain_creator.domain()},
       {domain_creator.functions_of_time({{"Rotation", 2.0}})}};
 
   ActionTesting::emplace_array_component<component>(

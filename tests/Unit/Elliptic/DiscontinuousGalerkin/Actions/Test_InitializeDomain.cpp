@@ -85,7 +85,7 @@ void test_initialize_domain(const Spectral::Quadrature quadrature) {
     using element_array = ElementArray<1, metavariables>;
 
     ActionTesting::MockRuntimeSystem<metavariables> runner{
-        {domain_creator.create_domain(), domain_creator.functions_of_time(),
+        {domain_creator.domain(), domain_creator.functions_of_time(),
          quadrature}};
     ActionTesting::emplace_component_and_initialize<element_array>(
         &runner, element_id, {domain_creator.initial_refinement_levels(),
@@ -160,7 +160,7 @@ void test_initialize_domain(const Spectral::Quadrature quadrature) {
     using element_array = ElementArray<2, metavariables>;
 
     ActionTesting::MockRuntimeSystem<metavariables> runner{
-        {domain_creator.create_domain(), domain_creator.functions_of_time(),
+        {domain_creator.domain(), domain_creator.functions_of_time(),
          quadrature}};
     ActionTesting::emplace_component_and_initialize<element_array>(
         &runner, element_id, {domain_creator.initial_refinement_levels(),
@@ -231,7 +231,7 @@ void test_initialize_domain(const Spectral::Quadrature quadrature) {
     using metavariables = Metavariables<3>;
     using element_array = ElementArray<3, metavariables>;
     ActionTesting::MockRuntimeSystem<metavariables> runner{
-        {domain_creator.create_domain(), domain_creator.functions_of_time(),
+        {domain_creator.domain(), domain_creator.functions_of_time(),
          quadrature}};
     ActionTesting::emplace_component_and_initialize<element_array>(
         &runner, element_id, {domain_creator.initial_refinement_levels(),

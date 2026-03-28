@@ -72,7 +72,7 @@ RotatedRectangles::RotatedRectangles(
   domain_ = build_domain(context);
 }
 
-Domain<2> RotatedRectangles::create_domain(
+Domain<2> RotatedRectangles::build_domain(
     const Options::Context& /*context*/) const {
   return rectilinear_domain<2>(
       Index<2>{2, 2},
@@ -126,7 +126,7 @@ std::vector<std::string> RotatedRectangles::block_names() const {
   return block_names_for_rectilinear_domains(Index<2>{2, 2});
 }
 
-Domain<2> RotatedRectangles::create_domain() const { return domain_; }
+const Domain<2>& RotatedRectangles::domain() const { return domain_; }
 
 std::vector<std::array<size_t, 2>> RotatedRectangles::initial_extents() const {
   const size_t& x_0 = initial_number_of_grid_points_in_xy_[0][0];

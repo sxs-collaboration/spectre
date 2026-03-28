@@ -217,8 +217,8 @@ void test_add_temporal_ids() {
       0.9, 4.9, domain::creators::Sphere::Excision{}, 1_st, 5_st, false);
 
   ActionTesting::MockRuntimeSystem<metavars> runner{
-      {domain_creator.create_domain(), ::Verbosity::Silent,
-       "UnusedVolumeFilename", "UnusedReductionFilename"}};
+      {domain_creator.domain(), ::Verbosity::Silent, "UnusedVolumeFilename",
+       "UnusedReductionFilename"}};
   ActionTesting::emplace_component<target_component>(&runner, 0);
   for (int i = 0; i < 2; ++i) {
     ActionTesting::next_action<target_component>(make_not_null(&runner), 0);
@@ -392,8 +392,8 @@ void test_add_linked_message_id() {
       0.9, 4.9, domain::creators::Sphere::Excision{}, 1_st, 5_st, false);
 
   ActionTesting::MockRuntimeSystem<metavars> runner{
-      {domain_creator.create_domain(), ::Verbosity::Silent,
-       "UnusedVolumeFileName", "UnusedReductionFilename"}};
+      {domain_creator.domain(), ::Verbosity::Silent, "UnusedVolumeFileName",
+       "UnusedReductionFilename"}};
   ActionTesting::emplace_component<target_component>(&runner, 0);
   for (int i = 0; i < 2; ++i) {
     ActionTesting::next_action<target_component>(make_not_null(&runner), 0);
@@ -656,8 +656,8 @@ void test_add_temporal_ids_time_dependent() {
   initial_expiration_times[f_of_t_name] = 0.1;
   const double new_expiration_time = 1.0;
   ActionTesting::MockRuntimeSystem<metavars> runner{
-      {domain_creator.create_domain(), ::Verbosity::Silent,
-       "UnusedVolumeFileName", "UnusedReductionFilename"},
+      {domain_creator.domain(), ::Verbosity::Silent, "UnusedVolumeFileName",
+       "UnusedReductionFilename"},
       {domain_creator.functions_of_time(initial_expiration_times)}};
   ActionTesting::emplace_component<target_component>(&runner, 0);
   for (size_t i = 0; i < 2; ++i) {

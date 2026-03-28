@@ -116,7 +116,7 @@ SphericalShells::SphericalShells(
   domain_ = build_domain(context);
 }
 
-Domain<3> SphericalShells::create_domain(
+Domain<3> SphericalShells::build_domain(
     const Options::Context& /*context*/) const {
   std::vector<Block<3>> blocks;
   blocks.reserve(num_blocks_);
@@ -240,7 +240,7 @@ std::vector<std::array<size_t, 3>> SphericalShells::initial_extents() const {
                                 2 * initial_spherical_harmonic_l_ + 1}};
 }
 
-Domain<3> SphericalShells::create_domain() const { return domain_; }
+const Domain<3>& SphericalShells::domain() const { return domain_; }
 
 std::vector<std::array<size_t, 3>> SphericalShells::initial_refinement_levels()
     const {

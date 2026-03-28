@@ -96,7 +96,7 @@ std::vector<DataVector> strahlkorper_coefs_in_ringdown_distorted_frame(
       ShellWedges::All,
       time_dependent_map_options};
 
-  const auto temporary_domain = domain_creator.create_domain();
+  const auto temporary_domain = domain_creator.domain();
   const auto functions_of_time = domain_creator.functions_of_time();
 
   // Loop over the selected horizons, transforming each to the

@@ -67,7 +67,7 @@ void test_strahlkorper_in_different_frame() {
             0.0, std::array<double, 3>({{0.0, 0.0, 0.0}}),
             std::array<double, 3>({{0.01, 0.02, 0.03}}))));
   }
-  Domain<3> domain = domain_creator->create_domain();
+  Domain<3> domain = domain_creator->domain();
   const auto functions_of_time = domain_creator->functions_of_time();
 
   // Compute strahlkorper in the destination frame.
@@ -164,7 +164,7 @@ void test_strahlkorper_coords_in_different_frame() {
         grid_points_each_dimension, false, std::nullopt, radial_partitioning,
         radial_distribution, ShellWedges::All);
   }
-  Domain<3> domain = domain_creator->create_domain();
+  Domain<3> domain = domain_creator->domain();
   const auto functions_of_time = domain_creator->functions_of_time();
 
   // Compute strahlkorper coords in the inertial frame.

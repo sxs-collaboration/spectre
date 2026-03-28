@@ -125,7 +125,7 @@ CartoonSphere1D::CartoonSphere1D(
   domain_ = build_domain(context);
 }
 
-Domain<3> CartoonSphere1D::create_domain(
+Domain<3> CartoonSphere1D::build_domain(
     const Options::Context& /*context*/) const {
   using Interval = CoordinateMaps::Interval;
   using Identity1D = CoordinateMaps::Identity<1>;
@@ -200,7 +200,7 @@ CartoonSphere1D::external_boundary_conditions() const {
   return boundary_conditions;
 }
 
-Domain<3> CartoonSphere1D::create_domain() const { return domain_; }
+const Domain<3>& CartoonSphere1D::domain() const { return domain_; }
 
 std::vector<std::array<size_t, 3>> CartoonSphere1D::initial_extents() const {
   std::vector<std::array<size_t, 3>> output;

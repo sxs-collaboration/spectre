@@ -74,7 +74,7 @@ class TestFindHorizon(unittest.TestCase):
             initial_refinement=0,
             initial_number_of_grid_points=8,
             use_equiangular_map=True,
-        ).create_domain()
+        ).domain()
         element_ids = [ElementId[3](block_id) for block_id in range(6)]
         elements = [
             Element(

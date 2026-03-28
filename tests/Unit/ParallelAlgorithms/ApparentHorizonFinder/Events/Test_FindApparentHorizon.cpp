@@ -173,7 +173,7 @@ SPECTRE_TEST_CASE("Unit.ApparentHorizonFinder.FindApparentHorizonEvent",
           std::move(time_dependence)}});
   const auto block_names = domain_creator.block_names();
   ActionTesting::MockRuntimeSystem<metavars> runner{
-      {domain_creator.create_domain(),
+      {domain_creator.domain(),
        std::unordered_map<std::string, std::unordered_set<std::string>>{
            {"MockHorizonMetavars", {block_names.begin(), block_names.end()}}}},
       {domain_creator.functions_of_time(),
@@ -315,7 +315,7 @@ SPECTRE_TEST_CASE("Unit.ApparentHorizonFinder.FindApparentHorizonEvent",
         get<gh::Tags::Phi<DataVector, 3>>(vars),
         get<Tags::deriv<gh::Tags::Phi<DataVector, 3>, tmpl::size_t<3>,
                         Frame::Inertial>>(vars),
-        observation_time, domain_creator.create_domain(), mesh, element_id,
+        observation_time, domain_creator.domain(), mesh, element_id,
         functions_of_time);
     CHECK(results.vars == target_vars);
 

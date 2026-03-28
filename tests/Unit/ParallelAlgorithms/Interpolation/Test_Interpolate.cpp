@@ -246,7 +246,7 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.InterpolateEvent",
       {std::unordered_map<std::string, std::unordered_set<std::string>>{
            {"InterpolatorTargetA", {block_names.begin(), block_names.end()}}},
        ah::OptionHolders::ApparentHorizon<Frame::Inertial>{},
-       domain_creator.create_domain(), ::Verbosity::Silent},
+       domain_creator.domain(), ::Verbosity::Silent},
       {std::move(functions_of_time)}};
   ActionTesting::set_phase(make_not_null(&runner),
                            Parallel::Phase::Initialization);

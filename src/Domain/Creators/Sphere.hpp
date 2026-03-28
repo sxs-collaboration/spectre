@@ -384,7 +384,7 @@ class Sphere final : public DomainCreator<3> {
   Sphere& operator=(Sphere&&) = default;
   ~Sphere() override = default;
 
-  Domain<3> create_domain() const override;
+  const Domain<3>& domain() const override;
 
   std::unordered_map<std::string, tnsr::I<double, 3, Frame::Grid>>
   grid_anchors() const override {

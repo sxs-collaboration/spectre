@@ -108,7 +108,7 @@ void test_interpolate_volume_vars() {
       0_st,
       number_of_grid_points,
       true};
-  const auto domain = domain_creator.create_domain();
+  const auto domain = domain_creator.domain();
   const auto& functions_of_time = domain_creator.functions_of_time();
 
   const auto& blocks = domain.blocks();

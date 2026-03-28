@@ -206,7 +206,7 @@ Domain<2> AngularDisk::build_domain(const Options::Context& /*context*/) const {
   return domain;
 }
 
-Domain<2> AngularDisk::create_domain() const { return domain_; }
+const Domain<2>& AngularDisk::domain() const { return domain_; }
 
 std::vector<DirectionMap<
     2, std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>

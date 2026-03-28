@@ -57,7 +57,7 @@ void run_test() {
 
   const domain::creators::Sphere sphere_creator{
       0.9, 2.0, domain::creators::Sphere::Excision{nullptr}, 0_st, 4_st, true};
-  const Domain<3> domain = sphere_creator.create_domain();
+  const Domain<3> domain = sphere_creator.domain();
 
   const size_t l_max = 6;
   const LinkedMessageId<double> time{2.0, {1.0}};

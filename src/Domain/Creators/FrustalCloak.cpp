@@ -71,7 +71,7 @@ FrustalCloak::FrustalCloak(
   domain_ = build_domain(context);
 }
 
-Domain<3> FrustalCloak::create_domain(
+Domain<3> FrustalCloak::build_domain(
     const Options::Context& /*context*/) const {
   std::vector<std::unique_ptr<
       CoordinateMapBase<Frame::BlockLogical, Frame::Inertial, 3>>>
@@ -105,7 +105,7 @@ FrustalCloak::external_boundary_conditions() const {
   return boundary_conditions;
 }
 
-Domain<3> FrustalCloak::create_domain() const { return domain_; }
+const Domain<3>& FrustalCloak::domain() const { return domain_; }
 
 std::vector<std::array<size_t, 3>> FrustalCloak::initial_extents() const {
   return {

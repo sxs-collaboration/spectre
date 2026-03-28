@@ -191,8 +191,8 @@ void test_observe(
       ::Tags::Variables<typename decltype(prim_vars)::tags_list>,
       coordinates_tag, ::Tags::AnalyticSolutions<solution_variables>,
       observers::Tags::ObservationKey<ArraySectionIdTag>>>(
-      metavariables{}, rectilinear.create_domain(), element, mesh, vars,
-      prim_vars, get<coordinates_tag>(coordinate_vars),
+      metavariables{}, rectilinear.domain(), element, mesh, vars, prim_vars,
+      get<coordinates_tag>(coordinate_vars),
       [&solutions, &has_analytic_solutions]() {
         return has_analytic_solutions ? std::make_optional(solutions)
                                       : std::nullopt;

@@ -61,7 +61,7 @@ void make_test_volume_data_file(const std::string& volfile_name) {
   const domain::creators::Sphere domain_creator{
       3.0, 4.0, domain::creators::Sphere::Excision{}, 0_st, num_points_per_dim,
       true};
-  const auto domain = domain_creator.create_domain();
+  const auto domain = domain_creator.domain();
   const auto element_ids =
       initial_element_ids(domain_creator.initial_refinement_levels());
   h5::H5File<h5::AccessType::ReadWrite> h5file(volfile_name);

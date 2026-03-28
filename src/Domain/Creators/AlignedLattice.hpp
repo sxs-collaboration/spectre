@@ -227,7 +227,7 @@ class AlignedLattice final : public DomainCreator<Dim> {
   AlignedLattice& operator=(AlignedLattice&&) = default;
   ~AlignedLattice() override = default;
 
-  Domain<Dim> create_domain() const override;
+  const Domain<Dim>& domain() const override;
 
   std::vector<DirectionMap<
       Dim, std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>

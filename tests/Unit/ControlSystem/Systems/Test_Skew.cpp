@@ -118,7 +118,7 @@ void test_skew_process_measurement() {
   using component = MockComponent<Metavars>;
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<Metavars>;
   MockRuntimeSystem runner{
-      {creator.create_domain(), ::Verbosity::Silent, 4, true, false,
+      {creator.domain(), ::Verbosity::Silent, 4, true, false,
        std::unordered_map<std::string, bool>{},
        tnsr::I<double, 3, Frame::Grid>{std::array{0.0, 0.0, 0.0}},
        tnsr::I<double, 3, Frame::Grid>{std::array{0.0, 0.0, 0.0}},

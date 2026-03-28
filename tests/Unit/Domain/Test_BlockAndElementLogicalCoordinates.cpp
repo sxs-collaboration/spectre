@@ -461,7 +461,7 @@ void fuzzy_test_block_and_element_logical_coordinates_unrefined(
 
 void fuzzy_test_block_and_element_logical_coordinates_shell(
     const DomainCreator<3>& shell, const size_t n_pts) {
-  const auto domain = shell.create_domain();
+  const auto domain = shell.domain();
   fuzzy_test_block_and_element_logical_coordinates_unrefined(domain, n_pts);
   fuzzy_test_block_and_element_logical_coordinates(
       domain, shell.initial_refinement_levels(), n_pts);
@@ -475,7 +475,7 @@ void fuzzy_test_block_and_element_logical_coordinates_time_dependent_brick(
   const domain::creators::Brick brick(
       {{-0.1, -0.2, -0.3}}, {{0.1, 0.2, 0.3}}, {{0, 0, 0}}, {{3, 3, 3}},
       {{false, false, false}}, {}, uniform_translation.get_clone());
-  const auto domain = brick.create_domain();
+  const auto domain = brick.domain();
   const auto functions_of_time = uniform_translation.functions_of_time();
   // Test at two different times.
   fuzzy_test_block_and_element_logical_coordinates_unrefined(domain, n_pts, 0.0,
@@ -492,7 +492,7 @@ void fuzzy_test_block_and_element_logical_coordinates_distorted_brick(
   const domain::creators::Brick brick(
       {{-0.1, -0.2, -0.3}}, {{0.1, 0.2, 0.3}}, {{0, 0, 0}}, {{3, 3, 3}},
       {{false, false, false}}, {}, uniform_translation.get_clone());
-  const auto domain = brick.create_domain();
+  const auto domain = brick.domain();
   const auto functions_of_time = uniform_translation.functions_of_time();
   // Test at two different times.
   fuzzy_test_block_and_element_logical_coordinates_unrefined(domain, n_pts, 0.0,
@@ -878,7 +878,7 @@ void test_element_ids_are_uniquely_determined() {
 void test_block_logical_coordinates_with_roundoff_error() {
   const auto shell = domain::creators::Sphere(
       1., 3., domain::creators::Sphere::Excision{}, 0_st, 3_st, true);
-  const auto domain = shell.create_domain();
+  const auto domain = shell.domain();
 
   // Use this as roundoff error
   const double eps = 1e-14;

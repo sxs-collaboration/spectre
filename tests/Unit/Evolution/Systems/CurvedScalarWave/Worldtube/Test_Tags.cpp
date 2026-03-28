@@ -57,7 +57,7 @@ void test_excision_sphere_tag() {
       std::make_unique<domain::creators::Sphere>(
           1., 2., domain::creators::Sphere::Excision{}, 2_st, 4_st, true);
   const auto shell_excision_sphere =
-      shell->create_domain().excision_spheres().at("ExcisionSphere");
+      shell->domain().excision_spheres().at("ExcisionSphere");
 
   CHECK(Tags::ExcisionSphere<3>::create_from_options(shell, "ExcisionSphere") ==
         shell_excision_sphere);
@@ -119,7 +119,7 @@ void test_compute_face_coordinates_grid() {
     const auto& initial_extents_1 = shell_1.initial_extents();
     const auto& initial_extents_2 = shell_2.initial_extents();
 
-    const auto domain = shell_1.create_domain();
+    const auto domain = shell_1.domain();
     const auto& blocks = domain.blocks();
     const auto& excision_sphere =
         domain.excision_spheres().at("ExcisionSphere");
@@ -201,7 +201,7 @@ void test_compute_face_coordinates() {
       TestHelpers::CurvedScalarWave::Worldtube::worldtube_binary_compact_object<
           false>(7., 0.2, pow(7, -1.5));
   const double initial_time = 0.;
-  auto domain = domain_creator->create_domain();
+  auto domain = domain_creator->domain();
   const auto excision_sphere = domain.excision_spheres().at("ExcisionSphereA");
   const auto& blocks = domain.blocks();
   const auto initial_extents = domain_creator->initial_extents();
@@ -332,7 +332,7 @@ void test_particle_position_velocity_compute() {
       TestHelpers::CurvedScalarWave::Worldtube::worldtube_binary_compact_object<
           false>(orbit_radius, 0.2, angular_velocity);
   const double initial_time = 0.;
-  auto domain = domain_creator->create_domain();
+  auto domain = domain_creator->domain();
   const auto excision_sphere = domain.excision_spheres().at("ExcisionSphereA");
   std::uniform_real_distribution<> time_dist(0., 10.);
   auto box =
@@ -544,7 +544,7 @@ void test_face_quantities_compute() {
                                        initial_refinement,
                                        initial_extent,
                                        true};
-  const auto shell_domain = shell.create_domain();
+  const auto shell_domain = shell.domain();
   const auto excision_sphere =
       shell_domain.excision_spheres().at("ExcisionSphere");
   const auto& initial_refinements = shell.initial_refinement_levels();

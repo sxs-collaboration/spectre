@@ -152,7 +152,7 @@ class RotatedRectangles final : public DomainCreator<2> {
   RotatedRectangles& operator=(RotatedRectangles&&) = default;
   ~RotatedRectangles() override = default;
 
-  Domain<2> create_domain() const override;
+  const Domain<2>& domain() const override;
 
   std::vector<DirectionMap<
       2, std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>

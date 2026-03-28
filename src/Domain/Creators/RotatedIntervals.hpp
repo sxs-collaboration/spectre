@@ -165,7 +165,7 @@ class RotatedIntervals final : public DomainCreator<1> {
   RotatedIntervals& operator=(RotatedIntervals&&) = default;
   ~RotatedIntervals() override = default;
 
-  Domain<1> create_domain() const override;
+  const Domain<1>& domain() const override;
 
   std::vector<DirectionMap<
       1, std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>

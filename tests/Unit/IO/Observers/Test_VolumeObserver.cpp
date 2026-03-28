@@ -200,7 +200,7 @@ SPECTRE_TEST_CASE("Unit.IO.Observers.VolumeObserver", "[Unit][Observers]") {
   tuples::TaggedTuple<observers::Tags::ReductionFileName,
                       observers::Tags::VolumeFileName, domain::Tags::Domain<3>,
                       domain::Tags::FunctionsOfTimeInitialize>
-      cache_data{"", output_file_prefix, domain_creator.create_domain(),
+      cache_data{"", output_file_prefix, domain_creator.domain(),
                  domain_creator.functions_of_time(initial_expiration_times)};
   ActionTesting::MockRuntimeSystem<metavariables> runner{std::move(cache_data)};
   ActionTesting::emplace_group_component<obs_component>(&runner);

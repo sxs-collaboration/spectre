@@ -145,7 +145,7 @@ class FrustalCloak final : public DomainCreator<3> {
   FrustalCloak& operator=(FrustalCloak&&) = default;
   ~FrustalCloak() override = default;
 
-  Domain<3> create_domain() const override;
+  const Domain<3>& domain() const override;
 
   std::vector<DirectionMap<
       3, std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>

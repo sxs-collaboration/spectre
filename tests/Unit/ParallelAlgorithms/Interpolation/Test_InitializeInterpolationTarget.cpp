@@ -82,7 +82,7 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.InterpolationTarget.Initialize",
       0.9, 4.9, domain::creators::Sphere::Excision{}, 1_st, 5_st, false);
 
   ActionTesting::MockRuntimeSystem<metavars> runner{
-      {domain_creator.create_domain(), ::Verbosity::Silent}};
+      {domain_creator.domain(), ::Verbosity::Silent}};
   ActionTesting::set_phase(make_not_null(&runner),
                            Parallel::Phase::Initialization);
   ActionTesting::emplace_component<component>(&runner, 0);
@@ -102,7 +102,7 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.InterpolationTarget.Initialize",
 
   const auto& cache = ActionTesting::cache<component>(runner, 0_st);
   CHECK(Parallel::get<domain::Tags::Domain<3>>(cache) ==
-        domain_creator.create_domain());
+        domain_creator.domain());
 
   CHECK(ActionTesting::get_databox_tag<
             component, ::intrp::Tags::InterpolatedVars<

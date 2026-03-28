@@ -253,12 +253,12 @@ void test() {
                                                        &init_expr_times]() {
     if constexpr (UseTimeDepMaps) {
       return ActionTesting::MockRuntimeSystem<metavars>(
-          {domain_creator.create_domain(), ::Verbosity::Silent},
+          {domain_creator.domain(), ::Verbosity::Silent},
           {domain_creator.functions_of_time(init_expr_times)});
     } else {
       (void)init_expr_times;
       return ActionTesting::MockRuntimeSystem<metavars>(
-          {domain_creator.create_domain(), ::Verbosity::Silent});
+          {domain_creator.domain(), ::Verbosity::Silent});
     }
   }();
   ActionTesting::emplace_component_and_initialize<target_component>(

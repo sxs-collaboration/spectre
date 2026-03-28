@@ -79,7 +79,7 @@ void test_local_adm_integrals(const double& distance,
       /* equatorial_compression */ {},
       /* radial_partitioning */ prev_distances,
       /* radial_distribution */ domain::CoordinateMaps::Distribution::Inverse};
-  const auto shell_domain = shell.create_domain();
+  const auto shell_domain = shell.domain();
   const auto& blocks = shell_domain.blocks();
   const auto& initial_ref_levels = shell.initial_refinement_levels();
   const auto element_ids = initial_element_ids(initial_ref_levels);

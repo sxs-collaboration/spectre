@@ -76,7 +76,7 @@ void test_compute_horizon_volume_quantities(const bool is_time_dependent) {
                                   std::array{0.0, 0.0, 0.0}}},
                 true}}
           : std::nullopt};
-  const auto domain = domain_creator.create_domain();
+  const auto domain = domain_creator.domain();
   const auto& functions_of_time = domain_creator.functions_of_time();
 
   // Just use the first block, it has all maps and all frames

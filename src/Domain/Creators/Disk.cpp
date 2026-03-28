@@ -171,7 +171,7 @@ Disk::external_boundary_conditions() const {
   return boundary_conditions;
 }
 
-Domain<2> Disk::create_domain() const { return domain_; }
+const Domain<2>& Disk::domain() const { return domain_; }
 
 std::vector<std::array<size_t, 2>> Disk::initial_extents() const {
   return {

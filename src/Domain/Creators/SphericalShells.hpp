@@ -212,7 +212,7 @@ class SphericalShells final : public DomainCreator<3> {
   SphericalShells& operator=(SphericalShells&&) = default;
   ~SphericalShells() override = default;
 
-  Domain<3> create_domain() const override;
+  const Domain<3>& domain() const override;
 
   /// A single grid anchor "Center" at the origin.
   std::unordered_map<std::string, tnsr::I<double, 3, Frame::Grid>>

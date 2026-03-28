@@ -345,7 +345,7 @@ void test_dg_operator(
   register_factory_classes_with_charm<Metavars>();
 
   // Get a list of all elements in the domain
-  auto domain = domain_creator.create_domain();
+  auto domain = domain_creator.domain();
   auto boundary_conditions = domain_creator.external_boundary_conditions();
   const auto initial_ref_levs = domain_creator.initial_refinement_levels();
   const auto initial_extents = domain_creator.initial_extents();
