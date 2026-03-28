@@ -269,7 +269,7 @@ class Rectilinear final : public DomainCreator<Dim> {
           Dim>;
 
  private:
-  Domain<Dim> create_domain(const Options::Context& context) const;
+  Domain<Dim> build_domain(const Options::Context& context) const;
   std::array<double, Dim> lower_bounds_{};
   std::array<double, Dim> upper_bounds_{};
   std::array<CoordinateMaps::DistributionAndSingularityPosition, Dim>

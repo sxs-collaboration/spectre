@@ -222,7 +222,7 @@ class CartoonCylinder final : public DomainCreator<3> {
           2>;
 
  private:
-  Domain<3> create_domain(const Options::Context& context) const;
+  Domain<3> build_domain(const Options::Context& context) const;
   std::array<double, 2> lower_bounds_{};
   std::array<double, 2> upper_bounds_{};
   std::array<size_t, 2> initial_refinement_levels_{};

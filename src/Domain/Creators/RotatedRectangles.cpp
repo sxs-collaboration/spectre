@@ -70,7 +70,7 @@ RotatedRectangles::RotatedRectangles(
   if (context != Options::Context{}) {
     // Run create_domain for non-default contexts to validate the constructed
     // domain.
-    (void)create_domain(context);
+    (void)build_domain(context);
   }
 }
 
@@ -129,7 +129,7 @@ std::vector<std::string> RotatedRectangles::block_names() const {
 }
 
 Domain<2> RotatedRectangles::create_domain() const {
-  return create_domain(Options::Context{});
+  return build_domain(Options::Context{});
 }
 
 std::vector<std::array<size_t, 2>> RotatedRectangles::initial_extents() const {

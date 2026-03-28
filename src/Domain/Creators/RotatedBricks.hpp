@@ -213,7 +213,7 @@ class RotatedBricks final : public DomainCreator<3> {
   std::vector<std::array<size_t, 3>> initial_refinement_levels() const override;
 
  private:
-  Domain<3> create_domain(const Options::Context& context) const;
+  Domain<3> build_domain(const Options::Context& context) const;
   typename LowerBound::type lower_xyz_{
       {std::numeric_limits<double>::signaling_NaN()}};
   typename Midpoint::type midpoint_xyz_{

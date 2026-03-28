@@ -428,7 +428,7 @@ BinaryCompactObject<UseWorldtube>::BinaryCompactObject(
   if (context != Options::Context{}) {
     // Run create_domain for non-default contexts to validate the constructed
     // domain.
-    (void)create_domain(context);
+    (void)build_domain(context);
   }
 }
 
@@ -905,7 +905,7 @@ BinaryCompactObject<UseWorldtube>::functions_of_time(
 
 template <bool UseWorldtube>
 Domain<3> BinaryCompactObject<UseWorldtube>::create_domain() const {
-  return create_domain(Options::Context{});
+  return build_domain(Options::Context{});
 }
 
 template class BinaryCompactObject<true>;

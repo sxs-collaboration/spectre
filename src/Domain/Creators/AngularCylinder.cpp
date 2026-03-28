@@ -320,7 +320,8 @@ AngularCylinder::AngularCylinder(
   }
 }
 
-Domain<3> AngularCylinder::create_domain() const {
+Domain<3> AngularCylinder::build_domain(
+    const Options::Context& /*context*/) const {
   using Affine = CoordinateMaps::Affine;
   using Identity1D = CoordinateMaps::Identity<1>;
   using Interval = CoordinateMaps::Interval;
@@ -438,6 +439,10 @@ Domain<3> AngularCylinder::create_domain() const {
     }
   }
   return domain;
+}
+
+Domain<3> AngularCylinder::create_domain() const {
+  return build_domain(Options::Context{});
 }
 
 std::vector<DirectionMap<

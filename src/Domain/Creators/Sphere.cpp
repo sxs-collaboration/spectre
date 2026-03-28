@@ -213,11 +213,11 @@ Sphere::Sphere(
   if (context != Options::Context{}) {
     // Run create_domain for non-default contexts to validate the constructed
     // domain.
-    (void)create_domain(context);
+    (void)build_domain(context);
   }
 }
 
-Domain<3> Sphere::create_domain(const Options::Context& context) const {
+Domain<3> Sphere::build_domain(const Options::Context& context) const {
   std::vector<std::array<size_t, 8>> corners =
       corners_for_radially_layered_domains(num_shells_, fill_interior_,
                                            {{1, 2, 3, 4, 5, 6, 7, 8}},
@@ -408,7 +408,7 @@ Sphere::external_boundary_conditions() const {
 }
 
 Domain<3> Sphere::create_domain() const {
-  return create_domain(Options::Context{});
+  return build_domain(Options::Context{});
 }
 
 std::unordered_map<std::string,

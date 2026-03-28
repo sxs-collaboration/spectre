@@ -103,7 +103,7 @@ RotatedIntervals::RotatedIntervals(
   if (context != Options::Context{}) {
     // Run create_domain for non-default contexts to validate the constructed
     // domain.
-    (void)create_domain(context);
+    (void)build_domain(context);
   }
 }
 
@@ -160,7 +160,7 @@ std::vector<std::string> RotatedIntervals::block_names() const {
 }
 
 Domain<1> RotatedIntervals::create_domain() const {
-  return create_domain(Options::Context{});
+  return build_domain(Options::Context{});
 }
 
 std::vector<std::array<size_t, 1>> RotatedIntervals::initial_extents() const {

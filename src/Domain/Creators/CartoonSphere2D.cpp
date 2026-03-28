@@ -172,7 +172,7 @@ CartoonSphere2D::CartoonSphere2D(
   if (context != Options::Context{}) {
     // Run create_domain for non-default contexts to validate the constructed
     // domain.
-    (void)create_domain(context);
+    (void)build_domain(context);
   }
 }
 
@@ -419,7 +419,7 @@ CartoonSphere2D::external_boundary_conditions() const {
 }
 
 Domain<3> CartoonSphere2D::create_domain() const {
-  return create_domain(Options::Context{});
+  return build_domain(Options::Context{});
 }
 
 std::vector<std::array<size_t, 3>> CartoonSphere2D::initial_extents() const {

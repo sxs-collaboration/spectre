@@ -251,7 +251,7 @@ class CartoonSphere2D final : public DomainCreator<3> {
           std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>> override;
 
  private:
-  Domain<3> create_domain(const Options::Context& context) const;
+  Domain<3> build_domain(const Options::Context& context) const;
   double inner_radius_{};
   double outer_radius_{};
   std::vector<std::array<size_t, 2>> initial_refinement_{};

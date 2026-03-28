@@ -74,11 +74,11 @@ Disk::Disk(typename InnerRadius::type inner_radius,
   if (context != Options::Context{}) {
     // Run create_domain for non-default contexts to validate the constructed
     // domain.
-    (void)create_domain(context);
+    (void)build_domain(context);
   }
 }
 
-Domain<2> Disk::create_domain(const Options::Context& context) const {
+Domain<2> Disk::build_domain(const Options::Context& context) const {
   using Wedge2DMap = CoordinateMaps::Wedge<2>;
   using Affine = CoordinateMaps::Affine;
   using Affine2D = CoordinateMaps::ProductOf2Maps<Affine, Affine>;
@@ -176,7 +176,7 @@ Disk::external_boundary_conditions() const {
 }
 
 Domain<2> Disk::create_domain() const {
-  return create_domain(Options::Context{});
+  return build_domain(Options::Context{});
 }
 
 std::vector<std::array<size_t, 2>> Disk::initial_extents() const {

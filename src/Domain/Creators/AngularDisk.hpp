@@ -44,7 +44,7 @@ namespace domain::creators {
  * \brief Create a 2D filled disk domain with radial partitioning using a B2
  * filled disk at the center and Fourier hollow disks surrounding it.
  */
-class AngularDisk : public DomainCreator<2> {
+class AngularDisk final : public DomainCreator<2> {
  public:
   using maps_list = tmpl::list<domain::CoordinateMap<
       Frame::BlockLogical, Frame::Inertial,
@@ -172,6 +172,7 @@ class AngularDisk : public DomainCreator<2> {
   }
 
  private:
+  Domain<2> build_domain(const Options::Context& context) const;
   typename OuterRadius::type outer_radius_{};
   typename RadialPartitioning::type radial_partitioning_{};
   typename InitialDiskThetaGridPoints::type initial_disk_grid_points_{};

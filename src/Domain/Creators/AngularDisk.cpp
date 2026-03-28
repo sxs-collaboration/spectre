@@ -143,7 +143,7 @@ AngularDisk::AngularDisk(
   }
 }
 
-Domain<2> AngularDisk::create_domain() const {
+Domain<2> AngularDisk::build_domain(const Options::Context& /*context*/) const {
   using Identity = CoordinateMaps::Identity<1>;
   using Affine = CoordinateMaps::Affine;
   const auto aligned = OrientationMap<2>::create_aligned();
@@ -203,6 +203,10 @@ Domain<2> AngularDisk::create_domain() const {
     }
   }
   return domain;
+}
+
+Domain<2> AngularDisk::create_domain() const {
+  return build_domain(Options::Context{});
 }
 
 std::vector<DirectionMap<

@@ -263,11 +263,11 @@ Cylinder::Cylinder(
   if (context != Options::Context{}) {
     // Run create_domain for non-default contexts to validate the constructed
     // domain.
-    (void)create_domain(context);
+    (void)build_domain(context);
   }
 }
 
-Domain<3> Cylinder::create_domain(const Options::Context& context) const {
+Domain<3> Cylinder::build_domain(const Options::Context& context) const {
   const size_t number_of_shells = 1 + radial_partitioning_.size();
   const size_t number_of_layers = 1 + partitioning_in_z_.size();
   std::vector<PairOfFaces> pairs_of_faces{};
@@ -353,7 +353,7 @@ Cylinder::external_boundary_conditions() const {
 }
 
 Domain<3> Cylinder::create_domain() const {
-  return create_domain(Options::Context{});
+  return build_domain(Options::Context{});
 }
 
 std::vector<std::array<size_t, 3>> Cylinder::initial_extents() const {

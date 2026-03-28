@@ -75,7 +75,7 @@ Rectilinear<Dim>::Rectilinear(
   if (context != Options::Context{}) {
     // Run create_domain for non-default contexts to validate the constructed
     // domain.
-    (void)create_domain(context);
+    (void)build_domain(context);
   }
 }
 
@@ -229,7 +229,7 @@ Rectilinear<Dim>::external_boundary_conditions() const {
 
 template <size_t Dim>
 Domain<Dim> Rectilinear<Dim>::create_domain() const {
-  return create_domain(Options::Context{});
+  return build_domain(Options::Context{});
 }
 
 template <size_t Dim>
