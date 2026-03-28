@@ -39,19 +39,21 @@ namespace gauges {
  *
  * \f{align*}
  * H_a :=  [1 - R(t)] H_a^\mathrm{init} +
- *  [\mu_{L1} \mathrm{log}(\sqrt{g}/N) + \mu_{L2} \mathrm{log}(1/N)] t_a
- *   - \mu_S g_{ai} N^i / N
+ *  [\mu_{L1} \mathrm{log}(\sqrt{\gamma}/\alpha) + \mu_{L2}
+ * \mathrm{log}(1/\alpha)] n_a
+ *   - \mu_S \gamma_{ai} \beta^i / \alpha
  * \f}
  *
- * where \f$N, N^k\f$ are the lapse and shift respectively, \f$t_a\f$ is the
- * unit normal one-form to the spatial slice, and \f$g_{ab}\f$ is
+ * where \f$\alpha, \beta^k\f$ are the lapse and shift respectively, \f$n_a\f$
+ * is the unit normal one-form to the spatial slice, and \f$\gamma_{ab}\f$ is
  * the spatial metric (obtained by projecting the spacetime metric onto the
- * 3-slice, i.e. \f$g_{ab} = \psi_{ab} + t_a t_b\f$). The prefactors are:
+ * 3-slice, i.e. \f$\gamma_{ab} = g_{ab} + n_a n_b\f$). The prefactors are:
  *
  * \f{align*}
- *  \mu_{L1} &= A_{L1} R(t) W(x^i) \mathrm{log}(\sqrt{g}/N)^{e_{L1}}, \\
- *  \mu_{L2} &= A_{L2} R(t) W(x^i) \mathrm{log}(1/N)^{e_{L2}}, \\
- *  \mu_{S} &= A_{S} R(t) W(x^i) \mathrm{log}(\sqrt{g}/N)^{e_{S}},
+ *  \mu_{L1} &= A_{L1} R(t) W(x^i) \mathrm{log}(\sqrt{\gamma}/\alpha)^{e_{L1}},
+ * \\
+ *  \mu_{L2} &= A_{L2} R(t) W(x^i) \mathrm{log}(1/\alpha)^{e_{L2}}, \\
+ *  \mu_{S} &= A_{S} R(t) W(x^i) \mathrm{log}(\sqrt{\gamma}/\alpha)^{e_{S}},
  * \f}
  *
  * temporal roll-on function \f$ R(t)\f$ is:
@@ -94,9 +96,10 @@ namespace gauges {
  *
  * \f{align*}
  * T_1 =& [1 - R(t)] H_a^\mathrm{init}, \\
- * T_2 =& [\mu_{L1} \mathrm{log}(\sqrt{g}/N) + \mu_{L2} \mathrm{log}(1/N)] t_a,
+ * T_2 =& [\mu_{L1} \mathrm{log}(\sqrt{\gamma}/\alpha) + \mu_{L2}
+ * \mathrm{log}(1/\alpha)] n_a,
  * \\
- * T_3 =& - \mu_S g_{ai} N^i / N.
+ * T_3 =& - \mu_S \gamma_{ai} \beta^i / \alpha.
  * \f}
  *
  * Derivation:
@@ -108,30 +111,32 @@ namespace gauges {
  *                - H_b^\mathrm{init} \partial_a R.
  * \f}
  *
- * \f$\blacksquare\f$ Write \f$ T_2 \equiv (\mu_1 + \mu_2) t_b \f$. Then:
+ * \f$\blacksquare\f$ Write \f$ T_2 \equiv (\mu_1 + \mu_2) n_b \f$. Then:
  *
  * \f{align*}
- * \partial_a T_2 =& (\partial_a \mu_1 + \partial_a \mu_2) t_b \\
- *               +& (\mu_1 + \mu_2) \partial_a t_b,
+ * \partial_a T_2 =& (\partial_a \mu_1 + \partial_a \mu_2) n_b \\
+ *               +& (\mu_1 + \mu_2) \partial_a n_b,
  * \f}
  *
  * where
  *
  * \f{align*}
- * \partial_a t_b =& \left(-\partial_a N, 0, 0, 0\right) \\
+ * \partial_a n_b =& \left(-\partial_a \alpha, 0, 0, 0\right) \\
  *
  * \partial_a \mu_1
- *  =& \partial_a [A_{L1} R(t) W(x^i) \mathrm{log}(\sqrt{g}/N)^{e_{L1} +
+ *  =& \partial_a [A_{L1} R(t) W(x^i) \mathrm{log}(\sqrt{\gamma}/\alpha)^{e_{L1}
+ * +
  * 1}], \\
- *  =& A_{L1} R(t) W(x^i) \partial_a [\mathrm{log}(\sqrt{g}/N)^{e_{L1} +
+ *  =& A_{L1} R(t) W(x^i) \partial_a [\mathrm{log}(\sqrt{\gamma}/\alpha)^{e_{L1}
+ * +
  * 1}] \\
- *   +& A_{L1} \mathrm{log}(\sqrt{g}/N)^{e_{L1} + 1} \partial_a [R(t)
+ *   +& A_{L1} \mathrm{log}(\sqrt{\gamma}/\alpha)^{e_{L1} + 1} \partial_a [R(t)
  * W(x^i)],\\
  *
  * \partial_a \mu_2
- *  =& \partial_a [A_{L2} R(t) W(x^i) \mathrm{log}(1/N)^{e_{L2} + 1}], \\
- *  =& A_{L2} R(t) W(x^i) \partial_a [\mathrm{log}(1/N)^{e_{L2} + 1}] \\
- *     +& A_{L2} \mathrm{log}(1/N)^{e_{L2} + 1} \partial_a [R(t) W(x^i)],
+ *  =& \partial_a [A_{L2} R(t) W(x^i) \mathrm{log}(1/\alpha)^{e_{L2} + 1}], \\
+ *  =& A_{L2} R(t) W(x^i) \partial_a [\mathrm{log}(1/\alpha)^{e_{L2} + 1}] \\
+ *     +& A_{L2} \mathrm{log}(1/\alpha)^{e_{L2} + 1} \partial_a [R(t) W(x^i)],
  * \f}
  *
  * where \f$\partial_a [R W] = \left(\partial_0 R(t), \partial_i
@@ -140,23 +145,22 @@ namespace gauges {
  * \f$\blacksquare\f$ Finally, the derivatives of \f$ T_3 \f$ are:
  *
  * \f[
- * \partial_a T_3 = -\partial_a(\mu_S/N) g_{bi} N^i
- *                  -(\mu_S/N) \partial_a(g_{bi}) N^i
- *                  -(\mu_S/N) g_{bi}\partial_a N^i,
+ * \partial_a T_3 = -\partial_a(\mu_S/\alpha) \gamma_{bi} \beta^i
+ *                  -(\mu_S/\alpha) \partial_a(\gamma_{bi}) \beta^i
+ *                  -(\mu_S/\alpha) \gamma_{bi}\partial_a \beta^i,
  * \f]
  *
  * where
  *
  * \f{align*}
- * \partial_a(\mu_S / N) =& (1/N)\partial_a \mu_S
- *                       - \frac{\mu_S}{N^2}\partial_a N, \,\,\mathrm{and}\\
- * \partial_a \mu_S =& \partial_a [A_S R(t) W(x^i)
- * \mathrm{log}(\sqrt{g}/N)^{e_S}], \\
+ * \partial_a(\mu_S / \alpha) =& (1/\alpha)\partial_a \mu_S
+ *                       - \frac{\mu_S}{\alpha^2}\partial_a \alpha,
+ * \,\,\mathrm{and}\\ \partial_a \mu_S =& \partial_a [A_S R(t) W(x^i)
+ * \mathrm{log}(\sqrt{\gamma}/\alpha)^{e_S}], \\
  *                  =& A_S R(t) W(x^i) \partial_a
- * [\mathrm{log}(\sqrt{g}/N)^{e_S}] \\
- *                  +& A_S \mathrm{log}(\sqrt{g} / N)^{e_S} \partial_a [R(t)
- * W(x^i)].
- * \f}
+ * [\mathrm{log}(\sqrt{\gamma}/\alpha)^{e_S}] \\
+ *                  +& A_S \mathrm{log}(\sqrt{\gamma} / \alpha)^{e_S} \partial_a
+ * [R(t) W(x^i)]. \f}
  */
 template <size_t SpatialDim, typename Frame>
 void damped_harmonic_rollon(

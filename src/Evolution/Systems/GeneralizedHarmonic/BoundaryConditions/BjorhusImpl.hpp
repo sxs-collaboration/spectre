@@ -22,20 +22,20 @@ namespace gh::BoundaryConditions {
 namespace Bjorhus {
 /*!
  * \brief Computes the expression needed to set boundary conditions on the time
- * derivative of the characteristic field \f$v^{\psi}_{ab}\f$
+ * derivative of the characteristic field \f$v^{g}_{ab}\f$
  *
  * \details In the Bjorhus scheme, the time derivatives of evolved variables are
  * characteristic projected. A constraint-preserving correction term is added
  * here to the resulting characteristic (time-derivative) field:
  *
  * \f{align}
- * \Delta \partial_t v^{\psi}_{ab} = \lambda_{\psi} n^i C_{iab}
+ * \Delta \partial_t v^{g}_{ab} = \lambda_{g} n^i C_{iab}
  * \f}
  *
  * where \f$n^i\f$ is the local unit normal to the external boundary,
- * \f$C_{iab} = \partial_i \psi_{ab} - \Phi_{iab}\f$ is the three-index
- * constraint, and \f$\lambda_{\psi}\f$ is the characteristic speed of the field
- * \f$v^{\psi}_{ab}\f$.
+ * \f$C_{iab} = \partial_i g_{ab} - \Phi_{iab}\f$ is the three-index
+ * constraint, and \f$\lambda_{g}\f$ is the characteristic speed of the field
+ * \f$v^{g}_{ab}\f$.
  */
 template <size_t VolumeDim, typename DataType>
 void constraint_preserving_corrections_dt_v_psi(
@@ -128,13 +128,13 @@ void constraint_preserving_corrections_dt_v_zero(
  *     \left(k_a P^c_b l^d + k_b P^c_a l^d -
  *          \left(k_a l_b k^c l^d + k_b l_a k_c l^d + k_a k_b l^c l^d
  *          \right) \right) \left(\gamma_2 - \frac{1}{r}
- *                          \right) \partial_t v^{\psi}_{cd}
+ *                          \right) \partial_t v^{g}_{cd}
  * \f}
  *
  * where \f$r\f$ is the radial coordinate at the outer boundary, which is
  * assumed to be spherical, \f$\gamma_2\f$ is a GH constraint damping parameter,
- * and \f$\partial_t v^{\psi}_{ab}\f$ is the characteristic projected time
- * derivative of evolved variables (corresponding to the \f$v^{\psi}\f$ field).
+ * and \f$\partial_t v^{g}_{ab}\f$ is the characteristic projected time
+ * derivative of evolved variables (corresponding to the \f$v^{g}\f$ field).
  * Finally, we constrain physical degrees of freedom using corrections from
  * Eq. (68) of \cite Lindblom2005qh :
  *

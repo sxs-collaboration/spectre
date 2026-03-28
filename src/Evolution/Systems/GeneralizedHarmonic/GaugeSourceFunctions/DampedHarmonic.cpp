@@ -183,9 +183,9 @@ void damped_harmonic_impl(
                       spacetime_metric.get(i + 1, j + 1), 0, num_points);
     }
   }
-  // We need \f$ \partial_a g_{bi} = \partial_a \psi_{bi} \f$. Here we
+  // We need \f$ \partial_a \gamma_{bi} = \partial_a g_{bi} \f$. Here we
   // use `derivatives_of_spacetime_metric` to get \f$ \partial_a g_{bc}\f$
-  // instead, and use only the derivatives of \f$ g_{bi}\f$.
+  // instead, and use only the derivatives of \f$ \gamma_{bi}\f$.
   const tnsr::ii<DataVector, SpatialDim, Frame> d0_spatial_metric{};
   for (size_t i = 0; i < SpatialDim; ++i) {
     for (size_t j = i; j < SpatialDim; ++j) {
@@ -222,15 +222,16 @@ void damped_harmonic_impl(
   get(mu_L2) = amp_coef_L2 * roll_on * get(weight) * get(pow3);
   get(mu_S_over_lapse) = get(mu_S) * get(one_over_lapse);
 
-  // Calc \f$ \mu_1 = \mu_{L1} log(rootg/N) = R W log(rootg/N)^5\f$
+  // Calc \f$ \mu_1 = \mu_{L1} \log(\sqrt{\gamma}/\alpha) = R W
+  // \log(\sqrt{\gamma}/\alpha)^5\f$
   get(mu1) = get(mu_L1) * get(log_fac_1);
 
-  // Calc \f$ \mu_2 = \mu_{L2} log(1/N) = R W log(1/N)^5\f$
+  // Calc \f$ \mu_2 = \mu_{L2} \log(1/\alpha) = R W \log(1/\alpha)^5\f$
   get(mu2) = get(mu_L2) * get(log_fac_2);
 
   get(prefac) = get(mu_L1) * get(log_fac_1) + get(mu_L2) * get(log_fac_2);
 
-  // Compute g_ai shift^i
+  // Compute g_{ai} shift^i
   for (size_t a = 0; a < SpatialDim + 1; ++a) {
     spacetime_metric_dot_shift.get(a) =
         spacetime_metric.get(a, 1) * shift.get(0);
@@ -304,11 +305,11 @@ void damped_harmonic_impl(
     }
   };
   // \partial_a \mu_{S} = \partial_a(A_S R_S W
-  //                               \log(\sqrt{g}/N)^{c_{S}})
+  //                               \log(\sqrt{\gamma}/\alpha)^{c_{S}})
   // \partial_a \mu_1 = \partial_a(A_L1 R_L1 W
-  //                               \log(\sqrt{g}/N)^{1+c_{L1}})
+  //                               \log(\sqrt{\gamma}/\alpha)^{1+c_{L1}})
   // \partial_a \mu_2 = \partial_a(A_L2 R_L2 W
-  //                               \log(1/N)^{1+c_{L2}})
+  //                               \log(1/\alpha)^{1+c_{L2}})
   spacetime_deriv_of_power_log_factor_metric_lapse(
       make_not_null(&d4_log_fac_mu1), exp_fac_1, exp_L1 + 1);
   spacetime_deriv_of_power_log_factor_metric_lapse(
@@ -376,8 +377,8 @@ void damped_harmonic_impl(
         + (get(mu1) + get(mu2)) * get(lapse) * half_phi_two_normals.get(i);
   }
 
-  // \f[ \partial_a (\mu_S/N) = (1/N) \partial_a \mu_{S}
-  //         - (\mu_{S}/N^2) \partial_a N
+  // \f[ \partial_a (\mu_S/\alpha) = (1/\alpha) \partial_a \mu_{S}
+  //         - (\mu_{S}/\alpha^2) \partial_a \alpha
   // \f]
   //
   // Note that the d4_lapse terms are actually
