@@ -17,6 +17,7 @@ target_link_libraries(
   INTERFACE
   DataStructures
   DataStructuresHelpers
+  Framework
   FunctionsOfTime
   Parallel
   Utilities

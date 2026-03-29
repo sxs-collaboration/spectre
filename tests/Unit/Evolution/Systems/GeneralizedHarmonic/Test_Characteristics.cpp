@@ -78,29 +78,29 @@ void test_characteristic_speeds() {
       gh::CharacteristicSpeedsCompute<Dim, Frame>>("CharacteristicSpeeds");
   const DataVector used_for_size(5);
   pypp::check_with_random_values<1>(speed_with_index<0, Dim, Frame>,
-                                    "TestFunctions", "char_speed_upsi",
+                                    "Characteristics", "char_speed_upsi",
                                     {{{-2.0, 2.0}}}, used_for_size);
   pypp::check_with_random_values<1>(speed_with_index<1, Dim, Frame>,
-                                    "TestFunctions", "char_speed_uzero",
+                                    "Characteristics", "char_speed_uzero",
                                     {{{-2.0, 2.0}}}, used_for_size);
   pypp::check_with_random_values<1>(speed_with_index<3, Dim, Frame>,
-                                    "TestFunctions", "char_speed_uminus",
+                                    "Characteristics", "char_speed_uminus",
                                     {{{-2.0, 2.0}}}, used_for_size);
   pypp::check_with_random_values<1>(speed_with_index<2, Dim, Frame>,
-                                    "TestFunctions", "char_speed_uplus",
+                                    "Characteristics", "char_speed_uplus",
                                     {{{-2.0, 2.0}}}, used_for_size);
 
   pypp::check_with_random_values<1>(
-      char_speed_with_moving_mesh<0, Dim, Frame>, "TestFunctions",
+      char_speed_with_moving_mesh<0, Dim, Frame>, "Characteristics",
       "char_speed_upsi_moving_mesh", {{{-2.0, 2.0}}}, used_for_size);
   pypp::check_with_random_values<1>(
-      char_speed_with_moving_mesh<1, Dim, Frame>, "TestFunctions",
+      char_speed_with_moving_mesh<1, Dim, Frame>, "Characteristics",
       "char_speed_uzero_moving_mesh", {{{-2.0, 2.0}}}, used_for_size);
   pypp::check_with_random_values<1>(
-      char_speed_with_moving_mesh<2, Dim, Frame>, "TestFunctions",
+      char_speed_with_moving_mesh<2, Dim, Frame>, "Characteristics",
       "char_speed_uplus_moving_mesh", {{{-2.0, 2.0}}}, used_for_size);
   pypp::check_with_random_values<1>(
-      char_speed_with_moving_mesh<3, Dim, Frame>, "TestFunctions",
+      char_speed_with_moving_mesh<3, Dim, Frame>, "Characteristics",
       "char_speed_uminus_moving_mesh", {{{-2.0, 2.0}}}, used_for_size);
 }
 
@@ -114,29 +114,29 @@ void test_characteristic_speeds_on_strahlkorper() {
       "CharacteristicSpeedsOnStrahlkorper");
   const DataVector used_for_size(5);
   pypp::check_with_random_values<1>(speed_with_index<0, Dim, Frame>,
-                                    "TestFunctions", "char_speed_upsi",
+                                    "Characteristics", "char_speed_upsi",
                                     {{{-2.0, 2.0}}}, used_for_size);
   pypp::check_with_random_values<1>(speed_with_index<1, Dim, Frame>,
-                                    "TestFunctions", "char_speed_uzero",
+                                    "Characteristics", "char_speed_uzero",
                                     {{{-2.0, 2.0}}}, used_for_size);
   pypp::check_with_random_values<1>(speed_with_index<3, Dim, Frame>,
-                                    "TestFunctions", "char_speed_uminus",
+                                    "Characteristics", "char_speed_uminus",
                                     {{{-2.0, 2.0}}}, used_for_size);
   pypp::check_with_random_values<1>(speed_with_index<2, Dim, Frame>,
-                                    "TestFunctions", "char_speed_uplus",
+                                    "Characteristics", "char_speed_uplus",
                                     {{{-2.0, 2.0}}}, used_for_size);
 
   pypp::check_with_random_values<1>(
-      char_speed_with_moving_mesh<0, Dim, Frame>, "TestFunctions",
+      char_speed_with_moving_mesh<0, Dim, Frame>, "Characteristics",
       "char_speed_upsi_moving_mesh", {{{-2.0, 2.0}}}, used_for_size);
   pypp::check_with_random_values<1>(
-      char_speed_with_moving_mesh<1, Dim, Frame>, "TestFunctions",
+      char_speed_with_moving_mesh<1, Dim, Frame>, "Characteristics",
       "char_speed_uzero_moving_mesh", {{{-2.0, 2.0}}}, used_for_size);
   pypp::check_with_random_values<1>(
-      char_speed_with_moving_mesh<3, Dim, Frame>, "TestFunctions",
+      char_speed_with_moving_mesh<3, Dim, Frame>, "Characteristics",
       "char_speed_uminus_moving_mesh", {{{-2.0, 2.0}}}, used_for_size);
   pypp::check_with_random_values<1>(
-      char_speed_with_moving_mesh<2, Dim, Frame>, "TestFunctions",
+      char_speed_with_moving_mesh<2, Dim, Frame>, "Characteristics",
       "char_speed_uplus_moving_mesh", {{{-2.0, 2.0}}}, used_for_size);
 }
 
@@ -272,8 +272,9 @@ void test_characteristic_speeds_analytic(
     const std::array<double, 3>& upper_bound) {
   // Set up grid
   const size_t spatial_dim = 3;
-  Mesh<spatial_dim> mesh{grid_size_each_dimension, Spectral::Basis::Legendre,
-                         Spectral::Quadrature::GaussLobatto};
+  const Mesh<spatial_dim> mesh{grid_size_each_dimension,
+                               Spectral::Basis::Legendre,
+                               Spectral::Quadrature::GaussLobatto};
 
   using Affine = domain::CoordinateMaps::Affine;
   using Affine3D =
@@ -377,11 +378,11 @@ void test_characteristic_fields() {
   pypp::check_with_random_values<1>(
       field_with_tag<gh::Tags::VSpacetimeMetric<DataVector, Dim, Frame>, Dim,
                      Frame>,
-      "TestFunctions", "char_field_upsi", {{{-2., 2.}}}, used_for_size);
+      "Characteristics", "char_field_upsi", {{{-2., 2.}}}, used_for_size);
   // VZero
   pypp::check_with_random_values<1>(
       field_with_tag<gh::Tags::VZero<DataVector, Dim, Frame>, Dim, Frame>,
-      "TestFunctions", "char_field_uzero", {{{-2., 2.}}}, used_for_size,
+      "Characteristics", "char_field_uzero", {{{-2., 2.}}}, used_for_size,
       1.e-9);  // last argument loosens tolerance from
                // default of 1.0e-12 to avoid occasional
                // failures of this test, suspected from
@@ -389,7 +390,7 @@ void test_characteristic_fields() {
   // VPlus
   pypp::check_with_random_values<1>(
       field_with_tag<gh::Tags::VPlus<DataVector, Dim, Frame>, Dim, Frame>,
-      "TestFunctions", "char_field_uplus", {{{-2., 2.}}}, used_for_size,
+      "Characteristics", "char_field_uplus", {{{-2., 2.}}}, used_for_size,
       1.e-10);  // last argument loosens tolerance from
                 // default of 1.0e-12 to avoid occasional
                 // failures of this test, suspected from
@@ -397,7 +398,7 @@ void test_characteristic_fields() {
   // VMinus
   pypp::check_with_random_values<1>(
       field_with_tag<gh::Tags::VMinus<DataVector, Dim, Frame>, Dim, Frame>,
-      "TestFunctions", "char_field_uminus", {{{-2., 2.}}}, used_for_size,
+      "Characteristics", "char_field_uminus", {{{-2., 2.}}}, used_for_size,
       1.e-10);  // last argument loosens tolerance from
                 // default of 1.0e-12 to avoid occasional
                 // failures of this test, suspected from
@@ -412,8 +413,9 @@ void test_characteristic_fields_analytic(
     const std::array<double, 3>& upper_bound) {
   // Set up grid
   const size_t spatial_dim = 3;
-  Mesh<spatial_dim> mesh{grid_size_each_dimension, Spectral::Basis::Legendre,
-                         Spectral::Quadrature::GaussLobatto};
+  const Mesh<spatial_dim> mesh{grid_size_each_dimension,
+                               Spectral::Basis::Legendre,
+                               Spectral::Quadrature::GaussLobatto};
 
   using Affine = domain::CoordinateMaps::Affine;
   using Affine3D =
@@ -560,15 +562,15 @@ void test_evolved_from_characteristic_fields() {
   pypp::check_with_random_values<1>(
       evol_field_with_tag<gr::Tags::SpacetimeMetric<DataVector, Dim, Frame>,
                           Dim, Frame>,
-      "TestFunctions", "evol_field_psi", {{{-2., 2.}}}, used_for_size);
+      "Characteristics", "evol_field_psi", {{{-2., 2.}}}, used_for_size);
   // Pi
   pypp::check_with_random_values<1>(
       evol_field_with_tag<gh::Tags::Pi<DataVector, Dim, Frame>, Dim, Frame>,
-      "TestFunctions", "evol_field_pi", {{{-2., 2.}}}, used_for_size);
+      "Characteristics", "evol_field_pi", {{{-2., 2.}}}, used_for_size);
   // Phi
   pypp::check_with_random_values<1>(
       evol_field_with_tag<gh::Tags::Phi<DataVector, Dim, Frame>, Dim, Frame>,
-      "TestFunctions", "evol_field_phi", {{{-2., 2.}}}, used_for_size);
+      "Characteristics", "evol_field_phi", {{{-2., 2.}}}, used_for_size);
 }
 
 // Test return-by-reference GH fundamental fields by comparing to Kerr-Schild
@@ -579,8 +581,9 @@ void test_evolved_from_characteristic_fields_analytic(
     const std::array<double, 3>& upper_bound) {
   // Set up grid
   const size_t spatial_dim = 3;
-  Mesh<spatial_dim> mesh{grid_size_each_dimension, Spectral::Basis::Legendre,
-                         Spectral::Quadrature::GaussLobatto};
+  const Mesh<spatial_dim> mesh{grid_size_each_dimension,
+                               Spectral::Basis::Legendre,
+                               Spectral::Quadrature::GaussLobatto};
 
   using Affine = domain::CoordinateMaps::Affine;
   using Affine3D =
@@ -700,7 +703,7 @@ void test_evolved_from_characteristic_fields_analytic(
 
 SPECTRE_TEST_CASE("Unit.Evolution.Systems.GeneralizedHarmonic.Characteristics",
                   "[Unit][Evolution]") {
-  pypp::SetupLocalPythonEnvironment local_python_env{
+  const pypp::SetupLocalPythonEnvironment local_python_env{
       "Evolution/Systems/GeneralizedHarmonic/"};
 
   test_characteristic_speeds<1, Frame::Grid>();

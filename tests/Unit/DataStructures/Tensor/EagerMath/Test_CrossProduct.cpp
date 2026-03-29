@@ -14,6 +14,7 @@
 #include "Framework/SetupLocalPythonEnvironment.hpp"
 #include "Utilities/MakeWithValue.hpp"
 
+namespace {
 template <typename DataType>
 void check_cross_product(const DataType& used_for_size) {
   // Make constants used to create vectors and one_forms
@@ -227,22 +228,22 @@ void check_cross_product(const DataType& used_for_size) {
           const tnsr::I<DataType, 3, Frame::Grid>&,
           const tnsr::II<DataType, 3, Frame::Grid>&, const Scalar<DataType>&)>(
           &cross_product<DataType, SpatialIndex<3, UpLo::Up, Frame::Grid>>),
-      "TestFunctions", "cross_product_up", {{{1.0, 10.0}}},
-      curved_vector_x_hat);
+      "CrossProduct", "cross_product_up", {{{1.0, 10.0}}}, curved_vector_x_hat);
   pypp::check_with_random_values<1>(
       static_cast<tnsr::i<DataType, 3, Frame::Grid> (*)(
           const tnsr::I<DataType, 3, Frame::Grid>&,
           const tnsr::i<DataType, 3, Frame::Grid>&,
           const tnsr::II<DataType, 3, Frame::Grid>&, const Scalar<DataType>&)>(
           &cross_product<DataType, SpatialIndex<3, UpLo::Up, Frame::Grid>>),
-      "TestFunctions", "cross_product_lo", {{{1.0, 10.0}}},
-      curved_vector_x_hat);
+      "CrossProduct", "cross_product_lo", {{{1.0, 10.0}}}, curved_vector_x_hat);
 }
+
+}  // namespace
 
 SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.EagerMath.CrossProduct",
                   "[DataStructures][Unit]") {
   // Set up a python environment for check_with_random_values
-  pypp::SetupLocalPythonEnvironment local_python_env(
+  const pypp::SetupLocalPythonEnvironment local_python_env(
       "DataStructures/Tensor/EagerMath/");
   check_cross_product(std::numeric_limits<double>::signaling_NaN());
   check_cross_product(

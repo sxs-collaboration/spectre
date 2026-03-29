@@ -1,8 +1,8 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
+import Evolution.Systems.GrMhd.ValenciaDivClean.ConservativeFromPrimitive as cons
 import Evolution.Systems.GrMhd.ValenciaDivClean.Fluxes as fluxes
-import Evolution.Systems.GrMhd.ValenciaDivClean.TestFunctions as cons
 import numpy as np
 import PointwiseFunctions.AnalyticData.GrMhd.MagneticRotor as rotor
 import PointwiseFunctions.AnalyticSolutions.Hydro.SmoothFlow as hydro

@@ -84,7 +84,7 @@ void test_gauge_constraint_random(const DataType& used_for_size) {
           const tnsr::aa<DataType, SpatialDim, Frame>&,
           const tnsr::iaa<DataType, SpatialDim, Frame>&)>(
           &gh::gauge_constraint<DataType, SpatialDim, Frame>),
-      "TestFunctions", "gauge_constraint", {{{-1.0, 1.0}}}, used_for_size);
+      "Constraints", "gauge_constraint", {{{-1.0, 1.0}}}, used_for_size);
 }
 
 // Test the return-by-reference gauge constraint by comparing to Kerr-Schild
@@ -95,8 +95,8 @@ void test_gauge_constraint_analytic(const Solution& solution,
                                     const std::array<double, 3>& upper_bound) {
   // Check vs. time-independent analytic solution
   // Set up grid
-  Mesh<3> mesh{grid_size_each_dimension, Spectral::Basis::Legendre,
-               Spectral::Quadrature::GaussLobatto};
+  const Mesh<3> mesh{grid_size_each_dimension, Spectral::Basis::Legendre,
+                     Spectral::Quadrature::GaussLobatto};
 
   using Affine = domain::CoordinateMaps::Affine;
   using Affine3D =
@@ -182,7 +182,7 @@ void test_two_index_constraint_random(const DataType& used_for_size) {
           const Scalar<DataType>&,
           const tnsr::iaa<DataType, SpatialDim, Frame>&)>(
           &gh::two_index_constraint<DataType, SpatialDim, Frame>),
-      "TestFunctions", "two_index_constraint", {{{-1.0, 1.0}}}, used_for_size);
+      "Constraints", "two_index_constraint", {{{-1.0, 1.0}}}, used_for_size);
 }
 
 // Test the return-by-reference two-index constraint
@@ -202,8 +202,8 @@ void test_two_index_constraint_analytic(
   // Check vs. time-independent analytic solution
   // Set up grid
   const size_t data_size = pow<3>(grid_size_each_dimension);
-  Mesh<3> mesh{grid_size_each_dimension, Spectral::Basis::Legendre,
-               Spectral::Quadrature::GaussLobatto};
+  const Mesh<3> mesh{grid_size_each_dimension, Spectral::Basis::Legendre,
+                     Spectral::Quadrature::GaussLobatto};
 
   using Affine = domain::CoordinateMaps::Affine;
   using Affine3D =
@@ -313,7 +313,7 @@ void test_two_index_constraint_analytic(
                            inverse_spatial_metric, inverse_spacetime_metric, pi,
                            phi, d_pi, d_phi, gamma2, three_index_constraint);
 
-  Approx numerical_approx =
+  const Approx numerical_approx =
       Approx::custom().epsilon(error_tolerance).scale(1.0);
   CHECK_ITERABLE_CUSTOM_APPROX(
       two_index_constraint,
@@ -328,7 +328,7 @@ void test_four_index_constraint_random(const DataType& used_for_size) {
       static_cast<tnsr::iaa<DataType, SpatialDim, Frame> (*)(
           const tnsr::ijaa<DataType, SpatialDim, Frame>&)>(
           &gh::four_index_constraint<DataType, SpatialDim, Frame>),
-      "TestFunctions", "four_index_constraint", {{{-1.0, 1.0}}}, used_for_size);
+      "Constraints", "four_index_constraint", {{{-1.0, 1.0}}}, used_for_size);
 }
 
 // Test the return-by-reference four-index constraint
@@ -345,8 +345,8 @@ void test_four_index_constraint_analytic(
   // Check vs. time-independent analytic solution
   // Set up grid
   const size_t data_size = pow<3>(grid_size_each_dimension);
-  Mesh<3> mesh{grid_size_each_dimension, Spectral::Basis::Legendre,
-               Spectral::Quadrature::GaussLobatto};
+  const Mesh<3> mesh{grid_size_each_dimension, Spectral::Basis::Legendre,
+                     Spectral::Quadrature::GaussLobatto};
 
   using Affine = domain::CoordinateMaps::Affine;
   using Affine3D =
@@ -397,7 +397,7 @@ void test_four_index_constraint_analytic(
           x, std::numeric_limits<double>::signaling_NaN());
   gh::four_index_constraint(make_not_null(&four_index_constraint), d_phi);
 
-  Approx numerical_approx =
+  const Approx numerical_approx =
       Approx::custom().epsilon(error_tolerance).scale(1.0);
   CHECK_ITERABLE_CUSTOM_APPROX(
       four_index_constraint,
@@ -423,7 +423,7 @@ void test_f_constraint_random(const DataType& used_for_size) {
           const Scalar<DataType>&,
           const tnsr::iaa<DataType, SpatialDim, Frame>&)>(
           &gh::f_constraint<DataType, SpatialDim, Frame>),
-      "TestFunctions", "f_constraint", {{{-1.0, 1.0}}}, used_for_size);
+      "Constraints", "f_constraint", {{{-1.0, 1.0}}}, used_for_size);
   pypp::check_with_random_values<1>(
       static_cast<tnsr::a<DataType, SpatialDim, Frame> (*)(
           const tnsr::a<DataType, SpatialDim, Frame>&,
@@ -440,7 +440,7 @@ void test_f_constraint_random(const DataType& used_for_size) {
           const tnsr::iaa<DataType, SpatialDim, Frame>&,
           const tnsr::aa<DataType, SpatialDim, Frame>&)>(
           &gh::f_constraint<DataType, SpatialDim, Frame>),
-      "TestFunctions", "f_constraint_with_stress_energy", {{{-1.0, 1.0}}},
+      "Constraints", "f_constraint_with_stress_energy", {{{-1.0, 1.0}}},
       used_for_size);
 }
 
@@ -462,8 +462,8 @@ void test_f_constraint_analytic(const Solution& solution,
   // Check vs. time-independent analytic solution
   // Set up grid
   const size_t data_size = pow<3>(grid_size_each_dimension);
-  Mesh<3> mesh{grid_size_each_dimension, Spectral::Basis::Legendre,
-               Spectral::Quadrature::GaussLobatto};
+  const Mesh<3> mesh{grid_size_each_dimension, Spectral::Basis::Legendre,
+                     Spectral::Quadrature::GaussLobatto};
 
   using Affine = domain::CoordinateMaps::Affine;
   using Affine3D =
@@ -572,7 +572,7 @@ void test_f_constraint_analytic(const Solution& solution,
                    inverse_spatial_metric, inverse_spacetime_metric, pi, phi,
                    d_pi, d_phi, gamma2, three_index_constraint);
 
-  Approx numerical_approx =
+  const Approx numerical_approx =
       Approx::custom().epsilon(error_tolerance).scale(1.0);
   CHECK_ITERABLE_CUSTOM_APPROX(f_constraint,
                                make_with_value<decltype(f_constraint)>(x, 0.0),
@@ -592,7 +592,7 @@ void test_constraint_energy_random(const DataType& used_for_size) {
           const tnsr::II<DataType, SpatialDim, Frame>&, const Scalar<DataType>&,
           double, double, double, double)>(
           &gh::constraint_energy<DataType, SpatialDim, Frame>),
-      "TestFunctions", "constraint_energy", {{{-1.0, 1.0}}}, used_for_size);
+      "Constraints", "constraint_energy", {{{-1.0, 1.0}}}, used_for_size);
 }
 
 // Test the return-by-reference constraint energy
@@ -613,8 +613,8 @@ void test_constraint_energy_analytic(const Solution& solution,
   // Check vs. time-independent analytic solution
   // Set up grid
   const size_t data_size = pow<3>(grid_size_each_dimension);
-  Mesh<3> mesh{grid_size_each_dimension, Spectral::Basis::Legendre,
-               Spectral::Quadrature::GaussLobatto};
+  const Mesh<3> mesh{grid_size_each_dimension, Spectral::Basis::Legendre,
+                     Spectral::Quadrature::GaussLobatto};
 
   using Affine = domain::CoordinateMaps::Affine;
   using Affine3D =
@@ -737,7 +737,7 @@ void test_constraint_energy_analytic(const Solution& solution,
       two_index_constraint, three_index_constraint, four_index_constraint,
       inverse_spatial_metric, determinant_spatial_metric, 2.0, -3.0, 4.0, -5.0);
 
-  Approx numerical_approx =
+  const Approx numerical_approx =
       Approx::custom().epsilon(error_tolerance).scale(1.0);
   CHECK_ITERABLE_CUSTOM_APPROX(
       constraint_energy, make_with_value<decltype(constraint_energy)>(x, 0.0),
@@ -757,7 +757,7 @@ void test_constraint_energy_normalization_random(
           const tnsr::II<DataType, SpatialDim, Frame>&, const Scalar<DataType>&,
           double)>(
           &gh::constraint_energy_normalization<DataType, SpatialDim, Frame>),
-      "TestFunctions", "constraint_energy_normalization", {{{-1.0, 1.0}}},
+      "Constraints", "constraint_energy_normalization", {{{-1.0, 1.0}}},
       used_for_size);
 }
 
@@ -833,8 +833,8 @@ void test_constraint_compute_items(const Solution& solution,
   // Check vs. time-independent analytic solution
   // Set up grid
   const size_t data_size = pow<3>(grid_size);
-  Mesh<3> mesh{grid_size, Spectral::Basis::Legendre,
-               Spectral::Quadrature::GaussLobatto};
+  const Mesh<3> mesh{grid_size, Spectral::Basis::Legendre,
+                     Spectral::Quadrature::GaussLobatto};
   using Affine = domain::CoordinateMaps::Affine;
   using Affine3D =
       domain::CoordinateMaps::ProductOf3Maps<Affine, Affine, Affine>;
@@ -956,7 +956,7 @@ void test_constraint_compute_items(const Solution& solution,
   constexpr double width = 11.3137084989848;  // sqrt(128.0)
   const std::array<double, 3> center{{0.0, 0.0, 0.0}};
 
-  std::unordered_map<std::string,
+  std::unordered_map<std::string,  // NOLINT(misc-const-correctness)
                      std::unique_ptr<::domain::FunctionsOfTime::FunctionOfTime>>
       functions_of_time{};
 
@@ -1040,7 +1040,7 @@ void test_constraint_compute_items(const Solution& solution,
               constant_02, amplitude_2, width, center))));
 
   // Compute tested quantities locally
-  std::unordered_map<std::string,
+  std::unordered_map<std::string,  // NOLINT(misc-const-correctness)
                      std::unique_ptr<::domain::FunctionsOfTime::FunctionOfTime>>
       empty_functions_of_time{};
   Scalar<DataVector> gamma0{};
@@ -1365,7 +1365,7 @@ void test_compute_tags() {
 // [[TimeOut, 10]]
 SPECTRE_TEST_CASE("Unit.Evolution.Systems.GeneralizedHarmonic.Constraints",
                   "[Unit][Evolution]") {
-  pypp::SetupLocalPythonEnvironment local_python_env{
+  const pypp::SetupLocalPythonEnvironment local_python_env{
       "Evolution/Systems/GeneralizedHarmonic/"};
   three_index_constraint();
   gauge_constraint();

@@ -30,14 +30,14 @@ void test_constant_random(const DataType& used_for_size) {
 
   ConstraintDamping::Constant<VolumeDim, Fr> val{value};
 
-  TestHelpers::ConstraintDamping::check(std::move(val), "constant",
+  TestHelpers::ConstraintDamping::check(std::move(val), "Constant",
                                         used_for_size, {{{-1.0, 1.0}}},
                                         {"IgnoredFunctionOfTime"}, value);
 
   std::unique_ptr<ConstraintDamping::Constant<VolumeDim, Fr>> val_unique_ptr =
       std::make_unique<ConstraintDamping::Constant<VolumeDim, Fr>>(value);
 
-  TestHelpers::ConstraintDamping::check(val_unique_ptr->get_clone(), "constant",
+  TestHelpers::ConstraintDamping::check(val_unique_ptr->get_clone(), "Constant",
                                         used_for_size, {{{-1.0, 1.0}}},
                                         {"IgnoredFunctionOfTime"}, value);
 }

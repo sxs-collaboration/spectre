@@ -1,8 +1,6 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-import os
-import sys
 import unittest
 
 import numpy as np
@@ -13,9 +11,6 @@ import spectre.PointwiseFunctions.Hydro.EquationsOfState as eos
 from spectre import Informer
 from spectre.DataStructures import DataVector
 from spectre.DataStructures.Tensor import Scalar, tnsr
-
-sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
-from TestFunctions import *
 
 
 class TestSoundSpeedSquared(unittest.TestCase):

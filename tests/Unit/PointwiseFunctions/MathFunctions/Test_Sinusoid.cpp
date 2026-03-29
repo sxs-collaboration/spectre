@@ -51,7 +51,7 @@ void test_sinusoid_random(const DataType& used_for_size) {
   auto sinusoid_for_move = sinusoid;
   test_move_semantics(std::move(sinusoid_for_move), sinusoid);
 
-  TestHelpers::MathFunctions::check(std::move(sinusoid), "sinusoid",
+  TestHelpers::MathFunctions::check(std::move(sinusoid), "Sinusoid",
                                     used_for_size, {{{-1.0, 1.0}}}, amplitude,
                                     wavenumber, phase);
 }

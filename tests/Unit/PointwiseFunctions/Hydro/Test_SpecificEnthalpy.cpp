@@ -25,7 +25,7 @@ void test_relativistic_specific_enthalpy(const DataType& used_for_size) {
                                        const Scalar<DataType>&,
                                        const Scalar<DataType>&)>(
           &hydro::relativistic_specific_enthalpy<DataType>),
-      "TestFunctions", "relativistic_specific_enthalpy", {{{0.01, 1.0}}},
+      "SpecificEnthalpy", "relativistic_specific_enthalpy", {{{0.01, 1.0}}},
       used_for_size);
 }
 }  // namespace
@@ -33,7 +33,7 @@ void test_relativistic_specific_enthalpy(const DataType& used_for_size) {
 namespace hydro {
 SPECTRE_TEST_CASE("Unit.PointwiseFunctions.Hydro.SpecificEnthalpy",
                   "[Unit][Hydro]") {
-  pypp::SetupLocalPythonEnvironment local_python_env{
+  const pypp::SetupLocalPythonEnvironment local_python_env{
       "PointwiseFunctions/Hydro"};
 
   test_relativistic_specific_enthalpy(

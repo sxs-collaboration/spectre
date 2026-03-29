@@ -34,7 +34,7 @@ void test_characteristic_speeds(const DataVector& /*used_for_size*/) {
   // const double max_value = 1.0 / sqrt(3);
   // pypp::check_with_random_values<7>(
   //     &grmhd::ValenciaDivClean::characteristic_speeds_approximate_mhd<3>,
-  //     "TestFunctions", "characteristic_speeds",
+  //     "CharacteristicSpeeds", "CharacteristicSpeeds",
   //     {{{0.0, 1.0},
   //       {-1.0, 1.0},
   //       {-max_value, max_value},
@@ -51,7 +51,7 @@ void test_with_normal_along_coordinate_axes(const DataVector& used_for_size) {
   namespace gr_helper = TestHelpers::gr;
   const auto nn_gen = make_not_null(&generator);
   const auto rest_mass_density = helper::random_density(nn_gen, used_for_size);
-  EquationsOfState::PolytropicFluid<true> eos(0.001, 4.0 / 3.0);
+  const EquationsOfState::PolytropicFluid<true> eos(0.001, 4.0 / 3.0);
   const auto specific_internal_energy =
       eos.specific_internal_energy_from_density(rest_mass_density);
   const auto specific_enthalpy = hydro::relativistic_specific_enthalpy(
@@ -81,11 +81,11 @@ void test_with_normal_along_coordinate_axes(const DataVector& used_for_size) {
   const DataVector comoving_magnetic_field_squared =
       get(magnetic_field_squared) / square(get(lorentz_factor)) +
       square(get(magnetic_field_dot_spatial_velocity));
-  Scalar<DataVector> alfven_speed_squared{
+  const Scalar<DataVector> alfven_speed_squared{
       comoving_magnetic_field_squared /
       (comoving_magnetic_field_squared +
        get(rest_mass_density) * get(specific_enthalpy))};
-  Scalar<DataVector> sound_speed_squared{
+  const Scalar<DataVector> sound_speed_squared{
       (get(eos.chi_from_density(rest_mass_density)) +
        get(eos.kappa_times_p_over_rho_squared_from_density(
            rest_mass_density))) /
@@ -97,14 +97,14 @@ void test_with_normal_along_coordinate_axes(const DataVector& used_for_size) {
 
     const auto& eos_base =
         static_cast<const EquationsOfState::EquationOfState<true, 1>&>(eos);
-    Approx custom_approx = Approx::custom().epsilon(1.0e-10);
+    const Approx custom_approx = Approx::custom().epsilon(1.0e-10);
     CHECK_ITERABLE_CUSTOM_APPROX(
         grmhd::ValenciaDivClean::characteristic_speeds_approximate_mhd(
             rest_mass_density, electron_fraction, specific_internal_energy,
             specific_enthalpy, spatial_velocity, lorentz_factor, magnetic_field,
             lapse, shift, spatial_metric, normal, eos_base),
         (pypp::call<std::array<DataVector, 9>>(
-            "TestFunctions", "characteristic_speeds", lapse, shift,
+            "CharacteristicSpeeds", "CharacteristicSpeeds", lapse, shift,
             spatial_velocity, spatial_velocity_squared, sound_speed_squared,
             alfven_speed_squared, normal)),
         custom_approx);
@@ -157,9 +157,9 @@ void test_hydro_characteristic_speed(const DataVector& used_for_size) {
             specific_enthalpy, electron_fraction, lorentz_factor, unit_normal,
             spatial_metric, *eos_3d),
         (pypp::call<std::array<DataVector, 3>>(
-            "TestFunctions", "characteristic_speeds_hydro", spatial_velocity,
-            spatial_velocity_squared, sound_speed_squared, lorentz_factor,
-            unit_normal)),
+            "CharacteristicSpeeds", "characteristic_speeds_hydro",
+            spatial_velocity, spatial_velocity_squared, sound_speed_squared,
+            lorentz_factor, unit_normal)),
         custom_approx);
   }
 }
@@ -167,7 +167,7 @@ void test_hydro_characteristic_speed(const DataVector& used_for_size) {
 
 SPECTRE_TEST_CASE("Unit.GrMhd.ValenciaDivClean.Characteristics",
                   "[Unit][Evolution]") {
-  pypp::SetupLocalPythonEnvironment local_python_env{
+  const pypp::SetupLocalPythonEnvironment local_python_env{
       "Evolution/Systems/GrMhd/ValenciaDivClean"};
 
   const DataVector dv(5);

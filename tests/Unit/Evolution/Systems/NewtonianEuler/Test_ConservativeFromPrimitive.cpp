@@ -15,7 +15,8 @@ namespace {
 template <size_t Dim>
 void test_conservative_from_primitive(const DataVector& used_for_size) {
   pypp::check_with_random_values<3>(
-      &NewtonianEuler::ConservativeFromPrimitive<Dim>::apply, "TestFunctions",
+      &NewtonianEuler::ConservativeFromPrimitive<Dim>::apply,
+      "ConservativeFromPrimitive",
       {"mass_density_cons", "momentum_density", "energy_density"},
       {{{-1.0, 1.0}, {-2.0, 2.0}, {-3.0, 3.0}}}, used_for_size);
 }
@@ -25,7 +26,7 @@ void test_conservative_from_primitive(const DataVector& used_for_size) {
 SPECTRE_TEST_CASE(
     "Unit.Evolution.Systems.NewtonianEuler.ConservativeFromPrimitive",
     "[Unit][Evolution]") {
-  pypp::SetupLocalPythonEnvironment local_python_env{
+  const pypp::SetupLocalPythonEnvironment local_python_env{
       "Evolution/Systems/NewtonianEuler"};
 
   GENERATE_UNINITIALIZED_DATAVECTOR;

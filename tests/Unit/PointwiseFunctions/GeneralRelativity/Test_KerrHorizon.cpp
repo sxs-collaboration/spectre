@@ -39,7 +39,7 @@ Scalar<DataType> wrap_kerr_horizon_radius(const Scalar<DataType>& theta,
 template <typename DataType>
 void test_kerr_horizon(const DataType& used_for_size) {
   pypp::check_with_random_values<6>(&wrap_kerr_horizon_radius<DataType>,
-                                    "TestFunctions", "kerr_horizon_radius",
+                                    "KerrHorizon", "kerr_horizon_radius",
                                     {{{0.0, M_PI},
                                       {0.0, 2.0 * M_PI},
                                       {1.0, 2.0},
@@ -52,7 +52,7 @@ void test_kerr_horizon(const DataType& used_for_size) {
 
 SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticSolutions.Gr.KerrHorizon",
                   "[PointwiseFunctions][Unit]") {
-  pypp::SetupLocalPythonEnvironment local_python_env(
+  const pypp::SetupLocalPythonEnvironment local_python_env(
       "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/");
   const DataVector dv(5);
   test_kerr_horizon(dv);
@@ -70,7 +70,7 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticSolutions.Gr.KerrHorizon",
 
   // Test for Kerr (mass=2) along equator, for spin not in z direction.
   // Angles and radius worked out by hand.
-  CHECK(approx(sqrt(square(2.0 * (1.0 + sqrt(0.86))) + 4.0 * 0.14)) ==
+  CHECK(approx(sqrt(square(2.0 * (1.0 + sqrt(0.86))) + (4.0 * 0.14))) ==
         get(kerr_horizon_radius<double>(
             {{acos(0.3 / sqrt(0.14)) + M_PI_2, atan2(0.2, 0.1)}}, 2.0,
             {{0.1, 0.2, 0.3}})));
@@ -78,7 +78,7 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticSolutions.Gr.KerrHorizon",
   // Test for Kerr (mass=2) along pole, for extremal spin not in z direction.
   // one_minus_eps to make sure we don't get FPE in sqrt(M^2-a^2).
   const double one_minus_eps = 1.0 - std::numeric_limits<double>::min();
-  Approx numerical_approx = Approx::custom().epsilon(1.e-8).scale(1.0);
+  const Approx numerical_approx = Approx::custom().epsilon(1.e-8).scale(1.0);
   CHECK(
       numerical_approx(2.0) ==
       get(kerr_horizon_radius<double>(
@@ -102,8 +102,7 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticSolutions.Gr.KerrHorizon",
         mass * (1. + sqrt(1. - dot(dimless_spin, dimless_spin)));
     const DataVector theta{0., M_PI_4 * 0.34, M_PI_4, M_PI_2 * 0.67, M_PI_2};
     const DataVector phi{M_PI_2 * 0.4, M_PI * 0.55, M_PI_4, M_PI_4 * 1.2, M_PI};
-    const std::array<DataVector, 2> theta_phi{
-        {std::move(theta), std::move(phi)}};
+    const std::array<DataVector, 2> theta_phi{{theta, phi}};
     CHECK_ITERABLE_APPROX(kerr_schild_radius_from_boyer_lindquist(
                               r_plus, theta_phi, mass, dimless_spin),
                           kerr_horizon_radius(theta_phi, mass, dimless_spin));

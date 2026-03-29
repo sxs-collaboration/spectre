@@ -74,8 +74,8 @@ void test_characteristic_speeds(const DataVector& used_for_size) {
     CHECK_ITERABLE_APPROX(
         NewtonianEuler::characteristic_speeds(velocity, sound_speed, normal),
         (pypp::call<std::array<DataVector, Dim + 2>>(
-            "TestFunctions", "characteristic_speeds", velocity, sound_speed,
-            normal)));
+            "CharacteristicSpeeds", "CharacteristicSpeeds", velocity,
+            sound_speed, normal)));
   }
 
   // test for normal of random orientation
@@ -84,7 +84,7 @@ void test_characteristic_speeds(const DataVector& used_for_size) {
           const tnsr::I<DataVector, Dim>&, const Scalar<DataVector>&,
           const tnsr::i<DataVector, Dim>&)>(
           &NewtonianEuler::characteristic_speeds<Dim>),
-      "TestFunctions", "characteristic_speeds",
+      "CharacteristicSpeeds", "CharacteristicSpeeds",
       {{{-1.0, 1.0}, {0.0, 1.0}, {-1.0, 1.0}}}, used_for_size);
   test_compute_item_in_databox(
       velocity, sound_speed,
@@ -142,8 +142,8 @@ void test_left_and_right_eigenvectors_impl(
   const auto sound_speed_squared = NewtonianEuler::sound_speed_squared(
       density, specific_internal_energy, equation_of_state);
   const Scalar<double> energy_density{
-      {{get(density) * get(specific_internal_energy) +
-        0.5 * get(density) * get(v_squared)}}};
+      {{(get(density) * get(specific_internal_energy)) +
+        (0.5 * get(density) * get(v_squared))}}};
   const Scalar<double> specific_enthalpy{
       {{(get(energy_density) + get(pressure)) / get(density)}}};
 
@@ -160,7 +160,7 @@ void test_left_and_right_eigenvectors_impl(
 
   // For small values of specific_internal_energy, the relative error can
   // increase from the default level
-  Approx local_approx = Approx::custom().epsilon(1e-12).scale(1.0);
+  const Approx local_approx = Approx::custom().epsilon(1e-12).scale(1.0);
   for (size_t i = 0; i < Dim + 2; ++i) {
     for (size_t j = 0; j < Dim + 2; ++j) {
       const double delta_ij = (i == j) ? 1. : 0.;
@@ -299,8 +299,8 @@ void test_numerical_eigenvectors() {
 
   const Scalar<double> v_squared{{{get(dot_product(velocity, velocity))}}};
   const Scalar<double> energy_density{
-      {{get(density) * get(specific_internal_energy) +
-        0.5 * get(density) * get(v_squared)}}};
+      {{(get(density) * get(specific_internal_energy)) +
+        (0.5 * get(density) * get(v_squared))}}};
 
   const EquationsOfState::IdealFluid<false> equation_of_state{5. / 3.};
   const auto pressure = equation_of_state.pressure_from_density_and_energy(
@@ -315,7 +315,7 @@ void test_numerical_eigenvectors() {
                     density, specific_internal_energy)) *
         get(density) / get(pressure)}}};
   const double b_times_theta =
-      get(kappa_over_density) * (get(v_squared) - get(specific_enthalpy)) +
+      (get(kappa_over_density) * (get(v_squared) - get(specific_enthalpy))) +
       get(sound_speed_squared);
 
   const auto expected_flux_jacobian = NewtonianEuler::detail::flux_jacobian(
@@ -339,7 +339,7 @@ void test_numerical_eigenvectors() {
   const Matrix num_flux_jacobian = num_right * num_eigenvalues * num_left;
 
   // Numerically-obtained eigenvectors may lead to slightly larger errors
-  Approx local_approx = Approx::custom().epsilon(1e-11).scale(1.0);
+  const Approx local_approx = Approx::custom().epsilon(1e-11).scale(1.0);
   for (size_t i = 0; i < Dim + 2; ++i) {
     for (size_t j = 0; j < Dim + 2; ++j) {
       const double delta_ij = (i == j) ? 1. : 0.;
@@ -355,7 +355,7 @@ void test_numerical_eigenvectors() {
 
 SPECTRE_TEST_CASE("Unit.Evolution.Systems.NewtonianEuler.Characteristics",
                   "[Unit][Evolution]") {
-  pypp::SetupLocalPythonEnvironment local_python_env{
+  const pypp::SetupLocalPythonEnvironment local_python_env{
       "Evolution/Systems/NewtonianEuler"};
 
   GENERATE_UNINITIALIZED_DATAVECTOR;

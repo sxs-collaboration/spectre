@@ -47,7 +47,7 @@ struct MetavariablesForTest {
 
 SPECTRE_TEST_CASE("Unit.Evolution.Systems.ForceFree.MaskNsInterior",
                   "[Unit][Evolution]") {
-  pypp::SetupLocalPythonEnvironment local_python_env{
+  const pypp::SetupLocalPythonEnvironment local_python_env{
       "Evolution/Systems/ForceFree"};
 
   const size_t num_dg_pts = 5;
@@ -92,13 +92,14 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.ForceFree.MaskNsInterior",
   {
     const auto dg_mask = get<Tags::NsInteriorMask>(box);
     const Scalar<DataVector> dg_mask_from_python{pypp::call<Scalar<DataVector>>(
-        "TestFunctions", "compute_ns_interior_mask", dg_inertial_coords)};
+        "MaskNeutronStarInterior", "compute_ns_interior_mask",
+        dg_inertial_coords)};
     CHECK(dg_mask == dg_mask_from_python);
 
     const auto subcell_mask =
         get<evolution::dg::subcell::Tags::Inactive<Tags::NsInteriorMask>>(box);
     const Scalar<DataVector> subcell_mask_from_python{
-        pypp::call<Scalar<DataVector>>("TestFunctions",
+        pypp::call<Scalar<DataVector>>("MaskNeutronStarInterior",
                                        "compute_ns_interior_mask",
                                        subcell_inertial_coords)};
     CHECK(subcell_mask == subcell_mask_from_python);

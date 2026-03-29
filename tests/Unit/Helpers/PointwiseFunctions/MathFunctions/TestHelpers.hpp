@@ -52,33 +52,29 @@ void check_impl(
 
         INFO("Testing call operator...");
         pypp::check_with_random_values<1>(
-            func, *math_function, "TestFunctions",
-            python_function_prefix + "_call_operator", random_value_bounds,
-            member_args_tuple, used_for_size);
+            func, *math_function, python_function_prefix, "call_operator",
+            random_value_bounds, member_args_tuple, used_for_size);
         INFO("Done testing call operator...");
 
         FirstDerivFunction d_func{&MathFunc::first_deriv};
         INFO("Testing first derivative...");
         pypp::check_with_random_values<1>(
-            d_func, *math_function, "TestFunctions",
-            python_function_prefix + "_first_deriv", random_value_bounds,
-            member_args_tuple, used_for_size);
+            d_func, *math_function, python_function_prefix, "first_deriv",
+            random_value_bounds, member_args_tuple, used_for_size);
         INFO("Done testing first derivative...");
 
         SecondDerivFunction d2_func{&MathFunc::second_deriv};
         INFO("Testing second derivative...");
         pypp::check_with_random_values<1>(
-            d2_func, *math_function, "TestFunctions",
-            python_function_prefix + "_second_deriv", random_value_bounds,
-            member_args_tuple, used_for_size);
+            d2_func, *math_function, python_function_prefix, "second_deriv",
+            random_value_bounds, member_args_tuple, used_for_size);
         INFO("Done testing second derivative...");
 
         ThirdDerivFunction d3_func{&MathFunc::third_deriv};
         INFO("Testing third derivative...");
         pypp::check_with_random_values<1>(
-            d3_func, *math_function, "TestFunctions",
-            python_function_prefix + "_third_deriv", random_value_bounds,
-            member_args_tuple, used_for_size);
+            d3_func, *math_function, python_function_prefix, "third_deriv",
+            random_value_bounds, member_args_tuple, used_for_size);
         INFO("Done testing third derivative...");
 
         INFO("Done\n\n");
@@ -124,10 +120,13 @@ void check_impl(
  * \ingroup TestingFrameworkGroup
  * \brief Test a MathFunction by comparing to python functions
  *
- * The python functions must be added to
- * tests/Unit/PointwiseFunctions/MathFunctions/Python/TestFunctions.py. The
- * prefix for each class of MathFunction is arbitrary, but should generally
- * be descriptive (e.g. 'gaussian', 'sinusoid', 'pow_x') of the MathFunction.
+ * The python functions must be added to modules under
+ * tests/Unit/PointwiseFunctions/MathFunctions/Python/ named for the
+ * `python_function_prefix` (for example, `gaussian`, `sinusoid`, `pow_x`).
+ * Each python function should be named `call_operator`, `first_deriv`,
+ * `second_deriv`, or `third_deriv`. The prefix for each class of MathFunction
+ * is arbitrary, but should generally be descriptive (e.g. 'gaussian',
+ * 'sinusoid', 'pow_x') of the MathFunction.
  *
  * The `python_function_prefix` argument passed to `check` must be `PREFIX`. If
  * a MathFunction class has member variables set by its constructor, then these
