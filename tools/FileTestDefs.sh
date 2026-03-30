@@ -265,6 +265,7 @@ long_lines_exclude() {
 }
 long_lines() {
     whitelist "$1" \
+              '.claude/skills/*' \
               '.cmake$' \
               '.css$' \
               '.github/workflows/*' \
