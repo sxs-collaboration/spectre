@@ -47,13 +47,14 @@ enum class Topology : uint8_t {
   S1 = 2,
   S2Colatitude = 3,
   S2Longitude = 4,
-  B2Radial = 5,
-  B2Angular = 6,
-  B3Radial = 7,
-  B3Colatitude = 8,
-  B3Longitude = 9,
-  CartoonSphere = 10,
-  CartoonCylinder = 11
+  B1Radial = 5,
+  B2Radial = 6,
+  B2Angular = 7,
+  B3Radial = 8,
+  B3Colatitude = 9,
+  B3Longitude = 10,
+  CartoonSphere = 11,
+  CartoonCylinder = 12
 };
 
 /// Output operator for a Topology.
@@ -83,8 +84,14 @@ static constexpr auto full_sphere = std::array{
 static constexpr auto cartoon_sphere =
     std::array{Topology::I1, Topology::CartoonSphere, Topology::CartoonSphere};
 
+static constexpr auto cartoon_sphere_inner = std::array{
+    Topology::B1Radial, Topology::CartoonSphere, Topology::CartoonSphere};
+
 static constexpr auto cartoon_cylinder =
     std::array{Topology::I1, Topology::I1, Topology::CartoonCylinder};
+
+static constexpr auto cartoon_cylinder_inner =
+    std::array{Topology::B1Radial, Topology::I1, Topology::CartoonCylinder};
 }  // namespace topologies
 
 }  // namespace domain

@@ -11,6 +11,7 @@
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Structure/OrientationMap.hpp"
+#include "Domain/Structure/Topology.hpp"
 #include "NumericalAlgorithms/Spectral/Basis.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Quadrature.hpp"
@@ -52,6 +53,8 @@ std::array<Spectral::Basis, Dim> make_basis(
         [[fallthrough]];
       case (domain::Topology::CartoonCylinder):
         return Spectral::Basis::Cartoon;
+      case (domain::Topology::B1Radial):
+        return Spectral::Basis::ZernikeB1;
       default:
         ERROR("Invalid topology");
     }
@@ -93,6 +96,8 @@ std::array<Spectral::Quadrature, Dim> make_quadrature(
             return Spectral::Quadrature::SphericalSymmetry;
           case (domain::Topology::CartoonCylinder):
             return Spectral::Quadrature::AxialSymmetry;
+          case (domain::Topology::B1Radial):
+            return Spectral::Quadrature::GaussRadauUpper;
           default:
             ERROR("Invalid topology");
         }
