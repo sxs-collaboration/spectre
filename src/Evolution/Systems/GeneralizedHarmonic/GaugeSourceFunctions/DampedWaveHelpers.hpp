@@ -54,7 +54,7 @@ void spacetime_deriv_of_spatial_weight_function(
 /*
  * The log factor that appears in damped harmonic gauge source function.
  *
- * Calculates:  \f$ logF = \mathrm{log}(g^p/N) \f$.
+ * Calculates:  \f$ logF = \mathrm{log}(\gamma^p/\alpha) \f$.
  */
 template <typename DataType>
 void log_factor_metric_lapse(gsl::not_null<Scalar<DataType>*> logfac,

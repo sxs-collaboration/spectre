@@ -40,7 +40,7 @@ namespace gh {
  *
  * It computes
  * \f[
- * v_\psi^{\hat{\imath}} = -(1 + \gamma_1) \beta^{\hat{\imath}}
+ * v_g^{\hat{\imath}} = -(1 + \gamma_1) \beta^{\hat{\imath}}
  *                           -(1 + \gamma_1) v^{\hat{\imath}},
  * \f]
  * where \f$\hat{\imath}\f$ is in `SourceFrame`.
@@ -297,7 +297,7 @@ struct VMinusSpeedCompute : VMinusSpeed<DataVector, Dim, SourceFrame>,
  *
  * \f{align*}
  * \mathrm{SpECTRE} && \mathrm{Lindblom} \\
- * u^{\psi}_{ab} && u^\hat{0}_{ab} \\
+ * u^{g}_{ab} && u^\hat{0}_{ab} \\
  * u^0_{iab} && u^\hat{2}_{iab} \\
  * u^{\pm}_{ab} && u^{\hat{1}\pm}_{ab}
  * \f}
@@ -307,7 +307,7 @@ struct VMinusSpeedCompute : VMinusSpeed<DataVector, Dim, SourceFrame>,
  * term used in SpEC and SpECTRE but not published anywhere:
  *
  * \f{align*}
- * v_{\psi} =& -(1 + \gamma_1) n_k \beta^k - (1 + \gamma_1) n_k v^k_g \\
+ * v_{g} =& -(1 + \gamma_1) n_k \beta^k - (1 + \gamma_1) n_k v^k_g \\
  * v_{0} =& -n_k \beta^k - n_k v^k_g\\
  * v_{\pm} =& -n_k \beta^k \pm \alpha - n_k v^k_g
  * \f}
@@ -413,7 +413,7 @@ struct CharacteristicSpeedsOnStrahlkorperCompute
  *
  * \f{align*}
  * \mathrm{SpECTRE} && \mathrm{Lindblom} \\
- * u^{\psi}_{ab} && u^\hat{0}_{ab} \\
+ * u^{g}_{ab} && u^\hat{0}_{ab} \\
  * u^0_{iab} && u^\hat{2}_{iab} \\
  * u^{\pm}_{ab} && u^{\hat{1}\pm}_{ab}
  * \f}
@@ -421,14 +421,14 @@ struct CharacteristicSpeedsOnStrahlkorperCompute
  * The characteristic fields \f$u\f$ are given in terms of the evolved fields by
  * Eq.(32) - (34) of \cite Lindblom2005qh, respectively:
  * \f{align*}
- * u^{\psi}_{ab} =& \psi_{ab} \\
+ * u^{g}_{ab} =& g_{ab} \\
  * u^0_{iab} =& (\delta^k_i - n_i n^k) \Phi_{kab} := P^k_i \Phi_{kab} \\
- * u^{\pm}_{ab} =& \Pi_{ab} \pm n^i \Phi_{iab} - \gamma_2\psi_{ab}
+ * u^{\pm}_{ab} =& \Pi_{ab} \pm n^i \Phi_{iab} - \gamma_2 g_{ab}
  * \f}
  *
- * where \f$\psi_{ab}\f$ is the spacetime metric, \f$\Pi_{ab}\f$ and
+ * where \f$g_{ab}\f$ is the spacetime metric, \f$\Pi_{ab}\f$ and
  * \f$\Phi_{iab}\f$ are evolved generalized harmonic fields introduced by first
- * derivatives of \f$\psi_{ab}\f$, \f$\gamma_2\f$ is a constraint damping
+ * derivatives of \f$g_{ab}\f$, \f$\gamma_2\f$ is a constraint damping
  * parameter, and \f$n_k\f$ is the unit normal to the surface.
  *
  * \ref EvolvedFieldsFromCharacteristicFieldsCompute computes evolved fields
@@ -436,8 +436,8 @@ struct CharacteristicSpeedsOnStrahlkorperCompute
  * above relations:
  *
  * \f{align*}
- * \psi_{ab} =& u^{\psi}_{ab}, \\
- * \Pi_{ab} =& \frac{1}{2}(u^{+}_{ab} + u^{-}_{ab}) + \gamma_2 u^{\psi}_{ab}, \\
+ * g_{ab} =& u^{g}_{ab}, \\
+ * \Pi_{ab} =& \frac{1}{2}(u^{+}_{ab} + u^{-}_{ab}) + \gamma_2 u^{g}_{ab}, \\
  * \Phi_{iab} =& \frac{1}{2}(u^{+}_{ab} - u^{-}_{ab}) n_i + u^0_{iab}.
  * \f}
  *

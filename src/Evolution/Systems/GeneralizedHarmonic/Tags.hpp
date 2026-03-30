@@ -18,10 +18,10 @@ namespace Tags {
 /*!
  * \brief Conjugate momentum to the spacetime metric.
  *
- * \details If \f$ \psi_{ab} \f$ is the spacetime metric, and \f$ N \f$ and
- * \f$ N^i \f$ are the lapse and shift respectively, then we define
- * \f$ \Pi_{ab} = -\frac{1}{N} ( \partial_t \psi_{ab} + N^{i} \Phi_{iab} ) \f$
- * where \f$\Phi_{iab}\f$ is the variable defined by the tag Phi.
+ * \details If \f$ g_{ab} \f$ is the spacetime metric, and \f$ \alpha \f$ and
+ * \f$ \beta^i \f$ are the lapse and shift respectively, then we define
+ * \f$ \Pi_{ab} = -\frac{1}{\alpha} ( \partial_t g_{ab} + \beta^{i} \Phi_{iab} )
+ * \f$ where \f$\Phi_{iab}\f$ is the variable defined by the tag Phi.
  */
 template <typename DataType, size_t Dim, typename Frame>
 struct Pi : db::SimpleTag {
@@ -31,8 +31,8 @@ struct Pi : db::SimpleTag {
 /*!
  * \brief Auxiliary variable which is analytically the spatial derivative of the
  * spacetime metric
- * \details If \f$\psi_{ab}\f$ is the spacetime metric then we define
- * \f$\Phi_{iab} = \partial_i \psi_{ab}\f$
+ * \details If \f$g_{ab}\f$ is the spacetime metric then we define
+ * \f$\Phi_{iab} = \partial_i g_{ab}\f$
  */
 template <typename DataType, size_t Dim, typename Frame>
 struct Phi : db::SimpleTag {

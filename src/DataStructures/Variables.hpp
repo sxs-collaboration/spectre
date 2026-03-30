@@ -134,11 +134,11 @@ class Variables<tmpl::list<Tags...>> {
       "reference.");
 
   /// The number of variables of the Variables object is holding. E.g.
-  /// \f$\psi_{ab}\f$ would be counted as one variable.
+  /// \f$g_{ab}\f$ would be counted as one variable.
   static constexpr auto number_of_variables = sizeof...(Tags);
 
   /// The total number of independent components of all the variables. E.g.
-  /// a rank-2 symmetric spacetime Tensor \f$\psi_{ab}\f$ in 3 spatial
+  /// a rank-2 symmetric spacetime Tensor \f$g_{ab}\f$ in 3 spatial
   /// dimensions would have 10 independent components.
   static constexpr size_t number_of_independent_components =
       (... + Tags::type::size());
