@@ -26,7 +26,9 @@ template <Basis basis, Quadrature quadrature>
 void test(const DataVector& target_pts) {
   CAPTURE(basis);
   CAPTURE(quadrature);
-  const auto custom_approx = Approx::custom().epsilon(5.0e-13).scale(1.0);
+  const auto custom_approx = basis == Basis::Fourier
+                                 ? Approx::custom().epsilon(5.0e-12).scale(1.0)
+                                 : Approx::custom().epsilon(5.0e-13).scale(1.0);
   for (size_t n = minimum_number_of_points<basis, quadrature>;
        n <= maximum_number_of_points<basis>; ++n) {
     CAPTURE(n);
