@@ -514,7 +514,7 @@ doxygen_start_line() {
 }
 doxygen_start_line_report() {
     echo "Found occurrences of bad Doxygen syntax: /*! STUFF:"
-    pretty_grep -E '\/\*!.*' "$@"
+    pretty_grep -E '/\*!.*' "$@"
 }
 doxygen_start_line_test() {
     test_check pass foo.cpp ''
