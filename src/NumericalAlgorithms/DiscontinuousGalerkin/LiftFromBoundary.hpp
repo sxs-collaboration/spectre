@@ -15,7 +15,6 @@
 #include "NumericalAlgorithms/Spectral/BoundaryLiftingTerm.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Quadrature.hpp"
-#include "Utilities/Algorithm.hpp"
 #include "Utilities/Gsl.hpp"
 
 namespace dg {
@@ -100,12 +99,10 @@ void lift_boundary_terms_gauss_points(
     const Variables<BoundaryCorrectionTagsList>& boundary_corrections,
     const Scalar<DataVector>& magnitude_of_face_normal,
     const Scalar<DataVector>& face_det_jacobian) {
-  ASSERT(alg::all_of(volume_mesh.quadrature(),
-                     [](const Spectral::Quadrature quadrature) {
-                       return quadrature == Spectral::Quadrature::Gauss;
-                     }),
-         "Must use Gauss points in all directions but got the mesh: "
-             << volume_mesh);
+  ASSERT(volume_mesh.quadrature(direction.dimension()) ==
+             Spectral::Quadrature::Gauss,
+         "Must use Gauss points in the face-normal direction "
+             << direction.dimension() << " but got mesh: " << volume_mesh);
   const Mesh<Dim - 1> boundary_mesh =
       volume_mesh.slice_away(direction.dimension());
   const Mesh<1> volume_stripe_mesh =
@@ -173,12 +170,9 @@ void lift_boundary_terms_gauss_points(
     const Variables<BoundaryCorrectionTagsList>& lower_boundary_corrections,
     const Scalar<DataVector>& lower_magnitude_of_face_normal,
     const Scalar<DataVector>& lower_face_det_jacobian) {
-  ASSERT(alg::all_of(volume_mesh.quadrature(),
-                     [](const Spectral::Quadrature quadrature) {
-                       return quadrature == Spectral::Quadrature::Gauss;
-                     }),
-         "Must use Gauss points in all directions but got the mesh: "
-             << volume_mesh);
+  ASSERT(volume_mesh.quadrature(dimension) == Spectral::Quadrature::Gauss,
+         "Must use Gauss points in the face-normal dimension "
+             << dimension << " but got mesh: " << volume_mesh);
   const Mesh<Dim - 1> boundary_mesh = volume_mesh.slice_away(dimension);
   const Mesh<1> volume_stripe_mesh = volume_mesh.slice_through(dimension);
   const size_t num_boundary_grid_points = boundary_mesh.number_of_grid_points();

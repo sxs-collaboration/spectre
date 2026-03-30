@@ -424,6 +424,13 @@ void apply_boundary_condition_on_face(
   Variables<tags_on_exterior_face> exterior_face_fields{
       number_of_points_on_face};
 
+  const bool has_collocation_points_on_side =
+      volume_mesh.quadrature(direction.dimension()) ==
+          Spectral::Quadrature::GaussLobatto or
+      (volume_mesh.quadrature(direction.dimension()) ==
+           Spectral::Quadrature::GaussRadauUpper and
+       direction.side() == Side::Upper);
+
   if constexpr (uses_ghost_condition) {
     using mortar_tags_list = tmpl::list<PackageFieldTags...>;
     using dg_package_data_projected_tags =
@@ -584,12 +591,13 @@ void apply_boundary_condition_on_face(
         get<evolution::dg::Tags::MagnitudeOfNormal>(
             *db::get<evolution::dg::Tags::NormalCovectorAndMagnitude<Dim>>(*box)
                  .at(direction));
-    if (volume_mesh.quadrature(0) == Spectral::Quadrature::GaussLobatto) {
+    if (has_collocation_points_on_side) {
       // The lift_flux function lifts only on the slice, it does not add
       // the contribution to the volume.
       ::dg::lift_flux(make_not_null(&boundary_corrections_on_face),
                       volume_mesh.extents(direction.dimension()),
-                      magnitude_of_interior_face_normal);
+                      magnitude_of_interior_face_normal,
+                      volume_mesh.basis(direction.dimension()));
 
       // Add the flux contribution to the volume data
       db::mutate<dt_variables_tag>(
@@ -637,7 +645,7 @@ void apply_boundary_condition_on_face(
   }
   // Add TimeDerivative correction to volume time derivatives.
   if constexpr (uses_time_derivative_condition) {
-    if (volume_mesh.quadrature(0) == Spectral::Quadrature::GaussLobatto) {
+    if (has_collocation_points_on_side) {
       db::mutate<dt_variables_tag>(
           [&direction, &dt_time_derivative_correction,
            &volume_mesh](const auto dt_variables_ptr) {

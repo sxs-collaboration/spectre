@@ -793,14 +793,17 @@ void ComputeTimeDerivative<Dim, EvolutionSystem, DgStepChoosers,
   }
 
   if (not mortar_history_directions.empty()) {
-    // We assume isotropic quadrature, i.e. the quadrature is the same in
-    // all directions.
-    const bool using_gauss_points =
-        db::get<domain::Tags::Mesh<Dim>>(*box).quadrature() ==
-        make_array<Dim>(Spectral::Quadrature::Gauss);
+    // Need volume Jacobian for any face whose normal direction uses Gauss
+    // points. This means mixed-quadrature non-hypercube elements (e.g.
+    // full_cylinder) where some directions have collocated face points and
+    // others do not.
+    const bool any_direction_uses_gauss =
+        alg::any_of(volume_mesh.quadrature(), [](const Spectral::Quadrature q) {
+          return q == Spectral::Quadrature::Gauss;
+        });
 
     const Scalar<DataVector> volume_det_inv_jacobian{};
-    if (using_gauss_points) {
+    if (any_direction_uses_gauss) {
       // NOLINTNEXTLINE
       const_cast<DataVector&>(get(volume_det_inv_jacobian))
           .set_data_ref(make_not_null(&const_cast<DataVector&>(  // NOLINT
@@ -809,8 +812,8 @@ void ComputeTimeDerivative<Dim, EvolutionSystem, DgStepChoosers,
     }
 
     // Add face normal and Jacobian determinants to the local mortar data. We
-    // only need the Jacobians if we are using Gauss points. Then copy over
-    // into the boundary history, since that's what the LTS steppers use.
+    // only need the Jacobians for directions using Gauss points. Then copy
+    // over into the boundary history, since that's what the LTS steppers use.
     //
     // The boundary history coupling computation (which computes the _lifted_
     // boundary correction) returns a Variables<dt<EvolvedVars>> instead of
@@ -820,7 +823,7 @@ void ComputeTimeDerivative<Dim, EvolutionSystem, DgStepChoosers,
     db::mutate<evolution::dg::Tags::MortarData<Dim>,
                evolution::dg::Tags::MortarDataHistory<Dim>>(
         [&element, integration_order, &mortar_history_directions, &mortar_info,
-         &time_step_id, using_gauss_points, &volume_det_inv_jacobian,
+         &time_step_id, any_direction_uses_gauss, &volume_det_inv_jacobian,
          &volume_mesh](
             const gsl::not_null<
                 DirectionalIdMap<Dim, evolution::dg::MortarDataHolder<Dim>>*>
@@ -837,7 +840,7 @@ void ComputeTimeDerivative<Dim, EvolutionSystem, DgStepChoosers,
                 normal_covector_and_magnitude) {
           Scalar<DataVector> volume_det_jacobian{};
           Scalar<DataVector> face_det_jacobian{};
-          if (using_gauss_points) {
+          if (any_direction_uses_gauss) {
             get(volume_det_jacobian) = 1.0 / get(volume_det_inv_jacobian);
           }
           for (const auto& [direction, neighbors_in_direction] :
@@ -853,7 +856,8 @@ void ComputeTimeDerivative<Dim, EvolutionSystem, DgStepChoosers,
             const Scalar<DataVector>& face_normal_magnitude =
                 get<evolution::dg::Tags::MagnitudeOfNormal>(
                     *normal_covector_and_magnitude.at(direction));
-            if (using_gauss_points) {
+            if (volume_mesh.quadrature(direction.dimension()) ==
+                Spectral::Quadrature::Gauss) {
               const Matrix identity{};
               auto interpolation_matrices =
                   make_array<Dim>(std::cref(identity));
@@ -881,7 +885,8 @@ void ComputeTimeDerivative<Dim, EvolutionSystem, DgStepChoosers,
               }
               auto& local_mortar_data = mortar_data->at(mortar_id).local();
               local_mortar_data.face_normal_magnitude = face_normal_magnitude;
-              if (using_gauss_points) {
+              if (volume_mesh.quadrature(direction.dimension()) ==
+                  Spectral::Quadrature::Gauss) {
                 local_mortar_data.volume_mesh = volume_mesh;
                 local_mortar_data.volume_det_inv_jacobian =
                     volume_det_inv_jacobian;

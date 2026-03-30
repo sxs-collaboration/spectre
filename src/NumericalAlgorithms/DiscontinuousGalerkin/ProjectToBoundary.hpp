@@ -112,6 +112,13 @@ void project_contiguous_data_to_boundary(
             first_volume_field[0].size() * number_of_independent_components},
         volume_mesh.extents());
   } else {
+    ASSERT(volume_mesh.quadrature(sliced_dim) ==
+                   Spectral::Quadrature::GaussLobatto or
+               (volume_mesh.quadrature(sliced_dim) ==
+                    Spectral::Quadrature::GaussRadauUpper and
+                direction.side() == Side::Upper),
+           "Got quadrature without boundary collocation point at "
+               << direction << " with " << volume_mesh.quadrature(sliced_dim));
     const size_t fixed_index = direction.side() == Side::Upper
                                    ? volume_mesh.extents(sliced_dim) - 1
                                    : 0;
@@ -194,6 +201,13 @@ void project_tensors_to_boundary(
                      volume_mesh.extents());
     });
   } else {
+    ASSERT(volume_mesh.quadrature(sliced_dim) ==
+                   Spectral::Quadrature::GaussLobatto or
+               (volume_mesh.quadrature(sliced_dim) ==
+                    Spectral::Quadrature::GaussRadauUpper and
+                direction.side() == Side::Upper),
+           "Got quadrature without boundary collocation point at "
+               << direction << " with " << volume_mesh.quadrature(sliced_dim));
     const size_t fixed_index = direction.side() == Side::Upper
                                    ? volume_mesh.extents(sliced_dim) - 1
                                    : 0;
@@ -255,6 +269,13 @@ void project_tensor_to_boundary(
                      volume_mesh.extents());
     }
   } else {
+    ASSERT(volume_mesh.quadrature(sliced_dim) ==
+                   Spectral::Quadrature::GaussLobatto or
+               (volume_mesh.quadrature(sliced_dim) ==
+                    Spectral::Quadrature::GaussRadauUpper and
+                direction.side() == Side::Upper),
+           "Got quadrature without boundary collocation point at "
+               << direction << " with " << volume_mesh.quadrature(sliced_dim));
     const size_t fixed_index = direction.side() == Side::Upper
                                    ? volume_mesh.extents(sliced_dim) - 1
                                    : 0;

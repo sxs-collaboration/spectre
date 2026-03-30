@@ -1743,15 +1743,17 @@ void test_impl(const Spectral::Quadrature quadrature,
       };
 
   const auto check_mortar_data = [&compute_expected_mortar_data,
-                                  &det_inv_jacobian, &get_tag, &mesh,
-                                  &quadrature](const auto& mortar_data,
-                                               const auto& mortar_id) {
+                                  &det_inv_jacobian, &get_tag,
+                                  &mesh](const auto& mortar_data,
+                                         const auto& mortar_id) {
     CHECK_ITERABLE_APPROX(mortar_data.mortar_data.value(),
                           compute_expected_mortar_data(mortar_id.direction(),
                                                        mortar_id.id(), true));
 
     // Check face normal and/or Jacobians
-    const bool using_gauss_points = quadrature == Spectral::Quadrature::Gauss;
+    const bool using_gauss_points =
+        mesh.quadrature(mortar_id.direction().dimension()) ==
+        Spectral::Quadrature::Gauss;
     REQUIRE(mortar_data.face_normal_magnitude.has_value());
     const Scalar<DataVector>& local_face_normal_magnitude =
         mortar_data.face_normal_magnitude.value();
