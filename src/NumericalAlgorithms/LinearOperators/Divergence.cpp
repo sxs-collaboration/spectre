@@ -10,8 +10,10 @@
 #include "DataStructures/ComplexDataVector.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/DataVector.hpp"
+#include "DataStructures/Tensor/IndexType.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
+#include "NumericalAlgorithms/LinearOperators/Divergence.tpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.tpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
@@ -143,3 +145,18 @@ template void logical_divergence(
 #undef DTYPE
 #undef DIM
 #undef TENSOR
+
+#define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
+
+#define INSTANTIATE_SCALAR_CARTOON(_, data)                             \
+  template Scalar<DataVector> divergence(                                 \
+      const tnsr::I<DataVector, DIM(data), Frame::Inertial>& input,       \
+      const Mesh<DIM(data)>& mesh,                                        \
+      const InverseJacobian<DataVector, DIM(data), Frame::ElementLogical, \
+                            Frame::Inertial>& inverse_jacobian,           \
+      const tnsr::I<DataVector, DIM(data), Frame::Inertial>& inertial_coords);
+
+GENERATE_INSTANTIATIONS(INSTANTIATE_SCALAR_CARTOON, (1, 2, 3))
+
+#undef INSTANTIATION_SCALAR_CARTOON
+#undef DIM
