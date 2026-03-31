@@ -67,6 +67,7 @@ void verify_solution_suite(
 }
 }  // namespace
 
+// [[Timeout, 10]]
 SPECTRE_TEST_CASE(
     "Unit.PointwiseFunctions.AnalyticSolutions.RelEuler.RotatingStar",
     "[Unit][PointwiseFunctions]") {
