@@ -374,7 +374,7 @@ jobs:
       - name: Build Python docs
         working-directory: build
         run: |
-          make py-docs
+          make py-docs -j4
       # Upload as an artifact to make available to deployment and to PRs
       - name: Prepare for upload
         working-directory: build
