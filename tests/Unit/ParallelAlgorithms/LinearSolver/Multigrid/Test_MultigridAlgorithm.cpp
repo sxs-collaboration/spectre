@@ -32,11 +32,9 @@
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 
-// \cond
 namespace PUP {
 class er;
 }  // namespace PUP
-// \endcond
 
 namespace helpers = LinearSolverAlgorithmTestHelpers;
 namespace helpers_mg = TestHelpers::LinearSolver::multigrid;
