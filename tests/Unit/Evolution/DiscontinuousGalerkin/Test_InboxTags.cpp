@@ -19,7 +19,7 @@
 #include "Time/TimeStepId.hpp"
 
 namespace {
-enum class SendType { GhostData, DgData, AllData, SplitDgData };
+enum class SendType { GhostData, DgData, AllData };
 
 template <size_t Dim>
 evolution::dg::BoundaryData<Dim> make_boundary_data(const int label,
@@ -116,23 +116,6 @@ void test() {
     CHECK(time3_messages.at(mortar_upper) == data_upper_3);
     CHECK(time3_messages.at(mortar_lower) == data_lower_3);
   }
-
-  CHECK(not inbox.set_missing_messages(1));
-
-  CHECK(Inbox::insert_into_inbox(
-      &inbox, time_step_3,
-      std::pair{mortar_upper, make_boundary_data<Dim>(4, time_step_4,
-                                                      SendType::SplitDgData)}));
-
-  inbox.collect_messages();
-
-  CHECK(inbox.messages.size() == 3);
-  CHECK(inbox.messages.at(time_step_1).size() == 2);
-  CHECK(inbox.messages.at(time_step_2).size() == 1);
-  CHECK(inbox.messages.at(time_step_3).size() == 2);
-
-  CHECK(inbox.messages.at(time_step_3).at(mortar_upper) ==
-        make_boundary_data<Dim>(4, time_step_4, SendType::AllData));
 
   const auto data_upper_2 =
       make_boundary_data<Dim>(5, time_step_2, SendType::GhostData);

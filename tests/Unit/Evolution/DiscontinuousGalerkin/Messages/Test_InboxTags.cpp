@@ -270,58 +270,6 @@ void test_with_ghost_cells() {
   CHECK(bc_inbox.messages.count(time_step_id_b) == 0);
   CHECK(bm_inbox.count(time_step_id_b) == 0);
 
-  // Now send fluxes separately.
-  bc_tag::insert_into_inbox(make_not_null(&bc_inbox), time_step_id_a,
-                            std::make_pair(nhbr_key, send_data_a));
-
-  boundary_message_a = create_boundary_message(
-      time_step_id_a, time_step_id_a, nhbr_key, volume_mesh_a, mesh_a,
-      send_data_a.ghost_cell_data, nullopt, send_data_a.tci_status,
-      send_data_a.integration_order);
-  bm_tag::insert_into_inbox(make_not_null(&bm_inbox), boundary_message_a);
-  bc_inbox.collect_messages();
-
-  BcType send_flux_data_a;
-  send_flux_data_a.volume_mesh_ghost_cell_data =
-      send_data_a.volume_mesh_ghost_cell_data;
-  send_flux_data_a.boundary_correction_data =
-      DataVector{mesh_a.number_of_grid_points() * number_of_components, 0.0};
-  // Verify that when we update the fluxes the validity of the fluxes is also
-  // updated correctly
-  send_flux_data_a.validity_range = time_step_id_c;
-  send_flux_data_a.tci_status = 6;
-  send_flux_data_a.integration_order = 4;
-  fill_with_random_values(
-      make_not_null(&send_flux_data_a.boundary_correction_data.value()),
-      make_not_null(&gen), make_not_null(&dist));
-
-  BoundaryMessage<Dim>* flux_boundary_message_a = create_boundary_message(
-      time_step_id_a, time_step_id_c, nhbr_key, volume_mesh_a, mesh_a, nullopt,
-      send_flux_data_a.boundary_correction_data, send_flux_data_a.tci_status,
-      send_flux_data_a.integration_order);
-
-  bc_tag::insert_into_inbox(make_not_null(&bc_inbox), time_step_id_a,
-                            std::make_pair(nhbr_key, send_flux_data_a));
-  bm_tag::insert_into_inbox(make_not_null(&bm_inbox), flux_boundary_message_a);
-  bc_inbox.collect_messages();
-
-  BcType send_all_data_a = send_data_a;
-  send_all_data_a.boundary_correction_data =
-      send_flux_data_a.boundary_correction_data;
-  send_all_data_a.validity_range = send_flux_data_a.validity_range;
-  send_all_data_a.tci_status = send_flux_data_a.tci_status;
-  send_all_data_a.integration_order = send_flux_data_a.integration_order;
-
-  BoundaryMessage<Dim>* all_boundary_message_a = create_boundary_message(
-      time_step_id_a, time_step_id_c, nhbr_key, volume_mesh_a, mesh_a,
-      send_all_data_a.ghost_cell_data, send_all_data_a.boundary_correction_data,
-      send_all_data_a.tci_status, send_all_data_a.integration_order);
-  BoundaryMessage<Dim>* all_boundary_message_a_compare = all_boundary_message_a;
-
-  CHECK(bc_inbox.messages.at(time_step_id_a).at(nhbr_key) == send_all_data_a);
-  CHECK(*(bm_inbox.at(time_step_id_a).at(nhbr_key).get()) ==
-        *all_boundary_message_a_compare);
-
   // Check sending both ghost and flux data at once
   BcType send_all_data_b = send_data_b;
   send_all_data_b.boundary_correction_data = DataVector{

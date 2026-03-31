@@ -86,18 +86,12 @@ void AtomicInboxBoundaryData<Dim>::collect_messages() {
       auto& data = get<1>(*data_in_direction);
       auto& directional_element_id = get<2>(*data_in_direction);
       auto& current_inbox = messages[time_step_id];
-      if (auto it = current_inbox.find(directional_element_id);
-          it != current_inbox.end()) {
-        merge_boundary_data(make_not_null(&it->second), std::move(data));
-      } else {
-        // We have not received ghost cells or fluxes at this time.
-        if (not current_inbox
-                    .emplace(std::move(directional_element_id), std::move(data))
-                    .second) {
-          ERROR("Failed to insert data to receive at instance '"
-                << time_step_id
-                << "' with tag 'BoundaryCorrectionAndGhostCellsInbox'.\n");
-        }
+      if (not current_inbox
+                  .emplace(std::move(directional_element_id), std::move(data))
+                  .second) {
+        ERROR("Failed to insert data to receive at instance '"
+              << time_step_id
+              << "' with tag 'BoundaryCorrectionAndGhostCellsInbox'.\n");
       }
 
       spsc_in_direction.pop();

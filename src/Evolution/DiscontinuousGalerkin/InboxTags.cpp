@@ -47,15 +47,10 @@ bool BoundaryCorrectionAndGhostCellsInbox<Dim, UseNodegroupDgElements>::
         const gsl::not_null<type_map*> inbox, const temporal_id& time_step_id,
         std::pair<DirectionalId<Dim>, evolution::dg::BoundaryData<Dim>> data) {
   auto& current_inbox = inbox->messages[time_step_id];
-  if (auto it = current_inbox.find(data.first); it != current_inbox.end()) {
-    merge_boundary_data(make_not_null(&it->second), std::move(data.second));
-  } else {
-    // We have not received ghost cells or fluxes at this time.
-    if (not current_inbox.insert(std::move(data)).second) {
-      ERROR("Failed to insert data to receive at instance '"
-            << time_step_id
-            << "' with tag 'BoundaryCorrectionAndGhostCellsInbox'.\n");
-    }
+  if (not current_inbox.insert(std::move(data)).second) {
+    ERROR("Failed to insert data to receive at instance '"
+          << time_step_id
+          << "' with tag 'BoundaryCorrectionAndGhostCellsInbox'.\n");
   }
   --inbox->missing_messages;
   return inbox->missing_messages == 0;
