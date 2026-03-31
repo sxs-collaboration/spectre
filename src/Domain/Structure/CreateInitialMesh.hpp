@@ -17,6 +17,9 @@ template <size_t Dim>
 struct ElementId;
 template <size_t Dim>
 class Mesh;
+namespace domain {
+enum class Topology : uint8_t;
+}  // namespace domain
 namespace Spectral {
 enum class Basis : uint8_t;
 enum class Quadrature : uint8_t;
@@ -55,4 +58,16 @@ Mesh<Dim> create_initial_mesh(
     const std::vector<std::array<size_t, Dim>>& initial_extents,
     const Block<Dim>& block, const ElementId<Dim>& element_id,
     Spectral::Basis i1_basis, Spectral::Quadrature i1_quadrature);
+
+/// \ingroup InitializationGroup
+/// \brief Create a new array of topologies to account for potential radial
+/// refinement of Bn topologies.
+///
+/// \param topologies initial topologies of the Element
+/// \param element_id the ElementId of the Element
+template <size_t Dim>
+std::array<domain::Topology, Dim> refine_Bn_topology(
+    const std::array<domain::Topology, Dim>& topologies,
+    const ElementId<Dim>& element_id);
+
 }  // namespace domain
