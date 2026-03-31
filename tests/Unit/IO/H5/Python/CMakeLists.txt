@@ -58,10 +58,12 @@ spectre_add_python_bindings_test(
   "Unit.IO.H5.Python.ReadH5"
   Test_ReadH5.py
   "unit;IO;H5;python"
-  PyH5)
+  PyH5
+  TIMEOUT 10)
 
 spectre_add_python_bindings_test(
   "Unit.IO.H5.Python.TransformVolumeData"
   Test_TransformVolumeData.py
   "unit;IO;H5;python"
-  PyH5)
+  PyH5
+  TIMEOUT 10)
