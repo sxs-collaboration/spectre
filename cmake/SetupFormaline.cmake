@@ -6,9 +6,11 @@
 # directory that are tracked by Git. I.e.
 #   git ls-tree --full-tree --name-only HEAD
 set(SPECTRE_FORMALINE_LOCATIONS
+  .claude
   .clang-format
   .clang-tidy
   .codecov.yaml
+  .codex
   .devcontainer
   .dockerignore
   .github
@@ -24,6 +26,7 @@ set(SPECTRE_FORMALINE_LOCATIONS
   Metadata.yaml
   pyproject.toml
   README.md
+  .skills
   setup.cfg
   src
   support

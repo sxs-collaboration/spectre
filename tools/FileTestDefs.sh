@@ -461,7 +461,11 @@ license() {
               'RotatingStarId_Hybrid.dat$' \
               'support/Profiling/ScoreP/spectre.flt' \
               'support/TeXLive/texlive.profile' \
-              'tests/InputFiles/GrMhd/GhValenciaDivClean/EvolutionParameters.perl' && \
+              'tests/InputFiles/GrMhd/GhValenciaDivClean/EvolutionParameters.perl' \
+              '\.skills/.*\.md$' \
+              '\.codex/.*\.md$' \
+              '\.agents/.*\.md$' \
+              '\.claude/.*\.md$' && \
         ! staged_grep -q "Distributed under the MIT License" "$1"
 }
 license_report() {
