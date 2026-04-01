@@ -5,10 +5,13 @@
 
 #pragma once
 
+#include <boost/container/small_vector.hpp>
 #include <cstddef>
 #include <map>
+#include <utility>
 
-#include "Domain/Structure/DirectionalIdMap.hpp"
+#include "Domain/Structure/DirectionalId.hpp"
+#include "Domain/Structure/MaxNumberOfNeighbors.hpp"
 #include "Evolution/DiscontinuousGalerkin/BoundaryData.hpp"
 #include "Time/TimeStepId.hpp"
 
@@ -24,7 +27,9 @@ namespace evolution::dg {
 /// which implementation is in use.
 template <size_t Dim>
 struct InboxBoundaryData {
-  using mapped_type = DirectionalIdMap<Dim, evolution::dg::BoundaryData<Dim>>;
+  using mapped_type = boost::container::small_vector<
+      std::pair<DirectionalId<Dim>, evolution::dg::BoundaryData<Dim>>,
+      maximum_number_of_neighbors(Dim)>;
 
   std::map<TimeStepId, mapped_type> messages;
 

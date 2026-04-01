@@ -19,6 +19,7 @@
 #include "Time/Slab.hpp"
 #include "Time/Time.hpp"
 #include "Time/TimeStepId.hpp"
+#include "Utilities/Algorithm.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeString.hpp"
 #include "Utilities/TMPL.hpp"
@@ -52,6 +53,16 @@ BoundaryMessage<Dim>* create_boundary_message(
                              : nullptr,  // subcell_ghost_data
       dg_data.has_value() ? dg_data.value().data() : nullptr  // dg_flux_data
   );
+}
+
+template <typename T>
+const typename T::value_type::second_type& find(
+    const T& container, const typename T::value_type::first_type& key) {
+  const auto entry = alg::find_if(
+      container,
+      [&](const typename T::value_type& x) { return x.first == key; });
+  REQUIRE(entry != container.end());
+  return entry->second;
 }
 
 template <size_t Dim, bool UseNodegroupDgElements>
@@ -103,9 +114,9 @@ void test_no_ghost_cells() {
   bm_tag::insert_into_inbox(make_not_null(&bm_inbox), boundary_message_a);
   bc_inbox.collect_messages();
 
-  CHECK((bc_inbox.messages.at(time_step_id_a).at(nhbr_key) == send_data_a));
+  CHECK((find(bc_inbox.messages.at(time_step_id_a), nhbr_key) == send_data_a));
   // Check the values, not the pointers
-  CHECK(*(bm_inbox.at(time_step_id_a).at(nhbr_key).get()) ==
+  CHECK(*(find(bm_inbox.at(time_step_id_a), nhbr_key).get()) ==
         *boundary_message_a_compare);
 
   BcType send_data_b{};
@@ -150,11 +161,11 @@ void test_no_ghost_cells() {
                    << ", next time: " << time_step_id_c << "\n";
   CHECK(inbox_output == expected_inbox_output);
 
-  CHECK((bc_inbox.messages.at(time_step_id_a).at(nhbr_key) == send_data_a));
-  CHECK((bc_inbox.messages.at(time_step_id_b).at(nhbr_key) == send_data_b));
-  CHECK(*(bm_inbox.at(time_step_id_a).at(nhbr_key).get()) ==
+  CHECK((find(bc_inbox.messages.at(time_step_id_a), nhbr_key) == send_data_a));
+  CHECK((find(bc_inbox.messages.at(time_step_id_b), nhbr_key) == send_data_b));
+  CHECK(*(find(bm_inbox.at(time_step_id_a), nhbr_key).get()) ==
         *boundary_message_a_compare);
-  CHECK(*(bm_inbox.at(time_step_id_b).at(nhbr_key).get()) ==
+  CHECK(*(find(bm_inbox.at(time_step_id_b), nhbr_key).get()) ==
         *boundary_message_b_compare);
 
   bc_inbox.messages.erase(time_step_id_a);
@@ -162,8 +173,8 @@ void test_no_ghost_cells() {
   CHECK(bc_inbox.messages.count(time_step_id_a) == 0);
   CHECK(bm_inbox.count(time_step_id_a) == 0);
 
-  CHECK((bc_inbox.messages.at(time_step_id_b).at(nhbr_key) == send_data_b));
-  CHECK(*(bm_inbox.at(time_step_id_b).at(nhbr_key).get()) ==
+  CHECK((find(bc_inbox.messages.at(time_step_id_b), nhbr_key) == send_data_b));
+  CHECK(*(find(bm_inbox.at(time_step_id_b), nhbr_key).get()) ==
         *boundary_message_b_compare);
   bc_inbox.messages.erase(time_step_id_b);
   bm_inbox.erase(time_step_id_b);
@@ -220,9 +231,9 @@ void test_with_ghost_cells() {
   bm_tag::insert_into_inbox(make_not_null(&bm_inbox), boundary_message_a);
   bc_inbox.collect_messages();
 
-  CHECK((bc_inbox.messages.at(time_step_id_a).at(nhbr_key) == send_data_a));
+  CHECK((find(bc_inbox.messages.at(time_step_id_a), nhbr_key) == send_data_a));
   // Check the values, not the pointers
-  CHECK(*(bm_inbox.at(time_step_id_a).at(nhbr_key).get()) ==
+  CHECK(*(find(bm_inbox.at(time_step_id_a), nhbr_key).get()) ==
         *boundary_message_a_compare);
 
   BcType send_data_b{};
@@ -250,11 +261,11 @@ void test_with_ghost_cells() {
   bm_tag::insert_into_inbox(make_not_null(&bm_inbox), boundary_message_b);
   bc_inbox.collect_messages();
 
-  CHECK((bc_inbox.messages.at(time_step_id_a).at(nhbr_key) == send_data_a));
-  CHECK((bc_inbox.messages.at(time_step_id_b).at(nhbr_key) == send_data_b));
-  CHECK(*(bm_inbox.at(time_step_id_a).at(nhbr_key).get()) ==
+  CHECK((find(bc_inbox.messages.at(time_step_id_a), nhbr_key) == send_data_a));
+  CHECK((find(bc_inbox.messages.at(time_step_id_b), nhbr_key) == send_data_b));
+  CHECK(*(find(bm_inbox.at(time_step_id_a), nhbr_key).get()) ==
         *boundary_message_a_compare);
-  CHECK(*(bm_inbox.at(time_step_id_b).at(nhbr_key).get()) ==
+  CHECK(*(find(bm_inbox.at(time_step_id_b), nhbr_key).get()) ==
         *boundary_message_b_compare);
 
   bc_inbox.messages.erase(time_step_id_a);
@@ -262,8 +273,8 @@ void test_with_ghost_cells() {
   CHECK(bc_inbox.messages.count(time_step_id_a) == 0);
   CHECK(bm_inbox.count(time_step_id_a) == 0);
 
-  CHECK((bc_inbox.messages.at(time_step_id_b).at(nhbr_key) == send_data_b));
-  CHECK(*(bm_inbox.at(time_step_id_b).at(nhbr_key).get()) ==
+  CHECK((find(bc_inbox.messages.at(time_step_id_b), nhbr_key) == send_data_b));
+  CHECK(*(find(bm_inbox.at(time_step_id_b), nhbr_key).get()) ==
         *boundary_message_b_compare);
   bc_inbox.messages.erase(time_step_id_b);
   bm_inbox.erase(time_step_id_b);
@@ -292,8 +303,9 @@ void test_with_ghost_cells() {
   bm_tag::insert_into_inbox(make_not_null(&bm_inbox), all_boundary_message_b);
   bc_inbox.collect_messages();
 
-  CHECK((bc_inbox.messages.at(time_step_id_b).at(nhbr_key) == send_all_data_b));
-  CHECK(*(bm_inbox.at(time_step_id_b).at(nhbr_key).get()) ==
+  CHECK((find(bc_inbox.messages.at(time_step_id_b), nhbr_key) ==
+         send_all_data_b));
+  CHECK(*(find(bm_inbox.at(time_step_id_b), nhbr_key).get()) ==
         *all_boundary_message_b_compare);
 }
 

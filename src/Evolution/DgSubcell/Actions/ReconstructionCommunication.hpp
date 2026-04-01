@@ -443,13 +443,13 @@ struct ReceiveAndSendDataForReconstruction {
       inbox.set_missing_messages(expected_keys.size());
       return {Parallel::AlgorithmExecution::Retry, std::nullopt};
     }
-    if (const auto missing = std::count_if(
-            expected_keys.begin(), expected_keys.end(),
-            [&received](const auto& key) {
-              return received->second.find(key) == received->second.end();
-            });
-        missing != 0) {
-      inbox.set_missing_messages(static_cast<size_t>(missing));
+    if (const auto found = static_cast<size_t>(
+            alg::count_if(received->second,
+                          [&expected_keys](const auto& message) {
+                            return expected_keys.contains(message.first);
+                          }));
+        found < expected_keys.size()) {
+      inbox.set_missing_messages(expected_keys.size() - found);
       return {Parallel::AlgorithmExecution::Retry, std::nullopt};
     }
 
@@ -544,20 +544,24 @@ struct ReceiveAndSendDataForReconstruction {
       const ElementId<Dim> relevant_neighbor_id =
           *((element.neighbors()).at(direction_to_extend).ids().begin());
 
+      const auto received_data_for_direction_it =
+          alg::find_if(received_data, [&](const auto& entry) {
+            return entry.first == DirectionalId<Dim>{direction_to_extend,
+                                                     relevant_neighbor_id};
+          });
       // Received data must have entry for direction to extend.
-      ASSERT((received_data.contains(DirectionalId<Dim>{direction_to_extend,
-                                                        relevant_neighbor_id})),
+      ASSERT(received_data_for_direction_it != received_data.end(),
              "Received data missing entry for direction to extend."
                  << " direction_to_extend = " << direction_to_extend
                  << ", relevant_neighbor_id = " << relevant_neighbor_id
                  << ", problematic_direction = " << problematic_direction
                  << ", element = " << element.id());
+      const auto& received_data_for_direction =
+          received_data_for_direction_it->second;
 
       // Received data must have received ghost data for this extension
       // direction.
-      ASSERT(((received_data.at(DirectionalId<Dim>{direction_to_extend,
-                                                   relevant_neighbor_id}))
-                  .ghost_cell_data.has_value()),
+      ASSERT(received_data_for_direction.ghost_cell_data.has_value(),
              "Ghost data missing for this extension direction."
                  << " direction_to_extend = " << direction_to_extend
                  << ", relevant_neighbor_id = " << relevant_neighbor_id
@@ -577,9 +581,7 @@ struct ReceiveAndSendDataForReconstruction {
                                rdmp_tci_data.min_variables_values.size();
 
       const DataVector& full_ghost_cell_data =
-          received_data
-              .at(DirectionalId<Dim>{direction_to_extend, relevant_neighbor_id})
-              .ghost_cell_data.value();
+          received_data_for_direction.ghost_cell_data.value();
       const size_t relevant_ghost_data_size =
           full_ghost_cell_data.size() - rdmp_size;
 
@@ -706,8 +708,7 @@ struct ReceiveDataForReconstruction {
     }
 
     // Now that we have received all the data, copy it over as needed.
-    DirectionalIdMap<Dim, evolution::dg::BoundaryData<Dim>> received_data =
-        std::move(received->second);
+    auto received_data = std::move(received->second);
     inbox.messages.erase(received);
 
     const Mesh<Dim>& subcell_mesh = db::get<Tags::Mesh<Dim>>(box);
@@ -785,34 +786,30 @@ struct ReceiveDataForReconstruction {
                      << rdmp_tci_data_ptr->min_variables_values.size()
                      << " for the min.");
 
-          for (const auto& [direction, neighbors_in_direction] :
-               element.neighbors()) {
-            for (const auto& neighbor : neighbors_in_direction) {
-              DirectionalId<Dim> directional_element_id{direction, neighbor};
-              ASSERT(ghost_data_ptr->count(directional_element_id) == 0,
-                     "Found neighbor already inserted in direction "
-                         << direction << " with ElementId " << neighbor);
-              ASSERT(received_data[directional_element_id]
-                         .ghost_cell_data.has_value(),
-                     "Received subcell data message that does not contain any "
-                     "actual subcell data for reconstruction.");
-              // Collect the max/min of u(t^n) for the RDMP as we receive data.
-              // This reduces the memory footprint.
+          for (const auto& [directional_element_id, boundary_data] :
+               received_data) {
+            ASSERT(ghost_data_ptr->count(directional_element_id) == 0,
+                   "Found neighbor already inserted in direction "
+                       << directional_element_id.direction()
+                       << " with ElementId " << directional_element_id.id());
+            ASSERT(boundary_data.ghost_cell_data.has_value(),
+                   "Received subcell data message that does not contain any "
+                   "actual subcell data for reconstruction.");
+            // Collect the max/min of u(t^n) for the RDMP as we receive data.
+            // This reduces the memory footprint.
 
-              evolution::dg::subcell::insert_neighbor_rdmp_and_volume_data(
-                  rdmp_tci_data_ptr, ghost_data_ptr,
-                  *received_data[directional_element_id].ghost_cell_data,
-                  number_of_rdmp_vars, directional_element_id,
-                  mesh_for_ghost_data->at(directional_element_id), element,
-                  subcell_mesh, ghost_zone_size,
-                  neighbor_dg_to_fd_interpolants);
-              ASSERT(neighbor_tci_decisions->contains(directional_element_id),
-                     "The NeighorTciDecisions should contain the neighbor ("
-                         << directional_element_id.direction() << ", "
-                         << directional_element_id.id() << ") but doesn't");
-              neighbor_tci_decisions->at(directional_element_id) =
-                  received_data[directional_element_id].tci_status;
-            }
+            evolution::dg::subcell::insert_neighbor_rdmp_and_volume_data(
+                rdmp_tci_data_ptr, ghost_data_ptr,
+                *boundary_data.ghost_cell_data, number_of_rdmp_vars,
+                directional_element_id,
+                mesh_for_ghost_data->at(directional_element_id), element,
+                subcell_mesh, ghost_zone_size, neighbor_dg_to_fd_interpolants);
+            ASSERT(neighbor_tci_decisions->contains(directional_element_id),
+                   "The NeighorTciDecisions should contain the neighbor ("
+                       << directional_element_id.direction() << ", "
+                       << directional_element_id.id() << ") but doesn't");
+            neighbor_tci_decisions->at(directional_element_id) =
+                boundary_data.tci_status;
           }
         },
         make_not_null(&box),

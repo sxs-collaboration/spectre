@@ -8,6 +8,7 @@
 #include <pup_stl.h>
 
 #include "Utilities/GenerateInstantiations.hpp"
+#include "Utilities/Serialization/PupBoost.hpp"
 
 namespace evolution::dg {
 template <size_t Dim>

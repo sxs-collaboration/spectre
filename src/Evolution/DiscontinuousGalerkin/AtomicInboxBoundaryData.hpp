@@ -6,12 +6,13 @@
 #pragma once
 
 #include <atomic>
+#include <boost/container/small_vector.hpp>
 #include <cstddef>
 #include <map>
 #include <tuple>
+#include <utility>
 
 #include "Domain/Structure/DirectionalId.hpp"
-#include "Domain/Structure/DirectionalIdMap.hpp"
 #include "Domain/Structure/MaxNumberOfNeighbors.hpp"
 #include "Evolution/DiscontinuousGalerkin/BoundaryData.hpp"
 #include "Parallel/StaticSpscQueue.hpp"
@@ -99,7 +100,10 @@ struct AtomicInboxBoundaryData {
                  std::tuple<::TimeStepId, stored_type, DirectionalId<Dim>>, 20>,
              maximum_number_of_neighbors(Dim)>
       boundary_data_in_directions{};
-  std::map<TimeStepId, DirectionalIdMap<Dim, stored_type>> messages{};
+  std::map<TimeStepId, boost::container::small_vector<
+                           std::pair<DirectionalId<Dim>, stored_type>,
+                           maximum_number_of_neighbors(Dim)>>
+      messages{};
   std::atomic_int missing_messages{};
 
   // The number of messages in the SPSC queues is

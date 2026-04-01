@@ -155,11 +155,16 @@ bool receive_boundary_data(
     // using the `NormalDotNumericalFlux` prefix tag. This is because the
     // returned quantity is more a `dt` quantity than a
     // `NormalDotNormalDotFlux` since it's been lifted to the volume.
-    using InboxMap = std::map<
-        TimeStepId,
-        DirectionalIdMap<volume_dim, evolution::dg::BoundaryData<volume_dim>>>;
     inbox.collect_messages();
-    InboxMap& inbox_data = inbox.messages;
+    // This is a
+    //
+    // std::map<TimeStepId,
+    //          V<std::pair<DirectionalId<volume_dim>,
+    //                      evolution::dg::BoundaryData<volume_dim>>>,
+    //
+    // where V<> is a vector-like type the details of which we don't
+    // want to hardcode here.
+    auto& inbox_data = inbox.messages;
 
     for (auto time_entry = inbox_data.begin();
          time_entry != inbox_data.end();) {

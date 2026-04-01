@@ -86,13 +86,8 @@ void AtomicInboxBoundaryData<Dim>::collect_messages() {
       auto& data = get<1>(*data_in_direction);
       auto& directional_element_id = get<2>(*data_in_direction);
       auto& current_inbox = messages[time_step_id];
-      if (not current_inbox
-                  .emplace(std::move(directional_element_id), std::move(data))
-                  .second) {
-        ERROR("Failed to insert data to receive at instance '"
-              << time_step_id
-              << "' with tag 'BoundaryCorrectionAndGhostCellsInbox'.\n");
-      }
+      current_inbox.emplace_back(std::move(directional_element_id),
+                                 std::move(data));
 
       spsc_in_direction.pop();
       data_in_direction = spsc_in_direction.front();
