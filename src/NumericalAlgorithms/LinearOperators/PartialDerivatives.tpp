@@ -20,6 +20,7 @@
 #include "NumericalAlgorithms/Spectral/ModalToNodalMatrix.hpp"
 #include "NumericalAlgorithms/Spectral/NodalToModalMatrix.hpp"
 #include "NumericalAlgorithms/Spectral/Parity.hpp"
+#include "NumericalAlgorithms/Spectral/ParityFromSymmetry.hpp"
 #include "NumericalAlgorithms/Spectral/Quadrature.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/Spherepack.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/SpherepackCache.hpp"
@@ -808,10 +809,172 @@ struct LogicalImpl<1, VariableTags, DerivativeTags> {
     const size_t deriv_size =
         Variables<DerivativeTags>::number_of_independent_components *
         u.number_of_grid_points();
-    const Matrix& differentiation_matrix_xi =
-        Spectral::differentiation_matrix(mesh.slice_through(0));
-    apply_matrix_in_first_dim(logical_partial_derivatives_of_u[0], u.data(),
-                              differentiation_matrix_xi, deriv_size);
+    if (UNLIKELY(mesh.basis(0) == Spectral::Basis::ZernikeB1)) {
+      if constexpr (std::is_same_v<ValueType, double>) {
+        zernikeb1_apply(make_not_null(logical_partial_derivatives_of_u[0]), u,
+                        mesh.number_of_grid_points(), mesh.extents(0));
+      } else {
+        ERROR(
+            "Support for complex numbers with ZernikeB1 is not yet implemented "
+            "for logical_partial_derivative.");
+      }
+    } else {
+      const Matrix& differentiation_matrix_xi =
+          Spectral::differentiation_matrix(mesh.slice_through(0));
+      apply_matrix_in_first_dim(logical_partial_derivatives_of_u[0], u.data(),
+                                differentiation_matrix_xi, deriv_size);
+    }
+  }
+
+  template <typename T, typename ValueType = typename Variables<T>::value_type>
+  static void zernikeb1_apply(
+      const gsl::not_null<ValueType*> logical_partial_derivative_of_u,
+      const Variables<VariableTags>& u, const size_t num_grid_points,
+      const size_t extents_xi, Variables<T>* const buffer1,
+      Variables<DerivativeTags>* const buffer2) {
+    // Zernike bases need a differentiation matrix based on their parity. For
+    // ZernikeB1, that information is stored in the index structure.
+    // We sort components to a buffer by parity, apply the appropriate
+    // matrices, and copy the values to their destination
+
+    const Matrix& even_diff_matrix =
+        Spectral::differentiation_matrix<Spectral::Basis::ZernikeB1,
+                                         Spectral::Quadrature::GaussRadauUpper>(
+            extents_xi, Spectral::Parity::Even);
+    const Matrix& odd_diff_matrix =
+        Spectral::differentiation_matrix<Spectral::Basis::ZernikeB1,
+                                         Spectral::Quadrature::GaussRadauUpper>(
+            extents_xi, Spectral::Parity::Odd);
+
+    ValueType* p_logical_derivs = logical_partial_derivative_of_u;
+    const ValueType* p_data = u.data();
+    bool even = true;
+
+    constexpr auto parity_info =
+        Spectral::compute_parity_list<DerivativeTags>();
+    const auto parity_list = std::get<0>(parity_info);
+    const auto num_even_comps = std::get<1>(parity_info);
+    const auto num_odd_comps = std::get<2>(parity_info);
+
+    const size_t required_buffer_size =
+        (num_even_comps + num_odd_comps) * num_grid_points;
+    ASSERT(buffer1->size() >= required_buffer_size,
+           "Buffer1 size (" << buffer1->size()
+                            << ") is insufficient for ZernikeB1 requirements ("
+                            << required_buffer_size << ")");
+    ASSERT(buffer2->size() >= required_buffer_size,
+           "Buffer2 size (" << buffer2->size()
+                            << ") is insufficient for ZernikeB1 requirements ("
+                            << required_buffer_size << ")");
+
+    using DataType = std::conditional_t<std::is_same_v<ValueType, double>,
+                                        DataVector, ComplexDataVector>;
+    DataType even_components{};
+    even_components.set_data_ref(buffer1->data(),
+                                 num_even_comps * num_grid_points);
+    DataType odd_components{};
+    odd_components.set_data_ref(
+        buffer1->data() + num_even_comps * num_grid_points,
+        num_odd_comps * num_grid_points);
+    ValueType* p_even_components = even_components.data();
+    ValueType* p_odd_components = odd_components.data();
+
+    DataType even_deriv{};
+    even_deriv.set_data_ref(buffer2->data(), num_even_comps * num_grid_points);
+    DataType odd_deriv{};
+    odd_deriv.set_data_ref(buffer2->data() + num_even_comps * num_grid_points,
+                           num_odd_comps * num_grid_points);
+    ValueType* p_even_deriv = even_deriv.data();
+    ValueType* p_odd_deriv = odd_deriv.data();
+
+    for (const auto seg_size : parity_list) {
+      // seg_size is the number of contiguous components with the same parity
+      // (based on the bool `even`). The pattern alternates even/odd, so if the
+      // first element is odd, the list has a leading 0. However, after the
+      // potential leading 0, any other zero in the list indicates all
+      // components have been handled and all further values are guaranteed to
+      // be zero (the list has its size set by the worst-case scenario). If
+      // there are any neighboring components with the same parity (so not
+      // worst-case size), the list will have the back padded with zeros, which
+      // we don't need to loop over
+      // See Spectral::compute_parity_list() for more info
+      if (seg_size == 0) {
+        if (even) {
+          // Will have leading zero if first element is odd, so check next value
+          even = false;
+          continue;
+        } else {
+          // Iterated through all non-zero values
+          break;
+        }
+      }
+      if (even) {
+        std::copy(p_data, p_data + seg_size * num_grid_points,
+                  p_even_components);
+        p_even_components += seg_size * num_grid_points;
+      } else {
+        std::copy(p_data, p_data + seg_size * num_grid_points,
+                  p_odd_components);
+        p_odd_components += seg_size * num_grid_points;
+      }
+      p_data += seg_size * num_grid_points;  // NOLINT
+      even = not even;
+    }
+    apply_matrix_in_first_dim(p_even_deriv, even_components.data(),
+                              even_diff_matrix,
+                              num_even_comps * num_grid_points);
+    apply_matrix_in_first_dim(p_odd_deriv, odd_components.data(),
+                              odd_diff_matrix, num_odd_comps * num_grid_points);
+    even = true;
+    for (const auto seg_size : parity_list) {
+      if (seg_size == 0) {
+        if (even) {
+          // Will have leading zero if first element is odd
+          even = not even;
+          continue;
+        } else {
+          // Iterated through all non-zero values
+          break;
+        }
+      }
+      // Now copy the data from the buffers to the correct location in
+      // p_logical_derivs
+      if (even) {
+        std::copy(p_even_deriv, p_even_deriv + seg_size * num_grid_points,
+                  p_logical_derivs);
+        p_even_deriv += seg_size * num_grid_points;
+      } else {
+        std::copy(p_odd_deriv, p_odd_deriv + seg_size * num_grid_points,
+                  p_logical_derivs);
+        p_odd_deriv += seg_size * num_grid_points;
+      }
+      p_logical_derivs += seg_size * num_grid_points;  // NOLINT
+      even = not even;
+    }
+  }
+
+  template <typename ValueType>
+  static void zernikeb1_apply(
+      const gsl::not_null<ValueType*> logical_partial_derivative_of_u,
+      const Variables<VariableTags>& u, const size_t num_grid_points,
+      const size_t extents_0) {
+    constexpr auto parity_info =
+        Spectral::compute_parity_list<DerivativeTags>();
+    const auto num_comps = std::get<1>(parity_info) + std::get<2>(parity_info);
+
+    // Allocate buffers locally for this overload (use 2 buffers to match the
+    // 2 buffers used in the LogicalImpl<2> call)
+    const auto logical_derivs_data =
+        cpp20::make_unique_for_overwrite<ValueType[]>(2 * num_comps *
+                                                      num_grid_points);
+    Variables<DerivativeTags> buffer1{};
+    buffer1.set_data_ref(&logical_derivs_data[0], num_comps * num_grid_points);
+    Variables<DerivativeTags> buffer2{};
+    buffer2.set_data_ref(&logical_derivs_data[num_comps * num_grid_points],
+                         num_comps * num_grid_points);
+
+    zernikeb1_apply(logical_partial_derivative_of_u, u, num_grid_points,
+                    extents_0, &buffer1, &buffer2);
   }
 };
 
@@ -841,12 +1004,26 @@ struct LogicalImpl<2, VariableTags, DerivativeTags> {
       const size_t deriv_size =
           Variables<DerivativeTags>::number_of_independent_components *
           u.number_of_grid_points();
-      const Matrix& differentiation_matrix_xi =
-          Spectral::differentiation_matrix(mesh.slice_through(0));
+      if (UNLIKELY(mesh.basis(0) == Spectral::Basis::ZernikeB1)) {
+        if constexpr (std::is_same_v<ValueType, double>) {
+          LogicalImpl<1, VariableTags, DerivativeTags>::zernikeb1_apply(
+              make_not_null(logical_partial_derivatives_of_u[0]), u,
+              mesh.number_of_grid_points(), mesh.extents(0), partial_u_wrt_eta,
+              u_eta_fastest);
+        } else {
+          ERROR(
+              "Support for complex numbers with ZernikeB1 is not yet "
+              "implemented "
+              "for logical_partial_derivative.");
+        }
+      } else {
+        const Matrix& differentiation_matrix_xi =
+            Spectral::differentiation_matrix(mesh.slice_through(0));
+        apply_matrix_in_first_dim(logical_partial_derivatives_of_u[0], u.data(),
+                                  differentiation_matrix_xi, deriv_size);
+      }
       const size_t num_components_times_xi_slices =
           deriv_size / mesh.extents(0);
-      apply_matrix_in_first_dim(logical_partial_derivatives_of_u[0], u.data(),
-                                differentiation_matrix_xi, deriv_size);
       transpose<Variables<VariableTags>, Variables<DerivativeTags>>(
           make_not_null(u_eta_fastest), u, mesh.extents(0),
           num_components_times_xi_slices);
