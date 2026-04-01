@@ -9,10 +9,13 @@
 #include <vector>
 
 #include "DataStructures/DataVector.hpp"
+#include "DataStructures/Tensor/IndexType.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "DataStructures/Tensor/TypeAliases.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
+#include "Helpers/NumericalAlgorithms/Spectral/DiskTestFunctions.hpp"
 #include "Helpers/NumericalAlgorithms/SphericalHarmonics/YlmTestFunctions.hpp"
 #include "NumericalAlgorithms/Interpolation/CardinalInterpolator.hpp"
 #include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
@@ -297,6 +300,159 @@ void test_3d_spherical(const gsl::not_null<std::mt19937*> generator) {
     }
   }
 }
+
+void test_2d_disk(const gsl::not_null<std::mt19937*> generator) {
+  std::uniform_real_distribution<> xi_distribution(-1.0, 1.0);
+  std::uniform_real_distribution<> phi_distribution(0.0, 2.0 * M_PI);
+  for (size_t n_target_points = 1; n_target_points < 13;
+       n_target_points += 11) {
+    tnsr::I<DataVector, 2, Frame::ElementLogical> xi_target{n_target_points};
+    get<0>(xi_target) = make_with_random_values<DataVector>(
+        generator, make_not_null(&xi_distribution), xi_target);
+    get<1>(xi_target) = make_with_random_values<DataVector>(
+        generator, make_not_null(&phi_distribution), xi_target);
+    const tnsr::I<double, 2, Frame::ElementLogical> xi_target_single{
+        {{get<0>(xi_target)[0], get<1>(xi_target)[0]}}};
+    for (size_t n_y = 0; n_y < 4; ++n_y) {
+      for (size_t n_x = 0; n_x < 4; ++n_x) {
+        const Mesh<2> source_mesh{
+            n_x + n_y == 0 ? std::array{1_st, 1_st}
+                           : std::array{n_x + n_y + 1, 2 * (n_x + n_y) + 1},
+            std::array{Spectral::Basis::ZernikeB2, Spectral::Basis::ZernikeB2},
+            std::array{Spectral::Quadrature::GaussRadauUpper,
+                       Spectral::Quadrature::Equiangular}};
+        const DiskTestFunctions::ProductOfPolynomials f{n_x, n_y};
+        const auto xi_source = logical_coordinates(source_mesh);
+        const DataVector f_source =
+            f(0.5 * (get<0>(xi_source) + 1.0), get<1>(xi_source));
+        const DataVector f_expected =
+            f(0.5 * (get<0>(xi_target) + 1.0), get<1>(xi_target));
+        {
+          const intrp::Cardinal<2> interpolator(source_mesh, xi_target);
+          const DataVector f_interpolated = interpolator.interpolate(f_source);
+          CHECK_ITERABLE_APPROX(f_interpolated, f_expected);
+        }
+        if (n_target_points == 1) {
+          const intrp::Cardinal<2> interpolator(source_mesh, xi_target_single);
+          const DataVector f_interpolated = interpolator.interpolate(f_source);
+          CHECK(f_interpolated.size() == 1);
+          CHECK(f_interpolated[0] == approx(f_expected[0]));
+        }
+      }
+    }
+  }
+}
+
+void test_3d_cylinder(const gsl::not_null<std::mt19937*> generator) {
+  std::uniform_real_distribution<> xi_distribution(-1.0, 1.0);
+  std::uniform_real_distribution<> phi_distribution(0.0, 2.0 * M_PI);
+  for (size_t n_target_points = 1; n_target_points < 13;
+       n_target_points += 11) {
+    tnsr::I<DataVector, 3, Frame::ElementLogical> xi_target{n_target_points};
+    get<0>(xi_target) = make_with_random_values<DataVector>(
+        generator, make_not_null(&xi_distribution), xi_target);
+    get<1>(xi_target) = make_with_random_values<DataVector>(
+        generator, make_not_null(&phi_distribution), xi_target);
+    get<2>(xi_target) = make_with_random_values<DataVector>(
+        generator, make_not_null(&xi_distribution), xi_target);
+    const tnsr::I<double, 3, Frame::ElementLogical> xi_target_single{
+        {{get<0>(xi_target)[0], get<1>(xi_target)[0], get<2>(xi_target)[0]}}};
+    for (size_t n_z = 2; n_z < 4; ++n_z) {
+      for (size_t n_y = 0; n_y < 4; ++n_y) {
+        for (size_t n_x = 0; n_x < 4; ++n_x) {
+          const Mesh<3> source_mesh{
+              n_x + n_y == 0
+                  ? std::array{1_st, 1_st, n_z}
+                  : std::array{n_x + n_y + 1, 2 * (n_x + n_y) + 1, n_z},
+              std::array{Spectral::Basis::ZernikeB2, Spectral::Basis::ZernikeB2,
+                         Spectral::Basis::Legendre},
+              std::array{Spectral::Quadrature::GaussRadauUpper,
+                         Spectral::Quadrature::Equiangular,
+                         Spectral::Quadrature::GaussLobatto}};
+          const DiskTestFunctions::ProductOfPolynomials f{n_x, n_y};
+          const Polynomial f_z{n_z - 1, 1.5, 2.0};
+          const auto xi_source = logical_coordinates(source_mesh);
+          const DataVector f_source =
+              f(0.5 * (get<0>(xi_source) + 1.0), get<1>(xi_source)) *
+              f_z(get<2>(xi_source));
+          const DataVector f_expected =
+              f(0.5 * (get<0>(xi_target) + 1.0), get<1>(xi_target)) *
+              f_z(get<2>(xi_target));
+          {
+            const intrp::Cardinal<3> interpolator(source_mesh, xi_target);
+            const DataVector f_interpolated =
+                interpolator.interpolate(f_source);
+            CHECK_ITERABLE_APPROX(f_interpolated, f_expected);
+          }
+          if (n_target_points == 1) {
+            const intrp::Cardinal<3> interpolator(source_mesh,
+                                                  xi_target_single);
+            const DataVector f_interpolated =
+                interpolator.interpolate(f_source);
+            CHECK(f_interpolated.size() == 1);
+            CHECK(f_interpolated[0] == approx(f_expected[0]));
+          }
+        }
+      }
+    }
+  }
+}
+void test_errors() {
+  {
+    INFO("Testing SphericalHarmonic with unsupported quadrature");
+    CHECK_THROWS_WITH(
+        (intrp::Cardinal<2>{Mesh<2>{{3, 3},
+                                    {Spectral::Basis::SphericalHarmonic,
+                                     Spectral::Basis::SphericalHarmonic},
+                                    {Spectral::Quadrature::GaussLobatto,
+                                     Spectral::Quadrature::Equiangular}},
+                            tnsr::I<DataVector, 2, Frame::ElementLogical>{
+                                {{{1.0, 2.0}, {0.5, 1.5}}}}}),
+        Catch::Matchers::ContainsSubstring(
+            "Quadrature must be Gauss or Equiangular for Basis "
+            "SphericalHarmonic"));
+  }
+  {
+    INFO("Testing ZernikeB2 with unsupported quadrature");
+    CHECK_THROWS_WITH(
+        (intrp::Cardinal<2>{
+            Mesh<2>{{3, 3},
+                    {Spectral::Basis::ZernikeB2, Spectral::Basis::ZernikeB2},
+                    {Spectral::Quadrature::Gauss,
+                     Spectral::Quadrature::Equiangular}},
+            tnsr::I<DataVector, 2, Frame::ElementLogical>{
+                {{{0.5, 1.0}, {0.0, 1.5}}}}}),
+        Catch::Matchers::ContainsSubstring(
+            "Quadrature must be GaussRadauUpper or Equiangular for Basis "
+            "ZernikeB2"));
+  }
+  {
+    INFO("Testing 1D ZernikeB2 interpolate_zernike_b2 error");
+    CHECK_THROWS_WITH(
+        (intrp::Cardinal<1>{Mesh<1>{3, Spectral::Basis::ZernikeB2,
+                                    Spectral::Quadrature::GaussRadauUpper},
+                            tnsr::I<DataVector, 1, Frame::ElementLogical>{
+                                {{{1.0, 2.0, 3.0}}}}}),
+        Catch::Matchers::ContainsSubstring(
+            "ZernikeB2 interpolation is not supported for 1D"));
+  }
+
+#ifdef SPECTRE_DEBUG
+  {
+    INFO("Testing N_phi odd assertion for ZernikeB2");
+    CHECK_THROWS_WITH(
+        (intrp::Cardinal<2>{
+            Mesh<2>{{3, 4},
+                    {Spectral::Basis::ZernikeB2, Spectral::Basis::ZernikeB2},
+                    {Spectral::Quadrature::GaussRadauUpper,
+                     Spectral::Quadrature::Equiangular}},
+            tnsr::I<DataVector, 2, Frame::ElementLogical>{
+                {{{0.5, 1.0}, {0.0, 1.5}}}}}),
+        Catch::Matchers::ContainsSubstring(
+            "Need N_phi to be odd for stability"));
+  }
+#endif
+}
 }  // namespace
 
 // [[Timeout, 20]]
@@ -306,6 +462,33 @@ SPECTRE_TEST_CASE("Unit.Numerical.Interpolation.Cardinal",
   test_1d(make_not_null(&generator));
   test_2d_cartesian(make_not_null(&generator));
   test_2d_spherical(make_not_null(&generator));
+  test_2d_disk(make_not_null(&generator));
   test_3d_cartesian(make_not_null(&generator));
   test_3d_spherical(make_not_null(&generator));
+  test_3d_cylinder(make_not_null(&generator));
+  test_errors();
+  {
+    INFO("Testing basic construction");
+    const intrp::Cardinal<2> interpolant{
+        Mesh<2>{{{3, 2}},
+                {{Spectral::Basis::Legendre, Spectral::Basis::Legendre}},
+                {{Spectral::Quadrature::Gauss,
+                  Spectral::Quadrature::GaussLobatto}}},
+        tnsr::I<DataVector, 2, Frame::ElementLogical>{
+            {{{1., 2., 3.}, {2., 3., 4.}}}}};
+    test_serialization(interpolant);
+  }
+  {
+    INFO("Testing Zernike construction");
+    const intrp::Cardinal<3> interpolant{
+        Mesh<3>{{{3, 9, 4}},
+                {{Spectral::Basis::ZernikeB2, Spectral::Basis::ZernikeB2,
+                  Spectral::Basis::Legendre}},
+                {{Spectral::Quadrature::GaussRadauUpper,
+                  Spectral::Quadrature::Equiangular,
+                  Spectral::Quadrature::GaussLobatto}}},
+        tnsr::I<DataVector, 3, Frame::ElementLogical>{
+            {{{1., 2., 3.}, {2., 3., 4.}, {3., 4., 5.}}}}};
+    test_serialization(interpolant);
+  }
 }
