@@ -6,6 +6,7 @@
 
 #pragma once
 
+#include <boost/container/small_vector.hpp>
 #include <boost/container/static_vector.hpp>
 #include <boost/math/quaternion.hpp>
 #include <boost/rational.hpp>
@@ -52,6 +53,25 @@ void pup(PUP::er& p, boost::container::static_vector<T, N>& v) {
 
 template <class T, size_t N>
 void operator|(PUP::er& p, boost::container::static_vector<T, N>& v) {
+  pup(p, v);
+}
+
+template <class T, size_t N>
+void pup(PUP::er& p, boost::container::small_vector<T, N>& v) {
+  auto size = v.size();
+  p | size;
+  v.resize(size);
+  if (PUP::as_bytes<T>::value) {
+    PUParray(p, v.data(), size);
+  } else {
+    for (auto& x : v) {
+      p | x;
+    }
+  }
+}
+
+template <class T, size_t N>
+void operator|(PUP::er& p, boost::container::small_vector<T, N>& v) {
   pup(p, v);
 }
 
