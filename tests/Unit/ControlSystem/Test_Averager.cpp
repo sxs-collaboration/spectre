@@ -16,6 +16,7 @@
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeArray.hpp"
+#include "Utilities/Serialization/Serialize.hpp"
 
 namespace {
 template <size_t DerivOrder>

@@ -20,6 +20,7 @@
 #include "ParallelAlgorithms/ApparentHorizonFinder/Criteria/Tags/Criteria.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/FastFlow.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/Serialization/Serialize.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace ah::Criteria {

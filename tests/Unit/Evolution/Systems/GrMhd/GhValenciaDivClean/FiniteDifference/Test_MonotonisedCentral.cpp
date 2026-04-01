@@ -11,6 +11,7 @@
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/Evolution/Systems/GrMhd/GhValenciaDivClean/FiniteDifference/PrimReconstructor.hpp"
+#include "Utilities/Serialization/Serialize.hpp"
 
 SPECTRE_TEST_CASE(
     "Unit.Evolution.Systems.GrMhd.GhValenciaDivClean.Fd.MonotonisedCentralPrim",

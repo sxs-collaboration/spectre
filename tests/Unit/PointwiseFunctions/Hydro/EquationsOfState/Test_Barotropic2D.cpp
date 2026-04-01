@@ -16,6 +16,7 @@
 #include "PointwiseFunctions/Hydro/EquationsOfState/Factory.hpp"
 #include "PointwiseFunctions/Hydro/SpecificEnthalpy.hpp"
 #include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
+#include "Utilities/Serialization/Serialize.hpp"
 
 SPECTRE_TEST_CASE("Unit.PointwiseFunctions.EquationsOfState.Barotropic2D",
                   "[Unit][EquationsOfState]") {

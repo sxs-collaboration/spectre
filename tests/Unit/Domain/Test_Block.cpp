@@ -28,6 +28,7 @@
 #include "Utilities/GetOutput.hpp"
 #include "Utilities/MakeArray.hpp"
 #include "Utilities/Serialization/CharmPupable.hpp"
+#include "Utilities/Serialization/Serialize.hpp"
 
 namespace domain {
 namespace {

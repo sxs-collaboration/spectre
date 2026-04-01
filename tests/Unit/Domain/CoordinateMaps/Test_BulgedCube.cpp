@@ -17,6 +17,7 @@
 #include "NumericalAlgorithms/Spectral/Basis.hpp"
 #include "NumericalAlgorithms/Spectral/CollocationPoints.hpp"
 #include "NumericalAlgorithms/Spectral/Quadrature.hpp"
+#include "Utilities/Serialization/Serialize.hpp"
 #include "Utilities/TypeTraits.hpp"
 
 namespace domain {

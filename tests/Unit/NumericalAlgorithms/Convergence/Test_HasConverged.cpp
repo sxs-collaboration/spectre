@@ -12,6 +12,7 @@
 #include "NumericalAlgorithms/Convergence/Reason.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/GetOutput.hpp"
+#include "Utilities/Serialization/Serialize.hpp"
 
 SPECTRE_TEST_CASE("Unit.Numerical.Convergence.HasConverged",
                   "[Unit][NumericalAlgorithms]") {

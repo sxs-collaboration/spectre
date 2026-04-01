@@ -15,6 +15,7 @@
 #include "IO/ComposeTable.hpp"
 #include "Informer/InfoFromBuild.hpp"
 #include "Utilities/FileSystem.hpp"
+#include "Utilities/Serialization/Serialize.hpp"
 
 namespace {
 void test_table(const io::ComposeTable& compose_table) {

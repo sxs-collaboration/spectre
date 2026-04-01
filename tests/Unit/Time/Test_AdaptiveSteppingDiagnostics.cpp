@@ -5,6 +5,7 @@
 
 #include "Framework/TestHelpers.hpp"
 #include "Time/AdaptiveSteppingDiagnostics.hpp"
+#include "Utilities/Serialization/Serialize.hpp"
 
 SPECTRE_TEST_CASE("Unit.Time.AdaptiveSteppingDiagnostics", "[Unit][Time]") {
   AdaptiveSteppingDiagnostics diags{1, 2, 3, 4, 5};

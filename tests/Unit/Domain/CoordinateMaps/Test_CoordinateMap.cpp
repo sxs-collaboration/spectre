@@ -45,6 +45,7 @@
 #include "Utilities/Literals.hpp"
 #include "Utilities/MakeArray.hpp"
 #include "Utilities/MakeWithValue.hpp"
+#include "Utilities/Serialization/Serialize.hpp"
 
 namespace domain {
 namespace {

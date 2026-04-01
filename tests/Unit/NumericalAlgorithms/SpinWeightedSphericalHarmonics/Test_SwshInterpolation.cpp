@@ -13,6 +13,7 @@
 #include "NumericalAlgorithms/SpinWeightedSphericalHarmonics/SwshInterpolation.hpp"
 #include "NumericalAlgorithms/SpinWeightedSphericalHarmonics/SwshTransform.hpp"
 #include "Utilities/Literals.hpp"
+#include "Utilities/Serialization/Serialize.hpp"
 
 namespace Spectral::Swsh {
 namespace {

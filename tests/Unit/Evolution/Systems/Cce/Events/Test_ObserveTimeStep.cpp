@@ -19,6 +19,7 @@
 #include "Time/Slab.hpp"
 #include "Time/Time.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/Serialization/Serialize.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace Cce {

@@ -22,6 +22,7 @@
 #include "Utilities/MakeWithValue.hpp"
 #include "Utilities/Overloader.hpp"
 #include "Utilities/Serialization/PupStlCpp11.hpp"
+#include "Utilities/Serialization/Serialize.hpp"
 
 namespace TestHelpers {
 namespace MathFunctions {

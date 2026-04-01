@@ -11,6 +11,7 @@
 #include "Domain/Structure/ElementId.hpp"
 #include "Evolution/DiscontinuousGalerkin/AtomicInboxBoundaryData.hpp"
 #include "Framework/TestHelpers.hpp"
+#include "Utilities/Serialization/Serialize.hpp"
 
 namespace evolution::dg {
 namespace {

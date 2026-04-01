@@ -10,6 +10,7 @@
 #include "DataStructures/DataVector.hpp"
 #include "Domain/FunctionsOfTime/PiecewisePolynomial.hpp"
 #include "Framework/TestHelpers.hpp"
+#include "Utilities/Serialization/Serialize.hpp"
 
 SPECTRE_TEST_CASE("Unit.ControlSystem.FutureMeasurements",
                   "[Unit][ControlSystem]") {

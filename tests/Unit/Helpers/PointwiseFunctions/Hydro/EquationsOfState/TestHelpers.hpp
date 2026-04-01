@@ -18,6 +18,7 @@
 #include "Utilities/Literals.hpp"
 #include "Utilities/MakeWithValue.hpp"
 #include "Utilities/Overloader.hpp"
+#include "Utilities/Serialization/Serialize.hpp"
 
 namespace TestHelpers {
 namespace EquationsOfState {

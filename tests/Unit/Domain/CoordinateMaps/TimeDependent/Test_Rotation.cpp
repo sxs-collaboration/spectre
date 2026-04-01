@@ -27,6 +27,7 @@
 #include "Helpers/Domain/CoordinateMaps/TestMapHelpers.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/GetOutput.hpp"
+#include "Utilities/Serialization/Serialize.hpp"
 
 class DataVector;
 namespace domain::FunctionsOfTime {

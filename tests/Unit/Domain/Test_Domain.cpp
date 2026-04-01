@@ -61,6 +61,7 @@
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/GetOutput.hpp"
 #include "Utilities/MakeVector.hpp"
+#include "Utilities/Serialization/Serialize.hpp"
 #include "Utilities/StdHelpers.hpp"
 
 namespace domain {

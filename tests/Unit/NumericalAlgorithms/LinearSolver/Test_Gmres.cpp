@@ -19,6 +19,7 @@
 #include "NumericalAlgorithms/LinearSolver/Gmres.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
+#include "Utilities/Serialization/Serialize.hpp"
 
 namespace helpers = TestHelpers::LinearSolver;
 

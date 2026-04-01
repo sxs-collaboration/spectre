@@ -15,6 +15,7 @@
 #include "Framework/TestHelpers.hpp"
 #include "Utilities/Literals.hpp"
 #include "Utilities/MakeWithValue.hpp"
+#include "Utilities/Serialization/Serialize.hpp"
 #include "Utilities/SetNumberOfGridPoints.hpp"
 
 SPECTRE_TEST_CASE("Unit.DataStructures.BlazeInteroperability",

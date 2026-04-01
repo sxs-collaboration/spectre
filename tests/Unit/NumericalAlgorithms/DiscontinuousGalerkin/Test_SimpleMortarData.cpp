@@ -11,6 +11,7 @@
 #include "NumericalAlgorithms/DiscontinuousGalerkin/SimpleMortarData.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Literals.hpp"
+#include "Utilities/Serialization/Serialize.hpp"
 
 // for __decay_and_strip<>::__type
 

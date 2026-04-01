@@ -6,6 +6,7 @@
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Subcell/TciOptions.hpp"
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
+#include "Utilities/Serialization/Serialize.hpp"
 
 SPECTRE_TEST_CASE("Unit.GrMhd.ValenciaDivClean.Subcell.TciOptions",
                   "[Unit][GrMhd]") {

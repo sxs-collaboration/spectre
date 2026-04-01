@@ -16,6 +16,7 @@
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Quadrature.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/RelativisticEuler/RotatingStar.hpp"
+#include "Utilities/Serialization/Serialize.hpp"
 
 namespace {
 void verify_solution(const RelativisticEuler::Solutions::RotatingStar& solution,

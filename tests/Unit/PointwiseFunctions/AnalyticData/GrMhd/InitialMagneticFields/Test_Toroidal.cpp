@@ -21,6 +21,7 @@
 #include "PointwiseFunctions/AnalyticData/GrMhd/InitialMagneticFields/Toroidal.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
 #include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
+#include "Utilities/Serialization/Serialize.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
 namespace grmhd::AnalyticData::InitialMagneticFields {

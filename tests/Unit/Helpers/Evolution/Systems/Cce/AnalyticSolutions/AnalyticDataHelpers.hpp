@@ -28,6 +28,7 @@
 #include "PointwiseFunctions/GeneralRelativity/Shift.hpp"
 #include "PointwiseFunctions/GeneralRelativity/SpacetimeNormalVector.hpp"
 #include "PointwiseFunctions/GeneralRelativity/SpatialMetric.hpp"
+#include "Utilities/Serialization/Serialize.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
 namespace Cce {

@@ -8,6 +8,7 @@
 
 #include "Framework/TestHelpers.hpp"
 #include "Time/EvolutionOrdering.hpp"
+#include "Utilities/Serialization/Serialize.hpp"
 
 namespace {
 template <int>

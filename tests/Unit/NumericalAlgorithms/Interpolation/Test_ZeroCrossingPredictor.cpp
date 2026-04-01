@@ -8,6 +8,7 @@
 #include "DataStructures/DataVector.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "NumericalAlgorithms/Interpolation/ZeroCrossingPredictor.hpp"
+#include "Utilities/Serialization/Serialize.hpp"
 
 namespace {
 

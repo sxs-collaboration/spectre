@@ -12,6 +12,7 @@
 #include "Time/Slab.hpp"
 #include "Time/Time.hpp"
 #include "Utilities/GetOutput.hpp"
+#include "Utilities/Serialization/Serialize.hpp"
 
 namespace {
 void test_time() {

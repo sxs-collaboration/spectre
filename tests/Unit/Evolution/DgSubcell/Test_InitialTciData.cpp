@@ -13,6 +13,7 @@
 #include "Evolution/DgSubcell/Tags/InitialTciData.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Utilities/MakeString.hpp"
+#include "Utilities/Serialization/Serialize.hpp"
 
 namespace evolution::dg::subcell {
 namespace {

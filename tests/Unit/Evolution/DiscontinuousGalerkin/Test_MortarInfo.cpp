@@ -16,6 +16,7 @@
 #include "NumericalAlgorithms/DiscontinuousGalerkin/MortarInterpolator.hpp"
 #include "NumericalAlgorithms/Spectral/SegmentSize.hpp"
 #include "Utilities/MakeArray.hpp"
+#include "Utilities/Serialization/Serialize.hpp"
 
 namespace evolution::dg {
 namespace {

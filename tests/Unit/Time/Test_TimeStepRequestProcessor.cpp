@@ -13,6 +13,7 @@
 #include "Time/TimeStepRequestProcessor.hpp"
 #include "Utilities/Literals.hpp"
 #include "Utilities/Numeric.hpp"
+#include "Utilities/Serialization/Serialize.hpp"
 
 namespace {
 // Test processing requests in all orders, with different subsets

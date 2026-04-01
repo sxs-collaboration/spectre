@@ -13,6 +13,7 @@
 #include "PointwiseFunctions/AnalyticSolutions/ForceFree/ExactWald.hpp"
 #include "PointwiseFunctions/InitialDataUtilities/InitialData.hpp"
 #include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
+#include "Utilities/Serialization/Serialize.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
 namespace {

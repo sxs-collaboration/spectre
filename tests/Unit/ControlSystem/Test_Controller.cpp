@@ -16,6 +16,7 @@
 #include "Domain/FunctionsOfTime/PiecewisePolynomial.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Utilities/ConstantExpressions.hpp"
+#include "Utilities/Serialization/Serialize.hpp"
 
 namespace {
 template <size_t DerivOrder>

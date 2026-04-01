@@ -8,6 +8,7 @@
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Options/Comparator.hpp"
+#include "Utilities/Serialization/Serialize.hpp"
 
 namespace {
 void check(const std::string& name, const bool expected_less,

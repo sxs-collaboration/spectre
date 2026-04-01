@@ -16,6 +16,7 @@
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
 #include "Helpers/Evolution/Systems/Cce/AnalyticSolutions/AnalyticDataHelpers.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
+#include "Utilities/Serialization/Serialize.hpp"
 
 namespace Cce::Solutions {
 SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.GaugeWave", "[Unit][Cce]") {

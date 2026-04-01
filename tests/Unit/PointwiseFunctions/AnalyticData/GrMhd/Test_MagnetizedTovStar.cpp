@@ -25,6 +25,7 @@
 #include "Utilities/GetOutput.hpp"
 #include "Utilities/MakeVector.hpp"
 #include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
+#include "Utilities/Serialization/Serialize.hpp"
 
 namespace grmhd::AnalyticData {
 namespace {

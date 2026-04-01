@@ -16,6 +16,7 @@
 #include "PointwiseFunctions/AnalyticSolutions/ScalarAdvection/Sinusoid.hpp"
 #include "PointwiseFunctions/InitialDataUtilities/InitialData.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/Serialization/Serialize.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
 namespace {
