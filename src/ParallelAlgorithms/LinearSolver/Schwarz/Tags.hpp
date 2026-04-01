@@ -93,7 +93,7 @@ struct SubdomainSolver : db::SimpleTag {
   using option_tags = tmpl::list<
       OptionTags::SubdomainSolver<std::unique_ptr<SolverType>, OptionsGroup>>;
   static type create_from_options(const type& value) {
-    return deserialize<type>(serialize<type>(value).data());
+    return serialize_and_deserialize<type>(value);
   }
 };
 

@@ -1332,8 +1332,7 @@ SPECTRE_ALWAYS_INLINE auto DataBox<tmpl::list<Tags...>>::copy_item() const {
   using item_type = typename item_tag::type;
   static_assert(tmpl::list_contains_v<mutable_item_creation_tags, item_tag>,
                 "Can only copy mutable creation items");
-  return deserialize<item_type>(
-      serialize<item_type>(get_item<item_tag>().get()).data());
+  return serialize_and_deserialize<item_type>(get_item<item_tag>().get());
 }
 
 template <typename... DbTags>

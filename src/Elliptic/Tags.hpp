@@ -47,7 +47,7 @@ struct Background : db::SimpleTag {
 
   static constexpr bool pass_metavariables = false;
   static type create_from_options(const type& value) {
-    return deserialize<type>(serialize<type>(value).data());
+    return serialize_and_deserialize<type>(value);
   }
 };
 
@@ -59,7 +59,7 @@ struct InitialGuess : db::SimpleTag {
 
   static constexpr bool pass_metavariables = false;
   static type create_from_options(const type& value) {
-    return deserialize<type>(serialize<type>(value).data());
+    return serialize_and_deserialize<type>(value);
   }
 };
 

@@ -94,7 +94,7 @@ struct EventsAndTriggers : db::SimpleTag {
 
   static constexpr bool pass_metavariables = false;
   static type create_from_options(const type& events_and_triggers) {
-    return deserialize<type>(serialize<type>(events_and_triggers).data());
+    return serialize_and_deserialize<type>(events_and_triggers);
   }
   static std::string name() {
     return "EventsAndTriggers" + get_output(WhenToCheck);
@@ -111,7 +111,7 @@ struct EventsRunAtCleanup : db::SimpleTag {
 
   static constexpr bool pass_metavariables = false;
   static type create_from_options(const type& events_run_at_cleanup) {
-    return deserialize<type>(serialize<type>(events_run_at_cleanup).data());
+    return serialize_and_deserialize<type>(events_run_at_cleanup);
   }
 };
 

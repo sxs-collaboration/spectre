@@ -290,7 +290,7 @@ struct ObserveCoefficientsTrigger : db::SimpleTag {
   static constexpr bool pass_metavariables = false;
   static std::unique_ptr<Trigger> create_from_options(
       const std::unique_ptr<Trigger>& trigger) {
-    return deserialize<type>(serialize<type>(trigger).data());
+    return serialize_and_deserialize<type>(trigger);
   }
 };
 

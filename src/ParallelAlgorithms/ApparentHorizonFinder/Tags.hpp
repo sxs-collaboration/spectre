@@ -153,7 +153,7 @@ struct ApparentHorizonOptions : db::SimpleTag {
 
   static constexpr bool pass_metavariables = false;
   static type create_from_options(const type& option) {
-    return {deserialize<type>(serialize<type>(option).data())};
+    return {serialize_and_deserialize<type>(option)};
   }
 };
 

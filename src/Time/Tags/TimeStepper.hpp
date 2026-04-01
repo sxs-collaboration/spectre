@@ -43,7 +43,7 @@ struct ConcreteTimeStepper : db::SimpleTag {
           "Variable-order TimeSteppers are only supported in evolutions with "
           "local time-stepping.");
     }
-    return deserialize<type>(serialize<type>(time_stepper).data());
+    return serialize_and_deserialize<type>(time_stepper);
   }
 };
 

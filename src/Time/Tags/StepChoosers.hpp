@@ -25,7 +25,7 @@ struct StepChoosers : db::SimpleTag {
 
   static constexpr bool pass_metavariables = false;
   static type create_from_options(const type& step_choosers) {
-    return deserialize<type>(serialize<type>(step_choosers).data());
+    return serialize_and_deserialize<type>(step_choosers);
   }
 };
 }  // namespace Tags
