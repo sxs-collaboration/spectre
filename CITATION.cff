@@ -136,6 +136,11 @@ authors:
   family-names: Corso
   given-names: Nicholas
   orcid: https://orcid.org/0000-0002-0088-2563
+- affiliation: Max Planck Institute for Gravitational Physics (Albert Einstein Institute),
+    Am Mühlenberg 1, Potsdam 14476, Germany
+  family-names: Dittmer
+  given-names: Clemens
+  orcid: https://orcid.org/0009-0007-3833-9252
 - affiliation: Cornell Center for Astrophysics and Planetary Science, Cornell University,
     Ithaca, New York 14853, USA
   family-names: Fayyazuddin Ljungberg
@@ -235,6 +240,11 @@ authors:
   family-names: Nee
   given-names: Peter James
   orcid: https://orcid.org/0000-0002-2362-5420
+- affiliation: Max Planck Institute for Gravitational Physics (Albert Einstein Institute),
+    Am Mühlenberg 1, Potsdam 14476, Germany
+  family-names: Nishimura
+  given-names: Nami
+  orcid: https://orcid.org/0009-0002-4398-9130
 - affiliation: Nicholas and Lee Begovich Center for Gravitational-Wave Physics and
     Astronomy, California State University, Fullerton, Fullerton, California 92831,
     USA
@@ -252,6 +262,12 @@ authors:
   family-names: Pannone
   given-names: Kyle
   orcid: https://orcid.org/0009-0005-8607-2113
+- affiliation: Nicholas and Lee Begovich Center for Gravitational-Wave Physics and
+    Astronomy, California State University, Fullerton, Fullerton, California 92831,
+    USA
+  family-names: Pineda
+  given-names: Jose Maria
+  orcid: https://orcid.org/0009-0007-6694-8434
 - affiliation: International Centre for Theoretical Sciences - Tata Institute of Fundamental
     Research (ICTS-TIFR), Survey No. 151, Shivakote, Hesaraghatta Hobli, Bengaluru
     - 560 089, Karnataka, India.
@@ -308,6 +324,11 @@ authors:
   family-names: Vieira
   given-names: Daniel
   orcid: https://orcid.org/0000-0001-8019-0390
+- affiliation: Theoretical Astrophysics, Walter Burke Institute for Theoretical Physics,
+    California Institute of Technology, Pasadena, CA 91125, USA
+  family-names: Wang
+  given-names: Xiyue
+  orcid: https://orcid.org/0009-0006-3331-0832
 - affiliation: Max Planck Institute for Gravitational Physics (Albert Einstein Institute),
     Am Mühlenberg 1, Potsdam 14476, Germany
   family-names: Wlodarczyk
@@ -324,8 +345,8 @@ authors:
   given-names: Jooheon
   orcid: https://orcid.org/0000-0002-3251-0924
 cff-version: 1.2.0
-date-released: 2025-08-19
-doi: 10.5281/zenodo.16906840
+date-released: 2026-04-01
+doi: 10.5281/zenodo.19373346
 keywords:
 - Software
 - Astrophysics
@@ -1043,4 +1064,4 @@ references:
 repository-code: https://github.com/sxs-collaboration/spectre
 title: SpECTRE
 url: https://spectre-code.org
-version: 2025.08.19
+version: 2026.04.01
