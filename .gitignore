@@ -75,8 +75,11 @@ tags
 # Keep Tags/ directories on case-insensitive file systems
 !Tags/
 
-# AI instructions
+# AI/LLM Agent/CLI tools
 AGENTS.md
-CLAUDE.md
+
 .aider*
-.claude
+
+CLAUDE.md
+.claude/settings.local.json
+CLAUDE.local.md
