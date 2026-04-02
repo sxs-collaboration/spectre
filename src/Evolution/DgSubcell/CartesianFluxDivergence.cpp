@@ -20,6 +20,26 @@
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/Gsl.hpp"
 
+namespace {
+void validate_input_sizes(const gsl::not_null<DataVector*> dt_var,
+                          const DataVector& inv_jacobian,
+                          const DataVector& boundary_correction,
+                          size_t num_volume_points, size_t num_face_points) {
+  ASSERT(dt_var->size() == num_volume_points,
+         "dt_var size " << dt_var->size()
+                        << " does not match expected volume points "
+                        << num_volume_points);
+  ASSERT(inv_jacobian.size() == num_volume_points,
+         "inv_jacobian size " << inv_jacobian.size()
+                              << " does not match expected volume points "
+                              << num_volume_points);
+  ASSERT(boundary_correction.size() == num_face_points,
+         "boundary_correction size " << boundary_correction.size()
+                                     << " does not match expected face points "
+                                     << num_face_points);
+}
+}  // namespace
+
 namespace evolution::dg::subcell {
 void add_cartesian_flux_divergence(const gsl::not_null<DataVector*> dt_var,
                                    const double one_over_delta,
@@ -29,6 +49,12 @@ void add_cartesian_flux_divergence(const gsl::not_null<DataVector*> dt_var,
                                    const size_t dimension) {
   (void)dimension;
   ASSERT(dimension == 0, "dimension must be 0 but is " << dimension);
+
+  const size_t num_volume_points = subcell_extents.product();
+  const size_t num_face_points = subcell_extents[0] + 1;
+  validate_input_sizes(dt_var, inv_jacobian, boundary_correction,
+                       num_volume_points, num_face_points);
+
   for (size_t i = 0; i < subcell_extents[0]; ++i) {
     (*dt_var)[i] += one_over_delta * inv_jacobian[i] *
                     (boundary_correction[i + 1] - boundary_correction[i]);
@@ -45,6 +71,12 @@ void add_cartesian_flux_divergence(const gsl::not_null<DataVector*> dt_var,
          "dimension must be 0 or 1 but is " << dimension);
   Index<2> subcell_face_extents = subcell_extents;
   ++subcell_face_extents[dimension];
+
+  const size_t num_volume_points = subcell_extents.product();
+  const size_t num_face_points = subcell_face_extents.product();
+  validate_input_sizes(dt_var, inv_jacobian, boundary_correction,
+                       num_volume_points, num_face_points);
+
   for (size_t j = 0; j < subcell_extents[1]; ++j) {
     for (size_t i = 0; i < subcell_extents[0]; ++i) {
       Index<2> index(i, j);
@@ -72,6 +104,12 @@ void add_cartesian_flux_divergence(const gsl::not_null<DataVector*> dt_var,
          "dimension must be 0, 1, or 2 but is " << dimension);
   Index<3> subcell_face_extents = subcell_extents;
   ++subcell_face_extents[dimension];
+
+  const size_t num_volume_points = subcell_extents.product();
+  const size_t num_face_points = subcell_face_extents.product();
+  validate_input_sizes(dt_var, inv_jacobian, boundary_correction,
+                       num_volume_points, num_face_points);
+
   for (size_t k = 0; k < subcell_extents[2]; ++k) {
     for (size_t j = 0; j < subcell_extents[1]; ++j) {
       for (size_t i = 0; i < subcell_extents[0]; ++i) {
@@ -113,9 +151,13 @@ void add_cartoon_cartesian_flux_divergence(
 
   Index<3> subcell_face_extents = subcell_extents;
   ++subcell_face_extents[dimension];
+
   const size_t num_volume_points = subcell_extents.product();
-  ASSERT(inertial_coords.get(0).size() == num_volume_points,
-         "inertial_coords size " << inertial_coords.get(0).size()
+  const size_t num_face_points = subcell_face_extents.product();
+  validate_input_sizes(dt_var, inv_jacobian, boundary_correction,
+                       num_volume_points, num_face_points);
+  ASSERT(get<0>(inertial_coords).size() == num_volume_points,
+         "inertial_coords size " << get<0>(inertial_coords).size()
                                  << " does not match expected volume points "
                                  << num_volume_points);
 

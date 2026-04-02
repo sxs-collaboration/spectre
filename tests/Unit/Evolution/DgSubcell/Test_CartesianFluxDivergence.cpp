@@ -321,6 +321,271 @@ void test_cartoon() {
     CHECK_ITERABLE_APPROX(dt_var, expected_dt_var);
   }
 }
+
+void test_validation_errors() {
+#ifdef SPECTRE_DEBUG
+  {
+    INFO("Test 1D validation errors");
+    const Index<1> subcell_extents{3};
+    {
+      INFO("Test wrong dt_var size");
+      DataVector dt_var_wrong_size(2, 0.0);  // Should be 3
+      const DataVector inv_jacobian(3, 1.0);
+      const DataVector boundary_correction(4, 1.0);
+      CHECK_THROWS_WITH(
+          evolution::dg::subcell::add_cartesian_flux_divergence(
+              make_not_null(&dt_var_wrong_size), 1.0, inv_jacobian,
+              boundary_correction, subcell_extents, 0),
+          Catch::Matchers::ContainsSubstring(
+              "dt_var size 2 does not match expected volume points 3"));
+    }
+    {
+      INFO("Test wrong inv_jacobian size");
+      DataVector dt_var(3, 0.0);
+      const DataVector inv_jacobian_wrong_size(2, 1.0);  // Should be 3
+      const DataVector boundary_correction(4, 1.0);
+      CHECK_THROWS_WITH(
+          evolution::dg::subcell::add_cartesian_flux_divergence(
+              make_not_null(&dt_var), 1.0, inv_jacobian_wrong_size,
+              boundary_correction, subcell_extents, 0),
+          Catch::Matchers::ContainsSubstring(
+              "inv_jacobian size 2 does not match expected volume points 3"));
+    }
+    {
+      INFO("Test wrong boundary_correction size");
+      DataVector dt_var(3, 0.0);
+      const DataVector inv_jacobian(3, 1.0);
+      const DataVector boundary_correction_wrong_size(3, 1.0);
+      CHECK_THROWS_WITH(evolution::dg::subcell::add_cartesian_flux_divergence(
+                            make_not_null(&dt_var), 1.0, inv_jacobian,
+                            boundary_correction_wrong_size, subcell_extents, 0),
+                        Catch::Matchers::ContainsSubstring(
+                            "boundary_correction size 3 does not match "
+                            "expected face points 4"));
+    }
+    {
+      INFO("Test invalid dimension");
+      DataVector dt_var(3, 0.0);
+      const DataVector inv_jacobian(3, 1.0);
+      const DataVector boundary_correction(4, 1.0);
+      CHECK_THROWS_WITH(
+          evolution::dg::subcell::add_cartesian_flux_divergence(
+              make_not_null(&dt_var), 1.0, inv_jacobian, boundary_correction,
+              subcell_extents, 1),
+          Catch::Matchers::ContainsSubstring("dimension must be 0 but is 1"));
+    }
+  }
+  {
+    INFO("Test 2D validation errors");
+    const Index<2> subcell_extents{3, 2};  // 6 volume points
+    {
+      INFO("Test wrong boundary_correction size for dimension 0");
+      DataVector dt_var(6, 0.0);
+      const DataVector inv_jacobian(6, 1.0);
+      const DataVector boundary_correction_wrong_size(
+          7, 1.0);  // Should be 8 (4x2)
+      CHECK_THROWS_WITH(evolution::dg::subcell::add_cartesian_flux_divergence(
+                            make_not_null(&dt_var), 1.0, inv_jacobian,
+                            boundary_correction_wrong_size, subcell_extents, 0),
+                        Catch::Matchers::ContainsSubstring(
+                            "boundary_correction size 7 does not match "
+                            "expected face points 8"));
+    }
+    {
+      INFO("Test invalid dimension");
+      DataVector dt_var(6, 0.0);
+      const DataVector inv_jacobian(6, 1.0);
+      const DataVector boundary_correction(8, 1.0);
+      CHECK_THROWS_WITH(evolution::dg::subcell::add_cartesian_flux_divergence(
+                            make_not_null(&dt_var), 1.0, inv_jacobian,
+                            boundary_correction, subcell_extents, 2),
+                        Catch::Matchers::ContainsSubstring(
+                            "dimension must be 0 or 1 but is 2"));
+    }
+  }
+  {
+    INFO("Test 3D validation errors");
+    const Index<3> subcell_extents{2, 2, 2};  // 8 volume points
+    {
+      INFO("Test invalid dimension");
+      DataVector dt_var(8, 0.0);
+      const DataVector inv_jacobian(8, 1.0);
+      const DataVector boundary_correction(12, 1.0);  // 3x2x2 for dim 0
+      CHECK_THROWS_WITH(evolution::dg::subcell::add_cartesian_flux_divergence(
+                            make_not_null(&dt_var), 1.0, inv_jacobian,
+                            boundary_correction, subcell_extents, 3),
+                        Catch::Matchers::ContainsSubstring(
+                            "dimension must be 0, 1, or 2 but is 3"));
+    }
+  }
+#endif  // SPECTRE_DEBUG
+  const double time = 0.0;
+  const std::unordered_map<
+      std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>
+      functions_of_time{};
+
+  using Affine = domain::CoordinateMaps::Affine;
+  using Identity = domain::CoordinateMaps::Identity<1>;
+  using Affine3d =
+      domain::CoordinateMaps::ProductOf3Maps<Affine, Identity, Identity>;
+
+  const Affine x_map{-1.0, 1.0, 1.0, 3.0};
+
+  const auto block_to_inertial_coord_map =
+      domain::make_coordinate_map<Frame::BlockLogical, Frame::Inertial>(
+          Affine3d{x_map, Identity{}, Identity{}});
+  const Block<3> block{block_to_inertial_coord_map.get_clone(), 0, {}};
+  const ElementId<3> element_id{0};
+  const auto logical_to_grid_map =
+      ElementMap<3, Frame::Grid>{element_id, block};
+  const auto grid_to_inertial_map_ptr =
+      domain::make_coordinate_map_base<Frame::Grid, Frame::Inertial>(
+          domain::CoordinateMaps::Identity<3>{});
+  const auto& grid_to_inertial_map = *grid_to_inertial_map_ptr;
+  {
+    INFO("Test cartoon - contains zero coordinate");
+    const Index<3> subcell_extents{3, 1, 1};
+    const size_t dimension = 0;
+
+    // Create coordinates that contain x=0
+    tnsr::I<DataVector, 3, Frame::Inertial> coords_with_zero(
+        subcell_extents.product());
+    get<0>(coords_with_zero) = DataVector{0.0, 1.0, 2.0};  // Contains x=0
+    get<1>(coords_with_zero) = DataVector{0.0, 0.0, 0.0};
+    get<2>(coords_with_zero) = DataVector{0.0, 0.0, 0.0};
+
+    DataVector dt_var(subcell_extents.product(), 0.0);
+    const DataVector inv_jacobian(subcell_extents.product(), 1.0);
+    const DataVector boundary_correction(4, 1.0);
+
+    CHECK_THROWS_WITH(
+        evolution::dg::subcell::add_cartoon_cartesian_flux_divergence(
+            make_not_null(&dt_var), 1.0, inv_jacobian, boundary_correction,
+            subcell_extents, dimension, coords_with_zero, logical_to_grid_map,
+            grid_to_inertial_map, time, functions_of_time),
+        Catch::Matchers::ContainsSubstring("Element contains x=0 for subcell"));
+  }
+#ifdef SPECTRE_DEBUG
+  {
+    INFO("Test cartoon - wrong z extent");
+    const Index<3> wrong_subcell_extents{3, 1, 2};  // z should be 1
+    const size_t dimension = 0;
+
+    const Mesh<3> volume_mesh{
+        wrong_subcell_extents.indices(),
+        {Spectral::Basis::FiniteDifference, Spectral::Basis::Cartoon,
+         Spectral::Basis::FiniteDifference},
+        {Spectral::Quadrature::CellCentered,
+         Spectral::Quadrature::SphericalSymmetry,
+         Spectral::Quadrature::CellCentered}};
+
+    const auto volume_logical_coords = logical_coordinates(volume_mesh);
+    const auto volume_inertial_coords = grid_to_inertial_map(
+        logical_to_grid_map(volume_logical_coords), time, functions_of_time);
+
+    DataVector dt_var(wrong_subcell_extents.product(), 0.0);
+    const DataVector inv_jacobian(wrong_subcell_extents.product(), 1.0);
+    const DataVector boundary_correction(8, 1.0);  // 4x1x2
+
+    CHECK_THROWS_WITH(
+        evolution::dg::subcell::add_cartoon_cartesian_flux_divergence(
+            make_not_null(&dt_var), 1.0, inv_jacobian, boundary_correction,
+            wrong_subcell_extents, dimension, volume_inertial_coords,
+            logical_to_grid_map, grid_to_inertial_map, time, functions_of_time),
+        Catch::Matchers::ContainsSubstring(
+            "Expecting extent = 1 in third dimension"));
+  }
+  {
+    INFO("Test cartoon - wrong x extent");
+    const Index<3> wrong_subcell_extents{1, 2, 1};  // x should not be 1
+    const size_t dimension = 0;
+
+    const Mesh<3> volume_mesh{
+        wrong_subcell_extents.indices(),
+        {Spectral::Basis::FiniteDifference, Spectral::Basis::FiniteDifference,
+         Spectral::Basis::Cartoon},
+        {Spectral::Quadrature::CellCentered, Spectral::Quadrature::CellCentered,
+         Spectral::Quadrature::AxialSymmetry}};
+
+    const auto volume_logical_coords = logical_coordinates(volume_mesh);
+    const auto volume_inertial_coords = grid_to_inertial_map(
+        logical_to_grid_map(volume_logical_coords), time, functions_of_time);
+
+    DataVector dt_var(wrong_subcell_extents.product(), 0.0);
+    const DataVector inv_jacobian(wrong_subcell_extents.product(), 1.0);
+    const DataVector boundary_correction(4, 1.0);  // 2x2x1
+
+    CHECK_THROWS_WITH(
+        evolution::dg::subcell::add_cartoon_cartesian_flux_divergence(
+            make_not_null(&dt_var), 1.0, inv_jacobian, boundary_correction,
+            wrong_subcell_extents, dimension, volume_inertial_coords,
+            logical_to_grid_map, grid_to_inertial_map, time, functions_of_time),
+        Catch::Matchers::ContainsSubstring(
+            "Expecting extent != 1 in first dimension"));
+  }
+  {
+    INFO("Test cartoon - invalid dimension for spherical");
+    const Index<3> subcell_extents{3, 1, 1};  // Spherical symmetry
+    const size_t invalid_dimension = 1;       // Should be 0 for spherical
+
+    const Mesh<3> volume_mesh{
+        subcell_extents.indices(),
+        {Spectral::Basis::FiniteDifference, Spectral::Basis::Cartoon,
+         Spectral::Basis::Cartoon},
+        {Spectral::Quadrature::CellCentered,
+         Spectral::Quadrature::SphericalSymmetry,
+         Spectral::Quadrature::SphericalSymmetry}};
+
+    const auto volume_logical_coords = logical_coordinates(volume_mesh);
+    const auto volume_inertial_coords = grid_to_inertial_map(
+        logical_to_grid_map(volume_logical_coords), time, functions_of_time);
+
+    DataVector dt_var(subcell_extents.product(), 0.0);
+    const DataVector inv_jacobian(subcell_extents.product(), 1.0);
+    const DataVector boundary_correction(
+        6,
+        1.0);  // Should actually be different size but testing dimension first
+
+    CHECK_THROWS_WITH(
+        evolution::dg::subcell::add_cartoon_cartesian_flux_divergence(
+            make_not_null(&dt_var), 1.0, inv_jacobian, boundary_correction,
+            subcell_extents, invalid_dimension, volume_inertial_coords,
+            logical_to_grid_map, grid_to_inertial_map, time, functions_of_time),
+        Catch::Matchers::ContainsSubstring(
+            "Using cartoon derivatives with spherical symmetry, expecting "
+            "dimension = 0"));
+  }
+  {
+    INFO("Test cartoon - invalid dimension for axial");
+    const Index<3> subcell_extents{3, 2, 1};  // Axial symmetry
+    const size_t invalid_dimension = 2;       // Should be 0 or 1 for axial
+
+    const Mesh<3> volume_mesh{
+        subcell_extents.indices(),
+        {Spectral::Basis::FiniteDifference, Spectral::Basis::FiniteDifference,
+         Spectral::Basis::Cartoon},
+        {Spectral::Quadrature::CellCentered, Spectral::Quadrature::CellCentered,
+         Spectral::Quadrature::AxialSymmetry}};
+
+    const auto volume_logical_coords = logical_coordinates(volume_mesh);
+    const auto volume_inertial_coords = grid_to_inertial_map(
+        logical_to_grid_map(volume_logical_coords), time, functions_of_time);
+
+    DataVector dt_var(subcell_extents.product(), 0.0);
+    const DataVector inv_jacobian(subcell_extents.product(), 1.0);
+    const DataVector boundary_correction(12, 1.0);
+
+    CHECK_THROWS_WITH(
+        evolution::dg::subcell::add_cartoon_cartesian_flux_divergence(
+            make_not_null(&dt_var), 1.0, inv_jacobian, boundary_correction,
+            subcell_extents, invalid_dimension, volume_inertial_coords,
+            logical_to_grid_map, grid_to_inertial_map, time, functions_of_time),
+        Catch::Matchers::ContainsSubstring(
+            "Using cartoon derivatives with axial symmetry, expecting "
+            "dimension = 0 or 1"));
+  }
+#endif  // SPECTRE_DEBUG
+}
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Evolution.Subcell.FD.CartesianFluxDivergence",
@@ -329,4 +594,5 @@ SPECTRE_TEST_CASE("Unit.Evolution.Subcell.FD.CartesianFluxDivergence",
   test<2>();
   test<3>();
   test_cartoon();
+  test_validation_errors();
 }
