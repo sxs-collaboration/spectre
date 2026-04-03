@@ -239,7 +239,6 @@ class Gmres final : public PreconditionedLinearSolver<Preconditioner,
   }
 
   /// \cond
-  explicit Gmres(CkMigrateMessage* m);
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(Gmres);  // NOLINT
   /// \endcond
@@ -344,7 +343,8 @@ Gmres<VarsType, Preconditioner, LinearSolverRegistrars>::Gmres(
 template <typename VarsType, typename Preconditioner,
           typename LinearSolverRegistrars>
 Gmres<VarsType, Preconditioner, LinearSolverRegistrars>::Gmres(const Gmres& rhs)
-    : Base(rhs),
+    : PUP::able(rhs),
+      Base(rhs),
       convergence_criteria_(rhs.convergence_criteria_),
       verbosity_(rhs.verbosity_),
       restart_(rhs.restart_) {
@@ -362,14 +362,6 @@ Gmres<VarsType, Preconditioner, LinearSolverRegistrars>::operator=(
   initialize();
   return *this;
 }
-
-/// \cond
-template <typename VarsType, typename Preconditioner,
-          typename LinearSolverRegistrars>
-Gmres<VarsType, Preconditioner, LinearSolverRegistrars>::Gmres(
-    CkMigrateMessage* m)
-    : Base(m) {}
-/// \endcond
 
 template <typename VarsType, typename Preconditioner,
           typename LinearSolverRegistrars>
@@ -483,6 +475,7 @@ Gmres<VarsType, Preconditioner, LinearSolverRegistrars>::solve(
   return has_converged;
 }
 
+#if defined(SPECTRE_USE_CHARM)
 /// \cond
 template <typename VarsType, typename Preconditioner,
           typename LinearSolverRegistrars>
@@ -490,6 +483,6 @@ template <typename VarsType, typename Preconditioner,
 PUP::able::PUP_ID
     Gmres<VarsType, Preconditioner, LinearSolverRegistrars>::my_PUP_ID = 0;
 /// \endcond
-
+#endif  // SPECTRE_USE_CHARM
 }  // namespace Serial
 }  // namespace LinearSolver

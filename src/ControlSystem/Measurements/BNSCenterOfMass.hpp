@@ -111,14 +111,11 @@ void center_of_mass_integral_on_element(
  * event.
  */
 template <typename ControlSystems>
-class BNSEvent : public ::Event {
+class BNSEvent : public ::Event SPECTRE_FINDUS_DERIVED(BNSEvent<ControlSystems>,
+                                                       ::Event) {
  public:
   /// \cond
-  // LCOV_EXCL_START
-  explicit BNSEvent(CkMigrateMessage* /*unused*/) {}
-  using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(BNSEvent);  // NOLINT
-  // LCOV_EXCL_STOP
   /// \endcond
 
   // This event is created during control system initialization, not
@@ -192,10 +189,12 @@ class BNSEvent : public ::Event {
   bool needs_evolved_variables() const override { return true; }
 };
 
+#if defined(SPECTRE_USE_CHARM)
 /// \cond
 template <typename ControlSystems>
 PUP::able::PUP_ID BNSEvent<ControlSystems>::my_PUP_ID = 0;  // NOLINT
 /// \endcond
+#endif  // SPECTRE_USE_CHARM
 
 namespace measurements {
 namespace Tags {

@@ -13,8 +13,6 @@
 #include "Utilities/Gsl.hpp"
 
 namespace gh::gauges {
-Harmonic::Harmonic(CkMigrateMessage* const msg) : GaugeCondition(msg) {}
-
 void Harmonic::pup(PUP::er& p) { GaugeCondition::pup(p); }
 
 std::unique_ptr<GaugeCondition> Harmonic::get_clone() const {
@@ -40,8 +38,10 @@ void Harmonic::gauge_and_spacetime_derivative(
 
 bool Harmonic::is_harmonic() const { return true; }
 
+#if defined(SPECTRE_USE_CHARM)
 // NOLINTNEXTLINE
 PUP::able::PUP_ID Harmonic::my_PUP_ID = 0;
+#endif  // SPECTRE_USE_CHARM
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 

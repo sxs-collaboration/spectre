@@ -156,7 +156,7 @@ std::string name() {
  * `/<SubgroupName>/OneMinusY.vol` with the elements in the same order as the
  * radial index order for the spin weighted quantities above.
  */
-class ObserveFields : public Event {
+class ObserveFields : public SPECTRE_CHARM_DERIVED(ObserveFields, Event) {
   template <typename Tag, bool IncludeSecondDeriv = true>
   // clang-format off
   using zero_one_two_radial_derivs = tmpl::flatten<tmpl::list<
@@ -200,7 +200,6 @@ class ObserveFields : public Event {
                       Tags::ComplexInertialRetardedTime, Tags::OneMinusY>;
 
   /// \cond
-  explicit ObserveFields(CkMigrateMessage* /*unused*/) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(ObserveFields);  // NOLINT
   /// \endcond
@@ -557,6 +556,8 @@ ObserveFields::ObserveFields(
 }
 
 /// \cond
+#if defined(SPECTRE_USE_CHARM)
 PUP::able::PUP_ID ObserveFields::my_PUP_ID = 0;  // NOLINT
+#endif                                           // SPECTRE_USE_CHARM
 /// \endcond
 }  // namespace Cce::Events

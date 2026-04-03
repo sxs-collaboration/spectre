@@ -111,7 +111,9 @@ LinearizedBondiSachs::get_clone() const {
   return std::make_unique<LinearizedBondiSachs>(*this);
 }
 
+#if defined(SPECTRE_USE_CHARM)
 PUP::able::PUP_ID LinearizedBondiSachs::my_PUP_ID = 0;
+#endif  // SPECTRE_USE_CHARM
 }  // namespace InitializeJ
 
 namespace {
@@ -185,7 +187,9 @@ void assign_du_components_from_l_factors(
 LinearizedBondiSachs::LinearizedBondiSachs(
     const std::array<std::complex<double>, 2>& mode_constants,
     const double extraction_radius, const double frequency)
-    : SphericalMetricData{extraction_radius}, frequency_{frequency} {
+    : WorldtubeData{extraction_radius},
+      SphericalMetricData{extraction_radius},
+      frequency_{frequency} {
   c_2a_ = mode_constants[0];
   c_3a_ = mode_constants[1];
   c_2b_ = 3.0 * c_2a_ / square(frequency_);
@@ -609,5 +613,7 @@ void LinearizedBondiSachs::pup(PUP::er& p) {
   p | frequency_;
 }
 
+#if defined(SPECTRE_USE_CHARM)
 PUP::able::PUP_ID LinearizedBondiSachs::my_PUP_ID = 0;
+#endif  // SPECTRE_USE_CHARM
 }  // namespace Cce::Solutions

@@ -77,7 +77,9 @@ void local_adm_integrals(
  * - Center of mass
  */
 template <typename ArraySectionIdTag = void>
-class ObserveAdmIntegrals : public Event {
+class ObserveAdmIntegrals
+    : public SPECTRE_CHARM_DERIVED(
+          SINGLE_ARG(ObserveAdmIntegrals<ArraySectionIdTag>), Event) {
  private:
   using ReductionData = Parallel::ReductionData<
       // Number of points
@@ -104,7 +106,6 @@ class ObserveAdmIntegrals : public Event {
 
  public:
   /// \cond
-  explicit ObserveAdmIntegrals(CkMigrateMessage* msg) : Event(msg) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(ObserveAdmIntegrals);  // NOLINT
   /// \endcond
@@ -276,10 +277,12 @@ class ObserveAdmIntegrals : public Event {
 };
 /// @}
 
+#if defined(SPECTRE_USE_CHARM)
 /// \cond
 template <typename ArraySectionIdTag>
 PUP::able::PUP_ID ObserveAdmIntegrals<ArraySectionIdTag>::my_PUP_ID =
     0;  // NOLINT
 /// \endcond
+#endif  // SPECTRE_USE_CHARM
 
 }  // namespace Events

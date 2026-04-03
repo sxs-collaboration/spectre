@@ -65,10 +65,6 @@ Wcns5zPrim<System>::Wcns5zPrim(
 }
 
 template <typename System>
-Wcns5zPrim<System>::Wcns5zPrim(CkMigrateMessage* const msg)
-    : Reconstructor<System>(msg) {}
-
-template <typename System>
 std::unique_ptr<Reconstructor<System>> Wcns5zPrim<System>::get_clone() const {
   return std::make_unique<Wcns5zPrim<System>>(*this);
 }
@@ -90,9 +86,11 @@ void Wcns5zPrim<System>::pup(PUP::er& p) {
   }
 }
 
+#if defined(SPECTRE_USE_CHARM)
 template <typename System>
 // NOLINTNEXTLINE
 PUP::able::PUP_ID Wcns5zPrim<System>::my_PUP_ID = 0;
+#endif  // SPECTRE_USE_CHARM
 
 template <typename System>
 template <size_t ThermodynamicDim, typename TagsList>

@@ -111,7 +111,9 @@ std::string get_unsupported_autodiff_maps_error() {
  * \brief Abstract base class for CoordinateMap
  */
 template <typename SourceFrame, typename TargetFrame, size_t Dim>
-class CoordinateMapBase : public PUP::able {
+class CoordinateMapBase
+    : public SPECTRE_CHARM_PUPable(
+          SINGLE_ARG(CoordinateMapBase<SourceFrame, TargetFrame, Dim>)) {
  public:
   static constexpr size_t dim = Dim;
   using source_frame = SourceFrame;
@@ -310,8 +312,10 @@ class CoordinateMapBase : public PUP::able {
  */
 template <typename SourceFrame, typename TargetFrame, typename... Maps>
 class CoordinateMap
-    : public CoordinateMapBase<SourceFrame, TargetFrame,
-                               CoordinateMaps::map_dim<Maps...>> {
+    : public SPECTRE_CHARM_DERIVED(
+          SINGLE_ARG(CoordinateMap<SourceFrame, TargetFrame, Maps...>),
+          SINGLE_ARG(CoordinateMapBase<SourceFrame, TargetFrame,
+                                       CoordinateMaps::map_dim<Maps...>>)) {
   static_assert(sizeof...(Maps) > 0, "Must have at least one map");
   static_assert(
       tmpl::all<tmpl::integral_list<size_t, Maps::dim...>,
@@ -582,8 +586,6 @@ class CoordinateMap
       SINGLE_ARG(CoordinateMapBase<SourceFrame, TargetFrame, dim>),
       CoordinateMap);
 
-  explicit CoordinateMap(CkMigrateMessage* /*unused*/) {}
-
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& p) override {
     size_t version = 0;
@@ -741,10 +743,12 @@ template <typename SourceFrame, typename TargetFrame, typename... Maps,
 CoordinateMap<SourceFrame, TargetFrame, NewMap, Maps...> push_front(
     CoordinateMap<SourceFrame, TargetFrame, Maps...> old_map, NewMap new_map);
 
+#if defined(SPECTRE_USE_CHARM)
 /// \cond
 template <typename SourceFrame, typename TargetFrame, typename... Maps>
 PUP::able::PUP_ID
     CoordinateMap<SourceFrame, TargetFrame, Maps...>::my_PUP_ID =  // NOLINT
     0;
 /// \endcond
+#endif  // SPECTRE_USE_CHARM
 }  // namespace domain

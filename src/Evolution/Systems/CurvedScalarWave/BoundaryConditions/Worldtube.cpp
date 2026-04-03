@@ -18,23 +18,23 @@
 namespace CurvedScalarWave::BoundaryConditions {
 
 template <size_t Dim>
-Worldtube<Dim>::Worldtube(CkMigrateMessage* const msg)
-    : BoundaryCondition<Dim>(msg) {}
-
-template <size_t Dim>
 std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
 Worldtube<Dim>::get_clone() const {
   return std::make_unique<Worldtube>(*this);
 }
 
 template <size_t Dim>
-void Worldtube<Dim>::pup(PUP::er& p) {
-  BoundaryCondition<Dim>::pup(p);
+void Worldtube<Dim>::pup([[maybe_unused]] PUP::er& p) {
+#if defined(SPECTRE_USE_CHARM)
+  BoundaryConditions::BoundaryCondition<Dim>::pup(p);
+#endif  // SPECTRE_USE_CHARM
 }
 
+#if defined(SPECTRE_USE_CHARM)
 template <size_t Dim>
 // NOLINTNEXTLINE
 PUP::able::PUP_ID Worldtube<Dim>::my_PUP_ID = 0;
+#endif  // SPECTRE_USE_CHARM
 
 template <size_t Dim>
 std::optional<std::string> Worldtube<Dim>::dg_time_derivative(

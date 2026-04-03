@@ -57,7 +57,6 @@ class TestEvent : public ::Event {
  public:
   /// \cond
   // LCOV_EXCL_START
-  explicit TestEvent(CkMigrateMessage* /*unused*/) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(TestEvent);  // NOLINT
   // LCOV_EXCL_STOP
@@ -125,12 +124,14 @@ class TestEvent : public ::Event {
 template <typename Label, typename ControlSystems, bool CallRunCallbacks>
 size_t TestEvent<Label, ControlSystems, CallRunCallbacks>::call_count = 0;
 
+#if defined(SPECTRE_USE_CHARM)
 /// \cond
 template <typename Label, typename ControlSystems, bool CallRunCallbacks>
 PUP::able::PUP_ID
     TestEvent<Label, ControlSystems, CallRunCallbacks>::my_PUP_ID = 0;
 /// \endcond
 // NOLINTEND
+#endif  // SPECTRE_USE_CHARM
 
 template <typename Label, bool CallRunCallbacks = false>
 struct Measurement : tt::ConformsTo<control_system::protocols::Measurement> {

@@ -21,12 +21,14 @@ class er;
 namespace StepChoosers {
 
 /// Sets a constant goal.
-class Constant : public StepChooser<StepChooserUse::Slab>,
-                 public StepChooser<StepChooserUse::LtsStep> {
+class Constant
+    : public SPECTRE_CHARM_DERIVED(
+          Constant, SINGLE_ARG(StepChooser<StepChooserUse::Slab>)),
+      public SPECTRE_CHARM_DERIVED(
+          Constant, SINGLE_ARG(StepChooser<StepChooserUse::LtsStep>)) {
  public:
   /// \cond
   Constant() = default;
-  explicit Constant(CkMigrateMessage* /*unused*/) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(Constant);  // NOLINT
   /// \endcond

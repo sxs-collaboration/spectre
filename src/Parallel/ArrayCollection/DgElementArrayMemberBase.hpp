@@ -31,7 +31,8 @@ namespace Parallel {
  * serialization.
  */
 template <size_t Dim>
-class DgElementArrayMemberBase : PUP::able {
+class DgElementArrayMemberBase
+    : public SPECTRE_CHARM_PUPable(DgElementArrayMemberBase<Dim>) {
  public:
   DgElementArrayMemberBase() = default;
 
@@ -44,8 +45,6 @@ class DgElementArrayMemberBase : PUP::able {
   ~DgElementArrayMemberBase() override = default;
 
   WRAPPED_PUPable_abstract(DgElementArrayMemberBase);  // NOLINT
-
-  explicit DgElementArrayMemberBase(CkMigrateMessage* msg);
 
   /// Start execution of the phase-dependent action list in `next_phase`. If
   /// `next_phase` has already been visited, execution will resume at the point

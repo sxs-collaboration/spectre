@@ -65,10 +65,6 @@ bool HybridEos<ColdEquationOfState>::is_equal(
 }
 
 template <typename ColdEquationOfState>
-HybridEos<ColdEquationOfState>::HybridEos(CkMigrateMessage* msg)
-    : EquationOfState<is_relativistic, 2>(msg) {}
-
-template <typename ColdEquationOfState>
 void HybridEos<ColdEquationOfState>::pup(PUP::er& p) {
   EquationOfState<is_relativistic, 2>::pup(p);
   p | cold_eos_;

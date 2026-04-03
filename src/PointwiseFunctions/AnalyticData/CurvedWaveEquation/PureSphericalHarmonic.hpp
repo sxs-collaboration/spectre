@@ -41,8 +41,15 @@ namespace CurvedScalarWave::AnalyticData {
  * behavior and late-time tails in different background spacetimes.
  */
 
-class PureSphericalHarmonic : public evolution::initial_data::InitialData,
-                              public MarkAsAnalyticData {
+class PureSphericalHarmonic
+    : public evolution::initial_data::InitialData,
+      public MarkAsAnalyticData
+#if defined(SPECTRE_USE_FINDUS)
+    ,
+      public virtual findus::serialize::SerializableDerived<
+          PureSphericalHarmonic, evolution::initial_data::InitialData>
+#endif
+{
  public:
   struct Radius {
     using type = double;
@@ -86,7 +93,6 @@ class PureSphericalHarmonic : public evolution::initial_data::InitialData,
       -> std::unique_ptr<evolution::initial_data::InitialData> override;
 
   /// \cond
-  explicit PureSphericalHarmonic(CkMigrateMessage* msg);
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(PureSphericalHarmonic);
   /// \endcond

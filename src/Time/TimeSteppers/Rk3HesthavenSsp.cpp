@@ -157,4 +157,6 @@ bool Rk3HesthavenSsp::can_change_step_size_impl(
 TIME_STEPPER_DEFINE_OVERLOADS(Rk3HesthavenSsp)
 }  // namespace TimeSteppers
 
+#if defined(SPECTRE_USE_CHARM)
 PUP::able::PUP_ID TimeSteppers::Rk3HesthavenSsp::my_PUP_ID = 0;  // NOLINT
+#endif  // SPECTRE_USE_CHARM

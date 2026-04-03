@@ -15,18 +15,16 @@
 
 namespace gh::BoundaryConditions {
 template <size_t Dim>
-DirichletMinkowski<Dim>::DirichletMinkowski(CkMigrateMessage* const msg)
-    : BoundaryCondition<Dim>(msg) {}
-
-template <size_t Dim>
 std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
 DirichletMinkowski<Dim>::get_clone() const {
   return std::make_unique<DirichletMinkowski>(*this);
 }
 
 template <size_t Dim>
-void DirichletMinkowski<Dim>::pup(PUP::er& p) {
-  BoundaryCondition<Dim>::pup(p);
+void DirichletMinkowski<Dim>::pup([[maybe_unused]] PUP::er& p) {
+#if defined(SPECTRE_USE_CHARM)
+  BoundaryConditions::BoundaryCondition<Dim>::pup(p);
+#endif  // SPECTRE_USE_CHARM
 }
 
 template <size_t Dim>
@@ -76,9 +74,11 @@ std::optional<std::string> DirichletMinkowski<Dim>::dg_ghost(
   return {};
 }
 
+#if defined(SPECTRE_USE_CHARM)
 template <size_t Dim>
 // NOLINTNEXTLINE
 PUP::able::PUP_ID DirichletMinkowski<Dim>::my_PUP_ID = 0;
+#endif  // SPECTRE_USE_CHARM
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 

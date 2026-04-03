@@ -86,8 +86,6 @@ std::unique_ptr<evolution::initial_data::InitialData> BlastWave::get_clone()
   return std::make_unique<BlastWave>(*this);
 }
 
-BlastWave::BlastWave(CkMigrateMessage* msg) : InitialData(msg) {}
-
 void BlastWave::pup(PUP::er& p) {
   InitialData::pup(p);
   p | inner_radius_;
@@ -190,7 +188,9 @@ BlastWave::variables(
       get<density_tag>(data), get<energy_tag>(data), get<pressure_tag>(data));
 }
 
+#if defined(SPECTRE_USE_CHARM)
 PUP::able::PUP_ID BlastWave::my_PUP_ID = 0;
+#endif  // SPECTRE_USE_CHARM
 
 bool operator==(const BlastWave& lhs, const BlastWave& rhs) {
   return lhs.inner_radius_ == rhs.inner_radius_ and

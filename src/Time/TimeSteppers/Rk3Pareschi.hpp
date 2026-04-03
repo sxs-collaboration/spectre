@@ -35,7 +35,16 @@ namespace TimeSteppers {
  *
  * The CFL factor/stable step size is 1.25637.
  */
-class Rk3Pareschi : public ImexRungeKutta {
+class Rk3Pareschi
+    : public ImexRungeKutta
+#if defined(SPECTRE_USE_FINDUS)
+    ,
+      public virtual findus::serialize::SerializableDerived<Rk3Pareschi,
+                                                            TimeStepper>,
+      public virtual findus::serialize::SerializableDerived<Rk3Pareschi,
+                                                            ImexTimeStepper>
+#endif
+{
  public:
   using options = tmpl::list<>;
   static constexpr Options::String help = {
@@ -58,8 +67,6 @@ class Rk3Pareschi : public ImexRungeKutta {
   size_t implicit_stage_order() const override;
 
   WRAPPED_PUPable_decl_template(Rk3Pareschi);  // NOLINT
-
-  explicit Rk3Pareschi(CkMigrateMessage* /*unused*/) {}
 
   const ButcherTableau& butcher_tableau() const override;
 

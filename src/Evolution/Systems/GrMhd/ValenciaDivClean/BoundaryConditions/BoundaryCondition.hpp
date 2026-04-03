@@ -11,7 +11,8 @@ namespace grmhd::ValenciaDivClean {
 /// \brief Boundary conditions for the GRMHD Valencia Divergence Cleaning system
 namespace BoundaryConditions {
 /// \brief The base class off of which all boundary conditions must inherit
-class BoundaryCondition : public domain::BoundaryConditions::BoundaryCondition {
+class BoundaryCondition
+    : public virtual domain::BoundaryConditions::BoundaryCondition {
  public:
   BoundaryCondition() = default;
   BoundaryCondition(BoundaryCondition&&) = default;
@@ -19,7 +20,6 @@ class BoundaryCondition : public domain::BoundaryConditions::BoundaryCondition {
   BoundaryCondition(const BoundaryCondition&) = default;
   BoundaryCondition& operator=(const BoundaryCondition&) = default;
   ~BoundaryCondition() override = default;
-  explicit BoundaryCondition(CkMigrateMessage* msg);
 
   void pup(PUP::er& p) override;
 };

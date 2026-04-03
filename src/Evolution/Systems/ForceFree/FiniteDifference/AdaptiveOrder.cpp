@@ -42,9 +42,6 @@ AdaptiveOrder::AdaptiveOrder(
   set_function_pointers();
 }
 
-AdaptiveOrder::AdaptiveOrder(CkMigrateMessage* const msg)
-    : Reconstructor(msg) {}
-
 std::unique_ptr<Reconstructor> AdaptiveOrder::get_clone() const {
   return std::make_unique<AdaptiveOrder>(*this);
 }
@@ -73,8 +70,10 @@ void AdaptiveOrder::pup(PUP::er& p) {
   }
 }
 
+#if defined(SPECTRE_USE_CHARM)
 // NOLINTNEXTLINE
 PUP::able::PUP_ID AdaptiveOrder::my_PUP_ID = 0;
+#endif  // SPECTRE_USE_CHARM
 
 void AdaptiveOrder::reconstruct(
     const gsl::not_null<std::array<Variables<recons_tags>, dim>*>

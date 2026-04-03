@@ -62,7 +62,9 @@ namespace ForceFree::BoundaryCorrections {
  * \f$G - F_\text{int}\f$
  *
  */
-class Rusanov final : public evolution::BoundaryCorrection {
+class Rusanov final
+    : public SPECTRE_CHARM_DERIVED(Rusanov,
+                                   SINGLE_ARG(evolution::BoundaryCorrection)) {
  private:
   struct AbsCharSpeed : db::SimpleTag {
     using type = Scalar<DataVector>;
@@ -82,8 +84,6 @@ class Rusanov final : public evolution::BoundaryCorrection {
   ~Rusanov() override = default;
 
   /// \cond
-  explicit Rusanov(CkMigrateMessage* /*unused*/);
-  using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(Rusanov);  // NOLINT
   /// \endcond
   void pup(PUP::er& p) override;  // NOLINT

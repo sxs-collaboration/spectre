@@ -99,9 +99,6 @@ void only_vary_gauge_d_heuristic(
 }
 }  // namespace
 
-ConformalFactor::ConformalFactor(CkMigrateMessage* msg)
-    : InitializeJ<false>(msg) {}
-
 ConformalFactor::ConformalFactor(
     const double angular_coordinate_tolerance, const size_t max_iterations,
     const bool require_convergence, const bool optimize_l_0_mode,
@@ -417,7 +414,9 @@ void ConformalFactor::pup(PUP::er& p) {
   p | input_mode_filename_;
 }
 
+#if defined(SPECTRE_USE_CHARM)
 PUP::able::PUP_ID ConformalFactor::my_PUP_ID = 0;
+#endif  // SPECTRE_USE_CHARM
 std::ostream& operator<<(
     std::ostream& os,
     const Cce::InitializeJ::ConformalFactorIterationHeuristic& heuristic_type) {

@@ -55,7 +55,7 @@ namespace grmhd::ValenciaDivClean::fd {
  * Z oscillation indicator. See ::fd::reconstruction::wcns5z() for details.
  *
  */
-class Wcns5zPrim : public Reconstructor {
+class Wcns5zPrim : public SPECTRE_CHARM_DERIVED(Wcns5zPrim, Reconstructor) {
  private:
   using prims_to_reconstruct_tags =
       tmpl::list<hydro::Tags::RestMassDensity<DataVector>,
@@ -122,8 +122,6 @@ class Wcns5zPrim : public Reconstructor {
              FallbackReconstructorType fallback_reconstructor,
              size_t max_number_of_extrema,
              bool reconstruct_rho_times_temperature);
-
-  explicit Wcns5zPrim(CkMigrateMessage* msg);
 
   WRAPPED_PUPable_decl_base_template(Reconstructor, Wcns5zPrim);
 

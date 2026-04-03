@@ -30,7 +30,7 @@ namespace ray_tracing {
  * spacetime should be valid within the bounds returned by the `time_bounds`
  * function.
  */
-class BackgroundSpacetime : public PUP::able {
+class BackgroundSpacetime : public SPECTRE_CHARM_PUPable(BackgroundSpacetime) {
  protected:
   static constexpr size_t Dim = 3;
   using DataType = double;
@@ -52,8 +52,10 @@ class BackgroundSpacetime : public PUP::able {
   ~BackgroundSpacetime() override = default;
 
   /// \cond
+#if defined(SPECTRE_USE_CHARM)
   explicit BackgroundSpacetime(CkMigrateMessage* msg) : PUP::able(msg) {}
   WRAPPED_PUPable_abstract(BackgroundSpacetime);
+#endif  // SPECTRE_USE_CHARM
   /// \endcond
 
   /// Copies the background spacetime. Must call `initialize` on the clone

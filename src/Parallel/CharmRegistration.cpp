@@ -1,6 +1,7 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
+#if defined(SPECTRE_USE_CHARM)
 #include "Parallel/CharmRegistration.hpp"
 
 #include <algorithm>
@@ -26,3 +27,4 @@ std::string get_template_parameters_as_string_impl(
   return template_params;
 }
 }  // namespace Parallel::charmxx
+#endif  // SPECTRE_USE_CHARM

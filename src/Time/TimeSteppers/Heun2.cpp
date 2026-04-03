@@ -46,4 +46,6 @@ Heun2::implicit_butcher_tableau() const {
 }
 }  // namespace TimeSteppers
 
+#if defined(SPECTRE_USE_CHARM)
 PUP::able::PUP_ID TimeSteppers::Heun2::my_PUP_ID = 0;  // NOLINT
+#endif                                                 // SPECTRE_USE_CHARM

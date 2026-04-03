@@ -38,9 +38,6 @@ template <size_t Dim>
 ObserveAmrStats<Dim>::ObserveAmrStats() = default;
 
 template <size_t Dim>
-ObserveAmrStats<Dim>::ObserveAmrStats(CkMigrateMessage* m) : Event(m) {}
-
-template <size_t Dim>
 ObserveAmrStats<Dim>::ObserveAmrStats(bool print_to_terminal,
                                       bool observe_per_core)
     : print_to_terminal_(print_to_terminal),
@@ -53,8 +50,10 @@ void ObserveAmrStats<Dim>::pup(PUP::er& p) {
   p | observe_per_core_;
 }
 
+#if defined(SPECTRE_USE_CHARM)
 template <size_t Dim>
 PUP::able::PUP_ID ObserveAmrStats<Dim>::my_PUP_ID = 0;  // NOLINT
+#endif                                                  // SPECTRE_USE_CHARM
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 #define INSTANTIATE(_, data) template class ObserveAmrStats<DIM(data)>;

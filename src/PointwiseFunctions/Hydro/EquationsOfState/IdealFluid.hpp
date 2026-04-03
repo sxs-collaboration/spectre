@@ -45,7 +45,9 @@ namespace EquationsOfState {
  * \f]
  */
 template <bool IsRelativistic>
-class IdealFluid : public EquationOfState<IsRelativistic, 2> {
+class IdealFluid : public SPECTRE_CHARM_DERIVED(
+                       SINGLE_ARG(IdealFluid<IsRelativistic>),
+                       SINGLE_ARG(EquationOfState<IsRelativistic, 2>)) {
  public:
   static constexpr size_t thermodynamic_dim = 2;
   static constexpr bool is_relativistic = IsRelativistic;
@@ -100,7 +102,8 @@ class IdealFluid : public EquationOfState<IsRelativistic, 2> {
   bool is_equal(const EquationOfState<IsRelativistic, 2>& rhs) const override;
 
   WRAPPED_PUPable_decl_base_template(  // NOLINT
-      SINGLE_ARG(EquationOfState<IsRelativistic, 2>), IdealFluid);
+      SINGLE_ARG(EquationOfState<IsRelativistic, 2>),
+      SINGLE_ARG(IdealFluid<IsRelativistic>));
 
   /// The lower bound of the rest mass density that is valid for this EOS
   double rest_mass_density_lower_bound() const override { return 0.0; }
@@ -151,8 +154,10 @@ class IdealFluid : public EquationOfState<IsRelativistic, 2> {
   double min_temperature_ = std::numeric_limits<double>::signaling_NaN();
 };
 
+#if defined(SPECTRE_USE_CHARM)
 /// \cond
 template <bool IsRelativistic>
 PUP::able::PUP_ID EquationsOfState::IdealFluid<IsRelativistic>::my_PUP_ID = 0;
 /// \endcond
+#endif  // SPECTRE_USE_CHARM
 }  // namespace EquationsOfState

@@ -20,7 +20,7 @@ namespace gauges {
 /// be updated to correctly detect and forward to the gauge condition. The
 /// header file must also be included in `Factory.hpp` and the gauge condition
 /// added to the `all_gauges` type alias in `Factory.hpp`.
-class GaugeCondition : public PUP::able {
+class GaugeCondition : public SPECTRE_CHARM_PUPable(GaugeCondition) {
  public:
   GaugeCondition() = default;
   GaugeCondition(const GaugeCondition&) = default;
@@ -28,8 +28,6 @@ class GaugeCondition : public PUP::able {
   GaugeCondition(GaugeCondition&&) = default;
   GaugeCondition& operator=(GaugeCondition&&) = default;
   ~GaugeCondition() override = default;
-
-  explicit GaugeCondition(CkMigrateMessage* msg);
 
   WRAPPED_PUPable_abstract(GaugeCondition);  // NOLINT
 

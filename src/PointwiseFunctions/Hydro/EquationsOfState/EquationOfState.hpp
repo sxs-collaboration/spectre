@@ -147,7 +147,9 @@ using get_eos_base = typename get_eos_base_impl<T>::type;
  * of state and `false` for non-relativistic equations of state.
  */
 template <bool IsRelativistic>
-class EquationOfState<IsRelativistic, 1> : public PUP::able {
+class EquationOfState<IsRelativistic, 1>
+    : public SPECTRE_CHARM_PUPable(
+          SINGLE_ARG(EquationOfState<IsRelativistic, 1>)) {
  public:
   static constexpr bool is_relativistic = IsRelativistic;
   static constexpr size_t thermodynamic_dim = 1;
@@ -160,8 +162,6 @@ class EquationOfState<IsRelativistic, 1> : public PUP::able {
   EquationOfState(EquationOfState&&) = default;
   EquationOfState& operator=(EquationOfState&&) = default;
   ~EquationOfState() override = default;
-
-  explicit EquationOfState(CkMigrateMessage* msg) : PUP::able(msg) {}
 
   WRAPPED_PUPable_abstract(EquationOfState);  // NOLINT
 
@@ -335,7 +335,9 @@ class EquationOfState<IsRelativistic, 1> : public PUP::able {
  * of state and `false` for non-relativistic equations of state.
  */
 template <bool IsRelativistic>
-class EquationOfState<IsRelativistic, 2> : public PUP::able {
+class EquationOfState<IsRelativistic, 2>
+    : public SPECTRE_CHARM_PUPable(
+          SINGLE_ARG(EquationOfState<IsRelativistic, 2>)) {
  public:
   static constexpr bool is_relativistic = IsRelativistic;
   static constexpr size_t thermodynamic_dim = 2;
@@ -348,8 +350,6 @@ class EquationOfState<IsRelativistic, 2> : public PUP::able {
   EquationOfState(EquationOfState&&) = default;
   EquationOfState& operator=(EquationOfState&&) = default;
   ~EquationOfState() override = default;
-
-  explicit EquationOfState(CkMigrateMessage* msg) : PUP::able(msg) {}
 
   WRAPPED_PUPable_abstract(EquationOfState);  // NOLINT
 
@@ -543,7 +543,9 @@ class EquationOfState<IsRelativistic, 2> : public PUP::able {
  * of state and `false` for non-relativistic equations of state.
  */
 template <bool IsRelativistic>
-class EquationOfState<IsRelativistic, 3> : public PUP::able {
+class EquationOfState<IsRelativistic, 3>
+    : public SPECTRE_CHARM_PUPable(
+          SINGLE_ARG(EquationOfState<IsRelativistic, 3>)) {
  public:
   static constexpr bool is_relativistic = IsRelativistic;
   static constexpr size_t thermodynamic_dim = 3;
@@ -556,8 +558,6 @@ class EquationOfState<IsRelativistic, 3> : public PUP::able {
   EquationOfState(EquationOfState&&) = default;
   EquationOfState& operator=(EquationOfState&&) = default;
   ~EquationOfState() override = default;
-
-  explicit EquationOfState(CkMigrateMessage* msg) : PUP::able(msg) {}
 
   WRAPPED_PUPable_abstract(EquationOfState);  // NOLINT
 
@@ -821,9 +821,7 @@ bool operator!=(const EquationOfState<IsRelLhs, ThermoDimLhs>& lhs,
            EQUATION_OF_STATE_FUNCTIONS_3D))))                              \
                                                                            \
   /* clang-tidy: do not use non-const references */                        \
-  void pup(PUP::er& p) override; /* NOLINT */                              \
-                                                                           \
-  explicit DERIVED(CkMigrateMessage* msg);
+  void pup(PUP::er& p) override; /* NOLINT */
 
 /// \cond
 #define EQUATION_OF_STATE_FORWARD_ARGUMENTS(z, n, unused) \

@@ -42,11 +42,10 @@ enum class Direction { Before, After, Both };
 /// slabs or steps are approximate.
 ///
 /// \see Times
-class NearTimes : public Trigger {
+class NearTimes : public SPECTRE_CHARM_DERIVED(NearTimes, Trigger) {
  public:
   /// \cond
   NearTimes() = default;
-  explicit NearTimes(CkMigrateMessage* /*unused*/) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(NearTimes);  // NOLINT
   /// \endcond

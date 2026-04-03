@@ -26,7 +26,10 @@ namespace sgb::BoundaryConditions {
 /// Do not apply a boundary condition, used exclusively for singular boundary
 /// value problems.
 
-class DoNothing : public elliptic::BoundaryConditions::BoundaryCondition<3> {
+class DoNothing
+    : public elliptic::BoundaryConditions::BoundaryCondition<3>
+      SPECTRE_FINDUS_DERIVED(DoNothing,
+                             domain::BoundaryConditions::BoundaryCondition) {
  private:
   using Base = elliptic::BoundaryConditions::BoundaryCondition<3>;
 
@@ -45,7 +48,6 @@ class DoNothing : public elliptic::BoundaryConditions::BoundaryCondition<3> {
   ~DoNothing() override = default;
 
   /// \cond
-  explicit DoNothing(CkMigrateMessage* m) : Base(m) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(DoNothing);
   /// \endcond
@@ -85,8 +87,9 @@ inline bool operator!=(const DoNothing& /*lhs*/, const DoNothing& /*rhs*/) {
   return false;
 }
 
+#if defined(SPECTRE_USE_CHARM)
 /// \cond
 PUP::able::PUP_ID DoNothing::my_PUP_ID = 0;  // NOLINT
 /// \endcond
-
+#endif  // SPECTRE_USE_CHARM
 }  // namespace sgb::BoundaryConditions

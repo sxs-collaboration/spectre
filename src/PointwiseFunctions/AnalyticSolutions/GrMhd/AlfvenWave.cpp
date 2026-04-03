@@ -77,8 +77,6 @@ std::unique_ptr<evolution::initial_data::InitialData> AlfvenWave::get_clone()
   return std::make_unique<AlfvenWave>(*this);
 }
 
-AlfvenWave::AlfvenWave(CkMigrateMessage* msg) : InitialData(msg) {}
-
 void AlfvenWave::pup(PUP::er& p) {
   InitialData::pup(p);
   p | wavenumber_;
@@ -205,7 +203,9 @@ AlfvenWave::variables(
   return {std::move(specific_internal_energy)};
 }
 
+#if defined(SPECTRE_USE_CHARM)
 PUP::able::PUP_ID AlfvenWave::my_PUP_ID = 0;
+#endif  // SPECTRE_USE_CHARM
 
 bool operator==(const AlfvenWave& lhs, const AlfvenWave& rhs) {
   // there is no comparison operator for the EoS, but should be okay as

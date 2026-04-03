@@ -41,7 +41,7 @@ namespace ah::Criteria {
  * Note that the residual is obtained from the provided FastFlow::IterInfo. The
  * residual is the gr::surfaces::expansion weighted by the FastFlow weights.
  */
-class Residual : public Criterion {
+class Residual : public SPECTRE_CHARM_DERIVED(Residual, Criterion) {
  public:
   struct MinResidual {
     using type = double;
@@ -69,7 +69,6 @@ class Residual : public Criterion {
            const Options::Context& context = {});
 
   /// \cond
-  explicit Residual(CkMigrateMessage* msg);
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(Residual);  // NOLINT
   /// \endcond

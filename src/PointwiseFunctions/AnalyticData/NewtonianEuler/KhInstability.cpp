@@ -59,14 +59,6 @@ KhInstability<Dim>::get_clone() const {
 }
 
 template <size_t Dim>
-KhInstability<Dim>::KhInstability(CkMigrateMessage* msg)
-    : evolution::initial_data::InitialData(msg) {}
-
-template <size_t Dim>
-// NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
-PUP::able::PUP_ID KhInstability<Dim>::my_PUP_ID = 0;
-
-template <size_t Dim>
 void KhInstability<Dim>::pup(PUP::er& p) {
   evolution::initial_data::InitialData::pup(p);
   p | adiabatic_index_;
@@ -176,6 +168,11 @@ template <size_t Dim>
 bool operator!=(const KhInstability<Dim>& lhs, const KhInstability<Dim>& rhs) {
   return not(lhs == rhs);
 }
+
+#if defined(SPECTRE_USE_CHARM)
+template <size_t Dim>
+PUP::able::PUP_ID KhInstability<Dim>::my_PUP_ID = 0;  // NOLINT
+#endif                                                // SPECTRE_USE_CHARM
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(1, data)

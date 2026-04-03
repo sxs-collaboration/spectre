@@ -25,12 +25,16 @@ namespace StepChoosers {
 /// size increases, the new size bound is the size of the most recent
 /// step, otherwise no restriction is imposed.
 template <typename VariablesTag>
-class PreventRapidIncrease : public StepChooser<StepChooserUse::Slab>,
-                             public StepChooser<StepChooserUse::LtsStep> {
+class PreventRapidIncrease
+    : public SPECTRE_CHARM_DERIVED(
+          SINGLE_ARG(PreventRapidIncrease<VariablesTag>),
+          SINGLE_ARG(StepChooser<StepChooserUse::Slab>)),
+      public SPECTRE_CHARM_DERIVED(
+          SINGLE_ARG(PreventRapidIncrease<VariablesTag>),
+          SINGLE_ARG(StepChooser<StepChooserUse::LtsStep>)) {
  public:
   /// \cond
   PreventRapidIncrease() = default;
-  explicit PreventRapidIncrease(CkMigrateMessage* /*unused*/) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(PreventRapidIncrease);  // NOLINT
   /// \endcond
@@ -78,8 +82,10 @@ class PreventRapidIncrease : public StepChooser<StepChooserUse::Slab>,
   }
 };
 
+#if defined(SPECTRE_USE_CHARM)
 /// \cond
 template <typename VariablesTag>
 PUP::able::PUP_ID PreventRapidIncrease<VariablesTag>::my_PUP_ID = 0;  // NOLINT
 /// \endcond
+#endif  // SPECTRE_USE_CHARM
 }  // namespace StepChoosers

@@ -96,7 +96,10 @@ struct Composition;
 
 template <typename Frames, size_t Dim, size_t... Is>
 struct Composition<Frames, Dim, std::index_sequence<Is...>>
-    : public CoordinateMapBase<tmpl::front<Frames>, tmpl::back<Frames>, Dim> {
+    : public SPECTRE_CHARM_DERIVED(
+          SINGLE_ARG(Composition<Frames, Dim, std::index_sequence<Is...>>),
+          SINGLE_ARG(CoordinateMapBase<tmpl::front<Frames>, tmpl::back<Frames>,
+                                       Dim>)) {
   using frames = Frames;
   using SourceFrame = tmpl::front<Frames>;
   using TargetFrame = tmpl::back<Frames>;
@@ -107,7 +110,7 @@ struct Composition<Frames, Dim, std::index_sequence<Is...>>
   using Base::operator();
 
   Composition() = default;
-  Composition(const Composition& rhs) { *this = rhs; }
+  Composition(const Composition& rhs) : PUP::able(rhs) { *this = rhs; }
   Composition& operator=(const Composition& rhs);
   Composition(Composition&& /*rhs*/) = default;
   Composition& operator=(Composition&& /*rhs*/) = default;
@@ -118,7 +121,6 @@ struct Composition<Frames, Dim, std::index_sequence<Is...>>
   }
 
   /// \cond
-  explicit Composition(CkMigrateMessage* /*m*/) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(Composition);  // NOLINT
   /// \endcond
@@ -290,10 +292,12 @@ Composition(std::unique_ptr<FirstMap>, std::unique_ptr<Maps>... maps)
                               typename Maps::target_frame...>,
                    FirstMap::dim>;
 
+#if defined(SPECTRE_USE_CHARM)
 /// \cond
 template <typename Frames, size_t Dim, size_t... Is>
 PUP::able::PUP_ID
     Composition<Frames, Dim, std::index_sequence<Is...>>::my_PUP_ID = 0;
 /// \endcond
+#endif  // SPECTRE_USE_CHARM
 
 }  // namespace domain::CoordinateMaps

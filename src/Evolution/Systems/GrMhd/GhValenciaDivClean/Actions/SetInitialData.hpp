@@ -60,8 +60,15 @@ namespace grmhd::GhValenciaDivClean {
  * mostly combines the `gh::NumericInitialData` and
  * `grmhd::ValenciaDivClean::NumericInitialData` classes.
  */
-class NumericInitialData : public evolution::initial_data::InitialData,
-                           public evolution::NumericInitialData {
+class NumericInitialData
+    : public evolution::initial_data::InitialData,
+      public evolution::NumericInitialData
+#if defined(SPECTRE_USE_FINDUS)
+    ,
+      public virtual findus::serialize::SerializableDerived<
+          NumericInitialData, evolution::initial_data::InitialData>
+#endif
+{
  private:
   using GhNumericId = gh::NumericInitialData;
   using HydroNumericId = grmhd::ValenciaDivClean::NumericInitialData;
@@ -88,7 +95,6 @@ class NumericInitialData : public evolution::initial_data::InitialData,
   ~NumericInitialData() = default;
 
   /// \cond
-  explicit NumericInitialData(CkMigrateMessage* msg);
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(NumericInitialData);
   /// \endcond

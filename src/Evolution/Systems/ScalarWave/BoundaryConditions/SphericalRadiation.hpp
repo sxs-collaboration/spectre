@@ -77,7 +77,11 @@ SphericalRadiationType convert_spherical_radiation_type_from_yaml(
  * tested.
  */
 template <size_t Dim>
-class SphericalRadiation final : public BoundaryCondition<Dim> {
+class SphericalRadiation final
+    : public BoundaryCondition<Dim>
+      SPECTRE_FINDUS_DERIVED(
+          SINGLE_ARG(SphericalRadiation<Dim>),
+          SINGLE_ARG(domain::BoundaryConditions::BoundaryCondition)) {
  public:
   struct TypeOptionTag {
     using type = detail::SphericalRadiationType;
@@ -100,8 +104,6 @@ class SphericalRadiation final : public BoundaryCondition<Dim> {
   SphericalRadiation(const SphericalRadiation&) = default;
   SphericalRadiation& operator=(const SphericalRadiation&) = default;
   ~SphericalRadiation() override = default;
-
-  explicit SphericalRadiation(CkMigrateMessage* msg);
 
   WRAPPED_PUPable_decl_base_template(
       domain::BoundaryConditions::BoundaryCondition, SphericalRadiation);

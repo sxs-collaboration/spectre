@@ -27,8 +27,6 @@ class NodeLock {
  public:
   NodeLock();
 
-  explicit NodeLock(CkMigrateMessage* /*message*/);
-
   NodeLock(const NodeLock&) = delete;
   NodeLock& operator=(const NodeLock&) = delete;
   NodeLock(NodeLock&& moved_lock) noexcept;

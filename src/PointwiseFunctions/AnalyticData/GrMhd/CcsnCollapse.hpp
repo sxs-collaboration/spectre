@@ -137,7 +137,13 @@ class ProgenitorProfile {
 class CcsnCollapse : public virtual evolution::initial_data::InitialData,
                      public MarkAsAnalyticData,
                      public AnalyticDataBase,
-                     public hydro::TemperatureInitialization<CcsnCollapse> {
+                     public hydro::TemperatureInitialization<CcsnCollapse>
+#if defined(SPECTRE_USE_FINDUS)
+    ,
+                     public virtual findus::serialize::SerializableDerived<
+                         CcsnCollapse, evolution::initial_data::InitialData>
+#endif
+{
   template <typename DataType>
   struct IntermediateVariables {
     IntermediateVariables(
@@ -276,7 +282,6 @@ class CcsnCollapse : public virtual evolution::initial_data::InitialData,
       -> std::unique_ptr<evolution::initial_data::InitialData> override;
 
   /// \cond
-  explicit CcsnCollapse(CkMigrateMessage* msg);
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(CcsnCollapse);
   /// \endcond

@@ -10,9 +10,9 @@
 namespace amr::Events {
 RefineMesh::RefineMesh() = default;
 
-RefineMesh::RefineMesh(CkMigrateMessage* m) : Event(m) {}
-
 void RefineMesh::pup(PUP::er& p) { Event::pup(p); }
 
+#if defined(SPECTRE_USE_CHARM)
 PUP::able::PUP_ID RefineMesh::my_PUP_ID = 0;  // NOLINT
+#endif                                        // SPECTRE_USE_CHARM
 }  // namespace amr::Events

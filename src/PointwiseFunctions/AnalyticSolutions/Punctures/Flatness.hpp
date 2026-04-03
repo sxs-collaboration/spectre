@@ -19,7 +19,15 @@
 namespace Punctures::Solutions {
 
 /// Flat spacetime. Useful as initial guess.
-class Flatness : public elliptic::analytic_data::AnalyticSolution {
+class Flatness : public elliptic::analytic_data::AnalyticSolution
+#if defined(SPECTRE_USE_FINDUS)
+    ,
+                 public virtual findus::serialize::SerializableDerived<
+                     Flatness, elliptic::analytic_data::InitialGuess>,
+                 public virtual findus::serialize::SerializableDerived<
+                     Flatness, elliptic::analytic_data::Background>
+#endif
+{
  public:
   using options = tmpl::list<>;
   static constexpr Options::String help{
@@ -37,8 +45,6 @@ class Flatness : public elliptic::analytic_data::AnalyticSolution {
   }
 
   /// \cond
-  explicit Flatness(CkMigrateMessage* m)
-      : elliptic::analytic_data::AnalyticSolution(m) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(Flatness);
   /// \endcond

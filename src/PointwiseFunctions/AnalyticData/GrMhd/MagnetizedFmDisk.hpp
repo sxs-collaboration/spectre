@@ -84,8 +84,15 @@ namespace grmhd::AnalyticData {
  * coordinates are not same.
  *
  */
-class MagnetizedFmDisk : public virtual evolution::initial_data::InitialData,
-                         public MarkAsAnalyticData {
+class MagnetizedFmDisk
+    : public virtual evolution::initial_data::InitialData,
+      public MarkAsAnalyticData
+#if defined(SPECTRE_USE_FINDUS)
+    ,
+      public virtual findus::serialize::SerializableDerived<
+          MagnetizedFmDisk, evolution::initial_data::InitialData>
+#endif
+{
  private:
   using FmDisk = RelativisticEuler::Solutions::FishboneMoncriefDisk;
 
@@ -158,7 +165,6 @@ class MagnetizedFmDisk : public virtual evolution::initial_data::InitialData,
       -> std::unique_ptr<evolution::initial_data::InitialData> override;
 
   /// \cond
-  explicit MagnetizedFmDisk(CkMigrateMessage* msg);
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(MagnetizedFmDisk);
   /// \endcond

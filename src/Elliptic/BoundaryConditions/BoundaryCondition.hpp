@@ -88,7 +88,8 @@ namespace BoundaryConditions {
  * performed for.
  */
 template <size_t Dim>
-class BoundaryCondition : public domain::BoundaryConditions::BoundaryCondition {
+class BoundaryCondition
+    : public virtual domain::BoundaryConditions::BoundaryCondition {
  private:
   using Base = domain::BoundaryConditions::BoundaryCondition;
 
@@ -103,7 +104,6 @@ class BoundaryCondition : public domain::BoundaryConditions::BoundaryCondition {
   ~BoundaryCondition() override = default;
 
   /// \cond
-  explicit BoundaryCondition(CkMigrateMessage* m) : Base(m) {}
   WRAPPED_PUPable_abstract(BoundaryCondition);  // NOLINT
   /// \endcond
 

@@ -32,7 +32,9 @@ class Gaussian;
  *  the same type as the input type.
  */
 template <typename Fr>
-class Gaussian<1, Fr> : public MathFunction<1, Fr> {
+class Gaussian<1, Fr>
+    : public SPECTRE_CHARM_DERIVED(SINGLE_ARG(Gaussian<1, Fr>),
+                                   SINGLE_ARG(MathFunction<1, Fr>)) {
  public:
   struct Amplitude {
     using type = double;
@@ -57,8 +59,6 @@ class Gaussian<1, Fr> : public MathFunction<1, Fr> {
 
   WRAPPED_PUPable_decl_base_template(SINGLE_ARG(MathFunction<1, Fr>),
                                      Gaussian);  // NOLINT
-
-  explicit Gaussian(CkMigrateMessage* /*unused*/) {}
 
   Gaussian(double amplitude, double width, double center);
   Gaussian(double amplitude, double width, const std::array<double, 1>& center);
@@ -116,7 +116,9 @@ class Gaussian<1, Fr> : public MathFunction<1, Fr> {
  * VolumeDim == 1 is handled specially by Gaussian<1, T, Frame::Inertial>.)
  */
 template <size_t VolumeDim, typename Fr>
-class Gaussian : public MathFunction<VolumeDim, Fr> {
+class Gaussian
+    : public SPECTRE_CHARM_DERIVED(SINGLE_ARG(Gaussian<VolumeDim, Fr>),
+                                   SINGLE_ARG(MathFunction<VolumeDim, Fr>)) {
  public:
   struct Amplitude {
     using type = double;
@@ -141,8 +143,6 @@ class Gaussian : public MathFunction<VolumeDim, Fr> {
 
   WRAPPED_PUPable_decl_base_template(SINGLE_ARG(MathFunction<VolumeDim, Fr>),
                                      Gaussian);  // NOLINT
-
-  explicit Gaussian(CkMigrateMessage* /*unused*/) {}
 
   Gaussian(double amplitude, double width,
            const std::array<double, VolumeDim>& center);
@@ -211,6 +211,7 @@ bool operator!=(const Gaussian<VolumeDim, Fr>& lhs,
 }
 }  // namespace MathFunctions
 
+#if defined(SPECTRE_USE_CHARM)
 /// \cond
 template <size_t VolumeDim, typename Fr>
 PUP::able::PUP_ID MathFunctions::Gaussian<VolumeDim, Fr>::my_PUP_ID =
@@ -219,3 +220,4 @@ PUP::able::PUP_ID MathFunctions::Gaussian<VolumeDim, Fr>::my_PUP_ID =
 template <typename Fr>
 PUP::able::PUP_ID MathFunctions::Gaussian<1, Fr>::my_PUP_ID = 0;  // NOLINT
 /// \endcond
+#endif  // SPECTRE_USE_CHARM

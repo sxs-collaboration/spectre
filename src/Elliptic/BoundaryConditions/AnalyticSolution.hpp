@@ -48,7 +48,10 @@ template <typename System, size_t Dim, typename... FieldTags,
           typename... FluxTags>
 class AnalyticSolution<System, Dim, tmpl::list<FieldTags...>,
                        tmpl::list<FluxTags...>>
-    : public BoundaryCondition<Dim> {
+    : public SPECTRE_CHARM_DERIVED(
+          SINGLE_ARG(AnalyticSolution<System, Dim, tmpl::list<FieldTags...>,
+                                      tmpl::list<FluxTags...>>),
+          BoundaryCondition<Dim>) {
  private:
   using Base = BoundaryCondition<Dim>;
 
@@ -66,7 +69,9 @@ class AnalyticSolution<System, Dim, tmpl::list<FieldTags...>,
       "Boundary conditions from the analytic solution";
 
   AnalyticSolution() = default;
-  AnalyticSolution(const AnalyticSolution& rhs) : Base(rhs) { *this = rhs; }
+  AnalyticSolution(const AnalyticSolution& rhs) : PUP::able(rhs), Base(rhs) {
+    *this = rhs;
+  }
   AnalyticSolution& operator=(const AnalyticSolution& rhs) {
     if (rhs.solution_ != nullptr) {
       solution_ = rhs.solution_->get_clone();
@@ -81,7 +86,6 @@ class AnalyticSolution<System, Dim, tmpl::list<FieldTags...>,
   ~AnalyticSolution() = default;
 
   /// \cond
-  explicit AnalyticSolution(CkMigrateMessage* m) : Base(m) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(AnalyticSolution);
   /// \endcond
@@ -229,6 +233,7 @@ void AnalyticSolution<System, Dim, tmpl::list<FieldTags...>,
   p | boundary_condition_types_;
 }
 
+#if defined(SPECTRE_USE_CHARM)
 /// \cond
 template <typename System, size_t Dim, typename... FieldTags,
           typename... FluxTags>
@@ -236,5 +241,5 @@ PUP::able::PUP_ID AnalyticSolution<System, Dim, tmpl::list<FieldTags...>,
                                    tmpl::list<FluxTags...>>::my_PUP_ID =
     0;  // NOLINT
 /// \endcond
-
+#endif  // SPECTRE_USE_CHARM
 }  // namespace elliptic::BoundaryConditions

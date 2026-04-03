@@ -15,11 +15,9 @@
 
 namespace Ccz4::BoundaryConditions {
 
-// LCOV_EXCL_START
-Sommerfeld::Sommerfeld(CkMigrateMessage* const msg) : BoundaryCondition(msg) {}
-// LCOV_EXCL_STOP
 Sommerfeld::Sommerfeld(const Sommerfeld& rhs)
-    : BoundaryCondition{dynamic_cast<const BoundaryCondition&>(rhs)} {}
+    : PUP::able(rhs),
+      BoundaryCondition{dynamic_cast<const BoundaryCondition&>(rhs)} {}
 
 Sommerfeld& Sommerfeld::operator=(const Sommerfeld& /*rhs*/) { return *this; }
 
@@ -28,9 +26,15 @@ Sommerfeld::get_clone() const {
   return std::make_unique<Sommerfeld>(*this);
 }
 
-void Sommerfeld::pup(PUP::er& p) { BoundaryCondition::pup(p); }
+void Sommerfeld::pup([[maybe_unused]] PUP::er& p) {
+#if defined(SPECTRE_USE_CHARM)
+  BoundaryCondition::pup(p);
+#endif  // SPECTRE_USE_CHARM
+}
+#if defined(SPECTRE_USE_CHARM)
 // NOLINTNEXTLINE
 PUP::able::PUP_ID Sommerfeld::my_PUP_ID = 0;
+#endif  // SPECTRE_USE_CHARM
 
 void Sommerfeld::fd_ghost(
     const gsl::not_null<tnsr::ii<DataVector, 3, Frame::Inertial>*>

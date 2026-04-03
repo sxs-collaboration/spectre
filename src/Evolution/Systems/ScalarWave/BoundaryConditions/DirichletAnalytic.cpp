@@ -15,7 +15,9 @@
 namespace ScalarWave::BoundaryConditions {
 template <size_t Dim>
 DirichletAnalytic<Dim>::DirichletAnalytic(const DirichletAnalytic& rhs)
-    : BoundaryCondition<Dim>{dynamic_cast<const BoundaryCondition<Dim>&>(rhs)},
+    : PUP::able(rhs),
+      BoundaryConditions::BoundaryCondition<Dim>{dynamic_cast<
+          const BoundaryConditions::BoundaryCondition<Dim>&>(rhs)},
       analytic_prescription_(rhs.analytic_prescription_->get_clone()) {}
 
 template <size_t Dim>
@@ -27,10 +29,6 @@ DirichletAnalytic<Dim>& DirichletAnalytic<Dim>::operator=(
   analytic_prescription_ = rhs.analytic_prescription_->get_clone();
   return *this;
 }
-
-template <size_t Dim>
-DirichletAnalytic<Dim>::DirichletAnalytic(CkMigrateMessage* const msg)
-    : BoundaryCondition<Dim>(msg) {}
 
 template <size_t Dim>
 DirichletAnalytic<Dim>::DirichletAnalytic(
@@ -45,7 +43,9 @@ DirichletAnalytic<Dim>::get_clone() const {
 
 template <size_t Dim>
 void DirichletAnalytic<Dim>::pup(PUP::er& p) {
-  BoundaryCondition<Dim>::pup(p);
+#if defined(SPECTRE_USE_CHARM)
+  BoundaryConditions::BoundaryCondition<Dim>::pup(p);
+#endif  // SPECTRE_USE_CHARM
   p | analytic_prescription_;
 }
 
@@ -88,9 +88,11 @@ std::optional<std::string> DirichletAnalytic<Dim>::dg_ghost(
   return std::nullopt;
 }
 
+#if defined(SPECTRE_USE_CHARM)
 template <size_t Dim>
 // NOLINTNEXTLINE
 PUP::able::PUP_ID DirichletAnalytic<Dim>::my_PUP_ID = 0;
+#endif  // SPECTRE_USE_CHARM
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 

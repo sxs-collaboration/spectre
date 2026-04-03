@@ -70,12 +70,6 @@ class DummyBufferUpdater  // NOLINT
   WRAPPED_PUPable_decl_base_template(
       WorldtubeBufferUpdater<cce_metric_input_tags<T>>, DummyBufferUpdater);
 
-  explicit DummyBufferUpdater(CkMigrateMessage* /*unused*/)
-      : extraction_radius_{1.0},
-        coordinate_amplitude_{0.0},
-        coordinate_frequency_{0.0},
-        l_max_{0} {}
-
   double update_buffers_for_time(
       const gsl::not_null<Variables<cce_metric_input_tags<T>>*> buffers,
       const gsl::not_null<size_t*> time_span_start,
@@ -266,8 +260,6 @@ class BondiBufferUpdater
   WRAPPED_PUPable_decl_base_template(WorldtubeBufferUpdater<tags_for_writing>,
                                      BondiBufferUpdater);
 
-  explicit BondiBufferUpdater(CkMigrateMessage* /*unused*/) {}
-
   double update_buffers_for_time(
       const gsl::not_null<Variables<tags_for_writing>*> buffers,
       const gsl::not_null<size_t*> time_span_start,
@@ -411,10 +403,12 @@ class BondiBufferUpdater
   size_t l_max_ = 0;
 };
 
+#if defined(SPECTRE_USE_CHARM)
 template <typename T>
 PUP::able::PUP_ID Cce::DummyBufferUpdater<T>::my_PUP_ID = 0;  // NOLINT
 template <typename T>
 PUP::able::PUP_ID Cce::BondiBufferUpdater<T>::my_PUP_ID = 0;  // NOLINT
+#endif  // SPECTRE_USE_CHARM
 
 template class Cce::DummyBufferUpdater<ComplexModalVector>;
 template class Cce::DummyBufferUpdater<DataVector>;

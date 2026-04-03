@@ -34,20 +34,22 @@ namespace grmhd::ValenciaDivClean::BoundaryConditions {
 
 Reflective::Reflective(bool reflect_both) : reflect_both_(reflect_both) {}
 
-Reflective::Reflective(CkMigrateMessage* const msg) : BoundaryCondition(msg) {}
-
 std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
 Reflective::get_clone() const {
   return std::make_unique<Reflective>(*this);
 }
 
 void Reflective::pup(PUP::er& p) {
+#if defined(SPECTRE_USE_CHARM)
   BoundaryCondition::pup(p);
+#endif  // SPECTRE_USE_CHARM
   p | reflect_both_;
 }
 
+#if defined(SPECTRE_USE_CHARM)
 // NOLINTNEXTLINE
 PUP::able::PUP_ID Reflective::my_PUP_ID = 0;
+#endif  // SPECTRE_USE_CHARM
 
 std::optional<std::string> Reflective::dg_ghost(
     const gsl::not_null<Scalar<DataVector>*> tilde_d,

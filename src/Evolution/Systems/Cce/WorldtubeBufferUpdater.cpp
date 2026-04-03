@@ -982,11 +982,13 @@ void KleinGordonWorldtubeH5BufferUpdater::pup(PUP::er& p) {
   }
 }
 
+#if defined(SPECTRE_USE_CHARM)
 template <typename T>
 PUP::able::PUP_ID MetricWorldtubeH5BufferUpdater<T>::my_PUP_ID = 0;  // NOLINT
 template <typename T>
 PUP::able::PUP_ID BondiWorldtubeH5BufferUpdater<T>::my_PUP_ID = 0;     // NOLINT
 PUP::able::PUP_ID KleinGordonWorldtubeH5BufferUpdater::my_PUP_ID = 0;  // NOLINT
+#endif  // SPECTRE_USE_CHARM
 
 template class MetricWorldtubeH5BufferUpdater<ComplexModalVector>;
 template class MetricWorldtubeH5BufferUpdater<DataVector>;

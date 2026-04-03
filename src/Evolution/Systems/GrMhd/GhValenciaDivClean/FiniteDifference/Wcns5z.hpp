@@ -64,7 +64,8 @@ namespace grmhd::GhValenciaDivClean::fd {
  */
 // template on System instead
 template <typename System>
-class Wcns5zPrim : public Reconstructor<System> {
+class Wcns5zPrim : public SPECTRE_CHARM_DERIVED(SINGLE_ARG(Wcns5zPrim<System>),
+                                                Reconstructor<System>) {
  private:
   using prims_to_reconstruct_tags =
       tmpl::list<hydro::Tags::RestMassDensity<DataVector>,
@@ -141,8 +142,6 @@ class Wcns5zPrim : public Reconstructor<System> {
              ::VariableFixing::FixReconstructedStateToAtmosphere
                  fix_reconstructed_state_to_atmosphere,
              bool reconstruct_rho_times_temperature);
-
-  explicit Wcns5zPrim(CkMigrateMessage* msg);
 
   WRAPPED_PUPable_decl_base_template(Reconstructor<System>, Wcns5zPrim<System>);
 

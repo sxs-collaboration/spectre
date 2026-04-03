@@ -27,7 +27,9 @@ class PowX;
  * \brief Power of X \f$f(x)=x^X\f$
  */
 template <typename Fr>
-class PowX<1, Fr> : public MathFunction<1, Fr> {
+class PowX<1, Fr>
+    : public SPECTRE_CHARM_DERIVED(SINGLE_ARG(PowX<1, Fr>),
+                                   SINGLE_ARG(MathFunction<1, Fr>)) {
  public:
   struct Power {
     using type = int;
@@ -45,8 +47,6 @@ class PowX<1, Fr> : public MathFunction<1, Fr> {
   std::unique_ptr<MathFunction<1, Fr>> get_clone() const override;
 
   explicit PowX(int power);
-
-  explicit PowX(CkMigrateMessage* /*unused*/) {}
 
   double operator()(const double& x) const override;
   DataVector operator()(const DataVector& x) const override;
@@ -84,7 +84,9 @@ class PowX<1, Fr> : public MathFunction<1, Fr> {
 
 }  // namespace MathFunctions
 
+#if defined(SPECTRE_USE_CHARM)
 /// \cond
 template <typename Fr>
 PUP::able::PUP_ID MathFunctions::PowX<1, Fr>::my_PUP_ID = 0;  // NOLINT
 /// \endcond
+#endif  // SPECTRE_USE_CHARM

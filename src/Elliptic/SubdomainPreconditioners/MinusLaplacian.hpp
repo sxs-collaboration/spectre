@@ -105,7 +105,10 @@ template <size_t Dim, typename OptionsGroup,
           typename LinearSolverRegistrars =
               tmpl::list<Registrars::MinusLaplacian<Dim, OptionsGroup, Solver>>>
 class MinusLaplacian
-    : public LinearSolver::Serial::LinearSolver<LinearSolverRegistrars> {
+    : public SPECTRE_CHARM_DERIVED(
+          SINGLE_ARG(MinusLaplacian<Dim, OptionsGroup, Solver,
+                                    LinearSolverRegistrars>),
+          LinearSolver::Serial::LinearSolver<LinearSolverRegistrars>) {
  private:
   using Base = LinearSolver::Serial::LinearSolver<LinearSolverRegistrars>;
   using StoredSolverType = tmpl::conditional_t<std::is_abstract_v<Solver>,
@@ -163,7 +166,8 @@ class MinusLaplacian
   MinusLaplacian& operator=(MinusLaplacian&& /*rhs*/) = default;
   ~MinusLaplacian() = default;
   MinusLaplacian(const MinusLaplacian& rhs)
-      : Base(rhs),
+      : PUP::able(rhs),
+        Base(rhs),
         solver_(rhs.clone_solver()),
         boundary_condition_type_(rhs.boundary_condition_type_) {}
   MinusLaplacian& operator=(const MinusLaplacian& rhs) {
@@ -174,7 +178,6 @@ class MinusLaplacian
   }
 
   /// \cond
-  explicit MinusLaplacian(CkMigrateMessage* m) : Base(m) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(MinusLaplacian);  // NOLINT
   /// \endcond
@@ -531,6 +534,7 @@ MinusLaplacian<Dim, OptionsGroup, Solver, LinearSolverRegistrars>::solve(
   return {0, 0};
 }
 
+#if defined(SPECTRE_USE_CHARM)
 /// \cond
 template <size_t Dim, typename OptionsGroup, typename Solver,
           typename LinearSolverRegistrars>
@@ -538,5 +542,6 @@ template <size_t Dim, typename OptionsGroup, typename Solver,
 PUP::able::PUP_ID MinusLaplacian<Dim, OptionsGroup, Solver,
                                  LinearSolverRegistrars>::my_PUP_ID = 0;
 /// \endcond
+#endif  // SPECTRE_USE_CHARM
 
 }  // namespace elliptic::subdomain_preconditioners

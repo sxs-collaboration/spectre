@@ -34,7 +34,7 @@ class TestBoundaryCondition;
 /// To be used in conjunction with `SystemWithBoundaryConditions`
 template <size_t Dim>
 class BoundaryConditionBase
-    : public ::domain::BoundaryConditions::BoundaryCondition {
+    : public virtual ::domain::BoundaryConditions::BoundaryCondition {
  public:
   using creatable_classes = tmpl::list<
       TestBoundaryCondition<Dim>,
@@ -47,8 +47,6 @@ class BoundaryConditionBase
   BoundaryConditionBase(const BoundaryConditionBase&) = default;
   BoundaryConditionBase& operator=(const BoundaryConditionBase&) = default;
   ~BoundaryConditionBase() override = default;
-
-  explicit BoundaryConditionBase(CkMigrateMessage* msg);
 
   void pup(PUP::er& p) override;
 
@@ -67,7 +65,6 @@ class TestBoundaryCondition final : public BoundaryConditionBase<Dim> {
   TestBoundaryCondition(const TestBoundaryCondition&) = default;
   TestBoundaryCondition& operator=(const TestBoundaryCondition&) = default;
   ~TestBoundaryCondition() override = default;
-  explicit TestBoundaryCondition(CkMigrateMessage* const msg);
 
   struct DirectionOptionTag {
     using type = std::string;

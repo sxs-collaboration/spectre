@@ -36,7 +36,13 @@ namespace RadiationTransport::M1Grey::Solutions {
  */
 
 class ConstantM1 : public virtual evolution::initial_data::InitialData,
-                   public MarkAsAnalyticSolution {
+                   public MarkAsAnalyticSolution
+#if defined(SPECTRE_USE_FINDUS)
+    ,
+                   public virtual findus::serialize::SerializableDerived<
+                       ConstantM1, evolution::initial_data::InitialData>
+#endif
+{
  public:
   /// The mean flow velocity.
   struct MeanVelocity {
@@ -69,7 +75,6 @@ class ConstantM1 : public virtual evolution::initial_data::InitialData,
   auto get_clone() const
       -> std::unique_ptr<evolution::initial_data::InitialData> override;
 
-  explicit ConstantM1(CkMigrateMessage* msg);
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(ConstantM1);
 

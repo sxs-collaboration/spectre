@@ -23,10 +23,6 @@ DgElementArrayMemberBase<Dim>::DgElementArrayMemberBase(
     : element_id_(element_id), my_node_(node_number) {}
 
 template <size_t Dim>
-DgElementArrayMemberBase<Dim>::DgElementArrayMemberBase(CkMigrateMessage* msg)
-    : PUP::able(msg) {}
-
-template <size_t Dim>
 Phase DgElementArrayMemberBase<Dim>::phase() const {
   return phase_;
 }

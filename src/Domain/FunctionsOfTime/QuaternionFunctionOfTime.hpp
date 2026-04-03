@@ -65,7 +65,9 @@ namespace domain::FunctionsOfTime {
  * `Parallel::GlobalCache` for objects held by mutable global cache tags.
  */
 template <size_t MaxDeriv>
-class QuaternionFunctionOfTime : public FunctionOfTime {
+class QuaternionFunctionOfTime
+    : public SPECTRE_CHARM_DERIVED(
+          SINGLE_ARG(QuaternionFunctionOfTime<MaxDeriv>), FunctionOfTime) {
  public:
   QuaternionFunctionOfTime();
   QuaternionFunctionOfTime(QuaternionFunctionOfTime&&);
@@ -78,10 +80,6 @@ class QuaternionFunctionOfTime : public FunctionOfTime {
       double t, const std::array<DataVector, 1>& initial_quat_func,
       std::array<DataVector, MaxDeriv + 1> initial_angle_func,
       double expiration_time);
-
-  // LCOV_EXCL_START
-  explicit QuaternionFunctionOfTime(CkMigrateMessage* /*unused*/);
-  // LCOV_EXCL_STOP
 
   auto get_clone() const -> std::unique_ptr<FunctionOfTime> override;
 
@@ -200,8 +198,10 @@ template <size_t MaxDeriv>
 bool operator!=(const QuaternionFunctionOfTime<MaxDeriv>& lhs,
                 const QuaternionFunctionOfTime<MaxDeriv>& rhs);
 
+#if defined(SPECTRE_USE_CHARM)
 /// \cond
 template <size_t MaxDeriv>
 PUP::able::PUP_ID QuaternionFunctionOfTime<MaxDeriv>::my_PUP_ID = 0;  // NOLINT
 /// \endcond
+#endif  // SPECTRE_USE_CHARM
 }  // namespace domain::FunctionsOfTime

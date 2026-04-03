@@ -23,7 +23,10 @@ namespace GrSelfForce::BoundaryConditions {
  * \brief Applies no boundary condition at all. Used to impose nothing but
  * regularity at the horizon in horizon-penetrating coordinates.
  */
-class None : public elliptic::BoundaryConditions::BoundaryCondition<2> {
+class None
+    : public elliptic::BoundaryConditions::BoundaryCondition<2>
+      SPECTRE_FINDUS_DERIVED(None,
+                             domain::BoundaryConditions::BoundaryCondition) {
  private:
   using Base = elliptic::BoundaryConditions::BoundaryCondition<2>;
   using GradTensorType =
@@ -44,7 +47,6 @@ class None : public elliptic::BoundaryConditions::BoundaryCondition<2> {
   ~None() override = default;
 
   /// \cond
-  explicit None(CkMigrateMessage* m);
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(None);
   /// \endcond

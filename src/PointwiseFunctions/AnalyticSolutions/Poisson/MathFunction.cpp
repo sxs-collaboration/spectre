@@ -64,8 +64,10 @@ void MathFunctionVariables<DataType, Dim>::operator()(
 
 }  // namespace detail
 
+#if defined(SPECTRE_USE_CHARM)
 template <size_t Dim>
 PUP::able::PUP_ID MathFunction<Dim>::my_PUP_ID = 0;  // NOLINT
+#endif                                               // SPECTRE_USE_CHARM
 
 template <size_t Dim>
 std::unique_ptr<elliptic::analytic_data::AnalyticSolution>
@@ -77,10 +79,6 @@ template <size_t Dim>
 MathFunction<Dim>::MathFunction(
     std::unique_ptr<::MathFunction<Dim, Frame::Inertial>> math_function)
     : math_function_(std::move(math_function)) {}
-
-template <size_t Dim>
-MathFunction<Dim>::MathFunction(CkMigrateMessage* m)
-    : elliptic::analytic_data::AnalyticSolution(m) {}
 
 template <size_t Dim>
 void MathFunction<Dim>::pup(PUP::er& p) {

@@ -39,7 +39,13 @@ namespace Burgers::Solutions {
 /// Additionally, the time derivative \f$\partial_t u0\f$ is zero, rather than
 /// the correct delta function.
 class Step : public evolution::initial_data::InitialData,
-             public MarkAsAnalyticSolution {
+             public MarkAsAnalyticSolution
+#if defined(SPECTRE_USE_FINDUS)
+    ,
+             public virtual findus::serialize::SerializableDerived<
+                 Step, evolution::initial_data::InitialData>
+#endif
+{
  public:
   struct LeftValue {
     using type = double;
@@ -73,7 +79,6 @@ class Step : public evolution::initial_data::InitialData,
       -> std::unique_ptr<evolution::initial_data::InitialData> override;
 
   /// \cond
-  explicit Step(CkMigrateMessage* msg);
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(Step);
   /// \endcond

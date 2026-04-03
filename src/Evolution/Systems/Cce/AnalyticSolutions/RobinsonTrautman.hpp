@@ -55,7 +55,10 @@ namespace Solutions {
  * evolutions, or need to write more sophisticated caching of the internal time
  * step data.
  */
-struct RobinsonTrautman : public SphericalMetricData {
+struct RobinsonTrautman
+    : public virtual SPECTRE_CHARM_DERIVED(RobinsonTrautman, WorldtubeData),
+      public virtual SPECTRE_CHARM_DERIVED(RobinsonTrautman,
+                                           SphericalMetricData) {
   struct InitialModes {
     using type = std::vector<std::complex<double>>;
     static constexpr Options::String help{
@@ -105,8 +108,6 @@ struct RobinsonTrautman : public SphericalMetricData {
       "scalar on the boundary to be evolved to determine the metric"};
 
   WRAPPED_PUPable_decl_template(RobinsonTrautman);  // NOLINT
-
-  explicit RobinsonTrautman(CkMigrateMessage* msg) : SphericalMetricData(msg) {}
 
   RobinsonTrautman() = default;
 

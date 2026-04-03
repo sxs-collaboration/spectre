@@ -42,9 +42,7 @@ struct DummyDecisionTag2 {
 
 template <size_t Val>
 struct TestCreatable : public PhaseChange {
-
   TestCreatable() = default;
-  explicit TestCreatable(CkMigrateMessage* /*unused*/) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(TestCreatable);  // NOLINT
 
@@ -80,8 +78,10 @@ struct TestCreatable : public PhaseChange {
   int option_value_ = 0;
 };
 
+#if defined(SPECTRE_USE_CHARM)
 template <size_t Val>
 PUP::able::PUP_ID TestCreatable<Val>::my_PUP_ID = 0;
+#endif  // SPECTRE_USE_CHARM
 
 struct Metavariables {
   struct factory_creation

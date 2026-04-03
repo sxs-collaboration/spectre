@@ -72,14 +72,14 @@ namespace dg::Events {
  */
 template <typename System>
 class ObserveTimeStepVolume
-    : public ObserveConstantsPerElement<System::volume_dim> {
+    : public ObserveConstantsPerElement<System::volume_dim>
+      SPECTRE_FINDUS_DERIVED(ObserveTimeStepVolume<System>, ::Event) {
  public:
   static constexpr size_t volume_dim = System::volume_dim;
   static_assert(not tt::is_a_v<tmpl::list, typename System::variables_tag>,
                 "Split variables systems not handled.");
 
   /// \cond
-  explicit ObserveTimeStepVolume(CkMigrateMessage* m);
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(ObserveTimeStepVolume);  // NOLINT
   /// \endcond

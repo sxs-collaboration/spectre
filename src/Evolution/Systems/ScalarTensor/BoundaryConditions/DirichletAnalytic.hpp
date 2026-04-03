@@ -34,7 +34,11 @@ namespace ScalarTensor::BoundaryConditions {
  * \brief Sets Dirichlet boundary conditions using the analytic solution or
  * analytic data.
  */
-class DirichletAnalytic final : public BoundaryCondition {
+class DirichletAnalytic final
+    : public BoundaryCondition
+      SPECTRE_FINDUS_DERIVED(
+          SINGLE_ARG(DirichletAnalytic),
+          SINGLE_ARG(domain::BoundaryConditions::BoundaryCondition)) {
  public:
   /// \brief What analytic solution/data to prescribe.
   struct AnalyticPrescription {
@@ -63,8 +67,6 @@ class DirichletAnalytic final : public BoundaryCondition {
   DirichletAnalytic(std::unique_ptr<evolution::initial_data::InitialData>
                         analytic_prescription,
                     double amplitude);
-
-  explicit DirichletAnalytic(CkMigrateMessage* msg);
 
   WRAPPED_PUPable_decl_base_template(
       domain::BoundaryConditions::BoundaryCondition, DirichletAnalytic);

@@ -63,8 +63,15 @@ namespace ScalarWave::Solutions {
  * because of the scale invariance of the wave equation. The profile could be a
  * Gausssian centered at 0 with width 1, for instance.
  */
-class RegularSphericalWave : public evolution::initial_data::InitialData,
-                             public MarkAsAnalyticSolution {
+class RegularSphericalWave
+    : public evolution::initial_data::InitialData,
+      public MarkAsAnalyticSolution
+#if defined(SPECTRE_USE_FINDUS)
+    ,
+      public virtual findus::serialize::SerializableDerived<
+          RegularSphericalWave, evolution::initial_data::InitialData>
+#endif
+{
  public:
   static constexpr size_t volume_dim = 3;
   struct Profile {
@@ -96,7 +103,6 @@ class RegularSphericalWave : public evolution::initial_data::InitialData,
       -> std::unique_ptr<evolution::initial_data::InitialData> override;
 
   /// \cond
-  explicit RegularSphericalWave(CkMigrateMessage* msg);
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(RegularSphericalWave);
   /// \endcond

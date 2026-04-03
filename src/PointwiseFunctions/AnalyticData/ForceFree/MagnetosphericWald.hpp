@@ -68,8 +68,15 @@ namespace ForceFree::AnalyticData {
  * \note We set $M=1$ and $B_0=1$ in the initial data to fix scales.
  *
  */
-class MagnetosphericWald : public evolution::initial_data::InitialData,
-                           public MarkAsAnalyticData {
+class MagnetosphericWald
+    : public evolution::initial_data::InitialData,
+      public MarkAsAnalyticData
+#if defined(SPECTRE_USE_FINDUS)
+    ,
+      public virtual findus::serialize::SerializableDerived<
+          MagnetosphericWald, evolution::initial_data::InitialData>
+#endif
+{
  public:
   struct Spin {
     using type = double;
@@ -97,7 +104,6 @@ class MagnetosphericWald : public evolution::initial_data::InitialData,
       -> std::unique_ptr<evolution::initial_data::InitialData> override;
 
   /// \cond
-  explicit MagnetosphericWald(CkMigrateMessage* msg);
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(MagnetosphericWald);
   /// \endcond

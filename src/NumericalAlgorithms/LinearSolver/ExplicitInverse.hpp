@@ -81,10 +81,12 @@ struct ExplicitInverse {
  *   subdomain problems only approximately, but possibly still sufficiently to
  *   provide effective preconditioning.
  */
-template <typename ValueType,
-          typename LinearSolverRegistrars =
-              tmpl::list<Registrars::ExplicitInverse<ValueType>>>
-class ExplicitInverse : public LinearSolver<LinearSolverRegistrars> {
+template <typename ValueType, typename LinearSolverRegistrars = tmpl::list<
+                                  Registrars::ExplicitInverse<ValueType>>>
+class ExplicitInverse
+    : public SPECTRE_CHARM_DERIVED(
+          SINGLE_ARG(ExplicitInverse<ValueType, LinearSolverRegistrars>),
+          LinearSolver<LinearSolverRegistrars>) {
  private:
   using Base = LinearSolver<LinearSolverRegistrars>;
 
@@ -128,7 +130,6 @@ class ExplicitInverse : public LinearSolver<LinearSolverRegistrars> {
         complex_shift_(complex_shift) {}
 
   /// \cond
-  explicit ExplicitInverse(CkMigrateMessage* m) : Base(m) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(ExplicitInverse);  // NOLINT
   /// \endcond
@@ -273,6 +274,7 @@ ExplicitInverse<ValueType, LinearSolverRegistrars>::solve(
   return {0, 0};
 }
 
+#if defined(SPECTRE_USE_CHARM)
 /// \cond
 // NOLINTBEGIN
 template <typename ValueType, typename LinearSolverRegistrars>
@@ -280,5 +282,6 @@ PUP::able::PUP_ID
     ExplicitInverse<ValueType, LinearSolverRegistrars>::my_PUP_ID = 0;
 // NOLINTEND
 /// \endcond
+#endif  // SPECTRE_USE_CHARM
 
 }  // namespace LinearSolver::Serial

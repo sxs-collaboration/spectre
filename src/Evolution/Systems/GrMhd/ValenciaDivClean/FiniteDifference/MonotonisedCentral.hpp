@@ -57,7 +57,8 @@ namespace grmhd::ValenciaDivClean::fd {
  * \brief Monotonised central reconstruction. See
  * ::fd::reconstruction::monotonised_central() for details.
  */
-class MonotonisedCentralPrim : public Reconstructor {
+class MonotonisedCentralPrim
+    : public SPECTRE_CHARM_DERIVED(MonotonisedCentralPrim, Reconstructor) {
  private:
   // pressure -> temperature
   using prims_to_reconstruct_tags =
@@ -90,8 +91,6 @@ class MonotonisedCentralPrim : public Reconstructor {
   ~MonotonisedCentralPrim() override = default;
 
   explicit MonotonisedCentralPrim(bool reconstruct_rho_times_temperature);
-
-  explicit MonotonisedCentralPrim(CkMigrateMessage* msg);
 
   WRAPPED_PUPable_decl_base_template(Reconstructor, MonotonisedCentralPrim);
 

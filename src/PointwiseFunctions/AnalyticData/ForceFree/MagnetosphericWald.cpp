@@ -26,9 +26,6 @@ MagnetosphericWald::MagnetosphericWald(const double spin,
   }
 }
 
-MagnetosphericWald::MagnetosphericWald(CkMigrateMessage* msg)
-    : InitialData(msg) {}
-
 std::unique_ptr<evolution::initial_data::InitialData>
 MagnetosphericWald::get_clone() const {
   return std::make_unique<MagnetosphericWald>(*this);
@@ -40,8 +37,10 @@ void MagnetosphericWald::pup(PUP::er& p) {
   p | background_spacetime_;
 }
 
+#if defined(SPECTRE_USE_CHARM)
 // NOLINTNEXTLINE
 PUP::able::PUP_ID MagnetosphericWald::my_PUP_ID = 0;
+#endif  // SPECTRE_USE_CHARM
 
 tuples::TaggedTuple<Tags::TildeE> MagnetosphericWald::variables(
     const tnsr::I<DataVector, 3>& x, tmpl::list<Tags::TildeE> /*meta*/) {

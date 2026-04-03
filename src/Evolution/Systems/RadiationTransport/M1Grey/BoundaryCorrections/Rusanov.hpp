@@ -96,7 +96,9 @@ class Rusanov;
  */
 template <typename... NeutrinoSpecies>
 class Rusanov<tmpl::list<NeutrinoSpecies...>> final
-    : public evolution::BoundaryCorrection {
+    : public SPECTRE_CHARM_DERIVED(
+          SINGLE_ARG(Rusanov<tmpl::list<NeutrinoSpecies...>>),
+          SINGLE_ARG(evolution::BoundaryCorrection)) {
  public:
   using options = tmpl::list<>;
   static constexpr Options::String help = {
@@ -111,7 +113,6 @@ class Rusanov<tmpl::list<NeutrinoSpecies...>> final
   ~Rusanov() override = default;
 
   /// \cond
-  explicit Rusanov(CkMigrateMessage* msg) : BoundaryCorrection(msg) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(Rusanov);  // NOLINT
   /// \endcond
@@ -202,10 +203,10 @@ class Rusanov<tmpl::list<NeutrinoSpecies...>> final
   }
 };
 
-/// \cond
+#if defined(SPECTRE_USE_CHARM)
 template <typename... NeutrinoSpecies>
 // NOLINTNEXTLINE
 PUP::able::PUP_ID Rusanov<tmpl::list<NeutrinoSpecies...>>::my_PUP_ID = 0;
-/// \endcond
+#endif  // SPECTRE_USE_CHARM
 
 }  // namespace RadiationTransport::M1Grey::BoundaryCorrections

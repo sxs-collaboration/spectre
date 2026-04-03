@@ -28,8 +28,6 @@ auto IntegratedFunctionOfTime::operator=(IntegratedFunctionOfTime&&)
 auto IntegratedFunctionOfTime::operator=(const IntegratedFunctionOfTime&)
     -> IntegratedFunctionOfTime& = default;
 IntegratedFunctionOfTime::~IntegratedFunctionOfTime() = default;
-IntegratedFunctionOfTime::IntegratedFunctionOfTime(
-    CkMigrateMessage* /*unused*/) {}
 
 IntegratedFunctionOfTime::IntegratedFunctionOfTime(
     const double t, std::array<double, 2> initial_func_and_derivs,
@@ -159,7 +157,10 @@ bool operator!=(const IntegratedFunctionOfTime& lhs,
                 const IntegratedFunctionOfTime& rhs) {
   return not(lhs == rhs);
 }
+
+#if defined(SPECTRE_USE_CHARM)
 PUP::able::PUP_ID IntegratedFunctionOfTime::my_PUP_ID = 0;  // NOLINT
+#endif                                                      // SPECTRE_USE_CHARM
 
 #define DIMRETURNED(data) BOOST_PP_TUPLE_ELEM(0, data)
 

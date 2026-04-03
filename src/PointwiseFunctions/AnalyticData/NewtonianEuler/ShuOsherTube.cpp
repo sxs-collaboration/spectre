@@ -48,11 +48,10 @@ std::unique_ptr<evolution::initial_data::InitialData> ShuOsherTube::get_clone()
   return std::make_unique<ShuOsherTube>(*this);
 }
 
-ShuOsherTube::ShuOsherTube(CkMigrateMessage* msg)
-    : evolution::initial_data::InitialData(msg) {}
-
+#if defined(SPECTRE_USE_CHARM)
 // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
 PUP::able::PUP_ID ShuOsherTube::my_PUP_ID = 0;
+#endif  // SPECTRE_USE_CHARM
 
 void ShuOsherTube::pup(PUP::er& p) {
   evolution::initial_data::InitialData::pup(p);

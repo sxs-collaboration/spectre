@@ -338,7 +338,7 @@ struct ConformalFactor;
  * `GlobalCache`.
  */
 template <>
-struct InitializeJ<true> : public PUP::able {
+struct InitializeJ<true> : public SPECTRE_CHARM_PUPable(InitializeJ<true>) {
   using boundary_tags = tmpl::list<Tags::BoundaryValue<Tags::BondiJ>,
                                    Tags::BoundaryValue<Tags::Dr<Tags::BondiJ>>,
                                    Tags::BoundaryValue<Tags::BondiR>,
@@ -356,7 +356,6 @@ struct InitializeJ<true> : public PUP::able {
   using creatable_classes = tmpl::list<InverseCubic<true>>;
 
   InitializeJ() = default;
-  explicit InitializeJ(CkMigrateMessage* /*msg*/) {}
 
   WRAPPED_PUPable_abstract(InitializeJ);  // NOLINT
 
@@ -397,7 +396,7 @@ struct InitializeJ<true> : public PUP::able {
  * `GlobalCache`.
  */
 template <>
-struct InitializeJ<false> : public PUP::able {
+struct InitializeJ<false> : public SPECTRE_CHARM_PUPable(InitializeJ<false>) {
   using boundary_tags = tmpl::list<Tags::BoundaryValue<Tags::BondiJ>,
                                    Tags::BoundaryValue<Tags::Dr<Tags::BondiJ>>,
                                    Tags::BoundaryValue<Tags::BondiR>,
@@ -412,7 +411,6 @@ struct InitializeJ<false> : public PUP::able {
                                        NoIncomingRadiation, ZeroNonSmooth>;
 
   InitializeJ() = default;
-  explicit InitializeJ(CkMigrateMessage* /*msg*/) {}
 
   WRAPPED_PUPable_abstract(InitializeJ);  // NOLINT
 

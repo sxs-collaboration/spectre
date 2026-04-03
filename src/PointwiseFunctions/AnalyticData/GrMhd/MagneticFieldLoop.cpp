@@ -56,9 +56,6 @@ MagneticFieldLoop::get_clone() const {
   return std::make_unique<MagneticFieldLoop>(*this);
 }
 
-MagneticFieldLoop::MagneticFieldLoop(CkMigrateMessage* msg)
-    : InitialData(msg) {}
-
 void MagneticFieldLoop::pup(PUP::er& p) {
   InitialData::pup(p);
   p | pressure_;
@@ -184,7 +181,9 @@ MagneticFieldLoop::variables(
           variables(x, tmpl::list<hydro::Tags::Pressure<DataType>>{})));
 }
 
+#if defined(SPECTRE_USE_CHARM)
 PUP::able::PUP_ID MagneticFieldLoop::my_PUP_ID = 0;
+#endif  // SPECTRE_USE_CHARM
 
 bool operator==(const MagneticFieldLoop& lhs, const MagneticFieldLoop& rhs) {
   // there is no comparison operator for the EoS, but should be okay as

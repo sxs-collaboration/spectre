@@ -73,11 +73,13 @@ namespace Triggers {
  * `domain::FunctionsOfTime::SettleToConstantQuaternion`.
  */
 template <bool UseGridCentersFunctionOfTime>
-class SeparationLessThan : public Trigger {
+class SeparationLessThan
+    : public SPECTRE_CHARM_DERIVED(
+          SINGLE_ARG(SeparationLessThan<UseGridCentersFunctionOfTime>),
+          Trigger) {
  public:
   /// \cond
   SeparationLessThan() = default;
-  explicit SeparationLessThan(CkMigrateMessage* /*unused*/) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(SeparationLessThan);  // NOLINT
   /// \endcond

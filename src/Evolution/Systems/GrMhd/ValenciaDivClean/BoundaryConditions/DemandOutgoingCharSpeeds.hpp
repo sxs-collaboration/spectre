@@ -30,7 +30,11 @@ namespace grmhd::ValenciaDivClean::BoundaryConditions {
 /// A `BoundaryCondition` that only verifies that all characteristic speeds are
 /// directed out of the domain; no boundary data is altered by this boundary
 /// condition.
-class DemandOutgoingCharSpeeds final : public BoundaryCondition {
+class DemandOutgoingCharSpeeds final
+    : public BoundaryCondition
+      SPECTRE_FINDUS_DERIVED(
+          SINGLE_ARG(DemandOutgoingCharSpeeds),
+          SINGLE_ARG(domain::BoundaryConditions::BoundaryCondition)) {
  private:
   template <typename T>
   using Flux = ::Tags::Flux<T, tmpl::size_t<3>, Frame::Inertial>;
@@ -49,8 +53,6 @@ class DemandOutgoingCharSpeeds final : public BoundaryCondition {
   DemandOutgoingCharSpeeds& operator=(const DemandOutgoingCharSpeeds&) =
       default;
   ~DemandOutgoingCharSpeeds() override = default;
-
-  explicit DemandOutgoingCharSpeeds(CkMigrateMessage* msg);
 
   WRAPPED_PUPable_decl_base_template(
       domain::BoundaryConditions::BoundaryCondition, DemandOutgoingCharSpeeds);

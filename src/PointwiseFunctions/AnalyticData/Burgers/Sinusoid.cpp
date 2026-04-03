@@ -23,8 +23,6 @@ std::unique_ptr<evolution::initial_data::InitialData> Sinusoid::get_clone()
   return std::make_unique<Sinusoid>(*this);
 }
 
-Sinusoid::Sinusoid(CkMigrateMessage* msg) : InitialData(msg) {}
-
 tuples::TaggedTuple<Tags::U> Sinusoid::variables(
     const tnsr::I<DataVector, 1>& x, tmpl::list<Tags::U> /*meta*/) const {
   return {u(x)};
@@ -32,7 +30,9 @@ tuples::TaggedTuple<Tags::U> Sinusoid::variables(
 
 void Sinusoid::pup(PUP::er& p) { InitialData::pup(p); }
 
+#if defined(SPECTRE_USE_CHARM)
 PUP::able::PUP_ID Sinusoid::my_PUP_ID = 0;
+#endif  // SPECTRE_USE_CHARM
 
 bool operator==(const Sinusoid& /*lhs*/, const Sinusoid& /*rhs*/) {
   return true;

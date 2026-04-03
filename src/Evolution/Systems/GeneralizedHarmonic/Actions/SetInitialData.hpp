@@ -73,7 +73,10 @@ void initial_gh_variables_from_adm(
  * from numeric initial data. It selects the set of variables to load from
  * the volume data file (ADM or GH variables).
  */
-class NumericInitialData : public evolution::initial_data::InitialData {
+class NumericInitialData
+    : public evolution::initial_data::InitialData
+      SPECTRE_FINDUS_DERIVED(NumericInitialData,
+                             evolution::initial_data::InitialData) {
  public:
   /// Name of a variable in the volume data file
   template <typename Tag>
@@ -146,7 +149,6 @@ class NumericInitialData : public evolution::initial_data::InitialData {
   ~NumericInitialData() = default;
 
   /// \cond
-  explicit NumericInitialData(CkMigrateMessage* msg);
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(NumericInitialData);
   /// \endcond

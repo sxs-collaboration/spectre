@@ -18,15 +18,16 @@
 #include "Utilities/MakeString.hpp"
 
 namespace Burgers::BoundaryConditions {
-DemandOutgoingCharSpeeds::DemandOutgoingCharSpeeds(CkMigrateMessage* const msg)
-    : BoundaryCondition(msg) {}
-
 std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
 DemandOutgoingCharSpeeds::get_clone() const {
   return std::make_unique<DemandOutgoingCharSpeeds>(*this);
 }
 
-void DemandOutgoingCharSpeeds::pup(PUP::er& p) { BoundaryCondition::pup(p); }
+void DemandOutgoingCharSpeeds::pup([[maybe_unused]] PUP::er& p) {
+#if defined(SPECTRE_USE_CHARM)
+  BoundaryCondition::pup(p);
+#endif  // SPECTRE_USE_CHARM
+}
 
 std::optional<std::string>
 DemandOutgoingCharSpeeds::dg_demand_outgoing_char_speeds(
@@ -94,6 +95,8 @@ void DemandOutgoingCharSpeeds::fd_demand_outgoing_char_speeds(
   }
 }
 
+#if defined(SPECTRE_USE_CHARM)
 // NOLINTNEXTLINE
 PUP::able::PUP_ID DemandOutgoingCharSpeeds::my_PUP_ID = 0;
+#endif  // SPECTRE_USE_CHARM
 }  // namespace Burgers::BoundaryConditions

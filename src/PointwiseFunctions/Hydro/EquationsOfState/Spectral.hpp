@@ -51,7 +51,9 @@ namespace EquationsOfState {
  *
  *
  */
-class Spectral : public EquationOfState<true, 1> {
+class Spectral
+    : public SPECTRE_CHARM_DERIVED(Spectral,
+                                   SINGLE_ARG(EquationOfState<true, 1>)) {
  public:
   static constexpr size_t thermodynamic_dim = 1;
   static constexpr bool is_relativistic = true;

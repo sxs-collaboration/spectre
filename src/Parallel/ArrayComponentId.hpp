@@ -75,7 +75,11 @@ template <>
 struct hash<Parallel::ArrayComponentId> {
   size_t operator()(const Parallel::ArrayComponentId& t) const {
     size_t result = t.component_id();
-    boost::hash_combine(result, t.array_index().hash());
+    boost::hash_combine(result, t.array_index()
+#if defined(SPECTRE_USE_CHARM)
+                                    .hash()
+#endif
+    );
     return result;
   }
 };

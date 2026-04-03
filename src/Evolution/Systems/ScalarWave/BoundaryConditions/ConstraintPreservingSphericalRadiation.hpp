@@ -174,7 +174,10 @@ convert_constraint_preserving_spherical_radiation_type_from_yaml(
  */
 template <size_t Dim>
 class ConstraintPreservingSphericalRadiation final
-    : public BoundaryCondition<Dim> {
+    : public BoundaryCondition<Dim>
+      SPECTRE_FINDUS_DERIVED(
+          SINGLE_ARG(ConstraintPreservingSphericalRadiation<Dim>),
+          SINGLE_ARG(domain::BoundaryConditions::BoundaryCondition)) {
  public:
   struct TypeOptionTag {
     using type = detail::ConstraintPreservingSphericalRadiationType;
@@ -205,8 +208,6 @@ class ConstraintPreservingSphericalRadiation final
       const ConstraintPreservingSphericalRadiation&) = default;
   /// \endcond
   ~ConstraintPreservingSphericalRadiation() override = default;
-
-  explicit ConstraintPreservingSphericalRadiation(CkMigrateMessage* msg);
 
   WRAPPED_PUPable_decl_base_template(
       domain::BoundaryConditions::BoundaryCondition,

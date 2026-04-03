@@ -23,20 +23,20 @@ namespace Test_Classes {
 struct DerivedInPupStlCpp11;
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-function"
-struct Base : public PUP::able {
+struct Base : public SPECTRE_CHARM_PUPable(Base) {
   using creatable_classes = tmpl::list<Test_Classes::DerivedInPupStlCpp11>;
   // clang-tidy: internal charm++ warnings
   WRAPPED_PUPable_abstract(Base);  // NOLINT
 };
 #pragma GCC diagnostic pop
 
-struct DerivedInPupStlCpp11 : public Base {
+struct DerivedInPupStlCpp11
+    : public SPECTRE_CHARM_DERIVED(DerivedInPupStlCpp11, Base) {
   explicit DerivedInPupStlCpp11(std::vector<double> vec)
       : vec_(std::move(vec)) {}
   // clang-tidy: internal charm++ warnings
   WRAPPED_PUPable_decl_base_template(Base,  // NOLINT
                                      DerivedInPupStlCpp11);
-  explicit DerivedInPupStlCpp11(CkMigrateMessage* /* m */) {}
   void pup(PUP::er& p) override {
     Base::pup(p);
     p | vec_;
@@ -127,6 +127,8 @@ SPECTRE_TEST_CASE("Unit.Serialization.PupStlCpp11", "[Serialization][Unit]") {
   }
 }
 
+#if defined(SPECTRE_USE_CHARM)
 // clang-tidy: possibly throwing constructor static storage
 // clang-tidy: false positive: redundant declaration
 PUP::able::PUP_ID Test_Classes::DerivedInPupStlCpp11::my_PUP_ID = 0;  // NOLINT
+#endif  // SPECTRE_USE_CHARM

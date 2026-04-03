@@ -18,7 +18,7 @@ class MonotonisedCentral;
 /*!
  * \brief The base class from which all reconstruction schemes must inherit
  */
-class Reconstructor : public PUP::able {
+class Reconstructor : public SPECTRE_CHARM_PUPable(Reconstructor) {
  public:
   Reconstructor() = default;
   Reconstructor(const Reconstructor&) = default;
@@ -27,13 +27,15 @@ class Reconstructor : public PUP::able {
   Reconstructor& operator=(Reconstructor&&) = default;
   ~Reconstructor() override = default;
 
+  SPECTRE_FINDUS_VIRTUAL()
   // NOLINTNEXTLINE(google-runtime-references)
-  void pup(PUP::er& p) override;
+  void pup(PUP::er& p) SPECTRE_CHARM_OVERRIDE();
 
+#if defined(SPECTRE_USE_CHARM)
   /// \cond
-  explicit Reconstructor(CkMigrateMessage* msg);
   WRAPPED_PUPable_abstract(Reconstructor);  // NOLINT
   /// \endcond
+#endif  // SPECTRE_USE_CHARM
 
   using creatable_classes = tmpl::list<MonotonisedCentral>;
 

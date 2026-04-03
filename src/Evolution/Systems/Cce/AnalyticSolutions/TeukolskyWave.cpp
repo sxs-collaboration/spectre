@@ -26,7 +26,8 @@ namespace Cce::Solutions {
 
 TeukolskyWave::TeukolskyWave(const double extraction_radius,
                              const double amplitude, const double duration)
-    : SphericalMetricData{extraction_radius},
+    : WorldtubeData{extraction_radius},
+      SphericalMetricData{extraction_radius},
       amplitude_{amplitude},
       duration_{duration} {}
 
@@ -309,5 +310,7 @@ void TeukolskyWave::pup(PUP::er& p) {
   p | duration_;
 }
 
+#if defined(SPECTRE_USE_CHARM)
 PUP::able::PUP_ID TeukolskyWave::my_PUP_ID = 0;
+#endif  // SPECTRE_USE_CHARM
 }  // namespace Cce::Solutions

@@ -67,7 +67,11 @@ template <typename... ObservableTensorTags, typename... NonTensorComputeTags,
           typename ArraySectionIdTag>
 class ObserveAtExtremum<tmpl::list<ObservableTensorTags...>,
                         tmpl::list<NonTensorComputeTags...>, ArraySectionIdTag>
-    : public Event {
+    : public SPECTRE_CHARM_DERIVED(
+          SINGLE_ARG(ObserveAtExtremum<tmpl::list<ObservableTensorTags...>,
+                                       tmpl::list<NonTensorComputeTags...>,
+                                       ArraySectionIdTag>),
+          Event) {
  private:
   /// Reduction data will contain the time, and either the maximum
   /// or the minimum of a function
@@ -132,9 +136,10 @@ class ObserveAtExtremum<tmpl::list<ObservableTensorTags...>,
         "and other tensors to observe at that extremum."};
   };
 
-  explicit ObserveAtExtremum(CkMigrateMessage* msg);
+  /// \cond
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(ObserveAtExtremum);  // NOLINT
+  /// \endcond
 
   using options = tmpl::list<SubfileName, TensorsToObserve>;
 
@@ -209,13 +214,6 @@ class ObserveAtExtremum<tmpl::list<ObservableTensorTags...>,
 /// @}
 
 /// \cond
-template <typename... ObservableTensorTags, typename... NonTensorComputeTags,
-          typename ArraySectionIdTag>
-ObserveAtExtremum<tmpl::list<ObservableTensorTags...>,
-                  tmpl::list<NonTensorComputeTags...>,
-                  ArraySectionIdTag>::ObserveAtExtremum(CkMigrateMessage* msg)
-    : Event(msg) {}
-
 template <typename... ObservableTensorTags, typename... NonTensorComputeTags,
           typename ArraySectionIdTag>
 ObserveAtExtremum<
@@ -406,11 +404,13 @@ void ObserveAtExtremum<tmpl::list<ObservableTensorTags...>,
   p | additional_tensor_names_;
 }
 
+#if defined(SPECTRE_USE_CHARM)
 template <typename... ObservableTensorTags, typename... NonTensorComputeTags,
           typename ArraySectionIdTag>
 PUP::able::PUP_ID ObserveAtExtremum<tmpl::list<ObservableTensorTags...>,
                                     tmpl::list<NonTensorComputeTags...>,
                                     ArraySectionIdTag>::my_PUP_ID =
     0;  // NOLINT
+#endif  // SPECTRE_USE_CHARM
 /// \endcond
 }  // namespace Events

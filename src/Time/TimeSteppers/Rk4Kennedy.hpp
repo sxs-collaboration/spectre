@@ -22,7 +22,16 @@ namespace TimeSteppers {
  *
  * The CFL factor/stable step size is 2.1172491998184686.
  */
-class Rk4Kennedy : public ImexRungeKutta {
+class Rk4Kennedy
+    : public ImexRungeKutta
+#if defined(SPECTRE_USE_FINDUS)
+    ,
+      public virtual findus::serialize::SerializableDerived<Rk4Kennedy,
+                                                            TimeStepper>,
+      public virtual findus::serialize::SerializableDerived<Rk4Kennedy,
+                                                            ImexTimeStepper>
+#endif
+{
  public:
   using options = tmpl::list<>;
   static constexpr Options::String help = {
@@ -45,8 +54,6 @@ class Rk4Kennedy : public ImexRungeKutta {
   size_t implicit_stage_order() const override;
 
   WRAPPED_PUPable_decl_template(Rk4Kennedy);  // NOLINT
-
-  explicit Rk4Kennedy(CkMigrateMessage* /*unused*/) {}
 
   const ButcherTableau& butcher_tableau() const override;
 

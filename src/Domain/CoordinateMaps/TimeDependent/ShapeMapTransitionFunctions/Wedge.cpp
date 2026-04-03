@@ -826,8 +826,8 @@ void Wedge::pup(PUP::er& p) {
   }
 }
 
-Wedge::Wedge(CkMigrateMessage* const msg) : ShapeMapTransitionFunction(msg) {}
-
+#if defined(SPECTRE_USE_CHARM)
 // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
 PUP::able::PUP_ID Wedge::my_PUP_ID = 0;
+#endif  // SPECTRE_USE_CHARM
 }  // namespace domain::CoordinateMaps::ShapeMapTransitionFunctions

@@ -31,7 +31,7 @@ namespace NewtonianEuler::Sources {
  * terms in the evolution equations.
  */
 template <size_t Dim>
-class NoSource : public Source<Dim> {
+class NoSource : public SPECTRE_CHARM_DERIVED(NoSource<Dim>, Source<Dim>) {
  public:
   using options = tmpl::list<>;
 
@@ -45,7 +45,6 @@ class NoSource : public Source<Dim> {
   ~NoSource() override = default;
 
   /// \cond
-  explicit NoSource(CkMigrateMessage* msg);
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(NoSource);
   /// \endcond

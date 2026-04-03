@@ -161,14 +161,14 @@ struct ControlErrorArgs {
  * that logic would depend not only on the current state, but also on
  * the previous state.
  */
-class State : public PUP::able {
+class State : public SPECTRE_CHARM_PUPable(State) {
  public:
   State() = default;
   State(const State& /*rhs*/) = default;
   State& operator=(const State& /*rhs*/) = default;
   State(State&& /*rhs*/) = default;
   State& operator=(State&& /*rhs*/) = default;
-  virtual ~State() override = default;
+  ~State() override = default;
 
   /// Name of this state
   virtual std::string name() const = 0;
@@ -189,7 +189,7 @@ class State : public PUP::able {
    * the `control_system::Tags::Verbosity` flag).
    */
   virtual std::string update(
-      const gsl::not_null<Info*> info, const StateUpdateArgs& update_args,
+      gsl::not_null<Info*> info, const StateUpdateArgs& update_args,
       const CrossingTimeInfo& crossing_time_info) const = 0;
   /// Returns the control signal, but does not modify the state or any
   /// parameters.
@@ -197,6 +197,5 @@ class State : public PUP::able {
       const Info& info, const ControlErrorArgs& control_error_args) const = 0;
 
   WRAPPED_PUPable_abstract(State);  // NOLINT
-  explicit State(CkMigrateMessage* msg) : PUP::able(msg) {}
 };
 }  // namespace control_system::size

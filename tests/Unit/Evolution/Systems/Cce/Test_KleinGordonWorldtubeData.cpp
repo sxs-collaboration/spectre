@@ -38,8 +38,6 @@ class KleinGordonDummyBufferUpdater
 
   WRAPPED_PUPable_decl_template(KleinGordonDummyBufferUpdater);  // NOLINT
 
-  explicit KleinGordonDummyBufferUpdater(CkMigrateMessage* /*unused*/) {}
-
   double update_buffers_for_time(
       const gsl::not_null<Variables<klein_gordon_input_tags>*> buffers,
       const gsl::not_null<size_t*> time_span_start,
@@ -133,8 +131,10 @@ class KleinGordonDummyBufferUpdater
   size_t l_max_ = 0;
 };
 
+#if defined(SPECTRE_USE_CHARM)
 // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
 PUP::able::PUP_ID Cce::KleinGordonDummyBufferUpdater::my_PUP_ID = 0;
+#endif  // SPECTRE_USE_CHARM
 
 namespace {
 

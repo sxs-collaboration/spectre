@@ -70,7 +70,15 @@ struct MoustacheVariables {
  * This solution is taken from \cite Stamm2010.
  */
 template <size_t Dim>
-class Moustache : public elliptic::analytic_data::AnalyticSolution {
+class Moustache : public elliptic::analytic_data::AnalyticSolution
+#if defined(SPECTRE_USE_FINDUS)
+    ,
+                  public virtual findus::serialize::SerializableDerived<
+                      Moustache<Dim>, elliptic::analytic_data::InitialGuess>,
+                  public virtual findus::serialize::SerializableDerived<
+                      Moustache<Dim>, elliptic::analytic_data::Background>
+#endif
+{
  public:
   using options = tmpl::list<>;
   static constexpr Options::String help{
@@ -90,8 +98,6 @@ class Moustache : public elliptic::analytic_data::AnalyticSolution {
   }
 
   /// \cond
-  explicit Moustache(CkMigrateMessage* m)
-      : elliptic::analytic_data::AnalyticSolution(m) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(Moustache);  // NOLINT
   /// \endcond
@@ -107,10 +113,12 @@ class Moustache : public elliptic::analytic_data::AnalyticSolution {
   }
 };
 
+#if defined(SPECTRE_USE_CHARM)
 /// \cond
 template <size_t Dim>
 PUP::able::PUP_ID Moustache<Dim>::my_PUP_ID = 0;  // NOLINT
 /// \endcond
+#endif  // SPECTRE_USE_CHARM
 
 template <size_t Dim>
 constexpr bool operator==(const Moustache<Dim>& /*lhs*/,

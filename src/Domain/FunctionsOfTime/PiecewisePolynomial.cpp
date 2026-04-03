@@ -60,10 +60,6 @@ PiecewisePolynomial<MaxDeriv>::PiecewisePolynomial(
 }
 
 template <size_t MaxDeriv>
-PiecewisePolynomial<MaxDeriv>::PiecewisePolynomial(
-    CkMigrateMessage* /*unused*/) {}
-
-template <size_t MaxDeriv>
 std::unique_ptr<FunctionOfTime> PiecewisePolynomial<MaxDeriv>::get_clone()
     const {
   return std::make_unique<PiecewisePolynomial>(*this);
@@ -387,4 +383,22 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (0, 1, 2, 3, 4), (0, 1, 2))
 #undef DIM
 #undef DIMRETURNED
 #undef INSTANTIATE
+
+namespace FunctionOfTimeHelpers {
+template class ThreadsafeList<std::array<DataVector, 1>>;
+template class ThreadsafeList<std::array<DataVector, 2>>;
+template class ThreadsafeList<std::array<DataVector, 3>>;
+template class ThreadsafeList<std::array<DataVector, 4>>;
+template class ThreadsafeList<std::array<DataVector, 5>>;
+template class ThreadsafeList<std::array<DataVector, 6>>;
+template class ThreadsafeList<std::array<DataVector, 7>>;
+
+template class ThreadsafeList<std::array<double, 1>>;
+template class ThreadsafeList<std::array<double, 2>>;
+template class ThreadsafeList<std::array<double, 3>>;
+template class ThreadsafeList<std::array<double, 4>>;
+template class ThreadsafeList<std::array<double, 5>>;
+template class ThreadsafeList<std::array<double, 6>>;
+template class ThreadsafeList<std::array<double, 7>>;
+}  // namespace FunctionOfTimeHelpers
 }  // namespace domain::FunctionsOfTime

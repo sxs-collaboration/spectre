@@ -38,11 +38,10 @@ class DataBox;
 namespace DenseTriggers {
 /// \ingroup EventsAndTriggersGroup
 /// Trigger when any of a collection of DenseTriggers triggers.
-class Or : public DenseTrigger {
+class Or : public SPECTRE_CHARM_DERIVED(Or, DenseTrigger) {
  public:
   /// \cond
   Or() = default;
-  explicit Or(CkMigrateMessage* const msg) : DenseTrigger(msg) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(Or);  // NOLINT
   /// \endcond

@@ -14,8 +14,6 @@ ObserveDataBox::ObserveDataBox(
     std::optional<std::string> file_name_for_tag_names)
     : file_name_for_tag_names_(std::move(file_name_for_tag_names)) {}
 
-ObserveDataBox::ObserveDataBox(CkMigrateMessage* m) : Event{m} {}
-
 void ObserveDataBox::pup(PUP::er& p) {
   Event::pup(p);
   p | file_name_for_tag_names_;
@@ -34,7 +32,9 @@ void ObserveDataBox::impl(const db::Access& box_access,
   }
 }
 
+#if defined(SPECTRE_USE_CHARM)
 PUP::able::PUP_ID ObserveDataBox::my_PUP_ID = 0;  // NOLINT
+#endif                                            // SPECTRE_USE_CHARM
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 

@@ -39,8 +39,6 @@ SpecInitialData::get_clone() const {
   return std::make_unique<SpecInitialData>(*this);
 }
 
-SpecInitialData::SpecInitialData(CkMigrateMessage* msg) : InitialData(msg) {}
-
 void SpecInitialData::pup(PUP::er& p) {
   InitialData::pup(p);
   p | data_directory_;
@@ -51,7 +49,9 @@ void SpecInitialData::pup(PUP::er& p) {
   }
 }
 
+#if defined(SPECTRE_USE_CHARM)
 PUP::able::PUP_ID SpecInitialData::my_PUP_ID = 0;
+#endif  // SPECTRE_USE_CHARM
 
 template <typename DataType>
 tuples::tagged_tuple_from_typelist<

@@ -20,10 +20,6 @@ Ccz4WrappedGr<SolutionType>::Ccz4WrappedGr(const SolutionType& wrapped_solution)
     : SolutionType(wrapped_solution) {}
 
 template <typename SolutionType>
-Ccz4WrappedGr<SolutionType>::Ccz4WrappedGr(CkMigrateMessage* msg)
-    : InitialData(msg), SolutionType(msg) {}
-
-template <typename SolutionType>
 std::unique_ptr<evolution::initial_data::InitialData>
 Ccz4WrappedGr<SolutionType>::get_clone() const {
   return std::make_unique<Ccz4WrappedGr<SolutionType>>(*this);
@@ -247,8 +243,10 @@ void Ccz4WrappedGr<SolutionType>::pup(PUP::er& p) {
   SolutionType::pup(p);
 }
 
+#if defined(SPECTRE_USE_CHARM)
 template <typename SolutionType>
 PUP::able::PUP_ID Ccz4WrappedGr<SolutionType>::my_PUP_ID = 0;
+#endif  // SPECTRE_USE_CHARM
 
 template <typename SolutionType>
 bool operator==(const Ccz4WrappedGr<SolutionType>& lhs,

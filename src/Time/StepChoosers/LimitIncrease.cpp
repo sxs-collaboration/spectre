@@ -26,5 +26,7 @@ void LimitIncrease::pup(PUP::er& p) {
   p | factor_;
 }
 
+#if defined(SPECTRE_USE_CHARM)
 PUP::able::PUP_ID LimitIncrease::my_PUP_ID = 0;  // NOLINT
+#endif                                           // SPECTRE_USE_CHARM
 }  // namespace StepChoosers

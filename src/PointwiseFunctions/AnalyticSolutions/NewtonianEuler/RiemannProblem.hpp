@@ -126,8 +126,15 @@ namespace NewtonianEuler::Solutions {
  * speed of the contact discontinuity (\f$u_*\f$).
  */
 template <size_t Dim>
-class RiemannProblem : public evolution::initial_data::InitialData,
-                       public MarkAsAnalyticSolution {
+class RiemannProblem
+    : public evolution::initial_data::InitialData,
+      public MarkAsAnalyticSolution
+#if defined(SPECTRE_USE_FINDUS)
+    ,
+      public virtual findus::serialize::SerializableDerived<
+          RiemannProblem<Dim>, evolution::initial_data::InitialData>
+#endif
+{
   enum class Side { Left, Right };
   enum PropagationAxis { X = 0, Y = 1, Z = 2 };
 
@@ -250,7 +257,6 @@ class RiemannProblem : public evolution::initial_data::InitialData,
       -> std::unique_ptr<evolution::initial_data::InitialData> override;
 
   /// \cond
-  explicit RiemannProblem(CkMigrateMessage* msg);
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(RiemannProblem);
   /// \endcond
@@ -289,7 +295,7 @@ class RiemannProblem : public evolution::initial_data::InitialData,
   void pup(PUP::er& /*p*/) override;
 
   // Retrieve these member variables for testing purposes.
-  constexpr std::array<double, 2> diagnostic_star_region_values() const {
+  std::array<double, 2> diagnostic_star_region_values() const {
     return make_array(pressure_star_, velocity_star_);
   }
 

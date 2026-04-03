@@ -21,7 +21,8 @@ namespace amr::Criteria {
  * h-refinement criterion.
  */
 template <size_t Dim>
-class IncreaseResolution : public Criterion {
+class IncreaseResolution
+    : public SPECTRE_CHARM_DERIVED(IncreaseResolution<Dim>, Criterion) {
  public:
   using options = tmpl::list<>;
 
@@ -31,7 +32,6 @@ class IncreaseResolution : public Criterion {
   IncreaseResolution() = default;
 
   /// \cond
-  explicit IncreaseResolution(CkMigrateMessage* msg);
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(IncreaseResolution);  // NOLINT
   /// \endcond
@@ -51,9 +51,10 @@ class IncreaseResolution : public Criterion {
   }
 };
 
+#if defined(SPECTRE_USE_CHARM)
 /// \cond
 template <size_t Dim>
 PUP::able::PUP_ID IncreaseResolution<Dim>::my_PUP_ID = 0;  // NOLINT
 /// \endcond
-
+#endif  // SPECTRE_USE_CHARM
 }  // namespace amr::Criteria

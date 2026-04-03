@@ -22,7 +22,8 @@ namespace intrp {
 /// \details This interpolator is hand-coded to be identical to the SpEC
 /// implementation used for SpEC CCE so that comparison results can be as close
 /// as possible for diagnostics.
-class CubicSpanInterpolator : public SpanInterpolator {
+class CubicSpanInterpolator
+    : public SPECTRE_CHARM_DERIVED(CubicSpanInterpolator, SpanInterpolator) {
  public:
   using options = tmpl::list<>;
   static constexpr Options::String help = {"Cubic interpolator."};
@@ -33,8 +34,6 @@ class CubicSpanInterpolator : public SpanInterpolator {
   CubicSpanInterpolator(CubicSpanInterpolator&&) = default;
   CubicSpanInterpolator& operator=(CubicSpanInterpolator&&) = default;
   ~CubicSpanInterpolator() override = default;
-
-  explicit CubicSpanInterpolator(CkMigrateMessage* /*unused*/) {}
 
   WRAPPED_PUPable_decl_template(CubicSpanInterpolator);  // NOLINT
 

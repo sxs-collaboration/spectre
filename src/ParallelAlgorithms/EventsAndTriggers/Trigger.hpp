@@ -17,7 +17,7 @@ namespace Triggers {}
 
 /// \ingroup EventsAndTriggersGroup
 /// Base class for checking whether to run an Event.
-class Trigger : public PUP::able {
+class Trigger : public SPECTRE_CHARM_PUPable(Trigger) {
  protected:
   /// \cond
   Trigger() = default;

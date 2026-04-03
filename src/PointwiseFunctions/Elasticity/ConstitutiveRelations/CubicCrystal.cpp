@@ -62,7 +62,9 @@ double CubicCrystal::poisson_ratio() const {
   return 1. / (1. + (c_11_ / c_12_));
 }
 
+#if defined(SPECTRE_USE_CHARM)
 PUP::able::PUP_ID CubicCrystal::my_PUP_ID = 0;
+#endif  // SPECTRE_USE_CHARM
 
 void CubicCrystal::pup(PUP::er& p) {
   p | c_11_;

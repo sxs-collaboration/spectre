@@ -12,8 +12,6 @@ namespace GrSelfForce::BoundaryConditions {
 
 Angular::Angular(const int m_mode_number) : m_mode_number_(m_mode_number) {}
 
-Angular::Angular(CkMigrateMessage* m) : Base(m) {}
-
 void Angular::apply(
     const gsl::not_null<tnsr::aa<ComplexDataVector, 3>*> field,
     const gsl::not_null<tnsr::aa<ComplexDataVector, 3>*> n_dot_field_gradient,
@@ -78,6 +76,8 @@ bool operator!=(const Angular& lhs, const Angular& rhs) {
   return not(lhs == rhs);
 }
 
+#if defined(SPECTRE_USE_CHARM)
 PUP::able::PUP_ID Angular::my_PUP_ID = 0;  // NOLINT
+#endif                                     // SPECTRE_USE_CHARM
 
 }  // namespace GrSelfForce::BoundaryConditions

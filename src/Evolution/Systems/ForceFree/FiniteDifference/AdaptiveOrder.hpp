@@ -59,7 +59,8 @@ namespace ForceFree::fd {
  * positive.
  *
  */
-class AdaptiveOrder : public Reconstructor {
+class AdaptiveOrder
+    : public SPECTRE_CHARM_DERIVED(AdaptiveOrder, Reconstructor) {
  private:
   using TildeE = ForceFree::Tags::TildeE;
   using TildeB = ForceFree::Tags::TildeB;
@@ -123,8 +124,6 @@ class AdaptiveOrder : public Reconstructor {
                 std::optional<double> alpha_9,
                 FallbackReconstructorType low_order_reconstructor,
                 const Options::Context& context = {});
-
-  explicit AdaptiveOrder(CkMigrateMessage* msg);
 
   WRAPPED_PUPable_decl_base_template(Reconstructor, AdaptiveOrder);
 

@@ -56,7 +56,6 @@ class TestBoundaryCondition : public BoundaryCondition<1> {
   TestBoundaryCondition& operator=(const TestBoundaryCondition&) = default;
   TestBoundaryCondition& operator=(TestBoundaryCondition&&) = default;
   ~TestBoundaryCondition() override = default;
-  explicit TestBoundaryCondition(CkMigrateMessage* m) : Base(m) {}
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-function"
   WRAPPED_PUPable_decl_template(TestBoundaryCondition);
@@ -103,8 +102,9 @@ class TestBoundaryCondition : public BoundaryCondition<1> {
   }
 };
 
+#if defined(SPECTRE_USE_CHARM)
 PUP::able::PUP_ID TestBoundaryCondition::my_PUP_ID = 0;
-
+#endif  // SPECTRE_USE_CHARM
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Elliptic.BoundaryConditions.Base", "[Unit][Elliptic]") {

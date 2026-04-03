@@ -28,7 +28,9 @@ void Constant::pup(PUP::er& p) {
   p | value_;
 }
 
+#if defined(SPECTRE_USE_CHARM)
 PUP::able::PUP_ID Constant::my_PUP_ID = 0;  // NOLINT
+#endif                                      // SPECTRE_USE_CHARM
 }  // namespace StepChoosers
 
 template <>

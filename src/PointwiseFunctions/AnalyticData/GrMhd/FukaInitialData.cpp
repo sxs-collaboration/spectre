@@ -40,15 +40,15 @@ FukaInitialData::get_clone() const {
   return std::make_unique<FukaInitialData>(*this);
 }
 
-FukaInitialData::FukaInitialData(CkMigrateMessage* msg) : InitialData(msg) {}
-
 void FukaInitialData::pup(PUP::er& p) {
   InitialData::pup(p);
   p | info_filename_;
   p | electron_fraction_;
 }
 
+#if defined(SPECTRE_USE_CHARM)
 // NOLINTNEXTLINE
 PUP::able::PUP_ID FukaInitialData::my_PUP_ID = 0;
+#endif  // SPECTRE_USE_CHARM
 
 }  // namespace grmhd::AnalyticData

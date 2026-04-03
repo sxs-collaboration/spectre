@@ -37,7 +37,10 @@ namespace BnsInitialData::BoundaryConditions {
  * equations be regular at the surface of the neutron star.  See
  * \cite BaumgarteShapiro 15.79.
  */
-class StarSurface : public elliptic::BoundaryConditions::BoundaryCondition<3> {
+class StarSurface
+    : public elliptic::BoundaryConditions::BoundaryCondition<3>
+      SPECTRE_FINDUS_DERIVED(StarSurface,
+                             domain::BoundaryConditions::BoundaryCondition) {
  private:
   using Base = elliptic::BoundaryConditions::BoundaryCondition<3>;
 
@@ -55,7 +58,6 @@ class StarSurface : public elliptic::BoundaryConditions::BoundaryCondition<3> {
   ~StarSurface() override = default;
 
   /// \cond
-  explicit StarSurface(CkMigrateMessage* m) : Base(m) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(StarSurface);
   /// \endcond

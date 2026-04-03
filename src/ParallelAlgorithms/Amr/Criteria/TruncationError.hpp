@@ -65,7 +65,9 @@ void max_over_components(
  * \tparam TensorTags List of tags of the tensors to be monitored
  */
 template <size_t Dim, typename TensorTags>
-class TruncationError : public Criterion {
+class TruncationError
+    : public SPECTRE_CHARM_DERIVED(SINGLE_ARG(TruncationError<Dim, TensorTags>),
+                                   Criterion) {
  public:
   struct VariablesToMonitor {
     using type = std::vector<std::string>;
@@ -102,7 +104,6 @@ class TruncationError : public Criterion {
                   const Options::Context& context = {});
 
   /// \cond
-  explicit TruncationError(CkMigrateMessage* msg);
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(TruncationError);  // NOLINT
   /// \endcond
@@ -141,10 +142,6 @@ TruncationError<Dim, TensorTags>::TruncationError(
       target_rel_truncation_error_(target_rel_truncation_error) {
   db::validate_selection<TensorTags>(vars_to_monitor_, context);
 }
-
-template <size_t Dim, typename TensorTags>
-TruncationError<Dim, TensorTags>::TruncationError(CkMigrateMessage* msg)
-    : Criterion(msg) {}
 
 template <size_t Dim, typename TensorTags>
 template <typename DbTagsList, typename Metavariables>
@@ -186,8 +183,10 @@ void TruncationError<Dim, TensorTags>::pup(PUP::er& p) {
   p | target_rel_truncation_error_;
 }
 
+#if defined(SPECTRE_USE_CHARM)
 template <size_t Dim, typename TensorTags>
 PUP::able::PUP_ID TruncationError<Dim, TensorTags>::my_PUP_ID = 0;  // NOLINT
+#endif  // SPECTRE_USE_CHARM
 /// \endcond
 
 }  // namespace amr::Criteria

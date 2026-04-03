@@ -61,7 +61,6 @@ class BadCriterion : public amr::Criterion {
   using options = tmpl::list<>;
 
   BadCriterion() = default;
-  explicit BadCriterion(CkMigrateMessage* msg) : Criterion(msg) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(BadCriterion);  // NOLINT
 
@@ -82,7 +81,9 @@ class BadCriterion : public amr::Criterion {
   void pup(PUP::er& p) override { Criterion::pup(p); }
 };
 
+#if defined(SPECTRE_USE_CHARM)
 PUP::able::PUP_ID BadCriterion::my_PUP_ID = 0;  // NOLINT
+#endif                                          // SPECTRE_USE_CHARM
 #pragma GCC diagnostic pop
 
 template <typename Metavariables>

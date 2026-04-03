@@ -71,7 +71,8 @@ namespace Elasticity::ConstitutiveRelations {
  * material (see `Elasticity::ConstitutiveRelations::IsotropicHomogeneous`).
  */
 
-class CubicCrystal : public ConstitutiveRelation<3> {
+class CubicCrystal
+    : public SPECTRE_CHARM_DERIVED(CubicCrystal, ConstitutiveRelation<3>) {
  public:
   static constexpr size_t volume_dim = 3;
 
@@ -134,8 +135,6 @@ class CubicCrystal : public ConstitutiveRelation<3> {
 
   // clang-tidy: no runtime references
   void pup(PUP::er& /*p*/) override;  //  NOLINT
-
-  explicit CubicCrystal(CkMigrateMessage* /*unused*/) {}
 
   WRAPPED_PUPable_decl_base_template(  // NOLINT
       SINGLE_ARG(ConstitutiveRelation<3>), CubicCrystal);

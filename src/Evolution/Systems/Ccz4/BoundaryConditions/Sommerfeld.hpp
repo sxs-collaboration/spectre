@@ -56,7 +56,11 @@ namespace Ccz4::BoundaryConditions {
  * (all wedges), as we only apply it on the upper_zeta
  * direction in blocks with external boundaries.
  */
-class Sommerfeld final : public BoundaryCondition {
+class Sommerfeld final
+    : public BoundaryCondition
+      SPECTRE_FINDUS_DERIVED(
+          SINGLE_ARG(Sommerfeld),
+          SINGLE_ARG(domain::BoundaryConditions::BoundaryCondition)) {
  public:
   using options = tmpl::list<>;
   static constexpr Options::String help{
@@ -68,8 +72,6 @@ class Sommerfeld final : public BoundaryCondition {
   Sommerfeld(const Sommerfeld&);
   Sommerfeld& operator=(const Sommerfeld&);
   ~Sommerfeld() override = default;
-
-  explicit Sommerfeld(CkMigrateMessage* msg);
 
   WRAPPED_PUPable_decl_base_template(
       domain::BoundaryConditions::BoundaryCondition, Sommerfeld);

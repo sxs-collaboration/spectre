@@ -273,7 +273,16 @@ template <typename GrSolution, bool HasMhd = false>
 class WrappedGr;
 
 template <typename GrSolution, bool HasMhd>
-class WrappedGr : public elliptic::analytic_data::AnalyticSolution {
+class WrappedGr
+    : public elliptic::analytic_data::AnalyticSolution
+#if defined(SPECTRE_USE_FINDUS)
+    ,
+      public virtual findus::serialize::SerializableDerived<
+          WrappedGr<GrSolution, HasMhd>, elliptic::analytic_data::InitialGuess>,
+      public virtual findus::serialize::SerializableDerived<
+          WrappedGr<GrSolution, HasMhd>, elliptic::analytic_data::Background>
+#endif
+{
  public:
   static constexpr size_t Dim = 3;
 
@@ -296,8 +305,6 @@ class WrappedGr : public elliptic::analytic_data::AnalyticSolution {
   const GrSolution& gr_solution() const { return gr_solution_; }
 
   /// \cond
-  explicit WrappedGr(CkMigrateMessage* m)
-      : elliptic::analytic_data::AnalyticSolution(m) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(WrappedGr);
   std::unique_ptr<elliptic::analytic_data::AnalyticSolution> get_clone()

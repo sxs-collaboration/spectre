@@ -23,8 +23,6 @@ namespace ForceFree::Solutions {
 ExactWald::ExactWald(const double magnetic_field_amplitude)
     : magnetic_field_amplitude_(magnetic_field_amplitude) {}
 
-ExactWald::ExactWald(CkMigrateMessage* msg) : InitialData(msg) {}
-
 std::unique_ptr<evolution::initial_data::InitialData> ExactWald::get_clone()
     const {
   return std::make_unique<ExactWald>(*this);
@@ -36,8 +34,10 @@ void ExactWald::pup(PUP::er& p) {
   p | magnetic_field_amplitude_;
 }
 
+#if defined(SPECTRE_USE_CHARM)
 // NOLINTNEXTLINE
 PUP::able::PUP_ID ExactWald::my_PUP_ID = 0;
+#endif  // SPECTRE_USE_CHARM
 
 tuples::TaggedTuple<Tags::TildeE> ExactWald::variables(
     const tnsr::I<DataVector, 3>& x, double /*t*/,

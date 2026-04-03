@@ -12,19 +12,15 @@ ConstraintPreservingFreeOutflow::ConstraintPreservingFreeOutflow(
     gh::BoundaryConditions::detail::ConstraintPreservingBjorhusType type)
     : constraint_preserving_(type) {}
 
-// LCOV_EXCL_START
-ConstraintPreservingFreeOutflow::ConstraintPreservingFreeOutflow(
-    CkMigrateMessage* const msg)
-    : BoundaryCondition(msg) {}
-// LCOV_EXCL_STOP
-
 std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
 ConstraintPreservingFreeOutflow::get_clone() const {
   return std::make_unique<ConstraintPreservingFreeOutflow>(*this);
 }
 
 void ConstraintPreservingFreeOutflow::pup(PUP::er& p) {
+#if defined(SPECTRE_USE_CHARM)
   BoundaryCondition::pup(p);
+#endif  // SPECTRE_USE_CHARM
   p | constraint_preserving_;
 }
 
@@ -202,6 +198,8 @@ std::optional<std::string> ConstraintPreservingFreeOutflow::dg_time_derivative(
       logical_dt_phi, d_spacetime_metric, d_pi, d_phi);
 }
 
+#if defined(SPECTRE_USE_CHARM)
 // NOLINTNEXTLINE
 PUP::able::PUP_ID ConstraintPreservingFreeOutflow::my_PUP_ID = 0;
+#endif  // SPECTRE_USE_CHARM
 }  // namespace grmhd::GhValenciaDivClean::BoundaryConditions

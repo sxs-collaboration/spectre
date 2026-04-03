@@ -35,7 +35,6 @@ namespace {
 class TestTrigger : public Trigger {
  public:
   TestTrigger() = default;
-  explicit TestTrigger(CkMigrateMessage* /*unused*/) {}
   using PUP::able::register_constructor;
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-function"
@@ -65,7 +64,9 @@ class TestTrigger : public Trigger {
   bool result_{};
 };
 
+#if defined(SPECTRE_USE_CHARM)
 PUP::able::PUP_ID TestTrigger::my_PUP_ID = 0;  // NOLINT
+#endif                                         // SPECTRE_USE_CHARM
 
 struct Metavariables {
   using component_list = tmpl::list<>;

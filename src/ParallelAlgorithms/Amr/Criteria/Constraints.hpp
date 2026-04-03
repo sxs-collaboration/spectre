@@ -113,7 +113,9 @@ void max_over_components(
  * index that originates from a derivative.
  */
 template <size_t Dim, typename TensorTags>
-class Constraints : public Criterion {
+class Constraints
+    : public SPECTRE_CHARM_DERIVED(SINGLE_ARG(Constraints<Dim, TensorTags>),
+                                   Criterion) {
  public:
   struct ConstraintsToMonitor {
     using type = std::vector<std::string>;
@@ -149,7 +151,6 @@ class Constraints : public Criterion {
               double coarsening_factor, const Options::Context& context = {});
 
   /// \cond
-  explicit Constraints(CkMigrateMessage* msg);
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(Constraints);  // NOLINT
   /// \endcond
@@ -193,10 +194,6 @@ Constraints<Dim, TensorTags>::Constraints(
       coarsening_factor_(coarsening_factor) {
   db::validate_selection<TensorTags>(vars_to_monitor_, context);
 }
-
-template <size_t Dim, typename TensorTags>
-Constraints<Dim, TensorTags>::Constraints(CkMigrateMessage* msg)
-    : Criterion(msg) {}
 
 template <size_t Dim, typename TensorTags>
 template <typename ComputeTagsList, typename DataBoxType,
@@ -254,8 +251,10 @@ void Constraints<Dim, TensorTags>::pup(PUP::er& p) {
   p | coarsening_factor_;
 }
 
+#if defined(SPECTRE_USE_CHARM)
 template <size_t Dim, typename TensorTags>
 PUP::able::PUP_ID Constraints<Dim, TensorTags>::my_PUP_ID = 0;  // NOLINT
+#endif  // SPECTRE_USE_CHARM
 /// \endcond
 
 }  // namespace amr::Criteria

@@ -24,7 +24,6 @@ struct BoundaryCorrection : public evolution::BoundaryCorrection {
   using options = tmpl::list<>;
   static constexpr Options::String help = {"Halp"};
 
-  explicit BoundaryCorrection(CkMigrateMessage* /*unused*/) {}
   using PUP::able::register_constructor;
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-function"
@@ -36,7 +35,9 @@ struct BoundaryCorrection : public evolution::BoundaryCorrection {
   }
 };
 
+#if defined(SPECTRE_USE_CHARM)
 PUP::able::PUP_ID BoundaryCorrection::my_PUP_ID = 0;  // NOLINT
+#endif                                                // SPECTRE_USE_CHARM
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Evolution.BoundaryCorrectionTags",

@@ -13,7 +13,7 @@
 #include "Utilities/TMPL.hpp"
 
 namespace control_system::size::States {
-class Initial : public State {
+class Initial : public SPECTRE_CHARM_DERIVED(Initial, State) {
  public:
   using options = tmpl::list<>;
   static constexpr Options::String help{
@@ -31,6 +31,5 @@ class Initial : public State {
       const ControlErrorArgs& control_error_args) const override;
 
   WRAPPED_PUPable_decl_template(Initial);  // NOLINT
-  explicit Initial(CkMigrateMessage* const /*msg*/) {}
 };
 }  // namespace control_system::size::States

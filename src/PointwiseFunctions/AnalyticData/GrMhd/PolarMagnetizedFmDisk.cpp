@@ -6,7 +6,6 @@
 #include <pup.h>
 #include <utility>
 
-
 namespace grmhd::AnalyticData {
 
 PolarMagnetizedFmDisk::PolarMagnetizedFmDisk(
@@ -18,15 +17,14 @@ PolarMagnetizedFmDisk::get_clone() const {
   return std::make_unique<PolarMagnetizedFmDisk>(*this);
 }
 
-PolarMagnetizedFmDisk::PolarMagnetizedFmDisk(CkMigrateMessage* msg)
-    : fm_disk_(msg) {}
-
 void PolarMagnetizedFmDisk::pup(PUP::er& p) {
   p | fm_disk_;
   p | torus_map_;
 }
 
+#if defined(SPECTRE_USE_CHARM)
 PUP::able::PUP_ID PolarMagnetizedFmDisk::my_PUP_ID = 0; // NOLINT
+#endif                                                  // SPECTRE_USE_CHARM
 
 bool operator==(const PolarMagnetizedFmDisk& lhs,
                 const PolarMagnetizedFmDisk& rhs) {

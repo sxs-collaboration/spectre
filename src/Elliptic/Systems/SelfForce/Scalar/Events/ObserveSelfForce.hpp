@@ -84,7 +84,9 @@ std::optional<tnsr::i<std::complex<double>, 2>> extract_self_force(
  * sum is truncated at some maximum m-mode number.
  */
 template <typename ArraySectionIdTag = void>
-class ObserveSelfForce : public Event {
+class ObserveSelfForce
+    : public SPECTRE_CHARM_DERIVED(
+          SINGLE_ARG(ObserveSelfForce<ArraySectionIdTag>), Event) {
  public:
   using ReductionData = Parallel::ReductionData<
       // Observation value
@@ -112,7 +114,6 @@ class ObserveSelfForce : public Event {
 
   ObserveSelfForce() = default;
 
-  explicit ObserveSelfForce(CkMigrateMessage* msg) : Event(msg) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(ObserveSelfForce);  // NOLINT
 
@@ -220,10 +221,12 @@ class ObserveSelfForce : public Event {
   bool needs_evolved_variables() const override { return false; }
 };
 
+#if defined(SPECTRE_USE_CHARM)
 /// \cond
 // NOLINTBEGIN(cppcoreguidelines-avoid-non-const-global-variables)
 template <typename ArraySectionIdTag>
 PUP::able::PUP_ID ObserveSelfForce<ArraySectionIdTag>::my_PUP_ID = 0;
 // NOLINTEND(cppcoreguidelines-avoid-non-const-global-variables)
 /// \endcond
+#endif  // SPECTRE_USE_CHARM
 }  // namespace ScalarSelfForce::Events

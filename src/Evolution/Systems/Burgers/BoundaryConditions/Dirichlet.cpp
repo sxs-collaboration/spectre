@@ -16,15 +16,15 @@
 namespace Burgers::BoundaryConditions {
 Dirichlet::Dirichlet(const double u_value) : u_value_(u_value) {}
 
-Dirichlet::Dirichlet(CkMigrateMessage* const msg) : BoundaryCondition(msg) {}
-
 std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
 Dirichlet::get_clone() const {
   return std::make_unique<Dirichlet>(*this);
 }
 
 void Dirichlet::pup(PUP::er& p) {
+#if defined(SPECTRE_USE_CHARM)
   BoundaryCondition::pup(p);
+#endif  // SPECTRE_USE_CHARM
   p | u_value_;
 }
 
@@ -44,6 +44,8 @@ void Dirichlet::fd_ghost(const gsl::not_null<Scalar<DataVector>*> u,
   get(*u) = u_value_;
 }
 
+#if defined(SPECTRE_USE_CHARM)
 // NOLINTNEXTLINE
 PUP::able::PUP_ID Dirichlet::my_PUP_ID = 0;
+#endif  // SPECTRE_USE_CHARM
 }  // namespace Burgers::BoundaryConditions

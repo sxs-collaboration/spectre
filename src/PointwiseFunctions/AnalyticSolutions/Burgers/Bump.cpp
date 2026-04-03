@@ -20,8 +20,6 @@ std::unique_ptr<evolution::initial_data::InitialData> Bump::get_clone() const {
   return std::make_unique<Bump>(*this);
 }
 
-Bump::Bump(CkMigrateMessage* msg) : InitialData(msg) {}
-
 template <typename T>
 Scalar<T> Bump::u(const tnsr::I<T, 1>& x, double t) const {
   const T center_distance = get<0>(x) - center_;
@@ -73,7 +71,9 @@ void Bump::pup(PUP::er& p) {
   p | center_;
 }
 
+#if defined(SPECTRE_USE_CHARM)
 PUP::able::PUP_ID Bump::my_PUP_ID = 0;
+#endif  // SPECTRE_USE_CHARM
 }  // namespace Burgers::Solutions
 
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(0, data)

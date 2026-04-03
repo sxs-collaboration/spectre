@@ -15,10 +15,6 @@
 
 namespace gh::Solutions {
 template <typename SolutionType>
-WrappedGr<SolutionType>::WrappedGr(CkMigrateMessage* msg)
-    : InitialData(msg), SolutionType(msg) {}
-
-template <typename SolutionType>
 std::unique_ptr<evolution::initial_data::InitialData>
 WrappedGr<SolutionType>::get_clone() const {
   return std::make_unique<WrappedGr<SolutionType>>(*this);
@@ -125,8 +121,10 @@ void WrappedGr<SolutionType>::pup(PUP::er& p) {
   SolutionType::pup(p);
 }
 
+#if defined(SPECTRE_USE_CHARM)
 template <typename SolutionType>
 PUP::able::PUP_ID WrappedGr<SolutionType>::my_PUP_ID = 0;
+#endif  // SPECTRE_USE_CHARM
 
 template <typename SolutionType>
 bool operator==(const WrappedGr<SolutionType>& lhs,

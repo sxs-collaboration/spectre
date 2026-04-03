@@ -133,8 +133,11 @@ struct MultiplePuncturesVariables {
  *
  * \see ::Punctures
  */
-class MultiplePunctures : public elliptic::analytic_data::Background,
-                          public elliptic::analytic_data::InitialGuess {
+class MultiplePunctures
+    : public SPECTRE_CHARM_DERIVED(MultiplePunctures,
+                                   elliptic::analytic_data::Background),
+      public SPECTRE_CHARM_DERIVED(MultiplePunctures,
+                                   elliptic::analytic_data::InitialGuess) {
  public:
   struct Punctures {
     static constexpr Options::String help =
@@ -154,9 +157,6 @@ class MultiplePunctures : public elliptic::analytic_data::Background,
   MultiplePunctures(std::vector<Puncture> punctures)
       : punctures_(std::move(punctures)) {}
 
-  explicit MultiplePunctures(CkMigrateMessage* m)
-      : elliptic::analytic_data::Background(m),
-        elliptic::analytic_data::InitialGuess(m) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(MultiplePunctures);
 

@@ -111,7 +111,6 @@ struct BoundaryTerms final : public evolution::BoundaryCorrection {
     using type = Scalar<DataVector>;
   };
 
-  explicit BoundaryTerms(CkMigrateMessage* /*unused*/) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(BoundaryTerms);  // NOLINT
   BoundaryTerms(const bool mesh_is_moving, const double sign_of_normal)
@@ -714,12 +713,14 @@ struct BoundaryTerms final : public evolution::BoundaryCorrection {
   double sign_of_normal_{0.0};
 };
 
+#if defined(SPECTRE_USE_CHARM)
 template <size_t Dim, bool HasPrims, SystemType SysType,
           bool HasInverseSpatialMetric>
 PUP::able::PUP_ID
     // NOLINTNEXTLINE
     BoundaryTerms<Dim, HasPrims, SysType, HasInverseSpatialMetric>::my_PUP_ID =
         0;
+#endif  // SPECTRE_USE_CHARM
 
 // Forward declare different boundary conditions.
 //
@@ -735,7 +736,8 @@ template <typename System>
 class GhostAndTimeDerivative;
 
 template <typename System>
-class BoundaryCondition : public domain::BoundaryConditions::BoundaryCondition {
+class BoundaryCondition
+    : public virtual domain::BoundaryConditions::BoundaryCondition {
  public:
   BoundaryCondition() = default;
   BoundaryCondition(BoundaryCondition&&) = default;
@@ -743,8 +745,6 @@ class BoundaryCondition : public domain::BoundaryConditions::BoundaryCondition {
   BoundaryCondition(const BoundaryCondition&) = default;
   BoundaryCondition& operator=(const BoundaryCondition&) = default;
   ~BoundaryCondition() override = default;
-  explicit BoundaryCondition(CkMigrateMessage* msg)
-      : domain::BoundaryConditions::BoundaryCondition(msg) {}
 
   void pup(PUP::er& p) override {
     domain::BoundaryConditions::BoundaryCondition::pup(p);
@@ -763,9 +763,6 @@ class DemandOutgoingCharSpeeds : public BoundaryCondition<System> {
   DemandOutgoingCharSpeeds& operator=(const DemandOutgoingCharSpeeds&) =
       default;
   ~DemandOutgoingCharSpeeds() override = default;
-
-  explicit DemandOutgoingCharSpeeds(CkMigrateMessage* msg)
-      : BoundaryCondition<System>(msg) {}
 
   WRAPPED_PUPable_decl_base_template(
       domain::BoundaryConditions::BoundaryCondition, DemandOutgoingCharSpeeds);
@@ -911,9 +908,11 @@ class DemandOutgoingCharSpeeds : public BoundaryCondition<System> {
   bool mesh_is_moving_{false};
 };
 
+#if defined(SPECTRE_USE_CHARM)
 template <typename System>
 // NOLINTNEXTLINE
 PUP::able::PUP_ID DemandOutgoingCharSpeeds<System>::my_PUP_ID = 0;
+#endif  // SPECTRE_USE_CHARM
 
 template <typename System>
 class Ghost : public BoundaryCondition<System> {
@@ -925,8 +924,6 @@ class Ghost : public BoundaryCondition<System> {
   Ghost(const Ghost&) = default;
   Ghost& operator=(const Ghost&) = default;
   ~Ghost() override = default;
-
-  explicit Ghost(CkMigrateMessage* msg) : BoundaryCondition<System>(msg) {}
 
   WRAPPED_PUPable_decl_base_template(
       domain::BoundaryConditions::BoundaryCondition, Ghost);
@@ -1347,9 +1344,11 @@ class Ghost : public BoundaryCondition<System> {
   bool mesh_is_moving_{false};
 };
 
+#if defined(SPECTRE_USE_CHARM)
 template <typename System>
 // NOLINTNEXTLINE
 PUP::able::PUP_ID Ghost<System>::my_PUP_ID = 0;
+#endif  // SPECTRE_USE_CHARM
 
 template <typename System>
 class TimeDerivative : public BoundaryCondition<System> {
@@ -1362,9 +1361,6 @@ class TimeDerivative : public BoundaryCondition<System> {
   TimeDerivative(const TimeDerivative&) = default;
   TimeDerivative& operator=(const TimeDerivative&) = default;
   ~TimeDerivative() override = default;
-
-  explicit TimeDerivative(CkMigrateMessage* msg)
-      : BoundaryCondition<System>(msg) {}
 
   WRAPPED_PUPable_decl_base_template(
       domain::BoundaryConditions::BoundaryCondition, TimeDerivative);
@@ -1657,9 +1653,11 @@ class TimeDerivative : public BoundaryCondition<System> {
   double expected_dt_var1_{std::numeric_limits<double>::signaling_NaN()};
 };
 
+#if defined(SPECTRE_USE_CHARM)
 template <typename System>
 // NOLINTNEXTLINE
 PUP::able::PUP_ID TimeDerivative<System>::my_PUP_ID = 0;
+#endif  // SPECTRE_USE_CHARM
 
 template <typename System>
 class GhostAndTimeDerivative : public BoundaryCondition<System> {
@@ -1673,9 +1671,6 @@ class GhostAndTimeDerivative : public BoundaryCondition<System> {
   GhostAndTimeDerivative(const GhostAndTimeDerivative&) = default;
   GhostAndTimeDerivative& operator=(const GhostAndTimeDerivative&) = default;
   ~GhostAndTimeDerivative() override = default;
-
-  explicit GhostAndTimeDerivative(CkMigrateMessage* msg)
-      : BoundaryCondition<System>(msg) {}
 
   WRAPPED_PUPable_decl_base_template(
       domain::BoundaryConditions::BoundaryCondition, GhostAndTimeDerivative);
@@ -2042,9 +2037,11 @@ class GhostAndTimeDerivative : public BoundaryCondition<System> {
   TimeDerivative<System> time_derivative_;
 };
 
+#if defined(SPECTRE_USE_CHARM)
 template <typename System>
 // NOLINTNEXTLINE
 PUP::able::PUP_ID GhostAndTimeDerivative<System>::my_PUP_ID = 0;
+#endif  // SPECTRE_USE_CHARM
 
 template <bool AddTypeAlias, size_t Dim>
 struct InverseSpatialMetricTagImpl {

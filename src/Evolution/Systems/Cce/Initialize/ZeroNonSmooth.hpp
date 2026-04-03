@@ -34,7 +34,8 @@ namespace InitializeJ {
  * have vanishing first radial derivative, and so will typically not be smooth
  * (only continuous) with the provided Cauchy data at the worldtube boundary.
  */
-struct ZeroNonSmooth : InitializeJ<false> {
+struct ZeroNonSmooth
+    : public SPECTRE_CHARM_DERIVED(ZeroNonSmooth, InitializeJ<false>) {
   struct AngularCoordinateTolerance {
     using type = double;
     static std::string name() { return "AngularCoordTolerance"; }
@@ -68,7 +69,6 @@ struct ZeroNonSmooth : InitializeJ<false> {
       "(roughly a no incoming radiation condition)"};
 
   WRAPPED_PUPable_decl_template(ZeroNonSmooth);  // NOLINT
-  explicit ZeroNonSmooth(CkMigrateMessage* /*unused*/) {}
 
   ZeroNonSmooth(double angular_coordinate_tolerance, size_t max_iterations,
                 bool require_convergence = false);

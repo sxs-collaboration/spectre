@@ -18,8 +18,6 @@ std::unique_ptr<InitialMagneticField> Toroidal::get_clone() const {
   return std::make_unique<Toroidal>(*this);
 }
 
-Toroidal::Toroidal(CkMigrateMessage* msg) : InitialMagneticField(msg) {}
-
 void Toroidal::pup(PUP::er& p) {
   InitialMagneticField::pup(p);
   p | pressure_exponent_;
@@ -29,8 +27,10 @@ void Toroidal::pup(PUP::er& p) {
   p | max_distance_from_center_;
 }
 
+#if defined(SPECTRE_USE_CHARM)
 // NOLINTNEXTLINE
 PUP::able::PUP_ID Toroidal::my_PUP_ID = 0;
+#endif  // SPECTRE_USE_CHARM
 
 Toroidal::Toroidal(const size_t pressure_exponent, const double cutoff_pressure,
                    const double vector_potential_amplitude,

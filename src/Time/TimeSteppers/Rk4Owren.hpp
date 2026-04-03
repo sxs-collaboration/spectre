@@ -37,7 +37,14 @@ namespace TimeSteppers {
  *
  * The CFL factor/stable step size is 1.4367588951002057.
  */
-class Rk4Owren : public RungeKutta {
+class Rk4Owren
+    : public RungeKutta
+#if defined(SPECTRE_USE_FINDUS)
+    ,
+      public virtual findus::serialize::SerializableDerived<Rk4Owren,
+                                                            TimeStepper>
+#endif
+{
  public:
   using options = tmpl::list<>;
   static constexpr Options::String help = {
@@ -56,8 +63,6 @@ class Rk4Owren : public RungeKutta {
   double stable_step() const override;
 
   WRAPPED_PUPable_decl_template(Rk4Owren);  // NOLINT
-
-  explicit Rk4Owren(CkMigrateMessage* /*msg*/);
 
   const ButcherTableau& butcher_tableau() const override;
 };

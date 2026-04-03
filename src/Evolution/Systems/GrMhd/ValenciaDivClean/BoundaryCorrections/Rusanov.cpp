@@ -17,8 +17,6 @@
 #include "Utilities/Gsl.hpp"
 
 namespace grmhd::ValenciaDivClean::BoundaryCorrections {
-Rusanov::Rusanov(CkMigrateMessage* /*unused*/) {}
-
 std::unique_ptr<evolution::BoundaryCorrection> Rusanov::get_clone() const {
   return std::make_unique<Rusanov>(*this);
 }
@@ -227,6 +225,8 @@ bool operator!=(const Rusanov& lhs, const Rusanov& rhs) {
   return not(lhs == rhs);
 }
 
+#if defined(SPECTRE_USE_CHARM)
 // NOLINTNEXTLINE
 PUP::able::PUP_ID Rusanov::my_PUP_ID = 0;
+#endif  // SPECTRE_USE_CHARM
 }  // namespace grmhd::ValenciaDivClean::BoundaryCorrections

@@ -48,7 +48,7 @@ namespace ah::Criteria {
  * PowerMonitors::relative_truncation_error, and the number of pileup modes
  * is given by PowerMonitors::convergence_rate_and_number_of_pile_up_modes
  */
-class Shape : public Criterion {
+class Shape : public SPECTRE_CHARM_DERIVED(Shape, Criterion) {
  public:
   struct MinTruncationError {
     using type = double;
@@ -84,7 +84,6 @@ class Shape : public Criterion {
         const Options::Context& context = {});
 
   /// \cond
-  explicit Shape(CkMigrateMessage* msg);
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(Shape);  // NOLINT
   /// \endcond

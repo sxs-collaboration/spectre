@@ -3,6 +3,4 @@
 
 #include "Evolution/Systems/GeneralizedHarmonic/GaugeSourceFunctions/Gauges.hpp"
 
-namespace gh::gauges {
-GaugeCondition::GaugeCondition(CkMigrateMessage* msg) : PUP::able(msg) {}
-}  // namespace gh::gauges
+namespace gh::gauges {}  // namespace gh::gauges

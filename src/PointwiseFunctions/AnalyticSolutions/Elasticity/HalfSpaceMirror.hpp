@@ -112,7 +112,16 @@ struct HalfSpaceMirrorVariables {
  * profile and \f$ \Theta = \mathrm{Tr}(S)\f$ the materials expansion.
  *
  */
-class HalfSpaceMirror : public elliptic::analytic_data::AnalyticSolution {
+class HalfSpaceMirror
+    : public elliptic::analytic_data::AnalyticSolution
+#if defined(SPECTRE_USE_FINDUS)
+    ,
+      public virtual findus::serialize::SerializableDerived<
+          HalfSpaceMirror, elliptic::analytic_data::InitialGuess>,
+      public virtual findus::serialize::SerializableDerived<
+          HalfSpaceMirror, elliptic::analytic_data::Background>
+#endif
+{
  public:
   using constitutive_relation_type =
       Elasticity::ConstitutiveRelations::IsotropicHomogeneous<3>;
@@ -176,8 +185,6 @@ class HalfSpaceMirror : public elliptic::analytic_data::AnalyticSolution {
   }
 
   /// \cond
-  explicit HalfSpaceMirror(CkMigrateMessage* m)
-      : elliptic::analytic_data::AnalyticSolution(m) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(HalfSpaceMirror);  // NOLINT
   /// \endcond

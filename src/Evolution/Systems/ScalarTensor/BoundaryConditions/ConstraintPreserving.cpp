@@ -12,18 +12,15 @@ ConstraintPreserving::ConstraintPreserving(
     gh::BoundaryConditions::detail::ConstraintPreservingBjorhusType type)
     : constraint_preserving_(type) {}
 
-// LCOV_EXCL_START
-ConstraintPreserving::ConstraintPreserving(CkMigrateMessage* const msg)
-    : BoundaryCondition(msg) {}
-// LCOV_EXCL_STOP
-
 std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
 ConstraintPreserving::get_clone() const {
   return std::make_unique<ConstraintPreserving>(*this);
 }
 
 void ConstraintPreserving::pup(PUP::er& p) {
+#if defined(SPECTRE_USE_CHARM)
   BoundaryCondition::pup(p);
+#endif  // SPECTRE_USE_CHARM
   p | constraint_preserving_;
   p | csw_constraint_preserving_;
 }
@@ -204,6 +201,8 @@ std::optional<std::string> ConstraintPreserving::dg_time_derivative(
   return gh_string.value() + ";" + scalar_string.value();
 }
 
+#if defined(SPECTRE_USE_CHARM)
 // NOLINTNEXTLINE
 PUP::able::PUP_ID ConstraintPreserving::my_PUP_ID = 0;
+#endif  // SPECTRE_USE_CHARM
 }  // namespace ScalarTensor::BoundaryConditions

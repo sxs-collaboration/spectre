@@ -56,7 +56,11 @@ namespace NewtonianEuler::BoundaryConditions {
  *
  */
 template <size_t Dim>
-class Reflection final : public BoundaryCondition<Dim> {
+class Reflection final
+    : public BoundaryCondition<Dim>
+      SPECTRE_FINDUS_DERIVED(
+          SINGLE_ARG(Reflection<Dim>),
+          SINGLE_ARG(domain::BoundaryConditions::BoundaryCondition)) {
  public:
   using options = tmpl::list<>;
   static constexpr Options::String help{
@@ -68,8 +72,6 @@ class Reflection final : public BoundaryCondition<Dim> {
   Reflection(const Reflection&) = default;
   Reflection& operator=(const Reflection&) = default;
   ~Reflection() override = default;
-
-  explicit Reflection(CkMigrateMessage* msg);
 
   WRAPPED_PUPable_decl_base_template(
       domain::BoundaryConditions::BoundaryCondition, Reflection);

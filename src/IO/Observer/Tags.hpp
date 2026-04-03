@@ -4,7 +4,6 @@
 #pragma once
 
 #include <atomic>
-#include <converse.h>
 #include <cstddef>
 #include <memory>
 #include <set>

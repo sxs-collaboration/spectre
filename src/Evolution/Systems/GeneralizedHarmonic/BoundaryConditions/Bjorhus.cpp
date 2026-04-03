@@ -70,11 +70,6 @@ ConstraintPreservingBjorhus<Dim>::ConstraintPreservingBjorhus(
     : type_(type) {}
 
 template <size_t Dim>
-ConstraintPreservingBjorhus<Dim>::ConstraintPreservingBjorhus(
-    CkMigrateMessage* const msg)
-    : BoundaryCondition<Dim>(msg) {}
-
-template <size_t Dim>
 std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
 ConstraintPreservingBjorhus<Dim>::get_clone() const {
   return std::make_unique<ConstraintPreservingBjorhus>(*this);
@@ -82,7 +77,9 @@ ConstraintPreservingBjorhus<Dim>::get_clone() const {
 
 template <size_t Dim>
 void ConstraintPreservingBjorhus<Dim>::pup(PUP::er& p) {
-  BoundaryCondition<Dim>::pup(p);
+#if defined(SPECTRE_USE_CHARM)
+  BoundaryConditions::BoundaryCondition<Dim>::pup(p);
+#endif  // SPECTRE_USE_CHARM
   p | type_;
 }
 
@@ -535,9 +532,11 @@ void ConstraintPreservingBjorhus<Dim>::compute_intermediate_vars(
                         face_mesh_velocity);
 }
 
+#if defined(SPECTRE_USE_CHARM)
 template <size_t Dim>
 // NOLINTNEXTLINE
 PUP::able::PUP_ID ConstraintPreservingBjorhus<Dim>::my_PUP_ID = 0;
+#endif  // SPECTRE_USE_CHARM
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 

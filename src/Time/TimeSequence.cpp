@@ -51,8 +51,10 @@ void EvenlySpaced<T>::pup(PUP::er& p) {
   p | offset_;
 }
 
+#if defined(SPECTRE_USE_CHARM)
 template <typename T>
 PUP::able::PUP_ID EvenlySpaced<T>::my_PUP_ID = 0;  // NOLINT
+#endif                                             // SPECTRE_USE_CHARM
 
 template <typename T>
 Specified<T>::Specified(std::vector<T> values) : values_(std::move(values)) {
@@ -87,8 +89,10 @@ void Specified<T>::pup(PUP::er& p) {
   p | values_;
 }
 
+#if defined(SPECTRE_USE_CHARM)
 template <typename T>
 PUP::able::PUP_ID Specified<T>::my_PUP_ID = 0;  // NOLINT
+#endif                                          // SPECTRE_USE_CHARM
 
 // For time values
 template class EvenlySpaced<double>;

@@ -151,13 +151,15 @@ namespace elliptic::analytic_data {
  *
  * \see ::NumericData
  */
-class NumericData : public elliptic::analytic_data::Background,
-                    public elliptic::analytic_data::InitialGuess,
-                    public ::NumericData {
+class NumericData
+    : public SPECTRE_CHARM_DERIVED(NumericData,
+                                   elliptic::analytic_data::Background),
+      public SPECTRE_CHARM_DERIVED(NumericData,
+                                   elliptic::analytic_data::InitialGuess),
+      public ::NumericData {
  public:
   using ::NumericData::NumericData;
 
-  explicit NumericData(CkMigrateMessage* m);
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(NumericData);
 
@@ -178,11 +180,16 @@ namespace evolution::initial_data {
  * \see ::NumericData
  */
 class NumericData : public evolution::initial_data::InitialData,
-                    public ::NumericData {
+                    public ::NumericData
+#if defined(SPECTRE_USE_FINDUS)
+    ,
+                    public virtual findus::serialize::SerializableDerived<
+                        NumericData, evolution::initial_data::InitialData>
+#endif
+{
  public:
   using ::NumericData::NumericData;
 
-  explicit NumericData(CkMigrateMessage* m);
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(NumericData);
 

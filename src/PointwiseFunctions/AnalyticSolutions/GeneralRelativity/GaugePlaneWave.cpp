@@ -19,9 +19,6 @@
 
 namespace gr::Solutions {
 template <size_t Dim>
-GaugePlaneWave<Dim>::GaugePlaneWave(CkMigrateMessage* /*msg*/) {}
-
-template <size_t Dim>
 GaugePlaneWave<Dim>::GaugePlaneWave(
     const std::array<double, Dim>& wave_vector,
     std::unique_ptr<MathFunction<1, Frame::Inertial>> profile)

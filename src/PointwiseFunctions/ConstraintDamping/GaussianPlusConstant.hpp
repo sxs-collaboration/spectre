@@ -38,7 +38,10 @@ namespace ConstraintDamping {
  * the dimension of the spatial volume.
  */
 template <size_t VolumeDim, typename Fr>
-class GaussianPlusConstant : public DampingFunction<VolumeDim, Fr> {
+class GaussianPlusConstant
+    : public SPECTRE_CHARM_DERIVED(
+          SINGLE_ARG(GaussianPlusConstant<VolumeDim, Fr>),
+          SINGLE_ARG(DampingFunction<VolumeDim, Fr>)) {
  public:
   struct Constant {
     using type = double;
@@ -70,7 +73,6 @@ class GaussianPlusConstant : public DampingFunction<VolumeDim, Fr> {
   WRAPPED_PUPable_decl_base_template(SINGLE_ARG(DampingFunction<VolumeDim, Fr>),
                                      GaussianPlusConstant);  // NOLINT
 
-  explicit GaussianPlusConstant(CkMigrateMessage* msg);
   /// \endcond
 
   GaussianPlusConstant(double constant, double amplitude, double width,
@@ -131,6 +133,7 @@ bool operator!=(const GaussianPlusConstant<VolumeDim, Fr>& lhs,
 }
 }  // namespace ConstraintDamping
 
+#if defined(SPECTRE_USE_CHARM)
 /// \cond
 template <size_t VolumeDim, typename Fr>
 PUP::able::PUP_ID
@@ -138,3 +141,4 @@ PUP::able::PUP_ID
     ConstraintDamping::GaussianPlusConstant<VolumeDim, Fr>::my_PUP_ID =
         0;  // NOLINT
 /// \endcond
+#endif  // SPECTRE_USE_CHARM

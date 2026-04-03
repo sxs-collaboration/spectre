@@ -23,18 +23,16 @@
 
 namespace NewtonianEuler::BoundaryConditions {
 template <size_t Dim>
-Reflection<Dim>::Reflection(CkMigrateMessage* const msg)
-    : BoundaryCondition<Dim>(msg) {}
-
-template <size_t Dim>
 std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
 Reflection<Dim>::get_clone() const {
   return std::make_unique<Reflection>(*this);
 }
 
 template <size_t Dim>
-void Reflection<Dim>::pup(PUP::er& p) {
-  BoundaryCondition<Dim>::pup(p);
+void Reflection<Dim>::pup([[maybe_unused]] PUP::er& p) {
+#if defined(SPECTRE_USE_CHARM)
+  BoundaryConditions::BoundaryCondition<Dim>::pup(p);
+#endif  // SPECTRE_USE_CHARM
 }
 
 template <size_t Dim>
@@ -95,9 +93,11 @@ std::optional<std::string> Reflection<Dim>::dg_ghost(
   return {};
 }
 
+#if defined(SPECTRE_USE_CHARM)
 template <size_t Dim>
 // NOLINTNEXTLINE
 PUP::able::PUP_ID Reflection<Dim>::my_PUP_ID = 0;
+#endif  // SPECTRE_USE_CHARM
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 

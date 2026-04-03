@@ -62,7 +62,7 @@ struct email {
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-function"
-class Shape : public PUP::able {
+class Shape : public SPECTRE_CHARM_PUPable(Shape) {
  public:
   Shape() = default;
   virtual size_t number_of_sides() const = 0;
@@ -70,10 +70,9 @@ class Shape : public PUP::able {
   WRAPPED_PUPable_abstract(Shape);  // NOLINT
 };
 
-class Triangle : public Shape {
+class Triangle : public SPECTRE_CHARM_DERIVED(Triangle, Shape) {
  public:
   Triangle() = default;
-  explicit Triangle(CkMigrateMessage* /*m*/) {}
   size_t number_of_sides() const final { return 3; }
   // clang-tidy: internal charm++ warnings
   WRAPPED_PUPable_decl_base_template(Shape,  // NOLINT
@@ -81,10 +80,9 @@ class Triangle : public Shape {
   void pup(PUP::er& p) override { Shape::pup(p); }
 };
 
-class Square : public Shape {
+class Square : public SPECTRE_CHARM_DERIVED(Square, Shape) {
  public:
   Square() = default;
-  explicit Square(CkMigrateMessage* /*m*/) {}
   size_t number_of_sides() const final { return 4; }
   // clang-tidy: internal charm++ warnings
   WRAPPED_PUPable_decl_base_template(Shape,  // NOLINT
@@ -92,7 +90,7 @@ class Square : public Shape {
   void pup(PUP::er& p) override { Shape::pup(p); }
 };
 
-class Animal : public PUP::able {
+class Animal : public SPECTRE_CHARM_PUPable(Animal) {
  public:
   Animal() = default;
   virtual size_t number_of_legs() const = 0;
@@ -101,11 +99,10 @@ class Animal : public PUP::able {
   WRAPPED_PUPable_abstract(Animal);  // NOLINT
 };
 
-class Arthropod : public Animal {
+class Arthropod : public SPECTRE_CHARM_DERIVED(Arthropod, Animal) {
  public:
   Arthropod() = default;
   explicit Arthropod(const size_t num_legs) : number_of_legs_(num_legs){};
-  explicit Arthropod(CkMigrateMessage* /*m*/) {}
   size_t number_of_legs() const final { return number_of_legs_; }
   void set_number_of_legs(const size_t num_legs) final {
     number_of_legs_ = num_legs;
@@ -216,14 +213,11 @@ struct TestMetavariables {
 // PerformAlgorithmCallback because they can be mocked.
 class UseCkCallbackAsCallback : public Parallel::Callback {
  public:
-  WRAPPED_PUPable_decl(UseCkCallbackAsCallback);
+  WRAPPED_PUPable_decl_template(UseCkCallbackAsCallback);
   UseCkCallbackAsCallback() = default;
-  explicit UseCkCallbackAsCallback(CkMigrateMessage* msg)
-      : Parallel::Callback(msg) {}
   explicit UseCkCallbackAsCallback(const CkCallback& callback,
                                    const size_t index)
       : callback_(callback), index_(index) {}
-  using PUP::able::register_constructor;
   void invoke() override { callback_.send(nullptr); }
   void pup(PUP::er& p) override { p | callback_; }
   // We shouldn't be pupping so registration doesn't matter
@@ -621,14 +615,16 @@ void Test_GlobalCache<Metavariables>::exit() {
 
 // --------- registration stuff below -------
 
+#if defined(SPECTRE_USE_CHARM)
 // clang-format off
-PUPable_def(UseCkCallbackAsCallback)
+PUP::able::PUP_ID UseCkCallbackAsCallback::my_PUP_ID = 0; // NOLINT
 // clang-tidy: possibly throwing constructor static storage
 // clang-tidy: false positive: redundant declaration
 PUP::able::PUP_ID Triangle::my_PUP_ID = 0;  // NOLINT
 PUP::able::PUP_ID Square::my_PUP_ID = 0;        // NOLINT
 PUP::able::PUP_ID Arthropod::my_PUP_ID = 0;     // NOLINT
 // clang-format on
+#endif  // SPECTRE_USE_CHARM
 
 extern "C" void CkRegisterMainModule() {
   using charmxx_main_component = Test_GlobalCache<TestMetavariables>;

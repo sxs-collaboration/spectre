@@ -59,7 +59,8 @@ namespace InitialMagneticFields {
  * multiple magnetic fields can be superposed. Each magnetic field
  * configuration does a `+=` to make this possible.
  */
-class InitialMagneticField : public PUP::able {
+class InitialMagneticField
+    : public SPECTRE_CHARM_PUPable(InitialMagneticField) {
  protected:
   InitialMagneticField() = default;
 
@@ -83,7 +84,6 @@ class InitialMagneticField : public PUP::able {
   virtual bool is_equal(const InitialMagneticField& rhs) const = 0;
 
   /// \cond
-  explicit InitialMagneticField(CkMigrateMessage* msg) : PUP::able(msg) {}
   WRAPPED_PUPable_abstract(InitialMagneticField);
   /// \endcond
 };

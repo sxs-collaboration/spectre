@@ -26,11 +26,12 @@ namespace StepChoosers {
 ///
 /// The suggestion provided depends on the current time, so it should
 /// be applied immediately, rather than delayed several slabs.
-class StepToTimes : public StepChooser<StepChooserUse::Slab> {
+class StepToTimes
+    : public SPECTRE_CHARM_DERIVED(
+          StepToTimes, SINGLE_ARG(StepChooser<StepChooserUse::Slab>)) {
  public:
   /// \cond
   StepToTimes() = default;
-  explicit StepToTimes(CkMigrateMessage* /*unused*/) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(StepToTimes);  // NOLINT
   /// \endcond

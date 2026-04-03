@@ -39,7 +39,7 @@ namespace amr {
 ///
 /// \example
 /// \snippet Amr/Criteria/Test_Criterion.cpp criterion_examples
-class Criterion : public PUP::able {
+class Criterion : public SPECTRE_CHARM_PUPable(Criterion) {
  protected:
   /// \cond
   Criterion() = default;
@@ -51,7 +51,6 @@ class Criterion : public PUP::able {
 
  public:
   ~Criterion() override = default;
-  explicit Criterion(CkMigrateMessage* msg) : PUP::able(msg) {}
 
   WRAPPED_PUPable_abstract(Criterion);  // NOLINT
 

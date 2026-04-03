@@ -18,9 +18,6 @@
 
 namespace NewtonianEuler::BoundaryCorrections {
 template <size_t Dim>
-Rusanov<Dim>::Rusanov(CkMigrateMessage* msg) : BoundaryCorrection(msg) {}
-
-template <size_t Dim>
 std::unique_ptr<evolution::BoundaryCorrection> Rusanov<Dim>::get_clone() const {
   return std::make_unique<Rusanov>(*this);
 }
@@ -158,9 +155,11 @@ void Rusanov<Dim>::dg_boundary_terms(
   }
 }
 
+#if defined(SPECTRE_USE_CHARM)
 template <size_t Dim>
 // NOLINTNEXTLINE
 PUP::able::PUP_ID Rusanov<Dim>::my_PUP_ID = 0;
+#endif  // SPECTRE_USE_CHARM
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 

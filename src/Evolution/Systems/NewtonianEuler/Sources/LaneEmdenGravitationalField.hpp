@@ -64,7 +64,8 @@ namespace NewtonianEuler::Sources {
  * density to compute a self-consistent gravitational field (i.e., as if one
  * were solving a coupled Euler + Poisson system).
  */
-class LaneEmdenGravitationalField : public Source<3> {
+class LaneEmdenGravitationalField
+    : public SPECTRE_CHARM_DERIVED(LaneEmdenGravitationalField, Source<3>) {
  public:
   /// The central mass density of the star.
   struct CentralMassDensity {
@@ -105,7 +106,6 @@ class LaneEmdenGravitationalField : public Source<3> {
   ~LaneEmdenGravitationalField() override = default;
 
   /// \cond
-  explicit LaneEmdenGravitationalField(CkMigrateMessage* msg);
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(LaneEmdenGravitationalField);
   /// \endcond

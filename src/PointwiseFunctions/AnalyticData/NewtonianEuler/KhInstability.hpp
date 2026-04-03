@@ -96,8 +96,15 @@ namespace NewtonianEuler::AnalyticData {
  * the \f$z-\f$axis.
  */
 template <size_t Dim>
-class KhInstability : public evolution::initial_data::InitialData,
-                      public MarkAsAnalyticData {
+class KhInstability
+    : public evolution::initial_data::InitialData,
+      public MarkAsAnalyticData
+#if defined(SPECTRE_USE_FINDUS)
+    ,
+      public virtual findus::serialize::SerializableDerived<
+          KhInstability<Dim>, evolution::initial_data::InitialData>
+#endif
+{
  public:
   using equation_of_state_type = EquationsOfState::IdealFluid<false>;
 
@@ -194,7 +201,6 @@ class KhInstability : public evolution::initial_data::InitialData,
       -> std::unique_ptr<evolution::initial_data::InitialData> override;
 
   /// \cond
-  explicit KhInstability(CkMigrateMessage* msg);
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(KhInstability);
   /// \endcond

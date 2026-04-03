@@ -63,8 +63,6 @@ std::unique_ptr<evolution::initial_data::InitialData> MagneticRotor::get_clone()
   return std::make_unique<MagneticRotor>(*this);
 }
 
-MagneticRotor::MagneticRotor(CkMigrateMessage* msg) : InitialData(msg) {}
-
 void MagneticRotor::pup(PUP::er& p) {
   InitialData::pup(p);
   p | rotor_radius_;
@@ -174,7 +172,9 @@ MagneticRotor::variables(
       get<density_tag>(data), get<energy_tag>(data), get<pressure_tag>(data));
 }
 
+#if defined(SPECTRE_USE_CHARM)
 PUP::able::PUP_ID MagneticRotor::my_PUP_ID = 0;
+#endif  // SPECTRE_USE_CHARM
 
 bool operator==(const MagneticRotor& lhs, const MagneticRotor& rhs) {
   // there is no comparison operator for the EoS, but should be okay as

@@ -54,7 +54,8 @@ namespace ScalarAdvection::fd {
  * ::fd::reconstruction::aoweno_53() for details.
  */
 template <size_t Dim>
-class AoWeno53 : public Reconstructor<Dim> {
+class AoWeno53 : public SPECTRE_CHARM_DERIVED(SINGLE_ARG(AoWeno53<Dim>),
+                                              Reconstructor<Dim>) {
  private:
   using face_vars_tags =
       tmpl::list<ScalarAdvection::Tags::U,
@@ -99,8 +100,6 @@ class AoWeno53 : public Reconstructor<Dim> {
 
   AoWeno53(double gamma_hi, double gamma_lo, double epsilon,
            size_t nonlinear_weight_exponent);
-
-  explicit AoWeno53(CkMigrateMessage* msg);
 
   WRAPPED_PUPable_decl_base_template(Reconstructor<Dim>, AoWeno53);
 

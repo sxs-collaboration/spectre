@@ -32,7 +32,7 @@ namespace Events {}
 /// may be observed. For example, in the scalar wave system the 1- and 2-index
 /// constraints would be added as compute tags, as well as anything they depend
 /// on that's not already in the `DataBox`.
-class Event : public PUP::able {
+class Event : public SPECTRE_CHARM_PUPable(Event) {
  protected:
   /// \cond
   Event() = default;
@@ -44,7 +44,6 @@ class Event : public PUP::able {
 
  public:
   ~Event() override = default;
-  explicit Event(CkMigrateMessage* msg) : PUP::able(msg) {}
 
   WRAPPED_PUPable_abstract(Event);  // NOLINT
 

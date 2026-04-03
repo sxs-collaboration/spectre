@@ -17,12 +17,10 @@ namespace Triggers {
  * coordinate sphere of radius 1.99 M centered on the origin in the inertial
  * frame. This assumes a black hole mass of 1M.
  */
-class InsideHorizon : public Trigger {
+class InsideHorizon : public SPECTRE_CHARM_DERIVED(InsideHorizon, Trigger) {
  public:
   /// \cond
   InsideHorizon() = default;
-  explicit InsideHorizon(CkMigrateMessage* /*unused*/) {}
-  using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(InsideHorizon);  // NOLINT
   /// \endcond
 

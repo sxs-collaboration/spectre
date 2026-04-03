@@ -12,7 +12,8 @@ namespace RadiationTransport::M1Grey {
 namespace BoundaryConditions {
 /// \brief The base class off of which all boundary conditions must inherit
 template <typename NeutrinoSpeciesList>
-class BoundaryCondition : public domain::BoundaryConditions::BoundaryCondition {
+class BoundaryCondition
+    : public virtual domain::BoundaryConditions::BoundaryCondition {
  public:
   BoundaryCondition() = default;
   BoundaryCondition(BoundaryCondition&&) = default;
@@ -21,11 +22,10 @@ class BoundaryCondition : public domain::BoundaryConditions::BoundaryCondition {
   BoundaryCondition& operator=(const BoundaryCondition&) = default;
   ~BoundaryCondition() override = default;
 
-  explicit BoundaryCondition(CkMigrateMessage* const msg)
-      : domain::BoundaryConditions::BoundaryCondition(msg) {}
-
-  void pup(PUP::er& p) override {
+  void pup([[maybe_unused]] PUP::er& p) override {
+#if defined(SPECTRE_USE_CHARM)
     domain::BoundaryConditions::BoundaryCondition::pup(p);
+#endif  // SPECTRE_USE_CHARM
   }
 };
 }  // namespace BoundaryConditions

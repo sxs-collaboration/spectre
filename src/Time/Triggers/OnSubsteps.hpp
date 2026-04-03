@@ -44,11 +44,10 @@ namespace Triggers {
  *       Always:
  * ```
  */
-class OnSubsteps : public Trigger {
+class OnSubsteps : public SPECTRE_CHARM_DERIVED(OnSubsteps, Trigger) {
  public:
   /// \cond
   OnSubsteps() = default;
-  explicit OnSubsteps(CkMigrateMessage* /*unused*/) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(OnSubsteps);  // NOLINT
   /// \endcond

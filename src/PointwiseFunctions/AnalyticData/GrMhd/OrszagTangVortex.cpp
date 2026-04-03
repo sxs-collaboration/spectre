@@ -24,8 +24,6 @@ OrszagTangVortex::get_clone() const {
   return std::make_unique<OrszagTangVortex>(*this);
 }
 
-OrszagTangVortex::OrszagTangVortex(CkMigrateMessage* msg) : InitialData(msg) {}
-
 void OrszagTangVortex::pup(PUP::er& p) {
   InitialData::pup(p);
   p | equation_of_state_;
@@ -121,7 +119,9 @@ OrszagTangVortex::variables(
       get<density_tag>(data), get<energy_tag>(data), get<pressure_tag>(data));
 }
 
+#if defined(SPECTRE_USE_CHARM)
 PUP::able::PUP_ID OrszagTangVortex::my_PUP_ID = 0;
+#endif  // SPECTRE_USE_CHARM
 
 bool operator==(const OrszagTangVortex& /*lhs*/,
                 const OrszagTangVortex& /*rhs*/) {

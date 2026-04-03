@@ -155,5 +155,7 @@ double DeltaR::control_error(const Info& /*info*/,
   return control_error_args.control_error_delta_r;
 }
 
+#if defined(SPECTRE_USE_CHARM)
 PUP::able::PUP_ID DeltaR::my_PUP_ID = 0;
+#endif  // SPECTRE_USE_CHARM
 }  // namespace control_system::size::States

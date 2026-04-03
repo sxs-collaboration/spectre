@@ -39,19 +39,17 @@ struct ScalarFieldTag : db::SimpleTag {
 #pragma GCC diagnostic ignored "-Wunused-function"
 struct NoAnalyticSolution : elliptic::analytic_data::Background {
   NoAnalyticSolution() = default;
-  explicit NoAnalyticSolution(CkMigrateMessage* m)
-      : elliptic::analytic_data::Background(m) {}
-  WRAPPED_PUPable_decl_template(NoAnalyticSolution);
+  WRAPPED_PUPable_decl_template(NoAnalyticSolution);  // NOLINT
 
   // Does _not_ provide variables for all system fields
 };
 
+#if defined(SPECTRE_USE_CHARM)
 PUP::able::PUP_ID NoAnalyticSolution::my_PUP_ID = 0;  // NOLINT
+#endif                                                // SPECTRE_USE_CHARM
 
 struct AnalyticSolution : elliptic::analytic_data::AnalyticSolution {
   AnalyticSolution() = default;
-  explicit AnalyticSolution(CkMigrateMessage* m)
-      : elliptic::analytic_data::AnalyticSolution(m) {}
   WRAPPED_PUPable_decl_template(AnalyticSolution);
   std::unique_ptr<elliptic::analytic_data::AnalyticSolution> get_clone()
       const override {
@@ -65,7 +63,9 @@ struct AnalyticSolution : elliptic::analytic_data::AnalyticSolution {
   }
 };
 
+#if defined(SPECTRE_USE_CHARM)
 PUP::able::PUP_ID AnalyticSolution::my_PUP_ID = 0;  // NOLINT
+#endif                                              // SPECTRE_USE_CHARM
 #pragma GCC diagnostic pop
 
 template <typename Metavariables>

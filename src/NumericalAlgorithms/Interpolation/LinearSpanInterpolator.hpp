@@ -18,7 +18,8 @@ namespace intrp {
 
 /// \brief Performs a linear interpolation; this class can be chosen via the
 /// options factory mechanism as a possible `SpanInterpolator`
-class LinearSpanInterpolator : public SpanInterpolator {
+class LinearSpanInterpolator
+    : public SPECTRE_CHARM_DERIVED(LinearSpanInterpolator, SpanInterpolator) {
  public:
   using options = tmpl::list<>;
   static constexpr Options::String help = {"Linear interpolator."};
@@ -31,8 +32,6 @@ class LinearSpanInterpolator : public SpanInterpolator {
   ~LinearSpanInterpolator() override = default;
 
   WRAPPED_PUPable_decl_template(LinearSpanInterpolator);  // NOLINT
-
-  explicit LinearSpanInterpolator(CkMigrateMessage* /*unused*/) {}
 
   // clang-tidy: do not pass by non-const reference
   void pup(PUP::er& /*p*/) override {}

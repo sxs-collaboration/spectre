@@ -142,8 +142,11 @@ namespace ScalarSelfForce::AnalyticData {
  * transition, and (2) we can more easily support the 2nd order self-force
  * source.
  */
-class CircularOrbit : public elliptic::analytic_data::Background,
-                      public elliptic::analytic_data::InitialGuess {
+class CircularOrbit
+    : public SPECTRE_CHARM_DERIVED(CircularOrbit,
+                                   elliptic::analytic_data::Background),
+      public SPECTRE_CHARM_DERIVED(CircularOrbit,
+                                   elliptic::analytic_data::InitialGuess) {
  public:
   struct BlackHoleMass {
     static constexpr Options::String help =
@@ -201,7 +204,6 @@ class CircularOrbit : public elliptic::analytic_data::Background,
       std::optional<std::array<double, 4>> hyperboloidal_slicing_transitions,
       bool impose_equatorial_symmetry);
 
-  explicit CircularOrbit(CkMigrateMessage* m);
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(CircularOrbit);
 

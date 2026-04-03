@@ -25,13 +25,11 @@ AnalyticConstant<Dim>::get_clone() const {
 
 template <size_t Dim>
 void AnalyticConstant<Dim>::pup(PUP::er& p) {
-  BoundaryCondition<Dim>::pup(p);
+#if defined(SPECTRE_USE_CHARM)
+  BoundaryConditions::BoundaryCondition<Dim>::pup(p);
+#endif  // SPECTRE_USE_CHARM
   p | amplitude_;
 }
-
-template <size_t Dim>
-AnalyticConstant<Dim>::AnalyticConstant(CkMigrateMessage* const msg)
-    : BoundaryCondition<Dim>(msg) {}
 
 template <size_t Dim>
 AnalyticConstant<Dim>::AnalyticConstant(const double amplitude)
@@ -71,9 +69,11 @@ std::optional<std::string> AnalyticConstant<Dim>::dg_ghost(
   return {};
 }
 
+#if defined(SPECTRE_USE_CHARM)
 template <size_t Dim>
 // NOLINTNEXTLINE
 PUP::able::PUP_ID AnalyticConstant<Dim>::my_PUP_ID = 0;
+#endif  // SPECTRE_USE_CHARM
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 

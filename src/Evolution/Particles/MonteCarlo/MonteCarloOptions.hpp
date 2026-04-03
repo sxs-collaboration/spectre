@@ -13,7 +13,8 @@
 namespace Particles::MonteCarlo {
 
 template <size_t NeutrinoSpecies>
-class MonteCarloOptions : public PUP::able {
+class MonteCarloOptions
+    : public SPECTRE_CHARM_PUPable(MonteCarloOptions<NeutrinoSpecies>) {
  public:
   explicit MonteCarloOptions(
       const std::array<double, NeutrinoSpecies> initial_packet_energy)
@@ -31,10 +32,9 @@ class MonteCarloOptions : public PUP::able {
 
   using options = tmpl::list<InitialPacketEnergy>;
 
-  explicit MonteCarloOptions(CkMigrateMessage* msg) : PUP::able(msg) {}
-
   using PUP::able::register_constructor;
-  void pup(PUP::er& p) override;
+  SPECTRE_FINDUS_VIRTUAL()
+  void pup(PUP::er& p) SPECTRE_CHARM_OVERRIDE();
   WRAPPED_PUPable_decl_template(MonteCarloOptions);
 
   const std::array<double, NeutrinoSpecies>& get_initial_packet_energy() const {

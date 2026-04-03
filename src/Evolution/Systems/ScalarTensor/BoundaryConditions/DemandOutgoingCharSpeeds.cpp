@@ -22,10 +22,11 @@ DemandOutgoingCharSpeeds::get_clone() const {
   return std::make_unique<DemandOutgoingCharSpeeds>(*this);
 }
 
-void DemandOutgoingCharSpeeds::pup(PUP::er& p) { BoundaryCondition::pup(p); }
-
-DemandOutgoingCharSpeeds::DemandOutgoingCharSpeeds(CkMigrateMessage* const msg)
-    : BoundaryCondition(msg) {}
+void DemandOutgoingCharSpeeds::pup([[maybe_unused]] PUP::er& p) {
+#if defined(SPECTRE_USE_CHARM)
+  BoundaryCondition::pup(p);
+#endif  // SPECTRE_USE_CHARM
+}
 
 std::optional<std::string>
 DemandOutgoingCharSpeeds::dg_demand_outgoing_char_speeds(
@@ -77,6 +78,8 @@ DemandOutgoingCharSpeeds::dg_demand_outgoing_char_speeds(
   return std::nullopt;  // LCOV_EXCL_LINE
 }
 
+#if defined(SPECTRE_USE_CHARM)
 // NOLINTNEXTLINE
 PUP::able::PUP_ID DemandOutgoingCharSpeeds::my_PUP_ID = 0;
+#endif  // SPECTRE_USE_CHARM
 }  // namespace ScalarTensor::BoundaryConditions

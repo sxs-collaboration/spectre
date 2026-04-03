@@ -44,7 +44,8 @@ MagnetizedTovStar::MagnetizedTovStar(
       magnetic_fields_(std::move(magnetic_fields)) {}
 
 MagnetizedTovStar::MagnetizedTovStar(const MagnetizedTovStar& rhs)
-    : evolution::initial_data::InitialData{rhs},
+    : PUP::able(rhs),
+      evolution::initial_data::InitialData{rhs},
       RelativisticEuler::Solutions::TovStar(
           static_cast<const RelativisticEuler::Solutions::TovStar&>(rhs)),
       magnetic_fields_(clone_unique_ptrs(rhs.magnetic_fields_)) {}
@@ -63,8 +64,6 @@ std::unique_ptr<evolution::initial_data::InitialData>
 MagnetizedTovStar::get_clone() const {
   return std::make_unique<MagnetizedTovStar>(*this);
 }
-
-MagnetizedTovStar::MagnetizedTovStar(CkMigrateMessage* msg) : tov_star(msg) {}
 
 void MagnetizedTovStar::pup(PUP::er& p) {
   tov_star::pup(p);
@@ -96,7 +95,9 @@ void MagnetizedTovVariables<DataType, Region>::operator()(
 }
 }  // namespace magnetized_tov_detail
 
+#if defined(SPECTRE_USE_CHARM)
 PUP::able::PUP_ID MagnetizedTovStar::my_PUP_ID = 0;
+#endif  // SPECTRE_USE_CHARM
 
 bool operator==(const MagnetizedTovStar& lhs, const MagnetizedTovStar& rhs) {
   bool equal =

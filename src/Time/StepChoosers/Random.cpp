@@ -23,9 +23,6 @@ template <size_t VolumeDim>
 Random<VolumeDim>::Random() = default;
 
 template <size_t VolumeDim>
-Random<VolumeDim>::Random(CkMigrateMessage* /*unused*/) {}
-
-template <size_t VolumeDim>
 Random<VolumeDim>::Random(const double minimum, const double maximum,
                           const size_t seed, const Options::Context& context)
     : minimum_(minimum), maximum_(maximum), seed_(seed) {
@@ -71,8 +68,10 @@ void Random<VolumeDim>::pup(PUP::er& p) {
   p | seed_;
 }
 
+#if defined(SPECTRE_USE_CHARM)
 template <size_t VolumeDim>
 PUP::able::PUP_ID Random<VolumeDim>::my_PUP_ID = 0;  // NOLINT
+#endif                                               // SPECTRE_USE_CHARM
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 

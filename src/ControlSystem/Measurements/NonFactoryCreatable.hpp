@@ -24,12 +24,13 @@ struct NonFactoryCreatableWrapper : public FactoryCreatableClass {
   using factory_creatable_class = FactoryCreatableClass;
 
   /// \cond
-  explicit NonFactoryCreatableWrapper(CkMigrateMessage* /*unused*/) {}
-  using PUP::able::register_constructor;
-  WRAPPED_PUPable_decl_template(NonFactoryCreatableWrapper);  // NOLINT
+  WRAPPED_PUPable_decl_base_template(  // NOLINT
+      NonFactoryCreatableWrapper,
+      NonFactoryCreatableWrapper<FactoryCreatableClass>);
   /// \endcond
 };
 
+#if defined(SPECTRE_USE_CHARM)
 /// \cond
 // NOLINTBEGIN
 template <typename FactoryCreatableClass>
@@ -37,3 +38,4 @@ PUP::able::PUP_ID NonFactoryCreatableWrapper<FactoryCreatableClass>::my_PUP_ID =
     0;
 // NOLINTEND
 /// \endcond
+#endif  // SPECTRE_USE_CHARM

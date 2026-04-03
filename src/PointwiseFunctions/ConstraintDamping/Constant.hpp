@@ -36,7 +36,9 @@ namespace ConstraintDamping {
  * the dimension of the spatial volume.
  */
 template <size_t VolumeDim, typename Fr>
-class Constant : public DampingFunction<VolumeDim, Fr> {
+class Constant
+    : public SPECTRE_CHARM_DERIVED(SINGLE_ARG(Constant<VolumeDim, Fr>),
+                                   SINGLE_ARG(DampingFunction<VolumeDim, Fr>)) {
  public:
   struct Value {
     using type = double;
@@ -50,7 +52,6 @@ class Constant : public DampingFunction<VolumeDim, Fr> {
   WRAPPED_PUPable_decl_base_template(SINGLE_ARG(DampingFunction<VolumeDim, Fr>),
                                      Constant);  // NOLINT
 
-  explicit Constant(CkMigrateMessage* msg);
   /// \endcond
 
   Constant(double value);
@@ -101,9 +102,11 @@ bool operator!=(const Constant<VolumeDim, Fr>& lhs,
 }
 }  // namespace ConstraintDamping
 
+#if defined(SPECTRE_USE_CHARM)
 /// \cond
 template <size_t VolumeDim, typename Fr>
 // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
 PUP::able::PUP_ID ConstraintDamping::Constant<VolumeDim, Fr>::my_PUP_ID =
     0;  // NOLINT
 /// \endcond
+#endif  // SPECTRE_USE_CHARM

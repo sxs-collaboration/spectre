@@ -103,10 +103,12 @@ void SeparationLessThan<UseGridCentersFunctionOfTime>::pup(PUP::er& p) {
   p | separation_;
 }
 
+#if defined(SPECTRE_USE_CHARM)
 template <bool UseGridCentersFunctionOfTime>
 // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
 PUP::able::PUP_ID SeparationLessThan<UseGridCentersFunctionOfTime>::my_PUP_ID =
     0;
+#endif  // SPECTRE_USE_CHARM
 
 template class SeparationLessThan<true>;
 template class SeparationLessThan<false>;

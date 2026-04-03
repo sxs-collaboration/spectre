@@ -31,7 +31,6 @@ class TestTrigger : public DenseTrigger {
  public:
   /// \cond
   TestTrigger() = default;
-  explicit TestTrigger(CkMigrateMessage* const msg) : DenseTrigger(msg) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(TestTrigger);  // NOLINT
   /// \endcond
@@ -99,8 +98,6 @@ class BoxTrigger : public DenseTrigger {
  public:
   /// \cond
   BoxTrigger() = default;
-  explicit BoxTrigger(CkMigrateMessage* const msg) : DenseTrigger(msg) {}
-  using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(BoxTrigger);  // NOLINT
   /// \endcond
 
@@ -142,8 +139,10 @@ class BoxTrigger : public DenseTrigger {
   void pup(PUP::er& p) { DenseTrigger::pup(p); }
 };
 
+#if defined(SPECTRE_USE_CHARM)
 /// \cond
 template <typename Label>
 PUP::able::PUP_ID BoxTrigger<Label>::my_PUP_ID = 0;  // NOLINT
 /// \endcond
+#endif  // SPECTRE_USE_CHARM
 }  // namespace TestHelpers::DenseTriggers

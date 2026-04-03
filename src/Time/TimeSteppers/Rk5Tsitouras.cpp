@@ -6,7 +6,6 @@
 #include "DataStructures/TaggedVariant.hpp"
 
 namespace TimeSteppers {
-Rk5Tsitouras::Rk5Tsitouras(CkMigrateMessage* /*msg*/) {}
 
 variants::TaggedVariant<Tags::FixedOrder, Tags::VariableOrder>
 Rk5Tsitouras::order() const {
@@ -52,4 +51,6 @@ const RungeKutta::ButcherTableau& Rk5Tsitouras::butcher_tableau() const {
 }
 }  // namespace TimeSteppers
 
+#if defined(SPECTRE_USE_CHARM)
 PUP::able::PUP_ID TimeSteppers::Rk5Tsitouras::my_PUP_ID = 0;  // NOLINT
+#endif  // SPECTRE_USE_CHARM

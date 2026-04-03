@@ -16,8 +16,6 @@
 #include "Utilities/Gsl.hpp"
 
 namespace Burgers::BoundaryCorrections {
-Hll::Hll(CkMigrateMessage* msg) : BoundaryCorrection(msg) {}
-
 std::unique_ptr<evolution::BoundaryCorrection> Hll::get_clone() const {
   return std::make_unique<Hll>(*this);
 }
@@ -71,5 +69,7 @@ void Hll::dg_boundary_terms(
 }
 }  // namespace Burgers::BoundaryCorrections
 
+#if defined(SPECTRE_USE_CHARM)
 // NOLINTNEXTLINE
 PUP::able::PUP_ID Burgers::BoundaryCorrections::Hll::my_PUP_ID = 0;
+#endif  // SPECTRE_USE_CHARM

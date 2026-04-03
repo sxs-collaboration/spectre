@@ -36,10 +36,6 @@ void NumericData::pup(PUP::er& p) {
 
 namespace elliptic::analytic_data {
 
-NumericData::NumericData(CkMigrateMessage* m)
-    : elliptic::analytic_data::Background(m),
-      elliptic::analytic_data::InitialGuess(m) {}
-
 void NumericData::pup(PUP::er& p) {
   elliptic::analytic_data::Background::pup(p);
   elliptic::analytic_data::InitialGuess::pup(p);
@@ -55,14 +51,13 @@ bool operator!=(const NumericData& lhs, const NumericData& rhs) {
   return not(lhs == rhs);
 }
 
+#if defined(SPECTRE_USE_CHARM)
 PUP::able::PUP_ID NumericData::my_PUP_ID = 0;  // NOLINT
+#endif                                         // SPECTRE_USE_CHARM
 
 }  // namespace elliptic::analytic_data
 
 namespace evolution::initial_data {
-
-NumericData::NumericData(CkMigrateMessage* m)
-    : evolution::initial_data::InitialData(m) {}
 
 std::unique_ptr<evolution::initial_data::InitialData> NumericData::get_clone()
     const {
@@ -83,6 +78,8 @@ bool operator!=(const NumericData& lhs, const NumericData& rhs) {
   return not(lhs == rhs);
 }
 
+#if defined(SPECTRE_USE_CHARM)
 PUP::able::PUP_ID NumericData::my_PUP_ID = 0;  // NOLINT
+#endif                                         // SPECTRE_USE_CHARM
 
 }  // namespace evolution::initial_data

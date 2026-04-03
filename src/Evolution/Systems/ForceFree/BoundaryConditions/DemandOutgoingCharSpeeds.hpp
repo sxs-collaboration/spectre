@@ -30,7 +30,11 @@ namespace ForceFree::BoundaryConditions {
  * are directed out of the domain; no boundary data is altered by this boundary
  * condition.
  */
-class DemandOutgoingCharSpeeds final : public BoundaryCondition {
+class DemandOutgoingCharSpeeds final
+    : public BoundaryCondition
+      SPECTRE_FINDUS_DERIVED(
+          SINGLE_ARG(DemandOutgoingCharSpeeds),
+          SINGLE_ARG(domain::BoundaryConditions::BoundaryCondition)) {
  public:
   using options = tmpl::list<>;
   static constexpr Options::String help{
@@ -44,8 +48,6 @@ class DemandOutgoingCharSpeeds final : public BoundaryCondition {
   DemandOutgoingCharSpeeds& operator=(const DemandOutgoingCharSpeeds&) =
       default;
   ~DemandOutgoingCharSpeeds() override = default;
-
-  explicit DemandOutgoingCharSpeeds(CkMigrateMessage* msg);
 
   WRAPPED_PUPable_decl_base_template(
       domain::BoundaryConditions::BoundaryCondition, DemandOutgoingCharSpeeds);

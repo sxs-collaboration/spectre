@@ -61,8 +61,6 @@ std::unique_ptr<evolution::initial_data::InitialData> KhInstability::get_clone()
   return std::make_unique<KhInstability>(*this);
 }
 
-KhInstability::KhInstability(CkMigrateMessage* msg) : InitialData(msg) {}
-
 void KhInstability::pup(PUP::er& p) {
   InitialData::pup(p);
   p | adiabatic_index_;
@@ -199,7 +197,9 @@ KhInstability::variables(
           variables(x, tmpl::list<hydro::Tags::Pressure<DataType>>{})));
 }
 
+#if defined(SPECTRE_USE_CHARM)
 PUP::able::PUP_ID KhInstability::my_PUP_ID = 0;
+#endif  // SPECTRE_USE_CHARM
 
 bool operator==(const KhInstability& lhs, const KhInstability& rhs) {
   // No comparison for equation_of_state_. Comparing adiabatic_index_ should

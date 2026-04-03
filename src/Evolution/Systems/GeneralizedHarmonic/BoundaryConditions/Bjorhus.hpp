@@ -100,7 +100,11 @@ namespace gh::BoundaryConditions {
  * boundary.
  */
 template <size_t Dim>
-class ConstraintPreservingBjorhus final : public BoundaryCondition<Dim> {
+class ConstraintPreservingBjorhus final
+    : public BoundaryCondition<Dim>
+      SPECTRE_FINDUS_DERIVED(
+          SINGLE_ARG(DirichletMinkowski<Dim>),
+          SINGLE_ARG(domain::BoundaryConditions::BoundaryCondition)) {
  public:
   struct TypeOptionTag {
     using type = detail::ConstraintPreservingBjorhusType;
@@ -130,8 +134,6 @@ class ConstraintPreservingBjorhus final : public BoundaryCondition<Dim> {
       default;
   /// \endcond
   ~ConstraintPreservingBjorhus() override = default;
-
-  explicit ConstraintPreservingBjorhus(CkMigrateMessage* msg);
 
   WRAPPED_PUPable_decl_base_template(
       domain::BoundaryConditions::BoundaryCondition,

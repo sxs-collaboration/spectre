@@ -15,7 +15,8 @@ namespace BoundaryConditions {
 /// \brief The base class for Generalized Harmonic and scalar field combined
 /// boundary conditions; all boundary conditions for this system must inherit
 /// from this base class.
-class BoundaryCondition : public domain::BoundaryConditions::BoundaryCondition {
+class BoundaryCondition
+    : public virtual domain::BoundaryConditions::BoundaryCondition {
  public:
   BoundaryCondition() = default;
   BoundaryCondition(BoundaryCondition&&) = default;
@@ -23,9 +24,8 @@ class BoundaryCondition : public domain::BoundaryConditions::BoundaryCondition {
   BoundaryCondition(const BoundaryCondition&) = default;
   BoundaryCondition& operator=(const BoundaryCondition&) = default;
   ~BoundaryCondition() override = default;
-  explicit BoundaryCondition(CkMigrateMessage* msg);
 
   void pup(PUP::er& p) override;
 };
-} // namespace BoundaryCondition
-} // namespace ScalarTensor
+}  // namespace BoundaryConditions
+}  // namespace ScalarTensor

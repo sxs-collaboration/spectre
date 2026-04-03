@@ -31,7 +31,7 @@ namespace Sources {
  * \brief Source terms base class.
  */
 template <size_t Dim>
-class Source : public PUP::able {
+class Source : public SPECTRE_CHARM_PUPable(Source<Dim>) {
  protected:
   Source() = default;
 
@@ -39,7 +39,6 @@ class Source : public PUP::able {
   ~Source() override = default;
 
   /// \cond
-  explicit Source(CkMigrateMessage* msg) : PUP::able(msg) {}
   WRAPPED_PUPable_abstract(Source);
   /// \endcond
 

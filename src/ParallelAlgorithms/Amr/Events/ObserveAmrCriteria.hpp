@@ -72,12 +72,11 @@ struct get_compute_tags {
 /// - 2.0 is for splitting the element
 template <typename Metavariables>
 class ObserveAmrCriteria
-    : public dg::Events::ObserveConstantsPerElement<Metavariables::volume_dim> {
+    : public dg::Events::ObserveConstantsPerElement<Metavariables::volume_dim>
+      SPECTRE_FINDUS_DERIVED(ObserveAmrCriteria<Metavariables>, ::Event) {
  public:
   static constexpr size_t volume_dim = Metavariables::volume_dim;
   /// \cond
-  explicit ObserveAmrCriteria(CkMigrateMessage* m)
-      : dg::Events::ObserveConstantsPerElement<volume_dim>(m) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(ObserveAmrCriteria);  // NOLINT
   /// \endcond
@@ -142,8 +141,10 @@ class ObserveAmrCriteria
   }
 };
 
+#if defined(SPECTRE_USE_CHARM)
 /// \cond
 template <typename Metavariables>
 PUP::able::PUP_ID ObserveAmrCriteria<Metavariables>::my_PUP_ID = 0;  // NOLINT
 /// \endcond
+#endif  // SPECTRE_USE_CHARM
 }  // namespace amr::Events

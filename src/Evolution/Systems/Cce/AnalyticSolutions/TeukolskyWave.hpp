@@ -38,7 +38,9 @@ namespace Solutions {
  * F(u) = A e^{- u^2 / k^2}.
  * \f]
  */
-struct TeukolskyWave : public SphericalMetricData {
+struct TeukolskyWave
+    : public virtual SPECTRE_CHARM_DERIVED(TeukolskyWave, WorldtubeData),
+      public virtual SPECTRE_CHARM_DERIVED(TeukolskyWave, SphericalMetricData) {
   struct ExtractionRadius {
     using type = double;
     static constexpr Options::String help{
@@ -64,8 +66,6 @@ struct TeukolskyWave : public SphericalMetricData {
   using options = tmpl::list<ExtractionRadius, Amplitude, Duration>;
 
   WRAPPED_PUPable_decl_template(TeukolskyWave);  // NOLINT
-
-  explicit TeukolskyWave(CkMigrateMessage* msg) : SphericalMetricData(msg) {}
 
   // clang doesn't manage to use = default correctly in this case
   // NOLINTNEXTLINE(modernize-use-equals-default)

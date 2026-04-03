@@ -431,7 +431,8 @@ RotatingStar::RotatingStar(
       equation_of_state_(std::move(equation_of_state)) {}
 
 RotatingStar::RotatingStar(const RotatingStar& rhs)
-    : evolution::initial_data::InitialData(rhs),
+    : PUP::able(rhs),
+      evolution::initial_data::InitialData(rhs),
       rot_ns_filename_(rhs.rot_ns_filename_),
       cst_solution_{rot_ns_filename_, rhs.is_polytrope_,
                     rhs.polytropic_constant_},
@@ -450,8 +451,6 @@ RotatingStar& RotatingStar::operator=(const RotatingStar& rhs) {
   equation_of_state_ = rhs.equation_of_state_->get_clone();
   return *this;
 }
-
-RotatingStar::RotatingStar(CkMigrateMessage* msg) : InitialData(msg) {}
 
 std::unique_ptr<evolution::initial_data::InitialData> RotatingStar::get_clone()
     const {
@@ -996,7 +995,9 @@ auto RotatingStar::variables(
           variables(vars, x, tmpl::list<DerivSpatialMetric<DataType>>{})));
 }
 
+#if defined(SPECTRE_USE_CHARM)
 PUP::able::PUP_ID RotatingStar::my_PUP_ID = 0;
+#endif  // SPECTRE_USE_CHARM
 
 bool operator==(const RotatingStar& lhs, const RotatingStar& rhs) {
   return lhs.rot_ns_filename_ == rhs.rot_ns_filename_ and

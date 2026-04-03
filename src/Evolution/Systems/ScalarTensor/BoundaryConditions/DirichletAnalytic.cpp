@@ -24,7 +24,8 @@
 
 namespace ScalarTensor::BoundaryConditions {
 DirichletAnalytic::DirichletAnalytic(const DirichletAnalytic& rhs)
-    : BoundaryCondition{dynamic_cast<const BoundaryCondition&>(rhs)},
+    : PUP::able(rhs),
+      BoundaryCondition{dynamic_cast<const BoundaryCondition&>(rhs)},
       analytic_prescription_(rhs.analytic_prescription_->get_clone()),
       amplitude_(rhs.amplitude_) {}
 
@@ -43,16 +44,15 @@ DirichletAnalytic::DirichletAnalytic(
     : analytic_prescription_(std::move(analytic_prescription)),
       amplitude_(amplitude) {}
 
-DirichletAnalytic::DirichletAnalytic(CkMigrateMessage* const msg)
-    : BoundaryCondition(msg) {}
-
 std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
 DirichletAnalytic::get_clone() const {
   return std::make_unique<DirichletAnalytic>(*this);
 }
 
 void DirichletAnalytic::pup(PUP::er& p) {
+#if defined(SPECTRE_USE_CHARM)
   BoundaryCondition::pup(p);
+#endif  // SPECTRE_USE_CHARM
   p | analytic_prescription_;
   p | amplitude_;
 }
@@ -133,6 +133,8 @@ std::optional<std::string> DirichletAnalytic::dg_ghost(
   return {};
 }
 
+#if defined(SPECTRE_USE_CHARM)
 // NOLINTNEXTLINE
 PUP::able::PUP_ID DirichletAnalytic::my_PUP_ID = 0;
+#endif  // SPECTRE_USE_CHARM
 }  // namespace ScalarTensor::BoundaryConditions

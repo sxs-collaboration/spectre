@@ -27,12 +27,10 @@ namespace Triggers {
  * The trigger only approximates whether the particle might cross during the
  * next time step and may therefore fire twice.
  */
-class OrbitRadius : public Trigger {
+class OrbitRadius : public SPECTRE_CHARM_DERIVED(OrbitRadius, Trigger) {
  public:
   /// \cond
   OrbitRadius() = default;
-  explicit OrbitRadius(CkMigrateMessage* /*unused*/) {}
-  using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(OrbitRadius);  // NOLINT
   /// \endcond
 

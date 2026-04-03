@@ -74,8 +74,6 @@ struct SystemAnalyticSolution : public MarkAsAnalyticSolution,
   SystemAnalyticSolution() = default;
   ~SystemAnalyticSolution() override = default;
 
-  explicit SystemAnalyticSolution(CkMigrateMessage* msg)
-      : evolution::initial_data::InitialData(msg) {}
   using PUP::able::register_constructor;
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-function"
@@ -144,16 +142,16 @@ struct SystemAnalyticSolution : public MarkAsAnalyticSolution,
   }
 };
 
+#if defined(SPECTRE_USE_CHARM)
 // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
 PUP::able::PUP_ID SystemAnalyticSolution::my_PUP_ID = 0;
+#endif  // SPECTRE_USE_CHARM
 
 struct SystemAnalyticData : public MarkAsAnalyticData,
                             public evolution::initial_data::InitialData {
   SystemAnalyticData() = default;
   ~SystemAnalyticData() override = default;
 
-  explicit SystemAnalyticData(CkMigrateMessage* msg)
-      : evolution::initial_data::InitialData(msg) {}
   using PUP::able::register_constructor;
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-function"
@@ -215,8 +213,10 @@ struct SystemAnalyticData : public MarkAsAnalyticData,
   void pup(PUP::er& p) override { InitialData::pup(p); }
 };
 
+#if defined(SPECTRE_USE_CHARM)
 // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
 PUP::able::PUP_ID SystemAnalyticData::my_PUP_ID = 0;
+#endif  // SPECTRE_USE_CHARM
 
 template <size_t Dim, bool HasPrimitiveAndConservativeVars>
 struct System {

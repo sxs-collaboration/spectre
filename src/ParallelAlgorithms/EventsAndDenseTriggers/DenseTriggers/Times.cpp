@@ -41,5 +41,7 @@ std::optional<double> Times::next_check_time_impl(
   return next_time;
 }
 
+#if defined(SPECTRE_USE_CHARM)
 PUP::able::PUP_ID Times::my_PUP_ID = 0;  // NOLINT
+#endif                                   // SPECTRE_USE_CHARM
 }  // namespace DenseTriggers

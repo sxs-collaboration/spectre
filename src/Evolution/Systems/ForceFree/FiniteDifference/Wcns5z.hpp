@@ -54,7 +54,7 @@ namespace ForceFree::fd {
  * \brief Fifth order weighted nonlinear compact scheme reconstruction using the
  * Z oscillation indicator. See ::fd::reconstruction::wcns5z() for details.
  */
-class Wcns5z : public Reconstructor {
+class Wcns5z : public SPECTRE_CHARM_DERIVED(Wcns5z, Reconstructor) {
  private:
   using TildeE = ForceFree::Tags::TildeE;
   using TildeB = ForceFree::Tags::TildeB;
@@ -116,8 +116,6 @@ class Wcns5z : public Reconstructor {
   Wcns5z(size_t nonlinear_weight_exponent, double epsilon,
          FallbackReconstructorType fallback_reconstructor,
          size_t max_number_of_extrema);
-
-  explicit Wcns5z(CkMigrateMessage* msg);
 
   WRAPPED_PUPable_decl_base_template(Reconstructor, Wcns5z);
 

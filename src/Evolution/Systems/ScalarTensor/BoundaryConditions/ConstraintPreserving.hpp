@@ -40,7 +40,11 @@ namespace ScalarTensor::BoundaryConditions {
  * tensor on the metric.
  *
  */
-class ConstraintPreserving final : public BoundaryCondition {
+class ConstraintPreserving final
+    : public BoundaryCondition
+      SPECTRE_FINDUS_DERIVED(
+          SINGLE_ARG(ConstraintPreserving),
+          SINGLE_ARG(domain::BoundaryConditions::BoundaryCondition)) {
  public:
   using options = tmpl::push_back<
       typename gh::BoundaryConditions::ConstraintPreservingBjorhus<3>::options>;
@@ -59,8 +63,6 @@ class ConstraintPreserving final : public BoundaryCondition {
   ConstraintPreserving(const ConstraintPreserving&) = default;
   ConstraintPreserving& operator=(const ConstraintPreserving&) = default;
   ~ConstraintPreserving() override = default;
-
-  explicit ConstraintPreserving(CkMigrateMessage* msg);
 
   WRAPPED_PUPable_decl_base_template(
       domain::BoundaryConditions::BoundaryCondition, ConstraintPreserving);

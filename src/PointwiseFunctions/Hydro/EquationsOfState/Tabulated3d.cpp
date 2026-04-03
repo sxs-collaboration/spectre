@@ -267,9 +267,6 @@ bool Tabulated3D<IsRelativistic>::operator!=(
 }
 
 template <bool IsRelativistic>
-Tabulated3D<IsRelativistic>::Tabulated3D(CkMigrateMessage* msg)
-    : EquationOfState<IsRelativistic, 3>(msg) {}
-template <bool IsRelativistic>
 template <class DataType>
 void Tabulated3D<IsRelativistic>::enforce_physicality(
     Scalar<DataType>& electron_fraction, Scalar<DataType>& rest_mass_density,

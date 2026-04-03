@@ -30,8 +30,6 @@ class TestFoT : public domain::FunctionsOfTime::FunctionOfTime {
   WRAPPED_PUPable_decl_template(TestFoT);  // NOLINT
 #pragma GCC diagnostic pop
 
-  explicit TestFoT(CkMigrateMessage* /*unused*/) {}
-
   auto get_clone() const -> std::unique_ptr<FunctionOfTime> override {
     return std::make_unique<TestFoT>(*this);
   }
@@ -69,7 +67,9 @@ class TestFoT : public domain::FunctionsOfTime::FunctionOfTime {
   double upper_bound_{};
 };
 
+#if defined(SPECTRE_USE_CHARM)
 PUP::able::PUP_ID TestFoT::my_PUP_ID = 0;  // NOLINT
+#endif                                     // SPECTRE_USE_CHARM
 
 SPECTRE_TEST_CASE("Unit.Domain.FunctionsOfTime.OutputTimeBounds",
                   "[Unit][Domain]") {

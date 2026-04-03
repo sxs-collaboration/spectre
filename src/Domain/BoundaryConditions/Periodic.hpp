@@ -44,7 +44,10 @@ class MarkAsPeriodic {
  * conditions since they may not make sense.
  */
 template <typename SystemBoundaryConditionBaseClass>
-struct Periodic final : public SystemBoundaryConditionBaseClass,
+struct Periodic final : public virtual SystemBoundaryConditionBaseClass,
+                        public virtual SPECTRE_CHARM_DERIVED(
+                            Periodic<SystemBoundaryConditionBaseClass>,
+                            domain::BoundaryConditions::BoundaryCondition),
                         public MarkAsPeriodic {
  public:
   using options = tmpl::list<>;
@@ -61,8 +64,6 @@ struct Periodic final : public SystemBoundaryConditionBaseClass,
   Periodic& operator=(const Periodic&) = default;
   ~Periodic() override = default;
 
-  explicit Periodic(CkMigrateMessage* msg);
-
   WRAPPED_PUPable_decl_base_template(
       domain::BoundaryConditions::BoundaryCondition, Periodic);
 
@@ -73,26 +74,26 @@ struct Periodic final : public SystemBoundaryConditionBaseClass,
 };
 
 template <typename SystemBoundaryConditionBaseClass>
-Periodic<SystemBoundaryConditionBaseClass>::Periodic(
-    CkMigrateMessage* const msg)
-    : SystemBoundaryConditionBaseClass(msg) {}
-
-template <typename SystemBoundaryConditionBaseClass>
 std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
 Periodic<SystemBoundaryConditionBaseClass>::get_clone() const {
   return std::make_unique<Periodic>(*this);
 }
 
 template <typename SystemBoundaryConditionBaseClass>
-void Periodic<SystemBoundaryConditionBaseClass>::pup(PUP::er& p) {
+void Periodic<SystemBoundaryConditionBaseClass>::pup(
+    [[maybe_unused]] PUP::er& p) {
+#if defined(SPECTRE_USE_CHARM)
   BoundaryCondition::pup(p);
+#endif  // SPECTRE_USE_CHARM
 }
 
+#if defined(SPECTRE_USE_CHARM)
 /// \cond
 template <typename SystemBoundaryConditionBaseClass>
 // NOLINTNEXTLINE
 PUP::able::PUP_ID Periodic<SystemBoundaryConditionBaseClass>::my_PUP_ID = 0;
 /// \endcond
+#endif  // SPECTRE_USE_CHARM
 
 /// Check if a boundary condition inherits from `MarkAsPeriodic`, which
 /// constitutes as it being marked as a periodic boundary condition.

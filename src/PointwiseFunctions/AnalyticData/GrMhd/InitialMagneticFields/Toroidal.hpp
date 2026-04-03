@@ -54,7 +54,7 @@ namespace grmhd::AnalyticData::InitialMagneticFields {
  * multiple magnetic fields can be superposed. Each magnetic field
  * configuration does a `+=` to make this possible.
  */
-class Toroidal : public InitialMagneticField {
+class Toroidal : public SPECTRE_CHARM_DERIVED(Toroidal, InitialMagneticField) {
  public:
   struct PressureExponent {
     using type = size_t;
@@ -111,7 +111,6 @@ class Toroidal : public InitialMagneticField {
   auto get_clone() const -> std::unique_ptr<InitialMagneticField> override;
 
   /// \cond
-  explicit Toroidal(CkMigrateMessage* msg);
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(Toroidal);
   /// \endcond

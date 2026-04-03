@@ -32,7 +32,10 @@ namespace ScalarSelfForce::BoundaryConditions {
  *
  * These boundary conditions currently assume a circular equatorial orbit.
  */
-class Sommerfeld : public elliptic::BoundaryConditions::BoundaryCondition<2> {
+class Sommerfeld
+    : public elliptic::BoundaryConditions::BoundaryCondition<2>
+      SPECTRE_FINDUS_DERIVED(Sommerfeld,
+                             domain::BoundaryConditions::BoundaryCondition) {
  private:
   using Base = elliptic::BoundaryConditions::BoundaryCondition<2>;
 
@@ -95,7 +98,6 @@ class Sommerfeld : public elliptic::BoundaryConditions::BoundaryCondition<2> {
   int order() const { return order_; }
 
   /// \cond
-  explicit Sommerfeld(CkMigrateMessage* m);
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(Sommerfeld);
   /// \endcond

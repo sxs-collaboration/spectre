@@ -34,8 +34,6 @@ Wcns5z::Wcns5z(const size_t nonlinear_weight_exponent, const double epsilon,
           nonlinear_weight_exponent_, fallback_reconstructor_);
 }
 
-Wcns5z::Wcns5z(CkMigrateMessage* const msg) : Reconstructor(msg) {}
-
 std::unique_ptr<Reconstructor> Wcns5z::get_clone() const {
   return std::make_unique<Wcns5z>(*this);
 }
@@ -54,8 +52,10 @@ void Wcns5z::pup(PUP::er& p) {
   }
 }
 
+#if defined(SPECTRE_USE_CHARM)
 // NOLINTNEXTLINE
 PUP::able::PUP_ID Wcns5z::my_PUP_ID = 0;
+#endif  // SPECTRE_USE_CHARM
 
 void Wcns5z::reconstruct(
     const gsl::not_null<std::array<Variables<recons_tags>, dim>*>

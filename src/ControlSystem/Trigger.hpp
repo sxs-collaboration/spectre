@@ -57,7 +57,9 @@ namespace control_system {
 /// input file.  The `control_system::control_system_triggers`
 /// metafunction provides the list of triggers to include.
 template <typename ControlSystems>
-class Trigger : public DenseTrigger {
+class Trigger
+    : public SPECTRE_CHARM_DERIVED(SINGLE_ARG(Trigger<ControlSystems>),
+                                   DenseTrigger) {
   static_assert(tmpl::size<ControlSystems>::value > 0);
   using measurement = typename tmpl::front<ControlSystems>::measurement;
   static_assert(tmpl::all<ControlSystems,
@@ -66,11 +68,7 @@ class Trigger : public DenseTrigger {
 
  public:
   /// \cond
-  // LCOV_EXCL_START
-  explicit Trigger(CkMigrateMessage* const msg) : DenseTrigger(msg) {}
-  using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(Trigger);  // NOLINT
-  // LCOV_EXCL_STOP
   /// \endcond
 
   // This trigger is created during control system initialization, not
@@ -193,10 +191,12 @@ class Trigger : public DenseTrigger {
   }
 };
 
+#if defined(SPECTRE_USE_CHARM)
 /// \cond
 template <typename ControlSystems>
 PUP::able::PUP_ID Trigger<ControlSystems>::my_PUP_ID = 0;  // NOLINT
 /// \endcond
+#endif  // SPECTRE_USE_CHARM
 
 // This metafunction is tested in Test_EventTriggerMetafunctions.cpp
 

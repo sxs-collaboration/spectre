@@ -39,7 +39,7 @@ namespace Cce::Events {
  *
  * The subfile will be written into the `/Cce` subgroup.
  */
-class ObserveTimeStep : public Event {
+class ObserveTimeStep : public SPECTRE_CHARM_DERIVED(ObserveTimeStep, Event) {
  public:
   /// The name of the subfile inside the HDF5 file
   struct SubfileName {
@@ -57,7 +57,6 @@ class ObserveTimeStep : public Event {
   };
 
   /// \cond
-  explicit ObserveTimeStep(CkMigrateMessage* /*unused*/) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(ObserveTimeStep);  // NOLINT
   /// \endcond
@@ -74,7 +73,7 @@ class ObserveTimeStep : public Event {
 
   ObserveTimeStep() = default;
   explicit ObserveTimeStep(const std::string& subfile_name,
-                           const bool output_time);
+                           bool output_time);
 
   using observed_reduction_data_tags = tmpl::list<>;
 
@@ -129,9 +128,9 @@ class ObserveTimeStep : public Event {
   }
 
  private:
-  std::string subfile_path_;
-  bool output_time_;
-  std::vector<std::string> legend_;
+  std::string subfile_path_{};
+  bool output_time_{false};
+  std::vector<std::string> legend_{};
 };
 
 ObserveTimeStep::ObserveTimeStep(const std::string& subfile_name,
@@ -140,7 +139,9 @@ ObserveTimeStep::ObserveTimeStep(const std::string& subfile_name,
       output_time_(output_time),
       legend_(std::vector<std::string>{"Time", "Time Step"}) {}
 
+#if defined(SPECTRE_USE_CHARM)
 /// \cond
 PUP::able::PUP_ID ObserveTimeStep::my_PUP_ID = 0;  // NOLINT
 /// \endcond
+#endif  // SPECTRE_USE_CHARM
 }  // namespace Cce::Events

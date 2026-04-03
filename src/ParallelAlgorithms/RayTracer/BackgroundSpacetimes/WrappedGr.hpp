@@ -25,7 +25,8 @@ namespace ray_tracing {
 
 /// Analytic background spacetime from a GR or GRMHD solution.
 template <typename SolutionType>
-class WrappedGr : public BackgroundSpacetime {
+class WrappedGr : public BackgroundSpacetime SPECTRE_FINDUS_DERIVED(
+                      WrappedGr<SolutionType>, BackgroundSpacetime) {
  public:
   using options = typename SolutionType::options;
   static constexpr Options::String help = SolutionType::help;
@@ -63,8 +64,6 @@ class WrappedGr : public BackgroundSpacetime {
   }
 
   /// \cond
-  explicit WrappedGr(CkMigrateMessage* msg) : BackgroundSpacetime(msg) {}
-  using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(WrappedGr);
   /// \endcond
 
@@ -113,8 +112,10 @@ bool operator!=(const WrappedGr<SolutionType>& lhs,
 }
 
 /// \cond
+#if defined(SPECTRE_USE_CHARM)
 template <typename SolutionType>
 PUP::able::PUP_ID WrappedGr<SolutionType>::my_PUP_ID = 0;  // NOLINT
+#endif                                                     // SPECTRE_USE_CHARM
 /// \endcond
 
 }  // namespace ray_tracing

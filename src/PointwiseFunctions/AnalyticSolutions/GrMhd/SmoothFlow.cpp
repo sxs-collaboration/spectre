@@ -24,9 +24,6 @@ std::unique_ptr<evolution::initial_data::InitialData> SmoothFlow::get_clone()
   return std::make_unique<SmoothFlow>(*this);
 }
 
-SmoothFlow::SmoothFlow(CkMigrateMessage* msg)
-    : RelativisticEuler::Solutions::SmoothFlow<3>(msg) {}
-
 void SmoothFlow::pup(PUP::er& p) {
   RelativisticEuler::Solutions::SmoothFlow<3>::pup(p);
 }
@@ -47,7 +44,9 @@ SmoothFlow::variables(
   return {make_with_value<Scalar<DataType>>(x, 0.0)};
 }
 
+#if defined(SPECTRE_USE_CHARM)
 PUP::able::PUP_ID SmoothFlow::my_PUP_ID = 0;
+#endif  // SPECTRE_USE_CHARM
 
 bool operator==(const SmoothFlow& lhs, const SmoothFlow& rhs) {
   using smooth_flow = RelativisticEuler::Solutions::SmoothFlow<3>;

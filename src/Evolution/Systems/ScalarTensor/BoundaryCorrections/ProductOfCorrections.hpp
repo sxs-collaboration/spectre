@@ -63,7 +63,18 @@ class ProductOfCorrections<DerivedGhCorrection, DerivedScalarCorrection,
                            tmpl::list<ScalarDgPackageDataVolumeTags...>,
                            tmpl::list<GhDgBoundaryTermsVolumeTags...>,
                            tmpl::list<ScalarDgBoundaryTermsVolumeTags...>>
-    final : public evolution::BoundaryCorrection {
+    final : public SPECTRE_CHARM_DERIVED(
+                SINGLE_ARG(ProductOfCorrections<
+                           DerivedGhCorrection, DerivedScalarCorrection,
+                           tmpl::list<GhDgPackagedFieldTags...>,
+                           tmpl::list<ScalarDgPackagedFieldTags...>,
+                           tmpl::list<GhDgPackageDataTemporaryTags...>,
+                           tmpl::list<ScalarDgPackageDataTemporaryTags...>,
+                           tmpl::list<GhDgPackageDataVolumeTags...>,
+                           tmpl::list<ScalarDgPackageDataVolumeTags...>,
+                           tmpl::list<GhDgBoundaryTermsVolumeTags...>,
+                           tmpl::list<ScalarDgBoundaryTermsVolumeTags...>>),
+                SINGLE_ARG(evolution::BoundaryCorrection)) {
  public:
   static constexpr size_t dim = 3;
   using dg_package_field_tags =
@@ -128,8 +139,6 @@ class ProductOfCorrections<DerivedGhCorrection, DerivedScalarCorrection,
   ~ProductOfCorrections() override = default;
 
   /// \cond
-  explicit ProductOfCorrections(CkMigrateMessage* msg)
-      : BoundaryCorrection(msg) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(ProductOfCorrections);  // NOLINT
   /// \endcond
@@ -230,6 +239,7 @@ class ProductOfCorrections<DerivedGhCorrection, DerivedScalarCorrection,
 };
 /// @}
 
+#if defined(SPECTRE_USE_CHARM)
 /// \cond
 template <typename DerivedGhCorrection, typename DerivedScalarCorrection,
           typename... GhDgPackagedFieldTags,
@@ -251,4 +261,5 @@ PUP::able::PUP_ID ProductOfCorrections<
     tmpl::list<GhDgBoundaryTermsVolumeTags...>,
     tmpl::list<ScalarDgBoundaryTermsVolumeTags...>>::my_PUP_ID = 0;  // NOLINT
 /// \endcond
+#endif  // SPECTRE_USE_CHARM
 }  // namespace ScalarTensor::BoundaryCorrections

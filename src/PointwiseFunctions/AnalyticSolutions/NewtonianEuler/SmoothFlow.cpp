@@ -28,10 +28,6 @@ SmoothFlow<Dim>::SmoothFlow(const std::array<double, Dim>& mean_velocity,
                   perturbation_size} {}
 
 template <size_t Dim>
-SmoothFlow<Dim>::SmoothFlow(CkMigrateMessage* msg)
-    : evolution::initial_data::InitialData(msg), smooth_flow(msg) {}
-
-template <size_t Dim>
 std::unique_ptr<evolution::initial_data::InitialData>
 SmoothFlow<Dim>::get_clone() const {
   return std::make_unique<SmoothFlow>(*this);
@@ -43,9 +39,11 @@ void SmoothFlow<Dim>::pup(PUP::er& p) {
   smooth_flow::pup(p);
 }
 
+#if defined(SPECTRE_USE_CHARM)
 template <size_t Dim>
 // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
 PUP::able::PUP_ID SmoothFlow<Dim>::my_PUP_ID = 0;
+#endif  // SPECTRE_USE_CHARM
 
 template <size_t Dim>
 bool operator==(const SmoothFlow<Dim>& lhs, const SmoothFlow<Dim>& rhs) {

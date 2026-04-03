@@ -52,7 +52,7 @@ class GhLockstep;
  * number of time steps sent to `insert_gh_data()` that have not yet been
  * retrieved via `retrieve_and_remove_first_ready_gh_data()`.
  */
-class GhInterfaceManager : public PUP::able {
+class GhInterfaceManager : public SPECTRE_CHARM_PUPable(GhInterfaceManager) {
  public:
   using gh_variables = Variables<
       tmpl::list<gr::Tags::SpacetimeMetric<DataVector, 3>,

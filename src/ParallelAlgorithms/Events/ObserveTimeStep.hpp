@@ -96,7 +96,8 @@ struct FormatTimeOutput
  * evolutions.
  */
 template <typename System>
-class ObserveTimeStep : public Event {
+class ObserveTimeStep
+    : public SPECTRE_CHARM_DERIVED(SINGLE_ARG(ObserveTimeStep<System>), Event) {
  private:
   using ReductionData = Events::detail::ObserveTimeStepReductionData;
 
@@ -122,7 +123,6 @@ class ObserveTimeStep : public Event {
   };
 
   /// \cond
-  explicit ObserveTimeStep(CkMigrateMessage* /*m*/);
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(ObserveTimeStep);  // NOLINT
   /// \endcond

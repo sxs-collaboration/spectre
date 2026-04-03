@@ -3,9 +3,11 @@
 
 #include "ParallelAlgorithms/EventsAndTriggers/LogicalTriggers.hpp"
 
+#if defined(SPECTRE_USE_CHARM)
 namespace Triggers {
 PUP::able::PUP_ID Always::my_PUP_ID = 0;  // NOLINT
 PUP::able::PUP_ID Not::my_PUP_ID = 0;  // NOLINT
 PUP::able::PUP_ID And::my_PUP_ID = 0;  // NOLINT
 PUP::able::PUP_ID Or::my_PUP_ID = 0;  // NOLINT
 }  // namespace Triggers
+#endif  // SPECTRE_USE_CHARM

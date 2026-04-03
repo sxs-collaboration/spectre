@@ -6,7 +6,9 @@
 #include <pup.h>
 
 namespace Burgers::fd {
-Reconstructor::Reconstructor(CkMigrateMessage* const msg) : PUP::able(msg) {}
-
-void Reconstructor::pup(PUP::er& p) { PUP::able::pup(p); }
+void Reconstructor::pup([[maybe_unused]] PUP::er& p) {
+#if defined(SPECTRE_USE_CHARM)
+  PUP::able::pup(p);
+#endif  // SPECTRE_USE_CHARM
+}
 }  // namespace Burgers::fd

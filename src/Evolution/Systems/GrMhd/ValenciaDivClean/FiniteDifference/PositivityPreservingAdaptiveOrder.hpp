@@ -58,7 +58,9 @@ namespace grmhd::ValenciaDivClean::fd {
  *
  * The rest mass density, electron fraction, and the pressure are kept positive.
  */
-class PositivityPreservingAdaptiveOrderPrim : public Reconstructor {
+class PositivityPreservingAdaptiveOrderPrim
+    : public SPECTRE_CHARM_DERIVED(PositivityPreservingAdaptiveOrderPrim,
+                                   Reconstructor) {
  private:
   using prims_to_reconstruct_tags =
       tmpl::list<hydro::Tags::RestMassDensity<DataVector>,
@@ -142,8 +144,6 @@ class PositivityPreservingAdaptiveOrderPrim : public Reconstructor {
       FallbackReconstructorType low_order_reconstructor,
       bool reconstruct_rho_times_temperature,
       const Options::Context& context = {});
-
-  explicit PositivityPreservingAdaptiveOrderPrim(CkMigrateMessage* msg);
 
   WRAPPED_PUPable_decl_base_template(Reconstructor,
                                      PositivityPreservingAdaptiveOrderPrim);

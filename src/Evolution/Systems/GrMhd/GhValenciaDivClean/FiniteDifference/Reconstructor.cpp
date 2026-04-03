@@ -10,12 +10,10 @@
 #include "Utilities/GenerateInstantiations.hpp"
 namespace grmhd::GhValenciaDivClean::fd {
 template <typename System>
-Reconstructor<System>::Reconstructor(CkMigrateMessage* const msg)
-    : PUP::able(msg) {}
-
-template <typename System>
-void Reconstructor<System>::pup(PUP::er& p) {
+void Reconstructor<System>::pup([[maybe_unused]] PUP::er& p) {
+#if defined(SPECTRE_USE_CHARM)
   PUP::able::pup(p);
+#endif  // SPECTRE_USE_CHARM
 }
 
 #define NEUTRINO(data) BOOST_PP_TUPLE_ELEM(0, data)

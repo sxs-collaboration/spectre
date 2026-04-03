@@ -604,8 +604,10 @@ TIME_STEPPER_DEFINE_OVERLOADS_TEMPLATED(AdamsMoultonPc<Monotonic>,
 LTS_TIME_STEPPER_DEFINE_OVERLOADS_TEMPLATED(AdamsMoultonPc<Monotonic>,
                                             bool Monotonic)
 
+#if defined(SPECTRE_USE_CHARM)
 template <bool Monotonic>
 PUP::able::PUP_ID AdamsMoultonPc<Monotonic>::my_PUP_ID = 0;  // NOLINT
+#endif  // SPECTRE_USE_CHARM
 
 #define MONOTONIC(data) BOOST_PP_TUPLE_ELEM(0, data)
 

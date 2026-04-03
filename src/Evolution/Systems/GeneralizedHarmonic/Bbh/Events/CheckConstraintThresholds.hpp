@@ -34,7 +34,8 @@ namespace gh::bbh::Events {
  * and three-index constraints, using a reduction to determine if their Linf
  * norms exceed completion thresholds.
  */
-class CheckConstraintThresholds : public Event {
+class CheckConstraintThresholds : public Event SPECTRE_FINDUS_DERIVED(
+                                      CheckConstraintThresholds, Event) {
   using ReductionData = Parallel::ReductionData<
       Parallel::ReductionDatum<double, funcl::AssertEqual<>>,
       Parallel::ReductionDatum<double, funcl::Max<>>,
@@ -42,7 +43,6 @@ class CheckConstraintThresholds : public Event {
 
  public:
   /// \cond
-  explicit CheckConstraintThresholds(CkMigrateMessage* /*unused*/) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(CheckConstraintThresholds);  // NOLINT
   /// \endcond

@@ -94,7 +94,9 @@ namespace ConstitutiveRelations {
  * reduces to two dimensions.
  */
 template <size_t Dim>
-class IsotropicHomogeneous : public ConstitutiveRelation<Dim> {
+class IsotropicHomogeneous
+    : public SPECTRE_CHARM_DERIVED(SINGLE_ARG(IsotropicHomogeneous<Dim>),
+                                   ConstitutiveRelation<Dim>) {
  public:
   static constexpr size_t volume_dim = Dim;
 
@@ -150,8 +152,6 @@ class IsotropicHomogeneous : public ConstitutiveRelation<Dim> {
   // clang-tidy: no runtime references
   void pup(PUP::er& /*p*/) override;  //  NOLINT
 
-  explicit IsotropicHomogeneous(CkMigrateMessage* /*unused*/) {}
-
   WRAPPED_PUPable_decl_base_template(  // NOLINT
       SINGLE_ARG(ConstitutiveRelation<Dim>), IsotropicHomogeneous);
 
@@ -167,10 +167,12 @@ template <size_t Dim>
 bool operator!=(const IsotropicHomogeneous<Dim>& lhs,
                 const IsotropicHomogeneous<Dim>& rhs);
 
+#if defined(SPECTRE_USE_CHARM)
 /// \cond
 template <size_t Dim>
 PUP::able::PUP_ID IsotropicHomogeneous<Dim>::my_PUP_ID = 0;
 /// \endcond
+#endif  // SPECTRE_USE_CHARM
 
 }  // namespace ConstitutiveRelations
 }  // namespace Elasticity

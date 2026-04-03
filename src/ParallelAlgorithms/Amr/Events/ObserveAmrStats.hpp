@@ -65,7 +65,8 @@ struct FormatAmrStatsOutput
  * \brief Observes AMR statistics, such as number of elements and grid points
  */
 template <size_t Dim>
-class ObserveAmrStats : public Event {
+class ObserveAmrStats
+    : public SPECTRE_CHARM_DERIVED(SINGLE_ARG(ObserveAmrStats<Dim>), Event) {
  public:
   struct PrintToTerminal {
     using type = bool;
@@ -79,7 +80,6 @@ class ObserveAmrStats : public Event {
   };
 
   /// \cond
-  explicit ObserveAmrStats(CkMigrateMessage* m);
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(ObserveAmrStats);  // NOLINT
   /// \endcond

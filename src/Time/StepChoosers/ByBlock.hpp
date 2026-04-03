@@ -33,12 +33,15 @@ namespace StepChoosers {
 /// `standard_step_choosers` list, but can be added to the
 /// `factory_creation` struct in the metavariables.
 template <size_t Dim>
-class ByBlock : public StepChooser<StepChooserUse::Slab>,
-                public StepChooser<StepChooserUse::LtsStep> {
+class ByBlock : public SPECTRE_CHARM_DERIVED(
+                    SINGLE_ARG(ByBlock<Dim>),
+                    SINGLE_ARG(StepChooser<StepChooserUse::Slab>)),
+                public SPECTRE_CHARM_DERIVED(
+                    SINGLE_ARG(ByBlock<Dim>),
+                    SINGLE_ARG(StepChooser<StepChooserUse::LtsStep>)) {
  public:
   /// \cond
   ByBlock() = default;
-  explicit ByBlock(CkMigrateMessage* /*unused*/) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(ByBlock);  // NOLINT
   /// \endcond

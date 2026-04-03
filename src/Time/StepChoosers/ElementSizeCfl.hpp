@@ -39,12 +39,15 @@ namespace StepChoosers {
 /// This is useful as a coarse estimate for slabs, or to place a ceiling on
 /// another dynamically-adjusted step chooser.
 template <size_t Dim, typename System>
-class ElementSizeCfl : public StepChooser<StepChooserUse::Slab>,
-                       public StepChooser<StepChooserUse::LtsStep> {
+class ElementSizeCfl : public SPECTRE_CHARM_DERIVED(
+                           SINGLE_ARG(ElementSizeCfl<Dim, System>),
+                           SINGLE_ARG(StepChooser<StepChooserUse::Slab>)),
+                       public SPECTRE_CHARM_DERIVED(
+                           SINGLE_ARG(ElementSizeCfl<Dim, System>),
+                           SINGLE_ARG(StepChooser<StepChooserUse::LtsStep>)) {
  public:
   /// \cond
   ElementSizeCfl() = default;
-  explicit ElementSizeCfl(CkMigrateMessage* /*unused*/) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(ElementSizeCfl);  // NOLINT
   /// \endcond
@@ -102,8 +105,10 @@ class ElementSizeCfl : public StepChooser<StepChooserUse::Slab>,
   double safety_factor_ = std::numeric_limits<double>::signaling_NaN();
 };
 
+#if defined(SPECTRE_USE_CHARM)
 /// \cond
 template <size_t Dim, typename System>
 PUP::able::PUP_ID ElementSizeCfl<Dim, System>::my_PUP_ID = 0;  // NOLINT
 /// \endcond
+#endif  // SPECTRE_USE_CHARM
 }  // namespace StepChoosers

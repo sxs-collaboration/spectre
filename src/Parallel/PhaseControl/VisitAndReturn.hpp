@@ -88,10 +88,11 @@ struct TemporaryPhaseRequested {
  *   the first `VisitAndReturn`.
  */
 template <Parallel::Phase TargetPhase>
-struct VisitAndReturn : public PhaseChange {
+struct VisitAndReturn
+    : public SPECTRE_CHARM_DERIVED(SINGLE_ARG(VisitAndReturn<TargetPhase>),
+                                   PhaseChange) {
   /// \cond
   VisitAndReturn() = default;
-  explicit VisitAndReturn(CkMigrateMessage* /*unused*/) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(VisitAndReturn);  // NOLINT
   /// \endcond
@@ -171,7 +172,9 @@ struct VisitAndReturn : public PhaseChange {
 };
 }  // namespace PhaseControl
 
+#if defined(SPECTRE_USE_CHARM)
 /// \cond
 template <Parallel::Phase TargetPhase>
 PUP::able::PUP_ID PhaseControl::VisitAndReturn<TargetPhase>::my_PUP_ID = 0;
 /// \endcond
+#endif  // SPECTRE_USE_CHARM

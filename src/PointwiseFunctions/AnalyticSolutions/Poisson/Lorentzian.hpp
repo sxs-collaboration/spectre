@@ -70,7 +70,16 @@ struct LorentzianVariables {
  * \note Corresponding 1D and 2D solutions are not implemented yet.
  */
 template <size_t Dim, typename DataType = DataVector>
-class Lorentzian : public elliptic::analytic_data::AnalyticSolution {
+class Lorentzian
+    : public elliptic::analytic_data::AnalyticSolution
+#if defined(SPECTRE_USE_FINDUS)
+    ,
+      public virtual findus::serialize::SerializableDerived<
+          Lorentzian<Dim, DataType>, elliptic::analytic_data::InitialGuess>,
+      public virtual findus::serialize::SerializableDerived<
+          Lorentzian<Dim, DataType>, elliptic::analytic_data::Background>
+#endif
+{
   static_assert(
       Dim == 3,
       "This solution is currently implemented in 3 spatial dimensions only");
@@ -117,8 +126,6 @@ class Lorentzian : public elliptic::analytic_data::AnalyticSolution {
   }
 
   /// \cond
-  explicit Lorentzian(CkMigrateMessage* m)
-      : elliptic::analytic_data::AnalyticSolution(m) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(Lorentzian);  // NOLINT
   /// \endcond
@@ -144,10 +151,12 @@ class Lorentzian : public elliptic::analytic_data::AnalyticSolution {
   double complex_phase_ = std::numeric_limits<double>::signaling_NaN();
 };
 
+#if defined(SPECTRE_USE_CHARM)
 /// \cond
 template <size_t Dim, typename DataType>
 PUP::able::PUP_ID Lorentzian<Dim, DataType>::my_PUP_ID = 0;  // NOLINT
 /// \endcond
+#endif  // SPECTRE_USE_CHARM
 
 template <size_t Dim, typename DataType>
 bool operator==(const Lorentzian<Dim, DataType>& lhs,

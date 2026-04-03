@@ -136,7 +136,11 @@ struct ProductOfCorrectionsImpl<
  * application is inconsequential.
  */
 template <typename DerivedGhCorrection, typename DerivedValenciaCorrection>
-class ProductOfCorrections final : public evolution::BoundaryCorrection {
+class ProductOfCorrections final
+    : public SPECTRE_CHARM_DERIVED(
+          SINGLE_ARG(ProductOfCorrections<DerivedGhCorrection,
+                                          DerivedValenciaCorrection>),
+          SINGLE_ARG(evolution::BoundaryCorrection)) {
  public:
   using dg_package_field_tags =
       tmpl::append<typename DerivedGhCorrection::dg_package_field_tags,
@@ -216,8 +220,6 @@ class ProductOfCorrections final : public evolution::BoundaryCorrection {
   ~ProductOfCorrections() override = default;
 
   /// \cond
-  explicit ProductOfCorrections(CkMigrateMessage* msg)
-      : BoundaryCorrection(msg) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(ProductOfCorrections);  // NOLINT
   /// \endcond
@@ -258,10 +260,12 @@ class ProductOfCorrections final : public evolution::BoundaryCorrection {
   DerivedValenciaCorrection derived_valencia_correction_;
 };
 
+#if defined(SPECTRE_USE_CHARM)
 /// \cond
 template <typename DerivedGhCorrection, typename DerivedValenciaCorrection>
 PUP::able::PUP_ID ProductOfCorrections<DerivedGhCorrection,
                                        DerivedValenciaCorrection>::my_PUP_ID =
     0;  // NOLINT
 /// \endcond
+#endif  // SPECTRE_USE_CHARM
 }  // namespace grmhd::GhValenciaDivClean::BoundaryCorrections

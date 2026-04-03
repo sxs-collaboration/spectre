@@ -45,10 +45,11 @@ namespace ah::Events {
  *
  */
 template <typename HorizonMetavars>
-class FindApparentHorizon : public Event {
+class FindApparentHorizon
+    : public SPECTRE_CHARM_DERIVED(
+          SINGLE_ARG(FindApparentHorizon<HorizonMetavars>), Event) {
  public:
   /// \cond
-  explicit FindApparentHorizon(CkMigrateMessage* /*unused*/) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(FindApparentHorizon);  // NOLINT
   /// \endcond
@@ -219,10 +220,12 @@ class FindApparentHorizon : public Event {
   std::string name_ = name();
 };
 
+#if defined(SPECTRE_USE_CHARM)
 /// \cond
 // NOLINTBEGIN
 template <typename HorizonMetavars>
 PUP::able::PUP_ID FindApparentHorizon<HorizonMetavars>::my_PUP_ID = 0;
 // NOLINTEND
 /// \endcond
+#endif  // SPECTRE_USE_CHARM
 }  // namespace ah::Events

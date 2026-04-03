@@ -34,9 +34,6 @@ SmoothFlow<Dim, IsRelativistic>::SmoothFlow(
       equation_of_state_{adiabatic_index_} {}
 
 template <size_t Dim, bool IsRelativistic>
-SmoothFlow<Dim, IsRelativistic>::SmoothFlow(CkMigrateMessage* /*unused*/) {}
-
-template <size_t Dim, bool IsRelativistic>
 void SmoothFlow<Dim, IsRelativistic>::pup(PUP::er& p) {
   p | mean_velocity_;
   p | wavevector_;

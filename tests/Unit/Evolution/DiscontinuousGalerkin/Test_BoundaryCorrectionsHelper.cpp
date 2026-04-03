@@ -94,15 +94,13 @@ struct System : public InverseSpatialMetric<Dim, CurvedBackground> {
   using compute_volume_time_derivative_terms = TimeDerivativeTerms;
 };
 
-struct CorrectionBase : public PUP::able {
+struct CorrectionBase : public SPECTRE_CHARM_PUPable(CorrectionBase) {
   CorrectionBase() = default;
   CorrectionBase(const CorrectionBase&) = default;
   CorrectionBase& operator=(const CorrectionBase&) = default;
   CorrectionBase(CorrectionBase&&) = default;
   CorrectionBase& operator=(CorrectionBase&&) = default;
   ~CorrectionBase() override = default;
-
-  explicit CorrectionBase(CkMigrateMessage* msg) : PUP::able(msg) {}
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-function"
@@ -113,7 +111,9 @@ struct CorrectionBase : public PUP::able {
 };
 
 template <size_t Dim, typename VolumeDoubleType>
-struct Correction final : public CorrectionBase {
+struct Correction final
+    : public SPECTRE_CHARM_DERIVED(
+          SINGLE_ARG(Correction<Dim, VolumeDoubleType>), CorrectionBase) {
  private:
   struct AbsCharSpeed : db::SimpleTag {
     using type = Scalar<DataVector>;
@@ -140,7 +140,6 @@ struct Correction final : public CorrectionBase {
     return std::make_unique<Correction>(*this);
   }
 
-  explicit Correction(CkMigrateMessage* msg) : CorrectionBase(msg) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(Correction);  // NOLINT
   void pup(PUP::er& p) override { CorrectionBase::pup(p); }
@@ -273,8 +272,10 @@ struct Correction final : public CorrectionBase {
   }
 };
 
+#if defined(SPECTRE_USE_CHARM)
 template <size_t Dim, typename VolumeDoubleType>
 PUP::able::PUP_ID Correction<Dim, VolumeDoubleType>::my_PUP_ID = 0;
+#endif  // SPECTRE_USE_CHARM
 
 template <size_t Dim, bool CurvedBackground, typename VolumeDoubleType>
 void test_impl(const gsl::not_null<std::mt19937*> gen) {

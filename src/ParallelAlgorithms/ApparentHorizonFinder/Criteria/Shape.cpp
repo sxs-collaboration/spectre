@@ -45,7 +45,7 @@ bool Shape::is_equal(const Criterion& other) const {
          min_resolution_l_ == other_shape->min_resolution_l_;
 }
 
-Shape::Shape(CkMigrateMessage* msg) : Criterion(msg) {}
-
+#if defined(SPECTRE_USE_CHARM)
 PUP::able::PUP_ID ah::Criteria::Shape::my_PUP_ID = 0;  // NOLINT
+#endif                                                 // SPECTRE_USE_CHARM
 }  // namespace ah::Criteria

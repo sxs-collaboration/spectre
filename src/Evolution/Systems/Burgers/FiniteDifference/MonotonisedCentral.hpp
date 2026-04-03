@@ -50,7 +50,8 @@ namespace Burgers::fd {
  * \brief Monotonised central reconstruction. See
  * ::fd::reconstruction::monotonised_central() for details.
  */
-class MonotonisedCentral : public Reconstructor {
+class MonotonisedCentral
+    : public SPECTRE_CHARM_DERIVED(MonotonisedCentral, Reconstructor) {
  private:
   using face_vars_tags = tmpl::list<
       Burgers::Tags::U,
@@ -72,7 +73,6 @@ class MonotonisedCentral : public Reconstructor {
   void pup(PUP::er& p) override;
 
   /// \cond
-  explicit MonotonisedCentral(CkMigrateMessage* msg);
   WRAPPED_PUPable_decl_base_template(Reconstructor, MonotonisedCentral);
   /// \endcond
 

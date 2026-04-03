@@ -43,7 +43,10 @@ namespace EquationsOfState {
  *
  */
 template <typename EquilEos>
-class Equilibrium3D : public EquationOfState<EquilEos::is_relativistic, 3> {
+class Equilibrium3D
+    : public SPECTRE_CHARM_DERIVED(
+          SINGLE_ARG(Equilibrium3D<EquilEos>),
+          SINGLE_ARG(EquationOfState<EquilEos::is_relativistic, 3>)) {
  public:
   static constexpr size_t thermodynamic_dim = 3;
   static constexpr bool is_relativistic = EquilEos::is_relativistic;
@@ -116,7 +119,8 @@ class Equilibrium3D : public EquationOfState<EquilEos::is_relativistic, 3> {
   //
 
   WRAPPED_PUPable_decl_base_template(  // NOLINT
-      SINGLE_ARG(EquationOfState<EquilEos::is_relativistic, 3>), Equilibrium3D);
+      SINGLE_ARG(EquationOfState<EquilEos::is_relativistic, 3>),
+      SINGLE_ARG(Equilibrium3D<EquilEos>));
 
   /// The lower bound of the electron fraction that is valid for this EOS
   double electron_fraction_lower_bound() const override { return 0.0; }
@@ -174,8 +178,11 @@ class Equilibrium3D : public EquationOfState<EquilEos::is_relativistic, 3> {
   EQUATION_OF_STATE_FORWARD_DECLARE_MEMBER_IMPLS(3)
   EquilEos underlying_eos_;
 };
+
+#if defined(SPECTRE_USE_CHARM)
 /// \cond
 template <typename EquilEos>
 PUP::able::PUP_ID EquationsOfState::Equilibrium3D<EquilEos>::my_PUP_ID = 0;
 /// \endcond
+#endif  // SPECTRE_USE_CHARM
 }  // namespace EquationsOfState

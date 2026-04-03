@@ -333,7 +333,9 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (double, DataVector))
 
 }  // namespace Xcts::Solutions::tov_detail
 
+#if defined(SPECTRE_USE_CHARM)
 PUP::able::PUP_ID Xcts::Solutions::TovStar::my_PUP_ID = 0;  // NOLINT
+#endif                                                      // SPECTRE_USE_CHARM
 
 // Instantiate implementations for common variables
 template class Xcts::Solutions::CommonVariables<

@@ -19,8 +19,11 @@ namespace RadiationTransport::M1Grey::BoundaryConditions {
 template <typename... NeutrinoSpecies>
 DirichletAnalytic<tmpl::list<NeutrinoSpecies...>>::DirichletAnalytic(
     const DirichletAnalytic& rhs)
-    : BoundaryCondition<tmpl::list<NeutrinoSpecies...>>{dynamic_cast<
-          const BoundaryCondition<tmpl::list<NeutrinoSpecies...>>&>(rhs)},
+    : PUP::able(rhs),
+      BoundaryConditions::BoundaryCondition<
+          tmpl::list<NeutrinoSpecies...>>{dynamic_cast<
+          const BoundaryConditions::BoundaryCondition<
+              tmpl::list<NeutrinoSpecies...>>&>(rhs)},
       analytic_prescription_(rhs.analytic_prescription_->get_clone()) {}
 
 template <typename... NeutrinoSpecies>
@@ -41,7 +44,9 @@ DirichletAnalytic<tmpl::list<NeutrinoSpecies...>>::DirichletAnalytic(
 
 template <typename... NeutrinoSpecies>
 void DirichletAnalytic<tmpl::list<NeutrinoSpecies...>>::pup(PUP::er& p) {
-  BoundaryCondition<tmpl::list<NeutrinoSpecies...>>::pup(p);
+#if defined(SPECTRE_USE_CHARM)
+  BoundaryConditions::BoundaryCondition<tmpl::list<NeutrinoSpecies...>>::pup(p);
+#endif  // SPECTRE_USE_CHARM
   p | analytic_prescription_;
 }
 
@@ -190,10 +195,12 @@ DirichletAnalytic<tmpl::list<NeutrinoSpecies...>>::dg_ghost(
   return {};
 }
 
+#if defined(SPECTRE_USE_CHARM)
 template <typename... NeutrinoSpecies>
 // NOLINTNEXTLINE
 PUP::able::PUP_ID DirichletAnalytic<tmpl::list<NeutrinoSpecies...>>::my_PUP_ID =
     0;
+#endif  // SPECTRE_USE_CHARM
 
 template class DirichletAnalytic<tmpl::list<neutrinos::ElectronNeutrinos<1>>>;
 

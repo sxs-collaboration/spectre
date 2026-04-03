@@ -52,8 +52,6 @@ class SomeEvent : public Event {
   SomeEvent() = default;
   explicit SomeEvent(std::string subfile_path)
       : subfile_path_(std::move(subfile_path)) {}
-
-  explicit SomeEvent(CkMigrateMessage* /*unused*/) {}
   using PUP::able::register_constructor;
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-function"
@@ -81,7 +79,9 @@ class SomeEvent : public Event {
   std::string subfile_path_;
 };
 
+#if defined(SPECTRE_USE_CHARM)
 PUP::able::PUP_ID SomeEvent::my_PUP_ID = 0;  // NOLINT
+#endif                                       // SPECTRE_USE_CHARM
 
 template <typename Metavariables>
 struct Component {

@@ -36,7 +36,8 @@ namespace gh::gauges {
  * \warning Assumes \f$\partial_t \Gamma_a=0\f$ i.e. the solution is static or
  * in harmonic gauge.
  */
-class AnalyticChristoffel final : public GaugeCondition {
+class AnalyticChristoffel final
+    : public SPECTRE_CHARM_DERIVED(AnalyticChristoffel, GaugeCondition) {
  private:
   template <size_t SpatialDim>
   using solution_tags =
@@ -73,7 +74,6 @@ class AnalyticChristoffel final : public GaugeCondition {
           analytic_prescription);
 
   /// \cond
-  explicit AnalyticChristoffel(CkMigrateMessage* msg);
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(AnalyticChristoffel);  // NOLINT
   /// \endcond

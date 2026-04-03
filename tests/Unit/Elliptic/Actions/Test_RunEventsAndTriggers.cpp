@@ -30,7 +30,6 @@
 namespace {
 struct TestEvent : public Event {
  public:
-  explicit TestEvent(CkMigrateMessage* /*unused*/) {}
   using PUP::able::register_constructor;
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-function"
@@ -65,7 +64,9 @@ struct TestEvent : public Event {
   bool needs_evolved_variables() const override { return false; }
 };
 
+#if defined(SPECTRE_USE_CHARM)
 PUP::able::PUP_ID TestEvent::my_PUP_ID = 0;  // NOLINT
+#endif                                       // SPECTRE_USE_CHARM
 
 struct Label {};
 

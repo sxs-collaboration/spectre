@@ -36,7 +36,7 @@ amr::Flag random_flag(
  * - If all weights are zero, `amr::Flag::DoNothing` is always chosen.
  */
 template <Type CriteriaType>
-class Random : public Criterion {
+class Random : public SPECTRE_CHARM_DERIVED(Random<CriteriaType>, Criterion) {
  public:
   struct ProbabilityWeights {
     using type = std::unordered_map<amr::Flag, size_t>;
@@ -58,7 +58,6 @@ class Random : public Criterion {
   explicit Random(std::unordered_map<amr::Flag, size_t> probability_weights);
 
   /// \cond
-  explicit Random(CkMigrateMessage* msg);
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(Random);  // NOLINT
   /// \endcond

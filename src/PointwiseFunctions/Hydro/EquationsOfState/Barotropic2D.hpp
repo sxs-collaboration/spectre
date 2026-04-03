@@ -41,7 +41,10 @@ namespace EquationsOfState {
  * zero temperature and in beta equalibrium.
  */
 template <typename ColdEos>
-class Barotropic2D : public EquationOfState<ColdEos::is_relativistic, 2> {
+class Barotropic2D
+    : public SPECTRE_CHARM_DERIVED(
+          SINGLE_ARG(Barotropic2D<ColdEos>),
+          SINGLE_ARG(EquationOfState<ColdEos::is_relativistic, 2>)) {
  public:
   static constexpr size_t thermodynamic_dim = 2;
   static constexpr bool is_relativistic = ColdEos::is_relativistic;
@@ -113,7 +116,8 @@ class Barotropic2D : public EquationOfState<ColdEos::is_relativistic, 2> {
   /// @}
 
   WRAPPED_PUPable_decl_base_template(  // NOLINT
-      SINGLE_ARG(EquationOfState<ColdEos::is_relativistic, 2>), Barotropic2D);
+      SINGLE_ARG(EquationOfState<ColdEos::is_relativistic, 2>),
+      SINGLE_ARG(Barotropic2D<ColdEos>));
 
   /// The lower bound of the electron fraction that is valid for this EOS
   double electron_fraction_lower_bound() const override { return 0.0; }
@@ -165,9 +169,11 @@ class Barotropic2D : public EquationOfState<ColdEos::is_relativistic, 2> {
   EQUATION_OF_STATE_FORWARD_DECLARE_MEMBER_IMPLS(2)
   ColdEos underlying_eos_;
 };
+#if defined(SPECTRE_USE_CHARM)
 /// \cond
 template <typename ColdEos>
 // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
 PUP::able::PUP_ID EquationsOfState::Barotropic2D<ColdEos>::my_PUP_ID = 0;
 /// \endcond
+#endif  // SPECTRE_USE_CHARM
 }  // namespace EquationsOfState

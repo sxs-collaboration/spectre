@@ -42,7 +42,11 @@ namespace gh::BoundaryConditions {
  * analytic data.
  */
 template <size_t Dim>
-class DirichletAnalytic final : public BoundaryCondition<Dim> {
+class DirichletAnalytic final
+    : public BoundaryCondition<Dim>
+      SPECTRE_FINDUS_DERIVED(
+          SINGLE_ARG(DirichletMinkowski<Dim>),
+          SINGLE_ARG(domain::BoundaryConditions::BoundaryCondition)) {
  public:
   /// \brief What analytic solution/data to prescribe.
   struct AnalyticPrescription {
@@ -68,8 +72,6 @@ class DirichletAnalytic final : public BoundaryCondition<Dim> {
   explicit DirichletAnalytic(
       std::unique_ptr<evolution::initial_data::InitialData>
           analytic_prescription);
-
-  explicit DirichletAnalytic(CkMigrateMessage* msg);
 
   WRAPPED_PUPable_decl_base_template(
       domain::BoundaryConditions::BoundaryCondition, DirichletAnalytic);

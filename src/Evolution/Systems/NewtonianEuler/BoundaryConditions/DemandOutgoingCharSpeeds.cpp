@@ -24,24 +24,23 @@
 
 namespace NewtonianEuler::BoundaryConditions {
 template <size_t Dim>
-DemandOutgoingCharSpeeds<Dim>::DemandOutgoingCharSpeeds(
-    CkMigrateMessage* const msg)
-    : BoundaryCondition<Dim>(msg) {}
-
-template <size_t Dim>
 std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
 DemandOutgoingCharSpeeds<Dim>::get_clone() const {
   return std::make_unique<DemandOutgoingCharSpeeds>(*this);
 }
 
 template <size_t Dim>
-void DemandOutgoingCharSpeeds<Dim>::pup(PUP::er& p) {
-  BoundaryCondition<Dim>::pup(p);
+void DemandOutgoingCharSpeeds<Dim>::pup([[maybe_unused]] PUP::er& p) {
+#if defined(SPECTRE_USE_CHARM)
+  BoundaryConditions::BoundaryCondition<Dim>::pup(p);
+#endif  // SPECTRE_USE_CHARM
 }
 
+#if defined(SPECTRE_USE_CHARM)
 template <size_t Dim>
 // NOLINTNEXTLINE
 PUP::able::PUP_ID DemandOutgoingCharSpeeds<Dim>::my_PUP_ID = 0;
+#endif  // SPECTRE_USE_CHARM
 
 template <size_t Dim>
 template <size_t ThermodynamicDim>

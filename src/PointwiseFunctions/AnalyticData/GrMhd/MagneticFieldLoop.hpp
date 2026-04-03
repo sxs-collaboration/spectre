@@ -60,7 +60,13 @@ class MagneticFieldLoop
     : public evolution::initial_data::InitialData,
       public MarkAsAnalyticData,
       public AnalyticDataBase,
-      public hydro::TemperatureInitialization<MagneticFieldLoop> {
+      public hydro::TemperatureInitialization<MagneticFieldLoop>
+#if defined(SPECTRE_USE_FINDUS)
+    ,
+      public virtual findus::serialize::SerializableDerived<
+          MagneticFieldLoop, evolution::initial_data::InitialData>
+#endif
+{
  public:
   using equation_of_state_type = EquationsOfState::IdealFluid<true>;
 
@@ -143,7 +149,6 @@ class MagneticFieldLoop
       -> std::unique_ptr<evolution::initial_data::InitialData> override;
 
   /// \cond
-  explicit MagneticFieldLoop(CkMigrateMessage* msg);
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(MagneticFieldLoop);
   /// \endcond

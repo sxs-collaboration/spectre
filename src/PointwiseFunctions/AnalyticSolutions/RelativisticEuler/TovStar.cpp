@@ -17,8 +17,6 @@
 
 namespace RelativisticEuler::Solutions {
 
-TovStar::TovStar(CkMigrateMessage* msg) : InitialData(msg) {}
-
 TovStar::TovStar(
     const double central_rest_mass_density,
     std::unique_ptr<EquationsOfState::EquationOfState<true, 1>>
@@ -31,7 +29,8 @@ TovStar::TovStar(
                        coordinate_system_) {}
 
 TovStar::TovStar(const TovStar& rhs)
-    : evolution::initial_data::InitialData(rhs),
+    : PUP::able(rhs),
+      evolution::initial_data::InitialData(rhs),
       central_rest_mass_density_(rhs.central_rest_mass_density_),
       equation_of_state_(rhs.equation_of_state_->get_clone()),
       coordinate_system_(rhs.coordinate_system_),
@@ -760,7 +759,9 @@ void TovVariables<DataType, Region>::operator()(
 #endif  // defined(__GNUC__) && !defined(__clang__)
 }  // namespace tov_detail
 
+#if defined(SPECTRE_USE_CHARM)
 PUP::able::PUP_ID TovStar::my_PUP_ID = 0;
+#endif  // SPECTRE_USE_CHARM
 
 bool operator==(const TovStar& lhs, const TovStar& rhs) {
   return lhs.central_rest_mass_density_ == rhs.central_rest_mass_density_ and

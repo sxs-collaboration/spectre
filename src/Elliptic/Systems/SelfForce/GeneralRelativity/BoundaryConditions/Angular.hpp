@@ -34,7 +34,10 @@ namespace GrSelfForce::BoundaryConditions {
  * The ordering of components in $\Psi$ here is:
  * $\{tt,tr,t\theta,t\phi,rr,r\theta,r\phi,\theta\theta,\theta\phi,\phi\phi\}$.
  */
-class Angular : public elliptic::BoundaryConditions::BoundaryCondition<2> {
+class Angular
+    : public elliptic::BoundaryConditions::BoundaryCondition<2>
+      SPECTRE_FINDUS_DERIVED(Angular,
+                             domain::BoundaryConditions::BoundaryCondition) {
  private:
   using Base = elliptic::BoundaryConditions::BoundaryCondition<2>;
   using GradTensorType =
@@ -63,7 +66,6 @@ class Angular : public elliptic::BoundaryConditions::BoundaryCondition<2> {
   int m_mode_number() const { return m_mode_number_; }
 
   /// \cond
-  explicit Angular(CkMigrateMessage* m);
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(Angular);
   /// \endcond

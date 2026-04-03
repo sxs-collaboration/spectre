@@ -78,7 +78,6 @@ struct BoundaryTerms final : public evolution::BoundaryCorrection {
     using type = Scalar<DataVector>;
   };
 
-  explicit BoundaryTerms(CkMigrateMessage* /*unused*/) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(BoundaryTerms);  // NOLINT
   BoundaryTerms() = default;
@@ -150,8 +149,10 @@ struct BoundaryTerms final : public evolution::BoundaryCorrection {
   }
 };
 
+#if defined(SPECTRE_USE_CHARM)
 template <size_t Dim>
 PUP::able::PUP_ID BoundaryTerms<Dim>::my_PUP_ID = 0;  // NOLINT
+#endif                                                // SPECTRE_USE_CHARM
 
 template <bool LocalTimeStepping>
 struct SetLocalMortarData {

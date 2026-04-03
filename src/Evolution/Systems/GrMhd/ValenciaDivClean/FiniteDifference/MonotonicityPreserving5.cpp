@@ -37,10 +37,6 @@ MonotonicityPreserving5Prim::MonotonicityPreserving5Prim(
       epsilon_(epsilon),
       reconstruct_rho_times_temperature_(reconstruct_rho_times_temperature) {}
 
-MonotonicityPreserving5Prim::MonotonicityPreserving5Prim(
-    CkMigrateMessage* const msg)
-    : Reconstructor(msg) {}
-
 std::unique_ptr<Reconstructor> MonotonicityPreserving5Prim::get_clone() const {
   return std::make_unique<MonotonicityPreserving5Prim>(*this);
 }
@@ -52,8 +48,10 @@ void MonotonicityPreserving5Prim::pup(PUP::er& p) {
   p | reconstruct_rho_times_temperature_;
 }
 
+#if defined(SPECTRE_USE_CHARM)
 // NOLINTNEXTLINE
 PUP::able::PUP_ID MonotonicityPreserving5Prim::my_PUP_ID = 0;
+#endif  // SPECTRE_USE_CHARM
 
 template <size_t ThermodynamicDim>
 void MonotonicityPreserving5Prim::reconstruct(

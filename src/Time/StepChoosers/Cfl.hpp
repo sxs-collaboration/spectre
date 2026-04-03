@@ -34,12 +34,15 @@ struct MinimumGridSpacing;
 namespace StepChoosers {
 /// Sets a goal based on the CFL stability criterion.
 template <typename Frame, typename System>
-class Cfl : public StepChooser<StepChooserUse::Slab>,
-            public StepChooser<StepChooserUse::LtsStep> {
+class Cfl : public SPECTRE_CHARM_DERIVED(
+                SINGLE_ARG(Cfl<Frame, System>),
+                SINGLE_ARG(StepChooser<StepChooserUse::Slab>)),
+            public SPECTRE_CHARM_DERIVED(
+                SINGLE_ARG(Cfl<Frame, System>),
+                SINGLE_ARG(StepChooser<StepChooserUse::LtsStep>)) {
  public:
   /// \cond
   Cfl() = default;
-  explicit Cfl(CkMigrateMessage* /*unused*/) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(Cfl);  // NOLINT
   /// \endcond
@@ -89,8 +92,10 @@ class Cfl : public StepChooser<StepChooserUse::Slab>,
   double safety_factor_ = std::numeric_limits<double>::signaling_NaN();
 };
 
+#if defined(SPECTRE_USE_CHARM)
 /// \cond
 template <typename Frame, typename System>
 PUP::able::PUP_ID Cfl<Frame, System>::my_PUP_ID = 0;  // NOLINT
 /// \endcond
+#endif  // SPECTRE_USE_CHARM
 }  // namespace StepChoosers

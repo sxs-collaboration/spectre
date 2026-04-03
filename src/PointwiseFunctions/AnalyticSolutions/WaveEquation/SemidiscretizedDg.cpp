@@ -26,9 +26,6 @@ SemidiscretizedDg::get_clone() const {
   return std::make_unique<SemidiscretizedDg>(*this);
 }
 
-SemidiscretizedDg::SemidiscretizedDg(CkMigrateMessage* msg)
-    : InitialData(msg) {}
-
 namespace {
 struct Mode {
   std::complex<double> frequency;
@@ -163,5 +160,7 @@ void SemidiscretizedDg::pup(PUP::er& p) {
   p | amplitudes_;
 }
 
+#if defined(SPECTRE_USE_CHARM)
 PUP::able::PUP_ID SemidiscretizedDg::my_PUP_ID = 0;
+#endif  // SPECTRE_USE_CHARM
 }  // namespace ScalarWave::Solutions

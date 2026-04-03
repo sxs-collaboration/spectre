@@ -30,7 +30,8 @@ class MathFunction;
  * function input (i.e., the spatial coordinates) is given as a rank-1 tensor.
  */
 template <size_t VolumeDim, typename Fr>
-class MathFunction : public PUP::able {
+class MathFunction
+    : public SPECTRE_CHARM_PUPable(SINGLE_ARG(MathFunction<VolumeDim, Fr>)) {
  public:
   constexpr static size_t volume_dim = VolumeDim;
   using frame = Fr;
@@ -82,7 +83,8 @@ class MathFunction : public PUP::able {
  * be `Tensors`, `doubles`, or `DataVectors`.
  */
 template <typename Fr>
-class MathFunction<1, Fr> : public PUP::able {
+class MathFunction<1, Fr>
+    : public SPECTRE_CHARM_PUPable(SINGLE_ARG(MathFunction<1, Fr>)) {
  public:
   constexpr static size_t volume_dim = 1;
   using frame = Fr;

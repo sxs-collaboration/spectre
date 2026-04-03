@@ -38,7 +38,11 @@ namespace grmhd::GhValenciaDivClean::BoundaryConditions {
  * reason is that some care and experimentation is necessary to impose the
  * boundary condition correctly on FD.
  */
-class ConstraintPreservingFreeOutflow final : public BoundaryCondition {
+class ConstraintPreservingFreeOutflow final
+    : public BoundaryCondition
+      SPECTRE_FINDUS_DERIVED(
+          SINGLE_ARG(DirichletAnalytic<System>),
+          SINGLE_ARG(domain::BoundaryConditions::BoundaryCondition)) {
  public:
   using options =
       typename gh::BoundaryConditions::ConstraintPreservingBjorhus<3>::options;
@@ -58,8 +62,6 @@ class ConstraintPreservingFreeOutflow final : public BoundaryCondition {
   ConstraintPreservingFreeOutflow& operator=(
       const ConstraintPreservingFreeOutflow&) = default;
   ~ConstraintPreservingFreeOutflow() override = default;
-
-  explicit ConstraintPreservingFreeOutflow(CkMigrateMessage* msg);
 
   WRAPPED_PUPable_decl_base_template(
       domain::BoundaryConditions::BoundaryCondition,

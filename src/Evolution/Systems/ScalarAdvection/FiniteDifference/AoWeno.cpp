@@ -45,10 +45,6 @@ AoWeno53<Dim>::AoWeno53(const double gamma_hi, const double gamma_lo,
 }
 
 template <size_t Dim>
-AoWeno53<Dim>::AoWeno53(CkMigrateMessage* const msg)
-    : Reconstructor<Dim>(msg) {}
-
-template <size_t Dim>
 std::unique_ptr<Reconstructor<Dim>> AoWeno53<Dim>::get_clone() const {
   return std::make_unique<AoWeno53>(*this);
 }
@@ -68,8 +64,10 @@ void AoWeno53<Dim>::pup(PUP::er& p) {
   }
 }
 
+#if defined(SPECTRE_USE_CHARM)
 template <size_t Dim>
 PUP::able::PUP_ID AoWeno53<Dim>::my_PUP_ID = 0;
+#endif  // SPECTRE_USE_CHARM
 
 template <size_t Dim>
 template <typename TagsList>

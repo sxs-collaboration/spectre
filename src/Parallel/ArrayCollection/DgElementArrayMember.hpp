@@ -68,7 +68,11 @@ template <size_t Dim, typename Metavariables,
 class DgElementArrayMember<Dim, Metavariables,
                            tmpl::list<PhaseDepActionListsPack...>,
                            SimpleTagsFromOptions>
-    : public DgElementArrayMemberBase<Dim> {
+    : public SPECTRE_CHARM_DERIVED(
+          SINGLE_ARG(DgElementArrayMember<
+                     Dim, Metavariables, tmpl::list<PhaseDepActionListsPack...>,
+                     SimpleTagsFromOptions>),
+          DgElementArrayMemberBase<Dim>) {
  public:
   using ParallelComponent =
       DgElementCollection<Dim, Metavariables,
@@ -114,8 +118,6 @@ class DgElementArrayMember<Dim, Metavariables,
 
   WRAPPED_PUPable_decl_base_template(  // NOLINT
       SINGLE_ARG(DgElementArrayMemberBase<Dim>), DgElementArrayMember);
-
-  explicit DgElementArrayMember(CkMigrateMessage* msg);
   /// \endcond
 
   /// Start execution of the phase-dependent action list in `next_phase`. If
@@ -199,13 +201,6 @@ class DgElementArrayMember<Dim, Metavariables,
 };
 
 /// \cond
-template <size_t Dim, typename Metavariables,
-          typename... PhaseDepActionListsPack, typename SimpleTagsFromOptions>
-DgElementArrayMember<
-    Dim, Metavariables, tmpl::list<PhaseDepActionListsPack...>,
-    SimpleTagsFromOptions>::DgElementArrayMember(CkMigrateMessage* msg)
-    : DgElementArrayMemberBase<Dim>(msg) {}
-
 template <size_t Dim, typename Metavariables,
           typename... PhaseDepActionListsPack, typename SimpleTagsFromOptions>
 template <class... InitializationTags>
@@ -566,11 +561,13 @@ void DgElementArrayMember<Dim, Metavariables,
   }
 }
 
+#if defined(SPECTRE_USE_CHARM)
 template <size_t Dim, typename Metavariables,
           typename... PhaseDepActionListsPack, typename SimpleTagsFromOptions>
 PUP::able::PUP_ID DgElementArrayMember<
     Dim, Metavariables, tmpl::list<PhaseDepActionListsPack...>,
     SimpleTagsFromOptions>::my_PUP_ID =  // NOLINT
     0;
+#endif  // SPECTRE_USE_CHARM
 /// \endcond
 }  // namespace Parallel

@@ -34,7 +34,6 @@ namespace {
 class ErrorChooser : public StepChooser<StepChooserUse::LtsStep> {
  public:
   ErrorChooser() = default;
-  explicit ErrorChooser(CkMigrateMessage* /*unused*/) {}
   using PUP::able::register_constructor;
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-function"
@@ -54,7 +53,9 @@ class ErrorChooser : public StepChooser<StepChooserUse::LtsStep> {
   bool can_be_delayed() const override { return true; }
 };
 
+#if defined(SPECTRE_USE_CHARM)
 PUP::able::PUP_ID ErrorChooser::my_PUP_ID = 0;  // NOLINT
+#endif                                          // SPECTRE_USE_CHARM
 
 struct Metavariables {
   struct factory_creation

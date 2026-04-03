@@ -223,7 +223,8 @@ class KleinGordonWorldtubeH5BufferUpdater;
  *  times at each of the rows of the time-series data.
  */
 template <typename BufferTags>
-class WorldtubeBufferUpdater : public PUP::able {
+class WorldtubeBufferUpdater
+    : public SPECTRE_CHARM_PUPable(WorldtubeBufferUpdater<BufferTags>) {
  public:
   using creatable_classes =
       tmpl::list<MetricWorldtubeH5BufferUpdater<ComplexModalVector>,
@@ -265,7 +266,9 @@ class WorldtubeBufferUpdater : public PUP::able {
  */
 template <typename T>
 class MetricWorldtubeH5BufferUpdater
-    : public WorldtubeBufferUpdater<cce_metric_input_tags<T>> {
+    : public SPECTRE_CHARM_DERIVED(
+          SINGLE_ARG(MetricWorldtubeH5BufferUpdater<T>),
+          WorldtubeBufferUpdater<cce_metric_input_tags<T>>) {
   static_assert(std::is_same_v<T, ComplexModalVector> or
                     std::is_same_v<T, DataVector>,
                 "Can only use ComplexModalVector or DataVector in a "
@@ -397,8 +400,6 @@ class MetricWorldtubeH5BufferUpdater
       WorldtubeBufferUpdater<cce_metric_input_tags<T>>,
       MetricWorldtubeH5BufferUpdater);
 
-  explicit MetricWorldtubeH5BufferUpdater(CkMigrateMessage* /*unused*/) {}
-
   /// \brief Update the `buffers`, `time_span_start`, and `time_span_end` with
   /// data (either Goldberg modal data or just nodal data depending on the
   /// template parameter to this class) and the start and end index in the
@@ -487,11 +488,15 @@ class MetricWorldtubeH5BufferUpdater
  */
 template <typename T>
 class BondiWorldtubeH5BufferUpdater
-    : public WorldtubeBufferUpdater<tmpl::conditional_t<
-          std::is_same_v<T, ComplexModalVector>,
-          Tags::worldtube_boundary_tags_for_writing<
-              Spectral::Swsh::Tags::SwshTransform>,
-          Tags::worldtube_boundary_tags_for_writing<Tags::BoundaryValue>>> {
+    : public SPECTRE_CHARM_DERIVED(
+          SINGLE_ARG(BondiWorldtubeH5BufferUpdater<T>),
+          SINGLE_ARG(
+              WorldtubeBufferUpdater<
+                  tmpl::conditional_t<std::is_same_v<T, ComplexModalVector>,
+                                      Tags::worldtube_boundary_tags_for_writing<
+                                          Spectral::Swsh::Tags::SwshTransform>,
+                                      Tags::worldtube_boundary_tags_for_writing<
+                                          Tags::BoundaryValue>>>)) {
   static_assert(std::is_same_v<T, ComplexModalVector> or
                     std::is_same_v<T, ComplexDataVector>,
                 "Can only use ComplexModalVector or ComplexDataVector in a "
@@ -521,8 +526,6 @@ class BondiWorldtubeH5BufferUpdater
   WRAPPED_PUPable_decl_base_template(
       SINGLE_ARG(WorldtubeBufferUpdater<tags_for_writing>),
       BondiWorldtubeH5BufferUpdater);
-
-  explicit BondiWorldtubeH5BufferUpdater(CkMigrateMessage* /*unused*/) {}
 
   /// update the `buffers`, `time_span_start`, and `time_span_end` with Goldberg
   /// modal data (either Goldberg modal data or complex nodal data depending on
@@ -595,7 +598,9 @@ class BondiWorldtubeH5BufferUpdater
 /// H5 file produced by the SpEC format. We assume the scalar field is
 /// real-valued.
 class KleinGordonWorldtubeH5BufferUpdater
-    : public WorldtubeBufferUpdater<klein_gordon_input_tags> {
+    : public SPECTRE_CHARM_DERIVED(
+          KleinGordonWorldtubeH5BufferUpdater,
+          WorldtubeBufferUpdater<klein_gordon_input_tags>) {
  public:
   // charm needs the empty constructor
   KleinGordonWorldtubeH5BufferUpdater() = default;
@@ -609,8 +614,6 @@ class KleinGordonWorldtubeH5BufferUpdater
       std::optional<double> extraction_radius = std::nullopt);
 
   WRAPPED_PUPable_decl_template(KleinGordonWorldtubeH5BufferUpdater);  // NOLINT
-
-  explicit KleinGordonWorldtubeH5BufferUpdater(CkMigrateMessage* /*unused*/) {}
 
   /// update the `buffers`, `time_span_start`, and `time_span_end` with Goldberg
   /// modal data and the start and end index in the member `time_buffer_`

@@ -29,11 +29,9 @@ RegularSphericalWave::get_clone() const {
   return std::make_unique<RegularSphericalWave>(*this);
 }
 
-RegularSphericalWave::RegularSphericalWave(CkMigrateMessage* msg)
-    : InitialData(msg) {}
-
 RegularSphericalWave::RegularSphericalWave(const RegularSphericalWave& other)
-    : evolution::initial_data::InitialData(other),
+    : PUP::able(other),
+      evolution::initial_data::InitialData(other),
       profile_(other.profile_->get_clone()) {}
 
 RegularSphericalWave& RegularSphericalWave::operator=(
@@ -135,5 +133,7 @@ void RegularSphericalWave::pup(PUP::er& p) {
   p | profile_;
 }
 
+#if defined(SPECTRE_USE_CHARM)
 PUP::able::PUP_ID RegularSphericalWave::my_PUP_ID = 0;
+#endif  // SPECTRE_USE_CHARM
 }  // namespace ScalarWave::Solutions

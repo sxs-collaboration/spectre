@@ -35,12 +35,15 @@ namespace StepChoosers {
 /// `standard_step_choosers` list, but can be added to the
 /// `factory_creation` struct in the metavariables.
 template <size_t VolumeDim>
-class Random : public StepChooser<StepChooserUse::Slab>,
-               public StepChooser<StepChooserUse::LtsStep> {
+class Random : public SPECTRE_CHARM_DERIVED(
+                   SINGLE_ARG(Random<VolumeDim>),
+                   SINGLE_ARG(StepChooser<StepChooserUse::Slab>)),
+               public SPECTRE_CHARM_DERIVED(
+                   SINGLE_ARG(Random<VolumeDim>),
+                   SINGLE_ARG(StepChooser<StepChooserUse::LtsStep>)) {
  public:
   /// \cond
   Random();
-  explicit Random(CkMigrateMessage* /*unused*/);
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(Random);  // NOLINT
   /// \endcond

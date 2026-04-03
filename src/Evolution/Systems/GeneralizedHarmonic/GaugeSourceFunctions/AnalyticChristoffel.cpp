@@ -26,7 +26,8 @@
 
 namespace gh::gauges {
 AnalyticChristoffel::AnalyticChristoffel(const AnalyticChristoffel& rhs)
-    : GaugeCondition{dynamic_cast<const GaugeCondition&>(rhs)},
+    : PUP::able(rhs),
+      GaugeCondition{dynamic_cast<const GaugeCondition&>(rhs)},
       analytic_prescription_(rhs.analytic_prescription_->get_clone()) {}
 
 AnalyticChristoffel& AnalyticChristoffel::operator=(
@@ -41,9 +42,6 @@ AnalyticChristoffel& AnalyticChristoffel::operator=(
 AnalyticChristoffel::AnalyticChristoffel(
     std::unique_ptr<evolution::initial_data::InitialData> analytic_prescription)
     : analytic_prescription_(std::move(analytic_prescription)) {}
-
-AnalyticChristoffel::AnalyticChristoffel(CkMigrateMessage* const msg)
-    : GaugeCondition(msg) {}
 
 void AnalyticChristoffel::pup(PUP::er& p) {
   GaugeCondition::pup(p);
@@ -119,8 +117,10 @@ void AnalyticChristoffel::gauge_and_spacetime_derivative_impl(
   }
 }
 
+#if defined(SPECTRE_USE_CHARM)
 // NOLINTNEXTLINE
 PUP::able::PUP_ID AnalyticChristoffel::my_PUP_ID = 0;
+#endif  // SPECTRE_USE_CHARM
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 

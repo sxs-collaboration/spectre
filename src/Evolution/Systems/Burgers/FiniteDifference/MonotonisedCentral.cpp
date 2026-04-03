@@ -31,16 +31,15 @@
 #include "Utilities/TMPL.hpp"
 
 namespace Burgers::fd {
-MonotonisedCentral::MonotonisedCentral(CkMigrateMessage* const msg)
-    : Reconstructor(msg) {}
-
 std::unique_ptr<Reconstructor> MonotonisedCentral::get_clone() const {
   return std::make_unique<MonotonisedCentral>(*this);
 }
 
 void MonotonisedCentral::pup(PUP::er& p) { Reconstructor::pup(p); }
 
+#if defined(SPECTRE_USE_CHARM)
 PUP::able::PUP_ID MonotonisedCentral::my_PUP_ID = 0;
+#endif  // SPECTRE_USE_CHARM
 
 void MonotonisedCentral::reconstruct(
     const gsl::not_null<std::array<Variables<face_vars_tags>, 1>*>

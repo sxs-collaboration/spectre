@@ -30,10 +30,6 @@
 
 namespace ScalarAdvection::fd {
 template <size_t Dim>
-MonotonisedCentral<Dim>::MonotonisedCentral(CkMigrateMessage* const msg)
-    : Reconstructor<Dim>(msg) {}
-
-template <size_t Dim>
 std::unique_ptr<Reconstructor<Dim>> MonotonisedCentral<Dim>::get_clone() const {
   return std::make_unique<MonotonisedCentral>(*this);
 }
@@ -43,8 +39,10 @@ void MonotonisedCentral<Dim>::pup(PUP::er& p) {
   Reconstructor<Dim>::pup(p);
 }
 
+#if defined(SPECTRE_USE_CHARM)
 template <size_t Dim>
 PUP::able::PUP_ID MonotonisedCentral<Dim>::my_PUP_ID = 0;
+#endif  // SPECTRE_USE_CHARM
 
 template <size_t Dim>
 template <typename TagsList>

@@ -50,7 +50,13 @@ namespace NewtonianEuler::Solutions {
 template <size_t Dim>
 class SmoothFlow : public evolution::initial_data::InitialData,
                    virtual public MarkAsAnalyticSolution,
-                   private hydro::Solutions::SmoothFlow<Dim, false> {
+                   private hydro::Solutions::SmoothFlow<Dim, false>
+#if defined(SPECTRE_USE_FINDUS)
+    ,
+                   public virtual findus::serialize::SerializableDerived<
+                       SmoothFlow<Dim>, evolution::initial_data::InitialData>
+#endif
+{
   using smooth_flow = hydro::Solutions::SmoothFlow<Dim, false>;
 
  public:
@@ -70,7 +76,6 @@ class SmoothFlow : public evolution::initial_data::InitialData,
       -> std::unique_ptr<evolution::initial_data::InitialData> override;
 
   /// \cond
-  explicit SmoothFlow(CkMigrateMessage* msg);
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(SmoothFlow);
   /// \endcond

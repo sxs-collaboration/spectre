@@ -31,7 +31,11 @@ namespace CurvedScalarWave::BoundaryConditions {
 /// directed out of the domain; no boundary data is altered by this boundary
 /// condition.
 template <size_t Dim>
-class DemandOutgoingCharSpeeds final : public BoundaryCondition<Dim> {
+class DemandOutgoingCharSpeeds final
+    : public BoundaryCondition<Dim>
+      SPECTRE_FINDUS_DERIVED(
+          SINGLE_ARG(DemandOutgoingCharSpeeds<Dim>),
+          SINGLE_ARG(domain::BoundaryConditions::BoundaryCondition)) {
  public:
   using options = tmpl::list<>;
   static constexpr Options::String help{
@@ -46,8 +50,6 @@ class DemandOutgoingCharSpeeds final : public BoundaryCondition<Dim> {
       default;
   /// \endcond
   ~DemandOutgoingCharSpeeds() override = default;
-
-  explicit DemandOutgoingCharSpeeds(CkMigrateMessage* msg);
 
   WRAPPED_PUPable_decl_base_template(
       domain::BoundaryConditions::BoundaryCondition, DemandOutgoingCharSpeeds);

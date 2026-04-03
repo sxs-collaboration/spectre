@@ -13,7 +13,7 @@
 #include "Utilities/TMPL.hpp"
 
 namespace control_system::size::States {
-class DeltaRNoDrift : public State {
+class DeltaRNoDrift : public SPECTRE_CHARM_DERIVED(DeltaRNoDrift, State) {
  public:
   using options = tmpl::list<>;
   static constexpr Options::String help{
@@ -35,6 +35,5 @@ class DeltaRNoDrift : public State {
       const ControlErrorArgs& control_error_args) const override;
 
   WRAPPED_PUPable_decl_template(DeltaRNoDrift);  // NOLINT
-  explicit DeltaRNoDrift(CkMigrateMessage* const /*msg*/) {}
 };
 }  // namespace control_system::size::States

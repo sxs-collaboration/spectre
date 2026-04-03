@@ -25,22 +25,27 @@ namespace Parallel {
  * `CkArrayIndex::data()` can be safely reinterpreted as an `Index*`.
  */
 template <class Index>
-struct ArrayIndex : public CkArrayIndex {
+struct ArrayIndex
+#if defined(SPECTRE_USE_CHARM)
+    : public CkArrayIndex
+#endif
+{
   static_assert(std::is_standard_layout_v<Index> and std::is_trivial_v<Index>,
                 "The array index type must be a POD, plain-old-data");
   // clang-tidy: suspicious use of sizeof
-  static_assert(sizeof(Index) <= 3 * sizeof(int),  // NOLINT
-                "The default Charm++ CK_ARRAYINDEX_MAXLEN is 3. If you have "
-                "changed this at Charm++ configuration time then please update "
-                "the static_assert, otherwise your Index type is too large.");
+  static_assert(sizeof(Index) <= 2 * sizeof(int),  // NOLINT
+                "The maximum index size is 64 bits or 8 bytes. Your Index type "
+                "is too large.");
   // clang-tidy: suspicious use of sizeof
   static_assert(sizeof(Index) % sizeof(int) == 0,  // NOLINT
                 "The Charm++ array Index type must be exactly a multiple of "
                 "the size of an integer, but the user-provided one is not.");
+#if defined(SPECTRE_USE_CHARM)
   static_assert(
       alignof(Index) == alignof(decltype(index)),
       "Incorrect alignment of Charm++ array Index type. The "
       "alignment must match the alignment of the internal Charm++ type");
+#endif
   static_assert(not tt::is_a_v<ArrayIndex, Index>,
                 "The Index type passed to ArrayIndex cannot be an ArrayIndex");
 
@@ -48,14 +53,20 @@ struct ArrayIndex : public CkArrayIndex {
   // memory reserved for it in the base class
   // clang-tidy: mark explicit: it's a conversion constructor
   ArrayIndex(const Index& array_index)  // NOLINT
-                                        // clang-tidy: do not use unions
+#if defined(SPECTRE_USE_CHARM)
       : array_index_(new (index) Index(array_index)) {  // NOLINT
     // clang-tidy: suspicious use of sizeof
     nInts = sizeof(array_index) / sizeof(int);  // NOLINT
   }
+#elif defined(SPECTRE_USE_FINDUS)
+      : array_index_(0) {
+    std::memcpy(&array_index_, &array_index, sizeof(array_index_));
+  }
+#endif
 
   // clang-tidy: mark explicit: it's a conversion constructor
   ArrayIndex(const CkArrayIndex& array_index)  // NOLINT
+#if defined(SPECTRE_USE_CHARM)
       : CkArrayIndex(array_index),
         // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
         array_index_(reinterpret_cast<Index*>(CkArrayIndex::data())) {
@@ -63,6 +74,12 @@ struct ArrayIndex : public CkArrayIndex {
            "The CkArrayIndex::nInts does not match the size of the custom "
            "array index class.");
   }
+#elif defined(SPECTRE_USE_FINDUS)
+      : array_index_(0) {
+    static_assert(sizeof(array_index_) == sizeof(CkArrayIndex));
+    std::memcpy(&array_index_, &array_index, sizeof(array_index_));
+  }
+#endif
 
   ArrayIndex(const ArrayIndex& rhs) = delete;
   ArrayIndex& operator=(const ArrayIndex& rhs) = delete;
@@ -71,10 +88,20 @@ struct ArrayIndex : public CkArrayIndex {
   ArrayIndex& operator=(ArrayIndex&& /*rhs*/) = delete;
   ~ArrayIndex() = default;
 
-  const Index& get_index() const { return *array_index_; }
+  const Index& get_index() const {
+#if defined(SPECTRE_USE_CHARM)
+    return *array_index_;
+#elif defined(SPECTRE_USE_FINDUS)
+    return array_index_;
+#endif
+  }
 
  private:
+#if defined(SPECTRE_USE_CHARM)
   Index* array_index_ = nullptr;
+#elif defined(SPECTRE_USE_FINDUS)
+  std::uint64_t array_index_ = 0;
+#endif
 };
 
 using ArrayIndex1D = ArrayIndex<CkIndex1D>;

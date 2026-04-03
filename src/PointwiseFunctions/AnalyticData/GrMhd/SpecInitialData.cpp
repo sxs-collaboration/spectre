@@ -70,8 +70,7 @@ SpecInitialData<ThermodynamicDim>::get_clone() const {
 }
 
 template <size_t ThermodynamicDim>
-SpecInitialData<ThermodynamicDim>::SpecInitialData(CkMigrateMessage* msg)
-    : InitialData(msg) {}
+: InitialData(msg) {}
 
 template <size_t ThermodynamicDim>
 void SpecInitialData<ThermodynamicDim>::pup(PUP::er& p) {
@@ -88,8 +87,10 @@ void SpecInitialData<ThermodynamicDim>::pup(PUP::er& p) {
   }
 }
 
+#if defined(SPECTRE_USE_CHARM)
 template <size_t ThermodynamicDim>
 PUP::able::PUP_ID SpecInitialData<ThermodynamicDim>::my_PUP_ID = 0;
+#endif  // SPECTRE_USE_CHARM
 
 template <size_t ThermodynamicDim>
 template <typename DataType>

@@ -306,8 +306,13 @@ struct BinaryVariables
  * \cite Ossokine2015yla).
  */
 template <typename IsolatedObjectBase, typename IsolatedObjectClasses>
-class Binary : public elliptic::analytic_data::Background,
-               public elliptic::analytic_data::InitialGuess {
+class Binary
+    : public SPECTRE_CHARM_DERIVED(
+          SINGLE_ARG(Binary<IsolatedObjectBase, IsolatedObjectClasses>),
+          elliptic::analytic_data::Background),
+      public SPECTRE_CHARM_DERIVED(
+          SINGLE_ARG(Binary<IsolatedObjectBase, IsolatedObjectClasses>),
+          elliptic::analytic_data::InitialGuess) {
  public:
   struct XCoords {
     static constexpr Options::String help =
@@ -389,9 +394,6 @@ class Binary : public elliptic::analytic_data::Background,
     }
   }
 
-  explicit Binary(CkMigrateMessage* m)
-      : elliptic::analytic_data::Background(m),
-        elliptic::analytic_data::InitialGuess(m) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(Binary);
 
@@ -519,10 +521,12 @@ class Binary : public elliptic::analytic_data::Background,
   }
 };
 
+#if defined(SPECTRE_USE_CHARM)
 /// \cond
 template <typename IsolatedObjectBase, typename IsolatedObjectClasses>
 PUP::able::PUP_ID Binary<IsolatedObjectBase, IsolatedObjectClasses>::my_PUP_ID =
     0;  // NOLINT
 /// \endcond
+#endif  // SPECTRE_USE_CHARM
 
 }  // namespace Xcts::AnalyticData

@@ -42,9 +42,6 @@ KerrSphericalHarmonic::get_clone() const {
   return std::make_unique<KerrSphericalHarmonic>(*this);
 }
 
-KerrSphericalHarmonic::KerrSphericalHarmonic(CkMigrateMessage* msg)
-    : InitialData(msg) {}
-
 void KerrSphericalHarmonic::pup(PUP::er& p) {
   InitialData::pup(p);
   p | mass_;
@@ -91,7 +88,9 @@ KerrSphericalHarmonic::variables(
   return pi;
 }
 
+#if defined(SPECTRE_USE_CHARM)
 PUP::able::PUP_ID KerrSphericalHarmonic::my_PUP_ID = 0;
+#endif  // SPECTRE_USE_CHARM
 
 bool operator==(const KerrSphericalHarmonic& lhs,
                 const KerrSphericalHarmonic& rhs) {

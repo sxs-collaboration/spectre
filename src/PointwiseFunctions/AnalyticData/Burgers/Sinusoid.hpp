@@ -89,7 +89,13 @@ namespace Burgers::AnalyticData {
  * \endcode
  */
 class Sinusoid : public evolution::initial_data::InitialData,
-                 public MarkAsAnalyticData {
+                 public MarkAsAnalyticData
+#if defined(SPECTRE_USE_FINDUS)
+    ,
+                 public virtual findus::serialize::SerializableDerived<
+                     Sinusoid, evolution::initial_data::InitialData>
+#endif
+{
  public:
   using options = tmpl::list<>;
   static constexpr Options::String help{
@@ -108,7 +114,6 @@ class Sinusoid : public evolution::initial_data::InitialData,
       -> std::unique_ptr<evolution::initial_data::InitialData> override;
 
   /// \cond
-  explicit Sinusoid(CkMigrateMessage* msg);
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(Sinusoid);
   /// \endcond

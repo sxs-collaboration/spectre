@@ -50,7 +50,8 @@ namespace Events {
  * The slab information is the same on all elements.  The step
  * information is summed over the elements.
  */
-class ObserveAdaptiveSteppingDiagnostics : public Event {
+class ObserveAdaptiveSteppingDiagnostics
+    : public SPECTRE_CHARM_DERIVED(ObserveAdaptiveSteppingDiagnostics, Event) {
  private:
   using ReductionData = Parallel::ReductionData<
       Parallel::ReductionDatum<double, funcl::AssertEqual<>>,
@@ -70,7 +71,6 @@ class ObserveAdaptiveSteppingDiagnostics : public Event {
   };
 
   /// \cond
-  explicit ObserveAdaptiveSteppingDiagnostics(CkMigrateMessage* /*unused*/) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(ObserveAdaptiveSteppingDiagnostics);  // NOLINT
   /// \endcond

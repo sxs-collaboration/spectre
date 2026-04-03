@@ -103,7 +103,11 @@ template <size_t VolumeDim, typename... Tensors,
           typename... NonTensorComputeTags, typename ArraySectionIdTag>
 class ObserveFields<VolumeDim, tmpl::list<Tensors...>,
                     tmpl::list<NonTensorComputeTags...>, ArraySectionIdTag>
-    : public Event {
+    : public SPECTRE_CHARM_DERIVED(
+          SINGLE_ARG(ObserveFields<VolumeDim, tmpl::list<Tensors...>,
+                                   tmpl::list<NonTensorComputeTags...>,
+                                   ArraySectionIdTag>),
+          Event) {
  public:
   /// The name of the subfile inside the HDF5 file
   struct SubfileName {
@@ -114,7 +118,6 @@ class ObserveFields<VolumeDim, tmpl::list<Tensors...>,
   };
 
   /// \cond
-  explicit ObserveFields(CkMigrateMessage* /*unused*/) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(ObserveFields);  // NOLINT
   /// \endcond
@@ -534,6 +537,7 @@ ObserveFields<VolumeDim, tmpl::list<Tensors...>,
       coordinates_floating_point_type;
 }
 
+#if defined(SPECTRE_USE_CHARM)
 /// \cond
 template <size_t VolumeDim, typename... Tensors,
           typename... NonTensorComputeTags, typename ArraySectionIdTag>
@@ -541,5 +545,6 @@ PUP::able::PUP_ID ObserveFields<VolumeDim, tmpl::list<Tensors...>,
                                 tmpl::list<NonTensorComputeTags...>,
                                 ArraySectionIdTag>::my_PUP_ID = 0;  // NOLINT
 /// \endcond
+#endif  // SPECTRE_USE_CHARM
 }  // namespace Events
 }  // namespace dg

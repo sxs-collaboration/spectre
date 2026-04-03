@@ -77,7 +77,9 @@ void max_over_components(gsl::not_null<std::array<Flag, Dim>*> result,
  * \see persson_smoothness_indicator
  */
 template <size_t Dim, typename TensorTags>
-class Persson : public Criterion {
+class Persson
+    : public SPECTRE_CHARM_DERIVED(SINGLE_ARG(Persson<Dim, TensorTags>),
+                                   Criterion) {
  public:
   struct VariablesToMonitor {
     using type = std::vector<std::string>;
@@ -137,7 +139,6 @@ class Persson : public Criterion {
           const Options::Context& context = {});
 
   /// \cond
-  explicit Persson(CkMigrateMessage* msg);
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(Persson);  // NOLINT
   /// \endcond
@@ -182,9 +183,6 @@ Persson<Dim, TensorTags>::Persson(std::vector<std::string> vars_to_monitor,
       coarsening_factor_(coarsening_factor) {
   db::validate_selection<TensorTags>(vars_to_monitor_, context);
 }
-
-template <size_t Dim, typename TensorTags>
-Persson<Dim, TensorTags>::Persson(CkMigrateMessage* msg) : Criterion(msg) {}
 
 template <size_t Dim, typename TensorTags>
 template <typename DbTagsList, typename Metavariables>
@@ -233,8 +231,10 @@ void Persson<Dim, TensorTags>::pup(PUP::er& p) {
   p | coarsening_factor_;
 }
 
+#if defined(SPECTRE_USE_CHARM)
 template <size_t Dim, typename TensorTags>
 PUP::able::PUP_ID Persson<Dim, TensorTags>::my_PUP_ID = 0;  // NOLINT
+#endif                                                      // SPECTRE_USE_CHARM
 /// \endcond
 
 }  // namespace amr::Criteria

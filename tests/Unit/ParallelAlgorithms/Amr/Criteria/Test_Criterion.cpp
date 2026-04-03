@@ -63,7 +63,6 @@ class CriterionOne : public amr::Criterion {
   CriterionOne() = default;
   explicit CriterionOne(const double critical_value)
       : critical_value_(critical_value) {}
-  explicit CriterionOne(CkMigrateMessage* msg) : Criterion(msg) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(CriterionOne);  // NOLINT
 
@@ -91,7 +90,9 @@ class CriterionOne : public amr::Criterion {
   double critical_value_{0.0};
 };
 
+#if defined(SPECTRE_USE_CHARM)
 PUP::able::PUP_ID CriterionOne::my_PUP_ID = 0;  // NOLINT
+#endif                                          // SPECTRE_USE_CHARM
 
 class CriterionTwo : public amr::Criterion {
  public:
@@ -109,7 +110,6 @@ class CriterionTwo : public amr::Criterion {
   CriterionTwo() = default;
   explicit CriterionTwo(const double target_value)
       : target_value_(target_value) {}
-  explicit CriterionTwo(CkMigrateMessage* /*msg*/) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(CriterionTwo);  // NOLINT
 
@@ -140,7 +140,9 @@ class CriterionTwo : public amr::Criterion {
   double target_value_{0.0};
 };
 
+#if defined(SPECTRE_USE_CHARM)
 PUP::able::PUP_ID CriterionTwo::my_PUP_ID = 0;  // NOLINT
+#endif                                          // SPECTRE_USE_CHARM
 #pragma GCC diagnostic pop
 
 struct Metavariables {

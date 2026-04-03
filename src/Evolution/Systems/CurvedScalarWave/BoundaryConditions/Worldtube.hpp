@@ -53,7 +53,11 @@ namespace CurvedScalarWave::BoundaryConditions {
  * evolution when using these boundary conditions.
  */
 template <size_t Dim>
-class Worldtube final : public BoundaryConditions::BoundaryCondition<Dim> {
+class Worldtube final
+    : public BoundaryCondition<Dim>
+      SPECTRE_FINDUS_DERIVED(
+          SINGLE_ARG(Worldtube<Dim>),
+          SINGLE_ARG(domain::BoundaryConditions::BoundaryCondition)) {
  public:
   using options = tmpl::list<>;
   static constexpr Options::String help{
@@ -62,7 +66,6 @@ class Worldtube final : public BoundaryConditions::BoundaryCondition<Dim> {
       "preserving boundary conditions on the time derivative."};
 
   Worldtube() = default;
-  explicit Worldtube(CkMigrateMessage* msg);
 
   WRAPPED_PUPable_decl_base_template(
       domain::BoundaryConditions::BoundaryCondition, Worldtube);

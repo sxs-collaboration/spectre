@@ -45,7 +45,15 @@ class MarkAsNone {
  * one, not use `None.
  */
 template <typename SystemBoundaryConditionBaseClass>
-struct None final : public SystemBoundaryConditionBaseClass, public MarkAsNone {
+struct None final : public SystemBoundaryConditionBaseClass,
+                    public MarkAsNone
+#if defined(SPECTRE_USE_FINDUS)
+    ,
+                    public virtual findus::serialize::SerializableDerived<
+                        None<SystemBoundaryConditionBaseClass>,
+                        domain::BoundaryConditions::BoundaryCondition>
+#endif
+{
  public:
   using options = tmpl::list<>;
   static constexpr Options::String help{
@@ -60,8 +68,6 @@ struct None final : public SystemBoundaryConditionBaseClass, public MarkAsNone {
   None& operator=(const None&) = default;
   ~None() override = default;
 
-  explicit None(CkMigrateMessage* msg);
-
   WRAPPED_PUPable_decl_base_template(
       domain::BoundaryConditions::BoundaryCondition, None);
 
@@ -70,10 +76,6 @@ struct None final : public SystemBoundaryConditionBaseClass, public MarkAsNone {
 
   void pup(PUP::er& p) override;
 };
-
-template <typename SystemBoundaryConditionBaseClass>
-None<SystemBoundaryConditionBaseClass>::None(CkMigrateMessage* const msg)
-    : SystemBoundaryConditionBaseClass(msg) {}
 
 template <typename SystemBoundaryConditionBaseClass>
 std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
@@ -86,11 +88,13 @@ void None<SystemBoundaryConditionBaseClass>::pup(PUP::er& p) {
   BoundaryCondition::pup(p);
 }
 
+#if defined(SPECTRE_USE_CHARM)
 /// \cond
 template <typename SystemBoundaryConditionBaseClass>
 // NOLINTNEXTLINE
 PUP::able::PUP_ID None<SystemBoundaryConditionBaseClass>::my_PUP_ID = 0;
 /// \endcond
+#endif  // SPECTRE_USE_CHARM
 
 /// Check if a boundary condition inherits from `MarkAsNone`, which
 /// constitutes as it being marked as a none boundary condition.

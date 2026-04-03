@@ -48,7 +48,7 @@ bool tuple_equal(const std::tuple<Args...>& tuple_1,
 /// An abstract base class, whose derived class holds a function that
 /// can be invoked at a later time.  The function is intended to be
 /// invoked only once.
-class Callback : public PUP::able {
+class Callback : public SPECTRE_CHARM_PUPable(Callback) {
  public:
   WRAPPED_PUPable_abstract(Callback);  // NOLINT
   Callback() = default;
@@ -57,7 +57,6 @@ class Callback : public PUP::able {
   Callback(Callback&&) = default;
   Callback& operator=(Callback&&) = default;
   ~Callback() override = default;
-  explicit Callback(CkMigrateMessage* msg) : PUP::able(msg) {}
   virtual void invoke() = 0;
   virtual void register_with_charm() = 0;
   /*!
@@ -71,14 +70,16 @@ class Callback : public PUP::able {
 /// Wraps a call to a simple action and its arguments.
 /// Can be invoked only once.
 template <typename SimpleAction, typename Proxy, typename... Args>
-class SimpleActionCallback : public Callback {
+class SimpleActionCallback
+    : public SPECTRE_CHARM_DERIVED(
+          SINGLE_ARG(SimpleActionCallback<SimpleAction, Proxy, Args...>),
+          Callback) {
  public:
   WRAPPED_PUPable_decl_template(SimpleActionCallback);  // NOLINT
   SimpleActionCallback() = default;
   // NOLINTNEXTLINE(google-explicit-constructor)
   SimpleActionCallback(Proxy proxy, std::decay_t<Args>... args)
       : proxy_(proxy), args_(std::move(args)...) {}
-  explicit SimpleActionCallback(CkMigrateMessage* msg) : Callback(msg) {}
   using PUP::able::register_constructor;
   void invoke() override {
     std::apply(
@@ -135,7 +136,6 @@ class SimpleActionCallback<SimpleAction, Proxy> : public Callback {
   SimpleActionCallback() = default;
   // NOLINTNEXTLINE(google-explicit-constructor)
   SimpleActionCallback(Proxy proxy) : proxy_(proxy) {}
-  explicit SimpleActionCallback(CkMigrateMessage* msg) : Callback(msg) {}
   using PUP::able::register_constructor;
   void invoke() override { Parallel::simple_action<SimpleAction>(proxy_); }
 
@@ -174,14 +174,16 @@ class SimpleActionCallback<SimpleAction, Proxy> : public Callback {
 /// Wraps a call to a threaded action and its arguments.
 /// Can be invoked only once.
 template <typename ThreadedAction, typename Proxy, typename... Args>
-class ThreadedActionCallback : public Callback {
+class ThreadedActionCallback
+    : public SPECTRE_CHARM_DERIVED(
+          SINGLE_ARG(ThreadedActionCallback<ThreadedAction, Proxy, Args...>),
+          Callback) {
  public:
   WRAPPED_PUPable_decl_template(ThreadedActionCallback);  // NOLINT
   ThreadedActionCallback() = default;
   // NOLINTNEXTLINE(google-explicit-constructor)
   ThreadedActionCallback(Proxy proxy, std::decay_t<Args>... args)
       : proxy_(proxy), args_(std::move(args)...) {}
-  explicit ThreadedActionCallback(CkMigrateMessage* msg) : Callback(msg) {}
   using PUP::able::register_constructor;
   void invoke() override {
     std::apply(
@@ -239,7 +241,6 @@ class ThreadedActionCallback<ThreadedAction, Proxy> : public Callback {
   ThreadedActionCallback() = default;
   // NOLINTNEXTLINE(google-explicit-constructor)
   ThreadedActionCallback(Proxy proxy) : proxy_(proxy) {}
-  explicit ThreadedActionCallback(CkMigrateMessage* msg) : Callback(msg) {}
   using PUP::able::register_constructor;
   void invoke() override { Parallel::threaded_action<ThreadedAction>(proxy_); }
 
@@ -279,13 +280,14 @@ class ThreadedActionCallback<ThreadedAction, Proxy> : public Callback {
 
 /// Wraps a call to perform_algorithm.
 template <typename Proxy>
-class PerformAlgorithmCallback : public Callback {
+class PerformAlgorithmCallback
+    : public SPECTRE_CHARM_DERIVED(SINGLE_ARG(PerformAlgorithmCallback<Proxy>),
+                                   Callback) {
  public:
   WRAPPED_PUPable_decl_template(PerformAlgorithmCallback);  // NOLINT
   PerformAlgorithmCallback() = default;
   // NOLINTNEXTLINE(google-explicit-constructor)
   PerformAlgorithmCallback(Proxy proxy) : proxy_(proxy) {}
-  explicit PerformAlgorithmCallback(CkMigrateMessage* msg) : Callback(msg) {}
   using PUP::able::register_constructor;
   void invoke() override { proxy_.perform_algorithm(); }
   void pup(PUP::er& p) override { p | proxy_; }
@@ -319,6 +321,7 @@ class PerformAlgorithmCallback : public Callback {
   std::decay_t<Proxy> proxy_{};
 };
 
+#if defined(SPECTRE_USE_CHARM)
 /// \cond
 template <typename Proxy>
 // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
@@ -342,5 +345,6 @@ template <typename ThreadedAction, typename Proxy>
 PUP::able::PUP_ID ThreadedActionCallback<ThreadedAction, Proxy>::my_PUP_ID =
     0;  // NOLINT
 /// \endcond
+#endif  // SPECTRE_USE_CHARM
 
 }  // namespace Parallel

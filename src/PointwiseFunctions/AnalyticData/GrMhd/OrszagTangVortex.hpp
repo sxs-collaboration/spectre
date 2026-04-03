@@ -64,7 +64,13 @@ class OrszagTangVortex
     : public evolution::initial_data::InitialData,
       public AnalyticDataBase,
       public hydro::TemperatureInitialization<OrszagTangVortex>,
-      public MarkAsAnalyticData {
+      public MarkAsAnalyticData
+#if defined(SPECTRE_USE_FINDUS)
+    ,
+      public virtual findus::serialize::SerializableDerived<
+          OrszagTangVortex, evolution::initial_data::InitialData>
+#endif
+{
  public:
   using equation_of_state_type = EquationsOfState::IdealFluid<true>;
 
@@ -84,7 +90,6 @@ class OrszagTangVortex
       -> std::unique_ptr<evolution::initial_data::InitialData> override;
 
   /// \cond
-  explicit OrszagTangVortex(CkMigrateMessage* msg);
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(OrszagTangVortex);
   /// \endcond

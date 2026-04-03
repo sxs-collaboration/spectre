@@ -54,8 +54,6 @@ struct UnpackCounter {
   UnpackCounter(UnpackCounter&& /*unused*/) = default;
   UnpackCounter& operator=(UnpackCounter&& /*unused*/) = default;
 
-  explicit UnpackCounter(CkMigrateMessage* /*msg*/) {}
-
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& p) {
     p | counter_value;

@@ -38,7 +38,8 @@ namespace InitializeJ {
  * \f}
  */
 template <>
-struct InverseCubic<true> : InitializeJ<true> {
+struct InverseCubic<true>
+    : public SPECTRE_CHARM_DERIVED(InverseCubic<true>, InitializeJ<true>) {
   using options = tmpl::list<>;
   static constexpr Options::String help = {
       "Initialization process where J is set to a simple Ansatz with a\n"
@@ -46,7 +47,6 @@ struct InverseCubic<true> : InitializeJ<true> {
       "worldtube"};
 
   WRAPPED_PUPable_decl_template(InverseCubic);  // NOLINT
-  explicit InverseCubic(CkMigrateMessage* /*unused*/) {}
 
   InverseCubic() = default;
 
@@ -89,7 +89,8 @@ struct InverseCubic<true> : InitializeJ<true> {
  * \f}
  */
 template <>
-struct InverseCubic<false> : InitializeJ<false> {
+struct InverseCubic<false>
+    : public SPECTRE_CHARM_DERIVED(InverseCubic<false>, InitializeJ<false>) {
   using options = tmpl::list<>;
   static constexpr Options::String help = {
       "Initialization process where J is set to a simple Ansatz with a\n"
@@ -97,7 +98,6 @@ struct InverseCubic<false> : InitializeJ<false> {
       "worldtube"};
 
   WRAPPED_PUPable_decl_template(InverseCubic);  // NOLINT
-  explicit InverseCubic(CkMigrateMessage* /*unused*/) {}
 
   InverseCubic() = default;
 

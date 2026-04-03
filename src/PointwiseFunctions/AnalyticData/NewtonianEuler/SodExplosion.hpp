@@ -49,8 +49,15 @@ namespace NewtonianEuler::AnalyticData {
  * where the initial discontinuity is can be chosen arbitrarily.
  */
 template <size_t Dim>
-class SodExplosion : public evolution::initial_data::InitialData,
-                     public MarkAsAnalyticData {
+class SodExplosion
+    : public evolution::initial_data::InitialData,
+      public MarkAsAnalyticData
+#if defined(SPECTRE_USE_FINDUS)
+    ,
+      public virtual findus::serialize::SerializableDerived<
+          SodExplosion<Dim>, evolution::initial_data::InitialData>
+#endif
+{
  public:
   static_assert(Dim > 1, "Sod explosion is a 2d and 3d problem.");
   using equation_of_state_type = EquationsOfState::IdealFluid<false>;
@@ -104,7 +111,6 @@ class SodExplosion : public evolution::initial_data::InitialData,
       -> std::unique_ptr<evolution::initial_data::InitialData> override;
 
   /// \cond
-  explicit SodExplosion(CkMigrateMessage* msg);
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(SodExplosion);
   /// \endcond

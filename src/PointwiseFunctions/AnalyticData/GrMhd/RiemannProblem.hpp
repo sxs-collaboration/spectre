@@ -120,7 +120,13 @@ namespace grmhd::AnalyticData {
 class RiemannProblem : public evolution::initial_data::InitialData,
                        public AnalyticDataBase,
                        public hydro::TemperatureInitialization<RiemannProblem>,
-                       public MarkAsAnalyticData {
+                       public MarkAsAnalyticData
+#if defined(SPECTRE_USE_FINDUS)
+    ,
+                       public virtual findus::serialize::SerializableDerived<
+                           RiemannProblem, evolution::initial_data::InitialData>
+#endif
+{
  public:
   using equation_of_state_type = EquationsOfState::IdealFluid<true>;
 
@@ -221,7 +227,6 @@ class RiemannProblem : public evolution::initial_data::InitialData,
       -> std::unique_ptr<evolution::initial_data::InitialData> override;
 
   /// \cond
-  explicit RiemannProblem(CkMigrateMessage* msg);
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(RiemannProblem);
   /// \endcond

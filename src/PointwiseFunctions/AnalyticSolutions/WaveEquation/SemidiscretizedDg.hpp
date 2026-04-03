@@ -36,8 +36,15 @@ namespace ScalarWave::Solutions {
  * periodic domain of length \f$2 \pi\f$ (or an integer multiple) with
  * equally sized linear elements.
  */
-class SemidiscretizedDg : public evolution::initial_data::InitialData,
-                          public MarkAsAnalyticSolution {
+class SemidiscretizedDg
+    : public evolution::initial_data::InitialData,
+      public MarkAsAnalyticSolution
+#if defined(SPECTRE_USE_FINDUS)
+    ,
+      public virtual findus::serialize::SerializableDerived<
+          SemidiscretizedDg, evolution::initial_data::InitialData>
+#endif
+{
  public:
   using tags = tmpl::list<Tags::Pi, Tags::Phi<1>, Tags::Psi>;
 
@@ -68,7 +75,6 @@ class SemidiscretizedDg : public evolution::initial_data::InitialData,
       -> std::unique_ptr<evolution::initial_data::InitialData> override;
 
   /// \cond
-  explicit SemidiscretizedDg(CkMigrateMessage* msg);
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(SemidiscretizedDg);
   /// \endcond

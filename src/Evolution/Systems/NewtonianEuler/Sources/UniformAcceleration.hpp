@@ -52,7 +52,8 @@ namespace NewtonianEuler::Sources {
  * and \f$e\f$ is the energy density.
  */
 template <size_t Dim>
-class UniformAcceleration : public Source<Dim> {
+class UniformAcceleration
+    : public SPECTRE_CHARM_DERIVED(UniformAcceleration<Dim>, Source<Dim>) {
  public:
   /// The applied acceleration
   struct Acceleration {
@@ -76,7 +77,6 @@ class UniformAcceleration : public Source<Dim> {
       const std::array<double, Dim>& acceleration_field);
 
   /// \cond
-  explicit UniformAcceleration(CkMigrateMessage* msg);
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(UniformAcceleration);
   /// \endcond

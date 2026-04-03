@@ -54,10 +54,13 @@ class Interpolate;
 template <size_t VolumeDim, typename InterpolationTargetTag,
           typename... InterpolatorSourceVarTags>
 class Interpolate<VolumeDim, InterpolationTargetTag,
-                  tmpl::list<InterpolatorSourceVarTags...>> : public Event {
+                  tmpl::list<InterpolatorSourceVarTags...>>
+    : public SPECTRE_CHARM_DERIVED(
+          SINGLE_ARG(Interpolate<VolumeDim, InterpolationTargetTag,
+                                 tmpl::list<InterpolatorSourceVarTags...>>),
+          Event) {
  public:
   /// \cond
-  explicit Interpolate(CkMigrateMessage* /*unused*/) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(Interpolate);  // NOLINT
   /// \endcond
@@ -152,6 +155,7 @@ class Interpolate<VolumeDim, InterpolationTargetTag,
   std::optional<std::string> dependency_;
 };
 
+#if defined(SPECTRE_USE_CHARM)
 /// \cond
 template <size_t VolumeDim, typename InterpolationTargetTag,
           typename... InterpolatorSourceVarTags>
@@ -160,6 +164,7 @@ PUP::able::PUP_ID
                 tmpl::list<InterpolatorSourceVarTags...>>::my_PUP_ID =
         0;  // NOLINT
 /// \endcond
+#endif  // SPECTRE_USE_CHARM
 
 }  // namespace Events
 }  // namespace intrp

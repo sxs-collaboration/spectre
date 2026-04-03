@@ -55,13 +55,10 @@
 
 namespace grmhd::GhValenciaDivClean::BoundaryConditions {
 template <typename System>
-DirichletFreeOutflow<System>::DirichletFreeOutflow(CkMigrateMessage* const msg)
-    : BoundaryCondition(msg) {}
-// LCOV_EXCL_STOP
-template <typename System>
 DirichletFreeOutflow<System>::DirichletFreeOutflow(
     const DirichletFreeOutflow<System>& rhs)
-    : BoundaryCondition{dynamic_cast<const BoundaryCondition&>(rhs)},
+    : PUP::able(rhs),
+      BoundaryCondition{dynamic_cast<const BoundaryCondition&>(rhs)},
       analytic_prescription_(rhs.analytic_prescription_->get_clone()) {}
 
 template <typename System>
@@ -87,12 +84,16 @@ DirichletFreeOutflow<System>::get_clone() const {
 
 template <typename System>
 void DirichletFreeOutflow<System>::pup(PUP::er& p) {
+#if defined(SPECTRE_USE_CHARM)
   BoundaryCondition::pup(p);
+#endif  // SPECTRE_USE_CHARM
   p | analytic_prescription_;
 }
+#if defined(SPECTRE_USE_CHARM)
 template <typename System>
 // NOLINTNEXTLINE
 PUP::able::PUP_ID DirichletFreeOutflow<System>::my_PUP_ID = 0;
+#endif  // SPECTRE_USE_CHARM
 
 template <typename System>
 std::optional<std::string> DirichletFreeOutflow<System>::dg_ghost(

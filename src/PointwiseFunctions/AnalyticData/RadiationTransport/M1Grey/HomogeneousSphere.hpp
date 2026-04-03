@@ -36,8 +36,15 @@ namespace RadiationTransport::M1Grey::AnalyticData {
  * with an arctangent function, instead of the step function, which has
  * sharper features.
  */
-class HomogeneousSphere : public virtual evolution::initial_data::InitialData,
-                          public MarkAsAnalyticData {
+class HomogeneousSphere
+    : public virtual evolution::initial_data::InitialData,
+      public MarkAsAnalyticData
+#if defined(SPECTRE_USE_FINDUS)
+    ,
+      public virtual findus::serialize::SerializableDerived<
+          HomogeneousSphere, evolution::initial_data::InitialData>
+#endif
+{
  public:
   static constexpr Options::String help = {
       "A homogeneous sphere emitting and absorbing neutrinos."};
@@ -80,7 +87,6 @@ class HomogeneousSphere : public virtual evolution::initial_data::InitialData,
       -> std::unique_ptr<evolution::initial_data::InitialData> override;
 
   /// \cond
-  explicit HomogeneousSphere(CkMigrateMessage* /*message*/) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(HomogeneousSphere);
   /// \endcond

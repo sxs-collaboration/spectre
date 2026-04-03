@@ -52,13 +52,11 @@ IsentropicVortex<Dim>::get_clone() const {
   return std::make_unique<IsentropicVortex>(*this);
 }
 
-template <size_t Dim>
-IsentropicVortex<Dim>::IsentropicVortex(CkMigrateMessage* msg)
-    : InitialData(msg) {}
-
+#if defined(SPECTRE_USE_CHARM)
 template <size_t Dim>
 // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
 PUP::able::PUP_ID IsentropicVortex<Dim>::my_PUP_ID = 0;
+#endif  // SPECTRE_USE_CHARM
 
 template <size_t Dim>
 void IsentropicVortex<Dim>::pup(PUP::er& p) {

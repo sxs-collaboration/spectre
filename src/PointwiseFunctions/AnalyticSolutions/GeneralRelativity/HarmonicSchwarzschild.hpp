@@ -184,8 +184,6 @@ class HarmonicSchwarzschild : public AnalyticSolution<3_st>,
   HarmonicSchwarzschild& operator=(HarmonicSchwarzschild&& /*rhs*/) = default;
   ~HarmonicSchwarzschild() = default;
 
-  explicit HarmonicSchwarzschild(CkMigrateMessage* /*msg*/);
-
   /*!
    * \brief Computes and returns spacetime quantities for a Schwarzschild black
    * hole with harmonic coordinates at a specific Cartesian position

@@ -83,8 +83,6 @@ std::unique_ptr<evolution::initial_data::InitialData> SlabJet::get_clone()
   return std::make_unique<SlabJet>(*this);
 }
 
-SlabJet::SlabJet(CkMigrateMessage* msg) : InitialData(msg) {}
-
 void SlabJet::pup(PUP::er& p) {
   InitialData::pup(p);
   p | equation_of_state_;
@@ -185,7 +183,9 @@ tuples::TaggedTuple<hydro::Tags::SpecificEnthalpy<DataType>> SlabJet::variables(
       get<density_tag>(data), get<energy_tag>(data), get<pressure_tag>(data));
 }
 
+#if defined(SPECTRE_USE_CHARM)
 PUP::able::PUP_ID SlabJet::my_PUP_ID = 0;
+#endif  // SPECTRE_USE_CHARM
 
 bool operator==(const SlabJet& lhs, const SlabJet& rhs) {
   return lhs.equation_of_state_ == rhs.equation_of_state_ and

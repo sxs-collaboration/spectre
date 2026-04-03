@@ -19,8 +19,6 @@ Sommerfeld::Sommerfeld(const double black_hole_mass,
       orbital_radius_(orbital_radius),
       m_mode_number_(m_mode_number) {}
 
-Sommerfeld::Sommerfeld(CkMigrateMessage* m) : Base(m) {}
-
 std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
 Sommerfeld::get_clone() const {
   return std::make_unique<Sommerfeld>(*this);
@@ -67,6 +65,8 @@ bool operator!=(const Sommerfeld& lhs, const Sommerfeld& rhs) {
   return not(lhs == rhs);
 }
 
+#if defined(SPECTRE_USE_CHARM)
 PUP::able::PUP_ID Sommerfeld::my_PUP_ID = 0;  // NOLINT
+#endif                                        // SPECTRE_USE_CHARM
 
 }  // namespace GrSelfForce::BoundaryConditions

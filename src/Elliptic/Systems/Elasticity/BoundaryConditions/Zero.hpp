@@ -43,7 +43,10 @@ struct ZeroHelpString<elliptic::BoundaryConditionType::Neumann> {
 
 /// Impose zero Dirichlet ("fixed") or Neumann ("free") boundary conditions.
 template <size_t Dim, elliptic::BoundaryConditionType BoundaryConditionType>
-class Zero : public elliptic::BoundaryConditions::BoundaryCondition<Dim> {
+class Zero
+    : public elliptic::BoundaryConditions::BoundaryCondition<Dim>
+      SPECTRE_FINDUS_DERIVED(SINGLE_ARG(Zero<Dim, BoundaryConditionType>),
+                             domain::BoundaryConditions::BoundaryCondition) {
  private:
   using Base = elliptic::BoundaryConditions::BoundaryCondition<Dim>;
 
@@ -68,7 +71,6 @@ class Zero : public elliptic::BoundaryConditions::BoundaryCondition<Dim> {
   ~Zero() = default;
 
   /// \cond
-  explicit Zero(CkMigrateMessage* m) : Base(m) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(Zero);
   /// \endcond
@@ -111,9 +113,10 @@ bool operator!=(const Zero<Dim, BoundaryConditionType>& lhs,
   return not(lhs == rhs);
 }
 
+#if defined(SPECTRE_USE_CHARM)
 /// \cond
 template <size_t Dim, elliptic::BoundaryConditionType BoundaryConditionType>
 PUP::able::PUP_ID Zero<Dim, BoundaryConditionType>::my_PUP_ID = 0;  // NOLINT
 /// \endcond
-
+#endif  // SPECTRE_USE_CHARM
 }  // namespace Elasticity::BoundaryConditions

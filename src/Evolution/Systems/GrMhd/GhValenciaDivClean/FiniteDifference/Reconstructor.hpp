@@ -31,7 +31,7 @@ class Wcns5zPrim;
 
 // template on System instead
 template <typename System>
-class Reconstructor : public PUP::able {
+class Reconstructor : public SPECTRE_CHARM_PUPable(Reconstructor<System>) {
  public:
   Reconstructor() = default;
   Reconstructor(const Reconstructor&) = default;
@@ -40,10 +40,15 @@ class Reconstructor : public PUP::able {
   Reconstructor& operator=(Reconstructor&&) = default;
   ~Reconstructor() override = default;
 
+  SPECTRE_FINDUS_VIRTUAL()
+  // NOLINTNEXTLINE(google-runtime-references)
+  void pup(PUP::er& p) SPECTRE_CHARM_OVERRIDE();
+
+#if defined(SPECTRE_USE_CHARM)
   /// \cond
-  explicit Reconstructor(CkMigrateMessage* msg);
-  WRAPPED_PUPable_abstract(Reconstructor<System>);  // NOLINT
+  WRAPPED_PUPable_abstract(Reconstructor);  // NOLINT
   /// \endcond
+#endif  // SPECTRE_USE_CHARM
 
   using system = System;
   using creatable_classes =
@@ -58,8 +63,5 @@ class Reconstructor : public PUP::able {
   virtual bool supports_adaptive_order() const { return false; }
 
   virtual bool reconstruct_rho_times_temperature() const = 0;
-
-  // NOLINTNEXTLINE(google-runtime-references)
-  void pup(PUP::er& p) override;
 };
 }  // namespace grmhd::GhValenciaDivClean::fd

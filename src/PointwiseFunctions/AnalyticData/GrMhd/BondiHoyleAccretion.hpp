@@ -76,9 +76,16 @@ namespace grmhd::AnalyticData {
  * where \f$\gamma = \text{det}(\gamma_{ij})\f$. Wald's solution reproduces a
  * uniform magnetic field far from the black hole.
  */
-class BondiHoyleAccretion : public virtual evolution::initial_data::InitialData,
-                            public MarkAsAnalyticData,
-                            public AnalyticDataBase {
+class BondiHoyleAccretion
+    : public virtual evolution::initial_data::InitialData,
+      public MarkAsAnalyticData,
+      public AnalyticDataBase
+#if defined(SPECTRE_USE_FINDUS)
+    ,
+      public virtual findus::serialize::SerializableDerived<
+          BondiHoyleAccretion, evolution::initial_data::InitialData>
+#endif
+{
  public:
   using equation_of_state_type = EquationsOfState::PolytropicFluid<true>;
 
@@ -153,7 +160,6 @@ class BondiHoyleAccretion : public virtual evolution::initial_data::InitialData,
       -> std::unique_ptr<evolution::initial_data::InitialData> override;
 
   /// \cond
-  explicit BondiHoyleAccretion(CkMigrateMessage* msg);
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(BondiHoyleAccretion);
   /// \endcond

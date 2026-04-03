@@ -91,7 +91,16 @@ namespace Xcts::Solutions {
  * \f$\psi_\mathrm{init}=1\f$ so that a nonlinear iterative numerical solver
  * will converge to the same weak-field solution.
  */
-class ConstantDensityStar : public elliptic::analytic_data::AnalyticSolution {
+class ConstantDensityStar
+    : public elliptic::analytic_data::AnalyticSolution
+#if defined(SPECTRE_USE_FINDUS)
+    ,
+      public virtual findus::serialize::SerializableDerived<
+          ConstantDensityStar, elliptic::analytic_data::InitialGuess>,
+      public virtual findus::serialize::SerializableDerived<
+          ConstantDensityStar, elliptic::analytic_data::Background>
+#endif
+{
  public:
   struct Density {
     using type = double;
@@ -121,8 +130,6 @@ class ConstantDensityStar : public elliptic::analytic_data::AnalyticSolution {
   }
 
   /// \cond
-  explicit ConstantDensityStar(CkMigrateMessage* m)
-      : elliptic::analytic_data::AnalyticSolution(m) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(ConstantDensityStar);
   /// \endcond

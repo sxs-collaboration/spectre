@@ -31,18 +31,21 @@
 #include "Utilities/Gsl.hpp"
 
 namespace grmhd::ValenciaDivClean::BoundaryConditions {
-HydroFreeOutflow::HydroFreeOutflow(CkMigrateMessage* const msg)
-    : BoundaryCondition(msg) {}
-
 std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
 HydroFreeOutflow::get_clone() const {
   return std::make_unique<HydroFreeOutflow>(*this);
 }
 
-void HydroFreeOutflow::pup(PUP::er& p) { BoundaryCondition::pup(p); }
+void HydroFreeOutflow::pup([[maybe_unused]] PUP::er& p) {
+#if defined(SPECTRE_USE_CHARM)
+  BoundaryCondition::pup(p);
+#endif  // SPECTRE_USE_CHARM
+}
 
+#if defined(SPECTRE_USE_CHARM)
 // NOLINTNEXTLINE
 PUP::able::PUP_ID HydroFreeOutflow::my_PUP_ID = 0;
+#endif  // SPECTRE_USE_CHARM
 
 std::optional<std::string> HydroFreeOutflow::dg_ghost(
     const gsl::not_null<Scalar<DataVector>*> tilde_d,

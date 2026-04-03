@@ -84,7 +84,13 @@ namespace ForceFree::Solutions {
  *
  */
 class ExactWald : public evolution::initial_data::InitialData,
-                  public MarkAsAnalyticSolution {
+                  public MarkAsAnalyticSolution
+#if defined(SPECTRE_USE_FINDUS)
+    ,
+                  public virtual findus::serialize::SerializableDerived<
+                      ExactWald, evolution::initial_data::InitialData>
+#endif
+{
  public:
   struct MagneticFieldAmplitude {
     using type = double;
@@ -111,7 +117,6 @@ class ExactWald : public evolution::initial_data::InitialData,
       -> std::unique_ptr<evolution::initial_data::InitialData> override;
 
   /// \cond
-  explicit ExactWald(CkMigrateMessage* msg);
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(ExactWald);
   /// \endcond

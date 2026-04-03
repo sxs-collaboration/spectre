@@ -40,7 +40,13 @@ namespace grmhd::AnalyticData {
 class PolarMagnetizedFmDisk
     : public virtual evolution::initial_data::InitialData,
       public MarkAsAnalyticData,
-      public AnalyticDataBase {
+      public AnalyticDataBase
+#if defined(SPECTRE_USE_FINDUS)
+    ,
+      public virtual findus::serialize::SerializableDerived<
+          PolarMagnetizedFmDisk, evolution::initial_data::InitialData>
+#endif
+{
  public:
   struct DiskParameters {
     using type = MagnetizedFmDisk;
@@ -73,7 +79,6 @@ class PolarMagnetizedFmDisk
       -> std::unique_ptr<evolution::initial_data::InitialData> override;
 
   /// \cond
-  explicit PolarMagnetizedFmDisk(CkMigrateMessage* msg);
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(PolarMagnetizedFmDisk);
   /// \endcond

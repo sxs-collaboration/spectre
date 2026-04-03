@@ -39,7 +39,8 @@ namespace Cce::InterfaceManagers {
  * `GhLocalTimeStepping::request_gh_data()` and receives interpolated boundary
  * data via `GhLocalTimeStepping::retrieve_and_remove_first_ready_gh_data()`.
  */
-class GhLocalTimeStepping : public GhInterfaceManager {
+class GhLocalTimeStepping
+    : public SPECTRE_CHARM_DERIVED(GhLocalTimeStepping, GhInterfaceManager) {
  public:
   struct BoundaryInterpolator {
     using type = std::unique_ptr<intrp::SpanInterpolator>;
@@ -54,10 +55,11 @@ class GhLocalTimeStepping : public GhInterfaceManager {
 
   GhLocalTimeStepping() = default;
   GhLocalTimeStepping(const GhLocalTimeStepping& rhs)
-      : gh_data_{rhs.gh_data_},
+      : PUP::able(rhs),
+        gh_data_{rhs.gh_data_},
         requests_{rhs.requests_},
         latest_removed_{rhs.latest_removed_} {
-    if (rhs.interpolator_.get() != nullptr) {
+    if (rhs.interpolator_ != nullptr) {
       interpolator_ = rhs.interpolator_->get_clone();
     }
   }
@@ -66,7 +68,7 @@ class GhLocalTimeStepping : public GhInterfaceManager {
       std::unique_ptr<intrp::SpanInterpolator> interpolator)
       : interpolator_{std::move(interpolator)} {}
   GhLocalTimeStepping& operator=(const GhLocalTimeStepping& rhs) {
-    if (rhs.interpolator_.get() != nullptr) {
+    if (rhs.interpolator_ != nullptr) {
       interpolator_ = rhs.interpolator_->get_clone();
     }
     gh_data_ = rhs.gh_data_;
@@ -74,8 +76,7 @@ class GhLocalTimeStepping : public GhInterfaceManager {
     latest_removed_ = rhs.latest_removed_;
     return *this;
   }
-
-  explicit GhLocalTimeStepping(CkMigrateMessage* /*unused*/) {}
+  ~GhLocalTimeStepping() override = default;
 
   WRAPPED_PUPable_decl_template(GhLocalTimeStepping);  // NOLINT
 

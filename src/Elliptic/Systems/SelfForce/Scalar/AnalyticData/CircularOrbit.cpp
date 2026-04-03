@@ -50,10 +50,6 @@ CircularOrbit::CircularOrbit(const double black_hole_mass,
       hyperboloidal_slicing_transitions_(hyperboloidal_slicing_transitions),
       impose_equatorial_symmetry_(impose_equatorial_symmetry) {}
 
-CircularOrbit::CircularOrbit(CkMigrateMessage* m)
-    : elliptic::analytic_data::Background(m),
-      elliptic::analytic_data::InitialGuess(m) {}
-
 tnsr::I<double, 2> CircularOrbit::puncture_position() const {
   const double M = black_hole_mass_;
   const double r_plus = M * (1. + sqrt(1. - square(black_hole_spin_)));
@@ -304,6 +300,8 @@ bool operator!=(const CircularOrbit& lhs, const CircularOrbit& rhs) {
   return not(lhs == rhs);
 }
 
+#if defined(SPECTRE_USE_CHARM)
 PUP::able::PUP_ID CircularOrbit::my_PUP_ID = 0;  // NOLINT
+#endif                                           // SPECTRE_USE_CHARM
 
 }  // namespace ScalarSelfForce::AnalyticData

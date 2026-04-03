@@ -45,8 +45,6 @@ RiemannProblem::get_clone() const {
   return std::make_unique<RiemannProblem>(*this);
 }
 
-RiemannProblem::RiemannProblem(CkMigrateMessage* msg) : InitialData(msg) {}
-
 void RiemannProblem::pup(PUP::er& p) {
   InitialData::pup(p);
   p | equation_of_state_;
@@ -207,7 +205,9 @@ tuples::TaggedTuple<gr::Tags::Shift<DataType, 3>> RiemannProblem::variables(
   return {std::move(shift)};
 }
 
+#if defined(SPECTRE_USE_CHARM)
 PUP::able::PUP_ID RiemannProblem::my_PUP_ID = 0;
+#endif  // SPECTRE_USE_CHARM
 
 bool operator==(const RiemannProblem& lhs, const RiemannProblem& rhs) {
   return lhs.adiabatic_index_ == rhs.adiabatic_index_ and

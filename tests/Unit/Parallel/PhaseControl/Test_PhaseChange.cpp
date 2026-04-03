@@ -67,7 +67,6 @@ bool contributed = false;
 
 struct TestPhaseChange : public PhaseChange {
   TestPhaseChange() = default;
-  explicit TestPhaseChange(CkMigrateMessage* /*unused*/) {}
   using PUP::able::register_constructor;
 
 #pragma GCC diagnostic push
@@ -133,7 +132,9 @@ struct TestPhaseChange : public PhaseChange {
   int stored_multiplier_ = 0;
 };
 
+#if defined(SPECTRE_USE_CHARM)
 PUP::able::PUP_ID TestPhaseChange::my_PUP_ID = 0;
+#endif  // SPECTRE_USE_CHARM
 
 struct Metavariables {
   using component_list = tmpl::list<TestComponentAlpha, TestComponentBeta>;

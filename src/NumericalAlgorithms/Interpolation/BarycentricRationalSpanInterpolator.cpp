@@ -41,5 +41,7 @@ double BarycentricRationalSpanInterpolator::interpolate(
   return interpolant(target_point);
 }
 
+#if defined(SPECTRE_USE_CHARM)
 PUP::able::PUP_ID intrp::BarycentricRationalSpanInterpolator::my_PUP_ID = 0;
+#endif  // SPECTRE_USE_CHARM
 }  // namespace intrp

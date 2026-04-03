@@ -29,8 +29,6 @@ AlfvenWave::AlfvenWave(const double wave_speed, const Options::Context& context)
   lorentz_factor_ = 1.0 / sqrt(1.0 - square(wave_speed_));
 }
 
-AlfvenWave::AlfvenWave(CkMigrateMessage* msg) : InitialData(msg) {}
-
 std::unique_ptr<evolution::initial_data::InitialData> AlfvenWave::get_clone()
     const {
   return std::make_unique<AlfvenWave>(*this);
@@ -43,7 +41,9 @@ void AlfvenWave::pup(PUP::er& p) {
   p | background_spacetime_;
 }
 
+#if defined(SPECTRE_USE_CHARM)
 PUP::able::PUP_ID AlfvenWave::my_PUP_ID = 0;
+#endif  // SPECTRE_USE_CHARM
 
 DataVector AlfvenWave::wave_profile(const DataVector& x_prime) {
   // Compute the B_z'(=-E_x') at the rest frame of the wave

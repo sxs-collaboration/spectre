@@ -97,12 +97,15 @@ namespace StepChoosers {
  */
 template <typename StepChooserUse, typename EvolvedVariableTag,
           typename ErrorControlSelector = NoSuchType>
-class ErrorControl : public StepChooser<StepChooserUse>,
-                     public RequestsStepperErrorTolerances {
+class ErrorControl
+    : public SPECTRE_CHARM_DERIVED(
+          SINGLE_ARG(ErrorControl<StepChooserUse, EvolvedVariableTag,
+                                  ErrorControlSelector>),
+          SINGLE_ARG(StepChooser<StepChooserUse>)),
+      public RequestsStepperErrorTolerances {
  public:
   /// \cond
   ErrorControl() = default;
-  explicit ErrorControl(CkMigrateMessage* /*unused*/) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(ErrorControl);  // NOLINT
   /// \endcond
@@ -227,10 +230,13 @@ class ErrorControl : public StepChooser<StepChooserUse>,
   double min_factor_ = std::numeric_limits<double>::signaling_NaN();
   double safety_factor_ = std::numeric_limits<double>::signaling_NaN();
 };
+
+#if defined(SPECTRE_USE_CHARM)
 /// \cond
 template <typename StepChooserUse, typename EvolvedVariableTag,
           typename ErrorControlSelector>
 PUP::able::PUP_ID ErrorControl<StepChooserUse, EvolvedVariableTag,
                                ErrorControlSelector>::my_PUP_ID = 0;  // NOLINT
 /// \endcond
+#endif
 }  // namespace StepChoosers

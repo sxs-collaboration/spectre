@@ -20,7 +20,7 @@
 namespace gh::BoundaryConditions {
 template <size_t Dim>
 DirichletAnalytic<Dim>::DirichletAnalytic(const DirichletAnalytic& rhs)
-    : BoundaryCondition<Dim>{dynamic_cast<const BoundaryCondition<Dim>&>(rhs)},
+    : PUP::able(rhs),
       analytic_prescription_(rhs.analytic_prescription_->get_clone()) {}
 
 template <size_t Dim>
@@ -39,10 +39,6 @@ DirichletAnalytic<Dim>::DirichletAnalytic(
     : analytic_prescription_(std::move(analytic_prescription)) {}
 
 template <size_t Dim>
-DirichletAnalytic<Dim>::DirichletAnalytic(CkMigrateMessage* const msg)
-    : BoundaryCondition<Dim>(msg) {}
-
-template <size_t Dim>
 std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
 DirichletAnalytic<Dim>::get_clone() const {
   return std::make_unique<DirichletAnalytic>(*this);
@@ -50,7 +46,9 @@ DirichletAnalytic<Dim>::get_clone() const {
 
 template <size_t Dim>
 void DirichletAnalytic<Dim>::pup(PUP::er& p) {
-  BoundaryCondition<Dim>::pup(p);
+#if defined(SPECTRE_USE_CHARM)
+  BoundaryConditions::BoundaryCondition<Dim>::pup(p);
+#endif  // SPECTRE_USE_CHARM
   p | analytic_prescription_;
 }
 
@@ -119,9 +117,11 @@ void DirichletAnalytic<Dim>::lapse_shift_and_inv_spatial_metric(
   gr::lapse(lapse, *shift, spacetime_metric);
 }
 
+#if defined(SPECTRE_USE_CHARM)
 template <size_t Dim>
 // NOLINTNEXTLINE
 PUP::able::PUP_ID DirichletAnalytic<Dim>::my_PUP_ID = 0;
+#endif  // SPECTRE_USE_CHARM
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 

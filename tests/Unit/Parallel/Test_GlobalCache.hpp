@@ -50,7 +50,6 @@ class TestArrayChare : public CBase_TestArrayChare<Metavariables> {
       Parallel::CProxy_GlobalCache<Metavariables> global_cache_proxy)
       : main_proxy_(std::move(main_proxy)),
         global_cache_proxy_(std::move(global_cache_proxy)) {}
-  explicit TestArrayChare(CkMigrateMessage* /*msg*/) {}
   ~TestArrayChare() override {
     (void)Parallel::charmxx::RegisterChare<
         TestArrayChare<Metavariables>,

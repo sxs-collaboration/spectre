@@ -76,7 +76,8 @@ namespace Events {
  */
 
 template <size_t Dim>
-class MonitorMemory : public Event {
+class MonitorMemory
+    : public SPECTRE_CHARM_DERIVED(SINGLE_ARG(MonitorMemory<Dim>), Event) {
  private:
   // Reduction data for arrays
   using ReductionData = Parallel::ReductionData<
@@ -87,7 +88,6 @@ class MonitorMemory : public Event {
                                funcl::ElementWise<funcl::Plus<>>>>;
 
  public:
-  explicit MonitorMemory(CkMigrateMessage* msg);
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(MonitorMemory);  // NOLINT
 
@@ -155,9 +155,6 @@ class MonitorMemory : public Event {
 };
 
 /// \cond
-template <size_t Dim>
-MonitorMemory<Dim>::MonitorMemory(CkMigrateMessage* msg) : Event(msg) {}
-
 template <size_t Dim>
 template <typename Metavariables>
 MonitorMemory<Dim>::MonitorMemory(
@@ -326,8 +323,10 @@ void MonitorMemory<Dim>::pup(PUP::er& p) {
   p | components_to_monitor_;
 }
 
+#if defined(SPECTRE_USE_CHARM)
 template <size_t Dim>
 PUP::able::PUP_ID MonitorMemory<Dim>::my_PUP_ID = 0;  // NOLINT
+#endif                                                // SPECTRE_USE_CHARM
 /// \endcond
 
 }  // namespace Events

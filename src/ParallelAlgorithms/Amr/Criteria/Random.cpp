@@ -31,9 +31,6 @@ Random<CriteriaType>::Random(
   }
 }
 
-template <Type CriteriaType>
-Random<CriteriaType>::Random(CkMigrateMessage* msg) : Criterion(msg) {}
-
 // NOLINTNEXTLINE(google-runtime-references)
 template <Type CriteriaType>
 void Random<CriteriaType>::pup(PUP::er& p) {
@@ -73,8 +70,10 @@ amr::Flag random_flag(
 }
 }  // namespace detail
 
+#if defined(SPECTRE_USE_CHARM)
 template <Type CriteriaType>
 PUP::able::PUP_ID Random<CriteriaType>::my_PUP_ID = 0;  // NOLINT
+#endif                                                  // SPECTRE_USE_CHARM
 
 template class Random<Type::h>;
 template class Random<Type::p>;

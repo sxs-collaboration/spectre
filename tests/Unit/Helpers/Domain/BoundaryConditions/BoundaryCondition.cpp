@@ -17,10 +17,6 @@
 
 namespace TestHelpers::domain::BoundaryConditions {
 template <size_t Dim>
-BoundaryConditionBase<Dim>::BoundaryConditionBase(CkMigrateMessage* const msg)
-    : ::domain::BoundaryConditions::BoundaryCondition(msg) {}
-
-template <size_t Dim>
 void BoundaryConditionBase<Dim>::pup(PUP::er& p) {
   ::domain::BoundaryConditions::BoundaryCondition::pup(p);
 }
@@ -62,10 +58,6 @@ TestBoundaryCondition<Dim>::TestBoundaryCondition(const std::string& direction,
 }
 
 template <size_t Dim>
-TestBoundaryCondition<Dim>::TestBoundaryCondition(CkMigrateMessage* const msg)
-    : BoundaryConditionBase<Dim>(msg) {}
-
-template <size_t Dim>
 auto TestBoundaryCondition<Dim>::get_clone() const
     -> std::unique_ptr<::domain::BoundaryConditions::BoundaryCondition> {
   return std::make_unique<TestBoundaryCondition<Dim>>(*this);
@@ -91,8 +83,10 @@ bool operator!=(const TestBoundaryCondition<Dim>& lhs,
   return not(lhs == rhs);
 }
 
+#if defined(SPECTRE_USE_CHARM)
 template <size_t Dim>
 PUP::able::PUP_ID TestBoundaryCondition<Dim>::my_PUP_ID = 0;  // NOLINT
+#endif  // SPECTRE_USE_CHARM
 
 template <size_t Dim>
 void test_boundary_conditions(

@@ -89,13 +89,15 @@ template <size_t VolumeDim, typename InterpolationTargetTag,
           typename... SourceVarTags>
 class InterpolateWithoutInterpComponent<VolumeDim, InterpolationTargetTag,
                                         tmpl::list<SourceVarTags...>>
-    : public Event {
+    : public SPECTRE_CHARM_DERIVED(SINGLE_ARG(InterpolateWithoutInterpComponent<
+                                              VolumeDim, InterpolationTargetTag,
+                                              tmpl::list<SourceVarTags...>>),
+                                   Event) {
  private:
   using frame = typename InterpolationTargetTag::compute_target_points::frame;
 
  public:
   /// \cond
-  explicit InterpolateWithoutInterpComponent(CkMigrateMessage* /*unused*/) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(InterpolateWithoutInterpComponent);  // NOLINT
   /// \endcond
@@ -418,6 +420,7 @@ class InterpolateWithoutInterpComponent<VolumeDim, InterpolationTargetTag,
   bool needs_evolved_variables() const override { return true; }
 };
 
+#if defined(SPECTRE_USE_CHARM)
 /// \cond
 template <size_t VolumeDim, typename InterpolationTargetTag,
           typename... SourceVarTags>
@@ -426,5 +429,6 @@ PUP::able::PUP_ID
                                       tmpl::list<SourceVarTags...>>::my_PUP_ID =
         0;  // NOLINT
 /// \endcond
+#endif  // SPECTRE_USE_CHARM
 
 }  // namespace intrp::Events

@@ -19,10 +19,6 @@ UniformAcceleration<Dim>::UniformAcceleration(
     : acceleration_field_(acceleration_field) {}
 
 template <size_t Dim>
-UniformAcceleration<Dim>::UniformAcceleration(CkMigrateMessage* msg)
-    : Source<Dim>{msg} {}
-
-template <size_t Dim>
 void UniformAcceleration<Dim>::pup(PUP::er& p) {
   Source<Dim>::pup(p);
   p | acceleration_field_;
@@ -55,9 +51,11 @@ void UniformAcceleration<Dim>::operator()(
   }
 }
 
+#if defined(SPECTRE_USE_CHARM)
 template <size_t Dim>
 // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
 PUP::able::PUP_ID UniformAcceleration<Dim>::my_PUP_ID = 0;
+#endif  // SPECTRE_USE_CHARM
 
 template <size_t Dim>
 bool operator==(const UniformAcceleration<Dim>& lhs,

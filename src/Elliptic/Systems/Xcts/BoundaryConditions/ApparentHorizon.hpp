@@ -100,7 +100,9 @@ namespace Xcts::BoundaryConditions {
  */
 template <Xcts::Geometry ConformalGeometry>
 class ApparentHorizon
-    : public elliptic::BoundaryConditions::BoundaryCondition<3> {
+    : public elliptic::BoundaryConditions::BoundaryCondition<3>
+      SPECTRE_FINDUS_DERIVED(ApparentHorizon<ConformalGeometry>,
+                             domain::BoundaryConditions::BoundaryCondition) {
  private:
   using Base = elliptic::BoundaryConditions::BoundaryCondition<3>;
 
@@ -160,7 +162,6 @@ class ApparentHorizon
   ~ApparentHorizon() = default;
 
   /// \cond
-  explicit ApparentHorizon(CkMigrateMessage* m) : Base(m) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(ApparentHorizon);
   /// \endcond

@@ -45,7 +45,10 @@ namespace grmhd::ValenciaDivClean {
  * factor). To evolve the initial data, an atmosphere treatment is likely
  * required to fix the value of the fluid variables in these regions.
  */
-class NumericInitialData : public evolution::initial_data::InitialData {
+class NumericInitialData
+    : public evolution::initial_data::InitialData
+      SPECTRE_FINDUS_DERIVED(NumericInitialData,
+                             evolution::initial_data::InitialData) {
  public:
   /// Name of a variable in the volume data file. Can be optional, in which case
   /// a constant value can be supplied instead of a dataset name.
@@ -122,7 +125,6 @@ class NumericInitialData : public evolution::initial_data::InitialData {
   ~NumericInitialData() = default;
 
   /// \cond
-  explicit NumericInitialData(CkMigrateMessage* msg);
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(NumericInitialData);
   /// \endcond

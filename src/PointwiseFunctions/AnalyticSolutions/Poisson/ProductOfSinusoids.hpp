@@ -66,7 +66,18 @@ struct ProductOfSinusoidsVariables {
  * use this solution for the complex Poisson equation.
  */
 template <size_t Dim, typename DataType = DataVector>
-class ProductOfSinusoids : public elliptic::analytic_data::AnalyticSolution {
+class ProductOfSinusoids
+    : public elliptic::analytic_data::AnalyticSolution
+#if defined(SPECTRE_USE_FINDUS)
+    ,
+      public virtual findus::serialize::SerializableDerived<
+          ProductOfSinusoids<Dim, DataType>,
+          elliptic::analytic_data::InitialGuess>,
+      public virtual findus::serialize::SerializableDerived<
+          ProductOfSinusoids<Dim, DataType>,
+          elliptic::analytic_data::Background>
+#endif
+{
  public:
   struct WaveNumbers {
     using type = std::array<double, Dim>;
@@ -100,8 +111,6 @@ class ProductOfSinusoids : public elliptic::analytic_data::AnalyticSolution {
   }
 
   /// \cond
-  explicit ProductOfSinusoids(CkMigrateMessage* m)
-      : elliptic::analytic_data::AnalyticSolution(m) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(ProductOfSinusoids);  // NOLINT
   /// \endcond
@@ -139,10 +148,12 @@ class ProductOfSinusoids : public elliptic::analytic_data::AnalyticSolution {
   double complex_phase_ = std::numeric_limits<double>::signaling_NaN();
 };
 
+#if defined(SPECTRE_USE_CHARM)
 /// \cond
 template <size_t Dim, typename DataType>
 PUP::able::PUP_ID ProductOfSinusoids<Dim, DataType>::my_PUP_ID = 0;  // NOLINT
 /// \endcond
+#endif  // SPECTRE_USE_CHARM
 
 template <size_t Dim, typename DataType>
 bool operator==(const ProductOfSinusoids<Dim, DataType>& lhs,

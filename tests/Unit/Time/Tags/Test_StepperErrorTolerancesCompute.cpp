@@ -51,7 +51,6 @@ class GlobalCache;
 namespace {
 class OtherEvent : public Event {
  public:
-  explicit OtherEvent(CkMigrateMessage* /*unused*/) {}
   using PUP::able::register_constructor;
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-function"

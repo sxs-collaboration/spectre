@@ -215,5 +215,7 @@ double AhSpeed::control_error(
          (Y00 * control_error_args.avg_distorted_normal_dot_unit_coord_vector);
 }
 
+#if defined(SPECTRE_USE_CHARM)
 PUP::able::PUP_ID AhSpeed::my_PUP_ID = 0;
+#endif  // SPECTRE_USE_CHARM
 }  // namespace control_system::size::States

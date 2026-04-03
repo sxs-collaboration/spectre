@@ -100,7 +100,6 @@ const tuples::tagged_tuple_from_typelist<extra_data> initial_extra_data{
 class TestTrigger : public DenseTrigger {
  public:
   TestTrigger() = default;
-  explicit TestTrigger(CkMigrateMessage* const msg) : DenseTrigger(msg) {}
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-function"
   WRAPPED_PUPable_decl_template(TestTrigger);  // NOLINT
@@ -165,11 +164,12 @@ class TestTrigger : public DenseTrigger {
   std::optional<double> next_trigger_{};
 };
 
+#if defined(SPECTRE_USE_CHARM)
 PUP::able::PUP_ID TestTrigger::my_PUP_ID = 0;  // NOLINT
+#endif                                         // SPECTRE_USE_CHARM
 
 struct TestEvent : public Event {
   TestEvent() = default;
-  explicit TestEvent(CkMigrateMessage* const /*msg*/) {}
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-function"
   WRAPPED_PUPable_decl_template(TestEvent);  // NOLINT
@@ -258,7 +258,9 @@ struct TestEvent : public Event {
 
 std::vector<DataTuple> TestEvent::calls{};
 
+#if defined(SPECTRE_USE_CHARM)
 PUP::able::PUP_ID TestEvent::my_PUP_ID = 0;  // NOLINT
+#endif                                       // SPECTRE_USE_CHARM
 
 struct System {
   using variables_tag = Tags::Variables<tmpl::list<EvolvedVar>>;

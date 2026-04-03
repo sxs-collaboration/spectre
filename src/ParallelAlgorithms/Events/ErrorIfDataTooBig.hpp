@@ -61,10 +61,12 @@ namespace Events {
  * compute tags like `Tags::DerivCompute`
  */
 template <size_t Dim, typename Tensors, typename NonTensorComputeTags>
-class ErrorIfDataTooBig : public Event {
+class ErrorIfDataTooBig
+    : public SPECTRE_CHARM_DERIVED(
+          SINGLE_ARG(ErrorIfDataTooBig<Dim, Tensors, NonTensorComputeTags>),
+          Event) {
  public:
   /// \cond
-  explicit ErrorIfDataTooBig(CkMigrateMessage* /*unused*/) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(ErrorIfDataTooBig);  // NOLINT
   /// \endcond
@@ -166,10 +168,12 @@ class ErrorIfDataTooBig : public Event {
   double threshold_ = std::numeric_limits<double>::signaling_NaN();
 };
 
+#if defined(SPECTRE_USE_CHARM)
 /// \cond
 template <size_t Dim, typename Tensors, typename NonTensorComputeTags>
 PUP::able::PUP_ID
     ErrorIfDataTooBig<Dim, Tensors,
                       NonTensorComputeTags>::my_PUP_ID = 0;  // NOLINT
 /// \endcond
+#endif  // SPECTRE_USE_CHARM
 }  // namespace Events

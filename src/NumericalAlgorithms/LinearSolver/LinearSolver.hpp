@@ -35,7 +35,8 @@ namespace Registrars {}
  * other factor-creatable linear solver as preconditioner.
  */
 template <typename LinearSolverRegistrars>
-class LinearSolver : public PUP::able {
+class LinearSolver
+    : public SPECTRE_CHARM_PUPable(LinearSolver<LinearSolverRegistrars>) {
  protected:
   /// \cond
   LinearSolver() = default;
@@ -49,7 +50,6 @@ class LinearSolver : public PUP::able {
   ~LinearSolver() override = default;
 
   /// \cond
-  explicit LinearSolver(CkMigrateMessage* m);
   WRAPPED_PUPable_abstract(LinearSolver);  // NOLINT
   /// \endcond
 
@@ -87,12 +87,6 @@ class LinearSolver : public PUP::able {
   virtual void reset() = 0;
 };
 
-/// \cond
-template <typename LinearSolverRegistrars>
-LinearSolver<LinearSolverRegistrars>::LinearSolver(CkMigrateMessage* m)
-    : PUP::able(m) {}
-/// \endcond
-
 template <typename LinearSolverRegistrars>
 template <typename LinearOperator, typename VarsType, typename SourceType,
           typename... OperatorArgs, typename... Args>
@@ -125,7 +119,11 @@ struct NoPreconditioner {};
  * preconditioning.
  */
 template <typename Preconditioner, typename LinearSolverRegistrars>
-class PreconditionedLinearSolver : public LinearSolver<LinearSolverRegistrars> {
+class PreconditionedLinearSolver
+    : public SPECTRE_CHARM_DERIVED(
+          SINGLE_ARG(PreconditionedLinearSolver<Preconditioner,
+                                                LinearSolverRegistrars>),
+          LinearSolver<LinearSolverRegistrars>) {
  private:
   using Base = LinearSolver<LinearSolverRegistrars>;
 
@@ -157,11 +155,12 @@ class PreconditionedLinearSolver : public LinearSolver<LinearSolverRegistrars> {
   ~PreconditionedLinearSolver() override = default;
 
   /// \cond
-  explicit PreconditionedLinearSolver(CkMigrateMessage* m);
   /// \endcond
 
   void pup(PUP::er& p) override {  // NOLINT
+#if defined(SPECTRE_USE_CHARM)
     PUP::able::pup(p);
+#endif  // SPECTRE_USE_CHARM
     if constexpr (not std::is_same_v<Preconditioner, NoPreconditioner>) {
       p | preconditioner_;
     }
@@ -249,7 +248,7 @@ PreconditionedLinearSolver<Preconditioner, LinearSolverRegistrars>::
 template <typename Preconditioner, typename LinearSolverRegistrars>
 PreconditionedLinearSolver<Preconditioner, LinearSolverRegistrars>::
     PreconditionedLinearSolver(const PreconditionedLinearSolver& rhs)
-    : Base(rhs) {
+    : PUP::able(rhs), Base(rhs) {
   if constexpr (not std::is_same_v<Preconditioner, NoPreconditioner>) {
     preconditioner_ = rhs.clone_preconditioner();
   }
@@ -264,13 +263,6 @@ PreconditionedLinearSolver<Preconditioner, LinearSolverRegistrars>::operator=(
   }
   return *this;
 }
-
-/// \cond
-template <typename Preconditioner, typename LinearSolverRegistrars>
-PreconditionedLinearSolver<Preconditioner, LinearSolverRegistrars>::
-    PreconditionedLinearSolver(CkMigrateMessage* m)
-    : Base(m) {}
-/// \endcond
 
 template <typename Preconditioner, typename LinearSolverRegistrars>
 void PreconditionedLinearSolver<Preconditioner,

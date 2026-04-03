@@ -27,7 +27,8 @@ PlaneWave<Dim>::PlaneWave(
 
 template <size_t Dim>
 PlaneWave<Dim>::PlaneWave(const PlaneWave& other)
-    : evolution::initial_data::InitialData(other),
+    : PUP::able(other),
+      evolution::initial_data::InitialData(other),
       wave_vector_(other.wave_vector_),
       center_(other.center_),
       profile_(other.profile_->get_clone()),
@@ -47,9 +48,6 @@ std::unique_ptr<evolution::initial_data::InitialData>
 PlaneWave<Dim>::get_clone() const {
   return std::make_unique<PlaneWave<Dim>>(*this);
 }
-
-template <size_t Dim>
-PlaneWave<Dim>::PlaneWave(CkMigrateMessage* msg) : InitialData(msg) {}
 
 template <size_t Dim>
 template <typename T>
@@ -165,8 +163,10 @@ T PlaneWave<Dim>::u(const tnsr::I<T, Dim>& x, const double t) const {
   return result;
 }
 
+#if defined(SPECTRE_USE_CHARM)
 template <size_t Dim>
 PUP::able::PUP_ID PlaneWave<Dim>::my_PUP_ID = 0;
+#endif  // SPECTRE_USE_CHARM
 }  // namespace ScalarWave::Solutions
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)

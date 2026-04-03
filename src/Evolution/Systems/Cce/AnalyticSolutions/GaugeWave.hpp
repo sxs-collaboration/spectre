@@ -44,7 +44,9 @@ namespace Solutions {
  * omit that extra map. The behavior of translation-independence is
  * tested by the `Cce::Solutions::BouncingBlackHole` solution.
  */
-struct GaugeWave : public SphericalMetricData {
+struct GaugeWave
+    : public virtual SPECTRE_CHARM_DERIVED(GaugeWave, WorldtubeData),
+      public virtual SPECTRE_CHARM_DERIVED(GaugeWave, SphericalMetricData) {
   struct ExtractionRadius {
     using type = double;
     static constexpr Options::String help{
@@ -90,8 +92,6 @@ struct GaugeWave : public SphericalMetricData {
       "perturbation near a Schwarzschild metric in spherical coordinates"};
 
   WRAPPED_PUPable_decl_template(GaugeWave);  // NOLINT
-
-  explicit GaugeWave(CkMigrateMessage* msg) : SphericalMetricData(msg) {}
 
   // clang doesn't manage to use = default correctly in this case
   // NOLINTNEXTLINE(modernize-use-equals-default)

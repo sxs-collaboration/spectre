@@ -29,9 +29,9 @@ tuples::TaggedTuple<ScalarAdvection::Tags::U> Sinusoid::variables(
 
 void Sinusoid::pup(PUP::er& p) { InitialData::pup(p); }
 
-Sinusoid::Sinusoid(CkMigrateMessage* msg) : InitialData(msg) {}
-
+#if defined(SPECTRE_USE_CHARM)
 PUP::able::PUP_ID Sinusoid::my_PUP_ID = 0;
+#endif  // SPECTRE_USE_CHARM
 
 bool operator==(const Sinusoid& /*lhs*/, const Sinusoid& /*rhs*/) {
   return true;

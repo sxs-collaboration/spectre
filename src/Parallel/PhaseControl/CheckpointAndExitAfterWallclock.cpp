@@ -33,14 +33,12 @@ CheckpointAndExitAfterWallclock::CheckpointAndExitAfterWallclock(
   }
 }
 
-CheckpointAndExitAfterWallclock::CheckpointAndExitAfterWallclock(
-    CkMigrateMessage* msg)
-    : PhaseChange(msg) {}
-
 void CheckpointAndExitAfterWallclock::pup(PUP::er& p) {
   PhaseChange::pup(p);
   p | wallclock_hours_for_checkpoint_and_exit_;
 }
 }  // namespace PhaseControl
 
+#if defined(SPECTRE_USE_CHARM)
 PUP::able::PUP_ID PhaseControl::CheckpointAndExitAfterWallclock::my_PUP_ID = 0;
+#endif  // SPECTRE_USE_CHARM

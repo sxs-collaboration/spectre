@@ -36,9 +36,10 @@ namespace InitializeJ {
 // as a consequence, this initial data generator is deliberately not
 // option-creatable; it should only be obtained from the `get_initialize_j`
 // function of `Cce::InitializeJ::LinearizedBondiSachs`.
-struct LinearizedBondiSachs : ::Cce::InitializeJ::InitializeJ<false> {
+struct LinearizedBondiSachs
+    : public SPECTRE_CHARM_DERIVED(LinearizedBondiSachs,
+                                   ::Cce::InitializeJ::InitializeJ<false>) {
   WRAPPED_PUPable_decl_template(LinearizedBondiSachs);  // NOLINT
-  explicit LinearizedBondiSachs(CkMigrateMessage* /*unused*/) {}
 
   LinearizedBondiSachs() = default;
 
@@ -112,7 +113,10 @@ void assign_du_components_from_l_factors(
  * where \f$C_{2a}\f$ and \f$C_{3a}\f$ may be specified freely and are taken via
  * input option `InitialModes`.
  */
-struct LinearizedBondiSachs : public SphericalMetricData {
+struct LinearizedBondiSachs
+    : public virtual SPECTRE_CHARM_DERIVED(LinearizedBondiSachs, WorldtubeData),
+      public virtual SPECTRE_CHARM_DERIVED(LinearizedBondiSachs,
+                                           SphericalMetricData) {
   struct InitialModes {
     using type = std::array<std::complex<double>, 2>;
     static constexpr Options::String help{
@@ -137,9 +141,6 @@ struct LinearizedBondiSachs : public SphericalMetricData {
   using options = tmpl::list<InitialModes, ExtractionRadius, Frequency>;
 
   WRAPPED_PUPable_decl_template(LinearizedBondiSachs);  // NOLINT
-
-  explicit LinearizedBondiSachs(CkMigrateMessage* msg)
-      : SphericalMetricData(msg) {}
 
   // clang doesn't manage to use = default correctly in this case
   // NOLINTNEXTLINE(hicpp-use-equals-default,modernize-use-equals-default)

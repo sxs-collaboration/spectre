@@ -50,5 +50,7 @@ std::complex<double> CubicSpanInterpolator::interpolate(
   return interpolate_impl(source_points, values, target_point);
 }
 
-PUP::able::PUP_ID intrp::CubicSpanInterpolator::my_PUP_ID = 0;
+#if defined(SPECTRE_USE_CHARM)
+PUP::able::PUP_ID intrp::CubicSpanInterpolator::my_PUP_ID = 0;  // NOLINT
+#endif  // SPECTRE_USE_CHARM
 }  // namespace intrp

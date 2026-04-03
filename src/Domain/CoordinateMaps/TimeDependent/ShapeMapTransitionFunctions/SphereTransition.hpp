@@ -52,7 +52,9 @@ namespace domain::CoordinateMaps::ShapeMapTransitionFunctions {
  * `domain::CoordinateMaps::ShapeMapTransitionFunctions::Wedge` class where both
  * the inner and outer surface are spheres centered on the same center.
  */
-class SphereTransition final : public ShapeMapTransitionFunction {
+class SphereTransition final
+    : public SPECTRE_CHARM_DERIVED(SphereTransition,
+                                   ShapeMapTransitionFunction) {
  public:
   explicit SphereTransition() = default;
   SphereTransition(double r_min, double r_max, bool reverse = false,
@@ -75,7 +77,6 @@ class SphereTransition final : public ShapeMapTransitionFunction {
       const std::array<DataVector, 3>& source_coords) const override;
 
   WRAPPED_PUPable_decl_template(SphereTransition);
-  explicit SphereTransition(CkMigrateMessage* msg);
   void pup(PUP::er& p) override;
 
   std::unique_ptr<ShapeMapTransitionFunction> get_clone() const override {

@@ -40,9 +40,6 @@ BondiHoyleAccretion::get_clone() const {
   return std::make_unique<BondiHoyleAccretion>(*this);
 }
 
-BondiHoyleAccretion::BondiHoyleAccretion(CkMigrateMessage* msg)
-    : InitialData(msg) {}
-
 void BondiHoyleAccretion::pup(PUP::er& p) {
   InitialData::pup(p);
   p | bh_mass_;
@@ -215,7 +212,9 @@ BondiHoyleAccretion::variables(
       get<density_tag>(data), get<energy_tag>(data), get<pressure_tag>(data));
 }
 
+#if defined(SPECTRE_USE_CHARM)
 PUP::able::PUP_ID BondiHoyleAccretion::my_PUP_ID = 0;
+#endif  // SPECTRE_USE_CHARM
 
 bool operator==(const BondiHoyleAccretion& lhs,
                 const BondiHoyleAccretion& rhs) {

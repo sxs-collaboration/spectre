@@ -11,9 +11,6 @@
 
 namespace gr::Solutions {
 template <size_t Dim>
-Minkowski<Dim>::Minkowski(CkMigrateMessage* /*msg*/) {}
-
-template <size_t Dim>
 template <typename DataType>
 tuples::TaggedTuple<gr::Tags::Lapse<DataType>> Minkowski<Dim>::variables(
     const tnsr::I<DataType, Dim>& x, double /*t*/,

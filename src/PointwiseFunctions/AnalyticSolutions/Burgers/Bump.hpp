@@ -37,7 +37,13 @@ namespace Burgers::Solutions {
  * h}\f$.
  */
 class Bump : public evolution::initial_data::InitialData,
-             public MarkAsAnalyticSolution {
+             public MarkAsAnalyticSolution
+#if defined(SPECTRE_USE_FINDUS)
+    ,
+             public virtual findus::serialize::SerializableDerived<
+                 Bump, evolution::initial_data::InitialData>
+#endif
+{
  public:
   struct HalfWidth {
     using type = double;
@@ -72,7 +78,6 @@ class Bump : public evolution::initial_data::InitialData,
       -> std::unique_ptr<evolution::initial_data::InitialData> override;
 
   /// \cond
-  explicit Bump(CkMigrateMessage* msg);
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(Bump);
   /// \endcond

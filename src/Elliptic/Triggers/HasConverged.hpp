@@ -16,11 +16,11 @@ namespace elliptic::Triggers {
 /// \ingroup EventsAndTriggersGroup
 /// Trigger when the solver identified by the `Label` has converged.
 template <typename Label>
-class HasConverged : public Trigger {
+class HasConverged
+    : public SPECTRE_CHARM_DERIVED(SINGLE_ARG(HasConverged<Label>), Trigger) {
  public:
   /// \cond
   HasConverged() = default;
-  explicit HasConverged(CkMigrateMessage* /*unused*/) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(HasConverged);  // NOLINT
   /// \endcond
@@ -36,8 +36,10 @@ class HasConverged : public Trigger {
   }
 };
 
+#if defined(SPECTRE_USE_CHARM)
 /// \cond
 template <typename Label>
 PUP::able::PUP_ID HasConverged<Label>::my_PUP_ID = 0;  // NOLINT
 /// \endcond
+#endif  // SPECTRE_USE_CHARM
 }  // namespace elliptic::Triggers

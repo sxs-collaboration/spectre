@@ -40,7 +40,7 @@ namespace DenseTriggers {}
 /// steps or slabs, such as the step size, may have the values from
 /// times off by one step.  The evolved variables will be in an
 /// unspecified state.
-class DenseTrigger : public PUP::able {
+class DenseTrigger : public SPECTRE_CHARM_PUPable(DenseTrigger) {
  protected:
   /// \cond
   DenseTrigger() = default;
@@ -53,10 +53,11 @@ class DenseTrigger : public PUP::able {
  public:
   ~DenseTrigger() override = default;
 
+#if defined(SPECTRE_USE_CHARM)
   /// \cond
-  explicit DenseTrigger(CkMigrateMessage* const msg) : PUP::able(msg) {}
   WRAPPED_PUPable_abstract(DenseTrigger);  // NOLINT
   /// \endcond
+#endif  // SPECTRE_USE_CHARM
 
   /// Check whether the trigger fires.  Returns std::nullopt if
   /// insufficient data is available to make the decision.  The
@@ -134,7 +135,8 @@ class DenseTrigger : public PUP::able {
     return previous_trigger_time_;
   }
 
-  void pup(PUP::er& p) override {
+  SPECTRE_FINDUS_VIRTUAL()
+  void pup(PUP::er& p) SPECTRE_CHARM_OVERRIDE() {
     p | next_previous_trigger_time_;
     p | previous_trigger_time_;
   }

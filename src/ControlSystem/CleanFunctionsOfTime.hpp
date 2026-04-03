@@ -76,14 +76,13 @@ struct CleanFunctionsOfTimeAction {
 /// \warning Running this event will make the
 /// `global_functions_of_time` data stored in the output files
 /// useless.
-class CleanFunctionsOfTime : public Event {
+class CleanFunctionsOfTime
+    : public SPECTRE_CHARM_DERIVED(CleanFunctionsOfTime, Event) {
   using ReductionData = Parallel::ReductionData<
       Parallel::ReductionDatum<double, funcl::AssertEqual<>>>;
 
  public:
   /// \cond
-  explicit CleanFunctionsOfTime(CkMigrateMessage* m);
-  using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(CleanFunctionsOfTime);  // NOLINT
   /// \endcond
 

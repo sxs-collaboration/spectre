@@ -13,7 +13,7 @@
 #include "Utilities/TMPL.hpp"
 
 namespace control_system::size::States {
-class AhSpeed : public State {
+class AhSpeed : public SPECTRE_CHARM_DERIVED(AhSpeed, State) {
  public:
   using options = tmpl::list<>;
   static constexpr Options::String help{
@@ -32,6 +32,5 @@ class AhSpeed : public State {
       const ControlErrorArgs& control_error_args) const override;
 
   WRAPPED_PUPable_decl_template(AhSpeed);  // NOLINT
-  explicit AhSpeed(CkMigrateMessage* const /*msg*/) {}
 };
 }  // namespace control_system::size::States

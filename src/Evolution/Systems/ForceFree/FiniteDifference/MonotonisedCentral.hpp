@@ -54,7 +54,8 @@ namespace ForceFree::fd {
  * ::fd::reconstruction::monotonised_central() for details.
  */
 
-class MonotonisedCentral : public Reconstructor {
+class MonotonisedCentral
+    : public SPECTRE_CHARM_DERIVED(MonotonisedCentral, Reconstructor) {
  private:
   using TildeE = ForceFree::Tags::TildeE;
   using TildeB = ForceFree::Tags::TildeB;
@@ -81,8 +82,6 @@ class MonotonisedCentral : public Reconstructor {
   MonotonisedCentral(const MonotonisedCentral&) = default;
   MonotonisedCentral& operator=(const MonotonisedCentral&) = default;
   ~MonotonisedCentral() override = default;
-
-  explicit MonotonisedCentral(CkMigrateMessage* msg);
 
   WRAPPED_PUPable_decl_base_template(Reconstructor, MonotonisedCentral);
 

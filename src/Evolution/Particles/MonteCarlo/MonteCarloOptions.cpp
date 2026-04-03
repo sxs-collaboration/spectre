@@ -9,12 +9,16 @@
 
 namespace Particles::MonteCarlo {
 
+#if defined(SPECTRE_USE_CHARM)
 template <size_t NeutrinoSpecies>
 PUP::able::PUP_ID MonteCarloOptions<NeutrinoSpecies>::my_PUP_ID = 0;  // NOLINT
+#endif  // SPECTRE_USE_CHARM
 
 template <size_t NeutrinoSpecies>
 void MonteCarloOptions<NeutrinoSpecies>::pup(PUP::er& p) {
+#if defined(SPECTRE_USE_CHARM)
   PUP::able::pup(p);
+#endif  // SPECTRE_USE_CHARM
   p | initial_packet_energy_;
 }
 

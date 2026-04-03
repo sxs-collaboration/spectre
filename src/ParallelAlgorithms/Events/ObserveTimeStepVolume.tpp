@@ -31,19 +31,15 @@ class FunctionOfTime;
 
 namespace dg::Events {
 template <typename System>
-ObserveTimeStepVolume<System>::ObserveTimeStepVolume(CkMigrateMessage* const m)
-    : ObserveConstantsPerElement<volume_dim>(m) {}
-
-template <typename System>
-ObserveTimeStepVolume<System>::ObserveTimeStepVolume() = default;
-
-template <typename System>
 ObserveTimeStepVolume<System>::ObserveTimeStepVolume(
     const std::string& subfile_name,
     const ::FloatingPointType coordinates_floating_point_type,
     const ::FloatingPointType floating_point_type)
     : ObserveConstantsPerElement<volume_dim>(
           subfile_name, coordinates_floating_point_type, floating_point_type) {}
+
+template <typename System>
+ObserveTimeStepVolume<System>::ObserveTimeStepVolume() = default;
 
 template <typename System>
 bool ObserveTimeStepVolume<System>::needs_evolved_variables() const {
@@ -73,8 +69,10 @@ std::vector<TensorComponent> ObserveTimeStepVolume<System>::assemble_data(
   return components;
 }
 
+  #if defined(SPECTRE_USE_CHARM)
 /// \cond
 template <typename System>
 PUP::able::PUP_ID ObserveTimeStepVolume<System>::my_PUP_ID = 0;  // NOLINT
 /// \endcond
+  #endif // SPECTRE_USE_CHARM
 }  // namespace dg::Events

@@ -80,7 +80,8 @@ class KleinGordonWorldtubeDataManager;
  *   and size of the buffer updates.
  */
 template <typename BoundaryTags>
-class WorldtubeDataManager : public PUP::able {
+class WorldtubeDataManager
+    : public SPECTRE_CHARM_PUPable(WorldtubeDataManager<BoundaryTags>) {
  public:
   using creatable_classes =
       tmpl::list<MetricWorldtubeDataManager, BondiWorldtubeDataManager,
@@ -113,8 +114,10 @@ class WorldtubeDataManager : public PUP::able {
  * function that handles buffer updating and boundary computation.
  */
 class MetricWorldtubeDataManager
-    : public WorldtubeDataManager<
-          Tags::characteristic_worldtube_boundary_tags<Tags::BoundaryValue>> {
+    : public SPECTRE_CHARM_DERIVED(
+          MetricWorldtubeDataManager,
+          WorldtubeDataManager<Tags::characteristic_worldtube_boundary_tags<
+              Tags::BoundaryValue>>) {
   using input_tags = cce_metric_input_tags<ComplexModalVector>;
 
  public:
@@ -128,8 +131,6 @@ class MetricWorldtubeDataManager
       bool fix_spec_normalization);
 
   WRAPPED_PUPable_decl_template(MetricWorldtubeDataManager);  // NOLINT
-
-  explicit MetricWorldtubeDataManager(CkMigrateMessage* /*unused*/) {}
 
   /*!
    * \brief Update the `boundary_data_box` entries for all tags in
@@ -208,8 +209,10 @@ class MetricWorldtubeDataManager
  * set of 9 scalars is a far leaner (factor of ~4) data storage format.
  */
 class BondiWorldtubeDataManager
-    : public WorldtubeDataManager<
-          Tags::characteristic_worldtube_boundary_tags<Tags::BoundaryValue>> {
+    : public SPECTRE_CHARM_DERIVED(
+          BondiWorldtubeDataManager,
+          WorldtubeDataManager<Tags::characteristic_worldtube_boundary_tags<
+              Tags::BoundaryValue>>) {
  public:
   // charm needs an empty constructor.
   BondiWorldtubeDataManager() = default;
@@ -223,8 +226,6 @@ class BondiWorldtubeDataManager
       std::unique_ptr<intrp::SpanInterpolator> interpolator);
 
   WRAPPED_PUPable_decl_template(BondiWorldtubeDataManager);  // NOLINT
-
-  explicit BondiWorldtubeDataManager(CkMigrateMessage* /*unused*/) {}
 
   /*!
    * \brief Update the `boundary_data_box` entries for all tags in
@@ -292,7 +293,9 @@ class BondiWorldtubeDataManager
 };
 
 class KleinGordonWorldtubeDataManager
-    : public WorldtubeDataManager<Tags::klein_gordon_worldtube_boundary_tags> {
+    : public SPECTRE_CHARM_DERIVED(
+          KleinGordonWorldtubeDataManager,
+          WorldtubeDataManager<Tags::klein_gordon_worldtube_boundary_tags>) {
  public:
   // charm needs an empty constructor.
   KleinGordonWorldtubeDataManager() = default;
@@ -304,8 +307,6 @@ class KleinGordonWorldtubeDataManager
       std::unique_ptr<intrp::SpanInterpolator> interpolator);
 
   WRAPPED_PUPable_decl_template(KleinGordonWorldtubeDataManager);  // NOLINT
-
-  explicit KleinGordonWorldtubeDataManager(CkMigrateMessage* /*unused*/) {}
 
   /*!
    * \brief Update the `boundary_data_box` entries for all tags in

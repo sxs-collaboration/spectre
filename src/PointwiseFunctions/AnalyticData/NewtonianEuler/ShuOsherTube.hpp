@@ -59,7 +59,13 @@ namespace NewtonianEuler::AnalyticData {
  * With these values the usual final time is 1.8.
  */
 class ShuOsherTube : public evolution::initial_data::InitialData,
-                     public MarkAsAnalyticData {
+                     public MarkAsAnalyticData
+#if defined(SPECTRE_USE_FINDUS)
+    ,
+                     public virtual findus::serialize::SerializableDerived<
+                         ShuOsherTube, evolution::initial_data::InitialData>
+#endif
+{
  public:
   using equation_of_state_type = EquationsOfState::IdealFluid<false>;
 
@@ -131,7 +137,6 @@ class ShuOsherTube : public evolution::initial_data::InitialData,
       -> std::unique_ptr<evolution::initial_data::InitialData> override;
 
   /// \cond
-  explicit ShuOsherTube(CkMigrateMessage* msg);
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(ShuOsherTube);
   /// \endcond

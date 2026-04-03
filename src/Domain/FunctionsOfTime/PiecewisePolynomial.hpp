@@ -27,7 +27,9 @@ namespace FunctionsOfTime {
  * `Parallel::GlobalCache` for objects held by mutable global cache tags.
  */
 template <size_t MaxDeriv>
-class PiecewisePolynomial : public FunctionOfTime {
+class PiecewisePolynomial
+    : public SPECTRE_CHARM_DERIVED(SINGLE_ARG(PiecewisePolynomial<MaxDeriv>),
+                                   FunctionOfTime) {
  public:
   PiecewisePolynomial();
   PiecewisePolynomial(PiecewisePolynomial&&);
@@ -39,8 +41,6 @@ class PiecewisePolynomial : public FunctionOfTime {
   PiecewisePolynomial(
       double t, std::array<DataVector, MaxDeriv + 1> initial_func_and_derivs,
       double expiration_time);
-
-  explicit PiecewisePolynomial(CkMigrateMessage* /*unused*/);
 
   auto get_clone() const -> std::unique_ptr<FunctionOfTime> override;
 
@@ -127,9 +127,11 @@ template <size_t MaxDeriv>
 bool operator!=(const PiecewisePolynomial<MaxDeriv>& lhs,
                 const PiecewisePolynomial<MaxDeriv>& rhs);
 
+#if defined(SPECTRE_USE_CHARM)
 /// \cond
 template <size_t MaxDeriv>
 PUP::able::PUP_ID PiecewisePolynomial<MaxDeriv>::my_PUP_ID = 0;  // NOLINT
 /// \endcond
+#endif  // SPECTRE_USE_CHARM
 }  // namespace FunctionsOfTime
 }  // namespace domain

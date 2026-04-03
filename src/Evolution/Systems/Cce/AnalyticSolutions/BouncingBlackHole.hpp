@@ -33,7 +33,8 @@ namespace Cce::Solutions {
  * produce zero news. The solution is a coordinate transform applied to the
  * Schwarzschild solution in Kerr-Schild coordinates.
  */
-struct BouncingBlackHole : public WorldtubeData {
+struct BouncingBlackHole
+    : public SPECTRE_CHARM_DERIVED(BouncingBlackHole, WorldtubeData) {
   struct Amplitude {
     using type = double;
     static constexpr Options::String help{
@@ -70,8 +71,6 @@ struct BouncingBlackHole : public WorldtubeData {
   using options = tmpl::list<Amplitude, ExtractionRadius, Mass, Period>;
 
   WRAPPED_PUPable_decl_template(BouncingBlackHole);  // NOLINT
-
-  explicit BouncingBlackHole(CkMigrateMessage* msg) : WorldtubeData(msg) {}
 
   // clang doesn't manage to use = default correctly in this case
   // NOLINTNEXTLINE(modernize-use-equals-default)

@@ -56,7 +56,6 @@ struct EventCount : db::SimpleTag {
 template <typename Label>
 class TestEvent : public Event {
  public:
-  explicit TestEvent(CkMigrateMessage* /*unused*/) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(TestEvent);  // NOLINT
 
@@ -124,8 +123,10 @@ template <typename Label>
 std::optional<double> TestEvent<Label>::previous_time_during_event =
     std::nullopt;
 
+#if defined(SPECTRE_USE_CHARM)
 template <typename Label>
 PUP::able::PUP_ID TestEvent<Label>::my_PUP_ID = 0;  // NOLINT
+#endif                                              // SPECTRE_USE_CHARM
 
 namespace EventLabels {
 struct A {
@@ -345,7 +346,6 @@ void do_test(const bool time_runs_forward, const bool add_event) {
 class MutatingTrigger : public DenseTrigger {
  public:
   MutatingTrigger() = default;
-  explicit MutatingTrigger(CkMigrateMessage* const msg) : DenseTrigger(msg) {}
   using PUP::able::register_constructor;
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-function"
@@ -376,7 +376,9 @@ class MutatingTrigger : public DenseTrigger {
   }
 };
 
+#if defined(SPECTRE_USE_CHARM)
 PUP::able::PUP_ID MutatingTrigger::my_PUP_ID = 0;  // NOLINT
+#endif                                             // SPECTRE_USE_CHARM
 
 struct MutatingMetavariables {
   using component_list = tmpl::list<>;

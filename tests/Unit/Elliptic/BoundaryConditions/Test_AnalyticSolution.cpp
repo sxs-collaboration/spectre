@@ -75,8 +75,6 @@ struct TestSolution : elliptic::analytic_data::AnalyticSolution {
   TestSolution(TestSolution&&) = default;
   TestSolution& operator=(TestSolution&&) = default;
   ~TestSolution() override = default;
-  explicit TestSolution(CkMigrateMessage* m)
-      : elliptic::analytic_data::AnalyticSolution(m) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(TestSolution);  // NOLINT
 
@@ -95,8 +93,10 @@ struct TestSolution : elliptic::analytic_data::AnalyticSolution {
   }
 };
 
+#if defined(SPECTRE_USE_CHARM)
 template <size_t Dim>
 PUP::able::PUP_ID TestSolution<Dim>::my_PUP_ID = 0;  // NOLINT
+#endif                                               // SPECTRE_USE_CHARM
 
 template <size_t Dim>
 struct Metavariables {

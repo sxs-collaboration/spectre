@@ -64,7 +64,12 @@ template <size_t VolumeDim, typename InterpolationTargetTag,
 class FindCommonHorizon<
     VolumeDim, InterpolationTargetTag, tmpl::list<InterpolatorSourceVarTags...>,
     tmpl::list<Tensors...>, tmpl::list<NonTensorComputeTags...>>
-    : public Event {
+    : public SPECTRE_CHARM_DERIVED(
+          SINGLE_ARG(FindCommonHorizon<VolumeDim, InterpolationTargetTag,
+                                       tmpl::list<InterpolatorSourceVarTags...>,
+                                       tmpl::list<Tensors...>,
+                                       tmpl::list<NonTensorComputeTags...>>),
+          Event) {
   using ObserveFieldsEvent =
       dg::Events::ObserveFields<VolumeDim, tmpl::list<Tensors...>,
                                 tmpl::list<NonTensorComputeTags...>>;
@@ -74,7 +79,6 @@ class FindCommonHorizon<
 
  public:
   /// \cond
-  explicit FindCommonHorizon(CkMigrateMessage* /*unused*/) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(FindCommonHorizon);  // NOLINT
   /// \endcond
@@ -164,6 +168,7 @@ class FindCommonHorizon<
   InterpolateEvent interpolate_event_;
 };
 
+#if defined(SPECTRE_USE_CHARM)
 /// \cond
 // NOLINTBEGIN
 template <size_t VolumeDim, typename InterpolationTargetTag,
@@ -174,6 +179,7 @@ PUP::able::PUP_ID FindCommonHorizon<
     tmpl::list<Tensors...>, tmpl::list<NonTensorComputeTags...>>::my_PUP_ID = 0;
 // NOLINTEND
 /// \endcond
+#endif  // SPECTRE_USE_CHARM
 }  // namespace intrp::Events
 
 namespace ah::Events {
@@ -191,7 +197,11 @@ class FindCommonHorizon;
 template <typename HorizonMetavars, typename... Tensors,
           typename... NonTensorComputeTags>
 class FindCommonHorizon<HorizonMetavars, tmpl::list<Tensors...>,
-                        tmpl::list<NonTensorComputeTags...>> : public Event {
+                        tmpl::list<NonTensorComputeTags...>>
+    : public SPECTRE_CHARM_DERIVED(
+          SINGLE_ARG(FindCommonHorizon<HorizonMetavars, tmpl::list<Tensors...>,
+                                       tmpl::list<NonTensorComputeTags...>>),
+          Event) {
   using ObserveFieldsEvent =
       dg::Events::ObserveFields<3, tmpl::list<Tensors...>,
                                 tmpl::list<NonTensorComputeTags...>>;
@@ -199,7 +209,6 @@ class FindCommonHorizon<HorizonMetavars, tmpl::list<Tensors...>,
 
  public:
   /// \cond
-  explicit FindCommonHorizon(CkMigrateMessage* /*unused*/) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(FindCommonHorizon);  // NOLINT
   /// \endcond
@@ -293,6 +302,7 @@ class FindCommonHorizon<HorizonMetavars, tmpl::list<Tensors...>,
   HorizonFindEvent horizon_find_event_;
 };
 
+#if defined(SPECTRE_USE_CHARM)
 /// \cond
 // NOLINTBEGIN
 template <typename HorizonMetavars, typename... Tensors,
@@ -302,4 +312,5 @@ PUP::able::PUP_ID
                       tmpl::list<NonTensorComputeTags...>>::my_PUP_ID = 0;
 // NOLINTEND
 /// \endcond
+#endif  // SPECTRE_USE_CHARM
 }  // namespace ah::Events

@@ -23,7 +23,15 @@ namespace Poisson::Solutions {
 /// The trivial solution \f$u=0\f$ of a Poisson equation. Useful as initial
 /// guess.
 template <size_t Dim, typename DataType = DataVector>
-class Zero : public elliptic::analytic_data::AnalyticSolution {
+class Zero : public elliptic::analytic_data::AnalyticSolution
+#if defined(SPECTRE_USE_FINDUS)
+    ,
+             public virtual findus::serialize::SerializableDerived<
+                 Zero<Dim, DataType>, elliptic::analytic_data::InitialGuess>,
+             public virtual findus::serialize::SerializableDerived<
+                 Zero<Dim, DataType>, elliptic::analytic_data::Background>
+#endif
+{
  public:
   using options = tmpl::list<>;
   static constexpr Options::String help{
@@ -41,8 +49,6 @@ class Zero : public elliptic::analytic_data::AnalyticSolution {
   }
 
   /// \cond
-  explicit Zero(CkMigrateMessage* m)
-      : elliptic::analytic_data::AnalyticSolution(m) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(Zero);  // NOLINT
   /// \endcond
@@ -64,10 +70,12 @@ class Zero : public elliptic::analytic_data::AnalyticSolution {
   }
 };
 
+#if defined(SPECTRE_USE_CHARM)
 /// \cond
 template <size_t Dim, typename DataType>
 PUP::able::PUP_ID Zero<Dim, DataType>::my_PUP_ID = 0;  // NOLINT
 /// \endcond
+#endif  // SPECTRE_USE_CHARM
 
 template <size_t Dim, typename DataType>
 bool operator==(const Zero<Dim, DataType>& /*lhs*/,

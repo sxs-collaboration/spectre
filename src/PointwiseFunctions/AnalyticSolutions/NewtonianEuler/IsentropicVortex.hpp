@@ -83,8 +83,15 @@ namespace NewtonianEuler::Solutions {
  * \f$\epsilon \cos{z}\f$.
  */
 template <size_t Dim>
-class IsentropicVortex : public evolution::initial_data::InitialData,
-                         public MarkAsAnalyticSolution {
+class IsentropicVortex
+    : public evolution::initial_data::InitialData,
+      public MarkAsAnalyticSolution
+#if defined(SPECTRE_USE_FINDUS)
+    ,
+      public virtual findus::serialize::SerializableDerived<
+          IsentropicVortex<Dim>, evolution::initial_data::InitialData>
+#endif
+{
   static_assert(Dim == 2 or Dim == 3,
                 "IsentropicVortex solution works in 2 and 3 dimensions");
 
@@ -148,7 +155,6 @@ class IsentropicVortex : public evolution::initial_data::InitialData,
       -> std::unique_ptr<evolution::initial_data::InitialData> override;
 
   /// \cond
-  explicit IsentropicVortex(CkMigrateMessage* msg);
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(IsentropicVortex);
   /// \endcond

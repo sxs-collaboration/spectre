@@ -80,8 +80,6 @@ std::unique_ptr<evolution::initial_data::InitialData> BondiMichel::get_clone()
   return std::make_unique<BondiMichel>(*this);
 }
 
-BondiMichel::BondiMichel(CkMigrateMessage* msg) : InitialData(msg) {}
-
 void BondiMichel::pup(PUP::er& p) {
   InitialData::pup(p);
   p | mass_;
@@ -321,7 +319,9 @@ BondiMichel::variables(
   return result;
 }
 
+#if defined(SPECTRE_USE_CHARM)
 PUP::able::PUP_ID BondiMichel::my_PUP_ID = 0;
+#endif  // SPECTRE_USE_CHARM
 
 bool operator==(const BondiMichel& lhs, const BondiMichel& rhs) {
   // there is no comparison operator for the EoS, but should be okay as

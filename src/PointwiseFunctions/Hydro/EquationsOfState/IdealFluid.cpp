@@ -56,10 +56,6 @@ bool IdealFluid<IsRelativistic>::operator!=(
 }
 
 template <bool IsRelativistic>
-IdealFluid<IsRelativistic>::IdealFluid(CkMigrateMessage* msg)
-    : EquationOfState<IsRelativistic, 2>(msg) {}
-
-template <bool IsRelativistic>
 void IdealFluid<IsRelativistic>::pup(PUP::er& p) {
   EquationOfState<IsRelativistic, 2>::pup(p);
   p | adiabatic_index_;

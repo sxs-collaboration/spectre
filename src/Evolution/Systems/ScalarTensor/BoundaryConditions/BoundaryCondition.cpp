@@ -9,10 +9,9 @@
 #include "Utilities/GenerateInstantiations.hpp"
 
 namespace ScalarTensor::BoundaryConditions {
-BoundaryCondition::BoundaryCondition(CkMigrateMessage* const msg)
-    : domain::BoundaryConditions::BoundaryCondition(msg) {}
-
-void BoundaryCondition::pup(PUP::er& p) {
+void BoundaryCondition::pup([[maybe_unused]] PUP::er& p) {
+#if defined(SPECTRE_USE_CHARM)
   domain::BoundaryConditions::BoundaryCondition::pup(p);
+#endif  // SPECTRE_USE_CHARM
 }
 }  // namespace ScalarTensor::BoundaryConditions

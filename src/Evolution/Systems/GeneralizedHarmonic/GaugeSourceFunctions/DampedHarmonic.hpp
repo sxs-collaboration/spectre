@@ -206,7 +206,8 @@ void damped_harmonic(
  *
  * \see `damped_harmonic()`
  */
-class DampedHarmonic final : public GaugeCondition {
+class DampedHarmonic final
+    : public SPECTRE_CHARM_DERIVED(DampedHarmonic, GaugeCondition) {
  public:
   /// The width of the Gaussian for the spatial decay of the damped harmonic
   /// gauge.
@@ -247,7 +248,6 @@ class DampedHarmonic final : public GaugeCondition {
   ~DampedHarmonic() override = default;
 
   /// \cond
-  explicit DampedHarmonic(CkMigrateMessage* msg);
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(DampedHarmonic);  // NOLINT
   /// \endcond

@@ -71,8 +71,6 @@ KomissarovShock::get_clone() const {
   return std::make_unique<KomissarovShock>(*this);
 }
 
-KomissarovShock::KomissarovShock(CkMigrateMessage* msg) : InitialData(msg) {}
-
 void KomissarovShock::pup(PUP::er& p) {
   InitialData::pup(p);
   p | adiabatic_index_;
@@ -181,7 +179,9 @@ KomissarovShock::variables(
       get<density_tag>(data), get<energy_tag>(data), get<pressure_tag>(data));
 }
 
+#if defined(SPECTRE_USE_CHARM)
 PUP::able::PUP_ID KomissarovShock::my_PUP_ID = 0;
+#endif  // SPECTRE_USE_CHARM
 
 bool operator==(const KomissarovShock& lhs, const KomissarovShock& rhs) {
   return lhs.adiabatic_index_ == rhs.adiabatic_index_ and

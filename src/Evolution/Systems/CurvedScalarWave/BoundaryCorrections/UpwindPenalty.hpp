@@ -82,7 +82,9 @@ namespace CurvedScalarWave::BoundaryCorrections {
  * indicates an element-wise product.
  */
 template <size_t Dim>
-class UpwindPenalty final : public evolution::BoundaryCorrection {
+class UpwindPenalty final
+    : public SPECTRE_CHARM_DERIVED(SINGLE_ARG(UpwindPenalty<Dim>),
+                                   SINGLE_ARG(evolution::BoundaryCorrection)) {
  private:
   struct CharSpeedsTensor : db::SimpleTag {
     using type = tnsr::a<DataVector, 3, Frame::Inertial>;
@@ -102,8 +104,6 @@ class UpwindPenalty final : public evolution::BoundaryCorrection {
   ~UpwindPenalty() override = default;
 
   /// \cond
-  explicit UpwindPenalty(CkMigrateMessage* msg);
-  using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(UpwindPenalty);  // NOLINT
   /// \endcond
   void pup(PUP::er& p) override;  // NOLINT

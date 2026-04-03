@@ -33,9 +33,6 @@ MonotonisedCentralPrim::MonotonisedCentralPrim(
     const bool reconstruct_rho_times_temperature)
     : reconstruct_rho_times_temperature_(reconstruct_rho_times_temperature) {}
 
-MonotonisedCentralPrim::MonotonisedCentralPrim(CkMigrateMessage* const msg)
-    : Reconstructor(msg) {}
-
 std::unique_ptr<Reconstructor> MonotonisedCentralPrim::get_clone() const {
   return std::make_unique<MonotonisedCentralPrim>(*this);
 }
@@ -45,8 +42,10 @@ void MonotonisedCentralPrim::pup(PUP::er& p) {
   p | reconstruct_rho_times_temperature_;
 }
 
+#if defined(SPECTRE_USE_CHARM)
 // NOLINTNEXTLINE
 PUP::able::PUP_ID MonotonisedCentralPrim::my_PUP_ID = 0;
+#endif  // SPECTRE_USE_CHARM
 
 template <size_t ThermodynamicDim>
 void MonotonisedCentralPrim::reconstruct(

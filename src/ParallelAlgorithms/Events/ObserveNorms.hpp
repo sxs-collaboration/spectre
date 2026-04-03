@@ -108,7 +108,12 @@ template <typename... ObservableTensorTags, typename... NonTensorComputeTags,
           typename ArraySectionIdTag, typename OptionName>
 class ObserveNorms<tmpl::list<ObservableTensorTags...>,
                    tmpl::list<NonTensorComputeTags...>, ArraySectionIdTag,
-                   OptionName> : public Event {
+                   OptionName>
+    : public SPECTRE_CHARM_DERIVED(
+          SINGLE_ARG(ObserveNorms<tmpl::list<ObservableTensorTags...>,
+                                  tmpl::list<NonTensorComputeTags...>,
+                                  ArraySectionIdTag, OptionName>),
+          Event) {
  private:
   struct ObserveTensor {
     static constexpr Options::String help = {
@@ -194,7 +199,6 @@ class ObserveNorms<tmpl::list<ObservableTensorTags...>,
         "List specifying each tensor to observe and how it is reduced."};
   };
 
-  explicit ObserveNorms(CkMigrateMessage* msg);
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(ObserveNorms);  // NOLINT
 
@@ -293,13 +297,6 @@ class ObserveNorms<tmpl::list<ObservableTensorTags...>,
 /// @}
 
 /// \cond
-template <typename... ObservableTensorTags, typename... NonTensorComputeTags,
-          typename ArraySectionIdTag, typename OptionName>
-ObserveNorms<tmpl::list<ObservableTensorTags...>,
-             tmpl::list<NonTensorComputeTags...>, ArraySectionIdTag,
-             OptionName>::ObserveNorms(CkMigrateMessage* msg)
-    : Event(msg) {}
-
 template <typename... ObservableTensorTags, typename... NonTensorComputeTags,
           typename ArraySectionIdTag, typename OptionName>
 ObserveNorms<tmpl::list<ObservableTensorTags...>,
@@ -540,6 +537,7 @@ void ObserveNorms<tmpl::list<ObservableTensorTags...>,
   p | tensor_components_;
 }
 
+#if defined(SPECTRE_USE_CHARM)
 // NOLINTBEGIN(cppcoreguidelines-avoid-non-const-global-variables)
 template <typename... ObservableTensorTags, typename... NonTensorComputeTags,
           typename ArraySectionIdTag, typename OptionName>
@@ -547,5 +545,6 @@ PUP::able::PUP_ID ObserveNorms<tmpl::list<ObservableTensorTags...>,
                                tmpl::list<NonTensorComputeTags...>,
                                ArraySectionIdTag, OptionName>::my_PUP_ID = 0;
 // NOLINTEND(cppcoreguidelines-avoid-non-const-global-variables)
+#endif  // SPECTRE_USE_CHARM
 /// \endcond
 }  // namespace Events

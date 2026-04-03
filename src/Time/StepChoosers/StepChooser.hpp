@@ -79,7 +79,7 @@ struct AllStepChoosers {};
 /// step chooser, slab chooser, or both by inheriting from StepChooser
 /// with the appropriate `StepChooserUse` template argument.
 template <typename StepChooserUse>
-class StepChooser : public virtual PUP::able {
+class StepChooser : public SPECTRE_CHARM_PUPable(StepChooser<StepChooserUse>) {
  protected:
   /// \cond HIDDEN_SYMBOLS
   StepChooser() = default;

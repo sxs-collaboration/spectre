@@ -13,9 +13,6 @@
 
 namespace NewtonianEuler::Sources {
 template <size_t Dim>
-NoSource<Dim>::NoSource(CkMigrateMessage* msg) : Source<Dim>{msg} {}
-
-template <size_t Dim>
 void NoSource<Dim>::pup(PUP::er& p) {
   Source<Dim>::pup(p);
 }
@@ -39,9 +36,11 @@ void NoSource<Dim>::operator()(
     const EquationsOfState::EquationOfState<false, 2>& /*eos*/,
     const tnsr::I<DataVector, Dim>& /*coords*/, const double /*time*/) const {}
 
+#if defined(SPECTRE_USE_CHARM)
 template <size_t Dim>
 // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
 PUP::able::PUP_ID NoSource<Dim>::my_PUP_ID = 0;
+#endif  // SPECTRE_USE_CHARM
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 

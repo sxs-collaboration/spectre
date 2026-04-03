@@ -75,7 +75,6 @@ struct ComponentBeta;
 
 struct RegisterTrigger : public Trigger {
   RegisterTrigger() = default;
-  explicit RegisterTrigger(CkMigrateMessage* /*unused*/) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(RegisterTrigger);  // NOLINT
 
@@ -89,7 +88,6 @@ struct RegisterTrigger : public Trigger {
 
 struct SolveTrigger : public Trigger {
   SolveTrigger() = default;
-  explicit SolveTrigger(CkMigrateMessage* /*unused*/) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(SolveTrigger);  // NOLINT
 
@@ -101,8 +99,10 @@ struct SolveTrigger : public Trigger {
   bool operator()(const size_t step) const { return step % 3 == 0; }
 };
 
+#if defined(SPECTRE_USE_CHARM)
 PUP::able::PUP_ID SolveTrigger::my_PUP_ID = 0;
 PUP::able::PUP_ID RegisterTrigger::my_PUP_ID = 0;
+#endif  // SPECTRE_USE_CHARM
 
 template <typename Metavariables>
 struct ComponentAlpha {

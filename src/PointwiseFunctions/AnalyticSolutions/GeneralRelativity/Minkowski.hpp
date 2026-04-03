@@ -40,15 +40,12 @@ class Minkowski : public AnalyticSolution<Dim>, public MarkAsAnalyticSolution {
   static constexpr Options::String help{
       "Minkowski solution to Einstein's Equations"};
 
-
   Minkowski() = default;
   Minkowski(const Minkowski& /*rhs*/) = default;
   Minkowski& operator=(const Minkowski& /*rhs*/) = default;
   Minkowski(Minkowski&& /*rhs*/) = default;
   Minkowski& operator=(Minkowski&& /*rhs*/) = default;
   ~Minkowski() = default;
-
-  explicit Minkowski(CkMigrateMessage* /*msg*/);
 
   template <typename DataType>
   using DerivLapse = ::Tags::deriv<gr::Tags::Lapse<DataType>, tmpl::size_t<Dim>,

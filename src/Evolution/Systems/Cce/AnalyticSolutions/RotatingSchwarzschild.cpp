@@ -23,7 +23,8 @@ namespace Cce::Solutions {
 RotatingSchwarzschild::RotatingSchwarzschild(const double extraction_radius,
                                              const double mass,
                                              const double frequency)
-    : SphericalMetricData{extraction_radius},
+    : WorldtubeData{extraction_radius},
+      SphericalMetricData{extraction_radius},
       frequency_{frequency},
       mass_{mass} {}
 
@@ -117,5 +118,7 @@ void RotatingSchwarzschild::pup(PUP::er& p) {
   p | frequency_;
 }
 
+#if defined(SPECTRE_USE_CHARM)
 PUP::able::PUP_ID RotatingSchwarzschild::my_PUP_ID = 0;
+#endif  // SPECTRE_USE_CHARM
 }  // namespace Cce::Solutions

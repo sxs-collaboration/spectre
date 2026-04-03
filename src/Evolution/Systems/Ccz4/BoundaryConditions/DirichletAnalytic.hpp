@@ -41,7 +41,11 @@ namespace Ccz4::BoundaryConditions {
  * \brief Sets Dirichlet boundary conditions using the analytic solution or
  * analytic data.
  */
-class DirichletAnalytic final : public BoundaryCondition {
+class DirichletAnalytic final
+    : public BoundaryCondition
+      SPECTRE_FINDUS_DERIVED(
+          SINGLE_ARG(DirichletAnalytic),
+          SINGLE_ARG(domain::BoundaryConditions::BoundaryCondition)) {
  public:
   /// \brief What analytic solution/data to prescribe.
   struct AnalyticPrescription {
@@ -60,8 +64,6 @@ class DirichletAnalytic final : public BoundaryCondition {
   DirichletAnalytic(const DirichletAnalytic&);
   DirichletAnalytic& operator=(const DirichletAnalytic&);
   ~DirichletAnalytic() override = default;
-
-  explicit DirichletAnalytic(CkMigrateMessage* msg);
 
   explicit DirichletAnalytic(
       std::unique_ptr<evolution::initial_data::InitialData>

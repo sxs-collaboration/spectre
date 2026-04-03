@@ -16,7 +16,8 @@
 
 namespace Burgers::BoundaryConditions {
 DirichletAnalytic::DirichletAnalytic(const DirichletAnalytic& rhs)
-    : BoundaryCondition{dynamic_cast<const BoundaryCondition&>(rhs)},
+    : PUP::able(rhs),
+      BoundaryCondition{dynamic_cast<const BoundaryCondition&>(rhs)},
       analytic_prescription_(rhs.analytic_prescription_->get_clone()) {}
 
 DirichletAnalytic& DirichletAnalytic::operator=(const DirichletAnalytic& rhs) {
@@ -30,9 +31,6 @@ DirichletAnalytic& DirichletAnalytic::operator=(const DirichletAnalytic& rhs) {
 DirichletAnalytic::DirichletAnalytic(
     std::unique_ptr<evolution::initial_data::InitialData> analytic_prescription)
     : analytic_prescription_(std::move(analytic_prescription)) {}
-
-DirichletAnalytic::DirichletAnalytic(CkMigrateMessage* const msg)
-    : BoundaryCondition(msg) {}
 
 std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
 DirichletAnalytic::get_clone() const {
@@ -102,7 +100,9 @@ void DirichletAnalytic::fd_ghost(
 }
 
 void DirichletAnalytic::pup(PUP::er& p) {
+#if defined(SPECTRE_USE_CHARM)
   BoundaryCondition::pup(p);
+#endif  // SPECTRE_USE_CHARM
   p | analytic_prescription_;
 }
 
@@ -112,6 +112,8 @@ void DirichletAnalytic::flux_impl(
   Burgers::Fluxes::apply(flux, u_analytic);
 }
 
+#if defined(SPECTRE_USE_CHARM)
 // NOLINTNEXTLINE
 PUP::able::PUP_ID DirichletAnalytic::my_PUP_ID = 0;
+#endif  // SPECTRE_USE_CHARM
 }  // namespace Burgers::BoundaryConditions

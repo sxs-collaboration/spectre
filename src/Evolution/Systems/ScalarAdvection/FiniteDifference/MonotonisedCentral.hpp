@@ -51,7 +51,9 @@ namespace ScalarAdvection::fd {
  * ::fd::reconstruction::monotonised_central() for details.
  */
 template <size_t Dim>
-class MonotonisedCentral : public Reconstructor<Dim> {
+class MonotonisedCentral
+    : public SPECTRE_CHARM_DERIVED(SINGLE_ARG(MonotonisedCentral<Dim>),
+                                   Reconstructor<Dim>) {
  private:
   using volume_vars_tags = tmpl::list<ScalarAdvection::Tags::U>;
 
@@ -70,7 +72,6 @@ class MonotonisedCentral : public Reconstructor<Dim> {
   void pup(PUP::er& p) override;
 
   /// \cond
-  explicit MonotonisedCentral(CkMigrateMessage* msg);
   WRAPPED_PUPable_decl_base_template(Reconstructor<Dim>, MonotonisedCentral);
   /// \endcond
 

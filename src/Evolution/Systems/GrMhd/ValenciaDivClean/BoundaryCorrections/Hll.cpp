@@ -28,8 +28,6 @@ Hll::Hll(const double magnetic_field_magnitude_for_hydro,
     : magnetic_field_magnitude_for_hydro_(magnetic_field_magnitude_for_hydro),
       light_speed_density_cutoff_(light_speed_density_cutoff) {}
 
-Hll::Hll(CkMigrateMessage* /*unused*/) {}
-
 std::unique_ptr<evolution::BoundaryCorrection> Hll::get_clone() const {
   return std::make_unique<Hll>(*this);
 }
@@ -355,6 +353,8 @@ bool operator==(const Hll& lhs, const Hll& rhs) {
 }
 bool operator!=(const Hll& lhs, const Hll& rhs) { return not(lhs == rhs); }
 
+#if defined(SPECTRE_USE_CHARM)
 // NOLINTNEXTLINE
 PUP::able::PUP_ID Hll::my_PUP_ID = 0;
+#endif  // SPECTRE_USE_CHARM
 }  // namespace grmhd::ValenciaDivClean::BoundaryCorrections

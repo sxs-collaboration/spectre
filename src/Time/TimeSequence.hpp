@@ -19,7 +19,7 @@
 /// of simulation times or std::uint64_t for a sequence of slab
 /// numbers.
 template <typename T>
-class TimeSequence : public PUP::able {
+class TimeSequence : public SPECTRE_CHARM_PUPable(TimeSequence<T>) {
  protected:
   /// \cond HIDDEN_SYMBOLS
   TimeSequence() = default;
@@ -60,11 +60,11 @@ namespace TimeSequences {
  * for all integers $n$.
  */
 template <typename T>
-class EvenlySpaced : public TimeSequence<T> {
+class EvenlySpaced : public SPECTRE_CHARM_DERIVED(SINGLE_ARG(EvenlySpaced<T>),
+                                                  TimeSequence<T>) {
  public:
   /// \cond
   EvenlySpaced() = default;
-  explicit EvenlySpaced(CkMigrateMessage* /*unused*/) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(EvenlySpaced);  // NOLINT
   /// \endcond
@@ -110,11 +110,11 @@ class EvenlySpaced : public TimeSequence<T> {
 
 /// An explicitly specified sequence of times.
 template <typename T>
-class Specified : public TimeSequence<T> {
+class Specified
+    : public SPECTRE_CHARM_DERIVED(SINGLE_ARG(Specified<T>), TimeSequence<T>) {
  public:
   /// \cond
   Specified() = default;
-  explicit Specified(CkMigrateMessage* /*unused*/) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(Specified);  // NOLINT
   /// \endcond

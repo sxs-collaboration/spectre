@@ -74,7 +74,6 @@ class BrillLindquist : public AnalyticDataBase<3>, public MarkAsAnalyticData {
                  const std::array<double, 3>& center_a,
                  const std::array<double, 3>& center_b,
                  const Options::Context& context = {});
-  explicit BrillLindquist(CkMigrateMessage* /*unused*/);
 
   BrillLindquist() = default;
   BrillLindquist(const BrillLindquist& /*rhs*/) = default;

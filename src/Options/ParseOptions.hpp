@@ -16,6 +16,7 @@
 #include <map>
 #include <ostream>
 #include <pup.h>
+#include <pup_stl.h>
 #include <sstream>
 #include <string>
 #include <unordered_map>

@@ -18,7 +18,7 @@ namespace initial_data {
  * \brief The abstract base class for initial data of evolution systems. All
  * analytic solutions and analytic data must virtually inherit from this class.
  */
-class InitialData : public PUP::able {
+class InitialData : public SPECTRE_CHARM_PUPable(InitialData) {
  protected:
   InitialData() = default;
 
@@ -28,7 +28,6 @@ class InitialData : public PUP::able {
   virtual auto get_clone() const -> std::unique_ptr<InitialData> = 0;
 
   /// \cond
-  explicit InitialData(CkMigrateMessage* msg) : PUP::able(msg) {}
   WRAPPED_PUPable_abstract(InitialData);
   /// \endcond
 };

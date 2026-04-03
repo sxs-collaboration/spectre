@@ -67,7 +67,9 @@ namespace grmhd::ValenciaDivClean::BoundaryCorrections {
  * fluid part of the system in order to make the flux less dissipative for
  * those variables.
  */
-class Rusanov final : public evolution::BoundaryCorrection {
+class Rusanov final
+    : public SPECTRE_CHARM_DERIVED(Rusanov,
+                                   SINGLE_ARG(evolution::BoundaryCorrection)) {
  private:
   struct AbsCharSpeed : db::SimpleTag {
     using type = Scalar<DataVector>;
@@ -87,7 +89,6 @@ class Rusanov final : public evolution::BoundaryCorrection {
   ~Rusanov() override = default;
 
   /// \cond
-  explicit Rusanov(CkMigrateMessage* /*unused*/);
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(Rusanov);  // NOLINT
   /// \endcond

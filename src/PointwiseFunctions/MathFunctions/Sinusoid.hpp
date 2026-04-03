@@ -29,7 +29,9 @@ class Sinusoid;
  *  \details Input file options are: Amplitude, Phase, and Wavenumber
  */
 template <typename Fr>
-class Sinusoid<1, Fr> : public MathFunction<1, Fr> {
+class Sinusoid<1, Fr>
+    : public SPECTRE_CHARM_DERIVED(SINGLE_ARG(Sinusoid<1, Fr>),
+                                   SINGLE_ARG(MathFunction<1, Fr>)) {
  public:
   struct Amplitude {
     using type = double;
@@ -56,8 +58,6 @@ class Sinusoid<1, Fr> : public MathFunction<1, Fr> {
 
   WRAPPED_PUPable_decl_base_template(SINGLE_ARG(MathFunction<1, Fr>),
                                      Sinusoid);  // NOLINT
-
-  explicit Sinusoid(CkMigrateMessage* /*unused*/) {}
 
   double operator()(const double& x) const override;
   DataVector operator()(const DataVector& x) const override;
@@ -96,7 +96,9 @@ class Sinusoid<1, Fr> : public MathFunction<1, Fr> {
 
 }  // namespace MathFunctions
 
+#if defined(SPECTRE_USE_CHARM)
 /// \cond
 template <typename Fr>
 PUP::able::PUP_ID MathFunctions::Sinusoid<1, Fr>::my_PUP_ID = 0;  // NOLINT
 /// \endcond
+#endif  // SPECTRE_USE_CHARM

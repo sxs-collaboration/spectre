@@ -44,7 +44,9 @@ namespace EquationsOfState {
  * The temperature is given in units of MeV.
  */
 template <bool IsRelativistic>
-class Tabulated3D : public EquationOfState<IsRelativistic, 3> {
+class Tabulated3D : public SPECTRE_CHARM_DERIVED(
+                        SINGLE_ARG(Tabulated3D<IsRelativistic>),
+                        SINGLE_ARG(EquationOfState<IsRelativistic, 3>)) {
  public:
   static constexpr size_t thermodynamic_dim = 3;
   static constexpr bool is_relativistic = IsRelativistic;
@@ -169,7 +171,8 @@ class Tabulated3D : public EquationOfState<IsRelativistic, 3> {
                            Scalar<DataType>& temperature) const;
 
   WRAPPED_PUPable_decl_base_template(  // NOLINT
-      SINGLE_ARG(EquationOfState<IsRelativistic, 3>), Tabulated3D);
+      SINGLE_ARG(EquationOfState<IsRelativistic, 3>),
+      SINGLE_ARG(Tabulated3D<IsRelativistic>));
 
   /// The lower bound of the electron fraction that is valid for this EOS
   double electron_fraction_lower_bound() const override {
@@ -252,9 +255,11 @@ class Tabulated3D : public EquationOfState<IsRelativistic, 3> {
   static constexpr double upper_bound_tolerance_ = 0.9999;
 };
 
+#if defined(SPECTRE_USE_CHARM)
 /// \cond
 template <bool IsRelativistic>
 PUP::able::PUP_ID EquationsOfState::Tabulated3D<IsRelativistic>::my_PUP_ID = 0;
 /// \endcond
+#endif  // SPECTRE_USE_CHARM
 
 }  // namespace EquationsOfState

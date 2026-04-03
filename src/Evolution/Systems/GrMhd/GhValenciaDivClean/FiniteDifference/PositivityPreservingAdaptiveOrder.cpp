@@ -51,11 +51,6 @@
 
 namespace grmhd::GhValenciaDivClean::fd {
 template <typename System>
-PositivityPreservingAdaptiveOrderPrim<
-    System>::PositivityPreservingAdaptiveOrderPrim(CkMigrateMessage* const msg)
-    : Reconstructor<System>(msg) {}
-
-template <typename System>
 PositivityPreservingAdaptiveOrderPrim<System>::
     PositivityPreservingAdaptiveOrderPrim(
         const double alpha_5, const std::optional<double> alpha_7,
@@ -120,9 +115,11 @@ void PositivityPreservingAdaptiveOrderPrim<System>::pup(PUP::er& p) {
   }
 }
 
+#if defined(SPECTRE_USE_CHARM)
 template <typename System>
 // NOLINTNEXTLINE
 PUP::able::PUP_ID PositivityPreservingAdaptiveOrderPrim<System>::my_PUP_ID = 0;
+#endif  // SPECTRE_USE_CHARM
 
 template <typename System>
 template <size_t ThermodynamicDim, typename TagsList>

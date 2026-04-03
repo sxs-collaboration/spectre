@@ -17,11 +17,12 @@ namespace elliptic::Triggers {
 /// Trigger every N iterations of the solver identifid by the `Label`, after a
 /// given offset.
 template <typename Label>
-class EveryNIterations : public Trigger {
+class EveryNIterations
+    : public SPECTRE_CHARM_DERIVED(SINGLE_ARG(EveryNIterations<Label>),
+                                   Trigger) {
  public:
   /// \cond
   EveryNIterations() = default;
-  explicit EveryNIterations(CkMigrateMessage* /*unused*/) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(EveryNIterations);  // NOLINT
   /// \endcond
@@ -61,8 +62,10 @@ class EveryNIterations : public Trigger {
   uint64_t offset_{0};
 };
 
+#if defined(SPECTRE_USE_CHARM)
 /// \cond
 template <typename Label>
 PUP::able::PUP_ID EveryNIterations<Label>::my_PUP_ID = 0;  // NOLINT
 /// \endcond
+#endif  // SPECTRE_USE_CHARM
 }  // namespace elliptic::Triggers

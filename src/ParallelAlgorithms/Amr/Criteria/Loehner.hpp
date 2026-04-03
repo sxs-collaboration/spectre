@@ -122,7 +122,9 @@ void max_over_components(
  * \see amr::Criteria::loehner_smoothness_indicator
  */
 template <size_t Dim, typename TensorTags>
-class Loehner : public Criterion {
+class Loehner
+    : public SPECTRE_CHARM_DERIVED(SINGLE_ARG(Loehner<Dim, TensorTags>),
+                                   Criterion) {
  public:
   struct VariablesToMonitor {
     using type = std::vector<std::string>;
@@ -173,7 +175,6 @@ class Loehner : public Criterion {
           const Options::Context& context = {});
 
   /// \cond
-  explicit Loehner(CkMigrateMessage* msg);
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(Loehner);  // NOLINT
   /// \endcond
@@ -222,9 +223,6 @@ Loehner<Dim, TensorTags>::Loehner(std::vector<std::string> vars_to_monitor,
 }
 
 template <size_t Dim, typename TensorTags>
-Loehner<Dim, TensorTags>::Loehner(CkMigrateMessage* msg) : Criterion(msg) {}
-
-template <size_t Dim, typename TensorTags>
 template <typename DbTagsList, typename Metavariables>
 std::array<Flag, Dim> Loehner<Dim, TensorTags>::operator()(
     const db::DataBox<DbTagsList>& box,
@@ -270,8 +268,10 @@ void Loehner<Dim, TensorTags>::pup(PUP::er& p) {
   p | coarsening_factor_;
 }
 
+#if defined(SPECTRE_USE_CHARM)
 template <size_t Dim, typename TensorTags>
 PUP::able::PUP_ID Loehner<Dim, TensorTags>::my_PUP_ID = 0;  // NOLINT
+#endif                                                      // SPECTRE_USE_CHARM
 /// \endcond
 
 }  // namespace amr::Criteria

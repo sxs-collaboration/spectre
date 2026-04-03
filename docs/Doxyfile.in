@@ -189,7 +189,10 @@ SEARCH_INCLUDES        = YES
 PREDEFINED             = SPECTRE_ALWAYS_INLINE= \
                          OVERLOADER_CONSTEXPR= \
                          SPECTRE_DOXYGEN_INVOKED \
-                         SPECTRE_AUTODIFF
+                         SPECTRE_AUTODIFF \
+                         FINDUS_OVERRIDE_SERIALIZATION_ID(x,y)= \
+                         SPECTRE_FINDUS_DERIVED(x,y)= \
+                         SPECTRE_FINDUS_VIRTUAL()=
 
 #---------------------------------------------------------------------------
 # Configuration::additions related to external references
