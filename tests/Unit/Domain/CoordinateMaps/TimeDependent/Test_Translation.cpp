@@ -23,6 +23,7 @@
 #include "PointwiseFunctions/MathFunctions/RegisterDerivedWithCharm.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
+#include "Utilities/Serialization/Serialize.hpp"
 #include "Utilities/StdArrayHelpers.hpp"
 #include "Utilities/TypeTraits.hpp"
 

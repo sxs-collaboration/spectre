@@ -21,6 +21,7 @@
 #include "Time/Time.hpp"
 #include "Time/TimeStepId.hpp"
 #include "Utilities/Literals.hpp"
+#include "Utilities/Serialization/Serialize.hpp"
 
 namespace Cce {
 namespace {

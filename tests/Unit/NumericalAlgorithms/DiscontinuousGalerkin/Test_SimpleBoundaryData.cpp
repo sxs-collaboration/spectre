@@ -18,6 +18,7 @@
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Quadrature.hpp"
 #include "NumericalAlgorithms/Spectral/SegmentSize.hpp"
+#include "Utilities/Serialization/Serialize.hpp"
 
 namespace {
 

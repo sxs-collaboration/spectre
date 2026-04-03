@@ -20,6 +20,7 @@
 #include "PointwiseFunctions/Hydro/SpecificEnthalpy.hpp"
 #include "PointwiseFunctions/Hydro/Units.hpp"
 #include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
+#include "Utilities/Serialization/Serialize.hpp"
 namespace EquationsOfState {
 namespace {
 

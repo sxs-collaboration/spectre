@@ -40,6 +40,7 @@
 #include "Helpers/Domain/DomainTestHelpers.hpp"
 #include "Utilities/MakeVector.hpp"
 #include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
+#include "Utilities/Serialization/Serialize.hpp"
 
 namespace domain {
 namespace {

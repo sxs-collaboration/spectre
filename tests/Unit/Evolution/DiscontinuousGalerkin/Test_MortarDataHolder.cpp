@@ -14,6 +14,7 @@
 #include "NumericalAlgorithms/Spectral/Quadrature.hpp"
 #include "Utilities/GetOutput.hpp"
 #include "Utilities/MakeString.hpp"
+#include "Utilities/Serialization/Serialize.hpp"
 
 namespace evolution::dg {
 namespace {

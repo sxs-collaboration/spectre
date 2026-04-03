@@ -75,8 +75,7 @@ struct PhaseChangeAndTriggers : db::SimpleTag {
   static constexpr bool is_overlayable = true;
   static constexpr bool pass_metavariables = false;
   static type create_from_options(const type& phase_control_and_triggers) {
-    return deserialize<type>(
-        serialize<type>(phase_control_and_triggers).data());
+    return serialize_and_deserialize<type>(phase_control_and_triggers);
   }
 };
 }  // namespace Tags

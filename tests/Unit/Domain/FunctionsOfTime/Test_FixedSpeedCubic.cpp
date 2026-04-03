@@ -14,6 +14,7 @@
 #include "Framework/TestHelpers.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/GetOutput.hpp"
+#include "Utilities/Serialization/Serialize.hpp"
 
 namespace {
 void test(

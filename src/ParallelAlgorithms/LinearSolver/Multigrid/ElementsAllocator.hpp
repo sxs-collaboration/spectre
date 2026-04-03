@@ -92,10 +92,8 @@ struct ElementsAllocator
     // Copy the initialization items so we can adjust them on each refinement
     // level
     auto initialization_items =
-        deserialize<tuples::TaggedTuple<InitializationTags...>>(
-            serialize<tuples::TaggedTuple<InitializationTags...>>(
-                original_initialization_items)
-                .data());
+        serialize_and_deserialize<tuples::TaggedTuple<InitializationTags...>>(
+            original_initialization_items);
     auto& local_cache = *Parallel::local_branch(global_cache);
     auto& element_array =
         Parallel::get_parallel_component<ElementArray>(local_cache);

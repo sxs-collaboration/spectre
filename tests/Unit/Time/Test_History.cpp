@@ -16,6 +16,7 @@
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/GetOutput.hpp"
 #include "Utilities/Overloader.hpp"
+#include "Utilities/Serialization/Serialize.hpp"
 
 namespace {
 constexpr size_t num_points = 3;

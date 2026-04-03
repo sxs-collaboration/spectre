@@ -16,6 +16,7 @@
 #include "Domain/FunctionsOfTime/PiecewisePolynomial.hpp"
 #include "Helpers/Domain/CoordinateMaps/TestMapHelpers.hpp"
 #include "Utilities/EqualWithinRoundoff.hpp"
+#include "Utilities/Serialization/Serialize.hpp"
 #include "Utilities/StdArrayHelpers.hpp"
 
 namespace domain::CoordinateMaps::ShapeMapTransitionFunctions {

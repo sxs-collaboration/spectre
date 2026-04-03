@@ -24,6 +24,7 @@
 #include "Helpers/DataStructures/DataBox/TestHelpers.hpp"
 #include "Utilities/CloneUniquePtrs.hpp"
 #include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
+#include "Utilities/Serialization/Serialize.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace {

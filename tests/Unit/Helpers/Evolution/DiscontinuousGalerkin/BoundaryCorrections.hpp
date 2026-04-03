@@ -28,6 +28,7 @@
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/Serialization/Serialize.hpp"
 #include "Utilities/StdHelpers/RetrieveUniquePtr.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"

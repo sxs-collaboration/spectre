@@ -54,6 +54,7 @@
 #include "Utilities/MakeWithValue.hpp"
 #include "Utilities/PrettyType.hpp"
 #include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
+#include "Utilities/Serialization/Serialize.hpp"
 #include "Utilities/StdHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"

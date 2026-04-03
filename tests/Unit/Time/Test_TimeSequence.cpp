@@ -14,6 +14,7 @@
 #include "Framework/TestHelpers.hpp"
 #include "Time/TimeSequence.hpp"
 #include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
+#include "Utilities/Serialization/Serialize.hpp"
 
 namespace {
 void test_evenly_spaced() {

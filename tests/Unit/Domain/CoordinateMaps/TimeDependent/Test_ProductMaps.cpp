@@ -24,6 +24,7 @@
 #include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Quadrature.hpp"
+#include "Utilities/Serialization/Serialize.hpp"
 
 namespace domain {
 namespace {

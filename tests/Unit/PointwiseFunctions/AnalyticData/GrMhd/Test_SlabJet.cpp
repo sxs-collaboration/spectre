@@ -14,6 +14,7 @@
 #include "PointwiseFunctions/InitialDataUtilities/InitialData.hpp"
 #include "PointwiseFunctions/InitialDataUtilities/Tags/InitialData.hpp"
 #include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
+#include "Utilities/Serialization/Serialize.hpp"
 
 namespace {
 struct SlabJetProxy : public ::grmhd::AnalyticData::SlabJet {

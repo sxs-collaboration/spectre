@@ -34,6 +34,7 @@
 #include "Helpers/DataStructures/DataBox/TestHelpers.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Literals.hpp"
+#include "Utilities/Serialization/Serialize.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 #include "Utilities/TypeTraits.hpp"

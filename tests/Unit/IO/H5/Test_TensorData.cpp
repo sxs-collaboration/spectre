@@ -15,6 +15,7 @@
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Quadrature.hpp"
 #include "Utilities/GetOutput.hpp"
+#include "Utilities/Serialization/Serialize.hpp"
 #include "Utilities/StdHelpers.hpp"
 
 namespace {

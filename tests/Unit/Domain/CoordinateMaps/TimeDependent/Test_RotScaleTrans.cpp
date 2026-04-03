@@ -31,6 +31,7 @@
 #include "Helpers/Domain/CoordinateMaps/TestMapHelpers.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/GetOutput.hpp"
+#include "Utilities/Serialization/Serialize.hpp"
 
 template <size_t Dim>
 void test_RotScaleTrans() {

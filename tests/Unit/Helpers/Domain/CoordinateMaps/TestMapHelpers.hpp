@@ -32,6 +32,7 @@
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/Domain/DomainTestHelpers.hpp"
 #include "Utilities/Numeric.hpp"
+#include "Utilities/Serialization/Serialize.hpp"
 #include "Utilities/StdArrayHelpers.hpp"
 #include "Utilities/TypeTraits.hpp"
 

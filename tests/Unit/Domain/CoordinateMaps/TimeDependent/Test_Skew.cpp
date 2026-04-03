@@ -23,6 +23,7 @@
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Numeric.hpp"
+#include "Utilities/Serialization/Serialize.hpp"
 #include "Utilities/StdArrayHelpers.hpp"
 #include "Utilities/TypeTraits.hpp"
 

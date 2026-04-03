@@ -13,6 +13,7 @@
 #include "Framework/TestHelpers.hpp"
 #include "NumericalAlgorithms/Interpolation/CubicSpline.hpp"
 #include "Utilities/Math.hpp"
+#include "Utilities/Serialization/Serialize.hpp"
 
 namespace {
 template <class F>

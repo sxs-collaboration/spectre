@@ -14,6 +14,7 @@
 #include "PointwiseFunctions/Hydro/MagneticFieldTreatment.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeWithValue.hpp"
+#include "Utilities/Serialization/Serialize.hpp"
 
 namespace {
 

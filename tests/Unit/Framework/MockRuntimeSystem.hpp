@@ -18,6 +18,7 @@
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
+#include "Utilities/Serialization/Serialize.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 #include "Utilities/TypeTraits.hpp"

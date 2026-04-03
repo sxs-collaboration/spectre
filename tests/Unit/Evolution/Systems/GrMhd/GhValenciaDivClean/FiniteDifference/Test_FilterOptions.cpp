@@ -8,6 +8,7 @@
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/DataStructures/DataBox/TestHelpers.hpp"
+#include "Utilities/Serialization/Serialize.hpp"
 
 SPECTRE_TEST_CASE(
     "Unit.Evolution.Systems.GrMhd.GhValenciaDivClean.Fd.FilterOptions",

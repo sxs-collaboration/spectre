@@ -38,6 +38,7 @@
 #include "PointwiseFunctions/InitialDataUtilities/InitialData.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
+#include "Utilities/Serialization/Serialize.hpp"
 
 namespace {
 template <size_t Dim>

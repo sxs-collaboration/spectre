@@ -27,6 +27,7 @@
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "Utilities/CloneUniquePtrs.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/Serialization/Serialize.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace {

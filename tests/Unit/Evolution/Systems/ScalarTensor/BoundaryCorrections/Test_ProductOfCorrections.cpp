@@ -22,6 +22,7 @@
 #include "Helpers/Evolution/DiscontinuousGalerkin/BoundaryCorrections.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Formulation.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/Serialization/Serialize.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace {

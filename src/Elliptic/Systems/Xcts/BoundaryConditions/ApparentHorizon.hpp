@@ -171,14 +171,15 @@ class ApparentHorizon
         center_, rotation_,
         solution_for_lapse_.has_value()
             ? std::make_optional(
-                  deserialize<
+                  serialize_and_deserialize<
                       std::unique_ptr<elliptic::analytic_data::InitialGuess>>(
-                      serialize(solution_for_lapse_.value()).data()))
+                      solution_for_lapse_.value()))
             : std::nullopt,
         solution_for_negative_expansion_.has_value()
-            ? std::make_optional(deserialize<std::unique_ptr<
-                                     elliptic::analytic_data::InitialGuess>>(
-                  serialize(solution_for_negative_expansion_.value()).data()))
+            ? std::make_optional(
+                  serialize_and_deserialize<
+                      std::unique_ptr<elliptic::analytic_data::InitialGuess>>(
+                      solution_for_negative_expansion_.value()))
             : std::nullopt);
   }
 

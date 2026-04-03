@@ -13,6 +13,7 @@
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/Domain/BoundaryConditions/BoundaryCondition.hpp"
 #include "Utilities/Serialization/CharmPupable.hpp"
+#include "Utilities/Serialization/Serialize.hpp"
 
 namespace {
 namespace helpers = TestHelpers::domain::BoundaryConditions;

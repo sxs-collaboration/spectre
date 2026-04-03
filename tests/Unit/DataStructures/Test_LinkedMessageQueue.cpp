@@ -9,6 +9,7 @@
 
 #include "DataStructures/LinkedMessageQueue.hpp"
 #include "Framework/TestHelpers.hpp"
+#include "Utilities/Serialization/Serialize.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 

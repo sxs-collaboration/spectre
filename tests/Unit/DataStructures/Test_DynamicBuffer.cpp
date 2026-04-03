@@ -14,6 +14,7 @@
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/Serialization/Serialize.hpp"
 #include "Utilities/TypeTraits/IsIterable.hpp"
 
 namespace {

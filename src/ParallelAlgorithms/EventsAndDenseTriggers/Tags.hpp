@@ -31,7 +31,7 @@ struct EventsAndDenseTriggers : db::SimpleTag {
   using option_tags = tmpl::list<OptionTags::EventsAndDenseTriggers>;
   static constexpr bool pass_metavariables = false;
   static type create_from_options(const type& events_and_triggers) {
-    return deserialize<type>(serialize(events_and_triggers).data());
+    return serialize_and_deserialize<type>(events_and_triggers);
   }
 };
 }  // namespace Tags

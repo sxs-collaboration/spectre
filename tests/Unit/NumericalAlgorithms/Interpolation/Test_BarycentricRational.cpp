@@ -10,6 +10,7 @@
 
 #include "Framework/TestHelpers.hpp"
 #include "NumericalAlgorithms/Interpolation/BarycentricRational.hpp"
+#include "Utilities/Serialization/Serialize.hpp"
 
 namespace {
 template <class F>

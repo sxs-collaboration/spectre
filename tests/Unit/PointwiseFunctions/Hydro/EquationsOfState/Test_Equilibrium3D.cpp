@@ -18,7 +18,7 @@
 #include "PointwiseFunctions/Hydro/EquationsOfState/Factory.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/IdealFluid.hpp"
 #include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
-
+#include "Utilities/Serialization/Serialize.hpp"
 
 SPECTRE_TEST_CASE("Unit.PointwiseFunctions.EquationsOfState.Equilibrium3D",
                   "[Unit][EquationsOfState]") {

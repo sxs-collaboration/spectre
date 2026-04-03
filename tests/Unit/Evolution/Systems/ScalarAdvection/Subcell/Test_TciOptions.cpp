@@ -6,6 +6,7 @@
 #include "Evolution/Systems/ScalarAdvection/Subcell/TciOptions.hpp"
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
+#include "Utilities/Serialization/Serialize.hpp"
 
 SPECTRE_TEST_CASE("Unit.Evolution.ScalarAdvection.Subcell.TciOptions",
                   "[Unit][Evolution]") {

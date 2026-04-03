@@ -14,6 +14,7 @@
 #include "NumericalAlgorithms/Interpolation/CubicSpanInterpolator.hpp"
 #include "NumericalAlgorithms/Interpolation/LinearSpanInterpolator.hpp"
 #include "NumericalAlgorithms/Interpolation/SpanInterpolator.hpp"
+#include "Utilities/Serialization/Serialize.hpp"
 
 namespace intrp {
 

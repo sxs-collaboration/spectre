@@ -39,7 +39,7 @@ struct AnalyticData : db::SimpleTag {
 
   static constexpr bool pass_metavariables = false;
   static DataType create_from_options(const DataType& analytic_solution) {
-    return deserialize<type>(serialize<type>(analytic_solution).data());
+    return serialize_and_deserialize<type>(analytic_solution);
   }
 };
 }  // namespace Tags

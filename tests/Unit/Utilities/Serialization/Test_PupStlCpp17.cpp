@@ -10,6 +10,7 @@
 #include "Framework/TestHelpers.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Serialization/PupStlCpp17.hpp"
+#include "Utilities/Serialization/Serialize.hpp"
 
 namespace {
 struct LocalNoCopyMove {

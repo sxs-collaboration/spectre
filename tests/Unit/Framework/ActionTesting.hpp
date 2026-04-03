@@ -431,8 +431,7 @@ struct InitializeDataBox<tmpl::list<SimpleTags...>, ComputeTagsList> {
 
   /// Sets the initial values of simple tags in the DataBox.
   static void set_initial_values(const InitialValues& t) {
-    initial_values_ =
-        deserialize<InitialValues>(serialize<InitialValues>(t).data());
+    initial_values_ = serialize_and_deserialize<InitialValues>(t);
     initial_values_valid_ = true;
   }
 

@@ -11,6 +11,7 @@
 #include "Framework/TestHelpers.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Utilities/GetOutput.hpp"
+#include "Utilities/Serialization/Serialize.hpp"
 
 namespace evolution::dg {
 namespace {

@@ -5,6 +5,7 @@
 
 #include "Framework/TestHelpers.hpp"
 #include "Parallel/NodeLock.hpp"
+#include "Utilities/Serialization/Serialize.hpp"
 
 namespace {
 void test_two_locks() {

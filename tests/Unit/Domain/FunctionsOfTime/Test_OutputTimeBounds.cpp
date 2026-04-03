@@ -16,6 +16,7 @@
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Serialization/CharmPupable.hpp"
 #include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
+#include "Utilities/Serialization/Serialize.hpp"
 
 namespace {
 class TestFoT : public domain::FunctionsOfTime::FunctionOfTime {

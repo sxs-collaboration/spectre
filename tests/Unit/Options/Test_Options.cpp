@@ -23,6 +23,7 @@
 #include "Options/Tags.hpp"
 #include "Utilities/GetOutput.hpp"
 #include "Utilities/PrettyType.hpp"
+#include "Utilities/Serialization/Serialize.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace {

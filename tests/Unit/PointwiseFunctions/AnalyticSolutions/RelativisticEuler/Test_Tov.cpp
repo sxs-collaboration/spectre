@@ -15,6 +15,7 @@
 #include "PointwiseFunctions/Hydro/EquationsOfState/PolytropicFluid.hpp"
 #include "PointwiseFunctions/Hydro/SpecificEnthalpy.hpp"
 #include "Utilities/ConstantExpressions.hpp"
+#include "Utilities/Serialization/Serialize.hpp"
 
 namespace {
 

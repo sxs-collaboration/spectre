@@ -12,6 +12,7 @@
 #include "Domain/FunctionsOfTime/SettleToConstantQuaternion.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Utilities/ConstantExpressions.hpp"
+#include "Utilities/Serialization/Serialize.hpp"
 
 namespace {
 void test(

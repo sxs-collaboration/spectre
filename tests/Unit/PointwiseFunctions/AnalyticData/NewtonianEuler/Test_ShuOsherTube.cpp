@@ -16,6 +16,7 @@
 #include "Framework/TestHelpers.hpp"
 #include "PointwiseFunctions/AnalyticData/NewtonianEuler/ShuOsherTube.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
+#include "Utilities/Serialization/Serialize.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
