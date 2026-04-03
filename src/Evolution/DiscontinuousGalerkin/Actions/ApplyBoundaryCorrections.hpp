@@ -122,30 +122,8 @@ bool receive_boundary_data(
     const gsl::not_null<tuples::TaggedTuple<InboxTags...>*> inboxes) {
   constexpr size_t volume_dim = Metavariables::system::volume_dim;
   constexpr size_t face_dim = volume_dim - 1;
-
-  const auto needed_time = [&box]() {
-    if constexpr (LocalTimeStepping) {
-      const LtsTimeStepper& time_stepper =
-          db::get<::Tags::TimeStepper<LtsTimeStepper>>(*box);
-      if constexpr (DenseOutput) {
-        const auto& dense_output_time = db::get<::Tags::Time>(*box);
-        return [&dense_output_time, &time_stepper](const TimeStepId& id) {
-          return time_stepper.neighbor_data_required(dense_output_time, id);
-        };
-      } else {
-        const auto& next_temporal_id =
-            db::get<::Tags::Next<::Tags::TimeStepId>>(*box);
-        return [&next_temporal_id, &time_stepper](const TimeStepId& id) {
-          return time_stepper.neighbor_data_required(next_temporal_id, id);
-        };
-      }
-    } else {
-      static_assert(not DenseOutput,
-                    "Should not be receiving data for dense output with GTS.");
-      const auto& current_id = db::get<::Tags::TimeStepId>(*box);
-      return [&current_id](const TimeStepId& id) { return id <= current_id; };
-    }
-  }();
+  static_assert(LocalTimeStepping or not DenseOutput,
+                "Should not be receiving data for dense output with GTS.");
 
   auto& inbox =
       tuples::get<evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<
@@ -168,22 +146,32 @@ bool receive_boundary_data(
           mortar_infos.at(mortar_id).time_stepping_policy();
       switch (time_stepping_policy) {
         case TimeSteppingPolicy::EqualRate:
-          if (LocalTimeStepping) {
+          if (LocalTimeStepping or
+              mortar_next_time_step_id > db::get<::Tags::TimeStepId>(*box)) {
             continue;
           }
           break;
         case TimeSteppingPolicy::Conservative:
-          if (not LocalTimeStepping) {
+          if constexpr (not LocalTimeStepping) {
             continue;
+          } else {
+            const LtsTimeStepper& time_stepper =
+                db::get<::Tags::TimeStepper<LtsTimeStepper>>(*box);
+            using goal_tag =
+                tmpl::conditional_t<DenseOutput, ::Tags::Time,
+                                    ::Tags::Next<::Tags::TimeStepId>>;
+            const auto& goal = db::get<goal_tag>(*box);
+            if (not time_stepper.neighbor_data_required(
+                    goal, mortar_next_time_step_id)) {
+              continue;
+            }
           }
           break;
         default:
           ERROR("Unhandled TimeSteppingPolicy: " << time_stepping_policy);
       }
 
-      if (needed_time(mortar_next_time_step_id)) {
-        time_to_process.emplace(mortar_next_time_step_id);
-      }
+      time_to_process.emplace(mortar_next_time_step_id);
     }
 
     if (not time_to_process.has_value()) {
