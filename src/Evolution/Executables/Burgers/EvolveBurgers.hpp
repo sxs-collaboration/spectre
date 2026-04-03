@@ -125,7 +125,7 @@ struct EvolutionMetavars {
   static constexpr size_t volume_dim = 1;
   using system = Burgers::System;
   using temporal_id = Tags::TimeStepId;
-  using TimeStepperBase = TimeStepper;
+  using TimeStepperBase = LtsTimeStepper;
 
   static constexpr bool local_time_stepping =
       TimeStepperBase::local_time_stepping;
