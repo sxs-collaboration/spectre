@@ -45,9 +45,15 @@ slowly.
 
 Once the run is complete, run
 ```
+hpcprof hpctoolkit-EXEC-measurements
+```
+or if HPCToolkit version < 2024, run
+```
 hpcprof -I /path/to/spectre/src/+ hpctoolkit-EXEC-measurements
 ```
-Note that the `+` is a literal `+` symbol. This will create the directory
+Note that the `+` is a literal `+` symbol.
+
+This will create the directory
 ```
 hpctoolkit-EXEC-database
 ```
