@@ -194,6 +194,12 @@ alphabetical order):
     and compiler optimizations. You cannot disable the checks in Debug builds,
     so this option has no effect in Debug builds.
     (default is `OFF` in release)
+- SPECTRE_DEBUG_Og
+  - Compile Debug builds with `-Og` instead of the default `-O0`.
+    `-Og` is specifically designed to preserve debuggability while enabling
+    optimizations that do not interfere with source-level debugging.
+    Has no effect when `SPECTRE_OPTIMIZE_SIZE=ON` (which uses `-Oz`).
+    (default is `ON`)
 - SPECTRE_NAN_INIT
   - Defines `SPECTRE_NAN_INIT` macro to initialize memory to NaN in various
     places to catch use of uninitialized values.
