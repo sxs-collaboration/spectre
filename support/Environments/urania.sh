@@ -55,6 +55,6 @@ spectre_run_cmake() {
           -D BUILD_PYTHON_BINDINGS=ON \
           -D MACHINE=Urania \
           -D SPEC_ROOT=/u/guilara/repos/spec \
-          -D Catch2_DIR=/u/guilara/repos/Catch2/install_dir/lib64/cmake/Catch2 \
+          -D SPECTRE_FETCH_MISSING_DEPS=ON \
           "$@" $SPECTRE_HOME
 }

@@ -115,6 +115,7 @@ bool receive_boundary_data(
     const gsl::not_null<db::DataBox<DbTagsList>*> box,
     const gsl::not_null<tuples::TaggedTuple<InboxTags...>*> inboxes) {
   constexpr size_t volume_dim = Metavariables::system::volume_dim;
+  constexpr size_t face_dim = volume_dim - 1;
 
   const auto needed_time = [&box]() {
     if constexpr (LocalTimeStepping) {
@@ -239,10 +240,10 @@ bool receive_boundary_data(
                   const gsl::not_null<
                       DirectionalIdMap<volume_dim, Mesh<volume_dim>>*>
                       neighbor_mesh) {
-                const Mesh<volume_dim - 1> neighbor_face_mesh =
+                const Mesh<face_dim> neighbor_face_mesh =
                     received_mortar_data->second.volume_mesh.slice_away(
                         sliced_away_dim);
-                const Mesh<volume_dim - 1> mortar_mesh =
+                const Mesh<face_dim> mortar_mesh =
                     ::dg::mortar_mesh(face_mesh, neighbor_face_mesh);
 
                 const auto project_boundary_mortar_data =
