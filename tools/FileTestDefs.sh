@@ -260,10 +260,12 @@ long_lines_exclude() {
         grep -v 'import' | \
         grep -v '\\link' | \
         grep -v '\\endlink' | \
-        grep -v 'CopyFiles:'
+        grep -v 'CopyFiles:' | \
+        grep -v '^allowed-tools:'
 }
 long_lines() {
     whitelist "$1" \
+              '.claude/skills/*' \
               '.cmake$' \
               '.css$' \
               '.github/workflows/*' \
