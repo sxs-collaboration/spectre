@@ -12,6 +12,7 @@ import urllib
 
 import git
 import pybtex
+import pybtex.database
 import yaml
 
 VERSION_PATTERN = r"(\d{4})\.(\d{2})\.(\d{2})(\.\d+)?"
@@ -269,6 +270,30 @@ class TestMetadata(unittest.TestCase):
             ref_text = to_plaintext_reference(entry)
             if key == "charmpp":
                 self.assertEqual(ref_text, charmpp_ref)
+
+    def test_documentation_bibliography_journal_names(self):
+        for bibliography_file in [
+            "docs/References.bib",
+            "docs/Dependencies.bib",
+        ]:
+            references = pybtex.database.parse_file(
+                os.path.join(self.repo.working_dir, bibliography_file)
+            )
+            journal_macros = [
+                f"{key}: {entry.fields['journal']}"
+                for key, entry in references.entries.items()
+                if "journal" in entry.fields
+                and entry.fields["journal"].startswith("\\")
+            ]
+            self.assertEqual(
+                journal_macros,
+                [],
+                (
+                    f"Journal names in '{bibliography_file}' should be written"
+                    " out directly because Doxygen does not expand LaTeX"
+                    f" macros: {journal_macros}"
+                ),
+            )
 
 
 if __name__ == "__main__":
