@@ -14,10 +14,15 @@
 #include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
 #include "Framework/CheckWithRandomValues.hpp"
 #include "Framework/SetupLocalPythonEnvironment.hpp"
+#include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/Evolution/DiscontinuousGalerkin/BoundaryConditions.hpp"
+#include "Options/Protocols/FactoryCreation.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
+#include "PointwiseFunctions/MathFunctions/MathFunction.hpp"
+#include "PointwiseFunctions/MathFunctions/Sinusoid.hpp"
+#include "Time/Tags/Time.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -28,6 +33,19 @@ namespace {
 using frame = Frame::Inertial;
 
 template <size_t Dim>
+struct Metavariables {
+  struct factory_creation
+      : tt::ConformsTo<Options::protocols::FactoryCreation> {
+    using factory_classes = tmpl::map<
+        tmpl::pair<MathFunction<1, Frame::Inertial>,
+                   tmpl::list<MathFunctions::Sinusoid<1, Frame::Inertial>>>,
+        tmpl::pair<gh::BoundaryConditions::BoundaryCondition<Dim>,
+                   tmpl::list<gh::BoundaryConditions::
+                                  ConstraintPreservingBjorhus<Dim>>>>;
+  };
+};
+
+template <size_t Dim>
 void test() {
   CAPTURE(Dim);
   MAKE_GENERATOR(gen);
@@ -36,11 +54,14 @@ void test() {
         std::pair{"ConstraintPreservingPhysical"s,
                   "ConstraintPreservingGaugePhysical"s}}) {
     CAPTURE(bc_string);
+    const auto box_of_gridless_data =
+        db::create<db::AddSimpleTags<::Tags::Time>>(0.0);
 
     helpers::test_boundary_condition_with_python<
         gh::BoundaryConditions::ConstraintPreservingBjorhus<Dim>,
         gh::BoundaryConditions::BoundaryCondition<Dim>, gh::System<Dim>,
-        tmpl::list<gh::BoundaryCorrections::UpwindPenalty<Dim>>>(
+        tmpl::list<gh::BoundaryCorrections::UpwindPenalty<Dim>>, tmpl::list<>,
+        tmpl::list<>, Metavariables<Dim>>(
         make_not_null(&gen),
         "Evolution.Systems.GeneralizedHarmonic.BoundaryConditions.Bjorhus",
         tuples::TaggedTuple<
@@ -55,8 +76,9 @@ void test() {
             "dt_phi_" + bc_type},
         "ConstraintPreservingBjorhus:\n"
         "  Type: " +
-            bc_string,
-        Index<Dim - 1>{Dim == 1 ? 1 : 5}, db::DataBox<tmpl::list<>>{},
+            bc_string +
+            (Dim == 3 ? "\n  IncomingWaveProfile: None" : ""),
+        Index<Dim - 1>{Dim == 1 ? 1 : 5}, box_of_gridless_data,
         tuples::TaggedTuple<
             helpers::Tags::Range<gr::Tags::Lapse<DataVector>>,
             helpers::Tags::Range<gr::Tags::Shift<DataVector, Dim, frame>>,
@@ -69,6 +91,62 @@ void test() {
             std::array<double, 2>{{-1000., 1000.}}},
         1.e-6);
   }
+}
+
+void test_incoming_wave_profile_option_parsing_and_dim_guard() {
+  {
+    const auto created = TestHelpers::test_creation<
+        std::unique_ptr<gh::BoundaryConditions::BoundaryCondition<3>>,
+        Metavariables<3>>(
+        "ConstraintPreservingBjorhus:\n"
+        "  Type: ConstraintPreservingPhysical\n"
+        "  IncomingWaveProfile: None");
+    CHECK(dynamic_cast<
+              const gh::BoundaryConditions::ConstraintPreservingBjorhus<3>*>(
+              created.get()) != nullptr);
+  }
+
+  {
+    const auto created = TestHelpers::test_creation<
+        std::unique_ptr<gh::BoundaryConditions::BoundaryCondition<3>>,
+        Metavariables<3>>(
+        "ConstraintPreservingBjorhus:\n"
+        "  Type: ConstraintPreservingPhysical\n"
+        "  IncomingWaveProfile:\n"
+        "    Sinusoid:\n"
+        "      Amplitude: 1.2\n"
+        "      Wavenumber: 0.7\n"
+        "      Phase: 0.4");
+    CHECK(dynamic_cast<
+              const gh::BoundaryConditions::ConstraintPreservingBjorhus<3>*>(
+              created.get()) != nullptr);
+  }
+
+  CHECK_THROWS_WITH(
+      (TestHelpers::test_creation<
+          std::unique_ptr<gh::BoundaryConditions::BoundaryCondition<1>>,
+          Metavariables<1>>("ConstraintPreservingBjorhus:\n"
+                            "  Type: ConstraintPreservingPhysical\n"
+                            "  IncomingWaveProfile:\n"
+                            "    Sinusoid:\n"
+                            "      Amplitude: 1.2\n"
+                            "      Wavenumber: 0.7\n"
+                            "      Phase: 0.4")),
+      Catch::Matchers::ContainsSubstring(
+          "Option 'IncomingWaveProfile' is not a valid option."));
+
+  CHECK_THROWS_WITH(
+      (TestHelpers::test_creation<
+          std::unique_ptr<gh::BoundaryConditions::BoundaryCondition<2>>,
+          Metavariables<2>>("ConstraintPreservingBjorhus:\n"
+                            "  Type: ConstraintPreservingPhysical\n"
+                            "  IncomingWaveProfile:\n"
+                            "    Sinusoid:\n"
+                            "      Amplitude: 1.2\n"
+                            "      Wavenumber: 0.7\n"
+                            "      Phase: 0.4")),
+      Catch::Matchers::ContainsSubstring(
+          "Option 'IncomingWaveProfile' is not a valid option."));
 }
 
 template <size_t Dim>
@@ -294,4 +372,5 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.GeneralizedHarmonic.BCBjorhus.Cls",
   test_with_random_values<1>(used_for_size);
   test_with_random_values<2>(used_for_size);
   test_with_random_values<3>(used_for_size);
+  test_incoming_wave_profile_option_parsing_and_dim_guard();
 }

@@ -5,6 +5,7 @@
 
 #include <array>
 #include <cstddef>
+#include <limits>
 #include <memory>
 #include <optional>
 #include <pup.h>
@@ -18,12 +19,14 @@
 #include "Evolution/BoundaryConditions/Type.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/BoundaryConditions/BoundaryCondition.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
+#include "Options/Auto.hpp"
 #include "Options/Options.hpp"
 #include "Options/String.hpp"
 #include "PointwiseFunctions/AnalyticData/Tags.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/AnalyticSolution.hpp"
 #include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/ConstraintDampingTags.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
+#include "PointwiseFunctions/MathFunctions/MathFunction.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Serialization/CharmPupable.hpp"
 #include "Utilities/TMPL.hpp"
@@ -33,6 +36,9 @@ namespace domain::Tags {
 template <size_t Dim, typename Frame>
 struct Coordinates;
 }  // namespace domain::Tags
+namespace Tags {
+struct Time;
+}  // namespace Tags
 /// \endcond
 
 namespace gh::BoundaryConditions::detail {
@@ -82,6 +88,22 @@ namespace gh::BoundaryConditions {
  * all the above conditions are also imposed on characteristic modes with speeds
  * exactly zero.
  *
+ * An optional injected incoming-wave contribution can be specified through
+ * `IncomingWaveProfile`. The injected strain-rate tensor is
+ * \f[
+ *   \dot{h}_{ab} = \dot{f}(t)
+ *   \left(\hat{x}_a \hat{x}_b + \hat{y}_a \hat{y}_b - 2 \hat{z}_a
+ * \hat{z}_b\right),
+ * \f]
+ * where the configured profile is interpreted directly as \f$\dot{f}(t)\f$ and
+ * \f$\hat{x}_a\f$, \f$\hat{y}_a\f$ and \f$\hat{z}_a\f$ are the components of
+ * the coordinate basis vectors. This formula is taken from
+ * \cite Lindblom2005qh.  It should be considered an approximate perturbation
+ * rather than an exact gravitational wave which would have to be constructed at
+ * null-infinity. Note that the profile of the injected wave is specified at the
+ * outer boundary and its amplitude should be adjusted according to the usual
+ * 1/r scaling.
+ *
  * This class provides two choices of combinations of the above corrections:
  *  - `ConstraintPreserving` : this imposes the constraint-preserving and
  * gauge-controlling corrections;
@@ -95,9 +117,7 @@ namespace gh::BoundaryConditions {
  * `Bjorhus::constraint_preserving_gauge_physical_corrections_dt_v_minus()`
  * for the further details on implementation.
  *
- * \note These boundary conditions assume a spherical outer boundary. Also, we
- * do not yet have an option to inject incoming gravitational waves at the outer
- * boundary.
+ * \note These boundary conditions assume a spherical outer boundary.
  */
 template <size_t Dim>
 class ConstraintPreservingBjorhus final : public BoundaryCondition<Dim> {
@@ -110,7 +130,23 @@ class ConstraintPreservingBjorhus final : public BoundaryCondition<Dim> {
         "terms for VMinus."};
   };
 
-  using options = tmpl::list<TypeOptionTag>;
+  struct IncomingWaveProfileOptionTag {
+    using type =
+        Options::Auto<std::unique_ptr<::MathFunction<1, Frame::Inertial>>,
+                      Options::AutoLabel::None>;
+    static std::string name() { return "IncomingWaveProfile"; }
+    static constexpr Options::String help{
+        "Optional incoming-wave profile interpreted as the first time "
+        "derivative for the injected physical wave. See the "
+        "ConstraintPreservingBjorhus class documentation for the injected-wave "
+        "formula. Specify `None` to disable injection. This option is only "
+        "supported in 3D."};
+  };
+
+  using options = tmpl::flatten<tmpl::list<
+      TypeOptionTag,
+      tmpl::conditional_t<Dim == 3, tmpl::list<IncomingWaveProfileOptionTag>,
+                          tmpl::list<>>>>;
   static constexpr Options::String help{
       "ConstraintPreservingBjorhus boundary conditions setting the value of the"
       "time derivatives of the spacetime metric, Phi and Pi to expressions that"
@@ -118,16 +154,17 @@ class ConstraintPreservingBjorhus final : public BoundaryCondition<Dim> {
   static std::string name() { return "ConstraintPreservingBjorhus"; }
 
   explicit ConstraintPreservingBjorhus(
-      detail::ConstraintPreservingBjorhusType type);
+      detail::ConstraintPreservingBjorhusType type,
+      std::optional<std::unique_ptr<::MathFunction<1, Frame::Inertial>>>
+          incoming_wave_profile = std::nullopt);
 
   ConstraintPreservingBjorhus() = default;
   /// \cond
   ConstraintPreservingBjorhus(ConstraintPreservingBjorhus&&) = default;
   ConstraintPreservingBjorhus& operator=(ConstraintPreservingBjorhus&&) =
       default;
-  ConstraintPreservingBjorhus(const ConstraintPreservingBjorhus&) = default;
-  ConstraintPreservingBjorhus& operator=(const ConstraintPreservingBjorhus&) =
-      default;
+  ConstraintPreservingBjorhus(const ConstraintPreservingBjorhus&);
+  ConstraintPreservingBjorhus& operator=(const ConstraintPreservingBjorhus&);
   /// \endcond
   ~ConstraintPreservingBjorhus() override = default;
 
@@ -168,7 +205,7 @@ class ConstraintPreservingBjorhus final : public BoundaryCondition<Dim> {
                                Frame::Inertial>,
                  ::Tags::deriv<Tags::Phi<DataVector, Dim>, tmpl::size_t<Dim>,
                                Frame::Inertial>>;
-  using dg_gridless_tags = tmpl::list<>;
+  using dg_gridless_tags = tmpl::list<::Tags::Time>;
 
   std::optional<std::string> dg_time_derivative(
       gsl::not_null<tnsr::aa<DataVector, Dim, Frame::Inertial>*>
@@ -177,7 +214,6 @@ class ConstraintPreservingBjorhus final : public BoundaryCondition<Dim> {
           dt_pi_correction,
       gsl::not_null<tnsr::iaa<DataVector, Dim, Frame::Inertial>*>
           dt_phi_correction,
-
       const std::optional<tnsr::I<DataVector, Dim, Frame::Inertial>>&
           face_mesh_velocity,
       const tnsr::i<DataVector, Dim, Frame::Inertial>& normal_covector,
@@ -207,7 +243,8 @@ class ConstraintPreservingBjorhus final : public BoundaryCondition<Dim> {
       // c.f. dg_interior_deriv_vars_tags
       const tnsr::iaa<DataVector, Dim, Frame::Inertial>& d_spacetime_metric,
       const tnsr::iaa<DataVector, Dim, Frame::Inertial>& d_pi,
-      const tnsr::ijaa<DataVector, Dim, Frame::Inertial>& d_phi) const;
+      const tnsr::ijaa<DataVector, Dim, Frame::Inertial>& d_phi,
+      double time = std::numeric_limits<double>::signaling_NaN()) const;
 
  private:
   void compute_intermediate_vars(
@@ -274,6 +311,7 @@ class ConstraintPreservingBjorhus final : public BoundaryCondition<Dim> {
 
   detail::ConstraintPreservingBjorhusType type_{
       detail::ConstraintPreservingBjorhusType::ConstraintPreservingPhysical};
+  std::unique_ptr<::MathFunction<1, Frame::Inertial>> incoming_wave_profile_{};
 };
 }  // namespace gh::BoundaryConditions
 

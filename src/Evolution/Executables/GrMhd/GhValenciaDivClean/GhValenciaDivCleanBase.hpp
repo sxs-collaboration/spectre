@@ -226,6 +226,8 @@
 #include "PointwiseFunctions/Hydro/Tags.hpp"
 #include "PointwiseFunctions/Hydro/TransportVelocity.hpp"
 #include "PointwiseFunctions/InitialDataUtilities/Tags/InitialData.hpp"
+#include "PointwiseFunctions/MathFunctions/Factory.hpp"
+#include "PointwiseFunctions/MathFunctions/MathFunction.hpp"
 #include "Time/Actions/SelfStartActions.hpp"
 #include "Time/AdvanceTime.hpp"
 #include "Time/ChangeSlabSize/Action.hpp"
@@ -662,6 +664,8 @@ struct GhValenciaDivCleanTemplateBase<
             grmhd::AnalyticData::InitialMagneticFields::
                 initial_magnetic_fields>,
         tmpl::pair<gh::gauges::GaugeCondition, gh::gauges::all_gauges>,
+        tmpl::pair<MathFunction<1, Frame::Inertial>,
+                   MathFunctions::all_math_functions<1, Frame::Inertial>>,
         tmpl::pair<evolution::initial_data::InitialData, initial_data_list>,
         // Restrict to monotonic time steppers in LTS to avoid control
         // systems deadlocking.

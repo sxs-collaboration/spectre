@@ -123,12 +123,13 @@
 #include "PointwiseFunctions/GeneralRelativity/WeylElectric.hpp"
 #include "PointwiseFunctions/InitialDataUtilities/InitialData.hpp"
 #include "PointwiseFunctions/InitialDataUtilities/Tags/InitialData.hpp"
+#include "PointwiseFunctions/MathFunctions/MathFunction.hpp"
 #include "PointwiseFunctions/ScalarTensor/ConstraintDampingTags.hpp"
 #include "PointwiseFunctions/ScalarTensor/ConstraintGammas.hpp"
 #include "PointwiseFunctions/ScalarTensor/ScalarCharge.hpp"
 #include "PointwiseFunctions/ScalarTensor/ScalarGaussBonnet/Tags.hpp"
-#include "PointwiseFunctions/ScalarTensor/SourceTags.hpp"
 #include "PointwiseFunctions/ScalarTensor/ScalarSource.hpp"
+#include "PointwiseFunctions/ScalarTensor/SourceTags.hpp"
 #include "PointwiseFunctions/ScalarTensor/StressEnergy.hpp"
 #include "Time/Actions/SelfStartActions.hpp"
 #include "Time/ChangeTimeStepperOrder.hpp"
@@ -367,6 +368,7 @@ struct FactoryCreation : tt::ConformsTo<Options::protocols::FactoryCreation> {
           ScalarTensor::BoundaryConditions::BoundaryCondition,
           ScalarTensor::BoundaryConditions::standard_boundary_conditions>,
       tmpl::pair<gh::gauges::GaugeCondition, gh::gauges::all_gauges>,
+      tmpl::pair<MathFunction<1, Frame::Inertial>, tmpl::list<>>,
       tmpl::pair<
           evolution::initial_data::InitialData,
           tmpl::push_back<initial_data_list, ScalarTensor::NumericInitialData>>,

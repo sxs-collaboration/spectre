@@ -83,6 +83,7 @@ DomainCreator:
     OuterBoundaryCondition:
       ConstraintPreservingBjorhus:
         Type: ConstraintPreservingPhysical
+        IncomingWaveProfile: None
 
 Evolution:
   InitialTime: *InitialTime

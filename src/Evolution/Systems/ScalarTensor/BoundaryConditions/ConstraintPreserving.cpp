@@ -6,11 +6,14 @@
 #include <cstddef>
 #include <memory>
 #include <pup.h>
+#include <utility>
 
 namespace ScalarTensor::BoundaryConditions {
 ConstraintPreserving::ConstraintPreserving(
-    gh::BoundaryConditions::detail::ConstraintPreservingBjorhusType type)
-    : constraint_preserving_(type) {}
+    gh::BoundaryConditions::detail::ConstraintPreservingBjorhusType type,
+    std::optional<std::unique_ptr<::MathFunction<1, Frame::Inertial>>>
+        incoming_wave_profile)
+    : constraint_preserving_(type, std::move(incoming_wave_profile)) {}
 
 // LCOV_EXCL_START
 ConstraintPreserving::ConstraintPreserving(CkMigrateMessage* const msg)

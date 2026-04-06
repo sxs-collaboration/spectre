@@ -34,6 +34,7 @@
 #include "PointwiseFunctions/GeneralRelativity/SpacetimeNormalOneForm.hpp"
 #include "PointwiseFunctions/GeneralRelativity/SpacetimeNormalVector.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
+#include "PointwiseFunctions/MathFunctions/MathFunction.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 #include "Utilities/Serialization/Serialize.hpp"
@@ -45,9 +46,11 @@ namespace {
 struct Metavariables {
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
-    using factory_classes = tmpl::map<tmpl::pair<
-        ScalarTensor::BoundaryConditions::BoundaryCondition,
-        tmpl::list<ScalarTensor::BoundaryConditions::ConstraintPreserving>>>;
+    using factory_classes = tmpl::map<
+        tmpl::pair<MathFunction<1, Frame::Inertial>, tmpl::list<>>,
+        tmpl::pair<ScalarTensor::BoundaryConditions::BoundaryCondition,
+                   tmpl::list<ScalarTensor::BoundaryConditions::
+                                  ConstraintPreserving>>>;
   };
 };
 
@@ -382,9 +385,8 @@ void test_dg(const gsl::not_null<std::mt19937*> generator,
 
 }  // namespace
 
-SPECTRE_TEST_CASE(
-  "Unit.ScalarTensor.BoundaryConditions.ConstraintPreserving",
-  "[Unit][Evolution]") {
+SPECTRE_TEST_CASE("Unit.ScalarTensor.BoundaryConditions.ConstraintPreserving",
+                  "[Unit][Evolution]") {
   MAKE_GENERATOR(gen);
   register_factory_classes_with_charm<Metavariables>();
 
@@ -393,7 +395,8 @@ SPECTRE_TEST_CASE(
           std::unique_ptr<ScalarTensor::BoundaryConditions::BoundaryCondition>,
           Metavariables>(
           "ConstraintPreserving:\n"
-          "  Type: ConstraintPreservingPhysical\n")
+          "  Type: ConstraintPreservingPhysical\n"
+          "  IncomingWaveProfile: None\n")
           ->get_clone();
 
   const auto serialized_and_deserialized_condition = serialize_and_deserialize(

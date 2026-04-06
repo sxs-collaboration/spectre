@@ -112,6 +112,7 @@ DomainCreator:
       BoundaryCondition:
         ConstraintPreservingBjorhus:
           Type: ConstraintPreservingPhysical
+          IncomingWaveProfile: None
     UseEquiangularMap: True
     # Found that a CubeScale of 1.2 worked well for equal mass non-spinning
     # inspirals and allowed for more common horizon finds.

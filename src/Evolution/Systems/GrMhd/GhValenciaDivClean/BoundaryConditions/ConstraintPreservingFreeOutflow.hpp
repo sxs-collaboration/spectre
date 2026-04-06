@@ -48,7 +48,9 @@ class ConstraintPreservingFreeOutflow final : public BoundaryCondition {
 
   ConstraintPreservingFreeOutflow() = default;
   explicit ConstraintPreservingFreeOutflow(
-      gh::BoundaryConditions::detail::ConstraintPreservingBjorhusType type);
+      gh::BoundaryConditions::detail::ConstraintPreservingBjorhusType type,
+      std::optional<std::unique_ptr<::MathFunction<1, Frame::Inertial>>>
+          incoming_wave_profile = std::nullopt);
 
   ConstraintPreservingFreeOutflow(ConstraintPreservingFreeOutflow&&) = default;
   ConstraintPreservingFreeOutflow& operator=(

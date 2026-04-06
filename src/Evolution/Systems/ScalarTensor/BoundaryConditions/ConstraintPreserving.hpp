@@ -25,6 +25,7 @@
 #include "Evolution/Systems/ScalarTensor/Tags.hpp"
 #include "Options/String.hpp"
 #include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/ConstraintDampingTags.hpp"
+#include "PointwiseFunctions/MathFunctions/MathFunction.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Serialization/CharmPupable.hpp"
 #include "Utilities/TMPL.hpp"
@@ -52,7 +53,9 @@ class ConstraintPreserving final : public BoundaryCondition {
 
   ConstraintPreserving() = default;
   explicit ConstraintPreserving(
-      gh::BoundaryConditions::detail::ConstraintPreservingBjorhusType type);
+      gh::BoundaryConditions::detail::ConstraintPreservingBjorhusType type,
+      std::optional<std::unique_ptr<::MathFunction<1, Frame::Inertial>>>
+          incoming_wave_profile = std::nullopt);
 
   ConstraintPreserving(ConstraintPreserving&&) = default;
   ConstraintPreserving& operator=(ConstraintPreserving&&) = default;
