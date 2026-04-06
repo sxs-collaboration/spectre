@@ -18,7 +18,6 @@ set(LIBS_TO_LINK
   Hydro
   Informer
   Interpolation
-  Limiters
   LinearOperators
   MathFunctions
   RelativisticEulerSolutions

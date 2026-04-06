@@ -25,7 +25,6 @@ target_link_libraries(
   GeneralRelativitySolutions
   IO
   Informer
-  Limiters
   LinearOperators
   Options
   Parallel

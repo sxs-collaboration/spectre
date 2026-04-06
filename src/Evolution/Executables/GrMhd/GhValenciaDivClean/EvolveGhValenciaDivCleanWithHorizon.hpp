@@ -5,7 +5,6 @@
 
 #include <vector>
 
-#include "Evolution/DiscontinuousGalerkin/Limiters/Tags.hpp"
 #include "Evolution/Executables/GrMhd/GhValenciaDivClean/GhValenciaDivCleanBase.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/TimeDerivativeTerms.hpp"
@@ -56,7 +55,6 @@ struct EvolutionMetavars
   using analytic_solution_fields = typename defaults::analytic_solution_fields;
   using ordered_list_of_primitive_recovery_schemes =
       typename defaults::ordered_list_of_primitive_recovery_schemes;
-  using limiter = typename defaults::limiter;
   using initialize_initial_data_dependent_quantities_actions =
       typename defaults::initialize_initial_data_dependent_quantities_actions;
 

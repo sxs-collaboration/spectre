@@ -13,12 +13,10 @@ set(LIBS_TO_LINK
   FiniteDifference
   Hydro
   Informer
-  Limiters
   LinearOperators
   MathFunctions
   NewtonianEuler
   NewtonianEulerAnalyticData
-  NewtonianEulerLimiters
   NewtonianEulerSolutions
   NewtonianEulerSources
   Observer
