@@ -65,6 +65,7 @@ spectre_target_headers(
   Namespace.hpp
   NodalToModalMatrix.hpp
   Parity.hpp
+  ParityFromSymmetry.hpp
   PrecomputedSpectralQuantity.hpp
   Projection.hpp
   Quadrature.hpp

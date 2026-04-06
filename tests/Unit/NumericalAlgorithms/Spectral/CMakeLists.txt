@@ -34,6 +34,7 @@ set(LIBRARY_SOURCES
   Test_ModalToNodalMatrix.cpp
   Test_NodalToModalMatrix.cpp
   Test_Parity.cpp
+  Test_ParityFromSymmetry.cpp
   Test_Projection.cpp
   Test_Quadrature.cpp
   Test_QuadratureWeights.cpp
