@@ -82,7 +82,8 @@ metric, derivative of shift, etc. are implemented as functions in
 
 ## Test Requirements
 - Files: `tests/Unit/<mirrors_src>/Test_<SourceFile>.cpp`
-- First include: `"Framework/TestingFramework.hpp"` (blank line after)
+- Include order: `"Framework/TestingFramework.hpp"`, blank line,
+  system/external includes, blank line, spectre includes.
 - All helper classes/functions in anonymous `namespace {}`
 - Test macro: `SPECTRE_TEST_CASE("Unit.Category.Name", "[Unit][Category]")`
 - Floating-point: `CHECK_ITERABLE_APPROX` (not `Approx`)
@@ -94,3 +95,9 @@ metric, derivative of shift, etc. are implemented as functions in
 - Use meromorphic tests: like `sin^2(x)+cos^2(x)=1` or that a spacetime vector
   in general relativity that should be null is actually null. I.e, test
   identities.
+- Name tests after the component and behavior (e.g.,
+  `Test_ApparentHorizonFinder`).
+- Prefer a single `SPECTRE_TEST_CASE` that calls several anonymous-namespace
+  helper functions over many small `SPECTRE_TEST_CASE`s.
+- Increase test timeouts sparingly. If necessary, use `// [[TimeOut, SECONDS]]`
+  on the line before `SPECTRE_TEST_CASE`. Default timeout is 2 seconds.
