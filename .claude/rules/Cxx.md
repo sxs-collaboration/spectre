@@ -1,3 +1,8 @@
+---
+triggers:
+  - glob: "**/*.{hpp,cpp,tpp}"
+---
+
 # SpECTRE Code Rules Reference
 
 ## Banned Patterns

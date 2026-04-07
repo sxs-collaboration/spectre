@@ -4,8 +4,8 @@
 **Current branch**: !`git branch --show-current`
 
 Perform a thorough code review of SpECTRE changes. Follow every step below
-precisely. Read `references/spectre-rules.md` for the full SpECTRE code rules
-reference -- provide it to review agents.
+precisely. The full SpECTRE code rules reference (provide to review agents):
+!`tail -n +5 .claude/rules/Cxx.md`
 
 ## Step 1: Parse Arguments & Acquire Diff
 
@@ -93,7 +93,7 @@ rebaseme, testing, rebase.
 ## Step 4: Code Review (2 Parallel Agents)
 
 Launch 2 parallel agents. Provide each with the full diff and the
-contents of `references/spectre-rules.md`.
+SpECTRE code rules reference shown above.
 
 ### Agent A: Style, Patterns & Idioms
 Instructions for the agent:
