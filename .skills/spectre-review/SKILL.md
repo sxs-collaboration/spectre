@@ -152,6 +152,7 @@ borderline issues rather than missing real ones.
 
 Spawn an agent using the cheapest available model (Claude Code: `haiku`;
 Codex: `gpt-5.4-mini`). Provide it with:
+- The SpECTRE code rules reference (from Step 1)
 - The list of pruned findings (with scores)
 - A summary of what the diff does
 
