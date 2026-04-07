@@ -803,10 +803,7 @@ struct GhValenciaDivCleanTemplateBase<
                   tmpl::front<ordered_list_of_primitive_recovery_schemes>>>,
           tmpl::list<>>,
       Actions::MutateApply<CleanHistory<system>>,
-      tmpl::conditional_t<
-          local_time_stepping,
-          Actions::MutateApply<evolution::dg::CleanMortarHistory<volume_dim>>,
-          tmpl::list<>>,
+      Actions::MutateApply<evolution::dg::CleanMortarHistory<volume_dim>>,
       tmpl::conditional_t<
           use_dg_subcell,
           tmpl::list<parameterized_deleptonization,
@@ -857,10 +854,7 @@ struct GhValenciaDivCleanTemplateBase<
           control_system::Actions::LimitTimeStep<control_systems>>,
       Actions::MutateApply<UpdateU<system, local_time_stepping>>,
       Actions::MutateApply<CleanHistory<system>>,
-      tmpl::conditional_t<
-          local_time_stepping,
-          Actions::MutateApply<evolution::dg::CleanMortarHistory<volume_dim>>,
-          tmpl::list<>>,
+      Actions::MutateApply<evolution::dg::CleanMortarHistory<volume_dim>>,
       Actions::MutateApply<
           grmhd::GhValenciaDivClean::subcell::FixConservativesAndComputePrims<
               ordered_list_of_primitive_recovery_schemes, system>>,
