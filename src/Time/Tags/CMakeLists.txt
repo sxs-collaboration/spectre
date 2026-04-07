@@ -5,6 +5,7 @@ spectre_target_sources(
   ${LIBRARY}
   PRIVATE
   StepperErrorTolerancesCompute.cpp
+  TimeStepper.cpp
   )
 
 spectre_target_headers(
