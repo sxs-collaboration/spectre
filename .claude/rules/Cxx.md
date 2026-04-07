@@ -98,7 +98,7 @@ metric, derivative of shift, etc. are implemented as functions in
 - Error tests: `CHECK_THROWS_WITH` inside `#ifdef SPECTRE_DEBUG`
 - Pointwise functions: test with analytic solution AND random-value comparison
   via `pypp::check_with_random_values()`
-- Use meromorphic tests: like `sin^2(x)+cos^2(x)=1` or that a spacetime vector
+- Use metamorphic tests: like `sin^2(x)+cos^2(x)=1` or that a spacetime vector
   in general relativity that should be null is actually null. I.e, test
   identities.
 - Name tests after the component and behavior (e.g.,
