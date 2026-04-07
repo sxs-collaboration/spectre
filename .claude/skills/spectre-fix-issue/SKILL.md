@@ -3,8 +3,8 @@ name: spectre-fix-issue
 description: >
   Fetch a GitHub issue by number. Trigger when the user references a GitHub
   issue (e.g. "fix issue #1727", "work on #1727").
-allowed-tools: ["Bash"]
-argument-hint: "ISSUE_NUMBER [--repo OWNER/REPO]"
+allowed-tools: ["Bash", "Read"]
+argument-hint: "ISSUE_NUMBER [--repo OWNER/REPO] [--full]"
 ---
 
 Read and follow instructions in file

@@ -3,7 +3,7 @@ name: spectre-fix-pr
 description: >
   Fetch PR review comments. Trigger when users reference a PR
   (e.g. "address comments on PR #1234", "work on PR #1234 reviews").
-allowed-tools: ["Bash"]
+allowed-tools: ["Bash", "Read"]
 argument-hint: "PR_NUMBER [--repo OWNER/REPO]"
 ---
 
