@@ -47,6 +47,7 @@ metric, derivative of shift, etc. are implemented as functions in
 - **Naming**: CamelCase for classes, template params, files, dirs. snake_case
   for functions, variables. SCREAMING_SNAKE_CASE for macros. Trailing `_` on
   private members. Unused params: `/*name*/`.
+- **Names**: Use full, descriptive names (e.g., `block_id` not `blk_id`).
 - **Almost always `auto`** except expression templates (e.g. `DataVector`)
 - **Braces on all loops and if/else** (no braceless one-liners)
 - **Return by value** preferred. Mutable out-params: `gsl::not_null<T*>` (listed
