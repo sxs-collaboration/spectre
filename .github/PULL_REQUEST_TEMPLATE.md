@@ -24,6 +24,11 @@ lines below.
   [code review guide](https://spectre-code.org/code_review_guide.html).
 - [ ] The PR lists upgrade instructions and is labeled `bugfix` or
   `new feature` if appropriate.
+- [ ] If a coding agent is used, have one of
+      "Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>",
+      "Co-Authored-by: Codex <noreply@openai.com>", or
+      "Co-Authored-By: GitHub Copilot CLI <noreply@microsoft.com>"
+      as the last line of the commit, depending on the agent.
 
 ### Further comments
 
