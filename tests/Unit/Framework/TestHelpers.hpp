@@ -104,11 +104,8 @@ void test_move_semantics(T&& a, const T& comparison, Args&&... args) {
 
 /// Test for copy and move semantics assuming operator== is
 /// implemented correctly.
-///
-/// If T is not default constructible, pass additional arguments that
-/// are used to construct a T.
-template <typename T, typename... Args>
-void test_copy_semantics(const T& a, Args&&... args) {
+template <typename T>
+void test_copy_semantics(const T& a) {
   INFO("Copy semantics");
   static_assert(tt::has_equivalence_v<T>,
                 "Class has no operator== implemented");
@@ -140,7 +137,7 @@ void test_copy_semantics(const T& a, Args&&... args) {
   CHECK(b == a);
   CHECK_FALSE(b != a);
 
-  test_move_semantics(std::move(b), a, std::forward<Args>(args)...);
+  test_move_semantics(std::move(b), a);
 }
 
 // Test for iterators
