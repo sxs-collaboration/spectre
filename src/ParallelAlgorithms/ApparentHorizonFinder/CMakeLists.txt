@@ -15,7 +15,6 @@ spectre_target_sources(
   Destination.cpp
   FastFlow.cpp
   InterpolateVolumeVars.cpp
-  InterpolationTarget.cpp
   OptionTags.cpp
   Storage.cpp
   )
@@ -28,10 +27,6 @@ spectre_target_headers(
   CleanUp.hpp
   Component.hpp
   ComputeCoords.hpp
-  ComputeExcisionBoundaryVolumeQuantities.hpp
-  ComputeExcisionBoundaryVolumeQuantities.tpp
-  ComputeHorizonVolumeQuantities.hpp
-  ComputeHorizonVolumeQuantities.tpp
   ComputeVarsToInterpolateToTarget.hpp
   CurrentTime.hpp
   Destination.hpp
@@ -40,7 +35,6 @@ spectre_target_headers(
   HorizonAliases.hpp
   Initialization.hpp
   InterpolateVolumeVars.hpp
-  InterpolationTarget.hpp
   OptionTags.hpp
   PrintDeadlockAnalysis.hpp
   Storage.hpp
@@ -68,7 +62,6 @@ target_link_libraries(
   Initialization
   Observer
   Parallel
-  ParallelInterpolation
   )
 
 add_subdirectory(Callbacks)

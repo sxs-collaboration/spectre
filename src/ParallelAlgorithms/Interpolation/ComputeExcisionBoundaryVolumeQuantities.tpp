@@ -1,7 +1,7 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "ParallelAlgorithms/ApparentHorizonFinder/ComputeExcisionBoundaryVolumeQuantities.hpp"
+#include "ParallelAlgorithms/Interpolation/ComputeExcisionBoundaryVolumeQuantities.hpp"
 
 #pragma once
 
@@ -37,7 +37,7 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 
-namespace ah {
+namespace intrp {
 
 /// Single frame case
 template <typename SrcTagList, typename DestTagList>
@@ -318,4 +318,4 @@ void ComputeExcisionBoundaryVolumeQuantities::apply(
                               inv_spatial_metric);
 }
 
-}  // namespace ah
+}  // namespace intrp

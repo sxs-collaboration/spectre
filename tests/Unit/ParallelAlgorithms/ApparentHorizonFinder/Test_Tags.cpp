@@ -65,11 +65,6 @@ SPECTRE_TEST_CASE("Unit.ApparentHorizonFinder.Tags",
   TestHelpers::db::test_compute_tag<ah::Tags::ObservationTimeCompute<0>>(
       "AhObservationTime0");
   test_observation_time();
-  TestHelpers::db::test_simple_tag<
-      ah::Tags::PreviousIterationStrahlkorper<::Frame::Distorted>>(
-      "PreviousIterationStrahlkorper");
-  TestHelpers::db::test_simple_tag<ah::Tags::FailedInterpolationIterations>(
-      "FailedInterpolationIterations");
   TestHelpers::db::test_simple_tag<ah::Tags::ObserveCenters>("ObserveCenters");
   TestHelpers::db::test_simple_tag<ah::Tags::LMax>("LMax");
 }

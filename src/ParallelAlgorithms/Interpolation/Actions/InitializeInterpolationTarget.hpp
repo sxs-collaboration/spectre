@@ -52,9 +52,7 @@ CREATE_IS_CALLABLE_V(initialize)
 /// - Adds:
 ///   - `Tags::IndicesOfFilledInterpPoints<TemporalId>`
 ///   - `Tags::IndicesOfInvalidInterpPoints<TemporalId>`
-///   - `Tags::PendingTemporalIds<TemporalId>`
-///   - `Tags::TemporalIds<TemporalId>` if target is non-sequential
-///     `Tags::CurrentTemporalId<TemporalId>` if target is sequential
+///   - `Tags::TemporalIds<TemporalId>`
 ///   - `Tags::CompletedTemporalIds<TemporalId>`
 ///   - `Tags::InterpolatedVars<InterpolationTargetTag,TemporalId>`
 ///   - `::Tags::Variables<typename
@@ -71,11 +69,7 @@ struct InitializeInterpolationTarget {
   using return_tag_list_initial = tmpl::list<
       Tags::IndicesOfFilledInterpPoints<TemporalId>,
       Tags::IndicesOfInvalidInterpPoints<TemporalId>,
-      Tags::PendingTemporalIds<TemporalId>, Tags::Dependencies<TemporalId>,
-      tmpl::conditional_t<is_sequential::value,
-                          Tags::CurrentTemporalId<TemporalId>,
-                          Tags::TemporalIds<TemporalId>>,
-      Tags::CompletedTemporalIds<TemporalId>,
+      Tags::TemporalIds<TemporalId>, Tags::CompletedTemporalIds<TemporalId>,
       Tags::InterpolatedVars<InterpolationTargetTag, TemporalId>,
       ::Tags::Variables<
           typename InterpolationTargetTag::vars_to_interpolate_to_target>>;

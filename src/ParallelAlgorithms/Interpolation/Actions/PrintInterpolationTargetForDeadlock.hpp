@@ -20,15 +20,11 @@ namespace deadlock {
  * \brief Simple action to print deadlock info on an interpolation target.
  *
  * \details This will print the following information for all temporal ids
- * stored in `intrp::Tags::CurrentTemporalId` (sequential targets) or
- * `intrp::Tags::TemporalIds` (non-sequential targets).
+ * stored in `intrp::Tags::TemporalIds`.
  *
  * - `intrp::Tags::IndicesOfFilledInterpPoints`
  * - `intrp::Tags::IndicesOfInvalidInterpPoints1
  * - Size of `intrp::Tags::InterpolatedVars`
- *
- * And also any `intrp::Tags::PendingTemporalIds` for sequential targets will be
- * printed.
  */
 struct PrintInterpolationTarget {
   template <typename ParallelComponent, typename DbTags, typename Metavariables,
@@ -66,51 +62,30 @@ struct PrintInterpolationTarget {
          << ", invalid points received " << invalid_size << ". ";
     };
 
-    if constexpr (TargetTag::compute_target_points::is_sequential::value) {
-      ss << pretty_type::name<TargetTag>() << ", ";
+    const auto& temporal_ids =
+        db::get<intrp::Tags::TemporalIds<TemporalId>>(box);
 
-      const auto& current_temporal_id =
-          db::get<intrp::Tags::CurrentTemporalId<TemporalId>>(box);
-      const auto& pending_temporal_ids =
-          db::get<intrp::Tags::PendingTemporalIds<TemporalId>>(box);
-
-      if (current_temporal_id.has_value()) {
-        ss << "current temporal id " << current_temporal_id.value() << ", ";
-
-        stream_points(current_temporal_id.value());
-      } else {
-        ss << "no current temporal id. ";
-      }
-
-      ss << "Pending ids " << pending_temporal_ids;
-
-      Parallel::fprintf(file_name, "%s\n", ss.str());
-    } else {
-      const auto& temporal_ids =
-          db::get<intrp::Tags::TemporalIds<TemporalId>>(box);
-
-      if (temporal_ids.empty()) {
-        ss << pretty_type::name<TargetTag>() << ", No temporal ids.";
-        Parallel::printf("%s\n", ss.str());
-        return;
-      }
-
-      ss << "========== BEGIN TARGET " << pretty_type::name<TargetTag>()
-         << " ==========\n";
-
-      for (const auto& temporal_id : temporal_ids) {
-        ss << "Temporal id " << temporal_id << ", ";
-
-        stream_points(temporal_id);
-
-        ss << "\n";
-      }
-
-      ss << "========== END TARGET " << pretty_type::name<TargetTag>()
-         << " ============\n";
-
-      Parallel::fprintf(file_name, "%s\n", ss.str());
+    if (temporal_ids.empty()) {
+      ss << pretty_type::name<TargetTag>() << ", No temporal ids.";
+      Parallel::printf("%s\n", ss.str());
+      return;
     }
+
+    ss << "========== BEGIN TARGET " << pretty_type::name<TargetTag>()
+       << " ==========\n";
+
+    for (const auto& temporal_id : temporal_ids) {
+      ss << "Temporal id " << temporal_id << ", ";
+
+      stream_points(temporal_id);
+
+      ss << "\n";
+    }
+
+    ss << "========== END TARGET " << pretty_type::name<TargetTag>()
+       << " ============\n";
+
+    Parallel::fprintf(file_name, "%s\n", ss.str());
   }
 };
 }  // namespace deadlock

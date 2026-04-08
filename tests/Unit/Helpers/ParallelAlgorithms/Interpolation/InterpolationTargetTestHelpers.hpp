@@ -20,12 +20,7 @@
 #include "IO/Logging/Verbosity.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/Phase.hpp"
-#include "ParallelAlgorithms/Interpolation/Actions/CleanUpInterpolator.hpp"
 #include "ParallelAlgorithms/Interpolation/Actions/InitializeInterpolationTarget.hpp"
-#include "ParallelAlgorithms/Interpolation/Actions/InitializeInterpolator.hpp"
-#include "ParallelAlgorithms/Interpolation/Actions/InterpolationTargetReceiveVars.hpp"
-#include "ParallelAlgorithms/Interpolation/Actions/SendPointsToInterpolator.hpp"
-#include "ParallelAlgorithms/Interpolation/InterpolatedVars.hpp"
 #include "ParallelAlgorithms/Interpolation/InterpolationTarget.hpp"
 #include "ParallelAlgorithms/Interpolation/InterpolationTargetDetail.hpp"
 #include "ParallelAlgorithms/Interpolation/Protocols/InterpolationTargetTag.hpp"
@@ -40,21 +35,6 @@
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
-
-/// \cond
-namespace intrp {
-namespace Actions {
-template <typename InterpolationTargetTag>
-struct ReceivePoints;
-}  // namespace Actions
-namespace Tags {
-template <typename TemporalId>
-struct InterpolatedVarsHolders;
-template <size_t Dim>
-struct NumberOfElements;
-}  // namespace Tags
-}  // namespace intrp
-/// \endcond
 
 namespace InterpTargetTestHelpers {
 enum class ValidPoints { All, None, Some };
@@ -79,63 +59,6 @@ struct mock_interpolation_target {
           tmpl::list<intrp::Actions::InitializeInterpolationTarget<
               Metavariables, InterpolationTargetTag>>>,
       Parallel::PhaseActions<Parallel::Phase::Testing, tmpl::list<>>>;
-};
-
-template <typename InterpolationTargetTag>
-struct MockReceivePoints {
-  template <typename ParallelComponent, typename DbTags, typename Metavariables,
-            typename ArrayIndex, size_t VolumeDim,
-            Requires<tmpl::list_contains_v<
-                DbTags, ::intrp::Tags::NumberOfElements<VolumeDim>>> = nullptr>
-  static void apply(
-      db::DataBox<DbTags>& box, Parallel::GlobalCache<Metavariables>& /*cache*/,
-      const ArrayIndex& /*array_index*/,
-      const typename InterpolationTargetTag::temporal_id::type& temporal_id,
-      std::vector<BlockLogicalCoords<VolumeDim>>&& block_coord_holders,
-      const size_t iteration = 0_st,
-      const size_t /*reinterpolation_iteration*/ = 0_st) {
-    db::mutate<intrp::Tags::InterpolatedVarsHolders<Metavariables>>(
-        [&temporal_id, &block_coord_holders, &iteration](
-            const gsl::not_null<typename intrp::Tags::InterpolatedVarsHolders<
-                Metavariables>::type*>
-                vars_holders) {
-          auto& vars_infos =
-              get<intrp::Vars::HolderTag<InterpolationTargetTag,
-                                         Metavariables>>(*vars_holders)
-                  .infos;
-
-          // Add the target interpolation points at this timestep.
-          vars_infos.emplace(std::make_pair(
-              temporal_id,
-              intrp::Vars::Info<VolumeDim, typename InterpolationTargetTag::
-                                               vars_to_interpolate_to_target>{
-                  std::move(block_coord_holders), iteration}));
-        },
-        make_not_null(&box));
-  }
-};
-
-template <typename Metavariables>
-struct mock_interpolator {
-  using metavariables = Metavariables;
-  using chare_type = ActionTesting::MockArrayChare;
-  using array_index = size_t;
-  using phase_dependent_action_list = tmpl::list<
-      Parallel::PhaseActions<
-          Parallel::Phase::Initialization,
-          tmpl::list<intrp::Actions::InitializeInterpolator<
-              metavariables::volume_dim,
-              intrp::Tags::VolumeVarsInfo<
-                  Metavariables,
-                  typename Metavariables::InterpolationTargetA::temporal_id>,
-              intrp::Tags::InterpolatedVarsHolders<Metavariables>>>>,
-      Parallel::PhaseActions<Parallel::Phase::Testing, tmpl::list<>>>;
-
-  using component_being_mocked = intrp::Interpolator<Metavariables>;
-  using replace_these_simple_actions = tmpl::list<intrp::Actions::ReceivePoints<
-      typename Metavariables::InterpolationTargetA>>;
-  using with_these_simple_actions = tmpl::list<
-      MockReceivePoints<typename Metavariables::InterpolationTargetA>>;
 };
 
 template <typename InterpolationTargetTag, size_t Dim>

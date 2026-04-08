@@ -24,8 +24,6 @@
 #include "ParallelAlgorithms/ApparentHorizonFinder/FastFlow.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/Protocols/Callback.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/Tags.hpp"
-#include "ParallelAlgorithms/Interpolation/InterpolationTargetDetail.hpp"
-#include "ParallelAlgorithms/Interpolation/Protocols/PostInterpolationCallback.hpp"
 #include "Utilities/Functional.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/PrettyType.hpp"

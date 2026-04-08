@@ -22,8 +22,8 @@
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.tpp"
 #include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
-#include "ParallelAlgorithms/ApparentHorizonFinder/ComputeExcisionBoundaryVolumeQuantities.hpp"
-#include "ParallelAlgorithms/ApparentHorizonFinder/ComputeExcisionBoundaryVolumeQuantities.tpp"
+#include "ParallelAlgorithms/Interpolation/ComputeExcisionBoundaryVolumeQuantities.hpp"
+#include "ParallelAlgorithms/Interpolation/ComputeExcisionBoundaryVolumeQuantities.tpp"
 #include "ParallelAlgorithms/Interpolation/Protocols/ComputeVarsToInterpolate.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
 #include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/Phi.hpp"
@@ -367,14 +367,14 @@ void test_compute_excision_boundary_volume_quantities() {
   // Compute dest_vars
   Variables<DestTags> dest_vars(mesh.number_of_grid_points());
   if constexpr (is_time_dependent) {
-    ah::ComputeExcisionBoundaryVolumeQuantities::apply(
+    intrp::ComputeExcisionBoundaryVolumeQuantities::apply(
         make_not_null(&dest_vars), src_vars, mesh, jacobian_target_to_inertial,
         inv_jacobian_target_to_inertial, jacobian_logical_to_target,
         inv_jacobian_logical_to_target, inv_jacobian_grid_to_target,
         frame_velocity_target_to_inertial, frame_velocity_grid_to_target);
   } else {
     // time-independent.
-    ah::ComputeExcisionBoundaryVolumeQuantities::apply(
+    intrp::ComputeExcisionBoundaryVolumeQuantities::apply(
         make_not_null(&dest_vars), src_vars, mesh);
   }
 
@@ -500,10 +500,11 @@ void test_compute_excision_boundary_volume_quantities() {
 
 // [[Timeout, 20]]
 SPECTRE_TEST_CASE(
-    "Unit.ApparentHorizonFinder.ComputeExcisionBoundaryVolumeQuantities",
-    "[ApparentHorizonFinder][Unit]") {
+    "Unit.NumericalAlgorithms.Interpolator."
+    "ComputeExcisionBoundaryVolumeQuantities",
+    "[Unit]") {
   static_assert(
-      tt::assert_conforms_to_v<ah::ComputeExcisionBoundaryVolumeQuantities,
+      tt::assert_conforms_to_v<intrp::ComputeExcisionBoundaryVolumeQuantities,
                                intrp::protocols::ComputeVarsToInterpolate>);
   // time-independent.
   // All possible tags.
