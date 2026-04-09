@@ -253,8 +253,10 @@ void test(const std::unique_ptr<ObserveEvent> observe,
                {"TimeName", observation_time});
 
   // Process the data
-  runner.template invoke_queued_simple_action<observer_component>(0);
-  CHECK(runner.template is_simple_action_queue_empty<observer_component>(0));
+  ActionTesting::invoke_queued_simple_action<observer_component>(
+      make_not_null(&runner), 0);
+  CHECK(ActionTesting::is_simple_action_queue_empty<observer_component>(
+      runner, 0));
 
   const auto& results = MockContributeReductionData::results;
   CHECK(results.observation_id.value() == observation_time);
@@ -429,8 +431,10 @@ void test_cartoon(const std::unique_ptr<ObserveEvent> observe,
                {"TimeName", observation_time});
 
   // Process the data
-  runner.template invoke_queued_simple_action<observer_component>(0);
-  CHECK(runner.template is_simple_action_queue_empty<observer_component>(0));
+  ActionTesting::invoke_queued_simple_action<observer_component>(
+      make_not_null(&runner), 0);
+  CHECK(ActionTesting::is_simple_action_queue_empty<observer_component>(
+      runner, 0));
 
   const auto& results = MockContributeReductionData::results;
 
