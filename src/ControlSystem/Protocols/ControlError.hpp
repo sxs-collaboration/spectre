@@ -8,9 +8,9 @@
 #include <type_traits>
 
 #include "DataStructures/DataVector.hpp"
+#include "DataStructures/TaggedTuple.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Utilities/TMPL.hpp"
-#include "Utilities/TaggedTuple.hpp"
 #include "Utilities/TypeTraits/CreateIsCallable.hpp"
 
 template <bool AllowDecrease>

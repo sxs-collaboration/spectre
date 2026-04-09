@@ -9,13 +9,13 @@
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
+#include "DataStructures/TaggedTuple.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "IO/Observer/ObservationId.hpp"
 #include "IO/Observer/ReductionActions.hpp"
 #include "Parallel/Phase.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
-#include "Utilities/TaggedTuple.hpp"
 
 namespace Parallel {
 template <typename Metavariables>

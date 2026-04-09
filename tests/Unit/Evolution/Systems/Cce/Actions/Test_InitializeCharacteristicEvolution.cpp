@@ -10,6 +10,7 @@
 #include <utility>
 
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
+#include "DataStructures/TaggedTuple.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Evolution/Systems/Cce/Actions/InitializeCharacteristicEvolutionScri.hpp"
 #include "Evolution/Systems/Cce/Actions/InitializeCharacteristicEvolutionTime.hpp"
@@ -45,7 +46,6 @@
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 #include "Utilities/TMPL.hpp"
-#include "Utilities/TaggedTuple.hpp"
 
 namespace Tags {
 struct TimeStep;

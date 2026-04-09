@@ -7,6 +7,7 @@
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/Index.hpp"
+#include "DataStructures/TaggedTuple.hpp"
 #include "Evolution/Systems/NewtonianEuler/BoundaryConditions/BoundaryCondition.hpp"
 #include "Evolution/Systems/NewtonianEuler/BoundaryConditions/Reflection.hpp"
 #include "Evolution/Systems/NewtonianEuler/BoundaryCorrections/Rusanov.hpp"
@@ -18,7 +19,6 @@
 #include "PointwiseFunctions/AnalyticSolutions/NewtonianEuler/SmoothFlow.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
-#include "Utilities/TaggedTuple.hpp"
 
 namespace {
 namespace helpers = TestHelpers::evolution::dg;

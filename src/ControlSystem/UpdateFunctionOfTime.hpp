@@ -13,11 +13,11 @@
 #include "ControlSystem/Tags/IsActiveMap.hpp"
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataVector.hpp"
+#include "DataStructures/TaggedTuple.hpp"
 #include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/TMPL.hpp"
-#include "Utilities/TaggedTuple.hpp"
 
 /// \cond
 namespace domain::Tags {

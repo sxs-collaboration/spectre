@@ -8,6 +8,7 @@
 #include <type_traits>
 #include <utility>
 
+#include "DataStructures/TaggedTuple.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
@@ -34,7 +35,6 @@
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 #include "Utilities/Serialization/Serialize.hpp"
-#include "Utilities/TaggedTuple.hpp"
 
 namespace {
 class SomeEvent : public Event {

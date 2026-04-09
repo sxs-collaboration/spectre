@@ -9,11 +9,11 @@
 #include "DataStructures/CachedTempBuffer.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/DataVector.hpp"
+#include "DataStructures/TaggedTuple.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/Gsl.hpp"
-#include "Utilities/TaggedTuple.hpp"
 
 namespace {
 namespace Tags {

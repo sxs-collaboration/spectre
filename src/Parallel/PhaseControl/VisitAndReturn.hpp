@@ -6,9 +6,10 @@
 #include <optional>
 #include <pup.h>
 #include <string>
-#include <utility>
 #include <type_traits>
+#include <utility>
 
+#include "DataStructures/TaggedTuple.hpp"
 #include "Options/String.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Phase.hpp"
@@ -19,7 +20,6 @@
 #include "Utilities/MakeString.hpp"
 #include "Utilities/Serialization/CharmPupable.hpp"
 #include "Utilities/TMPL.hpp"
-#include "Utilities/TaggedTuple.hpp"
 
 namespace PhaseControl {
 namespace Tags {

@@ -7,12 +7,12 @@
 #include <optional>
 #include <type_traits>
 
+#include "DataStructures/TaggedTuple.hpp"
 #include "Parallel/CharmRegistration.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Local.hpp"
 #include "Parallel/PhaseControl/PhaseControlTags.hpp"
 #include "Parallel/PhaseControlReductionHelpers.hpp"
-#include "Utilities/TaggedTuple.hpp"
 
 #include "Parallel/Main.decl.h"
 

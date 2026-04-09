@@ -6,6 +6,7 @@
 #include <optional>
 
 #include "DataStructures/DataBox/DataBox.hpp"
+#include "DataStructures/TaggedTuple.hpp"
 #include "Parallel/AlgorithmExecution.hpp"
 #include "Parallel/ArrayCollection/IsDgElementCollection.hpp"
 #include "Parallel/ArrayCollection/SimpleActionOnElement.hpp"
@@ -14,7 +15,6 @@
 #include "ParallelAlgorithms/Interpolation/Actions/ElementReceiveInterpPoints.hpp"
 #include "ParallelAlgorithms/Interpolation/InterpolationTargetDetail.hpp"
 #include "Utilities/TMPL.hpp"
-#include "Utilities/TaggedTuple.hpp"
 
 namespace intrp {
 namespace Actions {

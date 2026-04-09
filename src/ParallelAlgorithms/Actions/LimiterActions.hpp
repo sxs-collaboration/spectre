@@ -14,6 +14,7 @@
 #include <utility>
 
 #include "DataStructures/DataBox/DataBox.hpp"
+#include "DataStructures/TaggedTuple.hpp"
 #include "Domain/Structure/DirectionalId.hpp"
 #include "Domain/Tags.hpp"
 #include "Parallel/AlgorithmExecution.hpp"
@@ -21,7 +22,6 @@
 #include "Parallel/InboxInserters.hpp"
 #include "Parallel/Invoke.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
-#include "Utilities/TaggedTuple.hpp"
 
 namespace Limiters {
 namespace Tags {

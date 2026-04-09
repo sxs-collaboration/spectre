@@ -8,6 +8,7 @@
 #include <tuple>
 
 #include "DataStructures/DataVector.hpp"
+#include "DataStructures/TaggedTuple.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Evolution/Systems/NewtonianEuler/Tags.hpp"
 #include "Framework/CheckWithRandomValues.hpp"
@@ -18,7 +19,6 @@
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Serialization/Serialize.hpp"
 #include "Utilities/TMPL.hpp"
-#include "Utilities/TaggedTuple.hpp"
 
 namespace {
 struct ShuOsherTubeProxy : NewtonianEuler::AnalyticData::ShuOsherTube {

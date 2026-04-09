@@ -6,12 +6,12 @@
 #include <cstddef>
 
 #include "DataStructures/DataBox/DataBox.hpp"
+#include "DataStructures/TaggedTuple.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Parallel/AlgorithmExecution.hpp"
 #include "Parallel/ArrayCollection/ReceiveDataForElement.hpp"
 #include "Parallel/ArrayCollection/Tags/ElementCollection.hpp"
 #include "Parallel/GlobalCache.hpp"
-#include "Utilities/TaggedTuple.hpp"
 
 namespace Parallel::Actions {
 /// \brief Starts the next phase on the nodegroup and calls

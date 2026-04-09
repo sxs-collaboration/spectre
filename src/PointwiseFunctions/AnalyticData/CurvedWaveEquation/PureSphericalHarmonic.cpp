@@ -8,13 +8,13 @@
 #include <pup.h>
 
 #include "DataStructures/DataVector.hpp"
+#include "DataStructures/TaggedTuple.hpp"
 #include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Evolution/Systems/CurvedScalarWave/Tags.hpp"
 #include "NumericalAlgorithms/SpinWeightedSphericalHarmonics/SwshInterpolation.hpp"
 #include "Options/ParseError.hpp"
 #include "Utilities/MakeWithValue.hpp"
-#include "Utilities/TaggedTuple.hpp"
 
 namespace CurvedScalarWave::AnalyticData {
 

@@ -9,6 +9,7 @@
 #include <type_traits>
 #include <utility>
 
+#include "DataStructures/TaggedTuple.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Bbh/CompletionCriteria.hpp"
 #include "Options/String.hpp"
 #include "Parallel/GlobalCache.hpp"
@@ -19,7 +20,6 @@
 #include "Utilities/Functional.hpp"
 #include "Utilities/Serialization/CharmPupable.hpp"
 #include "Utilities/TMPL.hpp"
-#include "Utilities/TaggedTuple.hpp"
 
 namespace gh::bbh::phase_control {
 namespace Tags {

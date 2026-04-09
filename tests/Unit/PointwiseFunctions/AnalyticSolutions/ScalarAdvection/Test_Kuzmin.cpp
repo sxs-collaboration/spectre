@@ -6,6 +6,7 @@
 #include <random>
 
 #include "DataStructures/DataVector.hpp"
+#include "DataStructures/TaggedTuple.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Evolution/Systems/ScalarAdvection/Tags.hpp"
 #include "Framework/CheckWithRandomValues.hpp"
@@ -17,7 +18,6 @@
 #include "PointwiseFunctions/InitialDataUtilities/InitialData.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Serialization/Serialize.hpp"
-#include "Utilities/TaggedTuple.hpp"
 
 namespace {
 

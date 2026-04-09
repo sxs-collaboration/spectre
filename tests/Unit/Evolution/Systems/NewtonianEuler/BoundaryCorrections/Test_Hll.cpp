@@ -7,6 +7,7 @@
 #include <cstddef>
 #include <string>
 
+#include "DataStructures/TaggedTuple.hpp"
 #include "Evolution/BoundaryCorrection.hpp"
 #include "Evolution/Systems/NewtonianEuler/BoundaryCorrections/Hll.hpp"
 #include "Evolution/Systems/NewtonianEuler/System.hpp"
@@ -21,7 +22,6 @@
 #include "PointwiseFunctions/Hydro/EquationsOfState/PolytropicFluid.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
 #include "Utilities/TMPL.hpp"
-#include "Utilities/TaggedTuple.hpp"
 
 namespace {
 struct ConvertIdeal {

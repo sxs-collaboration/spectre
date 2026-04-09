@@ -11,6 +11,7 @@
 #include <unordered_set>
 #include <vector>
 
+#include "DataStructures/TaggedTuple.hpp"
 #include "Domain/Block.hpp"
 #include "Domain/Creators/DomainCreator.hpp"
 #include "Domain/Creators/OptionTags.hpp"
@@ -41,7 +42,6 @@
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/System/ParallelInfo.hpp"
 #include "Utilities/TMPL.hpp"
-#include "Utilities/TaggedTuple.hpp"
 
 namespace elliptic {
 

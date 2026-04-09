@@ -11,6 +11,7 @@
 #include <unordered_map>
 #include <utility>
 
+#include "DataStructures/TaggedTuple.hpp"
 #include "DataStructures/Tags.hpp"
 #include "DataStructures/Tags/TempTensor.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
@@ -23,7 +24,6 @@
 #include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
-#include "Utilities/TaggedTuple.hpp"
 
 namespace NewtonianEuler::Limiters {
 

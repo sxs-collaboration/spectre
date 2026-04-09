@@ -11,6 +11,7 @@
 #include "ControlSystem/Tags/SystemTags.hpp"
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataVector.hpp"
+#include "DataStructures/TaggedTuple.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/Creators/Tags/ObjectCenter.hpp"
 #include "Domain/Structure/ObjectLabel.hpp"
@@ -19,7 +20,6 @@
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
-#include "Utilities/TaggedTuple.hpp"
 
 /// \cond
 namespace domain::Tags {

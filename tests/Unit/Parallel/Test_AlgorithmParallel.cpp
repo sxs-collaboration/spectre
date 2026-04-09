@@ -13,6 +13,7 @@
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
+#include "DataStructures/TaggedTuple.hpp"
 #include "Helpers/Parallel/RoundRobinArrayElements.hpp"
 #include "Options/String.hpp"
 #include "Parallel/AlgorithmExecution.hpp"
@@ -33,7 +34,6 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/System/ParallelInfo.hpp"
 #include "Utilities/TMPL.hpp"
-#include "Utilities/TaggedTuple.hpp"
 
 static constexpr int number_of_1d_array_elements = 14;
 

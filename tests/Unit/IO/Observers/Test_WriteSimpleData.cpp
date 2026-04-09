@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "DataStructures/Matrix.hpp"
+#include "DataStructures/TaggedTuple.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
@@ -31,7 +32,6 @@
 #include "Utilities/FileSystem.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Numeric.hpp"
-#include "Utilities/TaggedTuple.hpp"
 
 // NOLINTNEXTLINE(google-build-using-namespace)
 namespace helpers = TestObservers_detail;

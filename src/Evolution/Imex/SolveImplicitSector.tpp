@@ -18,6 +18,7 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/ExtractPoint.hpp"
 #include "DataStructures/Matrix.hpp"
+#include "DataStructures/TaggedTuple.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
 #include "DataStructures/VariablesTag.hpp"
@@ -37,7 +38,6 @@
 #include "Utilities/SplitTuple.hpp"
 #include "Utilities/StdArrayHelpers.hpp"
 #include "Utilities/TMPL.hpp"
-#include "Utilities/TaggedTuple.hpp"
 #include "Utilities/TypeTraits/IsA.hpp"
 
 /// \cond

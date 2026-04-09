@@ -10,10 +10,10 @@
 #include <utility>
 
 #include "DataStructures/DataBox/DataBox.hpp"
+#include "DataStructures/TaggedTuple.hpp"
 #include "Utilities/ForceInline.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
-#include "Utilities/TaggedTuple.hpp"
 #include "Utilities/TupleSlice.hpp"
 #include "Utilities/TypeTraits/CreateIsCallable.hpp"
 #include "Utilities/TypeTraits/IsMaplike.hpp"

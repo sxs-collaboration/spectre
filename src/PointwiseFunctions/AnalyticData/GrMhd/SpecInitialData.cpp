@@ -11,6 +11,7 @@
 #include <utility>
 #include <vector>
 
+#include "DataStructures/TaggedTuple.hpp"
 #include "DataStructures/Tensor/EagerMath/DeterminantAndInverse.hpp"
 #include "DataStructures/Tensor/EagerMath/DotProduct.hpp"
 #include "DataStructures/Tensor/EagerMath/RaiseOrLowerIndex.hpp"
@@ -24,7 +25,6 @@
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Serialization/PupStlCpp17.hpp"
 #include "Utilities/System/ParallelInfo.hpp"
-#include "Utilities/TaggedTuple.hpp"
 
 namespace grmhd::AnalyticData {
 

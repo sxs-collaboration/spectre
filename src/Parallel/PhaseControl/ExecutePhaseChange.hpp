@@ -8,6 +8,7 @@
 #include <type_traits>
 #include <utility>
 
+#include "DataStructures/TaggedTuple.hpp"
 #include "Parallel/AlgorithmExecution.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Phase.hpp"
@@ -16,7 +17,6 @@
 #include "Parallel/PhaseControl/PhaseControlTags.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
-#include "Utilities/TaggedTuple.hpp"
 
 /// \cond
 namespace Tags {

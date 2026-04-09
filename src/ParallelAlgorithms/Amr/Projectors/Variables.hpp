@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "DataStructures/ApplyMatrices.hpp"
+#include "DataStructures/TaggedTuple.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Domain/Structure/ChildSize.hpp"
 #include "Domain/Structure/Element.hpp"
@@ -19,7 +20,6 @@
 #include "ParallelAlgorithms/Amr/Protocols/Projector.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
-#include "Utilities/TaggedTuple.hpp"
 
 namespace amr::projectors {
 

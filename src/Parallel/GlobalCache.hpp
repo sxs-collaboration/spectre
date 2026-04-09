@@ -20,6 +20,7 @@
 
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/DataBox/TagTraits.hpp"
+#include "DataStructures/TaggedTuple.hpp"
 #include "Parallel/ArrayComponentId.hpp"
 #include "Parallel/Callback.hpp"
 #include "Parallel/CharmRegistration.hpp"
@@ -40,7 +41,6 @@
 #include "Utilities/StdHelpers/RetrieveUniquePtr.hpp"
 #include "Utilities/System/ParallelInfo.hpp"
 #include "Utilities/TMPL.hpp"
-#include "Utilities/TaggedTuple.hpp"
 #include "Utilities/TypeTraits/CreateGetTypeAliasOrDefault.hpp"
 #include "Utilities/TypeTraits/IsA.hpp"
 

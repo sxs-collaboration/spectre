@@ -7,6 +7,7 @@
 #include <pup.h>
 #include <utility>
 
+#include "DataStructures/TaggedTuple.hpp"
 #include "DataStructures/Tags/TempTensor.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
@@ -19,7 +20,6 @@
 #include "PointwiseFunctions/InitialDataUtilities/InitialData.hpp"
 #include "Utilities/CallWithDynamicType.hpp"
 #include "Utilities/Gsl.hpp"
-#include "Utilities/TaggedTuple.hpp"
 
 namespace ForceFree::BoundaryConditions {
 

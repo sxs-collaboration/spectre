@@ -4,7 +4,7 @@
 module AlgorithmArray {
 
   include "DataStructures/DataBox/DataBox.hpp";
-  include "Utilities/TaggedTuple.hpp";
+  include "DataStructures/TaggedTuple.hpp";
   include "Parallel/Callback.hpp";
   include "Parallel/GlobalCache.decl.h";
   include "Parallel/MaxInlineMethodsReached.hpp";

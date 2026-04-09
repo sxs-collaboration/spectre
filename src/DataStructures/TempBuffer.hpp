@@ -5,9 +5,9 @@
 
 #include <cstddef>
 
+#include "DataStructures/TaggedTuple.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Utilities/TMPL.hpp"
-#include "Utilities/TaggedTuple.hpp"
 
 /*!
  * \ingroup DataStructuresGroup

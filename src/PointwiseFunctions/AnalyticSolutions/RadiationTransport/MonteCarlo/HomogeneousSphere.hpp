@@ -7,6 +7,7 @@
 #include <memory>
 #include <pup.h>
 
+#include "DataStructures/TaggedTuple.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Evolution/Particles/MonteCarlo/Tags.hpp"
 #include "Options/String.hpp"
@@ -19,7 +20,6 @@
 #include "PointwiseFunctions/Hydro/TagsDeclarations.hpp"
 #include "PointwiseFunctions/InitialDataUtilities/Tags/InitialData.hpp"
 #include "Utilities/TMPL.hpp"
-#include "Utilities/TaggedTuple.hpp"
 
 /// \cond
 class DataVector;

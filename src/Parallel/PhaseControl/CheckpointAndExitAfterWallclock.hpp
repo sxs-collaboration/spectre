@@ -10,6 +10,7 @@
 #include <type_traits>
 #include <utility>
 
+#include "DataStructures/TaggedTuple.hpp"
 #include "Options/Auto.hpp"
 #include "Options/Options.hpp"
 #include "Parallel/AlgorithmMetafunctions.hpp"
@@ -23,7 +24,6 @@
 #include "Utilities/Serialization/CharmPupable.hpp"
 #include "Utilities/System/ParallelInfo.hpp"
 #include "Utilities/TMPL.hpp"
-#include "Utilities/TaggedTuple.hpp"
 #include "Utilities/UtcTime.hpp"
 
 namespace PhaseControl {

@@ -9,6 +9,7 @@
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
+#include "DataStructures/TaggedTuple.hpp"
 #include "Evolution/DiscontinuousGalerkin/InboxTags.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarTags.hpp"
 #include "Parallel/ArrayCollection/IsDgElementCollection.hpp"
@@ -19,7 +20,6 @@
 #include "Time/Tags/Time.hpp"
 #include "Time/Tags/TimeStep.hpp"
 #include "Time/Tags/TimeStepId.hpp"
-#include "Utilities/TaggedTuple.hpp"
 
 /*!
  * \brief Namespace for actions related to debugging deadlocks in communication.

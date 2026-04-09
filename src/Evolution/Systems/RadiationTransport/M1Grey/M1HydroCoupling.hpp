@@ -10,6 +10,7 @@
 #include <tuple>
 
 #include "DataStructures/DataBox/DataBox.hpp"
+#include "DataStructures/TaggedTuple.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Evolution/Imex/Protocols/ImplicitSource.hpp"
 #include "Evolution/Imex/Protocols/ImplicitSourceJacobian.hpp"
@@ -21,7 +22,6 @@
 #include "Utilities/Protocols/StaticReturnApplyable.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
-#include "Utilities/TaggedTuple.hpp"
 
 /// \cond
 class DataVector;

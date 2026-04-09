@@ -7,6 +7,7 @@
 #include <cstddef>
 
 #include "DataStructures/DataBox/DataBox.hpp"
+#include "DataStructures/TaggedTuple.hpp"
 #include "Evolution/Systems/NewtonianEuler/BoundaryConditions/BoundaryCondition.hpp"
 #include "Evolution/Systems/NewtonianEuler/BoundaryConditions/DemandOutgoingCharSpeeds.hpp"
 #include "Evolution/Systems/NewtonianEuler/BoundaryCorrections/Rusanov.hpp"
@@ -22,7 +23,6 @@
 #include "PointwiseFunctions/Hydro/Tags.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
-#include "Utilities/TaggedTuple.hpp"
 
 namespace helpers = TestHelpers::evolution::dg;
 

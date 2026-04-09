@@ -7,6 +7,7 @@
 #include <pup.h>
 
 #include "DataStructures/DataVector.hpp"
+#include "DataStructures/TaggedTuple.hpp"
 #include "DataStructures/Tensor/EagerMath/DotProduct.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Evolution/Systems/CurvedScalarWave/Tags.hpp"
@@ -15,7 +16,6 @@
 #include "PointwiseFunctions/GeneralRelativity/GeodesicAcceleration.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Utilities/MakeWithValue.hpp"
-#include "Utilities/TaggedTuple.hpp"
 
 namespace CurvedScalarWave::AnalyticData {
 

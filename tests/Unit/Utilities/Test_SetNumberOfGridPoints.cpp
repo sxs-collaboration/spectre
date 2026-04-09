@@ -8,11 +8,11 @@
 #include <cstddef>
 #include <vector>
 
+#include "DataStructures/TaggedTuple.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Literals.hpp"
 #include "Utilities/MakeWithValue.hpp"
 #include "Utilities/SetNumberOfGridPoints.hpp"
-#include "Utilities/TaggedTuple.hpp"
 
 namespace {
 struct TriviallyResizable {};

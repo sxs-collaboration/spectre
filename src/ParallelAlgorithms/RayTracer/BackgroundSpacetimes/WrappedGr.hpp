@@ -10,6 +10,7 @@
 #include <type_traits>
 #include <utility>
 
+#include "DataStructures/TaggedTuple.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Options/String.hpp"
 #include "ParallelAlgorithms/RayTracer/BackgroundSpacetimes/BackgroundSpacetime.hpp"
@@ -18,7 +19,6 @@
 #include "Utilities/PrettyType.hpp"
 #include "Utilities/Serialization/CharmPupable.hpp"
 #include "Utilities/TMPL.hpp"
-#include "Utilities/TaggedTuple.hpp"
 #include "Utilities/TupleSlice.hpp"
 
 namespace ray_tracing {

@@ -4,10 +4,11 @@
 #pragma once
 
 #include <Exporter.hpp>  // The SpEC Exporter
-#include <optional>
 #include <memory>
+#include <optional>
 
 #include "DataStructures/CachedTempBuffer.hpp"
+#include "DataStructures/TaggedTuple.hpp"
 #include "Evolution/NumericInitialData.hpp"
 #include "Options/String.hpp"
 #include "PointwiseFunctions/AnalyticData/GrMhd/AnalyticData.hpp"
@@ -17,7 +18,6 @@
 #include "PointwiseFunctions/InitialDataUtilities/InitialData.hpp"
 #include "Utilities/Serialization/CharmPupable.hpp"
 #include "Utilities/TMPL.hpp"
-#include "Utilities/TaggedTuple.hpp"
 
 /// \cond
 namespace PUP {

@@ -16,6 +16,7 @@
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/SpinWeighted.hpp"
+#include "DataStructures/TaggedTuple.hpp"
 #include "DataStructures/Variables.hpp"
 #include "DataStructures/VariablesTag.hpp"
 #include "Evolution/Systems/Cce/BoundaryData.hpp"
@@ -40,7 +41,6 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Overloader.hpp"
 #include "Utilities/TMPL.hpp"
-#include "Utilities/TaggedTuple.hpp"
 
 // Charm looks for this function but since we build without a main function or
 // main module we just have it be empty

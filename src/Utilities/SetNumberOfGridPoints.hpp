@@ -12,7 +12,6 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeWithValue.hpp"
 #include "Utilities/TMPL.hpp"
-#include "Utilities/TaggedTuple.hpp"
 
 /// Implementations of \link set_number_of_grid_points \endlink
 ///
@@ -94,15 +93,3 @@ struct SetNumberOfGridPointsImpls::SetNumberOfGridPointsImpl<std::vector<T>> {
   }
 };
 
-template <typename... Tags>
-struct SetNumberOfGridPointsImpls::SetNumberOfGridPointsImpl<
-    tuples::TaggedTuple<Tags...>> {
-  static constexpr bool is_trivial =
-      (... and SetNumberOfGridPointsImpl<typename Tags::type>::is_trivial);
-  static void apply(const gsl::not_null<tuples::TaggedTuple<Tags...>*> result,
-                    const size_t size) {
-    expand_pack((set_number_of_grid_points(
-                     make_not_null(&tuples::get<Tags>(*result)), size),
-                 0)...);
-  }
-};

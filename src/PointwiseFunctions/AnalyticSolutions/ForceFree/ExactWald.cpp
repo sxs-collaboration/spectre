@@ -9,6 +9,7 @@
 #include <pup.h>
 
 #include "DataStructures/DataVector.hpp"
+#include "DataStructures/TaggedTuple.hpp"
 #include "DataStructures/Tensor/EagerMath/DotProduct.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Evolution/Systems/ForceFree/Tags.hpp"
@@ -16,7 +17,6 @@
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "PointwiseFunctions/InitialDataUtilities/InitialData.hpp"
 #include "Utilities/MakeWithValue.hpp"
-#include "Utilities/TaggedTuple.hpp"
 
 namespace ForceFree::Solutions {
 

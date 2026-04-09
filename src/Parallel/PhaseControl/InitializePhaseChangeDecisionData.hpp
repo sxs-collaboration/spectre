@@ -3,11 +3,11 @@
 
 #pragma once
 
+#include "DataStructures/TaggedTuple.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/PhaseControl/PhaseControlTags.hpp"
 #include "Utilities/Gsl.hpp"
-#include "Utilities/TaggedTuple.hpp"
 
 namespace PhaseControl {
 /*!

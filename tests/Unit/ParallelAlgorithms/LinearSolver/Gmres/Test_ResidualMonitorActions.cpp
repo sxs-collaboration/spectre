@@ -15,6 +15,7 @@
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/DynamicMatrix.hpp"
 #include "DataStructures/DynamicVector.hpp"
+#include "DataStructures/TaggedTuple.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "Helpers/ParallelAlgorithms/LinearSolver/ResidualMonitorActionsTestHelpers.hpp"
 #include "IO/Logging/Verbosity.hpp"
@@ -30,7 +31,6 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Literals.hpp"
 #include "Utilities/TMPL.hpp"
-#include "Utilities/TaggedTuple.hpp"
 
 namespace Parallel {
 template <typename Metavariables>

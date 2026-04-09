@@ -21,6 +21,7 @@
 #include "ControlSystem/TimescaleTuner.hpp"
 #include "ControlSystem/UpdateFunctionOfTime.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
+#include "DataStructures/TaggedTuple.hpp"
 #include "Domain/Creators/DomainCreator.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/Tags.hpp"
 #include "Time/OptionTags/InitialTime.hpp"
@@ -29,7 +30,6 @@
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/StdHelpers.hpp"
 #include "Utilities/TMPL.hpp"
-#include "Utilities/TaggedTuple.hpp"
 #include "Utilities/TypeTraits/CreateHasStaticMemberVariable.hpp"
 
 /// \cond

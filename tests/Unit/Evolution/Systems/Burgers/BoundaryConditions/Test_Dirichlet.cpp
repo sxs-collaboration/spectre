@@ -5,6 +5,7 @@
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/Index.hpp"
+#include "DataStructures/TaggedTuple.hpp"
 #include "Evolution/Systems/Burgers/BoundaryConditions/Dirichlet.hpp"
 #include "Evolution/Systems/Burgers/BoundaryConditions/Factory.hpp"
 #include "Evolution/Systems/Burgers/BoundaryCorrections/Rusanov.hpp"
@@ -14,7 +15,6 @@
 #include "Helpers/Evolution/DiscontinuousGalerkin/BoundaryConditions.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
-#include "Utilities/TaggedTuple.hpp"
 
 namespace helpers = TestHelpers::evolution::dg;
 

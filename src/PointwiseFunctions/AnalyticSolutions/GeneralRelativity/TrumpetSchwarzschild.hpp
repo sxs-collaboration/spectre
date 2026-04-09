@@ -6,6 +6,7 @@
 #include <limits>
 #include <ostream>
 
+#include "DataStructures/TaggedTuple.hpp"
 #include "NumericalAlgorithms/Interpolation/CubicSpline.hpp"
 #include "Options/Context.hpp"
 #include "Options/String.hpp"
@@ -13,7 +14,6 @@
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/Solutions.hpp"
 #include "PointwiseFunctions/GeneralRelativity/TagsDeclarations.hpp"
 #include "PointwiseFunctions/InitialDataUtilities/InitialData.hpp"
-#include "Utilities/TaggedTuple.hpp"
 
 /// \cond
 namespace PUP {

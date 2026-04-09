@@ -6,6 +6,7 @@
 #include <memory>
 #include <utility>
 
+#include "DataStructures/TaggedTuple.hpp"
 #include "Framework/CheckWithRandomValues.hpp"
 #include "Framework/SetupLocalPythonEnvironment.hpp"
 #include "Framework/TestCreation.hpp"
@@ -14,7 +15,6 @@
 #include "PointwiseFunctions/InitialDataUtilities/InitialData.hpp"
 #include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 #include "Utilities/Serialization/Serialize.hpp"
-#include "Utilities/TaggedTuple.hpp"
 
 namespace {
 

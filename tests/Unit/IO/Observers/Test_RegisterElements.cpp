@@ -7,6 +7,7 @@
 #include <type_traits>
 #include <vector>
 
+#include "DataStructures/TaggedTuple.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "Helpers/IO/Observers/ObserverHelpers.hpp"
@@ -21,7 +22,6 @@
 #include "Parallel/ArrayIndex.hpp"
 #include "Parallel/Invoke.hpp"
 #include "Utilities/Gsl.hpp"
-#include "Utilities/TaggedTuple.hpp"
 
 namespace {
 // NOLINTNEXTLINE(google-build-using-namespace)

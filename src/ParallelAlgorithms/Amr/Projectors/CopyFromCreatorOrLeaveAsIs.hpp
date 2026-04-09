@@ -8,11 +8,11 @@
 #include <unordered_map>
 #include <utility>
 
+#include "DataStructures/TaggedTuple.hpp"
 #include "ParallelAlgorithms/Amr/Protocols/Projector.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
-#include "Utilities/TaggedTuple.hpp"
 
 /// \cond
 template <size_t Dim>

@@ -5,8 +5,8 @@
 
 #include "Framework/TestingFramework.hpp"
 
+#include "DataStructures/TaggedTuple.hpp"
 #include "Utilities/TMPL.hpp"
-#include "Utilities/TaggedTuple.hpp"
 
 namespace TestHelpers {
 /// \ingroup TestingFrameworkGroup

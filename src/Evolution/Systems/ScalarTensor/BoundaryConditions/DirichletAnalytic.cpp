@@ -9,6 +9,7 @@
 #include <pup.h>
 
 #include "DataStructures/DataVector.hpp"
+#include "DataStructures/TaggedTuple.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/System.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
@@ -20,7 +21,6 @@
 #include "PointwiseFunctions/GeneralRelativity/SpatialMetric.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Utilities/CallWithDynamicType.hpp"
-#include "Utilities/TaggedTuple.hpp"
 
 namespace ScalarTensor::BoundaryConditions {
 DirichletAnalytic::DirichletAnalytic(const DirichletAnalytic& rhs)

@@ -10,6 +10,7 @@
 #include <utility>
 
 #include "DataStructures/DataBox/DataBox.hpp"
+#include "DataStructures/TaggedTuple.hpp"
 #include "Domain/Amr/Flag.hpp"
 #include "Domain/Amr/Helpers.hpp"
 #include "Domain/Amr/Tags/Flags.hpp"
@@ -22,7 +23,6 @@
 #include "ParallelAlgorithms/Amr/Actions/InitializeParent.hpp"
 #include "Utilities/Algorithm.hpp"
 #include "Utilities/TMPL.hpp"
-#include "Utilities/TaggedTuple.hpp"
 
 namespace amr::Actions {
 /// \brief Collects data from child elements to send to their parent element

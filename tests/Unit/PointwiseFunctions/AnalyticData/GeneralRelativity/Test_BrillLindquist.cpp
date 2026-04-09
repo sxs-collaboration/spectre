@@ -9,6 +9,7 @@
 #include <tuple>
 
 #include "DataStructures/DataVector.hpp"
+#include "DataStructures/TaggedTuple.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
 #include "DataStructures/VariablesTag.hpp"
@@ -18,7 +19,6 @@
 #include "PointwiseFunctions/AnalyticData/GeneralRelativity/AnalyticData.hpp"
 #include "PointwiseFunctions/AnalyticData/GeneralRelativity/BrillLindquist.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
-#include "Utilities/TaggedTuple.hpp"
 
 namespace {
 struct BrillLindquistProxy : gr::AnalyticData::BrillLindquist {

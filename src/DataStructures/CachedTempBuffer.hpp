@@ -6,10 +6,10 @@
 #include <cstddef>
 #include <utility>
 
+#include "DataStructures/TaggedTuple.hpp"
 #include "DataStructures/TempBuffer.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
-#include "Utilities/TaggedTuple.hpp"
 
 /*!
  * \ingroup DataStructuresGroup

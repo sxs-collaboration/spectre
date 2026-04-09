@@ -6,6 +6,7 @@
 #include <Exporter.hpp>  // The SpEC Exporter
 #include <memory>
 
+#include "DataStructures/TaggedTuple.hpp"
 #include "Options/String.hpp"
 #include "PointwiseFunctions/AnalyticData/AnalyticData.hpp"
 #include "PointwiseFunctions/AnalyticData/GeneralRelativity/AnalyticData.hpp"
@@ -13,7 +14,6 @@
 #include "PointwiseFunctions/InitialDataUtilities/InitialData.hpp"
 #include "Utilities/Serialization/CharmPupable.hpp"
 #include "Utilities/TMPL.hpp"
-#include "Utilities/TaggedTuple.hpp"
 
 /// \cond
 namespace PUP {

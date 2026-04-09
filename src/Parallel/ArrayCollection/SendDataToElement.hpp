@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "DataStructures/DataBox/DataBox.hpp"
+#include "DataStructures/TaggedTuple.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Evolution/DiscontinuousGalerkin/AtomicInboxBoundaryData.hpp"
 #include "Parallel/ArrayCollection/ReceiveDataForElement.hpp"
@@ -18,7 +19,6 @@
 #include "Parallel/NodeLock.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/Gsl.hpp"
-#include "Utilities/TaggedTuple.hpp"
 
 namespace Parallel::Actions {
 /*!

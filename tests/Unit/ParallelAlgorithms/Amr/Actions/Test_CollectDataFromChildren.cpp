@@ -10,6 +10,7 @@
 #include <unordered_set>
 #include <vector>
 
+#include "DataStructures/TaggedTuple.hpp"
 #include "Domain/Amr/Flag.hpp"
 #include "Domain/Amr/Helpers.hpp"
 #include "Domain/Amr/Info.hpp"
@@ -33,7 +34,6 @@
 #include "Utilities/Literals.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
-#include "Utilities/TaggedTuple.hpp"
 
 namespace {
 const ElementId<2> parent_id{0, std::array{SegmentId{0, 0}, SegmentId{0, 0}}};

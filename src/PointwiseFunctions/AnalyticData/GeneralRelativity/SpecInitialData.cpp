@@ -8,10 +8,10 @@
 #include <pup.h>
 #include <utility>
 
+#include "DataStructures/TaggedTuple.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "IO/External/InterpolateFromSpec.hpp"
 #include "Utilities/System/ParallelInfo.hpp"
-#include "Utilities/TaggedTuple.hpp"
 
 namespace gr::AnalyticData {
 

@@ -9,6 +9,7 @@
 #include <unordered_set>
 #include <utility>
 
+#include "DataStructures/TaggedTuple.hpp"
 #include "Domain/Amr/Flag.hpp"
 #include "Domain/Amr/Info.hpp"
 #include "Domain/Amr/Tags/Flags.hpp"
@@ -34,7 +35,6 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
-#include "Utilities/TaggedTuple.hpp"
 
 namespace {
 

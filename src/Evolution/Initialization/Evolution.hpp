@@ -14,6 +14,7 @@
 #include "DataStructures/ApplyMatrices.hpp"
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
+#include "DataStructures/TaggedTuple.hpp"
 #include "DataStructures/TaggedVariant.hpp"
 #include "Domain/Amr/Helpers.hpp"
 #include "Domain/Structure/ChildSize.hpp"
@@ -51,7 +52,6 @@
 #include "Utilities/MakeArray.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
-#include "Utilities/TaggedTuple.hpp"
 
 /// \cond
 namespace Parallel::Tags {
