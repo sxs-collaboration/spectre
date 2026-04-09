@@ -11,9 +11,13 @@
 #include <string>
 #include <utility>
 
+#include "Utilities/ErrorHandling/Assert.hpp"
+#include "Utilities/Gsl.hpp"
+#include "Utilities/MakeWithValue.hpp"
 #include "Utilities/Overloader.hpp"
 #include "Utilities/PrettyType.hpp"
 #include "Utilities/PrintHelpers.hpp"
+#include "Utilities/SetNumberOfGridPoints.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
@@ -776,6 +780,44 @@ tuples::TaggedTuple<Tags1..., Tags2...> tagged_tuple_cat(
 /// @}
 
 }  // namespace tuples
+
+namespace MakeWithValueImpls {
+/// \brief Makes a `TaggedTuple`; each element of the `TaggedTuple`
+/// must be `make_with_value`-creatable from a `T`.
+template <typename... Tags, typename T>
+struct MakeWithValueImpl<tuples::TaggedTuple<Tags...>, T> {
+  template <typename ValueType>
+  static SPECTRE_ALWAYS_INLINE tuples::TaggedTuple<Tags...> apply(
+      const T& input, const ValueType value) {
+    return tuples::TaggedTuple<Tags...>(
+        make_with_value<typename Tags::type>(input, value)...);
+  }
+};
+
+template <typename Tag, typename... Tags>
+struct NumberOfPoints<tuples::TaggedTuple<Tag, Tags...>> {
+  static SPECTRE_ALWAYS_INLINE size_t apply(
+      const tuples::TaggedTuple<Tag, Tags...>& input) {
+    const size_t points = number_of_points(tuples::get<Tag>(input));
+    ASSERT((... and (number_of_points(tuples::get<Tags>(input)) == points)),
+           "Inconsistent number of points in tuple entries.");
+    return points;
+  }
+};
+}  // namespace MakeWithValueImpls
+
+template <typename... Tags>
+struct SetNumberOfGridPointsImpls::SetNumberOfGridPointsImpl<
+    tuples::TaggedTuple<Tags...>> {
+  static constexpr bool is_trivial =
+      (... and SetNumberOfGridPointsImpl<typename Tags::type>::is_trivial);
+  static void apply(const gsl::not_null<tuples::TaggedTuple<Tags...>*> result,
+                    const size_t size) {
+    expand_pack((set_number_of_grid_points(
+                     make_not_null(&tuples::get<Tags>(*result)), size),
+                 0)...);
+  }
+};
 
 namespace std {
 template <typename... Tags>

@@ -16,6 +16,7 @@
 #include <utility>
 
 #include "DataStructures/DataBox/DataBox.hpp"
+#include "DataStructures/TaggedTuple.hpp"
 #include "Options/Auto.hpp"
 #include "Options/Context.hpp"
 #include "Options/ParseError.hpp"
@@ -33,7 +34,6 @@
 #include "Utilities/StdHelpers.hpp"
 #include "Utilities/System/ParallelInfo.hpp"
 #include "Utilities/TMPL.hpp"
-#include "Utilities/TaggedTuple.hpp"
 #include "Utilities/TypeTraits/CreateHasTypeAlias.hpp"
 
 /// \cond

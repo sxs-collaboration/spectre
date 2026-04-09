@@ -18,6 +18,7 @@
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/DynamicMatrix.hpp"
 #include "DataStructures/DynamicVector.hpp"
+#include "DataStructures/TaggedTuple.hpp"
 #include "IO/Observer/Actions/RegisterWithObservers.hpp"
 #include "IO/Observer/Helpers.hpp"
 #include "IO/Observer/ObserverComponent.hpp"
@@ -45,7 +46,6 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
-#include "Utilities/TaggedTuple.hpp"
 #include "Utilities/TypeTraits/GetFundamentalType.hpp"
 
 namespace LinearSolverAlgorithmTestHelpers {

@@ -3,10 +3,10 @@
 
 #pragma once
 
+#include "DataStructures/TaggedTuple.hpp"
 #include "Parallel/Reduction.hpp"
 #include "Utilities/Serialization/Serialize.hpp"
 #include "Utilities/TMPL.hpp"
-#include "Utilities/TaggedTuple.hpp"
 
 namespace PhaseControl {
 

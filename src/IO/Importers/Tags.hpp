@@ -13,6 +13,7 @@
 #include <variant>
 
 #include "DataStructures/DataBox/Tag.hpp"
+#include "DataStructures/TaggedTuple.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "IO/Importers/ObservationSelector.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
@@ -21,7 +22,6 @@
 #include "Parallel/ArrayComponentId.hpp"
 #include "Parallel/InboxInserters.hpp"
 #include "Utilities/PrettyType.hpp"
-#include "Utilities/TaggedTuple.hpp"
 
 /// Items related to loading data from files
 namespace importers {

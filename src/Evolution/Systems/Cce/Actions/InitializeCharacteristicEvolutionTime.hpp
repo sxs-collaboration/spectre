@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "DataStructures/DataBox/DataBox.hpp"
+#include "DataStructures/TaggedTuple.hpp"
 #include "DataStructures/VariablesTag.hpp"
 #include "Evolution/Initialization/Tags.hpp"
 #include "Evolution/Systems/Cce/OptionTags.hpp"
@@ -30,7 +31,6 @@
 #include "Utilities/Rational.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
-#include "Utilities/TaggedTuple.hpp"
 
 namespace Cce {
 namespace Actions {

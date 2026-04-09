@@ -12,12 +12,12 @@
 #include <vector>
 
 #include "DataStructures/DataBox/TagName.hpp"
+#include "DataStructures/TaggedTuple.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/BlockLogicalCoordinates.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/Structure/ElementSearchTree.hpp"
 #include "IO/Exporter/Exporter.hpp"
-#include "Utilities/TaggedTuple.hpp"
 
 namespace spectre::Exporter {
 

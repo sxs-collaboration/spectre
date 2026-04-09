@@ -8,6 +8,7 @@
 #include <string>
 
 #include "DataStructures/DataBox/Prefixes.hpp"
+#include "DataStructures/TaggedTuple.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Evolution/Systems/Ccz4/Tags.hpp"
 #include "Options/String.hpp"
@@ -16,7 +17,6 @@
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Serialization/CharmPupable.hpp"
 #include "Utilities/TMPL.hpp"
-#include "Utilities/TaggedTuple.hpp"
 
 /// \cond
 class DataVector;

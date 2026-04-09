@@ -5,6 +5,7 @@
 
 #include <array>
 
+#include "DataStructures/TaggedTuple.hpp"
 #include "Options/Protocols/FactoryCreation.hpp"
 #include "Parallel/PhaseControl/ExecutePhaseChange.hpp"
 #include "Parallel/PhaseControl/InitializePhaseChangeDecisionData.hpp"
@@ -15,7 +16,6 @@
 #include "Utilities/Functional.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
-#include "Utilities/TaggedTuple.hpp"
 
 namespace {
 

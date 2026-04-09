@@ -14,6 +14,7 @@
 #include <string>
 #include <tuple>
 
+#include "DataStructures/TaggedTuple.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Parallel/Algorithms/AlgorithmArray.hpp"
 #include "Parallel/Algorithms/AlgorithmGroup.hpp"
@@ -35,7 +36,6 @@
 #include "Utilities/Serialization/Serialize.hpp"
 #include "Utilities/System/Exit.hpp"
 #include "Utilities/TMPL.hpp"
-#include "Utilities/TaggedTuple.hpp"
 #include "Utilities/TypeTraits.hpp"
 
 namespace {

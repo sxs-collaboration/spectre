@@ -19,6 +19,7 @@
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/FloatingPointType.hpp"
 #include "DataStructures/LinkedMessageId.hpp"
+#include "DataStructures/TaggedTuple.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Domain/Creators/Rectilinear.hpp"
 #include "Domain/Creators/RegisterDerivedWithCharm.hpp"
@@ -46,7 +47,6 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
-#include "Utilities/TaggedTuple.hpp"
 
 namespace {
 // Mock actions only exist so we don't need all other action down the line. In

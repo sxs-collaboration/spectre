@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "DataStructures/DataBox/Tag.hpp"
+#include "DataStructures/TaggedTuple.hpp"
 #include "Options/ParseOptions.hpp"
 #include "Options/String.hpp"
 #include "Parallel/CreateFromOptions.hpp"
@@ -13,7 +14,6 @@
 #include "Parallel/Phase.hpp"
 #include "Utilities/NoSuchType.hpp"
 #include "Utilities/TMPL.hpp"
-#include "Utilities/TaggedTuple.hpp"
 #include "Utilities/TypeTraits.hpp"
 
 namespace {

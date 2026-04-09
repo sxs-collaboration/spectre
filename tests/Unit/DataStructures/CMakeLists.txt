@@ -40,6 +40,7 @@ set(LIBRARY_SOURCES
   Test_StaticDeque.cpp
   Test_StripeIterator.cpp
   Test_TaggedContainers.cpp
+  Test_TaggedTuple.cpp
   Test_Tags.cpp
   Test_TempBuffer.cpp
   Test_Transpose.cpp

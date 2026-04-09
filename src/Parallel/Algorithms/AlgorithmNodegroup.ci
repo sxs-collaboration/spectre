@@ -3,7 +3,7 @@
 
 module AlgorithmNodegroup {
 
-  include "Utilities/TaggedTuple.hpp";
+  include "DataStructures/TaggedTuple.hpp";
   include "Parallel/GlobalCache.decl.h";
   include "Parallel/Phase.hpp";
 

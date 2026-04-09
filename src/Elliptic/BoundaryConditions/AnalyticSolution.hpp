@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "DataStructures/DataBox/MetavariablesTag.hpp"
+#include "DataStructures/TaggedTuple.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/Tags.hpp"
 #include "Domain/Tags/FaceNormal.hpp"
@@ -25,7 +26,6 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Serialization/CharmPupable.hpp"
 #include "Utilities/TMPL.hpp"
-#include "Utilities/TaggedTuple.hpp"
 
 namespace elliptic::BoundaryConditions {
 

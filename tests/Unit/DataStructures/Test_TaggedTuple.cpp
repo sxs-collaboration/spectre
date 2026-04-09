@@ -10,8 +10,8 @@
 #include <type_traits>
 #include <vector>
 
+#include "DataStructures/TaggedTuple.hpp"
 #include "Framework/TestHelpers.hpp"
-#include "Utilities/TaggedTuple.hpp"
 
 namespace PUP {
 class er;
@@ -92,27 +92,27 @@ void test_general() {
                 "Failed to test size of TaggedTuple");
   {
     const std::string expected_output =
-      "TaggedTuple:\n"
-      "----------\n"
-      "Name:  (anonymous namespace)::name\n"
-      "Type:  std::string\n"
-      "Value: bla\n"
-      "----------\n"
-      "Name:  (anonymous namespace)::age\n"
-      "Type:  int\n"
-      "Value: 17\n"
-      "----------\n"
-      "Name:  (anonymous namespace)::email\n"
-      "Type:  std::string\n"
-      "Value: bla@bla.bla\n"
-      "----------\n"
-      "Name:  (anonymous namespace)::parents\n"
-      "Type:  std::vector<std::string>\n"
-      "Value: (Mom,Dad)\n"
-      "----------\n"
-      "Name:  (anonymous namespace)::not_streamable_tag\n"
-      "Type:  (anonymous namespace)::not_streamable\n"
-      "Value: UNSTREAMABLE\n";
+        "TaggedTuple:\n"
+        "----------\n"
+        "Name:  (anonymous namespace)::name\n"
+        "Type:  std::string\n"
+        "Value: bla\n"
+        "----------\n"
+        "Name:  (anonymous namespace)::age\n"
+        "Type:  int\n"
+        "Value: 17\n"
+        "----------\n"
+        "Name:  (anonymous namespace)::email\n"
+        "Type:  std::string\n"
+        "Value: bla@bla.bla\n"
+        "----------\n"
+        "Name:  (anonymous namespace)::parents\n"
+        "Type:  std::vector<std::string>\n"
+        "Value: (Mom,Dad)\n"
+        "----------\n"
+        "Name:  (anonymous namespace)::not_streamable_tag\n"
+        "Type:  (anonymous namespace)::not_streamable\n"
+        "Value: UNSTREAMABLE\n";
     std::stringstream ss;
     ss << test;
     CHECK(ss.str() == expected_output);
@@ -1020,7 +1020,6 @@ void test_single_tag_constructor() {
   }
 }
 }  // namespace
-
 
 SPECTRE_TEST_CASE("Unit.Utilities.TaggedTuple", "[Utilities][Unit]") {
   test_general();

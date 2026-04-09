@@ -25,6 +25,7 @@
 #include <vector>
 #include <yaml-cpp/yaml.h>
 
+#include "DataStructures/TaggedTuple.hpp"
 #include "Options/Context.hpp"
 #include "Options/Options.hpp"
 #include "Options/OptionsDetails.hpp"
@@ -39,7 +40,6 @@
 #include "Utilities/NoSuchType.hpp"
 #include "Utilities/PrettyType.hpp"
 #include "Utilities/StdHelpers.hpp"
-#include "Utilities/TaggedTuple.hpp"
 #include "Utilities/TypeTraits.hpp"
 #include "Utilities/TypeTraits/IsA.hpp"
 #include "Utilities/TypeTraits/IsInteger.hpp"

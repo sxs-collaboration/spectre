@@ -8,6 +8,7 @@
 #include <memory>
 #include <string>
 
+#include "DataStructures/TaggedTuple.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "IO/Exporter/PointwiseInterpolator.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
@@ -17,7 +18,6 @@
 #include "PointwiseFunctions/InitialDataUtilities/InitialGuess.hpp"
 #include "Utilities/Serialization/CharmPupable.hpp"
 #include "Utilities/TMPL.hpp"
-#include "Utilities/TaggedTuple.hpp"
 
 /// \cond
 namespace PUP {

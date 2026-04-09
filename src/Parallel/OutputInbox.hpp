@@ -5,8 +5,8 @@
 
 #include <cstddef>
 
+#include "DataStructures/TaggedTuple.hpp"
 #include "Utilities/TMPL.hpp"
-#include "Utilities/TaggedTuple.hpp"
 #include "Utilities/TypeTraits/CreateIsCallable.hpp"
 
 namespace Parallel {

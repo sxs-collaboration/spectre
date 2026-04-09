@@ -3,11 +3,11 @@
 
 #include "ParallelAlgorithms/RayTracer/BackgroundSpacetimes/NumericData.hpp"
 
+#include "DataStructures/TaggedTuple.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "IO/Exporter/PointwiseInterpolator.hpp"
 #include "IO/Exporter/SpacetimeInterpolator.hpp"
 #include "Parallel/Printf/Printf.hpp"
-#include "Utilities/TaggedTuple.hpp"
 
 namespace ray_tracing {
 

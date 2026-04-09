@@ -19,6 +19,7 @@
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Index.hpp"
+#include "DataStructures/TaggedTuple.hpp"
 #include "Domain/Creators/Rectilinear.hpp"
 #include "Domain/Creators/RegisterDerivedWithCharm.hpp"
 #include "Domain/Creators/Tags/Domain.hpp"
@@ -58,7 +59,6 @@
 #include "Utilities/MakeString.hpp"
 #include "Utilities/Numeric.hpp"
 #include "Utilities/Serialization/Serialize.hpp"
-#include "Utilities/TaggedTuple.hpp"
 
 // NOLINTNEXTLINE(google-build-using-namespace)
 namespace helpers = TestObservers_detail;

@@ -11,6 +11,7 @@
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataVector.hpp"
+#include "DataStructures/TaggedTuple.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
 #include "DataStructures/VariablesTag.hpp"
@@ -43,7 +44,6 @@
 #include "PointwiseFunctions/Hydro/Tags.hpp"
 #include "Time/Tags/Time.hpp"
 #include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
-#include "Utilities/TaggedTuple.hpp"
 
 namespace grmhd::GhValenciaDivClean::Actions {
 namespace {

@@ -13,6 +13,7 @@
 #include <unordered_set>
 #include <utility>
 
+#include "DataStructures/TaggedTuple.hpp"
 #include "Framework/MockDistributedObject.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Parallel/GlobalCache.hpp"
@@ -20,7 +21,6 @@
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Serialization/Serialize.hpp"
 #include "Utilities/TMPL.hpp"
-#include "Utilities/TaggedTuple.hpp"
 #include "Utilities/TypeTraits.hpp"
 #include "Utilities/TypeTraits/IsA.hpp"
 

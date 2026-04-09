@@ -12,6 +12,7 @@
 #include <variant>
 #include <vector>
 
+#include "DataStructures/TaggedTuple.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "IO/Exporter/PointwiseInterpolator.hpp"
 #include "IO/Exporter/SpacetimeInterpolator.hpp"
@@ -22,7 +23,6 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Serialization/CharmPupable.hpp"
 #include "Utilities/TMPL.hpp"
-#include "Utilities/TaggedTuple.hpp"
 
 namespace ray_tracing {
 

@@ -6,6 +6,7 @@
 #include <cstddef>
 
 #include "DataStructures/DataBox/DataBox.hpp"
+#include "DataStructures/TaggedTuple.hpp"
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "IO/Logging/Tags.hpp"
@@ -20,7 +21,6 @@
 #include "ParallelAlgorithms/Amr/Tags.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
-#include "Utilities/TaggedTuple.hpp"
 
 /// Actions to control the elliptic AMR algorithm
 namespace elliptic::amr::Actions {

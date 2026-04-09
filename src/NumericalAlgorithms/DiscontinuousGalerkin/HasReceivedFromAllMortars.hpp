@@ -5,9 +5,9 @@
 
 #include <cstddef>
 
+#include "DataStructures/TaggedTuple.hpp"
 #include "Domain/Structure/Element.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/MortarHelpers.hpp"
-#include "Utilities/TaggedTuple.hpp"
 
 namespace dg {
 

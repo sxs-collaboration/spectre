@@ -17,6 +17,7 @@
 #include "ControlSystem/TimescaleTuner.hpp"
 #include "ControlSystem/UpdateFunctionOfTime.hpp"
 #include "DataStructures/DataVector.hpp"
+#include "DataStructures/TaggedTuple.hpp"
 #include "Domain/Creators/Tags/FunctionsOfTime.hpp"
 #include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
 #include "Domain/FunctionsOfTime/PiecewisePolynomial.hpp"
@@ -26,7 +27,6 @@
 #include "Helpers/ControlSystem/SystemHelpers.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Utilities/TMPL.hpp"
-#include "Utilities/TaggedTuple.hpp"
 
 namespace control_system {
 namespace {

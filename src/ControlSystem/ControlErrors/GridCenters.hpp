@@ -10,6 +10,7 @@
 #include "ControlSystem/Tags/QueueTags.hpp"
 #include "ControlSystem/Tags/SystemTags.hpp"
 #include "DataStructures/DataVector.hpp"
+#include "DataStructures/TaggedTuple.hpp"
 #include "Domain/Creators/Tags/ObjectCenter.hpp"
 #include "Domain/Structure/ObjectLabel.hpp"
 #include "Options/Context.hpp"
@@ -18,7 +19,6 @@
 #include "Parallel/GlobalCache.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
-#include "Utilities/TaggedTuple.hpp"
 
 /// \cond
 namespace domain::Tags {

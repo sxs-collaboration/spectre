@@ -7,7 +7,7 @@
 #include <type_traits>
 #include <unordered_set>
 
-#include "Utilities/TaggedTuple.hpp"
+#include "DataStructures/TaggedTuple.hpp"
 
 #include "Parallel/GlobalCache.decl.h"
 

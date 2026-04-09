@@ -8,6 +8,7 @@
 #include <pup.h>
 
 #include "DataStructures/CachedTempBuffer.hpp"
+#include "DataStructures/TaggedTuple.hpp"
 #include "DataStructures/Tags/TempTensor.hpp"
 #include "DataStructures/Tensor/IndexType.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
@@ -17,7 +18,6 @@
 #include "PointwiseFunctions/AnalyticData/GeneralRelativity/AnalyticData.hpp"
 #include "PointwiseFunctions/GeneralRelativity/TagsDeclarations.hpp"
 #include "Utilities/TMPL.hpp"
-#include "Utilities/TaggedTuple.hpp"
 
 /// \cond
 namespace Tags {

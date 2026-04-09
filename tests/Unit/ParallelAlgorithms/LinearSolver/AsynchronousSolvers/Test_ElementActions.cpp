@@ -11,6 +11,7 @@
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/DynamicVector.hpp"
 #include "DataStructures/Matrix.hpp"
+#include "DataStructures/TaggedTuple.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "Helpers/IO/Observers/ObserverHelpers.hpp"
 #include "IO/H5/Dat.hpp"
@@ -24,7 +25,6 @@
 #include "ParallelAlgorithms/LinearSolver/Tags.hpp"
 #include "Utilities/FileSystem.hpp"
 #include "Utilities/TMPL.hpp"
-#include "Utilities/TaggedTuple.hpp"
 
 namespace {
 

@@ -3,7 +3,7 @@
 
 module AlgorithmSingleton {
 
-  include "Utilities/TaggedTuple.hpp";
+  include "DataStructures/TaggedTuple.hpp";
   include "Parallel/GlobalCache.decl.h";
   include "Parallel/MaxInlineMethodsReached.hpp";
   include "Parallel/Phase.hpp";

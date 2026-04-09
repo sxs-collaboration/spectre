@@ -3,9 +3,9 @@
 
 #pragma once
 
+#include "DataStructures/TaggedTuple.hpp"
 #include "Parallel/InitializationTag.hpp"
 #include "Utilities/TMPL.hpp"
-#include "Utilities/TaggedTuple.hpp"
 #include "Utilities/TypeTraits.hpp"
 
 namespace Parallel {

@@ -28,6 +28,7 @@
 #include "ControlSystem/TimescaleTuner.hpp"
 #include "ControlSystem/UpdateTimescaleTuner.hpp"
 #include "DataStructures/DataVector.hpp"
+#include "DataStructures/TaggedTuple.hpp"
 #include "Domain/Block.hpp"
 #include "Domain/Creators/Tags/FunctionsOfTime.hpp"
 #include "Domain/ExcisionSphere.hpp"
@@ -47,7 +48,6 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
-#include "Utilities/TaggedTuple.hpp"
 
 namespace Frame {
 struct Distorted;

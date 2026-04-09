@@ -9,10 +9,10 @@
 #include <functional>
 #include <vector>
 
+#include "DataStructures/TaggedTuple.hpp"
 #include "Utilities/Literals.hpp"
 #include "Utilities/MakeArray.hpp"
 #include "Utilities/MakeWithValue.hpp"
-#include "Utilities/TaggedTuple.hpp"
 
 namespace {
 struct Makeable {

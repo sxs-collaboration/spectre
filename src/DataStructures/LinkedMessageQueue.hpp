@@ -11,10 +11,10 @@
 #include <utility>
 
 #include "DataStructures/LinkedMessageId.hpp"
+#include "DataStructures/TaggedTuple.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/Serialization/PupStlCpp17.hpp"
 #include "Utilities/TMPL.hpp"
-#include "Utilities/TaggedTuple.hpp"
 
 /// \cond
 template <typename Id, typename QueueTags>

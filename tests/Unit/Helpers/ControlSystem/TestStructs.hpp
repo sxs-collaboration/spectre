@@ -14,6 +14,7 @@
 #include "ControlSystem/TimescaleTuner.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/LinkedMessageId.hpp"
+#include "DataStructures/TaggedTuple.hpp"
 #include "Domain/Structure/ObjectLabel.hpp"
 #include "Helpers/ControlSystem/Examples.hpp"
 #include "Options/String.hpp"
@@ -27,7 +28,6 @@
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/Serialization/CharmPupable.hpp"
 #include "Utilities/TMPL.hpp"
-#include "Utilities/TaggedTuple.hpp"
 
 namespace Tags {
 struct PreviousTriggerTime;

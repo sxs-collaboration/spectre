@@ -10,9 +10,9 @@
 #include <string>
 #include <utility>
 
+#include "DataStructures/TaggedTuple.hpp"
 #include "Parallel/OutputInbox.hpp"
 #include "Utilities/StdHelpers.hpp"
-#include "Utilities/TaggedTuple.hpp"
 
 namespace Parallel {
 namespace {

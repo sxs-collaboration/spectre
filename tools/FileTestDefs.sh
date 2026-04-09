@@ -624,7 +624,7 @@ enable_if() {
                   'src/IO/H5/File.hpp$' \
                   'src/Utilities/Requires.hpp$' \
                   'src/Utilities/TMPL.hpp$' \
-                  'src/Utilities/TaggedTuple.hpp$' \
+                  'src/DataStructures/TaggedTuple.hpp$' \
                   'tests/Unit/Utilities/Test_TypeTraits.cpp$' && \
         staged_grep -q std::enable_if "$1"
 }

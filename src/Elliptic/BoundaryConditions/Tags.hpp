@@ -8,9 +8,9 @@
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/DataBox/TagName.hpp"
+#include "DataStructures/TaggedTuple.hpp"
 #include "Elliptic/BoundaryConditions/BoundaryConditionType.hpp"
 #include "Options/String.hpp"
-#include "Utilities/TaggedTuple.hpp"
 
 namespace elliptic {
 namespace OptionTags {

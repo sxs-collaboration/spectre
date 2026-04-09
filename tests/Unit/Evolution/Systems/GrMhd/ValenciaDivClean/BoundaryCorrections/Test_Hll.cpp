@@ -7,6 +7,7 @@
 #include <cstddef>
 #include <string>
 
+#include "DataStructures/TaggedTuple.hpp"
 #include "Evolution/BoundaryCorrection.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/BoundaryCorrections/Hll.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/System.hpp"
@@ -19,7 +20,6 @@
 #include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/PolytropicFluid.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
-#include "Utilities/TaggedTuple.hpp"
 
 namespace {
 namespace helpers = TestHelpers::evolution::dg;

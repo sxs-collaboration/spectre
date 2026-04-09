@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "DataStructures/Matrix.hpp"
+#include "DataStructures/TaggedTuple.hpp"
 #include "Domain/Creators/Tags/Domain.hpp"
 #include "Domain/Creators/Tags/FunctionsOfTime.hpp"
 #include "Domain/Domain.hpp"
@@ -38,7 +39,6 @@
 #include "Utilities/Numeric.hpp"
 #include "Utilities/Overloader.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
-#include "Utilities/TaggedTuple.hpp"
 
 namespace helpers = TestObservers_detail;
 

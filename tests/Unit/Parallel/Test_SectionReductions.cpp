@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "DataStructures/DataBox/DataBox.hpp"
+#include "DataStructures/TaggedTuple.hpp"
 #include "Options/String.hpp"
 #include "Parallel/AlgorithmExecution.hpp"
 #include "Parallel/Algorithms/AlgorithmArray.hpp"
@@ -28,7 +29,6 @@
 #include "ParallelAlgorithms/Actions/TerminatePhase.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/System/ParallelInfo.hpp"
-#include "Utilities/TaggedTuple.hpp"
 
 namespace {
 

@@ -16,6 +16,7 @@
 #include <tuple>
 #include <type_traits>
 
+#include "DataStructures/TaggedTuple.hpp"
 #include "Informer/InfoFromBuild.hpp"
 #include "Informer/Informer.hpp"
 #include "Options/ParseOptions.hpp"
@@ -48,7 +49,6 @@
 #include "Utilities/System/Exit.hpp"
 #include "Utilities/System/ParallelInfo.hpp"
 #include "Utilities/TMPL.hpp"
-#include "Utilities/TaggedTuple.hpp"
 #include "Utilities/TypeTraits/CreateGetTypeAliasOrDefault.hpp"
 #include "Utilities/TypeTraits/CreateIsCallable.hpp"
 

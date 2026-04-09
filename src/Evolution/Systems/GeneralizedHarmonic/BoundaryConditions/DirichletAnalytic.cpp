@@ -8,6 +8,7 @@
 #include <pup.h>
 #include <type_traits>
 
+#include "DataStructures/TaggedTuple.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/System.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/Factory.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Lapse.hpp"
@@ -15,7 +16,6 @@
 #include "PointwiseFunctions/GeneralRelativity/SpatialMetric.hpp"
 #include "Utilities/CallWithDynamicType.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
-#include "Utilities/TaggedTuple.hpp"
 
 namespace gh::BoundaryConditions {
 template <size_t Dim>

@@ -11,6 +11,7 @@
 #include <unordered_set>
 #include <vector>
 
+#include "DataStructures/TaggedTuple.hpp"
 #include "Domain/Creators/Tags/Domain.hpp"
 #include "Domain/Creators/Tags/InitialExtents.hpp"
 #include "Domain/Creators/Tags/InitialRefinementLevels.hpp"
@@ -33,7 +34,6 @@
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/Serialization/Serialize.hpp"
 #include "Utilities/System/ParallelInfo.hpp"
-#include "Utilities/TaggedTuple.hpp"
 
 namespace LinearSolver::multigrid {
 

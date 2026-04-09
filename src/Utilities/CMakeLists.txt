@@ -82,7 +82,6 @@ spectre_target_headers(
   StlBoilerplate.hpp
   StlStreamDeclarations.hpp
   TMPL.hpp
-  TaggedTuple.hpp
   TmplDebugging.hpp
   TmplDigraph.hpp
   Tuple.hpp

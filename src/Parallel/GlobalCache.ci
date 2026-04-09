@@ -3,12 +3,12 @@
 
 module GlobalCache {
 
+  include "DataStructures/TaggedTuple.hpp";
   include "optional";
   include "string";
   include "Parallel/GlobalCacheDeclare.hpp";
   include "Parallel/ParallelComponentHelpers.hpp";
   include "Parallel/ResourceInfo.hpp";
-  include "Utilities/TaggedTuple.hpp";
   include "Parallel/Main.decl.h";
 
   namespace Parallel {
