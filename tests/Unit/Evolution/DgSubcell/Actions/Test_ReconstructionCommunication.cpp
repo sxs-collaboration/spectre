@@ -68,6 +68,7 @@
 #include "Time/Tags/TimeStepId.hpp"
 #include "Time/Time.hpp"
 #include "Time/TimeStepId.hpp"
+#include "Utilities/Algorithm.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Numeric.hpp"
@@ -481,14 +482,15 @@ void test(const bool use_cell_centered_flux) {
             comp, evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<
                       Dim, UseNodegroupDgElements>>(runner, east_id)
             .messages;
-    CHECK_ITERABLE_APPROX(
-        expected_east_data,
-        east_data.at(time_step_id)
-            .at(DirectionalId<Dim>{Direction<Dim>::lower_xi(), self_id})
-            .ghost_cell_data.value());
-    CHECK(east_data.at(time_step_id)
-              .at(DirectionalId<Dim>{Direction<Dim>::lower_xi(), self_id})
-              .tci_status == self_tci_decision);
+    const auto east_message =
+        alg::find_if(east_data.at(time_step_id), [&](const auto& entry) {
+          return entry.first ==
+                 DirectionalId<Dim>{Direction<Dim>::lower_xi(), self_id};
+        });
+    REQUIRE(east_message != east_data.at(time_step_id).end());
+    CHECK_ITERABLE_APPROX(expected_east_data,
+                          east_message->second.ghost_cell_data.value());
+    CHECK(east_message->second.tci_status == self_tci_decision);
   }
   if constexpr (Dim > 1) {
     const auto direction = Direction<Dim>::lower_eta();
@@ -534,15 +536,14 @@ void test(const bool use_cell_centered_flux) {
             comp, evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<
                       Dim, UseNodegroupDgElements>>(runner, south_id)
             .messages;
-    CHECK(
-        expected_south_data ==
-        south_data.at(time_step_id)
-            .at(DirectionalId<Dim>{orientation(direction.opposite()), self_id})
-            .ghost_cell_data.value());
-    CHECK(
-        south_data.at(time_step_id)
-            .at(DirectionalId<Dim>{orientation(direction.opposite()), self_id})
-            .tci_status == self_tci_decision);
+    const auto south_message =
+        alg::find_if(south_data.at(time_step_id), [&](const auto& entry) {
+          return entry.first ==
+                 DirectionalId<Dim>{orientation(direction.opposite()), self_id};
+        });
+    REQUIRE(south_message != south_data.at(time_step_id).end());
+    CHECK(expected_south_data == south_message->second.ghost_cell_data.value());
+    CHECK(south_message->second.tci_status == self_tci_decision);
   }
 
   // Set the inbox data on self_id and then check that it gets processed
@@ -744,12 +745,16 @@ DataVector compute_expected_ghost_data(
     const auto& extender_id =
         element.neighbors().at(extender_direction).ids().begin();
     const auto& data_from_extender =
-        ActionTesting::get_inbox_tag<
-            comp, evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<
-                      Dim, UseNodegroupDgElements>>(runner, element_id)
-            .messages.at(time_step_id)
-            .at(DirectionalId<Dim>{extender_direction, *extender_id})
-            .ghost_cell_data.value();
+        alg::find_if(
+            ActionTesting::get_inbox_tag<
+                comp, evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<
+                          Dim, UseNodegroupDgElements>>(runner, element_id)
+                .messages.at(time_step_id),
+            [&](const auto& entry) {
+              return entry.first ==
+                     DirectionalId<Dim>{extender_direction, *extender_id};
+            })
+            ->second.ghost_cell_data.value();
 
     const DataVector relevant_ghost_data;
     const size_t ghost_data_size = data_from_extender.size() - rdmp_size;
@@ -1095,12 +1100,14 @@ void test_receive_and_send_data(const bool enable_extension,
           orientation(direction.opposite());
       const auto& neighbor_element = *(id_to_element.at(*neighbor_id));
       const auto& ghost_data =
-          ActionTesting::get_inbox_tag<
-              comp, evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<
-                        Dim, UseNodegroupDgElements>>(runner, element_id)
-              .messages.at(time_step_id)
-              .at(directional_id)
-              .ghost_cell_data.value();
+          alg::find_if(
+              ActionTesting::get_inbox_tag<
+                  comp,
+                  evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<
+                      Dim, UseNodegroupDgElements>>(runner, element_id)
+                  .messages.at(time_step_id),
+              [&](const auto& entry) { return entry.first == directional_id; })
+              ->second.ghost_cell_data.value();
       const DataVector expected_ghost_data =
           compute_expected_ghost_data<Dim, UseNodegroupDgElements>(
               runner, neighbor_element, direction_from_neighbor, subcell_mesh,

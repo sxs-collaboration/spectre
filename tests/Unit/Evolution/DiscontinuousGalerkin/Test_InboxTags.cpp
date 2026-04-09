@@ -17,9 +17,10 @@
 #include "NumericalAlgorithms/Spectral/Quadrature.hpp"
 #include "Time/Slab.hpp"
 #include "Time/TimeStepId.hpp"
+#include "Utilities/Algorithm.hpp"
 
 namespace {
-enum class SendType { GhostData, DgData, AllData, SplitDgData };
+enum class SendType { GhostData, DgData, AllData };
 
 template <size_t Dim>
 evolution::dg::BoundaryData<Dim> make_boundary_data(const int label,
@@ -102,37 +103,25 @@ void test() {
   {
     const auto& time1_messages = inbox.messages.at(time_step_1);
     CHECK(time1_messages.size() == 2);
-    CHECK(time1_messages.at(mortar_upper) == data_upper_1);
-    CHECK(time1_messages.at(mortar_lower) == data_lower_1);
+    CHECK(alg::find(time1_messages, std::pair{mortar_upper, data_upper_1}) !=
+          time1_messages.end());
+    CHECK(alg::find(time1_messages, std::pair{mortar_lower, data_lower_1}) !=
+          time1_messages.end());
   }
   {
     const auto& time2_messages = inbox.messages.at(time_step_2);
     CHECK(time2_messages.size() == 1);
-    CHECK(time2_messages.at(mortar_lower) == data_lower_2);
+    CHECK(alg::find(time2_messages, std::pair{mortar_lower, data_lower_2}) !=
+          time2_messages.end());
   }
   {
     const auto& time3_messages = inbox.messages.at(time_step_3);
     CHECK(time3_messages.size() == 2);
-    CHECK(time3_messages.at(mortar_upper) == data_upper_3);
-    CHECK(time3_messages.at(mortar_lower) == data_lower_3);
+    CHECK(alg::find(time3_messages, std::pair{mortar_upper, data_upper_3}) !=
+          time3_messages.end());
+    CHECK(alg::find(time3_messages, std::pair{mortar_lower, data_lower_3}) !=
+          time3_messages.end());
   }
-
-  CHECK(not inbox.set_missing_messages(1));
-
-  CHECK(Inbox::insert_into_inbox(
-      &inbox, time_step_3,
-      std::pair{mortar_upper, make_boundary_data<Dim>(4, time_step_4,
-                                                      SendType::SplitDgData)}));
-
-  inbox.collect_messages();
-
-  CHECK(inbox.messages.size() == 3);
-  CHECK(inbox.messages.at(time_step_1).size() == 2);
-  CHECK(inbox.messages.at(time_step_2).size() == 1);
-  CHECK(inbox.messages.at(time_step_3).size() == 2);
-
-  CHECK(inbox.messages.at(time_step_3).at(mortar_upper) ==
-        make_boundary_data<Dim>(4, time_step_4, SendType::AllData));
 
   const auto data_upper_2 =
       make_boundary_data<Dim>(5, time_step_2, SendType::GhostData);

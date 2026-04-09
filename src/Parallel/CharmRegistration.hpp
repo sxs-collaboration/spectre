@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include <boost/container/small_vector.hpp>
 #include <cstddef>
 #include <memory>
 #include <string>
@@ -388,6 +389,11 @@ struct get_value_type {
 
 template <class T>
 struct get_value_type<std::vector<T>> {
+  using type = T;
+};
+
+template <class T, size_t N>
+struct get_value_type<boost::container::small_vector<T, N>> {
   using type = T;
 };
 

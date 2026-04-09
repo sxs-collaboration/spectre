@@ -86,6 +86,7 @@
 #include "Time/TimeSteppers/AdamsBashforth.hpp"
 #include "Time/TimeSteppers/LtsTimeStepper.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"
+#include "Utilities/Algorithm.hpp"
 #include "Utilities/CloneUniquePtrs.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Gsl.hpp"
@@ -1810,22 +1811,28 @@ void test_impl(const Spectral::Quadrature quadrature,
         compute_expected_mortar_data(mortar_id_east.direction(),
                                      mortar_id_east.id(), true));
   }
-  const auto& east_received_data =
+  const DirectionalId<Dim> east_neighbor_mortar_id{
+      element.neighbors()
+          .at(mortar_id_east.direction())
+          .orientation(mortar_id_east.id())(
+              mortar_id_east.direction().opposite()),
+      element.id()};
+  const auto& east_received_messages =
       ActionTesting::get_inbox_tag<
           component<metavars>,
           ::evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<
               Dim, UseNodegroupDgElements>>(runner, mortar_id_east.id())
-          .messages.at(time_step_id)
-          .at(DirectionalId<Dim>{element.neighbors()
-                                     .at(mortar_id_east.direction())
-                                     .orientation(mortar_id_east.id())(
-                                         mortar_id_east.direction().opposite()),
-                                 element.id()});
+          .messages.at(time_step_id);
+  const auto east_received_data =
+      alg::find_if(east_received_messages, [&](const auto& entry) {
+        return entry.first == east_neighbor_mortar_id;
+      });
+  REQUIRE(east_received_data != east_received_messages.end());
   CHECK_ITERABLE_APPROX(
-      east_received_data.boundary_correction_data.value(),
+      east_received_data->second.boundary_correction_data.value(),
       compute_expected_mortar_data(mortar_id_east.direction(),
                                    mortar_id_east.id(), false));
-  CHECK(east_received_data.validity_range == next_time_step_id);
+  CHECK(east_received_data->second.validity_range == next_time_step_id);
 
   if constexpr (Dim > 1) {
     const DirectionalId<Dim> mortar_id_south{Direction<Dim>::lower_eta(),
@@ -1856,22 +1863,26 @@ void test_impl(const Spectral::Quadrature quadrature,
             .orientation(mortar_id_south.id())(
                 mortar_id_south.direction().opposite()),
         element.id()};
-    const auto& south_received_data =
+    const auto& south_received_messages =
         ActionTesting::get_inbox_tag<
             component<metavars>,
             ::evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<
                 Dim, UseNodegroupDgElements>>(runner, mortar_id_south.id())
-            .messages.at(time_step_id)
-            .at(south_neighbor_mortar_id);
-    CHECK(south_received_data.validity_range == next_time_step_id);
-    CHECK(south_received_data.volume_mesh == south_orientation(mesh));
-    CHECK(south_received_data.boundary_correction_mesh.value() ==
+            .messages.at(time_step_id);
+    const auto south_received_data =
+        alg::find_if(south_received_messages, [&](const auto& entry) {
+          return entry.first == south_neighbor_mortar_id;
+        });
+    REQUIRE(south_received_data != south_received_messages.end());
+    CHECK(south_received_data->second.validity_range == next_time_step_id);
+    CHECK(south_received_data->second.volume_mesh == south_orientation(mesh));
+    CHECK(south_received_data->second.boundary_correction_mesh.value() ==
           ::dg::mortar_mesh(
               mesh.slice_away(south_neighbor_mortar_id.direction().dimension()),
               south_orientation(mesh).slice_away(
                   south_neighbor_mortar_id.direction().dimension())));
     CHECK_ITERABLE_APPROX(
-        south_received_data.boundary_correction_data.value(),
+        south_received_data->second.boundary_correction_data.value(),
         compute_expected_mortar_data(mortar_id_south.direction(),
                                      mortar_id_south.id(), false));
   }

@@ -12,13 +12,6 @@
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Time/TimeStepId.hpp"
 
-/// \cond
-namespace gsl {
-template <class T>
-class not_null;
-}  // namespace gsl
-/// \endcond
-
 namespace evolution::dg {
 /*!
  * \brief The data communicated between neighber elements.
@@ -64,22 +57,4 @@ template <size_t Dim>
 bool operator!=(const BoundaryData<Dim>& lhs, const BoundaryData<Dim>& rhs);
 template <size_t Dim>
 std::ostream& operator<<(std::ostream& os, const BoundaryData<Dim>& value);
-
-/*!
- * \brief Merge DG boundary correction data into an existing
- * BoundaryData object.
- *
- * In a 2-send implementation, we can receive DG boundary correction
- * data at a time for which we have already received ghost cell data.
- * This function sanity checks that the data we already have is the
- * ghost cells and then copes in the DG data.
- *
- * \note We do not currently use a 2-send implementation.  We
- * generally find that the number of communications is more important
- * than the size of each communication, and so a single communication
- * per time/sub step is preferred.
- */
-template <size_t Dim>
-void merge_boundary_data(gsl::not_null<BoundaryData<Dim>*> destination,
-                         BoundaryData<Dim> source);
 }  // namespace evolution::dg
