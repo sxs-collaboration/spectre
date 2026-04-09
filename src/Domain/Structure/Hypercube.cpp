@@ -77,6 +77,14 @@ HypercubeElement<ElementDim, HypercubeDim>::index() const {
   return index_;
 }
 
+// GCC warns that some instantiations (ElementDim == HypercubeDim) never return
+// because the gsl::at(index_, d) always throws if the size of index_ is 0. The
+// general template cannot be marked [[noreturn]] since other instantiations
+// do return.
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wsuggest-attribute=noreturn"
+#endif
 template <size_t ElementDim, size_t HypercubeDim>
 const Side&
 HypercubeElement<ElementDim, HypercubeDim>::side_in_parent_dimension(
@@ -96,6 +104,9 @@ HypercubeElement<ElementDim, HypercubeDim>::side_in_parent_dimension(
   }
   return gsl::at(index_, d);
 }
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 
 template <size_t ElementDim, size_t HypercubeDim>
 std::ostream& operator<<(
