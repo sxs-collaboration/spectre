@@ -113,19 +113,23 @@ class FukaInitialData : public evolution::initial_data::InitialData,
         get<hydro::Tags::SpatialVelocity<DataVector, 3>>(result);
     const auto& spatial_metric =
         get<gr::Tags::SpatialMetric<DataVector, 3>>(result);
-    // Compute enthalpy from internal energy and pressure
-    auto& specific_enthalpy =
-        get<hydro::Tags::SpecificEnthalpy<DataVector>>(result);
-    get(specific_enthalpy) = DataVector(num_points);
-    for (size_t i = 0; i < num_points; ++i) {
-      const double local_rest_mass_density = get(rest_mass_density)[i];
-      if (equal_within_roundoff(local_rest_mass_density, 0.)) {
-        get(specific_enthalpy)[i] = 1.;
-      } else {
-        get(specific_enthalpy)[i] = get(hydro::relativistic_specific_enthalpy(
-            Scalar<double>(local_rest_mass_density),
-            Scalar<double>(get(specific_internal_energy)[i]),
-            Scalar<double>(get(pressure)[i])));
+    if constexpr (tmpl::list_contains_v<
+                      tmpl::list<RequestedTags...>,
+                      hydro::Tags::SpecificEnthalpy<DataVector>>) {
+      // Compute enthalpy from internal energy and pressure if requested
+      auto& specific_enthalpy =
+          get<hydro::Tags::SpecificEnthalpy<DataVector>>(result);
+      get(specific_enthalpy) = DataVector(num_points);
+      for (size_t i = 0; i < num_points; ++i) {
+        const double local_rest_mass_density = get(rest_mass_density)[i];
+        if (equal_within_roundoff(local_rest_mass_density, 0.)) {
+          get(specific_enthalpy)[i] = 1.;
+        } else {
+          get(specific_enthalpy)[i] = get(hydro::relativistic_specific_enthalpy(
+              Scalar<double>(local_rest_mass_density),
+              Scalar<double>(get(specific_internal_energy)[i]),
+              Scalar<double>(get(pressure)[i])));
+        }
       }
     }
     // Constant electron fraction specified by input file
