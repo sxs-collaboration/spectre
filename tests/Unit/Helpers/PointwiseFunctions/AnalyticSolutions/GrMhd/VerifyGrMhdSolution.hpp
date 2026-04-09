@@ -19,6 +19,7 @@
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.tpp"
 #include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
+#include "NumericalAlgorithms/Spectral/Quadrature.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/AnalyticSolution.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
@@ -285,14 +286,19 @@ void verify_grmhd_solution(const Solution& solution, const Block<3>& block,
   tnsr::i<DataVector, 3> source_tilde_s(number_of_points);
   tnsr::I<DataVector, 3> source_tilde_b(number_of_points);
   Scalar<DataVector> source_tilde_phi(number_of_points);
+  // inertial_coords is needed for cartoon path of ComputeSources (not tested
+  // here)
+  const tnsr::I<DataVector, 3, Frame::Inertial> dg_inertial_coords{
+      number_of_points, std::numeric_limits<double>::signaling_NaN()};
   grmhd::ValenciaDivClean::ComputeSources::apply(
       make_not_null(&source_tilde_tau), make_not_null(&source_tilde_s),
       make_not_null(&source_tilde_b), make_not_null(&source_tilde_phi), tilde_d,
       tilde_ye, tilde_tau, tilde_s, tilde_b, tilde_phi, spatial_velocity,
       magnetic_field, rest_mass_density, electron_fraction,
-      specific_internal_energy, lorentz_factor, pressure, lapse, d_lapse,
+      specific_internal_energy, lorentz_factor, pressure, lapse, shift, d_lapse,
       d_shift, spatial_metric, d_spatial_metric, inv_spatial_metric,
-      sqrt_det_spatial_metric, extrinsic_curvature, 0.0);
+      sqrt_det_spatial_metric, extrinsic_curvature, 0.0, dg_inertial_coords,
+      mesh);
 
   Scalar<DataVector> residual_tilde_d(number_of_points, 0.);
   Scalar<DataVector> residual_tilde_ye(number_of_points, 0.);
