@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "DataStructures/DataBox/Tag.hpp"
-#include "Time/OptionTags/StepChoosers.hpp"
+#include "Time/OptionTags/LtsStepChoosers.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"
 #include "Utilities/Serialization/Serialize.hpp"
 #include "Utilities/TMPL.hpp"
@@ -17,10 +17,10 @@ namespace Tags {
 /// \ingroup DataBoxTagsGroup
 /// \ingroup TimeGroup
 /// \brief Tag for a vector of ::StepChooser%s
-struct StepChoosers : db::SimpleTag {
+struct LtsStepChoosers : db::SimpleTag {
   using type =
       std::vector<std::unique_ptr<::StepChooser<StepChooserUse::LtsStep>>>;
-  using option_tags = tmpl::list<::OptionTags::StepChoosers>;
+  using option_tags = tmpl::list<::OptionTags::LtsStepChoosers>;
   static constexpr bool is_overlayable = true;
 
   static constexpr bool pass_metavariables = false;

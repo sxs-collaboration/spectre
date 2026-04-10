@@ -24,8 +24,8 @@
 #include "Time/Tags/AdaptiveSteppingDiagnostics.hpp"
 #include "Time/Tags/FixedLtsRatio.hpp"
 #include "Time/Tags/HistoryEvolvedVariables.hpp"
+#include "Time/Tags/LtsStepChoosers.hpp"
 #include "Time/Tags/MinimumTimeStep.hpp"
-#include "Time/Tags/StepChoosers.hpp"
 #include "Time/Tags/TimeStep.hpp"
 #include "Time/Tags/TimeStepId.hpp"
 #include "Time/Tags/TimeStepper.hpp"
@@ -73,12 +73,12 @@ void check(const bool time_runs_forward,
           std::make_unique<StepChoosers::Constant>(2. * request));
 
   auto box = db::create<
-      db::AddSimpleTags<Parallel::Tags::MetavariablesImpl<Metavariables>,
-                        Tags::ConcreteTimeStepper<LtsTimeStepper>,
-                        Tags::MinimumTimeStep, Tags::TimeStepId,
-                        Tags::Next<Tags::TimeStepId>, Tags::TimeStep,
-                        Tags::StepChoosers, Tags::HistoryEvolvedVariables<Var>,
-                        Tags::AdaptiveSteppingDiagnostics>,
+      db::AddSimpleTags<
+          Parallel::Tags::MetavariablesImpl<Metavariables>,
+          Tags::ConcreteTimeStepper<LtsTimeStepper>, Tags::MinimumTimeStep,
+          Tags::TimeStepId, Tags::Next<Tags::TimeStepId>, Tags::TimeStep,
+          Tags::LtsStepChoosers, Tags::HistoryEvolvedVariables<Var>,
+          Tags::AdaptiveSteppingDiagnostics>,
       db::AddComputeTags<time_stepper_ref_tags<LtsTimeStepper>>>(
       Metavariables{}, std::move(time_stepper), 1e-8,
       TimeStepId(time_runs_forward, 0, time, 1, initial_step_size,
@@ -125,13 +125,13 @@ void test_fixed_lts_ratio() {
   auto box = db::create<
       db::AddSimpleTags<Parallel::Tags::MetavariablesImpl<Metavariables>,
                         Tags::ConcreteTimeStepper<LtsTimeStepper>,
-                        Tags::StepChoosers, Tags::MinimumTimeStep,
+                        Tags::LtsStepChoosers, Tags::MinimumTimeStep,
                         Tags::FixedLtsRatio, Tags::TimeStepId, Tags::TimeStep,
                         Tags::Next<Tags::TimeStepId>,
                         Tags::HistoryEvolvedVariables<Var>,
                         Tags::AdaptiveSteppingDiagnostics>,
       db::AddComputeTags<time_stepper_ref_tags<LtsTimeStepper>>>(
-      Metavariables{}, std::move(time_stepper), Tags::StepChoosers::type{},
+      Metavariables{}, std::move(time_stepper), Tags::LtsStepChoosers::type{},
       1e-10, std::optional<size_t>(8), initial_id, initial_step, next_id,
       std::move(history), AdaptiveSteppingDiagnostics{1, 2, 3, 4, 5});
 

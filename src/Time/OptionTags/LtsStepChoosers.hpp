@@ -13,7 +13,7 @@
 namespace OptionTags {
 /// \ingroup OptionTagsGroup
 /// \ingroup TimeGroup
-struct StepChoosers {
+struct LtsStepChoosers {
   static constexpr Options::String help{
       "Limits on the LTS step size.  If the list is empty, the step:slab "
       "ratio will not be changed."};

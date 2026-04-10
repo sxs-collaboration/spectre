@@ -53,7 +53,7 @@ Evolution:
   TimeStepper:
     AdamsBashforth:
       Order: 3
-  StepChoosers:
+  LtsStepChoosers:
     - LimitIncrease:
         Factor: 2
     - PreventRapidIncrease

@@ -30,7 +30,7 @@ struct LtsStep;
 namespace Tags {
 template <Triggers::WhenToCheck WhenToCheck>
 struct EventsAndTriggers;
-struct StepChoosers;
+struct LtsStepChoosers;
 template <typename StepperInterface>
 struct TimeStepper;
 struct VariableOrderAlgorithm;
@@ -60,7 +60,7 @@ struct StepperErrorEstimatesEnabledCompute : db::ComputeTag,
   using argument_tags = tmpl::conditional_t<
       LocalTimeStepping,
       tmpl::list<::Tags::EventsAndTriggers<Triggers::WhenToCheck::AtSlabs>,
-                 CacheTagPrefix<::Tags::StepChoosers>>,
+                 CacheTagPrefix<::Tags::LtsStepChoosers>>,
       tmpl::list<::Tags::EventsAndTriggers<Triggers::WhenToCheck::AtSlabs>>>;
 
   static constexpr auto function = []() {
@@ -100,7 +100,7 @@ struct StepperErrorTolerancesCompute
   using argument_tags = tmpl::conditional_t<
       LocalTimeStepping,
       tmpl::list<::Tags::EventsAndTriggers<Triggers::WhenToCheck::AtSlabs>,
-                 CacheTagPrefix<::Tags::StepChoosers>,
+                 CacheTagPrefix<::Tags::LtsStepChoosers>,
                  CacheTagPrefix<::Tags::TimeStepper<::TimeStepper>>,
                  CacheTagPrefix<::Tags::VariableOrderAlgorithm>>,
       tmpl::list<::Tags::EventsAndTriggers<Triggers::WhenToCheck::AtSlabs>>>;

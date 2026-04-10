@@ -94,7 +94,7 @@ Evolution:
   InitialSlabSize: 0.1
   VariableOrderAlgorithm:
     GoalOrder: 4
-  StepChoosers:
+  LtsStepChoosers:
     - LimitIncrease:
         Factor: 2
     - ErrorControl:

@@ -118,7 +118,7 @@ Cce:
     VariableOrderAlgorithm:
       GoalOrder: 3
     MinimumTimeStep: 1e-7
-    StepChoosers:
+    LtsStepChoosers:
       - Constant: 0.1
       - LimitIncrease:
           Factor: 2

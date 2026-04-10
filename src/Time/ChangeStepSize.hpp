@@ -13,8 +13,8 @@
 #include "Time/AdaptiveSteppingDiagnostics.hpp"
 #include "Time/ChooseLtsStepSize.hpp"
 #include "Time/Tags/HistoryEvolvedVariables.hpp"
+#include "Time/Tags/LtsStepChoosers.hpp"
 #include "Time/Tags/MinimumTimeStep.hpp"
-#include "Time/Tags/StepChoosers.hpp"
 #include "Time/Time.hpp"
 #include "Time/TimeStepId.hpp"
 #include "Time/TimeStepRequest.hpp"
@@ -44,7 +44,7 @@ struct TimeStepper;
 ///
 /// \details
 /// Usually, the new step size is chosen by calling the StepChoosers from
-/// `Tags::StepChoosers`, restricted based on the allowed step sizes at the
+/// `Tags::LtsStepChoosers`, restricted based on the allowed step sizes at the
 /// current time, and limits from history initialization.
 ///
 /// If `Tags::FixedLtsRatio` is present in the DataBox and not empty, the
@@ -65,7 +65,7 @@ template <typename StepChoosersToUse = AllStepChoosers,
 struct ChangeStepSize {
   using const_global_cache_tags =
       tmpl::list<CacheTagPrefix<Tags::MinimumTimeStep>,
-                 CacheTagPrefix<Tags::StepChoosers>>;
+                 CacheTagPrefix<Tags::LtsStepChoosers>>;
 
   using return_tags = tmpl::list<Tags::DataBox>;
   using argument_tags = tmpl::list<>;
@@ -80,7 +80,7 @@ struct ChangeStepSize {
     const LtsTimeStepper& time_stepper =
         db::get<CacheTagPrefix<Tags::TimeStepper<LtsTimeStepper>>>(*box);
     const auto& step_choosers =
-        db::get<CacheTagPrefix<Tags::StepChoosers>>(*box);
+        db::get<CacheTagPrefix<Tags::LtsStepChoosers>>(*box);
 
     using history_tags = ::Tags::get_all_history_tags<DbTags>;
     bool can_change_step_size = true;
