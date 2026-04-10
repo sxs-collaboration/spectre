@@ -22,6 +22,8 @@ bool Maximum::uses_local_data() const { return false; }
 
 bool Maximum::can_be_delayed() const { return true; }
 
+bool Maximum::must_set_step_size() const { return false; }
+
 void Maximum::pup(PUP::er& p) {
   StepChooser<StepChooserUse::Slab>::pup(p);
   StepChooser<StepChooserUse::LtsStep>::pup(p);

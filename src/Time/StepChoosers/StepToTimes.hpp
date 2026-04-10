@@ -55,6 +55,7 @@ class StepToTimes : public StepChooser<StepChooserUse::Slab> {
 
   bool uses_local_data() const override;
   bool can_be_delayed() const override;
+  bool must_set_step_size() const override;
 
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& p) override;

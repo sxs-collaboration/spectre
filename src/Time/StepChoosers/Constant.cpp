@@ -22,6 +22,8 @@ bool Constant::uses_local_data() const { return false; }
 
 bool Constant::can_be_delayed() const { return true; }
 
+bool Constant::must_set_step_size() const { return false; }
+
 void Constant::pup(PUP::er& p) {
   StepChooser<StepChooserUse::Slab>::pup(p);
   StepChooser<StepChooserUse::LtsStep>::pup(p);

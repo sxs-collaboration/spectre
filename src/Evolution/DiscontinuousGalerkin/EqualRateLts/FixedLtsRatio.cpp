@@ -39,6 +39,11 @@ bool FixedLtsRatio<Dim>::can_be_delayed() const {
 }
 
 template <size_t Dim>
+bool FixedLtsRatio<Dim>::must_set_step_size() const {
+  return false;
+}
+
+template <size_t Dim>
 std::unordered_map<std::type_index, StepperErrorTolerances>
 FixedLtsRatio<Dim>::tolerances() const {
   std::unordered_map<std::type_index, StepperErrorTolerances> tolerances{};

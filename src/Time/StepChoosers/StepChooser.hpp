@@ -109,6 +109,14 @@ class StepChooser : public virtual PUP::able {
   /// `TimeStepRequest` must return false here.
   virtual bool can_be_delayed() const = 0;
 
+  /// Whether the StepChooser's output only makes sense for setting
+  /// the step size, as opposed to using it to set the slab size in an
+  /// LTS evolution.
+  ///
+  /// This is generally true for StepChoosers that explicitly use past
+  /// step sizes to compute their suggestion and false for others.
+  virtual bool must_set_step_size() const = 0;
+
   /// The `last_step` parameter describes the step size to be
   /// adjusted.  It may be the step size or the slab size, or may be
   /// infinite if the appropriate size cannot be determined.

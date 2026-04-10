@@ -71,6 +71,7 @@ class PreventRapidIncrease : public StepChooser<StepChooserUse::Slab>,
 
   bool uses_local_data() const override { return false; }
   bool can_be_delayed() const override { return true; }
+  bool must_set_step_size() const override { return true; }
 
   void pup(PUP::er& p) override {
     StepChooser<StepChooserUse::Slab>::pup(p);

@@ -41,6 +41,11 @@ bool ByBlock<Dim>::can_be_delayed() const {
 }
 
 template <size_t Dim>
+bool ByBlock<Dim>::must_set_step_size() const {
+  return false;
+}
+
+template <size_t Dim>
 void ByBlock<Dim>::pup(PUP::er& p) {
   StepChooser<StepChooserUse::Slab>::pup(p);
   StepChooser<StepChooserUse::LtsStep>::pup(p);

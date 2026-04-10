@@ -63,6 +63,11 @@ bool Random<VolumeDim>::can_be_delayed() const {
 }
 
 template <size_t VolumeDim>
+bool Random<VolumeDim>::must_set_step_size() const {
+  return false;
+}
+
+template <size_t VolumeDim>
 void Random<VolumeDim>::pup(PUP::er& p) {
   StepChooser<StepChooserUse::Slab>::pup(p);
   StepChooser<StepChooserUse::LtsStep>::pup(p);

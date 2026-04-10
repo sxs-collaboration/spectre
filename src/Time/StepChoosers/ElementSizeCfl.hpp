@@ -90,6 +90,7 @@ class ElementSizeCfl : public StepChooser<StepChooserUse::Slab>,
 
   bool uses_local_data() const override { return true; }
   bool can_be_delayed() const override { return true; }
+  bool must_set_step_size() const override { return false; }
 
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& p) override {
