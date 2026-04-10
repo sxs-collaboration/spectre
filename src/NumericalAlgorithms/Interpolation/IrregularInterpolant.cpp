@@ -14,6 +14,7 @@
 #include "DataStructures/Tensor/IndexType.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "NumericalAlgorithms/Interpolation/CardinalInterpolator.hpp"
+#include "NumericalAlgorithms/Spectral/Basis.hpp"
 #include "NumericalAlgorithms/Spectral/BasisFunctions/Zernike.hpp"
 #include "NumericalAlgorithms/Spectral/InterpolationMatrix.hpp"
 #include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
@@ -508,10 +509,9 @@ Matrix interpolation_matrix(
           fd_to_fd_interp_order == std::nullopt,
       "fd_to_fd_interp_order only applies to FD meshes. But Mesh is " << mesh);
 
-  if (mesh.basis()[0] == Spectral::Basis::FiniteDifference) {
-    ASSERT(mesh.basis()[1] == Spectral::Basis::FiniteDifference and
-               mesh.basis()[2] == Spectral::Basis::FiniteDifference,
-           "Mixed FD and DG bases are not supported. Mesh = " << mesh);
+  if (mesh.basis() == std::array{Spectral::Basis::FiniteDifference,
+                                 Spectral::Basis::FiniteDifference,
+                                 Spectral::Basis::FiniteDifference}) {
     auto source_xi = logical_coordinates(mesh);
     DataVector xi_source{get<0>(source_xi).data(), mesh.extents(0)};
     DataVector eta_source;
@@ -577,6 +577,35 @@ Matrix interpolation_matrix(
       }
     }
     return result;
+  } else if (mesh.basis() == std::array{Spectral::Basis::FiniteDifference,
+                                        Spectral::Basis::FiniteDifference,
+                                        Spectral::Basis::Cartoon}) {
+    // Axial Symmetry -> call 2D implementation
+    tnsr::I<DataType, 2, Frame::ElementLogical> points_2d{};
+    if constexpr (std::is_same_v<DataType, DataVector>) {
+      get<0>(points_2d).set_data_ref(
+          make_not_null(const_cast<DataType*>(&get<0>(points))));  // NOLINT
+      get<1>(points_2d).set_data_ref(
+          make_not_null(const_cast<DataType*>(&get<1>(points))));  // NOLINT
+    } else {
+      get<0>(points_2d) = get<0>(points);
+      get<1>(points_2d) = get<1>(points);
+    }
+    return interpolation_matrix(mesh.slice_through(0, 1), points_2d,
+                                fd_to_fd_interp_order);
+  } else if (mesh.basis() == std::array{Spectral::Basis::FiniteDifference,
+                                        Spectral::Basis::Cartoon,
+                                        Spectral::Basis::Cartoon}) {
+    // Spherical Symmetry -> call 1D implementation
+    tnsr::I<DataType, 1, Frame::ElementLogical> points_1d{};
+    if constexpr (std::is_same_v<DataType, DataVector>) {
+      get<0>(points_1d).set_data_ref(
+          make_not_null(const_cast<DataType*>(&get<0>(points))));  // NOLINT
+    } else {
+      get<0>(points_1d) = get<0>(points);
+    }
+    return interpolation_matrix(mesh.slice_through(0), points_1d,
+                                fd_to_fd_interp_order);
   } else if (mesh.basis()[1] == Spectral::Basis::SphericalHarmonic) {
     ASSERT(mesh.basis()[2] == Spectral::Basis::SphericalHarmonic,
            "Expected last two dimensions to each have spherical harmonic "
@@ -610,6 +639,10 @@ Matrix interpolation_matrix(
                                        number_of_target_points);
     return result;
   }
+  ASSERT(mesh.basis(0) != Spectral::Basis::FiniteDifference and
+             mesh.basis(1) != Spectral::Basis::FiniteDifference and
+             mesh.basis(2) != Spectral::Basis::FiniteDifference,
+         "Mixed FD and DG bases are not supported. Mesh = " << mesh);
 
   // Not FD or special basis, so use 1D spectral interpolation matrices
   const std::array<Matrix, 3> matrices{
