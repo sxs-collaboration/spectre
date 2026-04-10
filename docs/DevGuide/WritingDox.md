@@ -184,6 +184,9 @@ entry. Else, use the URL provided by the publisher.
 - Make sure to wrap strings in the BibTeX entries in `{}` when capitalization is
 important, or when BibTeX keywords should be ignored (e.g. `and` in author
 lists).
+- Spell out journal names directly instead of using LaTeX macros such as
+  `\apj` or `\mnras`, since Doxygen does not expand those macros in the
+  generated bibliography.
 
 To cite an entry from the `docs/References.bib` file in the documentation, use
 the Doxygen keyword
