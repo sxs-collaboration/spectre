@@ -138,22 +138,7 @@ std::vector<CellInTopology> compute_cells(const std::vector<size_t>& extents) {
 }
 
 int xdmf_topology_type(const Topology topology) {
-  switch (topology) {
-    case Topology::Line:
-      return 2;
-    case Topology::Triangle:
-      return 4;
-    case Topology::Quad:
-      return 5;
-    case Topology::Wedge:
-      return 8;
-    case Topology::Hexahedron:
-      return 9;
-    // LCOV_EXCL_START
-    default:
-      ERROR("Unknown topology type for XDMF type tag");
-      // LCOV_EXCL_STOP
-  }
+  return static_cast<int>(topology);
 }
 
 // Explicit instantiations
