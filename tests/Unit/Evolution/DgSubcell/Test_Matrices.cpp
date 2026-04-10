@@ -229,6 +229,195 @@ void reconstruction_matrix(const double eps) {
   }
 }
 
+void test_cartoon_matrices() {
+  for (const auto quad : {Spectral::Quadrature::SphericalSymmetry,
+                          Spectral::Quadrature::AxialSymmetry}) {
+    // projection_matrix for a Cartoon dimension returns a 1x1 identity matrix.
+    const Mesh<1> cartoon_mesh{1, Spectral::Basis::Cartoon, quad};
+    const Matrix& proj_mat =
+        projection_matrix(cartoon_mesh, /*subcell_extents=*/1, quad);
+    REQUIRE(proj_mat.rows() == 1);
+    REQUIRE(proj_mat.columns() == 1);
+    CHECK(proj_mat(0, 0) == approx(1.0));
+    // reconstruction_matrix for a Cartoon 1D mesh returns a 1x1 identity
+    // matrix.
+    const Index<1> cartoon_subcell_extents{1};
+    const Matrix& rec_mat = subcell::fd::reconstruction_matrix(
+        cartoon_mesh, cartoon_subcell_extents);
+    REQUIRE(rec_mat.rows() == 1);
+    REQUIRE(rec_mat.columns() == 1);
+    CHECK(rec_mat(0, 0) == approx(1.0));
+  }
+#ifdef SPECTRE_DEBUG
+  // projection_matrix: unsupported subcell_quadrature.
+  CHECK_THROWS_WITH(
+      projection_matrix(Mesh<1>{3, Spectral::Basis::Legendre,
+                                Spectral::Quadrature::GaussLobatto},
+                        5, Spectral::Quadrature::GaussLobatto),
+      Catch::Matchers::ContainsSubstring(
+          "subcell_quadrature option in projection_matrix should be"));
+  // projection_matrix: unsupported basis (not Legendre or Cartoon).
+  CHECK_THROWS_WITH(
+      projection_matrix(Mesh<1>{3, Spectral::Basis::Chebyshev,
+                                Spectral::Quadrature::GaussLobatto},
+                        5, Spectral::Quadrature::CellCentered),
+      Catch::Matchers::ContainsSubstring(
+          "FD Subcell projection only supports Legendre or Cartoon bases"));
+  // reconstruction_matrix: unsupported basis at dim 0.
+  CHECK_THROWS_WITH(
+      subcell::fd::reconstruction_matrix(
+          Mesh<1>{3, Spectral::Basis::Chebyshev,
+                  Spectral::Quadrature::GaussLobatto},
+          Index<1>{5}),
+      Catch::Matchers::ContainsSubstring(
+          "FD Subcell reconstruction only supports Legendre or Cartoon bases"));
+  // reconstruction_matrix 1D: non-uniform subcell extents (trivially can't
+  // fail for 1D since Index<1> is always "uniform", so test non-uniform mesh
+  // instead via 2D).
+  CHECK_THROWS_WITH(
+      subcell::fd::reconstruction_matrix(
+          Mesh<2>{{3, 4},
+                  {Spectral::Basis::Legendre, Spectral::Basis::Legendre},
+                  {Spectral::Quadrature::GaussLobatto,
+                   Spectral::Quadrature::GaussLobatto}},
+          Index<2>{5}),
+      Catch::Matchers::ContainsSubstring(
+          "The subcell mesh must have isotropic basis"));
+  CHECK_THROWS_WITH(
+      subcell::fd::reconstruction_matrix(
+          Mesh<2>{3, Spectral::Basis::Legendre,
+                  Spectral::Quadrature::GaussLobatto},
+          Index<2>{{5, 7}}),
+      Catch::Matchers::ContainsSubstring("The subcell mesh must be uniform"));
+#endif
+}
+
+// Tests projection for 3D meshes with trailing Cartoon dimensions:
+// {Legendre, Legendre, Cartoon} (axial symmetry) and
+// {Legendre, Cartoon, Cartoon} (spherical symmetry).
+// Reconstruction is not tested here because DimByDim reconstruction passes
+// 1D slices, which are already covered by test_cartoon_matrices.
+template <size_t MaxPts, Spectral::Quadrature QuadratureType>
+void test_cartoon_mixed_matrices() {
+  for (size_t num_pts_1d = std::max(
+           static_cast<size_t>(2),
+           Spectral::minimum_number_of_points<Spectral::Basis::Legendre,
+                                              QuadratureType>);
+       num_pts_1d < MaxPts + 1; ++num_pts_1d) {
+    CAPTURE(num_pts_1d);
+    const size_t num_subcells_1d = 2 * num_pts_1d - 1;
+
+    for (const bool axial : {true, false}) {
+      CAPTURE(axial);
+      // axial  => {Legendre, Legendre, Cartoon}, AxialSymmetry
+      // !axial => {Legendre, Cartoon,  Cartoon}, SphericalSymmetry
+      const std::array<size_t, 3> dg_extents_arr{
+          num_pts_1d, axial ? num_pts_1d : 1_st, 1_st};
+      const std::array<Spectral::Basis, 3> bases{
+          Spectral::Basis::Legendre,
+          axial ? Spectral::Basis::Legendre : Spectral::Basis::Cartoon,
+          Spectral::Basis::Cartoon};
+      const auto cartoon_quad = axial ? Spectral::Quadrature::AxialSymmetry
+                                      : Spectral::Quadrature::SphericalSymmetry;
+      const std::array<Spectral::Quadrature, 3> quadratures{
+          QuadratureType, axial ? QuadratureType : cartoon_quad, cartoon_quad};
+
+      const Mesh<3> dg_mesh{dg_extents_arr, bases, quadratures};
+      const auto logical_coords = logical_coordinates(dg_mesh);
+
+      const std::array<size_t, 3> subcell_extents_arr{
+          num_subcells_1d, axial ? num_subcells_1d : 1_st, 1_st};
+      const Index<3> subcell_extents{subcell_extents_arr};
+      const size_t num_subcells = subcell_extents.product();
+
+      const size_t poly_degree = std::min(num_pts_1d - 2, 6_st);
+      const DataVector nodal_coeffs =
+          TestHelpers::evolution::dg::subcell::cell_values(poly_degree,
+                                                           logical_coords);
+
+      // Build projection matrices per dimension.
+      const Matrix empty{};
+      auto projection_mat = make_array<3>(std::cref(empty));
+      for (size_t d = 0; d < 3; ++d) {
+        const auto subcell_quad = gsl::at(bases, d) == Spectral::Basis::Cartoon
+                                      ? gsl::at(quadratures, d)
+                                      : Spectral::Quadrature::CellCentered;
+        gsl::at(projection_mat, d) = std::cref(projection_matrix(
+            dg_mesh.slice_through(d), subcell_extents[d], subcell_quad));
+      }
+
+      // Project DG -> subcell.
+      DataVector subcell_values(num_subcells, 0.0);
+      apply_matrices(make_not_null(&subcell_values), projection_mat,
+                     nodal_coeffs, dg_mesh.extents());
+
+      // The projected values should match the test polynomial evaluated at the
+      // subcell collocation points.
+      const std::array<Spectral::Basis, 3> subcell_bases{
+          Spectral::Basis::FiniteDifference,
+          axial ? Spectral::Basis::FiniteDifference : Spectral::Basis::Cartoon,
+          Spectral::Basis::Cartoon};
+      const std::array<Spectral::Quadrature, 3> subcell_quads{
+          Spectral::Quadrature::CellCentered,
+          axial ? Spectral::Quadrature::CellCentered : cartoon_quad,
+          cartoon_quad};
+      const Mesh<3> subcell_mesh{subcell_extents_arr, subcell_bases,
+                                 subcell_quads};
+      const DataVector expected_subcell_values =
+          TestHelpers::evolution::dg::subcell::cell_values(
+              poly_degree, logical_coordinates(subcell_mesh));
+      CHECK_ITERABLE_APPROX(subcell_values, expected_subcell_values);
+    }
+  }
+#ifdef SPECTRE_DEBUG
+  // reconstruction_matrix 3D spherical: cartoon subcell extents must be 1.
+  CHECK_THROWS_WITH(
+      subcell::fd::reconstruction_matrix(
+          Mesh<3>{{3, 1, 1},
+                  {Spectral::Basis::Legendre, Spectral::Basis::Cartoon,
+                   Spectral::Basis::Cartoon},
+                  {QuadratureType, Spectral::Quadrature::SphericalSymmetry,
+                   Spectral::Quadrature::SphericalSymmetry}},
+          Index<3>{{5, 3, 1}}),
+      Catch::Matchers::ContainsSubstring(
+          "The subcell extents are neither isotropic nor a valid cartoon "
+          "pattern"));
+  // reconstruction_matrix 3D axial: non-uniform DG extents in non-cartoon dims.
+  CHECK_THROWS_WITH(
+      subcell::fd::reconstruction_matrix(
+          Mesh<3>{{3, 4, 1},
+                  {Spectral::Basis::Legendre, Spectral::Basis::Legendre,
+                   Spectral::Basis::Cartoon},
+                  {QuadratureType, QuadratureType,
+                   Spectral::Quadrature::AxialSymmetry}},
+          Index<3>{{5, 5, 1}}),
+      Catch::Matchers::ContainsSubstring(
+          "The non-cartoon subcell sub-mesh must have isotropic basis"));
+  // reconstruction_matrix 3D axial: subcell extents not {n,n,1}.
+  CHECK_THROWS_WITH(
+      subcell::fd::reconstruction_matrix(
+          Mesh<3>{{3, 3, 1},
+                  {Spectral::Basis::Legendre, Spectral::Basis::Legendre,
+                   Spectral::Basis::Cartoon},
+                  {QuadratureType, QuadratureType,
+                   Spectral::Quadrature::AxialSymmetry}},
+          Index<3>{{5, 7, 1}}),
+      Catch::Matchers::ContainsSubstring(
+          "The subcell extents are neither isotropic nor a valid cartoon"));
+  // reconstruction_matrix 3D axial: cartoon subcell extent not 1.
+  CHECK_THROWS_WITH(
+      subcell::fd::reconstruction_matrix(
+          Mesh<3>{{3, 3, 1},
+                  {Spectral::Basis::Legendre, Spectral::Basis::Legendre,
+                   Spectral::Basis::Cartoon},
+                  {QuadratureType, QuadratureType,
+                   Spectral::Quadrature::AxialSymmetry}},
+          Index<3>{{5, 5, 3}}),
+      Catch::Matchers::ContainsSubstring(
+          "The subcell mesh must be uniform but is"));
+#endif
+}
+
 SPECTRE_TEST_CASE("Unit.Evolution.Subcell.Fd.ProjectionMatrix",
                   "[Evolution][Unit]") {
   test_projection_matrix<10, 1, Spectral::Basis::Legendre,
@@ -261,6 +450,9 @@ SPECTRE_TEST_CASE("Unit.Evolution.Subcell.Fd.ProjectionMatrix",
                                  Spectral::Quadrature::GaussLobatto>();
   test_projection_matrix_to_face<5, 3, 2, Spectral::Basis::Legendre,
                                  Spectral::Quadrature::Gauss>();
+  test_cartoon_matrices();
+  test_cartoon_mixed_matrices<10, Spectral::Quadrature::GaussLobatto>();
+  test_cartoon_mixed_matrices<10, Spectral::Quadrature::Gauss>();
 }
 
 // [[TimeOut, 10]]

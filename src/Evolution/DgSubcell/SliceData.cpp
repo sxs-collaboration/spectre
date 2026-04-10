@@ -94,12 +94,20 @@ DirectionMap<Dim, DataVector> slice_data_impl(
     const size_t num_sliced_pts =
         number_of_ghost_points * subcell_extents.slice_away(d).product();
 
-    ASSERT(num_sliced_pts <= num_pts,
-           "Number of ghost points (" << number_of_ghost_points
-                                      << ") is larger than the subcell mesh "
-                                         "extent to the slicing direction ("
-                                      << subcell_extents.indices().at(d)
-                                      << ") ");
+    // Note that Cartoon dimensions fail this assert but they will never be in
+    // directions_to_slice
+    if (Dim != 3 or
+        std::find_if(directions_to_slice.begin(), directions_to_slice.end(),
+                     [d](const Direction<Dim>& i) {
+                       return i.dimension() == d;
+                     }) != directions_to_slice.end()) {
+      ASSERT(num_sliced_pts <= num_pts,
+             "Number of ghost points (" << number_of_ghost_points
+                                        << ") is larger than the subcell mesh "
+                                           "extent to the slicing direction ("
+                                        << subcell_extents.indices().at(d)
+                                        << ")");
+    }
 
     gsl::at(result_grid_points, d) = num_sliced_pts;
   }

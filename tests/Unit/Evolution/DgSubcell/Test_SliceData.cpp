@@ -182,11 +182,79 @@ void test() {
   }
 }
 
+void test_cartoon() {
+  const size_t num_pts_xy = 5;
+  const size_t additional_buffer_size = 0;
+  const Index<3> extents{num_pts_xy, num_pts_xy, 1};
+
+  Variables<tmpl::list<Tags::Scalar, Tags::Vector<3>>> volume_vars{
+      extents.product()};
+  std::iota(volume_vars.data(), volume_vars.data() + volume_vars.size(), 0.0);
+
+  // Cartoon dimension is not sliced
+  const std::unordered_set<Direction<3>> directions_to_slice{
+      Direction<3>::upper_xi(), Direction<3>::lower_xi(),
+      Direction<3>::upper_eta(), Direction<3>::lower_eta()};
+
+  for (size_t number_of_ghost_points = 1; number_of_ghost_points < 4;
+       ++number_of_ghost_points) {
+    CAPTURE(number_of_ghost_points);
+    const auto sliced_data =
+        subcell::slice_data(volume_vars, extents, number_of_ghost_points,
+                            directions_to_slice, additional_buffer_size, {});
+    // Check that we got data back for the four requested directions.
+    CHECK(sliced_data.size() == 4);
+    for (const auto& direction : directions_to_slice) {
+      CAPTURE(direction);
+      REQUIRE(sliced_data.count(direction) == 1);
+      Index<3> expected_slice_extents = extents;
+      expected_slice_extents[direction.dimension()] = number_of_ghost_points;
+      CHECK(sliced_data.at(direction).size() ==
+            expected_slice_extents.product() *
+                    Variables<tmpl::list<Tags::Scalar, Tags::Vector<3>>>::
+                        number_of_independent_components +
+                additional_buffer_size);
+    }
+    // Zeta directions are absent.
+    CHECK(sliced_data.count(Direction<3>::upper_zeta()) == 0);
+    CHECK(sliced_data.count(Direction<3>::lower_zeta()) == 0);
+  }
+}
+
+#ifdef SPECTRE_DEBUG
+template <size_t Dim>
+void test_assert() {
+  const size_t num_points = 2;
+  const size_t additional_buffer_size = 0;
+  const Index<Dim> extents{num_points};
+
+  Variables<tmpl::list<Tags::Scalar, Tags::Vector<Dim>>> volume_vars{
+      extents.product()};
+  std::iota(volume_vars.data(), volume_vars.data() + volume_vars.size(), 0.0);
+
+  const std::unordered_set<Direction<Dim>> directions_to_slice{
+      Direction<Dim>::upper_xi()};
+
+  const size_t number_of_ghost_points = 3;
+
+  CHECK_THROWS_WITH(
+      subcell::slice_data(volume_vars, extents, number_of_ghost_points,
+                          directions_to_slice, additional_buffer_size, {}),
+      Catch::Matchers::ContainsSubstring("Number of ghost points"));
+}
+#endif  // SPECTRE_DEBUG
+
 // [[TimeOut, 8]]
 SPECTRE_TEST_CASE("Unit.Evolution.Subcell.SliceData", "[Evolution][Unit]") {
   test<1>();
   test<2>();
   test<3>();
+  test_cartoon();
+#ifdef SPECTRE_DEBUG
+  test_assert<1>();
+  test_assert<2>();
+  test_assert<3>();
+#endif  // SPECTRE_DEBUG
 }
 }  // namespace
 }  // namespace evolution::dg::subcell

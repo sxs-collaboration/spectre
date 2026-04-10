@@ -41,6 +41,7 @@
 #include "Evolution/DgSubcell/Tags/TciStatus.hpp"
 #include "Evolution/Initialization/SetVariables.hpp"
 #include "NumericalAlgorithms/Interpolation/IrregularInterpolant.hpp"
+#include "NumericalAlgorithms/Spectral/Basis.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Parallel/AlgorithmExecution.hpp"
 #include "Parallel/GlobalCache.hpp"
@@ -153,7 +154,8 @@ struct SetSubcellGrid {
     const Element<Dim>& element = db::get<::domain::Tags::Element<Dim>>(box);
 
     for (size_t d = 0; d < Dim; ++d) {
-      if (subcell_options.persson_num_highest_modes() >= dg_mesh.extents(d)) {
+      if (subcell_options.persson_num_highest_modes() >= dg_mesh.extents(d) and
+          dg_mesh.basis(d) != Spectral::Basis::Cartoon) {
         ERROR("Number of the highest modes to be monitored by the Persson TCI ("
               << subcell_options.persson_num_highest_modes()
               << ") must be smaller than the extent of the DG mesh ("
