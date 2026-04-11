@@ -376,15 +376,16 @@ void flux_jacobian_hydro(
     const tnsr::i<DataVector, 3>& unit_normal,
     const EquationsOfState::EquationOfState<true, ThermodynamicDim>&
         equation_of_state) {
-  Variables<tmpl::list<hydro::Tags::SoundSpeedSquared<DataVector>,
-                       hydro::Tags::Pressure<DataVector>,
-                       ::Tags::TempScalar<0>, ::Tags::TempScalar<1>,
-                       ::Tags::TempScalar<2>, ::Tags::TempScalar<3>,
-                       ::Tags::TempScalar<4>, ::Tags::TempScalar<5>,
-                       ::Tags::TempScalar<6>, ::Tags::TempScalar<7>,
-                       ::Tags::TempScalar<8>, ::Tags::TempI<0, 3>,
-                       ::Tags::Tempi<0, 3>, ::Tags::TempIj<0, 3>,
-                       ::Tags::TempI<1, 3>>>
+  // Use Variables to reduce total number of allocations
+  Variables<tmpl::list<
+      hydro::Tags::SoundSpeedSquared<DataVector>,
+      hydro::Tags::Pressure<DataVector>, ::Tags::TempScalar<0>,
+      ::Tags::TempScalar<1>, ::Tags::TempScalar<2>, ::Tags::TempScalar<3>,
+      ::Tags::TempScalar<4>, ::Tags::TempScalar<5>, ::Tags::TempScalar<6>,
+      ::Tags::TempScalar<7>, ::Tags::TempScalar<8>, ::Tags::TempScalar<9>,
+      ::Tags::TempScalar<10>, ::Tags::TempScalar<11>, ::Tags::TempScalar<12>,
+      ::Tags::TempScalar<13>, ::Tags::TempI<0, 3>, ::Tags::Tempi<0, 3>,
+      ::Tags::TempI<1, 3>>>
       temp_tensors{get<0, 0>(spatial_metric).size()};
 
   Scalar<DataVector>& sound_speed_squared =
@@ -395,8 +396,6 @@ void flux_jacobian_hydro(
   // We define zeta as the partial derivative of pressure with respect to
   // electron fraction
   Scalar<DataVector>& zeta = get<::Tags::TempScalar<1>>(temp_tensors);
-  Scalar<DataVector>& kappa_times_p_over_rho_squared =
-      get<::Tags::TempScalar<2>>(temp_tensors);
   Scalar<DataVector>& pressure =
       get<hydro::Tags::Pressure<DataVector>>(temp_tensors);
   if constexpr (ThermodynamicDim == 1) {
@@ -408,6 +407,8 @@ void flux_jacobian_hydro(
     get(kappa) = 0.0;
     get(zeta) = 0.0;
   } else if constexpr (ThermodynamicDim == 2) {
+    Scalar<DataVector>& kappa_times_p_over_rho_squared =
+        get<::Tags::TempScalar<2>>(temp_tensors);
     get(kappa_times_p_over_rho_squared) =
         get(equation_of_state
                 .kappa_times_p_over_rho_squared_from_density_and_energy(
@@ -423,9 +424,10 @@ void flux_jacobian_hydro(
                  square(get(rest_mass_density));
     get(zeta) = 0.0;
   } else if constexpr (ThermodynamicDim == 3) {
-    const Scalar<DataVector> temperature =
-        equation_of_state.temperature_from_density_and_energy(
-            rest_mass_density, specific_internal_energy, electron_fraction);
+    Scalar<DataVector>& temperature = get<::Tags::TempScalar<2>>(temp_tensors);
+    get(temperature) =
+        get(equation_of_state.temperature_from_density_and_energy(
+            rest_mass_density, specific_internal_energy, electron_fraction));
     get(sound_speed_squared) =
         get(equation_of_state.sound_speed_squared_from_density_and_temperature(
             rest_mass_density, temperature, electron_fraction));
@@ -437,14 +439,18 @@ void flux_jacobian_hydro(
         rest_mass_density, temperature, electron_fraction));
   }
 
+  // The expressions in this function have been iteratively optimized by Codex
+  // with 3 main goals:
+  //   1. Avoid catastrophic cancellations by rewriting terms like W-1 to, e.g.,
+  //      v^2 W^2 / (W + 1). Known tricks were listed in a skill used by Codex.
+  //   2. Avoid repeated calculations by storing intermediate results in
+  //      temporary variables and reusing previous allocations when possible.
+  //   3. Try different rearrangements and run benchmark to find the best
+  //      optimization.
+
   // Intermediate variables
-  Scalar<DataVector>& Z = get<::Tags::TempScalar<3>>(temp_tensors);
-  tenex::evaluate(make_not_null(&Z),
-                  rest_mass_density() * specific_enthalpy() *
-                      square(lorentz_factor()));
-  Scalar<DataVector>& D = get<::Tags::TempScalar<4>>(temp_tensors);
-  tenex::evaluate(make_not_null(&D), rest_mass_density() * lorentz_factor());
-  Scalar<DataVector>& normal_velocity = get<::Tags::TempScalar<5>>(temp_tensors);
+  Scalar<DataVector>& normal_velocity =
+      get<::Tags::TempScalar<3>>(temp_tensors);
   tenex::evaluate(make_not_null(&normal_velocity),
                   spatial_velocity(ti::I) * unit_normal(ti::i));
   tnsr::I<DataVector, 3>& unit_vector = get<::Tags::TempI<0, 3>>(temp_tensors);
@@ -452,109 +458,166 @@ void flux_jacobian_hydro(
                          inv_spatial_metric(ti::I, ti::J) * unit_normal(ti::j));
   tnsr::i<DataVector, 3>& spatial_velocity_one_form =
       get<::Tags::Tempi<0, 3>>(temp_tensors);
-  tenex::evaluate<ti::i>(make_not_null(&spatial_velocity_one_form),
-                         spatial_metric(ti::i, ti::j) *
-                             spatial_velocity(ti::J));
-  tnsr::Ij<DataVector, 3>& mixed_spatial_metric =
-      get<::Tags::TempIj<0, 3>>(temp_tensors);
-  tenex::evaluate<ti::I, ti::j>(make_not_null(&mixed_spatial_metric),
-                                inv_spatial_metric(ti::I, ti::K) *
-                                    spatial_metric(ti::k, ti::j));
+  tenex::evaluate<ti::i>(
+      make_not_null(&spatial_velocity_one_form),
+      spatial_metric(ti::i, ti::j) * spatial_velocity(ti::J));
+
+  // Cancellation-safe thermodynamic / kinematic differences
+  Scalar<DataVector>& h_minus_1 = get<::Tags::TempScalar<9>>(temp_tensors);
+  get(h_minus_1) =
+      get(specific_internal_energy) + get(pressure) / get(rest_mass_density);
+  Scalar<DataVector>& velocity_squared =
+      get<::Tags::TempScalar<10>>(temp_tensors);
+  tenex::evaluate(make_not_null(&velocity_squared),
+                  spatial_velocity(ti::I) * spatial_velocity_one_form(ti::i));
+  Scalar<DataVector>& lorentz_factor_squared =
+      get<::Tags::TempScalar<11>>(temp_tensors);
+  get(lorentz_factor_squared) = square(get(lorentz_factor));
+  Scalar<DataVector>& W_minus_1 = get<::Tags::TempScalar<12>>(temp_tensors);
+  get(W_minus_1) = get(velocity_squared) * get(lorentz_factor_squared) /
+                   (get(lorentz_factor) + 1.0);
+  Scalar<DataVector>& h_minus_W = get<::Tags::TempScalar<13>>(temp_tensors);
+  get(h_minus_W) = get(h_minus_1) - get(W_minus_1);
 
   // Derivatives of Z
-  Scalar<DataVector>& dzdD = get<::Tags::TempScalar<6>>(temp_tensors);
+  Scalar<DataVector>& inv_derivative_denom =
+      get<::Tags::TempScalar<7>>(temp_tensors);
+  get(inv_derivative_denom) =
+      1.0 / ((-get(lorentz_factor_squared) + get(sound_speed_squared) *
+                                                 get(velocity_squared) *
+                                                 get(lorentz_factor_squared)) *
+             get(rest_mass_density));
+  Scalar<DataVector>& dzdD = get<::Tags::TempScalar<4>>(temp_tensors);
   tenex::evaluate(
       make_not_null(&dzdD),
-      -((lorentz_factor() *
-         (kappa() * (-specific_enthalpy() + lorentz_factor()) -
-          zeta() * electron_fraction() +
-          (sound_speed_squared() * specific_enthalpy() + lorentz_factor()) *
-              rest_mass_density())) /
-        ((-square(lorentz_factor()) +
-          sound_speed_squared() * (-1. + square(lorentz_factor()))) *
-         rest_mass_density())));
+      -(lorentz_factor() *
+        (-kappa() * h_minus_W() - zeta() * electron_fraction() +
+         (sound_speed_squared() * specific_enthalpy() + lorentz_factor()) *
+             rest_mass_density()) *
+        inv_derivative_denom()));
   tnsr::I<DataVector, 3>& dzds = get<::Tags::TempI<1, 3>>(temp_tensors);
   tenex::evaluate<ti::I>(
       make_not_null(&dzds),
-      (spatial_velocity(ti::I) * square(lorentz_factor()) *
-       (kappa() + sound_speed_squared() * rest_mass_density())) /
-      ((-square(lorentz_factor()) +
-        sound_speed_squared() * (-1. + square(lorentz_factor()))) *
-       rest_mass_density()));
-  Scalar<DataVector>& dzdtau = get<::Tags::TempScalar<7>>(temp_tensors);
-  tenex::evaluate(
-      make_not_null(&dzdtau),
-      -((square(lorentz_factor()) * (kappa() + rest_mass_density())) /
-        ((-square(lorentz_factor()) +
-          sound_speed_squared() * (-1. + square(lorentz_factor()))) *
-         rest_mass_density())));
-  Scalar<DataVector>& dzdye = get<::Tags::TempScalar<8>>(temp_tensors);
-  tenex::evaluate(
-      make_not_null(&dzdye),
-      (zeta() * lorentz_factor()) /
-      ((square(lorentz_factor()) -
-        sound_speed_squared() * (-1. + square(lorentz_factor()))) *
-       rest_mass_density()));
+      (spatial_velocity(ti::I) * lorentz_factor_squared() *
+       (kappa() + sound_speed_squared() * rest_mass_density()) *
+       inv_derivative_denom()));
+  Scalar<DataVector>& dzdtau = get<::Tags::TempScalar<5>>(temp_tensors);
+  tenex::evaluate(make_not_null(&dzdtau),
+                  -(lorentz_factor_squared() * (kappa() + rest_mass_density()) *
+                    inv_derivative_denom()));
+  Scalar<DataVector>& dzdye = get<::Tags::TempScalar<6>>(temp_tensors);
+  tenex::evaluate(make_not_null(&dzdye),
+                  -(zeta() * lorentz_factor() * inv_derivative_denom()));
 
+  // Common factors used repeatedly in the characteristic matrix entries
+  Scalar<DataVector>& D_over_Z = get<::Tags::TempScalar<8>>(temp_tensors);
+  get(D_over_Z) = 1.0 / (get(specific_enthalpy) * get(lorentz_factor));
   // Put analytic expressions into characteristic matrix
   characteristic_matrix->get(0, 0) =
-      ((get(Z) - get(D) * get(dzdD)) * get(normal_velocity)) / get(Z);
-  for (size_t B = 0; B < 3; ++B) {
-    characteristic_matrix->get(0, B + 1) =
-        (get(D) * (unit_vector.get(B) - dzds.get(B) * get(normal_velocity))) /
-        get(Z);
-  }
+      (1.0 - get(D_over_Z) * get(dzdD)) * get(normal_velocity);
+  characteristic_matrix->get(0, 1) =
+      get(D_over_Z) * (unit_vector.get(0) - dzds.get(0) * get(normal_velocity));
+  characteristic_matrix->get(0, 2) =
+      get(D_over_Z) * (unit_vector.get(1) - dzds.get(1) * get(normal_velocity));
+  characteristic_matrix->get(0, 3) =
+      get(D_over_Z) * (unit_vector.get(2) - dzds.get(2) * get(normal_velocity));
+  characteristic_matrix->get(4, 1) =
+      unit_vector.get(0) - characteristic_matrix->get(0, 1);
+  characteristic_matrix->get(4, 2) =
+      unit_vector.get(1) - characteristic_matrix->get(0, 2);
+  characteristic_matrix->get(4, 3) =
+      unit_vector.get(2) - characteristic_matrix->get(0, 3);
+  characteristic_matrix->get(5, 1) =
+      get(electron_fraction) * characteristic_matrix->get(0, 1);
+  characteristic_matrix->get(5, 2) =
+      get(electron_fraction) * characteristic_matrix->get(0, 2);
+  characteristic_matrix->get(5, 3) =
+      get(electron_fraction) * characteristic_matrix->get(0, 3);
   characteristic_matrix->get(0, 4) =
-      -((get(D) * get(dzdtau) * get(normal_velocity)) / get(Z));
+      -(get(D_over_Z) * get(dzdtau) * get(normal_velocity));
   characteristic_matrix->get(0, 5) =
-      -((get(D) * get(dzdye) * get(normal_velocity)) / get(Z));
-  for (size_t c = 0; c < 3; ++c) {
-    characteristic_matrix->get(c + 1, 0) =
-        (-1.0 + get(dzdD)) * unit_normal.get(c) -
-        get(dzdD) * get(normal_velocity) * spatial_velocity_one_form.get(c);
-    for (size_t B = 0; B < 3; ++B) {
-      characteristic_matrix->get(c + 1, B + 1) =
-          mixed_spatial_metric.get(B, c) * get(normal_velocity) +
-          unit_vector.get(B) * spatial_velocity_one_form.get(c) +
-          dzds.get(B) *
-              (unit_normal.get(c) -
-               get(normal_velocity) * spatial_velocity_one_form.get(c));
-    }
-    characteristic_matrix->get(c + 1, 4) =
-        (-1.0 + get(dzdtau)) * unit_normal.get(c) -
-        get(dzdtau) * get(normal_velocity) * spatial_velocity_one_form.get(c);
-    characteristic_matrix->get(c + 1, 5) =
-        get(dzdye) * (unit_normal.get(c) -
-                      get(normal_velocity) * spatial_velocity_one_form.get(c));
-  }
-  characteristic_matrix->get(4, 0) =
-      -(((get(Z) - get(D) * get(dzdD)) * get(normal_velocity)) / get(Z));
-  for (size_t B = 0; B < 3; ++B) {
-    characteristic_matrix->get(4, B + 1) =
-        ((get(Z) - get(D)) * unit_vector.get(B) +
-         get(D) * dzds.get(B) * get(normal_velocity)) /
-        get(Z);
-  }
-  characteristic_matrix->get(4, 4) =
-      (get(D) * get(dzdtau) * get(normal_velocity)) / get(Z);
-  characteristic_matrix->get(4, 5) =
-      (get(D) * get(dzdye) * get(normal_velocity)) / get(Z);
-  characteristic_matrix->get(5, 0) =
-      -((get(D) * get(electron_fraction) * get(dzdD) * get(normal_velocity)) /
-        get(Z));
-  for (size_t B = 0; B < 3; ++B) {
-    characteristic_matrix->get(5, B + 1) =
-        (get(D) * get(electron_fraction) *
-         (unit_vector.get(B) - dzds.get(B) * get(normal_velocity))) /
-        get(Z);
-  }
+      -(get(D_over_Z) * get(dzdye) * get(normal_velocity));
+  characteristic_matrix->get(1, 0) =
+      (-1.0 + get(dzdD)) * unit_normal.get(0) -
+      get(dzdD) * get(normal_velocity) * spatial_velocity_one_form.get(0);
+  characteristic_matrix->get(2, 0) =
+      (-1.0 + get(dzdD)) * unit_normal.get(1) -
+      get(dzdD) * get(normal_velocity) * spatial_velocity_one_form.get(1);
+  characteristic_matrix->get(3, 0) =
+      (-1.0 + get(dzdD)) * unit_normal.get(2) -
+      get(dzdD) * get(normal_velocity) * spatial_velocity_one_form.get(2);
+
+  characteristic_matrix->get(1, 1) =
+      get(normal_velocity) +
+      unit_vector.get(0) * spatial_velocity_one_form.get(0) +
+      dzds.get(0) * (unit_normal.get(0) -
+                     get(normal_velocity) * spatial_velocity_one_form.get(0));
+  characteristic_matrix->get(1, 2) =
+      unit_vector.get(1) * spatial_velocity_one_form.get(0) +
+      dzds.get(1) * (unit_normal.get(0) -
+                     get(normal_velocity) * spatial_velocity_one_form.get(0));
+  characteristic_matrix->get(1, 3) =
+      unit_vector.get(2) * spatial_velocity_one_form.get(0) +
+      dzds.get(2) * (unit_normal.get(0) -
+                     get(normal_velocity) * spatial_velocity_one_form.get(0));
+  characteristic_matrix->get(2, 1) =
+      unit_vector.get(0) * spatial_velocity_one_form.get(1) +
+      dzds.get(0) * (unit_normal.get(1) -
+                     get(normal_velocity) * spatial_velocity_one_form.get(1));
+  characteristic_matrix->get(2, 2) =
+      get(normal_velocity) +
+      unit_vector.get(1) * spatial_velocity_one_form.get(1) +
+      dzds.get(1) * (unit_normal.get(1) -
+                     get(normal_velocity) * spatial_velocity_one_form.get(1));
+  characteristic_matrix->get(2, 3) =
+      unit_vector.get(2) * spatial_velocity_one_form.get(1) +
+      dzds.get(2) * (unit_normal.get(1) -
+                     get(normal_velocity) * spatial_velocity_one_form.get(1));
+  characteristic_matrix->get(3, 1) =
+      unit_vector.get(0) * spatial_velocity_one_form.get(2) +
+      dzds.get(0) * (unit_normal.get(2) -
+                     get(normal_velocity) * spatial_velocity_one_form.get(2));
+  characteristic_matrix->get(3, 2) =
+      unit_vector.get(1) * spatial_velocity_one_form.get(2) +
+      dzds.get(1) * (unit_normal.get(2) -
+                     get(normal_velocity) * spatial_velocity_one_form.get(2));
+  characteristic_matrix->get(3, 3) =
+      get(normal_velocity) +
+      unit_vector.get(2) * spatial_velocity_one_form.get(2) +
+      dzds.get(2) * (unit_normal.get(2) -
+                     get(normal_velocity) * spatial_velocity_one_form.get(2));
+
+  characteristic_matrix->get(1, 4) =
+      -unit_normal.get(0) +
+      get(dzdtau) * (unit_normal.get(0) -
+                     get(normal_velocity) * spatial_velocity_one_form.get(0));
+  characteristic_matrix->get(2, 4) =
+      -unit_normal.get(1) +
+      get(dzdtau) * (unit_normal.get(1) -
+                     get(normal_velocity) * spatial_velocity_one_form.get(1));
+  characteristic_matrix->get(3, 4) =
+      -unit_normal.get(2) +
+      get(dzdtau) * (unit_normal.get(2) -
+                     get(normal_velocity) * spatial_velocity_one_form.get(2));
+  characteristic_matrix->get(1, 5) =
+      get(dzdye) * (unit_normal.get(0) -
+                    get(normal_velocity) * spatial_velocity_one_form.get(0));
+  characteristic_matrix->get(2, 5) =
+      get(dzdye) * (unit_normal.get(1) -
+                    get(normal_velocity) * spatial_velocity_one_form.get(1));
+  characteristic_matrix->get(3, 5) =
+      get(dzdye) * (unit_normal.get(2) -
+                    get(normal_velocity) * spatial_velocity_one_form.get(2));
+  characteristic_matrix->get(4, 0) = -characteristic_matrix->get(0, 0);
+  characteristic_matrix->get(4, 4) = -characteristic_matrix->get(0, 4);
+  characteristic_matrix->get(4, 5) = -characteristic_matrix->get(0, 5);
+  characteristic_matrix->get(5, 0) = -get(electron_fraction) * get(D_over_Z) *
+                                     get(dzdD) * get(normal_velocity);
   characteristic_matrix->get(5, 4) =
-      -((get(D) * get(electron_fraction) * get(dzdtau) * get(normal_velocity)) /
-        get(Z));
+      get(electron_fraction) * characteristic_matrix->get(0, 4);
   characteristic_matrix->get(5, 5) =
-      ((get(Z) - get(D) * get(electron_fraction) * get(dzdye)) *
-       get(normal_velocity)) /
-      get(Z);
+      (1.0 - get(electron_fraction) * get(D_over_Z) * get(dzdye)) *
+      get(normal_velocity);
 }
 
 template <size_t ThermodynamicDim>
@@ -615,11 +678,12 @@ void numerical_characteristics(
                 blaze_complex_R);
     const double tolerance = 1.0e-12;
     for (size_t i = 0; i < matrix_size; ++i) {
-      ASSERT(std::abs(blaze_complex_eigenvalues[i].imag()) < tolerance,
+      ASSERT(std::abs(blaze_complex_eigenvalues.at(i).imag()) < tolerance,
              "Complex eigenvalue: "
-                 << blaze_complex_eigenvalues[i].real() << " + "
-                 << blaze_complex_eigenvalues[i].imag() << " i.");
-      blaze_real_eigenvalues[i] = blaze_complex_eigenvalues[i].real();
+                 << blaze_complex_eigenvalues.at(i).real() << " + "
+                 << blaze_complex_eigenvalues.at(i).imag() << " i.");
+      gsl::at(blaze_real_eigenvalues, i) =
+          blaze_complex_eigenvalues.at(i).real();
     }
 
 // We found cases in which blaze::geev returns a wrong eigenvalue. As a sanity
@@ -649,7 +713,7 @@ void numerical_characteristics(
     // Solve for eigenvalues using GSL
     gsl_eigen_nonsymm(gsl_point_matrix, gsl_complex_eigenvalues, gsl_workspace);
     for (size_t i = 0; i < matrix_size; ++i) {
-      gsl_real_eigenvalues[i] =
+      gsl::at(gsl_real_eigenvalues, i) =
           GSL_REAL(gsl_vector_complex_get(gsl_complex_eigenvalues, i));
     }
 
@@ -662,8 +726,8 @@ void numerical_characteristics(
 
     // Compare eigenvalues
     for (size_t i = 0; i < matrix_size; ++i) {
-      if (UNLIKELY(std::abs(sorted_blaze_real_eigenvalues[i] -
-                            gsl_real_eigenvalues[i]) > 1.e-6)) {
+      if (UNLIKELY(std::abs(gsl::at(sorted_blaze_real_eigenvalues, i) -
+                            gsl::at(gsl_real_eigenvalues, i)) > 1.e-6)) {
         std::ostringstream matrix_stream;
         matrix_stream << "Point matrix:\n";
         for (size_t row = 0; row < matrix_size; ++row) {
@@ -673,9 +737,9 @@ void numerical_characteristics(
           matrix_stream << "\n";
         }
         matrix_stream << "Blaze eigenvalue: "
-                      << sorted_blaze_real_eigenvalues[i]
-                      << ", GSL eigenvalue: " << gsl_real_eigenvalues[i]
-                      << "\n";
+                      << gsl::at(sorted_blaze_real_eigenvalues, i)
+                      << ", GSL eigenvalue: "
+                      << gsl::at(gsl_real_eigenvalues, i) << "\n";
 
         ERROR(
             "The eigensolvers from blaze and GSL found different eigenvalues "
@@ -698,7 +762,7 @@ void numerical_characteristics(
     // Note: we're looping through the ith eigenvalue/vectors, not the ith row!
     for (size_t i = 0; i < matrix_size; ++i) {
       // Store eigenvalue
-      characteristic_speeds->get(i)[point] = blaze_real_eigenvalues[i];
+      characteristic_speeds->get(i)[point] = gsl::at(blaze_real_eigenvalues, i);
 
       // For each PAIR of degenerate eigenvalues, it is possible that GSL
       // returns a PAIR of complex eigenvectors that are complex conjugates of
@@ -720,7 +784,7 @@ void numerical_characteristics(
       // by their real and imaginary parts are also linearly-independent
       // eigenvectors. Here, we use this fact to build real-valued left and
       // right eigenvectors.
-      if (not processed_right_eigenvectors[i]) {
+      if (not gsl::at(processed_right_eigenvectors, i)) {
         // If needed, find index of complex conjugate eigenvector
         // Note: most time this will be i+1, but not always.
         size_t conjugate_i = 0;
@@ -755,12 +819,13 @@ void numerical_characteristics(
         // be degenerate
         if (right_eigenvector_is_complex) {
           ASSERT(
-              blaze_real_eigenvalues[i] - blaze_real_eigenvalues[conjugate_i] <
+              gsl::at(blaze_real_eigenvalues, i) -
+                      gsl::at(blaze_real_eigenvalues, conjugate_i) <
                   1.e-8,
               "Expected degenerate eigenvalues for complex eigenvectors, but "
               "eigenvalues differ by "
-                  << blaze_real_eigenvalues[i] -
-                         blaze_real_eigenvalues[conjugate_i]
+                  << gsl::at(blaze_real_eigenvalues, i) -
+                         gsl::at(blaze_real_eigenvalues, conjugate_i)
                   << ".");
         }
         // Process the ith right eigenvector (and its complex conjugate if
@@ -772,14 +837,14 @@ void numerical_characteristics(
                 blaze_complex_R(k, i).imag();
           }
         }
-        processed_right_eigenvectors[i] = true;
+        gsl::at(processed_right_eigenvectors, i) = true;
         if (right_eigenvector_is_complex) {
-          processed_right_eigenvectors[conjugate_i] = true;
+          gsl::at(processed_right_eigenvectors, conjugate_i) = true;
         }
       }
 
       // Same as above, but for left eigenvectors
-      if (not processed_left_eigenvectors[i]) {
+      if (not gsl::at(processed_left_eigenvectors, i)) {
         // If needed, find index of complex conjugate eigenvector
         // Note: most time this will be i+1, but not always.
         size_t conjugate_i = 0;
@@ -814,12 +879,13 @@ void numerical_characteristics(
         // be degenerate
         if (left_eigenvector_is_complex) {
           ASSERT(
-              blaze_real_eigenvalues[i] - blaze_real_eigenvalues[conjugate_i] <
+              gsl::at(blaze_real_eigenvalues, i) -
+                      gsl::at(blaze_real_eigenvalues, conjugate_i) <
                   1.e-8,
               "Expected degenerate eigenvalues for complex eigenvectors, but "
               "eigenvalues differ by "
-                  << blaze_real_eigenvalues[i] -
-                         blaze_real_eigenvalues[conjugate_i]
+                  << gsl::at(blaze_real_eigenvalues, i) -
+                         gsl::at(blaze_real_eigenvalues, conjugate_i)
                   << ".");
         }
         // Process the ith left eigenvector (and its complex conjugate if
@@ -832,9 +898,9 @@ void numerical_characteristics(
                 blaze_complex_L(k, i).imag();
           }
         }
-        processed_left_eigenvectors[i] = true;
+        gsl::at(processed_left_eigenvectors, i) = true;
         if (left_eigenvector_is_complex) {
-          processed_left_eigenvectors[conjugate_i] = true;
+          gsl::at(processed_left_eigenvectors, conjugate_i) = true;
         }
       }
     }
