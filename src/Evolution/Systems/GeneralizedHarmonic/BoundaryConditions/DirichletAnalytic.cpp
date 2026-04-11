@@ -75,7 +75,10 @@ std::optional<std::string> DirichletAnalytic<Dim>::dg_ghost(
     const Scalar<DataVector>& interior_gamma2, const double time) const {
   *gamma1 = interior_gamma1;
   *gamma2 = interior_gamma2;
-  ASSERT(analytic_prescription_ != nullptr,
+  // Use .get() to avoid Clang-13 bug: with -Og in C++20 mode, the compiler
+  // rewrites unique_ptr != nullptr via std::operator== but fails to emit the
+  // out-of-line instantiation, causing a linker error.
+  ASSERT(analytic_prescription_.get() != nullptr,
          "The analytic prescription must be set.");
   using evolved_vars_tags = typename System<Dim>::variables_tag::tags_list;
   auto boundary_values = call_with_dynamic_type<

@@ -90,7 +90,10 @@ class AnalyticChristoffel final : public GaugeCondition {
       const InverseJacobian<DataVector, SpatialDim, Frame::ElementLogical,
                             Frame::Inertial>& inverse_jacobian,
       const AllSolutionsForChristoffelAnalytic /*meta*/) const {
-    ASSERT(analytic_prescription_ != nullptr,
+    // Use .get() to avoid Clang-13 bug: with -Og in C++20 mode, the compiler
+    // rewrites unique_ptr != nullptr via std::operator== but fails to emit the
+    // out-of-line instantiation, causing a linker error.
+    ASSERT(analytic_prescription_.get() != nullptr,
            "The analytic prescription cannot be nullptr.");
     const auto solution_vars = call_with_dynamic_type<
         tuples::tagged_tuple_from_typelist<solution_tags<SpatialDim>>,
