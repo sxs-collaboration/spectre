@@ -31,10 +31,6 @@ def _list_tensor_components(observation):
     components.remove("connectivity")
     if "pole_connectivity" in components:
         components.remove("pole_connectivity")
-    if "disk_connectivity" in components:
-        components.remove("disk_connectivity")
-    if "cylinder_connectivity" in components:
-        components.remove("cylinder_connectivity")
     if "tetrahedral_connectivity" in components:
         components.remove("tetrahedral_connectivity")
     components.remove("total_extents")
@@ -45,6 +41,11 @@ def _list_tensor_components(observation):
         components.remove("domain")
     if "functions_of_time" in components:
         components.remove("functions_of_time")
+    # New mixed-topology datasets — handled as cell-centered attributes
+    if "ElementId" in components:
+        components.remove("ElementId")
+    if "BlockId" in components:
+        components.remove("BlockId")
     return components
 
 
@@ -81,6 +82,66 @@ def _xmf_topology(
     )
     xmf_data_item.text = os.path.join(grid_path, connectivity_name)
     return xmf_topology
+
+
+def _count_cells_in_mixed_connectivity(connectivity):
+    """Count cells in an XDMF mixed-topology connectivity array."""
+    # Map from XDMF type integer to number of vertices per cell
+    verts_per_type = {2: 2, 4: 3, 5: 4, 8: 6, 9: 8}
+    number_of_cells = 0
+    i = 0
+    while i < len(connectivity):
+        type_tag = int(connectivity[i])
+        n_verts = verts_per_type.get(type_tag)
+        if n_verts is None:
+            raise ValueError(f"Unknown XDMF topology type tag: {type_tag}")
+        i += 1 + n_verts
+        number_of_cells += 1
+    return number_of_cells
+
+
+def _xmf_mixed_topology(
+    observation, connectivity_name: str, grid_path: str
+) -> ET.Element:
+    """Build an XDMF Mixed topology element for a new-format connectivity."""
+    connectivity = observation[connectivity_name][:]
+    number_of_cells = _count_cells_in_mixed_connectivity(connectivity)
+    xmf_topology = ET.Element(
+        "Topology",
+        TopologyType="Mixed",
+        NumberOfElements=str(number_of_cells),
+    )
+    xmf_data_item = ET.SubElement(
+        xmf_topology,
+        "DataItem",
+        Dimensions=str(len(connectivity)),
+        NumberType="Int",
+        Format="HDF5",
+    )
+    xmf_data_item.text = os.path.join(grid_path, connectivity_name)
+    return xmf_topology
+
+
+def _xmf_cell_attribute(
+    observation, name: str, number_of_cells: int, grid_path: str
+) -> ET.Element:
+    """Build an XDMF Attribute element for a cell-centered uint64 dataset."""
+    xmf_attribute = ET.Element(
+        "Attribute",
+        Name=name,
+        AttributeType="Scalar",
+        Center="Cell",
+    )
+    xmf_data_item = ET.SubElement(
+        xmf_attribute,
+        "DataItem",
+        Dimensions=str(number_of_cells),
+        NumberType="UInt",
+        Precision="8",
+        Format="HDF5",
+    )
+    xmf_data_item.text = os.path.join(grid_path, name)
+    return xmf_attribute
 
 
 def _xmf_geometry(
@@ -169,8 +230,6 @@ def _xmf_grid(
     temporal_id: str,
     coordinates: str,
     filling_poles: bool = False,
-    filling_disk_center: bool = False,
-    filling_cylinder_center: bool = False,
     use_tetrahedral_connectivity: bool = False,
 ) -> ET.Element:
     # Make sure the coordinates are found in the file. We assume there should
@@ -192,18 +251,7 @@ def _xmf_grid(
     dim = sum((coordinates + "_" + xyz) in observation for xyz in "xyz")
 
     if filling_poles:
-        # Filling poles is currently supported for a 2D surface embedded in 3D
         assert "pole_connectivity" in observation and topo_dim == 2 and dim == 3
-
-    if filling_disk_center:
-        assert "disk_connectivity" in observation and topo_dim == 2 and dim == 2
-
-    if filling_cylinder_center:
-        assert (
-            "cylinder_connectivity" in observation
-            and topo_dim == 3
-            and dim == 3
-        )
 
     xmf_grid = ET.Element("Grid", Name=filename, GridType="Uniform")
 
@@ -218,19 +266,33 @@ def _xmf_grid(
     # Configure grid location in the H5 file
     grid_path = filename + ":/" + subfile_name + "/" + temporal_id + "/"
 
+    # Detect new mixed-topology format by presence of 'element_id' dataset
+    is_new_format = "ElementId" in observation
+
     # Write topology
     if topo_dim == 2 and dim == 3:
         # 2D surface embedded in 3D space
         if filling_poles:
-            # Cover poles with triangles
-            xmf_topology = _xmf_topology(
+            if is_new_format:
+                xmf_topology = _xmf_mixed_topology(
+                    observation,
+                    connectivity_name="pole_connectivity",
+                    grid_path=grid_path,
+                )
+            else:
+                xmf_topology = _xmf_topology(
+                    observation,
+                    topology_type="Triangle",
+                    connectivity_name="pole_connectivity",
+                    grid_path=grid_path,
+                )
+        elif is_new_format:
+            xmf_topology = _xmf_mixed_topology(
                 observation,
-                topology_type="Triangle",
-                connectivity_name="pole_connectivity",
+                connectivity_name="connectivity",
                 grid_path=grid_path,
             )
         else:
-            # Cover 2D surface
             xmf_topology = _xmf_topology(
                 observation,
                 topology_type="Quadrilateral",
@@ -238,32 +300,27 @@ def _xmf_grid(
                 grid_path=grid_path,
             )
     else:
-        if filling_disk_center:
-            xmf_topology = _xmf_topology(
-                observation,
-                topology_type="Triangle",
-                connectivity_name="disk_connectivity",
-                grid_path=grid_path,
-            )
-        elif filling_cylinder_center:
-            xmf_topology = _xmf_topology(
-                observation,
-                topology_type="Wedge",
-                connectivity_name="cylinder_connectivity",
-                grid_path=grid_path,
-            )
-        else:
-            # Cover volume
-            if use_tetrahedral_connectivity:
-                topology_type = {3: "Tetrahedron", 2: "Triangle"}[topo_dim]
-                connectivity_name = "tetrahedral_connectivity"
-            else:
-                topology_type = {3: "Hexahedron", 2: "Quadrilateral"}[topo_dim]
-                connectivity_name = "connectivity"
+        # Cover volume
+        if use_tetrahedral_connectivity:
+            topology_type = {3: "Tetrahedron", 2: "Triangle"}[topo_dim]
             xmf_topology = _xmf_topology(
                 observation,
                 topology_type=topology_type,
-                connectivity_name=connectivity_name,
+                connectivity_name="tetrahedral_connectivity",
+                grid_path=grid_path,
+            )
+        elif is_new_format:
+            xmf_topology = _xmf_mixed_topology(
+                observation,
+                connectivity_name="connectivity",
+                grid_path=grid_path,
+            )
+        else:
+            topology_type = {3: "Hexahedron", 2: "Quadrilateral"}[topo_dim]
+            xmf_topology = _xmf_topology(
+                observation,
+                topology_type=topology_type,
+                connectivity_name="connectivity",
                 grid_path=grid_path,
             )
     xmf_grid.append(xmf_topology)
@@ -308,6 +365,21 @@ def _xmf_grid(
                     grid_path=grid_path,
                 )
             )
+
+    # For new-format volume data, add cell-centered element_id and block_id
+    # attributes (not for the pole-filling grid, which uses pole_connectivity).
+    if is_new_format and not filling_poles:
+        number_of_cells = _count_cells_in_mixed_connectivity(
+            observation["connectivity"][:]
+        )
+        for attr_name in ["ElementId", "BlockId"]:
+            if attr_name in observation:
+                xmf_grid.append(
+                    _xmf_cell_attribute(
+                        observation, attr_name, number_of_cells, grid_path
+                    )
+                )
+
     return xmf_grid
 
 
@@ -349,8 +421,8 @@ def generate_xdmf(
     data. To process multiple files suffixed with the node number and from
     multiple segments specify a glob like 'Segment*/VolumeData*.h5'.
 
-    To load the XDMF file in ParaView you must choose the 'Xdmf Reader', NOT
-    'Xdmf3 Reader'.
+    To load the XDMF file in ParaView you must choose the 'Xdmf3 Reader', NOT
+    'Xdmf Reader'.
 
     \f
     Arguments:
@@ -408,7 +480,7 @@ def generate_xdmf(
         )
 
     # Prepare XDMF document by building up an XML tree
-    xmf_root = ET.Element("Xdmf", Version="2.0")
+    xmf_root = ET.Element("Xdmf", Version="3.0")
     xmf_domain = ET.SubElement(xmf_root, "Domain")
     xmf_timesteps = ET.SubElement(
         xmf_domain,
@@ -499,7 +571,8 @@ def generate_xdmf(
                     use_tetrahedral_connectivity=use_tetrahedral_connectivity,
                 )
             )
-            # Connect poles if the data is a 2D surface in 3D
+            # Backwards compatibility: old files have a separate
+            # 'pole_connectivity' dataset with Triangle cells to fill the poles.
             if "pole_connectivity" in observation:
                 xmf_timestep_grid.append(
                     _xmf_grid(
@@ -510,38 +583,6 @@ def generate_xdmf(
                         temporal_id=temporal_id,
                         coordinates=coordinates,
                         filling_poles=True,
-                        use_tetrahedral_connectivity=(
-                            use_tetrahedral_connectivity
-                        ),
-                    )
-                )
-            # Fill disk center if disk_connectivity is present
-            if "disk_connectivity" in observation:
-                xmf_timestep_grid.append(
-                    _xmf_grid(
-                        observation,
-                        topo_dim=topo_dim,
-                        filename=filename_in_output,
-                        subfile_name=subfile_name,
-                        temporal_id=temporal_id,
-                        coordinates=coordinates,
-                        filling_disk_center=True,
-                        use_tetrahedral_connectivity=(
-                            use_tetrahedral_connectivity
-                        ),
-                    )
-                )
-            # Fill cylinder center if cylinder_connectivity is present
-            if "cylinder_connectivity" in observation:
-                xmf_timestep_grid.append(
-                    _xmf_grid(
-                        observation,
-                        topo_dim=topo_dim,
-                        filename=filename_in_output,
-                        subfile_name=subfile_name,
-                        temporal_id=temporal_id,
-                        coordinates=coordinates,
-                        filling_cylinder_center=True,
                         use_tetrahedral_connectivity=(
                             use_tetrahedral_connectivity
                         ),
@@ -558,11 +599,8 @@ def generate_xdmf(
     except AttributeError:
         pass
 
-    # Output XML
-    xmf_document = """\
-<?xml version="1.0" ?>
-<!DOCTYPE Xdmf SYSTEM "Xdmf.dtd">
-"""
+    # Output XML (XDMF 3.0 does not use the DTD declaration)
+    xmf_document = '<?xml version="1.0" ?>\n'
     xmf_document += ET.tostring(xmf_root, encoding="unicode")
     xmf_document += "\n"
     if output:

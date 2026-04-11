@@ -13,8 +13,12 @@ std::ostream& operator<<(std::ostream& os, const Topology& topology) {
   switch (topology) {
     case Topology::Line:
       return os << "Line";
+    case Topology::Triangle:
+      return os << "Triangle";
     case Topology::Quad:
       return os << "Quad";
+    case Topology::Wedge:
+      return os << "Wedge";
     case Topology::Hexahedron:
       return os << "Hexahedron";
     // LCOV_EXCL_START
@@ -131,6 +135,10 @@ std::vector<CellInTopology> compute_cells(const std::vector<size_t>& extents) {
       "Only know how to compute connectivity for extents of size 1, 2, and 3, "
       "not "
       << extents.size());
+}
+
+int xdmf_topology_type(const Topology topology) {
+  return static_cast<int>(topology);
 }
 
 // Explicit instantiations

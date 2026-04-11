@@ -24,6 +24,7 @@ class Cli(click.Group):
             "bbh",
             "clean-output",
             "combine-h5",
+            "element-id-to-paraview",
             "delete-subfiles",
             "eccentricity-control-params",
             "extend-connectivity",
@@ -63,6 +64,12 @@ class Cli(click.Group):
             from spectre.IO.H5.CombineH5 import combine_h5_command
 
             return combine_h5_command
+        elif name == "element-id-to-paraview":
+            from spectre.Visualization.ElementIdToParaview import (
+                element_id_to_paraview_command,
+            )
+
+            return element_id_to_paraview_command
         elif name == "delete-subfiles":
             from spectre.IO.H5.DeleteSubfiles import delete_subfiles_command
 

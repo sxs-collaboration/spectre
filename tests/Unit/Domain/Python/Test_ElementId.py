@@ -79,6 +79,21 @@ class TestElementId(unittest.TestCase):
             hash(ElementId[1](0, [SegmentId(1, 1)])),
         )
 
+    def test_to_short_id(self):
+        # Same segments, different block → same short_id
+        elem_b0 = ElementId[3](
+            0, [SegmentId(2, 3), SegmentId(1, 0), SegmentId(1, 1)]
+        )
+        elem_b5 = ElementId[3](
+            5, [SegmentId(2, 3), SegmentId(1, 0), SegmentId(1, 1)]
+        )
+        self.assertEqual(elem_b0.to_short_id(), elem_b5.to_short_id())
+        # Different segments → different short_id
+        elem_diff = ElementId[3](
+            0, [SegmentId(2, 2), SegmentId(1, 0), SegmentId(1, 1)]
+        )
+        self.assertNotEqual(elem_b0.to_short_id(), elem_diff.to_short_id())
+
     def test_external_boundary_id(self):
         self.assertEqual(
             ElementId[1].external_boundary_id(),

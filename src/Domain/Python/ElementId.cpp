@@ -37,6 +37,7 @@ void bind_element_id_impl(py::module& m) {  // NOLINT
       .def("id_of_child", &ElementId<Dim>::id_of_child, py::arg("dim"),
            py::arg("side"))
       .def("id_of_parent", &ElementId<Dim>::id_of_parent, py::arg("dim"))
+      .def("to_short_id", &ElementId<Dim>::to_short_id)
       .def("__repr__",
            [](const ElementId<Dim>& element_id) {
              return get_output(element_id);

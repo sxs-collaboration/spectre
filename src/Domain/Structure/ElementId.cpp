@@ -395,6 +395,14 @@ ElementId<VolumeDim> ElementId<VolumeDim>::without_direction() const {
 }
 
 template <size_t VolumeDim>
+size_t ElementId<VolumeDim>::to_short_id() const {
+  // The bottom 16 bits are: block_id (8), grid_index (4), direction (4).
+  // Shift right by 16 to return only the 48-bit segment ID portion.
+  // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
+  return (*reinterpret_cast<const uint64_t*>(this)) >> 16;
+}
+
+template <size_t VolumeDim>
 size_t ElementId<VolumeDim>::number_of_block_boundaries() const {
   return (is_on_lower_block_boundary(compact_segment_id_xi_) ? 1_st : 0_st) +
          (is_on_upper_block_boundary(compact_segment_id_xi_) ? 1_st : 0_st) +

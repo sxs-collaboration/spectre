@@ -399,6 +399,37 @@ void test_serialization() {
     CHECK(ElementId<VolumeDim>(get_output(element_id)) == element_id);
   }
 }
+void test_to_short_id() {
+  // Same segments, different block_id → same short_id
+  const ElementId<3> elem_b0{0, {{{2, 3}, {1, 0}, {1, 1}}}};
+  const ElementId<3> elem_b5{5, {{{2, 3}, {1, 0}, {1, 1}}}};
+  CHECK(elem_b0.to_short_id() == elem_b5.to_short_id());
+
+  // Same segments, different grid_index → same short_id
+  const ElementId<3> elem_g0{0, {{{2, 3}, {1, 0}, {1, 1}}}, 0};
+  const ElementId<3> elem_g3{0, {{{2, 3}, {1, 0}, {1, 1}}}, 3};
+  CHECK(elem_g0.to_short_id() == elem_g3.to_short_id());
+
+  // Different segments → different short_id
+  const ElementId<3> elem_a{0, {{{2, 3}, {1, 0}, {1, 1}}}};
+  const ElementId<3> elem_b{0, {{{2, 2}, {1, 0}, {1, 1}}}};
+  CHECK(elem_a.to_short_id() != elem_b.to_short_id());
+
+  // Verify value matches expected bit-shift
+  // The raw 64-bit representation shifted right by 16 should equal to_short_id
+  uint64_t raw = 0;
+  std::memcpy(&raw, &elem_b0, sizeof(raw));
+  CHECK(elem_b0.to_short_id() == (raw >> 16));
+
+  // Also test 1D and 2D
+  const ElementId<1> elem_1d_a{0, {{{3, 5}}}};
+  const ElementId<1> elem_1d_b{7, {{{3, 5}}}};
+  CHECK(elem_1d_a.to_short_id() == elem_1d_b.to_short_id());
+
+  const ElementId<2> elem_2d_a{0, {{{2, 1}, {3, 5}}}};
+  const ElementId<2> elem_2d_b{3, {{{2, 1}, {3, 5}}}, 2};
+  CHECK(elem_2d_a.to_short_id() == elem_2d_b.to_short_id());
+}
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Domain.Structure.ElementId", "[Domain][Unit]") {
@@ -407,6 +438,7 @@ SPECTRE_TEST_CASE("Unit.Domain.Structure.ElementId", "[Domain][Unit]") {
   test_serialization<1>();
   test_serialization<2>();
   test_serialization<3>();
+  test_to_short_id();
 #ifdef SPECTRE_DEBUG
   CHECK_THROWS_WITH(
       ElementId<1>(two_to_the(ElementId<1>::block_id_bits)),

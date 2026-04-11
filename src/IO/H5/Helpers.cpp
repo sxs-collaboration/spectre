@@ -63,10 +63,34 @@ struct VectorTo<2, DataVector> {
   }
 };
 
-template <>
-struct VectorTo<2, std::vector<float>> {
-  static std::vector<float> apply(std::vector<float> raw_data,
-                                  const std::array<hsize_t, 2>& /*size*/) {
+template <typename T>
+struct VectorTo<2, std::vector<T>> {
+  static std::vector<T> apply(std::vector<T> raw_data,
+                              const std::array<hsize_t, 2>& /*size*/) {
+    return raw_data;
+  }
+};
+
+template <typename T>
+struct VectorTo<3, std::vector<T>> {
+  static std::vector<T> apply(std::vector<T> raw_data,
+                              const std::array<hsize_t, 3>& /*size*/) {
+    return raw_data;
+  }
+};
+
+template <typename T>
+struct VectorTo<4, std::vector<T>> {
+  static std::vector<T> apply(std::vector<T> raw_data,
+                              const std::array<hsize_t, 4>& /*size*/) {
+    return raw_data;
+  }
+};
+
+template <typename T>
+struct VectorTo<5, std::vector<T>> {
+  static std::vector<T> apply(std::vector<T> raw_data,
+                              const std::array<hsize_t, 5>& /*size*/) {
     return raw_data;
   }
 };
@@ -1043,16 +1067,9 @@ GENERATE_INSTANTIATIONS(INSTANTIATE_READ_SCALAR,
 GENERATE_INSTANTIATIONS(INSTANTIATE_READ_VECTOR,
                         (float, double, int, unsigned int, long, unsigned long,
                          long long, unsigned long long, char),
-                        (1))
+                        (1, 2, 3, 4, 5))
 
 #undef INSTANTIATE_READ_VECTOR
-
-#define INSTANTIATE_READ_VECTOR(_, DATA)          \
-  template std::vector<TYPE(DATA)>                \
-  read_data<RANK(DATA), std::vector<TYPE(DATA)>>( \
-      const hid_t group_id, const std::string& dataset_name);
-
-GENERATE_INSTANTIATIONS(INSTANTIATE_READ_VECTOR, (float), (2, 3, 5))
 
 #define INSTANTIATE_READ_MULTIARRAY(_, DATA)                         \
   template boost::multi_array<TYPE(DATA), RANK(DATA)>                \

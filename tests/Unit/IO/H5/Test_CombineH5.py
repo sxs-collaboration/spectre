@@ -48,8 +48,8 @@ class TestCombineH5(unittest.TestCase):
             os.remove(self.output_file)
 
         # Initializing attributes
-        grid_names1 = ["[B0(L0I0,L0I0,L1I0)]"]
-        grid_names2 = ["[B1(L1I0,L0I0,L0I0)]"]
+        grid_names1 = ["[B0,(L0I0,L0I0,L1I0)]"]
+        grid_names2 = ["[B1,(L1I0,L0I0,L0I0)]"]
         observation_values = {0: 7.0, 1: 1.3}
         basis = Basis.Legendre
         quad = Quadrature.Gauss

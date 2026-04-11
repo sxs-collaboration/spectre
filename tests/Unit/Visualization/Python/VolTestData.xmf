@@ -1,6 +1,5 @@
 <?xml version="1.0" ?>
-<!DOCTYPE Xdmf SYSTEM "Xdmf.dtd">
-<Xdmf Version="2.0">
+<Xdmf Version="3.0">
   <Domain>
     <Grid Name="Evolution" GridType="Collection" CollectionType="Temporal">
       <Grid Name="Grids" GridType="Collection">
