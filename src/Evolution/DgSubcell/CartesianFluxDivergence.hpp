@@ -41,21 +41,21 @@ namespace evolution::dg::subcell {
  */
 void add_cartesian_flux_divergence(gsl::not_null<DataVector*> dt_var,
                                    double one_over_delta,
-                                   const DataVector& inv_jacobian,
+                                   const DataVector& det_inv_jacobian,
                                    const DataVector& boundary_correction,
                                    const Index<1>& subcell_extents,
                                    size_t dimension);
 
 void add_cartesian_flux_divergence(gsl::not_null<DataVector*> dt_var,
                                    double one_over_delta,
-                                   const DataVector& inv_jacobian,
+                                   const DataVector& det_inv_jacobian,
                                    const DataVector& boundary_correction,
                                    const Index<2>& subcell_extents,
                                    size_t dimension);
 
 void add_cartesian_flux_divergence(gsl::not_null<DataVector*> dt_var,
                                    double one_over_delta,
-                                   const DataVector& inv_jacobian,
+                                   const DataVector& det_inv_jacobian,
                                    const DataVector& boundary_correction,
                                    const Index<3>& subcell_extents,
                                    size_t dimension);
@@ -84,7 +84,7 @@ void add_cartesian_flux_divergence(gsl::not_null<DataVector*> dt_var,
  */
 void add_cartoon_cartesian_flux_divergence(
     gsl::not_null<DataVector*> dt_var, double one_over_delta,
-    const DataVector& inv_jacobian, const DataVector& boundary_correction,
+    const DataVector& det_inv_jacobian, const DataVector& boundary_correction,
     const Index<3>& subcell_extents, size_t dimension,
     const tnsr::I<DataVector, 3, Frame::Inertial>& inertial_coords,
     const ElementMap<3, Frame::Grid>& logical_to_grid_map,
@@ -92,6 +92,7 @@ void add_cartoon_cartesian_flux_divergence(
         grid_to_inertial_map,
     double time,
     const std::unordered_map<
-    std::string, std::unique_ptr<::domain::FunctionsOfTime::FunctionOfTime>>&
+        std::string,
+        std::unique_ptr<::domain::FunctionsOfTime::FunctionOfTime>>&
         functions_of_time);
 }  // namespace evolution::dg::subcell

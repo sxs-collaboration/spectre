@@ -48,23 +48,23 @@ void test() {
     const Mesh<Dim> subcell_face_mesh{extents, basis, quadrature};
 
     DataVector dt_var{subcell_extents.product(), 1.2};
-    const DataVector inv_jacobian{subcell_extents.product(), 5.0};
+    const DataVector det_inv_jacobian{subcell_extents.product(), 5.0};
     const auto logical_coords = logical_coordinates(subcell_face_mesh);
     const double one_over_delta =
         1.0 / (get<0>(logical_coords)[1] - get<0>(logical_coords)[0]);
     const DataVector boundary_correction = 3.0 * logical_coords.get(d);
     evolution::dg::subcell::add_cartesian_flux_divergence(
-        make_not_null(&dt_var), one_over_delta, inv_jacobian,
+        make_not_null(&dt_var), one_over_delta, det_inv_jacobian,
         boundary_correction, subcell_extents, d);
     const DataVector expected_dt_var{subcell_extents.product(),
-                                     inv_jacobian[0] * 3.0 + 1.2};
+                                     det_inv_jacobian[0] * 3.0 + 1.2};
     CHECK_ITERABLE_APPROX(dt_var, expected_dt_var);
   }
 }
 
 void test_cartoon() {
   // Helper function to create spatially varying inverse Jacobian
-  const auto create_varying_inv_jacobian =
+  const auto create_varying_det_inv_jacobian =
       [](const size_t num_points, const double base_value,
          const double increment) -> DataVector {
     DataVector result(num_points);
@@ -148,11 +148,11 @@ void test_cartoon() {
     }
 
     DataVector dt_var(subcell_extents.product(), 0.0);
-    const DataVector inv_jacobian =
-        create_varying_inv_jacobian(subcell_extents.product(), 0.5, 0.2);
+    const DataVector det_inv_jacobian =
+        create_varying_det_inv_jacobian(subcell_extents.product(), 0.5, 0.2);
 
     evolution::dg::subcell::add_cartoon_cartesian_flux_divergence(
-        make_not_null(&dt_var), one_over_delta, inv_jacobian,
+        make_not_null(&dt_var), one_over_delta, det_inv_jacobian,
         boundary_correction, subcell_extents, dimension, volume_inertial_coords,
         logical_to_grid_map, grid_to_inertial_map, time, functions_of_time);
 
@@ -177,8 +177,8 @@ void test_cartoon() {
       const double weight_upper = square(x_face_upper) / square(x_vol);
 
       expected_dt_var[i] = compute_cell_contribution(
-          one_over_delta, inv_jacobian[i], weight_lower, f_lower, weight_upper,
-          f_upper);
+          one_over_delta, det_inv_jacobian[i], weight_lower, f_lower,
+          weight_upper, f_upper);
     }
 
     CHECK_ITERABLE_APPROX(dt_var, expected_dt_var);
@@ -220,11 +220,11 @@ void test_cartoon() {
     const DataVector boundary_correction = get<0>(face_inertial_coords);
 
     DataVector dt_var(subcell_extents.product(), 0.0);
-    const DataVector inv_jacobian =
-        create_varying_inv_jacobian(subcell_extents.product(), 0.8, 0.1);
+    const DataVector det_inv_jacobian =
+        create_varying_det_inv_jacobian(subcell_extents.product(), 0.8, 0.1);
 
     evolution::dg::subcell::add_cartoon_cartesian_flux_divergence(
-        make_not_null(&dt_var), one_over_delta, inv_jacobian,
+        make_not_null(&dt_var), one_over_delta, det_inv_jacobian,
         boundary_correction, subcell_extents, dimension, volume_inertial_coords,
         logical_to_grid_map, grid_to_inertial_map, time, functions_of_time);
 
@@ -234,20 +234,20 @@ void test_cartoon() {
     const double x_vol_00 = 1.5;
     const double weight_lower_00 = 1.0 / x_vol_00;
     const double weight_upper_00 = 2.0 / x_vol_00;
-    expected_dt_var[0] = one_over_delta * inv_jacobian[0] *
+    expected_dt_var[0] = one_over_delta * det_inv_jacobian[0] *
                          (weight_upper_00 * 2.0 - weight_lower_00 * 1.0);
 
     // Cell (1,0): x_vol = 2.5, x_face = [2, 3], inv_jac = 0.9
     const double x_vol_10 = 2.5;
     const double weight_lower_10 = 2.0 / x_vol_10;
     const double weight_upper_10 = 3.0 / x_vol_10;
-    expected_dt_var[1] = one_over_delta * inv_jacobian[1] *
+    expected_dt_var[1] = one_over_delta * det_inv_jacobian[1] *
                          (weight_upper_10 * 3.0 - weight_lower_10 * 2.0);
 
-    // Cells (0,1) and (1,1): same x-coords but different inv_jacobian
-    expected_dt_var[2] = one_over_delta * inv_jacobian[2] *
+    // Cells (0,1) and (1,1): same x-coords but different det_inv_jacobian
+    expected_dt_var[2] = one_over_delta * det_inv_jacobian[2] *
                          (weight_upper_00 * 2.0 - weight_lower_00 * 1.0);
-    expected_dt_var[3] = one_over_delta * inv_jacobian[3] *
+    expected_dt_var[3] = one_over_delta * det_inv_jacobian[3] *
                          (weight_upper_10 * 3.0 - weight_lower_10 * 2.0);
 
     CHECK_ITERABLE_APPROX(dt_var, expected_dt_var);
@@ -294,11 +294,11 @@ void test_cartoon() {
     }
 
     DataVector dt_var(subcell_extents.product(), 0.0);
-    const DataVector inv_jacobian =
-        create_varying_inv_jacobian(subcell_extents.product(), 0.6, 0.15);
+    const DataVector det_inv_jacobian =
+        create_varying_det_inv_jacobian(subcell_extents.product(), 0.6, 0.15);
 
     evolution::dg::subcell::add_cartoon_cartesian_flux_divergence(
-        make_not_null(&dt_var), one_over_delta, inv_jacobian,
+        make_not_null(&dt_var), one_over_delta, det_inv_jacobian,
         boundary_correction, subcell_extents, dimension, volume_inertial_coords,
         logical_to_grid_map, grid_to_inertial_map, time, functions_of_time);
 
@@ -314,9 +314,9 @@ void test_cartoon() {
 
       // No coordinate weighting in y-direction (weight = 1.0)
       expected_dt_var[vol_idx] =
-          compute_cell_contribution(one_over_delta, inv_jacobian[vol_idx], 1.0,
-                                    boundary_correction[face_lower_idx], 1.0,
-                                    boundary_correction[face_upper_idx]);
+          compute_cell_contribution(one_over_delta, det_inv_jacobian[vol_idx],
+                                    1.0, boundary_correction[face_lower_idx],
+                                    1.0, boundary_correction[face_upper_idx]);
     }
     CHECK_ITERABLE_APPROX(dt_var, expected_dt_var);
   }
@@ -330,34 +330,34 @@ void test_validation_errors() {
     {
       INFO("Test wrong dt_var size");
       DataVector dt_var_wrong_size(2, 0.0);  // Should be 3
-      const DataVector inv_jacobian(3, 1.0);
+      const DataVector det_inv_jacobian(3, 1.0);
       const DataVector boundary_correction(4, 1.0);
       CHECK_THROWS_WITH(
           evolution::dg::subcell::add_cartesian_flux_divergence(
-              make_not_null(&dt_var_wrong_size), 1.0, inv_jacobian,
+              make_not_null(&dt_var_wrong_size), 1.0, det_inv_jacobian,
               boundary_correction, subcell_extents, 0),
           Catch::Matchers::ContainsSubstring(
               "dt_var size 2 does not match expected volume points 3"));
     }
     {
-      INFO("Test wrong inv_jacobian size");
+      INFO("Test wrong det_inv_jacobian size");
       DataVector dt_var(3, 0.0);
-      const DataVector inv_jacobian_wrong_size(2, 1.0);  // Should be 3
+      const DataVector det_inv_jacobian_wrong_size(2, 1.0);  // Should be 3
       const DataVector boundary_correction(4, 1.0);
       CHECK_THROWS_WITH(
           evolution::dg::subcell::add_cartesian_flux_divergence(
-              make_not_null(&dt_var), 1.0, inv_jacobian_wrong_size,
+              make_not_null(&dt_var), 1.0, det_inv_jacobian_wrong_size,
               boundary_correction, subcell_extents, 0),
-          Catch::Matchers::ContainsSubstring(
-              "inv_jacobian size 2 does not match expected volume points 3"));
+          Catch::Matchers::ContainsSubstring("det_inv_jacobian size 2 does not "
+                                             "match expected volume points 3"));
     }
     {
       INFO("Test wrong boundary_correction size");
       DataVector dt_var(3, 0.0);
-      const DataVector inv_jacobian(3, 1.0);
+      const DataVector det_inv_jacobian(3, 1.0);
       const DataVector boundary_correction_wrong_size(3, 1.0);
       CHECK_THROWS_WITH(evolution::dg::subcell::add_cartesian_flux_divergence(
-                            make_not_null(&dt_var), 1.0, inv_jacobian,
+                            make_not_null(&dt_var), 1.0, det_inv_jacobian,
                             boundary_correction_wrong_size, subcell_extents, 0),
                         Catch::Matchers::ContainsSubstring(
                             "boundary_correction size 3 does not match "
@@ -366,12 +366,12 @@ void test_validation_errors() {
     {
       INFO("Test invalid dimension");
       DataVector dt_var(3, 0.0);
-      const DataVector inv_jacobian(3, 1.0);
+      const DataVector det_inv_jacobian(3, 1.0);
       const DataVector boundary_correction(4, 1.0);
       CHECK_THROWS_WITH(
           evolution::dg::subcell::add_cartesian_flux_divergence(
-              make_not_null(&dt_var), 1.0, inv_jacobian, boundary_correction,
-              subcell_extents, 1),
+              make_not_null(&dt_var), 1.0, det_inv_jacobian,
+              boundary_correction, subcell_extents, 1),
           Catch::Matchers::ContainsSubstring("dimension must be 0 but is 1"));
     }
   }
@@ -381,11 +381,11 @@ void test_validation_errors() {
     {
       INFO("Test wrong boundary_correction size for dimension 0");
       DataVector dt_var(6, 0.0);
-      const DataVector inv_jacobian(6, 1.0);
+      const DataVector det_inv_jacobian(6, 1.0);
       const DataVector boundary_correction_wrong_size(
           7, 1.0);  // Should be 8 (4x2)
       CHECK_THROWS_WITH(evolution::dg::subcell::add_cartesian_flux_divergence(
-                            make_not_null(&dt_var), 1.0, inv_jacobian,
+                            make_not_null(&dt_var), 1.0, det_inv_jacobian,
                             boundary_correction_wrong_size, subcell_extents, 0),
                         Catch::Matchers::ContainsSubstring(
                             "boundary_correction size 7 does not match "
@@ -394,10 +394,10 @@ void test_validation_errors() {
     {
       INFO("Test invalid dimension");
       DataVector dt_var(6, 0.0);
-      const DataVector inv_jacobian(6, 1.0);
+      const DataVector det_inv_jacobian(6, 1.0);
       const DataVector boundary_correction(8, 1.0);
       CHECK_THROWS_WITH(evolution::dg::subcell::add_cartesian_flux_divergence(
-                            make_not_null(&dt_var), 1.0, inv_jacobian,
+                            make_not_null(&dt_var), 1.0, det_inv_jacobian,
                             boundary_correction, subcell_extents, 2),
                         Catch::Matchers::ContainsSubstring(
                             "dimension must be 0 or 1 but is 2"));
@@ -409,10 +409,10 @@ void test_validation_errors() {
     {
       INFO("Test invalid dimension");
       DataVector dt_var(8, 0.0);
-      const DataVector inv_jacobian(8, 1.0);
+      const DataVector det_inv_jacobian(8, 1.0);
       const DataVector boundary_correction(12, 1.0);  // 3x2x2 for dim 0
       CHECK_THROWS_WITH(evolution::dg::subcell::add_cartesian_flux_divergence(
-                            make_not_null(&dt_var), 1.0, inv_jacobian,
+                            make_not_null(&dt_var), 1.0, det_inv_jacobian,
                             boundary_correction, subcell_extents, 3),
                         Catch::Matchers::ContainsSubstring(
                             "dimension must be 0, 1, or 2 but is 3"));
@@ -455,12 +455,12 @@ void test_validation_errors() {
     get<2>(coords_with_zero) = DataVector{0.0, 0.0, 0.0};
 
     DataVector dt_var(subcell_extents.product(), 0.0);
-    const DataVector inv_jacobian(subcell_extents.product(), 1.0);
+    const DataVector det_inv_jacobian(subcell_extents.product(), 1.0);
     const DataVector boundary_correction(4, 1.0);
 
     CHECK_THROWS_WITH(
         evolution::dg::subcell::add_cartoon_cartesian_flux_divergence(
-            make_not_null(&dt_var), 1.0, inv_jacobian, boundary_correction,
+            make_not_null(&dt_var), 1.0, det_inv_jacobian, boundary_correction,
             subcell_extents, dimension, coords_with_zero, logical_to_grid_map,
             grid_to_inertial_map, time, functions_of_time),
         Catch::Matchers::ContainsSubstring("Element contains x=0 for subcell"));
@@ -484,12 +484,12 @@ void test_validation_errors() {
         logical_to_grid_map(volume_logical_coords), time, functions_of_time);
 
     DataVector dt_var(wrong_subcell_extents.product(), 0.0);
-    const DataVector inv_jacobian(wrong_subcell_extents.product(), 1.0);
+    const DataVector det_inv_jacobian(wrong_subcell_extents.product(), 1.0);
     const DataVector boundary_correction(8, 1.0);  // 4x1x2
 
     CHECK_THROWS_WITH(
         evolution::dg::subcell::add_cartoon_cartesian_flux_divergence(
-            make_not_null(&dt_var), 1.0, inv_jacobian, boundary_correction,
+            make_not_null(&dt_var), 1.0, det_inv_jacobian, boundary_correction,
             wrong_subcell_extents, dimension, volume_inertial_coords,
             logical_to_grid_map, grid_to_inertial_map, time, functions_of_time),
         Catch::Matchers::ContainsSubstring(
@@ -512,12 +512,12 @@ void test_validation_errors() {
         logical_to_grid_map(volume_logical_coords), time, functions_of_time);
 
     DataVector dt_var(wrong_subcell_extents.product(), 0.0);
-    const DataVector inv_jacobian(wrong_subcell_extents.product(), 1.0);
+    const DataVector det_inv_jacobian(wrong_subcell_extents.product(), 1.0);
     const DataVector boundary_correction(4, 1.0);  // 2x2x1
 
     CHECK_THROWS_WITH(
         evolution::dg::subcell::add_cartoon_cartesian_flux_divergence(
-            make_not_null(&dt_var), 1.0, inv_jacobian, boundary_correction,
+            make_not_null(&dt_var), 1.0, det_inv_jacobian, boundary_correction,
             wrong_subcell_extents, dimension, volume_inertial_coords,
             logical_to_grid_map, grid_to_inertial_map, time, functions_of_time),
         Catch::Matchers::ContainsSubstring(
@@ -541,14 +541,14 @@ void test_validation_errors() {
         logical_to_grid_map(volume_logical_coords), time, functions_of_time);
 
     DataVector dt_var(subcell_extents.product(), 0.0);
-    const DataVector inv_jacobian(subcell_extents.product(), 1.0);
+    const DataVector det_inv_jacobian(subcell_extents.product(), 1.0);
     const DataVector boundary_correction(
         6,
         1.0);  // Should actually be different size but testing dimension first
 
     CHECK_THROWS_WITH(
         evolution::dg::subcell::add_cartoon_cartesian_flux_divergence(
-            make_not_null(&dt_var), 1.0, inv_jacobian, boundary_correction,
+            make_not_null(&dt_var), 1.0, det_inv_jacobian, boundary_correction,
             subcell_extents, invalid_dimension, volume_inertial_coords,
             logical_to_grid_map, grid_to_inertial_map, time, functions_of_time),
         Catch::Matchers::ContainsSubstring(
@@ -572,12 +572,12 @@ void test_validation_errors() {
         logical_to_grid_map(volume_logical_coords), time, functions_of_time);
 
     DataVector dt_var(subcell_extents.product(), 0.0);
-    const DataVector inv_jacobian(subcell_extents.product(), 1.0);
+    const DataVector det_inv_jacobian(subcell_extents.product(), 1.0);
     const DataVector boundary_correction(12, 1.0);
 
     CHECK_THROWS_WITH(
         evolution::dg::subcell::add_cartoon_cartesian_flux_divergence(
-            make_not_null(&dt_var), 1.0, inv_jacobian, boundary_correction,
+            make_not_null(&dt_var), 1.0, det_inv_jacobian, boundary_correction,
             subcell_extents, invalid_dimension, volume_inertial_coords,
             logical_to_grid_map, grid_to_inertial_map, time, functions_of_time),
         Catch::Matchers::ContainsSubstring(
