@@ -58,6 +58,7 @@
 #include "Time/TimeSteppers/TimeStepper.hpp"
 #include "Utilities/Algorithm.hpp"
 #include "Utilities/CallWithDynamicType.hpp"
+#include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeArray.hpp"
@@ -108,6 +109,11 @@ struct TemporaryReference {
 ///
 /// Setting \p DenseOutput to true receives data required for output
 /// at `::Tags::Time` instead of `::Tags::Next<::Tags::TimeStepId>`.
+///
+/// If \p LocalTimeStepping is true, it will process all data
+/// necessary for conservative LTS, otherwise it will process all data
+/// necessary for GTS.  Some data for the other mode may also be
+/// processed to simplify the message handling.
 template <bool UseNodegroupDgElements, typename Metavariables,
           bool LocalTimeStepping, bool DenseOutput, typename DbTagsList,
           typename... InboxTags>
@@ -116,30 +122,8 @@ bool receive_boundary_data(
     const gsl::not_null<tuples::TaggedTuple<InboxTags...>*> inboxes) {
   constexpr size_t volume_dim = Metavariables::system::volume_dim;
   constexpr size_t face_dim = volume_dim - 1;
-
-  const auto needed_time = [&box]() {
-    if constexpr (LocalTimeStepping) {
-      const LtsTimeStepper& time_stepper =
-          db::get<::Tags::TimeStepper<LtsTimeStepper>>(*box);
-      if constexpr (DenseOutput) {
-        const auto& dense_output_time = db::get<::Tags::Time>(*box);
-        return [&dense_output_time, &time_stepper](const TimeStepId& id) {
-          return time_stepper.neighbor_data_required(dense_output_time, id);
-        };
-      } else {
-        const auto& next_temporal_id =
-            db::get<::Tags::Next<::Tags::TimeStepId>>(*box);
-        return [&next_temporal_id, &time_stepper](const TimeStepId& id) {
-          return time_stepper.neighbor_data_required(next_temporal_id, id);
-        };
-      }
-    } else {
-      static_assert(not DenseOutput,
-                    "Should not be receiving data for dense output with GTS.");
-      const auto& current_id = db::get<::Tags::TimeStepId>(*box);
-      return [&current_id](const TimeStepId& id) { return id <= current_id; };
-    }
-  }();
+  static_assert(LocalTimeStepping or not DenseOutput,
+                "Should not be receiving data for dense output with GTS.");
 
   auto& inbox =
       tuples::get<evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<
@@ -147,15 +131,63 @@ bool receive_boundary_data(
 
   const auto& volume_mesh = db::get<domain::Tags::Mesh<volume_dim>>(*box);
   const auto& mortar_infos = db::get<Tags::MortarInfo<volume_dim>>(*box);
+  const auto& mortar_next_time_step_ids =
+      db::get<evolution::dg::Tags::MortarNextTemporalId<volume_dim>>(*box);
 
-  size_t missing_messages{};
-  do {
-    // The boundary history coupling computation (which computes the _lifted_
-    // boundary correction) returns a Variables<dt<EvolvedVars>> instead of
-    // using the `NormalDotNumericalFlux` prefix tag. This is because the
-    // returned quantity is more a `dt` quantity than a
-    // `NormalDotNormalDotFlux` since it's been lifted to the volume.
-    inbox.collect_messages();
+  for (;;) {
+    std::optional<TimeStepId> time_to_process{};
+    for (const auto& [mortar_id, mortar_next_time_step_id] :
+         mortar_next_time_step_ids) {
+      if (mortar_next_time_step_id < time_to_process) {
+        continue;
+      }
+
+      const auto& time_stepping_policy =
+          mortar_infos.at(mortar_id).time_stepping_policy();
+      switch (time_stepping_policy) {
+        case TimeSteppingPolicy::EqualRate:
+          if (LocalTimeStepping or
+              mortar_next_time_step_id > db::get<::Tags::TimeStepId>(*box)) {
+            continue;
+          }
+          break;
+        case TimeSteppingPolicy::Conservative:
+          if constexpr (not LocalTimeStepping) {
+            continue;
+          } else {
+            const LtsTimeStepper& time_stepper =
+                db::get<::Tags::TimeStepper<LtsTimeStepper>>(*box);
+            using goal_tag =
+                tmpl::conditional_t<DenseOutput, ::Tags::Time,
+                                    ::Tags::Next<::Tags::TimeStepId>>;
+            const auto& goal = db::get<goal_tag>(*box);
+            if (not time_stepper.neighbor_data_required(
+                    goal, mortar_next_time_step_id)) {
+              continue;
+            }
+          }
+          break;
+        default:
+          ERROR("Unhandled TimeSteppingPolicy: " << time_stepping_policy);
+      }
+
+      time_to_process.emplace(mortar_next_time_step_id);
+    }
+
+    if (not time_to_process.has_value()) {
+      if constexpr (using_subcell_v<Metavariables> and not LocalTimeStepping) {
+        evolution::dg::subcell::neighbor_reconstructed_face_solution<
+            volume_dim, typename Metavariables::SubcellOptions::
+                            DgComputeSubcellNeighborPackagedData>(
+            &db::as_access(*box));
+      }
+      return true;
+    }
+
+    const auto expected_messages = static_cast<size_t>(alg::count_if(
+        mortar_next_time_step_ids,
+        [&](const auto& entry) { return entry.second == *time_to_process; }));
+
     // This is a
     //
     // std::map<TimeStepId,
@@ -165,198 +197,156 @@ bool receive_boundary_data(
     // where V<> is a vector-like type the details of which we don't
     // want to hardcode here.
     auto& inbox_data = inbox.messages;
+    auto messages_to_process = inbox_data.end();
 
-    for (auto time_entry = inbox_data.begin();
-         time_entry != inbox_data.end();) {
-      if (not needed_time(time_entry->first)) {
-        ++time_entry;
-        continue;
-      }
-
-      for (auto received_mortar_data = time_entry->second.begin();
-           received_mortar_data != time_entry->second.end();) {
-        const auto& mortar_id = received_mortar_data->first;
-
-        const auto& time_stepping_policy =
-            mortar_infos.at(mortar_id).time_stepping_policy();
-        switch (time_stepping_policy) {
-          case TimeSteppingPolicy::EqualRate:
-            if (LocalTimeStepping) {
-              ++received_mortar_data;
-              continue;
-            }
-            break;
-          case TimeSteppingPolicy::Conservative:
-            if (not LocalTimeStepping) {
-              ++received_mortar_data;
-              continue;
-            }
-            break;
-          default:
-            ERROR("Unhandled TimeSteppingPolicy: " << time_stepping_policy);
+    {
+      size_t missing_messages{};
+      do {
+        inbox.collect_messages();
+        if (messages_to_process == inbox_data.end()) {
+          messages_to_process = inbox_data.find(*time_to_process);
         }
-
-        const size_t sliced_away_dim = mortar_id.direction().dimension();
-        const Mesh<face_dim> face_mesh =
-            volume_mesh.slice_away(sliced_away_dim);
-        const auto mortar_next_time_step_id =
-            db::get<evolution::dg::Tags::MortarNextTemporalId<volume_dim>>(*box)
-                .at(mortar_id);
-        if (mortar_next_time_step_id != time_entry->first) {
-          ++received_mortar_data;
-          continue;
-        }
-
-        if constexpr (using_subcell_v<Metavariables>) {
-          if (time_stepping_policy == TimeSteppingPolicy::EqualRate) {
-            evolution::dg::subcell::receive_subcell_data_for_dg<volume_dim>(
-                &db::as_access(*box), mortar_id, received_mortar_data->second);
-            evolution::dg::subcell::neighbor_tci_decision<volume_dim>(
-                make_not_null(&db::as_access(*box)), mortar_id,
-                received_mortar_data->second);
-          }
-        }
-
-        db::mutate<evolution::dg::Tags::MortarMesh<volume_dim>,
-                   evolution::dg::Tags::MortarData<volume_dim>,
-                   evolution::dg::Tags::MortarDataHistory<volume_dim>,
-                   evolution::dg::Tags::MortarNextTemporalId<volume_dim>,
-                   domain::Tags::NeighborMesh<volume_dim>>(
-            [&](const gsl::not_null<
-                    DirectionalIdMap<volume_dim, Mesh<face_dim>>*>
-                    mortar_meshes,
-                const gsl::not_null<DirectionalIdMap<
-                    volume_dim, evolution::dg::MortarDataHolder<volume_dim>>*>
-                    gts_mortar_data,
-                const gsl::not_null<DirectionalIdMap<
-                    volume_dim,
-                    TimeSteppers::BoundaryHistory<
-                        evolution::dg::MortarData<volume_dim>,
-                        evolution::dg::MortarData<volume_dim>, DataVector>>*>
-                    boundary_data_history,
-                const gsl::not_null<DirectionalIdMap<volume_dim, TimeStepId>*>
-                    mortar_next_time_step_ids,
-                const gsl::not_null<
-                    DirectionalIdMap<volume_dim, Mesh<volume_dim>>*>
-                    neighbor_mesh) {
-              const Mesh<face_dim> neighbor_face_mesh =
-                  received_mortar_data->second.volume_mesh.slice_away(
-                      sliced_away_dim);
-              const Mesh<face_dim> mortar_mesh =
-                  ::dg::mortar_mesh(face_mesh, neighbor_face_mesh);
-
-              const auto project_boundary_mortar_data =
-                  [&mortar_mesh](const TimeStepId& /*id*/,
-                                 const gsl::not_null<
-                                     ::evolution::dg::MortarData<volume_dim>*>
-                                     mortar_data) {
-                    return p_project_mortar_data(mortar_data, mortar_mesh);
-                  };
-
-              mortar_meshes->at(mortar_id) = mortar_mesh;
-              switch (time_stepping_policy) {
-                case TimeSteppingPolicy::EqualRate:
-                  p_project_mortar_data(
-                      make_not_null(&gts_mortar_data->at(mortar_id).local()),
-                      mortar_mesh);
-                  break;
-                case TimeSteppingPolicy::Conservative:
-                  boundary_data_history->at(mortar_id).local().for_each(
-                      project_boundary_mortar_data);
-                  break;
-                default:
-                  ERROR(
-                      "Unhandled TimeSteppingPolicy: " << time_stepping_policy);
-              }
-
-              neighbor_mesh->insert_or_assign(
-                  mortar_id, received_mortar_data->second.volume_mesh);
-              mortar_next_time_step_ids->at(mortar_id) =
-                  received_mortar_data->second.validity_range;
-
-              ASSERT(using_subcell_v<Metavariables> or
-                         received_mortar_data->second.boundary_correction_data
-                             .has_value(),
-                     "Must receive neighbor boundary correction data when "
-                     "not using DG-subcell. Mortar ID is: ("
-                         << mortar_id.direction() << "," << mortar_id.id()
-                         << ") and TimeStepId is " << time_entry->first);
-              MortarData<volume_dim> neighbor_mortar_data{};
-              neighbor_mortar_data.face_mesh = neighbor_face_mesh;
-              neighbor_mortar_data.mortar_mesh =
-                  received_mortar_data->second.boundary_correction_mesh;
-              neighbor_mortar_data.mortar_data = std::move(
-                  received_mortar_data->second.boundary_correction_data);
-              switch (time_stepping_policy) {
-                case TimeSteppingPolicy::EqualRate:
-                  if (neighbor_mortar_data.mortar_data.has_value()) {
-                    p_project_mortar_data(make_not_null(&neighbor_mortar_data),
-                                          mortar_mesh);
-                  }
-                  gts_mortar_data->at(mortar_id).neighbor() =
-                      std::move(neighbor_mortar_data);
-                  break;
-                case TimeSteppingPolicy::Conservative:
-                  ASSERT(neighbor_mortar_data.mortar_data.has_value(),
-                         "Did not receive mortar data for " << mortar_id);
-                  boundary_data_history->at(mortar_id).remote().insert(
-                      time_entry->first,
-                      received_mortar_data->second.integration_order,
-                      std::move(neighbor_mortar_data));
-                  boundary_data_history->at(mortar_id).remote().for_each(
-                      project_boundary_mortar_data);
-                  break;
-                default:
-                  ERROR(
-                      "Unhandled TimeSteppingPolicy: " << time_stepping_policy);
-              }
-            },
-            box);
-        received_mortar_data = time_entry->second.erase(received_mortar_data);
-      }
-
-      if (time_entry->second.empty()) {
-        time_entry = inbox_data.erase(time_entry);
-      } else {
-        ++time_entry;
+        const size_t available_messages =
+            messages_to_process == inbox_data.end()
+                ? 0
+                : messages_to_process->second.size();
+        ASSERT(available_messages <= expected_messages,
+               "Too many boundary messages at " << *time_to_process << ": "
+                                                << available_messages << "/"
+                                                << expected_messages);
+        missing_messages = expected_messages - available_messages;
+      } while (missing_messages != 0 and
+               inbox.set_missing_messages(missing_messages));
+      if (missing_messages != 0) {
+        return false;
       }
     }
 
-    missing_messages = 0;
-    for (const auto& [mortar_id, mortar_next_time_step_id] :
-         db::get<evolution::dg::Tags::MortarNextTemporalId<volume_dim>>(*box)) {
+    // *time_to_process represents the same temporal event as this,
+    // but may have an out-of-date slab size because the
+    // MortarNextTemporalId data can be sent before the slab size is
+    // chosen.  It is important that the corrected version be what is
+    // inserted into the boundary history.
+    const TimeStepId processing_time = messages_to_process->first;
+
+    for (auto& mortar_id_and_data : messages_to_process->second) {
+      const auto& mortar_id = mortar_id_and_data.first;
+      auto& received_mortar_data = mortar_id_and_data.second;
+      const size_t sliced_away_dim = mortar_id.direction().dimension();
+      const Mesh<face_dim> face_mesh = volume_mesh.slice_away(sliced_away_dim);
+      ASSERT(mortar_next_time_step_ids.at(mortar_id) == processing_time,
+             "Processing wrong time for mortar "
+                 << mortar_id << "\nExpected "
+                 << mortar_next_time_step_ids.at(mortar_id)
+                 << " but processing " << processing_time);
+
       const auto& time_stepping_policy =
           mortar_infos.at(mortar_id).time_stepping_policy();
-      switch (time_stepping_policy) {
-        case TimeSteppingPolicy::EqualRate:
-          if (LocalTimeStepping) {
-            continue;
-          }
-          break;
-        case TimeSteppingPolicy::Conservative:
-          if (not LocalTimeStepping) {
-            continue;
-          }
-          break;
-        default:
-          ERROR("Unhandled TimeSteppingPolicy: " << time_stepping_policy);
+
+      if constexpr (using_subcell_v<Metavariables>) {
+        if (time_stepping_policy == TimeSteppingPolicy::EqualRate) {
+          evolution::dg::subcell::receive_subcell_data_for_dg<volume_dim>(
+              &db::as_access(*box), mortar_id, received_mortar_data);
+          evolution::dg::subcell::neighbor_tci_decision<volume_dim>(
+              make_not_null(&db::as_access(*box)), mortar_id,
+              received_mortar_data);
+        }
       }
-      if (needed_time(mortar_next_time_step_id)) {
-        ++missing_messages;
-      }
+
+      db::mutate<evolution::dg::Tags::MortarMesh<volume_dim>,
+                 evolution::dg::Tags::MortarData<volume_dim>,
+                 evolution::dg::Tags::MortarDataHistory<volume_dim>,
+                 evolution::dg::Tags::MortarNextTemporalId<volume_dim>,
+                 domain::Tags::NeighborMesh<volume_dim>>(
+          [&](const gsl::not_null<DirectionalIdMap<volume_dim, Mesh<face_dim>>*>
+                  mortar_meshes,
+              const gsl::not_null<DirectionalIdMap<
+                  volume_dim, evolution::dg::MortarDataHolder<volume_dim>>*>
+                  gts_mortar_data,
+              const gsl::not_null<DirectionalIdMap<
+                  volume_dim,
+                  TimeSteppers::BoundaryHistory<
+                      evolution::dg::MortarData<volume_dim>,
+                      evolution::dg::MortarData<volume_dim>, DataVector>>*>
+                  boundary_data_history,
+              const gsl::not_null<DirectionalIdMap<volume_dim, TimeStepId>*>
+                  mortar_next_time_step_ids_mutable,
+              const gsl::not_null<
+                  DirectionalIdMap<volume_dim, Mesh<volume_dim>>*>
+                  neighbor_mesh) {
+            const Mesh<face_dim> neighbor_face_mesh =
+                received_mortar_data.volume_mesh.slice_away(sliced_away_dim);
+            const Mesh<face_dim> mortar_mesh =
+                ::dg::mortar_mesh(face_mesh, neighbor_face_mesh);
+
+            const auto project_boundary_mortar_data =
+                [&mortar_mesh](const TimeStepId& /*id*/,
+                               const gsl::not_null<
+                                   ::evolution::dg::MortarData<volume_dim>*>
+                                   mortar_data) {
+                  return p_project_mortar_data(mortar_data, mortar_mesh);
+                };
+
+            mortar_meshes->at(mortar_id) = mortar_mesh;
+            switch (time_stepping_policy) {
+              case TimeSteppingPolicy::EqualRate:
+                p_project_mortar_data(
+                    make_not_null(&gts_mortar_data->at(mortar_id).local()),
+                    mortar_mesh);
+                break;
+              case TimeSteppingPolicy::Conservative:
+                boundary_data_history->at(mortar_id).local().for_each(
+                    project_boundary_mortar_data);
+                break;
+              default:
+                ERROR("Unhandled TimeSteppingPolicy: " << time_stepping_policy);
+            }
+
+            neighbor_mesh->insert_or_assign(mortar_id,
+                                            received_mortar_data.volume_mesh);
+            mortar_next_time_step_ids_mutable->at(mortar_id) =
+                received_mortar_data.validity_range;
+
+            ASSERT(
+                using_subcell_v<Metavariables> or
+                    received_mortar_data.boundary_correction_data.has_value(),
+                "Must receive neighbor boundary correction data when "
+                "not using DG-subcell. Mortar ID is: ("
+                    << mortar_id.direction() << "," << mortar_id.id()
+                    << ") and TimeStepId is " << processing_time);
+            MortarData<volume_dim> neighbor_mortar_data{};
+            neighbor_mortar_data.face_mesh = neighbor_face_mesh;
+            neighbor_mortar_data.mortar_mesh =
+                received_mortar_data.boundary_correction_mesh;
+            neighbor_mortar_data.mortar_data =
+                std::move(received_mortar_data.boundary_correction_data);
+            switch (time_stepping_policy) {
+              case TimeSteppingPolicy::EqualRate:
+                if (neighbor_mortar_data.mortar_data.has_value()) {
+                  p_project_mortar_data(make_not_null(&neighbor_mortar_data),
+                                        mortar_mesh);
+                }
+                gts_mortar_data->at(mortar_id).neighbor() =
+                    std::move(neighbor_mortar_data);
+                break;
+              case TimeSteppingPolicy::Conservative:
+                ASSERT(neighbor_mortar_data.mortar_data.has_value(),
+                       "Did not receive mortar data for " << mortar_id);
+                boundary_data_history->at(mortar_id).remote().insert(
+                    processing_time, received_mortar_data.integration_order,
+                    std::move(neighbor_mortar_data));
+                boundary_data_history->at(mortar_id).remote().for_each(
+                    project_boundary_mortar_data);
+                break;
+              default:
+                ERROR("Unhandled TimeSteppingPolicy: " << time_stepping_policy);
+            }
+          },
+          box);
     }
 
-    if (missing_messages == 0) {
-      if constexpr (using_subcell_v<Metavariables>) {
-        evolution::dg::subcell::neighbor_reconstructed_face_solution<
-            volume_dim, typename Metavariables::SubcellOptions::
-                            DgComputeSubcellNeighborPackagedData>(
-            &db::as_access(*box));
-      }
-      return true;
-    }
-  } while (inbox.set_missing_messages(missing_messages));
-  return false;
+    inbox_data.erase(messages_to_process);
+  }
 }
 
 /// Apply corrections from boundary communication.
