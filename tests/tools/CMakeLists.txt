@@ -14,6 +14,12 @@ spectre_add_python_bindings_test(
   None)
 
 spectre_add_python_bindings_test(
+  "tools.PostprocessDocs"
+  Test_PostprocessDocs.py
+  "Python"
+  None)
+
+spectre_add_python_bindings_test(
   "tools.Status"
   Test_Status.py
   "Python"

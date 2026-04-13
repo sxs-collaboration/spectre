@@ -11,6 +11,35 @@ import pybtex.database
 from bs4 import BeautifulSoup
 
 
+def clean_up_doxygen_bibliography_artifacts(citeref_item, entry):
+    logger = logging.getLogger(__name__)
+    citation_entry = citeref_item.parent
+    removed_empty_lists = False
+    for bibliography_list in citation_entry.find_all(
+        ["ol", "ul"], recursive=False
+    ):
+        list_items = bibliography_list.find_all("li", recursive=False)
+        if list_items and all(
+            list_item.get_text(strip=True) == "" for list_item in list_items
+        ):
+            bibliography_list.decompose()
+            removed_empty_lists = True
+    if not removed_empty_lists or "year" not in entry.fields:
+        return
+    citation_text = citeref_item.get_text().rstrip()
+    year = entry.fields["year"]
+    if citation_text.endswith(","):
+        citeref_item.append(f" {year}.")
+    elif citation_text.endswith(".") and not citation_text.endswith(f"{year}."):
+        citeref_item.append(f" {year}.")
+    elif year not in citation_text:
+        citeref_item.append(f", {year}.")
+    logger.info(
+        "Removed empty bibliography list artifact and restored year for %s.",
+        entry.key,
+    )
+
+
 def append_eprint_links_to_citelist(html_dir, references_files):
     logger = logging.getLogger(__name__)
 
@@ -31,6 +60,8 @@ def append_eprint_links_to_citelist(html_dir, references_files):
     for citeref_anchor in citelist.find_all(id=re.compile("CITEREF_*")):
         key = re.match("CITEREF_(.*)", citeref_anchor.attrs["id"]).groups()[0]
         entry = references.entries[key]
+        citeref_item = citeref_anchor.find_next("p")
+        clean_up_doxygen_bibliography_artifacts(citeref_item, entry)
         # We support only arXiv eprints for now. More formats may be added here
         # if necessary.
         if (
@@ -42,13 +73,16 @@ def append_eprint_links_to_citelist(html_dir, references_files):
             arxiv_url = "https://arxiv.org/abs/{}".format(
                 entry.fields["eprint"]
             )
+            if citeref_item.find("a", href=arxiv_url) is not None:
+                logger.debug("ArXiv link already present for {}.".format(key))
+                continue
             eprint_link = citelist.new_tag("a", href=arxiv_url)
             eprint_link.string = "arXiv:{}".format(entry.fields["eprint"])
         else:
             logger.debug("Found no supported eprint data for {}.".format(key))
             continue
         # Append the eprint link to the citation HTML
-        citeref_item = citeref_anchor.find_next("p")
+        citeref_item.append(" ")
         citeref_item.append(eprint_link)
         citeref_item.append(".")
         logger.info("Added eprint link to {}: {}".format(key, eprint_link))
