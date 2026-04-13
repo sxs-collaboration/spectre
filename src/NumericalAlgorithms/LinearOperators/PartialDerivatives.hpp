@@ -424,8 +424,12 @@ struct DerivCompute
  * Computes the spatial derivative for a single tensor represented by
  * 'TensorTag' in the frame mapped to by 'InverseJacobianTag'. It takes a
  * single Tensor designated by 'TensorTag', the inverse Jacobian, and a mesh.
+ *
+ * For an executable that does not allow a Cartoon basis, the last parameter,
+ * `InertialCoordsTag`, should not be passed.
  */
-template <typename TensorTag, typename InverseJacobianTag, typename MeshTag>
+template <typename TensorTag, typename InverseJacobianTag, typename MeshTag,
+          typename InertialCoordsTag = void>
 struct DerivTensorCompute
     : ::Tags::deriv<TensorTag,
                     tmpl::size_t<tmpl::back<
@@ -441,15 +445,25 @@ struct DerivTensorCompute
  public:
   using base = ::Tags::deriv<TensorTag, tmpl::size_t<Dim>, deriv_frame>;
   using return_type = typename base::type;
-  static constexpr void (*function)(
-      gsl::not_null<return_type*>, const typename TensorTag::type&,
-      const Mesh<Dim>&,
+  static constexpr void function(
+      const gsl::not_null<return_type*> du, const typename TensorTag::type& u,
+      const Mesh<Dim>& mesh,
       const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
-                            deriv_frame>&) =
-      partial_derivative<
-          typename TensorTag::type::type, typename TensorTag::type::symmetry,
-          typename TensorTag::type::index_list, Dim, deriv_frame>;
-  using argument_tags =
-      tmpl::list<TensorTag, domain::Tags::Mesh<Dim>, InverseJacobianTag>;
+                            deriv_frame>& inverse_jacobian) {
+    partial_derivative(du, u, mesh, inverse_jacobian);
+  }
+  static constexpr void function(
+      const gsl::not_null<return_type*> du, const typename TensorTag::type& u,
+      const Mesh<Dim>& mesh,
+      const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
+                            deriv_frame>& inverse_jacobian,
+      const tnsr::I<DataVector, Dim, Frame::Inertial>& inertial_coords) {
+    partial_derivative(du, u, mesh, inverse_jacobian, inertial_coords);
+  }
+  using argument_tags = tmpl::conditional_t<
+      std::is_same_v<void, InertialCoordsTag>,
+      tmpl::list<TensorTag, domain::Tags::Mesh<Dim>, InverseJacobianTag>,
+      tmpl::list<TensorTag, domain::Tags::Mesh<Dim>, InverseJacobianTag,
+                 InertialCoordsTag>>;
 };
 }  // namespace Tags
