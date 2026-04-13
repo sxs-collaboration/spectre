@@ -412,7 +412,8 @@ void test_points_shape_map(
     const std::array<double, 3>& outer_center, const Wedge::Axis axis,
     const double check_time, const std::string& fot_name,
     const FunctionsOfTimeMap& functions_of_time, const std::array<T, 3>& points,
-    const bool reverse = false, const bool check_jacobians = true) {
+    const bool reverse = false, const bool check_jacobians = true,
+    const Approx inverse_map_approx = approx) {
   std::unique_ptr<ShapeMapTransitionFunction> wedge = std::make_unique<Wedge>(
       inner_center, inner_radius, inner_sphericity, outer_center, outer_radius,
       outer_sphericity, static_cast<Wedge::Axis>(axis), reverse);
@@ -430,7 +431,8 @@ void test_points_shape_map(
       test_coordinate_map_argument_types(shape, points, check_time,
                                          functions_of_time);
     }
-    test_inverse_map(shape, points, check_time, functions_of_time);
+    test_inverse_map(shape, points, check_time, functions_of_time,
+                     inverse_map_approx);
   }
 
   test_frame_velocity(shape, points, check_time, functions_of_time);
@@ -514,14 +516,20 @@ void test_in_shape_map_no_offset(const gsl::not_null<Generator*> generator,
   }
 
   const double eps = std::numeric_limits<double>::epsilon();
+  const Approx interior_inverse_map_approx =
+      Approx::custom().margin(1.0e-12).scale(1.0);
   // Check for points within the interior
   for (const auto& point :
        {center, center + std::array{0.0, 2.0 * eps, 0.0},
         center + std::array{0.0, 0.5 * inner_radius, 0.0},
         center + std::array{0.0, (1.0 - 2.0 * eps) * inner_radius, 0.0},
         center + std::array{0.0, inner_radius, 0.0}}) {
+    // The interior inverse solves a cubic analytically, so this check picks up
+    // unavoidable floating-point roundoff when converting the recovered radius
+    // back to Cartesian coordinates.
     test_points_shape_map(1.0, 0.0, center, center, Wedge::Axis::Interior,
-                          check_time, fot_name, functions_of_time, point);
+                          check_time, fot_name, functions_of_time, point, false,
+                          true, interior_inverse_map_approx);
   }
 }
 
@@ -680,6 +688,8 @@ void test_in_shape_map_offset(const gsl::not_null<Generator*> generator,
     }      // for axis
 
     const double eps = std::numeric_limits<double>::epsilon();
+    const Approx interior_inverse_map_approx =
+        Approx::custom().margin(1.0e-12).scale(1.0);
     // Check for points within the interior
     for (const auto& point :
          {inner_center, inner_center + std::array{0.0, 2.0 * eps, 0.0},
@@ -688,7 +698,8 @@ void test_in_shape_map_offset(const gsl::not_null<Generator*> generator,
           inner_center + std::array{0.0, inner_radius, 0.0}}) {
       test_points_shape_map(1.0, outer_sphericity, inner_center, outer_center,
                             Wedge::Axis::Interior, check_time, fot_name,
-                            functions_of_time, point);
+                            functions_of_time, point, false, true,
+                            interior_inverse_map_approx);
     }
   }  // for outer sphericity
 }
