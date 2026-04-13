@@ -1,3 +1,8 @@
+---
+triggers:
+  - glob: "**/*.{hpp,cpp,tpp}"
+---
+
 # SpECTRE Code Rules Reference
 
 ## Banned Patterns
@@ -47,6 +52,7 @@ metric, derivative of shift, etc. are implemented as functions in
 - **Naming**: CamelCase for classes, template params, files, dirs. snake_case
   for functions, variables. SCREAMING_SNAKE_CASE for macros. Trailing `_` on
   private members. Unused params: `/*name*/`.
+- **Names**: Use full, descriptive names (e.g., `block_id` not `blk_id`).
 - **Almost always `auto`** except expression templates (e.g. `DataVector`)
 - **Braces on all loops and if/else** (no braceless one-liners)
 - **Return by value** preferred. Mutable out-params: `gsl::not_null<T*>` (listed
@@ -82,7 +88,8 @@ metric, derivative of shift, etc. are implemented as functions in
 
 ## Test Requirements
 - Files: `tests/Unit/<mirrors_src>/Test_<SourceFile>.cpp`
-- First include: `"Framework/TestingFramework.hpp"` (blank line after)
+- Include order: `"Framework/TestingFramework.hpp"`, blank line,
+  system/external includes, blank line, spectre includes.
 - All helper classes/functions in anonymous `namespace {}`
 - Test macro: `SPECTRE_TEST_CASE("Unit.Category.Name", "[Unit][Category]")`
 - Floating-point: `CHECK_ITERABLE_APPROX` (not `Approx`)
@@ -91,6 +98,12 @@ metric, derivative of shift, etc. are implemented as functions in
 - Error tests: `CHECK_THROWS_WITH` inside `#ifdef SPECTRE_DEBUG`
 - Pointwise functions: test with analytic solution AND random-value comparison
   via `pypp::check_with_random_values()`
-- Use meromorphic tests: like `sin^2(x)+cos^2(x)=1` or that a spacetime vector
+- Use metamorphic tests: like `sin^2(x)+cos^2(x)=1` or that a spacetime vector
   in general relativity that should be null is actually null. I.e, test
   identities.
+- Name tests after the component and behavior (e.g.,
+  `Test_ApparentHorizonFinder`).
+- Prefer a single `SPECTRE_TEST_CASE` that calls several anonymous-namespace
+  helper functions over many small `SPECTRE_TEST_CASE`s.
+- Increase test timeouts sparingly. If necessary, use `// [[TimeOut, SECONDS]]`
+  on the line before `SPECTRE_TEST_CASE`. Default timeout is 2 seconds.
