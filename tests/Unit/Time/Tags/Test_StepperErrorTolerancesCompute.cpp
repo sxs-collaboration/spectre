@@ -27,7 +27,7 @@
 #include "Time/StepChoosers/LimitIncrease.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"
 #include "Time/StepperErrorTolerances.hpp"
-#include "Time/Tags/StepChoosers.hpp"
+#include "Time/Tags/LtsStepChoosers.hpp"
 #include "Time/Tags/StepperErrorEstimatesEnabled.hpp"
 #include "Time/Tags/StepperErrorTolerances.hpp"
 #include "Time/Tags/StepperErrorTolerancesCompute.hpp"
@@ -145,11 +145,11 @@ SPECTRE_TEST_CASE("Unit.Time.Tags.StepperErrorTolerancesCompute",
           all_orders ? StepperErrorTolerances::Estimates::AllOrders
                      : StepperErrorTolerances::Estimates::StepperOrder;
 
-      db::mutate<Tags::StepChoosers,
+      db::mutate<Tags::LtsStepChoosers,
                  Tags::EventsAndTriggers<Triggers::WhenToCheck::AtSlabs>>(
-          [](const gsl::not_null<Tags::StepChoosers::type*> choosers,
+          [](const gsl::not_null<Tags::LtsStepChoosers::type*> choosers,
              const gsl::not_null<EventsAndTriggers*> events) {
-            *choosers = TestHelpers::test_creation<Tags::StepChoosers::type,
+            *choosers = TestHelpers::test_creation<Tags::LtsStepChoosers::type,
                                                    Metavariables>(
                 "- ErrorControl:\n"
                 "    SafetyFactor: 0.95\n"
@@ -171,9 +171,9 @@ SPECTRE_TEST_CASE("Unit.Time.Tags.StepperErrorTolerancesCompute",
       CHECK(db::get<Tags::StepperErrorTolerances<AltEvolvedVariablesTag>>(*box)
                 .estimates == StepperErrorTolerances::Estimates::None);
 
-      db::mutate<Tags::StepChoosers>(
-          [](const gsl::not_null<Tags::StepChoosers::type*> choosers) {
-            *choosers = TestHelpers::test_creation<Tags::StepChoosers::type,
+      db::mutate<Tags::LtsStepChoosers>(
+          [](const gsl::not_null<Tags::LtsStepChoosers::type*> choosers) {
+            *choosers = TestHelpers::test_creation<Tags::LtsStepChoosers::type,
                                                    Metavariables>(
                 "- LimitIncrease:\n"
                 "    Factor: 2\n"
@@ -186,9 +186,9 @@ SPECTRE_TEST_CASE("Unit.Time.Tags.StepperErrorTolerancesCompute",
       CHECK(db::get<Tags::StepperErrorTolerances<AltEvolvedVariablesTag>>(*box)
                 .estimates == StepperErrorTolerances::Estimates::None);
 
-      db::mutate<Tags::StepChoosers>(
-          [](const gsl::not_null<Tags::StepChoosers::type*> choosers) {
-            *choosers = TestHelpers::test_creation<Tags::StepChoosers::type,
+      db::mutate<Tags::LtsStepChoosers>(
+          [](const gsl::not_null<Tags::LtsStepChoosers::type*> choosers) {
+            *choosers = TestHelpers::test_creation<Tags::LtsStepChoosers::type,
                                                    Metavariables>("");
           },
           box);
@@ -198,9 +198,9 @@ SPECTRE_TEST_CASE("Unit.Time.Tags.StepperErrorTolerancesCompute",
       CHECK(db::get<Tags::StepperErrorTolerances<AltEvolvedVariablesTag>>(*box)
                 .estimates == StepperErrorTolerances::Estimates::None);
 
-      db::mutate<Tags::StepChoosers>(
-          [](const gsl::not_null<Tags::StepChoosers::type*> choosers) {
-            *choosers = TestHelpers::test_creation<Tags::StepChoosers::type,
+      db::mutate<Tags::LtsStepChoosers>(
+          [](const gsl::not_null<Tags::LtsStepChoosers::type*> choosers) {
+            *choosers = TestHelpers::test_creation<Tags::LtsStepChoosers::type,
                                                    Metavariables>(
                 "- ErrorControl:\n"
                 "    SafetyFactor: 0.95\n"
@@ -227,9 +227,9 @@ SPECTRE_TEST_CASE("Unit.Time.Tags.StepperErrorTolerancesCompute",
       CHECK(db::get<Tags::StepperErrorTolerances<AltEvolvedVariablesTag>>(*box)
                 .estimates == StepperErrorTolerances::Estimates::None);
 
-      db::mutate<Tags::StepChoosers>(
-          [](const gsl::not_null<Tags::StepChoosers::type*> choosers) {
-            *choosers = TestHelpers::test_creation<Tags::StepChoosers::type,
+      db::mutate<Tags::LtsStepChoosers>(
+          [](const gsl::not_null<Tags::LtsStepChoosers::type*> choosers) {
+            *choosers = TestHelpers::test_creation<Tags::LtsStepChoosers::type,
                                                    Metavariables>(
                 "- ErrorControl:\n"
                 "    SafetyFactor: 0.95\n"
@@ -258,9 +258,9 @@ SPECTRE_TEST_CASE("Unit.Time.Tags.StepperErrorTolerancesCompute",
                                                 .absolute = 1.0e-5,
                                                 .relative = 1.0e-8});
 
-      db::mutate<Tags::StepChoosers>(
-          [](const gsl::not_null<Tags::StepChoosers::type*> choosers) {
-            *choosers = TestHelpers::test_creation<Tags::StepChoosers::type,
+      db::mutate<Tags::LtsStepChoosers>(
+          [](const gsl::not_null<Tags::LtsStepChoosers::type*> choosers) {
+            *choosers = TestHelpers::test_creation<Tags::LtsStepChoosers::type,
                                                    Metavariables>(
                 "- ErrorControl:\n"
                 "    SafetyFactor: 0.95\n"
@@ -286,11 +286,11 @@ SPECTRE_TEST_CASE("Unit.Time.Tags.StepperErrorTolerancesCompute",
               Catch::Matchers::ContainsSubstring(
                   " must use the same tolerances."));
 
-      db::mutate<Tags::StepChoosers,
+      db::mutate<Tags::LtsStepChoosers,
                  Tags::EventsAndTriggers<Triggers::WhenToCheck::AtSlabs>>(
-          [](const gsl::not_null<Tags::StepChoosers::type*> choosers,
+          [](const gsl::not_null<Tags::LtsStepChoosers::type*> choosers,
              const gsl::not_null<EventsAndTriggers*> events) {
-            *choosers = TestHelpers::test_creation<Tags::StepChoosers::type,
+            *choosers = TestHelpers::test_creation<Tags::LtsStepChoosers::type,
                                                    Metavariables>("");
             *events =
                 TestHelpers::test_creation<EventsAndTriggers, Metavariables>(
@@ -316,11 +316,11 @@ SPECTRE_TEST_CASE("Unit.Time.Tags.StepperErrorTolerancesCompute",
       CHECK(db::get<Tags::StepperErrorTolerances<AltEvolvedVariablesTag>>(*box)
                 .estimates == StepperErrorTolerances::Estimates::None);
 
-      db::mutate<Tags::StepChoosers,
+      db::mutate<Tags::LtsStepChoosers,
                  Tags::EventsAndTriggers<Triggers::WhenToCheck::AtSlabs>>(
-          [](const gsl::not_null<Tags::StepChoosers::type*> choosers,
+          [](const gsl::not_null<Tags::LtsStepChoosers::type*> choosers,
              const gsl::not_null<EventsAndTriggers*> events) {
-            *choosers = TestHelpers::test_creation<Tags::StepChoosers::type,
+            *choosers = TestHelpers::test_creation<Tags::LtsStepChoosers::type,
                                                    Metavariables>("");
             *events =
                 TestHelpers::test_creation<EventsAndTriggers, Metavariables>(
@@ -357,7 +357,7 @@ SPECTRE_TEST_CASE("Unit.Time.Tags.StepperErrorTolerancesCompute",
 
     auto box = db::create<
         db::AddSimpleTags<
-            Tags::StepChoosers,
+            Tags::LtsStepChoosers,
             Tags::EventsAndTriggers<Triggers::WhenToCheck::AtSlabs>,
             Tags::ConcreteTimeStepper<LtsTimeStepper>,
             Tags::VariableOrderAlgorithm>,

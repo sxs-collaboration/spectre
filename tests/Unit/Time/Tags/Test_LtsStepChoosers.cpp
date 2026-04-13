@@ -7,8 +7,8 @@
 #include <string>
 
 #include "Helpers/DataStructures/DataBox/TestHelpers.hpp"
-#include "Time/Tags/StepChoosers.hpp"
+#include "Time/Tags/LtsStepChoosers.hpp"
 
-SPECTRE_TEST_CASE("Unit.Time.Tags.StepChoosers", "[Unit][Time]") {
-  TestHelpers::db::test_simple_tag<Tags::StepChoosers>("StepChoosers");
+SPECTRE_TEST_CASE("Unit.Time.Tags.LtsStepChoosers", "[Unit][Time]") {
+  TestHelpers::db::test_simple_tag<Tags::LtsStepChoosers>("LtsStepChoosers");
 }

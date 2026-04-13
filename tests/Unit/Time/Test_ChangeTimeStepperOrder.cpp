@@ -42,8 +42,8 @@
 #include "Time/StepperErrorEstimate.hpp"
 #include "Time/Tags/AdaptiveSteppingDiagnostics.hpp"
 #include "Time/Tags/HistoryEvolvedVariables.hpp"
+#include "Time/Tags/LtsStepChoosers.hpp"
 #include "Time/Tags/MinimumTimeStep.hpp"
-#include "Time/Tags/StepChoosers.hpp"
 #include "Time/Tags/StepperErrorTolerancesCompute.hpp"
 #include "Time/Tags/StepperErrors.hpp"
 #include "Time/Tags/Time.hpp"
@@ -366,7 +366,7 @@ double run(std::unique_ptr<LtsTimeStepper> time_stepper, const double tolerance,
           ::Tags::EventsAndTriggers<Triggers::WhenToCheck::AtSlabs>,
           Tags::VariableOrderAlgorithm, ::Tags::TimeStepId,
           ::Tags::Next<::Tags::TimeStepId>, ::Tags::TimeStep, ::Tags::Time,
-          ::Tags::AdaptiveSteppingDiagnostics, ::Tags::StepChoosers,
+          ::Tags::AdaptiveSteppingDiagnostics, ::Tags::LtsStepChoosers,
           ::Tags::MinimumTimeStep, System::variables_tag, dt_variables_tag,
           history_tag, ::Tags::StepperErrors<System::variables_tag>>,
       tmpl::push_back<

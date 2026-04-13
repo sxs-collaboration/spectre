@@ -35,7 +35,7 @@ Evolution:
   InitialSlabSize: 0.001
   VariableOrderAlgorithm:
     GoalOrder: 4
-  StepChoosers:
+  LtsStepChoosers:
     - LimitIncrease:
         Factor: 2
     - ElementSizeCfl:

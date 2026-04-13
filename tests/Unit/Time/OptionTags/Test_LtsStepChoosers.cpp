@@ -7,7 +7,7 @@
 
 #include "Framework/TestCreation.hpp"
 #include "Options/Protocols/FactoryCreation.hpp"
-#include "Time/OptionTags/StepChoosers.hpp"
+#include "Time/OptionTags/LtsStepChoosers.hpp"
 #include "Time/StepChoosers/LimitIncrease.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
@@ -23,9 +23,9 @@ struct Metavariables {
   };
 };
 
-SPECTRE_TEST_CASE("Unit.Time.OptionTags.StepChoosers", "[Unit][Time]") {
+SPECTRE_TEST_CASE("Unit.Time.OptionTags.LtsStepChoosers", "[Unit][Time]") {
   const auto choosers =
-      TestHelpers::test_option_tag<OptionTags::StepChoosers, Metavariables>(
+      TestHelpers::test_option_tag<OptionTags::LtsStepChoosers, Metavariables>(
           "- LimitIncrease:\n"
           "    Factor: 3.0\n");
   CHECK(choosers.size() == 1);

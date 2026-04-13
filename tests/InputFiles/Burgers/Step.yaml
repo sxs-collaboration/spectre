@@ -31,7 +31,7 @@ Evolution:
       Order: 3
   VariableOrderAlgorithm:
     GoalOrder: 3
-  StepChoosers:
+  LtsStepChoosers:
     - Cfl:
         SafetyFactor: 0.5
     - LimitIncrease:

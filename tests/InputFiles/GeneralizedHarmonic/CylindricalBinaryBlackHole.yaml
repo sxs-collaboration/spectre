@@ -23,7 +23,7 @@ Evolution:
   InitialSlabSize: 0.25
   VariableOrderAlgorithm:
     GoalOrder: 3
-  StepChoosers:
+  LtsStepChoosers:
     - LimitIncrease:
         Factor: 2
     - PreventRapidIncrease

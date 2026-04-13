@@ -27,7 +27,7 @@ Evolution:
     AdamsBashforth:
       Order: 3
   # StepChoosers are needed only for local time stepping
-  # StepChoosers:
+  # LtsStepChoosers:
   #   - LimitIncrease:
   #       Factor: 2
   #   - PreventRapidIncrease
