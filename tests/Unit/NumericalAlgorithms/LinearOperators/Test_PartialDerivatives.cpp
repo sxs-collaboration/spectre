@@ -1507,6 +1507,351 @@ void test_cartoon_partial_derivative_and_choosers() {
                                   to_inertial(coords));
   CHECK_ITERABLE_CUSTOM_APPROX(d_tnsr_lgl, expected_d_tnsr_lgl, local_approx);
 }
+
+template <typename VariableTags, typename GradientTags = VariableTags>
+void test_logical_partial_derivatives_zernikeb1_1d(const size_t n_r) {
+  CAPTURE(n_r);
+  const Mesh<1> mesh{n_r, Spectral::Basis::ZernikeB1,
+                     Spectral::Quadrature::GaussRadauUpper};
+
+  const size_t number_of_grid_points = mesh.number_of_grid_points();
+  const DataVector radius =
+      0.5 * (Spectral::collocation_points(mesh.slice_through(0)) + 1.0);
+
+  // Get the parity information from the existing framework
+  constexpr auto parity_info = Spectral::compute_parity_list<VariableTags>();
+  const auto parity_list = std::get<0>(parity_info);
+
+  Variables<VariableTags> u(number_of_grid_points);
+  Variables<GradientTags> du_expected(number_of_grid_points);
+
+  // Fill tensor components according to their parity requirements
+  // Each component gets a different power based on its parity
+  size_t component_index = 0;
+  bool current_parity_is_even = true;
+  size_t parity_list_index = 0;
+  size_t even_power_counter = 0;
+  size_t odd_power_counter = 1;          // Start with r^1 for odd components
+  std::vector<size_t> component_powers;  // Store powers for derivatives later
+
+  const auto need_to_switch_parity = [component_index, &parity_list,
+                                      parity_list_index]() {
+    return component_index >= gsl::at(parity_list, parity_list_index) and
+           parity_list_index < parity_list.size() - 1 and
+           gsl::at(parity_list, parity_list_index + 1) > 0;
+  };
+
+  tmpl::for_each<VariableTags>([&]<typename Tag>(tmpl::type_<Tag> /*meta*/) {
+    auto& tensor = get<Tag>(u);
+
+    for (size_t i = 0; i < tensor.size(); ++i) {
+      // Check if we need to switch parity based on the parity list
+      if (need_to_switch_parity()) {
+        component_index = 0;
+        ++parity_list_index;
+        current_parity_is_even = not current_parity_is_even;
+      }
+
+      // Choose power based on component parity, incrementing for each component
+      size_t power{};
+      if (current_parity_is_even) {
+        power = even_power_counter;
+        even_power_counter += 2;
+      } else {
+        power = odd_power_counter;
+        odd_power_counter += 2;
+      }
+      component_powers.push_back(power);
+
+      tensor[i] = pow(radius, static_cast<double>(power));
+      ++component_index;
+    }
+  });
+
+  // Compute expected derivatives
+  component_index = 0;
+  parity_list_index = 0;
+  size_t power_index = 0;
+
+  tmpl::for_each<GradientTags>([&]<typename Tag>(tmpl::type_<Tag> /*meta*/) {
+    auto& deriv_tensor = get<Tag>(du_expected);
+
+    for (size_t i = 0; i < deriv_tensor.size(); ++i) {
+      if (need_to_switch_parity()) {
+        component_index = 0;
+        ++parity_list_index;
+      }
+
+      const size_t power = component_powers[power_index++];
+
+      // Compute analytical derivative: d/dxi(r^n) = dr/dxi * n * r^(n-1)
+      // where dr/dxi = 0.5 (from radius = 0.5*(xi + 1))
+      if (power == 0) {
+        deriv_tensor[i] = 0.0;
+      } else {
+        deriv_tensor[i] = 0.5 * static_cast<double>(power) *
+                          pow(radius, static_cast<double>(power - 1));
+      }
+      ++component_index;
+    }
+  });
+
+  // Compute actual derivatives
+  const auto du = logical_partial_derivatives<GradientTags>(u, mesh);
+
+  const Approx local_approx = Approx::custom().epsilon(1.0e-12).scale(1.0);
+  CHECK_VARIABLES_CUSTOM_APPROX(du[0], du_expected, local_approx);
+}
+
+template <bool Spherical, typename VariableTags,
+          typename GradientTags = VariableTags>
+void test_partial_derivatives_zernikeb1_cartoon(const size_t n_x) {
+  CAPTURE(n_x, Spherical);
+
+  Mesh<3> mesh;
+  tnsr::I<DataVector, 3, Frame::Grid> coords;
+  InverseJacobian<DataVector, 3, Frame::ElementLogical, Frame::Grid>
+      inv_jacobian;
+
+  using Identity1D = domain::CoordinateMaps::Identity<1>;
+  const Identity1D identity_cartoon_map;
+
+  if constexpr (Spherical) {
+    // Spherical symmetry: ZernikeB1 + Cartoon + Cartoon
+    mesh = Mesh<3>{{{n_x, 1, 1}},
+                   {{Spectral::Basis::ZernikeB1, Spectral::Basis::Cartoon,
+                     Spectral::Basis::Cartoon}},
+                   {{Spectral::Quadrature::GaussRadauUpper,
+                     Spectral::Quadrature::SphericalSymmetry,
+                     Spectral::Quadrature::SphericalSymmetry}}};
+
+    const Affine affine_x_map(-1.0, 1.0, 0.0, 2.0);
+    using Cartoon_map_combination =
+        domain::CoordinateMaps::ProductOf3Maps<Affine, Identity1D, Identity1D>;
+    const domain::CoordinateMap<Frame::ElementLogical, Frame::Grid,
+                                Cartoon_map_combination>
+        map{{affine_x_map, identity_cartoon_map, identity_cartoon_map}};
+    inv_jacobian = map.inv_jacobian(logical_coordinates(mesh));
+    coords = map(logical_coordinates(mesh));
+  } else {
+    // Axial symmetry: ZernikeB1 + Legendre + Cartoon
+    mesh = Mesh<3>{{{n_x, 5, 1}},
+                   {{Spectral::Basis::ZernikeB1, Spectral::Basis::Legendre,
+                     Spectral::Basis::Cartoon}},
+                   {{Spectral::Quadrature::GaussRadauUpper,
+                     Spectral::Quadrature::GaussLobatto,
+                     Spectral::Quadrature::AxialSymmetry}}};
+
+    const Affine affine_x_map(-1.0, 1.0, 0.0, 2.0);
+    const Affine affine_y_map(-1.0, 1.0, -1.5, 2.0);
+    using Cartoon_map_combination =
+        domain::CoordinateMaps::ProductOf3Maps<Affine, Affine, Identity1D>;
+    const domain::CoordinateMap<Frame::ElementLogical, Frame::Grid,
+                                Cartoon_map_combination>
+        map{{affine_x_map, affine_y_map, identity_cartoon_map}};
+    inv_jacobian = map.inv_jacobian(logical_coordinates(mesh));
+    coords = map(logical_coordinates(mesh));
+  }
+
+  const size_t number_of_grid_points = mesh.number_of_grid_points();
+
+  using d_VarTags =
+      tmpl::transform<GradientTags, tmpl::bind<::Tags::deriv, tmpl::_1,
+                                               tmpl::size_t<3>, Frame::Grid>>;
+
+  Variables<VariableTags> vars{number_of_grid_points};
+  Variables<d_VarTags> expected_d_vars{number_of_grid_points};
+
+  const DataVector& x_coord = get<0>(coords);
+  const DataVector& y_coord = get<1>(coords);
+  const DataVector& z_coord = get<2>(coords);
+
+  const DataVector r_coord =
+      sqrt(x_coord * x_coord + y_coord * y_coord + z_coord * z_coord);
+
+  // Fill tensors with test functions that respect ZernikeB1 parity
+  // Use f(r) = r^2 which has even parity (good for ZernikeB1)
+  // For vectors, multiply by coordinate prefactors that respect cartoon
+  // symmetry
+  tmpl::for_each<VariableTags>(
+      [&vars, &r_coord, &x_coord, &y_coord, &z_coord,
+       &number_of_grid_points]<typename Tag>(tmpl::type_<Tag> /*meta*/) {
+        using TensorType = typename Tag::type;
+        auto& tensor = get<Tag>(vars);
+
+        if constexpr (TensorType::rank() == 0) {
+          // Scalar: f(r) = r^2 (even parity)
+          tensor.get() = r_coord * r_coord;
+          (void)x_coord;
+          (void)y_coord;
+          (void)number_of_grid_points;
+        } else if constexpr (TensorType::rank() == 1) {
+          // Vector: multiply by coordinate prefactors
+          if constexpr (TensorType::index_dim(0) == 4) {
+            // Spacetime vector
+            if constexpr (Spherical) {
+              // Spherical case: (1, x, y, z) * r^2
+              get<0>(tensor) = r_coord * r_coord;
+              get<1>(tensor) = x_coord * r_coord * r_coord;
+              get<2>(tensor) = y_coord * r_coord * r_coord;
+              get<3>(tensor) = z_coord * r_coord * r_coord;
+            } else {
+              // Axial case: (1, x, 1, z) * r^2 - matches spatial pattern with
+              // time component
+              get<0>(tensor) = r_coord * r_coord;
+              get<1>(tensor) = x_coord * r_coord * r_coord;
+              get<2>(tensor) = r_coord * r_coord;
+              get<3>(tensor) = z_coord * r_coord * r_coord;
+            }
+          } else {
+            // Spatial vector (3 components)
+            if constexpr (Spherical) {
+              // Spherical case: (x, y, z) * r^2
+              get<0>(tensor) = x_coord * r_coord * r_coord;
+              get<1>(tensor) = y_coord * r_coord * r_coord;
+              get<2>(tensor) = z_coord * r_coord * r_coord;
+            } else {
+              // Axial case, we need: (odd, even, odd) components
+              get<0>(tensor) = x_coord * r_coord * r_coord;
+              get<1>(tensor) = r_coord * r_coord;
+              get<2>(tensor) = z_coord * r_coord * r_coord;
+            }
+          }
+        } else {
+          ERROR("Higher rank tensors not yet supported in this test");
+        }
+      });
+
+  // Compute expected derivatives analytically for the test functions
+  tmpl::for_each<GradientTags>(
+      [&expected_d_vars, &r_coord, &number_of_grid_points, &x_coord, &y_coord,
+       &z_coord]<typename Tag>(tmpl::type_<Tag> /*meta*/) {
+        using TensorType = typename Tag::type;
+        using DerivTag = ::Tags::deriv<Tag, tmpl::size_t<3>, Frame::Grid>;
+        auto& d_tensor = get<DerivTag>(expected_d_vars);
+
+        if constexpr (TensorType::rank() == 0) {
+          // Scalar: f(r) = r^2, so df/dx_i = 2r * dr/dx_i = 2r * x_i/r = 2*x_i
+          for (size_t deriv_dir = 0; deriv_dir < 3; ++deriv_dir) {
+            if (deriv_dir == 0) {
+              d_tensor.get(deriv_dir) = 2.0 * x_coord;
+            } else if (deriv_dir == 1) {
+              d_tensor.get(deriv_dir) = 2.0 * y_coord;
+            } else {
+              d_tensor.get(deriv_dir) = 2.0 * z_coord;
+            }
+          }
+        } else if constexpr (TensorType::rank() == 1) {
+          // Vector: components are prefactor * r^2
+          // d(prefactor * r^2)/dx_i = d(prefactor)/dx_i * r^2 + prefactor *
+          // d(r^2)/dx_i where d(r^2)/dx_i = 2*x_i
+          for (size_t component_index = 0; component_index < TensorType::size();
+               ++component_index) {
+            const auto tensor_index =
+                TensorType::get_tensor_index(component_index);
+
+            for (size_t deriv_dir = 0; deriv_dir < 3; ++deriv_dir) {
+              const auto deriv_tensor_index = prepend(tensor_index, deriv_dir);
+
+              // Get prefactor and its derivative
+              DataVector prefactor(number_of_grid_points, 1.0);
+              DataVector prefactor_deriv(number_of_grid_points, 0.0);
+
+              const auto deriv_of_coord = [number_of_grid_points](
+                                              const size_t coord_index,
+                                              const size_t deriv_index) {
+                return DataVector(number_of_grid_points,
+                                  deriv_index == coord_index ? 1.0 : 0.0);
+              };
+
+              if constexpr (TensorType::index_dim(0) == 4) {
+                // Spacetime vector
+                if constexpr (Spherical) {
+                  if (gsl::at(tensor_index, 0) == 0) {
+                    prefactor = DataVector(number_of_grid_points, 1.0);
+                    prefactor_deriv = DataVector(number_of_grid_points, 0.0);
+                  } else if (gsl::at(tensor_index, 0) == 1) {
+                    prefactor = x_coord;
+                    prefactor_deriv = deriv_of_coord(0, deriv_dir);
+                  } else if (gsl::at(tensor_index, 0) == 2) {
+                    prefactor = y_coord;
+                    prefactor_deriv = deriv_of_coord(1, deriv_dir);
+                  } else {
+                    prefactor = z_coord;
+                    prefactor_deriv = deriv_of_coord(2, deriv_dir);
+                  }
+                } else {
+                  // Axial case: (1, x, 1, z) * r^2
+                  if (gsl::at(tensor_index, 0) == 0 or
+                      gsl::at(tensor_index, 0) == 2) {
+                    prefactor = DataVector(number_of_grid_points, 1.0);
+                    prefactor_deriv = DataVector(number_of_grid_points, 0.0);
+                  } else if (gsl::at(tensor_index, 0) == 1) {
+                    prefactor = x_coord;
+                    prefactor_deriv = deriv_of_coord(0, deriv_dir);
+                  } else {
+                    prefactor = z_coord;
+                    prefactor_deriv = deriv_of_coord(2, deriv_dir);
+                  }
+                }
+              } else {
+                // Spatial vector (3 components)
+                if constexpr (Spherical) {
+                  if (gsl::at(tensor_index, 0) == 0) {
+                    prefactor = x_coord;
+                    prefactor_deriv = deriv_of_coord(0, deriv_dir);
+                  } else if (gsl::at(tensor_index, 0) == 1) {
+                    prefactor = y_coord;
+                    prefactor_deriv = deriv_of_coord(1, deriv_dir);
+                  } else {
+                    prefactor = z_coord;
+                    prefactor_deriv = deriv_of_coord(2, deriv_dir);
+                  }
+                } else {
+                  // Axial case: (x, 1, z) * r^2
+                  if (gsl::at(tensor_index, 0) == 0) {
+                    prefactor = x_coord;
+                    prefactor_deriv = deriv_of_coord(0, deriv_dir);
+                  } else if (gsl::at(tensor_index, 0) == 1) {
+                    prefactor = DataVector(number_of_grid_points, 1.0);
+                    prefactor_deriv = DataVector(number_of_grid_points, 0.0);
+                  } else {
+                    prefactor = z_coord;
+                    prefactor_deriv = deriv_of_coord(2, deriv_dir);
+                  }
+                }
+              }
+              // Apply product rule: d(prefactor * r^2)/dx_i = d(prefactor)/dx_i
+              // * r^2 + prefactor * d(r^2)/dx_i
+              DataVector r_squared_deriv(number_of_grid_points);
+              if (deriv_dir == 0) {
+                r_squared_deriv = 2.0 * x_coord;
+              } else if (deriv_dir == 1) {
+                r_squared_deriv = 2.0 * y_coord;
+              } else {
+                r_squared_deriv = 2.0 * z_coord;
+              }
+              d_tensor.get(deriv_tensor_index) =
+                  prefactor_deriv * (r_coord * r_coord) +
+                  prefactor * r_squared_deriv;
+            }
+          }
+        } else {
+          ERROR("Higher rank tensors not yet supported in this test");
+        }
+      });
+
+  const auto to_inertial =
+      domain::CoordinateMap<Frame::Grid, Frame::Inertial,
+                            domain::CoordinateMaps::Identity<3>>{};
+
+  Variables<d_VarTags> computed_d_vars{number_of_grid_points};
+  cartoon_partial_derivatives(make_not_null(&computed_d_vars), vars, mesh,
+                              inv_jacobian, to_inertial(coords));
+
+  const Approx local_approx = Approx::custom().epsilon(1e-12).scale(1.0);
+  CHECK_VARIABLES_CUSTOM_APPROX(computed_d_vars, expected_d_vars, local_approx);
+}
 }  // namespace
 
 // [[Timeout, 60]]
@@ -1627,6 +1972,13 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.LogicalDerivs",
       Catch::Matchers::ContainsSubstring(
           "Fourier with an even number of grid points can be unstable due "));
 #endif  // SPECTRE_DEBUG
+
+  for (size_t n_r = 3; n_r <= 8; ++n_r) {
+    test_logical_partial_derivatives_zernikeb1_1d<two_vars<DataVector, 1>>(n_r);
+    test_logical_partial_derivatives_zernikeb1_1d<two_vars<DataVector, 1>,
+                                                  one_var<DataVector, 1>>(n_r);
+    test_logical_partial_derivatives_zernikeb1_1d<scalar_var<DataVector>>(n_r);
+  }
 }
 
 // [[Timeout, 120]]
@@ -1680,6 +2032,20 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.PartialDerivs",
   test_cartoon_partial_derivatives<false>(1.0);
 
   test_cartoon_partial_derivative_and_choosers();
+
+  using spacetime_vector = ::Tags::Tempa<0, 3>;
+  using three_vars =
+      tmpl::list<spacetime_vector, ::Tags::Tempi<0, 3>, ::Tags::TempScalar<0>>;
+  for (size_t n_r = 3; n_r <= 6; ++n_r) {
+    test_partial_derivatives_zernikeb1_cartoon<true, three_vars>(n_r);
+    test_partial_derivatives_zernikeb1_cartoon<true, three_vars,
+                                               tmpl::list<spacetime_vector>>(
+        n_r);
+    test_partial_derivatives_zernikeb1_cartoon<false, three_vars>(n_r);
+    test_partial_derivatives_zernikeb1_cartoon<false, three_vars,
+                                               tmpl::list<spacetime_vector>>(
+        n_r);
+  }
 
   TestHelpers::db::test_prefix_tag<
       Tags::deriv<Var1<DataVector, 3>, tmpl::size_t<3>, Frame::Grid>>(
@@ -1869,10 +2235,11 @@ void test_cartoon_partial_derivatives_compute_item(
                          domain::Tags::Coordinates<Dim, Frame::Inertial>>;
   using prefixed_variables_tag =
       db::add_tag_prefix<SomePrefix, Tags::Variables<vars_tags>>;
-  using deriv_prefixed_tag = Tags::DerivCompute<
-      prefixed_variables_tag, domain::Tags::Mesh<Dim>, inv_jac_tag,
-      tmpl::list<SomePrefix<::Tags::TempScalar<0>>>,
-      domain::Tags::Coordinates<Dim, Frame::Inertial>>;
+  using deriv_prefixed_tag =
+      Tags::DerivCompute<prefixed_variables_tag, domain::Tags::Mesh<Dim>,
+                         inv_jac_tag,
+                         tmpl::list<SomePrefix<::Tags::TempScalar<0>>>,
+                         domain::Tags::Coordinates<Dim, Frame::Inertial>>;
 
   TestHelpers::db::test_compute_tag<deriv_tag>(
       "Variables(deriv(TempTensor0),deriv(TempTensor0))");
