@@ -462,15 +462,14 @@ operator()(const ObservationBox<ComputeTagsList, DataBoxType>& box,
   const auto& mesh = get<::Events::Tags::ObserverMesh<VolumeDim>>(box);
   const auto det_jacobian = [&box, &mesh]() -> DataVector {
     if constexpr (VolumeDim == 3 and
-                  db::tag_is_retrievable_v<
-                      domain::Tags::Coordinates<VolumeDim, Frame::Inertial>,
-                      std::decay_t<decltype(box)>>) {
+                  db::tag_is_retrievable_v<::Events::Tags::ObserverCoordinates<
+                                               VolumeDim, Frame::Inertial>,
+                                           std::decay_t<decltype(box)>>) {
       if (mesh.basis(2) == Spectral::Basis::Cartoon) {
         if (mesh.quadrature(2) == Spectral::Quadrature::SphericalSymmetry) {
           // Spherical Symmetry, needs x^2 cartesian to spherical jacobian
-          return square(get<0>(
-                     get<domain::Tags::Coordinates<VolumeDim, Frame::Inertial>>(
-                         box))) /
+          return square(get<0>(get<::Events::Tags::ObserverCoordinates<
+                                   VolumeDim, Frame::Inertial>>(box))) /
                  get(get<::Events::Tags::ObserverDetInvJacobian<
                          Frame::ElementLogical, Frame::Inertial>>(box));
         } else {
@@ -478,9 +477,8 @@ operator()(const ObservationBox<ComputeTagsList, DataBoxType>& box,
           ASSERT(mesh.quadrature(2) == Spectral::Quadrature::AxialSymmetry,
                  "Unexpected quadrature " << mesh.quadrature(2)
                                           << " (expected AxialSymmetry)");
-          return get<0>(
-                     get<domain::Tags::Coordinates<VolumeDim, Frame::Inertial>>(
-                         box)) /
+          return get<0>(get<::Events::Tags::ObserverCoordinates<
+                            VolumeDim, Frame::Inertial>>(box)) /
                  get(get<::Events::Tags::ObserverDetInvJacobian<
                          Frame::ElementLogical, Frame::Inertial>>(box));
         }
