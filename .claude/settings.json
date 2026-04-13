@@ -1,4 +1,12 @@
 {
+  "permissions": {
+    "allow": [
+      "Skill(spectre-fix-ci)",
+      "Skill(spectre-fix-issue)",
+      "Skill(spectre-fix-pr)",
+      "Skill(spectre-review)"
+    ]
+  },
   "hooks": {
     "PostToolUse": [
       {
