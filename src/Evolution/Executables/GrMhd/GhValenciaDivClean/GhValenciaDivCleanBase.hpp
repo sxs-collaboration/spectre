@@ -59,14 +59,10 @@
 #include "Evolution/DiscontinuousGalerkin/DgElementArray.hpp"
 #include "Evolution/DiscontinuousGalerkin/Initialization/Mortars.hpp"
 #include "Evolution/DiscontinuousGalerkin/Initialization/QuadratureTag.hpp"
-#include "Evolution/DiscontinuousGalerkin/Limiters/Minmod.hpp"
-#include "Evolution/DiscontinuousGalerkin/Limiters/Tags.hpp"
-#include "Evolution/DiscontinuousGalerkin/Limiters/Weno.hpp"
 #include "Evolution/DiscontinuousGalerkin/UsingSubcell.hpp"
 #include "Evolution/Initialization/ConservativeSystem.hpp"
 #include "Evolution/Initialization/DgDomain.hpp"
 #include "Evolution/Initialization/Evolution.hpp"
-#include "Evolution/Initialization/Limiter.hpp"
 #include "Evolution/Initialization/NonconservativeSystem.hpp"
 #include "Evolution/Initialization/SetVariables.hpp"
 #include "Evolution/NumericInitialData.hpp"
@@ -146,7 +142,6 @@
 #include "ParallelAlgorithms/Actions/FilterAction.hpp"
 #include "ParallelAlgorithms/Actions/FunctionsOfTimeAreReady.hpp"
 #include "ParallelAlgorithms/Actions/InitializeItems.hpp"
-#include "ParallelAlgorithms/Actions/LimiterActions.hpp"
 #include "ParallelAlgorithms/Actions/MutateApply.hpp"
 #include "ParallelAlgorithms/Actions/TerminatePhase.hpp"
 #include "ParallelAlgorithms/Events/Completion.hpp"
@@ -282,13 +277,6 @@ struct GhValenciaDivCleanDefaults {
       grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::NewmanHamlin,
       grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::PalenzuelaEtAl>;
 
-  // Do not limit the divergence-cleaning field Phi or the GH fields
-  using limiter = Tags::Limiter<
-      Limiters::Minmod<3, tmpl::list<grmhd::ValenciaDivClean::Tags::TildeD,
-                                     grmhd::ValenciaDivClean::Tags::TildeTau,
-                                     grmhd::ValenciaDivClean::Tags::TildeS<>,
-                                     grmhd::ValenciaDivClean::Tags::TildeB<>>>>;
-
   using initialize_initial_data_dependent_quantities_actions = tmpl::list<
       gh::Actions::InitializeGhAnd3Plus1Variables<volume_dim>,
       tmpl::conditional_t<UseDgSubcell,
@@ -368,7 +356,6 @@ struct GhValenciaDivCleanTemplateBase<
   using analytic_solution_fields = typename defaults::analytic_solution_fields;
   using ordered_list_of_primitive_recovery_schemes =
       typename defaults::ordered_list_of_primitive_recovery_schemes;
-  using limiter = typename defaults::limiter;
   using initialize_initial_data_dependent_quantities_actions =
       typename defaults::initialize_initial_data_dependent_quantities_actions;
 
@@ -812,9 +799,7 @@ struct GhValenciaDivCleanTemplateBase<
                      VariableFixing::Actions::FixVariables<
                          VariableFixing::LimitLorentzFactor>,
                      Actions::UpdateConservatives>,
-          tmpl::list<Limiters::Actions::SendData<derived_metavars>,
-                     Limiters::Actions::Limit<derived_metavars>,
-                     parameterized_deleptonization,
+          tmpl::list<parameterized_deleptonization,
                      VariableFixing::Actions::FixVariables<
                          grmhd::ValenciaDivClean::FixConservatives>,
                      Actions::UpdatePrimitives>>>>;
@@ -907,8 +892,6 @@ struct GhValenciaDivCleanTemplateBase<
                           Initialization::Actions::InitializeItems<
                               evolution::dg::subcell::DisableLts<3>>,
                           tmpl::list<>>,
-      tmpl::conditional_t<use_dg_subcell, tmpl::list<>,
-                          Initialization::Actions::Minmod<3>>,
       evolution::Actions::InitializeRunEventsAndDenseTriggers,
       intrp::Actions::ElementInitInterpPoints<volume_dim,
                                               interpolation_target_tags>,

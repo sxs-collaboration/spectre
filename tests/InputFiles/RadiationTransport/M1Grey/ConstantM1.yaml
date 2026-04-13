@@ -57,14 +57,6 @@ SpatialDiscretization:
     Formulation: StrongInertial
     Quadrature: GaussLobatto
 
-Limiter:
-  Minmod:
-    Type: LambdaPiN
-    # The optimal value of the TVB constant is problem-dependent.
-    # This test uses 0 to favor robustness over accuracy.
-    TvbConstant: 0.0
-    DisableForDebugging: false
-
 EventsAndTriggersAtCheckpoints:
 
 EventsAndTriggersAtSlabs:

@@ -20,8 +20,6 @@
 #include "Evolution/DiscontinuousGalerkin/DgElementArray.hpp"
 #include "Evolution/DiscontinuousGalerkin/Initialization/Mortars.hpp"
 #include "Evolution/DiscontinuousGalerkin/Initialization/QuadratureTag.hpp"
-#include "Evolution/DiscontinuousGalerkin/Limiters/Minmod.hpp"
-#include "Evolution/DiscontinuousGalerkin/Limiters/Tags.hpp"
 #include "Evolution/Imex/Actions/DoImplicitStep.hpp"
 #include "Evolution/Imex/Actions/RecordTimeStepperData.hpp"
 #include "Evolution/Imex/CleanHistory.hpp"
@@ -30,7 +28,6 @@
 #include "Evolution/Initialization/ConservativeSystem.hpp"
 #include "Evolution/Initialization/DgDomain.hpp"
 #include "Evolution/Initialization/Evolution.hpp"
-#include "Evolution/Initialization/Limiter.hpp"
 #include "Evolution/Initialization/SetVariables.hpp"
 #include "Evolution/Systems/RadiationTransport/M1Grey/BoundaryConditions/Factory.hpp"
 #include "Evolution/Systems/RadiationTransport/M1Grey/BoundaryCorrections/Factory.hpp"
@@ -58,7 +55,6 @@
 #include "ParallelAlgorithms/Actions/AddComputeTags.hpp"
 #include "ParallelAlgorithms/Actions/AddSimpleTags.hpp"
 #include "ParallelAlgorithms/Actions/InitializeItems.hpp"
-#include "ParallelAlgorithms/Actions/LimiterActions.hpp"
 #include "ParallelAlgorithms/Actions/MutateApply.hpp"
 #include "ParallelAlgorithms/Actions/TerminatePhase.hpp"
 #include "ParallelAlgorithms/Events/Completion.hpp"
@@ -132,8 +128,6 @@ struct EvolutionMetavars {
                    RadiationTransport::M1Grey::Solutions::all_solutions>;
 
   using analytic_variables_tags = typename system::variables_tag::tags_list;
-  using limiter = Tags::Limiter<
-      Limiters::Minmod<3, typename system::variables_tag::tags_list>>;
 
   using analytic_compute = evolution::Tags::AnalyticSolutionsCompute<
       volume_dim, analytic_variables_tags, false, initial_data_list>;
@@ -222,8 +216,6 @@ struct EvolutionMetavars {
           local_time_stepping,
           Actions::MutateApply<evolution::dg::CleanMortarHistory<volume_dim>>,
           tmpl::list<>>,
-      Limiters::Actions::SendData<EvolutionMetavars>,
-      Limiters::Actions::Limit<EvolutionMetavars>,
       Actions::MutateApply<typename RadiationTransport::M1Grey::
                                ComputeM1Closure<neutrino_species>>>>;
 
@@ -248,7 +240,6 @@ struct EvolutionMetavars {
           StepChoosers::step_chooser_compute_tags<EvolutionMetavars,
                                                   local_time_stepping>>,
       ::evolution::dg::Initialization::Mortars<volume_dim>,
-      Initialization::Actions::Minmod<3>,
       evolution::Actions::InitializeRunEventsAndDenseTriggers,
       Parallel::Actions::TerminatePhase>;
 

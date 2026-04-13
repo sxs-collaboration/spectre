@@ -23,12 +23,9 @@
 #include "Evolution/DiscontinuousGalerkin/CleanMortarHistory.hpp"
 #include "Evolution/DiscontinuousGalerkin/DgElementArray.hpp"
 #include "Evolution/DiscontinuousGalerkin/Initialization/Mortars.hpp"
-#include "Evolution/DiscontinuousGalerkin/Limiters/Minmod.hpp"
-#include "Evolution/DiscontinuousGalerkin/Limiters/Tags.hpp"
 #include "Evolution/Initialization/ConservativeSystem.hpp"
 #include "Evolution/Initialization/DgDomain.hpp"
 #include "Evolution/Initialization/Evolution.hpp"
-#include "Evolution/Initialization/Limiter.hpp"
 #include "Evolution/Initialization/SetVariables.hpp"
 #include "Evolution/Systems/ForceFree/BoundaryConditions/BoundaryCondition.hpp"
 #include "Evolution/Systems/ForceFree/BoundaryConditions/Factory.hpp"
@@ -58,7 +55,6 @@
 #include "ParallelAlgorithms/Actions/AddSimpleTags.hpp"
 #include "ParallelAlgorithms/Actions/FilterAction.hpp"
 #include "ParallelAlgorithms/Actions/InitializeItems.hpp"
-#include "ParallelAlgorithms/Actions/LimiterActions.hpp"
 #include "ParallelAlgorithms/Actions/MutateApply.hpp"
 #include "ParallelAlgorithms/Actions/TerminatePhase.hpp"
 #include "ParallelAlgorithms/Events/Completion.hpp"
@@ -116,10 +112,6 @@ struct EvolutionMetavars {
 
   using initial_data_list = tmpl::append<ForceFree::Solutions::all_solutions,
                                          ForceFree::AnalyticData::all_data>;
-
-  using limiter = Tags::Limiter<Limiters::Minmod<
-      3, tmpl::list<ForceFree::Tags::TildeE, ForceFree::Tags::TildeB,
-                    ForceFree::Tags::TildeQ>>>;
 
   using analytic_variables_tags = typename system::variables_tag::tags_list;
 
@@ -211,8 +203,6 @@ struct EvolutionMetavars {
           local_time_stepping,
           Actions::MutateApply<evolution::dg::CleanMortarHistory<volume_dim>>,
           tmpl::list<>>,
-      Limiters::Actions::SendData<EvolutionMetavars>,
-      Limiters::Actions::Limit<EvolutionMetavars>,
 
       dg::Actions::Filter<
           Filters::Exponential<0>,
@@ -251,7 +241,6 @@ struct EvolutionMetavars {
           StepChoosers::step_chooser_compute_tags<EvolutionMetavars,
                                                   local_time_stepping>>,
       ::evolution::dg::Initialization::Mortars<volume_dim>,
-      Initialization::Actions::Minmod<3>,
       evolution::Actions::InitializeRunEventsAndDenseTriggers,
       Parallel::Actions::TerminatePhase>;
 

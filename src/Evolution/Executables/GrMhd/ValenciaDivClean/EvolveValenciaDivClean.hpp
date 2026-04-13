@@ -45,14 +45,9 @@
 #include "Evolution/DiscontinuousGalerkin/DgElementArray.hpp"
 #include "Evolution/DiscontinuousGalerkin/Initialization/Mortars.hpp"
 #include "Evolution/DiscontinuousGalerkin/Initialization/QuadratureTag.hpp"
-#include "Evolution/DiscontinuousGalerkin/Limiters/Krivodonova.hpp"
-#include "Evolution/DiscontinuousGalerkin/Limiters/Minmod.hpp"
-#include "Evolution/DiscontinuousGalerkin/Limiters/Tags.hpp"
-#include "Evolution/DiscontinuousGalerkin/Limiters/Weno.hpp"
 #include "Evolution/Initialization/ConservativeSystem.hpp"
 #include "Evolution/Initialization/DgDomain.hpp"
 #include "Evolution/Initialization/Evolution.hpp"
-#include "Evolution/Initialization/Limiter.hpp"
 #include "Evolution/Initialization/SetVariables.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/AllSolutions.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/BoundaryConditions/Factory.hpp"
@@ -90,7 +85,6 @@
 #include "IO/Observer/ObserverComponent.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Formulation.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Tags.hpp"
-#include "NumericalAlgorithms/FiniteDifference/Minmod.hpp"
 #include "NumericalAlgorithms/LinearOperators/Divergence.hpp"
 #include "Options/Protocols/FactoryCreation.hpp"
 #include "Options/String.hpp"
@@ -106,7 +100,6 @@
 #include "ParallelAlgorithms/Actions/AddComputeTags.hpp"
 #include "ParallelAlgorithms/Actions/AddSimpleTags.hpp"
 #include "ParallelAlgorithms/Actions/InitializeItems.hpp"
-#include "ParallelAlgorithms/Actions/LimiterActions.hpp"
 #include "ParallelAlgorithms/Actions/MutateApply.hpp"
 #include "ParallelAlgorithms/Actions/TerminatePhase.hpp"
 #include "ParallelAlgorithms/Events/Completion.hpp"
@@ -202,7 +195,7 @@ template <typename... InterpolationTargetTags,
           bool UseParametrizedDeleptonization>
 struct EvolutionMetavars<tmpl::list<InterpolationTargetTags...>,
                          UseParametrizedDeleptonization> {
-  // The use_dg_subcell flag controls whether to use "standard" limiting (false)
+  // The use_dg_subcell flag controls whether to use unlimited DG (false)
   // or a DG-FD hybrid scheme (true).
   static constexpr bool use_parametrized_deleptonization =
       UseParametrizedDeleptonization;
@@ -232,13 +225,6 @@ struct EvolutionMetavars<tmpl::list<InterpolationTargetTags...>,
   using analytic_variables_tags =
       typename system::primitive_variables_tag::tags_list;
   using equation_of_state_tag = hydro::Tags::GrmhdEquationOfState;
-  // Do not limit the divergence-cleaning field Phi
-  using limiter = Tags::Limiter<
-      Limiters::Minmod<3, tmpl::list<grmhd::ValenciaDivClean::Tags::TildeD,
-                                     grmhd::ValenciaDivClean::Tags::TildeYe,
-                                     grmhd::ValenciaDivClean::Tags::TildeTau,
-                                     grmhd::ValenciaDivClean::Tags::TildeS<>,
-                                     grmhd::ValenciaDivClean::Tags::TildeB<>>>>;
 
   using interpolator_source_vars =
       tmpl::remove_duplicates<tmpl::flatten<tmpl::list<
@@ -456,11 +442,9 @@ struct EvolutionMetavars<tmpl::list<InterpolationTargetTags...>,
       tmpl::conditional_t<
           use_dg_subcell,
           tmpl::list<>,
-          tmpl::list<Limiters::Actions::SendData<EvolutionMetavars>,
-                     Limiters::Actions::Limit<EvolutionMetavars>,
-                     VariableFixing::Actions::FixVariables<
-                         grmhd::ValenciaDivClean::Flattener<
-                             ordered_list_of_primitive_recovery_schemes>>>>,
+          tmpl::list<VariableFixing::Actions::FixVariables<
+              grmhd::ValenciaDivClean::Flattener<
+                  ordered_list_of_primitive_recovery_schemes>>>>,
       parameterized_deleptonization,
       VariableFixing::Actions::FixVariables<
           VariableFixing::FixToAtmosphere<volume_dim>>,
@@ -592,8 +576,6 @@ struct EvolutionMetavars<tmpl::list<InterpolationTargetTags...>,
                           Initialization::Actions::InitializeItems<
                               evolution::dg::subcell::DisableLts<3>>,
                           tmpl::list<>>,
-      tmpl::conditional_t<use_dg_subcell, tmpl::list<>,
-                          Initialization::Actions::Minmod<3>>,
       evolution::Actions::InitializeRunEventsAndDenseTriggers,
       intrp::Actions::ElementInitInterpPoints<volume_dim,
                                               interpolation_target_tags>,

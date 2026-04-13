@@ -25,7 +25,6 @@ target_link_libraries(
   Evolution
   FiniteDifference
   Informer
-  Limiters
   LinearOperators
   Observer
   Options

@@ -24,7 +24,6 @@ set(LIBS_TO_LINK
   GrMhdSolutions
   Hydro
   Informer
-  Limiters
   LinearOperators
   MathFunctions
   MonteCarloSolutions

@@ -12,7 +12,6 @@ set(LIBS_TO_LINK
   Evolution
   FiniteDifference
   Informer
-  Limiters
   LinearOperators
   Observer
   Options

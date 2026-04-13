@@ -104,12 +104,6 @@ PrimitiveFromConservative:
   DensityWhenSkippingInversion: *MinimumD
   KastaunMaxLorentzFactor: 10.0
 
-Limiter:
-  Minmod:
-    Type: Muscl
-    TvbConstant: 50.0
-    DisableForDebugging: false
-
 EvolutionSystem:
   ValenciaDivClean:
     DampingParameter: 0.0

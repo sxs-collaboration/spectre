@@ -37,18 +37,15 @@
 #include "Evolution/DiscontinuousGalerkin/DgElementArray.hpp"
 #include "Evolution/DiscontinuousGalerkin/Initialization/Mortars.hpp"
 #include "Evolution/DiscontinuousGalerkin/Initialization/QuadratureTag.hpp"
-#include "Evolution/DiscontinuousGalerkin/Limiters/Tags.hpp"
 #include "Evolution/Initialization/ConservativeSystem.hpp"
 #include "Evolution/Initialization/DgDomain.hpp"
 #include "Evolution/Initialization/Evolution.hpp"
-#include "Evolution/Initialization/Limiter.hpp"
 #include "Evolution/Initialization/SetVariables.hpp"
 #include "Evolution/Systems/NewtonianEuler/AllSolutions.hpp"
 #include "Evolution/Systems/NewtonianEuler/BoundaryConditions/Factory.hpp"
 #include "Evolution/Systems/NewtonianEuler/BoundaryCorrections/Factory.hpp"
 #include "Evolution/Systems/NewtonianEuler/FiniteDifference/Factory.hpp"
 #include "Evolution/Systems/NewtonianEuler/FiniteDifference/Tag.hpp"
-#include "Evolution/Systems/NewtonianEuler/Limiters/Minmod.hpp"
 #include "Evolution/Systems/NewtonianEuler/SoundSpeedSquared.hpp"
 #include "Evolution/Systems/NewtonianEuler/Sources/Factory.hpp"
 #include "Evolution/Systems/NewtonianEuler/Subcell/NeighborPackagedData.hpp"
@@ -78,7 +75,6 @@
 #include "Parallel/Protocols/RegistrationMetavariables.hpp"
 #include "ParallelAlgorithms/Actions/AddComputeTags.hpp"
 #include "ParallelAlgorithms/Actions/InitializeItems.hpp"
-#include "ParallelAlgorithms/Actions/LimiterActions.hpp"
 #include "ParallelAlgorithms/Actions/MutateApply.hpp"
 #include "ParallelAlgorithms/Actions/TerminatePhase.hpp"
 #include "ParallelAlgorithms/Events/Completion.hpp"
@@ -136,7 +132,7 @@ class CProxy_GlobalCache;
 template <size_t Dim>
 struct EvolutionMetavars {
   static constexpr size_t volume_dim = Dim;
-  // The use_dg_subcell flag controls whether to use "standard" limiting (false)
+  // The use_dg_subcell flag controls whether to use unlimited DG (false)
   // or a DG-FD hybrid scheme (true).
   static constexpr bool use_dg_subcell = true;
 
@@ -156,8 +152,6 @@ struct EvolutionMetavars {
       typename system::primitive_variables_tag::tags_list;
 
   using equation_of_state_tag = hydro::Tags::EquationOfState<false, 2>;
-
-  using limiter = Tags::Limiter<NewtonianEuler::Limiters::Minmod<Dim>>;
 
   using analytic_compute = evolution::Tags::AnalyticSolutionsCompute<
       volume_dim, analytic_variables_tags, use_dg_subcell, initial_data_list>;
@@ -293,8 +287,6 @@ struct EvolutionMetavars {
                           Initialization::Actions::InitializeItems<
                               evolution::dg::subcell::DisableLts<Dim>>,
                           tmpl::list<>>,
-      tmpl::conditional_t<use_dg_subcell, tmpl::list<>,
-                          Initialization::Actions::Minmod<Dim>>,
       evolution::Actions::InitializeRunEventsAndDenseTriggers,
       Parallel::Actions::TerminatePhase>>;
 
@@ -324,27 +316,22 @@ struct EvolutionMetavars {
               evolution::Actions::RunEventsAndDenseTriggers<
                   events_and_dense_triggers_postprocessors>,
               Actions::MutateApply<UpdateU<system, local_time_stepping>>>>,
-      tmpl::conditional_t<use_dg_subcell,
-                          // Note: The primitive variables are computed as part
-                          // of the TCI.
-                          evolution::dg::subcell::Actions::TciAndRollback<
-                              NewtonianEuler::subcell::TciOnDgGrid<volume_dim>>,
-                          tmpl::list<>>,
+      tmpl::conditional_t<
+          use_dg_subcell,
+          // Note: The primitive variables are computed as part of the TCI.
+          evolution::dg::subcell::Actions::TciAndRollback<
+              NewtonianEuler::subcell::TciOnDgGrid<volume_dim>>,
+          tmpl::list<
+              // Conservative `UpdatePrimitives` expects system to
+              // possess list of recovery schemes so we use
+              // `MutateApply` instead.
+              Actions::MutateApply<
+                  typename system::primitive_from_conservative>>>,
       Actions::MutateApply<CleanHistory<system>>,
       tmpl::conditional_t<
           local_time_stepping,
           Actions::MutateApply<evolution::dg::CleanMortarHistory<volume_dim>>,
-          tmpl::list<>>,
-      tmpl::conditional_t<
-          use_dg_subcell,
-          tmpl::list<>,
-          tmpl::list<Limiters::Actions::SendData<EvolutionMetavars>,
-                     Limiters::Actions::Limit<EvolutionMetavars>,
-                     // Conservative `UpdatePrimitives` expects system to
-                     // possess list of recovery schemes so we use
-                     // `MutateApply` instead.
-                     Actions::MutateApply<
-                         typename system::primitive_from_conservative>>>>>;
+          tmpl::list<>>>>;
 
   struct SubcellOptions {
     static constexpr bool subcell_enabled = use_dg_subcell;

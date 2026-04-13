@@ -25,7 +25,6 @@ target_link_libraries(
   Hydro
   Imex
   Informer
-  Limiters
   LinearOperators
   MathFunctions
   M1Grey

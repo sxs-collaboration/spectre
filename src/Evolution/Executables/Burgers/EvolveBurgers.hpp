@@ -34,12 +34,9 @@
 #include "Evolution/DiscontinuousGalerkin/DgElementArray.hpp"
 #include "Evolution/DiscontinuousGalerkin/Initialization/Mortars.hpp"
 #include "Evolution/DiscontinuousGalerkin/Initialization/QuadratureTag.hpp"
-#include "Evolution/DiscontinuousGalerkin/Limiters/Minmod.hpp"
-#include "Evolution/DiscontinuousGalerkin/Limiters/Tags.hpp"
 #include "Evolution/Initialization/ConservativeSystem.hpp"
 #include "Evolution/Initialization/DgDomain.hpp"
 #include "Evolution/Initialization/Evolution.hpp"
-#include "Evolution/Initialization/Limiter.hpp"
 #include "Evolution/Initialization/SetVariables.hpp"
 #include "Evolution/Systems/Burgers/BoundaryConditions/Factory.hpp"
 #include "Evolution/Systems/Burgers/BoundaryCorrections/Factory.hpp"
@@ -69,7 +66,6 @@
 #include "Parallel/Protocols/RegistrationMetavariables.hpp"
 #include "ParallelAlgorithms/Actions/AddComputeTags.hpp"
 #include "ParallelAlgorithms/Actions/InitializeItems.hpp"
-#include "ParallelAlgorithms/Actions/LimiterActions.hpp"
 #include "ParallelAlgorithms/Actions/MutateApply.hpp"
 #include "ParallelAlgorithms/Actions/TerminatePhase.hpp"
 #include "ParallelAlgorithms/Events/Completion.hpp"
@@ -131,15 +127,12 @@ struct EvolutionMetavars {
       TimeStepperBase::local_time_stepping;
   static constexpr bool use_dg_element_collection = false;
 
-  // The use_dg_subcell flag controls whether to use "standard" limiting (false)
+  // The use_dg_subcell flag controls whether to use unlimited DG (false)
   // or a DG-FD hybrid scheme (true).
   static constexpr bool use_dg_subcell = true;
 
   using initial_data_list = tmpl::append<Burgers::Solutions::all_solutions,
                                          Burgers::AnalyticData::all_data>;
-
-  using limiter =
-      Tags::Limiter<Limiters::Minmod<1, system::variables_tag::tags_list>>;
 
   using analytic_variables_tags = typename system::variables_tag::tags_list;
   using analytic_compute = evolution::Tags::AnalyticSolutionsCompute<
@@ -260,11 +253,7 @@ struct EvolutionMetavars {
       tmpl::conditional_t<
           local_time_stepping,
           Actions::MutateApply<evolution::dg::CleanMortarHistory<volume_dim>>,
-          tmpl::list<>>,
-      tmpl::conditional_t<use_dg_subcell, tmpl::list<>,
-                          tmpl::list<
-                              Limiters::Actions::SendData<EvolutionMetavars>,
-                              Limiters::Actions::Limit<EvolutionMetavars>>>>>;
+          tmpl::list<>>>>;
 
   using dg_subcell_step_actions = tmpl::flatten<tmpl::list<
       evolution::dg::subcell::Actions::SelectNumericalMethod,
@@ -339,8 +328,6 @@ struct EvolutionMetavars {
                           Initialization::Actions::InitializeItems<
                               evolution::dg::subcell::DisableLts<1>>,
                           tmpl::list<>>,
-      tmpl::conditional_t<use_dg_subcell, tmpl::list<>,
-                          Initialization::Actions::Minmod<1>>,
       evolution::Actions::InitializeRunEventsAndDenseTriggers,
       Parallel::Actions::TerminatePhase>;
 
