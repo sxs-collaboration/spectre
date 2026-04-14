@@ -1,8 +1,16 @@
 {
+  "permissions": {
+    "allow": [
+      "Skill(spectre-fix-ci)",
+      "Skill(spectre-fix-issue)",
+      "Skill(spectre-fix-pr)",
+      "Skill(spectre-review)"
+    ]
+  },
   "hooks": {
     "PostToolUse": [
       {
-        "matcher": "Edit|Write",
+        "matcher": "Edit|Update|Write",
         "hooks": [
           {
             "type": "command",
