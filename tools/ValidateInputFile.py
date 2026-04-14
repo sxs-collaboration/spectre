@@ -9,6 +9,7 @@ from typing import Optional, Sequence, Union
 
 import click
 import rich
+import rich.console
 import rich.syntax
 import yaml
 

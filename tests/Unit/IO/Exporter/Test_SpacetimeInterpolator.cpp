@@ -117,6 +117,7 @@ void test_time_interpolation(
 
 }  // namespace
 
+// [[TimeOut, 10]]
 SPECTRE_TEST_CASE("Unit.IO.Exporter.SpacetimeInterpolator", "[Unit]") {
   domain::creators::register_derived_with_charm();
   domain::creators::time_dependence::register_derived_with_charm();
