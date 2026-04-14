@@ -45,6 +45,8 @@ namespace fd {
  *                \frac{1}{2} u_i\right)
  * \f}
  *
+ * Dimensions with Cartoon bases are not filtered as there is nothing to filter.
+ *
  * \note The \f$F^{(11)}\f$ filter isn't implemented yet.
  *
  * \note The argument \f$\epsilon\f$ controls how much of the mode is filter
@@ -103,6 +105,8 @@ void low_pass_filter(
  *    -120f_{i+2}+210f_{i+1}-252f_{i}+210f_{i-1}-120f_{i-2}+45f_{i-3}
  *    -10f_{i-4}+f_{i-5})
  * \f}
+ *
+ * Dimensions with Cartoon bases are not filtered as there is nothing to filter.
  *
  * \note This function applies \f$\Delta x \mathcal{D}^{(2m)}\f$.
  */
