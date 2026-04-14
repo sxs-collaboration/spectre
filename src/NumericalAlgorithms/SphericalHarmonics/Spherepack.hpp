@@ -172,9 +172,24 @@ class Spherepack {
   /// collocation points and spectral coefficients for a given l_max
   /// and m_max.  Useful for allocating space without having to create
   /// a Spherepack.
+  ///
+  /// The number of theta collocation points (Gauss-Legendre in
+  /// \f$\cos\theta\f$) needed to represent all modes up to \f$l_{\rm
+  /// max}\f$ exactly.
+  ///
+  SPECTRE_ALWAYS_INLINE static constexpr size_t n_theta_points(
+      const size_t l_max) {
+    return l_max + 1;
+  }
+  /// The number of phi collocation points (uniform in \f$\phi\f$) needed
+  /// to represent all modes up to \f$m_{\rm max}\f$ exactly.
+  SPECTRE_ALWAYS_INLINE static constexpr size_t n_phi_points(
+      const size_t m_max) {
+    return 2 * m_max + 1;
+  }
   SPECTRE_ALWAYS_INLINE static constexpr size_t physical_size(
       const size_t l_max, const size_t m_max) {
-    return (l_max + 1) * (2 * m_max + 1);
+    return n_theta_points(l_max) * n_phi_points(m_max);
   }
   /// \note `spectral_size` is the size of the buffer that holds the
   /// coefficients; it is not the number of coefficients (which is
