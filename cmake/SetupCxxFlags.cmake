@@ -18,6 +18,8 @@ endif()
 option(SPECTRE_OPTIMIZE_SIZE "Optimize for executable size instead of speed"
   ${_SPECTRE_OPTIMIZE_SIZE_DEFAULT})
 
+option(SPECTRE_DEBUG_Og "Compile Debug builds with -Og instead of -O0" ON)
+
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")
   set(SPECTRE_DEBUG ON)
 endif()
@@ -39,6 +41,10 @@ set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DSPECTRE_DEBUG")
 
 if(${SPECTRE_OPTIMIZE_SIZE})
   set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Oz")
+elseif(${SPECTRE_DEBUG_Og})
+  set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Og")
+  set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -Og")
+  set(CMAKE_Fortran_FLAGS_DEBUG "${CMAKE_Fortran_FLAGS_DEBUG} -Og")
 endif()
 
 if(NOT ${DEBUG_SYMBOLS})
