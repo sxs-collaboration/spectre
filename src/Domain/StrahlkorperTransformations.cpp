@@ -379,6 +379,15 @@ template void strahlkorper_in_different_frame(
         functions_of_time,
     const double time);
 
+template void strahlkorper_in_different_frame_aligned(
+    const gsl::not_null<ylm::Strahlkorper<::Frame::Grid>*> dest_strahlkorper,
+    const ylm::Strahlkorper<::Frame::Inertial>& src_strahlkorper,
+    const Domain<3>& domain,
+    const std::unordered_map<
+        std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
+        functions_of_time,
+    const double time);
+
 #define INSTANTIATEALIGNED(_, data)                                  \
   template void strahlkorper_in_different_frame_aligned(             \
       const gsl::not_null<ylm::Strahlkorper<DESTFRAME(data)>*>       \

@@ -11,8 +11,8 @@ import yaml
 from rich.pretty import pretty_repr
 
 import spectre.IO.H5 as spectre_h5
-from spectre.Evolution.Ringdown.ComputeAhCCoefsInRingdownDistortedFrame import (
-    compute_ahc_coefs_in_ringdown_distorted_frame,
+from spectre.Evolution.Ringdown.ComputeRingdownShapeAndTranslationFoT import (
+    compute_ringdown_shape_and_translation_fot,
 )
 
 # next import out of order to avoid Unrecognized PUP::able::PUP_ID error
@@ -141,9 +141,8 @@ def start_ringdown(
     logger.warning(
         "The BBH pipeline is still experimental. Please review the"
         " generated input files. In particular, the ringdown BBH pipline has"
-        " been tested for a q=1, spin=0 quasicircular inspiral but does not"
-        " yet support accounting for a nonzero translation map in the inspiral"
-        " (necessary for unequal-mass mergers.)"
+        " been tested for q=1, q=2, spin=0 inspirals but does not"
+        " yet support choosing an excision radius automatically."
     )
     # Determine ringdown parameters from inspiral
     # Resolve and set correct files/paths.
@@ -214,7 +213,9 @@ def start_ringdown(
     )
 
     evaluated_fot_dict = functions_of_time_from_volume(
-        str(fot_vol_h5_path), fot_vol_subfile, match_time
+        fot_vol_h5_path=str(fot_vol_h5_path),
+        fot_vol_subfile=fot_vol_subfile,
+        match_time=match_time,
     )
     match_time = evaluated_fot_dict["MatchTime"]
 
@@ -237,22 +238,25 @@ def start_ringdown(
             [0.0, 0.0, 0.0, 0.0],
         ]
     evaluated_fot_dict["Expansion"] = [1.0, 0.0, 0.0]
-    evaluated_fot_dict["Translation"] = [
-        [0.0, 0.0, 0.0],
-        [0.0, 0.0, 0.0],
-        [0.0, 0.0, 0.0],
-    ]
+    # This was added so we don't try to read in translation function of time
+    # history if there was no translation map in the inspiral.
+    if "Translation" not in evaluated_fot_dict:
+        evaluated_fot_dict["Translation"] = None
 
-    ringdown_ylm_coefs, ringdown_ylm_legend = (
-        compute_ahc_coefs_in_ringdown_distorted_frame(
-            str(ahc_reductions_path),
-            ahc_subfile,
-            evaluated_fot_dict,
-            number_of_ahc_finds_for_fit,
-            match_time,
-            settling_timescale,
-            zero_coefs_eps,
-        )
+    (
+        ringdown_ylm_coefs,
+        ringdown_ylm_legend,
+        ahc_translation_fot,
+    ) = compute_ringdown_shape_and_translation_fot(
+        path_to_volume_data=fot_vol_h5_path,
+        volume_subfile_name=fot_vol_subfile,
+        ahc_reductions_path=str(ahc_reductions_path),
+        ahc_subfile=ahc_subfile,
+        evaluated_fot_dict=evaluated_fot_dict,
+        number_of_ahc_finds_for_fit=number_of_ahc_finds_for_fit,
+        match_time=match_time,
+        settling_timescale=settling_timescale,
+        zero_coefs_eps=zero_coefs_eps,
     )
 
     # Setting up and writing the distorted coefficients output file.
@@ -308,7 +312,7 @@ def start_ringdown(
         width=float("inf"),
     ).strip()
     ringdown_params["Translation"] = yaml.safe_dump(
-        evaluated_fot_dict["Translation"],
+        ahc_translation_fot,
         default_flow_style=True,
         width=float("inf"),
     ).strip()
