@@ -416,7 +416,7 @@ void test_cartoon(const std::unique_ptr<ObserveEvent> observe,
                         ::Events::Tags::ObserverMesh<3>,
                         ::Events::Tags::ObserverDetInvJacobian<
                             Frame::ElementLogical, Frame::Inertial>,
-                        domain::Tags::Coordinates<3, Frame::Inertial>,
+                        ::Events::Tags::ObserverCoordinates<3, Frame::Inertial>,
                         Tags::Variables<typename decltype(vars)::tags_list>,
                         observers::Tags::ObservationKey<ArraySectionIdTag>>>(
       metavariables{}, mesh, det_inv_jacobian, inertial_coords, vars, section);
