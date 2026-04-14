@@ -617,27 +617,32 @@ void VolumeData::write_volume_data(
               if (element.element_name.size() >= 3 and
                   element.element_name[0] == '[' and
                   element.element_name[1] == 'B') {
-                if (dim == 1) {
+                // numerical dimension != computational dimension when using
+                // cartoon bases
+                const size_t num_dim = elements.front().basis.size();
+                if (num_dim == 1) {
                   const ElementId<1> element_id{element.element_name};
                   element_ids.insert(element_ids.end(), number_of_cells,
                                      element_id.to_short_id());
                   block_ids.insert(block_ids.end(), number_of_cells,
                                    element_id.block_id());
-                } else if (dim == 2) {
+                } else if (num_dim == 2) {
                   const ElementId<2> element_id{element.element_name};
                   element_ids.insert(element_ids.end(), number_of_cells,
                                      element_id.to_short_id());
                   block_ids.insert(block_ids.end(), number_of_cells,
                                    element_id.block_id());
-                } else if (dim == 3) {
+                } else if (num_dim == 3) {
                   const ElementId<3> element_id{element.element_name};
                   element_ids.insert(element_ids.end(), number_of_cells,
                                      element_id.to_short_id());
                   block_ids.insert(block_ids.end(), number_of_cells,
                                    element_id.block_id());
                 } else {
-                  ERROR("Can only encode ElementID when dim is 1, 2, or 3, got "
-                        << dim);
+                  ERROR(
+                      "Can only encode ElementID when simulation dim is 1, 2, "
+                      "or 3, got "
+                      << dim);
                 }
               } else {
                 element_ids.insert(

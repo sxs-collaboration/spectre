@@ -1012,7 +1012,7 @@ void test_cartoon() {
       {17.9, 27.6, 21.9, -28.1}};
   const std::vector<size_t> observation_ids{8435087234, size_t(-1)};
   const std::vector<double> observation_values{8.0, -2.3};
-  const std::vector<std::string> grid_names{"[[2,3,4]]"};
+  const std::vector<std::string> grid_names{"[B0,(L1I0,L1I0,L1I0)]"};
   const std::vector<std::vector<Spectral::Basis>> bases{
       {Spectral::Basis::Legendre, Spectral::Basis::Legendre,
        Spectral::Basis::Cartoon}};
@@ -1155,6 +1155,24 @@ void test_cartoon() {
                   {Spectral::Basis::Legendre, Spectral::Basis::Legendre},
                   {Spectral::Quadrature::GaussLobatto,
                    Spectral::Quadrature::GaussLobatto}));
+  }
+
+  {
+    INFO("Cartoon element_id uses numerical dim (3), not written dim (2)");
+    const size_t observation_id = observation_ids.front();
+    const auto element_id_var =
+        volume_file.get_tensor_component(observation_id, "ElementId").data;
+    const auto block_id_var =
+        volume_file.get_tensor_component(observation_id, "BlockId").data;
+    const auto& element_id = get<0>(element_id_var);
+    const auto& block_id = get<0>(block_id_var);
+    // 2x2 element (written as 2D) has 1 quad cell
+    CHECK(element_id.size() == 1);
+    CHECK(block_id.size() == 1);
+    // Must parse as ElementId<3> (numerical dim), not ElementId<2> (file dim)
+    const auto expected_eid = ElementId<3>{grid_names.front()}.to_short_id();
+    CHECK(element_id[0] == approx(expected_eid));
+    CHECK(static_cast<uint64_t>(block_id[0]) == 0);
   }
 
   if (file_system::check_if_file_exists(h5_file_name)) {
