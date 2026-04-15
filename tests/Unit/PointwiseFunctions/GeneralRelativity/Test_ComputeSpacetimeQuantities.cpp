@@ -226,7 +226,10 @@ void test_compute_pontryagin_scalar_in_vacuum(const DataVector& used_for_size) {
           const tnsr::II<DataVector, 3, Frame::Inertial>&)>(
           &gr::pontryagin_scalar_in_vacuum),
       "ComputeSpacetimeQuantities", "pontryagin_scalar_in_vacuum",
-      {{{-10., 10.}}}, used_for_size);
+      // The C++ Tenex contraction and the Python matrix-product reference
+      // accumulate roundoff in a different order for this fully algebraic
+      // expression, so allow a slightly looser comparison here.
+      {{{-10., 10.}}}, used_for_size, 2.0e-12);
 }
 
 void test_compute_gauss_bonnet_scalar_in_vacuum(
