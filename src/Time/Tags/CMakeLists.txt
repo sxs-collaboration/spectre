@@ -14,6 +14,7 @@ spectre_target_headers(
   AdaptiveSteppingDiagnostics.hpp
   FixedLtsRatio.hpp
   HistoryEvolvedVariables.hpp
+  LtsMode.hpp
   LtsStepChoosers.hpp
   MinimumTimeStep.hpp
   StepNumberWithinSlab.hpp
