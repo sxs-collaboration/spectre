@@ -22,6 +22,7 @@ class Variables;
 
 namespace fd {
 /*!
+ * \ingroup NumericalAlgorithmsGroup
  * \brief Compute the logical partial derivatives using cell-centered finite
  * difference derivatives.
  *
@@ -48,6 +49,7 @@ void logical_partial_derivatives(
     const Mesh<Dim>& volume_mesh, size_t number_of_variables, size_t fd_order);
 
 /*!
+ * \ingroup NumericalAlgorithmsGroup
  * \brief Compute the partial derivative on the `DerivativeFrame` using the
  * `inverse_jacobian`.
  *
@@ -65,6 +67,7 @@ void partial_derivatives(
     const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
                           DerivativeFrame>& inverse_jacobian);
 /*!
+ * \ingroup NumericalAlgorithmsGroup
  * \brief Compute the partial derivative using the `inverse_jacobian` for
  * `Basis::FiniteDifference` dimensions and the Cartoon method for
  * `Basis::Cartoon` dimensions.
@@ -85,6 +88,7 @@ void cartoon_partial_derivatives(
     const tnsr::I<DataVector, Dim, Frame::Inertial>& inertial_coords);
 
 /*!
+ * \ingroup NumericalAlgorithmsGroup
  * \brief Compute the partial derivative, either normal FD or FD/cartoon,
  * based on the mesh (only known at runtime).
  */
