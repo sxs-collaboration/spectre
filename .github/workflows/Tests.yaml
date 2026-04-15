@@ -410,6 +410,7 @@ jobs:
   unit_tests:
     name: Unit tests
     runs-on: ubuntu-latest
+    timeout-minutes: 345
     strategy:
       fail-fast: false
       matrix:
@@ -1004,6 +1005,7 @@ ${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
   # Build all test executables and run unit tests on macOS
   unit_tests_macos:
     name: Unit tests on macOS
+    timeout-minutes: 345
     strategy:
       fail-fast: false
       matrix:
