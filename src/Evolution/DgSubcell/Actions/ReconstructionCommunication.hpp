@@ -746,6 +746,9 @@ struct ReceiveDataForReconstruction {
           // is doing DG.
           for (auto& received_mortar_data : received_data) {
             const auto& mortar_id = received_mortar_data.first;
+            ASSERT(element.face_types().at(mortar_id.direction()) !=
+                       domain::FaceType::MultipleNonconforming,
+                   "This code needs updating to handle nonconforming blocks");
             try {
               mortar_next_time_step_id->at(mortar_id) =
                   received_mortar_data.second.validity_range;

@@ -231,19 +231,29 @@ void internal_mortar_data_impl(
         Variables<mortar_tags_list>::number_of_independent_components;
     Variables<mortar_tags_list> packaged_data{};
 
-    // This is the case where we only have one neighbor in this direction, so we
-    // may or may not have to do any projection. If we don't have to do
-    // projection, then we can use the local_mortar_data itself to calculate the
-    // dg_package_data. However, if we need to project, then we hae to use the
-    // packaged_data_buffer that was passed in.
-    if (neighbors_in_direction.size() == 1) {
+    // If there are multiple non-conforming neighbors, we only create a single
+    // mortar labeled by the host ElementId.  This is done because the data
+    // from all neighbors will be combined onto a single mortar as it makes no
+    // sense to have multiple mortars between non-conforming Elements.
+    const bool has_multiple_non_conforming_neighbors =
+        neighbors_in_direction.size() > 1 and
+        not neighbors_in_direction.are_conforming();
+    if (neighbors_in_direction.size() == 1 or
+        not neighbors_in_direction.are_conforming()) {
       const auto& neighbor = *neighbors_in_direction.begin();
-      const auto mortar_id = DirectionalId<Dim>{direction, neighbor};
+      const DirectionalId<Dim> mortar_id{
+          direction,
+          has_multiple_non_conforming_neighbors ? element.id() : neighbor};
       const auto& mortar_mesh = mortar_meshes.at(mortar_id);
       const auto& mortar_size = mortar_infos.at(mortar_id).mortar_size();
 
-      // Have to use packaged_data_buffer
-      if (Spectral::needs_projection(face_mesh, mortar_mesh, mortar_size)) {
+      // If we only have one conforming neighbor in this direction, we may or
+      // may not have to do any projection. If we don't have to do projection,
+      // then we can use the local_mortar_data itself to calculate the
+      // dg_package_data. However, if we need to project, then we have to use
+      // the packaged_data_buffer that was passed in.
+      if (neighbors_in_direction.are_conforming() and
+          Spectral::needs_projection(face_mesh, mortar_mesh, mortar_size)) {
         // The face mesh will be assigned below along with ensuring the size of
         // the mortar data is correct
         packaged_data.set_data_ref(packaged_data_buffer->data(),
@@ -268,8 +278,8 @@ void internal_mortar_data_impl(
                                    local_mortar_data.size());
       }
     } else {
-      // In this case, we have multiple neighbors in this direction so all will
-      // need to project their data which means we use the
+      // In this case, we have multiple conforming neighbors in this direction
+      // so all will need to project their data which means we use the
       // packaged_data_buffer to calculate the dg_package_data
       packaged_data.set_data_ref(packaged_data_buffer->data(), total_face_size);
     }
@@ -282,37 +292,39 @@ void internal_mortar_data_impl(
         package_data_volume_args...);
 
     // Perform step 3
-    // This will only do something if
+    // This will only do something if neighbors are conforming and either
     //  a) we have multiple neighbors in this direction
     // or
     //  b) the one (and only) neighbor in this direction needed projection
-    for (const auto& neighbor : neighbors_in_direction) {
-      const DirectionalId<Dim> mortar_id{direction, neighbor};
-      const auto& mortar_mesh = mortar_meshes.at(mortar_id);
-      const auto& mortar_size = mortar_infos.at(mortar_id).mortar_size();
+    if (neighbors_in_direction.are_conforming()) {
+      for (const auto& neighbor : neighbors_in_direction) {
+        const DirectionalId<Dim> mortar_id{direction, neighbor};
+        const auto& mortar_mesh = mortar_meshes.at(mortar_id);
+        const auto& mortar_size = mortar_infos.at(mortar_id).mortar_size();
 
-      if (Spectral::needs_projection(face_mesh, mortar_mesh, mortar_size)) {
-        auto& local_mortar = mortar_data_ptr->at(mortar_id).local();
-        local_mortar.face_mesh = face_mesh;
-        local_mortar.mortar_mesh = mortar_mesh;
-        // If this is the first time, initialize the data. If we don't do this,
-        // then the DataVector will be non-owning which we don't want
-        if (UNLIKELY(not local_mortar.mortar_data.has_value())) {
-          local_mortar.mortar_data = DataVector{};
+        if (Spectral::needs_projection(face_mesh, mortar_mesh, mortar_size)) {
+          auto& local_mortar = mortar_data_ptr->at(mortar_id).local();
+          local_mortar.face_mesh = face_mesh;
+          local_mortar.mortar_mesh = mortar_mesh;
+          // If this is the first time, initialize the data. If we don't do
+          // this, then the DataVector will be non-owning which we don't want
+          if (UNLIKELY(not local_mortar.mortar_data.has_value())) {
+            local_mortar.mortar_data = DataVector{};
+          }
+
+          DataVector& local_mortar_data = local_mortar.mortar_data.value();
+
+          // Do a destructive resize to account for potential p-refinement
+          local_mortar_data.destructive_resize(
+              mortar_mesh.number_of_grid_points() *
+              Variables<mortar_tags_list>::number_of_independent_components);
+
+          Variables<mortar_tags_list> projected_packaged_data{
+              local_mortar_data.data(), local_mortar_data.size()};
+          ::dg::project_to_mortar(make_not_null(&projected_packaged_data),
+                                  packaged_data, face_mesh, mortar_mesh,
+                                  mortar_size);
         }
-
-        DataVector& local_mortar_data = local_mortar.mortar_data.value();
-
-        // Do a destructive resize to account for potential p-refinement
-        local_mortar_data.destructive_resize(
-            mortar_mesh.number_of_grid_points() *
-            Variables<mortar_tags_list>::number_of_independent_components);
-
-        Variables<mortar_tags_list> projected_packaged_data{
-            local_mortar_data.data(), local_mortar_data.size()};
-        ::dg::project_to_mortar(make_not_null(&projected_packaged_data),
-                                packaged_data, face_mesh, mortar_mesh,
-                                mortar_size);
       }
     }
   }

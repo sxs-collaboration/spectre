@@ -113,6 +113,9 @@ void InitializeGeometry<Dim>::apply(
                                       i1_quadrature);
   // Neighbor meshes
   for (const auto& [direction, neighbors] : element->neighbors()) {
+    ASSERT(element->face_types().at(direction) !=
+               domain::FaceType::MultipleNonconforming,
+           "This code needs updating to handle nonconforming blocks");
     for (const auto& neighbor_id : neighbors) {
       const auto& neighbor_block = domain.blocks()[neighbor_id.block_id()];
       const auto& orientation = neighbors.orientation(neighbor_id);
