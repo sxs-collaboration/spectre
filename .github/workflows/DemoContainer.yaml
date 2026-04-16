@@ -31,21 +31,24 @@ on:
         required: true
 
 jobs:
-  docker:
-    name: Build and push
-    runs-on: ubuntu-latest
+  build:
+    name: Build (${{ matrix.arch }})
+    runs-on: ${{ matrix.runner }}
     environment: deploy-containers
+    strategy:
+      fail-fast: true
+      matrix:
+        include: ${{ fromJSON(inputs.build_arm
+          && '[{"arch":"amd64","runner":"ubuntu-latest"},
+               {"arch":"arm64","runner":"ubuntu-24.04-arm"}]'
+          || '[{"arch":"amd64","runner":"ubuntu-latest"}]') }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-      - name: Set up emulation support
-        uses: docker/setup-qemu-action@v2
-        with:
-          platforms: arm64
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
       - name: Login to DockerHub
-        uses: docker/login-action@v2
+        uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
@@ -56,20 +59,52 @@ jobs:
           context: .
           file: "./containers/Dockerfile.buildenv"
           target: deploy
-          tags: ${{ inputs.image_name }}:deploy,${{ inputs.image_name }}:latest
-          platforms: >
-            ${{ inputs.build_arm && 'linux/amd64,linux/arm64'
-            || 'linux/amd64' }}
+          tags: ${{ inputs.image_name }}:deploy-${{ matrix.arch }}
+          platforms: linux/${{ matrix.arch }}
           build-args: PARALLEL_MAKE_ARG=-j4
       - name: Build and push demo container
-        uses: docker/build-push-action@v3
+        uses: docker/build-push-action@v5
         with:
           push: true
           context: .
           file: "./containers/Dockerfile.buildenv"
           target: demo
-          tags: ${{ inputs.image_name }}:demo
-          platforms: >
-            ${{ inputs.build_arm && 'linux/amd64,linux/arm64'
-            || 'linux/amd64' }}
+          tags: ${{ inputs.image_name }}:demo-${{ matrix.arch }}
+          platforms: linux/${{ matrix.arch }}
           build-args: PARALLEL_MAKE_ARG=-j4
+
+  create_manifests:
+    name: Create multi-arch manifests
+    needs: build
+    runs-on: ubuntu-latest
+    environment: deploy-containers
+    steps:
+      - name: Login to DockerHub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      - name: Create deploy manifest
+        run: |
+          SOURCES="${{ inputs.image_name }}:deploy-amd64"
+          if [ "${{ inputs.build_arm }}" = "true" ]; then
+            SOURCES="$SOURCES ${{ inputs.image_name }}:deploy-arm64"
+          fi
+          docker buildx imagetools create \
+            --tag ${{ inputs.image_name }}:deploy \
+            --tag ${{ inputs.image_name }}:latest \
+            $SOURCES
+      - name: Create demo manifest
+        run: |
+          SOURCES="${{ inputs.image_name }}:demo-amd64"
+          if [ "${{ inputs.build_arm }}" = "true" ]; then
+            SOURCES="$SOURCES ${{ inputs.image_name }}:demo-arm64"
+          fi
+          docker buildx imagetools create \
+            --tag ${{ inputs.image_name }}:demo $SOURCES
+      - name: Inspect manifests
+        run: |
+          docker buildx imagetools inspect ${{ inputs.image_name }}:deploy
+          docker buildx imagetools inspect ${{ inputs.image_name }}:demo
