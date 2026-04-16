@@ -327,13 +327,11 @@ ARG DEBIAN_FRONTEND=noninteractive
 # that we don't need. Thus, not building the deps with Spack reduces total
 # build time of the Docker image.
 # - Blaze
-RUN wget https://bitbucket.org/blaze-lib/blaze/downloads/blaze-3.8.tar.gz -O blaze.tar.gz \
-    && tar -xzf blaze.tar.gz \
-    && mv blaze-* blaze \
+RUN git clone --depth 1 --branch v3.8.1 https://bitbucket.org/blaze-lib/blaze.git blaze \
     && mv blaze/blaze /usr/local/include \
     && rm -rf blaze*
 # - Catch2
-RUN wget https://github.com/catchorg/Catch2/archive/refs/tags/v3.4.0.tar.gz -O catch.tar.gz \
+RUN wget https://github.com/catchorg/Catch2/archive/refs/tags/v3.14.0.tar.gz -O catch.tar.gz \
     && tar -xzf catch.tar.gz && rm catch.tar.gz \
     && mv Catch2-* Catch2 \
     && cd Catch2 \
