@@ -51,7 +51,9 @@
 #include "Time/TimeSteppers/AdamsBashforth.hpp"
 #include "Utilities/Algorithm.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/MakeVector.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
+#include "Utilities/Rational.hpp"
 #include "Utilities/Serialization/CharmPupable.hpp"
 #include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 #include "Utilities/TMPL.hpp"
@@ -1050,6 +1052,157 @@ void test() {
   }
 }
 
+template <typename Metavariables>
+struct ReceiveOrderComponent {
+  using metavariables = Metavariables;
+  using chare_type = ActionTesting::MockArrayChare;
+  using array_index = ElementId<1>;
+
+  using simple_tags = tmpl::list<
+      VolumeTag, ::Tags::TimeStepId, ::Tags::Next<::Tags::TimeStepId>,
+      ::Tags::TimeStep, Tags::ConcreteTimeStepper<LtsTimeStepper>,
+      typename Metavariables::system::variables_tag, domain::Tags::Mesh<1>,
+      domain::Tags::Element<1>, domain::Tags::NeighborMesh<1>>;
+  using compute_tags = tmpl::push_back<time_stepper_ref_tags<LtsTimeStepper>>;
+
+  using phase_dependent_action_list = tmpl::list<
+      Parallel::PhaseActions<
+          Parallel::Phase::Initialization,
+          tmpl::list<
+              ActionTesting::InitializeDataBox<simple_tags, compute_tags>,
+              ::evolution::dg::Initialization::Mortars<1>>>,
+      Parallel::PhaseActions<
+          Parallel::Phase::Testing,
+          tmpl::list<::evolution::dg::Actions::ApplyLtsBoundaryCorrections<
+              1, false, false>>>>;
+};
+
+struct ReceiveOrderMetavariables {
+  static constexpr bool local_time_stepping = true;
+  using system = System<1, TestHelpers::SystemType::Conservative>;
+  using const_global_cache_tags = tmpl::list<>;
+  struct factory_creation
+      : tt::ConformsTo<Options::protocols::FactoryCreation> {
+    using factory_classes = tmpl::map<tmpl::pair<evolution::BoundaryCorrection,
+                                                 tmpl::list<BoundaryTerms<1>>>>;
+  };
+
+  using component_list =
+      tmpl::list<ReceiveOrderComponent<ReceiveOrderMetavariables>>;
+};
+
+void test_receive_order() {
+  using metavars = ReceiveOrderMetavariables;
+  using comp = ReceiveOrderComponent<metavars>;
+  using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<metavars>;
+  register_factory_classes_with_charm<metavars>();
+
+  MAKE_GENERATOR(gen);
+
+  Domain<1> domain{make_vector(Block<1>(nullptr, 0, {}))};
+  const Mesh<1> mesh(2, Spectral::Basis::Legendre,
+                     Spectral::Quadrature::GaussLobatto);
+
+  const ElementId<1> west_id{0, {{{2, 0}}}};
+  const ElementId<1> self_id{0, {{{2, 1}}}};
+  const ElementId<1> east_id{0, {{{2, 2}}}};
+
+  DirectionMap<1, Neighbors<1>> neighbors{};
+  neighbors[Direction<1>::lower_xi()] =
+      Neighbors<1>{{west_id}, OrientationMap<1>::create_aligned()};
+  neighbors[Direction<1>::upper_xi()] =
+      Neighbors<1>{{east_id}, OrientationMap<1>::create_aligned()};
+  const Element<1> element{self_id, std::move(neighbors)};
+
+  const DirectionalId west_mortar{Direction<1>::lower_xi(), west_id};
+  const DirectionalId east_mortar{Direction<1>::upper_xi(), east_id};
+
+  domain::Tags::NeighborMesh<1>::type neighbor_mesh{};
+  neighbor_mesh[west_mortar] = mesh;
+  neighbor_mesh[east_mortar] = mesh;
+
+  MockRuntimeSystem runner{{std::move(domain),
+                            std::make_unique<BoundaryTerms<1>>(),
+                            dg::Formulation::StrongInertial}};
+
+  const Slab slab(0.0, 1.0);
+  const TimeStepId time_step_id(true, 0, slab.start());
+  const TimeStepId& next_time_step_id = time_step_id;
+  const auto time_step = slab.duration();
+
+  std::vector<std::tuple<DirectionalId<1>, Rational, Rational>> messages{
+      {west_mortar, {0, 4}, {1, 4}}, {west_mortar, {1, 4}, {2, 4}},
+      {west_mortar, {2, 4}, {3, 4}}, {west_mortar, {3, 4}, {4, 4}},
+      {east_mortar, {0, 2}, {1, 2}}, {east_mortar, {1, 2}, {2, 2}}};
+  std::shuffle(messages.begin(), messages.end(), gen);
+
+  using variables_tag = metavars::system::variables_tag;
+  variables_tag::type evolved_vars(2, 0.0);
+
+  ActionTesting::emplace_component_and_initialize<comp>(
+      &runner, self_id,
+      {10, time_step_id, next_time_step_id, time_step,
+       std::make_unique<TimeSteppers::AdamsBashforth>(1), evolved_vars, mesh,
+       element, neighbor_mesh});
+
+  // Initialize the mortars
+  ActionTesting::next_action<comp>(make_not_null(&runner), self_id);
+  ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Testing);
+
+  using mortar_tags_list = BoundaryTerms<1>::dg_package_field_tags;
+  constexpr size_t mortar_data_size =
+      Variables<mortar_tags_list>::number_of_independent_components;
+
+  db::mutate<Tags::Next<Tags::TimeStepId>,
+             evolution::dg::Tags::MortarDataHistory<1>>(
+      [&](const gsl::not_null<TimeStepId*> id,
+          const gsl::not_null<DirectionalIdMap<
+              1, TimeSteppers::BoundaryHistory<evolution::dg::MortarData<1>,
+                                               evolution::dg::MortarData<1>,
+                                               DataVector>>*>
+              mortar_history) {
+        *id = TimeStepId(true, 0, slab.end());
+
+        evolution::dg::MortarData<1> local_data{};
+        local_data.mortar_data.emplace(mortar_data_size, 0.0);
+        local_data.face_normal_magnitude.emplace(1_st, 1.0);
+        local_data.face_mesh.emplace();
+        local_data.mortar_mesh.emplace();
+
+        mortar_history->at(west_mortar)
+            .local()
+            .insert(time_step_id, 1, local_data);
+        mortar_history->at(east_mortar)
+            .local()
+            .insert(time_step_id, 1, local_data);
+      },
+      make_not_null(
+          &ActionTesting::get_databox<comp>(make_not_null(&runner), self_id)));
+
+  while (not messages.empty()) {
+    const auto [mortar_id, send_time, next_time] = messages.back();
+    messages.pop_back();
+
+    const Mesh<0> mortar_mesh{};
+    const DataVector flux_data{mortar_data_size, 0.0};
+    const evolution::dg::BoundaryData<1> data{
+        mesh,        std::nullopt,
+        mortar_mesh, std::nullopt,
+        {flux_data}, TimeStepId(true, 0, Time(slab, next_time)),
+        1,           1};
+
+    using inbox =
+        evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<1, false>;
+
+    Parallel::receive_data<inbox>(
+        runner.mock_distributed_objects<comp>().at(self_id),
+        TimeStepId(true, 0, Time(slab, send_time)), std::pair{mortar_id, data});
+
+    REQUIRE(ActionTesting::next_action_if_ready<comp>(
+                make_not_null(&runner), self_id) == messages.empty());
+  }
+}
+
 SPECTRE_TEST_CASE("Unit.Evolution.DG.ApplyBoundaryCorrections",
                   "[Unit][Evolution][Actions]") {
   PUPable_reg(TimeSteppers::AdamsBashforth);
@@ -1067,5 +1220,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.DG.ApplyBoundaryCorrections",
           });
         });
   });
+
+  test_receive_order();
 }
 }  // namespace
