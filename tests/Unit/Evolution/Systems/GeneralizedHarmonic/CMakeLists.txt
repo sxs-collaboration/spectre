@@ -16,16 +16,17 @@ set(LIBRARY_SOURCES
   BoundaryCorrections/Test_AveragedUpwindPenalty.cpp
   BoundaryCorrections/Test_UpwindPenalty.cpp
   Test_ApplyTensorYlmFilter.cpp
+  Test_BbhCheckpointAndExitIfCompletePhaseChange.cpp
+  Test_BbhCompletionCriteria.cpp
+  Test_BbhCompletionSingleton.cpp
   Test_Characteristics.cpp
   Test_Constraints.cpp
   Test_DuDt.cpp
   Test_DuDtTempTags.cpp
   Test_Fluxes.cpp
-  Test_BbhCompletionCriteria.cpp
-  Test_BbhCompletionSingleton.cpp
-  Test_BbhCheckpointAndExitIfCompletePhaseChange.cpp
   Test_System.cpp
   Test_Tags.cpp
+  Test_TensorYlmTransforms.cpp
   )
 
 add_test_library(${LIBRARY} "${LIBRARY_SOURCES}")
