@@ -15,6 +15,8 @@
 #include "Time/StepChoosers/Constant.hpp"
 #include "Time/StepChoosers/ErrorControl.hpp"
 #include "Time/StepChoosers/LimitIncrease.hpp"
+#include "Time/StepChoosers/Maximum.hpp"
+#include "Time/StepChoosers/StepToTimes.hpp"
 #include "Utilities/TMPL.hpp"
 
 template <bool EvolveCcm>
@@ -112,12 +114,16 @@ struct CharacteristicExtractDefaults {
                           tmpl::list<Cce::Tags::CauchyAngularCoords>>;
   using cce_step_choosers =
       tmpl::list<StepChoosers::Constant, StepChoosers::LimitIncrease,
+                 StepChoosers::Maximum,
                  StepChoosers::ErrorControl<StepChooserUse::LtsStep,
                                             Tags::Variables<evolved_swsh_tags>,
                                             swsh_vars_selector>,
                  StepChoosers::ErrorControl<StepChooserUse::LtsStep,
                                             evolved_coordinates_variables_tag,
                                             coord_vars_selector>>;
+  using cce_slab_choosers =
+      tmpl::list<StepChoosers::Constant, StepChoosers::LimitIncrease,
+                 StepChoosers::Maximum, StepChoosers::StepToTimes>;
 
   using ccm_psi0 = tmpl::list<
       Cce::Tags::BoundaryValue<Cce::Tags::Psi0Match>,

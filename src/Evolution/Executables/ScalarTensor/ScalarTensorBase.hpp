@@ -375,11 +375,10 @@ struct FactoryCreation : tt::ConformsTo<Options::protocols::FactoryCreation> {
       tmpl::pair<PhaseChange, PhaseControl::factory_creatable_classes>,
       tmpl::pair<StepChooser<StepChooserUse::LtsStep>,
                  StepChoosers::standard_step_choosers<system>>,
-      tmpl::pair<
-          StepChooser<StepChooserUse::Slab>,
-          tmpl::append<
-              StepChoosers::standard_slab_choosers<system, LocalTimeStepping>,
-              tmpl::conditional_t<LocalTimeStepping,
+      tmpl::pair<StepChooser<StepChooserUse::Slab>,
+                 tmpl::append<StepChoosers::standard_slab_choosers<system>,
+                              tmpl::conditional_t<
+                                  LocalTimeStepping,
                                   tmpl::list<evolution::dg::StepChoosers::
                                                  FixedLtsRatio<volume_dim>>,
                                   tmpl::list<>>>>,

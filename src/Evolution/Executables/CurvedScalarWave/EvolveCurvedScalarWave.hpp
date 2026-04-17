@@ -244,8 +244,7 @@ struct EvolutionMetavars {
                    tmpl::push_back<StepChoosers::standard_step_choosers<system>,
                                    StepChoosers::ByBlock<volume_dim>>>,
         tmpl::pair<StepChooser<StepChooserUse::Slab>,
-                   tmpl::append<StepChoosers::standard_slab_choosers<
-                                    system, local_time_stepping>,
+                   tmpl::append<StepChoosers::standard_slab_choosers<system>,
                                 tmpl::conditional_t<
                                     local_time_stepping,
                                     tmpl::list<evolution::dg::StepChoosers::
