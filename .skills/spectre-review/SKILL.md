@@ -41,7 +41,7 @@ black --check --diff FILEPATH
 isort --check-only --diff FILEPATH
 ```
 
-## Step 3: CI Pre-Checks on Changed Files
+## Step 3: CI Pre-Checks on Changed Files (run in parallel)
 
 Check each changed file for issues that SpECTRE CI (`tools/FileTestDefs.sh`,
 `tools/CheckFiles.sh`) will flag. Only check lines/patterns introduced in the
@@ -121,8 +121,25 @@ Instructions for the agent:
 - Check that new `.cpp`/`.hpp` files are listed in their `CMakeLists.txt`
 - Only flag issues introduced by the diff
 - For each finding: `file:line`, severity, explanation
+- Check for potentially problematic floating point math like:
+  - Catastrophic cancellation: subtraction of nearly-equal values
+    (`a - b` where `a ~ b`).
+  - Division by near-zero: a denominator that approaches zero for certain
+    inputs (e.g., near coordinate boundaries, poles, or special points).
+  - Naive summation of many terms: summing a long list of floating-point
+    numbers accumulates round-off.
+  - Unstable polynomial evaluation: monomial form
+    (`a*x^3 + b*x^2 + c*x + d`), instead use Horner's method,
+    `evaluate_polynomial()` from `src/Utilities/Math.hpp`
+  - Numerically unstable quadratic formula: the standard formula
+    `(-b +/- sqrt(b^2 - 4ac)) / 2a` loses precision.
+  - Accumulation of terms with widely varying magnitudes: adding a tiny
+    correction to a large value drops the correction entirely.
+  - Make sure the code always uses `atan2` instead of `atan`, `log1p(x)` instead
+    of `log(1+x)`, `expm1(x)` instead of `exp(x)-1`, `hypot(x,y)` instead of
+    `sqrt(x*x+y*y)`.
 
-## Step 5: clang-tidy (if requested)
+## Step 5: clang-tidy (if requested, run in parallel)
 
 If "clang-tidy" was in arguments:
 1. Check for `build/compile_commands.json`. If missing, report that clang-tidy
@@ -130,7 +147,7 @@ If "clang-tidy" was in arguments:
 2. For each changed `.cpp` file: `clang-tidy -p build/ FILEPATH 2>&1`
 3. Filter output to only warnings on lines in the diff.
 
-## Step 6: Code Coverage (if requested)
+## Step 6: Code Coverage (if requested, run in parallel)
 
 If "coverage" was in arguments:
 Read `references/coverage-steps.md` and follow those instructions exactly.
