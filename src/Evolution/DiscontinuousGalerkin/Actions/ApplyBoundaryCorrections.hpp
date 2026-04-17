@@ -138,7 +138,8 @@ bool receive_boundary_data(
     std::optional<TimeStepId> time_to_process{};
     for (const auto& [mortar_id, mortar_next_time_step_id] :
          mortar_next_time_step_ids) {
-      if (mortar_next_time_step_id < time_to_process) {
+      if (time_to_process.has_value() and
+          mortar_next_time_step_id > *time_to_process) {
         continue;
       }
 
