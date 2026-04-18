@@ -422,6 +422,15 @@ RUN apt-get update -y \
 # Install bibtex for Doxygen bibliography management
 # We first install the TeXLive infrastructure according to the configuration in
 # support/TeXLive/texlive.profile and then use it to install the bibtex package.
+#
+# WARNING: if you are rebuilding the container in late March/early April you
+# might have version mismatches between the TeXLive installer respositories like
+# CTAN. You can then use the previous year's TeXLive until CTAN is updated. E.g.
+#    wget \
+#  ftp://tug.org/historic/systems/texlive/2025/tlnet-final/install-tl-unx.tar.gz
+# and
+# install-tl-*/install-tl -profile=texlive.profile \
+#        -repository ftp://tug.org/historic/systems/texlive/2025/tlnet-final
 RUN if [ ${UBUNTU_VERSION} = 22.04 ]; then \
     mkdir /work/texlive && cd /work/texlive \
     && wget http://mirror.ctan.org/systems/texlive/tlnet/install-tl-unx.tar.gz \
