@@ -58,5 +58,18 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Affine", "[Domain][Unit]") {
   test_coordinate_map_argument_types(affine_map, point_xi);
 
   check_if_map_is_identity(CoordinateMaps::Affine{-1.0, 1.0, -1.0, 1.0});
+
+#ifdef SPECTRE_DEBUG
+  CHECK_THROWS_WITH(
+      (CoordinateMaps::Affine{-1.0, -1.0, -2.0, 2.0}),
+      Catch::Matchers::ContainsSubstring(
+          "The left and right boundaries for both source and target "
+          "interval must differ"));
+  CHECK_THROWS_WITH(
+      (CoordinateMaps::Affine{-1.0, 1.0, 2.0, 2.0}),
+      Catch::Matchers::ContainsSubstring(
+          "The left and right boundaries for both source and target "
+          "interval must differ"));
+#endif
 }
 }  // namespace domain
