@@ -20,6 +20,7 @@
 #include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
 #include "Domain/FunctionsOfTime/PiecewisePolynomial.hpp"
 #include "Framework/TestHelpers.hpp"
+#include "Helpers/Domain/CoordinateMaps/TestMapHelpers.hpp"
 #include "NumericalAlgorithms/Spectral/Basis.hpp"
 #include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
@@ -154,6 +155,10 @@ void test_product_of_2_maps_time_dep(
 
   CHECK(map2d.frame_velocity(logical_coords, time, functions_of_time) ==
         expected_frame_velocity_datavector);
+
+  test_coordinate_map_argument_types(map2d, point_source_a, time,
+                                     functions_of_time);
+  test_coordinate_map_argument_types(map2d, point_xi, time, functions_of_time);
 
   CHECK(map2d == map2d);
   CHECK_FALSE(map2d != map2d);
@@ -447,6 +452,10 @@ void test_product_of_3_maps_time_dep(
 
   CHECK(map3d.frame_velocity(logical_coords, time, functions_of_time) ==
         expected_frame_velocity_datavector);
+
+  test_coordinate_map_argument_types(map3d, point_source_a, time,
+                                     functions_of_time);
+  test_coordinate_map_argument_types(map3d, point_xi, time, functions_of_time);
 
   CHECK(map3d == map3d);
   CHECK_FALSE(map3d != map3d);
