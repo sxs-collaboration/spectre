@@ -19,9 +19,32 @@
 
 namespace Spectral::filtering {
 Matrix exponential_filter(const Mesh<1>& mesh, const double alpha,
-                          const unsigned half_power) {
+                          const unsigned half_power, const Parity parity) {
   if (UNLIKELY(mesh.number_of_grid_points() == 1)) {
     return Matrix(1, 1, 1.0);
+  }
+  if (mesh.basis(0) == Spectral::Basis::ZernikeB1) {
+    ASSERT(parity != Parity::Uninitialized,
+           "Need parity to be set to filter ZernikeB1");
+    const size_t m = parity == Parity::Even ? 0 : 1;
+    const size_t n = mesh.number_of_grid_points();
+    const Matrix& nodal_to_modal =
+        Spectral::nodal_to_modal_matrix<Spectral::Basis::ZernikeB1,
+                                        Spectral::Quadrature::GaussRadauUpper>(
+            n, m, 2 * n - 2);
+    const Matrix& modal_to_nodal =
+        Spectral::modal_to_nodal_matrix<Spectral::Basis::ZernikeB1,
+                                        Spectral::Quadrature::GaussRadauUpper>(
+            n, m, 2 * n - 2);
+    Matrix filter_matrix(n - m, n - m, 0.0);
+    const size_t order = n - 1 - m;
+    filter_matrix(0, 0) = 1.0;
+    for (size_t i = 1; i <= order; ++i) {
+      filter_matrix(i, i) =
+          exp(-alpha * pow(static_cast<double>(i) / static_cast<double>(order),
+                           2 * half_power));
+    }
+    return modal_to_nodal * filter_matrix * nodal_to_modal;
   }
   const Matrix& nodal_to_modal = Spectral::nodal_to_modal_matrix(mesh);
   const Matrix& modal_to_nodal = Spectral::modal_to_nodal_matrix(mesh);

@@ -9,6 +9,7 @@
 #include <string>
 #include <unordered_set>
 
+#include "NumericalAlgorithms/Spectral/Parity.hpp"
 #include "Options/Auto.hpp"
 #include "Options/String.hpp"
 #include "Utilities/TMPL.hpp"
@@ -110,7 +111,9 @@ class Exponential {
               const Options::Context& context = {});
 
   /// A cached matrix used to apply the filter to the given mesh
-  const Matrix& filter_matrix(const Mesh<1>& mesh) const;
+  const Matrix& filter_matrix(
+      const Mesh<1>& mesh,
+      Spectral::Parity parity = Spectral::Parity::Uninitialized) const;
 
   bool enable() const { return enable_; }
 
