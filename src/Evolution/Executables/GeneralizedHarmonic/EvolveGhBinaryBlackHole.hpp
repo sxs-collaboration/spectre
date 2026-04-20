@@ -652,11 +652,8 @@ struct EvolutionMetavars {
       ::evolution::dg::Initialization::Mortars<volume_dim>,
       intrp::Actions::ElementInitInterpPoints<volume_dim,
                                               interpolation_target_tags>,
-      tmpl::conditional_t<
-          local_time_stepping,
-          evolution::dg::Initialization::Actions::SetupEqualRateRegions<
-              EvolutionMetavars, volume_dim, equal_rate_regions>,
-          tmpl::list<>>,
+      evolution::dg::Initialization::Actions::SetupEqualRateRegions<
+          EvolutionMetavars, volume_dim, equal_rate_regions>,
       evolution::Actions::InitializeRunEventsAndDenseTriggers,
       control_system::Actions::InitializeMeasurements<control_systems>,
       Initialization::Actions::InitializeItems<
@@ -777,15 +774,13 @@ struct EvolutionMetavars {
                 tmpl::conditional_t<
                     local_time_stepping,
                     tmpl::list<
-                        Tags::FixedLtsRatio,
-                        Parallel::Tags::Section<
-                            gh_dg_element_array,
-                            evolution::dg::Tags::EqualRateRegionId>,
                         evolution::dg::Tags::ChangeFixedLtsRatio::
                             NumberOfExpectedMessages,
                         evolution::dg::Tags::ChangeFixedLtsRatio::NewStepSize>,
                     tmpl::list<>>>,
-            gh::bbh::Tags::ElementCompletionRequested,
+            gh::bbh::Tags::ElementCompletionRequested, Tags::FixedLtsRatio,
+            Parallel::Tags::Section<gh_dg_element_array,
+                                    evolution::dg::Tags::EqualRateRegionId>,
             Tags::ChangeSlabSize::NumberOfExpectedMessages,
             Tags::ChangeSlabSize::NewSlabSize>>>;
     static constexpr bool keep_coarse_grids = false;

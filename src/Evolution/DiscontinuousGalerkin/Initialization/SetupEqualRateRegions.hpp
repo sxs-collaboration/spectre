@@ -19,6 +19,7 @@
 #include "Parallel/Section.hpp"
 #include "Parallel/Tags/Section.hpp"
 #include "Parallel/TypeTraits.hpp"
+#include "Time/LtsMode.hpp"
 #include "Time/Tags/FixedLtsRatio.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/Gsl.hpp"
@@ -31,6 +32,7 @@ template <size_t VolumeDim>
 class Element;
 class TimeDelta;
 namespace Tags {
+struct LtsMode;
 struct TimeStep;
 }  // namespace Tags
 namespace domain::Tags {
@@ -145,6 +147,10 @@ struct SetupEqualRateRegions {
       Parallel::GlobalCache<Metavariables>& cache,
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) {
+    if (db::get<::Tags::LtsMode>(box) == LtsMode::Off) {
+      return {Parallel::AlgorithmExecution::Continue, std::nullopt};
+    }
+
     db::mutate_apply<SetupLocalEqualRateRegion<Dim>>(make_not_null(&box));
 
     // Set up sections.  This will be empty everywhere except element 0.

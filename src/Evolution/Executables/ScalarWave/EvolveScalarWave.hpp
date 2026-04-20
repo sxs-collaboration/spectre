@@ -292,11 +292,8 @@ struct EvolutionMetavars {
           StepChoosers::step_chooser_compute_tags<EvolutionMetavars,
                                                   local_time_stepping>>,
       ::evolution::dg::Initialization::Mortars<volume_dim>,
-      tmpl::conditional_t<
-          local_time_stepping,
-          evolution::dg::Initialization::Actions::SetupEqualRateRegions<
-              EvolutionMetavars, volume_dim, equal_rate_regions>,
-          tmpl::list<>>,
+      evolution::dg::Initialization::Actions::SetupEqualRateRegions<
+          EvolutionMetavars, volume_dim, equal_rate_regions>,
       evolution::Actions::InitializeRunEventsAndDenseTriggers,
       Initialization::Actions::InitializeItems<
           evolution::dg::Initialization::SpectralFilters<
@@ -376,14 +373,13 @@ struct EvolutionMetavars {
             tmpl::conditional_t<
                 local_time_stepping,
                 tmpl::list<
-                    Tags::FixedLtsRatio,
-                    Parallel::Tags::Section<
-                        dg_element_array,
-                        evolution::dg::Tags::EqualRateRegionId>,
                     evolution::dg::Tags::ChangeFixedLtsRatio::
                         NumberOfExpectedMessages,
                     evolution::dg::Tags::ChangeFixedLtsRatio::NewStepSize>,
                 tmpl::list<>>,
+            Tags::FixedLtsRatio,
+            Parallel::Tags::Section<dg_element_array,
+                                    evolution::dg::Tags::EqualRateRegionId>,
             Tags::ChangeSlabSize::NumberOfExpectedMessages,
             Tags::ChangeSlabSize::NewSlabSize>>>;
     static constexpr bool keep_coarse_grids = false;

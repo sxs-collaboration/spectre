@@ -447,11 +447,8 @@ struct GeneralizedHarmonicTemplateBase {
           tmpl::push_back<StepChoosers::step_chooser_compute_tags<
               GeneralizedHarmonicTemplateBase, local_time_stepping>>>,
       ::evolution::dg::Initialization::Mortars<volume_dim>,
-      tmpl::conditional_t<
-          local_time_stepping,
-          evolution::dg::Initialization::Actions::SetupEqualRateRegions<
-              DerivedMetavars, volume_dim, equal_rate_regions>,
-          tmpl::list<>>,
+      evolution::dg::Initialization::Actions::SetupEqualRateRegions<
+          DerivedMetavars, volume_dim, equal_rate_regions>,
       evolution::Actions::InitializeRunEventsAndDenseTriggers,
       Initialization::Actions::InitializeItems<
           evolution::dg::Initialization::SpectralFilters<
