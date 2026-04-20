@@ -493,41 +493,41 @@ std::optional<double> Wedge::original_radius_over_radius(
         return std::nullopt;
       }
 
-      const double factor =
-          cube(inner_surface_.radius) /
-          (square(centered_coords_magnitude) * radial_distortion);
+      // We want to solve
+      //
+      //   0 = -1 + r/r~ - (r/r~)^3 radial_distortion r~^2 / R_in^3
+      //
+      // for r/r~.  Solving in this form is badly behaved when
+      // radial_distortion is small, so instead we solve for the
+      // inverse:
+      //
+      //   0 = (r~/r)^3 - (r~/r)^2 + radial_distortion r~^2 / R_in^3
+      //
+      // See Numerical Recipes (3rd edition) pg 228 for the solution
+      // for a cubic.
 
-      // The following variable names are defined in Numerical Recipes (3rd
-      // edition) pg 228. We choose to keep them as they appear in NR for better
-      // comparison with the book.
+      const double intercept = square(centered_coords_magnitude) *
+                               radial_distortion / cube(inner_surface_.radius);
 
-      // Numerical Recipes (3rd edition) pg 228, eq 5.6.10
-      const double R = 0.5 * factor;
-      const double Q = factor / 3.0;
-      const bool multiple_real_roots = square(R) < cube(Q);
+      if (intercept > 4.0 / 27.0) {
+        ERROR("No positive root in original_radius_over_radius.");
+      }
 
-      if (multiple_real_roots) {
-        // Numerical Recipes (3rd edition) pg 228, eqs 5.6.11 - 5.6.12
-        const double theta = acos(R / sqrt(cube(Q)));
-        std::vector<double> roots{
-            -2.0 * sqrt(Q) * cos(theta / 3.0),
-            -2.0 * sqrt(Q) * cos((theta + 2.0 * M_PI) / 3.0),
-            -2.0 * sqrt(Q) * cos((theta - 2.0 * M_PI) / 3.0)};
+      if (intercept > 0.0) {
+        // Three real roots: NR eqs 5.6.11 - 5.6.12
 
-        // Radii are positive
-        std::erase_if(roots, [](const double root) { return root < 0.0; });
-
-        // Since the root of this is the original radius over target radius, it
-        // will be of order unity and not something super large, so we take the
-        // smallest of the positive roots. If this turns out to not be robust
-        // enough we can change this.
-        return *alg::min_element(roots);
+        // The other roots can be found by shifting the argument of
+        // cos by multiples of 2 pi/3, but the one here is the
+        // solution continuous with the single-real-root case.
+        return 3.0 / (1.0 + 2.0 * cos(acos(1.0 - 13.5 * intercept) / 3.0));
       } else {
-        // Numerical Recipes (3rd edition) pg 228, eqs 5.6.13 - 5.6.17
-        const double A = -sgn(R) * cbrt(abs(R) + sqrt(square(R) - cube(Q)));
-        const double B = A == 0.0 ? 0.0 : Q / A;
+        // Single real root: NR eqs 5.6.13 - 5.6.17
 
-        return A + B;
+        // 3 * A in eq 5.6.15
+        const double threeA =
+            cbrt(1.0 - 13.5 * intercept +
+                 sqrt((182.25 * intercept - 27.0) * intercept));
+        return 3.0 * threeA / (1.0 + threeA * (1.0 + threeA));
       }
     } else if (equal_within_roundoff(
                    centered_coords_magnitude + radial_distortion,
