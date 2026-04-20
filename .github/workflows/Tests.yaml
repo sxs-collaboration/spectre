@@ -86,7 +86,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           fetch-depth: 0
       - name: Check commits
@@ -116,7 +116,7 @@ jobs:
       image: ${{ inputs.container || 'sxscollaboration/spectre:dev' }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           fetch-depth: 0
       # Work around https://github.com/actions/checkout/issues/760
@@ -214,7 +214,7 @@ jobs:
         build_type: [Debug, Release]
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           fetch-depth: 0
       # Work around https://github.com/actions/checkout/issues/760
@@ -299,7 +299,7 @@ jobs:
         CCACHE_BASEDIR: $GITHUB_WORKSPACE
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       # Work around https://github.com/actions/checkout/issues/760
       - name: Trust checkout
         run: |
@@ -322,7 +322,7 @@ jobs:
           cat /work/release_notes.md | sed 's/\(\B\@\)/\\\1/g' \
             >> docs/Changelog.md
       - name: Restore ccache
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@v5
         id: restore-ccache
         env:
           CACHE_KEY_PREFIX: ccache-gcc-11-Debug-pch-ON
@@ -569,7 +569,7 @@ jobs:
         run: |
           echo "time=$(date +%s)" >> "$GITHUB_OUTPUT"
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       # Work around https://github.com/actions/checkout/issues/760
       - name: Trust checkout
         run: |
@@ -678,7 +678,7 @@ jobs:
       # - To restore the most recent cache we provide a partially-matched
       #   "restore key".
       - name: Restore ccache
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@v5
         id: restore-ccache
         env:
           CACHE_KEY_PREFIX: "ccache-${{ matrix.compiler }}-\
@@ -864,7 +864,7 @@ ${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
       # cache.
       - name: Save ccache
         if: always() && github.ref == 'refs/heads/develop'
-        uses: actions/cache/save@v4
+        uses: actions/cache/save@v5
         with:
           path: /work/ccache
           key: ${{ steps.restore-ccache.outputs.cache-primary-key }}
@@ -1042,7 +1042,7 @@ ${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
           echo "NUM_CORES=$CORES" >> $GITHUB_ENV
           echo "Detect $CORES cores"
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
@@ -1054,7 +1054,7 @@ ${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
       # We install the remaining dependencies with Spack and cache them.
       # See the `unit_tests` job above for details on the cache configuration.
       - name: Restore dependency cache
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@v5
         id: restore-dependencies
         env:
           CACHE_KEY_PREFIX: "dependencies-${{ matrix.os }}"
@@ -1113,7 +1113,7 @@ ${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
         continue-on-error: true
       - name: Save dependency cache
         if: github.ref == 'refs/heads/develop'
-        uses: actions/cache/save@v4
+        uses: actions/cache/save@v5
         with:
           path: ~/dependencies
           key: ${{ steps.restore-dependencies.outputs.cache-primary-key }}
@@ -1132,7 +1132,7 @@ ${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
           rm -rf $CCACHE_DIR
           mkdir -p $CCACHE_DIR
       - name: Restore ccache
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@v5
         id: restore-ccache
         env:
           CACHE_KEY_PREFIX: "ccache-${{ matrix.os }}"
@@ -1199,7 +1199,7 @@ ${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
           ccache --evict-older-than "${job_duration}s"
       - name: Save ccache
         if: always() && github.ref == 'refs/heads/develop'
-        uses: actions/cache/save@v4
+        uses: actions/cache/save@v5
         with:
           path: ~/ccache
           key: ${{ steps.restore-ccache.outputs.cache-primary-key }}
@@ -1247,7 +1247,7 @@ ${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
     env:
       TZ: ${{ github.event.inputs.timezone }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           fetch-depth: 0
           # Using a personal access token with admin privileges here so this
@@ -1383,7 +1383,7 @@ ${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
         CXXFLAGS: "-Werror"
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       # Work around https://github.com/actions/checkout/issues/760
       - name: Trust checkout
         run: |
