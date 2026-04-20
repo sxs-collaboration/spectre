@@ -610,7 +610,7 @@ jobs:
             -D Kokkos_ENABLE_SERIAL=ON \
             -D Kokkos_ENABLE_OPENMP=ON \
             -D Kokkos_ENABLE_CUDA=${{ matrix.CUDA || 'OFF' }} \
-            -D Kokkos_ARCH_${{ matrix.KOKKOS_ARCH || 'NATIVE' }}=ON \
+            -D Kokkos_ARCH_${{ matrix.KOKKOS_ARCH || 'X86_64' }}=ON \
             -D Kokkos_ENABLE_CUDA_CONSTEXPR=ON \
             -D Kokkos_ENABLE_CUDA_RELOCATABLE_DEVICE_CODE=ON \
             -D CMAKE_POSITION_INDEPENDENT_CODE=ON
