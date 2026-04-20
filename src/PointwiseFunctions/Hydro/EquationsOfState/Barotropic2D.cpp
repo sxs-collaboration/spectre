@@ -142,12 +142,15 @@ Scalar<DataType> Barotropic2D<ColdEos>::
       rest_mass_density);
 }
 
-template class Barotropic2D<EquationsOfState::PolytropicFluid<true>>;
-template class Barotropic2D<EquationsOfState::PolytropicFluid<false>>;
+template class Barotropic2D<PolytropicFluid<true>>;
+template class Barotropic2D<PolytropicFluid<false>>;
 template class Barotropic2D<PiecewisePolytropicFluid<true>>;
 template class Barotropic2D<PiecewisePolytropicFluid<false>>;
 template class Barotropic2D<Spectral>;
 template class Barotropic2D<Enthalpy<PolytropicFluid<true>>>;
+template class Barotropic2D<Enthalpy<Enthalpy<PolytropicFluid<true>>>>;
+template class Barotropic2D<
+    Enthalpy<Enthalpy<Enthalpy<PolytropicFluid<true>>>>>;
 template class Barotropic2D<Enthalpy<Spectral>>;
 template class Barotropic2D<Enthalpy<Enthalpy<Spectral>>>;
 template class Barotropic2D<Enthalpy<Enthalpy<Enthalpy<Spectral>>>>;

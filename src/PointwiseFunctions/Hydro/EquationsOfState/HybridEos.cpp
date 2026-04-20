@@ -8,10 +8,10 @@
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
-#include "PointwiseFunctions//Hydro/EquationsOfState/Enthalpy.hpp"
-#include "PointwiseFunctions//Hydro/EquationsOfState/Spectral.hpp"
+#include "PointwiseFunctions/Hydro/EquationsOfState/Enthalpy.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/Equilibrium3D.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/PolytropicFluid.hpp"
+#include "PointwiseFunctions/Hydro/EquationsOfState/Spectral.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 
 namespace EquationsOfState {
@@ -108,7 +108,8 @@ HybridEos<ColdEquationOfState>::pressure_from_density_and_enthalpy_impl(
          get(rest_mass_density) * (thermal_adiabatic_index_ - 1.0) *
              max((get(specific_enthalpy) - 1.0 -
                   get(cold_eos_.specific_internal_energy_from_density(
-                      rest_mass_density))), 0.0)) /
+                      rest_mass_density))),
+                 0.0)) /
         thermal_adiabatic_index_};
   } else {
     return Scalar<DataType>{
@@ -116,7 +117,8 @@ HybridEos<ColdEquationOfState>::pressure_from_density_and_enthalpy_impl(
          get(rest_mass_density) * (thermal_adiabatic_index_ - 1.0) *
              max((get(specific_enthalpy) -
                   get(cold_eos_.specific_internal_energy_from_density(
-                      rest_mass_density))), 0.0)) /
+                      rest_mass_density))),
+                 0.0)) /
         thermal_adiabatic_index_};
   }
 }
@@ -132,7 +134,8 @@ Scalar<DataType> HybridEos<ColdEquationOfState>::
       get(cold_eos_.specific_internal_energy_from_density(rest_mass_density)) +
       1.0 / (thermal_adiabatic_index_ - 1.0) *
           max((get(pressure) -
-               get(cold_eos_.pressure_from_density(rest_mass_density))), 0.0) /
+               get(cold_eos_.pressure_from_density(rest_mass_density))),
+              0.0) /
           get(rest_mass_density)};
 }
 
@@ -143,10 +146,12 @@ HybridEos<ColdEquationOfState>::temperature_from_density_and_energy_impl(
     const Scalar<DataType>& rest_mass_density,
     const Scalar<DataType>& specific_internal_energy) const {
   using std::max;
-  return Scalar<DataType>{(thermal_adiabatic_index_ - 1.0) *
-                          max((get(specific_internal_energy) -
-                           get(cold_eos_.specific_internal_energy_from_density(
-                               rest_mass_density))), 0.0)};
+  return Scalar<DataType>{
+      (thermal_adiabatic_index_ - 1.0) *
+      max((get(specific_internal_energy) -
+           get(cold_eos_.specific_internal_energy_from_density(
+               rest_mass_density))),
+          0.0)};
 }
 
 template <typename ColdEquationOfState>
@@ -236,7 +241,8 @@ Scalar<DataType> HybridEos<ColdEquationOfState>::
       square(thermal_adiabatic_index_ - 1.0) *
           max((get(specific_internal_energy) -
                get(cold_eos_.specific_internal_energy_from_density(
-                   rest_mass_density))), 0.0)};
+                   rest_mass_density))),
+              0.0)};
 }
 
 template <typename ColdEquationOfState>
@@ -263,4 +269,14 @@ template class EquationsOfState::HybridEos<
     EquationsOfState::PolytropicFluid<false>>;
 template class EquationsOfState::HybridEos<EquationsOfState::Spectral>;
 template class EquationsOfState::HybridEos<
+    EquationsOfState::Enthalpy<EquationsOfState::PolytropicFluid<true>>>;
+template class EquationsOfState::HybridEos<
+    EquationsOfState::Enthalpy<EquationsOfState::Enthalpy<
+        EquationsOfState::Enthalpy<EquationsOfState::PolytropicFluid<true>>>>>;
+template class EquationsOfState::HybridEos<
     EquationsOfState::Enthalpy<EquationsOfState::Spectral>>;
+template class EquationsOfState::HybridEos<EquationsOfState::Enthalpy<
+    EquationsOfState::Enthalpy<EquationsOfState::Spectral>>>;
+template class EquationsOfState::HybridEos<
+    EquationsOfState::Enthalpy<EquationsOfState::Enthalpy<
+        EquationsOfState::Enthalpy<EquationsOfState::Spectral>>>>;

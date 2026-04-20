@@ -53,59 +53,74 @@ struct DerivedClasses {};
 
 template <>
 struct DerivedClasses<true, 1> {
-  using type = tmpl::list<
-      Enthalpy<Enthalpy<Enthalpy<Spectral>>>, Enthalpy<Enthalpy<Spectral>>,
-      Enthalpy<Spectral>, Enthalpy<PolytropicFluid<true>>,
-      PiecewisePolytropicFluid<true>, PolytropicFluid<true>, Spectral>;
+  using type = tmpl::list<PolytropicFluid<true>, PiecewisePolytropicFluid<true>,
+                          Spectral, Enthalpy<PolytropicFluid<true>>,
+                          Enthalpy<Enthalpy<PolytropicFluid<true>>>,
+                          Enthalpy<Enthalpy<Enthalpy<PolytropicFluid<true>>>>,
+                          Enthalpy<Spectral>, Enthalpy<Enthalpy<Spectral>>,
+                          Enthalpy<Enthalpy<Enthalpy<Spectral>>>>;
 };
 
 template <>
 struct DerivedClasses<false, 1> {
   using type =
-      tmpl::list<PiecewisePolytropicFluid<false>, PolytropicFluid<false>>;
+      tmpl::list<PolytropicFluid<false>, PiecewisePolytropicFluid<false>>;
 };
 
 template <>
 struct DerivedClasses<true, 2> {
-  using type =
-      tmpl::list<Barotropic2D<PolytropicFluid<true>>, Barotropic2D<Spectral>,
-                 Barotropic2D<Enthalpy<Spectral>>,
-                 Barotropic2D<PiecewisePolytropicFluid<true>>,
-                 Barotropic2D<Enthalpy<Enthalpy<Spectral>>>,
-                 Barotropic2D<Enthalpy<Enthalpy<Enthalpy<Spectral>>>>,
-                 DarkEnergyFluid<true>, IdealFluid<true>,
-                 HybridEos<PolytropicFluid<true>>, HybridEos<Spectral>,
-                 HybridEos<Enthalpy<Spectral>>>;
+  using type = tmpl::list<
+      DarkEnergyFluid<true>, IdealFluid<true>,
+      Barotropic2D<PolytropicFluid<true>>,
+      Barotropic2D<PiecewisePolytropicFluid<true>>, Barotropic2D<Spectral>,
+      Barotropic2D<Enthalpy<PolytropicFluid<true>>>,
+      Barotropic2D<Enthalpy<Enthalpy<Enthalpy<PolytropicFluid<true>>>>>,
+      Barotropic2D<Enthalpy<Spectral>>,
+      Barotropic2D<Enthalpy<Enthalpy<Spectral>>>,
+      Barotropic2D<Enthalpy<Enthalpy<Enthalpy<Spectral>>>>,
+      HybridEos<PolytropicFluid<true>>, HybridEos<Spectral>,
+      HybridEos<Enthalpy<PolytropicFluid<true>>>,
+      HybridEos<Enthalpy<Enthalpy<Enthalpy<PolytropicFluid<true>>>>>,
+      HybridEos<Enthalpy<Spectral>>, HybridEos<Enthalpy<Enthalpy<Spectral>>>,
+      HybridEos<Enthalpy<Enthalpy<Enthalpy<Spectral>>>>>;
 };
 
 template <>
 struct DerivedClasses<false, 2> {
-  using type = tmpl::list<Barotropic2D<PolytropicFluid<false>>,
-                          Barotropic2D<PiecewisePolytropicFluid<false>>,
-                          IdealFluid<false>, HybridEos<PolytropicFluid<false>>>;
+  using type =
+      tmpl::list<IdealFluid<false>, Barotropic2D<PolytropicFluid<false>>,
+                 Barotropic2D<PiecewisePolytropicFluid<false>>,
+                 HybridEos<PolytropicFluid<false>>>;
 };
 
 template <>
 struct DerivedClasses<true, 3> {
-  using type =
-      tmpl::list<Tabulated3D<true>, Barotropic3D<PolytropicFluid<true>>,
-                 Barotropic3D<Spectral>, Barotropic3D<Enthalpy<Spectral>>,
-                 Barotropic3D<PiecewisePolytropicFluid<true>>,
-                 Barotropic3D<Enthalpy<Enthalpy<Spectral>>>,
-                 Barotropic3D<Enthalpy<Enthalpy<Enthalpy<Spectral>>>>,
-                 Equilibrium3D<HybridEos<PolytropicFluid<true>>>,
-                 Equilibrium3D<HybridEos<Spectral>>,
-                 Equilibrium3D<HybridEos<Enthalpy<Spectral>>>,
-                 Equilibrium3D<DarkEnergyFluid<true>>,
-                 Equilibrium3D<IdealFluid<true>>>;
+  using type = tmpl::list<
+      Tabulated3D<true>, Barotropic3D<PolytropicFluid<true>>,
+      Barotropic3D<PiecewisePolytropicFluid<true>>, Barotropic3D<Spectral>,
+      Barotropic3D<Enthalpy<PolytropicFluid<true>>>,
+      Barotropic3D<Enthalpy<Enthalpy<Enthalpy<PolytropicFluid<true>>>>>,
+      Barotropic3D<Enthalpy<Spectral>>,
+      Barotropic3D<Enthalpy<Enthalpy<Spectral>>>,
+      Barotropic3D<Enthalpy<Enthalpy<Enthalpy<Spectral>>>>,
+      Equilibrium3D<DarkEnergyFluid<true>>, Equilibrium3D<IdealFluid<true>>,
+      Equilibrium3D<HybridEos<PolytropicFluid<true>>>,
+      Equilibrium3D<HybridEos<Enthalpy<PolytropicFluid<true>>>>,
+      Equilibrium3D<
+          HybridEos<Enthalpy<Enthalpy<Enthalpy<PolytropicFluid<true>>>>>>,
+      Equilibrium3D<HybridEos<Enthalpy<Spectral>>>,
+      Equilibrium3D<HybridEos<Enthalpy<Enthalpy<Spectral>>>>,
+      Equilibrium3D<HybridEos<Enthalpy<Enthalpy<Enthalpy<Spectral>>>>>,
+      Equilibrium3D<HybridEos<Spectral>>>;
 };
 
 template <>
 struct DerivedClasses<false, 3> {
-  using type = tmpl::list<Tabulated3D<false>, Equilibrium3D<IdealFluid<false>>,
-                          Barotropic3D<PiecewisePolytropicFluid<false>>,
-                          Equilibrium3D<HybridEos<PolytropicFluid<false>>>,
-                          Barotropic3D<PolytropicFluid<false>>>;
+  using type =
+      tmpl::list<Tabulated3D<false>, Barotropic3D<PolytropicFluid<false>>,
+                 Barotropic3D<PiecewisePolytropicFluid<false>>,
+                 Equilibrium3D<IdealFluid<false>>,
+                 Equilibrium3D<HybridEos<PolytropicFluid<false>>>>;
 };
 
 }  // namespace detail
@@ -401,9 +416,7 @@ class EquationOfState<IsRelativistic, 2> : public PUP::able {
   virtual bool is_barotropic() const = 0;
 
   /// \brief Returns `true` if the EOS is in beta-equilibrium
-  virtual bool is_equilibrium() const {
-    return true;
-  }
+  virtual bool is_equilibrium() const { return true; }
 
   /// @{
   /*!
