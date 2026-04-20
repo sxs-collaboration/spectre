@@ -15,7 +15,9 @@
 
 # Building and postprocessing documentation
 beautifulsoup4
-coverxygen
+# coverxygen 1.8.2 has an enum-handling regression (upstream issue #37).
+# Remove this pin once a fix is released.
+coverxygen != 1.8.2
 nbconvert
 pybtex
 sphinx
