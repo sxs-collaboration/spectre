@@ -25,7 +25,7 @@ jobs:
       RELEASE_TAG_NAME: ${{ inputs.tag_name || github.event.release.tag_name }}
     steps:
       - name: Download Spack
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           repository: spack/spack
           fetch-depth: 0
@@ -97,7 +97,7 @@ jobs:
         run: |
           git diff
       - name: Send pull request to Spack
-        uses: peter-evans/create-pull-request@v5
+        uses: peter-evans/create-pull-request@v8
         with:
           token: ${{ secrets.GH_TOKEN_SXSBOT_SPACK }}
           commit-message: "spectre: add ${{ env.RELEASE_TAG_NAME }}"

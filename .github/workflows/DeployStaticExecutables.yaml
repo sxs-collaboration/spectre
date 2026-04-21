@@ -21,13 +21,13 @@ jobs:
       RELEASE_TAG_NAME: ${{ inputs.tag_name || github.event.release.tag_name }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       # Build static executables in a Docker container with an older version
       # of Ubuntu so that the glibc is compatible with most Linux distros.
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@v4
       - name: Build static executables
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v7
         with:
           push: false
           context: .
@@ -110,7 +110,7 @@ jobs:
         run:  |
           tar cJf CceExecutables.tar.xz CceExecutables
       - name: Upload to release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           tag_name: ${{ env.RELEASE_TAG_NAME }}
           fail_on_unmatched_files: true

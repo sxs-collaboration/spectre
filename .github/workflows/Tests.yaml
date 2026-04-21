@@ -186,7 +186,7 @@ jobs:
           python3 tools/CompileReleaseNotes.py -vv -o release_notes.md \
             --github-token ${{ secrets.GITHUB_TOKEN }}
       - name: Upload release notes
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: release-notes
           path: release_notes.md
@@ -309,7 +309,7 @@ jobs:
         run: |
           python3 -m pip install -r support/Python/dev_requirements.txt
       - name: Download release notes
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         id: release-notes
         with:
           name: release-notes
@@ -381,7 +381,7 @@ jobs:
         run: |
           tar -cf docs-html.tar --directory docs/html .
       - name: Upload documentation
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: docs-html
           path: build/docs-html.tar
@@ -1043,7 +1043,7 @@ ${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
           echo "Detect $CORES cores"
       - name: Checkout repository
         uses: actions/checkout@v5
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: '3.12'
       - name: Install Homebrew dependencies
@@ -1269,7 +1269,7 @@ ${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
           #      public_repo: on
           #  Everything else is off.
           token: ${{ secrets.GH_TOKEN_RELEASE }}
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: '3.8'
       - name: Install Python dependencies
@@ -1315,7 +1315,7 @@ ${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
             --github-token ${{ secrets.GITHUB_TOKEN }}
           git diff
       - name: Download release notes
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         id: release-notes
         with:
           name: release-notes
