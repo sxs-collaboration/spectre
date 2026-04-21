@@ -3,45 +3,61 @@
 
 #pragma once
 
+#include <initializer_list>
 #include <memory>
 #include <type_traits>
+#include <typeinfo>
 
 #include "DataStructures/DataBox/Tag.hpp"
-#include "DataStructures/TaggedVariant.hpp"
+#include "Time/LtsMode.hpp"
 #include "Time/OptionTags/TimeStepper.hpp"
 #include "Time/TimeSteppers/LtsTimeStepper.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"
-#include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Serialization/Serialize.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace Tags {
 /// \ingroup DataBoxTagsGroup
 /// \ingroup TimeGroup
-/// The evolution TimeStepper.  The template parameter should be one
-/// of the time stepper base classes, such as `TimeStepper` or
-/// `LtsTimeStepper`.
+/// The evolution TimeStepper.
+///
+/// The \p StepperType template parameter should be one of the time
+/// stepper base classes, such as `TimeStepper` or `LtsTimeStepper`.
+///
+/// If the \p MonotonicLts parameter is true, the chosen stepper will
+/// be required to be monotonic when parsed from options in local
+/// time-stepping mode.  This is generally required for evolutions
+/// with control systems.
 ///
 /// For the contained object to be used, the reference tags listed in
 /// `time_stepper_ref_tags<StepperType>` will also need to be added to
 /// the DataBox.
-template <typename StepperType>
+template <typename StepperType, bool MonotonicLts = false>
 struct ConcreteTimeStepper : db::SimpleTag {
   using type = std::unique_ptr<StepperType>;
+  template <typename Metavars>
   using option_tags = tmpl::list<::OptionTags::TimeStepper<StepperType>>;
 
-  static constexpr bool pass_metavariables = false;
+  static constexpr bool pass_metavariables = true;
+  template <typename Metavars>
   static std::unique_ptr<StepperType> create_from_options(
       const std::unique_ptr<StepperType>& time_stepper) {
-    if (not std::is_same_v<StepperType, LtsTimeStepper> and
-        variants::holds_alternative<TimeSteppers::Tags::VariableOrder>(
-            time_stepper->order())) {
-      ERROR_NO_TRACE(
-          "Variable-order TimeSteppers are only supported in evolutions with "
-          "local time-stepping.");
-    }
+    const ::LtsMode lts_mode = Metavars::local_time_stepping
+                                   ? ::LtsMode::Conservative
+                                   : ::LtsMode::Off;
+    using factory_types =
+        tmpl::at<typename Metavars::factory_creation::factory_classes,
+                 StepperType>;
+    [&]<typename... Derived>(tmpl::list<Derived...> /*meta*/) {
+      validate_time_stepper(*time_stepper, lts_mode, {&typeid(Derived)...});
+    }(factory_types{});
     return serialize_and_deserialize<type>(time_stepper);
   }
+
+ private:
+  static void validate_time_stepper(
+      const StepperType& time_stepper, ::LtsMode lts_mode,
+      std::initializer_list<const std::type_info*> factory_types);
 };
 
 /// \ingroup DataBoxTagsGroup
@@ -65,10 +81,12 @@ struct TimeStepper : db::SimpleTag {
 /// provided interfaces, such as `Tags::TimeStepper<TimeStepper>` and
 /// `Tags::TimeStepper<LtsTimeStepper>`.  Usually added through the
 /// `time_stepper_ref_tags` alias.
-template <typename StepperInterface, typename StepperType>
+template <typename StepperInterface, typename StepperType,
+          typename MonotonicLts>
 struct TimeStepperRef : TimeStepper<StepperInterface>, db::ReferenceTag {
   using base = TimeStepper<StepperInterface>;
-  using argument_tags = tmpl::list<ConcreteTimeStepper<StepperType>>;
+  using argument_tags =
+      tmpl::list<ConcreteTimeStepper<StepperType, MonotonicLts::value>>;
   static const StepperInterface& get(const StepperType& stepper) {
     return stepper;
   }
@@ -86,11 +104,12 @@ struct LtsOrError : TimeStepper<LtsTimeStepper>, db::ReferenceTag {
 
 /// \ingroup TimeGroup
 /// List of immutable tags needed when adding a Tags::ConcreteTimeStepper.
-template <typename StepperType>
+template <typename StepperType, bool MonotonicLts = false>
 using time_stepper_ref_tags = tmpl::append<
     tmpl::transform<
         typename StepperType::provided_time_stepper_interfaces,
-        tmpl::bind<::Tags::TimeStepperRef, tmpl::_1, tmpl::pin<StepperType>>>,
+        tmpl::bind<::Tags::TimeStepperRef, tmpl::_1, tmpl::pin<StepperType>,
+                   std::bool_constant<MonotonicLts>>>,
     tmpl::conditional_t<
         tmpl::list_contains_v<
             typename StepperType::provided_time_stepper_interfaces,

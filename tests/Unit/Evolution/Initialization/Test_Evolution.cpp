@@ -121,14 +121,15 @@ void test_gts() {
           Initialization::Tags::InitialSlabSize<false>,
           ::Tags::Next<::Tags::TimeStepId>, ::Tags::TimeStep,
           ::Tags::ChangeSlabSize::SlabSizeGoal>,
-      tmpl::list<Parallel::Tags::FromGlobalCache<
-          ::Tags::ConcreteTimeStepper<TimeStepper>,
-          TestMetavariables<TimeStepper>>>>(
+      tmpl::push_front<time_stepper_ref_tags<TimeStepper>,
+                       Parallel::Tags::FromGlobalCache<
+                           ::Tags::ConcreteTimeStepper<TimeStepper>,
+                           TestMetavariables<TimeStepper>>>>(
       &global_cache, initial_time, initial_dt, initial_slab_size, TimeStepId{},
       TimeDelta{}, std::numeric_limits<double>::signaling_NaN());
 
   db::mutate_apply<Initialization::TimeStepping<TestMetavariables<TimeStepper>,
-                                                TimeStepper>>(
+                                                TimeStepper, false>>(
       make_not_null(&box));
 
   CHECK(db::get<::Tags::Next<::Tags::TimeStepId>>(box) ==
@@ -166,14 +167,16 @@ void test_lts() {
           Initialization::Tags::InitialSlabSize<true>,
           ::Tags::Next<::Tags::TimeStepId>, ::Tags::TimeStep,
           ::Tags::ChangeSlabSize::SlabSizeGoal>,
-      tmpl::list<Parallel::Tags::FromGlobalCache<
-          ::Tags::ConcreteTimeStepper<LtsTimeStepper>,
-          TestMetavariables<LtsTimeStepper>>>>(
+      tmpl::push_front<time_stepper_ref_tags<LtsTimeStepper>,
+                       Parallel::Tags::FromGlobalCache<
+                           ::Tags::ConcreteTimeStepper<LtsTimeStepper>,
+                           TestMetavariables<LtsTimeStepper>>>>(
       &global_cache, initial_time, initial_dt, initial_slab_size, TimeStepId{},
       TimeDelta{}, std::numeric_limits<double>::signaling_NaN());
 
   db::mutate_apply<Initialization::TimeStepping<
-      TestMetavariables<LtsTimeStepper>, LtsTimeStepper>>(make_not_null(&box));
+      TestMetavariables<LtsTimeStepper>, LtsTimeStepper, false>>(
+      make_not_null(&box));
 
   CHECK(db::get<::Tags::Next<::Tags::TimeStepId>>(box) ==
         expected_next_time_step_id);
