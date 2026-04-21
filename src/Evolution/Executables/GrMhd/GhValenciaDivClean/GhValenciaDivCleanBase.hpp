@@ -756,6 +756,7 @@ struct GhValenciaDivCleanTemplateBase<
 
   using events_and_dense_triggers_dg_postprocessors = tmpl::list<
       ::domain::CheckFunctionsOfTimeAreReadyPostprocessor<volume_dim>,
+      evolution::dg::ApplyLtsDenseBoundaryCorrections<derived_metavars>,
       AlwaysReadyPostprocessor<
           typename system::template primitive_from_conservative<
               ordered_list_of_primitive_recovery_schemes>>>;
@@ -786,22 +787,16 @@ struct GhValenciaDivCleanTemplateBase<
                                    ZeroMhdTimeDerivatives<system>>,
           tmpl::list<>>,
       Actions::MutateApply<RecordTimeStepperData<system>>,
+      evolution::Actions::RunEventsAndDenseTriggers<
+          events_and_dense_triggers_dg_postprocessors>,
+      control_system::Actions::LimitTimeStep<control_systems>,
+      Actions::MutateApply<UpdateU<system, local_time_stepping>>,
+      evolution::dg::Actions::ApplyLtsBoundaryCorrections<
+          volume_dim, use_dg_element_collection>,
       tmpl::conditional_t<
           local_time_stepping,
-          tmpl::list<
-              evolution::Actions::RunEventsAndDenseTriggers<tmpl::push_front<
-                  events_and_dense_triggers_dg_postprocessors,
-                  evolution::dg::ApplyLtsDenseBoundaryCorrections<
-                      derived_metavars>>>,
-              Actions::MutateApply<UpdateU<system, local_time_stepping>>,
-              evolution::dg::Actions::ApplyLtsBoundaryCorrections<
-                  volume_dim, use_dg_element_collection>,
-              Actions::MutateApply<ChangeTimeStepperOrder<system>>>,
-          tmpl::list<
-              evolution::Actions::RunEventsAndDenseTriggers<
-                  events_and_dense_triggers_dg_postprocessors>,
-              control_system::Actions::LimitTimeStep<control_systems>,
-              Actions::MutateApply<UpdateU<system, local_time_stepping>>>>,
+          tmpl::list<Actions::MutateApply<ChangeTimeStepperOrder<system>>>,
+          tmpl::list<>>,
       tmpl::conditional_t<
           use_dg_subcell,
           // Note: The primitive variables are computed as part of the TCI.
@@ -856,9 +851,7 @@ struct GhValenciaDivCleanTemplateBase<
       Actions::MutateApply<RecordTimeStepperData<system>>,
       evolution::Actions::RunEventsAndDenseTriggers<
           events_and_dense_triggers_subcell_postprocessors>,
-      tmpl::conditional_t<
-          local_time_stepping, tmpl::list<>,
-          control_system::Actions::LimitTimeStep<control_systems>>,
+      control_system::Actions::LimitTimeStep<control_systems>,
       Actions::MutateApply<UpdateU<system, local_time_stepping>>,
       Actions::MutateApply<CleanHistory<system>>,
       Actions::MutateApply<evolution::dg::CleanMortarHistory<volume_dim>>,
