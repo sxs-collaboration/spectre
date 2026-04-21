@@ -975,9 +975,9 @@ struct ApplyBoundaryCorrectionsToTimeDerivative
  * data history, we insert the received temporal id, that is, the current time
  * of the neighbor, along with the boundary correction data.
  */
-template <size_t VolumeDim, bool DenseOutput, bool UseNodegroupDgElements>
+template <size_t VolumeDim, bool UseNodegroupDgElements>
 struct ApplyLtsBoundaryCorrections
-    : ApplyBoundaryCorrections_detail::ActionImpl<true, VolumeDim, DenseOutput,
+    : ApplyBoundaryCorrections_detail::ActionImpl<true, VolumeDim, false,
                                                   UseNodegroupDgElements> {};
 }  // namespace Actions
 }  // namespace evolution::dg

@@ -203,7 +203,7 @@ struct EvolutionMetavars {
                              true>>>,
                      Actions::MutateApply<UpdateU<system, local_time_stepping>>,
                      evolution::dg::Actions::ApplyLtsBoundaryCorrections<
-                         volume_dim, false, use_dg_element_collection>,
+                         volume_dim, use_dg_element_collection>,
                      Actions::MutateApply<ChangeTimeStepperOrder<system>>>,
           tmpl::list<
               evolution::Actions::RunEventsAndDenseTriggers<
