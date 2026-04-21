@@ -93,7 +93,6 @@ struct Component {
 };
 
 struct Metavariables {
-  static constexpr bool local_time_stepping = false;
   using component_list = tmpl::list<Component<Metavariables>>;
 };
 

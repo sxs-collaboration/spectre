@@ -93,9 +93,6 @@ struct LimitTimeStep {
       Parallel::GlobalCache<Metavariables>& cache,
       const ElementId<Dim>& array_index, ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) {
-    static_assert(not Metavariables::local_time_stepping,
-                  "The control system LimitTimeStep action is only for global "
-                  "time stepping.");
     const auto& time_step_id = db::get<::Tags::TimeStepId>(box);
     if (time_step_id.substep() != 0) {
       return {Parallel::AlgorithmExecution::Continue, std::nullopt};
