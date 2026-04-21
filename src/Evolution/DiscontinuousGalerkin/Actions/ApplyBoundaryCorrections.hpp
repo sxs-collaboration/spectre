@@ -352,6 +352,10 @@ bool receive_boundary_data(
 
 /// Apply corrections from boundary communication.
 ///
+/// This is usually used indirectly through
+/// `ApplyBoundaryCorrectionsToTimeDerivative`,
+/// `ApplyLtsBoundaryCorrections`, or `ApplyLtsDenseBoundaryCorrections`.
+///
 /// If `LocalTimeStepping` is false, updates the derivative of the variables,
 /// which should be done before taking a time step.  If
 /// `LocalTimeStepping` is true, updates the variables themselves, which should
@@ -360,15 +364,14 @@ bool receive_boundary_data(
 /// Setting \p DenseOutput to true receives data required for output
 /// at ::Tags::Time instead of performing a full step.  This is only
 /// used for local time-stepping.
-template <bool LocalTimeStepping, typename Metavariables, size_t VolumeDim,
-          bool DenseOutput>
+template <bool LocalTimeStepping, typename Metavariables, bool DenseOutput>
 struct ApplyBoundaryCorrections {
   static constexpr bool local_time_stepping = LocalTimeStepping;
   static_assert(local_time_stepping or not DenseOutput,
                 "GTS does not use ApplyBoundaryCorrections for dense output.");
 
   using system = typename Metavariables::system;
-  static constexpr size_t volume_dim = VolumeDim;
+  static constexpr size_t volume_dim = system::volume_dim;
   using variables_tag = typename system::variables_tag;
   using dt_variables_tag = db::add_tag_prefix<::Tags::dt, variables_tag>;
   using DtVariables = typename dt_variables_tag::type;
@@ -895,6 +898,11 @@ struct ApplyBoundaryCorrections {
   }
 };
 
+/// Apply corrections from boundary communication for LTS dense output.
+template <typename Metavariables>
+struct ApplyLtsDenseBoundaryCorrections
+    : ApplyBoundaryCorrections<true, Metavariables, true> {};
+
 namespace Actions {
 namespace ApplyBoundaryCorrections_detail {
 template <bool LocalTimeStepping, size_t VolumeDim, bool DenseOutput,
@@ -914,6 +922,7 @@ struct ActionImpl {
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) {
+    static_assert(Metavariables::system::volume_dim == VolumeDim);
     static_assert(
         UseNodegroupDgElements ==
             Parallel::is_dg_element_collection_v<ParallelComponent>,
@@ -948,7 +957,7 @@ struct ActionImpl {
     }
 
     db::mutate_apply<ApplyBoundaryCorrections<LocalTimeStepping, Metavariables,
-                                              VolumeDim, DenseOutput>>(
+                                              DenseOutput>>(
         make_not_null(&box));
     return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }

@@ -765,11 +765,10 @@ struct GhValenciaDivCleanTemplateBase<
       tmpl::conditional_t<
           local_time_stepping,
           tmpl::list<
-              evolution::Actions::RunEventsAndDenseTriggers<
-                  tmpl::push_front<events_and_dense_triggers_dg_postprocessors,
-                                   evolution::dg::ApplyBoundaryCorrections<
-                                       local_time_stepping, derived_metavars,
-                                       volume_dim, true>>>,
+              evolution::Actions::RunEventsAndDenseTriggers<tmpl::push_front<
+                  events_and_dense_triggers_dg_postprocessors,
+                  evolution::dg::ApplyLtsDenseBoundaryCorrections<
+                      derived_metavars>>>,
               Actions::MutateApply<UpdateU<system, local_time_stepping>>,
               evolution::dg::Actions::ApplyLtsBoundaryCorrections<
                   volume_dim, use_dg_element_collection>,

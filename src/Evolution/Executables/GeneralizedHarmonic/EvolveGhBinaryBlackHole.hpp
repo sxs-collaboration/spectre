@@ -579,9 +579,8 @@ struct EvolutionMetavars {
           tmpl::list<evolution::Actions::RunEventsAndDenseTriggers<tmpl::list<
                          ::domain::CheckFunctionsOfTimeAreReadyPostprocessor<
                              volume_dim>,
-                         evolution::dg::ApplyBoundaryCorrections<
-                             local_time_stepping, EvolutionMetavars, volume_dim,
-                             true>>>,
+                         evolution::dg::ApplyLtsDenseBoundaryCorrections<
+                             EvolutionMetavars>>>,
                      Actions::MutateApply<UpdateU<system, local_time_stepping>>,
                      evolution::dg::Actions::ApplyLtsBoundaryCorrections<
                          volume_dim, use_dg_element_collection>,

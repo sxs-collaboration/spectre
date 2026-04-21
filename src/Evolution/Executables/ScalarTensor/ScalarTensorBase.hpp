@@ -439,9 +439,8 @@ struct ScalarTensorTemplateBase {
           tmpl::list<evolution::Actions::RunEventsAndDenseTriggers<tmpl::list<
                          ::domain::CheckFunctionsOfTimeAreReadyPostprocessor<
                              volume_dim>,
-                         evolution::dg::ApplyBoundaryCorrections<
-                             local_time_stepping, derived_metavars, volume_dim,
-                             true>>>,
+                         evolution::dg::ApplyLtsDenseBoundaryCorrections<
+                             derived_metavars>>>,
                      Actions::MutateApply<UpdateU<system, local_time_stepping>>,
                      evolution::dg::Actions::ApplyLtsBoundaryCorrections<
                          volume_dim, use_dg_element_collection>,
