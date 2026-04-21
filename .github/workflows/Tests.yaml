@@ -347,6 +347,7 @@ jobs:
           -D OVERRIDE_ARCH=x86-64
           -D CHARM_ROOT=${CHARM_ROOT}
           -D CMAKE_BUILD_TYPE=Debug
+          -D SPECTRE_DEBUG_Og=ON
           -D DEBUG_SYMBOLS=OFF
           -D USE_PCH=ON
           -D USE_XSIMD=ON
@@ -742,6 +743,7 @@ ${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
           -D ENABLE_WARNINGS=${ENABLE_WARNINGS:-'ON'}
           -D CHARM_ROOT=${MATRIX_CHARM_ROOT:-$CHARM_ROOT}
           -D CMAKE_BUILD_TYPE=${{ matrix.build_type }}
+          -D SPECTRE_DEBUG_Og=ON
           -D DEBUG_SYMBOLS=OFF
           -D BACKTRACE_LIB=/usr/local/lib/libbacktrace.a
           -D BACKTRACE_HEADER_DIR=/usr/local/include
@@ -961,6 +963,7 @@ ${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
           -D BUILD_SHARED_LIBS=ON
           -D CHARM_ROOT=${MATRIX_CHARM_ROOT:-$CHARM_ROOT}
           -D CMAKE_BUILD_TYPE=${{ matrix.build_type }}
+          -D SPECTRE_DEBUG_Og=ON
           -D DEBUG_SYMBOLS=OFF
           -D UNIT_TESTS_IN_TEST_EXECUTABLES=OFF
           -D STRIP_SYMBOLS=ON
@@ -1172,6 +1175,7 @@ ${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
             -D BLAS_ROOT=$(brew --prefix openblas) \
             -D LAPACK_ROOT=$(brew --prefix openblas) \
             -D CMAKE_BUILD_TYPE=Debug \
+            -D SPECTRE_DEBUG_Og=ON \
             -D DEBUG_SYMBOLS=OFF \
             -D UNIT_TESTS_IN_TEST_EXECUTABLES=OFF \
             -D STUB_EXECUTABLE_OBJECT_FILES=ON \
@@ -1432,6 +1436,7 @@ ${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
             -D OVERRIDE_ARCH=${OVERRIDE_ARCH}\
             -D CHARM_ROOT=${CHARM_ROOT}\
             -D CMAKE_BUILD_TYPE=Debug\
+            -D SPECTRE_DEBUG_Og=ON\
             -D DEBUG_SYMBOLS=OFF\
             -D STRIP_SYMBOLS=ON\
             -D STUB_EXECUTABLE_OBJECT_FILES=ON\
