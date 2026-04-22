@@ -25,6 +25,7 @@
 #include "ParallelAlgorithms/EventsAndDenseTriggers/EventsAndDenseTriggers.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
 #include "Time/ChooseLtsStepSize.hpp"
+#include "Time/LtsMode.hpp"
 #include "Time/Slab.hpp"
 #include "Time/Time.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
@@ -36,6 +37,7 @@
 class TimeStepper;
 namespace Tags {
 struct EventsAndDenseTriggers;
+struct LtsMode;
 struct TimeStep;
 template <typename StepperInterface>
 struct TimeStepper;
@@ -141,6 +143,7 @@ struct InitializeMeasurements {
     // anything clever looking at measurement times or planning ahead
     // for future steps.  Avoiding a single non-ideal step isn't worth
     // the added complexity.
+    const auto lts_mode = db::get<::Tags::LtsMode>(box);
     double earliest_expiration = std::numeric_limits<double>::infinity();
     for (const auto& fot :
          Parallel::get<domain::Tags::FunctionsOfTime>(cache)) {
@@ -152,7 +155,7 @@ struct InitializeMeasurements {
     if ((start_time + time_step).value() > earliest_expiration) {
       db::mutate<::Tags::TimeStep>(
           [&](const gsl::not_null<TimeDelta*> step) {
-            if constexpr (Metavariables::local_time_stepping) {
+            if (lts_mode != LtsMode::Off) {
               *step = choose_lts_step_size(
                   start_time,
                   0.99 * (earliest_expiration - start_time.value()));
