@@ -62,9 +62,9 @@ void spacetime_derivatives(
  * in this stencil
  */
 void second_spacetime_derivatives(
-    gsl::not_null<Variables<
-        db::wrap_tags_in<::Tags::second_deriv, System::gradients_tags,
-                         tmpl::size_t<3>, Frame::Inertial>>*>
+    gsl::not_null<
+        Variables<db::wrap_tags_in<::Tags::second_deriv, System::gradients_tags,
+                                   tmpl::size_t<3>, Frame::Inertial>>*>
         result,
     const Variables<typename System::variables_tag::tags_list>&
         volume_evolved_variables,
@@ -73,5 +73,7 @@ void second_spacetime_derivatives(
     const size_t& deriv_order, const Mesh<3>& volume_mesh,
     const InverseJacobian<DataVector, 3, Frame::ElementLogical,
                           Frame::Inertial>&
-        cell_centered_logical_to_inertial_inv_jacobian);
+        cell_centered_logical_to_inertial_inv_jacobian,
+    const InverseHessian<DataVector, 3, Frame::ElementLogical, Frame::Inertial>&
+        cell_centered_logical_to_inertial_inv_hessian);
 }  // namespace Ccz4::fd

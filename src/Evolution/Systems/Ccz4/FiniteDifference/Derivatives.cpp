@@ -93,9 +93,9 @@ void spacetime_derivatives(
 }
 
 void second_spacetime_derivatives(
-    const gsl::not_null<Variables<
-        db::wrap_tags_in<::Tags::second_deriv, System::gradients_tags,
-                         tmpl::size_t<3>, Frame::Inertial>>*>
+    const gsl::not_null<
+        Variables<db::wrap_tags_in<::Tags::second_deriv, System::gradients_tags,
+                                   tmpl::size_t<3>, Frame::Inertial>>*>
         result,
     const Variables<typename System::variables_tag::tags_list>&
         volume_evolved_variables,
@@ -104,7 +104,9 @@ void second_spacetime_derivatives(
     const size_t& deriv_order, const Mesh<3>& volume_mesh,
     const InverseJacobian<DataVector, 3, Frame::ElementLogical,
                           Frame::Inertial>&
-        cell_centered_logical_to_inertial_inv_jacobian) {
+        cell_centered_logical_to_inertial_inv_jacobian,
+    const InverseHessian<DataVector, 3, Frame::ElementLogical, Frame::Inertial>&
+        cell_centered_logical_to_inertial_inv_hessian) {
   ASSERT(deriv_order == 4,
          "Only fourth order second partial derivatives have been implemented.");
 
@@ -157,6 +159,7 @@ void second_spacetime_derivatives(
   ::fd::second_partial_derivatives<gradients_tags>(
       result, volume_Ccz4_vars, ghost_cell_vars, volume_mesh,
       number_of_Ccz4_components, deriv_order,
-      cell_centered_logical_to_inertial_inv_jacobian);
+      cell_centered_logical_to_inertial_inv_jacobian,
+      cell_centered_logical_to_inertial_inv_hessian);
 }
 }  // namespace Ccz4::fd

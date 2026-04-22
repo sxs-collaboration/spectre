@@ -179,7 +179,7 @@ compute_prim_solution_for_second_deriv(
   get(get<ConformalFactor>(vars)) += 2.0;
   get(get<TraceExtrinsicCurvature>(vars)) += 15.0;
   get(get<Theta>(vars)) += 30.0;
-  get(get<Lapse>(vars)) += 50.0;
+  get(get<Lapse>(vars)) += 50.0 + coords.get(0) * coords.get(2);
   for (size_t j = 0; j < 3; ++j) {
     get<GammaHat>(vars).get(j) += 1.0e-2 * static_cast<double>((j + 2) + 10);
     get<Shift>(vars).get(j) += 1.0e-2 * static_cast<double>((j + 2) + 60);

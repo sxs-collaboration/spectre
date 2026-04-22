@@ -126,6 +126,50 @@ class ElementMap {
     return jac;
   }
 
+#ifdef SPECTRE_AUTODIFF
+  /*!
+   * \brief The inverse Hessian of the element map.
+   *
+   * Let \f$ \xi^i \f$ be the element logical coordinates, \f$ x^i \f$ be the
+   * block logical coordinates, and \f$ y^i \f$ be the inertial coordinates.
+   * The element map maps \f$ \xi^i \rightarrow x^i \rightarrow y^i \f$. Thus,
+   * the inverse Hessian is
+   * \f[
+   * \frac{\partial^2\xi^i}{\partial y^j \partial y^k} =
+   * \frac{\partial}{\partial y^j}\frac{\partial x^l}{\partial y^k}
+   * \frac{\partial \xi^i}{\partial x^l}} =
+   * \frac{\partial^2 x^l}{\partial y^j \partial y^k}
+   * \frac{\partial \xi^i}{\partial x^l}
+   * \f]
+   * where we have used the fact
+   * \f[
+   * \frac{\partial^2 \xi^i}{\partial x^l \partial x^n} = 0.
+   * \f]
+   */
+  template <typename T>
+  InverseHessian<T, Dim, Frame::ElementLogical, TargetFrame> inv_hessian(
+      const tnsr::I<T, Dim, Frame::ElementLogical>& source_point,
+      const double time = std::numeric_limits<double>::signaling_NaN(),
+      const domain::FunctionsOfTimeMap& functions_of_time = {}) const {
+    auto block_source_point =
+        apply_affine_transformation_to_point(source_point);
+    auto block_inv_jac =
+        block_map_->inv_jacobian(block_source_point, time, functions_of_time);
+    auto block_inv_hes = block_map_->inv_hessian(
+        std::move(block_source_point), block_inv_jac, time, functions_of_time);
+    InverseHessian<T, Dim, Frame::ElementLogical, TargetFrame> inv_hes;
+    for (size_t i = 0; i < Dim; ++i) {
+      for (size_t j = 0; j < Dim; ++j) {
+        for (size_t k = j; k < Dim; ++k) {
+          inv_hes.get(i, j, k) =
+              block_inv_hes.get(i, j, k) / gsl::at(map_slope_, i);
+        }
+      }
+    }
+    return inv_hes;
+  }
+#endif  // SPECTRE_AUTODIFF
+
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& p);
 

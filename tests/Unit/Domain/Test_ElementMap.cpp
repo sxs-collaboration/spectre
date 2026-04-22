@@ -74,22 +74,43 @@ void test_element_impl(
           composed_map.inverse(inertial_point_double).value());
   }
 
+  const auto composed_map_inv_jacobian_dv =
+      composed_map.inv_jacobian(logical_point_dv);
   CHECK_ITERABLE_APPROX(element_map.inv_jacobian(logical_point_dv),
-                        composed_map.inv_jacobian(logical_point_dv));
+                        composed_map_inv_jacobian_dv);
+  const auto composed_map_inv_jacobian_double =
+      composed_map.inv_jacobian(logical_point_double);
   CHECK_ITERABLE_APPROX(element_map.inv_jacobian(logical_point_double),
-                        composed_map.inv_jacobian(logical_point_double));
+                        composed_map_inv_jacobian_double);
   CHECK_ITERABLE_APPROX(element_map_deserialized.inv_jacobian(logical_point_dv),
-                        composed_map.inv_jacobian(logical_point_dv));
+                        composed_map_inv_jacobian_dv);
   CHECK_ITERABLE_APPROX(
       element_map_deserialized.inv_jacobian(logical_point_double),
-      composed_map.inv_jacobian(logical_point_double));
+      composed_map_inv_jacobian_double);
 
-  CHECK_ITERABLE_APPROX(element_map.inv_jacobian(logical_point_dv),
-                        composed_map.inv_jacobian(logical_point_dv));
+#ifdef SPECTRE_AUTODIFF
+  CHECK_ITERABLE_APPROX(
+      element_map.inv_hessian(logical_point_dv),
+      composed_map.inv_hessian(logical_point_dv, composed_map_inv_jacobian_dv));
+  CHECK_ITERABLE_APPROX(
+      element_map.inv_hessian(logical_point_double),
+      composed_map.inv_hessian(logical_point_double,
+                               composed_map_inv_jacobian_double));
+  CHECK_ITERABLE_APPROX(
+      element_map_deserialized.inv_hessian(logical_point_dv),
+      composed_map.inv_hessian(logical_point_dv, composed_map_inv_jacobian_dv));
+  CHECK_ITERABLE_APPROX(
+      element_map_deserialized.inv_hessian(logical_point_double),
+      composed_map.inv_hessian(logical_point_double,
+                               composed_map_inv_jacobian_double));
+#endif  // SPECTRE_AUTODIFF
+
+  CHECK_ITERABLE_APPROX(element_map.jacobian(logical_point_dv),
+                        composed_map.jacobian(logical_point_dv));
   CHECK_ITERABLE_APPROX(element_map.jacobian(logical_point_double),
                         composed_map.jacobian(logical_point_double));
-  CHECK_ITERABLE_APPROX(element_map_deserialized.inv_jacobian(logical_point_dv),
-                        composed_map.inv_jacobian(logical_point_dv));
+  CHECK_ITERABLE_APPROX(element_map_deserialized.jacobian(logical_point_dv),
+                        composed_map.jacobian(logical_point_dv));
   CHECK_ITERABLE_APPROX(element_map_deserialized.jacobian(logical_point_double),
                         composed_map.jacobian(logical_point_double));
 
