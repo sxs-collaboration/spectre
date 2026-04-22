@@ -122,15 +122,13 @@ struct PrintElementInfo {
            << "\n";
       }
 
-      if constexpr (Metavariables::local_time_stepping) {
-        const auto& mortar_data_history =
-            db::get<evolution::dg::Tags::MortarDataHistory<3>>(box);
-        ss << "  MortarDataHistory:\n";
+      const auto& mortar_data_history =
+          db::get<evolution::dg::Tags::MortarDataHistory<3>>(box);
+      ss << "  MortarDataHistory:\n";
 
-        for (const auto& [key, history] : mortar_data_history) {
-          ss << "   Key: " << key << ", history:\n";
-          history.template print<false>(ss, 4_st);
-        }
+      for (const auto& [key, history] : mortar_data_history) {
+        ss << "   Key: " << key << ", history:\n";
+        history.template print<false>(ss, 4_st);
       }
     } else {
       ss << "\n";
