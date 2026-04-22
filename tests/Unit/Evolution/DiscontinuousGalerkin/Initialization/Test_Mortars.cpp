@@ -51,7 +51,9 @@
 #include "Parallel/Phase.hpp"
 #include "ParallelAlgorithms/Amr/Protocols/Projector.hpp"
 #include "Time/BoundaryHistory.hpp"
+#include "Time/LtsMode.hpp"
 #include "Time/Slab.hpp"
+#include "Time/Tags/LtsMode.hpp"
 #include "Time/Tags/TimeStepId.hpp"
 #include "Time/Time.hpp"
 #include "Time/TimeStepId.hpp"
@@ -102,7 +104,8 @@ template <size_t Dim, bool LocalTimeStepping>
 struct Metavariables {
   static constexpr size_t volume_dim = Dim;
   static constexpr bool local_time_stepping = LocalTimeStepping;
-  using const_global_cache_tags = tmpl::list<domain::Tags::Domain<Dim>>;
+  using const_global_cache_tags =
+      tmpl::list<domain::Tags::Domain<Dim>, ::Tags::LtsMode>;
   struct system {
     using variables_tag = ::Tags::Variables<tmpl::list<Var1, Var2<Dim>>>;
   };
@@ -137,8 +140,10 @@ void test_impl(
     }
     domain = Domain<Dim>{std::move(blocks)};
   }
-  tuples::TaggedTuple<domain::Tags::Domain<Dim>> opts{
-      std::move(domain.value())};
+  const auto lts_mode =
+      LocalTimeStepping ? LtsMode::Conservative : LtsMode::Off;
+  tuples::TaggedTuple<domain::Tags::Domain<Dim>, ::Tags::LtsMode> opts{
+      std::move(domain.value()), lts_mode};
   MockRuntimeSystem runner{std::move(opts)};
   ActionTesting::emplace_component_and_initialize<component<metavars>>(
       &runner, element.id(),
@@ -653,20 +658,19 @@ void test_p_refine(
         expected_normal_covector_and_magnitude,
     const mortar_data_history_type<Dim>& expected_mortar_data_history) {
   auto box = db::create<db::AddSimpleTags<
-      domain::Tags::Domain<Dim>, domain::Tags::Mesh<Dim>,
+      domain::Tags::Domain<Dim>, ::Tags::LtsMode, domain::Tags::Mesh<Dim>,
       domain::Tags::Element<Dim>, domain::Tags::NeighborMesh<Dim>,
       ::Tags::TimeStepId, Tags::MortarData<Dim>, Tags::MortarMesh<Dim>,
       Tags::MortarInfo<Dim>, Tags::MortarNextTemporalId<Dim>,
       evolution::dg::Tags::NormalCovectorAndMagnitude<Dim>,
       Tags::MortarDataHistory<Dim>>>(
-      Domain<Dim>{}, std::move(new_mesh), std::move(new_element),
-      std::move(neighbor_meshes), temporal_id, std::move(mortar_data),
-      std::move(mortar_mesh), std::move(mortar_infos),
-      std::move(mortar_next_temporal_id),
+      Domain<Dim>{}, UsingLts ? LtsMode::Conservative : LtsMode::Off,
+      std::move(new_mesh), std::move(new_element), std::move(neighbor_meshes),
+      temporal_id, std::move(mortar_data), std::move(mortar_mesh),
+      std::move(mortar_infos), std::move(mortar_next_temporal_id),
       std::move(normal_covector_and_magnitude), std::move(mortar_data_history));
 
-  db::mutate_apply<
-      evolution::dg::Initialization::ProjectMortars<Dim, UsingLts>>(
+  db::mutate_apply<evolution::dg::Initialization::ProjectMortars<Dim>>(
       make_not_null(&box), std::make_pair(old_mesh, old_element));
 
   CHECK(db::get<Tags::MortarData<Dim>>(box) == expected_mortar_data);
@@ -1160,6 +1164,9 @@ void test_h_refinement() {
                            evolution::dg::Tags::NormalCovector<2>>>;
   using mortar_data_history_tag = Tags::MortarDataHistory<2>;
 
+  const auto lts_mode =
+      LocalTimeStepping ? LtsMode::Conservative : LtsMode::Off;
+
   const DirectionalId<2> mortar_id_a(Direction<2>::upper_eta(),
                                      ElementId<2>(0));
   const DirectionalId<2> mortar_id_b(Direction<2>::lower_xi(), ElementId<2>(1));
@@ -1330,9 +1337,9 @@ void test_h_refinement() {
     INFO("No local refinement");
     auto box = tmpl::as_pack<decltype(orig_single_items)>(
         [&]<typename... Tags>(tmpl::type_<Tags>... /*meta*/) {
-          return db::create<
-              db::AddSimpleTags<domain::Tags::Domain<2>, Tags...>>(
-              Domain<2>{}, get<Tags>(orig_single_items)...);
+          return db::create<db::AddSimpleTags<domain::Tags::Domain<2>,
+                                              ::Tags::LtsMode, Tags...>>(
+              Domain<2>{}, lts_mode, get<Tags>(orig_single_items)...);
         });
 
     const auto& mortar_ids = refined_mortar_ids;
@@ -1344,8 +1351,7 @@ void test_h_refinement() {
         },
         make_not_null(&box));
 
-    db::mutate_apply<
-        evolution::dg::Initialization::ProjectMortars<2, LocalTimeStepping>>(
+    db::mutate_apply<evolution::dg::Initialization::ProjectMortars<2>>(
         make_not_null(&box),
         std::pair(get<domain::Tags::Mesh<2>>(orig_single_items),
                   get<domain::Tags::Element<2>>(orig_single_items)));
@@ -1384,9 +1390,9 @@ void test_h_refinement() {
     INFO("Local p-refinement");
     auto box = tmpl::as_pack<decltype(orig_single_items)>(
         [&]<typename... Tags>(tmpl::type_<Tags>... /*meta*/) {
-          return db::create<
-              db::AddSimpleTags<domain::Tags::Domain<2>, Tags...>>(
-              Domain<2>{}, get<Tags>(orig_single_items)...);
+          return db::create<db::AddSimpleTags<domain::Tags::Domain<2>,
+                                              ::Tags::LtsMode, Tags...>>(
+              Domain<2>{}, lts_mode, get<Tags>(orig_single_items)...);
         });
 
     const auto& mortar_ids = refined_mortar_ids;
@@ -1402,8 +1408,7 @@ void test_h_refinement() {
         },
         make_not_null(&box));
 
-    db::mutate_apply<
-        evolution::dg::Initialization::ProjectMortars<2, LocalTimeStepping>>(
+    db::mutate_apply<evolution::dg::Initialization::ProjectMortars<2>>(
         make_not_null(&box),
         std::pair(get<domain::Tags::Mesh<2>>(orig_single_items),
                   get<domain::Tags::Element<2>>(orig_single_items)));
@@ -1466,16 +1471,18 @@ void test_h_refinement() {
 
   {
     INFO("Join");
-    auto box =
-        db::create<tmpl::push_front<decltype(orig_single_items)::tags_list,
-                                    domain::Tags::Domain<2>>>();
+    auto box = db::create<
+        tmpl::push_front<decltype(orig_single_items)::tags_list,
+                         domain::Tags::Domain<2>, ::Tags::LtsMode>>();
 
     const auto& mortar_ids = refined_mortar_ids;
-    db::mutate<domain::Tags::Element<2>, domain::Tags::Mesh<2>,
+    db::mutate<::Tags::LtsMode, domain::Tags::Element<2>, domain::Tags::Mesh<2>,
                domain::Tags::NeighborMesh<2>>(
-        [&](const gsl::not_null<Element<2>*> element,
+        [&](const gsl::not_null<LtsMode*> local_lts_mode,
+            const gsl::not_null<Element<2>*> element,
             const gsl::not_null<Mesh<2>*> mesh,
             const gsl::not_null<::dg::MortarMap<2, Mesh<2>>*> neighbor_meshes) {
+          *local_lts_mode = lts_mode;
           *element = refined_single_element;
           *mesh = orig_mesh;
           *neighbor_meshes = refined_single_neighbor_meshes;
@@ -1546,8 +1553,7 @@ void test_h_refinement() {
         {id_sw, {temporal_id, std::move(history_sw)}},
         {id_se, {temporal_id, std::move(history_se)}}};
 
-    db::mutate_apply<
-        evolution::dg::Initialization::ProjectMortars<2, LocalTimeStepping>>(
+    db::mutate_apply<evolution::dg::Initialization::ProjectMortars<2>>(
         make_not_null(&box), children_items);
 
     const ::dg::MortarMap<2, Mesh<1>> expected_mortar_meshes{
@@ -1582,17 +1588,19 @@ void test_h_refinement() {
 
   {
     INFO("Split - nw");
-    auto box =
-        db::create<tmpl::push_front<decltype(orig_single_items)::tags_list,
-                                    domain::Tags::Domain<2>>>();
+    auto box = db::create<
+        tmpl::push_front<decltype(orig_single_items)::tags_list,
+                         domain::Tags::Domain<2>, ::Tags::LtsMode>>();
 
     const std::array mortar_ids{mortar_id_a, mortar_id_f, mortar_id_nw_ne,
                                 mortar_id_nw_sw};
-    db::mutate<domain::Tags::Element<2>, domain::Tags::Mesh<2>,
+    db::mutate<::Tags::LtsMode, domain::Tags::Element<2>, domain::Tags::Mesh<2>,
                domain::Tags::NeighborMesh<2>>(
-        [&](const gsl::not_null<Element<2>*> element,
+        [&](const gsl::not_null<LtsMode*> local_lts_mode,
+            const gsl::not_null<Element<2>*> element,
             const gsl::not_null<Mesh<2>*> mesh,
             const gsl::not_null<::dg::MortarMap<2, Mesh<2>>*> neighbor_meshes) {
+          *local_lts_mode = lts_mode;
           *element = Element<2>(
               id_nw, {{mortar_id_a.direction(),
                        Neighbors<2>({mortar_id_a.id()}, rotated)},
@@ -1611,8 +1619,7 @@ void test_h_refinement() {
         },
         make_not_null(&box));
 
-    db::mutate_apply<
-        evolution::dg::Initialization::ProjectMortars<2, LocalTimeStepping>>(
+    db::mutate_apply<evolution::dg::Initialization::ProjectMortars<2>>(
         make_not_null(&box), orig_single_items);
 
     const ::dg::MortarMap<2, Mesh<1>> expected_mortar_meshes{
@@ -1667,17 +1674,19 @@ void test_h_refinement() {
 
   {
     INFO("Split - ne");
-    auto box =
-        db::create<tmpl::push_front<decltype(orig_single_items)::tags_list,
-                                    domain::Tags::Domain<2>>>();
+    auto box = db::create<
+        tmpl::push_front<decltype(orig_single_items)::tags_list,
+                         domain::Tags::Domain<2>, ::Tags::LtsMode>>();
 
     const std::array mortar_ids{mortar_id_a, mortar_id_ne_nw, mortar_id_g,
                                 mortar_id_ne_se};
-    db::mutate<domain::Tags::Element<2>, domain::Tags::Mesh<2>,
+    db::mutate<::Tags::LtsMode, domain::Tags::Element<2>, domain::Tags::Mesh<2>,
                domain::Tags::NeighborMesh<2>>(
-        [&](const gsl::not_null<Element<2>*> element,
+        [&](const gsl::not_null<LtsMode*> local_lts_mode,
+            const gsl::not_null<Element<2>*> element,
             const gsl::not_null<Mesh<2>*> mesh,
             const gsl::not_null<::dg::MortarMap<2, Mesh<2>>*> neighbor_meshes) {
+          *local_lts_mode = lts_mode;
           *element = Element<2>(
               id_ne, {{mortar_id_a.direction(),
                        Neighbors<2>({mortar_id_a.id()}, rotated)},
@@ -1696,8 +1705,7 @@ void test_h_refinement() {
         },
         make_not_null(&box));
 
-    db::mutate_apply<
-        evolution::dg::Initialization::ProjectMortars<2, LocalTimeStepping>>(
+    db::mutate_apply<evolution::dg::Initialization::ProjectMortars<2>>(
         make_not_null(&box), orig_single_items);
 
     const ::dg::MortarMap<2, Mesh<1>> expected_mortar_meshes{
@@ -1752,17 +1760,19 @@ void test_h_refinement() {
 
   {
     INFO("Split - sw");
-    auto box =
-        db::create<tmpl::push_front<decltype(orig_single_items)::tags_list,
-                                    domain::Tags::Domain<2>>>();
+    auto box = db::create<
+        tmpl::push_front<decltype(orig_single_items)::tags_list,
+                         domain::Tags::Domain<2>, ::Tags::LtsMode>>();
 
     const std::array mortar_ids{mortar_id_sw_nw, mortar_id_f, mortar_id_sw_se,
                                 mortar_id_i};
-    db::mutate<domain::Tags::Element<2>, domain::Tags::Mesh<2>,
+    db::mutate<::Tags::LtsMode, domain::Tags::Element<2>, domain::Tags::Mesh<2>,
                domain::Tags::NeighborMesh<2>>(
-        [&](const gsl::not_null<Element<2>*> element,
+        [&](const gsl::not_null<LtsMode*> local_lts_mode,
+            const gsl::not_null<Element<2>*> element,
             const gsl::not_null<Mesh<2>*> mesh,
             const gsl::not_null<::dg::MortarMap<2, Mesh<2>>*> neighbor_meshes) {
+          *local_lts_mode = lts_mode;
           *element = Element<2>(
               id_sw, {{mortar_id_sw_nw.direction(),
                        Neighbors<2>({mortar_id_sw_nw.id()}, aligned)},
@@ -1781,8 +1791,7 @@ void test_h_refinement() {
         },
         make_not_null(&box));
 
-    db::mutate_apply<
-        evolution::dg::Initialization::ProjectMortars<2, LocalTimeStepping>>(
+    db::mutate_apply<evolution::dg::Initialization::ProjectMortars<2>>(
         make_not_null(&box), orig_single_items);
 
     const ::dg::MortarMap<2, Mesh<1>> expected_mortar_meshes{
@@ -1834,17 +1843,19 @@ void test_h_refinement() {
 
   {
     INFO("Split - se");
-    auto box =
-        db::create<tmpl::push_front<decltype(orig_single_items)::tags_list,
-                                    domain::Tags::Domain<2>>>();
+    auto box = db::create<
+        tmpl::push_front<decltype(orig_single_items)::tags_list,
+                         domain::Tags::Domain<2>, ::Tags::LtsMode>>();
 
     const std::array mortar_ids{mortar_id_se_ne, mortar_id_se_sw, mortar_id_h,
                                 mortar_id_i};
-    db::mutate<domain::Tags::Element<2>, domain::Tags::Mesh<2>,
+    db::mutate<::Tags::LtsMode, domain::Tags::Element<2>, domain::Tags::Mesh<2>,
                domain::Tags::NeighborMesh<2>>(
-        [&](const gsl::not_null<Element<2>*> element,
+        [&](const gsl::not_null<LtsMode*> local_lts_mode,
+            const gsl::not_null<Element<2>*> element,
             const gsl::not_null<Mesh<2>*> mesh,
             const gsl::not_null<::dg::MortarMap<2, Mesh<2>>*> neighbor_meshes) {
+          *local_lts_mode = lts_mode;
           *element = Element<2>(
               id_se, {{mortar_id_se_ne.direction(),
                        Neighbors<2>({mortar_id_se_ne.id()}, aligned)},
@@ -1863,8 +1874,7 @@ void test_h_refinement() {
         },
         make_not_null(&box));
 
-    db::mutate_apply<
-        evolution::dg::Initialization::ProjectMortars<2, LocalTimeStepping>>(
+    db::mutate_apply<evolution::dg::Initialization::ProjectMortars<2>>(
         make_not_null(&box), orig_single_items);
 
     const ::dg::MortarMap<2, Mesh<1>> expected_mortar_meshes{
@@ -1998,17 +2008,18 @@ void test_h_refinement_mortar_sizes_local_impl(
       self_id, {{direction, Neighbors<3>(std::move(neighbors), orientation)}});
 
   auto box = db::create<db::AddSimpleTags<
-      domain::Tags::Domain<3>, Tags::MortarData<3>, Tags::MortarMesh<3>,
-      Tags::MortarInfo<3>, Tags::MortarNextTemporalId<3>,
+      domain::Tags::Domain<3>, ::Tags::LtsMode, Tags::MortarData<3>,
+      Tags::MortarMesh<3>, Tags::MortarInfo<3>, Tags::MortarNextTemporalId<3>,
       evolution::dg::Tags::NormalCovectorAndMagnitude<3>,
       mortar_data_history_tag, domain::Tags::Mesh<3>, domain::Tags::Element<3>,
       domain::Tags::NeighborMesh<3>, ::Tags::TimeStepId>>(
-      Domain<3>{}, std::move(mortar_data), std::move(mortar_meshes),
-      std::move(mortar_infos), std::move(mortar_next_temporal_ids),
+      Domain<3>{}, LtsMode::Conservative, std::move(mortar_data),
+      std::move(mortar_meshes), std::move(mortar_infos),
+      std::move(mortar_next_temporal_ids),
       std::move(normal_covector_and_magnitude), std::move(mortar_data_history),
       mesh, std::move(element), std::move(neighbor_meshes), time_step_id);
 
-  db::mutate_apply<evolution::dg::Initialization::ProjectMortars<3, true>>(
+  db::mutate_apply<evolution::dg::Initialization::ProjectMortars<3>>(
       make_not_null(&box), std::pair(mesh, old_element));
 
   check_boundary_histories(db::get<mortar_data_history_tag>(box),
@@ -2133,18 +2144,19 @@ void test_h_refinement_mortar_sizes_remote_impl_split(
       self_id, {{direction, Neighbors<3>(std::move(neighbors), orientation)}});
 
   auto box = db::create<db::AddSimpleTags<
-      domain::Tags::Domain<3>, Tags::MortarData<3>, Tags::MortarMesh<3>,
-      Tags::MortarInfo<3>, Tags::MortarNextTemporalId<3>,
+      domain::Tags::Domain<3>, ::Tags::LtsMode, Tags::MortarData<3>,
+      Tags::MortarMesh<3>, Tags::MortarInfo<3>, Tags::MortarNextTemporalId<3>,
       evolution::dg::Tags::NormalCovectorAndMagnitude<3>,
       mortar_data_history_tag, domain::Tags::Mesh<3>, domain::Tags::Element<3>,
       domain::Tags::NeighborMesh<3>, ::Tags::TimeStepId>>(
-      Domain<3>{}, Tags::MortarData<3>::type{}, Tags::MortarMesh<3>::type{},
-      Tags::MortarInfo<3>::type{}, Tags::MortarNextTemporalId<3>::type{},
+      Domain<3>{}, LtsMode::Conservative, Tags::MortarData<3>::type{},
+      Tags::MortarMesh<3>::type{}, Tags::MortarInfo<3>::type{},
+      Tags::MortarNextTemporalId<3>::type{},
       evolution::dg::Tags::NormalCovectorAndMagnitude<3>::type{},
       mortar_data_history_tag::type{}, mesh, std::move(element),
       std::move(neighbor_meshes), time_step_id);
 
-  db::mutate_apply<evolution::dg::Initialization::ProjectMortars<3, true>>(
+  db::mutate_apply<evolution::dg::Initialization::ProjectMortars<3>>(
       make_not_null(&box), parent_items);
 
   check_boundary_histories(db::get<mortar_data_history_tag>(box),
@@ -2232,18 +2244,19 @@ void test_h_refinement_mortar_sizes_remote_impl_join(
       self_id, {{direction, Neighbors<3>(std::move(neighbors), orientation)}});
 
   auto box = db::create<db::AddSimpleTags<
-      domain::Tags::Domain<3>, Tags::MortarData<3>, Tags::MortarMesh<3>,
-      Tags::MortarInfo<3>, Tags::MortarNextTemporalId<3>,
+      domain::Tags::Domain<3>, ::Tags::LtsMode, Tags::MortarData<3>,
+      Tags::MortarMesh<3>, Tags::MortarInfo<3>, Tags::MortarNextTemporalId<3>,
       evolution::dg::Tags::NormalCovectorAndMagnitude<3>,
       mortar_data_history_tag, domain::Tags::Mesh<3>, domain::Tags::Element<3>,
       domain::Tags::NeighborMesh<3>, ::Tags::TimeStepId>>(
-      Domain<3>{}, Tags::MortarData<3>::type{}, Tags::MortarMesh<3>::type{},
-      Tags::MortarInfo<3>::type{}, Tags::MortarNextTemporalId<3>::type{},
+      Domain<3>{}, LtsMode::Conservative, Tags::MortarData<3>::type{},
+      Tags::MortarMesh<3>::type{}, Tags::MortarInfo<3>::type{},
+      Tags::MortarNextTemporalId<3>::type{},
       evolution::dg::Tags::NormalCovectorAndMagnitude<3>::type{},
       mortar_data_history_tag::type{}, mesh, std::move(element),
       std::move(neighbor_meshes), time_step_id);
 
-  db::mutate_apply<evolution::dg::Initialization::ProjectMortars<3, true>>(
+  db::mutate_apply<evolution::dg::Initialization::ProjectMortars<3>>(
       make_not_null(&box), children_items);
 
   check_boundary_histories(db::get<mortar_data_history_tag>(box),
@@ -2307,9 +2320,9 @@ SPECTRE_TEST_CASE("Unit.Evolution.DG.Initialization.Mortars",
   domain::creators::register_derived_with_charm();
   test_nonconforming_blocks<false>();
 
-  static_assert(tt::assert_conforms_to_v<
-                evolution::dg::Initialization::ProjectMortars<1, false>,
-                amr::protocols::Projector>);
+  static_assert(
+      tt::assert_conforms_to_v<evolution::dg::Initialization::ProjectMortars<1>,
+                               amr::protocols::Projector>);
   test_p_refine_gts<1>();
   test_p_refine_gts<2>();
   test_p_refine_gts<3>();
