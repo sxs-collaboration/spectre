@@ -350,16 +350,13 @@ struct FactoryCreation : tt::ConformsTo<Options::protocols::FactoryCreation> {
   using factory_classes = tmpl::map<
       tmpl::pair<DenseTrigger, DenseTriggers::standard_dense_triggers>,
       tmpl::pair<DomainCreator<volume_dim>, domain_creators<volume_dim>>,
-      tmpl::pair<
-          Event,
-          tmpl::flatten<tmpl::list<
-              Events::Completion, Events::MonitorMemory<volume_dim>,
-              typename detail::ObserverTags::field_observations,
-              Events::time_events<system>,
-              dg::Events::ObserveTimeStepVolume<system>,
-              tmpl::conditional_t<LocalTimeStepping,
-                                  dg::Events::ChangeFixedLtsRatio<volume_dim>,
-                                  tmpl::list<>>>>>,
+      tmpl::pair<Event,
+                 tmpl::flatten<tmpl::list<
+                     Events::Completion, Events::MonitorMemory<volume_dim>,
+                     typename detail::ObserverTags::field_observations,
+                     Events::time_events<system>,
+                     dg::Events::ObserveTimeStepVolume<system>,
+                     dg::Events::ChangeFixedLtsRatio<volume_dim>>>>,
       tmpl::pair<
           evolution::BoundaryCorrection,
           ScalarTensor::BoundaryCorrections::standard_boundary_corrections>,
@@ -376,12 +373,9 @@ struct FactoryCreation : tt::ConformsTo<Options::protocols::FactoryCreation> {
       tmpl::pair<StepChooser<StepChooserUse::LtsStep>,
                  StepChoosers::standard_step_choosers<system>>,
       tmpl::pair<StepChooser<StepChooserUse::Slab>,
-                 tmpl::append<StepChoosers::standard_slab_choosers<system>,
-                              tmpl::conditional_t<
-                                  LocalTimeStepping,
-                                  tmpl::list<evolution::dg::StepChoosers::
-                                                 FixedLtsRatio<volume_dim>>,
-                                  tmpl::list<>>>>,
+                 tmpl::push_back<
+                     StepChoosers::standard_slab_choosers<system>,
+                     evolution::dg::StepChoosers::FixedLtsRatio<volume_dim>>>,
       tmpl::pair<TimeSequence<double>,
                  TimeSequences::all_time_sequences<double>>,
       tmpl::pair<TimeSequence<std::uint64_t>,

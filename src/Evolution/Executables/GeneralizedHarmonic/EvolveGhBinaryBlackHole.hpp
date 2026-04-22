@@ -500,34 +500,31 @@ struct EvolutionMetavars {
             DomainCreator<volume_dim>,
             tmpl::list<::domain::creators::BinaryCompactObject,
                        ::domain::creators::CylindricalBinaryCompactObject>>,
-        tmpl::pair<
-            Event,
-            tmpl::flatten<tmpl::list<
-                ah::Events::FindApparentHorizon<AhA>,
-                ah::Events::FindApparentHorizon<AhB>,
-                ah::Events::FindCommonHorizon<AhC, observe_fields,
-                                              non_tensor_compute_tags>,
-                gh::bbh::Events::CheckConstraintThresholds,
-                intrp::Events::InterpolateWithoutInterpComponent<
-                    3, BondiSachs, source_vars_no_deriv>,
-                intrp::Events::InterpolateWithoutInterpComponent<
-                    3, ExcisionBoundaryA, ah::source_vars<3>>,
-                intrp::Events::InterpolateWithoutInterpComponent<
-                    3, ExcisionBoundaryB, ah::source_vars<3>>,
-                Events::MonitorMemory<3>, Events::Completion,
-                dg::Events::field_observations<volume_dim, observe_fields,
-                                               non_tensor_compute_tags>,
-                control_system::metafunctions::control_system_events<
-                    control_systems>,
-                control_system::CleanFunctionsOfTime,
-                Events::time_events<system>,
-                dg::Events::ObserveTimeStepVolume<system>,
-                amr::Events::RefineMesh,
-                amr::Events::ObserveAmrStats<volume_dim>,
-                amr::Events::ObserveAmrCriteria<EvolutionMetavars>,
-                tmpl::conditional_t<local_time_stepping,
-                                    dg::Events::ChangeFixedLtsRatio<volume_dim>,
-                                    tmpl::list<>>>>>,
+        tmpl::pair<Event,
+                   tmpl::flatten<tmpl::list<
+                       ah::Events::FindApparentHorizon<AhA>,
+                       ah::Events::FindApparentHorizon<AhB>,
+                       ah::Events::FindCommonHorizon<AhC, observe_fields,
+                                                     non_tensor_compute_tags>,
+                       gh::bbh::Events::CheckConstraintThresholds,
+                       intrp::Events::InterpolateWithoutInterpComponent<
+                           3, BondiSachs, source_vars_no_deriv>,
+                       intrp::Events::InterpolateWithoutInterpComponent<
+                           3, ExcisionBoundaryA, ah::source_vars<3>>,
+                       intrp::Events::InterpolateWithoutInterpComponent<
+                           3, ExcisionBoundaryB, ah::source_vars<3>>,
+                       Events::MonitorMemory<3>, Events::Completion,
+                       dg::Events::field_observations<
+                           volume_dim, observe_fields, non_tensor_compute_tags>,
+                       control_system::metafunctions::control_system_events<
+                           control_systems>,
+                       control_system::CleanFunctionsOfTime,
+                       Events::time_events<system>,
+                       dg::Events::ObserveTimeStepVolume<system>,
+                       amr::Events::RefineMesh,
+                       amr::Events::ObserveAmrStats<volume_dim>,
+                       amr::Events::ObserveAmrCriteria<EvolutionMetavars>,
+                       dg::Events::ChangeFixedLtsRatio<volume_dim>>>>,
         tmpl::pair<
             evolution::BoundaryCorrection,
             gh::BoundaryCorrections::standard_boundary_corrections<volume_dim>>,
@@ -554,12 +551,9 @@ struct EvolutionMetavars {
         tmpl::pair<StepChooser<StepChooserUse::LtsStep>,
                    StepChoosers::standard_step_choosers<system>>,
         tmpl::pair<StepChooser<StepChooserUse::Slab>,
-                   tmpl::append<StepChoosers::standard_slab_choosers<system>,
-                                tmpl::conditional_t<
-                                    local_time_stepping,
-                                    tmpl::list<evolution::dg::StepChoosers::
-                                                   FixedLtsRatio<volume_dim>>,
-                                    tmpl::list<>>>>,
+                   tmpl::push_back<
+                       StepChoosers::standard_slab_choosers<system>,
+                       evolution::dg::StepChoosers::FixedLtsRatio<volume_dim>>>,
         tmpl::pair<TimeSequence<double>,
                    TimeSequences::all_time_sequences<double>>,
         tmpl::pair<TimeSequence<std::uint64_t>,
@@ -700,11 +694,8 @@ struct EvolutionMetavars {
                   evolution::Actions::RunEventsAndTriggers<
                       Triggers::WhenToCheck::AtSlabs>,
                   Actions::ChangeSlabSize,
-                  std::conditional_t<
-                      local_time_stepping,
-                      evolution::dg::Actions::ChangeFixedLtsRatio,
-                      tmpl::list<>>,
-                  step_actions, Actions::MutateApply<AdvanceTime<>>,
+                  evolution::dg::Actions::ChangeFixedLtsRatio, step_actions,
+                  Actions::MutateApply<AdvanceTime<>>,
                   PhaseControl::Actions::ExecutePhaseChange>>>,
           Parallel::PhaseActions<
               Parallel::Phase::PostFailureCleanup,
@@ -763,15 +754,11 @@ struct EvolutionMetavars {
                         get_non_sequential_target_tags<
                             interpolation_target_tags>,
                     tmpl::bind<intrp::Tags::PointInfo, tmpl::_1,
-                               tmpl::pin<tmpl::size_t<volume_dim>>>>,
-                tmpl::conditional_t<
-                    local_time_stepping,
-                    tmpl::list<
-                        evolution::dg::Tags::ChangeFixedLtsRatio::
-                            NumberOfExpectedMessages,
-                        evolution::dg::Tags::ChangeFixedLtsRatio::NewStepSize>,
-                    tmpl::list<>>>,
-            gh::bbh::Tags::ElementCompletionRequested, Tags::FixedLtsRatio,
+                               tmpl::pin<tmpl::size_t<volume_dim>>>>>,
+            gh::bbh::Tags::ElementCompletionRequested,
+            evolution::dg::Tags::ChangeFixedLtsRatio::NumberOfExpectedMessages,
+            evolution::dg::Tags::ChangeFixedLtsRatio::NewStepSize,
+            Tags::FixedLtsRatio,
             Parallel::Tags::Section<gh_dg_element_array,
                                     evolution::dg::Tags::EqualRateRegionId>,
             Tags::ChangeSlabSize::NumberOfExpectedMessages,

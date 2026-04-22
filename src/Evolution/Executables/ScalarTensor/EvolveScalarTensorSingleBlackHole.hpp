@@ -284,11 +284,8 @@ struct EvolutionMetavars : public ScalarTensorTemplateBase<EvolutionMetavars> {
                   evolution::Actions::RunEventsAndTriggers<
                       Triggers::WhenToCheck::AtSlabs>,
                   Actions::ChangeSlabSize,
-                  std::conditional_t<
-                      local_time_stepping,
-                      evolution::dg::Actions::ChangeFixedLtsRatio,
-                      tmpl::list<>>,
-                  step_actions, Actions::MutateApply<AdvanceTime<>>,
+                  evolution::dg::Actions::ChangeFixedLtsRatio, step_actions,
+                  Actions::MutateApply<AdvanceTime<>>,
                   PhaseControl::Actions::ExecutePhaseChange>>>,
           Parallel::PhaseActions<
               Parallel::Phase::PostFailureCleanup,

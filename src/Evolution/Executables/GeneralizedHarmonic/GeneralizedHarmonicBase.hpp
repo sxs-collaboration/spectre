@@ -303,9 +303,7 @@ struct FactoryCreation : tt::ConformsTo<Options::protocols::FactoryCreation> {
               typename detail::ObserverTags<volume_dim>::field_observations,
               Events::time_events<system>,
               dg::Events::ObserveTimeStepVolume<system>,
-              tmpl::conditional_t<LocalTimeStepping,
-                                  dg::Events::ChangeFixedLtsRatio<volume_dim>,
-                                  tmpl::list<>>>>>,
+              dg::Events::ChangeFixedLtsRatio<volume_dim>>>>,
       tmpl::pair<
           evolution::BoundaryCorrection,
           gh::BoundaryCorrections::standard_boundary_corrections<volume_dim>>,
@@ -326,12 +324,9 @@ struct FactoryCreation : tt::ConformsTo<Options::protocols::FactoryCreation> {
       tmpl::pair<StepChooser<StepChooserUse::LtsStep>,
                  StepChoosers::standard_step_choosers<system>>,
       tmpl::pair<StepChooser<StepChooserUse::Slab>,
-                 tmpl::append<StepChoosers::standard_slab_choosers<system>,
-                              tmpl::conditional_t<
-                                  LocalTimeStepping,
-                                  tmpl::list<evolution::dg::StepChoosers::
-                                                 FixedLtsRatio<volume_dim>>,
-                                  tmpl::list<>>>>,
+                 tmpl::push_back<
+                     StepChoosers::standard_slab_choosers<system>,
+                     evolution::dg::StepChoosers::FixedLtsRatio<volume_dim>>>,
       tmpl::pair<TimeSequence<double>,
                  TimeSequences::all_time_sequences<double>>,
       tmpl::pair<TimeSequence<std::uint64_t>,

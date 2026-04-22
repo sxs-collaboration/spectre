@@ -337,9 +337,7 @@ struct EvolutionMetavars<tmpl::list<InterpolationTargetTags...>,
                 Events::time_events<system>,
                 intrp::Events::InterpolateWithoutInterpComponent<
                     3, InterpolationTargetTags, interpolator_source_vars>...,
-                tmpl::conditional_t<local_time_stepping,
-                                    dg::Events::ChangeFixedLtsRatio<volume_dim>,
-                                    tmpl::list<>>>>>,
+                dg::Events::ChangeFixedLtsRatio<volume_dim>>>>,
         tmpl::pair<evolution::BoundaryCorrection,
                    grmhd::ValenciaDivClean::BoundaryCorrections::
                        standard_boundary_corrections>,
@@ -357,12 +355,9 @@ struct EvolutionMetavars<tmpl::list<InterpolationTargetTags...>,
         tmpl::pair<StepChooser<StepChooserUse::LtsStep>,
                    StepChoosers::standard_step_choosers<system>>,
         tmpl::pair<StepChooser<StepChooserUse::Slab>,
-                   tmpl::append<StepChoosers::standard_slab_choosers<system>,
-                                tmpl::conditional_t<
-                                    local_time_stepping,
-                                    tmpl::list<evolution::dg::StepChoosers::
-                                                   FixedLtsRatio<volume_dim>>,
-                                    tmpl::list<>>>>,
+                   tmpl::push_back<
+                       StepChoosers::standard_slab_choosers<system>,
+                       evolution::dg::StepChoosers::FixedLtsRatio<volume_dim>>>,
         tmpl::pair<TimeSequence<double>,
                    TimeSequences::all_time_sequences<double>>,
         tmpl::pair<TimeSequence<std::uint64_t>,
@@ -632,11 +627,8 @@ struct EvolutionMetavars<tmpl::list<InterpolationTargetTags...>,
                   evolution::Actions::RunEventsAndTriggers<
                       Triggers::WhenToCheck::AtSlabs>,
                   Actions::ChangeSlabSize,
-                  std::conditional_t<
-                      local_time_stepping,
-                      evolution::dg::Actions::ChangeFixedLtsRatio,
-                      tmpl::list<>>,
-                  step_actions, Actions::MutateApply<AdvanceTime<>>,
+                  evolution::dg::Actions::ChangeFixedLtsRatio, step_actions,
+                  Actions::MutateApply<AdvanceTime<>>,
                   PhaseControl::Actions::ExecutePhaseChange>>>,
           Parallel::PhaseActions<
               Parallel::Phase::PostFailureCleanup,

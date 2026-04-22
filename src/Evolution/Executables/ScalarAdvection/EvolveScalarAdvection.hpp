@@ -198,16 +198,13 @@ struct EvolutionMetavars {
     using factory_classes = tmpl::map<
         tmpl::pair<DenseTrigger, DenseTriggers::standard_dense_triggers>,
         tmpl::pair<DomainCreator<volume_dim>, domain_creators<volume_dim>>,
-        tmpl::pair<
-            Event,
-            tmpl::flatten<tmpl::list<
-                Events::Completion,
-                dg::Events::field_observations<volume_dim, observe_fields,
-                                               non_tensor_compute_tags>,
-                Events::time_events<system>,
-                tmpl::conditional_t<local_time_stepping,
-                                    dg::Events::ChangeFixedLtsRatio<volume_dim>,
-                                    tmpl::list<>>>>>,
+        tmpl::pair<Event,
+                   tmpl::flatten<tmpl::list<
+                       Events::Completion,
+                       dg::Events::field_observations<
+                           volume_dim, observe_fields, non_tensor_compute_tags>,
+                       Events::time_events<system>,
+                       dg::Events::ChangeFixedLtsRatio<volume_dim>>>>,
         tmpl::pair<evolution::BoundaryCorrection,
                    ScalarAdvection::BoundaryCorrections::
                        standard_boundary_corrections<Dim>>,
@@ -220,12 +217,9 @@ struct EvolutionMetavars {
         tmpl::pair<StepChooser<StepChooserUse::LtsStep>,
                    StepChoosers::standard_step_choosers<system>>,
         tmpl::pair<StepChooser<StepChooserUse::Slab>,
-                   tmpl::append<StepChoosers::standard_slab_choosers<system>,
-                                tmpl::conditional_t<
-                                    local_time_stepping,
-                                    tmpl::list<evolution::dg::StepChoosers::
-                                                   FixedLtsRatio<volume_dim>>,
-                                    tmpl::list<>>>>,
+                   tmpl::push_back<
+                       StepChoosers::standard_slab_choosers<system>,
+                       evolution::dg::StepChoosers::FixedLtsRatio<volume_dim>>>,
         tmpl::pair<TimeSequence<double>,
                    TimeSequences::all_time_sequences<double>>,
         tmpl::pair<TimeSequence<std::uint64_t>,
@@ -410,11 +404,8 @@ struct EvolutionMetavars {
                   evolution::Actions::RunEventsAndTriggers<
                       Triggers::WhenToCheck::AtSlabs>,
                   Actions::ChangeSlabSize,
-                  std::conditional_t<
-                      local_time_stepping,
-                      evolution::dg::Actions::ChangeFixedLtsRatio,
-                      tmpl::list<>>,
-                  step_actions, Actions::MutateApply<AdvanceTime<>>,
+                  evolution::dg::Actions::ChangeFixedLtsRatio, step_actions,
+                  Actions::MutateApply<AdvanceTime<>>,
                   PhaseControl::Actions::ExecutePhaseChange>>>>>;
 
   struct registration

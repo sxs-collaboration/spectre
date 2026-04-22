@@ -191,18 +191,15 @@ struct EvolutionMetavars {
                        volume_dim, typename system::variables_tag::tags_list>>,
         tmpl::pair<DenseTrigger, DenseTriggers::standard_dense_triggers>,
         tmpl::pair<DomainCreator<volume_dim>, domain_creators<volume_dim>>,
-        tmpl::pair<
-            Event,
-            tmpl::flatten<tmpl::list<
-                Events::Completion, amr::Events::RefineMesh,
-                amr::Events::ObserveAmrStats<volume_dim>,
-                amr::Events::ObserveAmrCriteria<EvolutionMetavars>,
-                dg::Events::field_observations<volume_dim, observe_fields,
-                                               non_tensor_compute_tags>,
-                Events::time_events<system>,
-                tmpl::conditional_t<local_time_stepping,
-                                    dg::Events::ChangeFixedLtsRatio<volume_dim>,
-                                    tmpl::list<>>>>>,
+        tmpl::pair<Event,
+                   tmpl::flatten<tmpl::list<
+                       Events::Completion, amr::Events::RefineMesh,
+                       amr::Events::ObserveAmrStats<volume_dim>,
+                       amr::Events::ObserveAmrCriteria<EvolutionMetavars>,
+                       dg::Events::field_observations<
+                           volume_dim, observe_fields, non_tensor_compute_tags>,
+                       Events::time_events<system>,
+                       dg::Events::ChangeFixedLtsRatio<volume_dim>>>>,
         tmpl::pair<evolution::BoundaryCorrection,
                    ScalarWave::BoundaryCorrections::
                        standard_boundary_corrections<volume_dim>>,
@@ -221,13 +218,10 @@ struct EvolutionMetavars {
                    tmpl::push_back<StepChoosers::standard_step_choosers<system>,
                                    StepChoosers::ByBlock<volume_dim>>>,
         tmpl::pair<StepChooser<StepChooserUse::Slab>,
-                   tmpl::append<StepChoosers::standard_slab_choosers<system>,
-                                tmpl::conditional_t<
-                                    local_time_stepping,
-                                    tmpl::list<evolution::dg::StepChoosers::
-                                                   FixedLtsRatio<volume_dim>>,
-                                    tmpl::list<>>,
-                                tmpl::list<StepChoosers::ByBlock<volume_dim>>>>,
+                   tmpl::push_back<
+                       StepChoosers::standard_slab_choosers<system>,
+                       evolution::dg::StepChoosers::FixedLtsRatio<volume_dim>,
+                       StepChoosers::ByBlock<volume_dim>>>,
         tmpl::pair<TimeSequence<double>,
                    TimeSequences::all_time_sequences<double>>,
         tmpl::pair<TimeSequence<std::uint64_t>,
@@ -341,11 +335,8 @@ struct EvolutionMetavars {
                   evolution::Actions::RunEventsAndTriggers<
                       Triggers::WhenToCheck::AtSlabs>,
                   Actions::ChangeSlabSize,
-                  std::conditional_t<
-                      local_time_stepping,
-                      evolution::dg::Actions::ChangeFixedLtsRatio,
-                      tmpl::list<>>,
-                  step_actions, Actions::MutateApply<AdvanceTime<>>,
+                  evolution::dg::Actions::ChangeFixedLtsRatio, step_actions,
+                  Actions::MutateApply<AdvanceTime<>>,
                   PhaseControl::Actions::ExecutePhaseChange>>>>>;
 
   struct amr : tt::ConformsTo<::amr::protocols::AmrMetavariables> {
@@ -371,19 +362,14 @@ struct EvolutionMetavars {
             Tags::StepperErrors<typename system::variables_tag>,
             SelfStart::Tags::InitialValue<typename system::variables_tag>,
             SelfStart::Tags::InitialValue<Tags::TimeStep>>,
-        ::amr::projectors::CopyFromCreatorOrLeaveAsIs<tmpl::push_back<
-            tmpl::conditional_t<
-                local_time_stepping,
-                tmpl::list<
-                    evolution::dg::Tags::ChangeFixedLtsRatio::
-                        NumberOfExpectedMessages,
-                    evolution::dg::Tags::ChangeFixedLtsRatio::NewStepSize>,
-                tmpl::list<>>,
+        ::amr::projectors::CopyFromCreatorOrLeaveAsIs<
+            evolution::dg::Tags::ChangeFixedLtsRatio::NumberOfExpectedMessages,
+            evolution::dg::Tags::ChangeFixedLtsRatio::NewStepSize,
             Tags::FixedLtsRatio,
             Parallel::Tags::Section<dg_element_array,
                                     evolution::dg::Tags::EqualRateRegionId>,
             Tags::ChangeSlabSize::NumberOfExpectedMessages,
-            Tags::ChangeSlabSize::NewSlabSize>>>;
+            Tags::ChangeSlabSize::NewSlabSize>>;
     static constexpr bool keep_coarse_grids = false;
     static constexpr bool p_refine_only_in_event = true;
   };
