@@ -644,8 +644,7 @@ struct EvolutionMetavars {
           typename system::gradient_variables>>>,
       gh::Actions::InitializeGhAnd3Plus1Variables<volume_dim>,
       Initialization::Actions::AddComputeTags<
-          tmpl::push_back<StepChoosers::step_chooser_compute_tags<
-              EvolutionMetavars, local_time_stepping>>>,
+          StepChoosers::step_chooser_compute_tags<EvolutionMetavars>>,
       Initialization::Actions::AddSimpleTags<
           gh::bbh::Actions::InitializeElementCompletionRequested>,
       ::evolution::dg::Initialization::Mortars<volume_dim>,

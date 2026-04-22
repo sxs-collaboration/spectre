@@ -138,8 +138,7 @@ struct TimeStepping {
 
   /// Tags for simple DataBox items that are default initialized.
   using default_initialized_simple_tags =
-      tmpl::push_back<StepChoosers::step_chooser_simple_tags<
-                          Metavariables, TimeStepperBase::local_time_stepping>,
+      tmpl::push_back<StepChoosers::step_chooser_simple_tags<Metavariables>,
                       ::Tags::TimeStepId, ::Tags::StepNumberWithinSlab,
                       ::Tags::AdaptiveSteppingDiagnostics>;
 

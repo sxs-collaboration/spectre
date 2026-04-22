@@ -35,30 +35,27 @@ namespace detail {
 CREATE_GET_TYPE_ALIAS_OR_DEFAULT(compute_tags)
 CREATE_GET_TYPE_ALIAS_OR_DEFAULT(simple_tags)
 
-template <typename Metavariables, bool UsingLts>
+template <typename Metavariables>
 using all_step_choosers = tmpl::join<tmpl::remove<
     tmpl::list<
         tmpl::at<typename Metavariables::factory_creation::factory_classes,
                  StepChooser<StepChooserUse::Slab>>,
-        tmpl::conditional_t<
-            UsingLts,
-            tmpl::at<typename Metavariables::factory_creation::factory_classes,
-                     StepChooser<StepChooserUse::LtsStep>>,
-            tmpl::no_such_type_>>,
+        tmpl::at<typename Metavariables::factory_creation::factory_classes,
+                 StepChooser<StepChooserUse::LtsStep>>>,
     tmpl::no_such_type_>>;
 }  // namespace detail
 
-template <typename Metavariables, bool UsingLts>
-using step_chooser_compute_tags = tmpl::remove_duplicates<tmpl::join<
-    tmpl::transform<detail::all_step_choosers<Metavariables, UsingLts>,
-                    detail::get_compute_tags_or_default<
-                        tmpl::_1, tmpl::pin<tmpl::list<>>>>>>;
+template <typename Metavariables>
+using step_chooser_compute_tags = tmpl::remove_duplicates<
+    tmpl::join<tmpl::transform<detail::all_step_choosers<Metavariables>,
+                               detail::get_compute_tags_or_default<
+                                   tmpl::_1, tmpl::pin<tmpl::list<>>>>>>;
 
-template <typename Metavariables, bool UsingLts>
-using step_chooser_simple_tags = tmpl::remove_duplicates<tmpl::join<
-    tmpl::transform<detail::all_step_choosers<Metavariables, UsingLts>,
-                    detail::get_simple_tags_or_default<
-                        tmpl::_1, tmpl::pin<tmpl::list<>>>>>>;
+template <typename Metavariables>
+using step_chooser_simple_tags = tmpl::remove_duplicates<
+    tmpl::join<tmpl::transform<detail::all_step_choosers<Metavariables>,
+                               detail::get_simple_tags_or_default<
+                                   tmpl::_1, tmpl::pin<tmpl::list<>>>>>>;
 }  // namespace StepChoosers
 
 /// A placeholder type to indicate that all constructible step choosers should

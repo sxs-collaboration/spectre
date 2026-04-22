@@ -443,8 +443,8 @@ struct GeneralizedHarmonicTemplateBase {
           domain::Tags::Coordinates<volume_dim, Frame::Inertial>>>,
       gh::Actions::InitializeGhAnd3Plus1Variables<volume_dim>,
       Initialization::Actions::AddComputeTags<
-          tmpl::push_back<StepChoosers::step_chooser_compute_tags<
-              GeneralizedHarmonicTemplateBase, local_time_stepping>>>,
+          StepChoosers::step_chooser_compute_tags<
+              GeneralizedHarmonicTemplateBase>>,
       ::evolution::dg::Initialization::Mortars<volume_dim>,
       tmpl::conditional_t<
           local_time_stepping,

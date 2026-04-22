@@ -488,8 +488,7 @@ struct ScalarTensorTemplateBase {
                                         Frame::Inertial>,
           typename system::gradient_variables>>,
       Initialization::Actions::AddComputeTags<
-          tmpl::push_back<StepChoosers::step_chooser_compute_tags<
-              ScalarTensorTemplateBase, local_time_stepping>>>,
+          StepChoosers::step_chooser_compute_tags<ScalarTensorTemplateBase>>,
       ::evolution::dg::Initialization::Mortars<volume_dim>,
       tmpl::conditional_t<
           local_time_stepping,

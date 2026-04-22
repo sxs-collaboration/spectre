@@ -300,8 +300,7 @@ struct EvolutionMetavars {
           CurvedScalarWave::Initialization::InitializeEvolvedVariables<
               volume_dim, solutions_and_data>>,
       Initialization::Actions::AddComputeTags<
-          StepChoosers::step_chooser_compute_tags<EvolutionMetavars,
-                                                  local_time_stepping>>,
+          StepChoosers::step_chooser_compute_tags<EvolutionMetavars>>,
       Initialization::Actions::AddComputeTags<tmpl::list<
           CurvedScalarWave::Worldtube::Tags::ParticlePositionVelocityCompute<
               volume_dim>,
