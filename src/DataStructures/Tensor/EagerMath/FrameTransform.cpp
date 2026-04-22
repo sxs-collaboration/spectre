@@ -360,6 +360,10 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (Frame::Inertial),
                         (Frame::BlockLogical, Frame::ElementLogical,
                          Frame::Grid, Frame::Distorted),
                         (double, DataVector))
+GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (Frame::Inertial),
+                        (Frame::NoFrame), (double, DataVector))
+GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (Frame::NoFrame),
+                        (Frame::Inertial), (double, DataVector))
 #undef INSTANTIATE
 
 #define TENSOR(data) BOOST_PP_TUPLE_ELEM(4, data)
@@ -392,6 +396,12 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (Frame::Inertial),
                         (Frame::BlockLogical, Frame::ElementLogical,
                          Frame::Grid, Frame::Distorted),
                         (double, DataVector), (I, i, iJ, ii, II, ijj))
+GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (Frame::Inertial),
+                        (Frame::NoFrame), (double, DataVector),
+                        (I, i, iJ, ii, II, ijj))
+GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (Frame::NoFrame),
+                        (Frame::Inertial), (double, DataVector),
+                        (I, i, iJ, ii, II, ijj))
 
 #undef INSTANTIATE
 
@@ -417,8 +427,8 @@ using make_real_t = std::conditional_t<
       const tnsr::TENSOR(data) < DTYPE(data), DIM(data),                       \
       DESTFRAME(data) > &input,                                                \
       const InverseJacobian<make_real_t<DTYPE(data)>, DIM(data),               \
-                            SRCFRAME(data), DESTFRAME(data)>& inv_jacobian)    \
-      -> TensorMetafunctions::prepend_spatial_index<                           \
+                            SRCFRAME(data), DESTFRAME(data)>&inv_jacobian)     \
+      ->TensorMetafunctions::prepend_spatial_index<                            \
           TensorMetafunctions::remove_first_index<                             \
               tnsr::TENSOR(data) < DTYPE(data), DIM(data), DESTFRAME(data)>>,  \
       DIM(data), UpLo::Up, SRCFRAME(data) > ;

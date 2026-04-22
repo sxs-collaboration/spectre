@@ -218,6 +218,15 @@ SPECTRE_TEST_CASE("Unit.Tensor.EagerMath.FrameTransform",
   test_transform_to_different_frame<1, Frame::Inertial, Frame::Distorted>(dv);
   test_transform_to_different_frame<2, Frame::Inertial, Frame::Distorted>(dv);
   test_transform_to_different_frame<3, Frame::Inertial, Frame::Distorted>(dv);
+  test_transform_to_different_frame<1, Frame::NoFrame, Frame::Inertial>(
+      double{});
+  test_transform_to_different_frame<2, Frame::NoFrame, Frame::Inertial>(
+      double{});
+  test_transform_to_different_frame<3, Frame::NoFrame, Frame::Inertial>(
+      double{});
+  test_transform_to_different_frame<1, Frame::NoFrame, Frame::Inertial>(dv);
+  test_transform_to_different_frame<2, Frame::NoFrame, Frame::Inertial>(dv);
+  test_transform_to_different_frame<3, Frame::NoFrame, Frame::Inertial>(dv);
   test_transform_first_index_to_different_frame();
 }
 
