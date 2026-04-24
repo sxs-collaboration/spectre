@@ -25,6 +25,7 @@
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Evolution/DgSubcell/GhostData.hpp"
+#include "Evolution/DgSubcell/Mesh.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/ConservativeFromPrimitive.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Tags.hpp"
 #include "Evolution/VariableFixing/FixToAtmosphere.hpp"
@@ -158,9 +159,20 @@ void reconstruct_prims_work(
     const Mesh<3>& subcell_mesh, const size_t ghost_zone_size,
     const bool compute_conservatives,
     const bool reconstruct_density_times_temperature) {
-  ASSERT(Mesh<3>(subcell_mesh.extents(0), subcell_mesh.basis(0),
-                 subcell_mesh.quadrature(0)) == subcell_mesh,
-         "The subcell mesh should be isotropic but got " << subcell_mesh);
+  // computation dimension accounts for "skipped" cartoon bases
+  const size_t comp_dim =
+      evolution::dg::subcell::fd::get_computational_dim(subcell_mesh);
+  evolution::dg::subcell::fd::verify_subcell_extents(subcell_mesh.extents());
+
+  const auto cartoon_neighbors =
+      comp_dim == 3
+          ? std::unordered_set<Direction<3>>{}
+          : (comp_dim == 2
+                 ? std::unordered_set<Direction<3>>{Direction<3>::lower_zeta(),
+                                                    Direction<3>::upper_zeta()}
+                 : std::unordered_set<Direction<3>>{
+                       Direction<3>::lower_eta(), Direction<3>::upper_eta(),
+                       Direction<3>::lower_zeta(), Direction<3>::upper_zeta()});
   const size_t volume_num_pts = subcell_mesh.number_of_grid_points();
   const size_t reconstructed_num_pts =
       (subcell_mesh.extents(0) + 1) *
@@ -178,8 +190,8 @@ void reconstruct_prims_work(
                                   reconstruct_density_times_temperature,
                                   reconstructed_num_pts, volume_num_pts,
                                   &volume_prims, &vars_on_lower_face,
-                                  &vars_on_upper_face,
-                                  &subcell_mesh](auto tag_v) {
+                                  &vars_on_upper_face, &subcell_mesh, comp_dim,
+                                  &cartoon_neighbors](auto tag_v) {
     (void)reconstruct_density_times_temperature;
     using tag = tmpl::type_from<decltype(tag_v)>;
     const typename tag::type* volume_tensor_ptr = nullptr;
@@ -250,6 +262,10 @@ void reconstruct_prims_work(
                    << direction);
         id = DirectionalId<3>{direction, *neighbors_in_direction.begin()};
       } else {
+        if (cartoon_neighbors.contains(direction)) {
+          // we don't need cartoon ghost data
+          continue;
+        }
         // retrieve boundary ghost data from neighbor_data
         ASSERT(
             element.external_boundaries().count(direction) == 1,
@@ -286,7 +302,7 @@ void reconstruct_prims_work(
                 subcell_mesh.extents(), number_of_variables);
     if constexpr (std::is_same_v<tag, hydro::Tags::Temperature<DataVector>>) {
       if (reconstruct_density_times_temperature) {
-        for (size_t i = 0; i < 3; ++i) {
+        for (size_t i = 0; i < comp_dim; ++i) {
           get(get<tag>(gsl::at(*vars_on_upper_face, i))) /=
               get(get<hydro::Tags::RestMassDensity<DataVector>>(
                   gsl::at(*vars_on_upper_face, i)));
@@ -298,7 +314,7 @@ void reconstruct_prims_work(
     }
   });
 
-  for (size_t i = 0; compute_conservatives and i < 3; ++i) {
+  for (size_t i = 0; compute_conservatives and i < comp_dim; ++i) {
     compute_conservatives_for_reconstruction(
         make_not_null(&gsl::at(*vars_on_lower_face, i)), eos, nullptr);
     compute_conservatives_for_reconstruction(

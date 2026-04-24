@@ -13,6 +13,8 @@
 #include "Domain/Structure/DirectionalIdMap.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Evolution/DgSubcell/GhostData.hpp"
+#include "Evolution/DgSubcell/Mesh.hpp"
+#include "NumericalAlgorithms/Spectral/Basis.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/Gsl.hpp"
@@ -36,10 +38,8 @@ void neighbor_data_as_variables(
     const size_t ghost_zone_size, const Mesh<Dim>& subcell_mesh) {
   const size_t neighbor_num_pts =
       ghost_zone_size * subcell_mesh.extents().slice_away(0).product();
-  ASSERT(
-      subcell_mesh == Mesh<Dim>(subcell_mesh.extents(0), subcell_mesh.basis(0),
-                                subcell_mesh.quadrature(0)),
-      "subcell_mesh must be isotropic but got " << subcell_mesh);
+  evolution::dg::subcell::fd::verify_subcell_extents(subcell_mesh.extents());
+
   vars_neighbor_data->clear();
   for (const auto& [neighbor_id, ghost_data] : all_ghost_data) {
     const DataVector& data =

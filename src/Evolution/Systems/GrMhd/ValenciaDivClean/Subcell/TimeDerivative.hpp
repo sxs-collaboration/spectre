@@ -18,6 +18,8 @@
 #include "DataStructures/TaggedContainers.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
+#include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
+#include "Domain/FunctionsOfTime/Tags.hpp"
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Tags.hpp"
 #include "Evolution/BoundaryCorrection.hpp"
@@ -25,6 +27,7 @@
 #include "Evolution/DgSubcell/CartesianFluxDivergence.hpp"
 #include "Evolution/DgSubcell/ComputeBoundaryTerms.hpp"
 #include "Evolution/DgSubcell/CorrectPackagedData.hpp"
+#include "Evolution/DgSubcell/Mesh.hpp"
 #include "Evolution/DgSubcell/Projection.hpp"
 #include "Evolution/DgSubcell/ReconstructionOrder.hpp"
 #include "Evolution/DgSubcell/SubcellOptions.hpp"
@@ -85,11 +88,10 @@ struct TimeDerivative {
     const Mesh<3>& subcell_mesh =
         db::get<evolution::dg::subcell::Tags::Mesh<3>>(*box);
     const Mesh<3>& dg_mesh = db::get<domain::Tags::Mesh<3>>(*box);
-    ASSERT(
-        is_isotropic(subcell_mesh),
-        "The subcell/FD mesh must be isotropic for the FD time derivative but "
-        "got "
-            << subcell_mesh);
+    const size_t comp_dim =
+        evolution::dg::subcell::fd::get_computational_dim(subcell_mesh);
+    evolution::dg::subcell::fd::verify_subcell_extents(subcell_mesh.extents());
+
     const size_t reconstructed_num_pts =
         (subcell_mesh.extents(0) + 1) *
         subcell_mesh.extents().slice_away(0).product();
@@ -200,10 +202,10 @@ struct TimeDerivative {
                &package_data_argvars_upper_face,
                &spacetime_vars_on_face =
                    db::get<evolution::dg::subcell::Tags::OnSubcellFaces<
-                       typename System::flux_spacetime_variables_tag, 3>>(
-                       *box)](auto tag_v) {
+                       typename System::flux_spacetime_variables_tag, 3>>(*box),
+               comp_dim](auto tag_v) {
                 using tag = tmpl::type_from<decltype(tag_v)>;
-                for (size_t d = 0; d < 3; ++d) {
+                for (size_t d = 0; d < comp_dim; ++d) { // comp_dim
                   get<tag>(gsl::at(package_data_argvars_lower_face, d)) =
                       get<tag>(gsl::at(spacetime_vars_on_face, d));
                   get<tag>(gsl::at(package_data_argvars_upper_face, d)) =
@@ -249,11 +251,10 @@ struct TimeDerivative {
               reconstructed_num_pts};
 
           // Compute fluxes on faces
-          for (size_t i = 0; i < 3; ++i) {
+          for (size_t i = 0; i < comp_dim; ++i) {
             // Build extents of mesh shifted by half a grid cell in direction i
             const unsigned long& num_subcells_1d = subcell_mesh.extents(0);
-            Index<3> face_mesh_extents(std::array<size_t, 3>{
-                num_subcells_1d, num_subcells_1d, num_subcells_1d});
+            Index<3> face_mesh_extents = subcell_mesh.extents();
             face_mesh_extents[i] = num_subcells_1d + 1;
 
             auto& vars_upper_face = gsl::at(package_data_argvars_upper_face, i);
@@ -475,7 +476,7 @@ struct TimeDerivative {
     const auto& cell_centered_det_inv_jacobian = db::get<
         evolution::dg::subcell::fd::Tags::DetInverseJacobianLogicalToInertial>(
         *box);
-    for (size_t dim = 0; dim < 3; ++dim) {
+    for (size_t dim = 0; dim < comp_dim; ++dim) {
       const auto& boundary_correction_in_axis =
           high_order_corrections.has_value()
               ? gsl::at(high_order_corrections.value(), dim)
@@ -483,8 +484,8 @@ struct TimeDerivative {
       const double inverse_delta = gsl::at(one_over_delta_xi, dim);
       tmpl::for_each<typename variables_tag::tags_list>(
           [&dt_vars_ptr, &boundary_correction_in_axis,
-           &cell_centered_det_inv_jacobian, dim, inverse_delta,
-           &subcell_mesh](auto evolved_var_tag_v) {
+           &cell_centered_det_inv_jacobian, dim, inverse_delta, &subcell_mesh,
+           comp_dim, &box](auto evolved_var_tag_v) {
             using evolved_var_tag =
                 tmpl::type_from<decltype(evolved_var_tag_v)>;
             using dt_tag = ::Tags::dt<evolved_var_tag>;
@@ -492,10 +493,24 @@ struct TimeDerivative {
             const auto& var_correction =
                 get<evolved_var_tag>(boundary_correction_in_axis);
             for (size_t i = 0; i < dt_var.size(); ++i) {
-              evolution::dg::subcell::add_cartesian_flux_divergence(
-                  make_not_null(&dt_var[i]), inverse_delta,
-                  get(cell_centered_det_inv_jacobian), var_correction[i],
-                  subcell_mesh.extents(), dim);
+              if (comp_dim == 3) {
+                evolution::dg::subcell::add_cartesian_flux_divergence(
+                    make_not_null(&dt_var[i]), inverse_delta,
+                    get(cell_centered_det_inv_jacobian), var_correction[i],
+                    subcell_mesh.extents(), dim);
+              } else {
+                evolution::dg::subcell::add_cartoon_cartesian_flux_divergence(
+                    make_not_null(&dt_var[i]), inverse_delta,
+                    get(cell_centered_det_inv_jacobian), var_correction[i],
+                    subcell_mesh.extents(), dim,
+                    db::get<evolution::dg::subcell::Tags::Coordinates<
+                        3, Frame::Inertial>>(*box),
+                    get<domain::Tags::ElementMap<3, Frame::Grid>>(*box),
+                    get<domain::CoordinateMaps::Tags::CoordinateMap<
+                        3, Frame::Grid, Frame::Inertial>>(*box),
+                    get<::Tags::Time>(*box),
+                    get<domain::Tags::FunctionsOfTime>(*box));
+              }
             }
           });
     }
