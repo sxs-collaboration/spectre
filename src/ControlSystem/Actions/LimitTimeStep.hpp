@@ -297,4 +297,24 @@ struct LimitTimeStep {
     return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
 };
+
+/// \ingroup ControlSystemGroup
+/// \brief No-control-system specialization that does nothing.
+///
+/// Exists just to avoid having to put conditionals in metavariables
+/// that may or may not have control systems.
+template <>
+struct LimitTimeStep<tmpl::list<>> {
+ public:
+  template <typename DbTagsList, typename... InboxTags, typename Metavariables,
+            size_t Dim, typename ActionList, typename ParallelComponent>
+  static Parallel::iterable_action_return_t apply(
+      db::DataBox<DbTagsList>& /*box*/,
+      const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
+      Parallel::GlobalCache<Metavariables>& /*cache*/,
+      const ElementId<Dim>& /*array_index*/, ActionList /*meta*/,
+      const ParallelComponent* const /*meta*/) {
+    return {Parallel::AlgorithmExecution::Continue, std::nullopt};
+  }
+};
 }  // namespace control_system::Actions

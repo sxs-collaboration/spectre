@@ -87,13 +87,15 @@ struct Component {
       Parallel::PhaseActions<Parallel::Phase::Initialization,
                              tmpl::list<ActionTesting::InitializeDataBox<
                                  simple_tags, compute_tags>>>,
-      Parallel::PhaseActions<
-          Parallel::Phase::Testing,
-          tmpl::list<control_system::Actions::LimitTimeStep<control_systems>>>>;
+      Parallel::PhaseActions<Parallel::Phase::Testing,
+                             tmpl::list<control_system::Actions::LimitTimeStep<
+                                 typename Metavariables::control_systems>>>>;
 };
 
+template <typename ControlSystems>
 struct Metavariables {
   using component_list = tmpl::list<Component<Metavariables>>;
+  using control_systems = ControlSystems;
 };
 
 void test(const std::string& test_label, const double initial_time,
@@ -165,8 +167,9 @@ void test(const std::string& test_label, const double initial_time,
   auto measurementsA = setup_measurements(*timescales["LabelA"]);
   auto measurementsBC = setup_measurements(*timescales["LabelBLabelC"]);
 
-  using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<Metavariables>;
-  using component = Component<Metavariables>;
+  using MockRuntimeSystem =
+      ActionTesting::MockRuntimeSystem<Metavariables<control_systems>>;
+  using component = Component<Metavariables<control_systems>>;
   MockRuntimeSystem runner{
       {1e-8}, {std::move(timescales), std::move(functions_of_time)}};
   ActionTesting::emplace_array_component_and_initialize<component>(
@@ -187,6 +190,36 @@ void test(const std::string& test_label, const double initial_time,
     CHECK(not ready);
     CHECK(not expected_step_end.has_value());
   }
+}
+
+// Check that the action does noting with no control systems, even if
+// the setup would be invalid with control systems.
+void test_no_control_systems() {
+  const ElementId<3> element_id{0};
+
+  std::unique_ptr<TimeStepper> stepper =
+      std::make_unique<TimeSteppers::AdamsMoultonPc<false>>(4);
+  const Slab initial_slab(0.0, 1.0);
+  const TimeStepId initial_id(true, 0, initial_slab.start());
+  // Simulate LTS
+  const auto time_step = initial_slab.duration() / 2;
+
+  using MockRuntimeSystem =
+      ActionTesting::MockRuntimeSystem<Metavariables<tmpl::list<>>>;
+  using component = Component<Metavariables<tmpl::list<>>>;
+  MockRuntimeSystem runner{{}};
+  ActionTesting::emplace_array_component_and_initialize<component>(
+      make_not_null(&runner), ActionTesting::NodeId{0},
+      ActionTesting::LocalCoreId{0}, element_id,
+      {control_system::FutureMeasurements{},
+       control_system::FutureMeasurements{}, std::move(stepper), initial_id,
+       TimeStepId{}, time_step, AdaptiveSteppingDiagnostics{},
+       TimeSteppers::History<Var::type>{}});
+
+  ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Testing);
+  ActionTesting::next_action<component>(make_not_null(&runner), element_id);
+  CHECK(ActionTesting::get_databox_tag<component, Tags::TimeStep>(
+            runner, element_id) == time_step);
 }
 }  // namespace
 
@@ -328,4 +361,6 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.Actions.LimitTimeStep",
           "Step must be decreased to avoid control-system deadlock, but "
           "time-stepper requires a fixed step size."));
   // clang-format on
+
+  test_no_control_systems();
 }
