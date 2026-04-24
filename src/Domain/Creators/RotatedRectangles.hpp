@@ -12,6 +12,7 @@
 #include "Domain/BoundaryConditions/BoundaryCondition.hpp"
 #include "Domain/BoundaryConditions/GetBoundaryConditionsBase.hpp"
 #include "Domain/Creators/DomainCreator.hpp"
+#include "Domain/Creators/TimeDependence/TimeDependence.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/Structure/DirectionMap.hpp"
 #include "Options/Context.hpp"
@@ -87,6 +88,13 @@ class RotatedRectangles : public DomainCreator<2> {
         "Sequence for [x], true if periodic."};
   };
 
+  struct TimeDependence {
+    using type =
+        std::unique_ptr<domain::creators::time_dependence::TimeDependence<2>>;
+    static constexpr Options::String help = {
+        "The time dependence of the moving mesh domain."};
+  };
+
   struct InitialRefinement {
     using type = std::array<size_t, 2>;
     static constexpr Options::String help = {
@@ -120,7 +128,8 @@ class RotatedRectangles : public DomainCreator<2> {
           tmpl::list<BoundaryCondition<
               domain::BoundaryConditions::get_boundary_conditions_base<
                   typename Metavariables::system>>>,
-          options_periodic>>;
+          options_periodic>,
+      tmpl::list<TimeDependence>>;
 
   static constexpr Options::String help = {
       "A DomainCreator useful for testing purposes.\n"
@@ -134,7 +143,9 @@ class RotatedRectangles : public DomainCreator<2> {
       typename UpperBound::type upper_xy,
       typename InitialRefinement::type initial_refinement_level_xy,
       typename InitialGridPoints::type initial_number_of_grid_points_in_xy,
-      typename IsPeriodicIn::type is_periodic_in);
+      typename IsPeriodicIn::type is_periodic_in,
+      std::unique_ptr<domain::creators::time_dependence::TimeDependence<2>>
+          time_dependence);
 
   RotatedRectangles(
       typename LowerBound::type lower_xy, typename Midpoint::type midpoint_xy,
@@ -143,6 +154,8 @@ class RotatedRectangles : public DomainCreator<2> {
       typename InitialGridPoints::type initial_number_of_grid_points_in_xy,
       std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
           boundary_condition,
+      std::unique_ptr<domain::creators::time_dependence::TimeDependence<2>>
+          time_dependence,
       const Options::Context& context = {});
 
   RotatedRectangles() = default;
@@ -157,6 +170,12 @@ class RotatedRectangles : public DomainCreator<2> {
   std::vector<DirectionMap<
       2, std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>
   external_boundary_conditions() const override;
+
+  auto functions_of_time(const std::unordered_map<std::string, double>&
+                             initial_expiration_times = {}) const
+      -> std::unordered_map<
+          std::string,
+          std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>> override;
 
   std::vector<std::string> block_names() const override;
 
@@ -178,6 +197,8 @@ class RotatedRectangles : public DomainCreator<2> {
       {{{std::numeric_limits<size_t>::max()}}}};
   std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
       boundary_condition_;
+  std::unique_ptr<domain::creators::time_dependence::TimeDependence<2>>
+      time_dependence_{nullptr};
 };
 }  // namespace creators
 }  // namespace domain

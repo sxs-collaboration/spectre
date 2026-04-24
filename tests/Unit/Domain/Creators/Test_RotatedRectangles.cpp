@@ -11,16 +11,21 @@
 #include <vector>
 
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "Domain/Block.hpp"
 #include "Domain/CoordinateMaps/Affine.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.tpp"
 #include "Domain/CoordinateMaps/DiscreteRotation.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.tpp"
+#include "Domain/CoordinateMaps/TimeDependent/Translation.hpp"
 #include "Domain/Creators/DomainCreator.hpp"
 #include "Domain/Creators/OptionTags.hpp"
 #include "Domain/Creators/RotatedRectangles.hpp"
+#include "Domain/Creators/TimeDependence/None.hpp"
+#include "Domain/Creators/TimeDependence/RegisterDerivedWithCharm.hpp"
 #include "Domain/Domain.hpp"
+#include "Domain/FunctionsOfTime/PiecewisePolynomial.hpp"
 #include "Domain/Structure/BlockNeighbors.hpp"
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/DirectionMap.hpp"
@@ -35,6 +40,7 @@
 
 namespace domain {
 namespace {
+template <typename... FuncsOfTime>
 void test_rotated_rectangles_construction(
     const creators::RotatedRectangles& rotated_rectangles,
     const std::array<double, 2>& lower_bound,
@@ -46,10 +52,18 @@ void test_rotated_rectangles_construction(
         expected_block_neighbors,
     const std::vector<std::unordered_set<Direction<2>>>&
         expected_external_boundaries,
+    const std::tuple<std::pair<std::string, FuncsOfTime>...>&
+        expected_functions_of_time,
+    const std::vector<std::unique_ptr<
+        domain::CoordinateMapBase<Frame::Grid, Frame::Inertial, 2>>>&
+        expected_grid_to_inertial_maps,
     const bool expect_boundary_conditions = false,
-    const bool is_periodic = false) {
+    const bool is_periodic = false,
+    const std::unordered_map<std::string, double>& initial_expiration_times =
+        {}) {
+  const std::vector<double> times{1.};
   const auto domain = TestHelpers::domain::creators::test_domain_creator(
-      rotated_rectangles, expect_boundary_conditions, is_periodic);
+      rotated_rectangles, expect_boundary_conditions, is_periodic, times);
   CHECK(rotated_rectangles.grid_anchors().empty());
 
   CHECK(rotated_rectangles.initial_extents() == expected_extents);
@@ -62,34 +76,41 @@ void test_rotated_rectangles_construction(
   using Affine = CoordinateMaps::Affine;
   using Affine2D = CoordinateMaps::ProductOf2Maps<Affine, Affine>;
   using DiscreteRotation2D = CoordinateMaps::DiscreteRotation<2>;
+  using TargetFrame =
+      tmpl::conditional_t<sizeof...(FuncsOfTime) == 0, Frame::Inertial,
+                          Frame::Grid>;
 
   const Affine lower_x_map(-1.0, 1.0, lower_bound[0], midpoint[0]);
   const Affine upper_x_map(-1.0, 1.0, midpoint[0], upper_bound[0]);
   const Affine lower_y_map(-1.0, 1.0, lower_bound[1], midpoint[1]);
   const Affine upper_y_map(-1.0, 1.0, midpoint[1], upper_bound[1]);
   std::vector<std::unique_ptr<
-      CoordinateMapBase<Frame::BlockLogical, Frame::Inertial, 2>>>
+      CoordinateMapBase<Frame::BlockLogical, TargetFrame, 2>>>
       coord_maps;
   coord_maps.emplace_back(
-      make_coordinate_map_base<Frame::BlockLogical, Frame::Inertial>(
+      make_coordinate_map_base<Frame::BlockLogical, TargetFrame>(
           Affine2D(lower_x_map, lower_y_map)));
   coord_maps.emplace_back(
-      make_coordinate_map_base<Frame::BlockLogical, Frame::Inertial>(
+      make_coordinate_map_base<Frame::BlockLogical, TargetFrame>(
           DiscreteRotation2D{OrientationMap<2>{std::array<Direction<2>, 2>{
               {Direction<2>::lower_xi(), Direction<2>::lower_eta()}}}},
           Affine2D(upper_x_map, lower_y_map)));
   coord_maps.emplace_back(
-      make_coordinate_map_base<Frame::BlockLogical, Frame::Inertial>(
+      make_coordinate_map_base<Frame::BlockLogical, TargetFrame>(
           DiscreteRotation2D{OrientationMap<2>{std::array<Direction<2>, 2>{
               {Direction<2>::lower_eta(), Direction<2>::upper_xi()}}}},
           Affine2D(lower_x_map, upper_y_map)));
   coord_maps.emplace_back(
-      make_coordinate_map_base<Frame::BlockLogical, Frame::Inertial>(
+      make_coordinate_map_base<Frame::BlockLogical, TargetFrame>(
           DiscreteRotation2D{OrientationMap<2>{std::array<Direction<2>, 2>{
               {Direction<2>::upper_eta(), Direction<2>::lower_xi()}}}},
           Affine2D(upper_x_map, upper_y_map)));
   test_domain_construction(domain, expected_block_neighbors,
-                           expected_external_boundaries, coord_maps);
+                           expected_external_boundaries, coord_maps, 10.0,
+                           rotated_rectangles.functions_of_time(),
+                           expected_grid_to_inertial_maps);
+  TestHelpers::domain::creators::test_functions_of_time(
+      rotated_rectangles, expected_functions_of_time, initial_expiration_times);
 }
 
 void test_rotated_rectangles() {
@@ -115,7 +136,8 @@ void test_rotated_rectangles() {
       {{refinement_level[0][0], refinement_level[0][1]}},
       {{{{grid_points[0][0], grid_points[1][0]}},
         {{grid_points[0][1], grid_points[2][0]}}}},
-      {{false, false}}};
+      {{false, false}},
+      nullptr};
   test_rotated_rectangles_construction(
       rotated_rectangles, lower_bound, midpoint, upper_bound, grid_points,
       refinement_level,
@@ -132,7 +154,8 @@ void test_rotated_rectangles() {
           {Direction<2>::lower_xi(), Direction<2>::lower_eta()},
           {Direction<2>::lower_xi(), Direction<2>::upper_eta()},
           {Direction<2>::upper_xi(), Direction<2>::upper_eta()},
-          {Direction<2>::lower_xi(), Direction<2>::upper_eta()}});
+          {Direction<2>::lower_xi(), Direction<2>::upper_eta()}},
+      std::tuple<>{}, {});
 
   const creators::RotatedRectangles rotated_rectangles_boundary_conditions{
       lower_bound,
@@ -143,7 +166,8 @@ void test_rotated_rectangles() {
         {{grid_points[0][1], grid_points[2][0]}}}},
       std::make_unique<
           TestHelpers::domain::BoundaryConditions::TestBoundaryCondition<2>>(
-          Direction<2>::lower_xi(), 2)};
+          Direction<2>::lower_xi(), 2),
+      nullptr};
 
   test_rotated_rectangles_construction(
       rotated_rectangles_boundary_conditions, lower_bound, midpoint,
@@ -162,7 +186,7 @@ void test_rotated_rectangles() {
           {Direction<2>::lower_xi(), Direction<2>::upper_eta()},
           {Direction<2>::upper_xi(), Direction<2>::upper_eta()},
           {Direction<2>::lower_xi(), Direction<2>::upper_eta()}},
-      true);
+      std::tuple<>{}, {}, true);
 
   const creators::RotatedRectangles rotated_periodic_rectangles{
       lower_bound,
@@ -171,7 +195,8 @@ void test_rotated_rectangles() {
       {{refinement_level[0][0], refinement_level[0][1]}},
       {{{{grid_points[0][0], grid_points[1][0]}},
         {{grid_points[0][1], grid_points[2][0]}}}},
-      {{true, true}}};
+      {{true, true}},
+      nullptr};
   test_rotated_rectangles_construction(
       rotated_periodic_rectangles, lower_bound, midpoint, upper_bound,
       grid_points, refinement_level,
@@ -192,8 +217,8 @@ void test_rotated_rectangles() {
            {Direction<2>::lower_eta(), {2, half_turn}},
            {Direction<2>::lower_xi(), {1, quarter_turn_cw}},
            {Direction<2>::upper_eta(), {2, half_turn}}}},
-      std::vector<std::unordered_set<Direction<2>>>{{}, {}, {}, {}}, false,
-      true);
+      std::vector<std::unordered_set<Direction<2>>>{{}, {}, {}, {}},
+      std::tuple<>{}, {}, false, true);
 
   const creators::RotatedRectangles
       periodic_rotated_rectangles_boundary_conditions{
@@ -204,7 +229,8 @@ void test_rotated_rectangles() {
           {{{{grid_points[0][0], grid_points[1][0]}},
             {{grid_points[0][1], grid_points[2][0]}}}},
           std::make_unique<TestHelpers::domain::BoundaryConditions::
-                               TestPeriodicBoundaryCondition<2>>()};
+                               TestPeriodicBoundaryCondition<2>>(),
+          nullptr};
   test_rotated_rectangles_construction(
       periodic_rotated_rectangles_boundary_conditions, lower_bound, midpoint,
       upper_bound, grid_points, refinement_level,
@@ -225,8 +251,8 @@ void test_rotated_rectangles() {
            {Direction<2>::lower_eta(), {2, half_turn}},
            {Direction<2>::lower_xi(), {1, quarter_turn_cw}},
            {Direction<2>::upper_eta(), {2, half_turn}}}},
-      std::vector<std::unordered_set<Direction<2>>>{{}, {}, {}, {}}, true,
-      true);
+      std::vector<std::unordered_set<Direction<2>>>{{}, {}, {}, {}},
+      std::tuple<>{}, {}, true, true);
 
   CHECK_THROWS_WITH(
       creators::RotatedRectangles(
@@ -236,7 +262,7 @@ void test_rotated_rectangles() {
             {{grid_points[0][1], grid_points[2][0]}}}},
           std::make_unique<TestHelpers::domain::BoundaryConditions::
                                TestNoneBoundaryCondition<2>>(),
-          Options::Context{false, {}, 1, 1}),
+          nullptr, Options::Context{false, {}, 1, 1}),
       Catch::Matchers::ContainsSubstring(
           "None boundary condition is not supported. If you would like "
           "an outflow-type boundary condition, you must use that."));
@@ -244,15 +270,32 @@ void test_rotated_rectangles() {
 
 void test_rotated_rectangles_factory() {
   INFO("Rotated rectangles factory");
+  domain::creators::time_dependence::register_derived_with_charm();
   const OrientationMap<2> half_turn{std::array<Direction<2>, 2>{
       {Direction<2>::lower_xi(), Direction<2>::lower_eta()}}};
   const OrientationMap<2> quarter_turn_cw{std::array<Direction<2>, 2>{
       {Direction<2>::upper_eta(), Direction<2>::lower_xi()}}};
   const OrientationMap<2> quarter_turn_ccw{std::array<Direction<2>, 2>{
       {Direction<2>::lower_eta(), Direction<2>::upper_xi()}}};
+  const std::vector<DirectionMap<2, BlockNeighbors<2>>>
+      expected_block_neighbors_nonperiodic{
+          {{Direction<2>::upper_xi(), {1, half_turn}},
+           {Direction<2>::upper_eta(), {2, quarter_turn_ccw}}},
+          {{Direction<2>::upper_xi(), {0, half_turn}},
+           {Direction<2>::lower_eta(), {3, quarter_turn_ccw}}},
+          {{Direction<2>::lower_xi(), {0, quarter_turn_cw}},
+           {Direction<2>::lower_eta(), {3, half_turn}}},
+          {{Direction<2>::upper_xi(), {1, quarter_turn_cw}},
+           {Direction<2>::lower_eta(), {2, half_turn}}}};
+  const std::vector<std::unordered_set<Direction<2>>>
+      expected_external_boundaries_nonperiodic{
+          {Direction<2>::lower_xi(), Direction<2>::lower_eta()},
+          {Direction<2>::lower_xi(), Direction<2>::upper_eta()},
+          {Direction<2>::upper_xi(), Direction<2>::upper_eta()},
+          {Direction<2>::lower_xi(), Direction<2>::upper_eta()}};
 
   {
-    INFO("No boundary condition");
+    INFO("No boundary condition, time independent");
     const auto domain_creator = TestHelpers::test_option_tag<
         domain::OptionTags::DomainCreator<2>,
         TestHelpers::domain::BoundaryConditions::
@@ -264,30 +307,19 @@ void test_rotated_rectangles_factory() {
         "  UpperBound: [5.1, 6.2]\n"
         "  IsPeriodicIn: [false, false]\n"
         "  InitialGridPoints: [[3,2],[1,4]]\n"
-        "  InitialRefinement: [2,1]\n");
+        "  InitialRefinement: [2,1]\n"
+        "  TimeDependence: None\n");
     const auto* rotated_rectangles_creator =
         dynamic_cast<const creators::RotatedRectangles*>(domain_creator.get());
     test_rotated_rectangles_construction(
         *rotated_rectangles_creator, {{0.1, -0.4}}, {{2.6, 3.2}}, {{5.1, 6.2}},
         {{{3, 1}}, {{2, 1}}, {{4, 3}}, {{4, 2}}},
         {{{2, 1}}, {{2, 1}}, {{1, 2}}, {{1, 2}}},
-        std::vector<DirectionMap<2, BlockNeighbors<2>>>{
-            {{Direction<2>::upper_xi(), {1, half_turn}},
-             {Direction<2>::upper_eta(), {2, quarter_turn_ccw}}},
-            {{Direction<2>::upper_xi(), {0, half_turn}},
-             {Direction<2>::lower_eta(), {3, quarter_turn_ccw}}},
-            {{Direction<2>::lower_xi(), {0, quarter_turn_cw}},
-             {Direction<2>::lower_eta(), {3, half_turn}}},
-            {{Direction<2>::upper_xi(), {1, quarter_turn_cw}},
-             {Direction<2>::lower_eta(), {2, half_turn}}}},
-        std::vector<std::unordered_set<Direction<2>>>{
-            {Direction<2>::lower_xi(), Direction<2>::lower_eta()},
-            {Direction<2>::lower_xi(), Direction<2>::upper_eta()},
-            {Direction<2>::upper_xi(), Direction<2>::upper_eta()},
-            {Direction<2>::lower_xi(), Direction<2>::upper_eta()}});
+        expected_block_neighbors_nonperiodic,
+        expected_external_boundaries_nonperiodic, std::tuple<>{}, {});
   }
   {
-    INFO("With boundary condition");
+    INFO("With boundary condition, time independent");
     const auto domain_creator = TestHelpers::test_option_tag<
         domain::OptionTags::DomainCreator<2>,
         TestHelpers::domain::BoundaryConditions::
@@ -302,28 +334,150 @@ void test_rotated_rectangles_factory() {
         "  BoundaryCondition:\n"
         "    TestBoundaryCondition:\n"
         "      Direction: lower-xi\n"
-        "      BlockId: 2\n");
+        "      BlockId: 2\n"
+        "  TimeDependence: None\n");
     const auto* rotated_rectangles_creator =
         dynamic_cast<const creators::RotatedRectangles*>(domain_creator.get());
     test_rotated_rectangles_construction(
         *rotated_rectangles_creator, {{0.1, -0.4}}, {{2.6, 3.2}}, {{5.1, 6.2}},
         {{{3, 1}}, {{2, 1}}, {{4, 3}}, {{4, 2}}},
         {{{2, 1}}, {{2, 1}}, {{1, 2}}, {{1, 2}}},
-        std::vector<DirectionMap<2, BlockNeighbors<2>>>{
-            {{Direction<2>::upper_xi(), {1, half_turn}},
-             {Direction<2>::upper_eta(), {2, quarter_turn_ccw}}},
-            {{Direction<2>::upper_xi(), {0, half_turn}},
-             {Direction<2>::lower_eta(), {3, quarter_turn_ccw}}},
-            {{Direction<2>::lower_xi(), {0, quarter_turn_cw}},
-             {Direction<2>::lower_eta(), {3, half_turn}}},
-            {{Direction<2>::upper_xi(), {1, quarter_turn_cw}},
-             {Direction<2>::lower_eta(), {2, half_turn}}}},
-        std::vector<std::unordered_set<Direction<2>>>{
-            {Direction<2>::lower_xi(), Direction<2>::lower_eta()},
-            {Direction<2>::lower_xi(), Direction<2>::upper_eta()},
-            {Direction<2>::upper_xi(), Direction<2>::upper_eta()},
-            {Direction<2>::lower_xi(), Direction<2>::upper_eta()}},
+        expected_block_neighbors_nonperiodic,
+        expected_external_boundaries_nonperiodic, std::tuple<>{}, {}, true);
+  }
+  {
+    INFO("No boundary condition, time dependent");
+    const auto domain_creator = TestHelpers::test_option_tag<
+        domain::OptionTags::DomainCreator<2>,
+        TestHelpers::domain::BoundaryConditions::
+            MetavariablesWithoutBoundaryConditions<
+                2, domain::creators::RotatedRectangles>>(
+        "RotatedRectangles:\n"
+        "  LowerBound: [0.1, -0.4]\n"
+        "  Midpoint:   [2.6, 3.2]\n"
+        "  UpperBound: [5.1, 6.2]\n"
+        "  IsPeriodicIn: [false, false]\n"
+        "  InitialGridPoints: [[3,2],[1,4]]\n"
+        "  InitialRefinement: [2,1]\n"
+        "  TimeDependence:\n"
+        "    UniformTranslation:\n"
+        "      InitialTime: 1.0\n"
+        "      Velocity: [2.3, 0.5]\n");
+    const auto* rotated_rectangles_creator =
+        dynamic_cast<const creators::RotatedRectangles*>(domain_creator.get());
+    const double initial_time = 1.0;
+    const DataVector velocity{{2.3, 0.5}};
+    const std::string f_of_t_name = "Translation";
+    std::unordered_map<std::string, double> initial_expiration_times{};
+    initial_expiration_times[f_of_t_name] = 10.0;
+    // without expiration times
+    test_rotated_rectangles_construction(
+        *rotated_rectangles_creator, {{0.1, -0.4}}, {{2.6, 3.2}}, {{5.1, 6.2}},
+        {{{3, 1}}, {{2, 1}}, {{4, 3}}, {{4, 2}}},
+        {{{2, 1}}, {{2, 1}}, {{1, 2}}, {{1, 2}}},
+        expected_block_neighbors_nonperiodic,
+        expected_external_boundaries_nonperiodic,
+        std::make_tuple(
+            std::pair<std::string,
+                      domain::FunctionsOfTime::PiecewisePolynomial<2>>{
+                f_of_t_name,
+                {initial_time,
+                 std::array<DataVector, 3>{{{0.0, 0.0}, velocity, {0.0, 0.0}}},
+                 std::numeric_limits<double>::infinity()}}),
+        make_vector_coordinate_map_base<Frame::Grid, Frame::Inertial>(
+            CoordinateMaps::TimeDependent::Translation<2>{f_of_t_name},
+            CoordinateMaps::TimeDependent::Translation<2>{f_of_t_name},
+            CoordinateMaps::TimeDependent::Translation<2>{f_of_t_name},
+            CoordinateMaps::TimeDependent::Translation<2>{f_of_t_name}));
+    // with expiration times
+    test_rotated_rectangles_construction(
+        *rotated_rectangles_creator, {{0.1, -0.4}}, {{2.6, 3.2}}, {{5.1, 6.2}},
+        {{{3, 1}}, {{2, 1}}, {{4, 3}}, {{4, 2}}},
+        {{{2, 1}}, {{2, 1}}, {{1, 2}}, {{1, 2}}},
+        expected_block_neighbors_nonperiodic,
+        expected_external_boundaries_nonperiodic,
+        std::make_tuple(
+            std::pair<std::string,
+                      domain::FunctionsOfTime::PiecewisePolynomial<2>>{
+                f_of_t_name,
+                {initial_time,
+                 std::array<DataVector, 3>{{{0.0, 0.0}, velocity, {0.0, 0.0}}},
+                 initial_expiration_times[f_of_t_name]}}),
+        make_vector_coordinate_map_base<Frame::Grid, Frame::Inertial>(
+            CoordinateMaps::TimeDependent::Translation<2>{f_of_t_name},
+            CoordinateMaps::TimeDependent::Translation<2>{f_of_t_name},
+            CoordinateMaps::TimeDependent::Translation<2>{f_of_t_name},
+            CoordinateMaps::TimeDependent::Translation<2>{f_of_t_name}),
+        false, false, initial_expiration_times);
+  }
+  {
+    INFO("With boundary condition, time dependent");
+    const auto domain_creator = TestHelpers::test_option_tag<
+        domain::OptionTags::DomainCreator<2>,
+        TestHelpers::domain::BoundaryConditions::
+            MetavariablesWithBoundaryConditions<
+                2, domain::creators::RotatedRectangles>>(
+        "RotatedRectangles:\n"
+        "  LowerBound: [0.1, -0.4]\n"
+        "  Midpoint:   [2.6, 3.2]\n"
+        "  UpperBound: [5.1, 6.2]\n"
+        "  InitialGridPoints: [[3,2],[1,4]]\n"
+        "  InitialRefinement: [2,1]\n"
+        "  BoundaryCondition:\n"
+        "    TestBoundaryCondition:\n"
+        "      Direction: lower-xi\n"
+        "      BlockId: 2\n"
+        "  TimeDependence:\n"
+        "    UniformTranslation:\n"
+        "      InitialTime: 1.0\n"
+        "      Velocity: [2.3, 0.5]\n");
+    const auto* rotated_rectangles_creator =
+        dynamic_cast<const creators::RotatedRectangles*>(domain_creator.get());
+    const double initial_time = 1.0;
+    const DataVector velocity{{2.3, 0.5}};
+    const std::string f_of_t_name = "Translation";
+    std::unordered_map<std::string, double> initial_expiration_times{};
+    initial_expiration_times[f_of_t_name] = 10.0;
+    // without expiration times
+    test_rotated_rectangles_construction(
+        *rotated_rectangles_creator, {{0.1, -0.4}}, {{2.6, 3.2}}, {{5.1, 6.2}},
+        {{{3, 1}}, {{2, 1}}, {{4, 3}}, {{4, 2}}},
+        {{{2, 1}}, {{2, 1}}, {{1, 2}}, {{1, 2}}},
+        expected_block_neighbors_nonperiodic,
+        expected_external_boundaries_nonperiodic,
+        std::make_tuple(
+            std::pair<std::string,
+                      domain::FunctionsOfTime::PiecewisePolynomial<2>>{
+                f_of_t_name,
+                {initial_time,
+                 std::array<DataVector, 3>{{{0.0, 0.0}, velocity, {0.0, 0.0}}},
+                 std::numeric_limits<double>::infinity()}}),
+        make_vector_coordinate_map_base<Frame::Grid, Frame::Inertial>(
+            CoordinateMaps::TimeDependent::Translation<2>{f_of_t_name},
+            CoordinateMaps::TimeDependent::Translation<2>{f_of_t_name},
+            CoordinateMaps::TimeDependent::Translation<2>{f_of_t_name},
+            CoordinateMaps::TimeDependent::Translation<2>{f_of_t_name}),
         true);
+    // with expiration times
+    test_rotated_rectangles_construction(
+        *rotated_rectangles_creator, {{0.1, -0.4}}, {{2.6, 3.2}}, {{5.1, 6.2}},
+        {{{3, 1}}, {{2, 1}}, {{4, 3}}, {{4, 2}}},
+        {{{2, 1}}, {{2, 1}}, {{1, 2}}, {{1, 2}}},
+        expected_block_neighbors_nonperiodic,
+        expected_external_boundaries_nonperiodic,
+        std::make_tuple(
+            std::pair<std::string,
+                      domain::FunctionsOfTime::PiecewisePolynomial<2>>{
+                f_of_t_name,
+                {initial_time,
+                 std::array<DataVector, 3>{{{0.0, 0.0}, velocity, {0.0, 0.0}}},
+                 initial_expiration_times[f_of_t_name]}}),
+        make_vector_coordinate_map_base<Frame::Grid, Frame::Inertial>(
+            CoordinateMaps::TimeDependent::Translation<2>{f_of_t_name},
+            CoordinateMaps::TimeDependent::Translation<2>{f_of_t_name},
+            CoordinateMaps::TimeDependent::Translation<2>{f_of_t_name},
+            CoordinateMaps::TimeDependent::Translation<2>{f_of_t_name}),
+        true, false, initial_expiration_times);
   }
 }
 }  // namespace

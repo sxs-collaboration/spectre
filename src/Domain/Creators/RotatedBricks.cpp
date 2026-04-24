@@ -10,8 +10,11 @@
 #include <vector>
 
 #include "DataStructures/Index.hpp"
+#include "Domain/Block.hpp"
 #include "Domain/BoundaryConditions/None.hpp"
 #include "Domain/BoundaryConditions/Periodic.hpp"
+#include "Domain/Creators/TimeDependence/None.hpp"
+#include "Domain/Creators/TimeDependence/TimeDependence.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/DomainHelpers.hpp"
 #include "Domain/Structure/Direction.hpp"
@@ -26,7 +29,9 @@ RotatedBricks::RotatedBricks(
     const typename UpperBound::type upper_xyz,
     const typename InitialRefinement::type initial_refinement_level_xyz,
     const typename InitialGridPoints::type initial_number_of_grid_points_in_xyz,
-    const typename IsPeriodicIn::type is_periodic_in)
+    const typename IsPeriodicIn::type is_periodic_in,
+    std::unique_ptr<domain::creators::time_dependence::TimeDependence<3>>
+        time_dependence)
     // clang-tidy: trivially copyable
     : lower_xyz_(std::move(lower_xyz)),                      // NOLINT
       midpoint_xyz_(std::move(midpoint_xyz)),                // NOLINT
@@ -36,7 +41,13 @@ RotatedBricks::RotatedBricks(
           std::move(initial_refinement_level_xyz)),          // NOLINT
       initial_number_of_grid_points_in_xyz_(                 // NOLINT
           std::move(initial_number_of_grid_points_in_xyz)),  // NOLINT
-      boundary_condition_(nullptr) {}
+      boundary_condition_(nullptr),
+      time_dependence_(std::move(time_dependence)) {
+  if (time_dependence_ == nullptr) {
+    time_dependence_ =
+        std::make_unique<domain::creators::time_dependence::None<3>>();
+  }
+}
 
 RotatedBricks::RotatedBricks(
     const typename LowerBound::type lower_xyz,
@@ -46,6 +57,8 @@ RotatedBricks::RotatedBricks(
     const typename InitialGridPoints::type initial_number_of_grid_points_in_xyz,
     std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
         boundary_condition,
+    std::unique_ptr<domain::creators::time_dependence::TimeDependence<3>>
+        time_dependence,
     const Options::Context& context)
     // clang-tidy: trivially copyable
     : lower_xyz_(std::move(lower_xyz)),                      // NOLINT
@@ -56,7 +69,12 @@ RotatedBricks::RotatedBricks(
           std::move(initial_refinement_level_xyz)),          // NOLINT
       initial_number_of_grid_points_in_xyz_(                 // NOLINT
           std::move(initial_number_of_grid_points_in_xyz)),  // NOLINT
-      boundary_condition_(std::move(boundary_condition)) {
+      boundary_condition_(std::move(boundary_condition)),
+      time_dependence_(std::move(time_dependence)) {
+  if (time_dependence_ == nullptr) {
+    time_dependence_ =
+        std::make_unique<domain::creators::time_dependence::None<3>>();
+  }
   using domain::BoundaryConditions::is_none;
   if (is_none(boundary_condition_)) {
     PARSE_ERROR(
@@ -73,7 +91,7 @@ RotatedBricks::RotatedBricks(
 }
 
 Domain<3> RotatedBricks::create_domain() const {
-  return rectilinear_domain<3>(
+  Domain<3> domain = rectilinear_domain<3>(
       Index<3>{2, 2, 2},
       std::array<std::vector<double>, 3>{
           {{lower_xyz_[0], midpoint_xyz_[0], upper_xyz_[0]},
@@ -104,6 +122,34 @@ Domain<3> RotatedBricks::create_domain() const {
               {Direction<3>::upper_xi(), Direction<3>::upper_eta(),
                Direction<3>::upper_zeta()}}}},
       is_periodic_in_);
+  if (not time_dependence_->is_none()) {
+    const size_t number_of_blocks = domain.blocks().size();
+    auto block_maps_grid_to_inertial =
+        time_dependence_->block_maps_grid_to_inertial(number_of_blocks);
+    auto block_maps_grid_to_distorted =
+        time_dependence_->block_maps_grid_to_distorted(number_of_blocks);
+    auto block_maps_distorted_to_inertial =
+        time_dependence_->block_maps_distorted_to_inertial(number_of_blocks);
+    for (size_t block_id = 0; block_id < number_of_blocks; ++block_id) {
+      domain.inject_time_dependent_map_for_block(
+          block_id, std::move(block_maps_grid_to_inertial[block_id]),
+          std::move(block_maps_grid_to_distorted[block_id]),
+          std::move(block_maps_distorted_to_inertial[block_id]));
+    }
+  }
+  return domain;
+}
+
+std::unordered_map<std::string,
+                   std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>
+RotatedBricks::functions_of_time(
+    const std::unordered_map<std::string, double>& initial_expiration_times)
+    const {
+  if (time_dependence_->is_none()) {
+    return {};
+  } else {
+    return time_dependence_->functions_of_time(initial_expiration_times);
+  }
 }
 
 std::vector<DirectionMap<

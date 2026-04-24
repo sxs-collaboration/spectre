@@ -10,8 +10,11 @@
 #include <vector>
 
 #include "DataStructures/Index.hpp"
+#include "Domain/Block.hpp"
 #include "Domain/BoundaryConditions/None.hpp"
 #include "Domain/BoundaryConditions/Periodic.hpp"
+#include "Domain/Creators/TimeDependence/None.hpp"
+#include "Domain/Creators/TimeDependence/TimeDependence.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/DomainHelpers.hpp"
 #include "Domain/Structure/Direction.hpp"
@@ -27,7 +30,9 @@ RotatedRectangles::RotatedRectangles(
     const typename UpperBound::type upper_xy,
     const typename InitialRefinement::type initial_refinement_level_xy,
     const typename InitialGridPoints::type initial_number_of_grid_points_in_xy,
-    const typename IsPeriodicIn::type is_periodic_in)
+    const typename IsPeriodicIn::type is_periodic_in,
+    std::unique_ptr<domain::creators::time_dependence::TimeDependence<2>>
+        time_dependence)
     // clang-tidy: trivially copyable
     : lower_xy_(std::move(lower_xy)),                       // NOLINT
       midpoint_xy_(std::move(midpoint_xy)),                 // NOLINT
@@ -37,7 +42,13 @@ RotatedRectangles::RotatedRectangles(
           std::move(initial_refinement_level_xy)),          // NOLINT
       initial_number_of_grid_points_in_xy_(                 // NOLINT
           std::move(initial_number_of_grid_points_in_xy)),  // NOLINT
-      boundary_condition_(nullptr) {}
+      boundary_condition_(nullptr),
+      time_dependence_(std::move(time_dependence)) {
+  if (time_dependence_ == nullptr) {
+    time_dependence_ =
+        std::make_unique<domain::creators::time_dependence::None<2>>();
+  }
+}
 
 RotatedRectangles::RotatedRectangles(
     const typename LowerBound::type lower_xy,
@@ -47,6 +58,8 @@ RotatedRectangles::RotatedRectangles(
     const typename InitialGridPoints::type initial_number_of_grid_points_in_xy,
     std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
         boundary_condition,
+    std::unique_ptr<domain::creators::time_dependence::TimeDependence<2>>
+        time_dependence,
     const Options::Context& context)
     : lower_xy_(lower_xy),
       midpoint_xy_(midpoint_xy),
@@ -54,7 +67,12 @@ RotatedRectangles::RotatedRectangles(
       is_periodic_in_{{false, false}},
       initial_refinement_level_xy_(initial_refinement_level_xy),
       initial_number_of_grid_points_in_xy_(initial_number_of_grid_points_in_xy),
-      boundary_condition_(std::move(boundary_condition)) {
+      boundary_condition_(std::move(boundary_condition)),
+      time_dependence_(std::move(time_dependence)) {
+  if (time_dependence_ == nullptr) {
+    time_dependence_ =
+        std::make_unique<domain::creators::time_dependence::None<2>>();
+  }
   using domain::BoundaryConditions::is_none;
   if (is_none(boundary_condition_)) {
     PARSE_ERROR(
@@ -70,7 +88,7 @@ RotatedRectangles::RotatedRectangles(
 }
 
 Domain<2> RotatedRectangles::create_domain() const {
-  return rectilinear_domain<2>(
+  Domain<2> domain = rectilinear_domain<2>(
       Index<2>{2, 2},
       std::array<std::vector<double>, 2>{
           {{lower_xy_[0], midpoint_xy_[0], upper_xy_[0]},
@@ -85,6 +103,34 @@ Domain<2> RotatedRectangles::create_domain() const {
           OrientationMap<2>{
               std::array{Direction<2>::upper_eta(), Direction<2>::lower_xi()}}},
       is_periodic_in_);
+  if (not time_dependence_->is_none()) {
+    const size_t number_of_blocks = domain.blocks().size();
+    auto block_maps_grid_to_inertial =
+        time_dependence_->block_maps_grid_to_inertial(number_of_blocks);
+    auto block_maps_grid_to_distorted =
+        time_dependence_->block_maps_grid_to_distorted(number_of_blocks);
+    auto block_maps_distorted_to_inertial =
+        time_dependence_->block_maps_distorted_to_inertial(number_of_blocks);
+    for (size_t block_id = 0; block_id < number_of_blocks; ++block_id) {
+      domain.inject_time_dependent_map_for_block(
+          block_id, std::move(block_maps_grid_to_inertial[block_id]),
+          std::move(block_maps_grid_to_distorted[block_id]),
+          std::move(block_maps_distorted_to_inertial[block_id]));
+    }
+  }
+  return domain;
+}
+
+std::unordered_map<std::string,
+                   std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>
+RotatedRectangles::functions_of_time(
+    const std::unordered_map<std::string, double>& initial_expiration_times)
+    const {
+  if (time_dependence_->is_none()) {
+    return {};
+  } else {
+    return time_dependence_->functions_of_time(initial_expiration_times);
+  }
 }
 
 std::vector<DirectionMap<

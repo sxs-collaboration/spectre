@@ -12,6 +12,7 @@
 #include "Domain/BoundaryConditions/BoundaryCondition.hpp"
 #include "Domain/BoundaryConditions/GetBoundaryConditionsBase.hpp"
 #include "Domain/Creators/DomainCreator.hpp"
+#include "Domain/Creators/TimeDependence/TimeDependence.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/Structure/DirectionMap.hpp"
 #include "Options/Context.hpp"
@@ -135,6 +136,13 @@ class RotatedBricks : public DomainCreator<3> {
         "Sequence in [x,y,z], true if periodic."};
   };
 
+  struct TimeDependence {
+    using type =
+        std::unique_ptr<domain::creators::time_dependence::TimeDependence<3>>;
+    static constexpr Options::String help = {
+        "The time dependence of the moving mesh domain."};
+  };
+
   struct InitialRefinement {
     using type = std::array<size_t, 3>;
     static constexpr Options::String help = {
@@ -168,7 +176,8 @@ class RotatedBricks : public DomainCreator<3> {
           tmpl::list<BoundaryCondition<
               domain::BoundaryConditions::get_boundary_conditions_base<
                   typename Metavariables::system>>>,
-          options_periodic>>;
+          options_periodic>,
+      tmpl::list<TimeDependence>>;
 
   static constexpr Options::String help = {
       "A DomainCreator useful for testing purposes.\n"
@@ -182,7 +191,9 @@ class RotatedBricks : public DomainCreator<3> {
       typename UpperBound::type upper_xyz,
       typename InitialRefinement::type initial_refinement_level_xyz,
       typename InitialGridPoints::type initial_number_of_grid_points_in_xyz,
-      typename IsPeriodicIn::type is_periodic_in);
+      typename IsPeriodicIn::type is_periodic_in,
+      std::unique_ptr<domain::creators::time_dependence::TimeDependence<3>>
+          time_dependence);
 
   RotatedBricks(
       typename LowerBound::type lower_xyz, typename Midpoint::type midpoint_xyz,
@@ -191,6 +202,8 @@ class RotatedBricks : public DomainCreator<3> {
       typename InitialGridPoints::type initial_number_of_grid_points_in_xyz,
       std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
           boundary_condition,
+      std::unique_ptr<domain::creators::time_dependence::TimeDependence<3>>
+          time_dependence,
       const Options::Context& context = {});
 
   RotatedBricks() = default;
@@ -205,6 +218,12 @@ class RotatedBricks : public DomainCreator<3> {
   std::vector<DirectionMap<
       3, std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>
   external_boundary_conditions() const override;
+
+  auto functions_of_time(const std::unordered_map<std::string, double>&
+                             initial_expiration_times = {}) const
+      -> std::unordered_map<
+          std::string,
+          std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>> override;
 
   std::vector<std::string> block_names() const override;
 
@@ -226,6 +245,8 @@ class RotatedBricks : public DomainCreator<3> {
       {{{std::numeric_limits<size_t>::max()}}}};
   std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
       boundary_condition_;
+  std::unique_ptr<domain::creators::time_dependence::TimeDependence<3>>
+      time_dependence_{nullptr};
 };
 }  // namespace creators
 }  // namespace domain

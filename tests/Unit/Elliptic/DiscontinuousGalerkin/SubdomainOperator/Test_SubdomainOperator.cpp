@@ -977,7 +977,8 @@ SPECTRE_TEST_CASE("Unit.Elliptic.DG.SubdomainOperator", "[Unit][Elliptic]") {
           {{1, 1}},
           {{{{3, 3}}, {{3, 3}}}},
           make_boundary_condition<system>(
-              elliptic::BoundaryConditionType::Dirichlet)};
+              elliptic::BoundaryConditionType::Dirichlet),
+          nullptr};
       test_subdomain_operator<system>(domain_creator);
     }
     {
@@ -991,7 +992,8 @@ SPECTRE_TEST_CASE("Unit.Elliptic.DG.SubdomainOperator", "[Unit][Elliptic]") {
           {{1, 1}},
           {{{{3, 3}}, {{3, 3}}}},
           make_boundary_condition<system>(
-              elliptic::BoundaryConditionType::Dirichlet)};
+              elliptic::BoundaryConditionType::Dirichlet),
+          nullptr};
       test_subdomain_operator<system>(domain_creator);
     }
     {
@@ -1004,7 +1006,8 @@ SPECTRE_TEST_CASE("Unit.Elliptic.DG.SubdomainOperator", "[Unit][Elliptic]") {
           {{1, 0, 0}},
           {{{{3, 3}}, {{3, 3}}, {{3, 3}}}},
           make_boundary_condition<system>(
-              elliptic::BoundaryConditionType::Dirichlet)};
+              elliptic::BoundaryConditionType::Dirichlet),
+          nullptr};
       test_subdomain_operator<system>(domain_creator);
     }
   }
