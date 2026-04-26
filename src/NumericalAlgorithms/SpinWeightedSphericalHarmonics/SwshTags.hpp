@@ -251,13 +251,17 @@ struct SwshInterpolator : db::SimpleTag, db::PrefixTag {
 }  // namespace Tags
 
 namespace detail {
-// implementation for get_tags_with_spin
 template <typename Tag, typename S>
 struct has_spin : std::bool_constant<Tag::type::type::spin == S::value> {};
 
-template <typename PrefixTag, typename S>
-struct wrapped_has_spin : has_spin<typename PrefixTag::tag, S> {};
+template <typename TagList>
+struct spins_in_tag_list;
 
+template <typename... Tags>
+struct spins_in_tag_list<tmpl::list<Tags...>> {
+  using type = tmpl::sort<tmpl::remove_duplicates<
+      tmpl::list<std::integral_constant<int, Tags::type::type::spin>...>>>;
+};
 }  // namespace detail
 
 /// \ingroup SwshGroup
@@ -272,23 +276,21 @@ using coefficient_buffer_tags_for_derivative_tag = tmpl::list<
     Spectral::Swsh::Tags::SwshTransform<DerivativeTag>>;
 
 /// \ingroup SwshGroup
-/// \brief Extract from `TagList` the subset of those tags that have a static
-/// int member `spin` equal to the template parameter `Spin`.
+/// \brief Get a list of distinct spins appearing in `TagList`.
 ///
-/// \snippet Test_SwshTags.cpp get_tags_with_spin
-template <int Spin, typename TagList>
-using get_tags_with_spin = tmpl::remove_duplicates<tmpl::filter<
-    TagList, detail::has_spin<tmpl::_1, std::integral_constant<int, Spin>>>>;
+/// \snippet Test_SwshTags.cpp spins_in_tag_list
+template <typename TagList>
+using spins_in_tag_list = typename detail::spins_in_tag_list<TagList>::type;
 
 /// \ingroup SwshGroup
-/// \brief Extract from `TagList` the subset of  those tags that wrap a tag
-/// that has a static int member `spin` equal to the template parameter `Spin`.
+/// \brief Partition `TagList` into lists with the same spin.
 ///
-/// \snippet Test_SwshTags.cpp get_prefix_tags_that_wrap_tags_with_spin
-template <int Spin, typename TagList>
-using get_prefix_tags_that_wrap_tags_with_spin =
-    tmpl::filter<TagList, tmpl::bind<detail::wrapped_has_spin, tmpl::_1,
-                                     std::integral_constant<int, Spin>>>;
-
+/// \snippet Test_SwshTags.cpp partition_tags_by_spin
+template <typename TagList>
+using partition_tags_by_spin = tmpl::transform<
+    spins_in_tag_list<TagList>,
+    tmpl::lazy::filter<
+        tmpl::pin<TagList>,
+        tmpl::defer<detail::has_spin<tmpl::_1, tmpl::parent<tmpl::_1>>>>>;
 }  // namespace Swsh
 }  // namespace Spectral

@@ -684,39 +684,21 @@ void inverse_swsh_transform_impl(
                        l_max, number_of_radial_points);
 }
 
-// A metafunction for binning a provided tag list into `SwshTransform` objects
-// according to spin-weight
-template <int MinSpin, ComplexRepresentation Representation, typename TagList,
-          typename IndexSequence>
+template <ComplexRepresentation Representation, typename PartitionedTagList>
 struct make_transform_list_impl;
 
-template <int MinSpin, ComplexRepresentation Representation, typename TagList,
-          int... Is>
-struct make_transform_list_impl<MinSpin, Representation, TagList,
-                                std::integer_sequence<int, Is...>> {
-  using type = tmpl::flatten<tmpl::list<tmpl::conditional_t<
-      not std::is_same_v<get_tags_with_spin<Is + MinSpin, TagList>,
-                         tmpl::list<>>,
-      SwshTransform<get_tags_with_spin<Is + MinSpin, TagList>, Representation>,
-      tmpl::list<>>...>>;
+template <ComplexRepresentation Representation, typename... Partition>
+struct make_transform_list_impl<Representation, tmpl::list<Partition...>> {
+  using type = tmpl::list<SwshTransform<Partition, Representation>...>;
 };
 
-// A metafunction for binning a provided tag list into `InverseSwshTransform`
-// objects according to spin-weight
-template <int MinSpin, ComplexRepresentation Representation, typename TagList,
-          typename IndexSequence>
+template <ComplexRepresentation Representation, typename PartitionedTagList>
 struct make_inverse_transform_list_impl;
 
-template <int MinSpin, ComplexRepresentation Representation, typename TagList,
-          int... Is>
-struct make_inverse_transform_list_impl<MinSpin, Representation, TagList,
-                                        std::integer_sequence<int, Is...>> {
-  using type = tmpl::flatten<tmpl::list<tmpl::conditional_t<
-      not std::is_same_v<get_tags_with_spin<Is + MinSpin, TagList>,
-                         tmpl::list<>>,
-      InverseSwshTransform<get_tags_with_spin<Is + MinSpin, TagList>,
-                           Representation>,
-      tmpl::list<>>...>>;
+template <ComplexRepresentation Representation, typename... Partition>
+struct make_inverse_transform_list_impl<Representation,
+                                        tmpl::list<Partition...>> {
+  using type = tmpl::list<InverseSwshTransform<Partition, Representation>...>;
 };
 }  // namespace detail
 
@@ -727,24 +709,15 @@ struct make_inverse_transform_list_impl<MinSpin, Representation, TagList,
 /// transformed. The `Representation` is the
 /// `Spectral::Swsh::ComplexRepresentation` to use for the transformations.
 ///
-/// \details Up to five `SwshTransform`s or `InverseSwshTransform`s will be
-/// returned, corresponding to the possible spin values. Any number of
-/// transformations are aggregated into that set of `SwshTransform`s (or
-/// `InverseSwshTransform`s). The number of transforms is up to five because the
-/// libsharp utility only has capability to perform spin-weighted spherical
-/// harmonic transforms for integer spin-weights from -2 to 2.
-///
 /// \snippet Test_SwshTransform.cpp make_transform_list
 template <ComplexRepresentation Representation, typename TagList>
 using make_transform_list = typename detail::make_transform_list_impl<
-    -2, Representation, TagList,
-    decltype(std::make_integer_sequence<int, 5>{})>::type;
+    Representation, partition_tags_by_spin<TagList>>::type;
 
 template <ComplexRepresentation Representation, typename TagList>
 using make_inverse_transform_list =
     typename detail::make_inverse_transform_list_impl<
-        -2, Representation, TagList,
-        decltype(std::make_integer_sequence<int, 5>{})>::type;
+        Representation, partition_tags_by_spin<TagList>>::type;
 /// @}
 
 /// \ingroup SwshGroup
@@ -759,12 +732,10 @@ using make_inverse_transform_list =
 ///
 /// \snippet Test_SwshTransform.cpp make_transform_from_derivative_tags
 template <ComplexRepresentation Representation, typename DerivativeTagList>
-using make_transform_list_from_derivative_tags =
-    typename detail::make_transform_list_impl<
-        -2, Representation,
-        tmpl::transform<DerivativeTagList,
-                        tmpl::bind<db::remove_tag_prefix, tmpl::_1>>,
-        decltype(std::make_integer_sequence<int, 5>{})>::type;
+using make_transform_list_from_derivative_tags = make_transform_list<
+    Representation,
+    tmpl::remove_duplicates<tmpl::transform<
+        DerivativeTagList, tmpl::bind<db::remove_tag_prefix, tmpl::_1>>>>;
 
 /// \ingroup SwshGroup
 /// \brief Convert spin-weighted spherical harmonic data to a new set of
