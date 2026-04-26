@@ -431,8 +431,7 @@ struct component {
           Metavariables::volume_dim, Frame::ElementLogical, Frame::Inertial>>;
 
   using lts_action = ::evolution::dg::Actions::ApplyLtsBoundaryCorrections<
-      Metavariables::volume_dim, false,
-      Metavariables::use_nodegroup_dg_elements>;
+      Metavariables::volume_dim, Metavariables::use_nodegroup_dg_elements>;
   using gts_action =
       ::evolution::dg::Actions::ApplyBoundaryCorrectionsToTimeDerivative<
           Metavariables::volume_dim, Metavariables::use_nodegroup_dg_elements>;
@@ -1065,16 +1064,16 @@ struct ReceiveOrderComponent {
       domain::Tags::Element<1>, domain::Tags::NeighborMesh<1>>;
   using compute_tags = tmpl::push_back<time_stepper_ref_tags<LtsTimeStepper>>;
 
-  using phase_dependent_action_list = tmpl::list<
-      Parallel::PhaseActions<
-          Parallel::Phase::Initialization,
-          tmpl::list<
-              ActionTesting::InitializeDataBox<simple_tags, compute_tags>,
-              ::evolution::dg::Initialization::Mortars<1>>>,
-      Parallel::PhaseActions<
-          Parallel::Phase::Testing,
-          tmpl::list<::evolution::dg::Actions::ApplyLtsBoundaryCorrections<
-              1, false, false>>>>;
+  using phase_dependent_action_list =
+      tmpl::list<Parallel::PhaseActions<
+                     Parallel::Phase::Initialization,
+                     tmpl::list<ActionTesting::InitializeDataBox<simple_tags,
+                                                                 compute_tags>,
+                                ::evolution::dg::Initialization::Mortars<1>>>,
+                 Parallel::PhaseActions<
+                     Parallel::Phase::Testing,
+                     tmpl::list<::evolution::dg::Actions::
+                                    ApplyLtsBoundaryCorrections<1, false>>>>;
 };
 
 struct ReceiveOrderMetavariables {
