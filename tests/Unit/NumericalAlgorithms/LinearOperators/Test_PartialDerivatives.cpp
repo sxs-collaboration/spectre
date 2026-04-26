@@ -2334,6 +2334,72 @@ void test_cartoon_partial_derivatives_compute_item(
           expected_du);
   CHECK_ITERABLE_APPROX(du_prefixed, expected_du_prefixed);
 }
+
+template <size_t CompDim, typename T>
+void test_cartoon_partial_derivatives_tensor_compute_item(
+    const std::array<size_t, 3> extents_array, const T& map) {
+  using tensor_tag = ::Tags::TempA<0, 3, Frame::Grid>;
+  using map_tag = MapTag<std::decay_t<decltype(map)>>;
+  using inv_jac_tag =
+      domain::Tags::InverseJacobianCompute<map_tag,
+                                           domain::Tags::LogicalCoordinates<3>>;
+  using deriv_tensor_tag =
+      Tags::DerivTensorCompute<tensor_tag, inv_jac_tag, domain::Tags::Mesh<3>,
+                               domain::Tags::Coordinates<3, Frame::Inertial>>;
+
+  const auto pad_at_end = []<typename ElemType>(const ElemType default_val,
+                                                const ElemType padding_val) {
+    std::array<ElemType, 3> arr{};
+    for (size_t i = 0; i < 3; ++i) {
+      gsl::at(arr, i) = i < CompDim ? default_val : padding_val;
+    }
+    return arr;
+  };
+  const Mesh<3> mesh{
+      extents_array,
+      pad_at_end(Spectral::Basis::Legendre, Spectral::Basis::Cartoon),
+      pad_at_end(Spectral::Quadrature::GaussLobatto,
+                 CompDim == 1 ? Spectral::Quadrature::SphericalSymmetry
+                              : Spectral::Quadrature::AxialSymmetry)};
+  const size_t num_grid_points = mesh.number_of_grid_points();
+  const auto x = map(logical_coordinates(mesh));
+
+  // Filling with x^a (not testing internal cartoon derivative logic here)
+  typename tensor_tag::type u(num_grid_points);
+  get<0>(u) = cartoon_func<CompDim == 1>(x);
+  get<1>(u) = get<0>(x) * cartoon_func<CompDim == 1>(x);
+  get<2>(u) = get<1>(x) * cartoon_func<CompDim == 1>(x);
+  get<3>(u) = get<2>(x) * cartoon_func<CompDim == 1>(x);
+
+  TensorMetafunctions::prepend_spatial_index<typename tensor_tag::type, 3,
+                                             UpLo::Lo, Frame::Grid>
+      expected_du(num_grid_points);
+  for (size_t i = 0; i < index_dim<0>(expected_du); ++i) {
+    for (size_t a = 0; a < index_dim<1>(expected_du); ++a) {
+      if ((i + 1) == a) {
+        expected_du.get(i, a) = cartoon_func<CompDim == 1>(x);
+      } else {
+        expected_du.get(i, a) = DataVector(num_grid_points, 0.0);
+      }
+      expected_du.get(i, a) +=
+          (a == 0 ? DataVector(num_grid_points, 1.0) : x.get(a - 1)) *
+          cartoon_dfunc<CompDim == 1>(i, x);
+    }
+  }
+
+  const auto to_inertial =
+      domain::CoordinateMap<Frame::Grid, Frame::Inertial,
+                            domain::CoordinateMaps::Identity<3>>{};
+  auto box = db::create<
+      db::AddSimpleTags<domain::Tags::Mesh<3>, tensor_tag, map_tag,
+                        domain::Tags::Coordinates<3, Frame::Inertial>>,
+      db::AddComputeTags<domain::Tags::LogicalCoordinates<3>, inv_jac_tag,
+                         deriv_tensor_tag>>(mesh, u, map, to_inertial(x));
+
+  const auto& du = db::get<typename deriv_tensor_tag::base>(box);
+
+  CHECK_ITERABLE_APPROX(du, expected_du);
+}
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.PartialDerivs.ComputeItems",
@@ -2371,6 +2437,18 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.PartialDerivs.ComputeItems",
                                                  Identity1D>{
               Affine{-1.0, 1.0, 0.0, 0.7}, Identity1D{}, Identity1D{}}));
   test_cartoon_partial_derivatives_compute_item<2>(
+      std::array<size_t, 3>{{6, 7, 1}},
+      domain::make_coordinate_map<Frame::ElementLogical, Frame::Grid>(
+          domain::CoordinateMaps::ProductOf3Maps<Affine, Affine, Identity1D>{
+              Affine{-1.0, 1.0, 0.0, 0.7}, Affine{-1.0, 1.0, 0.3, 0.55},
+              Identity1D{}}));
+  test_cartoon_partial_derivatives_tensor_compute_item<1>(
+      std::array<size_t, 3>{{8, 1, 1}},
+      domain::make_coordinate_map<Frame::ElementLogical, Frame::Grid>(
+          domain::CoordinateMaps::ProductOf3Maps<Affine, Identity1D,
+                                                 Identity1D>{
+              Affine{-1.0, 1.0, 0.0, 0.7}, Identity1D{}, Identity1D{}}));
+  test_cartoon_partial_derivatives_tensor_compute_item<2>(
       std::array<size_t, 3>{{6, 7, 1}},
       domain::make_coordinate_map<Frame::ElementLogical, Frame::Grid>(
           domain::CoordinateMaps::ProductOf3Maps<Affine, Affine, Identity1D>{
