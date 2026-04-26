@@ -18,7 +18,7 @@ endif()
 option(SPECTRE_OPTIMIZE_SIZE "Optimize for executable size instead of speed"
   ${_SPECTRE_OPTIMIZE_SIZE_DEFAULT})
 
-option(SPECTRE_DEBUG_Og "Compile Debug builds with -Og instead of -O0" ON)
+option(SPECTRE_DEBUG_Og "Compile Debug builds with -Og instead of -O0" OFF)
 
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")
   set(SPECTRE_DEBUG ON)
