@@ -182,7 +182,7 @@ double iteratively_adapt_angular_coordinates(
         Tags::CauchyAngularCoords,
         Tags::CauchyCartesianCoords>::apply(make_not_null(&gauge_c),
                                             make_not_null(&gauge_d),
-                                            angular_cauchy_coordinates,
+                                            *angular_cauchy_coordinates,
                                             *cartesian_cauchy_coordinates,
                                             l_max);
 
