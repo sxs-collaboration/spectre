@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "Domain/BoundaryConditions/BoundaryCondition.hpp"
+#include "Domain/BoundaryConditions/Cartoon.hpp"
 #include "Domain/BoundaryConditions/GetBoundaryConditionsBase.hpp"
 #include "Domain/CoordinateMaps/Distribution.hpp"
 #include "Domain/Creators/DomainCreator.hpp"
@@ -51,8 +52,9 @@ class CartoonSphere1D : public DomainCreator<3> {
   struct InnerRadius {
     using type = double;
     static constexpr Options::String help = {
-        "Inner radius of domain, which is a sphere if set to 0, otherwise a "
-        "spherical shell."};
+        "Inner radius of domain, greater than or equal to 0. If the origin is "
+        "included, the innermost element will use a 1D Zernike basis, "
+        "otherwise the domain will be a spherical shell."};
   };
 
   struct OuterRadius {
@@ -108,6 +110,15 @@ class CartoonSphere1D : public DomainCreator<3> {
     using type = std::unique_ptr<BoundaryConditionsBase>;
   };
 
+  template <typename BoundaryConditionsBase>
+  struct CartoonBoundaryCondition {
+    static constexpr Options::String help =
+        "Cartoon boundary condition will be automatically applied to "
+        "internal cartoon boundaries. No user options needed.";
+    using type = std::nullptr_t;
+    static std::string name() { return "CartoonBC"; }
+  };
+
   struct TimeDependence {
     using type =
         std::unique_ptr<domain::creators::time_dependence::TimeDependence<3>>;
@@ -139,7 +150,8 @@ class CartoonSphere1D : public DomainCreator<3> {
       "A sphere domain that requires/enforces spherical symmetry, resulting in "
       "a 1D computational domain (the radial axis). It uses Cartoon partial "
       "derivatives for the angular directions not in the computational "
-      "domain."};
+      "domain. If an element touches the x=0 axis, it uses ZernikeB1 bases and "
+      "automatically applies a system's Cartoon-type boundary condition."};
 
   CartoonSphere1D(
       double inner_bound, double outer_bound,
@@ -154,6 +166,8 @@ class CartoonSphere1D : public DomainCreator<3> {
           inner_boundary_condition = nullptr,
       std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
           outer_boundary_condition = nullptr,
+      std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
+          cartoon_boundary_condition = nullptr,
       const Options::Context& context = {});
 
   CartoonSphere1D() = default;
@@ -177,8 +191,7 @@ class CartoonSphere1D : public DomainCreator<3> {
   // Block.
   std::vector<std::string> block_names() const override;
 
-  // The block groups are Block0, Block1, ..., starting with the innermost
-  // Block.
+  // The only block group is PositiveBlocks
   std::unordered_map<std::string, std::unordered_set<std::string>>
   block_groups() const override;
 
@@ -195,10 +208,13 @@ class CartoonSphere1D : public DomainCreator<3> {
   std::vector<size_t> initial_num_points_{};
   std::vector<double> radial_partitioning_{};
   std::vector<CoordinateMaps::Distribution> radial_distributions_{};
+  bool use_zernike_{};
   std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
       inner_boundary_condition_{};
   std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
       outer_boundary_condition_{};
+  std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
+      cartoon_boundary_condition_{};
   std::unique_ptr<domain::creators::time_dependence::TimeDependence<3>>
       time_dependence_;
   size_t num_blocks_{};
@@ -208,3 +224,113 @@ class CartoonSphere1D : public DomainCreator<3> {
 };
 
 }  // namespace domain::creators
+
+namespace domain::creators::detail {
+/// \brief Helper struct for CartoonSphere1D options parsing so the internal
+/// cartoon boundary condition at $x = 0$ is not a required argument.
+///
+/// \details To get the cartoon-type boundary condition from a system we need
+/// access to the system's metavariables, which is only present when parsing
+/// options. The point of this design is so that the input file does not require
+/// a dummy value for an InnerBoundaryCondition that is always the same for a
+/// given system.
+///
+/// This helper's constructor does not take an InnerBoundaryCondition, which
+/// means if we parse a CartoonSphere1D as a CartonSphere1DOptionsHelper
+/// by having an options parsing specialization (so the input file values are
+/// the helper's construtor, not CartoonSphere1D's), we can detect the
+/// cartoon-type boundary condition for the given system and only then call the
+/// CartoonSphere1D constructor with the extra information.
+struct CartoonSphere1DOptionsHelper {
+  // Inherit the options template from CartoonSphere1D
+  template <typename Metavariables>
+  using options = typename domain::creators::CartoonSphere1D::template options<
+      Metavariables>;
+
+  using InitialRadialRefinement =
+      domain::creators::CartoonSphere1D::InitialRadialRefinement;
+  using InitialNumberOfRadialGridPoints =
+      domain::creators::CartoonSphere1D::InitialNumberOfRadialGridPoints;
+  using RadialDistributions =
+      domain::creators::CartoonSphere1D::RadialDistributions;
+
+  static constexpr Options::String help = {"CartoonSphere1DOptionsHelper"};
+
+  // Default constructor required by Options system
+  CartoonSphere1DOptionsHelper() = default;
+
+  // Does not take cartoon BC
+  CartoonSphere1DOptionsHelper(
+      double inner_bound, double outer_bound,
+      typename InitialRadialRefinement::type&& initial_refinement_levels,
+      typename InitialNumberOfRadialGridPoints::type&& initial_num_points,
+      std::vector<double> radial_partitioning = {},
+      typename RadialDistributions::type&& radial_distributions =
+          domain::CoordinateMaps::Distribution::Linear,
+      std::unique_ptr<domain::creators::time_dependence::TimeDependence<3>>
+          time_dependence = nullptr,
+      std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
+          inner_boundary_condition = nullptr,
+      std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
+          outer_boundary_condition = nullptr,
+      Options::Context&& context = {});
+
+  // Same members as in CartoonSphere1D; public, to be extracted
+  double inner_bound_{std::numeric_limits<double>::signaling_NaN()};
+  double outer_bound_{std::numeric_limits<double>::signaling_NaN()};
+  typename domain::creators::CartoonSphere1D::InitialRadialRefinement::type
+      initial_refinement_levels_{};
+  typename domain::creators::CartoonSphere1D::InitialNumberOfRadialGridPoints::
+      type initial_num_points_{};
+  std::vector<double> radial_partitioning_{};
+  domain::creators::CartoonSphere1D::RadialDistributions::type
+      radial_distributions_{domain::CoordinateMaps::Distribution::Linear};
+  std::unique_ptr<domain::creators::time_dependence::TimeDependence<3>>
+      time_dependence_{nullptr};
+  std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
+      inner_boundary_condition_{nullptr};
+  std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
+      outer_boundary_condition_{nullptr};
+  std::nullptr_t cartoon_boundary_condition_{
+      nullptr};  // For CartoonBoundaryCondition option
+  Options::Context context_{};
+};
+}  // namespace domain::creators::detail
+
+// Options parsing specialization to automate CartoonSphere1D's cartoon
+// boundary condition
+template <>
+struct Options::create_from_yaml<domain::creators::CartoonSphere1D> {
+  template <typename Metavariables>
+  static domain::creators::CartoonSphere1D create(
+      const Options::Option& options) {
+    auto helper =
+        options.parse_as<domain::creators::detail::CartoonSphere1DOptionsHelper,
+                         Metavariables>();
+
+    // Create cartoon BC if system supports it, if not will throw parse error in
+    // real constructor
+    std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
+        cartoon_boundary_condition = nullptr;
+    if constexpr (domain::BoundaryConditions::has_boundary_conditions_base_v<
+                      typename Metavariables::system>) {
+      if constexpr (domain::BoundaryConditions::system_has_cartoon_bc_v<
+                        Metavariables>) {
+        cartoon_boundary_condition =
+            domain::BoundaryConditions::make_cartoon_boundary_condition<
+                Metavariables>();
+      }
+    }
+
+    // Construct CartoonSphere1D using the helper's parsed data + cartoon BC
+    return domain::creators::CartoonSphere1D(
+        helper.inner_bound_, helper.outer_bound_,
+        std::move(helper.initial_refinement_levels_),
+        std::move(helper.initial_num_points_),
+        std::move(helper.radial_partitioning_), helper.radial_distributions_,
+        std::move(helper.time_dependence_),
+        std::move(helper.inner_boundary_condition_),
+        std::move(helper.outer_boundary_condition_),
+        std::move(cartoon_boundary_condition), helper.context_);
+  }
+};

@@ -5,6 +5,7 @@
 
 #include <cstddef>
 
+#include "Domain/BoundaryConditions/Cartoon.hpp"
 #include "Domain/BoundaryConditions/Periodic.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/BoundaryConditions/Bjorhus.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/BoundaryConditions/BoundaryCondition.hpp"
@@ -17,7 +18,8 @@ namespace gh::BoundaryConditions {
 /// Typelist of standard BoundaryConditions
 template <size_t Dim>
 using standard_boundary_conditions =
-    tmpl::list<ConstraintPreservingBjorhus<Dim>, DemandOutgoingCharSpeeds<Dim>,
+    tmpl::list<domain::BoundaryConditions::Cartoon<BoundaryCondition<Dim>>,
+               ConstraintPreservingBjorhus<Dim>, DemandOutgoingCharSpeeds<Dim>,
                DirichletAnalytic<Dim>, DirichletMinkowski<Dim>,
                domain::BoundaryConditions::Periodic<BoundaryCondition<Dim>>>;
 }  // namespace gh::BoundaryConditions

@@ -158,7 +158,7 @@ void test_creation(const std::string& option_string, const Creator& rhs,
   auto created = [&option_string, &with_boundary_conditions]() {
     if (with_boundary_conditions) {
       using metavars = TestHelpers::domain::BoundaryConditions::
-          MetavariablesWithBoundaryConditions<Dim, Creator>;
+          MetavariablesWithBoundaryConditionsCartoon<Dim, Creator>;
       return TestHelpers::test_option_tag<
           ::domain::OptionTags::DomainCreator<Dim>, metavars>(option_string);
     } else {

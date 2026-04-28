@@ -14,6 +14,7 @@
 #include "Domain/BoundaryConditions/BoundaryCondition.hpp"
 #include "Domain/CoordinateMaps/Distribution.hpp"
 #include "Domain/Creators/CartoonSphere1D.hpp"
+#include "Domain/Creators/OptionTags.hpp"
 #include "Domain/Creators/TimeDependence/RegisterDerivedWithCharm.hpp"
 #include "Domain/Creators/TimeDependence/UniformTranslation.hpp"
 #include "Domain/Creators/TimeDependentOptions/Sphere.hpp"
@@ -21,6 +22,7 @@
 #include "Domain/ElementMap.hpp"
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/ElementId.hpp"
+#include "Domain/Structure/Topology.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/Domain/BoundaryConditions/BoundaryCondition.hpp"
 #include "Helpers/Domain/Creators/TestHelpers.hpp"
@@ -35,6 +37,12 @@ create_boundary_condition(const bool outer) {
   return std::make_unique<
       TestHelpers::domain::BoundaryConditions::TestBoundaryCondition<3>>(
       outer ? Direction<3>::upper_xi() : Direction<3>::lower_xi(), 50);
+}
+
+std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
+create_cartoon_boundary_condition() {
+  return std::make_unique<TestHelpers::domain::BoundaryConditions::
+                              TestCartoonBoundaryCondition<3>>();
 }
 
 template <typename T>
@@ -114,6 +122,7 @@ void test_parse_errors() {
       domain::creators::CartoonSphere1D(
           lower_bound, 0.5 * lower_bound, radial_refinement, radial_extents,
           radial_partitioning, radial_distribution, nullptr, nullptr, nullptr,
+          create_cartoon_boundary_condition(),
           Options::Context{false, {}, 1, 1}),
       Catch::Matchers::ContainsSubstring(
           "Inner radius must be smaller than outer radius"));
@@ -122,7 +131,8 @@ void test_parse_errors() {
       domain::creators::CartoonSphere1D(
           lower_bound, upper_bound, radial_refinement, radial_extents,
           radial_partitioning_unordered, radial_distribution, nullptr, nullptr,
-          nullptr, Options::Context{false, {}, 1, 1}),
+          nullptr, create_cartoon_boundary_condition(),
+          Options::Context{false, {}, 1, 1}),
       Catch::Matchers::ContainsSubstring(
           "Specify radial partitioning in ascending order."));
 
@@ -130,27 +140,31 @@ void test_parse_errors() {
       domain::creators::CartoonSphere1D(
           lower_bound, upper_bound, radial_refinement, radial_extents,
           radial_partitioning_low, radial_distribution, nullptr, nullptr,
-          nullptr, Options::Context{false, {}, 1, 1}),
+          nullptr, create_cartoon_boundary_condition(),
+          Options::Context{false, {}, 1, 1}),
       Catch::Matchers::ContainsSubstring(
           "First radial partition must be larger than the inner"));
   CHECK_THROWS_WITH(
       domain::creators::CartoonSphere1D(
           lower_bound, upper_bound, radial_refinement, radial_extents,
           radial_partitioning_high, radial_distribution, nullptr, nullptr,
-          nullptr, Options::Context{false, {}, 1, 1}),
+          nullptr, create_cartoon_boundary_condition(),
+          Options::Context{false, {}, 1, 1}),
       Catch::Matchers::ContainsSubstring(
           "Last radial partition must be smaller than the outer"));
   CHECK_THROWS_WITH(
       domain::creators::CartoonSphere1D(
           lower_bound, upper_bound, radial_refinement, radial_extents,
           radial_partitioning, radial_distribution_too_many, nullptr, nullptr,
-          nullptr, Options::Context{false, {}, 1, 1}),
+          nullptr, create_cartoon_boundary_condition(),
+          Options::Context{false, {}, 1, 1}),
       Catch::Matchers::ContainsSubstring(
           "Specify a 'RadialDistribution' for every spherical shell. You"));
   CHECK_THROWS_WITH(
       domain::creators::CartoonSphere1D(
           lower_bound, upper_bound, radial_refinement_high, radial_extents,
           radial_partitioning, radial_distribution, nullptr, nullptr, nullptr,
+          create_cartoon_boundary_condition(),
           Options::Context{false, {}, 1, 1}),
       Catch::Matchers::ContainsSubstring(
           "must be the same size as RadialDistributions "));
@@ -158,6 +172,7 @@ void test_parse_errors() {
       domain::creators::CartoonSphere1D(
           lower_bound, upper_bound, radial_refinement, radial_extents_high,
           radial_partitioning, radial_distribution, nullptr, nullptr, nullptr,
+          create_cartoon_boundary_condition(),
           Options::Context{false, {}, 1, 1}),
       Catch::Matchers::ContainsSubstring(
           "must be the same size as RadialDistributions "));
@@ -166,6 +181,7 @@ void test_parse_errors() {
           lower_bound, upper_bound, radial_refinement, radial_extents,
           radial_partitioning, radial_distribution, nullptr,
           create_boundary_condition(false), nullptr,
+          create_cartoon_boundary_condition(),
           Options::Context{false, {}, 1, 1}),
       Catch::Matchers::ContainsSubstring(
           "Must specify either both inner and outer boundary conditions "
@@ -177,6 +193,7 @@ void test_parse_errors() {
           create_boundary_condition(false),
           std::make_unique<TestHelpers::domain::BoundaryConditions::
                                TestPeriodicBoundaryCondition<3>>(),
+          create_cartoon_boundary_condition(),
           Options::Context{false, {}, 1, 1}),
       Catch::Matchers::ContainsSubstring(
           "Cannot have periodic boundary conditions with CartoonSphere1D"));
@@ -186,7 +203,8 @@ void test_parse_errors() {
           radial_partitioning, radial_distribution, nullptr,
           std::make_unique<TestHelpers::domain::BoundaryConditions::
                                TestPeriodicBoundaryCondition<3>>(),
-          create_boundary_condition(true), Options::Context{false, {}, 1, 1}),
+          create_boundary_condition(true), create_cartoon_boundary_condition(),
+          Options::Context{false, {}, 1, 1}),
       Catch::Matchers::ContainsSubstring(
           "Cannot have periodic boundary conditions with CartoonSphere1D"));
   CHECK_THROWS_WITH(
@@ -196,6 +214,7 @@ void test_parse_errors() {
           create_boundary_condition(false),
           std::make_unique<TestHelpers::domain::BoundaryConditions::
                                TestNoneBoundaryCondition<3>>(),
+          create_cartoon_boundary_condition(),
           Options::Context{false, {}, 1, 1}),
       Catch::Matchers::ContainsSubstring(
           "None boundary condition is not supported. If you would like "
@@ -206,10 +225,47 @@ void test_parse_errors() {
           radial_partitioning, radial_distribution, nullptr,
           std::make_unique<TestHelpers::domain::BoundaryConditions::
                                TestNoneBoundaryCondition<3>>(),
-          create_boundary_condition(true), Options::Context{false, {}, 1, 1}),
+          create_boundary_condition(true), create_cartoon_boundary_condition(),
+          Options::Context{false, {}, 1, 1}),
       Catch::Matchers::ContainsSubstring(
           "None boundary condition is not supported. If you would like "
           "an outflow-type boundary condition, you must use that."));
+  CHECK_THROWS_WITH(
+      domain::creators::CartoonSphere1D(
+          lower_bound, upper_bound, radial_refinement, radial_extents,
+          radial_partitioning, radial_distribution, nullptr,
+          create_boundary_condition(true), create_cartoon_boundary_condition(),
+          create_cartoon_boundary_condition(),
+          Options::Context{false, {}, 1, 1}),
+      Catch::Matchers::ContainsSubstring(
+          "Cartoon boundary conditions should not be specified as external "));
+  // Test that using a system without a cartoon BC triggers a parse error via
+  // the create_from_yaml path.
+  CHECK_THROWS_WITH(
+      (TestHelpers::test_option_tag<
+          domain::OptionTags::DomainCreator<3>,
+          TestHelpers::domain::BoundaryConditions::
+              MetavariablesWithBoundaryConditions<
+                  3, domain::creators::CartoonSphere1D>>(
+          "CartoonSphere1D:\n"
+          "  InnerRadius: 1.0\n"
+          "  OuterRadius: 2.0\n"
+          "  InitialRadialRefinement: 3\n"
+          "  InitialNumberOfRadialGridPoints: 5\n"
+          "  RadialPartitioning: [1.5]\n"
+          "  TimeDependence: None\n"
+          "  RadialDistributions: Linear\n"
+          "  InnerBoundaryCondition:\n"
+          "    TestBoundaryCondition:\n"
+          "      Direction: lower-xi\n"
+          "      BlockId: 0\n"
+          "  OuterBoundaryCondition: \n"
+          "    TestBoundaryCondition:\n"
+          "      Direction: upper-xi\n"
+          "      BlockId: 1\n")),
+      Catch::Matchers::ContainsSubstring(
+          "CartoonSphere1D should only be used with systems that have a "
+          "cartoon-style boundary condition"));
 }
 
 void test_cartoon_sphere_construction(
@@ -295,16 +351,30 @@ void test_cartoon_sphere_construction(
         CHECK(external_boundaries.empty());
       }
     }
+    const bool using_zernike =
+        lower_bound == 0.0 and (block_id % 3 == 0 or block_id % 3 == 2);
+    {
+      INFO("Block topology");
+      if (using_zernike) {
+        CHECK(block.topologies() == domain::topologies::cartoon_sphere_inner);
+      } else {
+        CHECK(block.topologies() == domain::topologies::cartoon_sphere);
+      }
+    }
     if (expect_boundary_conditions) {
       INFO("Boundary conditions");
       const auto& boundary_conditions = all_boundary_conditions[block_id];
       for (const auto& direction : block.external_boundaries()) {
         CAPTURE(direction);
-        const auto& boundary_condition =
-            dynamic_cast<const TestHelpers::domain::BoundaryConditions::
-                             TestBoundaryCondition<3>&>(
-                *boundary_conditions.at(direction));
-        CHECK(boundary_condition.direction() == direction);
+        if (using_zernike) {
+          CHECK(is_cartoon(boundary_conditions.at(direction)));
+        } else {
+          const auto& boundary_condition =
+              dynamic_cast<const TestHelpers::domain::BoundaryConditions::
+                               TestBoundaryCondition<3>&>(
+                  *boundary_conditions.at(direction));
+          CHECK(boundary_condition.direction() == direction);
+        }
       }
     }
   }
@@ -330,13 +400,11 @@ void test_sphere(const gsl::not_null<Generator*> gen) {
 
   const std::array<double, 3> velocity{{2.3, -0.3, 0.5}};
   const std::vector<double> times{1., 10.};
-  for (auto [index, time_dependent, with_boundary_conditions] :
-       random_sample<5>(
-           cartesian_product(make_array(0_st, 1_st, 2_st),
-                             make_array(true, false), make_array(true, false)),
-           gen)) {
+  for (auto [index, time_dependent] :
+       random_sample<5>(cartesian_product(make_array(0_st, 1_st, 2_st),
+                                          make_array(true, false)),
+                        gen)) {
     CAPTURE(time_dependent);
-    CAPTURE(with_boundary_conditions);
     CAPTURE(gsl::at(radial_partitioning, index));
     CAPTURE(gsl::at(radial_distributions, index));
     domain::creators::CartoonSphere1D::RadialDistributions::type
@@ -357,7 +425,8 @@ void test_sphere(const gsl::not_null<Generator*> gen) {
           1.0, velocity);
       translation_velocity = velocity;
     }
-
+    // Must hardcode having boundary conditions for test_creation() to
+    // properly parse and give the domain a cartoon-type boundary condition
     const domain::creators::CartoonSphere1D cartoon_sphere{
         lower_bound,
         upper_bound,
@@ -366,19 +435,45 @@ void test_sphere(const gsl::not_null<Generator*> gen) {
         gsl::at(radial_partitioning, index),
         radial_distributions_variant,
         std::move(time_dependency),
-        with_boundary_conditions ? create_boundary_condition(false) : nullptr,
-        with_boundary_conditions ? create_boundary_condition(true) : nullptr};
+        create_boundary_condition(false),
+        create_boundary_condition(true),
+        create_cartoon_boundary_condition()};
     test_cartoon_sphere_construction(
         cartoon_sphere, lower_bound, upper_bound,
-        gsl::at(radial_partitioning, index), with_boundary_conditions,
+        gsl::at(radial_partitioning, index), true,
         time_dependent ? times : std::vector<double>{1.}, translation_velocity);
     TestHelpers::domain::creators::test_creation(
         option_string(lower_bound, upper_bound, radial_refinement,
                       radial_extents, gsl::at(radial_partitioning, index),
                       gsl::at(radial_distributions, index), time_dependent,
-                      with_boundary_conditions),
-        cartoon_sphere, with_boundary_conditions);
+                      true),
+        cartoon_sphere, true);
   }
+  const auto cartoon_sphere = TestHelpers::test_option_tag<
+      domain::OptionTags::DomainCreator<3>,
+      TestHelpers::domain::BoundaryConditions::
+          MetavariablesWithBoundaryConditionsCartoon<
+              3, domain::creators::CartoonSphere1D>>(
+      "CartoonSphere1D:\n"
+      "  InnerRadius: 0.0\n"
+      "  OuterRadius: 2.0\n"
+      "  InitialRadialRefinement: 3\n"
+      "  InitialNumberOfRadialGridPoints: 5\n"
+      "  RadialPartitioning: [1.5]\n"
+      "  TimeDependence: None\n"
+      "  RadialDistributions: Linear\n"
+      "  InnerBoundaryCondition:\n"
+      "    TestBoundaryCondition:\n"
+      "      Direction: lower-xi\n"
+      "      BlockId: 0\n"
+      "  OuterBoundaryCondition: \n"
+      "    TestBoundaryCondition:\n"
+      "      Direction: upper-xi\n"
+      "      BlockId: 1\n");
+  const std::vector<double> radial_partitioning_val(1, 1.5);
+  test_cartoon_sphere_construction(
+      dynamic_cast<const domain::creators::CartoonSphere1D&>(*cartoon_sphere),
+      0.0, upper_bound, radial_partitioning_val, true);
 }
 }  // namespace
 
