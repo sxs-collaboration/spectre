@@ -1036,6 +1036,8 @@ void test_cartoon() {
 
   const TestHelpers::domain::BoundaryConditions::TestBoundaryCondition<3>
       test_bc{Direction<3>::lower_xi(), 0};
+  const TestHelpers::domain::BoundaryConditions::TestCartoonBoundaryCondition<3>
+      cartoon_bc{};
   const domain::creators::CartoonCylinder domain_creator{
       {0.0, 1.0},
       {1.5, 2.0},
@@ -1047,7 +1049,8 @@ void test_cartoon() {
           domain::creators::time_dependence::UniformTranslation<3, 0>>(
           1., std::array<double, 3>{{2., 3., 4.}}),
       {{{{test_bc.get_clone(), test_bc.get_clone()}},
-        {{test_bc.get_clone(), test_bc.get_clone()}}}}};
+        {{test_bc.get_clone(), test_bc.get_clone()}}}},
+      cartoon_bc.get_clone()};
 
   domain::creators::register_derived_with_charm();
   domain::creators::time_dependence::register_derived_with_charm();
