@@ -17,6 +17,7 @@
 #include "ParallelAlgorithms/Actions/MutateApply.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
 #include "Time/AdvanceTime.hpp"
+#include "Time/LtsMode.hpp"
 #include "Time/Tags/StepperErrorEstimatesEnabled.hpp"
 #include "Time/TimeSteppers/AdamsBashforth.hpp"
 #include "Utilities/FileSystem.hpp"
@@ -218,7 +219,8 @@ void test_klein_gordon_h5_boundary_communication(
                                                   false),
        start_time, number_of_radial_points,
        static_cast<std::unique_ptr<LtsTimeStepper>>(
-           std::make_unique<::TimeSteppers::AdamsBashforth>(3))}};
+           std::make_unique<::TimeSteppers::AdamsBashforth>(3)),
+       LtsMode::Conservative}};
 
   const size_t buffer_size = 5;
   ActionTesting::set_phase(make_not_null(&runner),

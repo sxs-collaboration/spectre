@@ -18,6 +18,7 @@
 #include "ParallelAlgorithms/Actions/MutateApply.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
 #include "Time/AdvanceTime.hpp"
+#include "Time/LtsMode.hpp"
 #include "Time/Tags/StepperErrorEstimatesEnabled.hpp"
 #include "Time/TimeSteppers/AdamsBashforth.hpp"
 #include "Utilities/Gsl.hpp"
@@ -185,7 +186,8 @@ void test_klein_gordon_boundary_data(const gsl::not_null<Generator*> gen) {
        Tags::EndTimeFromFile::create_from_options(end_time, filename, false),
        start_time, number_of_radial_points,
        static_cast<std::unique_ptr<LtsTimeStepper>>(
-           std::make_unique<::TimeSteppers::AdamsBashforth>(3))}};
+           std::make_unique<::TimeSteppers::AdamsBashforth>(3)),
+       LtsMode::Conservative}};
 
   ActionTesting::set_phase(make_not_null(&runner),
                            Parallel::Phase::Initialization);

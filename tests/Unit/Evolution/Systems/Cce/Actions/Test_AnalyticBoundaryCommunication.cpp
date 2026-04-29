@@ -32,6 +32,7 @@
 #include "ParallelAlgorithms/Actions/MutateApply.hpp"
 #include "ParallelAlgorithms/Actions/TerminatePhase.hpp"
 #include "Time/AdvanceTime.hpp"
+#include "Time/LtsMode.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"
 #include "Time/Tags/StepperErrorEstimatesEnabled.hpp"
 #include "Time/TimeSteppers/AdamsBashforth.hpp"
@@ -192,7 +193,8 @@ SPECTRE_TEST_CASE(
           false, l_max, extraction_radius, end_time, start_time,
           number_of_radial_points,
           static_cast<std::unique_ptr<LtsTimeStepper>>(
-              std::make_unique<::TimeSteppers::AdamsBashforth>(3))}};
+              std::make_unique<::TimeSteppers::AdamsBashforth>(3)),
+          LtsMode::Conservative}};
 
   const AnalyticBoundaryDataManager analytic_manager{
       l_max, extraction_radius,

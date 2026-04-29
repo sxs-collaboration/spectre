@@ -43,6 +43,7 @@
 #include "ParallelAlgorithms/Actions/MutateApply.hpp"
 #include "ParallelAlgorithms/Actions/TerminatePhase.hpp"
 #include "Time/AdvanceTime.hpp"
+#include "Time/LtsMode.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"
 #include "Time/Tags/StepperErrorEstimatesEnabled.hpp"
 #include "Time/TimeSteppers/AdamsBashforth.hpp"
@@ -280,7 +281,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.Actions.ScriObserveInterpolated",
        number_of_radial_points,
        static_cast<std::unique_ptr<LtsTimeStepper>>(
            std::make_unique<::TimeSteppers::AdamsBashforth>(3)),
-       scri_output_density, false}};
+       LtsMode::Conservative, scri_output_density, false}};
 
   runner.set_phase(Parallel::Phase::Initialization);
   // Serialize and deserialize to get around the lack of implicit copy
