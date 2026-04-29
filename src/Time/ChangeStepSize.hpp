@@ -12,6 +12,7 @@
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "Time/AdaptiveSteppingDiagnostics.hpp"
 #include "Time/ChooseLtsStepSize.hpp"
+#include "Time/LtsMode.hpp"
 #include "Time/Tags/HistoryEvolvedVariables.hpp"
 #include "Time/Tags/LtsStepChoosers.hpp"
 #include "Time/Tags/MinimumTimeStep.hpp"
@@ -31,6 +32,7 @@ namespace Tags {
 struct AdaptiveSteppingDiagnostics;
 struct DataBox;
 struct FixedLtsRatio;
+struct LtsMode;
 template <typename Tag>
 struct Next;
 struct TimeStep;
@@ -72,6 +74,10 @@ struct ChangeStepSize {
 
   template <typename DbTags>
   static void apply(const gsl::not_null<db::DataBox<DbTags>*> box) {
+    if (db::get<CacheTagPrefix<Tags::LtsMode>>(*box) == LtsMode::Off) {
+      return;
+    }
+
     const auto& time_step_id = db::get<Tags::TimeStepId>(*box);
     if (time_step_id.substep() != 0) {
       return;

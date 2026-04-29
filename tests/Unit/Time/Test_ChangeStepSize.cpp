@@ -18,12 +18,14 @@
 #include "Time/AdaptiveSteppingDiagnostics.hpp"
 #include "Time/ChangeStepSize.hpp"
 #include "Time/History.hpp"
+#include "Time/LtsMode.hpp"
 #include "Time/Slab.hpp"
 #include "Time/StepChoosers/Constant.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"
 #include "Time/Tags/AdaptiveSteppingDiagnostics.hpp"
 #include "Time/Tags/FixedLtsRatio.hpp"
 #include "Time/Tags/HistoryEvolvedVariables.hpp"
+#include "Time/Tags/LtsMode.hpp"
 #include "Time/Tags/LtsStepChoosers.hpp"
 #include "Time/Tags/MinimumTimeStep.hpp"
 #include "Time/Tags/TimeStep.hpp"
@@ -33,6 +35,8 @@
 #include "Time/TimeStepId.hpp"
 #include "Time/TimeSteppers/AdamsBashforth.hpp"
 #include "Time/TimeSteppers/LtsTimeStepper.hpp"
+#include "Time/TimeSteppers/Rk3HesthavenSsp.hpp"
+#include "Time/TimeSteppers/TimeStepper.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Literals.hpp"
 #include "Utilities/MakeVector.hpp"
@@ -74,13 +78,13 @@ void check(const bool time_runs_forward,
 
   auto box = db::create<
       db::AddSimpleTags<
-          Parallel::Tags::MetavariablesImpl<Metavariables>,
+          Parallel::Tags::MetavariablesImpl<Metavariables>, Tags::LtsMode,
           Tags::ConcreteTimeStepper<LtsTimeStepper>, Tags::MinimumTimeStep,
           Tags::TimeStepId, Tags::Next<Tags::TimeStepId>, Tags::TimeStep,
           Tags::LtsStepChoosers, Tags::HistoryEvolvedVariables<Var>,
           Tags::AdaptiveSteppingDiagnostics>,
       db::AddComputeTags<time_stepper_ref_tags<LtsTimeStepper>>>(
-      Metavariables{}, std::move(time_stepper), 1e-8,
+      Metavariables{}, LtsMode::Conservative, std::move(time_stepper), 1e-8,
       TimeStepId(time_runs_forward, 0, time, 1, initial_step_size,
                  time.value()),
       TimeStepId(time_runs_forward, 0, time + initial_step_size),
@@ -123,17 +127,18 @@ void test_fixed_lts_ratio() {
   history.insert(initial_id, 0.0, 0.0);
 
   auto box = db::create<
-      db::AddSimpleTags<Parallel::Tags::MetavariablesImpl<Metavariables>,
-                        Tags::ConcreteTimeStepper<LtsTimeStepper>,
-                        Tags::LtsStepChoosers, Tags::MinimumTimeStep,
-                        Tags::FixedLtsRatio, Tags::TimeStepId, Tags::TimeStep,
-                        Tags::Next<Tags::TimeStepId>,
-                        Tags::HistoryEvolvedVariables<Var>,
-                        Tags::AdaptiveSteppingDiagnostics>,
+      db::AddSimpleTags<
+          Parallel::Tags::MetavariablesImpl<Metavariables>, Tags::LtsMode,
+          Tags::ConcreteTimeStepper<LtsTimeStepper>, Tags::LtsStepChoosers,
+          Tags::MinimumTimeStep, Tags::FixedLtsRatio, Tags::TimeStepId,
+          Tags::TimeStep, Tags::Next<Tags::TimeStepId>,
+          Tags::HistoryEvolvedVariables<Var>,
+          Tags::AdaptiveSteppingDiagnostics>,
       db::AddComputeTags<time_stepper_ref_tags<LtsTimeStepper>>>(
-      Metavariables{}, std::move(time_stepper), Tags::LtsStepChoosers::type{},
-      1e-10, std::optional<size_t>(8), initial_id, initial_step, next_id,
-      std::move(history), AdaptiveSteppingDiagnostics{1, 2, 3, 4, 5});
+      Metavariables{}, LtsMode::Conservative, std::move(time_stepper),
+      Tags::LtsStepChoosers::type{}, 1e-10, std::optional<size_t>(8),
+      initial_id, initial_step, next_id, std::move(history),
+      AdaptiveSteppingDiagnostics{1, 2, 3, 4, 5});
 
   db::mutate_apply<ChangeStepSize<>>(make_not_null(&box));
   // Step size change forbidden after self-start
@@ -157,6 +162,44 @@ void test_fixed_lts_ratio() {
   CHECK(db::get<Tags::TimeStep>(box).fraction() == Rational(1, 8));
   CHECK(db::get<Tags::AdaptiveSteppingDiagnostics>(box) ==
         AdaptiveSteppingDiagnostics{1, 2, 3, 5, 5});
+}
+
+void test_gts() {
+  // NOLINTNEXTLINE(misc-const-correctness)
+  std::unique_ptr<TimeStepper> time_stepper =
+      std::make_unique<TimeSteppers::Rk3HesthavenSsp>();
+  REQUIRE(dynamic_cast<const LtsTimeStepper*>(time_stepper.get()) == nullptr);
+
+  // Everything should be ignored with LTS off, so set some nonsense values.
+  const TimeStepId initial_id(false, 0, Slab(2.3, 4.5).start());
+  const auto initial_step = Slab(1.7, 9.5).duration() / 4;
+  const TimeStepId next_id(true, 3, Slab(7.8, 9.0).start());
+  // NOLINTNEXTLINE(misc-const-correctness)
+  TimeSteppers::History<double> history(6);
+
+  auto choosers =
+      make_vector<std::unique_ptr<StepChooser<StepChooserUse::LtsStep>>>(
+          std::make_unique<StepChoosers::Constant>(1e-3));
+
+  auto box = db::create<
+      db::AddSimpleTags<Parallel::Tags::MetavariablesImpl<Metavariables>,
+                        Tags::LtsMode, Tags::ConcreteTimeStepper<TimeStepper>,
+                        Tags::LtsStepChoosers, Tags::MinimumTimeStep,
+                        Tags::FixedLtsRatio, Tags::TimeStepId, Tags::TimeStep,
+                        Tags::Next<Tags::TimeStepId>,
+                        Tags::HistoryEvolvedVariables<Var>,
+                        Tags::AdaptiveSteppingDiagnostics>,
+      db::AddComputeTags<time_stepper_ref_tags<TimeStepper>>>(
+      Metavariables{}, LtsMode::Off, std::move(time_stepper),
+      std::move(choosers), 300.0, std::optional<size_t>(8), initial_id,
+      initial_step, next_id, std::move(history),
+      AdaptiveSteppingDiagnostics{1, 2, 3, 4, 5});
+
+  db::mutate_apply<ChangeStepSize<>>(make_not_null(&box));
+
+  CHECK(db::get<Tags::TimeStepId>(box) == initial_id);
+  CHECK(db::get<Tags::TimeStep>(box) == initial_step);
+  CHECK(db::get<Tags::Next<Tags::TimeStepId>>(box) == next_id);
 }
 }  // namespace
 
@@ -202,4 +245,5 @@ SPECTRE_TEST_CASE("Unit.Time.Actions.ChangeStepSize", "[Unit][Time][Actions]") {
       Catch::Matchers::ContainsSubstring("smaller than the MinimumTimeStep"));
 
   test_fixed_lts_ratio();
+  test_gts();
 }
