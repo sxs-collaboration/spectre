@@ -16,6 +16,7 @@
 #include <vector>
 
 #include "Framework/TestHelpers.hpp"
+#include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/StdHelpers.hpp"
 
@@ -150,6 +151,9 @@ void test_make_generator(const gsl::not_null<std::mt19937*> generator) {
 
   MAKE_GENERATOR(seeded_gen, 12345);
   CHECK(seeded_gen() == 3992670690);
+
+  CHECK_THROWS_WITH([]() { ERROR(""); }(),
+                    Catch::Matchers::ContainsSubstring("Seed is: 12345 from "));
 }
 
 void test_random_sample(const gsl::not_null<std::mt19937*> generator) {

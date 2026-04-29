@@ -25,6 +25,7 @@
 #include "DataStructures/Variables.hpp"
 #include "Utilities/Algorithm.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
+#include "Utilities/ErrorHandling/CaptureForError.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeArray.hpp"
@@ -326,15 +327,25 @@ inline std::ostream& operator<<(std::ostream& os, const NonCopyable& /*v*/) {
 /// \cond
 #define MAKE_GENERATOR_IMPL_FIRST_ARG(NAME, ...) NAME
 #define MAKE_GENERATOR_IMPL_SECOND_ARG(NAME, SEED, ...) SEED
+#define MAKE_GENERATOR_IMPL_CONCAT2(a, b) a##b
+#define MAKE_GENERATOR_IMPL_CONCAT(a, b) MAKE_GENERATOR_IMPL_CONCAT2(a, b)
+// Because of preprocessor weirdness the name and arguments of this
+// macro get printed in the error message, so make it something
+// understandable and avoid requiring dummy arguments and such.
+#define MAKE_GENERATOR_MESSAGE(...)                            \
+  MAKE_GENERATOR_IMPL_CONCAT(                                  \
+      MAKE_GENERATOR_IMPL_FIRST_ARG(__VA_ARGS__, DUMMY_TOKEN), \
+      _MAKE_GENERATOR_message)
 /// \endcond
 
 /// \ingroup TestingFrameworkGroup
 /// \brief `MAKE_GENERATOR(NAME [, SEED])` declares a variable of name `NAME`
 /// containing a generator of type `std::mt19937`.
 ///
-/// \details As the generator is made, `INFO` is called to make sure failed
-/// tests provide seed information.  `SEED` is chosen randomly if not supplied,
-/// otherwise it must be a constant expression.
+/// \details As the generator is made, `INFO` and `CAPTURE_FOR_ERROR`
+/// are called to make sure failed tests provide seed information.
+/// `SEED` is chosen randomly if not supplied, otherwise it must be a
+/// constant expression.
 // What is going on here:
 //
 // If this is called as MAKE_GENERATOR(NAME):
@@ -366,14 +377,16 @@ inline std::ostream& operator<<(std::ostream& os, const NonCopyable& /*v*/) {
 #define MAKE_GENERATOR(...)                                             \
   std::mt19937 MAKE_GENERATOR_IMPL_FIRST_ARG(__VA_ARGS__, DUMMY_TOKEN); \
   /* Capture everything because we don't know what passed seed uses */  \
-  INFO("Seed is: " << [&]() {                                           \
+  const std::string MAKE_GENERATOR_MESSAGE(__VA_ARGS__) = [&]() {       \
     const auto MAKE_GENERATOR_seed = (MAKE_GENERATOR_IMPL_SECOND_ARG(   \
         __VA_ARGS__, std::random_device{}(), DUMMY_TOKEN));             \
     MAKE_GENERATOR_IMPL_FIRST_ARG(__VA_ARGS__, DUMMY_TOKEN)             \
         .seed(MAKE_GENERATOR_seed);                                     \
-    return MakeString{} << MAKE_GENERATOR_seed << " from " __FILE__ ":" \
-                        << __LINE__;                                    \
-  }());
+    return MakeString{} << "Seed is: " << MAKE_GENERATOR_seed           \
+                        << " from " __FILE__ ":" << __LINE__;           \
+  }();                                                                  \
+  INFO(MAKE_GENERATOR_MESSAGE(__VA_ARGS__));                            \
+  CAPTURE_FOR_ERROR(MAKE_GENERATOR_MESSAGE(__VA_ARGS__))
 
 /*!
  * \ingroup TestingFrameworkGroup
