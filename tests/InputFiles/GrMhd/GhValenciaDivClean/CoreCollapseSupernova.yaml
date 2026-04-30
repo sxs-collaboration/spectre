@@ -286,6 +286,8 @@ EventsAndTriggersAtSlabs:
     Events:
       - Completion
 
+EventsAndTriggersAtSteps:
+
 InterpolationTargets:
   BondiSachsInterpolation:
     LMax: 16

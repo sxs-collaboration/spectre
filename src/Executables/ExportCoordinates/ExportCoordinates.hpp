@@ -366,17 +366,15 @@ struct Metavariables {
                                             Parallel::Actions::TerminatePhase>>,
           Parallel::PhaseActions<
               Parallel::Phase::Execute,
-              tmpl::flatten<tmpl::list<
-                  Actions::MutateApply<AdvanceTime<>>,
-                  Actions::ExportCoordinates<Dim>,
-                  Actions::FindGlobalMinimumGridSpacing,
-                  std::conditional_t<local_time_stepping,
-                                     evolution::Actions::RunEventsAndTriggers<
-                                         Triggers::WhenToCheck::AtSteps>,
-                                     tmpl::list<>>,
-                  evolution::Actions::RunEventsAndTriggers<
-                      Triggers::WhenToCheck::AtSlabs>,
-                  PhaseControl::Actions::ExecutePhaseChange>>>>>;
+              tmpl::flatten<
+                  tmpl::list<Actions::MutateApply<AdvanceTime<>>,
+                             Actions::ExportCoordinates<Dim>,
+                             Actions::FindGlobalMinimumGridSpacing,
+                             evolution::Actions::RunEventsAndTriggers<
+                                 Triggers::WhenToCheck::AtSteps>,
+                             evolution::Actions::RunEventsAndTriggers<
+                                 Triggers::WhenToCheck::AtSlabs>,
+                             PhaseControl::Actions::ExecutePhaseChange>>>>>;
 
   struct amr : tt::ConformsTo<::amr::protocols::AmrMetavariables> {
     using element_array = dg_element_array;

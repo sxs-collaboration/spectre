@@ -240,6 +240,8 @@ EventsAndTriggersAtSlabs:
     Events:
       - Completion
 
+EventsAndTriggersAtSteps:
+
 ApparentHorizons:
   LMax: 4
   AhA:

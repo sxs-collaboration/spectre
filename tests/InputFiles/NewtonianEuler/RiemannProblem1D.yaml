@@ -127,6 +127,8 @@ EventsAndTriggersAtSlabs:
                 Factor: 2.0
             - PreventRapidIncrease
 
+EventsAndTriggersAtSteps:
+
 EventsAndDenseTriggers:
 
 Observers:

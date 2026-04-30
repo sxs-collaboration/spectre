@@ -154,6 +154,8 @@ EventsAndTriggersAtSlabs:
             - Cfl:
                 SafetyFactor: 0.35
 
+EventsAndTriggersAtSteps:
+
 Worldtube:
   ExcisionSphere: ExcisionSphereA
   PunctureField:

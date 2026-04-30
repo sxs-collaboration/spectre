@@ -122,6 +122,8 @@ EventsAndTriggersAtSlabs:
       - MonitorMemory:
           ComponentsToMonitor: All
 
+EventsAndTriggersAtSteps:
+
 Observers:
   VolumeFileName: "ExportCoordinates3DVolume"
   ReductionFileName: "ExportCoordinates3DReductions"

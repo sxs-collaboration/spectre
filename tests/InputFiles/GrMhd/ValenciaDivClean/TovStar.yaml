@@ -234,6 +234,8 @@ EventsAndTriggersAtSlabs:
     Events:
       - Completion
 
+EventsAndTriggersAtSteps:
+
 Observers:
   VolumeFileName: "TovStarVolume"
   ReductionFileName: "TovStarReductions"

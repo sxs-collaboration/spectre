@@ -132,6 +132,8 @@ EventsAndTriggersAtSlabs:
       - Completion
 # [multiple_events]
 
+EventsAndTriggersAtSteps:
+
 Observers:
   VolumeFileName: "ScalarWavePlaneWave1DEventsAndTriggersExampleVolume"
   ReductionFileName: "ScalarWavePlaneWave1DEventsAndTriggersExampleReductions"

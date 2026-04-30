@@ -224,13 +224,10 @@ struct CharacteristicEvolution {
       Actions::FilterSwshVolumeQuantity<Tags::BondiH>,
       tmpl::conditional_t<
           evolve_ccm, tmpl::list<>,
-          tmpl::flatten<tmpl::list<
-              std::conditional_t<Metavariables::local_time_stepping,
-                                 evolution::Actions::RunEventsAndTriggers<
-                                     Triggers::WhenToCheck::AtSteps>,
-                                 tmpl::list<>>,
-              evolution::Actions::RunEventsAndTriggers<
-                  Triggers::WhenToCheck::AtSlabs>>>>,
+          tmpl::flatten<tmpl::list<evolution::Actions::RunEventsAndTriggers<
+                                       Triggers::WhenToCheck::AtSteps>,
+                                   evolution::Actions::RunEventsAndTriggers<
+                                       Triggers::WhenToCheck::AtSlabs>>>>,
       compute_scri_quantities_and_observe,
       ::Actions::MutateApply<ChangeStepSize<
           typename Metavariables::cce_step_choosers, Tags::CceEvolutionPrefix>>,

@@ -62,6 +62,8 @@ EventsAndTriggersAtSlabs:
     Events:
       - Completion
 
+EventsAndTriggersAtSteps:
+
 Evolution:
   InitialTime: 0.0
   InitialTimeStep: 0.1

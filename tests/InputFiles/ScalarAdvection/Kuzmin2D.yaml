@@ -98,6 +98,8 @@ EventsAndTriggersAtSlabs:
           FloatingPointTypes: [Float, Float]
           BlocksToObserve: All
 
+EventsAndTriggersAtSteps:
+
 EventsAndDenseTriggers:
 
 Observers:

@@ -130,13 +130,10 @@ struct KleinGordonCharacteristicEvolution
       ::Actions::Label<CceEvolutionLabelTag>,
       tmpl::conditional_t<
           evolve_ccm, tmpl::list<>,
-          tmpl::flatten<tmpl::list<
-              std::conditional_t<Metavariables::local_time_stepping,
-                                 evolution::Actions::RunEventsAndTriggers<
-                                     Triggers::WhenToCheck::AtSteps>,
-                                 tmpl::list<>>,
-              evolution::Actions::RunEventsAndTriggers<
-                  Triggers::WhenToCheck::AtSlabs>>>>,
+          tmpl::flatten<tmpl::list<evolution::Actions::RunEventsAndTriggers<
+                                       Triggers::WhenToCheck::AtSteps>,
+                                   evolution::Actions::RunEventsAndTriggers<
+                                       Triggers::WhenToCheck::AtSlabs>>>>,
       Actions::ReceiveWorldtubeData<
           Metavariables,
           typename Metavariables::cce_boundary_communication_tags>,

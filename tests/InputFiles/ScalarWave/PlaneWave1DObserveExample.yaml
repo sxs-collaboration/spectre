@@ -156,6 +156,8 @@ EventsAndTriggersAtSlabs:
           BlocksToObserve: All
 # [observe_event_trigger]
 
+EventsAndTriggersAtSteps:
+
 Observers:
   VolumeFileName: "ScalarWavePlaneWave1DObserveExampleVolume"
   ReductionFileName: "ScalarWavePlaneWave1DObserveExampleReductions"

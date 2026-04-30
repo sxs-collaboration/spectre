@@ -100,6 +100,8 @@ EventsAndTriggersAtSlabs:
                   Specified:
                     Values: [*final_time]
 
+EventsAndTriggersAtSteps:
+
 EventsAndDenseTriggers:
 
 Observers:

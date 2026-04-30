@@ -164,6 +164,8 @@ EventsAndTriggersAtSlabs:
     Events:
       - Completion
 
+EventsAndTriggersAtSteps:
+
 EventsAndDenseTriggers:
 
 Observers:

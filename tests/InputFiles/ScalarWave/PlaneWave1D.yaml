@@ -126,6 +126,8 @@ EventsAndTriggersAtSlabs:
     Events:
       - Completion
 
+EventsAndTriggersAtSteps:
+
 EventsAndTriggersAtCheckpoints:
   - Trigger: Always
     Events:

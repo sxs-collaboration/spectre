@@ -120,6 +120,8 @@ EventsAndTriggersAtSlabs:
   #         BlocksToObserve: All
   #     - Completion
 
+EventsAndTriggersAtSteps:
+
 EventsAndDenseTriggers:
   # Test LTS dense output at the initial time
   - Trigger:

@@ -177,6 +177,8 @@ EventsAndTriggersAtSlabs:
                 SafetyFactor: 0.2
             - PreventRapidIncrease
 
+EventsAndTriggersAtSteps:
+
 EventsAndDenseTriggers:
 
 EventsRunAtCleanup:

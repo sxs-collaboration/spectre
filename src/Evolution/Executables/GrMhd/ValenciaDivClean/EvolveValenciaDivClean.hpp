@@ -605,29 +605,27 @@ struct EvolutionMetavars<tmpl::list<InterpolationTargetTags...>,
                      tmpl::push_back<dg_registration_list,
                                      Parallel::Actions::TerminatePhase>>,
 
-          Parallel::PhaseActions<
-              Parallel::Phase::WriteCheckpoint,
-              tmpl::list<evolution::Actions::RunEventsAndTriggers<
-                             Triggers::WhenToCheck::AtCheckpoints>,
-                         Parallel::Actions::TerminatePhase>>,
+                 Parallel::PhaseActions<
+                     Parallel::Phase::WriteCheckpoint,
+                     tmpl::list<evolution::Actions::RunEventsAndTriggers<
+                                    Triggers::WhenToCheck::AtCheckpoints>,
+                                Parallel::Actions::TerminatePhase>>,
 
-          Parallel::PhaseActions<
-              Parallel::Phase::Evolve,
-              tmpl::flatten<tmpl::list<
-                  std::conditional_t<local_time_stepping,
-                                     evolution::Actions::RunEventsAndTriggers<
-                                         Triggers::WhenToCheck::AtSteps>,
-                                     tmpl::list<>>,
-                  evolution::Actions::RunEventsAndTriggers<
-                      Triggers::WhenToCheck::AtSlabs>,
-                  Actions::ChangeSlabSize,
-                  evolution::dg::Actions::ChangeFixedLtsRatio, step_actions,
-                  Actions::MutateApply<AdvanceTime<>>,
-                  PhaseControl::Actions::ExecutePhaseChange>>>,
-          Parallel::PhaseActions<
-              Parallel::Phase::PostFailureCleanup,
-              tmpl::list<Actions::RunEventsOnFailure<Tags::Time>,
-                         Parallel::Actions::TerminatePhase>>>>;
+                 Parallel::PhaseActions<
+                     Parallel::Phase::Evolve,
+                     tmpl::flatten<tmpl::list<
+                         evolution::Actions::RunEventsAndTriggers<
+                             Triggers::WhenToCheck::AtSteps>,
+                         evolution::Actions::RunEventsAndTriggers<
+                             Triggers::WhenToCheck::AtSlabs>,
+                         Actions::ChangeSlabSize,
+                         evolution::dg::Actions::ChangeFixedLtsRatio,
+                         step_actions, Actions::MutateApply<AdvanceTime<>>,
+                         PhaseControl::Actions::ExecutePhaseChange>>>,
+                 Parallel::PhaseActions<
+                     Parallel::Phase::PostFailureCleanup,
+                     tmpl::list<Actions::RunEventsOnFailure<Tags::Time>,
+                                Parallel::Actions::TerminatePhase>>>>;
 
   struct registration
       : tt::ConformsTo<Parallel::protocols::RegistrationMetavariables> {

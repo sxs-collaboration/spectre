@@ -155,6 +155,8 @@ EventsAndTriggersAtSlabs:
     Events:
       - Completion
 
+EventsAndTriggersAtSteps:
+
 EventsAndDenseTriggers:
 
 EventsRunAtCleanup:

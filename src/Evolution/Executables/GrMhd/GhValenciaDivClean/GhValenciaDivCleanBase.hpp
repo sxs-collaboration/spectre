@@ -946,10 +946,8 @@ struct GhValenciaDivCleanTemplateBase<
                   VariableFixing::Actions::FixVariables<
                       VariableFixing::LimitLorentzFactor>,
                   Actions::UpdateConservatives,
-                  std::conditional_t<local_time_stepping,
-                                     evolution::Actions::RunEventsAndTriggers<
-                                         Triggers::WhenToCheck::AtSteps>,
-                                     tmpl::list<>>,
+                  evolution::Actions::RunEventsAndTriggers<
+                      Triggers::WhenToCheck::AtSteps>,
                   evolution::Actions::RunEventsAndTriggers<
                       Triggers::WhenToCheck::AtSlabs>,
                   Actions::ChangeSlabSize,

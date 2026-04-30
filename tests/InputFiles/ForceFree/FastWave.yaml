@@ -79,6 +79,8 @@ EventsAndTriggersAtSlabs:
     Events:
       - Completion
 
+EventsAndTriggersAtSteps:
+
 EventsAndDenseTriggers:
 
 PhaseChangeAndTriggers:
