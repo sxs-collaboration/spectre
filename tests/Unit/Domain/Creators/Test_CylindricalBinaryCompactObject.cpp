@@ -334,16 +334,14 @@ TimeDepOptions construct_time_dependent_options() {
   const DataVector initial_angular_velocity{{0.0, 0.0, -0.2}};
 
   // Hardcoded in CylindricalBinaryCompactObject.cpp
-  std::array<DataVector, 1> initial_quaternion_coefs{{{1.0, 0.0, 0.0, 0.0}}};
-
-  // Rotation map has internally another FunctionOfTime for the
-  // rotation angle.
-  std::array<DataVector, 4> initial_rotation_angle_coefs{
-      {{3, 0.0}, initial_angular_velocity, {3, 0.0}, {3, 0.0}}};
+  const std::array<DataVector, 1> initial_quaternion_coefs{
+      {{1.0, 0.0, 0.0, 0.0}}};
 
   // Matches SizeMap{A,B}::InitialValues above
-  std::array<DataVector, 4> initial_size_A_coefs{{{1.1}, {0.0}, {0.0}, {0.0}}};
-  std::array<DataVector, 4> initial_size_B_coefs{{{1.2}, {0.0}, {0.0}, {0.0}}};
+  const std::array<DataVector, 4> initial_size_A_coefs{
+      {{1.1}, {0.0}, {0.0}, {0.0}}};
+  const std::array<DataVector, 4> initial_size_B_coefs{
+      {{1.2}, {0.0}, {0.0}, {0.0}}};
 
   // No expansion map options because of above option string
   return TimeDepOptions{
