@@ -52,7 +52,8 @@ std::array<tnsr::I<double, 3>, 3> get_circular_orbit_pos_vel_acc(
 
 // tests that the puncture field corresponds to a circular orbit with angular
 // velocity given by `ang_vel`
-void test_circular_orbit(std::array<double, 3> spin = {0., 0., 0.}) {
+void test_circular_orbit(const std::array<double, 3> spin,
+                         const std::string puncture_type, const size_t order) {
   MAKE_GENERATOR(gen);
   // sample 100 random points around the worldtube
   const double orbit_radius = 7.;
@@ -73,93 +74,53 @@ void test_circular_orbit(std::array<double, 3> spin = {0., 0., 0.}) {
   const auto [position_t1, velocity_t1, acceleration_t1] =
       get_circular_orbit_pos_vel_acc(orbit_radius, time_1, spin);
 
-  if (spin != std::array<double, 3>{0., 0., 0.}) {
-    for (size_t order = 0; order < 1; ++order) {
-      CAPTURE(order);
-      CAPTURE(spin);
-      puncture_vars puncture_t0{num_points};
-      Worldtube::puncture_field(make_not_null(&puncture_t0), sample_points,
-                                position_t0, velocity_t0, acceleration_t0, 1.,
-                                order, spin, "Kerr");
-      // rotate the sample points and check that the values don't change
-      tnsr::I<DataVector, 3, Frame::Inertial> sample_points_rotated(num_points,
-                                                                    0.);
-      sample_points_rotated.get(0) =
-          sample_points.get(0) * cos(orbit_speed * time_1) -
-          sample_points.get(1) * sin(orbit_speed * time_1);
-      sample_points_rotated.get(1) =
-          sample_points.get(0) * sin(orbit_speed * time_1) +
-          sample_points.get(1) * cos(orbit_speed * time_1);
-      sample_points_rotated.get(2) = sample_points.get(2);
-      puncture_vars puncture_t1{num_points};
-      Worldtube::puncture_field(make_not_null(&puncture_t1),
-                                sample_points_rotated, position_t1, velocity_t1,
-                                acceleration_t1, 1., order, spin, "Kerr");
-      const Approx local_approx = Approx::custom().epsilon(1.e-11).scale(1.);
-      CHECK_ITERABLE_CUSTOM_APPROX(get<Tags::Psi>(puncture_t0).get(),
-                                   get<Tags::Psi>(puncture_t1).get(),
-                                   local_approx);
-      CHECK_ITERABLE_CUSTOM_APPROX(
-          get<::Tags::dt<Tags::Psi>>(puncture_t0).get(),
-          get<::Tags::dt<Tags::Psi>>(puncture_t1).get(), local_approx);
+  for (size_t o = 0; o <= order; ++o) {
+    CAPTURE(o);
+    CAPTURE(spin);
 
-      // check that the spatial derivative also gets rotated
-      const auto& di_psi = get<deriv_psi_tag>(puncture_t0);
-      tnsr::i<DataVector, 3, Frame::Inertial> di_psi_rotated(num_points);
-      di_psi_rotated.get(0) = di_psi.get(0) * cos(orbit_speed * time_1) -
-                              di_psi.get(1) * sin(orbit_speed * time_1);
-      di_psi_rotated.get(1) = di_psi.get(0) * sin(orbit_speed * time_1) +
-                              di_psi.get(1) * cos(orbit_speed * time_1);
-      di_psi_rotated.get(2) = di_psi.get(2);
-      CHECK_ITERABLE_CUSTOM_APPROX(
-          di_psi_rotated, get<deriv_psi_tag>(puncture_t1), local_approx);
-    }
-  } else {
-    for (size_t order = 0; order < 1; ++order) {
-      CAPTURE(order);
-      puncture_vars puncture_t0{num_points};
-      Worldtube::puncture_field(make_not_null(&puncture_t0), sample_points,
-                                position_t0, velocity_t0, acceleration_t0, 1.,
-                                order);
-      // rotate the sample points and check that the values don't change
-      tnsr::I<DataVector, 3, Frame::Inertial> sample_points_rotated(num_points,
-                                                                    0.);
-      sample_points_rotated.get(0) =
-          sample_points.get(0) * cos(orbit_speed * time_1) -
-          sample_points.get(1) * sin(orbit_speed * time_1);
-      sample_points_rotated.get(1) =
-          sample_points.get(0) * sin(orbit_speed * time_1) +
-          sample_points.get(1) * cos(orbit_speed * time_1);
-      sample_points_rotated.get(2) = sample_points.get(2);
-      puncture_vars puncture_t1{num_points};
-      Worldtube::puncture_field(make_not_null(&puncture_t1),
-                                sample_points_rotated, position_t1, velocity_t1,
-                                acceleration_t1, 1., order);
-      const Approx local_approx = Approx::custom().epsilon(1.e-11).scale(1.);
-      CHECK_ITERABLE_CUSTOM_APPROX(get<Tags::Psi>(puncture_t0).get(),
-                                   get<Tags::Psi>(puncture_t1).get(),
-                                   local_approx);
-      CHECK_ITERABLE_CUSTOM_APPROX(
-          get<::Tags::dt<Tags::Psi>>(puncture_t0).get(),
-          get<::Tags::dt<Tags::Psi>>(puncture_t1).get(), local_approx);
+    puncture_vars puncture_t0{num_points};
+    Worldtube::puncture_field(make_not_null(&puncture_t0), sample_points,
+                              position_t0, velocity_t0, acceleration_t0, 1., o,
+                              spin, puncture_type);
+    // rotate the sample points and check that the values don't change
+    tnsr::I<DataVector, 3, Frame::Inertial> sample_points_rotated(num_points,
+                                                                  0.);
+    sample_points_rotated.get(0) =
+        sample_points.get(0) * cos(orbit_speed * time_1) -
+        sample_points.get(1) * sin(orbit_speed * time_1);
+    sample_points_rotated.get(1) =
+        sample_points.get(0) * sin(orbit_speed * time_1) +
+        sample_points.get(1) * cos(orbit_speed * time_1);
+    sample_points_rotated.get(2) = sample_points.get(2);
+    puncture_vars puncture_t1{num_points};
+    Worldtube::puncture_field(make_not_null(&puncture_t1),
+                              sample_points_rotated, position_t1, velocity_t1,
+                              acceleration_t1, 1., o, spin, puncture_type);
+    const Approx local_approx = Approx::custom().epsilon(1.e-11).scale(1.);
+    CHECK_ITERABLE_CUSTOM_APPROX(get<Tags::Psi>(puncture_t0).get(),
+                                 get<Tags::Psi>(puncture_t1).get(),
+                                 local_approx);
+    CHECK_ITERABLE_CUSTOM_APPROX(get<::Tags::dt<Tags::Psi>>(puncture_t0).get(),
+                                 get<::Tags::dt<Tags::Psi>>(puncture_t1).get(),
+                                 local_approx);
 
-      // check that the spatial derivative also gets rotated
-      const auto& di_psi = get<deriv_psi_tag>(puncture_t0);
-      tnsr::i<DataVector, 3, Frame::Inertial> di_psi_rotated(num_points);
-      di_psi_rotated.get(0) = di_psi.get(0) * cos(orbit_speed * time_1) -
-                              di_psi.get(1) * sin(orbit_speed * time_1);
-      di_psi_rotated.get(1) = di_psi.get(0) * sin(orbit_speed * time_1) +
-                              di_psi.get(1) * cos(orbit_speed * time_1);
-      di_psi_rotated.get(2) = di_psi.get(2);
-      CHECK_ITERABLE_CUSTOM_APPROX(
-          di_psi_rotated, get<deriv_psi_tag>(puncture_t1), local_approx);
-    }
+    // check that the spatial derivative also gets rotated
+    const auto& di_psi = get<deriv_psi_tag>(puncture_t0);
+    tnsr::i<DataVector, 3, Frame::Inertial> di_psi_rotated(num_points);
+    di_psi_rotated.get(0) = di_psi.get(0) * cos(orbit_speed * time_1) -
+                            di_psi.get(1) * sin(orbit_speed * time_1);
+    di_psi_rotated.get(1) = di_psi.get(0) * sin(orbit_speed * time_1) +
+                            di_psi.get(1) * cos(orbit_speed * time_1);
+    di_psi_rotated.get(2) = di_psi.get(2);
+    CHECK_ITERABLE_CUSTOM_APPROX(di_psi_rotated,
+                                 get<deriv_psi_tag>(puncture_t1), local_approx);
   }
 }
 
 // tests the derivative of the puncture field against a finite difference
 // calculation
-void test_derivative(std::array<double, 3> spin = {0., 0., 0.}) {
+void test_derivative(const std::array<double, 3> spin,
+                     const std::string puncture_type, const size_t order) {
   MAKE_GENERATOR(gen);
   const Approx local_approx = Approx::custom().epsilon(1.e-8).scale(1.);
   std::uniform_real_distribution<double> theta_dist{0, M_PI};
@@ -167,104 +128,53 @@ void test_derivative(std::array<double, 3> spin = {0., 0., 0.}) {
   std::uniform_real_distribution<double> pos_dist{2., 10.};
   std::uniform_real_distribution<double> vel_acc_dist{-0.1, 0.1};
   const double wt_radius = 0.1;
-  if (spin != std::array<double, 3>{0., 0., 0.}) {
+
+  for (size_t o = 0; o <= order; ++o) {
+    CAPTURE(order);
     CAPTURE(spin);
-    for (size_t order = 0; order < 1; ++order) {
-      CAPTURE(order);
-      auto random_position =
-          make_with_random_values<tnsr::I<double, 3, Frame::Inertial>>(
-              make_not_null(&gen), make_not_null(&pos_dist), 1);
-      const auto random_velocity =
-          make_with_random_values<tnsr::I<double, 3, Frame::Inertial>>(
-              make_not_null(&gen), make_not_null(&vel_acc_dist), 1);
-      const auto random_acceleration =
-          make_with_random_values<tnsr::I<double, 3, Frame::Inertial>>(
-              make_not_null(&gen), make_not_null(&vel_acc_dist), 1);
-      const auto helper_func = [&random_position, &random_velocity,
-                                &random_acceleration, &order,
-                                &spin](const std::array<double, 3>& point) {
-        tnsr::I<DataVector, 3, Frame::Inertial> tensor_point(size_t(1));
-        tensor_point.get(0) = point.at(0);
-        tensor_point.get(1) = point.at(1);
-        tensor_point.get(2) = point.at(2);
-        puncture_vars singular_field_num{1};
-        Worldtube::puncture_field(
-            make_not_null(&singular_field_num), tensor_point, random_position,
-            random_velocity, random_acceleration, 1., order, spin, "Kerr");
-        return get<Tags::Psi>(singular_field_num).get()[0];
-      };
-      for (size_t i = 0; i < 20; ++i) {
-        const auto theta = theta_dist(gen);
-        const auto phi = phi_dist(gen);
-        std::array<double, 3> test_point{wt_radius * sin(theta) * cos(phi),
-                                         wt_radius * sin(theta) * sin(phi),
-                                         wt_radius * cos(theta)};
-        tnsr::I<DataVector, 3, Frame::Inertial> tensor_point(size_t(1));
-        for (size_t j = 0; j < 3; ++j) {
-          tensor_point.get(j)[0] = test_point.at(j);
-        }
-        const double dx = 1e-6;
-        puncture_vars singular_field{1};
-        Worldtube::puncture_field(make_not_null(&singular_field), tensor_point,
-                                  random_position, random_velocity,
-                                  random_acceleration, 1., order, spin, "Kerr");
-        const auto& di_psi = get<deriv_psi_tag>(singular_field);
-        for (size_t j = 0; j < 3; ++j) {
-          CAPTURE(j);
-          const auto numerical_deriv_j =
-              numerical_derivative(helper_func, test_point, j, dx);
-          CHECK(di_psi.get(j)[0] == local_approx(numerical_deriv_j));
-        }
+    auto random_position =
+        make_with_random_values<tnsr::I<double, 3, Frame::Inertial>>(
+            make_not_null(&gen), make_not_null(&pos_dist), 1);
+    const auto random_velocity =
+        make_with_random_values<tnsr::I<double, 3, Frame::Inertial>>(
+            make_not_null(&gen), make_not_null(&vel_acc_dist), 1);
+    const auto random_acceleration =
+        make_with_random_values<tnsr::I<double, 3, Frame::Inertial>>(
+            make_not_null(&gen), make_not_null(&vel_acc_dist), 1);
+    const auto helper_func = [&random_position, &random_velocity,
+                              &random_acceleration, &o, &puncture_type,
+                              &spin](const std::array<double, 3>& point) {
+      tnsr::I<DataVector, 3, Frame::Inertial> tensor_point(size_t(1));
+      tensor_point.get(0) = point.at(0);
+      tensor_point.get(1) = point.at(1);
+      tensor_point.get(2) = point.at(2);
+      puncture_vars singular_field_num{1};
+      Worldtube::puncture_field(
+          make_not_null(&singular_field_num), tensor_point, random_position,
+          random_velocity, random_acceleration, 1., o, spin, puncture_type);
+      return get<Tags::Psi>(singular_field_num).get()[0];
+    };
+    for (size_t i = 0; i < 20; ++i) {
+      const auto theta = theta_dist(gen);
+      const auto phi = phi_dist(gen);
+      std::array<double, 3> test_point{wt_radius * sin(theta) * cos(phi),
+                                       wt_radius * sin(theta) * sin(phi),
+                                       wt_radius * cos(theta)};
+      tnsr::I<DataVector, 3, Frame::Inertial> tensor_point(size_t(1));
+      for (size_t j = 0; j < 3; ++j) {
+        tensor_point.get(j)[0] = test_point.at(j);
       }
-    }
-  } else {
-    for (size_t order = 0; order <= 1; ++order) {
-      CAPTURE(order);
-      CAPTURE(spin);
-      const auto random_position =
-          make_with_random_values<tnsr::I<double, 3, Frame::Inertial>>(
-              make_not_null(&gen), make_not_null(&pos_dist), 1);
-      const auto random_velocity =
-          make_with_random_values<tnsr::I<double, 3, Frame::Inertial>>(
-              make_not_null(&gen), make_not_null(&vel_acc_dist), 1);
-      const auto random_acceleration =
-          make_with_random_values<tnsr::I<double, 3, Frame::Inertial>>(
-              make_not_null(&gen), make_not_null(&vel_acc_dist), 1);
-      const auto helper_func = [&random_position, &random_velocity,
-                                &random_acceleration,
-                                &order](const std::array<double, 3>& point) {
-        tnsr::I<DataVector, 3, Frame::Inertial> tensor_point(size_t(1));
-        tensor_point.get(0) = point.at(0);
-        tensor_point.get(1) = point.at(1);
-        tensor_point.get(2) = point.at(2);
-        puncture_vars singular_field{1};
-        Worldtube::puncture_field(make_not_null(&singular_field), tensor_point,
-                                  random_position, random_velocity,
-                                  random_acceleration, 1., order);
-        return get<Tags::Psi>(singular_field).get()[0];
-      };
-      for (size_t i = 0; i < 20; ++i) {
-        const auto theta = theta_dist(gen);
-        const auto phi = phi_dist(gen);
-        std::array<double, 3> test_point{wt_radius * sin(theta) * cos(phi),
-                                         wt_radius * sin(theta) * sin(phi),
-                                         wt_radius * cos(theta)};
-        tnsr::I<DataVector, 3, Frame::Inertial> tensor_point(size_t(1));
-        for (size_t j = 0; j < 3; ++j) {
-          tensor_point.get(j)[0] = test_point.at(j);
-        }
-        const double dx = 1e-6;
-        puncture_vars singular_field{1};
-        Worldtube::puncture_field(make_not_null(&singular_field), tensor_point,
-                                  random_position, random_velocity,
-                                  random_acceleration, 1., order);
-        const auto& di_psi = get<deriv_psi_tag>(singular_field);
-        for (size_t j = 0; j < 3; ++j) {
-          CAPTURE(j);
-          const auto numerical_deriv_j =
-              numerical_derivative(helper_func, test_point, j, dx);
-          CHECK(di_psi.get(j)[0] == local_approx(numerical_deriv_j));
-        }
+      const double dx = 1e-6;
+      puncture_vars singular_field{1};
+      Worldtube::puncture_field(
+          make_not_null(&singular_field), tensor_point, random_position,
+          random_velocity, random_acceleration, 1., o, spin, puncture_type);
+      const auto& di_psi = get<deriv_psi_tag>(singular_field);
+      for (size_t j = 0; j < 3; ++j) {
+        CAPTURE(j);
+        const auto numerical_deriv_j =
+            numerical_derivative(helper_func, test_point, j, dx);
+        CHECK(di_psi.get(j)[0] == local_approx(numerical_deriv_j));
       }
     }
   }
@@ -273,78 +183,77 @@ void test_derivative(std::array<double, 3> spin = {0., 0., 0.}) {
 // tests that the Kerr puncture reduces to the Schwarzschild puncture when
 // spin is zero
 void test_schwarzschild_limit() {
-  typedef std::mt19937 MyRNG;  // MAKE_GENERATOR(gen)
-  const uint32_t seed_val = 123456;
-  MyRNG gen(seed_val);
+  MAKE_GENERATOR(gen);
   const Approx local_approx = Approx::custom().epsilon(1e-9).scale(1.);
   std::uniform_real_distribution<double> theta_dist{0, M_PI};
   std::uniform_real_distribution<double> phi_dist{0, 2 * M_PI};
-  const std::uniform_real_distribution<double> pos_dist{2., 10.};
-  const std::uniform_real_distribution<double> vel_acc_dist{-0.1, 0.1};
-  [[maybe_unused]] const double wt_radius = 0.1;
-  [[maybe_unused]] const auto theta = theta_dist(gen);
-  [[maybe_unused]] const auto phi = phi_dist(gen);
+  std::uniform_real_distribution<double> wt_dist{0., 0.1};
+  std::uniform_real_distribution<double> pos_dist{2., 10.};
+  std::uniform_real_distribution<double> vel_acc_dist{-0.1, 0.1};
 
   // Make random position, velocity, acceleration values
-  // auto random_position =
-  // make_with_random_values<tnsr::I<double, 3, Frame::Inertial>>(
-  //     make_not_null(&gen), make_not_null(&pos_dist), 1);
-  tnsr::I<double, 3, Frame::Inertial> random_position{{10, 5, 0}};
-  // auto random_velocity =
-  //     make_with_random_values<tnsr::I<double, 3, Frame::Inertial>>(
-  //         make_not_null(&gen), make_not_null(&vel_acc_dist), 1);
-  tnsr::I<double, 3, Frame::Inertial> random_velocity{{0.1, 0.2, 0}};
-  // auto random_acceleration =
-  //     make_with_random_values<tnsr::I<double, 3, Frame::Inertial>>(
-  //         make_not_null(&gen), make_not_null(&vel_acc_dist), 1);
-  tnsr::I<double, 3, Frame::Inertial> random_acceleration{{0.01, 0.02, 0}};
+  auto random_position =
+      make_with_random_values<tnsr::I<double, 3, Frame::Inertial>>(
+          make_not_null(&gen), make_not_null(&pos_dist), 1);
+  auto random_velocity =
+      make_with_random_values<tnsr::I<double, 3, Frame::Inertial>>(
+          make_not_null(&gen), make_not_null(&vel_acc_dist), 1);
+  auto random_acceleration =
+      make_with_random_values<tnsr::I<double, 3, Frame::Inertial>>(
+          make_not_null(&gen), make_not_null(&vel_acc_dist), 1);
   random_position.get(2) = 0.;
   random_velocity.get(2) = 0.;
   random_acceleration.get(2) =
       0.;  // We restrict to equatorial plane because Schwarzschild puncture is
            // only define on xy plane
-  CAPTURE(random_position);
-  CAPTURE(random_velocity);
-  CAPTURE(random_acceleration);
-  // Define field positions near the scalar charge
-  // std::array<double, 3> test_point{wt_radius * sin(theta) * cos(phi),
-  //                                  wt_radius * sin(theta) * sin(phi),
-  //                                  wt_radius * cos(theta)};
-  std::array<double, 3> test_point{0.05, 0.05, 0.05};
-  tnsr::I<DataVector, 3, Frame::Inertial> tensor_point(size_t(1));
-  for (size_t i = 0; i < 3; ++i) {
-    tensor_point.get(i)[0] = test_point.at(i);
-  }
-  CAPTURE(tensor_point);
-  // Initialize the puncture fields
-  puncture_vars puncture_schwarzschild{1};
-  Worldtube::puncture_field(make_not_null(&puncture_schwarzschild),
-                            tensor_point, random_position, random_velocity,
-                            random_acceleration, 1., 0);
-  puncture_vars puncture_kerr{1};
-  Worldtube::puncture_field(make_not_null(&puncture_kerr), tensor_point,
-                            random_position, random_velocity,
-                            random_acceleration, 1., 0,
-                            std::array<double, 3>{0., 0., 0.}, "Kerr");
+  for (size_t i = 0; i < 20; ++i) {
+    CAPTURE(random_position);
+    CAPTURE(random_velocity);
+    CAPTURE(random_acceleration);
 
-  CHECK_ITERABLE_CUSTOM_APPROX(get<Tags::Psi>(puncture_schwarzschild).get(),
-                               get<Tags::Psi>(puncture_kerr).get(),
-                               local_approx);
-  // CHECK_ITERABLE_CUSTOM_APPROX(
-  //     get<::Tags::dt<Tags::Psi>>(puncture_schwarzschild).get(),
-  //     get<::Tags::dt<Tags::Psi>>(puncture_kerr).get(), local_approx);
-  CHECK(get<::Tags::dt<Tags::Psi>>(puncture_kerr).get()[0] ==
-        local_approx(22.30770696556513708));
-  CHECK_ITERABLE_CUSTOM_APPROX(get<deriv_psi_tag>(puncture_schwarzschild),
-                               get<deriv_psi_tag>(puncture_kerr), local_approx);
+    const auto theta = theta_dist(gen);
+    const auto phi = phi_dist(gen);
+    const double wt_radius = wt_dist(gen);
+
+    std::array<double, 3> test_point{
+        wt_radius * sin(theta) * cos(phi), wt_radius * sin(theta) * sin(phi),
+        wt_radius * cos(theta)};  // Define field positions near scalar charge
+    tnsr::I<DataVector, 3, Frame::Inertial> tensor_point(size_t(1));
+    for (size_t j = 0; j < 3; ++j) {
+      tensor_point.get(j)[0] = test_point.at(j);
+    }
+    CAPTURE(tensor_point);
+
+    // Initialize the puncture fields
+    puncture_vars puncture_schwarzschild{1};
+    Worldtube::puncture_field(make_not_null(&puncture_schwarzschild),
+                              tensor_point, random_position, random_velocity,
+                              random_acceleration, 1., 0);
+    puncture_vars puncture_kerr{1};
+    Worldtube::puncture_field(make_not_null(&puncture_kerr), tensor_point,
+                              random_position, random_velocity,
+                              random_acceleration, 1., 0,
+                              std::array<double, 3>{0., 0., 0.}, "Kerr");
+
+    CHECK_ITERABLE_CUSTOM_APPROX(get<Tags::Psi>(puncture_schwarzschild).get(),
+                                 get<Tags::Psi>(puncture_kerr).get(),
+                                 local_approx);
+    // CHECK_ITERABLE_CUSTOM_APPROX(
+    //     get<::Tags::dt<Tags::Psi>>(puncture_schwarzschild).get(),
+    //     get<::Tags::dt<Tags::Psi>>(puncture_kerr).get(), local_approx);
+    CHECK_ITERABLE_CUSTOM_APPROX(get<deriv_psi_tag>(puncture_schwarzschild),
+                                 get<deriv_psi_tag>(puncture_kerr),
+                                 local_approx);
+  }
 }
 
 SPECTRE_TEST_CASE("Unit.Evolution.Systems.CurvedScalarWave.PunctureField",
                   "[Unit][Evolution]") {
-  test_circular_orbit();
-  test_derivative();
-  test_circular_orbit(std::array<double, 3>{0., 0., 0.3});  // Test Kerr case
-  test_derivative(std::array<double, 3>{0., 0., 0.3});      // Test Kerr case
+  test_circular_orbit({0., 0., 0.}, "Schwarzschild",
+                      1);                             // Test Schwarzschild case
+  test_derivative({0., 0., 0.}, "Schwarzschild", 1);  // Test Schwarzschild case
+  test_circular_orbit({0., 0., 0.3}, "Kerr", 0);      // Test Kerr case
+  test_derivative({0., 0., 0.3}, "Kerr", 0);          // Test Kerr case
   test_schwarzschild_limit();  // Test Schwarzschild limit of Kerr
 }
 }  // namespace

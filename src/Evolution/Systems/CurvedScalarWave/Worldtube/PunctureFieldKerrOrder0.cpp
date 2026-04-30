@@ -30,6 +30,10 @@ void puncture_field_kerr_0(
     const std::array<double, 3>& bh_spin) {
   const size_t grid_size = get<0>(centered_coords).size();
   result->initialize(grid_size);
+
+  const double M = bh_mass;
+  const double a = bh_spin[2];
+
   const double xp = particle_position[0];
   const double yp = particle_position[1];
   const double zp = particle_position[2];
@@ -41,15 +45,17 @@ void puncture_field_kerr_0(
   const double ypddot = particle_acceleration[1];
   const double zpddot = particle_acceleration[2];
 
-  const double rp = get(magnitude(particle_position));
-  const double rpdot = (xp * xpdot + yp * ypdot + zp * zpdot) / rp;
+  const double rho = xp * xp + yp * yp + zp * zp - a * a;
+  const double rp =
+      sqrt(rho + sqrt(4.0 * a * a * zp * zp + rho * rho)) / sqrt(2.0);
+  const double rhodot = 2.0 * (xp * xpdot + yp * ypdot + zp * zpdot);
+  const double rpdot = (rhodot + (4.0 * a * a * zp * zpdot + rho * rhodot) /
+                                     sqrt(4.0 * a * a * zp * zp + rho * rho)) /
+                       4.0 / rp;
 
   const auto& Dx = get<0>(centered_coords);
   const auto& Dy = get<1>(centered_coords);
   const auto& Dz = get<2>(centered_coords);
-
-  const double M = bh_mass;
-  const double a = bh_spin[2];
 
   DynamicBuffer<DataVector> temps(91, grid_size);
 
@@ -286,8 +292,8 @@ void puncture_field_kerr_0(
   const double d_222 = 2 * d_209 * d_98;
   const double d_223 = d_212 * d_98;
   const double d_224 = d_212 * zp;
-  const double d_225 = pow(d_59, -3.0 / 2.0);
-  const double d_226 = pow(d_57, -3.0 / 2.0);
+  const double d_225 = 1. / (d_59 * sqrt(d_59));
+  const double d_226 = 1. / (d_57 * sqrt(d_57));
   const double d_227 = d_226 * d_62;
   const double d_228 = d_225 * d_227;
   const double d_229 =
@@ -509,7 +515,7 @@ void puncture_field_kerr_0(
   dv_71 = d_18 * dv_68 - dv_69 * dv_70;
   DataVector& dv_72 = temps.at(70);
   dv_72 = dv_52 * (dv_53 + dv_55) + dv_71;
-  DataVector& dv_73 = temps.at(35);
+  DataVector& dv_73 = temps.at(44);
   dv_73 = -d_30 * dv_72 * (d_104 * d_40 * dv_35 + dv_14) +
           2 * dv_35 * rp *
               (Dx * (Dy * d_39 * (-d_2 * d_85 + d_83) - d_36 - d_82 * dv_43 -
@@ -519,37 +525,38 @@ void puncture_field_kerr_0(
                      Dz * d_13 * d_94 - d_93 - d_97 * dv_46) -
                dv_47 + dv_49) -
           dv_40 * dv_35 * dv_35;
-  DataVector& dv_74 = temps.at(30);
-  dv_74 = pow(
-      -dv_17 * 1.0 / (d_28 + d_40 * (d_104 * d_104)) - dv_19 * dv_22 + dv_30,
-      -3.0 / 2.0);
+  DataVector& dv_74 = temps.at(17);
+  dv_74 = 1. / ((-dv_17 * 1.0 / (d_28 + d_40 * (d_104 * d_104)) -
+                 dv_19 * dv_22 + dv_30) *
+                sqrt(-dv_17 * 1.0 / (d_28 + d_40 * (d_104 * d_104)) -
+                     dv_19 * dv_22 + dv_30));
   DataVector& dv_75 = temps.at(5);
   dv_75 = Dx + d_11 * dv_5;
-  DataVector& dv_76 = temps.at(10);
+  DataVector& dv_76 = temps.at(15);
   dv_76 = d_123 * dv_2 + d_127 * dv_10 + d_37 * (dv_75 + dv_8) + dv_15;
-  DataVector& dv_77 = temps.at(15);
+  DataVector& dv_77 = temps.at(2);
   dv_77 = dv_76 * dv_76;
-  DataVector& dv_78 = temps.at(24);
+  DataVector& dv_78 = temps.at(29);
   dv_78 = d_126 * dv_77 + d_127 * dv_24 + dv_22 * dv_51 + dv_25 * dv_50 + dv_29;
-  DataVector& dv_79 = temps.at(29);
+  DataVector& dv_79 = temps.at(24);
   dv_79 = sqrt(dv_78);
-  DataVector& dv_80 = temps.at(2);
+  DataVector& dv_80 = temps.at(8);
   dv_80 = 1.0 / dv_79;
   DataVector& dv_81 = temps.at(28);
   dv_81 = d_131 * dv_28;
-  DataVector& dv_82 = temps.at(8);
+  DataVector& dv_82 = temps.at(10);
   dv_82 = Dz * d_34;
   DataVector& dv_83 = temps.at(19);
   dv_83 = d_130 * dv_82;
-  DataVector& dv_84 = temps.at(17);
+  DataVector& dv_84 = temps.at(30);
   dv_84 = d_69 * dv_50;
   DataVector& dv_85 = temps.at(42);
   dv_85 = dv_83 * dv_84;
   DataVector& dv_86 = temps.at(27);
   dv_86 = d_138 * dv_27;
-  DataVector& dv_87 = temps.at(44);
+  DataVector& dv_87 = temps.at(35);
   dv_87 = d_137 * dv_11;
-  DataVector& dv_88 = temps.at(17);
+  DataVector& dv_88 = temps.at(30);
   dv_88 = dv_84 * dv_87;
   DataVector& dv_89 = temps.at(71);
   dv_89 = d_142 * dv_26;
@@ -573,13 +580,13 @@ void puncture_field_kerr_0(
   dv_98 = Dz * d_160 + dv_90;
   DataVector& dv_99 = temps.at(22);
   dv_99 = dv_22 * dv_98;
-  DataVector& dv_100 = temps.at(10);
+  DataVector& dv_100 = temps.at(15);
   dv_100 = d_126 * dv_76;
   DataVector& dv_101 = temps.at(49);
   dv_101 = 2 * dv_50;
-  DataVector& dv_102 = temps.at(47);
+  DataVector& dv_102 = temps.at(10);
   dv_102 = Dz + d_164 * dv_48 + d_45 * dv_82;
-  DataVector& dv_103 = temps.at(8);
+  DataVector& dv_103 = temps.at(47);
   dv_103 = d_164 * dv_101 + dv_100 * (d_162 * (d_12 + d_161) + d_163) + dv_102;
   DataVector& dv_104 = temps.at(76);
   dv_104 = d_40 * dv_43;
@@ -618,7 +625,7 @@ void puncture_field_kerr_0(
   dv_120 = Dy * ypddot;
   DataVector& dv_121 = temps.at(90);
   dv_121 = dv_109 + dv_119 + dv_120;
-  DataVector& dv_122 = temps.at(89);
+  DataVector& dv_122 = temps.at(82);
   dv_122 =
       2 * dv_100 *
       (-d_123 * d_174 * dv_117 + d_127 * d_41 * dv_120 + d_131 * d_34 * dv_12 -
@@ -629,13 +636,13 @@ void puncture_field_kerr_0(
        d_37 * (d_11 * (dv_115 + dv_116) + d_160 * dv_6 + d_160 * dv_7 +
                d_173 * dv_3 + d_173 * dv_4 + d_33 * (dv_113 + dv_114)) +
        d_44 * dv_83 - d_44 * dv_87 + d_46 * dv_109 + d_48 * dv_119 + dv_121);
-  DataVector& dv_123 = temps.at(15);
+  DataVector& dv_123 = temps.at(2);
   dv_123 = d_183 * dv_77 * 1.0 / (d_125 * d_125);
-  DataVector& dv_124 = temps.at(10);
+  DataVector& dv_124 = temps.at(87);
   dv_124 = dv_80 * (d_165 * dv_103 + d_166 * dv_106 + d_170 * dv_108 - dv_122 +
                     dv_123 - dv_81 - dv_85 + dv_86 + dv_88 + dv_89 - dv_91 +
                     dv_92 - dv_93 - dv_94 - dv_96 + dv_97 - dv_99);
-  DataVector& dv_125 = temps.at(36);
+  DataVector& dv_125 = temps.at(37);
   dv_125 = dv_52 * (-d_25 * dv_36 - d_25 * dv_37 - d_25 * dv_38 + 4 * rp);
   DataVector& dv_126 = temps.at(70);
   dv_126 = -dv_72;
@@ -643,11 +650,11 @@ void puncture_field_kerr_0(
   dv_127 = d_35 * dv_69;
   DataVector& dv_128 = temps.at(14);
   dv_128 = d_18 * dv_127 + dv_14;
-  DataVector& dv_129 = temps.at(37);
+  DataVector& dv_129 = temps.at(36);
   dv_129 = d_126 * dv_128;
-  DataVector& dv_130 = temps.at(5);
+  DataVector& dv_130 = temps.at(19);
   dv_130 = dv_126 * dv_129;
-  DataVector& dv_131 = temps.at(87);
+  DataVector& dv_131 = temps.at(35);
   dv_131 = dv_52 * dv_52;
   DataVector& dv_132 = temps.at(48);
   dv_132 = dv_101 + dv_49 + dv_67;
@@ -657,13 +664,13 @@ void puncture_field_kerr_0(
   dv_134 = -Dx * d_111 - Dy * d_110 + 2 * dv_56;
   DataVector& dv_135 = temps.at(48);
   dv_135 = d_44 * dv_132;
-  DataVector& dv_136 = temps.at(13);
+  DataVector& dv_136 = temps.at(79);
   dv_136 = d_18 * dv_52;
-  DataVector& dv_137 = temps.at(9);
+  DataVector& dv_137 = temps.at(15);
   dv_137 = 2 * dv_129;
-  DataVector& dv_138 = temps.at(19);
+  DataVector& dv_138 = temps.at(9);
   dv_138 = d_126 * dv_126;
-  DataVector& dv_139 = temps.at(8);
+  DataVector& dv_139 = temps.at(47);
   dv_139 =
       dv_103 * dv_133 * rp -
       dv_79 *
@@ -673,19 +680,19 @@ void puncture_field_kerr_0(
                      d_184 * dv_54 - d_186 * dv_136 + d_190 * (dv_134 + dv_60) +
                      dv_53 * zp - dv_70 * zp) -
            dv_138 * rp * (d_190 * d_42 * zp + zpdot) - dv_40 * dv_69 * zp);
-  DataVector& dv_140 = temps.at(58);
+  DataVector& dv_140 = temps.at(57);
   dv_140 = d_25 * dv_131;
   DataVector& dv_141 = temps.at(40);
   dv_141 = dv_40 * dv_52;
   DataVector& dv_142 = temps.at(59);
   dv_142 = d_116 * dv_45 + d_191 * dv_41 + 2 * dv_61;
-  DataVector& dv_143 = temps.at(57);
+  DataVector& dv_143 = temps.at(58);
   dv_143 = d_44 * dv_52;
-  DataVector& dv_144 = temps.at(13);
+  DataVector& dv_144 = temps.at(79);
   dv_144 = d_25 * dv_136;
   DataVector& dv_145 = temps.at(54);
   dv_145 = dv_52 * rp;
-  DataVector& dv_146 = temps.at(61);
+  DataVector& dv_146 = temps.at(60);
   dv_146 = dv_106 * dv_133 -
            dv_79 * (-d_36 * dv_141 - d_66 * dv_140 + d_7 * dv_135 +
                     dv_137 * (d_18 * rp * (dv_142 + dv_63) - d_66 * dv_144 +
@@ -693,9 +700,9 @@ void puncture_field_kerr_0(
                               dv_145 * (d_119 * d_39 * ypdot - d_176 * d_39 -
                                         d_192 * (d_191 + d_78))) -
                     dv_138 * (d_18 * d_37 + xpdot) + dv_143 * (dv_142 + dv_62));
-  DataVector& dv_147 = temps.at(41);
+  DataVector& dv_147 = temps.at(62);
   dv_147 = Dx * d_120 + d_188 * dv_41 + 2 * dv_64;
-  DataVector& dv_148 = temps.at(78);
+  DataVector& dv_148 = temps.at(58);
   dv_148 =
       dv_108 * dv_133 -
       dv_79 *
@@ -709,23 +716,23 @@ void puncture_field_kerr_0(
   dv_149 = dv_95 + dv_98;
   DataVector& dv_150 = temps.at(72);
   dv_150 = d_69 * dv_149;
-  DataVector& dv_151 = temps.at(58);
+  DataVector& dv_151 = temps.at(64);
   dv_151 = d_132 * dv_52;
-  DataVector& dv_152 = temps.at(13);
+  DataVector& dv_152 = temps.at(54);
   dv_152 = dv_151 * (Dx * d_216 * d_63 + Dy * d_219 * d_63 + Dz * d_229);
-  DataVector& dv_153 = temps.at(64);
+  DataVector& dv_153 = temps.at(68);
   dv_153 = Dx * d_156;
-  DataVector& dv_154 = temps.at(41);
+  DataVector& dv_154 = temps.at(9);
   dv_154 = Dy * d_156;
-  DataVector& dv_155 = temps.at(9);
+  DataVector& dv_155 = temps.at(40);
   dv_155 = d_101 * dv_45;
-  DataVector& dv_156 = temps.at(63);
+  DataVector& dv_156 = temps.at(15);
   dv_156 = Dz * d_244;
   DataVector& dv_157 = temps.at(12);
   dv_157 = d_63 * dv_12;
-  DataVector& dv_158 = temps.at(19);
+  DataVector& dv_158 = temps.at(79);
   dv_158 = d_238 * d_76 * dv_11;
-  DataVector& dv_159 = temps.at(63);
+  DataVector& dv_159 = temps.at(56);
   dv_159 =
       d_1 *
       (Dx * (Dx * d_39 *
@@ -768,7 +775,7 @@ void puncture_field_kerr_0(
   dv_162 = d_30 * dv_16;
   DataVector& dv_163 = temps.at(49);
   dv_163 = 2 * d_124 * dv_133 - 4 * dv_79;
-  DataVector& dv_164 = temps.at(56);
+  DataVector& dv_164 = temps.at(79);
   dv_164 = (1.0 / 4.0) * dv_33 * dv_74;
 
   get(get<CurvedScalarWave::Tags::Psi>(*result)) =
@@ -812,7 +819,7 @@ void puncture_field_kerr_0(
                       2 * d_195 *
                           (-d_140 * d_190 * dv_151 + d_182 * dv_149 +
                            d_196 * dv_127 + dv_121)) /
-                     pow(d_125, 3.0 / 2.0)) +
+                     (d_125 * sqrt(d_125))) +
             dv_80 * rp * (-dv_130 + dv_52 * (dv_125 + dv_68)) *
                 (dv_122 - dv_123 + dv_81 + dv_85 - dv_86 - dv_88 - dv_89 +
                  dv_91 - dv_92 + dv_93 + dv_94 + dv_96 - dv_97 + dv_99)) -
