@@ -327,81 +327,6 @@ std::string create_option_string(
          time_dependence + boundary_conditions;
 }
 
-void test_construction(const CylBCO& creator,
-                       const bool with_boundary_conditions,
-                       const bool include_inner_sphere_A,
-                       const bool include_inner_sphere_B,
-                       const bool include_outer_sphere,
-                       const double inner_radius_objectA,
-                       const double inner_radius_objectB,
-                       const std::array<double, 3>& center_objectA,
-                       const std::array<double, 3>& center_objectB,
-                       const std::vector<double>& times_to_check) {
-  const auto domain = TestHelpers::domain::creators::test_domain_creator(
-      creator, with_boundary_conditions, false, times_to_check);
-
-  const auto& [block_names, block_groups] = block_names_and_groups(
-      include_inner_sphere_A, include_inner_sphere_B, include_outer_sphere);
-
-  CHECK(creator.block_names() == block_names);
-  CHECK(creator.block_groups() == block_groups);
-
-  const auto& grid_anchors = creator.grid_anchors();
-  CHECK(grid_anchors.size() == 3);
-  const auto& grid_anchor_center_a = grid_anchors.at("CenterA");
-  const auto& grid_anchor_center_b = grid_anchors.at("CenterB");
-  const auto& grid_anchor_center = grid_anchors.at("Center");
-  for (size_t i = 0; i < 3; ++i) {
-    CHECK(grid_anchor_center_a.get(i) == center_objectA.at(i));
-    CHECK(grid_anchor_center_b.get(i) == center_objectB.at(i));
-    CHECK_ITERABLE_APPROX(grid_anchor_center.get(i),
-                          0.5 * (center_objectA.at(i) + center_objectB.at(i)));
-  }
-
-  CHECK(domain.excision_spheres().size() == 2);
-  const auto& excision_sphere_a =
-      domain.excision_spheres().at("ExcisionSphereA");
-  CHECK(excision_sphere_a.radius() == inner_radius_objectA);
-  const auto& excision_sphere_b =
-      domain.excision_spheres().at("ExcisionSphereB");
-  CHECK(excision_sphere_b.radius() == inner_radius_objectB);
-  for (size_t i = 0; i < 3; ++i) {
-    CHECK(excision_sphere_a.center().get(i) == center_objectA.at(i));
-    CHECK(excision_sphere_b.center().get(i) == center_objectB.at(i));
-  }
-  const auto& block = domain.blocks()[0];
-  CHECK(block.is_time_dependent() == excision_sphere_a.is_time_dependent());
-  CHECK(block.is_time_dependent() == excision_sphere_b.is_time_dependent());
-
-  if (block.is_time_dependent()) {
-    // Taken from option string above
-    const double initial_time = 1.0;
-    const double time = 2.0;
-    const double z_angle = (time - initial_time) * -0.2;
-    const auto functions_of_time = creator.functions_of_time();
-    const auto& center_a = excision_sphere_a.center();
-    const auto& center_b = excision_sphere_b.center();
-    const auto& map_a = excision_sphere_a.moving_mesh_grid_to_inertial_map();
-    const auto& map_b = excision_sphere_b.moving_mesh_grid_to_inertial_map();
-
-    const auto mapped_point_a = map_a(center_a, time, functions_of_time);
-    const auto mapped_point_b = map_b(center_b, time, functions_of_time);
-
-    // Just a rotation
-    const tnsr::I<double, 3> expected_mapped_point_a{
-        {get<0>(center_a) * cos(z_angle) - get<1>(center_a) * sin(z_angle),
-         get<0>(center_a) * sin(z_angle) + get<1>(center_a) * cos(z_angle),
-         get<2>(center_a)}};
-    const tnsr::I<double, 3> expected_mapped_point_b{
-        {get<0>(center_b) * cos(z_angle) - get<1>(center_b) * sin(z_angle),
-         get<0>(center_b) * sin(z_angle) + get<1>(center_b) * cos(z_angle),
-         get<2>(center_b)}};
-
-    CHECK_ITERABLE_APPROX(expected_mapped_point_a, mapped_point_a);
-    CHECK_ITERABLE_APPROX(expected_mapped_point_b, mapped_point_b);
-  }
-}
-
 TimeDepOptions construct_time_dependent_options() {
   constexpr double expected_time = 1.0;  // matches InitialTime: 1.0 above
 
@@ -442,6 +367,183 @@ TimeDepOptions construct_time_dependent_options() {
           {{initial_size_B_coefs[0][0], initial_size_B_coefs[1][0],
             initial_size_B_coefs[1][0]}}},
       std::nullopt};
+}
+
+void test_construction(
+    const CylBCO& creator, const bool with_boundary_conditions,
+    const bool include_inner_sphere_A, const bool include_inner_sphere_B,
+    const bool include_outer_sphere, const double inner_radius_objectA,
+    const double inner_radius_objectB, const double outer_radius,
+    const std::array<double, 3>& center_objectA,
+    const std::array<double, 3>& center_objectB,
+    const std::vector<double>& times_to_check) {
+  const auto domain = TestHelpers::domain::creators::test_domain_creator(
+      creator, with_boundary_conditions, false, times_to_check);
+
+  const auto& [block_names, block_groups] = block_names_and_groups(
+      include_inner_sphere_A, include_inner_sphere_B, include_outer_sphere);
+
+  CHECK(creator.block_names() == block_names);
+  CHECK(creator.block_groups() == block_groups);
+
+  const auto& grid_anchors = creator.grid_anchors();
+  CHECK(grid_anchors.size() == 3);
+  const auto& grid_anchor_center_a = grid_anchors.at("CenterA");
+  const auto& grid_anchor_center_b = grid_anchors.at("CenterB");
+  const auto& grid_anchor_center = grid_anchors.at("Center");
+  for (size_t i = 0; i < 3; ++i) {
+    CHECK(grid_anchor_center_a.get(i) == center_objectA.at(i));
+    CHECK(grid_anchor_center_b.get(i) == center_objectB.at(i));
+    CHECK_ITERABLE_APPROX(grid_anchor_center.get(i),
+                          0.5 * (center_objectA.at(i) + center_objectB.at(i)));
+  }
+
+  CHECK(domain.excision_spheres().size() == 2);
+  const auto& excision_sphere_a =
+      domain.excision_spheres().at("ExcisionSphereA");
+  CHECK(excision_sphere_a.radius() == inner_radius_objectA);
+  const auto& excision_sphere_b =
+      domain.excision_spheres().at("ExcisionSphereB");
+  CHECK(excision_sphere_b.radius() == inner_radius_objectB);
+  for (size_t i = 0; i < 3; ++i) {
+    CHECK(excision_sphere_a.center().get(i) == center_objectA.at(i));
+    CHECK(excision_sphere_b.center().get(i) == center_objectB.at(i));
+  }
+  const auto& blocks = domain.blocks();
+  const auto& block = blocks[0];
+  CHECK(block.is_time_dependent() == excision_sphere_a.is_time_dependent());
+  CHECK(block.is_time_dependent() == excision_sphere_b.is_time_dependent());
+
+  if (block.is_time_dependent()) {
+    // Taken from option string above
+    const double initial_time = 1.0;
+    const double time = 2.0;
+    const double z_angle = (time - initial_time) * -0.2;
+    const auto functions_of_time = creator.functions_of_time();
+    const auto& center_a = excision_sphere_a.center();
+    const auto& center_b = excision_sphere_b.center();
+    const auto& map_a = excision_sphere_a.moving_mesh_grid_to_inertial_map();
+    const auto& map_b = excision_sphere_b.moving_mesh_grid_to_inertial_map();
+
+    const auto mapped_point_a = map_a(center_a, time, functions_of_time);
+    const auto mapped_point_b = map_b(center_b, time, functions_of_time);
+
+    // Just a rotation
+    const tnsr::I<double, 3> expected_mapped_point_a{
+        {get<0>(center_a) * cos(z_angle) - get<1>(center_a) * sin(z_angle),
+         get<0>(center_a) * sin(z_angle) + get<1>(center_a) * cos(z_angle),
+         get<2>(center_a)}};
+    const tnsr::I<double, 3> expected_mapped_point_b{
+        {get<0>(center_b) * cos(z_angle) - get<1>(center_b) * sin(z_angle),
+         get<0>(center_b) * sin(z_angle) + get<1>(center_b) * cos(z_angle),
+         get<2>(center_b)}};
+
+    CHECK_ITERABLE_APPROX(expected_mapped_point_a, mapped_point_a);
+    CHECK_ITERABLE_APPROX(expected_mapped_point_b, mapped_point_b);
+
+    // Check that blocks have expected time dependent maps
+    constexpr double xi_min = 0.25;
+    const double expected_xi = std::max(
+        xi_min, std::abs(center_objectA[0]) / (std::abs(center_objectA[0]) +
+                                               std::abs(center_objectB[0])));
+
+    // Build expected time dependent maps to check against
+    const double expected_cut_spheres_offset_factor = 0.99;
+    const double expected_cutting_plane =
+        expected_cut_spheres_offset_factor *
+        ((1.0 - expected_xi) * center_objectB[0] +
+         expected_xi * center_objectA[0]);
+    const double expected_outer_radius_A =
+        inner_radius_objectA +
+        0.5 * (std::abs(expected_cutting_plane - center_objectA[0]) -
+               inner_radius_objectA);
+    const double expected_outer_radius_B =
+        inner_radius_objectB +
+        0.5 * (std::abs(expected_cutting_plane - center_objectB[0]) -
+               inner_radius_objectB);
+    const double expected_inner_common_radius =
+        3.0 * (center_objectA[0] - center_objectB[0]);
+    TimeDepOptions time_dep_options = construct_time_dependent_options();
+    time_dep_options.build_maps(
+        std::array{center_objectA, center_objectB}, std::nullopt, std::nullopt,
+        std::array{expected_cutting_plane,
+                   0.5 * (center_objectA[1] + center_objectB[1]),
+                   0.5 * (center_objectA[2] + center_objectB[2])},
+        std::array{inner_radius_objectA, expected_outer_radius_A},
+        std::array{inner_radius_objectB, expected_outer_radius_B}, false, false,
+        expected_inner_common_radius, outer_radius);
+
+    for (size_t i = 0; i < blocks.size(); i++) {
+      const std::string block_name = gsl::at(block_names, i);
+      if (block_groups.at("InnerSphereA").contains(block_name)) {
+        const auto& moving_mesh_grid_to_inertial_map =
+            blocks[i].moving_mesh_grid_to_inertial_map();
+        const auto& moving_mesh_grid_to_distorted_map =
+            blocks[i].moving_mesh_grid_to_distorted_map();
+        const auto& moving_mesh_distorted_to_inertial_map =
+            blocks[i].moving_mesh_distorted_to_inertial_map();
+
+        const auto& expected_grid_to_inertial_map =
+            time_dep_options.grid_to_inertial_map<domain::ObjectLabel::A>(true,
+                                                                          true);
+        const auto& expected_grid_to_distorted_block_maps =
+            time_dep_options.grid_to_distorted_map<domain::ObjectLabel::A>(
+                true);
+        const auto& expected_distorted_to_inertial_map =
+            time_dep_options.distorted_to_inertial_map<domain::ObjectLabel::A>(
+                true, true);
+
+        CHECK(moving_mesh_grid_to_inertial_map ==
+              *expected_grid_to_inertial_map);
+        CHECK(moving_mesh_grid_to_distorted_map ==
+              *expected_grid_to_distorted_block_maps);
+        CHECK(moving_mesh_distorted_to_inertial_map ==
+              *expected_distorted_to_inertial_map);
+
+      } else if (block_groups.at("InnerSphereB").contains(block_name)) {
+        const auto& moving_mesh_grid_to_inertial_map =
+            blocks[i].moving_mesh_grid_to_inertial_map();
+        const auto& moving_mesh_grid_to_distorted_map =
+            blocks[i].moving_mesh_grid_to_distorted_map();
+        const auto& moving_mesh_distorted_to_inertial_map =
+            blocks[i].moving_mesh_distorted_to_inertial_map();
+
+        const auto& expected_grid_to_inertial_map =
+            time_dep_options.grid_to_inertial_map<domain::ObjectLabel::B>(true,
+                                                                          true);
+        const auto& expected_grid_to_distorted_block_maps =
+            time_dep_options.grid_to_distorted_map<domain::ObjectLabel::B>(
+                true);
+        const auto& expected_distorted_to_inertial_map =
+            time_dep_options.distorted_to_inertial_map<domain::ObjectLabel::B>(
+                true, true);
+
+        CHECK(moving_mesh_grid_to_inertial_map ==
+              *expected_grid_to_inertial_map);
+        CHECK(moving_mesh_grid_to_distorted_map ==
+              *expected_grid_to_distorted_block_maps);
+        CHECK(moving_mesh_distorted_to_inertial_map ==
+              *expected_distorted_to_inertial_map);
+
+      } else if (block_groups.at("OuterSphere").contains(block_name)) {
+        const auto& moving_mesh_grid_to_inertial_map =
+            blocks[i].moving_mesh_grid_to_inertial_map();
+        const auto& expected_grid_to_inertial_map =
+            time_dep_options.grid_to_inertial_map<domain::ObjectLabel::None>(
+                false, false);
+        CHECK(moving_mesh_grid_to_inertial_map ==
+              *expected_grid_to_inertial_map);
+      } else {
+        const auto& moving_mesh_grid_to_inertial_map =
+            blocks[i].moving_mesh_grid_to_inertial_map();
+        const auto& expected_grid_to_inertial_map =
+            time_dep_options.grid_to_inertial_map<domain::ObjectLabel::None>(
+                false, true);
+        CHECK(moving_mesh_grid_to_inertial_map ==
+              *expected_grid_to_inertial_map);
+      }
+    }
+  }
 }
 
 void test_parse_errors() {
@@ -676,8 +778,8 @@ void test_cylindrical_bbh() {
     test_construction(cyl_binary_compact_object, with_boundary_conditions,
                       include_inner_sphere_A, include_inner_sphere_B,
                       include_outer_sphere, inner_radius_objectA,
-                      inner_radius_objectB, center_objectA, center_objectB,
-                      times_to_check);
+                      inner_radius_objectB, outer_radius, center_objectA,
+                      center_objectB, times_to_check);
     TestHelpers::domain::creators::test_creation(
         create_option_string(
             with_time_dependence, with_additional_outer_radial_refinement,
