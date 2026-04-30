@@ -7,8 +7,12 @@
 #include <optional>
 #include <type_traits>
 
+#include "ParallelAlgorithms/EventsAndTriggers/Tags.hpp"
+#include "ParallelAlgorithms/EventsAndTriggers/WhenToCheck.hpp"
+#include "Time/Tags/LtsStepChoosers.hpp"
 #include "Time/Tags/StepperErrorTolerancesCompute.hpp"
 #include "Time/Tags/StepperErrors.hpp"
+#include "Time/Tags/VariableOrderAlgorithm.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits/IsA.hpp"
 
@@ -44,7 +48,7 @@ class not_null;
 /// \ingroup TimeGroup
 /// \brief Perform variable updates for one substep
 /// @{
-template <typename System, bool LocalTimeStepping,
+template <typename System,
           template <typename> typename CacheTagPrefix = std::type_identity_t,
           typename = tmpl::conditional_t<
               tt::is_a_v<tmpl::list, typename System::variables_tag>,
@@ -52,17 +56,17 @@ template <typename System, bool LocalTimeStepping,
               tmpl::list<typename System::variables_tag>>>
 struct UpdateU;
 
-template <typename System, bool LocalTimeStepping,
-          template <typename> typename CacheTagPrefix,
+template <typename System, template <typename> typename CacheTagPrefix,
           typename... VariablesTags>
-struct UpdateU<System, LocalTimeStepping, CacheTagPrefix,
-               tmpl::list<VariablesTags...>> {
+struct UpdateU<System, CacheTagPrefix, tmpl::list<VariablesTags...>> {
+  using const_global_cache_tags =
+      tmpl::list<::Tags::EventsAndTriggers<Triggers::WhenToCheck::AtSlabs>,
+                 CacheTagPrefix<::Tags::LtsStepChoosers>,
+                 CacheTagPrefix<::Tags::VariableOrderAlgorithm>>;
   using simple_tags = tmpl::list<::Tags::StepperErrors<VariablesTags>...>;
-  using compute_tags =
-      tmpl::list<Tags::StepperErrorEstimatesEnabledCompute<LocalTimeStepping,
-                                                           CacheTagPrefix>,
-                 Tags::StepperErrorTolerancesCompute<
-                     VariablesTags, LocalTimeStepping, CacheTagPrefix>...>;
+  using compute_tags = tmpl::list<
+      Tags::StepperErrorEstimatesEnabledCompute<CacheTagPrefix>,
+      Tags::StepperErrorTolerancesCompute<VariablesTags, CacheTagPrefix>...>;
 
   using return_tags =
       tmpl::list<VariablesTags..., Tags::StepperErrors<VariablesTags>...>;

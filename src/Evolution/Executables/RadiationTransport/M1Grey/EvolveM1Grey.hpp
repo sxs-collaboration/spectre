@@ -203,8 +203,7 @@ struct EvolutionMetavars {
       Actions::MutateApply<
           evolution::dg::BackgroundGrVars<system, EvolutionMetavars>>,
       evolution::dg::Actions::ComputeTimeDerivative<
-          volume_dim, system, AllStepChoosers, local_time_stepping,
-          use_dg_element_collection>,
+          volume_dim, system, AllStepChoosers, use_dg_element_collection>,
       evolution::dg::Actions::ApplyBoundaryCorrectionsToTimeDerivative<
           volume_dim, use_dg_element_collection>,
       Actions::MutateApply<RecordTimeStepperData<system>>,
@@ -212,14 +211,11 @@ struct EvolutionMetavars {
       evolution::Actions::RunEventsAndDenseTriggers<tmpl::list<
           evolution::dg::ApplyLtsDenseBoundaryCorrections<EvolutionMetavars>,
           imex::ImplicitDenseOutput<system>>>,
-      Actions::MutateApply<UpdateU<system, local_time_stepping>>,
+      Actions::MutateApply<UpdateU<system>>,
       evolution::dg::Actions::ApplyLtsBoundaryCorrections<
           volume_dim, use_dg_element_collection>,
       imex::Actions::DoImplicitStep<system>,
-      tmpl::conditional_t<
-          local_time_stepping,
-          tmpl::list<Actions::MutateApply<ChangeTimeStepperOrder<system>>>,
-          tmpl::list<>>,
+      Actions::MutateApply<ChangeTimeStepperOrder<system>>,
       Actions::MutateApply<CleanHistory<system>>,
       Actions::MutateApply<imex::CleanHistory<system>>,
       Actions::MutateApply<evolution::dg::CleanMortarHistory<volume_dim>>,

@@ -21,7 +21,7 @@
 
 namespace Tags {
 namespace StepperErrorEstimatesEnabledCompute_detail {
-void lts_function(
+void function(
     const gsl::not_null<bool*> error_estimates_enabled,
     const ::EventsAndTriggers& events_and_triggers,
     const std::vector<std::unique_ptr<::StepChooser<StepChooserUse::LtsStep>>>&
@@ -53,30 +53,10 @@ void lts_function(
     }
   }
 }
-
-void gts_function(const gsl::not_null<bool*> error_estimates_enabled,
-                  const ::EventsAndTriggers& events_and_triggers) {
-  // In principle the slab size could be changed based on a dense
-  // trigger, but it's not clear that there is ever a good reason to
-  // do so, and it wouldn't make sense to use error control in that
-  // context in any case.
-  *error_estimates_enabled = false;
-  events_and_triggers.for_each_event([&](const auto& event) {
-    if (*error_estimates_enabled) {
-      return;
-    }
-
-    std::unordered_map<std::type_index, ::StepperErrorTolerances> tolerances{};
-    collect_stepper_error_tolerances(&tolerances, event);
-    if (not tolerances.empty()) {
-      *error_estimates_enabled = true;
-    }
-  });
-}
 }  // namespace StepperErrorEstimatesEnabledCompute_detail
 
 namespace StepperErrorTolerancesCompute_detail {
-void lts_impl(
+void function(
     const gsl::not_null<::StepperErrorTolerances*> tolerances,
     const ::EventsAndTriggers& events_and_triggers,
     const std::vector<std::unique_ptr<::StepChooser<StepChooserUse::LtsStep>>>&
@@ -87,6 +67,10 @@ void lts_impl(
   std::unordered_map<std::type_index, ::StepperErrorTolerances>
       all_tolerances{};
 
+  // In principle the slab size could be changed based on a dense
+  // trigger, but it's not clear that there is ever a good reason to
+  // do so, and it wouldn't make sense to use error control in that
+  // context in any case.
   events_and_triggers.for_each_event([&](const auto& event) {
     collect_stepper_error_tolerances(&all_tolerances, event);
   });
@@ -111,27 +95,6 @@ void lts_impl(
           time_stepper.order())) {
     tolerances->estimates = std::max(
         tolerances->estimates, variable_order_algorithm.required_estimates());
-  }
-}
-
-void gts_impl(const gsl::not_null<::StepperErrorTolerances*> tolerances,
-              const ::EventsAndTriggers& events_and_triggers,
-              const std::type_index& tag_type) {
-  std::unordered_map<std::type_index, ::StepperErrorTolerances>
-      all_tolerances{};
-  // In principle the slab size could be changed based on a dense
-  // trigger, but it's not clear that there is ever a good reason to
-  // do so, and it wouldn't make sense to use error control in that
-  // context in any case.
-  events_and_triggers.for_each_event([&](const auto& event) {
-    collect_stepper_error_tolerances(&all_tolerances, event);
-  });
-
-  if (const auto this_tolerance = all_tolerances.find(tag_type);
-      this_tolerance != all_tolerances.end()) {
-    *tolerances = this_tolerance->second;
-  } else {
-    *tolerances = ::StepperErrorTolerances{};
   }
 }
 }  // namespace StepperErrorTolerancesCompute_detail

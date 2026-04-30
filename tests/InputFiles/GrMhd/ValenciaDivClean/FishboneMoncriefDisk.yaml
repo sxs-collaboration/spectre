@@ -26,15 +26,9 @@ Evolution:
   TimeStepper:
     AdamsBashforth:
       Order: 3
-  # StepChoosers are needed only for local time stepping
-  # LtsStepChoosers:
-  #   - LimitIncrease:
-  #       Factor: 2
-  #   - PreventRapidIncrease
-  #   - Cfl:
-  #       SafetyFactor: 0.2
-  # InitialSlabSize is only needed for local time stepping
-  # InitialSlabSize: 0.01
+  LtsStepChoosers:
+  VariableOrderAlgorithm:
+    GoalOrder: 3
 
 PhaseChangeAndTriggers:
   - Trigger:

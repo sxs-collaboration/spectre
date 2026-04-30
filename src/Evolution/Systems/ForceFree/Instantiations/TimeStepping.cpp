@@ -10,5 +10,4 @@
 template class ChangeTimeStepperOrder<ForceFree::System>;
 template class CleanHistory<ForceFree::System>;
 template class RecordTimeStepperData<ForceFree::System>;
-template class UpdateU<ForceFree::System, false>;
-template class UpdateU<ForceFree::System, true>;
+template class UpdateU<ForceFree::System>;

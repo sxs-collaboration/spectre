@@ -10,5 +10,4 @@
 template class ChangeTimeStepperOrder<grmhd::ValenciaDivClean::System>;
 template class CleanHistory<grmhd::ValenciaDivClean::System>;
 template class RecordTimeStepperData<grmhd::ValenciaDivClean::System>;
-template class UpdateU<grmhd::ValenciaDivClean::System, false>;
-template class UpdateU<grmhd::ValenciaDivClean::System, true>;
+template class UpdateU<grmhd::ValenciaDivClean::System>;

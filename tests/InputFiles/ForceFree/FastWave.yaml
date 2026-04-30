@@ -23,6 +23,9 @@ Evolution:
   MinimumTimeStep: 1e-7
   TimeStepper:
     ClassicalRungeKutta4
+  LtsStepChoosers:
+  VariableOrderAlgorithm:
+    GoalOrder: 4
 
 EvolutionSystem:
   ForceFree:

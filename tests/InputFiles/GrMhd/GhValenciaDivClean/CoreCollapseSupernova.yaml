@@ -24,6 +24,9 @@ Evolution:
   MinimumTimeStep: 1.0e-7
   TimeStepper:
     Rk3HesthavenSsp:
+  LtsStepChoosers:
+  VariableOrderAlgorithm:
+    GoalOrder: 3
 
 PhaseChangeAndTriggers:
 

@@ -16,9 +16,7 @@
   template class CleanHistory<CurvedScalarWave::Worldtube::System<DIM(data)>>; \
   template class RecordTimeStepperData<                                        \
       CurvedScalarWave::Worldtube::System<DIM(data)>>;                         \
-  template class UpdateU<CurvedScalarWave::Worldtube::System<DIM(data)>,       \
-                         false>;                                               \
-  template class UpdateU<CurvedScalarWave::Worldtube::System<DIM(data)>, true>;
+  template class UpdateU<CurvedScalarWave::Worldtube::System<DIM(data)>>;
 
 GENERATE_INSTANTIATIONS(INSTANTIATION, (3))
 

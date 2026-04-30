@@ -197,9 +197,7 @@ struct CharacteristicEvolution {
                       tmpl::bind<::Actions::MutateApply,
                                  tmpl::bind<CalculateScriPlusValue, tmpl::_1>>>,
       ::Actions::MutateApply<RecordTimeStepperData<cce_system>>,
-      ::Actions::MutateApply<
-          UpdateU<cce_system, Metavariables::local_time_stepping,
-                  Tags::CceEvolutionPrefix>>,
+      ::Actions::MutateApply<UpdateU<cce_system, Tags::CceEvolutionPrefix>>,
       ::Actions::MutateApply<
           CleanHistory<cce_system, Tags::CceEvolutionPrefix>>>;
 
@@ -237,9 +235,7 @@ struct CharacteristicEvolution {
       ::Actions::MutateApply<ChangeStepSize<
           typename Metavariables::cce_step_choosers, Tags::CceEvolutionPrefix>>,
       ::Actions::MutateApply<RecordTimeStepperData<cce_system>>,
-      ::Actions::MutateApply<
-          UpdateU<cce_system, Metavariables::local_time_stepping,
-                  Tags::CceEvolutionPrefix>>,
+      ::Actions::MutateApply<UpdateU<cce_system, Tags::CceEvolutionPrefix>>,
       ::Actions::MutateApply<
           ChangeTimeStepperOrder<cce_system, Tags::CceEvolutionPrefix>>,
       ::Actions::MutateApply<

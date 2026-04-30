@@ -94,7 +94,7 @@ struct WorldtubeSingleton {
       Actions::SendAccelerationTerms<Metavariables>,
       ::Actions::MutateApply<UpdateAcceleration>,
       ::Actions::MutateApply<RecordTimeStepperData<worldtube_system>>,
-      ::Actions::MutateApply<UpdateU<worldtube_system, local_time_stepping>>,
+      ::Actions::MutateApply<UpdateU<worldtube_system>>,
       ::Actions::MutateApply<CleanHistory<worldtube_system>>,
       Actions::SendToElements<Metavariables>,
       domain::Actions::CheckFunctionsOfTimeAreReady<Dim>>;

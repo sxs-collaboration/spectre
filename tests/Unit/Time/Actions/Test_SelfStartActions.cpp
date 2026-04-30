@@ -14,6 +14,7 @@
 #include <optional>
 #include <string>
 #include <tuple>
+#include <vector>
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
@@ -35,6 +36,7 @@
 #include "Time/RecordTimeStepperData.hpp"
 #include "Time/RecordTimeStepperData.tpp"
 #include "Time/Slab.hpp"
+#include "Time/StepChoosers/StepChooser.hpp"
 #include "Time/Tags/AdaptiveSteppingDiagnostics.hpp"
 #include "Time/Tags/HistoryEvolvedVariables.hpp"
 #include "Time/Tags/StepNumberWithinSlab.hpp"
@@ -47,6 +49,7 @@
 #include "Time/TimeSteppers/AdamsBashforth.hpp"
 #include "Time/UpdateU.hpp"
 #include "Time/UpdateU.tpp"
+#include "Time/VariableOrderAlgorithm.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/PrettyType.hpp"
 #include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
@@ -165,7 +168,7 @@ struct Component {
       ComputeTimeDerivative,
       Actions::MutateApply<
           RecordTimeStepperData<typename metavariables::system>>,
-      Actions::MutateApply<UpdateU<typename metavariables::system, false>>,
+      Actions::MutateApply<UpdateU<typename metavariables::system>>,
       Actions::MutateApply<CleanHistory<typename metavariables::system>>,
       tmpl::conditional_t<has_primitives, Actions::UpdatePrimitives,
                           tmpl::list<>>>;
@@ -312,7 +315,9 @@ void test_actions(const size_t order, const int step_denominator) {
 
   MockRuntimeSystem<> runner{
       {std::make_unique<TimeSteppers::AdamsBashforth>(order),
-       EventsAndTriggers{}}};
+       EventsAndTriggers{},
+       std::vector<std::unique_ptr<StepChooser<StepChooserUse::LtsStep>>>{},
+       VariableOrderAlgorithm{order}}};
   emplace_component_and_initialize(make_not_null(&runner), forward_in_time,
                                    initial_time, initial_time_step, order,
                                    initial_value);
@@ -429,7 +434,9 @@ double error_in_step(const size_t order, const double step) {
   using component = Component<Metavariables<TestPrimitives, MultipleHistories>>;
   MockRuntimeSystem<TestPrimitives, MultipleHistories> runner{
       {std::make_unique<TimeSteppers::AdamsBashforth>(order),
-       EventsAndTriggers{}}};
+       EventsAndTriggers{},
+       std::vector<std::unique_ptr<StepChooser<StepChooserUse::LtsStep>>>{},
+       VariableOrderAlgorithm{order}}};
   emplace_component_and_initialize<TestPrimitives, MultipleHistories>(
       make_not_null(&runner), forward_in_time, initial_time, initial_time_step,
       order, initial_value);
@@ -438,9 +445,9 @@ double error_in_step(const size_t order, const double step) {
 
   run_past<std::is_same<SelfStart::Actions::Cleanup, tmpl::_1>,
            tmpl::bool_<true>, MultipleHistories>(make_not_null(&runner));
-  run_past<std::is_same<tmpl::pin<Actions::MutateApply<
-                            UpdateU<System<TestPrimitives>, false>>>,
-                        tmpl::_1>,
+  run_past<std::is_same<
+               tmpl::pin<Actions::MutateApply<UpdateU<System<TestPrimitives>>>>,
+               tmpl::_1>,
            tmpl::bool_<true>, MultipleHistories>(make_not_null(&runner));
 
   const double exact = -log(exp(-initial_value) - step);

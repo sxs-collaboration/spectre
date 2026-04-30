@@ -28,6 +28,9 @@ Evolution:
     Rk3HesthavenSsp:
     # AdamsMoultonPc:
     #   Order: 3
+  LtsStepChoosers:
+  VariableOrderAlgorithm:
+    GoalOrder: 3
 
 PhaseChangeAndTriggers:
   - Trigger:

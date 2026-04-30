@@ -49,6 +49,7 @@ spectre_target_headers(
   History.hpp
   LargestStepperError.hpp
   LtsMode.hpp
+  NoStepperErrorEstimates.hpp
   RecordTimeStepperData.hpp
   RecordTimeStepperData.tpp
   RequestsStepperErrorTolerances.hpp

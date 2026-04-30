@@ -35,6 +35,9 @@ Evolution:
   InitialTimeStep: 0.0001
   MinimumTimeStep: 1e-7
   TimeStepper: Rk5Tsitouras
+  LtsStepChoosers:
+  VariableOrderAlgorithm:
+    GoalOrder: 5
 
 DomainCreator:
   BinaryCompactObject:

@@ -26,6 +26,9 @@ Evolution:
   TimeStepper:
     AdamsMoultonPcMonotonic:
       Order: 3
+  LtsStepChoosers:
+  VariableOrderAlgorithm:
+    GoalOrder: 3
 
 PhaseChangeAndTriggers:
   - Trigger:

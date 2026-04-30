@@ -130,10 +130,10 @@ struct Metavariables {
 SPECTRE_TEST_CASE("Unit.Time.Tags.StepperErrorTolerancesCompute",
                   "[Unit][Time]") {
   TestHelpers::db::test_compute_tag<
-      Tags::StepperErrorEstimatesEnabledCompute<true>>(
+      Tags::StepperErrorEstimatesEnabledCompute<>>(
       "StepperErrorEstimatesEnabled");
   TestHelpers::db::test_compute_tag<
-      Tags::StepperErrorTolerancesCompute<EvolvedVariablesTag, true>>(
+      Tags::StepperErrorTolerancesCompute<EvolvedVariablesTag>>(
       "StepperErrorTolerances(Variables(EvolvedVar1,EvolvedVar2))");
 
   {
@@ -328,10 +328,9 @@ SPECTRE_TEST_CASE("Unit.Time.Tags.StepperErrorTolerancesCompute",
             Tags::VariableOrderAlgorithm>,
         tmpl::push_back<
             time_stepper_ref_tags<LtsTimeStepper>,
-            Tags::StepperErrorEstimatesEnabledCompute<true>,
-            Tags::StepperErrorTolerancesCompute<EvolvedVariablesTag, true>,
-            Tags::StepperErrorTolerancesCompute<AltEvolvedVariablesTag,
-                                                true>>>();
+            Tags::StepperErrorEstimatesEnabledCompute<>,
+            Tags::StepperErrorTolerancesCompute<EvolvedVariablesTag>,
+            Tags::StepperErrorTolerancesCompute<AltEvolvedVariablesTag>>>();
 
     db::mutate<Tags::ConcreteTimeStepper<LtsTimeStepper>,
                Tags::VariableOrderAlgorithm>(
@@ -370,12 +369,24 @@ SPECTRE_TEST_CASE("Unit.Time.Tags.StepperErrorTolerancesCompute",
     INFO("Compute tag GTS test");
     auto box = db::create<
         db::AddSimpleTags<
-            Tags::EventsAndTriggers<Triggers::WhenToCheck::AtSlabs>>,
+            Tags::LtsStepChoosers,
+            Tags::EventsAndTriggers<Triggers::WhenToCheck::AtSlabs>,
+            Tags::ConcreteTimeStepper<TimeStepper>,
+            Tags::VariableOrderAlgorithm>,
         db::AddComputeTags<
-            Tags::StepperErrorEstimatesEnabledCompute<false>,
-            Tags::StepperErrorTolerancesCompute<EvolvedVariablesTag, false>,
-            Tags::StepperErrorTolerancesCompute<AltEvolvedVariablesTag,
-                                                false>>>();
+            time_stepper_ref_tags<TimeStepper>,
+            Tags::StepperErrorEstimatesEnabledCompute<>,
+            Tags::StepperErrorTolerancesCompute<EvolvedVariablesTag>,
+            Tags::StepperErrorTolerancesCompute<AltEvolvedVariablesTag>>>();
+    db::mutate<Tags::ConcreteTimeStepper<TimeStepper>,
+               Tags::VariableOrderAlgorithm>(
+        [](const gsl::not_null<std::unique_ptr<TimeStepper>*> time_stepper,
+           const gsl::not_null<VariableOrderAlgorithm*> vo_algorithm) {
+          *time_stepper = std::make_unique<TimeSteppers::AdamsBashforth>(4);
+          *vo_algorithm = VariableOrderAlgorithm(4_st);
+        },
+        make_not_null(&box));
+
     db::mutate<Tags::EventsAndTriggers<Triggers::WhenToCheck::AtSlabs>>(
         [](const gsl::not_null<EventsAndTriggers*> events) {
           *events =

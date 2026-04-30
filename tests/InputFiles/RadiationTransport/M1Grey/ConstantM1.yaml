@@ -26,6 +26,9 @@ Evolution:
   Imex:
     Mode: SemiImplicit
     SolveTolerance: 1.0e-5
+  LtsStepChoosers:
+  VariableOrderAlgorithm:
+    GoalOrder: 3
 
 PhaseChangeAndTriggers:
 

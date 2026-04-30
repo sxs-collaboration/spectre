@@ -770,8 +770,7 @@ struct GhValenciaDivCleanTemplateBase<
   using dg_step_actions = tmpl::flatten<tmpl::list<
       dg::Actions::SpectralFilter,
       evolution::dg::Actions::ComputeTimeDerivative<
-          volume_dim, system, AllStepChoosers, local_time_stepping,
-          use_dg_element_collection>,
+          volume_dim, system, AllStepChoosers, use_dg_element_collection>,
       evolution::dg::Actions::ApplyBoundaryCorrectionsToTimeDerivative<
           volume_dim, use_dg_element_collection>,
       tmpl::conditional_t<
@@ -783,13 +782,10 @@ struct GhValenciaDivCleanTemplateBase<
       evolution::Actions::RunEventsAndDenseTriggers<
           events_and_dense_triggers_dg_postprocessors>,
       control_system::Actions::LimitTimeStep<control_systems>,
-      Actions::MutateApply<UpdateU<system, local_time_stepping>>,
+      Actions::MutateApply<UpdateU<system>>,
       evolution::dg::Actions::ApplyLtsBoundaryCorrections<
           volume_dim, use_dg_element_collection>,
-      tmpl::conditional_t<
-          local_time_stepping,
-          tmpl::list<Actions::MutateApply<ChangeTimeStepperOrder<system>>>,
-          tmpl::list<>>,
+      Actions::MutateApply<ChangeTimeStepperOrder<system>>,
       tmpl::conditional_t<
           use_dg_subcell,
           // Note: The primitive variables are computed as part of the TCI.
@@ -820,11 +816,9 @@ struct GhValenciaDivCleanTemplateBase<
       Actions::Goto<evolution::dg::subcell::Actions::Labels::EndOfSolvers>,
 
       Actions::Label<evolution::dg::subcell::Actions::Labels::BeginSubcell>,
-      tmpl::conditional_t<local_time_stepping,
-                          // This is just to adjust for FixedLtsRatio, so we
-                          // can pass an empty list of StepChoosers.
-                          Actions::MutateApply<ChangeStepSize<tmpl::list<>>>,
-                          tmpl::list<>>,
+      // This is just to adjust for FixedLtsRatio, so we
+      // can pass an empty list of StepChoosers.
+      Actions::MutateApply<ChangeStepSize<tmpl::list<>>>,
       Actions::MutateApply<evolution::dg::subcell::fd::CellCenteredFlux<
           system, grmhd::ValenciaDivClean::ComputeFluxes, volume_dim, false>>,
       evolution::dg::subcell::Actions::SendDataForReconstruction<
@@ -845,7 +839,7 @@ struct GhValenciaDivCleanTemplateBase<
       evolution::Actions::RunEventsAndDenseTriggers<
           events_and_dense_triggers_subcell_postprocessors>,
       control_system::Actions::LimitTimeStep<control_systems>,
-      Actions::MutateApply<UpdateU<system, local_time_stepping>>,
+      Actions::MutateApply<UpdateU<system>>,
       Actions::MutateApply<CleanHistory<system>>,
       Actions::MutateApply<evolution::dg::CleanMortarHistory<volume_dim>>,
       Actions::MutateApply<

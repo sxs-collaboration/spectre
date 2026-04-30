@@ -46,6 +46,9 @@ Evolution:
   TimeStepper:
     AdamsBashforth:
       Order: 3
+  LtsStepChoosers:
+  VariableOrderAlgorithm:
+    GoalOrder: 3
 
 DomainCreator:
   Brick:

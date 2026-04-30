@@ -80,9 +80,9 @@
 #include "Time/Actions/SelfStartActions.hpp"
 #include "Time/AdvanceTime.hpp"
 #include "Time/ChangeSlabSize/Action.hpp"
+#include "Time/NoStepperErrorEstimates.hpp"
 #include "Time/StepChoosers/Factory.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"
-#include "Time/Tags/StepperErrorTolerancesCompute.hpp"
 #include "Time/Tags/Time.hpp"
 #include "Time/Tags/TimeStepId.hpp"
 #include "Time/TimeSequence.hpp"
@@ -202,6 +202,7 @@ struct EvolutionMetavars {
                                        false, local_time_stepping>,
           evolution::dg::Initialization::Domain<EvolutionMetavars>>,
       Initialization::Actions::AddSimpleTags<
+          NoStepperErrorEstimates,
           evolution::dg::BackgroundGrVars<system, EvolutionMetavars>>,
       evolution::dg::subcell::Actions::SetSubcellGrid<volume_dim, system,
                                                       false>,
@@ -215,8 +216,7 @@ struct EvolutionMetavars {
           Particles::MonteCarlo::CellLightCrossingTimeCompute,
           Particles::MonteCarlo::InertialFrameEnergyDensityCompute,
           Particles::MonteCarlo::InverseJacobianInertialToFluidCompute,
-          domain::Tags::JacobianCompute<4, Frame::Inertial, Frame::Fluid>,
-          ::Tags::StepperErrorEstimatesEnabledCompute<false>>>,
+          domain::Tags::JacobianCompute<4, Frame::Inertial, Frame::Fluid>>>,
       evolution::Actions::InitializeRunEventsAndDenseTriggers,
       Parallel::Actions::TerminatePhase>;
 

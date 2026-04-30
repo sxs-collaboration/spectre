@@ -25,6 +25,9 @@ Evolution:
   MinimumTimeStep: 1e-7
   TimeStepper:
     DormandPrince5:
+  LtsStepChoosers:
+  VariableOrderAlgorithm:
+    GoalOrder: 5
 
 Amr:
   Criteria:

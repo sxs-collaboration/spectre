@@ -10,5 +10,4 @@
 template class ChangeTimeStepperOrder<ScalarTensor::System>;
 template class CleanHistory<ScalarTensor::System>;
 template class RecordTimeStepperData<ScalarTensor::System>;
-template class UpdateU<ScalarTensor::System, false>;
-template class UpdateU<ScalarTensor::System, true>;
+template class UpdateU<ScalarTensor::System>;

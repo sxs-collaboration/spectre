@@ -14,8 +14,7 @@
   template class ChangeTimeStepperOrder<NewtonianEuler::System<DIM(data)>>; \
   template class CleanHistory<NewtonianEuler::System<DIM(data)>>;           \
   template class RecordTimeStepperData<NewtonianEuler::System<DIM(data)>>;  \
-  template class UpdateU<NewtonianEuler::System<DIM(data)>, false>;         \
-  template class UpdateU<NewtonianEuler::System<DIM(data)>, true>;
+  template class UpdateU<NewtonianEuler::System<DIM(data)>>;
 
 GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
 
