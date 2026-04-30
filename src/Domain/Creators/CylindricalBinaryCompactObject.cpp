@@ -216,8 +216,8 @@ CylindricalBinaryCompactObject::CylindricalBinaryCompactObject(
            "future");
   }
 
-  // Create grid anchors
-  grid_anchors_ = bco::create_grid_anchors(center_A_, center_B_);
+  // Create grid anchors in x direction from unrotated input centers
+  grid_anchors_ = bco::create_grid_anchors(center_A, center_B);
 
   // Create block names and groups
   auto add_filled_cylinder_name = [this](const std::string& prefix,

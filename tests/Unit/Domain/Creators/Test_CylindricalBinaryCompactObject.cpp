@@ -346,6 +346,18 @@ void test_construction(const CylBCO& creator,
   CHECK(creator.block_names() == block_names);
   CHECK(creator.block_groups() == block_groups);
 
+  const auto& grid_anchors = creator.grid_anchors();
+  CHECK(grid_anchors.size() == 3);
+  const auto& grid_anchor_center_a = grid_anchors.at("CenterA");
+  const auto& grid_anchor_center_b = grid_anchors.at("CenterB");
+  const auto& grid_anchor_center = grid_anchors.at("Center");
+  for (size_t i = 0; i < 3; ++i) {
+    CHECK(grid_anchor_center_a.get(i) == center_objectA.at(i));
+    CHECK(grid_anchor_center_b.get(i) == center_objectB.at(i));
+    CHECK_ITERABLE_APPROX(grid_anchor_center.get(i),
+                          0.5 * (center_objectA.at(i) + center_objectB.at(i)));
+  }
+
   CHECK(domain.excision_spheres().size() == 2);
   const auto& excision_sphere_a =
       domain.excision_spheres().at("ExcisionSphereA");
