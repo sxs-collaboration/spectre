@@ -31,7 +31,9 @@
 #include "Domain/DomainHelpers.hpp"
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/DirectionMap.hpp"
+#include "Domain/Structure/HasBoundary.hpp"
 #include "Domain/Structure/OrientationMap.hpp"
+#include "Domain/Structure/Topology.hpp"
 #include "Options/ParseError.hpp"
 
 namespace Frame {
@@ -40,28 +42,33 @@ struct BlockLogical;
 }  // namespace Frame
 
 namespace domain::creators {
+
 CartoonSphere2D::CartoonSphere2D(
-    double inner_radius, double outer_radius,
-    typename InitialRefinement::type&& initial_refinement,
-    typename InitialGridPoints::type&& initial_number_of_grid_points,
+    double inner_radius, double outer_radius, size_t initial_angular_refinement,
+    const typename InitialRadialRefinement::type& initial_radial_refinement,
+    std::array<size_t, 2> initial_number_of_grid_points,
     std::vector<double> radial_partitioning, bool use_equiangular_map,
     std::variant<Excision, InnerSquare> interior,
+    CoordinateMaps::Distribution radial_distribution,
     std::unique_ptr<domain::creators::time_dependence::TimeDependence<3>>
         time_dependence,
     std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
-        y_axis_boundary_condition,
-    std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
         outer_boundary_condition,
+    std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
+        cartoon_boundary_condition,
     const Options::Context& context)
     : inner_radius_(inner_radius),
       outer_radius_(outer_radius),
+      initial_angular_refinement_(std::move(initial_angular_refinement)),
+      initial_number_of_grid_points_(std::move(initial_number_of_grid_points)),
       radial_partitioning_(std::move(radial_partitioning)),
       use_equiangular_map_(use_equiangular_map),
       interior_(std::move(interior)),
       fill_interior_(std::holds_alternative<InnerSquare>(interior_)),
       time_dependence_(std::move(time_dependence)),
-      y_axis_boundary_condition_(std::move(y_axis_boundary_condition)),
-      outer_boundary_condition_(std::move(outer_boundary_condition)) {
+      radial_distribution_(std::move(radial_distribution)),
+      outer_boundary_condition_(std::move(outer_boundary_condition)),
+      cartoon_boundary_condition_(std::move(cartoon_boundary_condition)) {
   if (time_dependence_ == nullptr) {
     time_dependence_ =
         std::make_unique<domain::creators::time_dependence::None<3>>();
@@ -73,6 +80,14 @@ CartoonSphere2D::CartoonSphere2D(
                     std::to_string(inner_radius_) + " and outer radius is " +
                     std::to_string(outer_radius_) + ".");
   }
+  if (fill_interior_ and std::get<InnerSquare>(interior_).sphericity != 1.0 and
+      radial_distribution_ != CoordinateMaps::Distribution::Linear) {
+    PARSE_ERROR(
+        context,
+        "Cannot have a non-linear radial distribution when the sphericity of "
+        "wedges is not 1.0, got "
+            << radial_distribution << ". You need to excise the center.");
+  }
 
   std::vector<domain::CoordinateMaps::Distribution> dummy_vec;
   const auto dummy_distribution = CoordinateMaps::Distribution::Linear;
@@ -83,54 +98,35 @@ CartoonSphere2D::CartoonSphere2D(
                          context);
   // num_shells_ is the number of wedge shells, always > 0
   num_blocks_ = 3 * num_shells_ + (fill_interior_ ? 1 : 0);
-
-  const auto check_possible_list_instantiation =
-      [this, &context](std::variant<std::array<size_t, 2>,
-                                    std::vector<std::array<size_t, 2>>>
-                           input_param,
-                       const std::string& name) {
-        if (std::holds_alternative<std::array<size_t, 2>>(input_param)) {
-          const auto input_value = std::get<std::array<size_t, 2>>(input_param);
-          return std::vector<std::array<size_t, 2>>(num_blocks_, input_value);
-        } else {
-          const auto& input_vec =
-              std::get<std::vector<std::array<size_t, 2>>>(input_param);
-          if (input_vec.size() != num_shells_) {
-            PARSE_ERROR(
-                context,
-                name << " must be one larger than RadialPartitioning (size="
-                     << radial_partitioning_.size() << "), but has size "
-                     << input_vec.size() << ".");
-          }
-          std::vector<std::array<size_t, 2>> extended;
-          extended.reserve(num_blocks_);
-          if (fill_interior_) {
-            extended.push_back(input_vec[0]);
-          }
-          for (size_t i = 0; i < num_shells_; ++i) {
-            for (size_t j = 0; j < 3; ++j) {
-              extended.push_back(input_vec[i]);
-            }
-          }
-          // reversing due to block_id scheme going from outer to inner layers
-          std::reverse(extended.begin(), extended.end());
-          return extended;
-        }
-      };
-  initial_refinement_ = check_possible_list_instantiation(
-      std::move(initial_refinement), "InitialRefinement");
-  initial_number_of_grid_points_ = check_possible_list_instantiation(
-      std::move(initial_number_of_grid_points), "InitialGridPoints");
-
-  if ((y_axis_boundary_condition_ == nullptr) !=
-      (outer_boundary_condition_ == nullptr)) {
-    PARSE_ERROR(context,
-                "Must specify either both inner and outer boundary conditions "
-                "or neither.");
+  if (std::holds_alternative<size_t>(initial_radial_refinement)) {
+    const auto input_value = std::get<size_t>(initial_radial_refinement);
+    initial_radial_refinement_ = std::vector<size_t>(num_blocks_, input_value);
+  } else {
+    const auto& input_vec =
+        std::get<std::vector<size_t>>(initial_radial_refinement);
+    if (input_vec.size() != num_shells_) {
+      PARSE_ERROR(context,
+                  "InitialRadialRefinement must be one larger than "
+                  "RadialPartitioning (size="
+                      << radial_partitioning_.size() << "), but has size "
+                      << input_vec.size() << ".");
+    }
+    initial_radial_refinement_.reserve(num_blocks_);
+    if (fill_interior_) {
+      initial_radial_refinement_.push_back(input_vec[0]);
+    }
+    for (size_t i = 0; i < num_shells_; ++i) {
+      for (size_t j = 0; j < 3; ++j) {
+        initial_radial_refinement_.push_back(input_vec[i]);
+      }
+    }
+    // reversing due to block_id scheme going from outer to inner layers
+    std::reverse(initial_radial_refinement_.begin(),
+                 initial_radial_refinement_.end());
   }
+
   using domain::BoundaryConditions::is_none;
-  if (is_none(y_axis_boundary_condition_) or
-      is_none(outer_boundary_condition_) or
+  if (is_none(outer_boundary_condition_) or
       (not fill_interior_ and
        is_none(std::get<Excision>(interior_).boundary_condition))) {
     PARSE_ERROR(
@@ -139,12 +135,32 @@ CartoonSphere2D::CartoonSphere2D(
         "outflow-type boundary condition, you must use that.");
   }
   using domain::BoundaryConditions::is_periodic;
-  if (is_periodic(y_axis_boundary_condition_) or
-      is_periodic(outer_boundary_condition_) or
+  if (is_periodic(outer_boundary_condition_) or
       (not fill_interior_ and
        is_periodic(std::get<Excision>(interior_).boundary_condition))) {
     PARSE_ERROR(context,
                 "Cannot have periodic boundary conditions on a 2D sphere.");
+  }
+
+  if (cartoon_boundary_condition_ == nullptr) {
+    PARSE_ERROR(
+        context,
+        "CartoonSphere2D should only be used with systems that have a "
+        "cartoon-style boundary condition, but none was provided. This "
+        "means the system is not set up to use cartoon methods. Make sure your "
+        "system has a boundary condition that inherits from MarkAsCartoon in "
+        "its standard_boundary_conditions list.");
+  }
+
+  // Check if user mistakenly specified a cartoon BC as an external boundary
+  if (outer_boundary_condition_ != nullptr and
+      domain::BoundaryConditions::is_cartoon(outer_boundary_condition_)) {
+    PARSE_ERROR(
+        context,
+        "Cartoon boundary conditions should not be specified as external "
+        "boundary conditions. They are automatically applied to internal "
+        "cartoon boundaries. Please choose a different boundary condition "
+        "for the outer boundary.");
   }
 
   block_names_.reserve(num_blocks_);
@@ -154,6 +170,7 @@ CartoonSphere2D::CartoonSphere2D(
   // block
   const std::array<std::string, 3> wedge_directions{"_LowerY", "_UpperX",
                                                     "_UpperY"};
+
   for (size_t i = 0; i < num_shells_; ++i) {
     const std::string shell = "Shell" + std::to_string(i);
     block_groups_[shell];
@@ -226,7 +243,8 @@ Domain<3> CartoonSphere2D::create_domain() const {
                 OrientationMap<2>{std::array<Direction<2>, 2>{
                     {Direction<2>::upper_eta(), Direction<2>::lower_xi()}}},
                 use_equiangular_map_,
-                domain::CoordinateMaps::Wedge<2>::WedgeHalves::UpperOnly},
+                domain::CoordinateMaps::Wedge<2>::WedgeHalves::UpperOnly,
+                radial_distribution_},
             Identity1D{}});
     // this is a full wedge, +x
     coord_maps.emplace_back(
@@ -237,7 +255,9 @@ Domain<3> CartoonSphere2D::create_domain() const {
                     inner_radius, outer_radius, inner_sphericity, 1.0,
                     OrientationMap<2>{std::array<Direction<2>, 2>{
                         {Direction<2>::upper_xi(), Direction<2>::upper_eta()}}},
-                    use_equiangular_map_},
+                    use_equiangular_map_,
+                    domain::CoordinateMaps::Wedge<2>::WedgeHalves::Both,
+                    radial_distribution_},
                 Identity1D{}}));
     // this is a half-wedge, +y
     coord_maps.emplace_back(
@@ -249,7 +269,8 @@ Domain<3> CartoonSphere2D::create_domain() const {
                     OrientationMap<2>{std::array<Direction<2>, 2>{
                         {Direction<2>::lower_eta(), Direction<2>::upper_xi()}}},
                     use_equiangular_map_,
-                    domain::CoordinateMaps::Wedge<2>::WedgeHalves::LowerOnly},
+                    domain::CoordinateMaps::Wedge<2>::WedgeHalves::LowerOnly,
+                    radial_distribution_},
                 Identity1D{}}));
     if (has_square) {
       if (use_equiangular_map_) {
@@ -335,9 +356,12 @@ Domain<3> CartoonSphere2D::create_domain() const {
     }
 
     for (size_t j = 0; j < neighbors.size(); ++j) {
-      blocks.emplace_back(
-          std::move(coord_maps.at(j)), 3 * i + j, std::move(neighbors.at(j)),
-          block_names_.at(3 * i + j), domain::topologies::cartoon_cylinder);
+      const auto topology = j % 3 == 1
+                                ? domain::topologies::cartoon_cylinder
+                                : domain::topologies::cartoon_cylinder_inner;
+      blocks.emplace_back(std::move(coord_maps.at(j)), 3 * i + j,
+                          std::move(neighbors.at(j)),
+                          block_names_.at(3 * i + j), topology);
     }
   }
 
@@ -387,13 +411,13 @@ CartoonSphere2D::external_boundary_conditions() const {
   // x=0 axis
   for (size_t i = 0; i < num_shells_; ++i) {
     boundary_conditions[3 * i + 0][Direction<3>::lower_xi()] =
-        y_axis_boundary_condition_->get_clone();
+        cartoon_boundary_condition_->get_clone();
     boundary_conditions[3 * i + 2][Direction<3>::lower_xi()] =
-        y_axis_boundary_condition_->get_clone();
+        cartoon_boundary_condition_->get_clone();
   }
   if (fill_interior_) {
     boundary_conditions[num_blocks_ - 1][Direction<3>::lower_xi()] =
-        y_axis_boundary_condition_->get_clone();
+        cartoon_boundary_condition_->get_clone();
   } else {
     const auto& excision_boundary_condition =
         std::get<Excision>(interior_).boundary_condition;
@@ -411,13 +435,12 @@ std::vector<std::array<size_t, 3>> CartoonSphere2D::initial_extents() const {
   std::vector<std::array<size_t, 3>> extended;
   extended.reserve(num_blocks_);
 
-  std::transform(initial_number_of_grid_points_.begin(),
-                 initial_number_of_grid_points_.end(),
-                 std::back_inserter(extended),
-                 [](const std::array<size_t, 2>& arr) -> std::array<size_t, 3> {
-                   // data is read as [r, theta] but coordinates are [theta, r]
-                   return {arr[1], arr[0], 1};
-                 });
+  for (size_t i = 0; i < num_blocks_; ++i) {
+    // data is read as [r, theta] but coordinates are [theta, r]
+    extended.emplace_back(
+        std::array<size_t, 3>{initial_number_of_grid_points_[1],
+                              initial_number_of_grid_points_[0], 1});
+  }
   if (fill_interior_) {
     // dealing with half-square, want identical extents, matching to wedge theta
     extended.back()[1] = extended.back()[0];
@@ -429,21 +452,20 @@ std::vector<std::array<size_t, 3>> CartoonSphere2D::initial_refinement_levels()
     const {
   std::vector<std::array<size_t, 3>> extended;
   extended.reserve(num_blocks_);
-
-  size_t n = 0;
-  std::transform(
-      initial_refinement_.begin(), initial_refinement_.end(),
-      std::back_inserter(extended),
-      [&n](const std::array<size_t, 2>& arr) -> std::array<size_t, 3> {
-        const size_t shift = (n % 3 == 0 or n % 3 == 2) and arr[1] != 0 ? 1 : 0;
-        ++n;
-        // data is read as [r, theta] but coordinates are [theta, r]
-        return {arr[1] - shift, arr[0], 0};
-      });
+  for (size_t i = 0; i < num_blocks_; ++i) {
+    // the angular refinement is that of a full wedge; for the half-wedges at
+    // the top and bottom of the domain, we must decrease the refinement so
+    // that the "physical" refinement is uniform
+    const size_t shift =
+        (i % 3 == 0 or i % 3 == 2) and initial_angular_refinement_ != 0 ? 1 : 0;
+    // Coordinates are [theta, r]
+    extended.emplace_back(std::array<size_t, 3>{
+        initial_angular_refinement_ - shift, initial_radial_refinement_[i], 0});
+  }
   if (fill_interior_) {
     // dealing with half-square, want proportional refinement, matching to wedge
     // theta
-    extended.back()[1] = initial_refinement_.back()[1];
+    extended.back()[1] = initial_angular_refinement_;
     const size_t shift = extended.back()[1] != 0 ? 1 : 0;
     extended.back()[0] = extended.back()[1] - shift;
   }

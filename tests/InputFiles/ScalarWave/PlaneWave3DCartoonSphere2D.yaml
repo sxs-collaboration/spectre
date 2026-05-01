@@ -46,17 +46,18 @@ Evolution:
       Order: 3
 
 DomainCreator:
-  CartoonSphere1D:
-    InnerRadius: 0.0
+  CartoonSphere2D:
+    InnerRadius: 5.0
     OuterRadius: 20.0
-    InitialRadialRefinement: [3, 2]
-    InitialNumberOfRadialGridPoints: 5
+    InitialAngularRefinement: 1
+    InitialRadialRefinement: 2
+    InitialGridPoints: [10, 11]
     RadialPartitioning: [10.0]
-    RadialDistributions: [Linear, Logarithmic]
+    UseEquiangularMap: true
+    RadialDistribution: Linear
     TimeDependence: None
-    InnerBoundaryCondition:
-      DirichletAnalytic:
-        AnalyticPrescription: *InitialData
+    Interior:
+      FillWithSphericity: 0.0
     OuterBoundaryCondition:
       DirichletAnalytic:
         AnalyticPrescription: *InitialData
