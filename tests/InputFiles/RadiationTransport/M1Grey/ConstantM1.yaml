@@ -22,6 +22,7 @@ Evolution:
   InitialTimeStep: &initial_time_step 0.01
   InitialSlabSize: *initial_time_step
   MinimumTimeStep: 1e-7
+  LocalTimeStepping: Off
   TimeStepper:
     Rk3Kennedy:
   Imex:

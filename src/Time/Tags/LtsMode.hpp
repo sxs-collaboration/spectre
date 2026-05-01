@@ -5,6 +5,7 @@
 
 #include "DataStructures/DataBox/Tag.hpp"
 #include "Time/LtsMode.hpp"
+#include "Time/OptionTags/LocalTimeStepping.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -15,16 +16,10 @@ namespace Tags {
 struct LtsMode : db::SimpleTag {
   using type = ::LtsMode;
 
-  static constexpr bool pass_metavariables = true;
+  static constexpr bool pass_metavariables = false;
+  using option_tags = tmpl::list<::OptionTags::LocalTimeStepping>;
 
-  template <typename Metavars>
-  using option_tags = tmpl::list<>;
-
-  template <typename Metavars>
-  static type create_from_options() {
-    return Metavars::local_time_stepping ? ::LtsMode::Conservative
-                                         : ::LtsMode::Off;
-  }
+  static type create_from_options(const type lts_mode) { return lts_mode; }
 };
 
 /// \ingroup DataBoxTagsGroup
@@ -35,14 +30,10 @@ template <::LtsMode Mode>
 struct LtsModeForced : LtsMode {
   using base = LtsMode;
 
-  template <typename Metavars>
-  static type create_from_options() {
+  static type create_from_options(const type lts_mode) {
     // Check consistency rather than just returning the forced mode so
     // that other tag creation functions can rely on the parsed value
     // being correct.
-    const auto lts_mode = Metavars::local_time_stepping
-                              ? ::LtsMode::Conservative
-                              : ::LtsMode::Off;
     if (lts_mode != Mode) {
       ERROR_NO_TRACE(
           "This executable only supports LocalTimeStepping: " << Mode);

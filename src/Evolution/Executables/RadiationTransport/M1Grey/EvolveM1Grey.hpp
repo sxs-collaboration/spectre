@@ -231,8 +231,8 @@ struct EvolutionMetavars {
 
   using initialization_actions = tmpl::list<
       Initialization::Actions::InitializeItems<
-          Initialization::TimeStepping<EvolutionMetavars, TimeStepperBase,
-                                       false, local_time_stepping>,
+          Initialization::TimeStepping<EvolutionMetavars, ImexTimeStepper,
+                                       false, true>,
           evolution::dg::Initialization::Domain<EvolutionMetavars>,
           Initialization::TimeStepperHistory<EvolutionMetavars>>,
       Initialization::Actions::AddSimpleTags<

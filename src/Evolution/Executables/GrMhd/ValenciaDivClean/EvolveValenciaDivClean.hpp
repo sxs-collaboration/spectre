@@ -521,8 +521,8 @@ struct EvolutionMetavars<tmpl::list<InterpolationTargetTags...>,
 
   using initialization_actions = tmpl::flatten<tmpl::list<
       Initialization::Actions::InitializeItems<
-          Initialization::TimeStepping<EvolutionMetavars, TimeStepperBase,
-                                       false, local_time_stepping>,
+          Initialization::TimeStepping<EvolutionMetavars, TimeStepper, false,
+                                       true>,
           evolution::dg::Initialization::Domain<EvolutionMetavars>,
           evolution::dg::subcell::GhostZoneInverseJacobian<
               volume_dim, grmhd::ValenciaDivClean::fd::Tags::Reconstructor>,

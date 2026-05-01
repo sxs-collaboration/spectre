@@ -339,9 +339,8 @@ struct Metavariables {
               Parallel::Phase::Initialization,
               tmpl::list<
                   Initialization::Actions::InitializeItems<
-                      Initialization::TimeStepping<Metavariables,
-                                                   TimeStepperBase, false,
-                                                   local_time_stepping>,
+                      Initialization::TimeStepping<Metavariables, TimeStepper,
+                                                   false, false>,
                       evolution::dg::Initialization::Domain<Metavariables>,
                       ::amr::Initialization::Initialize<volume_dim,
                                                         Metavariables>,

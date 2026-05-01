@@ -20,6 +20,7 @@ Evolution:
   InitialTimeStep: &initial_time_step 0.001
   InitialSlabSize: *initial_time_step
   MinimumTimeStep: 1e-7
+  LocalTimeStepping: Off
   TimeStepper: Rk3HesthavenSsp
   LtsStepChoosers:
   VariableOrderAlgorithm:

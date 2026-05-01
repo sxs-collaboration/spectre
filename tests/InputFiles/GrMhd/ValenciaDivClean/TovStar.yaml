@@ -23,6 +23,7 @@ Evolution:
   InitialTimeStep: &initial_time_step 0.0001
   InitialSlabSize: *initial_time_step
   MinimumTimeStep: 1e-7
+  LocalTimeStepping: Off
   TimeStepper:
     # Both RK3 and AM-PC 3 should work. These are the "standard" time steppers
     # for spectre for hydro right now.

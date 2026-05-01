@@ -76,8 +76,8 @@ struct WorldtubeSingleton {
 
   using initialization_actions = tmpl::list<
       ::Initialization::Actions::InitializeItems<
-          ::Initialization::TimeStepping<Metavariables, TimeStepperBase, false,
-                                         local_time_stepping>,
+          ::Initialization::TimeStepping<Metavariables, TimeStepper, false,
+                                         false>,
           Initialization::InitializeEvolvedVariables,
           Initialization::InitializeElementFacesGridCoordinates<Dim>>,
       ::Initialization::Actions::AddComputeTags<

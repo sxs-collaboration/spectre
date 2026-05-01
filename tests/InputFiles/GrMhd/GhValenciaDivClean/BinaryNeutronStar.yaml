@@ -23,7 +23,7 @@ Evolution:
   InitialTimeStep: &initial_time_step 0.075
   InitialSlabSize: *initial_time_step
   MinimumTimeStep: 1e-7
-  # Control systems only work with AdamsBashforth
+  LocalTimeStepping: Off
   TimeStepper:
     AdamsMoultonPcMonotonic:
       Order: 3

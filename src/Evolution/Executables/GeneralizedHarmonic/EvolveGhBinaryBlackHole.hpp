@@ -615,9 +615,8 @@ struct EvolutionMetavars {
 
   using initialization_actions = tmpl::list<
       Initialization::Actions::InitializeItems<
-          Initialization::TimeStepping<EvolutionMetavars, TimeStepperBase,
-                                       use_control_systems,
-                                       local_time_stepping>,
+          Initialization::TimeStepping<EvolutionMetavars, TimeStepper,
+                                       use_control_systems, true>,
           evolution::dg::Initialization::Domain<EvolutionMetavars,
                                                 use_control_systems>,
           ::amr::Initialization::Initialize<volume_dim, EvolutionMetavars>,

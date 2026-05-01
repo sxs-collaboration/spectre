@@ -53,6 +53,7 @@ Evolution:
   InitialTime: 0.0
   InitialTimeStep: &initial_time_step 0.1
   InitialSlabSize: *initial_time_step
+  LocalTimeStepping: Off
   TimeStepper:
     AdamsBashforth:
       Order: 1

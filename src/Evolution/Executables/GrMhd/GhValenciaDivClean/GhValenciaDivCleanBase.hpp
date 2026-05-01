@@ -864,9 +864,8 @@ struct GhValenciaDivCleanTemplateBase<
 
   using initialization_actions = tmpl::list<
       Initialization::Actions::InitializeItems<
-          Initialization::TimeStepping<derived_metavars, TimeStepperBase,
-                                       use_control_systems,
-                                       local_time_stepping>,
+          Initialization::TimeStepping<derived_metavars, TimeStepper,
+                                       use_control_systems, true>,
           evolution::dg::Initialization::Domain<derived_metavars,
                                                 use_control_systems>,
           Initialization::TimeStepperHistory<derived_metavars>>,
