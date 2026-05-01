@@ -63,7 +63,8 @@ PhaseChangeAndTriggers:
 Evolution:
   InitialTime: &InitialTime
     0.0
-  InitialTimeStep: 0.001
+  InitialTimeStep: &initial_time_step 0.001
+  InitialSlabSize: *initial_time_step
   MinimumTimeStep: 1e-7
   TimeStepper:
     AdamsBashforth:

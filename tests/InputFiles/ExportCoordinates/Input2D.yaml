@@ -61,7 +61,8 @@ EventsAndTriggersAtSteps:
 
 Evolution:
   InitialTime: 0.0
-  InitialTimeStep: 0.1
+  InitialTimeStep: &initial_time_step 0.1
+  InitialSlabSize: *initial_time_step
   TimeStepper:
     AdamsBashforth:
       Order: 1

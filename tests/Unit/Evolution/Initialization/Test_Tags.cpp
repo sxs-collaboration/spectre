@@ -10,8 +10,6 @@ SPECTRE_TEST_CASE("Unit.Evolution.Initialization.Tags",
                   "[Unit][Evolution]") {
   TestHelpers::db::test_simple_tag<Initialization::Tags::InitialTimeDelta>(
       "InitialTimeDelta");
-  TestHelpers::db::test_simple_tag<Initialization::Tags::InitialSlabSize<true>>(
+  TestHelpers::db::test_simple_tag<Initialization::Tags::InitialSlabSize>(
       "InitialSlabSize");
-  TestHelpers::db::test_simple_tag<
-      Initialization::Tags::InitialSlabSize<false>>("InitialSlabSize");
 }

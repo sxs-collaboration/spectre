@@ -21,7 +21,8 @@ ResourceInfo:
 
 Evolution:
   InitialTime: 0.0
-  InitialTimeStep: 0.0002
+  InitialTimeStep: &initial_time_step 0.0002
+  InitialSlabSize: *initial_time_step
   MinimumTimeStep: 1e-7
   TimeStepper:
     AdamsBashforth:

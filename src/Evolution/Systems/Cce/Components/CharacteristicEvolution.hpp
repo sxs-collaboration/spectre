@@ -111,8 +111,7 @@ struct CharacteristicEvolution {
       Actions::InitializeCharacteristicEvolutionVariables<Metavariables>,
       Actions::InitializeCharacteristicEvolutionTime<
           typename Metavariables::evolved_coordinates_variables_tag,
-          typename Metavariables::evolved_swsh_tags,
-          Metavariables::local_time_stepping>,
+          typename Metavariables::evolved_swsh_tags>,
       Actions::InitializeCharacteristicEvolutionScri<
           typename Metavariables::scri_values_to_observe,
           typename Metavariables::cce_boundary_component>,

@@ -154,7 +154,7 @@ struct MockCharacteristicEvolution {
       Actions::InitializeCharacteristicEvolutionVariables<Metavariables>,
       Actions::InitializeCharacteristicEvolutionTime<
           typename Metavariables::evolved_coordinates_variables_tag,
-          typename Metavariables::evolved_swsh_tags, false>,
+          typename Metavariables::evolved_swsh_tags>,
       // advance the time so that the current `TimeStepId` is valid without
       // having to perform self-start.
       ::Actions::MutateApply<AdvanceTime<Tags::CceEvolutionPrefix>>,

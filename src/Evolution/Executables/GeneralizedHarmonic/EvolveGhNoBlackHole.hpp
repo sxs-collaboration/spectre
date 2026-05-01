@@ -110,7 +110,7 @@ struct EvolutionMetavars
             volume_dim, typename system::variables_tag::tags_list>,
         ::amr::projectors::DefaultInitialize<
             Initialization::Tags::InitialTimeDelta,
-            Initialization::Tags::InitialSlabSize<local_time_stepping>,
+            Initialization::Tags::InitialSlabSize,
             ::domain::Tags::InitialExtents<volume_dim>,
             ::domain::Tags::InitialRefinementLevels<volume_dim>,
             evolution::dg::Tags::Quadrature,

@@ -378,17 +378,17 @@ struct Metavariables {
 
   struct amr : tt::ConformsTo<::amr::protocols::AmrMetavariables> {
     using element_array = dg_element_array;
-    using projectors = tmpl::list<
-        Initialization::ProjectTimeStepping<volume_dim>,
-        evolution::dg::Initialization::ProjectDomain<volume_dim>,
-        ::amr::projectors::DefaultInitialize<
-            Initialization::Tags::InitialTimeDelta,
-            Initialization::Tags::InitialSlabSize<local_time_stepping>,
-            ::domain::Tags::InitialExtents<Dim>,
-            ::domain::Tags::InitialRefinementLevels<Dim>,
-            evolution::dg::Tags::Quadrature>,
-        ::amr::projectors::CopyFromCreatorOrLeaveAsIs<
-            Tags::StepperErrorEstimatesEnabled>>;
+    using projectors =
+        tmpl::list<Initialization::ProjectTimeStepping<volume_dim>,
+                   evolution::dg::Initialization::ProjectDomain<volume_dim>,
+                   ::amr::projectors::DefaultInitialize<
+                       Initialization::Tags::InitialTimeDelta,
+                       Initialization::Tags::InitialSlabSize,
+                       ::domain::Tags::InitialExtents<Dim>,
+                       ::domain::Tags::InitialRefinementLevels<Dim>,
+                       evolution::dg::Tags::Quadrature>,
+                   ::amr::projectors::CopyFromCreatorOrLeaveAsIs<
+                       Tags::StepperErrorEstimatesEnabled>>;
     static constexpr bool keep_coarse_grids = false;
     static constexpr bool p_refine_only_in_event = false;
   };
