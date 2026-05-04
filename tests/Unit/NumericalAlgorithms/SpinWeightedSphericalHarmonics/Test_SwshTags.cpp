@@ -56,14 +56,38 @@ static_assert(
         Derivative<Spin2TestTag, EthEthbar>>,
     "failed testing SwshTransform");
 
-// [get_tags_with_spin]
+namespace test_spins_in_tag_list {
+// [spins_in_tag_list]
 using TestVarTagList = tmpl::list<SpinMinus1TestTag, SpinMinus1TestTag,
-                                  AnotherSpinMinus1TestTag, Spin2TestTag>;
+                                  Spin2TestTag, AnotherSpinMinus1TestTag>;
+
+static_assert(std::is_same_v<spins_in_tag_list<TestVarTagList>,
+                             tmpl::list<std::integral_constant<int, -1>,
+                                        std::integral_constant<int, 2>>>);
+
+using TestDerivativeTagList =
+    tmpl::list<Derivative<SpinMinus1TestTag, Eth>,
+               Derivative<SpinMinus1TestTag, EthEthbar>,
+               Derivative<AnotherSpinMinus1TestTag, EthEth>,
+               Derivative<Spin2TestTag, Ethbar>>;
+
+static_assert(std::is_same_v<spins_in_tag_list<TestDerivativeTagList>,
+                             tmpl::list<std::integral_constant<int, -1>,
+                                        std::integral_constant<int, 0>,
+                                        std::integral_constant<int, 1>>>);
+// [spins_in_tag_list]
+}  // namespace test_spins_in_tag_list
+
+namespace test_partition_tags_by_spin {
+// [partition_tags_by_spin]
+using TestVarTagList = tmpl::list<SpinMinus1TestTag, SpinMinus1TestTag,
+                                  Spin2TestTag, AnotherSpinMinus1TestTag>;
 
 static_assert(
-    std::is_same_v<get_tags_with_spin<-1, TestVarTagList>,
-                   tmpl::list<SpinMinus1TestTag, AnotherSpinMinus1TestTag>>,
-    "failed testing get_tags_with_spin");
+    std::is_same_v<partition_tags_by_spin<TestVarTagList>,
+                   tmpl::list<tmpl::list<SpinMinus1TestTag, SpinMinus1TestTag,
+                                         AnotherSpinMinus1TestTag>,
+                              tmpl::list<Spin2TestTag>>>);
 
 using TestDerivativeTagList =
     tmpl::list<Derivative<SpinMinus1TestTag, Eth>,
@@ -72,24 +96,14 @@ using TestDerivativeTagList =
                Derivative<Spin2TestTag, Ethbar>>;
 
 static_assert(
-    std::is_same_v<get_tags_with_spin<1, TestDerivativeTagList>,
+    std::is_same_v<
+        partition_tags_by_spin<TestDerivativeTagList>,
+        tmpl::list<tmpl::list<Derivative<SpinMinus1TestTag, EthEthbar>>,
+                   tmpl::list<Derivative<SpinMinus1TestTag, Eth>>,
                    tmpl::list<Derivative<AnotherSpinMinus1TestTag, EthEth>,
-                              Derivative<Spin2TestTag, Ethbar>>>,
-    "failed testing get_tags_with_spin");
-// [get_tags_with_spin]
-
-// [get_prefix_tags_that_wrap_tags_with_spin]
-using WrappedTagList = tmpl::list<Derivative<SpinMinus1TestTag, Eth>,
-                                  Derivative<SpinMinus1TestTag, EthEthbar>,
-                                  Derivative<AnotherSpinMinus1TestTag, EthEth>,
-                                  Derivative<Spin2TestTag, Ethbar>>;
-static_assert(
-    std::is_same_v<get_prefix_tags_that_wrap_tags_with_spin<-1, WrappedTagList>,
-                   tmpl::list<Derivative<SpinMinus1TestTag, Eth>,
-                              Derivative<SpinMinus1TestTag, EthEthbar>,
-                              Derivative<AnotherSpinMinus1TestTag, EthEth>>>,
-    "failed testing get_wrapped_tags_with_spin_from_prefix_tag_list");
-// [get_prefix_tags_that_wrap_tags_with_spin]
+                              Derivative<Spin2TestTag, Ethbar>>>>);
+// [partition_tags_by_spin]
+}  // namespace test_partition_tags_by_spin
 
 SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Spectral.Tags",
                   "[Unit][NumericalAlgorithms]") {

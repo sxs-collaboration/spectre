@@ -42,17 +42,17 @@ using TestDerivativeTagList =
     tmpl::list<Tags::Derivative<TestTag<0, -1>, Tags::Eth>,
                Tags::Derivative<TestTag<0, -1>, Tags::EthEthbar>,
                Tags::Derivative<TestTag<1, -1>, Tags::EthEthbar>,
-               Tags::Derivative<TestTag<0, 2>, Tags::EthbarEthbar>>;
+               Tags::Derivative<TestTag<0, 2>, Tags::EthEth>>;
 
 // [make_transform_list]
 using ExpectedInverseTransforms = tmpl::list<
     SwshTransform<tmpl::list<Tags::Derivative<TestTag<0, -1>, Tags::EthEthbar>,
                              Tags::Derivative<TestTag<1, -1>, Tags::EthEthbar>>,
                   ComplexRepresentation::RealsThenImags>,
-    SwshTransform<
-        tmpl::list<Tags::Derivative<TestTag<0, -1>, Tags::Eth>,
-                   Tags::Derivative<TestTag<0, 2>, Tags::EthbarEthbar>>,
-        ComplexRepresentation::RealsThenImags>>;
+    SwshTransform<tmpl::list<Tags::Derivative<TestTag<0, -1>, Tags::Eth>>,
+                  ComplexRepresentation::RealsThenImags>,
+    SwshTransform<tmpl::list<Tags::Derivative<TestTag<0, 2>, Tags::EthEth>>,
+                  ComplexRepresentation::RealsThenImags>>;
 
 static_assert(
     std::is_same_v<make_transform_list<ComplexRepresentation::RealsThenImags,
