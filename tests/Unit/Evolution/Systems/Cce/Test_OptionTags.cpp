@@ -8,6 +8,8 @@
 #include <optional>
 #include <string>
 
+#include "DataStructures/DataBox/DataBox.hpp"
+#include "DataStructures/DataBox/Tag.hpp"
 #include "Evolution/Systems/Cce/AnalyticBoundaryDataManager.hpp"
 #include "Evolution/Systems/Cce/AnalyticSolutions/BouncingBlackHole.hpp"
 #include "Evolution/Systems/Cce/AnalyticSolutions/GaugeWave.hpp"
@@ -38,6 +40,47 @@
 #include "Utilities/FileSystem.hpp"
 #include "Utilities/Literals.hpp"
 #include "Utilities/TypeTraits.hpp"
+
+namespace {
+struct Simple : db::SimpleTag {
+  using type = int;
+};
+
+struct SimpleDerived : Simple {
+  using base = Simple;
+};
+
+struct Simple2 : db::SimpleTag {
+  using type = int;
+};
+
+struct Ref : Simple2, db::ReferenceTag {
+  using base = Simple2;
+  using argument_tags = tmpl::list<Simple>;
+  static const int& get(const int& arg) { return arg; }
+};
+
+void test_cce_prefix_databox() {
+  TestHelpers::db::test_simple_tag<Simple>("Simple");
+  TestHelpers::db::test_simple_tag<SimpleDerived>("Simple");
+  TestHelpers::db::test_simple_tag<Simple2>("Simple2");
+  TestHelpers::db::test_reference_tag<Ref>("Simple2");
+
+  TestHelpers::db::test_simple_tag<Cce::Tags::CceEvolutionPrefix<Simple>>(
+      "Simple");
+  TestHelpers::db::test_simple_tag<
+      Cce::Tags::CceEvolutionPrefix<SimpleDerived>>("Simple");
+  TestHelpers::db::test_simple_tag<Cce::Tags::CceEvolutionPrefix<Simple2>>(
+      "Simple2");
+  TestHelpers::db::test_reference_tag<Cce::Tags::CceEvolutionPrefix<Ref>>(
+      "Simple2");
+
+  auto box = db::create<
+      db::AddSimpleTags<Cce::Tags::CceEvolutionPrefix<SimpleDerived>>,
+      db::AddComputeTags<Cce::Tags::CceEvolutionPrefix<Ref>>>(5);
+  CHECK(db::get<Cce::Tags::CceEvolutionPrefix<Simple>>(box) == 5);
+  CHECK(db::get<Cce::Tags::CceEvolutionPrefix<Simple2>>(box) == 5);
+}
 
 SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.OptionTags", "[Unit][Cce]") {
   TestHelpers::db::test_simple_tag<
@@ -221,4 +264,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.OptionTags", "[Unit][Cce]") {
   if (file_system::check_if_file_exists(filename)) {
     file_system::rm(filename, true);
   }
+
+  test_cce_prefix_databox();
 }
+}  // namespace

@@ -265,14 +265,25 @@ struct FilePrefix : db::SimpleTag {
 template <typename Tag>
 struct CceEvolutionPrefix;
 
+namespace CceEvolutionPrefix_detail {
+template <typename Tag>
+struct CopyBase : db::SimpleTag {};
+
+template <typename Tag>
+  requires requires { typename Tag::base; }
+struct CopyBase<Tag> : CceEvolutionPrefix<typename Tag::base> {
+  using base = CceEvolutionPrefix<typename Tag::base>;
+};
+}  // namespace CceEvolutionPrefix_detail
+
 template <db::simple_tag Tag>
-struct CceEvolutionPrefix<Tag> : db::SimpleTag {
+struct CceEvolutionPrefix<Tag> : CceEvolutionPrefix_detail::CopyBase<Tag> {
   using type = typename Tag::type;
   static std::string name() { return db::tag_name<Tag>(); }
 };
 
 template <Parallel::untemplated_initialization_tag Tag>
-struct CceEvolutionPrefix<Tag> : db::SimpleTag {
+struct CceEvolutionPrefix<Tag> : CceEvolutionPrefix_detail::CopyBase<Tag> {
   using type = typename Tag::type;
   using option_tags = db::wrap_tags_in<OptionTags::CceEvolutionPrefix,
                                        typename Tag::option_tags>;
@@ -286,7 +297,7 @@ struct CceEvolutionPrefix<Tag> : db::SimpleTag {
 };
 
 template <Parallel::templated_initialization_tag Tag>
-struct CceEvolutionPrefix<Tag> : db::SimpleTag {
+struct CceEvolutionPrefix<Tag> : CceEvolutionPrefix_detail::CopyBase<Tag> {
   using type = typename Tag::type;
   template <typename Metavariables>
   using option_tags =
