@@ -199,6 +199,27 @@ struct Tag0Reference : Tag0Ref, db::ReferenceTag {
   using argument_tags = tmpl::list<Tag0>;
   static const double& get(const double& tag0_value) { return tag0_value; }
 };
+
+template <typename Tag>
+struct Copy2 : db::SimpleTag {
+  using type = typename Tag::type;
+};
+
+template <typename Tag>
+struct Copy : Copy2<Tag> {
+  using base = Copy2<Tag>;
+};
+
+template <typename Tag>
+struct CopyCompute : Copy<Tag>, db::ComputeTag {
+  using base = Copy<Tag>;
+  using return_type = typename base::type;
+  using argument_tags = tmpl::list<Tag>;
+  static void function(const gsl::not_null<return_type*> ret,
+                       const return_type& arg) {
+    *ret = arg;
+  }
+};
 }  // namespace test_databox_tags
 
 void test_databox() {
@@ -3488,10 +3509,27 @@ void test_tag_inheritance() {
     CHECK(db::get<test_databox_tags::Tag0FromOption2>(box) == value);
     CHECK(db::get<test_databox_tags::Tag0FromOption>(box) == value);
     CHECK(db::get<test_databox_tags::Tag0>(box) == value);
+    CHECK(db::get<test_databox_tags::Copy<test_databox_tags::Tag0FromOption2>>(
+              box) == value);
+    CHECK(db::get<test_databox_tags::Copy<test_databox_tags::Tag0FromOption>>(
+              box) == value);
+    CHECK(db::get<test_databox_tags::Copy<test_databox_tags::Tag0>>(box) ==
+          value);
+    CHECK(db::get<test_databox_tags::Copy2<test_databox_tags::Tag0FromOption2>>(
+              box) == value);
+    CHECK(db::get<test_databox_tags::Copy2<test_databox_tags::Tag0FromOption>>(
+              box) == value);
+    CHECK(db::get<test_databox_tags::Copy2<test_databox_tags::Tag0>>(box) ==
+          value);
   };
 
-  auto box =
-      db::create<db::AddSimpleTags<test_databox_tags::Tag0FromOption2>>(2.0);
+  auto box = db::create<
+      db::AddSimpleTags<test_databox_tags::Tag0FromOption2>,
+      db::AddComputeTags<
+          test_databox_tags::CopyCompute<test_databox_tags::Tag0>,
+          test_databox_tags::CopyCompute<test_databox_tags::Tag0FromOption>,
+          test_databox_tags::CopyCompute<test_databox_tags::Tag0FromOption2>>>(
+      2.0);
   check_box(box, 2.0);
   check_box(db::as_access(box), 2.0);
   db::mutate<test_databox_tags::Tag0FromOption2>(
@@ -3531,12 +3569,39 @@ struct Tag0FromOptionLabeled : Tag0 {
     return "Tag0FromOptionLabeled" + std::to_string(Label);
   }
 };
+
+template <int Label>
+struct CopyFromOption : db::SimpleTag {
+  using type = double;
+  static std::string name() { return "CopyFromOption" + std::to_string(Label); }
+};
+
+template <int Label>
+struct CopyFromOptionCompute : CopyFromOption<Label>, db::ComputeTag {
+  using base = CopyFromOption<Label>;
+  using return_type = double;
+  using argument_tags = tmpl::list<Tag0FromOptionLabeled<Label>>;
+  static void function(const gsl::not_null<double*> result,
+                       const double value) {
+    ++calls;
+    *result = value;
+  }
+  // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
+  static int calls;
+};
+
+template <int Label>
+// NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
+int CopyFromOptionCompute<Label>::calls = 0;
 }  // namespace test_databox_tags
 
 void test_ambiguous_tags() {
   auto box = db::create<
       db::AddSimpleTags<test_databox_tags::Tag0FromOptionLabeled<1>,
-                        test_databox_tags::Tag0FromOptionLabeled<2>>>(1.0, 2.0);
+                        test_databox_tags::Tag0FromOptionLabeled<2>>,
+      db::AddComputeTags<test_databox_tags::CopyFromOptionCompute<1>,
+                         test_databox_tags::CopyFromOptionCompute<2>>>(1.0,
+                                                                       2.0);
   CHECK(db::get<test_databox_tags::Tag0FromOptionLabeled<1>>(box) == 1.0);
   CHECK(db::get<test_databox_tags::Tag0FromOptionLabeled<2>>(box) == 2.0);
   CHECK(db::get<test_databox_tags::Tag0FromOptionLabeled<1>>(
@@ -3552,15 +3617,48 @@ void test_ambiguous_tags() {
       Catch::Matchers::ContainsSubstring("is in the DataBox more than once"));
 #endif
 
+  CHECK(test_databox_tags::CopyFromOptionCompute<1>::calls == 0);
+  CHECK(test_databox_tags::CopyFromOptionCompute<2>::calls == 0);
+  CHECK(db::get<test_databox_tags::CopyFromOption<1>>(box) == 1.0);
+  CHECK(db::get<test_databox_tags::CopyFromOption<2>>(box) == 2.0);
+  CHECK(test_databox_tags::CopyFromOptionCompute<1>::calls == 1);
+  CHECK(test_databox_tags::CopyFromOptionCompute<2>::calls == 1);
+  CHECK(db::get<test_databox_tags::CopyFromOption<1>>(db::as_access(box)) ==
+        1.0);
+  CHECK(db::get<test_databox_tags::CopyFromOption<2>>(db::as_access(box)) ==
+        2.0);
+  CHECK(test_databox_tags::CopyFromOptionCompute<1>::calls == 1);
+  CHECK(test_databox_tags::CopyFromOptionCompute<2>::calls == 1);
+
   db::mutate<test_databox_tags::Tag0FromOptionLabeled<1>>(
       [](const gsl::not_null<double*> value) { *value = 5.0; },
       make_not_null(&box));
   CHECK(db::get<test_databox_tags::Tag0FromOptionLabeled<1>>(box) == 5.0);
+  CHECK(db::get<test_databox_tags::CopyFromOption<1>>(box) == 5.0);
+  CHECK(db::get<test_databox_tags::CopyFromOption<2>>(box) == 2.0);
+  CHECK(test_databox_tags::CopyFromOptionCompute<1>::calls == 2);
+  CHECK(test_databox_tags::CopyFromOptionCompute<2>::calls == 1);
+  CHECK(db::get<test_databox_tags::CopyFromOption<1>>(db::as_access(box)) ==
+        5.0);
+  CHECK(db::get<test_databox_tags::CopyFromOption<2>>(db::as_access(box)) ==
+        2.0);
+  CHECK(test_databox_tags::CopyFromOptionCompute<1>::calls == 2);
+  CHECK(test_databox_tags::CopyFromOptionCompute<2>::calls == 1);
 
   db::mutate<test_databox_tags::Tag0FromOptionLabeled<1>>(
       [](const gsl::not_null<double*> value) { *value = 10.0; },
       &db::as_access(box));
   CHECK(db::get<test_databox_tags::Tag0FromOptionLabeled<1>>(box) == 10.0);
+  CHECK(db::get<test_databox_tags::CopyFromOption<1>>(box) == 10.0);
+  CHECK(db::get<test_databox_tags::CopyFromOption<2>>(box) == 2.0);
+  CHECK(test_databox_tags::CopyFromOptionCompute<1>::calls == 3);
+  CHECK(test_databox_tags::CopyFromOptionCompute<2>::calls == 1);
+  CHECK(db::get<test_databox_tags::CopyFromOption<1>>(db::as_access(box)) ==
+        10.0);
+  CHECK(db::get<test_databox_tags::CopyFromOption<2>>(db::as_access(box)) ==
+        2.0);
+  CHECK(test_databox_tags::CopyFromOptionCompute<1>::calls == 3);
+  CHECK(test_databox_tags::CopyFromOptionCompute<2>::calls == 1);
 }
 }  // namespace
 
