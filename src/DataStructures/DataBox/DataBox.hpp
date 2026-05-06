@@ -868,13 +868,6 @@ auto DataBox<tmpl::list<Tags...>>::compute_tag_graphs() -> TagGraphs {
         for (const std::string& argument_tag : argument_tags) {
           result.tags_and_dependents[argument_tag].push_back(simple_tag);
         }
-        // If this compute tag is a subitem of another compute tag, then we
-        // need to make the parent aware that this tag depends on it.
-        if (result.subitem_to_parent_tag.find(simple_tag) !=
-            result.subitem_to_parent_tag.end()) {
-          result.tags_and_dependents[result.subitem_to_parent_tag[simple_tag]]
-              .push_back(simple_tag);
-        }
         result.tags_and_reset_functions[simple_tag] =
             &DataBox::template reset_compute_item<compute_tag>;
       });
