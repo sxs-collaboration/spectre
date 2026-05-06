@@ -926,12 +926,9 @@ void DataBox<tmpl::list<Tags...>>::reset_parent(
                        << " does not have a reset function.");
         if ((this->*(tag_graphs_.tags_and_reset_functions)
                         .at(dependent_item_name))()) {
-          if (tag_graphs_.tags_and_dependents.find(dependent_item_name) !=
-              tag_graphs_.tags_and_dependents.end()) {
-            // If the compute tag was evaluated, then we need to check the
-            // items that depend on it.
-            reset_compute_items(dependent_item_name);
-          }
+          // If the compute tag was evaluated, then we need to check the
+          // items that depend on it.
+          reset_compute_items(dependent_item_name);
           reset_parent(dependent_item_name, "");
           if (const auto parent_it =
                   tag_graphs_.subitem_to_parent_tag.find(dependent_item_name);
@@ -949,11 +946,11 @@ void DataBox<tmpl::list<Tags...>>::reset_compute_items(
     const std::string& item_name) {
   // If the compute tag was evaluated before reset, then we reset dependent
   // compute tags.
-  ASSERT(tag_graphs_.tags_and_dependents.find(item_name) !=
-             tag_graphs_.tags_and_dependents.end(),
-         "Item " << item_name << " does not have any dependents.");
-  for (const std::string& dependent_item_name :
-       tag_graphs_.tags_and_dependents.at(item_name)) {
+  const auto dependents = tag_graphs_.tags_and_dependents.find(item_name);
+  if (dependents == tag_graphs_.tags_and_dependents.end()) {
+    return;
+  }
+  for (const std::string& dependent_item_name : dependents->second) {
     ASSERT(
         tag_graphs_.tags_and_reset_functions.find(dependent_item_name) !=
             tag_graphs_.tags_and_reset_functions.end(),
@@ -966,12 +963,9 @@ void DataBox<tmpl::list<Tags...>>::reset_compute_items(
           parent_it != tag_graphs_.subitem_to_parent_tag.end()) {
         reset_parent(parent_it->second, dependent_item_name);
       }
-      if (tag_graphs_.tags_and_dependents.find(dependent_item_name) !=
-          tag_graphs_.tags_and_dependents.end()) {
-        // If the compute tag was evaluated, then we need to check the items
-        // that depend on it.
-        reset_compute_items(dependent_item_name);
-      }
+      // If the compute tag was evaluated, then we need to check the items
+      // that depend on it.
+      reset_compute_items(dependent_item_name);
     }
   }
   // If this tag is a parent tag, reset subitems and their dependents
@@ -988,10 +982,7 @@ template <typename MutatedTag>
 void DataBox<tmpl::list<Tags...>>::reset_compute_items_after_mutate() {
   using tag = detail::get_base<MutatedTag>;
   static const std::string mutated_tag = pretty_type::get_name<tag>();
-  if (tag_graphs_.tags_and_dependents.find(mutated_tag) !=
-      tag_graphs_.tags_and_dependents.end()) {
-    reset_compute_items(mutated_tag);
-  }
+  reset_compute_items(mutated_tag);
 
   // Handled subitems
   if constexpr (detail::has_subitems<MutatedTag>::value) {
@@ -1003,10 +994,7 @@ void DataBox<tmpl::list<Tags...>>::reset_compute_items_after_mutate() {
                   "an internal inconsistency bug.\n");
     for (const auto& subitem_name :
          tag_graphs_.parent_to_subitem_tags.at(mutated_tag)) {
-      if (tag_graphs_.tags_and_dependents.find(subitem_name) !=
-          tag_graphs_.tags_and_dependents.end()) {
-        reset_compute_items(subitem_name);
-      }
+      reset_compute_items(subitem_name);
     }
   }
   // Handle parent tags
@@ -1018,15 +1006,10 @@ void DataBox<tmpl::list<Tags...>>::reset_compute_items_after_mutate() {
                << " but did not. This is an internal inconsistency bug.");
     const auto& parent_tag_name =
         tag_graphs_.subitem_to_parent_tag.at(mutated_tag);
-    if (tag_graphs_.tags_and_dependents.find(parent_tag_name) !=
-        tag_graphs_.tags_and_dependents.end()) {
-      reset_compute_items(parent_tag_name);
-    }
+    reset_compute_items(parent_tag_name);
     for (const auto& subitem_name :
          tag_graphs_.parent_to_subitem_tags.at(parent_tag_name)) {
-      if (tag_graphs_.tags_and_dependents.find(subitem_name) !=
-              tag_graphs_.tags_and_dependents.end() and
-          subitem_name != mutated_tag) {
+      if (subitem_name != mutated_tag) {
         reset_compute_items(subitem_name);
       }
     }
