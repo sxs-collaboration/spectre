@@ -70,7 +70,8 @@ T safe_div(const T& num, const T& denom, const T& r) {
 }
 
 template <typename T>
-T secant_interpolate(const T& a, const T& b, const T& fa, const T& fb) {
+T secant_interpolate(const T& a, const T& b, const T& fa, const T& fb,
+                     const simd::mask_type_t<T>& incomplete_mask) {
   //
   // Performs standard secant interpolation of [a,b] given
   // function evaluations f(a) and f(b).  Performs a bisection
@@ -79,6 +80,12 @@ T secant_interpolate(const T& a, const T& b, const T& fa, const T& fb) {
   // one other form of interpolation has already failed, so we know
   // that the function is unlikely to be smooth with a root very
   // close to a or b.
+  //
+  // For lanes where `incomplete_mask` is false (already converged), the
+  // denominator `fb - fa` may be stale or zero. We substitute 1 to avoid
+  // undefined behavior (e.g. division by zero); the returned value for those
+  // lanes is meaningless and should not be used by the caller. See
+  // `cubic_interpolate` for the same pattern.
   //
   const T tol_batch = std::numeric_limits<T>::epsilon() * static_cast<T>(5);
   // WARNING: There are several different ways to implement the interpolation
@@ -97,7 +104,9 @@ T secant_interpolate(const T& a, const T& b, const T& fa, const T& fb) {
   // Original Boost code:
   // const T c = a - (fa / (fb - fa)) * (b - a); // works
 
-  const T c = a - (fa / (fb - fa)) * (b - a);
+  const T c =
+      a - (fa / simd::select(incomplete_mask, fb - fa, static_cast<T>(1))) *
+              (b - a);
   return simd::select((c <= simd::fma(fabs(a), tol_batch, a)) or
                           (c >= simd::fnma(fabs(b), tol_batch, b)),
                       static_cast<T>(0.5) * (a + b), c);
@@ -128,7 +137,7 @@ T quadratic_interpolate(const T& a, const T& b, const T& d, const T& fa,
   T result_secant{};
   if (UNLIKELY(simd::any(secant_failure_mask))) {
     // failure to determine coefficients, try a secant step:
-    result_secant = secant_interpolate(a, b, fa, fb);
+    result_secant = secant_interpolate(a, b, fa, fb, secant_failure_mask);
     if (UNLIKELY(simd::all(secant_failure_mask or (not incomplete_mask)))) {
       return result_secant;
     }
@@ -155,7 +164,7 @@ T quadratic_interpolate(const T& a, const T& b, const T& d, const T& fa,
   if (const auto mask = ((c <= a) or (c >= b)) and incomplete_mask;
       simd::any(mask)) {
     // Failure, try a secant step:
-    c = simd::select(mask, secant_interpolate(a, b, fa, fb), c);
+    c = simd::select(mask, secant_interpolate(a, b, fa, fb, mask), c);
   }
   return simd::select(secant_failure_mask, result_secant, c);
 }
@@ -392,7 +401,7 @@ std::pair<T, T> toms748_solve(F f, const T& ax, const T& bx, const T& fax,
 
   if (simd::any(fa != static_cast<T>(0))) {
     // On the first step we take a secant step:
-    c = toms748_detail::secant_interpolate(a, b, fa, fb);
+    c = toms748_detail::secant_interpolate(a, b, fa, fb, incomplete_mask);
     toms748_detail::bracket<AssumeFinite>(f, a, b, c, fa, fb, d, fd,
                                           incomplete_mask);
     --count;
@@ -477,7 +486,14 @@ std::pair<T, T> toms748_solve(F f, const T& ax, const T& bx, const T& fax,
     // Assumes that bounds a & b are not so close that fa == fb. Boost makes
     // this assumption too. If this is violated then the algorithm doesn't
     // work since the function at least appears constant.
-    c = simd::fnma(static_cast<T>(2) * (fu / (fb - fa)), b_minus_a, u);
+
+    // Safeguard complete lanes: `fb - fa` may be stale or zero for lanes
+    // that have already converged. Use 1 as a harmless dummy denominator;
+    // the result for complete lanes is discarded downstream.
+    c = simd::fnma(
+        static_cast<T>(2) *
+            (fu / simd::select(incomplete_mask, fb - fa, static_cast<T>(1))),
+        b_minus_a, u);
     c = simd::select(static_cast<T>(2) * fabs(c - u) > b_minus_a,
                      simd::fma(static_cast<T>(0.5), b_minus_a, a), c);
 
