@@ -418,11 +418,30 @@ void test_rectangle_factory() {
             Translation2D{f_of_t_name}),
         true, initial_expiration_times);
   }
-}  // namespace domain
+}
+
+void test_rectangle_factory_parse_errors() {
+  CHECK_THROWS_WITH(
+      (TestHelpers::test_option_tag<domain::OptionTags::DomainCreator<2>,
+                                    TestHelpers::domain::BoundaryConditions::
+                                        MetavariablesWithoutBoundaryConditions<
+                                            2, domain::creators::Rectangle>>(
+          "Rectangle:\n"
+          "  LowerBound: [-0.5,-1.0]\n"
+          "  UpperBound: [-0.5,1.0]\n"
+          "  Distribution: [Linear, Linear]\n"
+          "  IsPeriodicIn: [False,False]\n"
+          "  InitialGridPoints: [4,4]\n"
+          "  InitialRefinement: [1,1]\n"
+          "  TimeDependence: None\n")),
+      Catch::Matchers::ContainsSubstring(
+          "must be strictly smaller than upper bound (-0.5) in dimension 0"));
+}
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Domain.Creators.Rectangle", "[Domain][Unit]") {
   test_rectangle();
   test_rectangle_factory();
+  test_rectangle_factory_parse_errors();
 }
 }  // namespace domain

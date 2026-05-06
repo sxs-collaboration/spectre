@@ -10,6 +10,7 @@
 #include "Domain/CoordinateMaps/AutodiffInstantiationTypes.hpp"
 #include "Utilities/Autodiff/Autodiff.hpp"
 #include "Utilities/DereferenceWrapper.hpp"
+#include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/MakeWithValue.hpp"
 
@@ -22,7 +23,13 @@ Affine::Affine(const double A, const double B, const double a, const double b)
       b_(b),
       length_of_domain_(B - A),
       length_of_range_(b - a),
-      jacobian_(length_of_range_ / length_of_domain_),
+      jacobian_([A, B, a, b]() {
+        ASSERT(A != B and a != b,
+               "The left and right boundaries for both source and target "
+               "interval must differ, but are; ["
+                   << A << ", " << B << "] -> [" << a << ", " << b << "]");
+        return (b - a) / (B - A);
+      }()),
       inverse_jacobian_(length_of_domain_ / length_of_range_),
       is_identity_(A == a and B == b) {}
 
@@ -95,10 +102,9 @@ bool operator==(const CoordinateMaps::Affine& lhs,
   template tnsr::Ij<tt::remove_cvref_wrap_t<DTYPE(data)>, 1, Frame::NoFrame> \
   Affine::inv_jacobian(const std::array<DTYPE(data), 1>& source_coords) const;
 
-GENERATE_INSTANTIATIONS(
-    INSTANTIATE, (double, DataVector,
-                  std::reference_wrapper<const double>,
-                  std::reference_wrapper<const DataVector>))
+GENERATE_INSTANTIATIONS(INSTANTIATE, (double, DataVector,
+                                      std::reference_wrapper<const double>,
+                                      std::reference_wrapper<const DataVector>))
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, MAP_AUTODIFF_TYPES)
 
