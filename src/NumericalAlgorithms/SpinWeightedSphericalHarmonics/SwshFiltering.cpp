@@ -48,7 +48,8 @@ void filter_swsh_volume_quantity(
                             number_of_radial_grid_points});
     to_filter->data() = *buffer;
   }
-  if (LIKELY(filter_max_l < l_max)) {
+  if (LIKELY(filter_max_l < l_max or
+             filter_min_l > static_cast<size_t>(abs(Spin)))) {
     transform_buffer->destructive_resize(
         number_of_radial_grid_points *
         size_of_libsharp_coefficient_vector(l_max));
@@ -116,7 +117,8 @@ void filter_swsh_boundary_quantity(
     const size_t l_max, const size_t filter_min_l, const size_t filter_max_l,
     const gsl::not_null<SpinWeighted<ComplexModalVector, Spin>*>
         transform_buffer) {
-  if (LIKELY(filter_max_l < l_max)) {
+  if (LIKELY(filter_max_l < l_max or
+             filter_min_l > static_cast<size_t>(abs(Spin)))) {
     transform_buffer->destructive_resize(
         size_of_libsharp_coefficient_vector(l_max));
     swsh_transform(l_max, 1, transform_buffer, *to_filter);
