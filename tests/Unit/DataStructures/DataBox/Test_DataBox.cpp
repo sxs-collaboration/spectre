@@ -2148,6 +2148,21 @@ struct LeftAndRightParentCompute : LeftAndRight<Parent<0>>, db::ComputeTag {
   }
 };
 
+struct ParentBase : db::SimpleTag {
+  using type = DataVector;
+};
+
+struct BasedParent : ParentBase {
+  using base = ParentBase;
+};
+
+struct SubitemBase : db::SimpleTag {
+  using type = DataVector;
+};
+
+struct BasedSubitem : SubitemBase {
+  using base = SubitemBase;
+};
 }  // namespace
 
 namespace db {
@@ -2174,6 +2189,17 @@ struct Subitems<LeftAndRightParentCompute> {
     auto& [left_sub, right_sub] = *sub_value;
     left_sub = std::get<Subtag::tag::index>(left_parent).ptr();
     right_sub = std::get<Subtag::tag::index>(right_parent).ptr();
+  }
+};
+
+template <>
+struct Subitems<BasedParent> {
+  using type = tmpl::list<BasedSubitem>;
+  template <typename Subtag>
+  static void create_item(const gsl::not_null<DataVector*> parent_value,
+                          const gsl::not_null<DataVector*> sub_value) {
+    static_assert(std::is_same_v<Subtag, BasedSubitem>);
+    sub_value->set_data_ref(parent_value);
   }
 };
 }  // namespace db
@@ -2323,6 +2349,46 @@ void test_subitems() {
     db::mutate<ArgTag>([](const gsl::not_null<size_t*> arg) { *arg = 3; },
                        make_not_null(&box));
     CHECK(*db::get<LeftAndRight<First<0>>>(box).first == 4);
+  }
+  {
+    INFO("Subitems with base tags");
+    const auto check = [](const auto& box) {
+      CHECK(&db::get<BasedParent>(box) == &db::get<ParentBase>(box));
+      CHECK(&db::get<BasedSubitem>(box) == &db::get<SubitemBase>(box));
+      CHECK(db::get<BasedSubitem>(box).data() ==
+            db::get<BasedParent>(box).data());
+    };
+    auto box = db::create<db::AddSimpleTags<BasedParent>>(DataVector{1.0, 2.0});
+    check(box);
+    check(db::as_access(box));
+    db::mutate<BasedParent>(
+        [](const gsl::not_null<DataVector*> v) {
+          *v = DataVector{1.0, 2.0, 3.0};
+        },
+        make_not_null(&box));
+    check(box);
+    check(db::as_access(box));
+    db::mutate<ParentBase>(
+        [](const gsl::not_null<DataVector*> v) {
+          *v = DataVector{1.0, 2.0, 3.0, 4.0};
+        },
+        make_not_null(&box));
+    check(box);
+    check(db::as_access(box));
+    db::mutate<BasedParent>(
+        [](const gsl::not_null<DataVector*> v) {
+          *v = DataVector{1.0, 2.0, 3.0, 4.0, 5.0};
+        },
+        &db::as_access(box));
+    check(box);
+    check(db::as_access(box));
+    db::mutate<ParentBase>(
+        [](const gsl::not_null<DataVector*> v) {
+          *v = DataVector{1.0, 2.0, 3.0, 4.0, 5.0, 6.0};
+        },
+        &db::as_access(box));
+    check(box);
+    check(db::as_access(box));
   }
 }
 

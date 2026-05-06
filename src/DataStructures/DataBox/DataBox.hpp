@@ -1208,7 +1208,8 @@ decltype(auto) mutate(Invokable&& invokable,
     const CleanupRoutine unlock_box = [&box]() {
       box->mutate_locked_box_ = false;
       EXPAND_PACK_LEFT_TO_RIGHT(
-          box->template mutate_mutable_subitems<MutateTags>());
+          box->template mutate_mutable_subitems<
+              detail::first_matching_tag<TagList, MutateTags>>());
       EXPAND_PACK_LEFT_TO_RIGHT(
           box->template reset_compute_items_after_mutate<
               detail::first_matching_tag<TagList, MutateTags>>());
