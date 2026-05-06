@@ -787,6 +787,18 @@ void DataBox<tmpl::list<Tags...>>::pup_impl(
 
 ////////////////////////////////////////////////////////////////
 // Runtime tag retrieval
+namespace detail {
+template <typename MappedPtr>
+void set_or_null_if_ambiguous(
+    const gsl::not_null<std::unordered_map<std::string, MappedPtr>*> map,
+    const std::string& key, const MappedPtr value) {
+  const auto [entry, added] = map->emplace(key, value);
+  if (not added and entry->second != value) {
+    entry->second = nullptr;
+  }
+}
+}  // namespace detail
+
 template <typename... Tags>
 auto DataBox<tmpl::list<Tags...>>::compute_tag_graphs() -> TagGraphs {
   TagGraphs result{};
@@ -794,14 +806,9 @@ auto DataBox<tmpl::list<Tags...>>::compute_tag_graphs() -> TagGraphs {
   EXPAND_PACK_LEFT_TO_RIGHT([&result]() {
     using tag = detail::get_base<Tags>;
     const std::string tag_name = pretty_type::get_name<tag>();
-    if (result.tag_retrieval_functions.find(tag_name) ==
-        result.tag_retrieval_functions.end()) {
-      result.tag_retrieval_functions[tag_name] =
-          &DataBox::template get_item_as_void_pointer<Tags>;
-    } else if (result.tag_retrieval_functions[tag_name] !=
-               &DataBox::template get_item_as_void_pointer<Tags>) {
-      result.tag_retrieval_functions[tag_name] = nullptr;
-    }
+    detail::set_or_null_if_ambiguous(
+        make_not_null(&result.tag_retrieval_functions), tag_name,
+        &DataBox::template get_item_as_void_pointer<Tags>);
   }());
 
   // Compute graphs for resetting compute tags
@@ -858,39 +865,21 @@ auto DataBox<tmpl::list<Tags...>>::compute_tag_graphs() -> TagGraphs {
       });
 
   // Set mutation function
-  tmpl::for_each<mutable_item_tags>([&result]<typename Tag>(
-                                        tmpl::type_<Tag> /*meta*/) {
-    using tag = detail::get_base<Tag>;
-    const std::string tag_name = pretty_type::get_name<tag>();
-    if (result.tag_mutate_functions.find(tag_name) ==
-        result.tag_mutate_functions.end()) {
-      result.tag_mutate_functions[tag_name] =
-          &DataBox::template get_item_as_void_pointer_for_mutate<tag>;
-    } else if (result.tag_mutate_functions[tag_name] !=
-               &DataBox::template get_item_as_void_pointer_for_mutate<tag>) {
-      result.tag_mutate_functions[tag_name] = nullptr;
-    }
-
-    if (result.mutate_mutable_subitems_functions.find(tag_name) ==
-        result.mutate_mutable_subitems_functions.end()) {
-      result.mutate_mutable_subitems_functions[tag_name] =
-          static_cast<void (DataBox::*)()>(
-              &DataBox::template mutate_mutable_subitems<tag>);
-    } else if (result.mutate_mutable_subitems_functions[tag_name] !=
-               static_cast<void (DataBox::*)()>(
-                   &DataBox::template mutate_mutable_subitems<tag>)) {
-      result.mutate_mutable_subitems_functions[tag_name] = nullptr;
-    }
-
-    if (result.reset_compute_items_after_mutate_functions.find(tag_name) ==
-        result.reset_compute_items_after_mutate_functions.end()) {
-      result.reset_compute_items_after_mutate_functions[tag_name] =
-          &DataBox::template reset_compute_items_after_mutate<tag>;
-    } else if (result.reset_compute_items_after_mutate_functions[tag_name] !=
-               &DataBox::template reset_compute_items_after_mutate<tag>) {
-      result.reset_compute_items_after_mutate_functions[tag_name] = nullptr;
-    }
-  });
+  tmpl::for_each<mutable_item_tags>(
+      [&result]<typename Tag>(tmpl::type_<Tag> /*meta*/) {
+        using tag = detail::get_base<Tag>;
+        const std::string tag_name = pretty_type::get_name<tag>();
+        detail::set_or_null_if_ambiguous(
+            make_not_null(&result.tag_mutate_functions), tag_name,
+            &DataBox::template get_item_as_void_pointer_for_mutate<tag>);
+        detail::set_or_null_if_ambiguous(
+            make_not_null(&result.mutate_mutable_subitems_functions), tag_name,
+            static_cast<void (DataBox::*)()>(
+                &DataBox::template mutate_mutable_subitems<tag>));
+        detail::set_or_null_if_ambiguous(
+            make_not_null(&result.reset_compute_items_after_mutate_functions),
+            tag_name, &DataBox::template reset_compute_items_after_mutate<tag>);
+      });
   return result;
 }
 
