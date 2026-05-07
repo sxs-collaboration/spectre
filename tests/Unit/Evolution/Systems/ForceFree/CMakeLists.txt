@@ -24,6 +24,7 @@ set(LIBRARY_SOURCES
   Test_Fluxes.cpp
   Test_MaskNeutronStarInterior.cpp
   Test_Sources.cpp
+  Test_System.cpp
   Test_Tags.cpp
   Test_TimeDerivativeTerms.cpp
   )

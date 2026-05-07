@@ -21,6 +21,7 @@ SPECTRE_TEST_CASE("Unit.RadiationTransport.M1Grey.System.Imex",
   using DummySpecies = neutrinos::ElectronNeutrinos<1>;
 
   using system = RadiationTransport::M1Grey::System<tmpl::list<DummySpecies>>;
+  CHECK(system::name() == "M1Grey");
   using sector = tmpl::front<system::implicit_sectors>;
 
   // Metric

@@ -20,6 +20,7 @@ set(LIBRARY_SOURCES
   Subcell/Test_VelocityAtFace.cpp
   Test_Characteristics.cpp
   Test_Fluxes.cpp
+  Test_System.cpp
   Test_Tags.cpp
   Test_TimeDerivativeTerms.cpp
   Test_VelocityField.cpp

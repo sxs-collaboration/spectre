@@ -35,6 +35,8 @@ struct System;
 template <typename... NeutrinoSpecies>
 struct System<tmpl::list<NeutrinoSpecies...>>
     : tt::ConformsTo<imex::protocols::ImexSystem> {
+  static std::string name() { return "M1Grey"; }
+
   static constexpr bool is_in_flux_conservative_form = true;
   static constexpr bool has_primitive_and_conservative_vars = false;
   static constexpr size_t volume_dim = 3;

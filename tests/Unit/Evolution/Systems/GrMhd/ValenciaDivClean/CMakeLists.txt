@@ -41,6 +41,7 @@ set(LIBRARY_SOURCES
   Test_QuadrupoleFormula.cpp
   Test_SetVariablesNeededFixingToFalse.cpp
   Test_Sources.cpp
+  Test_System.cpp
   Test_Tags.cpp
   Test_TimeDerivativeTerms.cpp
   Test_ValenciaDivClean.cpp

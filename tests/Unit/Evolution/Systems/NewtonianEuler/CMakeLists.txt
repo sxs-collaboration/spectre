@@ -33,6 +33,7 @@ set(LIBRARY_SOURCES
   Test_RamPressure.cpp
   Test_SoundSpeedSquared.cpp
   Test_SpecificKineticEnergy.cpp
+  Test_System.cpp
   Test_Tags.cpp
   Test_TimeDerivativeTerms.cpp
   )

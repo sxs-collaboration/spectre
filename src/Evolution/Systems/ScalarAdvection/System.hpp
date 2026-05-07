@@ -26,6 +26,8 @@
 namespace ScalarAdvection {
 template <size_t Dim>
 struct System {
+  static std::string name() { return "ScalarAdvection"; }
+
   static constexpr bool is_in_flux_conservative_form = true;
   static constexpr bool has_primitive_and_conservative_vars = false;
   static constexpr size_t volume_dim = Dim;

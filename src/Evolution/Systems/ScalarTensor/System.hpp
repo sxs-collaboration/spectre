@@ -61,6 +61,8 @@ namespace ScalarTensor {
  * only implement this system in three spatial dimensions.
  */
 struct System {
+  static std::string name() { return "ScalarTensor"; }
+
   using boundary_conditions_base = BoundaryConditions::BoundaryCondition;
   static constexpr bool has_primitive_and_conservative_vars = false;
   static constexpr size_t volume_dim = 3;
