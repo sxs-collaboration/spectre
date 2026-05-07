@@ -13,6 +13,7 @@ set(LIBRARY_SOURCES
   Actions/Test_NormalCovectorAndMagnitude.cpp
   Initialization/Test_Mortars.cpp
   Initialization/Test_QuadratureTag.cpp
+  Initialization/Test_SpectralFilters.cpp
   Test_AtomicInboxBoundaryData.cpp
   Test_BackgroundGrVars.cpp
   Test_BoundaryCorrectionsHelper.cpp
@@ -49,6 +50,7 @@ target_link_libraries(
   EvolutionDgActionsHelpers
   GeneralRelativitySolutions
   Hydro
+  LinearOperators
   Options
   RelativisticEulerSolutions
   Spectral

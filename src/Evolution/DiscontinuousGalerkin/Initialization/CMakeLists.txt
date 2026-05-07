@@ -7,6 +7,8 @@ spectre_target_headers(
   HEADERS
   Mortars.hpp
   QuadratureTag.hpp
+  SpectralFilters.hpp
+  SpectralFilters.tpp
   )
 
 spectre_target_sources(
