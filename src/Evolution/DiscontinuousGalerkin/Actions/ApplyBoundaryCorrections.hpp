@@ -42,7 +42,11 @@
 #include "NumericalAlgorithms/DiscontinuousGalerkin/LiftFlux.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/LiftFromBoundary.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/MortarHelpers.hpp"
+#include "NumericalAlgorithms/DiscontinuousGalerkin/ProjectToBoundary.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Tags/Formulation.hpp"
+#include "NumericalAlgorithms/LinearOperators/Filters/Filter.hpp"
+#include "NumericalAlgorithms/LinearOperators/Filters/None.hpp"
+#include "NumericalAlgorithms/LinearOperators/Filters/Tag.hpp"
 #include "NumericalAlgorithms/Spectral/BoundaryInterpolationMatrices.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Quadrature.hpp"
@@ -53,6 +57,7 @@
 #include "Time/BoundaryHistory.hpp"
 #include "Time/EvolutionOrdering.hpp"
 #include "Time/SelfStart.hpp"
+#include "Time/Tags/StepNumberWithinSlab.hpp"
 #include "Time/Time.hpp"
 #include "Time/TimeStepId.hpp"
 #include "Time/TimeSteppers/LtsTimeStepper.hpp"
@@ -63,6 +68,7 @@
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeArray.hpp"
+#include "Utilities/MemoryHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
@@ -540,6 +546,7 @@ struct ApplyBoundaryCorrections {
   using system = typename Metavariables::system;
   static constexpr size_t volume_dim = system::volume_dim;
   using variables_tag = typename system::variables_tag;
+  using FilterTagList = typename variables_tag::tags_list;
   using dt_variables_tag = db::add_tag_prefix<::Tags::dt, variables_tag>;
   using DtVariables = typename dt_variables_tag::type;
   using derived_boundary_corrections =
@@ -568,13 +575,22 @@ struct ApplyBoundaryCorrections {
           evolution::dg::Tags::NormalCovectorAndMagnitude<volume_dim>,
           ::Tags::TimeStepper<TimeStepperType>,
           evolution::Tags::BoundaryCorrection,
-          tmpl::conditional_t<DenseOutput, ::Tags::Time, ::Tags::TimeStep>,
+          tmpl::conditional_t<
+              DenseOutput, ::Tags::Time,
+              tmpl::list<
+                  ::Tags::TimeStep,
+                  Filters::Tags::SpectralFilter<volume_dim, FilterTagList>,
+                  ::Tags::StepNumberWithinSlab,
+                  domain::Tags::Jacobian<volume_dim, Frame::Grid,
+                                         Frame::Inertial>,
+                  domain::Tags::InverseJacobian<volume_dim, Frame::Grid,
+                                                Frame::Inertial>>>,
           tmpl::conditional_t<local_time_stepping, tmpl::list<>,
                               domain::Tags::DetInvJacobian<
                                   Frame::ElementLogical, Frame::Inertial>>>>,
       volume_tags_for_dg_boundary_terms>;
 
-  // full step
+  // full step (GTS: local_time_stepping=false, DenseOutput=false)
   template <typename... VolumeArgs>
   static void apply(
       const gsl::not_null<typename tag_to_update::type*> vars_to_update,
@@ -591,15 +607,24 @@ struct ApplyBoundaryCorrections {
       const TimeStepperType& time_stepper,
       const evolution::BoundaryCorrection& boundary_correction,
       const TimeDelta& time_step,
+      const Filters::Filter<volume_dim, FilterTagList>& boundary_filter,
+      const uint64_t step_number_within_slab,
+      const Jacobian<DataVector, volume_dim, Frame::Grid, Frame::Inertial>&
+          volume_jac_grid_to_inertial,
+      const InverseJacobian<DataVector, volume_dim, Frame::Grid,
+                            Frame::Inertial>& volume_inv_jac_grid_to_inertial,
       const Scalar<DataVector>& gts_det_inv_jacobian,
       const VolumeArgs&... volume_args) {
     apply_impl(vars_to_update, mortar_data, volume_mesh, element, mortar_meshes,
                mortar_infos, dg_formulation, face_normal_covector_and_magnitude,
                time_stepper, boundary_correction, time_step,
-               std::numeric_limits<double>::signaling_NaN(),
-               gts_det_inv_jacobian, volume_args...);
+               std::numeric_limits<double>::signaling_NaN(), &boundary_filter,
+               step_number_within_slab, volume_jac_grid_to_inertial,
+               volume_inv_jac_grid_to_inertial, gts_det_inv_jacobian,
+               volume_args...);
   }
 
+  // full step (LTS: local_time_stepping=true, DenseOutput=false)
   template <typename... VolumeArgs>
   static void apply(
       const gsl::not_null<typename tag_to_update::type*> vars_to_update,
@@ -615,15 +640,23 @@ struct ApplyBoundaryCorrections {
           face_normal_covector_and_magnitude,
       const TimeStepperType& time_stepper,
       const evolution::BoundaryCorrection& boundary_correction,
-      const TimeDelta& time_step, const VolumeArgs&... volume_args) {
+      const TimeDelta& time_step,
+      const Filters::Filter<volume_dim, FilterTagList>& boundary_filter,
+      const uint64_t step_number_within_slab,
+      const Jacobian<DataVector, volume_dim, Frame::Grid, Frame::Inertial>&
+          volume_jac_grid_to_inertial,
+      const InverseJacobian<DataVector, volume_dim, Frame::Grid,
+                            Frame::Inertial>& volume_inv_jac_grid_to_inertial,
+      const VolumeArgs&... volume_args) {
     apply_impl(vars_to_update, mortar_data, volume_mesh, element, mortar_meshes,
                mortar_infos, dg_formulation, face_normal_covector_and_magnitude,
                time_stepper, boundary_correction, time_step,
-               std::numeric_limits<double>::signaling_NaN(), {},
-               volume_args...);
+               std::numeric_limits<double>::signaling_NaN(), &boundary_filter,
+               step_number_within_slab, volume_jac_grid_to_inertial,
+               volume_inv_jac_grid_to_inertial, {}, volume_args...);
   }
 
-  // dense output (LTS only)
+  // dense output (LTS only, DenseOutput=true)
   template <typename... VolumeArgs>
   static void apply(
       const gsl::not_null<typename variables_tag::type*> vars_to_update,
@@ -640,10 +673,14 @@ struct ApplyBoundaryCorrections {
       const LtsTimeStepper& time_stepper,
       const evolution::BoundaryCorrection& boundary_correction,
       const double dense_output_time, const VolumeArgs&... volume_args) {
-    apply_impl(vars_to_update, mortar_data, volume_mesh, element, mortar_meshes,
-               mortar_infos, dg_formulation, face_normal_covector_and_magnitude,
-               time_stepper, boundary_correction, TimeDelta{},
-               dense_output_time, {}, volume_args...);
+    apply_impl(
+        vars_to_update, mortar_data, volume_mesh, element, mortar_meshes,
+        mortar_infos, dg_formulation, face_normal_covector_and_magnitude,
+        time_stepper, boundary_correction, TimeDelta{}, dense_output_time,
+        nullptr, static_cast<uint64_t>(0),
+        Jacobian<DataVector, volume_dim, Frame::Grid, Frame::Inertial>{},
+        InverseJacobian<DataVector, volume_dim, Frame::Grid, Frame::Inertial>{},
+        {}, volume_args...);
   }
 
   template <typename DbTagsList, typename... InboxTags, typename ArrayIndex,
@@ -676,6 +713,12 @@ struct ApplyBoundaryCorrections {
       const TimeStepperType& time_stepper,
       const evolution::BoundaryCorrection& boundary_correction,
       const TimeDelta& time_step, const double dense_output_time,
+      const Filters::Filter<volume_dim, FilterTagList>* const filter_ptr,
+      const uint64_t step_number_within_slab,
+      const Jacobian<DataVector, volume_dim, Frame::Grid, Frame::Inertial>&
+          volume_jac_grid_to_inertial,
+      const InverseJacobian<DataVector, volume_dim, Frame::Grid,
+                            Frame::Inertial>& volume_inv_jac_grid_to_inertial,
       const Scalar<DataVector>& gts_det_inv_jacobian,
       const VolumeArgs&... volume_args) {
     // We treat this as a set, but use a map because we don't have a
@@ -701,6 +744,64 @@ struct ApplyBoundaryCorrections {
     if (mortars_to_act_on.empty()) {
       return;
     }
+
+    bool boundary_filter_active = false;
+    if constexpr (not DenseOutput) {
+      if (filter_ptr != nullptr and
+          dynamic_cast<const Filters::None<volume_dim, FilterTagList>*>(
+              filter_ptr) == nullptr) {
+        const auto step_number = static_cast<size_t>(step_number_within_slab);
+        boundary_filter_active =
+            filter_ptr->apply_boundary_filter_on_substep() or
+            filter_ptr->apply_boundary_filter_on_this_step(step_number);
+      }
+    }
+
+    const bool need_face_jacobians = [&]() {
+      if constexpr (DenseOutput) {
+        return false;
+      } else {
+        return boundary_filter_active and filter_ptr != nullptr and
+               filter_ptr->need_jacobians();
+      }
+    }();
+
+    size_t max_face_grid_points = 0;
+    if (need_face_jacobians) {
+      for (const auto& [mortar_id, _info] : mortar_infos) {
+        if (not mortars_to_act_on.contains(mortar_id) or
+            mortar_id.id() == ElementId<volume_dim>::external_boundary_id()) {
+          continue;
+        }
+        max_face_grid_points =
+            std::max(max_face_grid_points,
+                     volume_mesh.slice_away(mortar_id.direction().dimension())
+                         .number_of_grid_points());
+      }
+    }
+
+    // NOLINTNEXTLINE(modernize-avoid-c-arrays)
+    std::unique_ptr<double[]> face_jac_buffer{nullptr};
+    if (max_face_grid_points > 0) {
+      constexpr size_t jac_components =
+          Jacobian<DataVector, volume_dim, Frame::Grid,
+                   Frame::Inertial>::size();
+      // NOLINTNEXTLINE(modernize-avoid-c-arrays)
+      face_jac_buffer = cpp20::make_unique_for_overwrite<double[]>(
+          2 * jac_components * max_face_grid_points);
+    }
+
+    std::optional<
+        Jacobian<DataVector, volume_dim, Frame::Grid, Frame::Inertial>>
+        face_jac_grid_to_inertial{};
+    std::optional<
+        InverseJacobian<DataVector, volume_dim, Frame::Grid, Frame::Inertial>>
+        face_inv_jac_grid_to_inertial{};
+    if (face_jac_buffer != nullptr) {
+      face_jac_grid_to_inertial.emplace();
+      face_inv_jac_grid_to_inertial.emplace();
+    }
+    std::optional<Direction<volume_dim>> cached_face_jac_direction{};
 
     tuples::tagged_tuple_from_typelist<db::wrap_tags_in<
         detail::TemporaryReference, volume_tags_for_dg_boundary_terms>>
@@ -738,12 +839,17 @@ struct ApplyBoundaryCorrections {
         "final.");
     call_with_dynamic_type<void, derived_boundary_corrections>(
         &boundary_correction,
-        [&dense_output_time, &dg_formulation, &element,
-         &face_normal_covector_and_magnitude, &mortar_data, &mortar_meshes,
-         &mortar_infos, &mortars_to_act_on, &time_step, &time_stepper,
-         &vars_to_update, &volume_args_tuple, &volume_det_jacobian,
-         &volume_det_inv_jacobian,
+        [&cached_face_jac_direction, &dense_output_time, &dg_formulation,
+         &element, &face_inv_jac_grid_to_inertial,
+         &face_jac_buffer,  // NOLINT(modernize-avoid-c-arrays)
+         &face_jac_grid_to_inertial, &face_normal_covector_and_magnitude,
+         boundary_filter_active, filter_ptr, max_face_grid_points,
+         need_face_jacobians, &mortar_data, &mortar_meshes, &mortar_infos,
+         &mortars_to_act_on, &time_step, &time_stepper, &vars_to_update,
+         &volume_args_tuple, &volume_det_jacobian, &volume_det_inv_jacobian,
+         &volume_inv_jac_grid_to_inertial, &volume_jac_grid_to_inertial,
          &volume_mesh](auto* typed_boundary_correction) {
+          (void)need_face_jacobians;
           using BcType = std::decay_t<decltype(*typed_boundary_correction)>;
           // Compute internal boundary quantities on the mortar for sides of
           // the element that have neighbors, i.e. they are not an external
@@ -806,10 +912,38 @@ struct ApplyBoundaryCorrections {
                 volume_mesh.quadrature(direction.dimension()) ==
                     Spectral::Quadrature::GaussRadauUpper;
 
+            if (need_face_jacobians and
+                (not cached_face_jac_direction.has_value() or
+                 *cached_face_jac_direction != direction)) {
+              constexpr size_t jac_components =
+                  Jacobian<DataVector, volume_dim, Frame::Grid,
+                           Frame::Inertial>::size();
+              const size_t current_face_size =
+                  face_mesh.number_of_grid_points();
+              for (size_t i = 0; i < jac_components; ++i) {
+                (*face_jac_grid_to_inertial)[i].set_data_ref(
+                    &face_jac_buffer[i * max_face_grid_points],
+                    current_face_size);
+                (*face_inv_jac_grid_to_inertial)[i].set_data_ref(
+                    &face_jac_buffer[(jac_components + i) *
+                                     max_face_grid_points],
+                    current_face_size);
+              }
+              ::dg::project_tensor_to_boundary(
+                  make_not_null(&*face_jac_grid_to_inertial),
+                  volume_jac_grid_to_inertial, volume_mesh, direction);
+              ::dg::project_tensor_to_boundary(
+                  make_not_null(&*face_inv_jac_grid_to_inertial),
+                  volume_inv_jac_grid_to_inertial, volume_mesh, direction);
+              cached_face_jac_direction = direction;
+            }
+
             const auto compute_correction_coupling =
-                [&typed_boundary_correction, &direction, dg_formulation,
-                 &dt_boundary_correction_on_mortar, &face_det_jacobian,
-                 &face_mesh, &face_normal_covector_and_magnitude,
+                [&typed_boundary_correction, boundary_filter_active, &direction,
+                 dg_formulation, &dt_boundary_correction_on_mortar,
+                 &face_det_jacobian, &face_inv_jac_grid_to_inertial,
+                 &face_jac_grid_to_inertial, &face_mesh,
+                 &face_normal_covector_and_magnitude, filter_ptr,
                  &local_data_on_mortar, &mortar_id, &mortar_meshes,
                  &mortar_infos, &neighbor_data_on_mortar, using_points_on_face,
                  &volume_args_tuple, &volume_det_jacobian,
@@ -899,6 +1033,23 @@ struct ApplyBoundaryCorrections {
                 }
                 return dt_boundary_correction_on_mortar;
               }();
+              if constexpr (not DenseOutput) {
+                if (boundary_filter_active) {
+                  using BoundaryFilterVars = Variables<FilterTagList>;
+                  auto boundary_filter_view =
+                      dt_boundary_correction
+                          .template reference_with_different_prefixes<
+                              BoundaryFilterVars>();
+                  filter_ptr->apply_on_boundary(
+                      make_not_null(&boundary_filter_view), face_mesh,
+                      face_inv_jac_grid_to_inertial, face_jac_grid_to_inertial);
+                }
+              } else {
+                (void)boundary_filter_active;
+                (void)face_inv_jac_grid_to_inertial;
+                (void)face_jac_grid_to_inertial;
+                (void)filter_ptr;
+              }
 
               // Both paths initialize this to be non-owning.
               Scalar<DataVector> magnitude_of_face_normal{};
