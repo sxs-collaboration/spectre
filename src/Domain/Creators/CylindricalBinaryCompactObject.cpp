@@ -216,8 +216,8 @@ CylindricalBinaryCompactObject::CylindricalBinaryCompactObject(
            "future");
   }
 
-  // Create grid anchors
-  grid_anchors_ = bco::create_grid_anchors(center_A_, center_B_);
+  // Create grid anchors in x direction from unrotated input centers
+  grid_anchors_ = bco::create_grid_anchors(center_A, center_B);
 
   // Create block names and groups
   auto add_filled_cylinder_name = [this](const std::string& prefix,
@@ -962,7 +962,7 @@ Domain<3> CylindricalBinaryCompactObject::create_domain() const {
             ->distorted_to_inertial_map<domain::ObjectLabel::B>(true, true);
 
     for (size_t block = 1; block < number_of_blocks_; ++block) {
-      if (block == 46 or block == 60) {
+      if (block == 46 or block == 60 or block == first_outer_shell_block) {
         continue;  // Already initialized
       } else if (block > 46 and block < 60) {
         grid_to_inertial_block_maps[block] =
