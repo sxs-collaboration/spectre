@@ -72,29 +72,10 @@ void test_apply_filter(const size_t num_to_kill) {
   // off of modes.  This isn't really doing nothing, because any modes
   // in the scalarylm basis that are incompletely represented by the
   // tensorylm basis will be modified, but it is the best we can do.
-  SimpleSparseMatrix filter_matrix_scalar;
-  SimpleSparseMatrix filter_matrix_i;
-  SimpleSparseMatrix filter_matrix_ii;
-  SimpleSparseMatrix filter_matrix_ij;
-  SimpleSparseMatrix filter_matrix_kii;
-  fill_filter<Scalar<DataVector>::structure>(
-      make_not_null(&filter_matrix_scalar), ell_max, num_to_kill, std::nullopt,
-      CoefficientNormalization::Spherepack);
-  fill_filter<tnsr::i<DataVector, 3>::structure>(
-      make_not_null(&filter_matrix_i), ell_max, num_to_kill, std::nullopt,
-      CoefficientNormalization::Spherepack);
-  if constexpr (std::is_same_v<
-                    VarsList, typename filter_detail::gh_spacetime_vars_list>) {
-    fill_filter<tnsr::ii<DataVector, 3>::structure>(
-        make_not_null(&filter_matrix_ii), ell_max, num_to_kill, std::nullopt,
-        CoefficientNormalization::Spherepack);
-    fill_filter<tnsr::ij<DataVector, 3>::structure>(
-        make_not_null(&filter_matrix_ij), ell_max, num_to_kill, std::nullopt,
-        CoefficientNormalization::Spherepack);
-    fill_filter<tnsr::ijj<DataVector, 3>::structure>(
-        make_not_null(&filter_matrix_kii), ell_max, num_to_kill, std::nullopt,
-        CoefficientNormalization::Spherepack);
-  }
+  FilterMatrixHolder filter_matrices;
+  fill_tensor_ylm_filters<VarsList>(&filter_matrices, ell_max, num_to_kill,
+                                    std::nullopt,
+                                    CoefficientNormalization::Spherepack);
 
   // Make up bogus jacobians with random numbers, and make
   // them diagonally dominant so that they are invertible.
@@ -118,21 +99,10 @@ void test_apply_filter(const size_t num_to_kill) {
 
   // Now carry out the entire filtering algorithm,
   // using inertial_modal_vars as temporary storage.
-  if constexpr (std::is_same_v<
-                    VarsList, typename filter_detail::gh_spacetime_vars_list>) {
-    apply_tensor_ylm_filter(make_not_null(&inertial_nodal_vars),
-                            make_not_null(&inertial_modal_vars),
-                            jac_inertial_to_grid, jac_grid_to_inertial,
-                            filter_matrix_scalar, filter_matrix_i,
-                            filter_matrix_ii, filter_matrix_ij,
-                            filter_matrix_kii, ell_max, radial_extents);
-  } else {
-    apply_tensor_ylm_filter(make_not_null(&inertial_nodal_vars),
-                            make_not_null(&inertial_modal_vars),
-                            jac_inertial_to_grid, jac_grid_to_inertial,
-                            filter_matrix_scalar, filter_matrix_i, ell_max,
-                            radial_extents);
-  }
+  apply_tensor_ylm_filter(make_not_null(&inertial_nodal_vars),
+                          make_not_null(&inertial_modal_vars),
+                          jac_inertial_to_grid, jac_grid_to_inertial,
+                          filter_matrices, ell_max, radial_extents);
 
   // Do nodal to modal of the result (for comparison).
   filter_detail::nodal_to_modal_ylm(make_not_null(&inertial_modal_vars),
