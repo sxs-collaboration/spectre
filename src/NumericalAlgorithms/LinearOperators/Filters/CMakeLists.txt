@@ -8,6 +8,8 @@ spectre_target_headers(
   Filter.hpp
   Hypercube.hpp
   Hypercube.tpp
+  None.hpp
+  None.tpp
   SphericalShell.hpp
   SphericalShell.tpp
   Tag.hpp

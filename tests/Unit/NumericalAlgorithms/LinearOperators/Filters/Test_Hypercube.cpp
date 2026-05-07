@@ -33,6 +33,8 @@
 #include "NumericalAlgorithms/LinearOperators/Filters/Filter.hpp"
 #include "NumericalAlgorithms/LinearOperators/Filters/Hypercube.hpp"
 #include "NumericalAlgorithms/LinearOperators/Filters/Hypercube.tpp"
+#include "NumericalAlgorithms/LinearOperators/Filters/None.hpp"
+#include "NumericalAlgorithms/LinearOperators/Filters/None.tpp"
 #include "NumericalAlgorithms/Spectral/Basis.hpp"
 #include "NumericalAlgorithms/Spectral/Filtering.hpp"
 #include "NumericalAlgorithms/Spectral/MaximumNumberOfPoints.hpp"
@@ -620,12 +622,19 @@ void test_is_equal() {
   CHECK(b.is_equal(a));
   CHECK_FALSE(a.is_equal(c));
 
+  // Different concrete type returns false.
+  const Filters::None<Dim, TagList<Dim>> none_filter{};
+  CHECK_FALSE(a.is_equal(none_filter));
+
   // Via abstract base pointer (the primary AMR use case).
   const std::unique_ptr<Base> pa = std::make_unique<HypercubeFilter<Dim>>(a);
   const std::unique_ptr<Base> pb = std::make_unique<HypercubeFilter<Dim>>(b);
   const std::unique_ptr<Base> pc = std::make_unique<HypercubeFilter<Dim>>(c);
+  const std::unique_ptr<Base> pnone =
+      std::make_unique<Filters::None<Dim, TagList<Dim>>>(none_filter);
   CHECK(pa->is_equal(*pb));
   CHECK_FALSE(pa->is_equal(*pc));
+  CHECK_FALSE(pa->is_equal(*pnone));
 }
 
 void test_cartoon() {
