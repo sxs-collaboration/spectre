@@ -51,6 +51,8 @@ void test_tags() {
   TestHelpers::db::test_compute_tag<
       domain::Tags::GridToInertialInverseJacobian<Dim>>(
       "InverseJacobian(Grid,Inertial)");
+  TestHelpers::db::test_compute_tag<domain::Tags::GridToInertialJacobian<Dim>>(
+      "Jacobian(Grid,Inertial)");
   TestHelpers::db::test_simple_tag<domain::Tags::MeshVelocity<Dim>>(
       "MeshVelocity");
   TestHelpers::db::test_compute_tag<
@@ -118,6 +120,7 @@ void test() {
       domain::Tags::InertialFromGridCoordinatesCompute<Dim>,
       domain::Tags::ElementToInertialInverseJacobian<Dim>,
       domain::Tags::GridToInertialInverseJacobian<Dim>,
+      domain::Tags::GridToInertialJacobian<Dim>,
       domain::Tags::InertialMeshVelocityCompute<Dim>>;
 
   MAKE_GENERATOR(gen);
@@ -272,6 +275,27 @@ void test() {
               domain::Tags::InverseJacobian<Dim, Frame::Grid, Frame::Inertial>>(
               box)),
           std::get<1>(expected_coords_mesh_velocity_jacobians));
+      for (size_t i = 0;
+           i <
+           db::get<domain::Tags::Jacobian<Dim, Frame::Grid, Frame::Inertial>>(
+               box)
+               .size();
+           ++i) {
+        // Check that the `const_cast`s and set_data_ref inside the
+        // compute tag functions worked correctly
+        CHECK(
+            db::get<domain::Tags::Jacobian<Dim, Frame::Grid, Frame::Inertial>>(
+                box)[i]
+                .data() ==
+            std::get<2>(*db::get<
+                        domain::Tags::CoordinatesMeshVelocityAndJacobians<Dim>>(
+                box))[i]
+                .data());
+      }
+      CHECK_ITERABLE_APPROX(
+          (db::get<domain::Tags::Jacobian<Dim, Frame::Grid, Frame::Inertial>>(
+              box)),
+          std::get<2>(expected_coords_mesh_velocity_jacobians));
     } else {
       tnsr::I<DataVector, Dim, Frame::Inertial> expected_coords{num_pts};
       for (size_t i = 0; i < Dim; ++i) {
@@ -325,8 +349,13 @@ void test() {
               box)),
           Catch::Matchers::ContainsSubstring(
               "Should not request Grid to Inertial jacobian for a "
-              "non-moving mesh "
-              "because it is the identity."));
+              "non-moving mesh because it is the identity."));
+      CHECK_THROWS_WITH(
+          (db::get<domain::Tags::Jacobian<Dim, Frame::Grid, Frame::Inertial>>(
+              box)),
+          Catch::Matchers::ContainsSubstring(
+              "Should not request Grid to Inertial jacobian for a "
+              "non-moving mesh because it is the identity."));
     }
   };
   check_helper(3.0);

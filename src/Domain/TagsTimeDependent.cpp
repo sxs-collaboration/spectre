@@ -73,6 +73,36 @@ void GridToInertialInverseJacobian<Dim>::function(
 }
 
 template <size_t Dim>
+void GridToInertialJacobian<Dim>::function(
+    const gsl::not_null<
+        ::Jacobian<DataVector, Dim, Frame::Grid, Frame::Inertial>*>
+        jac_grid_to_inertial,
+    const std::optional<std::tuple<
+        tnsr::I<DataVector, Dim, Frame::Inertial>,
+        ::InverseJacobian<DataVector, Dim, Frame::Grid, Frame::Inertial>,
+        ::Jacobian<DataVector, Dim, Frame::Grid, Frame::Inertial>,
+        tnsr::I<DataVector, Dim, Frame::Inertial>>>&
+        grid_to_inertial_quantities) {
+  if (not grid_to_inertial_quantities.has_value()) {
+    ERROR(
+        "Should not request Grid to Inertial jacobian for a non-moving mesh "
+        "because it is the identity.");
+  } else {
+    const auto& jac_grid_to_inertial_tuple =
+        std::get<2>(*grid_to_inertial_quantities);
+    for (size_t i = 0; i < Dim; ++i) {
+      for (size_t j = 0; j < Dim; ++j) {
+        // This is a clang-tidy false positive.
+        // NOLINTNEXTLINE(readability-redundant-smartptr-get)
+        jac_grid_to_inertial->get(i, j).set_data_ref(
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
+            &const_cast<DataVector&>(jac_grid_to_inertial_tuple.get(i, j)));
+      }
+    }
+  }
+}
+
+template <size_t Dim>
 void ElementToInertialInverseJacobian<Dim>::function(
     const gsl::not_null<::InverseJacobian<
         DataVector, Dim, Frame::ElementLogical, Frame::Inertial>*>
@@ -146,7 +176,8 @@ void InertialMeshVelocityCompute<Dim>::function(
   template struct InertialFromGridCoordinatesCompute<DIM(data)>; \
   template struct ElementToInertialInverseJacobian<DIM(data)>;   \
   template struct InertialMeshVelocityCompute<DIM(data)>;        \
-  template struct GridToInertialInverseJacobian<DIM(data)>;
+  template struct GridToInertialInverseJacobian<DIM(data)>;      \
+  template struct GridToInertialJacobian<DIM(data)>;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
 

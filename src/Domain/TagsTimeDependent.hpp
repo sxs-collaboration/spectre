@@ -132,6 +132,29 @@ struct GridToInertialInverseJacobian
   using argument_tags = tmpl::list<CoordinatesMeshVelocityAndJacobians<Dim>>;
 };
 
+/// Computes the Grid to Inertial Jacobian from
+/// `CoordinatesVelocityAndJacobians`. If the mesh is not moving, requesting
+/// this tag will throw an error because the Jacobian is just the identity.
+template <size_t Dim>
+struct GridToInertialJacobian
+    : Tags::Jacobian<Dim, Frame::Grid, Frame::Inertial>,
+      db::ComputeTag {
+  using base = Tags::Jacobian<Dim, Frame::Grid, Frame::Inertial>;
+  using return_type = typename base::type;
+
+  static void function(
+      gsl::not_null<::Jacobian<DataVector, Dim, Frame::Grid, Frame::Inertial>*>
+          jac_grid_to_inertial,
+      const std::optional<std::tuple<
+          tnsr::I<DataVector, Dim, Frame::Inertial>,
+          ::InverseJacobian<DataVector, Dim, Frame::Grid, Frame::Inertial>,
+          ::Jacobian<DataVector, Dim, Frame::Grid, Frame::Inertial>,
+          tnsr::I<DataVector, Dim, Frame::Inertial>>>&
+          grid_to_inertial_quantities);
+
+  using argument_tags = tmpl::list<CoordinatesMeshVelocityAndJacobians<Dim>>;
+};
+
 /// Computes the Logical to Inertial inverse Jacobian from
 /// `CoordinatesVelocityAndJacobians`
 template <size_t Dim>
