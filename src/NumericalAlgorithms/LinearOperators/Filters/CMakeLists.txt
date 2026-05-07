@@ -10,4 +10,5 @@ spectre_target_headers(
   Hypercube.tpp
   SphericalShell.hpp
   SphericalShell.tpp
+  Tag.hpp
   )
