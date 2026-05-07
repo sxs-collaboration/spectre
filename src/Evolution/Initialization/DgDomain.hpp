@@ -123,6 +123,8 @@ struct Domain {
       ::domain::Tags::CoordinatesMeshVelocityAndJacobiansCompute<
           ::domain::CoordinateMaps::Tags::CoordinateMap<dim, Frame::Grid,
                                                         Frame::Inertial>>,
+      ::domain::Tags::GridToInertialInverseJacobian<dim>,
+      ::domain::Tags::GridToInertialJacobian<dim>,
 
       ::domain::Tags::InertialFromGridCoordinatesCompute<dim>,
       ::domain::Tags::ElementToInertialInverseJacobian<dim>,
