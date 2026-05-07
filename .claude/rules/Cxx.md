@@ -107,3 +107,15 @@ metric, derivative of shift, etc. are implemented as functions in
   helper functions over many small `SPECTRE_TEST_CASE`s.
 - Increase test timeouts sparingly. If necessary, use `// [[TimeOut, SECONDS]]`
   on the line before `SPECTRE_TEST_CASE`. Default timeout is 2 seconds.
+
+## Initialization mutators
+- Look at the file src/ParallelAlgorithms/Actions/InitializeItems.hpp
+  to understand the requirements. That is the code that calls the
+  initialization mutator.
+
+## clang-tidy
+- Use the most recent available clang-tidy on the system.
+- Using `NOLINT` is a last-resort except for
+  `NOLINTNEXTLINE(google-runtime-references)` on the line before a `void
+  pup(PUP::er&)` declaration. Instead, always try to fix the actual
+  underyling issue. Ask the user for guidance when unsure.
