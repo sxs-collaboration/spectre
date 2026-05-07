@@ -156,19 +156,21 @@ EvolutionSystem:
           Center: [0.0, 0.0, 0.0]
         MovementMethod: ExpansionFactor
 
-Filtering:
-  ExpFilter0:
-    Alpha: 64.0
-    HalfPower: 210
-    Enable: true
-    BlocksToFilter: All
-
 SpatialDiscretization:
   BoundaryCorrection:
     AveragedUpwindPenalty:
   DiscontinuousGalerkin:
     Formulation: StrongInertial
     Quadrature: GaussLobatto
+    Filtering:
+      - Hypercube:
+          HalfPower: 210
+          Enable: true
+          BlocksToFilter: All
+          VolumeFilterOnSubstep: true
+          BoundaryCorrectionFilterOnSubstep: false
+          VolumeFilterEveryNSteps: None
+          BoundaryCorrectionFilterEveryNSteps: None
 
 Observers:
   VolumeFileName: "BbhVolume"

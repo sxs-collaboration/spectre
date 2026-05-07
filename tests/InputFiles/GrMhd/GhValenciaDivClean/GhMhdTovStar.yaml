@@ -144,6 +144,15 @@ SpatialDiscretization:
   DiscontinuousGalerkin:
     Formulation: StrongInertial
     Quadrature: GaussLobatto
+    Filtering:
+      - Hypercube:
+          HalfPower: 64
+          Enable: true
+          BlocksToFilter: All
+          VolumeFilterOnSubstep: true
+          BoundaryCorrectionFilterOnSubstep: false
+          VolumeFilterEveryNSteps: None
+          BoundaryCorrectionFilterEveryNSteps: None
     Subcell:
       TroubledCellIndicator:
         PerssonTci:
@@ -177,14 +186,6 @@ SpatialDiscretization:
         ReconstructRhoTimesTemperature: true
     FilterOptions:
       SpacetimeDissipation: 0.1
-
-Filtering:
-  ExpFilter0:
-    Alpha: 36
-    HalfPower: 64
-    Enable: true
-    BlocksToFilter: All
-
 
 EventsAndTriggersAtCheckpoints:
 

@@ -118,18 +118,6 @@ EvolutionSystem:
         Width: 11.313708499
         Center: [0.0, 0.0, 0.0]
 
-Filtering:
-  ExpFilter0:
-    Alpha: 36.0
-    HalfPower: 64
-    Enable: true
-    BlocksToFilter: All
-  ExpFilter1:
-    Alpha: 36.0
-    HalfPower: 64
-    Enable: true
-    BlocksToFilter: All
-
 SpatialDiscretization:
   BoundaryCorrection:
     ProductAveragedUpwindPenaltyGHAndUpwindPenaltyScalar:
@@ -138,6 +126,15 @@ SpatialDiscretization:
   DiscontinuousGalerkin:
     Formulation: StrongInertial
     Quadrature: GaussLobatto
+    Filtering:
+      - Hypercube:
+          HalfPower: 64
+          Enable: true
+          BlocksToFilter: All
+          VolumeFilterOnSubstep: true
+          BoundaryCorrectionFilterOnSubstep: false
+          VolumeFilterEveryNSteps: None
+          BoundaryCorrectionFilterEveryNSteps: None
 
 EventsAndTriggersAtCheckpoints:
 

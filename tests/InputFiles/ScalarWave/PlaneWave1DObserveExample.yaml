@@ -88,14 +88,15 @@ SpatialDiscretization:
   DiscontinuousGalerkin:
     Formulation: StrongInertial
     Quadrature: GaussLobatto
-
-# If filtering is enabled in the executable the filter can be controlled using:
-# Filtering:
-#   ExpFilter0:
-#     Alpha: 36
-#     HalfPower: 128
-#     Enable: false
-#     BlocksToFilter: All
+    Filtering:
+      - Hypercube:
+          HalfPower: 128
+          Enable: false
+          BlocksToFilter: All
+          VolumeFilterOnSubstep: true
+          BoundaryCorrectionFilterOnSubstep: false
+          VolumeFilterEveryNSteps: None
+          BoundaryCorrectionFilterEveryNSteps: None
 
 # [observe_event_trigger]
 EventsAndDenseTriggers:

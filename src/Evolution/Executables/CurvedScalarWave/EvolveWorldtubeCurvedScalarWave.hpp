@@ -24,6 +24,7 @@
 #include "Evolution/DiscontinuousGalerkin/DgElementArray.hpp"
 #include "Evolution/DiscontinuousGalerkin/Initialization/Mortars.hpp"
 #include "Evolution/DiscontinuousGalerkin/Initialization/QuadratureTag.hpp"
+#include "Evolution/DiscontinuousGalerkin/Initialization/SpectralFilters.hpp"
 #include "Evolution/Executables/GeneralizedHarmonic/Deadlock.hpp"
 #include "Evolution/Initialization/DgDomain.hpp"
 #include "Evolution/Initialization/Evolution.hpp"
@@ -47,13 +48,13 @@
 #include "Evolution/Systems/CurvedScalarWave/Worldtube/Tags.hpp"
 #include "Evolution/Systems/CurvedScalarWave/Worldtube/Triggers/InsideHorizon.hpp"
 #include "Evolution/Systems/CurvedScalarWave/Worldtube/Triggers/OrbitRadius.hpp"
-#include "Evolution/Tags/Filter.hpp"
 #include "IO/Observer/Actions/RegisterEvents.hpp"
 #include "IO/Observer/Helpers.hpp"
 #include "IO/Observer/ObserverComponent.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Formulation.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Tags.hpp"
-#include "NumericalAlgorithms/LinearOperators/ExponentialFilter.hpp"
+#include "NumericalAlgorithms/LinearOperators/Filters/Factory.hpp"
+#include "NumericalAlgorithms/LinearOperators/Filters/Tag.hpp"
 #include "Options/Protocols/FactoryCreation.hpp"
 #include "Options/String.hpp"
 #include "Parallel/Local.hpp"
@@ -66,10 +67,10 @@
 #include "Parallel/Reduction.hpp"
 #include "ParallelAlgorithms/Actions/AddComputeTags.hpp"
 #include "ParallelAlgorithms/Actions/AddSimpleTags.hpp"
-#include "ParallelAlgorithms/Actions/FilterAction.hpp"
 #include "ParallelAlgorithms/Actions/FunctionsOfTimeAreReady.hpp"
 #include "ParallelAlgorithms/Actions/InitializeItems.hpp"
 #include "ParallelAlgorithms/Actions/MutateApply.hpp"
+#include "ParallelAlgorithms/Actions/SpectralFilter.hpp"
 #include "ParallelAlgorithms/Actions/TerminatePhase.hpp"
 #include "ParallelAlgorithms/Events/Completion.hpp"
 #include "ParallelAlgorithms/Events/Factory.hpp"
@@ -241,11 +242,14 @@ struct EvolutionMetavars {
         tmpl::pair<Trigger,
                    tmpl::flatten<tmpl::list<
                        Triggers::logical_triggers, Triggers::time_triggers,
-                       Triggers::OrbitRadius, Triggers::InsideHorizon>>>>;
+                       Triggers::OrbitRadius, Triggers::InsideHorizon>>>,
+        tmpl::pair<Filters::Filter<volume_dim,
+                                   typename system::variables_tag::tags_list>,
+                   Filters::all_filters<
+                       volume_dim, typename system::variables_tag::tags_list>>>;
   };
   using observed_reduction_data_tags = observers::collect_reduction_data_tags<
       tmpl::at<typename factory_creation::factory_classes, Event>>;
-  static constexpr bool use_filtering = true;
 
   using step_actions = tmpl::flatten<tmpl::list<
       CurvedScalarWave::Actions::CalculateGrVars<system, true>,
@@ -265,14 +269,7 @@ struct EvolutionMetavars {
           local_time_stepping,
           Actions::MutateApply<evolution::dg::CleanMortarHistory<volume_dim>>,
           tmpl::list<>>,
-      tmpl::conditional_t<
-          use_filtering,
-          dg::Actions::Filter<
-              Filters::Exponential<0>,
-              tmpl::list<CurvedScalarWave::Tags::Psi,
-                         CurvedScalarWave::Tags::Pi,
-                         CurvedScalarWave::Tags::Phi<volume_dim>>>,
-          tmpl::list<>>>>;
+      dg::Actions::SpectralFilter>>;
 
   using const_global_cache_tags = tmpl::list<
       CurvedScalarWave::Tags::BackgroundSpacetime<BackgroundSpacetime>,
@@ -326,6 +323,9 @@ struct EvolutionMetavars {
       intrp::Actions::ElementInitInterpPoints<volume_dim,
                                               interpolation_target_tags>,
       evolution::Actions::InitializeRunEventsAndDenseTriggers,
+      Initialization::Actions::InitializeItems<
+          evolution::dg::Initialization::SpectralFilters<
+              volume_dim, typename system::variables_tag::tags_list>>,
       Parallel::Actions::TerminatePhase>;
 
   using dg_element_array = DgElementArray<

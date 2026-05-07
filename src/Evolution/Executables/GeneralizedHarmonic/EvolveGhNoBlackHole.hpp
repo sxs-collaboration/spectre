@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "Evolution/Actions/RunEventsAndTriggers.hpp"
+#include "Evolution/DiscontinuousGalerkin/Initialization/ProjectSpectralFilters.hpp"
 #include "Evolution/Executables/GeneralizedHarmonic/GeneralizedHarmonicBase.hpp"
 #include "Options/Protocols/FactoryCreation.hpp"
 #include "Options/String.hpp"
@@ -106,6 +107,8 @@ struct EvolutionMetavars
                                                       local_time_stepping>,
         Initialization::ProjectTimeStepperHistory<EvolutionMetavars>,
         evolution::Actions::ProjectRunEventsAndDenseTriggers,
+        evolution::dg::Initialization::ProjectSpectralFilters<
+            volume_dim, typename system::variables_tag::tags_list>,
         ::amr::projectors::DefaultInitialize<
             Initialization::Tags::InitialTimeDelta,
             Initialization::Tags::InitialSlabSize<local_time_stepping>,

@@ -98,6 +98,15 @@ SpatialDiscretization:
   DiscontinuousGalerkin:
     Formulation: StrongInertial
     Quadrature: GaussLobatto
+    Filtering:
+      - Hypercube:
+          HalfPower: 32
+          Enable: true
+          BlocksToFilter: All
+          VolumeFilterOnSubstep: true
+          BoundaryCorrectionFilterOnSubstep: false
+          VolumeFilterEveryNSteps: None
+          BoundaryCorrectionFilterEveryNSteps: None
 
 EventsAndTriggersAtCheckpoints:
 
@@ -176,13 +185,6 @@ InterpolationTargets:
     Center: [0.,0.,0.]
     Radius: [400.]
     AngularOrdering: Strahlkorper
-
-Filtering:
-  ExpFilter0:
-    Alpha: 12
-    HalfPower: 32
-    Enable: true
-    BlocksToFilter: All
 
 EventsAndDenseTriggers:
 

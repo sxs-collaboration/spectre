@@ -21,6 +21,7 @@
 #include "DataStructures/Tensor/IndexType.hpp"
 #include "Domain/Structure/ObjectLabel.hpp"
 #include "Evolution/Actions/RunEventsAndTriggers.hpp"
+#include "Evolution/DiscontinuousGalerkin/Initialization/ProjectSpectralFilters.hpp"
 #include "Evolution/Executables/GeneralizedHarmonic/Deadlock.hpp"
 #include "Evolution/Executables/GeneralizedHarmonic/GeneralizedHarmonicBase.hpp"
 #include "Evolution/Systems/Cce/Callbacks/DumpBondiSachsOnWorldtube.hpp"
@@ -289,6 +290,8 @@ struct EvolutionMetavars : public GeneralizedHarmonicTemplateBase<3, UseLts> {
                                                       local_time_stepping>,
         Initialization::ProjectTimeStepperHistory<EvolutionMetavars>,
         evolution::Actions::ProjectRunEventsAndDenseTriggers,
+        evolution::dg::Initialization::ProjectSpectralFilters<
+            volume_dim, typename system::variables_tag::tags_list>,
         ::amr::projectors::DefaultInitialize<
             Initialization::Tags::InitialTimeDelta,
             Initialization::Tags::InitialSlabSize<gh_base::local_time_stepping>,

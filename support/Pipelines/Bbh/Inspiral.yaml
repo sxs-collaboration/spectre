@@ -278,21 +278,23 @@ EvolutionSystem:
         Center: [0.0, 0.0, 0.0]
     DampingFunctionGamma2: *ConstraintDampingTripleGaussian
 
-# Half power was determined to filter only the last term up to N = 19
-# since we support up to 20 gridpoints.
-Filtering:
-  ExpFilter0:
-    Alpha: 36.0
-    HalfPower: 420
-    Enable: true
-    BlocksToFilter: All
-
 SpatialDiscretization:
   BoundaryCorrection:
     AveragedUpwindPenalty:
   DiscontinuousGalerkin:
     Formulation: StrongInertial
     Quadrature: GaussLobatto
+    # Half power was determined to filter only the last term up to N = 19
+    # since we support up to 20 gridpoints.
+    Filtering:
+      - Hypercube:
+          HalfPower: 420
+          Enable: true
+          BlocksToFilter: All
+          VolumeFilterOnSubstep: true
+          BoundaryCorrectionFilterOnSubstep: false
+          VolumeFilterEveryNSteps: None
+          BoundaryCorrectionFilterEveryNSteps: None
 
 Observers:
   VolumeFileName: "BbhVolume"
