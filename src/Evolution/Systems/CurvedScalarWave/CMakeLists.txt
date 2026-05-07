@@ -11,6 +11,7 @@ spectre_target_sources(
   ApplyTensorYlmFilter.cpp
   Characteristics.cpp
   Constraints.cpp
+  SpectralFilter.cpp
   TimeDerivative.cpp
   )
 

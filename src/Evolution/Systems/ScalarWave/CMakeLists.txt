@@ -13,6 +13,7 @@ spectre_target_sources(
   EnergyDensity.cpp
   Equations.cpp
   MomentumDensity.cpp
+  SpectralFilter.cpp
   TimeDerivative.cpp
   )
 
