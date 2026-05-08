@@ -18,7 +18,7 @@ OutputFileChecks:
 ---
 
 Parallelization:
-  ElementDistribution: NumGridPoints
+  ElementDistribution: NumGridPointsAndGridSpacing
 
 Evolution:
   InitialTime: 0.0
