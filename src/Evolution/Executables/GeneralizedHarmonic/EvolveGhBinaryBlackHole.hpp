@@ -197,7 +197,6 @@
 #include "Time/Tags/TimeStepId.hpp"
 #include "Time/TimeSequence.hpp"
 #include "Time/TimeSteppers/Factory.hpp"
-#include "Time/TimeSteppers/LtsTimeStepper.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"
 #include "Time/Triggers/TimeTriggers.hpp"
 #include "Time/UpdateU.hpp"
@@ -538,9 +537,6 @@ struct EvolutionMetavars {
             tmpl::list<gh::gauges::DampedHarmonic, gh::gauges::Harmonic>>,
         tmpl::pair<MathFunction<1, Frame::Inertial>,
                    MathFunctions::all_math_functions<1, Frame::Inertial>>,
-        // Restrict to monotonic time steppers in LTS to avoid control
-        // systems deadlocking.
-        tmpl::pair<LtsTimeStepper, TimeSteppers::monotonic_lts_time_steppers>,
         tmpl::pair<PhaseChange,
                    tmpl::push_back<
                        PhaseControl::factory_creatable_classes,

@@ -181,13 +181,7 @@ struct EvolutionMetavars : public GeneralizedHarmonicTemplateBase<3> {
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
     using factory_classes = Options::add_factory_classes<
-        // Restrict to monotonic time steppers in LTS to avoid control
-        // systems deadlocking.
-        tmpl::insert<
-            tmpl::erase<typename gh_base::factory_creation::factory_classes,
-                        LtsTimeStepper>,
-            tmpl::pair<LtsTimeStepper,
-                       TimeSteppers::monotonic_lts_time_steppers>>,
+        typename gh_base::factory_creation::factory_classes,
         tmpl::pair<ah::Criterion, ah::Criteria::standard_criteria>,
         tmpl::pair<ylm::InitialShape<Frame::Inertial>,
                    tmpl::list<ylm::InitialShapes::Sphere<Frame::Inertial>,

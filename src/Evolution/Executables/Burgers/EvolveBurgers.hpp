@@ -106,7 +106,6 @@
 #include "Time/Tags/TimeStepId.hpp"
 #include "Time/TimeSequence.hpp"
 #include "Time/TimeSteppers/Factory.hpp"
-#include "Time/TimeSteppers/LtsTimeStepper.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"
 #include "Time/Triggers/TimeTriggers.hpp"
 #include "Time/UpdateU.hpp"
@@ -185,7 +184,6 @@ struct EvolutionMetavars {
         tmpl::pair<evolution::BoundaryCorrection,
                    Burgers::BoundaryCorrections::standard_boundary_corrections>,
         tmpl::pair<evolution::initial_data::InitialData, initial_data_list>,
-        tmpl::pair<LtsTimeStepper, TimeSteppers::lts_time_steppers>,
         tmpl::pair<PhaseChange, PhaseControl::factory_creatable_classes>,
         tmpl::pair<StepChooser<StepChooserUse::LtsStep>,
                    StepChoosers::standard_step_choosers<system>>,

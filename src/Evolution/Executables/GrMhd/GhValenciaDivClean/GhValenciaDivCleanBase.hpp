@@ -234,7 +234,6 @@
 #include "Time/Tags/TimeStepId.hpp"
 #include "Time/TimeSequence.hpp"
 #include "Time/TimeSteppers/Factory.hpp"
-#include "Time/TimeSteppers/LtsTimeStepper.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"
 #include "Time/Triggers/TimeTriggers.hpp"
 #include "Time/UpdateU.hpp"
@@ -646,13 +645,6 @@ struct GhValenciaDivCleanTemplateBase<
         tmpl::pair<MathFunction<1, Frame::Inertial>,
                    MathFunctions::all_math_functions<1, Frame::Inertial>>,
         tmpl::pair<evolution::initial_data::InitialData, initial_data_list>,
-        // Restrict to monotonic time steppers in LTS to avoid control
-        // systems deadlocking.
-        tmpl::pair<
-            LtsTimeStepper,
-            tmpl::conditional_t<use_control_systems,
-                                TimeSteppers::monotonic_lts_time_steppers,
-                                TimeSteppers::lts_time_steppers>>,
         tmpl::pair<PhaseChange, PhaseControl::factory_creatable_classes>,
         tmpl::pair<StepChooser<StepChooserUse::LtsStep>,
                    StepChoosers::standard_step_choosers<system>>,

@@ -114,7 +114,6 @@
 #include "Time/Tags/TimeStepId.hpp"
 #include "Time/TimeSequence.hpp"
 #include "Time/TimeSteppers/Factory.hpp"
-#include "Time/TimeSteppers/LtsTimeStepper.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"
 #include "Time/Triggers/TimeTriggers.hpp"
 #include "Time/UpdateU.hpp"
@@ -203,7 +202,6 @@ struct EvolutionMetavars {
         tmpl::pair<evolution::initial_data::InitialData,
                    tmpl::push_back<initial_data_list,
                                    evolution::initial_data::NumericData>>,
-        tmpl::pair<LtsTimeStepper, TimeSteppers::lts_time_steppers>,
         tmpl::pair<MathFunction<1, Frame::Inertial>,
                    MathFunctions::all_math_functions<1, Frame::Inertial>>,
         tmpl::pair<PhaseChange, PhaseControl::factory_creatable_classes>,

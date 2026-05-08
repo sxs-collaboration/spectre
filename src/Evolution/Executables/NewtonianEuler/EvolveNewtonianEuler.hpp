@@ -118,7 +118,6 @@
 #include "Time/Tags/TimeStepId.hpp"
 #include "Time/TimeSequence.hpp"
 #include "Time/TimeSteppers/Factory.hpp"
-#include "Time/TimeSteppers/LtsTimeStepper.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"
 #include "Time/Triggers/TimeTriggers.hpp"
 #include "Time/UpdateU.hpp"
@@ -223,7 +222,6 @@ struct EvolutionMetavars {
         tmpl::pair<evolution::BoundaryCorrection,
                    NewtonianEuler::BoundaryCorrections::
                        standard_boundary_corrections<volume_dim>>,
-        tmpl::pair<LtsTimeStepper, TimeSteppers::lts_time_steppers>,
         tmpl::pair<
             NewtonianEuler::BoundaryConditions::BoundaryCondition<volume_dim>,
             NewtonianEuler::BoundaryConditions::standard_boundary_conditions<

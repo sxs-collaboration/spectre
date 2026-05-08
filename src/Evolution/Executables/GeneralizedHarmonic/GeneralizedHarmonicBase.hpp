@@ -135,7 +135,6 @@
 #include "Time/Tags/Time.hpp"
 #include "Time/TimeSequence.hpp"
 #include "Time/TimeSteppers/Factory.hpp"
-#include "Time/TimeSteppers/LtsTimeStepper.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"
 #include "Time/Triggers/TimeTriggers.hpp"
 #include "Time/UpdateU.hpp"
@@ -317,7 +316,6 @@ struct FactoryCreation : tt::ConformsTo<Options::protocols::FactoryCreation> {
                        tmpl::conditional_t<volume_dim == 3,
                                            tmpl::list<gh::NumericInitialData>,
                                            tmpl::list<>>>>,
-      tmpl::pair<LtsTimeStepper, TimeSteppers::lts_time_steppers>,
       tmpl::pair<MathFunction<1, Frame::Inertial>,
                  MathFunctions::all_math_functions<1, Frame::Inertial>>,
       tmpl::pair<PhaseChange, PhaseControl::factory_creatable_classes>,

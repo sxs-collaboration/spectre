@@ -96,7 +96,6 @@
 #include "Time/TimeSequence.hpp"
 #include "Time/TimeSteppers/Factory.hpp"
 #include "Time/TimeSteppers/ImexTimeStepper.hpp"
-#include "Time/TimeSteppers/LtsTimeStepper.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"
 #include "Time/Triggers/TimeTriggers.hpp"
 #include "Time/UpdateU.hpp"
