@@ -125,10 +125,7 @@ struct EvolutionMetavars {
 
   using system = RadiationTransport::M1Grey::System<neutrino_species>;
   using temporal_id = Tags::TimeStepId;
-  using TimeStepperBase = ImexTimeStepper;
 
-  static constexpr bool local_time_stepping =
-      TimeStepperBase::local_time_stepping;
   static constexpr bool use_dg_element_collection = false;
 
   using initial_data_list =
@@ -198,7 +195,6 @@ struct EvolutionMetavars {
       observers::collect_reduction_data_tags<tmpl::flatten<tmpl::list<
           tmpl::at<typename factory_creation::factory_classes, Event>>>>;
 
-  static_assert(not local_time_stepping);
   using step_actions = tmpl::flatten<tmpl::list<
       Actions::MutateApply<
           evolution::dg::BackgroundGrVars<system, EvolutionMetavars>>,

@@ -81,11 +81,9 @@
 #include "Utilities/PrettyType.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 
-template <bool UseLts>
-struct EvolutionMetavars : public GeneralizedHarmonicTemplateBase<3, UseLts> {
-  static constexpr bool local_time_stepping = UseLts;
+struct EvolutionMetavars : public GeneralizedHarmonicTemplateBase<3> {
   static constexpr size_t volume_dim = 3;
-  using gh_base = GeneralizedHarmonicTemplateBase<volume_dim, UseLts>;
+  using gh_base = GeneralizedHarmonicTemplateBase<volume_dim>;
   using typename gh_base::initialize_initial_data_dependent_quantities_actions;
   using typename gh_base::system;
 

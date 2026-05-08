@@ -73,7 +73,6 @@ struct VariableOrder {
 /// in the cpp file.
 class TimeStepper : public PUP::able {
  public:
-  static constexpr bool local_time_stepping = false;
   static constexpr bool imex = false;
   using provided_time_stepper_interfaces = tmpl::list<TimeStepper>;
 

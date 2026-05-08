@@ -38,7 +38,6 @@ class er;
 template <template <typename> class BoundaryComponent>
 struct EvolutionMetavars : CharacteristicExtractDefaults<false> {
   using system = Cce::System<evolve_ccm>;
-  static constexpr bool local_time_stepping = true;
   using cce_boundary_component = BoundaryComponent<EvolutionMetavars>;
   using cce_base = CharacteristicExtractDefaults<false>;
 

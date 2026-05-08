@@ -286,10 +286,6 @@ struct SetMeshType {
 template <size_t Dim>
 struct Metavariables {
   static constexpr size_t volume_dim = Dim;
-  using TimeStepperBase = TimeStepper;
-
-  static constexpr bool local_time_stepping =
-      TimeStepperBase::local_time_stepping;
 
   // A placeholder system for the domain creators
   struct system {};

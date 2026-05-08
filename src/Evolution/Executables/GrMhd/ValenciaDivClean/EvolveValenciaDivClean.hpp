@@ -225,10 +225,7 @@ struct EvolutionMetavars<tmpl::list<InterpolationTargetTags...>,
   using initial_data_tag = evolution::initial_data::Tags::InitialData;
   using system = grmhd::ValenciaDivClean::System;
   using temporal_id = Tags::TimeStepId;
-  using TimeStepperBase = TimeStepper;
 
-  static constexpr bool local_time_stepping =
-      TimeStepperBase::local_time_stepping;
   static constexpr bool use_dg_element_collection = false;
 
   using analytic_variables_tags =

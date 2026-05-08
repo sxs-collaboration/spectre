@@ -116,9 +116,6 @@ struct EvolutionMetavars {
 
   using system = Particles::MonteCarlo::System;
   using temporal_id = Tags::TimeStepId;
-  using TimeStepperBase = TimeStepper;
-  static constexpr bool local_time_stepping =
-      TimeStepperBase::local_time_stepping;
   static constexpr bool use_dg_subcell = true;
 
   using initial_data_list =

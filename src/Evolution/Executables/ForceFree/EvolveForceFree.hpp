@@ -110,10 +110,7 @@ struct EvolutionMetavars {
   static constexpr size_t volume_dim = 3;
   using system = ForceFree::System;
   using temporal_id = Tags::TimeStepId;
-  using TimeStepperBase = TimeStepper;
 
-  static constexpr bool local_time_stepping =
-      TimeStepperBase::local_time_stepping;
   static constexpr bool use_dg_element_collection = false;
 
   using initial_data_list = tmpl::append<ForceFree::Solutions::all_solutions,

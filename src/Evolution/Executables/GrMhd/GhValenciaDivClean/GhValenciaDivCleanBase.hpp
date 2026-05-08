@@ -265,10 +265,7 @@ struct GhValenciaDivCleanDefaults {
   using domain_frame = Frame::Inertial;
   static constexpr bool use_damped_harmonic_rollon = true;
   using temporal_id = Tags::TimeStepId;
-  using TimeStepperBase = TimeStepper;
 
-  static constexpr bool local_time_stepping =
-      TimeStepperBase::local_time_stepping;
   static constexpr bool use_dg_element_collection = false;
 
   using neutrino_system = RadiationTransport::NoNeutrinos::System;
@@ -353,8 +350,6 @@ struct GhValenciaDivCleanTemplateBase<
   static constexpr bool use_damped_harmonic_rollon =
       defaults::use_damped_harmonic_rollon;
   using temporal_id = typename defaults::temporal_id;
-  using TimeStepperBase = typename defaults::TimeStepperBase;
-  static constexpr bool local_time_stepping = defaults::local_time_stepping;
   static constexpr bool use_dg_element_collection =
       defaults::use_dg_element_collection;
   using system = typename defaults::system;

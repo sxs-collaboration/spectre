@@ -130,10 +130,7 @@ struct EvolutionMetavars {
   static constexpr size_t volume_dim = Dim;
   using system = ScalarAdvection::System<Dim>;
   using temporal_id = Tags::TimeStepId;
-  using TimeStepperBase = TimeStepper;
 
-  static constexpr bool local_time_stepping =
-      TimeStepperBase::local_time_stepping;
   static constexpr bool use_dg_element_collection = false;
 
   // The use_dg_subcell flag controls whether to use unlimited DG (false)
