@@ -100,10 +100,9 @@ struct Var2 : db::SimpleTag {
   using type = tnsr::I<DataVector, Dim, Frame::Inertial>;
 };
 
-template <size_t Dim, bool LocalTimeStepping>
+template <size_t Dim>
 struct Metavariables {
   static constexpr size_t volume_dim = Dim;
-  static constexpr bool local_time_stepping = LocalTimeStepping;
   using const_global_cache_tags =
       tmpl::list<domain::Tags::Domain<Dim>, ::Tags::LtsMode>;
   struct system {
@@ -116,8 +115,9 @@ struct Metavariables {
 template <size_t Dim>
 using mortar_data_history_type = typename Tags::MortarDataHistory<Dim>::type;
 
-template <bool LocalTimeStepping, size_t Dim>
+template <size_t Dim>
 void test_impl(
+    const bool local_time_stepping,
     const std::vector<std::array<size_t, Dim>>& initial_extents,
     const Element<Dim>& element, const TimeStepId& time_step_id,
     const TimeStepId& next_time_step_id, const Spectral::Quadrature quadrature,
@@ -129,7 +129,7 @@ void test_impl(
                                 evolution::dg::Tags::NormalCovector<Dim>>>>>&
         expected_normal_covector_quantities,
     std::optional<Domain<Dim>> domain = std::nullopt) {
-  using metavars = Metavariables<Dim, LocalTimeStepping>;
+  using metavars = Metavariables<Dim>;
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<metavars>;
   if (domain == std::nullopt) {
     std::vector<Block<Dim>> blocks{};
@@ -141,7 +141,7 @@ void test_impl(
     domain = Domain<Dim>{std::move(blocks)};
   }
   const auto lts_mode =
-      LocalTimeStepping ? LtsMode::Conservative : LtsMode::Off;
+      local_time_stepping ? LtsMode::Conservative : LtsMode::Off;
   tuples::TaggedTuple<domain::Tags::Domain<Dim>, ::Tags::LtsMode> opts{
       std::move(domain.value()), lts_mode};
   MockRuntimeSystem runner{std::move(opts)};
@@ -173,7 +173,7 @@ void test_impl(
   for (const auto& mortar_id_and_mesh : expected_mortar_meshes) {
     // Just make sure this exists, it is not expected to hold any data
     CHECK(mortar_data.find(mortar_id_and_mesh.first) != mortar_data.end());
-    if (LocalTimeStepping) {
+    if (local_time_stepping) {
       CHECK(boundary_data_history.find(mortar_id_and_mesh.first) !=
             boundary_data_history.end());
     }
@@ -192,12 +192,13 @@ void test_impl(
         expected_normal_covector_quantities);
 }
 
-template <size_t Dim, bool LocalTimeStepping>
+template <size_t Dim>
 struct Test;
 
-template <bool LocalTimeStepping>
-struct Test<1, LocalTimeStepping> {
-  static void apply(const Spectral::Quadrature quadrature) {
+template <>
+struct Test<1> {
+  static void apply(const Spectral::Quadrature quadrature,
+                    const bool local_time_stepping) {
     INFO("1D");
     // Reference element is denoted by X, has one internal boundary and one
     // external boundary:
@@ -231,7 +232,7 @@ struct Test<1, LocalTimeStepping> {
              {.interface_data_policy =
                   evolution::dg::InterfaceDataPolicy::CopyProject,
               .time_stepping_policy =
-                  LocalTimeStepping
+                  local_time_stepping
                       ? evolution::dg::TimeSteppingPolicy::Conservative
                       : evolution::dg::TimeSteppingPolicy::EqualRate}}}};
 
@@ -242,16 +243,17 @@ struct Test<1, LocalTimeStepping> {
         expected_normal_covector_quantities{{Direction<1>::lower_xi(), {}},
                                             {Direction<1>::upper_xi(), {}}};
 
-    test_impl<LocalTimeStepping>(initial_extents, element, time_step_id,
-                                 next_time_step_id, quadrature, neighbor_meshes,
-                                 expected_mortar_meshes, expected_mortar_infos,
-                                 expected_normal_covector_quantities);
+    test_impl(local_time_stepping, initial_extents, element, time_step_id,
+              next_time_step_id, quadrature, neighbor_meshes,
+              expected_mortar_meshes, expected_mortar_infos,
+              expected_normal_covector_quantities);
   }
 };
 
-template <bool LocalTimeStepping>
-struct Test<2, LocalTimeStepping> {
-  static void apply(const Spectral::Quadrature quadrature) {
+template <>
+struct Test<2> {
+  static void apply(const Spectral::Quadrature quadrature,
+                    const bool local_time_stepping) {
     INFO("2D");
     // Reference element is denoted by X, has two internal boundaries (east and
     // south) and two external boundaries (west and north):
@@ -304,7 +306,7 @@ struct Test<2, LocalTimeStepping> {
                .interface_data_policy =
                    evolution::dg::InterfaceDataPolicy::CopyProject,
                .time_stepping_policy =
-                   LocalTimeStepping
+                   local_time_stepping
                        ? evolution::dg::TimeSteppingPolicy::Conservative
                        : evolution::dg::TimeSteppingPolicy::EqualRate}});
     }
@@ -318,16 +320,17 @@ struct Test<2, LocalTimeStepping> {
                                             {Direction<2>::lower_eta(), {}},
                                             {Direction<2>::upper_eta(), {}}};
 
-    test_impl<LocalTimeStepping>(initial_extents, element, time_step_id,
-                                 next_time_step_id, quadrature, neighbor_meshes,
-                                 expected_mortar_meshes, expected_mortar_infos,
-                                 expected_normal_covector_quantities);
+    test_impl(local_time_stepping, initial_extents, element, time_step_id,
+              next_time_step_id, quadrature, neighbor_meshes,
+              expected_mortar_meshes, expected_mortar_infos,
+              expected_normal_covector_quantities);
   }
 };
 
-template <bool LocalTimeStepping>
-struct Test<3, LocalTimeStepping> {
-  static void apply(const Spectral::Quadrature quadrature) {
+template <>
+struct Test<3> {
+  static void apply(const Spectral::Quadrature quadrature,
+                    const bool local_time_stepping) {
     INFO("3D");
     // Neighboring elements in:
     // - upper-xi (right id)
@@ -384,8 +387,8 @@ struct Test<3, LocalTimeStepping> {
         {interface_mortar_id_top,
          Mesh<2>({{2, 3}}, Spectral::Basis::Legendre, quadrature)}};
     const auto expected_time_stepping_policy =
-        LocalTimeStepping ? evolution::dg::TimeSteppingPolicy::Conservative
-                          : evolution::dg::TimeSteppingPolicy::EqualRate;
+        local_time_stepping ? evolution::dg::TimeSteppingPolicy::Conservative
+                            : evolution::dg::TimeSteppingPolicy::EqualRate;
     ::dg::MortarMap<3, MortarInfo<3>> expected_mortar_infos{};
     expected_mortar_infos.emplace(
         interface_mortar_id_right,
@@ -419,15 +422,14 @@ struct Test<3, LocalTimeStepping> {
             {Direction<3>::lower_eta(), {}},  {Direction<3>::upper_eta(), {}},
             {Direction<3>::lower_zeta(), {}}, {Direction<3>::upper_zeta(), {}}};
 
-    test_impl<LocalTimeStepping>(initial_extents, element, time_step_id,
-                                 next_time_step_id, quadrature, neighbor_meshes,
-                                 expected_mortar_meshes, expected_mortar_infos,
-                                 expected_normal_covector_quantities);
+    test_impl(local_time_stepping, initial_extents, element, time_step_id,
+              next_time_step_id, quadrature, neighbor_meshes,
+              expected_mortar_meshes, expected_mortar_infos,
+              expected_normal_covector_quantities);
   }
 };
 
-template <bool LocalTimeStepping>
-void test_nonconforming_blocks() {
+void test_nonconforming_blocks(const bool local_time_stepping) {
   INFO("NonconformingSphericalShells");
   const auto creator = domain::creators::NonconformingSphericalShells(
       2.0, 3.0, 4.0, 0, 0, 5, 7, 11, nullptr, nullptr);
@@ -444,8 +446,8 @@ void test_nonconforming_blocks() {
   const TimeStepId time_step_id{true, 3, Time{Slab{0.2, 3.4}, {3, 100}}};
   const TimeStepId next_time_step_id{true, 3, Time{Slab{0.2, 3.4}, {6, 100}}};
   const auto expected_time_stepping_policy =
-      LocalTimeStepping ? evolution::dg::TimeSteppingPolicy::Conservative
-                        : evolution::dg::TimeSteppingPolicy::EqualRate;
+      local_time_stepping ? evolution::dg::TimeSteppingPolicy::Conservative
+                          : evolution::dg::TimeSteppingPolicy::EqualRate;
   {
     INFO("Test S2 shell");
     const auto& shell_neighbor_ids =
@@ -478,12 +480,12 @@ void test_nonconforming_blocks() {
                                     evolution::dg::Tags::NormalCovector<3>>>>>
         shell_expected_normal_covector_quantities{
             {Direction<3>::lower_xi(), {}}, {Direction<3>::upper_xi(), {}}};
-    test_impl<LocalTimeStepping>(
-        initial_extents, shell, time_step_id, next_time_step_id,
-        Spectral::Quadrature::GaussLobatto, shell_neighbor_meshes,
-        shell_expected_mortar_meshes, shell_expected_mortar_infos,
-        shell_expected_normal_covector_quantities,
-        std::make_optional<Domain<3>>(std::move(domain)));
+    test_impl(local_time_stepping, initial_extents, shell, time_step_id,
+              next_time_step_id, Spectral::Quadrature::GaussLobatto,
+              shell_neighbor_meshes, shell_expected_mortar_meshes,
+              shell_expected_mortar_infos,
+              shell_expected_normal_covector_quantities,
+              std::make_optional<Domain<3>>(std::move(domain)));
   }
   {
     INFO("Test cubed sphere");
@@ -554,12 +556,11 @@ void test_nonconforming_blocks() {
             {Direction<3>::lower_xi(), {}},   {Direction<3>::upper_xi(), {}},
             {Direction<3>::lower_eta(), {}},  {Direction<3>::upper_eta(), {}},
             {Direction<3>::lower_zeta(), {}}, {Direction<3>::upper_zeta(), {}}};
-    test_impl<LocalTimeStepping>(
-        initial_extents, element, time_step_id, next_time_step_id,
-        Spectral::Quadrature::GaussLobatto, neighbor_meshes,
-        expected_mortar_meshes, expected_mortar_infos,
-        expected_normal_covector_quantities,
-        std::make_optional<Domain<3>>(std::move(domain)));
+    test_impl(local_time_stepping, initial_extents, element, time_step_id,
+              next_time_step_id, Spectral::Quadrature::GaussLobatto,
+              neighbor_meshes, expected_mortar_meshes, expected_mortar_infos,
+              expected_normal_covector_quantities,
+              std::make_optional<Domain<3>>(std::move(domain)));
   }
 }
 
@@ -1157,15 +1158,14 @@ Tags::MortarDataHistory<2>::type make_boundary_histories(
 // has (5,6), and the others are still (3,4).
 //
 // The central region can do nothing, p-refine, split, or join.
-template <bool LocalTimeStepping>
-void test_h_refinement() {
+void test_h_refinement(const bool local_time_stepping) {
   using NormalVars =
       Variables<tmpl::list<evolution::dg::Tags::MagnitudeOfNormal,
                            evolution::dg::Tags::NormalCovector<2>>>;
   using mortar_data_history_tag = Tags::MortarDataHistory<2>;
 
   const auto lts_mode =
-      LocalTimeStepping ? LtsMode::Conservative : LtsMode::Off;
+      local_time_stepping ? LtsMode::Conservative : LtsMode::Off;
 
   const DirectionalId<2> mortar_id_a(Direction<2>::upper_eta(),
                                      ElementId<2>(0));
@@ -1194,7 +1194,7 @@ void test_h_refinement() {
       std::array{Direction<2>::upper_eta(), Direction<2>::lower_xi()}};
   const TimeStepId temporal_id(true, 5, Slab(3.0, 6.0).start());
   const Mesh<2> orig_mesh = lgl_mesh<2>({{3, 4}});
-  const auto time_stepping_policy = LocalTimeStepping
+  const auto time_stepping_policy = local_time_stepping
                                         ? TimeSteppingPolicy::Conservative
                                         : TimeSteppingPolicy::EqualRate;
 
@@ -1274,7 +1274,7 @@ void test_h_refinement() {
                               {Direction<2>::upper_xi(), NormalVars(4, 3.0)},
                               {Direction<2>::lower_eta(), NormalVars(3, 4.0)}};
 
-    if (LocalTimeStepping) {
+    if (local_time_stepping) {
       get<mortar_data_history_tag>(orig_single_items) = make_boundary_histories(
           orig_mortar_ids, orig_mesh,
           get<Tags::MortarMesh<2>>(orig_single_items),
@@ -1364,7 +1364,7 @@ void test_h_refinement() {
         {mortar_id_i, lgl_mesh<1>(5)}};
 
     mortar_data_history_tag::type expected_mortar_data_history{};
-    if (LocalTimeStepping) {
+    if (local_time_stepping) {
       expected_mortar_data_history = make_boundary_histories(
           refined_mortar_ids, orig_mesh, expected_mortar_meshes,
           make_array<2>(Spectral::SegmentSize::Full),
@@ -1421,7 +1421,7 @@ void test_h_refinement() {
         {mortar_id_i, lgl_mesh<1>(5)}};
 
     mortar_data_history_tag::type expected_mortar_data_history{};
-    if (LocalTimeStepping) {
+    if (local_time_stepping) {
       expected_mortar_data_history = make_boundary_histories(
           refined_mortar_ids, refined_mesh, expected_mortar_meshes,
           make_array<2>(Spectral::SegmentSize::Full),
@@ -1495,7 +1495,7 @@ void test_h_refinement() {
     mortar_data_history_tag::type history_ne{};
     mortar_data_history_tag::type history_sw{};
     mortar_data_history_tag::type history_se{};
-    if (LocalTimeStepping) {
+    if (local_time_stepping) {
       // Only the mortar_size is used for constructing the histories
       const auto dummy_mortar_infos = [](const auto& ids) {
         ::dg::MortarMap<2, MortarInfo<2>> infos{};
@@ -1564,7 +1564,7 @@ void test_h_refinement() {
         {mortar_id_i, lgl_mesh<1>(5)}};
 
     mortar_data_history_tag::type expected_mortar_data_history{};
-    if (LocalTimeStepping) {
+    if (local_time_stepping) {
       for (const auto& mortar_id : refined_mortar_ids) {
         expected_mortar_data_history.emplace(mortar_id,
                                              boundary_history_type<2>{});
@@ -1651,7 +1651,7 @@ void test_h_refinement() {
               .time_stepping_policy = time_stepping_policy}}}};
 
     mortar_data_history_tag::type expected_mortar_data_history{};
-    if (LocalTimeStepping) {
+    if (local_time_stepping) {
       for (const auto& mortar_id : mortar_ids) {
         expected_mortar_data_history.emplace(mortar_id,
                                              boundary_history_type<2>{});
@@ -1737,7 +1737,7 @@ void test_h_refinement() {
               .time_stepping_policy = time_stepping_policy}}}};
 
     mortar_data_history_tag::type expected_mortar_data_history{};
-    if (LocalTimeStepping) {
+    if (local_time_stepping) {
       for (const auto& mortar_id : mortar_ids) {
         expected_mortar_data_history.emplace(mortar_id,
                                              boundary_history_type<2>{});
@@ -1823,7 +1823,7 @@ void test_h_refinement() {
               .time_stepping_policy = time_stepping_policy}}}};
 
     mortar_data_history_tag::type expected_mortar_data_history{};
-    if (LocalTimeStepping) {
+    if (local_time_stepping) {
       for (const auto& mortar_id : mortar_ids) {
         expected_mortar_data_history.emplace(mortar_id,
                                              boundary_history_type<2>{});
@@ -1906,7 +1906,7 @@ void test_h_refinement() {
               .time_stepping_policy = time_stepping_policy}}}};
 
     mortar_data_history_tag::type expected_mortar_data_history{};
-    if (LocalTimeStepping) {
+    if (local_time_stepping) {
       for (const auto& mortar_id : mortar_ids) {
         expected_mortar_data_history.emplace(mortar_id,
                                              boundary_history_type<2>{});
@@ -2308,17 +2308,15 @@ SPECTRE_TEST_CASE("Unit.Evolution.DG.Initialization.Mortars",
                   "[Unit][Evolution]") {
   for (const auto quadrature :
        {Spectral::Quadrature::Gauss, Spectral::Quadrature::GaussLobatto}) {
-    Test<1, true>::apply(quadrature);
-    Test<2, true>::apply(quadrature);
-    Test<3, true>::apply(quadrature);
-
-    Test<1, false>::apply(quadrature);
-    Test<2, false>::apply(quadrature);
-    Test<3, false>::apply(quadrature);
+    for (const auto local_time_stepping : {false, true}) {
+      Test<1>::apply(quadrature, local_time_stepping);
+      Test<2>::apply(quadrature, local_time_stepping);
+      Test<3>::apply(quadrature, local_time_stepping);
+    }
   }
 
   domain::creators::register_derived_with_charm();
-  test_nonconforming_blocks<false>();
+  test_nonconforming_blocks(false);
 
   static_assert(
       tt::assert_conforms_to_v<evolution::dg::Initialization::ProjectMortars<1>,
@@ -2329,8 +2327,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.DG.Initialization.Mortars",
   test_p_refine_lts<1>();
   test_p_refine_lts<2>();
   test_p_refine_lts<3>();
-  test_h_refinement<false>();
-  test_h_refinement<true>();
+  test_h_refinement(false);
+  test_h_refinement(true);
   test_h_refinement_mortar_sizes_local();
   test_h_refinement_mortar_sizes_remote();
 }
