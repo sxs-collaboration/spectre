@@ -1,0 +1,182 @@
+# Distributed under the MIT License.
+# See LICENSE.txt for details.
+
+Executable: EvolveGhNoBlackHole1D
+Testing:
+  Check: parse;execute
+  Timeout: 8
+ExpectedOutput:
+  - GhGaugeWave1DVolume0.h5
+  - GhGaugeWave1DReductions.h5
+
+---
+
+Parallelization:
+  ElementDistribution: NumGridPointsAndGridSpacing
+
+ResourceInfo:
+  AvoidGlobalProc0: false
+  Singletons: Auto
+
+Evolution:
+  InitialTime: 0.0
+  InitialTimeStep: 0.002
+  InitialSlabSize: 0.1
+  MinimumTimeStep: 1e-7
+  LocalTimeStepping: Conservative
+  TimeStepper:
+    AdamsBashforth:
+      Order: 3
+  LtsStepChoosers:
+    - PreventRapidIncrease
+    - ErrorControl:
+        AbsoluteTolerance: 1.0e-8
+        RelativeTolerance: 1.0e-6
+        SafetyFactor: 0.95
+        MaxFactor: 2.0
+        MinFactor: 0.25
+  VariableOrderAlgorithm:
+    GoalOrder: 3
+
+Amr:
+  Criteria:
+  EnableInBlocks: All
+  Policies:
+    EnforceTwoToOneBalanceInNormalDirection: true
+    Isotropy: Anisotropic
+    Limits:
+      RefinementLevel: Auto
+      NumGridPoints: Auto
+      ErrorBeyondLimits: False
+    AllowCoarsening: True
+  Verbosity: Quiet
+
+PhaseChangeAndTriggers:
+  - Trigger:
+      Slabs:
+       EvenlySpaced:
+         # Current implementation checks wallclock at these global syncs
+         Interval: 100
+         Offset: 0
+    PhaseChanges:
+      - CheckpointAndExitAfterWallclock:
+          WallclockHours: None
+
+InitialData: &InitialData
+  GeneralizedHarmonic(GaugeWave):
+    Amplitude: 0.5
+    Wavelength: 6.283185307179586
+
+DomainCreator:
+  RotatedIntervals:
+    LowerBound: [0.0]
+    Midpoint: [3.0]
+    UpperBound: [6.283185307179586]
+    InitialRefinement: [1]
+    InitialGridPoints: [[7,7]]
+    TimeDependence:
+      UniformTranslation:
+         InitialTime: 0.0
+         Velocity: [0.5]
+    BoundaryConditions:
+      LowerBoundary:
+        DirichletAnalytic:
+          AnalyticPrescription: *InitialData
+      UpperBoundary:
+        DirichletAnalytic:
+          AnalyticPrescription: *InitialData
+
+EvolutionSystem:
+  GeneralizedHarmonic:
+    GaugeCondition:
+      AnalyticChristoffel:
+        AnalyticPrescription: *InitialData
+    DampingFunctionGamma0:
+      GaussianPlusConstant:
+        Constant: 1.0
+        Amplitude: 0.0
+        Width: 1.0
+        Center: [0.0]
+    DampingFunctionGamma1:
+      GaussianPlusConstant:
+        Constant: -1.0
+        Amplitude: 0.0
+        Width: 1.0
+        Center: [0.0]
+    DampingFunctionGamma2:
+      GaussianPlusConstant:
+        Constant: 1.0
+        Amplitude: 0.0
+        Width: 1.0
+        Center: [0.0]
+
+SpatialDiscretization:
+  DiscontinuousGalerkin:
+    Formulation: StrongInertial
+    Quadrature: Gauss
+    Filtering:
+      - Hypercube:
+          HalfPower: 64
+          Enable: false
+          BlocksToFilter: All
+          VolumeFilterOnSubstep: true
+          BoundaryCorrectionFilterOnSubstep: false
+          VolumeFilterEveryNSteps: None
+          BoundaryCorrectionFilterEveryNSteps: None
+  BoundaryCorrection:
+    AveragedUpwindPenalty:
+
+EventsAndTriggersAtCheckpoints:
+
+EventsAndTriggersAtSlabs:
+  - Trigger:
+      Slabs:
+        EvenlySpaced:
+          Interval: 2
+          Offset: 0
+    Events:
+      - ObserveNorms:
+          SubfileName: Errors
+          TensorsToObserve:
+            - Name: Error(SpacetimeMetric)
+              NormType: L2Norm
+              Components: Sum
+            - Name: Error(Pi)
+              NormType: L2Norm
+              Components: Sum
+            - Name: Error(Phi)
+              NormType: L2Norm
+              Components: Sum
+  - Trigger:
+      Slabs:
+        EvenlySpaced:
+          Interval: 5
+          Offset: 0
+    Events:
+      - ObserveFields:
+          SubfileName: VolumeData
+          VariablesToObserve:
+            - SpacetimeMetric
+            - Pi
+            - Phi
+            - PointwiseL2Norm(GaugeConstraint)
+            - PointwiseL2Norm(ThreeIndexConstraint)
+          InterpolateToMesh: None
+          ProjectToMesh: None
+          CoordinatesFloatingPointType: Double
+          FloatingPointTypes: [Double]
+          BlocksToObserve: All
+  - Trigger:
+      Slabs:
+        Specified:
+          Values: [5]
+    Events:
+      - Completion
+
+EventsAndTriggersAtSteps:
+
+EventsAndDenseTriggers:
+
+Observers:
+  VolumeFileName: "GhGaugeWave1DVolume"
+  ReductionFileName: "GhGaugeWave1DReductions"
