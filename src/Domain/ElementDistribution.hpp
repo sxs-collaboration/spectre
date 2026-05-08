@@ -5,16 +5,12 @@
 
 #include <array>
 #include <cstddef>
+#include <iosfwd>
 #include <optional>
-#include <string>
 #include <unordered_map>
 #include <unordered_set>
 #include <utility>
 #include <vector>
-
-#include "Options/Options.hpp"
-#include "Options/ParseError.hpp"
-#include "Utilities/TypeTraits/CreateGetStaticMemberVariableOrDefault.hpp"
 
 /// \cond
 template <size_t Dim>
@@ -22,6 +18,12 @@ class Block;
 
 template <size_t Dim>
 class ElementId;
+
+namespace Options {
+class Option;
+template <typename T>
+struct create_from_yaml;
+}  // namespace Options
 
 namespace Spectral {
 enum class Basis : uint8_t;
@@ -178,33 +180,15 @@ struct BlockZCurveProcDistribution {
 };
 }  // namespace domain
 
-namespace element_weight_detail {
-CREATE_GET_STATIC_MEMBER_VARIABLE_OR_DEFAULT(local_time_stepping)
-}  // namespace element_weight_detail
-
 template <>
 struct Options::create_from_yaml<domain::ElementWeight> {
   template <typename Metavariables>
   static domain::ElementWeight create(const Options::Option& options) {
-    const auto ordering = options.parse_as<std::string>();
-    if (ordering == "Uniform") {
-      return domain::ElementWeight::Uniform;
-    } else if (ordering == "NumGridPoints") {
-      return domain::ElementWeight::NumGridPoints;
-    } else if (ordering == "NumGridPointsAndGridSpacing") {
-      if constexpr (not element_weight_detail::
-                        get_local_time_stepping_or_default_v<Metavariables,
-                                                             false>) {
-        PARSE_ERROR(
-            options.context(),
-            "When not using local time stepping, you cannot use "
-            "NumGridPointsAndGridSpacing for the element distribution. Please "
-            "choose another element distribution.");
-      }
-      return domain::ElementWeight::NumGridPointsAndGridSpacing;
-    }
-    PARSE_ERROR(options.context(),
-                "ElementWeight must be 'Uniform', 'NumGridPoints', or, "
-                "'NumGridPointsAndGridSpacing'");
+    return create<void>(options);
   }
 };
+
+template <>
+domain::ElementWeight
+Options::create_from_yaml<domain::ElementWeight>::create<void>(
+    const Options::Option& options);

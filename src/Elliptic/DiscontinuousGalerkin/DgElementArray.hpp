@@ -36,7 +36,6 @@
 #include "Parallel/Phase.hpp"
 #include "Parallel/Printf/Printf.hpp"
 #include "Parallel/Protocols/ArrayElementsAllocator.hpp"
-#include "Parallel/Tags/Parallelization.hpp"
 #include "Utilities/Literals.hpp"
 #include "Utilities/Numeric.hpp"
 #include "Utilities/ProtocolHelpers.hpp"

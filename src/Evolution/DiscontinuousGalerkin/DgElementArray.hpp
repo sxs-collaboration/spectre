@@ -31,7 +31,6 @@
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/Phase.hpp"
 #include "Parallel/Printf/Printf.hpp"
-#include "Parallel/Tags/Parallelization.hpp"
 #include "Utilities/Literals.hpp"
 #include "Utilities/Numeric.hpp"
 #include "Utilities/System/ParallelInfo.hpp"
