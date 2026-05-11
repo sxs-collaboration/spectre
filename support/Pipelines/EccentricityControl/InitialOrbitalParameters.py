@@ -86,6 +86,12 @@ def initial_orbital_parameters(
         "Initial orbital parameters can currently only be computed for zero"
         " eccentricity."
     )
+    assert orbital_angular_velocity != 0.0, (
+        "Cannot solve for orbital parameters if 'orbital_angular_velocity' is"
+        " zero. If you want orbital_angular_velocity=0, do not specify"
+        " eccentricity. Instead, specify the separation 'D_0' and radial"
+        " expansion velocity 'adot_0'."
+    )
     assert radial_expansion_velocity is None, (
         "Can't use the 'radial_expansion_velocity' to compute orbital"
         " parameters. Remove it and choose another orbital parameter."
