@@ -462,8 +462,7 @@ struct DerivTensorCompute
   }
   using argument_tags = tmpl::conditional_t<
       std::is_same_v<void, InertialCoordsTag>,
-      tmpl::list<TensorTag, domain::Tags::Mesh<Dim>, InverseJacobianTag>,
-      tmpl::list<TensorTag, domain::Tags::Mesh<Dim>, InverseJacobianTag,
-                 InertialCoordsTag>>;
+      tmpl::list<TensorTag, MeshTag, InverseJacobianTag>,
+      tmpl::list<TensorTag, MeshTag, InverseJacobianTag, InertialCoordsTag>>;
 };
 }  // namespace Tags

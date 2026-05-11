@@ -34,7 +34,12 @@
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.tpp"
 #include "Domain/CoordinateMaps/SphericalToCartesianPfaffian.hpp"
+#include "Domain/Creators/Tags/FunctionsOfTime.hpp"
 #include "Domain/Tags.hpp"
+#include "Evolution/DgSubcell/Tags/ActiveGrid.hpp"
+#include "Evolution/DgSubcell/Tags/Coordinates.hpp"
+#include "Evolution/DgSubcell/Tags/ObserverCoordinates.hpp"
+#include "Evolution/DgSubcell/Tags/ObserverMesh.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/DataStructures/DataBox/TestHelpers.hpp"
 #include "Helpers/NumericalAlgorithms/Spectral/DiskTestFunctions.hpp"
@@ -51,6 +56,8 @@
 #include "NumericalAlgorithms/Spectral/MinimumNumberOfPoints.hpp"
 #include "NumericalAlgorithms/Spectral/Quadrature.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/RealSphericalHarmonics.hpp"
+#include "Time/Tags/Time.hpp"
+#include "Utilities/CloneUniquePtrs.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeArray.hpp"
@@ -2118,6 +2125,7 @@ void test_partial_derivatives_compute_item(
     const std::array<size_t, Dim> extents_array, const T& map) {
   using vars_tags = tmpl::list<Var1<DataVector, Dim>, Var2<DataVector>>;
   using map_tag = MapTag<std::decay_t<decltype(map)>>;
+
   using inv_jac_tag = domain::Tags::InverseJacobianCompute<
       map_tag, typename domain::Tags::LogicalCoordinates<Dim>::base>;
   using deriv_tag =
@@ -2189,34 +2197,100 @@ void test_partial_derivatives_compute_item(
 template <size_t Dim, typename T>
 void test_partial_derivatives_tensor_compute_item(
     const std::array<size_t, Dim> extents_array, const T& map) {
-  using tensor_tag = Var1<DataVector, Dim>;
-  using map_tag = MapTag<std::decay_t<decltype(map)>>;
-  using inv_jac_tag = domain::Tags::InverseJacobianCompute<
-      map_tag, typename domain::Tags::LogicalCoordinates<Dim>::base>;
+  using tensor_tag = Var1<DataVector, Dim, Frame::Inertial>;
+  using mesh_tag = evolution::dg::subcell::Tags::ObserverMeshCompute<Dim>;
+  using inv_jac_tag =
+      evolution::dg::subcell::Tags::ObserverInverseJacobianCompute<
+          Dim, Frame::ElementLogical, Frame::Inertial>;
   using deriv_tensor_tag =
       Tags::DerivTensorCompute<tensor_tag, typename inv_jac_tag::base,
-                               domain::Tags::Mesh<Dim>>;
+                               typename mesh_tag::base>;
 
   const std::array<size_t, Dim> array_to_functions{extents_array -
                                                    make_array<Dim>(size_t{1})};
-  const Mesh<Dim> mesh{extents_array, Spectral::Basis::Legendre,
-                       Spectral::Quadrature::GaussLobatto};
-  const auto x_logical = logical_coordinates(mesh);
-  const auto x = map(logical_coordinates(mesh));
+  const Mesh<Dim> dg_mesh{extents_array, Spectral::Basis::Legendre,
+                          Spectral::Quadrature::GaussLobatto};
 
-  const auto u = tensor_tag::f(array_to_functions, x);
-  const auto expected_du = tensor_tag::df(array_to_functions, x);
+  const auto dg_x_logical = logical_coordinates(dg_mesh);
+  // NOLINTNEXTLINE(misc-const-correctness) - false positive - object is moved
+  ElementMap<Dim, Frame::Grid> element_map{ElementId<Dim>{0}, map.get_clone()};
+
+  const std::unordered_map<std::string,
+                     std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>
+      functions_of_time{};
+  const auto grid_to_inertial_map =
+      domain::make_coordinate_map_base<Frame::Grid, Frame::Inertial>(
+          domain::CoordinateMaps::Identity<Dim>{});
+  const double time = 1.3;
+  const auto dg_x =
+      (*grid_to_inertial_map)(element_map(logical_coordinates(dg_mesh)));
+
+  const auto dg_u = tensor_tag::f(array_to_functions, dg_x);
+  const auto dg_expected_du = tensor_tag::df(array_to_functions, dg_x);
 
   auto box = db::create<
-      db::AddSimpleTags<domain::Tags::Mesh<Dim>, tensor_tag, map_tag>,
-      db::AddComputeTags<domain::Tags::LogicalCoordinates<Dim>, inv_jac_tag,
-                         deriv_tensor_tag>>(mesh, u, map);
+      db::AddSimpleTags<domain::Tags::ElementMap<Dim, Frame::Grid>,
+                        domain::CoordinateMaps::Tags::CoordinateMap<
+                            Dim, Frame::Grid, Frame::Inertial>,
+                        domain::Tags::FunctionsOfTimeInitialize, ::Tags::Time,
+                        ::domain::Tags::Mesh<Dim>,
+                        evolution::dg::subcell::Tags::ActiveGrid, tensor_tag>,
+      db::AddComputeTags<
+          domain::Tags::LogicalCoordinates<Dim>,
+          domain::Tags::MappedCoordinates<
+              domain::Tags::ElementMap<Dim, Frame::Grid>,
+              domain::Tags::Coordinates<Dim, Frame::ElementLogical>>,
+          domain::Tags::CoordinatesMeshVelocityAndJacobiansCompute<
+              domain::CoordinateMaps::Tags::CoordinateMap<Dim, Frame::Grid,
+                                                          Frame::Inertial>>,
+          domain::Tags::InertialFromGridCoordinatesCompute<Dim>,
+          evolution::dg::subcell::Tags::MeshCompute<Dim>,
+          evolution::dg::subcell::Tags::LogicalCoordinatesCompute<Dim>,
+          evolution::dg::subcell::Tags::ObserverMeshCompute<Dim>,
+          domain::Tags::MappedCoordinates<
+              domain::Tags::ElementMap<Dim, Frame::Grid>,
+              evolution::dg::subcell::Tags::Coordinates<Dim,
+                                                        Frame::ElementLogical>,
+              evolution::dg::subcell::Tags::Coordinates>,
+          evolution::dg::subcell::Tags::InertialCoordinatesCompute<
+              ::domain::CoordinateMaps::Tags::CoordinateMap<Dim, Frame::Grid,
+                                                            Frame::Inertial>>,
+          evolution::dg::subcell::Tags::ObserverCoordinatesCompute<
+              Dim, Frame::ElementLogical>,
+          evolution::dg::subcell::Tags::ObserverCoordinatesCompute<
+              Dim, Frame::Inertial>,
+          evolution::dg::subcell::Tags::ObserverInverseJacobianCompute<
+              Dim, Frame::ElementLogical, Frame::Inertial>,
+          deriv_tensor_tag>>(
+      std::move(element_map), grid_to_inertial_map->get_clone(),
+      clone_unique_ptrs(functions_of_time), time, dg_mesh,
+      evolution::dg::subcell::ActiveGrid::Dg, dg_u);
 
-  const auto& du = db::get<typename deriv_tensor_tag::base>(box);
+  const auto& dg_du = db::get<typename deriv_tensor_tag::base>(box);
 
-  // CHECK_ITERABLE_APPROX(du, expected_du.data());
-  for (size_t n = 0; n < du.size(); ++n) {
-    CHECK_ITERABLE_APPROX(du[n], expected_du[n]);
+  for (size_t n = 0; n < dg_du.size(); ++n) {
+    CHECK_ITERABLE_APPROX(dg_du[n], dg_expected_du[n]);
+  }
+
+  db::mutate<evolution::dg::subcell::Tags::ActiveGrid>(
+      [](const auto active_grid_ptr) {
+        *active_grid_ptr = evolution::dg::subcell::ActiveGrid::Subcell;
+      },
+      make_not_null(&box));
+  const auto& sc_x =
+      db::get<Events::Tags::ObserverCoordinates<Dim, Frame::Inertial>>(box);
+  CAPTURE(dg_x);
+  CAPTURE(sc_x);
+  CAPTURE(Dim);
+  CAPTURE(extents_array);
+  const auto sc_u = tensor_tag::f(make_array<Dim>(size_t{1}), sc_x);
+  db::mutate<tensor_tag>([&sc_u](const auto tensor_ptr) { *tensor_ptr = sc_u; },
+                         make_not_null(&box));
+  const auto sc_expected_du = tensor_tag::df(make_array<Dim>(size_t{1}), sc_x);
+  const auto& sc_du = db::get<typename deriv_tensor_tag::base>(box);
+  const Approx local_approx = Approx::custom().epsilon(1e-12).scale(1.0);
+  for (size_t n = 0; n < sc_du.size(); ++n) {
+    CHECK_ITERABLE_CUSTOM_APPROX(sc_du[n], sc_expected_du[n], local_approx);
   }
 }
 
@@ -2457,12 +2531,12 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.PartialDerivs.ComputeItems",
   for (size_t a = 1; a < max_extents[0]; ++a) {
     test_partial_derivatives_tensor_compute_item(
         std::array<size_t, 1>{{a + 1}},
-        domain::make_coordinate_map<Frame::ElementLogical, Frame::Grid>(
+        domain::make_coordinate_map<Frame::BlockLogical, Frame::Grid>(
             Affine{-1.0, 1.0, -0.3, 0.7}));
     for (size_t b = 1; b < max_extents[1]; ++b) {
       test_partial_derivatives_tensor_compute_item(
           std::array<size_t, 2>{{a + 1, b + 1}},
-          domain::make_coordinate_map<Frame::ElementLogical, Frame::Grid>(
+          domain::make_coordinate_map<Frame::BlockLogical, Frame::Grid>(
               Affine2D{Affine{-1.0, 1.0, -0.3, 0.7},
                        Affine{-1.0, 1.0, 0.3, 0.55}}));
       for (size_t c = 1; a < max_extents[0] / 2 and b < max_extents[1] / 2 and
@@ -2470,7 +2544,7 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.PartialDerivs.ComputeItems",
            ++c) {
         test_partial_derivatives_tensor_compute_item(
             std::array<size_t, 3>{{a + 1, b + 1, c + 1}},
-            domain::make_coordinate_map<Frame::ElementLogical, Frame::Grid>(
+            domain::make_coordinate_map<Frame::BlockLogical, Frame::Grid>(
                 Affine3D{Affine{-1.0, 1.0, -0.3, 0.7},
                          Affine{-1.0, 1.0, 0.3, 0.55},
                          Affine{-1.0, 1.0, 2.3, 2.8}}));

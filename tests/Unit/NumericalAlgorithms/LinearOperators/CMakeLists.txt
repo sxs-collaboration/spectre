@@ -23,6 +23,7 @@ target_link_libraries(
   PRIVATE
   Actions
   DataStructures
+  DgSubcell
   DiscontinuousGalerkin
   Domain
   DomainCreators
