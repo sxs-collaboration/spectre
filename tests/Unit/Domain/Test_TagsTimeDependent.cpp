@@ -343,19 +343,23 @@ void test() {
           expected_inv_jacobian);
 
       CHECK_FALSE(db::get<domain::Tags::MeshVelocity<Dim>>(box));
-      CHECK_THROWS_WITH(
+      InverseJacobian<DataVector, Dim, Frame::Grid, Frame::Inertial>
+          expected_identity_inv_jac{num_pts, 0.0};
+      Jacobian<DataVector, Dim, Frame::Grid, Frame::Inertial>
+          expected_identity_jac{num_pts, 0.0};
+      for (size_t i = 0; i < Dim; ++i) {
+        expected_identity_inv_jac.get(i, i) = DataVector{num_pts, 1.0};
+        expected_identity_jac.get(i, i) = DataVector{num_pts, 1.0};
+      }
+      CHECK_ITERABLE_APPROX(
           (db::get<
               domain::Tags::InverseJacobian<Dim, Frame::Grid, Frame::Inertial>>(
               box)),
-          Catch::Matchers::ContainsSubstring(
-              "Should not request Grid to Inertial jacobian for a "
-              "non-moving mesh because it is the identity."));
-      CHECK_THROWS_WITH(
+          expected_identity_inv_jac);
+      CHECK_ITERABLE_APPROX(
           (db::get<domain::Tags::Jacobian<Dim, Frame::Grid, Frame::Inertial>>(
               box)),
-          Catch::Matchers::ContainsSubstring(
-              "Should not request Grid to Inertial jacobian for a "
-              "non-moving mesh because it is the identity."));
+          expected_identity_jac);
     }
   };
   check_helper(3.0);

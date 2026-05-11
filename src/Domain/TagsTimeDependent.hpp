@@ -109,8 +109,8 @@ struct InertialFromGridCoordinatesCompute
 };
 
 /// Computes the Grid to Inertial inverse Jacobian from
-/// `CoordinatesVelocityAndJacobians`. If the mesh is not moving, requesting
-/// this tag will throw an error because the Jacobian is just the identity.
+/// `CoordinatesVelocityAndJacobians`. If the mesh is not moving, sets the
+/// Jacobian to the identity.
 template <size_t Dim>
 struct GridToInertialInverseJacobian
     : Tags::InverseJacobian<Dim, Frame::Grid, Frame::Inertial>,
@@ -127,14 +127,16 @@ struct GridToInertialInverseJacobian
           ::InverseJacobian<DataVector, Dim, Frame::Grid, Frame::Inertial>,
           ::Jacobian<DataVector, Dim, Frame::Grid, Frame::Inertial>,
           tnsr::I<DataVector, Dim, Frame::Inertial>>>&
-          grid_to_inertial_quantities);
+          grid_to_inertial_quantities,
+      const tnsr::I<DataVector, Dim, Frame::Grid>&);
 
-  using argument_tags = tmpl::list<CoordinatesMeshVelocityAndJacobians<Dim>>;
+  using argument_tags = tmpl::list<CoordinatesMeshVelocityAndJacobians<Dim>,
+                                   Tags::Coordinates<Dim, Frame::Grid>>;
 };
 
 /// Computes the Grid to Inertial Jacobian from
-/// `CoordinatesVelocityAndJacobians`. If the mesh is not moving, requesting
-/// this tag will throw an error because the Jacobian is just the identity.
+/// `CoordinatesVelocityAndJacobians`. If the mesh is not moving, sets the
+/// Jacobian to the identity.
 template <size_t Dim>
 struct GridToInertialJacobian
     : Tags::Jacobian<Dim, Frame::Grid, Frame::Inertial>,
@@ -150,9 +152,11 @@ struct GridToInertialJacobian
           ::InverseJacobian<DataVector, Dim, Frame::Grid, Frame::Inertial>,
           ::Jacobian<DataVector, Dim, Frame::Grid, Frame::Inertial>,
           tnsr::I<DataVector, Dim, Frame::Inertial>>>&
-          grid_to_inertial_quantities);
+          grid_to_inertial_quantities,
+      const tnsr::I<DataVector, Dim, Frame::Grid>&);
 
-  using argument_tags = tmpl::list<CoordinatesMeshVelocityAndJacobians<Dim>>;
+  using argument_tags = tmpl::list<CoordinatesMeshVelocityAndJacobians<Dim>,
+                                   Tags::Coordinates<Dim, Frame::Grid>>;
 };
 
 /// Computes the Logical to Inertial inverse Jacobian from
