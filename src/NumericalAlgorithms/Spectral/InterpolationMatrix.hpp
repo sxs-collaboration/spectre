@@ -12,6 +12,7 @@ class Mesh;
 namespace Spectral {
 enum class Basis : uint8_t;
 enum class Quadrature : uint8_t;
+enum class Parity : uint8_t;
 }  // namespace Spectral
 /// \endcond
 
@@ -39,4 +40,14 @@ Matrix interpolation_matrix(size_t num_points, const T& target_points);
  */
 template <typename T>
 Matrix interpolation_matrix(const Mesh<1>& mesh, const T& target_points);
+
+/*!
+ * \brief  %Matrix used to interpolate to the \p target_points for bases with
+ * a spectral space that depends on parity, i.e. ZernikeB1.
+ *
+ * \see interpolation_matrix(size_t, const T&)
+ */
+template <Basis BasisType, Quadrature QuadratureType, typename T>
+Matrix interpolation_matrix(size_t num_points, const T& target_points,
+                            Spectral::Parity parity);
 }  // namespace Spectral

@@ -5,6 +5,7 @@
 
 #include <cmath>
 #include <cstddef>
+#include <vector>
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Matrix.hpp"
@@ -126,7 +127,7 @@ Matrix fourier_interpolation_matrix(const TargetDataType& x_target,
   template Matrix fourier_interpolation_matrix(const DTYPE(data) & x_target,  \
                                                const size_t n_source_points);
 
-GENERATE_INSTANTIATIONS(INSTANTIATE, (double, DataVector))
+GENERATE_INSTANTIATIONS(INSTANTIATE, (double, DataVector, std::vector<double>))
 
 #undef DTYPE
 #undef INSTANTIATE

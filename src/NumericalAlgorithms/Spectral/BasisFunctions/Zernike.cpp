@@ -218,6 +218,37 @@ Matrix Zernike<Dim>::differentiation_matrix(const size_t num_points,
   return extended_diff_matrix;
 }
 
+template <size_t Dim>
+template <typename T>
+Matrix Zernike<Dim>::interpolation_matrix(const size_t num_points,
+                                          const T& target_points,
+                                          const Parity parity) {
+  ASSERT(parity != Parity::Uninitialized,
+         "Passed parity must be set to either Even or Odd");
+  // Mirror xi around the symmetry point xi=-1 (r=0): xi' = -xi - 2.
+  DataVector extended_collocation_pts(2 * num_points);
+  {
+    const DataVector& pts =
+        Zernike<Dim>::compute_collocation_points_and_weights(num_points).first;
+    for (size_t i = 0; i < num_points; ++i) {
+      extended_collocation_pts[i] = pts[i];
+      extended_collocation_pts[i + num_points] = -pts[i] - 2.0;
+    }
+  }
+  // Fold the mirrored half back
+  const double sign = parity == Parity::Odd ? -1.0 : 1.0;
+  const Matrix extended =
+      fornberg_interpolation_matrix(target_points, extended_collocation_pts);
+  const size_t num_target = extended.rows();
+  Matrix result(num_target, num_points);
+  for (size_t k = 0; k < num_target; ++k) {
+    for (size_t j = 0; j < num_points; ++j) {
+      result(k, j) = extended(k, j) + sign * extended(k, j + num_points);
+    }
+  }
+  return result;
+}
+
 // Specializations of function templates defined in the Spectral directory
 
 template <>
@@ -275,7 +306,6 @@ std::pair<DataVector, DataVector> compute_collocation_points_and_weights<
   return Zernike<3>::compute_collocation_points_and_weights(num_points);
 }
 
-
 #if defined(__GNUC__) && !defined(__clang__)
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wsuggest-attribute=noreturn"
@@ -327,14 +357,21 @@ DataVector compute_basis_function_value<Basis::ZernikeB3>(
 #define GET_DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 #define GET_TYPE(data) BOOST_PP_TUPLE_ELEM(1, data)
 
+#define INSTANTIATE_INTERPOLATION_MATRICES(r, data)                  \
+  template Matrix Zernike<GET_DIM(data)>::interpolation_matrix(      \
+      const size_t num_points, const GET_TYPE(data) & target_points, \
+      const Parity parity);
+
 #define INSTANTIATE_BASIS_FUNCTION_VALUE(r, data)                       \
   template GET_TYPE(data) Zernike<GET_DIM(data)>::basis_function_value( \
       const size_t n, const size_t m, const GET_TYPE(data) & xi);
 
+GENERATE_INSTANTIATIONS(INSTANTIATE_INTERPOLATION_MATRICES, (1, 2, 3),
+                        (double, DataVector, std::vector<double>))
 GENERATE_INSTANTIATIONS(INSTANTIATE_BASIS_FUNCTION_VALUE, (1, 2, 3),
                         (double, DataVector))
 
-#undef INSTANTIATE_BASIS_FUNCTION_VALUE
+#undef INSTANTIATE_DIM_AND_TYPE
 #undef GET_TYPE
 
 #define INSTANTIATE_DIFF_MATRICES(r, data)                        \

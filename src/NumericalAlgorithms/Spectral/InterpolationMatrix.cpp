@@ -11,11 +11,13 @@
 #include "NumericalAlgorithms/Spectral/BarycentricWeights.hpp"
 #include "NumericalAlgorithms/Spectral/Basis.hpp"
 #include "NumericalAlgorithms/Spectral/BasisFunctions/Fourier.hpp"
+#include "NumericalAlgorithms/Spectral/BasisFunctions/Zernike.hpp"
 #include "NumericalAlgorithms/Spectral/CollocationPoints.hpp"
 #include "NumericalAlgorithms/Spectral/GetSpectralQuantityForMesh.hpp"
 #include "NumericalAlgorithms/Spectral/MaximumNumberOfPoints.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/MinimumNumberOfPoints.hpp"
+#include "NumericalAlgorithms/Spectral/Parity.hpp"
 #include "NumericalAlgorithms/Spectral/Quadrature.hpp"
 #include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/EqualWithinRoundoff.hpp"
@@ -96,6 +98,20 @@ Matrix interpolation_matrix(const Mesh<1>& mesh, const T& target_points) {
       mesh);
 }
 
+template <Basis BasisType, Quadrature QuadratureType, typename T>
+Matrix interpolation_matrix(size_t num_points, const T& target_points,
+                            const Spectral::Parity parity) {
+  static_assert(BasisType == Basis::ZernikeB1,
+                "Only Basis::ZernikeB1 is supported by this overload; for "
+                "ZernikeB2/ZernikeB3 use Irregular or Cardinal interpolants.");
+  static_assert(
+      QuadratureType == Quadrature::GaussRadauUpper,
+      "Zernike bases are only instantiated with GaussRadauUpper quadrature.");
+  ASSERT(parity != Parity::Uninitialized,
+         "Parity must be set to either Even or Odd");
+  return Zernike<1>::interpolation_matrix(num_points, target_points, parity);
+}
+
 template Matrix interpolation_matrix<Basis::Chebyshev, Quadrature::Gauss>(
     size_t, const std::vector<double>&);
 template Matrix
@@ -124,4 +140,14 @@ template Matrix Spectral::interpolation_matrix(const Mesh<1>&,
 template Matrix Spectral::interpolation_matrix(const Mesh<1>&,
                                                const std::vector<double>&);
 template Matrix Spectral::interpolation_matrix(const Mesh<1>&, const double&);
+
+template Matrix
+interpolation_matrix<Basis::ZernikeB1, Quadrature::GaussRadauUpper>(
+    size_t, const std::vector<double>&, Spectral::Parity);
+template Matrix
+interpolation_matrix<Basis::ZernikeB1, Quadrature::GaussRadauUpper>(
+    size_t, const DataVector&, Spectral::Parity);
+template Matrix
+interpolation_matrix<Basis::ZernikeB1, Quadrature::GaussRadauUpper>(
+    size_t, const double&, Spectral::Parity);
 }  // namespace Spectral
