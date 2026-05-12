@@ -52,6 +52,7 @@ EquationOfState: &eos
         PolytropicConstant: 123.6
         PolytropicExponent: 2.
       ThermalAdiabaticIndex: 2.0
+      MinTemperature: 1.e-16
 
 DomainCreator:
   BinaryCompactObject:

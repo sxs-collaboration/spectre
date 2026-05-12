@@ -133,6 +133,7 @@ void Tabulated3D<IsRelativistic>::initialize(const h5::EosTable& spectre_eos) {
   auto pressure = spectre_eos.read_quantity("pressure");
   auto eps = spectre_eos.read_quantity("specific internal energy");
   auto cs2 = spectre_eos.read_quantity("sound speed squared");
+  auto specific_entropy = spectre_eos.read_quantity("specific entropy");
 
   auto mu_l = spectre_eos.read_quantity("lepton chemical potential");
   //  WILL BE NEEDED FOR FUTURE PR
@@ -180,16 +181,20 @@ void Tabulated3D<IsRelativistic>::initialize(const h5::EosTable& spectre_eos) {
 
         double* table_point = &(table_data[index_tab3D * NumberOfVars]);
 
+        // NOLINTBEGIN(cppcoreguidelines-pro-bounds-pointer-arithmetic)
         table_point[Pressure] =
             std::log(press_MeV_to_geom * pressure[index_spectre]);
         table_point[Epsilon] = std::log(eps[index_spectre] - energy_shift);
         table_point[CsSquared] = cs2[index_spectre];
         table_point[DeltaMu] = mu_l[index_spectre];
+        table_point[SpecificEntropy] =
+            std::log(specific_entropy[index_spectre]);
 
         // Determine specific enthalpy minimum
         double h = 1. + table_point[Epsilon] +
                    table_point[Pressure] / std::exp(log_density[iR]);
         enthalpy_minimum = std::min(enthalpy_minimum, h);
+        // NOLINTEND(cppcoreguidelines-pro-bounds-pointer-arithmetic)
       }
     }
   }
@@ -495,6 +500,61 @@ Tabulated3D<IsRelativistic>::temperature_from_density_and_energy_impl(
     }
   }
   return temperature;
+}
+
+template <bool IsRelativistic>
+template <class DataType>
+Scalar<DataType>
+Tabulated3D<IsRelativistic>::specific_entropy_from_density_and_energy_impl(
+    const Scalar<DataType>& rest_mass_density,
+    const Scalar<DataType>& specific_internal_energy,
+    const Scalar<DataType>& electron_fraction) const {
+  auto temperature = temperature_from_density_and_energy_impl(
+      rest_mass_density, specific_internal_energy, electron_fraction);
+
+  return specific_entropy_from_density_and_temperature_impl(
+      rest_mass_density, temperature, electron_fraction);
+}
+
+template <bool IsRelativistic>
+template <class DataType>
+Scalar<DataType>
+Tabulated3D<IsRelativistic>::specific_entropy_from_density_and_temperature_impl(
+    const Scalar<DataType>& rest_mass_density,
+    const Scalar<DataType>& temperature,
+    const Scalar<DataType>& electron_fraction) const {
+  Scalar<DataType> converted_electron_fraction;
+  Scalar<DataType> log_rest_mass_density;
+  Scalar<DataType> log_temperature;
+
+  convert_to_table_quantities(
+      make_not_null(&converted_electron_fraction),
+      make_not_null(&log_rest_mass_density), make_not_null(&log_temperature),
+      electron_fraction, rest_mass_density, temperature);
+
+  Scalar<DataType> specific_entropy =
+      make_with_value<Scalar<DataType>>(get(rest_mass_density), 0.0);
+
+  if constexpr (std::is_same_v<DataType, double>) {
+    auto weights = interpolator_.get_weights(get(log_temperature),
+                                             get(log_rest_mass_density),
+                                             get(converted_electron_fraction));
+    auto interpolated_state =
+        interpolator_.template interpolate<SpecificEntropy>(weights);
+    get(specific_entropy) = std::exp(interpolated_state[0]);
+
+  } else if constexpr (std::is_same_v<DataType, DataVector>) {
+    for (size_t s = 0; s < get(electron_fraction).size(); ++s) {
+      auto weights = interpolator_.get_weights(
+          get(log_temperature)[s], get(log_rest_mass_density)[s],
+          get(converted_electron_fraction)[s]);
+      auto interpolated_state =
+          interpolator_.template interpolate<SpecificEntropy>(weights);
+      get(specific_entropy)[s] = std::exp(interpolated_state[0]);
+    }
+  }
+
+  return specific_entropy;
 }
 
 template <bool IsRelativistic>

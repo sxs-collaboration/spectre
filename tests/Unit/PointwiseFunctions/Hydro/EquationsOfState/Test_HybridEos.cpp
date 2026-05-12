@@ -33,15 +33,16 @@ void check_random_polytrope() {
       EquationsOfState::HybridEos<
           EquationsOfState::PolytropicFluid<IsRelativistic>>{
           EquationsOfState::PolytropicFluid<IsRelativistic>{100.0, 4.0 / 3.0},
-          5.0 / 3.0},
-      "HybridEos", "hybrid_polytrope", d_for_size, 100.0, 4.0 / 3.0, 5.0 / 3.0);
+          5.0 / 3.0, 1.e-3},
+      "HybridEos", "hybrid_polytrope", d_for_size, 100.0, 4.0 / 3.0, 5.0 / 3.0,
+      1.e-3);
   TestHelpers::EquationsOfState::check(
       EquationsOfState::HybridEos<
           EquationsOfState::PolytropicFluid<IsRelativistic>>{
           EquationsOfState::PolytropicFluid<IsRelativistic>{100.0, 4.0 / 3.0},
-          5.0 / 3.0},
-      "HybridEos", "hybrid_polytrope", dv_for_size, 100.0, 4.0 / 3.0,
-      5.0 / 3.0);
+          5.0 / 3.0, 1.e-3},
+      "HybridEos", "hybrid_polytrope", dv_for_size, 100.0, 4.0 / 3.0, 5.0 / 3.0,
+      1.e-3);
 }
 
 template <bool IsRelativistic>
@@ -95,19 +96,38 @@ void check_exact_polytrope() {
   CHECK(not eos.is_barotropic());
 }
 
-template <bool IsRelativistic>
+template <bool IsRelativistic, bool NonZeroMinTemp>
 void check_bounds() {
   const auto cold_eos =
       EquationsOfState::PolytropicFluid<IsRelativistic>{100.0, 1.5};
+  auto min_temperature = 0.0;
+  if constexpr (NonZeroMinTemp) {
+    const auto seed = std::random_device{}();
+    MAKE_GENERATOR(generator, seed);
+    CAPTURE(seed);
+    auto distribution = std::uniform_real_distribution<>{1.e-15, 1.e-5};
+    min_temperature = distribution(generator);
+  }
+  const auto thermal_adiabatic_index = 1.5;
+  CAPTURE(min_temperature);
+  CAPTURE(thermal_adiabatic_index);
   const EquationsOfState::HybridEos<
       EquationsOfState::PolytropicFluid<IsRelativistic>>
-      eos{cold_eos, 1.5};
+      eos{cold_eos, thermal_adiabatic_index, min_temperature};
   CHECK(0.0 == eos.rest_mass_density_lower_bound());
-  CHECK(200.0 == eos.specific_internal_energy_lower_bound(1.0));
+  CHECK(min_temperature == eos.temperature_lower_bound());
+  CHECK(
+      get(cold_eos.specific_internal_energy_from_density(Scalar<double>{1.0})) +
+          min_temperature / (thermal_adiabatic_index - 1) ==
+      eos.specific_internal_energy_lower_bound(1.0));
   if constexpr (IsRelativistic) {
-    CHECK(1.0 == eos.specific_enthalpy_lower_bound());
+    CHECK(1.0 + (thermal_adiabatic_index * min_temperature) /
+                    (thermal_adiabatic_index - 1.0) ==
+          eos.specific_enthalpy_lower_bound());
   } else {
-    CHECK(0.0 == eos.specific_enthalpy_lower_bound());
+    CHECK((thermal_adiabatic_index * min_temperature) /
+              (thermal_adiabatic_index - 1.0) ==
+          eos.specific_enthalpy_lower_bound());
   }
   const double max_double = std::numeric_limits<double>::max();
   CHECK(max_double == eos.rest_mass_density_upper_bound());
@@ -126,6 +146,8 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.EquationsOfState.HybridEos",
   check_random_polytrope<false>();
   check_exact_polytrope<true>();
   check_exact_polytrope<false>();
-  check_bounds<true>();
-  check_bounds<false>();
+  check_bounds<true, true>();
+  check_bounds<true, false>();
+  check_bounds<false, true>();
+  check_bounds<false, false>();
 }

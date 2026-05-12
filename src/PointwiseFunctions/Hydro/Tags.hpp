@@ -275,6 +275,12 @@ struct SpatialVelocitySquared : db::SimpleTag {
   using type = Scalar<DataType>;
 };
 
+/// The specific entropy \f$s\f$.
+template <typename DataType>
+struct SpecificEntropy : db::SimpleTag {
+  using type = Scalar<DataType>;
+};
+
 /// The relativistic specific enthalpy \f$h\f$.
 template <typename DataType>
 struct SpecificEnthalpy : db::SimpleTag {

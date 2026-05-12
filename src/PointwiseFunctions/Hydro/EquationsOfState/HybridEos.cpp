@@ -17,9 +17,11 @@
 namespace EquationsOfState {
 template <typename ColdEquationOfState>
 HybridEos<ColdEquationOfState>::HybridEos(ColdEquationOfState cold_eos,
-                                          const double thermal_adiabatic_index)
+                                          const double thermal_adiabatic_index,
+                                          const double min_temperature)
     : cold_eos_(std::move(cold_eos)),
-      thermal_adiabatic_index_(thermal_adiabatic_index) {}
+      thermal_adiabatic_index_(thermal_adiabatic_index),
+      min_temperature_(min_temperature) {}
 
 EQUATION_OF_STATE_MEMBER_DEFINITIONS(template <typename ColdEquationOfState>,
                                      HybridEos<ColdEquationOfState>, double, 2)
@@ -47,7 +49,8 @@ template <typename ColdEquationOfState>
 bool HybridEos<ColdEquationOfState>::operator==(
     const HybridEos<ColdEquationOfState>& rhs) const {
   return cold_eos_ == rhs.cold_eos_ and
-         thermal_adiabatic_index_ == rhs.thermal_adiabatic_index_;
+         thermal_adiabatic_index_ == rhs.thermal_adiabatic_index_ and
+         min_temperature_ == rhs.min_temperature_;
 }
 
 template <typename ColdEquationOfState>
@@ -73,6 +76,7 @@ void HybridEos<ColdEquationOfState>::pup(PUP::er& p) {
   EquationOfState<is_relativistic, 2>::pup(p);
   p | cold_eos_;
   p | thermal_adiabatic_index_;
+  p | min_temperature_;
 }
 
 template <typename ColdEquationOfState>
@@ -147,6 +151,52 @@ HybridEos<ColdEquationOfState>::temperature_from_density_and_energy_impl(
 
 template <typename ColdEquationOfState>
 template <class DataType>
+Scalar<DataType>
+HybridEos<ColdEquationOfState>::specific_entropy_from_density_and_energy_impl(
+    const Scalar<DataType>& rest_mass_density,
+    const Scalar<DataType>& specific_internal_energy) const {
+  using std::max;
+  DataType thermal_specific_internal_energy =
+      max(get(specific_internal_energy) -
+              get(cold_eos_.specific_internal_energy_from_density(
+                  rest_mass_density)),
+          0.0);
+  if constexpr (std::is_same_v<DataType, double>) {
+    return Scalar<double>{specific_entropy_from_density_and_thermal_energy(
+        get(rest_mass_density), thermal_specific_internal_energy)};
+  } else if constexpr (std::is_same_v<DataType, DataVector>) {
+    auto result = make_with_value<Scalar<DataVector>>(rest_mass_density, 0.0);
+    for (size_t i = 0; i < get(result).size(); ++i) {
+      get(result)[i] = specific_entropy_from_density_and_thermal_energy(
+          get(rest_mass_density)[i], thermal_specific_internal_energy[i]);
+    }
+    return result;
+  }
+}
+
+template <typename ColdEquationOfState>
+template <class DataType>
+Scalar<DataType> HybridEos<ColdEquationOfState>::
+    specific_entropy_from_density_and_temperature_impl(
+        const Scalar<DataType>& rest_mass_density,
+        const Scalar<DataType>& temperature) const {
+  if constexpr (std::is_same_v<DataType, double>) {
+    return Scalar<double>{specific_entropy_from_density_and_thermal_energy(
+        get(rest_mass_density),
+        get(temperature) / (thermal_adiabatic_index_ - 1.0))};
+  } else if constexpr (std::is_same_v<DataType, DataVector>) {
+    auto result = make_with_value<Scalar<DataVector>>(rest_mass_density, 0.0);
+    for (size_t i = 0; i < get(result).size(); ++i) {
+      get(result)[i] = specific_entropy_from_density_and_thermal_energy(
+          get(rest_mass_density)[i],
+          get(temperature)[i] / (thermal_adiabatic_index_ - 1.0));
+    }
+    return result;
+  }
+}
+
+template <typename ColdEquationOfState>
+template <class DataType>
 Scalar<DataType> HybridEos<ColdEquationOfState>::
     specific_internal_energy_from_density_and_temperature_impl(
         const Scalar<DataType>& rest_mass_density,
@@ -187,6 +237,23 @@ Scalar<DataType> HybridEos<ColdEquationOfState>::
           max((get(specific_internal_energy) -
                get(cold_eos_.specific_internal_energy_from_density(
                    rest_mass_density))), 0.0)};
+}
+
+template <typename ColdEquationOfState>
+double HybridEos<ColdEquationOfState>::
+    specific_entropy_from_density_and_thermal_energy(
+        const double rest_mass_density,
+        const double thermal_specific_internal_energy) const {
+  using std::max;
+  const double floored_thermal_specific_internal_energy =
+      max(min_temperature_ / (thermal_adiabatic_index_ - 1.0),
+          thermal_specific_internal_energy);
+  ASSERT(floored_thermal_specific_internal_energy > 0.0,
+         "The entropy is only well defined for positive nonzero temperatures. "
+         "Try setting the minimum temperature to be greater than 0.");
+  return log(floored_thermal_specific_internal_energy /
+             pow(rest_mass_density, thermal_adiabatic_index_ - 1.0)) /
+         (thermal_adiabatic_index_ - 1.0);
 }
 }  // namespace EquationsOfState
 

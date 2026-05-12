@@ -84,6 +84,26 @@ Barotropic3D<ColdEquilEos>::temperature_from_density_and_energy_impl(
   return make_with_value<Scalar<DataType>>(rest_mass_density, 0.0);
 }
 
+template <typename ColdEos>
+template <class DataType>
+Scalar<DataType>
+Barotropic3D<ColdEos>::specific_entropy_from_density_and_energy_impl(
+    const Scalar<DataType>& rest_mass_density,
+    const Scalar<DataType>& /*specific_internal_energy*/,
+    const Scalar<DataType>& /*electron_fraction*/) const {
+  return underlying_eos_.specific_entropy_from_density(rest_mass_density);
+}
+
+template <typename ColdEos>
+template <class DataType>
+Scalar<DataType>
+Barotropic3D<ColdEos>::specific_entropy_from_density_and_temperature_impl(
+    const Scalar<DataType>& rest_mass_density,
+    const Scalar<DataType>& /*temperature*/,
+    const Scalar<DataType>& /*electron_fraction*/) const {
+  return underlying_eos_.specific_entropy_from_density(rest_mass_density);
+}
+
 template <typename ColdEquilEos>
 template <class DataType>
 Scalar<DataType> Barotropic3D<ColdEquilEos>::

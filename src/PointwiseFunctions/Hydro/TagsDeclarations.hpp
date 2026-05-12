@@ -63,6 +63,8 @@ struct SpatialVelocityOneForm;
 template <typename DataType>
 struct SpatialVelocitySquared;
 template <typename DataType>
+struct SpecificEntropy;
+template <typename DataType>
 struct SpecificEnthalpy;
 template <typename DataType>
 struct SpecificInternalEnergy;

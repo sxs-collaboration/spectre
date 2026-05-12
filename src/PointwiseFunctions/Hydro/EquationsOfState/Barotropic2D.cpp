@@ -80,6 +80,24 @@ Scalar<DataType> Barotropic2D<ColdEos>::pressure_from_density_and_enthalpy_impl(
 template <typename ColdEos>
 template <class DataType>
 Scalar<DataType>
+Barotropic2D<ColdEos>::specific_entropy_from_density_and_energy_impl(
+    const Scalar<DataType>& rest_mass_density,
+    const Scalar<DataType>& /*specific_internal_energy*/) const {
+  return underlying_eos_.specific_entropy_from_density(rest_mass_density);
+}
+
+template <typename ColdEos>
+template <class DataType>
+Scalar<DataType>
+Barotropic2D<ColdEos>::specific_entropy_from_density_and_temperature_impl(
+    const Scalar<DataType>& rest_mass_density,
+    const Scalar<DataType>& /*temperature*/) const {
+  return underlying_eos_.specific_entropy_from_density(rest_mass_density);
+}
+
+template <typename ColdEos>
+template <class DataType>
+Scalar<DataType>
 Barotropic2D<ColdEos>::specific_internal_energy_from_density_and_pressure_impl(
     const Scalar<DataType>& rest_mass_density,
     const Scalar<DataType>& /*pressure*/) const {

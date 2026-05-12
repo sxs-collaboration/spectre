@@ -1,6 +1,8 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
+import math
+
 
 def dark_energy_fluid_pressure_from_density_and_energy(
     rest_mass_density, specific_internal_energy, parameter_w
@@ -29,6 +31,24 @@ def dark_energy_fluid_temperature_from_density_and_energy(
     rest_mass_density, specific_internal_energy, parameter_w
 ):
     return parameter_w * specific_internal_energy
+
+
+def dark_energy_fluid_specific_entropy_from_density_and_energy(
+    rest_mass_density, specific_internal_energy, parameter_w
+):
+    return (
+        math.log(specific_internal_energy / rest_mass_density**parameter_w)
+        / parameter_w
+    )
+
+
+def dark_energy_fluid_specific_entropy_from_density_and_temperature(
+    rest_mass_density, temperature, parameter_w
+):
+    return (
+        math.log(temperature / (parameter_w * rest_mass_density**parameter_w))
+        / parameter_w
+    )
 
 
 def dark_energy_fluid_specific_internal_energy_from_density_and_pressure(

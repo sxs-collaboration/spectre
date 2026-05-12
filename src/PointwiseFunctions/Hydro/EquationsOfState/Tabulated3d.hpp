@@ -69,7 +69,14 @@ class Tabulated3D : public EquationOfState<IsRelativistic, 3> {
   using options = tmpl::list<TableFilename, TableSubFilename>;
 
   /// Fields stored in the table
-  enum : size_t { Epsilon = 0, Pressure, CsSquared, DeltaMu, NumberOfVars };
+  enum : size_t {
+    Epsilon = 0,
+    Pressure,
+    CsSquared,
+    DeltaMu,
+    SpecificEntropy,
+    NumberOfVars
+  };
 
   Tabulated3D() = default;
   Tabulated3D(const Tabulated3D&) = default;
