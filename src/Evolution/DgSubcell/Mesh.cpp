@@ -88,9 +88,10 @@ Mesh<Dim> mesh(const Mesh<Dim>& dg_mesh) {
     if (dg_mesh.basis(1) == Spectral::Basis::Cartoon and
         dg_mesh.basis(2) == Spectral::Basis::Cartoon) {
       ASSERT(dg_mesh.basis(0) == Spectral::Basis::Legendre or
-                 dg_mesh.basis(0) == Spectral::Basis::Chebyshev,
+                 dg_mesh.basis(0) == Spectral::Basis::Chebyshev or
+                 dg_mesh.basis(0) == Spectral::Basis::ZernikeB1,
              "The DG mesh that is being converted to subcell can only mix "
-             "Legendre or Chebyshev with Cartoon, but got "
+             "Legendre, Chebyshev, or ZernikeB1 with Cartoon, but got "
                  << dg_mesh);
       ASSERT(dg_mesh.slice_away(0).quadrature() ==
                  make_array<2>(Spectral::Quadrature::SphericalSymmetry),
@@ -102,20 +103,33 @@ Mesh<Dim> mesh(const Mesh<Dim>& dg_mesh) {
                       Spectral::Quadrature::SphericalSymmetry,
                       Spectral::Quadrature::SphericalSymmetry}};
     } else if (dg_mesh.basis(2) == Spectral::Basis::Cartoon) {
-      ASSERT(dg_mesh.slice_away(2).basis() ==
-                     make_array<2>(Spectral::Basis::Legendre) or
-                 dg_mesh.slice_away(2).basis() ==
-                     make_array<2>(Spectral::Basis::Chebyshev),
+      ASSERT((dg_mesh.slice_away(2).basis() ==
+                  make_array<2>(Spectral::Basis::Legendre) or
+              dg_mesh.slice_away(2).basis() ==
+                  make_array<2>(Spectral::Basis::Chebyshev) or
+              dg_mesh.slice_away(2).basis() ==
+                  std::array{Spectral::Basis::ZernikeB1,
+                             Spectral::Basis::Legendre} or
+              dg_mesh.slice_away(2).basis() ==
+                  std::array{Spectral::Basis::ZernikeB1,
+                             Spectral::Basis::Chebyshev}),
              "The DG mesh that is being converted to subcell can only mix "
-             "Legendre or Chebyshev with Cartoon, but got "
+             "Legendre, Chebyshev, or ZernikeB1 with Cartoon, but got "
                  << dg_mesh);
       ASSERT(
-          dg_mesh.slice_away(2).quadrature() ==
-                  make_array<2>(Spectral::Quadrature::Gauss) or
-              dg_mesh.slice_away(2).quadrature() ==
-                  make_array<2>(Spectral::Quadrature::GaussLobatto),
+          (dg_mesh.slice_away(2).quadrature() ==
+               make_array<2>(Spectral::Quadrature::Gauss) or
+           dg_mesh.slice_away(2).quadrature() ==
+               make_array<2>(Spectral::Quadrature::GaussLobatto) or
+           dg_mesh.slice_away(2).quadrature() ==
+               std::array{Spectral::Quadrature::GaussRadauUpper,
+                          Spectral::Quadrature::Gauss} or
+           dg_mesh.slice_away(2).quadrature() ==
+               std::array{Spectral::Quadrature::GaussRadauUpper,
+                          Spectral::Quadrature::GaussLobatto}),
           "The DG quadrature for computing the subcell mesh must be Gauss or "
-          "GaussLobatto with a Cartoon quadrature but got DG mesh"
+          "GaussLobatto (can have ZernikeB1 in first dimension) with a Cartoon "
+          "quadrature but got DG mesh"
               << dg_mesh);
       return Mesh<3>{
           extents,
