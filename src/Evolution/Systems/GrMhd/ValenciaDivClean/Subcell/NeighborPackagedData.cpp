@@ -42,6 +42,7 @@
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Subcell/ComputeFluxes.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/System.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
+#include "NumericalAlgorithms/Spectral/Parity.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
@@ -180,7 +181,8 @@ DirectionalIdMap<3, DataVector> NeighborPackagedData::apply(
             evolution::dg::subcell::fd::project(
                 make_not_null(&mesh_velocity_on_subcell_face.value().get(i)),
                 mesh_velocity_on_dg_face.get(i), dg_face_mesh,
-                subcell_face_extents);
+                subcell_face_extents,
+                i == 0 ? Spectral::Parity::Odd : Spectral::Parity::Even);
           }
         }
 
@@ -232,7 +234,8 @@ DirectionalIdMap<3, DataVector> NeighborPackagedData::apply(
               dg_normal_covector.get(i),
               dg_mesh.slice_away(mortar_id.direction().dimension()),
               subcell_mesh.extents().slice_away(
-                  mortar_id.direction().dimension()));
+                  mortar_id.direction().dimension()),
+              i == 0 ? Spectral::Parity::Odd : Spectral::Parity::Even);
         }
 
         // Compute the packaged data

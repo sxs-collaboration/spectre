@@ -4,8 +4,10 @@
 #include "Evolution/DgSubcell/NeighborRdmpAndVolumeData.hpp"
 
 #include <algorithm>
+#include <cstddef>
 #include <functional>
 #include <iterator>
+#include <optional>
 #include <utility>
 
 #include "DataStructures/ApplyMatrices.hpp"
@@ -15,21 +17,156 @@
 #include "Domain/Structure/DirectionalId.hpp"
 #include "Domain/Structure/DirectionalIdMap.hpp"
 #include "Domain/Structure/Element.hpp"
-#include "Domain/Structure/ElementId.hpp"
-#include "Domain/Structure/OrientationMapHelpers.hpp"
 #include "Evolution/DgSubcell/GhostData.hpp"
 #include "Evolution/DgSubcell/Matrices.hpp"
 #include "Evolution/DgSubcell/Mesh.hpp"
 #include "NumericalAlgorithms/Interpolation/IrregularInterpolant.hpp"
 #include "NumericalAlgorithms/Spectral/Basis.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
+#include "NumericalAlgorithms/Spectral/Parity.hpp"
 #include "NumericalAlgorithms/Spectral/Quadrature.hpp"
+#include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
+#include "Utilities/Gsl.hpp"
 #include "Utilities/MakeArray.hpp"
+#include "Utilities/MemoryHelpers.hpp"
 
-namespace evolution::dg::subcell {
+namespace evolution::dg::subcell::detail {
+namespace {
+// Projects ghost data for a ZernikeB1 neighbor using parity-split projection
+// matrices
+void project_zernike_b1_ghost_data(
+    const gsl::not_null<DataVector*> computed_ghost_data,
+    const DataVector& neighbor_data_without_rdmp_vars,
+    const size_t number_of_vars, const Mesh<3>& neighbor_mesh,
+    const Mesh<3>& subcell_mesh, const size_t number_of_ghost_zones,
+    const Direction<3>& direction, const gsl::span<const size_t> parity_list,
+    const size_t num_even, const size_t num_odd) {
+  ASSERT(neighbor_mesh.basis(0) == Spectral::Basis::ZernikeB1 and
+             direction.dimension() != 0,
+         "Neighbor setup is not appropriate to call ZernikeB1-specific "
+         "projection, got neighbor mesh = "
+             << neighbor_mesh << ", direction = " << direction);
+  const size_t num_dg_pts = neighbor_mesh.number_of_grid_points();
+  const size_t num_ghost_pts_per_var =
+      number_of_ghost_zones *
+      subcell_mesh.extents().slice_away(direction.dimension()).product();
+  if (UNLIKELY(computed_ghost_data->size() !=
+               num_ghost_pts_per_var * number_of_vars)) {
+    computed_ghost_data->destructive_resize(num_ghost_pts_per_var *
+                                            number_of_vars);
+  }
+
+  auto buffer =
+      // NOLINTNEXTLINE(modernize-avoid-c-arrays)
+      cpp20::make_unique_for_overwrite<double[]>(
+          (num_even + num_odd) * (num_dg_pts + num_ghost_pts_per_var));
+  DataVector even_input{};
+  even_input.set_data_ref(&buffer[0], num_even * num_dg_pts);
+  DataVector odd_input{};
+  odd_input.set_data_ref(&buffer[num_even * num_dg_pts], num_odd * num_dg_pts);
+  DataVector even_output{};
+  even_input.set_data_ref(&buffer[(num_even + num_odd) * num_dg_pts],
+                          num_even * num_ghost_pts_per_var);
+  DataVector odd_output{};
+  odd_input.set_data_ref(&buffer[(num_even + num_odd) * num_dg_pts +
+                                 num_even * num_ghost_pts_per_var],
+                         num_odd * num_ghost_pts_per_var);
+
+  // Sort input components into even/odd parity buffers
+  const double* p_in = neighbor_data_without_rdmp_vars.data();
+  double* p_even_in = even_input.data();
+  double* p_odd_in = odd_input.data();
+  bool is_even = true;
+  for (const size_t seg_size : parity_list) {
+    if (seg_size == 0) {
+      if (is_even) {
+        is_even = false;
+        continue;
+      } else {
+        break;
+      }
+    }
+    if (is_even) {
+      std::copy(p_in, p_in + seg_size * num_dg_pts, p_even_in);  // NOLINT
+      p_even_in += seg_size * num_dg_pts;                        // NOLINT
+    } else {
+      std::copy(p_in, p_in + seg_size * num_dg_pts, p_odd_in);  // NOLINT
+      p_odd_in += seg_size * num_dg_pts;                        // NOLINT
+    }
+    p_in += seg_size * num_dg_pts;  // NOLINT
+    is_even = not is_even;
+  }
+
+  // Build matrix arrays: dim 0 gets parity-dependent ZernikeB1 matrices;
+  // other dims are shared between even and odd batches.
+  const Matrix empty{};
+  auto even_ghost_mat = make_array<3>(std::cref(empty));
+  auto odd_ghost_mat = make_array<3>(std::cref(empty));
+  even_ghost_mat[0] = std::cref(fd::projection_matrix(
+      neighbor_mesh.slice_through(0), subcell_mesh.extents(0),
+      Spectral::Quadrature::CellCentered, Spectral::Parity::Even));
+  odd_ghost_mat[0] = std::cref(fd::projection_matrix(
+      neighbor_mesh.slice_through(0), subcell_mesh.extents(0),
+      Spectral::Quadrature::CellCentered, Spectral::Parity::Odd));
+  for (size_t i = 1; i < 3; ++i) {
+    if (i == direction.dimension()) {
+      const auto& ghost_mat = fd::projection_matrix(
+          neighbor_mesh.slice_through(i), subcell_mesh.extents(i),
+          number_of_ghost_zones, direction.opposite().side());
+      gsl::at(even_ghost_mat, i) = std::cref(ghost_mat);
+      gsl::at(odd_ghost_mat, i) = std::cref(ghost_mat);
+    } else {
+      const auto& other_mat = fd::projection_matrix(
+          neighbor_mesh.slice_through(i), subcell_mesh.extents(i),
+          Spectral::Quadrature::CellCentered, Spectral::Parity::Uninitialized);
+      gsl::at(even_ghost_mat, i) = std::cref(other_mat);
+      gsl::at(odd_ghost_mat, i) = std::cref(other_mat);
+    }
+  }
+
+  if (num_even > 0) {
+    apply_matrices(make_not_null(&even_output), even_ghost_mat, even_input,
+                   neighbor_mesh.extents());
+  }
+  if (num_odd > 0) {
+    apply_matrices(make_not_null(&odd_output), odd_ghost_mat, odd_input,
+                   neighbor_mesh.extents());
+  }
+
+  // Reassemble output in original component order
+  double* p_out = computed_ghost_data->data();
+  const double* p_even_out = even_output.data();
+  const double* p_odd_out = odd_output.data();
+  is_even = true;
+  for (const size_t seg_size : parity_list) {
+    if (seg_size == 0) {
+      if (is_even) {
+        is_even = false;
+        continue;
+      } else {
+        break;
+      }
+    }
+    if (is_even) {
+      std::copy(p_even_out,
+                p_even_out + seg_size * num_ghost_pts_per_var,  // NOLINT
+                p_out);
+      p_even_out += seg_size * num_ghost_pts_per_var;  // NOLINT
+    } else {
+      std::copy(p_odd_out,
+                p_odd_out + seg_size * num_ghost_pts_per_var,  // NOLINT
+                p_out);
+      p_odd_out += seg_size * num_ghost_pts_per_var;  // NOLINT
+    }
+    p_out += seg_size * num_ghost_pts_per_var;  // NOLINT
+    is_even = not is_even;
+  }
+}
+}  // namespace
+
 template <bool InsertIntoMap, size_t Dim>
-void insert_or_update_neighbor_volume_data(
+void insert_or_update_neighbor_volume_data_impl(
     const gsl::not_null<DirectionalIdMap<Dim, GhostData>*> ghost_data_ptr,
     const DataVector& neighbor_subcell_data,
     const size_t number_of_rdmp_vars_in_buffer,
@@ -37,7 +174,9 @@ void insert_or_update_neighbor_volume_data(
     const Mesh<Dim>& neighbor_mesh, const Element<Dim>& element,
     const Mesh<Dim>& subcell_mesh, const size_t number_of_ghost_zones,
     const DirectionalIdMap<Dim, std::optional<intrp::Irregular<Dim>>>&
-        neighbor_dg_to_fd_interpolants) {
+        neighbor_dg_to_fd_interpolants,
+    const gsl::span<const size_t> parity_list, const size_t num_even,
+    const size_t num_odd) {
   fd::verify_subcell_mesh(neighbor_mesh, true);
   ASSERT(neighbor_subcell_data.size() != 0,
          "neighbor_subcell_data must be non-empty");
@@ -73,10 +212,10 @@ void insert_or_update_neighbor_volume_data(
                           number_of_rdmp_vars_in_buffer)),
         computed_ghost_data.begin());
   } else {
-    ASSERT(evolution::dg::subcell::fd::mesh(neighbor_mesh) == subcell_mesh,
+    ASSERT(fd::mesh(neighbor_mesh) == subcell_mesh,
            "Neighbor subcell mesh computed from the neighbor DG mesh ("
-               << evolution::dg::subcell::fd::mesh(neighbor_mesh)
-               << ") and my mesh (" << subcell_mesh << ") must be the same.");
+               << fd::mesh(neighbor_mesh) << ") and my mesh (" << subcell_mesh
+               << ") must be the same.");
     const Direction<Dim>& direction = directional_element_id.direction();
     const size_t total_number_of_ghost_zones =
         number_of_ghost_zones *
@@ -110,116 +249,69 @@ void insert_or_update_neighbor_volume_data(
     } else {
       // If our neighbor is in our block we can do simple dim-by-dim
       // interpolation.
-      const auto project_to_ghost_data =
-          [&direction, &computed_ghost_data, &number_of_ghost_zones,
-           &subcell_mesh](const Mesh<Dim>& neighbor_mesh_for_projection,
-                          const DataVector& neighbor_data_for_projection) {
-            // Project to ghosts
-            Matrix empty{};
-            auto ghost_projection_mat = make_array<Dim>(std::cref(empty));
-            for (size_t i = 0; i < Dim; ++i) {
-              if (i == direction.dimension()) {
-                gsl::at(ghost_projection_mat, i) =
-                    std::cref(evolution::dg::subcell::fd::projection_matrix(
-                        neighbor_mesh_for_projection.slice_through(i),
-                        subcell_mesh.extents(i), number_of_ghost_zones,
-                        direction.opposite().side()));
-              } else {
-                gsl::at(ghost_projection_mat, i) =
-                    std::cref(evolution::dg::subcell::fd::projection_matrix(
-                        neighbor_mesh_for_projection.slice_through(i),
-                        subcell_mesh.extents(i),
-                        Spectral::Quadrature::CellCentered));
-              }
-            }
-            apply_matrices(make_not_null(&computed_ghost_data),
-                           ghost_projection_mat, neighbor_data_for_projection,
-                           neighbor_mesh_for_projection.extents());
-          };
       const DataVector neighbor_data_without_rdmp_vars{
           // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
           const_cast<double*>(neighbor_subcell_data.data()),
           end_of_volume_data};
-      project_to_ghost_data(neighbor_mesh, neighbor_data_without_rdmp_vars);
+
+      if constexpr (Dim == 3) {
+        if (neighbor_mesh.basis(0) == Spectral::Basis::ZernikeB1 and
+            direction.dimension() != 0) {
+          // ZernikeB1 is in dimension 0 and is not the ghost direction, so
+          // we need to project even- and odd-parity components separately.
+          project_zernike_b1_ghost_data(
+              make_not_null(&computed_ghost_data),
+              neighbor_data_without_rdmp_vars, number_of_vars, neighbor_mesh,
+              subcell_mesh, number_of_ghost_zones, direction, parity_list,
+              num_even, num_odd);
+          ghost_data = std::move(computed_ghost_data);
+          return;
+        }
+      }
+
+      const Matrix empty{};
+      auto ghost_projection_mat = make_array<Dim>(std::cref(empty));
+      for (size_t i = 0; i < Dim; ++i) {
+        if (i == direction.dimension()) {
+          gsl::at(ghost_projection_mat, i) = std::cref(fd::projection_matrix(
+              neighbor_mesh.slice_through(i), subcell_mesh.extents(i),
+              number_of_ghost_zones, direction.opposite().side()));
+        } else {
+          gsl::at(ghost_projection_mat, i) = std::cref(fd::projection_matrix(
+              neighbor_mesh.slice_through(i), subcell_mesh.extents(i),
+              Spectral::Quadrature::CellCentered,
+              Spectral::Parity::Uninitialized));
+        }
+      }
+      apply_matrices(make_not_null(&computed_ghost_data), ghost_projection_mat,
+                     neighbor_data_without_rdmp_vars, neighbor_mesh.extents());
     }
   }
 
   ghost_data = std::move(computed_ghost_data);
 }
 
-template <size_t Dim>
-void insert_neighbor_rdmp_and_volume_data(
-    const gsl::not_null<RdmpTciData*> rdmp_tci_data_ptr,
-    const gsl::not_null<DirectionalIdMap<Dim, GhostData>*> ghost_data_ptr,
-    const DataVector& received_neighbor_subcell_data,
-    const size_t number_of_rdmp_vars,
-    const DirectionalId<Dim>& directional_element_id,
-    const Mesh<Dim>& neighbor_mesh, const Element<Dim>& element,
-    const Mesh<Dim>& subcell_mesh, const size_t number_of_ghost_zones,
-    const DirectionalIdMap<Dim, std::optional<intrp::Irregular<Dim>>>&
-        neighbor_dg_to_fd_interpolants) {
-  ASSERT(received_neighbor_subcell_data.size() != 0,
-         "received_neighbor_subcell_data must be non-empty");
-  // Note: since we determine the starting point of the RDMP vars
-  // from how many RDMP vars there are, we don't need to account for
-  // the mesh the neighbor sent (DG or FD)
-  const size_t max_offset =
-      received_neighbor_subcell_data.size() - 2 * number_of_rdmp_vars;
-  const size_t min_offset =
-      received_neighbor_subcell_data.size() - number_of_rdmp_vars;
-  for (size_t var_index = 0; var_index < number_of_rdmp_vars; ++var_index) {
-    rdmp_tci_data_ptr->max_variables_values[var_index] =
-        std::max(rdmp_tci_data_ptr->max_variables_values[var_index],
-                 received_neighbor_subcell_data[max_offset + var_index]);
-    rdmp_tci_data_ptr->min_variables_values[var_index] =
-        std::min(rdmp_tci_data_ptr->min_variables_values[var_index],
-                 received_neighbor_subcell_data[min_offset + var_index]);
-  }
-  // Note: it would be good to assert that the neighbor is at the same
-  // refinement level as us, but such a function does not yet exist.
-
-  insert_or_update_neighbor_volume_data<true>(
-      ghost_data_ptr, received_neighbor_subcell_data, number_of_rdmp_vars,
-      directional_element_id, neighbor_mesh, element, subcell_mesh,
-      number_of_ghost_zones, neighbor_dg_to_fd_interpolants);
-}
-
 #define GET_DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
-
-#define INSTANTIATION(r, data)                                               \
-  template void insert_neighbor_rdmp_and_volume_data(                        \
-      gsl::not_null<RdmpTciData*> rdmp_tci_data_ptr,                         \
-      gsl::not_null<DirectionalIdMap<GET_DIM(data), GhostData>*>             \
-          ghost_data_ptr,                                                    \
-      const DataVector& neighbor_subcell_data, size_t number_of_rdmp_vars,   \
-      const DirectionalId<GET_DIM(data)>& directional_element_id,            \
-      const Mesh<GET_DIM(data)>& neighbor_mesh,                              \
-      const Element<GET_DIM(data)>& element,                                 \
-      const Mesh<GET_DIM(data)>& subcell_mesh, size_t number_of_ghost_zones, \
-      const DirectionalIdMap<                                                \
-          GET_DIM(data), std::optional<intrp::Irregular<GET_DIM(data)>>>&);
-
-GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
-
-#undef INSTANTIATION
-
 #define GET_INSERT(data) BOOST_PP_TUPLE_ELEM(1, data)
 
-#define INSTANTIATION(r, data)                                               \
-  template void insert_or_update_neighbor_volume_data<GET_INSERT(data)>(     \
-      gsl::not_null<DirectionalIdMap<GET_DIM(data), GhostData>*>             \
-          ghost_data_ptr,                                                    \
-      const DataVector& received_neighbor_subcell_data,                      \
-      size_t number_of_rdmp_vars_in_buffer,                                  \
-      const DirectionalId<GET_DIM(data)>& directional_element_id,            \
-      const Mesh<GET_DIM(data)>& neighbor_mesh,                              \
-      const Element<GET_DIM(data)>& element,                                 \
-      const Mesh<GET_DIM(data)>& subcell_mesh, size_t number_of_ghost_zones, \
-      const DirectionalIdMap<                                                \
-          GET_DIM(data), std::optional<intrp::Irregular<GET_DIM(data)>>>&);
+#define INSTANTIATION(r, data)                                                \
+  template void insert_or_update_neighbor_volume_data_impl<GET_INSERT(data)>( \
+      gsl::not_null<DirectionalIdMap<GET_DIM(data), GhostData>*>              \
+          ghost_data_ptr,                                                     \
+      const DataVector& neighbor_subcell_data,                                \
+      size_t number_of_rdmp_vars_in_buffer,                                   \
+      const DirectionalId<GET_DIM(data)>& directional_element_id,             \
+      const Mesh<GET_DIM(data)>& neighbor_mesh,                               \
+      const Element<GET_DIM(data)>& element,                                  \
+      const Mesh<GET_DIM(data)>& subcell_mesh, size_t number_of_ghost_zones,  \
+      const DirectionalIdMap<GET_DIM(data),                                   \
+                             std::optional<intrp::Irregular<GET_DIM(data)>>>& \
+          neighbor_dg_to_fd_interpolants,                                     \
+      gsl::span<const size_t> parity_list, size_t num_even, size_t num_odd);
 
 GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3), (true, false))
 
 #undef INSTANTIATION
+#undef GET_INSERT
 #undef GET_DIM
-}  // namespace evolution::dg::subcell
+}  // namespace evolution::dg::subcell::detail

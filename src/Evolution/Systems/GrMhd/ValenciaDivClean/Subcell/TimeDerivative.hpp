@@ -50,6 +50,7 @@
 #include "NumericalAlgorithms/FiniteDifference/DerivativeOrder.hpp"
 #include "NumericalAlgorithms/FiniteDifference/HighOrderFluxCorrection.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
+#include "NumericalAlgorithms/Spectral/Parity.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
 #include "Utilities/CallWithDynamicType.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
@@ -278,7 +279,9 @@ struct TimeDerivative {
                 mesh_velocity_on_face.value().get(j) =
                     evolution::dg::subcell::fd::project_to_faces(
                         mesh_velocity_dg.value().get(j), dg_mesh,
-                        face_mesh_extents, i);
+                        face_mesh_extents, i,
+                        j == 0 ? Spectral::Parity::Odd
+                               : Spectral::Parity::Even);
               }
               tmpl::for_each<evolved_vars_tags>([&vars_upper_face,
                                                  &vars_lower_face,
@@ -328,11 +331,14 @@ struct TimeDerivative {
             for (size_t j = 0; j < 3; j++) {
               lower_outward_conormal.get(j) =
                   evolution::dg::subcell::fd::project_to_faces(
-                      inv_jacobian_dg.get(i, j), dg_mesh, face_mesh_extents, i);
+                      inv_jacobian_dg.get(i, j), dg_mesh, face_mesh_extents, i,
+                      (i == 0) != (j == 0) ? Spectral::Parity::Odd
+                                           : Spectral::Parity::Even);
             }
             const auto det_inv_jacobian_face =
                 evolution::dg::subcell::fd::project_to_faces(
-                    get(det_inv_jacobian_dg), dg_mesh, face_mesh_extents, i);
+                    get(det_inv_jacobian_dg), dg_mesh, face_mesh_extents, i,
+                    Spectral::Parity::Even);
 
             const Scalar<DataVector> normalization{sqrt(get(
                 dot_product(lower_outward_conormal, lower_outward_conormal,
@@ -431,7 +437,8 @@ struct TimeDerivative {
     if (div_mesh_velocity.has_value()) {
       const DataVector div_mesh_velocity_subcell =
           evolution::dg::subcell::fd::project(div_mesh_velocity.value().get(),
-                                              dg_mesh, subcell_mesh.extents());
+                                              dg_mesh, subcell_mesh.extents(),
+                                              Spectral::Parity::Even);
       const auto& evolved_vars = db::get<evolved_vars_tag>(*box);
 
       tmpl::for_each<typename variables_tag::tags_list>(

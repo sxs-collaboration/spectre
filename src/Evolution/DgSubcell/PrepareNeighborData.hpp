@@ -142,7 +142,9 @@ void prepare_neighbor_data(
     make_const_view(make_not_null(&data_to_project), ghost_variables, 0,
                     ghost_variables.size() - rdmp_size);
     const DataVector projected_data = evolution::dg::subcell::fd::project(
-        data_to_project, dg_mesh, subcell_mesh.extents());
+        data_to_project, dg_mesh, subcell_mesh.extents(),
+        typename Metavariables::SubcellOptions::GhostVariables::
+            ghost_variables_tag_list{});
     typename evolution::dg::subcell::Tags::InterpolatorsFromFdToNeighborFd<
         Dim>::type directions_not_to_slice{};
     for (const auto& [directional_element_id, _] :

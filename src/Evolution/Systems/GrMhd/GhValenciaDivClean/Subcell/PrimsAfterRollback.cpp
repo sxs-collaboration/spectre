@@ -49,7 +49,8 @@ void PrimsAfterRollback<OrderedListOfRecoverySchemes>::apply(
     prim_vars->initialize(num_grid_points);
     evolution::dg::subcell::fd::project(
         make_not_null(&get(get<hydro::Tags::Pressure<DataVector>>(*prim_vars))),
-        get(dg_pressure), dg_mesh, subcell_mesh.extents());
+        get(dg_pressure), dg_mesh, subcell_mesh.extents(),
+        Spectral::Parity::Even);
 
     // Compute the spatial metric, inverse spatial metric, and sqrt{det{spatial
     // metric}} on the subcells since we need these for the prim recovery.

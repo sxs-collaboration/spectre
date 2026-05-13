@@ -5,6 +5,7 @@
 
 #include "Evolution/DgSubcell/Projection.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
+#include "NumericalAlgorithms/Spectral/Parity.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 
@@ -23,8 +24,9 @@ void ObserverMeshVelocityCompute<Dim>::function(
     *active_mesh_velocity = tnsr::I<DataVector, Dim, Frame::Inertial>{};
     for (size_t i = 0; i < Dim; ++i) {
       active_mesh_velocity->value().get(i) =
-          evolution::dg::subcell::fd::project(dg_mesh_velocity.value().get(i),
-                                              dg_mesh, subcell_mesh.extents());
+          evolution::dg::subcell::fd::project(
+              dg_mesh_velocity.value().get(i), dg_mesh, subcell_mesh.extents(),
+              i == 0 ? Spectral::Parity::Odd : Spectral::Parity::Even);
     }
   } else {
     *active_mesh_velocity = std::nullopt;

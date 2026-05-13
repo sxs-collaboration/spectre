@@ -267,34 +267,36 @@ void test(const TestThis test_this, const int expected_tci_status,
       max(max(get(db::get<grmhd::ValenciaDivClean::Tags::TildeD>(box))),
           max(evolution::dg::subcell::fd::project(
               get(db::get<grmhd::ValenciaDivClean::Tags::TildeD>(box)), mesh,
-              subcell_mesh.extents()))),
+              subcell_mesh.extents(), Spectral::Parity::Even))),
       max(max(get(db::get<grmhd::ValenciaDivClean::Tags::TildeYe>(box))),
           max(evolution::dg::subcell::fd::project(
               get(db::get<grmhd::ValenciaDivClean::Tags::TildeYe>(box)), mesh,
-              subcell_mesh.extents()))),
+              subcell_mesh.extents(), Spectral::Parity::Even))),
       max(max(get(db::get<grmhd::ValenciaDivClean::Tags::TildeTau>(box))),
           max(evolution::dg::subcell::fd::project(
               get(db::get<grmhd::ValenciaDivClean::Tags::TildeTau>(box)), mesh,
-              subcell_mesh.extents()))),
+              subcell_mesh.extents(), Spectral::Parity::Even))),
       max(max(get(magnitude_tilde_b)),
           max(evolution::dg::subcell::fd::project(get(magnitude_tilde_b), mesh,
-                                                  subcell_mesh.extents())))};
+                                                  subcell_mesh.extents(),
+                                                  Spectral::Parity::Even)))};
   past_rdmp_tci_data.min_variables_values = DataVector{
       min(min(get(db::get<grmhd::ValenciaDivClean::Tags::TildeD>(box))),
           min(evolution::dg::subcell::fd::project(
               get(db::get<grmhd::ValenciaDivClean::Tags::TildeD>(box)), mesh,
-              subcell_mesh.extents()))),
+              subcell_mesh.extents(), Spectral::Parity::Even))),
       min(min(get(db::get<grmhd::ValenciaDivClean::Tags::TildeYe>(box))),
           min(evolution::dg::subcell::fd::project(
               get(db::get<grmhd::ValenciaDivClean::Tags::TildeYe>(box)), mesh,
-              subcell_mesh.extents()))),
+              subcell_mesh.extents(), Spectral::Parity::Even))),
       min(min(get(db::get<grmhd::ValenciaDivClean::Tags::TildeTau>(box))),
           min(evolution::dg::subcell::fd::project(
               get(db::get<grmhd::ValenciaDivClean::Tags::TildeTau>(box)), mesh,
-              subcell_mesh.extents()))),
+              subcell_mesh.extents(), Spectral::Parity::Even))),
       min(min(get(magnitude_tilde_b)),
           min(evolution::dg::subcell::fd::project(get(magnitude_tilde_b), mesh,
-                                                  subcell_mesh.extents())))};
+                                                  subcell_mesh.extents(),
+                                                  Spectral::Parity::Even)))};
 
   const evolution::dg::subcell::RdmpTciData expected_rdmp_tci_data =
       past_rdmp_tci_data;

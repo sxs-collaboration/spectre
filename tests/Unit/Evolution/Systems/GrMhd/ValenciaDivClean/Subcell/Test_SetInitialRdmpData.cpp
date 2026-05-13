@@ -1,7 +1,6 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "Evolution/DgSubcell/Reconstruction.hpp"
 #include "Framework/TestingFramework.hpp"
 
 #include <cstddef>
@@ -18,8 +17,80 @@
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Subcell/SetInitialRdmpData.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/System.hpp"
 #include "NumericalAlgorithms/Spectral/Basis.hpp"
+#include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Quadrature.hpp"
+
+namespace {
+void test_zernike_b1() {
+  const Mesh<3> dg_mesh{{4, 1, 1},
+                        {Spectral::Basis::ZernikeB1, Spectral::Basis::Cartoon,
+                         Spectral::Basis::Cartoon},
+                        {Spectral::Quadrature::GaussRadauUpper,
+                         Spectral::Quadrature::SphericalSymmetry,
+                         Spectral::Quadrature::SphericalSymmetry}};
+  const DataVector dg_logical_coordinates =
+      0.25 * (get<0>(logical_coordinates(dg_mesh)) + 1.0);
+  const Mesh<3> subcell_mesh = evolution::dg::subcell::fd::mesh(dg_mesh);
+  const size_t num_dg_pts = dg_mesh.number_of_grid_points();
+
+  using ConsVars =
+      typename grmhd::ValenciaDivClean::System::variables_tag::type;
+  ConsVars dg_vars{num_dg_pts, 0.0};
+
+  get(get<grmhd::ValenciaDivClean::Tags::TildeD>(dg_vars)) =
+      1.0 + dg_logical_coordinates;
+  get(get<grmhd::ValenciaDivClean::Tags::TildeYe>(dg_vars)) = 0.1;
+  get(get<grmhd::ValenciaDivClean::Tags::TildeTau>(dg_vars)) = 2.0;
+  get<grmhd::ValenciaDivClean::Tags::TildeB<>>(dg_vars).get(1) = 0.3;
+  get<grmhd::ValenciaDivClean::Tags::TildeB<>>(dg_vars).get(2) = 0.4;
+
+  const auto subcell_vars = evolution::dg::subcell::fd::project(
+      dg_vars, dg_mesh, subcell_mesh.extents());
+
+  evolution::dg::subcell::RdmpTciData rdmp_data{};
+  grmhd::ValenciaDivClean::subcell::SetInitialRdmpData::apply(
+      make_not_null(&rdmp_data),
+      get<grmhd::ValenciaDivClean::Tags::TildeD>(dg_vars),
+      get<grmhd::ValenciaDivClean::Tags::TildeYe>(dg_vars),
+      get<grmhd::ValenciaDivClean::Tags::TildeTau>(dg_vars),
+      get<grmhd::ValenciaDivClean::Tags::TildeB<>>(dg_vars),
+      evolution::dg::subcell::ActiveGrid::Dg, dg_mesh, subcell_mesh);
+
+  const auto& dg_tilde_d = get<grmhd::ValenciaDivClean::Tags::TildeD>(dg_vars);
+  const auto& dg_tilde_ye =
+      get<grmhd::ValenciaDivClean::Tags::TildeYe>(dg_vars);
+  const auto& dg_tilde_tau =
+      get<grmhd::ValenciaDivClean::Tags::TildeTau>(dg_vars);
+  const auto dg_tilde_b_magnitude =
+      magnitude(get<grmhd::ValenciaDivClean::Tags::TildeB<>>(dg_vars));
+  const auto& subcell_tilde_d =
+      get<grmhd::ValenciaDivClean::Tags::TildeD>(subcell_vars);
+  const auto& subcell_tilde_ye =
+      get<grmhd::ValenciaDivClean::Tags::TildeYe>(subcell_vars);
+  const auto& subcell_tilde_tau =
+      get<grmhd::ValenciaDivClean::Tags::TildeTau>(subcell_vars);
+  const auto projected_subcell_tilde_b_magnitude =
+      Scalar<DataVector>(evolution::dg::subcell::fd::project(
+          get(dg_tilde_b_magnitude), dg_mesh, subcell_mesh.extents(),
+          Spectral::Parity::Even));
+
+  using std::max;
+  using std::min;
+  const evolution::dg::subcell::RdmpTciData expected_rdmp_data{
+      {max(max(get(dg_tilde_d)), max(get(subcell_tilde_d))),
+       max(max(get(dg_tilde_ye)), max(get(subcell_tilde_ye))),
+       max(max(get(dg_tilde_tau)), max(get(subcell_tilde_tau))),
+       max(max(get(dg_tilde_b_magnitude)),
+           max(get(projected_subcell_tilde_b_magnitude)))},
+      {min(min(get(dg_tilde_d)), min(get(subcell_tilde_d))),
+       min(min(get(dg_tilde_ye)), min(get(subcell_tilde_ye))),
+       min(min(get(dg_tilde_tau)), min(get(subcell_tilde_tau))),
+       min(min(get(dg_tilde_b_magnitude)),
+           min(get(projected_subcell_tilde_b_magnitude)))}};
+  CHECK(rdmp_data == expected_rdmp_data);
+}
+}  // namespace
 
 SPECTRE_TEST_CASE(
     "Unit.Evolution.Systems.ValenciaDivClean.Subcell.SetInitialRdmpData",
@@ -59,7 +130,8 @@ SPECTRE_TEST_CASE(
       get<grmhd::ValenciaDivClean::Tags::TildeTau>(subcell_vars);
   const auto projected_subcell_tilde_b_magnitude =
       Scalar<DataVector>(evolution::dg::subcell::fd::project(
-          get(dg_tilde_b_magnitude), dg_mesh, subcell_mesh.extents()));
+          get(dg_tilde_b_magnitude), dg_mesh, subcell_mesh.extents(),
+          Spectral::Parity::Even));
 
   evolution::dg::subcell::RdmpTciData expected_dg_rdmp_data{};
   using std::max;
@@ -96,4 +168,6 @@ SPECTRE_TEST_CASE(
       min(get(subcell_tilde_d)), min(get(subcell_tilde_ye)),
       min(get(subcell_tilde_tau)), min(get(subcell_tilde_b_magnitude))};
   CHECK(rdmp_data == expected_subcell_rdmp_data);
+
+  test_zernike_b1();
 }

@@ -175,6 +175,10 @@ struct Metavariables {
         const db::DataBox<DbTagsList>& box) {
       return db::get<Tags::Reconstructor>(box).ghost_zone_size();
     }
+
+    struct GhostVariables {
+      using ghost_variables_tag_list = tmpl::list<Var1>;
+    };
   };
 
   struct GhostDataMutator {

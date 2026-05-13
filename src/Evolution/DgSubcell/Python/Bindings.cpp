@@ -12,6 +12,7 @@
 #include "Evolution/DgSubcell/Reconstruction.hpp"
 #include "Evolution/DgSubcell/ReconstructionMethod.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
+#include "NumericalAlgorithms/Spectral/Parity.hpp"
 #include "Utilities/ErrorHandling/SegfaultHandler.hpp"
 
 namespace py = pybind11;
@@ -25,10 +26,11 @@ void impl(py::module& m) {  // NOLINT
   m.def(
       "project",
       +[](const DataVector& dg_u, const Mesh<Dim>& dg_mesh,
-          const Index<Dim>& subcell_extents) {
-        return fd::project(dg_u, dg_mesh, subcell_extents);
+          const Index<Dim>& subcell_extents, const Spectral::Parity parity) {
+        return fd::project(dg_u, dg_mesh, subcell_extents, parity);
       },
-      py::arg("dg_u"), py::arg("dg_mesh"), py::arg("subcell_extents"));
+      py::arg("dg_u"), py::arg("dg_mesh"), py::arg("subcell_extents"),
+      py::arg("parity"));
   m.def(
       "reconstruct",
       +[](const DataVector& subcell_u_times_projected_det_jac,

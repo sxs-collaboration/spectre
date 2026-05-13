@@ -122,7 +122,8 @@ void correct_package_data(
           projected_data = DataVector{
               Variables<DgPackageFieldTags>::number_of_independent_components *
               subcell_face_mesh.number_of_grid_points()};
-          evolution::dg::subcell::fd::detail::project_impl(
+          evolution::dg::subcell::fd::detail::project_impl_with_tag_list<
+              DgPackageFieldTags>(
               gsl::make_span(projected_data.data(), projected_data.size()),
               gsl::make_span(
                   slice_data,

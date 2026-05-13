@@ -9,7 +9,9 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Matrix.hpp"
 #include "Evolution/DgSubcell/Matrices.hpp"
+#include "NumericalAlgorithms/Spectral/Basis.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
+#include "NumericalAlgorithms/Spectral/Parity.hpp"
 #include "NumericalAlgorithms/Spectral/Quadrature.hpp"
 #include "Utilities/Blas.hpp"
 #include "Utilities/ContainerHelpers.hpp"
@@ -22,13 +24,14 @@ namespace detail {
 template <size_t Dim>
 void project_impl(gsl::span<double> subcell_u,
                   const gsl::span<const double> dg_u, const Mesh<Dim>& dg_mesh,
-                  const Index<Dim>& subcell_extents) {
+                  const Index<Dim>& subcell_extents,
+                  const Spectral::Parity parity) {
   const Matrix empty{};
   auto projection_mat = make_array<Dim>(std::cref(empty));
   for (size_t d = 0; d < Dim; d++) {
     gsl::at(projection_mat, d) = std::cref(
         projection_matrix(dg_mesh.slice_through(d), subcell_extents[d],
-                          Spectral::Quadrature::CellCentered));
+                          Spectral::Quadrature::CellCentered, parity));
   }
   DataVector result{subcell_u.data(), subcell_u.size()};
   // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
@@ -44,18 +47,26 @@ void project_to_faces_impl(gsl::span<double> subcell_u,
                            const gsl::span<const double> dg_u,
                            const Mesh<Dim>& dg_mesh,
                            const Index<Dim>& subcell_extents,
-                           const size_t& face_direction) {
+                           const size_t& face_direction,
+                           const Spectral::Parity parity) {
+  if constexpr (Dim == 3) {
+    if (dg_mesh.basis(0) == Spectral::Basis::ZernikeB1) {
+      ASSERT(dg_mesh.basis(2) == Spectral::Basis::Cartoon,
+             "ZernikeB1 basis should only be used with Cartoon bases, got "
+                 << dg_mesh.basis());
+    }
+  }
   const Matrix empty{};
   auto projection_mat = make_array<Dim>(std::cref(empty));
   for (size_t d = 0; d < Dim; d++) {
     if (d == face_direction) {
       gsl::at(projection_mat, d) = std::cref(
           projection_matrix(dg_mesh.slice_through(d), subcell_extents[d],
-                            Spectral::Quadrature::FaceCentered));
+                            Spectral::Quadrature::FaceCentered, parity));
     } else {
       gsl::at(projection_mat, d) = std::cref(
           projection_matrix(dg_mesh.slice_through(d), subcell_extents[d],
-                            Spectral::Quadrature::CellCentered));
+                            Spectral::Quadrature::CellCentered, parity));
     }
   }
   DataVector result{subcell_u.data(), subcell_u.size()};
@@ -67,27 +78,34 @@ void project_to_faces_impl(gsl::span<double> subcell_u,
 
 template <size_t Dim>
 void project(const gsl::not_null<DataVector*> subcell_u, const DataVector& dg_u,
-             const Mesh<Dim>& dg_mesh, const Index<Dim>& subcell_extents) {
+             const Mesh<Dim>& dg_mesh, const Index<Dim>& subcell_extents,
+             const Spectral::Parity parity) {
   ASSERT(dg_u.size() % dg_mesh.number_of_grid_points() == 0,
          "The vector dg_u must have size that is a multiple of the number of "
          "grid points "
              << dg_mesh.number_of_grid_points() << " but got " << dg_u.size());
+  ASSERT(
+      parity == Spectral::Parity::Uninitialized or
+          dg_u.size() == dg_mesh.number_of_grid_points(),
+      "Trying to use the DataVector version of project() but passing more than "
+      "one component of a tensor. Must pass the types as a template");
   subcell_u->destructive_resize(subcell_extents.product() * dg_u.size() /
                                 dg_mesh.number_of_grid_points());
   detail::project_impl(gsl::span<double>{subcell_u->data(), subcell_u->size()},
                        gsl::span<const double>{dg_u.data(), dg_u.size()},
-                       dg_mesh, subcell_extents);
+                       dg_mesh, subcell_extents, parity);
 }
 
 template <size_t Dim>
 DataVector project(const DataVector& dg_u, const Mesh<Dim>& dg_mesh,
-                   const Index<Dim>& subcell_extents) {
+                   const Index<Dim>& subcell_extents,
+                   const Spectral::Parity parity) {
   ASSERT(dg_u.size() % dg_mesh.number_of_grid_points() == 0,
          "The vector dg_u must have size that is a multiple of the number of "
          "grid points "
              << dg_mesh.number_of_grid_points() << " but got " << dg_u.size());
   DataVector subcell_u{};
-  project(&subcell_u, dg_u, dg_mesh, subcell_extents);
+  project(&subcell_u, dg_u, dg_mesh, subcell_extents, parity);
   return subcell_u;
 }
 
@@ -95,7 +113,8 @@ template <size_t Dim>
 void project_to_faces(const gsl::not_null<DataVector*> subcell_u,
                       const DataVector& dg_u, const Mesh<Dim>& dg_mesh,
                       const Index<Dim>& subcell_extents,
-                      const size_t& face_direction) {
+                      const size_t& face_direction,
+                      const Spectral::Parity parity) {
   ASSERT(dg_u.size() % dg_mesh.number_of_grid_points() == 0,
          "The vector dg_u must have size that is a multiple of the number of "
          "grid points "
@@ -105,19 +124,21 @@ void project_to_faces(const gsl::not_null<DataVector*> subcell_u,
   detail::project_to_faces_impl(
       gsl::span<double>{subcell_u->data(), subcell_u->size()},
       gsl::span<const double>{dg_u.data(), dg_u.size()}, dg_mesh,
-      subcell_extents, face_direction);
+      subcell_extents, face_direction, parity);
 }
 
 template <size_t Dim>
 DataVector project_to_faces(const DataVector& dg_u, const Mesh<Dim>& dg_mesh,
                             const Index<Dim>& subcell_extents,
-                            const size_t& face_direction) {
+                            const size_t& face_direction,
+                            const Spectral::Parity parity) {
   ASSERT(dg_u.size() % dg_mesh.number_of_grid_points() == 0,
          "The vector dg_u must have size that is a multiple of the number of "
          "grid points "
              << dg_mesh.number_of_grid_points() << " but got " << dg_u.size());
   DataVector subcell_u{};
-  project_to_faces(&subcell_u, dg_u, dg_mesh, subcell_extents, face_direction);
+  project_to_faces(&subcell_u, dg_u, dg_mesh, subcell_extents, face_direction,
+                   parity);
   return subcell_u;
 }
 
@@ -125,23 +146,25 @@ DataVector project_to_faces(const DataVector& dg_u, const Mesh<Dim>& dg_mesh,
 
 #define INSTANTIATION(r, data)                                                 \
   template DataVector project(const DataVector&, const Mesh<DIM(data)>&,       \
-                              const Index<DIM(data)>&);                        \
+                              const Index<DIM(data)>&,                         \
+                              const Spectral::Parity parity);                  \
   template void project(gsl::not_null<DataVector*>, const DataVector&,         \
-                        const Mesh<DIM(data)>&, const Index<DIM(data)>&);      \
-  template void detail::project_impl(gsl::span<double> subcell_u,              \
-                                     const gsl::span<const double> dg_u,       \
-                                     const Mesh<DIM(data)>& dg_mesh,           \
-                                     const Index<DIM(data)>& subcell_extents); \
+                        const Mesh<DIM(data)>&, const Index<DIM(data)>&,       \
+                        const Spectral::Parity parity);                        \
+  template void detail::project_impl(                                          \
+      gsl::span<double> subcell_u, const gsl::span<const double> dg_u,         \
+      const Mesh<DIM(data)>& dg_mesh, const Index<DIM(data)>& subcell_extents, \
+      const Spectral::Parity parity);                                          \
   template DataVector project_to_faces(                                        \
       const DataVector&, const Mesh<DIM(data)>&, const Index<DIM(data)>&,      \
-      const size_t&);                                                          \
-  template void project_to_faces(gsl::not_null<DataVector*>,                   \
-                                 const DataVector&, const Mesh<DIM(data)>&,    \
-                                 const Index<DIM(data)>&, const size_t&);      \
+      const size_t&, const Spectral::Parity parity);                           \
+  template void project_to_faces(                                              \
+      gsl::not_null<DataVector*>, const DataVector&, const Mesh<DIM(data)>&,   \
+      const Index<DIM(data)>&, const size_t&, const Spectral::Parity parity);  \
   template void detail::project_to_faces_impl(                                 \
       gsl::span<double> subcell_u, const gsl::span<const double> dg_u,         \
       const Mesh<DIM(data)>& dg_mesh, const Index<DIM(data)>& subcell_extents, \
-      const size_t& face_direction);
+      const size_t& face_direction, const Spectral::Parity parity);
 
 GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
 

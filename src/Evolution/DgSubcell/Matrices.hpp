@@ -14,6 +14,7 @@ template <size_t Dim>
 class Mesh;
 enum class Side : uint8_t;
 namespace Spectral {
+enum class Parity : uint8_t;
 enum class Quadrature : uint8_t;
 }  // namespace Spectral
 /// \endcond
@@ -23,9 +24,13 @@ namespace evolution::dg::subcell::fd {
  * \ingroup DgSubcellGroup
  * \brief Computes the projection matrix in 1 dimension going from a DG
  * mesh to a conservative finite difference subcell mesh.
+ *
+ * The parity parameter is required for ZernikeB1 bases, and is ignored for
+ * others.
  */
 const Matrix& projection_matrix(const Mesh<1>& dg_mesh, size_t subcell_extents,
-                                const Spectral::Quadrature& subcell_quadrature);
+                                const Spectral::Quadrature& subcell_quadrature,
+                                Spectral::Parity parity);
 
 /*!
  * \ingroup DgSubcellGroup
@@ -95,4 +100,4 @@ const Matrix& reconstruction_matrix(const Mesh<Dim>& dg_mesh,
  */
 const Matrix& projection_matrix(const Mesh<1>& dg_mesh, size_t subcell_extents,
                                 size_t ghost_zone_size, Side side);
-}  // namespace evolution::dg::subcellfd
+}  // namespace evolution::dg::subcell::fd

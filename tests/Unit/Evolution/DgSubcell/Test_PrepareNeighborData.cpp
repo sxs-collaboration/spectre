@@ -79,6 +79,7 @@ struct Metavariables {
     }
 
     struct GhostVariables {
+      using ghost_variables_tag_list = tmpl::list<Var1>;
       using return_tags = tmpl::list<>;
       using argument_tags = tmpl::list<typename system::variables_tag>;
       template <typename T>

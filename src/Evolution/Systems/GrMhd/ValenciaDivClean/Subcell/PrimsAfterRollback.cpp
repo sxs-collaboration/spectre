@@ -47,7 +47,8 @@ void PrimsAfterRollback<OrderedListOfRecoverySchemes>::apply(
     prim_vars->initialize(num_grid_points);
     evolution::dg::subcell::fd::project(
         make_not_null(&get(get<hydro::Tags::Pressure<DataVector>>(*prim_vars))),
-        get(dg_pressure), dg_mesh, subcell_mesh.extents());
+        get(dg_pressure), dg_mesh, subcell_mesh.extents(),
+        Spectral::Parity::Even);
 
     grmhd::ValenciaDivClean::
         PrimitiveFromConservative<OrderedListOfRecoverySchemes, true>::apply(

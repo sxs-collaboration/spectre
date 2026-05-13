@@ -18,6 +18,7 @@
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
 #include "Evolution/DgSubcell/Tags/SubcellOptions.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
+#include "NumericalAlgorithms/Spectral/Parity.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -74,7 +75,8 @@ struct CellCenteredFlux {
             const DataVector& cell_centered_mesh_velocity =
                 evolution::dg::subcell::fd::project(
                     dg_mesh_velocity.value().get(i), dg_mesh,
-                    subcell_mesh.extents());
+                    subcell_mesh.extents(),
+                    i == 0 ? Spectral::Parity::Odd : Spectral::Parity::Even);
 
             tmpl::for_each<flux_variables>(
                 [&cell_centered_flux_vars, &cell_centered_mesh_velocity,
