@@ -12,10 +12,10 @@
 
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/Block.hpp"
-#include "Domain/CoordinateMaps/Affine.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.tpp"
 #include "Domain/CoordinateMaps/DiscreteRotation.hpp"
+#include "Domain/CoordinateMaps/Interval.hpp"
 #include "Domain/CoordinateMaps/TimeDependent/Translation.hpp"
 #include "Domain/Creators/DomainCreator.hpp"
 #include "Domain/Creators/OptionTags.hpp"
@@ -77,14 +77,16 @@ void test_rotated_intervals_construction(
               Frame::BlockLogical,
               tmpl::conditional_t<sizeof...(FuncsOfTime) == 0, Frame::Inertial,
                                   Frame::Grid>>(
-              CoordinateMaps::Affine{-1., 1., lower_bound[0], midpoint[0]}),
+              CoordinateMaps::Interval{-1., 1., lower_bound[0], midpoint[0],
+                                   CoordinateMaps::Distribution::Linear}),
           make_coordinate_map_base<
               Frame::BlockLogical,
               tmpl::conditional_t<sizeof...(FuncsOfTime) == 0, Frame::Inertial,
                                   Frame::Grid>>(
               CoordinateMaps::DiscreteRotation<1>{OrientationMap<1>{
                   std::array<Direction<1>, 1>{{Direction<1>::lower_xi()}}}},
-              CoordinateMaps::Affine{-1., 1., midpoint[0], upper_bound[0]})),
+              CoordinateMaps::Interval{-1., 1., midpoint[0], upper_bound[0],
+                                       CoordinateMaps::Distribution::Linear})),
       10.0, rotated_intervals.functions_of_time(),
       expected_grid_to_inertial_maps);
   TestHelpers::domain::creators::test_functions_of_time(

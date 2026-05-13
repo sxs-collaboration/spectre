@@ -47,6 +47,8 @@ DomainCreator:
     # steps.  (The speeds are larger on the left, so the element size
     # differences have to be exagerated more than expected.)
     BlockBounds: [[-1.0, 0.3, 0.5, 0.7, 0.9, 1.0]]
+    Distributions: [[]]
+    SingularityPositions: [[]]
     InitialLevels: [0]
     InitialGridPoints: [7]
     RefinedLevels:

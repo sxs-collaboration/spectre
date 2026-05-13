@@ -24,7 +24,7 @@
 /// \cond
 namespace domain {
 namespace CoordinateMaps {
-class Affine;
+class Interval;
 template <size_t VolumeDim>
 class DiscreteRotation;
 }  // namespace CoordinateMaps
@@ -44,7 +44,8 @@ class RotatedIntervals : public DomainCreator<1> {
  public:
   using maps_list = tmpl::list<domain::CoordinateMap<
       Frame::BlockLogical, Frame::Inertial,
-      domain::CoordinateMaps::DiscreteRotation<1>, CoordinateMaps::Affine>>;
+      domain::CoordinateMaps::DiscreteRotation<1>,
+      CoordinateMaps::Interval>>;
 
   struct LowerBound {
     using type = std::array<double, 1>;

@@ -1024,6 +1024,8 @@ SPECTRE_TEST_CASE("Unit.Elliptic.DG.SubdomainOperator", "[Unit][Elliptic]") {
           elliptic::BoundaryConditionType::Dirichlet);
       const domain::creators::AlignedLattice<1> domain_creator{
           {{{-2., 0., 2.}}},
+          {},
+          {},
           {{0}},
           {{3}},
           {{{{1}}, {{2}}, {{1}}}},  // Refine once in block 1
@@ -1055,6 +1057,8 @@ SPECTRE_TEST_CASE("Unit.Elliptic.DG.SubdomainOperator", "[Unit][Elliptic]") {
       const domain::creators::AlignedLattice<2> domain_creator{
           // Start with 4 unrefined blocks
           {{{-2., 0., 2.}, {-2., 0., 2.}}},
+          {},
+          {},
           {{0, 0}},
           {{3, 3}},
           // Refine once in eta in upper-right block in sketch above
@@ -1073,6 +1077,8 @@ SPECTRE_TEST_CASE("Unit.Elliptic.DG.SubdomainOperator", "[Unit][Elliptic]") {
           elliptic::BoundaryConditionType::Dirichlet);
       const domain::creators::AlignedLattice<3> domain_creator{
           {{{-2., 0., 2.}, {-2., 0., 2.}, {-2., 0., 2.}}},
+          {},
+          {},
           {{0, 0, 0}},
           {{3, 3, 3}},
           {{{{1, 0, 0}}, {{2, 1, 1}}, {{0, 1, 1}}}},

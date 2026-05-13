@@ -31,7 +31,8 @@ namespace {
 void test_uniform_cost_function() {
   // AlignedLattice with differently-refined Elements
   const auto domain_creator = domain::creators::AlignedLattice<2>(
-      {{{{70, 71, 72, 73}}, {{90, 92, 95, 99}}}}, {{2, 5}}, {{3, 3}},
+      {{{{70, 71, 72, 73}}, {{90, 92, 95, 99}}}}, {{{}, {}}}, {{{}, {}}},
+      {{2, 5}}, {{3, 3}},
       {{{{{1, 0}}, {{3, 2}}, {{3, 5}}}, {{{2, 1}}, {{3, 3}}, {{4, 6}}}}},
       {{{{{1, 0}}, {{3, 2}}, {{4, 5}}}, {{{2, 1}}, {{3, 3}}, {{6, 7}}}}}, {});
 
@@ -52,24 +53,24 @@ void test_uniform_cost_function() {
 // functions
 void test_weighted_cost_function(const domain::ElementWeight element_weight) {
   const auto domain_creator1 = domain::creators::AlignedLattice<3>(
-      {{{{0.0, 1.0, 2.0}}, {{0.0, 1.0}}, {{0.0, 1.0}}}}, {{2, 1, 0}},
-      {{4, 4, 4}}, {}, {}, {});
+      {{{{0.0, 1.0, 2.0}}, {{0.0, 1.0}}, {{0.0, 1.0}}}}, {{{}, {}, {}}},
+      {{{}, {}, {}}}, {{2, 1, 0}}, {{4, 4, 4}}, {}, {}, {});
   const auto domain1 = domain_creator1.create_domain();
   const auto& blocks1 = domain1.blocks();
 
   // Block size and grid points are the same as blocks in `domain1`, but
   // refinement levels are different
   const auto domain_creator2 = domain::creators::AlignedLattice<3>(
-      {{{{0.0, 1.0}}, {{0.0, 1.0}}, {{0.0, 1.0}}}}, {{2, 3, 2}}, {{4, 4, 4}},
-      {}, {}, {});
+      {{{{0.0, 1.0}}, {{0.0, 1.0}}, {{0.0, 1.0}}}}, {{{}, {}, {}}},
+      {{{}, {}, {}}}, {{2, 3, 2}}, {{4, 4, 4}}, {}, {}, {});
   const auto domain2 = domain_creator2.create_domain();
   const auto& blocks2 = domain2.blocks();
 
   // Block size and refinement levels are the same as blocks in `domain1`, but
   // grid points are different
   const auto domain_creator3 = domain::creators::AlignedLattice<3>(
-      {{{{0.0, 1.0}}, {{0.0, 1.0}}, {{0.0, 1.0}}}}, {{2, 1, 0}}, {{4, 3, 2}},
-      {}, {}, {});
+      {{{{0.0, 1.0}}, {{0.0, 1.0}}, {{0.0, 1.0}}}}, {{{}, {}, {}}},
+      {{{}, {}, {}}}, {{2, 1, 0}}, {{4, 3, 2}}, {}, {}, {});
   const auto domain3 = domain_creator3.create_domain();
   const auto& blocks3 = domain2.blocks();
 
@@ -511,14 +512,15 @@ SPECTRE_TEST_CASE("Unit.Domain.ElementDistribution", "[Domain][Unit]") {
 
   // 1D, single block
   const auto lattice_1d = domain::creators::AlignedLattice<1>(
-      {{{{0.0, 1.0}}}}, {{4}}, {{6}}, {}, {}, {});
+      {{{{0.0, 1.0}}}}, {{{}}}, {{{}}}, {{4}}, {{6}}, {}, {}, {});
   // 2D
   const auto lattice_2d = domain::creators::AlignedLattice<2>(
-      {{{{0.0, 0.3}}, {{0.0, 0.8, 2.5, 4.9}}}}, {{2, 3}}, {{4, 5}}, {}, {}, {});
+      {{{{0.0, 0.3}}, {{0.0, 0.8, 2.5, 4.9}}}}, {{{}, {}}}, {{{}, {}}},
+      {{2, 3}}, {{4, 5}}, {}, {}, {});
   // 3D
   const auto lattice_3d = domain::creators::AlignedLattice<3>(
-      {{{{0.0, 0.6}}, {{0.0, 0.4, 0.7}}, {{0.0, 0.3}}}}, {{2, 1, 3}},
-      {{5, 4, 5}}, {}, {}, {});
+      {{{{0.0, 0.6}}, {{0.0, 0.4, 0.7}}, {{0.0, 0.3}}}}, {{{}, {}, {}}},
+      {{{}, {}, {}}}, {{2, 1, 3}}, {{5, 4, 5}}, {}, {}, {});
 
   // Test element distribution construction logic
 

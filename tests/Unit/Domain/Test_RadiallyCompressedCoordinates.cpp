@@ -118,6 +118,29 @@ void test_radially_compressed_coordinates(
   }
 }
 
+void test_index_specific_compression() {
+  INFO("Testing index-specific radial compression");
+  const size_t Dim = 2;
+  using Frame = Frame::Inertial;
+  const double inner_radius = 10.0;
+  const double outer_radius = 100.0;
+  const auto distribution = CoordinateMaps::Distribution::Logarithmic;
+  const tnsr::I<DataVector, Dim, Frame> coords{
+      {{DataVector{50.0}, DataVector{1.5}}}};
+  using radial_dim = tmpl::size_t<0>;
+  using compute_tag =
+      Tags::RadiallyCompressedCoordinatesCompute<Dim, Frame, radial_dim>;
+  const std::optional<RadiallyCompressedCoordinatesOptions> options{
+      {inner_radius, outer_radius, distribution}};
+  tnsr::I<DataVector, Dim, Frame> result{static_cast<size_t>(1)};
+  compute_tag::function(make_not_null(&result), coords, options);
+  CHECK(get<1>(result)[0] == 1.5);
+  CHECK(get<0>(result)[0] < 50.0);
+  CHECK(get<0>(result)[0] > inner_radius);
+  TestHelpers::db::test_compute_tag<compute_tag>(
+      "RadiallyCompressedCoordinates");
+}
+
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Domain.RadiallyCompressedCoordinates",
@@ -131,6 +154,7 @@ SPECTRE_TEST_CASE("Unit.Domain.RadiallyCompressedCoordinates",
   test_radially_compressed_coordinates(
       CoordinateMaps::Distribution::Logarithmic);
   test_radially_compressed_coordinates(CoordinateMaps::Distribution::Inverse);
+  test_index_specific_compression();
 }
 
 }  // namespace domain
