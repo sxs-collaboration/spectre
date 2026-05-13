@@ -19,9 +19,10 @@ DataVector PrimitiveGhostVariables::apply(
     const size_t rdmp_size) {
   DataVector buffer{
       prims.number_of_grid_points() *
-          Variables<tags_for_reconstruction>::number_of_independent_components +
+          Variables<
+              ghost_variables_tag_list>::number_of_independent_components +
       rdmp_size};
-  Variables<tags_for_reconstruction> vars_to_reconstruct(
+  Variables<ghost_variables_tag_list> vars_to_reconstruct(
       buffer.data(), buffer.size() - rdmp_size);
   get<hydro::Tags::RestMassDensity<DataVector>>(vars_to_reconstruct) =
       get<hydro::Tags::RestMassDensity<DataVector>>(prims);

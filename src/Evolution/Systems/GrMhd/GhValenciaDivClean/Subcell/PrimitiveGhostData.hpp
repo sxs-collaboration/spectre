@@ -35,11 +35,9 @@ namespace grmhd::GhValenciaDivClean::subcell {
  * \note Only called on elements using FD.
  */
 class PrimitiveGhostVariables {
- private:
-  using tags_for_reconstruction = GhValenciaDivClean::Tags::
-      primitive_grmhd_and_spacetime_reconstruction_tags;
-
  public:
+  using ghost_variables_tag_list = GhValenciaDivClean::Tags::
+      primitive_grmhd_and_spacetime_reconstruction_tags;
   using return_tags = tmpl::list<>;
   using argument_tags =
       tmpl::list<::Tags::Variables<hydro::grmhd_tags<DataVector>>,

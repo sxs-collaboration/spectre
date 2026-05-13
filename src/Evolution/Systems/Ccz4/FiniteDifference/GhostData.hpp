@@ -22,6 +22,7 @@ namespace Ccz4::fd {
  */
 class GhostVariables {
  public:
+  using ghost_variables_tag_list = Ccz4::fd::System::variables_tag_list;
   using return_tags = tmpl::list<>;
   using argument_tags =
       tmpl::list<::Tags::Variables<Ccz4::fd::System::variables_tag_list>>;

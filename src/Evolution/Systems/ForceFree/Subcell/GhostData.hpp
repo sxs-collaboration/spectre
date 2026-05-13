@@ -35,6 +35,9 @@ class GhostVariables {
                  ForceFree::Tags::TildeQ>;
 
  public:
+  // TildeJ is prepended to evolved_vars in the packed DataVector (see .cpp)
+  using ghost_variables_tag_list =
+      tmpl::push_front<evolved_vars, ForceFree::Tags::TildeJ>;
   using return_tags = tmpl::list<>;
   using argument_tags =
       tmpl::list<::Tags::Variables<evolved_vars>, ForceFree::Tags::TildeJ>;

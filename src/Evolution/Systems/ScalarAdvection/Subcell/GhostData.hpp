@@ -26,6 +26,7 @@ namespace ScalarAdvection::subcell {
  */
 class GhostVariables {
  public:
+  using ghost_variables_tag_list = tmpl::list<ScalarAdvection::Tags::U>;
   using return_tags = tmpl::list<>;
   using argument_tags =
       tmpl::list<::Tags::Variables<tmpl::list<ScalarAdvection::Tags::U>>>;
