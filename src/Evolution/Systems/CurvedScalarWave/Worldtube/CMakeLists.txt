@@ -15,6 +15,7 @@ spectre_target_sources(
   PunctureField.cpp
   PunctureFieldOrder0.cpp
   PunctureFieldOrder1.cpp
+  PunctureFieldKerrOrder0.cpp
   RadiusFunctions.cpp
   SelfForce.cpp
   )
