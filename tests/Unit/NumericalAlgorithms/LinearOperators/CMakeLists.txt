@@ -4,6 +4,7 @@
 set(LIBRARY "Test_LinearOperators")
 
 set(LIBRARY_SOURCES
+  Filters/Test_Hypercube.cpp
   Test_CoefficientTransforms.cpp
   Test_DefiniteIntegral.cpp
   Test_Divergence.cpp
