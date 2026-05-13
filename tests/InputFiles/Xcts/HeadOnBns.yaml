@@ -55,6 +55,7 @@ DomainCreator:
       XCoord: *x_left
       Interior: Auto
       UseLogarithmicMap: False
+    CuttingPlanePosition: Auto
     CenterOfMassOffset: [*y_offset, *z_offset]
     Envelope:
       Radius: &outer_shell_inner_radius 120.

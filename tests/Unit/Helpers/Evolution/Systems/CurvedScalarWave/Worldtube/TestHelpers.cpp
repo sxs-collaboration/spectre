@@ -48,6 +48,7 @@ std::unique_ptr<DomainCreator<3>> worldtube_binary_compact_object(
       "      ExciseWithBoundaryCondition:\n"
       "        None\n"
       "    UseLogarithmicMap: false\n"
+      "  CuttingPlanePosition: Auto\n"
       "  CenterOfMassOffset: [0., 0.]\n"
       "  Envelope:\n"
       "    Radius: 30.0\n"

@@ -18,6 +18,7 @@ SourceDomainCreator:
       XCoord: &x_left -7.683
       ExciseInterior: True
       UseLogarithmicMap: True
+    CuttingPlanePosition: Auto
     CenterOfMassOffset: [0., 0.]
     Envelope:
       Radius: 60.
@@ -47,6 +48,7 @@ TargetDomainCreator:
       XCoord: *x_left
       ExciseInterior: True
       UseLogarithmicMap: true
+    CuttingPlanePosition: Auto
     CenterOfMassOffset: [0., 0.]
     Envelope:
       Radius: 100.

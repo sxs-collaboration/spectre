@@ -55,6 +55,7 @@ DomainCreator:
       Interior:
         ExciseWithBoundaryCondition: Worldtube
       UseLogarithmicMap: false
+    CuttingPlanePosition: Auto
     CenterOfMassOffset: [0., 0.]
     CubeScale: 1.0
     Envelope:
