@@ -491,6 +491,92 @@ void test_zernike_b1_projection_matrix() {
   }
 }
 
+void test_zernike_b1_reconstruction_matrix() {
+  constexpr Spectral::Basis basis = Spectral::Basis::ZernikeB1;
+  constexpr Spectral::Quadrature quadrature =
+      Spectral::Quadrature::GaussRadauUpper;
+  const Approx custom_approx = Approx::custom().epsilon(1.0e-12).scale(1.);
+
+  for (size_t n_dg = 2_st; n_dg <= 6; ++n_dg) {
+    CAPTURE(n_dg);
+    const Mesh<1> dg_mesh{n_dg, basis, quadrature};
+    const DataVector xi_dg = get<0>(logical_coordinates(dg_mesh));
+    const size_t n_fd = 2 * n_dg - 1;
+
+    const Matrix& P_even =
+        projection_matrix(dg_mesh, n_fd, Spectral::Quadrature::CellCentered,
+                          Spectral::Parity::Even);
+    const Matrix& P_odd =
+        projection_matrix(dg_mesh, n_fd, Spectral::Quadrature::CellCentered,
+                          Spectral::Parity::Odd);
+    const Matrix& R_even = subcell::fd::reconstruction_matrix(
+        dg_mesh, n_fd, Spectral::Parity::Even);
+    const Matrix& R_odd = subcell::fd::reconstruction_matrix(
+        dg_mesh, n_fd, Spectral::Parity::Odd);
+
+    REQUIRE(R_even.rows() == n_dg);
+    REQUIRE(R_even.columns() == n_fd);
+    REQUIRE(R_odd.rows() == n_dg);
+    REQUIRE(R_odd.columns() == n_fd);
+
+    // We stay within degree 6 to remain within the 6th-order integration
+    // accuracy of the conservation constraint: even Q^0_{2k} has degree 2k,
+    // odd Q^1_{2k+1} has degree 2k+1.
+    for (size_t k = 0; k < std::min(n_dg, size_t{3}); ++k) {
+      CAPTURE(k);
+      // Even parity: Q^0_{2k} (degree 2k <= 4)
+      const DataVector f_even =
+          Spectral::compute_basis_function_value<basis>(2 * k, 0_st, xi_dg);
+      DataVector f_even_fd(n_fd, 0.0);
+      dgemv_('N', P_even.rows(), P_even.columns(), 1.0, P_even.data(),
+             P_even.spacing(), f_even.data(), 1, 0.0, f_even_fd.data(), 1);
+      DataVector f_even_reconstructed(n_dg, 0.0);
+      dgemv_('N', R_even.rows(), R_even.columns(), 1.0, R_even.data(),
+             R_even.spacing(), f_even_fd.data(), 1, 0.0,
+             f_even_reconstructed.data(), 1);
+      CHECK_ITERABLE_CUSTOM_APPROX(f_even_reconstructed, f_even, custom_approx);
+
+      // Odd parity: Q^1_{2k+1} (degree 2k+1 <= 5)
+      const DataVector f_odd =
+          Spectral::compute_basis_function_value<basis>(2 * k + 1, 1_st, xi_dg);
+      DataVector f_odd_fd(n_fd, 0.0);
+      dgemv_('N', P_odd.rows(), P_odd.columns(), 1.0, P_odd.data(),
+             P_odd.spacing(), f_odd.data(), 1, 0.0, f_odd_fd.data(), 1);
+      DataVector f_odd_reconstructed(n_dg, 0.0);
+      dgemv_('N', R_odd.rows(), R_odd.columns(), 1.0, R_odd.data(),
+             R_odd.spacing(), f_odd_fd.data(), 1, 0.0,
+             f_odd_reconstructed.data(), 1);
+      CHECK_ITERABLE_CUSTOM_APPROX(f_odd_reconstructed, f_odd, custom_approx);
+    }
+  }
+
+#ifdef SPECTRE_DEBUG
+  CHECK_THROWS_WITH(subcell::fd::reconstruction_matrix(
+                        Mesh<1>{3, Spectral::Basis::ZernikeB1,
+                                Spectral::Quadrature::GaussRadauUpper},
+                        5, Spectral::Parity::Uninitialized),
+                    Catch::Matchers::ContainsSubstring(
+                        "Parity must be set when using ZernikeB1"));
+  CHECK_THROWS_WITH(
+      subcell::fd::reconstruction_matrix(
+          Mesh<1>{3, Spectral::Basis::Legendre,
+                  Spectral::Quadrature::GaussLobatto},
+          5, Spectral::Parity::Even),
+      Catch::Matchers::ContainsSubstring("only supports ZernikeB1"));
+  // subcell_extents < n_dg makes P^T P singular.
+  CHECK_THROWS_WITH(subcell::fd::reconstruction_matrix(
+                        Mesh<1>{3, Spectral::Basis::ZernikeB1,
+                                Spectral::Quadrature::GaussRadauUpper},
+                        2, Spectral::Parity::Even),
+                    Catch::Matchers::ContainsSubstring("Subcell extents"));
+  CHECK_THROWS_WITH(subcell::fd::reconstruction_matrix(
+                        Mesh<1>{3, Spectral::Basis::ZernikeB1,
+                                Spectral::Quadrature::GaussRadauUpper},
+                        2, Spectral::Parity::Odd),
+                    Catch::Matchers::ContainsSubstring("Subcell extents"));
+#endif
+}
+
 SPECTRE_TEST_CASE("Unit.Evolution.Subcell.Fd.ProjectionMatrix",
                   "[Evolution][Unit]") {
   test_projection_matrix<10, 1, Spectral::Basis::Legendre,
@@ -550,6 +636,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Subcell.Fd.ReconstructionMatrix",
                         Spectral::Quadrature::GaussLobatto>(1.0e-11);
   reconstruction_matrix<4, 3, Spectral::Basis::Legendre,
                         Spectral::Quadrature::Gauss>(1.0e-11);
+  test_zernike_b1_reconstruction_matrix();
 }
 }  // namespace
 }  // namespace evolution::dg::subcell::fd

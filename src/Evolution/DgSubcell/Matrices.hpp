@@ -87,6 +87,24 @@ const Matrix& reconstruction_matrix(const Mesh<Dim>& dg_mesh,
 
 /*!
  * \ingroup DgSubcellGroup
+ * \brief Computes the 1D reconstruction matrix for a ZernikeB1 DG mesh.
+ *
+ * Uses the same constrained least-squares formula as the Legendre overload,
+ * but with the parity-aware ZernikeB1 interpolation matrix and GaussRadauUpper
+ * quadrature weights, notably only for even parity. For odd parity, the
+ * collocation points are inconsistent with the constraint equation, so we opt
+ * to directly use the pseduo-inverse. Only `DimByDim` reconstruction is
+ * supported for ZernikeB1  meshes; this overload is called per-dimension for
+ * the radial direction.
+ *
+ * The `parity` parameter must be `Even` or `Odd` (not `Uninitialized`).
+ */
+const Matrix& reconstruction_matrix(const Mesh<1>& dg_mesh,
+                                    size_t subcell_extents,
+                                    Spectral::Parity parity);
+
+/*!
+ * \ingroup DgSubcellGroup
  * \brief Computes the projection matrix in 1 dimension going from a DG
  * mesh to a conservative finite difference subcell mesh for only the ghost
  * zones.

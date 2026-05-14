@@ -28,6 +28,7 @@
 #include "Evolution/DgSubcell/ReconstructionMethod.hpp"
 #include "Helpers/Evolution/DgSubcell/ProjectionTestHelpers.hpp"
 #include "NumericalAlgorithms/Spectral/Basis.hpp"
+#include "NumericalAlgorithms/Spectral/BasisFunctionValue.hpp"
 #include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/MinimumNumberOfPoints.hpp"
@@ -228,6 +229,107 @@ void test_reconstruct_fd(const std::vector<double>& eps,
   }
 }
 
+void test_zernike_b1_reconstruct() {
+  constexpr Spectral::Basis zernike_basis = Spectral::Basis::ZernikeB1;
+  constexpr Spectral::Quadrature zernike_quad =
+      Spectral::Quadrature::GaussRadauUpper;
+  const Approx custom_approx = Approx::custom().epsilon(1.0e-12).scale(1.);
+
+  for (size_t n_r = std::max(
+           size_t{2},
+           Spectral::minimum_number_of_points<zernike_basis, zernike_quad>);
+       n_r <= 5; ++n_r) {
+    CAPTURE(n_r);
+    const Mesh<3> dg_mesh{
+        {{n_r, 1, 1}},
+        {zernike_basis, Spectral::Basis::Cartoon, Spectral::Basis::Cartoon},
+        {zernike_quad, Spectral::Quadrature::SphericalSymmetry,
+         Spectral::Quadrature::SphericalSymmetry}};
+    const Index<3> subcell_extents{2 * n_r - 1, 1, 1};
+    const Mesh<1> dg_mesh_1d{n_r, zernike_basis, zernike_quad};
+    const auto xi_dg = get<0>(logical_coordinates(dg_mesh_1d));
+
+    // Test explicit-parity DataVector overloads: R(P(f)) = f for ZernikeB1
+    // basis functions of both parities.
+    for (size_t k = 0; k < std::min(n_r, size_t{3}); ++k) {
+      CAPTURE(k);
+      const DataVector f_even =
+          Spectral::compute_basis_function_value<zernike_basis>(2 * k, 0_st,
+                                                                xi_dg);
+      const DataVector f_even_subcell = evolution::dg::subcell::fd::project(
+          f_even, dg_mesh, subcell_extents, Spectral::Parity::Even);
+      const DataVector f_even_reconstructed =
+          evolution::dg::subcell::fd::reconstruct(
+              f_even_subcell, dg_mesh, subcell_extents,
+              evolution::dg::subcell::fd::ReconstructionMethod::DimByDim,
+              Spectral::Parity::Even);
+      CHECK_ITERABLE_CUSTOM_APPROX(f_even_reconstructed, f_even, custom_approx);
+
+      const DataVector f_odd =
+          Spectral::compute_basis_function_value<zernike_basis>(2 * k + 1, 1_st,
+                                                                xi_dg);
+      const DataVector f_odd_subcell = evolution::dg::subcell::fd::project(
+          f_odd, dg_mesh, subcell_extents, Spectral::Parity::Odd);
+      const DataVector f_odd_reconstructed =
+          evolution::dg::subcell::fd::reconstruct(
+              f_odd_subcell, dg_mesh, subcell_extents,
+              evolution::dg::subcell::fd::ReconstructionMethod::DimByDim,
+              Spectral::Parity::Odd);
+      CHECK_ITERABLE_CUSTOM_APPROX(f_odd_reconstructed, f_odd, custom_approx);
+    }
+
+    // Test the Variables overload, which deduces parity from the tag list.
+    using TagList = tmpl::list<Tags::Scalar, Tags::Vector<3>>;
+    Variables<TagList> dg_vars(dg_mesh.number_of_grid_points());
+    get(get<Tags::Scalar>(dg_vars)) =
+        Spectral::compute_basis_function_value<zernike_basis>(0, 0_st, xi_dg);
+    get<Tags::Vector<3>>(dg_vars).get(0) =
+        Spectral::compute_basis_function_value<zernike_basis>(1, 1_st, xi_dg);
+    for (size_t d = 1; d < 3; ++d) {
+      get<Tags::Vector<3>>(dg_vars).get(d) =
+          Spectral::compute_basis_function_value<zernike_basis>(0, 0_st, xi_dg);
+    }
+
+    const Variables<TagList> subcell_vars =
+        evolution::dg::subcell::fd::project(dg_vars, dg_mesh, subcell_extents);
+    const Variables<TagList> reconstructed_vars =
+        evolution::dg::subcell::fd::reconstruct(
+            subcell_vars, dg_mesh, subcell_extents,
+            evolution::dg::subcell::fd::ReconstructionMethod::DimByDim);
+
+    CHECK_ITERABLE_CUSTOM_APPROX(get(get<Tags::Scalar>(reconstructed_vars)),
+                                 get(get<Tags::Scalar>(dg_vars)),
+                                 custom_approx);
+    CHECK_ITERABLE_CUSTOM_APPROX(get<Tags::Vector<3>>(reconstructed_vars),
+                                 get<Tags::Vector<3>>(dg_vars), custom_approx);
+  }
+
+  // AllDimsAtOnce is not supported for ZernikeB1 (ERROR, not just ASSERT).
+  const Mesh<3> dg_mesh_err{
+      {{3, 1, 1}},
+      {zernike_basis, Spectral::Basis::Cartoon, Spectral::Basis::Cartoon},
+      {zernike_quad, Spectral::Quadrature::SphericalSymmetry,
+       Spectral::Quadrature::SphericalSymmetry}};
+  const Index<3> subcell_extents_err{5, 1, 1};
+  const DataVector f_err(5, 1.0);
+  CHECK_THROWS_WITH(
+      evolution::dg::subcell::fd::reconstruct(
+          f_err, dg_mesh_err, subcell_extents_err,
+          evolution::dg::subcell::fd::ReconstructionMethod::AllDimsAtOnce,
+          Spectral::Parity::Even),
+      Catch::Matchers::ContainsSubstring("AllDimsAtOnce"));
+
+#ifdef SPECTRE_DEBUG
+  // Uninitialized parity asserts for ZernikeB1.
+  CHECK_THROWS_WITH(
+      evolution::dg::subcell::fd::reconstruct(
+          f_err, dg_mesh_err, subcell_extents_err,
+          evolution::dg::subcell::fd::ReconstructionMethod::DimByDim,
+          Spectral::Parity::Uninitialized),
+      Catch::Matchers::ContainsSubstring("Parity must be set"));
+#endif
+}
+
 // [[TimeOut, 20]]
 SPECTRE_TEST_CASE("Unit.Evolution.Subcell.Fd.Reconstruction",
                   "[Evolution][Unit]") {
@@ -257,5 +359,6 @@ SPECTRE_TEST_CASE("Unit.Evolution.Subcell.Fd.Reconstruction",
                         Spectral::Quadrature::Gauss>(
         {1.0e-14, 1.0e-14, 1.0e-6, 3.0e-7, 3.0e-8}, reconstruction_method);
   }
+  test_zernike_b1_reconstruct();
 }
 }  // namespace

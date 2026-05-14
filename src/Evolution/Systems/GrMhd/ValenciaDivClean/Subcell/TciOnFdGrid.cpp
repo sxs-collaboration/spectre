@@ -63,20 +63,23 @@ std::tuple<int, evolution::dg::subcell::RdmpTciData> TciOnFdGrid::apply(
   evolution::dg::subcell::fd::reconstruct(
       make_not_null(&get(dg_tilde_d)), get(subcell_tilde_d), dg_mesh,
       subcell_mesh.extents(),
-      evolution::dg::subcell::fd::ReconstructionMethod::DimByDim);
+      evolution::dg::subcell::fd::ReconstructionMethod::DimByDim,
+      Spectral::Parity::Even);
 
   Scalar<DataVector> dg_tilde_ye{};
   assign_data(make_not_null(&dg_tilde_ye), num_dg_pts);
   evolution::dg::subcell::fd::reconstruct(
       make_not_null(&get(dg_tilde_ye)), get(subcell_tilde_ye), dg_mesh,
       subcell_mesh.extents(),
-      evolution::dg::subcell::fd::ReconstructionMethod::DimByDim);
+      evolution::dg::subcell::fd::ReconstructionMethod::DimByDim,
+      Spectral::Parity::Even);
   Scalar<DataVector> dg_tilde_tau{};
   assign_data(make_not_null(&dg_tilde_tau), num_dg_pts);
   evolution::dg::subcell::fd::reconstruct(
       make_not_null(&get(dg_tilde_tau)), get(subcell_tilde_tau), dg_mesh,
       subcell_mesh.extents(),
-      evolution::dg::subcell::fd::ReconstructionMethod::DimByDim);
+      evolution::dg::subcell::fd::ReconstructionMethod::DimByDim,
+      Spectral::Parity::Even);
 
   if (min(get(dg_tilde_d)) <
           tci_options.minimum_rest_mass_density_times_lorentz_factor) {
@@ -104,7 +107,8 @@ std::tuple<int, evolution::dg::subcell::RdmpTciData> TciOnFdGrid::apply(
     evolution::dg::subcell::fd::reconstruct(
         make_not_null(&get(dg_pressure)), get(subcell_pressure), dg_mesh,
         subcell_mesh.extents(),
-        evolution::dg::subcell::fd::ReconstructionMethod::DimByDim);
+        evolution::dg::subcell::fd::ReconstructionMethod::DimByDim,
+        Spectral::Parity::Even);
 
     if (evolution::dg::subcell::persson_tci(
             dg_tilde_d, dg_mesh, persson_exponent,
@@ -128,7 +132,8 @@ std::tuple<int, evolution::dg::subcell::RdmpTciData> TciOnFdGrid::apply(
   evolution::dg::subcell::fd::reconstruct(
       make_not_null(&get(dg_mag_tilde_b)), get(subcell_mag_tilde_b), dg_mesh,
       subcell_mesh.extents(),
-      evolution::dg::subcell::fd::ReconstructionMethod::DimByDim);
+      evolution::dg::subcell::fd::ReconstructionMethod::DimByDim,
+      Spectral::Parity::Even);
   // Add the reconstructed DG solution to the check. This is done so that we
   // wouldn't violate RDMP if we switch back. However, we don't want to return
   // max/mins from a bad DG solution.
