@@ -5,6 +5,7 @@
 
 #include <array>
 #include <cstddef>
+#include <numbers>
 #include <random>
 
 #include "DataStructures/DataBox/Prefixes.hpp"
@@ -29,6 +30,77 @@ using deriv_psi_tag =
     ::Tags::deriv<Tags::Psi, tmpl::size_t<3>, Frame::Inertial>;
 using puncture_vars =
     Variables<tmpl::list<Tags::Psi, ::Tags::dt<Tags::Psi>, deriv_psi_tag>>;
+
+Worldtube::PunctureField make_schwarzschild_puncture_field(
+    const size_t order, const double bh_mass) {
+  return Worldtube::PunctureField{
+      Worldtube::PunctureField::Schwarzschild{order, bh_mass}};
+}
+
+void test_dispatch() {
+  MAKE_GENERATOR(gen);
+  std::uniform_real_distribution<double> theta_dist{0., std::numbers::pi};
+  std::uniform_real_distribution<double> phi_dist{0., 2. * std::numbers::pi};
+  std::uniform_real_distribution<double> pos_dist{2., 10.};
+  std::uniform_real_distribution<double> vel_acc_dist{-0.1, 0.1};
+  const size_t size = 8;
+  const double wt_radius = 0.1;
+  tnsr::I<DataVector, 3, Frame::Inertial> centered_coords(size);
+  for (size_t i = 0; i < size; ++i) {
+    const double theta = theta_dist(gen);
+    const double phi = phi_dist(gen);
+    centered_coords.get(0)[i] = wt_radius * sin(theta) * cos(phi);
+    centered_coords.get(1)[i] = wt_radius * sin(theta) * sin(phi);
+    centered_coords.get(2)[i] = wt_radius * cos(theta);
+  }
+  const auto random_position =
+      make_with_random_values<tnsr::I<double, 3, Frame::Inertial>>(
+          make_not_null(&gen), make_not_null(&pos_dist), 1);
+  const auto random_velocity =
+      make_with_random_values<tnsr::I<double, 3, Frame::Inertial>>(
+          make_not_null(&gen), make_not_null(&vel_acc_dist), 1);
+  const auto random_acceleration =
+      make_with_random_values<tnsr::I<double, 3, Frame::Inertial>>(
+          make_not_null(&gen), make_not_null(&vel_acc_dist), 1);
+  const auto random_self_force = make_with_random_values<Scalar<DataVector>>(
+      make_not_null(&gen), make_not_null(&vel_acc_dist), DataVector(12));
+  const double bh_mass = 1.2345;
+  for (size_t order = 0; order <= 1; ++order) {
+    CAPTURE(order);
+    puncture_vars expected{size};
+    puncture_vars dispatched{size};
+    const auto puncture_field =
+        make_schwarzschild_puncture_field(order, bh_mass);
+    if (order == 0) {
+      Worldtube::acceleration_terms_0(
+          make_not_null(&expected), centered_coords, random_position,
+          random_velocity, random_acceleration, get(random_self_force)[0],
+          get(random_self_force)[1], get(random_self_force)[2],
+          get(random_self_force)[3], get(random_self_force)[4],
+          get(random_self_force)[5], bh_mass);
+    } else {
+      Worldtube::acceleration_terms_1(
+          make_not_null(&expected), centered_coords, random_position,
+          random_velocity, random_acceleration, get(random_self_force)[0],
+          get(random_self_force)[1], get(random_self_force)[2],
+          get(random_self_force)[3], get(random_self_force)[4],
+          get(random_self_force)[5], get(random_self_force)[6],
+          get(random_self_force)[7], get(random_self_force)[8],
+          get(random_self_force)[9], get(random_self_force)[10],
+          get(random_self_force)[11], bh_mass);
+    }
+    puncture_field.apply_acceleration_terms(
+        make_not_null(&dispatched), centered_coords, random_position,
+        random_velocity, random_acceleration, get(random_self_force)[0],
+        get(random_self_force)[1], get(random_self_force)[2],
+        get(random_self_force)[3], get(random_self_force)[4],
+        get(random_self_force)[5], get(random_self_force)[6],
+        get(random_self_force)[7], get(random_self_force)[8],
+        get(random_self_force)[9], get(random_self_force)[10],
+        get(random_self_force)[11]);
+    CHECK_VARIABLES_APPROX(expected, dispatched);
+  }
+}
 
 // tests the derivative of the puncture field against a finite difference
 // calculation
@@ -136,6 +208,7 @@ void test_derivative() {
 
 SPECTRE_TEST_CASE("Unit.Evolution.Systems.CurvedScalarWave.AccelerationTerms",
                   "[Unit][Evolution]") {
+  test_dispatch();
   test_derivative();
 }
 }  // namespace

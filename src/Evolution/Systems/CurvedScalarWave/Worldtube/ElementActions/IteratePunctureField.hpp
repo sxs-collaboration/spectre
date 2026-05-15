@@ -55,7 +55,7 @@ struct IteratePunctureField {
         [&self_force_data = get(inbox.at(time_step_id)),
          &position_velocity = db::get<Tags::ParticlePositionVelocity<Dim>>(box),
          &centered_face_coordinates, charge = db::get<Tags::Charge>(box),
-         order = db::get<Tags::ExpansionOrder>(box)](
+         &puncture_field = db::get<Tags::PunctureFieldConfig>(box)](
             const auto iterated_puncture_field) {
           tnsr::I<double, Dim> iterated_acceleration{
               {self_force_data[0], self_force_data[1], self_force_data[2]}};
@@ -66,23 +66,23 @@ struct IteratePunctureField {
             iterated_puncture_field->emplace(face_size);
           }
 
-          puncture_field(make_not_null(&iterated_puncture_field->value()),
-                         centered_face_coordinates.value(),
-                         position_velocity[0], position_velocity[1],
-                         iterated_acceleration, 1., order);
+          puncture_field.apply_puncture(
+              make_not_null(&iterated_puncture_field->value()),
+              centered_face_coordinates.value(), position_velocity[0],
+              position_velocity[1], iterated_acceleration);
           Variables<tmpl::list<CurvedScalarWave::Tags::Psi,
                                ::Tags::dt<CurvedScalarWave::Tags::Psi>,
                                ::Tags::deriv<CurvedScalarWave::Tags::Psi,
                                              tmpl::size_t<3>, Frame::Inertial>>>
               acceleration_terms(face_size);
-          acceleration_terms_1(
+          puncture_field.apply_acceleration_terms(
               make_not_null(&acceleration_terms),
               centered_face_coordinates.value(), position_velocity[0],
               position_velocity[1], iterated_acceleration, self_force_data[3],
               self_force_data[4], self_force_data[5], self_force_data[6],
               self_force_data[7], self_force_data[8], self_force_data[9],
               self_force_data[10], self_force_data[11], self_force_data[12],
-              self_force_data[13], self_force_data[14], 1.);
+              self_force_data[13], self_force_data[14]);
           iterated_puncture_field->value() += acceleration_terms;
           iterated_puncture_field->value() *= charge;
         },

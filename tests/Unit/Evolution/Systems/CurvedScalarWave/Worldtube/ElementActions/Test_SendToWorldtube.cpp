@@ -70,8 +70,8 @@ struct MockElementArray {
               db::AddSimpleTags<
                   domain::Tags::Element<Dim>, domain::Tags::Mesh<Dim>,
                   domain::Tags::Coordinates<Dim, Frame::Inertial>,
-                  Tags::PunctureField<Dim>, gr::Tags::Shift<DataVector, Dim>,
-                  gr::Tags::Lapse<DataVector>,
+                  Tags::GeodesicPunctureField<Dim>,
+                  gr::Tags::Shift<DataVector, Dim>, gr::Tags::Lapse<DataVector>,
                   domain::Tags::InverseJacobian<Dim, Frame::ElementLogical,
                                                 Frame::Inertial>,
                   typename CurvedScalarWave::System<Dim>::variables_tag,
@@ -124,9 +124,10 @@ struct MockMetavariables {
   using dg_element_array = MockElementArray<MockMetavariables>;
   using const_global_cache_tags =
       tmpl::list<domain::Tags::Domain<Dim>, Tags::ExcisionSphere<Dim>,
-                 Tags::WorldtubeRadius, Tags::ExpansionOrder,
-                 Tags::MaxIterations, Tags::Charge, Tags::Mass, ::Tags::Time,
-                 Tags::SelfForceTurnOnTime, Tags::SelfForceTurnOnInterval>;
+                 Tags::WorldtubeRadius, Tags::PunctureFieldConfig,
+                 Tags::ExpansionOrder, Tags::MaxIterations, Tags::Charge,
+                 Tags::Mass, ::Tags::Time, Tags::SelfForceTurnOnTime,
+                 Tags::SelfForceTurnOnInterval>;
 };
 
 // This test checks that `SendToWorldtube` integrates the regular field on the
@@ -170,14 +171,19 @@ SPECTRE_TEST_CASE("Unit.CurvedScalarWave.Worldtube.SendToWorldtube", "[Unit]") {
     const auto& initial_refinements = shell.initial_refinement_levels();
     const auto& initial_extents = shell.initial_extents();
     // self force and therefore iterative scheme is turned off
+    const auto puncture_field_options =
+        CurvedScalarWave::Worldtube::PunctureField{
+            CurvedScalarWave::Worldtube::PunctureField::Schwarzschild{
+                expansion_order, 1.}};
     tuples::TaggedTuple<domain::Tags::Domain<Dim>, Tags::ExcisionSphere<Dim>,
-                        Tags::WorldtubeRadius, Tags::ExpansionOrder,
-                        Tags::MaxIterations, Tags::Charge, Tags::Mass,
-                        ::Tags::Time, Tags::SelfForceTurnOnTime,
+                        Tags::WorldtubeRadius, Tags::PunctureFieldConfig,
+                        Tags::ExpansionOrder, Tags::MaxIterations, Tags::Charge,
+                        Tags::Mass, ::Tags::Time, Tags::SelfForceTurnOnTime,
                         Tags::SelfForceTurnOnInterval>
         tuple_of_opts{shell.create_domain(),
                       excision_sphere,
                       excision_sphere.radius(),
+                      puncture_field_options,
                       expansion_order,
                       static_cast<size_t>(0),
                       0.1,

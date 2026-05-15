@@ -143,7 +143,10 @@ EventsAndTriggersAtSlabs:
 
 Worldtube:
   ExcisionSphere: ExcisionSphereA
-  ExpansionOrder: 1
+  PunctureField:
+    Schwarzschild:
+      ExpansionOrder: 1
+      BlackHoleMass: 1.0
   Charge: *Charge
   SelfForceOptions: None
   WorldtubeRadiusOptions:

@@ -153,22 +153,22 @@ void FaceCoordinatesCompute<Dim, Frame, Centered>::function(
 #endif  // defined(__GNUC__) && !defined(__clang__)
 
 template <size_t Dim>
-void PunctureFieldCompute<Dim>::function(
+void GeodesicPunctureFieldCompute<Dim>::function(
     const gsl::not_null<return_type*> result,
     const std::optional<tnsr::I<DataVector, Dim, Frame::Inertial>>&
         inertial_face_coords_centered,
     const std::array<tnsr::I<double, Dim, ::Frame::Inertial>, 2>&
         particle_position_velocity,
     const tnsr::I<double, Dim>& particle_acceleration, const double charge,
-    const size_t expansion_order) {
+    const CurvedScalarWave::Worldtube::PunctureField& puncture_field) {
   if (inertial_face_coords_centered.has_value()) {
     if (not result->has_value()) {
       result->emplace(get<0>(inertial_face_coords_centered.value()).size());
     }
-    puncture_field(make_not_null(&(result->value())),
-                   inertial_face_coords_centered.value(),
-                   particle_position_velocity[0], particle_position_velocity[1],
-                   particle_acceleration, 1., expansion_order);
+    puncture_field.apply_puncture(
+        make_not_null(&(result->value())),
+        inertial_face_coords_centered.value(), particle_position_velocity[0],
+        particle_position_velocity[1], particle_acceleration);
     result->value() *= charge;
   } else {
     result->reset();
@@ -348,7 +348,7 @@ template struct BackgroundQuantitiesCompute<3>;
 template struct EvolvedParticlePositionVelocityCompute<3>;
 template struct GeodesicAccelerationCompute<3>;
 template struct ParticlePositionVelocityCompute<3>;
-template struct PunctureFieldCompute<3>;
+template struct GeodesicPunctureFieldCompute<3>;
 
 template struct FaceCoordinatesCompute<3, Frame::Grid, true>;
 template struct FaceCoordinatesCompute<3, Frame::Grid, false>;

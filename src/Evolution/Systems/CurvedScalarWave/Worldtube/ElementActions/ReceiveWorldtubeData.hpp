@@ -80,7 +80,7 @@ struct ReceiveWorldtubeData {
       const auto& puncture_field =
           db::get<Tags::MaxIterations>(box) > 1
               ? db::get<Tags::IteratedPunctureField<Dim>>(box)
-              : db::get<Tags::PunctureField<Dim>>(box);
+              : db::get<Tags::GeodesicPunctureField<Dim>>(box);
       ASSERT(puncture_field.has_value(),
              "The puncture field should be initialized!");
 
