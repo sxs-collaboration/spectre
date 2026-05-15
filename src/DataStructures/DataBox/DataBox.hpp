@@ -181,19 +181,6 @@ struct create_dependency_graph {
                                      tmpl::pin<TagsList>, tmpl::_1>>>;
   using type = immutable_item_argument_edges;
 };
-
-// Get the base if it is present
-template <typename Tag, typename = std::void_t<>>
-struct get_base_impl {
-  using type = Tag;
-};
-template <typename Tag>
-struct get_base_impl<Tag, std::void_t<typename Tag::base>> {
-  using type = typename Tag::base;
-};
-
-template <typename Tag>
-using get_base = typename get_base_impl<Tag>::type;
 }  // namespace detail
 
 /*!
@@ -385,6 +372,7 @@ class DataBox<tmpl::list<Tags...>> : public Access,
   struct TagGraphs {
     std::unordered_map<std::string, const void* (DataBox::*)() const>
         tag_retrieval_functions{};
+    std::unordered_map<std::string, std::vector<std::string>> tag_aliases{};
     std::unordered_map<std::string, std::vector<std::string>>
         tags_and_dependents{};
     std::unordered_map<std::string, bool (DataBox::*)()>
@@ -404,8 +392,6 @@ class DataBox<tmpl::list<Tags...>> : public Access,
   static const TagGraphs tag_graphs_;
   /// \endcond
   static TagGraphs compute_tag_graphs();
-  void reset_parent(const std::string& item_name,
-                    const std::string& skip_this_subitem);
   void reset_compute_items(const std::string& item_name);
   template <typename MutatedTag>
   void reset_compute_items_after_mutate();
@@ -787,22 +773,46 @@ void DataBox<tmpl::list<Tags...>>::pup_impl(
 
 ////////////////////////////////////////////////////////////////
 // Runtime tag retrieval
+namespace detail {
+template <typename MappedPtr>
+void set_or_null_if_ambiguous(
+    const gsl::not_null<std::unordered_map<std::string, MappedPtr>*> map,
+    const std::string& key, const MappedPtr value) {
+  const auto [entry, added] = map->emplace(key, value);
+  if (not added and entry->second != value) {
+    entry->second = nullptr;
+  }
+}
+
+template <typename Tag, typename... Others>
+struct tag_and_bases {
+  using type = tmpl::list<Tag, Others...>;
+};
+
+template <typename Tag, typename... Others>
+  requires requires { typename Tag::base; }
+struct tag_and_bases<Tag, Others...>
+    : tag_and_bases<typename Tag::base, Tag, Others...> {};
+}  // namespace detail
+
 template <typename... Tags>
 auto DataBox<tmpl::list<Tags...>>::compute_tag_graphs() -> TagGraphs {
   TagGraphs result{};
   // Compute graphs for retrieving tags
-  EXPAND_PACK_LEFT_TO_RIGHT([&result]() {
-    using tag = detail::get_base<Tags>;
-    const std::string tag_name = pretty_type::get_name<tag>();
-    if (result.tag_retrieval_functions.find(tag_name) ==
-        result.tag_retrieval_functions.end()) {
-      result.tag_retrieval_functions[tag_name] =
-          &DataBox::template get_item_as_void_pointer<Tags>;
-    } else if (result.tag_retrieval_functions[tag_name] !=
-               &DataBox::template get_item_as_void_pointer<Tags>) {
-      result.tag_retrieval_functions[tag_name] = nullptr;
-    }
-  }());
+  const auto process_tag = [&result]<typename ConcreteTag>(
+                               tmpl::type_<ConcreteTag> /*meta*/) {
+    const std::string concrete_tag_name = pretty_type::get_name<ConcreteTag>();
+    tmpl::for_each<typename detail::tag_and_bases<ConcreteTag>::type>(
+        [&]<typename Tag>(tmpl::type_<Tag> /*meta*/) {
+          const std::string tag_name = pretty_type::get_name<Tag>();
+          detail::set_or_null_if_ambiguous(
+              make_not_null(&result.tag_retrieval_functions), tag_name,
+              &DataBox::template get_item_as_void_pointer<ConcreteTag>);
+          result.tag_aliases[concrete_tag_name].push_back(tag_name);
+        });
+  };
+  (void)process_tag;
+  EXPAND_PACK_LEFT_TO_RIGHT(process_tag(tmpl::type_<Tags>{}));
 
   // Compute graphs for resetting compute tags
   //
@@ -814,11 +824,8 @@ auto DataBox<tmpl::list<Tags...>>::compute_tag_graphs() -> TagGraphs {
   tmpl::for_each<
       tmpl::append<mutable_item_parent_tags, reference_item_parent_tags,
                    compute_item_parent_tags>>([&result](auto tag_v) {
-    // We choose to always work with the associated simple tags, so we need
-    // to get the base tag _if_ we have a compute tag.
-    using parent_tag_compute = tmpl::type_from<decltype(tag_v)>;
-    using parent_tag = detail::get_base<tmpl::type_from<decltype(tag_v)>>;
-    using subitems = typename Subitems<parent_tag_compute>::type;
+    using parent_tag = tmpl::type_from<decltype(tag_v)>;
+    using subitems = typename Subitems<parent_tag>::type;
     const std::string parent_tag_name = pretty_type::get_name<parent_tag>();
     const std::vector<std::string> subitem_tag_names =
         pretty_type::vector_of_get_names(subitems{});
@@ -837,102 +844,39 @@ auto DataBox<tmpl::list<Tags...>>::compute_tag_graphs() -> TagGraphs {
   tmpl::for_each<tmpl::append<reference_item_tags, compute_item_tags>>(
       [&result](auto tag_v) {
         using compute_tag = tmpl::type_from<decltype(tag_v)>;
-        using associated_simple_tag = typename compute_tag::base;
-        const std::string simple_tag =
-            pretty_type::get_name<associated_simple_tag>();
+        const std::string tag_name = pretty_type::get_name<compute_tag>();
         const std::vector<std::string> argument_tags =
             pretty_type::vector_of_get_names(
                 typename compute_tag::argument_tags{});
         for (const std::string& argument_tag : argument_tags) {
-          result.tags_and_dependents[argument_tag].push_back(simple_tag);
+          result.tags_and_dependents[argument_tag].push_back(tag_name);
         }
-        // If this compute tag is a subitem of another compute tag, then we
-        // need to make the parent aware that this tag depends on it.
-        if (result.subitem_to_parent_tag.find(simple_tag) !=
-            result.subitem_to_parent_tag.end()) {
-          result.tags_and_dependents[result.subitem_to_parent_tag[simple_tag]]
-              .push_back(simple_tag);
-        }
-        result.tags_and_reset_functions[simple_tag] =
+        result.tags_and_reset_functions[tag_name] =
             &DataBox::template reset_compute_item<compute_tag>;
       });
 
   // Set mutation function
-  tmpl::for_each<mutable_item_tags>([&result]<typename Tag>(
-                                        tmpl::type_<Tag> /*meta*/) {
-    using tag = detail::get_base<Tag>;
-    const std::string tag_name = pretty_type::get_name<tag>();
-    if (result.tag_mutate_functions.find(tag_name) ==
-        result.tag_mutate_functions.end()) {
-      result.tag_mutate_functions[tag_name] =
-          &DataBox::template get_item_as_void_pointer_for_mutate<tag>;
-    } else if (result.tag_mutate_functions[tag_name] !=
-               &DataBox::template get_item_as_void_pointer_for_mutate<tag>) {
-      result.tag_mutate_functions[tag_name] = nullptr;
-    }
-
-    if (result.mutate_mutable_subitems_functions.find(tag_name) ==
-        result.mutate_mutable_subitems_functions.end()) {
-      result.mutate_mutable_subitems_functions[tag_name] =
-          static_cast<void (DataBox::*)()>(
-              &DataBox::template mutate_mutable_subitems<tag>);
-    } else if (result.mutate_mutable_subitems_functions[tag_name] !=
-               static_cast<void (DataBox::*)()>(
-                   &DataBox::template mutate_mutable_subitems<tag>)) {
-      result.mutate_mutable_subitems_functions[tag_name] = nullptr;
-    }
-
-    if (result.reset_compute_items_after_mutate_functions.find(tag_name) ==
-        result.reset_compute_items_after_mutate_functions.end()) {
-      result.reset_compute_items_after_mutate_functions[tag_name] =
-          &DataBox::template reset_compute_items_after_mutate<tag>;
-    } else if (result.reset_compute_items_after_mutate_functions[tag_name] !=
-               &DataBox::template reset_compute_items_after_mutate<tag>) {
-      result.reset_compute_items_after_mutate_functions[tag_name] = nullptr;
-    }
+  tmpl::for_each<mutable_item_tags>([&result]<typename MutableTag>(
+                                        tmpl::type_<MutableTag> /*meta*/) {
+    tmpl::for_each<typename detail::tag_and_bases<MutableTag>::type>(
+        [&result]<typename Tag>(tmpl::type_<Tag> /*meta*/) {
+          const std::string tag_name = pretty_type::get_name<Tag>();
+          detail::set_or_null_if_ambiguous(
+              make_not_null(&result.tag_mutate_functions), tag_name,
+              &DataBox::template get_item_as_void_pointer_for_mutate<
+                  MutableTag>);
+          detail::set_or_null_if_ambiguous(
+              make_not_null(&result.mutate_mutable_subitems_functions),
+              tag_name,
+              static_cast<void (DataBox::*)()>(
+                  &DataBox::template mutate_mutable_subitems<MutableTag>));
+          detail::set_or_null_if_ambiguous(
+              make_not_null(&result.reset_compute_items_after_mutate_functions),
+              tag_name,
+              &DataBox::template reset_compute_items_after_mutate<MutableTag>);
+        });
   });
   return result;
-}
-
-template <typename... Tags>
-void DataBox<tmpl::list<Tags...>>::reset_parent(
-    const std::string& item_name, const std::string& skip_this_subitem) {
-  if (const auto parent_tag_it =
-          tag_graphs_.parent_to_subitem_tags.find(item_name);
-      parent_tag_it != tag_graphs_.parent_to_subitem_tags.end()) {
-    for (const auto& subitem_tag : parent_tag_it->second) {
-      if (subitem_tag == skip_this_subitem) {
-        continue;
-      }
-      const auto dependent_items_it =
-          tag_graphs_.tags_and_dependents.find(subitem_tag);
-      if (dependent_items_it == tag_graphs_.tags_and_dependents.end()) {
-        continue;
-      }
-      for (const std::string& dependent_item_name :
-           dependent_items_it->second) {
-        ASSERT(tag_graphs_.tags_and_reset_functions.find(dependent_item_name) !=
-                   tag_graphs_.tags_and_reset_functions.end(),
-               "Item " << dependent_item_name
-                       << " does not have a reset function.");
-        if ((this->*(tag_graphs_.tags_and_reset_functions)
-                        .at(dependent_item_name))()) {
-          if (tag_graphs_.tags_and_dependents.find(dependent_item_name) !=
-              tag_graphs_.tags_and_dependents.end()) {
-            // If the compute tag was evaluated, then we need to check the
-            // items that depend on it.
-            reset_compute_items(dependent_item_name);
-          }
-          reset_parent(dependent_item_name, "");
-          if (const auto parent_it =
-                  tag_graphs_.subitem_to_parent_tag.find(dependent_item_name);
-              parent_it != tag_graphs_.subitem_to_parent_tag.end()) {
-            reset_parent(parent_it->second, dependent_item_name);
-          }
-        }
-      }
-    }
-  }
 }
 
 template <typename... Tags>
@@ -940,86 +884,60 @@ void DataBox<tmpl::list<Tags...>>::reset_compute_items(
     const std::string& item_name) {
   // If the compute tag was evaluated before reset, then we reset dependent
   // compute tags.
-  ASSERT(tag_graphs_.tags_and_dependents.find(item_name) !=
-             tag_graphs_.tags_and_dependents.end(),
-         "Item " << item_name << " does not have any dependents.");
-  for (const std::string& dependent_item_name :
-       tag_graphs_.tags_and_dependents.at(item_name)) {
-    ASSERT(
-        tag_graphs_.tags_and_reset_functions.find(dependent_item_name) !=
-            tag_graphs_.tags_and_reset_functions.end(),
-        "Item " << dependent_item_name << " does not have a reset function.");
-    if ((this->*(tag_graphs_.tags_and_reset_functions)
-                    .at(dependent_item_name))()) {
-      reset_parent(dependent_item_name, "");
-      if (const auto parent_it =
-              tag_graphs_.subitem_to_parent_tag.find(dependent_item_name);
-          parent_it != tag_graphs_.subitem_to_parent_tag.end()) {
-        reset_parent(parent_it->second, dependent_item_name);
-      }
-      if (tag_graphs_.tags_and_dependents.find(dependent_item_name) !=
-          tag_graphs_.tags_and_dependents.end()) {
-        // If the compute tag was evaluated, then we need to check the items
-        // that depend on it.
-        reset_compute_items(dependent_item_name);
+  const auto aliases = tag_graphs_.tag_aliases.find(item_name);
+  ASSERT(aliases != tag_graphs_.tag_aliases.end(),
+         "Internal error: Item " << item_name << " has no names");
+  for (const std::string& alias : aliases->second) {
+    const auto dependents = tag_graphs_.tags_and_dependents.find(alias);
+    if (dependents != tag_graphs_.tags_and_dependents.end()) {
+      for (const std::string& dependent_item_name : dependents->second) {
+        ASSERT(tag_graphs_.tags_and_reset_functions.find(dependent_item_name) !=
+                   tag_graphs_.tags_and_reset_functions.end(),
+               "Item " << dependent_item_name
+                       << " does not have a reset function.");
+        if ((this->*(tag_graphs_.tags_and_reset_functions)
+                        .at(dependent_item_name))()) {
+          // If the compute tag was evaluated, then we need to check the items
+          // that depend on it.
+          reset_compute_items(dependent_item_name);
+        }
       }
     }
-  }
-  // If this tag is a parent tag, reset subitems and their dependents
-  reset_parent(item_name, "");
-  // If this tag is a subitem, reset parent and other subitem dependents
-  if (const auto parent_it = tag_graphs_.subitem_to_parent_tag.find(item_name);
-      parent_it != tag_graphs_.subitem_to_parent_tag.end()) {
-    reset_parent(parent_it->second, item_name);
   }
 }
 
 template <typename... Tags>
 template <typename MutatedTag>
 void DataBox<tmpl::list<Tags...>>::reset_compute_items_after_mutate() {
-  using tag = detail::get_base<MutatedTag>;
-  static const std::string mutated_tag = pretty_type::get_name<tag>();
-  if (tag_graphs_.tags_and_dependents.find(mutated_tag) !=
-      tag_graphs_.tags_and_dependents.end()) {
-    reset_compute_items(mutated_tag);
-  }
+  DEBUG_STATIC_ASSERT(
+      tmpl::list_contains_v<mutable_item_tags, MutatedTag>,
+      "internal inconsistency bug: reset_compute_items_after_mutate on "
+      "invalid tag");
 
-  // Handled subitems
-  if constexpr (detail::has_subitems<MutatedTag>::value) {
-    ASSERT(tag_graphs_.parent_to_subitem_tags.find(mutated_tag) !=
-               tag_graphs_.parent_to_subitem_tags.end(),
-           "The parent tag "
-               << mutated_tag
-               << " is not in the set of parent_to_subitem_tags_. This is "
-                  "an internal inconsistency bug.\n");
-    for (const auto& subitem_name :
-         tag_graphs_.parent_to_subitem_tags.at(mutated_tag)) {
-      if (tag_graphs_.tags_and_dependents.find(subitem_name) !=
-          tag_graphs_.tags_and_dependents.end()) {
-        reset_compute_items(subitem_name);
-      }
+  // If a subitem is edited, reset the parent instead.  (The item
+  // itself will be reset as a subitem of the parent below.)
+  static const std::string tag_to_reset = []() {
+    if constexpr (tmpl::list_contains_v<mutable_subitem_tags, MutatedTag>) {
+      const std::string mutated_tag = pretty_type::get_name<MutatedTag>();
+      ASSERT(tag_graphs_.subitem_to_parent_tag.find(mutated_tag) !=
+                 tag_graphs_.subitem_to_parent_tag.end(),
+             "Expected to find a parent tag of "
+                 << mutated_tag
+                 << " but did not. This is an internal inconsistency bug.");
+      return tag_graphs_.subitem_to_parent_tag.at(mutated_tag);
+    } else {
+      return pretty_type::get_name<MutatedTag>();
     }
-  }
-  // Handle parent tags
-  if constexpr (tmpl::list_contains_v<mutable_subitem_tags, MutatedTag>) {
-    ASSERT(tag_graphs_.subitem_to_parent_tag.find(mutated_tag) !=
-               tag_graphs_.subitem_to_parent_tag.end(),
-           "Expected to find a parent tag of "
-               << mutated_tag
-               << " but did not. This is an internal inconsistency bug.");
-    const auto& parent_tag_name =
-        tag_graphs_.subitem_to_parent_tag.at(mutated_tag);
-    if (tag_graphs_.tags_and_dependents.find(parent_tag_name) !=
-        tag_graphs_.tags_and_dependents.end()) {
-      reset_compute_items(parent_tag_name);
-    }
-    for (const auto& subitem_name :
-         tag_graphs_.parent_to_subitem_tags.at(parent_tag_name)) {
-      if (tag_graphs_.tags_and_dependents.find(subitem_name) !=
-              tag_graphs_.tags_and_dependents.end() and
-          subitem_name != mutated_tag) {
-        reset_compute_items(subitem_name);
-      }
+  }();
+
+  reset_compute_items(tag_to_reset);
+
+  // If the tag has subitems, reset those too.
+  if (const auto parent_tag_it =
+          tag_graphs_.parent_to_subitem_tags.find(tag_to_reset);
+      parent_tag_it != tag_graphs_.parent_to_subitem_tags.end()) {
+    for (const auto& subitem_tag : parent_tag_it->second) {
+      reset_compute_items(subitem_tag);
     }
   }
 }
@@ -1223,7 +1141,8 @@ decltype(auto) mutate(Invokable&& invokable,
     const CleanupRoutine unlock_box = [&box]() {
       box->mutate_locked_box_ = false;
       EXPAND_PACK_LEFT_TO_RIGHT(
-          box->template mutate_mutable_subitems<MutateTags>());
+          box->template mutate_mutable_subitems<
+              detail::first_matching_tag<TagList, MutateTags>>());
       EXPAND_PACK_LEFT_TO_RIGHT(
           box->template reset_compute_items_after_mutate<
               detail::first_matching_tag<TagList, MutateTags>>());

@@ -70,6 +70,9 @@ struct Tag0 : db::SimpleTag {
 struct Tag0FromOption : Tag0 {
   using base = Tag0;
 };
+struct Tag0FromOption2 : Tag0FromOption {
+  using base = Tag0FromOption;
+};
 struct Tag1 : db::SimpleTag {
   using type = std::vector<double>;
 };
@@ -195,6 +198,27 @@ struct Tag0Reference : Tag0Ref, db::ReferenceTag {
   using base = Tag0Ref;
   using argument_tags = tmpl::list<Tag0>;
   static const double& get(const double& tag0_value) { return tag0_value; }
+};
+
+template <typename Tag>
+struct Copy2 : db::SimpleTag {
+  using type = typename Tag::type;
+};
+
+template <typename Tag>
+struct Copy : Copy2<Tag> {
+  using base = Copy2<Tag>;
+};
+
+template <typename Tag>
+struct CopyCompute : Copy<Tag>, db::ComputeTag {
+  using base = Copy<Tag>;
+  using return_type = typename base::type;
+  using argument_tags = tmpl::list<Tag>;
+  static void function(const gsl::not_null<return_type*> ret,
+                       const return_type& arg) {
+    *ret = arg;
+  }
 };
 }  // namespace test_databox_tags
 
@@ -2145,6 +2169,21 @@ struct LeftAndRightParentCompute : LeftAndRight<Parent<0>>, db::ComputeTag {
   }
 };
 
+struct ParentBase : db::SimpleTag {
+  using type = DataVector;
+};
+
+struct BasedParent : ParentBase {
+  using base = ParentBase;
+};
+
+struct SubitemBase : db::SimpleTag {
+  using type = DataVector;
+};
+
+struct BasedSubitem : SubitemBase {
+  using base = SubitemBase;
+};
 }  // namespace
 
 namespace db {
@@ -2171,6 +2210,17 @@ struct Subitems<LeftAndRightParentCompute> {
     auto& [left_sub, right_sub] = *sub_value;
     left_sub = std::get<Subtag::tag::index>(left_parent).ptr();
     right_sub = std::get<Subtag::tag::index>(right_parent).ptr();
+  }
+};
+
+template <>
+struct Subitems<BasedParent> {
+  using type = tmpl::list<BasedSubitem>;
+  template <typename Subtag>
+  static void create_item(const gsl::not_null<DataVector*> parent_value,
+                          const gsl::not_null<DataVector*> sub_value) {
+    static_assert(std::is_same_v<Subtag, BasedSubitem>);
+    sub_value->set_data_ref(parent_value);
   }
 };
 }  // namespace db
@@ -2320,6 +2370,46 @@ void test_subitems() {
     db::mutate<ArgTag>([](const gsl::not_null<size_t*> arg) { *arg = 3; },
                        make_not_null(&box));
     CHECK(*db::get<LeftAndRight<First<0>>>(box).first == 4);
+  }
+  {
+    INFO("Subitems with base tags");
+    const auto check = [](const auto& box) {
+      CHECK(&db::get<BasedParent>(box) == &db::get<ParentBase>(box));
+      CHECK(&db::get<BasedSubitem>(box) == &db::get<SubitemBase>(box));
+      CHECK(db::get<BasedSubitem>(box).data() ==
+            db::get<BasedParent>(box).data());
+    };
+    auto box = db::create<db::AddSimpleTags<BasedParent>>(DataVector{1.0, 2.0});
+    check(box);
+    check(db::as_access(box));
+    db::mutate<BasedParent>(
+        [](const gsl::not_null<DataVector*> v) {
+          *v = DataVector{1.0, 2.0, 3.0};
+        },
+        make_not_null(&box));
+    check(box);
+    check(db::as_access(box));
+    db::mutate<ParentBase>(
+        [](const gsl::not_null<DataVector*> v) {
+          *v = DataVector{1.0, 2.0, 3.0, 4.0};
+        },
+        make_not_null(&box));
+    check(box);
+    check(db::as_access(box));
+    db::mutate<BasedParent>(
+        [](const gsl::not_null<DataVector*> v) {
+          *v = DataVector{1.0, 2.0, 3.0, 4.0, 5.0};
+        },
+        &db::as_access(box));
+    check(box);
+    check(db::as_access(box));
+    db::mutate<ParentBase>(
+        [](const gsl::not_null<DataVector*> v) {
+          *v = DataVector{1.0, 2.0, 3.0, 4.0, 5.0, 6.0};
+        },
+        &db::as_access(box));
+    check(box);
+    check(db::as_access(box));
   }
 }
 
@@ -3413,6 +3503,163 @@ void test_access_errors() {
           "(.|\\n)*Cannot mutate tag.*Tag4.*Known tags are:\\n.*Tag1(.|\\n)*"));
 #endif  // SPECTRE_DEBUG
 }
+
+void test_tag_inheritance() {
+  const auto check_box = [](const auto& box, const double value) {
+    CHECK(db::get<test_databox_tags::Tag0FromOption2>(box) == value);
+    CHECK(db::get<test_databox_tags::Tag0FromOption>(box) == value);
+    CHECK(db::get<test_databox_tags::Tag0>(box) == value);
+    CHECK(db::get<test_databox_tags::Copy<test_databox_tags::Tag0FromOption2>>(
+              box) == value);
+    CHECK(db::get<test_databox_tags::Copy<test_databox_tags::Tag0FromOption>>(
+              box) == value);
+    CHECK(db::get<test_databox_tags::Copy<test_databox_tags::Tag0>>(box) ==
+          value);
+    CHECK(db::get<test_databox_tags::Copy2<test_databox_tags::Tag0FromOption2>>(
+              box) == value);
+    CHECK(db::get<test_databox_tags::Copy2<test_databox_tags::Tag0FromOption>>(
+              box) == value);
+    CHECK(db::get<test_databox_tags::Copy2<test_databox_tags::Tag0>>(box) ==
+          value);
+  };
+
+  auto box = db::create<
+      db::AddSimpleTags<test_databox_tags::Tag0FromOption2>,
+      db::AddComputeTags<
+          test_databox_tags::CopyCompute<test_databox_tags::Tag0>,
+          test_databox_tags::CopyCompute<test_databox_tags::Tag0FromOption>,
+          test_databox_tags::CopyCompute<test_databox_tags::Tag0FromOption2>>>(
+      2.0);
+  check_box(box, 2.0);
+  check_box(db::as_access(box), 2.0);
+  db::mutate<test_databox_tags::Tag0FromOption2>(
+      [](const gsl::not_null<double*> v) { *v = 3.0; }, make_not_null(&box));
+  check_box(db::as_access(box), 3.0);
+  check_box(box, 3.0);
+  db::mutate<test_databox_tags::Tag0FromOption>(
+      [](const gsl::not_null<double*> v) { *v = 4.0; }, make_not_null(&box));
+  check_box(box, 4.0);
+  check_box(db::as_access(box), 4.0);
+  db::mutate<test_databox_tags::Tag0>(
+      [](const gsl::not_null<double*> v) { *v = 5.0; }, make_not_null(&box));
+  check_box(db::as_access(box), 5.0);
+  check_box(box, 5.0);
+  db::mutate<test_databox_tags::Tag0FromOption2>(
+      [](const gsl::not_null<double*> v) { *v = 6.0; },
+      make_not_null(&db::as_access(box)));
+  check_box(box, 6.0);
+  check_box(db::as_access(box), 6.0);
+  db::mutate<test_databox_tags::Tag0FromOption>(
+      [](const gsl::not_null<double*> v) { *v = 7.0; },
+      make_not_null(&db::as_access(box)));
+  check_box(db::as_access(box), 7.0);
+  check_box(box, 7.0);
+  db::mutate<test_databox_tags::Tag0>(
+      [](const gsl::not_null<double*> v) { *v = 8.0; },
+      make_not_null(&db::as_access(box)));
+  check_box(box, 8.0);
+  check_box(db::as_access(box), 8.0);
+}
+
+namespace test_databox_tags {
+template <int Label>
+struct Tag0FromOptionLabeled : Tag0 {
+  using base = Tag0;
+  static std::string name() {
+    return "Tag0FromOptionLabeled" + std::to_string(Label);
+  }
+};
+
+template <int Label>
+struct CopyFromOption : db::SimpleTag {
+  using type = double;
+  static std::string name() { return "CopyFromOption" + std::to_string(Label); }
+};
+
+template <int Label>
+struct CopyFromOptionCompute : CopyFromOption<Label>, db::ComputeTag {
+  using base = CopyFromOption<Label>;
+  using return_type = double;
+  using argument_tags = tmpl::list<Tag0FromOptionLabeled<Label>>;
+  static void function(const gsl::not_null<double*> result,
+                       const double value) {
+    ++calls;
+    *result = value;
+  }
+  // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
+  static int calls;
+};
+
+template <int Label>
+// NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
+int CopyFromOptionCompute<Label>::calls = 0;
+}  // namespace test_databox_tags
+
+void test_ambiguous_tags() {
+  auto box = db::create<
+      db::AddSimpleTags<test_databox_tags::Tag0FromOptionLabeled<1>,
+                        test_databox_tags::Tag0FromOptionLabeled<2>>,
+      db::AddComputeTags<test_databox_tags::CopyFromOptionCompute<1>,
+                         test_databox_tags::CopyFromOptionCompute<2>>>(1.0,
+                                                                       2.0);
+  CHECK(db::get<test_databox_tags::Tag0FromOptionLabeled<1>>(box) == 1.0);
+  CHECK(db::get<test_databox_tags::Tag0FromOptionLabeled<2>>(box) == 2.0);
+  CHECK(db::get<test_databox_tags::Tag0FromOptionLabeled<1>>(
+            db::as_access(box)) == 1.0);
+  CHECK(db::get<test_databox_tags::Tag0FromOptionLabeled<2>>(
+            db::as_access(box)) == 2.0);
+#ifdef SPECTRE_DEBUG
+  CHECK_THROWS_WITH(
+      db::get<test_databox_tags::Tag0FromOptionLabeled<3>>(db::as_access(box)),
+      Catch::Matchers::ContainsSubstring("is not found in the DataBox"));
+  CHECK_THROWS_WITH(
+      db::get<test_databox_tags::Tag0>(db::as_access(box)),
+      Catch::Matchers::ContainsSubstring("is in the DataBox more than once"));
+#endif
+
+  CHECK(test_databox_tags::CopyFromOptionCompute<1>::calls == 0);
+  CHECK(test_databox_tags::CopyFromOptionCompute<2>::calls == 0);
+  CHECK(db::get<test_databox_tags::CopyFromOption<1>>(box) == 1.0);
+  CHECK(db::get<test_databox_tags::CopyFromOption<2>>(box) == 2.0);
+  CHECK(test_databox_tags::CopyFromOptionCompute<1>::calls == 1);
+  CHECK(test_databox_tags::CopyFromOptionCompute<2>::calls == 1);
+  CHECK(db::get<test_databox_tags::CopyFromOption<1>>(db::as_access(box)) ==
+        1.0);
+  CHECK(db::get<test_databox_tags::CopyFromOption<2>>(db::as_access(box)) ==
+        2.0);
+  CHECK(test_databox_tags::CopyFromOptionCompute<1>::calls == 1);
+  CHECK(test_databox_tags::CopyFromOptionCompute<2>::calls == 1);
+
+  db::mutate<test_databox_tags::Tag0FromOptionLabeled<1>>(
+      [](const gsl::not_null<double*> value) { *value = 5.0; },
+      make_not_null(&box));
+  CHECK(db::get<test_databox_tags::Tag0FromOptionLabeled<1>>(box) == 5.0);
+  CHECK(db::get<test_databox_tags::CopyFromOption<1>>(box) == 5.0);
+  CHECK(db::get<test_databox_tags::CopyFromOption<2>>(box) == 2.0);
+  CHECK(test_databox_tags::CopyFromOptionCompute<1>::calls == 2);
+  CHECK(test_databox_tags::CopyFromOptionCompute<2>::calls == 1);
+  CHECK(db::get<test_databox_tags::CopyFromOption<1>>(db::as_access(box)) ==
+        5.0);
+  CHECK(db::get<test_databox_tags::CopyFromOption<2>>(db::as_access(box)) ==
+        2.0);
+  CHECK(test_databox_tags::CopyFromOptionCompute<1>::calls == 2);
+  CHECK(test_databox_tags::CopyFromOptionCompute<2>::calls == 1);
+
+  db::mutate<test_databox_tags::Tag0FromOptionLabeled<1>>(
+      [](const gsl::not_null<double*> value) { *value = 10.0; },
+      &db::as_access(box));
+  CHECK(db::get<test_databox_tags::Tag0FromOptionLabeled<1>>(box) == 10.0);
+  CHECK(db::get<test_databox_tags::CopyFromOption<1>>(box) == 10.0);
+  CHECK(db::get<test_databox_tags::CopyFromOption<2>>(box) == 2.0);
+  CHECK(test_databox_tags::CopyFromOptionCompute<1>::calls == 3);
+  CHECK(test_databox_tags::CopyFromOptionCompute<2>::calls == 1);
+  CHECK(db::get<test_databox_tags::CopyFromOption<1>>(db::as_access(box)) ==
+        10.0);
+  CHECK(db::get<test_databox_tags::CopyFromOption<2>>(db::as_access(box)) ==
+        2.0);
+  CHECK(test_databox_tags::CopyFromOptionCompute<1>::calls == 3);
+  CHECK(test_databox_tags::CopyFromOptionCompute<2>::calls == 1);
+}
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.DataStructures.DataBox", "[Unit][DataStructures]") {
@@ -3441,6 +3688,8 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox", "[Unit][DataStructures]") {
   test_output();
   test_exception_safety();
   test_access_errors();
+  test_tag_inheritance();
+  test_ambiguous_tags();
 }
 
 // Test`tag_is_retrievable_v`
