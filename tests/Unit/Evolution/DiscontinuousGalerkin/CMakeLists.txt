@@ -1,9 +1,6 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-add_subdirectory(Limiters)
-add_subdirectory(Messages)
-
 set(LIBRARY "Test_EvolutionDg")
 
 set(LIBRARY_SOURCES
@@ -31,6 +28,10 @@ set(LIBRARY_SOURCES
   Test_TimeSteppingPolicy.cpp
   Test_UsingSubcell.cpp
   )
+
+add_subdirectory(EqualRateLts)
+add_subdirectory(Limiters)
+add_subdirectory(Messages)
 
 add_test_library(${LIBRARY} "${LIBRARY_SOURCES}")
 
