@@ -24,6 +24,7 @@ set(LIBRARY_SOURCES
   Test_BbhCompletionCriteria.cpp
   Test_BbhCompletionSingleton.cpp
   Test_BbhCheckpointAndExitIfCompletePhaseChange.cpp
+  Test_System.cpp
   Test_Tags.cpp
   )
 

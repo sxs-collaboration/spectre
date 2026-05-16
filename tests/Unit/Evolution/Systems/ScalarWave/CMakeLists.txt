@@ -14,6 +14,7 @@ set(LIBRARY_SOURCES
   Test_EnergyDensity.cpp
   Test_Equations.cpp
   Test_MomentumDensity.cpp
+  Test_System.cpp
   Test_Tags.cpp
   Test_TimeDerivative.cpp
   )

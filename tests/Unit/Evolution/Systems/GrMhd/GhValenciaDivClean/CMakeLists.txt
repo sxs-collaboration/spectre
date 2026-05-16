@@ -27,6 +27,7 @@ set(LIBRARY_SOURCES
   Test_Constraints.cpp
   Test_SetPiAndPhiFromConstraints.cpp
   Test_StressEnergy.cpp
+  Test_System.cpp
   Test_Tags.cpp
   Test_TimeDerivativeTerms.cpp
   )
@@ -51,5 +52,7 @@ target_link_libraries(
   GhGrMhdSolutions
   GhValenciaDivClean
   HydroHelpers
+  M1Grey
+  RadiationTransport
   ValenciaDivClean
   )

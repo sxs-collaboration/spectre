@@ -37,6 +37,8 @@ namespace ScalarWave {
 
 template <size_t Dim>
 struct System {
+  static std::string name() { return "ScalarWave"; }
+
   using boundary_conditions_base = BoundaryConditions::BoundaryCondition<Dim>;
 
   static constexpr bool is_in_flux_conservative_form = false;

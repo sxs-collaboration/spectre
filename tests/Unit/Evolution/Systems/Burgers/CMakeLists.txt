@@ -22,6 +22,7 @@ set(LIBRARY_SOURCES
   Subcell/Test_TimeDerivative.cpp
   Test_Characteristics.cpp
   Test_Fluxes.cpp
+  Test_System.cpp
   Test_Tags.cpp
   Test_TimeDerivativeTerms.cpp
   )

@@ -171,6 +171,8 @@ namespace ValenciaDivClean {
  *
  */
 struct System {
+  static std::string name() { return "ValenciaDivClean"; }
+
   static constexpr bool is_in_flux_conservative_form = true;
   static constexpr bool has_primitive_and_conservative_vars = true;
   static constexpr size_t volume_dim = 3;

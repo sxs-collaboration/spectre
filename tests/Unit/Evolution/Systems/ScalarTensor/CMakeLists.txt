@@ -10,6 +10,7 @@ set(LIBRARY_SOURCES
   BoundaryCorrections/Test_ProductOfCorrections.cpp
   Test_Characteristics.cpp
   Test_Constraints.cpp
+  Test_System.cpp
   Test_Tags.cpp
   Test_TimeDerivative.cpp
   )

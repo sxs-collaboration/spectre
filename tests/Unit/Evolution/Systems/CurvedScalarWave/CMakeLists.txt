@@ -20,6 +20,7 @@ set(LIBRARY_SOURCES
   Test_InitializeConstraintDampingGammas.cpp
   Test_InitializeEvolvedVariables.cpp
   Test_PsiSquared.cpp
+  Test_System.cpp
   Test_Tags.cpp
   Test_TimeDerivative.cpp
   )

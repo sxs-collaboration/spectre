@@ -35,6 +35,8 @@ struct System;
 
 template <typename NeutrinoTransportSystem>
 struct System {
+  static std::string name() { return "GhValenciaDivClean"; }
+
   using boundary_conditions_base = BoundaryConditions::BoundaryCondition;
   static constexpr bool has_primitive_and_conservative_vars = true;
   static constexpr size_t volume_dim = 3;
