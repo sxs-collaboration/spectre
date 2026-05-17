@@ -417,6 +417,43 @@ void test(const Spectral::Quadrature quadrature) {
                                            domain::Tags::FunctionsOfTime>(
                 runner, self_id));
 
+    // Check the Grid -> Inertial inverse jacobian alias
+    // (domain::Tags::GridToInertialInverseJacobian aliases
+    // std::get<1>(CoordinatesMeshVelocityAndJacobians)).
+    const auto& grid_to_inertial_inverse_jacobian_in_box =
+        ActionTesting::get_databox_tag<
+            component, ::domain::Tags::GridToInertialInverseJacobian<Dim>>(
+            runner, self_id);
+    for (size_t storage_index = 0;
+         storage_index < grid_to_inertial_inverse_jacobian_in_box.size();
+         ++storage_index) {
+      // Check that the `const_cast`s and set_data_ref inside the compute tag
+      // functions worked correctly: the tag must alias the cached tuple
+      // element.
+      CHECK(grid_to_inertial_inverse_jacobian_in_box[storage_index].data() ==
+            std::get<1>(coordinates_mesh_velocity_and_jacobians)[storage_index]
+                .data());
+    }
+    CHECK_ITERABLE_APPROX(grid_to_inertial_inverse_jacobian_in_box,
+                          std::get<1>(expected_coords_mesh_velocity_jacobians));
+
+    // Check the Grid -> Inertial jacobian alias
+    // (domain::Tags::GridToInertialJacobian aliases
+    // std::get<2>(CoordinatesMeshVelocityAndJacobians)).
+    const auto& grid_to_inertial_jacobian_in_box =
+        ActionTesting::get_databox_tag<
+            component, ::domain::Tags::GridToInertialJacobian<Dim>>(runner,
+                                                                    self_id);
+    for (size_t storage_index = 0;
+         storage_index < grid_to_inertial_jacobian_in_box.size();
+         ++storage_index) {
+      CHECK(grid_to_inertial_jacobian_in_box[storage_index].data() ==
+            std::get<2>(coordinates_mesh_velocity_and_jacobians)[storage_index]
+                .data());
+    }
+    CHECK_ITERABLE_APPROX(grid_to_inertial_jacobian_in_box,
+                          std::get<2>(expected_coords_mesh_velocity_jacobians));
+
     for (size_t i = 0; i < Dim; ++i) {
       // Check that the `const_cast`s and set_data_ref inside the compute tag
       // functions worked correctly
