@@ -43,6 +43,7 @@ spectre_target_headers(
   SliceData.hpp
   SliceTensor.hpp
   SliceVariable.hpp
+  SubcellEqualRateRegion.hpp
   SubcellOptions.hpp
   TwoMeshRdmpTci.hpp
   )
@@ -69,6 +70,7 @@ spectre_target_sources(
   Reconstruction.cpp
   ReconstructionMethod.cpp
   SliceData.cpp
+  SubcellEqualRateRegion.cpp
   SubcellOptions.cpp
   )
 
@@ -78,6 +80,7 @@ target_link_libraries(
   DataStructures
   Domain
   DomainCreators
+  Evolution
   Interpolation
   Parallel
   Spectral

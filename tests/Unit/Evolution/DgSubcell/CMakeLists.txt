@@ -44,6 +44,7 @@ set(LIBRARY_SOURCES
   Test_SliceData.cpp
   Test_SliceTensor.cpp
   Test_SliceVariable.cpp
+  Test_SubcellEqualRateRegion.cpp
   Test_SubcellOptions.cpp
   Test_Tags.cpp
   Test_TwoMeshRdmpTci.cpp
