@@ -11,8 +11,10 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Index.hpp"
 #include "DataStructures/Matrix.hpp"
+#include "NumericalAlgorithms/Spectral/Basis.hpp"
 #include "NumericalAlgorithms/Spectral/Filtering.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
+#include "NumericalAlgorithms/Spectral/Parity.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
@@ -23,7 +25,8 @@ namespace evolution::dg::subcell::detail {
 template <size_t Dim>
 bool persson_tci_impl(const gsl::not_null<DataVector*> filtered_component,
                       const DataVector& component, const Mesh<Dim>& dg_mesh,
-                      const double alpha, const size_t num_highest_modes) {
+                      const double alpha, const size_t num_highest_modes,
+                      const Spectral::Parity parity) {
   ASSERT(component.size() == dg_mesh.number_of_grid_points(),
          "The tensor components being checked must have the same number of "
          "grid points as the DG mesh. The tensor has "
@@ -32,9 +35,32 @@ bool persson_tci_impl(const gsl::not_null<DataVector*> filtered_component,
 
   const Matrix identity{};
   for (size_t d = 0; d < Dim; ++d) {
+    // Cartoon dimensions have a single collocation point with no spectral
+    // content to check
+    if (dg_mesh.basis(d) == Spectral::Basis::Cartoon) {
+      continue;
+    }
     auto matrices = make_array<Dim>(std::cref(identity));
-    gsl::at(matrices, d) = Spectral::filtering::zero_lowest_modes(
-        dg_mesh.slice_through(d), dg_mesh.extents(d) - num_highest_modes);
+    size_t num_to_zero{};
+    if (UNLIKELY(dg_mesh.basis(d) == Spectral::Basis::ZernikeB1)) {
+      ASSERT(parity != Spectral::Parity::Uninitialized,
+             "Parity must be set when calling persson_tci_impl on a ZernikeB1 "
+             "mesh.");
+      // ZernikeB1 even parity has n modes; odd parity has n-1 modes.
+      // m is the second index of the Zernike basis, akin to a Fourier
+      // index. Here we just need the fact that the spectral space size
+      // depends on it: we use the actual mode count as the effective order to
+      // match Legendre behavior: the threshold is calibrated to the polynomial
+      // resolution
+      const size_t m = parity == Spectral::Parity::Even ? 0 : 1;
+      num_to_zero = dg_mesh.extents(d) - m - num_highest_modes;
+      gsl::at(matrices, d) = Spectral::filtering::zero_lowest_modes(
+          dg_mesh.slice_through(d), num_to_zero, parity);
+    } else {
+      num_to_zero = dg_mesh.extents(d) - num_highest_modes;
+      gsl::at(matrices, d) = Spectral::filtering::zero_lowest_modes(
+          dg_mesh.slice_through(d), num_to_zero);
+    }
     apply_matrices(filtered_component, matrices, component, dg_mesh.extents());
 
     //
@@ -77,7 +103,7 @@ bool persson_tci_impl(const gsl::not_null<DataVector*> filtered_component,
 
     const double component_norm{l2Norm(component)};
 
-    if (pow(dg_mesh.extents(d) - num_highest_modes, alpha) *
+    if (pow(static_cast<double>(num_to_zero), alpha) *
             l2Norm(*filtered_component) >
         component_norm) {
       return true;
@@ -92,7 +118,7 @@ bool persson_tci_impl(const gsl::not_null<DataVector*> filtered_component,
   template bool persson_tci_impl(                                  \
       gsl::not_null<DataVector*> filtered_component,               \
       const DataVector& component, const Mesh<DIM(data)>& dg_mesh, \
-      double alpha, size_t num_highest_modes);
+      double alpha, size_t num_highest_modes, Spectral::Parity parity);
 
 GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
 

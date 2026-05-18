@@ -13,6 +13,7 @@
 #include "Evolution/DgSubcell/PerssonTci.hpp"
 #include "NumericalAlgorithms/Spectral/Basis.hpp"
 #include "NumericalAlgorithms/Spectral/BasisFunctionValue.hpp"
+#include "NumericalAlgorithms/Spectral/CollocationPoints.hpp"
 #include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
 #include "NumericalAlgorithms/Spectral/MaximumNumberOfPoints.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
@@ -197,10 +198,82 @@ void test_persson() {
   }
 }
 
+// Tests that a Cartoon dimension is correctly skipped by the TCI loop.
+void test_persson_cartoon_skipped() {
+  constexpr size_t num_pts_1d = 4;
+  const Mesh<3> dg_mesh{
+      {num_pts_1d, num_pts_1d, 1},
+      {Spectral::Basis::Legendre, Spectral::Basis::Legendre,
+       Spectral::Basis::Cartoon},
+      {Spectral::Quadrature::GaussLobatto, Spectral::Quadrature::GaussLobatto,
+       Spectral::Quadrature::AxialSymmetry}};
+  const auto logical_coords = logical_coordinates(dg_mesh);
+  const size_t num_pts = dg_mesh.number_of_grid_points();
+
+  Variables<tmpl::list<Tags::Scalar>> vars(num_pts);
+
+  // Smooth field (only mode-1 content in dim 0): TCI must not trigger.
+  get(get<Tags::Scalar>(vars)) =
+      Spectral::compute_basis_function_value<Spectral::Basis::Legendre>(
+          1, get<0>(logical_coords));
+  CHECK_FALSE(evolution::dg::subcell::persson_tci(get<Tags::Scalar>(vars),
+                                                  dg_mesh, 4.0, 1));
+
+  // Oscillatory field (purely the highest mode in dim 0): TCI must trigger.
+  get(get<Tags::Scalar>(vars)) =
+      Spectral::compute_basis_function_value<Spectral::Basis::Legendre>(
+          num_pts_1d - 1, get<0>(logical_coords));
+  CHECK(evolution::dg::subcell::persson_tci(get<Tags::Scalar>(vars), dg_mesh,
+                                            4.0, 1));
+}
+
+void test_persson_zernike_b1() {
+  const Mesh<3> dg_mesh{{{4, 1, 1}},
+                        {Spectral::Basis::ZernikeB1, Spectral::Basis::Cartoon,
+                         Spectral::Basis::Cartoon},
+                        {Spectral::Quadrature::GaussRadauUpper,
+                         Spectral::Quadrature::SphericalSymmetry,
+                         Spectral::Quadrature::SphericalSymmetry}};
+  const size_t num_pts = dg_mesh.number_of_grid_points();
+  const DataVector& xi =
+      Spectral::collocation_points<Spectral::Basis::ZernikeB1,
+                                   Spectral::Quadrature::GaussRadauUpper>(
+          num_pts);
+
+  {
+    const Scalar<DataVector> smooth_scalar{
+        Spectral::compute_basis_function_value<Spectral::Basis::ZernikeB1>(0, 0,
+                                                                           xi)};
+    CHECK_FALSE(
+        evolution::dg::subcell::persson_tci(smooth_scalar, dg_mesh, 4.0, 1));
+
+    const Scalar<DataVector> osc_scalar{
+        Spectral::compute_basis_function_value<Spectral::Basis::ZernikeB1>(
+            2 * (num_pts - 1), 0, xi)};
+    CHECK(evolution::dg::subcell::persson_tci(osc_scalar, dg_mesh, 4.0, 1));
+  }
+  {
+    tnsr::i<DataVector, 3> smooth_vec(num_pts, 0.0);
+    get<0>(smooth_vec) =
+        Spectral::compute_basis_function_value<Spectral::Basis::ZernikeB1>(1, 1,
+                                                                           xi);
+    CHECK_FALSE(
+        evolution::dg::subcell::persson_tci(smooth_vec, dg_mesh, 4.0, 1));
+
+    tnsr::i<DataVector, 3> osc_vec(num_pts, 0.0);
+    get<0>(osc_vec) =
+        Spectral::compute_basis_function_value<Spectral::Basis::ZernikeB1>(
+            2 * (num_pts - 1) - 1, 1, xi);
+    CHECK(evolution::dg::subcell::persson_tci(osc_vec, dg_mesh, 4.0, 1));
+  }
+}
+
 // [[TimeOut, 20]]
 SPECTRE_TEST_CASE("Unit.Evolution.Subcell.Tci.Persson", "[Evolution][Unit]") {
   test_persson<1>();
   test_persson<2>();
   test_persson<3>();
+  test_persson_cartoon_skipped();
+  test_persson_zernike_b1();
 }
 }  // namespace

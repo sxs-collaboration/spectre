@@ -3,21 +3,26 @@
 
 #pragma once
 
+#include <array>
 #include <cstddef>
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Index.hpp"
 #include "DataStructures/Matrix.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "NumericalAlgorithms/Spectral/Basis.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
+#include "NumericalAlgorithms/Spectral/Parity.hpp"
+#include "NumericalAlgorithms/Spectral/ParityFromSymmetry.hpp"
 #include "Utilities/Gsl.hpp"
 
 namespace evolution::dg::subcell {
 namespace detail {
 template <size_t Dim>
-bool persson_tci_impl(gsl::not_null<DataVector*> filtered_component,
-                      const DataVector& component, const Mesh<Dim>& dg_mesh,
-                      double alpha, size_t num_highest_modes);
+bool persson_tci_impl(
+    gsl::not_null<DataVector*> filtered_component, const DataVector& component,
+    const Mesh<Dim>& dg_mesh, double alpha, size_t num_highest_modes,
+    Spectral::Parity parity = Spectral::Parity::Uninitialized);
 }  // namespace detail
 
 /*!
@@ -66,12 +71,30 @@ bool persson_tci_impl(gsl::not_null<DataVector*> filtered_component,
  *
  * Typically, \f$\alpha=4.0\f$ and $M=1$ is a good choice.
  *
+ * This function supports Legendre, Chebyshev, ZernikeB1, and Cartoon bases.
  */
 template <size_t Dim, typename SymmList, typename IndexList>
 bool persson_tci(const Tensor<DataVector, SymmList, IndexList>& tensor,
                  const Mesh<Dim>& dg_mesh, const double alpha,
                  const size_t num_highest_modes) {
   DataVector filtered_component(dg_mesh.number_of_grid_points());
+  if constexpr (Dim == 3) {
+    if (dg_mesh.basis(0) == Spectral::Basis::ZernikeB1) {
+      using TensorType = Tensor<DataVector, SymmList, IndexList>;
+      constexpr auto component_parities =
+          Spectral::make_component_parity_array<TensorType>();
+      for (size_t component_index = 0; component_index < tensor.size();
+           ++component_index) {
+        if (detail::persson_tci_impl(
+                make_not_null(&filtered_component), tensor[component_index],
+                dg_mesh, alpha, num_highest_modes,
+                gsl::at(component_parities, component_index))) {
+          return true;
+        }
+      }
+      return false;
+    }
+  }
   for (size_t component_index = 0; component_index < tensor.size();
        ++component_index) {
     if (detail::persson_tci_impl(make_not_null(&filtered_component),
