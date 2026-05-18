@@ -32,6 +32,7 @@ PYBIND11_MODULE(_Pybindings, m) {  // NOLINT
         py::arg("parity") = Spectral::Parity::Uninitialized);
   m.def("zero_lowest_modes", &Spectral::filtering::zero_lowest_modes,
         py::arg("mesh"), py::arg("number_of_modes_to_zero"),
+        py::arg("parity") = Spectral::Parity::Uninitialized,
         py::return_value_policy::reference);
   // Projection
   py::enum_<Spectral::SegmentSize>(m, "SegmentSize")

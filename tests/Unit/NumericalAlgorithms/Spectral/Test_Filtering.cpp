@@ -12,10 +12,13 @@
 #include "DataStructures/ModalVector.hpp"
 #include "NumericalAlgorithms/LinearOperators/CoefficientTransforms.hpp"
 #include "NumericalAlgorithms/Spectral/Basis.hpp"
+#include "NumericalAlgorithms/Spectral/BasisFunctionValue.hpp"
+#include "NumericalAlgorithms/Spectral/CollocationPoints.hpp"
 #include "NumericalAlgorithms/Spectral/Filtering.hpp"
 #include "NumericalAlgorithms/Spectral/MaximumNumberOfPoints.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/MinimumNumberOfPoints.hpp"
+#include "NumericalAlgorithms/Spectral/Parity.hpp"
 #include "NumericalAlgorithms/Spectral/Quadrature.hpp"
 #include "Utilities/Blas.hpp"
 
@@ -124,6 +127,48 @@ void test_zero_lowest_modes() {
   }
 }
 
+void test_zero_lowest_modes_zernike_b1() {
+  const Approx local_approx = Approx::custom().epsilon(1.0e-12).scale(1.0);
+  for (size_t num_pts = 2;
+       num_pts <=
+       Spectral::maximum_number_of_points<Spectral::Basis::ZernikeB1>;
+       ++num_pts) {
+    CAPTURE(num_pts);
+    const Mesh<1> mesh{num_pts, Spectral::Basis::ZernikeB1,
+                       Spectral::Quadrature::GaussRadauUpper};
+    const DataVector& xi =
+        Spectral::collocation_points<Spectral::Basis::ZernikeB1,
+                                     Spectral::Quadrature::GaussRadauUpper>(
+            num_pts);
+    for (const auto parity : {Spectral::Parity::Even, Spectral::Parity::Odd}) {
+      CAPTURE(parity);
+      const size_t m = parity == Spectral::Parity::Even ? 0 : 1;
+      const size_t n_modes = num_pts - m;
+      for (size_t k = 0; k < n_modes; ++k) {
+        CAPTURE(k);
+        const Matrix& F =
+            Spectral::filtering::zero_lowest_modes(mesh, k, parity);
+        CHECK(F.rows() == num_pts);
+        CHECK(F.columns() == num_pts);
+        for (size_t mode = 0; mode < n_modes; ++mode) {
+          DataVector nodal_pure_mode = Spectral::compute_basis_function_value<
+              Spectral::Basis::ZernikeB1>(2 * mode + m, m, xi);
+          DataVector filtered(num_pts, 0.0);
+          dgemv_('N', num_pts, num_pts, 1.0, F.data(), F.spacing(),
+                 nodal_pure_mode.data(), 1, 0.0, filtered.data(), 1);
+          if (mode < k) {
+            CHECK_ITERABLE_CUSTOM_APPROX(filtered, DataVector(num_pts, 0.0),
+                                         local_approx);
+          } else {
+            CHECK_ITERABLE_CUSTOM_APPROX(filtered, nodal_pure_mode,
+                                         local_approx);
+          }
+        }
+      }
+    }
+  }
+}
+
 SPECTRE_TEST_CASE("Unit.Numerical.Spectral.ZeroLowestModesFilter",
                   "[NumericalAlgorithms][Spectral][Unit]") {
   test_zero_lowest_modes<Spectral::Basis::Legendre,
@@ -134,5 +179,6 @@ SPECTRE_TEST_CASE("Unit.Numerical.Spectral.ZeroLowestModesFilter",
                          Spectral::Quadrature::GaussLobatto>();
   test_zero_lowest_modes<Spectral::Basis::Chebyshev,
                          Spectral::Quadrature::Gauss>();
+  test_zero_lowest_modes_zernike_b1();
 }
 }  // namespace
