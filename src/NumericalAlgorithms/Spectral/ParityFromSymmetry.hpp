@@ -14,6 +14,7 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "DataStructures/Variables.hpp"
+#include "NumericalAlgorithms/Spectral/Parity.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
@@ -129,5 +130,42 @@ compute_parity_list() {
                              typename TensorType::index_list>;
   using vars_list = ::Tags::convert_to_temp_tensors<tmpl::list<tensor_type>, 0>;
   return compute_parity_list<vars_list>();
+}
+/*!
+ * \brief Returns a compile-time array mapping each component index of
+ * `TensorType` to its `Parity` (Even or Odd) based on the number of
+ * \f$x\f$-coordinate indices, for use in an axisymmetric spacetime with the
+ * Cartoon method.
+ *
+ * A component is `Parity::Even` if it has an even number of
+ * \f$x\f$-coordinate indices, or `Parity::Odd` otherwise.
+ *
+ * \see `compute_parity_list`
+ */
+template <typename TensorType>
+  requires(tt::is_a_v<Tensor, TensorType>)
+constexpr std::array<Parity, TensorType::size()> make_component_parity_array() {
+  constexpr auto parity_info = compute_parity_list<TensorType>();
+  constexpr auto parity_list = std::get<0>(parity_info);
+  constexpr size_t N = TensorType::size();
+  std::array<Parity, N> result{};
+  size_t component = 0;
+  bool is_even = true;
+  for (size_t i = 0; component < N; ++i) {
+    const size_t seg_size = parity_list[i];
+    if (seg_size == 0) {
+      if (is_even) {
+        is_even = false;
+        continue;
+      } else {
+        break;
+      }
+    }
+    for (size_t k = 0; k < seg_size; ++k, ++component) {
+      result[component] = is_even ? Parity::Even : Parity::Odd;
+    }
+    is_even = not is_even;
+  }
+  return result;
 }
 }  // namespace Spectral
