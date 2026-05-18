@@ -26,13 +26,13 @@
 #include "Evolution/DgSubcell/CellCenteredFlux.hpp"
 #include "Evolution/DgSubcell/ComputeBoundaryTerms.hpp"
 #include "Evolution/DgSubcell/CorrectPackagedData.hpp"
-#include "Evolution/DgSubcell/DisableLts.hpp"
 #include "Evolution/DgSubcell/GetTciDecision.hpp"
 #include "Evolution/DgSubcell/NeighborReconstructedFaceSolution.hpp"
 #include "Evolution/DgSubcell/NeighborTciDecision.hpp"
 #include "Evolution/DgSubcell/PerssonTci.hpp"
 #include "Evolution/DgSubcell/PrepareNeighborData.hpp"
 #include "Evolution/DgSubcell/SetInterpolators.hpp"
+#include "Evolution/DgSubcell/SubcellEqualRateRegion.hpp"
 #include "Evolution/DgSubcell/Tags/MethodOrder.hpp"
 #include "Evolution/DgSubcell/Tags/ObserverCoordinates.hpp"
 #include "Evolution/DgSubcell/Tags/ObserverMesh.hpp"
@@ -45,6 +45,7 @@
 #include "Evolution/DiscontinuousGalerkin/DgElementArray.hpp"
 #include "Evolution/DiscontinuousGalerkin/Initialization/Mortars.hpp"
 #include "Evolution/DiscontinuousGalerkin/Initialization/QuadratureTag.hpp"
+#include "Evolution/DiscontinuousGalerkin/Initialization/SetupEqualRateRegions.hpp"
 #include "Evolution/DiscontinuousGalerkin/Initialization/SpectralFilters.hpp"
 #include "Evolution/Initialization/ConservativeSystem.hpp"
 #include "Evolution/Initialization/DgDomain.hpp"
@@ -526,6 +527,11 @@ struct EvolutionMetavars<tmpl::list<InterpolationTargetTags...>,
   using dg_registration_list =
       tmpl::list<observers::Actions::RegisterEventsWithObservers>;
 
+  using equal_rate_regions = tmpl::conditional_t<
+      use_dg_subcell,
+      tmpl::list<evolution::dg::subcell::SubcellEqualRateRegion<volume_dim>>,
+      tmpl::list<>>;
+
   using initialization_actions = tmpl::flatten<tmpl::list<
       Initialization::Actions::InitializeItems<
           Initialization::TimeStepping<EvolutionMetavars, TimeStepperBase>,
@@ -581,10 +587,11 @@ struct EvolutionMetavars<tmpl::list<InterpolationTargetTags...>,
           StepChoosers::step_chooser_compute_tags<EvolutionMetavars,
                                                   local_time_stepping>>,
       ::evolution::dg::Initialization::Mortars<volume_dim>,
-      tmpl::conditional_t<use_dg_subcell and local_time_stepping,
-                          Initialization::Actions::InitializeItems<
-                              evolution::dg::subcell::DisableLts<3>>,
-                          tmpl::list<>>,
+      tmpl::conditional_t<
+          local_time_stepping,
+          evolution::dg::Initialization::Actions::SetupEqualRateRegions<
+              volume_dim, equal_rate_regions>,
+          tmpl::list<>>,
       evolution::Actions::InitializeRunEventsAndDenseTriggers,
       Initialization::Actions::InitializeItems<
           evolution::dg::Initialization::SpectralFilters<
