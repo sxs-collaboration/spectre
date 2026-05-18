@@ -11,6 +11,7 @@ set(LIBRARY_SOURCES
   Initialization/Test_Mortars.cpp
   Initialization/Test_ProjectSpectralFilters.cpp
   Initialization/Test_QuadratureTag.cpp
+  Initialization/Test_SetupEqualRateRegions.cpp
   Initialization/Test_SpectralFilters.cpp
   Test_AtomicInboxBoundaryData.cpp
   Test_BackgroundGrVars.cpp
