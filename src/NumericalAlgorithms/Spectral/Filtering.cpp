@@ -50,9 +50,29 @@ Matrix exponential_filter(const Mesh<1>& mesh, const double alpha,
   const Matrix& modal_to_nodal = Spectral::modal_to_nodal_matrix(mesh);
   Matrix filter_matrix(mesh.number_of_grid_points(),
                        mesh.number_of_grid_points(), 0.0);
-  const double order = mesh.number_of_grid_points() - 1.0;
-  for (size_t i = 0; i < mesh.number_of_grid_points(); ++i) {
-    filter_matrix(i, i) = exp(-alpha * pow(i / order, 2 * half_power));
+  if (mesh.basis(0) == Spectral::Basis::Fourier) {
+    ASSERT(mesh.number_of_grid_points() % 2 == 1,
+           "The Fourier basis is required to have an odd number of grid points "
+           "for stability, got "
+               << mesh.number_of_grid_points());
+    filter_matrix(0, 0) = 1.0;
+    // Maximum mode
+    const size_t M = mesh.number_of_grid_points() / 2;
+    const auto order = static_cast<double>(M);
+    for (size_t i = 1; i < mesh.number_of_grid_points(); i += 2) {
+      const size_t m = (i + 1) / 2;
+      const double weight =
+          exp(-alpha * pow(static_cast<double>(m) / order, 2 * half_power));
+      filter_matrix(i, i) = weight;
+      filter_matrix(i + 1, i + 1) = weight;
+    }
+  } else {
+    const double order =
+        static_cast<double>(mesh.number_of_grid_points()) - 1.0;
+    for (size_t i = 0; i < mesh.number_of_grid_points(); ++i) {
+      filter_matrix(i, i) =
+          exp(-alpha * pow(static_cast<double>(i) / order, 2 * half_power));
+    }
   }
   return modal_to_nodal * filter_matrix * nodal_to_modal;
 }

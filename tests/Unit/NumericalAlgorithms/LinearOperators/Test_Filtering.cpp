@@ -194,6 +194,11 @@ void test_exponential_filter_action(const double alpha,
            Spectral::minimum_number_of_points<BasisType, QuadratureType>;
        num_pts < max_pts; ++num_pts) {
     CAPTURE(num_pts);
+    if constexpr (BasisType == Spectral::Basis::Fourier) {
+      if (num_pts % 2 == 0) {
+        continue;
+      }
+    }
     const Mesh<Dim> mesh(num_pts, BasisType, QuadratureType);
 
     Variables<tmpl::list<Tags::ScalarVar, Tags::VectorVar<Dim>>> initial_vars(

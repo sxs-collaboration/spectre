@@ -320,6 +320,11 @@ void test_apply_in_volume() {
   for (size_t num_pts =
            Spectral::minimum_number_of_points<BasisType, QuadratureType>;
        num_pts < max_pts; ++num_pts) {
+    if constexpr (BasisType == Spectral::Basis::Fourier) {
+      if (num_pts % 2 == 0) {
+        continue;
+      }
+    }
     CAPTURE(num_pts);
     const Mesh<Dim> mesh(num_pts, BasisType, QuadratureType);
     const auto initial_vars = deterministic_vars<Dim>(mesh);
@@ -361,6 +366,11 @@ void test_apply_on_boundary() {
   for (size_t num_pts =
            Spectral::minimum_number_of_points<BasisType, QuadratureType>;
        num_pts < max_pts; ++num_pts) {
+    if constexpr (BasisType == Spectral::Basis::Fourier) {
+      if (num_pts % 2 == 0) {
+        continue;
+      }
+    }
     CAPTURE(num_pts);
     const Mesh<Dim> volume_mesh(num_pts, BasisType, QuadratureType);
     const Mesh<Dim - 1> face_mesh = volume_mesh.slice_away(0);
