@@ -72,13 +72,13 @@ def ringdown_parameters(
 
 def start_ringdown(
     inspiral_run_dir: Union[str, Path],
-    number_of_ahc_finds_for_fit: int,
-    match_time: float,
-    settling_timescale: float,
-    zero_coefs_eps: float,
-    lev: Optional[int],
-    refinement_level: Optional[int],
-    polynomial_order: Optional[int],
+    lev: Optional[int] = None,
+    refinement_level: Optional[int] = None,
+    polynomial_order: Optional[int] = None,
+    number_of_ahc_finds_for_fit: int = 10,
+    match_time: float = None,
+    settling_timescale: float = 10.0,
+    zero_coefs_eps: float = None,
     inspiral_input_file: Optional[Union[str, Path]] = None,
     ahc_reductions_path: Optional[Union[str, Path]] = None,
     ahc_subfile: str = "ObservationAhC_Ylm",
@@ -146,6 +146,7 @@ def start_ringdown(
     )
     # Determine ringdown parameters from inspiral
     # Resolve and set correct files/paths.
+    inspiral_run_dir = Path(inspiral_run_dir).resolve()
     if inspiral_input_file is None:
         inspiral_input_file = inspiral_run_dir / "Inspiral.yaml"
 
