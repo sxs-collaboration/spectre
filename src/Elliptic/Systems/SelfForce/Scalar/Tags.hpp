@@ -151,14 +151,15 @@ struct BoyerLindquistRadius : db::SimpleTag {
 /*!
  * \brief Blocks in which we use null slicing (vtu-slicing).
  */
+template <size_t Dim>
 struct NullSlicingBlocks : db::SimpleTag {
   using type = std::vector<size_t>;
   using option_tags = tmpl::list<OptionTags::NullSlicingBlocks,
-                                 domain::OptionTags::DomainCreator<2>>;
+                                 domain::OptionTags::DomainCreator<Dim>>;
   static constexpr bool pass_metavariables = false;
   static type create_from_options(
       const std::vector<std::string>& null_slicing_blocks,
-      const std::unique_ptr<DomainCreator<2>>& domain_creator) {
+      const std::unique_ptr<DomainCreator<Dim>>& domain_creator) {
     return domain::block_ids_from_names(null_slicing_blocks,
                                         domain_creator->block_names(),
                                         domain_creator->block_groups());

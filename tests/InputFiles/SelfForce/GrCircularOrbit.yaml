@@ -17,6 +17,15 @@ Background: &background
     OrbitalRadius: &orbital_radius 10.
     MModeNumber: &m_mode_number 1
 
+GrSelfForce:
+  NullSlicingBlocks:
+    - 'Block(0,0)'
+    - 'Block(2,0)'
+    - 'Block(0,1)'
+    - 'Block(2,1)'
+    - 'Block(0,2)'
+    - 'Block(2,2)'
+
 InitialGuess: *background
 
 RandomizeInitialGuess: None

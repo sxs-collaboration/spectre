@@ -26,6 +26,7 @@ target_link_libraries(
   DataStructures
   DomainStructure
   ErrorHandling
+  GrSelfForceAnalyticData
   Utilities
   )
 

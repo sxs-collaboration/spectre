@@ -11,9 +11,12 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
 #include "DataStructures/VariablesTag.hpp"
+#include "Domain/Tags.hpp"
 #include "Elliptic/Systems/SelfForce/GeneralRelativity/Tags.hpp"
+#include "Elliptic/Tags.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Tags.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
+#include "PointwiseFunctions/InitialDataUtilities/Background.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeWithValue.hpp"
 #include "Utilities/TMPL.hpp"
@@ -122,6 +125,13 @@ struct ModifyBoundaryData {
       tmpl::list<Tags::FieldIsRegularized,
                  ::Tags::Mortars<Tags::FieldIsRegularized, Dim>,
                  ::Tags::Mortars<singular_vars_on_mortars_tag, Dim>>;
+ public:
+  using argument_tags_linearized = tmpl::list<
+      domain::Tags::Element<Dim>, Tags::NullSlicingBlocks<Dim>,
+      elliptic::Tags::Background<elliptic::analytic_data::Background>>;
+  using const_global_cache_tags = tmpl::list<
+      Tags::NullSlicingBlocks<Dim>,
+      elliptic::Tags::Background<elliptic::analytic_data::Background>>;
   static void apply(
       gsl::not_null<tnsr::aa<ComplexDataVector, 3>*> field,
       gsl::not_null<tnsr::aa<ComplexDataVector, 3>*> n_dot_flux,
@@ -129,6 +139,15 @@ struct ModifyBoundaryData {
       const DirectionalIdMap<Dim, bool>& neighbors_field_is_regularized,
       const DirectionalIdMap<Dim, typename singular_vars_on_mortars_tag::type>&
           singular_vars_on_mortars);
+  static void apply_linearized(
+      gsl::not_null<tnsr::aa<ComplexDataVector, 3>*> field_remote,
+      gsl::not_null<tnsr::aa<ComplexDataVector, 3>*>
+          n_dot_flux_remote,
+      const tnsr::aa<ComplexDataVector, 3>& field_local,
+      const tnsr::aa<ComplexDataVector, 3>& n_dot_flux_local,
+      const DirectionalId<Dim>& mortar_id, const Element<Dim>& element,
+      const std::vector<size_t>& null_slicing_blocks,
+      const elliptic::analytic_data::Background& background);
 };
 
 }  // namespace GrSelfForce

@@ -3,11 +3,14 @@
 
 #include "Elliptic/Systems/SelfForce/GeneralRelativity/Equations.hpp"
 
+#include <algorithm>
 #include <cstddef>
 
 #include "DataStructures/ComplexDataVector.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "Elliptic/Systems/SelfForce/GeneralRelativity/AnalyticData/CircularOrbit.hpp"
+#include "Utilities/Algorithm.hpp"
 
 namespace GrSelfForce {
 
@@ -101,6 +104,34 @@ void ModifyBoundaryData::apply(
   for (size_t i = 0; i < singular_field.size(); ++i) {
     (*field)[i] += sign * singular_field[i];
     (*n_dot_flux)[i] -= sign * singular_field_n_dot_flux[i];
+  }
+}
+
+void ModifyBoundaryData::apply_linearized(
+    const gsl::not_null<tnsr::aa<ComplexDataVector, 3>*> field_remote,
+    const gsl::not_null<tnsr::aa<ComplexDataVector, 3>*>
+        n_dot_flux_remote,
+    const tnsr::aa<ComplexDataVector, 3>& field_local,
+    const tnsr::aa<ComplexDataVector, 3>& /*n_dot_flux_local*/,
+    const DirectionalId<Dim>& mortar_id, const Element<Dim>& element,
+    const std::vector<size_t>& null_slicing_blocks,
+    const elliptic::analytic_data::Background& background) {
+  if (alg::found(null_slicing_blocks, element.id().block_id()) ==
+      alg::found(null_slicing_blocks, mortar_id.id().block_id())) {
+    // Both elements use the same slicing. Nothing to do.
+    return;
+  }
+  // Apply the jump in the flux across the boundary to handle
+  // vtu-slicing. The signs are all the same (on both sides of the boundary and
+  // at both transition points).
+  const auto& circular_orbit =
+      dynamic_cast<const GrSelfForce::AnalyticData::CircularOrbit&>(background);
+  const double omega = circular_orbit.omega();
+  const double m_mode_number = circular_orbit.m_mode_number();
+  for (size_t j = 0; j < n_dot_flux_remote->size(); ++j) {
+    (*n_dot_flux_remote)[j] -=
+        std::complex<double>(0.0, m_mode_number * omega) *
+        ((field_local)[j] + (*field_remote)[j]) * 0.5;
   }
 }
 

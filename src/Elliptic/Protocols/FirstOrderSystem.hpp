@@ -189,11 +189,19 @@ struct test_fields_and_fluxes<Dim, tmpl::list<PrimalFields...>,
  *   2. The `const DirectionalId<Dim>& mortar_id` identifying the mortar.
  *   3. The `argument_tags`.
  *
- *   Currently, modification made by this function must not depend on the
- *   variables, meaning that the modification can only be adding or subtracting
- *   a precomputed field. This is a simplification so the linearized operator is
- *   not modified at all and can be relaxed if needed (then we also need
- *   `modify_boundary_data_linearized`).
+ *   The `modify_boundary_data` may also be used for modifications that depend
+ *   linearly on the variables. In this case, the class must also provide an
+ *   `argument_tags_linearized` type alias and an `apply_linearized` function
+ *   that takes these arguments in this order:
+ *
+ *   1. The remote primal fields and the remote normal-dot-fluxes on the mortar
+ *      as not-null pointers. These hold the received data from the neighbor and
+ *      can be modified in-place.
+ *   2. The local primal fields and the local normal-dot-fluxes on the mortar
+ *      as const references. These hold the data from the local side of the
+ *      boundary.
+ *   3. The `const DirectionalId<Dim>& mortar_id` identifying the mortar.
+ *   4. The `argument_tags_linearized`.
  */
 struct FirstOrderSystem {
   template <typename ConformingType>

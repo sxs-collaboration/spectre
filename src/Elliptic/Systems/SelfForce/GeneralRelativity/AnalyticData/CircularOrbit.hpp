@@ -89,6 +89,7 @@ class CircularOrbit : public elliptic::analytic_data::Background,
   double black_hole_spin() const { return black_hole_spin_; }
   double orbital_radius() const { return orbital_radius_; }
   int m_mode_number() const { return m_mode_number_; }
+  double omega() const;
 
   using background_tags =
       tmpl::list<Tags::Alpha, Tags::Beta, Tags::GammaRstar, Tags::GammaTheta>;
