@@ -8,7 +8,7 @@
 
 namespace domain {
 bool has_boundary(const domain::Topology topology, const Side side) {
-  return topology == Topology::I1 or
+  return topology == Topology::I1 or topology == Topology::B1Radial or
          (side == Side::Upper and
           (topology == Topology::B2Radial or topology == Topology::B3Radial));
 }

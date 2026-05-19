@@ -599,6 +599,121 @@ SPECTRE_TEST_CASE("Unit.Domain.CreateInitialElement", "[Domain][Unit]") {
               aligned}}});
   }
 
+  {
+    // Test refine_Bn_topology: elements at xi_index=0 retain the inner
+    // topology, while elements at xi_index!=0 get the refined topology.
+    const OrientationMap<2> aligned_2d = OrientationMap<2>::create_aligned();
+    const OrientationMap<3> aligned_3d = OrientationMap<3>::create_aligned();
+
+    // Helper: one 2D block, no neighbors. Refinement {2, 0} gives two element
+    // ids to check (xi_index=0 and xi_index=1).
+    const auto test_topology_refinement_2d = [&aligned_2d](
+                                                 const std::array<
+                                                     domain::Topology, 2>&
+                                                     block_topologies,
+                                                 const std::array<
+                                                     domain::Topology, 2>&
+                                                     expected_outer) {
+      const std::array<domain::Topology, 2>& expected_inner = block_topologies;
+      const ElementId<2> element_id_0{0, {{SegmentId{2, 0}, SegmentId{0, 0}}}};
+      const ElementId<2> element_id_1{0, {{SegmentId{2, 1}, SegmentId{0, 0}}}};
+      std::vector<Block<2>> local_blocks;
+      local_blocks.emplace_back(nullptr, 0,
+                                DirectionMap<2, BlockNeighbors<2>>{}, "",
+                                block_topologies);
+      const std::vector<std::array<size_t, 2>> refinement_levels{{2, 0}};
+
+      CHECK(domain::create_initial_element(element_id_0, local_blocks,
+                                           refinement_levels) ==
+            Element<2>{
+                element_id_0,
+                {{Direction<2>::upper_xi(),
+                  Neighbors<2>{ElementId<2>{0, std::array{SegmentId{2, 1},
+                                                          SegmentId{0, 0}}},
+                               aligned_2d}}},
+                expected_inner});
+
+      CHECK(domain::create_initial_element(element_id_1, local_blocks,
+                                           refinement_levels) ==
+            Element<2>{
+                element_id_1,
+                {{Direction<2>::lower_xi(),
+                  Neighbors<2>{ElementId<2>{0, std::array{SegmentId{2, 0},
+                                                          SegmentId{0, 0}}},
+                               aligned_2d}},
+                 {Direction<2>::upper_xi(),
+                  Neighbors<2>{ElementId<2>{0, std::array{SegmentId{2, 2},
+                                                          SegmentId{0, 0}}},
+                               aligned_2d}}},
+                expected_outer});
+    };
+
+    // Helper: one 3D block, no neighbors. Refinement {2, 1, 0} gives two
+    // element ids to check (xi_index=0 and xi_index=1).
+    const auto test_topology_refinement_3d =
+        [&aligned_3d](const std::array<domain::Topology, 3>& block_topologies,
+                      const std::array<domain::Topology, 3>& expected_outer) {
+          const std::array<domain::Topology, 3>& expected_inner =
+              block_topologies;
+          const ElementId<3> element_id_0{
+              0, {{SegmentId{2, 0}, SegmentId{0, 0}, SegmentId{0, 0}}}};
+          const ElementId<3> element_id_1{
+              0, {{SegmentId{2, 1}, SegmentId{0, 0}, SegmentId{0, 0}}}};
+          std::vector<Block<3>> local_blocks;
+          local_blocks.emplace_back(nullptr, 0,
+                                    DirectionMap<3, BlockNeighbors<3>>{}, "",
+                                    block_topologies);
+          const std::vector<std::array<size_t, 3>> refinement_levels{{2, 1, 0}};
+
+          CHECK(domain::create_initial_element(element_id_0, local_blocks,
+                                               refinement_levels) ==
+                Element<3>{
+                    element_id_0,
+                    {{Direction<3>::upper_xi(),
+                      Neighbors<3>{ElementId<3>{0, std::array{SegmentId{2, 1},
+                                                              SegmentId{0, 0},
+                                                              SegmentId{0, 0}}},
+                                   aligned_3d}}},
+                    expected_inner});
+
+          CHECK(domain::create_initial_element(element_id_1, local_blocks,
+                                               refinement_levels) ==
+                Element<3>{
+                    element_id_1,
+                    {{Direction<3>::lower_xi(),
+                      Neighbors<3>{ElementId<3>{0, std::array{SegmentId{2, 0},
+                                                              SegmentId{0, 0},
+                                                              SegmentId{0, 0}}},
+                                   aligned_3d}},
+                     {Direction<3>::upper_xi(),
+                      Neighbors<3>{ElementId<3>{0, std::array{SegmentId{2, 2},
+                                                              SegmentId{0, 0},
+                                                              SegmentId{0, 0}}},
+                                   aligned_3d}}},
+                    expected_outer});
+        };
+
+    // 2D: disk center stays disk; off-axis becomes annulus.
+    test_topology_refinement_2d(domain::topologies::disk,
+                                domain::topologies::annulus);
+
+    // 3D: cartoon cylinder inner stays when on-axis; becomes cartoon cylinder.
+    test_topology_refinement_3d(domain::topologies::cartoon_cylinder_inner,
+                                domain::topologies::cartoon_cylinder);
+
+    // 3D: cartoon sphere inner stays when on-axis; becomes cartoon sphere.
+    test_topology_refinement_3d(domain::topologies::cartoon_sphere_inner,
+                                domain::topologies::cartoon_sphere);
+
+    // 3D: full cylinder stays when on-axis; becomes cylindrical shell.
+    test_topology_refinement_3d(domain::topologies::full_cylinder,
+                                domain::topologies::cylindrical_shell);
+
+    // 3D: full sphere stays when on-axis; becomes spherical shell.
+    test_topology_refinement_3d(domain::topologies::full_sphere,
+                                domain::topologies::spherical_shell);
+  }
+
   test_h_refinement();
   test_nonconforming_blocks();
 }

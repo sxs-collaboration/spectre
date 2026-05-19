@@ -20,6 +20,8 @@ std::ostream& operator<<(std::ostream& os, const Topology topology) {
       return os << "S2Colatitude";
     case Topology::S2Longitude:
       return os << "S2Longitude";
+    case Topology::B1Radial:
+      return os << "B1Radial";
     case Topology::B2Radial:
       return os << "B2Radial";
     case Topology::B2Angular:

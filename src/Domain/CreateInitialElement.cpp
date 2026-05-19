@@ -9,6 +9,7 @@
 #include "DataStructures/Index.hpp"
 #include "DataStructures/IndexIterator.hpp"
 #include "Domain/Block.hpp"
+#include "Domain/Structure/CreateInitialMesh.hpp"
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/ElementId.hpp"
@@ -228,9 +229,9 @@ Element<VolumeDim> create_initial_element(
           compute_element_neighbor_in_same_block(upper_direction));
     }
   }
+  const auto topologies = refine_Bn_topology(block.topologies(), element_id);
   return Element<VolumeDim>(ElementId<VolumeDim>(element_id),
-                            std::move(neighbors_of_element),
-                            block.topologies());
+                            std::move(neighbors_of_element), topologies);
 }
 }  // namespace domain
 

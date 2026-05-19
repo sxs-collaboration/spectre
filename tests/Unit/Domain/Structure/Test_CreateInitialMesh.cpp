@@ -118,12 +118,22 @@ SPECTRE_TEST_CASE("Unit.Domain.Structure.CreateInitialMesh", "[Domain][Unit]") {
          {Spectral::Basis::Legendre, Spectral::Basis::Chebyshev}) {
       for (const auto& i1_quadrature :
            {Spectral::Quadrature::GaussLobatto, Spectral::Quadrature::Gauss}) {
-        CHECK(create_initial_mesh({{{3, 4}}}, disk, element_id_2d, i1_basis,
-                                  i1_quadrature) ==
+        CHECK(create_initial_mesh(
+                  {{{3, 4}}}, disk,
+                  ElementId<2>{0, {{SegmentId{1, 0}, SegmentId{0, 0}}}},
+                  i1_basis, i1_quadrature) ==
               Mesh<2>{{{3, 4}},
                       std::array{Spectral::Basis::ZernikeB2,
                                  Spectral::Basis::ZernikeB2},
                       std::array{Spectral::Quadrature::GaussRadauUpper,
+                                 Spectral::Quadrature::Equiangular}});
+        CHECK(create_initial_mesh(
+                  {{{3, 4}}}, disk,
+                  ElementId<2>{0, {{SegmentId{1, 1}, SegmentId{0, 0}}}},
+                  i1_basis, i1_quadrature) ==
+              Mesh<2>{{{3, 4}},
+                      std::array{i1_basis, Spectral::Basis::Fourier},
+                      std::array{i1_quadrature,
                                  Spectral::Quadrature::Equiangular}});
       }
     }
@@ -154,19 +164,32 @@ SPECTRE_TEST_CASE("Unit.Domain.Structure.CreateInitialMesh", "[Domain][Unit]") {
          {Spectral::Basis::Legendre, Spectral::Basis::Chebyshev}) {
       for (const auto& i1_quadrature :
            {Spectral::Quadrature::GaussLobatto, Spectral::Quadrature::Gauss}) {
-        CHECK(create_initial_mesh({{{3, 2, 4}}}, full_cylinder, element_id_3d,
-                                  i1_basis, i1_quadrature) ==
+        CHECK(create_initial_mesh(
+                  {{{3, 2, 4}}}, full_cylinder,
+                  ElementId<3>{
+                      0, {{SegmentId{1, 0}, SegmentId{0, 0}, SegmentId{0, 0}}}},
+                  i1_basis, i1_quadrature) ==
               Mesh<3>{{{3, 2, 4}},
                       std::array{Spectral::Basis::ZernikeB2,
                                  Spectral::Basis::ZernikeB2, i1_basis},
                       std::array{Spectral::Quadrature::GaussRadauUpper,
                                  Spectral::Quadrature::Equiangular,
                                  i1_quadrature}});
+        CHECK(
+            create_initial_mesh(
+                {{{3, 2, 4}}}, full_cylinder,
+                ElementId<3>{
+                    0, {{SegmentId{1, 1}, SegmentId{0, 0}, SegmentId{0, 0}}}},
+                i1_basis, i1_quadrature) ==
+            Mesh<3>{{{3, 2, 4}},
+                    std::array{i1_basis, Spectral::Basis::Fourier, i1_basis},
+                    std::array{i1_quadrature, Spectral::Quadrature::Equiangular,
+                               i1_quadrature}});
       }
     }
   }
   {
-    INFO("spheriical_shell");
+    INFO("spherical_shell");
     const Element<3> spherical_shell(element_id_3d, {},
                                      domain::topologies::spherical_shell);
     for (const auto& i1_basis :
@@ -191,14 +214,27 @@ SPECTRE_TEST_CASE("Unit.Domain.Structure.CreateInitialMesh", "[Domain][Unit]") {
          {Spectral::Basis::Legendre, Spectral::Basis::Chebyshev}) {
       for (const auto& i1_quadrature :
            {Spectral::Quadrature::GaussLobatto, Spectral::Quadrature::Gauss}) {
-        CHECK(create_initial_mesh({{{3, 2, 4}}}, full_sphere, element_id_3d,
-                                  i1_basis, i1_quadrature) ==
+        CHECK(create_initial_mesh(
+                  {{{3, 2, 4}}}, full_sphere,
+                  ElementId<3>{
+                      0, {{SegmentId{1, 0}, SegmentId{0, 0}, SegmentId{0, 0}}}},
+                  i1_basis, i1_quadrature) ==
               Mesh<3>{{{3, 2, 4}},
                       std::array{Spectral::Basis::ZernikeB3,
                                  Spectral::Basis::ZernikeB3,
                                  Spectral::Basis::ZernikeB3},
                       std::array{Spectral::Quadrature::GaussRadauUpper,
                                  Spectral::Quadrature::Gauss,
+                                 Spectral::Quadrature::Equiangular}});
+        CHECK(create_initial_mesh(
+                  {{{3, 2, 4}}}, full_sphere,
+                  ElementId<3>{
+                      0, {{SegmentId{1, 1}, SegmentId{0, 0}, SegmentId{0, 0}}}},
+                  i1_basis, i1_quadrature) ==
+              Mesh<3>{{{3, 2, 4}},
+                      std::array{i1_basis, Spectral::Basis::SphericalHarmonic,
+                                 Spectral::Basis::SphericalHarmonic},
+                      std::array{i1_quadrature, Spectral::Quadrature::Gauss,
                                  Spectral::Quadrature::Equiangular}});
       }
     }
@@ -239,14 +275,113 @@ SPECTRE_TEST_CASE("Unit.Domain.Structure.CreateInitialMesh", "[Domain][Unit]") {
       }
     }
   }
+  {
+    const ElementId<3> element_id_on_axis{
+        0, std::array{SegmentId{1, 0}, SegmentId{0, 0}, SegmentId{0, 0}}};
+    const ElementId<3> element_id_off_axis{
+        0, std::array{SegmentId{1, 1}, SegmentId{0, 0}, SegmentId{0, 0}}};
+    {
+      INFO("cartoon_sphere_inner");
+      const Element<3> cartoon_sphere_on_axis(
+          element_id_on_axis, {}, domain::topologies::cartoon_sphere_inner);
+      const Element<3> cartoon_sphere_off_axis(
+          element_id_off_axis, {}, domain::topologies::cartoon_sphere_inner);
+      for (const auto& i1_basis :
+           {Spectral::Basis::Legendre, Spectral::Basis::Chebyshev}) {
+        for (const auto& i1_quadrature : {Spectral::Quadrature::GaussLobatto,
+                                          Spectral::Quadrature::Gauss}) {
+          CHECK(create_initial_mesh({{{3, 1, 1}}}, cartoon_sphere_on_axis,
+                                    i1_basis, i1_quadrature) ==
+                Mesh<3>{{{3, 1, 1}},
+                        std::array{Spectral::Basis::ZernikeB1,
+                                   Spectral::Basis::Cartoon,
+                                   Spectral::Basis::Cartoon},
+                        std::array{Spectral::Quadrature::GaussRadauUpper,
+                                   Spectral::Quadrature::SphericalSymmetry,
+                                   Spectral::Quadrature::SphericalSymmetry}});
+          CHECK(create_initial_mesh({{{3, 1, 1}}}, cartoon_sphere_off_axis,
+                                    i1_basis, i1_quadrature) ==
+                Mesh<3>{{{3, 1, 1}},
+                        std::array{i1_basis, Spectral::Basis::Cartoon,
+                                   Spectral::Basis::Cartoon},
+                        std::array{i1_quadrature,
+                                   Spectral::Quadrature::SphericalSymmetry,
+                                   Spectral::Quadrature::SphericalSymmetry}});
+        }
+      }
+    }
+    {
+      INFO("cartoon_cylinder_inner");
+      const Block<3> cartoon_cylinder_block(
+          nullptr, 0, {}, "", domain::topologies::cartoon_cylinder_inner);
+      for (const auto& i1_basis :
+           {Spectral::Basis::Legendre, Spectral::Basis::Chebyshev}) {
+        for (const auto& i1_quadrature : {Spectral::Quadrature::GaussLobatto,
+                                          Spectral::Quadrature::Gauss}) {
+          CHECK(create_initial_mesh({{{3, 2, 1}}}, cartoon_cylinder_block,
+                                    element_id_on_axis, i1_basis,
+                                    i1_quadrature) ==
+                Mesh<3>{{{3, 2, 1}},
+                        std::array{Spectral::Basis::ZernikeB1, i1_basis,
+                                   Spectral::Basis::Cartoon},
+                        std::array{Spectral::Quadrature::GaussRadauUpper,
+                                   i1_quadrature,
+                                   Spectral::Quadrature::AxialSymmetry}});
+          CHECK(
+              create_initial_mesh({{{3, 2, 1}}}, cartoon_cylinder_block,
+                                  element_id_off_axis, i1_basis,
+                                  i1_quadrature) ==
+              Mesh<3>{{{3, 2, 1}},
+                      std::array{i1_basis, i1_basis, Spectral::Basis::Cartoon},
+                      std::array{i1_quadrature, i1_quadrature,
+                                 Spectral::Quadrature::AxialSymmetry}});
+        }
+      }
+    }
+  }
+
 #ifdef SPECTRE_DEBUG
   CHECK_THROWS_WITH(
       create_initial_mesh(
           {{{3, 4}}}, Block<2>{nullptr, 0, {}, "", domain::topologies::disk},
-          ElementId<2>{0, {{SegmentId{1, 0}, SegmentId{0, 0}}}},
+          ElementId<2>{0, {{SegmentId{1, 0}, SegmentId{1, 0}}}},
           Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto),
       Catch::Matchers::ContainsSubstring(
-          "Splitting Topology::B2Radial is not yet supported"));
+          "Angular dimensions cannot be angularly refined"));
+  CHECK_THROWS_WITH(
+      create_initial_mesh(
+          {{{3, 4}}}, Block<2>{nullptr, 0, {}, "", domain::topologies::disk},
+          ElementId<2>{0, {{SegmentId{1, 0}, SegmentId{1, 1}}}},
+          Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto),
+      Catch::Matchers::ContainsSubstring(
+          "Angular dimensions cannot be angularly refined"));
+  CHECK_THROWS_WITH(
+      create_initial_mesh(
+          {{{3, 4, 5}}},
+          Block<3>{nullptr, 0, {}, "", domain::topologies::full_cylinder},
+          ElementId<3>{0,
+                       {{SegmentId{0, 0}, SegmentId{1, 1}, SegmentId{0, 0}}}},
+          Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto),
+      Catch::Matchers::ContainsSubstring(
+          "Angular dimensions cannot be angularly refined"));
+  CHECK_THROWS_WITH(
+      create_initial_mesh(
+          {{{3, 4, 5}}},
+          Block<3>{nullptr, 0, {}, "", domain::topologies::full_sphere},
+          ElementId<3>{0,
+                       {{SegmentId{1, 0}, SegmentId{1, 1}, SegmentId{0, 0}}}},
+          Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto),
+      Catch::Matchers::ContainsSubstring(
+          "Angular dimensions cannot be angularly refined"));
+  CHECK_THROWS_WITH(
+      create_initial_mesh(
+          {{{3, 4, 5}}},
+          Block<3>{nullptr, 0, {}, "", domain::topologies::spherical_shell},
+          ElementId<3>{0,
+                       {{SegmentId{1, 0}, SegmentId{0, 0}, SegmentId{1, 1}}}},
+          Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto),
+      Catch::Matchers::ContainsSubstring(
+          "Angular dimensions cannot be angularly refined"));
 #endif  // SPECTRE_DEBUG
 }
 }  // namespace domain

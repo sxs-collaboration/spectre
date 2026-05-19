@@ -224,6 +224,35 @@ void test_3d() {
   CHECK(neighbor_is_conforming(domain::topologies::cylindrical_shell,
                                domain::topologies::full_cylinder,
                                Direction<3>::upper_zeta(), shell_to_full));
+
+  // Configurations of blocks in CartoonSphere2D domain
+  const OrientationMap<3> cartoonsphere2d_map(std::array<Direction<3>, 3>{
+      Direction<3>::lower_eta(), Direction<3>::upper_xi(),
+      Direction<3>::upper_zeta()});
+  const OrientationMap<3> cartoonsphere2d_map2(std::array<Direction<3>, 3>{
+      Direction<3>::upper_eta(), Direction<3>::lower_xi(),
+      Direction<3>::upper_zeta()});
+  const OrientationMap<3> cartoonsphere2d_map3(std::array<Direction<3>, 3>{
+      Direction<3>::lower_xi(), Direction<3>::lower_eta(),
+      Direction<3>::upper_zeta()});
+  CHECK(neighbor_is_conforming(domain::topologies::cartoon_cylinder_inner,
+                               domain::topologies::cartoon_cylinder,
+                               Direction<3>::upper_xi(), aligned));
+  CHECK(neighbor_is_conforming(domain::topologies::cartoon_cylinder,
+                               domain::topologies::cartoon_cylinder_inner,
+                               Direction<3>::lower_xi(), aligned));
+  CHECK(neighbor_is_conforming(domain::topologies::cartoon_cylinder_inner,
+                               domain::topologies::cartoon_cylinder,
+                               Direction<3>::upper_xi(), cartoonsphere2d_map2));
+  CHECK(neighbor_is_conforming(domain::topologies::cartoon_cylinder,
+                               domain::topologies::cartoon_cylinder_inner,
+                               Direction<3>::lower_eta(), cartoonsphere2d_map));
+  CHECK(neighbor_is_conforming(domain::topologies::cartoon_cylinder_inner,
+                               domain::topologies::cartoon_cylinder,
+                               Direction<3>::upper_xi(), cartoonsphere2d_map3));
+  CHECK(neighbor_is_conforming(domain::topologies::cartoon_cylinder,
+                               domain::topologies::cartoon_cylinder_inner,
+                               Direction<3>::upper_xi(), cartoonsphere2d_map3));
 }
 }  // namespace
 

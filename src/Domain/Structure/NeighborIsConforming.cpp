@@ -69,9 +69,28 @@ bool neighbor_is_conforming(
           return false;
         }
       }
+      // permute_from_neighbor reorders by dimension index only, never flipping
+      // sides. So the correct direction into the permuted array has the
+      // dimension from searching which self index maps to the neighbor shared
+      // face dimension, and the side directly from the orientation-mapped
+      // shared face direction.
+      const auto neighbor_shared_face =
+          orientation_of_neighbor(direction_to_neighbor.opposite());
+      std::optional<size_t> permuted_dim{};
+      for (size_t i = 0; i < VolumeDim; ++i) {
+        if (orientation_of_neighbor(i) == neighbor_shared_face.dimension()) {
+          permuted_dim = i;
+          break;
+        }
+      }
+      ASSERT(permuted_dim.has_value(),
+             "No dimension found matching neighbor shared face dimension "
+                 << neighbor_shared_face.dimension());
+      const Direction<VolumeDim> permuted_neighbor_direction{
+          permuted_dim.value(), neighbor_shared_face.side()};
       const auto neighbor_boundary_topologies = boundary_topologies(
           orientation_of_neighbor.permute_from_neighbor(neighbor_topologies),
-          direction_to_neighbor);
+          permuted_neighbor_direction);
       return self_boundary_topologies == neighbor_boundary_topologies;
     }
   }

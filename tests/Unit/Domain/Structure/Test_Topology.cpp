@@ -12,6 +12,7 @@ SPECTRE_TEST_CASE("Unit.Domain.Structure.Topology", "[Domain][Unit]") {
   CHECK(get_output(domain::Topology::S1) == "S1");
   CHECK(get_output(domain::Topology::S2Colatitude) == "S2Colatitude");
   CHECK(get_output(domain::Topology::S2Longitude) == "S2Longitude");
+  CHECK(get_output(domain::Topology::B1Radial) == "B1Radial");
   CHECK(get_output(domain::Topology::B2Radial) == "B2Radial");
   CHECK(get_output(domain::Topology::B2Angular) == "B2Angular");
   CHECK(get_output(domain::Topology::B3Radial) == "B3Radial");
