@@ -434,6 +434,167 @@ void test_for_rollback(const gsl::not_null<std::mt19937*> gen) {
   test<TestMovingMesh, false>(gen, false);
 }
 
+std::array<Mesh<3>, 3> create_axial_face_centered_meshes(
+    const Mesh<3>& cell_centered_mesh) {
+  std::array<Mesh<3>, 3> face_centered_meshes{};
+  for (size_t dim = 0; dim < 2; ++dim) {
+    auto basis = cell_centered_mesh.basis();
+    auto quadrature = cell_centered_mesh.quadrature();
+    auto extents = cell_centered_mesh.extents().indices();
+    gsl::at(extents, dim) = cell_centered_mesh.extents(0) + 1;
+    gsl::at(quadrature, dim) = Spectral::Quadrature::FaceCentered;
+    gsl::at(face_centered_meshes, dim) = Mesh<3>{extents, basis, quadrature};
+  }
+  return face_centered_meshes;
+}
+
+template <bool ComputeOnlyOnRollback>
+void test_cartoon(const bool did_rollback) {
+  // Test BackgroundGrVars with an axially symmetric subcell mesh:
+  // - Dims 0 and 1: FiniteDifference / CellCentered
+  // - Dim 2: Cartoon / AxialSymmetry (extent 1)
+  // This exercises the Cartoon branches in both the initialization-phase
+  // isotropy assert and in face_centered_impl (comp_dim == 2).
+  CAPTURE(ComputeOnlyOnRollback);
+  CAPTURE(did_rollback);
+
+  const double initial_time = 0.5;
+
+  const size_t num_dg_pts = 3;
+  const auto brick = create_a_brick<false>(num_dg_pts, initial_time);
+
+  const auto domain = brick.create_domain();
+  const auto element_id = ElementId<3>{0};
+  Element<3> element = domain::create_initial_element(
+      element_id, domain.blocks(),
+      std::vector<std::array<size_t, 3>>{{0, 0, 0}});
+
+  // Axially symmetric subcell mesh: FD in xi/eta, Cartoon in zeta.
+  const Mesh<3> dg_mesh{
+      {{num_dg_pts, num_dg_pts, 1}},
+      {Spectral::Basis::Legendre, Spectral::Basis::Legendre,
+       Spectral::Basis::Cartoon},
+      {Spectral::Quadrature::GaussLobatto, Spectral::Quadrature::GaussLobatto,
+       Spectral::Quadrature::AxialSymmetry}};
+  const Mesh<3> subcell_mesh = evolution::dg::subcell::fd::mesh(dg_mesh);
+
+  const auto face_centered_meshes =
+      create_axial_face_centered_meshes(subcell_mesh);
+
+  const auto& block = domain.blocks()[element_id.block_id()];
+  const auto element_map = ElementMap<3, Frame::Grid>{element_id, block};
+
+  std::unique_ptr<::domain::CoordinateMapBase<Frame::Grid, Frame::Inertial, 3>>
+      grid_to_inertial_map;
+  if (block.is_time_dependent()) {
+    grid_to_inertial_map = block.moving_mesh_grid_to_inertial_map().get_clone();
+  } else {
+    grid_to_inertial_map =
+        ::domain::make_coordinate_map_base<Frame::Grid, Frame::Inertial>(
+            ::domain::CoordinateMaps::Identity<3>{});
+  }
+
+  const auto compute_inertial_coords = [&grid_to_inertial_map, &element_map,
+                                        &brick](const Mesh<3> mesh,
+                                                const double time) {
+    return (*grid_to_inertial_map)(element_map(logical_coordinates(mesh)), time,
+                                   brick.functions_of_time());
+  };
+
+  const auto subcell_inertial_coords =
+      compute_inertial_coords(subcell_mesh, initial_time);
+
+  using gr_variables_tag =
+      ::Tags::Variables<SystemForTest::spacetime_variables_tag::tags_list>;
+  using inactive_gr_variables_tag =
+      evolution::dg::subcell::Tags::Inactive<gr_variables_tag>;
+  using subcell_face_gr_variables_tag =
+      evolution::dg::subcell::Tags::OnSubcellFaces<
+          typename SystemForTest::flux_spacetime_variables_tag, 3>;
+
+  const auto solution = []() {
+    return RelativisticEuler::Solutions::TovStar{
+        1.0e-3, EquationsOfState::PolytropicFluid<true>{100.0, 2.0}.get_clone(),
+        RelativisticEuler::Solutions::TovCoordinates::Schwarzschild};
+  }();
+
+  const auto dg_gr_vars = [&compute_inertial_coords, &dg_mesh, &initial_time,
+                           &solution]() {
+    gr_variables_tag::type gr_vars{dg_mesh.number_of_grid_points()};
+    gr_vars.assign_subset(evolution::Initialization::initial_data(
+        solution, compute_inertial_coords(dg_mesh, initial_time), initial_time,
+        typename gr_variables_tag::tags_list{}));
+    return gr_vars;
+  }();
+
+  auto box = [&block, &brick, &dg_gr_vars, &element, &element_id,
+              &grid_to_inertial_map, &initial_time, &solution,
+              &subcell_inertial_coords, &subcell_mesh]() {
+    typename subcell_face_gr_variables_tag::type face_gr_vars{};
+    return db::create<db::AddSimpleTags<
+        ::Tags::Time, domain::Tags::Domain<3>, domain::Tags::Element<3>,
+        domain::Tags::ElementMap<3, Frame::Grid>,
+        domain::CoordinateMaps::Tags::CoordinateMap<3, Frame::Grid,
+                                                    Frame::Inertial>,
+        domain::Tags::FunctionsOfTimeInitialize,
+        evolution::dg::subcell::Tags::Mesh<3>,
+        evolution::dg::subcell::Tags::Coordinates<3, Frame::Inertial>,
+        gr_variables_tag, inactive_gr_variables_tag,
+        subcell_face_gr_variables_tag,
+        evolution::dg::subcell::Tags::DidRollback,
+        evolution::initial_data::Tags::InitialData>>(
+        initial_time, brick.create_domain(), element,
+        ElementMap<3, Frame::Grid>{
+            element_id,
+            block.is_time_dependent()
+                ? block.moving_mesh_logical_to_grid_map().get_clone()
+                : block.stationary_map().get_to_grid_frame()},
+        std::move(grid_to_inertial_map),
+        clone_unique_ptrs(brick.functions_of_time()), subcell_mesh,
+        subcell_inertial_coords, dg_gr_vars,
+        typename inactive_gr_variables_tag::type{}, face_gr_vars, false,
+        solution.get_clone());
+  }();
+
+  // Apply the mutator for the initialization phase. This exercises the
+  // AxialSymmetry branch of the isotropic-mesh assert and the comp_dim==2
+  // loop in face_centered_impl.
+  db::mutate_apply<evolution::dg::subcell::BackgroundGrVars<
+      SystemForTest, MetavariablesForTest, ComputeOnlyOnRollback>>(
+      make_not_null(&box));
+
+  // Check that inactive GR vars were initialized with the correct number of
+  // grid points.
+  CHECK(get<inactive_gr_variables_tag>(box).number_of_grid_points() ==
+        subcell_mesh.number_of_grid_points());
+
+  // Check face-centered vars were initialized for comp_dim=2 faces only
+  // (dims 0 and 1 should have grid points; dim 2 is Cartoon and not filled).
+  for (size_t d = 0; d < 2; ++d) {
+    CHECK(gsl::at(get<subcell_face_gr_variables_tag>(box), d)
+              .number_of_grid_points() ==
+          gsl::at(face_centered_meshes, d).number_of_grid_points());
+  }
+
+  // Verify the cell-centered GR vars match the analytic solution.
+  const auto expected_cell_centered_gr_vars = solution.variables(
+      subcell_inertial_coords, initial_time, gr_variables_tag::tags_list{});
+  tmpl::for_each<gr_variables_tag::tags_list>(
+      [&box, &expected_cell_centered_gr_vars](const auto tag_v) {
+        using tag = tmpl::type_from<decltype(tag_v)>;
+        CHECK_ITERABLE_APPROX(get<evolution::dg::subcell::Tags::Inactive<tag>>(
+                                  get<inactive_gr_variables_tag>(box)),
+                              get<tag>(expected_cell_centered_gr_vars));
+      });
+}
+
+void test_cartoon_for_rollback() {
+  test_cartoon<true>(true);
+  test_cartoon<true>(false);
+  test_cartoon<false>(true);
+  test_cartoon<false>(false);
+}
+
 SPECTRE_TEST_CASE("Unit.Evolution.Subcell.Actions.BackgroundGrVars",
                   "[Unit][Evolution]") {
   MAKE_GENERATOR(gen);
@@ -443,6 +604,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.Subcell.Actions.BackgroundGrVars",
 
   test_for_rollback<false>(make_not_null(&gen));
   test_for_rollback<false>(make_not_null(&gen));
+
+  test_cartoon_for_rollback();
 }
 
 }  // namespace

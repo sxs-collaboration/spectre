@@ -469,7 +469,7 @@ void test() {
             non_uniform_mesh, element, subcell_mesh, number_of_ghost_zones,
             neighbor_dg_to_fd_interpolants),
         Catch::Matchers::ContainsSubstring(
-            "The neighbor mesh must be uniform but is"));
+            "The neighbor subcell mesh must have isotropic basis"));
     CHECK_THROWS_WITH(
         evolution::dg::subcell::insert_or_update_neighbor_volume_data<false>(
             make_not_null(&neighbor_data), received_fd_data,
@@ -478,7 +478,25 @@ void test() {
             non_uniform_mesh, element, subcell_mesh, number_of_ghost_zones,
             neighbor_dg_to_fd_interpolants),
         Catch::Matchers::ContainsSubstring(
-            "The neighbor mesh must be uniform but is"));
+            "The neighbor subcell mesh must have isotropic basis"));
+    if constexpr (Dim == 3) {
+      const Mesh<3> non_uniform_cartoon_mesh{
+          {{4, 5, 1}},
+          {Spectral::Basis::FiniteDifference, Spectral::Basis::FiniteDifference,
+           Spectral::Basis::Cartoon},
+          {Spectral::Quadrature::CellCentered,
+           Spectral::Quadrature::CellCentered,
+           Spectral::Quadrature::AxialSymmetry}};
+      CHECK_THROWS_WITH(
+          evolution::dg::subcell::insert_or_update_neighbor_volume_data<false>(
+              make_not_null(&neighbor_data), received_fd_data,
+              number_of_rdmp_vars,
+              DirectionalId<Dim>{Direction<Dim>::upper_xi(), ElementId<Dim>{1}},
+              non_uniform_cartoon_mesh, element, subcell_mesh,
+              number_of_ghost_zones, neighbor_dg_to_fd_interpolants),
+          Catch::Matchers::ContainsSubstring(
+              "The non-cartoon neighbor subcell sub-mesh must have isotropic"));
+    }
   }
 #endif
 }

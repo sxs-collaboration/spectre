@@ -38,10 +38,7 @@ void insert_or_update_neighbor_volume_data(
     const Mesh<Dim>& subcell_mesh, const size_t number_of_ghost_zones,
     const DirectionalIdMap<Dim, std::optional<intrp::Irregular<Dim>>>&
         neighbor_dg_to_fd_interpolants) {
-  ASSERT(neighbor_mesh == Mesh<Dim>(neighbor_mesh.extents(0),
-                                    neighbor_mesh.basis(0),
-                                    neighbor_mesh.quadrature(0)),
-         "The neighbor mesh must be uniform but is " << neighbor_mesh);
+  fd::verify_subcell_mesh(neighbor_mesh, true);
   ASSERT(neighbor_subcell_data.size() != 0,
          "neighbor_subcell_data must be non-empty");
   const size_t end_of_volume_data =
