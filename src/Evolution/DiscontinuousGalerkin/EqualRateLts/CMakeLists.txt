@@ -8,12 +8,14 @@ spectre_target_headers(
   EqualRateRegionGenerator.hpp
   EqualRateRegions.hpp
   EqualRateRegions.tpp
+  NonconformingEqualRateRegions.hpp
   )
 
 spectre_target_sources(
   ${LIBRARY}
   PRIVATE
   EqualRateRegions.cpp
+  NonconformingEqualRateRegions.cpp
   )
 
 add_subdirectory(Tags)

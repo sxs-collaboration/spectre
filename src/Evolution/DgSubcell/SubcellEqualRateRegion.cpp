@@ -13,6 +13,7 @@
 #include "Domain/Structure/ElementId.hpp"
 #include "Evolution/DgSubcell/Tags/SubcellOptions.hpp"
 #include "Evolution/DiscontinuousGalerkin/EqualRateLts/EqualRateRegions.tpp"
+#include "Evolution/DiscontinuousGalerkin/EqualRateLts/NonconformingEqualRateRegions.hpp"
 #include "Utilities/Algorithm.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
@@ -69,10 +70,20 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 
-#define INSTANTIATE(_, data)                      \
-  template class evolution::dg::EqualRateRegions< \
-      DIM(data),                                  \
-      tmpl::list<evolution::dg::subcell::SubcellEqualRateRegion<DIM(data)>>>;
+// This doesn't scale, but as long as there are only two region
+// generators we can just instantiate the combinations here.
+#define INSTANTIATE(_, data)                                                  \
+  template class evolution::dg::EqualRateRegions<                             \
+      DIM(data),                                                              \
+      tmpl::list<evolution::dg::subcell::SubcellEqualRateRegion<DIM(data)>>>; \
+  template class evolution::dg::EqualRateRegions<                             \
+      DIM(data),                                                              \
+      tmpl::list<evolution::dg::NonconformingEqualRateRegions<DIM(data)>,     \
+                 evolution::dg::subcell::SubcellEqualRateRegion<DIM(data)>>>; \
+  template class evolution::dg::EqualRateRegions<                             \
+      DIM(data),                                                              \
+      tmpl::list<evolution::dg::subcell::SubcellEqualRateRegion<DIM(data)>,   \
+                 evolution::dg::NonconformingEqualRateRegions<DIM(data)>>>;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
 
