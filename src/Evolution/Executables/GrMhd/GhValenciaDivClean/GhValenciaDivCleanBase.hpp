@@ -57,6 +57,7 @@
 #include "Evolution/DiscontinuousGalerkin/Actions/ComputeTimeDerivative.hpp"
 #include "Evolution/DiscontinuousGalerkin/CleanMortarHistory.hpp"
 #include "Evolution/DiscontinuousGalerkin/DgElementArray.hpp"
+#include "Evolution/DiscontinuousGalerkin/EqualRateLts/NonconformingEqualRateRegions.hpp"
 #include "Evolution/DiscontinuousGalerkin/Initialization/Mortars.hpp"
 #include "Evolution/DiscontinuousGalerkin/Initialization/QuadratureTag.hpp"
 #include "Evolution/DiscontinuousGalerkin/Initialization/SetupEqualRateRegions.hpp"
@@ -758,10 +759,12 @@ struct GhValenciaDivCleanTemplateBase<
           grmhd::GhValenciaDivClean::subcell::FixConservativesAndComputePrims<
               ordered_list_of_primitive_recovery_schemes, system>>>;
 
-  using equal_rate_regions = tmpl::conditional_t<
-      use_dg_subcell,
-      tmpl::list<evolution::dg::subcell::SubcellEqualRateRegion<volume_dim>>,
-      tmpl::list<>>;
+  using equal_rate_regions = tmpl::flatten<
+      tmpl::list<evolution::dg::NonconformingEqualRateRegions<volume_dim>,
+                 tmpl::conditional_t<
+                     use_dg_subcell,
+                     evolution::dg::subcell::SubcellEqualRateRegion<volume_dim>,
+                     tmpl::list<>>>>;
 
   using dg_step_actions = tmpl::flatten<tmpl::list<
       dg::Actions::SpectralFilter,

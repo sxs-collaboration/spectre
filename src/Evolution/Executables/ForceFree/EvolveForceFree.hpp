@@ -22,7 +22,9 @@
 #include "Evolution/DiscontinuousGalerkin/BackgroundGrVars.hpp"
 #include "Evolution/DiscontinuousGalerkin/CleanMortarHistory.hpp"
 #include "Evolution/DiscontinuousGalerkin/DgElementArray.hpp"
+#include "Evolution/DiscontinuousGalerkin/EqualRateLts/NonconformingEqualRateRegions.hpp"
 #include "Evolution/DiscontinuousGalerkin/Initialization/Mortars.hpp"
+#include "Evolution/DiscontinuousGalerkin/Initialization/SetupEqualRateRegions.hpp"
 #include "Evolution/DiscontinuousGalerkin/Initialization/SpectralFilters.hpp"
 #include "Evolution/Initialization/ConservativeSystem.hpp"
 #include "Evolution/Initialization/DgDomain.hpp"
@@ -219,6 +221,9 @@ struct EvolutionMetavars {
   using dg_registration_list =
       tmpl::list<observers::Actions::RegisterEventsWithObservers>;
 
+  using equal_rate_regions =
+      tmpl::list<evolution::dg::NonconformingEqualRateRegions<volume_dim>>;
+
   using initialization_actions = tmpl::list<
       Initialization::Actions::InitializeItems<
           Initialization::TimeStepping<EvolutionMetavars, TimeStepperBase>,
@@ -240,6 +245,11 @@ struct EvolutionMetavars {
           StepChoosers::step_chooser_compute_tags<EvolutionMetavars,
                                                   local_time_stepping>>,
       ::evolution::dg::Initialization::Mortars<volume_dim>,
+      tmpl::conditional_t<
+          local_time_stepping,
+          evolution::dg::Initialization::Actions::SetupEqualRateRegions<
+              volume_dim, equal_rate_regions>,
+          tmpl::list<>>,
       evolution::Actions::InitializeRunEventsAndDenseTriggers,
       Initialization::Actions::InitializeItems<
           evolution::dg::Initialization::SpectralFilters<

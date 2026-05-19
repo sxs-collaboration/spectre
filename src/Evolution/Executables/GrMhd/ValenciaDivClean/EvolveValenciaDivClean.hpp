@@ -43,6 +43,7 @@
 #include "Evolution/DiscontinuousGalerkin/BackgroundGrVars.hpp"
 #include "Evolution/DiscontinuousGalerkin/CleanMortarHistory.hpp"
 #include "Evolution/DiscontinuousGalerkin/DgElementArray.hpp"
+#include "Evolution/DiscontinuousGalerkin/EqualRateLts/NonconformingEqualRateRegions.hpp"
 #include "Evolution/DiscontinuousGalerkin/Initialization/Mortars.hpp"
 #include "Evolution/DiscontinuousGalerkin/Initialization/QuadratureTag.hpp"
 #include "Evolution/DiscontinuousGalerkin/Initialization/SetupEqualRateRegions.hpp"
@@ -527,10 +528,12 @@ struct EvolutionMetavars<tmpl::list<InterpolationTargetTags...>,
   using dg_registration_list =
       tmpl::list<observers::Actions::RegisterEventsWithObservers>;
 
-  using equal_rate_regions = tmpl::conditional_t<
-      use_dg_subcell,
-      tmpl::list<evolution::dg::subcell::SubcellEqualRateRegion<volume_dim>>,
-      tmpl::list<>>;
+  using equal_rate_regions = tmpl::flatten<
+      tmpl::list<evolution::dg::NonconformingEqualRateRegions<volume_dim>,
+                 tmpl::conditional_t<
+                     use_dg_subcell,
+                     evolution::dg::subcell::SubcellEqualRateRegion<volume_dim>,
+                     tmpl::list<>>>>;
 
   using initialization_actions = tmpl::flatten<tmpl::list<
       Initialization::Actions::InitializeItems<

@@ -39,8 +39,10 @@
 #include "Evolution/DiscontinuousGalerkin/Actions/ComputeTimeDerivative.hpp"
 #include "Evolution/DiscontinuousGalerkin/CleanMortarHistory.hpp"
 #include "Evolution/DiscontinuousGalerkin/DgElementArray.hpp"
+#include "Evolution/DiscontinuousGalerkin/EqualRateLts/NonconformingEqualRateRegions.hpp"
 #include "Evolution/DiscontinuousGalerkin/Initialization/Mortars.hpp"
 #include "Evolution/DiscontinuousGalerkin/Initialization/ProjectSpectralFilters.hpp"
+#include "Evolution/DiscontinuousGalerkin/Initialization/SetupEqualRateRegions.hpp"
 #include "Evolution/DiscontinuousGalerkin/Initialization/SpectralFilters.hpp"
 #include "Evolution/Executables/GeneralizedHarmonic/Deadlock.hpp"
 #include "Evolution/Initialization/DgDomain.hpp"
@@ -562,6 +564,9 @@ struct EvolutionMetavars {
   using dg_registration_list =
       tmpl::list<observers::Actions::RegisterEventsWithObservers>;
 
+  using equal_rate_regions =
+      tmpl::list<evolution::dg::NonconformingEqualRateRegions<volume_dim>>;
+
   static constexpr auto default_phase_order =
       std::array{Parallel::Phase::Initialization,
                  Parallel::Phase::RegisterWithElementDataReader,
@@ -626,6 +631,11 @@ struct EvolutionMetavars {
       ::evolution::dg::Initialization::Mortars<volume_dim>,
       intrp::Actions::ElementInitInterpPoints<volume_dim,
                                               interpolation_target_tags>,
+      tmpl::conditional_t<
+          local_time_stepping,
+          evolution::dg::Initialization::Actions::SetupEqualRateRegions<
+              volume_dim, equal_rate_regions>,
+          tmpl::list<>>,
       evolution::Actions::InitializeRunEventsAndDenseTriggers,
       control_system::Actions::InitializeMeasurements<control_systems>,
       Initialization::Actions::InitializeItems<
@@ -741,7 +751,7 @@ struct EvolutionMetavars {
                                tmpl::pin<tmpl::size_t<volume_dim>>>>>,
             gh::bbh::Tags::ElementCompletionRequested,
             Tags::ChangeSlabSize::NumberOfExpectedMessages,
-            Tags::ChangeSlabSize::NewSlabSize>>>;
+            Tags::ChangeSlabSize::NewSlabSize, Tags::FixedLtsRatio>>>;
     static constexpr bool keep_coarse_grids = false;
     static constexpr bool p_refine_only_in_event = true;
   };
