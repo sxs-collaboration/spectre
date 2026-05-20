@@ -22,14 +22,13 @@ namespace hydro::Tags {
  *
  */
 struct LowerSpatialFourVelocityCompute
-    : hydro::Tags::LowerSpatialFourVelocity<DataVector, 3, Frame::Inertial>,
+    : LowerSpatialFourVelocity<DataVector, 3, Frame::Inertial>,
       db::ComputeTag {
-  using base =
-      hydro::Tags::LowerSpatialFourVelocity<DataVector, 3, Frame::Inertial>;
+  using base = LowerSpatialFourVelocity<DataVector, 3, Frame::Inertial>;
   using argument_tags =
-      tmpl::list<hydro::Tags::SpatialVelocity<DataVector, 3, Frame::Inertial>,
+      tmpl::list<SpatialVelocity<DataVector, 3, Frame::Inertial>,
                  gr::Tags::SpatialMetric<DataVector, 3>,
-                 hydro::Tags::LorentzFactor<DataVector>>;
+                 LorentzFactor<DataVector>>;
   static void function(const gsl::not_null<tnsr::i<DataVector, 3>*> result,
                        const tnsr::I<DataVector, 3>& spatial_velocity,
                        const tnsr::ii<DataVector, 3>& spatial_metric,

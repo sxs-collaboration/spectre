@@ -9,7 +9,7 @@
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "PointwiseFunctions/GeneralRelativity/TagsDeclarations.hpp"
-#include "PointwiseFunctions/Hydro/Tags.hpp"
+#include "PointwiseFunctions/Hydro/TagsDeclarations.hpp"
 
 /// \cond
 namespace gsl {
@@ -48,7 +48,7 @@ struct TransportVelocityCompute
                  ::gr::Tags::Lapse<DataType>,
                  ::gr::Tags::Shift<DataType, Dim, Fr>>;
 
-  using base = hydro::Tags::TransportVelocity<DataType, Dim, Fr>;
+  using base = TransportVelocity<DataType, Dim, Fr>;
   using return_type = typename base::type;
 
   static constexpr auto function = static_cast<void (*)(
