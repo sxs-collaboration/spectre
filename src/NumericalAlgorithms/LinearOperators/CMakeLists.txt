@@ -55,4 +55,5 @@ target_link_libraries(
   DomainStructure
   )
 
+add_subdirectory(Filters)
 add_subdirectory(Python)
