@@ -51,6 +51,7 @@
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits/CreateGetTypeAliasOrDefault.hpp"
 #include "Utilities/TypeTraits/CreateIsCallable.hpp"
+#include "Utilities/UtcTime.hpp"
 
 #include "Parallel/Main.decl.h"
 
@@ -767,9 +768,20 @@ void Main<Metavariables>::execute_next_phase() {
       sys::abort("");
     }
 
-    const auto next_phase = PhaseControl::arbitrate_phase_change(
-        make_not_null(&phase_change_decision_data_), current_phase_,
-        *Parallel::local_branch(global_cache_proxy_));
+    std::optional<Parallel::Phase> next_phase{};
+    if (just_restored_from_checkpoint_) {
+      just_restored_from_checkpoint_ = false;
+      Parallel::printf("Restarting from checkpoint. Date and time: %s\n",
+                       utc_time());
+      next_phase.emplace(Parallel::Phase::UpdateOptionsAtRestartFromCheckpoint);
+    } else if (current_phase_ ==
+               Parallel::Phase::UpdateOptionsAtRestartFromCheckpoint) {
+      next_phase.emplace(Parallel::Phase::Restart);
+    } else {
+      next_phase = PhaseControl::arbitrate_phase_change(
+          make_not_null(&phase_change_decision_data_), current_phase_,
+          *Parallel::local_branch(global_cache_proxy_));
+    }
     if (next_phase.has_value()) {
       // Only print info if there was an actual phase change.
       if (current_phase_ != next_phase.value()) {
@@ -844,15 +856,9 @@ void Main<Metavariables>::execute_next_phase() {
 
   // We skip the reparsing and overlaying if there are no eligible tags
   if constexpr (tmpl::size<overlayable_option_list>::value > 0) {
-    // Make sure we only update the options the first time we run the phase
-    // UpdateOptionsAtRestartFromCheckpoint after restoring from checkpoint.
-    // Else, the code might try to update options each time the phase was
-    // encountered, even if there was no checkpoint/restart...
-    if (just_restored_from_checkpoint_ and
-        current_phase_ ==
-            Parallel::Phase::UpdateOptionsAtRestartFromCheckpoint) {
+    if (current_phase_ ==
+        Parallel::Phase::UpdateOptionsAtRestartFromCheckpoint) {
       update_const_global_cache_from_input_file();
-      just_restored_from_checkpoint_ = false;
     }
   }
 

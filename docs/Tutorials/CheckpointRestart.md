@@ -78,9 +78,8 @@ For example: activation thresholds on various algorithms, or frequency of data
 observation, are safe parameters to modify.
 
 The executable will update the global cache with new input file values during
-the phase `UpdateOptionsAtRestartFromCheckpoint`. The
-`CheckpointAndExitAfterWallclock` phase control automatically directs code flow
-to this phase after a restart.
+the phase `UpdateOptionsAtRestartFromCheckpoint`. The restart logic
+automatically directs code flow to this phase after a restart.
 
 In this option-updating phase, the code tries to read an "overlay" input file
 whose name is computed from the original input file and the number of the
@@ -89,3 +88,10 @@ and the code is restarted using a checkpoint
 `+restart Checkpoints/Checkpoint_0123`, then the overlay input file to read
 has name `path/to/Input.overlay_0123.yaml`. If this file does not exist, the
 executable continues with previous parameter values.
+
+After the `UpdateOptionsAtRestartFromCheckpoint` phase runs, the code will
+automatically transition to the `Restart` phase.  This phase is usually used to
+redo various registration actions that may have been invalidated by the restart
+or option-overlaying.  Control is then returned to the normal phase-arbitration
+code, which will usually return to the phase that was active before the
+checkpoint.

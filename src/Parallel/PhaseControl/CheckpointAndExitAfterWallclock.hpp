@@ -24,7 +24,6 @@
 #include "Utilities/Serialization/CharmPupable.hpp"
 #include "Utilities/System/ParallelInfo.hpp"
 #include "Utilities/TMPL.hpp"
-#include "Utilities/UtcTime.hpp"
 
 namespace PhaseControl {
 
@@ -71,10 +70,6 @@ struct CheckpointAndExitRequested {
  * Writing a single checkpoint at the end of the job's allocated time allows
  * the computation to be continued, while minimizing the disc space taken up by
  * checkpoint files.
- *
- * When restarting from the checkpoint, this phase control sends the control
- * flow to a UpdateOptionsAtRestartFromCheckpoint phase, allowing the user to
- * update (some) simulation parameters for the continuation of the run.
  *
  * Note that this phase control is not a trigger on wallclock time. Rather,
  * it checks the elapsed wallclock time when called, likely from a global sync
@@ -215,18 +210,6 @@ CheckpointAndExitAfterWallclock::arbitrate_phase_change_impl(
       return std::make_pair(Parallel::Phase::Exit,
                             ArbitrationStrategy::RunPhaseImmediately);
     } else {
-      // if current_phase is WriteCheckpoint, we follow with updating options
-      if (current_phase == Parallel::Phase::WriteCheckpoint) {
-        Parallel::printf("Restarting from checkpoint. Date and time: %s\n",
-                         utc_time());
-        return std::make_pair(
-            Parallel::Phase::UpdateOptionsAtRestartFromCheckpoint,
-            ArbitrationStrategy::PermitAdditionalJumps);
-      } else if (current_phase ==
-                 Parallel::Phase::UpdateOptionsAtRestartFromCheckpoint) {
-        return std::make_pair(Parallel::Phase::Restart,
-                              ArbitrationStrategy::PermitAdditionalJumps);
-      }
       // Reset restart_phase until it is needed for the next checkpoint
       const auto result = restart_phase;
       restart_phase.reset();
