@@ -52,7 +52,7 @@ void check_valid_extents(const size_t n_r, const size_t n_phi,
 }  // namespace
 
 template <typename TagsList>
-void ZernikeB2_disk_exponential_filter(
+void zernike_b2_disk_exponential_filter(
     const gsl::not_null<Variables<TagsList>*> u, const Mesh<2>& mesh,
     const double alpha, const unsigned half_power) {
   const auto [n_r, n_phi] = mesh.extents().indices();
@@ -190,7 +190,7 @@ void ZernikeB2_disk_exponential_filter(
 }
 
 template <typename TagsList>
-void ZernikeB2_cylinder_exponential_filter(
+void zernike_b2_cylinder_exponential_filter(
     const gsl::not_null<Variables<TagsList>*> u, const Mesh<3>& mesh,
     const double alpha, const unsigned half_power) {
   const auto [n_r, n_phi, n_z] = mesh.extents().indices();

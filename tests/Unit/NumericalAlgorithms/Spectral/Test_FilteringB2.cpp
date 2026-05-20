@@ -73,8 +73,8 @@ void test_disk_filter() {
       get<0>(get<::Tags::Tempi<0, 2>>(expected_result)) = f_vals;
       get<1>(get<::Tags::Tempi<0, 2>>(expected_result)) = f_sin_vals;
 
-      Spectral::filtering::ZernikeB2_disk_exponential_filter(make_not_null(&u),
-                                                             mesh, 0.0, 2);
+      Spectral::filtering::zernike_b2_disk_exponential_filter(make_not_null(&u),
+                                                              mesh, 0.0, 2);
 
       CHECK_VARIABLES_APPROX(u, expected_result);
     }
@@ -89,8 +89,8 @@ void test_disk_filter() {
       get<0>(get<::Tags::Tempi<0, 2>>(expected_result)) = 1.0;
       get<1>(get<::Tags::Tempi<0, 2>>(expected_result)) = 1.0;
 
-      Spectral::filtering::ZernikeB2_disk_exponential_filter(make_not_null(&u),
-                                                             mesh, 36.0, 32);
+      Spectral::filtering::zernike_b2_disk_exponential_filter(make_not_null(&u),
+                                                              mesh, 36.0, 32);
 
       CHECK_VARIABLES_APPROX(u, expected_result);
     }
@@ -108,8 +108,8 @@ void test_disk_filter() {
       get<0>(get<::Tags::Tempi<0, 2>>(expected_result)) = 0.;
       get<1>(get<::Tags::Tempi<0, 2>>(expected_result)) = 0.;
 
-      Spectral::filtering::ZernikeB2_disk_exponential_filter(make_not_null(&u),
-                                                             mesh, 36.0, 32);
+      Spectral::filtering::zernike_b2_disk_exponential_filter(make_not_null(&u),
+                                                              mesh, 36.0, 32);
 
       CHECK_VARIABLES_APPROX(u, expected_result);
     }
@@ -125,8 +125,8 @@ void test_disk_filter() {
       get<0>(get<::Tags::Tempi<0, 2>>(expected_result)) = 1.;
       get<1>(get<::Tags::Tempi<0, 2>>(expected_result)) = 1.;
 
-      Spectral::filtering::ZernikeB2_disk_exponential_filter(make_not_null(&u),
-                                                             mesh, 36.0, 32);
+      Spectral::filtering::zernike_b2_disk_exponential_filter(make_not_null(&u),
+                                                              mesh, 36.0, 32);
 
       CHECK_VARIABLES_APPROX(u, expected_result);
     }
@@ -183,7 +183,7 @@ void test_disk_filter_weights() {
         {
           const DataVector f_cos = r_m * cos(static_cast<double>(m) * phi);
           get(get<::Tags::TempScalar<0>>(u)) = f_cos;
-          Spectral::filtering::ZernikeB2_disk_exponential_filter(
+          Spectral::filtering::zernike_b2_disk_exponential_filter(
               make_not_null(&u), mesh, alpha, half_power);
           get(get<::Tags::TempScalar<0>>(expected_result)) =
               expected_factor * f_cos;
@@ -194,7 +194,7 @@ void test_disk_filter_weights() {
         {
           const DataVector f_sin = r_m * sin(static_cast<double>(m) * phi);
           get(get<::Tags::TempScalar<0>>(u)) = f_sin;
-          Spectral::filtering::ZernikeB2_disk_exponential_filter(
+          Spectral::filtering::zernike_b2_disk_exponential_filter(
               make_not_null(&u), mesh, alpha, half_power);
           get(get<::Tags::TempScalar<0>>(expected_result)) =
               expected_factor * f_sin;
@@ -245,7 +245,7 @@ void test_cylinder_filter() {
       get<0>(get<::Tags::Tempi<0, 2>>(expected_result)) = f_vals;
       get<1>(get<::Tags::Tempi<0, 2>>(expected_result)) = f_vals;
 
-      Spectral::filtering::ZernikeB2_cylinder_exponential_filter(
+      Spectral::filtering::zernike_b2_cylinder_exponential_filter(
           make_not_null(&u), mesh, 0.0, 2);
 
       CHECK_VARIABLES_APPROX(u, expected_result);
@@ -261,7 +261,7 @@ void test_cylinder_filter() {
       get<0>(get<::Tags::Tempi<0, 2>>(expected_result)) = 1.0;
       get<1>(get<::Tags::Tempi<0, 2>>(expected_result)) = 1.0;
 
-      Spectral::filtering::ZernikeB2_cylinder_exponential_filter(
+      Spectral::filtering::zernike_b2_cylinder_exponential_filter(
           make_not_null(&u), mesh, 36.0, 32);
 
       CHECK_VARIABLES_APPROX(u, expected_result);
@@ -281,7 +281,7 @@ void test_cylinder_filter() {
       get<0>(get<::Tags::Tempi<0, 2>>(expected_result)) = 0.;
       get<1>(get<::Tags::Tempi<0, 2>>(expected_result)) = 0.;
 
-      Spectral::filtering::ZernikeB2_cylinder_exponential_filter(
+      Spectral::filtering::zernike_b2_cylinder_exponential_filter(
           make_not_null(&u), mesh, 36.0, 32);
 
       CHECK_VARIABLES_APPROX(u, expected_result);
@@ -298,7 +298,7 @@ void test_cylinder_filter() {
       get<0>(get<::Tags::Tempi<0, 2>>(expected_result)) = 1.;
       get<1>(get<::Tags::Tempi<0, 2>>(expected_result)) = 1.;
 
-      Spectral::filtering::ZernikeB2_cylinder_exponential_filter(
+      Spectral::filtering::zernike_b2_cylinder_exponential_filter(
           make_not_null(&u), mesh, 36.0, 32);
 
       CHECK_VARIABLES_APPROX(u, expected_result);
@@ -328,7 +328,7 @@ void test_cylinder_filter() {
     get<0>(get<::Tags::Tempi<0, 2>>(expected_result)) = 0.;
     get<1>(get<::Tags::Tempi<0, 2>>(expected_result)) = 0.;
 
-    Spectral::filtering::ZernikeB2_cylinder_exponential_filter(
+    Spectral::filtering::zernike_b2_cylinder_exponential_filter(
         make_not_null(&u), mesh, 36.0, 32);
 
     CHECK_VARIABLES_APPROX(u, expected_result);
@@ -397,7 +397,7 @@ void test_cylinder_filter_weights() {
         {
           const DataVector f_cos = r_m * cos(static_cast<double>(m) * phi);
           get(get<::Tags::TempScalar<0>>(u)) = f_cos;
-          Spectral::filtering::ZernikeB2_cylinder_exponential_filter(
+          Spectral::filtering::zernike_b2_cylinder_exponential_filter(
               make_not_null(&u), mesh, alpha, half_power);
           get(get<::Tags::TempScalar<0>>(expected_result)) =
               disk_factor * f_cos;
@@ -408,7 +408,7 @@ void test_cylinder_filter_weights() {
         {
           const DataVector f_sin = r_m * sin(static_cast<double>(m) * phi);
           get(get<::Tags::TempScalar<0>>(u)) = f_sin;
-          Spectral::filtering::ZernikeB2_cylinder_exponential_filter(
+          Spectral::filtering::zernike_b2_cylinder_exponential_filter(
               make_not_null(&u), mesh, alpha, half_power);
           get(get<::Tags::TempScalar<0>>(expected_result)) =
               disk_factor * f_sin;
@@ -442,7 +442,7 @@ void test_cylinder_filter_weights() {
         Variables<TagsList> u{num_grid_points};
         Variables<TagsList> expected_result{num_grid_points};
         get(get<::Tags::TempScalar<0>>(u)) = f_z_vals;
-        Spectral::filtering::ZernikeB2_cylinder_exponential_filter(
+        Spectral::filtering::zernike_b2_cylinder_exponential_filter(
             make_not_null(&u), mesh, alpha, half_power);
         get(get<::Tags::TempScalar<0>>(expected_result)) = z_factor * f_z_vals;
         CHECK_VARIABLES_APPROX(u, expected_result);
@@ -463,7 +463,7 @@ void test_asserts() {
                         Spectral::Quadrature::Equiangular}};
     Variables<TagsList> u{mesh.number_of_grid_points()};
     CHECK_THROWS_WITH(
-        Spectral::filtering::ZernikeB2_disk_exponential_filter(
+        Spectral::filtering::zernike_b2_disk_exponential_filter(
             make_not_null(&u), mesh, 1.0, 2),
         Catch::Matchers::ContainsSubstring(
             "At least 2 radial grid points are required to filter ZernikeB2,"));
@@ -476,7 +476,7 @@ void test_asserts() {
                         Spectral::Quadrature::Equiangular}};
     Variables<TagsList> u{mesh.number_of_grid_points()};
     CHECK_THROWS_WITH(
-        Spectral::filtering::ZernikeB2_disk_exponential_filter(
+        Spectral::filtering::zernike_b2_disk_exponential_filter(
             make_not_null(&u), mesh, 1.0, 2),
         Catch::Matchers::ContainsSubstring(
             "Fourier with an even number of grid points can be unstable"));
@@ -489,7 +489,7 @@ void test_asserts() {
                         Spectral::Quadrature::Equiangular}};
     Variables<TagsList> u{mesh.number_of_grid_points()};
     CHECK_THROWS_WITH(
-        Spectral::filtering::ZernikeB2_disk_exponential_filter(
+        Spectral::filtering::zernike_b2_disk_exponential_filter(
             make_not_null(&u), mesh, 1.0, 2),
         Catch::Matchers::ContainsSubstring(
             "We choose to enforce the restriction that the Fourier modal space "
@@ -505,7 +505,7 @@ void test_asserts() {
                         Spectral::Quadrature::GaussLobatto}};
     Variables<TagsList> u{mesh.number_of_grid_points()};
     CHECK_THROWS_WITH(
-        Spectral::filtering::ZernikeB2_cylinder_exponential_filter(
+        Spectral::filtering::zernike_b2_cylinder_exponential_filter(
             make_not_null(&u), mesh, 1.0, 2),
         Catch::Matchers::ContainsSubstring(
             "Fourier with an even number of grid points can be unstable"));
@@ -520,7 +520,7 @@ void test_asserts() {
                         Spectral::Quadrature::GaussLobatto}};
     Variables<TagsList> u{mesh.number_of_grid_points()};
     CHECK_THROWS_WITH(
-        Spectral::filtering::ZernikeB2_cylinder_exponential_filter(
+        Spectral::filtering::zernike_b2_cylinder_exponential_filter(
             make_not_null(&u), mesh, 1.0, 2),
         Catch::Matchers::ContainsSubstring(
             "We choose to enforce the restriction that the Fourier modal space "
