@@ -31,4 +31,24 @@ std::complex<double> SpanInterpolator::interpolate(
                   gsl::span<const double>(imag_part.data(), imag_part.size()),
                   target_point)};
 }
+
+std::complex<double> SpanInterpolator::derivative(
+    const gsl::span<const double>& source_points,
+    const gsl::span<const std::complex<double>>& values,
+    const double target_point) const {
+  // the operation below to get the real and imag parts does not alter the
+  // contents of the span, so the const-cast is safe.
+  const ComplexDataVector view{
+      const_cast<std::complex<double>*>(values.data()),  // NOLINT
+      values.size()};
+  const DataVector real_part = real(view);
+  const DataVector imag_part = imag(view);
+  return std::complex<double>{
+      derivative(source_points,
+                 gsl::span<const double>(real_part.data(), real_part.size()),
+                 target_point),
+      derivative(source_points,
+                 gsl::span<const double>(imag_part.data(), imag_part.size()),
+                 target_point)};
+}
 }  // namespace intrp

@@ -35,6 +35,44 @@ SPECTRE_ALWAYS_INLINE ValueType interpolate_impl(
          ((t0 - t1) * (t0 - t2) * (t1 - t2) * (t0 - t3) * (t1 - t3) *
           (t2 - t3));
 }
+
+template <typename ValueType>
+SPECTRE_ALWAYS_INLINE ValueType derivative_impl(
+    const gsl::span<const double>& source_points,
+    const gsl::span<const ValueType>& values, const double target_point) {
+  const double t0 = source_points[0];
+  const double t1 = source_points[1];
+  const double t2 = source_points[2];
+  const double t3 = source_points[3];
+
+  const auto d0 = values[0];
+  const auto d1 = values[1];
+  const auto d2 = values[2];
+  const auto d3 = values[3];
+
+  const double x_minus_t0 = target_point - t0;
+  const double x_minus_t1 = target_point - t1;
+  const double x_minus_t2 = target_point - t2;
+  const double x_minus_t3 = target_point - t3;
+
+  // Sum-of-products derivative of each Lagrange basis numerator:
+  //   d/dx [(x - a)(x - b)(x - c)] = (x-b)(x-c) + (x-a)(x-c) + (x-a)(x-b)
+  const double s0 = (x_minus_t2 * x_minus_t3) + (x_minus_t1 * x_minus_t3) +
+                    (x_minus_t1 * x_minus_t2);
+  const double s1 = (x_minus_t2 * x_minus_t3) + (x_minus_t0 * x_minus_t3) +
+                    (x_minus_t0 * x_minus_t2);
+  const double s2 = (x_minus_t1 * x_minus_t3) + (x_minus_t0 * x_minus_t3) +
+                    (x_minus_t0 * x_minus_t1);
+  const double s3 = (x_minus_t1 * x_minus_t2) + (x_minus_t0 * x_minus_t2) +
+                    (x_minus_t0 * x_minus_t1);
+
+  return (d0 * s0 * (t1 - t2) * (t1 - t3) * (t2 - t3) -
+          d1 * s1 * (t0 - t2) * (t0 - t3) * (t2 - t3) +
+          d2 * s2 * (t0 - t1) * (t0 - t3) * (t1 - t3) -
+          d3 * s3 * (t0 - t1) * (t0 - t2) * (t1 - t2)) /
+         ((t0 - t1) * (t0 - t2) * (t1 - t2) * (t0 - t3) * (t1 - t3) *
+          (t2 - t3));
+}
 }  // namespace
 
 double CubicSpanInterpolator::interpolate(
@@ -48,6 +86,19 @@ std::complex<double> CubicSpanInterpolator::interpolate(
     const gsl::span<const std::complex<double>>& values,
     double target_point) const {
   return interpolate_impl(source_points, values, target_point);
+}
+
+double CubicSpanInterpolator::derivative(
+    const gsl::span<const double>& source_points,
+    const gsl::span<const double>& values, double target_point) const {
+  return derivative_impl(source_points, values, target_point);
+}
+
+std::complex<double> CubicSpanInterpolator::derivative(
+    const gsl::span<const double>& source_points,
+    const gsl::span<const std::complex<double>>& values,
+    double target_point) const {
+  return derivative_impl(source_points, values, target_point);
 }
 
 PUP::able::PUP_ID intrp::CubicSpanInterpolator::my_PUP_ID = 0;
