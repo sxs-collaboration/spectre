@@ -8,6 +8,7 @@ spectre_target_headers(
   EqualRateRegionGenerator.hpp
   EqualRateRegions.hpp
   EqualRateRegions.tpp
+  FixedLtsRatio.hpp
   NonconformingEqualRateRegions.hpp
   )
 
@@ -15,6 +16,7 @@ spectre_target_sources(
   ${LIBRARY}
   PRIVATE
   EqualRateRegions.cpp
+  FixedLtsRatio.cpp
   NonconformingEqualRateRegions.cpp
   )
 

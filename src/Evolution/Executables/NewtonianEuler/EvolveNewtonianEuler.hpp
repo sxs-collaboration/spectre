@@ -35,6 +35,7 @@
 #include "Evolution/DiscontinuousGalerkin/Actions/ComputeTimeDerivative.hpp"
 #include "Evolution/DiscontinuousGalerkin/CleanMortarHistory.hpp"
 #include "Evolution/DiscontinuousGalerkin/DgElementArray.hpp"
+#include "Evolution/DiscontinuousGalerkin/EqualRateLts/FixedLtsRatio.hpp"
 #include "Evolution/DiscontinuousGalerkin/EqualRateLts/NonconformingEqualRateRegions.hpp"
 #include "Evolution/DiscontinuousGalerkin/Initialization/Mortars.hpp"
 #include "Evolution/DiscontinuousGalerkin/Initialization/QuadratureTag.hpp"
@@ -110,7 +111,6 @@
 #include "Time/CleanHistory.hpp"
 #include "Time/RecordTimeStepperData.hpp"
 #include "Time/StepChoosers/Factory.hpp"
-#include "Time/StepChoosers/FixedLtsRatio.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"
 #include "Time/Tags/Time.hpp"
 #include "Time/Tags/TimeStepId.hpp"
@@ -231,13 +231,15 @@ struct EvolutionMetavars {
         tmpl::pair<PhaseChange, PhaseControl::factory_creatable_classes>,
         tmpl::pair<StepChooser<StepChooserUse::LtsStep>,
                    StepChoosers::standard_step_choosers<system>>,
-        tmpl::pair<StepChooser<StepChooserUse::Slab>,
-                   tmpl::append<StepChoosers::standard_slab_choosers<
-                                    system, local_time_stepping>,
-                                tmpl::conditional_t<
-                                    use_dg_subcell and local_time_stepping,
-                                    tmpl::list<StepChoosers::FixedLtsRatio>,
-                                    tmpl::list<>>>>,
+        tmpl::pair<
+            StepChooser<StepChooserUse::Slab>,
+            tmpl::append<
+                StepChoosers::standard_slab_choosers<system,
+                                                     local_time_stepping>,
+                tmpl::conditional_t<
+                    use_dg_subcell and local_time_stepping,
+                    tmpl::list<evolution::dg::StepChoosers::FixedLtsRatio>,
+                    tmpl::list<>>>>,
         tmpl::pair<TimeSequence<double>,
                    TimeSequences::all_time_sequences<double>>,
         tmpl::pair<TimeSequence<std::uint64_t>,

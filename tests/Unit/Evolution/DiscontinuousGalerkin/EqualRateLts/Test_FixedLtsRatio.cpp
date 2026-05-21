@@ -12,6 +12,7 @@
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/MetavariablesTag.hpp"
+#include "Evolution/DiscontinuousGalerkin/EqualRateLts/FixedLtsRatio.hpp"
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Options/Protocols/FactoryCreation.hpp"
@@ -19,7 +20,6 @@
 #include "Time/RequestsStepperErrorTolerances.hpp"
 #include "Time/Slab.hpp"
 #include "Time/StepChoosers/Constant.hpp"
-#include "Time/StepChoosers/FixedLtsRatio.hpp"
 #include "Time/StepChoosers/LimitIncrease.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"
 #include "Time/StepperErrorTolerances.hpp"
@@ -109,13 +109,13 @@ PUP::able::PUP_ID ToleranceChooser::my_PUP_ID = 0;  // NOLINT
 struct Metavariables {
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
-    using factory_classes =
-        tmpl::map<tmpl::pair<StepChooser<StepChooserUse::LtsStep>,
-                             tmpl::list<StepChoosers::Constant,
-                                        StepChoosers::LimitIncrease,
-                                        ErrorChooser, ToleranceChooser>>,
-                  tmpl::pair<StepChooser<StepChooserUse::Slab>,
-                             tmpl::list<StepChoosers::FixedLtsRatio>>>;
+    using factory_classes = tmpl::map<
+        tmpl::pair<
+            StepChooser<StepChooserUse::LtsStep>,
+            tmpl::list<StepChoosers::Constant, StepChoosers::LimitIncrease,
+                       ErrorChooser, ToleranceChooser>>,
+        tmpl::pair<StepChooser<StepChooserUse::Slab>,
+                   tmpl::list<evolution::dg::StepChoosers::FixedLtsRatio>>>;
   };
 };
 
@@ -158,7 +158,8 @@ void test(const std::optional<double>& expected_goal,
 }
 }  // namespace
 
-SPECTRE_TEST_CASE("Unit.Time.StepChoosers.FixedLtsRatio", "[Unit][Time]") {
+SPECTRE_TEST_CASE("Unit.Evolution.DG.EqualRateLts.FixedLtsRatio",
+                  "[Unit][Evolution]") {
   register_factory_classes_with_charm<Metavariables>();
 
   test({}, {}, {}, "    - ErrorChooser");
@@ -182,18 +183,18 @@ SPECTRE_TEST_CASE("Unit.Time.StepChoosers.FixedLtsRatio", "[Unit][Time]") {
        "    - LimitIncrease:\n"
        "        Factor: 4.0");
 
-  CHECK(StepChoosers::FixedLtsRatio{}.uses_local_data());
-  CHECK(StepChoosers::FixedLtsRatio{}.can_be_delayed());
+  CHECK(evolution::dg::StepChoosers::FixedLtsRatio{}.uses_local_data());
+  CHECK(evolution::dg::StepChoosers::FixedLtsRatio{}.can_be_delayed());
 
   {
-    const StepChoosers::FixedLtsRatio no_tolerances{
+    const evolution::dg::StepChoosers::FixedLtsRatio no_tolerances{
         make_vector<std::unique_ptr<StepChooser<StepChooserUse::LtsStep>>>(
             std::make_unique<StepChoosers::Constant>(1.0))};
     CHECK(no_tolerances.tolerances().empty());
   }
 
   {
-    const StepChoosers::FixedLtsRatio tolerance_chooser{
+    const evolution::dg::StepChoosers::FixedLtsRatio tolerance_chooser{
         make_vector<std::unique_ptr<StepChooser<StepChooserUse::LtsStep>>>(
             std::make_unique<ToleranceChooser>(1.0e-4, 1.0e-10),
             std::make_unique<ToleranceChooser>(1.0e-4, 1.0e-10))};
@@ -206,7 +207,7 @@ SPECTRE_TEST_CASE("Unit.Time.StepChoosers.FixedLtsRatio", "[Unit][Time]") {
   }
 
   {
-    const StepChoosers::FixedLtsRatio bad_tolerances{
+    const evolution::dg::StepChoosers::FixedLtsRatio bad_tolerances{
         make_vector<std::unique_ptr<StepChooser<StepChooserUse::LtsStep>>>(
             std::make_unique<ToleranceChooser>(1.0e-4, 1.0e-10),
             std::make_unique<ToleranceChooser>(1.0e-4, 1.0e-8))};

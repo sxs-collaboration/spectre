@@ -1,7 +1,7 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "Time/StepChoosers/FixedLtsRatio.hpp"
+#include "Evolution/DiscontinuousGalerkin/EqualRateLts/FixedLtsRatio.hpp"
 
 #include <memory>
 #include <pup.h>
@@ -15,7 +15,7 @@
 #include "Time/StepChoosers/StepChooser.hpp"
 #include "Time/StepperErrorTolerances.hpp"
 
-namespace StepChoosers {
+namespace evolution::dg::StepChoosers {
 FixedLtsRatio::FixedLtsRatio(
     std::vector<std::unique_ptr<::StepChooser<StepChooserUse::LtsStep>>>
         step_choosers)
@@ -39,4 +39,4 @@ void FixedLtsRatio::pup(PUP::er& p) {
 }
 
 PUP::able::PUP_ID FixedLtsRatio::my_PUP_ID = 0;  // NOLINT
-}  // namespace StepChoosers
+}  // namespace evolution::dg::StepChoosers

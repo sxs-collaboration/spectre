@@ -31,7 +31,7 @@ struct TimeStep;
 }  // namespace Tags
 /// \endcond
 
-namespace StepChoosers {
+namespace evolution::dg::StepChoosers {
 /// Requests a slab size based on the desired step in regions with a
 /// fixed slab fraction.
 ///
@@ -133,4 +133,4 @@ class FixedLtsRatio : public StepChooser<StepChooserUse::Slab>,
   std::vector<std::unique_ptr<::StepChooser<StepChooserUse::LtsStep>>>
       step_choosers_;
 };
-}  // namespace StepChoosers
+}  // namespace evolution::dg::StepChoosers
