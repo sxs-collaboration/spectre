@@ -3,15 +3,22 @@
 
 #include "Evolution/DiscontinuousGalerkin/Initialization/SetupEqualRateRegions.hpp"
 
+#include <array>
+#include <charm++.h>
 #include <cstddef>
 #include <optional>
+#include <utility>
+#include <vector>
 
 #include "Domain/Structure/DirectionalIdMap.hpp"
 #include "Domain/Structure/Element.hpp"
+#include "Domain/Structure/ElementId.hpp"
 #include "Domain/Structure/FaceType.hpp"
+#include "Domain/Structure/InitialElementIds.hpp"
 #include "Evolution/DiscontinuousGalerkin/EqualRateLts/EqualRateRegions.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarInfo.hpp"
 #include "Evolution/DiscontinuousGalerkin/TimeSteppingPolicy.hpp"
+#include "Parallel/ArrayIndex.hpp"
 #include "Time/Time.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
@@ -92,4 +99,45 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
 
 #undef INSTANTIATE
 #undef DIM
+
+namespace Actions::SetupEqualRateRegions_detail {
+template <size_t Dim>
+std::vector<std::pair<EqualRateRegionId, std::vector<CkArrayIndex>>>
+SectionsToCreate<Dim>::apply(
+    const Element<Dim>& element,
+    const EqualRateRegionsBase<Dim>& equal_rate_regions,
+    const std::vector<std::array<size_t, Dim>>& initial_refinement_levels) {
+  if (not is_zeroth_element(element.id())) {
+    // Only one element should create the sections.
+    return {};
+  }
+
+  const auto& regions = equal_rate_regions.regions();
+
+  std::vector<std::pair<EqualRateRegionId, std::vector<CkArrayIndex>>>
+      sections{};
+  sections.reserve(regions.size());
+
+  const auto all_elements = initial_element_ids(initial_refinement_levels);
+  for (const auto& [name, region_id] : regions) {
+    std::vector<CkArrayIndex> section_elements{};
+    for (const ElementId<Dim>& element_id : all_elements) {
+      if (equal_rate_regions.is_in_region(region_id, element_id)) {
+        section_elements.push_back(Parallel::ArrayIndex(element_id));
+      }
+    }
+    sections.emplace_back(region_id, std::move(section_elements));
+  }
+  return sections;
+}
+
+#define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
+
+#define INSTANTIATE(_, data) template struct SectionsToCreate<DIM(data)>;
+
+GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
+
+#undef INSTANTIATE
+#undef DIM
+}  // namespace Actions::SetupEqualRateRegions_detail
 }  // namespace evolution::dg::Initialization

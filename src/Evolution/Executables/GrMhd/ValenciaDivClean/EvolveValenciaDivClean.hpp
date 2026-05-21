@@ -587,7 +587,7 @@ struct EvolutionMetavars<tmpl::list<InterpolationTargetTags...>,
       tmpl::conditional_t<
           local_time_stepping,
           evolution::dg::Initialization::Actions::SetupEqualRateRegions<
-              volume_dim, equal_rate_regions>,
+              EvolutionMetavars, volume_dim, equal_rate_regions>,
           tmpl::list<>>,
       evolution::Actions::InitializeRunEventsAndDenseTriggers,
       Initialization::Actions::InitializeItems<

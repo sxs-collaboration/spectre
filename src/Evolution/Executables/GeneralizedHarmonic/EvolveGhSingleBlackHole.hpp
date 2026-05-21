@@ -321,9 +321,16 @@ struct EvolutionMetavars : public GeneralizedHarmonicTemplateBase<3, UseLts> {
                         get_non_sequential_target_tags<
                             interpolation_target_tags>,
                     tmpl::bind<intrp::Tags::PointInfo, tmpl::_1,
-                               tmpl::pin<tmpl::size_t<volume_dim>>>>>,
+                               tmpl::pin<tmpl::size_t<volume_dim>>>>,
+                tmpl::conditional_t<
+                    local_time_stepping,
+                    tmpl::list<Tags::FixedLtsRatio,
+                               Parallel::Tags::Section<
+                                   gh_dg_element_array,
+                                   evolution::dg::Tags::EqualRateRegionId>>,
+                    tmpl::list<>>>,
             Tags::ChangeSlabSize::NumberOfExpectedMessages,
-            Tags::ChangeSlabSize::NewSlabSize, Tags::FixedLtsRatio>>>;
+            Tags::ChangeSlabSize::NewSlabSize>>>;
     static constexpr bool keep_coarse_grids = false;
     static constexpr bool p_refine_only_in_event = true;
   };

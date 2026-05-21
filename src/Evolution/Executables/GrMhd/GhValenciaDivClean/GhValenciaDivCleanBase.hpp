@@ -901,7 +901,7 @@ struct GhValenciaDivCleanTemplateBase<
       tmpl::conditional_t<
           local_time_stepping,
           evolution::dg::Initialization::Actions::SetupEqualRateRegions<
-              volume_dim, equal_rate_regions>,
+              derived_metavars, volume_dim, equal_rate_regions>,
           tmpl::list<>>,
       evolution::Actions::InitializeRunEventsAndDenseTriggers,
       intrp::Actions::ElementInitInterpPoints<volume_dim,

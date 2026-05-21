@@ -118,9 +118,16 @@ struct EvolutionMetavars
             Tags::StepperErrors<typename system::variables_tag>,
             SelfStart::Tags::InitialValue<typename system::variables_tag>,
             SelfStart::Tags::InitialValue<Tags::TimeStep>>,
-        ::amr::projectors::CopyFromCreatorOrLeaveAsIs<
+        ::amr::projectors::CopyFromCreatorOrLeaveAsIs<tmpl::push_back<
+            tmpl::conditional_t<
+                local_time_stepping,
+                tmpl::list<Tags::FixedLtsRatio,
+                           Parallel::Tags::Section<
+                               gh_dg_element_array,
+                               evolution::dg::Tags::EqualRateRegionId>>,
+                tmpl::list<>>,
             Tags::ChangeSlabSize::NumberOfExpectedMessages,
-            Tags::ChangeSlabSize::NewSlabSize>>;
+            Tags::ChangeSlabSize::NewSlabSize>>>;
     static constexpr bool keep_coarse_grids = false;
     static constexpr bool p_refine_only_in_event = true;
   };
