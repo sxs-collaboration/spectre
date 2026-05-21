@@ -7,6 +7,8 @@
 #include <memory>
 #include <optional>
 #include <string>
+#include <typeinfo>
+#include <unordered_map>
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/MetavariablesTag.hpp"
@@ -14,11 +16,13 @@
 #include "Framework/TestHelpers.hpp"
 #include "Options/Protocols/FactoryCreation.hpp"
 #include "Options/String.hpp"
+#include "Time/RequestsStepperErrorTolerances.hpp"
 #include "Time/Slab.hpp"
 #include "Time/StepChoosers/Constant.hpp"
 #include "Time/StepChoosers/FixedLtsRatio.hpp"
 #include "Time/StepChoosers/LimitIncrease.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"
+#include "Time/StepperErrorTolerances.hpp"
 #include "Time/Tags/FixedLtsRatio.hpp"
 #include "Time/Tags/TimeStep.hpp"
 #include "Time/TimeStepRequest.hpp"
@@ -56,15 +60,62 @@ class ErrorChooser : public StepChooser<StepChooserUse::LtsStep> {
 
 PUP::able::PUP_ID ErrorChooser::my_PUP_ID = 0;  // NOLINT
 
+struct Var1 {};
+struct Var2 {};
+
+class ToleranceChooser : public StepChooser<StepChooserUse::LtsStep>,
+                         public RequestsStepperErrorTolerances {
+ public:
+  ToleranceChooser() = default;
+  explicit ToleranceChooser(CkMigrateMessage* /*unused*/) {}
+  using PUP::able::register_constructor;
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-function"
+  WRAPPED_PUPable_decl_template(ToleranceChooser);  // NOLINT
+#pragma GCC diagnostic pop
+
+  static constexpr Options::String help{""};
+  using options = tmpl::list<>;
+
+  ToleranceChooser(const double var1_tol, const double var2_tol)
+      : var1_tol_(var1_tol), var2_tol_(var2_tol) {}
+
+  using argument_tags = tmpl::list<>;
+
+  TimeStepRequest operator()(double /*last_step*/) const { return {}; }
+
+  bool uses_local_data() const override { return false; }
+  bool can_be_delayed() const override { return true; }
+
+  std::unordered_map<std::type_index, StepperErrorTolerances> tolerances()
+      const override {
+    return {{typeid(Var1),
+             {.estimates = StepperErrorTolerances::Estimates::StepperOrder,
+              .absolute = var1_tol_,
+              .relative = var1_tol_ * 10.0}},
+            {typeid(Var2),
+             {.estimates = StepperErrorTolerances::Estimates::StepperOrder,
+              .absolute = var2_tol_,
+              .relative = var2_tol_ * 10.0}}};
+  }
+
+ private:
+  double var1_tol_{};
+  double var2_tol_{};
+};
+
+PUP::able::PUP_ID ToleranceChooser::my_PUP_ID = 0;  // NOLINT
+
 struct Metavariables {
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
-    using factory_classes = tmpl::map<
-        tmpl::pair<StepChooser<StepChooserUse::LtsStep>,
-                   tmpl::list<StepChoosers::Constant,
-                              StepChoosers::LimitIncrease, ErrorChooser>>,
-        tmpl::pair<StepChooser<StepChooserUse::Slab>,
-                   tmpl::list<StepChoosers::FixedLtsRatio>>>;
+    using factory_classes =
+        tmpl::map<tmpl::pair<StepChooser<StepChooserUse::LtsStep>,
+                             tmpl::list<StepChoosers::Constant,
+                                        StepChoosers::LimitIncrease,
+                                        ErrorChooser, ToleranceChooser>>,
+                  tmpl::pair<StepChooser<StepChooserUse::Slab>,
+                             tmpl::list<StepChoosers::FixedLtsRatio>>>;
   };
 };
 
@@ -134,16 +185,32 @@ SPECTRE_TEST_CASE("Unit.Time.StepChoosers.FixedLtsRatio", "[Unit][Time]") {
   CHECK(StepChoosers::FixedLtsRatio{}.uses_local_data());
   CHECK(StepChoosers::FixedLtsRatio{}.can_be_delayed());
 
-  StepChoosers::FixedLtsRatio{}.for_each_step_chooser(
-      [](const auto& /*unused*/) { ERROR("Should not be called"); });
   {
-    const StepChoosers::FixedLtsRatio two_choosers{
+    const StepChoosers::FixedLtsRatio no_tolerances{
         make_vector<std::unique_ptr<StepChooser<StepChooserUse::LtsStep>>>(
-            std::make_unique<StepChoosers::Constant>(1.0),
-            std::make_unique<StepChoosers::Constant>(2.0))};
-    int count = 0;
-    two_choosers.for_each_step_chooser(
-        [&](const auto& /*unused*/) { ++count; });
-    CHECK(count == 2);
+            std::make_unique<StepChoosers::Constant>(1.0))};
+    CHECK(no_tolerances.tolerances().empty());
+  }
+
+  {
+    const StepChoosers::FixedLtsRatio tolerance_chooser{
+        make_vector<std::unique_ptr<StepChooser<StepChooserUse::LtsStep>>>(
+            std::make_unique<ToleranceChooser>(1.0e-4, 1.0e-10),
+            std::make_unique<ToleranceChooser>(1.0e-4, 1.0e-10))};
+    const auto tolerances = tolerance_chooser.tolerances();
+    CHECK(tolerances.size() == 2);
+    CHECK(tolerances.at(typeid(Var1)).absolute == 1.0e-4);
+    CHECK(tolerances.at(typeid(Var1)).relative == 1.0e-3);
+    CHECK(tolerances.at(typeid(Var2)).absolute == 1.0e-10);
+    CHECK(tolerances.at(typeid(Var2)).relative == 1.0e-9);
+  }
+
+  {
+    const StepChoosers::FixedLtsRatio bad_tolerances{
+        make_vector<std::unique_ptr<StepChooser<StepChooserUse::LtsStep>>>(
+            std::make_unique<ToleranceChooser>(1.0e-4, 1.0e-10),
+            std::make_unique<ToleranceChooser>(1.0e-4, 1.0e-8))};
+    CHECK_THROWS_WITH(bad_tolerances.tolerances(),
+                      Catch::Matchers::ContainsSubstring("must be the same"));
   }
 }

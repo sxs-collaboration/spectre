@@ -6,12 +6,16 @@
 #include <algorithm>
 #include <memory>
 #include <optional>
+#include <typeinfo>
+#include <unordered_map>
 #include <vector>
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "Options/String.hpp"
 #include "Time/EvolutionOrdering.hpp"
+#include "Time/RequestsStepperErrorTolerances.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"
+#include "Time/StepperErrorTolerances.hpp"
 #include "Time/TimeStepRequest.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/Serialization/CharmPupable.hpp"
@@ -35,7 +39,8 @@ namespace StepChoosers {
 /// `standard_step_choosers` list.  Executables using the feature must
 /// include it explicitly in the `factory_creation` struct and add the
 /// `::Tags::FixedLtsRatio` tag to the element DataBox.
-class FixedLtsRatio : public StepChooser<StepChooserUse::Slab> {
+class FixedLtsRatio : public StepChooser<StepChooserUse::Slab>,
+                      public RequestsStepperErrorTolerances {
  public:
   /// \cond
   FixedLtsRatio() = default;
@@ -119,12 +124,8 @@ class FixedLtsRatio : public StepChooser<StepChooserUse::Slab> {
   bool uses_local_data() const override;
   bool can_be_delayed() const override;
 
-  template <typename F>
-  void for_each_step_chooser(F&& f) const {
-    for (const auto& step_chooser : step_choosers_) {
-      f(*step_chooser);
-    }
-  }
+  std::unordered_map<std::type_index, StepperErrorTolerances> tolerances()
+      const override;
 
   void pup(PUP::er& p) override;
 

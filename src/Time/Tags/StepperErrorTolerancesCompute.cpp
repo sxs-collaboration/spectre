@@ -14,7 +14,6 @@
 #include "ParallelAlgorithms/EventsAndTriggers/EventsAndTriggers.hpp"
 #include "Time/ChangeSlabSize/Event.hpp"
 #include "Time/RequestsStepperErrorTolerances.hpp"
-#include "Time/StepChoosers/FixedLtsRatio.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"
 #include "Time/StepperErrorTolerances.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"
@@ -52,20 +51,8 @@ void lts_function(
             if (*error_estimates_enabled) {
               return;
             }
-            if (const auto* const fixed_ratio =
-                    dynamic_cast<const ::StepChoosers::FixedLtsRatio*>(
-                        &step_chooser);
-                fixed_ratio != nullptr) {
-              fixed_ratio->for_each_step_chooser(
-                  [&](const StepChooser<StepChooserUse::LtsStep>&
-                          sub_step_chooser) {
-                    if (*error_estimates_enabled) {
-                      return;
-                    }
-                    if (requests_any_tolerances(sub_step_chooser)) {
-                      *error_estimates_enabled = true;
-                    }
-                  });
+            if (requests_any_tolerances(step_chooser)) {
+              *error_estimates_enabled = true;
             }
           });
     }
@@ -145,17 +132,8 @@ void lts_impl(
             dynamic_cast<const ::Events::ChangeSlabSize*>(&event)) {
       change_slab_size->for_each_step_chooser(
           [&](const StepChooser<StepChooserUse::Slab>& step_chooser) {
-            if (const auto* const fixed_ratio =
-                    dynamic_cast<const ::StepChoosers::FixedLtsRatio*>(
-                        &step_chooser);
-                fixed_ratio != nullptr) {
-              fixed_ratio->for_each_step_chooser(
-                  [&](const StepChooser<StepChooserUse::LtsStep>&
-                          sub_step_chooser) {
-                    set_tolerances_if_requested(tolerances, sub_step_chooser,
-                                                tag_type, tag_name);
-                  });
-            }
+            set_tolerances_if_requested(tolerances, step_chooser, tag_type,
+                                        tag_name);
           });
     }
   });
