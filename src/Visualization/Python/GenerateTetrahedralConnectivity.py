@@ -113,6 +113,7 @@ def generate_tetrahedral_connectivity(
         [
             (key, vol_subfile[key].attrs["observation_value"])
             for key in vol_subfile.keys()
+            if key.startswith("ObservationId")
         ],
         key=lambda key_and_time: key_and_time[1],
     )
