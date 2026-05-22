@@ -14,7 +14,7 @@ spectre_load_modules() {
     module load paraview/5.10
     # Load Spack environment
     source /u/guilara/repos/spack/share/spack/setup-env.sh
-    spack env activate env3_spectre_impi
+    spack env activate env5_spectre
     # Load python environment
     source /u/guilara/envs/spectre_env/bin/activate
     # Define Charm paths
