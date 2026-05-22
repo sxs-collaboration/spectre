@@ -22,6 +22,7 @@
 #include "Evolution/DiscontinuousGalerkin/Actions/ComputeTimeDerivative.hpp"
 #include "Evolution/DiscontinuousGalerkin/CleanMortarHistory.hpp"
 #include "Evolution/DiscontinuousGalerkin/DgElementArray.hpp"
+#include "Evolution/DiscontinuousGalerkin/EqualRateLts/FixedLtsRatio.hpp"
 #include "Evolution/DiscontinuousGalerkin/EqualRateLts/NonconformingEqualRateRegions.hpp"
 #include "Evolution/DiscontinuousGalerkin/Initialization/Mortars.hpp"
 #include "Evolution/DiscontinuousGalerkin/Initialization/SetupEqualRateRegions.hpp"
@@ -321,7 +322,12 @@ struct FactoryCreation : tt::ConformsTo<Options::protocols::FactoryCreation> {
                  StepChoosers::standard_step_choosers<system>>,
       tmpl::pair<
           StepChooser<StepChooserUse::Slab>,
-          StepChoosers::standard_slab_choosers<system, LocalTimeStepping>>,
+          tmpl::append<
+              StepChoosers::standard_slab_choosers<system, LocalTimeStepping>,
+              tmpl::conditional_t<LocalTimeStepping,
+                                  tmpl::list<evolution::dg::StepChoosers::
+                                                 FixedLtsRatio<volume_dim>>,
+                                  tmpl::list<>>>>,
       tmpl::pair<TimeSequence<double>,
                  TimeSequences::all_time_sequences<double>>,
       tmpl::pair<TimeSequence<std::uint64_t>,

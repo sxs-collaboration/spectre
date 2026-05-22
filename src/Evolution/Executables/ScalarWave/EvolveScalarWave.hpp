@@ -20,6 +20,7 @@
 #include "Evolution/DiscontinuousGalerkin/Actions/ComputeTimeDerivative.hpp"
 #include "Evolution/DiscontinuousGalerkin/CleanMortarHistory.hpp"
 #include "Evolution/DiscontinuousGalerkin/DgElementArray.hpp"
+#include "Evolution/DiscontinuousGalerkin/EqualRateLts/FixedLtsRatio.hpp"
 #include "Evolution/DiscontinuousGalerkin/EqualRateLts/NonconformingEqualRateRegions.hpp"
 #include "Evolution/DiscontinuousGalerkin/Initialization/Mortars.hpp"
 #include "Evolution/DiscontinuousGalerkin/Initialization/ProjectSpectralFilters.hpp"
@@ -213,9 +214,14 @@ struct EvolutionMetavars {
                    tmpl::push_back<StepChoosers::standard_step_choosers<system>,
                                    StepChoosers::ByBlock<volume_dim>>>,
         tmpl::pair<StepChooser<StepChooserUse::Slab>,
-                   tmpl::push_back<StepChoosers::standard_slab_choosers<
-                                       system, local_time_stepping>,
-                                   StepChoosers::ByBlock<volume_dim>>>,
+                   tmpl::append<StepChoosers::standard_slab_choosers<
+                                    system, local_time_stepping>,
+                                tmpl::conditional_t<
+                                    local_time_stepping,
+                                    tmpl::list<evolution::dg::StepChoosers::
+                                                   FixedLtsRatio<volume_dim>>,
+                                    tmpl::list<>>,
+                                tmpl::list<StepChoosers::ByBlock<volume_dim>>>>,
         tmpl::pair<TimeSequence<double>,
                    TimeSequences::all_time_sequences<double>>,
         tmpl::pair<TimeSequence<std::uint64_t>,

@@ -662,7 +662,7 @@ struct GhValenciaDivCleanTemplateBase<
                    tmpl::append<StepChoosers::standard_slab_choosers<
                                     system, local_time_stepping>,
                                 tmpl::conditional_t<
-                                    use_dg_subcell and local_time_stepping,
+                                    local_time_stepping,
                                     tmpl::list<evolution::dg::StepChoosers::
                                                    FixedLtsRatio<volume_dim>>,
                                     tmpl::list<>>>>,
