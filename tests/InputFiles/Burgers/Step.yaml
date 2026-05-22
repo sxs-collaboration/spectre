@@ -98,6 +98,7 @@ EventsAndTriggersAtSlabs:
           DelayChange: 0
           StepChoosers:
             - FixedLtsRatio:
+                Regions: All
                 StepChoosers:
                   - Cfl:
                       SafetyFactor: 0.5

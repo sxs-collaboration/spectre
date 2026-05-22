@@ -12,7 +12,13 @@
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/MetavariablesTag.hpp"
+#include "Domain/Structure/Element.hpp"
+#include "Domain/Structure/ElementId.hpp"
+#include "Domain/Tags.hpp"
+#include "Evolution/DiscontinuousGalerkin/EqualRateLts/EqualRateRegions.hpp"
+#include "Evolution/DiscontinuousGalerkin/EqualRateLts/EqualRateRegions.tpp"
 #include "Evolution/DiscontinuousGalerkin/EqualRateLts/FixedLtsRatio.hpp"
+#include "Evolution/DiscontinuousGalerkin/EqualRateLts/Tags/EqualRateRegions.hpp"
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Options/Protocols/FactoryCreation.hpp"
@@ -33,6 +39,10 @@
 #include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 #include "Utilities/Serialization/Serialize.hpp"
 #include "Utilities/TMPL.hpp"
+
+namespace PUP {
+class er;
+}  // namespace PUP
 
 namespace {
 class ErrorChooser : public StepChooser<StepChooserUse::LtsStep> {
@@ -106,6 +116,7 @@ class ToleranceChooser : public StepChooser<StepChooserUse::LtsStep>,
 
 PUP::able::PUP_ID ToleranceChooser::my_PUP_ID = 0;  // NOLINT
 
+template <size_t Dim>
 struct Metavariables {
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
@@ -114,29 +125,66 @@ struct Metavariables {
             StepChooser<StepChooserUse::LtsStep>,
             tmpl::list<StepChoosers::Constant, StepChoosers::LimitIncrease,
                        ErrorChooser, ToleranceChooser>>,
-        tmpl::pair<StepChooser<StepChooserUse::Slab>,
-                   tmpl::list<evolution::dg::StepChoosers::FixedLtsRatio>>>;
+        tmpl::pair<
+            StepChooser<StepChooserUse::Slab>,
+            tmpl::list<evolution::dg::StepChoosers::FixedLtsRatio<Dim>>>>;
   };
 };
 
+class TestRegion {
+ public:
+  using creation_tags = tmpl::list<>;
+
+  static std::unordered_map<std::string, size_t> regions() {
+    std::unordered_map<std::string, size_t> result{};
+    result.emplace("Region", 0);
+    result.emplace("OtherRegion", 1);
+    return result;
+  }
+
+  template <size_t Dim>
+  static bool is_in_region(const size_t region_id,
+                           const ElementId<Dim>& element_id) {
+    return region_id == 0 and element_id.block_id() == 0;
+  }
+
+  void pup(PUP::er& p);  // unused
+};
+
+template <size_t Dim>
 void test(const std::optional<double>& expected_goal,
           const std::optional<double>& expected_size,
           const std::optional<size_t>& fixed_ratio,
-          const std::string& lts_choosers) {
+          const std::string& lts_choosers, const std::string& active_regions,
+          const bool expect_error) {
   CAPTURE(lts_choosers);
+  CAPTURE(active_regions);
   const Slab slab(2.0, 6.0);
   const auto time_step = slab.duration() / 2;
+
+  const Element<Dim> element(ElementId<Dim>(fixed_ratio.has_value() ? 0 : 1),
+                             {});
 
   for (const auto& time_sign : {1, -1}) {
     CAPTURE(time_sign);
     auto box = db::create<
-        db::AddSimpleTags<Parallel::Tags::MetavariablesImpl<Metavariables>,
-                          Tags::TimeStep, Tags::FixedLtsRatio>>(
-        Metavariables{}, time_sign * time_step, fixed_ratio);
+        db::AddSimpleTags<Parallel::Tags::MetavariablesImpl<Metavariables<Dim>>,
+                          evolution::dg::Tags::ConcreteEqualRateRegions<
+                              Dim, tmpl::list<TestRegion>>,
+                          domain::Tags::Element<Dim>, Tags::TimeStep,
+                          Tags::FixedLtsRatio>,
+        db::AddComputeTags<evolution::dg::Tags::EqualRateRegionsRef<
+            Dim, tmpl::list<TestRegion>>>>(
+        Metavariables<Dim>{},
+        evolution::dg::EqualRateRegions<Dim, tmpl::list<TestRegion>>{}, element,
+        time_sign * time_step, fixed_ratio);
 
     const auto chooser = TestHelpers::test_creation<
-        std::unique_ptr<StepChooser<StepChooserUse::Slab>>, Metavariables>(
+        std::unique_ptr<StepChooser<StepChooserUse::Slab>>, Metavariables<Dim>>(
         "FixedLtsRatio:\n"
+        "  Regions: " +
+        active_regions +
+        "\n"
         "  StepChoosers:\n" +
         lts_choosers);
 
@@ -149,55 +197,83 @@ void test(const std::optional<double>& expected_goal,
     };
 
     const double current_step = time_sign * slab.duration().value();
-    const TimeStepRequest expected{.size_goal = set_sign(expected_goal),
-                                   .size = set_sign(expected_size)};
-    CHECK(chooser->desired_step(current_step, box) == expected);
-    CHECK(serialize_and_deserialize(chooser)->desired_step(current_step, box) ==
-          expected);
+    if (expect_error) {
+      CHECK_THROWS_WITH(chooser->desired_step(current_step, box),
+                        Catch::Matchers::ContainsSubstring("Unknown region"));
+    } else {
+      const TimeStepRequest expected{.size_goal = set_sign(expected_goal),
+                                     .size = set_sign(expected_size)};
+      CHECK(chooser->desired_step(current_step, box) == expected);
+      CHECK(serialize_and_deserialize(chooser)->desired_step(current_step,
+                                                             box) == expected);
+    }
   }
 }
-}  // namespace
 
-SPECTRE_TEST_CASE("Unit.Evolution.DG.EqualRateLts.FixedLtsRatio",
-                  "[Unit][Evolution]") {
-  register_factory_classes_with_charm<Metavariables>();
+template <size_t Dim>
+void test_regions(const std::optional<double>& expected_goal,
+                  const std::optional<double>& expected_size,
+                  const std::optional<size_t>& fixed_ratio,
+                  const std::string& lts_choosers) {
+  test<Dim>(expected_goal, expected_size, fixed_ratio, lts_choosers, "All",
+            false);
+  test<Dim>(expected_goal, expected_size, fixed_ratio, lts_choosers,
+            "[Region, OtherRegion]", false);
+  test<Dim>(expected_goal, expected_size, fixed_ratio, lts_choosers,
+            "[OtherRegion, Region]", false);
+  test<Dim>(expected_goal, expected_size, fixed_ratio, lts_choosers, "[Region]",
+            false);
+  test<Dim>({}, {}, fixed_ratio, lts_choosers, "[OtherRegion]", false);
+  test<Dim>({}, {}, fixed_ratio, lts_choosers, "[]", false);
+  if (fixed_ratio.has_value()) {
+    // Inputs are only checked when in a region.
+    test<Dim>({}, {}, fixed_ratio, lts_choosers, "[BadRegion]", true);
+    test<Dim>({}, {}, fixed_ratio, lts_choosers, "[Region, BadRegion]", true);
+  }
+}
 
-  test({}, {}, {}, "    - ErrorChooser");
-  test({}, {}, {8}, "");
-  test({40.0}, {}, {8},
-       "    - Constant: 5.0\n"
-       "    - Constant: 7.0");
+template <size_t Dim>
+void test_dim() {
+  register_factory_classes_with_charm<Metavariables<Dim>>();
+
+  test_regions<Dim>({}, {}, {}, "    - ErrorChooser");
+  test_regions<Dim>({}, {}, {8}, "");
+  test_regions<Dim>({40.0}, {}, {8},
+                    "    - Constant: 5.0\n"
+                    "    - Constant: 7.0");
   // Initial step size used in test is 2.0
-  test({}, {64.0}, {8},
-       "    - LimitIncrease:\n"
-       "        Factor: 4.0\n"
-       "    - LimitIncrease:\n"
-       "        Factor: 9.0");
-  test({40.0}, {32.0}, {8},
-       "    - Constant: 5.0\n"
-       "    - LimitIncrease:\n"
-       "        Factor: 2.0");
+  test_regions<Dim>({}, {64.0}, {8},
+                    "    - LimitIncrease:\n"
+                    "        Factor: 4.0\n"
+                    "    - LimitIncrease:\n"
+                    "        Factor: 9.0");
+  test_regions<Dim>({40.0}, {32.0}, {8},
+                    "    - Constant: 5.0\n"
+                    "    - LimitIncrease:\n"
+                    "        Factor: 2.0");
   // Should never give a limit larger than the goal.
-  test({40.0}, {}, {8},
-       "    - Constant: 5.0\n"
-       "    - LimitIncrease:\n"
-       "        Factor: 4.0");
+  test_regions<Dim>({40.0}, {}, {8},
+                    "    - Constant: 5.0\n"
+                    "    - LimitIncrease:\n"
+                    "        Factor: 4.0");
 
-  CHECK(evolution::dg::StepChoosers::FixedLtsRatio{}.uses_local_data());
-  CHECK(evolution::dg::StepChoosers::FixedLtsRatio{}.can_be_delayed());
+  CHECK(evolution::dg::StepChoosers::FixedLtsRatio<Dim>{}.uses_local_data());
+  CHECK(evolution::dg::StepChoosers::FixedLtsRatio<Dim>{}.can_be_delayed());
 
   {
-    const evolution::dg::StepChoosers::FixedLtsRatio no_tolerances{
+    const evolution::dg::StepChoosers::FixedLtsRatio<Dim> no_tolerances{
         make_vector<std::unique_ptr<StepChooser<StepChooserUse::LtsStep>>>(
-            std::make_unique<StepChoosers::Constant>(1.0))};
+            std::make_unique<StepChoosers::Constant>(1.0)),
+        std::nullopt};
     CHECK(no_tolerances.tolerances().empty());
   }
 
   {
-    const evolution::dg::StepChoosers::FixedLtsRatio tolerance_chooser{
+    const evolution::dg::StepChoosers::FixedLtsRatio<Dim> tolerance_chooser{
         make_vector<std::unique_ptr<StepChooser<StepChooserUse::LtsStep>>>(
             std::make_unique<ToleranceChooser>(1.0e-4, 1.0e-10),
-            std::make_unique<ToleranceChooser>(1.0e-4, 1.0e-10))};
+            std::make_unique<ToleranceChooser>(1.0e-4, 1.0e-10)),
+        std::nullopt};
     const auto tolerances = tolerance_chooser.tolerances();
     CHECK(tolerances.size() == 2);
     CHECK(tolerances.at(typeid(Var1)).absolute == 1.0e-4);
@@ -207,11 +283,20 @@ SPECTRE_TEST_CASE("Unit.Evolution.DG.EqualRateLts.FixedLtsRatio",
   }
 
   {
-    const evolution::dg::StepChoosers::FixedLtsRatio bad_tolerances{
+    const evolution::dg::StepChoosers::FixedLtsRatio<Dim> bad_tolerances{
         make_vector<std::unique_ptr<StepChooser<StepChooserUse::LtsStep>>>(
             std::make_unique<ToleranceChooser>(1.0e-4, 1.0e-10),
-            std::make_unique<ToleranceChooser>(1.0e-4, 1.0e-8))};
+            std::make_unique<ToleranceChooser>(1.0e-4, 1.0e-8)),
+        std::nullopt};
     CHECK_THROWS_WITH(bad_tolerances.tolerances(),
                       Catch::Matchers::ContainsSubstring("must be the same"));
   }
 }
+
+SPECTRE_TEST_CASE("Unit.Evolution.DG.EqualRateLts.FixedLtsRatio",
+                  "[Unit][Evolution]") {
+  test_dim<1>();
+  test_dim<2>();
+  test_dim<3>();
+}
+}  // namespace

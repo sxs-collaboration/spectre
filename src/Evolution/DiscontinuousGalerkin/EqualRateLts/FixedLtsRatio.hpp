@@ -4,13 +4,16 @@
 #pragma once
 
 #include <algorithm>
+#include <cstddef>
 #include <memory>
 #include <optional>
+#include <string>
 #include <typeinfo>
 #include <unordered_map>
 #include <vector>
 
 #include "DataStructures/DataBox/DataBox.hpp"
+#include "Options/Auto.hpp"
 #include "Options/String.hpp"
 #include "Time/EvolutionOrdering.hpp"
 #include "Time/RequestsStepperErrorTolerances.hpp"
@@ -18,7 +21,9 @@
 #include "Time/StepperErrorTolerances.hpp"
 #include "Time/TimeStepRequest.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
+#include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Serialization/CharmPupable.hpp"
+#include "Utilities/StdHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
@@ -29,6 +34,14 @@ namespace Tags {
 struct FixedLtsRatio;
 struct TimeStep;
 }  // namespace Tags
+namespace domain::Tags {
+template <size_t VolumeDim>
+struct Element;
+}  // namespace domain::Tags
+namespace evolution::dg::Tags {
+template <size_t Dim>
+struct EqualRateRegions;
+}  // namespace evolution::dg::Tags
 /// \endcond
 
 namespace evolution::dg::StepChoosers {
@@ -39,6 +52,7 @@ namespace evolution::dg::StepChoosers {
 /// `standard_step_choosers` list.  Executables using the feature must
 /// include it explicitly in the `factory_creation` struct and add the
 /// `::Tags::FixedLtsRatio` tag to the element DataBox.
+template <size_t Dim>
 class FixedLtsRatio : public StepChooser<StepChooserUse::Slab>,
                       public RequestsStepperErrorTolerances {
  public:
@@ -55,14 +69,21 @@ class FixedLtsRatio : public StepChooser<StepChooserUse::Slab>,
     static constexpr Options::String help{"LTS step choosers to test"};
   };
 
+  struct Regions {
+    using type =
+        Options::Auto<std::vector<std::string>, Options::AutoLabel::All>;
+    static constexpr Options::String help{"Regions to adjust based on"};
+  };
+
   static constexpr Options::String help{
       "Requests a slab size based on the desired step in regions with a fixed "
       "slab fraction."};
-  using options = tmpl::list<StepChoosers>;
+  using options = tmpl::list<StepChoosers, Regions>;
 
   explicit FixedLtsRatio(
       std::vector<std::unique_ptr<::StepChooser<StepChooserUse::LtsStep>>>
-          step_choosers);
+          step_choosers,
+      std::optional<std::vector<std::string>> regions);
 
   using argument_tags = tmpl::list<::Tags::DataBox>;
 
@@ -72,6 +93,29 @@ class FixedLtsRatio : public StepChooser<StepChooserUse::Slab>,
     const auto& step_ratio = db::get<::Tags::FixedLtsRatio>(box);
     if (not step_ratio.has_value()) {
       return {};
+    }
+
+    if (regions_.has_value()) {
+      const auto element_id = db::get<domain::Tags::Element<Dim>>(box).id();
+      const auto& equal_rate_regions =
+          db::get<Tags::EqualRateRegions<Dim>>(box);
+      const auto& region_map = equal_rate_regions.regions();
+      bool active = false;
+      for (const auto& region_name : *regions_) {
+        const auto region_it = region_map.find(region_name);
+        if (region_it == region_map.end()) {
+          ERROR_NO_TRACE("Unknown region name in FixedLtsRatio: "
+                         << region_name
+                         << ".  Known regions: " << keys_of(region_map));
+        }
+        if (equal_rate_regions.is_in_region(region_it->second, element_id)) {
+          active = true;
+          // Don't break here so we check the remaining names for validity.
+        }
+      }
+      if (not active) {
+        return {};
+      }
     }
 
     const auto& current_step = db::get<::Tags::TimeStep>(box);
@@ -132,5 +176,6 @@ class FixedLtsRatio : public StepChooser<StepChooserUse::Slab>,
  private:
   std::vector<std::unique_ptr<::StepChooser<StepChooserUse::LtsStep>>>
       step_choosers_;
+  std::optional<std::vector<std::string>> regions_;
 };
 }  // namespace evolution::dg::StepChoosers
