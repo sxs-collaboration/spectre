@@ -250,7 +250,7 @@ void volume_terms(
     }
     if (dg_formulation == ::dg::Formulation::StrongInertial) {
       divergence(div_fluxes, *volume_fluxes, mesh,
-                 logical_to_inertial_inverse_jacobian);
+                 logical_to_inertial_inverse_jacobian, inertial_coordinates);
     } else if (dg_formulation == ::dg::Formulation::WeakInertial) {
       // We should ideally not recompute the
       // det_jac_times_inverse_jacobian for non-moving meshes.

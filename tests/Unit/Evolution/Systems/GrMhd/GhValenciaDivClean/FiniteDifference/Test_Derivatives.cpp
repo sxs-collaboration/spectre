@@ -75,10 +75,14 @@ SPECTRE_TEST_CASE(
                              tmpl::size_t<3>, Frame::Inertial>>
       deriv_of_gh_vars{subcell_mesh.number_of_grid_points()};
 
+  // needed for cartoon derivatives, not tested here
+  const tnsr::I<DataVector, 3, Frame::Inertial> inertial_coords(
+      subcell_mesh.number_of_grid_points(), 0.0);
+
   grmhd::GhValenciaDivClean::fd::spacetime_derivatives<System>(
       make_not_null(&deriv_of_gh_vars), volume_evolved_vars, all_ghost_data,
       fd_deriv_order, subcell_mesh,
-      cell_centered_logical_to_inertial_inv_jacobian);
+      cell_centered_logical_to_inertial_inv_jacobian, inertial_coords);
 
   Variables<db::wrap_tags_in<Tags::deriv,
                              typename System::gradients_tags,
@@ -170,12 +174,12 @@ SPECTRE_TEST_CASE(
         << Variables<grmhd::GhValenciaDivClean::Tags::
                          primitive_grmhd_and_spacetime_reconstruction_tags>::
                number_of_independent_components};
-    CHECK_THROWS_WITH(grmhd::GhValenciaDivClean::fd::spacetime_derivatives<
-                          System>(
-                          make_not_null(&deriv_of_gh_vars), volume_evolved_vars,
-                          bad_ghost_data, fd_deriv_order, subcell_mesh,
-                          cell_centered_logical_to_inertial_inv_jacobian),
-                      Catch::Matchers::ContainsSubstring(match_string));
+    CHECK_THROWS_WITH(
+        grmhd::GhValenciaDivClean::fd::spacetime_derivatives<System>(
+            make_not_null(&deriv_of_gh_vars), volume_evolved_vars,
+            bad_ghost_data, fd_deriv_order, subcell_mesh,
+            cell_centered_logical_to_inertial_inv_jacobian, inertial_coords),
+        Catch::Matchers::ContainsSubstring(match_string));
   }
 #endif  // SPECTRE_DEBUG
 }

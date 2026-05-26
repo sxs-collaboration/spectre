@@ -31,7 +31,8 @@ void spacetime_derivatives(
     const size_t& deriv_order, const Mesh<3>& volume_mesh,
     const InverseJacobian<DataVector, 3, Frame::ElementLogical,
                           Frame::Inertial>&
-        cell_centered_logical_to_inertial_inv_jacobian) {
+        cell_centered_logical_to_inertial_inv_jacobian,
+    const tnsr::I<DataVector, 3, Frame::Inertial>& inertial_coords) {
   using gradients_tags = typename System::gradients_tags;
   if (UNLIKELY(result->number_of_grid_points() !=
                volume_evolved_variables.number_of_grid_points())) {
@@ -53,15 +54,10 @@ void spacetime_derivatives(
       make_not_null(&ghost_cell_spacetime_vars), all_ghost_data,
       number_of_gh_components);
 
-  const auto volume_gh_vars =
-      gsl::make_span(get<FirstGhTag>(volume_evolved_variables)[0].data(),
-                     number_of_gh_components *
-                         volume_evolved_variables.number_of_grid_points());
-
   ::fd::partial_derivatives<gradients_tags>(
-      result, volume_gh_vars, ghost_cell_spacetime_vars, volume_mesh,
+      result, volume_evolved_variables, ghost_cell_spacetime_vars, volume_mesh,
       number_of_gh_components, deriv_order,
-      cell_centered_logical_to_inertial_inv_jacobian);
+      cell_centered_logical_to_inertial_inv_jacobian, inertial_coords);
 }
 
 // Instantiate here
@@ -84,7 +80,8 @@ void spacetime_derivatives(
       const size_t& deriv_order, const Mesh<3>& volume_mesh,                \
       const InverseJacobian<DataVector, 3, Frame::ElementLogical,           \
                             Frame::Inertial>&                               \
-          cell_centered_logical_to_inertial_inv_jacobian);
+          cell_centered_logical_to_inertial_inv_jacobian,                   \
+      const tnsr::I<DataVector, 3, Frame::Inertial>& inertial_coords);
 
 GENERATE_INSTANTIATIONS(INSTANTIATION,
                         (RadiationTransport::NoNeutrinos::System))

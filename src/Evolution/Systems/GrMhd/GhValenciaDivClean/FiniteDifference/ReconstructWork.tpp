@@ -21,6 +21,7 @@
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Evolution/DgSubcell/GhostData.hpp"
+#include "Evolution/DgSubcell/Mesh.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/FiniteDifference/ReconstructWork.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/Tags.hpp"
@@ -62,9 +63,21 @@ void reconstruct_prims_work(
     const bool compute_conservatives,
     const bool reconstruct_density_times_temperature,
     const VariableFixing::FixToAtmosphere<3>* fix_to_atmosphere) {
-  ASSERT(Mesh<3>(subcell_mesh.extents(0), subcell_mesh.basis(0),
-                 subcell_mesh.quadrature(0)) == subcell_mesh,
-         "The subcell mesh should be isotropic but got " << subcell_mesh);
+  // computation dimension accounts for "skipped" cartoon bases
+  const size_t comp_dim =
+      evolution::dg::subcell::fd::get_computational_dim(subcell_mesh);
+  evolution::dg::subcell::fd::verify_subcell_mesh(subcell_mesh);
+  const auto cartoon_neighbors =
+      comp_dim == 3
+          ? std::unordered_set<Direction<3>>{}
+          : (comp_dim == 2
+                 // Axially symmetric
+                 ? std::unordered_set<Direction<3>>{Direction<3>::lower_zeta(),
+                                                    Direction<3>::upper_zeta()}
+                 // Spherically symmetric
+                 : std::unordered_set<Direction<3>>{
+                       Direction<3>::lower_eta(), Direction<3>::upper_eta(),
+                       Direction<3>::lower_zeta(), Direction<3>::upper_zeta()});
   const size_t volume_num_pts = subcell_mesh.number_of_grid_points();
   const size_t reconstructed_num_pts =
       (subcell_mesh.extents(0) + 1) *
@@ -84,8 +97,9 @@ void reconstruct_prims_work(
                                   reconstructed_num_pts, volume_num_pts,
                                   &volume_prims, &vars_in_neighbor_count,
                                   &vars_on_lower_face, &vars_on_upper_face,
-                                  &subcell_mesh](auto tag_v) {
-    using tag = tmpl::type_from<decltype(tag_v)>;
+                                  &subcell_mesh, comp_dim,
+                                  &cartoon_neighbors]<typename tag>(
+                                     tmpl::type_<tag> /*meta*/) {
     const typename tag::type* volume_tensor_ptr = nullptr;
     Variables<tmpl::list<
         hydro::Tags::LorentzFactorTimesSpatialVelocity<DataVector, 3>>>
@@ -153,6 +167,10 @@ void reconstruct_prims_work(
                    << direction);
         id = DirectionalId<3>{direction, *neighbors_in_direction.begin()};
       } else {
+        // we don't need cartoon ghost data
+        if (cartoon_neighbors.contains(direction)) {
+          continue;
+        }
         // retrieve boundary ghost data from neighbor_data
         ASSERT(
             element.external_boundaries().count(direction) == 1,
@@ -192,7 +210,7 @@ void reconstruct_prims_work(
 
     if constexpr (std::is_same_v<tag, hydro::Tags::Temperature<DataVector>>) {
       if (reconstruct_density_times_temperature) {
-        for (size_t i = 0; i < 3; ++i) {
+        for (size_t i = 0; i < comp_dim; ++i) {
           get(get<tag>(gsl::at(*vars_on_upper_face, i))) /=
               get(get<hydro::Tags::RestMassDensity<DataVector>>(
                   gsl::at(*vars_on_upper_face, i)));
@@ -209,7 +227,7 @@ void reconstruct_prims_work(
       [&element, &neighbor_data, neighbor_num_pts, &spacetime_reconstructor,
        reconstructed_num_pts, volume_num_pts, &volume_spacetime_and_cons_vars,
        &vars_in_neighbor_count, &vars_on_lower_face, &vars_on_upper_face,
-       &subcell_mesh](auto tag_v) {
+       &subcell_mesh, &cartoon_neighbors](auto tag_v) {
         using tag = tmpl::type_from<decltype(tag_v)>;
         const typename tag::type& volume_tensor =
             get<tag>(volume_spacetime_and_cons_vars);
@@ -244,6 +262,10 @@ void reconstruct_prims_work(
                     .data(),
                 number_of_variables * neighbor_num_pts);
           } else {
+            // we don't use cartoon ghost data
+            if (cartoon_neighbors.contains(direction)) {
+              continue;
+            }
             // retrieve boundary ghost data from neighbor_data
             ASSERT(element.external_boundaries().count(direction) == 1,
                    "Element has neither neighbor nor external boundary to "
@@ -265,7 +287,7 @@ void reconstruct_prims_work(
         vars_in_neighbor_count += number_of_variables;
       });
 
-  for (size_t i = 0; i < 3; ++i) {
+  for (size_t i = 0; i < comp_dim; ++i) {
     if constexpr (tmpl::size<SpacetimeTagsToReconstruct>::value != 0) {
       spacetime_vars_for_grmhd(make_not_null(&gsl::at(*vars_on_lower_face, i)));
       spacetime_vars_for_grmhd(make_not_null(&gsl::at(*vars_on_upper_face, i)));
