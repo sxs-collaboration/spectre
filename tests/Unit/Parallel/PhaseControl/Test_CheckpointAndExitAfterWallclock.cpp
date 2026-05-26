@@ -106,31 +106,10 @@ SPECTRE_TEST_CASE("Unit.Parallel.PhaseControl.CheckpointAndExitAfterWallclock",
         serialize_and_deserialize(phase_change0);
     PhaseChangeDecisionData phase_change_decision_data{
         Parallel::Phase::Execute, false, true, Parallel::ExitCode::Complete};
+
+    // Main will normally run some phases on its own at this point,
+    // but will return control to us after the Restart phase.
     auto decision_result = phase_change_restart.arbitrate_phase_change(
-        make_not_null(&phase_change_decision_data),
-        Parallel::Phase::WriteCheckpoint, cache);
-    CHECK(decision_result ==
-          std::make_pair(
-              Parallel::Phase::UpdateOptionsAtRestartFromCheckpoint,
-              PhaseControl::ArbitrationStrategy::PermitAdditionalJumps));
-    CHECK(phase_change_decision_data ==
-          PhaseChangeDecisionData{Parallel::Phase::Execute, false, true,
-                                  Parallel::ExitCode::Complete});
-
-    // Next, from update phase, go to Restart
-    decision_result = phase_change_restart.arbitrate_phase_change(
-        make_not_null(&phase_change_decision_data),
-        Parallel::Phase::UpdateOptionsAtRestartFromCheckpoint, cache);
-    CHECK(decision_result ==
-          std::make_pair(
-              Parallel::Phase::Restart,
-              PhaseControl::ArbitrationStrategy::PermitAdditionalJumps));
-    CHECK(phase_change_decision_data ==
-          PhaseChangeDecisionData{Parallel::Phase::Execute, false, true,
-                                  Parallel::ExitCode::Complete});
-
-    // Finally, go back to Execute
-    decision_result = phase_change_restart.arbitrate_phase_change(
         make_not_null(&phase_change_decision_data), Parallel::Phase::Restart,
         cache);
     CHECK(decision_result ==
