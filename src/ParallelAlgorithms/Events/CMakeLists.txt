@@ -20,6 +20,7 @@ spectre_target_headers(
   ${LIBRARY}
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
+  ChangeFixedLtsRatio.hpp
   Completion.hpp
   ErrorIfDataTooBig.hpp
   Factory.hpp

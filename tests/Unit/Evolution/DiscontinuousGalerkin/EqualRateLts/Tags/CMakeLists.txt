@@ -3,5 +3,6 @@
 
 set(LIBRARY_SOURCES
   ${LIBRARY_SOURCES}
+  EqualRateLts/Tags/Test_ChangeFixedLtsRatioTags.cpp
   EqualRateLts/Tags/Test_EqualRateRegions.cpp
   PARENT_SCOPE)
