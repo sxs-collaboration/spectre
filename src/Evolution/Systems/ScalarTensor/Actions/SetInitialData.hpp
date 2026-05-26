@@ -122,9 +122,10 @@ class NumericInitialData : public evolution::initial_data::InitialData,
       const gsl::not_null<tuples::TaggedTuple<AllTags...>*> numeric_data,
       const Mesh<3>& mesh,
       const InverseJacobian<DataVector, 3, Frame::ElementLogical,
-                            Frame::Inertial>& inv_jacobian) const {
+                            Frame::Inertial>& inv_jacobian,
+      const tnsr::I<DataVector, 3, Frame::Inertial>& inertial_coords) const {
     gh_numeric_id_.set_initial_data(spacetime_metric, pi, phi, numeric_data,
-                                    mesh, inv_jacobian);
+                                    mesh, inv_jacobian, inertial_coords);
     scalar_numeric_id_.set_initial_data(psi_scalar, pi_scalar, phi_scalar,
                                         numeric_data);
   }
@@ -254,7 +255,7 @@ struct SetInitialData {
     db::mutate<gr::Tags::SpacetimeMetric<DataVector, 3>,
                gh::Tags::Pi<DataVector, 3>, gh::Tags::Phi<DataVector, 3>>(
         &gh::initial_gh_variables_from_adm<3>, box, spatial_metric, lapse,
-        shift, extrinsic_curvature, mesh, inv_jacobian);
+        shift, extrinsic_curvature, mesh, inv_jacobian, coords);
 
     // Move scalar variables and compute gradient
     db::mutate<CurvedScalarWave::Tags::Psi, CurvedScalarWave::Tags::Pi,
@@ -310,12 +311,14 @@ struct ReceiveNumericInitialData {
     const auto& inv_jacobian =
         db::get<domain::Tags::InverseJacobian<Dim, Frame::ElementLogical,
                                               Frame::Inertial>>(box);
+    const auto& inertial_coords =
+        db::get<domain::Tags::Coordinates<Dim, Frame::Inertial>>(box);
 
     db::mutate<gr::Tags::SpacetimeMetric<DataVector, 3>,
                gh::Tags::Pi<DataVector, 3>, gh::Tags::Phi<DataVector, 3>,
                CurvedScalarWave::Tags::Psi, CurvedScalarWave::Tags::Pi,
                CurvedScalarWave::Tags::Phi<3>>(
-        [&initial_data, &numeric_data, &mesh, &inv_jacobian](
+        [&initial_data, &numeric_data, &mesh, &inv_jacobian, &inertial_coords](
             const gsl::not_null<tnsr::aa<DataVector, 3>*> spacetime_metric,
             const gsl::not_null<tnsr::aa<DataVector, 3>*> pi,
             const gsl::not_null<tnsr::iaa<DataVector, 3>*> phi,
@@ -327,7 +330,7 @@ struct ReceiveNumericInitialData {
                                         psi_scalar, pi_scalar, phi_scalar,
 
                                         make_not_null(&numeric_data), mesh,
-                                        inv_jacobian);
+                                        inv_jacobian, inertial_coords);
         },
         make_not_null(&box));
 

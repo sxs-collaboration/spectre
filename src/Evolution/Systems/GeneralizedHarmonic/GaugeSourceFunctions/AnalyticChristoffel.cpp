@@ -63,6 +63,7 @@ void AnalyticChristoffel::gauge_and_spacetime_derivative_impl(
     const Mesh<SpatialDim>& mesh,
     const InverseJacobian<DataVector, SpatialDim, Frame::ElementLogical,
                           Frame::Inertial>& inverse_jacobian,
+    const tnsr::I<DataVector, SpatialDim, Frame::Inertial>& inertial_coords,
     const tuples::tagged_tuple_from_typelist<solution_tags<SpatialDim>>&
         solution_vars) const {
   const auto [pi, phi, spacetime_metric, lapse, shift, spatial_metric] =
@@ -112,7 +113,7 @@ void AnalyticChristoffel::gauge_and_spacetime_derivative_impl(
     }
   }
   partial_derivative(make_not_null(&di_gauge_h), *gauge_h, mesh,
-                     inverse_jacobian);
+                     inverse_jacobian, inertial_coords);
   // Set time derivative to zero. We are assuming a static solution.
   for (size_t a = 0; a < SpatialDim + 1; ++a) {
     d4_gauge_h->get(0, a) = 0.0;
@@ -124,19 +125,21 @@ PUP::able::PUP_ID AnalyticChristoffel::my_PUP_ID = 0;
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 
-#define INSTANTIATE(_, data)                                                 \
-  template void AnalyticChristoffel::gauge_and_spacetime_derivative_impl(    \
-      const gsl::not_null<tnsr::a<DataVector, DIM(data), Frame::Inertial>*>  \
-          gauge_h,                                                           \
-      const gsl::not_null<tnsr::ab<DataVector, DIM(data), Frame::Inertial>*> \
-          d4_gauge_h,                                                        \
-      const Mesh<DIM(data)>& mesh,                                           \
-      const InverseJacobian<DataVector, DIM(data), Frame::ElementLogical,    \
-                            Frame::Inertial>& inverse_jacobian,              \
-      const tuples::tagged_tuple_from_typelist<solution_tags<DIM(data)>>&    \
+#define INSTANTIATE(_, data)                                                  \
+  template void AnalyticChristoffel::gauge_and_spacetime_derivative_impl(     \
+      const gsl::not_null<tnsr::a<DataVector, DIM(data), Frame::Inertial>*>   \
+          gauge_h,                                                            \
+      const gsl::not_null<tnsr::ab<DataVector, DIM(data), Frame::Inertial>*>  \
+          d4_gauge_h,                                                         \
+      const Mesh<DIM(data)>& mesh,                                            \
+      const InverseJacobian<DataVector, DIM(data), Frame::ElementLogical,     \
+                            Frame::Inertial>& inverse_jacobian,               \
+      const tnsr::I<DataVector, DIM(data), Frame::Inertial>& inertial_coords, \
+      const tuples::tagged_tuple_from_typelist<solution_tags<DIM(data)>>&     \
           solution_vars) const;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
 
+#undef DIM
 #undef INSTANTIATE
 }  // namespace gh::gauges

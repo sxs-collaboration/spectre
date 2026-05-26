@@ -64,9 +64,22 @@
       const std::optional<tnsr::I<DataVector, DIM(data), Frame::Inertial>>&    \
           mesh_velocity_from_time_deriv_args);                                 \
   INSTANTIATE_PARTIAL_DERIVATIVES_WITH_SYSTEM(gh::System<DIM(data)>,           \
-                                              DIM(data), Frame::Inertial)
+                                              DIM(data), Frame::Inertial)      \
+  INSTANTIATE_CARTOON_PARTIAL_DERIVATIVES_WITH_SYSTEM(                         \
+      gh::System<DIM(data)>, DIM(data), Frame::Inertial)
 
 GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
 
 #undef INSTANTIATION
+
+#define TENSOR(data) BOOST_PP_TUPLE_ELEM(1, data)
+
+#define INSTANTIATION(r, data)                                       \
+  INSTANTIATE_CARTOON_PARTIAL_DERIVATIVE(DIM(data), Frame::Inertial, \
+                                         TENSOR(data))
+
+GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3), (tnsr::I, tnsr::a, tnsr::aa))
+
+#undef INSTANTIATION
+#undef TENSOR
 #undef DIM

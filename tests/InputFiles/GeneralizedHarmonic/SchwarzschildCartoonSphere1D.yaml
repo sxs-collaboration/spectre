@@ -1,0 +1,156 @@
+# Distributed under the MIT License.
+# See LICENSE.txt for details.
+
+Executable: EvolveGhNoBlackHole3D
+Testing:
+  Check: parse;execute
+  Timeout: 10
+  Priority: High
+ExpectedOutput:
+  - Gh3DVolume0.h5
+  - Gh3DReductions.h5
+
+---
+
+Parallelization:
+  ElementDistribution: NumGridPoints
+
+ResourceInfo:
+  AvoidGlobalProc0: false
+  Singletons: Auto
+
+Evolution:
+  InitialTime: 0.0
+  InitialTimeStep: 0.0002
+  MinimumTimeStep: 1e-7
+  TimeStepper:
+    DormandPrince5:
+
+Amr:
+  Criteria:
+  EnableInBlocks: All
+  Policies:
+    EnforceTwoToOneBalanceInNormalDirection: true
+    Isotropy: Anisotropic
+    Limits:
+      RefinementLevel: Auto
+      NumGridPoints: Auto
+      ErrorBeyondLimits: False
+    AllowCoarsening: True
+  Verbosity: Quiet
+
+PhaseChangeAndTriggers:
+
+InitialData: &InitialData
+  GeneralizedHarmonic(HarmonicSchwarzschild):
+    Mass: 1.0
+    Center: [0,0,0]
+
+DomainCreator:
+  CartoonSphere1D:
+    InnerRadius: 0.95
+    OuterRadius: 10
+    InitialRadialRefinement: 1
+    InitialNumberOfRadialGridPoints: [12]
+    RadialPartitioning: []
+    RadialDistributions: Logarithmic
+    TimeDependence: None
+    InnerBoundaryCondition:
+      DemandOutgoingCharSpeeds
+    OuterBoundaryCondition:
+      ConstraintPreservingBjorhus:
+        Type: ConstraintPreservingPhysical
+        IncomingWaveProfile: None
+
+EvolutionSystem:
+  GeneralizedHarmonic:
+    GaugeCondition:
+      AnalyticChristoffel:
+        AnalyticPrescription: *InitialData
+    DampingFunctionGamma0:
+      GaussianPlusConstant:
+        Constant: 0.001
+        Amplitude: 3.0
+        Width: 11.313708499
+        Center: [0.0, 0.0, 0.0]
+    DampingFunctionGamma1:
+      GaussianPlusConstant:
+        Constant: -1.0
+        Amplitude: 0.0
+        Width: 11.313708499
+        Center: [0.0, 0.0, 0.0]
+    DampingFunctionGamma2:
+      GaussianPlusConstant:
+        Constant: 0.001
+        Amplitude: 1.0
+        Width: 11.313708499
+        Center: [0.0, 0.0, 0.0]
+
+Filtering:
+  ExpFilter0:
+    Alpha: 36.0
+    HalfPower: 28
+    Enable: true
+    BlocksToFilter: All
+
+SpatialDiscretization:
+  DiscontinuousGalerkin:
+    Formulation: StrongInertial
+    Quadrature: GaussLobatto
+  BoundaryCorrection:
+    UpwindPenalty:
+
+EventsAndTriggersAtCheckpoints:
+
+EventsAndTriggersAtSlabs:
+  - Trigger:
+      Slabs:
+        EvenlySpaced:
+          Interval: 2
+          Offset: 0
+    Events:
+      - ObserveNorms:
+          SubfileName: Errors
+          TensorsToObserve:
+            - Name: PointwiseL2Norm(GaugeConstraint)
+              NormType: L2Norm
+              Components: Sum
+            - Name: PointwiseL2Norm(ThreeIndexConstraint)
+              NormType: L2Norm
+              Components: Sum
+            - Name: PointwiseL2Norm(FourIndexConstraint)
+              NormType: L2Norm
+              Components: Sum
+  - Trigger:
+      Slabs:
+        EvenlySpaced:
+          Interval: 5
+          Offset: 0
+    Events:
+      - ObserveFields:
+          SubfileName: VolumeData
+          VariablesToObserve:
+            - PointwiseL2Norm(GaugeConstraint)
+            - PointwiseL2Norm(ThreeIndexConstraint)
+            - PointwiseL2Norm(FourIndexConstraint)
+            - VSpacetimeMetricSpeed
+            - VZeroSpeed
+            - VMinusSpeed
+            - VPlusSpeed
+          InterpolateToMesh: None
+          ProjectToMesh: None
+          CoordinatesFloatingPointType: Double
+          FloatingPointTypes: [Double]
+          BlocksToObserve: All
+  - Trigger:
+      Slabs:
+        Specified:
+          Values: [5]
+    Events:
+      - Completion
+
+EventsAndDenseTriggers:
+
+Observers:
+  VolumeFileName: "Gh3DVolume"
+  ReductionFileName: "Gh3DReductions"
