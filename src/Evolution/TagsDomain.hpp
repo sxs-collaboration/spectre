@@ -34,13 +34,15 @@ struct DivMeshVelocityCompute : db::ComputeTag,
           mesh_velocity,
       const ::Mesh<Dim>& mesh,
       const ::InverseJacobian<DataVector, Dim, Frame::ElementLogical,
-                              Frame::Inertial>& inv_jac_logical_to_inertial);
+                              Frame::Inertial>& inv_jac_logical_to_inertial,
+      const tnsr::I<DataVector, Dim, Frame::Inertial>& coords);
 
   using argument_tags =
       tmpl::list<::domain::Tags::MeshVelocity<Dim, Frame::Inertial>,
                  ::domain::Tags::Mesh<Dim>,
                  ::domain::Tags::InverseJacobian<Dim, Frame::ElementLogical,
-                                                 Frame::Inertial>>;
+                                                 Frame::Inertial>,
+                 ::domain::Tags::Coordinates<Dim, Frame::Inertial>>;
 };
 }  // namespace Tags
 }  // namespace domain

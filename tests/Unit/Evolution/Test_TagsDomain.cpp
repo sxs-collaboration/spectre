@@ -13,6 +13,7 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/EagerMath/DeterminantAndInverse.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "Domain/CoordinateMaps/Affine.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.tpp"
 #include "Domain/CoordinateMaps/Identity.hpp"
@@ -31,6 +32,8 @@
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
 #include "NumericalAlgorithms/LinearOperators/Divergence.hpp"
 #include "NumericalAlgorithms/Spectral/Basis.hpp"
+#include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
+#include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Quadrature.hpp"
 #include "Time/Tags/Time.hpp"
 #include "Utilities/TMPL.hpp"
@@ -144,6 +147,65 @@ void test() {
       make_not_null(&box));
   check_helper();
 }
+
+void test_cartoon_div_mesh_velocity() {
+  using Affine = domain::CoordinateMaps::Affine;
+  using Identity1D = domain::CoordinateMaps::Identity<1>;
+
+  const Mesh<3> mesh{{{8, 1, 1}},
+                     {{Spectral::Basis::Legendre, Spectral::Basis::Cartoon,
+                       Spectral::Basis::Cartoon}},
+                     {{Spectral::Quadrature::GaussLobatto,
+                       Spectral::Quadrature::SphericalSymmetry,
+                       Spectral::Quadrature::SphericalSymmetry}}};
+
+  const Affine affine_x_map(-1.0, 1.0, 1.0, 4.0);
+  const Identity1D identity_map;
+  using CartoonMap =
+      domain::CoordinateMaps::ProductOf3Maps<Affine, Identity1D, Identity1D>;
+  const domain::CoordinateMap<Frame::ElementLogical, Frame::Inertial,
+                              CartoonMap>
+      coord_map{{affine_x_map, identity_map, identity_map}};
+
+  const auto log_coords = logical_coordinates(mesh);
+  const auto inv_jac = coord_map.inv_jacobian(log_coords);
+  const auto inertial_coords = coord_map(log_coords);
+
+  const size_t num_pts = mesh.number_of_grid_points();
+  tnsr::I<DataVector, 3, Frame::Inertial> mesh_velocity{num_pts, 0.0};
+  get<0>(mesh_velocity) = square(get<0>(inertial_coords));
+
+  using simple_tags = db::AddSimpleTags<
+      domain::Tags::Mesh<3>, domain::Tags::MeshVelocity<3, Frame::Inertial>,
+      domain::Tags::InverseJacobian<3, Frame::ElementLogical, Frame::Inertial>,
+      domain::Tags::Coordinates<3, Frame::Inertial>>;
+  using compute_tags =
+      db::AddComputeTags<evolution::domain::Tags::DivMeshVelocityCompute<3>>;
+
+  // Mesh velocity set: result should match calling divergence with coords
+  {
+    auto box = db::create<simple_tags, compute_tags>(
+        mesh,
+        std::optional<tnsr::I<DataVector, 3, Frame::Inertial>>{mesh_velocity},
+        inv_jac, inertial_coords);
+
+    const auto& div_vel = db::get<domain::Tags::DivMeshVelocity>(box);
+    REQUIRE(div_vel.has_value());
+    const auto expected =
+        divergence(mesh_velocity, mesh, inv_jac, inertial_coords);
+    CHECK_ITERABLE_APPROX(*div_vel, expected);
+  }
+
+  // No mesh velocity: result should be nullopt
+  {
+    auto box = db::create<simple_tags, compute_tags>(
+        mesh,
+        std::optional<tnsr::I<DataVector, 3, Frame::Inertial>>{std::nullopt},
+        inv_jac, inertial_coords);
+
+    CHECK_FALSE(db::get<domain::Tags::DivMeshVelocity>(box).has_value());
+  }
+}
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Evolution.TagsDomain", "[Unit][Evolution]") {
@@ -158,4 +220,6 @@ SPECTRE_TEST_CASE("Unit.Evolution.TagsDomain", "[Unit][Evolution]") {
   test<1, false>();
   test<2, false>();
   test<3, false>();
+
+  test_cartoon_div_mesh_velocity();
 }
