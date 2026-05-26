@@ -238,6 +238,13 @@ void test(const BoundaryConditionType& boundary_condition,
   const VariableFixing::FixToAtmosphere<3> variable_fixer{
       1.e-12, 3.e-12, Vlo{0.0, 1.e-4, 3.e-12, 1.e-11}, std::nullopt};
 
+  // CartoonGhost requires GH evolved variables (SpacetimeMetric, Pi, Phi) from
+  // the DataBox as subtags of System::variables_tag.  Although CartoonGhost is
+  // never the active BC in this test, call_with_dynamic_type instantiates the
+  // lambda for every type in the factory list, so the tag must be present.
+  typename System::variables_tag::type volume_evolved_vars{
+      subcell_mesh.number_of_grid_points()};
+
   // create a box for test
   auto box = db::create<db::AddSimpleTags<
       Parallel::Tags::MetavariablesImpl<EvolutionMetaVars<System>>,
@@ -251,7 +258,7 @@ void test(const BoundaryConditionType& boundary_condition,
       domain::Tags::ElementMap<3, Frame::Grid>,
       domain::CoordinateMaps::Tags::CoordinateMap<3, Frame::Grid,
                                                   Frame::Inertial>,
-      typename System::primitive_variables_tag,
+      typename System::variables_tag, typename System::primitive_variables_tag,
       ::Tags::VariableFixer<::VariableFixing::FixToAtmosphere<3>>,
       hydro::Tags::GrmhdEquationOfState>>(
       EvolutionMetaVars<System>{}, std::move(domain),
@@ -267,7 +274,7 @@ void test(const BoundaryConditionType& boundary_condition,
               domain::CoordinateMaps::Identity<3>{})},
       domain::make_coordinate_map_base<Frame::Grid, Frame::Inertial>(
           domain::CoordinateMaps::Identity<3>{}),
-      volume_prim_vars, variable_fixer,
+      volume_evolved_vars, volume_prim_vars, variable_fixer,
       solution.equation_of_state().promote_to_3d_eos());
 
   // compute FD ghost data and retrieve the result
