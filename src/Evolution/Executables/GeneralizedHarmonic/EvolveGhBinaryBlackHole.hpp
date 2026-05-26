@@ -39,6 +39,7 @@
 #include "Evolution/DiscontinuousGalerkin/Actions/ComputeTimeDerivative.hpp"
 #include "Evolution/DiscontinuousGalerkin/CleanMortarHistory.hpp"
 #include "Evolution/DiscontinuousGalerkin/DgElementArray.hpp"
+#include "Evolution/DiscontinuousGalerkin/EqualRateLts/ChangeFixedLtsRatio.hpp"
 #include "Evolution/DiscontinuousGalerkin/EqualRateLts/FixedLtsRatio.hpp"
 #include "Evolution/DiscontinuousGalerkin/EqualRateLts/NonconformingEqualRateRegions.hpp"
 #include "Evolution/DiscontinuousGalerkin/Initialization/Mortars.hpp"
@@ -142,6 +143,7 @@
 #include "ParallelAlgorithms/ApparentHorizonFinder/KerrSchild.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/Protocols/HorizonMetavars.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/Tags.hpp"
+#include "ParallelAlgorithms/Events/ChangeFixedLtsRatio.hpp"
 #include "ParallelAlgorithms/Events/Completion.hpp"
 #include "ParallelAlgorithms/Events/Factory.hpp"
 #include "ParallelAlgorithms/Events/MonitorMemory.hpp"
@@ -497,30 +499,34 @@ struct EvolutionMetavars {
             DomainCreator<volume_dim>,
             tmpl::list<::domain::creators::BinaryCompactObject,
                        ::domain::creators::CylindricalBinaryCompactObject>>,
-        tmpl::pair<Event,
-                   tmpl::flatten<tmpl::list<
-                       ah::Events::FindApparentHorizon<AhA>,
-                       ah::Events::FindApparentHorizon<AhB>,
-                       ah::Events::FindCommonHorizon<AhC, observe_fields,
-                                                     non_tensor_compute_tags>,
-                       gh::bbh::Events::CheckConstraintThresholds,
-                       intrp::Events::InterpolateWithoutInterpComponent<
-                           3, BondiSachs, source_vars_no_deriv>,
-                       intrp::Events::InterpolateWithoutInterpComponent<
-                           3, ExcisionBoundaryA, ah::source_vars<3>>,
-                       intrp::Events::InterpolateWithoutInterpComponent<
-                           3, ExcisionBoundaryB, ah::source_vars<3>>,
-                       Events::MonitorMemory<3>, Events::Completion,
-                       dg::Events::field_observations<
-                           volume_dim, observe_fields, non_tensor_compute_tags>,
-                       control_system::metafunctions::control_system_events<
-                           control_systems>,
-                       control_system::CleanFunctionsOfTime,
-                       Events::time_events<system>,
-                       dg::Events::ObserveTimeStepVolume<system>,
-                       amr::Events::RefineMesh,
-                       amr::Events::ObserveAmrStats<volume_dim>,
-                       amr::Events::ObserveAmrCriteria<EvolutionMetavars>>>>,
+        tmpl::pair<
+            Event,
+            tmpl::flatten<tmpl::list<
+                ah::Events::FindApparentHorizon<AhA>,
+                ah::Events::FindApparentHorizon<AhB>,
+                ah::Events::FindCommonHorizon<AhC, observe_fields,
+                                              non_tensor_compute_tags>,
+                gh::bbh::Events::CheckConstraintThresholds,
+                intrp::Events::InterpolateWithoutInterpComponent<
+                    3, BondiSachs, source_vars_no_deriv>,
+                intrp::Events::InterpolateWithoutInterpComponent<
+                    3, ExcisionBoundaryA, ah::source_vars<3>>,
+                intrp::Events::InterpolateWithoutInterpComponent<
+                    3, ExcisionBoundaryB, ah::source_vars<3>>,
+                Events::MonitorMemory<3>, Events::Completion,
+                dg::Events::field_observations<volume_dim, observe_fields,
+                                               non_tensor_compute_tags>,
+                control_system::metafunctions::control_system_events<
+                    control_systems>,
+                control_system::CleanFunctionsOfTime,
+                Events::time_events<system>,
+                dg::Events::ObserveTimeStepVolume<system>,
+                amr::Events::RefineMesh,
+                amr::Events::ObserveAmrStats<volume_dim>,
+                amr::Events::ObserveAmrCriteria<EvolutionMetavars>,
+                tmpl::conditional_t<local_time_stepping,
+                                    dg::Events::ChangeFixedLtsRatio<volume_dim>,
+                                    tmpl::list<>>>>>,
         tmpl::pair<
             evolution::BoundaryCorrection,
             gh::BoundaryCorrections::standard_boundary_corrections<volume_dim>>,
@@ -701,8 +707,12 @@ struct EvolutionMetavars {
                                      tmpl::list<>>,
                   evolution::Actions::RunEventsAndTriggers<
                       Triggers::WhenToCheck::AtSlabs>,
-                  Actions::ChangeSlabSize, step_actions,
-                  Actions::MutateApply<AdvanceTime<>>,
+                  Actions::ChangeSlabSize,
+                  std::conditional_t<
+                      local_time_stepping,
+                      evolution::dg::Actions::ChangeFixedLtsRatio,
+                      tmpl::list<>>,
+                  step_actions, Actions::MutateApply<AdvanceTime<>>,
                   PhaseControl::Actions::ExecutePhaseChange>>>,
           Parallel::PhaseActions<
               Parallel::Phase::PostFailureCleanup,
@@ -765,10 +775,14 @@ struct EvolutionMetavars {
                                tmpl::pin<tmpl::size_t<volume_dim>>>>,
                 tmpl::conditional_t<
                     local_time_stepping,
-                    tmpl::list<Tags::FixedLtsRatio,
-                               Parallel::Tags::Section<
-                                   gh_dg_element_array,
-                                   evolution::dg::Tags::EqualRateRegionId>>,
+                    tmpl::list<
+                        Tags::FixedLtsRatio,
+                        Parallel::Tags::Section<
+                            gh_dg_element_array,
+                            evolution::dg::Tags::EqualRateRegionId>,
+                        evolution::dg::Tags::ChangeFixedLtsRatio::
+                            NumberOfExpectedMessages,
+                        evolution::dg::Tags::ChangeFixedLtsRatio::NewStepSize>,
                     tmpl::list<>>>,
             gh::bbh::Tags::ElementCompletionRequested,
             Tags::ChangeSlabSize::NumberOfExpectedMessages,

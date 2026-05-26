@@ -1,0 +1,118 @@
+# Distributed under the MIT License.
+# See LICENSE.txt for details.
+
+Executable: EvolveBurgers
+Testing:
+  Timeout: 5
+  Check: parse;execute
+  Priority: High
+
+---
+
+Parallelization:
+  ElementDistribution: NumGridPoints
+
+ResourceInfo:
+  AvoidGlobalProc0: false
+
+InitialData: &InitialData
+  Step:
+    LeftValue: 2.
+    RightValue: 1.
+    InitialPosition: -0.5
+
+Evolution:
+  InitialTime: 0.0
+  InitialSlabSize: 0.01
+  InitialTimeStep: 0.001
+  MinimumTimeStep: 1e-7
+  TimeStepper:
+    AdamsBashforth:
+      Order: 3
+  VariableOrderAlgorithm:
+    GoalOrder: 3
+  LtsStepChoosers: &lts_step_choosers
+    - Cfl:
+        SafetyFactor: 0.5
+    - LimitIncrease:
+        Factor: 2.0
+
+PhaseChangeAndTriggers:
+
+DomainCreator:
+  AlignedLattice:
+    # These bounds are chosen so the large DG-only element on the left
+    # takes bigger steps than the subcell-allowed elements in the
+    # middle, and the small DG-only element on the right takes smaller
+    # steps.  (The speeds are larger on the left, so the element size
+    # differences have to be exagerated more than expected.)
+    BlockBounds: [[-1.0, 0.3, 0.5, 0.7, 0.9, 1.0]]
+    Distributions: [[]]
+    SingularityPositions: [[]]
+    InitialLevels: [0]
+    InitialGridPoints: [7]
+    RefinedLevels:
+    RefinedGridPoints:
+    BlocksToExclude:
+    BoundaryConditions:
+      - DirichletAnalytic:
+          AnalyticPrescription: *InitialData
+
+SpatialDiscretization:
+  BoundaryCorrection:
+    Hll:
+  DiscontinuousGalerkin:
+    Formulation: StrongInertial
+    Quadrature: GaussLobatto
+    Filtering:
+      - None:
+          BlocksToFilter: All
+    Subcell:
+      TroubledCellIndicator:
+        PerssonTci:
+          Exponent: 4.0
+          NumHighestModes: 1
+        RdmpTci:
+          Delta0: 1.0e-7
+          Epsilon: 1.0e-3
+        FdToDgTci:
+          NumberOfStepsBetweenTciCalls: 1
+          MinTciCallsAfterRollback: 1
+          MinimumClearTcis: 1
+        AlwaysUseSubcells: false
+        EnableExtensionDirections: false
+        UseHalo: false
+        OnlyDgBlocksAndGroups: [Block(0), Block(4)]
+      SubcellToDgReconstructionMethod: DimByDim
+      FiniteDifferenceDerivativeOrder: 2
+      FdInterpolationOrder: 1
+  SubcellSolver:
+    Reconstructor: MonotonisedCentral
+
+EventsAndTriggersAtCheckpoints:
+
+EventsAndTriggersAtSlabs:
+
+EventsAndTriggersAtSteps:
+  - Trigger:
+      StepsWithinSlab:
+        EvenlySpaced:
+          Interval: 2
+          Offset: 0
+    Events:
+      - ChangeFixedLtsRatio:
+          DelayChange: 1
+          Regions: All
+          StepChoosers: *lts_step_choosers
+
+EventsAndDenseTriggers:
+  - Trigger:
+      Times:
+        Specified:
+          Values: [0.123456]
+    Events:
+      - Completion
+
+Observers:
+  VolumeFileName: "BurgersStepVolume"
+  ReductionFileName: "BurgersStepReductions"

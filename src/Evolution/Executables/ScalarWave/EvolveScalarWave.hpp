@@ -20,6 +20,7 @@
 #include "Evolution/DiscontinuousGalerkin/Actions/ComputeTimeDerivative.hpp"
 #include "Evolution/DiscontinuousGalerkin/CleanMortarHistory.hpp"
 #include "Evolution/DiscontinuousGalerkin/DgElementArray.hpp"
+#include "Evolution/DiscontinuousGalerkin/EqualRateLts/ChangeFixedLtsRatio.hpp"
 #include "Evolution/DiscontinuousGalerkin/EqualRateLts/FixedLtsRatio.hpp"
 #include "Evolution/DiscontinuousGalerkin/EqualRateLts/NonconformingEqualRateRegions.hpp"
 #include "Evolution/DiscontinuousGalerkin/Initialization/Mortars.hpp"
@@ -78,6 +79,7 @@
 #include "ParallelAlgorithms/Amr/Projectors/Tensors.hpp"
 #include "ParallelAlgorithms/Amr/Projectors/Variables.hpp"
 #include "ParallelAlgorithms/Amr/Protocols/AmrMetavariables.hpp"
+#include "ParallelAlgorithms/Events/ChangeFixedLtsRatio.hpp"
 #include "ParallelAlgorithms/Events/Completion.hpp"
 #include "ParallelAlgorithms/Events/Factory.hpp"
 #include "ParallelAlgorithms/Events/Tags.hpp"
@@ -188,14 +190,18 @@ struct EvolutionMetavars {
                        volume_dim, typename system::variables_tag::tags_list>>,
         tmpl::pair<DenseTrigger, DenseTriggers::standard_dense_triggers>,
         tmpl::pair<DomainCreator<volume_dim>, domain_creators<volume_dim>>,
-        tmpl::pair<Event,
-                   tmpl::flatten<tmpl::list<
-                       Events::Completion, amr::Events::RefineMesh,
-                       amr::Events::ObserveAmrStats<volume_dim>,
-                       amr::Events::ObserveAmrCriteria<EvolutionMetavars>,
-                       dg::Events::field_observations<
-                           volume_dim, observe_fields, non_tensor_compute_tags>,
-                       Events::time_events<system>>>>,
+        tmpl::pair<
+            Event,
+            tmpl::flatten<tmpl::list<
+                Events::Completion, amr::Events::RefineMesh,
+                amr::Events::ObserveAmrStats<volume_dim>,
+                amr::Events::ObserveAmrCriteria<EvolutionMetavars>,
+                dg::Events::field_observations<volume_dim, observe_fields,
+                                               non_tensor_compute_tags>,
+                Events::time_events<system>,
+                tmpl::conditional_t<local_time_stepping,
+                                    dg::Events::ChangeFixedLtsRatio<volume_dim>,
+                                    tmpl::list<>>>>>,
         tmpl::pair<evolution::BoundaryCorrection,
                    ScalarWave::BoundaryCorrections::
                        standard_boundary_corrections<volume_dim>>,
@@ -333,8 +339,12 @@ struct EvolutionMetavars {
                                      tmpl::list<>>,
                   evolution::Actions::RunEventsAndTriggers<
                       Triggers::WhenToCheck::AtSlabs>,
-                  Actions::ChangeSlabSize, step_actions,
-                  Actions::MutateApply<AdvanceTime<>>,
+                  Actions::ChangeSlabSize,
+                  std::conditional_t<
+                      local_time_stepping,
+                      evolution::dg::Actions::ChangeFixedLtsRatio,
+                      tmpl::list<>>,
+                  step_actions, Actions::MutateApply<AdvanceTime<>>,
                   PhaseControl::Actions::ExecutePhaseChange>>>>>;
 
   struct amr : tt::ConformsTo<::amr::protocols::AmrMetavariables> {
@@ -364,10 +374,14 @@ struct EvolutionMetavars {
         ::amr::projectors::CopyFromCreatorOrLeaveAsIs<tmpl::push_back<
             tmpl::conditional_t<
                 local_time_stepping,
-                tmpl::list<Tags::FixedLtsRatio,
-                           Parallel::Tags::Section<
-                               dg_element_array,
-                               evolution::dg::Tags::EqualRateRegionId>>,
+                tmpl::list<
+                    Tags::FixedLtsRatio,
+                    Parallel::Tags::Section<
+                        dg_element_array,
+                        evolution::dg::Tags::EqualRateRegionId>,
+                    evolution::dg::Tags::ChangeFixedLtsRatio::
+                        NumberOfExpectedMessages,
+                    evolution::dg::Tags::ChangeFixedLtsRatio::NewStepSize>,
                 tmpl::list<>>,
             Tags::ChangeSlabSize::NumberOfExpectedMessages,
             Tags::ChangeSlabSize::NewSlabSize>>>;

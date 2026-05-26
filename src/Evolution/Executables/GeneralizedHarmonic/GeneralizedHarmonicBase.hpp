@@ -86,6 +86,7 @@
 #include "ParallelAlgorithms/Amr/Projectors/Tensors.hpp"
 #include "ParallelAlgorithms/Amr/Projectors/Variables.hpp"
 #include "ParallelAlgorithms/Amr/Protocols/AmrMetavariables.hpp"
+#include "ParallelAlgorithms/Events/ChangeFixedLtsRatio.hpp"
 #include "ParallelAlgorithms/Events/Completion.hpp"
 #include "ParallelAlgorithms/Events/Factory.hpp"
 #include "ParallelAlgorithms/Events/MonitorMemory.hpp"
@@ -300,7 +301,10 @@ struct FactoryCreation : tt::ConformsTo<Options::protocols::FactoryCreation> {
               Events::Completion, Events::MonitorMemory<volume_dim>,
               typename detail::ObserverTags<volume_dim>::field_observations,
               Events::time_events<system>,
-              dg::Events::ObserveTimeStepVolume<system>>>>,
+              dg::Events::ObserveTimeStepVolume<system>,
+              tmpl::conditional_t<LocalTimeStepping,
+                                  dg::Events::ChangeFixedLtsRatio<volume_dim>,
+                                  tmpl::list<>>>>>,
       tmpl::pair<
           evolution::BoundaryCorrection,
           gh::BoundaryCorrections::standard_boundary_corrections<volume_dim>>,

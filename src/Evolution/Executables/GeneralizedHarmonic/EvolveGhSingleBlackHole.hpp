@@ -21,6 +21,7 @@
 #include "DataStructures/Tensor/IndexType.hpp"
 #include "Domain/Structure/ObjectLabel.hpp"
 #include "Evolution/Actions/RunEventsAndTriggers.hpp"
+#include "Evolution/DiscontinuousGalerkin/EqualRateLts/ChangeFixedLtsRatio.hpp"
 #include "Evolution/DiscontinuousGalerkin/Initialization/ProjectSpectralFilters.hpp"
 #include "Evolution/Executables/GeneralizedHarmonic/Deadlock.hpp"
 #include "Evolution/Executables/GeneralizedHarmonic/GeneralizedHarmonicBase.hpp"
@@ -282,8 +283,12 @@ struct EvolutionMetavars : public GeneralizedHarmonicTemplateBase<3, UseLts> {
                                      tmpl::list<>>,
                   evolution::Actions::RunEventsAndTriggers<
                       Triggers::WhenToCheck::AtSlabs>,
-                  Actions::ChangeSlabSize, step_actions,
-                  Actions::MutateApply<AdvanceTime<>>,
+                  Actions::ChangeSlabSize,
+                  std::conditional_t<
+                      local_time_stepping,
+                      evolution::dg::Actions::ChangeFixedLtsRatio,
+                      tmpl::list<>>,
+                  step_actions, Actions::MutateApply<AdvanceTime<>>,
                   PhaseControl::Actions::ExecutePhaseChange>>>,
           Parallel::PhaseActions<
               Parallel::Phase::PostFailureCleanup,
@@ -324,10 +329,14 @@ struct EvolutionMetavars : public GeneralizedHarmonicTemplateBase<3, UseLts> {
                                tmpl::pin<tmpl::size_t<volume_dim>>>>,
                 tmpl::conditional_t<
                     local_time_stepping,
-                    tmpl::list<Tags::FixedLtsRatio,
-                               Parallel::Tags::Section<
-                                   gh_dg_element_array,
-                                   evolution::dg::Tags::EqualRateRegionId>>,
+                    tmpl::list<
+                        Tags::FixedLtsRatio,
+                        Parallel::Tags::Section<
+                            gh_dg_element_array,
+                            evolution::dg::Tags::EqualRateRegionId>,
+                        evolution::dg::Tags::ChangeFixedLtsRatio::
+                            NumberOfExpectedMessages,
+                        evolution::dg::Tags::ChangeFixedLtsRatio::NewStepSize>,
                     tmpl::list<>>>,
             Tags::ChangeSlabSize::NumberOfExpectedMessages,
             Tags::ChangeSlabSize::NewSlabSize>>>;

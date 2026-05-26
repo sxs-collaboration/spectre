@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "Evolution/Actions/RunEventsAndTriggers.hpp"
+#include "Evolution/DiscontinuousGalerkin/EqualRateLts/ChangeFixedLtsRatio.hpp"
 #include "Evolution/DiscontinuousGalerkin/Initialization/ProjectSpectralFilters.hpp"
 #include "Evolution/Executables/GeneralizedHarmonic/GeneralizedHarmonicBase.hpp"
 #include "Options/Protocols/FactoryCreation.hpp"
@@ -92,8 +93,12 @@ struct EvolutionMetavars
                                      tmpl::list<>>,
                   ::evolution::Actions::RunEventsAndTriggers<
                       Triggers::WhenToCheck::AtSlabs>,
-                  Actions::ChangeSlabSize, step_actions,
-                  Actions::MutateApply<AdvanceTime<>>,
+                  Actions::ChangeSlabSize,
+                  std::conditional_t<
+                      local_time_stepping,
+                      evolution::dg::Actions::ChangeFixedLtsRatio,
+                      tmpl::list<>>,
+                  step_actions, Actions::MutateApply<AdvanceTime<>>,
                   PhaseControl::Actions::ExecutePhaseChange>>>>>>;
 
   struct amr : tt::ConformsTo<::amr::protocols::AmrMetavariables> {
@@ -121,10 +126,14 @@ struct EvolutionMetavars
         ::amr::projectors::CopyFromCreatorOrLeaveAsIs<tmpl::push_back<
             tmpl::conditional_t<
                 local_time_stepping,
-                tmpl::list<Tags::FixedLtsRatio,
-                           Parallel::Tags::Section<
-                               gh_dg_element_array,
-                               evolution::dg::Tags::EqualRateRegionId>>,
+                tmpl::list<
+                    Tags::FixedLtsRatio,
+                    Parallel::Tags::Section<
+                        gh_dg_element_array,
+                        evolution::dg::Tags::EqualRateRegionId>,
+                    evolution::dg::Tags::ChangeFixedLtsRatio::
+                        NumberOfExpectedMessages,
+                    evolution::dg::Tags::ChangeFixedLtsRatio::NewStepSize>,
                 tmpl::list<>>,
             Tags::ChangeSlabSize::NumberOfExpectedMessages,
             Tags::ChangeSlabSize::NewSlabSize>>>;

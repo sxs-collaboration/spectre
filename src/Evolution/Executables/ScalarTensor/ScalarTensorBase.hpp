@@ -84,6 +84,7 @@
 #include "ParallelAlgorithms/Actions/RandomizeVariables.hpp"
 #include "ParallelAlgorithms/Actions/SpectralFilter.hpp"
 #include "ParallelAlgorithms/Actions/TerminatePhase.hpp"
+#include "ParallelAlgorithms/Events/ChangeFixedLtsRatio.hpp"
 #include "ParallelAlgorithms/Events/Completion.hpp"
 #include "ParallelAlgorithms/Events/Factory.hpp"
 #include "ParallelAlgorithms/Events/MonitorMemory.hpp"
@@ -349,12 +350,16 @@ struct FactoryCreation : tt::ConformsTo<Options::protocols::FactoryCreation> {
   using factory_classes = tmpl::map<
       tmpl::pair<DenseTrigger, DenseTriggers::standard_dense_triggers>,
       tmpl::pair<DomainCreator<volume_dim>, domain_creators<volume_dim>>,
-      tmpl::pair<Event,
-                 tmpl::flatten<tmpl::list<
-                     Events::Completion, Events::MonitorMemory<volume_dim>,
-                     typename detail::ObserverTags::field_observations,
-                     Events::time_events<system>,
-                     dg::Events::ObserveTimeStepVolume<system>>>>,
+      tmpl::pair<
+          Event,
+          tmpl::flatten<tmpl::list<
+              Events::Completion, Events::MonitorMemory<volume_dim>,
+              typename detail::ObserverTags::field_observations,
+              Events::time_events<system>,
+              dg::Events::ObserveTimeStepVolume<system>,
+              tmpl::conditional_t<LocalTimeStepping,
+                                  dg::Events::ChangeFixedLtsRatio<volume_dim>,
+                                  tmpl::list<>>>>>,
       tmpl::pair<
           evolution::BoundaryCorrection,
           ScalarTensor::BoundaryCorrections::standard_boundary_corrections>,

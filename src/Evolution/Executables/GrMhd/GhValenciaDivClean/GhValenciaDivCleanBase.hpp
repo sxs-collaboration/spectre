@@ -57,6 +57,7 @@
 #include "Evolution/DiscontinuousGalerkin/Actions/ComputeTimeDerivative.hpp"
 #include "Evolution/DiscontinuousGalerkin/CleanMortarHistory.hpp"
 #include "Evolution/DiscontinuousGalerkin/DgElementArray.hpp"
+#include "Evolution/DiscontinuousGalerkin/EqualRateLts/ChangeFixedLtsRatio.hpp"
 #include "Evolution/DiscontinuousGalerkin/EqualRateLts/FixedLtsRatio.hpp"
 #include "Evolution/DiscontinuousGalerkin/EqualRateLts/NonconformingEqualRateRegions.hpp"
 #include "Evolution/DiscontinuousGalerkin/Initialization/Mortars.hpp"
@@ -149,6 +150,7 @@
 #include "ParallelAlgorithms/Actions/MutateApply.hpp"
 #include "ParallelAlgorithms/Actions/SpectralFilter.hpp"
 #include "ParallelAlgorithms/Actions/TerminatePhase.hpp"
+#include "ParallelAlgorithms/Events/ChangeFixedLtsRatio.hpp"
 #include "ParallelAlgorithms/Events/Completion.hpp"
 #include "ParallelAlgorithms/Events/Factory.hpp"
 #include "ParallelAlgorithms/Events/ObserveAtExtremum.hpp"
@@ -617,23 +619,27 @@ struct GhValenciaDivCleanTemplateBase<
                        use_control_systems,
                        tmpl::list<::domain::creators::BinaryCompactObject>,
                        domain_creators<volume_dim>>>,
-        tmpl::pair<Event,
-                   tmpl::flatten<tmpl::list<
-                       Events::Completion, ::Events::ObserveDataBox,
-                       dg::Events::field_observations<
-                           volume_dim, observe_fields, non_tensor_compute_tags>,
-                       Events::ObserveAtExtremum<observe_fields,
-                                                 non_tensor_compute_tags>,
-                       Events::time_events<system>,
-                       dg::Events::ObserveTimeStepVolume<system>,
-                       control_system::metafunctions::control_system_events<
-                           control_systems>,
-                       tmpl::conditional_t<use_control_systems,
-                                           control_system::CleanFunctionsOfTime,
-                                           tmpl::list<>>,
-                       intrp::Events::InterpolateWithoutInterpComponent<
-                           volume_dim, InterpolationTargetTags,
-                           interpolator_source_vars>...>>>,
+        tmpl::pair<
+            Event,
+            tmpl::flatten<tmpl::list<
+                Events::Completion, ::Events::ObserveDataBox,
+                dg::Events::field_observations<volume_dim, observe_fields,
+                                               non_tensor_compute_tags>,
+                Events::ObserveAtExtremum<observe_fields,
+                                          non_tensor_compute_tags>,
+                Events::time_events<system>,
+                dg::Events::ObserveTimeStepVolume<system>,
+                control_system::metafunctions::control_system_events<
+                    control_systems>,
+                tmpl::conditional_t<use_control_systems,
+                                    control_system::CleanFunctionsOfTime,
+                                    tmpl::list<>>,
+                intrp::Events::InterpolateWithoutInterpComponent<
+                    volume_dim, InterpolationTargetTags,
+                    interpolator_source_vars>...,
+                tmpl::conditional_t<local_time_stepping,
+                                    dg::Events::ChangeFixedLtsRatio<volume_dim>,
+                                    tmpl::list<>>>>>,
         tmpl::pair<evolution::BoundaryCorrection,
                    grmhd::GhValenciaDivClean::BoundaryCorrections::
                        standard_boundary_corrections>,
@@ -967,8 +973,12 @@ struct GhValenciaDivCleanTemplateBase<
                                      tmpl::list<>>,
                   evolution::Actions::RunEventsAndTriggers<
                       Triggers::WhenToCheck::AtSlabs>,
-                  Actions::ChangeSlabSize, step_actions,
-                  Actions::MutateApply<AdvanceTime<>>,
+                  Actions::ChangeSlabSize,
+                  std::conditional_t<
+                      local_time_stepping,
+                      evolution::dg::Actions::ChangeFixedLtsRatio,
+                      tmpl::list<>>,
+                  step_actions, Actions::MutateApply<AdvanceTime<>>,
                   PhaseControl::Actions::ExecutePhaseChange>>>,
 
           tmpl::conditional_t<
