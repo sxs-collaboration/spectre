@@ -108,7 +108,7 @@ class TestInitialData(unittest.TestCase):
                 "coef(2,2)",
             ]
             shape_coefs = [5.0, 6.0, 7.0, 8.0, 9.0, 10.0]
-            times = [4990, 4992, 4994, 4996, 4998, 5000]
+            times = [4999.5, 4999.6, 4999.7, 4999.8, 4999.9, 5000]
             reduction_dat = reduction_file.try_insert_dat(
                 "ObservationAhC_Ylm.dat", legend, 0
             )
@@ -143,7 +143,7 @@ class TestInitialData(unittest.TestCase):
             math.inf,
         )
         expansion_fot = PiecewisePolynomial3(
-            times[0], 4 * [DataVector(size=1, fill=1.0)], math.inf
+            times[0], 4 * [DataVector(size=1, fill=0.01)], math.inf
         )
         expansion_outer_fot = PiecewisePolynomial3(
             times[0], 4 * [DataVector(size=1, fill=1.0)], math.inf
@@ -207,13 +207,12 @@ class TestInitialData(unittest.TestCase):
         serialized_binary_domain = serialize_domain(bco_domain)
 
         self.inspiral_volume_data = self.inspiral_dir / "BbhVolume0.h5"
-        obs_values = [4990.0, 4992.0, 4994.0, 4996.0, 4998.0, 5000.0]
         with spectre_h5.H5File(self.inspiral_volume_data, "w") as volume_file:
             volfile = volume_file.insert_vol("ForContinuation", version=0)
             for x in range(0, 5):
                 volfile.write_volume_data(
                     observation_id=x,
-                    observation_value=obs_values[x],
+                    observation_value=times[x],
                     elements=[
                         ElementVolumeData(
                             element_name="foo",
