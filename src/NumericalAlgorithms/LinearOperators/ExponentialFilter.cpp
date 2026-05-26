@@ -11,6 +11,7 @@
 #include "NumericalAlgorithms/Spectral/Filtering.hpp"
 #include "NumericalAlgorithms/Spectral/MaximumNumberOfPoints.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
+#include "NumericalAlgorithms/Spectral/Parity.hpp"
 #include "NumericalAlgorithms/Spectral/Quadrature.hpp"
 #include "Options/Options.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
@@ -43,7 +44,7 @@ Exponential<FilterIndex>::Exponential(
 
 template <size_t FilterIndex>
 const Matrix& Exponential<FilterIndex>::filter_matrix(
-    const Mesh<1>& mesh) const {
+    const Mesh<1>& mesh, const Spectral::Parity parity) const {
   const static double cached_alpha = alpha_;
 
   ASSERT(cached_alpha == alpha_, "Filter was cached with alpha = "
@@ -82,10 +83,26 @@ const Matrix& Exponential<FilterIndex>::filter_matrix(
         return compute_filter(extents, Spectral::Basis::Fourier,
                               Spectral::Quadrature::Equiangular);
       });
+  const static auto zernikeb1_cache = make_static_cache<
+      CacheRange<
+          1_st,
+          Spectral::maximum_number_of_points<Spectral::Basis::ZernikeB1> + 1>,
+      CacheEnumeration<Spectral::Parity, Spectral::Parity::Even,
+                       Spectral::Parity::Odd>>(
+      [alpha = alpha_, half_power = half_power_](
+          const size_t extents, const Spectral::Parity local_parity) {
+        return Spectral::filtering::exponential_filter(
+            Mesh<1>{extents, Spectral::Basis::ZernikeB1,
+                    Spectral::Quadrature::GaussRadauUpper},
+            alpha, half_power, local_parity);
+      });
   if (mesh.basis(0) == Spectral::Basis::Fourier) {
     return fourier_cache(mesh.extents(0));
+  } else if (mesh.basis(0) == Spectral::Basis::ZernikeB1) {
+    return zernikeb1_cache(mesh.extents(0), parity);
+  } else {
+    return cache(mesh.extents(0), mesh.basis(0), mesh.quadrature(0));
   }
-  return cache(mesh.extents(0), mesh.basis(0), mesh.quadrature(0));
 }
 
 template <size_t FilterIndex>

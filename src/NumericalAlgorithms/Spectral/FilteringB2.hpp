@@ -27,7 +27,7 @@ namespace Spectral::filtering {
  * \see exponential_filter()
  */
 template <typename TagsList>
-void ZernikeB2_disk_exponential_filter(gsl::not_null<Variables<TagsList>*> u,
+void zernike_b2_disk_exponential_filter(gsl::not_null<Variables<TagsList>*> u,
                                        const Mesh<2>& mesh, double alpha,
                                        unsigned half_power);
 
@@ -45,7 +45,7 @@ void ZernikeB2_disk_exponential_filter(gsl::not_null<Variables<TagsList>*> u,
  * \see exponential_filter()
  */
 template <typename TagsList>
-void ZernikeB2_cylinder_exponential_filter(
+void zernike_b2_cylinder_exponential_filter(
     gsl::not_null<Variables<TagsList>*> u, const Mesh<3>& mesh, double alpha,
     unsigned half_power);
 }  // namespace Spectral::filtering
