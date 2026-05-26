@@ -368,7 +368,7 @@ def _xmf_grid(
 
     # For new-format volume data, add cell-centered element_id and block_id
     # attributes (not for the pole-filling grid, which uses pole_connectivity).
-    if is_new_format and not filling_poles:
+    if is_new_format and not filling_poles and not use_tetrahedral_connectivity:
         number_of_cells = _count_cells_in_mixed_connectivity(
             observation["connectivity"][:]
         )
