@@ -9,6 +9,7 @@
 #include "DataStructures/Tags/TempTensor.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/System.hpp"
+#include "NumericalAlgorithms/Spectral/Parity.hpp"
 #include "NumericalAlgorithms/Spectral/ParityFromSymmetry.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -122,6 +123,59 @@ void test_constexpr() {
   check_scalar_constexpr(scalar);
 }
 
+void test_make_component_parity_array() {
+  {
+    constexpr auto result = make_component_parity_array<Scalar<DataVector>>();
+    static_assert(result.size() == 1);
+    static_assert(result[0] == Parity::Even);
+  }
+  {
+    constexpr auto result =
+        make_component_parity_array<tnsr::i<DataVector, 3>>();
+    static_assert(result.size() == 3);
+    static_assert(result[0] == Parity::Odd);
+    static_assert(result[1] == Parity::Even);
+    static_assert(result[2] == Parity::Even);
+  }
+  {
+    constexpr auto result =
+        make_component_parity_array<tnsr::ii<DataVector, 3>>();
+    static_assert(result.size() == 6);
+    static_assert(result[0] == Parity::Even);
+    static_assert(result[1] == Parity::Odd);
+    static_assert(result[2] == Parity::Odd);
+    static_assert(result[3] == Parity::Even);
+    static_assert(result[4] == Parity::Even);
+    static_assert(result[5] == Parity::Even);
+  }
+  {
+    constexpr auto result =
+        make_component_parity_array<tnsr::I<DataVector, 3>>();
+    static_assert(result.size() == 3);
+    static_assert(result[0] == Parity::Odd);
+    static_assert(result[1] == Parity::Even);
+    static_assert(result[2] == Parity::Even);
+  }
+  {
+    // Consistency: sum of each parity matches compute_parity_list counts
+    constexpr auto result =
+        make_component_parity_array<tnsr::iaB<DataVector, 3>>();
+    const auto [plist, n_even, n_odd] =
+        compute_parity_list<tnsr::iaB<DataVector, 3>>();
+    size_t even_count = 0;
+    size_t odd_count = 0;
+    for (const auto& p : result) {
+      if (p == Parity::Even) {
+        ++even_count;
+      } else {
+        ++odd_count;
+      }
+    }
+    CHECK(even_count == n_even);
+    CHECK(odd_count == n_odd);
+  }
+}
+
 void test_gh_system() {
   using gh_tags = gh::System<3>::gradients_tags;
   const auto [gh_list, gh_even, gh_odd] = compute_parity_list<gh_tags>();
@@ -145,5 +199,6 @@ SPECTRE_TEST_CASE("Unit.Numerical.Spectral.ParityFromSymmetry",
   test_expected_properties();
   test_constexpr();
   test_gh_system();
+  test_make_component_parity_array();
 }
 }  // namespace Spectral
