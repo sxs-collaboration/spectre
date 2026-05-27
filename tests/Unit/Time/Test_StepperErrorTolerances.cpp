@@ -5,6 +5,7 @@
 
 #include "Framework/TestHelpers.hpp"
 #include "Time/StepperErrorTolerances.hpp"
+#include "Utilities/GetOutput.hpp"
 
 SPECTRE_TEST_CASE("Unit.Time.StepperErrorTolerances", "[Unit][Time]") {
   const StepperErrorTolerances tols0{};
@@ -37,4 +38,8 @@ SPECTRE_TEST_CASE("Unit.Time.StepperErrorTolerances", "[Unit][Time]") {
   CHECK(tols1 != tols4);
   CHECK_FALSE(tols1 == tols4);
   test_serialization(tols1);
+
+  CHECK(get_output(tols0) == "None");
+  CHECK(get_output(tols1) == "abs = 0.1, rel = 0.3");
+  CHECK(get_output(tols4) == "abs = 0.1, rel = 0.3 (all orders)");
 }

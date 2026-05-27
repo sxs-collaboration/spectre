@@ -12,6 +12,7 @@ spectre_target_sources(
   AdvanceTime.cpp
   ApproximateTime.cpp
   ChooseLtsStepSize.cpp
+  CollectStepperErrorTolerances.cpp
   History.cpp
   LargestStepperError.cpp
   LtsMode.cpp
@@ -43,6 +44,7 @@ spectre_target_headers(
   ChooseLtsStepSize.hpp
   CleanHistory.hpp
   CleanHistory.tpp
+  CollectStepperErrorTolerances.hpp
   EvolutionOrdering.hpp
   History.hpp
   LargestStepperError.hpp
