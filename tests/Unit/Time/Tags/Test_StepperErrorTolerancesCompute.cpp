@@ -279,10 +279,9 @@ SPECTRE_TEST_CASE("Unit.Time.Tags.StepperErrorTolerancesCompute",
           box);
       CHECK_THROWS_WITH(
           db::get<Tags::StepperErrorTolerances<EvolvedVariablesTag>>(*box),
-          Catch::Matchers::ContainsSubstring("All ErrorControl events for ") and
-              Catch::Matchers::ContainsSubstring("EvolvedVar1") and
-              Catch::Matchers::ContainsSubstring(
-                  " must use the same tolerances."));
+          Catch::Matchers::ContainsSubstring(
+              "All time stepping error tolerances for one set of variables "
+              "must be the same"));
 
       db::mutate<Tags::LtsStepChoosers,
                  Tags::EventsAndTriggers<Triggers::WhenToCheck::AtSlabs>>(
