@@ -12,10 +12,8 @@
 #include "Evolution/DgSubcell/ReconstructionMethod.hpp"
 #include "NumericalAlgorithms/FiniteDifference/DerivativeOrder.hpp"
 #include "Options/Auto.hpp"
-#include "Options/Context.hpp"
 #include "Options/String.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
-#include "Utilities/Literals.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
@@ -213,30 +211,13 @@ class SubcellOptions {
     static constexpr type upper_bound() { return 3; }
   };
 
-  /// \brief Subcell steps per slab in regions allowed to do subcell
-  /// in LTS mode.  Must be a power of 2.
-  struct LtsStepsPerSlab {
-    using type = size_t;
-    static constexpr Options::String help = {
-        "Steps per slab in regions allowed to do subcell.  Must be a power of "
-        "2."};
-    static constexpr type lower_bound() { return 1; }
-    static constexpr type upper_bound() { return 1_st << 31; }
-  };
-
-  using gts_options =
+  using options =
       tmpl::list<PerssonExponent, PerssonNumHighestModes, RdmpDelta0,
                  RdmpEpsilon, AlwaysUseSubcells, EnableExtensionDirections,
                  SubcellToDgReconstructionMethod, UseHalo,
                  OnlyDgBlocksAndGroups, FiniteDifferenceDerivativeOrder,
                  NumberOfStepsBetweenTciCalls, MinTciCallsAfterRollback,
                  MinimumClearTcis, FdInterpolationOrder>;
-
-  template <typename Metavars>
-  using options =
-      tmpl::conditional_t<Metavars::local_time_stepping,
-                          tmpl::push_back<gts_options, LtsStepsPerSlab>,
-                          gts_options>;
 
   static constexpr Options::String help{
       "System-agnostic options for the DG-subcell method."};
@@ -251,9 +232,7 @@ class SubcellOptions {
       ::fd::DerivativeOrder finite_difference_derivative_order,
       size_t number_of_steps_between_tci_calls,
       size_t min_tci_calls_after_rollback, size_t min_clear_tci_before_dg,
-      size_t fd_to_fd_interp_order = 1_st,
-      const std::optional<size_t>& lts_steps_per_slab = std::nullopt,
-      const Options::Context& context = {});
+      size_t fd_to_fd_interp_order = 1_st);
 
   /// \brief Given an existing SubcellOptions that was created from block and
   /// group names, create one that stores block IDs.
@@ -329,14 +308,6 @@ class SubcellOptions {
   /// `0 means
   size_t min_clear_tci_before_dg() const { return min_clear_tci_before_dg_; }
 
-  /// The number of steps per slab in regions allowed to do subcell.
-  /// Only valid in LTS-subcell evolutions.
-  size_t lts_steps_per_slab() const {
-    ASSERT(lts_steps_per_slab_.has_value(),
-           "Attempted to access lts_steps_per_slab in GTS evolution.");
-    return lts_steps_per_slab_.value();
-  }
-
  private:
   friend bool operator==(const SubcellOptions& lhs, const SubcellOptions& rhs);
 
@@ -357,7 +328,6 @@ class SubcellOptions {
   size_t min_tci_calls_after_rollback_{1};
   size_t min_clear_tci_before_dg_{0};
   size_t fd_to_fd_interp_order_{};
-  std::optional<size_t> lts_steps_per_slab_{};
 };
 
 bool operator!=(const SubcellOptions& lhs, const SubcellOptions& rhs);
