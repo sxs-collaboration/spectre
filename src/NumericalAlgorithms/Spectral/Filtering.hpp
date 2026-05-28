@@ -69,8 +69,12 @@ Matrix exponential_filter(const Mesh<1>& mesh, double alpha,
  *
  * where \f$k\f$ is the number of modes set to zero. The output \f$\bar{u}\f$ is
  * also in the *nodal* representation.
+ *
+ * The Parity argument is only used for ZernikeB1 bases, where the modal space
+ * is parity dependent.
  */
-const Matrix& zero_lowest_modes(const Mesh<1>& mesh,
-                                size_t number_of_modes_to_zero);
+const Matrix& zero_lowest_modes(
+    const Mesh<1>& mesh, size_t number_of_modes_to_zero,
+    Spectral::Parity parity = Spectral::Parity::Uninitialized);
 }  // namespace filtering
 }  // namespace Spectral

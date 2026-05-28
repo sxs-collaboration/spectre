@@ -73,10 +73,31 @@ struct ZeroLowestModesImpl {
     return Matrix(modal_to_nodal * filter_matrix * nodal_to_modal);
   }
 };
+
+struct ZernikeB1ZeroLowestModesImpl {
+  Matrix operator()(const size_t n_dg, const size_t num_modes_to_zero,
+                    const size_t m) const {
+    const Matrix& nodal_to_modal =
+        Spectral::nodal_to_modal_matrix<Spectral::Basis::ZernikeB1,
+                                        Spectral::Quadrature::GaussRadauUpper>(
+            n_dg, m, 2 * n_dg - 2);
+    const Matrix& modal_to_nodal =
+        Spectral::modal_to_nodal_matrix<Spectral::Basis::ZernikeB1,
+                                        Spectral::Quadrature::GaussRadauUpper>(
+            n_dg, m, 2 * n_dg - 2);
+    const size_t n_modes = n_dg - m;
+    Matrix filter_matrix(n_modes, n_modes, 0.0);
+    for (size_t i = num_modes_to_zero; i < n_modes; ++i) {
+      filter_matrix(i, i) = 1.0;
+    }
+    return modal_to_nodal * filter_matrix * nodal_to_modal;
+  }
+};
 }  // namespace
 
 const Matrix& zero_lowest_modes(const Mesh<1>& mesh,
-                                const size_t number_of_modes_to_zero) {
+                                const size_t number_of_modes_to_zero,
+                                const Parity parity) {
   ASSERT(number_of_modes_to_zero < mesh.extents(0),
          "For a 1d mesh with " << mesh.extents(0)
                                << " grid points, you cannot zero "
@@ -140,6 +161,37 @@ const Matrix& zero_lowest_modes(const Mesh<1>& mesh,
                   ZeroLowestModesImpl<Spectral::Basis::Chebyshev,
                                       Spectral::Quadrature::Gauss>{});
           return cache(mesh.number_of_grid_points(), number_of_modes_to_zero);
+        }
+        default:
+          ERROR("Unsupported quadrature type in filtering lowest modes: "
+                << mesh.quadrature(0));
+      };
+    case Basis::ZernikeB1:
+      switch (mesh.quadrature(0)) {
+        case Spectral::Quadrature::GaussRadauUpper: {
+          ASSERT(
+              parity != Parity::Uninitialized,
+              "Parity must be set to filter lowest modes on a ZernikeB1 mesh.");
+          const size_t m = parity == Parity::Even ? 0 : 1;
+          ASSERT(number_of_modes_to_zero < mesh.number_of_grid_points() - m,
+                 "For ZernikeB1 with "
+                     << mesh.number_of_grid_points()
+                     << " grid points and parity " << (m == 0 ? "Even" : "Odd")
+                     << " (" << mesh.number_of_grid_points() - m
+                     << " modes), you cannot zero " << number_of_modes_to_zero
+                     << " modes.");
+          constexpr size_t max_num_pts =
+              Spectral::maximum_number_of_points<Spectral::Basis::ZernikeB1>;
+          constexpr size_t min_num_pts = Spectral::minimum_number_of_points<
+              Spectral::Basis::ZernikeB1,
+              Spectral::Quadrature::GaussRadauUpper>;
+          const auto cache =
+              make_static_cache<CacheRange<min_num_pts, max_num_pts + 1>,
+                                CacheRange<0_st, max_num_pts>,
+                                CacheRange<0_st, 2_st>>(
+                  ZernikeB1ZeroLowestModesImpl{});
+          return cache(mesh.number_of_grid_points(), number_of_modes_to_zero,
+                       m);
         }
         default:
           ERROR("Unsupported quadrature type in filtering lowest modes: "
