@@ -75,6 +75,7 @@ class Tabulated3D : public EquationOfState<IsRelativistic, 3> {
     CsSquared,
     DeltaMu,
     Kappa,
+    Zeta,
     SpecificEntropy,
     NumberOfVars
   };

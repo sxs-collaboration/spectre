@@ -145,6 +145,16 @@ Barotropic3D<ColdEquilEos>::kappa_from_density_and_temperature_impl(
   return make_with_value<Scalar<DataType>>(rest_mass_density, 0.0);
 }
 
+template <typename ColdEquilEos>
+template <typename DataType>
+Scalar<DataType>
+Barotropic3D<ColdEquilEos>::zeta_from_density_and_temperature_impl(
+    const Scalar<DataType>& rest_mass_density,
+    const Scalar<DataType>& /*temperature*/,
+    const Scalar<DataType>& /*electron_fraction*/) const {
+  return make_with_value<Scalar<DataType>>(get(rest_mass_density), 0.0);
+}
+
 template class Barotropic3D<PolytropicFluid<true>>;
 template class Barotropic3D<PolytropicFluid<false>>;
 template class Barotropic3D<PiecewisePolytropicFluid<true>>;

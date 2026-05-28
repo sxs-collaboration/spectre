@@ -16,6 +16,7 @@
 #include "PointwiseFunctions/Hydro/EquationsOfState/PolytropicFluid.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/Spectral.hpp"
 #include "Utilities/ConstantExpressions.hpp"
+#include "Utilities/MakeWithValue.hpp"
 
 namespace EquationsOfState {
 
@@ -171,6 +172,16 @@ Equilibrium3D<EquilEos>::kappa_from_density_and_temperature_impl(
           rest_mass_density, specific_internal_energy);
   return Scalar<DataType>{get(kappa_p_over_rho_squared) / get(pressure) *
                           square(get(rest_mass_density))};
+}
+
+template <typename EquilEos>
+template <typename DataType>
+Scalar<DataType>
+Equilibrium3D<EquilEos>::zeta_from_density_and_temperature_impl(
+    const Scalar<DataType>& rest_mass_density,
+    const Scalar<DataType>& /*temperature*/,
+    const Scalar<DataType>& /*electron_fraction*/) const {
+  return make_with_value<Scalar<DataType>>(get(rest_mass_density), 0.0);
 }
 
 template class Equilibrium3D<DarkEnergyFluid<true>>;

@@ -119,6 +119,7 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.EquationsOfState.Tabulated3D",
     vars[TEoS::Pressure] = state[TableIndex::Temp] + state[TableIndex::Rho];
     vars[TEoS::CsSquared] = state[TableIndex::Ye];
     vars[TEoS::Kappa] = state[TableIndex::Rho];
+    vars[TEoS::Zeta] = state[TableIndex::Ye];
     vars[TEoS::SpecificEntropy] =
         (vars[TEoS::Epsilon] - state[TableIndex::Rho] * state[TableIndex::Ye]) /
         state[TableIndex::Ye];
@@ -202,6 +203,9 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.EquationsOfState.Tabulated3D",
   CHECK(std::abs(output[TEoS::Kappa] -
                  get(eos.kappa_from_density_and_temperature(
                      state[1], state[0], state[2]))) < 1.e-10);
+  CHECK(std::abs(output[TEoS::Zeta] - get(eos.zeta_from_density_and_temperature(
+                                          state[1], state[0], state[2]))) <
+        1.e-12);
   CHECK(std::abs(std::exp(output[TEoS::SpecificEntropy]) -
                  get(eos.specific_entropy_from_density_and_temperature(
                      state[1], state[0], state[2]))) < 2.e-12);
@@ -244,6 +248,9 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.EquationsOfState.Tabulated3D",
                  get(eos.kappa_from_density_and_temperature(
                      vector_state[1], vector_state[0], vector_state[2]))[0]) <
         1.e-10);
+  CHECK(std::abs(output[TEoS::Zeta] - get(eos.zeta_from_density_and_temperature(
+                                          vector_state[1], vector_state[0],
+                                          vector_state[2]))[0]) < 1.e-12);
 
   const auto eps_interp_vector =
       eos.specific_internal_energy_from_density_and_temperature(
@@ -272,6 +279,9 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.EquationsOfState.Tabulated3D",
     CHECK_ITERABLE_APPROX(get(this_eos.kappa_from_density_and_temperature(
                               state[1], state[0], state[2])),
                           0.00473307329152856);
+    CHECK_ITERABLE_APPROX(get(this_eos.zeta_from_density_and_temperature(
+                              state[1], state[0], state[2])),
+                          -0.00043219601036757);
     CHECK_ITERABLE_APPROX(
         get(this_eos.specific_entropy_from_density_and_temperature(
             state[1], state[0], state[2])),
