@@ -13,6 +13,7 @@
 #include "PointwiseFunctions/Hydro/EquationsOfState/PolytropicFluid.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/Spectral.hpp"
 #include "Utilities/ConstantExpressions.hpp"
+#include "Utilities/MakeWithValue.hpp"
 
 namespace EquationsOfState {
 
@@ -132,6 +133,18 @@ Scalar<DataType> Barotropic3D<ColdEquilEos>::
       get(underlying_eos_.chi_from_density(rest_mass_density)) /
       enthalpy_density};
 }
+
+template <typename ColdEquilEos>
+template <class DataType>
+Scalar<DataType>
+Barotropic3D<ColdEquilEos>::kappa_from_density_and_temperature_impl(
+    const Scalar<DataType>& rest_mass_density,
+    const Scalar<DataType>& /*temperature*/,
+    const Scalar<DataType>& /*electron_fraction*/) const {
+  // Barotropic EOS: p = p(rho), so kappa = dp/deps|_rho = 0.
+  return make_with_value<Scalar<DataType>>(rest_mass_density, 0.0);
+}
+
 template class Barotropic3D<PolytropicFluid<true>>;
 template class Barotropic3D<PolytropicFluid<false>>;
 template class Barotropic3D<PiecewisePolytropicFluid<true>>;
