@@ -89,30 +89,45 @@ class SphericalShells : public DomainCreator<3> {
                        domain::CoordinateMaps::SphericalToCartesianPfaffian>>,
                    typename sphere::TimeDependentMapOptions::maps_list>;
 
+  /*!
+   * \brief Radius of innermost spherical shell
+   */
   struct InnerRadius {
     using type = double;
     static constexpr Options::String help = {
         "Inner radius of the spherical shells."};
   };
 
+  /*!
+   * \brief Radius of outer boundary
+   */
   struct OuterRadius {
     using type = double;
     static constexpr Options::String help = {
         "Outer radius of the spherical shells."};
   };
 
+  /*!
+   * \brief Initial refinement in radial direction
+   */
   struct InitialRadialRefinement {
     using type = size_t;
     static constexpr Options::String help = {
         "Initial radial refinement level."};
   };
 
+  /*!
+   * \brief Initial number of radial grid points
+   */
   struct InitialNumberOfRadialGridPoints {
     using type = size_t;
     static constexpr Options::String help = {
         "Initial number of radial grid points."};
   };
 
+  /*!
+   * \brief Initial spherical harmonic resolution
+   */
   struct InitialSphericalHarmonicL {
     using type = size_t;
     static size_t lower_bound() { return 6; }
@@ -121,6 +136,9 @@ class SphericalShells : public DomainCreator<3> {
         "spherical harmonic represented on the grid.  Minimum value is 6."};
   };
 
+  /*!
+   * \brief Radial coordinates of the boundaries splitting elements
+   */
   struct RadialPartitioning {
     using type = std::vector<double>;
     static constexpr Options::String help = {
@@ -131,6 +149,9 @@ class SphericalShells : public DomainCreator<3> {
         "are important, use InitialRefinement instead."};
   };
 
+  /*!
+   * \brief Distributions to apply to the radial coordinates
+   */
   struct RadialDistribution {
     using type =
         std::variant<domain::CoordinateMaps::Distribution,
@@ -147,6 +168,9 @@ class SphericalShells : public DomainCreator<3> {
       sphere::TimeDependentMapOptions,
       std::unique_ptr<domain::creators::time_dependence::TimeDependence<3>>>;
 
+  /*!
+   * \brief Time dependence of the domain
+   */
   struct TimeDependentMaps {
     using type = Options::Auto<TimeDepOptionType, Options::AutoLabel::None>;
     static constexpr Options::String help = {
@@ -155,6 +179,9 @@ class SphericalShells : public DomainCreator<3> {
         "for no time dependent maps."};
   };
 
+  /*!
+   * \brief Boundary condition to apply to inner boundary when not filled
+   */
   template <typename BoundaryConditionsBase>
   struct InnerBoundaryCondition {
     static constexpr Options::String help =
@@ -162,6 +189,9 @@ class SphericalShells : public DomainCreator<3> {
     using type = std::unique_ptr<BoundaryConditionsBase>;
   };
 
+  /*!
+   * \brief Boundary condition to apply to outer boundary
+   */
   template <typename BoundaryConditionsBase>
   struct OuterBoundaryCondition {
     static constexpr Options::String help =
