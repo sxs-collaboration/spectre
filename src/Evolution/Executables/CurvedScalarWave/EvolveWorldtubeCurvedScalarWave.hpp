@@ -7,6 +7,7 @@
 #include <cstdint>
 #include <vector>
 
+#include "DataStructures/Tensor/EagerMath/Norms.hpp"
 #include "Domain/Creators/BinaryCompactObject.hpp"
 #include "Domain/Creators/RegisterDerivedWithCharm.hpp"
 #include "Domain/Creators/TimeDependence/RegisterDerivedWithCharm.hpp"
@@ -74,6 +75,7 @@
 #include "ParallelAlgorithms/Events/Completion.hpp"
 #include "ParallelAlgorithms/Events/Factory.hpp"
 #include "ParallelAlgorithms/Events/ObserveNorms.hpp"
+#include "ParallelAlgorithms/Events/ObserveTimeStepVolume.hpp"
 #include "ParallelAlgorithms/EventsAndDenseTriggers/DenseTrigger.hpp"
 #include "ParallelAlgorithms/EventsAndDenseTriggers/DenseTriggers/Factory.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
@@ -171,7 +173,11 @@ struct EvolutionMetavars {
           ::Events::Tags::ObserverDetInvJacobianCompute<Frame::ElementLogical,
                                                         Frame::Inertial>,
           CurvedScalarWave::Tags::OneIndexConstraintCompute<volume_dim>,
-          CurvedScalarWave::Tags::TwoIndexConstraintCompute<volume_dim>>>,
+          CurvedScalarWave::Tags::TwoIndexConstraintCompute<volume_dim>,
+          ::Tags::PointwiseL2NormCompute<
+              CurvedScalarWave::Tags::OneIndexConstraint<volume_dim>>,
+          ::Tags::PointwiseL2NormCompute<
+              CurvedScalarWave::Tags::TwoIndexConstraint<volume_dim>>>>,
       domain::Tags::Coordinates<volume_dim, Frame::Grid>,
       domain::Tags::Coordinates<volume_dim, Frame::Inertial>>;
   using non_tensor_compute_tags =
@@ -211,14 +217,14 @@ struct EvolutionMetavars {
         tmpl::pair<DenseTrigger, DenseTriggers::standard_dense_triggers>,
         tmpl::pair<DomainCreator<volume_dim>,
                    tmpl::list<domain::creators::BinaryCompactObject<true>>>,
-        tmpl::pair<
-            Event,
-            tmpl::flatten<tmpl::list<
-                Events::time_events<system>, Events::Completion,
-                intrp::Events::InterpolateWithoutInterpComponent<
-                    volume_dim, Spheres, interpolator_source_vars>,
-                dg::Events::field_observations<volume_dim, observe_fields,
-                                               non_tensor_compute_tags>>>>,
+        tmpl::pair<Event,
+                   tmpl::flatten<tmpl::list<
+                       Events::time_events<system>, Events::Completion,
+                       intrp::Events::InterpolateWithoutInterpComponent<
+                           volume_dim, Spheres, interpolator_source_vars>,
+                       dg::Events::field_observations<
+                           volume_dim, observe_fields, non_tensor_compute_tags>,
+                       dg::Events::ObserveTimeStepVolume<system>>>>,
         tmpl::pair<evolution::BoundaryCorrection,
                    CurvedScalarWave::BoundaryCorrections::
                        standard_boundary_corrections<volume_dim>>,

@@ -27,6 +27,7 @@
 #include "Domain/FunctionsOfTime/IntegratedFunctionOfTime.hpp"
 #include "Domain/FunctionsOfTime/PiecewisePolynomial.hpp"
 #include "Domain/FunctionsOfTime/QuaternionFunctionOfTime.hpp"
+#include "Domain/FunctionsOfTime/QuaternionWorldtubeFunctionOfTime.hpp"
 #include "Domain/Structure/ObjectLabel.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/Spherepack.hpp"
 #include "Options/ParseError.hpp"
@@ -115,10 +116,10 @@ TimeDependentMapOptions<IsCylindrical>::create_worldtube_functions_of_time()
           rotation_map_options_.value());
 
   result[rotation_name] =
-      std::make_unique<FunctionsOfTime::IntegratedFunctionOfTime>(
-          initial_time_,
-          std::array<double, 2>{0., rotation_map_opts.angles[1][2]},
-          initial_expiration_time, true);
+      std::make_unique<FunctionsOfTime::QuaternionWorldtubeFunctionOfTime<1>>(
+          initial_time_, std::array{rotation_map_opts.quaternions[0]},
+          std::array{rotation_map_opts.angles[0], rotation_map_opts.angles[1]},
+          initial_expiration_time);
 
   // Size and Shape FunctionOfTime for objects A and B. Only spherical excision
   // spheres are supported currently.

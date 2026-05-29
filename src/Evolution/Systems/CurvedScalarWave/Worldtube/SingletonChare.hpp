@@ -87,7 +87,7 @@ struct WorldtubeSingleton {
 
   using worldtube_system = System<Dim>;
   using step_actions = tmpl::list<
-      Actions::UpdateFunctionsOfTime, Actions::ChangeSlabSize,
+      Actions::UpdateQuaternionFunctionsOfTime, Actions::ChangeSlabSize,
       Actions::ReceiveElementData,
       ::Actions::MutateApply<IterateAccelerationTerms>,
       Actions::SendAccelerationTerms<Metavariables>,

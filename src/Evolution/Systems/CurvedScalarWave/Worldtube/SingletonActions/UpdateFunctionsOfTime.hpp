@@ -11,13 +11,17 @@
 #include "ControlSystem/UpdateFunctionOfTime.hpp"
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
+#include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
+#include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/Creators/Tags/Domain.hpp"
 #include "Evolution/Systems/CurvedScalarWave/Worldtube/Inboxes.hpp"
 #include "Evolution/Systems/CurvedScalarWave/Worldtube/RadiusFunctions.hpp"
+#include "Evolution/Systems/CurvedScalarWave/Worldtube/SingletonActions/WriteData.hpp"
 #include "Evolution/Systems/CurvedScalarWave/Worldtube/Tags.hpp"
 #include "Evolution/Systems/CurvedScalarWave/Worldtube/Worldtube.hpp"
 #include "Parallel/AlgorithmExecution.hpp"
 #include "Parallel/GlobalCache.hpp"
+#include "Parallel/Printf/Printf.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Tags.hpp"
 #include "ParallelAlgorithms/Initialization/MutateAssign.hpp"
 #include "Time/Tags/TimeStepId.hpp"
@@ -42,7 +46,7 @@ namespace CurvedScalarWave::Worldtube::Actions {
  * In addition, the worldtube and black hole excision sphere radii are adjusted
  * according to smooth_broken_power_law.
  */
-struct UpdateFunctionsOfTime {
+struct UpdateQuaternionFunctionsOfTime {
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
@@ -58,18 +62,24 @@ struct UpdateFunctionsOfTime {
         db::get<Tags::ParticlePositionVelocity<3>>(box);
     const double& x = get<0>(particle_pos_vel[0]);
     const double& y = get<1>(particle_pos_vel[0]);
+    const double& z = get<2>(particle_pos_vel[0]);
     const double& xdot = get<0>(particle_pos_vel[1]);
     const double& ydot = get<1>(particle_pos_vel[1]);
-    const double r = hypot(x, y);
-    const double radial_vel = (xdot * x + ydot * y) / r;
+    const double& zdot = get<2>(particle_pos_vel[1]);
+    const double r = hypot(x, y, z);
+    const double radial_vel = (xdot * x + ydot * y + zdot * z) / r;
     const auto& excision_sphere = db::get<Tags::ExcisionSphere<3>>(box);
     const double grid_radius_particle =
         get(magnitude(excision_sphere.center()));
 
-    const DataVector angular_update{atan2(y, x),
-                                    (x * ydot - y * xdot) / square(r)};
     const DataVector expansion_update{r / grid_radius_particle,
                                       radial_vel / grid_radius_particle};
+
+    // Adding code to compute the quaternions and its derivative instead of just
+    // the azimuthal angle for the generic case.
+    const DataVector angular_update{(y * zdot - z * ydot) / square(r),
+                                    (xdot * z - x * zdot) / square(r),
+                                    (x * ydot - y * xdot) / square(r)};
 
     const auto& wt_radius_params =
         db::get<Tags::WorldtubeRadiusParameters>(box);
@@ -120,9 +130,23 @@ struct UpdateFunctionsOfTime {
     // current time. This is small enough that it can handle rapid time step
     // decreases but large enough to avoid floating point precision issues.
     const double new_expiration_time =
-        time +
-        0.01 * (db::get<::Tags::Next<::Tags::TimeStepId>>(box).substep_time() -
-                time);
+        db::get<::Tags::Next<::Tags::TimeStepId>>(box).substep_time();
+
+    if (Parallel::get<Tags::Verbosity>(cache) >= ::Verbosity::Quiet) {
+      // Time step and orbital velocity updates
+      Parallel::printf(
+          "Time: %.16f, TimeStep: %.16f\n", time,
+          (db::get<::Tags::Next<::Tags::TimeStepId>>(box).substep_time() -
+           time));
+      // Orbital velocity update
+      Parallel::printf(
+          "orbital_vel_x: %.16f, orbital_vel_y: "
+          "%.16f, orbital_vel_z: %.16f\n",
+          angular_update[0], angular_update[1], angular_update[2]);
+      // Particle position
+      Parallel::printf(
+          "Position_x: %.16f, Position_y: %.16f, Position_z: %.16f\n", x, y, z);
+    }
 
     db::mutate<Tags::ExpirationTime>(
         [&new_expiration_time](const auto expiration_time) {
@@ -136,8 +160,11 @@ struct UpdateFunctionsOfTime {
         make_not_null(&box));
     std::unordered_map<std::string, std::pair<DataVector, double>>
         all_updates{};
-    all_updates["Rotation"] =
-        std::make_pair(angular_update, new_expiration_time);
+    all_updates["Rotation"] = std::make_pair(
+        angular_update,
+        new_expiration_time);  // angle and omega updates as a DataVector of
+                               // size 2 (To be used for
+                               // QuaternionWorldtubeFunctionOfTime)
     all_updates["Expansion"] =
         std::make_pair(expansion_update, new_expiration_time);
     all_updates["SizeA"] = std::make_pair(size_a_update, new_expiration_time);
@@ -146,6 +173,17 @@ struct UpdateFunctionsOfTime {
     Parallel::mutate<::domain::Tags::FunctionsOfTime,
                      control_system::UpdateMultipleFunctionsOfTime>(
         cache, current_expiration_time, all_updates);
+
+    // Write data
+    if (db::get<Tags::ObserveCoefficientsTrigger>(box).is_triggered(box) and
+        db::get<::Tags::TimeStepId>(box).substep() == 0) {
+      const auto& functions_of_time =
+          Parallel::get<::domain::Tags::FunctionsOfTime>(cache);
+      const auto& function_of_time = functions_of_time.at("Rotation");
+      write_components_to_disk<Metavariables>(current_expiration_time, cache,
+                                              function_of_time);
+    }
+    //
 
     return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }

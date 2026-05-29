@@ -13,6 +13,7 @@ spectre_target_sources(
   OutputTimeBounds.cpp
   PiecewisePolynomial.cpp
   QuaternionFunctionOfTime.cpp
+  QuaternionWorldtubeFunctionOfTime.cpp
   QuaternionHelpers.cpp
   RegisterDerivedWithCharm.cpp
   SettleToConstant.cpp
@@ -30,6 +31,7 @@ spectre_target_headers(
   OutputTimeBounds.hpp
   PiecewisePolynomial.hpp
   QuaternionFunctionOfTime.hpp
+  QuaternionWorldtubeFunctionOfTime.hpp
   QuaternionHelpers.hpp
   RegisterDerivedWithCharm.hpp
   SettleToConstant.hpp
