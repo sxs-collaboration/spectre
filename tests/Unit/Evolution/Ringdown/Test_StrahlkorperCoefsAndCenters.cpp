@@ -54,6 +54,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.Ringdown.StrahlkorperCoefsAndCenters",
   // First, if the temporary file exists, remove it
   const std::string horizons_file_name{"Unit.Evolution.Ringdown.SCoefsRDis.h5"};
   const std::string horizons_subfile_name{"/ObservationAhC__Ylm.dat"};
+  const std::string volume_file_name{"BbhVolume1.h5"};
+  const std::string volume_file_subfile_name{"ForContinuation"};
   if (file_system::check_if_file_exists(horizons_file_name)) {
     file_system::rm(horizons_file_name, true);
   }
@@ -214,11 +216,11 @@ SPECTRE_TEST_CASE("Unit.Evolution.Ringdown.StrahlkorperCoefsAndCenters",
   auto serialized_fots_bco = serialize(functions_of_time_bco);
   auto serialized_domain_bco = serialize(domain_bco);
 
-  if (file_system::check_if_file_exists("BbhVolume0.h5")) {
-    file_system::rm("BbhVolume0.h5", true);
+  if (file_system::check_if_file_exists(volume_file_name)) {
+    file_system::rm(volume_file_name, true);
   }
-  h5::H5File<h5::AccessType::ReadWrite> h5_file{"BbhVolume0.h5", true};
-  auto& vol_file = h5_file.insert<h5::VolumeData>("ForContinuation");
+  h5::H5File<h5::AccessType::ReadWrite> h5_file{volume_file_name, true};
+  auto& vol_file = h5_file.insert<h5::VolumeData>(volume_file_subfile_name);
 
   for (size_t i = 0; i < times.size(); i++) {
     vol_file.write_volume_data(
@@ -238,7 +240,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Ringdown.StrahlkorperCoefsAndCenters",
   const std::pair<std::vector<DataVector>, std::vector<std::array<double, 3>>>
       distorted_and_translation_coefs =
           evolution::Ringdown::strahlkorper_coefs_and_centers(
-              "BbhVolume0.h5", "ForContinuation", horizons_file_name,
+              volume_file_name, volume_file_subfile_name, horizons_file_name,
               horizons_subfile_name, times_to_retrieve, match_time,
               settling_timescale, exp_func_and_2_derivs,
               exp_outer_bdry_func_and_2_derivs, rot_func_and_2_derivs);
@@ -260,5 +262,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.Ringdown.StrahlkorperCoefsAndCenters",
 
   if (file_system::check_if_file_exists(horizons_file_name)) {
     file_system::rm(horizons_file_name, true);
+  }
+  if (file_system::check_if_file_exists(volume_file_name)) {
+    file_system::rm(volume_file_name, true);
   }
 }
