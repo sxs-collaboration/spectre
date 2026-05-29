@@ -120,8 +120,9 @@ struct ComputeTimeDerivImpl<
                              temporary_tags,
                          ::gh::Tags::ConstraintGamma0>,
         extra_tags_for_grmhd,
-        tmpl::list<Tags::TraceReversedStressEnergy, Tags::FourVelocityOneForm,
-                   Tags::ComovingMagneticFieldOneForm>>>;
+        tmpl::list<
+            Tags::TraceReversedStressEnergy, Tags::FourVelocityOneForm,
+            grmhd::ValenciaDivClean::Tags::ComovingMagneticFieldOneForm>>>;
     Variables<temporary_tags> temp_tags{subcell_mesh.number_of_grid_points()};
     const auto temp_tags_ptr = make_not_null(&temp_tags);
 
@@ -371,7 +372,8 @@ struct ComputeTimeDerivImpl<
     trace_reversed_stress_energy(
         get<Tags::TraceReversedStressEnergy>(temp_tags_ptr),
         get<Tags::FourVelocityOneForm>(temp_tags_ptr),
-        get<Tags::ComovingMagneticFieldOneForm>(temp_tags_ptr),
+        get<grmhd::ValenciaDivClean::Tags::ComovingMagneticFieldOneForm>(
+            temp_tags_ptr),
 
         get<hydro::Tags::RestMassDensity<DataVector>>(evolved_vars, temp_tags,
                                                       primitive_vars),

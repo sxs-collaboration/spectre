@@ -326,7 +326,7 @@ SPECTRE_TEST_CASE(
       make_not_null(&get<grmhd::GhValenciaDivClean::Tags::FourVelocityOneForm>(
           expected_temp_variables)),
       make_not_null(
-          &get<grmhd::GhValenciaDivClean::Tags::ComovingMagneticFieldOneForm>(
+          &get<grmhd::ValenciaDivClean::Tags::ComovingMagneticFieldOneForm>(
               expected_temp_variables)),
       tuples::get<hydro::Tags::RestMassDensity<DataVector>>(arg_variables),
       get<hydro::Tags::SpatialVelocityOneForm<DataVector, 3, Frame::Inertial>>(

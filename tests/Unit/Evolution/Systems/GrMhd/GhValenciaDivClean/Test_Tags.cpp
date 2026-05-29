@@ -19,11 +19,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.GhValenciaDivClean.Tags",
       grmhd::GhValenciaDivClean::Tags::ComovingMagneticField>(
       "ComovingMagneticField");
   TestHelpers::db::test_simple_tag<
-      grmhd::GhValenciaDivClean::Tags::ComovingMagneticFieldOneForm>(
-          "ComovingMagneticFieldOneForm");
-  TestHelpers::db::test_simple_tag<
-      grmhd::GhValenciaDivClean::Tags::FourVelocity>(
-          "FourVelocity");
+      grmhd::GhValenciaDivClean::Tags::FourVelocity>("FourVelocity");
   TestHelpers::db::test_simple_tag<
       grmhd::GhValenciaDivClean::Tags::FourVelocityOneForm>(
           "FourVelocityOneForm");

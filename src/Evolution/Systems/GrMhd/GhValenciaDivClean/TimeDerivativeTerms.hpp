@@ -80,7 +80,7 @@ struct TimeDerivativeTermsImpl {
 
   using trace_reversed_stress_result_tags =
       tmpl::list<Tags::TraceReversedStressEnergy, Tags::FourVelocityOneForm,
-                 Tags::ComovingMagneticFieldOneForm>;
+                 grmhd::ValenciaDivClean::Tags::ComovingMagneticFieldOneForm>;
   using trace_reversed_stress_argument_tags = tmpl::list<
       hydro::Tags::RestMassDensity<DataVector>,
       hydro::Tags::SpatialVelocityOneForm<DataVector, 3_st, Frame::Inertial>,
@@ -373,7 +373,7 @@ struct TimeDerivativeTerms : evolution::PassVariables {
 
   using trace_reversed_stress_result_tags =
       tmpl::list<Tags::TraceReversedStressEnergy, Tags::FourVelocityOneForm,
-                 Tags::ComovingMagneticFieldOneForm>;
+                 grmhd::ValenciaDivClean::Tags::ComovingMagneticFieldOneForm>;
   using extra_temp_tags = tmpl::list<gr::Tags::SpatialMetric<DataVector, 3>>;
 
   using temporary_tags = tmpl::remove<

@@ -63,6 +63,11 @@ struct TildePhi : db::SimpleTag {
   using type = Scalar<DataVector>;
 };
 
+/// The down-index comoving magnetic field \f$b_\mu\f$
+struct ComovingMagneticFieldOneForm : db::SimpleTag {
+  using type = tnsr::a<DataVector, 3>;
+};
+
 /// \brief Set to `true` if the variables needed fixing.
 ///
 /// Used in DG-subcell hybrid scheme evolutions.
