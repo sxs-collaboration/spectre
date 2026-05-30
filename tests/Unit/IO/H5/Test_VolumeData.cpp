@@ -1450,7 +1450,6 @@ void test_mixed_connectivity_multi_element() {
   }
 }
 
-
 // Test 2D annulus: Legendre+Fourier basis, extents {3,5}.
 // Standard quads: (n_r-1)*(n_phi-1) = 2*4 = 8
 // Wrapping quads (Fourier seam): n_r-1 = 2
@@ -1541,14 +1540,13 @@ void test_annulus() {
 // Element 1 "[B1,(L0I0)]": Legendre+Fourier, extents {3,5} → 10 cells
 // Total: 18 cells
 void test_annulus_disk_mixed() {
-  const std::string h5_file_name(
-      "Unit.IO.H5.VolumeData.AnnulusDiskMixed.h5");
+  const std::string h5_file_name("Unit.IO.H5.VolumeData.AnnulusDiskMixed.h5");
   const uint32_t version_number = 4;
   if (file_system::check_if_file_exists(h5_file_name)) {
     file_system::rm(h5_file_name, true);
   }
 
-  const std::string name0 = "InnerDisk";      // block_id = 0 (no [B...])
+  const std::string name0 = "InnerDisk";         // block_id = 0 (no [B...])
   const std::string name1 = "[B1,(L0I0,L0I0)]";  // block_id = 1
 
   // Element 0: ZernikeB2 disk, 2*5=10 points
@@ -2151,6 +2149,149 @@ void test_spherical_shell_multi_element() {
   }
 }
 
+void test_b3_ball() {
+  // Standard hexahedra: (n_r-1)*(n_theta-1)*(n_phi-1) = 1*4*4 = 16
+  // Phi-wrapping hexahedra: (n_r-1)*(n_theta-1) = 4
+  // Step-2 pole-cap wedges: 2 poles * 3 wedges/layer = 6
+  // Step-3 pole cylinder wedges: 3  (theta=0 ring -> theta=4 ring directly)
+  // Step-3 body hexahedra (it=0): n_phi=5  (theta={0,1,3,4} x phi pairs)
+  // Step-3 equatorial body wedges (it=1): n_phi=5  (theta={1,2,3} x phi pairs)
+  // Total: 39 cells
+  const std::string h5_file_name("Unit.IO.H5.VolumeData.B3Ball.h5");
+  const uint32_t version_number = 4;
+  if (file_system::check_if_file_exists(h5_file_name)) {
+    file_system::rm(h5_file_name, true);
+  }
+  const std::string grid_name{"Ball"};
+  const std::vector<Spectral::Basis> bases{Spectral::Basis::ZernikeB3,
+                                           Spectral::Basis::ZernikeB3,
+                                           Spectral::Basis::ZernikeB3};
+  const std::vector<Spectral::Quadrature> quadratures{
+      Spectral::Quadrature::GaussRadauUpper,
+      Spectral::Quadrature::GaussRadauUpper,
+      Spectral::Quadrature::GaussRadauUpper};
+  const std::vector<size_t> extents{2, 5, 5};
+  const std::vector<TensorComponent> tensor_components{
+      {"InertialCoordinates_x", DataVector(50, 0.0)},
+      {"InertialCoordinates_y", DataVector(50, 0.0)},
+      {"InertialCoordinates_z", DataVector(50, 0.0)}};
+
+  {
+    h5::H5File<h5::AccessType::ReadWrite> h5_file{h5_file_name};
+    auto& volume_file =
+        h5_file.insert<h5::VolumeData>("/element_data", version_number);
+    volume_file.write_volume_data(
+        33333, 4.0,
+        std::vector<ElementVolumeData>{
+            {grid_name, tensor_components, extents, bases, quadratures}});
+    h5_file.close_current_object();
+  }
+
+  // clang-format off
+  // idx(ir, it, ip) = ir + 2*it + 10*ip  (n_r=2, n_theta=5)
+  // theta=0 ring ir=0: idx(0,0,ip) = 10*ip    -> [0,10,20,30,40]
+  // theta=0 ring ir=1: idx(1,0,ip) = 1+10*ip  -> [1,11,21,31,41]
+  // theta=1 ring ir=0: idx(0,1,ip) = 2+10*ip  -> [2,12,22,32,42]
+  // theta=2 ring ir=0: idx(0,2,ip) = 4+10*ip  -> [4,14,24,34,44]
+  // theta=3 ring ir=0: idx(0,3,ip) = 6+10*ip  -> [6,16,26,36,46]
+  // theta=4 ring ir=0: idx(0,4,ip) = 8+10*ip  -> [8,18,28,38,48]
+  // theta=4 ring ir=1: idx(1,4,ip) = 9+10*ip  -> [9,19,29,39,49]
+  DataVector expected_connectivity = {
+    // Standard hexahedra (it=0..3, ip=0..3): (n_r-1)*(n_theta-1)*(n_phi-1)=16
+    9.,  0., 1., 3., 2., 10.,11.,13.,12.,
+    9., 10.,11.,13.,12., 20.,21.,23.,22.,
+    9., 20.,21.,23.,22., 30.,31.,33.,32.,
+    9., 30.,31.,33.,32., 40.,41.,43.,42.,
+    9.,  2., 3., 5., 4., 12.,13.,15.,14.,
+    9., 12.,13.,15.,14., 22.,23.,25.,24.,
+    9., 22.,23.,25.,24., 32.,33.,35.,34.,
+    9., 32.,33.,35.,34., 42.,43.,45.,44.,
+    9.,  4., 5., 7., 6., 14.,15.,17.,16.,
+    9., 14.,15.,17.,16., 24.,25.,27.,26.,
+    9., 24.,25.,27.,26., 34.,35.,37.,36.,
+    9., 34.,35.,37.,36., 44.,45.,47.,46.,
+    9.,  6., 7., 9., 8., 16.,17.,19.,18.,
+    9., 16.,17.,19.,18., 26.,27.,29.,28.,
+    9., 26.,27.,29.,28., 36.,37.,39.,38.,
+    9., 36.,37.,39.,38., 46.,47.,49.,48.,
+    // Phi-wrapping hexahedra (it=0..3): ip=n_phi-1 -> ip=0
+    9., 40.,41.,43.,42.,  0., 1., 3., 2.,
+    9., 42.,43.,45.,44.,  2., 3., 5., 4.,
+    9., 44.,45.,47.,46.,  4., 5., 7., 6.,
+    9., 46.,47.,49.,48.,  6., 7., 9., 8.,
+    // Step-2 top-pole wedges (it=0, ir=0->1): halving of ring [0,10,20,30,40]
+    8.,  0.,10.,20.,  1.,11.,21.,
+    8., 20.,30.,40., 21.,31.,41.,
+    8.,  0.,20.,40.,  1.,21.,41.,
+    // Step-2 bottom-pole wedges (it=4, ir=0->1): reversed ring [48,38,28,18,8]
+    8., 48.,38.,28., 49.,39.,29.,
+    8., 28.,18., 8., 29.,19., 9.,
+    8., 48.,28., 8., 49.,29., 9.,
+    // Step-3 pole cylinder: theta=0 ring -> theta=4 ring
+    8.,  0.,10.,20.,  8.,18.,28.,
+    8., 20.,30.,40., 28.,38.,48.,
+    8.,  0.,20.,40.,  8.,28.,48.,
+    // Step-3 body hexahedra (it=0): theta={0,1,3,4} x phi pairs
+    9.,  0., 2., 6., 8., 10.,12.,16.,18.,
+    9., 10.,12.,16.,18., 20.,22.,26.,28.,
+    9., 20.,22.,26.,28., 30.,32.,36.,38.,
+    9., 30.,32.,36.,38., 40.,42.,46.,48.,
+    9., 40.,42.,46.,48.,  0., 2., 6., 8.,
+    // Step-3 equatorial body wedges (it=1): theta={1,2,3} x phi pairs
+    8.,  2., 4., 6., 12.,14.,16.,
+    8., 12.,14.,16., 22.,24.,26.,
+    8., 22.,24.,26., 32.,34.,36.,
+    8., 32.,34.,36., 42.,44.,46.,
+    8., 42.,44.,46.,  2., 4., 6.};
+  // clang-format on
+
+  {
+    const h5::H5File<h5::AccessType::ReadOnly> h5_file{h5_file_name};
+    const auto& volume_file =
+        h5_file.get<h5::VolumeData>("/element_data", version_number);
+    const auto h5_connectivity =
+        volume_file.get_tensor_component(33333, "connectivity").data;
+    const auto& conn = get<0>(h5_connectivity);
+    CHECK(conn == expected_connectivity);
+
+    // Verify element_id and block_id: 39 cells
+    constexpr size_t expected_num_cells = 39;
+    const auto element_id_var =
+        volume_file.get_tensor_component(33333, "ElementId").data;
+    const auto& element_id = get<0>(element_id_var);
+    CHECK(element_id.size() == expected_num_cells);
+
+    const auto block_id_var =
+        volume_file.get_tensor_component(33333, "BlockId").data;
+    const auto& block_id = get<0>(block_id_var);
+    CHECK(block_id.size() == expected_num_cells);
+
+    // Verify the inner hollow uses only wedges and hexahedra: no tetrahedra.
+    const DataVector& conn_dv = get<0>(h5_connectivity);
+    size_t tet_count = 0;
+    size_t conn_idx = 0;
+    while (conn_idx < conn_dv.size()) {
+      const auto tag = static_cast<int>(conn_dv[conn_idx]);
+      if (tag == 6) {  // Tetrahedron: 1 tag + 4 vertices
+        ++tet_count;
+        conn_idx += 5;
+      } else if (tag == 9) {  // Hexahedron: 1 tag + 8 vertices
+        conn_idx += 9;
+      } else if (tag == 8) {  // Wedge: 1 tag + 6 vertices
+        conn_idx += 7;
+      } else {
+        ++conn_idx;
+      }
+    }
+    CHECK(tet_count == 0);
+    h5_file.close_current_object();
+  }
+
+  if (file_system::check_if_file_exists(h5_file_name)) {
+    file_system::rm(h5_file_name, true);
+  }
+}
+
 }  // namespace
 
 // [[TimeOut, 20]]
@@ -2169,6 +2310,7 @@ SPECTRE_TEST_CASE("Unit.IO.H5.VolumeData", "[Unit][IO][H5]") {
   test_spherical_shell();
   test_spherical_shell_min_phi();
   test_spherical_shell_multi_element();
+  test_b3_ball();
   test_extend_connectivity_data<1>();
   test_extend_connectivity_data<2>();
   test_extend_connectivity_data<3>();
