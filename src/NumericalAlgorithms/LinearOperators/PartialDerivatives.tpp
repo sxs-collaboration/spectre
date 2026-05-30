@@ -24,6 +24,7 @@
 #include "NumericalAlgorithms/Spectral/Quadrature.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/Spherepack.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/SpherepackCache.hpp"
+#include "NumericalAlgorithms/SphericalHarmonics/SpherepackIterator.hpp"
 #include "Utilities/Algorithm.hpp"
 #include "Utilities/Blas.hpp"
 #include "Utilities/ContainerHelpers.hpp"
@@ -146,18 +147,27 @@ void logical_partial_derivatives(
         apply(make_not_null(&deriv_pointers), temp, temp, u, mesh);
     return;
   } else {
-    auto buffer = cpp20::make_unique_for_overwrite<ValueType[]>(
-        2 * u.number_of_grid_points() *
-        Variables<DerivativeTags>::number_of_independent_components);
-    Variables<DerivativeTags> temp0(
-        &buffer[0],
-        u.number_of_grid_points() *
-            Variables<DerivativeTags>::number_of_independent_components);
-    Variables<DerivativeTags> temp1(
-        &buffer[u.number_of_grid_points() *
-                Variables<DerivativeTags>::number_of_independent_components],
-        u.number_of_grid_points() *
-            Variables<DerivativeTags>::number_of_independent_components);
+    constexpr size_t n_comp =
+        Variables<DerivativeTags>::number_of_independent_components;
+    const size_t vars_size = u.number_of_grid_points() * n_comp;
+    // For ZernikeB3, temp0 must hold spec_buf + even_data + odd_data
+    // for filled_sphere_apply:
+    //   n_spectral    = 2*(l_max+1)^2  [SPHEREPACK buffer, m_max = l_max]
+    //   n_valid_modes = (l_max+1)^2    [valid coefficients]
+    //   total = n_spectral + n_valid_modes = 3*(l_max+1)^2
+    // temp1 then only needs even_result + odd_result = n_valid_modes,
+    // which is always <= vars_size = n_ylm_phys * n_r * n_comp.
+    size_t temp0_size = vars_size;
+    if constexpr (Dim == 3) {
+      if (mesh.basis(0) == Spectral::Basis::ZernikeB3) {
+        const size_t l_max_p1 = mesh.extents(1);  // l_max + 1
+        temp0_size = 3 * l_max_p1 * l_max_p1 * mesh.extents(0) * n_comp;
+      }
+    }
+    auto buffer =
+        cpp20::make_unique_for_overwrite<ValueType[]>(temp0_size + vars_size);
+    Variables<DerivativeTags> temp0(&buffer[0], temp0_size);
+    Variables<DerivativeTags> temp1(&buffer[temp0_size], vars_size);
     partial_derivatives_detail::LogicalImpl<Dim, VariableTags, DerivativeTags>::
         apply(make_not_null(&deriv_pointers), &temp0, &temp1, u, mesh);
   }
@@ -1273,6 +1283,15 @@ struct LogicalImpl<3, VariableTags, DerivativeTags> {
             "Support for complex numbers with spherical harmonics is not yet "
             "implemented for logical_partial_derivative.");
       }
+    } else if (mesh.basis(0) == Spectral::Basis::ZernikeB3) {
+      if constexpr (std::is_same_v<ValueType, double>) {
+        filled_sphere_apply(logical_du, partial_u_wrt_eta_or_zeta,
+                            u_eta_or_zeta_fastest, u, mesh);
+      } else {
+        ERROR(
+            "Support for complex numbers with the filled sphere is not yet "
+            "implemented for logical_partial_derivative.");
+      }
     } else if (mesh.basis(0) == Spectral::Basis::ZernikeB2) {
       if constexpr (std::is_same_v<ValueType, double>) {
         cylinder_apply(logical_du, partial_u_wrt_eta_or_zeta,
@@ -1343,6 +1362,160 @@ struct LogicalImpl<3, VariableTags, DerivativeTags> {
                                  logical_partial_derivatives_of_u[2] + offset};
       ylm.gradient_all_offsets(du, make_not_null(u.data() + offset),
                                mesh.extents(0));
+    }
+  }
+
+  // Angular derivatives are computed via SPHEREPACK's gradient, identical to
+  // the spherical-shell case.
+  //
+  // Radial derivative: functions on the ball with angular degree l behave as
+  // r^l near the origin, so their radial profile has definite parity based on
+  // l. We therefore:
+  //   1. Decompose into spherical-harmonic spectral space (per radial shell).
+  //   2. For each (l,m) mode apply D_even or D_odd depending on parity of l.
+  //   3. Synthesize back to physical space.
+  // Step 2 copies the components into definite-parity buffers such that the
+  // differentiation matrices can be called with two BLAS calls.
+  template <typename T>
+  static void filled_sphere_apply(
+      const gsl::not_null<std::array<double*, Dim>*> logical_du,
+      Variables<T>* const partial_u_wrt_eta_or_zeta,
+      Variables<DerivativeTags>* const u_eta_or_zeta_fastest,
+      const Variables<VariableTags>& u, const Mesh<Dim>& mesh) {
+    static_assert(Dim == 3);
+    ASSERT(mesh.basis() == make_array<3>(Spectral::Basis::ZernikeB3),
+           "filled_sphere_apply requires ZernikeB3 bases ZernikeB3, got "
+               << mesh.basis());
+
+    const size_t n_r = mesh.extents(0);
+    const size_t l_max = mesh.extents(1) - 1;
+    ASSERT(l_max < 2 * n_r - 1,
+           "ZernikeB3 radial resolution is insufficient for the requested "
+           "angular resolution. Need l_max < 2*n_r-1, but l_max="
+               << l_max << " and n_r=" << n_r);
+    const auto& ylm = ylm::get_spherepack_cache(l_max);
+    const size_t n_spectral = ylm.spectral_size();
+    const size_t num_grid_points = u.number_of_grid_points();
+
+    constexpr size_t n_components =
+        Variables<DerivativeTags>::number_of_independent_components;
+
+    // Angular derivatives; same as spherical_apply()
+    for (size_t n = 0; n < n_components; ++n) {
+      const size_t offset = n * num_grid_points;
+      const auto du_ang =
+          std::array{(*logical_du)[1] + offset, (*logical_du)[2] + offset};
+      ylm.gradient_all_offsets(du_ang, make_not_null(u.data() + offset), n_r);
+    }
+
+    // Radial derivative via parity-aware differentiation
+    const Matrix& D_even =
+        Spectral::differentiation_matrix<Spectral::Basis::ZernikeB3,
+                                         Spectral::Quadrature::GaussRadauUpper>(
+            n_r, Spectral::Parity::Even);
+    const Matrix& D_odd =
+        Spectral::differentiation_matrix<Spectral::Basis::ZernikeB3,
+                                         Spectral::Quadrature::GaussRadauUpper>(
+            n_r, Spectral::Parity::Odd);
+
+    // n_spectral is the SPHEREPACK buffer size = 2*(l_max+1)^2, including
+    // padding. Valid modes total (l_max+1)^2; get_spherepack_cache always
+    // sets m_max = l_max so each degree l contributes 2l+1 valid modes.
+    const size_t n_valid_modes = (l_max + 1) * (l_max + 1);
+    const size_t n_even_modes = (l_max % 2 == 0) ? (l_max + 1) * (l_max + 2) / 2
+                                                 : l_max * (l_max + 1) / 2;
+    const size_t n_odd_modes = n_valid_modes - n_even_modes;
+
+    // Five scratch segments needed. Buffer layout:
+    //   A: spec_buf | even_data | odd_data   [3*(l_max+1)^2 * n_r * n_comp]
+    //   B: even_result | odd_result          [  (l_max+1)^2 * n_r * n_comp]
+    //
+    // At the partial_derivatives() call site, A = *du (3 * n_ylm_phys * n_r *
+    // n_comp), which always satisfies the size requirement. At the
+    // logical_partial_derivatives() call site, A is explicitly over-allocated
+    // to 3 * (l_max + 1)^2 * n_r * n_comp when ZernikeB3.
+    const size_t spec_total = n_components * n_spectral * n_r;
+    const size_t even_total = n_even_modes * n_components * n_r;
+    const size_t odd_total = n_odd_modes * n_components * n_r;
+
+    double* const spec_buf = partial_u_wrt_eta_or_zeta->data();
+    double* const even_data = spec_buf + spec_total;  // NOLINT
+    double* const odd_data = even_data + even_total;  // NOLINT
+    double* const even_result = u_eta_or_zeta_fastest->data();
+    double* const odd_result = even_result + even_total;  // NOLINT
+
+    // SH analysis: physical -> spectral (all components)
+    for (size_t n = 0; n < n_components; ++n) {
+      ylm.phys_to_spec_all_offsets(
+          make_not_null(spec_buf + n * n_spectral * n_r),  // NOLINT
+          make_not_null(u.data() + n * num_grid_points), n_r);
+    }
+
+    // Gather even-l and odd-l radial profiles into compact buffers.
+    // For mode at SPHEREPACK offset s and component n, the n_r values are
+    // contiguous at spec_buf[n*n_spectral*n_r + s*n_r].
+    ylm::SpherepackIterator spec_iter{l_max, ylm.m_max()};
+    for (size_t n = 0; n < n_components; ++n) {
+      const double* spec = spec_buf + n * n_spectral * n_r;    // NOLINT
+      double* even_dest = even_data + n * n_even_modes * n_r;  // NOLINT
+      double* odd_dest = odd_data + n * n_odd_modes * n_r;     // NOLINT
+      size_t even_col = 0;
+      size_t odd_col = 0;
+      spec_iter.reset();
+      while (spec_iter) {
+        const size_t s = spec_iter();
+        if (spec_iter.l() % 2 == 0) {
+          std::copy(spec + s * n_r, spec + (s + 1) * n_r,  // NOLINT
+                    even_dest + even_col * n_r);           // NOLINT
+          ++even_col;
+        } else {
+          std::copy(spec + s * n_r, spec + (s + 1) * n_r,  // NOLINT
+                    odd_dest + odd_col * n_r);             // NOLINT
+          ++odd_col;
+        }
+        ++spec_iter;
+      }
+    }
+
+    // Apply radial differentiation matrices, treating
+    // n_components * n_{even,odd}_modes as the column count.
+    if (n_even_modes > 0) {
+      apply_matrix_in_first_dim(even_result, even_data, D_even, even_total);
+    }
+    if (n_odd_modes > 0) {
+      apply_matrix_in_first_dim(odd_result, odd_data, D_odd, odd_total);
+    }
+
+    // Copy differentiated radial profiles back to spectral buffer
+    for (size_t n = 0; n < n_components; ++n) {
+      double* spec = spec_buf + n * n_spectral * n_r;                 // NOLINT
+      const double* even_src = even_result + n * n_even_modes * n_r;  // NOLINT
+      const double* odd_src = odd_result + n * n_odd_modes * n_r;     // NOLINT
+      size_t even_col = 0;
+      size_t odd_col = 0;
+      spec_iter.reset();
+      while (spec_iter) {
+        const size_t s = spec_iter();
+        if (spec_iter.l() % 2 == 0) {
+          std::copy(even_src + even_col * n_r,        // NOLINT
+                    even_src + (even_col + 1) * n_r,  // NOLINT
+                    spec + s * n_r);                  // NOLINT
+          ++even_col;
+        } else {
+          std::copy(odd_src + odd_col * n_r,        // NOLINT
+                    odd_src + (odd_col + 1) * n_r,  // NOLINT
+                    spec + s * n_r);                // NOLINT
+          ++odd_col;
+        }
+        ++spec_iter;
+      }
+    }
+
+    // SH spectral -> physical
+    for (size_t n = 0; n < n_components; ++n) {
+      ylm.spec_to_phys_all_offsets(
+          make_not_null((*logical_du)[0] + n * num_grid_points),
+          make_not_null(spec_buf + n * n_spectral * n_r), n_r);  // NOLINT
     }
   }
 
