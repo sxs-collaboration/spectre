@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "Domain/BoundaryConditions/BoundaryCondition.hpp"
+#include "Domain/BoundaryConditions/Cartoon.hpp"
 #include "Domain/BoundaryConditions/None.hpp"
 #include "Domain/BoundaryConditions/Periodic.hpp"
 #include "Domain/Creators/DomainCreator.hpp"
@@ -39,7 +40,8 @@ class BoundaryConditionBase
   using creatable_classes = tmpl::list<
       TestBoundaryCondition<Dim>,
       ::domain::BoundaryConditions::None<BoundaryConditionBase<Dim>>,
-      ::domain::BoundaryConditions::Periodic<BoundaryConditionBase<Dim>>>;
+      ::domain::BoundaryConditions::Periodic<BoundaryConditionBase<Dim>>,
+      ::domain::BoundaryConditions::Cartoon<BoundaryConditionBase<Dim>>>;
 
   BoundaryConditionBase() = default;
   BoundaryConditionBase(BoundaryConditionBase&&) = default;
@@ -116,6 +118,10 @@ using TestPeriodicBoundaryCondition =
     ::domain::BoundaryConditions::Periodic<BoundaryConditionBase<Dim>>;
 
 template <size_t Dim>
+using TestCartoonBoundaryCondition =
+    ::domain::BoundaryConditions::Cartoon<BoundaryConditionBase<Dim>>;
+
+template <size_t Dim>
 using TestNoneBoundaryCondition =
     ::domain::BoundaryConditions::None<BoundaryConditionBase<Dim>>;
 
@@ -136,7 +142,27 @@ struct MetavariablesWithBoundaryConditions {
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
     using factory_classes =
-        tmpl::map<tmpl::pair<DomainCreator<Dim>, tmpl::list<Creator>>>;
+        tmpl::map<tmpl::pair<DomainCreator<Dim>, tmpl::list<Creator>>,
+                  tmpl::pair<BoundaryConditionBase<Dim>,
+                             tmpl::list<TestBoundaryCondition<Dim>,
+                                        TestPeriodicBoundaryCondition<Dim>,
+                                        TestNoneBoundaryCondition<Dim>>>>;
+  };
+};
+
+/// Metavariables with a system that has boundary conditions including cartoon
+template <size_t Dim, typename Creator>
+struct MetavariablesWithBoundaryConditionsCartoon {
+  using system = SystemWithBoundaryConditions<Dim>;
+  struct factory_creation
+      : tt::ConformsTo<Options::protocols::FactoryCreation> {
+    using factory_classes =
+        tmpl::map<tmpl::pair<DomainCreator<Dim>, tmpl::list<Creator>>,
+                  tmpl::pair<BoundaryConditionBase<Dim>,
+                             tmpl::list<TestBoundaryCondition<Dim>,
+                                        TestPeriodicBoundaryCondition<Dim>,
+                                        TestNoneBoundaryCondition<Dim>,
+                                        TestCartoonBoundaryCondition<Dim>>>>;
   };
 };
 

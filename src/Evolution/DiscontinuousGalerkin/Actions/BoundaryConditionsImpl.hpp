@@ -20,6 +20,7 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Domain/Block.hpp"
+#include "Domain/BoundaryConditions/Cartoon.hpp"
 #include "Domain/BoundaryConditions/None.hpp"
 #include "Domain/BoundaryConditions/Periodic.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
@@ -696,11 +697,30 @@ void apply_boundary_conditions_on_all_external_faces(
   using factory_classes =
       typename std::decay_t<decltype(db::get<Parallel::Tags::Metavariables>(
           *box))>::factory_creation::factory_classes;
+
+  // If cartoon BC is available, verify mesh is compatible before removing BC
+  // (cartoon BCs are coupled with ZernikeB1 basis which does not need a BC, but
+  // subcell version of mesh does)
+  if constexpr (domain::BoundaryConditions::detail::has_cartoon_bc_v<
+                    tmpl::at<factory_classes,
+                             typename System::boundary_conditions_base>>) {
+    const auto& mesh = db::get<::domain::Tags::Mesh<Dim>>(*box);
+    if (not domain::BoundaryConditions::dg_mesh_is_cartoon_compatible(mesh)) {
+      ERROR(
+          "You might have used a Cartoon boundary condition on an external "
+          "boundary condition. Alternatively and less likely, there is a bug. "
+          "The mesh is: "
+          << mesh);
+    }
+  }
+
   using derived_boundary_conditions = tmpl::remove_if<
       tmpl::at<factory_classes, typename System::boundary_conditions_base>,
       tmpl::or_<
-          std::is_base_of<domain::BoundaryConditions::MarkAsPeriodic, tmpl::_1>,
-          std::is_base_of<domain::BoundaryConditions::MarkAsNone, tmpl::_1>>>;
+          std::is_base_of<domain::BoundaryConditions::MarkAsCartoon, tmpl::_1>,
+          std::is_base_of<domain::BoundaryConditions::MarkAsNone, tmpl::_1>,
+          std::is_base_of<domain::BoundaryConditions::MarkAsPeriodic,
+                          tmpl::_1>>>;
 
   using variables_tag = typename System::variables_tag;
   using flux_variables = typename System::flux_variables;

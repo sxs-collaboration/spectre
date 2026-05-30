@@ -25,6 +25,7 @@
 #include "DataStructures/VariablesTag.hpp"
 #include "Domain/Block.hpp"
 #include "Domain/BoundaryConditions/BoundaryCondition.hpp"
+#include "Domain/BoundaryConditions/Cartoon.hpp"
 #include "Domain/BoundaryConditions/None.hpp"
 #include "Domain/BoundaryConditions/Periodic.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
@@ -2101,12 +2102,30 @@ using standard_boundary_conditions =
                domain::BoundaryConditions::None<BoundaryCondition<System>>>;
 
 template <typename System>
+using boundary_conditions_with_cartoon =
+    tmpl::list<DemandOutgoingCharSpeeds<System>, Ghost<System>,
+               TimeDerivative<System>, GhostAndTimeDerivative<System>,
+               domain::BoundaryConditions::Periodic<BoundaryCondition<System>>,
+               domain::BoundaryConditions::None<BoundaryCondition<System>>,
+               domain::BoundaryConditions::Cartoon<BoundaryCondition<System>>>;
+
+template <typename System>
 struct Metavariables {
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
     using factory_classes =
         tmpl::map<tmpl::pair<BoundaryCondition<System>,
                              standard_boundary_conditions<System>>>;
+  };
+};
+
+template <typename System>
+struct MetavariablesWithCartoon {
+  struct factory_creation
+      : tt::ConformsTo<Options::protocols::FactoryCreation> {
+    using factory_classes =
+        tmpl::map<tmpl::pair<BoundaryCondition<System>,
+                             boundary_conditions_with_cartoon<System>>>;
   };
 };
 
@@ -2593,6 +2612,96 @@ void test_1d(const bool moving_mesh, const dg::Formulation formulation,
   check_ghost_and_dt_combined_bc(Direction<Dim>::lower_xi());
 }
 
+void test_cartoon_mesh_compatibility() {
+  INFO("Test that non-cartoon mesh throws with cartoon boundary conditions");
+
+  // Create a 1D system with cartoon boundary conditions
+  using TestSystem = System<1, SystemType::Conservative, false, false>;
+
+  // Create a non-cartoon compatible mesh (regular Legendre basis)
+  const Mesh<1> non_cartoon_mesh{3, Spectral::Basis::Legendre,
+                                 Spectral::Quadrature::GaussLobatto};
+
+  const ElementId<1> element_id{0};
+  const Element<1> element{element_id, {}};
+  const double boundary_condition_volume_tag_number{2.5};
+  const double boundary_correction_volume_tag_number{3.5};
+
+  // Set up boundary conditions with cartoon BC on one boundary
+  std::vector<DirectionMap<
+      1, std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>
+      external_boundary_conditions{1};
+  external_boundary_conditions[0][Direction<1>::lower_xi()] = std::make_unique<
+      domain::BoundaryConditions::Cartoon<BoundaryCondition<TestSystem>>>();
+
+  auto boundary_correction =
+      BoundaryTerms<1, false, SystemType::Conservative, false>{false, 1.0};
+
+  using dt_variables_tag =
+      db::add_tag_prefix<::Tags::dt, typename TestSystem::variables_tag>;
+  using simple_tags = tmpl::list<
+      Parallel::Tags::MetavariablesImpl<MetavariablesWithCartoon<TestSystem>>,
+      domain::Tags::ExternalBoundaryConditions<1>, domain::Tags::Mesh<1>,
+      domain::Tags::Element<1>, domain::Tags::ElementMap<1, Frame::Grid>,
+      domain::CoordinateMaps::Tags::CoordinateMap<1, Frame::Grid,
+                                                  Frame::Inertial>,
+      ::Tags::Time, domain::Tags::FunctionsOfTime,
+      domain::Tags::MeshVelocity<1>,
+      domain::Tags::InverseJacobian<1, Frame::ElementLogical, Frame::Inertial>,
+      domain::Tags::DetInvJacobian<Frame::ElementLogical, Frame::Inertial>,
+      evolution::dg::Tags::NormalCovectorAndMagnitude<1>,
+      typename TestSystem::variables_tag, dt_variables_tag,
+      Tags::BoundaryConditionVolumeTag, Tags::BoundaryCorrectionVolumeTag,
+      ::dg::Tags::Formulation>;
+  using compute_tags = tmpl::list<>;
+
+  Variables<typename TestSystem::variables_tag::tags_list> evolved_vars{3, 1.0};
+  Variables<db::wrap_tags_in<::Tags::dt,
+                             typename TestSystem::variables_tag::tags_list>>
+      dt_evolved_vars{3, 0.0};
+
+  auto box = db::create<simple_tags, compute_tags>(
+      MetavariablesWithCartoon<TestSystem>{},
+      std::move(external_boundary_conditions), non_cartoon_mesh, element,
+      ElementMap<1, Frame::Grid>{
+          element_id,
+          domain::make_coordinate_map_base<Frame::BlockLogical, Frame::Grid>(
+              domain::CoordinateMaps::Identity<1>{})},
+      domain::make_coordinate_map_base<Frame::Grid, Frame::Inertial>(
+          domain::CoordinateMaps::Identity<1>{}),
+      0.0,
+      std::unordered_map<
+          std::string,
+          std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>{},
+      std::optional<tnsr::I<DataVector, 1>>{},
+      InverseJacobian<DataVector, 1, Frame::ElementLogical, Frame::Inertial>{
+          3_st, 1.0},
+      Scalar<DataVector>{3_st, 1.0},
+      evolution::dg::Tags::NormalCovectorAndMagnitude<1>::type{}, evolved_vars,
+      dt_evolved_vars, boundary_condition_volume_tag_number,
+      boundary_correction_volume_tag_number, dg::Formulation::StrongInertial);
+
+  // Create minimal temporaries, fluxes, and partial derivatives
+  const Variables<tmpl::list<Tags::Var3Squared>> temporaries{3, 1.0};
+  const Variables<
+      db::wrap_tags_in<::Tags::Flux, tmpl::list<Tags::Var1, Tags::Var2<1>>,
+                       tmpl::size_t<1>, Frame::Inertial>>
+      volume_fluxes{3, 1.0};
+  const Variables<db::wrap_tags_in<::Tags::deriv, tmpl::list<>, tmpl::size_t<1>,
+                                   Frame::Inertial>>
+      partial_derivs{};
+
+  // This should throw because we have cartoon BC but non-cartoon mesh
+  CHECK_THROWS_WITH(
+      (evolution::dg::Actions::detail::
+           apply_boundary_conditions_on_all_external_faces<TestSystem, 1>(
+               make_not_null(&box), boundary_correction, temporaries,
+               volume_fluxes, partial_derivs, nullptr)),
+      Catch::Matchers::ContainsSubstring(
+          "You might have used a Cartoon boundary condition on an external "
+          "boundary condition"));
+}
+
 SPECTRE_TEST_CASE("Unit.Evolution.DG.ComputeTimeDerivative.BoundaryConditions",
                   "[Unit][Evolution][Actions]") {
   // The test proceeds as follows:
@@ -2650,5 +2759,6 @@ SPECTRE_TEST_CASE("Unit.Evolution.DG.ComputeTimeDerivative.BoundaryConditions",
       }
     }
   }
+  test_cartoon_mesh_compatibility();
 }
 }  // namespace
