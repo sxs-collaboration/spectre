@@ -65,6 +65,63 @@ void test_exponential_filter(const double alpha, const unsigned half_power,
   }
 }
 
+void test_fourier_exponential_filter() {
+  const Approx local_approx = Approx::custom().epsilon(1.0e-11).scale(1.0);
+
+  const std::vector<size_t> num_pts_list{1, 3, 5, 15};
+  const std::vector<double> alphas{10.0, 20.0, 36.0};
+  const std::vector<unsigned> half_powers{2, 4, 8};
+
+  for (const size_t num_pts : num_pts_list) {
+    CAPTURE(num_pts);
+    const Mesh<1> mesh{num_pts, Spectral::Basis::Fourier,
+                       Spectral::Quadrature::Equiangular};
+    const DataVector& x = Spectral::collocation_points<
+        Spectral::Basis::Fourier, Spectral::Quadrature::Equiangular>(num_pts);
+    const size_t M = (num_pts - 1) / 2;
+
+    for (const double alpha : alphas) {
+      CAPTURE(alpha);
+      for (const unsigned half_power : half_powers) {
+        CAPTURE(half_power);
+        const Matrix filter =
+            Spectral::filtering::exponential_filter(mesh, alpha, half_power);
+
+        for (size_t m = 1; m <= M; ++m) {
+          CAPTURE(m);
+          const double expected_weight =
+              exp(-alpha * pow(static_cast<double>(m) / static_cast<double>(M),
+                               2 * half_power));
+
+          DataVector cos_vals = cos(static_cast<double>(m) * x);
+          DataVector sin_vals = sin(static_cast<double>(m) * x);
+
+          DataVector filtered_cos(num_pts, 0.0);
+          DataVector filtered_sin(num_pts, 0.0);
+          dgemv_('N', num_pts, num_pts, 1., filter.data(), filter.spacing(),
+                 cos_vals.data(), 1, 0.0, filtered_cos.data(), 1);
+          dgemv_('N', num_pts, num_pts, 1., filter.data(), filter.spacing(),
+                 sin_vals.data(), 1, 0.0, filtered_sin.data(), 1);
+
+          CHECK_ITERABLE_CUSTOM_APPROX(filtered_cos, expected_weight * cos_vals,
+                                       local_approx);
+          CHECK_ITERABLE_CUSTOM_APPROX(filtered_sin, expected_weight * sin_vals,
+                                       local_approx);
+        }
+      }
+    }
+  }
+#ifdef SPECTRE_DEBUG
+  CHECK_THROWS_WITH(
+      Spectral::filtering::exponential_filter(
+          Mesh<1>{4, Spectral::Basis::Fourier,
+                  Spectral::Quadrature::Equiangular},
+          2.0, 1),
+      Catch::Matchers::ContainsSubstring("The Fourier basis is required to "
+                                         "have an odd number of grid points"));
+#endif  // SPECTRE_DEBUG
+}
+
 SPECTRE_TEST_CASE("Unit.Numerical.Spectral.ExponentialFilter",
                   "[NumericalAlgorithms][Spectral][Unit]") {
   const std::vector<double> alphas{10.0, 20.0, 30.0, 40.0};
@@ -85,6 +142,7 @@ SPECTRE_TEST_CASE("Unit.Numerical.Spectral.ExponentialFilter",
                                                            1.0e-10);
     }
   }
+  test_fourier_exponential_filter();
 }
 
 template <Spectral::Basis BasisType, Spectral::Quadrature QuadratureType>

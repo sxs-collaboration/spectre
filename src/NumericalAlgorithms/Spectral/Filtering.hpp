@@ -36,6 +36,9 @@ namespace filtering {
  * more coefficients). Setting \f$\alpha=36\f$ results in setting the highest
  * coefficient to machine precision, effectively zeroing it out.
  *
+ * For filtering the Fourier basis, both \f$\cos\f$ and \f$\sin\f$
+ * contributions to a given \f$m\f$-mode are equally weighted.
+ *
  * The Parity argument is only used for ZernikeB1 bases, where the modal space
  * is parity dependent.
  *
