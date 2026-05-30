@@ -36,11 +36,20 @@ void test_spherical_logical_coords() {
         {Spectral::Basis::SphericalHarmonic,
          Spectral::Basis::SphericalHarmonic},
         {Spectral::Quadrature::Gauss, Spectral::Quadrature::Equiangular}};
-    const auto xi = logical_coordinates(mesh_s2);
+    const auto xi_s2 = logical_coordinates(mesh_s2);
     const ylm::Spherepack ylm(l, l);
     const auto xi_expected = ylm.theta_phi_points();
-    CHECK(get<0>(xi) == xi_expected[0]);
-    CHECK(get<1>(xi) == xi_expected[1]);
+    CHECK(get<0>(xi_s2) == xi_expected[0]);
+    CHECK(get<1>(xi_s2) == xi_expected[1]);
+    const Mesh<3> mesh_b3{
+        {1, nth, nph},
+        {Spectral::Basis::ZernikeB3, Spectral::Basis::ZernikeB3,
+         Spectral::Basis::ZernikeB3},
+        {Spectral::Quadrature::GaussRadauUpper, Spectral::Quadrature::Gauss,
+         Spectral::Quadrature::Equiangular}};
+    const auto xi_b3 = logical_coordinates(mesh_b3);
+    CHECK(get<1>(xi_b3) == xi_expected[0]);
+    CHECK(get<2>(xi_b3) == xi_expected[1]);
   }
 }
 

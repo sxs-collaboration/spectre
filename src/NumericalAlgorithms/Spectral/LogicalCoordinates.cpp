@@ -40,31 +40,30 @@ void logical_coordinates(
           two_pi_over_n_phi * index()[dim];
     }
   };
+  const auto S2_gauss = [&logical_coords, &mesh](const size_t dim) {
+    const size_t n_theta = mesh.extents(dim);
+    std::vector<double> theta(n_theta + 1);
+    DataVector temp(2 * n_theta + 1);
+    auto work = gsl::make_span(temp.data(), n_theta);
+    auto unused_weights = gsl::make_span(temp.data() + n_theta, n_theta + 1);
+
+    int err = 0;
+    gaqd_(static_cast<int>(n_theta), theta.data(), unused_weights.data(),
+          work.data(), static_cast<int>(unused_weights.size()), &err);
+    if (UNLIKELY(err != 0)) {
+      ERROR("gaqd error " << err << " in LogicalCoordinates");
+    }
+    for (IndexIterator<VolumeDim> index(mesh.extents()); index; ++index) {
+      logical_coords->get(dim)[index.collapsed_index()] = theta[index()[dim]];
+    }
+  };
 
   for (size_t d = 0; d < VolumeDim; ++d) {
     switch (mesh.basis(d)) {
       case Spectral::Basis::SphericalHarmonic: {
         switch (mesh.quadrature(d)) {
           case Spectral::Quadrature::Gauss: {
-            const size_t n_theta = mesh.extents(d);
-            std::vector<double> theta(n_theta + 1);
-            DataVector temp(2 * n_theta + 1);
-            auto work = gsl::make_span(temp.data(), n_theta);
-            auto unused_weights =
-                gsl::make_span(temp.data() + n_theta, n_theta + 1);
-
-            int err = 0;
-            gaqd_(static_cast<int>(n_theta), theta.data(),
-                  unused_weights.data(), work.data(),
-                  static_cast<int>(unused_weights.size()), &err);
-            if (UNLIKELY(err != 0)) {
-              ERROR("gaqd error " << err << " in LogicalCoordinates");
-            }
-            for (IndexIterator<VolumeDim> index(mesh.extents()); index;
-                 ++index) {
-              logical_coords->get(d)[index.collapsed_index()] =
-                  theta[index()[d]];
-            }
+            S2_gauss(d);
             break;
           }
           case Spectral::Quadrature::Equiangular: {
@@ -106,6 +105,27 @@ void logical_coordinates(
         }
         break;
       }
+      case Spectral::Basis::ZernikeB3: {
+        switch (mesh.quadrature(d)) {
+          case Spectral::Quadrature::GaussRadauUpper: {
+            I1(d);
+            break;
+          }
+          case Spectral::Quadrature::Gauss: {
+            S2_gauss(d);
+            break;
+          }
+          case Spectral::Quadrature::Equiangular: {
+            S1(d);
+            break;
+          }
+          default:
+            ERROR(
+                "Quadrature must be GaussRadauUpper, Equiangular, for Gauss "
+                "for Basis ZernikeB3");
+        }
+        break;
+      }
       case Spectral::Basis::Cartoon: {
         if (mesh.extents(d) != 1) {
           ERROR("Only 1 grid point is allowed in a Cartoon basis.");
@@ -121,8 +141,6 @@ void logical_coordinates(
       case Spectral::Basis::Legendre:
         [[fallthrough]];
       case Spectral::Basis::ZernikeB1:
-        [[fallthrough]];
-      case Spectral::Basis::ZernikeB3:
         [[fallthrough]];
       case Spectral::Basis::FiniteDifference: {
         I1(d);
