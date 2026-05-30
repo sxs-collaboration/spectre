@@ -3,12 +3,12 @@
 
 #pragma once
 
-#include "DataStructures/SimpleSparseMatrix.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Evolution/Systems/CurvedScalarWave/Tags.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/ApplyTensorYlmFilter.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/TensorYlm.hpp"
+#include "NumericalAlgorithms/SphericalHarmonics/TensorYlmFilter.hpp"
 #include "Utilities/Gsl.hpp"
 
 /// \cond
@@ -86,11 +86,12 @@ void transform_spatial_tensors_to_different_frame_without_hessians(
  *   allocated outside apply_tensor_ylm_filter. See above for size requirements.
  * \param jac_inertial_to_grid Jacobian taking V_x from inertial to grid.
  * \param jac_grid_to_inertial Jacobian taking V_x from grid to inertial.
- * \param filter_matrix_scalar The scalar filter matrix computed by fill_filter.
- * \param filter_matrix_i The Rank-1 matrix computed by fill_filter.
+ * \param filter_matrices The bundle of filter matrices computed by
+ *   fill_filter. Only the `scalar` and `i` members are used here.
  * \param ell_max The maximum ylm ell.
  * \param radial_extents The number of radial grid points, can be 1 for slices.
  */
+template <>
 void apply_tensor_ylm_filter(
     gsl::not_null<Variables<filter_detail::sw_vars_list<Frame::Inertial>>*>
         sw_vars,
@@ -100,8 +101,7 @@ void apply_tensor_ylm_filter(
         jac_inertial_to_grid,
     const InverseJacobian<DataVector, 3, Frame::Grid, Frame::Inertial>&
         jac_grid_to_inertial,
-    const SimpleSparseMatrix& filter_matrix_scalar,
-    const SimpleSparseMatrix& filter_matrix_i, size_t ell_max,
+    const FilterMatrixHolder& filter_matrices, size_t ell_max,
     size_t radial_extents);
 
 }  // namespace ylm::TensorYlm
