@@ -17,6 +17,7 @@
 #include "NumericalAlgorithms/Spectral/InterpolationMatrix.hpp"
 #include "NumericalAlgorithms/Spectral/MaximumNumberOfPoints.hpp"
 #include "NumericalAlgorithms/Spectral/MinimumNumberOfPoints.hpp"
+#include "NumericalAlgorithms/Spectral/Parity.hpp"
 #include "NumericalAlgorithms/Spectral/Quadrature.hpp"
 #include "Utilities/Gsl.hpp"
 
@@ -61,6 +62,59 @@ void test(const DataVector& target_pts) {
     }
   }
 }
+
+void test_zernike_b1(const DataVector& target_pts) {
+  constexpr Basis basis = Basis::ZernikeB1;
+  constexpr Quadrature quadrature = Quadrature::GaussRadauUpper;
+  const size_t num_target_pts = target_pts.size();
+  for (size_t num_points = minimum_number_of_points<basis, quadrature>;
+       num_points <= maximum_number_of_points<basis>; ++num_points) {
+    CAPTURE(num_points);
+    const Approx custom_approx = Approx::custom().epsilon(5.0e-13).scale(1.0);
+    const DataVector& xi = collocation_points<basis, quadrature>(num_points);
+
+    // If target points are source points, matrix should be identity
+    for (const Parity parity : {Parity::Even, Parity::Odd}) {
+      CAPTURE(parity);
+      const Matrix should_be_identity =
+          interpolation_matrix<basis, quadrature>(num_points, xi, parity);
+      REQUIRE(should_be_identity.rows() == num_points);
+      REQUIRE(should_be_identity.columns() == num_points);
+      Matrix identity(num_points, num_points, 0.0);
+      for (size_t i = 0; i < num_points; ++i) {
+        identity(i, i) = 1.0;
+      }
+      CHECK_ITERABLE_APPROX(should_be_identity, identity);
+    }
+
+    // Interpolating a basis function: even parity uses Q^0_{2k},
+    // odd parity uses Q^1_{2k+1}, for k = 0, ..., num_points - 1
+    const Matrix even_matrix = interpolation_matrix<basis, quadrature>(
+        num_points, target_pts, Parity::Even);
+    const Matrix odd_matrix = interpolation_matrix<basis, quadrature>(
+        num_points, target_pts, Parity::Odd);
+    REQUIRE(even_matrix.rows() == num_target_pts);
+    REQUIRE(even_matrix.columns() == num_points);
+    REQUIRE(odd_matrix.rows() == num_target_pts);
+    REQUIRE(odd_matrix.columns() == num_points);
+    for (size_t k = 0; k < num_points; ++k) {
+      CAPTURE(k);
+      const auto f_even_s =
+          compute_basis_function_value<basis>(2 * k, 0_st, xi);
+      const auto f_even_t =
+          compute_basis_function_value<basis>(2 * k, 0_st, target_pts);
+      CHECK_ITERABLE_CUSTOM_APPROX(apply_matrix(even_matrix, f_even_s),
+                                   f_even_t, custom_approx);
+
+      const auto f_odd_s =
+          compute_basis_function_value<basis>(2 * k + 1, 1_st, xi);
+      const auto f_odd_t =
+          compute_basis_function_value<basis>(2 * k + 1, 1_st, target_pts);
+      CHECK_ITERABLE_CUSTOM_APPROX(apply_matrix(odd_matrix, f_odd_s), f_odd_t,
+                                   custom_approx);
+    }
+  }
+}
 }  // namespace
 
 // [[Timeout, 20]]
@@ -78,5 +132,6 @@ SPECTRE_TEST_CASE("Unit.Numerical.Spectral.InterpolationMatrix",
   const auto phi_target_pts = make_with_random_values<DataVector>(
       make_not_null(&generator), make_not_null(&phi_distribution), 5_st);
   test<Basis::Fourier, Quadrature::Equiangular>(phi_target_pts);
+  test_zernike_b1(xi_target_pts);
 }
 }  // namespace Spectral

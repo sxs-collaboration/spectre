@@ -54,5 +54,25 @@ class Zernike {
    * accuracy.
    */
   static Matrix differentiation_matrix(size_t num_points, Parity parity);
+
+  /*!
+   * \brief %Matrix used to interpolate to the \p target_points.
+   *
+   * Due to the clustering of Zernike collocation toward the upper side, the
+   * generic barycentric interpolation yields large errors. By utilizing the
+   * fact that the Zernike bases' \f$m\f$ corresponds to parity of
+   * representable functions, we extend the function to negative \f$r\f$ before
+   * forming the matrix, greatly improving accuracy.
+   *
+   * The returned matrix \f$M\f$ has \f$n_\mathrm{target}\f$ rows and
+   * \p num_points columns, so that \f$f_\mathrm{target} = M
+   * f_\mathrm{source}\f$.
+   *
+   * This should only be used for ZernikeB1. To interpolate ZernikeB2 or
+   * ZernikeB3, look at Irregular or Cardinal.
+   */
+  template <typename T>
+  static Matrix interpolation_matrix(size_t num_points, const T& target_points,
+                                     Parity parity);
 };
 }  // namespace Spectral
