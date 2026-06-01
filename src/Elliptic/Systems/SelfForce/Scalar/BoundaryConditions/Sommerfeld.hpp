@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "DataStructures/ComplexDataVector.hpp"
+#include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Domain/Tags.hpp"
 #include "Elliptic/BoundaryConditions/BoundaryCondition.hpp"
@@ -109,23 +110,25 @@ class Sommerfeld : public elliptic::BoundaryConditions::BoundaryCondition<2> {
   }
 
   using argument_tags =
-      tmpl::list<Tags::Beta, Tags::Gamma>;
+      tmpl::list<Tags::Alpha, Tags::Beta, Tags::Gamma>;
   using volume_tags = tmpl::list<>;
 
   void apply(gsl::not_null<Scalar<ComplexDataVector>*> field,
-             gsl::not_null<Scalar<ComplexDataVector>*> n_dot_field_gradient,
+             gsl::not_null<Scalar<ComplexDataVector>*> n_dot_flux,
              const tnsr::i<ComplexDataVector, 2>& deriv_field,
+             const tnsr::I<ComplexDataVector, 2>& alpha,
              const Scalar<ComplexDataVector>& beta,
              const tnsr::i<ComplexDataVector, 2>& gamma) const;
 
   using argument_tags_linearized =
-      tmpl::list<Tags::Beta, Tags::Gamma>;
+      tmpl::list<Tags::Alpha, Tags::Beta, Tags::Gamma>;
   using volume_tags_linearized = tmpl::list<>;
 
   void apply_linearized(
       gsl::not_null<Scalar<ComplexDataVector>*> field_correction,
-      gsl::not_null<Scalar<ComplexDataVector>*> n_dot_field_gradient_correction,
+      gsl::not_null<Scalar<ComplexDataVector>*> n_dot_flux_correction,
       const tnsr::i<ComplexDataVector, 2>& deriv_field_correction,
+      const tnsr::I<ComplexDataVector, 2>& alpha,
       const Scalar<ComplexDataVector>& beta,
       const tnsr::i<ComplexDataVector, 2>& gamma) const;
 

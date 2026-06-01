@@ -98,7 +98,7 @@ SPECTRE_TEST_CASE("Unit.ScalarSelfForce.Actions.InitializeEffectiveSource",
                           elliptic::dg::Tags::Quadrature,
                           ScalarSelfForce::Tags::NullSlicingBlocks<2>>{
           std::make_unique<ScalarSelfForce::AnalyticData::CircularOrbit>(
-              1.0, 0.0, 6.0, 1, std::nullopt, false),
+              1.0, 0.0, 6.0, 1, std::nullopt, false, false),
           domain_creator.create_domain(), domain_creator.functions_of_time(),
 false, Spectral::Quadrature::GaussLobatto, std::vector<size_t>{}}};
   const ::Tags::Mortars<domain::Tags::Coordinates<2, Frame::Inertial>, 2>::type

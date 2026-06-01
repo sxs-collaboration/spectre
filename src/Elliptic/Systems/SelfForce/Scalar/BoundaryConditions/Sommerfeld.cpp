@@ -33,15 +33,17 @@ Sommerfeld::get_clone() const {
 
 void Sommerfeld::apply(
     const gsl::not_null<Scalar<ComplexDataVector>*> field,
-    const gsl::not_null<Scalar<ComplexDataVector>*> n_dot_field_gradient,
+    const gsl::not_null<Scalar<ComplexDataVector>*> n_dot_flux,
     const tnsr::i<ComplexDataVector, 2>& /*deriv_field*/,
+    const tnsr::I<ComplexDataVector, 2>& alpha,
     const Scalar<ComplexDataVector>& beta,
     const tnsr::i<ComplexDataVector, 2>& gamma) const {
   if (hyperboloidal_slicing_) {
     if (order_ == 1) {
-      get(*n_dot_field_gradient) = 0.;
+      get(*n_dot_flux) = 0.;
     } else if (order_ == 2) {
-      get(*n_dot_field_gradient) = -get(beta) / get<0>(gamma) * get(*field);
+      get(*n_dot_flux) =
+          -get<0>(alpha) * get(beta) / get<0>(gamma) * get(*field);
     } else {
       ERROR("Order " << order_
                      << " not implemented for Sommerfeld boundary condition "
@@ -55,9 +57,9 @@ void Sommerfeld::apply(
   const double omega = 1. / (a + sqrt(cube(r_0) / M));
   const double k = m_mode_number_ * omega;
   if (order_ == 1) {
-    get(*n_dot_field_gradient) = std::complex<double>(0.0, k) * get(*field);
+    get(*n_dot_flux) = std::complex<double>(0.0, k) * get(*field);
   } else if (order_ == 2) {
-    get(*n_dot_field_gradient) =
+    get(*n_dot_flux) =
         (square(k) - get(beta)) /
         (get<0>(gamma) - std::complex<double>(0.0, 2. * k)) * get(*field);
   } else {
@@ -69,12 +71,13 @@ void Sommerfeld::apply(
 void Sommerfeld::apply_linearized(
     const gsl::not_null<Scalar<ComplexDataVector>*> field_correction,
     const gsl::not_null<Scalar<ComplexDataVector>*>
-        n_dot_field_gradient_correction,
+        n_dot_flux_correction,
     const tnsr::i<ComplexDataVector, 2>& deriv_field_correction,
+    const tnsr::I<ComplexDataVector, 2>& alpha,
     const Scalar<ComplexDataVector>& beta,
     const tnsr::i<ComplexDataVector, 2>& gamma) const {
-  apply(field_correction, n_dot_field_gradient_correction,
-        deriv_field_correction, beta, gamma);
+  apply(field_correction, n_dot_flux_correction,
+        deriv_field_correction, alpha, beta, gamma);
 }
 
 void Sommerfeld::pup(PUP::er& p) {

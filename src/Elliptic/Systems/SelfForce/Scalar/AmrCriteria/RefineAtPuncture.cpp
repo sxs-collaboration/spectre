@@ -32,10 +32,17 @@ std::array<amr::Flag, 2> RefineAtPuncture::impl(
   // Split (h-refine) the element if it contains the puncture
   const auto& block = domain.blocks()[element_id.block_id()];
   // Check if the puncture is in the block
-  const auto block_logical_coords =
+  auto block_logical_coords =
       block_logical_coordinates_single_point(puncture_position, block);
   if (not block_logical_coords.has_value()) {
     return make_array<2>(amr::Flag::DoNothing);
+  }
+  // Snap to center of the block to avoid asymmetric refinement from round-off
+  // error for the usual case where the puncture is at the center of a block.
+  for (size_t d = 0; d < 2; ++d) {
+    if (abs(block_logical_coords->get(d)) < 1e-10) {
+      block_logical_coords->get(d) = 0.;
+    }
   }
   if (not element_logical_coordinates(*block_logical_coords, element_id)) {
     return make_array<2>(amr::Flag::DoNothing);

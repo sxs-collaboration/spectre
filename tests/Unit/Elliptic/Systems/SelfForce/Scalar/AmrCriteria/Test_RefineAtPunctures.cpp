@@ -99,6 +99,27 @@ void test_criterion(
         CHECK(flags == expected_flags);
       }
     }
+    {
+      INFO("Puncture on boundary with round-off error");
+      const double perturbed_radius = 12.5 - 1.0e-11;
+      auto databox2 = db::create<
+          tmpl::list<background_tag, domain::Tags::Domain<2>>>(
+          std::unique_ptr<elliptic::analytic_data::Background>{
+              std::make_unique<ScalarSelfForce::AnalyticData::CircularOrbit>(
+                  1.0, 0.5, perturbed_radius, 2,
+                  std::make_optional(std::array<double, 4>{5., 5., 25., 25.}),
+                  true, false)},
+          domain_creator.create_domain());
+      const ObservationBox<
+          tmpl::list<>,
+          db::DataBox<tmpl::list<background_tag, domain::Tags::Domain<2>>>>
+          box_perturbed{make_not_null(&databox2)};
+
+      const ElementId<2> element_id{0, {{{1, 1}, {1, 0}}}};
+      const auto expected_flags = make_array<2>(amr::Flag::Split);
+      auto flags = criterion.evaluate(box_perturbed, empty_cache, element_id);
+      CHECK(flags == expected_flags);
+    }
   }
 }
 
@@ -109,7 +130,9 @@ SPECTRE_TEST_CASE("Unit.ScalarSelfForce.AmrCriteria.RefineAtPuncture",
   register_factory_classes_with_charm<Metavariables>();
   test_criterion(std::make_unique<ScalarSelfForce::AnalyticData::CircularOrbit>(
       // Only orbital radius is relevant for the test
-      1.0, 0.5, /* orbital radius */ 10.0, 2, std::nullopt, false));
+      1.0, 0.5, /* orbital radius */ 13.0, 2,
+      std::make_optional(std::array<double, 4>{5., 5., 25., 25.}), true,
+      false));
   CHECK_THROWS_WITH(test_criterion(std::make_unique<OtherBackground>()),
                     Catch::Matchers::ContainsSubstring(
                         "RefineAtPuncture only works with 'CircularOrbit'."));

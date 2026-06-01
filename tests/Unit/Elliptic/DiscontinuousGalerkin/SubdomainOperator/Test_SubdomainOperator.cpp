@@ -263,12 +263,14 @@ struct RandomBackground : elliptic::analytic_data::Background {
     return result;
   }
   // ScalarSelfForce background to test complex numbers
-  static Scalar<ComplexDataVector> variables(
+  static tnsr::I<ComplexDataVector, Dim> variables(
       const tnsr::I<DataVector, Dim>& x,
       ScalarSelfForce::Tags::Alpha /*meta*/) {
-    Scalar<ComplexDataVector> result{x.begin()->size()};
+    tnsr::I<ComplexDataVector, Dim> result{x.begin()->size()};
     const DataVector r = get(magnitude(x));
-    get(result) = r;
+    for (size_t i = 0; i < Dim; ++i) {
+      result.get(i) = r;
+    }
     return result;
   }
   static Scalar<ComplexDataVector> variables(
