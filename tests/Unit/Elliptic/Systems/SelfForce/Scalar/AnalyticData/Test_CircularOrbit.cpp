@@ -67,6 +67,7 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.ScalarSelfForce.CircularOrbit",
                                                 6.,
                                                 m_mode_number,
                                                 {{-25., -5., 20., 40.}},
+                                                false,
                                                 impose_equatorial_symmetry};
       CAPTURE(circular_orbit.puncture_position());
       const auto background =

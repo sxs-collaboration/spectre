@@ -79,7 +79,7 @@ struct MMode : db::SimpleTag {
  * `ScalarSelfForce::AnalyticData::CircularOrbit`).
  */
 struct Alpha : db::SimpleTag {
-  using type = Scalar<ComplexDataVector>;
+  using type = tnsr::I<ComplexDataVector, 2>;
 };
 
 /*!

@@ -17,7 +17,7 @@ OutputFileChecks:
       # | Re(SelfForce_r) | Im(SelfForce_r)
       # | Re(SelfForce_theta) | Im(SelfForce_theta)
       - [0, 480, 4, 0., 0., 0., 0.]
-      - [1, 480, 4, -1.365e-4, 9.138e-5, 0., 0.]
+      - [1, 480, 4, -9.183e-5, 9.451e-5, 0., 0.]
       - [2, 975, 4, -1.365e-4, 9.138e-5, 0., 0.]
     AbsoluteTolerance: 2.0e-5
     RelativeTolerance: 0.
@@ -30,8 +30,9 @@ Background: &background
     BlackHoleSpin: &bh_spin 0.5
     OrbitalRadius: &orbital_radius 10.
     MModeNumber: &m_mode_number 1
-    HyperboloidalSlicingTransitions: [-25., -25., 50., 50.]
+    HyperboloidalSlicingTransitions: [5., 5., 25., 25.]
     ImposeEquatorialSymmetry: False
+    PenetratingHorizon: True
 
 ScalarSelfForce:
   NullSlicingBlocks:
@@ -48,11 +49,11 @@ RandomizeInitialGuess: None
 
 DomainCreator:
   AlignedLattice:
-    # Order of dimensions is (r_*, cos(theta))
+    # Order of dimensions is (r, cos(theta))
     BlockBounds:
-      # Puncture position is at r_* = 12.775940471833115
-      - [-50., -25., 0., &worldtube_right 25.55188094366623,
-         50., &outer_radius 350.] # r_*
+      # Puncture position is at r = 10.
+      - [1.866025403784, 5., 6., &worldtube_right 14,
+         25., &outer_radius 1e4] # r_*
       - [-1., -0.5, 0.5, 1.]  # cos(theta)
     Distributions:
       # r_*
@@ -119,14 +120,7 @@ DomainCreator:
         Refinement: [1, 0]
     BoundaryConditions:
       # Radial boundary conditions
-      - Lower:
-          Sommerfeld:
-            BlackHoleMass: *bh_mass
-            BlackHoleSpin: *bh_spin
-            OrbitalRadius: *orbital_radius
-            MModeNumber: *m_mode_number
-            HyperboloidalSlicing: True
-            Order: 1
+      - Lower: None
         Upper:
           Sommerfeld:
             BlackHoleMass: *bh_mass
@@ -134,6 +128,7 @@ DomainCreator:
             OrbitalRadius: *orbital_radius
             MModeNumber: *m_mode_number
             HyperboloidalSlicing: True
+            PenetratingHorizon: True
             Order: 2
       # Angular boundary conditions
       - None

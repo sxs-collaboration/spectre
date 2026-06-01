@@ -37,30 +37,36 @@ namespace ScalarSelfForce::AnalyticData {
  * \end{equation}
  * with the flux
  * \begin{equation}
- * F^i = \{\partial_{r_\star}, \alpha \partial_{\cos\theta}\} \Psi_m
+ * F^i = \{\frac{\Delta}{r^2+a^2}\partial_{r}, \frac{1-z^2}{r^2+a^2}
+ \partial_{z}\} \Psi_m
  * \text{.}
  * \end{equation}
  * We make the following changes compared to \cite Osburn:2022bby :
  *
  * - Multiply by the factor $\Sigma^2 / (r^2 + a^2)^2$ so that we can easily
  *   write the equations in first-order flux form.
- * - Use $\cos\theta$ as angular coordinate instead of $\theta$. This avoids
+ * - Use $z = \cos\theta$ as angular coordinate instead of $\theta$. This avoids
  *   the $\cot\theta$ term by rewriting the angular derivatives as:
  *   \f[
  *   \partial_\theta^2+\cot\theta\partial_\theta =
- *   \partial_{\cos\theta}\sin^2\theta\partial_{\cos\theta}
+ *   \partial_{z}\sin^2\theta\partial_{z}
  *   \f]
  * - Decompose $\Psi_m = \sin(\theta)^m u_m(r_\star, \theta)$. This avoids the
  *   $m^2/\sin^2\theta$ term by factoring out the singular behavior at the
  *   poles. The equations transform as:
  *   \f[
- *   -\partial_{\cos\theta}\sin^2\theta\partial_{\cos\theta} \Psi_m +
+ *   -\partial_{z}\sin^2\theta\partial_{z} \Psi_m +
  *   \frac{m^2}{\sin^2\theta}\Psi_m = \sin(\theta)^m \left( m(m+1)
- *   + 2m \cos\theta \partial_{\cos\theta}
- *   - \partial_{\cos\theta}\sin^2\theta\partial_{\cos\theta} \right) u_m
+ *   + 2m z \partial_{z}
+ *   - \partial_{z}\sin^2\theta\partial_{z} \right) u_m
  *   \f]
  *   We divide by $\sin(\theta)^m$ to get the equations for $u_m$.
- *
+ * - Use $r$ as the radial coordinate instead of $r_\star$. This has two
+ *   advantages: first, the horizon is placed at a finite radius rather than
+ *   $r_\star \rightarrow -\infty$; second, the flux component normal to the
+ *   boundary vanishes at the horizon ($r=r_{\plus}$) and the poles ($z^2=1$),
+ *   which reduces to simple regularity conditions.
+
  * Written this way, the equations are regular at the poles and converge
  * exponentially. We also don't have to apply angular boundary conditions
  * because regularity at the poles is automatically enforced by the
@@ -68,13 +74,12 @@ namespace ScalarSelfForce::AnalyticData {
  *
  * The resulting factors in the equation are:
  * \begin{align}
- * &\alpha = \frac{\Delta}{(r^2 + a^2)^2} \sin^2\theta \\
- * &\beta = \left(-m^2\Omega^2 \Sigma^2 + 4a m^2 \Omega M r + \Delta \left[
+ * &\beta = \left(\frac{1}{\Delta}\left(-m^2\Omega^2 \Sigma^2 + 4a m^2 \Omega M
+ r\right) +
  *   m (m + 1) + \frac{2M}{r}(1-\frac{a^2}{Mr}) + \frac{2iam}{r}
- *   \right]\right) \frac{1}{(r^2 + a^2)^2} \\
- * &\gamma_{r_\star} = -\frac{2iam}{r^2+a^2} + \frac{2a^2}{r}
- *   \frac{\alpha}{\sin^2\theta} \\
- * &\gamma_{\cos\theta} = 2 m \cos(\theta) \frac{\Delta}{(r^2 + a^2)^2}
+ *   \right) \frac{1}{r^2 + a^2} \\
+ * &\gamma_{r} = -\frac{2iam}{r^2+a^2} + \frac{2 a^2 \Delta}{r(r^2+a^2)^2} \\
+ * &\gamma_{z} =  \frac{2 m z}{r^2 + a^2}
  * \end{align}
  *
  * This class also provides the effective source $S_m^\mathrm{eff} = \Delta_m
@@ -175,6 +180,13 @@ class CircularOrbit : public elliptic::analytic_data::Background,
         "the second and third points.";
     using type = Options::Auto<std::array<double, 4>, Options::AutoLabel::None>;
   };
+  struct PenetratingHorizon {
+    static constexpr Options::String help =
+        "If 'False', use tortoise radial coordinate where the Kerr horizon is "
+        "at negative infinity. If 'True', use Boyer-Lindquist radial "
+        "coordinate where the Kerr horizon is at r_+.";
+    using type = bool;
+  };
   struct ImposeEquatorialSymmetry {
     static constexpr Options::String help =
         "Impose symmetry across the equatorial plane by using cos(theta)^2 "
@@ -182,9 +194,9 @@ class CircularOrbit : public elliptic::analytic_data::Background,
         "domain should span [0, 1] instead of [-1, 1].";
     using type = bool;
   };
-  using options =
-      tmpl::list<BlackHoleMass, BlackHoleSpin, OrbitalRadius, MModeNumber,
-                 HyperboloidalSlicingTransitions, ImposeEquatorialSymmetry>;
+  using options = tmpl::list<BlackHoleMass, BlackHoleSpin, OrbitalRadius,
+                             MModeNumber, HyperboloidalSlicingTransitions,
+                             PenetratingHorizon, ImposeEquatorialSymmetry>;
   static constexpr Options::String help =
       "Quasicircular orbit of a scalar point charge in Kerr spacetime";
 
@@ -199,7 +211,7 @@ class CircularOrbit : public elliptic::analytic_data::Background,
       double black_hole_mass, double black_hole_spin, double orbital_radius,
       int m_mode_number,
       std::optional<std::array<double, 4>> hyperboloidal_slicing_transitions,
-      bool impose_equatorial_symmetry);
+      bool penetrating_horizon, bool impose_equatorial_symmetry);
 
   explicit CircularOrbit(CkMigrateMessage* m);
   using PUP::able::register_constructor;
@@ -215,6 +227,7 @@ class CircularOrbit : public elliptic::analytic_data::Background,
       const {
     return hyperboloidal_slicing_transitions_;
   }
+  bool penetrating_horizon() const { return penetrating_horizon_; }
   bool impose_equatorial_symmetry() const {
     return impose_equatorial_symmetry_;
   }
@@ -257,6 +270,7 @@ class CircularOrbit : public elliptic::analytic_data::Background,
   double orbital_radius_{std::numeric_limits<double>::signaling_NaN()};
   int m_mode_number_{};
   std::optional<std::array<double, 4>> hyperboloidal_slicing_transitions_{};
+  bool penetrating_horizon_{false};
   bool impose_equatorial_symmetry_{false};
 };
 

@@ -28,7 +28,7 @@ namespace ScalarSelfForce {
  * $F^i=\{\partial_{r_\star}, \alpha \partial_{\cos\theta}\}\Psi_m$.
  */
 void fluxes(gsl::not_null<tnsr::I<ComplexDataVector, 2>*> flux,
-            const Scalar<ComplexDataVector>& alpha,
+            const tnsr::I<ComplexDataVector, 2>& alpha,
             const tnsr::i<ComplexDataVector, 2>& field_gradient);
 
 /*!
@@ -36,7 +36,7 @@ void fluxes(gsl::not_null<tnsr::I<ComplexDataVector, 2>*> flux,
  * $F^i=\{n_{r_\star}, \alpha n_{\cos\theta}\}\Psi_m$.
  */
 void fluxes_on_face(gsl::not_null<tnsr::I<ComplexDataVector, 2>*> flux,
-                    const Scalar<ComplexDataVector>& alpha,
+                    const tnsr::I<ComplexDataVector, 2>& alpha,
                     const tnsr::I<DataVector, 2>& face_normal_vector,
                     const Scalar<ComplexDataVector>& field);
 
@@ -58,11 +58,11 @@ struct Fluxes {
   static constexpr bool is_trivial = false;
   static constexpr bool is_discontinuous = false;
   static void apply(gsl::not_null<tnsr::I<ComplexDataVector, 2>*> flux,
-                    const Scalar<ComplexDataVector>& alpha,
+                    const tnsr::I<ComplexDataVector, 2>& alpha,
                     const Scalar<ComplexDataVector>& /*field*/,
                     const tnsr::i<ComplexDataVector, 2>& field_gradient);
   static void apply(gsl::not_null<tnsr::I<ComplexDataVector, 2>*> flux,
-                    const Scalar<ComplexDataVector>& alpha,
+                    const tnsr::I<ComplexDataVector, 2>& alpha,
                     const tnsr::i<DataVector, 2>& /*face_normal*/,
                     const tnsr::I<DataVector, 2>& face_normal_vector,
                     const Scalar<ComplexDataVector>& field);
