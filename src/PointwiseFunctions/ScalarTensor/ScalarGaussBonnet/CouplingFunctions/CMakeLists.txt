@@ -1,24 +1,26 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-set(LIBRARY ScalarGaussBonnetPointwise)
+set(LIBRARY ScalarGaussBonnetCouplings)
 
 add_spectre_library(${LIBRARY})
 
 spectre_target_sources(
   ${LIBRARY}
   PRIVATE
-  CouplingParameters.cpp
-  ScalarSource.cpp
+  CouplingFunction.cpp
+  Exponential.cpp
+  QuarticPolynomial.cpp
   )
 
 spectre_target_headers(
   ${LIBRARY}
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
-  CouplingParameters.hpp
-  ScalarGaussBonnet.hpp
-  ScalarSource.hpp
+  CouplingFunction.hpp
+  Exponential.hpp
+  Factory.hpp
+  QuarticPolynomial.hpp
   Tags.hpp
   )
 
@@ -30,5 +32,3 @@ target_link_libraries(
   INTERFACE
   ErrorHandling
   )
-
-add_subdirectory(CouplingFunctions)

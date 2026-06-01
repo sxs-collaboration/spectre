@@ -1,10 +1,9 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
-set(LIBRARY "Test_ScalarGaussBonnetPointwise")
+set(LIBRARY "Test_ScalarGaussBonnetCouplings")
 
 set(LIBRARY_SOURCES
-  Test_CouplingParameters.cpp
-  Test_ScalarSource.cpp
+  Test_CouplingFunctions.cpp
   Test_Tags.cpp
   )
 
@@ -14,9 +13,5 @@ target_link_libraries(
   PRIVATE
   ConstraintDamping
   Framework
-  ScalarGaussBonnetPointwise
-  ScalarTensor
-  ScalarTensorPointwise
+  ScalarGaussBonnetCouplings
   )
-
-  add_subdirectory(CouplingFunctions)
