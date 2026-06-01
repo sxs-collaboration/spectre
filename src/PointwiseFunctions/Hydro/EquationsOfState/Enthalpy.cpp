@@ -543,9 +543,10 @@ double Enthalpy<LowDensityEoS>::rest_mass_density_from_enthalpy(
 template <typename LowDensityEoS>
 PUP::able::PUP_ID EquationsOfState::Enthalpy<LowDensityEoS>::my_PUP_ID = 0;
 
-template class EquationsOfState::Enthalpy<Spectral>;
-template class EquationsOfState::Enthalpy<PolytropicFluid<true>>;
-template class EquationsOfState::Enthalpy<EquationsOfState::Enthalpy<Spectral>>;
-template class EquationsOfState::Enthalpy<
-    EquationsOfState::Enthalpy<EquationsOfState::Enthalpy<Spectral>>>;
+template class Enthalpy<PolytropicFluid<true>>;
+template class Enthalpy<Enthalpy<PolytropicFluid<true>>>;
+template class Enthalpy<Enthalpy<Enthalpy<PolytropicFluid<true>>>>;
+template class Enthalpy<Spectral>;
+template class Enthalpy<Enthalpy<Spectral>>;
+template class Enthalpy<Enthalpy<Enthalpy<Spectral>>>;
 }  // namespace EquationsOfState
