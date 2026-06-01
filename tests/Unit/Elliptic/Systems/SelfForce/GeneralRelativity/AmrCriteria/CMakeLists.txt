@@ -1,10 +1,11 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-set(LIBRARY "Test_GrSelfForce")
+set(LIBRARY "Test_GrSelfForceAmrCriteria")
 
 set(LIBRARY_SOURCES
-  Test_Tags.cpp
+  Test_RefineAtBoundary.cpp
+  Test_RefineAtPunctures.cpp
   )
 
 add_test_library(${LIBRARY} "${LIBRARY_SOURCES}")
@@ -12,15 +13,14 @@ add_test_library(${LIBRARY} "${LIBRARY_SOURCES}")
 target_link_libraries(
   ${LIBRARY}
   PRIVATE
+  Amr
+  AmrCriteria
   DataStructures
-  DataStructuresHelpers
   DomainCreators
   DomainStructure
   Options
-  GrSelfForce
+  Parallel
+  GrSelfForceAmrCriteria
+  GrSelfForceAnalyticData
+  Utilities
   )
-
-add_subdirectory(Actions)
-add_subdirectory(AnalyticData)
-add_subdirectory(AmrCriteria)
-add_subdirectory(BoundaryConditions)

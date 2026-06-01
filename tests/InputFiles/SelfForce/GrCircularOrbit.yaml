@@ -97,7 +97,8 @@ DomainCreator:
 Amr:
   Verbosity: Debug
   Criteria:
-    # - RefineAtPuncture
+    - RefineAtPuncture
+    - RefineAtBoundaryY
     - IncreaseResolution
   EnableInBlocks: All
   Policies:
