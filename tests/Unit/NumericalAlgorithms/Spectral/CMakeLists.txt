@@ -22,6 +22,7 @@ set(LIBRARY_SOURCES
   Test_Filtering.cpp
   Test_FilteringB1.cpp
   Test_FilteringB2.cpp
+  Test_FilteringB3.cpp
   Test_FiniteDifference.cpp
   Test_IndefiniteIntegral.cpp
   Test_IntegrationMatrix.cpp
