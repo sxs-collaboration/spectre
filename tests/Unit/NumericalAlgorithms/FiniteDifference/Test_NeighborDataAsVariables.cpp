@@ -74,7 +74,7 @@ void test() {
                           make_not_null(&neighbor_data_as_vars), neighbor_data,
                           ghost_zone_size, non_istropic_mesh),
                       Catch::Matchers::ContainsSubstring(
-                          "subcell_mesh must be isotropic but got"));
+                          "The subcell mesh must be uniform but is"));
   }
 #endif  // SPECTRE_DEBUG
 }

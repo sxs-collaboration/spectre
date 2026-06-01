@@ -13,9 +13,13 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Tags.hpp"
+#include "NumericalAlgorithms/Spectral/Mesh.hpp"
+#include "NumericalAlgorithms/Spectral/Quadrature.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Christoffel.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
+#include "PointwiseFunctions/Hydro/ComovingMagneticField.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
+#include "PointwiseFunctions/Hydro/TransportVelocity.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Gsl.hpp"
 
@@ -165,6 +169,100 @@ void sources_impl(
     get(*source_tilde_phi) += tilde_b.get(m) * d_lapse.get(m);
   }
 }
+
+void cartoon_sources_impl(
+    const gsl::not_null<tnsr::i<DataVector, 3, Frame::Inertial>*>
+        source_tilde_s,
+    const gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*>
+        source_tilde_b,
+
+    const Scalar<DataVector>& pressure_star,
+    const tnsr::i<DataVector, 3, Frame::Inertial>& magnetic_field_one_form,
+    const Scalar<DataVector>& magnetic_field_dot_spatial_velocity,
+
+    const tnsr::i<DataVector, 3, Frame::Inertial>& tilde_s,
+    const tnsr::I<DataVector, 3, Frame::Inertial>& tilde_b,
+    const Scalar<DataVector>& tilde_phi,
+    const tnsr::I<DataVector, 3, Frame::Inertial>& spatial_velocity,
+    const Scalar<DataVector>& lorentz_factor, const Scalar<DataVector>& lapse,
+    const tnsr::I<DataVector, 3, Frame::Inertial>& shift,
+    const tnsr::ii<DataVector, 3, Frame::Inertial>& spatial_metric,
+    const tnsr::II<DataVector, 3, Frame::Inertial>& inv_spatial_metric,
+    const Scalar<DataVector>& sqrt_det_spatial_metric,
+    const tnsr::I<DataVector, 3, Frame::Inertial>& inertial_coords,
+    const Spectral::Quadrature cartoon_quadrature) {
+#ifdef SPECTRE_DEBUG
+  for (size_t i = 0; i < get<0>(inertial_coords).size(); ++i) {
+    ASSERT(not equal_within_roundoff(
+               0.0, get<0>(inertial_coords)[i],
+               std::numeric_limits<double>::epsilon() * 100.0,
+               max(get<0>(inertial_coords))),
+           "Cannot compute the Cartoon source terms with x=0 in the domain but "
+           "we got inertial_coords = "
+               << inertial_coords);
+  }
+#endif  // SPECTRE_DEBUG
+  if (cartoon_quadrature == Spectral::Quadrature::SphericalSymmetry) {
+    get<0>(*source_tilde_s) += 2.0 * get(lapse) * get(sqrt_det_spatial_metric) *
+                               get(pressure_star) / get<0>(inertial_coords);
+    get<0>(*source_tilde_b) +=
+        get(lapse) *
+        (get<1, 1>(inv_spatial_metric) + get<2, 2>(inv_spatial_metric)) *
+        get(tilde_phi) / get<0>(inertial_coords);
+  } else {
+    ASSERT(
+        cartoon_quadrature == Spectral::Quadrature::AxialSymmetry,
+        "Got unexpected quadrature for Cartoon basis: " << cartoon_quadrature);
+
+    Variables<
+        tmpl::list<hydro::Tags::SpatialVelocityOneForm<DataVector, 3>,
+                   grmhd::ValenciaDivClean::Tags::ComovingMagneticFieldOneForm,
+                   hydro::Tags::TransportVelocity<DataVector, 3>>>
+        temp_tensors(get<0>(inertial_coords).size());
+
+    auto& spatial_velocity_one_form =
+        get<hydro::Tags::SpatialVelocityOneForm<DataVector, 3>>(temp_tensors);
+    raise_or_lower_index(make_not_null(&spatial_velocity_one_form),
+                         spatial_velocity, spatial_metric);
+
+    auto& comoving_magnetic_field_one_form =
+        get<grmhd::ValenciaDivClean::Tags::ComovingMagneticFieldOneForm>(
+            temp_tensors);
+    hydro::comoving_magnetic_field_one_form(
+        make_not_null(&comoving_magnetic_field_one_form),
+        spatial_velocity_one_form, magnetic_field_one_form,
+        magnetic_field_dot_spatial_velocity, lorentz_factor, shift, lapse);
+
+    auto& transport_velocity =
+        get<hydro::Tags::TransportVelocity<DataVector, 3>>(temp_tensors);
+    hydro::transport_velocity(make_not_null(&transport_velocity),
+                              spatial_velocity, lapse, shift);
+
+    get<0>(*source_tilde_s) +=
+        (get(lapse) *
+             (get(sqrt_det_spatial_metric) * get(pressure_star) -
+              get<2>(tilde_b) * get<3>(comoving_magnetic_field_one_form) /
+                  get(lorentz_factor)) +
+         get<2>(tilde_s) * get<2>(transport_velocity)) /
+        get<0>(inertial_coords);
+    get<2>(*source_tilde_s) +=
+        (get(lapse) * get<2>(tilde_b) *
+             get<1>(comoving_magnetic_field_one_form) / get(lorentz_factor) -
+         get<0>(tilde_s) * get<2>(transport_velocity)) /
+        get<0>(inertial_coords);
+
+    get<0>(*source_tilde_b) +=
+        (get(lapse) * (get<2, 2>(inv_spatial_metric) * get(tilde_phi) -
+                       get<2>(spatial_velocity) * get<2>(tilde_b)) +
+         get<2>(tilde_b) * get<2>(transport_velocity)) /
+        get<0>(inertial_coords);
+    get<2>(*source_tilde_b) +=
+        (get(lapse) * (-get<2, 0>(inv_spatial_metric) * get(tilde_phi) +
+                       get<0>(spatial_velocity) * get<2>(tilde_b)) -
+         get<0>(tilde_b) * get<2>(transport_velocity)) /
+        get<0>(inertial_coords);
+  }
+}
 }  // namespace detail
 
 void ComputeSources::apply(
@@ -186,6 +284,7 @@ void ComputeSources::apply(
     const Scalar<DataVector>& specific_internal_energy,
     const Scalar<DataVector>& lorentz_factor,
     const Scalar<DataVector>& pressure, const Scalar<DataVector>& lapse,
+    const tnsr::I<DataVector, 3, Frame::Inertial>& shift,
     const tnsr::i<DataVector, 3, Frame::Inertial>& d_lapse,
     const tnsr::iJ<DataVector, 3, Frame::Inertial>& d_shift,
     const tnsr::ii<DataVector, 3, Frame::Inertial>& spatial_metric,
@@ -193,7 +292,9 @@ void ComputeSources::apply(
     const tnsr::II<DataVector, 3, Frame::Inertial>& inv_spatial_metric,
     const Scalar<DataVector>& sqrt_det_spatial_metric,
     const tnsr::ii<DataVector, 3, Frame::Inertial>& extrinsic_curvature,
-    const double constraint_damping_parameter) {
+    const double constraint_damping_parameter,
+    const tnsr::I<DataVector, 3, Frame::Inertial>& inertial_coords,
+    const Mesh<3>& dg_mesh) {
   Variables<
       tmpl::list<TildeSUp, DensitizedStress, MagneticFieldOneForm,
                  hydro::Tags::MagneticFieldDotSpatialVelocity<DataVector>,
@@ -260,5 +361,14 @@ void ComputeSources::apply(
 
       rest_mass_density, electron_fraction, pressure, specific_internal_energy,
       extrinsic_curvature, constraint_damping_parameter);
+
+  if (dg_mesh.basis(2) == Spectral::Basis::Cartoon) {
+    detail::cartoon_sources_impl(
+        source_tilde_s, source_tilde_b, pressure_star, magnetic_field_oneform,
+        magnetic_field_dot_spatial_velocity, tilde_s, tilde_b, tilde_phi,
+        spatial_velocity, lorentz_factor, lapse, shift, spatial_metric,
+        inv_spatial_metric, sqrt_det_spatial_metric, inertial_coords,
+        dg_mesh.quadrature(2));
+  }
 }
 }  // namespace grmhd::ValenciaDivClean

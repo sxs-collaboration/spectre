@@ -11,6 +11,9 @@
 SPECTRE_TEST_CASE("Unit.Evolution.Systems.ValenciaDivClean.Tags",
                   "[Unit][Evolution]") {
   TestHelpers::db::test_simple_tag<
+      grmhd::ValenciaDivClean::Tags::ComovingMagneticFieldOneForm>(
+      "ComovingMagneticFieldOneForm");
+  TestHelpers::db::test_simple_tag<
       grmhd::ValenciaDivClean::Tags::VariablesNeededFixing>(
-          "VariablesNeededFixing");
+      "VariablesNeededFixing");
 }

@@ -3,7 +3,11 @@
 
 #pragma once
 
+#include <cstdint>
+
 #include "DataStructures/Tensor/TypeAliases.hpp"
+#include "Domain/Tags.hpp"
+#include "Evolution/DgSubcell/Tags/Coordinates.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/TagsDeclarations.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
 #include "PointwiseFunctions/GeneralRelativity/TagsDeclarations.hpp"
@@ -13,7 +17,12 @@
 
 /// \cond
 class DataVector;
+template <size_t Dim>
+class Mesh;
 
+namespace Spectral {
+enum class Quadrature : uint8_t;
+}  // namespace Spectral
 namespace Tags {
 template <typename>
 struct Source;
@@ -23,6 +32,26 @@ struct Source;
 namespace grmhd {
 namespace ValenciaDivClean {
 namespace detail {
+void cartoon_sources_impl(
+    gsl::not_null<tnsr::i<DataVector, 3, Frame::Inertial>*> source_tilde_s,
+    gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*> source_tilde_b,
+
+    const Scalar<DataVector>& pressure_star,
+    const tnsr::i<DataVector, 3, Frame::Inertial>& magnetic_field_one_form,
+    const Scalar<DataVector>& magnetic_field_dot_spatial_velocity,
+
+    const tnsr::i<DataVector, 3, Frame::Inertial>& tilde_s,
+    const tnsr::I<DataVector, 3, Frame::Inertial>& tilde_b,
+    const Scalar<DataVector>& tilde_phi,
+    const tnsr::I<DataVector, 3, Frame::Inertial>& spatial_velocity,
+    const Scalar<DataVector>& lorentz_factor, const Scalar<DataVector>& lapse,
+    const tnsr::I<DataVector, 3, Frame::Inertial>& shift,
+    const tnsr::ii<DataVector, 3, Frame::Inertial>& spatial_metric,
+    const tnsr::II<DataVector, 3, Frame::Inertial>& inv_spatial_metric,
+    const Scalar<DataVector>& sqrt_det_spatial_metric,
+    const tnsr::I<DataVector, 3, Frame::Inertial>& inertial_coords,
+    Spectral::Quadrature cartoon_quadrature);
+
 void sources_impl(
     gsl::not_null<Scalar<DataVector>*> source_tilde_tau,
     gsl::not_null<tnsr::i<DataVector, 3, Frame::Inertial>*> source_tilde_s,
@@ -113,6 +142,40 @@ void sources_impl(
  * of the divergence-free (no-monopole) condition \f$\Phi = \partial_i {\tilde
  * B}^i = 0\f$ .
  *
+ * When using the cartoon method, the flux of vector-quantity conserved
+ * variables result in terms that are not flux-like but can be interpreted as
+ * sources. For spherical symmetry these extra source terms are
+ * \f{align*}
+ *  S_{\mathrm{spherical}, \tilde{S}_x} &=
+ *    \frac{2}{x} \alpha \sqrt{\gamma} (p + p_m) \\
+ *  S_{\mathrm{spherical}, \tilde{B}^x} &=
+ *    \frac{1}{x}\alpha (\gamma^{yy} + \gamma^{zz}) \tilde{\Phi}
+ * \f}
+ *
+ * and for axial symmetry they are
+ * \f{align*}
+ *  S_{\mathrm{axial}, \tilde{S}_x} &=
+ *    \frac{1}{x} \left( \alpha \sqrt{\gamma} (p + p_m)
+ *    + \tilde{S}_z v^z_\mathrm{tr}
+ *    - \frac{\alpha}{W} b_z \tilde{B}^z \right) \\
+ *  S_{\mathrm{axial}, \tilde{S}_z} &=
+ *    \frac{1}{x} \left( -\tilde{S}_x  v^z_\mathrm{tr}
+ *    + \frac{\alpha}{W} b_x \tilde{B}^z \right) \\
+ *  S_{\mathrm{axial}, \tilde{B}^x} &=
+ *    \frac{1}{x} \left( \alpha \gamma^{zz}\tilde{\Phi}
+ *    - \alpha v^z \tilde{B}^z
+ *    + \tilde{B}^z v^z_\mathrm{tr} \right) \\
+ *  S_{\mathrm{axial}, \tilde{B}^z} &=
+ *    \frac{1}{x} \left( -\alpha \gamma^{zx} \tilde{\Phi}
+ *    + \alpha v^x \tilde{B}^z
+ *    - \tilde{B}^x v^z_\mathrm{tr} \right),
+ * \f}
+ *
+ * where \f$v^i_\mathrm{tr} = \alpha v^i - \beta^i\f$ is the transport
+ * velocity. These terms are associated with the $x$ component of
+ * $\tilde{S}_j$ and $\tilde{B}^j$ because that is the divergence direction we
+ * have cartoonified.
+ *
  * \note For the electron fraction side, the source term is currently set to
  * \f$S(\tilde{Y}_e) = 0\f$ where the conserved variable \f$\tilde{Y}_e\f$ is a
  * generalized electron fraction. Implementing the source term using neutrino
@@ -140,6 +203,7 @@ struct ComputeSources {
                  hydro::Tags::SpecificInternalEnergy<DataVector>,
                  hydro::Tags::LorentzFactor<DataVector>,
                  hydro::Tags::Pressure<DataVector>, gr::Tags::Lapse<DataVector>,
+                 gr::Tags::Shift<DataVector, 3>,
                  ::Tags::deriv<gr::Tags::Lapse<DataVector>, tmpl::size_t<3>,
                                Frame::Inertial>,
                  ::Tags::deriv<gr::Tags::Shift<DataVector, 3>, tmpl::size_t<3>,
@@ -150,7 +214,9 @@ struct ComputeSources {
                  gr::Tags::InverseSpatialMetric<DataVector, 3>,
                  gr::Tags::SqrtDetSpatialMetric<DataVector>,
                  gr::Tags::ExtrinsicCurvature<DataVector, 3>,
-                 grmhd::ValenciaDivClean::Tags::ConstraintDampingParameter>;
+                 grmhd::ValenciaDivClean::Tags::ConstraintDampingParameter,
+                 evolution::dg::subcell::Tags::Coordinates<3, Frame::Inertial>,
+                 domain::Tags::Mesh<3>>;
 
   static void apply(
       gsl::not_null<Scalar<DataVector>*> source_tilde_tau,
@@ -169,6 +235,7 @@ struct ComputeSources {
       const Scalar<DataVector>& specific_internal_energy,
       const Scalar<DataVector>& lorentz_factor,
       const Scalar<DataVector>& pressure, const Scalar<DataVector>& lapse,
+      const tnsr::I<DataVector, 3, Frame::Inertial>& shift,
       const tnsr::i<DataVector, 3, Frame::Inertial>& d_lapse,
       const tnsr::iJ<DataVector, 3, Frame::Inertial>& d_shift,
       const tnsr::ii<DataVector, 3, Frame::Inertial>& spatial_metric,
@@ -176,7 +243,9 @@ struct ComputeSources {
       const tnsr::II<DataVector, 3, Frame::Inertial>& inv_spatial_metric,
       const Scalar<DataVector>& sqrt_det_spatial_metric,
       const tnsr::ii<DataVector, 3, Frame::Inertial>& extrinsic_curvature,
-      double constraint_damping_parameter);
+      double constraint_damping_parameter,
+      const tnsr::I<DataVector, 3, Frame::Inertial>& inertial_coords,
+      const Mesh<3>& dg_mesh);
 };
 }  // namespace ValenciaDivClean
 }  // namespace grmhd

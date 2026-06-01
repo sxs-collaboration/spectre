@@ -48,11 +48,6 @@ struct FourVelocity : db::SimpleTag {
   using type = tnsr::A<DataVector, 3>;
 };
 
-/// The down-index comoving magnetic field \f$b_\mu\f$
-struct ComovingMagneticFieldOneForm : db::SimpleTag {
-  using type = tnsr::a<DataVector, 3>;
-};
-
 /// The down-index four-velocity \f$u_\mu\f$
 struct FourVelocityOneForm : db::SimpleTag {
   using type = tnsr::a<DataVector, 3>;

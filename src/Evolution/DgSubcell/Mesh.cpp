@@ -16,37 +16,6 @@
 
 namespace evolution::dg::subcell::fd {
 template <size_t Dim>
-size_t get_computational_dim(const Mesh<Dim>& subcell_mesh) {
-  if constexpr (Dim == 3) {
-    if (subcell_mesh.quadrature(2) == Spectral::Quadrature::SphericalSymmetry) {
-      return 1;
-    } else if (subcell_mesh.quadrature(2) ==
-               Spectral::Quadrature::AxialSymmetry) {
-      return 2;
-    } else {
-      return 3;
-    }
-  } else {
-    return Dim;
-  }
-}
-
-template <size_t Dim>
-size_t get_computational_dim(const Index<Dim>& subcell_extents) {
-  if constexpr (Dim == 3) {
-    if (subcell_extents[1] == 1) {
-      return 1;
-    } else if (subcell_extents[2] == 1) {
-      return 2;
-    } else {
-      return 3;
-    }
-  } else {
-    return Dim;
-  }
-}
-
-template <size_t Dim>
 void verify_subcell_mesh(const Mesh<Dim>& subcell_mesh, const bool neighbor) {
   const std::string neighbor_str = neighbor ? " neighbor" : "";
   if constexpr (Dim == 3) {
@@ -92,39 +61,6 @@ void verify_subcell_mesh(const Mesh<Dim>& subcell_mesh, const bool neighbor) {
                  << " subcell mesh must have isotropic basis, quadrature, and "
                     "extents but got "
                  << subcell_mesh);
-  }
-}
-
-template <size_t Dim>
-void verify_subcell_extents(const Index<Dim>& subcell_extents,
-                            const bool neighbor) {
-  const std::string neighbor_str = neighbor ? " neighbor" : "";
-  if constexpr (Dim == 3) {
-    if (subcell_extents[1] == 1) {
-      // Checking for spherical symmetry
-      ASSERT(
-          subcell_extents[0] != 1 and subcell_extents[2] == 1,
-          "The" << neighbor_str
-                << " subcell extents are neither isotropic nor a valid cartoon "
-                   "pattern, got "
-                << subcell_extents);
-    } else if (subcell_extents[2] == 1) {
-      // Checking for axial symmetry
-      ASSERT(
-          subcell_extents.slice_away(2) == Index<2>(subcell_extents[0]),
-          "The" << neighbor_str
-                << " subcell extents are neither isotropic nor a valid cartoon "
-                   "pattern, got "
-                << subcell_extents);
-    } else {
-      ASSERT(subcell_extents == Index<Dim>(subcell_extents[0]),
-             "The" << neighbor_str << " subcell mesh must be uniform but is "
-                   << subcell_extents);
-    }
-  } else {
-    ASSERT(subcell_extents == Index<Dim>(subcell_extents[0]),
-           "The" << neighbor_str << " subcell mesh must be uniform but is "
-                 << subcell_extents);
   }
 }
 
@@ -259,25 +195,12 @@ Mesh<Dim> dg_mesh(const Mesh<Dim>& subcell_mesh, const Spectral::Basis basis,
   return Mesh<Dim>{extents, basis, quadrature};
 }
 
-template size_t get_computational_dim(const Mesh<1>& subcell_mesh);
-template size_t get_computational_dim(const Mesh<2>& subcell_mesh);
-template size_t get_computational_dim(const Mesh<3>& subcell_mesh);
-template size_t get_computational_dim(const Index<1>& subcell_extents);
-template size_t get_computational_dim(const Index<2>& subcell_extents);
-template size_t get_computational_dim(const Index<3>& subcell_extents);
 template void verify_subcell_mesh(const Mesh<1>& subcell_mesh,
                                   const bool neighbor);
 template void verify_subcell_mesh(const Mesh<2>& subcell_mesh,
                                   const bool neighbor);
 template void verify_subcell_mesh(const Mesh<3>& subcell_mesh,
                                   const bool neighbor);
-template void verify_subcell_extents(const Index<1>& subcell_extents,
-                                     const bool neighbor);
-template void verify_subcell_extents(const Index<2>& subcell_extents,
-                                     const bool neighbor);
-template void verify_subcell_extents(const Index<3>& subcell_extents,
-                                     const bool neighbor);
-
 template Mesh<1> mesh(const Mesh<1>& dg_mesh);
 template Mesh<2> mesh(const Mesh<2>& dg_mesh);
 template Mesh<3> mesh(const Mesh<3>& dg_mesh);
