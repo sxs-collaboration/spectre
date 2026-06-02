@@ -26,6 +26,7 @@
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Structure/ObjectLabel.hpp"
+#include "Domain/Structure/Topology.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/Domain/BoundaryConditions/BoundaryCondition.hpp"
 #include "Helpers/Domain/Creators/TestHelpers.hpp"
@@ -63,7 +64,7 @@ std::string option_string(
     const std::vector<domain::CoordinateMaps::Distribution>&
         radial_distribution,
     const bool time_dependent, const bool hard_coded_time_dependent_maps,
-    const bool with_boundary_conditions) {
+    const bool with_boundary_conditions, const bool inner_bc_is_none = false) {
   const std::string time_dependent_option =
       time_dependent ? (hard_coded_time_dependent_maps
                             ? "  TimeDependentMaps:\n"
@@ -84,12 +85,14 @@ std::string option_string(
                               "      InitialTime: 1.0\n"
                               "      Velocity: [2.3, -0.3, 0.5]\n")
                      : "  TimeDependentMaps: None\n";
-  const std::string inner_bc_option = with_boundary_conditions
-                                          ? "  InnerBoundaryCondition:\n"
-                                            "    TestBoundaryCondition:\n"
-                                            "      Direction: lower-xi\n"
-                                            "      BlockId: 50\n"
-                                          : "";
+  const std::string inner_bc_option =
+      with_boundary_conditions
+          ? (inner_bc_is_none ? "  InnerBoundaryCondition: None\n"
+                              : "  InnerBoundaryCondition:\n"
+                                "    TestBoundaryCondition:\n"
+                                "      Direction: lower-xi\n"
+                                "      BlockId: 50\n")
+          : "";
   const std::string outer_bc_option = with_boundary_conditions
                                           ? "  OuterBoundaryCondition:\n"
                                             "    TestBoundaryCondition:\n"
@@ -218,8 +221,9 @@ void test_parse_errors() {
                                TestNoneBoundaryCondition<3>>(),
           Options::Context{false, {}, 1, 1}),
       Catch::Matchers::ContainsSubstring(
-          "None boundary condition is not supported. If you would like "
-          "an outflow-type boundary condition, you must use that."));
+          "None boundary condition is not supported for the outer "
+          "boundary. If you would like an outflow-type boundary "
+          "condition, you must use that."));
   CHECK_THROWS_WITH(
       domain::creators::SphericalShells(
           inner_radius, outer_radius, radial_refinement, radial_extents, l,
@@ -228,8 +232,26 @@ void test_parse_errors() {
                                TestNoneBoundaryCondition<3>>(),
           create_boundary_condition(true), Options::Context{false, {}, 1, 1}),
       Catch::Matchers::ContainsSubstring(
-          "None boundary condition is not supported. If you would like "
-          "an outflow-type boundary condition, you must use that."));
+          "None boundary condition for the inner boundary is not "
+          "supported when the center is excised. If you would like an "
+          "outflow-type boundary condition, you must use that."));
+  CHECK_THROWS_WITH(
+      domain::creators::SphericalShells(
+          0.0, outer_radius, radial_refinement, radial_extents, l,
+          radial_partitioning, radial_distribution, std::nullopt,
+          std::make_unique<TestHelpers::domain::BoundaryConditions::
+                               TestBoundaryCondition<3>>(),
+          create_boundary_condition(true), Options::Context{false, {}, 1, 1}),
+      Catch::Matchers::ContainsSubstring(
+          "Cannot set a boundary condition for the inner boundary when "
+          "the center is not excised."));
+  // None BC is allowed when inner_radius = 0.0 (no inner BC is applied)
+  CHECK_NOTHROW(domain::creators::SphericalShells(
+      0.0, outer_radius, radial_refinement, radial_extents, l,
+      radial_partitioning, radial_distribution, std::nullopt,
+      std::make_unique<TestHelpers::domain::BoundaryConditions::
+                           TestNoneBoundaryCondition<3>>(),
+      create_boundary_condition(true), Options::Context{false, {}, 1, 1}));
 }
 
 template <typename Generator>
@@ -250,6 +272,14 @@ void test_spherical_shells_construction(
   CHECK(grid_anchors.at("Center") ==
         tnsr::I<double, 3, Frame::Grid>{std::array{0.0, 0.0, 0.0}});
 
+  // Check excision spheres
+  if (inner_radius == 0.0) {
+    CHECK(domain.excision_spheres().empty());
+  } else {
+    CHECK(domain.excision_spheres().size() == 1);
+    CHECK(domain.excision_spheres().count("ExcisionSphere") == 1);
+  }
+
   const auto& blocks = domain.blocks();
   const auto block_names = spherical_shells.block_names();
   const size_t num_blocks = blocks.size();
@@ -265,7 +295,11 @@ void test_spherical_shells_construction(
       alg::accumulate(blocks, 0_st, [](const size_t count, const auto& block) {
         return count + block.external_boundaries().size();
       });
-  CHECK(num_external_boundaries == 2);
+  // inner_radius == 0 means the innermost block is a filled ball (B3 topology):
+  // its lower-xi face is the degenerate center point, not a real boundary,
+  // so there is only one external boundary (the outer sphere).
+  const size_t expected_num_external_boundaries = (inner_radius == 0.0) ? 1 : 2;
+  CHECK(num_external_boundaries == expected_num_external_boundaries);
 
   std::vector<double> expected_radii = radial_partitioning;
   expected_radii.insert(expected_radii.begin(), inner_radius);
@@ -326,18 +360,46 @@ void test_spherical_shells_construction(
     {
       INFO("External boundaries");
       const auto& external_boundaries = block.external_boundaries();
-      if (num_blocks == 1) {
-        CHECK(external_boundaries.size() == 2);
-        CHECK(alg::found(external_boundaries, Direction<3>::lower_xi()));
-        CHECK(alg::found(external_boundaries, Direction<3>::upper_xi()));
-      } else if (block_id == 0) {
-        CHECK(external_boundaries.size() == 1);
-        CHECK(alg::found(external_boundaries, Direction<3>::lower_xi()));
-      } else if (block_id == num_blocks - 1) {
-        CHECK(external_boundaries.size() == 1);
-        CHECK(alg::found(external_boundaries, Direction<3>::upper_xi()));
+      if (inner_radius == 0.0) {
+        // B3Radial topology: lower-xi (center) is not a real boundary.
+        if (block_id == num_blocks - 1) {
+          CHECK(external_boundaries.size() == 1);
+          CHECK(alg::found(external_boundaries, Direction<3>::upper_xi()));
+        } else {
+          CHECK(external_boundaries.empty());
+        }
       } else {
-        CHECK(external_boundaries.empty());
+        if (num_blocks == 1) {
+          CHECK(external_boundaries.size() == 2);
+          CHECK(alg::found(external_boundaries, Direction<3>::lower_xi()));
+          CHECK(alg::found(external_boundaries, Direction<3>::upper_xi()));
+        } else if (block_id == 0) {
+          CHECK(external_boundaries.size() == 1);
+          CHECK(alg::found(external_boundaries, Direction<3>::lower_xi()));
+        } else if (block_id == num_blocks - 1) {
+          CHECK(external_boundaries.size() == 1);
+          CHECK(alg::found(external_boundaries, Direction<3>::upper_xi()));
+        } else {
+          CHECK(external_boundaries.empty());
+        }
+      }
+    }
+    {
+      INFO("Block topology");
+      if (inner_radius == 0.0 and block_id == 0) {
+        CHECK(block.topologies() == domain::topologies::full_sphere);
+      } else {
+        CHECK(block.topologies() == domain::topologies::spherical_shell);
+      }
+    }
+    {
+      INFO("Block name");
+      if (inner_radius == 0.0 and block_id == 0) {
+        CHECK(block_names[block_id] == "FilledSphere");
+      } else {
+        const size_t shell_index =
+            (inner_radius == 0.0) ? block_id - 1 : block_id;
+        CHECK(block_names[block_id] == "Shell" + std::to_string(shell_index));
       }
     }
     if (expect_boundary_conditions) {
@@ -586,6 +648,76 @@ void test_shape_distortion() {
     }
   }
 }
+
+template <typename Generator>
+void test_filled_sphere(const gsl::not_null<Generator*> gen) {
+  const double inner_radius = 0.0;
+  const double outer_radius = 2.0;
+  const size_t radial_refinement = 2;
+  const size_t radial_extents = 5;
+  const size_t l = 6;
+  const std::vector<domain::CoordinateMaps::Distribution> radial_distribution{
+      domain::CoordinateMaps::Distribution::Linear};
+
+  {
+    INFO("Single filled ball, no boundary conditions");
+    const domain::creators::SphericalShells spherical_shells{
+        inner_radius, outer_radius, radial_refinement, radial_extents, l};
+    test_spherical_shells_construction(gen, spherical_shells, inner_radius,
+                                       outer_radius, {}, false);
+    TestHelpers::domain::creators::test_creation(
+        option_string(inner_radius, outer_radius, radial_refinement,
+                      radial_extents, l, {}, radial_distribution, false, false,
+                      false),
+        spherical_shells, false);
+  }
+  {
+    INFO("Single filled ball, with boundary conditions");
+    const domain::creators::SphericalShells spherical_shells{
+        inner_radius,
+        outer_radius,
+        radial_refinement,
+        radial_extents,
+        l,
+        {},
+        domain::CoordinateMaps::Distribution::Linear,
+        std::nullopt,
+        std::make_unique<TestHelpers::domain::BoundaryConditions::
+                             TestNoneBoundaryCondition<3>>(),
+        create_boundary_condition(true)};
+    test_spherical_shells_construction(gen, spherical_shells, inner_radius,
+                                       outer_radius, {}, true);
+    TestHelpers::domain::creators::test_creation(
+        option_string(inner_radius, outer_radius, radial_refinement,
+                      radial_extents, l, {}, radial_distribution, false, false,
+                      true, true),
+        spherical_shells, true);
+  }
+  {
+    INFO("Filled ball with one radial partition, no boundary conditions");
+    const std::vector<double> radial_partitioning{1.0};
+    const std::vector<domain::CoordinateMaps::Distribution>
+        radial_distribution_2{
+            domain::CoordinateMaps::Distribution::Linear,
+            domain::CoordinateMaps::Distribution::Logarithmic};
+    const domain::creators::SphericalShells spherical_shells{
+        inner_radius,
+        outer_radius,
+        radial_refinement,
+        radial_extents,
+        l,
+        radial_partitioning,
+        radial_distribution_2};
+    test_spherical_shells_construction(gen, spherical_shells, inner_radius,
+                                       outer_radius, radial_partitioning,
+                                       false);
+    TestHelpers::domain::creators::test_creation(
+        option_string(inner_radius, outer_radius, radial_refinement,
+                      radial_extents, l, radial_partitioning,
+                      radial_distribution_2, false, false, false),
+        spherical_shells, false);
+  }
+}
 }  // namespace
 
 // [[TimeOut, 15]]
@@ -594,5 +726,6 @@ SPECTRE_TEST_CASE("Unit.Domain.Creators.SphericalShells", "[Domain][Unit]") {
   domain::creators::time_dependence::register_derived_with_charm();
   test_parse_errors();
   test_sphere(make_not_null(&gen));
+  test_filled_sphere(make_not_null(&gen));
   test_shape_distortion();
 }

@@ -44,7 +44,8 @@ SphericalShells::SphericalShells(
     std::vector<double> radial_partitioning,
     const typename RadialDistribution::type& radial_distribution,
     std::optional<TimeDepOptionType> time_dependent_options,
-    std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
+    std::optional<
+        std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>
         inner_boundary_condition,
     std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
         outer_boundary_condition,
@@ -57,7 +58,8 @@ SphericalShells::SphericalShells(
       initial_spherical_harmonic_l_(initial_spherical_harmonic_l),
       radial_partitioning_(std::move(radial_partitioning)),
       time_dependent_options_(std::move(time_dependent_options)),
-      inner_boundary_condition_(std::move(inner_boundary_condition)),
+      inner_boundary_condition_(
+          std::move(inner_boundary_condition).value_or(nullptr)),
       outer_boundary_condition_(std::move(outer_boundary_condition)),
       grid_anchors_{{{"Center", tnsr::I<double, 3, Frame::Grid>{
                                     std::array{0.0, 0.0, 0.0}}}}} {
@@ -72,7 +74,13 @@ SphericalShells::SphericalShells(
       make_not_null(&num_blocks_), make_not_null(&radial_distribution_),
       radial_partitioning_, radial_distribution, inner_radius_, outer_radius_,
       "inner", "outer", context);
-  for (size_t shell = 0; shell < num_blocks_; ++shell) {
+  excise_center_ = inner_radius_ != 0.0;
+  if (not excise_center_) {
+    block_names_.emplace_back("FilledSphere");
+    block_groups_["FilledSphere"].insert("FilledSphere");
+  }
+  const size_t num_shells = excise_center_ ? num_blocks_ : num_blocks_ - 1;
+  for (size_t shell = 0; shell < num_shells; ++shell) {
     const std::string shell_name = "Shell" + std::to_string(shell);
     block_names_.emplace_back(shell_name);
     // This makes consistent block groups with those created by Sphere
@@ -81,12 +89,23 @@ SphericalShells::SphericalShells(
 
   // Validate boundary conditions
   using domain::BoundaryConditions::is_none;
-  if (is_none(inner_boundary_condition_) or
-      is_none(outer_boundary_condition_)) {
-    PARSE_ERROR(
-        context,
-        "None boundary condition is not supported. If you would like an "
-        "outflow-type boundary condition, you must use that.");
+  if (excise_center_ and is_none(inner_boundary_condition_)) {
+    PARSE_ERROR(context,
+                "None boundary condition for the inner boundary is not "
+                "supported when the center is excised. If you would like an "
+                "outflow-type boundary condition, you must use that.");
+  }
+  if (not excise_center_ and not(is_none(inner_boundary_condition_) or
+                                 inner_boundary_condition_ == nullptr)) {
+    PARSE_ERROR(context,
+                "Cannot set a boundary condition for the inner boundary when "
+                "the center is not excised.");
+  }
+  if (is_none(outer_boundary_condition_)) {
+    PARSE_ERROR(context,
+                "None boundary condition is not supported for the outer "
+                "boundary. If you would like an outflow-type boundary "
+                "condition, you must use that.");
   }
   using domain::BoundaryConditions::is_periodic;
   if (is_periodic(inner_boundary_condition_) or
@@ -96,8 +115,8 @@ SphericalShells::SphericalShells(
         "Cannot have periodic boundary conditions with SphericalShells");
   }
   // Validate consistency of inner and outer boundary condition
-  if ((inner_boundary_condition_ == nullptr) !=
-      (outer_boundary_condition_ == nullptr)) {
+  if (excise_center_ and (inner_boundary_condition_ == nullptr) !=
+                             (outer_boundary_condition_ == nullptr)) {
     PARSE_ERROR(context,
                 "Must specify either both inner and outer boundary conditions "
                 "or neither.");
@@ -142,16 +161,20 @@ Domain<3> SphericalShells::create_domain() const {
       neighbors.emplace(std::pair{Direction<3>::upper_xi(),
                                   BlockNeighbors<3>{i + 1, aligned}});
     }
-    blocks.emplace_back(std::move(stationary_map), i, std::move(neighbors),
-                        block_names_.at(i),
-                        domain::topologies::spherical_shell);
+    blocks.emplace_back(
+        std::move(stationary_map), i, std::move(neighbors), block_names_.at(i),
+        (not excise_center_ and i == 0) ? domain::topologies::full_sphere
+                                        : domain::topologies::spherical_shell);
   }
 
   std::unordered_map<std::string, ExcisionSphere<3>> excision_spheres{};
-  excision_spheres.emplace(
-      "ExcisionSphere", ExcisionSphere<3>{inner_radius_,
-                                          tnsr::I<double, 3, Frame::Grid>{0.0},
-                                          {{0, Direction<3>::lower_xi()}}});
+  if (excise_center_) {
+    excision_spheres.emplace(
+        "ExcisionSphere",
+        ExcisionSphere<3>{inner_radius_,
+                          tnsr::I<double, 3, Frame::Grid>{0.0},
+                          {{0, Direction<3>::lower_xi()}}});
+  }
 
   Domain<3> domain(std::move(blocks), std::move(excision_spheres),
                    block_groups_);
@@ -224,18 +247,26 @@ SphericalShells::external_boundary_conditions() const {
   std::vector<DirectionMap<
       3, std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>
       boundary_conditions{num_blocks_};
-  boundary_conditions[0][Direction<3>::lower_xi()] =
-      inner_boundary_condition_->get_clone();
+  if (excise_center_) {
+    boundary_conditions[0][Direction<3>::lower_xi()] =
+        inner_boundary_condition_->get_clone();
+  }
   boundary_conditions[num_blocks_ - 1][Direction<3>::upper_xi()] =
       outer_boundary_condition_->get_clone();
   return boundary_conditions;
 }
 
 std::vector<std::array<size_t, 3>> SphericalShells::initial_extents() const {
-  return std::vector{num_blocks_,
-                     std::array{initial_number_of_radial_grid_points_,
-                                initial_spherical_harmonic_l_ + 1,
-                                2 * initial_spherical_harmonic_l_ + 1}};
+  std::vector<std::array<size_t, 3>> extents{
+      num_blocks_, std::array{initial_number_of_radial_grid_points_,
+                              initial_spherical_harmonic_l_ + 1,
+                              2 * initial_spherical_harmonic_l_ + 1}};
+  if (not excise_center_) {
+    // setting B3's number of r points based on minimizing the spectral space
+    // restriction inequality: l_max < 2 * n_r - 1
+    extents[0][0] = (initial_spherical_harmonic_l_ + 3) / 2;
+  }
+  return extents;
 }
 
 std::vector<std::array<size_t, 3>> SphericalShells::initial_refinement_levels()
