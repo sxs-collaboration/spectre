@@ -5,6 +5,7 @@
 
 #include <cstddef>
 
+#include "Domain/BoundaryConditions/Cartoon.hpp"
 #include "Domain/BoundaryConditions/Periodic.hpp"
 #include "Evolution/Systems/ScalarWave/BoundaryConditions/BoundaryCondition.hpp"
 #include "Evolution/Systems/ScalarWave/BoundaryConditions/ConstraintPreservingSphericalRadiation.hpp"
@@ -19,5 +20,6 @@ using standard_boundary_conditions =
     tmpl::list<ConstraintPreservingSphericalRadiation<Dim>,
                DirichletAnalytic<Dim>,
                domain::BoundaryConditions::Periodic<BoundaryCondition<Dim>>,
+               domain::BoundaryConditions::Cartoon<BoundaryCondition<Dim>>,
                SphericalRadiation<Dim>>;
 }  // namespace ScalarWave::BoundaryConditions

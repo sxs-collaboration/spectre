@@ -12,7 +12,9 @@
 #include <vector>
 
 #include "Domain/BoundaryConditions/BoundaryCondition.hpp"
+#include "Domain/BoundaryConditions/Cartoon.hpp"
 #include "Domain/BoundaryConditions/GetBoundaryConditionsBase.hpp"
+#include "Domain/CoordinateMaps/Distribution.hpp"
 #include "Domain/Creators/DomainCreator.hpp"
 #include "Domain/Creators/Sphere.hpp"
 #include "Domain/Creators/TimeDependence/TimeDependence.hpp"
@@ -44,9 +46,8 @@ class CoordinateMap;
 }  // namespace domain
 /// \endcond
 
-namespace domain::creators::detail{
-
-/// Options for filling the interior of the sphere with a cube
+namespace domain::creators::detail {
+/// Options for filling the interior of the disk with a square
 struct InnerSquare {
   static constexpr Options::String help = {
       "Fill the interior of the 2D sphere with a half-square."};
@@ -64,7 +65,7 @@ struct InnerSquare {
   explicit InnerSquare(double sphericity_in) : sphericity(sphericity_in) {}
   double sphericity = std::numeric_limits<double>::signaling_NaN();
 };
-} // namespace domain::creators::detail
+}  // namespace domain::creators::detail
 
 namespace domain::creators {
 /// Create a 3D Domain with a half-disk computational domain employing axial
@@ -103,12 +104,12 @@ class CartoonSphere2D : public DomainCreator<3> {
     static constexpr Options::String help = {"Outer radius of the half-disk."};
   };
 
-  struct InitialRefinement {
-    using type =
-        std::variant<std::array<size_t, 2>, std::vector<std::array<size_t, 2>>>;
+  struct InitialAngularRefinement {
+    using type = size_t;
     static constexpr Options::String help = {
-        "Initial refinement level in [r, theta]. If one pair is given, it will "
-        "be applied to all blocks, otherwise each shell can be specified.\n"
+        "Initial refinement level in theta. It will be applied to all "
+        "blocks because h-refinement is not supported for the ZernikeB1 "
+        "basis.\n"
         "Note: the half-wedges will have their theta values decremented by "
         "one.\n"
         "Note: the inner square, if included, will have refinement set to "
@@ -116,13 +117,20 @@ class CartoonSphere2D : public DomainCreator<3> {
         "(decremented by one in the halved dimension)."};
   };
 
-  struct InitialGridPoints {
-    using type =
-        std::variant<std::array<size_t, 2>, std::vector<std::array<size_t, 2>>>;
+  struct InitialRadialRefinement {
+    using type = std::variant<size_t, std::vector<size_t>>;
     static constexpr Options::String help = {
-        "Initial number of grid points in [r,theta]. If one pair is given, it "
-        "will be applied to all blocks, otherwise each shell can be "
-        "specified, from innermost to outermost.\n"
+        "Initial refinement level in r. If one value is given, it will be "
+        "applied to all blocks, otherwise each shell can be specificed, "
+        "from innermost to outermost.\n"};
+  };
+
+  struct InitialGridPoints {
+    using type = std::array<size_t, 2>;
+    static constexpr Options::String help = {
+        "Initial number of grid points in [r,theta]. It will be applied to all "
+        "blocks because p-refinement is not supported for the ZernikeB1 "
+        "basis.\n"
         "Note: if included, the inner square will have both dimensions'"
         "number of grid points set to the theta value of the surrounding "
         "wedges."};
@@ -132,7 +140,7 @@ class CartoonSphere2D : public DomainCreator<3> {
     using type = std::vector<double>;
     static constexpr Options::String help = {
         "Radial coordinates of the boundaries splitting the radial shells. "
-        "Leave emtpy for only one layer."};
+        "Leave empty for only one layer."};
   };
 
   struct UseEquiangularMap {
@@ -154,18 +162,19 @@ class CartoonSphere2D : public DomainCreator<3> {
   };
 
   template <typename BoundaryConditionsBase>
-  struct YAxisBoundaryCondition {
-    using type = std::unique_ptr<BoundaryConditionsBase>;
-    static constexpr Options::String help = {
-      "The boundary condition to impose at the x=z=0 boundary."};
-  };
-
-  template <typename BoundaryConditionsBase>
   struct OuterBoundaryCondition {
     using type = std::unique_ptr<BoundaryConditionsBase>;
     static constexpr Options::String help = {
         "The boundary condition to impose at the outer boundary of the "
         "domain."};
+  };
+
+  struct RadialDistribution {
+    using type = CoordinateMaps::Distribution;
+    static constexpr Options::String help = {
+        "Distribution of grid points for the radial direction of the wedges. "
+        "For anything but linear, the center must be excised with sphericity = "
+        "1.0"};
   };
 
   struct TimeDependence {
@@ -177,8 +186,9 @@ class CartoonSphere2D : public DomainCreator<3> {
   };
 
   using basic_options =
-      tmpl::list<InnerRadius, OuterRadius, InitialRefinement, InitialGridPoints,
-                 RadialPartitioning, UseEquiangularMap, Interior,
+      tmpl::list<InnerRadius, OuterRadius, InitialAngularRefinement,
+                 InitialRadialRefinement, InitialGridPoints, RadialPartitioning,
+                 UseEquiangularMap, Interior, RadialDistribution,
                  TimeDependence>;
 
   template <typename Metavariables>
@@ -187,9 +197,6 @@ class CartoonSphere2D : public DomainCreator<3> {
           typename Metavariables::system>,
       tmpl::push_back<
           basic_options,
-          YAxisBoundaryCondition<
-              domain::BoundaryConditions::get_boundary_conditions_base<
-                  typename Metavariables::system>>,
           OuterBoundaryCondition<
               domain::BoundaryConditions::get_boundary_conditions_base<
                   typename Metavariables::system>>>,
@@ -204,21 +211,27 @@ class CartoonSphere2D : public DomainCreator<3> {
       "in which case the inner sphericity is set to 1.\n"
       "Equiangular coordinates give better gridpoint spacings in the angular\n"
       "direction, while equidistant coordinates give better gridpoint\n"
-      "spacings in the center half-square."};
+      "spacings in the center half-square.\n"
+      "Elements touching the x=0 axis use ZernikeB1 bases in the x direction\n"
+      "and automatically apply a system's Cartoon-type boundary condition.\n"
+      "Angular refinement must be globally set as the required mortar\n"
+      "projection has not been implemented."};
 
   CartoonSphere2D(
       double inner_radius, double outer_radius,
-      typename InitialRefinement::type&& initial_refinement,
-      typename InitialGridPoints::type&& initial_number_of_grid_points,
+      size_t initial_angular_refinement,
+      const typename InitialRadialRefinement::type& initial_radial_refinement,
+      std::array<size_t, 2> initial_number_of_grid_points,
       std::vector<double> radial_partitioning, bool use_equiangular_map,
       std::variant<Excision, InnerSquare> interior,
+      CoordinateMaps::Distribution radial_distribution,
       std::unique_ptr<domain::creators::time_dependence::TimeDependence<3>>
-          time_dependence = nullptr,
+          time_dependence,
       std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
-          y_axis_boundary_condition = nullptr,
+          outer_boundary_condition,
       std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
-          outer_boundary_condition = nullptr,
-      const Options::Context& context = {});
+          cartoon_boundary_condition,
+      const Options::Context& context);
 
   CartoonSphere2D() = default;
   CartoonSphere2D(const CartoonSphere2D&) = delete;
@@ -253,18 +266,21 @@ class CartoonSphere2D : public DomainCreator<3> {
  private:
   double inner_radius_{};
   double outer_radius_{};
-  std::vector<std::array<size_t, 2>> initial_refinement_{};
-  std::vector<std::array<size_t, 2>> initial_number_of_grid_points_{};
+  size_t initial_angular_refinement_{};
+  std::vector<size_t> initial_radial_refinement_{};
+  std::array<size_t, 2> initial_number_of_grid_points_{};
   std::vector<double> radial_partitioning_{};
   bool use_equiangular_map_{false};
   std::variant<Excision, InnerSquare> interior_{};
   bool fill_interior_{false};
   std::unique_ptr<domain::creators::time_dependence::TimeDependence<3>>
       time_dependence_ = nullptr;
-  std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
-      y_axis_boundary_condition_ = nullptr;
+  CoordinateMaps::Distribution radial_distribution_ =
+      CoordinateMaps::Distribution::Linear;
   std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
       outer_boundary_condition_ = nullptr;
+  std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
+      cartoon_boundary_condition_ = nullptr;
   std::vector<std::string> block_names_;
   std::unordered_map<std::string, std::unordered_set<std::string>>
       block_groups_;
@@ -272,3 +288,126 @@ class CartoonSphere2D : public DomainCreator<3> {
   size_t num_blocks_{};
 };
 }  // namespace domain::creators
+
+namespace domain::creators::detail {
+/// \brief Helper struct for CartoonSphere2D options parsing so the internal
+/// cartoon boundary condition at $x = 0$ is not a required argument.
+///
+/// \detail To get the cartoon-type boundary condition from a system we need
+/// access to the system's metavariables, which is only present when parsing
+/// options. The point of this design is so that the input file does not require
+/// a dummy value for an InnerBoundaryCondition that is always the same for a
+/// given system.
+///
+/// This helper's constructor does not take an InnerBoundaryCondition, which
+/// means if we parse a CartoonSphere2D as a CartonSphere2DOptionsHelper
+/// by having an options parsing specialization (so the input file values are
+/// the helper's construtor, not CartoonSphere2D's), we can detect the
+/// cartoon-type boundary condition for the given system and only then call the
+/// CartoonSphere2D constructor with the extra information.
+struct CartoonSphere2DOptionsHelper {
+  // Inherit the options template from CartoonSphere2D
+  template <typename Metavariables>
+  using options = typename domain::creators::CartoonSphere2D::template options<
+      Metavariables>;
+
+  using InitialRadialRefinement =
+      domain::creators::CartoonSphere2D::InitialRadialRefinement;
+  using Interior = domain::creators::CartoonSphere2D::Interior;
+
+  template <typename BoundaryConditionsBase>
+  using OuterBoundaryCondition =
+      domain::creators::CartoonSphere2D::OuterBoundaryCondition<
+          BoundaryConditionsBase>;
+
+  static constexpr Options::String help = {"CartoonSphere2DOptionsHelper."};
+
+  // Default constructor required by Options system
+  CartoonSphere2DOptionsHelper() = default;
+
+  // Does not take cartoon BC
+  CartoonSphere2DOptionsHelper(
+      double inner_radius, double outer_radius,
+      size_t initial_angular_refinement,
+      typename InitialRadialRefinement::type&& initial_radial_refinement,
+      std::array<size_t, 2> initial_number_of_grid_points,
+      std::vector<double> radial_partitioning, bool use_equiangular_map,
+      std::variant<Excision, InnerSquare> interior,
+      CoordinateMaps::Distribution radial_distribution =
+          CoordinateMaps::Distribution::Linear,
+      std::unique_ptr<domain::creators::time_dependence::TimeDependence<3>>
+          time_dependence = nullptr,
+      std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
+          outer_boundary_condition = nullptr,
+      Options::Context&& context = {})
+      : inner_radius_(inner_radius),
+        outer_radius_(outer_radius),
+        initial_angular_refinement_(initial_angular_refinement),
+        initial_radial_refinement_(std::move(initial_radial_refinement)),
+        initial_number_of_grid_points_(
+            std::move(initial_number_of_grid_points)),
+        radial_partitioning_(std::move(radial_partitioning)),
+        use_equiangular_map_(use_equiangular_map),
+        interior_(std::move(interior)),
+        radial_distribution_(radial_distribution),
+        time_dependence_(std::move(time_dependence)),
+        outer_boundary_condition_(std::move(outer_boundary_condition)),
+        context_(std::move(context)) {}
+
+  // Same members as in CartoonSphere2D; public, to be extracted
+  double inner_radius_{std::numeric_limits<double>::signaling_NaN()};
+  double outer_radius_{std::numeric_limits<double>::signaling_NaN()};
+  size_t initial_angular_refinement_{0};
+  typename InitialRadialRefinement::type initial_radial_refinement_{};
+  std::array<size_t, 2> initial_number_of_grid_points_{};
+  std::vector<double> radial_partitioning_{};
+  bool use_equiangular_map_{false};
+  typename Interior::type interior_{};
+  CoordinateMaps::Distribution radial_distribution_{
+      CoordinateMaps::Distribution::Linear};
+  std::unique_ptr<domain::creators::time_dependence::TimeDependence<3>>
+      time_dependence_{nullptr};
+  std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
+      outer_boundary_condition_{nullptr};
+  Options::Context context_{};
+};
+}  // namespace domain::creators::detail
+
+// Options parsing specialization to automate CartoonSphere2D's cartoon
+// boundary condition
+template <>
+struct Options::create_from_yaml<domain::creators::CartoonSphere2D> {
+  template <typename Metavariables>
+  static domain::creators::CartoonSphere2D create(
+      const Options::Option& options) {
+    auto helper =
+        options.parse_as<domain::creators::detail::CartoonSphere2DOptionsHelper,
+                         Metavariables>();
+
+    // Create cartoon BC if system supports it, if not will throw parse error in
+    // real constructor
+    std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
+        cartoon_boundary_condition = nullptr;
+    if constexpr (domain::BoundaryConditions::has_boundary_conditions_base_v<
+                      typename Metavariables::system>) {
+      if constexpr (domain::BoundaryConditions::system_has_cartoon_bc_v<
+                        Metavariables>) {
+        cartoon_boundary_condition =
+            domain::BoundaryConditions::make_cartoon_boundary_condition<
+                Metavariables>();
+      }
+    }
+
+    // Construct CartoonSphere2D using the helper's parsed data + cartoon BC
+    return domain::creators::CartoonSphere2D(
+        helper.inner_radius_, helper.outer_radius_,
+        helper.initial_angular_refinement_,
+        std::move(helper.initial_radial_refinement_),
+        std::move(helper.initial_number_of_grid_points_),
+        std::move(helper.radial_partitioning_), helper.use_equiangular_map_,
+        std::move(helper.interior_), helper.radial_distribution_,
+        std::move(helper.time_dependence_),
+        std::move(helper.outer_boundary_condition_),
+        std::move(cartoon_boundary_condition), helper.context_);
+  }
+};

@@ -698,22 +698,6 @@ void apply_boundary_conditions_on_all_external_faces(
       typename std::decay_t<decltype(db::get<Parallel::Tags::Metavariables>(
           *box))>::factory_creation::factory_classes;
 
-  // If cartoon BC is available, verify mesh is compatible before removing BC
-  // (cartoon BCs are coupled with ZernikeB1 basis which does not need a BC, but
-  // subcell version of mesh does)
-  if constexpr (domain::BoundaryConditions::detail::has_cartoon_bc_v<
-                    tmpl::at<factory_classes,
-                             typename System::boundary_conditions_base>>) {
-    const auto& mesh = db::get<::domain::Tags::Mesh<Dim>>(*box);
-    if (not domain::BoundaryConditions::dg_mesh_is_cartoon_compatible(mesh)) {
-      ERROR(
-          "You might have used a Cartoon boundary condition on an external "
-          "boundary condition. Alternatively and less likely, there is a bug. "
-          "The mesh is: "
-          << mesh);
-    }
-  }
-
   using derived_boundary_conditions = tmpl::remove_if<
       tmpl::at<factory_classes, typename System::boundary_conditions_base>,
       tmpl::or_<
@@ -737,6 +721,28 @@ void apply_boundary_conditions_on_all_external_faces(
   const auto& external_boundary_conditions =
       db::get<domain::Tags::ExternalBoundaryConditions<Dim>>(*box).at(
           element.id().block_id());
+
+  // Error if any cartoon-type BC is used with an incompatible mesh.
+  // Cartoon BCs are coupled only to ZernikeB1 basis elements, which do not need
+  // a DG boundary condition but do require one with subcell
+  if constexpr (domain::BoundaryConditions::detail::has_cartoon_bc_v<
+                    tmpl::at<factory_classes,
+                             typename System::boundary_conditions_base>>) {
+    const auto& mesh = db::get<::domain::Tags::Mesh<Dim>>(*box);
+    if (not domain::BoundaryConditions::dg_mesh_is_cartoon_compatible(mesh)) {
+      for (const Direction<Dim>& direction : element.external_boundaries()) {
+        if (domain::BoundaryConditions::is_cartoon(
+                external_boundary_conditions.at(direction))) {
+          ERROR(
+              "You might have used a Cartoon boundary condition on an external "
+              "boundary condition. Alternatively and less likely, there is a "
+              "bug. The problematic BC is in direction "
+              << direction << ", the mesh is: " << mesh);
+        }
+      }
+    }
+  }
+
   tmpl::for_each<derived_boundary_conditions>(
       [&boundary_correction, &box, &element, &external_boundary_conditions,
        &number_of_boundaries_left, &partial_derivs, &primitive_vars,

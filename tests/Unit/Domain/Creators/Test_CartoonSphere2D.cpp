@@ -45,8 +45,8 @@ namespace {
 template <typename... FuncsOfTime>
 void test_sphere_construction(
     const creators::CartoonSphere2D& sphere, const double inner_radius,
-    const double outer_radius,
-    const std::vector<std::array<size_t, 2>>& expected_refinement_levels_param,
+    const double outer_radius, const size_t expected_angular_refinement,
+    const std::vector<size_t>& expected_radial_refinement,
     const std::vector<std::array<size_t, 2>>& expected_extents_param,
     const std::vector<double>& expected_radial_partitioning,
     const bool use_equiangular_map,
@@ -203,37 +203,22 @@ void test_sphere_construction(
   }
   CHECK(sphere.initial_extents() == expected_extents);
 
-  std::vector<std::array<size_t, 2>> expected_refinement_levels_temp{};
   std::vector<std::array<size_t, 3>> expected_refinement_levels{};
-  expected_refinement_levels_temp.reserve(num_blocks);
   expected_refinement_levels.reserve(num_blocks);
-  if (fill_interior) {
-    expected_refinement_levels_temp.push_back(
-        expected_refinement_levels_param[0]);
-  }
   for (size_t i = 0; i < num_shells; ++i) {
     for (size_t j = 0; j < 3; ++j) {
-      expected_refinement_levels_temp.push_back(
-          expected_refinement_levels_param[i]);
+      const size_t index = num_shells - i - 1;
+      const size_t shift =
+          (j == 0 or j == 2) and expected_angular_refinement != 0 ? 1 : 0;
+      expected_refinement_levels.push_back({expected_angular_refinement - shift,
+                                            expected_radial_refinement[index],
+                                            0});
     }
   }
-  std::reverse(expected_refinement_levels_temp.begin(),
-               expected_refinement_levels_temp.end());
-  size_t n = 0;
-  std::transform(
-      expected_refinement_levels_temp.begin(),
-      expected_refinement_levels_temp.end(),
-      std::back_inserter(expected_refinement_levels),
-      [&n](const std::array<size_t, 2>& arr) -> std::array<size_t, 3> {
-        const size_t shift = (n % 3 == 0 or n % 3 == 2) and arr[1] != 0 ? 1 : 0;
-        ++n;
-        return {arr[1] - shift, arr[0], 0};
-      });
   if (fill_interior) {
-    expected_refinement_levels.back()[1] =
-        expected_refinement_levels_temp.back()[1];
-    expected_refinement_levels.back()[0] =
-        expected_refinement_levels.back()[1] - 1;
+    const size_t shift = expected_angular_refinement != 0 ? 1 : 0;
+    expected_refinement_levels.push_back(
+        {expected_angular_refinement - shift, expected_angular_refinement, 0});
   }
   CHECK(sphere.initial_refinement_levels() == expected_refinement_levels);
 
@@ -336,237 +321,236 @@ void test_sphere_construction(
 }
 
 std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
-create_boundary_condition1() {
-  return std::make_unique<
-      TestHelpers::domain::BoundaryConditions::TestBoundaryCondition<3>>(
-      Direction<3>::upper_eta(), 1);
-}
-std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
-create_boundary_condition2() {
+create_boundary_condition_outer() {
   return std::make_unique<
       TestHelpers::domain::BoundaryConditions::TestBoundaryCondition<3>>(
       Direction<3>::lower_xi(), 2);
 }
 std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
-create_boundary_condition3() {
+create_boundary_condition_inner() {
   return std::make_unique<
       TestHelpers::domain::BoundaryConditions::TestBoundaryCondition<3>>(
       Direction<3>::lower_eta(), 3);
+}
+
+std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
+create_cartoon_boundary_condition() {
+  return std::make_unique<TestHelpers::domain::BoundaryConditions::
+                              TestCartoonBoundaryCondition<3>>();
 }
 
 void test_sphere_boundaries() {
   INFO("CartoonSphere2D boundaries");
   const double inner_radius = 1.0;
   const double outer_radius = 2.0;
-  const std::array<size_t, 2> refinement_level_arr{{2, 3}};
-  const std::vector<std::array<size_t, 2>> refinement_level_vec{
-      {4, 4}, {3, 5}, {2, 6}};
+  const size_t angular_refinement = 2;
+  const size_t radial_refinement = 4;
+  const std::array<size_t, 2> grid_points_arr{{4, 4}};
+  const std::vector<size_t> radial_refinement_partitioned{4, 6, 5};
   const std::vector<double> radial_partitioning{{1.3, 1.8}};
   const std::vector<double> radial_partitioning_empty{};
-  const std::array<size_t, 2> grid_points_arr{{4, 4}};
-  const std::vector<std::array<size_t, 2>> grid_points_vec{
-      {4, 4}, {5, 3}, {6, 7}};
   const domain::creators::detail::InnerSquare fill_center{0.0};
+  const auto linear_map = CoordinateMaps::Distribution::Linear;
 
   {
-    INFO("No BC, no refinement, equiangular");
+    INFO("No partitioning, equiangular");
     const creators::CartoonSphere2D sphere{inner_radius,
                                            outer_radius,
-                                           refinement_level_arr,
+                                           angular_refinement,
+                                           radial_refinement,
                                            grid_points_arr,
                                            radial_partitioning_empty,
                                            true,
-                                           fill_center};
+                                           fill_center,
+                                           linear_map,
+                                           nullptr,
+                                           create_boundary_condition_outer(),
+                                           create_cartoon_boundary_condition(),
+                                           {}};
     test_sphere_construction(
-        sphere, inner_radius, outer_radius,
-        std::vector<std::array<size_t, 2>>{1, refinement_level_arr},
-        std::vector<std::array<size_t, 2>>{1, grid_points_arr},
-        radial_partitioning_empty, true, fill_center);
+        sphere, inner_radius, outer_radius, angular_refinement,
+        std::vector<size_t>(1, radial_refinement),
+        std::vector<std::array<size_t, 2>>(1, grid_points_arr),
+        radial_partitioning_empty, true, fill_center, true);
   }
   {
-    INFO("No BC, no refinement, affine");
+    INFO("No partitioning, affine");
     const creators::CartoonSphere2D sphere{inner_radius,
                                            outer_radius,
-                                           refinement_level_arr,
+                                           angular_refinement,
+                                           radial_refinement,
                                            grid_points_arr,
                                            radial_partitioning_empty,
                                            false,
-                                           fill_center};
+                                           fill_center,
+                                           linear_map,
+                                           nullptr,
+                                           create_boundary_condition_outer(),
+                                           create_cartoon_boundary_condition(),
+                                           {}};
     test_sphere_construction(
-        sphere, inner_radius, outer_radius,
-        std::vector<std::array<size_t, 2>>{1, refinement_level_arr},
-        std::vector<std::array<size_t, 2>>{1, grid_points_arr},
-        radial_partitioning_empty, false, fill_center);
+        sphere, inner_radius, outer_radius, angular_refinement,
+        std::vector<size_t>(1, radial_refinement),
+        std::vector<std::array<size_t, 2>>(1, grid_points_arr),
+        radial_partitioning_empty, false, fill_center, true);
   }
   {
-    INFO("No BC, with refinement and extents array");
+    INFO("Partitioning and refinement array");
     const creators::CartoonSphere2D sphere{inner_radius,
                                            outer_radius,
-                                           refinement_level_vec,
+                                           angular_refinement,
+                                           radial_refinement_partitioned,
                                            grid_points_arr,
-                                           radial_partitioning,
-                                           true,
-                                           fill_center};
-    test_sphere_construction(
-        sphere, inner_radius, outer_radius, refinement_level_vec,
-        std::vector<std::array<size_t, 2>>{3, grid_points_arr},
-        radial_partitioning, true, fill_center);
-  }
-  {
-    INFO("No BC, with refinement and refinement array");
-    const creators::CartoonSphere2D sphere{inner_radius,
-                                           outer_radius,
-                                           refinement_level_arr,
-                                           grid_points_vec,
-                                           radial_partitioning,
-                                           true,
-                                           fill_center};
-    test_sphere_construction(
-        sphere, inner_radius, outer_radius,
-        std::vector<std::array<size_t, 2>>{3, refinement_level_arr},
-        grid_points_vec, radial_partitioning, true, fill_center);
-  }
-  {
-    INFO("With BC, no excision");
-    const creators::CartoonSphere2D sphere{inner_radius,
-                                           outer_radius,
-                                           refinement_level_vec,
-                                           grid_points_vec,
                                            radial_partitioning,
                                            true,
                                            fill_center,
+                                           linear_map,
                                            nullptr,
-                                           create_boundary_condition1(),
-                                           create_boundary_condition2()};
-    test_sphere_construction(sphere, inner_radius, outer_radius,
-                             refinement_level_vec, grid_points_vec,
-                             radial_partitioning, true, fill_center, true);
+                                           create_boundary_condition_outer(),
+                                           create_cartoon_boundary_condition(),
+                                           {}};
+    test_sphere_construction(
+        sphere, inner_radius, outer_radius, angular_refinement,
+        radial_refinement_partitioned,
+        std::vector<std::array<size_t, 2>>(3, grid_points_arr),
+        radial_partitioning, true, fill_center, true);
   }
   {
-    INFO("With BC, with excision");
-    domain::creators::detail::Excision excise1{create_boundary_condition3()};
-    domain::creators::detail::Excision excise2{create_boundary_condition3()};
+    INFO("Partitioning and refinement vector");
     const creators::CartoonSphere2D sphere{inner_radius,
                                            outer_radius,
-                                           refinement_level_vec,
-                                           grid_points_vec,
+                                           angular_refinement,
+                                           radial_refinement,
+                                           grid_points_arr,
+                                           radial_partitioning,
+                                           true,
+                                           fill_center,
+                                           linear_map,
+                                           nullptr,
+                                           create_boundary_condition_outer(),
+                                           create_cartoon_boundary_condition(),
+                                           {}};
+    test_sphere_construction(
+        sphere, inner_radius, outer_radius, angular_refinement,
+        std::vector<size_t>(3, radial_refinement),
+        std::vector<std::array<size_t, 2>>(3, grid_points_arr),
+        radial_partitioning, true, fill_center, true);
+  }
+  {
+    INFO("With excision");
+    domain::creators::detail::Excision excise1{
+        create_boundary_condition_inner()};
+    domain::creators::detail::Excision excise2{
+        create_boundary_condition_inner()};
+    const creators::CartoonSphere2D sphere{inner_radius,
+                                           outer_radius,
+                                           angular_refinement,
+                                           radial_refinement_partitioned,
+                                           grid_points_arr,
                                            radial_partitioning,
                                            true,
                                            std::move(excise1),
+                                           linear_map,
                                            nullptr,
-                                           create_boundary_condition1(),
-                                           create_boundary_condition2()};
+                                           create_boundary_condition_outer(),
+                                           create_cartoon_boundary_condition(),
+                                           {}};
     test_sphere_construction(
-        sphere, inner_radius, outer_radius, refinement_level_vec,
-        grid_points_vec, radial_partitioning, true, std::move(excise2), true);
+        sphere, inner_radius, outer_radius, angular_refinement,
+        radial_refinement_partitioned,
+        std::vector<std::array<size_t, 2>>(3, grid_points_arr),
+        radial_partitioning, true, std::move(excise2), true);
   }
   {
-    INFO("With BC, with excision and no partitioning");
-    domain::creators::detail::Excision excise1{create_boundary_condition3()};
-    domain::creators::detail::Excision excise2{create_boundary_condition3()};
+    INFO("With excision and no partitioning");
+    domain::creators::detail::Excision excise1{
+        create_boundary_condition_inner()};
+    domain::creators::detail::Excision excise2{
+        create_boundary_condition_inner()};
     const creators::CartoonSphere2D sphere{inner_radius,
                                            outer_radius,
-                                           refinement_level_arr,
+                                           angular_refinement,
+                                           radial_refinement,
                                            grid_points_arr,
                                            radial_partitioning_empty,
-                                           true,
+                                           false,
                                            std::move(excise1),
+                                           linear_map,
                                            nullptr,
-                                           create_boundary_condition1(),
-                                           create_boundary_condition2()};
+                                           create_boundary_condition_outer(),
+                                           create_cartoon_boundary_condition(),
+                                           {}};
     test_sphere_construction(
-        sphere, inner_radius, outer_radius,
-        std::vector<std::array<size_t, 2>>{1, refinement_level_arr},
-        std::vector<std::array<size_t, 2>>{1, grid_points_arr},
-        radial_partitioning_empty, true, std::move(excise2), true);
+        sphere, inner_radius, outer_radius, angular_refinement,
+        std::vector<size_t>(1, radial_refinement),
+        std::vector<std::array<size_t, 2>>(1, grid_points_arr),
+        radial_partitioning_empty, false, std::move(excise2), true);
   }
 }
 
 void test_sphere_factory() {
   INFO("CartoonSphere2D factory");
   using Translation3D = CoordinateMaps::TimeDependent::Translation<3>;
-  const auto sphere = TestHelpers::test_option_tag<
-      domain::OptionTags::DomainCreator<3>,
-      TestHelpers::domain::BoundaryConditions::
-          MetavariablesWithoutBoundaryConditions<
-              3, domain::creators::CartoonSphere2D>>(
-      "CartoonSphere2D:\n"
-      "  InnerRadius: 1.0\n"
-      "  OuterRadius: 5.0\n"
-      "  InitialRefinement:\n"
-      "    - [3, 4]\n"
-      "    - [3, 3]\n"
-      "    - [2, 4]\n"
-      "  InitialGridPoints: [2,3]\n"
-      "  RadialPartitioning: [3.5, 4.5]\n"
-      "  UseEquiangularMap: true\n"
-      "  Interior:\n"
-      "    FillWithSphericity: 0.0\n"
-      "  TimeDependence: None\n");
   const double inner_radius = 1.0;
   const double outer_radius = 5.0;
-  const std::vector<std::array<size_t, 2>> refinement_levels{
-      {3, 4}, {3, 3}, {2, 4}};
+  const size_t angular_refinement = 3;
+  const std::vector<size_t> radial_refinement{3, 3, 2};
   const std::vector<std::array<size_t, 2>> grid_points{3, {2, 3}};
   const std::vector<double> radial_partition{{3.5, 4.5}};
   const domain::creators::detail::InnerSquare fill_center{0.0};
-  test_sphere_construction(
-      dynamic_cast<const creators::CartoonSphere2D&>(*sphere), inner_radius,
-      outer_radius, refinement_levels, grid_points, radial_partition, true,
-      fill_center);
 
   const auto sphere_boundary_conditions = TestHelpers::test_option_tag<
       domain::OptionTags::DomainCreator<3>,
       TestHelpers::domain::BoundaryConditions::
-          MetavariablesWithBoundaryConditions<
+          MetavariablesWithBoundaryConditionsCartoon<
               3, domain::creators::CartoonSphere2D>>(
       "CartoonSphere2D:\n"
       "  InnerRadius: 1.0\n"
       "  OuterRadius: 5.0\n"
-      "  InitialRefinement:\n"
-      "    - [3, 4]\n"
-      "    - [3, 3]\n"
-      "    - [2, 4]\n"
+      "  InitialAngularRefinement: 3\n"
+      "  InitialRadialRefinement:\n"
+      "    - 3\n"
+      "    - 3\n"
+      "    - 2\n"
       "  InitialGridPoints: [2,3]\n"
       "  RadialPartitioning: [3.5, 4.5]\n"
       "  UseEquiangularMap: false\n"
+      "  RadialDistribution: Linear\n"
       "  TimeDependence: None\n"
       "  Interior:\n"
       "    ExciseWithBoundaryCondition:\n"
       "      TestBoundaryCondition:\n"
       "        Direction: lower-eta\n"
       "        BlockId: 3\n"
-      "  YAxisBoundaryCondition:\n"
-      "    TestBoundaryCondition:\n"
-      "      Direction: upper-eta\n"
-      "      BlockId: 1\n"
       "  OuterBoundaryCondition:\n"
       "    TestBoundaryCondition:\n"
       "      Direction: lower-xi\n"
       "      BlockId: 2\n");
-  domain::creators::detail::Excision excise1{create_boundary_condition3()};
+  domain::creators::detail::Excision excise1{create_boundary_condition_inner()};
   test_sphere_construction(dynamic_cast<const creators::CartoonSphere2D&>(
                                *sphere_boundary_conditions),
-                           inner_radius, outer_radius, refinement_levels,
-                           grid_points, radial_partition, false,
-                           std::move(excise1), true);
+                           inner_radius, outer_radius, angular_refinement,
+                           radial_refinement, grid_points, radial_partition,
+                           false, std::move(excise1), true);
 
   INFO("With TimeDependent Map");
   const auto sphere_time_dependent = TestHelpers::test_option_tag<
       domain::OptionTags::DomainCreator<3>,
       TestHelpers::domain::BoundaryConditions::
-          MetavariablesWithBoundaryConditions<
+          MetavariablesWithBoundaryConditionsCartoon<
               3, domain::creators::CartoonSphere2D>>(
       "CartoonSphere2D:\n"
       "  InnerRadius: 1.0\n"
       "  OuterRadius: 5.0\n"
-      "  InitialRefinement:\n"
-      "    - [3, 4]\n"
-      "    - [3, 3]\n"
-      "    - [2, 4]\n"
+      "  InitialAngularRefinement: 3\n"
+      "  InitialRadialRefinement:\n"
+      "    - 3\n"
+      "    - 3\n"
+      "    - 2\n"
       "  InitialGridPoints: [2,3]\n"
       "  RadialPartitioning: [3.5, 4.5]\n"
       "  UseEquiangularMap: false\n"
+      "  RadialDistribution: Linear\n"
       "  TimeDependence:\n"
       "    UniformTranslation:\n"
       "      InitialTime: 2.3\n"
@@ -576,16 +560,12 @@ void test_sphere_factory() {
       "      TestBoundaryCondition:\n"
       "        Direction: lower-eta\n"
       "        BlockId: 3\n"
-      "  YAxisBoundaryCondition:\n"
-      "    TestBoundaryCondition:\n"
-      "      Direction: upper-eta\n"
-      "      BlockId: 1\n"
       "  OuterBoundaryCondition:\n"
       "    TestBoundaryCondition:\n"
       "      Direction: lower-xi\n"
       "      BlockId: 2\n");
-  domain::creators::detail::Excision excise2{create_boundary_condition3()};
-  domain::creators::detail::Excision excise3{create_boundary_condition3()};
+  domain::creators::detail::Excision excise2{create_boundary_condition_inner()};
+  domain::creators::detail::Excision excise3{create_boundary_condition_inner()};
   const double initial_time = 2.3;
   const DataVector velocity{{1.1, -0.1, 0.3}};
   const std::string f_of_t_name = "Translation";
@@ -603,8 +583,8 @@ void test_sphere_factory() {
   // without expiration times
   test_sphere_construction(
       dynamic_cast<const creators::CartoonSphere2D&>(*sphere_time_dependent),
-      inner_radius, outer_radius, refinement_levels, grid_points,
-      radial_partition, false, std::move(excise2), true,
+      inner_radius, outer_radius, angular_refinement, radial_refinement,
+      grid_points, radial_partition, false, std::move(excise2), true,
       std::make_tuple(
           std::pair<std::string,
                     domain::FunctionsOfTime::PiecewisePolynomial<2>>{
@@ -616,8 +596,8 @@ void test_sphere_factory() {
   // with expiration times
   test_sphere_construction(
       dynamic_cast<const creators::CartoonSphere2D&>(*sphere_time_dependent),
-      inner_radius, outer_radius, refinement_levels, grid_points,
-      radial_partition, false, std::move(excise3), true,
+      inner_radius, outer_radius, angular_refinement, radial_refinement,
+      grid_points, radial_partition, false, std::move(excise3), true,
       std::make_tuple(
           std::pair<std::string,
                     domain::FunctionsOfTime::PiecewisePolynomial<2>>{
@@ -633,84 +613,120 @@ void test_sphere_errors() {
   const double inner_radius = 1.0;
   const double high_inner_radius = 3.0;
   const double outer_radius = 2.0;
-  const std::vector<std::array<size_t, 2>> refinement_level_vec{
-      {3, 4}, {3, 5}, {4, 6}};
-  const std::vector<std::array<size_t, 2>> refinement_level_short{{3, 4},
-                                                                  {3, 2}};
-  const std::vector<std::array<size_t, 2>> grid_points_vec{
-      {4, 4}, {5, 3}, {6, 7}};
+  const size_t angular_refinement = 2;
+  const std::vector<size_t> radial_refinement_vec{3, 3, 4};
+  const std::vector<size_t> radial_refinement_short{3, 2};
+  const std::array<size_t, 2> grid_points{5, 3};
   const std::vector<double> radial_partitioning{{1.3, 1.8}};
   const std::vector<double> radial_partitioning_unordered{{1.6, 1.3}};
   const std::vector<double> radial_partitioning_low{{0.8, 1.3}};
   const std::vector<double> radial_partitioning_high{{1.6, 3.3}};
   const domain::creators::detail::InnerSquare fill_center{0.0};
+  const auto linear_map = CoordinateMaps::Distribution::Linear;
 
   CHECK_THROWS_WITH(
-      creators::CartoonSphere2D(
-          high_inner_radius, outer_radius, refinement_level_vec,
-          grid_points_vec, radial_partitioning, false, fill_center, nullptr,
-          nullptr, nullptr, Options::Context{false, {}, 1, 1}),
+      creators::CartoonSphere2D(high_inner_radius, outer_radius,
+                                angular_refinement, radial_refinement_vec,
+                                grid_points, radial_partitioning, false,
+                                fill_center, linear_map, nullptr, nullptr,
+                                create_cartoon_boundary_condition(),
+                                Options::Context{false, {}, 1, 1}),
       Catch::Matchers::ContainsSubstring("Inner radius must be smaller than "
                                          "outer radius, but inner radius is "));
   CHECK_THROWS_WITH(
       creators::CartoonSphere2D(
-          inner_radius, outer_radius, refinement_level_vec, grid_points_vec,
-          radial_partitioning_unordered, false, fill_center, nullptr, nullptr,
-          nullptr, Options::Context{false, {}, 1, 1}),
+          inner_radius, outer_radius, angular_refinement, radial_refinement_vec,
+          grid_points, radial_partitioning_unordered, false, fill_center,
+          linear_map, nullptr, nullptr, create_cartoon_boundary_condition(),
+          Options::Context{false, {}, 1, 1}),
       Catch::Matchers::ContainsSubstring(
           "Specify radial partitioning in ascending order."));
   CHECK_THROWS_WITH(
       creators::CartoonSphere2D(
-          inner_radius, outer_radius, refinement_level_vec, grid_points_vec,
-          radial_partitioning_low, false, fill_center, nullptr, nullptr,
-          nullptr, Options::Context{false, {}, 1, 1}),
+          inner_radius, outer_radius, angular_refinement, radial_refinement_vec,
+          grid_points, radial_partitioning_low, false, fill_center, linear_map,
+          nullptr, nullptr, create_cartoon_boundary_condition(),
+          Options::Context{false, {}, 1, 1}),
       Catch::Matchers::ContainsSubstring(
           "First radial partition must be larger than the inner"));
   CHECK_THROWS_WITH(
       creators::CartoonSphere2D(
-          inner_radius, outer_radius, refinement_level_vec, grid_points_vec,
-          radial_partitioning_high, false, fill_center, nullptr, nullptr,
-          nullptr, Options::Context{false, {}, 1, 1}),
+          inner_radius, outer_radius, angular_refinement, radial_refinement_vec,
+          grid_points, radial_partitioning_high, false, fill_center, linear_map,
+          nullptr, nullptr, create_cartoon_boundary_condition(),
+          Options::Context{false, {}, 1, 1}),
       Catch::Matchers::ContainsSubstring(
           "Last radial partition must be smaller than the outer"));
+  CHECK_THROWS_WITH(creators::CartoonSphere2D(
+                        inner_radius, outer_radius, angular_refinement,
+                        radial_refinement_short, grid_points,
+                        radial_partitioning, false, fill_center, linear_map,
+                        nullptr, nullptr, create_cartoon_boundary_condition(),
+                        Options::Context{false, {}, 1, 1}),
+                    Catch::Matchers::ContainsSubstring(
+                        "InitialRadialRefinement must be one larger "
+                        "than RadialPartitioning (size"));
   CHECK_THROWS_WITH(
       creators::CartoonSphere2D(
-          inner_radius, outer_radius, refinement_level_short, grid_points_vec,
-          radial_partitioning, false, fill_center, nullptr, nullptr, nullptr,
-          Options::Context{false, {}, 1, 1}),
-      Catch::Matchers::ContainsSubstring("InitialRefinement must be one larger "
-                                         "than RadialPartitioning (size"));
-  CHECK_THROWS_WITH(
-      creators::CartoonSphere2D(
-          inner_radius, outer_radius, refinement_level_vec, grid_points_vec,
-          radial_partitioning, false, fill_center, nullptr,
-          std::make_unique<TestHelpers::domain::BoundaryConditions::
-                               TestPeriodicBoundaryCondition<3>>(),
-          nullptr, Options::Context{false, {}, 1, 1}),
-      Catch::Matchers::ContainsSubstring(
-          "Must specify either both inner and outer boundary conditions "));
-  CHECK_THROWS_WITH(
-      creators::CartoonSphere2D(
-          inner_radius, outer_radius, refinement_level_vec, grid_points_vec,
-          radial_partitioning, false, fill_center, nullptr,
+          inner_radius, outer_radius, angular_refinement, radial_refinement_vec,
+          grid_points, radial_partitioning, false, fill_center, linear_map,
+          nullptr,
           std::make_unique<TestHelpers::domain::BoundaryConditions::
                                TestNoneBoundaryCondition<3>>(),
-          std::make_unique<TestHelpers::domain::BoundaryConditions::
-                               TestNoneBoundaryCondition<3>>(),
+          create_cartoon_boundary_condition(),
           Options::Context{false, {}, 1, 1}),
       Catch::Matchers::ContainsSubstring(
           "None boundary condition is not supported. If you would like an "));
   CHECK_THROWS_WITH(
       creators::CartoonSphere2D(
-          inner_radius, outer_radius, refinement_level_vec, grid_points_vec,
-          radial_partitioning, false, fill_center, nullptr,
+          inner_radius, outer_radius, angular_refinement, radial_refinement_vec,
+          grid_points, radial_partitioning, false, fill_center, linear_map,
+          nullptr,
           std::make_unique<TestHelpers::domain::BoundaryConditions::
                                TestPeriodicBoundaryCondition<3>>(),
-          std::make_unique<TestHelpers::domain::BoundaryConditions::
-                               TestPeriodicBoundaryCondition<3>>(),
+          create_cartoon_boundary_condition(),
           Options::Context{false, {}, 1, 1}),
       Catch::Matchers::ContainsSubstring(
           "Cannot have periodic boundary conditions on a 2D sphere."));
+  CHECK_THROWS_WITH(
+      creators::CartoonSphere2D(
+          inner_radius, outer_radius, angular_refinement, radial_refinement_vec,
+          grid_points, radial_partitioning, false, fill_center, linear_map,
+          nullptr, create_cartoon_boundary_condition(),
+          create_cartoon_boundary_condition(),
+          Options::Context{false, {}, 1, 1}),
+      Catch::Matchers::ContainsSubstring(
+          "Cartoon boundary conditions should not be specified as external "));
+  // Test that using a system without a cartoon BC triggers a parse error via
+  // the create_from_yaml path. MetavariablesWithBoundaryConditions has a system
+  // with boundary conditions but no Cartoon BC in its factory list, so
+  // cartoon_boundary_condition_ will be nullptr when CartoonSphere2D is
+  // constructed.
+  CHECK_THROWS_WITH(
+      (TestHelpers::test_option_tag<
+          domain::OptionTags::DomainCreator<3>,
+          TestHelpers::domain::BoundaryConditions::
+              MetavariablesWithBoundaryConditions<
+                  3, domain::creators::CartoonSphere2D>>(
+          "CartoonSphere2D:\n"
+          "  InnerRadius: 1.0\n"
+          "  OuterRadius: 2.0\n"
+          "  InitialAngularRefinement: 2\n"
+          "  InitialRadialRefinement: 4\n"
+          "  InitialGridPoints: [4, 4]\n"
+          "  RadialPartitioning: []\n"
+          "  UseEquiangularMap: false\n"
+          "  RadialDistribution: Linear\n"
+          "  TimeDependence: None\n"
+          "  Interior:\n"
+          "    FillWithSphericity: 0.0\n"
+          "  OuterBoundaryCondition:\n"
+          "    TestBoundaryCondition:\n"
+          "      Direction: lower-xi\n"
+          "      BlockId: 2\n")),
+      Catch::Matchers::ContainsSubstring(
+          "CartoonSphere2D should only be used with systems that have a "
+          "cartoon-style boundary condition"));
 }
 }  // namespace
 

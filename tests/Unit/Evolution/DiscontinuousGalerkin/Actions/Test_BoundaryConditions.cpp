@@ -2633,6 +2633,8 @@ void test_cartoon_mesh_compatibility() {
       external_boundary_conditions{1};
   external_boundary_conditions[0][Direction<1>::lower_xi()] = std::make_unique<
       domain::BoundaryConditions::Cartoon<BoundaryCondition<TestSystem>>>();
+  external_boundary_conditions[0][Direction<1>::upper_xi()] = std::make_unique<
+      domain::BoundaryConditions::None<BoundaryCondition<TestSystem>>>();
 
   auto boundary_correction =
       BoundaryTerms<1, false, SystemType::Conservative, false>{false, 1.0};
@@ -2691,7 +2693,8 @@ void test_cartoon_mesh_compatibility() {
                                    Frame::Inertial>>
       partial_derivs{};
 
-  // This should throw because we have cartoon BC but non-cartoon mesh
+  // This should throw because a cartoon BC is used on lower_xi with
+  // an incompatible mesh.
   CHECK_THROWS_WITH(
       (evolution::dg::Actions::detail::
            apply_boundary_conditions_on_all_external_faces<TestSystem, 1>(
@@ -2700,6 +2703,55 @@ void test_cartoon_mesh_compatibility() {
       Catch::Matchers::ContainsSubstring(
           "You might have used a Cartoon boundary condition on an external "
           "boundary condition"));
+
+  // Negative test: cartoon BCs are in the factory and the mesh is incompatible,
+  // but no cartoon BC is actually used on any external face. This must not
+  // error
+  {
+    INFO(
+        "Test that non-cartoon mesh does not throw when cartoon BC is not "
+        "used");
+    std::vector<DirectionMap<
+        1, std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>
+        no_cartoon_bcs{1};
+    no_cartoon_bcs[0][Direction<1>::lower_xi()] = std::make_unique<
+        domain::BoundaryConditions::None<BoundaryCondition<TestSystem>>>();
+    no_cartoon_bcs[0][Direction<1>::upper_xi()] = std::make_unique<
+        domain::BoundaryConditions::None<BoundaryCondition<TestSystem>>>();
+
+    Variables<typename TestSystem::variables_tag::tags_list> evolved_vars2{3,
+                                                                           1.0};
+    Variables<db::wrap_tags_in<::Tags::dt,
+                               typename TestSystem::variables_tag::tags_list>>
+        dt_evolved_vars2{3, 0.0};
+
+    auto box2 = db::create<simple_tags, compute_tags>(
+        MetavariablesWithCartoon<TestSystem>{}, std::move(no_cartoon_bcs),
+        non_cartoon_mesh, element,
+        ElementMap<1, Frame::Grid>{
+            element_id,
+            domain::make_coordinate_map_base<Frame::BlockLogical, Frame::Grid>(
+                domain::CoordinateMaps::Identity<1>{})},
+        domain::make_coordinate_map_base<Frame::Grid, Frame::Inertial>(
+            domain::CoordinateMaps::Identity<1>{}),
+        0.0,
+        std::unordered_map<
+            std::string,
+            std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>{},
+        std::optional<tnsr::I<DataVector, 1>>{},
+        InverseJacobian<DataVector, 1, Frame::ElementLogical, Frame::Inertial>{
+            3_st, 1.0},
+        Scalar<DataVector>{3_st, 1.0},
+        evolution::dg::Tags::NormalCovectorAndMagnitude<1>::type{},
+        evolved_vars2, dt_evolved_vars2, boundary_condition_volume_tag_number,
+        boundary_correction_volume_tag_number, dg::Formulation::StrongInertial);
+
+    CHECK_NOTHROW(
+        (evolution::dg::Actions::detail::
+             apply_boundary_conditions_on_all_external_faces<TestSystem, 1>(
+                 make_not_null(&box2), boundary_correction, temporaries,
+                 volume_fluxes, partial_derivs, nullptr)));
+  }
 }
 
 SPECTRE_TEST_CASE("Unit.Evolution.DG.ComputeTimeDerivative.BoundaryConditions",
