@@ -53,6 +53,7 @@ target_link_libraries(
   Options
   Serialization
   Spectral
+  SphericalHarmonics
   Utilities
   PRIVATE
   Boost::boost
