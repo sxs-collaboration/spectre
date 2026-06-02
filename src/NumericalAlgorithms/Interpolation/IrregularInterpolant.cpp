@@ -15,100 +15,31 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "NumericalAlgorithms/Interpolation/CardinalInterpolator.hpp"
 #include "NumericalAlgorithms/Spectral/Basis.hpp"
-#include "NumericalAlgorithms/Spectral/BasisFunctions/Zernike.hpp"
 #include "NumericalAlgorithms/Spectral/InterpolationMatrix.hpp"
 #include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
-#include "NumericalAlgorithms/Spectral/NodalToModalMatrix.hpp"
-#include "NumericalAlgorithms/Spectral/Quadrature.hpp"
+#include "NumericalAlgorithms/SphericalHarmonics/Spherepack.hpp"
 #include "Utilities/Blas.hpp"
 #include "Utilities/ContainerHelpers.hpp"
 
 namespace {
 template <size_t Dim>
-void compute_zernikeb2_interpolation(
+void compute_zernike_b2_interpolation(
     gsl::not_null<Matrix*> result, const Mesh<Dim>& mesh,
     const std::array<Matrix, Dim>& interpolation_matrices,
     const size_t number_of_target_points) {
   static_assert(Dim == 2 or Dim == 3,
                 "ZernikeB2 interpolation only supports 2D and 3D");
-
   const size_t n_r = mesh.extents(0);
   const size_t n_phi = mesh.extents(1);
   const size_t n_z = Dim == 3 ? mesh.extents(2) : 1;
 
-  ASSERT(n_phi % 2 == 1, "Need N_phi to be odd for stability, got " << n_phi);
-
-  Matrix identity{};
-  const Matrix& m_r = interpolation_matrices[0];
-  const Matrix& m_ph = interpolation_matrices[1];
-  const Matrix& m_z = [&interpolation_matrices, &identity]() {
-    if constexpr (Dim == 3) {
-      (void)identity;
-      return interpolation_matrices[2];
-    } else {
-      (void)interpolation_matrices;
-      return identity;
-    }
-  }();
-
-  const Matrix& nodal_to_modal =
-      Spectral::nodal_to_modal_matrix<Spectral::Basis::Fourier,
-                                      Spectral::Quadrature::Equiangular>(n_phi);
-
-  // Pre-compute angular (and z for 3D) weights in interleaved format
   const size_t combined_dim = n_phi * n_z;  // n_z=1 for 2D case
   Matrix zernike_weights(2 * number_of_target_points, combined_dim);
 
-  for (size_t k = 0; k < number_of_target_points; ++k) {
-    // Initialize
-    for (size_t idx = 0; idx < combined_dim; ++idx) {
-      zernike_weights(2 * k, idx) = 0.0;      // even (radial_offset=0)
-      zernike_weights(2 * k + 1, idx) = 0.0;  // odd (radial_offset=n_r)
-    }
-
-    // m=0 mode (always uses radial_offset = 0)
-    for (size_t i_phi = 0; i_phi < n_phi; ++i_phi) {
-      const double angular_weight = m_ph(k, 0) * nodal_to_modal(0, i_phi);
-      if constexpr (Dim == 2) {
-        zernike_weights(2 * k, i_phi) += angular_weight;
-      } else {  // Dim == 3
-        for (size_t i_z = 0; i_z < n_z; ++i_z) {
-          const size_t idx = i_z * n_phi + i_phi;
-          zernike_weights(2 * k, idx) +=
-              Dim == 3 ? angular_weight * m_z(k, i_z) : angular_weight;
-        }
-      }
-    }
-
-    // m>0 modes: group by radial_offset
-    for (size_t i_m = 1; i_m < n_phi; ++i_m) {
-      const size_t m = (i_m + 1) / 2;
-      const size_t radial_offset = (m % 2) * n_r;
-
-      for (size_t i_phi = 0; i_phi < n_phi; ++i_phi) {
-        const double angular_weight = m_ph(k, i_m) * nodal_to_modal(i_m, i_phi);
-        if constexpr (Dim == 2) {
-          if (radial_offset == 0) {
-            zernike_weights(2 * k, i_phi) += angular_weight;
-          } else {
-            zernike_weights(2 * k + 1, i_phi) += angular_weight;
-          }
-        } else {  // Dim == 3
-          for (size_t i_z = 0; i_z < n_z; ++i_z) {
-            const size_t idx = i_z * n_phi + i_phi;
-            const double combined_weight =
-                Dim == 3 ? angular_weight * m_z(k, i_z) : angular_weight;
-            if (radial_offset == 0) {
-              zernike_weights(2 * k, idx) += combined_weight;
-            } else {
-              zernike_weights(2 * k + 1, idx) += combined_weight;
-            }
-          }
-        }
-      }
-    }
-  }
+  intrp::Cardinal<Dim>::compute_zernike_b2_weights(
+      make_not_null(&zernike_weights), mesh, interpolation_matrices,
+      number_of_target_points);
 
   // Now fill the result matrix using the pre-computed weights
   for (size_t k = 0; k < number_of_target_points; ++k) {
@@ -118,12 +49,13 @@ void compute_zernikeb2_interpolation(
         const size_t i_r = s % n_r;
 
         // Even contribution (radial_offset=0)
-        (*result)(k, s) = m_r(k, i_r) * zernike_weights(2 * k, i_phi);
+        (*result)(k, s) =
+            interpolation_matrices[0](k, i_r) * zernike_weights(2 * k, i_phi);
 
         // Odd contribution (radial_offset=n_r)
-        if (i_r + n_r < m_r.columns()) {
-          (*result)(k, s) +=
-              m_r(k, i_r + n_r) * zernike_weights(2 * k + 1, i_phi);
+        if (i_r + n_r < interpolation_matrices[0].columns()) {
+          (*result)(k, s) += interpolation_matrices[0](k, i_r + n_r) *
+                             zernike_weights(2 * k + 1, i_phi);
         }
       } else {  // Dim == 3
         // NOLINTNEXTLINE(clang-analyzer-core.DivideZero)
@@ -133,13 +65,79 @@ void compute_zernikeb2_interpolation(
         const size_t idx = i_z * n_phi + i_phi;
 
         // Even contribution (radial_offset=0)
-        (*result)(k, s) = m_r(k, i_r) * zernike_weights(2 * k, idx);
+        (*result)(k, s) =
+            interpolation_matrices[0](k, i_r) * zernike_weights(2 * k, idx);
 
         // Odd contribution (radial_offset=n_r)
-        if (i_r + n_r < m_r.columns()) {
-          (*result)(k, s) +=
-              m_r(k, i_r + n_r) * zernike_weights(2 * k + 1, idx);
+        if (i_r + n_r < interpolation_matrices[0].columns()) {
+          (*result)(k, s) += interpolation_matrices[0](k, i_r + n_r) *
+                             zernike_weights(2 * k + 1, idx);
         }
+      }
+    }
+  }
+}
+
+template <typename DataType>
+void compute_zernike_b3_interpolation(
+    gsl::not_null<Matrix*> result, const Mesh<3>& mesh,
+    const std::array<Matrix, 3>& interpolation_matrices,
+    const tnsr::I<DataType, 3, Frame::ElementLogical>& target_points,
+    const size_t number_of_target_points) {
+  const size_t n_r = mesh.extents(0);
+  const size_t n_th = mesh.extents(1);
+  const size_t n_phi = mesh.extents(2);
+  const size_t n_ang = n_th * n_phi;
+  const size_t l_max = n_th - 1;
+  const size_t m_max = (n_phi - 1) / 2;
+
+  const ylm::Spherepack b3_ylm(l_max, m_max);
+  const size_t n_spectral = b3_ylm.spectral_size();
+
+  Matrix zernike_b3_weights(2 * number_of_target_points, n_spectral);
+  if constexpr (std::is_same_v<DataType, DataVector>) {
+    intrp::Cardinal<3>::compute_zernike_b3_weights(
+        make_not_null(&zernike_b3_weights), mesh, target_points, b3_ylm,
+        number_of_target_points);
+  } else {
+    tnsr::I<DataVector, 3, Frame::ElementLogical> target_points_dv{1_st};
+    get<0>(target_points_dv) = get<0>(target_points);
+    get<1>(target_points_dv) = get<1>(target_points);
+    get<2>(target_points_dv) = get<2>(target_points);
+    intrp::Cardinal<3>::compute_zernike_b3_weights(
+        make_not_null(&zernike_b3_weights), mesh, target_points_dv, b3_ylm,
+        number_of_target_points);
+  }
+
+  // Build the SH analysis matrix A[s * n_ang + i_ang] = A(s, i_ang) with one
+  // phys_to_spec_all_offsets call on an identity-like arrangement: for "shell"
+  // i_ang (stride = n_ang) the physical data is a unit vector at position
+  // i_ang, so A_mat[s * n_ang + i_ang] is the s-th spectral coefficient of
+  // that unit vector, i.e. A(s, i_ang).
+  DataVector phys_id(n_ang * n_ang, 0.0);
+  for (size_t i = 0; i < n_ang; ++i) {
+    phys_id[i * n_ang + i] = 1.0;
+  }
+  const DataVector A_mat = b3_ylm.phys_to_spec_all_offsets(phys_id, n_ang);
+
+  // result(k, s_grid) with s_grid = i_ang * n_r + i_r equals
+  //   interp_r_even(k, i_r) * B_even(k, i_ang)
+  // + interp_r_odd (k, i_r) * B_odd (k, i_ang)
+  // where B_{even,odd}(k, i_ang) = sum_s zernike_b3_weights(2k{+1}, s)*A(s,
+  // i_ang). This is the B3 analogue of compute_zernike_b2_interpolation.
+  for (size_t k = 0; k < number_of_target_points; ++k) {
+    for (size_t i_ang = 0; i_ang < n_ang; ++i_ang) {
+      double b_even = 0.0;
+      double b_odd = 0.0;
+      for (size_t s = 0; s < n_spectral; ++s) {
+        const double a_val = A_mat[s * n_ang + i_ang];
+        b_even += zernike_b3_weights(2 * k, s) * a_val;
+        b_odd += zernike_b3_weights(2 * k + 1, s) * a_val;
+      }
+      for (size_t i_r = 0; i_r < n_r; ++i_r) {
+        (*result)(k, i_ang* n_r + i_r) =
+            interpolation_matrices[0](k, i_r) * b_even +
+            interpolation_matrices[0](k, i_r + n_r) * b_odd;
       }
     }
   }
@@ -473,9 +471,9 @@ Matrix interpolation_matrix(
     const intrp::Cardinal cardinal_interpolator(mesh, points);
     const auto& interpolation_matrices =
         cardinal_interpolator.interpolation_matrices();
-    compute_zernikeb2_interpolation<2>(make_not_null(&result), mesh,
-                                       interpolation_matrices,
-                                       number_of_target_points);
+    compute_zernike_b2_interpolation<2>(make_not_null(&result), mesh,
+                                        interpolation_matrices,
+                                        number_of_target_points);
     return result;
   }
 
@@ -634,9 +632,17 @@ Matrix interpolation_matrix(
     const intrp::Cardinal cardinal_interpolator(mesh, points);
     const auto& interpolation_matrices =
         cardinal_interpolator.interpolation_matrices();
-    compute_zernikeb2_interpolation<3>(make_not_null(&result), mesh,
-                                       interpolation_matrices,
-                                       number_of_target_points);
+    compute_zernike_b2_interpolation<3>(make_not_null(&result), mesh,
+                                        interpolation_matrices,
+                                        number_of_target_points);
+    return result;
+  } else if (mesh.basis()[0] == Spectral::Basis::ZernikeB3) {
+    const intrp::Cardinal cardinal_interpolator(mesh, points);
+    const auto& interpolation_matrices =
+        cardinal_interpolator.interpolation_matrices();
+    compute_zernike_b3_interpolation(make_not_null(&result), mesh,
+                                     interpolation_matrices, points,
+                                     number_of_target_points);
     return result;
   }
   ASSERT(mesh.basis(0) != Spectral::Basis::FiniteDifference and
