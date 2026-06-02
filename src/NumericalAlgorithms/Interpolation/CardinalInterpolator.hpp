@@ -60,7 +60,7 @@ class Cardinal {
   void pup(PUP::er& p);
 
  private:
-  /// Precomputes `zernike_weights_`, which is all the work independent of
+  /// Precomputes `zernike_b2_weights_`, which is all work independent of
   /// `f_source`, to avoid redundant computations. This is only needed when
   /// the source mesh has a B2 basis
   void set_zernike_b2_weights();
@@ -78,7 +78,7 @@ class Cardinal {
   std::array<Matrix, Dim> interpolation_matrices_{};
   bool using_spherical_harmonics_{false};
   bool using_zernike_b2_{false};
-  Matrix zernike_weights_{};
+  Matrix zernike_b2_weights_{};
 };
 
 template <size_t Dim>

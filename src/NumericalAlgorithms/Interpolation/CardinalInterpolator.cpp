@@ -213,12 +213,12 @@ void Cardinal<Dim>::set_zernike_b2_weights() {
 
   // Pre-compute combined angular+z weights in interleaved format: [even_k0,
   // odd_k0, even_k1, odd_k1, ...]
-  zernike_weights_.resize(2 * n_target_points_, combined_dim);
+  zernike_b2_weights_.resize(2 * n_target_points_, combined_dim);
 
   for (size_t k = 0; k < n_target_points_; ++k) {
     for (size_t idx = 0; idx < combined_dim; ++idx) {
-      zernike_weights_(2 * k, idx) = 0.0;      // even (radial_offset=0)
-      zernike_weights_(2 * k + 1, idx) = 0.0;  // odd (radial_offset=n_r)
+      zernike_b2_weights_(2 * k, idx) = 0.0;      // even (radial_offset=0)
+      zernike_b2_weights_(2 * k + 1, idx) = 0.0;  // odd (radial_offset=n_r)
     }
 
     // m=0 mode (always uses radial_offset = 0)
@@ -226,11 +226,11 @@ void Cardinal<Dim>::set_zernike_b2_weights() {
       const double angular_weight =
           interpolation_matrices_[1](k, 0) * nodal_to_modal(0, i_phi);
       if constexpr (Dim == 2) {
-        zernike_weights_(2 * k, i_phi) += angular_weight;
+        zernike_b2_weights_(2 * k, i_phi) += angular_weight;
       } else {  // Dim == 3
         for (size_t i_z = 0; i_z < n_z; ++i_z) {
           const size_t idx = i_z * n_phi + i_phi;
-          zernike_weights_(2 * k, idx) +=
+          zernike_b2_weights_(2 * k, idx) +=
               angular_weight * interpolation_matrices_[2](k, i_z);
         }
       }
@@ -246,9 +246,9 @@ void Cardinal<Dim>::set_zernike_b2_weights() {
             interpolation_matrices_[1](k, i_m) * nodal_to_modal(i_m, i_phi);
         if constexpr (Dim == 2) {
           if (radial_offset == 0) {
-            zernike_weights_(2 * k, i_phi) += angular_weight;
+            zernike_b2_weights_(2 * k, i_phi) += angular_weight;
           } else {
-            zernike_weights_(2 * k + 1, i_phi) += angular_weight;
+            zernike_b2_weights_(2 * k + 1, i_phi) += angular_weight;
           }
         } else {  // Dim == 3
           for (size_t i_z = 0; i_z < n_z; ++i_z) {
@@ -256,9 +256,9 @@ void Cardinal<Dim>::set_zernike_b2_weights() {
             const double combined_weight =
                 angular_weight * interpolation_matrices_[2](k, i_z);
             if (radial_offset == 0) {
-              zernike_weights_(2 * k, idx) += combined_weight;
+              zernike_b2_weights_(2 * k, idx) += combined_weight;
             } else {
-              zernike_weights_(2 * k + 1, idx) += combined_weight;
+              zernike_b2_weights_(2 * k + 1, idx) += combined_weight;
             }
           }
         }
@@ -290,11 +290,11 @@ DataVector Cardinal<Dim>::interpolate_zernike_b2(
   for (size_t k = 0; k < n_target_points_; ++k) {
     // Angular (and z for 3D) contraction for even modes
     dgemv_('N', n_r, combined_dim, 1.0, f_source.data(), n_r,
-           zernike_weights_.data() + 2 * k, 2 * n_target_points_, 0.0,
+           zernike_b2_weights_.data() + 2 * k, 2 * n_target_points_, 0.0,
            intermediate.data(), 1);
     // Angular (and z for 3D) contraction for odd modes
     dgemv_('N', n_r, combined_dim, 1.0, f_source.data(), n_r,
-           zernike_weights_.data() + (2 * k + 1), 2 * n_target_points_, 0.0,
+           zernike_b2_weights_.data() + (2 * k + 1), 2 * n_target_points_, 0.0,
            intermediate.data() + n_r, 1);
     // Radial interpolation for both even and odd contributions
     result[k] = ddot_(2 * n_r, interpolation_matrices_[0].data() + k,
