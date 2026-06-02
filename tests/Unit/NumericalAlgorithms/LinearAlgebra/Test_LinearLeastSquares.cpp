@@ -10,7 +10,7 @@
 #include <vector>
 
 #include "Framework/TestHelpers.hpp"
-#include "NumericalAlgorithms/Interpolation/LinearLeastSquares.hpp"
+#include "NumericalAlgorithms/LinearAlgebra/LinearLeastSquares.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Math.hpp"
 

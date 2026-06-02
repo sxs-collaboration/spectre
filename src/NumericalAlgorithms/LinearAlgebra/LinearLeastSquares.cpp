@@ -1,7 +1,7 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "NumericalAlgorithms/Interpolation/LinearLeastSquares.hpp"
+#include "NumericalAlgorithms/LinearAlgebra/LinearLeastSquares.hpp"
 
 #include <array>
 #include <cmath>

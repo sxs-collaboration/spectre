@@ -9,6 +9,7 @@ spectre_target_sources(
   ${LIBRARY}
   PRIVATE
   FindGeneralizedEigenvalues.cpp
+  LinearLeastSquares.cpp
   )
 
 spectre_target_headers(
@@ -16,6 +17,7 @@ spectre_target_headers(
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
   FindGeneralizedEigenvalues.hpp
+  LinearLeastSquares.hpp
   )
 
 target_link_libraries(
@@ -25,5 +27,6 @@ target_link_libraries(
   DataStructures
   ErrorHandling
   PRIVATE
+  GSL::gsl
   LAPACK::LAPACK
   )

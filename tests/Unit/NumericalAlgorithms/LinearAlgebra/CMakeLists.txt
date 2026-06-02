@@ -5,6 +5,7 @@ set(LIBRARY "Test_LinearAlgebra")
 
 set(LIBRARY_SOURCES
   Test_FindGeneralizedEigenvalues.cpp
+  Test_LinearLeastSquares.cpp
   )
 
 add_test_library(${LIBRARY} "${LIBRARY_SOURCES}")

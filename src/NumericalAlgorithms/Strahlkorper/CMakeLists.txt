@@ -39,7 +39,7 @@ target_link_libraries(
   Utilities
   PRIVATE
   FiniteDifference
-  Interpolation
+  LinearAlgebra
   )
 
 add_subdirectory(IO)
