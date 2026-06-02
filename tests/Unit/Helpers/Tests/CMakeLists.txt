@@ -22,4 +22,5 @@ target_link_libraries(
 
 add_subdirectory(Domain)
 add_subdirectory(IO)
+add_subdirectory(NumericalAlgorithms)
 add_subdirectory(PointwiseFunctions)
