@@ -34,6 +34,7 @@ bool persson_tci_impl(const gsl::not_null<DataVector*> filtered_component,
              << dg_mesh.number_of_grid_points() << " grid points.");
 
   const Matrix identity{};
+  std::optional<double> component_norm;
   for (size_t d = 0; d < Dim; ++d) {
     // Cartoon dimensions have a single collocation point with no spectral
     // content to check
@@ -101,7 +102,9 @@ bool persson_tci_impl(const gsl::not_null<DataVector*> filtered_component,
     // would be sufficient to stick to the case 2 for now.
     //
 
-    const double component_norm{l2Norm(component)};
+    if (not component_norm.has_value()) {
+      component_norm = l2Norm(component);
+    }
 
     if (pow(static_cast<double>(num_to_zero), alpha) *
             l2Norm(*filtered_component) >
