@@ -205,6 +205,12 @@ void test_compute_spatial_metric_lapse_shift(const T& used_for_size) {
   CHECK_ITERABLE_APPROX(spatial_metric, spatial_metric_test);
   CHECK_ITERABLE_APPROX(shift, shift_test);
   CHECK_ITERABLE_APPROX(lapse, lapse_test);
+
+  // The induced spatial metric should only differ from the spacetime metric
+  // by an $\alpha^2$ term.
+  auto induced_spatial_metric_test = gr::induced_spatial_metric(psi, lapse);
+  induced_spatial_metric_test.get(0, 0) -= square(get(lapse));
+  CHECK_ITERABLE_APPROX(psi, induced_spatial_metric_test);
 }
 
 template <size_t Dim, typename DataType>
