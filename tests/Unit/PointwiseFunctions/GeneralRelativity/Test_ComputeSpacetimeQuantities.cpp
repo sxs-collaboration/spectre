@@ -302,6 +302,9 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.GeneralRelativity.SpacetimeDecomp",
   TestHelpers::db::test_compute_tag<
       gr::Tags::LapseCompute<DataVector, 3, Frame::Inertial>>("Lapse");
   TestHelpers::db::test_compute_tag<
+      gr::Tags::InducedSpatialMetricCompute<DataVector, 3, Frame::Inertial>>(
+      "InducedSpatialMetric");
+  TestHelpers::db::test_compute_tag<
       gr::Tags::SqrtDetSpatialMetricCompute<DataVector, 3, Frame::Inertial>>(
       "SqrtDetSpatialMetric");
   TestHelpers::db::test_compute_tag<gr::Tags::DetAndInverseSpatialMetricCompute<
@@ -345,6 +348,8 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.GeneralRelativity.SpacetimeDecomp",
                 expected_det_and_inverse_spatial_metric.second);
   const auto expected_lapse =
       gr::lapse(expected_shift, expected_spacetime_metric);
+  const auto expected_induced_spatial_metric =
+      gr::induced_spatial_metric(expected_spacetime_metric, expected_lapse);
   const auto expected_inverse_spacetime_metric = gr::inverse_spacetime_metric(
       expected_lapse, expected_shift,
       expected_det_and_inverse_spatial_metric.second);
@@ -358,6 +363,7 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.GeneralRelativity.SpacetimeDecomp",
           gr::Tags::SqrtDetSpatialMetricCompute<DataVector, 3, Frame::Inertial>,
           gr::Tags::ShiftCompute<DataVector, 3, Frame::Inertial>,
           gr::Tags::LapseCompute<DataVector, 3, Frame::Inertial>,
+          gr::Tags::InducedSpatialMetricCompute<DataVector, 3, Frame::Inertial>,
           gr::Tags::InverseSpacetimeMetricCompute<DataVector, 3,
                                                   Frame::Inertial>,
           gr::Tags::SpacetimeNormalOneFormCompute<DataVector, 3,
@@ -375,6 +381,8 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.GeneralRelativity.SpacetimeDecomp",
         sqrt(get(expected_det_and_inverse_spatial_metric.first)));
   CHECK(db::get<gr::Tags::Shift<DataVector, 3>>(box) == expected_shift);
   CHECK(db::get<gr::Tags::Lapse<DataVector>>(box) == expected_lapse);
+  CHECK(db::get<gr::Tags::InducedSpatialMetric<DataVector, 3, Frame::Inertial>>(
+            box) == expected_induced_spatial_metric);
   CHECK(db::get<gr::Tags::InverseSpacetimeMetric<DataVector, 3>>(box) ==
         expected_inverse_spacetime_metric);
   CHECK(db::get<gr::Tags::SpacetimeNormalOneForm<DataVector, 3>>(box) ==

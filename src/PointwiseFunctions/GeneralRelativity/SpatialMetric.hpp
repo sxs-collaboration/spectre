@@ -72,6 +72,28 @@ struct SpatialMetricCompute : SpatialMetric<DataType, SpatialDim, Frame>,
 
   using base = SpatialMetric<DataType, SpatialDim, Frame>;
 };
+/*!
+ * \brief Compute item for the induced spatial metric \f$\gamma_{ab}\f$
+ * from the spacetime metric \f$g_{ab}\f$ and the spacetime normal one-form
+ * \f$n_a\f$.
+ *
+ * \details Can be retrieved using `gr::Tags::InducedSpatialMetric`.
+ */
+template <typename DataType, size_t SpatialDim, typename Frame>
+struct InducedSpatialMetricCompute
+    : InducedSpatialMetric<DataType, SpatialDim, Frame>,
+      db::ComputeTag {
+  using argument_tags =
+      tmpl::list<SpacetimeMetric<DataType, SpatialDim, Frame>, Lapse<DataType>>;
 
+  using return_type = tnsr::aa<DataType, SpatialDim, Frame>;
+
+  static constexpr auto function = static_cast<void (*)(
+      gsl::not_null<tnsr::aa<DataType, SpatialDim, Frame>*>,
+      const tnsr::aa<DataType, SpatialDim, Frame>&, const Scalar<DataType>&)>(
+      &induced_spatial_metric<DataType, SpatialDim, Frame>);
+
+  using base = InducedSpatialMetric<DataType, SpatialDim, Frame>;
+};
 }  // namespace Tags
 }  // namespace gr
