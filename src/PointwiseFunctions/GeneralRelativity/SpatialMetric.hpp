@@ -30,6 +30,26 @@ void spatial_metric(
     const tnsr::aa<DataType, SpatialDim, Frame>& spacetime_metric);
 /// @}
 
+/// @{
+/*!
+ * \ingroup GeneralRelativityGroup
+ * \brief Compute the induced spatial metric \f$\gamma_{ab}\f$ in spacetime
+ * coordinates.
+ * \details The induced spatial metric is \f$\gamma_{ab}=g_{ab} + n_a n_b\f$.
+ * Since \f$n_a=(-\alpha,0,0,0)\f$, this adds \f$\alpha^2\f$ to \f$g_{tt}\f$.
+ */
+template <typename DataType, size_t SpatialDim, typename Frame>
+tnsr::aa<DataType, SpatialDim, Frame> induced_spatial_metric(
+    const tnsr::aa<DataType, SpatialDim, Frame>& spacetime_metric,
+    const Scalar<DataType>& lapse);
+
+template <typename DataType, size_t SpatialDim, typename Frame>
+void induced_spatial_metric(
+    gsl::not_null<tnsr::aa<DataType, SpatialDim, Frame>*> result,
+    const tnsr::aa<DataType, SpatialDim, Frame>& spacetime_metric,
+    const Scalar<DataType>& lapse);
+/// @}
+
 namespace Tags {
 /*!
  * \brief Compute item for spatial metric \f$\gamma_{ij}\f$ from the
@@ -52,5 +72,6 @@ struct SpatialMetricCompute : SpatialMetric<DataType, SpatialDim, Frame>,
 
   using base = SpatialMetric<DataType, SpatialDim, Frame>;
 };
+
 }  // namespace Tags
 }  // namespace gr
