@@ -25,6 +25,16 @@ template <typename DataType, size_t Dim, typename Frame>
 struct SpatialMetric : db::SimpleTag {
   using type = tnsr::ii<DataType, Dim, Frame>;
 };
+
+/*!
+ * \brief The induced spatial metric \f$\gamma_{ab} = g_{ab} + n_a n_b\f$
+ * in spacetime coordinates, where \f$n_a\f$ is the unit normal to the spatial
+ * hypersurface.
+ */
+template <typename DataType, size_t Dim, typename Frame>
+struct InducedSpatialMetric : db::SimpleTag {
+  using type = tnsr::aa<DataType, Dim, Frame>;
+};
 /*!
  * \brief Inverse of the spatial metric.
  */

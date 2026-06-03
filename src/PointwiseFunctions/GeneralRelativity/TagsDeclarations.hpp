@@ -18,6 +18,8 @@ struct InverseSpacetimeMetric;
 template <typename DataType, size_t Dim, typename Frame = Frame::Inertial>
 struct SpatialMetric;
 template <typename DataType, size_t Dim, typename Frame = Frame::Inertial>
+struct InducedSpatialMetric;
+template <typename DataType, size_t Dim, typename Frame = Frame::Inertial>
 struct DetAndInverseSpatialMetric;
 template <typename DataType, size_t Dim, typename Frame = Frame::Inertial>
 struct InverseSpatialMetric;
