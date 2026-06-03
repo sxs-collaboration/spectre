@@ -177,7 +177,11 @@ struct Domain {
               neighbor_orientation.inverse_map()(::domain::create_initial_mesh(
                   initial_extents, neighbor_block, neighbor, i1_basis,
                   i1_quadrature)));
-        } else {
+        } else if (element->face_types().at(direction) ==
+                   ::domain::FaceType::SingleNonconforming) {
+          // We do not insert neighbor meshes into neighbor_mesh for a direction
+          // with domain::FaceType::MultipleNonconforming as this could
+          // overflow the FixedHashMap size
           neighbor_mesh->emplace(
               DirectionalId{direction, neighbor},
               ::domain::create_initial_mesh(initial_extents, neighbor_block,

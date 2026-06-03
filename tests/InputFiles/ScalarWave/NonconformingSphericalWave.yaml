@@ -1,0 +1,86 @@
+# Distributed under the MIT License.
+# See LICENSE.txt for details.
+
+Executable: EvolveScalarWave3D
+Testing:
+  Check: parse;execute
+
+---
+
+Parallelization:
+  ElementDistribution: NumGridPoints
+
+ResourceInfo:
+  AvoidGlobalProc0: false
+  Singletons: Auto
+
+InitialData: &InitialData
+  RegularSphericalWave:
+    Profile:
+      Gaussian:
+        Amplitude: 1.0
+        Width: 1.0
+        Center: 2.4
+
+Amr:
+  Criteria:
+  EnableInBlocks: All
+  Policies:
+    AllowCoarsening: true
+    EnforceTwoToOneBalanceInNormalDirection: true
+    Isotropy: Anisotropic
+    Limits:
+      RefinementLevel: Auto
+      NumGridPoints: Auto
+      ErrorBeyondLimits: False
+  Verbosity: Verbose
+
+PhaseChangeAndTriggers:
+
+Evolution:
+  InitialTime: 0.0
+  InitialTimeStep: 0.001
+  MinimumTimeStep: 1e-7
+  TimeStepper:
+    AdamsBashforth:
+      Order: 3
+
+DomainCreator:
+  NonconformingSphericalShells:
+    InnerRadius: 1.9
+    InterfaceRadius: 2.4
+    OuterRadius: 2.9
+    InitialRadialRefinement: 0
+    InitialAngularRefinementOfWedges: 1
+    InitialNumberOfRadialGridPoints: 5
+    InitialSphericalHarmonicL: 4
+    InitialNumberOfAngularGridPointsOfWedges: 5
+    InnerBoundaryCondition:
+      DirichletAnalytic:
+        AnalyticPrescription: *InitialData
+    OuterBoundaryCondition:
+      DirichletAnalytic:
+        AnalyticPrescription: *InitialData
+
+SpatialDiscretization:
+  BoundaryCorrection:
+    UpwindPenalty:
+  DiscontinuousGalerkin:
+    Formulation: StrongInertial
+    Quadrature: GaussLobatto
+
+EventsAndTriggersAtCheckpoints:
+
+EventsAndTriggersAtSlabs:
+  - Trigger:
+      Slabs:
+        Specified:
+          Values: [50]
+    Events:
+      - Completion
+
+EventsAndDenseTriggers:
+
+Observers:
+  VolumeFileName: "Volume"
+  ReductionFileName: "Reductions"

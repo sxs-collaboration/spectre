@@ -279,6 +279,9 @@ void h_refine_structure(
   }
 
   for (const auto& [direction, neighbors] : new_element.neighbors()) {
+    ASSERT(new_element.face_types().at(direction) !=
+               domain::FaceType::MultipleNonconforming,
+           "This code needs updating to handle nonconforming blocks");
     const auto sliced_away_dimension = direction.dimension();
     const auto new_face_mesh = new_mesh.slice_away(sliced_away_dimension);
     for (const auto& neighbor : neighbors) {
@@ -380,6 +383,9 @@ void ProjectMortars<Dim, LocalTimeStepping>::apply(
   std::vector<NewMortarEntry> new_mortars{};
 
   for (const auto& [direction, neighbors] : new_element.neighbors()) {
+    ASSERT(new_element.face_types().at(direction) !=
+               domain::FaceType::MultipleNonconforming,
+           "This code needs updating to handle nonconforming blocks");
     const auto sliced_away_dimension = direction.dimension();
     const auto old_face_mesh = old_mesh.slice_away(sliced_away_dimension);
     const auto new_face_mesh = new_mesh.slice_away(sliced_away_dimension);

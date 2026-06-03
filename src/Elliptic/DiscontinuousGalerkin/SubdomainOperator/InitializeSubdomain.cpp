@@ -39,6 +39,9 @@ void InitializeOverlapGeometry<Dim>::operator()(
   // this setup is a possible optimization. The computational cost and memory
   // usage is probably irrelevant though.
   for (const auto& [direction, neighbors] : element.neighbors()) {
+    ASSERT(element.face_types().at(direction) !=
+               domain::FaceType::MultipleNonconforming,
+           "This code needs updating to handle nonconforming blocks");
     for (const auto& neighbor_id : neighbors) {
       const auto& orientation = neighbors.orientation(neighbor_id);
       const auto direction_from_neighbor = orientation(direction.opposite());

@@ -648,12 +648,7 @@ void test_nonconforming_blocks() {
   const auto& shell_neighbor_mesh =
       ActionTesting::get_databox_tag<component, domain::Tags::NeighborMesh<3>>(
           runner, shell_id);
-  CHECK(shell_neighbor_mesh.size() == 6);
-  for (size_t block_id = 0; block_id < 6; ++block_id) {
-    CHECK(shell_neighbor_mesh.at(
-              {Direction<3>::lower_xi(), ElementId<3>(block_id)}) ==
-          cubed_sphere_mesh);
-  }
+  CHECK(shell_neighbor_mesh.empty());
 }
 
 namespace test_projectors {

@@ -19,6 +19,9 @@ namespace domain::Tags {
  * \brief Holds the mesh of each neighboring element, oriented to the
  * host's logical frame.
  *
+ * \warning Does not include the neigbors in Directions in which the element has
+ * domain::FaceType::MultipleNonconforming.
+ *
  * This knowledge can be used to determine the geometry of mortars between
  * elements. It is kept up to date by AMR.
  *
