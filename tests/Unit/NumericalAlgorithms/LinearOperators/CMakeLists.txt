@@ -5,6 +5,7 @@ set(LIBRARY "Test_LinearOperators")
 
 set(LIBRARY_SOURCES
   Filters/Test_Hypercube.cpp
+  Filters/Test_SphericalShell.cpp
   Test_CoefficientTransforms.cpp
   Test_DefiniteIntegral.cpp
   Test_Divergence.cpp
@@ -23,6 +24,7 @@ target_link_libraries(
   ${LIBRARY}
   PRIVATE
   Actions
+  CurvedScalarWave
   DataStructures
   DgSubcell
   DiscontinuousGalerkin
