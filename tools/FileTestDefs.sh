@@ -285,6 +285,7 @@ long_lines() {
               'CITATION.cff' \
               'CMakeLists.txt$' \
               'Doxyfile.in$' \
+              'containers/CodingAgents.def$' \
               'containers/Dockerfile.buildenv$' \
               'containers/Dockerfile.travis$' \
               'docs/DevGuide/Travis.md' \
