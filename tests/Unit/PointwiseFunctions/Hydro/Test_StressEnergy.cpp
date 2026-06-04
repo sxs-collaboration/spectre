@@ -15,6 +15,7 @@
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/StressEnergy.hpp"
 #include "Framework/CheckWithRandomValues.hpp"
 #include "Framework/SetupLocalPythonEnvironment.hpp"
+#include "Helpers/DataStructures/DataBox/TestHelpers.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
 #include "Helpers/PointwiseFunctions/GeneralRelativity/TestHelpers.hpp"
 #include "PointwiseFunctions/GeneralRelativity/InverseSpacetimeMetric.hpp"
@@ -200,6 +201,8 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.Hydro.StressEnergy",
       {"stress_energy_tensor"}, {{{0.0, 1.0}}}, used_for_size, tolerance);
 
   consistency_check(used_for_size);
+  TestHelpers::db::test_compute_tag<
+      hydro::Tags::StressEnergyCompute<DataVector>>("StressEnergy");
 }
 
 }  // namespace hydro

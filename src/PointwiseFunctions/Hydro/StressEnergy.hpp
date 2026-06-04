@@ -3,7 +3,10 @@
 
 #pragma once
 
+#include "DataStructures/Tensor/IndexType.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
+#include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
+#include "PointwiseFunctions/Hydro/Tags.hpp"
 #include "Utilities/Gsl.hpp"
 
 namespace hydro {
@@ -133,7 +136,7 @@ void stress_trace(gsl::not_null<Scalar<DataType>*> result,
                   const Scalar<DataType>& comoving_magnetic_field_squared);
 
 /*!
- * \brief Stress Energy Tesnor, $T^{ab}=
+ * \brief Stress Energy Tensor, $T^{ab}=
  * (\rho h)^{*} u^a u ^b + p^{*} g^{ab} - b^{a} b^{b}$,
  *
  * where $(\rho h)^{*} = \rho h + b^{2}$ and $p^{*} = p + b^{2}/2$
@@ -156,4 +159,35 @@ void stress_energy_tensor(
     const tnsr::I<DataType, 3>& magnetic_field,
     const tnsr::ii<DataType, 3>& spatial_metric,
     const tnsr::II<DataType, 3>& inverse_spatial_metric);
+
+namespace Tags {
+/// Compute item for the stress-energy tensor, \f$T^{ab}\f$.
+///
+/// Can be retrieved using hydro::Tags::StressEnergy
+template <typename DataType>
+struct StressEnergyCompute : StressEnergy<DataType, 3>, db::ComputeTag {
+  using argument_tags = tmpl::list<
+      hydro::Tags::RestMassDensity<DataType>,
+      hydro::Tags::SpecificInternalEnergy<DataType>,
+      hydro::Tags::Pressure<DataType>, hydro::Tags::LorentzFactor<DataType>,
+      gr::Tags::Lapse<DataType>,
+      hydro::Tags::ComovingMagneticFieldMagnitude<DataType>,
+      hydro::Tags::SpatialVelocity<DataType, 3>, gr::Tags::Shift<DataType, 3>,
+      hydro::Tags::MagneticField<DataType, 3>,
+      gr::Tags::SpatialMetric<DataType, 3>,
+      gr::Tags::InverseSpatialMetric<DataType, 3>>;
+
+  using return_type = tnsr::AA<DataType, 3>;
+
+  static constexpr auto function = static_cast<void (*)(
+      gsl::not_null<tnsr::AA<DataType, 3>*>, const Scalar<DataType>&,
+      const Scalar<DataType>&, const Scalar<DataType>&, const Scalar<DataType>&,
+      const Scalar<DataType>&, const Scalar<DataType>&,
+      const tnsr::I<DataType, 3>&, const tnsr::I<DataType, 3>&,
+      const tnsr::I<DataType, 3>&, const tnsr::ii<DataType, 3>&,
+      const tnsr::II<DataType, 3>&)>(&stress_energy_tensor);
+
+  using base = StressEnergy<DataType, 3>;
+};
+}  // namespace Tags
 }  // namespace hydro

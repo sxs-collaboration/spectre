@@ -68,6 +68,8 @@ template <typename DataType>
 struct SpecificEnthalpy;
 template <typename DataType>
 struct SpecificInternalEnergy;
+template <typename DataType, size_t Dim, typename Fr = Frame::Inertial>
+struct StressEnergy;
 template <typename DataType>
 struct Temperature;
 template <typename DataType, size_t Dim, typename Fr = Frame::Inertial>

@@ -76,6 +76,9 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.Hydro.Tags", "[Unit][Hydro]") {
   TestHelpers::db::test_simple_tag<
       hydro::Tags::SpecificInternalEnergy<DataVector>>(
       "SpecificInternalEnergy");
+  TestHelpers::db::test_simple_tag<
+      hydro::Tags::StressEnergy<DataVector, 3, Frame::ElementLogical>>(
+      "StressEnergy");
   TestHelpers::db::test_simple_tag<hydro::Tags::Temperature<DataVector>>(
       "Temperature");
   TestHelpers::db::test_simple_tag<
