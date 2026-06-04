@@ -50,3 +50,22 @@ def weyl_electric(
     )
     # Extract spatial components and add vacuum contribution
     return vacuum_weyl_electric + matter_weyl[1:, 1:]
+
+
+def kretschmann_scalar(
+    weyl_electric_scalar,
+    weyl_magnetic_scalar,
+    inverse_spacetime_metric,
+    ricci_tensor,
+    ricci_scalar,
+):
+    # K = 8(E - B) + 2 R_{ab} R^{ab} - R^2/3
+    kretschmann_vacuum = 8.0 * (weyl_electric_scalar - weyl_magnetic_scalar)
+    ricci_sq = np.einsum(
+        "ab,ac,bd,cd->",
+        ricci_tensor,
+        inverse_spacetime_metric,
+        inverse_spacetime_metric,
+        ricci_tensor,
+    )
+    return kretschmann_vacuum + 2.0 * ricci_sq - ricci_scalar**2 / 3.0

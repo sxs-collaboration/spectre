@@ -35,6 +35,8 @@ struct GrmhdEquationOfState;
 template <typename DataType>
 struct InversePlasmaBeta;
 template <typename DataType>
+struct KretschmannScalar;
+template <typename DataType>
 struct LorentzFactor;
 template <typename DataType>
 struct LorentzFactorSquared;

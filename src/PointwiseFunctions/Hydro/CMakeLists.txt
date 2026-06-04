@@ -15,6 +15,7 @@ spectre_target_sources(
   MagneticFieldTreatment.cpp
   MassFlux.cpp
   MassWeightedFluidItems.cpp
+  QuadraticCurvatureScalars.cpp
   QuadrupoleFormula.cpp
   Ricci.cpp
   SoundSpeedSquared.cpp
@@ -36,6 +37,7 @@ spectre_target_headers(
   MagneticFieldTreatment.hpp
   MassFlux.hpp
   MassWeightedFluidItems.hpp
+  QuadraticCurvatureScalars.hpp
   QuadrupoleFormula.hpp
   Ricci.hpp
   SoundSpeedSquared.hpp
