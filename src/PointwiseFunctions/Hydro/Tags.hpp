@@ -293,6 +293,12 @@ struct SpecificInternalEnergy : db::SimpleTag {
   using type = Scalar<DataType>;
 };
 
+/// The stress-energy tensor \f$T^{ab}\f$.
+template <typename DataType, size_t Dim, typename Fr>
+struct StressEnergy : db::SimpleTag {
+  using type = tnsr::AA<DataType, Dim, Fr>;
+};
+
 /// The temperature \f$T\f$ of the fluid.
 template <typename DataType>
 struct Temperature : db::SimpleTag {
