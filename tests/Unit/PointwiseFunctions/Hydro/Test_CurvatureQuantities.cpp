@@ -6,6 +6,7 @@
 #include <cmath>
 #include <cstddef>
 #include <random>
+#include <utility>
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/EagerMath/DeterminantAndInverse.hpp"
@@ -14,10 +15,13 @@
 #include "Framework/CheckWithRandomValues.hpp"
 #include "Framework/SetupLocalPythonEnvironment.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
+#include "PointwiseFunctions/GeneralRelativity/ExtrinsicCurvature.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Ricci.hpp"
 #include "PointwiseFunctions/GeneralRelativity/SpatialMetric.hpp"
+#include "PointwiseFunctions/GeneralRelativity/WeylElectric.hpp"
 #include "PointwiseFunctions/Hydro/Ricci.hpp"
 #include "PointwiseFunctions/Hydro/StressEnergy.hpp"
+#include "PointwiseFunctions/Hydro/WeylElectric.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeWithValue.hpp"
@@ -121,6 +125,54 @@ void test_curvature_quantities_flrw() {
   const auto ricci_scalar = gr::ricci_scalar(ricci, inverse_spacetime_metric);
   CHECK_ITERABLE_APPROX(get(ricci_scalar),
                         8. * M_PI * (get(density) - 3. * get(pressure)));
+
+  auto compute_deriv_spacetime_metric = [num_points, scale_factor, density]() {
+    // Friedmann equations ->
+    // $d_t g_{ii} = 2 a \dot{a} = 2 a^2 \sqrt{8\pi \rho / 3}
+    // All other components are 0.
+    tnsr::abb<DataVector, 3, Frame::Inertial> deriv_spacetime_metric(num_points,
+                                                                     0.0);
+    tnsr::ii<DataVector, 3, Frame::Inertial> dt_spatial_metric(num_points, 0.0);
+    for (size_t i = 0; i < 3; ++i) {
+      deriv_spacetime_metric.get(0, i + 1, i + 1) =
+          2. * square(scale_factor) * sqrt(8. * M_PI * get(density) / 3.);
+      dt_spatial_metric.get(i, i) =
+          2. * square(scale_factor) * sqrt(8. * M_PI * get(density) / 3.);
+    }
+    return std::make_pair(deriv_spacetime_metric, dt_spatial_metric);
+  };
+  const auto derivs = compute_deriv_spacetime_metric();
+  const tnsr::ii<DataVector, 3, Frame::Inertial> dt_spatial_metric =
+      derivs.second;
+  const tnsr::ijj<DataVector, 3, Frame::Inertial> deriv_spatial_metric(
+      num_points, 0.0);
+  const tnsr::iJ<DataVector, 3, Frame::Inertial> deriv_shift(num_points, 0.0);
+  const auto induced_spatial_metric =
+      gr::induced_spatial_metric(spacetime_metric, lapse);
+  const tnsr::ii<DataVector, 3, Frame::Inertial> spatial_ricci(num_points, 0.0);
+
+  const auto extrinsic_curvature =
+      gr::extrinsic_curvature(lapse, shift, deriv_shift, spatial_metric,
+                              dt_spatial_metric, deriv_spatial_metric);
+
+  // Weyl electric and magnetic components
+  const auto electric_weyl =
+      hydro::weyl_electric(gr::weyl_electric(spatial_ricci, extrinsic_curvature,
+                                             inverse_spatial_metric),
+                           stress_energy, ricci, ricci_scalar,
+                           inverse_spacetime_metric, induced_spatial_metric);
+  const Approx custom_approx = Approx::custom().epsilon(2.e-13).scale(1.0);
+  for (size_t i = 0; i < 3; ++i) {
+    for (size_t j = 0; j < 3; ++j) {
+      CHECK_ITERABLE_CUSTOM_APPROX(electric_weyl.get(i, j),
+                                   (DataVector{num_points, 0.0}),
+                                   custom_approx);
+    }
+  }
+  TestHelpers::db::test_compute_tag<
+      hydro::Tags::WeylElectricCompute<DataVector>>("WeylElectric");
+  TestHelpers::db::test_compute_tag<
+      hydro::Tags::WeylElectricScalarCompute<DataVector>>("WeylElectricScalar");
 }
 
 template <typename DataType>
@@ -137,6 +189,15 @@ void test_curvature_quantities_random_values(const DataType& used_for_size) {
       &gr::ricci_scalar<3, Frame::Inertial, IndexType::Spacetime, DataType>;
   pypp::check_with_random_values<1>(f_ricci_scalar, "CurvatureQuantities",
                                     "ricci_scalar", {{{-1., 1.}}},
+                                    used_for_size);
+
+  tnsr::ii<DataType, 3> (*f_weyl_electric)(
+      const tnsr::ii<DataType, 3>&, const tnsr::AA<DataType, 3>&,
+      const tnsr::aa<DataType, 3>&, const Scalar<DataType>&,
+      const tnsr::AA<DataType, 3>&, const tnsr::aa<DataType, 3>&) =
+      &hydro::weyl_electric<DataType>;
+  pypp::check_with_random_values<1>(f_weyl_electric, "CurvatureQuantities",
+                                    "weyl_electric", {{{-1., 1.}}},
                                     used_for_size);
 }
 

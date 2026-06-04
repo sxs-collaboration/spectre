@@ -327,6 +327,20 @@ struct TransportVelocity : db::SimpleTag {
   using type = tnsr::I<DataType, Dim, Fr>;
 };
 
+/// The electric part of the Weyl tensor in hydro.
+/// \see hydro::weyl_electric
+template <typename DataType, size_t Dim, typename Fr>
+struct WeylElectric : db::SimpleTag {
+  using type = tnsr::ii<DataType, Dim, Fr>;
+};
+
+/// The Weyl electric scalar \f$E_{ij} E^{ij}\f$.
+/// \see gr::weyl_electric_scalar
+template <typename DataType>
+struct WeylElectricScalar : db::SimpleTag {
+  using type = Scalar<DataType>;
+};
+
 /// The spatial components of the four-velocity one-form \f$u_i\f$.
 template <typename DataType, size_t Dim, typename Fr>
 struct LowerSpatialFourVelocity : db::SimpleTag {

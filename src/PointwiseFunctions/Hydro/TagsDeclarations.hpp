@@ -79,6 +79,10 @@ struct Temperature;
 template <typename DataType, size_t Dim, typename Fr = Frame::Inertial>
 struct TransportVelocity;
 template <typename DataType, size_t Dim, typename Fr = Frame::Inertial>
+struct WeylElectric;
+template <typename DataType>
+struct WeylElectricScalar;
+template <typename DataType, size_t Dim, typename Fr = Frame::Inertial>
 struct LowerSpatialFourVelocity;
 template <typename DataType, size_t Dim, typename Fr = Frame::Inertial>
 struct LorentzFactorTimesSpatialVelocity;
