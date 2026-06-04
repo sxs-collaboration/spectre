@@ -9,6 +9,7 @@ set(LIBRARY "Test_Hydro")
 
 set(LIBRARY_SOURCES
   Test_ComovingMagneticField.cpp
+  Test_CurvatureQuantities.cpp
   Test_InversePlasmaBeta.cpp
   Test_LorentzFactor.cpp
   Test_MagneticFieldTreatment.cpp

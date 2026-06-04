@@ -54,6 +54,10 @@ template <typename DataType>
 struct Pressure;
 template <typename DataType>
 struct RestMassDensity;
+template <typename DataType, size_t Dim, typename Fr = Frame::Inertial>
+struct GrRicci;
+template <typename DataType>
+struct GrRicciScalar;
 template <typename DataType>
 struct SoundSpeedSquared;
 template <typename DataType, size_t Dim, typename Fr = Frame::Inertial>
