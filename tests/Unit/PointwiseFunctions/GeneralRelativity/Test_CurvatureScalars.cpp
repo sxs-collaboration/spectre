@@ -72,11 +72,15 @@ void test_curvature_scalars_schwarzschild() {
       gr::weyl_magnetic_scalar<Frame::Inertial, DataVector>(
           magnetic_weyl, inverse_spatial_metric);
 
-  const auto gauss_bonnet = gr::gauss_bonnet_scalar_in_vacuum(
+  const auto kretschmann = gr::kretschmann_scalar_in_vacuum<DataVector>(
+      electric_weyl_scalar, magnetic_weyl_scalar);
+  CHECK_ITERABLE_APPROX(kretschmann.get(), 48.0 * a * a);
+
+  const auto gauss_bonnet = gr::gauss_bonnet_scalar_in_vacuum<DataVector>(
       electric_weyl_scalar, magnetic_weyl_scalar);
   CHECK_ITERABLE_APPROX(gauss_bonnet.get(), 48.0 * a * a);
 
-  const auto pontryagin = gr::pontryagin_scalar_in_vacuum<Frame::Inertial>(
+  const auto pontryagin = gr::pontryagin_scalar<DataVector, Frame::Inertial>(
       electric_weyl, magnetic_weyl, inverse_spatial_metric);
   CHECK_ITERABLE_APPROX(pontryagin.get(), DataVector(num_points, 0.0));
 
