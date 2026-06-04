@@ -9,6 +9,7 @@
 #include "DataStructures/Index.hpp"
 #include "DataStructures/IndexIterator.hpp"
 #include "Framework/TestHelpers.hpp"
+#include "Helpers/NumericalAlgorithms/Spectral/BallTestFunctions.hpp"
 #include "Helpers/NumericalAlgorithms/Spectral/DiskTestFunctions.hpp"
 #include "Helpers/NumericalAlgorithms/Spectral/FourierTestFunctions.hpp"
 #include "Helpers/NumericalAlgorithms/SphericalHarmonics/YlmTestFunctions.hpp"
@@ -266,6 +267,33 @@ void test_definite_integral_hollow_cylinder(const size_t n_r, const size_t n_ph,
   }
 }
 
+void test_definite_integral_ball(const size_t n_r, const size_t L) {
+  CAPTURE(n_r);
+  CAPTURE(L);
+  const Mesh<3> mesh{
+      {n_r, L + 1, 2 * L + 1},
+      {Spectral::Basis::ZernikeB3, Spectral::Basis::ZernikeB3,
+       Spectral::Basis::ZernikeB3},
+      {Spectral::Quadrature::GaussRadauUpper, Spectral::Quadrature::Gauss,
+       Spectral::Quadrature::Equiangular}};
+  const auto xi_vector = logical_coordinates(mesh);
+  const DataVector r = 0.5 * (get<0>(xi_vector) + 1.0);
+  for (size_t pow_nx = 0; pow_nx <= L; ++pow_nx) {
+    CAPTURE(pow_nx);
+    for (size_t pow_ny = 0; pow_ny <= L - pow_nx; ++pow_ny) {
+      CAPTURE(pow_ny);
+      for (size_t pow_nz = 0; pow_nz <= L - pow_nx - pow_ny; ++pow_nz) {
+        CAPTURE(pow_nz);
+        const BallTestFunctions::ProductOfPolynomials f{pow_nx, pow_ny, pow_nz};
+        const DataVector integrand =
+            r * r * f(r, get<1>(xi_vector), get<2>(xi_vector));
+        CHECK(f.definite_integral() ==
+              approx(definite_integral(integrand, mesh)));
+      }
+    }
+  }
+}
+
 void test_definite_integral_cartoon_spherical(const size_t n_x) {
   const Mesh mesh =
       Mesh<3>{{{n_x, 1, 1}},
@@ -372,6 +400,15 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.DefiniteIntegral",
       test_definite_integral_hollow_disk(n_r, n_ph);
       for (size_t n_z = 2; n_z < 5; ++n_z) {
         test_definite_integral_hollow_cylinder(n_r, n_ph, n_z);
+      }
+    }
+  }
+
+  for (size_t n_r = 2; n_r < 5; ++n_r) {
+    for (size_t L = 2; L < 9; ++L) {
+      // We enforce these restrictions for the ball
+      if (L < 2 * n_r - 1) {
+        test_definite_integral_ball(n_r, L);
       }
     }
   }

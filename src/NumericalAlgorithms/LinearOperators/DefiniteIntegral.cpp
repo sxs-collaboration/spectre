@@ -17,6 +17,7 @@
 #include "NumericalAlgorithms/SphericalHarmonics/Spherepack.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/SpherepackCache.hpp"
 #include "Utilities/Blas.hpp"
+#include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 
 // The 2D and 3D definite integrals have been optimized and are up to 2x faster
@@ -148,6 +149,26 @@ double definite_integral<3>(const DataVector& integrand, const Mesh<3>& mesh) {
       for (size_t i = x_last_unrolled; i < x_size; ++i) {
         // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
         result += w_ylm[j] * w_x[i] * integrand[i + offset];
+      }
+    }
+  } else if (mesh.basis(1) == Spectral::Basis::ZernikeB3) {
+    const auto& ylm = ylm::get_spherepack_cache(mesh.extents(1) - 1);
+    const size_t angular_size = ylm.physical_size();
+    const std::vector<double>& w_ylm = ylm.integration_weights();
+    const DataVector w_radial =
+        Spectral::quadrature_weights(sliced_meshes[0]) * 4.0 /
+        square(Spectral::collocation_points(sliced_meshes[0]) + 1.0);
+    const double* const w_r = w_radial.data();
+    for (size_t j = 0; j < angular_size; ++j) {
+      const size_t offset = j * x_size;
+      for (size_t i = 0; i < x_last_unrolled; i += 2) {
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+        result += w_ylm[j] * w_r[i] * integrand[i + offset] +
+                  w_ylm[j] * w_r[i + 1] * integrand[i + 1 + offset];  // NOLINT
+      }
+      for (size_t i = x_last_unrolled; i < x_size; ++i) {
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+        result += w_ylm[j] * w_r[i] * integrand[i + offset];
       }
     }
   } else if (mesh.basis(0) == Spectral::Basis::ZernikeB2) {
