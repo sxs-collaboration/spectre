@@ -18,3 +18,35 @@ def ricci_in_gr(stress_energy, spacetime_metric):
 def ricci_scalar(ricci_tensor, inverse_spacetime_metric):
     # R = g^{ab} R_{ab}
     return np.einsum("ab,ab->", inverse_spacetime_metric, ricci_tensor)
+
+
+def weyl_electric(
+    vacuum_weyl_electric,
+    _stress_energy,
+    ricci_tensor,
+    ricci_scalar,
+    inverse_spacetime_metric,
+    induced_spatial_metric,
+):
+    # Mixed-index four-spatial metric: gamma_a^B = g^{BC} gamma_{aC}
+    gamma_mixed = np.einsum(
+        "BC,aC->aB", inverse_spacetime_metric, induced_spatial_metric
+    )
+    # Spatial projection of Ricci: gamma_a^c gamma_b^d R_{cd}
+    proj_R = np.einsum("ac,bd,cd->ab", gamma_mixed, gamma_mixed, ricci_tensor)
+    # Raised four-spatial metric: gamma^{cd} = g^{ca} g^{db} gamma_{ab}
+    gamma_upper = np.einsum(
+        "ca,db,ab->cd",
+        inverse_spacetime_metric,
+        inverse_spacetime_metric,
+        induced_spatial_metric,
+    )
+    # Trace: gamma^{cd} R_{cd}
+    trace_gamma_R = np.einsum("cd,cd->", gamma_upper, ricci_tensor)
+    # Spacetime matter contribution to Weyl electric (4x4)
+    matter_weyl = (
+        -0.5 * (proj_R + induced_spatial_metric * trace_gamma_R)
+        + induced_spatial_metric * ricci_scalar / 3.0
+    )
+    # Extract spatial components and add vacuum contribution
+    return vacuum_weyl_electric + matter_weyl[1:, 1:]

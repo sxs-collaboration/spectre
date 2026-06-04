@@ -22,6 +22,7 @@ spectre_target_sources(
   SpecificEntropy.cpp
   StressEnergy.cpp
   TransportVelocity.cpp
+  WeylElectric.cpp
   )
 
 spectre_target_headers(
@@ -46,6 +47,7 @@ spectre_target_headers(
   Temperature.hpp
   TransportVelocity.hpp
   Units.hpp
+  WeylElectric.hpp
   )
 
 target_link_libraries(
