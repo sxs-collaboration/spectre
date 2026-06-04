@@ -50,6 +50,8 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.Hydro.Tags", "[Unit][Hydro]") {
       hydro::Tags::MagneticFieldSquared<DataVector>>("MagneticFieldSquared");
   TestHelpers::db::test_simple_tag<hydro::Tags::MagneticPressure<DataVector>>(
       "MagneticPressure");
+  TestHelpers::db::test_simple_tag<hydro::Tags::PontryaginScalar<DataVector>>(
+      "PontryaginScalar");
   TestHelpers::db::test_simple_tag<hydro::Tags::Pressure<DataVector>>(
       "Pressure");
   TestHelpers::db::test_simple_tag<hydro::Tags::RestMassDensity<DataVector>>(
