@@ -167,33 +167,43 @@ class Spherepack {
   /// the Ylm expansion.
   Spherepack(size_t l_max, size_t m_max);
 
-  /// @{
-  /// Static functions to return the correct sizes of vectors of
-  /// collocation points and spectral coefficients for a given l_max
-  /// and m_max.  Useful for allocating space without having to create
-  /// a Spherepack.
-  ///
   /// The number of theta collocation points (Gauss-Legendre in
-  /// \f$\cos\theta\f$) needed to represent all modes up to \f$l_{\rm
-  /// max}\f$ exactly.
+  /// \f$\cos\theta\f$) needed to represent all modes up to
+  /// \f$l_{\max}\f$ exactly.
   ///
+  /// Use to get the correct sizes of vectors of collocation points and
+  /// spectral coefficients for a given l_max and m_max.  Useful for allocating
+  /// space without having to create a Spherepack.
   SPECTRE_ALWAYS_INLINE static constexpr size_t n_theta_points(
       const size_t l_max) {
     return l_max + 1;
   }
   /// The number of phi collocation points (uniform in \f$\phi\f$) needed
-  /// to represent all modes up to \f$m_{\rm max}\f$ exactly.
+  /// to represent all modes up to \f$m_{\max}\f$ exactly.
+  ///
+  /// Use to get the correct sizes of vectors of collocation points and
+  /// spectral coefficients for a given l_max and m_max.  Useful for allocating
+  /// space without having to create a Spherepack.
   SPECTRE_ALWAYS_INLINE static constexpr size_t n_phi_points(
       const size_t m_max) {
     return 2 * m_max + 1;
   }
+  /// \brief The number of grid points used in the nodal (physical)
+  /// representation.
+  ///
+  /// Use to get the correct sizes of vectors of collocation points and
+  /// spectral coefficients for a given l_max and m_max.  Useful for allocating
+  /// space without having to create a Spherepack.
   SPECTRE_ALWAYS_INLINE static constexpr size_t physical_size(
       const size_t l_max, const size_t m_max) {
     return n_theta_points(l_max) * n_phi_points(m_max);
   }
+  /// \brief The number of grid points used in the nodal (physical)
+  /// representation.
+  ///
   /// \note `spectral_size` is the size of the buffer that holds the
   /// coefficients; it is not the number of coefficients (which is
-  /// \f$m_{\rm max}^2+(l_{\rm max}-m_{\rm max})(2m_{\rm max}+1)\f$).
+  /// \f$m_{\max}^2+(l_{\max}-m_{\max})(2m_{\max}+1)\f$).
   /// To simplify its internal indexing, SPHEREPACK uses a buffer with
   /// more space than necessary. See SpherepackIterator for
   /// how to index the coefficients in the buffer.
@@ -201,7 +211,6 @@ class Spherepack {
       const size_t l_max, const size_t m_max) {
     return 2 * (l_max + 1) * (m_max + 1);
   }
-  /// @}
 
   /// @{
   /// Sizes in physical and spectral space for this instance.
