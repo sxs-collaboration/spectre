@@ -1137,10 +1137,10 @@ Domain<3> create_serialized_domain() {
   using Identity2D = CoordinateMaps::Identity<2>;
   using Translation = CoordinateMaps::ProductOf2Maps<Affine, Identity2D>;
 
-  const creators::BinaryCompactObject<false>::Object object_A{
-      0.45825, 6., 7.683, true, true};
-  const creators::BinaryCompactObject<false>::Object object_B{
-      0.45825, 6., -7.683, true, true};
+  const creators::BinaryCompactObject::Object object_A{0.45825, 6., 7.683, true,
+                                                       true};
+  const creators::BinaryCompactObject::Object object_B{0.45825, 6., -7.683,
+                                                       true, true};
 
   const double x_coord_a = object_A.x_coord;
   const double x_coord_b = object_B.x_coord;

@@ -24,8 +24,7 @@ struct Metavariables {
     // we set `UseWorldtube` to `false` here so the functions of time are valid
     // which simplifies testing.
     using factory_classes = tmpl::map<tmpl::pair<
-        DomainCreator<3>,
-        tmpl::list<::domain::creators::BinaryCompactObject<EvolveOrbit>>>>;
+        DomainCreator<3>, tmpl::list<::domain::creators::BinaryCompactObject>>>;
   };
 };
 

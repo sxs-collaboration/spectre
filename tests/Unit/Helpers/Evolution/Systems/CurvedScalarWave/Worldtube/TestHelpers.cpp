@@ -64,6 +64,9 @@ std::unique_ptr<DomainCreator<3>> worldtube_binary_compact_object(
       "  InitialGridPoints: 3\n"
       "  UseEquiangularMap: true\n"
       "  CubeScale: 1.0\n"
+      "  UseWorldtube: " +
+      std::string(EvolveOrbit ? "true" : "false") +
+      "\n"
       "  TimeDependentMaps:\n"
       "    GridCenters: None\n"
       "    InitialTime: 0.0\n"

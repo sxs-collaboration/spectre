@@ -77,13 +77,11 @@ create_grid_anchors(const std::array<double, 3>& center_a,
 }
 }  // namespace bco
 
-template <bool UseWorldtube>
-bool BinaryCompactObject<UseWorldtube>::Object::is_excised() const {
+bool BinaryCompactObject::Object::is_excised() const {
   return inner_boundary_condition.has_value();
 }
 
-template <bool UseWorldtube>
-BinaryCompactObject<UseWorldtube>::BinaryCompactObject(
+BinaryCompactObject::BinaryCompactObject(
     typename ObjectA::type object_A, typename ObjectB::type object_B,
     std::array<double, 2> center_of_mass_offset, const double envelope_radius,
     const double outer_radius, const double cube_scale,
@@ -95,7 +93,7 @@ BinaryCompactObject<UseWorldtube>::BinaryCompactObject(
     const typename RadialDistributionOuterShell::type&
         radial_distribution_outer_shell,
     const double opening_angle_in_degrees,
-    const bool spherical_harmonics_in_wavezone,
+    const bool spherical_harmonics_in_wavezone, const bool use_worldtube,
     std::optional<bco::TimeDependentMapOptions<false>> time_dependent_options,
     std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
         outer_boundary_condition,
@@ -123,7 +121,8 @@ BinaryCompactObject<UseWorldtube>::BinaryCompactObject(
           std::holds_alternative<CartesianCubeAtXCoord>(object_B_)),
       time_dependent_options_(std::move(time_dependent_options)),
       opening_angle_(M_PI * opening_angle_in_degrees / 180.0),
-      spherical_harmonics_in_wavezone_(spherical_harmonics_in_wavezone) {
+      spherical_harmonics_in_wavezone_(spherical_harmonics_in_wavezone),
+      use_worldtube_(use_worldtube) {
   // Determination of parameters for domain construction:
   const double tan_half_opening_angle = tan(0.5 * opening_angle_);
   translation_ = 0.5 * (x_coord_a_ + x_coord_b_);
@@ -663,9 +662,8 @@ BinaryCompactObject<UseWorldtube>::BinaryCompactObject(
   }
 }
 
-template <bool UseWorldtube>
-std::vector<std::array<size_t, 3>>
-BinaryCompactObject<UseWorldtube>::initial_extents() const {
+std::vector<std::array<size_t, 3>> BinaryCompactObject::initial_extents()
+    const {
   if (not spherical_harmonics_in_wavezone_) {
     return initial_number_of_grid_points_;
   }
@@ -683,8 +681,7 @@ BinaryCompactObject<UseWorldtube>::initial_extents() const {
   return extents;
 }
 
-template <bool UseWorldtube>
-Domain<3> BinaryCompactObject<UseWorldtube>::create_domain() const {
+Domain<3> BinaryCompactObject::create_domain() const {
   const double inner_sphericity_A = is_excised_a_ ? 1.0 : 0.0;
   const double inner_sphericity_B = is_excised_b_ ? 1.0 : 0.0;
 
@@ -1233,10 +1230,9 @@ Domain<3> BinaryCompactObject<UseWorldtube>::create_domain() const {
   return domain;
 }
 
-template <bool UseWorldtube>
 std::vector<DirectionMap<
     3, std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>
-BinaryCompactObject<UseWorldtube>::external_boundary_conditions() const {
+BinaryCompactObject::external_boundary_conditions() const {
   if (outer_boundary_condition_ == nullptr) {
     return {};
   }
@@ -1282,20 +1278,19 @@ BinaryCompactObject<UseWorldtube>::external_boundary_conditions() const {
   return boundary_conditions;
 }
 
-template <bool UseWorldtube>
 std::unordered_map<std::string,
                    std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>
-BinaryCompactObject<UseWorldtube>::functions_of_time(
+BinaryCompactObject::functions_of_time(
     const std::unordered_map<std::string, double>& initial_expiration_times)
     const {
-  return time_dependent_options_.has_value()
-             ? time_dependent_options_->create_functions_of_time<UseWorldtube>(
-                   initial_expiration_times)
-             : std::unordered_map<
-                   std::string,
-                   std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>{};
+  if (not time_dependent_options_.has_value()) {
+    return {};
+  }
+  if (use_worldtube_) {
+    return time_dependent_options_->create_functions_of_time<true>(
+        initial_expiration_times);
+  }
+  return time_dependent_options_->create_functions_of_time<false>(
+      initial_expiration_times);
 }
-
-template class BinaryCompactObject<true>;
-template class BinaryCompactObject<false>;
 }  // namespace domain::creators

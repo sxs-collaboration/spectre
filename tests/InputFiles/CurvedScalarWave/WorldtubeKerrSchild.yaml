@@ -67,6 +67,7 @@ DomainCreator:
       OpeningAngle: 90.0
       UseSphericalHarmonics: false
       BoundaryCondition: ConstraintPreservingSphericalRadiation
+    UseWorldtube: true
     TimeDependentMaps:
       InitialTime: 0.
       ExpansionMap:

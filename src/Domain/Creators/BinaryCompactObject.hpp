@@ -159,11 +159,10 @@ create_grid_anchors(const std::array<double, 3>& center_a,
  * the \f$\ell\f$ of the shells since having an \f$m_{\max}\f$ below the maximum
  * allowed from the \f$\ell\f$ can drive simulations unstable.
  *
- * The `UseWorldtube` template parameter is set to false by default. When set to
- * true, some of the functions of time will be `IntegratedFunctionOfTime` used
- * to control the orbit of the worldtube.
+ * The `UseWorldtube` option defaults to `false`. When set to `true`, some of
+ * the functions of time will be `IntegratedFunctionOfTime` used to control the
+ * orbit of the worldtube.
  */
-template <bool UseWorldtube = false>
 class BinaryCompactObject : public DomainCreator<3> {
  private:
   // Time-independent maps
@@ -281,7 +280,7 @@ class BinaryCompactObject : public DomainCreator<3> {
                 typename Metavariables::system>,
             Interior, ExciseInterior>,
         UseLogarithmicMap>;
-    Object() = default;
+    Object() {}  // NOLINT(modernize-use-equals-default)
     Object(double local_inner_radius, double local_outer_radius,
            double local_x_coord, std::optional<Excision> interior,
            bool local_use_logarithmic_map)
@@ -437,6 +436,15 @@ class BinaryCompactObject : public DomainCreator<3> {
         "0). "};
   };
 
+  struct UseWorldtube {
+    using type = bool;
+    static constexpr Options::String help = {
+        "Whether to set up functions of time appropriate for a worldtube run. "
+        "When true, some functions of time will be IntegratedFunctionOfTime "
+        "used to control the orbit of the worldtube. Used by the curved scalar "
+        "wave worldtube executable."};
+  };
+
   struct CubeScale {
     using type = double;
     static constexpr Options::String help = {
@@ -508,7 +516,8 @@ class BinaryCompactObject : public DomainCreator<3> {
                  OuterRadius, CubeScale, InitialRefinement, InitialGridPoints,
                  UseEquiangularMap, RadialDistributionEnvelope,
                  RadialPartitioningOuterShell, RadialDistributionOuterShell,
-                 OpeningAngle, SphericalHarmonicsInWavezone, TimeDependentMaps>,
+                 OpeningAngle, SphericalHarmonicsInWavezone, UseWorldtube,
+                 TimeDependentMaps>,
       tmpl::conditional_t<
           domain::BoundaryConditions::has_boundary_conditions_base_v<
               typename Metavariables::system>,
@@ -556,7 +565,7 @@ class BinaryCompactObject : public DomainCreator<3> {
           radial_distribution_outer_shell =
               CoordinateMaps::Distribution::Linear,
       double opening_angle_in_degrees = 90.0,
-      bool spherical_harmonics_in_wavezone = false,
+      bool spherical_harmonics_in_wavezone = false, bool use_worldtube = false,
       std::optional<bco::TimeDependentMapOptions<false>>
           time_dependent_options = std::nullopt,
       std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
@@ -602,8 +611,8 @@ class BinaryCompactObject : public DomainCreator<3> {
           std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>> override;
 
  private:
-  typename ObjectA::type object_A_{};
-  typename ObjectB::type object_B_{};
+  typename ObjectA::type object_A_{Object{}};
+  typename ObjectB::type object_B_{Object{}};
   std::array<double, 2> center_of_mass_offset_{};
   double envelope_radius_ = std::numeric_limits<double>::signaling_NaN();
   double outer_radius_ = std::numeric_limits<double>::signaling_NaN();
@@ -648,5 +657,6 @@ class BinaryCompactObject : public DomainCreator<3> {
   std::optional<bco::TimeDependentMapOptions<false>> time_dependent_options_;
   double opening_angle_ = std::numeric_limits<double>::signaling_NaN();
   bool spherical_harmonics_in_wavezone_ = false;
+  bool use_worldtube_ = false;
 };
 }  // namespace domain::creators

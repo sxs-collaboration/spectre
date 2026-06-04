@@ -70,6 +70,7 @@ DomainCreator:
       Envelope: [1, 1, 1]
       OuterShell0:     [1, 1, 1]
     InitialGridPoints: 3
+    UseWorldtube: false
     TimeDependentMaps:
       InitialTime: 0.0
       ExpansionMap:

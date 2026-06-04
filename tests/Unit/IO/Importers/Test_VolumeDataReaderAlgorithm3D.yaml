@@ -30,6 +30,7 @@ SourceDomainCreator:
       UseSphericalHarmonics: false
     UseEquiangularMap: True
     CubeScale: 1.0
+    UseWorldtube: false
     InitialRefinement: 1
     InitialGridPoints: 7
     TimeDependentMaps: None
@@ -60,6 +61,7 @@ TargetDomainCreator:
       UseSphericalHarmonics: false
     UseEquiangularMap: True
     CubeScale: 1.0
+    UseWorldtube: false
     InitialRefinement: 0
     InitialGridPoints: 3
     TimeDependentMaps: None

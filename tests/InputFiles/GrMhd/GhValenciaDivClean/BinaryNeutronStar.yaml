@@ -114,6 +114,7 @@ DomainCreator:
       OuterShell2UpperX: [13, 13, 14]
       OuterShell2LowerX: [13, 13, 14]
 
+    UseWorldtube: false
     TimeDependentMaps:
       InitialTime: 0.0
       SkewMap: None

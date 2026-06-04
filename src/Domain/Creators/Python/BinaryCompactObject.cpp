@@ -18,8 +18,8 @@ namespace py = pybind11;
 
 namespace domain::creators::py_bindings {
 void bind_binary_compact_object(py::module& m) {
-  py::class_<domain::creators::BinaryCompactObject<false>, DomainCreator<3>>(
-      m, "BinaryCompactObject")
+  using BCO = domain::creators::BinaryCompactObject;
+  py::class_<BCO, DomainCreator<3>>(m, "BinaryCompactObject")
       .def(py::init(
                [](const double inner_radius_object_a,
                   const double outer_radius_object_a, const double x_coord_a,
@@ -35,15 +35,14 @@ void bind_binary_compact_object(py::module& m) {
                   const std::vector<double>& radial_partitioning_outer_shell,
                   const double opening_angle_in_degrees,
                   const bool spherical_harmonics_in_wavezone,
+                  const bool use_worldtube,
                   std::optional<bco::TimeDependentMapOptions<false>>
                       time_dependent_options) {
-                 return domain::creators::BinaryCompactObject<false>{
-                     domain::creators::BinaryCompactObject<false>::Object{
-                         inner_radius_object_a, outer_radius_object_a,
-                         x_coord_a, excise_a, use_logarithmic_map_a},
-                     domain::creators::BinaryCompactObject<false>::Object{
-                         inner_radius_object_b, outer_radius_object_b,
-                         x_coord_b, excise_b, use_logarithmic_map_b},
+                 return BCO{
+                     BCO::Object{inner_radius_object_a, outer_radius_object_a,
+                                 x_coord_a, excise_a, use_logarithmic_map_a},
+                     BCO::Object{inner_radius_object_b, outer_radius_object_b,
+                                 x_coord_b, excise_b, use_logarithmic_map_b},
                      center_of_mass_offset,
                      envelope_radius,
                      outer_radius,
@@ -56,6 +55,7 @@ void bind_binary_compact_object(py::module& m) {
                      domain::CoordinateMaps::Distribution::Linear,
                      opening_angle_in_degrees,
                      spherical_harmonics_in_wavezone,
+                     use_worldtube,
                      std::move(time_dependent_options)};
                }),
            py::arg("inner_radius_a"), py::arg("outer_radius_a"),
@@ -70,6 +70,6 @@ void bind_binary_compact_object(py::module& m) {
            py::arg("radial_partitioning_outer_shell") = std::vector<double>{},
            py::arg("opening_angle_in_degrees") = 120,
            py::arg("spherical_harmonics_in_wavezone") = false,
-           py::arg("time_dependent_options"));
+           py::arg("use_worldtube") = false, py::arg("time_dependent_options"));
 }
 }  // namespace domain::creators::py_bindings

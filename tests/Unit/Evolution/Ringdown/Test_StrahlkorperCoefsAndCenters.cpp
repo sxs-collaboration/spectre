@@ -195,8 +195,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.Ringdown.StrahlkorperCoefsAndCenters",
                          KerrSchildFromBoyerLindquist{0.4, {0.0, 0.0, 0.0}}},
           std::nullopt};
 
-  using Object = domain::creators::BinaryCompactObject<false>::Object;
-  const domain::creators::BinaryCompactObject<false> domain_creator_bco{
+  using Object = domain::creators::BinaryCompactObject::Object;
+  const domain::creators::BinaryCompactObject domain_creator_bco{
       Object{0.1, 6., 8., true, true},
       Object{0.2, 6, -6., true, true},
       std::array<double, 2>{{0., 0.}},
@@ -210,6 +210,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Ringdown.StrahlkorperCoefsAndCenters",
       std::vector<double>{},
       domain::CoordinateMaps::Distribution::Inverse,
       120.,
+      false,
       false,
       time_dependent_map_options_bco};
   const auto domain_bco = domain_creator_bco.create_domain();

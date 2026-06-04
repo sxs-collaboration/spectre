@@ -156,6 +156,7 @@ DomainCreator:
       ObjectBCube:    [6, 6, 7]
       Envelope:       [6, 6, 6]
       OuterShell0:     [6, 6, 6]
+    UseWorldtube: false
     TimeDependentMaps: None
 
 Amr:
