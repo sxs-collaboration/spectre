@@ -167,6 +167,13 @@ struct EquationOfState : db::SimpleTag {
   }
 };
 
+/// The Kretschmann scalar in hydro.
+/// \see hydro::kretschmann_scalar
+template <typename DataType>
+struct KretschmannScalar : db::SimpleTag {
+  using type = Scalar<DataType>;
+};
+
 /// The inverse plasma beta \f$\beta^{-1} = b^2 / (2 p)\f$, where
 ///// \f$b^2\f$ is the square of the comoving magnetic field amplitude
 ///// and \f$p\f$ is the fluid pressure.

@@ -6,7 +6,6 @@
 #include <cmath>
 #include <cstddef>
 #include <random>
-#include <utility>
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/EagerMath/DeterminantAndInverse.hpp"
@@ -14,11 +13,13 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Framework/CheckWithRandomValues.hpp"
 #include "Framework/SetupLocalPythonEnvironment.hpp"
+#include "Framework/TestHelpers.hpp"
+#include "Helpers/DataStructures/DataBox/TestHelpers.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
 #include "PointwiseFunctions/GeneralRelativity/ExtrinsicCurvature.hpp"
-#include "PointwiseFunctions/GeneralRelativity/Ricci.hpp"
 #include "PointwiseFunctions/GeneralRelativity/SpatialMetric.hpp"
 #include "PointwiseFunctions/GeneralRelativity/WeylElectric.hpp"
+#include "PointwiseFunctions/Hydro/QuadraticCurvatureScalars.hpp"
 #include "PointwiseFunctions/Hydro/Ricci.hpp"
 #include "PointwiseFunctions/Hydro/StressEnergy.hpp"
 #include "PointwiseFunctions/Hydro/WeylElectric.hpp"
@@ -57,6 +58,10 @@ void test_curvature_quantities_flrw() {
   // - Ricci scalar: $R = 8\pi (\rho - 3p)$
   // - Kretschmann scalar: $K = (64\pi^2 / 3) * (4\rho^2 + (3p + \rho)^2)$
   //
+  // The magnetic Weyl tensor vanishes in FLRW: the spacetime is conformally
+  // flat and the extrinsic curvature is proportional to the spatial metric, so
+  // the magnetic part B_{ij} = epsilon_{ikl} nabla^k K^l_j = 0.
+  //
   // The metric is constant in space. We test random values for density,
   // pressure, and the scale factor, to represent random instances of the
   // metric, not random points.
@@ -91,11 +96,23 @@ void test_curvature_quantities_flrw() {
   const tnsr::AA<DataVector, 3, Frame::Inertial> inverse_spacetime_metric =
       determinant_and_inverse(spacetime_metric).second;
 
+  // Friedmann equations -> d_t g_{ii} = 2 a adot = 2 a^2 sqrt(8 pi rho / 3)
+  tnsr::ii<DataVector, 3, Frame::Inertial> dt_spatial_metric(num_points, 0.0);
+  for (size_t i = 0; i < 3; ++i) {
+    dt_spatial_metric.get(i, i) =
+        2. * square(scale_factor) * sqrt(8. * M_PI * get(density) / 3.);
+  }
+  const tnsr::ijj<DataVector, 3, Frame::Inertial> deriv_spatial_metric(
+      num_points, 0.0);
+
   const auto spatial_metric = gr::spatial_metric(spacetime_metric);
   const tnsr::II<DataVector, 3, Frame::Inertial> inverse_spatial_metric =
       determinant_and_inverse(spatial_metric).second;
   const tnsr::I<DataVector, 3, Frame::Inertial> shift(num_points, 0.0);
+  const tnsr::iJ<DataVector, 3, Frame::Inertial> deriv_shift(num_points, 0.0);
   const Scalar<DataVector> lapse(num_points, 1.0);
+  const auto induced_spatial_metric =
+      gr::induced_spatial_metric(spacetime_metric, lapse);
 
   // Hydro quantities for stress energy tensor (cold stationary fluid)
   const Scalar<DataVector> specific_internal_energy(num_points, 0.0);
@@ -104,6 +121,12 @@ void test_curvature_quantities_flrw() {
   const tnsr::I<DataVector, 3, Frame::Inertial> spatial_velocity(num_points,
                                                                  0.0);
   const tnsr::I<DataVector, 3, Frame::Inertial> magnetic_field(num_points, 0.0);
+
+  const tnsr::ii<DataVector, 3, Frame::Inertial> spatial_ricci(num_points, 0.0);
+
+  const auto extrinsic_curvature =
+      gr::extrinsic_curvature(lapse, shift, deriv_shift, spatial_metric,
+                              dt_spatial_metric, deriv_spatial_metric);
 
   // Stress energy tensor
   tnsr::AA<DataVector, 3, Frame::Inertial> stress_energy(num_points, 0.0);
@@ -126,36 +149,7 @@ void test_curvature_quantities_flrw() {
   CHECK_ITERABLE_APPROX(get(ricci_scalar),
                         8. * M_PI * (get(density) - 3. * get(pressure)));
 
-  auto compute_deriv_spacetime_metric = [num_points, scale_factor, density]() {
-    // Friedmann equations ->
-    // $d_t g_{ii} = 2 a \dot{a} = 2 a^2 \sqrt{8\pi \rho / 3}
-    // All other components are 0.
-    tnsr::abb<DataVector, 3, Frame::Inertial> deriv_spacetime_metric(num_points,
-                                                                     0.0);
-    tnsr::ii<DataVector, 3, Frame::Inertial> dt_spatial_metric(num_points, 0.0);
-    for (size_t i = 0; i < 3; ++i) {
-      deriv_spacetime_metric.get(0, i + 1, i + 1) =
-          2. * square(scale_factor) * sqrt(8. * M_PI * get(density) / 3.);
-      dt_spatial_metric.get(i, i) =
-          2. * square(scale_factor) * sqrt(8. * M_PI * get(density) / 3.);
-    }
-    return std::make_pair(deriv_spacetime_metric, dt_spatial_metric);
-  };
-  const auto derivs = compute_deriv_spacetime_metric();
-  const tnsr::ii<DataVector, 3, Frame::Inertial> dt_spatial_metric =
-      derivs.second;
-  const tnsr::ijj<DataVector, 3, Frame::Inertial> deriv_spatial_metric(
-      num_points, 0.0);
-  const tnsr::iJ<DataVector, 3, Frame::Inertial> deriv_shift(num_points, 0.0);
-  const auto induced_spatial_metric =
-      gr::induced_spatial_metric(spacetime_metric, lapse);
-  const tnsr::ii<DataVector, 3, Frame::Inertial> spatial_ricci(num_points, 0.0);
-
-  const auto extrinsic_curvature =
-      gr::extrinsic_curvature(lapse, shift, deriv_shift, spatial_metric,
-                              dt_spatial_metric, deriv_spatial_metric);
-
-  // Weyl electric and magnetic components
+  // Weyl electric component (vanishes in FLRW by conformally-flat symmetry)
   const auto electric_weyl =
       hydro::weyl_electric(gr::weyl_electric(spatial_ricci, extrinsic_curvature,
                                              inverse_spatial_metric),
@@ -169,6 +163,27 @@ void test_curvature_quantities_flrw() {
                                    custom_approx);
     }
   }
+
+  const auto electric_weyl_scalar =
+      gr::weyl_electric_scalar(electric_weyl, inverse_spatial_metric);
+  // Magnetic Weyl vanishes in FLRW: extrinsic curvature is proportional to
+  // the spatial metric, so its covariant curl is zero.
+  const Scalar<DataVector> magnetic_weyl_scalar(num_points, 0.0);
+
+  // Kretschmann computation and tests
+  const auto kretschmann =
+      hydro::kretschmann_scalar(electric_weyl_scalar, magnetic_weyl_scalar,
+                                inverse_spacetime_metric, ricci, ricci_scalar);
+  CHECK_ITERABLE_APPROX(kretschmann.get(),
+                        (64. / 3.) * square(M_PI) *
+                            (4. * square(get(density)) +
+                             square(3. * get(pressure) + get(density))));
+
+  // Check compute items work correctly in DataBox
+  TestHelpers::db::test_compute_tag<
+      hydro::Tags::KretschmannScalarCompute<DataVector>>("KretschmannScalar");
+  TestHelpers::db::test_compute_tag<
+      hydro::Tags::PontryaginScalarCompute<DataVector>>("PontryaginScalar");
   TestHelpers::db::test_compute_tag<
       hydro::Tags::WeylElectricCompute<DataVector>>("WeylElectric");
   TestHelpers::db::test_compute_tag<
@@ -198,6 +213,14 @@ void test_curvature_quantities_random_values(const DataType& used_for_size) {
       &hydro::weyl_electric<DataType>;
   pypp::check_with_random_values<1>(f_weyl_electric, "CurvatureQuantities",
                                     "weyl_electric", {{{-1., 1.}}},
+                                    used_for_size);
+
+  Scalar<DataType> (*f_kretschmann)(
+      const Scalar<DataType>&, const Scalar<DataType>&,
+      const tnsr::AA<DataType, 3>&, const tnsr::aa<DataType, 3>&,
+      const Scalar<DataType>&) = &hydro::kretschmann_scalar<DataType>;
+  pypp::check_with_random_values<1>(f_kretschmann, "CurvatureQuantities",
+                                    "kretschmann_scalar", {{{-1., 1.}}},
                                     used_for_size);
 }
 
