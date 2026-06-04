@@ -53,6 +53,8 @@ struct MagneticPressure;
 template <typename DataType, size_t Dim, typename Fr = Frame::Inertial>
 struct MassFlux;
 template <typename DataType>
+struct PontryaginScalar;
+template <typename DataType>
 struct Pressure;
 template <typename DataType>
 struct RestMassDensity;

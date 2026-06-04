@@ -93,5 +93,11 @@ template <typename DataType, size_t Dim, typename Frame>
 struct WeylTypeD1;
 template <typename Datatype>
 struct WeylTypeD1Scalar;
+template <typename DataType>
+struct GaussBonnetScalar;
+template <typename DataType>
+struct KretschmannScalar;
+template <typename DataType>
+struct PontryaginScalar;
 }  // namespace Tags
 }  // namespace gr

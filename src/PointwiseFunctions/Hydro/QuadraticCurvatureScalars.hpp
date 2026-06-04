@@ -80,5 +80,23 @@ struct KretschmannScalarCompute : KretschmannScalar<DataType>, db::ComputeTag {
   using base = KretschmannScalar<DataType>;
 };
 
+/// Compute item for the Pontryagin scalar in hydro.
+///
+/// Can be retrieved using hydro::Tags::PontryaginScalar
+template <typename DataType>
+struct PontryaginScalarCompute : PontryaginScalar<DataType>, db::ComputeTag {
+  using argument_tags = tmpl::list<hydro::Tags::WeylElectric<DataType, 3>,
+                                   gr::Tags::WeylMagnetic<DataType, 3>,
+                                   gr::Tags::InverseSpatialMetric<DataType, 3>>;
+
+  using return_type = Scalar<DataType>;
+
+  static constexpr auto function = static_cast<void (*)(
+      gsl::not_null<Scalar<DataType>*>, const tnsr::ii<DataType, 3>&,
+      const tnsr::ii<DataType, 3>&, const tnsr::II<DataType, 3>&)>(
+      &gr::pontryagin_scalar);
+
+  using base = PontryaginScalar<DataType>;
+};
 }  // namespace Tags
 }  // namespace hydro

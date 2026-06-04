@@ -121,14 +121,10 @@ Scalar<DataType> gauss_bonnet_scalar_in_vacuum(
 namespace gr::Tags {
 /// @{
 /*!
- * \brief Tags for the PontryaginScalar in vacuum.
+ * \brief Compute tag for the PontryaginScalar in vacuum.
  *
  * The tags are tested in Test_CurvatureScalarComputeTags.cpp
  */
-template <typename DataType>
-struct PontryaginScalar : db::SimpleTag {
-  using type = Scalar<DataType>;
-};
 
 template <typename DataType, typename Frame>
 struct PontryaginScalarCompute : PontryaginScalar<DataType>, db::ComputeTag {
@@ -148,14 +144,30 @@ struct PontryaginScalarCompute : PontryaginScalar<DataType>, db::ComputeTag {
 
 /// @{
 /*!
- * \brief Tags for the Gauss Bonnet Scalar in vacuum.
+ * \brief Compute tag for the Kretschmann Scalar in vacuum.
  *
  * The tags are tested in Test_CurvatureScalarComputeTags.cpp
  */
+
 template <typename DataType>
-struct GaussBonnetScalar : db::SimpleTag {
-  using type = Scalar<DataType>;
+struct KretschmannScalarCompute : KretschmannScalar<DataType>, db::ComputeTag {
+  using argument_tags = tmpl::list<gr::Tags::WeylElectricScalar<DataType>,
+                                   gr::Tags::WeylMagneticScalar<DataType>>;
+  using return_type = Scalar<DataType>;
+  static constexpr auto function =
+      static_cast<void (*)(gsl::not_null<Scalar<DataType>*>,
+                           const Scalar<DataType>&, const Scalar<DataType>&)>(
+          &gr::kretschmann_scalar_in_vacuum<DataType>);
+  using base = KretschmannScalar<DataType>;
 };
+/// @}
+
+/// @{
+/*!
+ * \brief Compute tag for the Gauss Bonnet Scalar in vacuum.
+ *
+ * The tags are tested in Test_CurvatureScalarComputeTags.cpp
+ */
 
 template <typename DataType>
 struct GaussBonnetScalarCompute : GaussBonnetScalar<DataType>, db::ComputeTag {

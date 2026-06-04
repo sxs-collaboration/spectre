@@ -306,6 +306,36 @@ struct WeylTypeD1Scalar : db::SimpleTag {
   using type = Scalar<DataType>;
 };
 
+/*!
+ * \brief The Gauss-Bonnet scalar \f$G = R_{abcd}R^{abcd} - 4R_{ab}R^{ab} +
+ * R^2\f$ in vacuum.
+ */
+template <typename DataType>
+struct GaussBonnetScalar : db::SimpleTag {
+  using type = Scalar<DataType>;
+};
+
+/*!
+ * \brief The Kretschmann scalar \f$K = R_{abcd}R^{abcd}\f$ in vacuum.
+ *
+ * \details This tag computes only the Weyl contribution to the Kretschmann
+ * scalar, which equals \f$R_{abcd}R^{abcd}\f$ in vacuum. In the presence of
+ * matter, additional terms depending on the Ricci tensor are needed: see
+ * `hydro::Tags::KretschmannScalar` for the complete formula.
+ */
+template <typename DataType>
+struct KretschmannScalar : db::SimpleTag {
+  using type = Scalar<DataType>;
+};
+
+/*!
+ * \brief The Pontryagin scalar \f$P = {}^{*}R_{abcd}R^{abcd}\f$.
+ */
+template <typename DataType>
+struct PontryaginScalar : db::SimpleTag {
+  using type = Scalar<DataType>;
+};
+
 }  // namespace Tags
 
 /// GR Tags commonly needed for the evolution of hydro systems

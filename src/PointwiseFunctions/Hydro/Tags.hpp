@@ -236,6 +236,17 @@ struct MagneticPressure : db::SimpleTag {
   using type = Scalar<DataType>;
 };
 
+/// The Pontryagin scalar
+/// \f$P = {}^{*}R_{abcd}R^{abcd} = {}^{*}C_{abcd}C^{abcd} = 16 E_{ab}B^{ab}\f$,
+/// where \f$E_{ab}\f$ and \f$B_{ab}\f$ are the electric and magnetic
+/// decompositions of the Weyl tensor, \f$C_{abcd}\f$. Note that the formula is
+/// the same as in vacuum, but the input Weyl electric component is different in
+/// the hydro system.
+template <typename DataType>
+struct PontryaginScalar : db::SimpleTag {
+  using type = Scalar<DataType>;
+};
+
 /// The fluid pressure \f$p\f$.
 template <typename DataType>
 struct Pressure : db::SimpleTag {
