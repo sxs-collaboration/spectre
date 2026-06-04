@@ -52,6 +52,10 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.Hydro.Tags", "[Unit][Hydro]") {
       "Pressure");
   TestHelpers::db::test_simple_tag<hydro::Tags::RestMassDensity<DataVector>>(
       "RestMassDensity");
+  TestHelpers::db::test_simple_tag<
+      hydro::Tags::GrRicci<DataVector, 3, Frame::ElementLogical>>("GrRicci");
+  TestHelpers::db::test_simple_tag<hydro::Tags::GrRicciScalar<DataVector>>(
+      "GrRicciScalar");
   TestHelpers::db::test_simple_tag<hydro::Tags::SoundSpeedSquared<DataVector>>(
       "SoundSpeedSquared");
   // [prefix_example]

@@ -16,6 +16,7 @@ spectre_target_sources(
   MassFlux.cpp
   MassWeightedFluidItems.cpp
   QuadrupoleFormula.cpp
+  Ricci.cpp
   SoundSpeedSquared.cpp
   SpecificEnthalpy.cpp
   SpecificEntropy.cpp
@@ -35,6 +36,7 @@ spectre_target_headers(
   MassFlux.hpp
   MassWeightedFluidItems.hpp
   QuadrupoleFormula.hpp
+  Ricci.hpp
   SoundSpeedSquared.hpp
   SpecificEnthalpy.hpp
   SpecificEntropy.hpp

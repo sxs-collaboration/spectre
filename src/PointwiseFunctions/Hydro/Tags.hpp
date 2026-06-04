@@ -241,6 +241,18 @@ struct RestMassDensity : db::SimpleTag {
   using type = Scalar<DataType>;
 };
 
+/// The spacetime (4D) Ricci tensor \f$R_{ab}\f$.
+template <typename DataType, size_t Dim, typename Fr>
+struct GrRicci : db::SimpleTag {
+  using type = tnsr::aa<DataType, Dim, Fr>;
+};
+
+/// The spacetime (4D) Ricci scalar \f$R\f$.
+template <typename DataType>
+struct GrRicciScalar : db::SimpleTag {
+  using type = Scalar<DataType>;
+};
+
 /// The sound speed squared \f$c_s^2\f$.
 template <typename DataType>
 struct SoundSpeedSquared : db::SimpleTag {
