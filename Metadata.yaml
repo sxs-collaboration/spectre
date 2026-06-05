@@ -148,6 +148,10 @@ Authors:
         Orcid: 0000-0003-2426-8768
         Affiliations: [*caltech]
         GitHub: knelli2
+      - Name: Scheel, Mark A.
+        Orcid: 0000-0001-6656-9134
+        Affiliations: [*caltech]
+        GitHub: markscheel
 
   Developers:
     Description: |
@@ -211,10 +215,6 @@ Authors:
         Orcid: 0000-0001-9288-519X
         Affiliations: [*aei]
         GitHub: haraldp271
-      - Name: Scheel, Mark A.
-        Orcid: 0000-0001-6656-9134
-        Affiliations: [*caltech]
-        GitHub: markscheel
       - Name: Teukolsky, Saul A.
         Orcid: 0000-0001-9765-4526
         Affiliations: [*caltech, *cornell]
