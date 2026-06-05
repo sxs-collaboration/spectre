@@ -533,6 +533,43 @@ void test_sphere_factory() {
                            radial_refinement, grid_points, radial_partition,
                            false, std::move(excise1), true);
 
+  {
+    INFO("Multiple distributions via list parsing");
+    const auto sphere_multi_dist = TestHelpers::test_option_tag<
+        domain::OptionTags::DomainCreator<3>,
+        TestHelpers::domain::BoundaryConditions::
+            MetavariablesWithBoundaryConditionsCartoon<
+                3, domain::creators::CartoonSphere2D>>(
+        "CartoonSphere2D:\n"
+        "  InnerRadius: 1.0\n"
+        "  OuterRadius: 5.0\n"
+        "  InitialAngularRefinement: 3\n"
+        "  InitialRadialRefinement:\n"
+        "    - 3\n"
+        "    - 3\n"
+        "    - 2\n"
+        "  InitialGridPoints: [2,3]\n"
+        "  RadialPartitioning: [3.5, 4.5]\n"
+        "  UseEquiangularMap: false\n"
+        "  RadialDistribution: [Linear, Linear, Linear]\n"
+        "  TimeDependence: None\n"
+        "  Interior:\n"
+        "    ExciseWithBoundaryCondition:\n"
+        "      TestBoundaryCondition:\n"
+        "        Direction: lower-eta\n"
+        "        BlockId: 3\n"
+        "  OuterBoundaryCondition:\n"
+        "    TestBoundaryCondition:\n"
+        "      Direction: lower-xi\n"
+        "      BlockId: 2\n");
+    domain::creators::detail::Excision excise_multi{
+        create_boundary_condition_inner()};
+    test_sphere_construction(
+        dynamic_cast<const creators::CartoonSphere2D&>(*sphere_multi_dist),
+        inner_radius, outer_radius, angular_refinement, radial_refinement,
+        grid_points, radial_partition, false, std::move(excise_multi), true);
+  }
+
   INFO("With TimeDependent Map");
   const auto sphere_time_dependent = TestHelpers::test_option_tag<
       domain::OptionTags::DomainCreator<3>,
@@ -697,6 +734,19 @@ void test_sphere_errors() {
           Options::Context{false, {}, 1, 1}),
       Catch::Matchers::ContainsSubstring(
           "Cartoon boundary conditions should not be specified as external "));
+  CHECK_THROWS_WITH(
+      creators::CartoonSphere2D(
+          inner_radius, outer_radius, angular_refinement, radial_refinement_vec,
+          grid_points, radial_partitioning, false, fill_center,
+          std::vector<CoordinateMaps::Distribution>{
+              CoordinateMaps::Distribution::Logarithmic,
+              CoordinateMaps::Distribution::Linear,
+              CoordinateMaps::Distribution::Linear},
+          nullptr, nullptr, create_cartoon_boundary_condition(),
+          Options::Context{false, {}, 1, 1}),
+      Catch::Matchers::ContainsSubstring(
+          "Cannot have a non-linear radial distribution in the innermost "
+          "shell"));
   // Test that using a system without a cartoon BC triggers a parse error via
   // the create_from_yaml path. MetavariablesWithBoundaryConditions has a system
   // with boundary conditions but no Cartoon BC in its factory list, so
