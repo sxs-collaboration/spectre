@@ -36,6 +36,8 @@
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "NumericalAlgorithms/LinearOperators/Filters/Filter.hpp"
+#include "NumericalAlgorithms/LinearOperators/Filters/None.hpp"
+#include "NumericalAlgorithms/LinearOperators/Filters/None.tpp"
 #include "NumericalAlgorithms/LinearOperators/Filters/SphericalShell.hpp"
 #include "NumericalAlgorithms/LinearOperators/Filters/SphericalShell.tpp"
 #include "NumericalAlgorithms/Spectral/Basis.hpp"
@@ -176,12 +178,19 @@ void test_is_equal() {
   CHECK(b.is_equal(a));
   CHECK_FALSE(a.is_equal(c));
 
+  // Different concrete type returns false.
+  const Filters::None<3, TagList> none_filter{};
+  CHECK_FALSE(a.is_equal(none_filter));
+
   // Via abstract base pointer (the primary AMR use case).
   const std::unique_ptr<Base> pa = std::make_unique<SphericalShellFilter>(a);
   const std::unique_ptr<Base> pb = std::make_unique<SphericalShellFilter>(b);
   const std::unique_ptr<Base> pc = std::make_unique<SphericalShellFilter>(c);
+  const std::unique_ptr<Base> pnone =
+      std::make_unique<Filters::None<3, TagList>>(none_filter);
   CHECK(pa->is_equal(*pb));
   CHECK_FALSE(pa->is_equal(*pc));
+  CHECK_FALSE(pa->is_equal(*pnone));
 }
 
 void test_construction_and_accessors() {
