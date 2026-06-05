@@ -184,6 +184,14 @@ Authors:
         Orcid: 0000-0003-4502-528X
         Affiliations: [*fullerton]
         GitHub: mar-celine
+      - Name: Carpenter, Alexander
+        Orcid: 0000-0002-9183-8006
+        Affiliations: [*fullerton]
+        GitHub: AlexCarpenter46
+      - Name: Foucart, Francois
+        Orcid: 0000-0003-4617-4738
+        Affiliations: [*new_hampshire]
+        GitHub: ffoucart
       - Name: Hébert, François
         Orcid: 0000-0001-9009-6955
         Affiliations: [*caltech]
@@ -196,6 +204,10 @@ Authors:
         Orcid: 0000-0001-5523-4603
         Affiliations: [*cornell]
         GitHub: prayush
+      - Name: Lara, Guillermo
+        Orcid: 0000-0001-9461-6292
+        Affiliations: [*aei]
+        GitHub: guilara
       - Name: Lovelace, Geoffrey
         Orcid: 0000-0002-7084-1070
         Affiliations: [*fullerton]
@@ -208,6 +220,10 @@ Authors:
         Orcid: 0000-0001-9891-8677
         Affiliations: [*caltech]
         GitHub: moxcodes
+      - Name: Murphy, Michael
+        Orcid: 0000-0003-3865-3034
+        Affiliations: [*cornell]
+        GitHub: michaeldmurphy1
       - Name: O'Shea, Eamonn
         Affiliations: [*cornell]
         GitHub: osheamonn
@@ -263,10 +279,6 @@ Authors:
         Orcid: 0000-0002-5075-5116
         Affiliations: [*cornell]
         GitHub: moble
-      - Name: Carpenter, Alexander
-        Orcid: 0000-0002-9183-8006
-        Affiliations: [*fullerton]
-        GitHub: AlexCarpenter46
       - Name: Ceja, Andrea
         Orcid: 0000-0002-1681-7299
         Affiliations: [*fullerton]
@@ -287,10 +299,6 @@ Authors:
         Orcid: 0000-0002-7074-4545
         Affiliations: [*cornell]
         GitHub: norafl
-      - Name: Foucart, Francois
-        Orcid: 0000-0003-4617-4738
-        Affiliations: [*new_hampshire]
-        GitHub: ffoucart
       - Name: Ghadiri, Noora
         Orcid: 0000-0001-9162-4449
         Affiliations: [*fullerton]
@@ -318,10 +326,6 @@ Authors:
         Orcid: 0009-0003-1034-0498
         Affiliations: [*fullerton]
         GitHub: "kenzenjones"
-      - Name: Lara, Guillermo
-        Orcid: 0000-0001-9461-6292
-        Affiliations: [*aei]
-        GitHub: guilara
       - Name: Legred, Isaac
         Orcid: 0000-0002-9523-9617
         Affiliations: [*caltech]
@@ -350,10 +354,6 @@ Authors:
         Orcid: 0000-0002-0491-1210
         Affiliations: [*caltech]
         GitHub: ermost
-      - Name: Murphy, Michael
-        Orcid: 0000-0003-3865-3034
-        Affiliations: [*cornell]
-        GitHub: michaeldmurphy1
       - Name: Nee, Peter James
         Orcid: 0000-0002-2362-5420
         Affiliations: [*aei]
