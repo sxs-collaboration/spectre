@@ -15,6 +15,7 @@ spectre_target_sources(
   ExtrinsicCurvature.cpp
   GeodesicAcceleration.cpp
   GeodesicEquation.cpp
+  HamiltonianConstraint.cpp
   InterfaceNullNormal.cpp
   InverseSpacetimeMetric.cpp
   KerrHorizon.cpp
@@ -52,6 +53,7 @@ spectre_target_headers(
   ExtrinsicCurvature.hpp
   GeodesicAcceleration.hpp
   GeodesicEquation.hpp
+  HamiltonianConstraint.hpp
   InterfaceNullNormal.hpp
   InverseSpacetimeMetric.hpp
   KerrHorizon.hpp

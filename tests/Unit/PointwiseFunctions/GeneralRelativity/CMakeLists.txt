@@ -11,6 +11,7 @@ set(LIBRARY_SOURCES
   Test_CurvatureScalars.cpp
   Test_GeodesicAcceleration.cpp
   Test_GeodesicEquation.cpp
+  Test_HamiltonianConstraint.cpp
   Test_InterfaceNullNormal.cpp
   Test_KerrHorizon.cpp
   Test_KerrSchildCoords.cpp
