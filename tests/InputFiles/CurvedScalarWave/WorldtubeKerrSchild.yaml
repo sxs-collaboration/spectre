@@ -74,8 +74,7 @@ DomainCreator:
         DecayTimescaleOuterBoundary: 1.
       RotationMap:
         InitialAngularVelocity: [0., 0., 0.001]
-      TranslationMap:
-        InitialValues: [[0.0, 0.0, 0.0], [0.0, 0.0, 0.0], [0.0, 0.0, 0.0]]
+      TranslationMap: None
       SkewMap: None
       ShapeMapA:
         LMax: 8
