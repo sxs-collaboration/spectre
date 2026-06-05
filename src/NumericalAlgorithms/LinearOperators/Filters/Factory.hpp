@@ -28,10 +28,11 @@ namespace Filters {
  * `Filters::HollowCylinder` and `Filters::FilledCylinder` are included for
  * `Dim == 3`.
  *
- * Note: `Filters::SphericalShell` is not included here because it requires
- * system-specific instantiation of `ylm::TensorYlm::apply_tensor_ylm_filter`.
- * Executables that support it must add it to their `factory_classes` manually
- * and include the appropriate system-specific header.
+ * Note: `Filters::SphericalShell` and `Filters::FilledSphere` are not included
+ * here because they require system-specific instantiation of
+ * `ylm::TensorYlm::apply_tensor_ylm_filter`. Executables that support them
+ * must add them to their `factory_classes` manually and include the
+ * appropriate system-specific header.
  */
 template <size_t Dim, typename TagList>
 using all_filters = tmpl::append<
