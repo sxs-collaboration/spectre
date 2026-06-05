@@ -15,6 +15,7 @@ set(LIBRARY_SOURCES
   Test_InterfaceNullNormal.cpp
   Test_KerrHorizon.cpp
   Test_KerrSchildCoords.cpp
+  Test_MomentumConstraint.cpp
   Test_ProjectionOperators.cpp
   Test_Psi4.cpp
   Test_Ricci.cpp

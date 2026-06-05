@@ -21,6 +21,7 @@ spectre_target_sources(
   KerrHorizon.cpp
   KerrSchildCoords.cpp
   Lapse.cpp
+  MomentumConstraint.cpp
   ProjectionOperators.cpp
   Psi4.cpp
   Psi4Real.cpp
@@ -59,6 +60,7 @@ spectre_target_headers(
   KerrHorizon.hpp
   KerrSchildCoords.hpp
   Lapse.hpp
+  MomentumConstraint.hpp
   ProjectionOperators.hpp
   Ricci.hpp
   Psi4.hpp
