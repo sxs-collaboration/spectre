@@ -897,13 +897,27 @@ Domain<3> BinaryCompactObject::create_domain() const {
                 inner_sphericity_B, 1.0, use_equiangular_map_,
                 offset_b_optional, false, {}, object_B_radial_distribution),
             translation_B);
-    Maps maps_cube_B =
-        domain::make_vector_coordinate_map_base<Frame::BlockLogical,
-                                                Frame::Inertial, 3>(
-            sph_wedge_coordinate_maps(
-                object_b.outer_radius, sqrt(3.0) * 0.5 * length_inner_cube_,
-                1.0, 0.0, use_equiangular_map_, offset_b_optional),
-            translation_B);
+    Maps maps_cube_B;
+    const double cube_b_R_in = object_b.outer_radius;
+    const double cube_b_R_out = sqrt(3.0) * 0.5 * length_inner_cube_;
+    const double alpha = object_b.cube_b_log_map_strength;
+    const double physical_r0 = (cube_b_R_in * cube_b_R_out * (1.0 - alpha)) /
+                               (cube_b_R_in - alpha * cube_b_R_out);
+    const double logical_r0 =
+        (2.0 * physical_r0 - (cube_b_R_out + cube_b_R_in)) /
+        (cube_b_R_out - cube_b_R_in);
+    for (auto& wedge :
+         sph_wedge_coordinate_maps(cube_b_R_in, cube_b_R_out, 1.0, 0.0,
+                                   use_equiangular_map_, offset_b_optional)) {
+      const auto grid_distribution = RadialInterval3D{
+          Identity{}, Identity{},
+          Interval{-1., 1., -1., 1.,
+                   domain::CoordinateMaps::Distribution::Logarithmic,
+                   logical_r0}};
+      maps_cube_B.emplace_back(
+          make_coordinate_map_base<Frame::BlockLogical, Frame::Inertial>(
+              grid_distribution, std::move(wedge), translation_B));
+    }
     std::move(maps_center_B.begin(), maps_center_B.end(),
               std::back_inserter(maps));
     std::move(maps_cube_B.begin(), maps_cube_B.end(), std::back_inserter(maps));

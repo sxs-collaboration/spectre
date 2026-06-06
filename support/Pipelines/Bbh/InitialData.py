@@ -125,14 +125,15 @@ def id_parameters(
     L1_dist_B = separation - L1_dist_A
     falloff_width_A = 3.0 / 5.0 * L1_dist_A
     falloff_width_B = 3.0 / 5.0 * L1_dist_B
-    # This extra refinement was found through trial and error and allowed mass
-    # ratio 6 to evolve through inspiral stably. This extra refinement doesn't
-    # seem to scale linearly with mass ratio. The current hard-coded limits (3
-    # and 5) were enough to find initial data for mass ratio 50 (no evolution
-    # attempted).
+    # Extra radial refinement and log map strength scale logarithmically with
+    # mass ratio to resolve the small black hole.
     q = target_params["MassA"] / target_params["MassB"]
-    extra_radial_refinement_l = min(round(q / 3.0) - 1 if (q > 3.0) else 0, 3)
-    extra_radial_refinement_p = min(round(q / 5.0) if (q > 5.0) else 0, 5)
+    cube_b_log_map_strength = 1.0 + 0.15 * np.log(q)
+    extra_radial_refinement_l = round(0.3 * np.log(q))
+    extra_radial_refinement_p = round(0.9 * np.log(q))
+    assert (
+        polynomial_order + 2 + extra_radial_refinement_p <= 20
+    ), "The polynomial order + extra radial points exceeds the maximum of 20."
     horizon_l_max = (
         40 if max(np.linalg.norm(chi_A), np.linalg.norm(chi_B)) > 0.9 else 20
     )
@@ -148,7 +149,10 @@ def id_parameters(
         "LinearVelocity_z": linear_velocity[2],
         "ExcisionRadiusRight": excision_factor * r_plus_A,
         "ExcisionRadiusLeft": excision_factor * r_plus_B,
-        "ObjectOuterRadius": separation / 3.75,
+        "ObjectAOuterRadius": separation / 3.75,
+        "ObjectBOuterRadius": separation / 3.75 / q,
+        "CubeScale": 1.0,
+        "CubeBLogMapStrength": cube_b_log_map_strength,
         "OrbitalAngularVelocity": orbital_angular_velocity,
         "RadialExpansionVelocity": radial_expansion_velocity,
         "ConformalSpinRight_x": chi_A[0],
