@@ -203,6 +203,87 @@ std::vector<domain::CoordinateMaps::Wedge<3>> sph_wedge_coordinate_maps(
         radial_distribution = {domain::CoordinateMaps::Distribution::Linear},
     ShellWedges which_wedges = ShellWedges::All, double opening_angle = M_PI_2);
 
+/*!
+ * \ingroup ComputationalDomainGroup
+ * \brief Redistribute points in the radial ($\zeta$) direction of a domain
+ * layer (e.g. a shell or cube around an object) between the radii
+ * \f$r_\mathrm{in}\f$ and \f$r_\mathrm{out}\f$.
+ *
+ * The map takes a logical coordinate in \f$[-1, 1]\f$ to a
+ * logarithmically-redistributed logical coordinate in \f$[-1, 1]\f$. It is
+ * meant to be applied before a map that is affine along each radial ray, such
+ * as a `domain::CoordinateMaps::Wedge` map. A `log_map_strength` of 1.0 places
+ * the log-map physical origin ("singularity position") at radius 0; larger
+ * values move it toward the inner radius, concentrating grid points near the
+ * object.
+ *
+ * We define three radial coordinates:
+ * - \f$\zeta\f$: input logical coordinate in \f$[-1, 1]\f$;
+ * - \f$\zeta_{\log}\f$: logarithmically-redistributed logical coordinate in
+ *   \f$[-1, 1]\f$;
+ * - \f$r\f$: physical radius in \f$[r_\mathrm{in}, r_\mathrm{out}]\f$.
+ *
+ * Hence, we define two maps:
+ * - Log map \f$\zeta_{\log}(\zeta)\f$:
+ *   \f{align}
+ *   \ln(\zeta_{\log} - \zeta_0)
+ *   &= \frac{1 + \zeta}{2} \ln(1 - \zeta_0) \nonumber \\
+ *   &+ \frac{1 - \zeta}{2} \ln(-1 - \zeta_0),
+ *   \f}
+ *   where \f$\zeta_0 < -1\f$ is the "logical position" of the log map's
+ *   origin.
+ * - Radius map \f$r(\zeta_{\log})\f$, affine along each radial ray:
+ *   \f{align}
+ *   r(\zeta_{\log}) = \frac{1 - \zeta_{\log}}{2} r_\mathrm{in}
+ *   + \frac{1 + \zeta_{\log}}{2} r_\mathrm{out}.
+ *   \f}
+ *   For example, for a `domain::CoordinateMaps::Wedge` map between two
+ *   spherical surfaces, the redistribution is isotropic. With a flat outer
+ *   surface, \f$r_\mathrm{out}\f$ is the distance to the corners, so the
+ *   redistribution varies with direction.
+ *
+ * Composing these two maps, we get \f$r(\zeta) = r(\zeta_{\log}(\zeta))\f$:
+ *
+ * \f{align}
+ * \ln(r - r_0) &= \frac{1 + \zeta}{2} \ln(r_\mathrm{out} - r_0) \nonumber \\
+ * &+ \frac{1 - \zeta}{2} \ln(r_\mathrm{in} - r_0),
+ * \f}
+ *
+ * where \f$r_0 < r_\mathrm{in}\f$ is the "physical position" of the log map's
+ * origin. For the log map \f$\zeta_{\log}(\zeta)\f$, we need to specify
+ * \f$\zeta_0\f$, but it is easier to specify \f$r_0\f$ because the
+ * ratio of the radial Jacobian (\f$J := dr/d\zeta\f$) at the outer
+ * (\f$\zeta=+1\f$) vs inner (\f$\zeta=-1\f$) boundaries is
+ *
+ * \f{align}
+ * \frac{J_\mathrm{out}}{J_\mathrm{in}}
+ * = \frac{r_\mathrm{out} - r_0}{r_\mathrm{in} - r_0}
+ * := \alpha \frac{r_\mathrm{out}}{r_\mathrm{in}},
+ * \f}
+ *
+ * where \f$\alpha \geq 1\f$ is `log_map_strength`, which we use to
+ * parametrize \f$r_0\f$. Once we specify \f$\alpha\f$, we can invert the
+ * Jacobian ratio above to get
+ *
+ * \f{align}
+ * r_0 = \frac{r_\mathrm{in} r_\mathrm{out} (1 - \alpha)}
+ * {r_\mathrm{in} - \alpha r_\mathrm{out}}.
+ * \f}
+ *
+ * Then, we can invert the radius map \f$r(\zeta_{\log})\f$ to get
+ *
+ * \f{align}
+ * \zeta_0 = \frac{2 r_0 - (r_\mathrm{out} + r_\mathrm{in})}
+ * {r_\mathrm{out} - r_\mathrm{in}}.
+ * \f}
+ *
+ * \param inner_radius The inner radius \f$r_\mathrm{in}\f$ of the layer.
+ * \param outer_radius The outer radius \f$r_\mathrm{out}\f$ of the layer.
+ * \param log_map_strength The log-map strength \f$\alpha \geq 1\f$.
+ */
+domain::CoordinateMaps::Interval radial_distribution_log_map(
+    double inner_radius, double outer_radius, double log_map_strength);
+
 /// \ingroup ComputationalDomainGroup
 /// These are the ten Frustums used in the DomainCreators for binary compact
 /// objects. The Frustums partition the volume defined by two bounding

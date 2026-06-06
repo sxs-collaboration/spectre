@@ -741,6 +741,27 @@ std::vector<domain::CoordinateMaps::Wedge<3>> sph_wedge_coordinate_maps(
   return wedges_for_all_layers;
 }
 
+domain::CoordinateMaps::Interval radial_distribution_log_map(
+    const double inner_radius, const double outer_radius,
+    const double log_map_strength) {
+  ASSERT(inner_radius < outer_radius,
+         "inner_radius (" << inner_radius
+                          << ") must be smaller than outer_radius ("
+                          << outer_radius << ").");
+  ASSERT(log_map_strength >= 1.0,
+         "log_map_strength (" << log_map_strength << ") must be at least 1.");
+  // See equation for r_0 in the docs
+  const double radial_singularity_position =
+      (inner_radius * outer_radius * (1.0 - log_map_strength)) /
+      (inner_radius - log_map_strength * outer_radius);
+  // See equation for zeta_0 in the docs
+  const double logical_singularity_position =
+      (2.0 * radial_singularity_position - (outer_radius + inner_radius)) /
+      (outer_radius - inner_radius);
+  const auto distribution = domain::CoordinateMaps::Distribution::Logarithmic;
+  return {-1., 1., -1., 1., distribution, logical_singularity_position};
+}
+
 std::vector<domain::CoordinateMaps::Frustum> frustum_coordinate_maps(
     const double length_inner_cube, const double length_outer_cube,
     const bool equiangular_map_at_outer, const bool equiangular_map_at_inner,

@@ -1699,6 +1699,72 @@ void test_which_wedges() {
   CHECK(get_output(ShellWedges::FourOnEquator) == "FourOnEquator");
   CHECK(get_output(ShellWedges::OneAlongMinusX) == "OneAlongMinusX");
 }
+
+void test_radial_distribution_log_map() {
+  using Interval = CoordinateMaps::Interval;
+  const Approx custom_approx = Approx::custom().epsilon(1.e-12).scale(1.0);
+  for (const auto& [inner_radius, outer_radius, log_map_strength] :
+       std::array<std::array<double, 3>, 5>{{{{1.0, 3.0, 1.0}},
+                                             {{1.0, 3.0, 2.5}},
+                                             {{0.01, 4.0, 1.0}},
+                                             {{0.01, 4.0, 10.0}},
+                                             {{2.0, 5.0, 1.5}}}}) {
+    CAPTURE(inner_radius);
+    CAPTURE(outer_radius);
+    CAPTURE(log_map_strength);
+
+    // Build the logical log map
+    const Interval logical_log_map = radial_distribution_log_map(
+        inner_radius, outer_radius, log_map_strength);
+
+    // Check that the boundary values stay the same
+    CHECK(logical_log_map(std::array<double, 1>{{-1.0}})[0] == approx(-1.0));
+    CHECK(logical_log_map(std::array<double, 1>{{1.0}})[0] == approx(1.0));
+
+    // Build a linear radial map and a log radial map
+    const Interval radial_linear_map{-1.0, 1.0, inner_radius, outer_radius,
+                                     CoordinateMaps::Distribution::Linear};
+    const double radial_singularity_position =
+        inner_radius * outer_radius * (1.0 - log_map_strength) /
+        (inner_radius - log_map_strength * outer_radius);
+    const Interval radial_log_map{-1.0,
+                                  1.0,
+                                  inner_radius,
+                                  outer_radius,
+                                  CoordinateMaps::Distribution::Logarithmic,
+                                  radial_singularity_position};
+
+    // Check that the composition of the log map and the linear radius map
+    // reproduces a log distribution in the radius
+    for (const double zeta : {-1.0, -0.7, -0.2, 0.0, 0.3, 0.8, 1.0}) {
+      CAPTURE(zeta);
+      const std::array<double, 1> source{{zeta}};
+      CHECK(radial_linear_map(logical_log_map(source))[0] ==
+            custom_approx(radial_log_map(source)[0]));
+    }
+
+    // Check Jacobian ratio agrees with the definition of log_map_strength
+    const double jacobian_ratio =
+        get<0, 0>(logical_log_map.jacobian(std::array<double, 1>{{1.0}})) /
+        get<0, 0>(logical_log_map.jacobian(std::array<double, 1>{{-1.0}}));
+    CHECK(jacobian_ratio ==
+          custom_approx(log_map_strength * outer_radius / inner_radius));
+  }
+
+  // Check that log_map_strength = 1 puts the singularity at r = 0
+  const double inner_radius = 1.0;
+  const double outer_radius = 3.0;
+  const double log_map_strength = 1.0;
+  const double radial_singularity_position = 0.0;
+  const double logical_singularity_position =
+      (2.0 * radial_singularity_position - (outer_radius + inner_radius)) /
+      (outer_radius - inner_radius);
+  CHECK(radial_distribution_log_map(inner_radius, outer_radius,
+                                    log_map_strength) ==
+        Interval{-1.0, 1.0, -1.0, 1.0,
+                 CoordinateMaps::Distribution::Logarithmic,
+                 logical_singularity_position});
+}
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Domain.DomainHelpers", "[Domain][Unit]") {
@@ -1725,5 +1791,6 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainHelpers", "[Domain][Unit]") {
   test_set_cartesian_periodic_boundaries_2();
   test_set_cartesian_periodic_boundaries_3();
   test_which_wedges();
+  test_radial_distribution_log_map();
 }
 }  // namespace domain

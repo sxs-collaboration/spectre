@@ -88,7 +88,8 @@ DomainCreator:
       Interior:
         ExciseWithBoundaryCondition:
           DemandOutgoingCharSpeeds:
-      UseLogarithmicMap: true
+      ShellLogMapStrength: 1.0
+      CubeLogMapStrength: None
     ObjectB:
       InnerRadius: &ExcisionRadiusB {{ ExcisionRadiusB }}
       # Found that the max allowable value for the OuterRadius is 6.0. Higher
@@ -98,7 +99,8 @@ DomainCreator:
       Interior:
         ExciseWithBoundaryCondition:
           DemandOutgoingCharSpeeds:
-      UseLogarithmicMap: true
+      ShellLogMapStrength: 1.0
+      CubeLogMapStrength: None
     CenterOfMassOffset:
       - &YOffset {{ CenterOfMassOffset_y }}
       - &ZOffset {{ CenterOfMassOffset_z }}
