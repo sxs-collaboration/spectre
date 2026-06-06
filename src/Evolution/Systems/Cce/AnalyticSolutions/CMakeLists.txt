@@ -20,6 +20,7 @@ spectre_target_headers(
   HEADERS
   BouncingBlackHole.hpp
   LinearizedBondiSachs.hpp
+  LinearizedBondiSachsInitializeJ.hpp
   GaugeWave.hpp
   RobinsonTrautman.hpp
   RotatingSchwarzschild.hpp

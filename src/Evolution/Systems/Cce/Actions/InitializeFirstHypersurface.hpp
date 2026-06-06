@@ -75,17 +75,15 @@ struct InitializeFirstHypersurface {
                          ->template local_synchronous_action<
                              observers::Actions::GetLockPointer<
                                  observers::Tags::H5FileLock>>();
+    // Box-based dispatch (see `InitializeJ::InitializeJ::operator()`): the
+    // generator picks the right derived-class `return_tags`/`argument_tags`
+    // via `call_with_dynamic_type` and forwards to `db::mutate_apply`.
     if constexpr (tt::is_a_v<AnalyticWorldtubeBoundary, BoundaryComponent>) {
-      db::mutate_apply<typename InitializeJ::InitializeJ<false>::mutate_tags,
-                       typename InitializeJ::InitializeJ<false>::argument_tags>(
-          db::get<Tags::InitializeJ<false>>(box), make_not_null(&box),
-          make_not_null(hdf5_lock));
+      db::get<Tags::InitializeJ<false>>(box)(make_not_null(&box),
+                                             make_not_null(hdf5_lock));
     } else {
-      db::mutate_apply<
-          typename InitializeJ::InitializeJ<EvolveCcm>::mutate_tags,
-          typename InitializeJ::InitializeJ<EvolveCcm>::argument_tags>(
-          db::get<Tags::InitializeJ<EvolveCcm>>(box), make_not_null(&box),
-          make_not_null(hdf5_lock));
+      db::get<Tags::InitializeJ<EvolveCcm>>(box)(make_not_null(&box),
+                                                 make_not_null(hdf5_lock));
     }
     db::mutate_apply<InitializeScriPlusValue<Tags::InertialRetardedTime>>(
         make_not_null(&box), db::get<::Tags::TimeStepId>(box).substep_time());

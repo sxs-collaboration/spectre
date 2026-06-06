@@ -7,6 +7,7 @@
 #include <cstddef>
 
 #include "DataStructures/ComplexDataVector.hpp"
+#include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/SpinWeighted.hpp"
 #include "DataStructures/TaggedTuple.hpp"
@@ -331,23 +332,49 @@ void test_initialize_j(const size_t l_max, const size_t number_of_radial_points,
   tnsr::i<DataVector, 2, ::Frame::Spherical<::Frame::Inertial>>
       test_angular_coordinates{number_of_angular_points};
   auto node_lock = Parallel::NodeLock{};
-  (*(analytic_solution->get_initialize_j(time)))(
-      make_not_null(&test_j), make_not_null(&test_cartesian_coordinates),
-      make_not_null(&test_angular_coordinates),
-      get<Tags::BoundaryValue<Tags::BondiJ>>(boundary_variables),
-      get<Tags::BoundaryValue<Tags::Dr<Tags::BondiJ>>>(boundary_variables),
-      get<Tags::BoundaryValue<Tags::BondiR>>(boundary_variables),
-      get<Tags::BoundaryValue<Tags::BondiBeta>>(boundary_variables), l_max,
-      number_of_radial_points, make_not_null(&node_lock));
-  (*expected_initialize_j)(
-      make_not_null(&expected_j),
-      make_not_null(&expected_cartesian_coordinates),
-      make_not_null(&expected_angular_coordinates),
-      get<Tags::BoundaryValue<Tags::BondiJ>>(boundary_variables),
-      get<Tags::BoundaryValue<Tags::Dr<Tags::BondiJ>>>(boundary_variables),
-      get<Tags::BoundaryValue<Tags::BondiR>>(boundary_variables),
-      get<Tags::BoundaryValue<Tags::BondiBeta>>(boundary_variables), l_max,
-      number_of_radial_points, make_not_null(&node_lock));
+  // Invoke the generator through the box-based dispatch (the path used by
+  // `InitializeFirstHypersurface`); the base no longer exposes a direct
+  // `operator()`. The box holds the generator's `mutate_tags` (outputs) and
+  // `argument_tags` (boundary values, `LMax`, `NumberOfRadialPoints`).
+  const auto run_initialize_j =
+      [&boundary_variables, &node_lock, l_max, number_of_radial_points,
+       number_of_angular_points](
+          const std::unique_ptr<InitializeJ::InitializeJ<false>>& generator,
+          const gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 2>>*> j,
+          const gsl::not_null<tnsr::i<DataVector, 3>*> cartesian_coordinates,
+          const gsl::not_null<
+              tnsr::i<DataVector, 2, ::Frame::Spherical<::Frame::Inertial>>*>
+              angular_coordinates) {
+        auto box = db::create<db::AddSimpleTags<
+            Tags::BondiJ, Tags::CauchyCartesianCoords,
+            Tags::CauchyAngularCoords, Tags::BoundaryValue<Tags::BondiJ>,
+            Tags::BoundaryValue<Tags::Dr<Tags::BondiJ>>,
+            Tags::BoundaryValue<Tags::BondiR>,
+            Tags::BoundaryValue<Tags::BondiBeta>, Tags::LMax,
+            Tags::NumberOfRadialPoints>>(
+            Scalar<SpinWeighted<ComplexDataVector, 2>>{
+                number_of_angular_points * number_of_radial_points},
+            tnsr::i<DataVector, 3>{number_of_angular_points},
+            tnsr::i<DataVector, 2, ::Frame::Spherical<::Frame::Inertial>>{
+                number_of_angular_points},
+            get<Tags::BoundaryValue<Tags::BondiJ>>(boundary_variables),
+            get<Tags::BoundaryValue<Tags::Dr<Tags::BondiJ>>>(
+                boundary_variables),
+            get<Tags::BoundaryValue<Tags::BondiR>>(boundary_variables),
+            get<Tags::BoundaryValue<Tags::BondiBeta>>(boundary_variables),
+            l_max, number_of_radial_points);
+        (*generator)(make_not_null(&box), make_not_null(&node_lock));
+        *j = db::get<Tags::BondiJ>(box);
+        *cartesian_coordinates = db::get<Tags::CauchyCartesianCoords>(box);
+        *angular_coordinates = db::get<Tags::CauchyAngularCoords>(box);
+      };
+  run_initialize_j(analytic_solution->get_initialize_j(time),
+                   make_not_null(&test_j),
+                   make_not_null(&test_cartesian_coordinates),
+                   make_not_null(&test_angular_coordinates));
+  run_initialize_j(expected_initialize_j, make_not_null(&expected_j),
+                   make_not_null(&expected_cartesian_coordinates),
+                   make_not_null(&expected_angular_coordinates));
   CHECK(test_j == expected_j);
   CHECK(test_cartesian_coordinates == expected_cartesian_coordinates);
   CHECK(test_angular_coordinates == expected_angular_coordinates);
