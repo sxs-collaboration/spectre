@@ -13,6 +13,7 @@
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "NumericalAlgorithms/LinearOperators/Filters/Filter.hpp"
+#include "NumericalAlgorithms/Spectral/Parity.hpp"
 #include "Options/Auto.hpp"
 #include "Options/Context.hpp"
 #include "Options/String.hpp"
@@ -206,7 +207,17 @@ class Hypercube : public Filter<Dim, TagList> {
   bool is_equal(const Filter<Dim, TagList>& other) const override;
 
  private:
-  const Matrix& filter_matrix(const Mesh<1>& mesh) const;
+  const Matrix& filter_matrix(
+      const Mesh<1>& mesh,
+      Spectral::Parity parity = Spectral::Parity::Uninitialized) const;
+
+  // Apply the parity-aware ZernikeB1 filter to a LocalDim-dimensional mesh
+  // where direction 0 uses ZernikeB1. Each tensor component is filtered with
+  // the Even or Odd direction-0 matrix according to its radial parity;
+  // directions 1..LocalDim-1 use the ordinary parity-independent filter matrix.
+  template <size_t LocalDim>
+  void apply_zernikeb1_filter(gsl::not_null<Variables<TagList>*> vars,
+                              const Mesh<LocalDim>& mesh) const;
 
   template <size_t LocalDim, typename LocalTagList>
   // NOLINTNEXTLINE(readability-redundant-declaration)

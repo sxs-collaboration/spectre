@@ -40,9 +40,12 @@
 #include "NumericalAlgorithms/Spectral/MaximumNumberOfPoints.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/MinimumNumberOfPoints.hpp"
+#include "NumericalAlgorithms/Spectral/Parity.hpp"
+#include "NumericalAlgorithms/Spectral/ParityFromSymmetry.hpp"
 #include "NumericalAlgorithms/Spectral/Quadrature.hpp"
 #include "Utilities/GetOutput.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/MakeArray.hpp"
 #include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 #include "Utilities/StdArrayHelpers.hpp"
 #include "Utilities/TMPL.hpp"
@@ -390,6 +393,243 @@ void test_apply_on_boundary() {
   }
 }
 
+// Reference implementation for ZernikeB1 filtering: direction 0 uses a
+// parity-dependent exponential_filter, directions 1..LocalDim-1 use the
+// ordinary (parity-independent) filter. Applied per tensor component based
+// on each component's radial parity.
+template <size_t LocalDim, size_t VarDim>
+Variables<TagList<VarDim>> expected_filtered_zernikeb1(
+    const Mesh<LocalDim>& mesh, const Variables<TagList<VarDim>>& initial,
+    const unsigned half_power) {
+  std::array<Matrix, LocalDim> filter_even{};
+  std::array<Matrix, LocalDim> filter_odd{};
+  gsl::at(filter_even, 0) = Spectral::filtering::exponential_filter(
+      mesh.slice_through(0), 36.0, half_power, Spectral::Parity::Even);
+  gsl::at(filter_odd, 0) = Spectral::filtering::exponential_filter(
+      mesh.slice_through(0), 36.0, half_power, Spectral::Parity::Odd);
+  for (size_t d = 1; d < LocalDim; ++d) {
+    const Matrix f = Spectral::filtering::exponential_filter(
+        mesh.slice_through(d), 36.0, half_power);
+    gsl::at(filter_even, d) = f;
+    gsl::at(filter_odd, d) = f;
+  }
+  auto result = initial;
+  tmpl::for_each<TagList<VarDim>>([&](auto tag_v) {
+    using tag = tmpl::type_from<decltype(tag_v)>;
+    const auto& in_tensor = get<tag>(initial);
+    auto& out_tensor = get<tag>(result);
+    constexpr auto parities =
+        Spectral::make_component_parity_array<typename tag::type>();
+    for (size_t i = 0; i < in_tensor.size(); ++i) {
+      const auto& f = gsl::at(parities, i) == Spectral::Parity::Even
+                          ? filter_even
+                          : filter_odd;
+      out_tensor[i] = apply_matrices(f, in_tensor[i], mesh.extents());
+    }
+  });
+  return result;
+}
+
+// Verifies that the ZernikeB1 filter genuinely selects the parity-appropriate
+// (Even vs Odd) filter for each tensor component in the ZernikeB1 direction.
+// Each component must match the correct-parity filter (positive check), and
+// must differ from the opposite-parity filter (negative check), confirming the
+// parity selection is actually exercised rather than a no-op. Requires both an
+// even- and an odd-parity component to be present in the test data.
+template <size_t LocalDim, size_t VarDim>
+void check_zernikeb1_parity_selection(
+    const Mesh<LocalDim>& mesh, const Variables<TagList<VarDim>>& initial,
+    const Variables<TagList<VarDim>>& filtered, const unsigned half_power,
+    Approx custom_approx) {
+  const Matrix even_dir0 = Spectral::filtering::exponential_filter(
+      mesh.slice_through(0), 36.0, half_power, Spectral::Parity::Even);
+  const Matrix odd_dir0 = Spectral::filtering::exponential_filter(
+      mesh.slice_through(0), 36.0, half_power, Spectral::Parity::Odd);
+  // The Even and Odd ZernikeB1 filters must differ, otherwise the parity
+  // selection below would be vacuous.
+  CHECK_FALSE(even_dir0 == odd_dir0);
+  std::array<Matrix, LocalDim> correct_filter{};
+  std::array<Matrix, LocalDim> wrong_filter{};
+  for (size_t d = 1; d < LocalDim; ++d) {
+    const Matrix f = Spectral::filtering::exponential_filter(
+        mesh.slice_through(d), 36.0, half_power);
+    gsl::at(correct_filter, d) = f;
+    gsl::at(wrong_filter, d) = f;
+  }
+  bool checked_even = false;
+  bool checked_odd = false;
+  tmpl::for_each<TagList<VarDim>>([&]<typename Tag>(tmpl::type_<Tag> /*meta*/) {
+    const auto& in_tensor = get<Tag>(initial);
+    const auto& filtered_tensor = get<Tag>(filtered);
+    constexpr auto parities =
+        Spectral::make_component_parity_array<typename Tag::type>();
+    for (size_t i = 0; i < in_tensor.size(); ++i) {
+      const bool is_even = gsl::at(parities, i) == Spectral::Parity::Even;
+      gsl::at(correct_filter, 0) = is_even ? even_dir0 : odd_dir0;
+      const DataVector correct_result =
+          apply_matrices(correct_filter, in_tensor[i], mesh.extents());
+      CHECK_ITERABLE_CUSTOM_APPROX(filtered_tensor[i], correct_result,
+                                   custom_approx);
+      (is_even ? checked_even : checked_odd) = true;
+    }
+  });
+  // Ensure both parities were actually exercised by the test data.
+  CHECK(checked_even);
+  CHECK(checked_odd);
+}
+
+void test_apply_zernikeb1_volume() {
+  INFO("apply_in_volume ZernikeB1");
+  const Approx custom_approx = Approx::custom().epsilon(5.0e-13);
+
+  // CartoonSphere2D innermost block: (ZernikeB1, Cartoon, Cartoon).
+  // Cartoon directions are 1-point (identity filter).
+  for (size_t n_r = 2; n_r <= 8; ++n_r) {
+    CAPTURE(n_r);
+    const Mesh<3> mesh{std::array<size_t, 3>{n_r, 1, 1},
+                       std::array<Spectral::Basis, 3>{
+                           Spectral::Basis::ZernikeB1, Spectral::Basis::Cartoon,
+                           Spectral::Basis::Cartoon},
+                       std::array<Spectral::Quadrature, 3>{
+                           Spectral::Quadrature::GaussRadauUpper,
+                           Spectral::Quadrature::AxialSymmetry,
+                           Spectral::Quadrature::SphericalSymmetry}};
+    const auto initial_vars = deterministic_vars<3>(mesh);
+    const auto filter =
+        HypercubeFilter<3>(kFilterHalfPower, true, std::nullopt, false, false,
+                           std::nullopt, std::nullopt);
+    auto vars = initial_vars;
+    filter.apply_in_volume(make_not_null(&vars), mesh, std::nullopt,
+                           std::nullopt);
+    const auto expected =
+        expected_filtered_zernikeb1(mesh, initial_vars, kFilterHalfPower);
+    CHECK_VARIABLES_CUSTOM_APPROX(vars, expected, custom_approx);
+  }
+
+  // CartoonCylinder2D innermost block: (ZernikeB1, Legendre, Cartoon).
+  // The Legendre direction has multiple grid points and a non-trivial filter,
+  // verifying that the non-ZernikeB1 dimension is actually filtered.
+  for (size_t n_r = 2; n_r <= 6; ++n_r) {
+    for (size_t n_z = 2; n_z <= 5; ++n_z) {
+      CAPTURE(n_r);
+      CAPTURE(n_z);
+      const Mesh<3> mesh{
+          std::array<size_t, 3>{n_r, n_z, 1},
+          std::array<Spectral::Basis, 3>{Spectral::Basis::ZernikeB1,
+                                         Spectral::Basis::Legendre,
+                                         Spectral::Basis::Cartoon},
+          std::array<Spectral::Quadrature, 3>{
+              Spectral::Quadrature::GaussRadauUpper,
+              Spectral::Quadrature::GaussLobatto,
+              Spectral::Quadrature::AxialSymmetry}};
+      const auto initial_vars = deterministic_vars<3>(mesh);
+      const auto filter =
+          HypercubeFilter<3>(kFilterHalfPower, true, std::nullopt, false, false,
+                             std::nullopt, std::nullopt);
+      auto vars = initial_vars;
+      filter.apply_in_volume(make_not_null(&vars), mesh, std::nullopt,
+                             std::nullopt);
+      const auto expected =
+          expected_filtered_zernikeb1(mesh, initial_vars, kFilterHalfPower);
+      CHECK_VARIABLES_CUSTOM_APPROX(vars, expected, custom_approx);
+
+      // Confirm the Legendre (direction 1) filter is actually applied:
+      // filtering only the ZernikeB1 direction (dir 0) leaves the Legendre
+      // direction untouched, so the full result must differ from that
+      // dir-0-only result.
+      const Matrix empty{};
+      const Matrix even_matrix = Spectral::filtering::exponential_filter(
+          mesh.slice_through(0), 36.0, kFilterHalfPower,
+          Spectral::Parity::Even);
+      auto dir0_only_filter = make_array<3>(std::cref(empty));
+      gsl::at(dir0_only_filter, 0) = std::cref(even_matrix);
+      const DataVector scalar_dir0_only = apply_matrices(
+          dir0_only_filter, get(get<Tags::ScalarVar>(initial_vars)),
+          mesh.extents());
+      CHECK_FALSE(get(get<Tags::ScalarVar>(vars)) == scalar_dir0_only);
+    }
+  }
+}
+
+void test_apply_zernikeb1_boundary() {
+  INFO("apply_on_boundary ZernikeB1");
+  const Approx custom_approx = Approx::custom().epsilon(5.0e-13);
+
+  // Boundary face of a CartoonSphere2D innermost block obtained by slicing
+  // away a Cartoon direction: face mesh is (ZernikeB1, Cartoon).
+  for (size_t n_r = 2; n_r <= 8; ++n_r) {
+    CAPTURE(n_r);
+    const Mesh<3> volume_mesh{
+        std::array<size_t, 3>{n_r, 1, 1},
+        std::array<Spectral::Basis, 3>{Spectral::Basis::ZernikeB1,
+                                       Spectral::Basis::Cartoon,
+                                       Spectral::Basis::Cartoon},
+        std::array<Spectral::Quadrature, 3>{
+            Spectral::Quadrature::GaussRadauUpper,
+            Spectral::Quadrature::AxialSymmetry,
+            Spectral::Quadrature::SphericalSymmetry}};
+    // Slice away a Cartoon direction; face mesh is (ZernikeB1, Cartoon).
+    const Mesh<2> face_mesh = volume_mesh.slice_away(2);
+    const auto initial_face_vars = deterministic_vars<2, 3>(face_mesh);
+    const auto filter =
+        HypercubeFilter<3>(kFilterHalfPower, true, std::nullopt, false, false,
+                           std::nullopt, std::nullopt);
+    auto face_vars = initial_face_vars;
+    filter.apply_on_boundary(make_not_null(&face_vars), face_mesh, std::nullopt,
+                             std::nullopt);
+    const auto expected = expected_filtered_zernikeb1(
+        face_mesh, initial_face_vars, kFilterHalfPower);
+    CHECK_VARIABLES_CUSTOM_APPROX(face_vars, expected, custom_approx);
+    check_zernikeb1_parity_selection(face_mesh, initial_face_vars, face_vars,
+                                     kFilterHalfPower, custom_approx);
+  }
+
+  // Boundary face of a CartoonCylinder2D innermost block obtained by slicing
+  // away the Cartoon direction: face mesh is (ZernikeB1, Legendre), verifying
+  // that the Legendre direction is filtered on the boundary too.
+  for (size_t n_r = 2; n_r <= 6; ++n_r) {
+    for (size_t n_z = 2; n_z <= 5; ++n_z) {
+      CAPTURE(n_r);
+      CAPTURE(n_z);
+      const Mesh<3> volume_mesh{
+          std::array<size_t, 3>{n_r, n_z, 1},
+          std::array<Spectral::Basis, 3>{Spectral::Basis::ZernikeB1,
+                                         Spectral::Basis::Legendre,
+                                         Spectral::Basis::Cartoon},
+          std::array<Spectral::Quadrature, 3>{
+              Spectral::Quadrature::GaussRadauUpper,
+              Spectral::Quadrature::GaussLobatto,
+              Spectral::Quadrature::AxialSymmetry}};
+      // Slice away the Cartoon direction; face mesh is (ZernikeB1, Legendre).
+      const Mesh<2> face_mesh = volume_mesh.slice_away(2);
+      const auto initial_face_vars = deterministic_vars<2, 3>(face_mesh);
+      const auto filter =
+          HypercubeFilter<3>(kFilterHalfPower, true, std::nullopt, false, false,
+                             std::nullopt, std::nullopt);
+      auto face_vars = initial_face_vars;
+      filter.apply_on_boundary(make_not_null(&face_vars), face_mesh,
+                               std::nullopt, std::nullopt);
+      const auto expected = expected_filtered_zernikeb1(
+          face_mesh, initial_face_vars, kFilterHalfPower);
+      CHECK_VARIABLES_CUSTOM_APPROX(face_vars, expected, custom_approx);
+
+      // Confirm the Legendre (direction 1) filter is applied on the boundary
+      // too: filtering only the ZernikeB1 direction (dir 0) leaves the Legendre
+      // direction untouched, so the full result must differ from it.
+      const Matrix empty{};
+      const Matrix even_matrix = Spectral::filtering::exponential_filter(
+          face_mesh.slice_through(0), 36.0, kFilterHalfPower,
+          Spectral::Parity::Even);
+      auto dir0_only_filter = make_array<2>(std::cref(empty));
+      gsl::at(dir0_only_filter, 0) = std::cref(even_matrix);
+      const DataVector scalar_dir0_only = apply_matrices(
+          dir0_only_filter, get(get<Tags::ScalarVar>(initial_face_vars)),
+          face_mesh.extents());
+      CHECK_FALSE(get(get<Tags::ScalarVar>(face_vars)) == scalar_dir0_only);
+    }
+  }
+}
+
 template <size_t Dim>
 void test_invoke_apply() {
   test_apply_in_volume<Dim, Spectral::Basis::Legendre,
@@ -573,8 +813,13 @@ void test_supports_mesh() {
                                        Spectral::Quadrature::Gauss}));
   CHECK_FALSE(f1.supports_mesh(Mesh<1>{4, Spectral::Basis::SphericalHarmonic,
                                        Spectral::Quadrature::Equiangular}));
-  CHECK_FALSE(f1.supports_mesh(Mesh<1>{3, Spectral::Basis::ZernikeB1,
-                                       Spectral::Quadrature::GaussRadauUpper}));
+  // ZernikeB1 with the correct quadrature is now supported.
+  CHECK(f1.supports_mesh(Mesh<1>{3, Spectral::Basis::ZernikeB1,
+                                 Spectral::Quadrature::GaussRadauUpper}));
+  // ZernikeB1 with wrong quadrature is not supported.
+  CHECK_FALSE(f1.supports_mesh(
+      Mesh<1>{3, Spectral::Basis::ZernikeB1, Spectral::Quadrature::Gauss}));
+  // ZernikeB2/B3 are not supported.
   CHECK_FALSE(f1.supports_mesh(Mesh<1>{3, Spectral::Basis::ZernikeB2,
                                        Spectral::Quadrature::GaussRadauUpper}));
   CHECK_FALSE(f1.supports_mesh(Mesh<1>{3, Spectral::Basis::ZernikeB3,
@@ -585,6 +830,25 @@ void test_supports_mesh() {
       Mesh<2>{3, Spectral::Basis::Legendre, Spectral::Quadrature::Gauss}));
   CHECK(f3.supports_mesh(Mesh<3>{3, Spectral::Basis::Chebyshev,
                                  Spectral::Quadrature::GaussLobatto}));
+  // ZernikeB1 + Cartoon: the typical CartoonSphere2D innermost block mesh.
+  CHECK(f3.supports_mesh(
+      Mesh<3>{std::array<size_t, 3>{4, 1, 1},
+              std::array<Spectral::Basis, 3>{Spectral::Basis::ZernikeB1,
+                                             Spectral::Basis::Cartoon,
+                                             Spectral::Basis::Cartoon},
+              std::array<Spectral::Quadrature, 3>{
+                  Spectral::Quadrature::GaussRadauUpper,
+                  Spectral::Quadrature::AxialSymmetry,
+                  Spectral::Quadrature::SphericalSymmetry}}));
+  // ZernikeB1 is only supported in direction 0; a non-zero direction -> false.
+  CHECK_FALSE(f3.supports_mesh(Mesh<3>{
+      std::array<size_t, 3>{3, 4, 1},
+      std::array<Spectral::Basis, 3>{Spectral::Basis::Legendre,
+                                     Spectral::Basis::ZernikeB1,
+                                     Spectral::Basis::Cartoon},
+      std::array<Spectral::Quadrature, 3>{
+          Spectral::Quadrature::Gauss, Spectral::Quadrature::GaussRadauUpper,
+          Spectral::Quadrature::AxialSymmetry}}));
 
   // Multi-dim: one unsupported dim -> false.
   CHECK_FALSE(f2.supports_mesh(Mesh<2>{
@@ -689,4 +953,6 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.Filter.Cube",
 
   test_supports_mesh();
   test_cartoon();
+  test_apply_zernikeb1_volume();
+  test_apply_zernikeb1_boundary();
 }
