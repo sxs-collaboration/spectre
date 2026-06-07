@@ -13,6 +13,7 @@ spectre_target_sources(
   ElectromagneticVariables.cpp
   Fluxes.cpp
   Sources.cpp
+  SpectralFilter.cpp
   TimeDerivativeTerms.cpp
   )
 

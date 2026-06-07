@@ -12,6 +12,7 @@ spectre_target_sources(
   Characteristics.cpp
   Constraints.cpp
   Equations.cpp
+  SpectralFilter.cpp
   TimeDerivative.cpp
   )
 
@@ -25,6 +26,7 @@ spectre_target_headers(
   DuDtTempTags.hpp
   Equations.hpp
   Initialize.hpp
+  SpectralFilter.hpp
   System.hpp
   Tags.hpp
   TagsDeclarations.hpp

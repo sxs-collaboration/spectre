@@ -18,6 +18,7 @@ spectre_target_sources(
   PrimitiveFromConservativeOptions.cpp
   SetVariablesNeededFixingToFalse.cpp
   Sources.cpp
+  SpectralFilter.cpp
   TimeDerivativeTerms.cpp
   )
 

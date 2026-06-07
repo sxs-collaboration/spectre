@@ -10,6 +10,7 @@ spectre_target_sources(
   PRIVATE
   Characteristics.cpp
   Fluxes.cpp
+  SpectralFilter.cpp
   TimeDerivativeTerms.cpp
   VelocityField.cpp
   )
