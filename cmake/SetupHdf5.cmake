@@ -117,6 +117,10 @@ if(${HDF5_SUPPORTS_SET_FILE_LOCKING})
     TARGET hdf5::hdf5
     APPEND PROPERTY INTERFACE_COMPILE_DEFINITIONS
     HDF5_SUPPORTS_SET_FILE_LOCKING)
+  set_property(
+    TARGET HDF5::HDF5
+    APPEND PROPERTY INTERFACE_COMPILE_DEFINITIONS
+    HDF5_SUPPORTS_SET_FILE_LOCKING)
 else()
   message(WARNING "The HDF5 library does not support 'H5Pset_file_locking'. "
     "This means that simulations may crash when you read H5 files while "

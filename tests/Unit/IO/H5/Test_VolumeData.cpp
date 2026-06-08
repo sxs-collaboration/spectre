@@ -342,8 +342,17 @@ void test() {
   CHECK(volume_file.has_global_functions_of_time());
   const std::string subfile_group_path =
       std::string(volume_file.subfile_path()) + h5::VolumeData::extension();
+  const hid_t fapl_id = H5Pcreate(H5P_FILE_ACCESS);
+  CHECK_H5(fapl_id, "Failed to create file access property list.");
+#ifdef HDF5_SUPPORTS_SET_FILE_LOCKING
+  CHECK_H5(H5Pset_file_locking(
+               fapl_id, false,
+               // Ignore file locks when they are disabled on the file system
+               true),
+           "Failed to configure file locking.");
+#endif
   const hid_t read_only_file_id =
-      H5Fopen(h5_file_name.c_str(), H5F_ACC_RDONLY, H5P_DEFAULT);
+      H5Fopen(h5_file_name.c_str(), H5F_ACC_RDONLY, fapl_id);
   CHECK(read_only_file_id >= 0);
   {
     const h5::detail::OpenGroup subfile_group(
@@ -463,7 +472,7 @@ void test() {
         };
     const auto read_observation_value_attribute = [&]() {
       const hid_t read_file_id =
-          H5Fopen(h5_file_name.c_str(), H5F_ACC_RDONLY, H5P_DEFAULT);
+          H5Fopen(h5_file_name.c_str(), H5F_ACC_RDONLY, fapl_id);
       CHECK(read_file_id >= 0);
       const h5::detail::OpenGroup read_subfile_group(
           read_file_id, subfile_group_path, h5::AccessType::ReadOnly);
