@@ -590,8 +590,8 @@ RUN if [ ${UBUNTU_VERSION} != 18.04 ] && [ "$TARGETARCH" != "amd64" ]; then \
     -D USE_GIT_HOOKS=OFF \
     -D OVERRIDE_ARCH=haswell \
     -D USE_LD=gold \
-    -D gfortran=/usr/lib/gcc/x86_64-linux-gnu/9/libgfortran.a \
-    -D quadmath=/usr/lib/gcc/x86_64-linux-gnu/9/libquadmath.a \
+    -D gfortran=/usr/lib/gcc/x86_64-linux-gnu/10/libgfortran.a \
+    -D quadmath=/usr/lib/gcc/x86_64-linux-gnu/10/libquadmath.a \
     -D BUILD_DOCS=OFF \
     -D USE_CCACHE=OFF \
     .. \
