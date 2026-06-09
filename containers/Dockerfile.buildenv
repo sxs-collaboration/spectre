@@ -168,8 +168,7 @@ RUN apt-get update -y \
     && apt-get install -y \
         libopenblas-dev liblapack-dev \
         libgsl-dev \
-        libboost-dev libboost-program-options-dev \
-        libboost-thread-dev libboost-tools-dev libssl-dev \
+        libssl-dev \
         libhdf5-dev hdf5-tools \
         libarpack2-dev \
         libbenchmark-dev \
@@ -190,9 +189,28 @@ RUN apt-get update -y \
     -D CMAKE_INSTALL_PREFIX=/usr/local \
     .. \
     && make ${PARALLEL_MAKE_ARG} && make install \
-    && cd ../.. && rm -rf ./0.8.0.tar.gz ./yaml-cpp-0.8.0; \
+    && cd ../.. && rm -rf ./0.8.0.tar.gz ./yaml-cpp-0.8.0 \
+    && wget https://archives.boost.io/release/1.83.0/source/boost_1_83_0.tar.gz \
+    && tar xf boost_1_83_0.tar.gz && cd boost_1_83_0 \
+    && CC=gcc-10 CXX=g++-10 ./bootstrap.sh \
+    --with-toolset=gcc \
+    --with-libraries=program_options \
+    --prefix=/usr/local \
+    && echo "using gcc : : g++-10 ;" > ./user-config.jam \
+    && ./b2 ${PARALLEL_MAKE_ARG} \
+    --user-config=./user-config.jam \
+    toolset=gcc \
+    cxxstd=20 \
+    variant=release \
+    link=static \
+    runtime-link=shared \
+    cflags=-fPIC cxxflags=-fPIC \
+    install \
+    && cd .. && rm -rf boost_1_83_0 boost_1_83_0.tar.gz; \
     else \
-    apt-get install -y libjemalloc2 libjemalloc-dev libyaml-cpp-dev; \
+    apt-get install -y libjemalloc2 libjemalloc-dev libyaml-cpp-dev \
+        libboost-dev libboost-program-options-dev \
+        libboost-thread-dev libboost-tools-dev; \
     fi
 
 # Install Python packages
@@ -572,8 +590,8 @@ RUN if [ ${UBUNTU_VERSION} != 18.04 ] && [ "$TARGETARCH" != "amd64" ]; then \
     -D USE_GIT_HOOKS=OFF \
     -D OVERRIDE_ARCH=haswell \
     -D USE_LD=gold \
-    -D gfortran=/usr/lib/gcc/x86_64-linux-gnu/9/libgfortran.a \
-    -D quadmath=/usr/lib/gcc/x86_64-linux-gnu/9/libquadmath.a \
+    -D gfortran=/usr/lib/gcc/x86_64-linux-gnu/10/libgfortran.a \
+    -D quadmath=/usr/lib/gcc/x86_64-linux-gnu/10/libquadmath.a \
     -D BUILD_DOCS=OFF \
     -D USE_CCACHE=OFF \
     .. \

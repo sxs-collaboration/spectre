@@ -76,7 +76,7 @@ jobs:
               fetch_options=pkg.fetch_options,
           )
           version_lines = spack.util.format.get_version_lines(
-            version_hashes, url_dict
+            version_hashes
           )
 
           package_file = os.path.join(pkg.package_dir, 'package.py')
