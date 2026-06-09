@@ -263,6 +263,15 @@ class BondiWorldtubeDataManager
   void pup(PUP::er& p) override;  // NOLINT
 
  private:
+  // Compute the boundary value of `Du<Dy<BondiJ>>` at the requested time by
+  // forming the nodal product `0.5 * R * Dr<BondiJ>` at each buffered time and
+  // numerically time-differentiating the result with `interpolator_`.
+  void populate_boundary_du_dy_j(
+      gsl::not_null<Variables<
+          Tags::characteristic_worldtube_boundary_tags<Tags::BoundaryValue>>*>
+          boundary_data_variables,
+      double time) const;
+
   std::unique_ptr<
       WorldtubeBufferUpdater<Tags::worldtube_boundary_tags_for_writing<
           Spectral::Swsh::Tags::SwshTransform>>>

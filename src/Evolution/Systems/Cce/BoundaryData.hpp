@@ -587,7 +587,8 @@ using characteristic_worldtube_boundary_tags = db::wrap_tags_in<
         tmpl::list<Tags::BondiBeta, Tags::BondiU, Tags::Dr<Tags::BondiU>,
                    Tags::BondiQ, Tags::BondiW, Tags::BondiJ,
                    Tags::Dr<Tags::BondiJ>, Tags::BondiH, Tags::Du<Tags::BondiJ>,
-                   Tags::BondiR, Tags::Du<Tags::BondiR>, Tags::DuRDividedByR>,
+                   Tags::BondiR, Tags::Du<Tags::BondiR>, Tags::DuRDividedByR,
+                   Tags::Du<Tags::Dy<Tags::BondiJ>>>,
         tmpl::conditional_t<
             IncludeKleinGordon,
             tmpl::list<Cce::Tags::KleinGordonPsi, Cce::Tags::KleinGordonPi>,

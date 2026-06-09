@@ -140,14 +140,20 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.AnalyticBoundaryDataManager",
       get<gr::Tags::SpacetimeMetric<DataVector, 3>>(
           analytic_solution_gh_variables),
       extraction_radius, l_max);
-  tmpl::for_each<
-      Tags::characteristic_worldtube_boundary_tags<Tags::BoundaryValue>>(
-      [&boundary_variables_from_manager,
-       &expected_boundary_variables](auto tag_v) {
-        using tag = typename decltype(tag_v)::type;
-        CHECK_ITERABLE_APPROX(get<tag>(boundary_variables_from_manager),
-                              get<tag>(expected_boundary_variables));
-      });
+  // `Du<Dy<BondiJ>>` is not set by `create_bondi_boundary_data` (it is
+  // computed in `BondiWorldtubeDataManager` by time-differentiating the
+  // buffered `0.5 * R * Dr<BondiJ>` and has no single-time analogue here).
+  // Both sides remain default-initialized at that tag, so comparing them
+  // would be NaN-vs-NaN with `SPECTRE_NAN_INIT`.
+  using tags_to_compare = tmpl::list_difference<
+      Tags::characteristic_worldtube_boundary_tags<Tags::BoundaryValue>,
+      tmpl::list<Tags::BoundaryValue<Tags::Du<Tags::Dy<Tags::BondiJ>>>>>;
+  tmpl::for_each<tags_to_compare>([&boundary_variables_from_manager,
+                                   &expected_boundary_variables](auto tag_v) {
+    using tag = typename decltype(tag_v)::type;
+    CHECK_ITERABLE_APPROX(get<tag>(boundary_variables_from_manager),
+                          get<tag>(expected_boundary_variables));
+  });
 
   // test writing news
   ActionTesting::MockRuntimeSystem<metavariables> runner{{l_max}};
