@@ -1060,7 +1060,7 @@ ${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
         uses: actions/cache/restore@v5
         id: restore-dependencies
         env:
-          CACHE_KEY_PREFIX: "dependencies-${{ matrix.os }}"
+          CACHE_KEY_PREFIX: "dependencies-${{ matrix.os }}-${{ runner.arch }}"
         with:
           path: ~/dependencies
           key: "${{ env.CACHE_KEY_PREFIX }}-${{ github.run_id }}"
@@ -1138,7 +1138,7 @@ ${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
         uses: actions/cache/restore@v5
         id: restore-ccache
         env:
-          CACHE_KEY_PREFIX: "ccache-${{ matrix.os }}"
+          CACHE_KEY_PREFIX: "ccache-${{ matrix.os }}-${{ runner.arch }}"
         with:
           path: ~/ccache
           key: "${{ env.CACHE_KEY_PREFIX }}-${{ github.run_id }}"
