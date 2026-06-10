@@ -58,8 +58,11 @@ std::optional<tnsr::i<std::complex<double>, 2>> extract_self_force(
   const int m_mode = circular_orbit.m_mode_number();
   const double r_plus = M * (1. + sqrt(1. - square(spin)));
   const double r_minus = M * (1. - sqrt(1. - square(spin)));
-  const double alpha = 1. - 2. * M * r0 / (square(r0) + square(a));
-  get<0>(self_force) /= r0 * alpha;
+  get<0>(self_force) /= r0;
+  if (not circular_orbit.penetrating_horizon()) {
+    const double alpha = 1. - 2. * M * r0 / (square(r0) + square(a));
+    get<0>(self_force) /= alpha;
+  }
   get<0>(self_force) -= get(field_at_puncture) / square(r0);
   if (m_mode > 0) {
     const double delta_phi =

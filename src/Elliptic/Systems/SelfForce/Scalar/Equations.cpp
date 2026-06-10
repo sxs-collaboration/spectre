@@ -18,18 +18,18 @@
 namespace ScalarSelfForce {
 
 void fluxes(const gsl::not_null<tnsr::I<ComplexDataVector, 2>*> flux,
-            const Scalar<ComplexDataVector>& alpha,
+            const tnsr::I<ComplexDataVector, 2>& alpha,
             const tnsr::i<ComplexDataVector, 2>& field_gradient) {
-  get<0>(*flux) = get<0>(field_gradient);
-  get<1>(*flux) = get(alpha) * get<1>(field_gradient);
+  get<0>(*flux) = get<0>(alpha) * get<0>(field_gradient);
+  get<1>(*flux) = get<1>(alpha) * get<1>(field_gradient);
 }
 
 void fluxes_on_face(const gsl::not_null<tnsr::I<ComplexDataVector, 2>*> flux,
-                    const Scalar<ComplexDataVector>& alpha,
+                    const tnsr::I<ComplexDataVector, 2>& alpha,
                     const tnsr::I<DataVector, 2>& face_normal_vector,
                     const Scalar<ComplexDataVector>& field) {
-  get<0>(*flux) = get<0>(face_normal_vector) * get(field);
-  get<1>(*flux) = get(alpha) * get<1>(face_normal_vector) * get(field);
+  get<0>(*flux) = get<0>(alpha) * get<0>(face_normal_vector) * get(field);
+  get<1>(*flux) = get<1>(alpha) * get<1>(face_normal_vector) * get(field);
 }
 
 void add_sources(const gsl::not_null<Scalar<ComplexDataVector>*> source,
@@ -43,14 +43,14 @@ void add_sources(const gsl::not_null<Scalar<ComplexDataVector>*> source,
 }
 
 void Fluxes::apply(const gsl::not_null<tnsr::I<ComplexDataVector, 2>*> flux,
-                   const Scalar<ComplexDataVector>& alpha,
+                   const tnsr::I<ComplexDataVector, 2>& alpha,
                    const Scalar<ComplexDataVector>& /*field*/,
                    const tnsr::i<ComplexDataVector, 2>& field_gradient) {
   fluxes(flux, alpha, field_gradient);
 }
 
 void Fluxes::apply(const gsl::not_null<tnsr::I<ComplexDataVector, 2>*> flux,
-                   const Scalar<ComplexDataVector>& alpha,
+                   const tnsr::I<ComplexDataVector, 2>& alpha,
                    const tnsr::i<DataVector, 2>& /*face_normal*/,
                    const tnsr::I<DataVector, 2>& face_normal_vector,
                    const Scalar<ComplexDataVector>& field) {
