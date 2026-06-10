@@ -19,8 +19,12 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
 #include "DataStructures/VariablesTag.hpp"
+#include "Domain/Creators/NonconformingSphericalShells.hpp"
+#include "Domain/Creators/RegisterDerivedWithCharm.hpp"
 #include "Domain/Creators/Tags/Domain.hpp"
 #include "Domain/Creators/Tags/InitialExtents.hpp"
+#include "Domain/Creators/Tags/InitialRefinementLevels.hpp"
+#include "Domain/Structure/InitialElementIds.hpp"
 #include "Domain/Tags.hpp"
 #include "Evolution/BoundaryCorrection.hpp"
 #include "Evolution/DgSubcell/Tags/TciStatus.hpp"
@@ -28,10 +32,12 @@
 #include "Evolution/DiscontinuousGalerkin/BoundaryData.hpp"
 #include "Evolution/DiscontinuousGalerkin/Initialization/Mortars.hpp"
 #include "Evolution/DiscontinuousGalerkin/Initialization/QuadratureTag.hpp"
+#include "Evolution/DiscontinuousGalerkin/InterpolatedBoundaryData.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarData.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarInfo.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarTags.hpp"
 #include "Evolution/DiscontinuousGalerkin/NormalVectorTags.hpp"
+#include "Evolution/Initialization/DgDomain.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
 #include "Helpers/Evolution/DiscontinuousGalerkin/Actions/SystemType.hpp"
@@ -42,7 +48,9 @@
 #include "Options/Protocols/FactoryCreation.hpp"
 #include "Parallel/AlgorithmExecution.hpp"
 #include "Parallel/Phase.hpp"
+#include "ParallelAlgorithms/Actions/InitializeItems.hpp"
 #include "Time/Slab.hpp"
+#include "Time/Tags/Time.hpp"
 #include "Time/Tags/TimeStep.hpp"
 #include "Time/Tags/TimeStepId.hpp"
 #include "Time/Tags/TimeStepper.hpp"
@@ -1202,6 +1210,208 @@ void test_receive_order() {
   }
 }
 
+template <typename Metavariables>
+struct DeterministicComponent {
+  using metavariables = Metavariables;
+  using chare_type = ActionTesting::MockArrayChare;
+  using array_index = ElementId<3>;
+  using variables_tag = typename Metavariables::system::variables_tag;
+  using dt_variables_tag = db::add_tag_prefix<::Tags::dt, variables_tag>;
+  using simple_tags =
+      tmpl::list<::domain::Tags::InitialExtents<3>,
+                 ::domain::Tags::InitialRefinementLevels<3>,
+                 ::evolution::dg::Tags::Quadrature,
+                 Tags::ConcreteTimeStepper<TimeStepper>, ::Tags::Time,
+                 ::Tags::TimeStep, ::Tags::TimeStepId,
+                 ::Tags::Next<::Tags::TimeStepId>, VolumeTag, dt_variables_tag>;
+  using compute_tags = tmpl::push_back<time_stepper_ref_tags<TimeStepper>>;
+
+  using phase_dependent_action_list = tmpl::list<
+      Parallel::PhaseActions<
+          Parallel::Phase::Initialization,
+          tmpl::list<
+              ActionTesting::InitializeDataBox<simple_tags, compute_tags>,
+              Initialization::Actions::InitializeItems<
+                  ::evolution::dg::Initialization::Domain<Metavariables>>,
+              ::evolution::dg::Initialization::Mortars<3>>>,
+      Parallel::PhaseActions<
+          Parallel::Phase::Testing,
+          tmpl::list<::evolution::dg::Actions::
+                         ApplyBoundaryCorrectionsToTimeDerivative<3, false>>>>;
+};
+
+struct DeterministicMetavariables {
+  static constexpr size_t volume_dim = 3;
+  static constexpr bool local_time_stepping = false;
+  using system = System<3, TestHelpers::SystemType::Conservative>;
+  using const_global_cache_tags = tmpl::list<>;
+  struct factory_creation
+      : tt::ConformsTo<Options::protocols::FactoryCreation> {
+    using factory_classes = tmpl::map<tmpl::pair<evolution::BoundaryCorrection,
+                                                 tmpl::list<BoundaryTerms<3>>>>;
+  };
+
+  using component_list =
+      tmpl::list<DeterministicComponent<DeterministicMetavariables>>;
+};
+
+void test_deterministic_mortar_interpolation() {
+  using metavars = DeterministicMetavariables;
+  using component = DeterministicComponent<metavars>;
+  using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<metavars>;
+  register_factory_classes_with_charm<metavars>();
+  domain::creators::register_derived_with_charm();
+
+  const size_t spherical_harmonic_l = 4;
+  const size_t cube_angular_extents = 2;
+  const domain::creators::NonconformingSphericalShells creator{
+      1.9, 2.4, 2.9, 0, 1, 2, spherical_harmonic_l, cube_angular_extents};
+  const Domain<3> domain = creator.create_domain();
+  const auto initial_extents = creator.initial_extents();
+  const auto initial_refinement = creator.initial_refinement_levels();
+
+  MockRuntimeSystem runner{{creator.create_domain(),
+                            std::make_unique<BoundaryTerms<3>>(),
+                            dg::Formulation::StrongInertial}};
+
+  const Slab slab(0.0, 1.0);
+  const TimeStepId time_step_id(true, 0, slab.start());
+  const TimeStepId& next_time_step_id = time_step_id;
+  const auto time_step = slab.duration();
+  using variables_tag = metavars::system::variables_tag;
+  using dt_variables_tag = db::add_tag_prefix<::Tags::dt, variables_tag>;
+  dt_variables_tag::type dt_evolved_vars(
+      2 * (spherical_harmonic_l + 1) * (2 * spherical_harmonic_l + 1), 0.0);
+
+  const ElementId<3> sphere_id{6};
+  ActionTesting::emplace_component_and_initialize<component>(
+      &runner, sphere_id,
+      {initial_extents, initial_refinement, Spectral::Quadrature::GaussLobatto,
+       std::make_unique<TimeSteppers::AdamsBashforth>(1), 1.2, time_step,
+       time_step_id, next_time_step_id, 10, dt_evolved_vars});
+
+  // Initialize the domain and mortars
+  ActionTesting::next_action<component>(make_not_null(&runner), sphere_id);
+  ActionTesting::next_action<component>(make_not_null(&runner), sphere_id);
+  ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Testing);
+
+  const Direction<3> direction_to_sphere = Direction<3>::upper_zeta();
+  const DirectionalId<3> sphere_mortar_id{direction_to_sphere, sphere_id};
+  const Mesh<2> spherical_face_mesh{
+      {{spherical_harmonic_l + 1, 2 * spherical_harmonic_l + 1}},
+      {{Spectral::Basis::SphericalHarmonic,
+        Spectral::Basis::SphericalHarmonic}},
+      {{Spectral::Quadrature::Gauss, Spectral::Quadrature::Equiangular}}};
+  const Mesh<3> cube_volume_mesh{
+      {{2, cube_angular_extents, cube_angular_extents}},
+      {{Spectral::Basis::Legendre, Spectral::Basis::SphericalHarmonic,
+        Spectral::Basis::SphericalHarmonic}},
+      {{Spectral::Quadrature::GaussLobatto, Spectral::Quadrature::Gauss,
+        Spectral::Quadrature::Equiangular}}};
+  const Mesh<2> cube_face_mesh{cube_angular_extents, Spectral::Basis::Legendre,
+                               Spectral::Quadrature::GaussLobatto};
+
+  const size_t n_pts = spherical_face_mesh.number_of_grid_points();
+  using mortar_tags_list = BoundaryTerms<3>::dg_package_field_tags;
+  constexpr size_t n_components =
+      Variables<mortar_tags_list>::number_of_independent_components;
+  CHECK(n_components == 9);
+  const size_t mortar_data_size = n_pts * n_components;
+  auto& sphere_box = get_databox<component>(make_not_null(&runner), sphere_id);
+  db::mutate<evolution::dg::Tags::MortarData<3>>(
+      [&sphere_id, &mortar_data_size,
+       &spherical_face_mesh](const auto mortar_data_ptr) {
+        auto& mortar_data =
+            mortar_data_ptr
+                ->at(DirectionalId<3>{Direction<3>::lower_xi(), sphere_id})
+                .local();
+        mortar_data.mortar_data = DataVector{mortar_data_size, 0.0};
+        mortar_data.mortar_mesh = spherical_face_mesh;
+        mortar_data.face_mesh = spherical_face_mesh;
+      },
+      make_not_null(&sphere_box));
+
+  MAKE_GENERATOR(generator);
+  std::uniform_real_distribution<> dist_positive(0.5, 1.);
+  using CovectorAndMag =
+      Variables<tmpl::list<evolution::dg::Tags::MagnitudeOfNormal,
+                           evolution::dg::Tags::NormalCovector<3>>>;
+  CovectorAndMag covector_and_mag{spherical_face_mesh.number_of_grid_points()};
+  get<evolution::dg::Tags::MagnitudeOfNormal>(covector_and_mag) =
+      make_with_random_values<Scalar<DataVector>>(
+          make_not_null(&generator), make_not_null(&dist_positive),
+          spherical_face_mesh.number_of_grid_points());
+  db::mutate<evolution::dg::Tags::NormalCovectorAndMagnitude<3>>(
+      [&covector_and_mag](const auto covector_and_mag_ptr,
+                          const auto& local_direction) {
+        (*covector_and_mag_ptr)[local_direction] = covector_and_mag;
+      },
+      make_not_null(&sphere_box), Direction<3>::lower_xi());
+
+  std::vector<size_t> contributors(n_pts, 0);
+  DataVector expected_interpolated_data{mortar_data_size, 0.0};
+  std::optional<evolution::dg::InterpolatedBoundaryData<3>>
+      interpolated_boundary_data{std::nullopt};
+  double value = 0.0;
+  for (size_t b = 0; b < 6; ++b) {
+    const auto element_ids =
+        initial_element_ids(b, creator.initial_refinement_levels()[b]);
+    for (const auto& element_id : element_ids) {
+      REQUIRE_FALSE(ActionTesting::next_action_if_ready<component>(
+          make_not_null(&runner), sphere_id));
+      value += 1.0;
+      const ::dg::MortarInterpolator<3> mortar_interpolator{
+          element_id, sphere_mortar_id, domain, cube_face_mesh,
+          spherical_face_mesh};
+      const DataVector face_data{
+          n_components * cube_face_mesh.number_of_grid_points(), value};
+      interpolated_boundary_data = evolution::dg::InterpolatedBoundaryData<3>{
+          {.data = mortar_interpolator.interpolate_to_neighbor(face_data),
+           .target_mesh = mortar_interpolator.neighbor_mortar_mesh(),
+           .offsets =
+               mortar_interpolator.interpolated_neighbor_data_offsets()}};
+      for (const auto offset : interpolated_boundary_data.value().offsets()) {
+        ++contributors[offset];
+        for (size_t c = 0; c < n_components; ++c) {
+          expected_interpolated_data[offset + c * n_pts] += value;
+        }
+      }
+      const evolution::dg::BoundaryData<3> data{
+          cube_volume_mesh,
+          std::nullopt,
+          cube_face_mesh,
+          std::nullopt,
+          {face_data},
+          TimeStepId(true, 0, Time(slab, {1, 2})),
+          1,
+          1,
+          interpolated_boundary_data};
+      using inbox =
+          evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<3, false>;
+
+      Parallel::receive_data<inbox>(
+          runner.mock_distributed_objects<component>().at(sphere_id),
+          TimeStepId(true, 0, Time(slab, {0, 2})),
+          std::pair{DirectionalId<3>{Direction<3>::lower_xi(), element_id},
+                    data});
+    }
+  }
+  REQUIRE(ActionTesting::next_action_if_ready<component>(make_not_null(&runner),
+                                                         sphere_id));
+  for (size_t i = 0; i < n_pts; ++i) {
+    for (size_t c = 0; c < n_components; ++c) {
+      expected_interpolated_data[i + c * n_pts] /=
+          static_cast<double>(contributors[i]);
+    }
+  }
+  const auto& interpolated_data =
+      db::get<evolution::dg::Tags::MortarData<3>>(sphere_box)
+          .at(DirectionalId<3>{Direction<3>::lower_xi(), sphere_id})
+          .neighbor()
+          .mortar_data.value();
+  CHECK_ITERABLE_APPROX(expected_interpolated_data, interpolated_data);
+}
+
 SPECTRE_TEST_CASE("Unit.Evolution.DG.ApplyBoundaryCorrections",
                   "[Unit][Evolution][Actions]") {
   PUPable_reg(TimeSteppers::AdamsBashforth);
@@ -1221,5 +1431,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.DG.ApplyBoundaryCorrections",
   });
 
   test_receive_order();
+
+  test_deterministic_mortar_interpolation();
 }
 }  // namespace

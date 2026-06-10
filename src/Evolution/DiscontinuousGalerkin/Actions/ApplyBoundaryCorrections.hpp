@@ -242,8 +242,8 @@ bool receive_boundary_data(
     // chosen.  It is important that the corrected version be what is
     // inserted into the boundary history.
     const TimeStepId processing_time = messages_to_process->first;
-    std::unordered_set<Direction<volume_dim>>
-        directions_with_multiple_non_conforming_neighbors{};
+    std::unordered_map<Direction<volume_dim>, std::vector<size_t>>
+        contributors_multiple_non_conforming_neighbors{};
 
     for (auto& mortar_id_and_data : messages_to_process->second) {
       const auto& received_mortar_id = mortar_id_and_data.first;
@@ -263,7 +263,7 @@ bool receive_boundary_data(
               : DirectionalId<volume_dim>{direction, element.id()};
 
       ASSERT(mortar_next_time_step_ids.at(mortar_id) == processing_time or
-                 directions_with_multiple_non_conforming_neighbors.contains(
+                 contributors_multiple_non_conforming_neighbors.contains(
                      direction),
              "Processing wrong time for mortar "
                  << mortar_id << "\nExpected "
@@ -418,10 +418,11 @@ bool receive_boundary_data(
                   // The data received from each neighbor has been interpolated
                   // to a subset of points of the single mortar mesh of the host
                   // If this is the first neighbor processed,
-                  if (not directions_with_multiple_non_conforming_neighbors
+                  if (not contributors_multiple_non_conforming_neighbors
                               .contains(direction)) {
-                    directions_with_multiple_non_conforming_neighbors.emplace(
-                        direction);
+                    contributors_multiple_non_conforming_neighbors.emplace(
+                        direction, std::vector<size_t>(
+                                       face_mesh.number_of_grid_points(), 0));
                     mortar_next_time_step_ids_mutable->at(mortar_id) =
                         received_mortar_data.validity_range;
                     mortar_meshes->at(mortar_id) = face_mesh;
@@ -430,9 +431,7 @@ bool receive_boundary_data(
                     gts_mortar_data->at(mortar_id).neighbor().mortar_mesh =
                         face_mesh;
                     gts_mortar_data->at(mortar_id).neighbor().mortar_data =
-                        DataVector{
-                            mortar_data_size,
-                            std::numeric_limits<double>::signaling_NaN()};
+                        DataVector{mortar_data_size, 0.0};
                   }
                   ASSERT(
                       mortar_next_time_step_ids_mutable->at(mortar_id) ==
@@ -461,9 +460,13 @@ bool receive_boundary_data(
                   auto& target_mortar_data = gts_mortar_data->at(mortar_id)
                                                  .neighbor()
                                                  .mortar_data.value();
-                  for (size_t c = 0; c < number_of_components; ++c) {
-                    for (size_t i = 0; i < npts_interpolated; ++i) {
-                      target_mortar_data[offsets[i] + c * npts_mortar] =
+                  auto& contributors =
+                      contributors_multiple_non_conforming_neighbors.at(
+                          direction);
+                  for (size_t i = 0; i < npts_interpolated; ++i) {
+                    ++contributors[offsets[i]];
+                    for (size_t c = 0; c < number_of_components; ++c) {
+                      target_mortar_data[offsets[i] + c * npts_mortar] +=
                           interpolated_data[i + c * npts_interpolated];
                     }
                   }
@@ -481,24 +484,34 @@ bool receive_boundary_data(
           box);
     }
 
-    const auto& gts_mortar_data =
-        db::get<evolution::dg::Tags::MortarData<volume_dim>>(*box);
-    for (const auto& direction :
-         directions_with_multiple_non_conforming_neighbors) {
-      const DirectionalId<volume_dim> mortar_id =
-          DirectionalId<volume_dim>{direction, element.id()};
-      const auto& target_mortar_data =
-          gts_mortar_data.at(mortar_id).neighbor().mortar_data.value();
-      ASSERT(std::none_of(target_mortar_data.begin(),
-                          target_mortar_data.begin() +
-                              static_cast<ptrdiff_t>(
-                                  volume_mesh.slice_away(direction.dimension())
-                                      .number_of_grid_points()),
-                          [](const double v) { return std::isnan(v); }),
-             "Not all points were interpolated.  Direction = "
-                 << direction << " ElementId = " << element.id() << "\n"
-                 << "target_mortar_data = " << target_mortar_data);
-    }
+    db::mutate<evolution::dg::Tags::MortarData<volume_dim>>(
+        [&contributors_multiple_non_conforming_neighbors, &element](
+            const gsl::not_null<DirectionalIdMap<
+                volume_dim, evolution::dg::MortarDataHolder<volume_dim>>*>
+                gts_mortar_data) {
+          for (const auto& [direction, contributors] :
+               contributors_multiple_non_conforming_neighbors) {
+            const DirectionalId<volume_dim> mortar_id =
+                DirectionalId<volume_dim>{direction, element.id()};
+            auto& target_mortar_data =
+                gts_mortar_data->at(mortar_id).neighbor().mortar_data.value();
+            const size_t npts_mortar = contributors.size();
+            const size_t number_of_components =
+                target_mortar_data.size() / npts_mortar;
+            ASSERT(alg::none_of(contributors,
+                                [](const size_t n) { return n == 0; }),
+                   "Not all points were interpolated.  Direction = "
+                       << direction << " ElementId = " << element.id() << "\n"
+                       << "target_mortar_data = " << target_mortar_data);
+            for (size_t i = 0; i < npts_mortar; ++i) {
+              for (size_t c = 0; c < number_of_components; ++c) {
+                target_mortar_data[i + c * npts_mortar] /=
+                    static_cast<double>(contributors[i]);
+              }
+            }
+          }
+        },
+        box);
 
     inbox_data.erase(messages_to_process);
   }
