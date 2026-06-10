@@ -67,7 +67,7 @@ struct InverseCubic<true> : InitializeJ<true> {
       const Scalar<SpinWeighted<ComplexDataVector, 0>>& r,
       const Scalar<SpinWeighted<ComplexDataVector, 0>>& beta, size_t l_max,
       size_t number_of_radial_points,
-      gsl::not_null<Parallel::NodeLock*> hdf5_lock) const override;
+      gsl::not_null<Parallel::NodeLock*> hdf5_lock) const;
 
   void pup(PUP::er& /*p*/) override;
 };
@@ -114,7 +114,7 @@ struct InverseCubic<false> : InitializeJ<false> {
       const Scalar<SpinWeighted<ComplexDataVector, 0>>& r,
       const Scalar<SpinWeighted<ComplexDataVector, 0>>& beta, size_t l_max,
       size_t number_of_radial_points,
-      gsl::not_null<Parallel::NodeLock*> hdf5_lock) const override;
+      gsl::not_null<Parallel::NodeLock*> hdf5_lock) const;
 
   void pup(PUP::er& /*p*/) override;
 };

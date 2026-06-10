@@ -7,6 +7,7 @@
 #include <memory>
 #include <string>
 
+#include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/SpinWeighted.hpp"
 #include "DataStructures/Tags.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
@@ -18,12 +19,16 @@
 #include "Options/String.hpp"
 #include "Parallel/NodeLock.hpp"
 #include "Parallel/Printf/Printf.hpp"
+#include "Utilities/CallWithDynamicType.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Serialization/CharmPupable.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
 class ComplexDataVector;
+namespace Cce::Solutions::LinearizedBondiSachs_detail::InitializeJ {
+struct LinearizedBondiSachs;
+}  // namespace Cce::Solutions::LinearizedBondiSachs_detail::InitializeJ
 /// \endcond
 
 namespace Cce {
@@ -40,8 +45,7 @@ struct NoOpFinalize {
       const Scalar<SpinWeighted<ComplexDataVector, 0>>& /*gauge_d*/,
       const tnsr::i<DataVector, 2, ::Frame::Spherical<::Frame::Inertial>>&
       /*angular_cauchy_coordinates*/,
-      const Spectral::Swsh::SwshInterpolator& /*interpolator*/) const {
-  }
+      const Spectral::Swsh::SwshInterpolator& /*interpolator*/) const {}
 };
 
 // perform an iterative solve for the set of angular coordinates. The iteration
@@ -348,6 +352,7 @@ struct InitializeJ<true> : public PUP::able {
       tmpl::list<Tags::BondiJ, Tags::CauchyCartesianCoords,
                  Tags::CauchyAngularCoords, Tags::PartiallyFlatCartesianCoords,
                  Tags::PartiallyFlatAngularCoords>;
+  using return_tags = mutate_tags;
   using argument_tags =
       tmpl::push_back<boundary_tags, Tags::LMax, Tags::NumberOfRadialPoints>;
 
@@ -362,22 +367,17 @@ struct InitializeJ<true> : public PUP::able {
 
   virtual std::unique_ptr<InitializeJ<true>> get_clone() const = 0;
 
-  virtual void operator()(
-      gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 2>>*> j,
-      gsl::not_null<tnsr::i<DataVector, 3>*> cartesian_cauchy_coordinates,
-      gsl::not_null<
-          tnsr::i<DataVector, 2, ::Frame::Spherical<::Frame::Inertial>>*>
-          angular_cauchy_coordinates,
-      gsl::not_null<tnsr::i<DataVector, 3>*> cartesian_inertial_coordinates,
-      gsl::not_null<
-          tnsr::i<DataVector, 2, ::Frame::Spherical<::Frame::Inertial>>*>
-          angular_inertial_coordinates,
-      const Scalar<SpinWeighted<ComplexDataVector, 2>>& boundary_j,
-      const Scalar<SpinWeighted<ComplexDataVector, 2>>& boundary_dr_j,
-      const Scalar<SpinWeighted<ComplexDataVector, 0>>& r,
-      const Scalar<SpinWeighted<ComplexDataVector, 0>>& beta, size_t l_max,
-      size_t number_of_radial_points,
-      gsl::not_null<Parallel::NodeLock*> hdf5_lock) const = 0;
+  // Each derived class declares its own `return_tags` and `argument_tags` and
+  // implements a non-virtual `operator()`; the dispatch below picks the
+  // correct dynamic type and forwards through `db::mutate_apply`.
+  template <typename DbTags>
+  void operator()(const gsl::not_null<db::DataBox<DbTags>*> box,
+                  const gsl::not_null<Parallel::NodeLock*> hdf5_lock) const {
+    call_with_dynamic_type<void, creatable_classes>(
+        this, [&](auto* const derived) {
+          db::mutate_apply(*derived, box, hdf5_lock);
+        });
+  }
 };
 
 /*!
@@ -398,6 +398,10 @@ struct InitializeJ<true> : public PUP::able {
  */
 template <>
 struct InitializeJ<false> : public PUP::able {
+  // Default boundary/mutate/argument tags used by the simple derived classes
+  // (ConformalFactor, InverseCubic<false>, NoIncomingRadiation, ZeroNonSmooth).
+  // A derived class may shadow these with its own list, in which case the
+  // per-class list is used during dispatch.
   using boundary_tags = tmpl::list<Tags::BoundaryValue<Tags::BondiJ>,
                                    Tags::BoundaryValue<Tags::Dr<Tags::BondiJ>>,
                                    Tags::BoundaryValue<Tags::BondiR>,
@@ -405,11 +409,15 @@ struct InitializeJ<false> : public PUP::able {
 
   using mutate_tags = tmpl::list<Tags::BondiJ, Tags::CauchyCartesianCoords,
                                  Tags::CauchyAngularCoords>;
+  using return_tags = mutate_tags;
   using argument_tags =
       tmpl::push_back<boundary_tags, Tags::LMax, Tags::NumberOfRadialPoints>;
 
-  using creatable_classes = tmpl::list<ConformalFactor, InverseCubic<false>,
-                                       NoIncomingRadiation, ZeroNonSmooth>;
+  using creatable_classes =
+      tmpl::list<ConformalFactor, InverseCubic<false>, NoIncomingRadiation,
+                 ZeroNonSmooth,
+                 ::Cce::Solutions::LinearizedBondiSachs_detail::InitializeJ::
+                     LinearizedBondiSachs>;
 
   InitializeJ() = default;
   explicit InitializeJ(CkMigrateMessage* /*msg*/) {}
@@ -418,22 +426,24 @@ struct InitializeJ<false> : public PUP::able {
 
   virtual std::unique_ptr<InitializeJ<false>> get_clone() const = 0;
 
-  virtual void operator()(
-      gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 2>>*> j,
-      gsl::not_null<tnsr::i<DataVector, 3>*> cartesian_cauchy_coordinates,
-      gsl::not_null<
-          tnsr::i<DataVector, 2, ::Frame::Spherical<::Frame::Inertial>>*>
-          angular_cauchy_coordinates,
-      const Scalar<SpinWeighted<ComplexDataVector, 2>>& boundary_j,
-      const Scalar<SpinWeighted<ComplexDataVector, 2>>& boundary_dr_j,
-      const Scalar<SpinWeighted<ComplexDataVector, 0>>& r,
-      const Scalar<SpinWeighted<ComplexDataVector, 0>>& beta, size_t l_max,
-      size_t number_of_radial_points,
-      gsl::not_null<Parallel::NodeLock*> hdf5_lock) const = 0;
+  // Each derived class declares its own `return_tags` and `argument_tags` and
+  // implements a non-virtual `operator()` whose signature matches those tags.
+  // The dispatch below picks the correct dynamic type and forwards through
+  // `db::mutate_apply` so the per-class tag lists are honored.
+  template <typename DbTags>
+  void operator()(const gsl::not_null<db::DataBox<DbTags>*> box,
+                  const gsl::not_null<Parallel::NodeLock*> hdf5_lock) const {
+    call_with_dynamic_type<void, creatable_classes>(
+        this, [&](auto* const derived) {
+          db::mutate_apply(*derived, box, hdf5_lock);
+        });
+  }
 };
 }  // namespace InitializeJ
 }  // namespace Cce
 
+#include "Evolution/Systems/Cce/AnalyticSolutions/LinearizedBondiSachsInitializeJ.hpp"
+#include "Evolution/Systems/Cce/Initialize/ConformalFactor.hpp"
 #include "Evolution/Systems/Cce/Initialize/InverseCubic.hpp"
 #include "Evolution/Systems/Cce/Initialize/NoIncomingRadiation.hpp"
 #include "Evolution/Systems/Cce/Initialize/ZeroNonSmooth.hpp"
