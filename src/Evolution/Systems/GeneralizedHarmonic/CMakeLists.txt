@@ -13,6 +13,7 @@ spectre_target_sources(
   Constraints.cpp
   Equations.cpp
   SpectralFilter.cpp
+  TensorYlmTransforms.cpp
   TimeDerivative.cpp
   )
 
@@ -30,6 +31,7 @@ spectre_target_headers(
   System.hpp
   Tags.hpp
   TagsDeclarations.hpp
+  TensorYlmTransforms.hpp
   TimeDerivative.hpp
   TimeDerivative.tpp
   )
@@ -58,6 +60,7 @@ target_link_libraries(
   Options
   Serialization
   Spectral
+  SphericalHarmonics
   Utilities
   INTERFACE
   Initialization
