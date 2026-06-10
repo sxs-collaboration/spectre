@@ -1,0 +1,177 @@
+# Distributed under the MIT License.
+# See LICENSE.txt for details.
+
+Bootstrap: docker
+From: sxscollaboration/spectre:dev
+
+%labels
+    Author SXS Collaboration
+    Description SpECTRE development container that includes coding agents.
+    Version dev
+
+%environment
+    # Keep runtime environment variables from the Dockerfile
+    export DEVCONTAINER=true
+    export EDITOR=emacs
+    export VISUAL=emacs
+    export LANG=C.UTF-8
+    export LC_ALL=C.UTF-8
+    # Because the default writable filesystem is only 64MB,
+    # we make pip write to /tmp. This requires binding /tmp
+    # to something container-specific. E.g.,
+    #
+    # CONTAINER_TMP=$(mktemp -d /tmp/$USER-claude-anthropic-XXXXXX)
+    # mkdir -p "$CONTAINER_TMP"
+    # apptainer shell --contain \
+    #           -B "$CONTAINER_TMP":/tmp \
+    #           -B ~/spectre_claude${num}:$HOME/spectre \
+    #           -B ~/Claudes/Anthropic/.claude:$HOME/.claude \
+    #           -B ~/Claudes/Anthropic/.claude.json:$HOME/.claude.json \
+    #           -B ~/.config/gh:/home/claude/.config/gh:ro \
+    #           -B ~/SpECTRE_AGENTS.md:$HOME/spectre/AGENTS.md:ro \
+    #           --add-caps CAP_NET_RAW ~/SpectreAi.sif "$@"
+    # rm -rf "$CONTAINER_TMP"
+    #
+    export TMPDIR=/tmp
+    export PIP_CACHE_DIR=/tmp/pip-cache
+    export PIP_TEMP_DIR=/tmp/pip-tmp
+    # Disable threading in OpenBLAS because it actually slows us down
+    export OPENBLAS_NUM_THREADS=1
+    # Point CMake to the serial HDF5 library.
+    export HDF5_ROOT=/usr/lib/x86_64-linux-gnu/hdf5/serial
+    # Add our paraview install to the PATH.
+    export PATH="/usr/local/bin:${PATH}:/opt/paraview/bin"
+    # Make sure spec can find petsc
+    export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:/usr/local/lib
+    export LIBRARY_PATH=${LIBRARY_PATH}:/usr/local/lib
+    # Add the NVIDIA CUDA toolkit (nvcc) to the PATH. Kokkos itself is NOT
+    # pre-installed; SpECTRE's CMake fetches and builds it automatically when
+    # SPECTRE_KOKKOS=ON and SPECTRE_FETCH_MISSING_DEPS=ON are set.
+    export CUDA_HOME=/usr/local/cuda-12.6
+    export PATH="${PATH}:${CUDA_HOME}/bin"
+    export LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:${CUDA_HOME}/lib64"
+
+%post
+    echo "=== Installing apt packages ==="
+    apt-get update
+
+    # Install base tools (curl/ca-certificates required before nodesource script)
+    apt-get install -y --no-install-recommends \
+      less git procps man-db unzip gnupg2 curl ca-certificates gh iputils-ping \
+      netcat lynx dnsutils aggregate jq nano vim emacs-nox tmux screen \
+      libopenmpi-dev clang-tidy-16
+    # Install clang and clangd. We want Claude Code to use clangd for finding
+    # definitions, etc. to reduce LLM usage.
+    add-apt-repository -y 'deb https://ppa.launchpadcontent.net/ubuntu-toolchain-r/test/ubuntu jammy main'
+    wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | apt-key add -
+    add-apt-repository "deb http://apt.llvm.org/jammy/ llvm-toolchain-jammy-21 main"
+    apt-get update
+    apt-get install -y clang-21 clangd-21 clang-tidy-21 lldb-21
+    apt-get install -y gcc-12 gfortran-12 g++-12 libstdc++-12-dev
+    apt-get install -y clang-format-21
+    apt-get remove -y clang-format clang-format-14
+    ln -s /usr/bin/clangd-21 /usr/local/bin/clangd
+    ln -s /usr/bin/clang-format-21 /usr/local/bin/clang-format
+
+    apt-get install -y python3.10-venv
+
+    # Install the NVIDIA CUDA compiler (nvcc) so agents can build SpECTRE with
+    # Kokkos + CUDA, matching the CI `nvcc-12-6` build. Kokkos itself is NOT
+    # installed here: SpECTRE's CMake fetches and builds it automatically when
+    # configured with SPECTRE_KOKKOS=ON and SPECTRE_FETCH_MISSING_DEPS=ON.
+    echo "=== Installing NVIDIA CUDA compiler (nvcc 12.6) ==="
+    wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-keyring_1.1-1_all.deb
+    dpkg -i cuda-keyring_1.1-1_all.deb
+    rm cuda-keyring_1.1-1_all.deb
+    apt-get update -y
+    apt-get install -y cuda-nvcc-12-6 build-essential libc6-dev pkg-config
+
+    # Install SpEC dependencies
+    apt-get install -y libfftw3-dev bc git-annex bear
+
+    wget http://ftp.mcs.anl.gov/pub/petsc/release-snapshots/petsc-3.19.6.tar.gz \
+    && tar xzf petsc-3.19.6.tar.gz
+    cd petsc-3.19.6 \
+    && python ./configure --prefix=/usr/local --with-mpi-dir=/usr/ \
+    --enable-debug=0  --COPTFLAGS="-O3" --CXXOPTFLAGS="-O3" --FOPTFLAGS="-O3" \
+    --with-hdf5=0 --download-hdf5=0 \
+    && make MAKE_NP=4 \
+    && make install \
+    && cd .. \
+    && rm -r ./petsc-3.19.6 ./petsc-3.19.6.tar.gz
+
+    # Custom paraview install because the apt one causes python
+    # incompatibilities.
+    wget -O paraview.tar.gz --no-check-certificate "https://www.paraview.org/paraview-downloads/download.php?submit=Download&version=v5.10&type=binary&os=Linux&downloadFile=ParaView-5.10.1-osmesa-MPI-Linux-Python3.9-x86_64.tar.gz"
+    tar -xzf paraview.tar.gz
+    rm paraview.tar.gz
+    mv ParaView-* /opt/paraview
+
+    # Cleanup apt lists to reduce image size
+    apt-get clean
+    rm -rf /var/lib/apt/lists/*
+
+    # Install Node.js 20 from NodeSource (this will install node and npm)
+    echo "=== Installing Node.js 20 ==="
+    curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
+    apt-get install -y --no-install-recommends nodejs
+    # Cleanup apt lists to reduce image size
+    apt-get clean
+    rm -rf /var/lib/apt/lists/*
+
+    # Install global npm packages (Claude Code and codex)
+    echo "=== Installing global npm packages ==="
+    # If you want a different CLAUDE_CODE_VERSION at build-time, set CLAUDE_CODE_VERSION in the environment when building
+    npm install -g "@anthropic-ai/claude-code@${CLAUDE_CODE_VERSION}" || npm install -g @anthropic-ai/claude-code
+    npm install -g @openai/codex || true
+    npm install -g @github/copilot
+
+    # add-apt-repository ppa:deadsnakes/ppa
+    # apt-get install -y python3.12 python3.12-dev
+    # curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
+    # python3.12 get-pip.py --upgrade
+    # python3.12 -m pip install --break-system-packages mistral-vibe pyyaml
+
+    # Install pyright since we want Claude Code to use pyright for finding
+    # definitions, etc. to reduce LLM usage.
+    # pyyaml is needed for spectre.
+    python3.10 -m pip install pyright
+
+    # Set up a claude script that checks for and installs C++ and Python
+    # LSPs, then launches Claude Code.
+    cat > /usr/local/bin/claude << 'EOF'
+#!/bin/bash
+# Install plugins if not already present
+if ! /usr/bin/claude plugin list 2>/dev/null | grep -q "clangd-lsp"; then
+    /usr/bin/claude plugin marketplace update claude-plugins-official || true
+    /usr/bin/claude plugin install clangd-lsp@claude-plugins-official || true
+fi
+if ! /usr/bin/claude plugin list 2>/dev/null | grep -q "pyright"; then
+    /usr/bin/claude plugin marketplace update claude-plugins-official || true
+    /usr/bin/claude plugin install pyright-lsp@claude-plugins-official || true
+fi
+exec env ENABLE_LSP_TOOL=1 /usr/bin/claude "$@"
+EOF
+    chmod +x /usr/local/bin/claude
+
+%runscript
+    # Default runtime: drop into bash by default, forwarding any arguments
+    exec /bin/bash "$@"
+
+%help
+    An extension to the SpECTRE development container that includes
+    Claude Code.
+    - To build, run:
+        apptainer build --fakeroot SpectreAi.sif ./CodingAgents.def
+    - To change CLAUDE_CODE_VERSION at build time, set the environment variable
+      CLAUDE_CODE_VERSION when building the container, for example:
+        CLAUDE_CODE_VERSION=1.2.3 singularity build spectre.sif Singularity.def
+    - NVIDIA nvcc 12.6 is pre-installed. To build SpECTRE with Kokkos + CUDA
+      (Kokkos is fetched automatically by SpECTRE's CMake — no separate Kokkos
+      install is needed):
+        cmake ... -D SPECTRE_KOKKOS=ON -D SPECTRE_FETCH_MISSING_DEPS=ON \
+                  -D Kokkos_ENABLE_CUDA=ON -D Kokkos_ARCH_AMPERE80=ON \
+                  -D BUILD_SHARED_LIBS=OFF
+      Adjust Kokkos_ARCH_* for your target GPU (e.g. AMPERE80 for A100,
+      HOPPER90 for H100, VOLTA70 for V100). BUILD_SHARED_LIBS=OFF is required
+      for CUDA builds.
