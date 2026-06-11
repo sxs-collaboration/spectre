@@ -35,7 +35,7 @@ class TestCombineH5Dat(unittest.TestCase):
 
         self.input_file_paths = [
             os.path.join(self.input_dir, "TestDatSeg" + str(i) + ".h5")
-            for i in range(1, 4, 1)
+            for i in range(1, 6, 1)
         ]
         self.output_file_path = os.path.join(
             self.output_dir, "TestDatSegJoined.h5"
@@ -46,19 +46,37 @@ class TestCombineH5Dat(unittest.TestCase):
         self.expected_file_path = os.path.join(
             self.output_dir, "TestDatSegExpected.h5"
         )
+        self.output_file_path_overlap = os.path.join(
+            self.output_dir, "TestDatSegJoinedOverlap.h5"
+        )
+        self.expected_file_path_overlap = os.path.join(
+            self.output_dir, "TestDatSegExpectedOverlap.h5"
+        )
 
         # Generate sample dat data for H5 files to be joined
         self.wave_1 = np.array(
             [[t, np.sin(t), np.cos(t)] for t in np.arange(0, 10.0, 0.1)]
         )
+        # Reverse order to test time sorting for the first h5 file
+        self.reverse_wave_1 = self.wave_1[np.argsort(-self.wave_1[:, 0])]
         self.wave_2 = np.array(
             [[t, np.sin(t), np.cos(t)] for t in np.arange(10.0, 20.0, 0.1)]
         )
         self.wave_3 = np.array(
             [[t, np.sin(t), np.cos(t)] for t in np.arange(20.0, 30.0, 0.1)]
         )
+        # Overlapping segment data to test remove_overlapping_segments option
+        self.wave_4 = np.array(
+            [[t, np.sin(t), np.cos(t)] for t in np.arange(29.0, 40.0, 0.1)]
+        )
+        # Reverse order to test time sorting within each segment/H5 file
+        self.reverse_wave_4 = self.wave_4[np.argsort(-self.wave_4[:, 0])]
         self.wave_joined = np.concatenate(
             (self.wave_1, self.wave_2, self.wave_3), axis=0
+        )
+        # Joined data that preserves later times/data
+        self.wave_joined_overlap = np.concatenate(
+            (self.wave_1, self.wave_2, self.wave_3[:-10], self.wave_4), axis=0
         )
         self.pow_1 = np.array(
             [[t, t**2, t**3, t**4] for t in np.arange(0, 10.0, 0.1)]
@@ -69,18 +87,24 @@ class TestCombineH5Dat(unittest.TestCase):
         self.pow_3 = np.array(
             [[t, t**2, t**3, t**4] for t in np.arange(20.0, 30.0, 0.1)]
         )
+        self.pow_4 = np.array(
+            [[t, t**2, t**3, t**4] for t in np.arange(29.0, 40.0, 0.1)]
+        )
         self.pow_joined = np.concatenate(
             (self.pow_1, self.pow_2, self.pow_3), axis=0
         )
+        self.pow_joined_overlap = np.concatenate(
+            (self.pow_1, self.pow_2, self.pow_3[:-10], self.pow_4), axis=0
+        )
 
-        # Generate 3 H5 files with two dat files inside each
+        # Generate 4 H5 files with two dat files inside each
         with spectre_h5.H5File(
             file_name=self.input_file_paths[0], mode="r+"
         ) as h5file:
             wave_datfile = h5file.insert_dat(
                 path="/Waves", legend=["Time", "Sin(t)", "Cos(t)"], version=0
             )
-            wave_datfile.append(self.wave_1)
+            wave_datfile.append(self.reverse_wave_1)
         with spectre_h5.H5File(
             file_name=self.input_file_paths[0], mode="r+"
         ) as h5file:
@@ -96,7 +120,7 @@ class TestCombineH5Dat(unittest.TestCase):
             wave_datfile = h5file.insert_dat(
                 path="/Waves", legend=["Time", "Sin(t)", "Cos(t)"], version=0
             )
-            wave_datfile.append(self.wave_2)
+            wave_datfile.append(self.wave_1)
         with spectre_h5.H5File(
             file_name=self.input_file_paths[1], mode="r+"
         ) as h5file:
@@ -105,14 +129,14 @@ class TestCombineH5Dat(unittest.TestCase):
                 legend=["Time", "t*t", "t*t*t", "t*t*t*t"],
                 version=0,
             )
-            pow_datfile.append(self.pow_2)
+            pow_datfile.append(self.pow_1)
         with spectre_h5.H5File(
             file_name=self.input_file_paths[2], mode="r+"
         ) as h5file:
             wave_datfile = h5file.insert_dat(
                 path="/Waves", legend=["Time", "Sin(t)", "Cos(t)"], version=0
             )
-            wave_datfile.append(self.wave_3)
+            wave_datfile.append(self.wave_2)
         with spectre_h5.H5File(
             file_name=self.input_file_paths[2], mode="r+"
         ) as h5file:
@@ -121,7 +145,39 @@ class TestCombineH5Dat(unittest.TestCase):
                 legend=["Time", "t*t", "t*t*t", "t*t*t*t"],
                 version=0,
             )
+            pow_datfile.append(self.pow_2)
+        with spectre_h5.H5File(
+            file_name=self.input_file_paths[3], mode="r+"
+        ) as h5file:
+            wave_datfile = h5file.insert_dat(
+                path="/Waves", legend=["Time", "Sin(t)", "Cos(t)"], version=0
+            )
+            wave_datfile.append(self.wave_3)
+        with spectre_h5.H5File(
+            file_name=self.input_file_paths[3], mode="r+"
+        ) as h5file:
+            pow_datfile = h5file.insert_dat(
+                path="/Powers/Pow",
+                legend=["Time", "t*t", "t*t*t", "t*t*t*t"],
+                version=0,
+            )
             pow_datfile.append(self.pow_3)
+        with spectre_h5.H5File(
+            file_name=self.input_file_paths[4], mode="r+"
+        ) as h5file:
+            wave_datfile = h5file.insert_dat(
+                path="/Waves", legend=["Time", "Sin(t)", "Cos(t)"], version=0
+            )
+            wave_datfile.append(self.reverse_wave_4)
+        with spectre_h5.H5File(
+            file_name=self.input_file_paths[4], mode="r+"
+        ) as h5file:
+            pow_datfile = h5file.insert_dat(
+                path="/Powers/Pow",
+                legend=["Time", "t*t", "t*t*t", "t*t*t*t"],
+                version=0,
+            )
+            pow_datfile.append(self.pow_4)
 
         self.test_yaml = """
         # Distributed under the MIT License.
@@ -137,6 +193,10 @@ class TestCombineH5Dat(unittest.TestCase):
             h5file.attrs.modify("InputSource.yaml", self.test_yaml)
         with h5py.File(self.input_file_paths[2], "r+") as h5file:
             h5file.attrs.modify("InputSource.yaml", self.test_yaml)
+        with h5py.File(self.input_file_paths[3], "r+") as h5file:
+            h5file.attrs.modify("InputSource.yaml", self.test_yaml)
+        with h5py.File(self.input_file_paths[4], "r+") as h5file:
+            h5file.attrs.modify("InputSource.yaml", self.test_yaml)
 
     def tearDown(self):
         if os.path.exists(self.input_dir):
@@ -147,7 +207,14 @@ class TestCombineH5Dat(unittest.TestCase):
     def test_combine_h5_dat(self):
         combine_h5_dat(
             output=self.output_file_path,
+            h5files=self.input_file_paths[1:4],
+            remove_overlapping_segments=False,
+            force=None,
+        )
+        combine_h5_dat(
+            output=self.output_file_path_overlap,
             h5files=self.input_file_paths,
+            remove_overlapping_segments=True,
             force=None,
         )
 
@@ -155,12 +222,18 @@ class TestCombineH5Dat(unittest.TestCase):
             npt.assert_allclose(h5file["Waves.dat"], self.wave_joined)
             npt.assert_allclose(h5file["Powers/Pow.dat"], self.pow_joined)
             self.assertEqual(h5file.attrs["InputSource.yaml"], self.test_yaml)
+        with h5py.File(self.output_file_path_overlap) as h5file:
+            npt.assert_allclose(h5file["Waves.dat"], self.wave_joined_overlap)
+            npt.assert_allclose(
+                h5file["Powers/Pow.dat"], self.pow_joined_overlap
+            )
+            self.assertEqual(h5file.attrs["InputSource.yaml"], self.test_yaml)
 
     def test_cli(self):
         runner = CliRunner()
         result = runner.invoke(
             combine_h5_dat_command,
-            ["-o", self.output_file_path_cli, *self.input_file_paths],
+            ["-o", self.output_file_path_cli, *self.input_file_paths[:3]],
             catch_exceptions=False,
         )
         with self.assertRaisesRegex(
@@ -168,7 +241,7 @@ class TestCombineH5Dat(unittest.TestCase):
         ):
             runner.invoke(
                 combine_h5_dat_command,
-                ["-o", self.output_file_path_cli, *self.input_file_paths],
+                ["-o", self.output_file_path_cli, *self.input_file_paths[:3]],
                 catch_exceptions=False,
             )
         result_force = runner.invoke(
@@ -177,11 +250,29 @@ class TestCombineH5Dat(unittest.TestCase):
                 "-o",
                 self.output_file_path_cli,
                 "--force",
+                *self.input_file_paths[1:4],
+            ],
+            catch_exceptions=False,
+        )
+        result_overlap = runner.invoke(
+            combine_h5_dat_command,
+            [
+                "-o",
+                self.output_file_path_cli,
+                "--force",
+                "--remove-overlapping-segments",
                 *self.input_file_paths,
             ],
             catch_exceptions=False,
         )
+        with h5py.File(self.output_file_path_cli) as h5file:
+            npt.assert_allclose(h5file["Waves.dat"], self.wave_joined_overlap)
+            npt.assert_allclose(
+                h5file["Powers/Pow.dat"], self.pow_joined_overlap
+            )
         self.assertEqual(result.exit_code, 0)
+        self.assertEqual(result_force.exit_code, 0)
+        self.assertEqual(result_overlap.exit_code, 0)
 
 
 if __name__ == "__main__":
