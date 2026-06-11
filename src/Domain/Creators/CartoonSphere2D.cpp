@@ -43,13 +43,39 @@ struct BlockLogical;
 
 namespace domain::creators {
 
+detail::CartoonSphere2DOptionsHelper::CartoonSphere2DOptionsHelper(
+    double inner_radius, double outer_radius, size_t initial_angular_refinement,
+    typename InitialRadialRefinement::type&& initial_radial_refinement,
+    std::array<size_t, 2> initial_number_of_grid_points,
+    std::vector<double> radial_partitioning, bool use_equiangular_map,
+    std::variant<Excision, InnerSquare> interior,
+    typename domain::creators::CartoonSphere2D::RadialDistribution::type
+        radial_distribution,
+    std::unique_ptr<domain::creators::time_dependence::TimeDependence<3>>
+        time_dependence,
+    std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
+        outer_boundary_condition,
+    Options::Context&& context)
+    : inner_radius_(inner_radius),
+      outer_radius_(outer_radius),
+      initial_angular_refinement_(initial_angular_refinement),
+      initial_radial_refinement_(std::move(initial_radial_refinement)),
+      initial_number_of_grid_points_(std::move(initial_number_of_grid_points)),
+      radial_partitioning_(std::move(radial_partitioning)),
+      use_equiangular_map_(use_equiangular_map),
+      interior_(std::move(interior)),
+      radial_distribution_(std::move(radial_distribution)),
+      time_dependence_(std::move(time_dependence)),
+      outer_boundary_condition_(std::move(outer_boundary_condition)),
+      context_(std::move(context)) {}
+
 CartoonSphere2D::CartoonSphere2D(
     double inner_radius, double outer_radius, size_t initial_angular_refinement,
     const typename InitialRadialRefinement::type& initial_radial_refinement,
     std::array<size_t, 2> initial_number_of_grid_points,
     std::vector<double> radial_partitioning, bool use_equiangular_map,
     std::variant<Excision, InnerSquare> interior,
-    CoordinateMaps::Distribution radial_distribution,
+    const typename RadialDistribution::type& radial_distribution,
     std::unique_ptr<domain::creators::time_dependence::TimeDependence<3>>
         time_dependence,
     std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
@@ -66,7 +92,6 @@ CartoonSphere2D::CartoonSphere2D(
       interior_(std::move(interior)),
       fill_interior_(std::holds_alternative<InnerSquare>(interior_)),
       time_dependence_(std::move(time_dependence)),
-      radial_distribution_(std::move(radial_distribution)),
       outer_boundary_condition_(std::move(outer_boundary_condition)),
       cartoon_boundary_condition_(std::move(cartoon_boundary_condition)) {
   if (time_dependence_ == nullptr) {
@@ -80,22 +105,20 @@ CartoonSphere2D::CartoonSphere2D(
                     std::to_string(inner_radius_) + " and outer radius is " +
                     std::to_string(outer_radius_) + ".");
   }
+  set_shell_distribution(
+      make_not_null(&num_shells_), make_not_null(&radial_distributions_),
+      radial_partitioning_, radial_distribution, inner_radius_, outer_radius_,
+      "inner", "outer", context);
+
+  // radial_distributions_[0] is the innermost shell
   if (fill_interior_ and std::get<InnerSquare>(interior_).sphericity != 1.0 and
-      radial_distribution_ != CoordinateMaps::Distribution::Linear) {
+      radial_distributions_[0] != CoordinateMaps::Distribution::Linear) {
     PARSE_ERROR(
         context,
-        "Cannot have a non-linear radial distribution when the sphericity of "
-        "wedges is not 1.0, got "
-            << radial_distribution << ". You need to excise the center.");
+        "Cannot have a non-linear radial distribution in the innermost shell "
+        "when the sphericity of wedges is not 1.0, got "
+            << radial_distributions_[0] << ". You need to excise the center.");
   }
-
-  std::vector<domain::CoordinateMaps::Distribution> dummy_vec;
-  const auto dummy_distribution = CoordinateMaps::Distribution::Linear;
-  // using this for checks of input values
-  set_shell_distribution(make_not_null(&num_shells_), make_not_null(&dummy_vec),
-                         radial_partitioning_, dummy_distribution,
-                         inner_radius_, outer_radius_, "inner", "outer",
-                         context);
   // num_shells_ is the number of wedge shells, always > 0
   num_blocks_ = 3 * num_shells_ + (fill_interior_ ? 1 : 0);
   if (std::holds_alternative<size_t>(initial_radial_refinement)) {
@@ -233,6 +256,8 @@ Domain<3> CartoonSphere2D::create_domain() const {
         i == 0 ? outer_radius_
                : radial_partitioning_[radial_partitioning_.size() - i];
     const double inner_sphericity = has_square ? inner_square_sphericity : 1.0;
+    // radial_distributions_[0] is innermost; loop goes outer->inner
+    const auto shell_distribution = radial_distributions_[num_shells_ - 1 - i];
     // this is a half-wedge, -y
     auto coord_maps = make_vector_coordinate_map_base<Frame::BlockLogical,
                                                       Frame::Inertial, 3>(
@@ -244,7 +269,7 @@ Domain<3> CartoonSphere2D::create_domain() const {
                     {Direction<2>::upper_eta(), Direction<2>::lower_xi()}}},
                 use_equiangular_map_,
                 domain::CoordinateMaps::Wedge<2>::WedgeHalves::UpperOnly,
-                radial_distribution_},
+                shell_distribution},
             Identity1D{}});
     // this is a full wedge, +x
     coord_maps.emplace_back(
@@ -257,7 +282,7 @@ Domain<3> CartoonSphere2D::create_domain() const {
                         {Direction<2>::upper_xi(), Direction<2>::upper_eta()}}},
                     use_equiangular_map_,
                     domain::CoordinateMaps::Wedge<2>::WedgeHalves::Both,
-                    radial_distribution_},
+                    shell_distribution},
                 Identity1D{}}));
     // this is a half-wedge, +y
     coord_maps.emplace_back(
@@ -270,7 +295,7 @@ Domain<3> CartoonSphere2D::create_domain() const {
                         {Direction<2>::lower_eta(), Direction<2>::upper_xi()}}},
                     use_equiangular_map_,
                     domain::CoordinateMaps::Wedge<2>::WedgeHalves::LowerOnly,
-                    radial_distribution_},
+                    shell_distribution},
                 Identity1D{}}));
     if (has_square) {
       if (use_equiangular_map_) {

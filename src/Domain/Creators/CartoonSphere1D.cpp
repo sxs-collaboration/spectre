@@ -13,6 +13,7 @@
 #include "Domain/BoundaryConditions/Periodic.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.tpp"
+#include "Domain/CoordinateMaps/Distribution.hpp"
 #include "Domain/CoordinateMaps/Identity.hpp"
 #include "Domain/CoordinateMaps/Interval.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
@@ -29,6 +30,7 @@
 #include "Domain/Structure/Topology.hpp"
 #include "Options/Context.hpp"
 #include "Options/ParseError.hpp"
+#include "Utilities/Gsl.hpp"
 
 namespace Frame {
 struct BlockLogical;
@@ -36,6 +38,30 @@ struct Inertial;
 }  // namespace Frame
 
 namespace domain::creators {
+
+detail::CartoonSphere1DOptionsHelper::CartoonSphere1DOptionsHelper(
+    double inner_bound, double outer_bound,
+    typename InitialRadialRefinement::type&& initial_refinement_levels,
+    typename InitialNumberOfRadialGridPoints::type&& initial_num_points,
+    std::vector<double> radial_partitioning,
+    typename RadialDistributions::type&& radial_distributions,
+    std::unique_ptr<domain::creators::time_dependence::TimeDependence<3>>
+        time_dependence,
+    std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
+        inner_boundary_condition,
+    std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
+        outer_boundary_condition,
+    Options::Context&& context)
+    : inner_bound_(inner_bound),
+      outer_bound_(outer_bound),
+      initial_refinement_levels_(std::move(initial_refinement_levels)),
+      initial_num_points_(std::move(initial_num_points)),
+      radial_partitioning_(std::move(radial_partitioning)),
+      radial_distributions_(std::move(radial_distributions)),
+      time_dependence_(std::move(time_dependence)),
+      inner_boundary_condition_(std::move(inner_boundary_condition)),
+      outer_boundary_condition_(std::move(outer_boundary_condition)),
+      context_(std::move(context)) {}
 
 CartoonSphere1D::CartoonSphere1D(
     double inner_bound, double outer_bound,
@@ -49,12 +75,15 @@ CartoonSphere1D::CartoonSphere1D(
         inner_boundary_condition,
     std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
         outer_boundary_condition,
+    std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
+        cartoon_boundary_condition,
     const Options::Context& context)
     : inner_bound_(inner_bound),
       outer_bound_(outer_bound),
       radial_partitioning_(std::move(radial_partitioning)),
       inner_boundary_condition_(std::move(inner_boundary_condition)),
       outer_boundary_condition_(std::move(outer_boundary_condition)),
+      cartoon_boundary_condition_(std::move(cartoon_boundary_condition)),
       time_dependence_(std::move(time_dependence)) {
   if (time_dependence_ == nullptr) {
     time_dependence_ =
@@ -95,6 +124,31 @@ CartoonSphere1D::CartoonSphere1D(
       std::move(initial_refinement_levels), "InitialRadialRefinement");
   initial_num_points_ = check_possible_list_instantiation(
       std::move(initial_num_points), "InitialNumberOfRadialGridPoints");
+  use_zernike_ = inner_bound_ == 0.0;
+
+  // Check if cartoon boundary condition is not provided
+  if (cartoon_boundary_condition_ == nullptr) {
+    PARSE_ERROR(
+        context,
+        "CartoonSphere1D should only be used with systems that have a "
+        "cartoon-style boundary condition, but none was provided. This "
+        "means the system is not set up to use cartoon methods. Make sure your "
+        "system has a boundary condition that inherits from MarkAsCartoon in "
+        "its standard_boundary_conditions list.");
+  }
+
+  // Check if user specified a cartoon BC as an external boundary
+  if ((inner_boundary_condition_ != nullptr and
+       domain::BoundaryConditions::is_cartoon(inner_boundary_condition_)) or
+      (outer_boundary_condition_ != nullptr and
+       domain::BoundaryConditions::is_cartoon(outer_boundary_condition_))) {
+    PARSE_ERROR(
+        context,
+        "Cartoon boundary conditions should not be specified as external "
+        "boundary conditions. They are automatically applied to internal "
+        "cartoon boundaries. Please choose a different boundary condition "
+        "for the inner and outer boundaries.");
+  }
 
   if ((inner_boundary_condition_ == nullptr) !=
       (outer_boundary_condition_ == nullptr)) {
@@ -120,7 +174,7 @@ CartoonSphere1D::CartoonSphere1D(
   for (size_t block = 0; block < num_blocks_; ++block) {
     const std::string block_name = "Block" + std::to_string(block);
     block_names_.emplace_back(block_name);
-    block_groups_[block_name].insert(block_name);
+    block_groups_["PositiveBlocks"].insert(block_name);
   }
 }
 
@@ -130,10 +184,11 @@ Domain<3> CartoonSphere1D::create_domain() const {
   using cartoon_sphere_map =
       CoordinateMaps::ProductOf3Maps<Interval, Identity1D, Identity1D>;
   const Identity1D identity_map;
+  const auto aligned = OrientationMap<3>::create_aligned();
 
   std::vector<Block<3>> blocks;
   blocks.reserve(num_blocks_);
-  const auto aligned = OrientationMap<3>::create_aligned();
+
   for (size_t i = 0; i < num_blocks_; ++i) {
     auto block_map = cartoon_sphere_map{
         {-1.0, 1.0, i == 0 ? inner_bound_ : radial_partitioning_[i - 1],
@@ -153,8 +208,15 @@ Domain<3> CartoonSphere1D::create_domain() const {
       neighbors.emplace(std::pair{Direction<3>::upper_xi(),
                                   BlockNeighbors<3>{i + 1, aligned}});
     }
-    blocks.emplace_back(std::move(stationary_map), i, std::move(neighbors),
-                        block_names_.at(i), domain::topologies::cartoon_sphere);
+    if (use_zernike_ and i == 0) {
+      blocks.emplace_back(std::move(stationary_map), i, std::move(neighbors),
+                          gsl::at(block_names_, i),
+                          domain::topologies::cartoon_sphere_inner);
+    } else {
+      blocks.emplace_back(std::move(stationary_map), i, std::move(neighbors),
+                          gsl::at(block_names_, i),
+                          domain::topologies::cartoon_sphere);
+    }
   }
 
   Domain<3> domain(std::move(blocks), {}, block_groups_);
@@ -191,8 +253,13 @@ CartoonSphere1D::external_boundary_conditions() const {
   std::vector<DirectionMap<
       3, std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>
       boundary_conditions{num_blocks_};
-  boundary_conditions[0][Direction<3>::lower_xi()] =
-      inner_boundary_condition_->get_clone();
+  if (use_zernike_) {
+    boundary_conditions[0][Direction<3>::lower_xi()] =
+        cartoon_boundary_condition_->get_clone();
+  } else {
+    boundary_conditions[0][Direction<3>::lower_xi()] =
+        inner_boundary_condition_->get_clone();
+  }
   boundary_conditions[num_blocks_ - 1][Direction<3>::upper_xi()] =
       outer_boundary_condition_->get_clone();
   return boundary_conditions;
@@ -200,7 +267,7 @@ CartoonSphere1D::external_boundary_conditions() const {
 
 std::vector<std::array<size_t, 3>> CartoonSphere1D::initial_extents() const {
   std::vector<std::array<size_t, 3>> output;
-  output.reserve(initial_num_points_.size());
+  output.reserve(num_blocks_);
   for (const auto& val : initial_num_points_) {
     // cartoon bases always have extents set to 1
     output.push_back({val, 1_st, 1_st});
@@ -211,7 +278,7 @@ std::vector<std::array<size_t, 3>> CartoonSphere1D::initial_extents() const {
 std::vector<std::array<size_t, 3>> CartoonSphere1D::initial_refinement_levels()
     const {
   std::vector<std::array<size_t, 3>> output;
-  output.reserve(initial_refinement_levels_.size());
+  output.reserve(num_blocks_);
   for (const auto& val : initial_refinement_levels_) {
     // cartoon bases always have no refinement
     output.push_back({val, 0_st, 0_st});

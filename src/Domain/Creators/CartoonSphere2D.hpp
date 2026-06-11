@@ -9,6 +9,7 @@
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
+#include <variant>
 #include <vector>
 
 #include "Domain/BoundaryConditions/BoundaryCondition.hpp"
@@ -170,11 +171,14 @@ class CartoonSphere2D : public DomainCreator<3> {
   };
 
   struct RadialDistribution {
-    using type = CoordinateMaps::Distribution;
+    using type = std::variant<CoordinateMaps::Distribution,
+                              std::vector<CoordinateMaps::Distribution>>;
     static constexpr Options::String help = {
         "Distribution of grid points for the radial direction of the wedges. "
-        "For anything but linear, the center must be excised with sphericity = "
-        "1.0"};
+        "A single value will be applied to all shells, or every shell can be "
+        "specified individually, in which case for N partitions there must be "
+        "N+1 distributions. For anything but linear in the innermost shell, "
+        "the center must be excised."};
   };
 
   struct TimeDependence {
@@ -224,7 +228,7 @@ class CartoonSphere2D : public DomainCreator<3> {
       std::array<size_t, 2> initial_number_of_grid_points,
       std::vector<double> radial_partitioning, bool use_equiangular_map,
       std::variant<Excision, InnerSquare> interior,
-      CoordinateMaps::Distribution radial_distribution,
+      const typename RadialDistribution::type& radial_distribution,
       std::unique_ptr<domain::creators::time_dependence::TimeDependence<3>>
           time_dependence,
       std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
@@ -250,8 +254,15 @@ class CartoonSphere2D : public DomainCreator<3> {
 
   std::vector<std::array<size_t, 3>> initial_refinement_levels() const override;
 
+  /// The block names are Shell0_LowerY, Shell0_UpperX, Shell0_UpperY,
+  /// Shell1_LowerY, and so on. The naming and numbering goes from outer-most
+  /// shell, starting from bottom and going counterclockwise, going to inside
+  /// neighboring shell. If the center is included, the "center" half-circle
+  /// follows same numbering with the _HalfSquare being the last block.
   std::vector<std::string> block_names() const override { return block_names_; }
 
+  /// The block groups are Shell0, Shell1, ... starting from the outermost
+  /// partition and working in.
   std::unordered_map<std::string, std::unordered_set<std::string>>
   block_groups() const override {
     return block_groups_;
@@ -275,8 +286,7 @@ class CartoonSphere2D : public DomainCreator<3> {
   bool fill_interior_{false};
   std::unique_ptr<domain::creators::time_dependence::TimeDependence<3>>
       time_dependence_ = nullptr;
-  CoordinateMaps::Distribution radial_distribution_ =
-      CoordinateMaps::Distribution::Linear;
+  std::vector<CoordinateMaps::Distribution> radial_distributions_{};
   std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
       outer_boundary_condition_ = nullptr;
   std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
@@ -293,7 +303,7 @@ namespace domain::creators::detail {
 /// \brief Helper struct for CartoonSphere2D options parsing so the internal
 /// cartoon boundary condition at $x = 0$ is not a required argument.
 ///
-/// \detail To get the cartoon-type boundary condition from a system we need
+/// \details To get the cartoon-type boundary condition from a system we need
 /// access to the system's metavariables, which is only present when parsing
 /// options. The point of this design is so that the input file does not require
 /// a dummy value for an InnerBoundaryCondition that is always the same for a
@@ -333,26 +343,13 @@ struct CartoonSphere2DOptionsHelper {
       std::array<size_t, 2> initial_number_of_grid_points,
       std::vector<double> radial_partitioning, bool use_equiangular_map,
       std::variant<Excision, InnerSquare> interior,
-      CoordinateMaps::Distribution radial_distribution =
-          CoordinateMaps::Distribution::Linear,
+      typename domain::creators::CartoonSphere2D::RadialDistribution::type
+          radial_distribution = CoordinateMaps::Distribution::Linear,
       std::unique_ptr<domain::creators::time_dependence::TimeDependence<3>>
           time_dependence = nullptr,
       std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
           outer_boundary_condition = nullptr,
-      Options::Context&& context = {})
-      : inner_radius_(inner_radius),
-        outer_radius_(outer_radius),
-        initial_angular_refinement_(initial_angular_refinement),
-        initial_radial_refinement_(std::move(initial_radial_refinement)),
-        initial_number_of_grid_points_(
-            std::move(initial_number_of_grid_points)),
-        radial_partitioning_(std::move(radial_partitioning)),
-        use_equiangular_map_(use_equiangular_map),
-        interior_(std::move(interior)),
-        radial_distribution_(radial_distribution),
-        time_dependence_(std::move(time_dependence)),
-        outer_boundary_condition_(std::move(outer_boundary_condition)),
-        context_(std::move(context)) {}
+      Options::Context&& context = {});
 
   // Same members as in CartoonSphere2D; public, to be extracted
   double inner_radius_{std::numeric_limits<double>::signaling_NaN()};
@@ -363,8 +360,8 @@ struct CartoonSphere2DOptionsHelper {
   std::vector<double> radial_partitioning_{};
   bool use_equiangular_map_{false};
   typename Interior::type interior_{};
-  CoordinateMaps::Distribution radial_distribution_{
-      CoordinateMaps::Distribution::Linear};
+  typename domain::creators::CartoonSphere2D::RadialDistribution::type
+      radial_distribution_{CoordinateMaps::Distribution::Linear};
   std::unique_ptr<domain::creators::time_dependence::TimeDependence<3>>
       time_dependence_{nullptr};
   std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
