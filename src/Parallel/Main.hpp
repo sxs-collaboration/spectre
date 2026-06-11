@@ -184,22 +184,10 @@ class Main : public CBase_Main<Metavariables> {
   using singleton_component_list =
       tmpl::filter<component_list, Parallel::is_singleton<tmpl::_1>>;
 
-  template <typename ParallelComponent>
-  using parallel_component_options = Parallel::get_option_tags<
-      typename ParallelComponent::simple_tags_from_options, Metavariables>;
-  template <typename ArrayComponent>
-  using array_component_allocation_options =
-      Parallel::get_option_tags<typename ArrayComponent::array_allocation_tags,
-                                Metavariables>;
-  using option_list = tmpl::remove_duplicates<tmpl::flatten<tmpl::list<
-      Parallel::OptionTags::ResourceInfo<Metavariables>,
-      Parallel::get_option_tags<const_global_cache_tags, Metavariables>,
-      Parallel::get_option_tags<mutable_global_cache_tags, Metavariables>,
-      tmpl::transform<component_list,
-                      tmpl::bind<parallel_component_options, tmpl::_1>>,
-      tmpl::transform<
-          all_array_component_list,
-          tmpl::bind<array_component_allocation_options, tmpl::_1>>>>>;
+  using option_list = tmpl::push_front<
+      Parallel::get_option_tags<
+          Parallel::all_initialization_tags_t<Metavariables>, Metavariables>,
+      Parallel::OptionTags::ResourceInfo<Metavariables>>;
   using overlayable_option_list =
       Parallel::get_overlayable_option_list<Metavariables>;
 
@@ -1076,13 +1064,14 @@ void Main<Metavariables>::update_const_global_cache_from_input_file() {
   if (file_system::check_if_file_exists(input_file_for_reparse)) {
     parser_.template overlay_file<overlayable_option_list>(
         input_file_for_reparse);
-    const auto data_to_overlay =
-        parser_.template apply<overlayable_option_list,
-                               Metavariables>([](auto... args) {
-          return tuples::tagged_tuple_from_typelist<overlayable_option_list>(
+    const auto updated_options =
+        parser_.template apply<option_list, Metavariables>([](auto... args) {
+          return tuples::tagged_tuple_from_typelist<option_list>(
               std::move(args)...);
         });
-    global_cache_proxy_.overlay_cache_data(data_to_overlay);
+    auto new_global_cache_values = Parallel::create_from_options<Metavariables>(
+        updated_options, Parallel::get_overlayable_tag_list<Metavariables>{});
+    global_cache_proxy_.overlay_cache_data(std::move(new_global_cache_values));
     Parallel::printf("... success!\n");
   } else {
     Parallel::printf(

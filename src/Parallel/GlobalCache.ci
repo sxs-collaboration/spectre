@@ -33,7 +33,7 @@ module GlobalCache {
         const Parallel::ResourceInfo<Metavariables>& resource_info);
     entry void overlay_cache_data(
         tuples::tagged_tuple_from_typelist<
-            Parallel::get_overlayable_option_list<Metavariables>>&);
+            Parallel::get_overlayable_tag_list<Metavariables>>);
     entry void print_mutable_cache_callbacks(const std::string& file_name);
   }
   }  // namespace Parallel

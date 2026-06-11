@@ -12,6 +12,7 @@
 #include "Parallel/Callback.hpp"
 #include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
+#include "Parallel/TypeTraits.hpp"
 #include "Utilities/PrettyType.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits.hpp"
@@ -297,6 +298,37 @@ using get_simple_tags_from_options =
         InitializationActionsList,
         detail::get_simple_tags_from_options_from_action<tmpl::_1>>>>;
 
+/// Collect all initialization tags required by the metavariables.
+///
+/// Initialization tags are the tags in the global cache, the
+/// `simple_tags_from_options` from each component, and the
+/// `array_allocation_tags` from each array component.
+template <typename Metavariables>
+struct all_initialization_tags {
+ private:
+  template <typename T>
+  using simple_tags_from_options = typename T::simple_tags_from_options;
+  template <typename T>
+  using array_allocation_tags = typename T::array_allocation_tags;
+
+ public:
+  using type = tmpl::remove_duplicates<tmpl::append<
+      get_const_global_cache_tags<Metavariables>,
+      get_mutable_global_cache_tags<Metavariables>,
+      tmpl::join<
+          tmpl::transform<typename Metavariables::component_list,
+                          tmpl::bind<simple_tags_from_options, tmpl::_1>>>,
+      tmpl::join<
+          tmpl::transform<tmpl::filter<typename Metavariables::component_list,
+                                       Parallel::is_array<tmpl::_1>>,
+                          tmpl::bind<array_allocation_tags, tmpl::_1>>>>>;
+};
+
+/// \copydoc all_initialization_tags
+template <typename Metavariables>
+using all_initialization_tags_t =
+    typename all_initialization_tags<Metavariables>::type;
+
 namespace detail {
 template <typename SimpleTag, typename Metavariables,
           bool PassMetavariables = SimpleTag::pass_metavariables>
@@ -331,17 +363,12 @@ struct is_tag_overlayable : std::false_type {};
 template <typename Tag>
 struct is_tag_overlayable<Tag, std::void_t<decltype(Tag::is_overlayable)>>
     : std::bool_constant<Tag::is_overlayable> {};
-
-template <typename Tag>
-struct GetUniqueOptionTag {
-  using type = tmpl::front<typename Tag::option_tags>;
-};
 }  // namespace detail
 
 /// Get the subset of `const_global_cache_tags` that are overlayable.
 ///
 /// Note this is a list of tags in the GlobalCache, but is not a list of option
-/// tags. However, each tag in the list will have a corresponding option tag.
+/// tags.
 ///
 /// By default, tags are not overlayable, i.e., can not be reparsed to update
 /// a simulation value after a restart from checkpoint. Any tag can "opt in"
@@ -358,12 +385,21 @@ using get_overlayable_tag_list =
     tmpl::filter<get_const_global_cache_tags<Metavariables>,
                  detail::is_tag_overlayable<tmpl::_1>>;
 
-/// Get the option tags corresponding to the output of
-/// `get_overlayable_tag_list`.
+/// Get the overlayable option tags.
+///
+/// These are the option tags that are only used to construct things
+/// in `get_overlayable_tag_list`.
 template <typename Metavariables>
-using get_overlayable_option_list =
-    tmpl::transform<get_overlayable_tag_list<Metavariables>,
-                    detail::GetUniqueOptionTag<tmpl::_1>>;
+using get_overlayable_option_list = tmpl::list_difference<
+    get_option_tags<get_const_global_cache_tags<Metavariables>, Metavariables>,
+    get_option_tags<
+        tmpl::remove_if<all_initialization_tags_t<Metavariables>,
+                        tmpl::and_<tmpl::lazy::list_contains<
+                                       tmpl::pin<get_const_global_cache_tags<
+                                           Metavariables>>,
+                                       tmpl::_1>,
+                                   detail::is_tag_overlayable<tmpl::_1>>>,
+        Metavariables>>;
 
 /// \cond
 namespace Algorithms {

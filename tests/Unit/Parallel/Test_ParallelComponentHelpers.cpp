@@ -348,6 +348,73 @@ void check_initialization_items(
   CHECK(Parallel::create_from_options<Metavariables>(
             options, simple_tags_from_options{}) == expected_items);
 }
+
+namespace overlay {
+template <size_t Label>
+struct Option {
+  static constexpr size_t value = Label;
+};
+
+template <bool Overlayable, typename Options>
+struct Tag : db::SimpleTag {
+  using type = int;
+  static constexpr bool pass_metavariables = false;
+  using option_tags = Options;
+  static constexpr bool is_overlayable = Overlayable;
+};
+
+template <typename ConstTags, typename OtherTags>
+struct Metavariables {
+  using const_global_cache_tags = ConstTags;
+  using mutable_global_cache_tags = OtherTags;
+  using component_list = tmpl::list<>;
+};
+
+using over12 = Tag<true, tmpl::list<Option<1>, Option<2>>>;
+using not13 = Tag<false, tmpl::list<Option<1>, Option<3>>>;
+using over1 = Tag<true, tmpl::list<Option<1>>>;
+static_assert(
+    std::is_same_v<Parallel::get_overlayable_tag_list<
+                       Metavariables<tmpl::list<over12>, tmpl::list<>>>,
+                   tmpl::list<over12>>);
+static_assert(
+    std::is_same_v<Parallel::get_overlayable_tag_list<
+                       Metavariables<tmpl::list<not13>, tmpl::list<over12>>>,
+                   tmpl::list<>>);
+static_assert(
+    std::is_same_v<Parallel::get_overlayable_tag_list<
+                       Metavariables<tmpl::list<over12, not13>, tmpl::list<>>>,
+                   tmpl::list<over12>>);
+static_assert(
+    std::is_same_v<Parallel::get_overlayable_tag_list<
+                       Metavariables<tmpl::list<over12, over1>, tmpl::list<>>>,
+                   tmpl::list<over12, over1>>);
+
+static_assert(
+    std::is_same_v<tmpl::sort<Parallel::get_overlayable_option_list<
+                       Metavariables<tmpl::list<over12>, tmpl::list<>>>>,
+                   tmpl::list<Option<1>, Option<2>>>);
+static_assert(
+    std::is_same_v<tmpl::sort<Parallel::get_overlayable_option_list<
+                       Metavariables<tmpl::list<not13>, tmpl::list<over12>>>>,
+                   tmpl::list<>>);
+static_assert(
+    std::is_same_v<tmpl::sort<Parallel::get_overlayable_option_list<
+                       Metavariables<tmpl::list<over12, not13>, tmpl::list<>>>>,
+                   tmpl::list<Option<2>>>);
+static_assert(
+    std::is_same_v<tmpl::sort<Parallel::get_overlayable_option_list<
+                       Metavariables<tmpl::list<over12>, tmpl::list<not13>>>>,
+                   tmpl::list<Option<2>>>);
+static_assert(
+    std::is_same_v<tmpl::sort<Parallel::get_overlayable_option_list<
+                       Metavariables<tmpl::list<over12, over1>, tmpl::list<>>>>,
+                   tmpl::list<Option<1>, Option<2>>>);
+static_assert(
+    std::is_same_v<tmpl::sort<Parallel::get_overlayable_option_list<
+                       Metavariables<tmpl::list<over12>, tmpl::list<over1>>>>,
+                   tmpl::list<Option<2>>>);
+}  // namespace overlay
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Parallel.ComponentHelpers", "[Unit][Parallel]") {
