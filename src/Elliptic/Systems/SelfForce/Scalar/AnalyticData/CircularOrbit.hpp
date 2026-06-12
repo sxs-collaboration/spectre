@@ -187,7 +187,11 @@ class CircularOrbit : public elliptic::analytic_data::Background,
         "Enable hyperboloidal slicing by specifying the transition points for "
         "the boost function. The boost function transitions from -1 to zero "
         "between the first two points and from zero to 1 between the last "
-        "two points. The effective source can only be evaluated where the "
+        "two points. The two points can be the same, in which case the "
+        "transition "
+        "is discontinuous (vtu slicing) and the jump must be handled by the DG "
+        "scheme (see option 'NullSlicingBlocks'). "
+        "The effective source can only be evaluated where the "
         "boost function is zero, so the regularized region must be between "
         "the second and third points.";
     using type = Options::Auto<std::array<double, 4>, Options::AutoLabel::None>;
