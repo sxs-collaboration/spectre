@@ -40,16 +40,15 @@ def available_subfiles(
         h5files = [h5files]
     subfiles = set()
 
-    def visitor(name):
-        if name.endswith(extension):
-            subfiles.add(name)
-
     for h5file in h5files:
         if isinstance(h5file, h5py.File):
-            h5file.visit(visitor)
+            keys = h5file.keys()
         else:
             with h5py.File(h5file, "r") as open_h5_file:
-                open_h5_file.visit(visitor)
+                keys = list(open_h5_file.keys())
+        for name in keys:
+            if name.endswith(extension):
+                subfiles.add(name)
     return sorted(subfiles)
 
 
