@@ -40,4 +40,32 @@ void convert_effsource_dpsidrstar(int m, double a, double r, double th,
                                   std::array<double, 10>& real_conv_drs,
                                   std::array<double, 10>& imag_conv_drs);
 
+void convert_effsource_psi_vr(int m, double a, double r, double z,
+                           std::array<double, 10>& real_orig,
+                           std::array<double, 10>& imag_orig,
+                           std::array<double, 10>& real_conv,
+                           std::array<double, 10>& imag_conv);
+
+void convert_effsource_Seff_vr(int m, double a, double r, double z,
+                            std::array<double, 10>& real_orig,
+                            std::array<double, 10>& imag_orig,
+                            std::array<double, 10>& real_conv,
+                            std::array<double, 10>& imag_conv);
+
+void convert_effsource_dpsidz_vr(int m, double a, double r, double z,
+                                  std::array<double, 10>& real_orig,
+                                  std::array<double, 10>& imag_orig,
+                                  std::array<double, 10>& real_orig_dth,
+                                  std::array<double, 10>& imag_orig_dth,
+                                  std::array<double, 10>& real_conv_dz,
+                                  std::array<double, 10>& imag_conv_dz);
+
+void convert_effsource_dpsidr_vr(int m, double a, double r, double z,
+                                  std::array<double, 10>& real_orig,
+                                  std::array<double, 10>& imag_orig,
+                                  std::array<double, 10>& real_orig_dr,
+                                  std::array<double, 10>& imag_orig_dr,
+                                  std::array<double, 10>& real_conv_dr,
+                                  std::array<double, 10>& imag_conv_dr);
+
 }  // namespace GrSelfForce::detail

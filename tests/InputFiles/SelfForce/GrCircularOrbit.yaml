@@ -13,18 +13,24 @@ ExpectedOutput:
 Background: &background
   CircularOrbit:
     BlackHoleMass: &bh_mass 1.
-    BlackHoleSpin: &bh_spin 0.5
-    OrbitalRadius: &orbital_radius 10.
-    MModeNumber: &m_mode_number 1
+    BlackHoleSpin: &bh_spin 0.6
+    OrbitalRadius: &orbital_radius 8.
+    MModeNumber: &m_mode_number 2
+    HyperboloidalSlicingTransitions:
+      - &v_to_t_transition 5
+      - *v_to_t_transition
+      - &t_to_u_transition 15
+      - *t_to_u_transition
+    PenetratingHorizon: True
 
 GrSelfForce:
   NullSlicingBlocks:
     - 'Block(0,0)'
-    - 'Block(2,0)'
+    - 'Block(4,0)'
     - 'Block(0,1)'
-    - 'Block(2,1)'
+    - 'Block(4,1)'
     - 'Block(0,2)'
-    - 'Block(2,2)'
+    - 'Block(4,2)'
 
 InitialGuess: *background
 
@@ -32,70 +38,98 @@ RandomizeInitialGuess: None
 
 DomainCreator:
   AlignedLattice:
-    # Order of dimensions is (r_*, theta)
+    # Order of dimensions is (r, cos(theta))
     BlockBounds:
-      # Puncture position is at r_* = 12.775940471833115
-      - [-50., 0., &worldtube_right 25.55188094366623, &outer_radius 350.] # r_*
-      # theta
-      - [0., 1., 2.1415926536, 3.1415926536]
+      - - 1.8
+        - *v_to_t_transition
+        - 6.
+        - &worldtube_right 10.
+        - *t_to_u_transition
+        - &outer_radius 1e4
+      # cos(theta)
+      - - -1.
+        - -0.5
+        - 0.5
+        - 1
     Distributions:
-      # r_*
-      - [Linear, Linear, &outer_shell_distribution Inverse]
-      # theta
+      # r_
+      - [Linear, Linear, Linear, Linear, &outer_shell_distribution Inverse]
+      # cos(theta)
       - [Linear, Linear, Linear]
     SingularityPositions:
-      # r_*
-      - [-51., -51., 0.]
-      # theta
-      - [-1., 0., 0.]
+      # r*
+      - [-51., -51., -51., 0., 0.]
+      # cos(theta)
+      - [-2., -2., -2.]
     InitialGridPoints: [4, 4]
-    InitialLevels: [0, 0]
+    InitialLevels: [1, 0]
     RefinedGridPoints: []
     BlocksToExclude: []
     RefinedLevels:
       # bottom row
       - LowerCornerIndex: [0, 0] # bottom left
         UpperCornerIndex: [1, 1]
-        Refinement: [0, 0]
-      - LowerCornerIndex: [1, 0] # bottom middle
+        Refinement: [ 0, 0 ]
+      - LowerCornerIndex: [1, 0] # bottom transition left
         UpperCornerIndex: [2, 1]
-        Refinement: [0, 0]
-      - LowerCornerIndex: [2, 0] # bottom right
+        Refinement: [ 0, 1 ]
+      - LowerCornerIndex: [2, 0] # bottom middle
         UpperCornerIndex: [3, 1]
-        Refinement: [1, 0]
+        Refinement: [ 1, 1 ]
+      - LowerCornerIndex: [3, 0] # bottom transition right
+        UpperCornerIndex: [4, 1]
+        Refinement: [ 0, 1 ]
+      - LowerCornerIndex: [4, 0] # bottom right
+        UpperCornerIndex: [5, 1]
+        Refinement: [ 1, 0 ]
       # middle row
       - LowerCornerIndex: [0, 1] # middle left
         UpperCornerIndex: [1, 2]
-        Refinement: [0, 0]
-      - LowerCornerIndex: [1, 1] # source region
+        Refinement: [ 0, 0 ]
+      - LowerCornerIndex: [1, 1] # middle transition left
         UpperCornerIndex: [2, 2]
-        Refinement: [1, 1]
-      - LowerCornerIndex: [2, 1] # middle right
+        Refinement: [ 0, 1 ]
+      - LowerCornerIndex: [2, 1] # source region
         UpperCornerIndex: [3, 2]
-        Refinement: [1, 0]
+        Refinement: [ 1, 1 ]
+      - LowerCornerIndex: [3, 1] # middle transition right
+        UpperCornerIndex: [4, 2]
+        Refinement: [ 0, 1 ]
+      - LowerCornerIndex: [4, 1] # middle right
+        UpperCornerIndex: [5, 2]
+        Refinement: [ 1, 0 ]
       # top row
       - LowerCornerIndex: [0, 2] # top left
         UpperCornerIndex: [1, 3]
-        Refinement: [0, 0]
-      - LowerCornerIndex: [1, 2] # top middle
+        Refinement: [ 0, 0 ]
+      - LowerCornerIndex: [1, 2] # top transition left
         UpperCornerIndex: [2, 3]
-        Refinement: [0, 0]
-      - LowerCornerIndex: [2, 2] # top right
+        Refinement: [ 0, 1 ]
+      - LowerCornerIndex: [2, 2] # top middle
         UpperCornerIndex: [3, 3]
-        Refinement: [1, 0]
+        Refinement: [ 1, 1 ]
+      - LowerCornerIndex: [3, 2] # top transition right
+        UpperCornerIndex: [4, 3]
+        Refinement: [ 0, 1 ]
+      - LowerCornerIndex: [4, 2] # top right
+        UpperCornerIndex: [5, 3]
+        Refinement: [ 1, 0 ]
+
     BoundaryConditions:
-      # Radial boundary conditions
-      - Sommerfeld:
-          BlackHoleMass: *bh_mass
-          BlackHoleSpin: *bh_spin
-          OrbitalRadius: *orbital_radius
-          MModeNumber: *m_mode_number
+      - Lower: None
+        Upper:
+          Sommerfeld:
+            BlackHoleMass: *bh_mass
+            BlackHoleSpin: *bh_spin
+            OrbitalRadius: *orbital_radius
+            MModeNumber: *m_mode_number
+            HyperboloidalSlicing: True
+            Order: 1
       # Angular boundary conditions
-      - Angular:
-          MModeNumber: *m_mode_number
+      - None
 
 Amr:
-  Verbosity: Debug
+  Verbosity: Quiet
   Criteria:
     # - RefineAtPuncture
     - IncreaseResolution
@@ -109,7 +143,7 @@ Amr:
       ErrorBeyondLimits: True
     AllowCoarsening: True
   MaxCoarseLevels: Auto
-  Iterations: 2
+  Iterations: 6
 
 PhaseChangeAndTriggers:
   # Run AMR in every iteration, but not on the initial guess
@@ -137,16 +171,16 @@ Observers:
 LinearSolver:
   Gmres:
     ConvergenceCriteria:
-      MaxIterations: 100
+      MaxIterations: 500
       RelativeResidual: 0
-      AbsoluteResidual: 1.e-12
+      AbsoluteResidual: 1.e-8
     Verbosity: Quiet
 
   Multigrid:
     Iterations: 1
     InitialCoarseLevels: 0
     PreSmoothing: True
-    UseBottomSolver: True
+    UseBottomSolver: False
     PostSmoothingAtBottom: False
     Verbosity: Silent
     OutputVolumeData: False

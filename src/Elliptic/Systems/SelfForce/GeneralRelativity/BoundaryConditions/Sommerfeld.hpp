@@ -12,6 +12,7 @@
 #include "Domain/Tags.hpp"
 #include "Elliptic/BoundaryConditions/BoundaryCondition.hpp"
 #include "Elliptic/BoundaryConditions/BoundaryConditionType.hpp"
+#include "Elliptic/Systems/SelfForce/GeneralRelativity/Tags.hpp"
 #include "Options/String.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
@@ -60,12 +61,24 @@ class Sommerfeld : public elliptic::BoundaryConditions::BoundaryCondition<2> {
         "Mode number 'm' of the scalar field";
     using type = int;
   };
+  struct HyperboloidalSlicing {
+    static constexpr Options::String help =
+        "Whether hyperboloidal slicing is applied. If true, a simple Neumann "
+        "boundary condition is applied.";
+    using type = bool;
+  };
+  struct Order {
+    static constexpr Options::String help =
+        "Order of the boundary condition. First order (Order=1) implements "
+        "just the leading 'i m Omega' term. Second order (Order=2) includes "
+        "the next-to-leading '1/r' term as well (Robin-type).";
+    using type = int;
+  };
 
   static constexpr Options::String help =
       "Radial Sommerfeld boundary condition";
-  using options =
-      tmpl::list<BlackHoleMass, BlackHoleSpin, OrbitalRadius, MModeNumber>;
-
+  using options = tmpl::list<BlackHoleMass, BlackHoleSpin, OrbitalRadius,
+                             MModeNumber, HyperboloidalSlicing, Order>;
   Sommerfeld() = default;
   Sommerfeld(const Sommerfeld&) = default;
   Sommerfeld& operator=(const Sommerfeld&) = default;
@@ -74,12 +87,15 @@ class Sommerfeld : public elliptic::BoundaryConditions::BoundaryCondition<2> {
   ~Sommerfeld() override = default;
 
   explicit Sommerfeld(double black_hole_mass, double black_hole_spin,
-                      double orbital_radius, int m_mode_number);
+                      double orbital_radius, int m_mode_number,
+                      bool hyperboloidal_slicing, int order);
 
   double black_hole_mass() const { return black_hole_mass_; }
   double black_hole_spin() const { return black_hole_spin_; }
   double orbital_radius() const { return orbital_radius_; }
   int m_mode_number() const { return m_mode_number_; }
+  bool hyperboloidal_slicing() const { return hyperboloidal_slicing_; }
+  int order() const { return order_; }
 
   /// \cond
   explicit Sommerfeld(CkMigrateMessage* m);
@@ -95,22 +111,27 @@ class Sommerfeld : public elliptic::BoundaryConditions::BoundaryCondition<2> {
     return {elliptic::BoundaryConditionType::Neumann};
   }
 
-  using argument_tags = tmpl::list<>;
+  using argument_tags = tmpl::list<Tags::Alpha, Tags::Beta, Tags::GammaRstar>;
   using volume_tags = tmpl::list<>;
 
-  void apply(
-      gsl::not_null<tnsr::aa<ComplexDataVector, 3>*> field,
-      gsl::not_null<tnsr::aa<ComplexDataVector, 3>*> n_dot_field_gradient,
-      const GradTensorType& deriv_field) const;
+  void apply(gsl::not_null<tnsr::aa<ComplexDataVector, 3>*> field,
+             gsl::not_null<tnsr::aa<ComplexDataVector, 3>*> n_dot_flux,
+             const GradTensorType& deriv_field,
+             const tnsr::I<ComplexDataVector, 2>& alpha,
+             const tnsr::aaBB<ComplexDataVector, 3>& beta,
+             const tnsr::aaBB<ComplexDataVector, 3>& gamma_rstar) const;
 
-  using argument_tags_linearized = tmpl::list<>;
+  using argument_tags_linearized =
+      tmpl::list<Tags::Alpha, Tags::Beta, Tags::GammaRstar>;
   using volume_tags_linearized = tmpl::list<>;
 
   void apply_linearized(
       gsl::not_null<tnsr::aa<ComplexDataVector, 3>*> field_correction,
-      gsl::not_null<tnsr::aa<ComplexDataVector, 3>*>
-          n_dot_field_correction_gradient,
-      const GradTensorType& deriv_field_correction) const;
+      gsl::not_null<tnsr::aa<ComplexDataVector, 3>*> n_dot_flux_correction,
+      const GradTensorType& deriv_field_correction,
+      const tnsr::I<ComplexDataVector, 2>& alpha,
+      const tnsr::aaBB<ComplexDataVector, 3>& beta,
+      const tnsr::aaBB<ComplexDataVector, 3>& gamma_rstar) const;
 
   // NOLINTNEXTLINE
   void pup(PUP::er& p) override;
@@ -122,6 +143,8 @@ class Sommerfeld : public elliptic::BoundaryConditions::BoundaryCondition<2> {
   double black_hole_spin_{std::numeric_limits<double>::signaling_NaN()};
   double orbital_radius_{std::numeric_limits<double>::signaling_NaN()};
   int m_mode_number_{};
+  bool hyperboloidal_slicing_{false};
+  int order_{1};
 };
 
 bool operator!=(const Sommerfeld& lhs, const Sommerfeld& rhs);

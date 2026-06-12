@@ -6,7 +6,9 @@
 #include <array>
 #include <cstddef>
 #include <limits>
+#include <optional>
 #include <pup.h>
+#include <cstdio>
 #include <vector>
 
 #include "DataStructures/DataBox/Prefixes.hpp"
@@ -15,6 +17,7 @@
 #include "Elliptic/Systems/SelfForce/GeneralRelativity/Tags.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
+#include "Options/Auto.hpp"
 #include "Options/String.hpp"
 #include "PointwiseFunctions/InitialDataUtilities/Background.hpp"
 #include "PointwiseFunctions/InitialDataUtilities/InitialGuess.hpp"
@@ -65,8 +68,26 @@ class CircularOrbit : public elliptic::analytic_data::Background,
         "Mode number 'm' of the m-mode decomposition";
     using type = int;
   };
-  using options =
-      tmpl::list<BlackHoleMass, BlackHoleSpin, OrbitalRadius, MModeNumber>;
+  struct HyperboloidalSlicingTransitions {
+    static constexpr Options::String help =
+        "Enable hyperboloidal slicing by specifying the transition points for "
+        "the boost function. The boost function transitions from -1 to zero "
+        "between the first two points and from zero to 1 between the last "
+        "two points. The effective source can only be evaluated where the "
+        "boost function is zero, so the regularized region must be between "
+        "the second and third points.";
+    using type = Options::Auto<std::array<double, 4>, Options::AutoLabel::None>;
+  };
+  struct PenetratingHorizon {
+    static constexpr Options::String help =
+        "If 'False', use tortoise radial coordinate where the Kerr horizon is "
+        "at negative infinity. If 'True', use Boyer-Lindquist radial "
+        "coordinate where the Kerr horizon is at r_+.";
+    using type = bool;
+  };
+  using options = tmpl::list<BlackHoleMass, BlackHoleSpin, OrbitalRadius,
+                             MModeNumber, HyperboloidalSlicingTransitions,
+                             PenetratingHorizon>;
   static constexpr Options::String help =
       "Quasicircular orbit of a point mass in Kerr spacetime";
 
@@ -78,7 +99,10 @@ class CircularOrbit : public elliptic::analytic_data::Background,
   ~CircularOrbit() override = default;
 
   CircularOrbit(double black_hole_mass, double black_hole_spin,
-                double orbital_radius, int m_mode_number);
+                double orbital_radius, int m_mode_number,
+                const std::optional<std::array<double, 4>>&
+                    hyperboloidal_slicing_transitions,
+                bool penetrating_horizon);
 
   explicit CircularOrbit(CkMigrateMessage* m);
   using PUP::able::register_constructor;
@@ -88,8 +112,13 @@ class CircularOrbit : public elliptic::analytic_data::Background,
   double black_hole_mass() const { return black_hole_mass_; }
   double black_hole_spin() const { return black_hole_spin_; }
   double orbital_radius() const { return orbital_radius_; }
-  int m_mode_number() const { return m_mode_number_; }
   double omega() const;
+  int m_mode_number() const { return m_mode_number_; }
+  const std::optional<std::array<double, 4>>&
+  hyperboloidal_slicing_transitions() const {
+    return hyperboloidal_slicing_transitions_;
+  }
+  bool penetrating_horizon() const { return penetrating_horizon_; }
 
   using background_tags =
       tmpl::list<Tags::Alpha, Tags::Beta, Tags::GammaRstar, Tags::GammaTheta>;
@@ -129,6 +158,8 @@ class CircularOrbit : public elliptic::analytic_data::Background,
   double black_hole_spin_{std::numeric_limits<double>::signaling_NaN()};
   double orbital_radius_{std::numeric_limits<double>::signaling_NaN()};
   int m_mode_number_{};
+  std::optional<std::array<double, 4>> hyperboloidal_slicing_transitions_{};
+  bool penetrating_horizon_{false};
 };
 
 bool operator!=(const CircularOrbit& lhs, const CircularOrbit& rhs);
