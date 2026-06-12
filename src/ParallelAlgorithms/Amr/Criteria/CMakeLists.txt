@@ -14,6 +14,7 @@ spectre_target_sources(
   Loehner.cpp
   Persson.cpp
   Random.cpp
+  RefineAtBoundary.cpp
   TruncationError.cpp
   Type.cpp
   )
@@ -31,6 +32,7 @@ spectre_target_headers(
   Loehner.hpp
   Persson.hpp
   Random.hpp
+  RefineAtBoundary.hpp
   TruncationError.hpp
   Type.hpp
   )

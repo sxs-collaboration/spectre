@@ -14,6 +14,7 @@
 #include "Elliptic/DiscontinuousGalerkin/DgElementArray.hpp"
 #include "Elliptic/Executables/Solver.hpp"
 #include "Elliptic/Systems/SelfForce/GeneralRelativity/Actions/InitializeEffectiveSource.hpp"
+#include "Elliptic/Systems/SelfForce/GeneralRelativity/AmrCriteria/RefineAtPuncture.hpp"
 #include "Elliptic/Systems/SelfForce/GeneralRelativity/AnalyticData/CircularOrbit.hpp"
 #include "Elliptic/Systems/SelfForce/GeneralRelativity/BoundaryConditions/None.hpp"
 #include "Elliptic/Systems/SelfForce/GeneralRelativity/BoundaryConditions/Sommerfeld.hpp"
@@ -34,6 +35,7 @@
 #include "ParallelAlgorithms/Actions/TerminatePhase.hpp"
 #include "ParallelAlgorithms/Amr/Actions/SendAmrDiagnostics.hpp"
 #include "ParallelAlgorithms/Amr/Criteria/Factory.hpp"
+#include "ParallelAlgorithms/Amr/Criteria/RefineAtBoundary.hpp"
 #include "ParallelAlgorithms/Amr/Protocols/AmrMetavariables.hpp"
 #include "ParallelAlgorithms/Events/Completion.hpp"
 #include "ParallelAlgorithms/Events/Factory.hpp"
@@ -93,9 +95,13 @@ struct Metavariables {
         tmpl::pair<elliptic::BoundaryConditions::BoundaryCondition<volume_dim>,
                    tmpl::list<GrSelfForce::BoundaryConditions::None,
                               GrSelfForce::BoundaryConditions::Sommerfeld>>,
-        tmpl::pair<::amr::Criterion,
-                   ::amr::Criteria::standard_criteria<
-                       volume_dim, typename system::primal_fields>>,
+        tmpl::pair<
+            ::amr::Criterion,
+            tmpl::push_back<
+                ::amr::Criteria::standard_criteria<
+                    volume_dim, typename system::primal_fields>,
+                GrSelfForce::AmrCriteria::RefineAtPuncture,
+                ::amr::Criteria::RefineAtBoundary<volume_dim, 1>>>,
         tmpl::pair<Event,
                    tmpl::flatten<tmpl::list<
                        Events::Completion,
