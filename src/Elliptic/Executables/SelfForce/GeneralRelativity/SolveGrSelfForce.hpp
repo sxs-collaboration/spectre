@@ -15,6 +15,8 @@
 #include "Elliptic/Executables/Solver.hpp"
 #include "Elliptic/Systems/SelfForce/GeneralRelativity/Actions/InitializeEffectiveSource.hpp"
 #include "Elliptic/Systems/SelfForce/GeneralRelativity/AnalyticData/CircularOrbit.hpp"
+#include "Elliptic/Systems/SelfForce/GeneralRelativity/AmrCriteria/RefineAtBoundary.hpp"
+#include "Elliptic/Systems/SelfForce/GeneralRelativity/AmrCriteria/RefineAtPuncture.hpp"
 #include "Elliptic/Systems/SelfForce/GeneralRelativity/BoundaryConditions/Angular.hpp"
 #include "Elliptic/Systems/SelfForce/GeneralRelativity/BoundaryConditions/Sommerfeld.hpp"
 #include "Elliptic/Systems/SelfForce/GeneralRelativity/FirstOrderSystem.hpp"
@@ -93,9 +95,13 @@ struct Metavariables {
         tmpl::pair<elliptic::BoundaryConditions::BoundaryCondition<volume_dim>,
                    tmpl::list<GrSelfForce::BoundaryConditions::Angular,
                               GrSelfForce::BoundaryConditions::Sommerfeld>>,
-        tmpl::pair<::amr::Criterion,
-                   ::amr::Criteria::standard_criteria<
-                       volume_dim, typename system::primal_fields>>,
+        tmpl::pair<
+            ::amr::Criterion,
+            tmpl::push_back<
+                ::amr::Criteria::standard_criteria<
+                    volume_dim, typename system::primal_fields>,
+                GrSelfForce::AmrCriteria::RefineAtPuncture,
+                GrSelfForce::AmrCriteria::RefineAtBoundary<volume_dim, 1>>>,
         tmpl::pair<Event,
                    tmpl::flatten<tmpl::list<
                        Events::Completion,
