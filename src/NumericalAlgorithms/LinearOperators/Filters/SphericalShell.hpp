@@ -213,6 +213,8 @@ class SphericalShell : public Filter<3, TagList> {
 
   bool supports_mesh(const Mesh<3>& mesh) const override;
 
+  std::string name() const override { return "SphericalShell"; }
+
   const std::optional<std::vector<size_t>>& blocks_to_filter() const override;
 
   void set_blocks_to_filter(

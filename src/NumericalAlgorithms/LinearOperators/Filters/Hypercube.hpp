@@ -166,6 +166,8 @@ class Hypercube : public Filter<Dim, TagList> {
 
   bool supports_mesh(const Mesh<Dim>& mesh) const override;
 
+  std::string name() const override { return "Hypercube"; }
+
   const std::optional<std::vector<size_t>>& blocks_to_filter() const override;
 
   void set_blocks_to_filter(

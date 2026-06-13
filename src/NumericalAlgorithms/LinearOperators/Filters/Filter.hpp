@@ -108,6 +108,10 @@ class Filter : public PUP::able {
   /// \brief Returns `true` if this filter can filter the `mesh`.
   virtual bool supports_mesh(const Mesh<Dim>& mesh) const = 0;
 
+  /// \brief A human-readable name for the concrete filter type, used in
+  /// diagnostics.
+  virtual std::string name() const = 0;
+
   /// \brief Returns `true` if `other` is the same concrete filter type and is
   /// equivalent to `*this`.
   virtual bool is_equal(const Filter& other) const = 0;
