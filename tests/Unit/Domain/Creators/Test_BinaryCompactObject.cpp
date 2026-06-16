@@ -54,10 +54,10 @@ class FunctionOfTime;
 
 namespace {
 using ExpirationTimeMap = std::unordered_map<std::string, double>;
-using Object = domain::creators::BinaryCompactObject<false>::Object;
+using Object = domain::creators::BinaryCompactObject::Object;
 using CartesianCubeAtXCoord =
-    domain::creators::BinaryCompactObject<false>::CartesianCubeAtXCoord;
-using Excision = domain::creators::BinaryCompactObject<false>::Excision;
+    domain::creators::BinaryCompactObject::CartesianCubeAtXCoord;
+using Excision = domain::creators::BinaryCompactObject::Excision;
 using Distribution = domain::CoordinateMaps::Distribution;
 
 template <size_t Dim, bool WithBoundaryConditions>
@@ -69,9 +69,8 @@ struct Metavariables {
                                          SystemWithoutBoundaryConditions<Dim>>;
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
-    using factory_classes = tmpl::map<
-        tmpl::pair<DomainCreator<3>,
-                   tmpl::list<::domain::creators::BinaryCompactObject<false>>>>;
+    using factory_classes = tmpl::map<tmpl::pair<
+        DomainCreator<3>, tmpl::list<::domain::creators::BinaryCompactObject>>>;
   };
 };
 
@@ -203,6 +202,8 @@ void test_connectivity() {
           radial_partitioning_outer_shells,
           variant_radial_distribution_outer_shells,
           opening_angle,
+          false,
+          false,
           std::nullopt,
           with_boundary_conditions ? create_outer_boundary_condition()
                                    : nullptr};
@@ -323,7 +324,7 @@ void test_connectivity() {
                                            create_inner_boundary_condition()})
                                      : std::nullopt,
                     false},
-                domain::creators::BinaryCompactObject<false>::Object{
+                domain::creators::BinaryCompactObject::Object{
                     inner_radius_objectB, outer_radius_objectB, xcoord_objectB,
                     excise_interiorB ? std::make_optional(Excision{
                                            create_inner_boundary_condition()})
@@ -334,8 +335,8 @@ void test_connectivity() {
                                                         : cube_scales[0],
                 refinement, grid_points, use_equiangular_map,
                 radial_distribution_envelope, radial_partitioning_outer_shells,
-                variant_radial_distribution_outer_shells, opening_angle,
-                std::nullopt, std::make_unique<PeriodicBc>(),
+                variant_radial_distribution_outer_shells, opening_angle, false,
+                false, std::nullopt, std::make_unique<PeriodicBc>(),
                 Options::Context{false, {}, 1, 1}),
             Catch::Matchers::ContainsSubstring(
                 "Cannot have periodic boundary "
@@ -362,7 +363,7 @@ void test_connectivity() {
                   radial_distribution_envelope,
                   radial_partitioning_outer_shells,
                   variant_radial_distribution_outer_shells, opening_angle,
-                  std::nullopt, create_outer_boundary_condition(),
+                  false, false, std::nullopt, create_outer_boundary_condition(),
                   Options::Context{false, {}, 1, 1}),
               Catch::Matchers::ContainsSubstring(
                   "Cannot have periodic boundary "
@@ -390,7 +391,8 @@ void test_connectivity() {
                   radial_distribution_envelope,
                   radial_partitioning_outer_shells,
                   variant_radial_distribution_outer_shells, opening_angle,
-                  std::nullopt, nullptr, Options::Context{false, {}, 1, 1}),
+                  false, false, std::nullopt, nullptr,
+                  Options::Context{false, {}, 1, 1}),
               Catch::Matchers::ContainsSubstring(
                   "Must specify either both inner and outer boundary "
                   "conditions or neither."));
@@ -415,7 +417,7 @@ void test_connectivity() {
                   radial_distribution_envelope,
                   radial_partitioning_outer_shells,
                   variant_radial_distribution_outer_shells, opening_angle,
-                  std::nullopt, create_outer_boundary_condition(),
+                  false, false, std::nullopt, create_outer_boundary_condition(),
                   Options::Context{false, {}, 1, 1}),
               Catch::Matchers::ContainsSubstring(
                   "Must specify either both inner and outer boundary "
@@ -526,7 +528,8 @@ std::string create_option_string(
          "    RadialDistribution: " +
          (excise_B ? "[Logarithmic, Linear]" : "Linear") + "\n" +
          "    OpeningAngle: " + std::to_string(opening_angle) + "\n" +
-         outer_boundary_condition + "  InitialRefinement:\n" +
+         "    UseSphericalHarmonics: false\n" + outer_boundary_condition +
+         "  InitialRefinement:\n" +
          (excise_A ? "" : "    ObjectAInterior: [1, 1, 1]\n") +
          (excise_B ? "" : "    ObjectBInterior: [1, 1, 1]\n") +
          "    ObjectAShell: [1, 1, " +
@@ -544,7 +547,10 @@ std::string create_option_string(
          "  InitialGridPoints: 3\n" + "  CubeScale: " + cube_scale +
          "\n"
          "  UseEquiangularMap: " +
-         stringize(use_equiangular_map) + "\n" + time_dependence;
+         stringize(use_equiangular_map) +
+         "\n"
+         "  UseWorldtube: false\n" +
+         time_dependence;
 }
 
 void test_bns_domain_with_cubes() {
@@ -600,6 +606,8 @@ void test_bns_domain_with_cubes() {
         std::vector<double>{0.49 * (envelope_radius + outer_radius)},
         radial_distribution_outer_shell,
         opening_angle,
+        false,
+        false,
         std::nullopt,
         create_outer_boundary_condition()};
 
@@ -813,7 +821,7 @@ void test_parse_errors() {
           Object{0.3, 0.8, -1.0, {{create_inner_boundary_condition()}}, false},
           std::array<double, 2>{{0.1, 0.2}}, 25.5, 32.4, 1.0, 2_st, 6_st, true,
           Distribution::Projective, std::vector<double>{20.0},
-          Distribution::Linear, 120.0, std::nullopt,
+          Distribution::Linear, 120.0, false, false, std::nullopt,
           create_outer_boundary_condition(), Options::Context{false, {}, 1, 1}),
       Catch::Matchers::ContainsSubstring(
           "First radial partition must be larger than the envelope radius"));
@@ -823,7 +831,7 @@ void test_parse_errors() {
           Object{0.3, 0.8, -1.0, {{create_inner_boundary_condition()}}, false},
           std::array<double, 2>{{0.1, 0.2}}, 25.5, 32.4, 1.0, 2_st, 6_st, true,
           Distribution::Projective, std::vector<double>{40.0},
-          Distribution::Linear, 120.0, std::nullopt,
+          Distribution::Linear, 120.0, false, false, std::nullopt,
           create_outer_boundary_condition(), Options::Context{false, {}, 1, 1}),
       Catch::Matchers::ContainsSubstring(
           "Last radial partition must be smaller than the outer radius"));
@@ -833,7 +841,7 @@ void test_parse_errors() {
           Object{0.3, 0.8, -1.0, {{create_inner_boundary_condition()}}, false},
           std::array<double, 2>{{0.1, 0.2}}, 25.5, 32.4, 1.0, 2_st, 6_st, true,
           Distribution::Projective, std::vector<double>{28.0, 28.0},
-          Distribution::Linear, 120.0, std::nullopt,
+          Distribution::Linear, 120.0, false, false, std::nullopt,
           create_outer_boundary_condition(), Options::Context{false, {}, 1, 1}),
       Catch::Matchers::ContainsSubstring(
           "Radial partitioning contains duplicate element"));
@@ -843,7 +851,7 @@ void test_parse_errors() {
           Object{0.3, 0.8, -1.0, {{create_inner_boundary_condition()}}, false},
           std::array<double, 2>{{0.1, 0.2}}, 25.5, 32.4, 1.0, 2_st, 6_st, true,
           Distribution::Projective, std::vector<double>{28.0, 29.0},
-          std::vector{Distribution::Linear}, 120.0, std::nullopt,
+          std::vector{Distribution::Linear}, 120.0, false, false, std::nullopt,
           create_outer_boundary_condition(), Options::Context{false, {}, 1, 1}),
       Catch::Matchers::ContainsSubstring(
           "Specify a 'RadialDistribution' for every spherical shell."));
@@ -853,7 +861,7 @@ void test_parse_errors() {
           Object{0.3, 0.8, -1.0, {{create_inner_boundary_condition()}}, false},
           std::array<double, 2>{{0.1, 0.2}}, 25.5, 32.4, 1.0, 2_st, 6_st, true,
           Distribution::Projective, std::vector<double>{}, Distribution::Linear,
-          120.0, std::nullopt, create_outer_boundary_condition(),
+          120.0, false, false, std::nullopt, create_outer_boundary_condition(),
           Options::Context{false, {}, 1, 1}),
       Catch::Matchers::ContainsSubstring(
           "The x-coordinate of ObjectA's center is expected to be positive."));
@@ -863,7 +871,7 @@ void test_parse_errors() {
           Object{0.3, 0.8, 1.0, {{create_inner_boundary_condition()}}, false},
           std::array<double, 2>{{0.1, 0.2}}, 25.5, 32.4, 1.0, 2_st, 6_st, true,
           Distribution::Projective, std::vector<double>{}, Distribution::Linear,
-          120.0, std::nullopt, create_outer_boundary_condition(),
+          120.0, false, false, std::nullopt, create_outer_boundary_condition(),
           Options::Context{false, {}, 1, 1}),
       Catch::Matchers::ContainsSubstring(
           "The x-coordinate of ObjectB's center is expected to be negative."));
@@ -873,7 +881,7 @@ void test_parse_errors() {
           Object{0.5, 1.0, -7.0, {{create_inner_boundary_condition()}}, false},
           std::array<double, 2>{{0.1, 0.2}}, 25.5, 32.4, 1.0, 2_st, 6_st, true,
           Distribution::Projective, std::vector<double>{}, Distribution::Linear,
-          120.0, std::nullopt, create_outer_boundary_condition(),
+          120.0, false, false, std::nullopt, create_outer_boundary_condition(),
           Options::Context{false, {}, 1, 1}),
       Catch::Matchers::ContainsSubstring(
           "The radius for the enveloping cube is too "
@@ -884,7 +892,7 @@ void test_parse_errors() {
           Object{0.5, 1.0, -7.0, {{create_inner_boundary_condition()}}, false},
           std::array<double, 2>{{0.1, 0.2}}, 25.5, 32.4, 0.5, 2_st, 6_st, true,
           Distribution::Projective, std::vector<double>{}, Distribution::Linear,
-          120.0, std::nullopt, create_outer_boundary_condition(),
+          120.0, false, false, std::nullopt, create_outer_boundary_condition(),
           Options::Context{false, {}, 1, 1}),
       Catch::Matchers::ContainsSubstring(
           "The cube length should be greater than or equal to the initial "
@@ -895,7 +903,7 @@ void test_parse_errors() {
           Object{1.5, 0.8, -1.0, {{create_inner_boundary_condition()}}, false},
           std::array<double, 2>{{0.1, 0.2}}, 25.5, 32.4, 1.0, 2_st, 6_st, true,
           Distribution::Projective, std::vector<double>{}, Distribution::Linear,
-          120.0, std::nullopt, create_outer_boundary_condition(),
+          120.0, false, false, std::nullopt, create_outer_boundary_condition(),
           Options::Context{false, {}, 1, 1}),
       Catch::Matchers::ContainsSubstring(
           "ObjectB's inner radius must be less than its outer radius."));
@@ -905,7 +913,7 @@ void test_parse_errors() {
           Object{0.5, 0.8, -1.0, {{create_inner_boundary_condition()}}, false},
           std::array<double, 2>{{0.1, 0.2}}, 25.5, 32.4, 1.0, 2_st, 6_st, true,
           Distribution::Projective, std::vector<double>{}, Distribution::Linear,
-          120.0, std::nullopt, create_outer_boundary_condition(),
+          120.0, false, false, std::nullopt, create_outer_boundary_condition(),
           Options::Context{false, {}, 1, 1}),
       Catch::Matchers::ContainsSubstring(
           "ObjectA's inner radius must be less than its outer radius."));
@@ -915,7 +923,7 @@ void test_parse_errors() {
           Object{0.5, 0.8, -1.0, {{create_inner_boundary_condition()}}, false},
           std::array<double, 2>{{0.1, 0.2}}, 25.5, 32.4, 1.0, 2_st, 6_st, true,
           Distribution::Projective, std::vector<double>{}, Distribution::Linear,
-          120.0, std::nullopt, create_outer_boundary_condition(),
+          120.0, false, false, std::nullopt, create_outer_boundary_condition(),
           Options::Context{false, {}, 1, 1}),
       Catch::Matchers::ContainsSubstring(
           "ObjectA's outer radius is too large for the given separation,  try "
@@ -926,7 +934,7 @@ void test_parse_errors() {
           Object{0.5, 1.0, -1.0, {{create_inner_boundary_condition()}}, false},
           std::array<double, 2>{{0.1, 0.2}}, 25.5, 32.4, 1.0, 2_st, 6_st, true,
           Distribution::Projective, std::vector<double>{}, Distribution::Linear,
-          120.0, std::nullopt, create_outer_boundary_condition(),
+          120.0, false, false, std::nullopt, create_outer_boundary_condition(),
           Options::Context{false, {}, 1, 1}),
       Catch::Matchers::ContainsSubstring(
           "ObjectB's outer radius is too large for the given separation,  try "
@@ -937,7 +945,7 @@ void test_parse_errors() {
           Object{0.5, 0.8, -1.0, std::nullopt, true},
           std::array<double, 2>{{0.1, 0.2}}, 25.5, 32.4, 1.0, 2_st, true, 6_st,
           Distribution::Projective, std::vector<double>{}, Distribution::Linear,
-          120.0, std::nullopt, create_outer_boundary_condition(),
+          120.0, false, false, std::nullopt, create_outer_boundary_condition(),
           Options::Context{false, {}, 1, 1}),
       Catch::Matchers::ContainsSubstring(
           "Using a logarithmically spaced radial grid in the "
@@ -949,7 +957,7 @@ void test_parse_errors() {
           Object{0.5, 0.8, -1.0, {{create_inner_boundary_condition()}}, false},
           std::array<double, 2>{{0.1, 0.2}}, 25.5, 32.4, 1.0, 2_st, 6_st, true,
           Distribution::Projective, std::vector<double>{}, Distribution::Linear,
-          120.0, std::nullopt, create_outer_boundary_condition(),
+          120.0, false, false, std::nullopt, create_outer_boundary_condition(),
           Options::Context{false, {}, 1, 1}),
       Catch::Matchers::ContainsSubstring(
           "Using a logarithmically spaced radial grid in the "
@@ -969,7 +977,7 @@ void test_parse_errors() {
           std::array<double, 2>{{0.1, 0.2}}, 25.5, 32.4, 1.0,
           std::vector<std::array<size_t, 3>>{}, 6_st, true,
           Distribution::Projective, std::vector<double>{}, Distribution::Linear,
-          120.0, std::nullopt, create_outer_boundary_condition(),
+          120.0, false, false, std::nullopt, create_outer_boundary_condition(),
           Options::Context{false, {}, 1, 1}),
       Catch::Matchers::ContainsSubstring("Invalid 'InitialRefinement'"));
   CHECK_THROWS_WITH(
@@ -978,11 +986,329 @@ void test_parse_errors() {
           Object{0.5, 0.8, -1.0, {{create_inner_boundary_condition()}}, false},
           std::array<double, 2>{{0.1, 0.2}}, 25.5, 32.4, 1.0, 2_st,
           std::vector<std::array<size_t, 3>>{}, true, Distribution::Projective,
-          std::vector<double>{}, Distribution::Linear, 120.0, std::nullopt,
-          create_outer_boundary_condition(), Options::Context{false, {}, 1, 1}),
+          std::vector<double>{}, Distribution::Linear, 120.0, false, false,
+          std::nullopt, create_outer_boundary_condition(),
+          Options::Context{false, {}, 1, 1}),
       Catch::Matchers::ContainsSubstring("Invalid 'InitialGridPoints'"));
+  // Misuse of SH types when SH is disabled
+  CHECK_THROWS_WITH(
+      domain::creators::BinaryCompactObject(
+          Object{0.5, 0.8, 1.0, {{create_inner_boundary_condition()}}, false},
+          Object{0.3, 0.8, -1.0, {{create_inner_boundary_condition()}}, false},
+          std::array<double, 2>{{0.1, 0.2}}, 25.5, 32.4, 1.0, 2_st,
+          std::unordered_map<std::string, std::variant<std::array<size_t, 3>,
+                                                       std::array<size_t, 2>>>{
+              {"OuterShell", std::array<size_t, 2>{5, 4}}},
+          true, Distribution::Projective, std::vector<double>{},
+          Distribution::Linear, 120.0, false, false, std::nullopt,
+          create_outer_boundary_condition(), Options::Context{false, {}, 1, 1}),
+      Catch::Matchers::ContainsSubstring(
+          "only valid when SphericalHarmonicsInWavezone is enabled"));
+  CHECK_THROWS_WITH(
+      domain::creators::BinaryCompactObject(
+          Object{0.5, 0.8, 1.0, {{create_inner_boundary_condition()}}, false},
+          Object{0.3, 0.8, -1.0, {{create_inner_boundary_condition()}}, false},
+          std::array<double, 2>{{0.1, 0.2}}, 25.5, 32.4, 1.0,
+          std::unordered_map<std::string,
+                             std::variant<std::array<size_t, 3>, size_t>>{
+              {"OuterShell", size_t{2}}},
+          6_st, true, Distribution::Projective, std::vector<double>{},
+          Distribution::Linear, 120.0, false, false, std::nullopt,
+          create_outer_boundary_condition(), Options::Context{false, {}, 1, 1}),
+      Catch::Matchers::ContainsSubstring(
+          "only valid when SphericalHarmonicsInWavezone is enabled"));
   // Note: the boundary condition-related parse errors are checked in the
   // test_connectivity function.
+}
+
+void test_spherical_harmonics_wavezone() {
+  INFO("Test BinaryCompactObject with SphericalHarmonicsInWavezone=true");
+  // Both objects excised, no radial partitioning -> 1 SH outer shell block.
+  // Block count: 24 (object shells+cubes) + 10 (envelope) + 1 (SH shell) = 35.
+  using GridPointsMap = std::unordered_map<
+      std::string, std::variant<std::array<size_t, 3>, std::array<size_t, 2>>>;
+  using RefinementMap =
+      std::unordered_map<std::string,
+                         std::variant<std::array<size_t, 3>, size_t>>;
+  const domain::creators::BinaryCompactObject bco_sh{
+      Object{0.3, 1.0, 3.0, {{create_inner_boundary_condition()}}, false},
+      Object{0.5, 1.0, -3.0, {{create_inner_boundary_condition()}}, false},
+      std::array<double, 2>{{0.0, 0.0}},
+      25.5,
+      32.4,
+      1.0,
+      RefinementMap{{"ObjectAShell", std::array<size_t, 3>{1, 1, 1}},
+                    {"ObjectACube", std::array<size_t, 3>{1, 1, 1}},
+                    {"ObjectBShell", std::array<size_t, 3>{1, 1, 1}},
+                    {"ObjectBCube", std::array<size_t, 3>{1, 1, 1}},
+                    {"Envelope", std::array<size_t, 3>{1, 1, 1}},
+                    {"OuterShell0", size_t{2}}},
+      GridPointsMap{{"ObjectAShell", std::array<size_t, 3>{3, 3, 3}},
+                    {"ObjectACube", std::array<size_t, 3>{3, 3, 3}},
+                    {"ObjectBShell", std::array<size_t, 3>{3, 3, 3}},
+                    {"ObjectBCube", std::array<size_t, 3>{3, 3, 3}},
+                    {"Envelope", std::array<size_t, 3>{3, 3, 3}},
+                    {"OuterShell0", std::array<size_t, 2>{4, 7}}},
+      true,
+      Distribution::Projective,
+      std::vector<double>{},
+      Distribution::Linear,
+      120.0,
+      true,
+      false,
+      std::nullopt,
+      create_outer_boundary_condition()};
+
+  // Check block count: 35 total (24 object + 10 envelope + 1 SH shell).
+  CHECK(bco_sh.block_names().size() == 35);
+
+  // SH outer shell is a single block named "OuterShell0" (not in any group).
+  CHECK(bco_sh.block_names()[34] == "OuterShell0");
+  CHECK(not bco_sh.block_groups().contains("OuterShell0"));
+
+  // initial_extents: OuterShell0 stores ell internally ({4, 7, 7}) and
+  // converts to collocation points on read: {4, 7+1, 2*7+1} = {4, 8, 15}.
+  const auto extents = bco_sh.initial_extents();
+  REQUIRE(extents.size() == 35);
+  CHECK(extents[34] == std::array<size_t, 3>{4, 8, 15});
+
+  // initial_refinement: OuterShell0 should be {2, 0, 0}.
+  const auto refinement = bco_sh.initial_refinement_levels();
+  REQUIRE(refinement.size() == 35);
+  CHECK(refinement[34] == std::array<size_t, 3>{2, 0, 0});
+
+  // external_boundary_conditions: outer BC on upper_xi of block 34.
+  const auto bcs = bco_sh.external_boundary_conditions();
+  REQUIRE(bcs.size() == 35);
+  CHECK(bcs[34].count(Direction<3>::upper_xi()) == 1);
+  // No boundary condition on upper_zeta for the SH shell block.
+  CHECK(bcs[34].count(Direction<3>::upper_zeta()) == 0);
+
+  // Verify the domain can be constructed and inspect neighbor topology.
+  const auto domain_sh = bco_sh.create_domain();
+  const auto& blocks = domain_sh.blocks();
+  REQUIRE(blocks.size() == 35);
+
+  // OuterShell0 (block 34): lower_xi has 10 envelope neighbors (non-conforming)
+  // and no upper_xi neighbor (only 1 shell).
+  const auto& sh_block = blocks[34];
+  CHECK(sh_block.neighbors().count(Direction<3>::lower_xi()) == 1);
+  CHECK(sh_block.neighbors().at(Direction<3>::lower_xi()).ids().size() == 10);
+  CHECK(sh_block.neighbors().count(Direction<3>::upper_xi()) == 0);
+
+  // Each envelope block (24-33): upper_zeta should point to block 34.
+  for (size_t j = 24; j < 34; ++j) {
+    CAPTURE(j);
+    CHECK(blocks[j].neighbors().count(Direction<3>::upper_zeta()) == 1);
+    CHECK(*blocks[j].neighbors().at(Direction<3>::upper_zeta()).ids().begin() ==
+          34);
+  }
+
+  // Check orientations at the envelope<->shell boundary.
+  // Shell's xi = frustum's zeta (radial); angular axes use self().
+  const OrientationMap<3> expected_shell_to_frustum{
+      {{Direction<3>::upper_zeta(), Direction<3>::self(),
+        Direction<3>::self()}}};
+  const auto expected_frustum_to_shell =
+      expected_shell_to_frustum.inverse_map();
+  const auto& lower_xi_neighbors =
+      sh_block.neighbors().at(Direction<3>::lower_xi());
+  for (size_t j = 24; j < 34; ++j) {
+    CAPTURE(j);
+    CHECK(lower_xi_neighbors.orientation(j) == expected_shell_to_frustum);
+  }
+  for (size_t j = 24; j < 34; ++j) {
+    CAPTURE(j);
+    const auto& uz_neighbors =
+        blocks[j].neighbors().at(Direction<3>::upper_zeta());
+    CHECK(uz_neighbors.orientation(34) == expected_frustum_to_shell);
+  }
+
+  // 2-shell test: add a radial partition and verify the shell-to-shell
+  // neighbor.
+  const domain::creators::BinaryCompactObject bco_sh2{
+      Object{0.3, 1.0, 3.0, {{create_inner_boundary_condition()}}, false},
+      Object{0.5, 1.0, -3.0, {{create_inner_boundary_condition()}}, false},
+      std::array<double, 2>{{0.0, 0.0}},
+      25.5,
+      32.4,
+      1.0,
+      RefinementMap{{"ObjectAShell", std::array<size_t, 3>{1, 1, 1}},
+                    {"ObjectACube", std::array<size_t, 3>{1, 1, 1}},
+                    {"ObjectBShell", std::array<size_t, 3>{1, 1, 1}},
+                    {"ObjectBCube", std::array<size_t, 3>{1, 1, 1}},
+                    {"Envelope", std::array<size_t, 3>{1, 1, 1}},
+                    {"OuterShell0", size_t{2}},
+                    {"OuterShell1", size_t{2}}},
+      GridPointsMap{{"ObjectAShell", std::array<size_t, 3>{3, 3, 3}},
+                    {"ObjectACube", std::array<size_t, 3>{3, 3, 3}},
+                    {"ObjectBShell", std::array<size_t, 3>{3, 3, 3}},
+                    {"ObjectBCube", std::array<size_t, 3>{3, 3, 3}},
+                    {"Envelope", std::array<size_t, 3>{3, 3, 3}},
+                    {"OuterShell0", std::array<size_t, 2>{4, 7}},
+                    {"OuterShell1", std::array<size_t, 2>{4, 7}}},
+      true,
+      Distribution::Projective,
+      std::vector<double>{28.0},
+      Distribution::Linear,
+      120.0,
+      true,
+      false,
+      std::nullopt,
+      create_outer_boundary_condition()};
+
+  const auto domain_sh2 = bco_sh2.create_domain();
+  const auto& blocks2 = domain_sh2.blocks();
+  REQUIRE(blocks2.size() == 36);
+
+  // OuterShell0 (block 34): lower_xi -> 10 envelope blocks, upper_xi -> {35}.
+  CHECK(blocks2[34].neighbors().count(Direction<3>::lower_xi()) == 1);
+  CHECK(blocks2[34].neighbors().at(Direction<3>::lower_xi()).ids().size() ==
+        10);
+  CHECK(blocks2[34].neighbors().count(Direction<3>::upper_xi()) == 1);
+  CHECK(*blocks2[34].neighbors().at(Direction<3>::upper_xi()).ids().begin() ==
+        35);
+
+  // OuterShell1 (block 35): lower_xi -> {34}, no upper_xi.
+  CHECK(blocks2[35].neighbors().count(Direction<3>::lower_xi()) == 1);
+  CHECK(*blocks2[35].neighbors().at(Direction<3>::lower_xi()).ids().begin() ==
+        34);
+  CHECK(blocks2[35].neighbors().count(Direction<3>::upper_xi()) == 0);
+
+  // external_boundary_conditions for 2-shell case: outer BC on upper_xi of
+  // block 35 (outermost shell); block 34 has no upper_xi BC.
+  const auto bcs2 = bco_sh2.external_boundary_conditions();
+  REQUIRE(bcs2.size() == 36);
+  CHECK(bcs2[35].count(Direction<3>::upper_xi()) == 1);
+  CHECK(bcs2[34].count(Direction<3>::upper_xi()) == 0);
+
+  // Error cases: strict validation rejects invalid SH block input.
+  // Convenience maps used in several tests below.
+  const RefinementMap valid_refinement{
+      {"ObjectAShell", std::array<size_t, 3>{1, 1, 1}},
+      {"ObjectACube", std::array<size_t, 3>{1, 1, 1}},
+      {"ObjectBShell", std::array<size_t, 3>{1, 1, 1}},
+      {"ObjectBCube", std::array<size_t, 3>{1, 1, 1}},
+      {"Envelope", std::array<size_t, 3>{1, 1, 1}},
+      {"OuterShell0", size_t{2}}};
+  const GridPointsMap valid_grid_points{
+      {"ObjectAShell", std::array<size_t, 3>{3, 3, 3}},
+      {"ObjectACube", std::array<size_t, 3>{3, 3, 3}},
+      {"ObjectBShell", std::array<size_t, 3>{3, 3, 3}},
+      {"ObjectBCube", std::array<size_t, 3>{3, 3, 3}},
+      {"Envelope", std::array<size_t, 3>{3, 3, 3}},
+      {"OuterShell0", std::array<size_t, 2>{4, 7}}};
+  // Global scalar refinement (non-zero) -> post-expansion angular error.
+  CHECK_THROWS_WITH(
+      domain::creators::BinaryCompactObject(
+          Object{0.3, 1.0, 3.0, {{create_inner_boundary_condition()}}, false},
+          Object{0.5, 1.0, -3.0, {{create_inner_boundary_condition()}}, false},
+          std::array<double, 2>{{0.0, 0.0}}, 25.5, 32.4, 1.0, 1_st,
+          valid_grid_points, true, Distribution::Projective,
+          std::vector<double>{}, Distribution::Linear, 120.0, true, false,
+          std::nullopt, create_outer_boundary_condition(),
+          Options::Context{false, {}, 1, 1}),
+      Catch::Matchers::ContainsSubstring(
+          "angular h-refinement is not supported"));
+  // Global scalar grid points (ell too small) -> post-expansion ell>=6 error.
+  CHECK_THROWS_WITH(
+      domain::creators::BinaryCompactObject(
+          Object{0.3, 1.0, 3.0, {{create_inner_boundary_condition()}}, false},
+          Object{0.5, 1.0, -3.0, {{create_inner_boundary_condition()}}, false},
+          std::array<double, 2>{{0.0, 0.0}}, 25.5, 32.4, 1.0, valid_refinement,
+          4_st, true, Distribution::Projective, std::vector<double>{},
+          Distribution::Linear, 120.0, true, false, std::nullopt,
+          create_outer_boundary_condition(), Options::Context{false, {}, 1, 1}),
+      Catch::Matchers::ContainsSubstring("at least ell=6"));
+  // Per-block [radial_points, L_max] with L_max < 6 -> post-expansion
+  // ell>=6 error. This is the canonical user-facing path to this error.
+  CHECK_THROWS_WITH(
+      domain::creators::BinaryCompactObject(
+          Object{0.3, 1.0, 3.0, {{create_inner_boundary_condition()}}, false},
+          Object{0.5, 1.0, -3.0, {{create_inner_boundary_condition()}}, false},
+          std::array<double, 2>{{0.0, 0.0}}, 25.5, 32.4, 1.0, valid_refinement,
+          GridPointsMap{{"ObjectAShell", std::array<size_t, 3>{3, 3, 3}},
+                        {"ObjectACube", std::array<size_t, 3>{3, 3, 3}},
+                        {"ObjectBShell", std::array<size_t, 3>{3, 3, 3}},
+                        {"ObjectBCube", std::array<size_t, 3>{3, 3, 3}},
+                        {"Envelope", std::array<size_t, 3>{3, 3, 3}},
+                        {"OuterShell0", std::array<size_t, 2>{4, 5}}},
+          true, Distribution::Projective, std::vector<double>{},
+          Distribution::Linear, 120.0, true, false, std::nullopt,
+          create_outer_boundary_condition(), Options::Context{false, {}, 1, 1}),
+      Catch::Matchers::ContainsSubstring("at least ell=6"));
+  // Global array<3> with l_max != m_max -> post-expansion single-ell error.
+  CHECK_THROWS_WITH(
+      domain::creators::BinaryCompactObject(
+          Object{0.3, 1.0, 3.0, {{create_inner_boundary_condition()}}, false},
+          Object{0.5, 1.0, -3.0, {{create_inner_boundary_condition()}}, false},
+          std::array<double, 2>{{0.0, 0.0}}, 25.5, 32.4, 1.0, valid_refinement,
+          std::array<size_t, 3>{4, 8, 10}, true, Distribution::Projective,
+          std::vector<double>{}, Distribution::Linear, 120.0, true, false,
+          std::nullopt, create_outer_boundary_condition(),
+          Options::Context{false, {}, 1, 1}),
+      Catch::Matchers::ContainsSubstring("specified by a single ell"));
+  // Map refinement with array<3> for OuterShell0 -> pre-expansion error.
+  CHECK_THROWS_WITH(
+      domain::creators::BinaryCompactObject(
+          Object{0.3, 1.0, 3.0, {{create_inner_boundary_condition()}}, false},
+          Object{0.5, 1.0, -3.0, {{create_inner_boundary_condition()}}, false},
+          std::array<double, 2>{{0.0, 0.0}}, 25.5, 32.4, 1.0,
+          RefinementMap{{"ObjectAShell", std::array<size_t, 3>{1, 1, 1}},
+                        {"ObjectACube", std::array<size_t, 3>{1, 1, 1}},
+                        {"ObjectBShell", std::array<size_t, 3>{1, 1, 1}},
+                        {"ObjectBCube", std::array<size_t, 3>{1, 1, 1}},
+                        {"Envelope", std::array<size_t, 3>{1, 1, 1}},
+                        {"OuterShell0", std::array<size_t, 3>{2, 0, 0}}},
+          valid_grid_points, true, Distribution::Projective,
+          std::vector<double>{}, Distribution::Linear, 120.0, true, false,
+          std::nullopt, create_outer_boundary_condition(),
+          Options::Context{false, {}, 1, 1}),
+      Catch::Matchers::ContainsSubstring(
+          "Specify its refinement as a single number"));
+  // Map grid points with array<3> for OuterShell0 -> pre-expansion error.
+  CHECK_THROWS_WITH(
+      domain::creators::BinaryCompactObject(
+          Object{0.3, 1.0, 3.0, {{create_inner_boundary_condition()}}, false},
+          Object{0.5, 1.0, -3.0, {{create_inner_boundary_condition()}}, false},
+          std::array<double, 2>{{0.0, 0.0}}, 25.5, 32.4, 1.0, valid_refinement,
+          GridPointsMap{{"ObjectAShell", std::array<size_t, 3>{3, 3, 3}},
+                        {"ObjectACube", std::array<size_t, 3>{3, 3, 3}},
+                        {"ObjectBShell", std::array<size_t, 3>{3, 3, 3}},
+                        {"ObjectBCube", std::array<size_t, 3>{3, 3, 3}},
+                        {"Envelope", std::array<size_t, 3>{3, 3, 3}},
+                        {"OuterShell0", std::array<size_t, 3>{4, 8, 15}}},
+          true, Distribution::Projective, std::vector<double>{},
+          Distribution::Linear, 120.0, true, false, std::nullopt,
+          create_outer_boundary_condition(), Options::Context{false, {}, 1, 1}),
+      Catch::Matchers::ContainsSubstring(
+          "Specify its grid points as [radial_points, L_max]"));
+  // Map refinement with size_t on a non-SH block -> pre-expansion error.
+  CHECK_THROWS_WITH(
+      domain::creators::BinaryCompactObject(
+          Object{0.3, 1.0, 3.0, {{create_inner_boundary_condition()}}, false},
+          Object{0.5, 1.0, -3.0, {{create_inner_boundary_condition()}}, false},
+          std::array<double, 2>{{0.0, 0.0}}, 25.5, 32.4, 1.0,
+          RefinementMap{{"Envelope", size_t{1}}, {"OuterShell0", size_t{2}}},
+          valid_grid_points, true, Distribution::Projective,
+          std::vector<double>{}, Distribution::Linear, 120.0, true, false,
+          std::nullopt, create_outer_boundary_condition(),
+          Options::Context{false, {}, 1, 1}),
+      Catch::Matchers::ContainsSubstring(
+          "only valid for spherical-harmonic outer-shell blocks"));
+  // Map grid points with array<2> on a non-SH block -> pre-expansion error.
+  CHECK_THROWS_WITH(
+      domain::creators::BinaryCompactObject(
+          Object{0.3, 1.0, 3.0, {{create_inner_boundary_condition()}}, false},
+          Object{0.5, 1.0, -3.0, {{create_inner_boundary_condition()}}, false},
+          std::array<double, 2>{{0.0, 0.0}}, 25.5, 32.4, 1.0, valid_refinement,
+          GridPointsMap{{"Envelope", std::array<size_t, 2>{3, 4}},
+                        {"OuterShell0", std::array<size_t, 2>{4, 7}}},
+          true, Distribution::Projective, std::vector<double>{},
+          Distribution::Linear, 120.0, true, false, std::nullopt,
+          create_outer_boundary_condition(), Options::Context{false, {}, 1, 1}),
+      Catch::Matchers::ContainsSubstring(
+          "only valid for spherical-harmonic outer-shell blocks"));
 }
 
 template <domain::ObjectLabel Object>
@@ -1004,7 +1330,7 @@ void test_kerr_horizon_conforming() {
   const double x_pos_B = -8;
   const double y_offset = 0.1;
   const double z_offset = 0.2;
-  domain::creators::BinaryCompactObject domain_creator{
+  const domain::creators::BinaryCompactObject domain_creator{
       Object{inner_radius_A, 4., x_pos_A, true, true},
       Object{inner_radius_B, 4., x_pos_B, true, true},
       std::array<double, 2>{{0.1, 0.2}},
@@ -1018,6 +1344,8 @@ void test_kerr_horizon_conforming() {
       std::vector<double>{},
       Distribution::Inverse,
       120.,
+      false,
+      false,
       domain::creators::bco::TimeDependentMapOptions<false>{
           0., std::nullopt, std::nullopt, std::nullopt, std::nullopt,
           HardcodedShape<domain::ObjectLabel::A>{
@@ -1091,5 +1419,6 @@ SPECTRE_TEST_CASE("Unit.Domain.Creators.BinaryCompactObject",
   }
   test_binary_factory();
   test_parse_errors();
+  test_spherical_harmonics_wavezone();
   test_kerr_horizon_conforming();
 }

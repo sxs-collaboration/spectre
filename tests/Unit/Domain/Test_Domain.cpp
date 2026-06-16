@@ -291,18 +291,18 @@ void test_1d_domains() {
     // Test construction from a vector of blocks
     auto vector_of_blocks = [&expected_neighbors]() {
       std::vector<Block<1>> vec;
-      vec.emplace_back(Block<1>{
+      vec.emplace_back(
           std::make_unique<CoordinateMap<Frame::BlockLogical, Frame::Inertial,
                                          CoordinateMaps::Affine>>(
               make_coordinate_map<Frame::BlockLogical, Frame::Inertial>(
                   CoordinateMaps::Affine{-1., 1., -2., 0.})),
-          0, expected_neighbors[0]});
-      vec.emplace_back(Block<1>{
+          0, expected_neighbors[0]);
+      vec.emplace_back(
           std::make_unique<CoordinateMap<Frame::BlockLogical, Frame::Inertial,
                                          CoordinateMaps::Affine>>(
               make_coordinate_map<Frame::BlockLogical, Frame::Inertial>(
                   CoordinateMaps::Affine{-1., 1., 0., 2.})),
-          1, expected_neighbors[1]});
+          1, expected_neighbors[1]);
       return vec;
     }();
 
@@ -344,8 +344,8 @@ void test_1d_domains() {
     test_serialization(domain);
 
     const auto expected_neighbors = []() {
-      OrientationMap<1> orientation{{{Direction<1>::lower_xi()}},
-                                    {{Direction<1>::lower_xi()}}};
+      const OrientationMap<1> orientation{{{Direction<1>::lower_xi()}},
+                                          {{Direction<1>::lower_xi()}}};
       return std::vector<DirectionMap<1, BlockNeighbors<1>>>{
           {{Direction<1>::lower_xi(), BlockNeighbors<1>{0, orientation}},
            {Direction<1>::upper_xi(), BlockNeighbors<1>{0, orientation}}}};
@@ -568,14 +568,9 @@ struct TestTimeDependentMapOptions {
   using Rotation = CoordinateMaps::TimeDependent::Rotation<3>;
   using Shape = CoordinateMaps::TimeDependent::Shape;
   using Identity = CoordinateMaps::Identity<3>;
-
-  // Maps
-  std::optional<Expansion> expansion_map_{};
-  std::optional<Rotation> rotation_map_{};
   using ShapeMapType =
       tmpl::conditional_t<IsCylindrical, std::array<std::optional<Shape>, 2>,
                           std::array<std::array<std::optional<Shape>, 6>, 2>>;
-  ShapeMapType shape_maps_{};
 
  public:
   using maps_list = tmpl::append<
@@ -677,12 +672,15 @@ struct TestTimeDependentMapOptions {
     return object == ObjectLabel::A ? 0_st : 1_st;
   }
 
+  ShapeMapType shape_maps_{};
   double initial_time_{std::numeric_limits<double>::signaling_NaN()};
-  std::optional<ExpansionMapOptions> expansion_map_options_{};
   std::optional<RotationMapOptions> rotation_options_{};
+  std::array<std::optional<double>, 2> inner_radii_{};
+  std::optional<ExpansionMapOptions> expansion_map_options_{};
   std::optional<ShapeMapOptions<ObjectLabel::A>> shape_options_A_{};
   std::optional<ShapeMapOptions<ObjectLabel::B>> shape_options_B_{};
-  std::array<std::optional<double>, 2> inner_radii_{};
+  std::optional<Rotation> rotation_map_{};
+  std::optional<Expansion> expansion_map_{};
 
  public:
   TestTimeDependentMapOptions() = default;
@@ -695,8 +693,8 @@ struct TestTimeDependentMapOptions {
       std::optional<ShapeMapOptions<ObjectLabel::B>> shape_options_B,
       const Options::Context& context = {})
       : initial_time_(initial_time),
-        expansion_map_options_(expansion_map_options),
         rotation_options_(rotation_options),
+        expansion_map_options_(expansion_map_options),
         shape_options_A_(shape_options_A),
         shape_options_B_(shape_options_B) {
     if (not(expansion_map_options_.has_value() or
@@ -1074,7 +1072,7 @@ Domain<3> create_serialized_domain() {
   std::unordered_map<std::string, std::unordered_set<std::string>>
       block_groups{};
 
-  static std::array<std::string, 6> wedge_directions{
+  static const std::array<std::string, 6> wedge_directions{
       "UpperZ", "LowerZ", "UpperY", "LowerY", "UpperX", "LowerX"};
   const auto add_object_region = [&block_names, &block_groups](
                                      const std::string& object_name,
@@ -1121,14 +1119,10 @@ Domain<3> create_serialized_domain() {
   const ExpandOverBlocks<std::array<size_t, 3>> expand_over_blocks{
       block_names, block_groups};
 
-  using BCO = creators::BinaryCompactObject<false>;
-
-  const BCO::InitialRefinement::type initial_refinement_variant{1_st};
-  const BCO::InitialGridPoints::type initial_grid_points_variant{3_st};
-  std::vector<std::array<size_t, 3>> initial_refinement =
-      std::visit(expand_over_blocks, initial_refinement_variant);
-  std::vector<std::array<size_t, 3>> initial_grid_points =
-      std::visit(expand_over_blocks, initial_grid_points_variant);
+  const std::vector<std::array<size_t, 3>> initial_refinement =
+      expand_over_blocks(1_st);
+  const std::vector<std::array<size_t, 3>> initial_grid_points =
+      expand_over_blocks(3_st);
 
   const std::vector<CoordinateMaps::Distribution> radial_distribution{
       CoordinateMaps::Distribution::Logarithmic};
@@ -1143,10 +1137,10 @@ Domain<3> create_serialized_domain() {
   using Identity2D = CoordinateMaps::Identity<2>;
   using Translation = CoordinateMaps::ProductOf2Maps<Affine, Identity2D>;
 
-  const creators::BinaryCompactObject<false>::Object object_A{
-      0.45825, 6., 7.683, true, true};
-  const creators::BinaryCompactObject<false>::Object object_B{
-      0.45825, 6., -7.683, true, true};
+  const creators::BinaryCompactObject::Object object_A{0.45825, 6., 7.683, true,
+                                                       true};
+  const creators::BinaryCompactObject::Object object_B{0.45825, 6., -7.683,
+                                                       true, true};
 
   const double x_coord_a = object_A.x_coord;
   const double x_coord_b = object_B.x_coord;
@@ -1350,8 +1344,8 @@ void test_versioning() {
   // Check that we can deserialize the domain stored in this old file
   creators::register_derived_with_charm();
   FunctionsOfTime::register_derived_with_charm();
-  h5::H5File<h5::AccessType::ReadOnly> h5file{unit_test_src_path() +
-                                              "/Domain/SerializedDomain.h5"};
+  const h5::H5File<h5::AccessType::ReadOnly> h5file{
+      unit_test_src_path() + "/Domain/SerializedDomain.h5"};
   const auto& volfile = h5file.get<h5::VolumeData>("/element_data");
   const size_t obs_id = volfile.list_observation_ids().front();
   const auto serialized_domain = *volfile.get_domain();

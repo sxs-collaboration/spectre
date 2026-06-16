@@ -136,6 +136,7 @@ DomainCreator:
       RadialPartitioning: []
       RadialDistribution: &outer_shell_distribution Inverse
       OpeningAngle: 120.0
+      UseSphericalHarmonics: false
       BoundaryCondition: Flatness
     UseEquiangularMap: True
     CubeScale: 1.0
@@ -155,6 +156,7 @@ DomainCreator:
       ObjectBCube:    [6, 6, 7]
       Envelope:       [6, 6, 6]
       OuterShell0:     [6, 6, 6]
+    UseWorldtube: false
     TimeDependentMaps: None
 
 Amr:

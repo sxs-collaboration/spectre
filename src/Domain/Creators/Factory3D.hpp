@@ -25,17 +25,15 @@
 namespace DomainCreators_detail {
 template <>
 struct domain_creators<3> {
-  using type =
-      tmpl::list<domain::creators::AlignedLattice<3>,
-                 domain::creators::AngularCylinder,
-                 domain::creators::BinaryCompactObject<false>,
-                 domain::creators::Brick, domain::creators::CartoonCylinder,
-                 domain::creators::CartoonSphere1D,
-                 domain::creators::CartoonSphere2D, domain::creators::Cylinder,
-                 domain::creators::CylindricalBinaryCompactObject,
-                 domain::creators::FrustalCloak,
-                 domain::creators::NonconformingSphericalShells,
-                 domain::creators::RotatedBricks, domain::creators::Sphere,
-                 domain::creators::SphericalShells>;
+  using type = tmpl::list<
+      domain::creators::AlignedLattice<3>, domain::creators::AngularCylinder,
+      domain::creators::BinaryCompactObject, domain::creators::Brick,
+      domain::creators::CartoonCylinder, domain::creators::CartoonSphere1D,
+      domain::creators::CartoonSphere2D, domain::creators::Cylinder,
+      domain::creators::CylindricalBinaryCompactObject,
+      domain::creators::FrustalCloak,
+      domain::creators::NonconformingSphericalShells,
+      domain::creators::RotatedBricks, domain::creators::Sphere,
+      domain::creators::SphericalShells>;
 };
 }  // namespace DomainCreators_detail

@@ -210,8 +210,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.Ringdown.MinimumAhCExcisionRadius",
                          KerrSchildFromBoyerLindquist{0.4, {0.0, 0.0, 0.0}}},
           std::nullopt};
 
-  using Object = domain::creators::BinaryCompactObject<false>::Object;
-  const domain::creators::BinaryCompactObject<false> domain_creator_bco{
+  using Object = domain::creators::BinaryCompactObject::Object;
+  const domain::creators::BinaryCompactObject domain_creator_bco{
       Object{0.2, 0.5, 1.0, true, true},
       Object{0.1, 0.5, -1.5, true, true},
       std::array<double, 2>{{0.0, 0.0}},
@@ -225,6 +225,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.Ringdown.MinimumAhCExcisionRadius",
       std::vector<double>{},
       domain::CoordinateMaps::Distribution::Inverse,
       120.,
+      false,
+      false,
       time_dependent_map_options_bco};
   const auto domain_bco = domain_creator_bco.create_domain();
   const auto functions_of_time_bco = domain_creator_bco.functions_of_time();

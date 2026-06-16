@@ -104,6 +104,7 @@ DomainCreator:
       # outer shell
       RadialDistribution: Logarithmic
     OuterShell:
+      UseSphericalHarmonics: false
       Radius: {{ OuterShellRadius }}
       # Radial distribution is linear to resolve gravitational waves
       RadialPartitioning: []
@@ -133,6 +134,7 @@ DomainCreator:
       ObjectBCube:    [{{ P     }}, {{ P     }}, {{ P - 1 }}]
       Envelope:       [{{ P + 3 }}, {{ P + 3 }}, {{ P + 5 }}]
       OuterShell0:    [{{ P + 3 }}, {{ P + 3 }}, {{ P + 4 }}]
+    UseWorldtube: false
 {% if IdFromEvolution %}
     TimeDependentMaps:
       InitialTime: &InitialTime {{ InitialTime }}

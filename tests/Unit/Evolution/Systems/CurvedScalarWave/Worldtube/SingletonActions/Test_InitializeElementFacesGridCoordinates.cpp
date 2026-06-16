@@ -111,16 +111,16 @@ SPECTRE_TEST_CASE(
                                                   quadrature);
 
     INFO("Testing BinaryCompactObject");
-    const domain::creators::BinaryCompactObject<true> binary_compact_object{
-        domain::creators::BinaryCompactObject<true>::Object{
+    const domain::creators::BinaryCompactObject binary_compact_object{
+        domain::creators::BinaryCompactObject::Object{
             0.5, 3., 8.,
             std::make_optional(
-                domain::creators::BinaryCompactObject<true>::Excision{nullptr}),
+                domain::creators::BinaryCompactObject::Excision{nullptr}),
             false},
-        domain::creators::BinaryCompactObject<true>::Object{
+        domain::creators::BinaryCompactObject::Object{
             1.5, 3., -5.,
             std::make_optional(
-                domain::creators::BinaryCompactObject<true>::Excision{nullptr}),
+                domain::creators::BinaryCompactObject::Excision{nullptr}),
             false},
         std::array<double, 2>{{0.1, 0.2}},
         30.,

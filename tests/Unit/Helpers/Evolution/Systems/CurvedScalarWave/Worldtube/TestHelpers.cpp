@@ -24,7 +24,7 @@ std::unique_ptr<DomainCreator<3>> worldtube_binary_compact_object(
   std::stringstream angular_velocity_stream;
   angular_velocity_stream << std::fixed << std::setprecision(16)
                           << angular_velocity;
-  std::string binary_compact_object_options =
+  const std::string binary_compact_object_options =
       "BinaryCompactObject:\n"
       "  ObjectA:\n"
       "    InnerRadius: " +
@@ -57,12 +57,16 @@ std::unique_ptr<DomainCreator<3>> worldtube_binary_compact_object(
       "    RadialPartitioning: []\n"
       "    RadialDistribution: Linear\n"
       "    OpeningAngle: 90.0\n"
+      "    UseSphericalHarmonics: false\n"
       "    BoundaryCondition:\n"
       "      None\n"
       "  InitialRefinement: 0\n"
       "  InitialGridPoints: 3\n"
       "  UseEquiangularMap: true\n"
       "  CubeScale: 1.0\n"
+      "  UseWorldtube: " +
+      std::string(EvolveOrbit ? "true" : "false") +
+      "\n"
       "  TimeDependentMaps:\n"
       "    GridCenters: None\n"
       "    InitialTime: 0.0\n"

@@ -65,9 +65,9 @@ thread_local Spherepack_detail::MemoryPool Spherepack::memory_pool_ =
 Spherepack::Spherepack(const size_t l_max, const size_t m_max)
     : l_max_{l_max},
       m_max_{m_max},
-      n_theta_{l_max_ + 1},
-      n_phi_{2 * m_max_ + 1},
-      spectral_size_{2 * (l_max_ + 1) * (m_max_ + 1)},
+      n_theta_{n_theta_points(l_max_)},
+      n_phi_{n_phi_points(m_max_)},
+      spectral_size_{spectral_size(l_max_, m_max_)},
       storage_(l_max_, m_max_) {
   if (l_max_ < 2) {
     ERROR("Must use l_max>=2, not l_max=" << l_max_);

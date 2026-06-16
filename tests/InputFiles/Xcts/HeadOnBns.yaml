@@ -64,9 +64,11 @@ DomainCreator:
       RadialPartitioning: []
       RadialDistribution: &outer_shell_distribution Inverse
       OpeningAngle: 90.0
+      UseSphericalHarmonics: false
       BoundaryCondition: Flatness
     UseEquiangularMap: True
     CubeScale: 1.0
+    UseWorldtube: false
     # This h-refinement is set up so spherical wedges have equal angular size.
     # Once the domain supports equatorial compression (or similar) this
     # h-refinement will simplify considerably.

@@ -117,6 +117,7 @@ DomainCreator:
       Radius: &outer_shell_inner_radius {{ EnvelopeRadius }}
       RadialDistribution: Projective
     OuterShell:
+      UseSphericalHarmonics: false
       Radius: &outer_radius 1e5
       RadialPartitioning: []
       RadialDistribution: &outer_shell_distribution Inverse
@@ -140,6 +141,7 @@ DomainCreator:
       ObjectBCube:    [{{ P + 1}}, {{ P + 1}}, {{ P + 2}}]
       Envelope:       [{{ P + 1}}, {{ P + 1}}, {{ P + 1}}]
       OuterShell0:     [{{ P + 1}}, {{ P + 1}}, {{ P + 1}}]
+    UseWorldtube: false
     TimeDependentMaps:
       InitialTime: 0.
       ExpansionMap: None
