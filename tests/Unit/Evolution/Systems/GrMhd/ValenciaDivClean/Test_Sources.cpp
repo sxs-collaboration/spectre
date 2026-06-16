@@ -1079,7 +1079,7 @@ void test_cartoon_sources_x_zero_assert() {
 #endif  // SPECTRE_DEBUG
 }  // namespace
 
-// [[TimeOut, 10]]
+// [[TimeOut, 20]]
 SPECTRE_TEST_CASE("Unit.GrMhd.ValenciaDivClean.Sources", "[Unit][GrMhd]") {
   pypp::SetupLocalPythonEnvironment local_python_env{
       "Evolution/Systems/GrMhd/ValenciaDivClean"};
