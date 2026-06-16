@@ -69,12 +69,17 @@ class BarycentricRationalSpanInterpolator : public SpanInterpolator {
     return std::make_unique<BarycentricRationalSpanInterpolator>(*this);
   }
 
-  // to get the generic overload:
+  // to get the generic overloads:
+  using SpanInterpolator::derivative;
   using SpanInterpolator::interpolate;
 
   double interpolate(const gsl::span<const double>& source_points,
                      const gsl::span<const double>& values,
                      double target_point) const override;
+
+  double derivative(const gsl::span<const double>& source_points,
+                    const gsl::span<const double>& values,
+                    double target_point) const override;
 
   size_t required_number_of_points_before_and_after() const override {
     return min_order_ / 2 + 1;

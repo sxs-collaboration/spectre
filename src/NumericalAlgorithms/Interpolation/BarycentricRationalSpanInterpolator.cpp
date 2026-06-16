@@ -41,5 +41,23 @@ double BarycentricRationalSpanInterpolator::interpolate(
   return interpolant(target_point);
 }
 
+double BarycentricRationalSpanInterpolator::derivative(
+    const gsl::span<const double>& source_points,
+    const gsl::span<const double>& values, const double target_point) const {
+  if (UNLIKELY(source_points.size() < min_order_ + 1)) {
+    ERROR("provided independent values for interpolation too small.");
+  }
+  // Boost moved barycentric_rational from boost::math to
+  // boost::math::interpolators in version 1.77.
+  // NOLINTNEXTLINE(google-build-using-namespace)
+  using namespace boost::math;
+  // NOLINTNEXTLINE(google-build-using-namespace)
+  using namespace boost::math::interpolators;
+  const barycentric_rational<double> interpolant(
+      source_points.data(), values.data(), source_points.size(),
+      std::min(source_points.size() - 1, max_order_));
+  return interpolant.prime(target_point);
+}
+
 PUP::able::PUP_ID intrp::BarycentricRationalSpanInterpolator::my_PUP_ID = 0;
 }  // namespace intrp

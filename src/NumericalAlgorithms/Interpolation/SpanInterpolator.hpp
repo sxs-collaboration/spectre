@@ -55,6 +55,23 @@ class SpanInterpolator : public PUP::able {
       const gsl::span<const std::complex<double>>& values,
       double target_point) const;
 
+  /// Evaluate the derivative of the interpolant of the function represented by
+  /// `values` at `source_points`, evaluated at the requested `target_point`.
+  virtual double derivative(const gsl::span<const double>& source_points,
+                            const gsl::span<const double>& values,
+                            double target_point) const = 0;
+
+  /// Evaluate the derivative of the interpolant of the function represented by
+  /// complex `values` at `source_points`, evaluated at the requested
+  /// `target_point`. This generic implementation calls the real version on the
+  /// real and imaginary parts separately; derived classes should override it
+  /// when a specialized complex implementation that avoids the split is more
+  /// efficient.
+  virtual std::complex<double> derivative(
+      const gsl::span<const double>& source_points,
+      const gsl::span<const std::complex<double>>& values,
+      double target_point) const;
+
   /// The number of domain points that should be both before and after the
   /// requested target point for best interpolation. For instance, for a linear
   /// interpolator, this function would return `1` to request that the target is

@@ -20,6 +20,13 @@ SPECTRE_ALWAYS_INLINE ValueType interpolate_impl(
                          (source_points[1] - source_points[0]) *
                          (target_point - source_points[0]);
 }
+
+template <typename ValueType>
+SPECTRE_ALWAYS_INLINE ValueType
+derivative_impl(const gsl::span<const double>& source_points,
+                const gsl::span<const ValueType>& values) {
+  return (values[1] - values[0]) / (source_points[1] - source_points[0]);
+}
 }  // namespace
 
 double LinearSpanInterpolator::interpolate(
@@ -33,6 +40,20 @@ std::complex<double> LinearSpanInterpolator::interpolate(
     const gsl::span<const std::complex<double>>& values,
     const double target_point) const {
   return interpolate_impl(source_points, values, target_point);
+}
+
+double LinearSpanInterpolator::derivative(
+    const gsl::span<const double>& source_points,
+    const gsl::span<const double>& values,
+    const double /*target_point*/) const {
+  return derivative_impl(source_points, values);
+}
+
+std::complex<double> LinearSpanInterpolator::derivative(
+    const gsl::span<const double>& source_points,
+    const gsl::span<const std::complex<double>>& values,
+    const double /*target_point*/) const {
+  return derivative_impl(source_points, values);
 }
 
 PUP::able::PUP_ID intrp::LinearSpanInterpolator::my_PUP_ID = 0;
