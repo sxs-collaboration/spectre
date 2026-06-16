@@ -18,3 +18,5 @@ if (NOT Catch2_FOUND)
   )
   FetchContent_MakeAvailable(Catch2)
 endif()
+
+message(STATUS "Catch version: ${Catch2_VERSION}")
