@@ -158,6 +158,11 @@ class SphericalShell : public Filter<3, TagList> {
 
   /// \brief Apply the volume filter once every `N` steps. `None`
   /// (`std::nullopt`) disables the every-N-steps trigger.
+  ///
+  /// \note Currently the check for whether to filter on every `N` steps is done
+  /// relative to the start of the current Slab. This means that for GTS,
+  /// independent of the value of `N` for every `N` steps, every step has a
+  /// filter applied since GTS has one step per slab.
   struct VolumeFilterEveryNSteps {
     using type = Options::Auto<size_t, Options::AutoLabel::None>;
     static constexpr Options::String help = {
@@ -166,6 +171,11 @@ class SphericalShell : public Filter<3, TagList> {
 
   /// \brief Apply the boundary correction filter once every `N` steps. `None`
   /// (`std::nullopt`) disables the every-N-steps trigger.
+  ///
+  /// \note Currently the check for whether to filter on every `N` steps is done
+  /// relative to the start of the current Slab. This means that for GTS,
+  /// independent of the value of `N` for every `N` steps, every step has a
+  /// filter applied since GTS has one step per slab.
   struct BoundaryCorrectionFilterEveryNSteps {
     using type = Options::Auto<size_t, Options::AutoLabel::None>;
     static constexpr Options::String help = {
@@ -212,6 +222,8 @@ class SphericalShell : public Filter<3, TagList> {
   bool need_jacobians() const override { return true; }
 
   bool supports_mesh(const Mesh<3>& mesh) const override;
+
+  std::string name() const override { return "SphericalShell"; }
 
   const std::optional<std::vector<size_t>>& blocks_to_filter() const override;
 

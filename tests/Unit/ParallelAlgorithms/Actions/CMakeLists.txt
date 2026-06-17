@@ -11,6 +11,7 @@ set(LIBRARY_SOURCES
   Test_MutateApply.cpp
   Test_RandomizeVariables.cpp
   Test_SetData.cpp
+  Test_SpectralFilter.cpp
   Test_TerminatePhase.cpp
   Test_UpdateMessageQueue.cpp
   )
@@ -21,8 +22,12 @@ target_link_libraries(
   ${LIBRARY}
   PRIVATE
   DataStructures
+  Domain
   DomainCreators
   DomainStructure
   FunctionsOfTime
+  LinearOperators
   Parallel
+  Spectral
+  Time
   )

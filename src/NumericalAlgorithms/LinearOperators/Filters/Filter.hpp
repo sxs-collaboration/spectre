@@ -87,6 +87,11 @@ class Filter : public PUP::able {
   virtual bool apply_volume_filter_on_substep() const = 0;
 
   /// Whether the volume filter should be applied at the given `step_number`.
+  ///
+  /// \note Currently the check for whether to filter on every `N` steps is done
+  /// relative to the start of the current Slab. This means that for GTS,
+  /// independent of the value of `N` for every `N` steps, every step has a
+  /// filter applied since GTS has one step per slab.
   virtual bool apply_volume_filter_on_this_step(size_t step_number) const = 0;
 
   /// Whether the boundary filter should be applied inside every Runge-Kutta
@@ -95,6 +100,11 @@ class Filter : public PUP::able {
 
   /// Whether the boundary filter should be applied at the given
   /// `step_number`.
+  ///
+  /// \note Currently the check for whether to filter on every `N` steps is done
+  /// relative to the start of the current Slab. This means that for GTS,
+  /// independent of the value of `N` for every `N` steps, every step has a
+  /// filter applied since GTS has one step per slab.
   virtual bool apply_boundary_filter_on_this_step(size_t step_number) const = 0;
 
   /// \brief Whether the filter needs the grid-to-inertial Jacobian and its
@@ -107,6 +117,10 @@ class Filter : public PUP::able {
 
   /// \brief Returns `true` if this filter can filter the `mesh`.
   virtual bool supports_mesh(const Mesh<Dim>& mesh) const = 0;
+
+  /// \brief A human-readable name for the concrete filter type, used in
+  /// diagnostics.
+  virtual std::string name() const = 0;
 
   /// \brief Returns `true` if `other` is the same concrete filter type and is
   /// equivalent to `*this`.
