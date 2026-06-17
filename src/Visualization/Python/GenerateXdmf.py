@@ -26,27 +26,19 @@ from spectre.support.Logging import configure_logging
 logger = logging.getLogger(__name__)
 
 
-def _list_tensor_components(observation):
-    components = list(observation.keys())
-    components.remove("connectivity")
-    if "pole_connectivity" in components:
-        components.remove("pole_connectivity")
-    if "tetrahedral_connectivity" in components:
-        components.remove("tetrahedral_connectivity")
-    components.remove("total_extents")
-    components.remove("grid_names")
-    components.remove("bases")
-    components.remove("quadratures")
-    if "domain" in components:
-        components.remove("domain")
-    if "functions_of_time" in components:
-        components.remove("functions_of_time")
-    # New mixed-topology datasets — handled as cell-centered attributes
-    if "ElementId" in components:
-        components.remove("ElementId")
-    if "BlockId" in components:
-        components.remove("BlockId")
-    return components
+_NON_TENSOR_COMPONENTS = {
+    "connectivity",
+    "pole_connectivity",
+    "tetrahedral_connectivity",
+    "total_extents",
+    "grid_names",
+    "bases",
+    "quadratures",
+    "domain",
+    "functions_of_time",
+    "ElementId",
+    "BlockId",
+}
 
 
 def _xmf_dtype(dtype: type):
@@ -57,8 +49,109 @@ def _xmf_dtype(dtype: type):
     return "Double" if dtype == np.dtype("float64") else "Float"
 
 
+class _ObservationCache:
+    """Hold per-grid metadata (component names, dtypes, point and cell counts,
+    connectivity lengths) for one volume subfile.
+
+    In the default mode every observation is re-read, so a changing grid or a
+    changing set of observed fields is always reflected. In fast mode the
+    metadata is read once from the first observation and reused for all
+    subsequent observations (the caller asserts that the grid and the observed
+    variables do not change over time).
+    """
+
+    def __init__(self, fast_mode: bool = False):
+        self._fast_mode = fast_mode
+        self._num_datasets = None
+        self._components = []
+        self._dtypes = {}
+        self._all_dataset_names = set()
+        # Grid metadata (only reused across observations in fast mode)
+        self._num_points = None
+        self._number_of_cells = None
+        self._pole_number_of_cells = None
+        self._connectivity_lengths = {}
+
+    def update(self, observation):
+        # Only fast mode reuses metadata across observations. In the default
+        # mode the component names and dtypes are re-read on every observation
+        # so a changing set of observed fields (even at a constant dataset
+        # count) is always reflected correctly.
+        if self._fast_mode and self._num_datasets is not None:
+            return
+        all_names = list(observation.keys())
+        self._num_datasets = len(all_names)
+        self._all_dataset_names = set(all_names)
+        self._components = [
+            name for name in all_names if name not in _NON_TENSOR_COMPONENTS
+        ]
+        self._dtypes = {
+            name: _xmf_dtype(observation[name].dtype)
+            for name in self._components
+        }
+
+    def update_grid_metadata(self, observation, topo_dim):
+        """Read num_points, cell counts, and connectivity lengths.
+
+        Re-read on every observation in the default mode; read only on the
+        first call in fast mode.
+        """
+        if self._fast_mode and self._num_points is not None:
+            return
+        total_extents = observation["total_extents"]
+        num_elements = len(total_extents) // topo_dim
+        extents = np.reshape(total_extents, (num_elements, topo_dim), order="C")
+        self._num_points = int(np.sum(np.prod(extents, axis=1)))
+        if self.has_dataset("ElementId"):
+            self._number_of_cells = observation["ElementId"].shape[0]
+            # The new mixed-topology pole-filling grid has no per-cell
+            # 'ElementId', and its cell count differs from the main grid, so it
+            # must be counted from the pole connectivity itself.
+            if self.has_dataset("pole_connectivity"):
+                self._pole_number_of_cells = _count_cells_in_mixed_connectivity(
+                    observation["pole_connectivity"][:]
+                )
+        for conn_name in [
+            "connectivity",
+            "pole_connectivity",
+            "tetrahedral_connectivity",
+        ]:
+            if self.has_dataset(conn_name):
+                self._connectivity_lengths[conn_name] = len(
+                    observation[conn_name]
+                )
+
+    @property
+    def num_points(self):
+        return self._num_points
+
+    @property
+    def number_of_cells(self):
+        return self._number_of_cells
+
+    @property
+    def pole_number_of_cells(self):
+        return self._pole_number_of_cells
+
+    def connectivity_length(self, name: str):
+        return self._connectivity_lengths[name]
+
+    @property
+    def components(self):
+        return self._components
+
+    def dtype(self, name: str):
+        return self._dtypes[name]
+
+    def has_dataset(self, name: str):
+        return name in self._all_dataset_names
+
+
 def _xmf_topology(
-    observation, topology_type: str, connectivity_name: str, grid_path: str
+    cache: _ObservationCache,
+    topology_type: str,
+    connectivity_name: str,
+    grid_path: str,
 ) -> ET.Element:
     num_vertices = {
         "Hexahedron": 8,
@@ -67,7 +160,7 @@ def _xmf_topology(
         "Triangle": 3,
         "Wedge": 6,
     }[topology_type]
-    num_cells = len(observation[connectivity_name]) // num_vertices
+    num_cells = cache.connectivity_length(connectivity_name) // num_vertices
     xmf_topology = ET.Element(
         "Topology",
         TopologyType=topology_type,
@@ -101,13 +194,13 @@ def _count_cells_in_mixed_connectivity(connectivity):
 
 
 def _xmf_mixed_topology(
-    observation,
+    cache: _ObservationCache,
     connectivity_name: str,
     number_of_cells: int,
     grid_path: str,
 ) -> ET.Element:
     """Build an XDMF Mixed topology element for a new-format connectivity."""
-    connectivity_length = observation[connectivity_name].shape[0]
+    connectivity_length = cache.connectivity_length(connectivity_name)
     xmf_topology = ET.Element(
         "Topology",
         TopologyType="Mixed",
@@ -125,7 +218,7 @@ def _xmf_mixed_topology(
 
 
 def _xmf_cell_attribute(
-    observation, name: str, number_of_cells: int, grid_path: str
+    name: str, number_of_cells: int, grid_path: str
 ) -> ET.Element:
     """Build an XDMF Attribute element for a cell-centered uint64 dataset."""
     xmf_attribute = ET.Element(
@@ -147,7 +240,11 @@ def _xmf_cell_attribute(
 
 
 def _xmf_geometry(
-    observation, coordinates: str, dim: int, num_points: int, grid_path: str
+    cache: _ObservationCache,
+    coordinates: str,
+    dim: int,
+    num_points: int,
+    grid_path: str,
 ) -> ET.Element:
     # The X_Y_Z and X_Y means that the x, y, and z coordinates are stored in
     # separate datasets, rather than something like interleaved.
@@ -160,7 +257,7 @@ def _xmf_geometry(
             xmf_geometry,
             "DataItem",
             Dimensions=str(num_points),
-            NumberType=_xmf_dtype(observation[component_name].dtype),
+            NumberType=cache.dtype(component_name),
             Precision="8",
             Format="HDF5",
         )
@@ -169,7 +266,7 @@ def _xmf_geometry(
 
 
 def _xmf_scalar(
-    observation, name: str, num_points: int, grid_path: str
+    cache: _ObservationCache, name: str, num_points: int, grid_path: str
 ) -> ET.Element:
     xmf_attribute = ET.Element(
         "Attribute",
@@ -181,7 +278,7 @@ def _xmf_scalar(
         xmf_attribute,
         "DataItem",
         Dimensions=str(num_points),
-        NumberType=_xmf_dtype(observation[name].dtype),
+        NumberType=cache.dtype(name),
         Precision="8",
         Format="HDF5",
     )
@@ -190,7 +287,11 @@ def _xmf_scalar(
 
 
 def _xmf_vector(
-    observation, name: str, dim: int, num_points: int, grid_path: str
+    cache: _ObservationCache,
+    name: str,
+    dim: int,
+    num_points: int,
+    grid_path: str,
 ) -> ET.Element:
     # Write a vector using the three components that make up the vector (i.e.
     # v_x, v_y, v_z)
@@ -216,7 +317,7 @@ def _xmf_vector(
             xmf_function,
             "DataItem",
             Dimensions=str(num_points),
-            NumberType=_xmf_dtype(observation[component_name].dtype),
+            NumberType=cache.dtype(component_name),
             Precision="8",
             Format="HDF5",
         )
@@ -231,18 +332,19 @@ def _xmf_grid(
     subfile_name: str,
     temporal_id: str,
     coordinates: str,
+    cache: _ObservationCache,
     filling_poles: bool = False,
     use_tetrahedral_connectivity: bool = False,
 ) -> ET.Element:
     # Make sure the coordinates are found in the file. We assume there should
     # always be an x-coordinate.
-    assert coordinates + "_x" in observation, (
+    assert cache.has_dataset(coordinates + "_x"), (
         f"No '{coordinates}_x' dataset found in '{filename}'. Existing"
         " datasets with 'Coordinates' in their name: "
         + str(
             [
                 dataset_name[:-2]
-                for dataset_name in observation
+                for dataset_name in cache.components
                 if "Coordinates" in dataset_name and dataset_name.endswith("_x")
             ]
         )
@@ -250,67 +352,55 @@ def _xmf_grid(
 
     # Determine dimension of embedding space by counting the number of
     # coordinate components
-    dim = sum((coordinates + "_" + xyz) in observation for xyz in "xyz")
+    dim = sum(cache.has_dataset(coordinates + "_" + xyz) for xyz in "xyz")
 
     if filling_poles:
-        assert "pole_connectivity" in observation and topo_dim == 2 and dim == 3
+        assert (
+            cache.has_dataset("pole_connectivity")
+            and topo_dim == 2
+            and dim == 3
+        )
 
     xmf_grid = ET.Element("Grid", Name=filename, GridType="Uniform")
 
-    # Extents in the logical directions for each element in the dataset. The
-    # extents are stored in one long list with the dimension varying fast and
-    # the element index varying slow.
-    total_extents = observation["total_extents"]
-    num_elements = len(total_extents) // topo_dim
-    extents = np.reshape(total_extents, (num_elements, topo_dim), order="C")
-    num_points = np.sum(np.prod(extents, axis=1))
+    cache.update_grid_metadata(observation, topo_dim)
+    num_points = cache.num_points
 
     # Configure grid location in the H5 file
     grid_path = filename + ":/" + subfile_name + "/" + temporal_id + "/"
 
     # Detect new mixed-topology format by presence of 'ElementId' dataset
-    is_new_format = "ElementId" in observation
-    # Read the main connectivity's cell count from the 'ElementId' dataset
-    # length (one entry per visualization cell) so we don't have to load and
-    # walk the connectivity array in Python. The pole-filling grid is counted
-    # separately below since it has no 'ElementId'.
-    number_of_cells = (
-        observation["ElementId"].shape[0] if is_new_format else None
-    )
+    is_new_format = cache.has_dataset("ElementId")
+    number_of_cells = cache.number_of_cells if is_new_format else None
 
     # Write topology
     if topo_dim == 2 and dim == 3:
         # 2D surface embedded in 3D space
         if filling_poles:
             if is_new_format:
-                # The pole-filling grid has no per-cell 'ElementId' and its
-                # cell count differs from the main grid (and can change between
-                # timesteps), so count the pole connectivity's own cells.
                 xmf_topology = _xmf_mixed_topology(
-                    observation,
+                    cache,
                     connectivity_name="pole_connectivity",
-                    number_of_cells=_count_cells_in_mixed_connectivity(
-                        observation["pole_connectivity"][:]
-                    ),
+                    number_of_cells=cache.pole_number_of_cells,
                     grid_path=grid_path,
                 )
             else:
                 xmf_topology = _xmf_topology(
-                    observation,
+                    cache,
                     topology_type="Triangle",
                     connectivity_name="pole_connectivity",
                     grid_path=grid_path,
                 )
         elif is_new_format:
             xmf_topology = _xmf_mixed_topology(
-                observation,
+                cache,
                 connectivity_name="connectivity",
                 number_of_cells=number_of_cells,
                 grid_path=grid_path,
             )
         else:
             xmf_topology = _xmf_topology(
-                observation,
+                cache,
                 topology_type="Quadrilateral",
                 connectivity_name="connectivity",
                 grid_path=grid_path,
@@ -320,14 +410,14 @@ def _xmf_grid(
         if use_tetrahedral_connectivity:
             topology_type = {3: "Tetrahedron", 2: "Triangle"}[topo_dim]
             xmf_topology = _xmf_topology(
-                observation,
+                cache,
                 topology_type=topology_type,
                 connectivity_name="tetrahedral_connectivity",
                 grid_path=grid_path,
             )
         elif is_new_format:
             xmf_topology = _xmf_mixed_topology(
-                observation,
+                cache,
                 connectivity_name="connectivity",
                 number_of_cells=number_of_cells,
                 grid_path=grid_path,
@@ -335,7 +425,7 @@ def _xmf_grid(
         else:
             topology_type = {3: "Hexahedron", 2: "Quadrilateral"}[topo_dim]
             xmf_topology = _xmf_topology(
-                observation,
+                cache,
                 topology_type=topology_type,
                 connectivity_name="connectivity",
                 grid_path=grid_path,
@@ -345,7 +435,7 @@ def _xmf_grid(
     # Write geometry
     xmf_grid.append(
         _xmf_geometry(
-            observation,
+            cache,
             coordinates=coordinates,
             dim=dim,
             num_points=num_points,
@@ -354,7 +444,7 @@ def _xmf_grid(
     )
 
     # Write the tensors that are to be visualized
-    for component in _list_tensor_components(observation):
+    for component in cache.components:
         if component in [coordinates + "_" + xyz for xyz in "xyz"[:dim]]:
             # Skip coordinates
             continue
@@ -362,7 +452,7 @@ def _xmf_grid(
             # Vectors
             xmf_grid.append(
                 _xmf_vector(
-                    observation,
+                    cache,
                     name=component[:-2],
                     dim=dim,
                     num_points=num_points,
@@ -376,7 +466,7 @@ def _xmf_grid(
             # Treat everything else as scalars
             xmf_grid.append(
                 _xmf_scalar(
-                    observation,
+                    cache,
                     name=component,
                     num_points=num_points,
                     grid_path=grid_path,
@@ -387,11 +477,9 @@ def _xmf_grid(
     # attributes (not for the pole-filling grid, which uses pole_connectivity).
     if is_new_format and not filling_poles and not use_tetrahedral_connectivity:
         for attr_name in ["ElementId", "BlockId"]:
-            if attr_name in observation:
+            if cache.has_dataset(attr_name):
                 xmf_grid.append(
-                    _xmf_cell_attribute(
-                        observation, attr_name, number_of_cells, grid_path
-                    )
+                    _xmf_cell_attribute(attr_name, number_of_cells, grid_path)
                 )
 
     return xmf_grid
@@ -427,6 +515,7 @@ def generate_xdmf(
     stride: int = 1,
     coordinates: str = "InertialCoordinates",
     use_tetrahedral_connectivity: bool = False,
+    fast_mode: bool = False,
 ):
     """Generate an XDMF file for ParaView and VisIt
 
@@ -454,6 +543,8 @@ def generate_xdmf(
         "InertialCoordinates".
       use_tetrahedral_connectivity: Optional. Use "tetrahedral_connectivity".
         Default: False
+      fast_mode: Optional. Assume the grid and observed variables do not change
+        over time. Default: False
     """
     h5file_names = h5files
 
@@ -553,6 +644,7 @@ def generate_xdmf(
             )
 
     # Sort timesteps globally by time and apply stride to the global sequence.
+    caches = {}
     sorted_timestep_items = sorted(
         timesteps.items(), key=lambda item: (item[0][0], item[0][1])
     )
@@ -572,8 +664,18 @@ def generate_xdmf(
         ET.SubElement(xmf_timestep_grid, "Time", Value=f"{time:.14e}")
 
         for vol_subfile, topo_dim, filename_in_output in timestep_records:
-            # Construct the grid for this observation
-            observation = vol_subfile[temporal_id]
+            # Construct the grid for this observation.
+            # Each subfile gets its own cache because different files
+            # have different grid partitions (num_points, cells, etc.).
+            subfile_id = id(vol_subfile)
+            if subfile_id not in caches:
+                caches[subfile_id] = _ObservationCache(fast_mode=fast_mode)
+            cache = caches[subfile_id]
+            if fast_mode and cache._num_datasets is not None:
+                observation = None
+            else:
+                observation = vol_subfile[temporal_id]
+                cache.update(observation)
             xmf_timestep_grid.append(
                 _xmf_grid(
                     observation,
@@ -582,12 +684,13 @@ def generate_xdmf(
                     subfile_name=subfile_name,
                     temporal_id=temporal_id,
                     coordinates=coordinates,
+                    cache=cache,
                     use_tetrahedral_connectivity=use_tetrahedral_connectivity,
                 )
             )
             # Backwards compatibility: old files have a separate
             # 'pole_connectivity' dataset with Triangle cells to fill the poles.
-            if "pole_connectivity" in observation:
+            if cache.has_dataset("pole_connectivity"):
                 xmf_timestep_grid.append(
                     _xmf_grid(
                         observation,
@@ -596,6 +699,7 @@ def generate_xdmf(
                         subfile_name=subfile_name,
                         temporal_id=temporal_id,
                         coordinates=coordinates,
+                        cache=cache,
                         filling_poles=True,
                         use_tetrahedral_connectivity=(
                             use_tetrahedral_connectivity
@@ -692,6 +796,18 @@ def generate_xdmf(
         "the HDF5 file. See the generate-tetrahedral-connectivity CLI for "
         "information on how to generate tetrahedral connectivity and what it "
         "can be useful for."
+    ),
+)
+@click.option(
+    "--fast-mode",
+    is_flag=True,
+    default=False,
+    help=(
+        "Assume the grid structure and observed variables do not change "
+        "over time. Reads HDF5 metadata only once and reuses it for all "
+        "timesteps. This is much faster on slow filesystems, but will "
+        "produce incorrect output if the simulation uses adaptive mesh "
+        "refinement (AMR) or changes which variables are observed."
     ),
 )
 def generate_xdmf_command(**kwargs):

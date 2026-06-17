@@ -582,6 +582,93 @@ class TestGenerateXdmf(unittest.TestCase):
             if attr.attrib["Name"] == "Psi":
                 self.assertEqual(attr.attrib.get("Center"), "Node")
 
+    def test_fast_mode_multiple_files(self):
+        """Fast mode with multiple files that have different grid sizes."""
+        file_a = os.path.join(self.test_dir, "VolumeA.h5")
+        file_b = os.path.join(self.test_dir, "VolumeB.h5")
+        # File A: one 2x2x2 element (8 points, 1 cell)
+        self.write_test_volume_file(file_a, [0.0, 1.0])
+        # File B: different grid — one 3x2x2 element (12 points, 2 cells)
+        with h5py.File(file_b, "w") as f:
+            vol = f.create_group("VolumeData.vol")
+            vol.attrs["dimension"] = 3
+            for obs_id, obs_val in enumerate([0.0, 1.0]):
+                obs = vol.create_group(f"ObservationId{obs_id}")
+                obs.attrs["observation_value"] = obs_val
+                obs.create_dataset(
+                    "connectivity",
+                    data=np.array(
+                        [
+                            9,
+                            0,
+                            1,
+                            4,
+                            3,
+                            6,
+                            7,
+                            10,
+                            9,
+                            9,
+                            1,
+                            2,
+                            5,
+                            4,
+                            7,
+                            8,
+                            11,
+                            10,
+                        ],
+                        dtype=np.int32,
+                    ),
+                )
+                obs.create_dataset(
+                    "total_extents",
+                    data=np.array([3, 2, 2], dtype=np.int32),
+                )
+                obs.create_dataset(
+                    "grid_names",
+                    data=np.array([b"[B1,(L0I0,L0I0,L0I0)]"]),
+                )
+                obs.create_dataset(
+                    "bases", data=np.array([0, 0, 0], dtype=np.int32)
+                )
+                obs.create_dataset(
+                    "quadratures",
+                    data=np.array([0, 0, 0], dtype=np.int32),
+                )
+                coords = np.linspace(0.0, 1.0, 12)
+                obs.create_dataset("InertialCoordinates_x", data=coords)
+                obs.create_dataset("InertialCoordinates_y", data=coords)
+                obs.create_dataset("InertialCoordinates_z", data=coords)
+                obs.create_dataset(
+                    "ElementId",
+                    data=np.array([10, 11], dtype=np.uint64),
+                )
+                obs.create_dataset(
+                    "BlockId",
+                    data=np.array([1, 1], dtype=np.uint64),
+                )
+                obs.create_dataset("Psi", data=coords)
+
+        data_files = [file_a, file_b]
+        output_normal = os.path.join(self.test_dir, "multi_normal")
+        output_fast = os.path.join(self.test_dir, "multi_fast")
+        generate_xdmf(
+            h5files=data_files,
+            output=output_normal,
+            subfile_name="VolumeData",
+        )
+        generate_xdmf(
+            h5files=data_files,
+            output=output_fast,
+            subfile_name="VolumeData",
+            fast_mode=True,
+        )
+        self.assertEqual(
+            ET.canonicalize(from_file=output_normal + ".xmf", strip_text=True),
+            ET.canonicalize(from_file=output_fast + ".xmf", strip_text=True),
+        )
+
     def write_new_format_with_poles_h5_file(self, filename):
         """Create a new-format 2D surface H5 file that also carries a separate
         'pole_connectivity' dataset.
@@ -664,6 +751,75 @@ class TestGenerateXdmf(unittest.TestCase):
         # pole_connectivity has 3 triangles, not the 2 main-grid cells.
         pole_topo = pole_grid.find("Topology")
         self.assertEqual(pole_topo.attrib.get("NumberOfElements"), "3")
+
+    def test_changing_field_set_with_same_dataset_count(self):
+        """When the set of observed fields changes between timesteps but the
+        number of datasets stays the same, each timestep must list its own
+        fields rather than reusing a cached field list."""
+        h5_file = os.path.join(self.test_dir, "ChangingFields.h5")
+        with h5py.File(h5_file, "w") as f:
+            vol = f.create_group("VolumeData.vol")
+            vol.attrs["dimension"] = 3
+            # obs0 observes 'Psi', obs1 observes 'Phi'. Both observations have
+            # the same number of datasets.
+            for obs_id, (obs_val, field) in enumerate(
+                [(0.0, "Psi"), (1.0, "Phi")]
+            ):
+                obs = vol.create_group(f"ObservationId{obs_id}")
+                obs.attrs["observation_value"] = obs_val
+                obs.create_dataset(
+                    "connectivity",
+                    data=np.array([9, 0, 1, 3, 2, 4, 5, 7, 6], dtype=np.int32),
+                )
+                obs.create_dataset(
+                    "total_extents", data=np.array([2, 2, 2], dtype=np.int32)
+                )
+                obs.create_dataset(
+                    "grid_names", data=np.array([b"[B0,(L0I0,L0I0,L0I0)]"])
+                )
+                obs.create_dataset(
+                    "bases", data=np.array([0, 0, 0], dtype=np.int32)
+                )
+                obs.create_dataset(
+                    "quadratures", data=np.array([0, 0, 0], dtype=np.int32)
+                )
+                coords = np.arange(8, dtype=float)
+                obs.create_dataset("InertialCoordinates_x", data=coords)
+                obs.create_dataset("InertialCoordinates_y", data=coords)
+                obs.create_dataset("InertialCoordinates_z", data=coords)
+                obs.create_dataset(
+                    "ElementId", data=np.array([42], dtype=np.uint64)
+                )
+                obs.create_dataset(
+                    "BlockId", data=np.array([0], dtype=np.uint64)
+                )
+                obs.create_dataset(field, data=coords)
+
+        output_filename = os.path.join(
+            self.test_dir, "Test_ChangingFields_output"
+        )
+        generate_xdmf(
+            h5files=[h5_file],
+            output=output_filename,
+            subfile_name="VolumeData",
+            coordinates="InertialCoordinates",
+        )
+        xmf_root = ET.parse(output_filename + ".xmf").getroot()
+
+        # One Uniform grid per timestep, in time order.
+        uniform_grids = xmf_root.findall(".//Grid[@GridType='Uniform']")
+        self.assertEqual(len(uniform_grids), 2)
+
+        first_attrs = {
+            a.attrib["Name"] for a in uniform_grids[0].findall("Attribute")
+        }
+        second_attrs = {
+            a.attrib["Name"] for a in uniform_grids[1].findall("Attribute")
+        }
+        self.assertIn("Psi", first_attrs)
+        # The second timestep observes 'Phi', not 'Psi'.
+        self.assertIn("Phi", second_attrs)
+        self.assertNotIn("Psi", second_attrs)
 
     def test_subfile_not_found(self):
         data_files = glob.glob(os.path.join(self.data_dir, "VolTestData*.h5"))
