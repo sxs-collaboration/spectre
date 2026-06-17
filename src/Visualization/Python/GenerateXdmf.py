@@ -101,11 +101,13 @@ def _count_cells_in_mixed_connectivity(connectivity):
 
 
 def _xmf_mixed_topology(
-    observation, connectivity_name: str, grid_path: str
+    observation,
+    connectivity_name: str,
+    number_of_cells: int,
+    grid_path: str,
 ) -> ET.Element:
     """Build an XDMF Mixed topology element for a new-format connectivity."""
-    connectivity = observation[connectivity_name][:]
-    number_of_cells = _count_cells_in_mixed_connectivity(connectivity)
+    connectivity_length = observation[connectivity_name].shape[0]
     xmf_topology = ET.Element(
         "Topology",
         TopologyType="Mixed",
@@ -114,7 +116,7 @@ def _xmf_mixed_topology(
     xmf_data_item = ET.SubElement(
         xmf_topology,
         "DataItem",
-        Dimensions=str(len(connectivity)),
+        Dimensions=str(connectivity_length),
         NumberType="Int",
         Format="HDF5",
     )
@@ -266,17 +268,30 @@ def _xmf_grid(
     # Configure grid location in the H5 file
     grid_path = filename + ":/" + subfile_name + "/" + temporal_id + "/"
 
-    # Detect new mixed-topology format by presence of 'element_id' dataset
+    # Detect new mixed-topology format by presence of 'ElementId' dataset
     is_new_format = "ElementId" in observation
+    # Read the main connectivity's cell count from the 'ElementId' dataset
+    # length (one entry per visualization cell) so we don't have to load and
+    # walk the connectivity array in Python. The pole-filling grid is counted
+    # separately below since it has no 'ElementId'.
+    number_of_cells = (
+        observation["ElementId"].shape[0] if is_new_format else None
+    )
 
     # Write topology
     if topo_dim == 2 and dim == 3:
         # 2D surface embedded in 3D space
         if filling_poles:
             if is_new_format:
+                # The pole-filling grid has no per-cell 'ElementId' and its
+                # cell count differs from the main grid (and can change between
+                # timesteps), so count the pole connectivity's own cells.
                 xmf_topology = _xmf_mixed_topology(
                     observation,
                     connectivity_name="pole_connectivity",
+                    number_of_cells=_count_cells_in_mixed_connectivity(
+                        observation["pole_connectivity"][:]
+                    ),
                     grid_path=grid_path,
                 )
             else:
@@ -290,6 +305,7 @@ def _xmf_grid(
             xmf_topology = _xmf_mixed_topology(
                 observation,
                 connectivity_name="connectivity",
+                number_of_cells=number_of_cells,
                 grid_path=grid_path,
             )
         else:
@@ -313,6 +329,7 @@ def _xmf_grid(
             xmf_topology = _xmf_mixed_topology(
                 observation,
                 connectivity_name="connectivity",
+                number_of_cells=number_of_cells,
                 grid_path=grid_path,
             )
         else:
@@ -369,9 +386,6 @@ def _xmf_grid(
     # For new-format volume data, add cell-centered element_id and block_id
     # attributes (not for the pole-filling grid, which uses pole_connectivity).
     if is_new_format and not filling_poles and not use_tetrahedral_connectivity:
-        number_of_cells = _count_cells_in_mixed_connectivity(
-            observation["connectivity"][:]
-        )
         for attr_name in ["ElementId", "BlockId"]:
             if attr_name in observation:
                 xmf_grid.append(

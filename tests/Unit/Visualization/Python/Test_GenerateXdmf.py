@@ -582,6 +582,89 @@ class TestGenerateXdmf(unittest.TestCase):
             if attr.attrib["Name"] == "Psi":
                 self.assertEqual(attr.attrib.get("Center"), "Node")
 
+    def write_new_format_with_poles_h5_file(self, filename):
+        """Create a new-format 2D surface H5 file that also carries a separate
+        'pole_connectivity' dataset.
+
+        The main mixed connectivity has 2 quads (2 cells) and 'ElementId' has
+        one entry per main cell. The 'pole_connectivity' has 3 triangles (3
+        cells), a different number of cells than the main grid.
+        """
+        with h5py.File(filename, "w") as f:
+            vol = f.create_group("SurfaceData.vol")
+            vol.attrs["dimension"] = 2
+            obs = vol.create_group("ObservationId0")
+            obs.attrs["observation_value"] = 1.0
+            # 1 element with extents [3, 2] -> 6 nodes
+            obs.create_dataset(
+                "total_extents", data=np.array([3, 2], dtype=np.int32)
+            )
+            obs.create_dataset(
+                "grid_names", data=np.array([b"[B0,(L0I0,L0I0)]"])
+            )
+            obs.create_dataset("bases", data=np.array([0, 0], dtype=np.int32))
+            obs.create_dataset(
+                "quadratures", data=np.array([0, 0], dtype=np.int32)
+            )
+            # Main mixed connectivity: 2 quads (tag 5, 4 verts) = 2 cells
+            obs.create_dataset(
+                "connectivity",
+                data=np.array([5, 0, 1, 3, 2, 5, 2, 3, 5, 4], dtype=np.int32),
+            )
+            # Pole mixed connectivity: 3 triangles (tag 4, 3 verts) = 3 cells
+            obs.create_dataset(
+                "pole_connectivity",
+                data=np.array(
+                    [4, 0, 1, 2, 4, 2, 3, 4, 4, 4, 5, 0], dtype=np.int32
+                ),
+            )
+            coords = np.linspace(0.0, 1.0, 6)
+            obs.create_dataset("InertialCoordinates_x", data=coords)
+            obs.create_dataset("InertialCoordinates_y", data=coords)
+            obs.create_dataset("InertialCoordinates_z", data=coords)
+            # One ElementId per main cell (2 cells)
+            obs.create_dataset(
+                "ElementId", data=np.array([7, 8], dtype=np.uint64)
+            )
+            obs.create_dataset(
+                "BlockId", data=np.array([0, 0], dtype=np.uint64)
+            )
+            obs.create_dataset("Phi", data=coords)
+
+    def test_new_format_poles_use_pole_cell_count(self):
+        """The pole-filling topology must report the pole connectivity's own
+        cell count, not the main grid's 'ElementId' cell count."""
+        h5_file = os.path.join(self.test_dir, "NewSurfaceWithPoles.h5")
+        self.write_new_format_with_poles_h5_file(h5_file)
+        output_filename = os.path.join(
+            self.test_dir, "Test_NewSurfaceWithPoles_output"
+        )
+        generate_xdmf(
+            h5files=[h5_file],
+            output=output_filename,
+            subfile_name="SurfaceData",
+            coordinates="InertialCoordinates",
+        )
+        xmf_root = ET.parse(output_filename + ".xmf").getroot()
+
+        # One grid for the main connectivity and one for the pole filling.
+        uniform_grids = xmf_root.findall(".//Grid[@GridType='Uniform']")
+        self.assertEqual(len(uniform_grids), 2)
+
+        # Find the pole-filling grid by its connectivity dataset name.
+        pole_grid = None
+        for grid in uniform_grids:
+            data_item = grid.find("Topology/DataItem")
+            if data_item is not None and data_item.text.endswith(
+                "pole_connectivity"
+            ):
+                pole_grid = grid
+        self.assertIsNotNone(pole_grid)
+
+        # pole_connectivity has 3 triangles, not the 2 main-grid cells.
+        pole_topo = pole_grid.find("Topology")
+        self.assertEqual(pole_topo.attrib.get("NumberOfElements"), "3")
+
     def test_subfile_not_found(self):
         data_files = glob.glob(os.path.join(self.data_dir, "VolTestData*.h5"))
         output_filename = os.path.join(
