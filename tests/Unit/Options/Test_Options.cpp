@@ -51,20 +51,6 @@ void test_options_empty() {
       Catch::Matchers::ContainsSubstring("\n'4' does not look like options"));
 }
 
-void test_options_syntax_error() {
-  INFO("Syntax error");
-  CHECK_THROWS_WITH(
-      []() {
-        Options::Parser<tmpl::list<>> opts("");
-        opts.parse(
-            "DomainCreator: CreateInterval:\n"
-            "  IsPeriodicIn: [false]");
-      }(),
-      Catch::Matchers::ContainsSubstring(
-          "At line 1 column 30:\nUnable to correctly parse the "
-          "input file because of a syntax error"));
-}
-
 struct Simple {
   using type = int;
   static constexpr Options::String help = {"halp"};
@@ -918,6 +904,38 @@ void test_options_complex_containers() {
                                                                 {{2}, {"B"}}}));
 }
 
+void test_options_syntax_error() {
+  INFO("Syntax error");
+  CHECK_THROWS_WITH(
+      []() {
+        Options::Parser<tmpl::list<>> opts("");
+        opts.parse(
+            "DomainCreator: CreateInterval:\n"
+            "  IsPeriodicIn: [false]");
+      }(),
+      Catch::Matchers::ContainsSubstring(
+          "At line 1 column 30:\nUnable to correctly parse the "
+          "input file because of a syntax error") and
+          not Catch::Matchers::ContainsSubstring("tabs"));
+  CHECK_THROWS_WITH(
+      []() {
+        Options::Parser<tmpl::list<UnorderedMap>> opts("");
+        opts.parse(
+            "UnorderedMap:\n"
+            "\tA: 3");
+      }(),
+      Catch::Matchers::ContainsSubstring("Unable to correctly parse the input "
+                                         "file because of a syntax error") and
+          Catch::Matchers::ContainsSubstring("indenting with tabs"));
+  // Check that tabs don't cause an error if the input file is valid.
+  {
+    Options::Parser<tmpl::list<UnorderedMap>> opts("");
+    opts.parse(
+        "UnorderedMap:\n"
+        "  A:\t3");
+  }
+}
+
 #ifdef SPECTRE_DEBUG
 struct Duplicate {
   using type = int;
@@ -1698,7 +1716,6 @@ void test_integer_scientific() {
 
 SPECTRE_TEST_CASE("Unit.Options", "[Unit][Options]") {
   test_options_empty();
-  test_options_syntax_error();
   test_options_simple();
   test_options_print_long_help();
   test_options_grouped();
@@ -1710,6 +1727,7 @@ SPECTRE_TEST_CASE("Unit.Options", "[Unit][Options]") {
   test_options_unordered_map();
   test_options_variant();
   test_options_complex_containers();
+  test_options_syntax_error();
   test_options_invalid_calls();
   test_options_apply();
   test_options_option_context_default_stream();
