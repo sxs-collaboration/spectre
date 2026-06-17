@@ -12,6 +12,7 @@ set(LIBRARY_SOURCES
   Actions/Test_ComputeTimeDerivative.cpp
   Actions/Test_NormalCovectorAndMagnitude.cpp
   Initialization/Test_Mortars.cpp
+  Initialization/Test_ProjectSpectralFilters.cpp
   Initialization/Test_QuadratureTag.cpp
   Initialization/Test_SpectralFilters.cpp
   Test_AtomicInboxBoundaryData.cpp

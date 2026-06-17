@@ -6,6 +6,7 @@ spectre_target_headers(
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
   Mortars.hpp
+  ProjectSpectralFilters.hpp
   QuadratureTag.hpp
   SpectralFilters.hpp
   SpectralFilters.tpp
