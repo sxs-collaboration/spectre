@@ -95,7 +95,7 @@ metric, derivative of shift, etc. are implemented as functions in
 - Floating-point: `CHECK_ITERABLE_APPROX` (not `Approx`)
 - Completion: < 5 seconds (prefer < 0.5s)
 - Random values: `MAKE_GENERATOR(gen)`, test 10^4 times for tolerance
-- Error tests: `CHECK_THROWS_WITH` inside `#ifdef SPECTRE_DEBUG`
+- Assert tests: `CHECK_THROWS_WITH` inside `#ifdef SPECTRE_DEBUG`
 - Pointwise functions: test with analytic solution AND random-value comparison
   via `pypp::check_with_random_values()`
 - Use metamorphic tests: like `sin^2(x)+cos^2(x)=1` or that a spacetime vector
