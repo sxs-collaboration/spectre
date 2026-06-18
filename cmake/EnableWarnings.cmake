@@ -88,6 +88,19 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     )
 endif()
 
+if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang"
+    AND CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 22
+    AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 23)
+  create_cxx_flags_target(
+    "-Wno-c2y-extensions"
+    SpectreDisableClangCatchWarning)
+  target_link_libraries(
+    SpectreWarnings
+    INTERFACE
+    SpectreDisableClangCatchWarning
+  )
+endif()
+
 # Suppress CUDA warnings that we don't want
 create_cxx_flag_target(
   "-Xcudafe \"--diag_suppress=177,186,191,554,1301,1305,2189,3060,20012\""
