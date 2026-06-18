@@ -9,14 +9,11 @@
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/TaggedVariant.hpp"
 #include "Time/OptionTags/TimeStepper.hpp"
+#include "Time/TimeSteppers/LtsTimeStepper.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Serialization/Serialize.hpp"
 #include "Utilities/TMPL.hpp"
-
-/// \cond
-class LtsTimeStepper;
-/// \endcond
 
 namespace Tags {
 /// \ingroup DataBoxTagsGroup
@@ -76,12 +73,26 @@ struct TimeStepperRef : TimeStepper<StepperInterface>, db::ReferenceTag {
     return stepper;
   }
 };
+
+/// \ingroup DataBoxTagsGroup
+/// \ingroup TimeGroup
+/// Compute tag to allow LTS code to compile in GTS executables.
+struct LtsOrError : TimeStepper<LtsTimeStepper>, db::ReferenceTag {
+  using base = TimeStepper<LtsTimeStepper>;
+  using argument_tags = tmpl::list<TimeStepper<::TimeStepper>>;
+  static const LtsTimeStepper& get(const ::TimeStepper& stepper);
+};
 }  // namespace Tags
 
 /// \ingroup TimeGroup
-/// List of Tags::TimeStepperRef specializations needed when adding a
-/// Tags::ConcreteTimeStepper.
+/// List of immutable tags needed when adding a Tags::ConcreteTimeStepper.
 template <typename StepperType>
-using time_stepper_ref_tags = tmpl::transform<
-    typename StepperType::provided_time_stepper_interfaces,
-    tmpl::bind<::Tags::TimeStepperRef, tmpl::_1, tmpl::pin<StepperType>>>;
+using time_stepper_ref_tags = tmpl::append<
+    tmpl::transform<
+        typename StepperType::provided_time_stepper_interfaces,
+        tmpl::bind<::Tags::TimeStepperRef, tmpl::_1, tmpl::pin<StepperType>>>,
+    tmpl::conditional_t<
+        tmpl::list_contains_v<
+            typename StepperType::provided_time_stepper_interfaces,
+            LtsTimeStepper>,
+        tmpl::list<>, tmpl::list<Tags::LtsOrError>>>;
