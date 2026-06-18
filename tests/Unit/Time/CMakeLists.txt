@@ -15,6 +15,7 @@ set(LIBRARY_SOURCES
   Test_EvolutionOrdering.cpp
   Test_History.cpp
   Test_LargestStepperError.cpp
+  Test_LtsMode.cpp
   Test_RecordTimeStepperData.cpp
   Test_SelfStart.cpp
   Test_Slab.cpp

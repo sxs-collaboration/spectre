@@ -35,6 +35,7 @@
 #include "Time/StepChoosers/StepChooser.hpp"
 #include "Time/Tags/AdaptiveSteppingDiagnostics.hpp"
 #include "Time/Tags/HistoryEvolvedVariables.hpp"
+#include "Time/Tags/LtsMode.hpp"
 #include "Time/Tags/StepNumberWithinSlab.hpp"
 #include "Time/Tags/Time.hpp"
 #include "Time/Tags/TimeStep.hpp"
@@ -117,7 +118,7 @@ struct TimeStepping {
   /// Tags for constant items added to the GlobalCache.  These items are
   /// initialized from input file options.
   using const_global_cache_tags =
-      tmpl::list<::Tags::ConcreteTimeStepper<TimeStepperBase>>;
+      tmpl::list<::Tags::ConcreteTimeStepper<TimeStepperBase>, ::Tags::LtsMode>;
 
   /// Tags for mutable items added to the GlobalCache.  These items are
   /// initialized from input file options.

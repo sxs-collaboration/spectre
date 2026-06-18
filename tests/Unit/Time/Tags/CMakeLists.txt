@@ -6,6 +6,7 @@ set(LIBRARY_SOURCES
   Tags/Test_AdaptiveSteppingDiagnostics.cpp
   Tags/Test_FixedLtsRatio.cpp
   Tags/Test_HistoryEvolvedVariables.cpp
+  Tags/Test_LtsMode.cpp
   Tags/Test_LtsStepChoosers.cpp
   Tags/Test_MinimumTimeStep.cpp
   Tags/Test_StepNumberWithinSlab.cpp
