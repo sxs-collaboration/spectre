@@ -5,6 +5,7 @@
 
 #include "Evolution/DiscontinuousGalerkin/Initialization/SpectralFilters.tpp"
 #include "Evolution/Systems/NewtonianEuler/Tags.hpp"
+#include "NumericalAlgorithms/LinearOperators/Filters/HollowCylinder.tpp"
 #include "NumericalAlgorithms/LinearOperators/Filters/Hypercube.tpp"
 #include "NumericalAlgorithms/LinearOperators/Filters/None.tpp"
 #include "Utilities/GenerateInstantiations.hpp"
@@ -28,6 +29,8 @@ using newtonian_euler_tags =
       DIM(data), newtonian_euler_tags<DIM(data)>>;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
+
+template class Filters::HollowCylinder<newtonian_euler_tags<3>>;
 
 #undef DIM
 #undef INSTANTIATE
