@@ -79,5 +79,39 @@ Matrix exponential_filter(const Mesh<1>& mesh, double alpha,
 const Matrix& zero_lowest_modes(
     const Mesh<1>& mesh, size_t number_of_modes_to_zero,
     Spectral::Parity parity = Spectral::Parity::Uninitialized);
+
+/*!
+ * \brief Zeros the highest `number_of_modes_to_zero` modal coefficients. Note
+ * that the matrix must be applied to a nodal representation.
+ *
+ * Given a function \f$u\f$
+ *
+ * \f{align}{
+ *   u(x)=\sum_{i=0}^N c_i P_i(x),
+ * \f}
+ *
+ * where \f$c_i\f$ are the modal coefficients and \f$P_i(x)\f$ is the basis
+ * (e.g. Legendre polynomials), the filter matrix will take the *nodal*
+ * representation of \f$u\f$ and zero out the highest `number_of_modes_to_zero`
+ * modal coefficients. That is, after the filter is applied \f$u\to\bar{u}\f$ is
+ *
+ * \f{align}{
+ *   \bar{u}(x)=\sum_{i=0}^{N-k} c_i P_i(x),
+ * \f}
+ *
+ * where \f$k\f$ is the number of modes set to zero. The output \f$\bar{u}\f$ is
+ * also in the *nodal* representation. The constant (\f$i=0\f$) mode is never
+ * removed for any basis.
+ *
+ * For the Fourier basis the "modes" are the \f$m\f$-modes: the highest
+ * `number_of_modes_to_zero` \f$m\f$-modes are zeroed, with both the \f$\cos\f$
+ * and \f$\sin\f$ contributions to a given \f$m\f$-mode treated identically.
+ *
+ * \note Only the Legendre, Chebyshev, and Fourier bases are supported. Unlike
+ * `zero_lowest_modes`, there is no parity argument and the ZernikeB1 basis is
+ * not supported.
+ */
+const Matrix& zero_highest_modes(const Mesh<1>& mesh,
+                                 size_t number_of_modes_to_zero);
 }  // namespace filtering
 }  // namespace Spectral

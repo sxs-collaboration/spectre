@@ -90,7 +90,7 @@ struct ZeroLowestModesImpl {
     for (size_t i = num_modes_to_zero; i < num_points; ++i) {
       filter_matrix(i, i) = 1.0;
     }
-    return Matrix(modal_to_nodal * filter_matrix * nodal_to_modal);
+    return {modal_to_nodal * filter_matrix * nodal_to_modal};
   }
 };
 
@@ -111,6 +111,48 @@ struct ZernikeB1ZeroLowestModesImpl {
       filter_matrix(i, i) = 1.0;
     }
     return modal_to_nodal * filter_matrix * nodal_to_modal;
+  }
+};
+
+template <Spectral::Basis BasisType, Spectral::Quadrature QuadratureType>
+struct ZeroHighestModesImpl {
+  Matrix operator()(const size_t num_points,
+                    const size_t num_modes_to_zero) const {
+    const Matrix& nodal_to_modal =
+        Spectral::nodal_to_modal_matrix<BasisType, QuadratureType>(num_points);
+    const Matrix& modal_to_nodal =
+        Spectral::modal_to_nodal_matrix<BasisType, QuadratureType>(num_points);
+    Matrix filter_matrix(num_points, num_points, 0.0);
+    for (size_t i = 0; i + num_modes_to_zero < num_points; ++i) {
+      filter_matrix(i, i) = 1.0;
+    }
+    return {modal_to_nodal * filter_matrix * nodal_to_modal};
+  }
+};
+
+struct FourierZeroHighestModesImpl {
+  Matrix operator()(const size_t num_points,
+                    const size_t num_modes_to_zero) const {
+    const Matrix& nodal_to_modal =
+        Spectral::nodal_to_modal_matrix<Spectral::Basis::Fourier,
+                                        Spectral::Quadrature::Equiangular>(
+            num_points);
+    const Matrix& modal_to_nodal =
+        Spectral::modal_to_nodal_matrix<Spectral::Basis::Fourier,
+                                        Spectral::Quadrature::Equiangular>(
+            num_points);
+    Matrix filter_matrix(num_points, num_points, 0.0);
+    // The constant (m = 0) mode is always retained.
+    filter_matrix(0, 0) = 1.0;
+    // Maximum mode
+    const size_t M = num_points / 2;
+    for (size_t i = 1; i < num_points; i += 2) {
+      const size_t m = (i + 1) / 2;
+      const double weight = (m + num_modes_to_zero <= M) ? 1.0 : 0.0;
+      filter_matrix(i, i) = weight;
+      filter_matrix(i + 1, i + 1) = weight;
+    }
+    return {modal_to_nodal * filter_matrix * nodal_to_modal};
   }
 };
 }  // namespace
@@ -215,6 +257,109 @@ const Matrix& zero_lowest_modes(const Mesh<1>& mesh,
         }
         default:
           ERROR("Unsupported quadrature type in filtering lowest modes: "
+                << mesh.quadrature(0));
+      };
+    default:
+      ERROR("Cannot filter basis type: " << mesh.basis(0));
+  };
+}
+
+const Matrix& zero_highest_modes(const Mesh<1>& mesh,
+                                 const size_t number_of_modes_to_zero) {
+  switch (mesh.basis(0)) {
+    case Basis::Legendre:
+      ASSERT(number_of_modes_to_zero < mesh.extents(0),
+             "For a 1d mesh with " << mesh.extents(0)
+                                   << " grid points, you cannot zero "
+                                   << number_of_modes_to_zero << " modes.");
+      switch (mesh.quadrature(0)) {
+        case Spectral::Quadrature::GaussLobatto: {
+          constexpr size_t max_num_points =
+              Spectral::maximum_number_of_points<Spectral::Basis::Legendre>;
+          constexpr size_t min_num_points = Spectral::minimum_number_of_points<
+              Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto>;
+          const auto cache =
+              make_static_cache<CacheRange<min_num_points, max_num_points + 1>,
+                                CacheRange<0_st, max_num_points>>(
+                  ZeroHighestModesImpl<Spectral::Basis::Legendre,
+                                       Spectral::Quadrature::GaussLobatto>{});
+          return cache(mesh.number_of_grid_points(), number_of_modes_to_zero);
+        }
+        case Spectral::Quadrature::Gauss: {
+          constexpr size_t max_num_points =
+              Spectral::maximum_number_of_points<Spectral::Basis::Legendre>;
+          constexpr size_t min_num_points =
+              Spectral::minimum_number_of_points<Spectral::Basis::Legendre,
+                                                 Spectral::Quadrature::Gauss>;
+          const auto cache =
+              make_static_cache<CacheRange<min_num_points, max_num_points + 1>,
+                                CacheRange<0_st, max_num_points>>(
+                  ZeroHighestModesImpl<Spectral::Basis::Legendre,
+                                       Spectral::Quadrature::Gauss>{});
+          return cache(mesh.number_of_grid_points(), number_of_modes_to_zero);
+        }
+        default:
+          ERROR("Unsupported quadrature type in filtering highest modes: "
+                << mesh.quadrature(0));
+      };
+    case Basis::Chebyshev:
+      ASSERT(number_of_modes_to_zero < mesh.extents(0),
+             "For a 1d mesh with " << mesh.extents(0)
+                                   << " grid points, you cannot zero "
+                                   << number_of_modes_to_zero << " modes.");
+      switch (mesh.quadrature(0)) {
+        case Spectral::Quadrature::GaussLobatto: {
+          constexpr size_t max_num_points =
+              Spectral::maximum_number_of_points<Spectral::Basis::Chebyshev>;
+          constexpr size_t min_num_points = Spectral::minimum_number_of_points<
+              Spectral::Basis::Chebyshev, Spectral::Quadrature::GaussLobatto>;
+          const auto cache =
+              make_static_cache<CacheRange<min_num_points, max_num_points + 1>,
+                                CacheRange<0_st, max_num_points>>(
+                  ZeroHighestModesImpl<Spectral::Basis::Chebyshev,
+                                       Spectral::Quadrature::GaussLobatto>{});
+          return cache(mesh.number_of_grid_points(), number_of_modes_to_zero);
+        }
+        case Spectral::Quadrature::Gauss: {
+          constexpr size_t max_num_points =
+              Spectral::maximum_number_of_points<Spectral::Basis::Chebyshev>;
+          constexpr size_t min_num_points =
+              Spectral::minimum_number_of_points<Spectral::Basis::Chebyshev,
+                                                 Spectral::Quadrature::Gauss>;
+          const auto cache =
+              make_static_cache<CacheRange<min_num_points, max_num_points + 1>,
+                                CacheRange<0_st, max_num_points>>(
+                  ZeroHighestModesImpl<Spectral::Basis::Chebyshev,
+                                       Spectral::Quadrature::Gauss>{});
+          return cache(mesh.number_of_grid_points(), number_of_modes_to_zero);
+        }
+        default:
+          ERROR("Unsupported quadrature type in filtering highest modes: "
+                << mesh.quadrature(0));
+      };
+    case Basis::Fourier:
+      switch (mesh.quadrature(0)) {
+        case Spectral::Quadrature::Equiangular: {
+          ASSERT(mesh.number_of_grid_points() % 2 == 1,
+                 "The Fourier basis is required to have an odd number of grid "
+                 "points for stability, got "
+                     << mesh.number_of_grid_points());
+          ASSERT(number_of_modes_to_zero <= mesh.number_of_grid_points() / 2,
+                 "For a Fourier mesh with "
+                     << mesh.number_of_grid_points() << " grid points ("
+                     << mesh.number_of_grid_points() / 2
+                     << " m-modes), you cannot zero " << number_of_modes_to_zero
+                     << " modes.");
+          constexpr size_t max_num_points =
+              Spectral::maximum_number_of_points<Spectral::Basis::Fourier>;
+          const auto cache =
+              make_static_cache<CacheRange<1_st, max_num_points + 1>,
+                                CacheRange<0_st, max_num_points / 2 + 1>>(
+                  FourierZeroHighestModesImpl{});
+          return cache(mesh.number_of_grid_points(), number_of_modes_to_zero);
+        }
+        default:
+          ERROR("Unsupported quadrature type in filtering highest modes: "
                 << mesh.quadrature(0));
       };
     default:
