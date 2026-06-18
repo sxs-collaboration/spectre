@@ -25,7 +25,7 @@ CHARM_PPN=$(expr ${SLURM_CPUS_PER_TASK} - 2)
 {% block list_modules %}
 # Load compiler and MPI modules with explicit version specifications,
 # consistently with the versions used to build the executable.
-source ${SPECTRE_HOME}/support/Environments/urania.sh
+source @CMAKE_SOURCE_DIR@/support/Environments/urania.sh
 spectre_load_modules
 {% endblock %}
 
