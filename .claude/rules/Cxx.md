@@ -95,7 +95,7 @@ metric, derivative of shift, etc. are implemented as functions in
 - Floating-point: `CHECK_ITERABLE_APPROX` (not `Approx`)
 - Completion: < 5 seconds (prefer < 0.5s)
 - Random values: `MAKE_GENERATOR(gen)`, test 10^4 times for tolerance
-- Error tests: `CHECK_THROWS_WITH` inside `#ifdef SPECTRE_DEBUG`
+- Assert tests: `CHECK_THROWS_WITH` inside `#ifdef SPECTRE_DEBUG`
 - Pointwise functions: test with analytic solution AND random-value comparison
   via `pypp::check_with_random_values()`
 - Use metamorphic tests: like `sin^2(x)+cos^2(x)=1` or that a spacetime vector
@@ -107,3 +107,15 @@ metric, derivative of shift, etc. are implemented as functions in
   helper functions over many small `SPECTRE_TEST_CASE`s.
 - Increase test timeouts sparingly. If necessary, use `// [[TimeOut, SECONDS]]`
   on the line before `SPECTRE_TEST_CASE`. Default timeout is 2 seconds.
+
+## Initialization mutators
+- Look at the file src/ParallelAlgorithms/Actions/InitializeItems.hpp
+  to understand the requirements. That is the code that calls the
+  initialization mutator.
+
+## clang-tidy
+- Use the most recent available clang-tidy on the system.
+- Using `NOLINT` is a last-resort except for
+  `NOLINTNEXTLINE(google-runtime-references)` on the line before a `void
+  pup(PUP::er&)` declaration. Instead, always try to fix the actual
+  underyling issue. Ask the user for guidance when unsure.
