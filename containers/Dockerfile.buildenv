@@ -110,8 +110,9 @@
 #  docker build --target deploy_static_execs_and_libs --platform linux/amd64 \
 #    --build-arg UBUNTU_VERSION=18.04 -f ./containers/Dockerfile.buildenv .
 #
-#    That is, it uses Ubuntu 18.04 and AMD64. There is no support for ARM and
-#    newer versions of Ubuntu will limit compatibility.
+#    That is, it uses Ubuntu 18.04. Both AMD64 and ARM64 are supported (replace
+#    linux/amd64 with linux/arm64), while newer versions of Ubuntu will limit
+#    compatibility.
 ARG UBUNTU_VERSION=22.04
 FROM ubuntu:${UBUNTU_VERSION} AS base
 ARG UBUNTU_VERSION=22.04
@@ -122,8 +123,7 @@ ARG UBUNTU_VERSION=22.04
 ARG TARGETARCH
 
 # Install add-apt-repository and basic tools
-RUN if [ ${UBUNTU_VERSION} = 18.04 ] && [ "$TARGETARCH" = "arm64" ]; then \
-    echo "Cannot use Ubuntu 18.04 with ARM" && exit 1; fi && apt-get update -y \
+RUN apt-get update -y \
     && apt-get install -y software-properties-common wget git file \
     && add-apt-repository ppa:ubuntu-toolchain-r/test
 
@@ -141,17 +141,25 @@ RUN wget -qO- https://apt.llvm.org/llvm-snapshot.gpg.key | \
     fi
 
 # Install compilers and build tools
+#
+# On Ubuntu 18.04 the unversioned `lld` package is only published for amd64 in
+# the universe archive, so it is unavailable on arm64. Install the versioned
+# `lld-17` from the LLVM apt repository (added above) instead and symlink
+# `ld.lld` so the unversioned linker name keeps resolving.
 RUN apt-get update -y \
     && if [ ${UBUNTU_VERSION} = 18.04 ]; then \
-    apt-get install -y gcc-10 g++-10 gfortran-10 clang-17; \
+    apt-get install -y gcc-10 g++-10 gfortran-10 clang-17 lld-17 \
+    && ln -s "$(command -v ld.lld-17)" /usr/bin/ld.lld; \
     else \
-    apt-get install -y gcc g++ gfortran clang clang-format clang-tidy cmake; \
+    apt-get install -y gcc g++ gfortran clang clang-format clang-tidy cmake lld; \
     fi \
-    && apt-get install -y lld bison flex libncurses-dev gdb autoconf automake \
+    && apt-get install -y bison flex libncurses-dev gdb autoconf automake \
     ninja-build lcov \
     && if [ ${UBUNTU_VERSION} = 18.04 ]; then \
-    wget -O cmake-install.sh \
-    "https://github.com/Kitware/CMake/releases/download/v3.28.1/cmake-3.28.1-linux-x86_64.sh" \
+    if [ "$TARGETARCH" = "arm64" ]; then CMAKE_ARCH=aarch64; \
+    else CMAKE_ARCH=x86_64; fi \
+    && wget -O cmake-install.sh \
+    "https://github.com/Kitware/CMake/releases/download/v3.28.1/cmake-3.28.1-linux-${CMAKE_ARCH}.sh" \
     && chmod +x ./cmake-install.sh && ./cmake-install.sh --skip-license \
     --prefix=/usr/local && rm cmake-install.sh; \
     fi
@@ -441,21 +449,25 @@ RUN apt-get update -y \
 # We first install the TeXLive infrastructure according to the configuration in
 # support/TeXLive/texlive.profile and then use it to install the bibtex package.
 #
-# WARNING: if you are rebuilding the container in late March/early April you
-# might have version mismatches between the TeXLive installer respositories like
-# CTAN. You can then use the previous year's TeXLive until CTAN is updated. E.g.
-#    wget \
-#  ftp://tug.org/historic/systems/texlive/2025/tlnet-final/install-tl-unx.tar.gz
-# and
-# install-tl-*/install-tl -profile=texlive.profile \
-#        -repository ftp://tug.org/historic/systems/texlive/2025/tlnet-final
+# WARNING: if you are rebuilding the container you might have version mismatches
+# between the TeXLive installer and the rolling `tlnet` repository. The
+# `mirror.ctan.org` redirect sends the installer download and the `install-tl`
+# repository fetch to two *different* random mirrors; if one of them is stale it
+# serves a `texlive.tlpdb` whose version does not match the just-downloaded
+# `install-tl`, causing "TLPDB::from_file could not get texlive.tlpdb". To avoid
+# this we pin both the installer and the package repository to a single fixed,
+# always-current CTAN core mirror so the two always come from the same snapshot.
+# If this mirror is ever unavailable, swap to another core mirror serving the
+# live `tlnet` (see https://ctan.org/mirrors), or fall back to a frozen historic
+# snapshot under https://texlive.info/historic/systems/texlive/<year>/tlnet-final .
 RUN if [ ${UBUNTU_VERSION} = 22.04 ]; then \
     mkdir /work/texlive && cd /work/texlive \
-    && wget http://mirror.ctan.org/systems/texlive/tlnet/install-tl-unx.tar.gz \
+    && wget https://ctan.math.illinois.edu/systems/texlive/tlnet/install-tl-unx.tar.gz \
     && tar -xzf install-tl-unx.tar.gz \
     && rm install-tl-unx.tar.gz \
     && wget https://raw.githubusercontent.com/sxs-collaboration/spectre/develop/support/TeXLive/texlive.profile \
     && install-tl-*/install-tl -profile=texlive.profile \
+        -repository https://ctan.math.illinois.edu/systems/texlive/tlnet \
     && rm -r install-tl-* texlive.profile install-tl.log \
     && /work/texlive/bin/${TEX_ARCH}-linux/tlmgr install bibtex \
     ; fi
@@ -567,10 +579,18 @@ COPY . spectre/
 # statically link to glibc (it is unsupported and causes a lot of undefined
 # behavior) we build using Ubuntu 18.04 to support a fairly old version of
 # glibc.
-RUN if [ ${UBUNTU_VERSION} != 18.04 ] && [ "$TARGETARCH" != "amd64" ]; then \
-    echo "Must use Ubuntu 18.04 with AMD64 for deploying static execs" \
-    && exit 1; fi \
-    && mkdir spectre/build && cd spectre/build \
+# Architecture-specific settings: the gfortran/quadmath static libs live under
+# the GCC multiarch triplet directory, and OVERRIDE_ARCH=haswell (which emits
+# `-march=haswell -mno-avx512f`) is x86-only. On arm64 we target armv8.2-a since
+# this is what GitHub runners guarantee and also will support Apple M1
+# (ARMv8.4-A), and NVIDIA Grace (ARMv9.0-A) chips.
+RUN set -e; \
+    if [ "$TARGETARCH" = "arm64" ]; then \
+      GCC_TRIPLET=aarch64-linux-gnu; ARCH_ARGS="-D OVERRIDE_ARCH=armv8.2-a"; \
+    else \
+      GCC_TRIPLET=x86_64-linux-gnu; ARCH_ARGS="-D OVERRIDE_ARCH=haswell"; \
+    fi; \
+    mkdir spectre/build && cd spectre/build \
     && cmake \
     -D CMAKE_C_COMPILER=gcc-10 \
     -D CMAKE_CXX_COMPILER=g++-10 \
@@ -588,10 +608,10 @@ RUN if [ ${UBUNTU_VERSION} != 18.04 ] && [ "$TARGETARCH" != "amd64" ]; then \
     -D SPECTRE_Fortran_STATIC_LIBS=ON \
     -D YAMLCPP_STATIC_LIBRARY=ON \
     -D USE_GIT_HOOKS=OFF \
-    -D OVERRIDE_ARCH=haswell \
+    $ARCH_ARGS \
     -D USE_LD=gold \
-    -D gfortran=/usr/lib/gcc/x86_64-linux-gnu/10/libgfortran.a \
-    -D quadmath=/usr/lib/gcc/x86_64-linux-gnu/10/libquadmath.a \
+    -D gfortran=/usr/lib/gcc/$GCC_TRIPLET/10/libgfortran.a \
+    -D quadmath=/usr/lib/gcc/$GCC_TRIPLET/10/libquadmath.a \
     -D BUILD_DOCS=OFF \
     -D USE_CCACHE=OFF \
     .. \
