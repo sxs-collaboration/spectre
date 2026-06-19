@@ -66,6 +66,11 @@ SpatialDiscretization:
   BoundaryCorrection:
     UpwindPenalty:
   DiscontinuousGalerkin:
+    Filtering:
+      # Scalar Wave doesn't yet have Ylm filtering implemented.
+      # That will be needed for stable evolutions.
+      - None:
+          BlocksToFilter: All
     Formulation: StrongInertial
     Quadrature: GaussLobatto
 

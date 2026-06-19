@@ -61,13 +61,15 @@ SpatialDiscretization:
   DiscontinuousGalerkin:
     Formulation: StrongInertial
     Quadrature: GaussLobatto
-
-Filtering:
-  ExpFilter0:
-    Alpha: 12
-    HalfPower: 32
-    Enable: false
-    BlocksToFilter: All
+    Filtering:
+      - Hypercube:
+          HalfPower: 32
+          Enable: false
+          BlocksToFilter: All
+          VolumeFilterOnSubstep: true
+          BoundaryCorrectionFilterOnSubstep: false
+          VolumeFilterEveryNSteps: None
+          BoundaryCorrectionFilterEveryNSteps: None
 
 EventsAndTriggersAtCheckpoints:
 

@@ -52,13 +52,15 @@ SpatialDiscretization:
   DiscontinuousGalerkin:
     Formulation: StrongInertial
     Quadrature: GaussLobatto
-
-Filtering:
-  ExpFilter0:
-    Alpha: 36
-    HalfPower: 50
-    Enable: false
-    BlocksToFilter: All
+    Filtering:
+      - Hypercube:
+          HalfPower: 50
+          Enable: false
+          BlocksToFilter: All
+          VolumeFilterOnSubstep: true
+          BoundaryCorrectionFilterOnSubstep: false
+          VolumeFilterEveryNSteps: None
+          BoundaryCorrectionFilterEveryNSteps: None
 
 Observers:
   VolumeFileName: "ForceFreeFastWaveVolume"

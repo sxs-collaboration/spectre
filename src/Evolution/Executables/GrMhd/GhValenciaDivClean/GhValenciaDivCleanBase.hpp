@@ -59,6 +59,7 @@
 #include "Evolution/DiscontinuousGalerkin/DgElementArray.hpp"
 #include "Evolution/DiscontinuousGalerkin/Initialization/Mortars.hpp"
 #include "Evolution/DiscontinuousGalerkin/Initialization/QuadratureTag.hpp"
+#include "Evolution/DiscontinuousGalerkin/Initialization/SpectralFilters.hpp"
 #include "Evolution/DiscontinuousGalerkin/UsingSubcell.hpp"
 #include "Evolution/Initialization/ConservativeSystem.hpp"
 #include "Evolution/Initialization/DgDomain.hpp"
@@ -105,7 +106,6 @@
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/System.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Tags.hpp"
 #include "Evolution/Systems/RadiationTransport/NoNeutrinos/System.hpp"
-#include "Evolution/Tags/Filter.hpp"
 #include "Evolution/Triggers/SeparationLessThan.hpp"
 #include "Evolution/TypeTraits.hpp"
 #include "Evolution/VariableFixing/Actions.hpp"
@@ -124,7 +124,9 @@
 #include "IO/Observer/Tags.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Formulation.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Tags.hpp"
-#include "NumericalAlgorithms/LinearOperators/ExponentialFilter.hpp"
+#include "NumericalAlgorithms/LinearOperators/Filters/Factory.hpp"
+#include "NumericalAlgorithms/LinearOperators/Filters/SphericalShell.hpp"
+#include "NumericalAlgorithms/LinearOperators/Filters/Tag.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
 #include "Options/Protocols/FactoryCreation.hpp"
 #include "Options/String.hpp"
@@ -139,10 +141,10 @@
 #include "Parallel/Reduction.hpp"
 #include "ParallelAlgorithms/Actions/AddComputeTags.hpp"
 #include "ParallelAlgorithms/Actions/AddSimpleTags.hpp"
-#include "ParallelAlgorithms/Actions/FilterAction.hpp"
 #include "ParallelAlgorithms/Actions/FunctionsOfTimeAreReady.hpp"
 #include "ParallelAlgorithms/Actions/InitializeItems.hpp"
 #include "ParallelAlgorithms/Actions/MutateApply.hpp"
+#include "ParallelAlgorithms/Actions/SpectralFilter.hpp"
 #include "ParallelAlgorithms/Actions/TerminatePhase.hpp"
 #include "ParallelAlgorithms/Events/Completion.hpp"
 #include "ParallelAlgorithms/Events/Factory.hpp"
@@ -672,7 +674,15 @@ struct GhValenciaDivCleanTemplateBase<
                          tmpl::conditional_t<
                              UseControlSystems,
                              tmpl::list<Triggers::SeparationLessThan<true>>,
-                             tmpl::list<>>>>>;
+                             tmpl::list<>>>>,
+        tmpl::pair<
+            Filters::Filter<volume_dim,
+                            typename system::variables_tag::tags_list>,
+            tmpl::push_back<
+                Filters::all_filters<volume_dim,
+                                     typename system::variables_tag::tags_list>,
+                Filters::SphericalShell<
+                    typename system::variables_tag::tags_list>>>>;
   };
 
   using interpolation_target_tags = tmpl::list<InterpolationTargetTags...>;
@@ -748,10 +758,7 @@ struct GhValenciaDivCleanTemplateBase<
               ordered_list_of_primitive_recovery_schemes, system>>>;
 
   using dg_step_actions = tmpl::flatten<tmpl::list<
-      dg::Actions::Filter<::Filters::Exponential<0>,
-                          tmpl::list<gr::Tags::SpacetimeMetric<DataVector, 3>,
-                                     gh::Tags::Pi<DataVector, 3>,
-                                     gh::Tags::Phi<DataVector, 3>>>,
+      dg::Actions::SpectralFilter,
       evolution::dg::Actions::ComputeTimeDerivative<
           volume_dim, system, AllStepChoosers, local_time_stepping,
           use_dg_element_collection>,
@@ -899,6 +906,9 @@ struct GhValenciaDivCleanTemplateBase<
           use_control_systems,
           control_system::Actions::InitializeMeasurements<control_systems>,
           tmpl::list<>>,
+      Initialization::Actions::InitializeItems<
+          evolution::dg::Initialization::SpectralFilters<
+              volume_dim, typename system::variables_tag::tags_list>>,
       Parallel::Actions::TerminatePhase>;
 
   using import_initial_data_action_lists = tmpl::list<

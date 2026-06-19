@@ -40,6 +40,8 @@
 #include "Evolution/DiscontinuousGalerkin/CleanMortarHistory.hpp"
 #include "Evolution/DiscontinuousGalerkin/DgElementArray.hpp"
 #include "Evolution/DiscontinuousGalerkin/Initialization/Mortars.hpp"
+#include "Evolution/DiscontinuousGalerkin/Initialization/ProjectSpectralFilters.hpp"
+#include "Evolution/DiscontinuousGalerkin/Initialization/SpectralFilters.hpp"
 #include "Evolution/Executables/GeneralizedHarmonic/Deadlock.hpp"
 #include "Evolution/Initialization/DgDomain.hpp"
 #include "Evolution/Initialization/Evolution.hpp"
@@ -63,9 +65,9 @@
 #include "Evolution/Systems/GeneralizedHarmonic/GaugeSourceFunctions/SetPiAndPhiFromConstraints.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/GaugeSourceFunctions/Tags/GaugeCondition.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Initialize.hpp"
+#include "Evolution/Systems/GeneralizedHarmonic/SpectralFilter.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/System.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
-#include "Evolution/Tags/Filter.hpp"
 #include "Evolution/Triggers/SeparationLessThan.hpp"
 #include "Evolution/TypeTraits.hpp"
 #include "IO/Importers/Actions/RegisterWithElementDataReader.hpp"
@@ -76,7 +78,8 @@
 #include "IO/Observer/ObserverComponent.hpp"
 #include "IO/Observer/Tags.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Tags.hpp"
-#include "NumericalAlgorithms/LinearOperators/ExponentialFilter.hpp"
+#include "NumericalAlgorithms/LinearOperators/Filters/Factory.hpp"
+#include "NumericalAlgorithms/LinearOperators/Filters/Tag.hpp"
 #include "Options/Options.hpp"
 #include "Options/ParseOptions.hpp"
 #include "Options/Protocols/FactoryCreation.hpp"
@@ -97,11 +100,11 @@
 #include "Parallel/Protocols/RegistrationMetavariables.hpp"
 #include "Parallel/Reduction.hpp"
 #include "ParallelAlgorithms/Actions/AddComputeTags.hpp"
-#include "ParallelAlgorithms/Actions/FilterAction.hpp"
 #include "ParallelAlgorithms/Actions/FunctionsOfTimeAreReady.hpp"
 #include "ParallelAlgorithms/Actions/InitializeItems.hpp"
 #include "ParallelAlgorithms/Actions/MemoryMonitor/ContributeMemoryData.hpp"
 #include "ParallelAlgorithms/Actions/MutateApply.hpp"
+#include "ParallelAlgorithms/Actions/SpectralFilter.hpp"
 #include "ParallelAlgorithms/Actions/TerminatePhase.hpp"
 #include "ParallelAlgorithms/Amr/Actions/CollectDataFromChildren.hpp"
 #include "ParallelAlgorithms/Amr/Actions/Component.hpp"
@@ -540,7 +543,10 @@ struct EvolutionMetavars {
         tmpl::pair<
             Trigger,
             tmpl::append<Triggers::logical_triggers, Triggers::time_triggers,
-                         tmpl::list<Triggers::SeparationLessThan<false>>>>>;
+                         tmpl::list<Triggers::SeparationLessThan<false>>>>,
+        tmpl::pair<Filters::Filter<volume_dim,
+                                   typename system::variables_tag::tags_list>,
+                   gh::all_filters<volume_dim>>>;
   };
 
   // A tmpl::list of tags to be added to the GlobalCache by the
@@ -596,11 +602,7 @@ struct EvolutionMetavars {
           local_time_stepping,
           Actions::MutateApply<evolution::dg::CleanMortarHistory<volume_dim>>,
           tmpl::list<>>,
-      dg::Actions::Filter<
-          Filters::Exponential<0>,
-          tmpl::list<gr::Tags::SpacetimeMetric<DataVector, volume_dim>,
-                     gh::Tags::Pi<DataVector, volume_dim>,
-                     gh::Tags::Phi<DataVector, volume_dim>>>>;
+      dg::Actions::SpectralFilter>;
 
   using initialization_actions = tmpl::list<
       Initialization::Actions::InitializeItems<
@@ -626,6 +628,9 @@ struct EvolutionMetavars {
                                               interpolation_target_tags>,
       evolution::Actions::InitializeRunEventsAndDenseTriggers,
       control_system::Actions::InitializeMeasurements<control_systems>,
+      Initialization::Actions::InitializeItems<
+          evolution::dg::Initialization::SpectralFilters<
+              volume_dim, typename system::variables_tag::tags_list>>,
       Parallel::Actions::TerminatePhase>;
 
   using gh_dg_element_array = DgElementArray<
@@ -713,6 +718,8 @@ struct EvolutionMetavars {
                                                       local_time_stepping>,
         Initialization::ProjectTimeStepperHistory<EvolutionMetavars>,
         evolution::Actions::ProjectRunEventsAndDenseTriggers,
+        evolution::dg::Initialization::ProjectSpectralFilters<
+            volume_dim, typename system::variables_tag::tags_list>,
         ::amr::projectors::DefaultInitialize<
             Initialization::Tags::InitialTimeDelta,
             Initialization::Tags::InitialSlabSize<local_time_stepping>,

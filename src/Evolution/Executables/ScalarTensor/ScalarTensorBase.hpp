@@ -23,6 +23,7 @@
 #include "Evolution/DiscontinuousGalerkin/CleanMortarHistory.hpp"
 #include "Evolution/DiscontinuousGalerkin/DgElementArray.hpp"
 #include "Evolution/DiscontinuousGalerkin/Initialization/Mortars.hpp"
+#include "Evolution/DiscontinuousGalerkin/Initialization/SpectralFilters.hpp"
 #include "Evolution/Initialization/DgDomain.hpp"
 #include "Evolution/Initialization/Evolution.hpp"
 #include "Evolution/Initialization/NonconservativeSystem.hpp"
@@ -49,7 +50,6 @@
 #include "Evolution/Systems/ScalarTensor/Initialize.hpp"
 #include "Evolution/Systems/ScalarTensor/System.hpp"
 #include "Evolution/Systems/ScalarTensor/Tags.hpp"
-#include "Evolution/Tags/Filter.hpp"
 #include "Evolution/TypeTraits.hpp"
 #include "IO/Importers/Actions/RegisterWithElementDataReader.hpp"
 #include "IO/Importers/ElementDataReader.hpp"
@@ -59,7 +59,8 @@
 #include "IO/Observer/ObserverComponent.hpp"
 #include "IO/Observer/Tags.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Tags.hpp"
-#include "NumericalAlgorithms/LinearOperators/ExponentialFilter.hpp"
+#include "NumericalAlgorithms/LinearOperators/Filters/Factory.hpp"
+#include "NumericalAlgorithms/LinearOperators/Filters/Tag.hpp"
 #include "Options/Protocols/FactoryCreation.hpp"
 #include "Options/String.hpp"
 #include "Parallel/Algorithms/AlgorithmSingleton.hpp"
@@ -73,12 +74,12 @@
 #include "Parallel/Reduction.hpp"
 #include "ParallelAlgorithms/Actions/AddComputeTags.hpp"
 #include "ParallelAlgorithms/Actions/AddSimpleTags.hpp"
-#include "ParallelAlgorithms/Actions/FilterAction.hpp"
 #include "ParallelAlgorithms/Actions/FunctionsOfTimeAreReady.hpp"
 #include "ParallelAlgorithms/Actions/InitializeItems.hpp"
 #include "ParallelAlgorithms/Actions/MemoryMonitor/ContributeMemoryData.hpp"
 #include "ParallelAlgorithms/Actions/MutateApply.hpp"
 #include "ParallelAlgorithms/Actions/RandomizeVariables.hpp"
+#include "ParallelAlgorithms/Actions/SpectralFilter.hpp"
 #include "ParallelAlgorithms/Actions/TerminatePhase.hpp"
 #include "ParallelAlgorithms/Events/Completion.hpp"
 #include "ParallelAlgorithms/Events/Factory.hpp"
@@ -375,7 +376,11 @@ struct FactoryCreation : tt::ConformsTo<Options::protocols::FactoryCreation> {
                  TimeSequences::all_time_sequences<std::uint64_t>>,
       tmpl::pair<TimeStepper, TimeSteppers::time_steppers>,
       tmpl::pair<Trigger, tmpl::append<Triggers::logical_triggers,
-                                       Triggers::time_triggers>>>;
+                                       Triggers::time_triggers>>,
+      tmpl::pair<Filters::Filter<volume_dim,
+                                 typename system::variables_tag::tags_list>,
+                 Filters::all_filters<
+                     volume_dim, typename system::variables_tag::tags_list>>>;
 };
 }  // namespace detail
 
@@ -454,11 +459,7 @@ struct ScalarTensorTemplateBase {
           local_time_stepping,
           Actions::MutateApply<evolution::dg::CleanMortarHistory<volume_dim>>,
           tmpl::list<>>,
-      // We allow for separate filtering of the system variables
-      dg::Actions::Filter<Filters::Exponential<0>,
-                          system::gh_system::variables_tag::tags_list>,
-      dg::Actions::Filter<Filters::Exponential<1>,
-                          system::scalar_system::variables_tag::tags_list>>;
+      dg::Actions::SpectralFilter>;
 
   template <bool UseControlSystems>
   using initialization_actions = tmpl::list<
@@ -478,5 +479,8 @@ struct ScalarTensorTemplateBase {
               ScalarTensorTemplateBase, local_time_stepping>>>,
       ::evolution::dg::Initialization::Mortars<volume_dim>,
       evolution::Actions::InitializeRunEventsAndDenseTriggers,
+      Initialization::Actions::InitializeItems<
+          evolution::dg::Initialization::SpectralFilters<
+              volume_dim, typename system::variables_tag::tags_list>>,
       Parallel::Actions::TerminatePhase>;
 };

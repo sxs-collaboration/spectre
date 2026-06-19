@@ -37,6 +37,7 @@
 #include "Evolution/DiscontinuousGalerkin/DgElementArray.hpp"
 #include "Evolution/DiscontinuousGalerkin/Initialization/Mortars.hpp"
 #include "Evolution/DiscontinuousGalerkin/Initialization/QuadratureTag.hpp"
+#include "Evolution/DiscontinuousGalerkin/Initialization/SpectralFilters.hpp"
 #include "Evolution/Initialization/ConservativeSystem.hpp"
 #include "Evolution/Initialization/DgDomain.hpp"
 #include "Evolution/Initialization/Evolution.hpp"
@@ -63,6 +64,7 @@
 #include "IO/Observer/ObserverComponent.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Formulation.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Tags.hpp"
+#include "NumericalAlgorithms/LinearOperators/Filters/Factory.hpp"
 #include "Options/Protocols/FactoryCreation.hpp"
 #include "Options/String.hpp"
 #include "Parallel/Local.hpp"
@@ -76,6 +78,7 @@
 #include "ParallelAlgorithms/Actions/AddComputeTags.hpp"
 #include "ParallelAlgorithms/Actions/InitializeItems.hpp"
 #include "ParallelAlgorithms/Actions/MutateApply.hpp"
+#include "ParallelAlgorithms/Actions/SpectralFilter.hpp"
 #include "ParallelAlgorithms/Actions/TerminatePhase.hpp"
 #include "ParallelAlgorithms/Events/Completion.hpp"
 #include "ParallelAlgorithms/Events/Factory.hpp"
@@ -239,7 +242,11 @@ struct EvolutionMetavars {
                    TimeSequences::all_time_sequences<std::uint64_t>>,
         tmpl::pair<TimeStepper, TimeSteppers::time_steppers>,
         tmpl::pair<Trigger, tmpl::append<Triggers::logical_triggers,
-                                         Triggers::time_triggers>>>;
+                                         Triggers::time_triggers>>,
+        tmpl::pair<Filters::Filter<volume_dim,
+                                   typename system::variables_tag::tags_list>,
+                   Filters::all_filters<
+                       volume_dim, typename system::variables_tag::tags_list>>>;
   };
 
   using observed_reduction_data_tags =
@@ -288,6 +295,9 @@ struct EvolutionMetavars {
                               evolution::dg::subcell::DisableLts<Dim>>,
                           tmpl::list<>>,
       evolution::Actions::InitializeRunEventsAndDenseTriggers,
+      Initialization::Actions::InitializeItems<
+          evolution::dg::Initialization::SpectralFilters<
+              volume_dim, typename system::variables_tag::tags_list>>,
       Parallel::Actions::TerminatePhase>>;
 
   using events_and_dense_triggers_postprocessors = tmpl::list<
@@ -330,7 +340,8 @@ struct EvolutionMetavars {
       tmpl::conditional_t<
           local_time_stepping,
           Actions::MutateApply<evolution::dg::CleanMortarHistory<volume_dim>>,
-          tmpl::list<>>>>;
+          tmpl::list<>>,
+      dg::Actions::SpectralFilter>>;
 
   struct SubcellOptions {
     static constexpr bool subcell_enabled = use_dg_subcell;

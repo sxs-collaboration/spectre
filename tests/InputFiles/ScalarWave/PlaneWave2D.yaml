@@ -78,14 +78,15 @@ SpatialDiscretization:
   DiscontinuousGalerkin:
     Formulation: StrongInertial
     Quadrature: GaussLobatto
-
-# Filtering is being tested by the 2D executable (see EvolveScalarWave.hpp)
-Filtering:
-  ExpFilter0:
-    Alpha: 36
-    HalfPower: 128
-    Enable: true
-    BlocksToFilter: All
+    Filtering:
+      - Hypercube:
+          HalfPower: 128
+          Enable: true
+          BlocksToFilter: All
+          VolumeFilterOnSubstep: true
+          BoundaryCorrectionFilterOnSubstep: false
+          VolumeFilterEveryNSteps: None
+          BoundaryCorrectionFilterEveryNSteps: None
 
 EventsAndTriggersAtCheckpoints:
 

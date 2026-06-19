@@ -64,6 +64,9 @@ SpatialDiscretization:
   DiscontinuousGalerkin:
     Formulation: StrongInertial
     Quadrature: GaussLobatto
+    Filtering:
+      - None:
+          BlocksToFilter: All
     Subcell:
       TroubledCellIndicator:
         PerssonTci:
