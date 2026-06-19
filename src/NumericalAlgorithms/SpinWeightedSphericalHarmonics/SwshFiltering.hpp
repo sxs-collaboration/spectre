@@ -29,7 +29,7 @@ namespace Swsh {
  * \warning In principle, the radial filter in this function could cache the
  * matrix used, but currently does not. If such a cache becomes desirable for
  * performance, care must be taken regarding the exponential parameters. An
- * implementation similar to `dg::Actions::ExponentialFilter` may be necessary.
+ * implementation similar to `Filters::Hypercube` may be necessary.
  * \note  For comparisons with SpEC CCE, `exponential_half_power` of 8,
  * `exponential_alpha` of 108, and `filter_max_l` of `l_max - 3` should be used.
  * This gives a highly aggressive radial filter, though, and for runs not
@@ -66,7 +66,7 @@ void filter_swsh_volume_quantity(
  * \warning In principle, the radial filter in this function could cache the
  * matrix used, but currently does not. If such a cache becomes desirable for
  * performance, care must be taken regarding the exponential parameters. An
- * implementation similar to `dg::Actions::ExponentialFilter` may be necessary.
+ * implementation similar to `Filters::Hypercube` may be necessary.
  */
 template <int Spin>
 void filter_swsh_volume_quantity(

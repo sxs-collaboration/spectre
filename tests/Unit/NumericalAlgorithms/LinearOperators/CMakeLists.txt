@@ -11,7 +11,6 @@ set(LIBRARY_SOURCES
   Test_CoefficientTransforms.cpp
   Test_DefiniteIntegral.cpp
   Test_Divergence.cpp
-  Test_Filtering.cpp
   Test_IndefiniteIntegral.cpp
   Test_Linearize.cpp
   Test_MeanValue.cpp
