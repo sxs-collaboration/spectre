@@ -15,8 +15,21 @@ on:
 
 jobs:
   deploy_static_execs:
-    name: Deploy static executables and libraries
-    runs-on: ubuntu-latest
+    name: Deploy static executables and libraries (${{ matrix.arch }})
+    runs-on: ${{ matrix.runner }}
+    # We build native images on matching runners (amd64 on ubuntu-latest, arm64
+    # on the GitHub-hosted ARM64 runner) rather than cross-compiling with QEMU,
+    # which proved fragile. See BuildDockerContainer.yaml for details.
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: amd64
+            runner: ubuntu-latest
+            asset: x86-64
+          - arch: arm64
+            runner: ubuntu-24.04-arm
+            asset: arm64
     env:
       RELEASE_TAG_NAME: ${{ inputs.tag_name || github.event.release.tag_name }}
     steps:
@@ -34,7 +47,7 @@ jobs:
           file: "./containers/Dockerfile.buildenv"
           target: deploy_static_execs_and_libs
           tags: sxs-collaboration/spectre:deploy_static_execs_and_libs
-          platforms: linux/amd64
+          platforms: linux/${{ matrix.arch }}
           load: true
           build-args: |
             UBUNTU_VERSION=18.04
@@ -108,11 +121,11 @@ jobs:
         # though it's a decent bit slower. Specifically, xz is two thirds the
         # size of gzip.
         run:  |
-          tar cJf CceExecutables.tar.xz CceExecutables
+          tar cJf CceExecutables-${{ matrix.asset }}.tar.xz CceExecutables
       - name: Upload to release
         uses: softprops/action-gh-release@v3
         with:
           tag_name: ${{ env.RELEASE_TAG_NAME }}
           fail_on_unmatched_files: true
           files: |
-            CceExecutables.tar.xz
+            CceExecutables-${{ matrix.asset }}.tar.xz
