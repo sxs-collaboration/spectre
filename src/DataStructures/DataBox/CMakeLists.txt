@@ -7,6 +7,7 @@ spectre_target_headers(
   HEADERS
   Access.hpp
   AsAccess.hpp
+  ConstructibleFromTags.hpp
   DataBox.hpp
   DataBoxTag.hpp
   DataOnSlice.hpp

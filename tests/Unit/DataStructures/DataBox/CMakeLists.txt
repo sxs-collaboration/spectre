@@ -4,6 +4,7 @@
 set(LIBRARY "Test_DataBox")
 
 set(LIBRARY_SOURCES
+  Test_ConstructibleFromTags.cpp
   Test_DataBox.cpp
   Test_DataBoxDocumentation.cpp
   Test_DataBoxPrefixes.cpp
