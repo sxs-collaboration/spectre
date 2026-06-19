@@ -345,15 +345,26 @@ def inspiral_parameters_spec(
     spin_magnitude_right = id_params["ID_chiAMagnitude"]
     initial_separation = id_params["ID_d"]
 
+    target_params = {
+        "MassRatio": mass_ratio,
+        "MassA": mass_right,
+        "MassB": mass_left,
+        "DimensionlessSpinA": id_params["ID_chiA"],
+        "DimensionlessSpinB": id_params["ID_chiB"],
+    }
+
     params = {
         # Initial data files
+        "IdFromEvolution": 0,
         "SpecDataDirectory": str(Path(id_run_dir).resolve()),
         # Domain geometry
-        # SpEC excision in ID_Params.perl is 0.89 * horizon radius, but
-        # usually you want to excise less than the maximum. Here use 6% larger,
-        # or about 0.9434 * horizon radius.
-        "ExcisionRadiusA": id_params["ID_rExcA"] * 1.06,
-        "ExcisionRadiusB": id_params["ID_rExcB"] * 1.06,
+        # SpEC excision in ID_Params.perl is 0.97 * apparent horizon radius.
+        # Using the exact same excision from ID_Params.perl works for equal
+        # mass, nonspinning bbh, but for spinning cases you want SpEC to
+        # generate initial data with a smaller excision radius (e.g. 0.95 *
+        # apparent horizon radius has worked for spin 0.5).
+        "ExcisionRadiusA": id_params["ID_rExcA"],
+        "ExcisionRadiusB": id_params["ID_rExcB"],
         "ObjectOuterRadius": initial_separation / 2.5,
         "XCoordA": id_params["ID_cA"][0],
         "XCoordB": id_params["ID_cB"][0],
@@ -394,6 +405,11 @@ def inspiral_parameters_spec(
             spin_magnitude_right=spin_magnitude_right,
         )
     )
+
+    # Store target parameters in the input file
+    params["TargetParams"] = yaml.safe_dump(
+        {"TargetParams": target_params}
+    ).strip()
 
     return params
 
