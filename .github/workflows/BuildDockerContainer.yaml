@@ -85,17 +85,15 @@ jobs:
           build-args: |
             PARALLEL_MAKE_ARG=-j4
             UBUNTU_VERSION=22.04
-      # The 18.04 container only supports amd64
       - name: Build dev1804 container
-        if: ${{ matrix.arch == 'amd64' }}
         uses: docker/build-push-action@v7
         with:
           push: true
           context: .
           file: "./containers/Dockerfile.buildenv"
           target: dev
-          tags: ${{ inputs.image_name }}:dev1804
-          platforms: linux/amd64
+          tags: ${{ inputs.image_name }}:dev1804-${{ matrix.arch }}
+          platforms: linux/${{ matrix.arch }}
           build-args: |
             PARALLEL_MAKE_ARG=-j4
             UBUNTU_VERSION=18.04
@@ -121,6 +119,14 @@ jobs:
           fi
           docker buildx imagetools create \
             --tag ${{ inputs.image_name }}:dev $SOURCES
+      - name: Create dev1804 manifest
+        run: |
+          SOURCES="${{ inputs.image_name }}:dev1804-amd64"
+          if [ "${{ inputs.build_arm }}" = "true" ]; then
+            SOURCES="$SOURCES ${{ inputs.image_name }}:dev1804-arm64"
+          fi
+          docker buildx imagetools create \
+            --tag ${{ inputs.image_name }}:dev1804 $SOURCES
       - name: Inspect manifest
         run: >
           docker buildx imagetools inspect ${{ inputs.image_name }}:dev
