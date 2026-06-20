@@ -10,6 +10,8 @@
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/TimeDerivativeTerms.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Tags.hpp"
 #include "Evolution/VariableFixing/Tags.hpp"
+#include "NumericalAlgorithms/SphericalHarmonics/IO/InitialShapeFromFile.hpp"
+#include "NumericalAlgorithms/SphericalHarmonics/InitialShape.hpp"
 #include "Options/FactoryHelpers.hpp"
 #include "Options/Protocols/FactoryCreation.hpp"
 #include "Options/String.hpp"
@@ -21,6 +23,7 @@
 #include "ParallelAlgorithms/ApparentHorizonFinder/Criteria/Factory.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/Events/FindApparentHorizon.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/HorizonAliases.hpp"
+#include "ParallelAlgorithms/ApparentHorizonFinder/KerrSchild.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/Protocols/HorizonMetavars.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Surfaces/Tags.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/Factory.hpp"
@@ -92,7 +95,11 @@ struct EvolutionMetavars
     using factory_classes = Options::add_factory_classes<
         typename base::factory_creation::factory_classes,
         tmpl::pair<Event, tmpl::list<ah::Events::FindApparentHorizon<AhA>>>,
-        tmpl::pair<ah::Criterion, ah::Criteria::standard_criteria>>;
+        tmpl::pair<ah::Criterion, ah::Criteria::standard_criteria>,
+        tmpl::pair<ylm::InitialShape<domain_frame>,
+                   tmpl::list<ylm::InitialShapes::Sphere<domain_frame>,
+                              ylm::InitialShapes::FromFile<domain_frame>,
+                              ah::InitialShapes::KerrSchild<domain_frame>>>>;
   };
 
   using initial_data_tag = typename base::initial_data_tag;

@@ -21,13 +21,17 @@
 #include "IO/H5/File.hpp"
 #include "NumericalAlgorithms/RootFinding/QuadraticEquation.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/IO/FillYlmLegendAndData.hpp"
+#include "NumericalAlgorithms/SphericalHarmonics/IO/InitialShapeFromFile.hpp"
+#include "NumericalAlgorithms/SphericalHarmonics/InitialShape.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/Spherepack.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/SpherepackIterator.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/Strahlkorper.hpp"
 #include "Options/ParseOptions.hpp"
+#include "Options/Protocols/FactoryCreation.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/FileSystem.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace Frame {
@@ -36,6 +40,16 @@ struct Inertial;
 
 namespace ylm {
 namespace {
+struct TestCreationMetavariables {
+  struct factory_creation
+      : tt::ConformsTo<Options::protocols::FactoryCreation> {
+    using factory_classes = tmpl::map<
+        tmpl::pair<ylm::InitialShape<Frame::Inertial>,
+                   tmpl::list<ylm::InitialShapes::Sphere<Frame::Inertial>,
+                              ylm::InitialShapes::FromFile<Frame::Inertial>>>>;
+  };
+};
+
 void test_invert_spec_phys_transform() {
   const double avg_radius = 1.0;
   const double delta_radius = 0.1;
@@ -220,16 +234,19 @@ Strahlkorper<Frame::Inertial> parse_strahlkorper_from_options(
   Options::Parser<tmpl::list<OptionTags::Strahlkorper<Frame::Inertial>>> opts(
       "");
   opts.parse(options_string);
-  return opts.get<OptionTags::Strahlkorper<Frame::Inertial>>();
+  return opts.get<OptionTags::Strahlkorper<Frame::Inertial>,
+                  TestCreationMetavariables>();
 }
 
 void test_construct_from_options() {
   // Test construction from Radius and Center
   {
     CHECK(parse_strahlkorper_from_options("Strahlkorper:\n"
-                                          " LMax : 6\n"
-                                          " Center: [1.,2.,3.]\n"
-                                          " Radius: 4.5\n") ==
+                                          " InitialL : 6\n"
+                                          " InitialShape:\n"
+                                          "   Sphere:\n"
+                                          "     Center: [1.,2.,3.]\n"
+                                          "     Radius: 4.5\n") ==
           Strahlkorper<Frame::Inertial>(6, 6, 4.5, {{1., 2., 3.}}));
   }
 
@@ -252,12 +269,14 @@ void test_construct_from_options() {
     {
       const auto read_strahlkorper = parse_strahlkorper_from_options(
           "Strahlkorper:\n"
-          " LMax : 4\n"
-          " H5Filename: TestStrahlkorperOptions.h5\n"
-          " SubfileName: TestSurface_Ylm\n"
-          " Time: 1.23\n"
-          " TimeEpsilon: 1.0e-10\n"
-          " CheckFrame: true\n");
+          " InitialL : 4\n"
+          " InitialShape:\n"
+          "   FromFile:\n"
+          "     H5Filename: TestStrahlkorperOptions.h5\n"
+          "     SubfileName: TestSurface_Ylm\n"
+          "     Time: 1.23\n"
+          "     TimeEpsilon: 1.0e-10\n"
+          "     CheckFrame: true\n");
 
       CHECK(read_strahlkorper.l_max() == l_max_original);
       CHECK(read_strahlkorper.m_max() == l_max_original);
@@ -271,12 +290,14 @@ void test_construct_from_options() {
       const size_t l_max_requested = 6;
       const auto read_strahlkorper = parse_strahlkorper_from_options(
           "Strahlkorper:\n"
-          " LMax : 6\n"
-          " H5Filename: TestStrahlkorperOptions.h5\n"
-          " SubfileName: TestSurface_Ylm\n"
-          " Time: 1.23\n"
-          " TimeEpsilon: 1.0e-10\n"
-          " CheckFrame: true\n");
+          " InitialL : 6\n"
+          " InitialShape:\n"
+          "   FromFile:\n"
+          "     H5Filename: TestStrahlkorperOptions.h5\n"
+          "     SubfileName: TestSurface_Ylm\n"
+          "     Time: 1.23\n"
+          "     TimeEpsilon: 1.0e-10\n"
+          "     CheckFrame: true\n");
 
       CHECK(read_strahlkorper.l_max() == l_max_requested);
       CHECK(read_strahlkorper.m_max() == l_max_requested);
@@ -292,12 +313,14 @@ void test_construct_from_options() {
     {
       const auto read_strahlkorper = parse_strahlkorper_from_options(
           "Strahlkorper:\n"
-          " LMax : 2\n"
-          " H5Filename: TestStrahlkorperOptions.h5\n"
-          " SubfileName: TestSurface_Ylm\n"
-          " Time: 1.23\n"
-          " TimeEpsilon: 1.0e-10\n"
-          " CheckFrame: true\n");
+          " InitialL : 2\n"
+          " InitialShape:\n"
+          "   FromFile:\n"
+          "     H5Filename: TestStrahlkorperOptions.h5\n"
+          "     SubfileName: TestSurface_Ylm\n"
+          "     Time: 1.23\n"
+          "     TimeEpsilon: 1.0e-10\n"
+          "     CheckFrame: true\n");
 
       CHECK(read_strahlkorper.l_max() == 2);
       CHECK(read_strahlkorper.m_max() == 2);
@@ -318,13 +341,16 @@ void test_construct_from_options() {
         "");
     opts.parse(
         "Strahlkorper:\n"
-        " LMax : 4\n"
-        " H5Filename: NonexistentFile.h5\n"
-        " SubfileName: TestSurface_Ylm\n"
-        " Time: 1.23\n"
-        " TimeEpsilon: 1.0e-10\n"
-        " CheckFrame: true\n");
-    CHECK_THROWS_WITH(opts.get<OptionTags::Strahlkorper<Frame::Inertial>>(),
+        " InitialL : 4\n"
+        " InitialShape:\n"
+        "   FromFile:\n"
+        "     H5Filename: NonexistentFile.h5\n"
+        "     SubfileName: TestSurface_Ylm\n"
+        "     Time: 1.23\n"
+        "     TimeEpsilon: 1.0e-10\n"
+        "     CheckFrame: true\n");
+    CHECK_THROWS_WITH((opts.get<OptionTags::Strahlkorper<Frame::Inertial>,
+                                TestCreationMetavariables>()),
                       Catch::Matchers::ContainsSubstring(
                           "Trying to open the file 'NonexistentFile.h5'") &&
                           Catch::Matchers::ContainsSubstring("does not exist"));
@@ -345,14 +371,17 @@ void test_construct_from_options() {
         "");
     opts.parse(
         "Strahlkorper:\n"
-        " LMax : 4\n"
-        " H5Filename: TestStrahlkorperOptionsFailure.h5\n"
-        " SubfileName: InvalidSurface\n"
-        " Time: 1.23\n"
-        " TimeEpsilon: 1.0e-10\n"
-        " CheckFrame: true\n");
+        " InitialL : 4\n"
+        " InitialShape:\n"
+        "   FromFile:\n"
+        "     H5Filename: TestStrahlkorperOptionsFailure.h5\n"
+        "     SubfileName: InvalidSurface\n"
+        "     Time: 1.23\n"
+        "     TimeEpsilon: 1.0e-10\n"
+        "     CheckFrame: true\n");
     CHECK_THROWS_WITH(
-        opts.get<OptionTags::Strahlkorper<Frame::Inertial>>(),
+        (opts.get<OptionTags::Strahlkorper<Frame::Inertial>,
+                  TestCreationMetavariables>()),
         Catch::Matchers::ContainsSubstring("Cannot open the object"));
 
     file_system::rm(test_filename, true);
@@ -373,14 +402,17 @@ void test_construct_from_options() {
         "");
     opts.parse(
         "Strahlkorper:\n"
-        " LMax : 4\n"
-        " H5Filename: TestStrahlkorperOptionsTimeEpsilon.h5\n"
-        " SubfileName: TestSurface_Ylm\n"
-        " Time: 1.2300000003\n"  // Differs by 3.0e-10 from actual time
-        " TimeEpsilon: 1.0e-10\n"
-        " CheckFrame: true\n");
+        " InitialL : 4\n"
+        " InitialShape:\n"
+        "   FromFile:\n"
+        "     H5Filename: TestStrahlkorperOptionsTimeEpsilon.h5\n"
+        "     SubfileName: TestSurface_Ylm\n"
+        "     Time: 1.2300000003\n"  // Differs by 3.0e-10 from actual time
+        "     TimeEpsilon: 1.0e-10\n"
+        "     CheckFrame: true\n");
     CHECK_THROWS_WITH(
-        opts.get<OptionTags::Strahlkorper<Frame::Inertial>>(),
+        (opts.get<OptionTags::Strahlkorper<Frame::Inertial>,
+                  TestCreationMetavariables>()),
         Catch::Matchers::ContainsSubstring("Could not find time"));
 
     file_system::rm(test_filename, true);

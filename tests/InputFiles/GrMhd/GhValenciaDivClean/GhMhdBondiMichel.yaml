@@ -242,9 +242,11 @@ ApparentHorizons:
   AhA:
     Criteria:
     InitialGuess:
-      LMax: 4
-      Radius: 2.2
-      Center: [0.0, 0.0, 0.0]
+      InitialL: 4
+      InitialShape:
+        Sphere:
+          Radius: 2.2
+          Center: [0.0, 0.0, 0.0]
     FastFlow:
       Flow: Fast
       Alpha: 1.0
