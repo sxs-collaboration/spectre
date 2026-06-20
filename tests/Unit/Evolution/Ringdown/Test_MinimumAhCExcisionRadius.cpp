@@ -131,7 +131,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.Ringdown.MinimumAhCExcisionRadius",
   const domain::creators::sphere::TimeDependentMapOptions
       time_dependent_map_options{times.at(0),          shape_map_options,
                                  rotation_map_options, expansion_map_options,
-                                 std::nullopt,         true};
+                                 std::nullopt,         true,
+                                 std::nullopt};
 
   const domain::creators::Sphere domain_creator{
       0.01,

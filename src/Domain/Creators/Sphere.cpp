@@ -320,26 +320,23 @@ Domain<3> Sphere::create_domain() const {
             fill_interior_ and (block_id == num_blocks_ - 1);
         // Correct for 'which_wedges' option
         const size_t shell = block_id / num_blocks_per_shell_;
-        const size_t block_number = shell * 6 +
-                                    which_wedge_index(which_wedges_) +
-                                    block_id % num_blocks_per_shell_;
+        const size_t shape_map_index =
+            which_wedge_index(which_wedges_) + block_id % num_blocks_per_shell_;
         block_maps_grid_to_distorted[block_id] =
-            hard_coded_options.grid_to_distorted_map(
-                block_number, is_inner_cube, num_blocks_per_shell_);
+            hard_coded_options.grid_to_distorted_map(shell, shape_map_index,
+                                                     is_inner_cube);
         block_maps_distorted_to_inertial[block_id] =
-            hard_coded_options.distorted_to_inertial_map(
-                block_number, is_inner_cube, num_blocks_per_shell_);
+            hard_coded_options.distorted_to_inertial_map(shell, is_inner_cube);
         block_maps_grid_to_inertial[block_id] =
             hard_coded_options.grid_to_inertial_map(
-                block_number, is_outer_shell, is_inner_cube,
-                num_blocks_per_shell_);
+                shell, shape_map_index, is_outer_shell, is_inner_cube);
       }
 
       // Inject time dependent map into the excision
       if (not fill_interior_ and which_wedges_ == ShellWedges::All) {
         domain.inject_time_dependent_map_for_excision_sphere(
-            "ExcisionSphere", hard_coded_options.grid_to_inertial_map(
-                                  0, false, true, num_blocks_per_shell_));
+            "ExcisionSphere",
+            hard_coded_options.grid_to_inertial_map(0, 0, false, true));
       }
     } else {
       const auto& time_dependence = std::get<std::unique_ptr<

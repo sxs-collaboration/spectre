@@ -44,8 +44,8 @@ std::vector<std::array<double, 4>> extract_rotation_func_and_2_derivs(
     const domain::FunctionsOfTimeMap& functions_of_time, const double time) {
   const auto function_of_time = functions_of_time.find("Rotation");
   if (function_of_time == functions_of_time.end()) {
-    ERROR("Rotation function of time could not be found at " << "time " << time
-                                                             << "M.");
+    ERROR("Rotation function of time could not be found at "
+          << "time " << time << "M.");
   }
   const auto values = function_of_time->second->func_and_2_derivs(time);
   std::vector<std::array<double, 4>> result(3);
@@ -182,7 +182,8 @@ strahlkorper_coefs_and_centers(
                                      rotation_map_options_from_volume,
                                      expansion_map_options_from_volume,
                                      translation_map_options_from_volume,
-                                     true};
+                                     true,
+                                     std::nullopt};
       // We construct a temporary ringdown domain that will be used to transform
       // the common horizon from the inspiral inertial frame to the temporary
       // frame (ringdown intermediate frame in SpEC) for shape coefficients and

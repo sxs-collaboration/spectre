@@ -245,7 +245,7 @@ void test_apparent_horizon(
                     3>{std::array{std::array{0.0, 0.0, 0.0},
                                   std::array{0.0, 0.01, 0.0},
                                   std::array{0.0, 0.0, 0.0}}},
-                true}}
+                true, std::nullopt}}
           : std::nullopt);
 
   {
