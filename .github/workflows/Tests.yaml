@@ -535,6 +535,10 @@ jobs:
 
     container:
       image: ${{ inputs.container || 'sxscollaboration/spectre:dev' }}
+      volumes:
+        - /usr/local:/mnt/host-usr-local
+        - /usr/share:/mnt/host-usr-share
+        - /opt:/mnt/host-opt
       env:
         # We make sure to use a fixed absolute path for the ccache directory
         CCACHE_DIR: /work/ccache
@@ -565,6 +569,18 @@ jobs:
       # for why we need this
       options: --privileged
     steps:
+      - name: Free host disk space
+        run: |
+          df -h /
+          rm -rf /mnt/host-usr-local/lib/android \
+                 /mnt/host-usr-local/.ghcup \
+                 /mnt/host-usr-local/julia* \
+                 /mnt/host-opt/hostedtoolcache \
+                 /mnt/host-usr-share/dotnet \
+                 /mnt/host-usr-share/swift \
+                 /mnt/host-usr-share/miniconda \
+                 /mnt/host-opt/microsoft /mnt/host-opt/google || true
+          df -h /
       - name: Record start time
         id: start
         run: |
