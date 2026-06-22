@@ -47,7 +47,6 @@ DomainCreator:
     RadiusB: &RadiusB 0.45825
     IncludeInnerSphereA: true
     IncludeInnerSphereB: true
-    IncludeOuterSphere: true
     UseEquiangularMap: true
     OuterRadius: 300.0
     InitialRefinement: 2
