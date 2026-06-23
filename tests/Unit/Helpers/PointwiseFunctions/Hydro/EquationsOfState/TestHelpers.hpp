@@ -316,7 +316,7 @@ void check_impl(
  * an EoS class has member variables (these must be `double`s currently) that
  * are used to compute the quantities, such as the polytropic constant and
  * polytropic exponent for a fluid, then they must be passed in as the last
- * arguments to the `check` function`. Each python function must take these same
+ * arguments to the `check` function. Each python function must take these same
  * arguments as the trailing arguments.
  */
 template <class EosType, class T, class... MemberArgs>

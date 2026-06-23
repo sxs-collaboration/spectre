@@ -130,9 +130,9 @@ class MultiLinearSpanInterpolation {
 
   MultiLinearSpanInterpolation() = default;
 
-  MultiLinearSpanInterpolation(
-      std::array<gsl::span<const double>, Dimension> x_,
-      gsl::span<const double> y_, Index<Dimension> number_of_points__);
+  MultiLinearSpanInterpolation(std::array<gsl::span<const double>, Dimension> x,
+                               gsl::span<const double> y,
+                               Index<Dimension> number_of_points);
 
   double lower_bound(const size_t which_dimension) const {
     return x_[which_dimension][0];
@@ -394,8 +394,8 @@ auto MultiLinearSpanInterpolation<Dimension, NumberOfVariables,
 template <size_t Dimension, size_t NumberOfVariables, bool UniformSpacing>
 MultiLinearSpanInterpolation<Dimension, NumberOfVariables, UniformSpacing>::
     MultiLinearSpanInterpolation(
-        std::array<gsl::span<double const>, Dimension> x,
-        gsl::span<double const> y, Index<Dimension> number_of_points)
+        std::array<gsl::span<const double>, Dimension> x,
+        gsl::span<const double> y, Index<Dimension> number_of_points)
     : number_of_points_(number_of_points), x_(x), y_(y) {
   for (size_t i = 0; i < Dimension; ++i) {
     spacing_[i] = x_[i][1] - x_[i][0];

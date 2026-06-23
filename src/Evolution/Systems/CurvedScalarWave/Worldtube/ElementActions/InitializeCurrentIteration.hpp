@@ -12,7 +12,7 @@
 namespace CurvedScalarWave::Worldtube::Initialization {
 
 /*!
- * \brief Sets the initial value of `CurrentIteration to 0.
+ * \brief Sets the initial value of `CurrentIteration` to 0.
  */
 struct InitializeCurrentIteration : tt::ConformsTo<db::protocols::Mutator> {
   using return_tags =

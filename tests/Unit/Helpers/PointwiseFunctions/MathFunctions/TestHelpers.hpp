@@ -132,7 +132,7 @@ void check_impl(
  * The `python_function_prefix` argument passed to `check` must be `PREFIX`. If
  * a MathFunction class has member variables set by its constructor, then these
  * member variables must be passed in as the last arguments to the `check`
- * function`. Each python function must take these same arguments as the
+ * function. Each python function must take these same arguments as the
  * trailing arguments.
  */
 template <class MathFunctionType, class T, class... MemberArgs>

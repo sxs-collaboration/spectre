@@ -42,7 +42,7 @@ class MarkAsNone {
  * to the list of creatable classes.
  *
  * \warning if you want an outflow-type boundary condition, you must implement
- * one, not use `None.
+ * one, not use `None`.
  */
 template <typename SystemBoundaryConditionBaseClass>
 struct None final : public SystemBoundaryConditionBaseClass, public MarkAsNone {

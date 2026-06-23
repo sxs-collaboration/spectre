@@ -24,7 +24,7 @@ namespace tenex {
  * \details Given the generic index order of a RHS TensorExpression and the
  * generic index order of the desired LHS Tensor, this creates a mapping between
  * the two that is then used to determine the (potentially reordered) ordering
- * of the elements of the desired LHS Tensor`s ::Symmetry, typelist of
+ * of the elements of the desired LHS Tensor's ::Symmetry, typelist of
  * \ref SpacetimeIndex "TensorIndexType"s, and Tensor_detail::Structure. This
  * struct is used to determine the LHS Tensor's properties when they are not
  * supplied by the user: when a user uses the `evaluate` overload that returns

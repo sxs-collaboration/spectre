@@ -316,7 +316,7 @@ static void execute_next_phase(
     const Parallel::Phase next_phase,
     const Parallel::CProxy_GlobalCache<metavariables>& global_cache);
 \endcode
-Parallel::Main<Metavariables>::execute_next_phase`
+`Parallel::Main<Metavariables>::execute_next_phase`
 determines the next phase, after
 which the `execute_next_phase` function of each component gets called. The
 `execute_next_phase` function determines what the parallel component should do

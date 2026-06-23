@@ -225,7 +225,7 @@ void cartesian_derivs_of_scalar(
  * \param inv_jac The inverse Jacobian as returned by
  * `ylm::inv_jacobian`
  * \param inv_hess The inverse Hessian as returned by
- * `ylm::inv_hessian.
+ * `ylm::inv_hessian`.
  */
 template <typename Fr>
 tnsr::ii<DataVector, 3, Fr> cartesian_second_derivs_of_scalar(
@@ -243,7 +243,7 @@ tnsr::ii<DataVector, 3, Fr> cartesian_second_derivs_of_scalar(
  * \param inv_jac The inverse Jacobian as returned by
  * `ylm::inv_jacobian`
  * \param inv_hess The inverse Hessian as returned by
- * `ylm::inv_hessian.
+ * `ylm::inv_hessian`.
  */
 template <typename Fr>
 void cartesian_second_derivs_of_scalar(

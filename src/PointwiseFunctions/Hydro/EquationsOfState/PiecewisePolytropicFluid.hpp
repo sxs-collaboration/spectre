@@ -32,7 +32,7 @@ namespace EquationsOfState {
  * A piecewise polytropic equation of state \f$p=K_i\rho^{\Gamma_i}\f$ where
  *  \f$K_i\f$ is the polytropic constant and \f$\Gamma_i\f$ is the polytropic
  * exponent. Here the subscript \f$i\f$ indicates two pairs of constants and
- *  exponents which characterize `the stiffness' of the matter at low and high
+ *  exponents which characterize 'the stiffness' of the matter at low and high
  *  densities.  For a given density, the polytropic exponent is related to the
  *  polytropic index \f$N_p\f$ by \f$N_p=1/(\Gamma-1)\f$.  For posterity,
  *  this two piece polytrope has been used in toy models of CCSNe (e.g.,
@@ -99,7 +99,7 @@ class PiecewisePolytropicFluid : public EquationOfState<IsRelativistic, 1> {
       "polytropic constant either describing the low or high density material, "
       "and Gamma_i is the polytropic exponent for the low or high density "
       "material. The polytropic index N_i is defined as Gamma_i = 1 + 1 / N_i."
-      "  The subscript `i' refers to different pairs of Gamma and K that can"
+      "  The subscript 'i' refers to different pairs of Gamma and K that can"
       " describe either low or high density material."};
 
   using options =

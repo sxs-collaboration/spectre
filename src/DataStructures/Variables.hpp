@@ -66,7 +66,7 @@ class Variables;
  * into it.
  *
  * The `Tags` are `struct`s that must have a public type alias `type` whose
- * value must be a `Tensor<DataVector, ...>`, a `static' method `name()` that
+ * value must be a `Tensor<DataVector, ...>`, a `static` method `name()` that
  * returns a `std::string` of the tag name, and must derive off of
  * `db::SimpleTag`. In general, they should be DataBoxTags that are not compute
  * items. For example,
