@@ -38,7 +38,7 @@ void test_exponential_filter(const double alpha, const unsigned half_power,
     const Mesh<1> mesh{num_pts, BasisType, QuadratureType};
     ModalVector initial_modal_coeffs(num_pts);
     for (size_t i = 0; i < num_pts; ++i) {
-      initial_modal_coeffs = i + 1.0;
+      initial_modal_coeffs[i] = static_cast<double>(i) + 1.0;
     }
     const DataVector initial_nodal_coeffs =
         to_nodal_coefficients(initial_modal_coeffs, mesh);
@@ -160,7 +160,7 @@ void test_zero_lowest_modes() {
       const Mesh<1> mesh{num_pts, BasisType, QuadratureType};
       ModalVector initial_modal_coeffs(num_pts);
       for (size_t i = 0; i < num_pts; ++i) {
-        initial_modal_coeffs = i + 1.0;
+        initial_modal_coeffs[i] = static_cast<double>(i) + 1.0;
       }
       const DataVector initial_nodal_coeffs =
           to_nodal_coefficients(initial_modal_coeffs, mesh);
@@ -238,5 +238,129 @@ SPECTRE_TEST_CASE("Unit.Numerical.Spectral.ZeroLowestModesFilter",
   test_zero_lowest_modes<Spectral::Basis::Chebyshev,
                          Spectral::Quadrature::Gauss>();
   test_zero_lowest_modes_zernike_b1();
+}
+
+template <Spectral::Basis BasisType, Spectral::Quadrature QuadratureType>
+void test_zero_highest_modes() {
+  CAPTURE(BasisType);
+  CAPTURE(QuadratureType);
+  for (size_t num_pts =
+           Spectral::minimum_number_of_points<BasisType, QuadratureType>;
+       num_pts <= Spectral::maximum_number_of_points<BasisType>; ++num_pts) {
+    CAPTURE(num_pts);
+    // Zeroing modes is a round trip through the modal<->nodal transforms, so
+    // the retained modes are reproduced and the dropped modes vanish to
+    // roundoff. The roundoff accumulates with the number of points (chained
+    // transforms) and scales with the data magnitude, whose largest modal
+    // coefficient is `num_pts`.
+    const Approx local_approx =
+        Approx::custom().epsilon(1.0e-13).scale(static_cast<double>(num_pts));
+    for (size_t number_of_modes_to_filter = 0;
+         number_of_modes_to_filter < num_pts; ++number_of_modes_to_filter) {
+      CAPTURE(number_of_modes_to_filter);
+      const Mesh<1> mesh{num_pts, BasisType, QuadratureType};
+      ModalVector initial_modal_coeffs(num_pts);
+      for (size_t i = 0; i < num_pts; ++i) {
+        initial_modal_coeffs[i] = static_cast<double>(i) + 1.0;
+      }
+      const DataVector initial_nodal_coeffs =
+          to_nodal_coefficients(initial_modal_coeffs, mesh);
+      DataVector filtered_nodal_coeffs(num_pts);
+      const Matrix& filter_matrix = Spectral::filtering::zero_highest_modes(
+          mesh, number_of_modes_to_filter);
+      dgemv_('N', num_pts, num_pts, 1., filter_matrix.data(),
+             filter_matrix.spacing(), initial_nodal_coeffs.data(), 1, 0.0,
+             filtered_nodal_coeffs.data(), 1);
+      const ModalVector filtered_modal_coeffs =
+          to_modal_coefficients(filtered_nodal_coeffs, mesh);
+      for (size_t i = 0; i < num_pts; ++i) {
+        CAPTURE(i);
+        if (i + number_of_modes_to_filter >= num_pts) {
+          CHECK(filtered_modal_coeffs[i] == local_approx(0.0));
+        } else {
+          CHECK(local_approx(filtered_modal_coeffs[i]) ==
+                initial_modal_coeffs[i]);
+        }
+      }
+    }
+  }
+}
+
+void test_fourier_zero_highest_modes() {
+  Approx local_approx = approx;
+  local_approx.scale(1.0);
+  const std::vector<size_t> num_pts_list{1, 3, 5, 15};
+  for (const size_t num_pts : num_pts_list) {
+    CAPTURE(num_pts);
+    const Mesh<1> mesh{num_pts, Spectral::Basis::Fourier,
+                       Spectral::Quadrature::Equiangular};
+    const DataVector& x = Spectral::collocation_points<
+        Spectral::Basis::Fourier, Spectral::Quadrature::Equiangular>(num_pts);
+    const size_t M = (num_pts - 1) / 2;
+    for (size_t number_of_modes_to_filter = 0; number_of_modes_to_filter <= M;
+         ++number_of_modes_to_filter) {
+      CAPTURE(number_of_modes_to_filter);
+      const Matrix& filter = Spectral::filtering::zero_highest_modes(
+          mesh, number_of_modes_to_filter);
+      // The constant mode is always retained.
+      const DataVector constant_vals(num_pts, 1.0);
+      DataVector filtered_constant(num_pts, 0.0);
+      dgemv_('N', num_pts, num_pts, 1., filter.data(), filter.spacing(),
+             constant_vals.data(), 1, 0.0, filtered_constant.data(), 1);
+      CHECK_ITERABLE_CUSTOM_APPROX(filtered_constant, constant_vals,
+                                   local_approx);
+      for (size_t m = 1; m <= M; ++m) {
+        CAPTURE(m);
+        const DataVector cos_vals = cos(static_cast<double>(m) * x);
+        const DataVector sin_vals = sin(static_cast<double>(m) * x);
+        DataVector filtered_cos(num_pts, 0.0);
+        DataVector filtered_sin(num_pts, 0.0);
+        dgemv_('N', num_pts, num_pts, 1., filter.data(), filter.spacing(),
+               cos_vals.data(), 1, 0.0, filtered_cos.data(), 1);
+        dgemv_('N', num_pts, num_pts, 1., filter.data(), filter.spacing(),
+               sin_vals.data(), 1, 0.0, filtered_sin.data(), 1);
+        // The top number_of_modes_to_filter m-modes are zeroed.
+        const bool keep = m + number_of_modes_to_filter <= M;
+        const DataVector expected_cos =
+            keep ? cos_vals : DataVector(num_pts, 0.0);
+        const DataVector expected_sin =
+            keep ? sin_vals : DataVector(num_pts, 0.0);
+        CHECK_ITERABLE_CUSTOM_APPROX(filtered_cos, expected_cos, local_approx);
+        CHECK_ITERABLE_CUSTOM_APPROX(filtered_sin, expected_sin, local_approx);
+      }
+    }
+  }
+}
+
+SPECTRE_TEST_CASE("Unit.Numerical.Spectral.ZeroHighestModesFilter",
+                  "[NumericalAlgorithms][Spectral][Unit]") {
+  test_zero_highest_modes<Spectral::Basis::Legendre,
+                          Spectral::Quadrature::GaussLobatto>();
+  test_zero_highest_modes<Spectral::Basis::Legendre,
+                          Spectral::Quadrature::Gauss>();
+  test_zero_highest_modes<Spectral::Basis::Chebyshev,
+                          Spectral::Quadrature::GaussLobatto>();
+  test_zero_highest_modes<Spectral::Basis::Chebyshev,
+                          Spectral::Quadrature::Gauss>();
+  test_fourier_zero_highest_modes();
+#ifdef SPECTRE_DEBUG
+  CHECK_THROWS_WITH(
+      Spectral::filtering::zero_highest_modes(
+          Mesh<1>{4, Spectral::Basis::Fourier,
+                  Spectral::Quadrature::Equiangular},
+          1),
+      Catch::Matchers::ContainsSubstring("The Fourier basis is required to "
+                                         "have an odd number of grid points"));
+  CHECK_THROWS_WITH(Spectral::filtering::zero_highest_modes(
+                        Mesh<1>{5, Spectral::Basis::Fourier,
+                                Spectral::Quadrature::Equiangular},
+                        3),
+                    Catch::Matchers::ContainsSubstring("you cannot zero"));
+  CHECK_THROWS_WITH(Spectral::filtering::zero_highest_modes(
+                        Mesh<1>{4, Spectral::Basis::Legendre,
+                                Spectral::Quadrature::GaussLobatto},
+                        4),
+                    Catch::Matchers::ContainsSubstring("you cannot zero"));
+#endif  // SPECTRE_DEBUG
 }
 }  // namespace
