@@ -16,6 +16,7 @@
 #include "Domain/BoundaryConditions/BoundaryCondition.hpp"
 #include "Domain/BoundaryConditions/GetBoundaryConditionsBase.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
+#include "Domain/CoordinateMaps/Identity.hpp"
 #include "Domain/Creators/DomainCreator.hpp"
 #include "Domain/Creators/TimeDependentOptions/BinaryCompactObject.hpp"
 #include "Domain/Domain.hpp"
@@ -35,6 +36,7 @@ template <typename Map1, typename Map2>
 class ProductOf2Maps;
 template <typename Map1, typename Map2, typename Map3>
 class ProductOf3Maps;
+class SphericalToCartesianPfaffian;
 template <size_t VolumeDim>
 class Wedge;
 template <size_t VolumeDim>
@@ -103,9 +105,8 @@ namespace domain::creators {
  *   consists of 4 blocks, named 'East', 'North', 'West', and 'South',
  *   so an example of a valid block name is 'CACylinderEast'.
  * - The Block group called "Outer" consists of all the CA and CB blocks.
- * - OuterSphereCAFilledCylinder, OuterSphereCBFilledCylinder,
- *   OuterSphereCACylinder, and OuterSphereCBCylinder are in a Block group
- *   called "OuterSphere" and all of these border the outer boundary.
+ * - OuterShell0 is the single shell in a Block group called "OuterSphere" and
+ *   it borders the outer boundary.
  * - The Block group called "InnerA" consists of all the EA, and MA
  *   blocks. They all border the inner boundary "A" if
  *   `IncludeInnerSphereA` is false.
@@ -179,6 +180,11 @@ class CylindricalBinaryCompactObject : public DomainCreator<3> {
                                                     CoordinateMaps::Interval>,
                      CoordinateMaps::UniformCylindricalSide,
                      CoordinateMaps::DiscreteRotation<3>>,
+                 domain::CoordinateMap<
+                     Frame::BlockLogical, Frame::Inertial,
+                     domain::CoordinateMaps::ProductOf2Maps<
+                         CoordinateMaps::Interval, CoordinateMaps::Identity<2>>,
+                     domain::CoordinateMaps::SphericalToCartesianPfaffian>,
                  bco::TimeDependentMapOptions<true>::maps_list>>;
 
   struct CenterA {
@@ -233,7 +239,10 @@ class CylindricalBinaryCompactObject : public DomainCreator<3> {
         "representing [r, theta, perp], or such a list for every block in the "
         "domain. Here 'r' is the radial direction normal to the inner and "
         "outer boundaries, 'theta' is the periodic direction, and 'perp' is "
-        "the third direction."};
+        "the third direction. Note that for blocks in 'OuterSphere', the "
+        "angular refinement levels must be specified as zero. The exception is "
+        "if a single number is specified for global refinement, the angular "
+        "refinement for 'OuterSphere' blocks will be set to 0 for you."};
   };
   struct InitialGridPoints {
     using type =
@@ -245,7 +254,9 @@ class CylindricalBinaryCompactObject : public DomainCreator<3> {
         "list representing [r, theta, perp], or such a list for every block in "
         "the domain. Here 'r' is the radial direction normal to the inner and "
         "outer boundaries, 'theta' is the periodic direction, and 'perp' is "
-        "the third direction."};
+        "the third direction. The exception to this is that for blocks in "
+        "'OuterSphere', the list represents [r, l_max, m_max]. Note that for "
+        "these blocks, l_max must be equal to m_max."};
   };
 
   struct BoundaryConditions {

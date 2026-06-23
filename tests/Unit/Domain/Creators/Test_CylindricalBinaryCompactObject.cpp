@@ -176,28 +176,8 @@ block_names_and_groups(const bool include_inner_sphere_A,
           "InnerSphereEBCylinderEast", "InnerSphereEBCylinderNorth",
           "InnerSphereEBCylinderWest", "InnerSphereEBCylinderSouth"}});
   }
-  block_names.insert(
-      block_names.end(),
-      {"OuterSphereCAFilledCylinderCenter", "OuterSphereCAFilledCylinderEast",
-       "OuterSphereCAFilledCylinderNorth", "OuterSphereCAFilledCylinderWest",
-       "OuterSphereCAFilledCylinderSouth", "OuterSphereCBFilledCylinderCenter",
-       "OuterSphereCBFilledCylinderEast", "OuterSphereCBFilledCylinderNorth",
-       "OuterSphereCBFilledCylinderWest", "OuterSphereCBFilledCylinderSouth",
-       "OuterSphereCACylinderEast", "OuterSphereCACylinderNorth",
-       "OuterSphereCACylinderWest", "OuterSphereCACylinderSouth",
-       "OuterSphereCBCylinderEast", "OuterSphereCBCylinderNorth",
-       "OuterSphereCBCylinderWest", "OuterSphereCBCylinderSouth"});
-  block_groups.insert(
-      {"OuterSphere",
-       {"OuterSphereCAFilledCylinderCenter", "OuterSphereCAFilledCylinderEast",
-        "OuterSphereCAFilledCylinderNorth", "OuterSphereCAFilledCylinderWest",
-        "OuterSphereCAFilledCylinderSouth", "OuterSphereCBFilledCylinderCenter",
-        "OuterSphereCBFilledCylinderEast", "OuterSphereCBFilledCylinderNorth",
-        "OuterSphereCBFilledCylinderWest", "OuterSphereCBFilledCylinderSouth",
-        "OuterSphereCACylinderEast", "OuterSphereCACylinderNorth",
-        "OuterSphereCACylinderWest", "OuterSphereCACylinderSouth",
-        "OuterSphereCBCylinderEast", "OuterSphereCBCylinderNorth",
-        "OuterSphereCBCylinderWest", "OuterSphereCBCylinderSouth"}});
+  block_names.insert(block_names.end(), {"OuterShell0"});
+  block_groups.insert({"OuterSphere", {"OuterShell0"}});
 
   return std::make_pair(block_names, block_groups);
 }
@@ -274,15 +254,21 @@ std::string create_option_string(
                                            "        BlockId: 314\n"}
                              : ""};
 
+  // is_h_refinement = true: we're constructing h-refinement
+  // is_h_refinement = false: we're constructing p-refinement (grid points)
   const auto initial_structure =
       [&include_inner_sphere_A, &include_inner_sphere_B](
-          const bool include_extra, const size_t value) {
+          const bool is_h_refinement, const bool include_extra,
+          const size_t value) {
         const std::string same = "[" + get_output(value) + "," +
                                  get_output(value) + "," + get_output(value) +
                                  "]";
         const std::string one_more = "[" + get_output(value + 1) + "," +
                                      get_output(value) + "," +
                                      get_output(value) + "]";
+        const std::string outer_shell = is_h_refinement ?
+                                    ("[" + get_output(value + 1) + ", 0, 0]") :
+                                    one_more;
         std::string result{};
         if (include_extra) {
           result += "\n    Outer: " + one_more;
@@ -294,7 +280,7 @@ std::string create_option_string(
           if (include_inner_sphere_B) {
             result += "\n    InnerSphereB: " + same;
           }
-          result += "\n    OuterSphere: " + one_more;
+          result += "\n    OuterSphere: " + outer_shell;
         } else {
           result = " " + get_output(value);
         }
@@ -312,9 +298,9 @@ std::string create_option_string(
          "\n  IncludeInnerSphereA: " + stringize(include_inner_sphere_A) +
          "\n  IncludeInnerSphereB: " + stringize(include_inner_sphere_B) +
          "\n  InitialRefinement:" +
-         initial_structure(with_additional_outer_radial_refinement, 1) +
+         initial_structure(true, with_additional_outer_radial_refinement, 1) +
          "\n  InitialGridPoints:" +
-         initial_structure(with_additional_grid_points, 3) + "\n" +
+         initial_structure(false, with_additional_grid_points, 3) + "\n" +
          time_dependence + boundary_conditions;
 }
 
@@ -631,16 +617,34 @@ void test_parse_errors() {
       Catch::Matchers::ContainsSubstring(
           "Must specify either both inner and outer boundary "
           "conditions or neither."));
+  // InitialRefinement and InitialGridPoints
+  CHECK_THROWS_WITH(
+      domain::creators::CylindricalBinaryCompactObject(
+          {{2.0, 0.05, 0.0}}, {-3.0, 0.05, 0.0}, 1.0, 0.4, false, false, 25.0,
+          false, std::array<size_t, 3>{1_st, 1_st, 1_st}, 3_st, std::nullopt,
+          create_inner_boundary_condition(), create_outer_boundary_condition(),
+          Options::Context{false, {}, 1, 1}),
+      Catch::Matchers::ContainsSubstring("Angular h-refinement"));
+  CHECK_THROWS_WITH(
+      domain::creators::CylindricalBinaryCompactObject(
+          {{2.0, 0.05, 0.0}}, {-3.0, 0.05, 0.0}, 1.0, 0.4, false, false, 25.0,
+          false, 1_st, std::array<size_t, 3>{{3_st, 4_st, 5_st}}, std::nullopt,
+          create_inner_boundary_condition(), create_outer_boundary_condition(),
+          Options::Context{false, {}, 1, 1}),
+      Catch::Matchers::ContainsSubstring("must have L_max = M_max"));
 }
 
 // This matches the structure in the option string
 std::unordered_map<std::string, std::array<size_t, 3>> make_initial_structure(
-    const size_t initial_value, const bool include_inner_sphere_A,
-    const bool include_inner_sphere_B) {
+    const bool is_h_refinement, const size_t initial_value,
+    const bool include_inner_sphere_A, const bool include_inner_sphere_B) {
   std::unordered_map<std::string, std::array<size_t, 3>> initial_map;
   const std::array<size_t, 3> same{initial_value, initial_value, initial_value};
   const std::array<size_t, 3> one_more{initial_value + 1, initial_value,
                                        initial_value};
+  const std::array<size_t, 3> outer_sphere =
+      is_h_refinement ? std::array<size_t, 3>{initial_value + 1, 0, 0}
+                      : one_more;
   initial_map["Outer"] = one_more;
   initial_map["InnerA"] = same;
   initial_map["InnerB"] = one_more;
@@ -650,7 +654,7 @@ std::unordered_map<std::string, std::array<size_t, 3>> make_initial_structure(
   if (include_inner_sphere_B) {
     initial_map["InnerSphereB"] = same;
   }
-  initial_map["OuterSphere"] = one_more;
+  initial_map["OuterSphere"] = outer_sphere;
 
   return initial_map;
 }
@@ -715,13 +719,13 @@ void test_cylindrical_bbh() {
 
     if (with_additional_outer_radial_refinement) {
       initial_refinement = make_initial_structure(
-          refinement, include_inner_sphere_A, include_inner_sphere_B);
+          true, refinement, include_inner_sphere_A, include_inner_sphere_B);
     } else {
       initial_refinement = refinement;
     }
     if (with_additional_grid_points) {
       initial_grid_points = make_initial_structure(
-          grid_points, include_inner_sphere_A, include_inner_sphere_B);
+          false, grid_points, include_inner_sphere_A, include_inner_sphere_B);
     } else {
       initial_grid_points = grid_points;
     }
