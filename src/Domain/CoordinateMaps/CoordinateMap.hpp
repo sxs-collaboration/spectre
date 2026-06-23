@@ -306,7 +306,7 @@ class CoordinateMapBase : public PUP::able {
  * Each coordinate map must contain a `static constexpr size_t dim` variable
  * that is equal to the dimensionality of the map. The Coordinatemap class
  * contains a member `static constexpr size_t dim`, a type alias `source_frame`,
- * a type alias `target_frame` and `typelist of the `Maps...`.
+ * a type alias `target_frame` and typelist of the `Maps...`.
  */
 template <typename SourceFrame, typename TargetFrame, typename... Maps>
 class CoordinateMap

@@ -143,7 +143,7 @@ void check_impl(
  *
  * If a DampingFunction class has member variables set by its constructor, then
  * these member variables must be passed in as the last arguments to the `check`
- * function`. Each python function must take these same arguments as the
+ * function. Each python function must take these same arguments as the
  * trailing arguments.
  */
 template <class DampingFunctionType, class T, class... MemberArgs>

@@ -23,7 +23,7 @@ namespace deadlock {
  * stored in `intrp::Tags::TemporalIds`.
  *
  * - `intrp::Tags::IndicesOfFilledInterpPoints`
- * - `intrp::Tags::IndicesOfInvalidInterpPoints1
+ * - `intrp::Tags::IndicesOfInvalidInterpPoints`
  * - Size of `intrp::Tags::InterpolatedVars`
  */
 struct PrintInterpolationTarget {

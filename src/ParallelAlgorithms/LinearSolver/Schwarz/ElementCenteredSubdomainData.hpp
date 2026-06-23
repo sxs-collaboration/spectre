@@ -266,7 +266,7 @@ bool operator!=(const ElementCenteredSubdomainData<Dim, TagsList>& lhs,
  * long as these conditions are satisfied:
  *
  * - The set of overlap IDs in the `overlap_data` doesn't change
- * - The extents of the `element_data` and the `overlap_data doesn't change
+ * - The extents of the `element_data` and the `overlap_data` doesn't change
  *
  * Iterating requires sorting the overlap IDs. If you find this impacts
  * performance, be advised to implement the internal data storage in
