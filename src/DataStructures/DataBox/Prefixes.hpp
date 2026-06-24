@@ -177,6 +177,19 @@ struct second_covariant_deriv<Tag, Dim, Frame> : db::PrefixTag, db::SimpleTag {
 };
 /// \endcond
 
+/*!
+ * \ingroup DataBoxTagsGroup
+ * \brief Prefix indicating the Lie derivative with respect to the unit vector
+ * normal to the spatial hypersurfaces.
+ *
+ * \snippet Test_DataBoxPrefixes.cpp lie_normal_name
+ */
+template <typename Tag>
+struct lie_normal : db::PrefixTag, db::SimpleTag {
+  using type = typename Tag::type;
+  using tag = Tag;
+};
+
 /// \ingroup DataBoxTagsGroup
 /// \brief Prefix indicating a flux
 ///

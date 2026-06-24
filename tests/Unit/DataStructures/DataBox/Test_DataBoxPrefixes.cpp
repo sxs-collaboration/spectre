@@ -50,6 +50,10 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.Prefixes",
       "second_covariant_deriv(TensorTag)");
   // [second_covariant_deriv_name]
 
+  // [lie_normal_name]
+  TestHelpers::db::test_prefix_tag<Tags::lie_normal<Tag>>("lie_normal(Tag)");
+  // [lie_normal_name]
+
   // [flux_name]
   TestHelpers::db::test_prefix_tag<Tags::Flux<TensorTag, Dim, Frame>>(
       "Flux(TensorTag)");
