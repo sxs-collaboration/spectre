@@ -22,6 +22,10 @@ struct Tag : db::SimpleTag {
 struct TensorTag : db::SimpleTag {
   using type = tnsr::I<DataVector, 2>;
 };
+
+struct ScalarTag : db::SimpleTag {
+  using type = Scalar<DataVector>;
+};
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.Prefixes",
@@ -32,6 +36,20 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.Prefixes",
   using Dim = tmpl::size_t<2>;
   using Frame = Frame::Inertial;
   using VariablesTag = Tags::Variables<tmpl::list<TensorTag>>;
+  // [covariant_deriv_name]
+  TestHelpers::db::test_prefix_tag<
+      Tags::covariant_deriv<TensorTag, Dim, Frame>>(
+      "covariant_deriv(TensorTag)");
+  // [covariant_deriv_name]
+  // [second_covariant_deriv_name]
+  TestHelpers::db::test_prefix_tag<
+      Tags::second_covariant_deriv<ScalarTag, Dim, Frame>>(
+      "second_covariant_deriv(ScalarTag)");
+  TestHelpers::db::test_prefix_tag<
+      Tags::second_covariant_deriv<TensorTag, Dim, Frame>>(
+      "second_covariant_deriv(TensorTag)");
+  // [second_covariant_deriv_name]
+
   // [flux_name]
   TestHelpers::db::test_prefix_tag<Tags::Flux<TensorTag, Dim, Frame>>(
       "Flux(TensorTag)");
