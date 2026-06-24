@@ -15,6 +15,7 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Transpose.hpp"
 #include "Domain/Tags.hpp"
+#include "NumericalAlgorithms/Spectral/Basis.hpp"
 #include "NumericalAlgorithms/Spectral/DifferentiationMatrix.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/ModalToNodalMatrix.hpp"
@@ -22,10 +23,12 @@
 #include "NumericalAlgorithms/Spectral/Parity.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/Spherepack.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/SpherepackCache.hpp"
+#include "NumericalAlgorithms/SphericalHarmonics/SpherepackIterator.hpp"
 #include "Utilities/Blas.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Literals.hpp"
+#include "Utilities/MemoryHelpers.hpp"
 #include "Utilities/SetNumberOfGridPoints.hpp"
 #include "Utilities/StdArrayHelpers.hpp"
 
@@ -127,6 +130,146 @@ void logical_partial_derivative(
     } else {
       ERROR(
           "Support for complex numbers with spherical harmonics is not yet "
+          "implemented for logical_partial_derivative.");
+    }
+  } else if (Dim == 3 and mesh.basis(0) == Spectral::Basis::ZernikeB3) {
+    if constexpr (std::is_same_v<typename DataType::value_type, double>) {
+      const size_t n_r = mesh.extents(0);
+      const size_t l_max = mesh.extents(1) - 1;
+      ASSERT(l_max < 2 * n_r - 1,
+             "ZernikeB3 radial resolution is insufficient for the requested "
+             "angular resolution. Need l_max < 2*n_r-1, but l_max="
+                 << l_max << " and n_r=" << n_r);
+      const auto& ylm = ylm::get_spherepack_cache(l_max);
+      const size_t n_spectral = ylm.spectral_size();
+      const size_t n_components = u.size();
+
+      // Angular derivatives
+      for (size_t storage_index = 0; storage_index < n_components;
+           ++storage_index) {
+        const auto u_tensor_index = u.get_tensor_index(storage_index);
+        const auto du_ang = std::array{
+            // NOLINTNEXTLINE(readability-redundant-smartptr-get)
+            logical_derivative_of_u->get(prepend(u_tensor_index, 1_st)).data(),
+            // NOLINTNEXTLINE(readability-redundant-smartptr-get)
+            logical_derivative_of_u->get(prepend(u_tensor_index, 2_st)).data()};
+        ylm.gradient_all_offsets(du_ang, make_not_null(u[storage_index].data()),
+                                 n_r);
+      }
+
+      // Radial derivatives, using parity-aware differentiation.
+      // Functions on the ball with angular degree l behave as r^l near the
+      // origin, giving even parity for even l and odd parity for odd l.
+      const Matrix& D_even = Spectral::differentiation_matrix<
+          Spectral::Basis::ZernikeB3, Spectral::Quadrature::GaussRadauUpper>(
+          n_r, Spectral::Parity::Even);
+      const Matrix& D_odd = Spectral::differentiation_matrix<
+          Spectral::Basis::ZernikeB3, Spectral::Quadrature::GaussRadauUpper>(
+          n_r, Spectral::Parity::Odd);
+
+      // n_spectral is the SPHEREPACK buffer size = 2*(l_max+1)^2, including
+      // padding. Valid modes total (l_max+1)^2; get_spherepack_cache always
+      // sets m_max = l_max so each degree l contributes 2l+1 valid modes.
+      const size_t n_valid_modes = (l_max + 1) * (l_max + 1);
+      const size_t n_even_modes = (l_max % 2 == 0)
+                                      ? (l_max + 1) * (l_max + 2) / 2
+                                      : l_max * (l_max + 1) / 2;
+      const size_t n_odd_modes = n_valid_modes - n_even_modes;
+
+      const size_t spec_total = n_components * n_spectral * n_r;
+      const size_t even_total = n_even_modes * n_components * n_r;
+      const size_t odd_total = n_odd_modes * n_components * n_r;
+      // NOLINTNEXTLINE(modernize-avoid-c-arrays)
+      const auto all_buf = cpp20::make_unique_for_overwrite<double[]>(
+          spec_total + 2 * (even_total + odd_total));
+      double* const spec_buf = all_buf.get();
+      double* const even_data = spec_buf + spec_total;      // NOLINT
+      double* const odd_data = even_data + even_total;      // NOLINT
+      double* const even_result = odd_data + odd_total;     // NOLINT
+      double* const odd_result = even_result + even_total;  // NOLINT
+
+      // SH physical -> spectral
+      for (size_t n = 0; n < n_components; ++n) {
+        ylm.phys_to_spec_all_offsets(
+            make_not_null(spec_buf + n * n_spectral * n_r),  // NOLINT
+            make_not_null(u[n].data()), n_r);
+      }
+
+      // Gather even-l and odd-l radial profiles into compact buffers.
+      // Mode at SPHEREPACK offset s has its n_r values at
+      // spec_buf[...+s*n_r].
+      ylm::SpherepackIterator spec_iter{l_max, ylm.m_max()};
+      for (size_t n = 0; n < n_components; ++n) {
+        const double* spec = spec_buf + n * n_spectral * n_r;    // NOLINT
+        double* even_dest = even_data + n * n_even_modes * n_r;  // NOLINT
+        double* odd_dest = odd_data + n * n_odd_modes * n_r;     // NOLINT
+        size_t even_col = 0;
+        size_t odd_col = 0;
+        spec_iter.reset();
+        while (spec_iter) {
+          const size_t s = spec_iter();
+          if (spec_iter.l() % 2 == 0) {
+            std::copy(spec + s * n_r, spec + (s + 1) * n_r,  // NOLINT
+                      even_dest + even_col * n_r);           // NOLINT
+            ++even_col;
+          } else {
+            std::copy(spec + s * n_r, spec + (s + 1) * n_r,  // NOLINT
+                      odd_dest + odd_col * n_r);             // NOLINT
+            ++odd_col;
+          }
+          ++spec_iter;
+        }
+      }
+
+      // Apply radial differentiation matrices
+      if (n_even_modes > 0) {
+        partial_derivatives_detail::apply_matrix_in_first_dim(
+            even_result, even_data, D_even, even_total);
+      }
+      if (n_odd_modes > 0) {
+        partial_derivatives_detail::apply_matrix_in_first_dim(
+            odd_result, odd_data, D_odd, odd_total);
+      }
+
+      // Copy differentiated radial profiles back to spectral buffer
+      for (size_t n = 0; n < n_components; ++n) {
+        double* spec = spec_buf + n * n_spectral * n_r;  // NOLINT
+        const double* even_src =
+            even_result + n * n_even_modes * n_r;                    // NOLINT
+        const double* odd_src = odd_result + n * n_odd_modes * n_r;  // NOLINT
+        size_t even_col = 0;
+        size_t odd_col = 0;
+        spec_iter.reset();
+        while (spec_iter) {
+          const size_t s = spec_iter();
+          if (spec_iter.l() % 2 == 0) {
+            std::copy(even_src + even_col * n_r,        // NOLINT
+                      even_src + (even_col + 1) * n_r,  // NOLINT
+                      spec + s * n_r);                  // NOLINT
+            ++even_col;
+          } else {
+            std::copy(odd_src + odd_col * n_r,        // NOLINT
+                      odd_src + (odd_col + 1) * n_r,  // NOLINT
+                      spec + s * n_r);                // NOLINT
+            ++odd_col;
+          }
+          ++spec_iter;
+        }
+      }
+
+      // SH spectral -> physical
+      for (size_t n = 0; n < n_components; ++n) {
+        const auto u_tensor_index = u.get_tensor_index(n);
+        ylm.spec_to_phys_all_offsets(
+            make_not_null(
+                // NOLINTNEXTLINE(readability-redundant-smartptr-get)
+                logical_derivative_of_u->get(prepend(u_tensor_index, 0_st))
+                    .data()),
+            make_not_null(spec_buf + n * n_spectral * n_r), n_r);  // NOLINT
+      }
+    } else {
+      ERROR(
+          "Support for complex numbers with true filled sphere is not yet "
           "implemented for logical_partial_derivative.");
     }
   } else if (Dim == 2 and mesh.basis(0) == Spectral::Basis::ZernikeB2) {
