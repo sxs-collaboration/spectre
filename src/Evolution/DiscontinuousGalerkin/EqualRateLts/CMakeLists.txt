@@ -5,17 +5,17 @@ spectre_target_headers(
   ${LIBRARY}
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
-  Mortars.hpp
-  ProjectSpectralFilters.hpp
-  QuadratureTag.hpp
-  SetupEqualRateRegions.hpp
-  SpectralFilters.hpp
-  SpectralFilters.tpp
+  EqualRateRegionGenerator.hpp
+  EqualRateRegions.hpp
+  EqualRateRegions.tpp
+  NonconformingEqualRateRegions.hpp
   )
 
 spectre_target_sources(
   ${LIBRARY}
   PRIVATE
-  Mortars.cpp
-  SetupEqualRateRegions.cpp
+  EqualRateRegions.cpp
+  NonconformingEqualRateRegions.cpp
   )
+
+add_subdirectory(Tags)

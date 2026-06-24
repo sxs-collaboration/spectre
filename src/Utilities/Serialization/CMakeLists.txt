@@ -19,6 +19,7 @@ spectre_target_headers(
   PupStlCpp11.hpp
   PupStlCpp17.hpp
   RegisterDerivedClassesWithCharm.hpp
+  Serializable.hpp
   Serialize.hpp
   )
 

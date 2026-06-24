@@ -22,7 +22,9 @@
 #include "Evolution/DiscontinuousGalerkin/Actions/ComputeTimeDerivative.hpp"
 #include "Evolution/DiscontinuousGalerkin/CleanMortarHistory.hpp"
 #include "Evolution/DiscontinuousGalerkin/DgElementArray.hpp"
+#include "Evolution/DiscontinuousGalerkin/EqualRateLts/NonconformingEqualRateRegions.hpp"
 #include "Evolution/DiscontinuousGalerkin/Initialization/Mortars.hpp"
+#include "Evolution/DiscontinuousGalerkin/Initialization/SetupEqualRateRegions.hpp"
 #include "Evolution/DiscontinuousGalerkin/Initialization/SpectralFilters.hpp"
 #include "Evolution/Initialization/DgDomain.hpp"
 #include "Evolution/Initialization/Evolution.hpp"
@@ -371,6 +373,9 @@ struct GeneralizedHarmonicTemplateBase {
   using dg_registration_list =
       tmpl::list<observers::Actions::RegisterEventsWithObservers>;
 
+  using equal_rate_regions =
+      tmpl::list<evolution::dg::NonconformingEqualRateRegions<volume_dim>>;
+
   // Register needs to be before InitializeTimeStepperHistory so that CCE is
   // properly registered when the self-start happens
   static constexpr auto default_phase_order =
@@ -434,6 +439,11 @@ struct GeneralizedHarmonicTemplateBase {
           tmpl::push_back<StepChoosers::step_chooser_compute_tags<
               GeneralizedHarmonicTemplateBase, local_time_stepping>>>,
       ::evolution::dg::Initialization::Mortars<volume_dim>,
+      tmpl::conditional_t<
+          local_time_stepping,
+          evolution::dg::Initialization::Actions::SetupEqualRateRegions<
+              volume_dim, equal_rate_regions>,
+          tmpl::list<>>,
       evolution::Actions::InitializeRunEventsAndDenseTriggers,
       Initialization::Actions::InitializeItems<
           evolution::dg::Initialization::SpectralFilters<

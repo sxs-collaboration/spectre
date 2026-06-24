@@ -86,7 +86,6 @@ SpatialDiscretization:
       SubcellToDgReconstructionMethod: DimByDim
       FiniteDifferenceDerivativeOrder: 2
       FdInterpolationOrder: 1
-      LtsStepsPerSlab: 4
   SubcellSolver:
     Reconstructor: MonotonisedCentral
 

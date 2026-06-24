@@ -1,9 +1,6 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-add_subdirectory(Limiters)
-add_subdirectory(Messages)
-
 set(LIBRARY "Test_EvolutionDg")
 
 set(LIBRARY_SOURCES
@@ -14,6 +11,7 @@ set(LIBRARY_SOURCES
   Initialization/Test_Mortars.cpp
   Initialization/Test_ProjectSpectralFilters.cpp
   Initialization/Test_QuadratureTag.cpp
+  Initialization/Test_SetupEqualRateRegions.cpp
   Initialization/Test_SpectralFilters.cpp
   Test_AtomicInboxBoundaryData.cpp
   Test_BackgroundGrVars.cpp
@@ -31,6 +29,10 @@ set(LIBRARY_SOURCES
   Test_TimeSteppingPolicy.cpp
   Test_UsingSubcell.cpp
   )
+
+add_subdirectory(EqualRateLts)
+add_subdirectory(Limiters)
+add_subdirectory(Messages)
 
 add_test_library(${LIBRARY} "${LIBRARY_SOURCES}")
 

@@ -123,45 +123,7 @@ void test_impl(const std::vector<double>& expected_values,
           expected_values[0], static_cast<size_t>(expected_values[1]),
           expected_values[2], expected_values[3], false, false, recons_method,
           false, std::nullopt, ::fd::DerivativeOrder::Two, 1, 1, 1));
-  CHECK(SubcellOptions(
-            expected_values[0], static_cast<size_t>(expected_values[1]),
-            expected_values[2], expected_values[3], false, false, recons_method,
-            false, std::nullopt, ::fd::DerivativeOrder::Two, 1, 1, 1, 1) ==
-        SubcellOptions(
-            expected_values[0], static_cast<size_t>(expected_values[1]),
-            expected_values[2], expected_values[3], false, false, recons_method,
-            false, std::nullopt, ::fd::DerivativeOrder::Two, 1, 1, 1));
-  CHECK(SubcellOptions(
-            expected_values[0], static_cast<size_t>(expected_values[1]),
-            expected_values[2], expected_values[3], false, false, recons_method,
-            false, std::nullopt, ::fd::DerivativeOrder::Two, 1, 1, 1, 2) !=
-        SubcellOptions(
-            expected_values[0], static_cast<size_t>(expected_values[1]),
-            expected_values[2], expected_values[3], false, false, recons_method,
-            false, std::nullopt, ::fd::DerivativeOrder::Two, 1, 1, 1));
-  CHECK(SubcellOptions(expected_values[0],
-                       static_cast<size_t>(expected_values[1]),
-                       expected_values[2], expected_values[3], false, false,
-                       recons_method, false, std::nullopt,
-                       ::fd::DerivativeOrder::Two, 1, 1, 1, 1, std::nullopt) ==
-        SubcellOptions(
-            expected_values[0], static_cast<size_t>(expected_values[1]),
-            expected_values[2], expected_values[3], false, false, recons_method,
-            false, std::nullopt, ::fd::DerivativeOrder::Two, 1, 1, 1));
-  CHECK(SubcellOptions(
-            expected_values[0], static_cast<size_t>(expected_values[1]),
-            expected_values[2], expected_values[3], false, false, recons_method,
-            false, std::nullopt, ::fd::DerivativeOrder::Two, 1, 1, 1, 1, 8) !=
-        SubcellOptions(
-            expected_values[0], static_cast<size_t>(expected_values[1]),
-            expected_values[2], expected_values[3], false, false, recons_method,
-            false, std::nullopt, ::fd::DerivativeOrder::Two, 1, 1, 1));
 }
-
-template <bool LocalTimeStepping>
-struct Metavariables {
-  static constexpr bool local_time_stepping = LocalTimeStepping;
-};
 
 SPECTRE_TEST_CASE("Unit.Evolution.Subcell.SubcellOptions",
                   "[Evolution][Unit]") {
@@ -175,13 +137,12 @@ SPECTRE_TEST_CASE("Unit.Evolution.Subcell.SubcellOptions",
                          static_cast<size_t>(expected_values[1]),
                          expected_values[2], expected_values[3], true, true,
                          fd::ReconstructionMethod::DimByDim, true, std::nullopt,
-                         ::fd::DerivativeOrder::Four, 1, 1, 1, 2, 8);
+                         ::fd::DerivativeOrder::Four, 1, 1, 1, 2);
   const SubcellOptions deserialized_options =
       serialize_and_deserialize(options);
   CHECK(options == deserialized_options);
 
-  CHECK(options == TestHelpers::test_option_tag<OptionTags::SubcellOptions,
-                                                Metavariables<true>>(
+  CHECK(options == TestHelpers::test_option_tag<OptionTags::SubcellOptions>(
                        "TroubledCellIndicator:\n"
                        "  PerssonTci:\n"
                        "    Exponent: 4.0\n"
@@ -199,8 +160,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Subcell.SubcellOptions",
                        "  OnlyDgBlocksAndGroups: None\n"
                        "SubcellToDgReconstructionMethod: DimByDim\n"
                        "FiniteDifferenceDerivativeOrder: 4\n"
-                       "FdInterpolationOrder: 2\n"
-                       "LtsStepsPerSlab: 8"));
+                       "FdInterpolationOrder: 2\n"));
 
   INFO("Test with block names and groups");
   const domain::creators::Cylinder cylinder{2.0,   10.0, 1.0,  8.0,
@@ -224,58 +184,23 @@ SPECTRE_TEST_CASE("Unit.Evolution.Subcell.SubcellOptions",
       "  EnableExtensionDirections: true\n"
       "  UseHalo: true\n";
   CHECK_THROWS_WITH(
-      SubcellOptions(TestHelpers::test_option_tag<OptionTags::SubcellOptions,
-                                                  Metavariables<false>>(
+      SubcellOptions(TestHelpers::test_option_tag<OptionTags::SubcellOptions>(
                          opts_no_blocks + "  OnlyDgBlocksAndGroups: [blah]\n"),
                      cylinder),
       Catch::Matchers::ContainsSubstring("The block or group 'blah'"));
 
   CHECK(SubcellOptions{
-            TestHelpers::test_option_tag<OptionTags::SubcellOptions,
-                                         Metavariables<false>>(
+            TestHelpers::test_option_tag<OptionTags::SubcellOptions>(
                 opts_no_blocks + "  OnlyDgBlocksAndGroups: [InnerCube]\n"),
             cylinder}
             .only_dg_block_ids()
             .size() == 1);
   CHECK(SubcellOptions{
-            TestHelpers::test_option_tag<OptionTags::SubcellOptions,
-                                         Metavariables<false>>(
+            TestHelpers::test_option_tag<OptionTags::SubcellOptions>(
                 opts_no_blocks + "  OnlyDgBlocksAndGroups: [Wedges]\n"),
             cylinder}
             .only_dg_block_ids()
             .size() == 4);
-
-  CHECK_THROWS_WITH((TestHelpers::test_option_tag<OptionTags::SubcellOptions,
-                                                  Metavariables<true>>(
-                        opts_no_blocks + "  OnlyDgBlocksAndGroups: [Wedges]\n"
-                                         "LtsStepsPerSlab: 0\n")),
-                    Catch::Matchers::ContainsSubstring(
-                        "Value 0 is below the lower bound of 1"));
-  CHECK_THROWS_WITH((TestHelpers::test_option_tag<OptionTags::SubcellOptions,
-                                                  Metavariables<true>>(
-                        opts_no_blocks + "  OnlyDgBlocksAndGroups: [Wedges]\n"
-                                         "LtsStepsPerSlab: 100000000000\n")),
-                    Catch::Matchers::ContainsSubstring(
-                        "Value 100000000000 is above the upper bound of"));
-  CHECK_THROWS_WITH((TestHelpers::test_option_tag<OptionTags::SubcellOptions,
-                                                  Metavariables<true>>(
-                        opts_no_blocks + "  OnlyDgBlocksAndGroups: [Wedges]\n"
-                                         "LtsStepsPerSlab: 10\n")),
-                    Catch::Matchers::ContainsSubstring(
-                        "LtsStepsPerSlab must be a power of 2"));
-  CHECK(TestHelpers::test_option_tag<OptionTags::SubcellOptions,
-                                     Metavariables<true>>(
-            opts_no_blocks + "  OnlyDgBlocksAndGroups: [Wedges]\n"
-                             "LtsStepsPerSlab: 16\n")
-            .lts_steps_per_slab() == 16);
-#ifdef SPECTRE_DEBUG
-  CHECK_THROWS_WITH(
-      (TestHelpers::test_option_tag<OptionTags::SubcellOptions,
-                                    Metavariables<false>>(
-           opts_no_blocks + "  OnlyDgBlocksAndGroups: [Wedges]\n")
-           .lts_steps_per_slab()),
-      Catch::Matchers::ContainsSubstring("lts_steps_per_slab in GTS"));
-#endif  // SPECTRE_DEBUG
 }
 }  // namespace
 }  // namespace evolution::dg::subcell

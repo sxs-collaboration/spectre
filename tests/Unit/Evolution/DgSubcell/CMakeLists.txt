@@ -17,7 +17,6 @@ set(LIBRARY_SOURCES
   Test_CombineVolumeGhostData.cpp
   Test_ComputeBoundaryTerms.cpp
   Test_CorrectPackagedData.cpp
-  Test_DisableLts.cpp
   Test_GetActiveTag.cpp
   Test_GetTciDecision.cpp
   Test_GhostData.cpp
@@ -44,6 +43,7 @@ set(LIBRARY_SOURCES
   Test_SliceData.cpp
   Test_SliceTensor.cpp
   Test_SliceVariable.cpp
+  Test_SubcellEqualRateRegion.cpp
   Test_SubcellOptions.cpp
   Test_Tags.cpp
   Test_TwoMeshRdmpTci.cpp
