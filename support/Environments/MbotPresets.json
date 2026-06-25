@@ -1,0 +1,64 @@
+{
+  "version": 7,
+  "include": ["Presets.json"],
+  "configurePresets": [
+    {
+      "name": "mbot",
+      "hidden": true,
+      "inherits": "base",
+      "generator": "Ninja",
+      "cacheVariables": {
+        "CHARM_ROOT": "$env{CHARM_ROOT}",
+        "MEMORY_ALLOCATOR": "JEMALLOC",
+        "BUILD_PYTHON_BINDINGS": "ON",
+        "ENABLE_PARAVIEW": "ON",
+        "USE_XSIMD": "ON"
+      }
+    },
+    {
+      "name": "mbot-gcc",
+      "hidden": true,
+      "inherits": "mbot",
+      "cacheVariables": {
+        "CMAKE_C_COMPILER": "gcc",
+        "CMAKE_CXX_COMPILER": "g++",
+        "CMAKE_Fortran_COMPILER": "gfortran",
+        "DEBUG_SYMBOLS": "OFF"
+      }
+    },
+    {
+      "name": "mbot-clang",
+      "hidden": true,
+      "inherits": "mbot",
+      "cacheVariables": {
+        "CMAKE_C_COMPILER": "clang",
+        "CMAKE_CXX_COMPILER": "clang++",
+        "CMAKE_Fortran_COMPILER": "gfortran"
+      }
+    },
+    {
+      "name": "debug",
+      "inherits": ["mbot-gcc", "debug-flags"]
+    },
+    {
+      "name": "release",
+      "inherits": ["mbot-gcc", "release-flags"]
+    },
+    {
+      "name": "release-debug",
+      "inherits": ["mbot-gcc", "release-debug-flags"]
+    },
+    {
+      "name": "debug-clang",
+      "inherits": ["mbot-clang", "debug-flags"]
+    },
+    {
+      "name": "release-clang",
+      "inherits": ["mbot-clang", "release-flags"]
+    },
+    {
+      "name": "release-debug-clang",
+      "inherits": ["mbot-clang", "release-debug-flags"]
+    }
+  ]
+}
