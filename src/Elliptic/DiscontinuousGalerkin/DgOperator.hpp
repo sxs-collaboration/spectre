@@ -277,13 +277,19 @@ struct DgOperatorImpl<System, Linearized, tmpl::list<PrimalFields...>,
         "The variables must have the same tensor types as the system fields.");
 #ifdef SPECTRE_DEBUG
     for (size_t d = 0; d < Dim; ++d) {
-      ASSERT(mesh.basis(d) == Spectral::Basis::Legendre and
-                 (mesh.quadrature(d) == Spectral::Quadrature::GaussLobatto or
-                  mesh.quadrature(d) == Spectral::Quadrature::Gauss),
-             "The elliptic DG operator is currently only implemented for "
-             "Legendre-Gauss(-Lobatto) grids. Found basis '"
-                 << mesh.basis(d) << "' and quadrature '" << mesh.quadrature(d)
-                 << "' in dimension " << d << ".");
+      // The radial direction of a spherical-shell domain is a Legendre slice,
+      // while its two angular directions use a spherical-harmonic basis. All
+      // other supported domains use Legendre in every dimension.
+      ASSERT(
+          (mesh.basis(d) == Spectral::Basis::Legendre and
+           (mesh.quadrature(d) == Spectral::Quadrature::GaussLobatto or
+            mesh.quadrature(d) == Spectral::Quadrature::Gauss)) or
+              (d > 0 and mesh.basis(d) == Spectral::Basis::SphericalHarmonic),
+          "The elliptic DG operator is currently only implemented for "
+          "Legendre-Gauss(-Lobatto) grids, or for a spherical-harmonic "
+          "basis in the angular directions. Found basis '"
+              << mesh.basis(d) << "' and quadrature '" << mesh.quadrature(d)
+              << "' in dimension " << d << ".");
     }
 #endif  // SPECTRE_DEBUG
     const auto& element_id = element.id();
@@ -343,8 +349,7 @@ struct DgOperatorImpl<System, Linearized, tmpl::list<PrimalFields...>,
              // boundary conditions from a non-linear operator.
              return element.external_boundaries();
            } else {
-             (void)element;
-             return Direction<Dim>::all_directions();
+             return element.all_boundaries();
            };
          }()) {
       if (not directions_predicate(direction)) {
@@ -591,13 +596,19 @@ struct DgOperatorImpl<System, Linearized, tmpl::list<PrimalFields...>,
         "The variables must have the same tensor types as the system fields.");
 #ifdef SPECTRE_DEBUG
     for (size_t d = 0; d < Dim; ++d) {
-      ASSERT(mesh.basis(d) == Spectral::Basis::Legendre and
-                 (mesh.quadrature(d) == Spectral::Quadrature::GaussLobatto or
-                  mesh.quadrature(d) == Spectral::Quadrature::Gauss),
-             "The elliptic DG operator is currently only implemented for "
-             "Legendre-Gauss(-Lobatto) grids. Found basis '"
-                 << mesh.basis(d) << "' and quadrature '" << mesh.quadrature(d)
-                 << "' in dimension " << d << ".");
+      // The radial direction of a spherical-shell domain is a Legendre slice,
+      // while its two angular directions use a spherical-harmonic basis. All
+      // other supported domains use Legendre in every dimension.
+      ASSERT(
+          (mesh.basis(d) == Spectral::Basis::Legendre and
+           (mesh.quadrature(d) == Spectral::Quadrature::GaussLobatto or
+            mesh.quadrature(d) == Spectral::Quadrature::Gauss)) or
+              (d > 0 and mesh.basis(d) == Spectral::Basis::SphericalHarmonic),
+          "The elliptic DG operator is currently only implemented for "
+          "Legendre-Gauss(-Lobatto) grids, or for a spherical-harmonic "
+          "basis in the angular directions. Found basis '"
+              << mesh.basis(d) << "' and quadrature '" << mesh.quadrature(d)
+              << "' in dimension " << d << ".");
     }
 #endif  // SPECTRE_DEBUG
     const auto& element_id = element.id();
