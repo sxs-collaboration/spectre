@@ -47,11 +47,14 @@ void check_element_work(const typename Element<VolumeDim>::Neighbors_t&
       CHECK_FALSE(element.neighbors().contains(direction));
       CHECK(element.face_types().at(direction) == domain::FaceType::External);
     }
+    // All faces of a hypercube element are boundaries (no topological faces).
+    CHECK(element.all_boundaries().contains(direction));
   }
   CHECK(element.neighbors().size() == element.internal_boundaries().size());
   CHECK(element.internal_boundaries().size() +
             element.external_boundaries().size() ==
         2 * VolumeDim);
+  CHECK(element.all_boundaries().size() == 2 * VolumeDim);
   CHECK(element == element);
   CHECK_FALSE(element != element);
 
@@ -169,16 +172,23 @@ void check_spherical_shell() {
   CHECK(
       spherical_shell.external_boundaries().contains(Direction<3>::upper_xi()));
   CHECK(spherical_shell.neighbors().empty());
+  // Only the two radial faces are boundaries; the angular faces are
+  // topological.
+  CHECK(spherical_shell.all_boundaries().size() == 2);
+  CHECK(spherical_shell.all_boundaries().contains(Direction<3>::lower_xi()));
+  CHECK(spherical_shell.all_boundaries().contains(Direction<3>::upper_xi()));
   for (const auto& direction : Direction<3>::all_directions()) {
     if (direction.dimension() == 0) {
       CHECK(spherical_shell.external_boundaries().contains(direction));
       CHECK_FALSE(spherical_shell.internal_boundaries().contains(direction));
+      CHECK(spherical_shell.all_boundaries().contains(direction));
       CHECK_FALSE(spherical_shell.neighbors().contains(direction));
       CHECK(spherical_shell.face_types().at(direction) ==
             domain::FaceType::External);
     } else {
       CHECK_FALSE(spherical_shell.external_boundaries().contains(direction));
       CHECK_FALSE(spherical_shell.internal_boundaries().contains(direction));
+      CHECK_FALSE(spherical_shell.all_boundaries().contains(direction));
       CHECK_FALSE(spherical_shell.neighbors().contains(direction));
       CHECK(spherical_shell.face_types().at(direction) ==
             domain::FaceType::Topological);
