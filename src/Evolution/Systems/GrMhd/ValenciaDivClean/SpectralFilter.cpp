@@ -4,6 +4,7 @@
 #include "DataStructures/Tensor/IndexType.hpp"
 #include "Evolution/DiscontinuousGalerkin/Initialization/SpectralFilters.tpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Tags.hpp"
+#include "NumericalAlgorithms/LinearOperators/Filters/HollowCylinder.tpp"
 #include "NumericalAlgorithms/LinearOperators/Filters/Hypercube.tpp"
 #include "NumericalAlgorithms/LinearOperators/Filters/None.tpp"
 #include "Utilities/TMPL.hpp"
@@ -20,5 +21,6 @@ using valencia_tags =
 
 template class Filters::Hypercube<3, valencia_tags>;
 template class Filters::None<3, valencia_tags>;
+template class Filters::HollowCylinder<valencia_tags>;
 template struct evolution::dg::Initialization::SpectralFilters<3,
                                                                valencia_tags>;

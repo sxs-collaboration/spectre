@@ -4,6 +4,7 @@
 #include "Evolution/DiscontinuousGalerkin/Initialization/SpectralFilters.tpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/System.hpp"
 #include "Evolution/Systems/RadiationTransport/NoNeutrinos/System.hpp"
+#include "NumericalAlgorithms/LinearOperators/Filters/HollowCylinder.tpp"
 #include "NumericalAlgorithms/LinearOperators/Filters/Hypercube.tpp"
 #include "NumericalAlgorithms/LinearOperators/Filters/None.tpp"
 #include "NumericalAlgorithms/LinearOperators/Filters/SphericalShell.tpp"
@@ -17,4 +18,5 @@ using ghmhd_tags = typename ghmhd_system::variables_tag::tags_list;
 template class Filters::Hypercube<3, ghmhd_tags>;
 template class Filters::None<3, ghmhd_tags>;
 template class Filters::SphericalShell<ghmhd_tags>;
+template class Filters::HollowCylinder<ghmhd_tags>;
 template struct evolution::dg::Initialization::SpectralFilters<3, ghmhd_tags>;

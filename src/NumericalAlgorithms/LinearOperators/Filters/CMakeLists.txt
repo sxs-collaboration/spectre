@@ -7,6 +7,8 @@ spectre_target_headers(
   HEADERS
   Factory.hpp
   Filter.hpp
+  HollowCylinder.hpp
+  HollowCylinder.tpp
   Hypercube.hpp
   Hypercube.tpp
   None.hpp

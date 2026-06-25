@@ -6,6 +6,7 @@
 #include "DataStructures/DataVector.hpp"
 #include "Evolution/DiscontinuousGalerkin/Initialization/SpectralFilters.tpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
+#include "NumericalAlgorithms/LinearOperators/Filters/HollowCylinder.tpp"
 #include "NumericalAlgorithms/LinearOperators/Filters/Hypercube.tpp"
 #include "NumericalAlgorithms/LinearOperators/Filters/None.tpp"
 #include "NumericalAlgorithms/LinearOperators/Filters/SphericalShell.tpp"
@@ -31,6 +32,7 @@ using tags_for_filter =
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
 
 template class Filters::SphericalShell<tags_for_filter<3>>;
+template class Filters::HollowCylinder<tags_for_filter<3>>;
 
 #undef DIM
 #undef INSTANTIATE

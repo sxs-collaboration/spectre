@@ -3,6 +3,7 @@
 
 #include "Evolution/DiscontinuousGalerkin/Initialization/SpectralFilters.tpp"
 #include "Evolution/Systems/ScalarAdvection/Tags.hpp"
+#include "NumericalAlgorithms/LinearOperators/Filters/HollowCylinder.tpp"
 #include "NumericalAlgorithms/LinearOperators/Filters/Hypercube.tpp"
 #include "NumericalAlgorithms/LinearOperators/Filters/None.tpp"
 #include "Utilities/GenerateInstantiations.hpp"
@@ -21,6 +22,8 @@ using scalar_advection_tags = tmpl::list<ScalarAdvection::Tags::U>;
       DIM(data), scalar_advection_tags>;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
+
+template class Filters::HollowCylinder<scalar_advection_tags>;
 
 #undef DIM
 #undef INSTANTIATE

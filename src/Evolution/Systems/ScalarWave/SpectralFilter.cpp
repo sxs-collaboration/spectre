@@ -5,6 +5,7 @@
 
 #include "Evolution/DiscontinuousGalerkin/Initialization/SpectralFilters.tpp"
 #include "Evolution/Systems/ScalarWave/Tags.hpp"
+#include "NumericalAlgorithms/LinearOperators/Filters/HollowCylinder.tpp"
 #include "NumericalAlgorithms/LinearOperators/Filters/Hypercube.tpp"
 #include "NumericalAlgorithms/LinearOperators/Filters/None.tpp"
 #include "Utilities/GenerateInstantiations.hpp"
@@ -25,6 +26,8 @@ using tags_for_filter = tmpl::list<ScalarWave::Tags::Psi, ScalarWave::Tags::Pi,
       DIM(data), tags_for_filter<DIM(data)>>;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
+
+template class Filters::HollowCylinder<tags_for_filter<3>>;
 
 #undef DIM
 #undef INSTANTIATE
