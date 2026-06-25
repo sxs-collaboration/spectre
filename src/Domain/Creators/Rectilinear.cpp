@@ -238,11 +238,7 @@ std::unordered_map<std::string,
 Rectilinear<Dim>::functions_of_time(
     const std::unordered_map<std::string, double>& initial_expiration_times)
     const {
-  if (time_dependence_->is_none()) {
-    return {};
-  } else {
-    return time_dependence_->functions_of_time(initial_expiration_times);
-  }
+  return time_dependence_->functions_of_time(initial_expiration_times);
 }
 
 template class Rectilinear<1>;
