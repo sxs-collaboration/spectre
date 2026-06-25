@@ -430,7 +430,94 @@ bool BondiWorldtubeDataManager::populate_hypersurface_boundary_data(
       *boundary_data_variables)) =
       exp(2.0 * bondi_beta.data()) / square(bondi_r.data()) *
       (bondi_k.data() * bondi_q.data() - bondi_j.data() * conj(bondi_q.data()));
+
+  populate_boundary_du_dr_j(boundary_data_variables, time);
   return true;
+}
+
+void BondiWorldtubeDataManager::populate_boundary_du_dr_j(
+    const gsl::not_null<Variables<
+        Tags::characteristic_worldtube_boundary_tags<Tags::BoundaryValue>>*>
+        boundary_data_variables,
+    const double time) const {
+  // The previous detail::populate_hypersurface_boundary_data call already
+  // refreshed time_span_start_ / time_span_end_ for the current target time.
+  // The interpolation sub-window we use for the time derivative must match the
+  // one used for value interpolation above.
+  const auto interpolation_time_span = detail::create_span_for_time_value(
+      time, 0, interpolator_->required_number_of_points_before_and_after(),
+      time_span_start_, time_span_end_, buffer_updater_->get_time_buffer());
+  const size_t interpolation_span_size =
+      interpolation_time_span.second - interpolation_time_span.first;
+  const size_t buffer_span_size = time_span_end_ - time_span_start_;
+  const size_t offset_in_buffer =
+      interpolation_time_span.first - time_span_start_;
+
+  const DataVector time_points{
+      buffer_updater_->get_time_buffer().data() +  // NOLINT
+          interpolation_time_span.first,
+      interpolation_span_size};
+
+  const size_t number_of_libsharp_coefficients =
+      Spectral::Swsh::size_of_libsharp_coefficient_vector(l_max_);
+  const size_t number_of_angular_points =
+      Spectral::Swsh::number_of_swsh_collocation_points(l_max_);
+
+  SpinWeighted<ComplexModalVector, 2> dr_j_libsharp_modes{
+      number_of_libsharp_coefficients};
+  SpinWeighted<ComplexDataVector, 2> dr_j_nodal{};
+
+  // Dr<J> over time, laid out so the nodal slice at buffer time `ti` lives in
+  // [ti * num_points, (ti + 1) * num_points).
+  ComplexDataVector dr_j_over_time{interpolation_span_size *
+                                   number_of_angular_points};
+
+  const auto& dr_j_modes_buffer =
+      get(get<Spectral::Swsh::Tags::SwshTransform<Tags::Dr<Tags::BondiJ>>>(
+              coefficients_buffers_))
+          .data();
+
+  for (size_t ti = 0; ti < interpolation_span_size; ++ti) {
+    const size_t time_index_in_buffer = offset_in_buffer + ti;
+    dr_j_libsharp_modes.data() = 0.0;
+    for (const auto libsharp_mode :
+         Spectral::Swsh::cached_coefficients_metadata(l_max_)) {
+      const size_t plus_m_goldberg_index = Spectral::Swsh::goldberg_mode_index(
+          l_max_, libsharp_mode.l, static_cast<int>(libsharp_mode.m));
+      const size_t minus_m_goldberg_index = Spectral::Swsh::goldberg_mode_index(
+          l_max_, libsharp_mode.l, -static_cast<int>(libsharp_mode.m));
+      Spectral::Swsh::goldberg_modes_to_libsharp_modes_single_pair(
+          libsharp_mode, make_not_null(&dr_j_libsharp_modes), 0,
+          dr_j_modes_buffer[(plus_m_goldberg_index * buffer_span_size) +
+                            time_index_in_buffer],
+          dr_j_modes_buffer[(minus_m_goldberg_index * buffer_span_size) +
+                            time_index_in_buffer]);
+    }
+    dr_j_nodal.data().set_data_ref(
+        dr_j_over_time.data() + (ti * number_of_angular_points),  // NOLINT
+        number_of_angular_points);
+    Spectral::Swsh::inverse_swsh_transform(
+        l_max_, 1, make_not_null(&dr_j_nodal), dr_j_libsharp_modes);
+  }
+
+  // Time derivative (at constant y, i.e. following the worldtube) of the
+  // boundary Dr<J>, i.e. Du<Dr<J>>. The conversion to Du<Dy<J>> via the
+  // worldtube Jacobian is performed by the consumer of this boundary value.
+  auto& du_dr_j =
+      get(get<Tags::BoundaryValue<Tags::Du<Tags::Dr<Tags::BondiJ>>>>(
+              *boundary_data_variables))
+          .data();
+  ComplexDataVector dr_j_at_point{interpolation_span_size};
+  for (size_t i = 0; i < number_of_angular_points; ++i) {
+    for (size_t ti = 0; ti < interpolation_span_size; ++ti) {
+      dr_j_at_point[ti] = dr_j_over_time[(ti * number_of_angular_points) + i];
+    }
+    du_dr_j[i] = interpolator_->derivative(
+        gsl::span<const double>(time_points.data(), time_points.size()),
+        gsl::span<const std::complex<double>>(dr_j_at_point.data(),
+                                              dr_j_at_point.size()),
+        time);
+  }
 }
 
 std::unique_ptr<WorldtubeDataManager<

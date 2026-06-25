@@ -411,16 +411,185 @@ class BondiBufferUpdater
   size_t l_max_ = 0;
 };
 
+// Fake buffer updater that fills only two Goldberg modes with simple
+// polynomial-in-time signals:
+//   * `R` lives entirely in the (l=0, m=0) mode and is constant in time.
+//   * `Dr<BondiJ>` lives entirely in the (l=2, m=0) mode and is linear in time
+//     (no constant offset). Linear-in-time means
+//        Dr<BondiJ>(t, theta, phi)
+//          = (t / target_time) * Dr<BondiJ>(target_time, theta, phi),
+//     so the time derivative of `dy_j = 0.5 R Dr<BondiJ>` at any target time
+//     is exactly `0.5 R Dr<BondiJ>(target_time) / target_time` at every
+//     angular collocation point. This lets the test compare the data
+//     manager's `Du<Dy<BondiJ>>` directly against
+//     `0.5 R Dr<BondiJ> / target_time` read off the boundary variables.
+// All other writing tags are zero. `BondiR` is set to a positive constant so
+// the existing post-processing in `BondiWorldtubeDataManager::populate...`
+// does not divide by zero.
+class SimplePolyBondiBufferUpdater
+    : public WorldtubeBufferUpdater<Tags::worldtube_boundary_tags_for_writing<
+          Spectral::Swsh::Tags::SwshTransform>> {
+ public:
+  using tags_for_writing = Tags::worldtube_boundary_tags_for_writing<
+      Spectral::Swsh::Tags::SwshTransform>;
+
+  SimplePolyBondiBufferUpdater() = default;
+  SimplePolyBondiBufferUpdater(DataVector time_buffer, const size_t l_max,
+                               const double r_amplitude,
+                               const double dr_j_slope,
+                               const double extraction_radius)
+      : time_buffer_{std::move(time_buffer)},
+        l_max_{l_max},
+        r_amplitude_{r_amplitude},
+        dr_j_slope_{dr_j_slope},
+        extraction_radius_{extraction_radius} {}
+
+  // NOLINTNEXTLINE
+  WRAPPED_PUPable_decl_base_template(WorldtubeBufferUpdater<tags_for_writing>,
+                                     SimplePolyBondiBufferUpdater);
+
+  explicit SimplePolyBondiBufferUpdater(CkMigrateMessage* /*unused*/) {}
+
+  double update_buffers_for_time(
+      const gsl::not_null<Variables<tags_for_writing>*> buffers,
+      const gsl::not_null<size_t*> time_span_start,
+      const gsl::not_null<size_t*> time_span_end, const double time,
+      const size_t /*computation_l_max*/, const size_t interpolator_length,
+      const size_t buffer_depth,
+      const bool /*time_varies_fastest*/ = true) const override {
+    if (*time_span_end > interpolator_length and
+        time_buffer_[*time_span_end - interpolator_length + 1] > time) {
+      return time_buffer_[*time_span_end - interpolator_length + 1];
+    }
+    const auto new_span = detail::create_span_for_time_value(
+        time, buffer_depth, interpolator_length, 0, time_buffer_.size(),
+        time_buffer_);
+    *time_span_start = new_span.first;
+    *time_span_end = new_span.second;
+    const size_t span_size = *time_span_end - *time_span_start;
+
+    tmpl::for_each<tags_for_writing>([&buffers](auto tag_v) {
+      using tag = typename decltype(tag_v)::type;
+      get(get<tag>(*buffers)).data() = std::complex<double>{0.0, 0.0};
+    });
+
+    auto& r_buffer =
+        get(get<Spectral::Swsh::Tags::SwshTransform<Tags::BondiR>>(*buffers))
+            .data();
+    const size_t r_mode_index =
+        Spectral::Swsh::goldberg_mode_index(l_max_, 0_st, 0);
+    for (size_t ti = 0; ti < span_size; ++ti) {
+      r_buffer[(r_mode_index * span_size) + ti] =
+          std::complex<double>{r_amplitude_, 0.0};
+    }
+
+    auto& dr_j_buffer =
+        get(get<Spectral::Swsh::Tags::SwshTransform<Tags::Dr<Tags::BondiJ>>>(
+                *buffers))
+            .data();
+    const size_t dr_j_mode_index =
+        Spectral::Swsh::goldberg_mode_index(l_max_, 2_st, 0);
+    for (size_t ti = 0; ti < span_size; ++ti) {
+      dr_j_buffer[(dr_j_mode_index * span_size) + ti] = std::complex<double>{
+          dr_j_slope_ * time_buffer_[(*time_span_start) + ti], 0.0};
+    }
+
+    return time_buffer_[std::min(*time_span_end - interpolator_length + 1,
+                                 time_buffer_.size() - 1)];
+  }
+
+  std::unique_ptr<WorldtubeBufferUpdater<tags_for_writing>> get_clone()
+      const override {
+    return std::make_unique<SimplePolyBondiBufferUpdater>(*this);
+  }
+
+  bool time_is_outside_range(const double time) const override {
+    return time < time_buffer_[0] or
+           time > time_buffer_[time_buffer_.size() - 1];
+  }
+
+  size_t get_l_max() const override { return l_max_; }
+
+  double get_extraction_radius() const override { return extraction_radius_; }
+
+  DataVector& get_time_buffer() override { return time_buffer_; }
+
+  bool has_version_history() const override { return true; }
+
+  void pup(PUP::er& p) override {
+    p | time_buffer_;
+    p | l_max_;
+    p | r_amplitude_;
+    p | dr_j_slope_;
+    p | extraction_radius_;
+  }
+
+ private:
+  DataVector time_buffer_;
+  size_t l_max_ = 0;
+  double r_amplitude_ = 0.0;
+  double dr_j_slope_ = 0.0;
+  double extraction_radius_ = 100.0;
+};
+
 template <typename T>
 PUP::able::PUP_ID Cce::DummyBufferUpdater<T>::my_PUP_ID = 0;  // NOLINT
 template <typename T>
-PUP::able::PUP_ID Cce::BondiBufferUpdater<T>::my_PUP_ID = 0;  // NOLINT
+PUP::able::PUP_ID Cce::BondiBufferUpdater<T>::my_PUP_ID = 0;         // NOLINT
+PUP::able::PUP_ID Cce::SimplePolyBondiBufferUpdater::my_PUP_ID = 0;  // NOLINT
 
 template class Cce::DummyBufferUpdater<ComplexModalVector>;
 template class Cce::DummyBufferUpdater<DataVector>;
 template class Cce::BondiBufferUpdater<ComplexModalVector>;
 
 namespace {
+
+void test_bondi_data_manager_du_dr_j() {
+  INFO("BondiWorldtubeDataManager::populate_boundary_du_dr_j");
+  const size_t l_max = 8;
+  const size_t buffer_size = 4;
+  const double r_amplitude = 100.0;
+  const double dr_j_slope = 0.25;
+  const double extraction_radius = 100.0;
+
+  DataVector time_buffer{30};
+  for (size_t i = 0; i < time_buffer.size(); ++i) {
+    time_buffer[i] = 1.0 + 0.1 * static_cast<double>(i);
+  }
+  const double target_time = 1.5 + 1.0e-3;
+
+  const BondiWorldtubeDataManager data_manager{
+      std::make_unique<SimplePolyBondiBufferUpdater>(
+          time_buffer, l_max, r_amplitude, dr_j_slope, extraction_radius),
+      l_max, buffer_size,
+      std::make_unique<intrp::BarycentricRationalSpanInterpolator>(3u, 4u)};
+
+  Variables<Tags::characteristic_worldtube_boundary_tags<Tags::BoundaryValue>>
+      boundary_variables{
+          Spectral::Swsh::number_of_swsh_collocation_points(l_max)};
+  Parallel::NodeLock hdf5_lock{};
+  data_manager.populate_hypersurface_boundary_data(
+      make_not_null(&boundary_variables), target_time,
+      make_not_null(&hdf5_lock));
+
+  // With Dr<BondiJ>(t) = (t / target_time) * Dr<BondiJ>(target_time), the
+  // analytic time derivative of Dr<BondiJ> at the target time is exactly
+  // Dr<BondiJ>(target_time) / target_time at every angular collocation point.
+  const auto& dr_bondi_j =
+      get(get<Tags::BoundaryValue<Tags::Dr<Tags::BondiJ>>>(boundary_variables))
+          .data();
+  const ComplexDataVector expected_du_dr_j = dr_bondi_j / target_time;
+  const auto& computed_du_dr_j =
+      get(get<Tags::BoundaryValue<Tags::Du<Tags::Dr<Tags::BondiJ>>>>(
+              boundary_variables))
+          .data();
+  const Approx interpolator_approx =
+      Approx::custom()
+          .epsilon(std::numeric_limits<double>::epsilon() * 1.0e5)
+          .scale(1.0);
+  CHECK_ITERABLE_CUSTOM_APPROX(computed_du_dr_j, expected_du_dr_j,
+                               interpolator_approx);
+}
 
 template <typename DataManager, typename DummyUpdater, typename Generator>
 void test_data_manager_with_bondi_buffer_updater(
@@ -532,17 +701,22 @@ void test_data_manager_with_bondi_buffer_updater(
           .epsilon(std::numeric_limits<double>::epsilon() * 1.0e4)
           .scale(1.0);
 
-  tmpl::for_each<
-      Tags::characteristic_worldtube_boundary_tags<Tags::BoundaryValue>>(
-      [&expected_boundary_variables, &interpolated_boundary_variables,
-       &angular_derivative_approx](auto tag_v) {
-        using tag = typename decltype(tag_v)::type;
-        INFO(db::tag_name<tag>());
-        const auto& test_lhs = get<tag>(expected_boundary_variables);
-        const auto& test_rhs = get<tag>(interpolated_boundary_variables);
-        CHECK_ITERABLE_CUSTOM_APPROX(test_lhs, test_rhs,
-                                     angular_derivative_approx);
-      });
+  // The expected variables are built from `create_bondi_boundary_data` at a
+  // single time, which does not populate `Du<Dr<BondiJ>>` (that boundary value
+  // is computed in `BondiWorldtubeDataManager` by time-differentiating the
+  // buffered `Dr<BondiJ>` and so has no single-time analogue here).
+  using tags_to_compare = tmpl::list_difference<
+      Tags::characteristic_worldtube_boundary_tags<Tags::BoundaryValue>,
+      tmpl::list<Tags::BoundaryValue<Tags::Du<Tags::Dr<Tags::BondiJ>>>>>;
+  tmpl::for_each<tags_to_compare>([&expected_boundary_variables,
+                                   &interpolated_boundary_variables,
+                                   &angular_derivative_approx](auto tag_v) {
+    using tag = typename decltype(tag_v)::type;
+    INFO(db::tag_name<tag>());
+    const auto& test_lhs = get<tag>(expected_boundary_variables);
+    const auto& test_rhs = get<tag>(interpolated_boundary_variables);
+    CHECK_ITERABLE_CUSTOM_APPROX(test_lhs, test_rhs, angular_derivative_approx);
+  });
 }
 
 template <typename T, typename Generator>
@@ -1020,6 +1194,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.ReadBoundaryDataH5",
     test_data_manager_with_bondi_buffer_updater<BondiWorldtubeDataManager,
                                                 BondiBufferUpdater>(
         make_not_null(&gen));
+    test_bondi_data_manager_du_dr_j();
   }
 }
 }  // namespace Cce

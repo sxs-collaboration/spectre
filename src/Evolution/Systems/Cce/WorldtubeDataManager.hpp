@@ -263,6 +263,18 @@ class BondiWorldtubeDataManager
   void pup(PUP::er& p) override;  // NOLINT
 
  private:
+  // Compute the boundary value of `Du<Dr<BondiJ>>` at the requested time by
+  // numerically time-differentiating the buffered `Dr<BondiJ>` with
+  // `interpolator_`, holding the angular coordinate fixed (i.e. following the
+  // worldtube). This is the time derivative at constant numerical coordinate
+  // y = -1, i.e. d_ubreve d_r J|_Gamma = d/du (d_r J|_Gamma), and is *not* a
+  // derivative at constant Bondi r.
+  void populate_boundary_du_dr_j(
+      gsl::not_null<Variables<
+          Tags::characteristic_worldtube_boundary_tags<Tags::BoundaryValue>>*>
+          boundary_data_variables,
+      double time) const;
+
   std::unique_ptr<
       WorldtubeBufferUpdater<Tags::worldtube_boundary_tags_for_writing<
           Spectral::Swsh::Tags::SwshTransform>>>

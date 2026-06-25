@@ -12,6 +12,7 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Evolution/Systems/Cce/BoundaryData.hpp"
+#include "Evolution/Systems/Cce/Tags.hpp"
 #include "Framework/CheckWithRandomValues.hpp"
 #include "Framework/SetupLocalPythonEnvironment.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
@@ -22,6 +23,7 @@
 #include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/Pi.hpp"
 #include "PointwiseFunctions/GeneralRelativity/SpacetimeMetric.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/TMPL.hpp"
 
 namespace Cce {
 namespace {
@@ -614,19 +616,24 @@ void test_kerr_schild_boundary_consistency(
           .epsilon(std::numeric_limits<double>::epsilon() * 1.0e5)
           .scale(1.0);
 
-  tmpl::for_each<
-      Tags::characteristic_worldtube_boundary_tags<Tags::BoundaryValue>>(
-      [&](auto tag_v) {
-        using tag = typename decltype(tag_v)::type;
-        INFO(db::tag_name<tag>());
-        const auto& test_nodal = get<tag>(modal_boundary_variables);
-        const auto& test_gh = get<tag>(gh_boundary_variables);
-        const auto& test_modal = get<tag>(modal_boundary_variables);
-        CHECK_ITERABLE_CUSTOM_APPROX(test_nodal, test_gh,
-                                     angular_derivative_approx);
-        CHECK_ITERABLE_CUSTOM_APPROX(test_nodal, test_modal,
-                                     angular_derivative_approx);
-      });
+  // `Du<Dr<BondiJ>>` is not populated by these single-time analytic worldtube
+  // computations (it is computed in `BondiWorldtubeDataManager` by
+  // time-differentiating buffered `Dr<BondiJ>`), so it stays NaN-initialized
+  // here; exclude it from the comparison.
+  using tags_to_compare = tmpl::list_difference<
+      Tags::characteristic_worldtube_boundary_tags<Tags::BoundaryValue>,
+      tmpl::list<Tags::BoundaryValue<Tags::Du<Tags::Dr<Tags::BondiJ>>>>>;
+  tmpl::for_each<tags_to_compare>([&](auto tag_v) {
+    using tag = typename decltype(tag_v)::type;
+    INFO(db::tag_name<tag>());
+    const auto& test_nodal = get<tag>(modal_boundary_variables);
+    const auto& test_gh = get<tag>(gh_boundary_variables);
+    const auto& test_modal = get<tag>(modal_boundary_variables);
+    CHECK_ITERABLE_CUSTOM_APPROX(test_nodal, test_gh,
+                                 angular_derivative_approx);
+    CHECK_ITERABLE_CUSTOM_APPROX(test_nodal, test_modal,
+                                 angular_derivative_approx);
+  });
 }
 
 // this tests that both execution pathways in Schwarzschild produce the expected
@@ -678,23 +685,27 @@ void test_schwarzschild_solution(const gsl::not_null<Generator*> gen) {
           .epsilon(std::numeric_limits<double>::epsilon() * 1.0e4)
           .scale(1.0);
 
-  tmpl::for_each<
-      Tags::characteristic_worldtube_boundary_tags<Tags::BoundaryValue>>(
-      [&](auto tag_v) {
-        using tag = typename decltype(tag_v)::type;
-        INFO(db::tag_name<tag>());
-        const auto& expected = get<tag>(expected_variables);
-        const auto& test_nodal = get<tag>(nodal_boundary_variables);
-        const auto& test_gh = get<tag>(gh_boundary_variables);
-        const auto& test_modal = get<tag>(modal_boundary_variables);
+  // `Du<Dr<BondiJ>>` is not populated by these single-time analytic worldtube
+  // computations (it is computed in `BondiWorldtubeDataManager` by
+  // time-differentiating buffered `Dr<BondiJ>`), so it stays NaN-initialized
+  // here; exclude it from the comparison.
+  using tags_to_compare = tmpl::list_difference<
+      Tags::characteristic_worldtube_boundary_tags<Tags::BoundaryValue>,
+      tmpl::list<Tags::BoundaryValue<Tags::Du<Tags::Dr<Tags::BondiJ>>>>>;
+  tmpl::for_each<tags_to_compare>([&](auto tag_v) {
+    using tag = typename decltype(tag_v)::type;
+    INFO(db::tag_name<tag>());
+    const auto& expected = get<tag>(expected_variables);
+    const auto& test_nodal = get<tag>(nodal_boundary_variables);
+    const auto& test_gh = get<tag>(gh_boundary_variables);
+    const auto& test_modal = get<tag>(modal_boundary_variables);
 
-        CHECK_ITERABLE_CUSTOM_APPROX(expected, test_nodal,
-                                     angular_derivative_approx);
-        CHECK_ITERABLE_CUSTOM_APPROX(expected, test_gh,
-                                     angular_derivative_approx);
-        CHECK_ITERABLE_CUSTOM_APPROX(expected, test_modal,
-                                     angular_derivative_approx);
-      });
+    CHECK_ITERABLE_CUSTOM_APPROX(expected, test_nodal,
+                                 angular_derivative_approx);
+    CHECK_ITERABLE_CUSTOM_APPROX(expected, test_gh, angular_derivative_approx);
+    CHECK_ITERABLE_CUSTOM_APPROX(expected, test_modal,
+                                 angular_derivative_approx);
+  });
 }
 }  // namespace
 

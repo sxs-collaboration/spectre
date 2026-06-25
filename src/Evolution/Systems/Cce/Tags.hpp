@@ -156,7 +156,15 @@ struct Dlambda : db::PrefixTag, db::SimpleTag {
   using tag = Tag;
 };
 
-/// The derivative with respect to Bondi retarded time \f$u\f$
+/// The derivative with respect to Bondi retarded time \f$u\f$.
+///
+/// \note The worldtube boundary tag `Du<Dr<BondiJ>>` is the time derivative
+/// *following the worldtube* (at constant numerical coordinate
+/// \f$\breve y = -1\f$), i.e.
+/// \f$\partial_{\breve u}\partial_r J = \frac{d}{d u}(\partial_r J)\f$, not a
+/// derivative at constant Bondi \f$r\f$. See
+/// `BondiWorldtubeDataManager::populate_boundary_du_dr_j` and the fixed-\f$y\f$
+/// vs. fixed-\f$r\f$ notes in `BoundaryData.hpp`.
 template <typename Tag>
 struct Du : db::PrefixTag, db::SimpleTag {
   using type = Scalar<SpinWeighted<ComplexDataVector, Tag::type::type::spin>>;
