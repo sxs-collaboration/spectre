@@ -806,7 +806,9 @@ struct ReceiveDataForReconstruction {
                 *boundary_data.ghost_cell_data, number_of_rdmp_vars,
                 directional_element_id,
                 mesh_for_ghost_data->at(directional_element_id), element,
-                subcell_mesh, ghost_zone_size, neighbor_dg_to_fd_interpolants);
+                subcell_mesh, ghost_zone_size, neighbor_dg_to_fd_interpolants,
+                typename Metavariables::SubcellOptions::GhostVariables::
+                    ghost_variables_tag_list{});
             ASSERT(neighbor_tci_decisions->contains(directional_element_id),
                    "The NeighorTciDecisions should contain the neighbor ("
                        << directional_element_id.direction() << ", "

@@ -19,6 +19,7 @@
 #include "NumericalAlgorithms/Spectral/MaximumNumberOfPoints.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/MinimumNumberOfPoints.hpp"
+#include "NumericalAlgorithms/Spectral/Parity.hpp"
 #include "NumericalAlgorithms/Spectral/Quadrature.hpp"
 #include "NumericalAlgorithms/Spectral/QuadratureWeights.hpp"
 #include "Utilities/Algorithm.hpp"
@@ -31,12 +32,15 @@
 #include "Utilities/StaticCache.hpp"
 
 namespace evolution::dg::subcell::fd {
-const Matrix& projection_matrix(
-    const Mesh<1>& dg_mesh, const size_t subcell_extents,
-    const Spectral::Quadrature& subcell_quadrature) {
+const Matrix& projection_matrix(const Mesh<1>& dg_mesh,
+                                const size_t subcell_extents,
+                                const Spectral::Quadrature& subcell_quadrature,
+                                const Spectral::Parity parity) {
   ASSERT(dg_mesh.basis(0) == Spectral::Basis::Legendre or
-             dg_mesh.basis(0) == Spectral::Basis::Cartoon,
-         "FD Subcell projection only supports Legendre or Cartoon bases right "
+             dg_mesh.basis(0) == Spectral::Basis::Cartoon or
+             dg_mesh.basis(0) == Spectral::Basis::ZernikeB1,
+         "FD Subcell projection only supports Legendre, Cartoon, or ZernikeB1 "
+         "bases right "
          "now but got basis "
              << dg_mesh.basis(0));
   ASSERT(subcell_quadrature == Spectral::Quadrature::FaceCentered or
@@ -46,7 +50,39 @@ const Matrix& projection_matrix(
          "subcell_quadrature option in projection_matrix should be "
          "FaceCentered, CellCentered, or a Cartoon quadrature, but got "
              << subcell_quadrature);
-  static const auto cache = make_static_cache<
+  ASSERT(dg_mesh.basis(0) != Spectral::Basis::ZernikeB1 or
+             parity != Spectral::Parity::Uninitialized,
+         "Parity must be set when using ZernikeB1");
+
+  const static auto zernike_b1_cache = make_static_cache<
+      CacheRange<
+          Spectral::minimum_number_of_points<
+              Spectral::Basis::ZernikeB1,
+              Spectral::Quadrature::GaussRadauUpper>,
+          Spectral::maximum_number_of_points<Spectral::Basis::ZernikeB1> + 1>,
+      CacheRange<Spectral::minimum_number_of_points<
+                     Spectral::Basis::FiniteDifference,
+                     Spectral::Quadrature::CellCentered>,
+                 Spectral::maximum_number_of_points<
+                     Spectral::Basis::FiniteDifference> +
+                     1>,
+      CacheEnumeration<Spectral::Quadrature, Spectral::Quadrature::CellCentered,
+                       Spectral::Quadrature::FaceCentered>,
+      CacheEnumeration<Spectral::Parity, Spectral::Parity::Even,
+                       Spectral::Parity::Odd>>(
+      [](const size_t local_num_dg_points, const size_t local_num_fd_points,
+         const Spectral::Quadrature local_subcell_quadrature,
+         const Spectral::Parity local_parity) {
+        return Spectral::interpolation_matrix<
+            Spectral::Basis::ZernikeB1, Spectral::Quadrature::GaussRadauUpper>(
+            local_num_dg_points,
+            Spectral::collocation_points(
+                Mesh<1>{local_num_fd_points, Spectral::Basis::FiniteDifference,
+                        local_subcell_quadrature}),
+            local_parity);
+      });
+
+  const static auto legendre_cache = make_static_cache<
       CacheRange<
           Spectral::minimum_number_of_points<
               Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto>,
@@ -74,9 +110,13 @@ const Matrix& projection_matrix(
   if (dg_mesh.basis(0) == Spectral::Basis::Cartoon) {
     static const Matrix cartoon_matrix{1, 1, 1.0};
     return cartoon_matrix;
+  } else if (dg_mesh.basis(0) == Spectral::Basis::ZernikeB1) {
+    return zernike_b1_cache(dg_mesh.extents(0), subcell_extents,
+                            subcell_quadrature, parity);
+  } else {
+    return legendre_cache(dg_mesh.extents(0), subcell_extents,
+                          dg_mesh.quadrature(0), subcell_quadrature);
   }
-  return cache(dg_mesh.extents(0), subcell_extents, dg_mesh.quadrature(0),
-               subcell_quadrature);
 }
 
 namespace {

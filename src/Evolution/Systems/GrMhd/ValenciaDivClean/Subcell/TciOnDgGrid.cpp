@@ -68,30 +68,30 @@ TciOnDgGrid<RecoveryScheme>::apply(
       };
   Scalar<DataVector> subcell_tilde_d{};
   assign_data(make_not_null(&subcell_tilde_d), num_subcell_pts);
-  evolution::dg::subcell::fd::project(make_not_null(&get(subcell_tilde_d)),
-                                      get(tilde_d), dg_mesh,
-                                      subcell_mesh.extents());
+  evolution::dg::subcell::fd::project(
+      make_not_null(&get(subcell_tilde_d)), get(tilde_d), dg_mesh,
+      subcell_mesh.extents(), Spectral::Parity::Even);
 
   Scalar<DataVector> subcell_tilde_ye{};
   assign_data(make_not_null(&subcell_tilde_ye), num_subcell_pts);
-  evolution::dg::subcell::fd::project(make_not_null(&get(subcell_tilde_ye)),
-                                      get(tilde_ye), dg_mesh,
-                                      subcell_mesh.extents());
+  evolution::dg::subcell::fd::project(
+      make_not_null(&get(subcell_tilde_ye)), get(tilde_ye), dg_mesh,
+      subcell_mesh.extents(), Spectral::Parity::Even);
 
   Scalar<DataVector> subcell_tilde_tau{};
   assign_data(make_not_null(&subcell_tilde_tau), num_subcell_pts);
-  evolution::dg::subcell::fd::project(make_not_null(&get(subcell_tilde_tau)),
-                                      get(tilde_tau), dg_mesh,
-                                      subcell_mesh.extents());
+  evolution::dg::subcell::fd::project(
+      make_not_null(&get(subcell_tilde_tau)), get(tilde_tau), dg_mesh,
+      subcell_mesh.extents(), Spectral::Parity::Even);
 
   Scalar<DataVector> mag_tilde_b{};
   assign_data(make_not_null(&mag_tilde_b), num_dg_pts);
   magnitude(make_not_null(&mag_tilde_b), tilde_b);
   Scalar<DataVector> subcell_mag_tilde_b{};
   assign_data(make_not_null(&subcell_mag_tilde_b), num_subcell_pts);
-  evolution::dg::subcell::fd::project(make_not_null(&get(subcell_mag_tilde_b)),
-                                      get(mag_tilde_b), dg_mesh,
-                                      subcell_mesh.extents());
+  evolution::dg::subcell::fd::project(
+      make_not_null(&get(subcell_mag_tilde_b)), get(mag_tilde_b), dg_mesh,
+      subcell_mesh.extents(), Spectral::Parity::Even);
   const double max_mag_tilde_b = max(get(mag_tilde_b));
 
   rdmp_tci_data.max_variables_values =

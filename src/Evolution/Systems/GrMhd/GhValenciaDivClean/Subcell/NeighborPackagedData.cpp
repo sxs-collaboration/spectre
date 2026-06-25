@@ -195,7 +195,8 @@ DirectionalIdMap<3, DataVector> NeighborPackagedData<System>::apply(
               evolution::dg::subcell::fd::project(
                   make_not_null(&mesh_velocity_on_subcell_face.value().get(i)),
                   mesh_velocity_on_dg_face.get(i), dg_face_mesh,
-                  subcell_face_extents);
+                  subcell_face_extents,
+                  i == 0 ? Spectral::Parity::Odd : Spectral::Parity::Even);
             }
           }
 
@@ -242,7 +243,8 @@ DirectionalIdMap<3, DataVector> NeighborPackagedData<System>::apply(
             evolution::dg::subcell::fd::project(
                 make_not_null(
                     &get(get<gh::Tags::ConstraintGamma1>(vars_on_face))),
-                get(gamma_on_dg_face), dg_face_mesh, subcell_face_extents);
+                get(gamma_on_dg_face), dg_face_mesh, subcell_face_extents,
+                Spectral::Parity::Even);
             data_on_slice(make_not_null(&gamma_on_dg_face),
                           get<gh::Tags::ConstraintGamma2>(box),
                           dg_mesh.extents(), direction.dimension(),
@@ -252,7 +254,8 @@ DirectionalIdMap<3, DataVector> NeighborPackagedData<System>::apply(
             evolution::dg::subcell::fd::project(
                 make_not_null(
                     &get(get<gh::Tags::ConstraintGamma2>(vars_on_face))),
-                get(gamma_on_dg_face), dg_face_mesh, subcell_face_extents);
+                get(gamma_on_dg_face), dg_face_mesh, subcell_face_extents,
+                Spectral::Parity::Even);
           }
 
           // Compute the neighbor's normal covector and normalize it.
@@ -271,7 +274,8 @@ DirectionalIdMap<3, DataVector> NeighborPackagedData<System>::apply(
                 normal_covector.get(i),
                 dg_mesh.slice_away(mortar_id.direction().dimension()),
                 subcell_mesh.extents().slice_away(
-                    mortar_id.direction().dimension()));
+                    mortar_id.direction().dimension()),
+                i == 0 ? Spectral::Parity::Odd : Spectral::Parity::Even);
           }
           // Need to renormalize the normal vector with the neighbor's
           // inverse spatial metric.

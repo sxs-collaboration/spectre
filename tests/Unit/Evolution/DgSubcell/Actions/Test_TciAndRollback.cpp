@@ -157,6 +157,10 @@ struct Metavariables {
         const db::DataBox<DbTagsList>& box) {
       return db::get<Tags::Reconstructor>(box).ghost_zone_size();
     }
+
+    struct GhostVariables {
+      using ghost_variables_tag_list = tmpl::list<Var1>;
+    };
   };
 
   struct TciOnDgGrid {
@@ -527,7 +531,9 @@ void test_impl(const bool rdmp_fails, const bool tci_fails,
           expected_ghost_data.at(directional_element_id)
               .neighbor_ghost_data_for_reconstruction(),
           0, directional_element_id, neighbor_mesh, element, subcell_mesh, 2,
-          Interps{});
+          Interps{},
+          typename metavars::SubcellOptions::GhostVariables::
+              ghost_variables_tag_list{});
     }
     const auto& ghost_data_for_reconstruction = ActionTesting::get_databox_tag<
         comp, evolution::dg::subcell::Tags::GhostDataForReconstruction<Dim>>(

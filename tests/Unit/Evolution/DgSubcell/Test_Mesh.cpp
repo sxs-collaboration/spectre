@@ -193,7 +193,7 @@ void test_cartoon_mesh() {
                    Spectral::Quadrature::SphericalSymmetry}}),
       Catch::Matchers::ContainsSubstring(
           "The DG mesh that is being converted to subcell can only mix "
-          "Legendre or Chebyshev with Cartoon"));
+          "Legendre, Chebyshev, or ZernikeB1 with Cartoon"));
   CHECK_THROWS_WITH(
       evolution::dg::subcell::fd::mesh(
           Mesh<3>{{{3, 3, 1}},
@@ -203,7 +203,7 @@ void test_cartoon_mesh() {
                    Spectral::Quadrature::AxialSymmetry}}),
       Catch::Matchers::ContainsSubstring(
           "The DG mesh that is being converted to subcell can only mix "
-          "Legendre or Chebyshev with Cartoon"));
+          "Legendre, Chebyshev, or ZernikeB1 with Cartoon"));
 
   // dg_mesh() assert: non-FiniteDifference dimension mixed with Cartoon
   CHECK_THROWS_WITH(
@@ -230,6 +230,26 @@ void test_cartoon_mesh() {
           "FiniteDifference with Cartoon"));
 #endif  // SPECTRE_DEBUG
 }
+void test_zernike_b1_cartoon_mesh() {
+  for (size_t i = 2; i < 5; ++i) {
+    // Spherically symmetric: ZernikeB1 in dim 0, Cartoon in dims 1 and 2.
+    const Mesh<3> dg_spherical{
+        {{i, 1, 1}},
+        {Spectral::Basis::ZernikeB1, Spectral::Basis::Cartoon,
+         Spectral::Basis::Cartoon},
+        {Spectral::Quadrature::GaussRadauUpper,
+         Spectral::Quadrature::SphericalSymmetry,
+         Spectral::Quadrature::SphericalSymmetry}};
+    const Mesh<3> subcell_spherical{
+        {{2 * i - 1, 1, 1}},
+        {Spectral::Basis::FiniteDifference, Spectral::Basis::Cartoon,
+         Spectral::Basis::Cartoon},
+        {Spectral::Quadrature::CellCentered,
+         Spectral::Quadrature::SphericalSymmetry,
+         Spectral::Quadrature::SphericalSymmetry}};
+    CHECK(evolution::dg::subcell::fd::mesh(dg_spherical) == subcell_spherical);
+  }
+}
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Evolution.Subcell.FD.Mesh", "[Evolution][Unit]") {
@@ -243,5 +263,6 @@ SPECTRE_TEST_CASE("Unit.Evolution.Subcell.FD.Mesh", "[Evolution][Unit]") {
   test_cartoon_mesh<Spectral::Basis::Chebyshev,
                     Spectral::Quadrature::GaussLobatto>();
   test_cartoon_mesh<Spectral::Basis::Chebyshev, Spectral::Quadrature::Gauss>();
+  test_zernike_b1_cartoon_mesh();
   print_comparison_point_computation();
 }

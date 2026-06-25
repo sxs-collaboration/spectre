@@ -41,6 +41,7 @@ class PrimitiveGhostVariables {
   using prims_to_reconstruct_tags = tmpl::list<MassDensity, Velocity, Pressure>;
 
  public:
+  using ghost_variables_tag_list = prims_to_reconstruct_tags;
   using return_tags = tmpl::list<>;
   using argument_tags = tmpl::list<::Tags::Variables<prim_tags>>;
 

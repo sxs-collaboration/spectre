@@ -16,9 +16,11 @@
 #include "Evolution/DgSubcell/Matrices.hpp"
 #include "Helpers/Evolution/DgSubcell/ProjectionTestHelpers.hpp"
 #include "NumericalAlgorithms/Spectral/Basis.hpp"
+#include "NumericalAlgorithms/Spectral/BasisFunctionValue.hpp"
 #include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/MinimumNumberOfPoints.hpp"
+#include "NumericalAlgorithms/Spectral/Parity.hpp"
 #include "NumericalAlgorithms/Spectral/Quadrature.hpp"
 #include "Utilities/Blas.hpp"
 #include "Utilities/Gsl.hpp"
@@ -54,9 +56,9 @@ void test_projection_matrix() {
     Matrix empty{};
     auto projection_mat = make_array<Dim>(std::cref(empty));
     for (size_t d = 0; d < Dim; ++d) {
-      gsl::at(projection_mat, d) = std::cref(
-          projection_matrix(dg_mesh.slice_through(d), subcell_mesh.extents()[d],
-                            Spectral::Quadrature::CellCentered));
+      gsl::at(projection_mat, d) = std::cref(projection_matrix(
+          dg_mesh.slice_through(d), subcell_mesh.extents()[d],
+          Spectral::Quadrature::CellCentered, Spectral::Parity::Uninitialized));
     }
     DataVector cell_centered_values(num_subcells, 0.0);
     apply_matrices(make_not_null(&cell_centered_values), projection_mat,
@@ -165,11 +167,13 @@ void test_projection_matrix_to_face() {
       if (d == Face_Dim) {
         gsl::at(projection_mat, d) = std::cref(projection_matrix(
             dg_mesh.slice_through(d), subcell_mesh.extents()[d],
-            Spectral::Quadrature::FaceCentered));
+            Spectral::Quadrature::FaceCentered,
+            Spectral::Parity::Uninitialized));
       } else {
         gsl::at(projection_mat, d) = std::cref(projection_matrix(
             dg_mesh.slice_through(d), subcell_mesh.extents()[d],
-            Spectral::Quadrature::CellCentered));
+            Spectral::Quadrature::CellCentered,
+            Spectral::Parity::Uninitialized));
       }
     }
     DataVector subcell_values(num_subcells, 0.0);
@@ -235,7 +239,8 @@ void test_cartoon_matrices() {
     // projection_matrix for a Cartoon dimension returns a 1x1 identity matrix.
     const Mesh<1> cartoon_mesh{1, Spectral::Basis::Cartoon, quad};
     const Matrix& proj_mat =
-        projection_matrix(cartoon_mesh, /*subcell_extents=*/1, quad);
+        projection_matrix(cartoon_mesh, /*subcell_extents=*/1, quad,
+                          Spectral::Parity::Uninitialized);
     REQUIRE(proj_mat.rows() == 1);
     REQUIRE(proj_mat.columns() == 1);
     CHECK(proj_mat(0, 0) == approx(1.0));
@@ -253,16 +258,27 @@ void test_cartoon_matrices() {
   CHECK_THROWS_WITH(
       projection_matrix(Mesh<1>{3, Spectral::Basis::Legendre,
                                 Spectral::Quadrature::GaussLobatto},
-                        5, Spectral::Quadrature::GaussLobatto),
+                        5, Spectral::Quadrature::GaussLobatto,
+                        Spectral::Parity::Uninitialized),
       Catch::Matchers::ContainsSubstring(
           "subcell_quadrature option in projection_matrix should be"));
-  // projection_matrix: unsupported basis (not Legendre or Cartoon).
+  // projection_matrix: unsupported basis (not Legendre, Cartoon, or ZernikeB1).
   CHECK_THROWS_WITH(
       projection_matrix(Mesh<1>{3, Spectral::Basis::Chebyshev,
                                 Spectral::Quadrature::GaussLobatto},
-                        5, Spectral::Quadrature::CellCentered),
+                        5, Spectral::Quadrature::CellCentered,
+                        Spectral::Parity::Uninitialized),
       Catch::Matchers::ContainsSubstring(
-          "FD Subcell projection only supports Legendre or Cartoon bases"));
+          "FD Subcell projection only supports Legendre, Cartoon, or "
+          "ZernikeB1"));
+  // projection_matrix: ZernikeB1 requires non-Uninitialized parity.
+  CHECK_THROWS_WITH(
+      projection_matrix(Mesh<1>{3, Spectral::Basis::ZernikeB1,
+                                Spectral::Quadrature::GaussRadauUpper},
+                        5, Spectral::Quadrature::CellCentered,
+                        Spectral::Parity::Uninitialized),
+      Catch::Matchers::ContainsSubstring(
+          "Parity must be set when using ZernikeB1"));
   // reconstruction_matrix: unsupported basis at dim 0.
   CHECK_THROWS_WITH(
       subcell::fd::reconstruction_matrix(
@@ -342,8 +358,9 @@ void test_cartoon_mixed_matrices() {
         const auto subcell_quad = gsl::at(bases, d) == Spectral::Basis::Cartoon
                                       ? gsl::at(quadratures, d)
                                       : Spectral::Quadrature::CellCentered;
-        gsl::at(projection_mat, d) = std::cref(projection_matrix(
-            dg_mesh.slice_through(d), subcell_extents[d], subcell_quad));
+        gsl::at(projection_mat, d) = std::cref(
+            projection_matrix(dg_mesh.slice_through(d), subcell_extents[d],
+                              subcell_quad, Spectral::Parity::Uninitialized));
       }
 
       // Project DG -> subcell.
@@ -418,6 +435,62 @@ void test_cartoon_mixed_matrices() {
 #endif
 }
 
+// Tests projection from a ZernikeB1/GaussRadauUpper DG mesh to a FD subcell
+// mesh for both Even (m=0) and Odd (m=1) parities.
+void test_zernike_b1_projection_matrix() {
+  constexpr Spectral::Basis basis = Spectral::Basis::ZernikeB1;
+  constexpr Spectral::Quadrature quadrature =
+      Spectral::Quadrature::GaussRadauUpper;
+  const Approx custom_approx = Approx::custom().epsilon(1.0e-11).scale(1.);
+
+  for (size_t num_pts_1d =
+           Spectral::minimum_number_of_points<basis, quadrature>;
+       num_pts_1d <= 6; ++num_pts_1d) {
+    CAPTURE(num_pts_1d);
+    const Mesh<1> dg_mesh{num_pts_1d, basis, quadrature};
+    const auto xi_dg = get<0>(logical_coordinates(dg_mesh));
+    const size_t num_subcells_1d = 2 * num_pts_1d - 1;
+    const Mesh<1> subcell_mesh{num_subcells_1d,
+                               Spectral::Basis::FiniteDifference,
+                               Spectral::Quadrature::CellCentered};
+    const auto xi_fd = get<0>(logical_coordinates(subcell_mesh));
+
+    const Matrix empty{};
+    auto even_projection_mat = make_array<1>(std::cref(empty));
+    even_projection_mat[0] = std::cref(projection_matrix(
+        dg_mesh, subcell_mesh.extents()[0], Spectral::Quadrature::CellCentered,
+        Spectral::Parity::Even));
+    auto odd_projection_mat = make_array<1>(std::cref(empty));
+    odd_projection_mat[0] = std::cref(projection_matrix(
+        dg_mesh, subcell_mesh.extents()[0], Spectral::Quadrature::CellCentered,
+        Spectral::Parity::Odd));
+
+    for (size_t k = 0; k < num_pts_1d; ++k) {
+      CAPTURE(k);
+      // Even parity (m=0): basis functions Q^0_{2k}
+      const DataVector f_even_dg =
+          Spectral::compute_basis_function_value<basis>(2 * k, 0_st, xi_dg);
+      const DataVector f_even_fd_expected =
+          Spectral::compute_basis_function_value<basis>(2 * k, 0_st, xi_fd);
+      DataVector f_even_fd(num_subcells_1d, 0.0);
+      apply_matrices(make_not_null(&f_even_fd), even_projection_mat, f_even_dg,
+                     dg_mesh.extents());
+      CHECK_ITERABLE_CUSTOM_APPROX(f_even_fd, f_even_fd_expected,
+                                   custom_approx);
+
+      // Odd parity (m=1): basis functions Q^1_{2k+1}
+      const DataVector f_odd_dg =
+          Spectral::compute_basis_function_value<basis>(2 * k + 1, 1_st, xi_dg);
+      const DataVector f_odd_fd_expected =
+          Spectral::compute_basis_function_value<basis>(2 * k + 1, 1_st, xi_fd);
+      DataVector f_odd_fd(num_subcells_1d, 0.0);
+      apply_matrices(make_not_null(&f_odd_fd), odd_projection_mat, f_odd_dg,
+                     dg_mesh.extents());
+      CHECK_ITERABLE_CUSTOM_APPROX(f_odd_fd, f_odd_fd_expected, custom_approx);
+    }
+  }
+}
+
 SPECTRE_TEST_CASE("Unit.Evolution.Subcell.Fd.ProjectionMatrix",
                   "[Evolution][Unit]") {
   test_projection_matrix<10, 1, Spectral::Basis::Legendre,
@@ -453,6 +526,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Subcell.Fd.ProjectionMatrix",
   test_cartoon_matrices();
   test_cartoon_mixed_matrices<10, Spectral::Quadrature::GaussLobatto>();
   test_cartoon_mixed_matrices<10, Spectral::Quadrature::Gauss>();
+  test_zernike_b1_projection_matrix();
 }
 
 // [[TimeOut, 10]]

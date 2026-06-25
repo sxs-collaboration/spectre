@@ -35,13 +35,15 @@ void SetInitialRdmpData::apply(
   } else {
     const Scalar<DataVector> tilde_b_magnitude = magnitude(tilde_b);
     const auto subcell_tilde_b_mag = evolution::dg::subcell::fd::project(
-        get(tilde_b_magnitude), dg_mesh, subcell_mesh.extents());
+        get(tilde_b_magnitude), dg_mesh, subcell_mesh.extents(),
+        Spectral::Parity::Even);
     const auto subcell_tilde_d = evolution::dg::subcell::fd::project(
-        get(tilde_d), dg_mesh, subcell_mesh.extents());
+        get(tilde_d), dg_mesh, subcell_mesh.extents(), Spectral::Parity::Even);
     const auto subcell_tilde_ye = evolution::dg::subcell::fd::project(
-        get(tilde_ye), dg_mesh, subcell_mesh.extents());
+        get(tilde_ye), dg_mesh, subcell_mesh.extents(), Spectral::Parity::Even);
     const auto subcell_tilde_tau = evolution::dg::subcell::fd::project(
-        get(tilde_tau), dg_mesh, subcell_mesh.extents());
+        get(tilde_tau), dg_mesh, subcell_mesh.extents(),
+        Spectral::Parity::Even);
 
     using std::max;
     using std::min;

@@ -252,7 +252,9 @@ struct TciAndRollback {
                            .neighbor_ghost_data_for_reconstruction(),
                        0, directional_element_id, mesh_for_ghost_data, element,
                        subcell_mesh, ghost_zone_size,
-                       neighbor_dg_to_fd_interpolants);
+                       neighbor_dg_to_fd_interpolants,
+                       typename Metavariables::SubcellOptions::GhostVariables::
+                           ghost_variables_tag_list{});
           }
 
           // Note: We do _not_ project the boundary history here because

@@ -52,6 +52,7 @@
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/TimeDerivativeTerms.hpp"
 #include "NumericalAlgorithms/FiniteDifference/PartialDerivatives.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
+#include "NumericalAlgorithms/Spectral/Parity.hpp"
 #include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/DerivSpatialMetric.hpp"
 #include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/ExtrinsicCurvature.hpp"
 #include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/SpatialDerivOfLapse.hpp"
@@ -171,9 +172,10 @@ struct ComputeTimeDerivImpl<
           subcell_mesh.number_of_grid_points()};
       for (size_t i = 0; i < 3; i++) {
         mesh_velocity_subcell.value().get(i) =
-            evolution::dg::subcell::fd::project(mesh_velocity_dg.value().get(i),
-                                                dg_mesh,
-                                                subcell_mesh.extents());
+            evolution::dg::subcell::fd::project(
+                mesh_velocity_dg.value().get(i), dg_mesh,
+                subcell_mesh.extents(),
+                i == 0 ? Spectral::Parity::Odd : Spectral::Parity::Even);
       }
     }
 
@@ -312,7 +314,7 @@ struct ComputeTimeDerivImpl<
       const DataVector div_mesh_velocity_subcell =
           evolution::dg::subcell::fd::project(
               div_mesh_velocity_dg.value().get(), dg_mesh,
-              subcell_mesh.extents());
+              subcell_mesh.extents(), Spectral::Parity::Even);
       tmpl::for_each<tmpl::list<GrmhdDtTags...>>(
           [&dt_vars_ptr, &div_mesh_velocity_subcell,
            &evolved_vars](auto evolved_var_tag_v) {
@@ -673,7 +675,9 @@ struct TimeDerivative {
                 mesh_velocity_on_face.value().get(j) =
                     evolution::dg::subcell::fd::project_to_faces(
                         mesh_velocity_dg.value().get(j), dg_mesh,
-                        face_mesh_extents, i);
+                        face_mesh_extents, i,
+                        j == 0 ? Spectral::Parity::Odd
+                               : Spectral::Parity::Even);
               }
 
               tmpl::for_each<grmhd_evolved_vars_tags>(
@@ -725,11 +729,14 @@ struct TimeDerivative {
             for (size_t j = 0; j < 3; j++) {
               lower_outward_conormal.get(j) =
                   evolution::dg::subcell::fd::project_to_faces(
-                      inv_jacobian_dg.get(i, j), dg_mesh, face_mesh_extents, i);
+                      inv_jacobian_dg.get(i, j), dg_mesh, face_mesh_extents, i,
+                      (i == 0) != (j == 0) ? Spectral::Parity::Odd
+                                           : Spectral::Parity::Even);
             }
             const auto det_inv_jacobian_face =
                 evolution::dg::subcell::fd::project_to_faces(
-                    get(det_inv_jacobian_dg), dg_mesh, face_mesh_extents, i);
+                    get(det_inv_jacobian_dg), dg_mesh, face_mesh_extents, i,
+                    Spectral::Parity::Even);
 
             const Scalar<DataVector> normalization{sqrt(get(
                 dot_product(lower_outward_conormal, lower_outward_conormal,
