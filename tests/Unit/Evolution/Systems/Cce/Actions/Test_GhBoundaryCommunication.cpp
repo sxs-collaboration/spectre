@@ -286,17 +286,19 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.Actions.GhBoundaryCommunication",
           .epsilon(std::numeric_limits<double>::epsilon() * 1.0e4)
           .scale(1.0);
 
-  tmpl::for_each<
-      Tags::characteristic_worldtube_boundary_tags<Tags::BoundaryValue>>(
-      [&expected_boundary_variables, &runner,
-       &angular_derivative_approx](auto tag_v) {
-        using tag = typename decltype(tag_v)::type;
-        INFO(db::tag_name<tag>());
-        const auto& test_lhs =
-            ActionTesting::get_databox_tag<evolution_component, tag>(runner, 0);
-        const auto& test_rhs = get<tag>(expected_boundary_variables);
-        CHECK_ITERABLE_CUSTOM_APPROX(test_lhs, test_rhs,
-                                     angular_derivative_approx);
-      });
+  // `Du<Dr<BondiJ>>` is not populated by `create_bondi_boundary_data` (the
+  // "expected" side here), so it would compare NaN-vs-NaN; exclude it.
+  using tags_to_compare = tmpl::list_difference<
+      Tags::characteristic_worldtube_boundary_tags<Tags::BoundaryValue>,
+      tmpl::list<Tags::BoundaryValue<Tags::Du<Tags::Dr<Tags::BondiJ>>>>>;
+  tmpl::for_each<tags_to_compare>([&expected_boundary_variables, &runner,
+                                   &angular_derivative_approx](auto tag_v) {
+    using tag = typename decltype(tag_v)::type;
+    INFO(db::tag_name<tag>());
+    const auto& test_lhs =
+        ActionTesting::get_databox_tag<evolution_component, tag>(runner, 0);
+    const auto& test_rhs = get<tag>(expected_boundary_variables);
+    CHECK_ITERABLE_CUSTOM_APPROX(test_lhs, test_rhs, angular_derivative_approx);
+  });
 }
 }  // namespace Cce

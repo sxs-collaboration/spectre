@@ -236,8 +236,12 @@ SPECTRE_TEST_CASE(
   analytic_manager.populate_hypersurface_boundary_data(
       make_not_null(&expected_boundary_variables), target_time);
 
-  tmpl::for_each<
-      Tags::characteristic_worldtube_boundary_tags<Tags::BoundaryValue>>(
+  // `Du<Dr<BondiJ>>` is not populated by `create_bondi_boundary_data` (the
+  // "expected" side here), so it would compare NaN-vs-NaN; exclude it.
+  using tags_to_compare = tmpl::list_difference<
+      Tags::characteristic_worldtube_boundary_tags<Tags::BoundaryValue>,
+      tmpl::list<Tags::BoundaryValue<Tags::Du<Tags::Dr<Tags::BondiJ>>>>>;
+  tmpl::for_each<tags_to_compare>(
       [&expected_boundary_variables, &runner](auto tag_v) {
         using tag = typename decltype(tag_v)::type;
         INFO(db::tag_name<tag>());
