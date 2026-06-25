@@ -1001,7 +1001,7 @@ void test_cartoon_dg_time_derivative() {
       dg_compute(cartoon_mesh, logical_coords_c, inertial_coords_c);
   const auto dg_3 = dg_compute(plain_mesh, logical_coords_3, inertial_coords_3);
 
-  const auto local_approx = Approx::custom().epsilon(1e-5).scale(1e-11);
+  const auto local_approx = Approx::custom().epsilon(1e-9).scale(1.0);
   constexpr size_t comp_dim = Spherical ? 1 : 2;
   CHECK_ITERABLE_CUSTOM_APPROX(dg_c.dt_tilde_d, dg_3.dt_tilde_d, local_approx);
   CHECK_ITERABLE_CUSTOM_APPROX(dg_c.dt_tilde_ye, dg_3.dt_tilde_ye,
