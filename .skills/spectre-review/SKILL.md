@@ -157,7 +157,7 @@ Read `references/coverage-steps.md` and follow those instructions exactly.
 Combine all findings from steps 2-6. Review each finding and REMOVE only clear
 non-issues:
 - False positives (pattern match that isn't the actual flagged issue)
-- Pre-existing issues not introduced by this diff
+- Pre-existing issues not introduced by this diff, except missing includes
 - Issues suppressed by `// NOLINT(...)` comments
 - Exact duplicates between agents or between agents and formatting/CI checks
 
