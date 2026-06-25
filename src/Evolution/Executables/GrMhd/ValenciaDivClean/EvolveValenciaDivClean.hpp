@@ -445,10 +445,7 @@ struct EvolutionMetavars<tmpl::list<InterpolationTargetTags...>,
                   tmpl::front<ordered_list_of_primitive_recovery_schemes>>>,
           tmpl::list<>>,
       Actions::MutateApply<CleanHistory<system>>,
-      tmpl::conditional_t<
-          local_time_stepping,
-          Actions::MutateApply<evolution::dg::CleanMortarHistory<volume_dim>>,
-          tmpl::list<>>,
+      Actions::MutateApply<evolution::dg::CleanMortarHistory<volume_dim>>,
       dg::Actions::SpectralFilter,
       tmpl::conditional_t<
           use_dg_subcell,
@@ -501,10 +498,7 @@ struct EvolutionMetavars<tmpl::list<InterpolationTargetTags...>,
           events_and_dense_triggers_subcell_postprocessors>,
       Actions::MutateApply<UpdateU<system, local_time_stepping>>,
       Actions::MutateApply<CleanHistory<system>>,
-      tmpl::conditional_t<
-          local_time_stepping,
-          Actions::MutateApply<evolution::dg::CleanMortarHistory<volume_dim>>,
-          tmpl::list<>>,
+      Actions::MutateApply<evolution::dg::CleanMortarHistory<volume_dim>>,
       Actions::MutateApply<
           grmhd::ValenciaDivClean::subcell::FixConservativesAndComputePrims<
               ordered_list_of_primitive_recovery_schemes>>,

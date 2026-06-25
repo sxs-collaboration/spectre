@@ -282,10 +282,7 @@ struct EvolutionMetavars {
                               ScalarAdvection::subcell::TciOnDgGrid<Dim>>,
                           tmpl::list<>>,
       Actions::MutateApply<CleanHistory<system>>,
-      tmpl::conditional_t<
-          local_time_stepping,
-          Actions::MutateApply<evolution::dg::CleanMortarHistory<volume_dim>>,
-          tmpl::list<>>,
+      Actions::MutateApply<evolution::dg::CleanMortarHistory<volume_dim>>,
       dg::Actions::SpectralFilter>>;
 
   using dg_subcell_step_actions = tmpl::flatten<tmpl::list<
@@ -310,10 +307,7 @@ struct EvolutionMetavars {
       Actions::MutateApply<RecordTimeStepperData<system>>,
       Actions::MutateApply<UpdateU<system, local_time_stepping>>,
       Actions::MutateApply<CleanHistory<system>>,
-      tmpl::conditional_t<
-          local_time_stepping,
-          Actions::MutateApply<evolution::dg::CleanMortarHistory<volume_dim>>,
-          tmpl::list<>>,
+      Actions::MutateApply<evolution::dg::CleanMortarHistory<volume_dim>>,
       evolution::dg::subcell::Actions::TciAndSwitchToDg<
           ScalarAdvection::subcell::TciOnFdGrid<volume_dim>>,
       Actions::Label<evolution::dg::subcell::Actions::Labels::EndOfSolvers>>>;

@@ -347,10 +347,7 @@ struct EvolutionMetavars {
               Actions::MutateApply<
                   typename system::primitive_from_conservative>>>,
       Actions::MutateApply<CleanHistory<system>>,
-      tmpl::conditional_t<
-          local_time_stepping,
-          Actions::MutateApply<evolution::dg::CleanMortarHistory<volume_dim>>,
-          tmpl::list<>>,
+      Actions::MutateApply<evolution::dg::CleanMortarHistory<volume_dim>>,
       dg::Actions::SpectralFilter>>;
 
   struct SubcellOptions {
@@ -404,10 +401,7 @@ struct EvolutionMetavars {
           events_and_dense_triggers_postprocessors>,
       Actions::MutateApply<UpdateU<system, local_time_stepping>>,
       Actions::MutateApply<CleanHistory<system>>,
-      tmpl::conditional_t<
-          local_time_stepping,
-          Actions::MutateApply<evolution::dg::CleanMortarHistory<volume_dim>>,
-          tmpl::list<>>,
+      Actions::MutateApply<evolution::dg::CleanMortarHistory<volume_dim>>,
       Actions::MutateApply<typename system::primitive_from_conservative>,
       evolution::dg::subcell::Actions::TciAndSwitchToDg<
           NewtonianEuler::subcell::TciOnFdGrid<volume_dim>>,
