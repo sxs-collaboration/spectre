@@ -5,6 +5,7 @@
 #include "Evolution/DiscontinuousGalerkin/Initialization/SpectralFilters.tpp"
 #include "Evolution/Systems/RadiationTransport/M1Grey/Tags.hpp"
 #include "Evolution/Systems/RadiationTransport/Tags.hpp"
+#include "NumericalAlgorithms/LinearOperators/Filters/FilledCylinder.tpp"
 #include "NumericalAlgorithms/LinearOperators/Filters/HollowCylinder.tpp"
 #include "NumericalAlgorithms/LinearOperators/Filters/Hypercube.tpp"
 #include "NumericalAlgorithms/LinearOperators/Filters/None.tpp"
@@ -21,4 +22,5 @@ using m1grey_tags =
 template class Filters::Hypercube<3, m1grey_tags>;
 template class Filters::None<3, m1grey_tags>;
 template class Filters::HollowCylinder<m1grey_tags>;
+template class Filters::FilledCylinder<m1grey_tags>;
 template struct evolution::dg::Initialization::SpectralFilters<3, m1grey_tags>;

@@ -5,7 +5,10 @@ spectre_target_headers(
   ${LIBRARY}
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
+  Detail.hpp
   Factory.hpp
+  FilledCylinder.hpp
+  FilledCylinder.tpp
   Filter.hpp
   HollowCylinder.hpp
   HollowCylinder.tpp

@@ -5,6 +5,7 @@
 
 #include "Evolution/DiscontinuousGalerkin/Initialization/SpectralFilters.tpp"
 #include "Evolution/Systems/CurvedScalarWave/Tags.hpp"
+#include "NumericalAlgorithms/LinearOperators/Filters/FilledCylinder.tpp"
 #include "NumericalAlgorithms/LinearOperators/Filters/HollowCylinder.tpp"
 #include "NumericalAlgorithms/LinearOperators/Filters/Hypercube.tpp"
 #include "NumericalAlgorithms/LinearOperators/Filters/None.tpp"
@@ -31,6 +32,7 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
 
 template class Filters::SphericalShell<tags_for_filter<3>>;
 template class Filters::HollowCylinder<tags_for_filter<3>>;
+template class Filters::FilledCylinder<tags_for_filter<3>>;
 
 #undef DIM
 #undef INSTANTIATE

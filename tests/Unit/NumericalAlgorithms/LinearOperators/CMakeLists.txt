@@ -4,6 +4,7 @@
 set(LIBRARY "Test_LinearOperators")
 
 set(LIBRARY_SOURCES
+  Filters/Test_FilledCylinder.cpp
   Filters/Test_HollowCylinder.cpp
   Filters/Test_Hypercube.cpp
   Filters/Test_None.cpp
