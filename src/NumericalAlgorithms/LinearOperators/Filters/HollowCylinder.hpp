@@ -313,8 +313,10 @@ class HollowCylinder : public Filter<3, TagList> {
   std::optional<size_t> boundary_filter_every_n_steps_{std::nullopt};
 
   // One filter matrix per direction, each bound to the single extent it was
-  // built for. The empty matrix is returned (and not cached) when a direction
-  // is not filtered.
+  // built for. These caches serve both the volume filter (`apply_in_volume`,
+  // which filters all three directions) and the boundary filter
+  // (`apply_on_boundary`). The empty matrix is returned (and not cached) when a
+  // direction is not filtered.
   // NOLINTNEXTLINE(spectre-mutable)
   mutable SingleExtentCache cached_radial_filter_{};
   // NOLINTNEXTLINE(spectre-mutable)
