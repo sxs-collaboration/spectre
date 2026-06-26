@@ -4,13 +4,11 @@
 #pragma once
 
 #include <memory>
-#include <string>
 #include <type_traits>
 #include <typeindex>
 #include <vector>
 
 #include "DataStructures/DataBox/Tag.hpp"
-#include "DataStructures/DataBox/TagName.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/WhenToCheck.hpp"
 #include "Time/Tags/StepperErrorEstimatesEnabled.hpp"
 #include "Time/Tags/StepperErrorTolerances.hpp"
@@ -80,11 +78,11 @@ void lts_impl(
         step_choosers,
     const ::TimeStepper& time_stepper,
     const ::VariableOrderAlgorithm& variable_order_algorithm,
-    const std::type_index& tag_type, const std::string& tag_name);
+    const std::type_index& tag_type);
 
 void gts_impl(gsl::not_null<::StepperErrorTolerances*> tolerances,
               const ::EventsAndTriggers& events_and_triggers,
-              const std::type_index& tag_type, const std::string& tag_name);
+              const std::type_index& tag_type);
 }  // namespace StepperErrorTolerancesCompute_detail
 
 /// \ingroup TimeGroup
@@ -116,8 +114,7 @@ struct StepperErrorTolerancesCompute
       const ::VariableOrderAlgorithm& variable_order_algorithm) {
     StepperErrorTolerancesCompute_detail::lts_impl(
         tolerances, events_and_triggers, step_choosers, time_stepper,
-        variable_order_algorithm, typeid(EvolvedVariableTag),
-        db::tag_name<EvolvedVariableTag>());
+        variable_order_algorithm, typeid(EvolvedVariableTag));
   }
 
   // global time stepping
@@ -125,8 +122,7 @@ struct StepperErrorTolerancesCompute
       const gsl::not_null<::StepperErrorTolerances*> tolerances,
       const ::EventsAndTriggers& events_and_triggers) {
     StepperErrorTolerancesCompute_detail::gts_impl(
-        tolerances, events_and_triggers, typeid(EvolvedVariableTag),
-        db::tag_name<EvolvedVariableTag>());
+        tolerances, events_and_triggers, typeid(EvolvedVariableTag));
   }
 };
 }  // namespace Tags

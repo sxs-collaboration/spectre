@@ -11,6 +11,8 @@
 #include <memory>
 #include <pup.h>
 #include <pup_stl.h>
+#include <typeindex>
+#include <unordered_map>
 #include <utility>
 #include <vector>
 
@@ -23,7 +25,9 @@
 #include "Parallel/Reduction.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
 #include "Time/ChangeSlabSize/Tags.hpp"
+#include "Time/RequestsStepperErrorTolerances.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"
+#include "Time/StepperErrorTolerances.hpp"
 #include "Time/TimeStepId.hpp"
 #include "Time/TimeStepRequest.hpp"
 #include "Time/TimeStepRequestProcessor.hpp"
@@ -72,7 +76,7 @@ struct StoreNewSlabSize {
 /// integration.  With local time-stepping this controls the interval
 /// between times when the sequences of steps on all elements are
 /// forced to align.
-class ChangeSlabSize : public Event {
+class ChangeSlabSize : public Event, public RequestsStepperErrorTolerances {
   using ReductionData = Parallel::ReductionData<
       Parallel::ReductionDatum<int64_t, funcl::AssertEqual<>>,
       Parallel::ReductionDatum<TimeStepRequestProcessor, funcl::Plus<>>>;
@@ -208,12 +212,8 @@ class ChangeSlabSize : public Event {
     return true;
   }
 
-  template <typename F>
-  void for_each_step_chooser(F&& f) const {
-    for (const auto& step_chooser : step_choosers_) {
-      f(*step_chooser);
-    }
-  }
+  std::unordered_map<std::type_index, StepperErrorTolerances> tolerances()
+      const override;
 
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& p) override {

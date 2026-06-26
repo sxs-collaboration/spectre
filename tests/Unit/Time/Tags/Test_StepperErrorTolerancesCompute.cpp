@@ -23,7 +23,6 @@
 #include "Time/ChangeSlabSize/Event.hpp"
 #include "Time/StepChoosers/Constant.hpp"
 #include "Time/StepChoosers/ErrorControl.hpp"
-#include "Time/StepChoosers/FixedLtsRatio.hpp"
 #include "Time/StepChoosers/LimitIncrease.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"
 #include "Time/StepperErrorTolerances.hpp"
@@ -123,8 +122,7 @@ struct Metavariables {
         tmpl::pair<StepChooser<StepChooserUse::LtsStep>,
                    step_choosers<StepChooserUse::LtsStep>>,
         tmpl::pair<StepChooser<StepChooserUse::Slab>,
-                   tmpl::push_back<step_choosers<StepChooserUse::Slab>,
-                                   StepChoosers::FixedLtsRatio>>,
+                   step_choosers<StepChooserUse::Slab>>,
         tmpl::pair<Trigger, tmpl::list<Triggers::Always>>>;
   };
 };
@@ -281,10 +279,9 @@ SPECTRE_TEST_CASE("Unit.Time.Tags.StepperErrorTolerancesCompute",
           box);
       CHECK_THROWS_WITH(
           db::get<Tags::StepperErrorTolerances<EvolvedVariablesTag>>(*box),
-          Catch::Matchers::ContainsSubstring("All ErrorControl events for ") and
-              Catch::Matchers::ContainsSubstring("EvolvedVar1") and
-              Catch::Matchers::ContainsSubstring(
-                  " must use the same tolerances."));
+          Catch::Matchers::ContainsSubstring(
+              "All time stepping error tolerances for one set of variables "
+              "must be the same"));
 
       db::mutate<Tags::LtsStepChoosers,
                  Tags::EventsAndTriggers<Triggers::WhenToCheck::AtSlabs>>(
@@ -305,45 +302,13 @@ SPECTRE_TEST_CASE("Unit.Time.Tags.StepperErrorTolerancesCompute",
                     "        StepChoosers:\n"
                     "          - LimitIncrease:\n"
                     "              Factor: 2\n"
-                    "          - FixedLtsRatio:\n"
-                    "              StepChoosers:\n"
-                    "                - Constant: 0.5");
-          },
-          box);
-      CHECK_FALSE(db::get<Tags::StepperErrorEstimatesEnabled>(*box));
-      CHECK(db::get<Tags::StepperErrorTolerances<EvolvedVariablesTag>>(*box)
-                .estimates == StepperErrorTolerances::Estimates::None);
-      CHECK(db::get<Tags::StepperErrorTolerances<AltEvolvedVariablesTag>>(*box)
-                .estimates == StepperErrorTolerances::Estimates::None);
-
-      db::mutate<Tags::LtsStepChoosers,
-                 Tags::EventsAndTriggers<Triggers::WhenToCheck::AtSlabs>>(
-          [](const gsl::not_null<Tags::LtsStepChoosers::type*> choosers,
-             const gsl::not_null<EventsAndTriggers*> events) {
-            *choosers = TestHelpers::test_creation<Tags::LtsStepChoosers::type,
-                                                   Metavariables>("");
-            *events =
-                TestHelpers::test_creation<EventsAndTriggers, Metavariables>(
-                    "- Trigger: Always\n"
-                    "  Events:\n"
-                    "    - OtherEvent\n"
-                    "- Trigger: Always\n"
-                    "  Events:\n"
-                    "    - OtherEvent\n"
-                    "    - ChangeSlabSize:\n"
-                    "        DelayChange: 0\n"
-                    "        StepChoosers:\n"
-                    "          - LimitIncrease:\n"
-                    "              Factor: 2\n"
-                    "          - FixedLtsRatio:\n"
-                    "              StepChoosers:\n"
-                    "                - ErrorControl:\n"
-                    "                    SafetyFactor: 0.95\n"
-                    "                    AbsoluteTolerance: 1.0e-5\n"
-                    "                    RelativeTolerance: 1.0e-4\n"
-                    "                    MaxFactor: 2.1\n"
-                    "                    MinFactor: 0.5\n"
-                    "                - Constant: 0.5");
+                    "          - ErrorControl:\n"
+                    "              SafetyFactor: 0.95\n"
+                    "              AbsoluteTolerance: 1.0e-5\n"
+                    "              RelativeTolerance: 1.0e-4\n"
+                    "              MaxFactor: 2.1\n"
+                    "              MinFactor: 0.5\n"
+                    "          - Constant: 0.5");
           },
           box);
       CHECK(db::get<Tags::StepperErrorEstimatesEnabled>(*box));

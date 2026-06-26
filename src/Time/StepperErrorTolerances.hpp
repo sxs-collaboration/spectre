@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include <iosfwd>
 #include <limits>
 
 /// \cond
@@ -28,3 +29,6 @@ bool operator==(const StepperErrorTolerances& a,
                 const StepperErrorTolerances& b);
 bool operator!=(const StepperErrorTolerances& a,
                 const StepperErrorTolerances& b);
+
+std::ostream& operator<<(std::ostream& os,
+                         const StepperErrorTolerances& tolerances);

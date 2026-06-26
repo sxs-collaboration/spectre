@@ -3,6 +3,7 @@
 
 #include "Time/StepperErrorTolerances.hpp"
 
+#include <ostream>
 #include <pup.h>
 #include <pup_stl.h>  // defines pup for enum
 
@@ -23,4 +24,16 @@ bool operator==(const StepperErrorTolerances& a,
 bool operator!=(const StepperErrorTolerances& a,
                 const StepperErrorTolerances& b) {
   return not(a == b);
+}
+
+std::ostream& operator<<(std::ostream& os,
+                         const StepperErrorTolerances& tolerances) {
+  if (tolerances.estimates == StepperErrorTolerances::Estimates::None) {
+    return os << "None";
+  }
+  os << "abs = " << tolerances.absolute << ", rel = " << tolerances.relative;
+  if (tolerances.estimates == StepperErrorTolerances::Estimates::AllOrders) {
+    os << " (all orders)";
+  }
+  return os;
 }
