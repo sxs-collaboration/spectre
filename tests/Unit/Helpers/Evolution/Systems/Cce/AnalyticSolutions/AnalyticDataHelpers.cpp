@@ -49,7 +49,7 @@ extract_bondi_scalars_from_cartesian_metric(
   get<0, 0>(inverse_spherical_metric) +=
       -2.0 * get<0, 1>(inverse_spherical_metric) +
       get<1, 1>(inverse_spherical_metric);
-  for(size_t i = 0; i < 3; ++i) {
+  for (size_t i = 0; i < 3; ++i) {
     inverse_spherical_metric.get(0, i) -= inverse_spherical_metric.get(1, i);
   }
   Scalar<SpinWeighted<ComplexDataVector, 0>> bondi_beta{
@@ -139,7 +139,7 @@ extract_dt_bondi_scalars_from_cartesian_metric(
   get<0, 0>(dt_inverse_spherical_metric) +=
       -2.0 * get<0, 1>(dt_inverse_spherical_metric) +
       get<1, 1>(dt_inverse_spherical_metric);
-  for(size_t i = 0; i < 3; ++i) {
+  for (size_t i = 0; i < 3; ++i) {
     inverse_spherical_metric.get(0, i) -= inverse_spherical_metric.get(1, i);
     dt_inverse_spherical_metric.get(0, i) -=
         dt_inverse_spherical_metric.get(1, i);
@@ -350,7 +350,13 @@ void test_initialize_j(const size_t l_max, const size_t number_of_radial_points,
             Tags::CauchyAngularCoords, Tags::BoundaryValue<Tags::BondiJ>,
             Tags::BoundaryValue<Tags::Dr<Tags::BondiJ>>,
             Tags::BoundaryValue<Tags::BondiR>,
-            Tags::BoundaryValue<Tags::BondiBeta>, Tags::LMax,
+            Tags::BoundaryValue<Tags::BondiBeta>,
+            Tags::BoundaryValue<Tags::BondiU>,
+            Tags::BoundaryValue<Tags::BondiW>,
+            Tags::BoundaryValue<Tags::BondiQ>,
+            Tags::BoundaryValue<Tags::Du<Tags::BondiJ>>,
+            Tags::BoundaryValue<Tags::Du<Tags::Dr<Tags::BondiJ>>>,
+            Tags::BoundaryValue<Tags::Du<Tags::BondiR>>, Tags::LMax,
             Tags::NumberOfRadialPoints>>(
             Scalar<SpinWeighted<ComplexDataVector, 2>>{
                 number_of_angular_points * number_of_radial_points},
@@ -362,6 +368,15 @@ void test_initialize_j(const size_t l_max, const size_t number_of_radial_points,
                 boundary_variables),
             get<Tags::BoundaryValue<Tags::BondiR>>(boundary_variables),
             get<Tags::BoundaryValue<Tags::BondiBeta>>(boundary_variables),
+            get<Tags::BoundaryValue<Tags::BondiU>>(boundary_variables),
+            get<Tags::BoundaryValue<Tags::BondiW>>(boundary_variables),
+            get<Tags::BoundaryValue<Tags::BondiQ>>(boundary_variables),
+            get<Tags::BoundaryValue<Tags::Du<Tags::BondiJ>>>(
+                boundary_variables),
+            get<Tags::BoundaryValue<Tags::Du<Tags::Dr<Tags::BondiJ>>>>(
+                boundary_variables),
+            get<Tags::BoundaryValue<Tags::Du<Tags::BondiR>>>(
+                boundary_variables),
             l_max, number_of_radial_points);
         (*generator)(make_not_null(&box), make_not_null(&node_lock));
         *j = db::get<Tags::BondiJ>(box);

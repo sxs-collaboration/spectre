@@ -166,6 +166,12 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.OptionTags", "[Unit][Cce]") {
       "InverseCubic");
   TestHelpers::test_option_tag<Cce::OptionTags::InitializeJ<false>>(
       "InverseCubic");
+  TestHelpers::test_option_tag<Cce::OptionTags::InitializeJ<false>>(
+      "CauchySecondOrder:\n"
+      "  AngularCoordTolerance: 1e-10\n"
+      "  MaxIterations: 300\n"
+      "  RequireConvergence: false\n"
+      "  MaxScriSecondDerivative: 1e-6");
   TestHelpers::test_option_tag<Cce::OptionTags::AnalyticSolution>(
       "BouncingBlackHole:\n"
       "  Period: 40.0\n"

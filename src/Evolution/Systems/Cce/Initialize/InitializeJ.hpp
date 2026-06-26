@@ -322,6 +322,7 @@ struct InverseCubic;
 template <bool evolve_ccm>
 struct InitializeJ;
 struct ConformalFactor;
+struct CauchySecondOrder;
 /// \endcond
 
 /*!
@@ -400,8 +401,8 @@ template <>
 struct InitializeJ<false> : public PUP::able {
   // Default boundary/mutate/argument tags used by the simple derived classes
   // (ConformalFactor, InverseCubic<false>, NoIncomingRadiation, ZeroNonSmooth).
-  // A derived class may shadow these with its own list, in which case the
-  // per-class list is used during dispatch.
+  // A derived class can shadow these with its own list (see CauchySecondOrder),
+  // in which case the per-class list is used during dispatch.
   using boundary_tags = tmpl::list<Tags::BoundaryValue<Tags::BondiJ>,
                                    Tags::BoundaryValue<Tags::Dr<Tags::BondiJ>>,
                                    Tags::BoundaryValue<Tags::BondiR>,
@@ -415,7 +416,7 @@ struct InitializeJ<false> : public PUP::able {
 
   using creatable_classes =
       tmpl::list<ConformalFactor, InverseCubic<false>, NoIncomingRadiation,
-                 ZeroNonSmooth,
+                 ZeroNonSmooth, CauchySecondOrder,
                  ::Cce::Solutions::LinearizedBondiSachs_detail::InitializeJ::
                      LinearizedBondiSachs>;
 
@@ -443,6 +444,7 @@ struct InitializeJ<false> : public PUP::able {
 }  // namespace Cce
 
 #include "Evolution/Systems/Cce/AnalyticSolutions/LinearizedBondiSachsInitializeJ.hpp"
+#include "Evolution/Systems/Cce/Initialize/CauchySecondOrder.hpp"
 #include "Evolution/Systems/Cce/Initialize/ConformalFactor.hpp"
 #include "Evolution/Systems/Cce/Initialize/InverseCubic.hpp"
 #include "Evolution/Systems/Cce/Initialize/NoIncomingRadiation.hpp"

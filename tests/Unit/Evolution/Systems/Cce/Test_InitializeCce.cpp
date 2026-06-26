@@ -11,6 +11,7 @@
 #include "DataStructures/Variables.hpp"
 #include "DataStructures/VariablesTag.hpp"
 #include "Evolution/Systems/Cce/GaugeTransformBoundaryData.hpp"
+#include "Evolution/Systems/Cce/Initialize/CauchySecondOrder.hpp"
 #include "Evolution/Systems/Cce/Initialize/ConformalFactor.hpp"
 #include "Evolution/Systems/Cce/Initialize/InitializeJ.hpp"
 #include "Evolution/Systems/Cce/Initialize/InverseCubic.hpp"
@@ -87,6 +88,25 @@ void check_boundary_and_asymptotic_j(
   CHECK_ITERABLE_CUSTOM_APPROX(scri_slice_j, scri_plus_zeroes, cce_approx);
   CHECK_ITERABLE_CUSTOM_APPROX(scri_slice_dy_dy_j.data(), scri_plus_zeroes,
                                cce_approx);
+}
+
+// Fill a worldtube boundary value with filtered random spin-weighted data of
+// the requested spin weight. Used to populate the additional boundary
+// quantities consumed by the `CauchySecondOrder` generator.
+template <int Spin, typename Generator, typename Distribution>
+void assign_random_swsh_boundary_value(
+    const gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, Spin>>*> field,
+    const gsl::not_null<Generator*> generator,
+    const gsl::not_null<Distribution*> distribution, const size_t l_max) {
+  SpinWeighted<ComplexModalVector, Spin> generated_modes{
+      Spectral::Swsh::size_of_libsharp_coefficient_vector(l_max)};
+  Spectral::Swsh::TestHelpers::generate_swsh_modes<Spin>(
+      make_not_null(&generated_modes.data()), generator, distribution, 1,
+      l_max);
+  get(*field) =
+      Spectral::Swsh::inverse_swsh_transform(l_max, 1, generated_modes);
+  Spectral::Swsh::filter_swsh_boundary_quantity(make_not_null(&get(*field)),
+                                                l_max, l_max / 2);
 }
 
 template <typename DbTags>
@@ -266,6 +286,115 @@ void test_initialize_j_no_radiation(
     CHECK(cce_approx(real(val)) == 0.0);
     CHECK(cce_approx(imag(val)) == 0.0);
   }
+}
+
+template <typename DbTags>
+void test_initialize_j_cauchy_second_order(
+    const gsl::not_null<db::DataBox<DbTags>*> box_to_initialize,
+    const size_t l_max, const size_t number_of_radial_points) {
+  auto node_lock = Parallel::NodeLock{};
+  // The angular coordinates are adapted iteratively (as in NoIncomingRadiation
+  // and ConformalFactor), so we only request a tolerance the linearized solve
+  // can reliably reach for randomly generated data.
+  const auto initializer =
+      InitializeJ::CauchySecondOrder{1.0e-10, 400, true, 1.0e-8};
+  db::mutate_apply<InitializeJ::CauchySecondOrder::return_tags,
+                   InitializeJ::CauchySecondOrder::argument_tags>(
+      initializer, box_to_initialize, make_not_null(&node_lock));
+
+  // note we want to copy here to compare against the next version of the
+  // computation
+  // NOLINTNEXTLINE(performance-unnecessary-copy-initialization)
+  const auto initialized_j = db::get<Tags::BondiJ>(*box_to_initialize);
+  const auto serialized_and_deserialized_initializer =
+      serialize_and_deserialize(initializer);
+  db::mutate_apply<InitializeJ::CauchySecondOrder::return_tags,
+                   InitializeJ::CauchySecondOrder::argument_tags>(
+      serialized_and_deserialized_initializer, box_to_initialize,
+      make_not_null(&node_lock));
+  CHECK_ITERABLE_APPROX(get(initialized_j).data(),
+                        get(db::get<Tags::BondiJ>(*box_to_initialize)).data());
+
+  // generate the gauge quantities so the boundary data can be compared in the
+  // evolution gauge.
+  db::mutate_apply<GaugeUpdateAngularFromCartesian<
+      Tags::CauchyAngularCoords, Tags::CauchyCartesianCoords>>(
+      box_to_initialize);
+  db::mutate_apply<GaugeUpdateJacobianFromCoordinates<
+      Tags::PartiallyFlatGaugeC, Tags::PartiallyFlatGaugeD,
+      Tags::CauchyAngularCoords, Tags::CauchyCartesianCoords>>(
+      box_to_initialize);
+  db::mutate_apply<GaugeUpdateInterpolator<Tags::CauchyAngularCoords>>(
+      box_to_initialize);
+  db::mutate_apply<
+      GaugeUpdateOmega<Tags::PartiallyFlatGaugeC, Tags::PartiallyFlatGaugeD,
+                       Tags::PartiallyFlatGaugeOmega>>(box_to_initialize);
+  db::mutate_apply<GaugeAdjustedBoundaryValue<Tags::BondiJ>>(box_to_initialize);
+
+  // The polynomial construction matches J and its first radial derivative at
+  // the worldtube, so the volume J on the boundary should equal the
+  // gauge-transformed boundary value of J.
+  const size_t number_of_angular_points =
+      Spectral::Swsh::number_of_swsh_collocation_points(l_max);
+  const auto& boundary_gauge_j =
+      db::get<Tags::EvolutionGaugeBoundaryValue<Tags::BondiJ>>(
+          *box_to_initialize);
+  for (size_t i = 0; i < number_of_angular_points; ++i) {
+    CHECK(approx(real(get(initialized_j).data()[i])) ==
+          real(get(boundary_gauge_j).data()[i]));
+    CHECK(approx(imag(get(initialized_j).data()[i])) ==
+          imag(get(boundary_gauge_j).data()[i]));
+  }
+
+  // The cubic-in-(1 - y) construction forces the second radial derivative of J
+  // to vanish at scri+ in the numerical gauge; the angular gauge transform only
+  // adds a term proportional to the (strain-sized) coordinate distortion, so
+  // the final initial data must still have a tiny second derivative there.
+  db::mutate_apply<PreSwshDerivatives<Tags::Dy<Tags::BondiJ>>>(
+      box_to_initialize);
+  db::mutate_apply<PreSwshDerivatives<Tags::Dy<Tags::Dy<Tags::BondiJ>>>>(
+      box_to_initialize);
+  const SpinWeighted<ComplexDataVector, 2> scri_slice_dy_dy_j;
+  make_const_view(
+      make_not_null(&scri_slice_dy_dy_j),
+      get(db::get<Tags::Dy<Tags::Dy<Tags::BondiJ>>>(*box_to_initialize)),
+      number_of_angular_points * (number_of_radial_points - 1),
+      number_of_angular_points);
+  const ComplexDataVector scri_plus_zeroes{number_of_angular_points, 0.0};
+  const Approx scri_approx = Approx::custom().epsilon(1.0e-10).scale(1.0);
+  CHECK_ITERABLE_CUSTOM_APPROX(scri_slice_dy_dy_j.data(), scri_plus_zeroes,
+                               scri_approx);
+}
+
+template <typename DbTags>
+void test_cauchy_second_order_scri_derivative_error(
+    const gsl::not_null<db::DataBox<DbTags>*> box_to_initialize) {
+  // The second-order construction drives the second radial derivative of J at
+  // scri+ to (near) zero, but a tiny numerical residual always remains. An
+  // unachievably small `MaxScriSecondDerivative` therefore trips the safeguard.
+  auto node_lock = Parallel::NodeLock{};
+  db::mutate_apply<InitializeJ::CauchySecondOrder::return_tags,
+                   InitializeJ::CauchySecondOrder::argument_tags>(
+      InitializeJ::CauchySecondOrder{1.0e-10, 400, true, 1.0e-30},
+      box_to_initialize, make_not_null(&node_lock));
+}
+
+template <typename DbTags>
+void test_cauchy_second_order_asymptotic_j_error(
+    const gsl::not_null<db::DataBox<DbTags>*> box_to_initialize) {
+  // Inflate the worldtube J without the compensating radial derivative so the
+  // asymptotic value of the constructed Cauchy-coordinate J is far too large
+  // for the angular solve to eliminate, tripping the pre-solve guard. This
+  // corrupts the boundary data, so it must run after the other checks.
+  db::mutate<Tags::BoundaryValue<Tags::BondiJ>>(
+      [](const gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 2>>*>
+             boundary_j) { get(*boundary_j).data() += 1.0; },
+      box_to_initialize);
+  auto node_lock = Parallel::NodeLock{};
+  db::mutate_apply<InitializeJ::CauchySecondOrder::return_tags,
+                   InitializeJ::CauchySecondOrder::argument_tags>(
+      InitializeJ::CauchySecondOrder{1.0e-10, 400, true, 1.0e-8},
+      box_to_initialize, make_not_null(&node_lock));
 }
 
 template <typename DbTags>
@@ -497,7 +626,12 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.InitializeJ", "[Unit][Cce]") {
       Tags::EvolutionGaugeBoundaryValue<Tags::BondiJ>,
       Tags::EvolutionGaugeBoundaryValue<Tags::Dr<Tags::BondiJ>>,
       Tags::EvolutionGaugeBoundaryValue<Tags::BondiR>,
-      Tags::EvolutionGaugeBoundaryValue<Tags::BondiBeta>>>;
+      Tags::EvolutionGaugeBoundaryValue<Tags::BondiBeta>,
+      Tags::BoundaryValue<Tags::BondiU>, Tags::BoundaryValue<Tags::BondiW>,
+      Tags::BoundaryValue<Tags::BondiQ>,
+      Tags::BoundaryValue<Tags::Du<Tags::BondiJ>>,
+      Tags::BoundaryValue<Tags::Du<Tags::Dr<Tags::BondiJ>>>,
+      Tags::BoundaryValue<Tags::Du<Tags::BondiR>>>>;
   using pre_swsh_derivatives_variables_tag = ::Tags::Variables<tmpl::list<
       Tags::BondiJ, Tags::Dy<Tags::BondiJ>, Tags::Dy<Tags::Dy<Tags::BondiJ>>,
       Tags::BondiK, Tags::BondiR, Tags::Integrand<Tags::BondiBeta>,
@@ -568,6 +702,52 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.InitializeJ", "[Unit][Cce]") {
         get(*boundary_dr_j) = -get(*boundary_j) / get(*boundary_r);
       },
       make_not_null(&box_to_initialize));
+  // The CauchySecondOrder generator additionally consumes the worldtube values
+  // of U, W, Q, Du(J), Du(Dr(J)), and Du(R) to evaluate the H hypersurface
+  // equation for dy^2 J. These enter through factors of the (large) worldtube
+  // radius R, so to keep the resulting dy^2 J at the same (strain) scale as J -
+  // and thus small enough for the angular coordinate solve to converge - they
+  // are drawn from a correspondingly smaller distribution.
+  UniformCustomDistribution<double> second_order_dist(1.0e-10, 1.0e-9);
+  db::mutate<Tags::BoundaryValue<Tags::BondiU>,
+             Tags::BoundaryValue<Tags::BondiW>,
+             Tags::BoundaryValue<Tags::BondiQ>,
+             Tags::BoundaryValue<Tags::Du<Tags::BondiJ>>,
+             Tags::BoundaryValue<Tags::Du<Tags::Dr<Tags::BondiJ>>>,
+             Tags::BoundaryValue<Tags::Du<Tags::BondiR>>>(
+      [&generator, &second_order_dist, &l_max](
+          const gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 1>>*>
+              boundary_u,
+          const gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 0>>*>
+              boundary_w,
+          const gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 1>>*>
+              boundary_q,
+          const gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 2>>*>
+              boundary_du_j,
+          const gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 2>>*>
+              boundary_du_dr_j,
+          const gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 0>>*>
+              boundary_du_r) {
+        assign_random_swsh_boundary_value<1>(
+            boundary_u, make_not_null(&generator),
+            make_not_null(&second_order_dist), l_max);
+        assign_random_swsh_boundary_value<0>(
+            boundary_w, make_not_null(&generator),
+            make_not_null(&second_order_dist), l_max);
+        assign_random_swsh_boundary_value<1>(
+            boundary_q, make_not_null(&generator),
+            make_not_null(&second_order_dist), l_max);
+        assign_random_swsh_boundary_value<2>(
+            boundary_du_j, make_not_null(&generator),
+            make_not_null(&second_order_dist), l_max);
+        assign_random_swsh_boundary_value<2>(
+            boundary_du_dr_j, make_not_null(&generator),
+            make_not_null(&second_order_dist), l_max);
+        assign_random_swsh_boundary_value<0>(
+            boundary_du_r, make_not_null(&generator),
+            make_not_null(&second_order_dist), l_max);
+      },
+      make_not_null(&box_to_initialize));
   {
     INFO("Check inverse cubic initial data generator");
     test_initialize_j_inverse_cubic(make_not_null(&box_to_initialize), l_max,
@@ -610,5 +790,22 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.InitializeJ", "[Unit][Cce]") {
             SpinWeight1CoordPerturbation,
         l_max, number_of_radial_points);
   }
+  {
+    INFO("Check second-order initial data generator");
+    test_initialize_j_cauchy_second_order(make_not_null(&box_to_initialize),
+                                          l_max, number_of_radial_points);
+  }
+  CHECK_THROWS_WITH(
+      test_cauchy_second_order_scri_derivative_error(
+          make_not_null(&box_to_initialize)),
+      Catch::Matchers::ContainsSubstring(
+          "The initial J has a second radial derivative at scri+ of "
+          "magnitude"));
+  CHECK_THROWS_WITH(
+      test_cauchy_second_order_asymptotic_j_error(
+          make_not_null(&box_to_initialize)),
+      Catch::Matchers::ContainsSubstring(
+          "The asymptotic value of the initial J in Cauchy coordinates has "
+          "magnitude"));
 }
 }  // namespace Cce
