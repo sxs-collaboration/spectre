@@ -17,6 +17,7 @@
 #include "Utilities/ErrorHandling/FormatStacktrace.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/System/ParallelInfo.hpp"
+#include "Utilities/System/PrettyWallTime.hpp"
 
 namespace {
 template <bool ShowTrace, typename ExceptionTypeToThrow>

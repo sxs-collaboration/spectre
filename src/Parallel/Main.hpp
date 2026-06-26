@@ -48,6 +48,7 @@
 #include "Utilities/StdHelpers.hpp"
 #include "Utilities/System/Exit.hpp"
 #include "Utilities/System/ParallelInfo.hpp"
+#include "Utilities/System/PrettyWallTime.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits/CreateGetTypeAliasOrDefault.hpp"
 #include "Utilities/TypeTraits/CreateIsCallable.hpp"

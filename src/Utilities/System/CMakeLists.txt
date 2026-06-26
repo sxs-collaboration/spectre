@@ -13,6 +13,7 @@ spectre_target_sources(
   Exit.cpp
   ParallelInfo.cpp
   Prefetch.cpp
+  PrettyWallTime.cpp
   )
 
 spectre_target_headers(
@@ -24,6 +25,7 @@ spectre_target_headers(
   Exit.hpp
   ParallelInfo.hpp
   Prefetch.hpp
+  PrettyWallTime.hpp
   System.hpp
   )
 
