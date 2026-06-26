@@ -288,6 +288,7 @@ long_lines() {
               'containers/CodingAgents.def$' \
               'containers/Dockerfile.buildenv$' \
               'containers/Dockerfile.travis$' \
+              'docs/DevGuide/LlmDevelopment.md' \
               'docs/DevGuide/Travis.md' \
               'docs/MainSite/Main.md' \
               'docs/Tutorials/CCE.md' \
