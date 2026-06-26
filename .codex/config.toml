@@ -1,0 +1,11 @@
+# Distributed under the MIT License.
+# See LICENSE.txt for details.
+#
+# SpECTRE MCP server for the OpenAI Codex CLI.
+#
+# Codex loads this project-local config only for *trusted* directories (it
+# prompts once on first use). Codex has no project-root variable, so the
+# 'command' is a repo-relative path: run 'codex' from the repository root so it
+# resolves. The launcher script itself then self-locates the repo and build dir.
+[mcp_servers.spectre]
+command = "tools/mcp/spectre-mcp.sh"

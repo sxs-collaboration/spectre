@@ -16,6 +16,9 @@ set(SPECTRE_FORMALINE_LOCATIONS
   .dockerignore
   .github
   .gitignore
+  .mcp.json
+  .vibe
+  .vscode
   citation.bib
   CITATION.cff
   cmake

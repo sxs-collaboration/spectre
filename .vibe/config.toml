@@ -1,0 +1,12 @@
+# Distributed under the MIT License.
+# See LICENSE.txt for details.
+#
+# SpECTRE MCP server for the Mistral Vibe CLI.
+#
+# Vibe has no project-root variable, so the 'command' is a repo-relative path:
+# run 'vibe' from the repository root so it resolves. The launcher script then
+# self-locates the repo and build dir.
+[[mcp_servers]]
+name = "spectre"
+transport = "stdio"
+command = "tools/mcp/spectre-mcp.sh"
