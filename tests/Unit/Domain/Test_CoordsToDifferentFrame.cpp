@@ -18,7 +18,7 @@
 #include "Domain/Domain.hpp"
 #include "Domain/FunctionsOfTime/RegisterDerivedWithCharm.hpp"
 #include "Domain/StrahlkorperTransformations.hpp"
-#include "NumericalAlgorithms/SphericalHarmonics/StrahlkorperFunctions.hpp"
+#include "NumericalAlgorithms/Strahlkorper/StrahlkorperFunctions.hpp"
 #include "Utilities/Gsl.hpp"
 
 namespace {

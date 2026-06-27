@@ -9,7 +9,7 @@
 #include <string>
 
 #include "NumericalAlgorithms/SphericalHarmonics/AngularOrdering.hpp"
-#include "NumericalAlgorithms/SphericalHarmonics/IO/StrahlkorperCoordsToTextFile.hpp"
+#include "NumericalAlgorithms/Strahlkorper/IO/StrahlkorperCoordsToTextFile.hpp"
 #include "Parallel/Printf/Printf.hpp"
 
 // Charm looks for this function but since we build without a main function or

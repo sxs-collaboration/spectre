@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "IO/Logging/Verbosity.hpp"
-#include "NumericalAlgorithms/SphericalHarmonics/Strahlkorper.hpp"
+#include "NumericalAlgorithms/Strahlkorper/Strahlkorper.hpp"
 #include "Options/Auto.hpp"
 #include "Options/Context.hpp"
 #include "Options/String.hpp"

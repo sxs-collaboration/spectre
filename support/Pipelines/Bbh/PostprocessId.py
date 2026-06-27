@@ -22,7 +22,7 @@ from spectre.Pipelines.Bbh.FindHorizon import (
     use_excision_as_horizon,
     vec_to_string,
 )
-from spectre.SphericalHarmonics import Frame, Strahlkorper
+from spectre.Strahlkorper import Frame, Strahlkorper
 from spectre.support.Schedule import schedule, scheduler_options
 from spectre.Visualization.ReadInputFile import find_event
 

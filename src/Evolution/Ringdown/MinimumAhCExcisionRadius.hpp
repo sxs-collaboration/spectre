@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "DataStructures/DataVector.hpp"
-#include "NumericalAlgorithms/SphericalHarmonics/Strahlkorper.hpp"
+#include "NumericalAlgorithms/Strahlkorper/Strahlkorper.hpp"
 
 namespace evolution::Ringdown {
 

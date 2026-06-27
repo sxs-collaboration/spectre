@@ -6,7 +6,7 @@
 #include <cstddef>
 #include <pup.h>
 
-#include "NumericalAlgorithms/SphericalHarmonics/Strahlkorper.hpp"
+#include "NumericalAlgorithms/Strahlkorper/Strahlkorper.hpp"
 #include "Options/Context.hpp"
 #include "Options/ParseError.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/FastFlow.hpp"

@@ -7,8 +7,8 @@
 #include <cmath>
 #include <cstddef>
 
-#include "NumericalAlgorithms/SphericalHarmonics/Strahlkorper.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/SpherepackIterator.hpp"
+#include "NumericalAlgorithms/Strahlkorper/Strahlkorper.hpp"
 
 namespace ylm::TestHelpers {
 Strahlkorper<Frame::Inertial> create_strahlkorper_y11(

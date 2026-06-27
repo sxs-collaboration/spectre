@@ -19,4 +19,5 @@ target_link_libraries(
   ApparentHorizonFinderCriteria
   Options
   SphericalHarmonics
+  Strahlkorper
   )

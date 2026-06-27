@@ -11,7 +11,7 @@
 #include "Evolution/Systems/CurvedScalarWave/Worldtube/KerrSchildDerivatives.hpp"
 #include "Evolution/Systems/CurvedScalarWave/Worldtube/SelfForce.hpp"
 #include "Evolution/Systems/CurvedScalarWave/Worldtube/Tags.hpp"
-#include "NumericalAlgorithms/SphericalHarmonics/Tags.hpp"
+#include "NumericalAlgorithms/Strahlkorper/Tags.hpp"
 #include "Utilities/Gsl.hpp"
 
 namespace CurvedScalarWave::Worldtube {

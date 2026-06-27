@@ -20,6 +20,7 @@ target_link_libraries(
   GrSurfaces
   GrSurfacesHelpers
   SphericalHarmonics
+  Strahlkorper
   SphericalHarmonicsHelpers
   XctsSolutions
   Utilities

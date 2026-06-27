@@ -57,7 +57,8 @@ target_link_libraries(
   Options
   Printf
   SphericalHarmonics
-  SphericalHarmonicsIO
+  Strahlkorper
+  StrahlkorperIO
   PRIVATE
   CoordinateMaps
   Domain

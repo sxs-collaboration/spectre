@@ -61,6 +61,7 @@ target_link_libraries(
   Serialization
   Spectral
   SphericalHarmonics
+  Strahlkorper
   TensorYlm
   Utilities
   INTERFACE

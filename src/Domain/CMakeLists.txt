@@ -80,6 +80,7 @@ target_link_libraries(
   LinearOperators
   RootFinding
   SphericalHarmonics
+  Strahlkorper
 )
 
 add_subdirectory(Amr)

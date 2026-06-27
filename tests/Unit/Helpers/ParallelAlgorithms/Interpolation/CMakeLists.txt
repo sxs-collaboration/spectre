@@ -29,6 +29,7 @@ target_link_libraries(
   ParallelInterpolation
   Spectral
   SphericalHarmonics
+  Strahlkorper
   Time
   Utilities
   )

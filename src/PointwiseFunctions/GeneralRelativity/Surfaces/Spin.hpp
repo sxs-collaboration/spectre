@@ -6,7 +6,7 @@
 #include <array>
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
-#include "NumericalAlgorithms/SphericalHarmonics/TagsTypeAliases.hpp"
+#include "NumericalAlgorithms/Strahlkorper/TagsTypeAliases.hpp"
 
 /// \cond
 class DataVector;

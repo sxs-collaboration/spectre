@@ -22,7 +22,8 @@ target_link_libraries(
   Ringdown
   Spectral
   SphericalHarmonics
-  SphericalHarmonicsIO
+  Strahlkorper
+  StrahlkorperIO
   Utilities
   )
 

@@ -35,7 +35,7 @@ spectre_python_link_libraries(
     Serialization
     Spectral
     SphericalHarmonics
-    SphericalHarmonicsIO
+    StrahlkorperIO
     Utilities
     pybind11::module
 )

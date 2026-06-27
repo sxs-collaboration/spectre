@@ -27,6 +27,7 @@ spectre_python_link_libraries(
   GrSurfaces
   pybind11::module
   SphericalHarmonics
+  Strahlkorper
   Utilities
 )
 

@@ -58,5 +58,6 @@ target_link_libraries(
   H5
   LinearOperators
   SphericalHarmonics
+  Strahlkorper
   Utilities
   )

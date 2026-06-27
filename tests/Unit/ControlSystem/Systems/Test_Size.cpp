@@ -32,7 +32,7 @@
 #include "Helpers/IO/Observers/MockWriteReductionDataRow.hpp"
 #include "IO/Logging/Verbosity.hpp"
 #include "IO/Observer/ObserverComponent.hpp"
-#include "NumericalAlgorithms/SphericalHarmonics/Strahlkorper.hpp"
+#include "NumericalAlgorithms/Strahlkorper/Strahlkorper.hpp"
 #include "ParallelAlgorithms/Actions/UpdateMessageQueue.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"

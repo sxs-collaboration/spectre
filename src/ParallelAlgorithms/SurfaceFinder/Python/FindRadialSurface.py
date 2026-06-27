@@ -20,7 +20,7 @@ from spectre.Domain import (
 from spectre.IO.H5 import open_volfiles, open_volfiles_command
 from spectre.IO.H5.IterElements import iter_elements
 from spectre.Pipelines.Bbh.FindHorizon import _strahlkorper_vol_data
-from spectre.SphericalHarmonics import (
+from spectre.Strahlkorper import (
     Frame,
     Strahlkorper,
     cartesian_coords,

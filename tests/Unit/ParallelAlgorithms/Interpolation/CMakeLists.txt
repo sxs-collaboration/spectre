@@ -46,6 +46,7 @@ target_link_libraries(
   RelativisticEulerSolutions
   Spectral
   SphericalHarmonics
-  SphericalHarmonicsIO
+  Strahlkorper
+  StrahlkorperIO
   Utilities
   )

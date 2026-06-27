@@ -31,7 +31,7 @@ from spectre.Evolution.Ringdown.ComputeRingdownShapeAndTranslationFoT import (
 )
 from spectre.Informer import unit_test_build_path
 from spectre.IO.H5 import ElementVolumeData, TensorComponent
-from spectre.SphericalHarmonics import Frame, Strahlkorper, ylm_legend_and_data
+from spectre.Strahlkorper import Frame, Strahlkorper, ylm_legend_and_data
 from spectre.support.Logging import configure_logging
 
 

@@ -30,7 +30,8 @@ target_link_libraries(
   H5
   Spectral
   SphericalHarmonics
-  SphericalHarmonicsIO
+  Strahlkorper
+  StrahlkorperIO
   Utilities
   )
 

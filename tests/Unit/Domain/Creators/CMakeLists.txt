@@ -44,7 +44,8 @@ target_link_libraries(
   H5
   Informer
   SphericalHarmonics
-  SphericalHarmonicsIO
+  Strahlkorper
+  StrahlkorperIO
   )
 
 add_subdirectory(Python)

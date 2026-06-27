@@ -15,7 +15,7 @@
 #include "Domain/Structure/BlockGroups.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "IO/Logging/Verbosity.hpp"
-#include "NumericalAlgorithms/SphericalHarmonics/StrahlkorperFunctions.hpp"
+#include "NumericalAlgorithms/Strahlkorper/StrahlkorperFunctions.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/OptionTags.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/Storage.hpp"
 #include "Utilities/GetOutput.hpp"

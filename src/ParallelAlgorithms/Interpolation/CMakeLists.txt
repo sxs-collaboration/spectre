@@ -42,7 +42,8 @@ target_link_libraries(
   Serialization
   Spectral
   SphericalHarmonics
-  SphericalHarmonicsIO
+  Strahlkorper
+  StrahlkorperIO
   Utilities
   INTERFACE
   Actions

@@ -41,6 +41,7 @@ target_link_libraries(
   Options
   RootFinding
   SphericalHarmonics
+  Strahlkorper
   SphericalHarmonicsHelpers
   Time
   Utilities

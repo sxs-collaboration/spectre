@@ -19,7 +19,7 @@ from spectre.Spectral import (
     Quadrature,
     logical_coordinates,
 )
-from spectre.SphericalHarmonics import Frame, Strahlkorper, power_monitor
+from spectre.Strahlkorper import Frame, Strahlkorper, power_monitor
 
 
 class TestPowerMonitors(unittest.TestCase):

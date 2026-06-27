@@ -14,7 +14,7 @@ from rich.pretty import pretty_repr
 import spectre.Evolution.Ringdown as Ringdown
 import spectre.IO.H5 as spectre_h5
 from spectre.DataStructures import ModalVector
-from spectre.SphericalHarmonics import (
+from spectre.Strahlkorper import (
     Frame,
     Strahlkorper,
     read_surface_ylm,
