@@ -33,6 +33,7 @@
 #include "NumericalAlgorithms/Spectral/Quadrature.hpp"
 #include "Options/Protocols/FactoryCreation.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
+#include "PointwiseFunctions/InitialDataUtilities/InitialGuess.hpp"
 #include "Utilities/Literals.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
@@ -66,9 +67,9 @@ using test_tags = tmpl::list<ScalarFieldTag<1>, ScalarFieldTag<2>,
                              FluxTag<Dim, 1>, FluxTag<Dim, 2>>;
 
 template <size_t Dim>
-struct TestSolution : elliptic::analytic_data::AnalyticSolution {
+struct TestSolution : elliptic::analytic_data::InitialGuess {
   using options = tmpl::list<>;
-  static constexpr Options::String help{"A solution."};
+  static constexpr Options::String help{"Initial data."};
   TestSolution() = default;
   TestSolution(const TestSolution&) = default;
   TestSolution& operator=(const TestSolution&) = default;
@@ -76,22 +77,18 @@ struct TestSolution : elliptic::analytic_data::AnalyticSolution {
   TestSolution& operator=(TestSolution&&) = default;
   ~TestSolution() override = default;
   explicit TestSolution(CkMigrateMessage* m)
-      : elliptic::analytic_data::AnalyticSolution(m) {}
+      : elliptic::analytic_data::InitialGuess(m) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(TestSolution);  // NOLINT
 
-  std::unique_ptr<elliptic::analytic_data::AnalyticSolution> get_clone()
-      const override {
-    return std::make_unique<TestSolution>(*this);
-  }
-
-  tuples::tagged_tuple_from_typelist<test_tags<Dim>> variables(
-      const tnsr::I<DataVector, Dim>& x, test_tags<Dim> /*meta*/) const {
+  template <typename... RequestedTags>
+  tuples::TaggedTuple<RequestedTags...> variables(
+      const tnsr::I<DataVector, Dim>& x,
+      tmpl::list<RequestedTags...> /*meta*/) const {
     // Create arbitrary analytic solution data
     Variables<test_tags<Dim>> result{x.begin()->size()};
     std::iota(result.data(), result.data() + result.size(), 1.);
-    return {get<ScalarFieldTag<1>>(result), get<ScalarFieldTag<2>>(result),
-            get<FluxTag<Dim, 1>>(result), get<FluxTag<Dim, 2>>(result)};
+    return {get<RequestedTags>(result)...};
   }
 };
 
@@ -106,7 +103,7 @@ struct Metavariables {
         tmpl::pair<elliptic::BoundaryConditions::BoundaryCondition<Dim>,
                    tmpl::list<elliptic::BoundaryConditions::AnalyticSolution<
                        System<Dim>>>>,
-        tmpl::pair<elliptic::analytic_data::AnalyticSolution,
+        tmpl::pair<elliptic::analytic_data::InitialGuess,
                    tmpl::list<TestSolution<Dim>>>>;
   };
 };

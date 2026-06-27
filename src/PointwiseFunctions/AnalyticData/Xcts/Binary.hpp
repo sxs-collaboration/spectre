@@ -309,6 +309,9 @@ template <typename IsolatedObjectBase, typename IsolatedObjectClasses>
 class Binary : public elliptic::analytic_data::Background,
                public elliptic::analytic_data::InitialGuess {
  public:
+  template <typename DataType>
+  using tags = typename detail::BinaryVariablesCache<DataType>::tags_list;
+
   struct XCoords {
     static constexpr Options::String help =
         "The coordinates on the x-axis where the two objects are placed";
@@ -395,14 +398,18 @@ class Binary : public elliptic::analytic_data::Background,
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(Binary);
 
-  template <typename DataType, typename... RequestedTags>
+  template <typename DataType, typename... RequestedTags,
+            Requires<tmpl2::flat_all_v<tmpl::list_contains_v<
+                tags<DataType>, RequestedTags>...>> = nullptr>
   tuples::TaggedTuple<RequestedTags...> variables(
       const tnsr::I<DataType, 3, Frame::Inertial>& x,
       tmpl::list<RequestedTags...> /*meta*/) const {
     return variables_impl<DataType>(x, std::nullopt, std::nullopt,
                                     tmpl::list<RequestedTags...>{});
   }
-  template <typename... RequestedTags>
+  template <typename... RequestedTags,
+            Requires<tmpl2::flat_all_v<tmpl::list_contains_v<
+                tags<DataVector>, RequestedTags>...>> = nullptr>
   tuples::TaggedTuple<RequestedTags...> variables(
       const tnsr::I<DataVector, 3, Frame::Inertial>& x, const Mesh<3>& mesh,
       const InverseJacobian<DataVector, 3, Frame::ElementLogical,
@@ -457,7 +464,9 @@ class Binary : public elliptic::analytic_data::Background,
   std::array<double, 3> linear_velocity_{};
   std::optional<std::array<double, 2>> falloff_widths_{};
 
-  template <typename DataType, typename... RequestedTags>
+  template <typename DataType, typename... RequestedTags,
+            Requires<tmpl2::flat_all_v<tmpl::list_contains_v<
+                tags<DataType>, RequestedTags>...>> = nullptr>
   tuples::TaggedTuple<RequestedTags...> variables_impl(
       const tnsr::I<DataType, 3, Frame::Inertial>& x,
       std::optional<std::reference_wrapper<const Mesh<3>>> mesh,

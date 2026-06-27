@@ -25,7 +25,6 @@
 #include "PointwiseFunctions/GeneralRelativity/Ricci.hpp"
 #include "PointwiseFunctions/Xcts/LongitudinalOperator.hpp"
 #include "Utilities/ContainerHelpers.hpp"
-#include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Gsl.hpp"
 
@@ -139,9 +138,10 @@ void CommonVariables<DataType, Cache>::operator()(
     ::Tags::deriv<
         Tags::ConformalChristoffelSecondKind<DataType, Dim, Frame::Inertial>,
         tmpl::size_t<Dim>, Frame::Inertial> /*meta*/) const {
-  ASSERT(mesh.has_value() and inv_jacobian.has_value(),
-         "Need a mesh and a Jacobian for numeric differentiation.");
   if constexpr (std::is_same_v<DataType, DataVector>) {
+    if (not(mesh.has_value() and inv_jacobian.has_value())) {
+      ERROR("Need a mesh and a Jacobian for numeric differentiation.");
+    }
     const auto& conformal_christoffel_second_kind = cache->get_var(
         *this,
         Tags::ConformalChristoffelSecondKind<DataType, Dim, Frame::Inertial>{});
@@ -200,9 +200,10 @@ void CommonVariables<DataType, Cache>::operator()(
     const gsl::not_null<Cache*> cache,
     ::Tags::deriv<gr::Tags::TraceExtrinsicCurvature<DataType>,
                   tmpl::size_t<Dim>, Frame::Inertial> /*meta*/) const {
-  ASSERT(mesh.has_value() and inv_jacobian.has_value(),
-         "Need a mesh and a Jacobian for numeric differentiation.");
   if constexpr (std::is_same_v<DataType, DataVector>) {
+    if (not(mesh.has_value() and inv_jacobian.has_value())) {
+      ERROR("Need a mesh and a Jacobian for numeric differentiation.");
+    }
     const auto& extrinsic_curvature_trace =
         cache->get_var(*this, gr::Tags::TraceExtrinsicCurvature<DataType>{});
     partial_derivative(deriv_extrinsic_curvature_trace,
@@ -246,9 +247,10 @@ void CommonVariables<DataType, Cache>::operator()(
     const gsl::not_null<Cache*> cache,
     ::Tags::div<Tags::LongitudinalShiftBackgroundMinusDtConformalMetric<
         DataType, Dim, Frame::Inertial>> /*meta*/) const {
-  ASSERT(mesh.has_value() and inv_jacobian.has_value(),
-         "Need a mesh and a Jacobian for numeric differentiation.");
   if constexpr (std::is_same_v<DataType, DataVector>) {
+    if (not(mesh.has_value() and inv_jacobian.has_value())) {
+      ERROR("Need a mesh and a Jacobian for numeric differentiation.");
+    }
     // Copy into a Variables to take the divergence because at this time the
     // `divergence` function only works with Variables. This won't be used for
     // anything performance-critical, but adding a `divergence` overload that
