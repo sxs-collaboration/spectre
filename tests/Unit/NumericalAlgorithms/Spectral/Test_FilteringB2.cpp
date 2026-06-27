@@ -3,8 +3,10 @@
 
 #include "Framework/TestingFramework.hpp"
 
+#include <array>
 #include <cmath>
 #include <cstddef>
+#include <optional>
 #include <tuple>
 #include <vector>
 
@@ -27,6 +29,7 @@
 #include "NumericalAlgorithms/Spectral/NodalToModalMatrix.hpp"
 #include "NumericalAlgorithms/Spectral/Quadrature.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/Literals.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace {
@@ -311,12 +314,12 @@ void test_cylinder_filter() {
     // Rather than constructing analytically, we verify that a constant- in-z
     // function (which has no high-z-mode content) is preserved, while a
     // function with only high-z-mode content vanishes.
-    const Matrix& mtn_z =
+    const Matrix& modal_to_nodal_z =
         Spectral::modal_to_nodal_matrix(mesh.slice_through(2));
     DataVector f_top_z_vals(num_grid_points, 0.0);
     const size_t n_rph = n_r * n_ph;
     for (size_t k = 0; k < n_z; ++k) {
-      const double z_nodal_val = mtn_z(k, n_z - 1);
+      const double z_nodal_val = modal_to_nodal_z(k, n_z - 1);
       for (size_t ij = 0; ij < n_rph; ++ij) {
         f_top_z_vals[ij + n_rph * k] = z_nodal_val;
       }
@@ -353,100 +356,354 @@ void test_cylinder_filter_weights() {
   const std::vector<std::tuple<size_t, size_t, size_t>> mesh_sizes{
       {2, 3, 2}, {2, 5, 3}, {3, 5, 3}, {3, 9, 3}, {4, 5, 4}, {5, 7, 3}};
 
-  for (const auto& [n_r, n_ph, n_z] : mesh_sizes) {
-    CAPTURE(n_r);
-    CAPTURE(n_ph);
-    CAPTURE(n_z);
-    const Mesh<3> mesh{{n_r, n_ph, n_z},
-                       {Spectral::Basis::ZernikeB2, Spectral::Basis::ZernikeB2,
-                        Spectral::Basis::Legendre},
-                       {Spectral::Quadrature::GaussRadauUpper,
-                        Spectral::Quadrature::Equiangular,
-                        Spectral::Quadrature::GaussLobatto}};
-    const auto x = logical_coordinates(mesh);
-    const DataVector r = 0.5 * (x[0] + 1.0);
-    const DataVector& phi = x[1];
-    const size_t num_grid_points = mesh.number_of_grid_points();
-    const size_t M = n_ph / 2;
-    const size_t n_order = n_r - 1;
-    const size_t n_rph = n_r * n_ph;
+  // The radial-angular plane is fixed to ZernikeB2 x Fourier, but the axial z
+  // filter uses exponential_filter() in whatever 1D basis the mesh has in z, so
+  // both Legendre and Chebyshev must work there.
+  const std::array<std::pair<Spectral::Basis, Spectral::Quadrature>, 2> z_bases{
+      {{Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto},
+       {Spectral::Basis::Chebyshev, Spectral::Quadrature::GaussLobatto}}};
 
-    for (const auto& [alpha, half_power] : params) {
-      CAPTURE(alpha);
-      CAPTURE(half_power);
+  for (const auto& [z_basis, z_quadrature] : z_bases) {
+    CAPTURE(z_basis);
+    CAPTURE(z_quadrature);
+    for (const auto& [n_r, n_ph, n_z] : mesh_sizes) {
+      CAPTURE(n_r);
+      CAPTURE(n_ph);
+      CAPTURE(n_z);
+      const Mesh<3> mesh{
+          {n_r, n_ph, n_z},
+          {Spectral::Basis::ZernikeB2, Spectral::Basis::ZernikeB2, z_basis},
+          {Spectral::Quadrature::GaussRadauUpper,
+           Spectral::Quadrature::Equiangular, z_quadrature}};
+      const auto x = logical_coordinates(mesh);
+      const DataVector r = 0.5 * (x[0] + 1.0);
+      const DataVector& phi = x[1];
+      const size_t num_grid_points = mesh.number_of_grid_points();
+      const size_t M = n_ph / 2;
+      const size_t n_order = n_r - 1;
+      const size_t n_rph = n_r * n_ph;
 
-      // (r, phi) weight test: r^m*{cos,sin}(m*phi) constant in z.
-      // Since the function is constant in z it has only the k_z=0 mode, whose
-      // z filter factor is exp(0)=1. So the full weight is purely the disk
-      // weight.
-      for (size_t m = 1; m <= M; ++m) {
-        CAPTURE(m);
-        const size_t ns = (m + 1) / 2;
-        const double disk_factor =
-            exp(-alpha *
-                pow(static_cast<double>(ns) / static_cast<double>(n_order),
-                    2 * half_power)) *
-            exp(-alpha * pow(static_cast<double>(m) / static_cast<double>(M),
-                             2 * half_power));
+      for (const auto& [alpha, half_power] : params) {
+        CAPTURE(alpha);
+        CAPTURE(half_power);
 
-        const DataVector r_m = pow(r, static_cast<double>(m));
-        Variables<TagsList> u{num_grid_points};
-        Variables<TagsList> expected_result{num_grid_points};
+        // (r, phi) weight test: r^m*{cos,sin}(m*phi) constant in z.
+        // Since the function is constant in z it has only the k_z=0 mode, whose
+        // z filter factor is exp(0)=1. So the full weight is purely the disk
+        // weight.
+        for (size_t m = 1; m <= M; ++m) {
+          CAPTURE(m);
+          const size_t ns = (m + 1) / 2;
+          const double disk_factor =
+              exp(-alpha *
+                  pow(static_cast<double>(ns) / static_cast<double>(n_order),
+                      2 * half_power)) *
+              exp(-alpha * pow(static_cast<double>(m) / static_cast<double>(M),
+                               2 * half_power));
 
-        // Cosine mode: r^m * cos(m*phi), constant in z
-        {
-          const DataVector f_cos = r_m * cos(static_cast<double>(m) * phi);
-          get(get<::Tags::TempScalar<0>>(u)) = f_cos;
-          Spectral::filtering::zernike_b2_cylinder_exponential_filter(
-              make_not_null(&u), mesh, alpha, half_power);
-          get(get<::Tags::TempScalar<0>>(expected_result)) =
-              disk_factor * f_cos;
-          CHECK_VARIABLES_APPROX(u, expected_result);
-        }
+          const DataVector r_m = pow(r, static_cast<double>(m));
+          Variables<TagsList> u{num_grid_points};
+          Variables<TagsList> expected_result{num_grid_points};
 
-        // Sine mode: r^m * sin(m*phi), constant in z
-        {
-          const DataVector f_sin = r_m * sin(static_cast<double>(m) * phi);
-          get(get<::Tags::TempScalar<0>>(u)) = f_sin;
-          Spectral::filtering::zernike_b2_cylinder_exponential_filter(
-              make_not_null(&u), mesh, alpha, half_power);
-          get(get<::Tags::TempScalar<0>>(expected_result)) =
-              disk_factor * f_sin;
-          CHECK_VARIABLES_APPROX(u, expected_result);
-        }
-      }
+          // Cosine mode: r^m * cos(m*phi), constant in z
+          {
+            const DataVector f_cos = r_m * cos(static_cast<double>(m) * phi);
+            get(get<::Tags::TempScalar<0>>(u)) = f_cos;
+            Spectral::filtering::zernike_b2_cylinder_exponential_filter(
+                make_not_null(&u), mesh, alpha, half_power);
+            get(get<::Tags::TempScalar<0>>(expected_result)) =
+                disk_factor * f_cos;
+            CHECK_VARIABLES_APPROX(u, expected_result);
+          }
 
-      // z weight test: the k-th Legendre modal basis function in z, constant
-      // in (r, phi). The nodal representation is column k of the
-      // modal-to-nodal matrix for the z mesh. Since the function is constant
-      // in (r, phi) it sits entirely in the (n=0, m=0) disk mode whose disk
-      // filter weight is exp(0)=1. So the full weight is the z weight alone:
-      //   exp(-alpha * (k / (n_z-1))^(2p)).
-      const Matrix& mtn_z =
-          Spectral::modal_to_nodal_matrix(mesh.slice_through(2));
-      const auto n_z_order = static_cast<double>(n_z - 1);
-
-      for (size_t k = 0; k < n_z; ++k) {
-        CAPTURE(k);
-        const double z_factor = exp(
-            -alpha * pow(static_cast<double>(k) / n_z_order, 2 * half_power));
-
-        DataVector f_z_vals(num_grid_points, 0.0);
-        for (size_t kk = 0; kk < n_z; ++kk) {
-          const double z_nodal_val = mtn_z(kk, k);
-          for (size_t ij = 0; ij < n_rph; ++ij) {
-            f_z_vals[ij + n_rph * kk] = z_nodal_val;
+          // Sine mode: r^m * sin(m*phi), constant in z
+          {
+            const DataVector f_sin = r_m * sin(static_cast<double>(m) * phi);
+            get(get<::Tags::TempScalar<0>>(u)) = f_sin;
+            Spectral::filtering::zernike_b2_cylinder_exponential_filter(
+                make_not_null(&u), mesh, alpha, half_power);
+            get(get<::Tags::TempScalar<0>>(expected_result)) =
+                disk_factor * f_sin;
+            CHECK_VARIABLES_APPROX(u, expected_result);
           }
         }
 
+        // z weight test: the k-th modal basis function in z (Legendre or
+        // Chebyshev, see z_bases above), constant in (r, phi). The nodal
+        // representation is column k of the modal-to-nodal matrix for the z
+        // mesh, which is built generically from the mesh's z basis, so the same
+        // check exercises both bases. Since the function is constant
+        // in (r, phi) it sits entirely in the (n=0, m=0) disk mode whose disk
+        // filter weight is exp(0)=1. So the full weight is the z weight alone:
+        //   exp(-alpha * (k / (n_z-1))^(2p)).
+        const Matrix& modal_to_nodal_z =
+            Spectral::modal_to_nodal_matrix(mesh.slice_through(2));
+        const auto n_z_order = static_cast<double>(n_z - 1);
+
+        for (size_t k = 0; k < n_z; ++k) {
+          CAPTURE(k);
+          const double z_factor = exp(
+              -alpha * pow(static_cast<double>(k) / n_z_order, 2 * half_power));
+
+          DataVector f_z_vals(num_grid_points, 0.0);
+          for (size_t kk = 0; kk < n_z; ++kk) {
+            const double z_nodal_val = modal_to_nodal_z(kk, k);
+            for (size_t ij = 0; ij < n_rph; ++ij) {
+              f_z_vals[ij + n_rph * kk] = z_nodal_val;
+            }
+          }
+
+          Variables<TagsList> u{num_grid_points};
+          Variables<TagsList> expected_result{num_grid_points};
+          get(get<::Tags::TempScalar<0>>(u)) = f_z_vals;
+          Spectral::filtering::zernike_b2_cylinder_exponential_filter(
+              make_not_null(&u), mesh, alpha, half_power);
+          get(get<::Tags::TempScalar<0>>(expected_result)) =
+              z_factor * f_z_vals;
+          CHECK_VARIABLES_APPROX(u, expected_result);
+        }
+      }
+    }
+  }
+}
+
+// Exercises the generalized `zernike_b2_{disk,cylinder}_filter` entry points:
+// independent disk/z half-powers, the top angular mode cutoff, identity when
+// nothing is requested, and a regression check that the `*_exponential_filter`
+// wrappers reproduce the generalized call.
+void test_generalized_filters() {
+  using TagsList = tmpl::list<::Tags::TempScalar<0>>;
+
+  const Mesh<3> mesh{
+      {5, 7, 4},
+      {Spectral::Basis::ZernikeB2, Spectral::Basis::ZernikeB2,
+       Spectral::Basis::Legendre},
+      {Spectral::Quadrature::GaussRadauUpper, Spectral::Quadrature::Equiangular,
+       Spectral::Quadrature::GaussLobatto}};
+  const Mesh<2> disk = mesh.slice_away(2);
+  const auto x = logical_coordinates(mesh);
+  const DataVector r = 0.5 * (x[0] + 1.0);
+  const DataVector& phi = x[1];
+  const size_t num_grid_points = mesh.number_of_grid_points();
+  const size_t M = 7 / 2;
+  const size_t n_order = 5 - 1;
+  const size_t n_rph = 5_st * 7_st;
+  const size_t n_z = 4;
+
+  DataVector smooth_field(num_grid_points);
+  for (size_t i = 0; i < num_grid_points; ++i) {
+    smooth_field[i] = sin(0.3 * static_cast<double>(i)) + 1.1;
+  }
+
+  {
+    INFO("Regression: cylinder exponential wrapper == generalized call");
+    const double alpha = 36.0;
+    const unsigned half_power = 8;
+    Variables<TagsList> wrapper{num_grid_points};
+    Variables<TagsList> general{num_grid_points};
+    get(get<::Tags::TempScalar<0>>(wrapper)) = smooth_field;
+    get(get<::Tags::TempScalar<0>>(general)) = smooth_field;
+    Spectral::filtering::zernike_b2_cylinder_exponential_filter(
+        make_not_null(&wrapper), mesh, alpha, half_power);
+    Spectral::filtering::zernike_b2_cylinder_filter(
+        make_not_null(&general), mesh, alpha,
+        std::optional<unsigned>{half_power},
+        std::optional<unsigned>{half_power}, 0);
+    CHECK_VARIABLES_APPROX(wrapper, general);
+  }
+  {
+    INFO("Regression: disk exponential wrapper == generalized call");
+    const DataVector disk_data(smooth_field.data(),
+                               disk.number_of_grid_points());
+    const double alpha = 36.0;
+    const unsigned half_power = 8;
+    Variables<TagsList> wrapper{disk.number_of_grid_points()};
+    Variables<TagsList> general{disk.number_of_grid_points()};
+    get(get<::Tags::TempScalar<0>>(wrapper)) = disk_data;
+    get(get<::Tags::TempScalar<0>>(general)) = disk_data;
+    Spectral::filtering::zernike_b2_disk_exponential_filter(
+        make_not_null(&wrapper), disk, alpha, half_power);
+    Spectral::filtering::zernike_b2_disk_filter(
+        make_not_null(&general), disk, alpha,
+        std::optional<unsigned>{half_power}, 0);
+    CHECK_VARIABLES_APPROX(wrapper, general);
+  }
+  {
+    INFO("Identity: no half-powers and no cutoff leaves the data unchanged");
+    Variables<TagsList> u{num_grid_points};
+    Variables<TagsList> expected_result{num_grid_points};
+    get(get<::Tags::TempScalar<0>>(u)) = smooth_field;
+    get(get<::Tags::TempScalar<0>>(expected_result)) = smooth_field;
+    Spectral::filtering::zernike_b2_cylinder_filter(
+        make_not_null(&u), mesh, 36.0, std::nullopt, std::nullopt, 0);
+    CHECK_VARIABLES_APPROX(u, expected_result);
+  }
+  {
+    INFO("Disk half-power is independent of the (constant-in-z) z direction");
+    // A pure (r, phi) mode that is constant in z must be scaled only by the
+    // disk weight, regardless of the z half-power.
+    const double alpha = 20.0;
+    const unsigned disk_half = 4;
+    for (size_t m = 1; m <= M; ++m) {
+      CAPTURE(m);
+      const size_t ns = (m + 1) / 2;
+      const double disk_factor =
+          exp(-alpha *
+              pow(static_cast<double>(ns) / static_cast<double>(n_order),
+                  2 * disk_half)) *
+          exp(-alpha * pow(static_cast<double>(m) / static_cast<double>(M),
+                           2 * disk_half));
+      const DataVector f =
+          pow(r, static_cast<double>(m)) * cos(static_cast<double>(m) * phi);
+      Variables<TagsList> expected_result{num_grid_points};
+      get(get<::Tags::TempScalar<0>>(expected_result)) = disk_factor * f;
+      // z_half_power = None and z_half_power = 6 must give the same result.
+      for (const std::optional<unsigned> z_half :
+           {std::optional<unsigned>{std::nullopt},
+            std::optional<unsigned>{6}}) {
         Variables<TagsList> u{num_grid_points};
-        Variables<TagsList> expected_result{num_grid_points};
-        get(get<::Tags::TempScalar<0>>(u)) = f_z_vals;
-        Spectral::filtering::zernike_b2_cylinder_exponential_filter(
-            make_not_null(&u), mesh, alpha, half_power);
-        get(get<::Tags::TempScalar<0>>(expected_result)) = z_factor * f_z_vals;
+        get(get<::Tags::TempScalar<0>>(u)) = f;
+        Spectral::filtering::zernike_b2_cylinder_filter(
+            make_not_null(&u), mesh, alpha, std::optional<unsigned>{disk_half},
+            z_half, 0);
         CHECK_VARIABLES_APPROX(u, expected_result);
       }
+    }
+  }
+  {
+    INFO("Z half-power acts on z modes with the disk left unfiltered");
+    // A pure top-z Legendre mode, constant in (r, phi), is scaled only by the
+    // z weight when the disk half-power is None.
+    const double alpha = 36.0;
+    const unsigned z_half = 8;
+    const Matrix& modal_to_nodal_z =
+        Spectral::modal_to_nodal_matrix(mesh.slice_through(2));
+    const auto n_z_order = static_cast<double>(n_z - 1);
+    for (size_t k = 0; k < n_z; ++k) {
+      CAPTURE(k);
+      const double z_factor =
+          exp(-alpha * pow(static_cast<double>(k) / n_z_order, 2 * z_half));
+      DataVector f_z_vals(num_grid_points, 0.0);
+      for (size_t kk = 0; kk < n_z; ++kk) {
+        const double z_nodal_val = modal_to_nodal_z(kk, k);
+        for (size_t ij = 0; ij < n_rph; ++ij) {
+          f_z_vals[ij + n_rph * kk] = z_nodal_val;
+        }
+      }
+      Variables<TagsList> u{num_grid_points};
+      Variables<TagsList> expected_result{num_grid_points};
+      get(get<::Tags::TempScalar<0>>(u)) = f_z_vals;
+      Spectral::filtering::zernike_b2_cylinder_filter(
+          make_not_null(&u), mesh, alpha, std::nullopt,
+          std::optional<unsigned>{z_half}, 0);
+      get(get<::Tags::TempScalar<0>>(expected_result)) = z_factor * f_z_vals;
+      CHECK_VARIABLES_APPROX(u, expected_result);
+    }
+  }
+  {
+    INFO("NumModesToKill zeroes the top angular mode and keeps m = 0");
+    // f = 1 + r^M cos(M phi): killing one angular mode removes the top mode
+    // exactly while leaving the constant untouched, with no exponential
+    // roll-off applied.
+    const DataVector f_mixed = 1.0 + pow(r, static_cast<double>(M)) *
+                                         cos(static_cast<double>(M) * phi);
+    Variables<TagsList> u{num_grid_points};
+    Variables<TagsList> expected_result{num_grid_points};
+    get(get<::Tags::TempScalar<0>>(u)) = f_mixed;
+    get(get<::Tags::TempScalar<0>>(expected_result)) = 1.0;
+    Spectral::filtering::zernike_b2_cylinder_filter(
+        make_not_null(&u), mesh, 36.0, std::nullopt, std::nullopt, 1);
+    CHECK_VARIABLES_APPROX(u, expected_result);
+
+    // A lower angular mode (m = 1 <= M - num_modes_to_kill) is retained
+    // exactly when no exponential roll-off is requested.
+    const DataVector f_low = r * cos(phi);
+    Variables<TagsList> u_low{num_grid_points};
+    Variables<TagsList> expected_low{num_grid_points};
+    get(get<::Tags::TempScalar<0>>(u_low)) = f_low;
+    get(get<::Tags::TempScalar<0>>(expected_low)) = f_low;
+    Spectral::filtering::zernike_b2_cylinder_filter(
+        make_not_null(&u_low), mesh, 36.0, std::nullopt, std::nullopt, 1);
+    CHECK_VARIABLES_APPROX(u_low, expected_low);
+  }
+  {
+    INFO("Disk generalized filter: analytic checks on the 2D entry point");
+    // The 2D `zernike_b2_disk_filter` is otherwise only reached through the
+    // wrapper regression check above (and indirectly via the cylinder, which
+    // reimplements the disk transform), so verify its new branches directly.
+    // The disk slice keeps n_r = 5 and n_ph = 7, so M and n_order match the
+    // values computed above for the 3D mesh.
+    const auto disk_x = logical_coordinates(disk);
+    const DataVector disk_r = 0.5 * (disk_x[0] + 1.0);
+    const DataVector& disk_phi = disk_x[1];
+    const size_t disk_num_grid_points = disk.number_of_grid_points();
+
+    {
+      INFO("no half-power and no cutoff is the identity");
+      DataVector disk_field(disk_num_grid_points);
+      for (size_t i = 0; i < disk_num_grid_points; ++i) {
+        disk_field[i] = sin(0.3 * static_cast<double>(i)) + 1.1;
+      }
+      Variables<TagsList> u{disk_num_grid_points};
+      Variables<TagsList> expected_result{disk_num_grid_points};
+      get(get<::Tags::TempScalar<0>>(u)) = disk_field;
+      get(get<::Tags::TempScalar<0>>(expected_result)) = disk_field;
+      Spectral::filtering::zernike_b2_disk_filter(make_not_null(&u), disk, 36.0,
+                                                  std::nullopt, 0);
+      CHECK_VARIABLES_APPROX(u, expected_result);
+    }
+    {
+      INFO("num_modes_to_kill zeroes the top angular mode and keeps m = 0");
+      // f = 1 + r^M cos(M phi): killing one angular mode removes the top mode
+      // exactly while leaving the constant untouched, with no roll-off applied.
+      const DataVector f_mixed =
+          1.0 + pow(disk_r, static_cast<double>(M)) *
+                    cos(static_cast<double>(M) * disk_phi);
+      Variables<TagsList> u{disk_num_grid_points};
+      Variables<TagsList> expected_result{disk_num_grid_points};
+      get(get<::Tags::TempScalar<0>>(u)) = f_mixed;
+      get(get<::Tags::TempScalar<0>>(expected_result)) = 1.0;
+      Spectral::filtering::zernike_b2_disk_filter(make_not_null(&u), disk, 36.0,
+                                                  std::nullopt, 1);
+      CHECK_VARIABLES_APPROX(u, expected_result);
+
+      // A lower angular mode (m = 1 <= M - num_modes_to_kill) survives exactly.
+      const DataVector f_low = disk_r * cos(disk_phi);
+      Variables<TagsList> u_low{disk_num_grid_points};
+      Variables<TagsList> expected_low{disk_num_grid_points};
+      get(get<::Tags::TempScalar<0>>(u_low)) = f_low;
+      get(get<::Tags::TempScalar<0>>(expected_low)) = f_low;
+      Spectral::filtering::zernike_b2_disk_filter(make_not_null(&u_low), disk,
+                                                  36.0, std::nullopt, 1);
+      CHECK_VARIABLES_APPROX(u_low, expected_low);
+    }
+    {
+      INFO("exponential roll-off and top-mode cutoff compose");
+      // f = 1 + r cos(phi) + r^M cos(M phi): the killed top mode (m = M)
+      // vanishes, the constant (m = 0) is untouched, and the surviving m = 1
+      // mode is scaled by its disk weight.
+      const double alpha = 20.0;
+      const unsigned half_power = 4;
+      const size_t m_keep = 1;
+      const size_t ns = (m_keep + 1) / 2;
+      const double disk_factor_m1 =
+          exp(-alpha *
+              pow(static_cast<double>(ns) / static_cast<double>(n_order),
+                  2 * half_power)) *
+          exp(-alpha * pow(static_cast<double>(m_keep) / static_cast<double>(M),
+                           2 * half_power));
+      const DataVector f_low = disk_r * cos(disk_phi);
+      const DataVector f_top = pow(disk_r, static_cast<double>(M)) *
+                               cos(static_cast<double>(M) * disk_phi);
+      Variables<TagsList> u{disk_num_grid_points};
+      Variables<TagsList> expected_result{disk_num_grid_points};
+      get(get<::Tags::TempScalar<0>>(u)) = 1.0 + f_low + f_top;
+      get(get<::Tags::TempScalar<0>>(expected_result)) =
+          1.0 + disk_factor_m1 * f_low;
+      Spectral::filtering::zernike_b2_disk_filter(
+          make_not_null(&u), disk, alpha, std::optional<unsigned>{half_power},
+          1);
+      CHECK_VARIABLES_APPROX(u, expected_result);
     }
   }
 }
@@ -496,6 +753,18 @@ void test_asserts() {
             "is not larger than the Zernike angular capabilities"));
   }
   {
+    INFO("Disk: killing more angular modes than resolved triggers assert");
+    const Mesh<2> mesh{{5, 7},
+                       {Spectral::Basis::ZernikeB2, Spectral::Basis::ZernikeB2},
+                       {Spectral::Quadrature::GaussRadauUpper,
+                        Spectral::Quadrature::Equiangular}};
+    Variables<TagsList> u{mesh.number_of_grid_points()};
+    CHECK_THROWS_WITH(Spectral::filtering::zernike_b2_disk_filter(
+                          make_not_null(&u), mesh, 1.0, std::nullopt, 4),
+                      Catch::Matchers::ContainsSubstring(
+                          "Cannot zero 4 angular modes when only 3"));
+  }
+  {
     INFO("Cylinder: even n_phi triggers the odd-check assert");
     const Mesh<3> mesh{{3, 4, 3},
                        {Spectral::Basis::ZernikeB2, Spectral::Basis::ZernikeB2,
@@ -526,6 +795,21 @@ void test_asserts() {
             "We choose to enforce the restriction that the Fourier modal space "
             "is not larger than the Zernike angular capabilities"));
   }
+  {
+    INFO("Cylinder: killing more angular modes than resolved triggers assert");
+    const Mesh<3> mesh{{5, 7, 3},
+                       {Spectral::Basis::ZernikeB2, Spectral::Basis::ZernikeB2,
+                        Spectral::Basis::Legendre},
+                       {Spectral::Quadrature::GaussRadauUpper,
+                        Spectral::Quadrature::Equiangular,
+                        Spectral::Quadrature::GaussLobatto}};
+    Variables<TagsList> u{mesh.number_of_grid_points()};
+    CHECK_THROWS_WITH(
+        Spectral::filtering::zernike_b2_cylinder_filter(
+            make_not_null(&u), mesh, 1.0, std::nullopt, std::nullopt, 4),
+        Catch::Matchers::ContainsSubstring(
+            "Cannot zero 4 angular modes when only 3"));
+  }
 }
 #endif
 
@@ -538,6 +822,7 @@ SPECTRE_TEST_CASE("Unit.Numerical.Spectral.B2Filter",
   test_disk_filter_weights();
   test_cylinder_filter();
   test_cylinder_filter_weights();
+  test_generalized_filters();
 #ifdef SPECTRE_DEBUG
   test_asserts();
 #endif  // SPECTRE_DEBUG
