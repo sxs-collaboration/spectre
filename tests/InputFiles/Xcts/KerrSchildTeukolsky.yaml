@@ -1,0 +1,163 @@
+# Distributed under the MIT License.
+# See LICENSE.txt for details.
+
+Executable: SolveXcts
+Testing:
+  Check: parse;execute
+  Timeout: 120
+
+---
+
+Parallelization:
+  ElementDistribution: NumGridPoints
+
+ResourceInfo:
+  AvoidGlobalProc0: false
+  Singletons: Auto
+
+Background: &solution
+  KerrSchildTeukolsky:
+    KerrSchild:
+      Mass: &KerrMass 1.
+      Spin: &KerrSpin [0.1, -0.2, 0.3]
+      Center: &KerrCenter [0., 0., 0.]
+      Velocity: [0., 0., 0.]
+    TeukolskyWave:
+      Amplitude: 0.02
+      Mode: 2
+      Parity: odd
+      Direction: outgoing
+      Center: [0.1, -0.2, 0.3]
+      Radius: 20.
+      Width: 4.
+
+InitialGuess: *solution
+
+RandomizeInitialGuess: None
+
+DomainCreator:
+  Sphere:
+    InnerRadius: &InnerRadius 1.8
+    OuterRadius: &OuterRadius 36.
+    Interior:
+      ExciseWithBoundaryCondition:
+        AnalyticSolution:
+          Solution: *solution
+          ConformalFactorMinusOne: Dirichlet
+          LapseTimesConformalFactorMinusOne: Dirichlet
+          ShiftExcess: Dirichlet
+    InitialRefinement: 0
+    InitialGridPoints: 6
+    UseEquiangularMap: True
+    EquatorialCompression: None
+    WhichWedges: All
+    RadialPartitioning: [3., 6.]
+    RadialDistribution:
+      - Logarithmic
+      - Logarithmic
+      - Inverse
+    TimeDependentMaps:
+      Shape:
+        InitialTime: 0.
+        LMax: 18
+        CoefficientTruncationLimit: 0.
+        Mass: *KerrMass
+        Spin: *KerrSpin
+        Center: *KerrCenter
+        InnerRadius: *InnerRadius
+        OuterRadius: *OuterRadius
+    OuterBoundaryCondition:
+      AnalyticSolution:
+        Solution: *solution
+        ConformalFactorMinusOne: Dirichlet
+        LapseTimesConformalFactorMinusOne: Dirichlet
+        ShiftExcess: Dirichlet
+
+Amr:
+  Verbosity: Verbose
+  Criteria:
+    - IncreaseResolution
+  EnableInBlocks: All
+  Policies:
+    EnforceTwoToOneBalanceInNormalDirection: true
+    Isotropy: Anisotropic
+    Limits:
+      NumGridPoints: Auto
+      RefinementLevel: Auto
+      ErrorBeyondLimits: False
+    AllowCoarsening: True
+  MaxCoarseLevels: Auto
+  Iterations: 0
+
+PhaseChangeAndTriggers: []
+
+Discretization:
+  DiscontinuousGalerkin:
+    PenaltyParameter: 1.
+    Massive: True
+    Quadrature: GaussLobatto
+    Formulation: WeakInertial
+
+Observers:
+  VolumeFileName: "KerrSchildTeukolskyVolume"
+  ReductionFileName: "KerrSchildTeukolskyReductions"
+
+NonlinearSolver:
+  NewtonRaphson:
+    ConvergenceCriteria:
+      MaxIterations: 20
+      RelativeResidual: 0.
+      AbsoluteResidual: 1.e-6
+    SufficientDecrease: 1.e-4
+    MaxGlobalizationSteps: 40
+    DampingFactor: 1.
+    Verbosity: Quiet
+
+LinearSolver:
+  Gmres:
+    ConvergenceCriteria:
+      MaxIterations: 30
+      RelativeResidual: 1.e-4
+      AbsoluteResidual: 1.e-12
+    Verbosity: Quiet
+
+  Multigrid:
+    Iterations: 1
+    InitialCoarseLevels: Auto
+    PreSmoothing: True
+    UseBottomSolver: False
+    PostSmoothingAtBottom: False
+    Verbosity: Silent
+    OutputVolumeData: False
+
+  SchwarzSmoother:
+    Iterations: 3
+    MaxOverlap: 2
+    Verbosity: Silent
+    SubdomainSolver:
+      Gmres:
+        ConvergenceCriteria:
+          MaxIterations: 3
+          RelativeResidual: 1.e-4
+          AbsoluteResidual: 1.e-12
+        Verbosity: Silent
+        Restart: None
+        Preconditioner:
+          MinusLaplacian:
+            Solver:
+              ExplicitInverse:
+                WriteMatrixToFile: None
+            BoundaryConditions: Auto
+    SkipResets: True
+    ObservePerCoreReductions: False
+    OutputVolumeData: False
+
+RadiallyCompressedCoordinates: None
+
+EventsAndTriggersAtIterations: []
+
+BuildMatrix:
+  MatrixSubfileName: None
+  Verbosity: Verbose
+  EnableDirectSolve: True
+  SkipResets: False

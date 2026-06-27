@@ -43,6 +43,7 @@
 #include "ParallelAlgorithms/LinearSolver/Multigrid/ElementsAllocator.hpp"
 #include "ParallelAlgorithms/LinearSolver/Multigrid/Tags.hpp"
 #include "PointwiseFunctions/AnalyticData/Xcts/Binary.hpp"
+#include "PointwiseFunctions/AnalyticData/Xcts/KerrSchildTeukolsky.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Xcts/Factory.hpp"
 #include "PointwiseFunctions/Hydro/LowerSpatialFourVelocity.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
@@ -123,6 +124,7 @@ struct Metavariables {
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
     using analytic_solutions_and_data = tmpl::push_back<
         Xcts::Solutions::all_analytic_solutions,
+        Xcts::AnalyticData::KerrSchildTeukolsky,
         Xcts::AnalyticData::Binary<elliptic::analytic_data::AnalyticSolution,
                                    Xcts::Solutions::all_analytic_solutions>,
         elliptic::analytic_data::NumericData>;
