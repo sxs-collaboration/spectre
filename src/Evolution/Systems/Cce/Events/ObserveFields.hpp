@@ -270,8 +270,7 @@ class ObserveFields : public Event {
                   const ArrayIndex& /*array_index*/,
                   const ParallelComponent* const /*component*/,
                   const ObservationValue& /*observation_value*/) const {
-    const bool write_synchronously =
-        Parallel::number_of_procs<size_t>(cache) == 1;
+    const bool write_synchronously = Parallel::number_of_procs(cache) == 1;
 
     // Number of points
     const size_t l_max = get<Tags::LMax>(box);

@@ -221,7 +221,7 @@ void write_combined_volume_data(
     h5::H5File<h5::AccessType::ReadWrite> h5file(
         file_prefix +
             std::to_string(
-                Parallel::my_node<int>(*Parallel::local_branch(my_proxy))) +
+                Parallel::my_node(*Parallel::local_branch(my_proxy))) +
             ".h5",
         true, observers::input_source_from_cache(cache));
     constexpr size_t version_number = 0;

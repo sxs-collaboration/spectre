@@ -408,7 +408,7 @@ void check_resource_info(
   auto resource_info =
       create_resource_info<metavars>(avoid_global_proc_0, singletons);
   resource_info.build_singleton_map(cache);
-  const size_t num_procs = Parallel::number_of_procs<size_t>(cache);
+  const auto num_procs = static_cast<size_t>(Parallel::number_of_procs(cache));
 
   std::unordered_set<size_t> expected_exclusive_procs{};
   std::set<size_t> expected_procs_available_for_elements{};

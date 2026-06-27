@@ -213,7 +213,7 @@ struct Initialize {
     const auto& receive_map = Parallel::get<Tags::ReceiveMap>(cache);
     const int element_to_send_to = send_map.at(array_index);
     const int element_to_receive_from = receive_map.at(array_index);
-    const bool using_two_nodes = Parallel::number_of_nodes<int>(cache) == 2;
+    const bool using_two_nodes = Parallel::number_of_nodes(cache) == 2;
 
     Initialization::mutate_assign<
         tmpl::list<Tags::MyElement, Tags::MyNode, Tags::ElementToSendTo,

@@ -270,10 +270,10 @@ void MonitorMemory<Dim>::operator()(
       // when we reduce, we will have a vector with 'num_nodes' elements, each
       // of which represents the total memory usage of all Elements on that
       // node.
-      const size_t num_nodes = Parallel::number_of_nodes<size_t>(
-          *Parallel::local(array_element_proxy));
-      const size_t my_node =
-          Parallel::my_node<size_t>(*Parallel::local(array_element_proxy));
+      const auto num_nodes = static_cast<size_t>(
+          Parallel::number_of_nodes(*Parallel::local(array_element_proxy)));
+      const auto my_node = static_cast<size_t>(
+          Parallel::my_node(*Parallel::local(array_element_proxy)));
       std::vector<double> data(num_nodes, 0.0);
       data[my_node] = size_in_megabytes;
 

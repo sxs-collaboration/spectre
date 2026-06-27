@@ -195,7 +195,8 @@ struct ProcessHitsAndThrows {
                     const Parallel::GlobalCache<Metavars>& cache,
                     const ArrayIndex& /*array_index*/, const size_t new_hits) {
     // TUTORIAL STEP 2.4: get number of processors from the cache
-    const auto num_procs = Parallel::number_of_procs<size_t>(cache);
+    const auto num_procs =
+        static_cast<size_t>(Parallel::number_of_procs(cache));
 
     // TUTORIAL STEP 2.5: get number of darts thrown each iteration
     // from the DataBox
@@ -361,7 +362,8 @@ void DartThrower<Metavars>::allocate_array(
       Parallel::get_parallel_component<DartThrower<Metavars>>(local_cache);
 
   size_t which_proc = 0;
-  const auto num_procs = Parallel::number_of_procs<size_t>(local_cache);
+  const auto num_procs =
+      static_cast<size_t>(Parallel::number_of_procs(local_cache));
   const size_t number_of_elements = num_procs;
 
   for (size_t i = 0; i < number_of_elements; ++i) {

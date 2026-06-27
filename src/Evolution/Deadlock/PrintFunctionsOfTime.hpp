@@ -45,12 +45,11 @@ struct PrintFunctionsOfTime {
 
       Parallel::fprintf(
           file_name,
-          "Node %zu\nFunctionsOfTime:\n%s\n\nMeasurementTimescales:\n%s\n",
-          Parallel::my_node<size_t>(cache), time_bounds,
-          measurement_time_bounds);
+          "Node %i\nFunctionsOfTime:\n%s\n\nMeasurementTimescales:\n%s\n",
+          Parallel::my_node(cache), time_bounds, measurement_time_bounds);
     } else {
-      Parallel::fprintf(file_name, "Node %zu\nFunctionsOfTime:%s\n",
-                        Parallel::my_node<size_t>(cache), time_bounds);
+      Parallel::fprintf(file_name, "Node %i\nFunctionsOfTime:%s\n",
+                        Parallel::my_node(cache), time_bounds);
     }
   }
 };

@@ -680,7 +680,7 @@ void GlobalCache<Metavariables>::compute_size_for_memory_monitor(
     auto& mem_monitor_proxy = Parallel::get_parallel_component<
         mem_monitor::MemoryMonitor<Metavariables>>(*this);
 
-    const int my_node = Parallel::my_node<int>(*this);
+    const int my_node = Parallel::my_node(*this);
 
     Parallel::simple_action<
         mem_monitor::ContributeMemoryData<GlobalCache<Metavariables>>>(

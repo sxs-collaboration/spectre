@@ -131,8 +131,8 @@ struct RegisterReductionNodeWithWritingNode {
                     const observers::ObservationKey& observation_key,
                     const size_t caller_node_id) {
     auto& my_proxy = Parallel::get_parallel_component<ParallelComponent>(cache);
-    const auto node_id =
-        Parallel::my_node<size_t>(*Parallel::local_branch(my_proxy));
+    const auto node_id = static_cast<size_t>(
+        Parallel::my_node(*Parallel::local_branch(my_proxy)));
     ASSERT(node_id == 0, "Only node zero, not node "
                              << node_id
                              << ", should be called from another node");
@@ -173,8 +173,8 @@ struct DeregisterReductionNodeWithWritingNode {
                     const observers::ObservationKey& observation_key,
                     const size_t caller_node_id) {
     auto& my_proxy = Parallel::get_parallel_component<ParallelComponent>(cache);
-    const auto node_id =
-        Parallel::my_node<size_t>(*Parallel::local_branch(my_proxy));
+    const auto node_id = static_cast<size_t>(
+        Parallel::my_node(*Parallel::local_branch(my_proxy)));
     ASSERT(node_id == 0,
            "Only node zero, not node "
                << node_id << " should deregister other nodes in the reduction");
@@ -225,8 +225,8 @@ struct RegisterReductionContributorWithObserverWriter {
                     const observers::ObservationKey& observation_key,
                     const Parallel::ArrayComponentId& id_of_caller) {
     auto& my_proxy = Parallel::get_parallel_component<ParallelComponent>(cache);
-    const auto node_id =
-        Parallel::my_node<size_t>(*Parallel::local_branch(my_proxy));
+    const auto node_id = static_cast<size_t>(
+        Parallel::my_node(*Parallel::local_branch(my_proxy)));
     db::mutate<Tags::ExpectedContributorsForObservations>(
         [&cache, &id_of_caller, &node_id,
          &observation_key](const gsl::not_null<std::unordered_map<
@@ -278,8 +278,8 @@ struct DeregisterReductionContributorWithObserverWriter {
                     const observers::ObservationKey& observation_key,
                     const Parallel::ArrayComponentId& id_of_caller) {
     auto& my_proxy = Parallel::get_parallel_component<ParallelComponent>(cache);
-    const auto node_id =
-        Parallel::my_node<size_t>(*Parallel::local_branch(my_proxy));
+    const auto node_id = static_cast<size_t>(
+        Parallel::my_node(*Parallel::local_branch(my_proxy)));
     db::mutate<Tags::ExpectedContributorsForObservations>(
         [&cache, &id_of_caller, &node_id,
          &observation_key](const gsl::not_null<std::unordered_map<

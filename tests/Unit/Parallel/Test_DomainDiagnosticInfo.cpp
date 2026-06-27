@@ -25,8 +25,10 @@ void test_diagnostic_info() {
   Parallel::GlobalCache<EmptyMetavars> cache{
       tuples::TaggedTuple<>{}, {}, procs_per_node};
 
-  const size_t number_of_cores = Parallel::number_of_procs<size_t>(cache);
-  const size_t number_of_nodes = Parallel::number_of_nodes<size_t>(cache);
+  const auto number_of_cores =
+      static_cast<size_t>(Parallel::number_of_procs(cache));
+  const auto number_of_nodes =
+      static_cast<size_t>(Parallel::number_of_nodes(cache));
 
   std::vector<size_t> elements_per_core(number_of_cores, 0_st);
   std::vector<size_t> elements_per_node(number_of_nodes, 0_st);
