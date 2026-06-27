@@ -4,7 +4,7 @@
 #include "Framework/TestingFramework.hpp"
 
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/ApplyTensorYlmFilter.hpp"
-#include "Helpers/NumericalAlgorithms/SphericalHarmonics/Test_ApplyTensorYlmFilter.hpp"
+#include "Helpers/NumericalAlgorithms/TensorYlm/Test_ApplyTensorYlmFilter.hpp"
 
 namespace ylm::TensorYlm {
 

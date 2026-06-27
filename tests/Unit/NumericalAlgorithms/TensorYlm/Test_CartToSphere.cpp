@@ -13,7 +13,7 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/SpherepackIterator.hpp"
-#include "NumericalAlgorithms/SphericalHarmonics/TensorYlmCartToSphere.hpp"
+#include "NumericalAlgorithms/TensorYlm/CartToSphere.hpp"
 #include "Utilities/Gsl.hpp"
 
 namespace {
@@ -493,12 +493,11 @@ void test_tensorylm_cart_to_sphere_vs_spec(
 // For debug builds this test sometimes times out if you don't increase
 // the timeout.
 // [[TimeOut, 40]]
-SPECTRE_TEST_CASE("Unit.SphericalHarmonics.TensorYlmCartToSphere",
+SPECTRE_TEST_CASE("Unit.TensorYlm.CartToSphere",
                   "[NumericalAlgorithms][Unit]") {
   const size_t ell_max = 8;
 
-  for (const auto norm :
-       std::vector<ylm::TensorYlm::CoefficientNormalization>{
+  for (const auto norm : std::vector<ylm::TensorYlm::CoefficientNormalization>{
            {ylm::TensorYlm::CoefficientNormalization::Standard,
             ylm::TensorYlm::CoefficientNormalization::Spherepack}}) {
     test_tensorylm_cart_to_sphere_vs_spec<

@@ -19,11 +19,6 @@ spectre_target_sources(
   SpherepackCache.cpp
   SpherepackHelper.cpp
   Tags.cpp
-  TensorYlmCartToSphere.cpp
-  TensorYlmFilter.cpp
-  TensorYlmHelpers.cpp
-  TensorYlmSphereToCart.cpp
-  WignerThreeJ.cpp
   YlmToStf.cpp
   )
 
@@ -32,8 +27,6 @@ spectre_target_headers(
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
   AngularOrdering.hpp
-  ApplyTensorYlmFilter.hpp
-  ApplyTensorYlmFilter.tpp
   ChangeCenterOfStrahlkorper.hpp
   InitialShape.hpp
   RealSphericalHarmonics.hpp
@@ -46,12 +39,6 @@ spectre_target_headers(
   Tags.hpp
   TagsDeclarations.hpp
   TagsTypeAliases.hpp
-  TensorYlm.hpp
-  TensorYlmCartToSphere.hpp
-  TensorYlmFilter.hpp
-  TensorYlmHelpers.hpp
-  TensorYlmSphereToCart.hpp
-  WignerThreeJ.hpp
   YlmToStf.hpp
   )
 

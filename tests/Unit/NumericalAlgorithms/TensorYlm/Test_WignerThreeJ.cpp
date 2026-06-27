@@ -6,7 +6,7 @@
 #include <cmath>
 #include <vector>
 
-#include "NumericalAlgorithms/SphericalHarmonics/WignerThreeJ.hpp"
+#include "NumericalAlgorithms/TensorYlm/WignerThreeJ.hpp"
 
 namespace {
 void test_wigner_three_j() {
@@ -41,7 +41,7 @@ void test_wigner_three_j() {
 }
 }  // namespace
 
-SPECTRE_TEST_CASE("Unit.SphericalHarmonics.WignerThreeJ",
+SPECTRE_TEST_CASE("Unit.TensorYlm.WignerThreeJ",
                   "[NumericalAlgorithms][Unit]") {
   test_wigner_three_j();
 }

@@ -1,7 +1,7 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "NumericalAlgorithms/SphericalHarmonics/TensorYlmHelpers.hpp"
+#include "NumericalAlgorithms/TensorYlm/Helpers.hpp"
 
 #include <array>
 #include <complex>

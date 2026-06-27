@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "NumericalAlgorithms/SphericalHarmonics/TensorYlm.hpp"
+#include "NumericalAlgorithms/TensorYlm/TensorYlm.hpp"
 
 #include <array>
 #include <complex>

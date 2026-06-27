@@ -1,7 +1,7 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "NumericalAlgorithms/SphericalHarmonics/TensorYlmSphereToCart.hpp"
+#include "NumericalAlgorithms/TensorYlm/SphereToCart.hpp"
 
 #include <blaze/math/CompressedMatrix.h>
 #include <complex>
@@ -13,8 +13,8 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/SpherepackIterator.hpp"
-#include "NumericalAlgorithms/SphericalHarmonics/TensorYlmHelpers.hpp"
-#include "NumericalAlgorithms/SphericalHarmonics/WignerThreeJ.hpp"
+#include "NumericalAlgorithms/TensorYlm/Helpers.hpp"
+#include "NumericalAlgorithms/TensorYlm/WignerThreeJ.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Math.hpp"
 #include "Utilities/Numeric.hpp"

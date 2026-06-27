@@ -22,7 +22,7 @@
 #include "NumericalAlgorithms/Spectral/Quadrature.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/Spherepack.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/SpherepackCache.hpp"
-#include "NumericalAlgorithms/SphericalHarmonics/TensorYlmFilter.hpp"
+#include "NumericalAlgorithms/TensorYlm/Filter.hpp"
 #include "Domain/Structure/BlockGroups.hpp"
 #include "Options/ParseError.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"

@@ -8,7 +8,7 @@
 
 #include "DataStructures/SimpleSparseMatrix.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
-#include "NumericalAlgorithms/SphericalHarmonics/TensorYlm.hpp"
+#include "NumericalAlgorithms/TensorYlm/TensorYlm.hpp"
 #include "Utilities/Gsl.hpp"
 
 /// \cond

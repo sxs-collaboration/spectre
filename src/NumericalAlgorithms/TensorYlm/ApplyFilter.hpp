@@ -4,7 +4,7 @@
 #pragma once
 
 #include "DataStructures/Variables.hpp"
-#include "NumericalAlgorithms/SphericalHarmonics/TensorYlm.hpp"
+#include "NumericalAlgorithms/TensorYlm/TensorYlm.hpp"
 #include "Utilities/Gsl.hpp"
 
 /// \cond

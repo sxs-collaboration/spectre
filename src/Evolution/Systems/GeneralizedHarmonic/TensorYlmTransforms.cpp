@@ -10,8 +10,8 @@
 #include "DataStructures/SimpleSparseMatrix.hpp"
 #include "DataStructures/Tensor/Structure.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
-#include "NumericalAlgorithms/SphericalHarmonics/ApplyTensorYlmFilter.tpp"
 #include "NumericalAlgorithms/SphericalHarmonics/Spherepack.hpp"
+#include "NumericalAlgorithms/TensorYlm/ApplyFilter.tpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/TMPL.hpp"
 

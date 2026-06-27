@@ -1,7 +1,7 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "NumericalAlgorithms/SphericalHarmonics/WignerThreeJ.hpp"
+#include "NumericalAlgorithms/TensorYlm/WignerThreeJ.hpp"
 
 #include <limits>
 

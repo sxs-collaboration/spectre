@@ -15,8 +15,8 @@
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/SpherepackIterator.hpp"
-#include "NumericalAlgorithms/SphericalHarmonics/TensorYlmCartToSphere.hpp"
-#include "NumericalAlgorithms/SphericalHarmonics/TensorYlmSphereToCart.hpp"
+#include "NumericalAlgorithms/TensorYlm/CartToSphere.hpp"
+#include "NumericalAlgorithms/TensorYlm/SphereToCart.hpp"
 #include "Utilities/Gsl.hpp"
 
 namespace {
@@ -621,12 +621,11 @@ void test_tensorylm_sphere_to_cart_vs_spec(
 }  // namespace
 
 // [[TimeOut, 80]]
-SPECTRE_TEST_CASE("Unit.SphericalHarmonics.TensorYlmSphereToCart",
+SPECTRE_TEST_CASE("Unit.TensorYlm.SphereToCart",
                   "[NumericalAlgorithms][Unit]") {
   const size_t ell_max = 8;
 
-  for (const auto norm :
-       std::vector<ylm::TensorYlm::CoefficientNormalization>{
+  for (const auto norm : std::vector<ylm::TensorYlm::CoefficientNormalization>{
            {ylm::TensorYlm::CoefficientNormalization::Standard,
             ylm::TensorYlm::CoefficientNormalization::Spherepack}}) {
     test_tensorylm_sphere_to_cart_vs_spec<

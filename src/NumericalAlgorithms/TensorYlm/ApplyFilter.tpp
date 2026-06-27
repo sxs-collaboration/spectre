@@ -2,7 +2,7 @@
 // See LICENSE.txt for details.
 #pragma once
 
-#include "NumericalAlgorithms/SphericalHarmonics/ApplyTensorYlmFilter.hpp"
+#include "NumericalAlgorithms/TensorYlm/ApplyFilter.hpp"
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Structure.hpp"

@@ -16,9 +16,9 @@
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/SpherepackIterator.hpp"
-#include "NumericalAlgorithms/SphericalHarmonics/TensorYlmCartToSphere.hpp"
-#include "NumericalAlgorithms/SphericalHarmonics/TensorYlmFilter.hpp"
-#include "NumericalAlgorithms/SphericalHarmonics/TensorYlmSphereToCart.hpp"
+#include "NumericalAlgorithms/TensorYlm/CartToSphere.hpp"
+#include "NumericalAlgorithms/TensorYlm/Filter.hpp"
+#include "NumericalAlgorithms/TensorYlm/SphereToCart.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Math.hpp"
 #include "Utilities/Numeric.hpp"
@@ -1252,29 +1252,25 @@ void test(
 // Test then split in fourths to allow running in parallel.
 
 // [[TimeOut, 180]]
-SPECTRE_TEST_CASE("Unit.SphericalHarmonics.TensorYlmFilter1",
-                  "[NumericalAlgorithms][Unit]") {
+SPECTRE_TEST_CASE("Unit.TensorYlm.Filter1", "[NumericalAlgorithms][Unit]") {
   test(std::optional<size_t>(),
        ylm::TensorYlm::CoefficientNormalization::Standard);
 }
 
 // [[TimeOut, 180]]
-SPECTRE_TEST_CASE("Unit.SphericalHarmonics.TensorYlmFilter2",
-                  "[NumericalAlgorithms][Unit]") {
+SPECTRE_TEST_CASE("Unit.TensorYlm.Filter2", "[NumericalAlgorithms][Unit]") {
   test(std::optional<size_t>(28),
        ylm::TensorYlm::CoefficientNormalization::Standard);
 }
 
 // [[TimeOut, 180]]
-SPECTRE_TEST_CASE("Unit.SphericalHarmonics.TensorYlmFilter3",
-                  "[NumericalAlgorithms][Unit]") {
+SPECTRE_TEST_CASE("Unit.TensorYlm.Filter3", "[NumericalAlgorithms][Unit]") {
   test(std::optional<size_t>(),
        ylm::TensorYlm::CoefficientNormalization::Spherepack);
 }
 
 // [[TimeOut, 180]]
-SPECTRE_TEST_CASE("Unit.SphericalHarmonics.TensorYlmFilter4",
-                  "[NumericalAlgorithms][Unit]") {
+SPECTRE_TEST_CASE("Unit.TensorYlm.Filter4", "[NumericalAlgorithms][Unit]") {
   test(std::optional<size_t>(28),
        ylm::TensorYlm::CoefficientNormalization::Spherepack);
 }
