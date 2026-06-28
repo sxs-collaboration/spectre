@@ -29,10 +29,9 @@ struct Inertial;
 namespace domain::creators::time_dependence {
 /// \brief Make the mesh time independent so that it isn't moving.
 ///
-/// \warning Calling the `block_maps` and `functions_of_time` functions causes
-/// an error because the `None` class should be detected separately and
-/// optimizations applied so that the coordinates, Jacobians, etc. are not
-/// recomputed.
+/// \warning Calling the `block_maps` functions causes an error because the
+/// `None` class should be detected separately and optimizations applied so that
+/// the coordinates, Jacobians, etc. are not recomputed.
 template <size_t MeshDim>
 class None final : public TimeDependence<MeshDim> {
  public:
@@ -63,9 +62,8 @@ class None final : public TimeDependence<MeshDim> {
       const -> std::vector<std::unique_ptr<domain::CoordinateMapBase<
           Frame::Distorted, Frame::Inertial, MeshDim>>> override;
 
-  [[noreturn]] auto functions_of_time(
-      const std::unordered_map<std::string, double>& initial_expiration_times =
-          {}) const
+  auto functions_of_time(const std::unordered_map<std::string, double>&
+                             initial_expiration_times = {}) const
       -> std::unordered_map<
           std::string,
           std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>> override;

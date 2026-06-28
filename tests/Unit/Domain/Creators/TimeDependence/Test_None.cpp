@@ -5,6 +5,7 @@
 
 #include <cstddef>
 #include <memory>
+#include <unordered_map>
 
 #include "Domain/Creators/TimeDependence/None.hpp"
 #include "Domain/Creators/TimeDependence/TimeDependence.hpp"
@@ -24,6 +25,7 @@ void test() {
       std::make_unique<None<MeshDim>>();
   CHECK(time_dep != nullptr);
   CHECK(time_dep->is_none());
+  CHECK(time_dep->functions_of_time().empty());
 
   const std::unique_ptr<TimeDependence<MeshDim>> time_dep_clone =
       time_dep->get_clone();
@@ -49,9 +51,6 @@ void test() {
       (time_dep->block_maps_distorted_to_inertial(5)),
       Catch::Matchers::ContainsSubstring(
           "The 'block_maps_distorted_to_inertial' function of the"));
-  CHECK_THROWS_WITH((time_dep->functions_of_time()),
-                    Catch::Matchers::ContainsSubstring(
-                        "The 'functions_of_time' function of the 'None'"));
 }
 
 SPECTRE_TEST_CASE("Unit.Domain.Creators.TimeDependence.None",
