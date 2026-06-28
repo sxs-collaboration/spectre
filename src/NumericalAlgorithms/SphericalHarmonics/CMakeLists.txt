@@ -10,6 +10,7 @@ spectre_target_sources(
   PRIVATE
   AngularOrdering.cpp
   ChangeCenterOfStrahlkorper.cpp
+  InitialShape.cpp
   RealSphericalHarmonics.cpp
   SpherepackIterator.cpp
   Strahlkorper.cpp
@@ -34,6 +35,7 @@ spectre_target_headers(
   ApplyTensorYlmFilter.hpp
   ApplyTensorYlmFilter.tpp
   ChangeCenterOfStrahlkorper.hpp
+  InitialShape.hpp
   RealSphericalHarmonics.hpp
   SpherepackIterator.hpp
   Strahlkorper.hpp

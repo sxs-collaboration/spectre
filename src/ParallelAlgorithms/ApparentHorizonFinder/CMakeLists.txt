@@ -15,6 +15,7 @@ spectre_target_sources(
   Destination.cpp
   FastFlow.cpp
   InterpolateVolumeVars.cpp
+  KerrSchild.cpp
   OptionTags.cpp
   Storage.cpp
   )
@@ -35,6 +36,7 @@ spectre_target_headers(
   HorizonAliases.hpp
   Initialization.hpp
   InterpolateVolumeVars.hpp
+  KerrSchild.hpp
   OptionTags.hpp
   PrintDeadlockAnalysis.hpp
   Storage.hpp
@@ -55,6 +57,7 @@ target_link_libraries(
   Options
   Printf
   SphericalHarmonics
+  SphericalHarmonicsIO
   PRIVATE
   CoordinateMaps
   Domain

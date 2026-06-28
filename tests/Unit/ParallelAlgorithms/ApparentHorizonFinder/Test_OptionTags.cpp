@@ -18,6 +18,8 @@
 #include "Domain/Domain.hpp"
 #include "Framework/TestCreation.hpp"
 #include "IO/Logging/Verbosity.hpp"
+#include "NumericalAlgorithms/SphericalHarmonics/IO/InitialShapeFromFile.hpp"
+#include "NumericalAlgorithms/SphericalHarmonics/InitialShape.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/Strahlkorper.hpp"
 #include "Options/Auto.hpp"
 #include "Options/Protocols/FactoryCreation.hpp"
@@ -27,9 +29,11 @@
 #include "ParallelAlgorithms/ApparentHorizonFinder/Criteria/Residual.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/Destination.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/FastFlow.hpp"
+#include "ParallelAlgorithms/ApparentHorizonFinder/KerrSchild.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/OptionTags.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/Protocols/HorizonMetavars.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/Tags.hpp"
+#include "PointwiseFunctions/GeneralRelativity/KerrHorizon.hpp"
 #include "Time/Tags/TimeAndPrevious.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
@@ -61,8 +65,12 @@ struct MockMetavariables {
 struct TestCreationMetavariables {
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
-    using factory_classes =
-        tmpl::map<tmpl::pair<ah::Criterion, ah::Criteria::standard_criteria>>;
+    using factory_classes = tmpl::map<
+        tmpl::pair<ah::Criterion, ah::Criteria::standard_criteria>,
+        tmpl::pair<ylm::InitialShape<Frame::Grid>,
+                   tmpl::list<ylm::InitialShapes::Sphere<Frame::Grid>,
+                              ylm::InitialShapes::FromFile<Frame::Grid>,
+                              ah::InitialShapes::KerrSchild<Frame::Grid>>>>;
   };
 };
 }  // namespace
@@ -106,9 +114,11 @@ SPECTRE_TEST_CASE("Unit.ApparentHorizonFinder.OptionTags",
           "  MaxIts: 100\n"
           "Verbosity: Verbose\n"
           "InitialGuess:\n"
-          "  Center: [0.05, 0.06, 0.07]\n"
-          "  Radius: 2.0\n"
-          "  LMax: 12\n"
+          "  InitialL: 12\n"
+          "  InitialShape:\n"
+          "    Sphere:\n"
+          "      Center: [0.05, 0.06, 0.07]\n"
+          "      Radius: 2.0\n"
           "MaxComputeCoordsRetries: 3\n"
           "BlocksForHorizonFind: All");
   CHECK(created_opts == apparent_horizon_opts);
@@ -130,6 +140,57 @@ SPECTRE_TEST_CASE("Unit.ApparentHorizonFinder.OptionTags",
                                           block_names.end()});
   }
   {
+    const auto kerr_schild_shape = TestHelpers::test_factory_creation<
+        ylm::InitialShape<Frame::Grid>,
+        ah::InitialShapes::KerrSchild<Frame::Grid>>(
+        "KerrSchild:\n"
+        "  Center: [0.1, -0.2, 0.3]\n"
+        "  Mass: 0.5\n"
+        "  Spin: [0.0, 0.0, 0.7]\n");
+    const size_t kerr_schild_l_max = 16;
+    const std::array<double, 3> kerr_schild_center{{0.1, -0.2, 0.3}};
+    const double mass = 0.5;
+    const std::array<double, 3> dimensionless_spin{{0.0, 0.0, 0.7}};
+    const ylm::Spherepack ylm{kerr_schild_l_max, kerr_schild_l_max};
+    const ylm::Strahlkorper<Frame::Grid> expected_kerr_schild_horizon{
+        kerr_schild_l_max, kerr_schild_l_max,
+        get(gr::Solutions::kerr_horizon_radius(ylm.theta_phi_points(), mass,
+                                               dimensionless_spin)),
+        kerr_schild_center};
+    CHECK(kerr_schild_shape->strahlkorper(kerr_schild_l_max, {}) ==
+          expected_kerr_schild_horizon);
+
+    const auto kerr_schild_created_opts =
+        TestHelpers::test_creation<ah::HorizonOptions<Frame::Grid>,
+                                   TestCreationMetavariables>(
+            "Criteria:\n"
+            "FastFlow:\n"
+            "  Flow: Fast\n"
+            "  Alpha: 1.0\n"
+            "  Beta: 0.5\n"
+            "  AbsTol: 1e-12\n"
+            "  TruncationTol: 1e-2\n"
+            "  DivergenceTol: 1.2\n"
+            "  DivergenceIter: 5\n"
+            "  MaxIts: 100\n"
+            "Verbosity: Verbose\n"
+            "InitialGuess:\n"
+            "  InitialL: 16\n"
+            "  InitialShape:\n"
+            "    KerrSchild:\n"
+            "      Center: [0.1, -0.2, 0.3]\n"
+            "      Mass: 0.5\n"
+            "      Spin: [0.0, 0.0, 0.7]\n"
+            "MaxComputeCoordsRetries: 3\n"
+            "BlocksForHorizonFind: All");
+
+    CHECK(kerr_schild_created_opts.initial_guess.l_max() == kerr_schild_l_max);
+    CHECK(kerr_schild_created_opts.initial_guess.expansion_center() ==
+          kerr_schild_center);
+    CHECK_ITERABLE_APPROX(kerr_schild_created_opts.initial_guess.coefficients(),
+                          expected_kerr_schild_horizon.coefficients());
+  }
+  {
     const auto new_created_opts =
         TestHelpers::test_creation<ah::HorizonOptions<Frame::Grid>,
                                    TestCreationMetavariables>(
@@ -145,9 +206,11 @@ SPECTRE_TEST_CASE("Unit.ApparentHorizonFinder.OptionTags",
             "  MaxIts: 100\n"
             "Verbosity: Verbose\n"
             "InitialGuess:\n"
-            "  Center: [0.05, 0.06, 0.07]\n"
-            "  Radius: 2.0\n"
-            "  LMax: 12\n"
+            "  InitialL: 12\n"
+            "  InitialShape:\n"
+            "    Sphere:\n"
+            "      Center: [0.05, 0.06, 0.07]\n"
+            "      Radius: 2.0\n"
             "MaxComputeCoordsRetries: 3\n"
             "BlocksForHorizonFind: [Shell0]");
     const auto blocks_for_horizon_find =

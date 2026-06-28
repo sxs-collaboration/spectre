@@ -26,6 +26,8 @@
 #include "Evolution/Executables/GeneralizedHarmonic/GeneralizedHarmonicBase.hpp"
 #include "Evolution/Systems/Cce/Callbacks/DumpBondiSachsOnWorldtube.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Actions/SetInitialData.hpp"
+#include "NumericalAlgorithms/SphericalHarmonics/IO/InitialShapeFromFile.hpp"
+#include "NumericalAlgorithms/SphericalHarmonics/InitialShape.hpp"
 #include "Options/FactoryHelpers.hpp"
 #include "Options/Protocols/FactoryCreation.hpp"
 #include "Options/String.hpp"
@@ -49,6 +51,7 @@
 #include "ParallelAlgorithms/ApparentHorizonFinder/Criteria/Factory.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/Events/FindApparentHorizon.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/HorizonAliases.hpp"
+#include "ParallelAlgorithms/ApparentHorizonFinder/KerrSchild.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/Protocols/HorizonMetavars.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Actions/RunEventsOnFailure.hpp"
 #include "ParallelAlgorithms/Interpolation/Actions/ElementInitInterpPoints.hpp"
@@ -187,6 +190,14 @@ struct EvolutionMetavars : public GeneralizedHarmonicTemplateBase<3, UseLts> {
             tmpl::pair<LtsTimeStepper,
                        TimeSteppers::monotonic_lts_time_steppers>>,
         tmpl::pair<ah::Criterion, ah::Criteria::standard_criteria>,
+        tmpl::pair<ylm::InitialShape<Frame::Inertial>,
+                   tmpl::list<ylm::InitialShapes::Sphere<Frame::Inertial>,
+                              ylm::InitialShapes::FromFile<Frame::Inertial>,
+                              ah::InitialShapes::KerrSchild<Frame::Inertial>>>,
+        tmpl::pair<ylm::InitialShape<Frame::Distorted>,
+                   tmpl::list<ylm::InitialShapes::Sphere<Frame::Distorted>,
+                              ylm::InitialShapes::FromFile<Frame::Distorted>,
+                              ah::InitialShapes::KerrSchild<Frame::Distorted>>>,
         tmpl::pair<Event,
                    tmpl::flatten<tmpl::list<
                        ah::Events::FindApparentHorizon<ApparentHorizon>,

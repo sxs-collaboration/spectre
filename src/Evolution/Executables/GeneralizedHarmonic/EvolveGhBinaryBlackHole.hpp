@@ -82,6 +82,8 @@
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Tags.hpp"
 #include "NumericalAlgorithms/LinearOperators/Filters/Factory.hpp"
 #include "NumericalAlgorithms/LinearOperators/Filters/Tag.hpp"
+#include "NumericalAlgorithms/SphericalHarmonics/IO/InitialShapeFromFile.hpp"
+#include "NumericalAlgorithms/SphericalHarmonics/InitialShape.hpp"
 #include "Options/Options.hpp"
 #include "Options/ParseOptions.hpp"
 #include "Options/Protocols/FactoryCreation.hpp"
@@ -136,6 +138,7 @@
 #include "ParallelAlgorithms/ApparentHorizonFinder/Events/FindApparentHorizon.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/Events/FindCommonHorizon.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/HorizonAliases.hpp"
+#include "ParallelAlgorithms/ApparentHorizonFinder/KerrSchild.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/Protocols/HorizonMetavars.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/Tags.hpp"
 #include "ParallelAlgorithms/Events/Completion.hpp"
@@ -462,6 +465,14 @@ struct EvolutionMetavars {
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
     using factory_classes = tmpl::map<
         tmpl::pair<ah::Criterion, ah::Criteria::standard_criteria>,
+        tmpl::pair<ylm::InitialShape<Frame::Distorted>,
+                   tmpl::list<ylm::InitialShapes::Sphere<Frame::Distorted>,
+                              ylm::InitialShapes::FromFile<Frame::Distorted>,
+                              ah::InitialShapes::KerrSchild<Frame::Distorted>>>,
+        tmpl::pair<ylm::InitialShape<Frame::Inertial>,
+                   tmpl::list<ylm::InitialShapes::Sphere<Frame::Inertial>,
+                              ylm::InitialShapes::FromFile<Frame::Inertial>,
+                              ah::InitialShapes::KerrSchild<Frame::Inertial>>>,
         tmpl::pair<
             amr::Criterion,
             tmpl::push_back<

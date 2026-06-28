@@ -250,9 +250,11 @@ ApparentHorizons:
           MaxResidual: 1.e-1
           MinResolutionL: 4
     InitialGuess:
-      LMax: &LMax 8
-      Radius: 2.2
-      Center: *Center
+      InitialL: &LMax 8
+      InitialShape:
+        Sphere:
+          Radius: 2.2
+          Center: *Center
     FastFlow:
       Flow: Fast
       Alpha: 1.0

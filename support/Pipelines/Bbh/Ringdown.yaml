@@ -332,9 +332,11 @@ ApparentHorizons:
   ApparentHorizon: &Ah
     Criteria:
     InitialGuess:
-      LMax: *MaximumL
-      Radius: 2.2
-      Center: [0., 0., 0.]
+      InitialL: *MaximumL
+      InitialShape:
+        Sphere:
+          Radius: 2.2
+          Center: [0., 0., 0.]
     FastFlow:
       Flow: Fast
       Alpha: 1.0

@@ -9,6 +9,7 @@ spectre_target_sources(
   ${LIBRARY}
   PRIVATE
   FillYlmLegendAndData.cpp
+  InitialShapeFromFile.cpp
   ReadSurfaceYlm.cpp
   StrahlkorperCoordsToTextFile.cpp
   StrahlkorperFromFile.cpp
@@ -19,6 +20,7 @@ spectre_target_headers(
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
   FillYlmLegendAndData.hpp
+  InitialShapeFromFile.hpp
   ReadSurfaceYlm.hpp
   StrahlkorperCoordsToTextFile.hpp
   )

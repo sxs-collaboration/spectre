@@ -5,6 +5,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <memory>
 #include <ostream>
 #include <pup.h>
 #include <pup_stl.h>
@@ -13,6 +14,7 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/ModalVector.hpp"
 #include "DataStructures/VectorImpl.hpp"
+#include "NumericalAlgorithms/SphericalHarmonics/InitialShape.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/SpherepackIterator.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/StdArrayHelpers.hpp"
@@ -34,6 +36,19 @@ Strahlkorper<Frame>::Strahlkorper(const size_t l_max, const size_t m_max,
       strahlkorper_coefs_(ylm_.spectral_size(), 0.0) {
   ylm::Spherepack::add_constant(&strahlkorper_coefs_, radius);
 }
+
+template <typename Frame>
+Strahlkorper<Frame>::Strahlkorper(const size_t initial_l,
+                                  const InitialShape<Frame>& initial_shape,
+                                  const Options::Context& context)
+    : Strahlkorper(initial_shape.strahlkorper(initial_l, context)) {}
+
+template <typename Frame>
+Strahlkorper<Frame>::Strahlkorper(
+    const size_t initial_l,
+    const std::unique_ptr<InitialShape<Frame>>& initial_shape,
+    const Options::Context& context)
+    : Strahlkorper(initial_l, *initial_shape, context) {}
 
 template <typename Frame>
 Strahlkorper<Frame>::Strahlkorper(

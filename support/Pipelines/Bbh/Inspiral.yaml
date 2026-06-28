@@ -528,9 +528,11 @@ ApparentHorizons:
   ObservationAhA: &AhA
     Criteria:
     InitialGuess:
-      LMax: &ObsLMax 10
-      Radius: {{ ExcisionRadiusA * 1.5 }}
-      Center: [*XCoordA, *YOffset, *ZOffset]
+      InitialL: &ObsLMax 10
+      InitialShape:
+        Sphere:
+          Radius: {{ ExcisionRadiusA * 1.5 }}
+          Center: [*XCoordA, *YOffset, *ZOffset]
     FastFlow: &DefaultFastFlow
       Flow: Fast
       Alpha: 1.0
@@ -546,9 +548,11 @@ ApparentHorizons:
   ObservationAhB: &AhB
     Criteria:
     InitialGuess:
-      LMax: *ObsLMax
-      Radius: {{ ExcisionRadiusB * 1.5 }}
-      Center: [*XCoordB, *YOffset, *ZOffset]
+      InitialL: *ObsLMax
+      InitialShape:
+        Sphere:
+          Radius: {{ ExcisionRadiusB * 1.5 }}
+          Center: [*XCoordB, *YOffset, *ZOffset]
     FastFlow: *DefaultFastFlow
     Verbosity: Quiet
     MaxComputeCoordsRetries: 3
@@ -556,9 +560,11 @@ ApparentHorizons:
   ObservationAhC:
     Criteria:
     InitialGuess:
-      LMax: 33
-      Radius: 10.0
-      Center: [0.0, 0.0, 0.0]
+      InitialL: 33
+      InitialShape:
+        Sphere:
+          Radius: 10.0
+          Center: [0.0, 0.0, 0.0]
     FastFlow: *DefaultFastFlow
     Verbosity: Quiet
     MaxComputeCoordsRetries: 3
