@@ -21,7 +21,7 @@ spectre_python_add_module(
   Yaml.py
 )
 
-if(MACHINE)
+if(MACHINE AND NOT MACHINE STREQUAL "UNKNOWN")
   message(STATUS "Selected machine: ${MACHINE}")
   configure_file(
     ${CMAKE_SOURCE_DIR}/support/Machines/${MACHINE}.yaml
