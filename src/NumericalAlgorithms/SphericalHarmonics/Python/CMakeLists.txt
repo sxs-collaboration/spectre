@@ -9,8 +9,6 @@ spectre_python_add_module(
   SOURCES
   Bindings.cpp
   Spherepack.cpp
-  Strahlkorper.cpp
-  StrahlkorperFunctions.cpp
   PYTHON_FILES
   __init__.py
 )
@@ -20,8 +18,6 @@ spectre_python_headers(
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
   Spherepack.hpp
-  Strahlkorper.hpp
-  StrahlkorperFunctions.hpp
   )
 
 spectre_python_link_libraries(
@@ -29,7 +25,6 @@ spectre_python_link_libraries(
   PRIVATE
   DataStructures
   SphericalHarmonics
-  SphericalHarmonicsIO
   pybind11::module
 )
 

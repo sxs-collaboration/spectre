@@ -48,6 +48,7 @@ target_link_libraries(
   PUBLIC
   DataStructures
   SphericalHarmonics
+  Strahlkorper
   PRIVATE
   ErrorHandling
   GeneralRelativity

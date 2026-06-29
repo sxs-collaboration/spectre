@@ -28,7 +28,7 @@
 #include "Domain/Structure/ObjectLabel.hpp"
 #include "Domain/Tags.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
-#include "NumericalAlgorithms/SphericalHarmonics/Tags.hpp"
+#include "NumericalAlgorithms/Strahlkorper/Tags.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Printf/Printf.hpp"
 #include "ParallelAlgorithms/Actions/UpdateMessageQueue.hpp"

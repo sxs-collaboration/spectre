@@ -8,7 +8,7 @@
 #include <tuple>
 
 #include "Evolution/Systems/CurvedScalarWave/Worldtube/Tags.hpp"
-#include "NumericalAlgorithms/SphericalHarmonics/Tags.hpp"
+#include "NumericalAlgorithms/Strahlkorper/Tags.hpp"
 #include "Parallel/AlgorithmExecution.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Utilities/Gsl.hpp"

@@ -8,7 +8,7 @@
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Bbh/CompletionCriteria.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Bbh/CompletionSingleton.hpp"
-#include "NumericalAlgorithms/SphericalHarmonics/Tags.hpp"
+#include "NumericalAlgorithms/Strahlkorper/Tags.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/FastFlow.hpp"

@@ -5,7 +5,7 @@
 #include <pybind11/stl.h>
 
 #include "DataStructures/Tensor/Tensor.hpp"
-#include "NumericalAlgorithms/SphericalHarmonics/Strahlkorper.hpp"
+#include "NumericalAlgorithms/Strahlkorper/Strahlkorper.hpp"
 #include "ParallelAlgorithms/SurfaceFinder/SurfaceFinder.hpp"
 #include "Utilities/ErrorHandling/SegfaultHandler.hpp"
 

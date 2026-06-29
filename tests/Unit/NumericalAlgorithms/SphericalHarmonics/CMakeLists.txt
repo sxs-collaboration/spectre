@@ -5,18 +5,9 @@ set(LIBRARY "Test_SphericalHarmonics")
 
 set(LIBRARY_SOURCES
   Test_AngularOrdering.cpp
-  Test_ChangeCenterOfStrahlkorper.cpp
   Test_RealSphericalHarmonics.cpp
   Test_Spherepack.cpp
   Test_SpherepackIterator.cpp
-  Test_Strahlkorper.cpp
-  Test_StrahlkorperDataBox.cpp
-  Test_StrahlkorperFunctions.cpp
-  Test_Tags.cpp
-  Test_TensorYlmCartToSphere.cpp
-  Test_TensorYlmFilter.cpp
-  Test_TensorYlmSphereToCart.cpp
-  Test_WignerThreeJ.cpp
   Test_YlmToStf.cpp
   )
 
@@ -26,15 +17,10 @@ target_link_libraries(
   ${LIBRARY}
   PRIVATE
   DataStructures
-  GrSurfaces
-  H5
-  RootFinding
   SphericalHarmonics
   SphericalHarmonicsHelpers
-  SphericalHarmonicsIO
   SpinWeightedSphericalHarmonics
   Utilities
   )
 
-add_subdirectory(IO)
 add_subdirectory(Python)

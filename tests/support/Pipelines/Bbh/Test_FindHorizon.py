@@ -26,7 +26,7 @@ from spectre.PointwiseFunctions.AnalyticSolutions.GeneralRelativity import (
 )
 from spectre.PointwiseFunctions.GeneralRelativity import ricci_tensor
 from spectre.Spectral import Basis, Mesh, Quadrature, logical_coordinates
-from spectre.SphericalHarmonics import Frame, Strahlkorper, cartesian_coords
+from spectre.Strahlkorper import Frame, Strahlkorper, cartesian_coords
 from spectre.support.Logging import configure_logging
 
 

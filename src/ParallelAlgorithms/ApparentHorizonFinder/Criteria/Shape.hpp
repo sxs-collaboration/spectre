@@ -9,8 +9,8 @@
 #include <string>
 
 #include "NumericalAlgorithms/LinearOperators/PowerMonitors.hpp"
-#include "NumericalAlgorithms/SphericalHarmonics/Strahlkorper.hpp"
-#include "NumericalAlgorithms/SphericalHarmonics/StrahlkorperFunctions.hpp"
+#include "NumericalAlgorithms/Strahlkorper/Strahlkorper.hpp"
+#include "NumericalAlgorithms/Strahlkorper/StrahlkorperFunctions.hpp"
 #include "Options/Context.hpp"
 #include "Options/String.hpp"
 #include "Parallel/GlobalCache.hpp"

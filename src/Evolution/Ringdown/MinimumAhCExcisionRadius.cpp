@@ -25,9 +25,9 @@
 #include "IO/H5/Dat.hpp"
 #include "IO/H5/File.hpp"
 #include "IO/H5/VolumeData.hpp"
-#include "NumericalAlgorithms/SphericalHarmonics/IO/ReadSurfaceYlm.hpp"
-#include "NumericalAlgorithms/SphericalHarmonics/Strahlkorper.hpp"
-#include "NumericalAlgorithms/SphericalHarmonics/StrahlkorperFunctions.hpp"
+#include "NumericalAlgorithms/Strahlkorper/IO/ReadSurfaceYlm.hpp"
+#include "NumericalAlgorithms/Strahlkorper/Strahlkorper.hpp"
+#include "NumericalAlgorithms/Strahlkorper/StrahlkorperFunctions.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Serialization/Serialize.hpp"
 

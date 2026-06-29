@@ -78,7 +78,8 @@ target_link_libraries(
   DomainTimeDependence
   GeneralRelativity
   SphericalHarmonics
-  SphericalHarmonicsIO
+  Strahlkorper
+  StrahlkorperIO
   INTERFACE
   ErrorHandling
   Options

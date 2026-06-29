@@ -30,10 +30,10 @@
 #include "IO/H5/File.hpp"
 #include "IO/H5/TensorData.hpp"
 #include "IO/H5/VolumeData.hpp"
-#include "NumericalAlgorithms/SphericalHarmonics/IO/FillYlmLegendAndData.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/Spherepack.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/SpherepackIterator.hpp"
-#include "NumericalAlgorithms/SphericalHarmonics/Strahlkorper.hpp"
+#include "NumericalAlgorithms/Strahlkorper/IO/FillYlmLegendAndData.hpp"
+#include "NumericalAlgorithms/Strahlkorper/Strahlkorper.hpp"
 #include "Utilities/FileSystem.hpp"
 #include "Utilities/Gsl.hpp"
 

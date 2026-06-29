@@ -16,5 +16,6 @@ target_link_libraries(
   DataStructures
   Spectral
   SphericalHarmonics
+  Strahlkorper
   Utilities
   )

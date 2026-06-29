@@ -6,9 +6,9 @@
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
-#include "NumericalAlgorithms/SphericalHarmonics/ApplyTensorYlmFilter.hpp"
-#include "NumericalAlgorithms/SphericalHarmonics/TensorYlm.hpp"
-#include "NumericalAlgorithms/SphericalHarmonics/TensorYlmFilter.hpp"
+#include "NumericalAlgorithms/TensorYlm/ApplyFilter.hpp"
+#include "NumericalAlgorithms/TensorYlm/Filter.hpp"
+#include "NumericalAlgorithms/TensorYlm/TensorYlm.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Utilities/Gsl.hpp"
 

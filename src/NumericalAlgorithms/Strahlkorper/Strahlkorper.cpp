@@ -1,0 +1,143 @@
+// Distributed under the MIT License.
+// See LICENSE.txt for details.
+
+#include "NumericalAlgorithms/Strahlkorper/Strahlkorper.hpp"
+
+#include <algorithm>
+#include <cmath>
+#include <memory>
+#include <ostream>
+#include <pup.h>
+#include <pup_stl.h>
+#include <utility>
+
+#include "DataStructures/DataVector.hpp"
+#include "DataStructures/ModalVector.hpp"
+#include "DataStructures/VectorImpl.hpp"
+#include "NumericalAlgorithms/SphericalHarmonics/SpherepackIterator.hpp"
+#include "NumericalAlgorithms/Strahlkorper/InitialShape.hpp"
+#include "Utilities/ErrorHandling/Assert.hpp"
+#include "Utilities/StdArrayHelpers.hpp"
+namespace Frame {
+struct Distorted;
+struct Inertial;
+}  // namespace Frame
+
+namespace ylm {
+template <typename Frame>
+Strahlkorper<Frame>::Strahlkorper(const size_t l_max, const size_t m_max,
+                                  const double radius,
+                                  std::array<double, 3> center)
+    : l_max_(l_max),
+      m_max_(m_max),
+      ylm_(l_max, m_max),
+      // clang-tidy: do not std::move trivially constructable types
+      center_(std::move(center)),  // NOLINT
+      strahlkorper_coefs_(ylm_.spectral_size(), 0.0) {
+  ylm::Spherepack::add_constant(&strahlkorper_coefs_, radius);
+}
+
+template <typename Frame>
+Strahlkorper<Frame>::Strahlkorper(const size_t initial_l,
+                                  const InitialShape<Frame>& initial_shape,
+                                  const Options::Context& context)
+    : Strahlkorper(initial_shape.strahlkorper(initial_l, context)) {}
+
+template <typename Frame>
+Strahlkorper<Frame>::Strahlkorper(
+    const size_t initial_l,
+    const std::unique_ptr<InitialShape<Frame>>& initial_shape,
+    const Options::Context& context)
+    : Strahlkorper(initial_l, *initial_shape, context) {}
+
+template <typename Frame>
+Strahlkorper<Frame>::Strahlkorper(
+    const size_t l_max, const size_t m_max,
+    const DataVector& radius_at_collocation_points,
+    std::array<double, 3> center)
+    : l_max_(l_max),
+      m_max_(m_max),
+      ylm_(l_max, m_max),
+      center_(center),
+      strahlkorper_coefs_(ylm_.phys_to_spec(radius_at_collocation_points)) {
+  ASSERT(radius_at_collocation_points.size() == ylm_.physical_size(),
+         "Bad size " << radius_at_collocation_points.size() << ", expected "
+                     << ylm_.physical_size());
+}
+
+template <typename Frame>
+Strahlkorper<Frame>::Strahlkorper(const size_t l_max, const size_t m_max,
+                                  const ModalVector& spectral_coefficients,
+                                  std::array<double, 3> center)
+    : l_max_(l_max), m_max_(m_max), ylm_(l_max, m_max), center_(center) {
+  ASSERT(spectral_coefficients.size() == ylm_.spectral_size(),
+         "Bad size " << spectral_coefficients.size() << ", expected "
+                     << ylm_.spectral_size());
+
+  strahlkorper_coefs_.destructive_resize(ylm_.spectral_size());
+  // We can remove this copy once strahlkorper_coefs_ are stored as ModalVector
+  std::copy(spectral_coefficients.begin(), spectral_coefficients.end(),
+            strahlkorper_coefs_.begin());
+}
+
+template <typename Frame>
+void Strahlkorper<Frame>::pup(PUP::er& p) {
+  p | l_max_;
+  p | m_max_;
+  p | center_;
+  p | strahlkorper_coefs_;
+
+  if (p.isUnpacking()) {
+    ylm_ = ylm::Spherepack(l_max_, m_max_);
+  }
+}
+
+template <typename Frame>
+std::array<double, 3> Strahlkorper<Frame>::physical_center() const {
+  // Uses Eqs. (38)-(40) in Hemberger et al, arXiv:1211.6079.  This is
+  // an approximation of Eq. (37) in the same paper, which gives the
+  // exact result.
+  std::array<double, 3> result = center_;
+  SpherepackIterator it(l_max_, m_max_);
+  result[0] += strahlkorper_coefs_[it.set(1, 1)()] * sqrt(0.75);
+  result[1] -= strahlkorper_coefs_[it.set(1, -1)()] * sqrt(0.75);
+  result[2] += strahlkorper_coefs_[it.set(1, 0)()] * sqrt(0.375);
+  return result;
+}
+
+template <typename Frame>
+double Strahlkorper<Frame>::average_radius() const {
+  return ylm::Spherepack::average(coefficients());
+}
+
+template <typename Frame>
+double Strahlkorper<Frame>::radius(const double theta, const double phi) const {
+  return ylm_.interpolate_from_coefs<double>(strahlkorper_coefs_, {theta, phi});
+}
+
+template <typename Frame>
+bool Strahlkorper<Frame>::point_is_contained(
+    const std::array<double, 3>& x) const {
+  // The point `x` is assumed to be in Cartesian coords in the
+  // Strahlkorper frame.
+
+  // Make the point relative to the center of the Strahlkorper.
+  auto xmc = x - center_;
+
+  // Is the point inside the surface?
+  const double theta = atan2(std::hypot(xmc[0], xmc[1]), xmc[2]);
+  const double phi = atan2(xmc[1], xmc[0]);
+  // Note that atan2 returns phi in (-pi,pi], whereas our convention
+  // for spherical coordinates assumes phi is in [0,2pi).  In some
+  // contexts (e.g. matching to points in a spherical-coordinate
+  // element) this would cause problems, so we would need to add 2pi
+  // to phi if phi were negative.  But here we don't need to do this,
+  // because inside the 'radius' function, the only thing that phi is
+  // used for is computing cos(m*phi) and sin(m*phi) for integer m.
+  return magnitude(xmc) < radius(theta, phi);
+}
+
+template class Strahlkorper<Frame::Inertial>;
+template class Strahlkorper<Frame::Grid>;
+template class Strahlkorper<Frame::Distorted>;
+}  // namespace ylm

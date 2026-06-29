@@ -5,7 +5,7 @@
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Evolution/Systems/CurvedScalarWave/ApplyTensorYlmFilter.hpp"
-#include "Helpers/NumericalAlgorithms/SphericalHarmonics/Test_ApplyTensorYlmFilter.hpp"
+#include "Helpers/NumericalAlgorithms/TensorYlm/Test_ApplyTensorYlmFilter.hpp"
 
 namespace ylm::TensorYlm {
 

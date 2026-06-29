@@ -4,8 +4,8 @@
 #include "PointwiseFunctions/GeneralRelativity/Surfaces/RadialDistance.hpp"
 
 #include "DataStructures/Tensor/Tensor.hpp"
-#include "NumericalAlgorithms/SphericalHarmonics/Strahlkorper.hpp"
-#include "NumericalAlgorithms/SphericalHarmonics/StrahlkorperFunctions.hpp"
+#include "NumericalAlgorithms/Strahlkorper/Strahlkorper.hpp"
+#include "NumericalAlgorithms/Strahlkorper/StrahlkorperFunctions.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 

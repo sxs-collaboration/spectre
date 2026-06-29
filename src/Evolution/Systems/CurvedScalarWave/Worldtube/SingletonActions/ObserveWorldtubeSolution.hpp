@@ -19,7 +19,7 @@
 #include "IO/Observer/ObserverComponent.hpp"
 #include "IO/Observer/ReductionActions.hpp"
 #include "IO/Observer/TypeOfObservation.hpp"
-#include "NumericalAlgorithms/SphericalHarmonics/Tags.hpp"
+#include "NumericalAlgorithms/Strahlkorper/Tags.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Reduction.hpp"
 #include "Time/Tags/TimeStepId.hpp"

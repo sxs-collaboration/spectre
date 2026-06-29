@@ -9,21 +9,11 @@ spectre_target_sources(
   ${LIBRARY}
   PRIVATE
   AngularOrdering.cpp
-  ChangeCenterOfStrahlkorper.cpp
-  InitialShape.cpp
   RealSphericalHarmonics.cpp
   SpherepackIterator.cpp
-  Strahlkorper.cpp
-  StrahlkorperFunctions.cpp
   Spherepack.cpp
   SpherepackCache.cpp
   SpherepackHelper.cpp
-  Tags.cpp
-  TensorYlmCartToSphere.cpp
-  TensorYlmFilter.cpp
-  TensorYlmHelpers.cpp
-  TensorYlmSphereToCart.cpp
-  WignerThreeJ.cpp
   YlmToStf.cpp
   )
 
@@ -32,29 +22,18 @@ spectre_target_headers(
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
   AngularOrdering.hpp
-  ApplyTensorYlmFilter.hpp
-  ApplyTensorYlmFilter.tpp
-  ChangeCenterOfStrahlkorper.hpp
-  InitialShape.hpp
   RealSphericalHarmonics.hpp
   SpherepackIterator.hpp
-  Strahlkorper.hpp
-  StrahlkorperFunctions.hpp
   Spherepack.hpp
   SpherepackCache.hpp
   SpherepackHelper.hpp
-  Tags.hpp
-  TagsDeclarations.hpp
-  TagsTypeAliases.hpp
-  TensorYlm.hpp
-  TensorYlmCartToSphere.hpp
-  TensorYlmFilter.hpp
-  TensorYlmHelpers.hpp
-  TensorYlmSphereToCart.hpp
-  WignerThreeJ.hpp
   YlmToStf.hpp
   )
 
+# This library is intentionally low-level: it holds only the Spherepack-based
+# spherical-harmonic implementation and it must NOT depend on Spectral (directly
+# or transitively). Higher-level functionality that depends on Spectral lives in
+# the Strahlkorper and TensorYlm libraries.
 target_link_libraries(
   ${LIBRARY}
   PUBLIC
@@ -65,10 +44,6 @@ target_link_libraries(
   slatec
   SPHEREPACK
   Utilities
-  PRIVATE
-  FiniteDifference
-  Interpolation
   )
 
-add_subdirectory(IO)
 add_subdirectory(Python)

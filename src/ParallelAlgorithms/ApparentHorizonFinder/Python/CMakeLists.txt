@@ -18,6 +18,7 @@ spectre_python_link_libraries(
   DataStructures
   ApparentHorizonFinder
   SphericalHarmonics
+  Strahlkorper
   pybind11::module
 )
 

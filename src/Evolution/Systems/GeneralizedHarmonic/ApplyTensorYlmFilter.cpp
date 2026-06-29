@@ -12,11 +12,11 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/Spherepack.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/SpherepackCache.hpp"
-#include "NumericalAlgorithms/SphericalHarmonics/TensorYlmFilter.hpp"
+#include "NumericalAlgorithms/TensorYlm/Filter.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/TMPL.hpp"
 
-#include "NumericalAlgorithms/SphericalHarmonics/ApplyTensorYlmFilter.tpp"
+#include "NumericalAlgorithms/TensorYlm/ApplyFilter.tpp"
 
 namespace ylm::TensorYlm {
 

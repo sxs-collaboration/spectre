@@ -5,7 +5,7 @@
 
 #include <array>
 
-#include "NumericalAlgorithms/SphericalHarmonics/Strahlkorper.hpp"
+#include "NumericalAlgorithms/Strahlkorper/Strahlkorper.hpp"
 
 /// \cond
 namespace Frame {

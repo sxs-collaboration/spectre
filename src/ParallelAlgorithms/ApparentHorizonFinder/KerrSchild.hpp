@@ -7,8 +7,8 @@
 #include <cstddef>
 #include <pup.h>
 
-#include "NumericalAlgorithms/SphericalHarmonics/InitialShape.hpp"
-#include "NumericalAlgorithms/SphericalHarmonics/Strahlkorper.hpp"
+#include "NumericalAlgorithms/Strahlkorper/InitialShape.hpp"
+#include "NumericalAlgorithms/Strahlkorper/Strahlkorper.hpp"
 #include "Options/Context.hpp"
 #include "Options/String.hpp"
 #include "Utilities/Serialization/CharmPupable.hpp"

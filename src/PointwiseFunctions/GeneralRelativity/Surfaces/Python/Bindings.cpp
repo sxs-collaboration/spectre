@@ -8,8 +8,8 @@
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/TaggedTuple.hpp"
-#include "NumericalAlgorithms/SphericalHarmonics/Strahlkorper.hpp"
-#include "NumericalAlgorithms/SphericalHarmonics/Tags.hpp"
+#include "NumericalAlgorithms/Strahlkorper/Strahlkorper.hpp"
+#include "NumericalAlgorithms/Strahlkorper/Tags.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/HorizonAliases.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Surfaces/Tags.hpp"
 #include "Utilities/ErrorHandling/SegfaultHandler.hpp"

@@ -35,6 +35,7 @@ target_link_libraries(
   PUBLIC
   DataStructures
   SphericalHarmonics
+  Strahlkorper
   Parallel
   Serialization
   )

@@ -47,6 +47,7 @@ target_link_libraries(
   Serialization
   Spectral
   SphericalHarmonics
+  TensorYlm
   Utilities
   INTERFACE
   Domain

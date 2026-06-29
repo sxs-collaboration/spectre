@@ -18,7 +18,7 @@
 #include "Domain/BlockLogicalCoordinates.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
-#include "NumericalAlgorithms/SphericalHarmonics/Strahlkorper.hpp"
+#include "NumericalAlgorithms/Strahlkorper/Strahlkorper.hpp"
 #include "Parallel/MultiReaderSpinlock.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/Destination.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/FastFlow.hpp"

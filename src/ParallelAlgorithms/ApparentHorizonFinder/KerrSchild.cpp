@@ -11,7 +11,7 @@
 #include "DataStructures/Tensor/IndexType.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/Spherepack.hpp"
-#include "NumericalAlgorithms/SphericalHarmonics/Strahlkorper.hpp"
+#include "NumericalAlgorithms/Strahlkorper/Strahlkorper.hpp"
 #include "Options/Context.hpp"
 #include "Options/ParseError.hpp"
 #include "PointwiseFunctions/GeneralRelativity/KerrHorizon.hpp"

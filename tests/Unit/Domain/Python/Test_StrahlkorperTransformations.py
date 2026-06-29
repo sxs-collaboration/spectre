@@ -11,7 +11,7 @@ from spectre.Domain import (
     strahlkorper_in_inertial_frame,
 )
 from spectre.Informer import unit_test_src_path
-from spectre.SphericalHarmonics import Frame, Strahlkorper
+from spectre.Strahlkorper import Frame, Strahlkorper
 
 
 class TestStrahlkorperTransformations(unittest.TestCase):

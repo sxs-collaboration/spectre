@@ -28,7 +28,7 @@
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Quadrature.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/Spherepack.hpp"
-#include "NumericalAlgorithms/SphericalHarmonics/Strahlkorper.hpp"
+#include "NumericalAlgorithms/Strahlkorper/Strahlkorper.hpp"
 #include "ParallelAlgorithms/SurfaceFinder/SurfaceFinder.hpp"
 #include "PointwiseFunctions/MathFunctions/Gaussian.hpp"
 

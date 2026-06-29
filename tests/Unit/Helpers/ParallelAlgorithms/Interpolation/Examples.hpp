@@ -10,7 +10,7 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "DataStructures/Variables.hpp"
-#include "NumericalAlgorithms/SphericalHarmonics/Tags.hpp"
+#include "NumericalAlgorithms/Strahlkorper/Tags.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "ParallelAlgorithms/Interpolation/ComputeExcisionBoundaryVolumeQuantities.hpp"
 #include "ParallelAlgorithms/Interpolation/InterpolationTargetDetail.hpp"

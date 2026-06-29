@@ -27,7 +27,7 @@ from spectre.PointwiseFunctions.GeneralRelativity.Surfaces import (
     horizon_quantities,
 )
 from spectre.Spectral import Basis, Quadrature
-from spectre.SphericalHarmonics import (
+from spectre.Strahlkorper import (
     Frame,
     Strahlkorper,
     cartesian_coords,
@@ -111,7 +111,7 @@ def find_horizon(
       obs_id: Observation ID in the volume data.
       obs_time: Time of the observation.
       initial_guess: Initial guess for the horizon. Specify a
-        'spectre.SphericalHarmonics.Strahlkorper[Frame.Inertial]'.
+        'spectre.Strahlkorper.Strahlkorper[Frame.Inertial]'.
       fast_flow: Optional. FastFlow object that controls the horizon finder.
         If not specified, a FastFlow object with default parameters is used.
       output_surfaces_file: Optional. H5 output file where the horizon Ylm

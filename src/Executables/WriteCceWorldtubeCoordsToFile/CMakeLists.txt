@@ -16,7 +16,7 @@ target_link_libraries(
   Boost::program_options
   Printf
   SphericalHarmonics
-  SphericalHarmonicsIO
+  StrahlkorperIO
   )
 
 if(BUILD_TESTING)

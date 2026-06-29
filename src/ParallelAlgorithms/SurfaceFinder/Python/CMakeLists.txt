@@ -18,6 +18,7 @@ spectre_python_link_libraries(
   PRIVATE
   DataStructures
   SphericalHarmonics
+  Strahlkorper
   SurfaceFinder
   pybind11::module
 )

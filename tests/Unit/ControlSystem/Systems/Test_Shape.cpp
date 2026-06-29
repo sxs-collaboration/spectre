@@ -38,7 +38,7 @@
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
 #include "Helpers/IO/Observers/MockWriteReductionDataRow.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/SpherepackIterator.hpp"
-#include "NumericalAlgorithms/SphericalHarmonics/Strahlkorper.hpp"
+#include "NumericalAlgorithms/Strahlkorper/Strahlkorper.hpp"
 #include "Parallel/Phase.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Gsl.hpp"

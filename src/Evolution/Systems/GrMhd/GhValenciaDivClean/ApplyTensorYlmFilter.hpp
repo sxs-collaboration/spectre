@@ -8,8 +8,8 @@
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/System.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Tags.hpp"
-#include "NumericalAlgorithms/SphericalHarmonics/ApplyTensorYlmFilter.hpp"
-#include "NumericalAlgorithms/SphericalHarmonics/TensorYlmFilter.hpp"
+#include "NumericalAlgorithms/TensorYlm/ApplyFilter.hpp"
+#include "NumericalAlgorithms/TensorYlm/Filter.hpp"
 
 /// \cond
 class DataVector;
