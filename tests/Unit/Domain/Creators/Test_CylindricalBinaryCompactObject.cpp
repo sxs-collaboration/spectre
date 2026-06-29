@@ -133,48 +133,12 @@ block_names_and_groups(const bool include_inner_sphere_A,
         "MBFilledCylinderNorth", "MBFilledCylinderSouth"}}};
 
   if (include_inner_sphere_A) {
-    block_names.insert(
-        block_names.end(),
-        {"InnerSphereEAFilledCylinderCenter", "InnerSphereEAFilledCylinderEast",
-         "InnerSphereEAFilledCylinderNorth", "InnerSphereEAFilledCylinderWest",
-         "InnerSphereEAFilledCylinderSouth",
-         "InnerSphereMAFilledCylinderCenter", "InnerSphereMAFilledCylinderEast",
-         "InnerSphereMAFilledCylinderNorth", "InnerSphereMAFilledCylinderWest",
-         "InnerSphereMAFilledCylinderSouth", "InnerSphereEACylinderEast",
-         "InnerSphereEACylinderNorth", "InnerSphereEACylinderWest",
-         "InnerSphereEACylinderSouth"});
-    block_groups.insert(
-        {"InnerSphereA",
-         {"InnerSphereEAFilledCylinderCenter",
-          "InnerSphereEAFilledCylinderEast", "InnerSphereEAFilledCylinderNorth",
-          "InnerSphereEAFilledCylinderWest", "InnerSphereEAFilledCylinderSouth",
-          "InnerSphereMAFilledCylinderCenter",
-          "InnerSphereMAFilledCylinderEast", "InnerSphereMAFilledCylinderNorth",
-          "InnerSphereMAFilledCylinderWest", "InnerSphereMAFilledCylinderSouth",
-          "InnerSphereEACylinderEast", "InnerSphereEACylinderNorth",
-          "InnerSphereEACylinderWest", "InnerSphereEACylinderSouth"}});
+    block_names.insert(block_names.end(), {"InnerAShell0"});
+    block_groups.insert({"InnerSphereA", {"InnerAShell0"}});
   }
   if (include_inner_sphere_B) {
-    block_names.insert(
-        block_names.end(),
-        {"InnerSphereEBFilledCylinderCenter", "InnerSphereEBFilledCylinderEast",
-         "InnerSphereEBFilledCylinderNorth", "InnerSphereEBFilledCylinderWest",
-         "InnerSphereEBFilledCylinderSouth",
-         "InnerSphereMBFilledCylinderCenter", "InnerSphereMBFilledCylinderEast",
-         "InnerSphereMBFilledCylinderNorth", "InnerSphereMBFilledCylinderWest",
-         "InnerSphereMBFilledCylinderSouth", "InnerSphereEBCylinderEast",
-         "InnerSphereEBCylinderNorth", "InnerSphereEBCylinderWest",
-         "InnerSphereEBCylinderSouth"});
-    block_groups.insert(
-        {"InnerSphereB",
-         {"InnerSphereEBFilledCylinderCenter",
-          "InnerSphereEBFilledCylinderEast", "InnerSphereEBFilledCylinderNorth",
-          "InnerSphereEBFilledCylinderWest", "InnerSphereEBFilledCylinderSouth",
-          "InnerSphereMBFilledCylinderCenter",
-          "InnerSphereMBFilledCylinderEast", "InnerSphereMBFilledCylinderNorth",
-          "InnerSphereMBFilledCylinderWest", "InnerSphereMBFilledCylinderSouth",
-          "InnerSphereEBCylinderEast", "InnerSphereEBCylinderNorth",
-          "InnerSphereEBCylinderWest", "InnerSphereEBCylinderSouth"}});
+    block_names.insert(block_names.end(), {"InnerBShell0"});
+    block_groups.insert({"InnerSphereB", {"InnerBShell0"}});
   }
   block_names.insert(block_names.end(), {"OuterShell0"});
   block_groups.insert({"OuterSphere", {"OuterShell0"}});
@@ -266,21 +230,23 @@ std::string create_option_string(
         const std::string one_more = "[" + get_output(value + 1) + "," +
                                      get_output(value) + "," +
                                      get_output(value) + "]";
-        const std::string outer_shell = is_h_refinement ?
-                                    ("[" + get_output(value + 1) + ", 0, 0]") :
-                                    one_more;
+        const std::string shell_same =
+            is_h_refinement ? ("[" + get_output(value) + ", 0, 0]") : same;
+        const std::string shell_one_more =
+            is_h_refinement ? ("[" + get_output(value + 1) + ", 0, 0]")
+                            : one_more;
         std::string result{};
         if (include_extra) {
           result += "\n    Outer: " + one_more;
           result += "\n    InnerA: " + same;
           result += "\n    InnerB: " + one_more;
           if (include_inner_sphere_A) {
-            result += "\n    InnerSphereA: " + same;
+            result += "\n    InnerSphereA: " + shell_same;
           }
           if (include_inner_sphere_B) {
-            result += "\n    InnerSphereB: " + same;
+            result += "\n    InnerSphereB: " + shell_same;
           }
-          result += "\n    OuterSphere: " + outer_shell;
+          result += "\n    OuterSphere: " + shell_one_more;
         } else {
           result = " " + get_output(value);
         }
@@ -642,19 +608,21 @@ std::unordered_map<std::string, std::array<size_t, 3>> make_initial_structure(
   const std::array<size_t, 3> same{initial_value, initial_value, initial_value};
   const std::array<size_t, 3> one_more{initial_value + 1, initial_value,
                                        initial_value};
-  const std::array<size_t, 3> outer_sphere =
+  const std::array<size_t, 3> shell_same =
+      is_h_refinement ? std::array<size_t, 3>{initial_value, 0, 0} : same;
+  const std::array<size_t, 3> shell_one_more =
       is_h_refinement ? std::array<size_t, 3>{initial_value + 1, 0, 0}
                       : one_more;
   initial_map["Outer"] = one_more;
   initial_map["InnerA"] = same;
   initial_map["InnerB"] = one_more;
   if (include_inner_sphere_A) {
-    initial_map["InnerSphereA"] = same;
+    initial_map["InnerSphereA"] = shell_same;
   }
   if (include_inner_sphere_B) {
-    initial_map["InnerSphereB"] = same;
+    initial_map["InnerSphereB"] = shell_same;
   }
-  initial_map["OuterSphere"] = outer_sphere;
+  initial_map["OuterSphere"] = shell_one_more;
 
   return initial_map;
 }

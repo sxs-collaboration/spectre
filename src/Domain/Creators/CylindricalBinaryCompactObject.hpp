@@ -31,6 +31,7 @@
 /// \cond
 namespace domain {
 namespace CoordinateMaps {
+class Affine;
 class Interval;
 template <typename Map1, typename Map2>
 class ProductOf2Maps;
@@ -110,17 +111,15 @@ namespace domain::creators {
  * - The Block group called "InnerA" consists of all the EA, and MA
  *   blocks. They all border the inner boundary "A" if
  *   `IncludeInnerSphereA` is false.
- * - If `IncludeInnerSphereA` is true, then there are new blocks
- *   InnerSphereEAFilledCylinder, InnerSphereMAFilledCylinder, and
- *   InnerSphereEACylinder. These are in a Block group called "InnerSphereA",
- *   and all of these border the inner excision boundary "A".
+ * - If `IncludeInnerSphereA` is true, InnerAShell0 is the single shell in a
+ *   Block group called "InnerSphereA" and it borders the inner excision
+ *   boundary "A".
  * - The Block group called "InnerB" consists of all the EB, and MB
  *   blocks. They all border the inner boundary "B" if
  *   `IncludeInnerSphereB` is false.
- * - If `IncludeInnerSphereB` is true, then there are new blocks
- *   InnerSphereEBFilledCylinder, InnerSphereMBFilledCylinder, and
- *   InnerSphereEBCylinder. These are in a Block group called "InnerSphereB",
- *   and all of these border the inner excision boundary "B".
+ * - If `IncludeInnerSphereB` is true, InnerBShell0 is the single shell in a
+ *   Block group called "InnerSphereB" and it borders the inner excision
+ *   boundary "B".
  *
  * If \f$c_A\f$ and \f$c_B\f$ are the input parameters center_A and
  * center_B, \f$r_A\f$ and \f$r_B\f$ are the input parameters radius_A and
@@ -184,7 +183,10 @@ class CylindricalBinaryCompactObject : public DomainCreator<3> {
                      Frame::BlockLogical, Frame::Inertial,
                      domain::CoordinateMaps::ProductOf2Maps<
                          CoordinateMaps::Interval, CoordinateMaps::Identity<2>>,
-                     domain::CoordinateMaps::SphericalToCartesianPfaffian>,
+                     domain::CoordinateMaps::SphericalToCartesianPfaffian,
+                     CoordinateMaps::ProductOf3Maps<CoordinateMaps::Affine,
+                                                    CoordinateMaps::Affine,
+                                                    CoordinateMaps::Affine>>,
                  bco::TimeDependentMapOptions<true>::maps_list>>;
 
   struct CenterA {
@@ -239,10 +241,11 @@ class CylindricalBinaryCompactObject : public DomainCreator<3> {
         "representing [r, theta, perp], or such a list for every block in the "
         "domain. Here 'r' is the radial direction normal to the inner and "
         "outer boundaries, 'theta' is the periodic direction, and 'perp' is "
-        "the third direction. Note that for blocks in 'OuterSphere', the "
-        "angular refinement levels must be specified as zero. The exception is "
-        "if a single number is specified for global refinement, the angular "
-        "refinement for 'OuterSphere' blocks will be set to 0 for you."};
+        "the third direction. Note that for spherical shell block groups "
+        "(e.g. 'OuterSphere'), the angular refinement levels must be specified "
+        "as zero. The exception is if a single number is specified for global "
+        "refinement, the angular refinement for 'OuterSphere' blocks will be "
+        "set to 0 for you."};
   };
   struct InitialGridPoints {
     using type =
