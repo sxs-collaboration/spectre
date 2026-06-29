@@ -6,6 +6,7 @@
 #include <utility>
 
 #include "Executables/ExportEquationOfStateForRotNS/DumpRotNSEos.hpp"
+#include "Options/Auto.hpp"
 #include "Options/Options.hpp"
 #include "Options/ParseOptions.hpp"
 #include "Parallel/Printf/Printf.hpp"
@@ -41,6 +42,18 @@ struct UpperBoundRestMassDensityCgs {
   static constexpr Options::String help = {
       "Upper bound of rest mass density in CGS units."};
 };
+
+struct ThermodynamicProfileFilename {
+  using type = Options::Auto<std::string, Options::AutoLabel::None>;
+  static constexpr Options::String help = {
+      "File from which the T(rho) and optionally Y_e(rho) interpolations are "
+      "constructed. If 'None', then the equation of state is treated as "
+      "barotropic. The first line must contain two integers: the number of "
+      "entries and a flag (0 or 1) indicating whether a Y_e(rho) column is "
+      "included. If the flag is 0, each subsequent line has two columns: "
+      "density and temperature (geometric units). If the flag is 1, each line "
+      "has three columns: density, temperature, and electron fraction."};
+};
 }  // namespace OptionTags
 }  // namespace
 
@@ -74,7 +87,8 @@ int main(int argc, char** argv) {
       tmpl::list<hydro::OptionTags::InitialDataEquationOfState<true, 3>,
                  OptionTags::NumberOfPoints, OptionTags::OutputFileName,
                  OptionTags::LowerBoundRestMassDensityCgs,
-                 OptionTags::UpperBoundRestMassDensityCgs>;
+                 OptionTags::UpperBoundRestMassDensityCgs,
+                 OptionTags::ThermodynamicProfileFilename>;
 
   Options::Parser<option_list> option_parser(help_string);
   option_parser.parse_file(vars["input-file"].as<std::string>());
@@ -101,7 +115,8 @@ int main(int argc, char** argv) {
       get<OptionTags::NumberOfPoints>(options),
       get<OptionTags::OutputFileName>(options),
       get<OptionTags::LowerBoundRestMassDensityCgs>(options),
-      get<OptionTags::UpperBoundRestMassDensityCgs>(options));
+      get<OptionTags::UpperBoundRestMassDensityCgs>(options),
+      get<OptionTags::ThermodynamicProfileFilename>(options));
 
   return 0;
 }
