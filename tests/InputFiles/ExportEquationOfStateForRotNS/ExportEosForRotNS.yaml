@@ -22,3 +22,4 @@ OutputFileName: ./EOS.GN
 NumberOfPoints: 40000
 LowerBoundRestMassDensityCgs: 1.0e3
 UpperBoundRestMassDensityCgs: 1.0e16
+ThermodynamicProfileFilename: None
