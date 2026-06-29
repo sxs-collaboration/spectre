@@ -113,6 +113,11 @@ metric, derivative of shift, etc. are implemented as functions in
   to understand the requirements. That is the code that calls the
   initialization mutator.
 
+## Performance improvements
+- Reduce memory allocations: Prefer using a Variables with temporary tags, a
+  TempBuffer, or a CachedTempBuffer instead of many individual Tensors or
+  DataVectors.
+
 ## clang-tidy
 - Use the most recent available clang-tidy on the system.
 - Using `NOLINT` is a last-resort except for
