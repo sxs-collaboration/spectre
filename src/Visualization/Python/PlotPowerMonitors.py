@@ -13,9 +13,11 @@ from matplotlib.ticker import MaxNLocator
 
 import spectre.IO.H5 as spectre_h5
 from spectre.DataStructures import DataVector
+from spectre.DataStructures.Tensor import Frame, tnsr
 from spectre.Domain import Domain, deserialize_domain
 from spectre.IO.H5 import open_volfiles, open_volfiles_command, parse_point
 from spectre.IO.H5.IterElements import iter_elements, stripped_element_name
+from spectre.IO.H5.TransformVolumeData import get_tensor_component_names
 from spectre.NumericalAlgorithms.LinearOperators import power_monitors
 from spectre.Spectral import Basis
 from spectre.support.CliExceptions import RequiredChoiceError
@@ -25,6 +27,118 @@ from spectre.Visualization.Plot import (
 )
 
 logger = logging.getLogger(__name__)
+
+
+def gh_shell_tensor_component_names(
+    spacetime_metric_name: str, pi_name: str, phi_name: str
+):
+    return (
+        get_tensor_component_names(
+            spacetime_metric_name, tnsr.aa[DataVector, 3, Frame.Inertial]
+        )
+        + get_tensor_component_names(
+            pi_name, tnsr.aa[DataVector, 3, Frame.Inertial]
+        )
+        + get_tensor_component_names(
+            phi_name, tnsr.iaa[DataVector, 3, Frame.Inertial]
+        )
+    )
+
+
+def plot_gh_shell_power_monitors(
+    volfiles: Union[spectre_h5.H5Vol, Iterable[spectre_h5.H5Vol]],
+    obs_id: int,
+    block_or_group_names: Sequence[str],
+    domain: Domain[3],
+    spacetime_metric_name: str = "SpacetimeMetric",
+    pi_name: str = "Pi",
+    phi_name: str = "Phi",
+    element_patterns: Optional[Sequence[str]] = None,
+    variables_to_plot: Sequence[str] = ("SpacetimeMetric", "Pi", "Phi"),
+    fixed_y_limits: Optional[Tuple[float, float]] = None,
+    figsize: Optional[Tuple[float, float]] = None,
+):
+    if domain.dim != 3:
+        raise click.UsageError(
+            "GH shell power monitors require 3D volume data."
+        )
+    from spectre.Evolution.Systems.GeneralizedHarmonic import (
+        gh_shell_power_monitors,
+    )
+
+    tensor_components = gh_shell_tensor_component_names(
+        spacetime_metric_name, pi_name, phi_name
+    )
+    num_cols = len(variables_to_plot)
+    fig, axes = plt.subplots(
+        nrows=2,
+        ncols=num_cols,
+        figsize=figsize or (num_cols * 4, 7),
+        sharey="row",
+        squeeze=False,
+    )
+
+    metric_type = tnsr.aa[DataVector, 3, Frame.Inertial]
+    pi_type = tnsr.aa[DataVector, 3, Frame.Inertial]
+    phi_type = tnsr.iaa[DataVector, 3, Frame.Inertial]
+    metric_size = metric_type.size
+    pi_size = pi_type.size
+
+    plotted_elements = 0
+    for element, tensor_data in iter_elements(
+        volfiles, obs_id, tensor_components, element_patterns=element_patterns
+    ):
+        if any(
+            basis == Basis.FiniteDifference for basis in element.mesh.basis()
+        ):
+            continue
+        if (
+            find_block_or_group(
+                element.id.block_id, block_or_group_names, domain
+            )
+            is None
+        ):
+            continue
+
+        if tensor_data.dtype != np.float64:
+            tensor_data = tensor_data.astype(np.float64)
+        spacetime_metric = metric_type(tensor_data[:metric_size])
+        pi = pi_type(tensor_data[metric_size : metric_size + pi_size])
+        phi = phi_type(tensor_data[metric_size + pi_size :])
+        monitors = gh_shell_power_monitors(
+            spacetime_metric,
+            pi,
+            phi,
+            element.mesh,
+            element.id,
+            domain,
+            element.time,
+            element.functions_of_time or {},
+        )
+
+        label = stripped_element_name(element.id)
+        for col, variable_name in enumerate(variables_to_plot):
+            radial = np.asarray(monitors[variable_name]["radial"])
+            angular = np.asarray(monitors[variable_name]["angular"])
+            axes[0][col].semilogy(radial, label=label)
+            axes[1][col].semilogy(angular, label=label)
+        plotted_elements += 1
+
+    for col, variable_name in enumerate(variables_to_plot):
+        axes[0][col].set_title(variable_name)
+        axes[1][col].set_xlabel("Mode number")
+    axes[0][0].set_ylabel("Radial power")
+    axes[1][0].set_ylabel("Angular power")
+    for ax in axes.ravel():
+        ax.grid(which="both")
+        ax.xaxis.set_major_locator(MaxNLocator(integer=True))
+        if fixed_y_limits is not None:
+            ax.set_ylim(*fixed_y_limits)
+    if plotted_elements <= 12 and plotted_elements > 0:
+        axes[0][-1].legend(loc="best", fontsize="small")
+    fig.suptitle(f"GH shell power monitors at observation {obs_id}")
+    fig.tight_layout()
+    return fig
 
 
 def find_block_or_group(
@@ -281,7 +395,9 @@ def plot_power_monitors(
 
 
 @click.command(name="power-monitors")
-@open_volfiles_command(obs_id_required=False, multiple_vars=True)
+@open_volfiles_command(
+    obs_id_required=False, vars_required=False, multiple_vars=True
+)
 @click.option(
     "--list-blocks",
     is_flag=True,
@@ -322,6 +438,56 @@ def plot_power_monitors(
     "--over-time", "-T", is_flag=True, help="Plot power monitors over time."
 )
 @click.option(
+    "--gh-shell",
+    is_flag=True,
+    help=(
+        "Compute Generalized Harmonic spherical-shell power monitors for "
+        "SpacetimeMetric/Pi/Phi. This computes one monitor per element."
+    ),
+)
+@click.option(
+    "--gh-spacetime-metric",
+    default="SpacetimeMetric",
+    show_default=True,
+    help="Volume-data tensor name for the GH spacetime metric.",
+)
+@click.option(
+    "--gh-pi",
+    default="Pi",
+    show_default=True,
+    help="Volume-data tensor name for the GH Pi variable.",
+)
+@click.option(
+    "--gh-phi",
+    default="Phi",
+    show_default=True,
+    help="Volume-data tensor name for the GH Phi variable.",
+)
+@click.option(
+    "--gh-shell-variable",
+    "gh_shell_variables",
+    multiple=True,
+    type=click.Choice(["SpacetimeMetric", "Pi", "Phi"]),
+    help=(
+        "GH variable to plot in '--gh-shell' mode. Can be specified multiple "
+        "times. Defaults to all three variables."
+    ),
+)
+@click.option(
+    "--gh-shell-frame-prefix",
+    type=click.Path(file_okay=False, dir_okay=False, writable=True),
+    help=(
+        "When used with '--gh-shell --over-time', write one PNG frame per "
+        "observation with this filename prefix."
+    ),
+)
+@click.option(
+    "--fixed-y-limits",
+    nargs=2,
+    type=float,
+    help="Fixed y-axis limits for GH shell movie frames.",
+)
+@click.option(
     "--skip-filtered-modes",
     type=int,
     default=0,
@@ -345,6 +511,13 @@ def plot_power_monitors_command(
     list_elements,
     element_patterns,
     over_time,
+    gh_shell,
+    gh_spacetime_metric,
+    gh_pi,
+    gh_phi,
+    gh_shell_variables,
+    gh_shell_frame_prefix,
+    fixed_y_limits,
     **kwargs,
 ):
     """Plot power monitors from volume data
@@ -369,6 +542,17 @@ def plot_power_monitors_command(
             "Specify an observation '--step' or '--time', or specify"
             " '--over-time' (but not both)."
         )
+    if not gh_shell and not vars:
+        raise click.UsageError(
+            "Specify '--var' / '-y' to select a variable to plot, or use "
+            "'--gh-shell'."
+        )
+    if gh_shell and over_time and not gh_shell_frame_prefix:
+        raise click.UsageError(
+            "Specify '--gh-shell-frame-prefix' when using "
+            "'--gh-shell --over-time' so one plot can be written for each "
+            "observation."
+        )
 
     # Print available blocks and groups
     open_h5_file = spectre_h5.H5File(h5_files[0], "r")
@@ -381,6 +565,7 @@ def plot_power_monitors_command(
         import rich.columns
 
         rich.print(rich.columns.Columns(all_block_groups + all_block_names))
+        open_h5_file.close()
         return
     elif not block_or_group_names:
         raise RequiredChoiceError(
@@ -430,7 +615,75 @@ def plot_power_monitors_command(
                 f"[bold]{block_name}[/bold] ({len(element_ids)} elements)"
             )
             console.print(rich.columns.Columns(element_ids))
+        open_h5_file.close()
         return
+
+    if gh_shell:
+        # This option applies only to the standard logical-dimension power
+        # monitors, not to GH shell power monitors.
+        kwargs.pop("skip_filtered_modes")
+        variables_to_plot = gh_shell_variables or (
+            "SpacetimeMetric",
+            "Pi",
+            "Phi",
+        )
+        if over_time:
+            all_obs_ids = volfile.list_observation_ids()
+            all_obs_times = [
+                volfile.get_observation_value(obs_id_i)
+                for obs_id_i in all_obs_ids
+            ]
+            open_h5_file.close()
+            import rich.progress
+
+            progress = rich.progress.Progress(
+                rich.progress.TextColumn(
+                    "[progress.description]{task.description}"
+                ),
+                rich.progress.BarColumn(),
+                rich.progress.MofNCompleteColumn(),
+                rich.progress.TimeRemainingColumn(),
+            )
+            task = progress.add_task(
+                "Writing GH shell frames", total=len(all_obs_ids)
+            )
+            with progress:
+                for obs_id_i, obs_time_i in zip(all_obs_ids, all_obs_times):
+                    fig = plot_gh_shell_power_monitors(
+                        open_volfiles(h5_files, subfile_name, obs_id_i),
+                        obs_id=obs_id_i,
+                        domain=domain,
+                        block_or_group_names=block_or_group_names,
+                        element_patterns=element_patterns,
+                        spacetime_metric_name=gh_spacetime_metric,
+                        pi_name=gh_pi,
+                        phi_name=gh_phi,
+                        variables_to_plot=variables_to_plot,
+                        fixed_y_limits=fixed_y_limits,
+                        **kwargs,
+                    )
+                    fig.savefig(
+                        f"{gh_shell_frame_prefix}_"
+                        f"{obs_id_i:012d}_t{obs_time_i:.12g}.png"
+                    )
+                    plt.close(fig)
+                    progress.update(task, advance=1)
+            return
+
+        open_h5_file.close()
+        return plot_gh_shell_power_monitors(
+            open_volfiles(h5_files, subfile_name, obs_id),
+            obs_id=obs_id,
+            domain=domain,
+            block_or_group_names=block_or_group_names,
+            element_patterns=element_patterns,
+            spacetime_metric_name=gh_spacetime_metric,
+            pi_name=gh_pi,
+            phi_name=gh_phi,
+            variables_to_plot=variables_to_plot,
+            fixed_y_limits=fixed_y_limits,
+            **kwargs,
+        )
 
     # Close the H5 file because we're done with preprocessing
     open_h5_file.close()

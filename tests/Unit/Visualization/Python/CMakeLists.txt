@@ -72,7 +72,7 @@ spectre_add_python_bindings_test(
   "Unit.Visualization.Python.PlotPowerMonitors"
   Test_PlotPowerMonitors.py
   "unit;visualization;python"
-  None
+  PyEvolutionSystemsGeneralizedHarmonic
   TIMEOUT 10)
 
 spectre_add_python_bindings_test(

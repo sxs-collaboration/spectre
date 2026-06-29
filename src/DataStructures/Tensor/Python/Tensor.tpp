@@ -245,6 +245,12 @@ void bind_tensor(py::module& m) {
       TensorKind::Tnsr >                                                    \
           (m, std::string{std::string{"ELi"} +                              \
                           std::string{BOOST_PP_STRINGIZE(TENSOR(data))}});
+#define INSTANTIATE_GRID_TO_INERTIAL_JAC(_, data)                            \
+  bind_tensor_impl<Jacobian<DTYPE(data), Dim, Frame::Grid, Frame::Inertial>, \
+                   TensorKind::Jacobian>(m, "Jacobian");                     \
+  bind_tensor_impl<                                                          \
+      InverseJacobian<DTYPE(data), Dim, Frame::Grid, Frame::Inertial>,       \
+      TensorKind::Jacobian>(m, "Jacobian");
 
   // Only tnsr::I and tnsr::i need to be instantiated for all frames currently,
   // so to reduce compile time and library size, we're choosing to only
@@ -262,11 +268,14 @@ void bind_tensor(py::module& m) {
   GENERATE_INSTANTIATIONS(INSTANTIATE_JAC, (double, DataVector),
                           (Frame::Grid, Frame::Inertial))
 
+  GENERATE_INSTANTIATIONS(INSTANTIATE_GRID_TO_INERTIAL_JAC,
+                          (double, DataVector))
+
   GENERATE_INSTANTIATIONS(INSTANTIATE_LOGICAL_DERIV, (double, DataVector),
-                          (Frame::Inertial),
-                          (i, I, a, A, ii, II, aa, AA))
+                          (Frame::Inertial), (i, I, a, A, ii, II, aa, AA))
 
 #undef INSTANTIATE_LOGICAL_DERIV
+#undef INSTANTIATE_GRID_TO_INERTIAL_JAC
 #undef INSTANTIATE_TNSR
 #undef INSTANTIATE_JAC
 #undef DTYPE

@@ -6,6 +6,7 @@ set(LIBRARY "Test_TensorYlm")
 set(LIBRARY_SOURCES
   Test_CartToSphere.cpp
   Test_Filter.cpp
+  Test_Helpers.cpp
   Test_SphereToCart.cpp
   Test_WignerThreeJ.cpp
   )

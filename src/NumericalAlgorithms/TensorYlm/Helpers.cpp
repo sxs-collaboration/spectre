@@ -6,7 +6,9 @@
 #include <array>
 #include <complex>
 #include <limits>
+#include <numeric>
 
+#include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Utilities/Array.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
@@ -113,6 +115,22 @@ int bv_to_s(const BasisVector basis_vector) {
   return result;
 }
 
+template <typename TensorStructure>
+int component_spin_weight(const size_t component) {
+  if constexpr (TensorStructure::rank() == 0) {
+    return 0;
+  } else {
+    const auto tensor_index = convert_to_cpp20_array(
+        TensorStructure::get_canonical_tensor_index(component));
+    const auto basis_vectors = to_sphere_basis_vector(tensor_index);
+    return std::accumulate(
+        basis_vectors.begin(), basis_vectors.end(), 0,
+        [](const int running_spin, const BasisVector basis_vector) {
+          return running_spin + bv_to_s(basis_vector);
+        });
+  }
+}
+
 template <typename Symm>
 double get_symm_factor(const size_t src_multiplicity, const size_t lbar) {
   static_assert(std::is_same_v<Symmetry<3, 2, 1>, Symm> or
@@ -157,5 +175,14 @@ template double get_symm_factor<Symmetry<1, 1>>(size_t src_multiplicity,
                                                 size_t lbar);
 template double get_symm_factor<Symmetry<2, 1>>(size_t src_multiplicity,
                                                 size_t lbar);
+template int component_spin_weight<typename Scalar<double>::structure>(size_t);
+template int component_spin_weight<
+    typename tnsr::i<double, 3, Frame::Grid>::structure>(size_t);
+template int component_spin_weight<
+    typename tnsr::ii<double, 3, Frame::Grid>::structure>(size_t);
+template int component_spin_weight<
+    typename tnsr::ij<double, 3, Frame::Grid>::structure>(size_t);
+template int component_spin_weight<
+    typename tnsr::ijj<double, 3, Frame::Grid>::structure>(size_t);
 
 }  // namespace ylm::TensorYlm::helpers

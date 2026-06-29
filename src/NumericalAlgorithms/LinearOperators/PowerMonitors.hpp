@@ -5,6 +5,7 @@
 
 #include <array>
 #include <cstddef>
+#include <limits>
 
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Utilities/Gsl.hpp"
@@ -193,4 +194,43 @@ struct ConvergenceInfo {
  */
 ConvergenceInfo convergence_rate_and_number_of_pile_up_modes(
     const DataVector& power_monitor, size_t number_of_filtered_modes = 0);
+
+/// @{
+/*!
+ * \brief Return the radial power monitor for a tensor component on a
+ * spherical shell.
+ *
+ * The mesh dimensions are assumed to be ordered `(radial, theta, phi)`. The
+ * radial grid points are contiguous, so each angular point supplies one
+ * radial slice to the one-dimensional modal transform.
+ */
+void spherical_shell_radial_power_monitor(gsl::not_null<DataVector*> result,
+                                          const DataVector& tensor_component,
+                                          const Mesh<3>& mesh);
+
+DataVector spherical_shell_radial_power_monitor(
+    const DataVector& tensor_component, const Mesh<3>& mesh);
+/// @}
+
+/// @{
+/*!
+ * \brief Return the angular power monitor for one TensorYlm component on a
+ * spherical shell.
+ *
+ * The mesh dimensions are assumed to be ordered `(radial, theta, phi)`, with
+ * `l_max == m_max`. TensorYlm coefficients use the radial dimension as the
+ * fastest-moving extent. As reviewed in Sec. II of \cite Boyle2023,
+ * spin-weighted spherical harmonics with `l < |spin_weight|` vanish, so these
+ * modes are omitted from both the sum and its normalization. Set
+ * `zero_m_is_real` for real scalar coefficients, which have no imaginary
+ * `m=0` coefficients in Spherepack storage.
+ */
+void spherical_shell_angular_power_monitor(
+    gsl::not_null<DataVector*> result, const DataVector& tensor_ylm_component,
+    const Mesh<3>& mesh, int spin_weight, bool zero_m_is_real);
+
+DataVector spherical_shell_angular_power_monitor(
+    const DataVector& tensor_ylm_component, const Mesh<3>& mesh,
+    int spin_weight, bool zero_m_is_real);
+/// @}
 }  // namespace PowerMonitors

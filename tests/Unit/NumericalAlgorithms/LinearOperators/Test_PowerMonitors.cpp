@@ -11,12 +11,15 @@
 #include <complex>
 #include <cstddef>
 #include <limits>
+#include <vector>
 
 #include "DataStructures/ComplexDataVector.hpp"
 #include "DataStructures/DataVector.hpp"
-#include "DataStructures/Tensor/Tensor.hpp"
+#include "DataStructures/Index.hpp"
+#include "DataStructures/ModalVector.hpp"
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
+#include "NumericalAlgorithms/LinearOperators/CoefficientTransforms.hpp"
 #include "NumericalAlgorithms/LinearOperators/PowerMonitors.hpp"
 #include "NumericalAlgorithms/Spectral/Basis.hpp"
 #include "NumericalAlgorithms/Spectral/BasisFunctionValue.hpp"
@@ -24,9 +27,38 @@
 #include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Quadrature.hpp"
+#include "NumericalAlgorithms/SphericalHarmonics/SpherepackIterator.hpp"
 #include "Utilities/ConstantExpressions.hpp"
+#include "Utilities/Gsl.hpp"
 
 namespace {
+
+Mesh<3> shell_mesh(const size_t radial_extents, const size_t ell_max) {
+  return Mesh<3>{
+      {{radial_extents, ell_max + 1, 2 * ell_max + 1}},
+      {{Spectral::Basis::Legendre, Spectral::Basis::SphericalHarmonic,
+        Spectral::Basis::SphericalHarmonic}},
+      {{Spectral::Quadrature::GaussLobatto, Spectral::Quadrature::Gauss,
+        Spectral::Quadrature::Equiangular}}};
+}
+
+void set_constant_angular_radial_profile(
+    const gsl::not_null<DataVector*> component, const Mesh<3>& mesh,
+    const DataVector& radial_profile, const double scale) {
+  const auto extents = mesh.extents();
+  for (size_t r = 0; r < extents[0]; ++r) {
+    for (size_t theta = 0; theta < extents[1]; ++theta) {
+      for (size_t phi = 0; phi < extents[2]; ++phi) {
+        Index<3> index{};
+        index[0] = r;
+        index[1] = theta;
+        index[2] = phi;
+        (*component)[collapsed_index(index, extents)] =
+            scale * radial_profile[r];
+      }
+    }
+  }
+}
 
 void test_power_monitors_impl() {
   const size_t number_of_points_per_dimension = 4;
@@ -364,6 +396,50 @@ void test_pile_up_modes() {
           .number_of_pile_up_modes;
   CHECK(pile_up_modes_zero_convergence == 0.0);
 }
+
+void test_spherical_shell_radial_power_monitor() {
+  const Mesh<3> mesh = shell_mesh(3, 2);
+  const DataVector radial_profile{1.0, -0.5, 2.0};
+  DataVector component(mesh.number_of_grid_points(), 0.0);
+  set_constant_angular_radial_profile(make_not_null(&component), mesh,
+                                      radial_profile, 2.0);
+
+  ModalVector radial_modes(radial_profile.size(), 0.0);
+  to_modal_coefficients(make_not_null(&radial_modes), radial_profile,
+                        mesh.slice_through(0));
+  DataVector expected_radial(radial_profile.size(), 0.0);
+  for (size_t i = 0; i < expected_radial.size(); ++i) {
+    expected_radial[i] = 2.0 * std::abs(radial_modes[i]);
+  }
+  DataVector result{};
+  PowerMonitors::spherical_shell_radial_power_monitor(make_not_null(&result),
+                                                      component, mesh);
+  CHECK_ITERABLE_APPROX(result, expected_radial);
+  CHECK_ITERABLE_APPROX(
+      PowerMonitors::spherical_shell_radial_power_monitor(component, mesh),
+      expected_radial);
+}
+
+void test_spherical_shell_angular_power_monitor() {
+  const Mesh<3> mesh = shell_mesh(2, 2);
+  const size_t radial_extents = mesh.extents(0);
+  const ylm::SpherepackIterator iterator{2, 2, 1, false};
+  DataVector coefficients(iterator.spherepack_array_size() * radial_extents,
+                          0.0);
+  for (ylm::SpherepackIterator it{2, 2, 1, false}; it; ++it) {
+    for (size_t r = 0; r < radial_extents; ++r) {
+      coefficients[it() * radial_extents + r] = static_cast<double>(it.l() + 1);
+    }
+  }
+
+  DataVector result{};
+  PowerMonitors::spherical_shell_angular_power_monitor(
+      make_not_null(&result), coefficients, mesh, 1, false);
+  CHECK_ITERABLE_APPROX(result, (DataVector{0.0, 2.0, 3.0}));
+  CHECK_ITERABLE_APPROX(PowerMonitors::spherical_shell_angular_power_monitor(
+                            coefficients, mesh, -1, false),
+                        (DataVector{0.0, 2.0, 3.0}));
+}
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.PowerMonitors",
@@ -375,4 +451,6 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.PowerMonitors",
   test_relative_truncation_error_linear_function();
   test_convergence_rate();
   test_pile_up_modes();
+  test_spherical_shell_radial_power_monitor();
+  test_spherical_shell_angular_power_monitor();
 }

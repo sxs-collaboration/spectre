@@ -7,6 +7,7 @@
 #include <array>
 #include <cmath>
 #include <limits>
+#include <vector>
 
 #include "DataStructures/ComplexDataVector.hpp"
 #include "DataStructures/ComplexModalVector.hpp"
@@ -16,8 +17,11 @@
 #include "NumericalAlgorithms/Interpolation/LinearRegression.hpp"
 #include "NumericalAlgorithms/LinearOperators/CoefficientTransforms.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
+#include "NumericalAlgorithms/SphericalHarmonics/SpherepackIterator.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/EqualWithinRoundoff.hpp"
+#include "Utilities/ErrorHandling/Assert.hpp"
+#include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 
@@ -67,6 +71,112 @@ std::array<DataVector, Dim> power_monitors(const VectorType& u,
                                            const Mesh<Dim>& mesh) {
   std::array<DataVector, Dim> result{};
   power_monitors(make_not_null(&result), u, mesh);
+  return result;
+}
+
+void spherical_shell_radial_power_monitor(
+    const gsl::not_null<DataVector*> result, const DataVector& tensor_component,
+    const Mesh<3>& mesh) {
+  if (mesh.basis(0) == Spectral::Basis::SphericalHarmonic or
+      mesh.basis(1) != Spectral::Basis::SphericalHarmonic or
+      mesh.basis(2) != Spectral::Basis::SphericalHarmonic) {
+    ERROR(
+        "Spherical-shell power monitors require the mesh dimensions to be "
+        "ordered (radial, theta, phi), but the mesh is "
+        << mesh);
+  }
+  if (tensor_component.size() != mesh.number_of_grid_points()) {
+    ERROR("Expected a tensor component with "
+          << mesh.number_of_grid_points() << " grid points, but got "
+          << tensor_component.size() << ".");
+  }
+
+  const auto radial_mesh = mesh.slice_through(0);
+  const size_t number_of_radial_points = mesh.extents(0);
+  const size_t number_of_angular_points = mesh.extents(1) * mesh.extents(2);
+  result->destructive_resize(number_of_radial_points);
+  *result = 0.0;
+  ModalVector radial_modes(number_of_radial_points, 0.0);
+  const DataVector radial_slice{};
+  for (size_t angular_index = 0; angular_index < number_of_angular_points;
+       ++angular_index) {
+    make_const_view(make_not_null(&radial_slice), tensor_component,
+                    angular_index * number_of_radial_points,
+                    number_of_radial_points);
+    to_modal_coefficients(make_not_null(&radial_modes), radial_slice,
+                          radial_mesh);
+    *result += square(radial_modes);
+  }
+  *result = sqrt(*result / static_cast<double>(number_of_angular_points));
+}
+
+DataVector spherical_shell_radial_power_monitor(
+    const DataVector& tensor_component, const Mesh<3>& mesh) {
+  DataVector result{};
+  spherical_shell_radial_power_monitor(make_not_null(&result), tensor_component,
+                                       mesh);
+  return result;
+}
+
+void spherical_shell_angular_power_monitor(
+    const gsl::not_null<DataVector*> result,
+    const DataVector& tensor_ylm_component, const Mesh<3>& mesh,
+    const int spin_weight, const bool zero_m_is_real) {
+  if (mesh.basis(0) == Spectral::Basis::SphericalHarmonic or
+      mesh.basis(1) != Spectral::Basis::SphericalHarmonic or
+      mesh.basis(2) != Spectral::Basis::SphericalHarmonic) {
+    ERROR(
+        "Spherical-shell power monitors require the mesh dimensions to be "
+        "ordered (radial, theta, phi), but the mesh is "
+        << mesh);
+  }
+  const size_t radial_extents = mesh.extents(0);
+  const size_t ell_max = mesh.extents(1) - 1;
+  const size_t m_max = (mesh.extents(2) - 1) / 2;
+  if (ell_max != m_max) {
+    ERROR(
+        "Spherical-shell TensorYlm power monitors require l_max == m_max, "
+        "but got l_max = "
+        << ell_max << " and m_max = " << m_max << ".");
+  }
+  const ylm::SpherepackIterator iterator{ell_max, m_max, 1, zero_m_is_real};
+  if (tensor_ylm_component.size() !=
+      radial_extents * iterator.spherepack_array_size()) {
+    ERROR("Expected a TensorYlm component with "
+          << radial_extents * iterator.spherepack_array_size()
+          << " coefficients, but got " << tensor_ylm_component.size() << ".");
+  }
+
+  result->destructive_resize(ell_max + 1);
+  *result = 0.0;
+  std::vector<size_t> counts(ell_max + 1, 0);
+  const auto abs_spin_weight = static_cast<size_t>(std::abs(spin_weight));
+  for (ylm::SpherepackIterator it{ell_max, m_max, 1, zero_m_is_real}; it;
+       ++it) {
+    if (it.l() < abs_spin_weight) {
+      continue;
+    }
+    for (size_t r = 0; r < radial_extents; ++r) {
+      (*result)[it.l()] +=
+          square(tensor_ylm_component[it() * radial_extents + r]);
+      ++counts[it.l()];
+    }
+  }
+  for (size_t ell = 0; ell <= ell_max; ++ell) {
+    (*result)[ell] =
+        counts[ell] == 0
+            ? 0.0
+            : sqrt((*result)[ell] / static_cast<double>(counts[ell]));
+  }
+}
+
+DataVector spherical_shell_angular_power_monitor(
+    const DataVector& tensor_ylm_component, const Mesh<3>& mesh,
+    const int spin_weight, const bool zero_m_is_real) {
+  DataVector result{};
+  spherical_shell_angular_power_monitor(make_not_null(&result),
+                                        tensor_ylm_component, mesh, spin_weight,
+                                        zero_m_is_real);
   return result;
 }
 
