@@ -378,7 +378,7 @@ void test_option_parsing() {
 }  // namespace
 
 // Verify all_filters contains Hypercube and None (no SphericalShell), plus
-// HollowCylinder for Dim == 3.
+// HollowCylinder and FilledCylinder for Dim == 3.
 static_assert(std::is_same_v<Filters::all_filters<1, TagList<1>>,
                              tmpl::list<Filters::Hypercube<1, TagList<1>>,
                                         Filters::None<1, TagList<1>>>>);
@@ -388,7 +388,8 @@ static_assert(std::is_same_v<Filters::all_filters<2, TagList<2>>,
 static_assert(std::is_same_v<Filters::all_filters<3, TagList<3>>,
                              tmpl::list<Filters::Hypercube<3, TagList<3>>,
                                         Filters::None<3, TagList<3>>,
-                                        Filters::HollowCylinder<TagList<3>>>>);
+                                        Filters::HollowCylinder<TagList<3>>,
+                                        Filters::FilledCylinder<TagList<3>>>>);
 
 SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.Filter.None",
                   "[NumericalAlgorithms][LinearOperators][Unit]") {

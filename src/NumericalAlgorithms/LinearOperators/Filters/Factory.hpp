@@ -5,6 +5,7 @@
 
 #include <cstddef>
 
+#include "NumericalAlgorithms/LinearOperators/Filters/FilledCylinder.hpp"
 #include "NumericalAlgorithms/LinearOperators/Filters/Filter.hpp"
 #include "NumericalAlgorithms/LinearOperators/Filters/HollowCylinder.hpp"
 #include "NumericalAlgorithms/LinearOperators/Filters/Hypercube.hpp"
@@ -24,7 +25,8 @@ namespace Filters {
  *            Filters::all_filters<volume_dim, FilterTagList>>,
  * ```
  *
- * `Filters::HollowCylinder` is included for `Dim == 3`.
+ * `Filters::HollowCylinder` and `Filters::FilledCylinder` are included for
+ * `Dim == 3`.
  *
  * Note: `Filters::SphericalShell` is not included here because it requires
  * system-specific instantiation of `ylm::TensorYlm::apply_tensor_ylm_filter`.
@@ -34,6 +36,7 @@ namespace Filters {
 template <size_t Dim, typename TagList>
 using all_filters = tmpl::append<
     tmpl::list<Hypercube<Dim, TagList>, None<Dim, TagList>>,
-    tmpl::conditional_t<Dim == 3, tmpl::list<HollowCylinder<TagList>>,
-                        tmpl::list<>>>;
+    tmpl::conditional_t<
+        Dim == 3, tmpl::list<HollowCylinder<TagList>, FilledCylinder<TagList>>,
+        tmpl::list<>>>;
 }  // namespace Filters

@@ -4,6 +4,7 @@
 #pragma once
 
 #include <cstddef>
+#include <memory>
 #include <optional>
 #include <string>
 #include <unordered_map>
@@ -37,58 +38,46 @@ class not_null;
 namespace Filters {
 /*!
  * \ingroup DiscontinuousGalerkinGroup
- * \brief A modal filter for hollow-cylinder elements: independent exponential
- * roll-offs in the radial, angular (Fourier), and axial directions plus an
- * optional top-mode Heaviside cutoff in the angular direction.
+ * \brief A modal filter for filled-cylinder elements: a smooth exponential
+ * roll-off of the coupled ZernikeB2 radial-angular (disk) modes and an
+ * independent exponential roll-off in the axial direction, plus an optional
+ * top-mode Heaviside cutoff in the angular direction.
  *
- * Concrete implementation of `Filters::Filter` for the hollow-cylinder shells
- * created by `domain::creators::AngularCylinder`, driven by the DG filtering
- * action. See `Filters::Filter` for the framing of volume vs. boundary
- * application, the substep / every-N-steps cadence controls, and the
+ * Concrete implementation of `Filters::Filter` for the central filled-cylinder
+ * block created by `domain::creators::AngularCylinder`, driven by the DG
+ * filtering action. See `Filters::Filter` for the framing of volume vs.
+ * boundary application, the substep / every-N-steps cadence controls, and the
  * `blocks_to_filter` semantics.
  *
- * A hollow-cylinder shell element uses a Legendre/Chebyshev basis in the
- * radial direction (logical dimension 0), a Fourier basis in the angular
- * direction (logical dimension 1), and a Legendre/Chebyshev basis in the axial
- * \f$z\f$ direction (logical dimension 2).
+ * A filled-cylinder element uses a ZernikeB2 basis in the radial direction
+ * (logical dimension 0), a ZernikeB2 basis in the angular direction (logical
+ * dimension 1), and a Legendre/Chebyshev basis in the axial \f$z\f$ direction
+ * (logical dimension 2). Unlike the Fourier-angular `Filters::HollowCylinder`
+ * shells, the ZernikeB2 radial and angular spectral spaces are intertwined (a
+ * two-dimensional disk basis), so the radial and angular roll-offs cannot be
+ * specified independently: a single `RadialAngularHalfPower` drives the
+ * combined disk exponential filter, while `ZHalfPower` drives the axial filter.
  *
- * For each component of the tensors in `TagList`, the filter rescales the 1-D
- * modal coefficients in a given logical direction by a smooth exponential
- * roll-off. For the radial and axial (Legendre/Chebyshev) directions the
- * coefficient \f$c_i\f$ of the \f$i\f$-th modal basis function is rescaled as
+ * In the volume the disk and axial filters are applied by
+ * `Spectral::filtering::zernike_b2_cylinder_filter`. The coefficient of the
+ * exponential roll-off is hardcoded to 36, matching `Filters::Hypercube`,
+ * `Filters::SphericalShell`, and `Filters::HollowCylinder`. When
+ * `NumModesToKill` is nonzero, the top `NumModesToKill` angular (Fourier
+ * \f$m\f$) modes are additionally set to zero by a Heaviside cutoff (the
+ * \f$m=0\f$ mode is always retained).
  *
- * \f{align*}{
- *  c_i \to c_i \exp\!\left[-36 \left(\frac{i}{N}\right)^{2m}\right],
- * \f}
- *
- * where \f$N\f$ is the basis degree (number of grid points per element per
- * dimension minus one) and \f$m\f$ is the half-power option for that direction
- * (`RadialHalfPower` or `ZHalfPower`). For the angular (Fourier) direction the
- * roll-off is applied in the angular mode number \f$k\f$ instead, with the
- * maximum resolved mode \f$K = (N_\mathrm{pts} - 1) / 2\f$ taking the role of
- * \f$N\f$:
- *
- * \f{align*}{
- *  c_k \to c_k \exp\!\left[-36 \left(\frac{k}{K}\right)^{2m}\right],
- * \f}
- *
- * where \f$m\f$ is `AngularHalfPower` and both the \f$\cos\f$ and \f$\sin\f$
- * contributions to a given mode \f$k\f$ are weighted identically. Any direction
- * whose half-power is `None` is left untouched. When `NumModesToKill` is
- * nonzero, the top `NumModesToKill` angular modes are additionally set to zero
- * by a Heaviside cutoff.
- *
- * \note The angular (Fourier) direction is periodic and therefore has no
- * boundary faces: a hollow-cylinder element only has radial and axial
- * boundaries. Consequently `apply_on_boundary` is only ever valid on a face
- * obtained by slicing away the radial direction (a `(angular, z)` face) or the
- * axial direction (a `(radial, angular)` face); both of these retain the
- * angular direction. A face that sliced away the angular direction would have
- * no Fourier direction and cannot occur, so `apply_on_boundary` errors if
- * handed one.
+ * For boundary-correction filtering the face mesh is classified by basis and
+ * quadrature:
+ * - an axial face (both directions ZernikeB2) is a full disk and is filtered by
+ *   `Spectral::filtering::zernike_b2_disk_filter`;
+ * - a mantle/radial face (ZernikeB2 with `Equiangular` quadrature in the
+ *   angular direction, Legendre/Chebyshev in \f$z\f$) is filtered by treating
+ *   the equiangular angular direction as a Fourier direction (an exponential
+ *   roll-off using `RadialAngularHalfPower` plus the `NumModesToKill` cutoff),
+ *   together with the axial filter;
  */
 template <typename TagList>
-class HollowCylinder : public Filter<3, TagList> {
+class FilledCylinder : public Filter<3, TagList> {
  public:
   /// \brief The number of top angular (Fourier) \f$m\f$-modes to set to zero.
   struct NumModesToKill {
@@ -99,34 +88,24 @@ class HollowCylinder : public Filter<3, TagList> {
 
   /*!
    * \brief Half of the exponent \f$m\f$ in the smooth exponential roll-off
-   * applied to the angular (Fourier) modal coefficients.
+   * applied to the coupled ZernikeB2 radial-angular (disk) modal coefficients
+   * (logical dimensions 0 and 1).
    *
    * \f{align*}{
-   *  c_k \to c_k \exp\left[-36 \left(\frac{k}{K}\right)^{2m}\right]
+   *  c \to c \exp\left[-36 \left(\frac{n}{N_r}\right)^{2m}\right]
+   *           \exp\left[-36 \left(\frac{k}{K}\right)^{2m}\right]
    * \f}
    *
-   * Here \f$k\f$ is the angular mode number and \f$K = (N_\mathrm{pts} -
-   * 1)/2\f$ is the maximum resolved mode; the \f$\cos\f$ and \f$\sin\f$ parts
-   * of each mode \f$k\f$ are weighted identically. If `None`, only the top-mode
-   * Heaviside cutoff (if any) is applied to the angular modes.
+   * where \f$n\f$ and \f$k\f$ are the radial and angular mode numbers and
+   * \f$N_r\f$, \f$K\f$ are the corresponding maximum resolved modes. If `None`,
+   * only the top-mode Heaviside cutoff (if any) is applied to the disk modes.
    */
-  struct AngularHalfPower {
+  struct RadialAngularHalfPower {
     using type = Options::Auto<size_t, Options::AutoLabel::None>;
     static constexpr Options::String help =
-        "The half-power for the angular (Fourier) exponential roll-off. If "
-        "None, only the top-mode cutoff is applied to the angular modes.";
-  };
-
-  /*!
-   * \brief Half of the exponent \f$m\f$ in the smooth exponential roll-off
-   * applied to the radial modal coefficients (logical dimension 0). If `None`,
-   * the radial direction is not filtered.
-   */
-  struct RadialHalfPower {
-    using type = Options::Auto<size_t, Options::AutoLabel::None>;
-    static constexpr Options::String help =
-        "The half-power for the radial exponential filter. If None, no radial "
-        "filtering is applied.";
+        "The half-power for the coupled ZernikeB2 radial-angular (disk) "
+        "exponential roll-off. If None, only the top-mode cutoff is applied to "
+        "the disk modes.";
   };
 
   /*!
@@ -154,7 +133,7 @@ class HollowCylinder : public Filter<3, TagList> {
     static constexpr Options::String help = {
         "List of blocks or block groups to apply filtering to. All other "
         "blocks will have no filtering. You can also specify 'All' to do "
-        "filtering in all blocks of the domain that are hollow cylinders."};
+        "filtering in all blocks of the domain that are filled cylinders."};
   };
 
   /// \brief Apply the volume filter inside every Runge-Kutta substep
@@ -200,21 +179,21 @@ class HollowCylinder : public Filter<3, TagList> {
   };
 
   using options =
-      tmpl::list<NumModesToKill, AngularHalfPower, RadialHalfPower, ZHalfPower,
-                 Enable, BlocksToFilter, VolumeFilterOnSubstep,
+      tmpl::list<NumModesToKill, RadialAngularHalfPower, ZHalfPower, Enable,
+                 BlocksToFilter, VolumeFilterOnSubstep,
                  BoundaryCorrectionFilterOnSubstep, VolumeFilterEveryNSteps,
                  BoundaryCorrectionFilterEveryNSteps>;
 
   static constexpr Options::String help = {
-      "A hollow-cylinder filter applying independent exponential roll-offs in "
-      "the radial, angular (Fourier), and axial directions with an optional "
-      "top-mode Heaviside cutoff in the angular direction."};
+      "A filled-cylinder filter applying a smooth exponential roll-off of the "
+      "coupled ZernikeB2 radial-angular (disk) modes and an independent "
+      "exponential roll-off in the axial direction, with an optional top-mode "
+      "Heaviside cutoff in the angular direction."};
 
-  HollowCylinder() = default;
+  FilledCylinder() = default;
 
-  HollowCylinder(
-      size_t num_modes_to_kill, std::optional<size_t> angular_half_power,
-      std::optional<size_t> radial_half_power,
+  FilledCylinder(
+      size_t num_modes_to_kill, std::optional<size_t> radial_angular_half_power,
       std::optional<size_t> z_half_power, bool enable,
       const std::optional<std::vector<std::string>>& blocks_to_filter,
       bool volume_filter_on_substep, bool boundary_filter_on_substep,
@@ -223,8 +202,8 @@ class HollowCylinder : public Filter<3, TagList> {
       const Options::Context& context = {});
 
   WRAPPED_PUPable_decl_base_template(  // NOLINT
-      SINGLE_ARG(Filter<3, TagList>), HollowCylinder);
-  explicit HollowCylinder(CkMigrateMessage* msg) : Filter<3, TagList>(msg) {}
+      SINGLE_ARG(Filter<3, TagList>), FilledCylinder);
+  explicit FilledCylinder(CkMigrateMessage* msg) : Filter<3, TagList>(msg) {}
 
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& p) override;
@@ -241,7 +220,7 @@ class HollowCylinder : public Filter<3, TagList> {
 
   bool supports_mesh(const Mesh<3>& mesh) const override;
 
-  std::string name() const override { return "HollowCylinder"; }
+  std::string name() const override { return "FilledCylinder"; }
 
   const std::optional<std::vector<size_t>>& blocks_to_filter() const override;
 
@@ -273,8 +252,8 @@ class HollowCylinder : public Filter<3, TagList> {
  private:
   template <typename LocalTagList>
   // NOLINTNEXTLINE(readability-redundant-declaration)
-  friend bool operator==(const HollowCylinder<LocalTagList>& lhs,
-                         const HollowCylinder<LocalTagList>& rhs);
+  friend bool operator==(const FilledCylinder<LocalTagList>& lhs,
+                         const FilledCylinder<LocalTagList>& rhs);
 
   // Caches a single filter matrix together with the parameters it was built
   // from: the 1-D extent, the half-power, and (for the angular direction) the
@@ -288,21 +267,23 @@ class HollowCylinder : public Filter<3, TagList> {
     Matrix matrix{};
   };
 
-  // Returns the cached radial/axial exponential filter matrix for a Legendre or
-  // Chebyshev direction with the given half-power and 1-D mesh. Returns an
-  // empty (identity) matrix when the half-power is None.
+  // Returns the cached axial exponential filter matrix for a Legendre or
+  // Chebyshev direction with the given half-power and 1-D mesh, stored in the
+  // passed-in cache. Returns an empty (identity) matrix when the half-power is
+  // None.
   const Matrix& exponential_filter_matrix(std::optional<size_t> half_power,
                                           const Mesh<1>& mesh_1d,
                                           SingleExtentCache& cache) const;
 
   // Returns the cached angular (Fourier) filter matrix combining the optional
-  // exponential roll-off and the optional top-mode cutoff. Returns an empty
-  // (identity) matrix when neither is requested.
+  // exponential roll-off and the optional top-mode cutoff. On the mantle face
+  // the equiangular ZernikeB2-angular direction is treated as Fourier, so the
+  // caller passes a Fourier/Equiangular `Mesh<1>` with the matching extent.
+  // Returns an empty (identity) matrix when neither is requested.
   const Matrix& angular_filter_matrix(const Mesh<1>& mesh_1d) const;
 
   size_t num_modes_to_kill_{0};
-  std::optional<size_t> angular_half_power_{std::nullopt};
-  std::optional<size_t> radial_half_power_{std::nullopt};
+  std::optional<size_t> radial_angular_half_power_{std::nullopt};
   std::optional<size_t> z_half_power_{std::nullopt};
   bool enable_{true};
   std::optional<std::vector<std::string>> blocks_and_groups_to_filter_{};
@@ -312,27 +293,28 @@ class HollowCylinder : public Filter<3, TagList> {
   std::optional<size_t> volume_filter_every_n_steps_{std::nullopt};
   std::optional<size_t> boundary_filter_every_n_steps_{std::nullopt};
 
-  // One filter matrix per direction, each bound to the single extent it was
-  // built for. These caches serve both the volume filter (`apply_in_volume`,
-  // which filters all three directions) and the boundary filter
-  // (`apply_on_boundary`). The empty matrix is returned (and not cached) when a
-  // direction is not filtered.
-  // NOLINTNEXTLINE(spectre-mutable)
-  mutable SingleExtentCache cached_radial_filter_{};
-  // NOLINTNEXTLINE(spectre-mutable)
-  mutable SingleExtentCache cached_angular_filter_{};
+  // Boundary-filter matrix caches, each bound to the single extent it was built
+  // for and rebuilt when queried with a different extent. These are used only
+  // by `apply_on_boundary` right now: the volume filter is applied uncached by
+  // `Spectral::filtering::zernike_b2_cylinder_filter`, which intertwines the
+  // radial and angular disk modes and so cannot reuse a per-direction 1-D
+  // matrix. `cached_z_filter_` holds the axial (Legendre/Chebyshev) filter and
+  // `cached_angular_filter_` the Fourier-treated mantle-angular filter. The
+  // empty matrix is returned (and not cached) when a direction is not filtered.
   // NOLINTNEXTLINE(spectre-mutable)
   mutable SingleExtentCache cached_z_filter_{};
+  // NOLINTNEXTLINE(spectre-mutable)
+  mutable SingleExtentCache cached_angular_filter_{};
   // Returned by const reference to represent the identity for unfiltered
   // directions; never mutated, so it needs no `mutable`.
   Matrix empty_matrix_{};
 };
 
 template <typename TagList>
-bool operator==(const HollowCylinder<TagList>& lhs,
-                const HollowCylinder<TagList>& rhs);
+bool operator==(const FilledCylinder<TagList>& lhs,
+                const FilledCylinder<TagList>& rhs);
 
 template <typename TagList>
-bool operator!=(const HollowCylinder<TagList>& lhs,
-                const HollowCylinder<TagList>& rhs);
+bool operator!=(const FilledCylinder<TagList>& lhs,
+                const FilledCylinder<TagList>& rhs);
 }  // namespace Filters
