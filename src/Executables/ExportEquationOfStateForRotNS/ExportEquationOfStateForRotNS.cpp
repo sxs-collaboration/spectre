@@ -2,24 +2,14 @@
 // See LICENSE.txt for details.
 
 #include <boost/program_options.hpp>
-#include <cmath>
-#include <cstddef>
-#include <fstream>
-#include <iomanip>
-#include <iterator>
 #include <string>
 #include <utility>
-#include <vector>
 
-#include "DataStructures/DataVector.hpp"
+#include "Executables/ExportEquationOfStateForRotNS/DumpRotNSEos.hpp"
 #include "Options/Options.hpp"
 #include "Options/ParseOptions.hpp"
 #include "Parallel/Printf/Printf.hpp"
-#include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
-#include "PointwiseFunctions/Hydro/Units.hpp"
-#include "Utilities/ErrorHandling/Error.hpp"
-#include "Utilities/FileSystem.hpp"
 #include "Utilities/TMPL.hpp"
 
 // Charm looks for this function but since we build without a main function or
@@ -27,80 +17,6 @@
 extern "C" void CkRegisterMainModule(void) {}
 
 namespace {
-void dump_barotropic_eos(
-    const EquationsOfState::EquationOfState<true, 1>& eos,
-    const size_t number_of_log10_number_density_points_for_dump,
-    const std::string& output_file_name,
-    const double lower_bound_rest_mass_density_cgs,
-    const double upper_bound_rest_mass_density_cgs) {
-  using std::log10;
-  using std::pow;
-  // Baryon mass, used to go from number density to rest mass
-  // density. I.e. `rho_cgs = n_cgs * baryon_mass`, where `n_gcs` is the number
-  // density in CGS units. This is the baryon mass that RotNS uses. This
-  // might be different from the baryon mass that the EoS uses.
-  //
-  // https://github.com/sxs-collaboration/spectre/issues/4694
-  const double baryon_mass_of_rotns_cgs =
-      hydro::units::geometric::default_baryon_mass *
-      hydro::units::cgs::mass_unit;
-  const double log10_lower_bound_number_density_cgs =
-      log10(lower_bound_rest_mass_density_cgs / baryon_mass_of_rotns_cgs);
-  const double log10_upper_bound_number_density_cgs =
-      log10(upper_bound_rest_mass_density_cgs / baryon_mass_of_rotns_cgs);
-  const double delta_log_number_density_cgs =
-      (log10_upper_bound_number_density_cgs -
-       log10_lower_bound_number_density_cgs) /
-      static_cast<double>(number_of_log10_number_density_points_for_dump - 1);
-
-  if (file_system::check_if_file_exists(output_file_name)) {
-    ERROR_NO_TRACE("File " << output_file_name
-                           << " already exists. Refusing to overwrite.");
-  }
-  std::ofstream outfile(output_file_name.c_str());
-
-  for (size_t log10_number_density_index = 0;
-       log10_number_density_index <
-       number_of_log10_number_density_points_for_dump;
-       ++log10_number_density_index) {
-    using std::pow;
-    const double number_density_cgs =
-        pow(10.0, log10_lower_bound_number_density_cgs +
-                      static_cast<double>(log10_number_density_index) *
-                          delta_log_number_density_cgs);
-
-    // Note: we will want to add the baryon mass to our EOS interface.
-    //
-    // https://github.com/sxs-collaboration/spectre/issues/4694
-    const Scalar<double> rest_mass_density_geometric{
-        number_density_cgs * cube(hydro::units::cgs::length_unit) *
-        eos.baryon_mass()};
-    const Scalar<double> pressure_geometric =
-        eos.pressure_from_density(rest_mass_density_geometric);
-    const Scalar<double> specific_internal_energy_geometric =
-        eos.specific_internal_energy_from_density(rest_mass_density_geometric);
-    const Scalar<double> total_energy_density_geometric{
-        get(rest_mass_density_geometric) *
-        (1.0 + get(specific_internal_energy_geometric))};
-
-    // Note: the energy density is divided by c^2
-    const double total_energy_density_cgs =
-        get(total_energy_density_geometric) *
-        hydro::units::cgs::rest_mass_density_unit;
-
-    // should be dyne cm^(-3)
-    const double pressure_cgs =
-        get(pressure_geometric) * hydro::units::cgs::pressure_unit;
-
-    outfile << std::scientific << std::setw(24) << std::setprecision(14)
-            << log10(number_density_cgs) << std::setw(24)
-            << std::setprecision(14) << log10(total_energy_density_cgs)
-            << std::setw(24) << std::setprecision(14) << log10(pressure_cgs)
-            << std::endl;
-  }
-  outfile.close();
-}
-
 namespace OptionTags {
 struct NumberOfPoints {
   using type = size_t;
@@ -133,10 +49,8 @@ int main(int argc, char** argv) {
   bpo::positional_options_description pos_desc;
 
   const std::string help_string =
-      "Dump a relativistic barotropic equation of state to disk.\n"
-      "All options controlling input and output are read from the input file.\n"
-      "This executable can be extended to support 2d and 3d EoS, where "
-      "temperature and electron fraction dependence is available.";
+      "Dump a relativistic equation of state to disk.\n"
+      "All options controlling input and output are read from the input file.";
 
   bpo::options_description desc(help_string);
   desc.add_options()("help,h,", "show this help message")(
@@ -157,7 +71,7 @@ int main(int argc, char** argv) {
   }
 
   using option_list =
-      tmpl::list<hydro::OptionTags::InitialDataEquationOfState<true, 1>,
+      tmpl::list<hydro::OptionTags::InitialDataEquationOfState<true, 3>,
                  OptionTags::NumberOfPoints, OptionTags::OutputFileName,
                  OptionTags::LowerBoundRestMassDensityCgs,
                  OptionTags::UpperBoundRestMassDensityCgs>;
@@ -167,7 +81,7 @@ int main(int argc, char** argv) {
 
   if (vars.count("check-options") != 0) {
     // Force all the options to be created.
-    option_parser.template apply<option_list>([](auto... args) {
+    option_parser.template apply<option_list>([](const auto&... args) {
       (void)std::initializer_list<char>{((void)args, '0')...};
     });
     Parallel::printf("\n%s parsed successfully!\n",
@@ -182,8 +96,8 @@ int main(int argc, char** argv) {
             std::move(args)...);
       });
 
-  dump_barotropic_eos(
-      *get<hydro::OptionTags::InitialDataEquationOfState<true, 1>>(options),
+  ExportEosForRotNS::dump_eos(
+      *get<hydro::OptionTags::InitialDataEquationOfState<true, 3>>(options),
       get<OptionTags::NumberOfPoints>(options),
       get<OptionTags::OutputFileName>(options),
       get<OptionTags::LowerBoundRestMassDensityCgs>(options),
