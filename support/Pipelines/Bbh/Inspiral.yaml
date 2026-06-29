@@ -390,6 +390,9 @@ EventsAndTriggersAtSlabs:
           - Name: ConstraintEnergy
             NormType: L2Norm
             Components: Sum
+          - Name: NormalizedConstraintEnergy
+            NormType: L2Norm
+            Components: Sum
       - ErrorIfDataTooBig:
           Threshold: 10
           VariablesToCheck: [ConstraintEnergy]
@@ -422,6 +425,7 @@ EventsAndTriggersAtSlabs:
             - SpacetimeMetric
             # For diagnostics:
             - ConstraintEnergy
+            - NormalizedConstraintEnergy
             - PointwiseL2Norm(GaugeConstraint)
             - PointwiseL2Norm(ThreeIndexConstraint)
             # For visualization:
