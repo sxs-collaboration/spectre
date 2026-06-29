@@ -43,7 +43,7 @@ class CstSolution {
   CstSolution(const std::string& filename, bool is_polytrope,
               double polytropic_constant);
 
-  std::array<double, 6> interpolate(double target_radius,
+  std::array<double, 8> interpolate(double target_radius,
                                     double target_cos_theta,
                                     bool interpolate_hydro_vars) const;
 
@@ -68,11 +68,13 @@ class CstSolution {
   DataVector radius_;
   DataVector cos_theta_;  // Note that cos(theta) is between 0 and 1.
   DataVector rest_mass_density_;
-  DataVector fluid_velocity_;
+  DataVector internal_energy_density_;
+  DataVector electron_fraction_;
   DataVector alpha_;
   DataVector rho_;
   DataVector gamma_;
   DataVector omega_;
+  DataVector fluid_velocity_;
 };
 }  // namespace detail
 
@@ -339,6 +341,8 @@ class RotatingStar : public virtual evolution::initial_data::InitialData,
     DataType sin_theta;
     // Data at coords
     std::optional<DataType> rest_mass_density;
+    std::optional<DataType> internal_energy_density;
+    std::optional<DataType> electron_fraction;
     std::optional<DataType> fluid_velocity;
     std::optional<MetricData> metric_data;
     // Data for 2nd-order FD derivatives.
@@ -386,7 +390,7 @@ class RotatingStar : public virtual evolution::initial_data::InitialData,
   using options = tmpl::list<Options::Alternatives<
       tmpl::list<RotNsFilename, PolytropicConstant>,
       tmpl::list<RotNsFilename,
-                 hydro::OptionTags::InitialDataEquationOfState<true, 1>>>>;
+                 hydro::OptionTags::InitialDataEquationOfState<true, 3>>>>;
 
   static constexpr Options::String help = {
       "Rotating neutron star initial data solved by the RotNS solver. The data "
@@ -406,7 +410,7 @@ class RotatingStar : public virtual evolution::initial_data::InitialData,
   ~RotatingStar() override = default;
 
   RotatingStar(std::string rot_ns_filename,
-               std::unique_ptr<EquationsOfState::EquationOfState<true, 1>>
+               std::unique_ptr<EquationsOfState::EquationOfState<true, 3>>
                    equation_of_state);
   RotatingStar(std::string rot_ns_filename, double polytropic_constant);
 
@@ -433,7 +437,7 @@ class RotatingStar : public virtual evolution::initial_data::InitialData,
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& p) override;
 
-  const EquationsOfState::EquationOfState<true, 1>& equation_of_state() const {
+  const EquationsOfState::EquationOfState<true, 3>& equation_of_state() const {
     return *equation_of_state_;
   }
 
@@ -634,7 +638,12 @@ class RotatingStar : public virtual evolution::initial_data::InitialData,
   double polytropic_constant_ = std::numeric_limits<double>::signaling_NaN();
   double polytropic_exponent_ = std::numeric_limits<double>::signaling_NaN();
   bool is_polytrope_{};
-  std::unique_ptr<EquationsOfState::EquationOfState<true, 1>>
+  // We use a 3D EoS here even though we only support using equilibrium
+  // electron fraction for initial data. This is because if a 3D EoS is
+  // used for the evolution, we would want the initial electron fraction
+  // profile to be consistent with the proper choice of equilibrium
+  // electron fraction for the evolved EoS.
+  std::unique_ptr<EquationsOfState::EquationOfState<true, 3>>
       equation_of_state_;
   // Floor value to protect EoS from encountering FPEs when computing state
   // variables in the atmosphere
