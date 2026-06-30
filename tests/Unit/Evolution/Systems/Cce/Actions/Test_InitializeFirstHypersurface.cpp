@@ -41,11 +41,15 @@
 namespace Cce {
 
 namespace {
-using swsh_boundary_tags_to_generate =
-    tmpl::list<Tags::BoundaryValue<Tags::BondiJ>,
-               Tags::BoundaryValue<Tags::Dr<Tags::BondiJ>>,
-               Tags::BoundaryValue<Tags::BondiBeta>,
-               Tags::BoundaryValue<Tags::BondiR>>;
+using swsh_boundary_tags_to_generate = tmpl::list<
+    Tags::BoundaryValue<Tags::BondiJ>,
+    Tags::BoundaryValue<Tags::Dr<Tags::BondiJ>>,
+    Tags::BoundaryValue<Tags::BondiBeta>, Tags::BoundaryValue<Tags::BondiR>,
+    Tags::BoundaryValue<Tags::BondiU>, Tags::BoundaryValue<Tags::BondiW>,
+    Tags::BoundaryValue<Tags::BondiQ>,
+    Tags::BoundaryValue<Tags::Du<Tags::BondiJ>>,
+    Tags::BoundaryValue<Tags::Du<Tags::Dr<Tags::BondiJ>>>,
+    Tags::BoundaryValue<Tags::Du<Tags::BondiR>>>;
 
 using real_cauchy_boundary_tags_to_compute =
     tmpl::list<Tags::CauchyCartesianCoords, Tags::CauchyAngularCoords,
@@ -167,24 +171,23 @@ void test_InitializeFirstHypersurface() {
       number_of_radial_points};
   TimeStepId time_step_id{true, 0, Time{Slab{1.0, 2.0}, {0, 1}}};
 
-  tmpl::for_each<swsh_boundary_tags_to_generate>([&swsh_variables, &gen,
-                                                  &coefficient_distribution,
-                                                  &l_max](auto tag_v) {
-    using tag = typename decltype(tag_v)::type;
-    SpinWeighted<ComplexModalVector, tag::type::type::spin> generated_modes{
-        Spectral::Swsh::size_of_libsharp_coefficient_vector(l_max)};
-    Spectral::Swsh::TestHelpers::generate_swsh_modes<tag::type::type::spin>(
-        make_not_null(&generated_modes.data()), make_not_null(&gen),
-        make_not_null(&coefficient_distribution), 1, l_max);
-    Spectral::Swsh::inverse_swsh_transform(
-        l_max, 1, make_not_null(&get(get<tag>(swsh_variables))),
-        generated_modes);
-    // aggressive filter to make the uniformly generated random modes
-    // somewhat reasonable
-    Spectral::Swsh::filter_swsh_volume_quantity(
-        make_not_null(&get(get<tag>(swsh_variables))), l_max, l_max / 2, 32.0,
-        8);
-  });
+  tmpl::for_each<swsh_boundary_tags_to_generate>(
+      [&swsh_variables, &gen, &coefficient_distribution, &l_max](auto tag_v) {
+        using tag = typename decltype(tag_v)::type;
+        SpinWeighted<ComplexModalVector, tag::type::type::spin> generated_modes{
+            Spectral::Swsh::size_of_libsharp_coefficient_vector(l_max)};
+        Spectral::Swsh::TestHelpers::generate_swsh_modes<tag::type::type::spin>(
+            make_not_null(&generated_modes.data()), make_not_null(&gen),
+            make_not_null(&coefficient_distribution), 1, l_max);
+        Spectral::Swsh::inverse_swsh_transform(
+            l_max, 1, make_not_null(&get(get<tag>(swsh_variables))),
+            generated_modes);
+        // aggressive filter to make the uniformly generated random modes
+        // somewhat reasonable
+        Spectral::Swsh::filter_swsh_volume_quantity(
+            make_not_null(&get(get<tag>(swsh_variables))), l_max, l_max / 2,
+            32.0, 8);
+      });
 
   ActionTesting::emplace_component_and_initialize<
       mock_observer_writer<metavariables<EvolveCcm>>>(&runner, 0,
