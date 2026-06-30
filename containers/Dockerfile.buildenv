@@ -617,12 +617,31 @@ COPY . spectre/
 # the GCC multiarch triplet directory, and OVERRIDE_ARCH=haswell (which emits
 # `-march=haswell -mno-avx512f`) is x86-only. On arm64 we target armv8.2-a since
 # this is what GitHub runners guarantee and also will support Apple M1
-# (ARMv8.4-A), and NVIDIA Grace (ARMv9.0-A) chips.
+# (ARMv8.4-A), and NVIDIA Grace (ARMv9.0-A) chips. On arm64 we also pass
+# `-Wno-psabi` to silence GCC's verbose -Wpsabi notes about the std::pair
+# argument-passing ABI change introduced in GCC 10.1 (harmless here since the
+# whole build uses one GCC, but they flood the log).
+# We build `module_All` first so every Charm++ interface header (`*.decl.h`/
+# `*.def.h`) is generated before the serial (`-j1`) executable compile. Some
+# libraries (e.g. Time) include these headers transitively via GlobalCache.hpp
+# without an explicit dependency on the generating target, so at `-j1` the
+# executable compile can otherwise race ahead of header generation and fail.
+# `QUADMATH_ARG` points the static libquadmath at the GCC multiarch dir on x86,
+# but is empty on arm64: libquadmath is not shipped there (long double is
+# already IEEE-128-bit), and the SpECTRE CMake only links it when found.
+# We point `LIBXSMM_LIBRARIES` at the static `libxsmm.a` because LIBXSMM has no
+# `*_STATIC` cmake option and `find_library` otherwise prefers the shared
+# `libxsmm.so`, which would make the extracted executable fail to run outside
+# the container with "libxsmm.so.2: cannot open shared object file".
 RUN set -e; \
     if [ "$TARGETARCH" = "arm64" ]; then \
-      GCC_TRIPLET=aarch64-linux-gnu; ARCH_ARGS="-D OVERRIDE_ARCH=armv8.2-a"; \
+      GCC_TRIPLET=aarch64-linux-gnu; \
+      ARCH_ARGS="-D OVERRIDE_ARCH=armv8.2-a \
+        -D CMAKE_CXX_FLAGS=-Wno-psabi -D CMAKE_C_FLAGS=-Wno-psabi"; \
+      QUADMATH_ARG=""; \
     else \
       GCC_TRIPLET=x86_64-linux-gnu; ARCH_ARGS="-D OVERRIDE_ARCH=haswell"; \
+      QUADMATH_ARG="-D quadmath=/usr/lib/gcc/$GCC_TRIPLET/13/libquadmath.a"; \
     fi; \
     mkdir spectre/build && cd spectre/build \
     && cmake \
@@ -646,10 +665,12 @@ RUN set -e; \
     -D USE_LD=gold \
     -D CMAKE_EXE_LINKER_FLAGS="-static-libstdc++ -static-libgcc" \
     -D gfortran=/usr/lib/gcc/$GCC_TRIPLET/13/libgfortran.a \
-    -D quadmath=/usr/lib/gcc/$GCC_TRIPLET/13/libquadmath.a \
+    $QUADMATH_ARG \
+    -D LIBXSMM_LIBRARIES=/usr/local/lib/libxsmm.a \
     -D BUILD_DOCS=OFF \
     -D USE_CCACHE=OFF \
     .. \
-    && make ${PARALLEL_MAKE_ARG} CharacteristicExtract PreprocessCceWorldtube \
+    && make ${PARALLEL_MAKE_ARG} module_All \
+    && make -j1 CharacteristicExtract PreprocessCceWorldtube \
     WriteCceWorldtubeCoordsToFile \
     && ctest -LE unit -R CharacteristicExtract -E KleinGordon
