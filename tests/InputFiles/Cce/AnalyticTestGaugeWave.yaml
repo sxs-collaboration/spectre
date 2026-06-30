@@ -69,6 +69,12 @@ Cce:
   EndTime: 4.0
   ExtractionRadius: 40.0
 
+  # The first-hypersurface initialization for J may be specified here just as
+  # in a standard CCE run, or set to 'FromAnalyticSolution' to use the
+  # initialization provided by the analytic solution.
+  InitializeJ:
+    InverseCubic:
+
   AnalyticSolution:
     GaugeWave:
       ExtractionRadius: 40.0
