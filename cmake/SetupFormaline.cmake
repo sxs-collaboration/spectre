@@ -16,8 +16,10 @@ set(SPECTRE_FORMALINE_LOCATIONS
   .dockerignore
   .github
   .gitignore
+  AGENTS.md
   citation.bib
   CITATION.cff
+  CLAUDE.md
   cmake
   CMakeLists.txt
   containers

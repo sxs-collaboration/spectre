@@ -440,8 +440,10 @@ license() {
               '.svg' \
               '.patch' \
               '.xmf' \
+              'AGENTS.md' \
               'LICENSE' \
               'citation.bib' \
+              'CLAUDE.md' \
               'cmake/CodeCoverage.cmake$' \
               'cmake/CodeCoverageDetection.cmake$' \
               'cmake/FindCatch.cmake$' \
