@@ -58,30 +58,37 @@ if(${DEBUG_SYMBOLS})
     APPEND PROPERTY INTERFACE_COMPILE_OPTIONS -g)
 endif(${DEBUG_SYMBOLS})
 
+set(_NO_AVX512 "")
+if((NOT APPLE OR NOT "${CMAKE_HOST_SYSTEM_PROCESSOR}" STREQUAL "arm64")
+    # sometimes ARM architectures use the name "aarch64"
+    AND NOT "${CMAKE_HOST_SYSTEM_PROCESSOR}" STREQUAL "aarch64"
+  )
+  # The -mno-avx512f flag is necessary to avoid a Blaze 3.8 bug. The flag
+  # should be re-enabled when we can insist on Blaze 3.9 which will include
+  # a fix that allows this vectorization flag again.
+  set(_NO_AVX512 "-mno-avx512f")
+endif()
+
 # Always compile only for the current architecture. This can be overridden
 # by passing `-D OVERRIDE_ARCH=THE_ARCHITECTURE` to CMake
 if(NOT "${OVERRIDE_ARCH}" STREQUAL "OFF")
-  set_property(TARGET SpectreFlags
+  if(NOT APPLE)
+    set_property(TARGET SpectreFlags
       APPEND PROPERTY
       INTERFACE_COMPILE_OPTIONS
-      # The -mno-avx512f flag is necessary to avoid a Blaze 3.8 bug. The flag
-      # should be re-enabled when we can insist on Blaze 3.9 which will include
-      # a fix that allows this vectorization flag again.
-      $<$<COMPILE_LANGUAGE:C>:-march=${OVERRIDE_ARCH} -mno-avx512f>
-      $<$<COMPILE_LANGUAGE:CXX>:-march=${OVERRIDE_ARCH} -mno-avx512f>
-      $<$<COMPILE_LANGUAGE:Fortran>:-march=${OVERRIDE_ARCH} -mno-avx512f>)
+      $<$<COMPILE_LANGUAGE:C>:-march=${OVERRIDE_ARCH} ${_NO_AVX512}>
+      $<$<COMPILE_LANGUAGE:CXX>:-march=${OVERRIDE_ARCH} ${_NO_AVX512}>
+      $<$<COMPILE_LANGUAGE:Fortran>:-march=${OVERRIDE_ARCH} ${_NO_AVX512}>)
+  endif()
 else()
   # Apple Silicon Macs do not support the -march flag or the -mno-avx512f flag
-  if((NOT APPLE OR NOT "${CMAKE_HOST_SYSTEM_PROCESSOR}" STREQUAL "arm64")
-    # sometimes ARM architectures use the name "aarch64"
-    AND NOT "${CMAKE_HOST_SYSTEM_PROCESSOR}" STREQUAL "aarch64"
-    )
+  if(NOT APPLE)
     set_property(TARGET SpectreFlags
         APPEND PROPERTY
         INTERFACE_COMPILE_OPTIONS
-        $<$<COMPILE_LANGUAGE:C>:-march=native -mno-avx512f>
-        $<$<COMPILE_LANGUAGE:CXX>:-march=native -mno-avx512f>
-        $<$<COMPILE_LANGUAGE:Fortran>:-march=native -mno-avx512f>)
+        $<$<COMPILE_LANGUAGE:C>:-march=native ${_NO_AVX512}>
+        $<$<COMPILE_LANGUAGE:CXX>:-march=native ${_NO_AVX512}>
+        $<$<COMPILE_LANGUAGE:Fortran>:-march=native ${_NO_AVX512}>)
   endif()
 endif()
 
