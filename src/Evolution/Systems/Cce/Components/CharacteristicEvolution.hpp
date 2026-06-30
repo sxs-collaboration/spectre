@@ -190,6 +190,10 @@ struct CharacteristicEvolution {
       tmpl::transform<bondi_hypersurface_step_tags,
                       tmpl::bind<hypersurface_computation, tmpl::_1>>,
       Actions::FilterSwshVolumeQuantity<Tags::BondiH>,
+      // `Tags::Dy<Tags::BondiH>` is not an input to any hypersurface
+      // integration (unlike the other Bondi radial derivatives), so it is
+      // computed explicitly here, from the filtered `H`, for volume output.
+      ::Actions::MutateApply<PreSwshDerivatives<Tags::Dy<Tags::BondiH>>>,
       ::Actions::MutateApply<
           CalculateScriPlusValue<::Tags::dt<Tags::InertialRetardedTime>>>,
       Actions::CalculateScriInputs,
@@ -224,6 +228,10 @@ struct CharacteristicEvolution {
       tmpl::transform<bondi_hypersurface_step_tags,
                       tmpl::bind<hypersurface_computation, tmpl::_1>>,
       Actions::FilterSwshVolumeQuantity<Tags::BondiH>,
+      // `Tags::Dy<Tags::BondiH>` is not an input to any hypersurface
+      // integration (unlike the other Bondi radial derivatives), so it is
+      // computed explicitly here, from the filtered `H`, for volume output.
+      ::Actions::MutateApply<PreSwshDerivatives<Tags::Dy<Tags::BondiH>>>,
       tmpl::conditional_t<
           evolve_ccm, tmpl::list<>,
           tmpl::flatten<tmpl::list<
