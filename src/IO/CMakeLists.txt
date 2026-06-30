@@ -20,6 +20,7 @@ spectre_target_headers(
   ComposeTable.hpp
   ComposeTableDerivatives.hpp
   Connectivity.hpp
+  Io.hpp
   )
 
 # Notes:
