@@ -94,24 +94,50 @@ void convert_file(const std::string& compose_directory,
       zeta_derivative_keys.begin(), zeta_derivative_keys.end(),
       [&data](const std::string& key) { return data.contains(key); });
 
-  // Write everything available from the CompOSE table except those derivatives.
+  // Write everything available from the CompOSE table except those
+  // derivatives and kappa. kappa is post-processed below.
   for (const auto& [quantity_name, quantity_data] : data) {
     if (std::find(zeta_derivative_keys.begin(), zeta_derivative_keys.end(),
                   quantity_name) != zeta_derivative_keys.end()) {
       continue;
     }
+    if (quantity_name == "kappa") {
+      continue;
+    }
     spectre_eos.write_quantity(quantity_name, quantity_data);
   }
 
-  // kappa = dp/dε (CompOSE Q11): if it wasn't requested in eos.quantities,
-  // fall back to zeros so the H5 format stays uniform and Tabulated3D can
-  // still read it.
+  // kappa = dp/dε (CompOSE Q11). Required by thermodynamic stability to be
+  // non-negative (∂p/∂ε > 0 at fixed ρ, Y_e), but CompOSE's tabulated Q11
+  // comes from interpolation of free-energy derivatives that can overshoot
+  // at table corners — in the DD2 HS table ~1% of points are negative.
+  // Replace any such points with a small positive floor so that downstream
+  // consumers (e.g. the GRMHD ValenciaDivClean characteristic decomposition)
+  // see a thermodynamically valid κ. If Q11 is missing entirely, fall back
+  // to zeros so the H5 format stays uniform.
+  constexpr double kappa_floor = 1.0e-12;
   if (not data.contains("kappa")) {
     Parallel::printf(
         "WARNING: source CompOSE table does not contain kappa (Q11 dp/dε); "
         "writing kappa = 0. Regenerate with index 11 in eos.quantities to "
         "get the true value.\n");
     spectre_eos.write_quantity("kappa", DataVector(ntot, 0.0));
+  } else {
+    DataVector kappa = data.at("kappa");
+    size_t n_clamped = 0;
+    for (double& kappa_value : kappa) {
+      if (kappa_value < 0.0) {
+        kappa_value = kappa_floor;
+        ++n_clamped;
+      }
+    }
+    if (n_clamped > 0) {
+      Parallel::printf(
+          "Clamped %zu/%zu negative kappa entries to %.1e. Positive kappa "
+          "values still from Q11.\n",
+          n_clamped, kappa.size(), kappa_floor);
+    }
+    spectre_eos.write_quantity("kappa", kappa);
   }
 
   // zeta = ∂P/∂Ye is computed analytically from the CompOSE free-energy

@@ -278,7 +278,7 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.EquationsOfState.Tabulated3D",
         0.52939128000453251);
     CHECK_ITERABLE_APPROX(get(this_eos.kappa_from_density_and_temperature(
                               state[1], state[0], state[2])),
-                          0.00473307329152856);
+                          0.00490097126107262);
     CHECK_ITERABLE_APPROX(get(this_eos.zeta_from_density_and_temperature(
                               state[1], state[0], state[2])),
                           -0.00043219601036757);
