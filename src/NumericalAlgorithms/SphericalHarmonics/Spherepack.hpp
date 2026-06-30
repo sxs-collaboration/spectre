@@ -497,10 +497,25 @@ class Spherepack {
   /// them to be compatible with a resolution given by `l_max_target` and
   /// `m_max_target`. This is done by truncation (restriction) or padding
   /// with zeros (prolongation).
+  ///
+  /// With `stride > 1`, `spectral_coefs` (and the result) hold `stride`
+  /// independent sets of coefficients interleaved with the given stride, i.e.
+  /// coefficient `c` of set `s` is at index `c * stride + s`. This is the
+  /// layout produced by `phys_to_spec_all_offsets`, so several sets (e.g.
+  /// radial points) can be prolonged or restricted in a single call.
   static DataVector prolong_or_restrict(const DataVector& spectral_coefs,
                                         size_t l_max_coefs, size_t m_max_coefs,
                                         size_t l_max_target,
-                                        size_t m_max_target);
+                                        size_t m_max_target, size_t stride = 1);
+
+  /// Same as the overload above, but writes into the pre-allocated `result`
+  /// buffer (resizing it only if necessary) to avoid allocating. Useful to
+  /// reuse a single buffer across repeated calls.
+  static void prolong_or_restrict(gsl::not_null<DataVector*> result,
+                                  const DataVector& spectral_coefs,
+                                  size_t l_max_coefs, size_t m_max_coefs,
+                                  size_t l_max_target, size_t m_max_target,
+                                  size_t stride = 1);
 
   /// Takes spectral coefficients compatible with `*this`, and either
   /// prolongs them or restricts them to be compatible with `target`.
