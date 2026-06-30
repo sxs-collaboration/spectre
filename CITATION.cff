@@ -146,6 +146,11 @@ authors:
   family-names: Chaudhary
   given-names: Himanshu
   orcid: https://orcid.org/0000-0002-4101-0534
+- affiliation: Max Planck Institute for Gravitational Physics (Albert Einstein Institute),
+    Am Mühlenberg 1, Potsdam 14476, Germany
+  family-names: Corelli
+  given-names: Fabrizio
+  orcid: https://orcid.org/0000-0001-9558-0877
 - affiliation: Cornell Center for Astrophysics and Planetary Science, Cornell University,
     Ithaca, New York 14853, USA
   family-names: Corso
@@ -345,8 +350,8 @@ authors:
   given-names: Jooheon
   orcid: https://orcid.org/0000-0002-3251-0924
 cff-version: 1.2.0
-date-released: 2026-06-09
-doi: 10.5281/zenodo.20617409
+date-released: 2026-06-30
+doi: 10.5281/zenodo.21065180
 keywords:
 - Software
 - Astrophysics
@@ -1064,4 +1069,4 @@ references:
 repository-code: https://github.com/sxs-collaboration/spectre
 title: SpECTRE
 url: https://spectre-code.org
-version: 2026.06.09.01
+version: 2026.06.30
