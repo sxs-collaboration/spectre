@@ -148,8 +148,13 @@ RUN wget -qO- https://apt.llvm.org/llvm-snapshot.gpg.key | \
 # `ld.lld` so the unversioned linker name keeps resolving.
 RUN apt-get update -y \
     && if [ ${UBUNTU_VERSION} = 18.04 ]; then \
-    apt-get install -y gcc-10 g++-10 gfortran-10 clang-17 lld-17 \
-    && ln -s "$(command -v ld.lld-17)" /usr/bin/ld.lld; \
+    apt-get install -y gcc-13 g++-13 gfortran-13 clang-17 lld-17 \
+    && ln -s "$(command -v ld.lld-17)" /usr/bin/ld.lld \
+    && update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-13 100 \
+        --slave /usr/bin/g++ g++ /usr/bin/g++-13 \
+        --slave /usr/bin/gfortran gfortran /usr/bin/gfortran-13 \
+    && update-alternatives --install /usr/bin/cc cc /usr/bin/gcc-13 100 \
+    && update-alternatives --install /usr/bin/c++ c++ /usr/bin/g++-13 100; \
     else \
     apt-get install -y gcc g++ gfortran clang clang-format clang-tidy cmake lld; \
     fi \
@@ -185,8 +190,8 @@ RUN apt-get update -y \
     && tar xf 0.8.0.tar.gz && mkdir ./yaml-cpp-0.8.0/build \
     && cd ./yaml-cpp-0.8.0/build \
     && cmake \
-    -D CMAKE_C_COMPILER=gcc-10 \
-    -D CMAKE_CXX_COMPILER=g++-10 \
+    -D CMAKE_C_COMPILER=gcc \
+    -D CMAKE_CXX_COMPILER=g++ \
     -D CMAKE_BUILD_TYPE=Release \
     -D YAML_BUILD_SHARED_LIBS=OFF \
     -D BUILD_SHARED_LIBS=OFF \
@@ -200,11 +205,11 @@ RUN apt-get update -y \
     && cd ../.. && rm -rf ./0.8.0.tar.gz ./yaml-cpp-0.8.0 \
     && wget https://archives.boost.io/release/1.83.0/source/boost_1_83_0.tar.gz \
     && tar xf boost_1_83_0.tar.gz && cd boost_1_83_0 \
-    && CC=gcc-10 CXX=g++-10 ./bootstrap.sh \
+    && CC=gcc CXX=g++ ./bootstrap.sh \
     --with-toolset=gcc \
     --with-libraries=program_options \
     --prefix=/usr/local \
-    && echo "using gcc : : g++-10 ;" > ./user-config.jam \
+    && echo "using gcc : : g++ ;" > ./user-config.jam \
     && ./b2 ${PARALLEL_MAKE_ARG} \
     --user-config=./user-config.jam \
     toolset=gcc \
@@ -377,6 +382,14 @@ RUN git clone https://github.com/ianlancetaylor/libbacktrace \
     && make $PARALLEL_MAKE_ARG install \
     && cd .. && rm -rf libbacktrace
 # - LibXSMM
+#
+# On x86 we cap the build at AVX2 (`AVX=2`) and disable LibXSMM's dynamic,
+# per-kernel target-attribute intrinsics (`INTRINSICS=1`, i.e. static: compile
+# only for the selected target). Otherwise LibXSMM compiles AVX-512 BF16 kernels
+# (e.g. `vcvtne2ps2bf16`) which the Ubuntu 18.04 assembler (binutils 2.30)
+# cannot assemble. AVX2 also matches the `-march=haswell` target used for the
+# deployed static executables. This is not an issue with gcc-10 because that
+# compiler doesn't emit the AVX-512 BF16 instructions anyway.
 RUN if [ "$TARGETARCH" = "arm64" ] ; then \
         git clone --single-branch --branch main --depth 1 \
             https://github.com/libxsmm/libxsmm.git libxsmm \
@@ -390,7 +403,7 @@ RUN if [ "$TARGETARCH" = "arm64" ] ; then \
         && tar -xzf libxsmm.tar.gz \
         && mv libxsmm-* libxsmm \
         && cd libxsmm \
-        && make $PARALLEL_MAKE_ARG PREFIX=/usr/local/ install \
+        && make $PARALLEL_MAKE_ARG PREFIX=/usr/local/ AVX=2 INTRINSICS=1 install \
         && cd .. \
         && rm -rf libxsmm libxsmm.tar.gz; \
     fi
@@ -592,9 +605,9 @@ RUN set -e; \
     fi; \
     mkdir spectre/build && cd spectre/build \
     && cmake \
-    -D CMAKE_C_COMPILER=gcc-10 \
-    -D CMAKE_CXX_COMPILER=g++-10 \
-    -D CMAKE_Fortran_COMPILER=gfortran-10 \
+    -D CMAKE_C_COMPILER=gcc-13 \
+    -D CMAKE_CXX_COMPILER=g++-13 \
+    -D CMAKE_Fortran_COMPILER=gfortran-13 \
     -D CMAKE_BUILD_TYPE=Release \
     -D DEBUG_SYMBOLS=OFF \
     -D BUILD_PYTHON_BINDINGS=OFF \
@@ -610,8 +623,9 @@ RUN set -e; \
     -D USE_GIT_HOOKS=OFF \
     $ARCH_ARGS \
     -D USE_LD=gold \
-    -D gfortran=/usr/lib/gcc/$GCC_TRIPLET/10/libgfortran.a \
-    -D quadmath=/usr/lib/gcc/$GCC_TRIPLET/10/libquadmath.a \
+    -D CMAKE_EXE_LINKER_FLAGS="-static-libstdc++ -static-libgcc" \
+    -D gfortran=/usr/lib/gcc/$GCC_TRIPLET/13/libgfortran.a \
+    -D quadmath=/usr/lib/gcc/$GCC_TRIPLET/13/libquadmath.a \
     -D BUILD_DOCS=OFF \
     -D USE_CCACHE=OFF \
     .. \
