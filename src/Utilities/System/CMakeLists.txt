@@ -23,6 +23,7 @@ spectre_target_headers(
   Abort.hpp
   AttachDebugger.hpp
   Exit.hpp
+  Info.hpp
   ParallelInfo.hpp
   Prefetch.hpp
   PrettyWallTime.hpp

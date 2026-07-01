@@ -7,7 +7,11 @@
 
 #pragma once
 
-#include <cstddef>
+#include <memory>
+#include <pup.h>
+
+#include "Utilities/Serialization/CharmPupable.hpp"
+#include "Utilities/System/Info.hpp"
 
 /// Functionality for parallelization.
 ///
@@ -17,6 +21,52 @@
 /// sys namespace in Utilities/System/ParallelInfo.hpp) so that the
 /// mocking framework will see the mocked cores and nodes.
 namespace Parallel {
+/// Low-level system information such as number of nodes and processors for the
+/// Charm++ runtime system.
+class Info final : public ::sys::Info {
+ public:
+  Info() = default;
+  Info(Info&&) = default;
+  Info& operator=(Info&&) = default;
+  Info(const Info&) = default;
+  Info& operator=(const Info&) = default;
+  ~Info() override = default;
+
+  explicit Info(CkMigrateMessage* msg);
+  using PUP::able::register_constructor;
+  WRAPPED_PUPable_decl_template(Info);  // NOLINT
+
+  auto get_clone() const -> std::unique_ptr<::sys::Info> override;
+
+  void pup(PUP::er& p) override;
+
+  /// \brief Number of processing elements.
+  int number_of_procs() const override;
+
+  /// \brief %Index of my processing element.
+  int my_proc() const override;
+
+  /// \brief Number of nodes.
+  int number_of_nodes() const override;
+
+  /// \brief %Index of my node.
+  int my_node() const override;
+
+  /// \brief Number of processing elements on the given node.
+  int procs_on_node(int node_index) const override;
+
+  /// \brief The local index of my processing element on my node.
+  int my_local_rank() const override;
+
+  /// \brief %Index of first processing element on the given node.
+  int first_proc_on_node(int node_index) const override;
+
+  /// \brief %Index of the node for the given processing element.
+  int node_of(int proc_index) const override;
+
+  /// \brief The local index for the given processing element on its node.
+  int local_rank_of(int proc_index) const override;
+};
 
 /*!
  * \ingroup ParallelGroup

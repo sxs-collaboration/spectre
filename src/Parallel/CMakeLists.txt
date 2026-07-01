@@ -14,6 +14,7 @@ spectre_target_sources(
   ArrayComponentId.cpp
   CharmRegistration.cpp
   ExitCode.cpp
+  Info.cpp
   InitializationFunctions.cpp
   Main.cpp
   NodeLock.cpp
