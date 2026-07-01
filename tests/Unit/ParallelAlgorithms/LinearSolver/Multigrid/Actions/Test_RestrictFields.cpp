@@ -10,6 +10,7 @@
 #include <unordered_set>
 #include <utility>
 
+#include "DataStructures/ApplyMatrices.hpp"
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/DataVector.hpp"
@@ -19,12 +20,16 @@
 #include "DataStructures/Variables.hpp"
 #include "DataStructures/VariablesTag.hpp"
 #include "Domain/Structure/ElementId.hpp"
+#include "Domain/Structure/SegmentId.hpp"
 #include "Domain/Tags.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "IO/Logging/Tags.hpp"
 #include "IO/Logging/Verbosity.hpp"
 #include "NumericalAlgorithms/Convergence/Tags.hpp"
+#include "NumericalAlgorithms/Spectral/Basis.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
+#include "NumericalAlgorithms/Spectral/Projection.hpp"
+#include "NumericalAlgorithms/Spectral/Quadrature.hpp"
 #include "NumericalAlgorithms/Spectral/SegmentSize.hpp"
 #include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
@@ -84,13 +89,23 @@ struct Metavariables {
                           tmpl::list<>, tmpl::list<FieldsAreMassiveTag>>;
 };
 
-template <typename FieldsAreMassiveTag>
-void test_restrict_fields(const Mesh<1>& fine_mesh, const Mesh<1>& coarse_mesh,
+// Only dimension 0 is h-refined (for spherical shells this is the radial
+// dimension; the angular dimensions cannot be h-refined). The two fine children
+// are the lower and upper radial halves of the coarse element.
+template <size_t Dim>
+std::array<SegmentId, Dim> shell_segment_ids(const SegmentId& radial) {
+  auto segment_ids = make_array<Dim>(SegmentId{0, 0});
+  segment_ids[0] = radial;
+  return segment_ids;
+}
+
+template <typename FieldsAreMassiveTag, size_t Dim>
+void test_restrict_fields(const Mesh<Dim>& fine_mesh,
+                          const Mesh<Dim>& coarse_mesh,
                           const DataVector& fine_data_left,
                           const DataVector& fine_data_right,
                           const DataVector& expected_coarse_data,
                           const bool fields_are_massive = false) {
-  constexpr size_t Dim = 1;
   using metavariables = Metavariables<Dim, FieldsAreMassiveTag>;
   using element_array = typename metavariables::element_array;
 
@@ -128,9 +143,9 @@ void test_restrict_fields(const Mesh<1>& fine_mesh, const Mesh<1>& coarse_mesh,
             {parent_id, child_ids, mesh, parent_mesh, size_t{0},
              std::move(fields)});
       };
-  const ElementId<Dim> left_element_id{0, {{{1, 0}}}, 0};
-  const ElementId<Dim> right_element_id{0, {{{1, 1}}}, 0};
-  const ElementId<Dim> coarse_element_id{0, {{{0, 0}}}, 1};
+  const ElementId<Dim> left_element_id{0, shell_segment_ids<Dim>({1, 0}), 0};
+  const ElementId<Dim> right_element_id{0, shell_segment_ids<Dim>({1, 1}), 0};
+  const ElementId<Dim> coarse_element_id{0, shell_segment_ids<Dim>({0, 0}), 1};
   add_element(left_element_id, coarse_element_id, {}, fine_mesh, coarse_mesh,
               fine_data_left);
   add_element(right_element_id, coarse_element_id, {}, fine_mesh, coarse_mesh,
@@ -207,5 +222,44 @@ SPECTRE_TEST_CASE("Unit.ParallelMultigrid.Action.RestrictFields",
             fine_data_right, Index<1>{4});
     test_restrict_fields<MassiveTag>(fine_mesh, coarse_mesh, fine_data_left,
                                      fine_data_right, coarse_data, true);
+  }
+  // Spherical shells: multigrid coarsens the radial dimension via h-refinement
+  // (the angular dimensions cannot be h-refined) and may also lower the radial
+  // or angular resolution
+  {
+    const auto shell_mesh = [](const size_t num_radial_points,
+                               const size_t l_max) {
+      return Mesh<3>{
+          {{num_radial_points, l_max + 1, 2 * l_max + 1}},
+          {{Spectral::Basis::Legendre, Spectral::Basis::SphericalHarmonic,
+            Spectral::Basis::SphericalHarmonic}},
+          {{Spectral::Quadrature::GaussLobatto, Spectral::Quadrature::Gauss,
+            Spectral::Quadrature::Equiangular}}};
+    };
+    const Mesh<3> fine_shell = shell_mesh(4, 6);
+    const Mesh<3> coarse_shell = shell_mesh(3, 4);
+    DataVector fine_data_left_shell(fine_shell.number_of_grid_points());
+    DataVector fine_data_right_shell(fine_shell.number_of_grid_points());
+    for (size_t i = 0; i < fine_data_left_shell.size(); ++i) {
+      fine_data_left_shell[i] = 0.1 * static_cast<double>(i) - 1.0;
+      fine_data_right_shell[i] = 1.0 - 0.05 * static_cast<double>(i);
+    }
+    const auto project_child = [&fine_shell, &coarse_shell](
+                                   const DataVector& child_data,
+                                   const Spectral::SegmentSize radial_size) {
+      DataVector result{};
+      Spectral::project(make_not_null(&result), child_data, fine_shell,
+                        coarse_shell,
+                        std::array{radial_size, Spectral::SegmentSize::Full,
+                                   Spectral::SegmentSize::Full},
+                        make_array<3>(Spectral::SegmentSize::Full), true);
+      return result;
+    };
+    const DataVector coarse_data =
+        project_child(fine_data_left_shell, Spectral::SegmentSize::LowerHalf) +
+        project_child(fine_data_right_shell, Spectral::SegmentSize::UpperHalf);
+    test_restrict_fields<MassiveTag>(fine_shell, coarse_shell,
+                                     fine_data_left_shell,
+                                     fine_data_right_shell, coarse_data, true);
   }
 }

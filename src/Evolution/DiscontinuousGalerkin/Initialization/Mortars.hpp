@@ -11,7 +11,6 @@
 #include <utility>
 #include <vector>
 
-#include "DataStructures/ApplyMatrices.hpp"
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
@@ -300,14 +299,11 @@ struct ProjectMortars : tt::ConformsTo<amr::protocols::Projector> {
                   const TimeStepId& /* id */,
                   const gsl::not_null<::evolution::dg::MortarData<Dim>*> data) {
                 const auto& old_mortar_mesh = data->mortar_mesh.value();
-                const auto mortar_projection_matrices =
-                    Spectral::projection_matrices(
-                        old_mortar_mesh, new_mortar_mesh,
-                        make_array<Dim - 1>(Spectral::SegmentSize::Full),
-                        new_mortar_size);
                 DataVector& vars = data->mortar_data.value();
-                vars = apply_matrices(mortar_projection_matrices, vars,
-                                      old_mortar_mesh.extents());
+                vars = Spectral::project(
+                    vars, old_mortar_mesh, new_mortar_mesh,
+                    make_array<Dim - 1>(Spectral::SegmentSize::Full),
+                    new_mortar_size);
                 data->mortar_mesh = new_mortar_mesh;
                 return true;
               };
@@ -380,13 +376,10 @@ struct ProjectMortars : tt::ConformsTo<amr::protocols::Projector> {
                       const gsl::not_null<::evolution::dg::MortarData<Dim>*>
                           data) {
                     const auto& old_mortar_mesh = data->mortar_mesh.value();
-                    const auto mortar_projection_matrices =
-                        Spectral::projection_matrices(
-                            old_mortar_mesh, new_mortar_mesh, old_mortar_size,
-                            make_array<Dim - 1>(Spectral::SegmentSize::Full));
                     DataVector& vars = data->mortar_data.value();
-                    vars = apply_matrices(mortar_projection_matrices, vars,
-                                          old_mortar_mesh.extents());
+                    vars = Spectral::project(
+                        vars, old_mortar_mesh, new_mortar_mesh, old_mortar_size,
+                        make_array<Dim - 1>(Spectral::SegmentSize::Full));
                     data->mortar_mesh = new_mortar_mesh;
                     return true;
                   };
@@ -402,14 +395,10 @@ struct ProjectMortars : tt::ConformsTo<amr::protocols::Projector> {
                     const auto& old_data = old_remote_history.data(id);
                     const auto& old_mortar_mesh =
                         old_data.mortar_mesh.value();
-                    const auto mortar_projection_matrices =
-                        Spectral::projection_matrices(
-                            old_mortar_mesh, new_mortar_mesh, old_mortar_size,
-                            make_array<Dim - 1>(Spectral::SegmentSize::Full));
-                    data->mortar_data.value() +=
-                        apply_matrices(mortar_projection_matrices,
-                                       old_data.mortar_data.value(),
-                                       old_mortar_mesh.extents());
+                    data->mortar_data.value() += Spectral::project(
+                        old_data.mortar_data.value(), old_mortar_mesh,
+                        new_mortar_mesh, old_mortar_size,
+                        make_array<Dim - 1>(Spectral::SegmentSize::Full));
                     return true;
                   };
               remote_history.for_each(project_mortar_data);

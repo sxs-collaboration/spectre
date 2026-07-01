@@ -3,11 +3,11 @@
 
 #pragma once
 
+#include <array>
 #include <cstddef>
 #include <unordered_map>
 #include <utility>
 
-#include "DataStructures/ApplyMatrices.hpp"
 #include "DataStructures/TaggedTuple.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Domain/Structure/ChildSize.hpp"
@@ -19,6 +19,7 @@
 #include "NumericalAlgorithms/Spectral/SegmentSize.hpp"
 #include "ParallelAlgorithms/Amr/Protocols/Projector.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/MakeArray.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace amr::projectors {
@@ -49,11 +50,10 @@ struct ProjectVariables : tt::ConformsTo<amr::protocols::Projector> {
     if (old_mesh == new_mesh) {
       return;  // mesh was not refined, so no projection needed
     }
-    const auto projection_matrices =
-        Spectral::p_projection_matrices(old_mesh, new_mesh);
-    const auto& old_extents = old_mesh.extents();
-    expand_pack(
-        (*vars = apply_matrices(projection_matrices, *vars, old_extents))...);
+    expand_pack((*vars = Spectral::project(
+                     *vars, old_mesh, new_mesh,
+                     make_array<Dim>(Spectral::SegmentSize::Full),
+                     make_array<Dim>(Spectral::SegmentSize::Full)))...);
   }
 
   // h-refinement
@@ -66,12 +66,11 @@ struct ProjectVariables : tt::ConformsTo<amr::protocols::Projector> {
     const auto& parent_mesh = get<domain::Tags::Mesh<Dim>>(parent_items);
     const auto child_sizes =
         domain::child_size(element_id.segment_ids(), parent_id.segment_ids());
-    const auto projection_matrices =
-        Spectral::projection_matrix_parent_to_child(parent_mesh, new_mesh,
-                                                    child_sizes);
-    expand_pack((*vars = apply_matrices(projection_matrices,
-                                        get<VariablesTags>(parent_items),
-                                        parent_mesh.extents()))...);
+    expand_pack((Spectral::project(vars, get<VariablesTags>(parent_items),
+                                   parent_mesh, new_mesh,
+                                   make_array<Dim>(Spectral::SegmentSize::Full),
+                                   child_sizes),
+                 0)...);
   }
 
   // h-coarsening
@@ -87,18 +86,18 @@ struct ProjectVariables : tt::ConformsTo<amr::protocols::Projector> {
       const auto& child_mesh = get<domain::Tags::Mesh<Dim>>(child_items);
       const auto child_sizes =
           domain::child_size(child_id.segment_ids(), element_id.segment_ids());
-      const auto projection_matrices =
-          Spectral::projection_matrix_child_to_parent(child_mesh, new_mesh,
-                                                      child_sizes);
       if (first_child) {
-        expand_pack((*vars = apply_matrices(projection_matrices,
-                                            get<VariablesTags>(child_items),
-                                            child_mesh.extents()))...);
+        expand_pack(
+            (Spectral::project(vars, get<VariablesTags>(child_items),
+                               child_mesh, new_mesh, child_sizes,
+                               make_array<Dim>(Spectral::SegmentSize::Full)),
+             0)...);
         first_child = false;
       } else {
-        expand_pack((*vars += apply_matrices(projection_matrices,
-                                             get<VariablesTags>(child_items),
-                                             child_mesh.extents()))...);
+        expand_pack((*vars += Spectral::project(
+                         get<VariablesTags>(child_items), child_mesh, new_mesh,
+                         child_sizes,
+                         make_array<Dim>(Spectral::SegmentSize::Full)))...);
       }
     }
   }

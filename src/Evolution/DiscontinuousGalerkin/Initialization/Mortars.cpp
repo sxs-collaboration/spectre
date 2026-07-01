@@ -456,13 +456,10 @@ void ProjectMortars<Dim, LocalTimeStepping>::apply(
                     const gsl::not_null<::evolution::dg::MortarData<Dim>*>
                         data) {
                   const auto& old_mortar_mesh = data->mortar_mesh.value();
-                  const auto mortar_projection_matrices =
-                      Spectral::projection_matrices(
-                          old_mortar_mesh, new_mortar_mesh, old_mortar_size,
-                          new_mortar_size);
                   DataVector& vars = data->mortar_data.value();
-                  vars = apply_matrices(mortar_projection_matrices, vars,
-                                        old_mortar_mesh.extents());
+                  vars =
+                      Spectral::project(vars, old_mortar_mesh, new_mortar_mesh,
+                                        old_mortar_size, new_mortar_size);
                   data->mortar_mesh = new_mortar_mesh;
                   return true;
                 };
@@ -478,13 +475,9 @@ void ProjectMortars<Dim, LocalTimeStepping>::apply(
                         data) {
                   const auto& old_data = old_local_history.data(id);
                   const auto& old_mortar_mesh = old_data.mortar_mesh.value();
-                  const auto mortar_projection_matrices =
-                      Spectral::projection_matrices(
-                          old_mortar_mesh, new_mortar_mesh, old_mortar_size,
-                          new_mortar_size);
-                  data->mortar_data.value() += apply_matrices(
-                      mortar_projection_matrices, old_data.mortar_data.value(),
-                      old_mortar_mesh.extents());
+                  data->mortar_data.value() += Spectral::project(
+                      old_data.mortar_data.value(), old_mortar_mesh,
+                      new_mortar_mesh, old_mortar_size, new_mortar_size);
                   return true;
                 };
             local_history.for_each(project_local_mortar_data);

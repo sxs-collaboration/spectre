@@ -11,7 +11,6 @@
 #include <unordered_map>
 #include <utility>
 
-#include "DataStructures/ApplyMatrices.hpp"
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/TaggedTuple.hpp"
@@ -396,13 +395,11 @@ struct ProjectTimeStepperHistory : tt::ConformsTo<amr::protocols::Projector> {
     if (old_mesh == new_mesh) {
       return;  // mesh was not refined, so no projection needed
     }
-    const auto projection_matrices =
-        Spectral::p_projection_matrices(old_mesh, new_mesh);
-    const auto& old_extents = old_mesh.extents();
-    history->map_entries(
-        [&projection_matrices, &old_extents](const auto entry) {
-          *entry = apply_matrices(projection_matrices, *entry, old_extents);
-        });
+    history->map_entries([&old_mesh, &new_mesh](const auto entry) {
+      *entry = Spectral::project(*entry, old_mesh, new_mesh,
+                                 make_array<dim>(Spectral::SegmentSize::Full),
+                                 make_array<dim>(Spectral::SegmentSize::Full));
+    });
     dt_vars->initialize(new_mesh.number_of_grid_points());
   }
 
@@ -454,13 +451,12 @@ struct ProjectTimeStepperHistory : tt::ConformsTo<amr::protocols::Projector> {
         const auto& parent_mesh = get<domain::Tags::Mesh<dim>>(parent_items);
         const auto child_sizes = domain::child_size(element_id.segment_ids(),
                                                     parent_id.segment_ids());
-        const auto projection_matrices =
-            Spectral::projection_matrix_parent_to_child(parent_mesh, new_mesh,
-                                                        child_sizes);
         transform(history, get<history_tag>(parent_items),
                   [&](const auto& source_entry) {
-                    return apply_matrices(projection_matrices, source_entry,
-                                          parent_mesh.extents());
+                    return Spectral::project(
+                        source_entry, parent_mesh, new_mesh,
+                        make_array<dim>(Spectral::SegmentSize::Full),
+                        child_sizes);
                   });
         break;
       }
@@ -521,22 +517,21 @@ struct ProjectTimeStepperHistory : tt::ConformsTo<amr::protocols::Projector> {
           const auto& child_mesh = get<domain::Tags::Mesh<dim>>(child_items);
           const auto child_sizes = domain::child_size(child_id.segment_ids(),
                                                       element_id.segment_ids());
-          const auto projection_matrices =
-              Spectral::projection_matrix_child_to_parent(child_mesh, new_mesh,
-                                                          child_sizes);
           if (first_child) {
             transform(history, get<history_tag>(child_items),
                       [&](const auto& source_entry) {
-                        return apply_matrices(projection_matrices, source_entry,
-                                              child_mesh.extents());
+                        return Spectral::project(
+                            source_entry, child_mesh, new_mesh, child_sizes,
+                            make_array<dim>(Spectral::SegmentSize::Full));
                       });
             first_child = false;
           } else {
             transform_mutate(
                 history, get<history_tag>(child_items),
                 [&](const auto dest_entry, const auto& source_entry) {
-                  *dest_entry += apply_matrices(
-                      projection_matrices, source_entry, child_mesh.extents());
+                  *dest_entry += Spectral::project(
+                      source_entry, child_mesh, new_mesh, child_sizes,
+                      make_array<dim>(Spectral::SegmentSize::Full));
                 });
           }
         }

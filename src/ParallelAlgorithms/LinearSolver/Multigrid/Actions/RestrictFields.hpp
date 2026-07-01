@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include <array>
 #include <cstddef>
 #include <map>
 #include <optional>
@@ -10,7 +11,6 @@
 #include <type_traits>
 #include <utility>
 
-#include "DataStructures/ApplyMatrices.hpp"
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
 #include "DataStructures/FixedHashMap.hpp"
@@ -23,6 +23,7 @@
 #include "IO/Observer/Tags.hpp"
 #include "NumericalAlgorithms/Convergence/Tags.hpp"
 #include "NumericalAlgorithms/Spectral/Projection.hpp"
+#include "NumericalAlgorithms/Spectral/SegmentSize.hpp"
 #include "Parallel/AlgorithmExecution.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/InboxInserters.hpp"
@@ -35,6 +36,7 @@
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/GetOutput.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/MakeArray.hpp"
 #include "Utilities/PrettyType.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -129,17 +131,16 @@ struct SendFieldsToCoarserGrid<tmpl::list<FieldsTags...>, OptionsGroup,
     }
     tuples::TaggedTuple<ReceiveTags...> restricted_fields{};
     if (Spectral::needs_projection(mesh, *parent_mesh, child_size)) {
-      const auto restriction_operator =
-          Spectral::projection_matrix_child_to_parent(mesh, *parent_mesh,
-                                                      child_size, massive);
-      const auto restrict_fields = [&restricted_fields, &restriction_operator,
-                                    &mesh](const auto receive_tag_v,
-                                           const auto& fields) {
-        using receive_tag = std::decay_t<decltype(receive_tag_v)>;
-        get<receive_tag>(restricted_fields) = typename receive_tag::type(
-            apply_matrices(restriction_operator, fields, mesh.extents()));
-        return '0';
-      };
+      const auto restrict_fields =
+          [&restricted_fields, &mesh, &parent_mesh, &child_size, massive](
+              const auto receive_tag_v, const auto& fields) {
+            using receive_tag = std::decay_t<decltype(receive_tag_v)>;
+            get<receive_tag>(restricted_fields) =
+                typename receive_tag::type(Spectral::project(
+                    fields, mesh, *parent_mesh, child_size,
+                    make_array<Dim>(Spectral::SegmentSize::Full), massive));
+            return '0';
+          };
       expand_pack(restrict_fields(ReceiveTags{}, db::get<FieldsTags>(box))...);
     } else {
       expand_pack(
