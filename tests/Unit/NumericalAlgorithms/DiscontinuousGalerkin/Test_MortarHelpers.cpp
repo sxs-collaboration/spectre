@@ -46,6 +46,36 @@ void test_mortar_mesh() {
         lgl_mesh<1>({{5}}));
   CHECK(dg::mortar_mesh(lgl_mesh<2>({{2, 5}}), lgl_mesh<2>({{3, 4}})) ==
         lgl_mesh<2>({{3, 5}}));
+  CHECK(
+      dg::mortar_mesh(Mesh<2>({{3, 4}},
+                              std::array{Spectral::Basis::Legendre,
+                                         Spectral::Basis::ZernikeB2},
+                              std::array{Spectral::Quadrature::GaussLobatto,
+                                         Spectral::Quadrature::Equiangular}),
+                      Mesh<2>({{5, 6}},
+                              std::array{Spectral::Basis::Legendre,
+                                         Spectral::Basis::Fourier},
+                              std::array{Spectral::Quadrature::GaussLobatto,
+                                         Spectral::Quadrature::Equiangular})) ==
+      Mesh<2>({{5, 6}},
+              std::array{Spectral::Basis::Legendre, Spectral::Basis::ZernikeB2},
+              std::array{Spectral::Quadrature::GaussLobatto,
+                         Spectral::Quadrature::Equiangular}));
+#ifdef SPECTRE_DEBUG
+  CHECK_THROWS_WITH(
+      dg::mortar_mesh(Mesh<2>({{3, 4}},
+                              std::array{Spectral::Basis::ZernikeB2,
+                                         Spectral::Basis::ZernikeB2},
+                              std::array{Spectral::Quadrature::Equiangular,
+                                         Spectral::Quadrature::Equiangular}),
+                      Mesh<2>({{5, 6}},
+                              std::array{Spectral::Basis::Fourier,
+                                         Spectral::Basis::Legendre},
+                              std::array{Spectral::Quadrature::Equiangular,
+                                         Spectral::Quadrature::Equiangular})),
+      Catch::Matchers::ContainsSubstring(
+          "The basis on face_mesh1 and face_mesh2 must be equal"));
+#endif
 }
 
 template <size_t Dim>
