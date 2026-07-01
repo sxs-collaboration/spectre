@@ -75,6 +75,159 @@ create_grid_anchors(const std::array<double, 3>& center_a,
 
   return result;
 }
+
+void validate_initial_grid_points(
+    const Options::Context& context,
+    const BinaryCompactObject::InitialGridPoints::type&
+        initial_number_of_grid_points,
+    const std::unordered_set<std::string>& spherical_harmonic_shell_names) {
+  if (std::holds_alternative<
+          std::unordered_map<std::string, std::variant<std::array<size_t, 3>,
+                                                       std::array<size_t, 2>>>>(
+          initial_number_of_grid_points)) {
+    const auto& grid_points_map = std::get<
+        std::unordered_map<std::string, std::variant<std::array<size_t, 3>,
+                                                     std::array<size_t, 2>>>>(
+        initial_number_of_grid_points);
+    for (const auto& [block_name, extents] : grid_points_map) {
+      const bool is_spherical_harmonic_block =
+          spherical_harmonic_shell_names.contains(block_name);
+      if (is_spherical_harmonic_block) {
+        if (std::holds_alternative<std::array<size_t, 3>>(extents)) {
+          PARSE_ERROR(context, "Block '"
+                                   << block_name
+                                   << "' is a spherical-harmonic outer-shell "
+                                      "block. Specify its grid points as "
+                                      "[radial_points, L_max], not array<3>.");
+        }
+      } else {
+        if (std::holds_alternative<std::array<size_t, 2>>(extents)) {
+          if (not spherical_harmonic_shell_names.empty()) {
+            PARSE_ERROR(context,
+                        "Specifying 2 grid points for block '"
+                            << block_name
+                            << "' is only valid for spherical-harmonic "
+                               "outer-shell blocks (OuterShell0, etc.).");
+          } else {
+            PARSE_ERROR(
+                context,
+                "Specifying 2 grid points (block '"
+                    << block_name
+                    << "') is only valid when SphericalHarmonicsInWavezone "
+                       "is enabled.");
+          }
+        }
+      }
+    }
+  }
+}
+
+void validate_initial_refinement(
+    const Options::Context& context,
+    const BinaryCompactObject::InitialRefinement::type& initial_refinement,
+    const std::unordered_set<std::string>& spherical_harmonic_shell_names) {
+  if (std::holds_alternative<std::unordered_map<
+          std::string, std::variant<std::array<size_t, 3>, size_t>>>(
+          initial_refinement)) {
+    const auto& refinement_map = std::get<std::unordered_map<
+        std::string, std::variant<std::array<size_t, 3>, size_t>>>(
+        initial_refinement);
+    for (const auto& [block_name, ref] : refinement_map) {
+      const bool is_spherical_harmonic_block =
+          spherical_harmonic_shell_names.contains(block_name);
+      if (is_spherical_harmonic_block) {
+        if (std::holds_alternative<std::array<size_t, 3>>(ref)) {
+          PARSE_ERROR(context,
+                      "Block '"
+                          << block_name
+                          << "' is a spherical-harmonic outer-shell block. "
+                             "Specify its refinement as a single number "
+                             "(radial only), not array<3>. Angular "
+                             "h-refinement is not supported for these blocks.");
+        }
+      } else {
+        if (std::holds_alternative<size_t>(ref)) {
+          if (not spherical_harmonic_shell_names.empty()) {
+            PARSE_ERROR(context,
+                        "Per-block single-number refinement for block '"
+                            << block_name
+                            << "' is only valid for spherical-harmonic "
+                               "outer-shell blocks (OuterShell0, etc.).");
+          } else {
+            PARSE_ERROR(
+                context,
+                "Per-block single-number refinement in map syntax (block '"
+                    << block_name
+                    << "') is only valid when SphericalHarmonicsInWavezone "
+                       "is enabled.");
+          }
+        }
+      }
+    }
+  }
+}
+
+std::vector<std::array<size_t, 3>> set_initial_refinement(
+    const ExpandOverBlocks<std::array<size_t, 3>>& expand_over_blocks,
+    const BinaryCompactObject::InitialRefinement::type& initial_refinement) {
+  return std::visit(
+      [&expand_over_blocks]<typename V>(
+          const V& v) -> std::vector<std::array<size_t, 3>> {
+        if constexpr (std::is_same_v<
+                          V,
+                          std::unordered_map<
+                              std::string,
+                              std::variant<std::array<size_t, 3>, size_t>>>) {
+          const auto converted = [&v]() {
+            std::unordered_map<std::string, std::array<size_t, 3>> result;
+            for (const auto& [name, val] : v) {
+              if (std::holds_alternative<size_t>(val)) {
+                const size_t r = std::get<size_t>(val);
+                result[name] = {r, 0, 0};
+              } else {
+                result[name] = std::get<std::array<size_t, 3>>(val);
+              }
+            }
+            return result;
+          }();
+          return expand_over_blocks(converted);
+        } else {
+          return expand_over_blocks(v);
+        }
+      },
+      initial_refinement);
+}
+
+std::vector<std::array<size_t, 3>> set_initial_grid_points(
+    const ExpandOverBlocks<std::array<size_t, 3>>& expand_over_blocks,
+    const BinaryCompactObject::InitialGridPoints::type& initial_grid_points) {
+  return std::visit(
+      [&expand_over_blocks]<typename V>(
+          const V& v) -> std::vector<std::array<size_t, 3>> {
+        if constexpr (std::is_same_v<
+                          V, std::unordered_map<
+                                 std::string,
+                                 std::variant<std::array<size_t, 3>,
+                                              std::array<size_t, 2>>>>) {
+          const auto converted = [&v]() {
+            std::unordered_map<std::string, std::array<size_t, 3>> result;
+            for (const auto& [name, val] : v) {
+              if (std::holds_alternative<std::array<size_t, 2>>(val)) {
+                const auto& a2 = std::get<std::array<size_t, 2>>(val);
+                result[name] = {a2[0], a2[1], a2[1]};
+              } else {
+                result[name] = std::get<std::array<size_t, 3>>(val);
+              }
+            }
+            return result;
+          }();
+          return expand_over_blocks(converted);
+        } else {
+          return expand_over_blocks(v);
+        }
+      },
+      initial_grid_points);
+}
 }  // namespace bco
 
 bool BinaryCompactObject::Object::is_excised() const {
@@ -166,97 +319,19 @@ BinaryCompactObject::BinaryCompactObject(
     }
   }
 
-  // Validate InitialGridPoints map entries.
-  // When SphericalHarmonicsInWavezone is enabled: spherical-harmonic shell
-  // entries must use array<2> {radial, L_max}; non-spherical-harmonic entries
-  // must use array<3>.
-  // When SphericalHarmonicsInWavezone is disabled: array<2> is not accepted
-  // anywhere.
-  if (std::holds_alternative<
-          std::unordered_map<std::string, std::variant<std::array<size_t, 3>,
-                                                       std::array<size_t, 2>>>>(
-          initial_number_of_grid_points)) {
-    const auto& grid_points_map = std::get<
-        std::unordered_map<std::string, std::variant<std::array<size_t, 3>,
-                                                     std::array<size_t, 2>>>>(
-        initial_number_of_grid_points);
-    for (const auto& [block_name, extents] : grid_points_map) {
-      const bool is_spherical_harmonic_block =
-          spherical_harmonic_shell_names.contains(block_name);
-      if (is_spherical_harmonic_block) {
-        if (std::holds_alternative<std::array<size_t, 3>>(extents)) {
-          PARSE_ERROR(context, "Block '"
-                                   << block_name
-                                   << "' is a spherical-harmonic outer-shell "
-                                      "block. Specify its grid points as "
-                                      "[radial_points, L_max], not array<3>.");
-        }
-      } else {
-        if (std::holds_alternative<std::array<size_t, 2>>(extents)) {
-          if (spherical_harmonics_in_wavezone_) {
-            PARSE_ERROR(context,
-                        "Specifying 2 grid points for block '"
-                            << block_name
-                            << "' is only valid for spherical-harmonic "
-                               "outer-shell blocks (OuterShell0, etc.).");
-          } else {
-            PARSE_ERROR(
-                context,
-                "Specifying 2 grid points (block '"
-                    << block_name
-                    << "') is only valid when SphericalHarmonicsInWavezone "
-                       "is enabled.");
-          }
-        }
-      }
-    }
-  }
-  // Validate InitialRefinement map entries.
-  // When SphericalHarmonicsInWavezone is enabled: spherical-harmonic shell
-  // entries must use size_t (radial only); array<3> is rejected on
-  // spherical-harmonic blocks even if angular components are zero.
-  // Non-spherical-harmonic entries must use array<3>.
-  // When SphericalHarmonicsInWavezone is disabled: size_t is not accepted
-  // anywhere.
-  if (std::holds_alternative<std::unordered_map<
-          std::string, std::variant<std::array<size_t, 3>, size_t>>>(
-          initial_refinement)) {
-    const auto& refinement_map = std::get<std::unordered_map<
-        std::string, std::variant<std::array<size_t, 3>, size_t>>>(
-        initial_refinement);
-    for (const auto& [block_name, ref] : refinement_map) {
-      const bool is_spherical_harmonic_block =
-          spherical_harmonic_shell_names.contains(block_name);
-      if (is_spherical_harmonic_block) {
-        if (std::holds_alternative<std::array<size_t, 3>>(ref)) {
-          PARSE_ERROR(context,
-                      "Block '"
-                          << block_name
-                          << "' is a spherical-harmonic outer-shell block. "
-                             "Specify its refinement as a single number "
-                             "(radial only), not array<3>. Angular "
-                             "h-refinement is not supported for these blocks.");
-        }
-      } else {
-        if (std::holds_alternative<size_t>(ref)) {
-          if (spherical_harmonics_in_wavezone_) {
-            PARSE_ERROR(context,
-                        "Per-block single-number refinement for block '"
-                            << block_name
-                            << "' is only valid for spherical-harmonic "
-                               "outer-shell blocks (OuterShell0, etc.).");
-          } else {
-            PARSE_ERROR(
-                context,
-                "Per-block single-number refinement in map syntax (block '"
-                    << block_name
-                    << "') is only valid when SphericalHarmonicsInWavezone "
-                       "is enabled.");
-          }
-        }
-      }
-    }
-  }
+  ASSERT(not(spherical_harmonics_in_wavezone_ and
+             spherical_harmonic_shell_names.empty()),
+         "SphericalHarmonicsInWavezone is enabled but the list of spherical "
+         "shell names is empty.");
+  ASSERT(spherical_harmonics_in_wavezone_ or
+             spherical_harmonic_shell_names.empty(),
+         "SphericalHarmonicsInWavezone is disabled but the list of spherical "
+         "shell names is non-empty.");
+
+  bco::validate_initial_refinement(context, initial_refinement,
+                                   spherical_harmonic_shell_names);
+  bco::validate_initial_grid_points(context, initial_number_of_grid_points,
+                                    spherical_harmonic_shell_names);
 
   // Calculate number of blocks
   // Object cubes and shells have 6 blocks each, for a total for 24 blocks.
@@ -508,74 +583,18 @@ BinaryCompactObject::BinaryCompactObject(
       block_names_, block_groups_};
 
   try {
-    initial_refinement_ = std::visit(
-        [&expand_over_blocks]<typename V>(
-            const V& v) -> std::vector<std::array<size_t, 3>> {
-          if constexpr (std::is_same_v<
-                            V,
-                            std::unordered_map<
-                                std::string,
-                                std::variant<std::array<size_t, 3>, size_t>>>) {
-            // Convert size_t entries to {r, 0, 0} for spherical harmonic
-            // blocks; array<3> entries are used unchanged.
-            const auto converted = [&v]() {
-              std::unordered_map<std::string, std::array<size_t, 3>> result;
-              for (const auto& [name, val] : v) {
-                if (std::holds_alternative<size_t>(val)) {
-                  const size_t r = std::get<size_t>(val);
-                  result[name] = {r, 0, 0};
-                } else {
-                  result[name] = std::get<std::array<size_t, 3>>(val);
-                }
-              }
-              return result;
-            }();
-            return expand_over_blocks(converted);
-          } else {
-            return expand_over_blocks(v);
-          }
-        },
-        initial_refinement);
+    initial_refinement_ =
+        bco::set_initial_refinement(expand_over_blocks, initial_refinement);
   } catch (const std::exception& error) {
     PARSE_ERROR(context, "Invalid 'InitialRefinement': " << error.what());
   }
   try {
-    initial_number_of_grid_points_ = std::visit(
-        [&expand_over_blocks]<typename V>(
-            const V& v) -> std::vector<std::array<size_t, 3>> {
-          if constexpr (std::is_same_v<
-                            V, std::unordered_map<
-                                   std::string,
-                                   std::variant<std::array<size_t, 3>,
-                                                std::array<size_t, 2>>>>) {
-            // Convert array<2>{r, L_max} entries to {r, l_max, m_max} =
-            // {r, L_max, L_max} for spherical harmonic blocks; array<3> entries
-            // are used unchanged. We store the (l_max, m_max) of the shell
-            // directly because ell is clear and unambiguous, whereas the number
-            // of collocation points implied by ell depends on the spectral
-            // implementation. The conversion to the number of collocation
-            // points is applied in initial_extents().
-            const auto converted = [&v]() {
-              std::unordered_map<std::string, std::array<size_t, 3>> result;
-              for (const auto& [name, val] : v) {
-                if (std::holds_alternative<std::array<size_t, 2>>(val)) {
-                  const auto& a2 = std::get<std::array<size_t, 2>>(val);
-                  result[name] = {a2[0], a2[1], a2[1]};
-                } else {
-                  result[name] = std::get<std::array<size_t, 3>>(val);
-                }
-              }
-              return result;
-            }();
-            return expand_over_blocks(converted);
-          } else {
-            return expand_over_blocks(v);
-          }
-        },
-        initial_number_of_grid_points);
+    initial_number_of_grid_points_ = bco::set_initial_grid_points(
+        expand_over_blocks, initial_number_of_grid_points);
   } catch (const std::exception& error) {
     PARSE_ERROR(context, "Invalid 'InitialGridPoints': " << error.what());
   }
+
   // Validate resolved grid points and refinement for spherical-harmonic
   // outer-shell blocks.
   if (spherical_harmonics_in_wavezone_) {
