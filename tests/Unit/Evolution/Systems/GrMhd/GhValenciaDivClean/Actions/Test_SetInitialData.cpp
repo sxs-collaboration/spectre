@@ -344,21 +344,19 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.GhValenciaDivClean.SetInitialData",
                                  evolution::dg::subcell::ActiveGrid::Subcell}) {
     test_set_initial_data(
         NumericInitialData{
-            "TestInitialData.h5",
-            "VolumeData",
-            0.,
-            {1.0e-9},
-            false,
+            importers::ImporterOptions{"TestInitialData.h5", "VolumeData", 0.,
+                                       Options::Auto<double>{1.0e-9}, false},
             gh::NumericInitialData::GhVars{"CustomSpacetimeMetric", "CustomPi",
                                            "CustomPhi"},
             {"CustomRho", "CustomUi", "CustomYe", "CustomB"},
             1.e-14},
         "NumericInitialData:\n"
-        "  FileGlob: TestInitialData.h5\n"
-        "  Subgroup: VolumeData\n"
-        "  ObservationValue: 0.\n"
-        "  ObservationValueEpsilon: 1e-9\n"
-        "  ElementsAreIdentical: False\n"
+        "  VolumeData:\n"
+        "    FileGlob: TestInitialData.h5\n"
+        "    Subgroup: VolumeData\n"
+        "    ObservationValue: 0.\n"
+        "    ObservationValueEpsilon: 1e-9\n"
+        "    ElementsAreIdentical: False\n"
         "  GhVariables:\n"
         "    SpacetimeMetric: CustomSpacetimeMetric\n"
         "    Pi: CustomPi\n"
@@ -371,22 +369,21 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.GhValenciaDivClean.SetInitialData",
         "  DensityCutoff: 1.e-14",
         true, active_grid);
     test_set_initial_data(
-        NumericInitialData{"TestInitialData.h5",
-                           "VolumeData",
-                           0.,
-                           std::nullopt,
-                           false,
-                           gh::NumericInitialData::AdmVars{
-                               "CustomSpatialMetric", "CustomLapse",
-                               "CustomShift", "CustomExtrinsicCurvature"},
-                           {"CustomRho", "CustomUi", 0.15, 0.},
-                           1.e-14},
+        NumericInitialData{
+            importers::ImporterOptions{"TestInitialData.h5", "VolumeData", 0.,
+                                       Options::Auto<double>{}, false},
+            gh::NumericInitialData::AdmVars{"CustomSpatialMetric",
+                                            "CustomLapse", "CustomShift",
+                                            "CustomExtrinsicCurvature"},
+            {"CustomRho", "CustomUi", 0.15, 0.},
+            1.e-14},
         "NumericInitialData:\n"
-        "  FileGlob: TestInitialData.h5\n"
-        "  Subgroup: VolumeData\n"
-        "  ObservationValue: 0.\n"
-        "  ObservationValueEpsilon: Auto\n"
-        "  ElementsAreIdentical: False\n"
+        "  VolumeData:\n"
+        "    FileGlob: TestInitialData.h5\n"
+        "    Subgroup: VolumeData\n"
+        "    ObservationValue: 0.\n"
+        "    ObservationValueEpsilon: Auto\n"
+        "    ElementsAreIdentical: False\n"
         "  GhVariables:\n"
         "    SpatialMetric: CustomSpatialMetric\n"
         "    Lapse: CustomLapse\n"

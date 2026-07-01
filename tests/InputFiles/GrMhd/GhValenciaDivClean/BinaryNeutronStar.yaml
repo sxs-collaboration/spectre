@@ -556,11 +556,12 @@ InitialData:
   #   AtmosphereDensity: *AtmosphereDensity
   #   ElectronFraction: 0.15
   NumericInitialData:
-    FileGlob: BnsVolume*.h5
-    Subgroup: VolumeData
-    ObservationValue: Last
-    ObservationValueEpsilon: Auto
-    ElementsAreIdentical: False
+    VolumeData:
+      FileGlob: BnsVolume*.h5
+      Subgroup: VolumeData
+      ObservationValue: Last
+      ObservationValueEpsilon: Auto
+      ElementsAreIdentical: False
     GhVariables:
       Lapse: Lapse
       Shift: ShiftExcess

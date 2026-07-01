@@ -90,14 +90,23 @@ struct ElementsAreIdentical {
 /// Options that specify the volume data to load. See the option tags for
 /// details.
 struct ImporterOptions
-    : tuples::TaggedTuple<OptionTags::FileGlob, OptionTags::Subgroup,
-                          OptionTags::ObservationValue,
-                          OptionTags::ObservationValueEpsilon,
-                          OptionTags::ElementsAreIdentical> {
+    : tuples::TaggedTuple<
+          OptionTags::FileGlob, OptionTags::Subgroup,
+          OptionTags::ObservationValue, OptionTags::ObservationValueEpsilon,
+          OptionTags::ElementsAreIdentical> {
   using options = tags_list;
   static constexpr Options::String help = "The volume data to load.";
   using TaggedTuple::TaggedTuple;
 };
+
+namespace OptionTags {
+/// Bundles all \ref importers::ImporterOptions for use in factory-creatable
+/// classes
+struct VolumeData {
+  using type = ImporterOptions;
+  static constexpr Options::String help = ImporterOptions::help;
+};
+}  // namespace OptionTags
 
 /// The \ref DataBoxGroup tags associated with the data importer
 namespace Tags {

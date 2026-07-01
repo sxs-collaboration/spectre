@@ -16,11 +16,12 @@ Parallelization:
 
 InitialData:
   NumericInitialData:
-    FileGlob: "{{ IdFileGlob }}"
-    Subgroup: "{{ IdFileGlobSubgroup }}"
-    ObservationValue: &InitialTime {{ MatchTime }}
-    ObservationValueEpsilon: Auto
-    ElementsAreIdentical: False
+    VolumeData:
+      FileGlob: "{{ IdFileGlob }}"
+      Subgroup: "{{ IdFileGlobSubgroup }}"
+      ObservationValue: &InitialTime {{ MatchTime }}
+      ObservationValueEpsilon: Auto
+      ElementsAreIdentical: False
     Variables:
       SpacetimeMetric: SpacetimeMetric
       Pi: Pi

@@ -48,20 +48,21 @@ InitialData:
     DataDirectory: "{{ SpecDataDirectory }}"
 {% else %}
   NumericInitialData:
-    FileGlob: "{{ IdFileGlob }}"
-    Subgroup: "{{ IdSubfile }}"
+    VolumeData:
+      FileGlob: "{{ IdFileGlob }}"
+      Subgroup: "{{ IdSubfile }}"
   {% if IdFromEvolution %}
-    ObservationValue: {{ InitialTime }}
-    ObservationValueEpsilon: Auto
-    ElementsAreIdentical: True
+      ObservationValue: {{ InitialTime }}
+      ObservationValueEpsilon: Auto
+      ElementsAreIdentical: True
     Variables:
       SpacetimeMetric: SpacetimeMetric
       Pi: Pi
       Phi: Phi
   {% else %}
-    ObservationValue: Last
-    ObservationValueEpsilon: Auto
-    ElementsAreIdentical: False
+      ObservationValue: Last
+      ObservationValueEpsilon: Auto
+      ElementsAreIdentical: False
     Variables:
       Lapse: Lapse
       # Load a shift that is not corotating. See `docs/Examples/BbhInitialData`

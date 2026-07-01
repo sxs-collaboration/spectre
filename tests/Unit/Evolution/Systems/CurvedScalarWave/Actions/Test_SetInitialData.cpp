@@ -288,18 +288,17 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.CurvedScalarWave.SetInitialData",
                   "[Unit][Evolution]") {
   register_factory_classes_with_charm<Metavariables>();
   test_set_initial_data(
-      NumericInitialData{"TestInitialData.h5",
-                         "VolumeData",
-                         0.,
-                         {1.0e-9},
-                         false,
-                         {"CustomPsi", "CustomPi", "CustomPhi"}},
+      NumericInitialData{
+          importers::ImporterOptions{"TestInitialData.h5", "VolumeData", 0.,
+                                     Options::Auto<double>{1.0e-9}, false},
+          NumericInitialData::ScalarVars{"CustomPsi", "CustomPi", "CustomPhi"}},
       "NumericInitialData:\n"
-      "  FileGlob: TestInitialData.h5\n"
-      "  Subgroup: VolumeData\n"
-      "  ObservationValue: 0.\n"
-      "  ObservationValueEpsilon: 1e-9\n"
-      "  ElementsAreIdentical: False\n"
+      "  VolumeData:\n"
+      "    FileGlob: TestInitialData.h5\n"
+      "    Subgroup: VolumeData\n"
+      "    ObservationValue: 0.\n"
+      "    ObservationValueEpsilon: 1e-9\n"
+      "    ElementsAreIdentical: False\n"
       "  Variables:\n"
       "    Psi: CustomPsi\n"
       "    Pi: CustomPi\n"
