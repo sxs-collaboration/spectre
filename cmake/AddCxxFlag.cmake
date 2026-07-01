@@ -6,6 +6,11 @@
 # have to write it to a file.
 set(_CHECK_CXX_FLAGS_SOURCE "${CMAKE_BINARY_DIR}/CMakeFiles/CheckCxxFlags.cpp")
 write_file(${_CHECK_CXX_FLAGS_SOURCE} "")
+# Gfortran rejects compiling a file with a .cpp extension as Fortran when
+# -Werror is enabled, so use a separate empty Fortran source.
+set(_CHECK_FORTRAN_FLAGS_SOURCE
+  "${CMAKE_BINARY_DIR}/CMakeFiles/CheckFortranFlags.f")
+write_file(${_CHECK_FORTRAN_FLAGS_SOURCE} "")
 
 # Checks if a flag is supported by the compiler and creates the target
 # TARGET_NAME whose INTERFACE_COMPILE_OPTIONS are set to the FLAG_TO_CHECK
