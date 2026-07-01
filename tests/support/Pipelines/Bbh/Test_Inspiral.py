@@ -14,6 +14,7 @@ from spectre.Informer import unit_test_build_path
 from spectre.Pipelines.Bbh.InitialData import generate_id
 from spectre.Pipelines.Bbh.Inspiral import (
     INSPIRAL_INPUT_FILE_TEMPLATE,
+    _common_horizon_lmax_threshold,
     inspiral_parameters,
     start_inspiral_command,
 )
@@ -107,6 +108,7 @@ class TestInspiral(unittest.TestCase):
         self.assertEqual(params["IncreaseThreshold"], 1.5 / 130 * 2e-3)
         self.assertEqual(params["SizeAMaxTimescale"], 20)
         self.assertEqual(params["SizeBMaxTimescale"], 20)
+        self.assertEqual(params["CommonHorizonLMaxThreshold"], 20)
         # Constraint damping
         self.assertEqual(params["Gamma0Constant"], 0.01)
         self.assertEqual(params["Gamma0LeftAmplitude"], 4.0 / 0.4)
@@ -116,6 +118,21 @@ class TestInspiral(unittest.TestCase):
         self.assertEqual(params["Gamma0OriginAmplitude"], 0.75)
         self.assertEqual(params["Gamma0OriginWidth"], 50.0)
         self.assertEqual(params["Gamma1Width"], 200.0)
+
+    def test_common_horizon_lmax_threshold(self):
+        cases = [
+            (1.0, 20),
+            (4.0, 20),
+            (5.0, 24),
+            (10.0, 40),
+            (12.0, 40),
+        ]
+        for mass_ratio, expected in cases:
+            with self.subTest(mass_ratio=mass_ratio):
+                self.assertEqual(
+                    _common_horizon_lmax_threshold(mass_ratio),
+                    expected,
+                )
 
     def test_cli(self):
         common_args = [
@@ -150,6 +167,20 @@ class TestInspiral(unittest.TestCase):
         self.assertTrue(
             (self.test_dir / "Inspiral/Segment_0000/Inspiral.yaml").exists()
         )
+
+        with open(
+            self.test_dir / "Inspiral/Segment_0000/Inspiral.yaml",
+            "r",
+        ) as open_input_file:
+            docs = list(yaml.safe_load_all(open_input_file))
+
+        self.assertEqual(len(docs), 2)
+        _top_level_doc, inspiral_doc = docs
+        self.assertEqual(
+            inspiral_doc["BbhCompletionCriteria"]["CommonHorizonLMaxThreshold"],
+            20,
+        )
+
         # Test with pipeline directory and lev specified
         try:
             start_inspiral_command(

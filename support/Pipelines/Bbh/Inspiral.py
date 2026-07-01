@@ -109,6 +109,15 @@ def _constraint_damping_params(
     }
 
 
+# Mirror SpEC's TerminateBelowThisL rule"
+def _common_horizon_lmax_threshold(mass_ratio: float) -> int:
+    if mass_ratio > 10.0:
+        return 40
+    if mass_ratio > 4.0:
+        return 21 + int((mass_ratio - 4.0) * 19.99 / 6.0)
+    return 20
+
+
 def inspiral_parameters(
     id_input_file: dict,
     id_metadata: dict,
@@ -234,6 +243,9 @@ def inspiral_parameters(
         # mass ratio 6 to evolve through inspiral stably.
         "ExtraRadRef": round(mass_ratio / 2.0) - 1 if (mass_ratio > 2.0) else 0,
         "ExtraRadPoints": round(mass_ratio / 5.0) if (mass_ratio > 5.0) else 0,
+        "CommonHorizonLMaxThreshold": _common_horizon_lmax_threshold(
+            mass_ratio
+        ),
     }
 
     # Initial functions of time (set from ID or load from evolution data)
@@ -385,6 +397,9 @@ def inspiral_parameters_spec(
         # mass ratio 6 to evolve through inspiral stably.
         "ExtraRadRef": round(mass_ratio / 2.0) - 1 if (mass_ratio > 2.0) else 0,
         "ExtraRadPoints": round(mass_ratio / 5.0) if (mass_ratio > 5.0) else 0,
+        "CommonHorizonLMaxThreshold": _common_horizon_lmax_threshold(
+            mass_ratio
+        ),
     }
 
     # Constraint damping parameters

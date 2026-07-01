@@ -520,7 +520,7 @@ BbhCompletionCriteria:
   MaxCommonHorizonSuccesses: 100
   GaugeConstraintLinfThreshold: 1.0
   ThreeIndexConstraintLinfThreshold: 1.0
-  CommonHorizonLMaxThreshold: 8
+  CommonHorizonLMaxThreshold: {{ CommonHorizonLMaxThreshold }}
   ConstraintCheckVerbose: false
 
 ApparentHorizons:
@@ -555,6 +555,10 @@ ApparentHorizons:
     BlocksForHorizonFind: ["ObjectBShell", "ObjectBCube"]
   ObservationAhC:
     Criteria:
+      - Residual:
+          MinResidual: 1.0e-4
+          MaxResidual: 1.0e-3
+          MinResolutionL: 6
     InitialGuess:
       LMax: 33
       Radius: 10.0
