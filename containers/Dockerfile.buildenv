@@ -383,18 +383,35 @@ RUN git clone https://github.com/ianlancetaylor/libbacktrace \
     && cd .. && rm -rf libbacktrace
 # - LibXSMM
 #
-# On x86 we cap the build at AVX2 (`AVX=2`) and disable LibXSMM's dynamic,
-# per-kernel target-attribute intrinsics (`INTRINSICS=1`, i.e. static: compile
-# only for the selected target). Otherwise LibXSMM compiles AVX-512 BF16 kernels
-# (e.g. `vcvtne2ps2bf16`) which the Ubuntu 18.04 assembler (binutils 2.30)
-# cannot assemble. AVX2 also matches the `-march=haswell` target used for the
-# deployed static executables. This is not an issue with gcc-10 because that
+# Version differs by architecture:
+#  * arm64 builds the 2.0.0 release, which is the first version with native
+#    AArch64 (SVE, NEON/ASIMD) GEMM support - 1.16.1 has no ARM backend. We
+#    build natively and do NOT pass `PLATFORM=1` (`-DLIBXSMM_PLATFORM_FORCE`):
+#    that forces the "unsupported platform" path, which has no native GEMM
+#    kernels and only hands off to BLAS at runtime via dlsym - a handoff that
+#    fails in our fully static binary ("LIBXSMM_GEMM failed").
+#  * x86 stays on the SpECTRE-validated 1.16.1. LibXSMM 2.0.0 rewrote its GEMM
+#    dispatch and produces wrong results for SpECTRE's matrix operations on x86
+#    (Subcell/FD reconstruction tests fail), so we do not adopt it here.
+# On x86 + Ubuntu 18.04 (the static-deploy image) we cap the build at AVX2
+# (`AVX=2`) and disable LibXSMM's dynamic, per-kernel target-attribute
+# intrinsics (`INTRINSICS=1`, i.e. static: compile only for the selected
+# target). Otherwise LibXSMM compiles AVX-512 BF16 kernels (e.g.
+# `vcvtne2ps2bf16`) which the Ubuntu 18.04 assembler (binutils 2.30) cannot
+# assemble. AVX2 also matches the `-march=haswell` target used for the deployed
+# static executables. This is not an issue with gcc-10 because that
 # compiler doesn't emit the AVX-512 BF16 instructions anyway.
+#
+# Note: We must NOT apply this cap to the Ubuntu 22.04 `dev`
+# image: `INTRINSICS=1` compiles even `libxsmm_init` for AVX2, removing
+# LibXSMM's CPUID-guarded runtime dispatch, which breaks the minimum-arch
+# (Nehalem) SDE test. The default build keeps that dispatch and runs on the
+# baseline arch. (22.04 has a new enough assembler anyway.)
 RUN if [ "$TARGETARCH" = "arm64" ] ; then \
-        git clone --single-branch --branch main --depth 1 \
+        git clone --single-branch --branch 2.0.0 --depth 1 \
             https://github.com/libxsmm/libxsmm.git libxsmm \
         && cd libxsmm \
-        && make $PARALLEL_MAKE_ARG PREFIX=/usr/local/ PLATFORM=1 install \
+        && make $PARALLEL_MAKE_ARG PREFIX=/usr/local/ install \
         && cd .. \
         && rm -rf libxsmm; \
     else \
@@ -403,7 +420,11 @@ RUN if [ "$TARGETARCH" = "arm64" ] ; then \
         && tar -xzf libxsmm.tar.gz \
         && mv libxsmm-* libxsmm \
         && cd libxsmm \
-        && make $PARALLEL_MAKE_ARG PREFIX=/usr/local/ AVX=2 INTRINSICS=1 install \
+        && if [ "${UBUNTU_VERSION}" = "18.04" ] ; then \
+            make $PARALLEL_MAKE_ARG PREFIX=/usr/local/ AVX=2 INTRINSICS=1 install; \
+        else \
+            make $PARALLEL_MAKE_ARG PREFIX=/usr/local/ install; \
+        fi \
         && cd .. \
         && rm -rf libxsmm libxsmm.tar.gz; \
     fi
