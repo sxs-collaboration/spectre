@@ -8,6 +8,7 @@ add_spectre_library(${LIBRARY})
 spectre_target_sources(
   ${LIBRARY}
   PRIVATE
+  DoubleCovariantDerivativeOfScalar.cpp
   RampUpFunction.cpp
   ScalarCharge.cpp
   ScalarSource.cpp
@@ -20,6 +21,7 @@ spectre_target_headers(
   HEADERS
   ConstraintDampingTags.hpp
   ConstraintGammas.hpp
+  DoubleCovariantDerivativeOfScalar.hpp
   RampUpFunction.hpp
   ScalarCharge.hpp
   SourceTags.hpp
