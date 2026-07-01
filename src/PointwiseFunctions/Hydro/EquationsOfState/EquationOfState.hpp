@@ -823,6 +823,46 @@ class EquationOfState<IsRelativistic, 3> : public PUP::able {
       const Scalar<DataVector>& /*electron_fraction*/) const = 0;
   /// @}
 
+  /// @{
+  /*!
+   * Computes
+   * \f[
+   * \kappa \equiv \left.\frac{\partial p}{\partial \epsilon}\right|_{\rho,Y_e},
+   * \f].
+   * Unlike the 1D and 2D interfaces which return
+   * \f$\kappa p/\rho^2\f$, the 3D interface returns \f$\kappa\f$ directly:
+   * 3D tables typically store \f$\kappa\f$ as an independent quantity, and
+   * callers that need \f$\kappa p/\rho^2\f$ can form it themselves.
+   */
+  virtual Scalar<double> kappa_from_density_and_temperature(
+      const Scalar<double>& /*rest_mass_density*/,
+      const Scalar<double>& /*temperature*/,
+      const Scalar<double>& /*electron_fraction*/) const = 0;
+
+  virtual Scalar<DataVector> kappa_from_density_and_temperature(
+      const Scalar<DataVector>& /*rest_mass_density*/,
+      const Scalar<DataVector>& /*temperature*/,
+      const Scalar<DataVector>& /*electron_fraction*/) const = 0;
+  /// @}
+
+  /// @{
+  /*!
+   * Computes
+   * \f[
+   * \zeta \equiv \left.\frac{\partial p}{\partial Y_e}\right|_{\rho,\epsilon},
+   * \f].
+   */
+  virtual Scalar<double> zeta_from_density_and_temperature(
+      const Scalar<double>& /*rest_mass_density*/,
+      const Scalar<double>& /*temperature*/,
+      const Scalar<double>& /*electron_fraction*/) const = 0;
+
+  virtual Scalar<DataVector> zeta_from_density_and_temperature(
+      const Scalar<DataVector>& /*rest_mass_density*/,
+      const Scalar<DataVector>& /*temperature*/,
+      const Scalar<DataVector>& /*electron_fraction*/) const = 0;
+  /// @}
+
   /// The lower bound of the electron fraction that is valid for this EOS
   virtual double electron_fraction_lower_bound() const = 0;
 
@@ -901,7 +941,8 @@ bool operator!=(const EquationOfState<IsRelLhs, ThermoDimLhs>& lhs,
    specific_entropy_from_density_and_temperature,                           \
    temperature_from_density_and_energy,                                     \
    specific_internal_energy_from_density_and_temperature,                   \
-   sound_speed_squared_from_density_and_temperature)
+   sound_speed_squared_from_density_and_temperature,                        \
+   kappa_from_density_and_temperature, zeta_from_density_and_temperature)
 
 #define EQUATION_OF_STATE_ARGUMENTS_EXPAND(z, n, type) \
   BOOST_PP_COMMA_IF(n) const Scalar<type>&

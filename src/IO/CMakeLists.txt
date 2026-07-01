@@ -9,6 +9,7 @@ spectre_target_sources(
   ${LIBRARY}
   PRIVATE
   ComposeTable.cpp
+  ComposeTableDerivatives.cpp
   Connectivity.cpp
   )
 
@@ -17,7 +18,9 @@ spectre_target_headers(
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
   ComposeTable.hpp
+  ComposeTableDerivatives.hpp
   Connectivity.hpp
+  Io.hpp
   )
 
 # Notes:

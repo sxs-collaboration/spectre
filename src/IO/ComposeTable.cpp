@@ -202,7 +202,7 @@ const std::vector<std::string>
         "specific enthalpy",
         "specific free enthalpy",
         "dp_drho",
-        "dp_depsilon",
+        "kappa",  // CompOSE Q11 (dp/dε)
         "sound speed squared",
         "specific heat at constant volume",
         "specific heat at constant pressure",

@@ -3,19 +3,51 @@
 
 #include <boost/program_options.hpp>
 
+#include <algorithm>
+#include <array>
+#include <cmath>
 #include <string>
 
 #include "DataStructures/DataVector.hpp"
 #include "IO/ComposeTable.hpp"
+#include "IO/ComposeTableDerivatives.hpp"
 #include "IO/H5/EosTable.hpp"
 #include "IO/H5/File.hpp"
 #include "Parallel/Printf/Printf.hpp"
+#include "Utilities/ErrorHandling/Assert.hpp"
+#include "Utilities/ErrorHandling/Error.hpp"
 
 // Charm looks for this function but since we build without a main function or
 // main module we just have it be empty
 extern "C" void CkRegisterMainModule(void) {}
 
 namespace {
+std::vector<double> make_grid_1d(const std::array<double, 2>& bounds,
+                                 const size_t npts, const bool log_spacing) {
+  std::vector<double> grid(npts);
+  if (npts == 0) {
+    ERROR("Number of points is zero.");
+  }
+  if (npts == 1) {
+    grid[0] = bounds[0];
+    return grid;
+  }
+  if (log_spacing) {
+    const double log_lo = std::log(bounds[0]);
+    const double log_hi = std::log(bounds[1]);
+    const double dlog = (log_hi - log_lo) / static_cast<double>(npts - 1);
+    for (size_t i = 0; i < npts; ++i) {
+      grid[i] = std::exp(log_lo + dlog * static_cast<double>(i));
+    }
+  } else {
+    const double d = (bounds[1] - bounds[0]) / static_cast<double>(npts - 1);
+    for (size_t i = 0; i < npts; ++i) {
+      grid[i] = bounds[0] + d * static_cast<double>(i);
+    }
+  }
+  return grid;
+}
+
 void convert_file(const std::string& compose_directory,
                   const std::string& spectre_eos_filename,
                   const std::string& spectre_eos_subfile) {
@@ -37,9 +69,107 @@ void convert_file(const std::string& compose_directory,
                   compose_table.electron_fraction_log_spacing()},
       compose_table.beta_equilibrium());
 
-  // Now dump data into the EosTable file
-  for (const auto& [quantity_name, quantity_data] : compose_table.data()) {
+  const auto& data = compose_table.data();
+
+  // Required base quantities
+  const DataVector& pressure = data.at("pressure");
+  const DataVector& eps = data.at("specific internal energy");
+
+  const size_t nN = compose_table.number_density_number_of_points();
+  const size_t nT = compose_table.temperature_number_of_points();
+  const size_t nYe = compose_table.electron_fraction_number_of_points();
+  const size_t ntot = nN * nT * nYe;
+
+  ASSERT(pressure.size() == ntot,
+         "Pressure size does not match table dimensions.");
+  ASSERT(eps.size() == pressure.size(),
+         "Epsilon size does not match pressure size.");
+
+  // Free-energy derivatives used to compute zeta analytically (CompOSE Table
+  // 7.3 indices 3,4,5,8,9). They are inputs only.
+  const std::array<std::string, 5> zeta_derivative_keys{
+      {"d2 F / d T2", "d2 F / d T d n_b", "d2 F / d T d Y_e",
+       "d2 F / d n_b d Y_e", "d F / d Y_e"}};
+  const bool have_derivatives = std::all_of(
+      zeta_derivative_keys.begin(), zeta_derivative_keys.end(),
+      [&data](const std::string& key) { return data.contains(key); });
+
+  // Write everything available from the CompOSE table except those
+  // derivatives and kappa. kappa is post-processed below.
+  for (const auto& [quantity_name, quantity_data] : data) {
+    if (std::find(zeta_derivative_keys.begin(), zeta_derivative_keys.end(),
+                  quantity_name) != zeta_derivative_keys.end()) {
+      continue;
+    }
+    if (quantity_name == "kappa") {
+      continue;
+    }
     spectre_eos.write_quantity(quantity_name, quantity_data);
+  }
+
+  // kappa = dp/dε (CompOSE Q11). Required by thermodynamic stability to be
+  // non-negative (∂p/∂ε > 0 at fixed ρ, Y_e), but CompOSE's tabulated Q11
+  // comes from interpolation of free-energy derivatives that can overshoot
+  // at table corners — in the DD2 HS table ~1% of points are negative.
+  // Replace any such points with a small positive floor so that downstream
+  // consumers (e.g. the GRMHD ValenciaDivClean characteristic decomposition)
+  // see a thermodynamically valid κ. If Q11 is missing entirely, fall back
+  // to zeros so the H5 format stays uniform.
+  constexpr double kappa_floor = 1.0e-12;
+  if (not data.contains("kappa")) {
+    Parallel::printf(
+        "WARNING: source CompOSE table does not contain kappa (Q11 dp/dε); "
+        "writing kappa = 0. Regenerate with index 11 in eos.quantities to "
+        "get the true value.\n");
+    spectre_eos.write_quantity("kappa", DataVector(ntot, 0.0));
+  } else {
+    DataVector kappa = data.at("kappa");
+    size_t n_clamped = 0;
+    for (double& kappa_value : kappa) {
+      if (kappa_value < 0.0) {
+        kappa_value = kappa_floor;
+        ++n_clamped;
+      }
+    }
+    if (n_clamped > 0) {
+      Parallel::printf(
+          "Clamped %zu/%zu negative kappa entries to %.1e. Positive kappa "
+          "values still from Q11.\n",
+          n_clamped, kappa.size(), kappa_floor);
+    }
+    spectre_eos.write_quantity("kappa", kappa);
+  }
+
+  // zeta = ∂P/∂Ye is computed analytically from the CompOSE free-energy
+  // derivatives (Table 7.3 indices 3,4,5,8,9). It is ill-defined for
+  // beta-equilibrium tables (Ye is fixed by beta equilibrium rather than free).
+  // In either the beta-equilibrium case or when those derivatives weren't
+  // tabulated we cannot compute it, so — as with kappa — emit a warning and
+  // write zeros to keep the H5 format uniform.
+  if (compose_table.beta_equilibrium()) {
+    Parallel::printf(
+        "WARNING: source CompOSE table is flagged beta-equilibrium; writing "
+        "zeta = 0 (∂P/∂Ye is undefined when Ye is fixed by beta "
+        "equilibrium).\n");
+    spectre_eos.write_quantity("zeta", DataVector(ntot, 0.0));
+  } else if (not have_derivatives) {
+    Parallel::printf(
+        "WARNING: source CompOSE table does not contain the free-energy "
+        "derivatives (Table 7.3 indices 3,4,5,8,9) needed for zeta = "
+        "(∂P/∂Ye)_{rho,eps}; writing zeta = 0. Regenerate with derivative "
+        "indices 3 4 5 8 9 in eos.quantities to get the true value.\n");
+    spectre_eos.write_quantity("zeta", DataVector(ntot, 0.0));
+  } else {
+    const auto T_grid = make_grid_1d(compose_table.temperature_bounds(), nT,
+                                     compose_table.temperature_log_spacing());
+    const auto nb_grid =
+        make_grid_1d(compose_table.number_density_bounds(), nN,
+                     compose_table.number_density_log_spacing());
+    spectre_eos.write_quantity(
+        "zeta", io::compute_zeta_from_free_energy_derivatives(
+                    data.at("d2 F / d T2"), data.at("d2 F / d T d n_b"),
+                    data.at("d2 F / d T d Y_e"), data.at("d2 F / d n_b d Y_e"),
+                    data.at("d F / d Y_e"), nb_grid, T_grid, nN, nT, nYe));
   }
 }
 }  // namespace
@@ -77,17 +207,23 @@ int main(int argc, char** argv) {
         "\n"
         "Task 1\n"
         "How many regular thermodynamic quantities...\n"
-        "7\n"
+        "8\n"
         "Please select the indices of the thermodynamic quantities...\n"
         " Index #           1 ?"
         "1\n"
         " Index #           2 ?"
         "2\n"
-        "The remaining are: 3 4 5 7 12\n"
+        "The remaining are: 3 4 5 7 11 12\n"
+        "(Index 11 is dp/dε, stored as 'kappa' in SpECTRE and required by "
+        "Tabulated3D.)\n"
         "The following function values and derivatives of the free energy...\n"
-        "1\n"
+        "5\n"
         "Please select the indices of the thermodynamic...\n"
-        "1\n"
+        "3 4 5 8 9\n"
+        "(These are d2F/dT2, d2F/dTdn_b, d2F/dTdY_e, d2F/dn_bdY_e, and "
+        "dF/dY_e. SpECTRE uses them to compute the bulk-viscosity-like "
+        "quantity zeta = (dp/dY_e)_{rho,eps} analytically. If they are "
+        "omitted, zeta is written as zeros, with a warning, like kappa.)\n"
         "How many particles do you want to select for the file eos.table?\n"
         "0\n"
         "There are average mass, charge and neutron numbers...\n"

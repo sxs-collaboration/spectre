@@ -118,6 +118,8 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.EquationsOfState.Tabulated3D",
     vars[TEoS::Epsilon] = state[TableIndex::Temp];
     vars[TEoS::Pressure] = state[TableIndex::Temp] + state[TableIndex::Rho];
     vars[TEoS::CsSquared] = state[TableIndex::Ye];
+    vars[TEoS::Kappa] = state[TableIndex::Rho];
+    vars[TEoS::Zeta] = state[TableIndex::Ye];
     vars[TEoS::SpecificEntropy] =
         (vars[TEoS::Epsilon] - state[TableIndex::Rho] * state[TableIndex::Ye]) /
         state[TableIndex::Ye];
@@ -197,6 +199,13 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.EquationsOfState.Tabulated3D",
   CHECK(std::abs(output[TEoS::CsSquared] -
                  get(eos.sound_speed_squared_from_density_and_temperature(
                      state[1], state[0], state[2]))) < 1.e-12);
+
+  CHECK(std::abs(output[TEoS::Kappa] -
+                 get(eos.kappa_from_density_and_temperature(
+                     state[1], state[0], state[2]))) < 1.e-10);
+  CHECK(std::abs(output[TEoS::Zeta] - get(eos.zeta_from_density_and_temperature(
+                                          state[1], state[0], state[2]))) <
+        1.e-12);
   CHECK(std::abs(std::exp(output[TEoS::SpecificEntropy]) -
                  get(eos.specific_entropy_from_density_and_temperature(
                      state[1], state[0], state[2]))) < 2.e-12);
@@ -235,6 +244,14 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.EquationsOfState.Tabulated3D",
                      vector_state[1], vector_state[0], vector_state[2]))[0]) <
         2.e-12);
 
+  CHECK(std::abs(output[TEoS::Kappa] -
+                 get(eos.kappa_from_density_and_temperature(
+                     vector_state[1], vector_state[0], vector_state[2]))[0]) <
+        1.e-10);
+  CHECK(std::abs(output[TEoS::Zeta] - get(eos.zeta_from_density_and_temperature(
+                                          vector_state[1], vector_state[0],
+                                          vector_state[2]))[0]) < 1.e-12);
+
   const auto eps_interp_vector =
       eos.specific_internal_energy_from_density_and_temperature(
           vector_state[1], vector_state[0], vector_state[2]);
@@ -251,18 +268,24 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.EquationsOfState.Tabulated3D",
     CHECK_ITERABLE_APPROX(
         get(this_eos.specific_internal_energy_from_density_and_temperature(
             state[1], state[0], state[2])),
-        0.30204636358732767);
+        0.48107744659425744);
     CHECK_ITERABLE_APPROX(get(this_eos.pressure_from_density_and_temperature(
                               state[1], state[0], state[2])),
-                          0.00001103280164124);
+                          0.00003283930543247);
     CHECK_ITERABLE_APPROX(
         get(this_eos.sound_speed_squared_from_density_and_temperature(
             state[1], state[0], state[2])),
-        0.41669901507784435);
+        0.52939128000453251);
+    CHECK_ITERABLE_APPROX(get(this_eos.kappa_from_density_and_temperature(
+                              state[1], state[0], state[2])),
+                          0.00490097126107262);
+    CHECK_ITERABLE_APPROX(get(this_eos.zeta_from_density_and_temperature(
+                              state[1], state[0], state[2])),
+                          -0.00043219601036757);
     CHECK_ITERABLE_APPROX(
         get(this_eos.specific_entropy_from_density_and_temperature(
             state[1], state[0], state[2])),
-        0.19418671736233717);
+        0.19937094553252138);
   };
 
   // Test against reference values
