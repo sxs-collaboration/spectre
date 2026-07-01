@@ -6,16 +6,14 @@
 #include <array>
 #include <cstddef>
 #include <functional>
-#include <ostream>
 
+#include "DataStructures/DataVector.hpp"
+#include "DataStructures/Matrix.hpp"
+#include "DataStructures/Variables.hpp"
+#include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/SegmentSize.hpp"
 #include "Utilities/ConstantExpressions.hpp"
-
-/// \cond
-class Matrix;
-template <size_t Dim>
-class Mesh;
-/// \endcond
+#include "Utilities/Gsl.hpp"
 
 namespace Spectral {
 /// Determine whether data needs to be projected between a child mesh and its
@@ -67,6 +65,16 @@ bool needs_projection(const Mesh<Dim>& mesh1, const Mesh<Dim>& mesh2,
  * T_{jk} = \frac{2 j + 1}{2} 2^j \sum_{n=0}^{j-k} \binom{j}{k+n}
  * \binom{(j + k + n - 1)/2}{j} \frac{(k + n)!^2}{(2 k + n + 1)! n!}
  * \f}
+ *
+ * \note This and the other matrix-returning projection functions in this file
+ * (projection_matrix_parent_to_child(), projection_matrices()) only support
+ * tensor-product bases (Legendre, Fourier, ZernikeB2). They cannot be used for
+ * spherical-shell meshes that use the `SphericalHarmonic` basis, because the
+ * angular projection couples the \f$\theta\f$ and \f$\phi\f$ directions and so
+ * cannot be expressed as the per-dimension matrices these functions return. Use
+ * Spectral::project() instead whenever spherical-shell meshes must be
+ * supported; it dispatches to these matrices for tensor-product meshes and to a
+ * Spherepack-based angular projection for spherical-shell meshes.
  */
 const Matrix& projection_matrix_child_to_parent(
     const Mesh<1>& child_mesh, const Mesh<1>& parent_mesh, SegmentSize size,
@@ -101,13 +109,97 @@ template <size_t Dim>
 std::array<std::reference_wrapper<const Matrix>, Dim> projection_matrices(
     const Mesh<Dim>& source_mesh, const Mesh<Dim>& target_mesh,
     const std::array<SegmentSize, Dim>& source_sizes,
-    const std::array<SegmentSize, Dim>& target_sizes);
+    const std::array<SegmentSize, Dim>& target_sizes,
+    bool operand_is_massive = false);
 
 /// The projection matrices from a source mesh to a target mesh where the
 /// meshes cover the same physical volume
 template <size_t Dim>
 std::array<std::reference_wrapper<const Matrix>, Dim> p_projection_matrices(
     const Mesh<Dim>& source_mesh, const Mesh<Dim>& target_mesh);
+
+/// Change the angular resolution (`l_max`, with `m_max == l_max`) of volume
+/// data on a spherical shell from `source_data` to `result_data`, for
+/// `num_components` components each laid out with the radial dimension varying
+/// fastest. Uses Spherepack prolong/restrict. \see Spectral::project() for the
+/// higher-level interface to call this.
+///
+/// For non-massive operands this is the L2 (Galerkin) projection,
+/// $P_\mathrm{L2}$. For massive operands (`operand_is_massive == true`) the
+/// restriction is the transpose of the prolongation (interpolation) operator,
+/// $I^T$, which is the L2 projection conjugated by the diagonal matrices $W$ of
+/// angular quadrature weights:
+/// $I^T = W_\mathrm{target} P_\mathrm{L2} W_\mathrm{source}^{-1}$.
+/// This means we divide by the source weights before projecting and multiply by
+/// the target weights afterwards. See projection_matrix_child_to_parent() for
+/// details on massive operands.
+void project_spherical_harmonics(gsl::not_null<double*> result_data,
+                                 const double* source_data,
+                                 size_t num_components,
+                                 size_t num_radial_points, size_t l_max_source,
+                                 size_t l_max_target, bool operand_is_massive);
+
+/// @{
+/*!
+ * \brief Project volume data from `source_mesh` to `target_mesh`, writing the
+ * (resized) result into `*result`.
+ *
+ * This is the unified entry point for projection regardless of basis. It
+ * handles both tensor-product meshes and spherical-shell meshes (Legendre
+ * radial dimension plus `SphericalHarmonic` angular dimensions with
+ * `m_max == l_max`):
+ * - For tensor-product meshes it delegates to the per-dimension projection
+ *   matrices above.
+ * - For spherical-shell meshes it projects the radial dimension with the 1D
+ *   projection matrix and changes the angular `l_max` with a Spherepack
+ *   prolong/restrict. The angular dimensions cannot be h-refined, so their
+ *   segment sizes must be `Full`.
+ *
+ * `source_sizes` and `target_sizes` carry h-refinement information (which
+ * portion of an element the source/target cover); pass `Full` in every
+ * dimension for pure p-refinement.
+ *
+ * \warning `*result` must not point to `source` (the result is resized to the
+ * target number of grid points).
+ */
+template <typename VectorType, size_t Dim>
+void project(gsl::not_null<VectorType*> result, const VectorType& source,
+             const Mesh<Dim>& source_mesh, const Mesh<Dim>& target_mesh,
+             const std::array<SegmentSize, Dim>& source_sizes,
+             const std::array<SegmentSize, Dim>& target_sizes,
+             bool operand_is_massive = false);
+
+template <size_t Dim, typename TagList>
+void project(const gsl::not_null<Variables<TagList>*> result,
+             const Variables<TagList>& source, const Mesh<Dim>& source_mesh,
+             const Mesh<Dim>& target_mesh,
+             const std::array<SegmentSize, Dim>& source_sizes,
+             const std::array<SegmentSize, Dim>& target_sizes,
+             const bool operand_is_massive = false) {
+  // Type-erase to the vector implementation with multiple components
+  using VectorType = typename Variables<TagList>::vector_type;
+  using ValueType = typename Variables<TagList>::value_type;
+  result->initialize(target_mesh.number_of_grid_points());
+  VectorType result_view(result->data(), result->size());
+  // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
+  const VectorType source_view(const_cast<ValueType*>(source.data()),
+                               source.size());
+  project(make_not_null(&result_view), source_view, source_mesh, target_mesh,
+          source_sizes, target_sizes, operand_is_massive);
+}
+
+template <size_t Dim, typename T>
+T project(const T& source, const Mesh<Dim>& source_mesh,
+          const Mesh<Dim>& target_mesh,
+          const std::array<SegmentSize, Dim>& source_sizes,
+          const std::array<SegmentSize, Dim>& target_sizes,
+          const bool operand_is_massive = false) {
+  T result{};
+  project(make_not_null(&result), source, source_mesh, target_mesh,
+          source_sizes, target_sizes, operand_is_massive);
+  return result;
+}
+/// @}
 
 /// @{
 /// \brief Performs a perfect hash of the mortars into $2^{d-1}$ slots on the

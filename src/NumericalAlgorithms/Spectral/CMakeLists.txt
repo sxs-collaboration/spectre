@@ -92,6 +92,7 @@ target_link_libraries(
   LAPACK::LAPACK
   RootFinding
   SPHEREPACK
+  SphericalHarmonics
   )
 
 add_subdirectory(BasisFunctions)
