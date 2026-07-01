@@ -227,10 +227,22 @@ void FilledCylinder<TagList>::apply_in_volume(
     /*inv_jac_grid_to_inertial*/,
     const std::optional<Jacobian<DataVector, 3, Frame::Grid, Frame::Inertial>>&
     /*jac_grid_to_inertial*/) const {
+  const size_t needed_temp_size =
+      Variables<TagList>::number_of_independent_components *
+      mesh.number_of_grid_points();
+  if (temp_storage_.size() < needed_temp_size) {
+    temp_storage_.destructive_resize(needed_temp_size);
+  }
+  const std::optional<Matrix> z_mat =
+      z_half_power_.has_value()
+          ? std::optional<Matrix>{exponential_filter_matrix(
+                z_half_power_, mesh.slice_through(2), cached_z_filter_)}
+          : std::nullopt;
   Spectral::filtering::zernike_b2_cylinder_filter(
-      vars, mesh, 36.0,
+      vars, make_not_null(&temp_storage_), mesh, 36.0,
       FilledCylinder_detail::to_unsigned(radial_angular_half_power_),
-      FilledCylinder_detail::to_unsigned(z_half_power_), num_modes_to_kill_);
+      FilledCylinder_detail::to_unsigned(z_half_power_), num_modes_to_kill_,
+      z_mat);
 }
 
 template <typename TagList>

@@ -11,6 +11,7 @@
 #include <unordered_set>
 #include <vector>
 
+#include "DataStructures/DataVector.hpp"
 #include "DataStructures/Matrix.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "NumericalAlgorithms/LinearOperators/Filters/Filter.hpp"
@@ -21,7 +22,6 @@
 #include "Utilities/TMPL.hpp"
 
 /// \cond
-class DataVector;
 template <size_t Dim>
 class Mesh;
 template <typename TagsList>
@@ -294,8 +294,9 @@ class FilledCylinder : public Filter<3, TagList> {
   std::optional<size_t> boundary_filter_every_n_steps_{std::nullopt};
 
   // Boundary-filter matrix caches, each bound to the single extent it was built
-  // for and rebuilt when queried with a different extent. These are used only
-  // by `apply_on_boundary` right now: the volume filter is applied uncached by
+  // for and rebuilt when queried with a different extent. The angular filter
+  // is used only by `apply_on_boundary` right now: the radial and angular
+  // filter is applied uncached by
   // `Spectral::filtering::zernike_b2_cylinder_filter`, which intertwines the
   // radial and angular disk modes and so cannot reuse a per-direction 1-D
   // matrix. `cached_z_filter_` holds the axial (Legendre/Chebyshev) filter and
@@ -308,6 +309,9 @@ class FilledCylinder : public Filter<3, TagList> {
   // Returned by const reference to represent the identity for unfiltered
   // directions; never mutated, so it needs no `mutable`.
   Matrix empty_matrix_{};
+  // Buffer used internally by `Spectral::filtering::zernike_b2_cylinder_filter`
+  // NOLINTNEXTLINE(spectre-mutable)
+  mutable DataVector temp_storage_{};
 };
 
 template <typename TagList>
