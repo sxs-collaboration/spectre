@@ -706,6 +706,28 @@ void test_generalized_filters() {
       CHECK_VARIABLES_APPROX(u, expected_result);
     }
   }
+  {
+    INFO("Precomputed z_filter gives same result as z_half_power");
+    // Passing the z filter matrix explicitly (with z_half_power = nullopt)
+    // must produce the same result as passing z_half_power and letting the
+    // function compute the matrix internally.
+    const unsigned z_half = 6;
+    const Matrix z_mat = Spectral::filtering::exponential_filter(
+        mesh.slice_through(2), 36.0, z_half);
+    Variables<TagsList> u_precomputed{num_grid_points};
+    Variables<TagsList> u_computed{num_grid_points};
+    get(get<::Tags::TempScalar<0>>(u_precomputed)) = smooth_field;
+    get(get<::Tags::TempScalar<0>>(u_computed)) = smooth_field;
+    DataVector buf{};
+    Spectral::filtering::zernike_b2_cylinder_filter(
+        make_not_null(&u_precomputed), make_not_null(&buf), mesh, 36.0,
+        std::optional<unsigned>{8}, std::nullopt, 0,
+        std::optional<Matrix>{z_mat});
+    Spectral::filtering::zernike_b2_cylinder_filter(
+        make_not_null(&u_computed), mesh, 36.0, std::optional<unsigned>{8},
+        std::optional<unsigned>{z_half}, 0);
+    CHECK_VARIABLES_APPROX(u_precomputed, u_computed);
+  }
 }
 
 #ifdef SPECTRE_DEBUG

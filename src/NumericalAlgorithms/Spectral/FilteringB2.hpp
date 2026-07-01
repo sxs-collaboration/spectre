@@ -9,6 +9,7 @@
 #include "Utilities/Gsl.hpp"
 
 /// \cond
+class DataVector;
 class Matrix;
 template <size_t>
 class Mesh;
@@ -40,6 +41,21 @@ template <typename TagsList>
 void zernike_b2_disk_filter(gsl::not_null<Variables<TagsList>*> u,
                             const Mesh<2>& mesh, double alpha,
                             std::optional<unsigned> half_power,
+                            size_t num_modes_to_kill);
+
+/*!
+ * \brief Filters the tensors stored within a `Variables` being represented by
+ * ZernikeB2 basis functions, with an optional exponential roll-off and an
+ * optional top-mode cutoff.
+ *
+ * \details Overload taking a caller-managed working buffer. Avoids heap
+ * allocation when the filter is applied repeatedly (e.g. in
+ * `Filters::FilledCylinder`).
+ */
+template <typename TagsList>
+void zernike_b2_disk_filter(gsl::not_null<Variables<TagsList>*> u,
+                            gsl::not_null<DataVector*> buf, const Mesh<2>& mesh,
+                            double alpha, std::optional<unsigned> half_power,
                             size_t num_modes_to_kill);
 
 /*!
@@ -91,6 +107,26 @@ void zernike_b2_cylinder_filter(
     gsl::not_null<Variables<TagsList>*> u, const Mesh<3>& mesh, double alpha,
     std::optional<unsigned> radial_angular_half_power,
     std::optional<unsigned> z_half_power, size_t num_modes_to_kill);
+
+/*!
+ * \brief Filters the tensors stored within a `Variables` being represented by
+ * ZernikeB2 \f$\times\f$ Legendre basis functions, with optional independent
+ * roll-offs for the combined radial-angular disk modes and the axial \f$z\f$
+ * modes plus an optional angular top-mode cutoff.
+ *
+ * \details Overload taking a caller-managed working buffer. Avoids heap
+ * allocation when the filter is applied repeatedly (e.g. in
+ * `Filters::FilledCylinder`). One can optionally pass the exponential filter
+ * to apply in the z direction, otherwise it will be computed.
+ *
+ */
+template <typename TagsList>
+void zernike_b2_cylinder_filter(
+    gsl::not_null<Variables<TagsList>*> u, gsl::not_null<DataVector*> buf,
+    const Mesh<3>& mesh, double alpha,
+    std::optional<unsigned> radial_angular_half_power,
+    std::optional<unsigned> z_half_power, size_t num_modes_to_kill,
+    const std::optional<Matrix>& z_filter);
 
 /*!
  * \brief Filters the tensors stored within a `Variables` being represented by

@@ -22,27 +22,28 @@
 #include "Utilities/MemoryHelpers.hpp"
 
 namespace Spectral::filtering {
-namespace {
-void apply_matrix_in_first_dim(double* result, const double* const input,
-                               const Matrix& matrix, const size_t size,
-                               const bool add_to_result) {
-  dgemm_<true>(
-      'N', 'N',
-      matrix.rows(),              // rows of matrix and result
-      size / matrix.columns(),    // columns of result and input
-      matrix.columns(),           // columns of matrix and rows of input
-      1.0,                        // overall multiplier
-      matrix.data(),              // matrix
-      matrix.spacing(),           // rows of matrix including padding
-      input,                      // input
-      matrix.columns(),           // rows of input
-      add_to_result ? 1.0 : 0.0,  // overwrite output with result or add to it
-      result,                     // result
-      matrix.rows());             // rows of result
+namespace b2_detail {
+[[maybe_unused]] inline void apply_matrix_in_first_dim(
+    double* result, const double* const input, const Matrix& matrix,
+    const size_t size) {
+  dgemm_<true>('N', 'N',
+               matrix.rows(),            // rows of matrix and result
+               size / matrix.columns(),  // columns of result and input
+               matrix.columns(),         // columns of matrix and rows of input
+               1.0,                      // overall multiplier
+               matrix.data(),            // matrix
+               matrix.spacing(),         // rows of matrix including padding
+               input,                    // input
+               matrix.columns(),         // rows of input
+               0.0,                      // overwrite output
+               result,                   // result
+               matrix.rows());           // rows of result
 }
 
-void check_valid_extents(const size_t n_r, const size_t n_phi,
-                         const size_t n_r_max, const size_t M) {
+[[maybe_unused]] inline void check_valid_extents(const size_t n_r,
+                                                 const size_t n_phi,
+                                                 const size_t n_r_max,
+                                                 const size_t M) {
   ASSERT(
       n_r > 1,
       "At least 2 radial grid points are required to filter ZernikeB2, got n_r "
@@ -61,12 +62,10 @@ void check_valid_extents(const size_t n_r, const size_t n_phi,
 // coefficient `alpha`) is applied to both the radial mode `n` and the angular
 // mode `m`; when `num_modes_to_kill` is nonzero the highest `num_modes_to_kill`
 // angular `m`-modes are zeroed, with the `m = 0` mode always retained.
-DataVector zernike_b2_filter_weights(const size_t n_r,
-                                     const std::optional<unsigned> half_power,
-                                     const size_t num_modes_to_kill,
-                                     const double alpha,
-                                     const size_t spectral_space_size,
-                                     const size_t n_r_max, const size_t M) {
+[[maybe_unused]] inline DataVector zernike_b2_filter_weights(
+    const size_t n_r, const std::optional<unsigned> half_power,
+    const size_t num_modes_to_kill, const double alpha,
+    const size_t spectral_space_size, const size_t n_r_max, const size_t M) {
   const bool do_exp = half_power.has_value();
   const auto power = half_power.value_or(0u);
   const size_t n_order = n_r - 1;
@@ -105,17 +104,18 @@ DataVector zernike_b2_filter_weights(const size_t n_r,
   }
   return weights;
 }
-}  // namespace
+}  // namespace b2_detail
 
 template <typename TagsList>
 void zernike_b2_disk_filter(const gsl::not_null<Variables<TagsList>*> u,
+                            const gsl::not_null<DataVector*> buf,
                             const Mesh<2>& mesh, const double alpha,
                             const std::optional<unsigned> half_power,
                             const size_t num_modes_to_kill) {
   const auto [n_r, n_phi] = mesh.extents().indices();
   const size_t n_r_max = 2 * n_r - 2;
   const size_t M = n_phi / 2;
-  check_valid_extents(n_r, n_phi, n_r_max, M);
+  b2_detail::check_valid_extents(n_r, n_phi, n_r_max, M);
   ASSERT(num_modes_to_kill <= M,
          "Cannot zero " << num_modes_to_kill << " angular modes when only " << M
                         << " m-modes are resolved.");
@@ -137,16 +137,18 @@ void zernike_b2_disk_filter(const gsl::not_null<Variables<TagsList>*> u,
   const size_t vars_size =
       Variables<TagsList>::number_of_independent_components * num_grid_points;
 
-  auto buffer = cpp20::make_unique_for_overwrite<double[]>(vars_size);
-  Variables<TagsList> temp(&buffer[0], vars_size);
+  if (UNLIKELY(buf->size() < vars_size)) {
+    buf->destructive_resize(vars_size);
+  }
+  Variables<TagsList> temp(buf->data(), vars_size);
   const size_t num_components_times_xi_slices = vars_size / n_r;
 
   // Go to phi modal space
   transpose<Variables<TagsList>, Variables<TagsList>>(
       make_not_null(&temp), (*u), mesh.extents(0),
       num_components_times_xi_slices);
-  apply_matrix_in_first_dim((*u).data(), temp.data(), nodal_to_modal_phi,
-                            vars_size, false);
+  b2_detail::apply_matrix_in_first_dim((*u).data(), temp.data(),
+                                       nodal_to_modal_phi, vars_size);
   raw_transpose(make_not_null(temp.data()), (*u).data(),
                 num_components_times_xi_slices, mesh.extents(0));
 
@@ -183,9 +185,9 @@ void zernike_b2_disk_filter(const gsl::not_null<Variables<TagsList>*> u,
 
   // Precompute filter weights for each spectral mode
   const size_t spectral_space_size = offset;
-  const DataVector weights =
-      zernike_b2_filter_weights(n_r, half_power, num_modes_to_kill, alpha,
-                                spectral_space_size, n_r_max, M);
+  const DataVector weights = b2_detail::zernike_b2_filter_weights(
+      n_r, half_power, num_modes_to_kill, alpha, spectral_space_size, n_r_max,
+      M);
 
   // Do filtering: both radial and angular simultaneously
   for (size_t i = 0; i < Variables<TagsList>::number_of_independent_components;
@@ -226,10 +228,35 @@ void zernike_b2_disk_filter(const gsl::not_null<Variables<TagsList>*> u,
   // Go back to phi-nodal space
   raw_transpose(make_not_null((*u).data()), temp.data(), mesh.extents(0),
                 num_components_times_xi_slices);
-  apply_matrix_in_first_dim(temp.data(), (*u).data(), modal_to_nodal_phi,
-                            vars_size, false);
+  b2_detail::apply_matrix_in_first_dim(temp.data(), (*u).data(),
+                                       modal_to_nodal_phi, vars_size);
   raw_transpose(make_not_null((*u).data()), temp.data(),
                 num_components_times_xi_slices, mesh.extents(0));
+}
+
+template <typename TagsList>
+void zernike_b2_disk_filter(const gsl::not_null<Variables<TagsList>*> u,
+                            const Mesh<2>& mesh, const double alpha,
+                            const std::optional<unsigned> half_power,
+                            const size_t num_modes_to_kill) {
+  const auto [n_r, n_phi] = mesh.extents().indices();
+  const size_t n_r_max = 2 * n_r - 2;
+  const size_t M = n_phi / 2;
+  b2_detail::check_valid_extents(n_r, n_phi, n_r_max, M);
+  ASSERT(num_modes_to_kill <= M,
+         "Cannot zero " << num_modes_to_kill << " angular modes when only " << M
+                        << " m-modes are resolved.");
+  if (not half_power.has_value() and num_modes_to_kill == 0) {
+    return;
+  }
+
+  const size_t num_grid_points = mesh.number_of_grid_points();
+  constexpr size_t num_components =
+      Variables<TagsList>::number_of_independent_components;
+  const size_t vars_size = num_components * num_grid_points;
+  DataVector buf(vars_size);
+  zernike_b2_disk_filter(u, make_not_null(&buf), mesh, alpha, half_power,
+                         num_modes_to_kill);
 }
 
 template <typename TagsList>
@@ -242,21 +269,22 @@ void zernike_b2_disk_exponential_filter(
 
 template <typename TagsList>
 void zernike_b2_cylinder_filter(
-    const gsl::not_null<Variables<TagsList>*> u, const Mesh<3>& mesh,
+    const gsl::not_null<Variables<TagsList>*> u,
+    const gsl::not_null<DataVector*> buf, const Mesh<3>& mesh,
     const double alpha, const std::optional<unsigned> radial_angular_half_power,
-    const std::optional<unsigned> z_half_power,
-    const size_t num_modes_to_kill) {
+    const std::optional<unsigned> z_half_power, const size_t num_modes_to_kill,
+    const std::optional<Matrix>& z_filter) {
   const auto [n_r, n_phi, n_z] = mesh.extents().indices();
   const size_t n_r_max = 2 * n_r - 2;
   const size_t M = n_phi / 2;
-  check_valid_extents(n_r, n_phi, n_r_max, M);
+  b2_detail::check_valid_extents(n_r, n_phi, n_r_max, M);
   ASSERT(num_modes_to_kill <= M,
          "Cannot zero " << num_modes_to_kill << " angular modes when only " << M
                         << " m-modes are resolved.");
 
   const bool filter_disk =
       radial_angular_half_power.has_value() or num_modes_to_kill > 0;
-  const bool filter_z = z_half_power.has_value();
+  const bool filter_z = z_half_power.has_value() or z_filter.has_value();
   if (not filter_disk and not filter_z) {
     return;
   }
@@ -266,8 +294,10 @@ void zernike_b2_cylinder_filter(
       Variables<TagsList>::number_of_independent_components;
   const size_t vars_size = num_components * num_grid_points;
 
-  auto buffer = cpp20::make_unique_for_overwrite<double[]>(vars_size);
-  Variables<TagsList> temp(&buffer[0], vars_size);
+  if (UNLIKELY(buf->size() < vars_size)) {
+    buf->destructive_resize(vars_size);
+  }
+  Variables<TagsList> temp(buf->data(), vars_size);
 
   if (filter_disk) {
     const Matrix& nodal_to_modal_phi = Spectral::nodal_to_modal_matrix<
@@ -279,8 +309,8 @@ void zernike_b2_cylinder_filter(
     // Go to phi-modal space.
     transpose<Variables<TagsList>, Variables<TagsList>>(
         make_not_null(&temp), (*u), n_r, num_components_times_xi_slices);
-    apply_matrix_in_first_dim((*u).data(), temp.data(), nodal_to_modal_phi,
-                              vars_size, false);
+    b2_detail::apply_matrix_in_first_dim((*u).data(), temp.data(),
+                                         nodal_to_modal_phi, vars_size);
     raw_transpose(make_not_null(temp.data()), (*u).data(),
                   num_components_times_xi_slices, n_r);
 
@@ -328,7 +358,7 @@ void zernike_b2_cylinder_filter(
     }
 
     // Precompute (r, phi) filter weights for one z-slice
-    const DataVector weights = zernike_b2_filter_weights(
+    const DataVector weights = b2_detail::zernike_b2_filter_weights(
         n_r, radial_angular_half_power, num_modes_to_kill, alpha,
         spectral_space_size, n_r_max, M);
 
@@ -385,28 +415,63 @@ void zernike_b2_cylinder_filter(
     // Go back to phi-nodal space
     raw_transpose(make_not_null((*u).data()), temp.data(), mesh.extents(0),
                   num_components_times_xi_slices);
-    apply_matrix_in_first_dim(temp.data(), (*u).data(), modal_to_nodal_phi,
-                              vars_size, false);
+    b2_detail::apply_matrix_in_first_dim(temp.data(), (*u).data(),
+                                         modal_to_nodal_phi, vars_size);
     raw_transpose(make_not_null((*u).data()), temp.data(),
                   num_components_times_xi_slices, mesh.extents(0));
   }
 
   if (filter_z) {
     // Apply z-direction filter
-    const Matrix z_filter = Spectral::filtering::exponential_filter(
-        mesh.slice_through(2), alpha, *z_half_power);
+    std::optional<Matrix> local_filter;
+    // Only compute z_filter if not passed
+    const Matrix& z_filter_matrix =
+        z_filter ? *z_filter
+                 : local_filter.emplace(Spectral::filtering::exponential_filter(
+                       mesh.slice_through(2), alpha, *z_half_power));
     const size_t chunk_size_z = n_r * n_phi;
     const size_t num_chunks_z = vars_size / chunk_size_z;
     transpose<Variables<TagsList>, Variables<TagsList>>(
         make_not_null(&temp), (*u), chunk_size_z, num_chunks_z);
-    apply_matrix_in_first_dim((*u).data(), temp.data(), z_filter, vars_size,
-                              false);
+    b2_detail::apply_matrix_in_first_dim((*u).data(), temp.data(),
+                                         z_filter_matrix, vars_size);
     raw_transpose(make_not_null(temp.data()), (*u).data(), num_chunks_z,
                   chunk_size_z);
     // Unable to avoid this copy in the current set-up due to an odd number of
     // operations on the data
     std::copy(temp.data(), temp.data() + vars_size, (*u).data());
   }
+}
+
+template <typename TagsList>
+void zernike_b2_cylinder_filter(
+    const gsl::not_null<Variables<TagsList>*> u, const Mesh<3>& mesh,
+    const double alpha, const std::optional<unsigned> radial_angular_half_power,
+    const std::optional<unsigned> z_half_power,
+    const size_t num_modes_to_kill) {
+  const auto [n_r, n_phi, n_z] = mesh.extents().indices();
+  const size_t n_r_max = 2 * n_r - 2;
+  const size_t M = n_phi / 2;
+  b2_detail::check_valid_extents(n_r, n_phi, n_r_max, M);
+  ASSERT(num_modes_to_kill <= M,
+         "Cannot zero " << num_modes_to_kill << " angular modes when only " << M
+                        << " m-modes are resolved.");
+
+  const bool filter_disk =
+      radial_angular_half_power.has_value() or num_modes_to_kill > 0;
+  const bool filter_z = z_half_power.has_value();
+  if (not filter_disk and not filter_z) {
+    return;
+  }
+
+  const size_t num_grid_points = mesh.number_of_grid_points();
+  constexpr size_t num_components =
+      Variables<TagsList>::number_of_independent_components;
+  const size_t vars_size = num_components * num_grid_points;
+  DataVector buf(vars_size);
+  zernike_b2_cylinder_filter(u, make_not_null(&buf), mesh, alpha,
+                             radial_angular_half_power, z_half_power,
+                             num_modes_to_kill, std::nullopt);
 }
 
 template <typename TagsList>
