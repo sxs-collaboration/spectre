@@ -110,7 +110,7 @@ using item_type_if_contained_t =
 /// can write things like `emplace_array_component(NodeId{3},...)`  instead of
 /// `emplace_array_component(3,...)`.
 struct NodeId {
-  size_t value;
+  int value;
 };
 
 inline bool operator==(const NodeId& lhs, const NodeId& rhs) {
@@ -133,7 +133,7 @@ inline bool operator!=(const NodeId& lhs, const NodeId& rhs) {
 /// 0 and 1, the cores on the second node also have local core numbers
 /// 0 and 1, and so on.
 struct LocalCoreId {
-  size_t value;
+  int value;
 };
 
 inline bool operator==(const LocalCoreId& lhs, const LocalCoreId& rhs) {
@@ -152,7 +152,7 @@ inline bool operator!=(const LocalCoreId& lhs, const LocalCoreId& rhs) {
 /// each of the 6 cores, and no two cores have the same global core
 /// number.
 struct GlobalCoreId {
-  size_t value;
+  int value;
 };
 
 inline bool operator==(const GlobalCoreId& lhs, const GlobalCoreId& rhs) {
@@ -167,21 +167,17 @@ inline bool operator!=(const GlobalCoreId& lhs, const GlobalCoreId& rhs) {
 namespace std {
 template <>
 struct hash<ActionTesting::NodeId> {
-  size_t operator()(const ActionTesting::NodeId& t) const { return t.value; }
+  int operator()(const ActionTesting::NodeId& t) const { return t.value; }
 };
 
 template <>
 struct hash<ActionTesting::LocalCoreId> {
-  size_t operator()(const ActionTesting::LocalCoreId& t) const {
-    return t.value;
-  }
+  int operator()(const ActionTesting::LocalCoreId& t) const { return t.value; }
 };
 
 template <>
 struct hash<ActionTesting::GlobalCoreId> {
-  size_t operator()(const ActionTesting::GlobalCoreId& t) const {
-    return t.value;
-  }
+  int operator()(const ActionTesting::GlobalCoreId& t) const { return t.value; }
 };
 }  // namespace std
 
@@ -715,8 +711,8 @@ class MockDistributedObject {
   bool performing_action_ = false;
   Parallel::Phase phase_{Parallel::Phase::Initialization};
 
-  size_t mock_node_{0};
-  size_t mock_local_core_{0};
+  int mock_node_{0};
+  int mock_local_core_{0};
   // mock_global_cores[node][local_core] is the global_core.
   std::unordered_map<NodeId, std::unordered_map<LocalCoreId, GlobalCoreId>>
       mock_global_cores_{};
@@ -847,9 +843,9 @@ int MockDistributedObject<Component>::number_of_procs() const {
 
 template <typename Component>
 int MockDistributedObject<Component>::my_proc() const {
-  return static_cast<int>(mock_global_cores_.at(NodeId{mock_node_})
-                              .at(LocalCoreId{mock_local_core_})
-                              .value);
+  return mock_global_cores_.at(NodeId{mock_node_})
+      .at(LocalCoreId{mock_local_core_})
+      .value;
 }
 
 template <typename Component>
@@ -859,43 +855,34 @@ int MockDistributedObject<Component>::number_of_nodes() const {
 
 template <typename Component>
 int MockDistributedObject<Component>::my_node() const {
-  return static_cast<int>(mock_node_);
+  return mock_node_;
 }
 
 template <typename Component>
 int MockDistributedObject<Component>::procs_on_node(
     const int node_index) const {
-  return static_cast<int>(
-      mock_global_cores_.at(NodeId{static_cast<size_t>(node_index)}).size());
+  return mock_global_cores_.at(NodeId{node_index}).size();
 }
 
 template <typename Component>
 int MockDistributedObject<Component>::my_local_rank() const {
-  return static_cast<int>(mock_local_core_);
+  return mock_local_core_;
 }
 
 template <typename Component>
 int MockDistributedObject<Component>::first_proc_on_node(
     const int node_index) const {
-  return static_cast<int>(
-      mock_global_cores_.at(NodeId{static_cast<size_t>(node_index)})
-          .at(LocalCoreId{0})
-          .value);
+  return mock_global_cores_.at(NodeId{node_index}).at(LocalCoreId{0}).value;
 }
 
 template <typename Component>
 int MockDistributedObject<Component>::node_of(const int proc_index) const {
-  return static_cast<int>(mock_nodes_and_local_cores_
-                              .at(GlobalCoreId{static_cast<size_t>(proc_index)})
-                              .first.value);
+  return mock_nodes_and_local_cores_.at(GlobalCoreId{proc_index}).first.value;
 }
 
 template <typename Component>
 int MockDistributedObject<Component>::local_rank_of(
     const int proc_index) const {
-  return static_cast<int>(mock_nodes_and_local_cores_
-                              .at(GlobalCoreId{static_cast<size_t>(proc_index)})
-                              .second.value);
+  return mock_nodes_and_local_cores_.at(GlobalCoreId{proc_index}).second.value;
 }
-
 }  // namespace ActionTesting

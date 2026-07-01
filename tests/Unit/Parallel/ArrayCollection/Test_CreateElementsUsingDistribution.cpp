@@ -42,7 +42,7 @@ std::unordered_map<ElementId<Dim>, size_t> get_distribution(
   // NOLINTNEXTLINE(clang-analyzer-cplusplus.NewDelete)
   const Parallel::GlobalCache<Metavars> cache{tuples::TaggedTuple<>{},
                                               tuples::TaggedTuple<>{},
-                                              std::vector<size_t>{2, 2}, 0, 0};
+                                              std::vector{2, 2}, 0, 0};
 
   std::unordered_map<ElementId<Dim>, size_t> element_to_proc{};
   Parallel::create_elements_using_distribution(

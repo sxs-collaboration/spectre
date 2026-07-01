@@ -200,10 +200,9 @@ void test(const bool write_synchronously) {
   }
 
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<metavars>;
-  MockRuntimeSystem runner{
-      {volume_filename_prefix},
-      {},
-      std::vector<size_t>{write_synchronously ? 1_st : 2_st}};
+  MockRuntimeSystem runner{{volume_filename_prefix},
+                           {},
+                           std::vector<int>{write_synchronously ? 1 : 2}};
   ActionTesting::emplace_nodegroup_component_and_initialize<obs_writer>(
       make_not_null(&runner), {Parallel::NodeLock{}});
   ActionTesting::emplace_singleton_component_and_initialize<element>(

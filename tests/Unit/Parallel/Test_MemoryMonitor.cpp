@@ -307,10 +307,10 @@ void test_contribute_memory_data(const gsl::not_null<Gen*> gen,
 
   // 4 mock nodes, 3 mock cores per node
   const size_t num_nodes = 4;
-  const size_t num_procs_per_node = 3;
-  const size_t num_procs = num_nodes * num_procs_per_node;
+  const int num_procs_per_node = 3;
+  const size_t num_procs = num_nodes * static_cast<size_t>(num_procs_per_node);
   ActionTesting::MockRuntimeSystem<metavars> runner{
-      {}, {}, std::vector<size_t>(num_nodes, num_procs_per_node)};
+      {}, {}, std::vector<int>(num_nodes, num_procs_per_node)};
 
   setup_runner(make_not_null(&runner));
 
@@ -399,9 +399,9 @@ void test_process_array(const gsl::not_null<Gen*> gen) {
 
   // 4 mock nodes, 3 mock cores per node
   const size_t num_nodes = 4;
-  const size_t num_procs_per_node = 3;
+  const int num_procs_per_node = 3;
   ActionTesting::MockRuntimeSystem<metavars> runner{
-      {}, {}, std::vector<size_t>(num_nodes, num_procs_per_node)};
+      {}, {}, std::vector<int>(num_nodes, num_procs_per_node)};
 
   setup_runner(make_not_null(&runner));
 
@@ -434,9 +434,9 @@ void test_process_singleton() {
 
   // 4 mock nodes, 3 mock cores per node
   const size_t num_nodes = 4;
-  const size_t num_procs_per_node = 3;
+  const int num_procs_per_node = 3;
   ActionTesting::MockRuntimeSystem<metavars> runner{
-      {}, {}, std::vector<size_t>(num_nodes, num_procs_per_node)};
+      {}, {}, std::vector<int>(num_nodes, num_procs_per_node)};
 
   setup_runner(make_not_null(&runner));
 
@@ -506,10 +506,10 @@ void test_monitor_memory_event() {
 
   // 4 mock nodes, 3 mock cores per node
   const size_t num_nodes = 4;
-  const size_t num_procs_per_node = 3;
-  const size_t num_procs = num_nodes * num_procs_per_node;
+  const int num_procs_per_node = 3;
+  const size_t num_procs = num_nodes * static_cast<size_t>(num_procs_per_node);
   ActionTesting::MockRuntimeSystem<event_metavars> runner{
-      {}, {}, std::vector<size_t>(num_nodes, num_procs_per_node)};
+      {}, {}, std::vector<int>(num_nodes, num_procs_per_node)};
 
   setup_runner(make_not_null(&runner));
 

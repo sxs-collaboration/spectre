@@ -762,10 +762,10 @@ template <typename Gen>
 void test_multi_node_multi_core_large(const gsl::not_null<Gen*> gen) {
   // 8 nodes, 25 procs per node
   const size_t num_nodes = 8;
-  const size_t num_procs_per_node = 25;
-  const size_t num_procs = num_nodes * num_procs_per_node;
+  const int num_procs_per_node = 25;
+  const size_t num_procs = num_nodes * static_cast<size_t>(num_procs_per_node);
   Parallel::GlobalCache<metavars> cache{
-      {}, {}, std::vector<size_t>(num_nodes, num_procs_per_node)};
+      {}, {}, std::vector<int>(num_nodes, num_procs_per_node)};
 
   INFO("8 nodes, 25 procs per node");
 
