@@ -452,6 +452,10 @@ auto block_logical_coordinates(
           "frame at the moment.");
     }
   }
+  // Indices of target points that could not be located in the domain. Collected
+  // here (rather than erroring inside the OpenMP region, which is undefined
+  // behavior) and reported after the parallel region if requested.
+  std::vector<size_t> missing_point_indices{};
 #pragma omp parallel num_threads(resolved_num_threads)
   {
     // Set up thread-local variables
@@ -459,6 +463,7 @@ auto block_logical_coordinates(
     std::vector<BlockLogicalCoords<Dim>> extra_block_logical_coords{};
     std::vector<ExtrapolationInfo<num_extrapolation_anchors>>
         extra_extrapolation_info{};
+    std::vector<size_t> extra_missing_point_indices{};
     // Keep track of a priority order for blocks to accelerate the search.
     // This helps when the target points are ordered so that they are likely to
     // be in the same block as the previous point.
@@ -477,12 +482,11 @@ auto block_logical_coordinates(
       }
       if (not extrapolate_into_excisions) {
         // The point wasn't found in any block and we're not extrapolating.
-        // Check if we should throw an error or just skip this point.
+        // Record it for a later error if requested, then skip it.
         if (error_on_missing_points) {
-          ERROR("Point is not in any block:\n" << target_point);
-        } else {
-          continue;
+          extra_missing_point_indices.push_back(s);
         }
+        continue;
       }
       // The point wasn't found in any block. Check if it's in an excision and
       // set up extrapolation if requested.
@@ -500,7 +504,7 @@ auto block_logical_coordinates(
           }
         }
         if (not found_in_excision and error_on_missing_points) {
-          ERROR("Point is not in any block or excision:\n" << target_point);
+          extra_missing_point_indices.push_back(s);
         }
       }
     }  // omp for target points
@@ -519,8 +523,27 @@ auto block_logical_coordinates(
       extrapolation_info.insert(extrapolation_info.end(),
                                 extra_extrapolation_info.begin(),
                                 extra_extrapolation_info.end());
+      missing_point_indices.insert(missing_point_indices.end(),
+                                   extra_missing_point_indices.begin(),
+                                   extra_missing_point_indices.end());
     }  // omp critical
   }  // omp parallel
+  // Report points that could not be located in the domain (only reached when
+  // `error_on_missing_points` is set). Done here, outside the OpenMP region.
+  if (not missing_point_indices.empty()) {
+    std::string missing_points{};
+    for (const size_t s : missing_point_indices) {
+      tnsr::I<double, Dim, Frame> target_point{};
+      for (size_t d = 0; d < Dim; ++d) {
+        target_point.get(d) = get_element(target_points.get(d), s);
+      }
+      missing_points += get_output(target_point) + "\n";
+    }
+    ERROR(
+        "The following " << missing_point_indices.size()
+                         << " target point(s) are outside the source domain:\n"
+                         << missing_points);
+  }
   return std::make_tuple(std::move(block_logical_coords),
                          std::move(extrapolation_info));
 }
