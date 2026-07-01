@@ -10,6 +10,7 @@
 
 #include <array>
 #include <cstddef>
+#include <limits>
 #include <optional>
 #include <string>
 #include <variant>
@@ -34,7 +35,19 @@ struct ObservationStep {
   int value;
 };
 
-using ObservationVariant = std::variant<ObservationId, ObservationStep, double>;
+/// Identifies an observation by its value (e.g. the time), selecting the
+/// observation whose value is closest to `value` within `epsilon`. This is the
+/// same selection as a bare `double`, but with a configurable tolerance.
+struct ObservationValue {
+  ObservationValue() = default;
+  explicit ObservationValue(double local_value, double local_epsilon = 1e-12)
+      : value(local_value), epsilon(local_epsilon) {}
+  double value = std::numeric_limits<double>::signaling_NaN();
+  double epsilon = 1e-12;
+};
+
+using ObservationVariant =
+    std::variant<ObservationId, ObservationStep, double, ObservationValue>;
 
 /*!
  * \brief Interpolate data in volume files to target points

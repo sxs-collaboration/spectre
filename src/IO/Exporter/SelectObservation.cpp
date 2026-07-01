@@ -30,7 +30,13 @@ size_t SelectObservation::operator()(
 }
 
 size_t SelectObservation::operator()(const double observation_value) const {
-  return volfile.find_observation_id(observation_value, obs_value_eps);
+  return (*this)(ObservationValue{observation_value});
+}
+
+size_t SelectObservation::operator()(
+    const ObservationValue observation_value) const {
+  return volfile.find_observation_id(observation_value.value,
+                                     observation_value.epsilon);
 }
 
 }  // namespace spectre::Exporter

@@ -104,6 +104,11 @@ PYBIND11_MODULE(_Pybindings, m) {  // NOLINT
   py::class_<spectre::Exporter::ObservationStep>(m, "ObservationStep")
       .def(py::init<int>())
       .def_readonly("value", &spectre::Exporter::ObservationStep::value);
+  py::class_<spectre::Exporter::ObservationValue>(m, "ObservationValue")
+      .def(py::init<double, double>(), py::arg("value"),
+           py::arg("epsilon") = 1e-12)
+      .def_readonly("value", &spectre::Exporter::ObservationValue::value)
+      .def_readonly("epsilon", &spectre::Exporter::ObservationValue::epsilon);
   bind_interpolate_to_points_impl<1, Frame::Grid>(m);
   bind_interpolate_to_points_impl<2, Frame::Grid>(m);
   bind_interpolate_to_points_impl<3, Frame::Grid>(m);
