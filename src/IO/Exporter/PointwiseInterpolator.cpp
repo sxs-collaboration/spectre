@@ -42,9 +42,9 @@ size_t resolve_num_threads(const std::optional<size_t> num_threads) {
 #ifdef _OPENMP
   return num_threads.value_or(omp_get_max_threads());
 #else
-  if (num_threads.has_value()) {
+  if (num_threads.has_value() and num_threads.value() > 1) {
     ERROR_NO_TRACE(
-        "OpenMP is not available, so num_threads cannot be specified.");
+        "OpenMP is not available, so num_threads > 1 cannot be requested.");
   }
   return 1;
 #endif  // _OPENMP
