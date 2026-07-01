@@ -542,9 +542,9 @@ struct ReadAllVolumeDataAndDistribute {
           make_not_null(&interpolated_data), file_paths,
           "/" + get<OptionTags::Subgroup>(options), observation,
           tensor_components, all_target_points,
-          /*extrapolate_into_excisions=*/false,
+          get<OptionTags::ExtrapolateIntoExcisions>(options),
           /*error_on_missing_points=*/true,
-          /*num_threads=*/1);
+          get<OptionTags::NumThreads>(options));
       // The target points are no longer needed; free them before distributing
       // the (potentially large) interpolated data to the target elements.
       all_target_points = tnsr::I<DataVector, Dim, Frame::Inertial>{};

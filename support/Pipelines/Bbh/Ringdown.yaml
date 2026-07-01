@@ -22,6 +22,8 @@ InitialData:
       ObservationValue: &InitialTime {{ MatchTime }}
       ObservationValueEpsilon: Auto
       ElementsAreIdentical: False
+      ExtrapolateIntoExcisions: False
+      NumThreads: 1
     Variables:
       SpacetimeMetric: SpacetimeMetric
       Pi: Pi

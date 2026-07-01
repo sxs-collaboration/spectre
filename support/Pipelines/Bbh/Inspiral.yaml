@@ -55,6 +55,8 @@ InitialData:
       ObservationValue: {{ InitialTime }}
       ObservationValueEpsilon: Auto
       ElementsAreIdentical: True
+      ExtrapolateIntoExcisions: False
+      NumThreads: 1
     Variables:
       SpacetimeMetric: SpacetimeMetric
       Pi: Pi
@@ -63,6 +65,8 @@ InitialData:
       ObservationValue: Last
       ObservationValueEpsilon: Auto
       ElementsAreIdentical: False
+      ExtrapolateIntoExcisions: False
+      NumThreads: 1
     Variables:
       Lapse: Lapse
       # Load a shift that is not corotating. See `docs/Examples/BbhInitialData`

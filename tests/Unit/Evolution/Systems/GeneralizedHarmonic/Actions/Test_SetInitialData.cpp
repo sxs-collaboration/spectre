@@ -305,7 +305,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Gh.NumericInitialData",
   test_set_initial_data(
       NumericInitialData{
           importers::ImporterOptions{"TestInitialData.h5", "VolumeData", 0.,
-                                     Options::Auto<double>{1.0e-9}, false},
+                                     Options::Auto<double>{1.0e-9}, false,
+                                     false, Options::Auto<size_t>{1}},
           NumericInitialData::GhVars{"CustomSpacetimeMetric", "CustomPi",
                                      "CustomPhi"}},
       "NumericInitialData:\n"
@@ -315,6 +316,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Gh.NumericInitialData",
       "    ObservationValue: 0.\n"
       "    ObservationValueEpsilon: 1e-9\n"
       "    ElementsAreIdentical: False\n"
+      "    ExtrapolateIntoExcisions: False\n"
+      "    NumThreads: 1\n"
       "  Variables:\n"
       "    SpacetimeMetric: CustomSpacetimeMetric\n"
       "    Pi: CustomPi\n"
@@ -323,7 +326,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Gh.NumericInitialData",
   test_set_initial_data(
       NumericInitialData{
           importers::ImporterOptions{"TestInitialData.h5", "VolumeData", 0.,
-                                     Options::Auto<double>{}, false},
+                                     Options::Auto<double>{}, false, false,
+                                     Options::Auto<size_t>{1}},
           NumericInitialData::AdmVars{"CustomSpatialMetric", "CustomLapse",
                                       "CustomShift",
                                       "CustomExtrinsicCurvature"}},
@@ -334,6 +338,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Gh.NumericInitialData",
       "    ObservationValue: 0.\n"
       "    ObservationValueEpsilon: Auto\n"
       "    ElementsAreIdentical: False\n"
+      "    ExtrapolateIntoExcisions: False\n"
+      "    NumThreads: 1\n"
       "  Variables:\n"
       "    SpatialMetric: CustomSpatialMetric\n"
       "    Lapse: CustomLapse\n"

@@ -486,6 +486,8 @@ InitialData:
       ObservationValue: Last
       ObservationValueEpsilon: Auto
       ElementsAreIdentical: False
+      ExtrapolateIntoExcisions: False
+      NumThreads: 1
     Variables:
       Lapse: Lapse
       # Load a shift that is not corotating. See `docs/Examples/BbhInitialData`

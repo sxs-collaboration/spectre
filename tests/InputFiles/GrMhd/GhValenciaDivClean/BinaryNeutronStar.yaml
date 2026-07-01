@@ -562,6 +562,8 @@ InitialData:
       ObservationValue: Last
       ObservationValueEpsilon: Auto
       ElementsAreIdentical: False
+      ExtrapolateIntoExcisions: False
+      NumThreads: 1
     GhVariables:
       Lapse: Lapse
       Shift: ShiftExcess

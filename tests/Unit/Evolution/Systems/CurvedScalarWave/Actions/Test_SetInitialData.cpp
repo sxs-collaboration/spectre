@@ -290,7 +290,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.CurvedScalarWave.SetInitialData",
   test_set_initial_data(
       NumericInitialData{
           importers::ImporterOptions{"TestInitialData.h5", "VolumeData", 0.,
-                                     Options::Auto<double>{1.0e-9}, false},
+                                     Options::Auto<double>{1.0e-9}, false,
+                                     false, Options::Auto<size_t>{1}},
           NumericInitialData::ScalarVars{"CustomPsi", "CustomPi", "CustomPhi"}},
       "NumericInitialData:\n"
       "  VolumeData:\n"
@@ -299,6 +300,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.CurvedScalarWave.SetInitialData",
       "    ObservationValue: 0.\n"
       "    ObservationValueEpsilon: 1e-9\n"
       "    ElementsAreIdentical: False\n"
+      "    ExtrapolateIntoExcisions: False\n"
+      "    NumThreads: 1\n"
       "  Variables:\n"
       "    Psi: CustomPsi\n"
       "    Pi: CustomPi\n"

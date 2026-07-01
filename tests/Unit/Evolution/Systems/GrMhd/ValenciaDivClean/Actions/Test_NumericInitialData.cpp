@@ -244,7 +244,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.ValenciaDivClean.NumericInitialData",
   test_numeric_initial_data(
       NumericInitialData{
           importers::ImporterOptions{"TestInitialData.h5", "VolumeData", 0.,
-                                     Options::Auto<double>{1.0e-9}, false},
+                                     Options::Auto<double>{1.0e-9}, false,
+                                     false, Options::Auto<size_t>{1}},
           NumericInitialData::PrimitiveVars{"CustomRho", "CustomUi", "CustomYe",
                                             "CustomB"},
           1.e-14},
@@ -255,6 +256,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.ValenciaDivClean.NumericInitialData",
       "    ObservationValue: 0.\n"
       "    ObservationValueEpsilon: 1e-9\n"
       "    ElementsAreIdentical: False\n"
+      "    ExtrapolateIntoExcisions: False\n"
+      "    NumThreads: 1\n"
       "  Variables:\n"
       "    RestMassDensity: CustomRho\n"
       "    LowerSpatialFourVelocity: CustomUi\n"
@@ -264,7 +267,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.ValenciaDivClean.NumericInitialData",
   test_numeric_initial_data(
       NumericInitialData{
           importers::ImporterOptions{"TestInitialData.h5", "VolumeData", 0.,
-                                     Options::Auto<double>{}, false},
+                                     Options::Auto<double>{}, false, false,
+                                     Options::Auto<size_t>{1}},
           NumericInitialData::PrimitiveVars{"CustomRho", "CustomUi", 0.15, 0.},
           1.e-14},
       "NumericInitialData:\n"
@@ -274,6 +278,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.ValenciaDivClean.NumericInitialData",
       "    ObservationValue: 0.\n"
       "    ObservationValueEpsilon: Auto\n"
       "    ElementsAreIdentical: False\n"
+      "    ExtrapolateIntoExcisions: False\n"
+      "    NumThreads: 1\n"
       "  Variables:\n"
       "    RestMassDensity: CustomRho\n"
       "    LowerSpatialFourVelocity: CustomUi\n"

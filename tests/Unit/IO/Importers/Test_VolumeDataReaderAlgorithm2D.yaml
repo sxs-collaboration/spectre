@@ -23,6 +23,8 @@ Importers:
     ObservationValue: 2.
     ObservationValueEpsilon: Auto
     ElementsAreIdentical: False
+    ExtrapolateIntoExcisions: False
+    NumThreads: 1
 # [importer_options]
 
 ResourceInfo:
