@@ -7,6 +7,7 @@
 #pragma once
 
 #include <cstddef>
+#include <type_traits>
 
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/Tensor/IndexType.hpp"
@@ -105,6 +106,89 @@ struct spacetime_deriv<Tag, Dim, Frame> : db::PrefixTag, db::SimpleTag {
   using tag = Tag;
 };
 /// \endcond
+
+/*!
+ * \ingroup DataBoxTagsGroup
+ * \brief Prefix indicating the spatial covariant derivative of a tensor.
+ *
+ * Prefix indicating the first covariant derivative of a tensor with respect
+ * to the spatial metric.
+ *
+ * \tparam Tag The tag to wrap
+ * \tparam Dim The volume dim as a type (e.g. `tmpl::size_t<Dim>`)
+ * \tparam Frame The frame of the derivative index
+ *
+ * \snippet Test_DataBoxPrefixes.cpp covariant_deriv_name
+ */
+template <typename Tag, typename Dim, typename Frame>
+struct covariant_deriv;
+
+/// \cond
+template <typename Tag, typename Dim, typename Frame>
+  requires(tt::is_a_v<Tensor, typename Tag::type>)
+struct covariant_deriv<Tag, Dim, Frame> : db::PrefixTag, db::SimpleTag {
+  using type =
+      TensorMetafunctions::prepend_spatial_index<typename Tag::type, Dim::value,
+                                                 UpLo::Lo, Frame>;
+  using tag = Tag;
+};
+/// \endcond
+
+/*!
+ * \ingroup DataBoxTagsGroup
+ * \brief Prefix indicating the second spatial covariant derivative of a tensor.
+ *
+ * Prefix indicating the second covariant derivative of a tensor with respect
+ * to the spatial metric.
+ *
+ * \tparam Tag The tag to wrap
+ * \tparam Dim The volume dim as a type (e.g. `tmpl::size_t<Dim>`)
+ * \tparam Frame The frame of the derivative index
+ *
+ * \note If ``Tag::type`` is ``Scalar``, then ``second_covariant_derivative``
+ * will hold a symmetric tensor.
+ *
+ * \snippet Test_DataBoxPrefixes.cpp second_covariant_deriv_name
+ */
+template <typename Tag, typename Dim, typename Frame>
+struct second_covariant_deriv;
+
+/// \cond
+template <typename Tag, typename Dim, typename Frame>
+  requires(tt::is_a_v<Tensor, typename Tag::type> and
+           not std::is_same_v<Scalar<typename Tag::type::type>,
+                              typename Tag::type>)
+struct second_covariant_deriv<Tag, Dim, Frame> : db::PrefixTag, db::SimpleTag {
+  using type = TensorMetafunctions::prepend_spatial_index<
+      TensorMetafunctions::prepend_spatial_index<typename Tag::type, Dim::value,
+                                                 UpLo::Lo, Frame>,
+      Dim::value, UpLo::Lo, Frame>;
+  using tag = Tag;
+};
+/// \endcond
+
+/// \cond
+template <typename Tag, typename Dim, typename Frame>
+  requires(std::is_same_v<Scalar<typename Tag::type::type>, typename Tag::type>)
+struct second_covariant_deriv<Tag, Dim, Frame> : db::PrefixTag, db::SimpleTag {
+  using type = TensorMetafunctions::prepend_two_symmetric_spatial_indices<
+      typename Tag::type, Dim::value, UpLo::Lo, Frame>;
+  using tag = Tag;
+};
+/// \endcond
+
+/*!
+ * \ingroup DataBoxTagsGroup
+ * \brief Prefix indicating the Lie derivative with respect to the unit vector
+ * normal to the spatial hypersurfaces.
+ *
+ * \snippet Test_DataBoxPrefixes.cpp lie_normal_name
+ */
+template <typename Tag>
+struct lie_normal : db::PrefixTag, db::SimpleTag {
+  using type = typename Tag::type;
+  using tag = Tag;
+};
 
 /// \ingroup DataBoxTagsGroup
 /// \brief Prefix indicating a flux
