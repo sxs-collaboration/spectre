@@ -382,6 +382,20 @@ void test_apply_in_volume() {
     CHECK_VARIABLES_CUSTOM_APPROX(vars, expected, custom_approx);
   }
 
+  // Buffer reuse: applying the same filter object twice to identical input
+  // must give identical output.
+  {
+    INFO("Buffer reuse");
+    const auto filter = CylinderFilter(1, 4, 4, true, std::nullopt, false,
+                                       false, std::nullopt, std::nullopt);
+    auto vars1 = initial_vars;
+    filter.apply_in_volume(make_not_null(&vars1), mesh, std::nullopt,
+                           std::nullopt);
+    auto vars2 = initial_vars;
+    filter.apply_in_volume(make_not_null(&vars2), mesh, std::nullopt,
+                           std::nullopt);
+    CHECK_VARIABLES_CUSTOM_APPROX(vars1, vars2, custom_approx);
+  }
   // The top-mode cutoff genuinely removes the highest angular modes: with a
   // nonzero NumModesToKill the result differs from the unfiltered data.
   const auto cutoff_filter =
