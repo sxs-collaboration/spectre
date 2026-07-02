@@ -69,6 +69,11 @@ Cce:
   EndTime: 2.4
   ExtractionRadius: 20.0
 
+  # The first-hypersurface initialization for J may be specified here just as
+  # in a standard CCE run, or set to 'FromAnalyticSolution' to use the
+  # initialization provided by the analytic solution.
+  InitializeJ: FromAnalyticSolution
+
   AnalyticSolution:
     RotatingSchwarzschild:
       ExtractionRadius: 20.0

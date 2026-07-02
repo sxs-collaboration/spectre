@@ -196,6 +196,28 @@ struct InitializeJ {
       "The initialization for the first hypersurface for J"};
   using group = Cce;
 };
+
+/// Option for choosing the first-hypersurface initialization of J in an
+/// analytic-solution CCE run.
+///
+/// \details Set to `FromAnalyticSolution` to use the J initialization provided
+/// by the analytic solution itself (via
+/// `Cce::Solutions::WorldtubeData::get_initialize_j`). Otherwise, any
+/// option-creatable `Cce::InitializeJ::InitializeJ<false>` may be specified to
+/// override the solution-provided initialization, exactly as in a standard CCE
+/// run.
+struct AnalyticInitializeJ {
+  static std::string name() { return "InitializeJ"; }
+  struct FromAnalyticSolution {};
+  using type =
+      Options::Auto<std::unique_ptr<::Cce::InitializeJ::InitializeJ<false>>,
+                    FromAnalyticSolution>;
+  static constexpr Options::String help{
+      "The initialization for the first hypersurface for J. Set to "
+      "'FromAnalyticSolution' to use the initialization provided by the "
+      "analytic solution."};
+  using group = Cce;
+};
 }  // namespace OptionTags
 
 /// \brief Initialization tags for CCE
@@ -558,17 +580,25 @@ struct InitializeJ : db::SimpleTag {
   }
 };
 
-// Tags that generates an `Cce::InitializeJ::InitializeJ` derived class from an
-// analytic solution.
+// Tag that generates an `Cce::InitializeJ::InitializeJ` derived class for an
+// analytic-solution run. By default the initialization is provided by the
+// analytic solution itself, but it may be overridden from the input file via
+// `OptionTags::AnalyticInitializeJ`.
 struct AnalyticInitializeJ : InitializeJ<false> {
   using base = InitializeJ<false>;
   using option_tags =
-      tmpl::list<OptionTags::AnalyticSolution, OptionTags::StartTime>;
+      tmpl::list<OptionTags::AnalyticInitializeJ, OptionTags::AnalyticSolution,
+                 OptionTags::StartTime>;
   static constexpr bool pass_metavariables = false;
   static std::unique_ptr<::Cce::InitializeJ::InitializeJ<false>>
   create_from_options(
+      const std::optional<std::unique_ptr<
+          ::Cce::InitializeJ::InitializeJ<false>>>& initialize_j,
       const std::unique_ptr<Cce::Solutions::WorldtubeData>& worldtube_data,
       const std::optional<double> start_time) {
+    if (initialize_j.has_value()) {
+      return initialize_j.value()->get_clone();
+    }
     return worldtube_data->get_initialize_j(*start_time);
   }
 };

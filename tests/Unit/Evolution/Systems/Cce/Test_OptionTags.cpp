@@ -172,6 +172,13 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.OptionTags", "[Unit][Cce]") {
       "  MaxIterations: 300\n"
       "  RequireConvergence: false\n"
       "  MaxScriSecondDerivative: 1e-6");
+  CHECK_FALSE(
+      TestHelpers::test_option_tag<Cce::OptionTags::AnalyticInitializeJ>(
+          "FromAnalyticSolution")
+          .has_value());
+  CHECK(TestHelpers::test_option_tag<Cce::OptionTags::AnalyticInitializeJ>(
+            "InverseCubic")
+            .has_value());
   TestHelpers::test_option_tag<Cce::OptionTags::AnalyticSolution>(
       "BouncingBlackHole:\n"
       "  Period: 40.0\n"
