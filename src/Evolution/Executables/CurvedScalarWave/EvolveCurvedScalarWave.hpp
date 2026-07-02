@@ -20,6 +20,8 @@
 #include "Evolution/DiscontinuousGalerkin/Actions/ComputeTimeDerivative.hpp"
 #include "Evolution/DiscontinuousGalerkin/CleanMortarHistory.hpp"
 #include "Evolution/DiscontinuousGalerkin/DgElementArray.hpp"
+#include "Evolution/DiscontinuousGalerkin/EqualRateLts/ChangeFixedLtsRatio.hpp"
+#include "Evolution/DiscontinuousGalerkin/EqualRateLts/FixedLtsRatio.hpp"
 #include "Evolution/DiscontinuousGalerkin/EqualRateLts/NonconformingEqualRateRegions.hpp"
 #include "Evolution/DiscontinuousGalerkin/Initialization/Mortars.hpp"
 #include "Evolution/DiscontinuousGalerkin/Initialization/QuadratureTag.hpp"
@@ -65,6 +67,7 @@
 #include "ParallelAlgorithms/Actions/MutateApply.hpp"
 #include "ParallelAlgorithms/Actions/SpectralFilter.hpp"
 #include "ParallelAlgorithms/Actions/TerminatePhase.hpp"
+#include "ParallelAlgorithms/Events/ChangeFixedLtsRatio.hpp"
 #include "ParallelAlgorithms/Events/Completion.hpp"
 #include "ParallelAlgorithms/Events/Factory.hpp"
 #include "ParallelAlgorithms/Events/ObserveNorms.hpp"
@@ -225,7 +228,10 @@ struct EvolutionMetavars {
                         volume_dim, SphericalSurface, interpolator_source_vars>,
                     tmpl::list<>>,
                 Events::time_events<system>,
-                dg::Events::ObserveTimeStepVolume<system>>>>,
+                dg::Events::ObserveTimeStepVolume<system>,
+                tmpl::conditional_t<local_time_stepping,
+                                    dg::Events::ChangeFixedLtsRatio<volume_dim>,
+                                    tmpl::list<>>>>>,
         tmpl::pair<evolution::BoundaryCorrection,
                    CurvedScalarWave::BoundaryCorrections::
                        standard_boundary_corrections<volume_dim>>,
@@ -238,9 +244,14 @@ struct EvolutionMetavars {
                    tmpl::push_back<StepChoosers::standard_step_choosers<system>,
                                    StepChoosers::ByBlock<volume_dim>>>,
         tmpl::pair<StepChooser<StepChooserUse::Slab>,
-                   tmpl::push_back<StepChoosers::standard_slab_choosers<
-                                       system, local_time_stepping>,
-                                   StepChoosers::ByBlock<volume_dim>>>,
+                   tmpl::append<StepChoosers::standard_slab_choosers<
+                                    system, local_time_stepping>,
+                                tmpl::conditional_t<
+                                    local_time_stepping,
+                                    tmpl::list<evolution::dg::StepChoosers::
+                                                   FixedLtsRatio<volume_dim>>,
+                                    tmpl::list<>>,
+                                tmpl::list<StepChoosers::ByBlock<volume_dim>>>>,
         tmpl::pair<TimeSequence<double>,
                    TimeSequences::all_time_sequences<double>>,
         tmpl::pair<TimeSequence<std::uint64_t>,
@@ -310,7 +321,7 @@ struct EvolutionMetavars {
       tmpl::conditional_t<
           local_time_stepping,
           evolution::dg::Initialization::Actions::SetupEqualRateRegions<
-              volume_dim, equal_rate_regions>,
+              EvolutionMetavars, volume_dim, equal_rate_regions>,
           tmpl::list<>>,
       evolution::Actions::InitializeRunEventsAndDenseTriggers,
       Initialization::Actions::InitializeItems<
@@ -355,8 +366,12 @@ struct EvolutionMetavars {
                                      tmpl::list<>>,
                   evolution::Actions::RunEventsAndTriggers<
                       Triggers::WhenToCheck::AtSlabs>,
-                  Actions::ChangeSlabSize, step_actions,
-                  Actions::MutateApply<AdvanceTime<>>,
+                  Actions::ChangeSlabSize,
+                  std::conditional_t<
+                      local_time_stepping,
+                      evolution::dg::Actions::ChangeFixedLtsRatio,
+                      tmpl::list<>>,
+                  step_actions, Actions::MutateApply<AdvanceTime<>>,
                   PhaseControl::Actions::ExecutePhaseChange>>>>>;
 
   struct registration

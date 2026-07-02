@@ -94,4 +94,9 @@ struct Section {
   CkSectionInfo cookie_{};
 };
 
+template <typename ParallelComponent, typename SectionIdTag>
+bool operator==(const Section<ParallelComponent, SectionIdTag>& a,
+                const Section<ParallelComponent, SectionIdTag>& b) {
+  return a.id() == b.id();
+}
 }  // namespace Parallel

@@ -43,6 +43,8 @@
 #include "Evolution/DiscontinuousGalerkin/BackgroundGrVars.hpp"
 #include "Evolution/DiscontinuousGalerkin/CleanMortarHistory.hpp"
 #include "Evolution/DiscontinuousGalerkin/DgElementArray.hpp"
+#include "Evolution/DiscontinuousGalerkin/EqualRateLts/ChangeFixedLtsRatio.hpp"
+#include "Evolution/DiscontinuousGalerkin/EqualRateLts/FixedLtsRatio.hpp"
 #include "Evolution/DiscontinuousGalerkin/EqualRateLts/NonconformingEqualRateRegions.hpp"
 #include "Evolution/DiscontinuousGalerkin/Initialization/Mortars.hpp"
 #include "Evolution/DiscontinuousGalerkin/Initialization/QuadratureTag.hpp"
@@ -107,6 +109,7 @@
 #include "ParallelAlgorithms/Actions/MutateApply.hpp"
 #include "ParallelAlgorithms/Actions/SpectralFilter.hpp"
 #include "ParallelAlgorithms/Actions/TerminatePhase.hpp"
+#include "ParallelAlgorithms/Events/ChangeFixedLtsRatio.hpp"
 #include "ParallelAlgorithms/Events/Completion.hpp"
 #include "ParallelAlgorithms/Events/Factory.hpp"
 #include "ParallelAlgorithms/Events/ObserveNorms.hpp"
@@ -167,7 +170,6 @@
 #include "Time/CleanHistory.hpp"
 #include "Time/RecordTimeStepperData.hpp"
 #include "Time/StepChoosers/Factory.hpp"
-#include "Time/StepChoosers/FixedLtsRatio.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"
 #include "Time/Tags/Time.hpp"
 #include "Time/Tags/TimeStepId.hpp"
@@ -333,7 +335,10 @@ struct EvolutionMetavars<tmpl::list<InterpolationTargetTags...>,
                                                non_tensor_compute_tags>,
                 Events::time_events<system>,
                 intrp::Events::InterpolateWithoutInterpComponent<
-                    3, InterpolationTargetTags, interpolator_source_vars>...>>>,
+                    3, InterpolationTargetTags, interpolator_source_vars>...,
+                tmpl::conditional_t<local_time_stepping,
+                                    dg::Events::ChangeFixedLtsRatio<volume_dim>,
+                                    tmpl::list<>>>>>,
         tmpl::pair<evolution::BoundaryCorrection,
                    grmhd::ValenciaDivClean::BoundaryCorrections::
                        standard_boundary_corrections>,
@@ -354,8 +359,9 @@ struct EvolutionMetavars<tmpl::list<InterpolationTargetTags...>,
                    tmpl::append<StepChoosers::standard_slab_choosers<
                                     system, local_time_stepping>,
                                 tmpl::conditional_t<
-                                    use_dg_subcell and local_time_stepping,
-                                    tmpl::list<StepChoosers::FixedLtsRatio>,
+                                    local_time_stepping,
+                                    tmpl::list<evolution::dg::StepChoosers::
+                                                   FixedLtsRatio<volume_dim>>,
                                     tmpl::list<>>>>,
         tmpl::pair<TimeSequence<double>,
                    TimeSequences::all_time_sequences<double>>,
@@ -587,7 +593,7 @@ struct EvolutionMetavars<tmpl::list<InterpolationTargetTags...>,
       tmpl::conditional_t<
           local_time_stepping,
           evolution::dg::Initialization::Actions::SetupEqualRateRegions<
-              volume_dim, equal_rate_regions>,
+              EvolutionMetavars, volume_dim, equal_rate_regions>,
           tmpl::list<>>,
       evolution::Actions::InitializeRunEventsAndDenseTriggers,
       Initialization::Actions::InitializeItems<
@@ -631,8 +637,12 @@ struct EvolutionMetavars<tmpl::list<InterpolationTargetTags...>,
                                      tmpl::list<>>,
                   evolution::Actions::RunEventsAndTriggers<
                       Triggers::WhenToCheck::AtSlabs>,
-                  Actions::ChangeSlabSize, step_actions,
-                  Actions::MutateApply<AdvanceTime<>>,
+                  Actions::ChangeSlabSize,
+                  std::conditional_t<
+                      local_time_stepping,
+                      evolution::dg::Actions::ChangeFixedLtsRatio,
+                      tmpl::list<>>,
+                  step_actions, Actions::MutateApply<AdvanceTime<>>,
                   PhaseControl::Actions::ExecutePhaseChange>>>,
           Parallel::PhaseActions<
               Parallel::Phase::PostFailureCleanup,

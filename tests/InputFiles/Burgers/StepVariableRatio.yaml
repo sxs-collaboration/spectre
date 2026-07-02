@@ -31,7 +31,7 @@ Evolution:
       Order: 3
   VariableOrderAlgorithm:
     GoalOrder: 3
-  LtsStepChoosers:
+  LtsStepChoosers: &lts_step_choosers
     - Cfl:
         SafetyFactor: 0.5
     - LimitIncrease:
@@ -92,20 +92,18 @@ SpatialDiscretization:
 EventsAndTriggersAtCheckpoints:
 
 EventsAndTriggersAtSlabs:
-  - Trigger: Always
-    Events:
-      - ChangeSlabSize:
-          DelayChange: 0
-          StepChoosers:
-            - FixedLtsRatio:
-                Regions: All
-                StepChoosers:
-                  - Cfl:
-                      SafetyFactor: 0.5
-            - LimitIncrease:
-                Factor: 2.0
 
 EventsAndTriggersAtSteps:
+  - Trigger:
+      StepsWithinSlab:
+        EvenlySpaced:
+          Interval: 2
+          Offset: 0
+    Events:
+      - ChangeFixedLtsRatio:
+          DelayChange: 1
+          Regions: All
+          StepChoosers: *lts_step_choosers
 
 EventsAndDenseTriggers:
   - Trigger:
