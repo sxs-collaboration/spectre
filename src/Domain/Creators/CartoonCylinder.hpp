@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "Domain/BoundaryConditions/BoundaryCondition.hpp"
+#include "Domain/BoundaryConditions/Cartoon.hpp"
 #include "Domain/BoundaryConditions/GetBoundaryConditionsBase.hpp"
 #include "Domain/CoordinateMaps/Distribution.hpp"
 #include "Domain/Creators/DomainCreator.hpp"
@@ -51,7 +52,9 @@ class CartoonCylinder : public DomainCreator<3> {
   struct LowerBounds {
     using type = std::array<double, 2>;
     static constexpr Options::String help = {
-        "Lower bound in the [x,y] dimensions."};
+        "Lower bound in the [x,y] dimensions. The lower x must be greater than "
+        "or equal to 0. If x=0 is included, the innermost elements use a 1D "
+        "Zernike basis, otherwise the domain will be a cylindrical shell."};
   };
 
   struct UpperBounds {
@@ -139,7 +142,9 @@ class CartoonCylinder : public DomainCreator<3> {
   static constexpr Options::String help{
       "A cylinder domain that requires/enforces axial symmetry. The "
       "computational domain is the x-y plane, with Cartoon partial derivatives "
-      "being used for the z direction."};
+      "being used for the z direction. Elements touching the x=0 axis use "
+      "ZernikeB1 bases in the x direction and automatically apply a system's "
+      "Cartoon-type boundary condition."};
 
   CartoonCylinder(
       std::array<double, 2> lower_bounds, std::array<double, 2> upper_bounds,
@@ -153,28 +158,9 @@ class CartoonCylinder : public DomainCreator<3> {
                             2>,
                  2>
           boundary_conditions = {},
+      std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
+          cartoon_boundary_condition = nullptr,
       const Options::Context& context = {});
-
-  template <typename BoundaryConditionsBase>
-  CartoonCylinder(
-      std::array<double, 2> lower_bounds, std::array<double, 2> upper_bounds,
-      std::array<size_t, 2> initial_refinement_levels,
-      std::array<size_t, 2> initial_num_points,
-      std::array<CoordinateMaps::Distribution, 2> distributions = {},
-      std::unique_ptr<domain::creators::time_dependence::TimeDependence<3>>
-          time_dependence = nullptr,
-      std::array<
-          std::variant<std::unique_ptr<BoundaryConditionsBase>,
-                       LowerUpperBoundaryCondition<BoundaryConditionsBase>>,
-          2>
-          boundary_conditions = {},
-      const Options::Context& context = {})
-      : CartoonCylinder(
-            lower_bounds, upper_bounds, initial_refinement_levels,
-            initial_num_points,
-            distributions, std::move(time_dependence),
-            transform_boundary_conditions(std::move(boundary_conditions)),
-            context) {}
 
   CartoonCylinder() = default;
   CartoonCylinder(const CartoonCylinder&) = delete;
@@ -193,12 +179,12 @@ class CartoonCylinder : public DomainCreator<3> {
 
   std::vector<std::array<size_t, 3>> initial_refinement_levels() const override;
 
-  std::vector<std::string> block_names() const override { return block_names_; }
+  /// The only block is Block0
+  std::vector<std::string> block_names() const override;
 
+  /// The only group is CartoonCylinder
   std::unordered_map<std::string, std::unordered_set<std::string>>
-  block_groups() const override {
-    return {{name(), {name()}}};
-  }
+  block_groups() const override;
 
   auto functions_of_time(const std::unordered_map<std::string, double>&
                              initial_expiration_times = {}) const
@@ -228,15 +214,20 @@ class CartoonCylinder : public DomainCreator<3> {
   std::array<size_t, 2> initial_num_points_{};
   bool is_periodic_in_y_{};
   std::array<CoordinateMaps::Distribution, 2> distributions_{};
+  bool using_zernike_{};
   std::array<
       std::array<std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>,
                  2>,
       2>
       boundary_conditions_{};
+  std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
+      cartoon_boundary_condition_{};
   std::unique_ptr<domain::creators::time_dependence::TimeDependence<3>>
       time_dependence_;
   size_t num_blocks_{};
-  inline static const std::vector<std::string> block_names_{name()};
+  std::vector<std::string> block_names_{};
+  std::unordered_map<std::string, std::unordered_set<std::string>>
+      block_groups_{};
 };
 
 template <typename BoundaryConditionsBase>
@@ -273,3 +264,122 @@ auto CartoonCylinder::transform_boundary_conditions(
 }
 
 }  // namespace domain::creators
+
+namespace domain::creators::detail {
+/// \brief Helper struct for CartoonCylinder options parsing so the internal
+/// cartoon boundary condition at $x = 0$ is not a required argument.
+///
+/// \details To get the cartoon-type boundary condition from a system we need
+/// access to the system's metavariables, which is only present when parsing
+/// options. The point of this design is so that the input file does not
+/// require a dummy value for an InnerBoundaryCondition that is always the
+/// same for a given system.
+///
+/// This helper's constructor does not take an InnerBoundaryCondition, which
+/// means if we parse a CartoonCylinder as a CartonSphere2DOptionsHelper
+/// by having an options parsing specialization (so the input file values are
+/// the helper's construtor, not CartoonCylinder's), we can detect the
+/// cartoon-type boundary condition for the given system and only then call
+/// the CartoonCylinder constructor with the extra information.
+struct CartoonCylinderOptionsHelper {
+  template <typename Metavariables>
+  using options = typename domain::creators::CartoonCylinder::template options<
+      Metavariables>;
+
+  template <typename BoundaryConditionsBase>
+  using LowerUpperBoundaryCondition =
+      domain::creators::CartoonCylinder::LowerUpperBoundaryCondition<
+          BoundaryConditionsBase>;
+
+  static constexpr Options::String help = {"CartoonCylinderOptionsHelper"};
+
+  // Default constructor required by Options system
+  CartoonCylinderOptionsHelper() = default;
+
+  // Does not take cartoon BC
+  CartoonCylinderOptionsHelper(
+      std::array<double, 2> lower_bounds, std::array<double, 2> upper_bounds,
+      std::array<size_t, 2> initial_refinement_levels,
+      std::array<size_t, 2> initial_num_points,
+      std::array<CoordinateMaps::Distribution, 2> distributions,
+      std::unique_ptr<domain::creators::time_dependence::TimeDependence<3>>
+          time_dependence = nullptr,
+      std::array<std::array<std::unique_ptr<
+                                domain::BoundaryConditions::BoundaryCondition>,
+                            2>,
+                 2>
+          boundary_conditions = {},
+      Options::Context context = {});
+
+  template <typename BoundaryConditionsBase>
+  CartoonCylinderOptionsHelper(
+      std::array<double, 2> lower_bounds, std::array<double, 2> upper_bounds,
+      std::array<size_t, 2> initial_refinement_levels,
+      std::array<size_t, 2> initial_num_points,
+      std::array<CoordinateMaps::Distribution, 2> distributions,
+      std::unique_ptr<domain::creators::time_dependence::TimeDependence<3>>
+          time_dependence = nullptr,
+      std::array<
+          std::variant<std::unique_ptr<BoundaryConditionsBase>,
+                       LowerUpperBoundaryCondition<BoundaryConditionsBase>>,
+          2>
+          boundary_conditions = {},
+      Options::Context context = {})
+      : CartoonCylinderOptionsHelper(
+            std::move(lower_bounds), std::move(upper_bounds),
+            std::move(initial_refinement_levels), std::move(initial_num_points),
+            std::move(distributions), std::move(time_dependence),
+            domain::creators::CartoonCylinder::transform_boundary_conditions(
+                std::move(boundary_conditions)),
+            std::move(context)) {}
+  // Same members as in CartoonCylinder; public, to be extracted
+  std::array<double, 2> lower_bounds_{};
+  std::array<double, 2> upper_bounds_{};
+  std::array<size_t, 2> initial_refinement_levels_{};
+  std::array<size_t, 2> initial_num_points_{};
+  std::array<CoordinateMaps::Distribution, 2> distributions_{};
+  std::unique_ptr<domain::creators::time_dependence::TimeDependence<3>>
+      time_dependence_{nullptr};
+  std::array<
+      std::array<std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>,
+                 2>,
+      2>
+      boundary_conditions_{};
+  Options::Context context_{};
+};
+}  // namespace domain::creators::detail
+
+// Options parsing specialization to automate CartoonCylinder's cartoon
+// boundary condition
+template <>
+struct Options::create_from_yaml<domain::creators::CartoonCylinder> {
+  template <typename Metavariables>
+  static domain::creators::CartoonCylinder create(
+      const Options::Option& options) {
+    auto helper =
+        options.parse_as<domain::creators::detail::CartoonCylinderOptionsHelper,
+                         Metavariables>();
+
+    // Create cartoon BC if system supports it, if not will throw parse error in
+    // real constructor
+    std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
+        cartoon_boundary_condition = nullptr;
+    if constexpr (domain::BoundaryConditions::has_boundary_conditions_base_v<
+                      typename Metavariables::system>) {
+      if constexpr (domain::BoundaryConditions::system_has_cartoon_bc_v<
+                        Metavariables>) {
+        cartoon_boundary_condition =
+            domain::BoundaryConditions::make_cartoon_boundary_condition<
+                Metavariables>();
+      }
+    }
+
+    // Construct CartoonCylinder using the helper's parsed data + cartoon BC
+    return domain::creators::CartoonCylinder(
+        helper.lower_bounds_, helper.upper_bounds_,
+        helper.initial_refinement_levels_, helper.initial_num_points_,
+        helper.distributions_, std::move(helper.time_dependence_),
+        std::move(helper.boundary_conditions_),
+        std::move(cartoon_boundary_condition), helper.context_);
+  }
+};
