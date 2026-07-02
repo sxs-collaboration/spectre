@@ -50,6 +50,9 @@ class UniformCylindricalSide;
 template <typename SourceFrame, typename TargetFrame, typename... Maps>
 class CoordinateMap;
 
+template <typename T>
+struct ExpandOverBlocks;
+
 namespace FunctionsOfTime {
 class FunctionOfTime;
 }  // namespace FunctionsOfTime
@@ -232,34 +235,36 @@ class CylindricalBinaryCompactObject : public DomainCreator<3> {
   };
 
   struct InitialRefinement {
-    using type =
-        std::variant<size_t, std::array<size_t, 3>,
-                     std::vector<std::array<size_t, 3>>,
-                     std::unordered_map<std::string, std::array<size_t, 3>>>;
+    using type = std::variant<
+        size_t, std::array<size_t, 3>, std::vector<std::array<size_t, 3>>,
+        std::unordered_map<std::string, std::array<size_t, 3>>,
+        std::unordered_map<std::string,
+                           std::variant<std::array<size_t, 3>, size_t>>>;
     static constexpr Options::String help = {
         "Initial refinement level. Specify one of: a single number, a list "
         "representing [r, theta, perp], or such a list for every block in the "
         "domain. Here 'r' is the radial direction normal to the inner and "
         "outer boundaries, 'theta' is the periodic direction, and 'perp' is "
         "the third direction. Note that for spherical shell block groups "
-        "(e.g. 'OuterSphere'), the angular refinement levels must be specified "
-        "as zero. The exception is if a single number is specified for global "
-        "refinement, the angular refinement for 'OuterSphere' blocks will be "
-        "set to 0 for you."};
+        "('InnerSphereA', 'InnerSphereB', and 'OuterSphere'), you must instead "
+        "specify refinement as a single value representing radial refinement."};
   };
   struct InitialGridPoints {
-    using type =
-        std::variant<size_t, std::array<size_t, 3>,
-                     std::vector<std::array<size_t, 3>>,
-                     std::unordered_map<std::string, std::array<size_t, 3>>>;
+    using type = std::variant<
+        size_t, std::array<size_t, 3>, std::vector<std::array<size_t, 3>>,
+        std::unordered_map<std::string, std::array<size_t, 3>>,
+        std::unordered_map<std::string, std::variant<std::array<size_t, 3>,
+                                                     std::array<size_t, 2>>>>;
     static constexpr Options::String help = {
         "Initial number of grid points. Specify one of: a single number, a "
         "list representing [r, theta, perp], or such a list for every block in "
         "the domain. Here 'r' is the radial direction normal to the inner and "
         "outer boundaries, 'theta' is the periodic direction, and 'perp' is "
-        "the third direction. The exception to this is that for blocks in "
-        "'OuterSphere', the list represents [r, l_max, m_max]. Note that for "
-        "these blocks, l_max must be equal to m_max."};
+        "the third direction. The exception to this is that for spherical "
+        "shell blocks groups ('InnerSphereA', 'InnerSphereB', 'OuterSphere'),"
+        "you must instead specify grid points as [r, L_max]. The exception to "
+        "this is if a single number is specified for global initial grid "
+        "points."};
   };
 
   struct BoundaryConditions {

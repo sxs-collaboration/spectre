@@ -36,6 +36,7 @@
 #include "Domain/Structure/ObjectLabel.hpp"
 #include "Domain/Structure/OrientationMap.hpp"
 #include "NumericalAlgorithms/RootFinding/QuadraticEquation.hpp"
+#include "NumericalAlgorithms/SphericalHarmonics/Spherepack.hpp"
 #include "Options/ParseError.hpp"
 
 namespace {
@@ -128,6 +129,25 @@ CylindricalBinaryCompactObject::CylindricalBinaryCompactObject(
         context,
         "Cannot have periodic boundary conditions with a binary domain");
   }
+
+  // Build the set of spherical-harmonic shell block groups and block names so
+  // the validation below can distinguish spherical-harmonic blocks from other
+  // blocks and block groups.
+  std::unordered_set<std::string> spherical_harmonic_shell_names{"OuterSphere",
+                                                                 "OuterShell0"};
+  if (include_inner_sphere_A) {
+    spherical_harmonic_shell_names.insert("InnerSphereA");
+    spherical_harmonic_shell_names.insert("InnerAShell0");
+  }
+  if (include_inner_sphere_B) {
+    spherical_harmonic_shell_names.insert("InnerSphereB");
+    spherical_harmonic_shell_names.insert("InnerBShell0");
+  }
+
+  bco::validate_initial_refinement(context, initial_refinement,
+                                   spherical_harmonic_shell_names);
+  bco::validate_initial_grid_points(context, initial_grid_points,
+                                    spherical_harmonic_shell_names);
 
   // The choices made below for the quantities xi, z_cutting_plane_,
   // and xi_min_sphere_e are the ones made in SpEC, and in the
@@ -307,62 +327,40 @@ CylindricalBinaryCompactObject::CylindricalBinaryCompactObject(
   }
   add_spherical_shell_name("Outer", "OuterSphere", 0);
 
-  // Expand initial refinement over all blocks
+  // For expanding initial refinement and grid points over all blocks
   const ExpandOverBlocks<std::array<size_t, 3>> expand_over_blocks{
       block_names_, block_groups_};
   try {
-    initial_refinement_ = std::visit(
-        [this, &expand_over_blocks, &first_inner_shell_A_block,
-         &first_inner_shell_B_block]<typename V>(
-            const V& v) -> std::vector<std::array<size_t, 3>> {
-          if constexpr (std::is_same_v<V, size_t>) {
-            std::vector<std::array<size_t, 3>> expanded = expand_over_blocks(v);
-
-            // If one size_t was used to globally define refinement throughout
-            // the domain, overwrite the refinement levels to be 0 just for the
-            // angular directions of the spherical shells since angular
-            // refinement doesn't make since for blocks with spherical
-            // harmonics. This allows the user to still easily specify a global
-            // refinement level instead of having to manually specify the same
-            // refinement for all directions of all block groups with the same
-            // number except spherical shell blocks.
-
-            if (include_inner_sphere_A_) {
-              // InnerAShell0
-              expanded[first_inner_shell_A_block][1] = 0;
-              expanded[first_inner_shell_A_block][2] = 0;
-            }
-            if (include_inner_sphere_B_) {
-              // InnerBShell0
-              expanded[first_inner_shell_B_block][1] = 0;
-              expanded[first_inner_shell_B_block][2] = 0;
-            }
-            // OuterShell0
-            expanded[first_outer_shell_block][1] = 0;
-            expanded[first_outer_shell_block][2] = 0;
-
-            return expanded;
-          } else {
-            (void)first_inner_shell_A_block;
-            (void)first_inner_shell_B_block;
-            (void)first_outer_shell_block;
-
-            return expand_over_blocks(v);
-          }
-        },
-        initial_refinement);
-
+    initial_refinement_ =
+        bco::set_initial_refinement(expand_over_blocks, initial_refinement);
+    // If a global single-number refinement was used, post-process the spherical
+    // shell entries to make the angular directions have h refinement = 0.
+    if (std::holds_alternative<size_t>(initial_refinement)) {
+      if (include_inner_sphere_A) {
+        // InnerAShell0
+        initial_refinement_[first_inner_shell_A_block][1] = 0;
+        initial_refinement_[first_inner_shell_A_block][2] = 0;
+      }
+      if (include_inner_sphere_B) {
+        // InnerBShell0
+        initial_refinement_[first_inner_shell_B_block][1] = 0;
+        initial_refinement_[first_inner_shell_B_block][2] = 0;
+      }
+      // OuterShell0
+      initial_refinement_[first_outer_shell_block][1] = 0;
+      initial_refinement_[first_outer_shell_block][2] = 0;
+    }
   } catch (const std::exception& error) {
     PARSE_ERROR(context, "Invalid 'InitialRefinement': " << error.what());
   }
+  // Validate angular h-refinement == 0 in spherical shell blocks
   if (include_inner_sphere_A_) {
-    // validate angular h-refinement == 0 in spherical shell blocks
     if (gsl::at(initial_refinement_, first_inner_shell_A_block)[1] != 0 or
         gsl::at(initial_refinement_, first_inner_shell_A_block)[2] != 0) {
       PARSE_ERROR(context,
                   "Angular h-refinement is not supported for "
                   "spherical-harmonic inner-shell blocks. Specify refinement "
-                  "for InnerSphereA as [radial_refinement, 0, 0].");
+                  "for InnerSphereA as a single number.");
     }
   }
   if (include_inner_sphere_B_) {
@@ -371,7 +369,7 @@ CylindricalBinaryCompactObject::CylindricalBinaryCompactObject(
       PARSE_ERROR(context,
                   "Angular h-refinement is not supported for "
                   "spherical-harmonic inner-shell blocks. Specify refinement "
-                  "for InnerSphereB as [radial_refinement, 0, 0].");
+                  "for InnerSphereB as a single number.");
     }
   }
   if (gsl::at(initial_refinement_, first_outer_shell_block)[1] != 0 or
@@ -379,75 +377,66 @@ CylindricalBinaryCompactObject::CylindricalBinaryCompactObject(
     PARSE_ERROR(context,
                 "Angular h-refinement is not supported for "
                 "spherical-harmonic outer-shell blocks. Specify refinement "
-                "as [radial_refinement, 0, 0].");
+                "for OuterSphere as a single number.");
   }
 
-  size_t inner_sphere_A_l_max = 0;
-  size_t inner_sphere_A_m_max = 0;
-  size_t inner_sphere_B_l_max = 0;
-  size_t inner_sphere_B_m_max = 0;
-  size_t outer_sphere_l_max = 0;
-  size_t outer_sphere_m_max = 0;
-
   try {
-    initial_grid_points_ = std::visit(expand_over_blocks, initial_grid_points);
-
-    inner_sphere_A_l_max = initial_grid_points_[first_inner_shell_A_block][1];
-    inner_sphere_A_m_max = initial_grid_points_[first_inner_shell_A_block][2];
-
-    inner_sphere_B_l_max = initial_grid_points_[first_inner_shell_B_block][1];
-    inner_sphere_B_m_max = initial_grid_points_[first_inner_shell_B_block][2];
-
-    outer_sphere_l_max =
-        initial_grid_points_[first_outer_shell_block][1];
-    outer_sphere_m_max = initial_grid_points_[first_outer_shell_block][2];
-
-    // For spherical-harmonic shell blocks, initial_number_of_grid_points_
-    // stores {n_radial, l_max, m_max}. Convert (l_max, m_max) to the number of
-    // collocation points the spherical-harmonic basis uses in each angular
-    // direction.
-
-    // InnerAShell0
-    initial_grid_points_[first_inner_shell_A_block][1] =
-        ylm::Spherepack::n_theta_points(inner_sphere_A_l_max);
-    initial_grid_points_[first_inner_shell_A_block][2] =
-        ylm::Spherepack::n_phi_points(inner_sphere_A_m_max);
-    // InnerBShell0
-    initial_grid_points_[first_inner_shell_B_block][1] =
-        ylm::Spherepack::n_theta_points(inner_sphere_B_l_max);
-    initial_grid_points_[first_inner_shell_B_block][2] =
-        ylm::Spherepack::n_phi_points(inner_sphere_B_m_max);
-    // OuterShell0
-    initial_grid_points_[first_outer_shell_block][1] =
-        ylm::Spherepack::n_theta_points(outer_sphere_l_max);
-    initial_grid_points_[first_outer_shell_block][2] =
-        ylm::Spherepack::n_phi_points(outer_sphere_m_max);
+    initial_grid_points_ =
+        bco::set_initial_grid_points(expand_over_blocks, initial_grid_points);
   } catch (const std::exception& error) {
     PARSE_ERROR(context, "Invalid 'InitialGridPoints': " << error.what());
   }
-  // A spherical-harmonic shell is fully specified by a single ell, so
-  // l_max must equal m_max.
-  if (inner_sphere_A_l_max != inner_sphere_A_m_max) {
-    PARSE_ERROR(
-        context,
-        "Spherical-harmonic inner-shell blocks must have L_max = M_max. "
-        "Specify grid points for InnerSphereA as [radial_points, L_max, "
-        "L_max].");
+  // Validate angular grid points in spherical shell blocks. A
+  // spherical-harmonic shell is fully specified by a single ell, so l_max must
+  // equal m_max.
+  if (include_inner_sphere_A_) {
+    if (initial_grid_points_[first_inner_shell_A_block][1] !=
+        initial_grid_points_[first_inner_shell_A_block][2]) {
+      PARSE_ERROR(
+          context,
+          "Spherical-harmonic inner-shell blocks must have L_max = M_max. "
+          "Specify grid points for InnerSphereA as [radial_points, L_max].");
+    }
+    // For spherical-harmonic outer-shell blocks, initial_number_of_grid_points_
+    // stores {n_radial, l_max, m_max}. Convert (l_max, m_max) to the number of
+    // collocation points the spherical-harmonic basis uses in each angular
+    // direction.
+    initial_grid_points_[first_inner_shell_A_block][1] =
+        ylm::Spherepack::n_theta_points(
+            gsl::at(initial_grid_points_, first_inner_shell_A_block)[1]);
+    initial_grid_points_[first_inner_shell_A_block][2] =
+        ylm::Spherepack::n_phi_points(
+            gsl::at(initial_grid_points_, first_inner_shell_A_block)[2]);
   }
-  if (inner_sphere_B_l_max != inner_sphere_B_m_max) {
-    PARSE_ERROR(
-        context,
-        "Spherical-harmonic inner-shell blocks must have L_max = M_max. "
-        "Specify grid points for InnerSphereB as [radial_points, L_max, "
-        "L_max].");
+  if (include_inner_sphere_B_) {
+    if (initial_grid_points_[first_inner_shell_B_block][1] !=
+        initial_grid_points_[first_inner_shell_B_block][2]) {
+      PARSE_ERROR(
+          context,
+          "Spherical-harmonic inner-shell blocks must have L_max = M_max. "
+          "Specify grid points for InnerSphereB as [radial_points, L_max].");
+    }
+    initial_grid_points_[first_inner_shell_B_block][1] =
+        ylm::Spherepack::n_theta_points(
+            gsl::at(initial_grid_points_, first_inner_shell_B_block)[1]);
+    initial_grid_points_[first_inner_shell_B_block][2] =
+        ylm::Spherepack::n_phi_points(
+            gsl::at(initial_grid_points_, first_inner_shell_B_block)[2]);
   }
-  if (outer_sphere_l_max != outer_sphere_m_max) {
+  if (initial_grid_points_[first_outer_shell_block][1] !=
+      initial_grid_points_[first_outer_shell_block][2]) {
     PARSE_ERROR(
         context,
         "Spherical-harmonic outer-shell blocks must have L_max = M_max. "
-        "Specify grid points for OuterSphere as [radial_points, L_max, "
-        "L_max].");
+        "Specify grid points for OuterSphere as [radial_points, L_max].");
   }
+
+  initial_grid_points_[first_outer_shell_block][1] =
+      ylm::Spherepack::n_theta_points(
+          gsl::at(initial_grid_points_, first_outer_shell_block)[1]);
+  initial_grid_points_[first_outer_shell_block][2] =
+      ylm::Spherepack::n_phi_points(
+          gsl::at(initial_grid_points_, first_outer_shell_block)[2]);
 
   // Now we must change the initial refinement and initial grid points
   // for certain blocks, because the [r, theta, perp] directions do

@@ -96,8 +96,8 @@ void validate_initial_grid_points(
         if (std::holds_alternative<std::array<size_t, 3>>(extents)) {
           PARSE_ERROR(context, "Block '"
                                    << block_name
-                                   << "' is a spherical-harmonic outer-shell "
-                                      "block. Specify its grid points as "
+                                   << "' is a spherical-harmonic shell block. "
+                                      "Specify its grid points as "
                                       "[radial_points, L_max], not array<3>.");
         }
       } else {
@@ -107,14 +107,13 @@ void validate_initial_grid_points(
                         "Specifying 2 grid points for block '"
                             << block_name
                             << "' is only valid for spherical-harmonic "
-                               "outer-shell blocks (OuterShell0, etc.).");
+                               "shell blocks (OuterShell0, etc.).");
           } else {
             PARSE_ERROR(
                 context,
                 "Specifying 2 grid points (block '"
                     << block_name
-                    << "') is only valid when SphericalHarmonicsInWavezone "
-                       "is enabled.");
+                    << "') is only valid for spherical-harmonic shell blocks.");
           }
         }
       }
@@ -140,7 +139,7 @@ void validate_initial_refinement(
           PARSE_ERROR(context,
                       "Block '"
                           << block_name
-                          << "' is a spherical-harmonic outer-shell block. "
+                          << "' is a spherical-harmonic shell block. "
                              "Specify its refinement as a single number "
                              "(radial only), not array<3>. Angular "
                              "h-refinement is not supported for these blocks.");
@@ -152,14 +151,13 @@ void validate_initial_refinement(
                         "Per-block single-number refinement for block '"
                             << block_name
                             << "' is only valid for spherical-harmonic "
-                               "outer-shell blocks (OuterShell0, etc.).");
+                               "shell blocks (OuterShell0, etc.).");
           } else {
             PARSE_ERROR(
                 context,
                 "Per-block single-number refinement in map syntax (block '"
                     << block_name
-                    << "') is only valid when SphericalHarmonicsInWavezone "
-                       "is enabled.");
+                    << "') is only valid for spherical-harmonic shell blocks.");
           }
         }
       }

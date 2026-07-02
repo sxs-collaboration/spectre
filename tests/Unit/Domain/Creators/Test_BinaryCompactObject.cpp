@@ -1003,7 +1003,7 @@ void test_parse_errors() {
           Distribution::Linear, 120.0, false, false, std::nullopt,
           create_outer_boundary_condition(), Options::Context{false, {}, 1, 1}),
       Catch::Matchers::ContainsSubstring(
-          "only valid when SphericalHarmonicsInWavezone is enabled"));
+          "only valid for spherical-harmonic shell blocks"));
   CHECK_THROWS_WITH(
       domain::creators::BinaryCompactObject(
           Object{0.5, 0.8, 1.0, {{create_inner_boundary_condition()}}, false},
@@ -1016,7 +1016,7 @@ void test_parse_errors() {
           Distribution::Linear, 120.0, false, false, std::nullopt,
           create_outer_boundary_condition(), Options::Context{false, {}, 1, 1}),
       Catch::Matchers::ContainsSubstring(
-          "only valid when SphericalHarmonicsInWavezone is enabled"));
+          "only valid for spherical-harmonic shell blocks"));
   // Note: the boundary condition-related parse errors are checked in the
   // test_connectivity function.
 }
@@ -1295,7 +1295,7 @@ void test_spherical_harmonics_wavezone() {
           std::nullopt, create_outer_boundary_condition(),
           Options::Context{false, {}, 1, 1}),
       Catch::Matchers::ContainsSubstring(
-          "only valid for spherical-harmonic outer-shell blocks"));
+          "only valid for spherical-harmonic shell blocks"));
   // Map grid points with array<2> on a non-SH block -> pre-expansion error.
   CHECK_THROWS_WITH(
       domain::creators::BinaryCompactObject(
@@ -1308,7 +1308,7 @@ void test_spherical_harmonics_wavezone() {
           Distribution::Linear, 120.0, true, false, std::nullopt,
           create_outer_boundary_condition(), Options::Context{false, {}, 1, 1}),
       Catch::Matchers::ContainsSubstring(
-          "only valid for spherical-harmonic outer-shell blocks"));
+          "only valid for spherical-harmonic shell blocks"));
 }
 
 template <domain::ObjectLabel Object>
