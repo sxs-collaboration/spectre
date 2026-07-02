@@ -54,6 +54,8 @@ spectre_target_headers(
   FilteringB1.tpp
   FilteringB2.hpp
   FilteringB2.tpp
+  FilteringB3.hpp
+  FilteringB3.tpp
   GetSpectralQuantityForMesh.hpp
   IntegrationMatrix.hpp
   InterpolationWeights.hpp

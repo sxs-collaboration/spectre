@@ -7,6 +7,7 @@ set(LIBRARY_SOURCES
   Test_AngularOrdering.cpp
   Test_RealSphericalHarmonics.cpp
   Test_Spherepack.cpp
+  Test_SpherepackCache.cpp
   Test_SpherepackIterator.cpp
   Test_YlmToStf.cpp
   )
