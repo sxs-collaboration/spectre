@@ -14,6 +14,7 @@ namespace py_bindings {
 void bind_info_at_compile(py::module& m) {
   // Wrapper to make Build Info available from python
   m.def("spectre_version", &spectre_version);
+  m.def("spectre_machine_name", &spectre_machine_name);
   m.def("unit_test_src_path", &unit_test_src_path);
   m.def("unit_test_build_path", &unit_test_build_path);
 }

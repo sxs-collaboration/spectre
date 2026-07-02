@@ -11,6 +11,15 @@
 
 std::string spectre_version() { return std::string("@SPECTRE_VERSION@"); }
 
+std::string spectre_machine_name() {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunreachable-code"
+  return std::string("@MACHINE@") == std::string("OFF")
+             ? std::string("Unknown")
+             : std::string("@MACHINE@");
+#pragma GCC diagnostic pop
+}
+
 std::string unit_test_build_path() { return "@CMAKE_BINARY_DIR@/tests/Unit/"; }
 
 std::string unit_test_src_path() { return "@CMAKE_SOURCE_DIR@/tests/Unit/"; }
@@ -20,6 +29,7 @@ std::string info_from_build() {
   os << "SpECTRE Build Information:\n";
   os << "Version:                      " << spectre_version() << "\n";
   os << "Compiled on host:             @HOSTNAME@\n";
+  os << "Machine name:                 " << spectre_machine_name() << "\n";
   os << "Compiled in directory:        @CMAKE_BINARY_DIR@\n";
   os << "Source directory is:          @CMAKE_SOURCE_DIR@\n";
   os << "Compiled on git branch:       " << git_branch() << "\n";
