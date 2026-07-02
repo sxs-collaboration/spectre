@@ -113,6 +113,10 @@ struct KleinGordonCharacteristicEvolution
                       tmpl::bind<hypersurface_computation, tmpl::_1>>,
       klein_gordon_hypersurface_computation,
       Actions::FilterSwshVolumeQuantity<Tags::BondiH>,
+      // `Tags::Dy<Tags::BondiH>` is not an input to any hypersurface
+      // integration (unlike the other Bondi radial derivatives), so it is
+      // computed explicitly here, from the filtered `H`, for volume output.
+      ::Actions::MutateApply<PreSwshDerivatives<Tags::Dy<Tags::BondiH>>>,
       Actions::FilterSwshVolumeQuantity<Tags::KleinGordonPi>,
       ::Actions::MutateApply<
           CalculateScriPlusValue<::Tags::dt<Tags::InertialRetardedTime>>>,
@@ -165,6 +169,10 @@ struct KleinGordonCharacteristicEvolution
                       tmpl::bind<hypersurface_computation, tmpl::_1>>,
       klein_gordon_hypersurface_computation,
       Actions::FilterSwshVolumeQuantity<Tags::BondiH>,
+      // `Tags::Dy<Tags::BondiH>` is not an input to any hypersurface
+      // integration (unlike the other Bondi radial derivatives), so it is
+      // computed explicitly here, from the filtered `H`, for volume output.
+      ::Actions::MutateApply<PreSwshDerivatives<Tags::Dy<Tags::BondiH>>>,
       Actions::FilterSwshVolumeQuantity<Tags::KleinGordonPi>,
       compute_scri_quantities_and_observe,
       ::Actions::MutateApply<ChangeStepSize<
