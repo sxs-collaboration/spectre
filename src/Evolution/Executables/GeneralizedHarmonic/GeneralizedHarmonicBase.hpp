@@ -429,7 +429,8 @@ struct GeneralizedHarmonicTemplateBase {
   template <typename DerivedMetavars, bool UseControlSystems>
   using initialization_actions = tmpl::list<
       Initialization::Actions::InitializeItems<
-          Initialization::TimeStepping<DerivedMetavars, TimeStepperBase>,
+          Initialization::TimeStepping<DerivedMetavars, TimeStepperBase,
+                                       UseControlSystems>,
           evolution::dg::Initialization::Domain<DerivedMetavars,
                                                 UseControlSystems>,
           ::amr::Initialization::Initialize<volume_dim, DerivedMetavars>,

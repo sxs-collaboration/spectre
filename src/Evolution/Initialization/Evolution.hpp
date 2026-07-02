@@ -113,12 +113,14 @@ void set_next_time_step_id(const gsl::not_null<TimeStepId*> next_time_step_id,
 /// Since the evolution has not started yet, initialize the state
 /// _before_ the initial time. So `Tags::TimeStepId` is undefined at this point,
 /// and `Tags::Next<Tags::TimeStepId>` is the initial time.
-template <typename Metavariables, typename TimeStepperBase>
+template <typename Metavariables, typename TimeStepperBase,
+          bool WithControlSystems>
 struct TimeStepping {
   /// Tags for constant items added to the GlobalCache.  These items are
   /// initialized from input file options.
-  using const_global_cache_tags =
-      tmpl::list<::Tags::ConcreteTimeStepper<TimeStepperBase>, ::Tags::LtsMode>;
+  using const_global_cache_tags = tmpl::list<
+      ::Tags::ConcreteTimeStepper<TimeStepperBase, WithControlSystems>,
+      ::Tags::LtsMode>;
 
   /// Tags for mutable items added to the GlobalCache.  These items are
   /// initialized from input file options.
@@ -128,7 +130,7 @@ struct TimeStepping {
   using argument_tags =
       tmpl::list<::Tags::Time, Tags::InitialTimeDelta,
                  Tags::InitialSlabSize<TimeStepperBase::local_time_stepping>,
-                 ::Tags::ConcreteTimeStepper<TimeStepperBase>>;
+                 ::Tags::TimeStepper<TimeStepperBase>>;
 
   /// Tags for simple DataBox items that are initialized from input file options
   using simple_tags_from_options =
@@ -154,7 +156,8 @@ struct TimeStepping {
 
   /// Tags for immutable DataBox items (compute items or reference items) added
   /// to the DataBox.
-  using compute_tags = time_stepper_ref_tags<TimeStepperBase>;
+  using compute_tags =
+      time_stepper_ref_tags<TimeStepperBase, WithControlSystems>;
 
   /// Given the items fetched from a DataBox by the argument_tags when using
   /// LTS, mutate the items in the DataBox corresponding to return_tags
