@@ -11,10 +11,11 @@
 #include "IO/Observer/ObserverComponent.hpp"
 #include "IO/Observer/ReductionActions.hpp"
 #include "Parallel/GlobalCache.hpp"
-#include "Parallel/Info.hpp"
 #include "Parallel/Invoke.hpp"
 #include "Parallel/Local.hpp"
+#include "Parallel/Tags/Info.hpp"
 #include "Utilities/Serialization/Serialize.hpp"
+#include "Utilities/System/Info.hpp"
 
 namespace mem_monitor {
 /*!
@@ -33,7 +34,7 @@ namespace mem_monitor {
 struct ProcessSingleton {
   template <typename ParallelComponent, typename DbTags, typename Metavariables,
             typename ArrayIndex>
-  static void apply(db::DataBox<DbTags>& /*box*/,
+  static void apply(db::DataBox<DbTags>& box,
                     Parallel::GlobalCache<Metavariables>& cache,
                     const ArrayIndex& /*array_index*/, const double time) {
     static_assert(
@@ -50,13 +51,12 @@ struct ProcessSingleton {
     auto& observer_writer_proxy = Parallel::get_parallel_component<
         observers::ObserverWriter<Metavariables>>(cache);
 
+    const auto& parallel_info = db::get<Parallel::Tags::Info>(box);
     Parallel::threaded_action<
         observers::ThreadedActions::WriteReductionDataRow>(
         // Node 0 is always the writer
         observer_writer_proxy[0], subfile_name<ParallelComponent>(), legend,
-        std::make_tuple(time,
-                        static_cast<size_t>(Parallel::my_proc(
-                            *Parallel::local(singleton_proxy))),
+        std::make_tuple(time, static_cast<size_t>(parallel_info.my_proc()),
                         size_in_MB));
   }
 };

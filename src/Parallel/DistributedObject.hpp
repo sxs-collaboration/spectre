@@ -353,46 +353,6 @@ class DistributedObject<ParallelComponent,
   /// Check if an algorithm should continue being evaluated
   constexpr bool get_terminate() const { return terminate_; }
 
-  /// @{
-  /// Wrappers for charm++ informational functions.
-
-  /// Number of processing elements
-  inline int number_of_procs() const { return sys::number_of_procs(); }
-
-  /// %Index of my processing element.
-  inline int my_proc() const { return sys::my_proc(); }
-
-  /// Number of nodes.
-  inline int number_of_nodes() const { return sys::number_of_nodes(); }
-
-  /// %Index of my node.
-  inline int my_node() const { return sys::my_node(); }
-
-  /// Number of processing elements on the given node.
-  inline int procs_on_node(const int node_index) const {
-    return sys::procs_on_node(node_index);
-  }
-
-  /// The local index of my processing element on my node.
-  /// This is in the interval 0, ..., procs_on_node(my_node()) - 1.
-  inline int my_local_rank() const { return sys::my_local_rank(); }
-
-  /// %Index of first processing element on the given node.
-  inline int first_proc_on_node(const int node_index) const {
-    return sys::first_proc_on_node(node_index);
-  }
-
-  /// %Index of the node for the given processing element.
-  inline int node_of(const int proc_index) const {
-    return sys::node_of(proc_index);
-  }
-
-  /// The local index for the given processing element on its node.
-  inline int local_rank_of(const int proc_index) const {
-    return sys::local_rank_of(proc_index);
-  }
-  /// @}
-
   // Invoke the static `apply` method of `ThisAction`. The if constexprs are for
   // handling the cases where the `apply` method returns a tuple of one, two,
   // or three elements, in order:

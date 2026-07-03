@@ -536,9 +536,13 @@ void test_monitor_memory_event() {
       ActionTesting::get_databox_tag<dg_elem_comp<event_metavars>,
                                      domain::Tags::Element<3>>(runner, 0);
 
+  const auto& parallel_info =
+      ActionTesting::get_databox_tag<dg_elem_comp<event_metavars>,
+                                     Parallel::Tags::Info>(runner, 0);
+
   // Run the event. This will queue a lot of actions
   const double time = 1.4;
-  monitor_memory(element, cache, 0,
+  monitor_memory(element, parallel_info, cache, 0,
                  std::add_pointer_t<dg_elem_comp<event_metavars>>{},
                  {"TimeName", time});
 

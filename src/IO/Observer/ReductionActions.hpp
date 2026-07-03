@@ -24,13 +24,13 @@
 #include "Parallel/ArrayComponentId.hpp"
 #include "Parallel/ArrayIndex.hpp"
 #include "Parallel/GlobalCache.hpp"
-#include "Parallel/Info.hpp"
 #include "Parallel/Invoke.hpp"
 #include "Parallel/Local.hpp"
 #include "Parallel/NodeLock.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/Printf/Printf.hpp"
 #include "Parallel/Reduction.hpp"
+#include "Parallel/Tags/Info.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/GetOutput.hpp"
@@ -40,6 +40,7 @@
 #include "Utilities/Requires.hpp"
 #include "Utilities/Serialization/PupStlCpp17.hpp"
 #include "Utilities/StdHelpers.hpp"
+#include "Utilities/System/Info.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace observers {
@@ -141,9 +142,10 @@ struct ContributeReductionData {
                 ObservationId, std::unordered_set<Parallel::ArrayComponentId>>*>
                 reduction_observers_contributed,
             const std::unordered_map<
-                ObservationKey,
-                std::unordered_set<Parallel::ArrayComponentId>>&
-                observations_registered) mutable {  // NOLINT(spectre-mutable)
+                ObservationKey, std::unordered_set<Parallel::ArrayComponentId>>&
+                observations_registered,
+            const sys::Info&
+                parallel_info) mutable {  // NOLINT(spectre-mutable)
           ASSERT(
               observations_registered.find(observation_id.observation_key()) !=
                   observations_registered.end(),
@@ -191,11 +193,8 @@ struct ContributeReductionData {
             auto& local_writer = *Parallel::local_branch(
                 Parallel::get_parallel_component<ObserverWriter<Metavariables>>(
                     cache));
-            auto& my_proxy =
-                Parallel::get_parallel_component<ParallelComponent>(cache);
             const std::optional<int> observe_with_core_id =
-                observe_per_core ? std::make_optional(Parallel::my_proc(
-                                       *Parallel::local_branch(my_proxy)))
+                observe_per_core ? std::make_optional(parallel_info.my_proc())
                                  : std::nullopt;
             Parallel::threaded_action<
                 ThreadedActions::CollectReductionDataOnNode>(
@@ -211,7 +210,8 @@ struct ContributeReductionData {
           }
         },
         make_not_null(&box),
-        db::get<Tags::ExpectedContributorsForObservations>(box));
+        db::get<Tags::ExpectedContributorsForObservations>(box),
+        db::get<Parallel::Tags::Info>(box));
     // Silence a gcc <= 9 unused-variable warning
     (void)observe_per_core;
   }
@@ -360,6 +360,7 @@ struct CollectReductionDataOnNode {
         "DataBox. This is a bug in the code.");
 
     bool send_data = false;
+    const auto& parallel_info = db::get<Parallel::Tags::Info>(box);
     // Now that we've retrieved pointers to the data in the DataBox we wish to
     // manipulate, lock the data and manipulate it.
     {
@@ -382,8 +383,6 @@ struct CollectReductionDataOnNode {
         auto reduction_data_this_core = received_reduction_data;
         reduction_data_this_core.finalize();
         auto reduction_names_this_core = reduction_names;
-        auto& my_proxy =
-            Parallel::get_parallel_component<ParallelComponent>(cache);
         const std::lock_guard hold_file_lock(*reduction_file_lock);
         ReductionActions_detail::write_data(
             "/Core" + std::to_string(observe_with_core_id.value()) +
@@ -392,8 +391,7 @@ struct CollectReductionDataOnNode {
             std::move(reduction_names_this_core),
             std::move(reduction_data_this_core.data()),
             Parallel::get<Tags::ReductionFileName>(cache) +
-                std::to_string(
-                    Parallel::my_node(*Parallel::local_branch(my_proxy))),
+                std::to_string(parallel_info.my_node()),
             std::make_index_sequence<sizeof...(ReductionDatums)>{});
       }
 
@@ -447,14 +445,10 @@ struct CollectReductionDataOnNode {
     }
 
     if (send_data) {
-      auto& my_proxy =
-          Parallel::get_parallel_component<ParallelComponent>(cache);
       Parallel::threaded_action<WriteReductionData>(
           Parallel::get_parallel_component<ObserverWriter<Metavariables>>(
               cache)[0],
-          observation_id,
-          static_cast<size_t>(
-              Parallel::my_node(*Parallel::local_branch(my_proxy))),
+          observation_id, static_cast<size_t>(parallel_info.my_node()),
           subfile_name,
           // NOLINTNEXTLINE(bugprone-use-after-move)
           std::move(reduction_names), std::move(received_reduction_data),

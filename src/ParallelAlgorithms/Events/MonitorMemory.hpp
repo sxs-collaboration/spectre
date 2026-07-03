@@ -28,12 +28,12 @@
 #include "Options/Auto.hpp"
 #include "Options/String.hpp"
 #include "Parallel/GlobalCache.hpp"
-#include "Parallel/Info.hpp"
 #include "Parallel/Invoke.hpp"
 #include "Parallel/Local.hpp"
 #include "Parallel/MemoryMonitor/MemoryMonitor.hpp"
 #include "Parallel/MemoryMonitor/Tags.hpp"
 #include "Parallel/Reduction.hpp"
+#include "Parallel/Tags/Info.hpp"
 #include "Parallel/TypeTraits.hpp"
 #include "ParallelAlgorithms/Actions/MemoryMonitor/ProcessArray.hpp"
 #include "ParallelAlgorithms/Actions/MemoryMonitor/ProcessGroups.hpp"
@@ -43,6 +43,7 @@
 #include "Utilities/Functional.hpp"
 #include "Utilities/Serialization/CharmPupable.hpp"
 #include "Utilities/Serialization/Serialize.hpp"
+#include "Utilities/System/Info.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
@@ -118,11 +119,13 @@ class MonitorMemory : public Event {
   using compute_tags_for_observation_box = tmpl::list<>;
 
   using return_tags = tmpl::list<>;
-  using argument_tags = tmpl::list<domain::Tags::Element<Dim>>;
+  using argument_tags =
+      tmpl::list<domain::Tags::Element<Dim>, Parallel::Tags::Info>;
 
   template <typename Metavariables, typename ArrayIndex,
             typename ParallelComponent>
   void operator()(const ::Element<Dim>& element,
+                  const ::sys::Info& parallel_info,
                   Parallel::GlobalCache<Metavariables>& cache,
                   const ArrayIndex& array_index,
                   const ParallelComponent* const /*meta*/,
@@ -228,13 +231,15 @@ template <size_t Dim>
 template <typename Metavariables, typename ArrayIndex,
           typename ParallelComponent>
 void MonitorMemory<Dim>::operator()(
-    const ::Element<Dim>& element, Parallel::GlobalCache<Metavariables>& cache,
-    const ArrayIndex& array_index, const ParallelComponent* const /*meta*/,
+    const ::Element<Dim>& element, const ::sys::Info& parallel_info,
+    Parallel::GlobalCache<Metavariables>& cache, const ArrayIndex& array_index,
+    const ParallelComponent* const /*meta*/,
     const ObservationValue& observation_value) const {
   using component_list = tmpl::push_back<typename Metavariables::component_list,
                                          Parallel::GlobalCache<Metavariables>>;
 
-  tmpl::for_each<component_list>([this, &observation_value, &element, &cache,
+  tmpl::for_each<component_list>([this, &observation_value, &element,
+                                  &parallel_info, &cache,
                                   &array_index](auto component_v) {
     using component = tmpl::type_from<decltype(component_v)>;
 
@@ -270,10 +275,9 @@ void MonitorMemory<Dim>::operator()(
       // when we reduce, we will have a vector with 'num_nodes' elements, each
       // of which represents the total memory usage of all Elements on that
       // node.
-      const auto num_nodes = static_cast<size_t>(
-          Parallel::number_of_nodes(*Parallel::local(array_element_proxy)));
-      const auto my_node = static_cast<size_t>(
-          Parallel::my_node(*Parallel::local(array_element_proxy)));
+      const auto num_nodes =
+          static_cast<size_t>(parallel_info.number_of_nodes());
+      const auto my_node = static_cast<size_t>(parallel_info.my_node());
       std::vector<double> data(num_nodes, 0.0);
       data[my_node] = size_in_megabytes;
 

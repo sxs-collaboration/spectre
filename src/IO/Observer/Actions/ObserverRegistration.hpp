@@ -17,10 +17,11 @@
 #include "IO/Observer/TypeOfObservation.hpp"
 #include "Parallel/ArrayComponentId.hpp"
 #include "Parallel/GlobalCache.hpp"
-#include "Parallel/Info.hpp"
 #include "Parallel/Invoke.hpp"
 #include "Parallel/Local.hpp"
+#include "Parallel/Tags/Info.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/System/Info.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace observers {
@@ -126,13 +127,12 @@ struct RegisterReductionNodeWithWritingNode {
   template <typename ParallelComponent, typename DbTagsList,
             typename Metavariables, typename ArrayIndex>
   static void apply(db::DataBox<DbTagsList>& box,
-                    Parallel::GlobalCache<Metavariables>& cache,
+                    Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
                     const observers::ObservationKey& observation_key,
                     const size_t caller_node_id) {
-    auto& my_proxy = Parallel::get_parallel_component<ParallelComponent>(cache);
-    const auto node_id = static_cast<size_t>(
-        Parallel::my_node(*Parallel::local_branch(my_proxy)));
+    const auto& parallel_info = db::get<Parallel::Tags::Info>(box);
+    const auto node_id = static_cast<size_t>(parallel_info.my_node());
     ASSERT(node_id == 0, "Only node zero, not node "
                              << node_id
                              << ", should be called from another node");
@@ -168,13 +168,12 @@ struct DeregisterReductionNodeWithWritingNode {
   template <typename ParallelComponent, typename DbTagsList,
             typename Metavariables, typename ArrayIndex>
   static void apply(db::DataBox<DbTagsList>& box,
-                    Parallel::GlobalCache<Metavariables>& cache,
+                    Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
                     const observers::ObservationKey& observation_key,
                     const size_t caller_node_id) {
-    auto& my_proxy = Parallel::get_parallel_component<ParallelComponent>(cache);
-    const auto node_id = static_cast<size_t>(
-        Parallel::my_node(*Parallel::local_branch(my_proxy)));
+    const auto& parallel_info = db::get<Parallel::Tags::Info>(box);
+    const auto node_id = static_cast<size_t>(parallel_info.my_node());
     ASSERT(node_id == 0,
            "Only node zero, not node "
                << node_id << " should deregister other nodes in the reduction");
@@ -224,9 +223,8 @@ struct RegisterReductionContributorWithObserverWriter {
                     const ArrayIndex& /*array_index*/,
                     const observers::ObservationKey& observation_key,
                     const Parallel::ArrayComponentId& id_of_caller) {
-    auto& my_proxy = Parallel::get_parallel_component<ParallelComponent>(cache);
-    const auto node_id = static_cast<size_t>(
-        Parallel::my_node(*Parallel::local_branch(my_proxy)));
+    const auto& parallel_info = db::get<Parallel::Tags::Info>(box);
+    const auto node_id = static_cast<size_t>(parallel_info.my_node());
     db::mutate<Tags::ExpectedContributorsForObservations>(
         [&cache, &id_of_caller, &node_id,
          &observation_key](const gsl::not_null<std::unordered_map<
@@ -277,9 +275,8 @@ struct DeregisterReductionContributorWithObserverWriter {
                     const ArrayIndex& /*array_index*/,
                     const observers::ObservationKey& observation_key,
                     const Parallel::ArrayComponentId& id_of_caller) {
-    auto& my_proxy = Parallel::get_parallel_component<ParallelComponent>(cache);
-    const auto node_id = static_cast<size_t>(
-        Parallel::my_node(*Parallel::local_branch(my_proxy)));
+    const auto& parallel_info = db::get<Parallel::Tags::Info>(box);
+    const auto node_id = static_cast<size_t>(parallel_info.my_node());
     db::mutate<Tags::ExpectedContributorsForObservations>(
         [&cache, &id_of_caller, &node_id,
          &observation_key](const gsl::not_null<std::unordered_map<

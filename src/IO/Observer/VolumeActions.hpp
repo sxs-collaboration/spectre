@@ -32,11 +32,11 @@
 #include "IO/Observer/TypeOfObservation.hpp"
 #include "Parallel/ArrayComponentId.hpp"
 #include "Parallel/GlobalCache.hpp"
-#include "Parallel/Info.hpp"
 #include "Parallel/Invoke.hpp"
 #include "Parallel/Local.hpp"
 #include "Parallel/NodeLock.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
+#include "Parallel/Tags/Info.hpp"
 #include "Utilities/Algorithm.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
@@ -45,6 +45,7 @@
 #include "Utilities/Requires.hpp"
 #include "Utilities/Serialization/Serialize.hpp"
 #include "Utilities/StdHelpers.hpp"
+#include "Utilities/System/Info.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace observers {
@@ -171,8 +172,7 @@ void write_data(const std::string& h5_file_name,
                 const observers::ObservationId& observation_id,
                 std::vector<ElementVolumeData>&& volume_data);
 
-template <typename ParallelComponent, typename Metavariables,
-          typename VolumeDataAtObsId>
+template <typename Metavariables, typename VolumeDataAtObsId>
 void write_combined_volume_data(
     Parallel::GlobalCache<Metavariables>& cache,
     const observers::ObservationId& observation_id,
@@ -180,7 +180,8 @@ void write_combined_volume_data(
     const gsl::not_null<Parallel::NodeLock*> volume_file_lock,
     const std::string& subfile_name,
     const std::optional<std::vector<char>>&
-        serialized_observation_functions_of_time) {
+        serialized_observation_functions_of_time,
+    const int my_node) {
   ASSERT(not volume_data.empty(),
          "Failed to populate volume_data before trying to write it.");
 
@@ -217,13 +218,9 @@ void write_combined_volume_data(
   {
     // Scoping is for closing HDF5 file before we release the lock.
     const auto& file_prefix = Parallel::get<Tags::VolumeFileName>(cache);
-    auto& my_proxy = Parallel::get_parallel_component<ParallelComponent>(cache);
     h5::H5File<h5::AccessType::ReadWrite> h5file(
-        file_prefix +
-            std::to_string(
-                Parallel::my_node(*Parallel::local_branch(my_proxy))) +
-            ".h5",
-        true, observers::input_source_from_cache(cache));
+        file_prefix + std::to_string(my_node) + ".h5", true,
+        observers::input_source_from_cache(cache));
     constexpr size_t version_number = 0;
     auto& volume_file =
         h5file.try_insert<h5::VolumeData>(subfile_name, version_number);
@@ -445,9 +442,10 @@ struct ContributeVolumeDataToWriter {
     }
 
     if (perform_write) {
-      VolumeActions_detail::write_combined_volume_data<ParallelComponent>(
+      const int my_node = db::get<Parallel::Tags::Info>(box).my_node();
+      VolumeActions_detail::write_combined_volume_data(
           cache, observation_id, volume_data, make_not_null(volume_file_lock),
-          subfile_name, serialized_functions_of_time);
+          subfile_name, serialized_functions_of_time, my_node);
     }
   }
 };
@@ -554,9 +552,10 @@ struct ContributeDependency {
     }
 
     if (perform_write) {
-      VolumeActions_detail::write_combined_volume_data<ParallelComponent>(
+      const int my_node = db::get<Parallel::Tags::Info>(box).my_node();
+      VolumeActions_detail::write_combined_volume_data(
           cache, observation_id, volume_data, make_not_null(volume_file_lock),
-          volume_subfile_name, serialized_functions_of_time);
+          volume_subfile_name, serialized_functions_of_time, my_node);
     }
   }
 };

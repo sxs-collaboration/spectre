@@ -12,15 +12,15 @@
 #include "IO/Observer/ObserverComponent.hpp"
 #include "IO/Observer/ReductionActions.hpp"
 #include "Parallel/GlobalCache.hpp"
-#include "Parallel/Info.hpp"
 #include "Parallel/Invoke.hpp"
-#include "Parallel/Local.hpp"
 #include "Parallel/MemoryMonitor/MemoryMonitor.hpp"
 #include "Parallel/MemoryMonitor/Tags.hpp"
+#include "Parallel/Tags/Info.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/GetOutput.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Serialization/Serialize.hpp"
+#include "Utilities/System/Info.hpp"
 
 namespace mem_monitor {
 /*!
@@ -70,7 +70,8 @@ struct ContributeMemoryData {
             const gsl::not_null<std::unordered_map<
                 std::string,
                 std::unordered_map<double, std::unordered_map<int, double>>>*>
-                memory_holder_all) {
+                memory_holder_all,
+            const sys::Info& parallel_info) {
           auto memory_holder_pair = memory_holder_all->try_emplace(
               pretty_type::name<ContributingComponent>());
           auto& memory_holder = (*memory_holder_pair.first).second;
@@ -82,16 +83,12 @@ struct ContributeMemoryData {
           // time, get all the data, write it to disk, then remove the current
           // time from the stored times as it's no longer needed
 
-          auto& mem_monitor_proxy =
-              Parallel::get_parallel_component<MemoryMonitor<Metavariables>>(
-                  cache);
-
           constexpr bool is_group = Parallel::is_group_v<ContributingComponent>;
 
-          const auto num_nodes = static_cast<size_t>(
-              Parallel::number_of_nodes(*Parallel::local(mem_monitor_proxy)));
-          const auto num_procs = static_cast<size_t>(
-              Parallel::number_of_procs(*Parallel::local(mem_monitor_proxy)));
+          const auto num_nodes =
+              static_cast<size_t>(parallel_info.number_of_nodes());
+          const auto num_procs =
+              static_cast<size_t>(parallel_info.number_of_procs());
           const size_t expected_number = is_group ? num_procs : num_nodes;
           ASSERT(memory_holder.at(time).size() <= expected_number,
                  "ContributeMemoryData received more data than it was "
@@ -115,10 +112,8 @@ struct ContributeMemoryData {
               if (not is_group) {
                 size_on_node = memory_holder.at(time).at(node);
               } else {
-                const int first_proc = Parallel::first_proc_on_node(
-                    node, *Parallel::local(mem_monitor_proxy));
-                const int procs_on_node = Parallel::procs_on_node(
-                    node, *Parallel::local(mem_monitor_proxy));
+                const int first_proc = parallel_info.first_proc_on_node(node);
+                const int procs_on_node = parallel_info.procs_on_node(node);
                 const int last_proc = first_proc + procs_on_node;
                 for (int proc = first_proc; proc < last_proc; proc++) {
                   size_on_node += memory_holder.at(time).at(proc);
@@ -163,7 +158,7 @@ struct ContributeMemoryData {
             memory_holder.erase(finished_time_iter);
           }
         },
-        make_not_null(&box));
+        make_not_null(&box), db::get<Parallel::Tags::Info>(box));
   }
 };
 }  // namespace mem_monitor
