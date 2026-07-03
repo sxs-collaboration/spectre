@@ -134,9 +134,12 @@ void test_observe(
   const std::optional<
       std::array<std::reference_wrapper<const Matrix>, volume_dim>>
       projection_matrices =
-          do_projection ? std::make_optional(Spectral::p_projection_matrices(
-                              mesh, target_mesh))
-                        : std::nullopt;
+          do_projection
+              ? std::make_optional(Spectral::projection_matrices(
+                    mesh, target_mesh,
+                    make_array<volume_dim>(Spectral::SegmentSize::Full),
+                    make_array<volume_dim>(Spectral::SegmentSize::Full)))
+              : std::nullopt;
   const double observation_time = 2.0;
   Variables<typename System::variables_tag::tags_list> vars(
       mesh.number_of_grid_points());

@@ -532,14 +532,6 @@ std::array<std::reference_wrapper<const Matrix>, Dim> projection_matrices(
   return projection_matrices;
 }
 
-template <size_t Dim>
-std::array<std::reference_wrapper<const Matrix>, Dim> p_projection_matrices(
-    const Mesh<Dim>& source_mesh, const Mesh<Dim>& target_mesh) {
-  return projection_matrices(source_mesh, target_mesh,
-                             make_array<Dim>(SegmentSize::Full),
-                             make_array<Dim>(SegmentSize::Full));
-}
-
 void project_spherical_harmonics(const gsl::not_null<double*> result_data,
                                  const double* const source_data,
                                  const size_t num_components,
@@ -736,10 +728,7 @@ size_t MortarSizeHash<Dim>::operator()(
                       const Mesh<DIM(data)>& target_mesh,                     \
                       const std::array<SegmentSize, DIM(data)>& source_sizes, \
                       const std::array<SegmentSize, DIM(data)>& target_sizes, \
-                      bool operand_is_massive);                               \
-  template std::array<std::reference_wrapper<const Matrix>, DIM(data)>        \
-  p_projection_matrices(const Mesh<DIM(data)>& source_mesh,                   \
-                        const Mesh<DIM(data)>& target_mesh);
+                      bool operand_is_massive);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (0, 1, 2, 3))
 #undef INSTANTIATE

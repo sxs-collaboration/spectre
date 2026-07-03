@@ -112,12 +112,6 @@ std::array<std::reference_wrapper<const Matrix>, Dim> projection_matrices(
     const std::array<SegmentSize, Dim>& target_sizes,
     bool operand_is_massive = false);
 
-/// The projection matrices from a source mesh to a target mesh where the
-/// meshes cover the same physical volume
-template <size_t Dim>
-std::array<std::reference_wrapper<const Matrix>, Dim> p_projection_matrices(
-    const Mesh<Dim>& source_mesh, const Mesh<Dim>& target_mesh);
-
 /// Change the angular resolution (`l_max`, with `m_max == l_max`) of volume
 /// data on a spherical shell from `source_data` to `result_data`, for
 /// `num_components` components each laid out with the radial dimension varying

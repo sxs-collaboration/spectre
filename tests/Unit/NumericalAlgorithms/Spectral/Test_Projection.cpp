@@ -530,8 +530,9 @@ void test_p_projection_matrices() {
   const auto quadrature = Spectral::Quadrature::GaussLobatto;
   {
     INFO("Identity");
-    const auto identity = Spectral::p_projection_matrices(
-        Mesh<Dim>{3, basis, quadrature}, Mesh<Dim>{3, basis, quadrature});
+    const auto identity = Spectral::projection_matrices(
+        Mesh<Dim>{3, basis, quadrature}, Mesh<Dim>{3, basis, quadrature},
+        make_array<Dim>(SegmentSize::Full), make_array<Dim>(SegmentSize::Full));
     for (size_t d = 0; d < Dim; ++d) {
       CHECK(gsl::at(identity, d).get() == Matrix{});
     }
@@ -540,9 +541,10 @@ void test_p_projection_matrices() {
     const size_t source_extents = 4;
     std::array<size_t, Dim> target_extents{};
     std::iota(target_extents.begin(), target_extents.end(), size_t{3});
-    const auto projection_matrix = Spectral::p_projection_matrices(
+    const auto projection_matrix = Spectral::projection_matrices(
         Mesh<Dim>{source_extents, basis, quadrature},
-        Mesh<Dim>{target_extents, basis, quadrature});
+        Mesh<Dim>{target_extents, basis, quadrature},
+        make_array<Dim>(SegmentSize::Full), make_array<Dim>(SegmentSize::Full));
     CHECK(&projection_matrix[0].get() ==
           &Spectral::projection_matrix_child_to_parent(
               {4, basis, quadrature}, {3, basis, quadrature},
