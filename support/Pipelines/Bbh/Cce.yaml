@@ -1,0 +1,166 @@
+# Distributed under the MIT License.
+# See LICENSE.txt for details.
+
+# This block is used by testing and the SpECTRE command line interface.
+Executable: CharacteristicExtract
+Testing:
+  Check: parse
+  Priority: High
+
+BondiSachsData: "{{ BondiSachsData }}"
+FilesCombined: |
+{{ FilesCombined | indent(2, true) }}
+
+---
+# Start of the input file that controls the CCE evolution.
+
+Evolution:
+  # The initial step size isn't super important because we use error-based
+  # adaptive time stepping to adjust the step size.
+  InitialTimeStep: 0.25
+  # The initial Slab size controls how often the EventsAndTriggers are run. They
+  # are run once per Slab.
+  InitialSlabSize: 10.0
+
+ResourceInfo:
+  # Can ignore this section since CCE performs best on a single core.
+  AvoidGlobalProc0: false
+  Singletons: Auto
+
+Observers:
+  # The reduction file is where to write the CCE output of quantities at future
+  # null infinity.
+  # Specifically, it will be in a `/SpectreRXXXX.cce` where the number is the
+  # ExtractionRadius specified below.
+  ReductionFileName: "CharacteristicExtractReduction"
+  # The volume file is where to write the quantities from the bulk of the
+  # spacetime. The fields to extract can be specified in the section
+  # EventsAndTriggersAtSlabs.Events.ObserveFields below.
+  VolumeFileName: "CharacteristicExtractVolume"
+
+EventsAndTriggersAtSlabs:
+  # Write the CCE time step every Slab. A Slab is a fixed length of simulation
+  # time and is not influenced by the dynamically adjusted step size.
+  - Trigger:
+      Slabs:
+        EvenlySpaced:
+          Offset: 0
+          Interval: 1
+    Events:
+      - ObserveTimeStep:
+          # The output is written into the "ReductionFileName" HDF5 file under
+          # "/SubfileName.dat"
+          SubfileName: CceTimeStep
+          PrintTimeToTerminal: true
+      # # If you want to dump volume data into VolumeFileName (specified above),
+      # # you can uncomment the ObserveFields option here:
+      # - ObserveFields:
+      #     # Data will be written in the group named by SubgroupName inside the
+      #     # h5 file specified by VolumeFileName. If dumping any volume data,
+      #     # it is recommended to also output OneMinusY and
+      #     # InertialRetardedTime so as to conveniently provide the
+      #     # coordinates. See the documentation of
+      #     # src/Evolution/Systems/Cce/Events/ObserveFields.hpp for details of
+      #     # the Cce volume format.
+      #     SubgroupName: "CceVolumeData"
+      #     VariablesToObserve:
+      #       - OneMinusY
+      #       - InertialRetardedTime
+      #       - J
+      #       - Psi0
+      #       - Psi1
+
+EventsAndTriggersAtSteps:
+
+Cce:
+  Evolution:
+    TimeStepper:
+      AdamsBashforth:
+        Order: 3 # Going to higher order doesn't seem necessary for CCE
+    VariableOrderAlgorithm:
+      GoalOrder: 3
+    MinimumTimeStep: 1e-7
+    LtsStepChoosers:
+      - Constant: 0.1 # Don't take steps bigger than 0.1M
+      - LimitIncrease:
+          Factor: 2
+      - ErrorControl(SwshVars):
+          AbsoluteTolerance: 1e-9
+          RelativeTolerance: 1e-7
+          # These factors control how much the time step is changed at once.
+          MaxFactor: 2
+          MinFactor: 0.25
+          # How close to the "perfect" time step we take. Since the "perfect"
+          # value assumes a linear system, we need some safety factor since our
+          # system is nonlinear, and also so that we reduce how often we retake
+          # time steps.
+          SafetyFactor: 0.9
+      - ErrorControl(CoordVars):
+          AbsoluteTolerance: 1e-9
+          RelativeTolerance: 1e-8
+          # These factors control how much the time step is changed at once.
+          MaxFactor: 2
+          MinFactor: 0.25
+          # How close to the "perfect" time step we take. Since the "perfect"
+          # value assumes a linear system, we need some safety factor since our
+          # system is nonlinear, and also so that we reduce how often we retake
+          # time steps.
+          SafetyFactor: 0.9
+
+  # The number of angular modes used by the CCE evolution. This must be larger
+  # than ObservationLMax. We always use all of the m modes for the LMax since
+  # using fewer m modes causes aliasing-driven instabilities.
+  LMax: 20
+  # Probably don't need more than 15 radial grid points, but could increase
+  # up to ~20
+  NumberOfRadialPoints: 15
+  # The maximum ell we use for writing waveform output. While CCE can dump
+  # more, you should be cautious with higher modes since mode mixing, truncation
+  # error, and systematic numerical effects can have significant contamination
+  # in these modes.
+  ObservationLMax: 8
+
+  InitializeJ:
+    # To see what other J-initialization procedures are available, comment
+    # out this group of options and do, e.g. "Blah:" The code will print
+    # an error message with the available options and a help string.
+    # More details can be found at spectre-code.org.
+    CauchySecondOrder:
+      AngularCoordTolerance: 1e-12
+      MaxIterations: 1000
+      RequireConvergence: True
+      MaxScriSecondDerivative: 1e-9
+
+  StartTime: Auto # Start at the first time in file
+  EndTime: Auto   # End at the last time in file
+  # If the CCE file name is of the form NameOfFileRXXXX.h5 then
+  # ExtractionRadius can be Auto. If the filename does not contain the radius,
+  # then you can specify it explicitly. For example:
+  #   BoundaryDataFilename: CceInputData.h5
+  #   ExtractionRadius: 257
+  BoundaryDataFilename: "{{ BondiSachsData }}"
+  ExtractionRadius: Auto
+  # How we interpolate the worldtube data in time for CCE.
+  H5Interpolator:
+    BarycentricRationalSpanInterpolator:
+      MinOrder: 10
+      MaxOrder: 10
+
+  # Loads this many time steps in from the HDF5 files at once. Fewer file system
+  # accesses improve performance, but requires more RAM.
+  H5LookaheadTimes: 10000
+
+  Filtering:
+    # Using half-power 64 means we effectively have a Heaviside filter, zeroing
+    # out the highest mode only.
+    RadialFilterHalfPower: 64
+    RadialFilterAlpha: 35.0
+    # The number of angular modes not touched by the angular filter. This should
+    # be about 2 smaller than LMax used for the CCE evolution.
+    FilterLMax: 18
+
+  ScriInterpOrder: 5
+  # How often per CCE time step to output. Given the tight default tolerances of
+  # 1e-6 with an Adams-Bashforth stepper, once per time step is fine for most
+  # systems.
+  ScriOutputDensity: 1
