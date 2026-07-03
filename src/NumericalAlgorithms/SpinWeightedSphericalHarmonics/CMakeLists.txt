@@ -44,3 +44,5 @@ target_link_libraries(
   PRIVATE
   Boost::boost
   )
+
+add_subdirectory(Python)
