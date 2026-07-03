@@ -362,3 +362,79 @@ def psi2(
         + (np.conj(np_alpha) - np_beta - np.conj(np_pi)) * np_pi
         - np_sigma * np_lambda
     )
+
+
+def newman_penrose_d_psi1(bondi_r, dy_psi_1, one_minus_y):
+    return dy_psi_1 * one_minus_y**2 / (2 * np.sqrt(2) * bondi_r)
+
+
+def newman_penrose_deltabar_psi0(
+    bondi_j, bondi_k, bondi_r, eth_psi_0, ethbar_psi_0, one_minus_y
+):
+    sqrt_one_plus_k = np.sqrt(1.0 + bondi_k)
+
+    return (
+        -one_minus_y
+        * (
+            sqrt_one_plus_k * ethbar_psi_0 / np.sqrt(2)
+            - np.conj(bondi_j) * eth_psi_0 / (np.sqrt(2) * sqrt_one_plus_k)
+        )
+        / (2 * np.sqrt(2) * bondi_r)
+    )
+
+
+def bianchi_constraint_d_psi1(
+    np_alpha,
+    np_epsilon,
+    np_rho,
+    np_pi,
+    psi_0,
+    psi_1,
+    np_d_psi_1,
+    np_deltabar_psi_0,
+):
+    return (
+        np_d_psi_1
+        - np_deltabar_psi_0
+        + (4 * np_alpha - np_pi) * psi_0
+        - 2 * (2 * np_rho + np_epsilon) * psi_1
+    )
+
+
+def newman_penrose_d_psi2(bondi_r, dy_psi_2, one_minus_y):
+    return dy_psi_2 * one_minus_y**2 / (2 * np.sqrt(2) * bondi_r)
+
+
+def newman_penrose_deltabar_psi1(
+    bondi_j, bondi_k, bondi_r, eth_psi_1, ethbar_psi_1, one_minus_y
+):
+    sqrt_one_plus_k = np.sqrt(1.0 + bondi_k)
+
+    return (
+        -one_minus_y
+        * (
+            sqrt_one_plus_k * ethbar_psi_1 / np.sqrt(2)
+            - np.conj(bondi_j) * eth_psi_1 / (np.sqrt(2) * sqrt_one_plus_k)
+        )
+        / (2 * np.sqrt(2) * bondi_r)
+    )
+
+
+def bianchi_constraint_d_psi2(
+    np_alpha,
+    np_lambda,
+    np_rho,
+    np_pi,
+    psi_0,
+    psi_1,
+    psi_2,
+    np_d_psi_2,
+    np_deltabar_psi_1,
+):
+    return (
+        np_d_psi_2
+        + np_lambda * psi_0
+        - np_deltabar_psi_1
+        - 2 * (np_pi - np_alpha) * psi_1
+        - 3 * np_rho * psi_2
+    )

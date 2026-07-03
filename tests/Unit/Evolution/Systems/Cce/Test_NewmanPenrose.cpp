@@ -79,6 +79,32 @@ void pypp_test_volume_weyl() {
                                     "NewmanPenrose", {"psi2"}, {{{1.0, 5.0}}},
                                     DataVector{num_pts});
 }
+
+void pypp_test_volume_np_bianchi() {
+  const pypp::SetupLocalPythonEnvironment local_python_env{
+      "Evolution/Systems/Cce/"};
+
+  const size_t num_pts = 5;
+
+  pypp::check_with_random_values<1>(&newman_penrose_d_psi1, "NewmanPenrose",
+                                    {"newman_penrose_d_psi1"}, {{{1.0, 5.0}}},
+                                    DataVector{num_pts});
+  pypp::check_with_random_values<1>(
+      &newman_penrose_deltabar_psi0, "NewmanPenrose",
+      {"newman_penrose_deltabar_psi0"}, {{{1.0, 5.0}}}, DataVector{num_pts});
+  pypp::check_with_random_values<1>(&bianchi_constraint_d_psi1, "NewmanPenrose",
+                                    {"bianchi_constraint_d_psi1"},
+                                    {{{1.0, 5.0}}}, DataVector{num_pts});
+  pypp::check_with_random_values<1>(&newman_penrose_d_psi2, "NewmanPenrose",
+                                    {"newman_penrose_d_psi2"}, {{{1.0, 5.0}}},
+                                    DataVector{num_pts});
+  pypp::check_with_random_values<1>(
+      &newman_penrose_deltabar_psi1, "NewmanPenrose",
+      {"newman_penrose_deltabar_psi1"}, {{{1.0, 5.0}}}, DataVector{num_pts});
+  pypp::check_with_random_values<1>(&bianchi_constraint_d_psi2, "NewmanPenrose",
+                                    {"bianchi_constraint_d_psi2"},
+                                    {{{1.0, 5.0}}}, DataVector{num_pts});
+}
 }  // namespace
 
 namespace {
@@ -177,6 +203,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.NewmanPenrose", "[Unit][Cce]") {
   pypp_test_volume_np_spin_coefficients();
 
   pypp_test_volume_weyl();
+
+  pypp_test_volume_np_bianchi();
 
   MAKE_GENERATOR(gen);
   compute_psi0_of_bh_on_wt(make_not_null(&gen));

@@ -398,6 +398,89 @@ void newman_penrose_lambda(
     const Scalar<SpinWeighted<ComplexDataVector, 0>>& exp_2_beta,
     const Scalar<SpinWeighted<ComplexDataVector, 0>>& one_minus_y);
 
+/*!
+ * \brief Compute the NP $D\Psi_1$ derivative term of the first Bianchi
+ * identity.
+ */
+void newman_penrose_d_psi1(
+    gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 1>>*> np_d_psi_1,
+    const Scalar<SpinWeighted<ComplexDataVector, 0>>& bondi_r,
+    const Scalar<SpinWeighted<ComplexDataVector, 1>>& dy_psi_1,
+    const Scalar<SpinWeighted<ComplexDataVector, 0>>& one_minus_y);
+
+/*!
+ * \brief Compute the NP derivative $\bar{\delta}\Psi_0$ of the first Bianchi
+ * identity.
+ */
+void newman_penrose_deltabar_psi0(
+    gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 1>>*>
+        np_deltabar_psi_0,
+    const Scalar<SpinWeighted<ComplexDataVector, +2>>& bondi_j,
+    const Scalar<SpinWeighted<ComplexDataVector, 0>>& bondi_k,
+    const Scalar<SpinWeighted<ComplexDataVector, 0>>& bondi_r,
+    const Scalar<SpinWeighted<ComplexDataVector, 3>>& eth_psi_0,
+    const Scalar<SpinWeighted<ComplexDataVector, 1>>& ethbar_psi_0,
+    const Scalar<SpinWeighted<ComplexDataVector, 0>>& one_minus_y);
+
+/*!
+ * \brief Compute the first NP Bianchi identity violation
+ * \f$D\Psi_1 - \bar{\delta}\Psi_0 + (4\alpha - \pi)\Psi_0
+ * - 2(2\rho + \epsilon)\Psi_1\f$ (spin weight 1).
+ */
+void bianchi_constraint_d_psi1(
+    gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 1>>*>
+        constraint_d_psi1,
+    const Scalar<SpinWeighted<ComplexDataVector, -1>>& np_alpha,
+    const Scalar<SpinWeighted<ComplexDataVector, 0>>& np_epsilon,
+    const Scalar<SpinWeighted<ComplexDataVector, 0>>& np_rho,
+    const Scalar<SpinWeighted<ComplexDataVector, -1>>& np_pi,
+    const Scalar<SpinWeighted<ComplexDataVector, 2>>& psi_0,
+    const Scalar<SpinWeighted<ComplexDataVector, 1>>& psi_1,
+    const Scalar<SpinWeighted<ComplexDataVector, 1>>& np_d_psi_1,
+    const Scalar<SpinWeighted<ComplexDataVector, 1>>& np_deltabar_psi_0);
+
+/*!
+ * \brief Compute the NP $D\Psi_2$ derivative term of the second Bianchi
+ * identity.
+ */
+void newman_penrose_d_psi2(
+    gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 0>>*> np_d_psi_2,
+    const Scalar<SpinWeighted<ComplexDataVector, 0>>& bondi_r,
+    const Scalar<SpinWeighted<ComplexDataVector, 0>>& dy_psi_2,
+    const Scalar<SpinWeighted<ComplexDataVector, 0>>& one_minus_y);
+
+/*!
+ * \brief Compute the NP derivative $\bar{\delta}\Psi_1$ of the second Bianchi
+ * identity.
+ */
+void newman_penrose_deltabar_psi1(
+    gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 0>>*>
+        np_deltabar_psi_1,
+    const Scalar<SpinWeighted<ComplexDataVector, +2>>& bondi_j,
+    const Scalar<SpinWeighted<ComplexDataVector, 0>>& bondi_k,
+    const Scalar<SpinWeighted<ComplexDataVector, 0>>& bondi_r,
+    const Scalar<SpinWeighted<ComplexDataVector, 2>>& eth_psi_1,
+    const Scalar<SpinWeighted<ComplexDataVector, 0>>& ethbar_psi_1,
+    const Scalar<SpinWeighted<ComplexDataVector, 0>>& one_minus_y);
+
+/*!
+ * \brief Compute the second NP Bianchi identity violation
+ * \f$D\Psi_2 + \lambda\Psi_0 - \bar{\delta}\Psi_1 - 2(\pi - \alpha)\Psi_1
+ * - 3\rho\Psi_2\f$ (spin weight 0).
+ */
+void bianchi_constraint_d_psi2(
+    gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 0>>*>
+        constraint_d_psi2,
+    const Scalar<SpinWeighted<ComplexDataVector, -1>>& np_alpha,
+    const Scalar<SpinWeighted<ComplexDataVector, -2>>& np_lambda,
+    const Scalar<SpinWeighted<ComplexDataVector, 0>>& np_rho,
+    const Scalar<SpinWeighted<ComplexDataVector, -1>>& np_pi,
+    const Scalar<SpinWeighted<ComplexDataVector, 2>>& psi_0,
+    const Scalar<SpinWeighted<ComplexDataVector, 1>>& psi_1,
+    const Scalar<SpinWeighted<ComplexDataVector, 0>>& psi_2,
+    const Scalar<SpinWeighted<ComplexDataVector, 0>>& np_d_psi_2,
+    const Scalar<SpinWeighted<ComplexDataVector, 0>>& np_deltabar_psi_1);
+
 namespace Tags {
 /*!
  * \brief Compute tag for $\alpha^{SW}$ in the volume.
