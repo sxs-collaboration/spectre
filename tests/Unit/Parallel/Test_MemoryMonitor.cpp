@@ -652,6 +652,7 @@ void test_monitor_memory_event() {
 }
 
 SPECTRE_TEST_CASE("Unit.Parallel.MemoryMonitor", "[Unit][Parallel]") {
+  register_classes_with_charm<ActionTesting::MockInfo>();
   MAKE_GENERATOR(gen);
   test_tags();
   // First only test the ContributeMemoryData action (second arg false)

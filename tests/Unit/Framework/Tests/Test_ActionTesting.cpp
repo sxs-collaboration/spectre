@@ -11,6 +11,7 @@
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
 #include "Framework/ActionTesting.hpp"
+#include "Framework/MockInfo.hpp"
 #include "Parallel/AlgorithmExecution.hpp"
 #include "Parallel/ArrayComponentId.hpp"
 #include "Parallel/GlobalCache.hpp"
@@ -1056,6 +1057,7 @@ void test_sizing() {
 }
 
 SPECTRE_TEST_CASE("Unit.ActionTesting.NodesAndCores", "[Unit]") {
+  register_classes_with_charm<ActionTesting::MockInfo>();
   test_parallel_info_functions();
   test_group_emplace();
   test_nodegroup_emplace();

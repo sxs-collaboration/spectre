@@ -25,6 +25,7 @@
 #include "Domain/Structure/SegmentId.hpp"
 #include "Domain/Tags.hpp"
 #include "Framework/ActionTesting.hpp"
+#include "Framework/MockInfo.hpp"
 #include "Helpers/Domain/Amr/RegistrationHelpers.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Parallel/Phase.hpp"
@@ -277,6 +278,7 @@ struct Metavariables {
 };
 
 void test() {
+  register_classes_with_charm<ActionTesting::MockInfo>();
   using array_component = Component<Metavariables>;
   using registrar = TestHelpers::amr::Registrar<Metavariables>;
 

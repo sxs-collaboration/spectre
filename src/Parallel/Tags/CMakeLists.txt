@@ -7,6 +7,7 @@ spectre_target_headers(
   HEADERS
   ArrayIndex.hpp
   DistributedObjectTags.hpp
+  Info.hpp
   InputSource.hpp
   Parallelization.hpp
   ResourceInfo.hpp

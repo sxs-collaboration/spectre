@@ -265,28 +265,28 @@ void test() {
       tuples::TaggedTuple<Parallel::Tags::MetavariablesImpl<Metavariables>,
                           Parallel::Tags::ArrayIndex<ElementId<3>>,
                           Parallel::Tags::GlobalCache<Metavariables>,
-                          domain::Tags::Element<3>, domain::Tags::Mesh<3>,
-                          domain::Tags::NeighborMesh<3>, amr::Tags::Info<3>,
-                          amr::Tags::NeighborInfo<3>>;
+                          Parallel::Tags::Info, domain::Tags::Element<3>,
+                          domain::Tags::Mesh<3>, domain::Tags::NeighborMesh<3>,
+                          amr::Tags::Info<3>, amr::Tags::NeighborInfo<3>>;
   std::unordered_map<ElementId<3>, TaggedTupleType> children_items;
   DirectionalIdMap<3, Mesh<3>> unused_child_neighbor_mesh{};
   children_items.emplace(
       child_1_id,
-      TaggedTupleType{Metavariables{}, child_1_id, nullptr, std::move(child_1),
-                      std::move(child_1_mesh), unused_child_neighbor_mesh,
-                      std::move(child_1_info),
+      TaggedTupleType{Metavariables{}, child_1_id, nullptr, nullptr,
+                      std::move(child_1), std::move(child_1_mesh),
+                      unused_child_neighbor_mesh, std::move(child_1_info),
                       std::move(child_1_neighbor_info)});
   children_items.emplace(
       child_2_id,
-      TaggedTupleType{Metavariables{}, child_2_id, nullptr, std::move(child_2),
-                      std::move(child_2_mesh), unused_child_neighbor_mesh,
-                      std::move(child_2_info),
+      TaggedTupleType{Metavariables{}, child_2_id, nullptr, nullptr,
+                      std::move(child_2), std::move(child_2_mesh),
+                      unused_child_neighbor_mesh, std::move(child_2_info),
                       std::move(child_2_neighbor_info)});
   children_items.emplace(
       child_3_id,
-      TaggedTupleType{Metavariables{}, child_3_id, nullptr, std::move(child_3),
-                      std::move(child_3_mesh), unused_child_neighbor_mesh,
-                      std::move(child_3_info),
+      TaggedTupleType{Metavariables{}, child_3_id, nullptr, nullptr,
+                      std::move(child_3), std::move(child_3_mesh),
+                      unused_child_neighbor_mesh, std::move(child_3_info),
                       std::move(child_3_neighbor_info)});
 
   DirectionMap<3, Neighbors<3>> expected_parent_neighbors{};
@@ -347,7 +347,7 @@ void test() {
             runner, 0)
             .empty());
   ActionTesting::simple_action<array_component, amr::Actions::InitializeParent>(
-      make_not_null(&runner), parent_id, children_items);
+      make_not_null(&runner), parent_id, std::move(children_items));
   CHECK(
       ActionTesting::get_databox_tag<array_component, domain::Tags::Element<3>>(
           runner, parent_id) == expected_parent);

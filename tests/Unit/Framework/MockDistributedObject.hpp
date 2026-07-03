@@ -33,6 +33,7 @@
 #include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "Parallel/Tags/ArrayIndex.hpp"
+#include "Parallel/Tags/Info.hpp"
 #include "ParallelAlgorithms/Initialization/MutateAssign.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Gsl.hpp"
@@ -257,7 +258,8 @@ class MockDistributedObject {
   using initial_tags = tmpl::flatten<tmpl::list<
       Parallel::Tags::MetavariablesImpl<metavariables>,
       Parallel::Tags::ArrayIndex<array_index>,
-      Parallel::Tags::GlobalCache<metavariables>, simple_tags_from_options,
+      Parallel::Tags::GlobalCache<metavariables>, Parallel::Tags::Info,
+      simple_tags_from_options,
       db::wrap_tags_in<Parallel::Tags::FromGlobalCache, all_cache_tags,
                        metavariables>,
       Parallel::Algorithm_detail::action_list_simple_tags<Component>,
@@ -286,8 +288,10 @@ class MockDistributedObject {
         inboxes_(inboxes) {
     ::Initialization::mutate_assign<tmpl::push_front<
         simple_tags_from_options, Parallel::Tags::ArrayIndex<array_index>,
-        Parallel::Tags::GlobalCache<metavariables>>>(
+        Parallel::Tags::GlobalCache<metavariables>, Parallel::Tags::Info>>(
         make_not_null(&box_), array_index_, global_cache_,
+        std::make_unique<MockInfo>(node_id, local_core_id, mock_global_cores_,
+                                   mock_nodes_and_local_cores_),
         std::forward<Options>(opts)...);
   }
 
