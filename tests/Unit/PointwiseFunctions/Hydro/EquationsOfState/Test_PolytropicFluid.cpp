@@ -17,6 +17,7 @@
 #include "PointwiseFunctions/Hydro/EquationsOfState/Barotropic3D.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/Factory.hpp"
+#include "PointwiseFunctions/Hydro/EquationsOfState/PiecewisePolytropicFluid.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/PolytropicFluid.hpp"
 #include "PointwiseFunctions/Hydro/Units.hpp"
 #include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
@@ -75,7 +76,8 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.EquationsOfState.PolytropicFluid",
 
   const auto eos = EoS::PolytropicFluid<true>{100.0, 2.0};
   const auto other_eos = EoS::PolytropicFluid<true>{4.0, 2.0};
-  const auto other_type_eos = EoS::DarkEnergyFluid<true>{0.5};
+  const auto other_type_eos =
+      EoS::PiecewisePolytropicFluid<true>{10.0, 0.5, 1.5, 2.0};
   CHECK(eos == eos);
   CHECK(eos != other_eos);
   CHECK(eos != other_type_eos);

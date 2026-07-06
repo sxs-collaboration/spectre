@@ -6,7 +6,6 @@ spectre_target_sources(
   PRIVATE
   Barotropic2D.cpp
   Barotropic3D.cpp
-  DarkEnergyFluid.cpp
   Enthalpy.cpp
   Equilibrium3D.cpp
   HybridEos.cpp
@@ -24,7 +23,6 @@ spectre_target_headers(
   HEADERS
   Barotropic2D.hpp
   Barotropic3D.hpp
-  DarkEnergyFluid.hpp
   Enthalpy.hpp
   Equilibrium3D.hpp
   EquationOfState.hpp

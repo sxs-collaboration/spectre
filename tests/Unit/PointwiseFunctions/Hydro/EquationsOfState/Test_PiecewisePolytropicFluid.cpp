@@ -18,6 +18,7 @@
 #include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/Factory.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/PiecewisePolytropicFluid.hpp"
+#include "PointwiseFunctions/Hydro/EquationsOfState/PolytropicFluid.hpp"
 #include "PointwiseFunctions/Hydro/SpecificEnthalpy.hpp"
 #include "PointwiseFunctions/Hydro/Units.hpp"
 #include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
@@ -329,7 +330,7 @@ SPECTRE_TEST_CASE(
   const auto eos = EoS::PiecewisePolytropicFluid<true>{10.0, 0.5, 1.5, 2.0};
   const auto other_eos =
       EoS::PiecewisePolytropicFluid<true>{10.0, 0.7, 1.5, 2.0};
-  const auto other_type_eos = EoS::DarkEnergyFluid<true>{0.5};
+  const auto other_type_eos = EoS::PolytropicFluid<true>{100.0, 2.0};
   // Same parameters should match
   CHECK(eos == eos);
   // Different parameters should NOT match

@@ -8,7 +8,6 @@
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
-#include "PointwiseFunctions/Hydro/EquationsOfState/DarkEnergyFluid.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/Enthalpy.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/Factory.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/HybridEos.hpp"
@@ -184,7 +183,6 @@ Equilibrium3D<EquilEos>::zeta_from_density_and_temperature_impl(
   return make_with_value<Scalar<DataType>>(get(rest_mass_density), 0.0);
 }
 
-template class Equilibrium3D<DarkEnergyFluid<true>>;
 template class Equilibrium3D<IdealFluid<true>>;
 template class Equilibrium3D<IdealFluid<false>>;
 template class Equilibrium3D<HybridEos<PolytropicFluid<true>>>;

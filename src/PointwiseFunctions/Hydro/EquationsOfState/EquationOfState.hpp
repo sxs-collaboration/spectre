@@ -24,8 +24,6 @@ template <typename ColdEos>
 class Barotropic2D;
 template <typename ColdEquilEos>
 class Barotropic3D;
-template <bool IsRelativistic>
-class DarkEnergyFluid;
 template <typename EquilEos>
 class Equilibrium3D;
 template <typename ColdEquationOfState>
@@ -70,8 +68,7 @@ struct DerivedClasses<false, 1> {
 template <>
 struct DerivedClasses<true, 2> {
   using type = tmpl::list<
-      DarkEnergyFluid<true>, IdealFluid<true>,
-      Barotropic2D<PolytropicFluid<true>>,
+      IdealFluid<true>, Barotropic2D<PolytropicFluid<true>>,
       Barotropic2D<PiecewisePolytropicFluid<true>>, Barotropic2D<Spectral>,
       Barotropic2D<Enthalpy<PolytropicFluid<true>>>,
       Barotropic2D<Enthalpy<Enthalpy<Enthalpy<PolytropicFluid<true>>>>>,
@@ -103,7 +100,7 @@ struct DerivedClasses<true, 3> {
       Barotropic3D<Enthalpy<Spectral>>,
       Barotropic3D<Enthalpy<Enthalpy<Spectral>>>,
       Barotropic3D<Enthalpy<Enthalpy<Enthalpy<Spectral>>>>,
-      Equilibrium3D<DarkEnergyFluid<true>>, Equilibrium3D<IdealFluid<true>>,
+      Equilibrium3D<IdealFluid<true>>,
       Equilibrium3D<HybridEos<PolytropicFluid<true>>>,
       Equilibrium3D<HybridEos<Enthalpy<PolytropicFluid<true>>>>,
       Equilibrium3D<
