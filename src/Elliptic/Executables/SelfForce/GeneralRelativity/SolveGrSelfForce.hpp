@@ -101,6 +101,7 @@ struct Metavariables {
                 ::amr::Criteria::standard_criteria<
                     volume_dim, typename system::primal_fields>,
                 GrSelfForce::AmrCriteria::RefineAtPuncture,
+                GrSelfForce::AmrCriteria::RefineAtBoundary<volume_dim, 0>,
                 GrSelfForce::AmrCriteria::RefineAtBoundary<volume_dim, 1>>>,
         tmpl::pair<Event,
                    tmpl::flatten<tmpl::list<

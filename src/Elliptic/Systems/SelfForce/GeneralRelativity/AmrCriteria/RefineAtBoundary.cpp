@@ -9,11 +9,7 @@ namespace GrSelfForce::AmrCriteria {
 // RefineAtBoundary<Dim, DimToRefine>::RefineAtBoundary(CkMigrateMessage* msg)
 //     : Criterion(msg) {}
 
-// template class RefineAtBoundary<1, 0>;
 template class RefineAtBoundary<2, 0>;
 template class RefineAtBoundary<2, 1>;
-// template class RefineAtBoundary<3, 0>;
-// template class RefineAtBoundary<3, 1>;
-// template class RefineAtBoundary<3, 2>;
 
 }  // namespace GrSelfForce::AmrCriteria

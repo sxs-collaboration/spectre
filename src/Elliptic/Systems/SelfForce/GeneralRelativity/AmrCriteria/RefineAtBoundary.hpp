@@ -17,11 +17,14 @@
 #include "ParallelAlgorithms/Amr/Criteria/Type.hpp"
 #include "Utilities/MakeArray.hpp"
 #include "Utilities/TMPL.hpp"
+
 namespace GrSelfForce::AmrCriteria {
 /*!
  * \brief Split boundary elements in the direction of the boundary
  *
- * Useful to refine poles like $\theta=0,\pi$.
+ * For `DimToRefine == 0` (radial), only the lower boundary (near the horizion)
+ * is refined. For `DimToRefine == 1` (angular), both boundaries are refined
+ * since they are poles like $\theta=0,\pi$.
  */
 template <size_t Dim, size_t DimToRefine>
 class RefineAtBoundary : public amr::Criterion {
@@ -59,20 +62,29 @@ class RefineAtBoundary : public amr::Criterion {
   std::string observation_name() override { return name(); }
 
   using compute_tags_for_observation_box = tmpl::list<>;
-  using argument_tags = tmpl::list<domain::Tags::Element<2>>;
+  using argument_tags = tmpl::list<domain::Tags::Element<Dim>>;
 
   template <typename Metavariables>
-  std::array<amr::Flag, 2> operator()(
-      const Element<2>& element,
+  std::array<amr::Flag, Dim> operator()(
+      const Element<Dim>& element,
       Parallel::GlobalCache<Metavariables>& /*cache*/,
-      const ElementId<2>& /*element_id*/) const {
+      const ElementId<Dim>& /*element_id*/) const {
     const auto& external_boundaries = element.external_boundaries();
-    auto result = make_array<2>(amr::Flag::DoNothing);
-    if (external_boundaries.count(Direction<2>{DimToRefine, Side::Lower}) ==
-            1 or
-        external_boundaries.count(Direction<2>{DimToRefine, Side::Upper}) ==
-            1) {
-      get<DimToRefine>(result) = amr::Flag::Split;
+    auto result = make_array<Dim>(amr::Flag::DoNothing);
+    if constexpr (DimToRefine == 0) {
+      // Radial direction: only refine near the horizon (lower boundary)
+      if (external_boundaries.count(Direction<Dim>{DimToRefine, Side::Lower}) ==
+          1) {
+        get<DimToRefine>(result) = amr::Flag::Split;
+      }
+    } else {
+      // Angular direction: refine near both poles
+      if (external_boundaries.count(Direction<Dim>{DimToRefine, Side::Lower}) ==
+              1 or
+          external_boundaries.count(Direction<Dim>{DimToRefine, Side::Upper}) ==
+              1) {
+        get<DimToRefine>(result) = amr::Flag::Split;
+      }
     }
     return result;
   }
