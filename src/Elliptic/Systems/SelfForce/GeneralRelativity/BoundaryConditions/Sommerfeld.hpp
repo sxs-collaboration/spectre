@@ -31,6 +31,22 @@ namespace GrSelfForce::BoundaryConditions {
  * n_i F^i = i m \Omega \Psi_m
  * \end{equation}
  *
+ * With hyperboloidal slicing (see `HyperboloidalSlicing`), the outgoing
+ * radiation condition above is replaced by a Neumann condition
+ * ($F^i = 0$) at first order (`Order = 1`). At second order (`Order = 2`),
+ * it instead imposes
+ *
+ * \begin{equation}
+ * \partial_{x^i}\left(\alpha^{i}\partial_{x^i}\Psi\right) = 0,
+ * \end{equation}
+ *
+ * i.e. $\gamma^{i}\cdot\partial_{x^i}\Psi = -\beta\cdot\Psi$, where $x^i$ is
+ * the radial coordinate ($r_\star$ or $r$, depending on
+ * `PenetratingHorizon`; see `CircularOrbit`). Since $\gamma^{i}$ and $\beta$
+ * couple all tensor components of $\Psi$ together, we invert this dense
+ * matrix in tensor-component space to solve for $\partial_{x^i}\Psi$, then
+ * set the flux $F^{i} = \alpha^{i}\partial_{x^i}\Psi$.
+ *
  * These boundary conditions currently assume a circular equatorial orbit.
  */
 class Sommerfeld : public elliptic::BoundaryConditions::BoundaryCondition<2> {

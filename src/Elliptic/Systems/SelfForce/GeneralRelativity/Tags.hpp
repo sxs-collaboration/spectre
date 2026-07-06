@@ -72,13 +72,13 @@ struct MMode : db::SimpleTag {
 };
 
 /*!
- * \brief The factor multiplying the angular derivative in the principal part of
- * the equations.
+ * \brief The factors $\alpha^i$ multiplying the radial and angular
+ * derivatives in the principal part of the equations.
  *
- * This is the factor $\alpha$ that defines the principal part of the equations
- * and allows to write it in first-order flux form (see
- * `GrSelfForce::FirstOrderSystem`). This factor is set by the analytic data
- * class (see `ScalarSelfForce::AnalyticData::CircularOrbit`).
+ * These are the factors $\alpha^i$ that define the principal part of the
+ * equations and allow writing them in first-order flux form (see
+ * `GrSelfForce::FirstOrderSystem`). They are set by the analytic data class
+ * (see `GrSelfForce::AnalyticData::CircularOrbit`).
  */
 struct Alpha : db::SimpleTag {
   using type = tnsr::I<ComplexDataVector, 2>;

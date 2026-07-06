@@ -11,7 +11,9 @@
 /// CircularOrbit.hpp for details.
 
 namespace GrSelfForce::detail {
-
+/// The functions below are used when `PenetratingHorizon` is `False`. They
+/// solve the PDEs in $(r_\star, \theta)$ coordinates, with metric components
+/// given in Boyer-Lindquist coordinates.
 void convert_effsource_psi(int m, double a, double r, double th,
                            std::array<double, 10>& real_orig,
                            std::array<double, 10>& imag_orig,
@@ -40,6 +42,10 @@ void convert_effsource_dpsidrstar(int m, double a, double r, double th,
                                   std::array<double, 10>& real_conv_drs,
                                   std::array<double, 10>& imag_conv_drs);
 
+/// The `_vr` functions below are used when `PenetratingHorizon` is `True`.
+/// They instead solve the PDEs in $(r, \cos\theta)$ coordinates, with metric
+/// components given in ingoing-Eddington-Finkelstein-like coordinates
+/// $(v, r, \theta, \phi)$.
 void convert_effsource_psi_vr(int m, double a, double r, double z,
                            std::array<double, 10>& real_orig,
                            std::array<double, 10>& imag_orig,

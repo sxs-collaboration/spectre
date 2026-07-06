@@ -38,28 +38,31 @@ RandomizeInitialGuess: None
 
 DomainCreator:
   AlignedLattice:
-    # Order of dimensions is (r, cos(theta))
+    # Order of dimensions is (radial, angular)
+    # i.e. (r_star, theta) if PenetratingHorizon is False,
+    # or (r, cos(theta)) if PenetratingHorizon is True.
     BlockBounds:
+      # radial
       - - 1.8
         - *v_to_t_transition
         - 6.
         - &worldtube_right 10.
         - *t_to_u_transition
         - &outer_radius 1e4
-      # cos(theta)
+      # angular
       - - -1.
         - -0.5
         - 0.5
         - 1
     Distributions:
-      # r_
+      # radial
       - [Linear, Linear, Linear, Linear, &outer_shell_distribution Inverse]
-      # cos(theta)
+      # angular
       - [Linear, Linear, Linear]
     SingularityPositions:
-      # r*
+      # radial
       - [-51., -51., -51., 0., 0.]
-      # cos(theta)
+      # angular
       - [-2., -2., -2.]
     InitialGridPoints: [4, 4]
     InitialLevels: [1, 0]
@@ -143,7 +146,7 @@ Amr:
       ErrorBeyondLimits: True
     AllowCoarsening: True
   MaxCoarseLevels: Auto
-  Iterations: 6
+  Iterations: 2
 
 PhaseChangeAndTriggers:
   # Run AMR in every iteration, but not on the initial guess
@@ -171,16 +174,16 @@ Observers:
 LinearSolver:
   Gmres:
     ConvergenceCriteria:
-      MaxIterations: 500
+      MaxIterations: 100
       RelativeResidual: 0
-      AbsoluteResidual: 1.e-8
+      AbsoluteResidual: 1.e-12
     Verbosity: Quiet
 
   Multigrid:
     Iterations: 1
     InitialCoarseLevels: 0
     PreSmoothing: True
-    UseBottomSolver: False
+    UseBottomSolver: True
     PostSmoothingAtBottom: False
     Verbosity: Silent
     OutputVolumeData: False

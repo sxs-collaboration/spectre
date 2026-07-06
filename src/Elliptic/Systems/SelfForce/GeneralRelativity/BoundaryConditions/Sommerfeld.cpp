@@ -44,6 +44,11 @@ void Sommerfeld::apply(
         (*n_dot_flux)[i] = 0.;
       }
     } else if (order_ == 2) {
+      // 2nd-order Sommerfeld with hyperboloidal slicing imposes
+      // d_x(alpha * d_x(Psi)) = 0, i.e. gamma . d_x(Psi) = -beta . Psi, where
+      // x is r_star or r depending on PenetratingHorizon. We invert this
+      // (dense in tensor-component space) for d_x(Psi), then set the flux
+      // F^x = alpha^x d_x(Psi).
       using TensorStruct = std::decay_t<decltype(*field)>::structure;
       const size_t n_points = field->begin()->size();
       for (size_t i = 0; i < n_points; ++i) {
@@ -64,7 +69,7 @@ void Sommerfeld::apply(
         }
         blaze::StaticVector<std::complex<double>, 10> grad_vec =
             blaze::solve(A_local, b_local);
-        const std::complex<double> alpha_factor = alpha.get(0)[i];
+        const std::complex<double> alpha_factor = get<0>(alpha)[i];
         for (size_t a = 0; a < 4; ++a) {
           for (size_t b = 0; b <= a; ++b) {
             const size_t row = TensorStruct::get_storage_index(a, b);

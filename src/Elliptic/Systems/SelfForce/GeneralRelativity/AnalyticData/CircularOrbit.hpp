@@ -5,10 +5,10 @@
 
 #include <array>
 #include <cstddef>
+#include <cstdio>
 #include <limits>
 #include <optional>
 #include <pup.h>
-#include <cstdio>
 #include <vector>
 
 #include "DataStructures/DataBox/Prefixes.hpp"
@@ -73,21 +73,27 @@ class CircularOrbit : public elliptic::analytic_data::Background,
         "Enable hyperboloidal slicing by specifying the transition points for "
         "the boost function. The boost function transitions from -1 to zero "
         "between the first two points and from zero to 1 between the last "
-        "two points. The effective source can only be evaluated where the "
+        "two points. The two points can be the same, in which case the "
+        "transition "
+        "is discontinuous (vtu slicing) and the jump must be handled by the DG "
+        "scheme (see option 'NullSlicingBlocks'). "
+        "The effective source can only be evaluated where the "
         "boost function is zero, so the regularized region must be between "
         "the second and third points.";
     using type = Options::Auto<std::array<double, 4>, Options::AutoLabel::None>;
   };
   struct PenetratingHorizon {
     static constexpr Options::String help =
-        "If 'False', use tortoise radial coordinate where the Kerr horizon is "
-        "at negative infinity. If 'True', use Boyer-Lindquist radial "
-        "coordinate where the Kerr horizon is at r_+.";
+        "If 'False', use tortoise radial coordinate 'r_star' where the Kerr "
+        "horizon is at negative infinity, and the angular coordinate is "
+        "'theta'. If 'True', use Boyer-Lindquist radial coordinate 'r' "
+        "where the Kerr horizon is at r_+, and the angular coordinate is "
+        "'cos(theta)'.";
     using type = bool;
   };
-  using options = tmpl::list<BlackHoleMass, BlackHoleSpin, OrbitalRadius,
-                             MModeNumber, HyperboloidalSlicingTransitions,
-                             PenetratingHorizon>;
+  using options =
+      tmpl::list<BlackHoleMass, BlackHoleSpin, OrbitalRadius, MModeNumber,
+                 HyperboloidalSlicingTransitions, PenetratingHorizon>;
   static constexpr Options::String help =
       "Quasicircular orbit of a point mass in Kerr spacetime";
 

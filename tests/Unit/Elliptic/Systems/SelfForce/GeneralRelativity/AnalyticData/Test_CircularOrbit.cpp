@@ -60,7 +60,7 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.GrSelfForce.CircularOrbit",
     for (int m_mode_number = 0; m_mode_number < 3; ++m_mode_number) {
       CAPTURE(m_mode_number);
       const auto circular_orbit = CircularOrbit{
-          1., 0.9, 20., m_mode_number, transitions, penetrating_horizon};
+          1., 0.9, 6., m_mode_number, transitions, penetrating_horizon};
       CAPTURE(circular_orbit.puncture_position());
       const auto background =
           circular_orbit.variables(x, CircularOrbit::background_tags{});
@@ -119,7 +119,7 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.GrSelfForce.CircularOrbit",
            std::nullopt, false);
 
   // penetrating_horizon = true: (r, cos_theta) coordinates
-  run_test(5, 10, -0.4, -0.2,
+  run_test(3., 5., -0.4, -0.2,
            std::array<double, 4>{2., 2., 25., 25.}, true);
 }
 

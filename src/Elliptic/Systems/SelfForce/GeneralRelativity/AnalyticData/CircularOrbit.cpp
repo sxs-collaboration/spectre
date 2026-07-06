@@ -28,23 +28,15 @@ template <size_t Order>
 std::pair<DataVector, DataVector> boost_function_and_deriv(
     const DataVector& r_star_or_r,
     const std::array<double, 4>& transition_points) {
-  if (transition_points[0] == transition_points[1] and
-      transition_points[2] == transition_points[3]) {
-    // Support vtu slicing by just setting transition width to zero.
-    return {step_function(r_star_or_r - transition_points[0]) +
-                step_function(r_star_or_r - transition_points[2]) - 1.0,
-            DataVector(r_star_or_r.size(), 0.0)};
-  } else {
-    return {smoothstep<Order>(transition_points[0], transition_points[1],
-                              r_star_or_r) +
-                smoothstep<Order>(transition_points[2], transition_points[3],
-                                  r_star_or_r) -
-                1.0,
-            smoothstep_deriv<Order>(transition_points[0], transition_points[1],
-                                    r_star_or_r) +
-                smoothstep_deriv<Order>(transition_points[2],
-                                        transition_points[3], r_star_or_r)};
-  }
+  return {smoothstep<Order>(transition_points[0], transition_points[1],
+                            r_star_or_r) +
+              smoothstep<Order>(transition_points[2], transition_points[3],
+                                r_star_or_r) -
+              1.0,
+          smoothstep_deriv<Order>(transition_points[0], transition_points[1],
+                                  r_star_or_r) +
+              smoothstep_deriv<Order>(transition_points[2],
+                                      transition_points[3], r_star_or_r)};
 }
 }  // namespace
 
@@ -103,6 +95,7 @@ CircularOrbit::variables(const tnsr::I<DataVector, 2>& x,
   const double r_plus = M * (1. + sqrt(1. - square(black_hole_spin_)));
   const double r_minus = M * (1. - sqrt(1. - square(black_hole_spin_)));
   const double omega = this->omega();
+  const double k = m_mode_number_ * omega;
   const auto& r_star_or_r = get<0>(x);
   const auto& theta_or_cos_theta = get<1>(x);
   DataVector r;
@@ -161,101 +154,70 @@ CircularOrbit::variables(const tnsr::I<DataVector, 2>& x,
       1. / r * std::complex<double>(0., 2. * a * m_mode_number_);
   // tt, tr, ttheta, tphi, rr, rtheta, rphi, theta theta, theta phi, phi phi
 
+  std::array<std::array<double, 10>, 10> Areal{};
+  std::array<std::array<double, 10>, 10> Aimag{};
+  std::array<std::array<double, 10>, 10> Breal{};
+  std::array<std::array<double, 10>, 10> Bimag{};
+  std::array<std::array<double, 10>, 10> Creal{};
+  std::array<std::array<double, 10>, 10> Cimag{};
+  DataVector H{};
+  DataVector dH{};
   if (penetrating_horizon_) {
-    std::array<std::array<double, 10>, 10> Areal_vr{};
-    std::array<std::array<double, 10>, 10> Aimag_vr{};
-    std::array<std::array<double, 10>, 10> Breal_vr{};
-    std::array<std::array<double, 10>, 10> Bimag_vr{};
-    std::array<std::array<double, 10>, 10> Creal_vr{};
-    std::array<std::array<double, 10>, 10> Cimag_vr{};
-    const auto [H, dH] = boost_function_and_deriv<1>(
+    auto boost_and_deriv = boost_function_and_deriv<1>(
         r, hyperboloidal_slicing_transitions_.value());
-    for (size_t i = 0; i < r.size(); i++) {
-      detail::getAreal_vr(m_mode_number_, a, m_mode_number_ * omega, r[i],
-                          cos_theta[i], H[i], dH[i], Areal_vr);
-      detail::getAimag_vr(m_mode_number_, a, m_mode_number_ * omega, r[i],
-                          cos_theta[i], H[i], dH[i], Aimag_vr);
-      detail::getBreal_vr(m_mode_number_, a, m_mode_number_ * omega, r[i],
-                          cos_theta[i], H[i], dH[i], Breal_vr);
-      detail::getBimag_vr(m_mode_number_, a, m_mode_number_ * omega, r[i],
-                          cos_theta[i], H[i], dH[i], Bimag_vr);
-      detail::getCreal_vr(m_mode_number_, a, m_mode_number_ * omega, r[i],
-                          cos_theta[i], H[i], dH[i], Creal_vr);
-      detail::getCimag_vr(m_mode_number_, a, m_mode_number_ * omega, r[i],
-                          cos_theta[i], H[i], dH[i], Cimag_vr);
+    H = std::move(boost_and_deriv.first);
+    dH = std::move(boost_and_deriv.second);
+  }
+  for (size_t i = 0; i < r.size(); i++) {
+    if (penetrating_horizon_) {
+      detail::getAreal_vr(m_mode_number_, a, k, r[i], cos_theta[i], H[i],
+                          dH[i], Areal);
+      detail::getAimag_vr(m_mode_number_, a, k, r[i], cos_theta[i], H[i],
+                          dH[i], Aimag);
+      detail::getBreal_vr(m_mode_number_, a, k, r[i], cos_theta[i], H[i],
+                          dH[i], Breal);
+      detail::getBimag_vr(m_mode_number_, a, k, r[i], cos_theta[i], H[i],
+                          dH[i], Bimag);
+      detail::getCreal_vr(m_mode_number_, a, k, r[i], cos_theta[i], H[i],
+                          dH[i], Creal);
+      detail::getCimag_vr(m_mode_number_, a, k, r[i], cos_theta[i], H[i],
+                          dH[i], Cimag);
+    } else {
+      detail::getAreal(m_mode_number_, a, k, r[i], theta[i], Areal);
+      detail::getAimag(m_mode_number_, a, k, r[i], theta[i], Aimag);
+      detail::getBreal(m_mode_number_, a, k, r[i], theta[i], Breal);
+      detail::getBimag(m_mode_number_, a, k, r[i], theta[i], Bimag);
+      detail::getCreal(m_mode_number_, a, k, r[i], theta[i], Creal);
+      detail::getCimag(m_mode_number_, a, k, r[i], theta[i], Cimag);
+    }
 
-      // NOLINTBEGIN(cppcoreguidelines-pro-bounds-constant-array-index)
-      for (size_t a1 = 0; a1 < 4; ++a1) {
-        for (size_t b = 0; b <= a1; ++b) {
-          const size_t matrix_i =
-              tnsr::aa<ComplexDataVector, 3>::get_storage_index(
-                  std::array<size_t, 2>{{a1, b}});
-          for (size_t c = 0; c < 4; ++c) {
-            for (size_t d = 0; d <= c; ++d) {
-              const size_t matrix_j =
-                  tnsr::aa<ComplexDataVector, 3>::get_storage_index(
-                      std::array<size_t, 2>{{c, d}});
-              gamma_rstar.get(a1, b, c, d)[i] =
-                  Areal_vr[matrix_i][matrix_j] +
-                  std::complex<double>(0., 1.) * Aimag_vr[matrix_i][matrix_j];
-              gamma_theta.get(a1, b, c, d)[i] =
-                  Breal_vr[matrix_i][matrix_j] +
-                  std::complex<double>(0., 1.) * Bimag_vr[matrix_i][matrix_j];
-              beta.get(a1, b, c, d)[i] =
-                  Creal_vr[matrix_i][matrix_j] +
-                  std::complex<double>(0., 1.) * Cimag_vr[matrix_i][matrix_j];
-            }
+    // NOLINTBEGIN(cppcoreguidelines-pro-bounds-constant-array-index)
+    for (size_t a1 = 0; a1 < 4; ++a1) {
+      for (size_t b = 0; b <= a1; ++b) {
+        const size_t matrix_i =
+            tnsr::aa<ComplexDataVector, 3>::get_storage_index(
+                std::array<size_t, 2>{{a1, b}});
+        for (size_t c = 0; c < 4; ++c) {
+          for (size_t d = 0; d <= c; ++d) {
+            const size_t matrix_j =
+                tnsr::aa<ComplexDataVector, 3>::get_storage_index(
+                    std::array<size_t, 2>{{c, d}});
+            gamma_rstar.get(a1, b, c, d)[i] =
+                Areal[matrix_i][matrix_j] +
+                std::complex<double>(0., 1.) * Aimag[matrix_i][matrix_j];
+            gamma_theta.get(a1, b, c, d)[i] =
+                Breal[matrix_i][matrix_j] +
+                std::complex<double>(0., 1.) * Bimag[matrix_i][matrix_j];
+            beta.get(a1, b, c, d)[i] =
+                Creal[matrix_i][matrix_j] +
+                std::complex<double>(0., 1.) * Cimag[matrix_i][matrix_j];
           }
         }
       }
-      // NOLINTEND(cppcoreguidelines-pro-bounds-constant-array-index)
     }
-  } else {
-    std::array<std::array<double, 10>, 10> Areal{};
-    std::array<std::array<double, 10>, 10> Aimag{};
-    std::array<std::array<double, 10>, 10> Breal{};
-    std::array<std::array<double, 10>, 10> Bimag{};
-    std::array<std::array<double, 10>, 10> Creal{};
-    std::array<std::array<double, 10>, 10> Cimag{};
-    for (size_t i = 0; i < r.size(); i++) {
-      detail::getAreal(m_mode_number_, a, m_mode_number_ * omega, r[i],
-                       theta[i], Areal);
-      detail::getAimag(m_mode_number_, a, m_mode_number_ * omega, r[i],
-                       theta[i], Aimag);
-      detail::getBreal(m_mode_number_, a, m_mode_number_ * omega, r[i],
-                       theta[i], Breal);
-      detail::getBimag(m_mode_number_, a, m_mode_number_ * omega, r[i],
-                       theta[i], Bimag);
-      detail::getCreal(m_mode_number_, a, m_mode_number_ * omega, r[i],
-                       theta[i], Creal);
-      detail::getCimag(m_mode_number_, a, m_mode_number_ * omega, r[i],
-                       theta[i], Cimag);
-      // NOLINTBEGIN(cppcoreguidelines-pro-bounds-constant-array-index)
-      for (size_t a1 = 0; a1 < 4; ++a1) {
-        for (size_t b = 0; b <= a1; ++b) {
-          const size_t matrix_i =
-              tnsr::aa<ComplexDataVector, 3>::get_storage_index(
-                  std::array<size_t, 2>{{a1, b}});
-          for (size_t c = 0; c < 4; ++c) {
-            for (size_t d = 0; d <= c; ++d) {
-              const size_t matrix_j =
-                  tnsr::aa<ComplexDataVector, 3>::get_storage_index(
-                      std::array<size_t, 2>{{c, d}});
-              gamma_rstar.get(a1, b, c, d)[i] =
-                  Areal[matrix_i][matrix_j] +
-                  std::complex<double>(0., 1.) * Aimag[matrix_i][matrix_j];
-              gamma_theta.get(a1, b, c, d)[i] =
-                  Breal[matrix_i][matrix_j] +
-                  std::complex<double>(0., 1.) * Bimag[matrix_i][matrix_j];
-              beta.get(a1, b, c, d)[i] =
-                  Creal[matrix_i][matrix_j] +
-                  std::complex<double>(0., 1.) * Cimag[matrix_i][matrix_j];
-            }
-          }
-        }
-      }
-      // NOLINTEND(cppcoreguidelines-pro-bounds-constant-array-index)
-    }
+    // NOLINTEND(cppcoreguidelines-pro-bounds-constant-array-index)
+  }
+  if (not penetrating_horizon_) {
     for (size_t i = 0; i < beta.size(); ++i) {
       beta[i] *= -1.;
       gamma_rstar[i] *= -1.;
@@ -263,22 +225,22 @@ CircularOrbit::variables(const tnsr::I<DataVector, 2>& x,
     }
     // Hyperboloidal slicing
     if (hyperboloidal_slicing_transitions_.has_value()) {
-      const auto [H, dH] = boost_function_and_deriv<1>(
+      const auto [H_rstar, dH_rstar] = boost_function_and_deriv<1>(
           r_star, hyperboloidal_slicing_transitions_.value());
-      const double k = m_mode_number_ * omega;
       for (size_t a1 = 0; a1 < 4; ++a1) {
         for (size_t b = 0; b <= a1; ++b) {
           for (size_t c = 0; c < 4; ++c) {
             for (size_t d = 0; d <= c; ++d) {
               if (a1 == c and b == d) {
-                beta.get(a1, b, c, d) +=
-                    std::complex<double>(0., -k) * dH + square(k) * square(H);
+                beta.get(a1, b, c, d) += std::complex<double>(0., -k) *
+                                             dH_rstar +
+                                         square(k) * square(H_rstar);
               }
               beta.get(a1, b, c, d) += std::complex<double>(0., k) *
-                                       gamma_rstar.get(a1, b, c, d) * H;
+                                       gamma_rstar.get(a1, b, c, d) * H_rstar;
               if (a1 == c and b == d) {
                 gamma_rstar.get(a1, b, c, d) -=
-                    std::complex<double>(0., 2. * k) * H;
+                    std::complex<double>(0., 2. * k) * H_rstar;
               }
             }
           }
@@ -417,17 +379,18 @@ CircularOrbit::variables(
     std::array<double, 10> src_im{};
     std::array<double, 10> src_conv_re{};
     std::array<double, 10> src_conv_im{};
-    if (penetrating_horizon_) {
-      for (size_t i = 0; i < get<0>(x).size(); ++i) {
-        x_i.t = 0;
-        x_i.r = r[i];
-        x_i.theta = theta[i];
-        x_i.phi = 0;
-        effsource_calc_m(m_mode_number_, &x_i, hS_re.data(), hS_im.data(),
-                         dhS_dr_re.data(), dhS_dr_im.data(), dhS_dth_re.data(),
-                         dhS_dth_im.data(), dhS_dph_re.data(),
-                         dhS_dph_im.data(), dhS_dt_re.data(), dhS_dt_im.data(),
-                         src_re.data(), src_im.data());
+    const std::complex<double> sign = penetrating_horizon_ ? 1. : -1.;
+    for (size_t i = 0; i < get<0>(x).size(); ++i) {
+      x_i.t = 0;
+      x_i.r = r[i];
+      x_i.theta = theta[i];
+      x_i.phi = 0;
+      effsource_calc_m(m_mode_number_, &x_i, hS_re.data(), hS_im.data(),
+                       dhS_dr_re.data(), dhS_dr_im.data(), dhS_dth_re.data(),
+                       dhS_dth_im.data(), dhS_dph_re.data(), dhS_dph_im.data(),
+                       dhS_dt_re.data(), dhS_dt_im.data(), src_re.data(),
+                       src_im.data());
+      if (penetrating_horizon_) {
         detail::convert_effsource_psi_vr(m_mode_number_, a, r[i],
                                          theta_or_cos_theta[i], hS_re, hS_im,
                                          hS_conv_re, hS_conv_im);
@@ -442,39 +405,7 @@ CircularOrbit::variables(
         detail::convert_effsource_Seff_vr(m_mode_number_, a, r[i],
                                           theta_or_cos_theta[i], src_re, src_im,
                                           src_conv_re, src_conv_im);
-        // NOLINTBEGIN(cppcoreguidelines-pro-bounds-constant-array-index)
-        for (size_t a1 = 0; a1 < 4; ++a1) {
-          for (size_t b = 0; b <= a1; ++b) {
-            const size_t comp =
-                tnsr::aa<ComplexDataVector, 3>::get_storage_index(
-                    std::array<size_t, 2>{{a1, b}});
-            effective_source.get(a1, b)[i] =
-                src_conv_re[comp] +
-                std::complex<double>(0., 1.) * src_conv_im[comp];
-            singular_field.get(a1, b)[i] =
-                hS_conv_re[comp] +
-                std::complex<double>(0., 1.) * hS_conv_im[comp];
-            deriv_singular_field.get(0, a1, b)[i] =
-                dhS_drstar_or_dr_re_conv[comp] +
-                std::complex<double>(0., 1.) * dhS_drstar_or_dr_im_conv[comp];
-            deriv_singular_field.get(1, a1, b)[i] =
-                dhS_dth_or_dcos_re_conv[comp] +
-                std::complex<double>(0., 1.) * dhS_dth_or_dcos_im_conv[comp];
-          }
-        }
-        // NOLINTEND(cppcoreguidelines-pro-bounds-constant-array-index)
-      }
-    } else {
-      for (size_t i = 0; i < get<0>(x).size(); ++i) {
-        x_i.t = 0;
-        x_i.r = r[i];
-        x_i.theta = theta[i];
-        x_i.phi = 0;
-        effsource_calc_m(m_mode_number_, &x_i, hS_re.data(), hS_im.data(),
-                         dhS_dr_re.data(), dhS_dr_im.data(), dhS_dth_re.data(),
-                         dhS_dth_im.data(), dhS_dph_re.data(),
-                         dhS_dph_im.data(), dhS_dt_re.data(), dhS_dt_im.data(),
-                         src_re.data(), src_im.data());
+      } else {
         detail::convert_effsource_psi(m_mode_number_, a, r[i], theta[i], hS_re,
                                       hS_im, hS_conv_re, hS_conv_im);
         detail::convert_effsource_dpsidtheta(
@@ -486,28 +417,28 @@ CircularOrbit::variables(
         detail::convert_effsource_Seff(m_mode_number_, a, r[i], theta[i],
                                        src_re, src_im, src_conv_re,
                                        src_conv_im);
-        // NOLINTBEGIN(cppcoreguidelines-pro-bounds-constant-array-index)
-        for (size_t a1 = 0; a1 < 4; ++a1) {
-          for (size_t b = 0; b <= a1; ++b) {
-            const size_t comp =
-                tnsr::aa<ComplexDataVector, 3>::get_storage_index(
-                    std::array<size_t, 2>{{a1, b}});
-            effective_source.get(a1, b)[i] =
-                -src_conv_re[comp] -
-                std::complex<double>(0., 1.) * src_conv_im[comp];
-            singular_field.get(a1, b)[i] =
-                hS_conv_re[comp] +
-                std::complex<double>(0., 1.) * hS_conv_im[comp];
-            deriv_singular_field.get(0, a1, b)[i] =
-                dhS_drstar_or_dr_re_conv[comp] +
-                std::complex<double>(0., 1.) * dhS_drstar_or_dr_im_conv[comp];
-            deriv_singular_field.get(1, a1, b)[i] =
-                dhS_dth_or_dcos_re_conv[comp] +
-                std::complex<double>(0., 1.) * dhS_dth_or_dcos_im_conv[comp];
-          }
-        }
-        // NOLINTEND(cppcoreguidelines-pro-bounds-constant-array-index)
       }
+      // NOLINTBEGIN(cppcoreguidelines-pro-bounds-constant-array-index)
+      for (size_t a1 = 0; a1 < 4; ++a1) {
+        for (size_t b = 0; b <= a1; ++b) {
+          const size_t comp =
+              tnsr::aa<ComplexDataVector, 3>::get_storage_index(
+                  std::array<size_t, 2>{{a1, b}});
+          effective_source.get(a1, b)[i] =
+              sign * (src_conv_re[comp] +
+                      std::complex<double>(0., 1.) * src_conv_im[comp]);
+          singular_field.get(a1, b)[i] =
+              hS_conv_re[comp] +
+              std::complex<double>(0., 1.) * hS_conv_im[comp];
+          deriv_singular_field.get(0, a1, b)[i] =
+              dhS_drstar_or_dr_re_conv[comp] +
+              std::complex<double>(0., 1.) * dhS_drstar_or_dr_im_conv[comp];
+          deriv_singular_field.get(1, a1, b)[i] =
+              dhS_dth_or_dcos_re_conv[comp] +
+              std::complex<double>(0., 1.) * dhS_dth_or_dcos_im_conv[comp];
+        }
+      }
+      // NOLINTEND(cppcoreguidelines-pro-bounds-constant-array-index)
     }
   }
   return result;
