@@ -24,6 +24,7 @@
 #include "Domain/CoordinateMaps/Identity.hpp"
 #include "Domain/CoordinateMaps/Interval.hpp"
 #include "Domain/CoordinateMaps/MapInstantiationMacros.hpp"
+#include "Domain/CoordinateMaps/PolarToCartesian.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.tpp"
 #include "Domain/CoordinateMaps/Wedge.hpp"
@@ -1183,6 +1184,35 @@ cyl_wedge_coordinate_maps(
       inner_radius, lower_z_bound, upper_z_bound, use_equiangular_map,
       partitioning_in_z, distribution_in_z, CylindricalDomainParityFlip::none));
   return cylinder_mapping;
+}
+
+domain::CoordinateMap<
+    Frame::BlockLogical, Frame::Inertial,
+    domain::CoordinateMaps::ProductOf3Maps<
+        ::domain::CoordinateMaps::Affine, ::domain::CoordinateMaps::Identity<1>,
+        ::domain::CoordinateMaps::Interval>,
+    domain::CoordinateMaps::ProductOf2Maps<
+        ::domain::CoordinateMaps::PolarToCartesian,
+        ::domain::CoordinateMaps::Identity<1>>>
+cyl_coordinate_map(const double inner_radius, const double outer_radius,
+                   const double lower_z_bound, const double upper_z_bound) {
+  using Affine = domain::CoordinateMaps::Affine;
+  using Identity1D = domain::CoordinateMaps::Identity<1>;
+  using Interval = domain::CoordinateMaps::Interval;
+  using PolarToCartesian = domain::CoordinateMaps::PolarToCartesian;
+  const auto linear = domain::CoordinateMaps::Distribution::Linear;
+
+  // Map: (xi, eta, zeta) in [-1,1] x [0, 2pi] x [-1, 1]
+  //   xi -> r in [inner_r, outer_r]  (Affine)
+  //   eta -> phi in [0, 2pi)         (Identity<1>, passes through)
+  //   zeta -> z in [z_lower, z_upper] (Interval)
+  // Then PolarToCartesian x Identity<1> maps (r, phi, z) -> (x, y, z)
+  return domain::make_coordinate_map<Frame::BlockLogical, Frame::Inertial>(
+      domain::CoordinateMaps::ProductOf3Maps<Affine, Identity1D, Interval>{
+          Affine{-1.0, 1.0, inner_radius, outer_radius}, Identity1D{},
+          Interval{-1.0, 1.0, lower_z_bound, upper_z_bound, linear}},
+      domain::CoordinateMaps::ProductOf2Maps<PolarToCartesian, Identity1D>{
+          PolarToCartesian{}, Identity1D{}});
 }
 
 std::vector<std::array<size_t, 8>> corners_for_cylindrical_layered_domains(

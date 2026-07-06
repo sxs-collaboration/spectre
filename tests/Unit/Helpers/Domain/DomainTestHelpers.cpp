@@ -278,22 +278,107 @@ void check_block_face_grid_points_align(
   const auto orientation =
       find_neighbor_orientation(host_block, neighbor_block);
   // Set up a Mesh on the shared face. Corner points are already checked by
-  // physical_separation, so check on Gauss points
+  // physical_separation, so check on Gauss points. For cylindrical blocks,
+  // GaussLobatto points are used so that endpoints are also checked since
+  // physical_separation cannot be called for cylindrical blocks since they do
+  // not have corners.
   Mesh<VolumeDim - 1> face_mesh;
-  if (host_block.topologies()[VolumeDim - 1] ==
+  if constexpr (VolumeDim == 3) {
+    if (host_block.topologies()[VolumeDim - 1] ==
       domain::Topology::CartoonCylinder) {
-    if constexpr (VolumeDim == 3) {
       face_mesh = Mesh<VolumeDim - 1>{
           {3, 1},
           {Spectral::Basis::Legendre, Spectral::Basis::Cartoon},
           {Spectral::Quadrature::Gauss, Spectral::Quadrature::AxialSymmetry}};
+    } else if (host_block.topologies() == domain::topologies::full_cylinder) {
+      if (neighbor_block.topologies() == domain::topologies::full_cylinder and
+          (direction == Direction<VolumeDim>::upper_zeta() or
+           direction == Direction<VolumeDim>::lower_zeta())) {
+        face_mesh = Mesh<VolumeDim - 1>{
+            {3, 9},
+            {Spectral::Basis::ZernikeB2, Spectral::Basis::ZernikeB2},
+            {Spectral::Quadrature::GaussRadauUpper,
+             Spectral::Quadrature::Equiangular}};
+      } else if (neighbor_block.topologies() ==
+                     domain::topologies::cylindrical_shell and
+                 (direction == Direction<VolumeDim>::upper_xi() or
+                  direction == Direction<VolumeDim>::lower_xi())) {
+        face_mesh = Mesh<VolumeDim - 1>{
+            {9, 5},
+            {Spectral::Basis::ZernikeB2, Spectral::Basis::Legendre},
+            {Spectral::Quadrature::Equiangular,
+             Spectral::Quadrature::GaussLobatto}};
+      } else {
+        ERROR(
+            "check_block_face_grid_points_align() for a filled cylinder host "
+            "block is only implemented for when a neighbor block is a filled "
+            "cylinder in the +/-zeta direction or a hollow cylinder in the "
+            "+/-xi direction.");
+      }
+    } else if (host_block.topologies() ==
+               domain::topologies::cylindrical_shell) {
+      // for some reason, clang-tidy thinks there are duplicate branches
+      // NOLINTBEGIN
+      if (neighbor_block.topologies() ==
+              domain::topologies::cylindrical_shell and
+          (direction == Direction<VolumeDim>::upper_xi() or
+           direction == Direction<VolumeDim>::lower_xi())) {
+        face_mesh = Mesh<VolumeDim - 1>{
+            {3, 9},
+            {Spectral::Basis::Fourier, Spectral::Basis::Legendre},
+            {Spectral::Quadrature::Equiangular,
+             Spectral::Quadrature::GaussLobatto}};
+      } else if (neighbor_block.topologies() ==
+                     domain::topologies::cylindrical_shell and
+                 (direction == Direction<VolumeDim>::upper_zeta() or
+                  direction == Direction<VolumeDim>::lower_zeta())) {
+        face_mesh = Mesh<VolumeDim - 1>{
+            {9, 5},
+            {Spectral::Basis::Legendre, Spectral::Basis::Fourier},
+            {Spectral::Quadrature::GaussLobatto,
+             Spectral::Quadrature::Equiangular}};
+      } else if (neighbor_block.topologies() ==
+                     domain::topologies::full_cylinder and
+                 (direction == Direction<VolumeDim>::upper_zeta() or
+                  direction == Direction<VolumeDim>::lower_zeta())) {
+        face_mesh = Mesh<VolumeDim - 1>{
+            {9, 5},
+            {Spectral::Basis::Legendre, Spectral::Basis::Fourier},
+            {Spectral::Quadrature::GaussLobatto,
+             Spectral::Quadrature::Equiangular}};
+      } else if (neighbor_block.topologies() ==
+                     domain::topologies::spherical_shell and
+                 (direction == Direction<VolumeDim>::upper_xi() or
+                  direction == Direction<VolumeDim>::lower_xi())) {
+        face_mesh = Mesh<VolumeDim - 1>{
+            {3, 9},
+            {Spectral::Basis::Fourier, Spectral::Basis::Legendre},
+            {Spectral::Quadrature::Equiangular,
+             Spectral::Quadrature::GaussLobatto}};
+      }  // NOLINTEND
+      else {
+        ERROR(
+            "check_block_face_grid_points_align() for a hollow cylinder host "
+            "block is only implemented for when a neighbor block is a hollow "
+            "cylinder in the +/-xi direction or a filled cylinder in the "
+            "+/-zeta direction.");
+      }
+    } else if (host_block.topologies() == domain::topologies::spherical_shell) {
+      ERROR(
+          "check_block_face_grid_points_align() is not implemented for "
+          "spherical shell host blocks.");
     } else {
-      ERROR("Cartoon basis used with non 3D mesh, got dim = " << VolumeDim);
+      face_mesh = Mesh<VolumeDim - 1>{3_st, Spectral::Basis::Legendre,
+                                    Spectral::Quadrature::Gauss};
     }
+  } else if (host_block.topologies()[VolumeDim - 1] ==
+      domain::Topology::CartoonCylinder) {
+    ERROR("Cartoon basis used with non 3D mesh, got dim = " << VolumeDim);
   } else {
     face_mesh = Mesh<VolumeDim - 1>{3_st, Spectral::Basis::Legendre,
                                     Spectral::Quadrature::Gauss};
   }
+
   // We want block logical coordinates on face_mesh on the host side and the
   // neighbor. The following returns element logical coordinates in the host
   // frame, which we then copy into tensors holding block logical coordinates,
@@ -543,6 +628,24 @@ void test_physical_separation(
             domain::check_block_face_grid_points_align(blocks[i], blocks[j],
                                                        time, functions_of_time);
           }
+        } else if constexpr (VolumeDim == 3) {
+           // For cylinder blocks, we don't test physical separation of corners
+           // with physical_separation() because there are no corners.
+           if ((blocks[i].topologies() == domain::topologies::full_cylinder and
+                blocks[j].topologies() == domain::topologies::full_cylinder) or
+               (blocks[i].topologies() == domain::topologies::full_cylinder and
+                blocks[j].topologies() ==
+                    domain::topologies::cylindrical_shell) or
+               (blocks[i].topologies() ==
+                    domain::topologies::cylindrical_shell and
+                blocks[j].topologies() ==
+                    domain::topologies::cylindrical_shell) or
+               (blocks[i].topologies() ==
+                    domain::topologies::cylindrical_shell and
+                blocks[j].topologies() == domain::topologies::full_cylinder)) {
+             domain::check_block_face_grid_points_align(
+                 blocks[i], blocks[j], time, functions_of_time);
+           }
         }
       }
     }

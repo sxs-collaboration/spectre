@@ -672,12 +672,14 @@ create_grid_anchors(const std::array<double, 3>& center_a,
  * \param context options context
  * \param initial_refinement the initial refinement from options
  * \param spherical_harmonic_shell_names the names of spherical shell blocks
- * that use spherical harmonics
+ * or groups that use spherical harmonics
+ * \param cylinder_names the names of cylindrical blocks or groups
  */
 void validate_initial_refinement(
     const Options::Context& context,
     const BinaryCompactObject::InitialRefinement::type& initial_refinement,
-    const std::unordered_set<std::string>& spherical_harmonic_shell_names);
+    const std::unordered_set<std::string>& spherical_harmonic_shell_names,
+    const std::unordered_set<std::string>& cylinder_names = {});
 
 /*!
  * \brief Validate `InitialGridPoints` map entries.
@@ -688,13 +690,16 @@ void validate_initial_refinement(
  * \param context options context
  * \param initial_number_of_grid_points the initial grid points from options
  * \param spherical_harmonic_shell_names the names of spherical shell blocks
- * that use spherical harmonics
+ * or groups that use spherical harmonics
+ * \param filled_cylinder_names the names of filled cylindrical blocks or groups
+ * containing them
  */
 void validate_initial_grid_points(
     const Options::Context& context,
     const BinaryCompactObject::InitialGridPoints::type&
         initial_number_of_grid_points,
-    const std::unordered_set<std::string>& spherical_harmonic_shell_names);
+    const std::unordered_set<std::string>& spherical_harmonic_shell_names,
+    const std::unordered_set<std::string>& filled_cylinder_names = {});
 
 /*!
  * \brief Convert `size_t` radial h refinement entries for spherical harmonic
@@ -705,12 +710,17 @@ void validate_initial_grid_points(
  * \param expand_over_blocks `ExpandOverBlocks` containing the block names and
  * block groups
  * \param initial_refinement the initial refinement from options
+ * \param spherical_harmonic_shell_names the names of spherical shell blocks
+ * or groups that use spherical harmonics
+ * \param cylinder_names the names of cylindrical blocks or groups
  *
  * \return converted refinement
  */
 std::vector<std::array<size_t, 3>> set_initial_refinement(
     const ExpandOverBlocks<std::array<size_t, 3>>& expand_over_blocks,
-    const BinaryCompactObject::InitialRefinement::type& initial_refinement);
+    const BinaryCompactObject::InitialRefinement::type& initial_refinement,
+    const std::unordered_set<std::string>& spherical_harmonic_shell_names,
+    const std::unordered_set<std::string>& cylinder_names = {});
 
 /*!
  * \brief Convert `array<2>{r, l_max}` entries for spherical harmonic blocks to
@@ -725,11 +735,17 @@ std::vector<std::array<size_t, 3>> set_initial_refinement(
  * \param expand_over_blocks `ExpandOverBlocks` containing the block names and
  * block groups
  * \param initial_grid_points the initial grid points from options
+ * \param spherical_harmonic_shell_names the names of spherical shell blocks
+ * or groups that use spherical harmonics
+ * \param filled_cylinder_names the names of filled cylindrical blocks or groups
+ * containing them
  *
  * \return converted grid points
  */
 std::vector<std::array<size_t, 3>> set_initial_grid_points(
     const ExpandOverBlocks<std::array<size_t, 3>>& expand_over_blocks,
-    const BinaryCompactObject::InitialGridPoints::type& initial_grid_points);
+    const BinaryCompactObject::InitialGridPoints::type& initial_grid_points,
+    const std::unordered_set<std::string>& spherical_harmonic_shell_names,
+    const std::unordered_set<std::string>& filled_cylinder_names = {});
 }  // namespace bco
 }  // namespace domain::creators
