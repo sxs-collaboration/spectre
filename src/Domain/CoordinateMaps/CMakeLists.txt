@@ -16,6 +16,7 @@ spectre_target_sources(
   CylindricalFlatEndcap.cpp
   CylindricalFlatSide.cpp
   CylindricalSide.cpp
+  CylindricalSphericalShell.cpp
   DiscreteRotation.cpp
   Distribution.cpp
   EquatorialCompression.cpp
@@ -58,6 +59,7 @@ spectre_target_headers(
   CylindricalFlatEndcap.hpp
   CylindricalFlatSide.hpp
   CylindricalSide.hpp
+  CylindricalSphericalShell.hpp
   DiscreteRotation.hpp
   Distribution.hpp
   EquatorialCompression.hpp
