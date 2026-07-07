@@ -148,17 +148,18 @@ struct MockElement {
       Parallel::Phase::Initialization,
       tmpl::list<ActionTesting::InitializeDataBox<tmpl::push_back<
           tmpl::list_difference<
-            ObserveFields::available_tags_to_observe,
-            tmpl::list<
-              Tags::Psi0, Tags::Psi1, Tags::Psi2,
-              Tags::NewmanPenroseAlpha, Tags::NewmanPenroseBeta,
-              Tags::NewmanPenroseGamma, Tags::NewmanPenroseEpsilon,
-              // Tags::NewmanPenroseKappa, // in our tetrad, \kappa=0
-              Tags::NewmanPenroseTau, Tags::NewmanPenroseSigma,
-              Tags::NewmanPenroseRho,
-              Tags::NewmanPenrosePi, Tags::NewmanPenroseNu,
-              Tags::NewmanPenroseMu, Tags::NewmanPenroseLambda
-              >>,
+              ObserveFields::available_tags_to_observe,
+              tmpl::list<Tags::Psi0, Tags::Psi1, Tags::Psi2,
+                         Tags::NewmanPenroseAlpha, Tags::NewmanPenroseBeta,
+                         Tags::NewmanPenroseGamma, Tags::NewmanPenroseEpsilon,
+                         // Tags::NewmanPenroseKappa, // in our tetrad, \kappa=0
+                         Tags::NewmanPenroseTau, Tags::NewmanPenroseSigma,
+                         Tags::NewmanPenroseRho, Tags::NewmanPenrosePi,
+                         Tags::NewmanPenroseNu, Tags::NewmanPenroseMu,
+                         Tags::NewmanPenroseLambda,
+                         // provided by Tags::DyCompute<Tags::BondiH> in the
+                         // ObservationBox rather than stored in the DataBox
+                         Tags::Dy<Tags::BondiH>>>,
           Spectral::Swsh::Tags::Derivative<Tags::BondiBeta,
                                            Spectral::Swsh::Tags::Eth>,
           Spectral::Swsh::Tags::Derivative<Tags::Dy<Tags::BondiBeta>,
@@ -169,8 +170,7 @@ struct MockElement {
                                            Spectral::Swsh::Tags::Ethbar>,
           Spectral::Swsh::Tags::Derivative<Tags::BondiU,
                                            Spectral::Swsh::Tags::Eth>,
-          Tags::Exp2Beta,
-          Tags::BondiK, Tags::LMax, Tags::NumberOfRadialPoints,
+          Tags::Exp2Beta, Tags::BondiK, Tags::LMax, Tags::NumberOfRadialPoints,
           ::Tags::Time>>>>>;
 };
 
@@ -243,27 +243,22 @@ void test(const bool write_synchronously) {
   set_number(::Tags::Time{}, time);
   size_data(Tags::ComplexInertialRetardedTime{}, num_angular_grid_points);
 
-  tmpl::for_each<
-      tmpl::list<Tags::BondiJ, Tags::OneMinusY,
-                 Tags::Dy<Tags::BondiJ>, Tags::Dy<Tags::Dy<Tags::BondiJ>>,
-                 Tags::BondiK, Tags::BondiQ, Tags::Dy<Tags::BondiQ>,
-                 Tags::EthRDividedByR,
-                 Tags::BondiBeta, Tags::Dy<Tags::BondiBeta>,
-                 Tags::BondiH, Tags::Dy<Tags::BondiH>,
-                 Tags::BondiU, Tags::Dy<Tags::BondiU>,
-                 Tags::BondiW, Tags::Dy<Tags::BondiW>,
-                 Spectral::Swsh::Tags::Derivative<Tags::BondiBeta,
-                                                  Spectral::Swsh::Tags::Eth>,
-                 Spectral::Swsh::Tags::Derivative<Tags::Dy<Tags::BondiBeta>,
-                                                  Spectral::Swsh::Tags::Eth>,
-                 Spectral::Swsh::Tags::Derivative<Tags::BondiU,
-                                                  Spectral::Swsh::Tags::Ethbar>,
-                 Spectral::Swsh::Tags::Derivative<Tags::BondiJ,
-                                                  Spectral::Swsh::Tags::Ethbar>,
-                 Spectral::Swsh::Tags::Derivative<Tags::BondiU,
-                                                  Spectral::Swsh::Tags::Eth>,
-                 Tags::Exp2Beta,
-                 Tags::BondiR>>([&size_data](auto tag_v) {
+  tmpl::for_each<tmpl::list<
+      Tags::BondiJ, Tags::OneMinusY, Tags::Dy<Tags::BondiJ>,
+      Tags::Dy<Tags::Dy<Tags::BondiJ>>, Tags::BondiK, Tags::BondiQ,
+      Tags::Dy<Tags::BondiQ>, Tags::EthRDividedByR, Tags::BondiBeta,
+      Tags::Dy<Tags::BondiBeta>, Tags::BondiH, Tags::BondiU,
+      Tags::Dy<Tags::BondiU>, Tags::BondiW, Tags::Dy<Tags::BondiW>,
+      Spectral::Swsh::Tags::Derivative<Tags::BondiBeta,
+                                       Spectral::Swsh::Tags::Eth>,
+      Spectral::Swsh::Tags::Derivative<Tags::Dy<Tags::BondiBeta>,
+                                       Spectral::Swsh::Tags::Eth>,
+      Spectral::Swsh::Tags::Derivative<Tags::BondiU,
+                                       Spectral::Swsh::Tags::Ethbar>,
+      Spectral::Swsh::Tags::Derivative<Tags::BondiJ,
+                                       Spectral::Swsh::Tags::Ethbar>,
+      Spectral::Swsh::Tags::Derivative<Tags::BondiU, Spectral::Swsh::Tags::Eth>,
+      Tags::Exp2Beta, Tags::BondiR>>([&size_data](auto tag_v) {
     using tag = tmpl::type_from<decltype(tag_v)>;
     size_data(tag{}, num_volume_grid_points);
   });

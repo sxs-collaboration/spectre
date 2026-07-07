@@ -364,11 +364,18 @@ using all_transform_buffer_tags =
                    tmpl::_1>>>>;
 
 namespace detail {
+// `Tags::BondiH` contributes no additional tags: `H` itself is stored as the
+// time derivative of the evolved `J`, and its radial derivative is not needed
+// by any hypersurface integration step. `Tags::Dy<Tags::BondiH>` is computed
+// on demand for volume observation via `Tags::DyCompute<Tags::BondiH>` in
+// `Cce::Events::ObserveFields`, so it must not also be stored here (a compute
+// tag whose base tag is already in the DataBox is an error when building the
+// `ObservationBox`).
 template <typename Tag>
 struct additional_pre_swsh_derivative_tags_for {
-  using type = tmpl::conditional_t<std::is_same_v<Tag, Tags::BondiH>,
-                                   tmpl::list<Tags::Dy<Tag>>,
-                                   tmpl::list<Tag, Tags::Dy<Tag>>>;
+  using type =
+      tmpl::conditional_t<std::is_same_v<Tag, Tags::BondiH>, tmpl::list<>,
+                          tmpl::list<Tag, Tags::Dy<Tag>>>;
 };
 }  // namespace detail
 

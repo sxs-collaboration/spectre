@@ -234,28 +234,30 @@ class ObserveFields : public Event {
                 const std::vector<std::string>& variables_to_observe,
                 const Options::Context& context = {});
 
-  using compute_tags_for_observation_box =
-    tmpl::list<Tags::Psi0Compute, Tags::Psi1Compute, Tags::Psi2Compute,
-               Tags::SwshDerivativeCompute<Tags::BondiJ,
-                                                  Spectral::Swsh::Tags::Eth>,
-               Tags::SwshDerivativeCompute<Tags::BondiW,
-                                                  Spectral::Swsh::Tags::Eth>,
-               Tags::NewmanPenroseAlphaCompute, Tags::NewmanPenroseBetaCompute,
-               Tags::NewmanPenroseGammaCompute,
-               Tags::NewmanPenroseEpsilonCompute,
-               // Tags::NewmanPenroseKappaCompute,
-               // in our choice of tetrad, \kappa=0
-               Tags::NewmanPenroseTauCompute,
-               Tags::NewmanPenroseSigmaCompute, Tags::NewmanPenroseRhoCompute,
-               Tags::NewmanPenrosePiCompute, Tags::NewmanPenroseNuCompute,
-               Tags::NewmanPenroseMuCompute, Tags::NewmanPenroseLambdaCompute,
-               Tags::SwshDerivativeCompute<Tags::NewmanPenrosePi,
-                                                 Spectral::Swsh::Tags::Eth>,
-               Tags::SwshDerivativeCompute<Tags::NewmanPenrosePi,
-                                                 Spectral::Swsh::Tags::Ethbar>,
-               Tags::DyCompute<Tags::NewmanPenrosePi>,
-               Tags::DyCompute<Tags::NewmanPenroseMu>
-      >;
+  using compute_tags_for_observation_box = tmpl::list<
+      Tags::Psi0Compute, Tags::Psi1Compute, Tags::Psi2Compute,
+      Tags::SwshDerivativeCompute<Tags::BondiJ, Spectral::Swsh::Tags::Eth>,
+      Tags::SwshDerivativeCompute<Tags::BondiW, Spectral::Swsh::Tags::Eth>,
+      Tags::NewmanPenroseAlphaCompute, Tags::NewmanPenroseBetaCompute,
+      Tags::NewmanPenroseGammaCompute, Tags::NewmanPenroseEpsilonCompute,
+      // Tags::NewmanPenroseKappaCompute,
+      // in our choice of tetrad, \kappa=0
+      Tags::NewmanPenroseTauCompute, Tags::NewmanPenroseSigmaCompute,
+      Tags::NewmanPenroseRhoCompute, Tags::NewmanPenrosePiCompute,
+      Tags::NewmanPenroseNuCompute, Tags::NewmanPenroseMuCompute,
+      Tags::NewmanPenroseLambdaCompute,
+      Tags::SwshDerivativeCompute<Tags::NewmanPenrosePi,
+                                  Spectral::Swsh::Tags::Eth>,
+      Tags::SwshDerivativeCompute<Tags::NewmanPenrosePi,
+                                  Spectral::Swsh::Tags::Ethbar>,
+      Tags::DyCompute<Tags::NewmanPenrosePi>,
+      Tags::DyCompute<Tags::NewmanPenroseMu>,
+      // H is the final hypersurface quantity, so unlike the other
+      // Bondi variables its radial derivative is not needed by (and
+      // is not computed during) the hypersurface integration steps.
+      // It is only of interest as volume output, so it is computed
+      // on demand here rather than stored in the evolution DataBox.
+      Tags::DyCompute<Tags::BondiH>>;
 
   using return_tags = tmpl::list<>;
   using argument_tags = tmpl::list<::Tags::ObservationBox>;
