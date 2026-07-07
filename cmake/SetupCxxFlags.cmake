@@ -69,6 +69,25 @@ if((NOT APPLE OR NOT "${CMAKE_HOST_SYSTEM_PROCESSOR}" STREQUAL "arm64")
   set(_NO_AVX512 "-mno-avx512f")
 endif()
 
+# Check whether -march=native is supported before adding it to SpectreFlags.
+# This avoids using the flag on compilers that reject it, such as clang on
+# arm64 Linux.
+function(_spectre_check_native_architecture_flag LANGUAGE XTYPE SOURCE_FILE
+         FLAG_VARIABLE)
+  set(${FLAG_VARIABLE} "" PARENT_SCOPE)
+  execute_process(
+    COMMAND
+    bash -c
+    "LC_ALL=POSIX ${CMAKE_${LANGUAGE}_COMPILER} -Werror \
+-march=native -x ${XTYPE} -c ${SOURCE_FILE} -o /dev/null"
+    RESULT_VARIABLE RESULT
+    ERROR_VARIABLE ERROR_FROM_COMPILATION
+    OUTPUT_QUIET)
+  if(${RESULT} EQUAL 0)
+    set(${FLAG_VARIABLE} "-march=native" PARENT_SCOPE)
+  endif()
+endfunction()
+
 # Always compile only for the current architecture. This can be overridden
 # by passing `-D OVERRIDE_ARCH=THE_ARCHITECTURE` to CMake
 if(NOT "${OVERRIDE_ARCH}" STREQUAL "OFF")
@@ -81,15 +100,22 @@ if(NOT "${OVERRIDE_ARCH}" STREQUAL "OFF")
       $<$<COMPILE_LANGUAGE:Fortran>:-march=${OVERRIDE_ARCH} ${_NO_AVX512}>)
   endif()
 else()
-  # Apple Silicon Macs do not support the -march flag or the -mno-avx512f flag
-  if(NOT APPLE)
-    set_property(TARGET SpectreFlags
-        APPEND PROPERTY
-        INTERFACE_COMPILE_OPTIONS
-        $<$<COMPILE_LANGUAGE:C>:-march=native ${_NO_AVX512}>
-        $<$<COMPILE_LANGUAGE:CXX>:-march=native ${_NO_AVX512}>
-        $<$<COMPILE_LANGUAGE:Fortran>:-march=native ${_NO_AVX512}>)
-  endif()
+  _spectre_check_native_architecture_flag(
+    C c ${_CHECK_CXX_FLAGS_SOURCE} _SPECTRE_C_NATIVE_ARCHITECTURE_FLAG)
+  _spectre_check_native_architecture_flag(
+    CXX c++ ${_CHECK_CXX_FLAGS_SOURCE} _SPECTRE_CXX_NATIVE_ARCHITECTURE_FLAG)
+  _spectre_check_native_architecture_flag(
+    Fortran f95 ${_CHECK_FORTRAN_FLAGS_SOURCE}
+    _SPECTRE_FORTRAN_NATIVE_ARCHITECTURE_FLAG)
+  set_property(TARGET SpectreFlags
+      APPEND PROPERTY
+      INTERFACE_COMPILE_OPTIONS
+      $<$<COMPILE_LANGUAGE:C>:${_SPECTRE_C_NATIVE_ARCHITECTURE_FLAG}>
+      $<$<COMPILE_LANGUAGE:C>:${_NO_AVX512}>
+      $<$<COMPILE_LANGUAGE:CXX>:${_SPECTRE_CXX_NATIVE_ARCHITECTURE_FLAG}>
+      $<$<COMPILE_LANGUAGE:CXX>:${_NO_AVX512}>
+      $<$<COMPILE_LANGUAGE:Fortran>:${_SPECTRE_FORTRAN_NATIVE_ARCHITECTURE_FLAG}>
+      $<$<COMPILE_LANGUAGE:Fortran>:${_NO_AVX512}>)
 endif()
 
 # We are getting multiple types of linker warnings on macOS:
