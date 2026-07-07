@@ -108,11 +108,19 @@ namespace domain::CoordinateMaps::FocallyLiftedInnerMaps {
  *
  * \f{align} \tilde{\lambda} &= \frac{C^3-P^3}{x^3-P^3}.\f}
  *
- * For `FocallyLiftedInnerMaps::FlatEndcap`, \f$x^i\f$ is always between
- * \f$P^i\f$ and \f$x_0^i\f$, so \f$\tilde{\lambda}\ge 1\f$.
- * Therefore a default-constructed `std::optional<double>` is returned
- * if \f$\tilde{\lambda}\f$ is less than unity (meaning that \f$x^i\f$
- * is outside the range of the map).
+ * The valid range of \f$\tilde{\lambda}\f$ depends on whether the source
+ * lies between the focus and the target:
+ * - Non-interior case (`source_is_between_focus_and_target`=`false`):
+ * \f$x_0^i\f$ lies beyond \f$x^i\f$ from \f$P^i\f$, so \f$\tilde{\lambda}\ge
+ * 1\f$.  A default-constructed `std::optional<double>` is returned if
+ * \f$\tilde{\lambda}<1\f$.
+ * - Interior case (`source_is_between_focus_and_target`=`true`): \f$x_0^i\f$
+ * lies between \f$P^i\f$ and \f$x^i\f$, so \f$\tilde{\lambda}\in(0,1]\f$.  A
+ * default-constructed `std::optional<double>` is returned if
+ * \f$\tilde{\lambda}\le 0\f$ or \f$\tilde{\lambda}>1\f$. In both cases a
+ * default-constructed `std::optional<double>` is also returned if \f$x^3 =
+ * P^3\f$ (the ray from \f$P\f$ is parallel to the disk and never intersects
+ * it).
  *
  * ### deriv_lambda_tilde
  *

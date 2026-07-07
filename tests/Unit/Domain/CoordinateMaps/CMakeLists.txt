@@ -10,6 +10,7 @@ set(LIBRARY_SOURCES
   Test_CoordinateMap.cpp
   Test_CylindricalEndcap.cpp
   Test_CylindricalFlatEndcap.cpp
+  Test_CylindricalFlatEndcapInterior.cpp
   Test_CylindricalFlatSide.cpp
   Test_CylindricalSide.cpp
   Test_DiscreteRotation.cpp

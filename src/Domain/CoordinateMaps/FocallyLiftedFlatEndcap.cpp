@@ -134,11 +134,27 @@ void FlatEndcap::dxbar_dsigma(
 std::optional<double> FlatEndcap::lambda_tilde(
     const std::array<double, 3>& parent_mapped_target_coords,
     const std::array<double, 3>& projection_point,
-    const bool /*source_is_between_focus_and_target*/) const {
-  const double result = (center_[2] - projection_point[2]) /
-                        (parent_mapped_target_coords[2] - projection_point[2]);
-  if (result < 1.0) {
+    const bool source_is_between_focus_and_target) const {
+  // Guard against division by zero: if the target and the projection point
+  // share the same z-coordinate, the ray from the projection point is
+  // parallel to the flat disk and never intersects it.
+  const double denom = parent_mapped_target_coords[2] - projection_point[2];
+  if (denom == 0.0) {
     return {};
+  }
+  const double result = (center_[2] - projection_point[2]) / denom;
+  if (source_is_between_focus_and_target) {
+    // Interior case: the flat disk lies between P and the target, so the
+    // scale factor from P to the flat disk is in (0, 1].
+    if (result <= 0.0 or result > 1.0) {
+      return {};
+    }
+  } else {
+    // Non-interior case: the flat disk lies beyond the sphere from P, so the
+    // scale factor from P to the flat disk is >= 1.
+    if (result < 1.0) {
+      return {};
+    }
   }
   return result;
 }
