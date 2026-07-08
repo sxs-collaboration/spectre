@@ -72,11 +72,11 @@ namespace domain::CoordinateMaps {
  * Jacobian determinant positive, because the flat disk sits at a larger
  * physical \f$z\f$ than the far sphere wall.
  *
- * CylindricalFlatEndcapInterior is intended for the Pill domain, where
- * the filled-cylinder endcap blocks have their flat face (\f$\bar{z}=+1\f$)
- * at the end of the inner cubed-cylinder region (inside the outer domain
- * sphere) and their spherical face (\f$\bar{z}=-1\f$) on the outer domain
- * sphere.
+ * CylindricalFlatEndcapInterior is intended for the
+ * domain::creators::BinaryNeutronStars domain, where the filled-cylinder
+ * endcap blocks have their flat face (\f$\bar{z}=+1\f$) at the end of the
+ * inner cubed-cylinder region and their spherical face (\f$\bar{z}=-1\f$) on
+ * the sphere that bounds the cylinder region.
  *
  * ### Requirements on map parameters
  *

@@ -121,11 +121,33 @@ void test_cylindrical_spherical_shell() {
   }
 }
 
+// Values taken from a failed rootfine for a point on the lower axial face
+// (beta = 0), from the shared face of two hollow cylinders in the
+// BinaryNeutronStars domain. F(beta) is bracketed but its root is at beta = 0
+// (to within roundoff), and F is very flat, so toms748 used to stall and hit
+// its iteration limit. The exact values are needed to reproduce the roundoff.
+void test_inverse_root_at_endpoint() {
+  INFO("CylindricalSphericalShell: inverse with the root at an endpoint");
+  const CoordinateMaps::CylindricalSphericalShell map{0.0,
+                                                      5.07916897172420834e-1,
+                                                      -3.64185386324870519e+0,
+                                                      5.35894762584559370e+0,
+                                                      6.70285464502917527e+0,
+                                                      2.39539408525017912e+1};
+  const std::array<double, 3> target{
+      -2.00301962478678819e+0, 1.53214923073692066e+1, 4.73949296878428239e+0};
+  const auto inverse = map.inverse(target);
+  REQUIRE(inverse.has_value());
+  CHECK((*inverse)[2] == approx(-1.0));
+  CHECK_ITERABLE_APPROX(map(*inverse), target);
+}
+
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.CylindricalSphericalShell",
                   "[Domain][Unit]") {
   test_cylindrical_spherical_shell();
+  test_inverse_root_at_endpoint();
   CHECK(not CoordinateMaps::CylindricalSphericalShell{}.is_identity());
 }
 }  // namespace domain
