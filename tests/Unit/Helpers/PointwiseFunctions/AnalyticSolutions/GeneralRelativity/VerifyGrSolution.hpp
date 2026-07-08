@@ -232,8 +232,7 @@ void verify_time_independent_einstein_solution(
       gr::Tags::SqrtDetSpatialMetric<DataVector>,
       gr::Tags::InverseSpacetimeMetric<DataVector, 3>,
       gr::Tags::SpacetimeChristoffelFirstKind<DataVector, 3>,
-      gr::Tags::TraceSpacetimeChristoffelFirstKind<DataVector, 3>,
-      gr::Tags::SpacetimeNormalVector<DataVector, 3>,
+      gh::Tags::TwoGaugeHUp<3>, gr::Tags::SpacetimeNormalVector<DataVector, 3>,
       gr::Tags::DerivativesOfSpacetimeMetric<DataVector, 3>>>
       buffer(mesh.number_of_grid_points());
 
@@ -273,9 +272,7 @@ void verify_time_independent_einstein_solution(
           &get<gr::Tags::InverseSpacetimeMetric<DataVector, 3>>(buffer)),
       make_not_null(
           &get<gr::Tags::SpacetimeChristoffelFirstKind<DataVector, 3>>(buffer)),
-      make_not_null(
-          &get<gr::Tags::TraceSpacetimeChristoffelFirstKind<DataVector, 3>>(
-              buffer)),
+      make_not_null(&get<gh::Tags::TwoGaugeHUp<3>>(buffer)),
       make_not_null(
           &get<gr::Tags::SpacetimeNormalVector<DataVector, 3>>(buffer)),
       d_spacetime_metric, d_pi, d_phi, spacetime_metric, pi, phi, gamma0,

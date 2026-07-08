@@ -624,7 +624,7 @@ void test_compute_dudt(const gsl::not_null<Generator*> generator) {
       gr::Tags::SqrtDetSpatialMetric<DataVector>,
       gr::Tags::InverseSpacetimeMetric<DataVector, Dim>,
       gr::Tags::SpacetimeChristoffelFirstKind<DataVector, Dim>,
-      gr::Tags::TraceSpacetimeChristoffelFirstKind<DataVector, Dim>,
+      gh::Tags::TwoGaugeHUp<Dim>,
       gr::Tags::SpacetimeNormalVector<DataVector, Dim>>>
       buffer(mesh.number_of_grid_points());
 
@@ -666,9 +666,7 @@ void test_compute_dudt(const gsl::not_null<Generator*> generator) {
       make_not_null(
           &get<gr::Tags::SpacetimeChristoffelFirstKind<DataVector, Dim>>(
               buffer)),
-      make_not_null(
-          &get<gr::Tags::TraceSpacetimeChristoffelFirstKind<DataVector, Dim>>(
-              buffer)),
+      make_not_null(&get<gh::Tags::TwoGaugeHUp<Dim>>(buffer)),
       make_not_null(
           &get<gr::Tags::SpacetimeNormalVector<DataVector, Dim>>(buffer)),
       d_spacetime_metric, d_pi, d_phi, spacetime_metric, pi, phi, gamma0,
@@ -679,6 +677,13 @@ void test_compute_dudt(const gsl::not_null<Generator*> generator) {
   CHECK_ITERABLE_APPROX(get<gh::Tags::ConstraintGamma2>(buffer), gamma2);
   CHECK_ITERABLE_APPROX((get<gh::Tags::GaugeH<DataVector, Dim>>(buffer)),
                         gauge_h);
+  auto expected_two_gauge_h_up =
+      raise_or_lower_index(gauge_h, inverse_spacetime_metric);
+  for (auto& component : expected_two_gauge_h_up) {
+    component *= 2.0;
+  }
+  CHECK_ITERABLE_APPROX(get<gh::Tags::TwoGaugeHUp<Dim>>(buffer),
+                        expected_two_gauge_h_up);
   Approx custom_approx = Approx::custom().epsilon(1.e-10);
   CHECK_ITERABLE_CUSTOM_APPROX(
       (get<gh::Tags::SpacetimeDerivGaugeH<DataVector, Dim>>(buffer)),
@@ -760,9 +765,7 @@ void test_compute_dudt(const gsl::not_null<Generator*> generator) {
       make_not_null(
           &get<gr::Tags::SpacetimeChristoffelFirstKind<DataVector, Dim>>(
               buffer)),
-      make_not_null(
-          &get<gr::Tags::TraceSpacetimeChristoffelFirstKind<DataVector, Dim>>(
-              buffer)),
+      make_not_null(&get<gh::Tags::TwoGaugeHUp<Dim>>(buffer)),
       make_not_null(
           &get<gr::Tags::SpacetimeNormalVector<DataVector, Dim>>(buffer)),
       d_spacetime_metric, d_pi, d_phi, spacetime_metric, pi, phi, gamma0,
@@ -812,9 +815,7 @@ void test_compute_dudt(const gsl::not_null<Generator*> generator) {
       make_not_null(
           &get<gr::Tags::SpacetimeChristoffelFirstKind<DataVector, Dim>>(
               buffer)),
-      make_not_null(
-          &get<gr::Tags::TraceSpacetimeChristoffelFirstKind<DataVector, Dim>>(
-              buffer)),
+      make_not_null(&get<gh::Tags::TwoGaugeHUp<Dim>>(buffer)),
       make_not_null(
           &get<gr::Tags::SpacetimeNormalVector<DataVector, Dim>>(buffer)),
       d_spacetime_metric, d_pi, d_phi, spacetime_metric, pi, phi, gamma0,

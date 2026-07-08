@@ -85,5 +85,11 @@ template <size_t Dim>
 struct SpacetimeChristoffelFirstKindThirdIndexUp : db::SimpleTag {
   using type = tnsr::abC<DataVector, Dim, Frame::Inertial>;
 };
+
+/// \f$2H^a\f$
+template <size_t Dim>
+struct TwoGaugeHUp : db::SimpleTag {
+  using type = tnsr::A<DataVector, Dim, Frame::Inertial>;
+};
 }  // namespace Tags
 }  // namespace gh
