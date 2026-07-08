@@ -62,6 +62,14 @@ void test_domain_construction(
         domain::CoordinateMapBase<Frame::Grid, Frame::Inertial, VolumeDim>>>&
         expected_grid_to_inertial_maps = {});
 
+/// Checks that the faces at each non-conforming block interface match: points
+/// on the neighbors' faces lie on the block's face, and points on the block's
+/// face lie on the abutting face of some neighbor. Requires at least one
+/// non-conforming interface. Only 3D, and skips time-dependent blocks.
+template <size_t VolumeDim>
+void test_non_conforming_interface_logical_coords(
+    const std::vector<Block<VolumeDim>>& blocks);
+
 // Test that two neighboring Blocks abut each other.
 template <size_t VolumeDim>
 void test_physical_separation(

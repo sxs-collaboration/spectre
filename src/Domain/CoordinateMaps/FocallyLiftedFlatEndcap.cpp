@@ -132,7 +132,10 @@ std::optional<double> FlatEndcap::lambda_tilde(
   if (denom == 0.0) {
     return {};
   }
-  const double result = (center_[2] - projection_point[2]) / denom;
+  double result = (center_[2] - projection_point[2]) / denom;
+  if (equal_within_roundoff(result, 1.0)) {
+    result = 1.0;
+  }
   if (source_is_between_focus_and_target) {
     // Interior case: the flat disk lies between P and the target, so the
     // scale factor from P to the flat disk is in (0, 1].
