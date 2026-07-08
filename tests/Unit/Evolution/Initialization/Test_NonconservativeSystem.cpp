@@ -25,12 +25,17 @@ struct Var : db::SimpleTag {
   using type = Scalar<DataVector>;
 };
 
+struct AuxVar : db::SimpleTag {
+  using type = Scalar<DataVector>;
+};
+
 template <size_t Dim>
 struct System {
   static constexpr bool is_in_flux_conservative_form = false;
   static constexpr bool has_primitive_and_conservative_vars = false;
   static constexpr size_t volume_dim = Dim;
   using variables_tag = Tags::Variables<tmpl::list<Var>>;
+  using auxiliary_variables = tmpl::list<AuxVar>;
 };
 
 template <size_t Dim, typename Metavariables>
@@ -71,6 +76,11 @@ void test() {
   // The numerical value that the vars are set to is undefined, but the number
   // of grid points must be correct.
   CHECK(ActionTesting::get_databox_tag<comp, vars_tag>(runner, 0)
+            .number_of_grid_points() == mesh.number_of_grid_points());
+  // The auxiliary-variable storage is allocated alongside the evolved variables
+  // and sized to the mesh in the same way (values are likewise undefined).
+  using aux_vars_tag = Tags::Variables<tmpl::list<AuxVar>>;
+  CHECK(ActionTesting::get_databox_tag<comp, aux_vars_tag>(runner, 0)
             .number_of_grid_points() == mesh.number_of_grid_points());
 }
 

@@ -47,10 +47,11 @@ evolution::dg::BoundaryData<Dim> make_boundary_data(const int label,
           std::nullopt};
 }
 
-template <size_t Dim, bool UseNodegroupDgElements>
+template <size_t Dim, bool UseNodegroupDgElements, bool IsAuxiliary = false>
 void test() {
   CAPTURE(Dim);
   CAPTURE(UseNodegroupDgElements);
+  CAPTURE(IsAuxiliary);
 
   const Slab slab(1.2, 3.4);
   const TimeStepId time_step_1(true, 5, slab.start());
@@ -68,7 +69,7 @@ void test() {
                                         element_lower};
 
   using Inbox = evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<
-      Dim, UseNodegroupDgElements>;
+      Dim, UseNodegroupDgElements, IsAuxiliary>;
 
   typename Inbox::type inbox{};
 
@@ -138,5 +139,11 @@ SPECTRE_TEST_CASE("Unit.Evolution.DG.InboxTags", "[Unit][Evolution]") {
   test<1, true>();
   test<2, true>();
   test<3, true>();
+  test<1, false, true>();
+  test<2, false, true>();
+  test<3, false, true>();
+  test<1, true, true>();
+  test<2, true, true>();
+  test<3, true, true>();
 }
 }  // namespace
