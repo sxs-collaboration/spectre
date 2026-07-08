@@ -125,6 +125,10 @@ std::optional<std::array<double, 3>> CylindricalSphericalShell::inverse(
       // Root not bracketed: the point lies outside the axial range of the map.
       return std::nullopt;
     }
+  } else if (equal_within_roundoff(f_lower, 0.0, 1.0e-13, f_scale)) {
+    beta = 0.0;
+  } else if (equal_within_roundoff(f_upper, 0.0, 1.0e-13, f_scale)) {
+    beta = 1.0;
   } else {
     constexpr double tol = 1.0e-15;
     try {
