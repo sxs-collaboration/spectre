@@ -8,6 +8,7 @@ add_spectre_library(${LIBRARY})
 spectre_target_sources(
   ${LIBRARY}
   PRIVATE
+  ApplyTensorYlmFilter.cpp
   Characteristics.cpp
   Constraints.cpp
   EnergyDensity.cpp
@@ -21,6 +22,7 @@ spectre_target_headers(
   ${LIBRARY}
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
+  ApplyTensorYlmFilter.hpp
   Characteristics.hpp
   Constraints.hpp
   EnergyDensity.hpp
