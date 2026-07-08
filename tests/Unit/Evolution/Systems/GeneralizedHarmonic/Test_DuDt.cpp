@@ -624,7 +624,6 @@ void test_compute_dudt(const gsl::not_null<Generator*> generator) {
       gr::Tags::SqrtDetSpatialMetric<DataVector>,
       gr::Tags::InverseSpacetimeMetric<DataVector, Dim>,
       gr::Tags::SpacetimeChristoffelFirstKind<DataVector, Dim>,
-      gr::Tags::SpacetimeChristoffelSecondKind<DataVector, Dim>,
       gr::Tags::TraceSpacetimeChristoffelFirstKind<DataVector, Dim>,
       gr::Tags::SpacetimeNormalVector<DataVector, Dim>>>
       buffer(mesh.number_of_grid_points());
@@ -666,9 +665,6 @@ void test_compute_dudt(const gsl::not_null<Generator*> generator) {
           &get<gr::Tags::InverseSpacetimeMetric<DataVector, Dim>>(buffer)),
       make_not_null(
           &get<gr::Tags::SpacetimeChristoffelFirstKind<DataVector, Dim>>(
-              buffer)),
-      make_not_null(
-          &get<gr::Tags::SpacetimeChristoffelSecondKind<DataVector, Dim>>(
               buffer)),
       make_not_null(
           &get<gr::Tags::TraceSpacetimeChristoffelFirstKind<DataVector, Dim>>(
@@ -765,9 +761,6 @@ void test_compute_dudt(const gsl::not_null<Generator*> generator) {
           &get<gr::Tags::SpacetimeChristoffelFirstKind<DataVector, Dim>>(
               buffer)),
       make_not_null(
-          &get<gr::Tags::SpacetimeChristoffelSecondKind<DataVector, Dim>>(
-              buffer)),
-      make_not_null(
           &get<gr::Tags::TraceSpacetimeChristoffelFirstKind<DataVector, Dim>>(
               buffer)),
       make_not_null(
@@ -818,9 +811,6 @@ void test_compute_dudt(const gsl::not_null<Generator*> generator) {
           &get<gr::Tags::InverseSpacetimeMetric<DataVector, Dim>>(buffer)),
       make_not_null(
           &get<gr::Tags::SpacetimeChristoffelFirstKind<DataVector, Dim>>(
-              buffer)),
-      make_not_null(
-          &get<gr::Tags::SpacetimeChristoffelSecondKind<DataVector, Dim>>(
               buffer)),
       make_not_null(
           &get<gr::Tags::TraceSpacetimeChristoffelFirstKind<DataVector, Dim>>(

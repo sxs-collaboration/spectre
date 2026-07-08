@@ -12,7 +12,6 @@
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/EagerMath/DeterminantAndInverse.hpp"
-#include "DataStructures/Tensor/EagerMath/RaiseOrLowerIndex.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Domain/CoordinateMaps/Affine.hpp"
@@ -178,8 +177,6 @@ void verify_time_independent_einstein_solution(
       gr::inverse_spacetime_metric(lapse, shift, upper_spatial_metric);
   const auto christoffel_first_kind =
       gr::christoffel_first_kind(d4_spacetime_metric);
-  const auto christoffel_second_kind = raise_or_lower_first_index(
-      christoffel_first_kind, upper_spacetime_metric);
   const auto trace_christoffel_first_kind =
       trace_last_indices(christoffel_first_kind, upper_spacetime_metric);
   const auto normal_vector = gr::spacetime_normal_vector(lapse, shift);
@@ -235,7 +232,6 @@ void verify_time_independent_einstein_solution(
       gr::Tags::SqrtDetSpatialMetric<DataVector>,
       gr::Tags::InverseSpacetimeMetric<DataVector, 3>,
       gr::Tags::SpacetimeChristoffelFirstKind<DataVector, 3>,
-      gr::Tags::SpacetimeChristoffelSecondKind<DataVector, 3>,
       gr::Tags::TraceSpacetimeChristoffelFirstKind<DataVector, 3>,
       gr::Tags::SpacetimeNormalVector<DataVector, 3>,
       gr::Tags::DerivativesOfSpacetimeMetric<DataVector, 3>>>
@@ -277,9 +273,6 @@ void verify_time_independent_einstein_solution(
           &get<gr::Tags::InverseSpacetimeMetric<DataVector, 3>>(buffer)),
       make_not_null(
           &get<gr::Tags::SpacetimeChristoffelFirstKind<DataVector, 3>>(buffer)),
-      make_not_null(
-          &get<gr::Tags::SpacetimeChristoffelSecondKind<DataVector, 3>>(
-              buffer)),
       make_not_null(
           &get<gr::Tags::TraceSpacetimeChristoffelFirstKind<DataVector, 3>>(
               buffer)),

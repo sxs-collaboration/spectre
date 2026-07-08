@@ -178,9 +178,6 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.ScalarTensor.TimeDerivative",
               &get<gr::Tags::SpacetimeChristoffelFirstKind<DataVector, 3>>(
                   expected_temp_variables)),
           make_not_null(
-              &get<gr::Tags::SpacetimeChristoffelSecondKind<DataVector, 3>>(
-                  expected_temp_variables)),
-          make_not_null(
               &get<gr::Tags::TraceSpacetimeChristoffelFirstKind<DataVector, 3>>(
                   expected_temp_variables)),
           make_not_null(&get<gr::Tags::SpacetimeNormalVector<DataVector, 3>>(
@@ -341,9 +338,6 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.ScalarTensor.TimeDerivative",
           temp_variables)),
       make_not_null(
           &get<gr::Tags::SpacetimeChristoffelFirstKind<DataVector, 3>>(
-              temp_variables)),
-      make_not_null(
-          &get<gr::Tags::SpacetimeChristoffelSecondKind<DataVector, 3>>(
               temp_variables)),
       make_not_null(
           &get<gr::Tags::TraceSpacetimeChristoffelFirstKind<DataVector, 3>>(
