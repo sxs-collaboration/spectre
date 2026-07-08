@@ -7,7 +7,9 @@
 /build*
 
 # Editor configurations
-.vscode
+.vscode/*
+# ... but keep the shared MCP server config (see tools/mcp/spectre-mcp.sh)
+!.vscode/mcp.json
 compile_commands.json
 .idea
 CMakeUserPresets.json

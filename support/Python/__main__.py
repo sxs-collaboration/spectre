@@ -35,6 +35,7 @@ class Cli(click.Group):
             "generate-xdmf",
             "interpolate-to-mesh",
             "interpolate-to-points",
+            "mcp",
             "plot",
             "render-1d",
             "render-3d",
@@ -124,6 +125,10 @@ class Cli(click.Group):
             )
 
             return interpolate_to_mesh_command
+        elif name == "mcp":
+            from spectre.support.Mcp import mcp_command
+
+            return mcp_command
         elif name == "plot":
             from spectre.Visualization import plot_command
 

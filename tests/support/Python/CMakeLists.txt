@@ -39,6 +39,12 @@ spectre_add_python_bindings_test(
   None)
 
 spectre_add_python_bindings_test(
+  "support.Python.Mcp"
+  Test_Mcp.py
+  "Python"
+  None)
+
+spectre_add_python_bindings_test(
   "support.Python.RunNext"
   Test_RunNext.py
   "Python"

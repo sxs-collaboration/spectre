@@ -15,6 +15,7 @@ spectre_python_add_module(
   DirectoryStructure.py
   Logging.py
   Machines.py
+  Mcp.py
   Resubmit.py
   RunNext.py
   Schedule.py

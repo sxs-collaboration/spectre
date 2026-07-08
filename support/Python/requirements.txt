@@ -23,6 +23,11 @@ humanize
 Jinja2
 numpy
 matplotlib
+# MCP: powers the 'spectre mcp' subcommand, which serves the CLI as Model
+# Context Protocol tools for AI assistants. Optional: installed only on
+# Python >= 3.10 (the 'mcp' package requires it). The rest of the CLI works
+# without it; only 'spectre mcp' needs it.
+mcp >= 1.10.0; python_version >= "3.10"
 # Pandas: To work with columns of data. Need a sufficiently recent version
 # to do some fancy indexing in Status CLI
 pandas >= 1.5

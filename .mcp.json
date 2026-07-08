@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "spectre": {
+      "type": "stdio",
+      "command": "${CLAUDE_PROJECT_DIR:-.}/tools/mcp/spectre-mcp.sh"
+    }
+  }
+}

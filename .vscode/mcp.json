@@ -1,0 +1,8 @@
+{
+  "servers": {
+    "spectre": {
+      "type": "stdio",
+      "command": "${workspaceFolder}/tools/mcp/spectre-mcp.sh"
+    }
+  }
+}
