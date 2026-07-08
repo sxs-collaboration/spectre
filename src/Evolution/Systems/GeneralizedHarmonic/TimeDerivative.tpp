@@ -8,7 +8,6 @@
 #include <cstddef>
 
 #include "DataStructures/DataVector.hpp"
-#include "DataStructures/Tensor/EagerMath/Trace.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Evolution/DiscontinuousGalerkin/TimeDerivativeDecisions.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/DuDtTempTags.hpp"
@@ -124,8 +123,6 @@ TimeDerivative<AllSolutionsForChristoffelAnalytic, Dim>::apply(
   }
 
   gr::christoffel_first_kind(christoffel_first_kind, da_spacetime_metric);
-  trace_last_indices(trace_christoffel, *christoffel_first_kind,
-                     *inverse_spacetime_metric);
   gr::spacetime_normal_vector(normal_spacetime_vector, *lapse, *shift);
 
   get(*gamma1gamma2) = get(gamma1) * get(gamma2);
@@ -180,6 +177,16 @@ TimeDerivative<AllSolutionsForChristoffelAnalytic, Dim>::apply(
               christoffel_first_kind->get(mu, nu, beta);
         }
       }
+      // The trace of the Christoffel symbol of the first kind,
+      // \f$g^{bc}\Gamma_{abc} = \Gamma_{ab}{}^{b}\f$, is the diagonal (in the
+      // traced-and-raised index) of `christoffel_first_kind_3_up`. Accumulate
+      // it here to avoid a separate full contraction over the metric.
+      if (nu == 0) {
+        gauge_constraint->get(mu) = christoffel_first_kind_3_up->get(mu, 0, 0);
+      } else {
+        gauge_constraint->get(mu) +=
+            christoffel_first_kind_3_up->get(mu, nu, nu);
+      }
     }
   }
 
@@ -233,7 +240,6 @@ TimeDerivative<AllSolutionsForChristoffelAnalytic, Dim>::apply(
   const DataVector& gamma1p1 = get(*gamma1_plus_1);
 
   for (size_t mu = 0; mu < Dim + 1; ++mu) {
-    gauge_constraint->get(mu) = trace_christoffel->get(mu);
     for (size_t nu = mu; nu < Dim + 1; ++nu) {
       shift_dot_three_index_constraint->get(mu, nu) =
           get<0>(*shift) * three_index_constraint->get(0, mu, nu);
