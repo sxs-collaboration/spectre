@@ -9,6 +9,7 @@
 #include "NumericalAlgorithms/LinearOperators/Filters/HollowCylinder.tpp"
 #include "NumericalAlgorithms/LinearOperators/Filters/Hypercube.tpp"
 #include "NumericalAlgorithms/LinearOperators/Filters/None.tpp"
+#include "NumericalAlgorithms/LinearOperators/Filters/SphericalShell.tpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -28,6 +29,7 @@ using tags_for_filter = tmpl::list<ScalarWave::Tags::Psi, ScalarWave::Tags::Pi,
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
 
+template class Filters::SphericalShell<tags_for_filter<3>>;
 template class Filters::HollowCylinder<tags_for_filter<3>>;
 template class Filters::FilledCylinder<tags_for_filter<3>>;
 

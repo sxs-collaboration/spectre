@@ -45,6 +45,7 @@
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Formulation.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Tags.hpp"
 #include "NumericalAlgorithms/LinearOperators/Filters/Factory.hpp"
+#include "NumericalAlgorithms/LinearOperators/Filters/SphericalShell.hpp"
 #include "NumericalAlgorithms/LinearOperators/Filters/Tag.hpp"
 #include "Options/Protocols/FactoryCreation.hpp"
 #include "Options/String.hpp"
@@ -235,10 +236,17 @@ struct EvolutionMetavars {
         tmpl::pair<TimeStepper, TimeSteppers::time_steppers>,
         tmpl::pair<Trigger, tmpl::append<Triggers::logical_triggers,
                                          Triggers::time_triggers>>,
-        tmpl::pair<Filters::Filter<volume_dim,
-                                   typename system::variables_tag::tags_list>,
-                   Filters::all_filters<
-                       volume_dim, typename system::variables_tag::tags_list>>>;
+        tmpl::pair<
+            Filters::Filter<volume_dim,
+                            typename system::variables_tag::tags_list>,
+            tmpl::append<
+                Filters::all_filters<volume_dim,
+                                     typename system::variables_tag::tags_list>,
+                tmpl::conditional_t<
+                    volume_dim == 3,
+                    tmpl::list<Filters::SphericalShell<
+                        typename system::variables_tag::tags_list>>,
+                    tmpl::list<>>>>>;
   };
 
   using observed_reduction_data_tags =
