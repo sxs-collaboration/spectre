@@ -23,8 +23,8 @@ namespace ylm::TensorYlm {
 namespace filter_detail {
 template <typename SrcFrame, typename DestFrame>
 void transform_spatial_tensors_to_different_frame_without_hessians(
-    const gsl::not_null<Variables<sw_vars_list<DestFrame>>*> dest,
-    const Variables<sw_vars_list<SrcFrame>>& src,
+    const gsl::not_null<Variables<csw_vars_list<DestFrame>>*> dest,
+    const Variables<csw_vars_list<SrcFrame>>& src,
     const InverseJacobian<DataVector, 3, SrcFrame, DestFrame>& jac) {
   const auto& [src_psi, src_pi, src_phi] = src;
   auto& [dest_psi, dest_pi, dest_phi] = *dest;
@@ -43,7 +43,7 @@ void transform_spatial_tensors_to_different_frame_without_hessians(
 }  // namespace filter_detail
 
 template <>
-void fill_tensor_ylm_filters<filter_detail::sw_vars_list<Frame::Inertial>>(
+void fill_tensor_ylm_filters<filter_detail::csw_vars_list<Frame::Inertial>>(
     const gsl::not_null<FilterMatrixHolder*> matrix, const size_t ell_max,
     const size_t number_of_ell_modes_to_kill,
     const std::optional<size_t> half_power,
@@ -73,10 +73,10 @@ void fill_tensor_ylm_filters<filter_detail::sw_vars_list<Frame::Inertial>>(
 template <>
 void apply_tensor_ylm_filter(
     const gsl::not_null<
-        Variables<filter_detail::sw_vars_list<Frame::Inertial>>*>
-        sw_vars,
+        Variables<filter_detail::csw_vars_list<Frame::Inertial>>*>
+        csw_vars,
     const gsl::not_null<
-        Variables<filter_detail::sw_vars_list<Frame::Inertial>>*>
+        Variables<filter_detail::csw_vars_list<Frame::Inertial>>*>
         temp_storage,
     const InverseJacobian<DataVector, 3, Frame::Inertial, Frame::Grid>&
         jac_inertial_to_grid,
@@ -86,55 +86,55 @@ void apply_tensor_ylm_filter(
     const size_t radial_extents) {
   const auto& ylm = ylm::get_spherepack_cache(ell_max);
   ASSERT(
-      radial_extents * ylm.physical_size() == sw_vars->number_of_grid_points(),
+      radial_extents * ylm.physical_size() == csw_vars->number_of_grid_points(),
       "Mismatch " << radial_extents * ylm.physical_size() << " must equal "
-                  << sw_vars->number_of_grid_points());
+                  << csw_vars->number_of_grid_points());
   ASSERT(radial_extents * ylm.spectral_size() <=
              temp_storage->number_of_grid_points(),
          "Mismatch " << radial_extents * ylm.spectral_size() << " must be <= "
                      << temp_storage->number_of_grid_points());
 
   // Here we re-use the same memory multiple times.  Note that
-  // 1. sw_vars_to_filter has the same number of components as
+  // 1. csw_vars_to_filter has the same number of components as
   //    sw_spatial_decomp_vars, even though the components are arranged
   //    differently. So we can create a non-owning Variables of either
   //    tag that points into the storage of a Variables with the opposite tag.
-  // 2. temp_storage has a larger size than sw_vars, because temp_storage
-  //    is sized to hold spectral coefficients (in S2) and sw_vars holds
+  // 2. temp_storage has a larger size than csw_vars, because temp_storage
+  //    is sized to hold spectral coefficients (in S2) and csw_vars holds
   //    collocation points (in S2).  This means that we can create a
   //    non-owning Variables to hold collocation points but that points into
   //    temp_storage (but we cannot create a non-owning Variables to hold
-  //    spectral coefficients that points into sw_vars).
+  //    spectral coefficients that points into csw_vars).
   //
   // We define two different Variables that point into temp_storage
   // (and we should not use any them simultaneously) and one
-  // Variables that points into sw_vars (which we should not use
-  // simultaneously with sw_vars).
-  Variables<filter_detail::sw_vars_list<Frame::Grid>> sw_spectral_vars(
+  // Variables that points into csw_vars (which we should not use
+  // simultaneously with csw_vars).
+  Variables<filter_detail::csw_vars_list<Frame::Grid>> sw_spectral_vars(
       temp_storage->data(), temp_storage->size());
-  Variables<filter_detail::sw_vars_list<Frame::Grid>> temp_grid_vars(
-      sw_vars->data(), sw_vars->size());
-  // The following Variables uses sw_vars->size() which is smaller
+  Variables<filter_detail::csw_vars_list<Frame::Grid>> temp_grid_vars(
+      csw_vars->data(), csw_vars->size());
+  // The following Variables uses csw_vars->size() which is smaller
   // than temp_storage->size().
-  ASSERT(sw_vars->size() <= temp_storage->size(),
-         "Should have " << sw_vars->size() << " <= " << temp_storage->size());
-  Variables<filter_detail::sw_vars_list<Frame::Grid>> temp_sw_vars(
-      temp_storage->data(), sw_vars->size());
+  ASSERT(csw_vars->size() <= temp_storage->size(),
+         "Should have " << csw_vars->size() << " <= " << temp_storage->size());
+  Variables<filter_detail::csw_vars_list<Frame::Grid>> temp_csw_vars(
+      temp_storage->data(), csw_vars->size());
 
   // 1. Multiply by inverse Jacobians to get into (mostly) grid frame.
   //    It's not really the grid frame because there are no Hessian
   //    corrections, but those don't matter for this purpose.
-  // src: sw_vars
-  // dest: temp_sw_vars
+  // src: csw_vars
+  // dest: temp_csw_vars
   filter_detail::transform_spatial_tensors_to_different_frame_without_hessians<
-      Frame::Inertial, Frame::Grid>(make_not_null(&temp_sw_vars), *sw_vars,
+      Frame::Inertial, Frame::Grid>(make_not_null(&temp_csw_vars), *csw_vars,
                                     jac_inertial_to_grid);
 
   // 1a. Copy
-  // src: temp_sw_vars
+  // src: temp_csw_vars
   // dest: temp_grid_vars
-  std::memcpy(temp_grid_vars.data(), temp_sw_vars.data(),
-              temp_sw_vars.size() * sizeof(double));
+  std::memcpy(temp_grid_vars.data(), temp_csw_vars.data(),
+              temp_csw_vars.size() * sizeof(double));
 
   // 2. Nodal to modal transformation.
   // src: temp_grid_vars
@@ -146,7 +146,7 @@ void apply_tensor_ylm_filter(
   // src: sw_spectral_vars
   // dest: sw_spectral_vars
   // but using temp_grid_vars as temp storage for each tensor
-  tmpl::for_each<filter_detail::sw_vars_list<Frame::Grid>>(
+  tmpl::for_each<filter_detail::csw_vars_list<Frame::Grid>>(
       [&sw_spectral_vars, &temp_grid_vars, radial_extents,
        &filter_matrices]<class Tag>(const tmpl::type_<Tag> /*meta*/) {
         // Different compilers disagree on whether radial_extents
@@ -223,15 +223,15 @@ void apply_tensor_ylm_filter(
 
   // 4a. Copy
   // src: temp_grid_vars
-  // dest: temp_sw_vars
-  std::memcpy(temp_sw_vars.data(), temp_grid_vars.data(),
+  // dest: temp_csw_vars
+  std::memcpy(temp_csw_vars.data(), temp_grid_vars.data(),
               temp_grid_vars.size() * sizeof(double));
 
   // 5. Multiply by Jacobians to get back into inertial frame.
-  // src: temp_sw_vars
-  // dest: sw_vars
+  // src: temp_csw_vars
+  // dest: csw_vars
   filter_detail::transform_spatial_tensors_to_different_frame_without_hessians<
-      Frame::Grid, Frame::Inertial>(sw_vars, temp_sw_vars,
+      Frame::Grid, Frame::Inertial>(csw_vars, temp_csw_vars,
                                     jac_grid_to_inertial);
 }
 
@@ -239,36 +239,36 @@ void apply_tensor_ylm_filter(
 
 namespace filter_detail {
 
-template void nodal_to_modal_ylm<sw_vars_list<Frame::Grid>>(
-    gsl::not_null<Variables<sw_vars_list<Frame::Grid>>*> modal,
-    const Variables<sw_vars_list<Frame::Grid>>& nodal,
+template void nodal_to_modal_ylm<csw_vars_list<Frame::Grid>>(
+    gsl::not_null<Variables<csw_vars_list<Frame::Grid>>*> modal,
+    const Variables<csw_vars_list<Frame::Grid>>& nodal,
     const ::ylm::Spherepack& ylm, size_t radial_extents);
 
-template void nodal_to_modal_ylm<sw_vars_list<Frame::Inertial>>(
-    gsl::not_null<Variables<sw_vars_list<Frame::Inertial>>*> modal,
-    const Variables<sw_vars_list<Frame::Inertial>>& nodal,
+template void nodal_to_modal_ylm<csw_vars_list<Frame::Inertial>>(
+    gsl::not_null<Variables<csw_vars_list<Frame::Inertial>>*> modal,
+    const Variables<csw_vars_list<Frame::Inertial>>& nodal,
     const ::ylm::Spherepack& ylm, size_t radial_extents);
 
-template void modal_to_nodal_ylm<sw_vars_list<Frame::Grid>>(
-    gsl::not_null<Variables<sw_vars_list<Frame::Grid>>*> modal,
-    const Variables<sw_vars_list<Frame::Grid>>& nodal,
+template void modal_to_nodal_ylm<csw_vars_list<Frame::Grid>>(
+    gsl::not_null<Variables<csw_vars_list<Frame::Grid>>*> modal,
+    const Variables<csw_vars_list<Frame::Grid>>& nodal,
     const ::ylm::Spherepack& ylm, size_t radial_extents);
 
-template void modal_to_nodal_ylm<sw_vars_list<Frame::Inertial>>(
-    gsl::not_null<Variables<sw_vars_list<Frame::Inertial>>*> modal,
-    const Variables<sw_vars_list<Frame::Inertial>>& nodal,
+template void modal_to_nodal_ylm<csw_vars_list<Frame::Inertial>>(
+    gsl::not_null<Variables<csw_vars_list<Frame::Inertial>>*> modal,
+    const Variables<csw_vars_list<Frame::Inertial>>& nodal,
     const ::ylm::Spherepack& ylm, size_t radial_extents);
 
 template void transform_spatial_tensors_to_different_frame_without_hessians<
     Frame::Grid, Frame::Inertial>(
-    gsl::not_null<Variables<sw_vars_list<Frame::Inertial>>*> dest,
-    const Variables<sw_vars_list<Frame::Grid>>& src,
+    gsl::not_null<Variables<csw_vars_list<Frame::Inertial>>*> dest,
+    const Variables<csw_vars_list<Frame::Grid>>& src,
     const InverseJacobian<DataVector, 3, Frame::Grid, Frame::Inertial>& jac);
 
 template void transform_spatial_tensors_to_different_frame_without_hessians<
     Frame::Inertial, Frame::Grid>(
-    gsl::not_null<Variables<sw_vars_list<Frame::Grid>>*> dest,
-    const Variables<sw_vars_list<Frame::Inertial>>& src,
+    gsl::not_null<Variables<csw_vars_list<Frame::Grid>>*> dest,
+    const Variables<csw_vars_list<Frame::Inertial>>& src,
     const InverseJacobian<DataVector, 3, Frame::Inertial, Frame::Grid>& jac);
 }  // namespace filter_detail
 }  // namespace ylm::TensorYlm

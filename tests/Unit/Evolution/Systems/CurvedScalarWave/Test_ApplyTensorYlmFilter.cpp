@@ -12,7 +12,7 @@ namespace ylm::TensorYlm {
 SPECTRE_TEST_CASE(
     "Unit.Evolution.Systems.CurvedScalarWave.ApplyTensorYlmFilter",
     "[NumericalAlgorithms][Unit]") {
-  test_apply_filter<filter_detail::sw_vars_list<Frame::Inertial>>(0);
-  test_apply_filter<filter_detail::sw_vars_list<Frame::Inertial>>(5);
+  test_apply_filter<filter_detail::csw_vars_list<Frame::Inertial>>(0);
+  test_apply_filter<filter_detail::csw_vars_list<Frame::Inertial>>(5);
 }
 }  // namespace ylm::TensorYlm

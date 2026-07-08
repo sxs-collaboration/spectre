@@ -25,7 +25,7 @@ namespace ylm::TensorYlm {
 namespace filter_detail {
 
 template <typename Frame>
-using sw_vars_list =
+using csw_vars_list =
     tmpl::list<::CurvedScalarWave::Tags::Psi, ::CurvedScalarWave::Tags::Pi,
                ::CurvedScalarWave::Tags::Phi<3, Frame>>;
 
@@ -50,8 +50,8 @@ using sw_vars_list =
  */
 template <typename SrcFrame, typename DestFrame>
 void transform_spatial_tensors_to_different_frame_without_hessians(
-    gsl::not_null<Variables<sw_vars_list<DestFrame>>*> dest,
-    const Variables<sw_vars_list<SrcFrame>>& src,
+    gsl::not_null<Variables<csw_vars_list<DestFrame>>*> dest,
+    const Variables<csw_vars_list<SrcFrame>>& src,
     const InverseJacobian<DataVector, 3, SrcFrame, DestFrame>& jac);
 
 }  // namespace filter_detail
@@ -59,12 +59,12 @@ void transform_spatial_tensors_to_different_frame_without_hessians(
 /*!
  * \brief Applies TensorYlm filter in place to Curved Scalar Wave variables.
  *
- * When radial_extents is 1, sw_vars and temp_storage are assumed to
+ * When radial_extents is 1, csw_vars and temp_storage are assumed to
  * be defined on a spherical slice, with number of grid points
  * corresponding to a spherical-harmonic grid of ell_max, and the
  * filter happens only on that slice.
  *
- * When radial_extents is > 1, sw_vars and temp_storage are assumed to
+ * When radial_extents is > 1, csw_vars and temp_storage are assumed to
  * be defined on a spherical shell of topology I1 x S2. The filter
  * happens in the entire volume, internally iterating over each
  * spherical slice at a time.
@@ -81,7 +81,7 @@ void transform_spatial_tensors_to_different_frame_without_hessians(
  * number of spectral coefficients, and both are different than the
  * size of the Spherepack storage array.
  *
- * \param sw_vars Scalar wave variables at collocation points.
+ * \param csw_vars Scalar wave variables at collocation points.
  * \param temp_storage Temporary storage for scalar wave variables,
  *   allocated outside apply_tensor_ylm_filter. See above for size requirements.
  * \param jac_inertial_to_grid Jacobian taking V_x from inertial to grid.
@@ -93,9 +93,9 @@ void transform_spatial_tensors_to_different_frame_without_hessians(
  */
 template <>
 void apply_tensor_ylm_filter(
-    gsl::not_null<Variables<filter_detail::sw_vars_list<Frame::Inertial>>*>
-        sw_vars,
-    gsl::not_null<Variables<filter_detail::sw_vars_list<Frame::Inertial>>*>
+    gsl::not_null<Variables<filter_detail::csw_vars_list<Frame::Inertial>>*>
+        csw_vars,
+    gsl::not_null<Variables<filter_detail::csw_vars_list<Frame::Inertial>>*>
         temp_storage,
     const InverseJacobian<DataVector, 3, Frame::Inertial, Frame::Grid>&
         jac_inertial_to_grid,
