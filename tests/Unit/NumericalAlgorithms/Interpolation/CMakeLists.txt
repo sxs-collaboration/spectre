@@ -12,7 +12,6 @@ set(LIBRARY_SOURCES
   Test_IrregularInterpolant.cpp
   Test_LagrangePolynomial.cpp
   Test_MultiLinearSpanInterpolation.cpp
-  Test_LinearLeastSquares.cpp
   Test_LinearRegression.cpp
   Test_PolynomialInterpolation.cpp
   Test_PredictedZeroCrossing.cpp
@@ -35,6 +34,7 @@ target_link_libraries(
   DomainStructure
   GeneralRelativitySolutions
   Interpolation
+  LinearAlgebra
   Logging
   MathFunctions
   ParallelInterpolation

@@ -15,11 +15,13 @@
 #include "DataStructures/Variables.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
+#include "Helpers/NumericalAlgorithms/Spectral/BallTestFunctions.hpp"
 #include "Helpers/NumericalAlgorithms/Spectral/DiskTestFunctions.hpp"
 #include "Helpers/NumericalAlgorithms/SphericalHarmonics/YlmTestFunctions.hpp"
 #include "NumericalAlgorithms/Interpolation/CardinalInterpolator.hpp"
 #include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
+#include "NumericalAlgorithms/Spectral/Quadrature.hpp"
 #include "Utilities/Math.hpp"
 
 namespace {
@@ -397,6 +399,73 @@ void test_3d_cylinder(const gsl::not_null<std::mt19937*> generator) {
     }
   }
 }
+
+void test_3d_ball(const gsl::not_null<std::mt19937*> generator) {
+  std::uniform_real_distribution<> xi_distribution(-1.0, 1.0);
+  std::uniform_real_distribution<> phi_distribution(0.0, 2.0 * M_PI);
+  for (const size_t n_target_points : {1_st, 12_st}) {
+    tnsr::I<DataVector, 3, Frame::ElementLogical> xi_target{n_target_points};
+    get<0>(xi_target) = make_with_random_values<DataVector>(
+        generator, make_not_null(&xi_distribution), xi_target);
+    get<1>(xi_target) = acos(make_with_random_values<DataVector>(
+        generator, make_not_null(&xi_distribution), xi_target));
+    get<2>(xi_target) = make_with_random_values<DataVector>(
+        generator, make_not_null(&phi_distribution), xi_target);
+    const tnsr::I<double, 3, Frame::ElementLogical> xi_target_single{
+        {{get<0>(xi_target)[0], get<1>(xi_target)[0], get<2>(xi_target)[0]}}};
+    for (size_t n_z = 2; n_z < 4; ++n_z) {
+      CAPTURE(n_z);
+      for (size_t n_y = 0; n_y < 4; ++n_y) {
+        CAPTURE(n_y);
+        for (size_t n_x = 0; n_x < 4; ++n_x) {
+          CAPTURE(n_x);
+          // SPHEREPACK requires m_max >= 2 (n_phi >= 5)
+          const size_t n_phi = 2 * (n_x + n_y) + 3;
+          if (n_phi < 5) {
+            continue;
+          }
+          const size_t n_theta = n_x + n_y + n_z + 2;
+          const Mesh<3> source_mesh{
+              std::array{n_theta / 2 + 1, n_theta, n_phi},
+              std::array{Spectral::Basis::ZernikeB3, Spectral::Basis::ZernikeB3,
+                         Spectral::Basis::ZernikeB3},
+              std::array{Spectral::Quadrature::GaussRadauUpper,
+                         Spectral::Quadrature::Gauss,
+                         Spectral::Quadrature::Equiangular}};
+          const BallTestFunctions::ProductOfPolynomials f{n_x, n_y, n_z};
+          const auto xi_source = logical_coordinates(source_mesh);
+          const DataVector f_source = f(0.5 * (get<0>(xi_source) + 1.0),
+                                        get<1>(xi_source), get<2>(xi_source));
+          const DataVector f_expected = f(0.5 * (get<0>(xi_target) + 1.0),
+                                          get<1>(xi_target), get<2>(xi_target));
+          {
+            const intrp::Cardinal<3> interpolator(source_mesh, xi_target);
+            const DataVector f_interpolated =
+                interpolator.interpolate(f_source);
+            CHECK_ITERABLE_APPROX(f_interpolated, f_expected);
+            {
+              INFO("Testing B3 serialization");
+              // The fields that are handled in complex ways by the pup function
+              // are excluded from the equality operator
+              const DataVector f_pup_interpolated =
+                  serialize_and_deserialize(interpolator).interpolate(f_source);
+              CHECK_ITERABLE_APPROX(f_pup_interpolated, f_expected);
+            }
+          }
+          if (n_target_points == 1) {
+            const intrp::Cardinal<3> interpolator(source_mesh,
+                                                  xi_target_single);
+            const DataVector f_interpolated =
+                interpolator.interpolate(f_source);
+            CHECK(f_interpolated.size() == 1);
+            CHECK(f_interpolated[0] == approx(f_expected[0]));
+          }
+        }
+      }
+    }
+  }
+}
+
 void test_errors() {
   {
     INFO("Testing SphericalHarmonic with unsupported quadrature");
@@ -413,6 +482,22 @@ void test_errors() {
             "SphericalHarmonic"));
   }
   {
+    INFO("Testing ZernikeB3 with unsupported quadrature");
+    CHECK_THROWS_WITH(
+        (intrp::Cardinal<3>{
+            Mesh<3>{{3, 5, 9},
+                    {Spectral::Basis::ZernikeB3, Spectral::Basis::ZernikeB3,
+                     Spectral::Basis::ZernikeB3},
+                    {Spectral::Quadrature::GaussLobatto,
+                     Spectral::Quadrature::Gauss,
+                     Spectral::Quadrature::Equiangular}},
+            tnsr::I<DataVector, 3, Frame::ElementLogical>{
+                {{{0.5}, {1.0}, {2.0}}}}}),
+        Catch::Matchers::ContainsSubstring(
+            "Quadrature must be GaussRadauUpper, Gauss, or Equiangular for "
+            "Basis ZernikeB3"));
+  }
+  {
     INFO("Testing ZernikeB2 with unsupported quadrature");
     CHECK_THROWS_WITH(
         (intrp::Cardinal<2>{
@@ -425,16 +510,6 @@ void test_errors() {
         Catch::Matchers::ContainsSubstring(
             "Quadrature must be GaussRadauUpper or Equiangular for Basis "
             "ZernikeB2"));
-  }
-  {
-    INFO("Testing 1D ZernikeB2 interpolate_zernike_b2 error");
-    CHECK_THROWS_WITH(
-        (intrp::Cardinal<1>{Mesh<1>{3, Spectral::Basis::ZernikeB2,
-                                    Spectral::Quadrature::GaussRadauUpper},
-                            tnsr::I<DataVector, 1, Frame::ElementLogical>{
-                                {{{1.0, 2.0, 3.0}}}}}),
-        Catch::Matchers::ContainsSubstring(
-            "ZernikeB2 interpolation is not supported for 1D"));
   }
 
 #ifdef SPECTRE_DEBUG
@@ -451,6 +526,21 @@ void test_errors() {
         Catch::Matchers::ContainsSubstring(
             "Need N_phi to be odd for stability"));
   }
+  {
+    INFO("Testing minimum resolution assertion for ZernikeB3");
+    CHECK_THROWS_WITH(
+        (intrp::Cardinal<3>{
+            Mesh<3>{{2, 5, 9},
+                    {Spectral::Basis::ZernikeB3, Spectral::Basis::ZernikeB3,
+                     Spectral::Basis::ZernikeB3},
+                    {Spectral::Quadrature::GaussRadauUpper,
+                     Spectral::Quadrature::Gauss,
+                     Spectral::Quadrature::Equiangular}},
+            tnsr::I<DataVector, 3, Frame::ElementLogical>{
+                {{{1.0, 0.5}, {1.5, 0.0}, {0.1, 0.2}}}}}),
+        Catch::Matchers::ContainsSubstring(
+            "ZernikeB3 radial resolution is insufficient"));
+  }
 #endif
 }
 }  // namespace
@@ -466,6 +556,7 @@ SPECTRE_TEST_CASE("Unit.Numerical.Interpolation.Cardinal",
   test_3d_cartesian(make_not_null(&generator));
   test_3d_spherical(make_not_null(&generator));
   test_3d_cylinder(make_not_null(&generator));
+  test_3d_ball(make_not_null(&generator));
   test_errors();
   {
     INFO("Testing basic construction");
@@ -479,7 +570,7 @@ SPECTRE_TEST_CASE("Unit.Numerical.Interpolation.Cardinal",
     test_serialization(interpolant);
   }
   {
-    INFO("Testing Zernike construction");
+    INFO("Testing ZernikeB2 serialization");
     const intrp::Cardinal<3> interpolant{
         Mesh<3>{{{3, 9, 4}},
                 {{Spectral::Basis::ZernikeB2, Spectral::Basis::ZernikeB2,
@@ -489,6 +580,20 @@ SPECTRE_TEST_CASE("Unit.Numerical.Interpolation.Cardinal",
                   Spectral::Quadrature::GaussLobatto}}},
         tnsr::I<DataVector, 3, Frame::ElementLogical>{
             {{{1., 2., 3.}, {2., 3., 4.}, {3., 4., 5.}}}}};
+    test_serialization(interpolant);
+  }
+  {
+    INFO("Testing ZernikeB3 serialization");
+    // Mesh: n_r=3, n_theta=5 (l_max=4), n_phi=9 (m_max=4)
+    const intrp::Cardinal<3> interpolant{
+        Mesh<3>{
+            {{3, 5, 9}},
+            {{Spectral::Basis::ZernikeB3, Spectral::Basis::ZernikeB3,
+              Spectral::Basis::ZernikeB3}},
+            {{Spectral::Quadrature::GaussRadauUpper,
+              Spectral::Quadrature::Gauss, Spectral::Quadrature::Equiangular}}},
+        tnsr::I<DataVector, 3, Frame::ElementLogical>{
+            {{{0.3, -0.6}, {0.8, 2.1}, {1.5, 4.2}}}}};
     test_serialization(interpolant);
   }
 }

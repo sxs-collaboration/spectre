@@ -12,7 +12,7 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "NumericalAlgorithms/FiniteDifference/NonUniform1D.hpp"
-#include "NumericalAlgorithms/Interpolation/LinearLeastSquares.hpp"
+#include "NumericalAlgorithms/LinearAlgebra/LinearLeastSquares.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/SpherepackIterator.hpp"
 #include "NumericalAlgorithms/Strahlkorper/Strahlkorper.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"

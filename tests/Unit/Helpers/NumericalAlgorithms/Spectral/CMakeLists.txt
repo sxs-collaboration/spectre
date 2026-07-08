@@ -4,6 +4,7 @@
 set(LIBRARY "SpectralHelpers")
 
 set(LIBRARY_SOURCES
+  BallTestFunctions.cpp
   DiskTestFunctions.cpp
   FourierTestFunctions.cpp
   PolynomialTestFunctions.cpp

@@ -14,7 +14,6 @@ spectre_target_sources(
   CubicSpanInterpolator.cpp
   CubicSpline.cpp
   IrregularInterpolant.cpp
-  LinearLeastSquares.cpp
   LinearRegression.cpp
   LinearSpanInterpolator.cpp
   PolynomialInterpolation.cpp
@@ -35,7 +34,6 @@ spectre_target_headers(
   CubicSpline.hpp
   IrregularInterpolant.hpp
   LagrangePolynomial.hpp
-  LinearLeastSquares.hpp
   LinearRegression.hpp
   MultiLinearSpanInterpolation.hpp
   LinearSpanInterpolator.hpp
@@ -55,6 +53,7 @@ target_link_libraries(
   Options
   Serialization
   Spectral
+  SphericalHarmonics
   Utilities
   PRIVATE
   Boost::boost

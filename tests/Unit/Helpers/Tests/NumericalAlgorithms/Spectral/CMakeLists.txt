@@ -1,11 +1,10 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-set(LIBRARY "Test_LinearAlgebra")
+set(LIBRARY "Test_SpectralHelpers")
 
 set(LIBRARY_SOURCES
-  Test_FindGeneralizedEigenvalues.cpp
-  Test_LinearLeastSquares.cpp
+  Test_BallTestFunctions.cpp
   )
 
 add_test_library(${LIBRARY} "${LIBRARY_SOURCES}")
@@ -13,5 +12,6 @@ add_test_library(${LIBRARY} "${LIBRARY_SOURCES}")
 target_link_libraries(
   ${LIBRARY}
   PRIVATE
-  LinearAlgebra
+  DataStructures
+  SpectralHelpers
   )
