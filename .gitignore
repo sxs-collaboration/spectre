@@ -76,10 +76,7 @@ tags
 !Tags/
 
 # AI/LLM Agent/CLI tools
-AGENTS.md
-
+AGENTS.local.md
 .aider*
-
-CLAUDE.md
 .claude/settings.local.json
 CLAUDE.local.md
