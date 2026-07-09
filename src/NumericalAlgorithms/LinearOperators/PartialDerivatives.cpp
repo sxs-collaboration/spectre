@@ -404,6 +404,129 @@ bool logical_derivatives_fast_path(
   return true;
 }
 
+bool fused_partial_derivatives_fast_path(
+    double* const du, const double* const u,
+    const size_t number_of_independent_components, const Mesh<1>& mesh,
+    const std::array<const double*, 1>& inverse_jacobian) {
+  if (not fast_path_supports(mesh)) {
+    return false;
+  }
+  const size_t number_of_points = mesh.extents(0);
+  const PackedMatrix matrix_xi =
+      pack_matrix(Spectral::differentiation_matrix(mesh.slice_through(0)));
+  DataVector buffer{number_of_points};
+  double* const logical_xi = buffer.data();
+  const double* const jacobian_xi = inverse_jacobian[0];
+  for (size_t component = 0; component < number_of_independent_components;
+       ++component) {
+    const double* const u_component = u + (component * number_of_points);
+    dispatch_on_extent(number_of_points, [&](const auto extent) {
+      differentiate_first_dim<decltype(extent)::value>(logical_xi, u_component,
+                                                       matrix_xi.data(), 1);
+    });
+    double* const du_component = du + (component * number_of_points);
+    for (size_t p = 0; p < number_of_points; ++p) {
+      du_component[p] = jacobian_xi[p] * logical_xi[p];
+    }
+  }
+  return true;
+}
+
+bool fused_partial_derivatives_fast_path(
+    double* const du, const double* const u,
+    const size_t number_of_independent_components, const Mesh<2>& mesh,
+    const std::array<const double*, 4>& inverse_jacobian) {
+  if (not fast_path_supports(mesh)) {
+    return false;
+  }
+  const size_t n0 = mesh.extents(0);
+  const size_t n1 = mesh.extents(1);
+  const size_t number_of_points = n0 * n1;
+  const PackedMatrix matrix_xi =
+      pack_matrix(Spectral::differentiation_matrix(mesh.slice_through(0)));
+  const PackedMatrix matrix_eta =
+      pack_matrix(Spectral::differentiation_matrix(mesh.slice_through(1)));
+  DataVector buffer{2 * number_of_points};
+  double* const logical_xi = buffer.data();
+  double* const logical_eta = buffer.data() + number_of_points;
+  for (size_t component = 0; component < number_of_independent_components;
+       ++component) {
+    const double* const u_component = u + (component * number_of_points);
+    dispatch_on_extent(n0, [&](const auto extent) {
+      differentiate_first_dim<decltype(extent)::value>(logical_xi, u_component,
+                                                       matrix_xi.data(), n1);
+    });
+    dispatch_on_extent(n1, [&](const auto extent) {
+      differentiate_middle_dim_dispatch<decltype(extent)::value>(
+          logical_eta, u_component, matrix_eta.data(), n0, 1);
+    });
+    for (size_t i = 0; i < 2; ++i) {
+      double* const du_component =
+          du + ((component * 2 + i) * number_of_points);
+      const double* const jacobian_xi = inverse_jacobian[i];
+      const double* const jacobian_eta = inverse_jacobian[2 + i];
+      for (size_t p = 0; p < number_of_points; ++p) {
+        du_component[p] = (jacobian_xi[p] * logical_xi[p]) +
+                          (jacobian_eta[p] * logical_eta[p]);
+      }
+    }
+  }
+  return true;
+}
+
+bool fused_partial_derivatives_fast_path(
+    double* const du, const double* const u,
+    const size_t number_of_independent_components, const Mesh<3>& mesh,
+    const std::array<const double*, 9>& inverse_jacobian) {
+  if (not fast_path_supports(mesh)) {
+    return false;
+  }
+  const size_t n0 = mesh.extents(0);
+  const size_t n1 = mesh.extents(1);
+  const size_t n2 = mesh.extents(2);
+  const size_t number_of_points = n0 * n1 * n2;
+  const PackedMatrix matrix_xi =
+      pack_matrix(Spectral::differentiation_matrix(mesh.slice_through(0)));
+  const PackedMatrix matrix_eta =
+      pack_matrix(Spectral::differentiation_matrix(mesh.slice_through(1)));
+  const PackedMatrix matrix_zeta =
+      pack_matrix(Spectral::differentiation_matrix(mesh.slice_through(2)));
+  // Per-component logical-derivative buffers; small enough to stay resident
+  // in the core-private cache while the Jacobian contraction consumes them.
+  DataVector buffer{3 * number_of_points};
+  double* const logical_xi = buffer.data();
+  double* const logical_eta = buffer.data() + number_of_points;
+  double* const logical_zeta = buffer.data() + (2 * number_of_points);
+  for (size_t component = 0; component < number_of_independent_components;
+       ++component) {
+    const double* const u_component = u + (component * number_of_points);
+    dispatch_on_extent(n0, [&](const auto extent) {
+      differentiate_first_dim<decltype(extent)::value>(
+          logical_xi, u_component, matrix_xi.data(), n1 * n2);
+    });
+    dispatch_on_extent(n1, [&](const auto extent) {
+      differentiate_middle_dim_dispatch<decltype(extent)::value>(
+          logical_eta, u_component, matrix_eta.data(), n0, n2);
+    });
+    dispatch_on_extent(n2, [&](const auto extent) {
+      differentiate_middle_dim_dispatch<decltype(extent)::value>(
+          logical_zeta, u_component, matrix_zeta.data(), n0 * n1, 1);
+    });
+    for (size_t i = 0; i < 3; ++i) {
+      double* const du_component =
+          du + ((component * 3 + i) * number_of_points);
+      const double* const jacobian_xi = inverse_jacobian[i];
+      const double* const jacobian_eta = inverse_jacobian[3 + i];
+      const double* const jacobian_zeta = inverse_jacobian[6 + i];
+      for (size_t p = 0; p < number_of_points; ++p) {
+        du_component[p] = (jacobian_xi[p] * logical_xi[p]) +
+                          (jacobian_eta[p] * logical_eta[p]) +
+                          (jacobian_zeta[p] * logical_zeta[p]);
+      }
+    }
+  }
+  return true;
+}
 // NOLINTEND(cppcoreguidelines-pro-bounds-constant-array-index)
 // NOLINTEND(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 }  // namespace partial_derivatives_detail

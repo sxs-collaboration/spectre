@@ -664,6 +664,22 @@ void partial_derivatives(
     partial_derivatives_of_u.initialize(mesh.number_of_grid_points());
   }
 
+  if constexpr (std::is_same_v<ValueType, double>) {
+    std::array<const double*, Dim * Dim> inverse_jacobian_pointers{};
+    for (size_t d = 0; d < Dim; ++d) {
+      for (size_t i = 0; i < Dim; ++i) {
+        gsl::at(inverse_jacobian_pointers, d * Dim + i) =
+            inverse_jacobian.get(d, i).data();
+      }
+    }
+    if (partial_derivatives_detail::fused_partial_derivatives_fast_path(
+            partial_derivatives_of_u.data(), u.data(),
+            Variables<DerivativeTags>::number_of_independent_components, mesh,
+            inverse_jacobian_pointers)) {
+      return;
+    }
+  }
+
   const size_t vars_size =
       u.number_of_grid_points() *
       Variables<DerivativeTags>::number_of_independent_components;
