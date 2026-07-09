@@ -45,6 +45,26 @@ void apply_matrix_in_first_dim(std::complex<double>* result,
                                const std::complex<double>* input,
                                const Matrix& matrix, size_t size,
                                bool add_to_result = false);
+
+// Transpose-free differentiation along all logical dimensions using
+// fixed-size kernels (dispatched on the extent of the contracted dimension),
+// writing the logical derivatives directly without the dgemm+transpose
+// pipeline. Returns false when the mesh is not supported (basis other than
+// Legendre/Chebyshev, or an extent outside the instantiated kernel range);
+// the caller must then fall back to the generic implementation.
+bool logical_derivatives_fast_path(const std::array<double*, 1>& logical_derivs,
+                                   const double* u,
+                                   size_t number_of_independent_components,
+                                   const Mesh<1>& mesh);
+bool logical_derivatives_fast_path(const std::array<double*, 2>& logical_derivs,
+                                   const double* u,
+                                   size_t number_of_independent_components,
+                                   const Mesh<2>& mesh);
+bool logical_derivatives_fast_path(const std::array<double*, 3>& logical_derivs,
+                                   const double* u,
+                                   size_t number_of_independent_components,
+                                   const Mesh<3>& mesh);
+
 }  // namespace partial_derivatives_detail
 
 /// @{
