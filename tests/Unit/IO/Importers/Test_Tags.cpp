@@ -39,7 +39,9 @@ SPECTRE_TEST_CASE("Unit.IO.Importers.Tags", "[Unit][IO]") {
       "    Subgroup: data.group\n"
       "    ObservationValue: 1.\n"
       "    ObservationValueEpsilon: 1e-9\n"
-      "    ElementsAreIdentical: True");
+      "    ElementsAreIdentical: True\n"
+      "    ExtrapolateIntoExcisions: False\n"
+      "    NumThreads: 1");
   const auto& options =
       opts.get<importers::Tags::ImporterOptions<ExampleVolumeData>>();
   using tuples::get;

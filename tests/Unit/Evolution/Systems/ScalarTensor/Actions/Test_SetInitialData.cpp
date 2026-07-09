@@ -334,21 +334,23 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.ScalarTensor.NumericInitialData",
                   "[Unit][Evolution]") {
   register_factory_classes_with_charm<Metavariables>();
   test_set_initial_data(
-      NumericInitialData{"TestInitialData.h5",
-                         "VolumeData",
-                         0.,
-                         {1.0e-9},
-                         false,
-                         gh::NumericInitialData::GhVars{
-                             "CustomSpacetimeMetric", "CustomPi", "CustomPhi"},
-                         CurvedScalarWave::NumericInitialData::ScalarVars{
-                             "CustomPsi", "CustomScalarPi", "CustomScalarPhi"}},
+      NumericInitialData{
+          importers::ImporterOptions{"TestInitialData.h5", "VolumeData", 0.,
+                                     Options::Auto<double>{1.0e-9}, false,
+                                     false, Options::Auto<size_t>{1}},
+          gh::NumericInitialData::GhVars{"CustomSpacetimeMetric", "CustomPi",
+                                         "CustomPhi"},
+          CurvedScalarWave::NumericInitialData::ScalarVars{
+              "CustomPsi", "CustomScalarPi", "CustomScalarPhi"}},
       "NumericInitialData:\n"
-      "  FileGlob: TestInitialData.h5\n"
-      "  Subgroup: VolumeData\n"
-      "  ObservationValue: 0.\n"
-      "  ObservationValueEpsilon: 1e-9\n"
-      "  ElementsAreIdentical: False\n"
+      "  VolumeData:\n"
+      "    FileGlob: TestInitialData.h5\n"
+      "    Subgroup: VolumeData\n"
+      "    ObservationValue: 0.\n"
+      "    ObservationValueEpsilon: 1e-9\n"
+      "    ElementsAreIdentical: False\n"
+      "    ExtrapolateIntoExcisions: False\n"
+      "    NumThreads: 1\n"
       "  GhVariables:\n"
       "    SpacetimeMetric: CustomSpacetimeMetric\n"
       "    Pi: CustomPi\n"
@@ -360,18 +362,23 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.ScalarTensor.NumericInitialData",
       true);
   test_set_initial_data(
       NumericInitialData{
-          "TestInitialData.h5", "VolumeData", 0., std::nullopt, false,
+          importers::ImporterOptions{"TestInitialData.h5", "VolumeData", 0.,
+                                     Options::Auto<double>{}, false, false,
+                                     Options::Auto<size_t>{1}},
           gh::NumericInitialData::AdmVars{"CustomSpatialMetric", "CustomLapse",
                                           "CustomShift",
                                           "CustomExtrinsicCurvature"},
           CurvedScalarWave::NumericInitialData::ScalarVars{
               "CustomPsi", "CustomScalarPi", "CustomScalarPhi"}},
       "NumericInitialData:\n"
-      "  FileGlob: TestInitialData.h5\n"
-      "  Subgroup: VolumeData\n"
-      "  ObservationValue: 0.\n"
-      "  ObservationValueEpsilon: Auto\n"
-      "  ElementsAreIdentical: False\n"
+      "  VolumeData:\n"
+      "    FileGlob: TestInitialData.h5\n"
+      "    Subgroup: VolumeData\n"
+      "    ObservationValue: 0.\n"
+      "    ObservationValueEpsilon: Auto\n"
+      "    ElementsAreIdentical: False\n"
+      "    ExtrapolateIntoExcisions: False\n"
+      "    NumThreads: 1\n"
       "  GhVariables:\n"
       "    SpatialMetric: CustomSpatialMetric\n"
       "    Lapse: CustomLapse\n"

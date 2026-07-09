@@ -85,19 +85,55 @@ struct ElementsAreIdentical {
       "'InertialCoordinates(_x,_y,_z)' must exist in the files. They are used "
       "to verify that the target points indeed match the source data.";
 };
+
+/*!
+ * \brief Extrapolate data into excised regions of the source domain.
+ */
+struct ExtrapolateIntoExcisions {
+  using type = bool;
+  static constexpr Options::String help =
+      "Fill target points that fall inside excised regions of the source "
+      "domain by extrapolating the source data into the excision (see "
+      "'spectre::Exporter::interpolate_to_points').";
+};
+
+/*!
+ * \brief Number of threads to use to accelerate the import with OpenMP, or
+ * 'Auto' to use all available threads.
+ */
+struct NumThreads {
+  using type = Options::Auto<size_t>;
+  static constexpr Options::String help =
+      "Number of threads to use to read and interpolate the volume data with "
+      "OpenMP, or 'Auto' to use all available threads. Keep this at 1 (serial) "
+      "unless you know the node is otherwise idle during the import (e.g. when "
+      "loading initial data), because the importer shares the node with the "
+      "Charm++ worker threads and additional threads can oversubscribe them. "
+      "Has no effect if the code was built without OpenMP support.";
+};
 }  // namespace OptionTags
 
 /// Options that specify the volume data to load. See the option tags for
 /// details.
 struct ImporterOptions
-    : tuples::TaggedTuple<OptionTags::FileGlob, OptionTags::Subgroup,
-                          OptionTags::ObservationValue,
-                          OptionTags::ObservationValueEpsilon,
-                          OptionTags::ElementsAreIdentical> {
+    : tuples::TaggedTuple<
+          OptionTags::FileGlob, OptionTags::Subgroup,
+          OptionTags::ObservationValue, OptionTags::ObservationValueEpsilon,
+          OptionTags::ElementsAreIdentical,
+          OptionTags::ExtrapolateIntoExcisions, OptionTags::NumThreads> {
   using options = tags_list;
   static constexpr Options::String help = "The volume data to load.";
   using TaggedTuple::TaggedTuple;
 };
+
+namespace OptionTags {
+/// Bundles all \ref importers::ImporterOptions for use in factory-creatable
+/// classes
+struct VolumeData {
+  using type = ImporterOptions;
+  static constexpr Options::String help = ImporterOptions::help;
+};
+}  // namespace OptionTags
 
 /// The \ref DataBoxGroup tags associated with the data importer
 namespace Tags {

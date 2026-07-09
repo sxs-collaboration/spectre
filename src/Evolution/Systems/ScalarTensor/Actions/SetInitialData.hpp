@@ -59,8 +59,8 @@ class NumericInitialData : public evolution::initial_data::InitialData,
   struct GhVariables : GhNumericId::Variables {};
   struct ScalarVariables : ScalarNumericId::Variables {};
 
-  using options = tmpl::push_back<importers::ImporterOptions::tags_list,
-                                  GhVariables, ScalarVariables>;
+  using options = tmpl::list<importers::OptionTags::VolumeData, GhVariables,
+                             ScalarVariables>;
 
   static constexpr Options::String help =
       "Numeric initial data for the Scalar Tensor system loaded from volume "
@@ -85,10 +85,7 @@ class NumericInitialData : public evolution::initial_data::InitialData,
   }
 
   NumericInitialData(
-      std::string file_glob, std::string subfile_name,
-      std::variant<double, importers::ObservationSelector> observation_value,
-      std::optional<double> observation_value_epsilon,
-      bool enable_interpolation,
+      importers::ImporterOptions importer_options,
       typename GhNumericId::Variables::type gh_selected_variables,
       typename ScalarNumericId::Variables::type hydro_selected_variables);
 

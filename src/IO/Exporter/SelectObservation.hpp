@@ -17,9 +17,9 @@ struct SelectObservation {
   size_t operator()(ObservationId observation_id) const;
   size_t operator()(ObservationStep observation_step) const;
   size_t operator()(double observation_value) const;
+  size_t operator()(ObservationValue observation_value) const;
   // NOLINTNEXTLINE(cppcoreguidelines-avoid-const-or-ref-data-members)
   const h5::VolumeData& volfile;
-  double obs_value_eps = 1e-12;
 };
 
 }  // namespace spectre::Exporter

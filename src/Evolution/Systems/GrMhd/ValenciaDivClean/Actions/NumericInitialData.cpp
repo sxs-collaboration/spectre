@@ -14,14 +14,9 @@
 namespace grmhd::ValenciaDivClean {
 
 NumericInitialData::NumericInitialData(
-    std::string file_glob, std::string subfile_name,
-    std::variant<double, importers::ObservationSelector> observation_value,
-    std::optional<double> observation_value_epsilon,
-    const bool enable_interpolation, PrimitiveVars selected_variables,
-    const double density_cutoff)
-    : importer_options_(
-          std::move(file_glob), std::move(subfile_name), observation_value,
-          observation_value_epsilon.value_or(1.0e-12), enable_interpolation),
+    importers::ImporterOptions importer_options,
+    PrimitiveVars selected_variables, const double density_cutoff)
+    : importer_options_(std::move(importer_options)),
       selected_variables_(std::move(selected_variables)),
       density_cutoff_(density_cutoff) {}
 

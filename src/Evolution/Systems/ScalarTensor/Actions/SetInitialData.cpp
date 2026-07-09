@@ -25,18 +25,12 @@
 namespace ScalarTensor {
 
 NumericInitialData::NumericInitialData(
-    std::string file_glob, std::string subfile_name,
-    std::variant<double, importers::ObservationSelector> observation_value,
-    std::optional<double> observation_value_epsilon, bool enable_interpolation,
+    importers::ImporterOptions importer_options,
     typename GhNumericId::Variables::type gh_selected_variables,
     typename ScalarNumericId::Variables::type hydro_selected_variables)
-    : gh_numeric_id_(file_glob, subfile_name, observation_value,
-                     observation_value_epsilon.value_or(1.0e-12),
-                     enable_interpolation, std::move(gh_selected_variables)),
-      scalar_numeric_id_(
-          std::move(file_glob), std::move(subfile_name), observation_value,
-          observation_value_epsilon.value_or(1.0e-12), enable_interpolation,
-          std::move(hydro_selected_variables)) {}
+    : gh_numeric_id_(importer_options, std::move(gh_selected_variables)),
+      scalar_numeric_id_(std::move(importer_options),
+                         std::move(hydro_selected_variables)) {}
 
 NumericInitialData::NumericInitialData(CkMigrateMessage* msg)
     : InitialData(msg) {}

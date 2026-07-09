@@ -480,11 +480,14 @@ ControlSystems:
 #   on this exact grid.
 InitialData:
   NumericInitialData:
-    FileGlob: "/path/to/initial_data.h5"
-    Subgroup: "VolumeData"
-    ObservationValue: Last
-    ObservationValueEpsilon: Auto
-    ElementsAreIdentical: False
+    VolumeData:
+      FileGlob: "/path/to/initial_data.h5"
+      Subgroup: "VolumeData"
+      ObservationValue: Last
+      ObservationValueEpsilon: Auto
+      ElementsAreIdentical: False
+      ExtrapolateIntoExcisions: False
+      NumThreads: 1
     Variables:
       Lapse: Lapse
       # Load a shift that is not corotating. See `docs/Examples/BbhInitialData`

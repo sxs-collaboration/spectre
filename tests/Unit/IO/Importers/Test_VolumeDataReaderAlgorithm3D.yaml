@@ -73,6 +73,8 @@ Importers:
     ObservationValue: 3.
     ObservationValueEpsilon: Auto
     ElementsAreIdentical: False
+    ExtrapolateIntoExcisions: False
+    NumThreads: 1
 
 ResourceInfo:
   AvoidGlobalProc0: false
