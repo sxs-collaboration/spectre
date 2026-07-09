@@ -97,6 +97,16 @@ void set_time_buffer_and_lmax(const gsl::not_null<DataVector*> time_buffer,
 
   for (size_t i = 0; i < data_table_dimensions[0]; ++i) {
     (*time_buffer)[i] = time_matrix(i, 0);
+    if (i > 0 and not((*time_buffer)[i - 1] < (*time_buffer)[i])) {
+      ERROR("Times in "
+            << data.subfile_path()
+            << " are not strictly increasing as required. The adjacent "
+               "times at indices "
+            << i - 1 << " and " << i << " are " << (*time_buffer)[i - 1]
+            << " and " << (*time_buffer)[i]
+            << ". Remove duplicate or overlapping time rows before using "
+               "this worldtube data for interpolation.");
+    }
   }
 
   if (is_modal_data) {

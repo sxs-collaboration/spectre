@@ -1147,6 +1147,29 @@ void test_bondi_worldtube_buffer_updater(const gsl::not_null<Generator*> gen) {
         gen, extraction_radius_in_filename, time_varies_fastest);
   }
 }
+
+void test_nonmonotonic_times_error() {
+  const std::string filename = "NonMonotonicTimes_CceR0100.h5";
+  if (file_system::check_if_file_exists(filename)) {
+    file_system::rm(filename, true);
+  }
+
+  {
+    h5::H5File<h5::AccessType::ReadWrite> h5_file{filename};
+    auto& lapse = h5_file.insert<h5::Dat>(
+        "/Lapse", std::vector<std::string>{"Time", "Y_0,0"}, 0);
+
+    lapse.append(std::vector<double>{0.0, 1.0});
+    lapse.append(std::vector<double>{2.0, 1.0});
+    lapse.append(std::vector<double>{1.0, 1.0});
+  }
+
+  CHECK_THROWS_WITH(
+      (MetricWorldtubeH5BufferUpdater<ComplexModalVector>{
+          filename, std::optional<double>{100.0}, true}),
+      Catch::Matchers::ContainsSubstring(
+          "Times in /Lapse are not strictly increasing as required."));
+}
 }  // namespace
 
 // An increased timeout because this test seems to have high variance in
@@ -1195,6 +1218,10 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.ReadBoundaryDataH5",
                                                 BondiBufferUpdater>(
         make_not_null(&gen));
     test_bondi_data_manager_du_dr_j();
+  }
+  {
+    INFO("Testing monotonically increasing times");
+    test_nonmonotonic_times_error();
   }
 }
 }  // namespace Cce
