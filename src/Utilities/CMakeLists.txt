@@ -72,6 +72,7 @@ spectre_target_headers(
   Rational.hpp
   Registration.hpp
   Requires.hpp
+  RuntimeCache.hpp
   SetNumberOfGridPoints.hpp
   SnakeCase.hpp
   Spherepack.hpp

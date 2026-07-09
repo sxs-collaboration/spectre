@@ -33,7 +33,7 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Literals.hpp"
 #include "Utilities/MakeArray.hpp"
-#include "Utilities/StaticCache.hpp"
+#include "Utilities/RuntimeCache.hpp"
 
 namespace Spectral {
 namespace {
@@ -123,7 +123,7 @@ const Matrix& projection_matrix_child_to_parent(const Mesh<1>& child_mesh,
           {child_extent, child_basis, child_quadrature}, local_child_size);
       return blaze::trans(prolongation_operator);
     };
-    const static auto cache_legendre = make_static_cache<
+    const static auto cache_legendre = make_runtime_cache<
         CacheEnumeration<Quadrature, Quadrature::Gauss,
                          Quadrature::GaussLobatto>,
         CacheRange<2_st, max_points_l + 1>,
@@ -140,7 +140,7 @@ const Matrix& projection_matrix_child_to_parent(const Mesh<1>& child_mesh,
                                 local_child_size);
         });
     const static auto cache_fourier =
-        make_static_cache<CacheRange<2_st, max_points_f + 1>,
+        make_runtime_cache<CacheRange<2_st, max_points_f + 1>,
                           CacheRange<2_st, max_points_f + 1>>(
             [compute_matrix](const size_t n_parent, const size_t n_child) {
               return compute_matrix(Basis::Fourier, Quadrature::Equiangular,
@@ -192,7 +192,7 @@ const Matrix& projection_matrix_child_to_parent(const Mesh<1>& child_mesh,
             return projection;
           };
       const static auto cache_legendre =
-          make_static_cache<CacheEnumeration<Quadrature, Quadrature::Gauss,
+          make_runtime_cache<CacheEnumeration<Quadrature, Quadrature::Gauss,
                                              Quadrature::GaussLobatto>,
                             CacheRange<2_st, max_points_l + 1>,
                             CacheEnumeration<Quadrature, Quadrature::Gauss,
@@ -204,7 +204,7 @@ const Matrix& projection_matrix_child_to_parent(const Mesh<1>& child_mesh,
                                       Basis::Legendre, q_child, n_child);
               });
       const static auto cache_fourier =
-          make_static_cache<CacheRange<2_st, max_points_f + 1>,
+          make_runtime_cache<CacheRange<2_st, max_points_f + 1>,
                             CacheRange<2_st, max_points_f + 1>>(
               [compute_matrix](const size_t n_parent, const size_t n_child) {
                 return compute_matrix(Basis::Fourier, Quadrature::Equiangular,
@@ -221,7 +221,7 @@ const Matrix& projection_matrix_child_to_parent(const Mesh<1>& child_mesh,
     }
 
     case SegmentSize::UpperHalf: {
-      const static auto cache = make_static_cache<
+      const static auto cache = make_runtime_cache<
           CacheEnumeration<Quadrature, Quadrature::Gauss,
                            Quadrature::GaussLobatto>,
           CacheRange<2_st, max_points_l + 1>,
@@ -302,7 +302,7 @@ const Matrix& projection_matrix_child_to_parent(const Mesh<1>& child_mesh,
 
     case SegmentSize::LowerHalf: {
       const static auto cache =
-          make_static_cache<CacheEnumeration<Quadrature, Quadrature::Gauss,
+          make_runtime_cache<CacheEnumeration<Quadrature, Quadrature::Gauss,
                                              Quadrature::GaussLobatto>,
                             CacheRange<2_st, max_points_l + 1>,
                             CacheEnumeration<Quadrature, Quadrature::Gauss,
@@ -413,7 +413,7 @@ const Matrix& projection_matrix_parent_to_child(const Mesh<1>& parent_mesh,
   switch (size) {
     case SegmentSize::Full: {
       const static auto cache =
-          make_static_cache<CacheEnumeration<Quadrature, Quadrature::Gauss,
+          make_runtime_cache<CacheEnumeration<Quadrature, Quadrature::Gauss,
                                              Quadrature::GaussLobatto>,
                             CacheRange<2_st, max_points_l + 1>,
                             CacheEnumeration<Quadrature, Quadrature::Gauss,
@@ -426,7 +426,7 @@ const Matrix& projection_matrix_parent_to_child(const Mesh<1>& parent_mesh,
 
     case SegmentSize::UpperHalf: {
       const static auto cache =
-          make_static_cache<CacheEnumeration<Quadrature, Quadrature::Gauss,
+          make_runtime_cache<CacheEnumeration<Quadrature, Quadrature::Gauss,
                                              Quadrature::GaussLobatto>,
                             CacheRange<2_st, max_points_l + 1>,
                             CacheEnumeration<Quadrature, Quadrature::Gauss,
@@ -441,7 +441,7 @@ const Matrix& projection_matrix_parent_to_child(const Mesh<1>& parent_mesh,
 
     case SegmentSize::LowerHalf: {
       const static auto cache =
-          make_static_cache<CacheEnumeration<Quadrature, Quadrature::Gauss,
+          make_runtime_cache<CacheEnumeration<Quadrature, Quadrature::Gauss,
                                              Quadrature::GaussLobatto>,
                             CacheRange<2_st, max_points_l + 1>,
                             CacheEnumeration<Quadrature, Quadrature::Gauss,
