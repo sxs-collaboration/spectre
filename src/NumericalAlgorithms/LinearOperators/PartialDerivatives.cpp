@@ -7,6 +7,7 @@
 #include <blaze/math/DynamicMatrix.h>
 #include <cstddef>
 #include <functional>
+#include <type_traits>
 #include <vector>
 
 #include "DataStructures/ComplexDataVector.hpp"
@@ -86,6 +87,325 @@ void apply_matrix_in_first_dim(std::complex<double>* result,
   //   raw_transpose(make_not_null(reinterpret_cast<double*>(result)),
   //                 buffer.data(), size, 2);
 }
+
+// NOLINTBEGIN(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+// NOLINTBEGIN(cppcoreguidelines-pro-bounds-constant-array-index)
+namespace {
+// Fixed-size differentiation kernels. Each kernel is templated on the extent
+// of the dimension it contracts over (needed at compile time so the
+// accumulators live in vector registers); every other extent is a runtime
+// batch count over unit-stride data. Written as plain FMA loops that
+// auto-vectorize (AVX-512/AVX2/NEON) with no BLAS packing and no transposes.
+
+// Largest extent handled by the fast path; larger meshes fall back to the
+// generic dgemm+transpose implementation.
+constexpr size_t fast_path_max_extent = 20;
+
+// Calls f(std::integral_constant<size_t, extent>{}) for extents in the
+// instantiated kernel range. Returns false outside the range so callers can
+// fall back to the generic implementation.
+template <typename F>
+bool dispatch_on_extent(const size_t extent, const F& f) {
+  switch (extent) {
+    case 2:
+      f(std::integral_constant<size_t, 2>{});
+      return true;
+    case 3:
+      f(std::integral_constant<size_t, 3>{});
+      return true;
+    case 4:
+      f(std::integral_constant<size_t, 4>{});
+      return true;
+    case 5:
+      f(std::integral_constant<size_t, 5>{});
+      return true;
+    case 6:
+      f(std::integral_constant<size_t, 6>{});
+      return true;
+    case 7:
+      f(std::integral_constant<size_t, 7>{});
+      return true;
+    case 8:
+      f(std::integral_constant<size_t, 8>{});
+      return true;
+    case 9:
+      f(std::integral_constant<size_t, 9>{});
+      return true;
+    case 10:
+      f(std::integral_constant<size_t, 10>{});
+      return true;
+    case 11:
+      f(std::integral_constant<size_t, 11>{});
+      return true;
+    case 12:
+      f(std::integral_constant<size_t, 12>{});
+      return true;
+    case 13:
+      f(std::integral_constant<size_t, 13>{});
+      return true;
+    case 14:
+      f(std::integral_constant<size_t, 14>{});
+      return true;
+    case 15:
+      f(std::integral_constant<size_t, 15>{});
+      return true;
+    case 16:
+      f(std::integral_constant<size_t, 16>{});
+      return true;
+    case 17:
+      f(std::integral_constant<size_t, 17>{});
+      return true;
+    case 18:
+      f(std::integral_constant<size_t, 18>{});
+      return true;
+    case 19:
+      f(std::integral_constant<size_t, 19>{});
+      return true;
+    case 20:
+      f(std::integral_constant<size_t, 20>{});
+      return true;
+    default:
+      return false;
+  }
+}
+
+// The kernels index the differentiation matrix with a column stride equal to
+// their compile-time extent, so the (tiny) matrix is copied out of blaze
+// storage (which may pad columns) once per call. A runtime column stride
+// measurably slows the kernels down with gcc.
+using PackedMatrix =
+    std::array<double, fast_path_max_extent * fast_path_max_extent>;
+
+PackedMatrix pack_matrix(const Matrix& matrix) {
+  PackedMatrix packed{};
+  const size_t extent = matrix.rows();
+  for (size_t k = 0; k < extent; ++k) {
+    for (size_t i = 0; i < extent; ++i) {
+      packed[i + (extent * k)] = matrix(i, k);
+    }
+  }
+  return packed;
+}
+
+// Differentiate along the first (fastest) logical dimension:
+// out(i, l) = sum_k D(i, k) u(k, l) for `number_of_lines` contiguous lines of
+// length N. The output line is accumulated in registers, one broadcast-FMA of
+// a matrix column per k.
+template <size_t N>
+void differentiate_first_dim(double* const out, const double* const u,
+                             const double* const matrix,
+                             const size_t number_of_lines) {
+  for (size_t line = 0; line < number_of_lines; ++line) {
+    const double* const u_line = u + (line * N);
+    double* const out_line = out + (line * N);
+    std::array<double, N> accumulator{};
+    for (size_t k = 0; k < N; ++k) {
+      const double u_k = u_line[k];
+      const double* const matrix_column = matrix + (k * N);
+      for (size_t i = 0; i < N; ++i) {
+        accumulator[i] += matrix_column[i] * u_k;
+      }
+    }
+    for (size_t i = 0; i < N; ++i) {
+      out_line[i] = accumulator[i];
+    }
+  }
+}
+
+// Differentiate along a middle or the slowest logical dimension with the
+// stride (the product of the extents of all faster dimensions) known at
+// compile time. The data is viewed as [batch][k][Stride] with the contracted
+// index k in the middle: out(s, i, b) = sum_k D(i, k) u(s, k, b). Each output
+// line of `Stride` values is accumulated in registers and stored exactly once
+// (a read-modify-write pass per k measured ~1.6x slower).
+template <size_t N, size_t Stride>
+void differentiate_middle_dim_small_stride(double* const out,
+                                           const double* const u,
+                                           const double* const matrix,
+                                           const size_t number_of_batches) {
+  for (size_t b = 0; b < number_of_batches; ++b) {
+    const double* const u_batch = u + (b * Stride * N);
+    double* const out_batch = out + (b * Stride * N);
+    for (size_t i = 0; i < N; ++i) {
+      std::array<double, Stride> accumulator{};
+      for (size_t k = 0; k < N; ++k) {
+        const double matrix_ik = matrix[i + (k * N)];
+        const double* const u_slice = u_batch + (k * Stride);
+        for (size_t x = 0; x < Stride; ++x) {
+          accumulator[x] += matrix_ik * u_slice[x];
+        }
+      }
+      double* const out_slice = out_batch + (i * Stride);
+      for (size_t x = 0; x < Stride; ++x) {
+        out_slice[x] = accumulator[x];
+      }
+    }
+  }
+}
+
+// One register-resident strip of width StripWidth for the runtime-stride
+// variant below: out_slice[s..s+W) = sum_k D(i,k) u(s.., k).
+template <size_t N, size_t StripWidth>
+void middle_dim_strip(double* const out_slice, const double* const u_batch,
+                      const double* const matrix, const size_t i,
+                      const size_t stride, const size_t s) {
+  std::array<double, StripWidth> accumulator{};
+  for (size_t k = 0; k < N; ++k) {
+    const double matrix_ik = matrix[i + (k * N)];
+    const double* const u_slice = u_batch + (k * stride) + s;
+    for (size_t j = 0; j < StripWidth; ++j) {
+      accumulator[j] += matrix_ik * u_slice[j];
+    }
+  }
+  for (size_t j = 0; j < StripWidth; ++j) {
+    out_slice[s + j] = accumulator[j];
+  }
+}
+
+// Runtime-stride variant, used when the stride exceeds the dispatch range
+// (i.e. for the slowest dimension of most meshes). Vectorized over the
+// contiguous fastest index in register-resident strips; the remainder after
+// the strips of 8 is handled by a 4/2/1 cascade of smaller strips so it stays
+// vectorized.
+template <size_t N>
+void differentiate_middle_dim(double* const out, const double* const u,
+                              const double* const matrix, const size_t stride,
+                              const size_t number_of_batches) {
+  for (size_t b = 0; b < number_of_batches; ++b) {
+    const double* const u_batch = u + (b * stride * N);
+    double* const out_batch = out + (b * stride * N);
+    for (size_t i = 0; i < N; ++i) {
+      double* const out_slice = out_batch + (i * stride);
+      size_t s = 0;
+      for (; s + 8 <= stride; s += 8) {
+        middle_dim_strip<N, 8>(out_slice, u_batch, matrix, i, stride, s);
+      }
+      if (s + 4 <= stride) {
+        middle_dim_strip<N, 4>(out_slice, u_batch, matrix, i, stride, s);
+        s += 4;
+      }
+      if (s + 2 <= stride) {
+        middle_dim_strip<N, 2>(out_slice, u_batch, matrix, i, stride, s);
+        s += 2;
+      }
+      if (s < stride) {
+        middle_dim_strip<N, 1>(out_slice, u_batch, matrix, i, stride, s);
+      }
+    }
+  }
+}
+
+// Differentiate along a middle or the slowest logical dimension, using the
+// compile-time-stride kernel whenever the stride is in dispatch range (always
+// true for the middle dimension when the fast path is active).
+template <size_t N>
+void differentiate_middle_dim_dispatch(double* const out, const double* const u,
+                                       const double* const matrix,
+                                       const size_t stride,
+                                       const size_t number_of_batches) {
+  const bool used_small_stride =
+      dispatch_on_extent(stride, [&](const auto stride_v) {
+        differentiate_middle_dim_small_stride<N, decltype(stride_v)::value>(
+            out, u, matrix, number_of_batches);
+      });
+  if (not used_small_stride) {
+    differentiate_middle_dim<N>(out, u, matrix, stride, number_of_batches);
+  }
+}
+
+template <size_t Dim>
+bool fast_path_supports(const Mesh<Dim>& mesh) {
+  for (size_t d = 0; d < Dim; ++d) {
+    if (mesh.basis(d) != Spectral::Basis::Legendre and
+        mesh.basis(d) != Spectral::Basis::Chebyshev) {
+      return false;
+    }
+    if (mesh.extents(d) < 2 or mesh.extents(d) > fast_path_max_extent) {
+      return false;
+    }
+  }
+  return true;
+}
+}  // namespace
+
+bool logical_derivatives_fast_path(
+    const std::array<double*, 1>& logical_derivs, const double* const u,
+    const size_t number_of_independent_components, const Mesh<1>& mesh) {
+  if (not fast_path_supports(mesh)) {
+    return false;
+  }
+  const PackedMatrix matrix_xi =
+      pack_matrix(Spectral::differentiation_matrix(mesh.slice_through(0)));
+  dispatch_on_extent(mesh.extents(0), [&](const auto extent) {
+    differentiate_first_dim<decltype(extent)::value>(
+        logical_derivs[0], u, matrix_xi.data(),
+        number_of_independent_components);
+  });
+  return true;
+}
+
+bool logical_derivatives_fast_path(
+    const std::array<double*, 2>& logical_derivs, const double* const u,
+    const size_t number_of_independent_components, const Mesh<2>& mesh) {
+  if (not fast_path_supports(mesh)) {
+    return false;
+  }
+  const size_t n0 = mesh.extents(0);
+  const size_t n1 = mesh.extents(1);
+  const PackedMatrix matrix_xi =
+      pack_matrix(Spectral::differentiation_matrix(mesh.slice_through(0)));
+  const PackedMatrix matrix_eta =
+      pack_matrix(Spectral::differentiation_matrix(mesh.slice_through(1)));
+  dispatch_on_extent(n0, [&](const auto extent) {
+    differentiate_first_dim<decltype(extent)::value>(
+        logical_derivs[0], u, matrix_xi.data(),
+        number_of_independent_components * n1);
+  });
+  dispatch_on_extent(n1, [&](const auto extent) {
+    differentiate_middle_dim_dispatch<decltype(extent)::value>(
+        logical_derivs[1], u, matrix_eta.data(), n0,
+        number_of_independent_components);
+  });
+  return true;
+}
+
+bool logical_derivatives_fast_path(
+    const std::array<double*, 3>& logical_derivs, const double* const u,
+    const size_t number_of_independent_components, const Mesh<3>& mesh) {
+  if (not fast_path_supports(mesh)) {
+    return false;
+  }
+  const size_t n0 = mesh.extents(0);
+  const size_t n1 = mesh.extents(1);
+  const size_t n2 = mesh.extents(2);
+  const PackedMatrix matrix_xi =
+      pack_matrix(Spectral::differentiation_matrix(mesh.slice_through(0)));
+  const PackedMatrix matrix_eta =
+      pack_matrix(Spectral::differentiation_matrix(mesh.slice_through(1)));
+  const PackedMatrix matrix_zeta =
+      pack_matrix(Spectral::differentiation_matrix(mesh.slice_through(2)));
+  // All three kernels batch over every component at once; for eta the batch
+  // also folds in the z-planes since the [comp][z] slabs are contiguous.
+  dispatch_on_extent(n0, [&](const auto extent) {
+    differentiate_first_dim<decltype(extent)::value>(
+        logical_derivs[0], u, matrix_xi.data(),
+        number_of_independent_components * n1 * n2);
+  });
+  dispatch_on_extent(n1, [&](const auto extent) {
+    differentiate_middle_dim_dispatch<decltype(extent)::value>(
+        logical_derivs[1], u, matrix_eta.data(), n0,
+        number_of_independent_components * n2);
+  });
+  dispatch_on_extent(n2, [&](const auto extent) {
+    differentiate_middle_dim_dispatch<decltype(extent)::value>(
+        logical_derivs[2], u, matrix_zeta.data(), n0 * n1,
+        number_of_independent_components);
+  });
+  return true;
+}
+
+// NOLINTEND(cppcoreguidelines-pro-bounds-constant-array-index)
+// NOLINTEND(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 }  // namespace partial_derivatives_detail
 
 template <typename DataType, typename SymmList, typename IndexList, size_t Dim>

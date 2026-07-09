@@ -851,6 +851,14 @@ struct LogicalImpl<1, VariableTags, DerivativeTags> {
             "for logical_partial_derivative.");
       }
     } else {
+      if constexpr (std::is_same_v<ValueType, double>) {
+        if (logical_derivatives_fast_path(
+                logical_partial_derivatives_of_u, u.data(),
+                Variables<DerivativeTags>::number_of_independent_components,
+                mesh)) {
+          return;
+        }
+      }
       const Matrix& differentiation_matrix_xi =
           Spectral::differentiation_matrix(mesh.slice_through(0));
       apply_matrix_in_first_dim(logical_partial_derivatives_of_u[0], u.data(),
@@ -1033,6 +1041,14 @@ struct LogicalImpl<2, VariableTags, DerivativeTags> {
       }
     } else {
       auto& logical_partial_derivatives_of_u = *logical_du;
+      if constexpr (std::is_same_v<ValueType, double>) {
+        if (logical_derivatives_fast_path(
+                logical_partial_derivatives_of_u, u.data(),
+                Variables<DerivativeTags>::number_of_independent_components,
+                mesh)) {
+          return;
+        }
+      }
       const size_t deriv_size =
           Variables<DerivativeTags>::number_of_independent_components *
           u.number_of_grid_points();
@@ -1307,6 +1323,14 @@ struct LogicalImpl<3, VariableTags, DerivativeTags> {
               Variables<T>::number_of_independent_components,
           "Temporary buffer in logical partial derivatives is too small");
       auto& logical_partial_derivatives_of_u = *logical_du;
+      if constexpr (std::is_same_v<ValueType, double>) {
+        if (logical_derivatives_fast_path(
+                logical_partial_derivatives_of_u, u.data(),
+                Variables<DerivativeTags>::number_of_independent_components,
+                mesh)) {
+          return;
+        }
+      }
       const Matrix& differentiation_matrix_xi =
           Spectral::differentiation_matrix(mesh.slice_through(0));
       const size_t deriv_size =
