@@ -197,13 +197,11 @@ Variables<TagsList> mass_conservative_restriction(
   if constexpr (FaceDim == 0) {
     return mortar_vars;
   } else {
-    const auto projection_matrices =
-        Spectral::projection_matrix_child_to_parent(mortar_mesh, face_mesh,
-                                                    mortar_size, true);
     mortar_vars *= get(mortar_jacobian);
     ::dg::apply_mass_matrix(make_not_null(&mortar_vars), mortar_mesh);
-    auto face_vars =
-        apply_matrices(projection_matrices, mortar_vars, mortar_mesh.extents());
+    auto face_vars = Spectral::project(
+        mortar_vars, mortar_mesh, face_mesh, mortar_size,
+        make_array<FaceDim>(Spectral::SegmentSize::Full), true);
     face_vars /= get(face_jacobian);
     ::dg::apply_inverse_mass_matrix(make_not_null(&face_vars), face_mesh);
     return face_vars;

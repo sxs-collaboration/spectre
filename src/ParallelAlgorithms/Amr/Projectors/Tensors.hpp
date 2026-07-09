@@ -3,11 +3,12 @@
 
 #pragma once
 
+#include <array>
 #include <cstddef>
 #include <unordered_map>
 #include <utility>
 
-#include "DataStructures/ApplyMatrices.hpp"
+#include "DataStructures/DataVector.hpp"
 #include "DataStructures/TaggedTuple.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Domain/Structure/ChildSize.hpp"
@@ -16,8 +17,10 @@
 #include "Domain/Tags.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Projection.hpp"
+#include "NumericalAlgorithms/Spectral/SegmentSize.hpp"
 #include "ParallelAlgorithms/Amr/Protocols/Projector.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/MakeArray.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace amr::projectors {
@@ -47,13 +50,12 @@ struct ProjectTensors : tt::ConformsTo<amr::protocols::Projector> {
     if (old_mesh == new_mesh) {
       return;  // mesh was not refined, so no projection needed
     }
-    const auto projection_matrices =
-        Spectral::p_projection_matrices(old_mesh, new_mesh);
-    const auto& old_extents = old_mesh.extents();
-    const auto project_tensor = [&projection_matrices,
-                                 old_extents](auto& tensor) {
+    const auto project_tensor = [&old_mesh, &new_mesh](auto& tensor) {
       for (size_t i = 0; i < tensor.size(); ++i) {
-        tensor[i] = apply_matrices(projection_matrices, tensor[i], old_extents);
+        tensor[i] =
+            Spectral::project(tensor[i], old_mesh, new_mesh,
+                              make_array<Dim>(Spectral::SegmentSize::Full),
+                              make_array<Dim>(Spectral::SegmentSize::Full));
       }
     };
     EXPAND_PACK_LEFT_TO_RIGHT(project_tensor(*tensors));
@@ -68,13 +70,11 @@ struct ProjectTensors : tt::ConformsTo<amr::protocols::Projector> {
     const auto& parent_mesh = get<domain::Tags::Mesh<Dim>>(parent_items);
     const auto child_sizes =
         domain::child_size(element_id.segment_ids(), parent_id.segment_ids());
-    const auto projection_matrices =
-        Spectral::projection_matrix_parent_to_child(parent_mesh, new_mesh,
-                                                    child_sizes);
     const auto project_tensor = [&](auto& new_tensor, const auto& old_tensor) {
       for (size_t i = 0; i < new_tensor.size(); ++i) {
-        new_tensor[i] = apply_matrices(projection_matrices, old_tensor[i],
-                                       parent_mesh.extents());
+        Spectral::project(
+            make_not_null(&new_tensor[i]), old_tensor[i], parent_mesh, new_mesh,
+            make_array<Dim>(Spectral::SegmentSize::Full), child_sizes);
       }
       return 0;
     };
@@ -93,15 +93,13 @@ struct ProjectTensors : tt::ConformsTo<amr::protocols::Projector> {
       const auto& child_mesh = get<domain::Tags::Mesh<Dim>>(child_items);
       const auto child_sizes =
           domain::child_size(child_id.segment_ids(), element_id.segment_ids());
-      const auto projection_matrices =
-          Spectral::projection_matrix_child_to_parent(child_mesh, new_mesh,
-                                                      child_sizes);
       if (first_child) {
         const auto project_tensor = [&](auto& new_tensor,
                                         const auto& old_tensor) {
           for (size_t i = 0; i < new_tensor.size(); ++i) {
-            new_tensor[i] = apply_matrices(projection_matrices, old_tensor[i],
-                                           child_mesh.extents());
+            Spectral::project(make_not_null(&new_tensor[i]), old_tensor[i],
+                              child_mesh, new_mesh, child_sizes,
+                              make_array<Dim>(Spectral::SegmentSize::Full));
           }
           return 0;
         };
@@ -111,8 +109,9 @@ struct ProjectTensors : tt::ConformsTo<amr::protocols::Projector> {
         const auto project_tensor = [&](auto& new_tensor,
                                         const auto& old_tensor) {
           for (size_t i = 0; i < new_tensor.size(); ++i) {
-            new_tensor[i] += apply_matrices(projection_matrices, old_tensor[i],
-                                            child_mesh.extents());
+            new_tensor[i] += Spectral::project(
+                old_tensor[i], child_mesh, new_mesh, child_sizes,
+                make_array<Dim>(Spectral::SegmentSize::Full));
           }
           return 0;
         };

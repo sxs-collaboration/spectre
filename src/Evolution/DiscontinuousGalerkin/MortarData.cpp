@@ -12,7 +12,6 @@
 #include <utility>
 #include <vector>
 
-#include "DataStructures/ApplyMatrices.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
@@ -43,15 +42,13 @@ bool p_project_geometric_data(
     if (mortar_data->face_normal_magnitude.has_value()) {
       const auto& old_face_mesh = mortar_data->face_mesh.value();
       if (old_face_mesh != new_face_mesh) {
-        const auto face_projection_matrices =
-            Spectral::p_projection_matrices(old_face_mesh, new_face_mesh);
+        const auto full = make_array<Dim - 1>(Spectral::SegmentSize::Full);
         DataVector& n = get(mortar_data->face_normal_magnitude.value());
-        n = apply_matrices(face_projection_matrices, n,
-                           old_face_mesh.extents());
+        n = Spectral::project(n, old_face_mesh, new_face_mesh, full, full);
         if (mortar_data->face_det_jacobian.has_value()) {
           DataVector& det_j = get(mortar_data->face_det_jacobian.value());
-          det_j = apply_matrices(face_projection_matrices, det_j,
-                                 old_face_mesh.extents());
+          det_j = Spectral::project(det_j, old_face_mesh, new_face_mesh, full,
+                                    full);
         }
         mortar_data->face_mesh = new_face_mesh;
         changed = true;
@@ -61,11 +58,10 @@ bool p_project_geometric_data(
   if (mortar_data->volume_det_inv_jacobian.has_value()) {
     const auto& old_volume_mesh = mortar_data->volume_mesh.value();
     if (old_volume_mesh != new_volume_mesh) {
-      const auto volume_projection_matrices =
-          Spectral::p_projection_matrices(old_volume_mesh, new_volume_mesh);
+      const auto full = make_array<Dim>(Spectral::SegmentSize::Full);
       DataVector& det_inv_j = get(mortar_data->volume_det_inv_jacobian.value());
-      det_inv_j = apply_matrices(volume_projection_matrices, det_inv_j,
-                                 old_volume_mesh.extents());
+      det_inv_j = Spectral::project(det_inv_j, old_volume_mesh, new_volume_mesh,
+                                    full, full);
       mortar_data->volume_mesh = new_volume_mesh;
       changed = true;
     }
@@ -83,11 +79,10 @@ bool p_project_mortar_data(
     if (old_mortar_mesh == new_mortar_mesh) {
       return false;
     }
-    const auto mortar_projection_matrices =
-        Spectral::p_projection_matrices(old_mortar_mesh, new_mortar_mesh);
+    const auto full = make_array<Dim - 1>(Spectral::SegmentSize::Full);
     DataVector& vars = mortar_data->mortar_data.value();
-    vars = apply_matrices(mortar_projection_matrices, vars,
-                          old_mortar_mesh.extents());
+    vars =
+        Spectral::project(vars, old_mortar_mesh, new_mortar_mesh, full, full);
     mortar_data->mortar_mesh = new_mortar_mesh;
     return true;
   } else {

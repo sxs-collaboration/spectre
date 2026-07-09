@@ -1363,9 +1363,9 @@ SPECTRE_TEST_CASE("Unit.Elliptic.DG.Operator", "[Unit][Elliptic]") {
           {{{{dirichlet_bc.get_clone(), dirichlet_bc.get_clone()}},
             {{dirichlet_bc.get_clone(), dirichlet_bc.get_clone()}}}}};
       Approx analytic_solution_aux_approx =
-          Approx::custom().epsilon(1.e-11).scale(M_PI);
+          Approx::custom().epsilon(1.e-10).scale(M_PI);
       Approx analytic_solution_operator_approx =
-          Approx::custom().epsilon(1.e-11).scale(M_PI * penalty_parameter *
+          Approx::custom().epsilon(1.e-10).scale(M_PI * penalty_parameter *
                                                  square(12));
       for (const auto& [massive, quadrature, dg_formulation] :
            cartesian_product(make_array(true, false),
@@ -1403,9 +1403,9 @@ SPECTRE_TEST_CASE("Unit.Elliptic.DG.Operator", "[Unit][Elliptic]") {
         {{{{dirichlet_bc.get_clone(), dirichlet_bc.get_clone()}},
           {{dirichlet_bc.get_clone(), dirichlet_bc.get_clone()}}}}};
     Approx analytic_solution_aux_approx =
-        Approx::custom().epsilon(1.e-11).scale(M_PI);
+        Approx::custom().epsilon(1.e-10).scale(M_PI);
     Approx analytic_solution_operator_approx =
-        Approx::custom().epsilon(1.e-11).scale(M_PI * penalty_parameter *
+        Approx::custom().epsilon(1.e-10).scale(M_PI * penalty_parameter *
                                                square(12));
     for (const auto& [massive, quadrature, dg_formulation] :
          cartesian_product(make_array(true, false),

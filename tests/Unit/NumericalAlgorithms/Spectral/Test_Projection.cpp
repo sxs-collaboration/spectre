@@ -5,9 +5,17 @@
 
 #include <cstddef>
 #include <initializer_list>
+#include <random>
+#include <vector>
 
+#include "DataStructures/ApplyMatrices.hpp"
+#include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Matrix.hpp"
+#include "DataStructures/Tensor/Tensor.hpp"
+#include "DataStructures/Variables.hpp"
+#include "Framework/TestHelpers.hpp"
+#include "Helpers/DataStructures/MakeWithRandomValues.hpp"
 #include "Helpers/NumericalAlgorithms/Spectral/FourierTestFunctions.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/ApplyMassMatrix.hpp"
 #include "NumericalAlgorithms/LinearOperators/DefiniteIntegral.hpp"
@@ -20,10 +28,15 @@
 #include "NumericalAlgorithms/Spectral/Projection.hpp"
 #include "NumericalAlgorithms/Spectral/Quadrature.hpp"
 #include "NumericalAlgorithms/Spectral/SegmentSize.hpp"
+#include "NumericalAlgorithms/SphericalHarmonics/Spherepack.hpp"
+#include "NumericalAlgorithms/SphericalHarmonics/SpherepackCache.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/GetOutput.hpp"
+#include "Utilities/Gsl.hpp"
 #include "Utilities/MakeArray.hpp"
+#include "Utilities/Math.hpp"
+#include "Utilities/TMPL.hpp"
 
 namespace Spectral {
 namespace {
@@ -517,8 +530,9 @@ void test_p_projection_matrices() {
   const auto quadrature = Spectral::Quadrature::GaussLobatto;
   {
     INFO("Identity");
-    const auto identity = Spectral::p_projection_matrices(
-        Mesh<Dim>{3, basis, quadrature}, Mesh<Dim>{3, basis, quadrature});
+    const auto identity = Spectral::projection_matrices(
+        Mesh<Dim>{3, basis, quadrature}, Mesh<Dim>{3, basis, quadrature},
+        make_array<Dim>(SegmentSize::Full), make_array<Dim>(SegmentSize::Full));
     for (size_t d = 0; d < Dim; ++d) {
       CHECK(gsl::at(identity, d).get() == Matrix{});
     }
@@ -527,9 +541,10 @@ void test_p_projection_matrices() {
     const size_t source_extents = 4;
     std::array<size_t, Dim> target_extents{};
     std::iota(target_extents.begin(), target_extents.end(), size_t{3});
-    const auto projection_matrix = Spectral::p_projection_matrices(
+    const auto projection_matrix = Spectral::projection_matrices(
         Mesh<Dim>{source_extents, basis, quadrature},
-        Mesh<Dim>{target_extents, basis, quadrature});
+        Mesh<Dim>{target_extents, basis, quadrature},
+        make_array<Dim>(SegmentSize::Full), make_array<Dim>(SegmentSize::Full));
     CHECK(&projection_matrix[0].get() ==
           &Spectral::projection_matrix_child_to_parent(
               {4, basis, quadrature}, {3, basis, quadrature},
@@ -540,6 +555,11 @@ void test_p_projection_matrices() {
     if constexpr (Dim > 2) {
       CHECK(&projection_matrix[2].get() ==
             &Spectral::projection_matrix_child_to_parent(
+                {4, basis, quadrature}, {5, basis, quadrature},
+                Spectral::SegmentSize::Full));
+      // Interpolation is the same as mode-padding
+      CHECK(projection_matrix[2].get() ==
+            Spectral::projection_matrix_parent_to_child(
                 {4, basis, quadrature}, {5, basis, quadrature},
                 Spectral::SegmentSize::Full));
     }
@@ -820,6 +840,323 @@ void test_hash() {
   CHECK(Spectral::MortarSizeHash<3>{}(
             {Spectral::SegmentSize::Full, Spectral::SegmentSize::Full}) == 0);
 }
+
+// Tags used by the Variables overload test of Spectral::project.
+struct Scalar1 : db::SimpleTag {
+  using type = Scalar<DataVector>;
+};
+struct Scalar2 : db::SimpleTag {
+  using type = Scalar<DataVector>;
+};
+
+Mesh<3> shell_mesh(const size_t num_radial_points, const size_t l_max) {
+  return Mesh<3>{
+      {{num_radial_points, l_max + 1, 2 * l_max + 1}},
+      {{Spectral::Basis::Legendre, Spectral::Basis::SphericalHarmonic,
+        Spectral::Basis::SphericalHarmonic}},
+      {{Spectral::Quadrature::GaussLobatto, Spectral::Quadrature::Gauss,
+        Spectral::Quadrature::Equiangular}}};
+}
+
+Mesh<2> sphere_mesh(const size_t l_max) {
+  return Mesh<2>{
+      {{l_max + 1, 2 * l_max + 1}},
+      {{Spectral::Basis::SphericalHarmonic,
+        Spectral::Basis::SphericalHarmonic}},
+      {{Spectral::Quadrature::Gauss, Spectral::Quadrature::Equiangular}}};
+}
+
+// Build volume data on a spherical shell representing the separable function
+// radial_poly(r) * angular(theta, phi), where the angular part is defined by
+// `reference_modes` (the Spherepack spectral coefficients at `l_reference`,
+// with no content above that degree) and radial_poly is the polynomial with the
+// given `radial_coeffs` in the logical radial coordinate. As long as the mesh
+// resolves both factors (l_max >= l_reference and num_radial_points > degree),
+// this is the *same* function on every such mesh, so Spectral::project between
+// two of them must reproduce it exactly.
+DataVector shell_field(const Mesh<3>& mesh, const DataVector& reference_modes,
+                       const size_t l_reference,
+                       const std::vector<double>& radial_coeffs) {
+  const size_t l_max = mesh.extents(1) - 1;
+  const size_t num_radial_points = mesh.extents(0);
+  const ylm::Spherepack& ylm = ylm::get_spherepack_cache(l_max);
+  const DataVector modes = ylm::Spherepack::prolong_or_restrict(
+      reference_modes, l_reference, l_reference, l_max, l_max);
+  const DataVector angular = ylm.spec_to_phys(modes);
+  const DataVector radial = evaluate_polynomial(
+      radial_coeffs, Spectral::collocation_points(mesh.slice_through(0)));
+  DataVector field(num_radial_points * angular.size());
+  for (size_t a = 0; a < angular.size(); ++a) {
+    for (size_t r = 0; r < num_radial_points; ++r) {
+      field[r + num_radial_points * a] = radial[r] * angular[a];
+    }
+  }
+  return field;
+}
+
+// The angular factor of shell_field on its own, as a function on the 2D sphere
+// `mesh`. It contains no angular modes above degree `l_reference`, so it is the
+// same function on every mesh that resolves it (l_max >= l_reference) and
+// Spectral::project between two such meshes must reproduce it exactly.
+DataVector sphere_field(const Mesh<2>& mesh, const DataVector& reference_modes,
+                        const size_t l_reference) {
+  const size_t l_max = mesh.extents(0) - 1;
+  const ylm::Spherepack& ylm = ylm::get_spherepack_cache(l_max);
+  const DataVector modes = ylm::Spherepack::prolong_or_restrict(
+      reference_modes, l_reference, l_reference, l_max, l_max);
+  return ylm.spec_to_phys(modes);
+}
+
+// The cube (tensor-product) path of Spectral::project must reproduce exactly
+// the behavior of the matrix-returning API, so existing consumers are
+// unchanged.
+void test_project_cube() {
+  MAKE_GENERATOR(gen);
+  std::uniform_real_distribution<double> dist(-1.0, 1.0);
+  // p-refinement
+  {
+    const Mesh<2> source{{{3, 4}},
+                         Spectral::Basis::Legendre,
+                         Spectral::Quadrature::GaussLobatto};
+    const Mesh<2> target{{{5, 6}},
+                         Spectral::Basis::Legendre,
+                         Spectral::Quadrature::GaussLobatto};
+    DataVector data(source.number_of_grid_points());
+    fill_with_random_values(make_not_null(&data), make_not_null(&gen),
+                            make_not_null(&dist));
+    DataVector result{};
+    Spectral::project(make_not_null(&result), data, source, target,
+                      make_array<2>(Spectral::SegmentSize::Full),
+                      make_array<2>(Spectral::SegmentSize::Full));
+    const DataVector expected = apply_matrices(
+        Spectral::projection_matrices(
+            source, target, make_array<2>(Spectral::SegmentSize::Full),
+            make_array<2>(Spectral::SegmentSize::Full)),
+        data, source.extents());
+    CHECK_ITERABLE_APPROX(result, expected);
+  }
+  // h-refinement (parent -> child) in dimension 0
+  {
+    const Mesh<2> parent{{{4, 4}},
+                         Spectral::Basis::Legendre,
+                         Spectral::Quadrature::GaussLobatto};
+    const Mesh<2> child{{{4, 4}},
+                        Spectral::Basis::Legendre,
+                        Spectral::Quadrature::GaussLobatto};
+    const std::array child_sizes{Spectral::SegmentSize::UpperHalf,
+                                 Spectral::SegmentSize::Full};
+    DataVector data(parent.number_of_grid_points());
+    fill_with_random_values(make_not_null(&data), make_not_null(&gen),
+                            make_not_null(&dist));
+    DataVector result{};
+    Spectral::project(make_not_null(&result), data, parent, child,
+                      make_array<2>(Spectral::SegmentSize::Full), child_sizes);
+    const DataVector expected = apply_matrices(
+        Spectral::projection_matrix_parent_to_child(parent, child, child_sizes),
+        data, parent.extents());
+    CHECK_ITERABLE_APPROX(result, expected);
+  }
+  // massive restriction (child -> parent)
+  {
+    const Mesh<2> child{{{5, 5}},
+                        Spectral::Basis::Legendre,
+                        Spectral::Quadrature::GaussLobatto};
+    const Mesh<2> parent{{{3, 3}},
+                         Spectral::Basis::Legendre,
+                         Spectral::Quadrature::GaussLobatto};
+    const std::array child_sizes{Spectral::SegmentSize::LowerHalf,
+                                 Spectral::SegmentSize::Full};
+    DataVector data(child.number_of_grid_points());
+    fill_with_random_values(make_not_null(&data), make_not_null(&gen),
+                            make_not_null(&dist));
+    DataVector result{};
+    Spectral::project(make_not_null(&result), data, child, parent, child_sizes,
+                      make_array<2>(Spectral::SegmentSize::Full), true);
+    const DataVector expected =
+        apply_matrices(Spectral::projection_matrix_child_to_parent(
+                           child, parent, child_sizes, true),
+                       data, child.extents());
+    CHECK_ITERABLE_APPROX(result, expected);
+  }
+}
+
+void test_project_shell() {
+  MAKE_GENERATOR(gen);
+  std::uniform_real_distribution<double> dist(-1.0, 1.0);
+  const size_t l_reference = 4;
+  const ylm::Spherepack& ylm_reference = ylm::get_spherepack_cache(l_reference);
+  DataVector reference_phys(ylm_reference.physical_size());
+  fill_with_random_values(make_not_null(&reference_phys), make_not_null(&gen),
+                          make_not_null(&dist));
+  const DataVector reference_modes = ylm_reference.phys_to_spec(reference_phys);
+  std::vector<double> radial_coeffs(4);  // polynomial of degree 3
+  fill_with_random_values(make_not_null(&radial_coeffs), make_not_null(&gen),
+                          make_not_null(&dist));
+
+  const auto check_exact = [&reference_modes, &radial_coeffs](
+                               const Mesh<3>& source, const Mesh<3>& target) {
+    const DataVector source_field =
+        shell_field(source, reference_modes, l_reference, radial_coeffs);
+    const DataVector target_field =
+        shell_field(target, reference_modes, l_reference, radial_coeffs);
+    DataVector result{};
+    Spectral::project(make_not_null(&result), source_field, source, target,
+                      make_array<3>(Spectral::SegmentSize::Full),
+                      make_array<3>(Spectral::SegmentSize::Full));
+    CHECK_ITERABLE_APPROX(result, target_field);
+  };
+
+  const auto coarse = shell_mesh(5, 6);
+  const auto fine = shell_mesh(7, 10);
+  // identity
+  check_exact(coarse, coarse);
+  // combined radial + angular, both directions
+  check_exact(coarse, fine);
+  check_exact(fine, coarse);
+  // radial-only (angular l_max unchanged)
+  check_exact(shell_mesh(5, 6), shell_mesh(8, 6));
+  check_exact(shell_mesh(8, 6), shell_mesh(5, 6));
+  // angular-only (radial unchanged)
+  check_exact(shell_mesh(5, 6), shell_mesh(5, 9));
+  check_exact(shell_mesh(5, 9), shell_mesh(5, 6));
+
+  // prolong-then-restrict round trip returns the original coarse field
+  {
+    const DataVector coarse_field =
+        shell_field(coarse, reference_modes, l_reference, radial_coeffs);
+    DataVector fine_result{};
+    Spectral::project(make_not_null(&fine_result), coarse_field, coarse, fine,
+                      make_array<3>(Spectral::SegmentSize::Full),
+                      make_array<3>(Spectral::SegmentSize::Full));
+    DataVector round_trip{};
+    Spectral::project(make_not_null(&round_trip), fine_result, fine, coarse,
+                      make_array<3>(Spectral::SegmentSize::Full),
+                      make_array<3>(Spectral::SegmentSize::Full));
+    CHECK_ITERABLE_APPROX(round_trip, coarse_field);
+  }
+
+  // Variables overload is consistent with the DataVector overload
+  {
+    std::vector<double> other_radial_coeffs(4);
+    fill_with_random_values(make_not_null(&other_radial_coeffs),
+                            make_not_null(&gen), make_not_null(&dist));
+    using vars_tags = tmpl::list<Scalar1, Scalar2>;
+    Variables<vars_tags> source_vars(coarse.number_of_grid_points());
+    get(get<Scalar1>(source_vars)) =
+        shell_field(coarse, reference_modes, l_reference, radial_coeffs);
+    get(get<Scalar2>(source_vars)) =
+        shell_field(coarse, reference_modes, l_reference, other_radial_coeffs);
+    Variables<vars_tags> result_vars{};
+    Spectral::project(make_not_null(&result_vars), source_vars, coarse, fine,
+                      make_array<3>(Spectral::SegmentSize::Full),
+                      make_array<3>(Spectral::SegmentSize::Full));
+    DataVector expected1{};
+    DataVector expected2{};
+    Spectral::project(make_not_null(&expected1), get(get<Scalar1>(source_vars)),
+                      coarse, fine, make_array<3>(Spectral::SegmentSize::Full),
+                      make_array<3>(Spectral::SegmentSize::Full));
+    Spectral::project(make_not_null(&expected2), get(get<Scalar2>(source_vars)),
+                      coarse, fine, make_array<3>(Spectral::SegmentSize::Full),
+                      make_array<3>(Spectral::SegmentSize::Full));
+    CHECK_ITERABLE_APPROX(get(get<Scalar1>(result_vars)), expected1);
+    CHECK_ITERABLE_APPROX(get(get<Scalar2>(result_vars)), expected2);
+  }
+}
+
+// 2D spherical shell (sphere surface): angular-only projection, exercised
+// through both the DataVector and Variables overloads.
+void test_project_shell_2d() {
+  MAKE_GENERATOR(gen);
+  std::uniform_real_distribution<double> dist(-1.0, 1.0);
+  const size_t l_reference = 4;
+  const ylm::Spherepack& ylm_reference = ylm::get_spherepack_cache(l_reference);
+  DataVector reference_phys(ylm_reference.physical_size());
+  fill_with_random_values(make_not_null(&reference_phys), make_not_null(&gen),
+                          make_not_null(&dist));
+  const DataVector reference_modes = ylm_reference.phys_to_spec(reference_phys);
+
+  const auto coarse = sphere_mesh(6);
+  const auto fine = sphere_mesh(10);
+  const auto full = make_array<2>(Spectral::SegmentSize::Full);
+  const auto check_exact = [&reference_modes, &full](const Mesh<2>& source,
+                                                     const Mesh<2>& target) {
+    const DataVector source_field =
+        sphere_field(source, reference_modes, l_reference);
+    const DataVector target_field =
+        sphere_field(target, reference_modes, l_reference);
+    DataVector result{};
+    Spectral::project(make_not_null(&result), source_field, source, target,
+                      full, full);
+    CHECK_ITERABLE_APPROX(result, target_field);
+  };
+  check_exact(coarse, coarse);  // identity
+  check_exact(coarse, fine);
+  check_exact(fine, coarse);
+
+  // Variables overload is consistent with the DataVector overload
+  using vars_tags = tmpl::list<Scalar1, Scalar2>;
+  Variables<vars_tags> source_vars(coarse.number_of_grid_points());
+  get(get<Scalar1>(source_vars)) =
+      sphere_field(coarse, reference_modes, l_reference);
+  get(get<Scalar2>(source_vars)) =
+      2.0 * sphere_field(coarse, reference_modes, l_reference);
+  Variables<vars_tags> result_vars{};
+  Spectral::project(make_not_null(&result_vars), source_vars, coarse, fine,
+                    full, full);
+  CHECK_ITERABLE_APPROX(get(get<Scalar1>(result_vars)),
+                        sphere_field(fine, reference_modes, l_reference));
+  CHECK_ITERABLE_APPROX(get(get<Scalar2>(result_vars)),
+                        2.0 * sphere_field(fine, reference_modes, l_reference));
+}
+
+// The massive restriction must be the transpose of the (non-massive)
+// prolongation, just as for tensor-product meshes. Equivalently, for the
+// Euclidean inner products,
+//   <u_coarse, R_massive v_fine> == <I u_coarse, v_fine>,
+// where I is the prolongation coarse -> fine. This adjoint property is what
+// geometric multigrid relies on, so verify it across radial-only, angular-only,
+// and combined refinement of a spherical shell.
+void test_project_shell_massive() {
+  MAKE_GENERATOR(gen);
+  std::uniform_real_distribution<double> dist(-1.0, 1.0);
+  const auto full = make_array<3>(Spectral::SegmentSize::Full);
+  const auto custom_approx = Approx::custom().epsilon(1.0e-12).scale(1.0);
+  const auto check_adjoint = [&](const Mesh<3>& coarse, const Mesh<3>& fine) {
+    DataVector u_coarse(coarse.number_of_grid_points());
+    DataVector v_fine(fine.number_of_grid_points());
+    fill_with_random_values(make_not_null(&u_coarse), make_not_null(&gen),
+                            make_not_null(&dist));
+    fill_with_random_values(make_not_null(&v_fine), make_not_null(&gen),
+                            make_not_null(&dist));
+    DataVector prolonged{};
+    Spectral::project(make_not_null(&prolonged), u_coarse, coarse, fine, full,
+                      full);
+    DataVector restricted{};
+    Spectral::project(make_not_null(&restricted), v_fine, fine, coarse, full,
+                      full, true);
+    CHECK(sum(u_coarse * restricted) == custom_approx(sum(prolonged * v_fine)));
+  };
+  check_adjoint(shell_mesh(4, 4), shell_mesh(6, 7));  // radial and angular
+  check_adjoint(shell_mesh(4, 5), shell_mesh(6, 5));  // radial only
+  check_adjoint(shell_mesh(5, 4), shell_mesh(5, 7));  // angular only
+}
+
+#ifdef SPECTRE_DEBUG
+void test_project_shell_asserts() {
+  const auto coarse = shell_mesh(5, 6);
+  const auto fine = shell_mesh(7, 10);
+  DataVector data(coarse.number_of_grid_points(), 1.0);
+  DataVector result{};
+  // angular dimensions cannot be h-refined
+  CHECK_THROWS_WITH(
+      Spectral::project(make_not_null(&result), data, coarse, fine,
+                        std::array{Spectral::SegmentSize::Full,
+                                   Spectral::SegmentSize::UpperHalf,
+                                   Spectral::SegmentSize::Full},
+                        make_array<3>(Spectral::SegmentSize::Full)),
+      Catch::Matchers::ContainsSubstring("angular h-refinement"));
+}
+#endif  // SPECTRE_DEBUG
 }  // namespace
 
 // [[TimeOut, 10]]
@@ -851,8 +1188,13 @@ SPECTRE_TEST_CASE("Unit.Numerical.Spectral.Projection",
   test_projection_matrices<3>();
   test_fourier_p_projections();
   test_zernike_b2_fourier_equivalence();
+  test_project_cube();
+  test_project_shell();
+  test_project_shell_2d();
+  test_project_shell_massive();
 #ifdef SPECTRE_DEBUG
   test_fourier_and_zernikeb2_asserts();
+  test_project_shell_asserts();
 #endif  // SPECTRE_DEBUG
   test_hash();
 }

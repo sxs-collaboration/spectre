@@ -9,15 +9,22 @@
 #include <functional>
 #include <initializer_list>
 #include <ostream>
+#include <type_traits>
+#include <vector>
 
+#include "DataStructures/ApplyMatrices.hpp"
+#include "DataStructures/ComplexDataVector.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Matrix.hpp"
+#include "NumericalAlgorithms/Spectral/Basis.hpp"
 #include "NumericalAlgorithms/Spectral/CollocationPoints.hpp"
 #include "NumericalAlgorithms/Spectral/InterpolationMatrix.hpp"
 #include "NumericalAlgorithms/Spectral/MaximumNumberOfPoints.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/ModalToNodalMatrix.hpp"
 #include "NumericalAlgorithms/Spectral/NodalToModalMatrix.hpp"
+#include "NumericalAlgorithms/SphericalHarmonics/Spherepack.hpp"
+#include "NumericalAlgorithms/SphericalHarmonics/SpherepackCache.hpp"
 #include "Utilities/Algorithm.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
@@ -485,7 +492,8 @@ template <size_t Dim>
 std::array<std::reference_wrapper<const Matrix>, Dim> projection_matrices(
     const Mesh<Dim>& source_mesh, const Mesh<Dim>& target_mesh,
     const std::array<SegmentSize, Dim>& source_sizes,
-    const std::array<SegmentSize, Dim>& target_sizes) {
+    const std::array<SegmentSize, Dim>& target_sizes,
+    const bool operand_is_massive) {
   static const Matrix identity{};
   auto projection_matrices = make_array<Dim>(std::cref(identity));
   const auto source_mesh_slices = source_mesh.slices();
@@ -499,28 +507,179 @@ std::array<std::reference_wrapper<const Matrix>, Dim> projection_matrices(
       if (source_mesh_slice == target_mesh_slice) {
         // No projection necessary, keep matrix the identity in this dimension
       } else {
+        // p-restriction and p-prolongation are the same (mode
+        // truncation/zero-padding)
         gsl::at(projection_matrices, d) = projection_matrix_child_to_parent(
-            source_mesh_slice, target_mesh_slice, SegmentSize::Full);
+            source_mesh_slice, target_mesh_slice, SegmentSize::Full,
+            operand_is_massive);
       }
     } else if (source_size == SegmentSize::Full) {
+      // h-prolongation
+      ASSERT(not operand_is_massive,
+             "Massive projection is a restriction (child to parent); cannot "
+             "prolong a massive quantity from parent to child.");
       gsl::at(projection_matrices, d) = projection_matrix_parent_to_child(
           source_mesh_slice, target_mesh_slice, target_size);
     } else {
+      // h-restriction
       ASSERT(target_size == SegmentSize::Full,
              "Cannot project from one half of segment to the other.");
       gsl::at(projection_matrices, d) = projection_matrix_child_to_parent(
-          source_mesh_slice, target_mesh_slice, source_size);
+          source_mesh_slice, target_mesh_slice, source_size,
+          operand_is_massive);
     }
   }
   return projection_matrices;
 }
 
-template <size_t Dim>
-std::array<std::reference_wrapper<const Matrix>, Dim> p_projection_matrices(
-    const Mesh<Dim>& source_mesh, const Mesh<Dim>& target_mesh) {
-  return projection_matrices(source_mesh, target_mesh,
-                             make_array<Dim>(SegmentSize::Full),
-                             make_array<Dim>(SegmentSize::Full));
+void project_spherical_harmonics(const gsl::not_null<double*> result_data,
+                                 const double* const source_data,
+                                 const size_t num_components,
+                                 const size_t num_radial_points,
+                                 const size_t l_max_source,
+                                 const size_t l_max_target,
+                                 const bool operand_is_massive) {
+  const ylm::Spherepack& ylm_source = ylm::get_spherepack_cache(l_max_source);
+  const ylm::Spherepack& ylm_target = ylm::get_spherepack_cache(l_max_target);
+  const size_t source_points_per_component =
+      num_radial_points * ylm_source.physical_size();
+  const size_t target_points_per_component =
+      num_radial_points * ylm_target.physical_size();
+  DataVector source_coefficients(ylm_source.spectral_size() *
+                                 num_radial_points);
+  DataVector target_coefficients(ylm_target.spectral_size() *
+                                 num_radial_points);
+  // For massive restriction multiply by the angular quadrature weights:
+  // I^T = W_target * P_L2 * W_source^{-1}
+  const auto scale_by_angular_weights = [num_radial_points](
+                                            double* const data,
+                                            const std::vector<double>& weights,
+                                            const bool invert) {
+    for (size_t angular = 0; angular < weights.size(); ++angular) {
+      const double factor = invert ? 1.0 / weights[angular] : weights[angular];
+      for (size_t radial = 0; radial < num_radial_points; ++radial) {
+        data[angular * num_radial_points + radial] *= factor;
+      }
+    }
+  };
+  DataVector weighted_source(operand_is_massive ? source_points_per_component
+                                                : 0);
+  for (size_t component = 0; component < num_components; ++component) {
+    const double* source_component =
+        source_data + component * source_points_per_component;
+    if (operand_is_massive) {
+      std::copy(source_component,
+                source_component + source_points_per_component,
+                weighted_source.data());
+      scale_by_angular_weights(weighted_source.data(),
+                               ylm_source.integration_weights(), true);
+      source_component = weighted_source.data();
+    }
+    ylm_source.phys_to_spec_all_offsets(
+        make_not_null(source_coefficients.data()),
+        make_not_null(source_component), num_radial_points);
+    ylm::Spherepack::prolong_or_restrict(
+        make_not_null(&target_coefficients), source_coefficients, l_max_source,
+        l_max_source, l_max_target, l_max_target, num_radial_points);
+    double* const result_component =
+        result_data.get() + component * target_points_per_component;
+    ylm_target.spec_to_phys_all_offsets(
+        make_not_null(result_component),
+        make_not_null(target_coefficients.data()), num_radial_points);
+    if (operand_is_massive) {
+      scale_by_angular_weights(result_component,
+                               ylm_target.integration_weights(), false);
+    }
+  }
+}
+
+template <typename VectorType, size_t Dim>
+void project(const gsl::not_null<VectorType*> result, const VectorType& source,
+             const Mesh<Dim>& source_mesh, const Mesh<Dim>& target_mesh,
+             const std::array<SegmentSize, Dim>& source_sizes,
+             const std::array<SegmentSize, Dim>& target_sizes,
+             const bool operand_is_massive) {
+  ASSERT(result->data() != source.data(),
+         "The result must not alias the source, because the result is resized "
+         "to the target number of grid points.");
+  // The source may hold several components laid out component-major (e.g. a
+  // `Variables` or the multiple fields of DG boundary data), so infer the
+  // component count from its size.
+  ASSERT(source.size() % source_mesh.number_of_grid_points() == 0,
+         "The source size (" << source.size()
+                             << ") must be a multiple of the number of grid "
+                                "points in the source mesh ("
+                             << source_mesh.number_of_grid_points() << ").");
+  const size_t num_components =
+      source.size() / source_mesh.number_of_grid_points();
+  result->destructive_resize(num_components *
+                             target_mesh.number_of_grid_points());
+  // Handle spherical shells. This is only supported for real data because the
+  // Spherepack angular transforms operate on `double`.
+  if constexpr (std::is_same_v<VectorType, DataVector> and
+                (Dim == 2 or Dim == 3)) {
+    constexpr size_t theta_dim = Dim - 2;
+    if (source_mesh.basis(theta_dim) == Basis::SphericalHarmonic and
+        source_mesh.basis(theta_dim + 1) == Basis::SphericalHarmonic) {
+      ASSERT(target_mesh.basis(theta_dim) == Basis::SphericalHarmonic and
+                 target_mesh.basis(theta_dim + 1) == Basis::SphericalHarmonic,
+             "Both source and target meshes must be spherical-shell meshes.");
+      ASSERT(gsl::at(source_sizes, theta_dim) == SegmentSize::Full and
+                 gsl::at(source_sizes, theta_dim + 1) == SegmentSize::Full and
+                 gsl::at(target_sizes, theta_dim) == SegmentSize::Full and
+                 gsl::at(target_sizes, theta_dim + 1) == SegmentSize::Full,
+             "Spherical shells don't support angular h-refinement, so "
+             "the angular segment sizes must be Full.");
+      const size_t l_max_source = source_mesh.extents(theta_dim) - 1;
+      const size_t l_max_target = target_mesh.extents(theta_dim) - 1;
+      ASSERT(source_mesh.extents(theta_dim + 1) == 2 * l_max_source + 1 and
+                 target_mesh.extents(theta_dim + 1) == 2 * l_max_target + 1,
+             "Spherical-shell projection assumes m_max == l_max, i.e. "
+             "n_phi == 2 * l_max + 1.");
+      size_t num_radial_points = 1;
+      if constexpr (Dim == 3) {
+        // In 3D, project the radial dimension first
+        num_radial_points = target_mesh.extents(0);
+        const Matrix& radial_matrix = projection_matrices<1>(
+            source_mesh.slice_through(0), target_mesh.slice_through(0),
+            {{gsl::at(source_sizes, 0)}}, {{gsl::at(target_sizes, 0)}},
+            operand_is_massive)[0];
+        static const Matrix identity{};
+        if (radial_matrix != identity) {
+          const auto radial_matrices =
+              std::array{std::cref(radial_matrix), std::cref(identity),
+                         std::cref(identity)};
+          if (l_max_source == l_max_target) {
+            // Only radial projection needed, write directly into `result`
+            apply_matrices(result, radial_matrices, source,
+                           source_mesh.extents());
+          } else {
+            // First radial, then angular projection
+            const auto radially_projected =
+                apply_matrices(radial_matrices, source, source_mesh.extents());
+            project_spherical_harmonics(
+                make_not_null(result->data()), radially_projected.data(),
+                num_components, num_radial_points, l_max_source, l_max_target,
+                operand_is_massive);
+          }
+          return;
+        }
+      }
+      if (l_max_source == l_max_target) {
+        *result = source;
+      } else {
+        project_spherical_harmonics(
+            make_not_null(result->data()), source.data(), num_components,
+            num_radial_points, l_max_source, l_max_target, operand_is_massive);
+      }
+      return;
+    }
+  }
+  // Fall back to tensor-product projection for non-spherical meshes
+  apply_matrices(result,
+                 projection_matrices(source_mesh, target_mesh, source_sizes,
+                                     target_sizes, operand_is_massive),
+                 source, source_mesh.extents());
 }
 
 template <size_t DimMinusOne>
@@ -551,30 +710,41 @@ size_t MortarSizeHash<Dim>::operator()(
 }
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
-#define INSTANTIATE(r, data)                                                   \
-  template bool needs_projection(                                              \
-      const Mesh<DIM(data)>& mesh1, const Mesh<DIM(data)>& mesh2,              \
-      const std::array<SegmentSize, DIM(data)>& child_sizes);                  \
-  template std::array<std::reference_wrapper<const Matrix>, DIM(data)>         \
-  projection_matrix_child_to_parent(                                           \
-      const Mesh<DIM(data)>& child_mesh, const Mesh<DIM(data)>& parent_mesh,   \
-      const std::array<SegmentSize, DIM(data)>& child_sizes,                   \
-      bool operand_is_massive);                                                \
-  template std::array<std::reference_wrapper<const Matrix>, DIM(data)>         \
-  projection_matrix_parent_to_child(                                           \
-      const Mesh<DIM(data)>& parent_mesh, const Mesh<DIM(data)>& child_mesh,   \
-      const std::array<SegmentSize, DIM(data)>& child_sizes);                  \
-  template std::array<std::reference_wrapper<const Matrix>, DIM(data)>         \
-  projection_matrices(const Mesh<DIM(data)>& source_mesh,                      \
-                      const Mesh<DIM(data)>& target_mesh,                      \
-                      const std::array<SegmentSize, DIM(data)>& source_sizes,  \
-                      const std::array<SegmentSize, DIM(data)>& target_sizes); \
-  template std::array<std::reference_wrapper<const Matrix>, DIM(data)>         \
-  p_projection_matrices(const Mesh<DIM(data)>& source_mesh,                    \
-                        const Mesh<DIM(data)>& target_mesh);
+#define INSTANTIATE(r, data)                                                  \
+  template bool needs_projection(                                             \
+      const Mesh<DIM(data)>& mesh1, const Mesh<DIM(data)>& mesh2,             \
+      const std::array<SegmentSize, DIM(data)>& child_sizes);                 \
+  template std::array<std::reference_wrapper<const Matrix>, DIM(data)>        \
+  projection_matrix_child_to_parent(                                          \
+      const Mesh<DIM(data)>& child_mesh, const Mesh<DIM(data)>& parent_mesh,  \
+      const std::array<SegmentSize, DIM(data)>& child_sizes,                  \
+      bool operand_is_massive);                                               \
+  template std::array<std::reference_wrapper<const Matrix>, DIM(data)>        \
+  projection_matrix_parent_to_child(                                          \
+      const Mesh<DIM(data)>& parent_mesh, const Mesh<DIM(data)>& child_mesh,  \
+      const std::array<SegmentSize, DIM(data)>& child_sizes);                 \
+  template std::array<std::reference_wrapper<const Matrix>, DIM(data)>        \
+  projection_matrices(const Mesh<DIM(data)>& source_mesh,                     \
+                      const Mesh<DIM(data)>& target_mesh,                     \
+                      const std::array<SegmentSize, DIM(data)>& source_sizes, \
+                      const std::array<SegmentSize, DIM(data)>& target_sizes, \
+                      bool operand_is_massive);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (0, 1, 2, 3))
 #undef INSTANTIATE
+
+#define VECTOR(data) BOOST_PP_TUPLE_ELEM(1, data)
+#define INSTANTIATE(r, data)                                                  \
+  template void project(                                                      \
+      gsl::not_null<VECTOR(data)*> result, const VECTOR(data) & source,       \
+      const Mesh<DIM(data)>& source_mesh, const Mesh<DIM(data)>& target_mesh, \
+      const std::array<SegmentSize, DIM(data)>& source_sizes,                 \
+      const std::array<SegmentSize, DIM(data)>& target_sizes,                 \
+      bool operand_is_massive);
+GENERATE_INSTANTIATIONS(INSTANTIATE, (0, 1, 2, 3),
+                        (DataVector, ComplexDataVector))
+#undef INSTANTIATE
+#undef VECTOR
 
 #define INSTANTIATE(r, data) template class MortarSizeHash<DIM(data)>;
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))

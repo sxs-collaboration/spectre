@@ -552,6 +552,48 @@ void test_prolong_restrict() {
   }
 }
 
+// The strided overload of prolong_or_restrict must reproduce the single-set
+// overload applied independently to each interleaved set.
+void test_prolong_restrict_strided() {
+  MAKE_GENERATOR(gen);
+  std::uniform_real_distribution<double> dist(-1.0, 1.0);
+  constexpr size_t stride = 3;
+  const auto check = [&gen, &dist](
+                         const size_t l_max_source, const size_t m_max_source,
+                         const size_t l_max_target, const size_t m_max_target) {
+    const size_t source_size =
+        Spherepack::spectral_size(l_max_source, m_max_source);
+    const size_t target_size =
+        Spherepack::spectral_size(l_max_target, m_max_target);
+    std::array<DataVector, stride> sets{};
+    DataVector interleaved(source_size * stride);
+    for (size_t s = 0; s < stride; ++s) {
+      gsl::at(sets, s) = DataVector(source_size);
+      for (size_t c = 0; c < source_size; ++c) {
+        const double value = dist(gen);
+        gsl::at(sets, s)[c] = value;
+        interleaved[c * stride + s] = value;
+      }
+    }
+    const DataVector strided_result =
+        Spherepack::prolong_or_restrict(interleaved, l_max_source, m_max_source,
+                                        l_max_target, m_max_target, stride);
+    REQUIRE(strided_result.size() == target_size * stride);
+    for (size_t s = 0; s < stride; ++s) {
+      const DataVector expected = Spherepack::prolong_or_restrict(
+          gsl::at(sets, s), l_max_source, m_max_source, l_max_target,
+          m_max_target);
+      for (size_t c = 0; c < target_size; ++c) {
+        CHECK(strided_result[c * stride + s] == approx(expected[c]));
+      }
+    }
+  };
+  check(10, 10, 7, 7);  // restriction
+  check(7, 7, 10, 10);  // prolongation
+  check(10, 8, 6, 2);   // restriction in both l and m
+  check(5, 5, 5, 5);    // equal resolution (no-op)
+}
+
 void test_loop_over_offset(
     const size_t l_max, const size_t m_max, const size_t physical_stride,
     const YlmTestFunctions::ScalarFunctionWithDerivs& func) {
@@ -1330,6 +1372,7 @@ SPECTRE_TEST_CASE("Unit.ApparentHorizonFinder.Spherepack",
   }
 
   test_prolong_restrict();
+  test_prolong_restrict_strided();
 
   Spherepack s(4, 4);
   auto s_copy(s);
