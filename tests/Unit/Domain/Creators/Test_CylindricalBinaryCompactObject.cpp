@@ -17,6 +17,7 @@
 #include <tuple>
 #include <unordered_map>
 #include <utility>
+#include <variant>
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
@@ -40,6 +41,7 @@
 #include "Helpers/Domain/Creators/TestHelpers.hpp"
 #include "Helpers/Domain/DomainTestHelpers.hpp"
 #include "Informer/InfoFromBuild.hpp"
+#include "NumericalAlgorithms/SphericalHarmonics/Spherepack.hpp"
 #include "Utilities/CartesianProduct.hpp"
 #include "Utilities/GetOutput.hpp"
 #include "Utilities/MakeArray.hpp"
@@ -231,10 +233,9 @@ std::string create_option_string(
                                      get_output(value) + "," +
                                      get_output(value) + "]";
         const std::string shell_same =
-            is_h_refinement ? ("[" + get_output(value) + ", 0, 0]") : same;
+            is_h_refinement ? get_output(value) : same;
         const std::string shell_one_more =
-            is_h_refinement ? ("[" + get_output(value + 1) + ", 0, 0]")
-                            : one_more;
+            is_h_refinement ? get_output(value + 1) : one_more;
         std::string result{};
         if (include_extra) {
           result += "\n    Outer: " + one_more;
@@ -601,18 +602,47 @@ void test_parse_errors() {
 }
 
 // This matches the structure in the option string
-std::unordered_map<std::string, std::array<size_t, 3>> make_initial_structure(
-    const bool is_h_refinement, const size_t initial_value,
-    const bool include_inner_sphere_A, const bool include_inner_sphere_B) {
-  std::unordered_map<std::string, std::array<size_t, 3>> initial_map;
+std::unordered_map<std::string, std::variant<std::array<size_t, 3>, size_t>>
+make_initial_refinement(const size_t initial_value,
+                        const bool include_inner_sphere_A,
+                        const bool include_inner_sphere_B) {
+  std::unordered_map<std::string, std::variant<std::array<size_t, 3>, size_t>>
+      initial_map;
   const std::array<size_t, 3> same{initial_value, initial_value, initial_value};
   const std::array<size_t, 3> one_more{initial_value + 1, initial_value,
                                        initial_value};
-  const std::array<size_t, 3> shell_same =
-      is_h_refinement ? std::array<size_t, 3>{initial_value, 0, 0} : same;
-  const std::array<size_t, 3> shell_one_more =
-      is_h_refinement ? std::array<size_t, 3>{initial_value + 1, 0, 0}
-                      : one_more;
+  const size_t shell_same = initial_value;
+  const size_t shell_one_more = initial_value + 1;
+
+  initial_map["Outer"] = one_more;
+  initial_map["InnerA"] = same;
+  initial_map["InnerB"] = one_more;
+  if (include_inner_sphere_A) {
+    initial_map["InnerSphereA"] = shell_same;
+  }
+  if (include_inner_sphere_B) {
+    initial_map["InnerSphereB"] = shell_same;
+  }
+  initial_map["OuterSphere"] = shell_one_more;
+
+  return initial_map;
+}
+
+// This matches the structure in the option string
+std::unordered_map<std::string,
+                   std::variant<std::array<size_t, 3>, std::array<size_t, 2>>>
+make_initial_grid_points(const size_t initial_value,
+                         const bool include_inner_sphere_A,
+                         const bool include_inner_sphere_B) {
+  std::unordered_map<std::string,
+                     std::variant<std::array<size_t, 3>, std::array<size_t, 2>>>
+      initial_map;
+  const std::array<size_t, 3> same{initial_value, initial_value, initial_value};
+  const std::array<size_t, 3> one_more{initial_value + 1, initial_value,
+                                       initial_value};
+  const std::array<size_t, 2> shell_same{initial_value, initial_value};
+  const std::array<size_t, 2> shell_one_more{initial_value + 1, initial_value};
+
   initial_map["Outer"] = one_more;
   initial_map["InnerA"] = same;
   initial_map["InnerB"] = one_more;
@@ -686,14 +716,14 @@ void test_cylindrical_bbh() {
     CylBCO::InitialGridPoints::type initial_grid_points{};
 
     if (with_additional_outer_radial_refinement) {
-      initial_refinement = make_initial_structure(
-          true, refinement, include_inner_sphere_A, include_inner_sphere_B);
+      initial_refinement = make_initial_refinement(
+          refinement, include_inner_sphere_A, include_inner_sphere_B);
     } else {
       initial_refinement = refinement;
     }
     if (with_additional_grid_points) {
-      initial_grid_points = make_initial_structure(
-          false, grid_points, include_inner_sphere_A, include_inner_sphere_B);
+      initial_grid_points = make_initial_grid_points(
+          grid_points, include_inner_sphere_A, include_inner_sphere_B);
     } else {
       initial_grid_points = grid_points;
     }
@@ -732,11 +762,152 @@ void test_cylindrical_bbh() {
         cyl_binary_compact_object, with_boundary_conditions);
   }
 }
+
+// Make sure initial refinement and initial grid points for different blocks
+// are set to the correct values based on the input
+void test_initial_extents_and_refinement() {
+  using RefinementMap =
+      std::unordered_map<std::string,
+                         std::variant<std::array<size_t, 3>, size_t>>;
+  using GridPointsMap = std::unordered_map<
+      std::string, std::variant<std::array<size_t, 3>, std::array<size_t, 2>>>;
+
+  const std::array<double, 3> center_A{{2.0, 0.05, 0.0}};
+  const std::array<double, 3> center_B{{-2.0, 0.05, 0.0}};
+  const double radius_A = 1.0;
+  const double radius_B = radius_A;
+  const bool include_inner_sphere_A = true;
+  const bool include_inner_sphere_B = true;
+  const double outer_radius = 100.0;
+  const bool use_equiangular_map = false;
+
+  // Set h and p refinement globally with one number
+  const size_t global_refinement = 1;
+  const size_t global_grid_points = 12;
+
+  // Set h and p refinement locally per block group
+  const RefinementMap local_refinement =
+      RefinementMap{{"InnerA", std::array<size_t, 3>{1, 1, 1}},
+                    {"InnerB", std::array<size_t, 3>{2, 2, 2}},
+                    {"Outer", std::array<size_t, 3>{2, 2, 2}},
+                    {"InnerSphereA", size_t{0}},
+                    {"InnerSphereB", size_t{1}},
+                    {"OuterSphere", size_t{2}}};
+  const GridPointsMap local_grid_points =
+      GridPointsMap{{"InnerA", std::array<size_t, 3>{5, 5, 5}},
+                    {"InnerB", std::array<size_t, 3>{7, 7, 7}},
+                    {"Outer", std::array<size_t, 3>{9, 9, 9}},
+                    {"InnerSphereA", std::array<size_t, 2>{4, 6}},
+                    {"InnerSphereB", std::array<size_t, 2>{6, 8}},
+                    {"OuterSphere", std::array<size_t, 2>{8, 10}}};
+
+  // Domain created from global h and p refinement
+  const auto cbco_global_creator =
+      domain::creators::CylindricalBinaryCompactObject(
+          center_A, center_B, radius_A, radius_B, include_inner_sphere_A,
+          include_inner_sphere_B, outer_radius, use_equiangular_map,
+          global_refinement, global_grid_points, std::nullopt,
+          create_inner_boundary_condition(), create_outer_boundary_condition(),
+          Options::Context{false, {}, 1, 1});
+  const std::vector<std::array<size_t, 3>> global_initial_refinement_levels =
+      cbco_global_creator.initial_refinement_levels();
+  const std::vector<std::array<size_t, 3>> global_initial_extents =
+      cbco_global_creator.initial_extents();
+  const Domain<3> cbco_global = cbco_global_creator.create_domain();
+  const auto& blocks_local = cbco_global.blocks();
+
+  // Domain created from local h and p refinement
+  const auto cbco_local_creator =
+      domain::creators::CylindricalBinaryCompactObject(
+          center_A, center_B, radius_A, radius_B, include_inner_sphere_A,
+          include_inner_sphere_B, outer_radius, use_equiangular_map,
+          local_refinement, local_grid_points, std::nullopt,
+          create_inner_boundary_condition(), create_outer_boundary_condition(),
+          Options::Context{false, {}, 1, 1});
+  const std::vector<std::array<size_t, 3>> local_initial_refinement_levels =
+      cbco_local_creator.initial_refinement_levels();
+  const std::vector<std::array<size_t, 3>> local_initial_extents =
+      cbco_local_creator.initial_extents();
+  const Domain<3> cbco_local = cbco_local_creator.create_domain();
+  const auto& blocks_global = cbco_local.blocks();
+
+  // Expected block groups containing block names
+  const auto& [_, block_groups] =
+      block_names_and_groups(include_inner_sphere_A, include_inner_sphere_B);
+
+  for (size_t i = 0; i < blocks_global.size(); i++) {
+    const std::string block_name_global = gsl::at(blocks_global, i).name();
+    const std::string block_name_local = gsl::at(blocks_local, i).name();
+    ASSERT(block_name_global == block_name_local,
+           "This test assumes both test domains have the same block names in "
+           "the same order.");
+
+    std::array<size_t, 3> expected_refinement_from_global{};
+    std::array<size_t, 3> expected_extents_from_global{};
+    std::array<size_t, 3> expected_refinement_from_local{};
+    std::array<size_t, 3> expected_extents_from_local{};
+    // Set expected h and p refinement
+    if (block_groups.at("InnerSphereA").contains(block_name_global)) {
+      expected_refinement_from_global = {{1, 0, 0}};
+      expected_extents_from_global = {{12, ylm::Spherepack::n_theta_points(12),
+                                       ylm::Spherepack::n_phi_points(12)}};
+      expected_refinement_from_local = {{0, 0, 0}};
+      expected_extents_from_local = {{4, ylm::Spherepack::n_theta_points(6),
+                                      ylm::Spherepack::n_phi_points(6)}};
+    } else if (block_groups.at("InnerSphereB").contains(block_name_global)) {
+      expected_refinement_from_global = {{1, 0, 0}};
+      expected_extents_from_global = {{12, ylm::Spherepack::n_theta_points(12),
+                                       ylm::Spherepack::n_phi_points(12)}};
+      expected_refinement_from_local = {{1, 0, 0}};
+      expected_extents_from_local = {{6, ylm::Spherepack::n_theta_points(8),
+                                      ylm::Spherepack::n_phi_points(8)}};
+    } else if (block_groups.at("OuterSphere").contains(block_name_global)) {
+      expected_refinement_from_global = {{1, 0, 0}};
+      expected_extents_from_global = {{12, ylm::Spherepack::n_theta_points(12),
+                                       ylm::Spherepack::n_phi_points(12)}};
+      expected_refinement_from_local = {{2, 0, 0}};
+      expected_extents_from_local = {{8, ylm::Spherepack::n_theta_points(10),
+                                      ylm::Spherepack::n_phi_points(10)}};
+    } else if (block_groups.at("InnerA").contains(block_name_global)) {
+      expected_refinement_from_global = {{1, 1, 1}};
+      expected_extents_from_global = {{12, 12, 12}};
+      expected_refinement_from_local = {{1, 1, 1}};
+      expected_extents_from_local = {{5, 5, 5}};
+    } else if (block_groups.at("InnerB").contains(block_name_global)) {
+      expected_refinement_from_global = {{1, 1, 1}};
+      expected_extents_from_global = {{12, 12, 12}};
+      expected_refinement_from_local = {{2, 2, 2}};
+      expected_extents_from_local = {{7, 7, 7}};
+    } else if (block_groups.at("Outer").contains(block_name_global)) {
+      expected_refinement_from_global = {{1, 1, 1}};
+      expected_extents_from_global = {{12, 12, 12}};
+      expected_refinement_from_local = {{2, 2, 2}};
+      expected_extents_from_local = {{9, 9, 9}};
+    } else {
+      ERROR("Block name not found in block groups.");
+    }
+
+    // Get actual h and p refinement constructed
+    const auto& refinement_from_global =
+        gsl::at(global_initial_refinement_levels, i);
+    const auto& extents_from_global = gsl::at(global_initial_extents, i);
+    const auto& refinement_from_local =
+        gsl::at(local_initial_refinement_levels, i);
+    const auto& extents_from_local = gsl::at(local_initial_extents, i);
+
+    // Check constructed vs expected h and p refinement
+    CHECK(refinement_from_global == expected_refinement_from_global);
+    CHECK(extents_from_global == expected_extents_from_global);
+    CHECK(refinement_from_local == expected_refinement_from_local);
+    CHECK(extents_from_local == expected_extents_from_local);
+  }
+}
 }  // namespace
 
 // [[TimeOut, 80]]
 SPECTRE_TEST_CASE("Unit.Domain.Creators.CylindricalBinaryCompactObject",
                   "[Domain][Unit]") {
+  test_initial_extents_and_refinement();
   test_cylindrical_bbh();
   test_parse_errors();
 }

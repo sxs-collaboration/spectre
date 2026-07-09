@@ -53,6 +53,9 @@ class Frustum;
 template <typename SourceFrame, typename TargetFrame, typename... Maps>
 class CoordinateMap;
 
+template <typename T>
+struct ExpandOverBlocks;
+
 namespace FunctionsOfTime {
 class FunctionOfTime;
 }  // namespace FunctionsOfTime
@@ -67,23 +70,6 @@ struct BlockLogical;
 /// \endcond
 
 namespace domain::creators {
-namespace bco {
-/*!
- * \brief Create a set of centers of objects for the binary domains.
- *
- * \details Will add the following centers to the set:
- *
- * - Center: The origin
- * - CenterA: Center of object A
- * - CenterB: Center of object B
- *
- * \return Object required by the DomainCreator%s
- */
-std::unordered_map<std::string, tnsr::I<double, 3, Frame::Grid>>
-create_grid_anchors(const std::array<double, 3>& center_a,
-                    const std::array<double, 3>& center_b);
-}  // namespace bco
-
 /*!
  * \ingroup ComputationalDomainGroup
  *
@@ -659,4 +645,91 @@ class BinaryCompactObject : public DomainCreator<3> {
   bool spherical_harmonics_in_wavezone_ = false;
   bool use_worldtube_ = false;
 };
+
+namespace bco {
+/*!
+ * \brief Create a set of centers of objects for the binary domains.
+ *
+ * \details Will add the following centers to the set:
+ *
+ * - Center: The origin
+ * - CenterA: Center of object A
+ * - CenterB: Center of object B
+ *
+ * \return Object required by the DomainCreator%s
+ */
+std::unordered_map<std::string, tnsr::I<double, 3, Frame::Grid>>
+create_grid_anchors(const std::array<double, 3>& center_a,
+                    const std::array<double, 3>& center_b);
+
+/*!
+ * \brief Validate `InitialRefinement` map entries.
+ *
+ * \details Any spherical-harmonic block must use `size_t` (radial only).
+ * `array<3>` is rejected on spherical-harmonic blocks even if angular
+ * components are zero. Non-spherical-harmonic entries must use `array<3>`.
+ *
+ * \param context options context
+ * \param initial_refinement the initial refinement from options
+ * \param spherical_harmonic_shell_names the names of spherical shell blocks
+ * that use spherical harmonics
+ */
+void validate_initial_refinement(
+    const Options::Context& context,
+    const BinaryCompactObject::InitialRefinement::type& initial_refinement,
+    const std::unordered_set<std::string>& spherical_harmonic_shell_names);
+
+/*!
+ * \brief Validate `InitialGridPoints` map entries.
+ *
+ * \details Any spherical-harmonic shell block must use
+ * `array<2>{radial, L_max}`. Non-spherical-harmonic blocks must use `array<3>`.
+ *
+ * \param context options context
+ * \param initial_number_of_grid_points the initial grid points from options
+ * \param spherical_harmonic_shell_names the names of spherical shell blocks
+ * that use spherical harmonics
+ */
+void validate_initial_grid_points(
+    const Options::Context& context,
+    const BinaryCompactObject::InitialGridPoints::type&
+        initial_number_of_grid_points,
+    const std::unordered_set<std::string>& spherical_harmonic_shell_names);
+
+/*!
+ * \brief Convert `size_t` radial h refinement entries for spherical harmonic
+ * blocks to `{r, 0, 0}`
+ *
+ * \details All `array<3>` entries are unchanged.
+ *
+ * \param expand_over_blocks `ExpandOverBlocks` containing the block names and
+ * block groups
+ * \param initial_refinement the initial refinement from options
+ *
+ * \return converted refinement
+ */
+std::vector<std::array<size_t, 3>> set_initial_refinement(
+    const ExpandOverBlocks<std::array<size_t, 3>>& expand_over_blocks,
+    const BinaryCompactObject::InitialRefinement::type& initial_refinement);
+
+/*!
+ * \brief Convert `array<2>{r, l_max}` entries for spherical harmonic blocks to
+ * `{r, l_max, m_max}` = `{r, l_max, l_max}`
+ *
+ * \details All array<3> entries are used unchanged. We store the (l_max, m_max)
+ * of the shell directly because ell is clear and unambiguous, whereas the
+ * number of collocation points implied by ell depends on the spectral
+ * implementation. The conversion to the number of collocation points is applied
+ * in `initial_extents()`.
+ *
+ * \param expand_over_blocks `ExpandOverBlocks` containing the block names and
+ * block groups
+ * \param initial_grid_points the initial grid points from options
+ *
+ * \return converted grid points
+ */
+std::vector<std::array<size_t, 3>> set_initial_grid_points(
+    const ExpandOverBlocks<std::array<size_t, 3>>& expand_over_blocks,
+    const BinaryCompactObject::InitialGridPoints::type& initial_grid_points);
+}  // namespace bco
 }  // namespace domain::creators
