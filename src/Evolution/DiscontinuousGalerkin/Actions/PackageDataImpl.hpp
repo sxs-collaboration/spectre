@@ -83,4 +83,64 @@ double dg_package_data(
       tmpl::list<ProjectedFieldTagsForCorrection...>{},
       db::get<VolumeTags>(box)...);
 }
+
+// Used during the auxiliary pass for LDG schemes.
+template <typename System, typename BoundaryCorrection,
+          typename... PackagedFieldTags, typename... ProjectedFieldTags,
+          typename... ProjectedFieldTagsForCorrection, size_t Dim,
+          typename... VolumeArgs>
+double dg_auxiliary_package_data(
+    const gsl::not_null<Variables<tmpl::list<PackagedFieldTags...>>*>
+        packaged_data,
+    const BoundaryCorrection& boundary_correction,
+    const Variables<tmpl::list<ProjectedFieldTags...>>& projected_fields,
+    const tnsr::i<DataVector, Dim, Frame::Inertial>& unit_normal_covector,
+    const std::optional<tnsr::I<DataVector, Dim, Frame::Inertial>>&
+        mesh_velocity,
+    tmpl::list<ProjectedFieldTagsForCorrection...> /*meta*/,
+    const VolumeArgs&... volume_args) {
+  std::optional<Scalar<DataVector>> normal_dot_mesh_velocity{};
+  if (mesh_velocity.has_value()) {
+    normal_dot_mesh_velocity =
+        dot_product(*mesh_velocity, unit_normal_covector);
+  }
+
+  if constexpr (evolution::dg::Actions::detail::
+                    has_inverse_spatial_metric_tag_v<System>) {
+    return boundary_correction.dg_auxiliary_package_data(
+        make_not_null(&get<PackagedFieldTags>(*packaged_data))...,
+        get<ProjectedFieldTagsForCorrection>(projected_fields)...,
+        unit_normal_covector,
+        get<evolution::dg::Actions::detail::NormalVector<Dim>>(
+            projected_fields),
+        mesh_velocity, normal_dot_mesh_velocity, volume_args...);
+  } else {
+    return boundary_correction.dg_auxiliary_package_data(
+        make_not_null(&get<PackagedFieldTags>(*packaged_data))...,
+        get<ProjectedFieldTagsForCorrection>(projected_fields)...,
+        unit_normal_covector, mesh_velocity, normal_dot_mesh_velocity,
+        volume_args...);
+  }
+}
+
+template <typename System, typename BoundaryCorrection,
+          typename... PackagedFieldTags, typename... ProjectedFieldTags,
+          typename... ProjectedFieldTagsForCorrection, size_t Dim,
+          typename... VolumeTags>
+double dg_auxiliary_package_data(
+    const gsl::not_null<Variables<tmpl::list<PackagedFieldTags...>>*>
+        packaged_data,
+    const BoundaryCorrection& boundary_correction,
+    const Variables<tmpl::list<ProjectedFieldTags...>>& projected_fields,
+    const tnsr::i<DataVector, Dim, Frame::Inertial>& unit_normal_covector,
+    const std::optional<tnsr::I<DataVector, Dim, Frame::Inertial>>&
+        mesh_velocity,
+    const db::Access& box, tmpl::list<VolumeTags...> /*meta*/,
+    tmpl::list<ProjectedFieldTagsForCorrection...> /*meta*/) {
+  return dg_auxiliary_package_data<System>(
+      packaged_data, boundary_correction, projected_fields,
+      unit_normal_covector, mesh_velocity,
+      tmpl::list<ProjectedFieldTagsForCorrection...>{},
+      db::get<VolumeTags>(box)...);
+}
 }  // namespace evolution::dg::Actions::detail
