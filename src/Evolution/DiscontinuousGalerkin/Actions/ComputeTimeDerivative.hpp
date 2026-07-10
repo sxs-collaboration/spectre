@@ -416,6 +416,12 @@ ComputeTimeDerivative<Dim, EvolutionSystem, DgStepChoosers, LocalTimeStepping,
   using flux_variables = typename EvolutionSystem::flux_variables;
   using compute_volume_time_derivative_terms =
       typename EvolutionSystem::compute_volume_time_derivative_terms;
+  // Systems may declare an `auxiliary_variables` type alias whose first
+  // derivatives are needed by the volume terms. The detect-or-default
+  // metafunction yields an empty list for systems without it.
+  using auxiliary_variables =
+      detail::get_auxiliary_variables_or_default_t<EvolutionSystem,
+                                                   tmpl::list<>>;
 
   const Mesh<Dim>& mesh = db::get<::domain::Tags::Mesh<Dim>>(box);
   const Element<Dim>& element = db::get<domain::Tags::Element<Dim>>(box);
@@ -584,32 +590,77 @@ ComputeTimeDerivative<Dim, EvolutionSystem, DgStepChoosers, LocalTimeStepping,
           box);
     }
   }
-  db::mutate_apply<
-      tmpl::list<dt_variables_tag>,
-      typename compute_volume_time_derivative_terms::argument_tags>(
-      [&dg_formulation, &div_fluxes, &det_inverse_jacobian,
-       &div_mesh_velocity = db::get<::domain::Tags::DivMeshVelocity>(box),
-       &evolved_variables = db::get<variables_tag>(box),
-       &inertial_coordinates =
-           db::get<domain::Tags::Coordinates<Dim, Frame::Inertial>>(box),
-       &logical_to_inertial_inv_jacobian =
-           db::get<::domain::Tags::InverseJacobian<Dim, Frame::ElementLogical,
-                                                   Frame::Inertial>>(box),
-       &mesh, &mesh_velocity = db::get<::domain::Tags::MeshVelocity<Dim>>(box),
-       &partial_derivs, &temporaries, &volume_fluxes](
-          const gsl::not_null<Variables<
-              db::wrap_tags_in<::Tags::dt, typename variables_tag::tags_list>>*>
-              dt_vars_ptr,
-          const auto&... time_derivative_args) {
-        detail::volume_terms<compute_volume_time_derivative_terms>(
-            dt_vars_ptr, make_not_null(&volume_fluxes),
-            make_not_null(&partial_derivs), make_not_null(&temporaries),
-            make_not_null(&div_fluxes), evolved_variables, dg_formulation, mesh,
-            inertial_coordinates, logical_to_inertial_inv_jacobian,
-            det_inverse_jacobian, mesh_velocity, div_mesh_velocity,
-            time_derivative_args...);
-      },
-      make_not_null(&box));
+  if constexpr (tmpl::size<auxiliary_variables>::value != 0) {
+    static_assert(
+        tmpl::size<tmpl::list_difference<
+                partial_derivative_tags,
+                tmpl::append<typename variables_tag::tags_list,
+                             auxiliary_variables>>>::value == 0,
+        "Every gradient variable must be an evolved variable (in "
+        "variables_tag) or an auxiliary variable (in auxiliary_variables); "
+        "otherwise it is not populated in the combined differentiation "
+        "source.");
+    Variables<detail::evolved_and_auxiliary_vars_tags<EvolutionSystem>>
+        evolved_and_auxiliary_vars{mesh.number_of_grid_points()};
+    evolved_and_auxiliary_vars.assign_subset(db::get<variables_tag>(box));
+    evolved_and_auxiliary_vars.assign_subset(
+        db::get<::Tags::Variables<auxiliary_variables>>(box));
+    db::mutate_apply<
+        tmpl::list<dt_variables_tag>,
+        typename compute_volume_time_derivative_terms::argument_tags>(
+        [&dg_formulation, &div_fluxes, &det_inverse_jacobian,
+         &div_mesh_velocity = db::get<::domain::Tags::DivMeshVelocity>(box),
+         &evolved_and_auxiliary_vars,
+         &inertial_coordinates =
+             db::get<domain::Tags::Coordinates<Dim, Frame::Inertial>>(box),
+         &logical_to_inertial_inv_jacobian =
+             db::get<::domain::Tags::InverseJacobian<Dim, Frame::ElementLogical,
+                                                     Frame::Inertial>>(box),
+         &mesh,
+         &mesh_velocity = db::get<::domain::Tags::MeshVelocity<Dim>>(box),
+         &partial_derivs, &temporaries,
+         &volume_fluxes](const gsl::not_null<Variables<db::wrap_tags_in<
+                             ::Tags::dt, typename variables_tag::tags_list>>*>
+                             dt_vars_ptr,
+                         const auto&... time_derivative_args) {
+          detail::volume_terms<compute_volume_time_derivative_terms>(
+              dt_vars_ptr, make_not_null(&volume_fluxes),
+              make_not_null(&partial_derivs), make_not_null(&temporaries),
+              make_not_null(&div_fluxes), evolved_and_auxiliary_vars,
+              dg_formulation, mesh, inertial_coordinates,
+              logical_to_inertial_inv_jacobian, det_inverse_jacobian,
+              mesh_velocity, div_mesh_velocity, time_derivative_args...);
+        },
+        make_not_null(&box));
+  } else {
+    db::mutate_apply<
+        tmpl::list<dt_variables_tag>,
+        typename compute_volume_time_derivative_terms::argument_tags>(
+        [&dg_formulation, &div_fluxes, &det_inverse_jacobian,
+         &div_mesh_velocity = db::get<::domain::Tags::DivMeshVelocity>(box),
+         &evolved_variables = db::get<variables_tag>(box),
+         &inertial_coordinates =
+             db::get<domain::Tags::Coordinates<Dim, Frame::Inertial>>(box),
+         &logical_to_inertial_inv_jacobian =
+             db::get<::domain::Tags::InverseJacobian<Dim, Frame::ElementLogical,
+                                                     Frame::Inertial>>(box),
+         &mesh,
+         &mesh_velocity = db::get<::domain::Tags::MeshVelocity<Dim>>(box),
+         &partial_derivs, &temporaries,
+         &volume_fluxes](const gsl::not_null<Variables<db::wrap_tags_in<
+                             ::Tags::dt, typename variables_tag::tags_list>>*>
+                             dt_vars_ptr,
+                         const auto&... time_derivative_args) {
+          detail::volume_terms<compute_volume_time_derivative_terms>(
+              dt_vars_ptr, make_not_null(&volume_fluxes),
+              make_not_null(&partial_derivs), make_not_null(&temporaries),
+              make_not_null(&div_fluxes), evolved_variables, dg_formulation,
+              mesh, inertial_coordinates, logical_to_inertial_inv_jacobian,
+              det_inverse_jacobian, mesh_velocity, div_mesh_velocity,
+              time_derivative_args...);
+        },
+        make_not_null(&box));
+  }
 
   const Variables<detail::get_primitive_vars_tags_from_system<EvolutionSystem>>*
       primitive_vars{nullptr};

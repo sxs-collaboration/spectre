@@ -10,4 +10,7 @@
 namespace TestHelpers::evolution::dg::Actions {
 template <SystemType system_type, bool UsePrims, size_t Dim>
 void test();
+
+template <SystemType system_type, size_t Dim>
+void test_LDG();
 }  // namespace TestHelpers::evolution::dg::Actions

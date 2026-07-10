@@ -7,4 +7,5 @@
 
 namespace TestHelpers::evolution::dg::Actions {
 template void test<SystemType::Mixed, false, 2>();
+template void test_LDG<SystemType::Mixed, 2>();
 }  // namespace TestHelpers::evolution::dg::Actions

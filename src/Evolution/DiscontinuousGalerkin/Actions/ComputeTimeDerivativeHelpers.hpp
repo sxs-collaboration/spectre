@@ -34,6 +34,14 @@ using inverse_spatial_metric_tag = typename inverse_spatial_metric_tag_impl<
 
 CREATE_GET_TYPE_ALIAS_OR_DEFAULT(auxiliary_variables)
 
+// `gradient_variables` is prepended since `partial_derivatives` requires the
+// differentiated tags to be the *leading* tags of the source `Variables`.
+template <typename System>
+using evolved_and_auxiliary_vars_tags = tmpl::remove_duplicates<
+    tmpl::append<typename System::gradient_variables,
+                 typename System::variables_tag::tags_list,
+                 get_auxiliary_variables_or_default_t<System, tmpl::list<>>>>;
+
 template <bool HasPrimitiveVars = false>
 struct get_primitive_vars {
   template <typename BoundaryCorrection>

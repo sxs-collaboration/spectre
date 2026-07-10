@@ -224,6 +224,13 @@ void test_wrapper() {
   test<system_type, UsePrims, 3>();
 }
 
+template <SystemType system_type>
+void test_LDG_wrapper() {
+  test_LDG<system_type, 1>();
+  test_LDG<system_type, 2>();
+  test_LDG<system_type, 3>();
+}
+
 // [[TimeOut, 10]]
 SPECTRE_TEST_CASE("Unit.Evolution.DG.ComputeTimeDerivative",
                   "[Unit][Evolution][Actions]") {
@@ -284,6 +291,10 @@ SPECTRE_TEST_CASE("Unit.Evolution.DG.ComputeTimeDerivative",
   test_wrapper<SystemType::Nonconservative, false>();
   test_wrapper<SystemType::Mixed, false>();
   test_wrapper<SystemType::Mixed, true>();
+
+  // Testing the local discontinuous Galerkin infrastructure
+  test_LDG_wrapper<SystemType::Nonconservative>();
+  test_LDG_wrapper<SystemType::Mixed>();
 
   for (const bool use_moving_mesh : {true, false}) {
     WithInverseSpatialMetricTag::test<1>(use_moving_mesh);
