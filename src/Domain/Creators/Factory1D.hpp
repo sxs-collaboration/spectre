@@ -7,6 +7,7 @@
 
 #include "Domain/Creators/AlignedLattice.hpp"
 #include "Domain/Creators/Factory.hpp"
+#include "Domain/Creators/Hypertorus.hpp"
 #include "Domain/Creators/Rectilinear.hpp"
 #include "Domain/Creators/RotatedIntervals.hpp"
 #include "Utilities/TMPL.hpp"
@@ -14,8 +15,9 @@
 namespace DomainCreators_detail {
 template <>
 struct domain_creators<1> {
-  using type = tmpl::list<domain::creators::AlignedLattice<1>,
-                          domain::creators::Interval,
-                          domain::creators::RotatedIntervals>;
+  using type =
+      tmpl::list<domain::creators::AlignedLattice<1>,
+                 domain::creators::Interval, domain::creators::PeriodicInterval,
+                 domain::creators::RotatedIntervals>;
 };
 }  // namespace DomainCreators_detail
