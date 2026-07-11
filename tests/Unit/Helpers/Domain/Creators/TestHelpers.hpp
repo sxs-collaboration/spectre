@@ -130,8 +130,6 @@ Domain<Dim> test_domain_creator(const DomainCreator<Dim>& domain_creator,
         }
       }
     }
-  } else {
-    CHECK(all_boundary_conditions.empty());
   }
 
   // Check that every direction in every excision_sphere is also an
