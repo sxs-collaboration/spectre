@@ -16,8 +16,9 @@
 #include "Utilities/Gsl.hpp"
 
 namespace evolution::dg::Tags {
-template <size_t Dim, bool UseNodegroupDgElements>
-bool BoundaryCorrectionAndGhostCellsInbox<Dim, UseNodegroupDgElements>::
+template <size_t Dim, bool UseNodegroupDgElements, bool IsAuxiliary>
+bool BoundaryCorrectionAndGhostCellsInbox<Dim, UseNodegroupDgElements,
+                                          IsAuxiliary>::
     insert_into_inbox(
         const gsl::not_null<type_spsc*> inbox, const temporal_id& time_step_id,
         std::pair<DirectionalId<Dim>, evolution::dg::BoundaryData<Dim>> data) {
@@ -41,8 +42,9 @@ bool BoundaryCorrectionAndGhostCellsInbox<Dim, UseNodegroupDgElements>::
   return inbox->missing_messages.fetch_sub(1, std::memory_order_acq_rel) == 1;
 }
 
-template <size_t Dim, bool UseNodegroupDgElements>
-bool BoundaryCorrectionAndGhostCellsInbox<Dim, UseNodegroupDgElements>::
+template <size_t Dim, bool UseNodegroupDgElements, bool IsAuxiliary>
+bool BoundaryCorrectionAndGhostCellsInbox<Dim, UseNodegroupDgElements,
+                                          IsAuxiliary>::
     insert_into_inbox(
         const gsl::not_null<type_map*> inbox, const temporal_id& time_step_id,
         std::pair<DirectionalId<Dim>, evolution::dg::BoundaryData<Dim>> data) {
@@ -52,10 +54,11 @@ bool BoundaryCorrectionAndGhostCellsInbox<Dim, UseNodegroupDgElements>::
   return inbox->missing_messages == 0;
 }
 
-template <size_t Dim, bool UseNodegroupDgElements>
-std::string
-BoundaryCorrectionAndGhostCellsInbox<Dim, UseNodegroupDgElements>::output_inbox(
-    const type_spsc& inbox, const size_t padding_size) {
+template <size_t Dim, bool UseNodegroupDgElements, bool IsAuxiliary>
+std::string BoundaryCorrectionAndGhostCellsInbox<
+    Dim, UseNodegroupDgElements,
+    IsAuxiliary>::output_inbox(const type_spsc& inbox,
+                               const size_t padding_size) {
   std::stringstream ss{};
   const std::string pad(padding_size, ' ');
   ss << std::scientific << std::setprecision(16);
@@ -73,10 +76,11 @@ BoundaryCorrectionAndGhostCellsInbox<Dim, UseNodegroupDgElements>::output_inbox(
   return ss.str();
 }
 
-template <size_t Dim, bool UseNodegroupDgElements>
-std::string
-BoundaryCorrectionAndGhostCellsInbox<Dim, UseNodegroupDgElements>::output_inbox(
-    const type_map& inbox, const size_t padding_size) {
+template <size_t Dim, bool UseNodegroupDgElements, bool IsAuxiliary>
+std::string BoundaryCorrectionAndGhostCellsInbox<
+    Dim, UseNodegroupDgElements,
+    IsAuxiliary>::output_inbox(const type_map& inbox,
+                               const size_t padding_size) {
   std::stringstream ss{};
   const std::string pad(padding_size, ' ');
   ss << std::scientific << std::setprecision(16);
@@ -97,14 +101,16 @@ BoundaryCorrectionAndGhostCellsInbox<Dim, UseNodegroupDgElements>::output_inbox(
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 #define USE_NODEGROUP_DG_ELEMENTS(data) BOOST_PP_TUPLE_ELEM(1, data)
+#define IS_AUXILIARY(data) BOOST_PP_TUPLE_ELEM(2, data)
 
 #define INSTANTIATE(_, data)                            \
   template struct BoundaryCorrectionAndGhostCellsInbox< \
-      DIM(data), USE_NODEGROUP_DG_ELEMENTS(data)>;
+      DIM(data), USE_NODEGROUP_DG_ELEMENTS(data), IS_AUXILIARY(data)>;
 
-GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (true, false))
+GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (true, false), (true, false))
 
 #undef INSTANTIATE
+#undef IS_AUXILIARY
 #undef USE_NODEGROUP_DG_ELEMENTS
 #undef DIM
 }  // namespace evolution::dg::Tags

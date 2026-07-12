@@ -6,6 +6,7 @@
 #include <type_traits>
 
 #include "Utilities/TMPL.hpp"
+#include "Utilities/TypeTraits/CreateGetTypeAliasOrDefault.hpp"
 #include "Utilities/TypeTraits/CreateHasTypeAlias.hpp"
 
 namespace evolution::dg::Actions::detail {
@@ -30,6 +31,8 @@ struct inverse_spatial_metric_tag_impl<true> {
 template <typename System>
 using inverse_spatial_metric_tag = typename inverse_spatial_metric_tag_impl<
     has_inverse_spatial_metric_tag_v<System>>::template f<System>;
+
+CREATE_GET_TYPE_ALIAS_OR_DEFAULT(auxiliary_variables)
 
 template <bool HasPrimitiveVars = false>
 struct get_primitive_vars {

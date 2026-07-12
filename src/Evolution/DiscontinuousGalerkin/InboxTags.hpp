@@ -104,7 +104,7 @@ namespace evolution::dg::Tags {
  * `UseNodegroupDgElements` to `true`. The actions that use this tag check
  * that the parallel component and the `UseNodegroupDgElements` is consistent.
  */
-template <size_t Dim, bool UseNodegroupDgElements>
+template <size_t Dim, bool UseNodegroupDgElements, bool IsAuxiliary = false>
 struct BoundaryCorrectionAndGhostCellsInbox {
   using stored_type = evolution::dg::BoundaryData<Dim>;
 
