@@ -220,8 +220,7 @@ struct EvolutionMetavars {
         tmpl::pair<StepChooser<StepChooserUse::LtsStep>,
                    StepChoosers::standard_step_choosers<system>>,
         tmpl::pair<StepChooser<StepChooserUse::Slab>,
-                   tmpl::append<StepChoosers::standard_slab_choosers<
-                                    system, local_time_stepping>,
+                   tmpl::append<StepChoosers::standard_slab_choosers<system>,
                                 tmpl::conditional_t<
                                     local_time_stepping,
                                     tmpl::list<evolution::dg::StepChoosers::
@@ -370,8 +369,7 @@ struct EvolutionMetavars {
       Initialization::Actions::AddComputeTags<
           tmpl::list<ScalarAdvection::Tags::VelocityFieldCompute<Dim>>>,
       Initialization::Actions::AddComputeTags<
-          StepChoosers::step_chooser_compute_tags<EvolutionMetavars,
-                                                  local_time_stepping>>,
+          StepChoosers::step_chooser_compute_tags<EvolutionMetavars>>,
       ::evolution::dg::Initialization::Mortars<volume_dim>,
       tmpl::conditional_t<
           local_time_stepping,

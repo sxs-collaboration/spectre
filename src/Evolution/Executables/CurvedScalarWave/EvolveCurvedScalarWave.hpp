@@ -244,8 +244,7 @@ struct EvolutionMetavars {
                    tmpl::push_back<StepChoosers::standard_step_choosers<system>,
                                    StepChoosers::ByBlock<volume_dim>>>,
         tmpl::pair<StepChooser<StepChooserUse::Slab>,
-                   tmpl::append<StepChoosers::standard_slab_choosers<
-                                    system, local_time_stepping>,
+                   tmpl::append<StepChoosers::standard_slab_choosers<system>,
                                 tmpl::conditional_t<
                                     local_time_stepping,
                                     tmpl::list<evolution::dg::StepChoosers::
@@ -314,8 +313,7 @@ struct EvolutionMetavars {
           CurvedScalarWave::Initialization::InitializeConstraintDampingGammas<
               volume_dim>>,
       Initialization::Actions::AddComputeTags<
-          tmpl::flatten<tmpl::list<StepChoosers::step_chooser_compute_tags<
-              EvolutionMetavars, local_time_stepping>>>>,
+          StepChoosers::step_chooser_compute_tags<EvolutionMetavars>>,
       ::evolution::dg::Initialization::Mortars<volume_dim>,
       intrp::Actions::ElementInitInterpPoints<volume_dim,
                                               interpolation_target_tags>,

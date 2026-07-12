@@ -179,11 +179,11 @@ struct EvolutionMetavars {
                        standard_boundary_conditions<neutrino_species>>,
         tmpl::pair<StepChooser<StepChooserUse::LtsStep>,
                    StepChoosers::standard_step_choosers<system, false>>,
-        tmpl::pair<StepChooser<StepChooserUse::Slab>,
-                   tmpl::append<StepChoosers::standard_slab_choosers<
-                                    system, local_time_stepping, false>,
-                                tmpl::conditional_t<
-                                    local_time_stepping,
+        tmpl::pair<
+            StepChooser<StepChooserUse::Slab>,
+            tmpl::append<
+                StepChoosers::standard_slab_choosers<system, false>,
+                tmpl::conditional_t<local_time_stepping,
                                     tmpl::list<evolution::dg::StepChoosers::
                                                    FixedLtsRatio<volume_dim>>,
                                     tmpl::list<>>>>,
@@ -259,8 +259,7 @@ struct EvolutionMetavars {
       Actions::MutateApply<typename RadiationTransport::M1Grey::
                                ComputeM1Closure<neutrino_species>>,
       Initialization::Actions::AddComputeTags<
-          StepChoosers::step_chooser_compute_tags<EvolutionMetavars,
-                                                  local_time_stepping>>,
+          StepChoosers::step_chooser_compute_tags<EvolutionMetavars>>,
       ::evolution::dg::Initialization::Mortars<volume_dim>,
       tmpl::conditional_t<
           local_time_stepping,

@@ -49,6 +49,7 @@ TimeStepRequest StepToTimes::operator()(const double now,
 
 bool StepToTimes::uses_local_data() const { return false; }
 bool StepToTimes::can_be_delayed() const { return false; }
+bool StepToTimes::must_set_step_size() const { return false; }
 
 void StepToTimes::pup(PUP::er& p) {
   StepChooser<StepChooserUse::Slab>::pup(p);

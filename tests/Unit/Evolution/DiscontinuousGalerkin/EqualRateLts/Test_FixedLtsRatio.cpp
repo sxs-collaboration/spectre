@@ -66,6 +66,7 @@ class ErrorChooser : public StepChooser<StepChooserUse::LtsStep> {
 
   bool uses_local_data() const override { return false; }
   bool can_be_delayed() const override { return true; }
+  bool must_set_step_size() const override { return false; }
 };
 
 PUP::able::PUP_ID ErrorChooser::my_PUP_ID = 0;  // NOLINT
@@ -96,6 +97,7 @@ class ToleranceChooser : public StepChooser<StepChooserUse::LtsStep>,
 
   bool uses_local_data() const override { return false; }
   bool can_be_delayed() const override { return true; }
+  bool must_set_step_size() const override { return false; }
 
   std::unordered_map<std::type_index, StepperErrorTolerances> tolerances()
       const override {

@@ -231,8 +231,7 @@ struct EvolutionMetavars {
                                   Parallel::Phase::LoadBalancing>,
                               PhaseControl::CheckpointAndExitAfterWallclock>>,
         tmpl::pair<StepChooser<StepChooserUse::Slab>,
-                   tmpl::push_back<StepChoosers::standard_slab_choosers<
-                                       system, local_time_stepping>,
+                   tmpl::push_back<StepChoosers::standard_slab_choosers<system>,
                                    StepChoosers::ByBlock<volume_dim>>>,
         tmpl::pair<TimeSequence<double>,
                    TimeSequences::all_time_sequences<double>>,
@@ -301,8 +300,7 @@ struct EvolutionMetavars {
           CurvedScalarWave::Initialization::InitializeEvolvedVariables<
               volume_dim, solutions_and_data>>,
       Initialization::Actions::AddComputeTags<
-          StepChoosers::step_chooser_compute_tags<EvolutionMetavars,
-                                                  local_time_stepping>>,
+          StepChoosers::step_chooser_compute_tags<EvolutionMetavars>>,
       Initialization::Actions::AddComputeTags<tmpl::list<
           CurvedScalarWave::Worldtube::Tags::ParticlePositionVelocityCompute<
               volume_dim>,

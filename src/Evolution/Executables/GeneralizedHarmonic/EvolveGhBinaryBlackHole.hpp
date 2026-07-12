@@ -553,8 +553,7 @@ struct EvolutionMetavars {
         tmpl::pair<StepChooser<StepChooserUse::LtsStep>,
                    StepChoosers::standard_step_choosers<system>>,
         tmpl::pair<StepChooser<StepChooserUse::Slab>,
-                   tmpl::append<StepChoosers::standard_slab_choosers<
-                                    system, local_time_stepping>,
+                   tmpl::append<StepChoosers::standard_slab_choosers<system>,
                                 tmpl::conditional_t<
                                     local_time_stepping,
                                     tmpl::list<evolution::dg::StepChoosers::
@@ -645,8 +644,7 @@ struct EvolutionMetavars {
           typename system::gradient_variables>>>,
       gh::Actions::InitializeGhAnd3Plus1Variables<volume_dim>,
       Initialization::Actions::AddComputeTags<
-          tmpl::push_back<StepChoosers::step_chooser_compute_tags<
-              EvolutionMetavars, local_time_stepping>>>,
+          StepChoosers::step_chooser_compute_tags<EvolutionMetavars>>,
       Initialization::Actions::AddSimpleTags<
           gh::bbh::Actions::InitializeElementCompletionRequested>,
       ::evolution::dg::Initialization::Mortars<volume_dim>,

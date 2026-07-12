@@ -20,6 +20,8 @@ bool LimitIncrease::uses_local_data() const { return false; }
 
 bool LimitIncrease::can_be_delayed() const { return true; }
 
+bool LimitIncrease::must_set_step_size() const { return false; }
+
 void LimitIncrease::pup(PUP::er& p) {
   StepChooser<StepChooserUse::Slab>::pup(p);
   StepChooser<StepChooserUse::LtsStep>::pup(p);

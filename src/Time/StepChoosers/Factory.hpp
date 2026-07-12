@@ -23,39 +23,27 @@ struct Inertial;
 
 namespace StepChoosers {
 namespace Factory_detail {
-template <typename System, bool HasCharSpeedFunctions>
+template <typename Use, typename System, bool HasCharSpeedFunctions>
 using common_step_choosers = tmpl::push_back<
     tmpl::conditional_t<
         HasCharSpeedFunctions,
         tmpl::list<StepChoosers::Cfl<Frame::Inertial, System>,
                    StepChoosers::ElementSizeCfl<System::volume_dim, System>>,
         tmpl::list<>>,
-    StepChoosers::Constant, StepChoosers::LimitIncrease, StepChoosers::Maximum>;
-template <typename Use, typename System>
-using step_choosers_for_step_only = tmpl::list<
-    StepChoosers::PreventRapidIncrease<typename System::variables_tag>,
-    StepChoosers::ErrorControl<Use, typename System::variables_tag>>;
-using step_choosers_for_slab_only = tmpl::list<StepChoosers::StepToTimes>;
-
-template <typename System, bool HasCharSpeedFunctions>
-using lts_slab_choosers =
-    tmpl::append<common_step_choosers<System, HasCharSpeedFunctions>,
-                 step_choosers_for_slab_only>;
+    StepChoosers::Constant,
+    StepChoosers::ErrorControl<Use, typename System::variables_tag>,
+    StepChoosers::LimitIncrease, StepChoosers::Maximum,
+    StepChoosers::PreventRapidIncrease<typename System::variables_tag>>;
 }  // namespace Factory_detail
 
 template <typename System, bool HasCharSpeedFunctions = true>
-using standard_step_choosers = tmpl::append<
-    Factory_detail::common_step_choosers<System, HasCharSpeedFunctions>,
-    Factory_detail::step_choosers_for_step_only<StepChooserUse::LtsStep,
-                                                System>>;
+using standard_step_choosers =
+    Factory_detail::common_step_choosers<StepChooserUse::LtsStep, System,
+                                         HasCharSpeedFunctions>;
 
-template <typename System, bool LocalTimeStepping,
-          bool HasCharSpeedFunctions = true>
-using standard_slab_choosers = tmpl::conditional_t<
-    LocalTimeStepping,
-    Factory_detail::lts_slab_choosers<System, HasCharSpeedFunctions>,
-    tmpl::append<
-        Factory_detail::lts_slab_choosers<System, HasCharSpeedFunctions>,
-        Factory_detail::step_choosers_for_step_only<StepChooserUse::Slab,
-                                                    System>>>;
+template <typename System, bool HasCharSpeedFunctions = true>
+using standard_slab_choosers =
+    tmpl::push_back<Factory_detail::common_step_choosers<
+                        StepChooserUse::Slab, System, HasCharSpeedFunctions>,
+                    StepChoosers::StepToTimes>;
 }  // namespace StepChoosers

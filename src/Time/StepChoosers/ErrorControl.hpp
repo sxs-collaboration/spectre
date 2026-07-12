@@ -202,6 +202,7 @@ class ErrorControl : public StepChooser<StepChooserUse>,
 
   bool uses_local_data() const override { return true; }
   bool can_be_delayed() const override { return true; }
+  bool must_set_step_size() const override { return true; }
 
   std::unordered_map<std::type_index, StepperErrorTolerances> tolerances()
       const override {

@@ -35,30 +35,27 @@ namespace detail {
 CREATE_GET_TYPE_ALIAS_OR_DEFAULT(compute_tags)
 CREATE_GET_TYPE_ALIAS_OR_DEFAULT(simple_tags)
 
-template <typename Metavariables, bool UsingLts>
+template <typename Metavariables>
 using all_step_choosers = tmpl::join<tmpl::remove<
     tmpl::list<
         tmpl::at<typename Metavariables::factory_creation::factory_classes,
                  StepChooser<StepChooserUse::Slab>>,
-        tmpl::conditional_t<
-            UsingLts,
-            tmpl::at<typename Metavariables::factory_creation::factory_classes,
-                     StepChooser<StepChooserUse::LtsStep>>,
-            tmpl::no_such_type_>>,
+        tmpl::at<typename Metavariables::factory_creation::factory_classes,
+                 StepChooser<StepChooserUse::LtsStep>>>,
     tmpl::no_such_type_>>;
 }  // namespace detail
 
-template <typename Metavariables, bool UsingLts>
-using step_chooser_compute_tags = tmpl::remove_duplicates<tmpl::join<
-    tmpl::transform<detail::all_step_choosers<Metavariables, UsingLts>,
-                    detail::get_compute_tags_or_default<
-                        tmpl::_1, tmpl::pin<tmpl::list<>>>>>>;
+template <typename Metavariables>
+using step_chooser_compute_tags = tmpl::remove_duplicates<
+    tmpl::join<tmpl::transform<detail::all_step_choosers<Metavariables>,
+                               detail::get_compute_tags_or_default<
+                                   tmpl::_1, tmpl::pin<tmpl::list<>>>>>>;
 
-template <typename Metavariables, bool UsingLts>
-using step_chooser_simple_tags = tmpl::remove_duplicates<tmpl::join<
-    tmpl::transform<detail::all_step_choosers<Metavariables, UsingLts>,
-                    detail::get_simple_tags_or_default<
-                        tmpl::_1, tmpl::pin<tmpl::list<>>>>>>;
+template <typename Metavariables>
+using step_chooser_simple_tags = tmpl::remove_duplicates<
+    tmpl::join<tmpl::transform<detail::all_step_choosers<Metavariables>,
+                               detail::get_simple_tags_or_default<
+                                   tmpl::_1, tmpl::pin<tmpl::list<>>>>>>;
 }  // namespace StepChoosers
 
 /// A placeholder type to indicate that all constructible step choosers should
@@ -108,6 +105,14 @@ class StepChooser : public virtual PUP::able {
   /// StepChoosers setting the `.end` or `.end_hard_limit` fields of
   /// `TimeStepRequest` must return false here.
   virtual bool can_be_delayed() const = 0;
+
+  /// Whether the StepChooser's output only makes sense for setting
+  /// the step size, as opposed to using it to set the slab size in an
+  /// LTS evolution.
+  ///
+  /// This is generally true for StepChoosers that explicitly use past
+  /// step sizes to compute their suggestion and false for others.
+  virtual bool must_set_step_size() const = 0;
 
   /// The `last_step` parameter describes the step size to be
   /// adjusted.  It may be the step size or the slab size, or may be
