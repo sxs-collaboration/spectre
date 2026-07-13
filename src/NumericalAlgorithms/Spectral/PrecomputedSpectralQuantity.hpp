@@ -9,7 +9,7 @@
 #include "NumericalAlgorithms/Spectral/MinimumNumberOfPoints.hpp"
 #include "NumericalAlgorithms/Spectral/Parity.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
-#include "Utilities/StaticCache.hpp"
+#include "Utilities/RuntimeCache.hpp"
 
 /// \cond
 namespace Spectral {
@@ -70,7 +70,8 @@ const auto& precomputed_spectral_quantity_with_parity(const size_t num_points,
 template <Basis BasisType, Quadrature QuadratureType,
           typename SpectralQuantityGenerator>
 const auto& precomputed_two_indexed_spectral_quantity(const size_t num_points,
-                                           const size_t m, const size_t N) {
+                                                      const size_t m,
+                                                      const size_t N) {
   constexpr size_t max_num_points =
       Spectral::maximum_number_of_points<BasisType>;
   constexpr size_t min_num_points =
@@ -80,14 +81,10 @@ const auto& precomputed_two_indexed_spectral_quantity(const size_t num_points,
          "points for this quadrature.");
   ASSERT(num_points <= max_num_points,
          "Exceeded maximum number of collocation points.");
-  // We compute the quantity for all possible `num_point`s the first time this
-  // function is called and keep the data around for the lifetime of the
-  // program. The computation is handled by the call operator of the
-  // `SpectralQuantityType` instance.
   static const auto precomputed_data =
-      make_static_cache<CacheRange<min_num_points, max_num_points + 1>,
-                        CacheRange<0_st, 2 * max_num_points - 1>,
-                        CacheRange<0_st, 2 * max_num_points - 1>>(
+      make_runtime_cache<CacheRange<min_num_points, max_num_points + 1>,
+                         CacheRange<size_t{0}, 2 * max_num_points - 1>,
+                         CacheRange<size_t{0}, 2 * max_num_points - 1>>(
           SpectralQuantityGenerator{});
   return precomputed_data(num_points, m, N);
 }

@@ -4,15 +4,19 @@
 #include "Framework/TestingFramework.hpp"
 
 #include <algorithm>
+#include <array>
+#include <atomic>
 #include <cstddef>
+#include <thread>
 #include <utility>
 #include <vector>
 
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
+#include "Utilities/Gsl.hpp"
 #include "Utilities/Literals.hpp"
 #include "Utilities/MakeString.hpp"
-#include "Utilities/StaticCache.hpp"
+#include "Utilities/RuntimeCache.hpp"
 
 namespace {
 enum class Color { Red, Green, Purple };
@@ -198,6 +202,58 @@ SPECTRE_TEST_CASE("Unit.Utilities.StaticCache", "[Utilities][Unit]") {
     }
   }
 
+  // RuntimeCache has the same lookup semantics as StaticCache, but avoids
+  // instantiating the generator for every combination of indices.
+  std::vector<std::pair<size_t, Color>> runtime_calls;
+  const auto runtime_cache = make_runtime_cache<
+      CacheRange<2_st, 5_st>,
+      CacheEnumeration<Color, Color::Red, Color::Green, Color::Purple>>(
+      [&runtime_calls](const size_t value, const Color color) {
+        runtime_calls.emplace_back(value, color);
+        return std::string{MakeString{} << value << color};
+      });
+  CHECK(runtime_calls.empty());
+  CHECK(runtime_cache(2, Color::Red) == "2Red");
+  CHECK(runtime_cache(4, Color::Purple) == "4Purple");
+  CHECK(runtime_calls.size() == 2);
+  CHECK(runtime_cache(2, Color::Red) == "2Red");
+  CHECK(runtime_calls.size() == 2);
+
+  size_t runtime_small_calls = 0;
+  const auto runtime_small_cache = make_runtime_cache([&runtime_small_calls]() {
+    ++runtime_small_calls;
+    return size_t{10};
+  });
+  CHECK(runtime_small_calls == 0);
+  CHECK(runtime_small_cache() == 10);
+  CHECK(runtime_small_cache() == 10);
+  CHECK(runtime_small_calls == 1);
+
+  std::atomic<size_t> concurrent_calls{0};
+  const auto concurrent_cache = make_runtime_cache<CacheRange<0_st, 1_st>>(
+      [&concurrent_calls](const size_t value) {
+        ++concurrent_calls;
+        return value + 10;
+      });
+  std::atomic<bool> start_concurrent_calls{false};
+  std::array<size_t, 8> concurrent_results{};
+  std::array<std::thread, 8> threads;
+  for (size_t i = 0; i < threads.size(); ++i) {
+    gsl::at(threads, i) = std::thread{
+        [&concurrent_cache, &concurrent_results, &start_concurrent_calls, i]() {
+          while (not start_concurrent_calls.load(std::memory_order_acquire)) {
+          }
+          gsl::at(concurrent_results, i) = concurrent_cache(0);
+        }};
+  }
+  start_concurrent_calls.store(true, std::memory_order_release);
+  for (auto& thread : threads) {
+    thread.join();
+  }
+  CHECK(std::all_of(concurrent_results.begin(), concurrent_results.end(),
+                    [](const size_t result) { return result == 10; }));
+  CHECK(concurrent_calls == 1);
+
 #ifdef SPECTRE_DEBUG
   CHECK_THROWS_WITH(
       (make_static_cache<CacheRange<3, 5>>([](const size_t x) { return x; })(
@@ -207,6 +263,14 @@ SPECTRE_TEST_CASE("Unit.Utilities.StaticCache", "[Utilities][Unit]") {
       (make_static_cache<CacheRange<3, 5>>([](const size_t x) { return x; })(
           5)),
       Catch::Matchers::ContainsSubstring("Index out of range: 3 <= 5 < 5"));
+  CHECK_THROWS_WITH(
+      (make_runtime_cache<CacheRange<3, 5>>([](const int x) { return x; })(
+          2)),
+      Catch::Matchers::ContainsSubstring("Index out of range: 3 <= 2 < 5"));
+  CHECK_THROWS_WITH(
+      (make_runtime_cache<CacheEnumeration<Color, Color::Red, Color::Green>>(
+          [](const Color color) { return color; })(Color::Purple)),
+      Catch::Matchers::ContainsSubstring("Uncached enumeration value: Purple"));
 #endif
 
   // Test that the passed callable is stored, so we don't get a
