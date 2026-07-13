@@ -5,12 +5,12 @@
 #include <array>
 #include <cmath>
 #include <cstddef>
+#include <limits>
 #include <optional>
+#include <random>
 #include <unordered_set>
-#include <vector>
 
 // Includes from SpECTRE libraries needed for this executable
-#include "DataStructures/DataVector.hpp"
 #include "DataStructures/TaggedTuple.hpp"
 #include "Options/String.hpp"
 #include "Parallel/AlgorithmExecution.hpp"
@@ -24,7 +24,6 @@
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "Parallel/Printf/Printf.hpp"
 #include "Parallel/Reduction.hpp"
-#include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -70,14 +69,16 @@ struct DartsPerIteration {
   using type = size_t;
   static constexpr Options::String help{
       "How many darts to throw on each processor in one iteration"};
+  static type lower_bound() { return 1; }
 };
 
 struct AccuracyGoal {
   using type = double;
   static constexpr Options::String help{
-      "Fractional accuracy goal for pi monte carlo estimate"};
+      "Fractional accuracy goal for pi Monte Carlo estimate"};
+  static type lower_bound() { return std::numeric_limits<type>::epsilon(); }
 };
-};  // namespace OptionTags
+}  // namespace OptionTags
 
 // TUTORIAL PART 1: Set up quantities stored in DataBox
 namespace Tags {
@@ -119,9 +120,9 @@ struct HitsAllProcs : db::SimpleTag {
   static constexpr bool pass_metavariables = false;
   static size_t create_from_options() { return 0; }
 };
-}  // Namespace Tags
+}  // namespace Tags
 
-// TUTORIAL PART 2: Complete the Actions ThrowDarts and EstimatePi.
+// TUTORIAL PART 2: Complete the ThrowDarts and ProcessHitsAndThrows actions.
 namespace Actions {
 // In spectre, "iterable actions" (actions that can be done more than once) are
 // made by creating a struct with a function apply with the following
@@ -139,7 +140,7 @@ struct ThrowDarts {
       const ParallelComponent* const /*meta*/
   ) {
     // TUTORIAL STEP 2.0: get how many darts to throw from the DataBox
-    const size_t number_of_darts = db::get<Tags::DartsPerIteration>(box);
+    const auto number_of_darts = db::get<Tags::DartsPerIteration>(box);
 
     // TUTORIAL STEP 2.1: throw N darts at the unit square, seeing how many
     // hit the quarter circle
@@ -148,9 +149,9 @@ struct ThrowDarts {
     std::uniform_real_distribution distribution{0.0, 1.0};
     size_t hits = 0;
     for (size_t i = 0; i < number_of_darts; ++i) {
-      const double x = distribution(generator);
-      const double y = distribution(generator);
-      if (x * x + y * y < 1) {
+      const auto x = distribution(generator);
+      const auto y = distribution(generator);
+      if (x * x + y * y < 1.0) {
         hits += 1;
       }
     }
@@ -158,7 +159,8 @@ struct ThrowDarts {
     // Get a proxy (an object that might live on another compute node)
     // for each ParallelComponent. The PiEstimator Singleton component
     // will run the ProcessHitsAndThrows action to estimate pi.
-    // The DartThrower parallel component calls ThrowDarts on a some processors.
+    // The DartThrower parallel component calls ThrowDarts on multiple
+    // processors.
     // TUTORIAL STEP 2.2: get the PiEstimator and DartThrower parallel
     // components.
     const auto& pi_estimator_proxy =
@@ -168,7 +170,7 @@ struct ThrowDarts {
         Parallel::get_parallel_component<DartThrower<Metavars>, Metavars>(
             cache)[array_index];
 
-    // Tutorial STEP 2.3: contribute hits to reduction data
+    // TUTORIAL STEP 2.3: contribute hits to reduction data
     const Parallel::ReductionData<
         Parallel::ReductionDatum<size_t, funcl::Plus<>>>
         hits_to_send{hits};
@@ -177,7 +179,7 @@ struct ThrowDarts {
 
     // After this action completes, tell this element of the
     // DartThrower array parallel component to pause until further notice.
-    // (That notice might come frm the ProcessHitsAndThrows action, if it
+    // (That notice might come from the ProcessHitsAndThrows action, if it
     // decides that more darts should be thrown.)
     return {Parallel::AlgorithmExecution::Pause, std::nullopt};
   }
@@ -199,7 +201,7 @@ struct ProcessHitsAndThrows {
 
     // TUTORIAL STEP 2.5: get number of darts thrown each iteration
     // from the DataBox
-    const size_t darts_per_iteration = db::get<Tags::DartsPerIteration>(box);
+    const auto darts_per_iteration = db::get<Tags::DartsPerIteration>(box);
 
     // TUTORIAL STEP 2.6: complete this lambda that updates quantities
     // in the DataBox:
@@ -222,12 +224,12 @@ struct ProcessHitsAndThrows {
         },
         make_not_null(&box));
 
-    // TUTORIAL STEP 2.7: estiamte pi, compute the fractional accuracy, and
+    // TUTORIAL STEP 2.7: estimate pi, compute the fractional accuracy, and
     // print the result using Parallel::printf
-    const double pi_estimate =
+    const auto pi_estimate =
         4.0 * static_cast<double>(db::get<Tags::HitsAllProcs>(box)) /
         static_cast<double>(db::get<Tags::ThrowsAllProcs>(box));
-    const double fractional_accuracy = abs(pi_estimate - M_PI) / M_PI;
+    const auto fractional_accuracy = std::abs(pi_estimate - M_PI) / M_PI;
 
     Parallel::printf("Pi ~ %1.15f (accuracy: %1.15f)\n", pi_estimate,
                      fractional_accuracy);
@@ -272,9 +274,9 @@ struct PiEstimator {
       const Parallel::CProxy_GlobalCache<Metavars>& global_cache);
 };
 
-// TUTORIAL STEP 3.1: After creating PiEstimator, uncomment this defintion.
+// TUTORIAL STEP 3.1: Define PiEstimator::execute_next_phase.
 // This function is necessary boilerplate that tells
-// spectre when one phase ends, start the next one.
+// SpECTRE to start the next phase when one phase ends.
 template <typename Metavars>
 void PiEstimator<Metavars>::execute_next_phase(
     const Parallel::Phase next_phase,
@@ -323,11 +325,9 @@ struct DartThrower {
       const std::unordered_set<size_t>& procs_to_ignore = {});
 };
 
-// TUTORIAL STEP 3.3: After creating DartThrower, uncomment this function
-// definition.
-// Then add it to the parallel component struct as a static function.
+// TUTORIAL STEP 3.3: Define DartThrower::execute_next_phase.
 // This function is necessary boilerplate that tells
-// spectre when one phase ends, start the next one.
+// SpECTRE to start the next phase when one phase ends.
 template <typename Metavars>
 void DartThrower<Metavars>::execute_next_phase(
     const Parallel::Phase next_phase,
@@ -337,8 +337,7 @@ void DartThrower<Metavars>::execute_next_phase(
       .start_phase(next_phase);
 }
 
-// TUTORIAL STEP 3.4: After creating DartThrower, uncomment this function.
-// Then add it to the parallel component struct as a static function.
+// TUTORIAL STEP 3.4: Define DartThrower::allocate_array.
 //
 // This function assigns the array elements to
 // specific cores (processors). The strategy is "round robin:" assign
@@ -362,7 +361,7 @@ void DartThrower<Metavars>::allocate_array(
 
   size_t which_proc = 0;
   const auto num_procs = Parallel::number_of_procs<size_t>(local_cache);
-  const size_t number_of_elements = num_procs;
+  const auto number_of_elements = num_procs;
 
   for (size_t i = 0; i < number_of_elements; ++i) {
     while (procs_to_ignore.find(which_proc) != procs_to_ignore.end()) {
@@ -382,7 +381,8 @@ struct Metavariables {
       tmpl::list<PiEstimator<Metavariables>, DartThrower<Metavariables>>;
 
   // TUTORIAL STEP 4.2: complete the help string for this executable.
-  static constexpr Options::String help{"Compute pi with Monte Carlo"};
+  static constexpr Options::String help{
+      "Compute pi with Monte Carlo integration"};
 
   // Boilerplate defining phases.
   // All executables have an initialization and an exit phase.
@@ -392,7 +392,7 @@ struct Metavariables {
       {Parallel::Phase::Initialization, Parallel::Phase::Execute,
        Parallel::Phase::Exit}};
 
-  // Boilerplate stating that this metavariables truct has no run-time content
+  // Boilerplate stating that this metavariables struct has no run-time content
   // that must be sent over the network when remote objects want the
   // metavariables. This is done by defining a pup (pack-unpack) function
   // that does nothing.
