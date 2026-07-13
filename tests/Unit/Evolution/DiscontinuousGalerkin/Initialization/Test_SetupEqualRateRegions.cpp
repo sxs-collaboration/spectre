@@ -28,8 +28,10 @@
 #include "Evolution/DiscontinuousGalerkin/MortarInfo.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarTags.hpp"
 #include "Evolution/DiscontinuousGalerkin/TimeSteppingPolicy.hpp"
+#include "Time/LtsMode.hpp"
 #include "Time/Slab.hpp"
 #include "Time/Tags/FixedLtsRatio.hpp"
+#include "Time/Tags/LtsMode.hpp"
 #include "Time/Tags/TimeStep.hpp"
 #include "Time/Time.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
@@ -178,7 +180,7 @@ void test() {
       const TimeDelta time_step = slab.duration() / lts_ratio;
 
       auto box = db::create<
-          db::AddSimpleTags<Tags::FixedLtsRatio,
+          db::AddSimpleTags<Tags::LtsMode, Tags::FixedLtsRatio,
                             evolution::dg::Tags::MortarInfo<Dim>,
                             domain::Tags::Element<Dim>,
                             evolution::dg::Tags::ConcreteEqualRateRegions<
@@ -186,8 +188,8 @@ void test() {
                             Tags::TimeStep>,
           db::AddComputeTags<evolution::dg::Tags::EqualRateRegionsRef<
               Dim, tmpl::list<TestRegions>>>>(
-          std::optional<size_t>{}, std::move(initial_mortar_infos),
-          std::move(element),
+          LtsMode::Conservative, std::optional<size_t>{},
+          std::move(initial_mortar_infos), std::move(element),
           evolution::dg::EqualRateRegions<Dim, tmpl::list<TestRegions>>{},
           time_step);
 

@@ -93,9 +93,6 @@ struct LimitTimeStep {
       Parallel::GlobalCache<Metavariables>& cache,
       const ElementId<Dim>& array_index, ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) {
-    static_assert(not Metavariables::local_time_stepping,
-                  "The control system LimitTimeStep action is only for global "
-                  "time stepping.");
     const auto& time_step_id = db::get<::Tags::TimeStepId>(box);
     if (time_step_id.substep() != 0) {
       return {Parallel::AlgorithmExecution::Continue, std::nullopt};
@@ -297,6 +294,26 @@ struct LimitTimeStep {
 
     change_slab_size(make_not_null(&box), new_step_end);
 
+    return {Parallel::AlgorithmExecution::Continue, std::nullopt};
+  }
+};
+
+/// \ingroup ControlSystemGroup
+/// \brief No-control-system specialization that does nothing.
+///
+/// Exists just to avoid having to put conditionals in metavariables
+/// that may or may not have control systems.
+template <>
+struct LimitTimeStep<tmpl::list<>> {
+ public:
+  template <typename DbTagsList, typename... InboxTags, typename Metavariables,
+            size_t Dim, typename ActionList, typename ParallelComponent>
+  static Parallel::iterable_action_return_t apply(
+      db::DataBox<DbTagsList>& /*box*/,
+      const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
+      Parallel::GlobalCache<Metavariables>& /*cache*/,
+      const ElementId<Dim>& /*array_index*/, ActionList /*meta*/,
+      const ParallelComponent* const /*meta*/) {
     return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
 };

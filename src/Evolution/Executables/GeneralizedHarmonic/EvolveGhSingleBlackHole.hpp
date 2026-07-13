@@ -330,14 +330,13 @@ struct EvolutionMetavars : public GeneralizedHarmonicTemplateBase<3, UseLts> {
                 tmpl::conditional_t<
                     local_time_stepping,
                     tmpl::list<
-                        Tags::FixedLtsRatio,
-                        Parallel::Tags::Section<
-                            gh_dg_element_array,
-                            evolution::dg::Tags::EqualRateRegionId>,
                         evolution::dg::Tags::ChangeFixedLtsRatio::
                             NumberOfExpectedMessages,
                         evolution::dg::Tags::ChangeFixedLtsRatio::NewStepSize>,
                     tmpl::list<>>>,
+            Tags::FixedLtsRatio,
+            Parallel::Tags::Section<gh_dg_element_array,
+                                    evolution::dg::Tags::EqualRateRegionId>,
             Tags::ChangeSlabSize::NumberOfExpectedMessages,
             Tags::ChangeSlabSize::NewSlabSize>>>;
     static constexpr bool keep_coarse_grids = false;
