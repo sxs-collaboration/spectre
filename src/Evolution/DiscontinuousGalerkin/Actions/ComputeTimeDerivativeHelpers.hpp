@@ -33,6 +33,8 @@ using inverse_spatial_metric_tag = typename inverse_spatial_metric_tag_impl<
     has_inverse_spatial_metric_tag_v<System>>::template f<System>;
 
 CREATE_GET_TYPE_ALIAS_OR_DEFAULT(auxiliary_variables)
+CREATE_GET_TYPE_ALIAS_OR_DEFAULT(dg_auxiliary_package_field_tags)
+CREATE_GET_TYPE_ALIAS_OR_DEFAULT(dg_auxiliary_boundary_terms_volume_tags)
 
 template <bool HasPrimitiveVars = false>
 struct get_primitive_vars {
