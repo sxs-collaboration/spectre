@@ -17,6 +17,8 @@ std::ostream& operator<<(std::ostream& os, const Topology& topology) {
       return os << "Triangle";
     case Topology::Quad:
       return os << "Quad";
+    case Topology::Tetrahedron:
+      return os << "Tetrahedron";
     case Topology::Wedge:
       return os << "Wedge";
     case Topology::Hexahedron:

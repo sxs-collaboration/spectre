@@ -56,6 +56,95 @@ namespace {
 constexpr const char* global_functions_of_time_observation_value_attr =
     "global_functions_of_time_observation_value";
 
+// Fill a ring of points with a recursive-halving fan of Triangle cells.
+// Used for 2D disk and sphere-surface pole caps.
+//
+// Each pass scans `ring` in steps of 2, emitting one Triangle per triple
+// (ring[i], ring[i+1], ring[i+2]) and keeping only the even-indexed points
+// (ring[0], ring[2], ...) as `new_ring` for the next pass.  If the ring has
+// an even number of points, a final wrap-around triangle closes the loop.
+// Replacing `ring` with `new_ring` halves the point count each iteration
+// until fewer than 3 points remain, at which point the interior is fully
+// triangulated.
+void recursive_triangle_fan(const gsl::not_null<std::vector<int>*> connectivity,
+                            const gsl::not_null<size_t*> cell_count,
+                            std::vector<int> ring) {
+  std::vector<int> new_ring;
+  new_ring.reserve(ring.size() / 2 - ring.size() % 2);
+  while (ring.size() >= 3) {
+    new_ring.clear();
+    new_ring.push_back(ring[0]);
+    for (size_t i = 0; i < ring.size() - 2; i += 2) {
+      connectivity->push_back(
+          vis::detail::xdmf_topology_type(vis::detail::Topology::Triangle));
+      ++(*cell_count);
+      connectivity->push_back(ring[i]);
+      connectivity->push_back(ring[i + 1]);
+      connectivity->push_back(ring[i + 2]);
+      new_ring.push_back(ring[i + 2]);
+    }
+    if (ring.size() % 2 == 0) {
+      const size_t sz = ring.size();
+      connectivity->push_back(
+          vis::detail::xdmf_topology_type(vis::detail::Topology::Triangle));
+      ++(*cell_count);
+      connectivity->push_back(ring[sz - 2]);
+      connectivity->push_back(ring[sz - 1]);
+      connectivity->push_back(ring[0]);
+    }
+    ring = std::move(new_ring);
+  }
+}
+
+// Fill between two parallel rings of points with a recursive-halving fan of
+// Wedge (triangular prism) cells.  Used for 3D cylinder centers, shell pole
+// caps, and the B3 ball inner-sphere filling.
+//
+// Identical in structure to recursive_triangle_fan, but operates on a matched
+// pair of rings (`bottom` and `top`) simultaneously.  Each pass emits one Wedge
+// per triple of paired points and retains only the even-indexed points in
+// `new_bottom`/`new_top` for the next pass, halving the ring size each
+// iteration until fewer than 3 point-pairs remain.
+void recursive_wedge_fan(const gsl::not_null<std::vector<int>*> connectivity,
+                         const gsl::not_null<size_t*> cell_count,
+                         std::vector<int> bottom, std::vector<int> top) {
+  std::vector<int> new_bottom;
+  std::vector<int> new_top;
+  while (bottom.size() >= 3) {
+    new_bottom.clear();
+    new_top.clear();
+    new_bottom.push_back(bottom[0]);
+    new_top.push_back(top[0]);
+    for (size_t i = 0; i < bottom.size() - 2; i += 2) {
+      connectivity->push_back(
+          vis::detail::xdmf_topology_type(vis::detail::Topology::Wedge));
+      ++(*cell_count);
+      connectivity->push_back(bottom[i]);
+      connectivity->push_back(bottom[i + 1]);
+      connectivity->push_back(bottom[i + 2]);
+      connectivity->push_back(top[i]);
+      connectivity->push_back(top[i + 1]);
+      connectivity->push_back(top[i + 2]);
+      new_bottom.push_back(bottom[i + 2]);
+      new_top.push_back(top[i + 2]);
+    }
+    if (bottom.size() % 2 == 0) {
+      const size_t sz = bottom.size();
+      connectivity->push_back(
+          vis::detail::xdmf_topology_type(vis::detail::Topology::Wedge));
+      ++(*cell_count);
+      connectivity->push_back(bottom[sz - 2]);
+      connectivity->push_back(bottom[sz - 1]);
+      connectivity->push_back(bottom[0]);
+      connectivity->push_back(top[sz - 2]);
+      connectivity->push_back(top[sz - 1]);
+      connectivity->push_back(top[0]);
+    }
+    bottom = std::move(new_bottom);
+    top = std::move(new_top);
+  }
+}
+
 size_t append_element_extents_and_connectivity(
     const gsl::not_null<std::vector<size_t>*> total_extents,
     const gsl::not_null<std::vector<int>*> total_connectivity,
@@ -224,34 +313,8 @@ size_t append_element_extents_and_connectivity(
           // minimum r for each phi slice
           inner_ring_points.push_back(element_start + k * n_r);
         }
-
-        std::vector<int> new_points;
-        while (inner_ring_points.size() >= 3) {
-          new_points.clear();
-          new_points.push_back(inner_ring_points[0]);
-          for (size_t i = 0; i < inner_ring_points.size() - 2; i += 2) {
-            total_connectivity->push_back(vis::detail::xdmf_topology_type(
-                vis::detail::Topology::Triangle));
-            ++cell_count;
-            total_connectivity->push_back(inner_ring_points[i]);
-            total_connectivity->push_back(inner_ring_points[i + 1]);
-            total_connectivity->push_back(inner_ring_points[i + 2]);
-            new_points.push_back(inner_ring_points[i + 2]);
-          }
-          if (inner_ring_points.size() % 2 == 0) {
-            // Add triangle closing the ring: connects last two points back to
-            // first
-            total_connectivity->push_back(vis::detail::xdmf_topology_type(
-                vis::detail::Topology::Triangle));
-            ++cell_count;
-            total_connectivity->push_back(
-                inner_ring_points[inner_ring_points.size() - 2]);
-            total_connectivity->push_back(
-                inner_ring_points[inner_ring_points.size() - 1]);
-            total_connectivity->push_back(inner_ring_points[0]);
-          }
-          inner_ring_points = std::move(new_points);
-        }
+        recursive_triangle_fan(total_connectivity, &cell_count,
+                               std::move(inner_ring_points));
       }
     }
     // generically do nothing if not a sphere, disk, or annulus
@@ -300,66 +363,27 @@ size_t append_element_extents_and_connectivity(
       // For a filled cylinder (ZernikeB2), fill the central hole with
       // wedges between consecutive z layers.
       if (element.basis[0] == Spectral::Basis::ZernikeB2) {
-        std::vector<int> ring_lo{};
-        std::vector<int> ring_hi{};
-        ring_lo.reserve(static_cast<size_t>(n_ph));
-        ring_hi.reserve(static_cast<size_t>(n_ph));
-        std::vector<int> new_lo{};
-        std::vector<int> new_hi{};
         for (int j_z = 0; j_z < n_z - 1; ++j_z) {
-          ring_lo.clear();
-          ring_hi.clear();
-          // Collect the minimum r ring points in this z layer and the next
+          std::vector<int> ring_lo;
+          std::vector<int> ring_hi;
+          ring_lo.reserve(static_cast<size_t>(n_ph));
+          ring_hi.reserve(static_cast<size_t>(n_ph));
           for (int k = 0; k < n_ph; ++k) {
             ring_lo.push_back(global_index(0, k, j_z));
             ring_hi.push_back(global_index(0, k, j_z + 1));
           }
-
-          // Build wedge prisms using the same recursive fan as the 2D case,
-          // extruded between ring_lo and ring_hi.
-          while (ring_lo.size() >= 3) {
-            new_lo.clear();
-            new_hi.clear();
-            new_lo.push_back(ring_lo[0]);
-            new_hi.push_back(ring_hi[0]);
-            for (size_t i = 0; i < ring_lo.size() - 2; i += 2) {
-              // Wedge (triangular prism): bottom triangle (ring_lo) + top
-              // triangle (ring_hi), each 3 vertices = 6 total.
-              total_connectivity->push_back(vis::detail::xdmf_topology_type(
-                  vis::detail::Topology::Wedge));
-              ++cell_count;
-              total_connectivity->push_back(ring_lo[i]);
-              total_connectivity->push_back(ring_lo[i + 1]);
-              total_connectivity->push_back(ring_lo[i + 2]);
-              total_connectivity->push_back(ring_hi[i]);
-              total_connectivity->push_back(ring_hi[i + 1]);
-              total_connectivity->push_back(ring_hi[i + 2]);
-              new_lo.push_back(ring_lo[i + 2]);
-              new_hi.push_back(ring_hi[i + 2]);
-            }
-            if (ring_lo.size() % 2 == 0) {
-              // Closing wedge connecting last two points back to first
-              const size_t size = ring_lo.size();
-              total_connectivity->push_back(vis::detail::xdmf_topology_type(
-                  vis::detail::Topology::Wedge));
-              ++cell_count;
-              total_connectivity->push_back(ring_lo[size - 2]);
-              total_connectivity->push_back(ring_lo[size - 1]);
-              total_connectivity->push_back(ring_lo[0]);
-              total_connectivity->push_back(ring_hi[size - 2]);
-              total_connectivity->push_back(ring_hi[size - 1]);
-              total_connectivity->push_back(ring_hi[0]);
-            }
-            ring_lo = std::move(new_lo);
-            ring_hi = std::move(new_hi);
-          }
+          recursive_wedge_fan(total_connectivity, &cell_count,
+                              std::move(ring_lo), std::move(ring_hi));
         }
       }
     }
     // If element is a 3D spherical shell (SphericalHarmonic in theta and phi
-    // directions), add phi-wrapping hexahedra and pole-cap wedges.
-    if (element.basis[1] == Spectral::Basis::SphericalHarmonic and
-        element.basis[2] == Spectral::Basis::SphericalHarmonic) {
+    // directions) or filled sphere, add phi-wrapping hexahedra and pole-cap
+    // wedges.
+    if ((element.basis[1] == Spectral::Basis::SphericalHarmonic and
+         element.basis[2] == Spectral::Basis::SphericalHarmonic) or
+        (element.basis[1] == Spectral::Basis::ZernikeB3 and
+         element.basis[2] == Spectral::Basis::ZernikeB3)) {
       const auto n_r = static_cast<int>(element.extents[0]);
       const auto n_theta = static_cast<int>(element.extents[1]);
       const auto n_phi = static_cast<int>(element.extents[2]);
@@ -413,45 +437,83 @@ size_t append_element_extents_and_connectivity(
             std::reverse(bottom_ring.begin(), bottom_ring.end());
             std::reverse(top_ring.begin(), top_ring.end());
           }
-          std::vector<int> new_bottom;
-          std::vector<int> new_top;
-          while (bottom_ring.size() >= 3) {
-            new_bottom.clear();
-            new_top.clear();
-            new_bottom.push_back(bottom_ring[0]);
-            new_top.push_back(top_ring[0]);
-            for (size_t i = 0; i < bottom_ring.size() - 2; i += 2) {
+          recursive_wedge_fan(total_connectivity, &cell_count,
+                              std::move(bottom_ring), std::move(top_ring));
+        }
+      }
+
+      // Step 3: For ZernikeB3 (filled ball), seal the inner hollow by
+      // connecting points across the equatorial plane at ir=0.
+      //
+      //  (a) Pole cylinder: the north pole ring (theta=0) is connected
+      //      directly to the south pole ring (theta=n_theta-1) using the same
+      //      recursive-halving wedge algorithm as Step 2, forming a cylinder.
+      //
+      //  (b) Body: for each northern hemisphere band [it, it+1]
+      //      (it = 0 .. (n_theta-3)/2), pair with its z-mirror band
+      //      [n_theta-2-it, n_theta-1-it].  When the two bands share the
+      //      equatorial theta (it+1 == n_theta-2-it), emit a 6-vertex Wedge;
+      //      otherwise emit an 8-vertex Hexahedron.
+      if (element.basis[0] == Spectral::Basis::ZernikeB3 and n_theta >= 3) {
+        // (a) Pole cylinder: connect north pole ring (theta=0) directly to
+        // south pole ring (theta=n_theta-1). The resulting wedges form a
+        // cylinder.
+        {
+          std::vector<int> bot;
+          std::vector<int> top;
+          bot.reserve(static_cast<size_t>(n_phi));
+          top.reserve(static_cast<size_t>(n_phi));
+          for (int ip = 0; ip < n_phi; ++ip) {
+            bot.push_back(idx(0, 0, ip));
+            top.push_back(idx(0, n_theta - 1, ip));
+          }
+          recursive_wedge_fan(total_connectivity, &cell_count, std::move(bot),
+                              std::move(top));
+        }
+
+        // (b) Body: northern band [it, it+1] paired with its z-mirror band
+        // [n_theta-2-it, n_theta-1-it], for it = 0 .. (n_theta-3)/2.
+        // it=0 produces hexahedra spanning theta={0,1,...,n_theta-2,n_theta-1},
+        // connecting the extremal theta rings to their neighbors.
+        for (int it = 0; 2 * it <= n_theta - 3; ++it) {
+          const int it_nlo = it;
+          const int it_nhi = it + 1;
+          const int it_slo = n_theta - 2 - it;  // mirror of it_nhi
+          const int it_shi = n_theta - 1 - it;  // mirror of it_nlo
+
+          for (int ip = 0; ip < n_phi; ++ip) {
+            const int ip1 = (ip + 1) % n_phi;
+
+            if (it_nhi < it_slo) {
+              // Bands don't share equatorial theta: 8-vertex Hexahedron.
+              total_connectivity->push_back(vis::detail::xdmf_topology_type(
+                  vis::detail::Topology::Hexahedron));
+              ++cell_count;
+              total_connectivity->push_back(idx(0, it_nlo, ip));
+              total_connectivity->push_back(idx(0, it_nhi, ip));
+              total_connectivity->push_back(idx(0, it_slo, ip));
+              total_connectivity->push_back(idx(0, it_shi, ip));
+              total_connectivity->push_back(idx(0, it_nlo, ip1));
+              total_connectivity->push_back(idx(0, it_nhi, ip1));
+              total_connectivity->push_back(idx(0, it_slo, ip1));
+              total_connectivity->push_back(idx(0, it_shi, ip1));
+            } else {
+              // it_nhi == it_slo: share equatorial theta -> 6-vertex Wedge.
               total_connectivity->push_back(vis::detail::xdmf_topology_type(
                   vis::detail::Topology::Wedge));
               ++cell_count;
-              total_connectivity->push_back(bottom_ring[i]);
-              total_connectivity->push_back(bottom_ring[i + 1]);
-              total_connectivity->push_back(bottom_ring[i + 2]);
-              total_connectivity->push_back(top_ring[i]);
-              total_connectivity->push_back(top_ring[i + 1]);
-              total_connectivity->push_back(top_ring[i + 2]);
-              new_bottom.push_back(bottom_ring[i + 2]);
-              new_top.push_back(top_ring[i + 2]);
+              total_connectivity->push_back(idx(0, it_nlo, ip));
+              total_connectivity->push_back(idx(0, it_nhi, ip));
+              total_connectivity->push_back(idx(0, it_shi, ip));
+              total_connectivity->push_back(idx(0, it_nlo, ip1));
+              total_connectivity->push_back(idx(0, it_nhi, ip1));
+              total_connectivity->push_back(idx(0, it_shi, ip1));
             }
-            if (bottom_ring.size() % 2 == 0) {
-              const size_t sz = bottom_ring.size();
-              total_connectivity->push_back(vis::detail::xdmf_topology_type(
-                  vis::detail::Topology::Wedge));
-              ++cell_count;
-              total_connectivity->push_back(bottom_ring[sz - 2]);
-              total_connectivity->push_back(bottom_ring[sz - 1]);
-              total_connectivity->push_back(bottom_ring[0]);
-              total_connectivity->push_back(top_ring[sz - 2]);
-              total_connectivity->push_back(top_ring[sz - 1]);
-              total_connectivity->push_back(top_ring[0]);
-            }
-            bottom_ring = std::move(new_bottom);
-            top_ring = std::move(new_top);
           }
         }
       }
     }
-    // generically do nothing if not a cylinder or spherical shell
+    // generically do nothing if not a cylinder, spherical shell, or ball
   }
   return cell_count;
 }
@@ -610,8 +672,8 @@ void VolumeData::write_volume_data(
 
               const size_t number_of_cells =
                   append_element_extents_and_connectivity(
-                      &total_extents, &total_connectivity,
-                      &total_points_so_far, dim, element);
+                      &total_extents, &total_connectivity, &total_points_so_far,
+                      dim, element);
 
               // Element ID: hash of the element name string
               if (element.element_name.size() >= 3 and

@@ -180,7 +180,7 @@ def _xmf_topology(
 def _count_cells_in_mixed_connectivity(connectivity):
     """Count cells in an XDMF mixed-topology connectivity array."""
     # Map from XDMF type integer to number of vertices per cell
-    verts_per_type = {2: 2, 4: 3, 5: 4, 8: 6, 9: 8}
+    verts_per_type = {2: 2, 4: 3, 5: 4, 6: 4, 8: 6, 9: 8}
     number_of_cells = 0
     i = 0
     while i < len(connectivity):
