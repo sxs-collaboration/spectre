@@ -6,6 +6,8 @@ spectre_python_add_module(
   MODULE_PATH Pipelines
   PYTHON_FILES
   __init__.py
+  Cce.py
+  Cce.yaml
   ControlId.py
   EccentricityControl.py
   FindHorizon.py
@@ -23,6 +25,7 @@ set(PIPELINE_TARGET bbh)
 add_custom_target(${PIPELINE_TARGET})
 add_dependencies(
   ${PIPELINE_TARGET}
+  CharacteristicExtract
   EvolveGhBinaryBlackHole
   EvolveGhSingleBlackHole
   SolveXcts

@@ -17,6 +17,7 @@ class Bbh(click.Group):
             "postprocess-id",
             "start-inspiral",
             "start-ringdown",
+            "run-cce",
         ]
 
     def get_command(self, ctx, name):
@@ -44,6 +45,10 @@ class Bbh(click.Group):
             from .Ringdown import start_ringdown_command
 
             return start_ringdown_command
+        elif name in ["run-cce", "start-cce"]:
+            from .Cce import run_cce_command
+
+            return run_cce_command
         raise RequiredChoiceError(
             f"The command '{name}' is not implemented.",
             choices=self.list_commands(ctx),
