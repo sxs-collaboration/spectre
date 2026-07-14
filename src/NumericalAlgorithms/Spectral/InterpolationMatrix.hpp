@@ -42,8 +42,8 @@ template <typename T>
 Matrix interpolation_matrix(const Mesh<1>& mesh, const T& target_points);
 
 /*!
- * \brief  %Matrix used to interpolate to the \p target_points for bases with
- * a spectral space that depends on parity, i.e. ZernikeB1.
+ * \brief %Matrix used to interpolate to the \p target_points for bases with
+ * a spectral space that depends on parity, i.e. ZernikeB1 and HalfFourier.
  *
  * \see interpolation_matrix(size_t, const T&)
  */

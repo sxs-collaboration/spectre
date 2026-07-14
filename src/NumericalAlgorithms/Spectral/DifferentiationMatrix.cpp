@@ -10,6 +10,7 @@
 #include "NumericalAlgorithms/Spectral/BarycentricWeights.hpp"
 #include "NumericalAlgorithms/Spectral/Basis.hpp"
 #include "NumericalAlgorithms/Spectral/BasisFunctions/Fourier.hpp"
+#include "NumericalAlgorithms/Spectral/BasisFunctions/HalfFourier.hpp"
 #include "NumericalAlgorithms/Spectral/BasisFunctions/Zernike.hpp"
 #include "NumericalAlgorithms/Spectral/CollocationPoints.hpp"
 #include "NumericalAlgorithms/Spectral/GetSpectralQuantityForMesh.hpp"
@@ -379,7 +380,13 @@ struct ParityBasedDifferentiationMatrixGenerator {
   Matrix operator()(const size_t num_points, const Parity parity) const {
     // We intentionally do not instantiate "normal" derivatives for Zernike
     // bases due to their large errors
-    if constexpr (BasisType == Spectral::Basis::ZernikeB1) {
+    if constexpr (BasisType == Spectral::Basis::HalfFourier) {
+      if (parity == Parity::Even) {
+        return HalfFourier::even_differentiation_matrix(num_points);
+      } else {
+        return HalfFourier::odd_differentiation_matrix(num_points);
+      }
+    } else if constexpr (BasisType == Spectral::Basis::ZernikeB1) {
       return Zernike<1>::differentiation_matrix(num_points, parity);
     } else if constexpr (BasisType == Spectral::Basis::ZernikeB2) {
       return Zernike<2>::differentiation_matrix(num_points, parity);
@@ -388,7 +395,7 @@ struct ParityBasedDifferentiationMatrixGenerator {
     } else {
       ERROR(
           "Calling ParityBasedDifferentiationMatrixGenerator with a "
-          "non-Zernike basis: call non-parity generator");
+          "non-Zernike, non-HalfFourier basis: call non-parity generator");
     }
   }
 };
@@ -455,6 +462,9 @@ template const Matrix&
 template const Matrix&
     differentiation_matrix<Basis::Legendre, Quadrature::GaussLobatto>(size_t);
 
+template const Matrix&
+    differentiation_matrix<Basis::HalfFourier, Quadrature::Equiangular>(size_t,
+                                                                        Parity);
 template const Matrix& differentiation_matrix<
     Basis::ZernikeB1, Quadrature::GaussRadauUpper>(size_t, Parity);
 template const Matrix& differentiation_matrix<

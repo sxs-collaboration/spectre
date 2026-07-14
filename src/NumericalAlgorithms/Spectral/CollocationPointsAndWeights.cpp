@@ -37,6 +37,8 @@ template struct CollocationPointsAndWeightsGenerator<Basis::FiniteDifference,
                                                      Quadrature::FaceCentered>;
 template struct CollocationPointsAndWeightsGenerator<Basis::Fourier,
                                                      Quadrature::Equiangular>;
+template struct CollocationPointsAndWeightsGenerator<Basis::HalfFourier,
+                                                     Quadrature::Equiangular>;
 template struct CollocationPointsAndWeightsGenerator<
     Basis::ZernikeB1, Quadrature::GaussRadauUpper>;
 template struct CollocationPointsAndWeightsGenerator<

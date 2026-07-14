@@ -4,6 +4,8 @@
 #include "NumericalAlgorithms/Spectral/NodalToModalMatrix.hpp"
 
 #include <cstddef>
+#include <cmath>
+#include <numbers>
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Matrix.hpp"
@@ -15,6 +17,7 @@
 #include "NumericalAlgorithms/Spectral/GetSpectralQuantityForMesh.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/ModalToNodalMatrix.hpp"
+#include "NumericalAlgorithms/Spectral/Parity.hpp"
 #include "NumericalAlgorithms/Spectral/PrecomputedSpectralQuantity.hpp"
 #include "NumericalAlgorithms/Spectral/Quadrature.hpp"
 #include "NumericalAlgorithms/Spectral/SpectralQuantityForMesh.hpp"
@@ -90,6 +93,41 @@ struct TwoIndexedNodalToModalMatrixGenerator {
     return inv_matrix;
   }
 };
+
+template <Basis BasisType, Quadrature QuadratureType>
+struct NodalToModalMatrixWithParityGenerator {
+  Matrix operator()(const size_t num_points, const Parity parity) const {
+    static_assert(BasisType == Basis::HalfFourier);
+    ASSERT(parity != Parity::Uninitialized,
+           "Passed parity must be set to either Even or Odd");
+    const double pi_over_n = std::numbers::pi / static_cast<double>(num_points);
+    const double one_over_n = 1.0 / static_cast<double>(num_points);
+    const double two_over_n = 2.0 / static_cast<double>(num_points);
+    Matrix inv_matrix(num_points, num_points);
+    if (parity == Parity::Even) {
+      for (size_t j = 0; j < num_points; ++j) {
+        const double phi_j = pi_over_n * (static_cast<double>(j) + 0.5);
+        inv_matrix(0, j) = one_over_n;
+        for (size_t k = 1; k < num_points; ++k) {
+          inv_matrix(k, j) = two_over_n * cos(static_cast<double>(k) * phi_j);
+        }
+      }
+      return inv_matrix;
+    } else {
+      for (size_t j = 0; j < num_points; ++j) {
+        const double phi_j = pi_over_n * (static_cast<double>(j) + 0.5);
+        for (size_t k = 1; k < num_points; ++k) {
+          inv_matrix(k - 1, j) =
+              two_over_n * sin(static_cast<double>(k) * phi_j);
+        }
+        // Nyquist mode k = N stored at row index N-1
+        inv_matrix(num_points - 1, j) =
+            one_over_n * sin(static_cast<double>(num_points) * phi_j);
+      }
+    }
+    return inv_matrix;
+  }
+};
 }  // namespace
 
 PRECOMPUTED_SPECTRAL_QUANTITY(nodal_to_modal_matrix, Matrix,
@@ -109,6 +147,15 @@ PRECOMPUTED_TWO_INDEXED_SPECTRAL_QUANTITY(nodal_to_modal_matrix, Matrix,
 TWO_INDEXED_SPECTRAL_QUANTITY_FOR_MESH(nodal_to_modal_matrix, Matrix)
 
 #undef TWO_INDEXED_SPECTRAL_QUANTITY_FOR_MESH
+
+PRECOMPUTED_SPECTRAL_QUANTITY_WITH_PARITY(nodal_to_modal_matrix, Matrix,
+                                          NodalToModalMatrixWithParityGenerator)
+
+#undef PRECOMPUTED_SPECTRAL_QUANTITY_WITH_PARITY
+
+SPECTRAL_QUANTITY_WITH_PARITY_FOR_MESH(nodal_to_modal_matrix, Matrix)
+
+#undef SPECTRAL_QUANTITY_WITH_PARITY_FOR_MESH
 
 template const Matrix&
     nodal_to_modal_matrix<Basis::Cartoon, Quadrature::AxialSymmetry>(size_t);
@@ -130,6 +177,9 @@ template const Matrix& nodal_to_modal_matrix<
     Basis::ZernikeB2, Quadrature::GaussRadauUpper>(size_t, size_t, size_t);
 template const Matrix& nodal_to_modal_matrix<
     Basis::ZernikeB3, Quadrature::GaussRadauUpper>(size_t, size_t, size_t);
+template const Matrix&
+    nodal_to_modal_matrix<Basis::HalfFourier, Quadrature::Equiangular>(size_t,
+                                                                       Parity);
 // Some compilers require these instantiations to exist
 template const Matrix& nodal_to_modal_matrix<Basis::FiniteDifference,
                                              Quadrature::CellCentered>(size_t);
