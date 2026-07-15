@@ -8,6 +8,7 @@
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/GaugePlaneWave.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/GaugeWave.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/HarmonicSchwarzschild.hpp"
+#include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/HighSpinKerrPuncture.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/Minkowski.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/SphericalKerrSchild.hpp"
@@ -25,6 +26,7 @@ using all_solutions =
                  tmpl::conditional_t<
                      Dim == 3,
                      tmpl::list<WrappedGr<gr::Solutions::HarmonicSchwarzschild>,
+                                WrappedGr<gr::Solutions::HighSpinKerrPuncture>,
                                 WrappedGr<gr::Solutions::KerrSchild>,
                                 WrappedGr<gr::Solutions::SphericalKerrSchild>,
                                 WrappedGr<gr::Solutions::TrumpetSchwarzschild>>,
