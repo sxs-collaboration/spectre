@@ -69,6 +69,9 @@ static constexpr auto hypertorus = make_array<VolumeDim>(Topology::S1);
 
 static constexpr auto annulus = std::array{Topology::I1, Topology::S1};
 
+static constexpr auto spherical_surface =
+    std::array{Topology::S2Colatitude, Topology::S2Longitude};
+
 static constexpr auto disk =
     std::array{Topology::B2Radial, Topology::B2Angular};
 
