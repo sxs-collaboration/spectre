@@ -68,6 +68,9 @@ void test_simple_tags() {
 
   TestHelpers::db::test_simple_tag<
       gh::Tags::ConstraintEnergy<DataVector, Dim, Frame>>("ConstraintEnergy");
+  TestHelpers::db::test_simple_tag<
+      gh::Tags::NormalizedConstraintEnergy<DataVector, Dim, Frame>>(
+      "NormalizedConstraintEnergy");
 }
 
 SPECTRE_TEST_CASE("Unit.Evolution.Systems.GeneralizedHarmonic.Tags",

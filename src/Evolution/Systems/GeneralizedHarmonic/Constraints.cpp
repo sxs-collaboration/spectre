@@ -1380,6 +1380,27 @@ void constraint_energy_normalization(
   get(*energy_norm) *= get(sqrt_spatial_metric_determinant);
 }
 
+template <typename DataType>
+Scalar<DataType> normalized_constraint_energy(
+    const Scalar<DataType>& constraint_energy,
+    const Scalar<DataType>& constraint_energy_normalization) {
+  auto normalized_energy =
+      make_with_value<Scalar<DataType>>(constraint_energy, 0.0);
+  normalized_constraint_energy<DataType>(make_not_null(&normalized_energy),
+                                         constraint_energy,
+                                         constraint_energy_normalization);
+  return normalized_energy;
+}
+
+template <typename DataType>
+void normalized_constraint_energy(
+    const gsl::not_null<Scalar<DataType>*> normalized_energy,
+    const Scalar<DataType>& constraint_energy,
+    const Scalar<DataType>& constraint_energy_normalization) {
+  get(*normalized_energy) =
+      get(constraint_energy) / (1.e-10 + get(constraint_energy_normalization));
+}
+
 }  // namespace gh
 
 // Explicit Instantiations
@@ -1600,6 +1621,21 @@ void constraint_energy_normalization(
           inverse_spatial_metric,                                             \
       const Scalar<DTYPE(data)>& sqrt_spatial_metric_determinant,             \
       double dimensional_constant);
+
+template Scalar<double> gh::normalized_constraint_energy(
+    const Scalar<double>& constraint_energy,
+    const Scalar<double>& constraint_energy_normalization);
+template Scalar<DataVector> gh::normalized_constraint_energy(
+    const Scalar<DataVector>& constraint_energy,
+    const Scalar<DataVector>& constraint_energy_normalization);
+template void gh::normalized_constraint_energy(
+    gsl::not_null<Scalar<double>*> normalized_energy,
+    const Scalar<double>& constraint_energy,
+    const Scalar<double>& constraint_energy_normalization);
+template void gh::normalized_constraint_energy(
+    gsl::not_null<Scalar<DataVector>*> normalized_energy,
+    const Scalar<DataVector>& constraint_energy,
+    const Scalar<DataVector>& constraint_energy_normalization);
 
 #define INSTANTIATE_ONLY_3D(_, data)                                       \
   template tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>                  \

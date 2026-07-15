@@ -1042,3 +1042,15 @@ def constraint_energy_normalization(
 
 
 # End test functions for normalized constraint energy
+
+# Begin test functions for normalized constraint energy
+
+
+def normalized_constraint_energy(
+    constraint_energy,
+    constraint_energy_normalization,
+):
+    return constraint_energy / (1.0e-10 + constraint_energy_normalization)
+
+
+# End test functions for normalized constraint energy

@@ -72,6 +72,9 @@ struct FourIndexConstraint;
 template <typename DataType, size_t SpatialDim,
           typename Frame = Frame::Inertial>
 struct ConstraintEnergy;
+template <typename DataType, size_t SpatialDim,
+          typename Frame = Frame::Inertial>
+struct NormalizedConstraintEnergy;
 }  // namespace Tags
 
 /// \brief Input option tags for the generalized harmonic evolution system

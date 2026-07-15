@@ -561,7 +561,7 @@ void constraint_energy(
 
 /// @{
 /*!
- * \brief Computes the generalized-harmonic normalized constraint energy.
+ * \brief Computes the generalized-harmonic constraint energy normalization.
  *
  * \details Computes the generalized-harmonic normalized constraint energy
  * integrand [Eq. (70) of \cite Lindblom2005qh with \f$m^{ab}=\delta^{ab}\f$],
@@ -595,6 +595,29 @@ void constraint_energy_normalization(
     const tnsr::II<DataType, SpatialDim, Frame>& inverse_spatial_metric,
     const Scalar<DataType>& sqrt_spatial_metric_determinant,
     double dimensional_constant);
+/// @}
+
+/// @{
+/*!
+ * \brief Computes the generalized-harmonic normalized constraint energy.
+ *
+ * \details Computes `constraint_energy()` and then normalizes by dividing
+ * the unnormalized constraint energy. by `(eps +
+ * constraint_energy_normalization())`, where eps (following SpEC) has a value
+ * of 1.e-10, The `eps` term is present so that situations like Minkowski space,
+ * in which `constraint_energy_normalization()` vanishes, do not cause
+ * floating-point exceptions when computing the normalized constraint energy.
+ */
+template <typename DataType>
+Scalar<DataType> normalized_constraint_energy(
+    const Scalar<DataType>& constraint_energy,
+    const Scalar<DataType>& constraint_energy_normalization);
+
+template <typename DataType>
+void normalized_constraint_energy(
+    gsl::not_null<Scalar<DataType>*> normalized_energy,
+    const Scalar<DataType>& constraint_energy,
+    const Scalar<DataType>& constraint_energy_normalization);
 /// @}
 
 namespace Tags {
@@ -818,6 +841,50 @@ struct ConstraintEnergyCompute
   }
 
   using base = ConstraintEnergy<DataVector, SpatialDim, Frame>;
+};
+
+/*!
+ * \brief Compute item to get the normalized combined energy in all constraints
+ * for the generalized harmonic evolution system.
+ *
+ * \details See `normalized_constraint_energy()`. Can be retrieved using
+ * `gh::Tags::NormalizedConstraintEnergy`.
+ */
+template <size_t SpatialDim, typename Frame>
+struct NormalizedConstraintEnergyCompute
+    : NormalizedConstraintEnergy<DataVector, SpatialDim, Frame>,
+      db::ComputeTag {
+  using argument_tags = tmpl::list<
+      ConstraintEnergy<DataVector, SpatialDim, Frame>,
+      ::Tags::deriv<gr::Tags::SpacetimeMetric<DataVector, SpatialDim, Frame>,
+                    tmpl::size_t<SpatialDim>, Frame>,
+      ::Tags::deriv<Pi<DataVector, SpatialDim, Frame>, tmpl::size_t<SpatialDim>,
+                    Frame>,
+      ::Tags::deriv<Phi<DataVector, SpatialDim, Frame>,
+                    tmpl::size_t<SpatialDim>, Frame>,
+      gr::Tags::InverseSpatialMetric<DataVector, SpatialDim, Frame>,
+      gr::Tags::SqrtDetSpatialMetric<DataVector>>;
+
+  using return_type = Scalar<DataVector>;
+
+  static constexpr auto function(
+      const gsl::not_null<Scalar<DataVector>*> normalized_energy,
+      const Scalar<DataVector>& constraint_energy,
+      const tnsr::iaa<DataVector, SpatialDim, Frame>& d_spacetime_metric,
+      const tnsr::iaa<DataVector, SpatialDim, Frame>& d_pi,
+      const tnsr::ijaa<DataVector, SpatialDim, Frame>& d_phi,
+      const tnsr::II<DataVector, SpatialDim, Frame>& inverse_spatial_metric,
+      const Scalar<DataVector>& sqrt_spatial_metric_determinant) {
+    set_number_of_grid_points(normalized_energy, constraint_energy);
+    const auto normalization =
+        constraint_energy_normalization<DataVector, SpatialDim, Frame>(
+            d_spacetime_metric, d_pi, d_phi, inverse_spatial_metric,
+            sqrt_spatial_metric_determinant, 1.0);
+    normalized_constraint_energy<DataVector>(normalized_energy,
+                                             constraint_energy, normalization);
+  }
+
+  using base = NormalizedConstraintEnergy<DataVector, SpatialDim, Frame>;
 };
 }  // namespace Tags
 }  // namespace gh

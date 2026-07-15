@@ -168,8 +168,9 @@ struct EvolvedFieldsFromCharacteristicFields : db::SimpleTag {
  * harmonic system, and their diagnostically useful combinations.
  * \details For details on how these are defined and computed, see
  * `GaugeConstraintCompute`, `FConstraintCompute`, `TwoIndexConstraintCompute`,
- * `ThreeIndexConstraintCompute`, `FourIndexConstraintCompute`, and
- * `ConstraintEnergyCompute` respectively
+ * `ThreeIndexConstraintCompute`, `FourIndexConstraintCompute`,
+ * `ConstraintEnergyCompute`, and `NormalizedConstraintEnergyCompute`
+ * respectively
  */
 template <typename DataType, size_t SpatialDim, typename Frame>
 struct GaugeConstraint : db::SimpleTag {
@@ -198,6 +199,11 @@ struct FourIndexConstraint : db::SimpleTag {
 /// \copydoc GaugeConstraint
 template <typename DataType, size_t SpatialDim, typename Frame>
 struct ConstraintEnergy : db::SimpleTag {
+  using type = Scalar<DataType>;
+};
+/// \copydoc GaugeConstraint
+template <typename DataType, size_t SpatialDim, typename Frame>
+struct NormalizedConstraintEnergy : db::SimpleTag {
   using type = Scalar<DataType>;
 };
 }  // namespace Tags

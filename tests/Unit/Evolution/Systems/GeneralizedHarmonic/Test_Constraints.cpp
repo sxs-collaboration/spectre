@@ -790,6 +790,27 @@ void test_constraint_energy_normalization_minkowski(
   CHECK(get(result) == 0.0);
 }
 
+// Test the return-by-value normalized constraint energy function using random
+// values
+template <typename DataType>
+void test_normalized_constraint_energy_random(const DataType& used_for_size) {
+  pypp::check_with_random_values<1>(
+      static_cast<Scalar<DataType> (*)(const Scalar<DataType>&,
+                                       const Scalar<DataType>&)>(
+          &gh::normalized_constraint_energy<DataType>),
+      "Constraints", "normalized_constraint_energy", {{{1.0, 2.0}}},
+      used_for_size);
+}
+
+void test_normalized_constraint_energy_zero_normalization() {
+  const Scalar<double> zero_double{0.0};
+  CHECK(get(gh::normalized_constraint_energy(zero_double, zero_double)) == 0.0);
+
+  const Scalar<DataVector> zero_datavector{DataVector(4, 0.0)};
+  CHECK(get(gh::normalized_constraint_energy(
+            zero_datavector, zero_datavector)) == DataVector(4, 0.0));
+}
+
 // Test compute items for various constraints via insertion and retrieval
 // in a databox
 template <typename Solution>
@@ -829,6 +850,9 @@ void test_constraint_compute_items(const Solution& solution,
   TestHelpers::db::test_compute_tag<
       gh::Tags::ConstraintEnergyCompute<3, Frame::Inertial>>(
       "ConstraintEnergy");
+  TestHelpers::db::test_compute_tag<
+      gh::Tags::NormalizedConstraintEnergyCompute<3, Frame::Inertial>>(
+      "NormalizedConstraintEnergy");
 
   // Check vs. time-independent analytic solution
   // Set up grid
@@ -998,6 +1022,7 @@ void test_constraint_compute_items(const Solution& solution,
                                                  Frame::Inertial>,
           gr::Tags::DetAndInverseSpatialMetricCompute<DataVector, 3,
                                                       Frame::Inertial>,
+          gr::Tags::SqrtDetSpatialMetricCompute<DataVector, 3, Frame::Inertial>,
           gr::Tags::InverseSpacetimeMetricCompute<DataVector, 3,
                                                   Frame::Inertial>,
           gr::Tags::SpatialChristoffelFirstKindCompute<DataVector, 3,
@@ -1015,7 +1040,8 @@ void test_constraint_compute_items(const Solution& solution,
           gh::Tags::TwoIndexConstraintCompute<3, Frame::Inertial>,
           gh::Tags::GaugeConstraintCompute<3, Frame::Inertial>,
           gh::Tags::FConstraintCompute<3, Frame::Inertial>,
-          gh::Tags::ConstraintEnergyCompute<3, Frame::Inertial>>>(
+          gh::Tags::ConstraintEnergyCompute<3, Frame::Inertial>,
+          gh::Tags::NormalizedConstraintEnergyCompute<3, Frame::Inertial>>>(
       std::move(functions_of_time),
       std::numeric_limits<double>::signaling_NaN(), x,
 
@@ -1080,6 +1106,12 @@ void test_constraint_compute_items(const Solution& solution,
       gauge_constraint, f_constraint, two_index_constraint,
       three_index_constraint, four_index_constraint, inverse_spatial_metric,
       det_spatial_metric);
+  const auto constraint_energy_normalization =
+      gh::constraint_energy_normalization(
+          deriv_spacetime_metric, deriv_pi, deriv_phi, inverse_spatial_metric,
+          db::get<gr::Tags::SqrtDetSpatialMetric<DataVector>>(box), 1.0);
+  const auto normalized_constraint_energy = gh::normalized_constraint_energy(
+      constraint_energy, constraint_energy_normalization);
 
   // Check that their compute items in databox furnish identical values
   CHECK(db::get<gh::Tags::ConstraintGamma0>(box) == gamma0);
@@ -1099,6 +1131,8 @@ void test_constraint_compute_items(const Solution& solution,
   CHECK(db::get<gh::Tags::FConstraint<DataVector, 3>>(box) == f_constraint);
   CHECK(db::get<gh::Tags::ConstraintEnergy<DataVector, 3>>(box) ==
         constraint_energy);
+  CHECK(db::get<gh::Tags::NormalizedConstraintEnergy<DataVector, 3>>(box) ==
+        normalized_constraint_energy);
 }
 
 void three_index_constraint() {
@@ -1347,6 +1381,14 @@ void constraint_energy_normalization() {
       std::numeric_limits<double>::signaling_NaN());
 }
 
+void normalized_constraint_energy() {
+  test_normalized_constraint_energy_random<DataVector>(
+      DataVector(4, std::numeric_limits<double>::signaling_NaN()));
+  test_normalized_constraint_energy_random<double>(
+      std::numeric_limits<double>::signaling_NaN());
+  test_normalized_constraint_energy_zero_normalization();
+}
+
 void test_compute_tags() {
   // Test the F constraint against Kerr Schild
   const double mass = 1.4;
@@ -1374,5 +1416,6 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.GeneralizedHarmonic.Constraints",
   f_constraint();
   constraint_energy();
   constraint_energy_normalization();
+  normalized_constraint_energy();
   test_compute_tags();
 }
