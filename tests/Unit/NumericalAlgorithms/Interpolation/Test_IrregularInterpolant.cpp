@@ -33,6 +33,7 @@
 #include "Domain/Structure/ElementId.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
+#include "Helpers/NumericalAlgorithms/Spectral/BallTestFunctions.hpp"
 #include "Helpers/NumericalAlgorithms/Spectral/DiskTestFunctions.hpp"
 #include "Helpers/NumericalAlgorithms/Spectral/FourierTestFunctions.hpp"
 #include "Helpers/NumericalAlgorithms/SphericalHarmonics/YlmTestFunctions.hpp"
@@ -643,6 +644,52 @@ void test_3d_cylinder(const gsl::not_null<std::mt19937*> generator) {
   }
 }
 
+void test_3d_ball(const gsl::not_null<std::mt19937*> generator) {
+  std::uniform_real_distribution<> xi_distribution(-1.0, 1.0);
+  std::uniform_real_distribution<> phi_distribution(0.0, 2.0 * M_PI);
+  for (size_t n_target_points = 1; n_target_points < 13;
+       n_target_points += 11) {
+    tnsr::I<DataVector, 3, Frame::ElementLogical> xi_target{n_target_points};
+    get<0>(xi_target) = make_with_random_values<DataVector>(
+        generator, make_not_null(&xi_distribution), xi_target);
+    get<1>(xi_target) = acos(make_with_random_values<DataVector>(
+        generator, make_not_null(&xi_distribution), xi_target));
+    get<2>(xi_target) = make_with_random_values<DataVector>(
+        generator, make_not_null(&phi_distribution), xi_target);
+    for (size_t n_z = 2; n_z < 4; ++n_z) {
+      CAPTURE(n_z);
+      for (size_t n_y = 0; n_y < 4; ++n_y) {
+        CAPTURE(n_y);
+        for (size_t n_x = 0; n_x < 4; ++n_x) {
+          CAPTURE(n_x);
+          // SPHEREPACK requires m_max >= 2 (n_phi >= 5)
+          const size_t n_phi = 2 * (n_x + n_y) + 3;
+          if (n_phi < 5) {
+            continue;
+          }
+          const size_t n_theta = n_x + n_y + n_z + 2;
+          const Mesh<3> source_mesh{
+              std::array{n_theta / 2 + 1, n_theta, n_phi},
+              std::array{Spectral::Basis::ZernikeB3, Spectral::Basis::ZernikeB3,
+                         Spectral::Basis::ZernikeB3},
+              std::array{Spectral::Quadrature::GaussRadauUpper,
+                         Spectral::Quadrature::Gauss,
+                         Spectral::Quadrature::Equiangular}};
+          const BallTestFunctions::ProductOfPolynomials f{n_x, n_y, n_z};
+          const auto xi_source = logical_coordinates(source_mesh);
+          const DataVector f_source = f(0.5 * (get<0>(xi_source) + 1.0),
+                                        get<1>(xi_source), get<2>(xi_source));
+          const DataVector f_expected = f(0.5 * (get<0>(xi_target) + 1.0),
+                                          get<1>(xi_target), get<2>(xi_target));
+          const intrp::Irregular<3> interpolator(source_mesh, xi_target);
+          const DataVector f_interpolated = interpolator.interpolate(f_source);
+          CHECK_ITERABLE_APPROX(f_interpolated, f_expected);
+        }
+      }
+    }
+  }
+}
+
 void test_2d_hollow_disk(const gsl::not_null<std::mt19937*> generator) {
   std::uniform_real_distribution<> xi_distribution(-1.0, 1.0);
   std::uniform_real_distribution<> phi_distribution(0.0,
@@ -1036,6 +1083,7 @@ SPECTRE_TEST_CASE("Unit.Numerical.Interpolation.IrregularInterpolant",
   test_3d_spherical(make_not_null(&generator));
   test_2d_disk(make_not_null(&generator));
   test_3d_cylinder(make_not_null(&generator));
+  test_3d_ball(make_not_null(&generator));
   test_2d_hollow_disk(make_not_null(&generator));
   test_3d_hollow_cylinder(make_not_null(&generator));
   test_cartoon_spherical(make_not_null(&generator));
