@@ -169,10 +169,28 @@ void test_mesh_3d() {
 #endif
 }
 
+template <size_t Dim>
+void test_equiangular_mesh() {
+  const auto refine = make_array<Dim>(amr::Flag::IncreaseResolution);
+  const auto coarsen = make_array<Dim>(amr::Flag::DecreaseResolution);
+  const auto stay = make_array<Dim>(amr::Flag::DoNothing);
+  Mesh<Dim> mesh_3{make_array<Dim>(3_st), Spectral::bases::hypertorus<Dim>,
+                   Spectral::quadratures::hypertorus<Dim>};
+  Mesh<Dim> mesh_5{make_array<Dim>(5_st), Spectral::bases::hypertorus<Dim>,
+                   Spectral::quadratures::hypertorus<Dim>};
+  Mesh<Dim> mesh_7{make_array<Dim>(7_st), Spectral::bases::hypertorus<Dim>,
+                   Spectral::quadratures::hypertorus<Dim>};
+  CHECK(amr::projectors::mesh(mesh_5, refine) == mesh_7);
+  CHECK(amr::projectors::mesh(mesh_5, coarsen) == mesh_3);
+  CHECK(amr::projectors::mesh(mesh_5, stay) == mesh_5);
+}
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Amr.Projectors.Mesh", "[ParallelAlgorithms][Unit]") {
   test_mesh_1d();
   test_mesh_2d();
   test_mesh_3d();
+  test_equiangular_mesh<1>();
+  test_equiangular_mesh<2>();
+  test_equiangular_mesh<3>();
 }
