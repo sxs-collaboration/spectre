@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include <cmath>
 #include <cstddef>
 #include <optional>
 #include <pup.h>
@@ -25,6 +26,7 @@
 #include "IO/Observer/ReductionActions.hpp"
 #include "IO/Observer/TypeOfObservation.hpp"
 #include "NumericalAlgorithms/LinearOperators/DefiniteIntegral.hpp"
+#include "NumericalAlgorithms/Spectral/Basis.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Quadrature.hpp"
 #include "Options/String.hpp"
@@ -461,36 +463,55 @@ operator()(const ObservationBox<ComputeTagsList, DataBoxType>& box,
 
   const auto& mesh = get<::Events::Tags::ObserverMesh<VolumeDim>>(box);
   const auto det_jacobian = [&box, &mesh]() -> DataVector {
-    if constexpr (VolumeDim == 3 and
+    if constexpr (VolumeDim > 1 and
                   db::tag_is_retrievable_v<::Events::Tags::ObserverCoordinates<
                                                VolumeDim, Frame::Inertial>,
                                            std::decay_t<decltype(box)>>) {
-      if (mesh.basis(2) == Spectral::Basis::Cartoon) {
-        if (mesh.quadrature(2) == Spectral::Quadrature::SphericalSymmetry) {
-          // Spherical Symmetry, needs x^2 cartesian to spherical jacobian
-          return square(get<0>(get<::Events::Tags::ObserverCoordinates<
-                                   VolumeDim, Frame::Inertial>>(box))) /
-                 get(get<::Events::Tags::ObserverDetInvJacobian<
-                         Frame::ElementLogical, Frame::Inertial>>(box));
-        } else {
-          // Axial Symmetry, needs x cartesian to cylindrical jacobian
-          ASSERT(mesh.quadrature(2) == Spectral::Quadrature::AxialSymmetry,
-                 "Unexpected quadrature " << mesh.quadrature(2)
-                                          << " (expected AxialSymmetry)");
-          return get<0>(get<::Events::Tags::ObserverCoordinates<
-                            VolumeDim, Frame::Inertial>>(box)) /
-                 get(get<::Events::Tags::ObserverDetInvJacobian<
-                         Frame::ElementLogical, Frame::Inertial>>(box));
-        }
-      } else {
-        return 1. / get(get<::Events::Tags::ObserverDetInvJacobian<
-                            Frame::ElementLogical, Frame::Inertial>>(box));
+      if (mesh.basis(0) == Spectral::Basis::ZernikeB2) {
+        // disk (2D) or cylinder (3D), need rho cartesian to polar jacobian
+        const auto& inertial_coords = get<
+            ::Events::Tags::ObserverCoordinates<VolumeDim, Frame::Inertial>>(
+            box);
+        const DataVector radius = sqrt(square(get<0>(inertial_coords)) +
+                                       square(get<1>(inertial_coords)));
+        return radius / get(get<::Events::Tags::ObserverDetInvJacobian<
+                                Frame::ElementLogical, Frame::Inertial>>(box));
       }
-    } else {
-      (void)mesh;
-      return 1. / get(get<::Events::Tags::ObserverDetInvJacobian<
-                          Frame::ElementLogical, Frame::Inertial>>(box));
+      if constexpr (VolumeDim == 3) {
+        if (mesh.basis(0) == Spectral::Basis::ZernikeB3) {
+          // ball, needs r^2 cartesian to spherical jacobian
+          const auto& inertial_coords = get<
+              ::Events::Tags::ObserverCoordinates<VolumeDim, Frame::Inertial>>(
+              box);
+          const DataVector r_squared = square(get<0>(inertial_coords)) +
+                                       square(get<1>(inertial_coords)) +
+                                       square(get<2>(inertial_coords));
+          return r_squared /
+                 get(get<::Events::Tags::ObserverDetInvJacobian<
+                         Frame::ElementLogical, Frame::Inertial>>(box));
+        } else if (mesh.basis(2) == Spectral::Basis::Cartoon) {
+          if (mesh.quadrature(2) == Spectral::Quadrature::SphericalSymmetry) {
+            // Spherical Symmetry, needs x^2 cartesian to spherical jacobian
+            return square(get<0>(get<::Events::Tags::ObserverCoordinates<
+                                     VolumeDim, Frame::Inertial>>(box))) /
+                   get(get<::Events::Tags::ObserverDetInvJacobian<
+                           Frame::ElementLogical, Frame::Inertial>>(box));
+          } else {
+            // Axial Symmetry, needs x cartesian to cylindrical jacobian
+            ASSERT(mesh.quadrature(2) == Spectral::Quadrature::AxialSymmetry,
+                   "Unexpected quadrature " << mesh.quadrature(2)
+                                            << " (expected AxialSymmetry)");
+            return get<0>(get<::Events::Tags::ObserverCoordinates<
+                              VolumeDim, Frame::Inertial>>(box)) /
+                   get(get<::Events::Tags::ObserverDetInvJacobian<
+                           Frame::ElementLogical, Frame::Inertial>>(box));
+          }
+        }
+      }
     }
+    (void)mesh;
+    return 1. / get(get<::Events::Tags::ObserverDetInvJacobian<
+                        Frame::ElementLogical, Frame::Inertial>>(box));
   }();
   const size_t number_of_points = mesh.number_of_grid_points();
   const double local_volume = definite_integral(det_jacobian, mesh);

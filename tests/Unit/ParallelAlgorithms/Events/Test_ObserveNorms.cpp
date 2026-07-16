@@ -23,8 +23,10 @@
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.tpp"
 #include "Domain/CoordinateMaps/Identity.hpp"
+#include "Domain/CoordinateMaps/PolarToCartesian.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.tpp"
+#include "Domain/CoordinateMaps/SphericalToCartesianPfaffian.hpp"
 #include "Domain/Tags.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "Framework/TestCreation.hpp"
@@ -33,6 +35,7 @@
 #include "IO/Observer/ObservationId.hpp"
 #include "IO/Observer/ObserverComponent.hpp"
 #include "IO/Observer/Tags.hpp"
+#include "NumericalAlgorithms/Spectral/Basis.hpp"
 #include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
 #include "NumericalAlgorithms/Spectral/Quadrature.hpp"
 #include "Options/Protocols/FactoryCreation.hpp"
@@ -342,6 +345,169 @@ void test(const std::unique_ptr<ObserveEvent> observe,
   CHECK(results.volume_integral_values[1] == approx(41.0));
   CHECK(results.volume_integral_values[2] == approx(68.0));
   CHECK(results.volume_integral_values[3] == approx(95.0));
+}
+
+template <Spectral::Basis basis, typename ArraySectionIdTag,
+          typename ObserveEvent>
+void test_b2_b3(const std::unique_ptr<ObserveEvent> observe,
+                const std::optional<std::string>& section) {
+  // We are testing that the correct cartesian to spherical/cylindrical jacobian
+  // is being mulitplied
+  CAPTURE(pretty_type::name<ArraySectionIdTag>());
+  CAPTURE(section);
+  CAPTURE(basis);
+  using metavariables = Metavariables<3, ArraySectionIdTag>;
+  using element_component = ElementComponent<metavariables>;
+  using observer_component = MockObserverComponent<metavariables>;
+  const typename element_component::array_index array_index(0);
+  Mesh<3> mesh;
+  double expected_volume{};
+  tnsr::I<DataVector, 3, Frame::Inertial> inertial_coords;
+  Scalar<DataVector> det_inv_jacobian;
+  DataVector coord_jacobian{};
+  if constexpr (basis == Spectral::Basis::ZernikeB2) {
+    mesh = Mesh<3>{{{3, 4, 3}},
+                   {{Spectral::Basis::ZernikeB2, Spectral::Basis::ZernikeB2,
+                     Spectral::Basis::Legendre}},
+                   {{Spectral::Quadrature::GaussRadauUpper,
+                     Spectral::Quadrature::Equiangular,
+                     Spectral::Quadrature::GaussLobatto}}};
+    auto map = domain::make_coordinate_map<Frame::ElementLogical,
+                                           Frame::Inertial>(
+        domain::CoordinateMaps::ProductOf3Maps<
+            domain::CoordinateMaps::Affine, domain::CoordinateMaps::Identity<1>,
+            domain::CoordinateMaps::Affine>{
+            domain::CoordinateMaps::Affine{-1.0, 1.0, 0.0, 2.5},
+            domain::CoordinateMaps::Identity<1>{},
+            domain::CoordinateMaps::Affine{-1.0, 1.0, -0.5, 0.5}},
+        domain::CoordinateMaps::ProductOf2Maps<
+            domain::CoordinateMaps::PolarToCartesian,
+            domain::CoordinateMaps::Identity<1>>(
+            domain::CoordinateMaps::PolarToCartesian{},
+            domain::CoordinateMaps::Identity<1>{}));
+    inertial_coords = map(logical_coordinates(mesh));
+    det_inv_jacobian =
+        determinant(map.inv_jacobian(logical_coordinates((mesh))));
+    coord_jacobian =
+        sqrt(square(get<0>(inertial_coords)) + square(get<1>(inertial_coords)));
+  } else {
+    mesh = Mesh<3>{
+        {{3, 4, 9}},
+        {{Spectral::Basis::ZernikeB3, Spectral::Basis::ZernikeB3,
+          Spectral::Basis::ZernikeB3}},
+        {{Spectral::Quadrature::GaussRadauUpper, Spectral::Quadrature::Gauss,
+          Spectral::Quadrature::Equiangular}}};
+    auto map =
+        domain::make_coordinate_map<Frame::ElementLogical, Frame::Inertial>(
+            domain::CoordinateMaps::ProductOf2Maps<
+                domain::CoordinateMaps::Affine,
+                domain::CoordinateMaps::Identity<2>>{
+                domain::CoordinateMaps::Affine{-1.0, 1.0, 0.0, 2.6},
+                domain::CoordinateMaps::Identity<2>{}},
+            domain::CoordinateMaps::SphericalToCartesianPfaffian{});
+    inertial_coords = map(logical_coordinates(mesh));
+    det_inv_jacobian =
+        determinant(map.inv_jacobian(logical_coordinates((mesh))));
+    coord_jacobian = square(get<0>(inertial_coords)) +
+                     square(get<1>(inertial_coords)) +
+                     square(get<2>(inertial_coords));
+  }
+  const size_t num_points = mesh.number_of_grid_points();
+
+  const double observation_time = 1.2;
+  Variables<tmpl::list<Var0, Var1>> vars(num_points);
+
+  get(get<Var0>(vars)) = get<0>(inertial_coords);
+  get<0>(get<Var1>(vars)) = get<0>(inertial_coords);
+  get<1>(get<Var1>(vars)) = get<1>(inertial_coords);
+  get<2>(get<Var1>(vars)) = get<2>(inertial_coords);
+
+  ActionTesting::MockRuntimeSystem<metavariables> runner{{}};
+  ActionTesting::emplace_component<element_component>(make_not_null(&runner),
+                                                      array_index);
+  ActionTesting::emplace_group_component<observer_component>(&runner);
+
+  auto box = db::create<
+      db::AddSimpleTags<Parallel::Tags::MetavariablesImpl<metavariables>,
+                        ::Events::Tags::ObserverMesh<3>,
+                        ::Events::Tags::ObserverDetInvJacobian<
+                            Frame::ElementLogical, Frame::Inertial>,
+                        ::Events::Tags::ObserverCoordinates<3, Frame::Inertial>,
+                        Tags::Variables<typename decltype(vars)::tags_list>,
+                        observers::Tags::ObservationKey<ArraySectionIdTag>>>(
+      metavariables{}, mesh, det_inv_jacobian, inertial_coords, vars, section);
+
+  auto obs_box = make_observation_box<
+      tmpl::filter<typename ObserveNormsEvent<
+                       ArraySectionIdTag>::compute_tags_for_observation_box,
+                   db::is_compute_tag<tmpl::_1>>>(make_not_null(&box));
+  observe->run(make_not_null(&obs_box),
+               ActionTesting::cache<element_component>(runner, array_index),
+               array_index, std::add_pointer_t<element_component>{},
+               {"TimeName", observation_time});
+
+  // Process the data
+  ActionTesting::invoke_queued_simple_action<observer_component>(
+      make_not_null(&runner), 0);
+  CHECK(ActionTesting::is_simple_action_queue_empty<observer_component>(runner,
+                                                                        0));
+
+  const auto& results = MockContributeReductionData::results;
+
+  const auto integrate = [&mesh, &det_inv_jacobian,
+                          &coord_jacobian](const DataVector& a) -> double {
+    const DataVector integrand = a * coord_jacobian / get<>(det_inv_jacobian);
+    return definite_integral(integrand, mesh);
+  };
+  // expected_volume matches ObserveNorms' local_volume = integral of
+  // det_jacobian
+  expected_volume = integrate(DataVector(num_points, 1.0));
+  CHECK(results.volume == approx(expected_volume));
+  const auto normalize_l1 = [&expected_volume](const double a) -> double {
+    return a / expected_volume;
+  };
+  const auto normalize_l2 = [&expected_volume](const double a) -> double {
+    return sqrt(a / expected_volume);
+  };
+
+  const auto& x = get<0>(get<Var1>(vars));
+  const auto& y = get<1>(get<Var1>(vars));
+  const auto& z = get<2>(get<Var1>(vars));
+  const DataVector abs_x{abs(x)};
+  const DataVector abs_y{abs(y)};
+  const DataVector abs_z{abs(z)};
+  const DataVector sq_x{square(x)};
+  const DataVector sq_y{square(y)};
+  const DataVector sq_z{square(z)};
+
+  // Check L1 integral norms
+  CHECK(results.l1_integral_norm_values[0] ==
+        approx(normalize_l1(integrate(abs_x) + integrate(abs_y) +
+                            integrate(abs_z))));
+  CHECK(results.l1_integral_norm_values[1] ==
+        approx(normalize_l1(integrate(abs_x))));
+  CHECK(results.l1_integral_norm_values[2] ==
+        approx(normalize_l1(integrate(abs_y))));
+  CHECK(results.l1_integral_norm_values[3] ==
+        approx(normalize_l1(integrate(abs_z))));
+
+  // Check L2 integral norms
+  CHECK(results.l2_integral_norm_values[0] ==
+        approx(
+            normalize_l2(integrate(sq_x) + integrate(sq_y) + integrate(sq_z))));
+  CHECK(results.l2_integral_norm_values[1] ==
+        approx(normalize_l2(integrate(sq_x))));
+  CHECK(results.l2_integral_norm_values[2] ==
+        approx(normalize_l2(integrate(sq_y))));
+  CHECK(results.l2_integral_norm_values[3] ==
+        approx(normalize_l2(integrate(sq_z))));
+
+  // Check volume integral values (no abs, no normalization)
+  CHECK(results.volume_integral_values[0] ==
+        approx(integrate(x) + integrate(y) + integrate(z)));
+  CHECK(results.volume_integral_values[1] == approx(integrate(x)));
+  CHECK(results.volume_integral_values[2] == approx(integrate(y)));
+  CHECK(results.volume_integral_values[3] == approx(integrate(z)));
 }
 
 template <bool Spherical, typename ArraySectionIdTag, typename ObserveEvent>
@@ -759,4 +925,25 @@ SPECTRE_TEST_CASE("Unit.Evolution.ObserveNorms", "[Unit][Evolution]") {
                                    {"Var1", "VolumeIntegral", "Sum"},
                                    {"Var1", "VolumeIntegral", "Individual"}}}),
       std::nullopt, 1.5);
+
+  test_b2_b3<Spectral::Basis::ZernikeB2, void>(
+      std::make_unique<ObserveNormsEvent<void>>(
+          ObserveNormsEvent<void>{"reduction0",
+                                  {{"Var1", "L1IntegralNorm", "Sum"},
+                                   {"Var1", "L1IntegralNorm", "Individual"},
+                                   {"Var1", "L2IntegralNorm", "Sum"},
+                                   {"Var1", "L2IntegralNorm", "Individual"},
+                                   {"Var1", "VolumeIntegral", "Sum"},
+                                   {"Var1", "VolumeIntegral", "Individual"}}}),
+      std::nullopt);
+  test_b2_b3<Spectral::Basis::ZernikeB3, void>(
+      std::make_unique<ObserveNormsEvent<void>>(
+          ObserveNormsEvent<void>{"reduction0",
+                                  {{"Var1", "L1IntegralNorm", "Sum"},
+                                   {"Var1", "L1IntegralNorm", "Individual"},
+                                   {"Var1", "L2IntegralNorm", "Sum"},
+                                   {"Var1", "L2IntegralNorm", "Individual"},
+                                   {"Var1", "VolumeIntegral", "Sum"},
+                                   {"Var1", "VolumeIntegral", "Individual"}}}),
+      std::nullopt);
 }
