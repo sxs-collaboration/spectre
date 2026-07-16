@@ -274,7 +274,7 @@ struct EvolutionMetavars {
   using initialization_actions = tmpl::flatten<tmpl::list<
       Initialization::Actions::InitializeItems<
           Initialization::TimeStepping<EvolutionMetavars, TimeStepperBase,
-                                       false>,
+                                       false, local_time_stepping>,
           evolution::dg::Initialization::Domain<EvolutionMetavars>,
           Initialization::TimeStepperHistory<EvolutionMetavars>>,
       Initialization::Actions::ConservativeSystem<system>,

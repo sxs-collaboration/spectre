@@ -30,6 +30,7 @@
 #include "Time/ChangeSlabSize/Tags.hpp"
 #include "Time/ChooseLtsStepSize.hpp"
 #include "Time/History.hpp"
+#include "Time/LtsMode.hpp"
 #include "Time/Slab.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"
 #include "Time/Tags/AdaptiveSteppingDiagnostics.hpp"
@@ -113,13 +114,14 @@ void set_next_time_step_id(const gsl::not_null<TimeStepId*> next_time_step_id,
 /// _before_ the initial time. So `Tags::TimeStepId` is undefined at this point,
 /// and `Tags::Next<Tags::TimeStepId>` is the initial time.
 template <typename Metavariables, typename TimeStepperBase,
-          bool WithControlSystems>
+          bool WithControlSystems, bool AllowLocalTimeStepping>
 struct TimeStepping {
   /// Tags for constant items added to the GlobalCache.  These items are
   /// initialized from input file options.
   using const_global_cache_tags = tmpl::list<
       ::Tags::ConcreteTimeStepper<TimeStepperBase, WithControlSystems>,
-      ::Tags::LtsMode>;
+      tmpl::conditional_t<AllowLocalTimeStepping, ::Tags::LtsMode,
+                          ::Tags::LtsModeForced<LtsMode::Off>>>;
 
   /// Tags for mutable items added to the GlobalCache.  These items are
   /// initialized from input file options.
@@ -128,13 +130,13 @@ struct TimeStepping {
   /// Tags for items fetched by the DataBox and passed to the apply function
   using argument_tags =
       tmpl::list<::Tags::Time, Tags::InitialTimeDelta,
-                 Tags::InitialSlabSize<TimeStepperBase::local_time_stepping>,
+                 Tags::InitialSlabSize<AllowLocalTimeStepping>,
                  ::Tags::TimeStepper<TimeStepperBase>>;
 
   /// Tags for simple DataBox items that are initialized from input file options
   using simple_tags_from_options =
       tmpl::list<::Tags::Time, Tags::InitialTimeDelta,
-                 Tags::InitialSlabSize<TimeStepperBase::local_time_stepping>>;
+                 Tags::InitialSlabSize<AllowLocalTimeStepping>>;
 
   /// Tags for simple DataBox items that are default initialized.
   using default_initialized_simple_tags =

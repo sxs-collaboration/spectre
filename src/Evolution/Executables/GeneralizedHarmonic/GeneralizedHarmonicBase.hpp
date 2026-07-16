@@ -426,7 +426,7 @@ struct GeneralizedHarmonicTemplateBase {
   using initialization_actions = tmpl::list<
       Initialization::Actions::InitializeItems<
           Initialization::TimeStepping<DerivedMetavars, TimeStepperBase,
-                                       UseControlSystems>,
+                                       UseControlSystems, local_time_stepping>,
           evolution::dg::Initialization::Domain<DerivedMetavars,
                                                 UseControlSystems>,
           ::amr::Initialization::Initialize<volume_dim, DerivedMetavars>,

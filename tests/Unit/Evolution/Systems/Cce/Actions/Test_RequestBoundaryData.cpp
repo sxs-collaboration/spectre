@@ -29,6 +29,7 @@
 #include "ParallelAlgorithms/Actions/TerminatePhase.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
 #include "Time/AdvanceTime.hpp"
+#include "Time/LtsMode.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"
 #include "Time/Tags/StepperErrorEstimatesEnabled.hpp"
 #include "Time/TimeStepId.hpp"
@@ -206,7 +207,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.Actions.RequestBoundaryData",
        Tags::EndTimeFromFile::create_from_options(end_time, filename, false),
        start_time, number_of_radial_points,
        static_cast<std::unique_ptr<LtsTimeStepper>>(
-           std::make_unique<::TimeSteppers::AdamsBashforth>(3))}};
+           std::make_unique<::TimeSteppers::AdamsBashforth>(3)),
+       LtsMode::Conservative}};
 
   ActionTesting::set_phase(make_not_null(&runner),
                            Parallel::Phase::Initialization);

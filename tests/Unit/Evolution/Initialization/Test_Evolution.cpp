@@ -129,7 +129,7 @@ void test_gts() {
       TimeDelta{}, std::numeric_limits<double>::signaling_NaN());
 
   db::mutate_apply<Initialization::TimeStepping<TestMetavariables<TimeStepper>,
-                                                TimeStepper, false>>(
+                                                TimeStepper, false, false>>(
       make_not_null(&box));
 
   CHECK(db::get<::Tags::Next<::Tags::TimeStepId>>(box) ==
@@ -175,7 +175,7 @@ void test_lts() {
       TimeDelta{}, std::numeric_limits<double>::signaling_NaN());
 
   db::mutate_apply<Initialization::TimeStepping<
-      TestMetavariables<LtsTimeStepper>, LtsTimeStepper, false>>(
+      TestMetavariables<LtsTimeStepper>, LtsTimeStepper, false, true>>(
       make_not_null(&box));
 
   CHECK(db::get<::Tags::Next<::Tags::TimeStepId>>(box) ==

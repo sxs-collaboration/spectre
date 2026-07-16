@@ -82,6 +82,7 @@
 #include "Time/ChangeSlabSize/Action.hpp"
 #include "Time/StepChoosers/Factory.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"
+#include "Time/Tags/StepperErrorTolerancesCompute.hpp"
 #include "Time/Tags/Time.hpp"
 #include "Time/Tags/TimeStepId.hpp"
 #include "Time/TimeSequence.hpp"
@@ -116,6 +117,8 @@ struct EvolutionMetavars {
   using system = Particles::MonteCarlo::System;
   using temporal_id = Tags::TimeStepId;
   using TimeStepperBase = TimeStepper;
+  static constexpr bool local_time_stepping =
+      TimeStepperBase::local_time_stepping;
   static constexpr bool use_dg_subcell = true;
 
   using initial_data_list =
@@ -196,7 +199,7 @@ struct EvolutionMetavars {
   using initialization_actions = tmpl::list<
       Initialization::Actions::InitializeItems<
           Initialization::TimeStepping<EvolutionMetavars, TimeStepperBase,
-                                       false>,
+                                       false, local_time_stepping>,
           evolution::dg::Initialization::Domain<EvolutionMetavars>>,
       Initialization::Actions::AddSimpleTags<
           evolution::dg::BackgroundGrVars<system, EvolutionMetavars>>,
@@ -212,7 +215,8 @@ struct EvolutionMetavars {
           Particles::MonteCarlo::CellLightCrossingTimeCompute,
           Particles::MonteCarlo::InertialFrameEnergyDensityCompute,
           Particles::MonteCarlo::InverseJacobianInertialToFluidCompute,
-          domain::Tags::JacobianCompute<4, Frame::Inertial, Frame::Fluid>>>,
+          domain::Tags::JacobianCompute<4, Frame::Inertial, Frame::Fluid>,
+          ::Tags::StepperErrorEstimatesEnabledCompute<false>>>,
       evolution::Actions::InitializeRunEventsAndDenseTriggers,
       Parallel::Actions::TerminatePhase>;
 

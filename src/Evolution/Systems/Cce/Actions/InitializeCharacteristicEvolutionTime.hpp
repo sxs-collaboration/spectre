@@ -16,9 +16,11 @@
 #include "Parallel/AlgorithmExecution.hpp"
 #include "ParallelAlgorithms/Initialization/MutateAssign.hpp"
 #include "Time/ChooseLtsStepSize.hpp"
+#include "Time/LtsMode.hpp"
 #include "Time/Slab.hpp"
 #include "Time/Tags/AdaptiveSteppingDiagnostics.hpp"
 #include "Time/Tags/HistoryEvolvedVariables.hpp"
+#include "Time/Tags/LtsMode.hpp"
 #include "Time/Tags/StepNumberWithinSlab.hpp"
 #include "Time/Tags/Time.hpp"
 #include "Time/Tags/TimeStep.hpp"
@@ -74,7 +76,8 @@ struct InitializeCharacteristicEvolutionTime {
                  ::Initialization::Tags::InitialTimeDelta>;
 
   using const_global_cache_tags = tmpl::list<
-      Tags::CceEvolutionPrefix<::Tags::ConcreteTimeStepper<LtsTimeStepper>>>;
+      Tags::CceEvolutionPrefix<::Tags::ConcreteTimeStepper<LtsTimeStepper>>,
+      Tags::CceEvolutionPrefix<::Tags::LtsModeForced<LtsMode::Conservative>>>;
 
   using evolved_swsh_variables_tag = ::Tags::Variables<EvolvedSwshTag>;
   using simple_tags = tmpl::list<
