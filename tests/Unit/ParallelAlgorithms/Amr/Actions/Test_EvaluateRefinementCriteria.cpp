@@ -82,9 +82,12 @@ class BadCriterion : public amr::Criterion {
       const ElementId<Metavariables::volume_dim>& /*element_id*/) const {
     if constexpr (Dim == 1) {
       return std::array{amr::Flag::DecreaseResolution};
-    } else {
+    } else if constexpr (Dim == 2) {
       return std::array{amr::Flag::DecreaseResolution,
                         amr::Flag::IncreaseResolution};
+    } else {
+      return std::array{amr::Flag::DecreaseResolution,
+                        amr::Flag::IncreaseResolution, amr::Flag::DoNothing};
     }
   }
 
@@ -120,12 +123,13 @@ struct Metavariables {
   using component_list = tmpl::list<Component<Metavariables>>;
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
-    using factory_classes = tmpl::map<
-        tmpl::pair<amr::Criterion,
-                   tmpl::list<BadCriterion<volume_dim>,
-                              amr::Criteria::IncreaseResolution<volume_dim>,
-                              amr::Criteria::DriveToTarget<
-                                  volume_dim, amr::Criteria::Type::h>>>>;
+    using factory_classes = tmpl::map<tmpl::pair<
+        amr::Criterion,
+        tmpl::list<
+            BadCriterion<volume_dim>,
+            amr::Criteria::IncreaseResolution<volume_dim>,
+            amr::Criteria::DriveToTarget<volume_dim, amr::Criteria::Type::h>,
+            amr::Criteria::DriveToTarget<volume_dim, amr::Criteria::Type::p>>>>;
   };
 
   struct amr : tt::ConformsTo<::amr::protocols::AmrMetavariables> {
@@ -353,7 +357,8 @@ void check_split_while_join_is_avoided() {
 
   Parallel::GlobalCache<metavariables> empty_cache{};
   auto databox = db::create<tmpl::list<::domain::Tags::Mesh<2>>>(mesh);
-  ObservationBox<tmpl::list<>, db::DataBox<tmpl::list<::domain::Tags::Mesh<2>>>>
+  const ObservationBox<tmpl::list<>,
+                       db::DataBox<tmpl::list<::domain::Tags::Mesh<2>>>>
       box{make_not_null(&databox)};
   auto flags_from_criterion =
       criteria.front()->evaluate(box, empty_cache, self_id);
@@ -394,10 +399,99 @@ void check_split_while_join_is_avoided() {
   CHECK(ActionTesting::number_of_queued_simple_actions<my_component>(
             runner, self_id) == 0);
 }
+
+template <bool IgnoreP>
+void check_topology_restrictions_enforced() {
+  CAPTURE(IgnoreP);
+  using metavariables = Metavariables<3, IgnoreP>;
+  using my_component = Component<metavariables>;
+
+  // The part of action we are testing does not depend upon information
+  // from neighbors, so we just use a single Element setup on the root
+  // refinement level
+  const ElementId<3> self_id(0);
+  const Mesh<3> mesh{std::array{2_st, 4_st, 7_st},
+                     Spectral::bases::spherical_shell<>,
+                     Spectral::quadratures::spherical_shell<>};
+  const amr::Info<3> initial_info{make_array<3>(amr::Flag::Undefined),
+                                  Mesh<3>{}};
+  const std::unordered_map<ElementId<3>, amr::Info<3>> initial_neighbor_info{};
+
+  // the refinement criteria wants to drive self to levels (2, 2, 2) so
+  // it will return flags (Split, Split, Split).
+  std::vector<std::unique_ptr<amr::Criterion>> criteria;
+  criteria.emplace_back(
+      std::make_unique<amr::Criteria::DriveToTarget<3, amr::Criteria::Type::h>>(
+          make_array<3>(2_st), make_array<3>(amr::Flag::DoNothing)));
+  // If IgnoreP is false, this criteria will want to drive resolution to
+  // (3, 4, 9)
+  criteria.emplace_back(
+      std::make_unique<amr::Criteria::DriveToTarget<3, amr::Criteria::Type::p>>(
+          std::array{3_st, 4_st, 9_st}, make_array<3>(amr::Flag::DoNothing)));
+
+  Parallel::GlobalCache<metavariables> empty_cache{};
+  auto databox = db::create<tmpl::list<::domain::Tags::Mesh<3>>>(mesh);
+  const ObservationBox<tmpl::list<>,
+                       db::DataBox<tmpl::list<::domain::Tags::Mesh<3>>>>
+      box{make_not_null(&databox)};
+  // Check the raw criteria produce unwanted values
+  const auto flags_from_h_criterion =
+      criteria.front()->evaluate(box, empty_cache, self_id);
+  CHECK(flags_from_h_criterion == make_array<3>(amr::Flag::Split));
+  const auto flags_from_p_criterion =
+      criteria.back()->evaluate(box, empty_cache, self_id);
+  CHECK(flags_from_p_criterion == std::array{amr::Flag::IncreaseResolution,
+                                             amr::Flag::DoNothing,
+                                             amr::Flag::IncreaseResolution});
+
+  ActionTesting::MockRuntimeSystem<metavariables> runner{
+      {std::move(criteria), std::nullopt,
+       amr::Policies{amr::Isotropy::Anisotropic, amr::Limits{}, true, true}}};
+
+  const Element<3> self(self_id, {}, domain::topologies::spherical_shell);
+  ActionTesting::emplace_component_and_initialize<my_component>(
+      &runner, self_id, {self, mesh, initial_info, initial_neighbor_info});
+
+  runner.set_phase(Parallel::Phase::Testing);
+
+  CHECK(ActionTesting::get_databox_tag<my_component, amr::Tags::Info<3>>(
+            runner, self_id) == initial_info);
+  CHECK(
+      ActionTesting::get_databox_tag<my_component, amr::Tags::NeighborInfo<3>>(
+          runner, self_id) == initial_neighbor_info);
+  CHECK(ActionTesting::is_simple_action_queue_empty<my_component>(runner,
+                                                                  self_id));
+
+  // self runs EvaluateAmrCriteria
+  ActionTesting::simple_action<my_component,
+                               amr::Actions::EvaluateRefinementCriteria>(
+      make_not_null(&runner), self_id);
+
+  // check the action correctly resets flags based on topology
+  // If IgonreP is false, IncreaseResolution has higher priority than DoNothing
+  const amr::Info<3> expected_info{
+      std::array{
+          amr::Flag::Split,
+          IgnoreP ? amr::Flag::DoNothing : amr::Flag::IncreaseResolution,
+          IgnoreP ? amr::Flag::DoNothing : amr::Flag::IncreaseResolution},
+      IgnoreP ? mesh
+              : Mesh<3>{std::array{2_st, 5_st, 9_st},
+                        Spectral::bases::spherical_shell<>,
+                        Spectral::quadratures::spherical_shell<>}};
+  CHECK(ActionTesting::get_databox_tag<my_component, amr::Tags::Info<3>>(
+            runner, self_id) == expected_info);
+  CHECK(
+      ActionTesting::get_databox_tag<my_component, amr::Tags::NeighborInfo<3>>(
+          runner, self_id) == initial_neighbor_info);
+  CHECK(ActionTesting::number_of_queued_simple_actions<my_component>(
+            runner, self_id) == 0);
+}
 }  //  namespace
 
 SPECTRE_TEST_CASE("Unit.Amr.Actions.EvaluateRefinementCriteria",
                   "[Unit][ParallelAlgorithms]") {
+  register_factory_classes_with_charm<Metavariables<3, true>>();
+  register_factory_classes_with_charm<Metavariables<3, false>>();
   register_factory_classes_with_charm<Metavariables<2, true>>();
   register_factory_classes_with_charm<Metavariables<1, true>>();
   register_factory_classes_with_charm<Metavariables<1, false>>();
@@ -464,4 +558,6 @@ SPECTRE_TEST_CASE("Unit.Amr.Actions.EvaluateRefinementCriteria",
   }
 #endif
   check_split_while_join_is_avoided();
+  check_topology_restrictions_enforced<true>();
+  check_topology_restrictions_enforced<false>();
 }

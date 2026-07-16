@@ -127,8 +127,9 @@ struct EvaluateRefinementCriteria {
       const auto& refinement_criteria =
           db::get<amr::Criteria::Tags::Criteria>(box);
       for (const auto& criterion : refinement_criteria) {
+        const auto refinement_type = criterion->type();
         if (Metavariables::amr::p_refine_only_in_event and
-            criterion->type() == amr::Criteria::Type::p) {
+            refinement_type == amr::Criteria::Type::p) {
           continue;
         }
         auto decision = criterion->evaluate(observation_box, cache, element_id);
@@ -142,6 +143,19 @@ struct EvaluateRefinementCriteria {
                      << typeid(*criterion).name()
                      << "' requested p-refinement, but claims to be "
                         "for h-refinement.");
+        }
+
+        // Enforce restrictions from the topologies of the Element
+        const auto& topologies =
+            db::get<domain::Tags::Element<Dim>>(box).topologies();
+        if (refinement_type == amr::Criteria::Type::p) {
+          enforce_p_refinement_topology_restrictions(make_not_null(&decision),
+                                                     topologies);
+        } else if (refinement_type == amr::Criteria::Type::h) {
+          enforce_h_refinement_topology_restrictions(make_not_null(&decision),
+                                                     topologies);
+        } else {
+          ERROR("Bad refinement type " << refinement_type);
         }
         for (size_t d = 0; d < volume_dim; ++d) {
           overall_decision[d] = std::max(overall_decision[d], decision[d]);
