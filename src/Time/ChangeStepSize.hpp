@@ -20,7 +20,7 @@
 #include "Time/TimeStepId.hpp"
 #include "Time/TimeStepRequest.hpp"
 #include "Time/TimeStepRequestProcessor.hpp"
-#include "Time/TimeSteppers/LtsTimeStepper.hpp"
+#include "Time/TimeSteppers/TimeStepper.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Gsl.hpp"
@@ -83,8 +83,8 @@ struct ChangeStepSize {
       return;
     }
 
-    const LtsTimeStepper& time_stepper =
-        db::get<CacheTagPrefix<Tags::TimeStepper<LtsTimeStepper>>>(*box);
+    const TimeStepper& time_stepper =
+        db::get<CacheTagPrefix<Tags::TimeStepper<TimeStepper>>>(*box);
     const auto& step_choosers =
         db::get<CacheTagPrefix<Tags::LtsStepChoosers>>(*box);
 
