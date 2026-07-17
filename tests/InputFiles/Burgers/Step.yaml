@@ -10,7 +10,7 @@ Testing:
 ---
 
 Parallelization:
-  ElementDistribution: NumGridPoints
+  ElementDistribution: NumGridPointsAndGridSpacing
 
 ResourceInfo:
   AvoidGlobalProc0: false

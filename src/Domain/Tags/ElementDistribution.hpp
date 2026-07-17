@@ -12,13 +12,8 @@
 #include "Domain/ElementDistribution.hpp"
 #include "Options/Auto.hpp"
 #include "Options/String.hpp"
+#include "Parallel/Tags/Parallelization.hpp"
 #include "Utilities/TMPL.hpp"
-
-/// \cond
-namespace Parallel::OptionTags {
-struct Parallelization;
-}  // namespace Parallel::OptionTags
-/// \endcond
 
 namespace domain {
 namespace OptionTags {
@@ -39,11 +34,6 @@ namespace Tags {
 /// \ingroup ComputationalDomainGroup
 /// Tag that holds method for how to distribute the elements on the given
 /// resources.
-///
-/// \note When not using local time stepping (LTS), a user cannot choose the
-/// NumGridPointsAndGridSpacing element distribution because grid spacing does
-/// not affect the computational cost at all. Therefore, if a user does choose
-/// NumGridPointsAndGridSpacing when not using LTS, an error will occur.
 struct ElementDistribution : db::SimpleTag {
   using type = std::optional<ElementWeight>;
   using option_tags = tmpl::list<OptionTags::ElementDistribution>;
