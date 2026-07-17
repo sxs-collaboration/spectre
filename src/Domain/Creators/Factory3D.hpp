@@ -15,6 +15,7 @@
 #include "Domain/Creators/CylindricalBinaryCompactObject.hpp"
 #include "Domain/Creators/Factory.hpp"
 #include "Domain/Creators/FrustalCloak.hpp"
+#include "Domain/Creators/Hypertorus.hpp"
 #include "Domain/Creators/NonconformingSphericalShells.hpp"
 #include "Domain/Creators/Rectilinear.hpp"
 #include "Domain/Creators/RotatedBricks.hpp"
@@ -33,7 +34,7 @@ struct domain_creators<3> {
       domain::creators::CylindricalBinaryCompactObject,
       domain::creators::FrustalCloak,
       domain::creators::NonconformingSphericalShells,
-      domain::creators::RotatedBricks, domain::creators::Sphere,
-      domain::creators::SphericalShells>;
+      domain::creators::PeriodicBrick, domain::creators::RotatedBricks,
+      domain::creators::Sphere, domain::creators::SphericalShells>;
 };
 }  // namespace DomainCreators_detail

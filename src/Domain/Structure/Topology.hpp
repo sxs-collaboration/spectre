@@ -64,6 +64,9 @@ namespace topologies {
 template <size_t VolumeDim>
 static constexpr auto hypercube = make_array<VolumeDim>(Topology::I1);
 
+template <size_t VolumeDim>
+static constexpr auto hypertorus = make_array<VolumeDim>(Topology::S1);
+
 static constexpr auto annulus = std::array{Topology::I1, Topology::S1};
 
 static constexpr auto disk =

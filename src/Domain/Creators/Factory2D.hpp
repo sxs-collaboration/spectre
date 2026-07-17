@@ -9,6 +9,7 @@
 #include "Domain/Creators/AngularDisk.hpp"
 #include "Domain/Creators/Disk.hpp"
 #include "Domain/Creators/Factory.hpp"
+#include "Domain/Creators/Hypertorus.hpp"
 #include "Domain/Creators/Rectilinear.hpp"
 #include "Domain/Creators/RotatedRectangles.hpp"
 #include "Utilities/TMPL.hpp"
@@ -16,9 +17,9 @@
 namespace DomainCreators_detail {
 template <>
 struct domain_creators<2> {
-  using type = tmpl::list<domain::creators::AlignedLattice<2>,
-                          domain::creators::AngularDisk, domain::creators::Disk,
-                          domain::creators::Rectangle,
-                          domain::creators::RotatedRectangles>;
+  using type = tmpl::list<
+      domain::creators::AlignedLattice<2>, domain::creators::AngularDisk,
+      domain::creators::Disk, domain::creators::PeriodicRectangle,
+      domain::creators::Rectangle, domain::creators::RotatedRectangles>;
 };
 }  // namespace DomainCreators_detail

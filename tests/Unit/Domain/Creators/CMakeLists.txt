@@ -17,6 +17,7 @@ set(LIBRARY_SOURCES
   Test_Disk.cpp
   Test_ExpandOverBlocks.cpp
   Test_FrustalCloak.cpp
+  Test_Hypertorus.cpp
   Test_Interval.cpp
   Test_NonconformingSphericalShells.cpp
   Test_Rectangle.cpp
