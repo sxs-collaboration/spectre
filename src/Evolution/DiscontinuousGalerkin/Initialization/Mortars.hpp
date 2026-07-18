@@ -39,6 +39,7 @@
 #include "ParallelAlgorithms/Amr/Protocols/Projector.hpp"
 #include "ParallelAlgorithms/Initialization/MutateAssign.hpp"
 #include "Time/BoundaryHistory.hpp"
+#include "Time/LtsMode.hpp"
 #include "Time/TimeStepId.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/Gsl.hpp"
@@ -56,6 +57,7 @@ namespace Spectral {
 enum class Quadrature : uint8_t;
 }  // namespace Spectral
 namespace Tags {
+struct LtsMode;
 struct TimeStepId;
 }  // namespace Tags
 namespace tuples {
@@ -74,8 +76,7 @@ template <size_t Dim>
 ::dg::MortarMap<Dim, MortarInfo<Dim>> mortar_infos(
     const Domain<Dim>& domain, const Element<Dim>& element,
     const Mesh<Dim>& volume_mesh,
-    const ::dg::MortarMap<Dim, Mesh<Dim>>& neighbor_mesh,
-    bool local_time_stepping);
+    const ::dg::MortarMap<Dim, Mesh<Dim>>& neighbor_mesh, LtsMode lts_mode);
 
 template <size_t Dim>
 std::tuple<::dg::MortarMap<Dim, Mesh<Dim - 1>>,
@@ -103,7 +104,7 @@ void h_refine_structure(
     const Domain<Dim>& domain, const Mesh<Dim>& new_mesh,
     const Element<Dim>& new_element,
     const ::dg::MortarMap<Dim, Mesh<Dim>>& neighbor_mesh,
-    const TimeStepId& current_temporal_id, bool local_time_stepping);
+    const TimeStepId& current_temporal_id, LtsMode lts_mode);
 }  // namespace detail
 
 /*!
@@ -152,10 +153,10 @@ struct Mortars {
     const auto& element = db::get<::domain::Tags::Element<Dim>>(box);
     const auto& volume_mesh = db::get<domain::Tags::Mesh<Dim>>(box);
     const auto& neighbor_mesh = db::get<domain::Tags::NeighborMesh<Dim>>(box);
+    const auto lts_mode = db::get<::Tags::LtsMode>(box);
     auto mortar_data = detail::empty_mortar_data(element);
-    auto mortar_infos =
-        detail::mortar_infos(domain, element, volume_mesh, neighbor_mesh,
-                             Metavariables::local_time_stepping);
+    auto mortar_infos = detail::mortar_infos(domain, element, volume_mesh,
+                                             neighbor_mesh, lts_mode);
     auto [mortar_meshes, mortar_next_temporal_ids, normal_covector_quantities] =
         detail::mortars_apply_impl(
             element, db::get<::Tags::Next<::Tags::TimeStepId>>(box),
@@ -208,7 +209,7 @@ struct Mortars {
 ///       elements onto refined mortars (both geometric and mortar-mesh data)
 ///     - Creates empty histories for new mortars between two h-refined
 ///       elements
-template <size_t Dim, bool LocalTimeStepping>
+template <size_t Dim>
 struct ProjectMortars : tt::ConformsTo<amr::protocols::Projector> {
  private:
   using magnitude_and_normal_type =
@@ -227,7 +228,7 @@ struct ProjectMortars : tt::ConformsTo<amr::protocols::Projector> {
   using argument_tags =
       tmpl::list<domain::Tags::Domain<Dim>, domain::Tags::Mesh<Dim>,
                  domain::Tags::Element<Dim>, domain::Tags::NeighborMesh<Dim>,
-                 ::Tags::TimeStepId>;
+                 ::Tags::TimeStepId, ::Tags::LtsMode>;
 
   static void apply(
       gsl::not_null<::dg::MortarMap<Dim, evolution::dg::MortarDataHolder<Dim>>*>
@@ -242,7 +243,7 @@ struct ProjectMortars : tt::ConformsTo<amr::protocols::Projector> {
       const Domain<Dim>& domain, const Mesh<Dim>& new_mesh,
       const Element<Dim>& new_element,
       const ::dg::MortarMap<Dim, Mesh<Dim>>& neighbor_mesh,
-      const TimeStepId& current_temporal_id,
+      const TimeStepId& current_temporal_id, LtsMode lts_mode,
       const std::pair<Mesh<Dim>, Element<Dim>>& old_mesh_and_element);
 
   template <typename... ParentTags>
@@ -261,13 +262,12 @@ struct ProjectMortars : tt::ConformsTo<amr::protocols::Projector> {
       const Domain<Dim>& domain, const Mesh<Dim>& new_mesh,
       const Element<Dim>& new_element,
       const ::dg::MortarMap<Dim, Mesh<Dim>>& neighbor_mesh,
-      const TimeStepId& /*possibly_unset*/,
+      const TimeStepId& /*possibly_unset*/, const LtsMode lts_mode,
       const tuples::TaggedTuple<ParentTags...>& parent_items) {
     detail::h_refine_structure(
         mortar_data, mortar_mesh, mortar_infos, mortar_next_temporal_id,
         normal_covector_and_magnitude, domain, new_mesh, new_element,
-        neighbor_mesh, get<::Tags::TimeStepId>(parent_items),
-        LocalTimeStepping);
+        neighbor_mesh, get<::Tags::TimeStepId>(parent_items), lts_mode);
 
     const auto& old_element = get<domain::Tags::Element<Dim>>(parent_items);
     const auto& old_histories = get<mortar_data_history_tag>(parent_items);
@@ -334,14 +334,14 @@ struct ProjectMortars : tt::ConformsTo<amr::protocols::Projector> {
       const Domain<Dim>& domain, const Mesh<Dim>& new_mesh,
       const Element<Dim>& new_element,
       const ::dg::MortarMap<Dim, Mesh<Dim>>& neighbor_mesh,
-      const TimeStepId& /*possibly_unset*/,
+      const TimeStepId& /*possibly_unset*/, const LtsMode lts_mode,
       const std::unordered_map<
           ElementId<Dim>, tuples::TaggedTuple<ChildTags...>>& children_items) {
     detail::h_refine_structure(
         mortar_data, mortar_mesh, mortar_infos, mortar_next_temporal_id,
         normal_covector_and_magnitude, domain, new_mesh, new_element,
         neighbor_mesh, get<::Tags::TimeStepId>(children_items.begin()->second),
-        LocalTimeStepping);
+        lts_mode);
 
     for (const auto& [direction, neighbors] : new_element.neighbors()) {
       for (const auto& neighbor : neighbors) {

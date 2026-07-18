@@ -54,7 +54,9 @@
 #include "Parallel/AlgorithmExecution.hpp"
 #include "Parallel/Phase.hpp"
 #include "ParallelAlgorithms/Actions/InitializeItems.hpp"
+#include "Time/LtsMode.hpp"
 #include "Time/Slab.hpp"
+#include "Time/Tags/LtsMode.hpp"
 #include "Time/Tags/StepNumberWithinSlab.hpp"
 #include "Time/Tags/Time.hpp"
 #include "Time/Tags/TimeStep.hpp"
@@ -484,7 +486,8 @@ struct Metavariables {
   static constexpr bool use_nodegroup_dg_elements = UseNodegroupDgElements;
   using system = System<Dim, SystemType>;
   using const_global_cache_tags =
-      tmpl::list<domain::Tags::Domain<Dim>, domain::Tags::InitialExtents<Dim>>;
+      tmpl::list<domain::Tags::Domain<Dim>, domain::Tags::InitialExtents<Dim>,
+                 ::Tags::LtsMode>;
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
     using factory_classes =
@@ -600,10 +603,12 @@ void test_impl(const Spectral::Quadrature quadrature,
                              {0, OrientationMap<Dim>::create_aligned()}}});
   }
   Domain<Dim> domain{std::move(blocks)};
+  const auto lts_mode =
+      UseLocalTimeStepping ? LtsMode::Conservative : LtsMode::Off;
   MockRuntimeSystem runner{{std::move(domain),
                             std::vector<std::array<size_t, Dim>>{
                                 make_array<Dim>(2_st), make_array<Dim>(3_st)},
-                            std::make_unique<BoundaryTerms<Dim>>(),
+                            lts_mode, std::make_unique<BoundaryTerms<Dim>>(),
                             dg_formulation}};
 
   const size_t number_of_grid_points_per_dimension = 5;
@@ -1111,9 +1116,8 @@ struct ReceiveOrderComponent {
 };
 
 struct ReceiveOrderMetavariables {
-  static constexpr bool local_time_stepping = true;
   using system = System<1, TestHelpers::SystemType::Conservative>;
-  using const_global_cache_tags = tmpl::list<>;
+  using const_global_cache_tags = tmpl::list<::Tags::LtsMode>;
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
     using factory_classes = tmpl::map<tmpl::pair<evolution::BoundaryCorrection,
@@ -1154,7 +1158,7 @@ void test_receive_order() {
   neighbor_mesh[west_mortar] = mesh;
   neighbor_mesh[east_mortar] = mesh;
 
-  MockRuntimeSystem runner{{std::move(domain),
+  MockRuntimeSystem runner{{LtsMode::Conservative, std::move(domain),
                             std::make_unique<BoundaryTerms<1>>(),
                             dg::Formulation::StrongInertial}};
 
@@ -1279,9 +1283,8 @@ struct DeterministicComponent {
 
 struct DeterministicMetavariables {
   static constexpr size_t volume_dim = 3;
-  static constexpr bool local_time_stepping = false;
   using system = System<3, TestHelpers::SystemType::Conservative>;
-  using const_global_cache_tags = tmpl::list<>;
+  using const_global_cache_tags = tmpl::list<::Tags::LtsMode>;
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
     using factory_classes = tmpl::map<tmpl::pair<evolution::BoundaryCorrection,
@@ -1307,7 +1310,7 @@ void test_deterministic_mortar_interpolation() {
   const auto initial_extents = creator.initial_extents();
   const auto initial_refinement = creator.initial_refinement_levels();
 
-  MockRuntimeSystem runner{{creator.create_domain(),
+  MockRuntimeSystem runner{{LtsMode::Off, creator.create_domain(),
                             std::make_unique<BoundaryTerms<3>>(),
                             dg::Formulation::StrongInertial}};
 
@@ -1579,6 +1582,7 @@ void run_boundary_filter_test_1d_gts(
   MockRuntimeSystem runner{{std::move(domain),
                             std::vector<std::array<size_t, Dim>>{
                                 make_array<Dim>(2_st), make_array<Dim>(3_st)},
+                            LtsMode::Off,
                             std::make_unique<BoundaryTerms<Dim>>(),
                             dg::Formulation::StrongInertial}};
 

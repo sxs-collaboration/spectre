@@ -71,11 +71,13 @@
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "Time/AdaptiveSteppingDiagnostics.hpp"
 #include "Time/History.hpp"
+#include "Time/LtsMode.hpp"
 #include "Time/Slab.hpp"
 #include "Time/StepChoosers/Constant.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"
 #include "Time/Tags/AdaptiveSteppingDiagnostics.hpp"
 #include "Time/Tags/HistoryEvolvedVariables.hpp"
+#include "Time/Tags/LtsMode.hpp"
 #include "Time/Tags/Time.hpp"
 #include "Time/Tags/TimeStep.hpp"
 #include "Time/Tags/TimeStepId.hpp"
@@ -985,7 +987,7 @@ struct Metavariables {
       Tags::NumericalFlux<BoundaryTerms<Dim, HasPrimitiveVariables>>;
   using const_global_cache_tags =
       tmpl::list<domain::Tags::InitialExtents<Dim>, normal_dot_numerical_flux,
-                 domain::Tags::Domain<Dim>>;
+                 domain::Tags::Domain<Dim>, ::Tags::LtsMode>;
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
     using factory_classes = tmpl::map<
@@ -1173,7 +1175,7 @@ void test_impl(const Spectral::Quadrature quadrature,
       return MockRuntimeSystem{
           {std::vector<std::array<size_t, Dim>>{extents, extents},
            typename metavars::normal_dot_numerical_flux::type{},
-           std::move(domain), dg_formulation,
+           std::move(domain), ::LtsMode::Conservative, dg_formulation,
            std::make_unique<BoundaryTerms<Dim, HasPrims>>(),
            std::move(boundary_conditions), 1e-8, std::move(step_choosers)}};
     } else {
@@ -1181,7 +1183,7 @@ void test_impl(const Spectral::Quadrature quadrature,
       return MockRuntimeSystem{
           {std::vector<std::array<size_t, Dim>>{extents, extents},
            typename metavars::normal_dot_numerical_flux::type{},
-           std::move(domain), dg_formulation,
+           std::move(domain), ::LtsMode::Off, dg_formulation,
            std::make_unique<BoundaryTerms<Dim, HasPrims>>(),
            std::move(boundary_conditions)}};
     }

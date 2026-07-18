@@ -740,8 +740,7 @@ struct EvolutionMetavars {
         evolution::dg::Initialization::ProjectDomain<volume_dim>,
         ::amr::projectors::ProjectVariables<volume_dim,
                                             typename system::variables_tag>,
-        evolution::dg::Initialization::ProjectMortars<volume_dim,
-                                                      local_time_stepping>,
+        evolution::dg::Initialization::ProjectMortars<volume_dim>,
         Initialization::ProjectTimeStepperHistory<EvolutionMetavars>,
         evolution::Actions::ProjectRunEventsAndDenseTriggers,
         evolution::dg::Initialization::ProjectSpectralFilters<
