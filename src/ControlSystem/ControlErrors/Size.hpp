@@ -37,6 +37,7 @@
 #include "Parallel/Printf/Printf.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Surfaces/Tags.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
+#include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
@@ -458,11 +459,15 @@ struct Size : tt::ConformsTo<protocols::ControlError> {
       const double d2t_horizon_00 =
           averaged_horizon_coef_at_average_time.value()[2][0];
 
-      // Must account for time offset of averaged time. Do a simple Taylor
-      // expansion
+      // Taylor expand from the averaged time t_avg to the current time t,
+      // where time_diff = t - t_avg:
+      // h(t) = h(t_avg) + time_diff * h'(t_avg)
+      //        + 0.5 * time_diff^2 * h''(t_avg),
+      // h'(t) = h'(t_avg) + time_diff * h''(t_avg).
       const double time_diff = time - averaged_time;
-      horizon_00 += time_diff * dt_horizon_00;
-      dt_horizon_00 += 0.5 * square(time_diff) * d2t_horizon_00;
+      horizon_00 +=
+          time_diff * dt_horizon_00 + 0.5 * square(time_diff) * d2t_horizon_00;
+      dt_horizon_00 += time_diff * d2t_horizon_00;
 
       // The "control error" for the averaged horizon coefficients is just the
       // averaged coefs minus the actual coef and time derivative from
