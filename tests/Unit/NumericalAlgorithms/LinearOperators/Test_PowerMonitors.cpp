@@ -269,14 +269,13 @@ void test_relative_truncation_error_linear_function() {
   }
 }
 
-void test_convergence_rate() {
+void test_convergence_rate(const gsl::not_null<std::mt19937*> gen) {
   // First, check that a power monitor with an exact, constant slope has the
   // expected convergence rate
-  MAKE_GENERATOR(gen);
   std::uniform_real_distribution<> slope_dis(-4.0, -1.0);
-  const double expected_slope = slope_dis(gen);
+  const double expected_slope = slope_dis(*gen);
   std::uniform_real_distribution<> offset_dis(-0.4, -0.1);
-  const double offset = offset_dis(gen);
+  const double offset = offset_dis(*gen);
   const size_t size_of_power_monitor{10};
   DataVector power_monitor_with_known_slope{size_of_power_monitor};
   for (size_t i = 0; i < size_of_power_monitor; ++i) {
@@ -308,7 +307,7 @@ void test_convergence_rate() {
   constexpr double noise_amp = 0.01;
   std::uniform_real_distribution<> noise_dis(-noise_amp, noise_amp);
   for (size_t i = 0; i < size_of_power_monitor - filtered_modes; ++i) {
-    power_monitor_with_known_slope[i] *= pow(10.0, noise_dis(gen));
+    power_monitor_with_known_slope[i] *= pow(10.0, noise_dis(*gen));
   }
   convergence_rate =
       PowerMonitors::convergence_rate_and_number_of_pile_up_modes(
@@ -329,15 +328,14 @@ void test_convergence_rate() {
 #endif
 }
 
-void test_pile_up_modes() {
+void test_pile_up_modes(const gsl::not_null<std::mt19937*> gen) {
   // Check assert that sufficient modes were provided
   // First, check that a power monitor with an exact, constant slope has the
   // vanishing pile up modes
-  MAKE_GENERATOR(gen);
   std::uniform_real_distribution<> slope_dis(-2.0, -1.0);
-  const double expected_slope = slope_dis(gen);
+  const double expected_slope = slope_dis(*gen);
   std::uniform_real_distribution<> offset_dis(-0.4, -0.1);
-  const double offset = offset_dis(gen);
+  const double offset = offset_dis(*gen);
   const size_t size_of_power_monitor{20};
   DataVector power_monitor_with_known_slope{size_of_power_monitor};
   for (size_t i = 0; i < size_of_power_monitor; ++i) {
@@ -440,17 +438,169 @@ void test_spherical_shell_angular_power_monitor() {
                             coefficients, mesh, -1, false),
                         (DataVector{0.0, 2.0, 3.0}));
 }
+
+void test_power_monitors_fourier(const gsl::not_null<std::mt19937*> gen) {
+  const size_t num_points = 7;
+  const Mesh<1> mesh{num_points, Spectral::Basis::Fourier,
+                     Spectral::Quadrature::Equiangular};
+  const auto x = Spectral::collocation_points(mesh);
+  const size_t num_points_combined = num_points / 2 + 1;
+
+  std::uniform_int_distribution<size_t> k_dis(1, num_points / 2);
+  const size_t k = k_dis(*gen);
+
+  // Pure cosine: only wavenumber k has power.
+  {
+    DataVector f(num_points);
+    f = cos(static_cast<double>(k) * x);
+    const auto pm = PowerMonitors::power_monitors(f, mesh);
+    CHECK(pm[0].size() == num_points_combined);
+    DataVector expected(num_points_combined, 0.0);
+    expected[k] = 1.0;
+    CHECK_ITERABLE_APPROX(pm[0], expected);
+  }
+
+  // Pure sine: only wavenumber k has power.
+  {
+    DataVector f(num_points);
+    for (size_t j = 0; j < num_points; ++j) {
+      f[j] = sin(static_cast<double>(k) * x[j]);
+    }
+    const auto pm = PowerMonitors::power_monitors(f, mesh);
+    CHECK(pm[0].size() == num_points_combined);
+    DataVector expected(num_points_combined, 0.0);
+    expected[k] = 1.0;
+    CHECK_ITERABLE_APPROX(pm[0], expected);
+  }
+
+  // cos(k*x) + sin(k*x): combined power at wavenumber k is sqrt(2).
+  {
+    DataVector f(num_points);
+    for (size_t j = 0; j < num_points; ++j) {
+      f[j] = cos(static_cast<double>(k) * x[j]) +
+             sin(static_cast<double>(k) * x[j]);
+    }
+    const auto pm = PowerMonitors::power_monitors(f, mesh);
+    CHECK(pm[0].size() == num_points_combined);
+    DataVector expected(num_points_combined, 0.0);
+    expected[k] = sqrt(2.0);
+    CHECK_ITERABLE_APPROX(pm[0], expected);
+  }
+}
+
+void test_power_monitors_fourier_multidim(
+    const gsl::not_null<std::mt19937*> gen) {
+  constexpr size_t n_fourier = 7;  // must be odd
+  constexpr size_t n_legendre_x = 4;
+  constexpr size_t n_legendre_z = 5;
+
+  std::uniform_int_distribution<size_t> k_dis(1, n_fourier / 2);
+
+  {
+    const size_t k = k_dis(*gen);
+    std::uniform_int_distribution<size_t> j_dis(0, n_legendre_x - 1);
+    const size_t j = j_dis(*gen);
+
+    const Mesh<2> mesh{{n_legendre_x, n_fourier},
+                       {Spectral::Basis::Legendre, Spectral::Basis::Fourier},
+                       {Spectral::Quadrature::GaussLobatto,
+                        Spectral::Quadrature::Equiangular}};
+    const DataVector& xi = Spectral::collocation_points(mesh.slice_through(0));
+    const DataVector xi_to_power =
+        Spectral::compute_basis_function_value<Spectral::Basis::Legendre>(j,
+                                                                          xi);
+    const DataVector& eta = Spectral::collocation_points(mesh.slice_through(1));
+
+    DataVector f(mesh.number_of_grid_points());
+    for (size_t i_f = 0; i_f < n_fourier; ++i_f) {
+      for (size_t i_l = 0; i_l < n_legendre_x; ++i_l) {
+        f[i_l + n_legendre_x * i_f] =
+            xi_to_power[i_l] * cos(static_cast<double>(k) * eta[i_f]);
+      }
+    }
+
+    const auto pm = PowerMonitors::power_monitors(f, mesh);
+    const size_t n_combined = n_fourier / 2 + 1;
+
+    CHECK(pm[0].size() == n_legendre_x);
+    DataVector expected_l(n_legendre_x, 0.0);
+    expected_l[j] = 1.0 / sqrt(static_cast<double>(n_fourier));
+    CHECK_ITERABLE_APPROX(pm[0], expected_l);
+
+    CHECK(pm[1].size() == n_combined);
+    DataVector expected_f(n_combined, 0.0);
+    expected_f[k] = 1.0 / sqrt(static_cast<double>(n_legendre_x));
+    CHECK_ITERABLE_APPROX(pm[1], expected_f);
+  }
+  {
+    const size_t k = k_dis(*gen);
+    std::uniform_int_distribution<size_t> jx_dis(0, n_legendre_x - 1);
+    std::uniform_int_distribution<size_t> jz_dis(0, n_legendre_z - 1);
+    const size_t j_x = jx_dis(*gen);
+    const size_t j_z = jz_dis(*gen);
+
+    const Mesh<3> mesh{
+        {n_legendre_x, n_fourier, n_legendre_z},
+        {Spectral::Basis::Legendre, Spectral::Basis::Fourier,
+         Spectral::Basis::Legendre},
+        {Spectral::Quadrature::GaussLobatto, Spectral::Quadrature::Equiangular,
+         Spectral::Quadrature::GaussLobatto}};
+    const DataVector& xi = Spectral::collocation_points(mesh.slice_through(0));
+    const DataVector& eta = Spectral::collocation_points(mesh.slice_through(1));
+    const DataVector& zeta =
+        Spectral::collocation_points(mesh.slice_through(2));
+    const DataVector xi_to_power =
+        Spectral::compute_basis_function_value<Spectral::Basis::Legendre>(j_x,
+                                                                          xi);
+    const DataVector zeta_to_power =
+        Spectral::compute_basis_function_value<Spectral::Basis::Legendre>(j_z,
+                                                                          zeta);
+
+    DataVector f(mesh.number_of_grid_points());
+    for (size_t i_lz = 0; i_lz < n_legendre_z; ++i_lz) {
+      for (size_t i_f = 0; i_f < n_fourier; ++i_f) {
+        for (size_t i_lx = 0; i_lx < n_legendre_x; ++i_lx) {
+          f[i_lx + n_legendre_x * (i_f + n_fourier * i_lz)] =
+              xi_to_power[i_lx] * cos(static_cast<double>(k) * eta[i_f]) *
+              zeta_to_power[i_lz];
+        }
+      }
+    }
+
+    const auto pm = PowerMonitors::power_monitors(f, mesh);
+    const size_t n_combined = n_fourier / 2 + 1;
+
+    CHECK(pm[0].size() == n_legendre_x);
+    DataVector expected_x(n_legendre_x, 0.0);
+    expected_x[j_x] = 1.0 / sqrt(static_cast<double>(n_fourier * n_legendre_z));
+    CHECK_ITERABLE_APPROX(pm[0], expected_x);
+
+    CHECK(pm[1].size() == n_combined);
+    DataVector expected_f(n_combined, 0.0);
+    expected_f[k] =
+        1.0 / sqrt(static_cast<double>(n_legendre_x * n_legendre_z));
+    CHECK_ITERABLE_APPROX(pm[1], expected_f);
+
+    CHECK(pm[2].size() == n_legendre_z);
+    DataVector expected_z(n_legendre_z, 0.0);
+    expected_z[j_z] = 1.0 / sqrt(static_cast<double>(n_legendre_x * n_fourier));
+    CHECK_ITERABLE_APPROX(pm[2], expected_z);
+  }
+}
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.PowerMonitors",
                   "[NumericalAlgorithms][LinearOperators][Unit]") {
+  MAKE_GENERATOR(gen);
   test_power_monitors_impl();
   test_power_monitors_second_impl();
   test_relative_truncation_error_impl();
   test_relative_truncation_error_with_symmetry();
   test_relative_truncation_error_linear_function();
-  test_convergence_rate();
-  test_pile_up_modes();
+  test_convergence_rate(make_not_null(&gen));
+  test_pile_up_modes(make_not_null(&gen));
   test_spherical_shell_radial_power_monitor();
   test_spherical_shell_angular_power_monitor();
+  test_power_monitors_fourier(make_not_null(&gen));
+  test_power_monitors_fourier_multidim(make_not_null(&gen));
 }

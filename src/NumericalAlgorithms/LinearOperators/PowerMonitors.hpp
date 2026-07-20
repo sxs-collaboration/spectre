@@ -36,6 +36,11 @@ namespace PowerMonitors {
  * where \f$ C_{k_0,k_1,k_2}\f$ are the modal coefficients
  * of variable \f$ \psi \f$.
  *
+ * For dimensions using a Fourier basis, the cosine and sine power for each
+ * wavenumber \f$ k \f$ are combined via \f$ P_k = \sqrt{P_{\cos,k}^2 +
+ * P_{\sin,k}^2} \f$, so the output size for a Fourier dimension of \f$ N \f$
+ * points is \f$ N/2 + 1 \f$ (integer division) rather than \f$ N \f$.
+ *
  */
 template <typename VectorType, size_t Dim>
 void power_monitors(gsl::not_null<std::array<DataVector, Dim>*> result,

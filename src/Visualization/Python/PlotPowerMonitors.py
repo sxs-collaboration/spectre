@@ -224,10 +224,6 @@ def plot_power_monitors(
             continue
 
         # Compute power monitors and take L2 norm over tensor components
-        all_modes = [
-            np.zeros(element.mesh.extents(d) - skip_filtered_modes)
-            for d in range(element.dim)
-        ]
         if tensor_data.dtype != np.float64:
             if not shown_dtype_warning_once:
                 logger.warning(
@@ -236,11 +232,19 @@ def plot_power_monitors(
                 )
                 shown_dtype_warning_once = True
             tensor_data = tensor_data.astype(np.float64)
+        all_modes = None
         for component in tensor_data:
             modes = power_monitors(DataVector(component), element.mesh)
+            if all_modes is None:
+                all_modes = [
+                    np.zeros(len(modes_dim) - skip_filtered_modes)
+                    for modes_dim in modes
+                ]
             for d, modes_dim in enumerate(modes):
                 num_modes = len(modes_dim) - skip_filtered_modes
                 all_modes[d] += np.array(modes_dim)[:num_modes] ** 2
+        if all_modes is None:
+            continue
         for d in range(element.dim):
             all_modes[d] = np.sqrt(all_modes[d])
 
