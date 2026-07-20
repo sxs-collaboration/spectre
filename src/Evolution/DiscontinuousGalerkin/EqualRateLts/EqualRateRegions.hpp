@@ -36,6 +36,10 @@ struct EqualRateRegionId {
 
   friend auto operator<=>(const EqualRateRegionId&,
                           const EqualRateRegionId&) = default;
+  friend bool operator==(const EqualRateRegionId&,
+                         const EqualRateRegionId&) = default;
+  friend bool operator<(const EqualRateRegionId&,
+                        const EqualRateRegionId&) = default;
 };
 
 std::ostream& operator<<(std::ostream& os, const EqualRateRegionId& id);
