@@ -36,9 +36,14 @@ namespace domain::CoordinateMaps {
  * planes normal to the \f$z\f$ axis and located at
  * \f$z = z^{\pm}_{\mathrm{P}1}\f$,
  * and let sphere 2 be intersected by two planes normal to the \f$z\f$ axis and
- * located at \f$z = z^{\pm}_{\mathrm{P}2}\f$.  Here we assume that
- * \f$z^{-}_{\mathrm{P}2} \leq z^{-}_{\mathrm{P}1}<
- * z^{+}_{\mathrm{P}1} \leq z^{+}_{\mathrm{P}2}\f$.
+ * located at \f$z = z^{\pm}_{\mathrm{P}2}\f$. We consider two cases for the
+ * plane ordering. In the standard configuration (which we call Class A) we have
+ * \f$z^{-}_{\mathrm{P}2} \leq z^{-}_{\mathrm{P}1} < z^{+}_{\mathrm{P}1} \leq
+ * z^{+}_{\mathrm{P}2}\f$, so the mapped band of sphere 2 contains the mapped
+ * band of sphere 1. The map also supports Class B configurations in which the
+ * outer sphere's lower cut lies above the inner sphere's lower cut,
+ * \f$z^{-}_{\mathrm{P}1} \leq z^{-}_{\mathrm{P}2}\f$ (the z-bands may overlap
+ * or be entirely disjoint).
  *
  * UniformCylindricalSide maps a 3D unit right cylindrical shell (with
  * coordinates \f$(\bar{x},\bar{y},\bar{z})\f$ such that
@@ -236,8 +241,18 @@ namespace domain::CoordinateMaps {
  * \f$z^{-}_{\mathrm{P}2}=z^{-}_{\mathrm{P}1}\f$ we treat
  * the last term in Eq.(\f$\ref{eq:lambdamin}\f$) as zero.
  *
- * We look for a root only between \f$\lambda_{\mathrm{min}}\f$
- * and \f$\lambda_{\mathrm{max}}=1\f$.
+ * In Class A we look for a root only between
+ * \f$\lambda_{\mathrm{min}}\f$ and \f$\lambda_{\mathrm{max}}=1\f$.
+ *
+ * In Class B (\f$z^{-}_{\mathrm{P}2} > z^{-}_{\mathrm{P}1}\f$), the
+ * last term in Eq.(\f$\ref{eq:lambdamin}\f$) instead provides an upper bound
+ * (requiring \f$\bar{z}\geq -1\f$):
+ * \f{align}
+ *   \lambda_{\mathrm{max}} &= \min\left\{1,\;
+ *     \frac{z^{-}_{\mathrm{P}1}-z}
+ *          {z^{-}_{\mathrm{P}1}-z^{-}_{\mathrm{P}2}}\right\}.
+ *     \label{eq:lambdamax_classb}
+ * \f}
  *
  * ##### Roots within roundoff of min or max \f$\lambda\f$
  *
@@ -316,7 +331,12 @@ namespace domain::CoordinateMaps {
  * satisfy these conditions.
  *
  * Likewise, the inverse map can immediately reject any point with
- * \f$z < z^{-}_{\mathrm{P}2}\f$ or \f$z > z^{+}_{\mathrm{P}2}\f$.
+ * \f$z < \min(z^{-}_{\mathrm{P}1}, z^{-}_{\mathrm{P}2})\f$
+ * or \f$z > z^{+}_{\mathrm{P}2}\f$.
+ * (In Class A \f$z^{-}_{\mathrm{P}2} \leq z^{-}_{\mathrm{P}1}\f$ so the
+ * lower bound is \f$z^{-}_{\mathrm{P}2}\f$; in Class B
+ * \f$z^{-}_{\mathrm{P}1} < z^{-}_{\mathrm{P}2}\f$ so the lower bound is
+ * \f$z^{-}_{\mathrm{P}1}\f$.)
  *
  * Finally, for \f$z^{+}_{\mathrm{P}2}\neq z^{+}_{\mathrm{P}1}\f$,
  * consider the circle \f$S^{+}_1\f$
@@ -364,17 +384,25 @@ namespace domain::CoordinateMaps {
  * for points with \f$z\geq z^{+}_{\mathrm{P}1}\f$.
  *
  * For \f$z^{-}_{\mathrm{P}2} \neq z^{-}_{\mathrm{P}1}\f$,
- * a similar cone can be constructed for the southern hemisphere. That
- * cone passes through
- * the circle \f$S^{-}_1\f$
- * defining the intersection of sphere 1
- * and the plane \f$z = z^{-}_{\mathrm{P}1}\f$ and the circle
- * \f$S^{-}_2\f$ defining the intersection of sphere 2 and the plane \f$z =
- * z^{-}_{\mathrm{P}2}\f$.  The inverse map rejects any point that is inside
- * that cone as well, provided that the point has
- * \f$z\leq z^{-}_{\mathrm{P}1}\f$.  For points with
- * \f$z > z^{-}_{\mathrm{P}1}\f$ checking the cone criterion
- * does not make sense.
+ * a similar cone connects the circle \f$S^{-}_1\f$ (the intersection of
+ * sphere 1 and the plane \f$z = z^{-}_{\mathrm{P}1}\f$) to the circle
+ * \f$S^{-}_2\f$ (the intersection of sphere 2 and the plane
+ * \f$z = z^{-}_{\mathrm{P}2}\f$).  The rejection criterion differs by class:
+ *
+ * - **Class A** (\f$z^{-}_{\mathrm{P}2} < z^{-}_{\mathrm{P}1}\f$): the cone
+ *   descends from \f$S^{-}_1\f$ to \f$S^{-}_2\f$.  Any point that lies inside
+ *   this cone at \f$z \leq z^{-}_{\mathrm{P}1}\f$ is below the lower boundary
+ *   surface and is rejected.
+ *
+ * - **Class B** (\f$z^{-}_{\mathrm{P}2} > z^{-}_{\mathrm{P}1}\f$): the cone
+ *   ascends from \f$S^{-}_1\f$ to \f$S^{-}_2\f$.  For a point at
+ *   \f$z \in [z^{-}_{\mathrm{P}1}, z^{-}_{\mathrm{P}2}]\f$ the
+ *   \f$\bar{z} \geq -1\f$ constraint bounds lambda from above:
+ *   \f$\lambda \leq \lambda_{\max}(z) =
+ *   (z^{-}_{\mathrm{P}1}-z)/(z^{-}_{\mathrm{P}1}-z^{-}_{\mathrm{P}2})\f$.
+ *   A point whose radial distance \f$\tilde\rho\f$ from the interpolated
+ *   center exceeds the cone radius at \f$\lambda_{\max}(z)\f$ would require
+ *   \f$\bar{z} < -1\f$ and is therefore rejected.
  *
  * ## jacobian
  *
@@ -511,16 +539,28 @@ namespace domain::CoordinateMaps {
  *
  * where 1.1 is a safety factor.
  *
- * Similarly, one can define an angle \f$\alpha^-\f$ for the region
- * near the south pole, and we require similar restrictions on that angle.
+ * Similarly, one can define an angle \f$\alpha^-\f$ for the lower boundary,
+ * and we require \f$\alpha^- > 1.1 ({\pi - \theta_{1 \mathrm{max}}})\f$
+ * always (when \f$z^-_{\mathrm{P}1} \neq z^-_{\mathrm{P}2}\f$), and
+ * additionally in Class A (\f$z^{-}_{\mathrm{P}2} < z^{-}_{\mathrm{P}1}\f$)
+ * \f$\alpha^- > 1.1 ({\pi - \theta_{2 \mathrm{max}}})\f$.
+ *
+ * In Class B the sphere-2 condition is automatically satisfied by convexity
+ * (the lower boundary segment starts inside sphere 2 and ends on its surface),
+ * so only the sphere-1 condition is enforced.  When
+ * \f$z^-_{\mathrm{P}1} = z^-_{\mathrm{P}2}\f$ (or
+ * \f$z^+_{\mathrm{P}1} = z^+_{\mathrm{P}2}\f$ for \f$\alpha^+\f$), the
+ * corresponding alpha is zero and the check is vacuous.
  *
  * ### Restrictions on z-planes
  *
  * We also demand that either
  * \f$z^+_{\mathrm{P}1} = z^+_{\mathrm{P}2}\f$
- * or that \f$z^+_{\mathrm{P}1} <= z^+_{\mathrm{P}2} -0.03 R_2\f$.
+ * or that \f$z^+_{\mathrm{P}1} \leq z^+_{\mathrm{P}2} - 0.03 R_2\f$.
  * Similarly, we demand that either \f$z^-_{\mathrm{P}1} = z^-_{\mathrm{P}2}\f$
- * or \f$z^-_{\mathrm{P}1} >= z^-_{\mathrm{P}2} + 0.03 R_2\f$.
+ * or \f$|z^-_{\mathrm{P}1} - z^-_{\mathrm{P}2}| \geq 0.03 R_2\f$
+ * (the lower planes may differ in either direction, accommodating both
+ * Class A and Class B configurations, but they must be sufficiently separated).
  * These restrictions follow expected use cases and avoid extreme distortions.
  *
  * ### Restrictions for unequal z planes
@@ -547,10 +587,10 @@ namespace domain::CoordinateMaps {
  * (which, if it occurs, means that the \f$x\f$ and \f$y\f$ centers of the
  * two spheres are equal).
  *
- * We require that the z planes in the above figures lie above/below
- * the centers of the corresponding spheres and are not too close to
- * the centers or edges of those spheres; specificially, we demand
- * that
+ * We require that the z planes are not too close to the poles or centers of
+ * the corresponding spheres.  The precise bounds depend on the class:
+ *
+ * **Class A** (\f$z^{-}_{\mathrm{P}2} < z^{-}_{\mathrm{P}1}\f$):
  * \f{align}
  *   \label{eq:theta_1_min_res}
  *   0.15\pi &< \theta_{1 \mathrm{min}} < 0.4\pi \\
@@ -561,6 +601,23 @@ namespace domain::CoordinateMaps {
  *   \label{eq:theta_2_max_res}
  *   0.6\pi &< \theta_{2 \mathrm{max}} < 0.85\pi .
  * \f}
+ *
+ * **Class B** (\f$z^{-}_{\mathrm{P}2} > z^{-}_{\mathrm{P}1}\f$):
+ * The lower cut of sphere 2 lies above the equator of sphere 2, so
+ * \f$\theta_{2\mathrm{max}}\f$ can be less than \f$\pi/2\f$.  The bounds
+ * for \f$\theta_{1\mathrm{min}}\f$, \f$\theta_{2\mathrm{min}}\f$ are
+ * unchanged; the bounds on the lower cuts are relaxed:
+ * \f{align}
+ *   0.15\pi &< \theta_{1 \mathrm{min}} < 0.4\pi \\
+ *   0.4\pi &< \theta_{1 \mathrm{max}} < 0.85\pi \\
+ *   0.15\pi &< \theta_{2 \mathrm{min}} < 0.4\pi \\
+ *   0.15\pi &< \theta_{2 \mathrm{max}} < 0.85\pi .
+ * \f}
+ * Because the relaxed \f$\theta_{2\mathrm{max}}\f$ upper bound (0.15\f$\pi\f$)
+ * overlaps with the \f$\theta_{2\mathrm{min}}\f$ lower bound (0.15\f$\pi\f$),
+ * the theta restrictions alone no longer guarantee that sphere 2's band is
+ * non-inverted (\f$z^+_{\mathrm{P}2} > z^-_{\mathrm{P}2}\f$).  This is
+ * therefore checked explicitly by the constructor.
  *
  * Here the numerical values are safety factors.
  * These restrictions are not strictly necessary but are made for simplicity.
@@ -622,28 +679,27 @@ namespace domain::CoordinateMaps {
  * \f}
  *
  * Similarly, if \f$z^-_{\mathrm{P}1} = z^-_{\mathrm{P}2}\f$ we replace
- * (\f$\ref{eq:theta_1_max_res}\f$) with
+ * Eqs. (\f$\ref{eq:theta_1_max_res}\f$), (\f$\ref{eq:theta_1_min_res}\f$),
+ * and (\f$\ref{eq:theta_2_max_res}\f$)
+ * with
  * \f{align}
  *   \label{eq:equal_minus_theta_1_max_res}
- *   0.41\pi &< \theta_{1 \mathrm{max}} < 0.85\pi,
+ *   0.41\pi &< \theta_{1 \mathrm{max}} < 0.85\pi, \\
+ *   \label{eq:equal_minus_theta_1_min_res}
+ *   0.15\pi &< \theta_{1 \mathrm{min}} < 0.55\pi.
  * \f}
- * and furthermore, if \f$z^-_{\mathrm{P}1} = z^-_{\mathrm{P}2}\f$ and
- * \f$\theta_{1 \mathrm{max}} < 0.6\pi\f$ we replace
- * Eqs. (\f$\ref{eq:theta_1_min_res}\f$) and (\f$\ref{eq:theta_2_max_res}\f$)
- * with
+ * The relaxed upper limit on \f$\theta_{1\mathrm{min}}\f$ (\f$0.55\pi\f$
+ * instead of \f$0.4\pi\f$) allows the upper cut of sphere 1 to reach or
+ * slightly pass the equator of sphere 1, which occurs when the equal lower
+ * planes coincide with the center of sphere 1.
+ * The restriction on \f$\theta_{2\mathrm{max}}\f$ is tightened (the lower
+ * cut of sphere 2 must not be too close to the poles):
  * \f{align}
- *   \label{eq:equal_minus_high_theta_1_min_res}
- *   0.15\pi &< \theta_{1 \mathrm{min}} < 0.3\pi \\
- *   \label{eq:equal_minus_high_theta_2_max_res}
- *   0.25\pi &< \theta_{2 \mathrm{max}} < 0.75\pi,
- * \f}
- * but if \f$z^-_{\mathrm{P}1} = z^-_{\mathrm{P}2}\f$ and
- * \f$\theta_{1 \mathrm{max}} \geq 0.6\pi\f$ we replace
- * Eq. (\f$\ref{eq:theta_2_max_res}\f$)
- * with
- * \f{align}
- *   \label{eq:equal_minus_low_theta_2_max_res}
- *   0.25\pi &< \theta_{2 \mathrm{max}} < 0.85\pi .
+ *   0.25\pi &< \theta_{2 \mathrm{max}} < 0.75\pi
+ *   \quad \text{if } \theta_{1 \mathrm{max}} < 0.6\pi, \\
+ *   \label{eq:equal_minus_theta_2_max_res}
+ *   0.25\pi &< \theta_{2 \mathrm{max}} < 0.85\pi
+ *   \quad \text{if } \theta_{1 \mathrm{max}} \geq 0.6\pi.
  * \f}
  */
 class UniformCylindricalSide {

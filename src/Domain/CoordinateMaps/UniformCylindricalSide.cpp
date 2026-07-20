@@ -104,18 +104,33 @@ UniformCylindricalSide::UniformCylindricalSide(
              << z_plane_plus_two << " " << z_plane_plus_one << " "
              << z_plane_plus_one + 0.03 * radius_two);
   ASSERT(z_plane_minus_two == z_plane_minus_one or
-             z_plane_minus_two <= z_plane_minus_one - 0.03 * radius_two,
-         "z_plane_minus_two must be >= z_plane_minus_one "
-         "- 0.03 * radius_two, or exactly equal to z_plane_minus_one, but "
-         "z_plane_minus_two = "
+             abs(z_plane_minus_two - z_plane_minus_one) >= 0.03 * radius_two,
+         "z_plane_minus_two must differ from z_plane_minus_one by at least "
+         "0.03 * radius_two, or be exactly equal, but z_plane_minus_two = "
              << z_plane_minus_two
              << ", z_plane_minus_one = " << z_plane_minus_one
-             << ", and z_plane_minus_one - 0.03 * radius_two = "
-             << z_plane_minus_one - 0.03 * radius_two);
-  ASSERT(z_plane_minus_two != z_plane_minus_one or
-             z_plane_plus_two != z_plane_plus_one,
-         "Not tested if both the positive z-planes and the negative z-planes "
-         "are equal");
+             << ", and 0.03 * radius_two = " << 0.03 * radius_two);
+  ASSERT(z_plane_plus_two != z_plane_plus_one or
+             z_plane_minus_two != z_plane_minus_one,
+         "Both pairs of z-planes cannot be simultaneously equal: "
+         "z_plane_plus_one="
+             << z_plane_plus_one << ", z_plane_plus_two=" << z_plane_plus_two
+             << ", z_plane_minus_one=" << z_plane_minus_one
+             << ", z_plane_minus_two=" << z_plane_minus_two);
+  // In Class B (z_plane_minus_two > z_plane_minus_one), the outer sphere's
+  // mapped band must still be non-inverted.  In Class A this is guaranteed
+  // implicitly by the theta bounds on sphere_two, but those bounds are relaxed
+  // in Class B, so we check it explicitly here (runs in both debug and
+  // release).
+  if (z_plane_minus_two > z_plane_minus_one) {
+    ASSERT(z_plane_plus_two > z_plane_minus_two,
+           "In Class B (z_plane_minus_two="
+               << z_plane_minus_two
+               << " > z_plane_minus_one=" << z_plane_minus_one
+               << "), the outer sphere's upper cut z_plane_plus_two="
+               << z_plane_plus_two
+               << " must be strictly above z_plane_minus_two.");
+  }
 
   // The code below defines several variables that are used only in ASSERTs.
   // We put that code in a #ifdef SPECTRE_DEBUG to avoid clang-tidy complaining
@@ -150,18 +165,24 @@ UniformCylindricalSide::UniformCylindricalSide(
   const double cos_theta_min_one_lower_limit =
       z_plane_plus_one_ == z_plane_plus_two_
           ? cos(M_PI * 0.59)
-          : (z_plane_minus_one_ == z_plane_minus_two_ and
-                     cos_theta_max_one > cos(M_PI * 0.6)
-                 ? cos(M_PI * 0.3)
+          : (z_plane_minus_one_ == z_plane_minus_two_
+                 // Equal lower planes (no lower cone): the upper cut can reach
+                 // or slightly pass the equator of sphere_one.
+                 ? cos(M_PI * 0.55)
                  : cos(M_PI * 0.4));
 
   const double cos_theta_max_one_upper_limit =
       z_plane_minus_one_ == z_plane_minus_two_
           ? cos(M_PI * 0.41)
-          : (z_plane_plus_one_ == z_plane_plus_two_ and
-                     cos_theta_min_one < cos(M_PI * 0.4)
-                 ? cos(M_PI * 0.7)
-                 : cos(M_PI * 0.6));
+          : (z_plane_minus_two_ > z_plane_minus_one_
+                 // Class B: outer lower cut is above inner lower cut.
+                 // The inner sphere's lower cut can be at or above the equator,
+                 // so use a more lenient limit (theta_max_one > 72 deg).
+                 ? cos(M_PI * 0.4)
+                 : (z_plane_plus_one_ == z_plane_plus_two_ and
+                            cos_theta_min_one < cos(M_PI * 0.4)
+                        ? cos(M_PI * 0.7)
+                        : cos(M_PI * 0.6)));
 
   const double cos_theta_min_two_upper_limit =
       z_plane_plus_one_ == z_plane_plus_two_ and
@@ -200,9 +221,15 @@ UniformCylindricalSide::UniformCylindricalSide(
                                   : cos(M_PI * 0.4)),
          "z_plane_plus_two is too close to the south pole: theta/pi="
              << acos(cos_theta_min_two) / M_PI << param_string());
+  // In Class B (z_minus_two > z_minus_one) the lower cut of sphere_two lies
+  // above sphere_one's lower cut, so theta_max_two can be less than pi/2
+  // (cut above equator of sphere_two). Use the same loose upper bound as
+  // is used for theta_min values (0.15*pi from the pole).
   ASSERT(cos_theta_max_two < (z_plane_minus_one_ == z_plane_minus_two_
                                   ? cos(M_PI * 0.25)
-                                  : cos(M_PI * 0.6)),
+                                  : (z_plane_minus_two_ > z_plane_minus_one_
+                                         ? cos(M_PI * 0.15)
+                                         : cos(M_PI * 0.6))),
          "z_plane_minus_two is too close to the north pole: theta/pi="
              << acos(cos_theta_max_two) / M_PI << param_string());
   ASSERT(cos_theta_min_two < cos_theta_min_two_upper_limit,
@@ -243,7 +270,10 @@ UniformCylindricalSide::UniformCylindricalSide(
                << " center_two[2] = " << center_two[2] << param_string());
   }
 
-  if (z_plane_plus_two == z_plane_plus_one) {
+  // When the plus planes are equal and the minus planes differ, the minus plane
+  // of sphere_two must be far enough below the shared upper boundary.
+  if (z_plane_plus_two == z_plane_plus_one and
+      z_plane_minus_two != z_plane_minus_one) {
     ASSERT(z_plane_minus_two <= z_plane_plus_two - 0.18 * radius_two,
            "The map has been tested only if the sphere_two planes are far "
            "enough apart. z_plane_plus_two="
@@ -251,7 +281,10 @@ UniformCylindricalSide::UniformCylindricalSide(
                << " radius_two=" << radius_two << param_string());
   }
 
-  if (z_plane_minus_two == z_plane_minus_one) {
+  // When only the minus planes are equal (plus planes differ), the plus plane
+  // of sphere_two must be far enough above the shared lower boundary.
+  if (z_plane_minus_two == z_plane_minus_one and
+      z_plane_plus_two != z_plane_plus_one) {
     ASSERT(z_plane_plus_two >= z_plane_minus_two + 0.18 * radius_two,
            "The map has been tested only if the sphere_two planes are far "
            "enough apart. z_plane_plus_two="
@@ -292,26 +325,57 @@ UniformCylindricalSide::UniformCylindricalSide(
 
   const double alpha_plus = atan2(z_plane_plus_two - z_plane_plus_one,
                                   max_horizontal_dist_between_circles_plus);
-  ASSERT(alpha_plus > 1.1 * theta_min_one and alpha_plus > 1.1 * theta_min_two,
-         "Angle alpha_plus is too small: alpha_plus = "
-             << alpha_plus << ", theta_min_one = " << theta_min_one
-             << ", theta_min_two = " << theta_min_two
-             << ", max_horizontal_dist_between_circles_plus = "
-             << max_horizontal_dist_between_circles_plus
-             << ", horizontal_dist_spheres = " << horizontal_dist_spheres
-             << param_string());
+  // When z_plane_plus_one == z_plane_plus_two the two spheres share the same
+  // upper z boundary; alpha_plus = 0 by definition and the cone-angle check
+  // is vacuous.
+  if (z_plane_plus_one_ != z_plane_plus_two_) {
+    ASSERT(
+        alpha_plus > 1.1 * theta_min_one and alpha_plus > 1.1 * theta_min_two,
+        "Angle alpha_plus is too small: alpha_plus = "
+            << alpha_plus << ", theta_min_one = " << theta_min_one
+            << ", theta_min_two = " << theta_min_two
+            << ", max_horizontal_dist_between_circles_plus = "
+            << max_horizontal_dist_between_circles_plus
+            << ", horizontal_dist_spheres = " << horizontal_dist_spheres
+            << param_string());
+  }
 
-  const double alpha_minus = atan2(z_plane_minus_one - z_plane_minus_two,
+  // Use abs so alpha_minus is positive regardless of which class:
+  // Class A (z_minus_two < z_minus_one): lower boundary goes downward.
+  // Class B (z_minus_two > z_minus_one): lower boundary goes upward.
+  // The tangent angle at S^-_1 is the same in both cases, so the same
+  // formula applies for sphere_one. For sphere_two in Class B, the line
+  // starts outside sphere_two and ends at S^-_2 (bottom of its mapped region);
+  // by convexity of sphere_two the segment stays outside sphere_two, so the
+  // sphere_two condition is automatically satisfied and need not be checked.
+  const double alpha_minus = atan2(abs(z_plane_minus_one - z_plane_minus_two),
                                    max_horizontal_dist_between_circles_minus);
-  ASSERT(alpha_minus > 1.1 * (M_PI - theta_max_one) and
-             alpha_minus > 1.1 * (M_PI - theta_max_two),
-         "Angle alpha_minus is too small: alpha_minus = "
-             << alpha_minus << ", theta_max_one = " << theta_max_one
-             << ", theta_max_two = " << theta_max_two
-             << ", max_horizontal_dist_between_circles_minus = "
-             << max_horizontal_dist_between_circles_minus
-             << ", horizontal_dist_spheres = " << horizontal_dist_spheres
-             << param_string());
+  // When z_plane_minus_one == z_plane_minus_two the two spheres share the same
+  // lower z boundary; alpha_minus = 0 by definition and the cone-angle check
+  // is vacuous.
+  if (z_plane_minus_one_ != z_plane_minus_two_) {
+    if (z_plane_minus_two_ < z_plane_minus_one_) {
+      // Class A: lower boundary descends; sphere_two condition applies.
+      ASSERT(alpha_minus > 1.1 * (M_PI - theta_max_one) and
+                 alpha_minus > 1.1 * (M_PI - theta_max_two),
+             "Angle alpha_minus is too small: alpha_minus = "
+                 << alpha_minus << ", theta_max_one = " << theta_max_one
+                 << ", theta_max_two = " << theta_max_two
+                 << ", max_horizontal_dist_between_circles_minus = "
+                 << max_horizontal_dist_between_circles_minus
+                 << ", horizontal_dist_spheres = " << horizontal_dist_spheres
+                 << param_string());
+    } else {
+      // Class B: lower boundary ascends; only sphere_one condition needed.
+      ASSERT(alpha_minus > 1.1 * (M_PI - theta_max_one),
+             "Angle alpha_minus is too small: alpha_minus = "
+                 << alpha_minus << ", theta_max_one = " << theta_max_one
+                 << ", max_horizontal_dist_between_circles_minus = "
+                 << max_horizontal_dist_between_circles_minus
+                 << ", horizontal_dist_spheres = " << horizontal_dist_spheres
+                 << param_string());
+    }
+  }
 #endif
 }
 
@@ -365,9 +429,12 @@ std::optional<std::array<double, 3>> UniformCylindricalSide::inverse(
     return std::nullopt;
   }
 
-  // check z >= z_plane_minus_two_
-  if (target_coords[2] < z_plane_minus_two_ and
-      not equal_within_roundoff(target_coords[2], z_plane_minus_two_)) {
+  // check z >= lower z bound.
+  // Class A (z_minus_two < z_minus_one): lower bound is z_minus_two.
+  // Class B (z_minus_two > z_minus_one): lower bound is z_minus_one.
+  const double z_lower_bound = std::min(z_plane_minus_one_, z_plane_minus_two_);
+  if (target_coords[2] < z_lower_bound and
+      not equal_within_roundoff(target_coords[2], z_lower_bound)) {
     return std::nullopt;
   }
 
@@ -391,34 +458,73 @@ std::optional<std::array<double, 3>> UniformCylindricalSide::inverse(
     return std::nullopt;
   }
 
-  // Check if the point is inside the cone
+  // Shared geometry computation for cone checks.
+  const auto cone_rho_and_radius = [this, &target_coords](
+                                       const double z_one, const double z_two,
+                                       double& rho_tilde,
+                                       double& circle_radius) {
+    const double lambda_tilde = (target_coords[2] - z_one) / (z_two - z_one);
+    rho_tilde = sqrt(square(target_coords[0] - center_one_[0] -
+                            lambda_tilde * (center_two_[0] - center_one_[0])) +
+                     square(target_coords[1] - center_one_[1] -
+                            lambda_tilde * (center_two_[1] - center_one_[1])));
+    circle_radius = sqrt(square(radius_one_) - square(z_one - center_one_[2])) *
+                        (1.0 - lambda_tilde) +
+                    sqrt(square(radius_two_) - square(z_two - center_two_[2])) *
+                        lambda_tilde;
+  };
+
+  // Returns true if the point is strictly inside the cone (rho < radius).
+  // Used in Class A: points inside the lower cone are below the lower boundary.
   auto point_inside_cone =
-      [this, &target_coords](const double z_one, const double z_two) {
-        const double lambda_tilde =
-            (target_coords[2] - z_one) / (z_two - z_one);
-        const double rho_tilde =
-            sqrt(square(target_coords[0] - center_one_[0] -
-                        lambda_tilde * (center_two_[0] - center_one_[0])) +
-                 square(target_coords[1] - center_one_[1] -
-                        lambda_tilde * (center_two_[1] - center_one_[1])));
-        const double circle_radius =
-            sqrt(square(radius_one_) -
-                 square(z_one - center_one_[2])) *
-                (1.0 - lambda_tilde) +
-            sqrt(square(radius_two_) -
-                 square(z_two - center_two_[2])) *
-                lambda_tilde;
+      [this, &cone_rho_and_radius](const double z_one, const double z_two) {
+        double rho_tilde = 0.0;
+        double circle_radius = 0.0;
+        cone_rho_and_radius(z_one, z_two, rho_tilde, circle_radius);
         return rho_tilde < circle_radius and
                not equal_within_roundoff(
                    rho_tilde, circle_radius,
                    std::numeric_limits<double>::epsilon() * 100.0, radius_two_);
       };
+
+  // Returns true if the point is strictly outside the cone (rho > radius).
+  // Used in Class B: points outside the lower cone exceed the maximum lambda
+  // for that z (would require zbar < -1), so they are not in the image.
+  auto point_outside_cone = [this, &cone_rho_and_radius](const double z_one,
+                                                   const double z_two) {
+    double rho_tilde = 0.0;
+    double circle_radius = 0.0;
+    cone_rho_and_radius(z_one, z_two, rho_tilde, circle_radius);
+    return rho_tilde > circle_radius and
+           not equal_within_roundoff(
+               rho_tilde, circle_radius,
+               std::numeric_limits<double>::epsilon() * 100.0, radius_two_);
+  };
+  // Lower cone gate depends on class:
+  //   Class A (z_minus_two < z_minus_one): cone descends; check z <=
+  //   z_minus_one. Class B (z_minus_two > z_minus_one): cone ascends; check z
+  //   in
+  //     [z_minus_one, z_minus_two].
+  const bool lower_cone_active =
+      z_plane_minus_one_ != z_plane_minus_two_ and
+      (z_plane_minus_two_ < z_plane_minus_one_
+           ? target_coords[2] <= z_plane_minus_one_
+           : (target_coords[2] >= z_plane_minus_one_ and
+              target_coords[2] <= z_plane_minus_two_));
+  // For Class A (z_minus_two < z_minus_one): reject if inside the lower cone
+  // (point is below the lower boundary surface).
+  // For Class B (z_minus_two > z_minus_one): reject if outside the lower cone
+  // (point's rho exceeds the maximum achievable at that z, requiring lambda >
+  // lambda_max which would give zbar < -1).
+  const bool lower_cone_rejected =
+      lower_cone_active and
+      (z_plane_minus_two_ < z_plane_minus_one_
+           ? point_inside_cone(z_plane_minus_one_, z_plane_minus_two_)
+           : point_outside_cone(z_plane_minus_one_, z_plane_minus_two_));
   if ((target_coords[2] >= z_plane_plus_one_ and
        z_plane_plus_one_ != z_plane_plus_two_ and
        point_inside_cone(z_plane_plus_one_, z_plane_plus_two_)) or
-      (target_coords[2] <= z_plane_minus_one_ and
-       z_plane_minus_one_ != z_plane_minus_two_ and
-       point_inside_cone(z_plane_minus_one_, z_plane_minus_two_))) {
+      lower_cone_rejected) {
     return std::nullopt;
   }
 
@@ -471,24 +577,33 @@ std::optional<std::array<double, 3>> UniformCylindricalSide::inverse(
     return 2.0 * half_deriv_of_func_to_zero;
   };
 
-  // If we get here, then lambda is not near unity or near zero.
-  // So let's find lambda.
+  // Find lambda via special-case checks or numerical root finding.
   double lambda = std::numeric_limits<double>::signaling_NaN();
 
   // Choose the minimum value of lambda.  Max value is always one.
   // These are not const because they can change with re-bracketing
   // below.
-  double lambda_min =
-      std::max({0.0,
-                z_plane_plus_two_ == z_plane_plus_one_
-                    ? 0.0
-                    : (target_coords[2] - z_plane_plus_one_) /
-                          (z_plane_plus_two_ - z_plane_plus_one_),
-                z_plane_minus_two_ == z_plane_minus_one_
-                    ? 0.0
-                    : (z_plane_minus_one_ - target_coords[2]) /
-                          (z_plane_minus_one_ - z_plane_minus_two_)});
-  double lambda_max = 1.0;
+  // Class A (z_minus_two < z_minus_one): the minus-plane constraint gives a
+  // lower bound on lambda (requiring zbar >= -1).
+  // Class B (z_minus_two > z_minus_one): it gives an upper bound instead.
+  // The formula (z_minus_one - z)/(z_minus_one - z_minus_two) evaluates to
+  // the correct bound value in both cases; we just route it to lambda_min or
+  // lambda_max depending on the class.
+  const double minus_plane_bound =
+      z_plane_minus_two_ == z_plane_minus_one_
+          ? 0.0
+          : (z_plane_minus_one_ - target_coords[2]) /
+                (z_plane_minus_one_ - z_plane_minus_two_);
+  double lambda_min = std::max(
+      {0.0,
+       z_plane_plus_two_ == z_plane_plus_one_
+           ? 0.0
+           : (target_coords[2] - z_plane_plus_one_) /
+                 (z_plane_plus_two_ - z_plane_plus_one_),
+       z_plane_minus_two_ < z_plane_minus_one_ ? minus_plane_bound : 0.0});
+  double lambda_max = z_plane_minus_two_ > z_plane_minus_one_
+                          ? std::min(1.0, minus_plane_bound)
+                          : 1.0;
 
   // The root should always be bracketed.  However, if
   // lambda==lambda_min or lambda==lambda_max, the function may not be
@@ -497,7 +612,11 @@ std::optional<std::array<double, 3>> UniformCylindricalSide::inverse(
   double function_at_lambda_min = function_to_zero(lambda_min);
   double function_at_lambda_max = function_to_zero(lambda_max);
 
-  if (1.0 - lambda_min <
+  if (lambda_max < std::numeric_limits<double>::epsilon() * 100.0) {
+    // Class B only: lambda_max is within roundoff of zero, meaning the point
+    // is at the inner sphere's lower boundary where lambda must be 0.
+    lambda = 0.0;
+  } else if (1.0 - lambda_min <
              std::numeric_limits<double>::epsilon() * 100.0) {
     // lambda_min is within roundoff of lambda_max, meaning that the
     // point must be within roundoff of a point on the outer sphere

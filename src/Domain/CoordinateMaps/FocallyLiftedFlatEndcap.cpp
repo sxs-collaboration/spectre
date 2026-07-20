@@ -136,7 +136,7 @@ std::optional<double> FlatEndcap::lambda_tilde(
   if (source_is_between_focus_and_target) {
     // Interior case: the flat disk lies between P and the target, so the
     // scale factor from P to the flat disk is in (0, 1].
-    if (result <= 0.0 or result > 1.0) {
+    if (result <= 0.0 or (result > 1.0)) {
       return {};
     }
   } else {
