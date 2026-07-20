@@ -947,15 +947,17 @@ struct ApplyBoundaryCorrections {
                      "instead. You may have unintentionally added external "
                      "mortars in one of the initialization actions.");
             }
-            if (volume_mesh.basis(direction.dimension()) ==
-                    Spectral::Basis::ZernikeB2 and
-                volume_mesh.quadrature(direction.dimension()) ==
-                    Spectral::Quadrature::GaussRadauUpper and
-                direction.side() != Side::Upper) {
+            if (UNLIKELY((volume_mesh.basis(direction.dimension()) ==
+                              Spectral::Basis::ZernikeB2 or
+                          volume_mesh.basis(direction.dimension()) ==
+                              Spectral::Basis::ZernikeB3) and
+                         volume_mesh.quadrature(direction.dimension()) ==
+                             Spectral::Quadrature::GaussRadauUpper and
+                         direction.side() != Side::Upper)) {
               ERROR(
-                  "Trying to use ZernikeB2 basis with GaussRadauUpper "
-                  "quadrature on the lower side: there is not a boundary here. "
-                  "volume mesh: "
+                  "Trying to use ZernikeB2 or ZernikeB3 basis with "
+                  "GaussRadauUpper quadrature on the lower side: there is not "
+                  "a boundary here. volume mesh: "
                   << volume_mesh << ", element ID " << element.id());
             }
 
