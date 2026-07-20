@@ -11,7 +11,6 @@
 #include "Domain/Structure/Side.hpp"
 #include "NumericalAlgorithms/Spectral/Basis.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
-#include "NumericalAlgorithms/Spectral/Quadrature.hpp"
 #include "NumericalAlgorithms/Spectral/SegmentSize.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
@@ -26,19 +25,11 @@ Mesh<Dim> mortar_mesh(const Mesh<Dim>& face_mesh1,
   } else {
     Index<Dim> mortar_extents{};
     for (size_t i = 0; i < Dim; ++i) {
-      // From the point of view of mortars, ZernikeB2 with Equiangular
-      // quadrature are identical to Fourier with Equiangular quadrature
-      ASSERT(
-          face_mesh1.basis(i) == face_mesh2.basis(i) or
-              (face_mesh1.quadrature(i) == Spectral::Quadrature::Equiangular and
-               ((face_mesh1.basis(i) == Spectral::Basis::ZernikeB2 and
-                 face_mesh2.basis(i) == Spectral::Basis::Fourier) or
-                (face_mesh1.basis(i) == Spectral::Basis::Fourier and
-                 face_mesh2.basis(i) == Spectral::Basis::ZernikeB2))),
-          "The basis on face_mesh1 and face_mesh2 must be equal in "
-          "direction "
-              << i << " but face_mesh1 is " << face_mesh1.basis(i)
-              << " while face_mesh2 is " << face_mesh2.basis(i));
+      ASSERT(face_mesh1.basis(i) == face_mesh2.basis(i),
+             "The basis on face_mesh1 and face_mesh2 must be equal in "
+             "direction "
+                 << i << " but face_mesh1 is " << face_mesh1.basis(i)
+                 << " while face_mesh2 is " << face_mesh2.basis(i));
       ASSERT(face_mesh1.quadrature(i) == face_mesh2.quadrature(i),
              "The quadrature on face_mesh1 and face_mesh2 must be equal in "
              "direction "

@@ -20,6 +20,7 @@
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/GetOutput.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/MakeArray.hpp"
 #include "Utilities/StdHelpers.hpp"
 
 namespace {
@@ -164,6 +165,134 @@ void test_explicit_choices_per_dimension() {
                 {{Spectral::Quadrature::GaussLobatto,
                   Spectral::Quadrature::GaussLobatto,
                   Spectral::Quadrature::Gauss}}});
+}
+
+void test_interface_mesh() {
+  INFO("interface mesh");
+  // Non-Bn meshes: on_interface == slice_away
+  const Mesh<3> mesh3d{
+      {{2, 3, 4}},
+      {{Spectral::Basis::Legendre, Spectral::Basis::Legendre,
+        Spectral::Basis::Fourier}},
+      {{Spectral::Quadrature::GaussLobatto, Spectral::Quadrature::GaussLobatto,
+        Spectral::Quadrature::Equiangular}}};
+  CHECK(mesh3d.on_interface(0) == mesh3d.slice_away(0));
+  CHECK(mesh3d.on_interface(1) == mesh3d.slice_away(1));
+  CHECK(mesh3d.on_interface(2) == mesh3d.slice_away(2));
+
+  // B3 ball: slicing away the radial dimension converts ZernikeB3 angular bases
+  // to SphericalHarmonic.
+  const Mesh<3> b3_mesh{
+      {{4, 5, 9}},
+      make_array<3>(Spectral::Basis::ZernikeB3),
+      {{Spectral::Quadrature::GaussRadauUpper, Spectral::Quadrature::Gauss,
+        Spectral::Quadrature::Equiangular}}};
+  CHECK(b3_mesh.on_interface(0) ==
+        Mesh<2>({{5, 9}},
+                std::array{Spectral::Basis::SphericalHarmonic,
+                           Spectral::Basis::SphericalHarmonic},
+                std::array{Spectral::Quadrature::Gauss,
+                           Spectral::Quadrature::Equiangular}));
+
+  // B2 disk: slicing away the radial dimension converts ZernikeB2 to Fourier.
+  const Mesh<2> b2_mesh{{{3, 7}},
+                        make_array<2>(Spectral::Basis::ZernikeB2),
+                        {{Spectral::Quadrature::GaussRadauUpper,
+                          Spectral::Quadrature::Equiangular}}};
+  CHECK(b2_mesh.on_interface(0) == Mesh<1>{7, Spectral::Basis::Fourier,
+                                           Spectral::Quadrature::Equiangular});
+
+  // B2 cylinder (mixed bases): only ZernikeB2 dims are converted.
+  const Mesh<3> b2_cyl_mesh{
+      {{3, 7, 5}},
+      {{Spectral::Basis::ZernikeB2, Spectral::Basis::ZernikeB2,
+        Spectral::Basis::Legendre}},
+      {{Spectral::Quadrature::GaussRadauUpper,
+        Spectral::Quadrature::Equiangular,
+        Spectral::Quadrature::GaussLobatto}}};
+  CHECK(b2_cyl_mesh.on_interface(0) ==
+        Mesh<2>({{7, 5}},
+                std::array{Spectral::Basis::Fourier, Spectral::Basis::Legendre},
+                std::array{Spectral::Quadrature::Equiangular,
+                           Spectral::Quadrature::GaussLobatto}));
+
+#ifdef SPECTRE_DEBUG
+  // B3: wrong Dim
+  CHECK_THROWS_WITH((Mesh<2>{{{3, 7}},
+                             make_array<2>(Spectral::Basis::ZernikeB3),
+                             {{Spectral::Quadrature::GaussRadauUpper,
+                               Spectral::Quadrature::Gauss}}}
+                         .on_interface(0)),
+                    Catch::Matchers::ContainsSubstring(
+                        "ZernikeB3 should only be used on 3D meshes"));
+  // B3: slicing an angular direction
+  CHECK_THROWS_WITH(
+      (Mesh<3>{
+          {{4, 5, 9}},
+          make_array<3>(Spectral::Basis::ZernikeB3),
+          {{Spectral::Quadrature::GaussRadauUpper, Spectral::Quadrature::Gauss,
+            Spectral::Quadrature::Equiangular}}}
+           .on_interface(1)),
+      Catch::Matchers::ContainsSubstring(
+          "A mesh using B3 only has an interface when sliced in the first "
+          "dimension"));
+  // B3: radial dimension does not use GaussRadauUpper
+  CHECK_THROWS_WITH(
+      (Mesh<3>{{{4, 5, 9}},
+               make_array<3>(Spectral::Basis::ZernikeB3),
+               {{Spectral::Quadrature::Gauss, Spectral::Quadrature::Gauss,
+                 Spectral::Quadrature::Equiangular}}}
+           .on_interface(0)),
+      Catch::Matchers::ContainsSubstring(
+          "A mesh using B3 only has an interface when sliced in the first "
+          "dimension"));
+  // B3: non-isotropic bases
+  CHECK_THROWS_WITH(
+      (Mesh<3>{
+          {{4, 5, 9}},
+          {{Spectral::Basis::ZernikeB3, Spectral::Basis::Legendre,
+            Spectral::Basis::Legendre}},
+          {{Spectral::Quadrature::GaussRadauUpper, Spectral::Quadrature::Gauss,
+            Spectral::Quadrature::GaussLobatto}}}
+           .on_interface(0)),
+      Catch::Matchers::ContainsSubstring(
+          "Mesh is using ZernikeB3 basis in a nonisotropic manner"));
+  // B2: wrong Dim
+  CHECK_THROWS_WITH((Mesh<1>{3, Spectral::Basis::ZernikeB2,
+                             Spectral::Quadrature::GaussRadauUpper}
+                         .on_interface(0)),
+                    Catch::Matchers::ContainsSubstring(
+                        "ZernikeB2 should only be used on 2D or 3D meshes"));
+  // B2: slicing an angular direction
+  CHECK_THROWS_WITH(
+      (Mesh<2>{{{3, 7}},
+               make_array<2>(Spectral::Basis::ZernikeB2),
+               {{Spectral::Quadrature::GaussRadauUpper,
+                 Spectral::Quadrature::Equiangular}}}
+           .on_interface(1)),
+      Catch::Matchers::ContainsSubstring(
+          "A mesh using B2 only has an interface when sliced in the first "
+          "dimension"));
+  // B2: radial dimension does not use GaussRadauUpper
+  CHECK_THROWS_WITH(
+      (Mesh<2>{
+          {{3, 7}},
+          make_array<2>(Spectral::Basis::ZernikeB2),
+          {{Spectral::Quadrature::Gauss, Spectral::Quadrature::Equiangular}}}
+           .on_interface(0)),
+      Catch::Matchers::ContainsSubstring(
+          "A mesh using B2 only has an interface when sliced in the first "
+          "dimension"));
+  // B2: first two bases are not both ZernikeB2
+  CHECK_THROWS_WITH(
+      (Mesh<2>{{{3, 7}},
+               {{Spectral::Basis::ZernikeB2, Spectral::Basis::Legendre}},
+               {{Spectral::Quadrature::GaussRadauUpper,
+                 Spectral::Quadrature::Gauss}}}
+           .on_interface(0)),
+      Catch::Matchers::ContainsSubstring(
+          "Mesh does not have ZernikeB2 for the first two bases"));
+#endif  // SPECTRE_DEBUG
 }
 
 void test_equality() {
@@ -342,6 +471,7 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Spectral.Mesh",
                   "[NumericalAlgorithms][Spectral][Unit]") {
   test_uniform_lgl_mesh();
   test_explicit_choices_per_dimension();
+  test_interface_mesh();
   test_equality();
   test_serialization();
   test_option_parsing<1>();

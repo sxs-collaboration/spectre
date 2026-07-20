@@ -194,6 +194,21 @@ class Mesh {
   Mesh<Dim - 1> slice_away(size_t d) const;
 
   /*!
+   * \brief Returns the interface Mesh for a DG boundary in direction \p d.
+   *
+   * \details Unlike `slice_away`, this function converts ZernikeB3 (ZernikeB2)
+   * angular bases to SphericalHarmonic (Fourier) when slicing away the radial
+   * dimension of a B3 ball (B2 disk), reflecting the fact that the outer
+   * boundary of a B3 ball (B2 disk) is geometrically an S2 (S1) and shares its
+   * collocation points with SphericalHarmonic (Fourier).
+   *
+   * \see slice_away()
+   */
+  // clang-tidy: incorrectly reported redundancy in template expression
+  template <size_t N = Dim, Requires<(N > 0 and N == Dim)> = nullptr>  // NOLINT
+  Mesh<Dim - 1> on_interface(size_t d) const;
+
+  /*!
    * \brief Returns a Mesh with the dimensions \p d, ... present (zero-indexed).
    *
    * \details Generally you use this method to obtain a lower-dimensional Mesh
