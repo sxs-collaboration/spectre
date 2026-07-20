@@ -267,7 +267,8 @@ bool receive_boundary_data(
       const auto& direction = received_mortar_id.direction();
       const auto& neighbor_mesh = received_mortar_data.volume_mesh;
       const size_t sliced_away_dim = direction.dimension();
-      const Mesh<face_dim> face_mesh = volume_mesh.slice_away(sliced_away_dim);
+      const Mesh<face_dim> face_mesh =
+          volume_mesh.on_interface(sliced_away_dim);
       // If there are multiple non-conforming neighbors, there is only a
       // single mortar labeled by the host ElementId.  This is done
       // because the data from all neighbors will be combined onto a
@@ -328,7 +329,7 @@ bool receive_boundary_data(
                 neighbor_meshes->insert_or_assign(received_mortar_id,
                                                   neighbor_mesh);
                 const Mesh<face_dim> neighbor_face_mesh =
-                    received_mortar_data.volume_mesh.slice_away(
+                    received_mortar_data.volume_mesh.on_interface(
                         sliced_away_dim);
                 const Mesh<face_dim> mortar_mesh =
                     ::dg::mortar_mesh(face_mesh, neighbor_face_mesh);
@@ -959,7 +960,7 @@ struct ApplyBoundaryCorrections {
             }
 
             const Mesh<volume_dim - 1> face_mesh =
-                volume_mesh.slice_away(direction.dimension());
+                volume_mesh.on_interface(direction.dimension());
 
             // Whether the mesh has a collocation point on this face. True for
             // GaussLobatto (points on both faces) and GaussRadauUpper (point

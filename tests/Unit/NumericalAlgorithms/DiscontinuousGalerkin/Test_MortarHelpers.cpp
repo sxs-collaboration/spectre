@@ -30,6 +30,7 @@
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/MakeArray.hpp"
 #include "Utilities/StdArrayHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -46,6 +47,20 @@ void test_mortar_mesh() {
         lgl_mesh<1>({{5}}));
   CHECK(dg::mortar_mesh(lgl_mesh<2>({{2, 5}}), lgl_mesh<2>({{3, 4}})) ==
         lgl_mesh<2>({{3, 5}}));
+  // B3 ball / shell interface: the B3 face mesh (from on_interface()) uses
+  // SphericalHarmonic and must match the shell face mesh.
+  const Mesh<3> b3_volume_mesh{
+      {{3, 5, 9}},
+      make_array<3>(Spectral::Basis::ZernikeB3),
+      {{Spectral::Quadrature::GaussRadauUpper, Spectral::Quadrature::Gauss,
+        Spectral::Quadrature::Equiangular}}};
+  const Mesh<2> b3_face_mesh = b3_volume_mesh.on_interface(0);
+  const Mesh<2> shell_face_mesh{
+      {{5, 9}},
+      make_array<2>(Spectral::Basis::SphericalHarmonic),
+      {{Spectral::Quadrature::Gauss, Spectral::Quadrature::Equiangular}}};
+  CHECK(b3_face_mesh == shell_face_mesh);
+  CHECK(dg::mortar_mesh(b3_face_mesh, shell_face_mesh) == shell_face_mesh);
 #ifdef SPECTRE_DEBUG
   CHECK_THROWS_WITH(
       dg::mortar_mesh(Mesh<2>({{3, 4}},

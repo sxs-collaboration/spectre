@@ -95,7 +95,7 @@ void internal_mortar_data_impl(
   std::optional<tnsr::I<DataVector, Dim>> face_mesh_velocity{};
   for (const auto& [direction, neighbors_in_direction] : element.neighbors()) {
     const Mesh<Dim - 1> face_mesh =
-        volume_mesh.slice_away(direction.dimension());
+        volume_mesh.on_interface(direction.dimension());
 
     // The face_temporaries buffer is guaranteed to be big enough because we
     // allocated it in ComputeTimeDerivative with the max number of grid points
