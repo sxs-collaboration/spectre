@@ -73,8 +73,8 @@ namespace evolution::dg::Actions::detail {
  */
 template <typename ComputeVolumeTimeDerivativeTerms, size_t Dim,
           typename... TimeDerivativeArguments, typename... VariablesTags,
-          typename... PartialDerivTags, typename... FluxVariablesTags,
-          typename... TemporaryTags>
+          typename... SourceVarsTags, typename... PartialDerivTags,
+          typename... FluxVariablesTags, typename... TemporaryTags>
 void volume_terms(
     const gsl::not_null<Variables<tmpl::list<::Tags::dt<VariablesTags>...>>*>
         dt_vars_ptr,
@@ -91,7 +91,8 @@ void volume_terms(
         Variables<tmpl::list<::Tags::div<::Tags::Flux<
             FluxVariablesTags, tmpl::size_t<Dim>, Frame::Inertial>>...>>*>
         div_fluxes,
-    const Variables<tmpl::list<VariablesTags...>>& evolved_vars,
+    const Variables<tmpl::list<SourceVarsTags...>>&
+        source_vars,
     const ::dg::Formulation dg_formulation, const Mesh<Dim>& mesh,
     [[maybe_unused]] const tnsr::I<DataVector, Dim, Frame::Inertial>&
         inertial_coordinates,
@@ -118,7 +119,7 @@ void volume_terms(
 
   // Compute d_i u_\alpha for nonconservative products
   if constexpr (has_partial_derivs) {
-    partial_derivatives(partial_derivs, evolved_vars, mesh,
+    partial_derivatives(partial_derivs, source_vars, mesh,
                         logical_to_inertial_inverse_jacobian,
                         inertial_coordinates);
   }
@@ -161,7 +162,7 @@ void volume_terms(
       goto end_of_flux_mesh_velocity;  // NOLINT(cppcoreguidelines-avoid-goto)
     }
     tmpl::for_each<flux_variables>([&div_mesh_velocity, &dt_vars_ptr,
-                                    &evolved_vars, &mesh_velocity,
+                                    &source_vars, &mesh_velocity,
                                     &volume_fluxes](auto tag_v) {
       // Modify fluxes for moving mesh
       using var_tag = typename decltype(tag_v)::type;
@@ -185,7 +186,7 @@ void volume_terms(
 
         // We now need to index flux(i,j) -= u(j) * v_g(i)
         flux_var[flux_var_storage_index] -=
-            get<var_tag>(evolved_vars).get(var_tensor_index) *
+            get<var_tag>(source_vars).get(var_tensor_index) *
             mesh_velocity->get(flux_index);
       }
 
@@ -195,7 +196,7 @@ void volume_terms(
            dt_var_storage_index < dt_var.size(); ++dt_var_storage_index) {
         // This is S -> S - u d_i v^i_g
         dt_var[dt_var_storage_index] -=
-            get<var_tag>(evolved_vars)[dt_var_storage_index] *
+            get<var_tag>(source_vars)[dt_var_storage_index] *
             get(*div_mesh_velocity);
       }
     });

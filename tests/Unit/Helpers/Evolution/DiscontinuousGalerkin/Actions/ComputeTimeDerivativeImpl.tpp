@@ -114,6 +114,11 @@ struct Var3 : db::SimpleTag {
   using type = Scalar<DataVector>;
 };
 
+// Used only by the `HasAux` system configuration below.
+struct VarAux : db::SimpleTag {
+  using type = Scalar<DataVector>;
+};
+
 struct PrimVar1 : db::SimpleTag {
   using type = Scalar<DataVector>;
 };
@@ -361,6 +366,118 @@ struct TimeDerivativeTerms {
     return {true};
   }
   /// [dt_mp]
+};
+
+// Time-derivative terms for the auxiliary (LDG) configurations. These reuse the
+// `TimeDerivativeTerms` and add a contribution from the `VarAux`. This lets the
+// test verify that the auxiliary variable's derivative reaches the volume
+// time-derivative terms. LDG systems are second order and thus cannot be
+// purely conservative, so we only test the nonconservative and mixed
+// configurations here.
+template <size_t Dim>
+struct LdgTimeDerivativeTerms {
+  using temporary_tags = tmpl::list<Var3Squared>;
+  using argument_tags = tmpl::list<Var1, Var2<Dim>, Var3>;
+
+  // Nonconservative + auxiliary: gradient_variables = [Var1, Var2, VarAux] and
+  // there are no fluxes. The partial-derivative arguments follow
+  // gradient_variables order (Var1, Var2, then VarAux).
+  static ::evolution::dg::TimeDerivativeDecisions<Dim> apply(
+      const gsl::not_null<Scalar<DataVector>*> dt_var1,
+      const gsl::not_null<tnsr::I<DataVector, Dim, Frame::Inertial>*> dt_var2,
+
+      const gsl::not_null<Scalar<DataVector>*> square_var3,
+
+      const tnsr::i<DataVector, Dim, Frame::Inertial>& d_var1,
+      const tnsr::iJ<DataVector, Dim, Frame::Inertial>& d_var2,
+      const tnsr::i<DataVector, Dim, Frame::Inertial>& d_var_aux,
+
+      const Scalar<DataVector>& var1,
+      const tnsr::I<DataVector, Dim, Frame::Inertial>& var2,
+      const Scalar<DataVector>& var3) {
+    TimeDerivativeTerms<Dim, SystemType::Nonconservative, false>::apply(
+        dt_var1, dt_var2, square_var3, d_var1, d_var2, var1, var2, var3);
+    add_ldg_contribution(dt_var1, d_var_aux);
+    return {true};
+  }
+
+  // Mixed + auxiliary: gradient_variables = [Var1, VarAux] and flux_variables =
+  // [Var2]. Var2 evolves through its flux (into `flux_var2`), Var1 through a
+  // nonconservative product using `d_var1`, and `d_var_aux` is the
+  // differentiated auxiliary variable. This exercises the auxiliary volume
+  // differentiation coexisting with the flux-divergence path.
+  static ::evolution::dg::TimeDerivativeDecisions<Dim> apply(
+      const gsl::not_null<Scalar<DataVector>*> dt_var1,
+      const gsl::not_null<tnsr::I<DataVector, Dim, Frame::Inertial>*> dt_var2,
+
+      const gsl::not_null<tnsr::IJ<DataVector, Dim, Frame::Inertial>*>
+          flux_var2,
+
+      const gsl::not_null<Scalar<DataVector>*> square_var3,
+
+      const tnsr::i<DataVector, Dim, Frame::Inertial>& d_var1,
+      const tnsr::i<DataVector, Dim, Frame::Inertial>& d_var_aux,
+
+      const Scalar<DataVector>& var1,
+      const tnsr::I<DataVector, Dim, Frame::Inertial>& var2,
+      const Scalar<DataVector>& var3) {
+    TimeDerivativeTerms<Dim, SystemType::Mixed, false>::apply(
+        dt_var1, dt_var2, flux_var2, square_var3, d_var1, var1, var2, var3);
+    add_ldg_contribution(dt_var1, d_var_aux);
+    return {true};
+  }
+
+ private:
+  static void add_ldg_contribution(
+      const gsl::not_null<Scalar<DataVector>*> dt_var1,
+      const tnsr::i<DataVector, Dim, Frame::Inertial>& d_var_aux) {
+    for (size_t d = 0; d < Dim; ++d) {
+      get(*dt_var1) += d_var_aux.get(d);
+    }
+  }
+};
+
+template <size_t Dim>
+struct LdgTimeDerivativeTermsWithVariables : public ::evolution::PassVariables {
+  using base = LdgTimeDerivativeTerms<Dim>;
+  using temporary_tags = typename base::temporary_tags;
+  using argument_tags = typename base::argument_tags;
+
+  using dt_var1 = ::Tags::dt<Var1>;
+  using dt_var2 = ::Tags::dt<Var2<Dim>>;
+  using flux_var2 = ::Tags::Flux<Var2<Dim>, tmpl::size_t<Dim>, Frame::Inertial>;
+
+  // Nonconservative + auxiliary (no fluxes).
+  static ::evolution::dg::TimeDerivativeDecisions<Dim> apply(
+      const gsl::not_null<Variables<tmpl::list<dt_var1, dt_var2>>*> dt_vars,
+      const gsl::not_null<Variables<tmpl::list<Var3Squared>>*> temporaries,
+      const tnsr::i<DataVector, Dim, Frame::Inertial>& d_var1,
+      const tnsr::iJ<DataVector, Dim, Frame::Inertial>& d_var2,
+      const tnsr::i<DataVector, Dim, Frame::Inertial>& d_var_aux,
+      const Scalar<DataVector>& var1,
+      const tnsr::I<DataVector, Dim, Frame::Inertial>& var2,
+      const Scalar<DataVector>& var3) {
+    base::apply(get<dt_var1>(dt_vars), get<dt_var2>(dt_vars),
+                get<Var3Squared>(temporaries), d_var1, d_var2, d_var_aux, var1,
+                var2, var3);
+    return {true};
+  }
+
+  // Mixed + auxiliary (Var2 carries a flux).
+  static ::evolution::dg::TimeDerivativeDecisions<Dim> apply(
+      const gsl::not_null<Variables<tmpl::list<dt_var1, dt_var2>>*> dt_vars,
+      const gsl::not_null<Variables<tmpl::list<flux_var2>>*> flux_vars,
+      const gsl::not_null<Variables<tmpl::list<Var3Squared>>*> temporaries,
+      const tnsr::i<DataVector, Dim, Frame::Inertial>& d_var1,
+      const tnsr::i<DataVector, Dim, Frame::Inertial>& d_var_aux,
+      const Scalar<DataVector>& var1,
+      const tnsr::I<DataVector, Dim, Frame::Inertial>& var2,
+      const Scalar<DataVector>& var3) {
+    base::apply(get<dt_var1>(dt_vars), get<dt_var2>(dt_vars),
+                get<flux_var2>(flux_vars), get<Var3Squared>(temporaries),
+                d_var1, d_var_aux, var1, var2, var3);
+    return {true};
+  }
 };
 
 template <size_t Dim, SystemType system_type, bool HasPrimitiveVars>
@@ -854,7 +971,7 @@ template <size_t Dim>
 size_t DemandOutgoingCharSpeeds<Dim>::number_of_times_called = 0;
 
 template <size_t Dim, SystemType system_type, bool HasPrimitiveVariables,
-          bool PassVariables>
+          bool PassVariables, bool HasAux = false>
 struct System {
   static constexpr bool has_primitive_and_conservative_vars =
       HasPrimitiveVariables;
@@ -863,23 +980,36 @@ struct System {
   using boundary_conditions_base = BoundaryCondition<Dim>;
 
   using variables_tag = Tags::Variables<tmpl::list<Var1, Var2<Dim>>>;
+  // Auxiliary variables: present only for the `HasAux` configuration,
+  // which is used to test the LDG infrastructure.
+  using auxiliary_variables =
+      tmpl::conditional_t<HasAux, tmpl::list<VarAux>, tmpl::list<>>;
   using flux_variables = tmpl::conditional_t<
       system_type == SystemType::Conservative, tmpl::list<Var1, Var2<Dim>>,
       tmpl::conditional_t<system_type == SystemType::Nonconservative,
                           tmpl::list<>, tmpl::list<Var2<Dim>>>>;
-  using gradient_variables = tmpl::conditional_t<
+  using base_gradient_variables = tmpl::conditional_t<
       system_type == SystemType::Conservative, tmpl::list<>,
       tmpl::conditional_t<system_type == SystemType::Nonconservative,
                           tmpl::list<Var1, Var2<Dim>>, tmpl::list<Var1>>>;
+  using gradient_variables =
+      tmpl::conditional_t<HasAux,
+                          tmpl::push_back<base_gradient_variables, VarAux>,
+                          base_gradient_variables>;
   using primitive_variables_tag =
       Tags::Variables<tmpl::list<PrimVar1, PrimVar2<Dim>>>;
 
   using compute_volume_time_derivative_terms = tmpl::conditional_t<
-      PassVariables,
-      TimeDerivativeTermsWithVariables<Dim, system_type,
-                                       has_primitive_and_conservative_vars>,
-      TimeDerivativeTerms<Dim, system_type,
-                          has_primitive_and_conservative_vars>>;
+      HasAux,
+      tmpl::conditional_t<PassVariables,
+                          LdgTimeDerivativeTermsWithVariables<Dim>,
+                          LdgTimeDerivativeTerms<Dim>>,
+      tmpl::conditional_t<
+          PassVariables,
+          TimeDerivativeTermsWithVariables<Dim, system_type,
+                                           has_primitive_and_conservative_vars>,
+          TimeDerivativeTerms<Dim, system_type,
+                              has_primitive_and_conservative_vars>>>;
 
   using normal_dot_fluxes = NonconservativeNormalDotFlux<Dim>;
 };
@@ -902,6 +1032,12 @@ struct component {
       ::evolution::dg::Tags::Quadrature, variables_tag,
       db::add_tag_prefix<::Tags::dt, variables_tag>,
       ::Tags::HistoryEvolvedVariables<variables_tag>, Var3,
+      tmpl::conditional_t<
+          (tmpl::size<
+               typename Metavariables::system::auxiliary_variables>::value > 0),
+          ::Tags::Variables<
+              typename Metavariables::system::auxiliary_variables>,
+          tmpl::list<>>,
       domain::Tags::Mesh<Metavariables::volume_dim>,
       ::domain::Tags::FunctionsOfTimeInitialize,
       domain::CoordinateMaps::Tags::CoordinateMap<Metavariables::volume_dim,
@@ -973,7 +1109,7 @@ struct component {
 
 template <size_t Dim, SystemType SystemTypeIn, bool LocalTimeStepping,
           bool UseMovingMesh, bool HasPrimitiveVariables, bool PassVariables,
-          bool UseNodegroupDgElements>
+          bool UseNodegroupDgElements, bool HasAux = false>
 struct Metavariables {
   static constexpr size_t volume_dim = Dim;
   static constexpr SystemType system_type = SystemTypeIn;
@@ -982,7 +1118,7 @@ struct Metavariables {
   static constexpr bool pass_variables = PassVariables;
   static constexpr bool use_nodegroup_dg_elements = UseNodegroupDgElements;
   using system =
-      System<Dim, system_type, HasPrimitiveVariables, pass_variables>;
+      System<Dim, system_type, HasPrimitiveVariables, pass_variables, HasAux>;
   using normal_dot_numerical_flux =
       Tags::NumericalFlux<BoundaryTerms<Dim, HasPrimitiveVariables>>;
   using const_global_cache_tags =
@@ -1023,7 +1159,7 @@ double dg_package_data(
 
 template <bool LocalTimeStepping, bool UseMovingMesh, size_t Dim,
           SystemType system_type, bool HasPrims, bool PassVariables,
-          bool UseNodegroupDgElements>
+          bool UseNodegroupDgElements, bool HasAux = false>
 void test_impl(const Spectral::Quadrature quadrature,
                const ::dg::Formulation dg_formulation) {
   CAPTURE(LocalTimeStepping);
@@ -1032,11 +1168,12 @@ void test_impl(const Spectral::Quadrature quadrature,
   CAPTURE(system_type);
   CAPTURE(HasPrims);
   CAPTURE(PassVariables);
+  CAPTURE(HasAux);
   CAPTURE(quadrature);
   CAPTURE(dg_formulation);
   using metavars =
       Metavariables<Dim, system_type, LocalTimeStepping, UseMovingMesh,
-                    HasPrims, PassVariables, UseNodegroupDgElements>;
+                    HasPrims, PassVariables, UseNodegroupDgElements, HasAux>;
   register_classes_with_charm<TimeSteppers::AdamsBashforth>();
   register_factory_classes_with_charm<metavars>();
 
@@ -1239,6 +1376,13 @@ void test_impl(const Spectral::Quadrature quadrature,
     get(var3)[i] = 5.0;
     get(var3)[i + 1] = 6.0;
   }
+  Variables<tmpl::list<VarAux>> aux_vars{mesh.number_of_grid_points()};
+  if constexpr (HasAux) {
+    get(get<VarAux>(aux_vars)) = 0.0;
+    for (size_t d = 0; d < Dim; ++d) {
+      get(get<VarAux>(aux_vars)) += (d + 1.0) * inertial_coords.get(d);
+    }
+  }
   using dt_variables_tags = tmpl::list<::Tags::dt<Var1>, ::Tags::dt<Var2<Dim>>>;
   Variables<dt_variables_tags> dt_evolved_vars{mesh.number_of_grid_points()};
   const ::TimeSteppers::History<decltype(evolved_vars)> history{1};
@@ -1326,62 +1470,81 @@ void test_impl(const Spectral::Quadrature quadrature,
                      std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>
       functions_of_time{};
 
-  ActionTesting::emplace_component_and_initialize<component<metavars>>(
-      &runner, self_id,
-      {time_step_id,
-       next_time_step_id,
-       time_step,
-       time_step_id.step_time().value(),
-       AdaptiveSteppingDiagnostics{},
-       quadrature,
-       evolved_vars,
-       dt_evolved_vars,
-       history,
-       var3,
-       mesh,
-       clone_unique_ptrs(functions_of_time),
-       grid_to_inertial_map->get_clone(),
-       element,
-       neighbor_mesh,
-       inertial_coords,
-       inv_jac,
-       mesh_velocity,
-       div_mesh_velocity,
-       ElementMap<Dim, Frame::Grid>{
-           self_id,
-           domain::make_coordinate_map_base<Frame::BlockLogical, Frame::Grid>(
-               domain::CoordinateMaps::Identity<Dim>{})},
-       std::make_unique<TimeSteppers::AdamsBashforth>(5)});
+  // The initialization values match `component::simple_tags`. For the `HasAux`
+  // configuration the auxiliary storage `aux_vars` is inserted right after
+  // `var3` (matching the conditional entry in `simple_tags`).
+  const auto emplace_self = [&](auto... aux_storage) {
+    ActionTesting::emplace_component_and_initialize<component<metavars>>(
+        &runner, self_id,
+        {time_step_id,
+         next_time_step_id,
+         time_step,
+         time_step_id.step_time().value(),
+         AdaptiveSteppingDiagnostics{},
+         quadrature,
+         evolved_vars,
+         dt_evolved_vars,
+         history,
+         var3,
+         std::move(aux_storage)...,
+         mesh,
+         clone_unique_ptrs(functions_of_time),
+         grid_to_inertial_map->get_clone(),
+         element,
+         neighbor_mesh,
+         inertial_coords,
+         inv_jac,
+         mesh_velocity,
+         div_mesh_velocity,
+         ElementMap<Dim, Frame::Grid>{
+             self_id,
+             domain::make_coordinate_map_base<Frame::BlockLogical, Frame::Grid>(
+                 domain::CoordinateMaps::Identity<Dim>{})},
+         std::make_unique<TimeSteppers::AdamsBashforth>(5)});
+  };
+  if constexpr (HasAux) {
+    emplace_self(aux_vars);
+  } else {
+    emplace_self();
+  }
+  const auto emplace_neighbor = [&](const ElementId<Dim>& neighbor_id,
+                                    auto... aux_storage) {
+    ActionTesting::emplace_component_and_initialize<component<metavars>>(
+        &runner, neighbor_id,
+        {time_step_id,
+         next_time_step_id,
+         time_step,
+         time_step_id.step_time().value(),
+         AdaptiveSteppingDiagnostics{},
+         quadrature,
+         evolved_vars,
+         dt_evolved_vars,
+         history,
+         var3,
+         std::move(aux_storage)...,
+         mesh,
+         clone_unique_ptrs(functions_of_time),
+         grid_to_inertial_map->get_clone(),
+         element,
+         neighbor_mesh,
+         inertial_coords,
+         inv_jac,
+         mesh_velocity,
+         div_mesh_velocity,
+         ElementMap<Dim, Frame::Grid>{
+             neighbor_id,
+             domain::make_coordinate_map_base<Frame::BlockLogical, Frame::Grid>(
+                 domain::CoordinateMaps::Identity<Dim>{})},
+         std::make_unique<TimeSteppers::AdamsBashforth>(5)});
+  };
   for (const auto& [direction, neighbor_ids] : neighbors) {
     (void)direction;
     for (const auto& neighbor_id : neighbor_ids) {
-      ActionTesting::emplace_component_and_initialize<component<metavars>>(
-          &runner, neighbor_id,
-          {time_step_id,
-           next_time_step_id,
-           time_step,
-           time_step_id.step_time().value(),
-           AdaptiveSteppingDiagnostics{},
-           quadrature,
-           evolved_vars,
-           dt_evolved_vars,
-           history,
-           var3,
-           mesh,
-           clone_unique_ptrs(functions_of_time),
-           grid_to_inertial_map->get_clone(),
-           element,
-           neighbor_mesh,
-           inertial_coords,
-           inv_jac,
-           mesh_velocity,
-           div_mesh_velocity,
-           ElementMap<Dim, Frame::Grid>{
-               neighbor_id,
-               domain::make_coordinate_map_base<Frame::BlockLogical,
-                                                Frame::Grid>(
-                   domain::CoordinateMaps::Identity<Dim>{})},
-           std::make_unique<TimeSteppers::AdamsBashforth>(5)});
+      if constexpr (HasAux) {
+        emplace_neighbor(neighbor_id, aux_vars);
+      } else {
+        emplace_neighbor(neighbor_id);
+      }
     }
   }
 
@@ -1467,6 +1630,15 @@ void test_impl(const Spectral::Quadrature quadrature,
                     Tags::Flux<Var1, tmpl::size_t<Dim>, Frame::Inertial>>>(
                 weak_div_fluxes));
       }
+    }
+  }
+
+  if constexpr (HasAux) {
+    const auto d_var_aux =
+        get<::Tags::deriv<VarAux, tmpl::size_t<Dim>, Frame::Inertial>>(
+            partial_derivatives<tmpl::list<VarAux>>(aux_vars, mesh, inv_jac));
+    for (size_t d = 0; d < Dim; ++d) {
+      get(get<::Tags::dt<Var1>>(expected_dt_evolved_vars)) += d_var_aux.get(d);
     }
   }
   // Set dt<Var2<Dim>>
@@ -1973,6 +2145,40 @@ void test() {
           test_impl<true, std::decay_t<decltype(moving_mesh)>::value, Dim,
                     system_type, UsePrims, true, use_nodegroup_dg_elements>(
               quadrature, local_dg_formulation);
+        };
+        moving_mesh_helper(std::integral_constant<bool, false>{});
+        moving_mesh_helper(std::integral_constant<bool, true>{});
+      };
+  for (const auto dg_formulation :
+       {::dg::Formulation::StrongInertial, ::dg::Formulation::WeakInertial}) {
+    invoke_tests_with_quadrature_and_formulation(
+        Spectral::Quadrature::GaussLobatto, dg_formulation);
+    invoke_tests_with_quadrature_and_formulation(Spectral::Quadrature::Gauss,
+                                                 dg_formulation);
+  }
+}
+
+template <SystemType system_type, size_t Dim>
+void test_LDG() {
+  // `LocalTimeStepping` is not tested because LDG is global-time-stepping only
+  // for now. The auxiliary variable is not time-integrated, so it gets no
+  // moving-mesh term of its own; the moving-mesh cases check that it coexists
+  // with the mesh-velocity terms on the evolved variables.
+  constexpr bool use_nodegroup_dg_elements = false;
+
+  const auto invoke_tests_with_quadrature_and_formulation =
+      [](const Spectral::Quadrature quadrature,
+         const ::dg::Formulation local_dg_formulation) {
+        const auto moving_mesh_helper = [&local_dg_formulation,
+                                         &quadrature](auto moving_mesh) {
+          // PassVariables == false
+          test_impl<false, std::decay_t<decltype(moving_mesh)>::value, Dim,
+                    system_type, false, false, use_nodegroup_dg_elements,
+                    /*HasAux=*/true>(quadrature, local_dg_formulation);
+          // PassVariables == true
+          test_impl<false, std::decay_t<decltype(moving_mesh)>::value, Dim,
+                    system_type, false, true, use_nodegroup_dg_elements,
+                    /*HasAux=*/true>(quadrature, local_dg_formulation);
         };
         moving_mesh_helper(std::integral_constant<bool, false>{});
         moving_mesh_helper(std::integral_constant<bool, true>{});

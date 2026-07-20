@@ -61,8 +61,8 @@ namespace evolution::dg::Actions::detail {
  */
 template <typename ComputeVolumeTimeDerivativeTerms, size_t Dim,
           typename... TimeDerivativeArguments, typename... VariablesTags,
-          typename... PartialDerivTags, typename... FluxVariablesTags,
-          typename... TemporaryTags>
+          typename... SourceVarsTags, typename... PartialDerivTags,
+          typename... FluxVariablesTags, typename... TemporaryTags>
 void volume_terms(
     const gsl::not_null<Variables<tmpl::list<::Tags::dt<VariablesTags>...>>*>
         dt_vars_ptr,
@@ -79,7 +79,7 @@ void volume_terms(
         Variables<tmpl::list<::Tags::div<::Tags::Flux<
             FluxVariablesTags, tmpl::size_t<Dim>, Frame::Inertial>>...>>*>
         div_fluxes,
-    const Variables<tmpl::list<VariablesTags...>>& evolved_vars,
+    const Variables<tmpl::list<SourceVarsTags...>>& source_vars,
     const ::dg::Formulation dg_formulation, const Mesh<Dim>& mesh,
     [[maybe_unused]] const tnsr::I<DataVector, Dim, Frame::Inertial>&
         inertial_coordinates,

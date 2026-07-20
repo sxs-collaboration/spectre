@@ -7,4 +7,5 @@
 
 namespace TestHelpers::evolution::dg::Actions {
 template void test<SystemType::Nonconservative, false, 3>();
+template void test_LDG<SystemType::Nonconservative, 3>();
 }  // namespace TestHelpers::evolution::dg::Actions
