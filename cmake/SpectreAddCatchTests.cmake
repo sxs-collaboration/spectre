@@ -47,6 +47,8 @@ set(_CATCH_TEST_ENV_VARS "")
 list(APPEND _CATCH_TEST_ENV_VARS "ASAN_OPTIONS=detect_leaks=0")
 # - Set PYTHONPATH to find Python modules
 list(APPEND _CATCH_TEST_ENV_VARS "PYTHONPATH=${PYTHONPATH}")
+# - Disable OpenMP because it causes segfaults
+list(APPEND _CATCH_TEST_ENV_VARS "OMP_NUM_THREADS=1")
 
 # Main function - the only one designed to be called from outside this module.
 function(spectre_add_catch_tests TEST_TARGET)

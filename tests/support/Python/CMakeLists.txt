@@ -9,7 +9,8 @@ if (BUILD_PYTHON_BINDINGS AND NOT PY_DEV_MODE)
   set_tests_properties(
     "support.Python.Cli" PROPERTIES
     PASS_REGULAR_EXPRESSION "${SPECTRE_VERSION}"
-    LABELS "python")
+    LABELS "python"
+    ENVIRONMENT "OMP_NUM_THREADS=1")
 
   add_test(NAME "support.Python.python-spectre"
     COMMAND ${CMAKE_BINARY_DIR}/bin/python-spectre -c
@@ -17,7 +18,8 @@ if (BUILD_PYTHON_BINDINGS AND NOT PY_DEV_MODE)
   set_tests_properties(
     "support.Python.python-spectre" PROPERTIES
     PASS_REGULAR_EXPRESSION "${SPECTRE_VERSION}"
-    LABELS "python")
+    LABELS "python"
+    ENVIRONMENT "OMP_NUM_THREADS=1")
 endif()
 
 spectre_add_python_bindings_test(

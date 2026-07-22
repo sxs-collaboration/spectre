@@ -39,7 +39,7 @@ function(set_standalone_test_properties TEST_NAME)
     PROPERTIES
     TIMEOUT "${TIMEOUT}"
     LABELS "standalone"
-    ENVIRONMENT "ASAN_OPTIONS=detect_leaks=0")
+    ENVIRONMENT "ASAN_OPTIONS=detect_leaks=0;OMP_NUM_THREADS=1")
 endfunction()
 
 # For tests that result in a failure it is necessary to redirect

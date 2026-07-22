@@ -339,7 +339,7 @@ function(SPECTRE_ADD_PYTHON_TEST TEST_NAME FILE TAGS
 
   spectre_test_timeout(TIMEOUT PYTHON ${TIMEOUT})
 
-  set(_PY_TEST_ENV_VARS "PYTHONPATH=${PYTHONPATH}")
+  set(_PY_TEST_ENV_VARS "PYTHONPATH=${PYTHONPATH};OMP_NUM_THREADS=1")
 
   # The fail regular expression is what Python.unittest returns when no
   # tests are found to be run. We treat this as a test failure.
