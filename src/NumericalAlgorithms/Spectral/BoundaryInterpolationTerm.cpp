@@ -27,9 +27,9 @@ const std::pair<DataVector, DataVector>& boundary_interpolation_term(
       "We only compute the time derivative correction interpolation for Gauss "
       "quadrature since for Gauss-Lobatto you can just copy values off the "
       "volume.");
-  static const auto cache = make_static_cache<
-      CacheRange<Spectral::minimum_number_of_points<BasisType, QuadratureType>,
-                 Spectral::maximum_number_of_points<BasisType> + 1>>(
+  static const auto cache = make_static_cache<CacheRange<
+      Spectral::minimum_number_of_points<BasisType, QuadratureType>,
+      Spectral::maximum_number_of_points<BasisType, QuadratureType> + 1>>(
       [](const size_t local_num_points) {
         const Matrix interp_matrix =
             interpolation_matrix<BasisType, Quadrature::GaussLobatto>(

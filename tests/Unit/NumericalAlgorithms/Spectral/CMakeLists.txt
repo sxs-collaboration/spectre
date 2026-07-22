@@ -32,6 +32,7 @@ set(LIBRARY_SOURCES
   Test_Legendre.cpp
   Test_LegendreGauss.cpp
   Test_LegendreGaussLobatto.cpp
+  Test_Limits.cpp
   Test_LinearFilterMatrix.cpp
   Test_LogicalCoordinates.cpp
   Test_Mesh.cpp

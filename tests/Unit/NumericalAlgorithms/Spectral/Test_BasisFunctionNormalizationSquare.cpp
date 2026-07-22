@@ -22,7 +22,7 @@ void test() {
   CAPTURE(basis);
   CAPTURE(quadrature);
   for (size_t n = minimum_number_of_points<basis, quadrature>;
-       n <= maximum_number_of_points<basis>; ++n) {
+       n <= maximum_number_of_points<basis, quadrature>; ++n) {
     CAPTURE(n);
     const auto& [xi, w] =
         compute_collocation_points_and_weights<basis, quadrature>(n);
@@ -47,7 +47,7 @@ void test_two_index() {
   CAPTURE(basis);
   CAPTURE(quadrature);
   for (size_t n = minimum_number_of_points<basis, quadrature>;
-       n <= maximum_number_of_points<basis>; ++n) {
+       n <= maximum_number_of_points<basis, quadrature>; ++n) {
     CAPTURE(n);
     const auto& [xi, w] =
         compute_collocation_points_and_weights<basis, quadrature>(n);

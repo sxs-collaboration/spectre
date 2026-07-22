@@ -320,8 +320,9 @@ void test_apply_in_volume() {
 
   const size_t max_pts =
       BasisType == Spectral::Basis::Fourier
-          ? Spectral::maximum_number_of_points<BasisType> / (3 * Dim)
-          : Spectral::maximum_number_of_points<BasisType> / Dim;
+          ? Spectral::maximum_number_of_points<BasisType, QuadratureType> /
+                (3 * Dim)
+          : Spectral::maximum_number_of_points<BasisType, QuadratureType> / Dim;
   for (size_t num_pts =
            Spectral::minimum_number_of_points<BasisType, QuadratureType>;
        num_pts < max_pts; ++num_pts) {
@@ -366,8 +367,9 @@ void test_apply_on_boundary() {
 
   const size_t max_pts =
       BasisType == Spectral::Basis::Fourier
-          ? Spectral::maximum_number_of_points<BasisType> / (3 * Dim)
-          : Spectral::maximum_number_of_points<BasisType> / Dim;
+          ? Spectral::maximum_number_of_points<BasisType, QuadratureType> /
+                (3 * Dim)
+          : Spectral::maximum_number_of_points<BasisType, QuadratureType> / Dim;
   for (size_t num_pts =
            Spectral::minimum_number_of_points<BasisType, QuadratureType>;
        num_pts < max_pts; ++num_pts) {
