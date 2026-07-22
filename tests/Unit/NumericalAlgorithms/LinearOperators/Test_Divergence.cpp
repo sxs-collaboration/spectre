@@ -189,11 +189,19 @@ void test_divergence() {
   TestHelpers::db::test_prefix_tag<Tags::div<TensorTag>>("div(Flux1)");
 
   const size_t n0 =
-      Spectral::maximum_number_of_points<Spectral::Basis::Legendre> / 2;
+      Spectral::maximum_number_of_points<Spectral::Basis::Legendre,
+                                         Spectral::Quadrature::GaussLobatto> /
+      2;
   const size_t n1 =
-      Spectral::maximum_number_of_points<Spectral::Basis::Legendre> / 2 + 1;
+      Spectral::maximum_number_of_points<Spectral::Basis::Legendre,
+                                         Spectral::Quadrature::GaussLobatto> /
+          2 +
+      1;
   const size_t n2 =
-      Spectral::maximum_number_of_points<Spectral::Basis::Legendre> / 2 - 1;
+      Spectral::maximum_number_of_points<Spectral::Basis::Legendre,
+                                         Spectral::Quadrature::GaussLobatto> /
+          2 -
+      1;
   const Mesh<1> mesh_1d{
       {{n0}}, Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto};
   const Mesh<2> mesh_2d{{{n0, n1}},
@@ -298,11 +306,19 @@ void test_divergence_compute_item_impl(
 
 void test_divergence_compute() {
   const size_t n0 =
-      Spectral::maximum_number_of_points<Spectral::Basis::Legendre> / 2;
+      Spectral::maximum_number_of_points<Spectral::Basis::Legendre,
+                                         Spectral::Quadrature::GaussLobatto> /
+      2;
   const size_t n1 =
-      Spectral::maximum_number_of_points<Spectral::Basis::Legendre> / 2 + 1;
+      Spectral::maximum_number_of_points<Spectral::Basis::Legendre,
+                                         Spectral::Quadrature::GaussLobatto> /
+          2 +
+      1;
   const size_t n2 =
-      Spectral::maximum_number_of_points<Spectral::Basis::Legendre> / 2 - 1;
+      Spectral::maximum_number_of_points<Spectral::Basis::Legendre,
+                                         Spectral::Quadrature::GaussLobatto> /
+          2 -
+      1;
   const Mesh<1> mesh_1d{
       {{n0}}, Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto};
   const Mesh<2> mesh_2d{{{n0, n1}},
@@ -682,11 +698,19 @@ void test_cartoon_chooser() {
 
   // With non-cartoon
   const size_t n0 =
-      Spectral::maximum_number_of_points<Spectral::Basis::Legendre> / 2;
+      Spectral::maximum_number_of_points<Spectral::Basis::Legendre,
+                                         Spectral::Quadrature::GaussLobatto> /
+      2;
   const size_t n1 =
-      Spectral::maximum_number_of_points<Spectral::Basis::Legendre> / 2 + 1;
+      Spectral::maximum_number_of_points<Spectral::Basis::Legendre,
+                                         Spectral::Quadrature::GaussLobatto> /
+          2 +
+      1;
   const size_t n2 =
-      Spectral::maximum_number_of_points<Spectral::Basis::Legendre> / 2 - 1;
+      Spectral::maximum_number_of_points<Spectral::Basis::Legendre,
+                                         Spectral::Quadrature::GaussLobatto> /
+          2 -
+      1;
 
   const Mesh<3> mesh_lgl{{{n0, n1, n2}},
                          Spectral::Basis::Legendre,

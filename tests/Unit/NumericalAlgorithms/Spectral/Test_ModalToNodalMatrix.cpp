@@ -25,7 +25,7 @@ void test() {
   CAPTURE(basis);
   CAPTURE(quadrature);
   for (size_t n = minimum_number_of_points<basis, quadrature>;
-       n <= maximum_number_of_points<basis>; ++n) {
+       n <= maximum_number_of_points<basis, quadrature>; ++n) {
     CAPTURE(n);
     const DataVector xi = collocation_points<basis, quadrature>(n);
     const Matrix m = modal_to_nodal_matrix<basis, quadrature>(n);
@@ -47,7 +47,7 @@ void test_two_indexed() {
   CAPTURE(basis);
   CAPTURE(quadrature);
   for (size_t n = minimum_number_of_points<basis, quadrature>;
-       n <= maximum_number_of_points<basis>; ++n) {
+       n <= maximum_number_of_points<basis, quadrature>; ++n) {
     CAPTURE(n);
     const DataVector xi = collocation_points<basis, quadrature>(n);
     for (size_t N = 0; N < 2 * n - 1; ++N) {

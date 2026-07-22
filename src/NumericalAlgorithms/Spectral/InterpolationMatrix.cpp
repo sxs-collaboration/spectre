@@ -43,7 +43,7 @@ Matrix interpolation_matrix(const size_t num_points, const T& target_points) {
     return Fourier::interpolation_matrix(num_points, target_points);
   }
   constexpr size_t max_num_points =
-      Spectral::maximum_number_of_points<BasisType>;
+      Spectral::maximum_number_of_points<BasisType, QuadratureType>;
   constexpr size_t min_num_points =
       Spectral::minimum_number_of_points<BasisType, QuadratureType>;
   ASSERT(num_points >= min_num_points,

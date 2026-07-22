@@ -77,7 +77,7 @@ void test_orthogonal_polynomial() {
   const auto xi_target = make_with_random_values<DataVector>(
       make_not_null(&generator), make_not_null(&xi_distribution), 5_st);
   for (size_t n = Spectral::minimum_number_of_points<basis, quadrature>;
-       n <= Spectral::maximum_number_of_points<basis>; ++n) {
+       n <= Spectral::maximum_number_of_points<basis, quadrature>; ++n) {
     const DataVector& xi = Spectral::collocation_points<basis, quadrature>(n);
     const Matrix& dm = Spectral::differentiation_matrix<basis, quadrature>(n);
     const DataVector& integration_weights =

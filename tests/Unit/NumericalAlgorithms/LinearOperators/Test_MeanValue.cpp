@@ -29,7 +29,8 @@ void test_mean_value() {
       Spectral::minimum_number_of_points<Spectral::Basis::Legendre,
                                          Spectral::Quadrature::GaussLobatto>;
   constexpr size_t max_extents =
-      Spectral::maximum_number_of_points<Spectral::Basis::Legendre>;
+      Spectral::maximum_number_of_points<Spectral::Basis::Legendre,
+                                         Spectral::Quadrature::GaussLobatto>;
   for (size_t nx = min_extents; nx <= max_extents; ++nx) {
     for (size_t ny = min_extents; ny <= max_extents; ++ny) {
       for (size_t nz = min_extents; nz <= max_extents; ++nz) {
@@ -61,7 +62,8 @@ void test_mean_value_on_boundary() {
       Spectral::minimum_number_of_points<Spectral::Basis::Legendre,
                                          Spectral::Quadrature::GaussLobatto>;
   constexpr size_t max_extents =
-      Spectral::maximum_number_of_points<Spectral::Basis::Legendre>;
+      Spectral::maximum_number_of_points<Spectral::Basis::Legendre,
+                                         Spectral::Quadrature::GaussLobatto>;
   for (size_t nx = min_extents; nx <= max_extents; ++nx) {
     for (size_t ny = min_extents; ny <= max_extents; ++ny) {
       for (size_t nz = min_extents; nz <= max_extents; ++nz) {
@@ -180,7 +182,8 @@ void test_mean_value_on_boundary_1d() {
       Spectral::minimum_number_of_points<Spectral::Basis::Legendre,
                                          Spectral::Quadrature::GaussLobatto>;
   constexpr size_t max_extents =
-      Spectral::maximum_number_of_points<Spectral::Basis::Legendre>;
+      Spectral::maximum_number_of_points<Spectral::Basis::Legendre,
+                                         Spectral::Quadrature::GaussLobatto>;
   for (size_t nx = min_extents; nx < max_extents; ++nx) {
     const Mesh<1> mesh{nx, Spectral::Basis::Legendre,
                        Spectral::Quadrature::GaussLobatto};
