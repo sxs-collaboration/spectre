@@ -355,7 +355,8 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.DefiniteIntegral",
       Spectral::minimum_number_of_points<Spectral::Basis::Legendre,
                                          Spectral::Quadrature::GaussLobatto>;
   constexpr size_t max_extents =
-      Spectral::maximum_number_of_points<Spectral::Basis::Legendre>;
+      Spectral::maximum_number_of_points<Spectral::Basis::Legendre,
+                                         Spectral::Quadrature::GaussLobatto>;
   for (size_t n0 = min_extents; n0 <= max_extents; ++n0) {
     test_definite_integral_1d(Mesh<1>{n0, Spectral::Basis::Legendre,
                                       Spectral::Quadrature::GaussLobatto});
@@ -425,7 +426,8 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.DefiniteIntegral",
       Spectral::minimum_number_of_points<Spectral::Basis::FiniteDifference,
                                          Spectral::Quadrature::CellCentered>;
   constexpr size_t max_extents_fd =
-    Spectral::maximum_number_of_points<Spectral::Basis::FiniteDifference>;
+      Spectral::maximum_number_of_points<Spectral::Basis::FiniteDifference,
+                                         Spectral::Quadrature::CellCentered>;
   for (size_t n0 = min_extents_fd; n0 <= max_extents_fd; ++n0) {
     test_midpoint_integral_1d(Mesh<1>{n0, Spectral::Basis::FiniteDifference,
                                       Spectral::Quadrature::CellCentered});

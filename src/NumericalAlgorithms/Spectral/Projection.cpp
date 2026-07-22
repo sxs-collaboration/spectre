@@ -39,8 +39,10 @@ namespace Spectral {
 namespace {
 void verify_meshes(const Mesh<1>& parent_mesh, const Mesh<1>& child_mesh,
                    const SegmentSize size) {
-  constexpr size_t max_points_l = maximum_number_of_points<Basis::Legendre>;
-  constexpr size_t max_points_f = maximum_number_of_points<Basis::Fourier>;
+  constexpr size_t max_points_l =
+      maximum_number_of_points<Basis::Legendre, Quadrature::GaussLobatto>;
+  constexpr size_t max_points_f =
+      maximum_number_of_points<Basis::Fourier, Quadrature::Equiangular>;
 
   // Legendre with Legendre (any segment size)
   const bool both_legendre = parent_mesh.basis(0) == Basis::Legendre and
@@ -102,8 +104,10 @@ const Matrix& projection_matrix_child_to_parent(const Mesh<1>& child_mesh,
                                                 const Mesh<1>& parent_mesh,
                                                 const SegmentSize size,
                                                 const bool operand_is_massive) {
-  constexpr size_t max_points_l = maximum_number_of_points<Basis::Legendre>;
-  constexpr size_t max_points_f = maximum_number_of_points<Basis::Fourier>;
+  constexpr size_t max_points_l =
+      maximum_number_of_points<Basis::Legendre, Quadrature::GaussLobatto>;
+  constexpr size_t max_points_f =
+      maximum_number_of_points<Basis::Fourier, Quadrature::Equiangular>;
   verify_meshes(parent_mesh, child_mesh, size);
 
   if (operand_is_massive) {
@@ -375,7 +379,8 @@ projection_matrix_child_to_parent(
 const Matrix& projection_matrix_parent_to_child(const Mesh<1>& parent_mesh,
                                                 const Mesh<1>& child_mesh,
                                                 const SegmentSize size) {
-  constexpr size_t max_points_l = maximum_number_of_points<Basis::Legendre>;
+  constexpr size_t max_points_l =
+      maximum_number_of_points<Basis::Legendre, Quadrature::GaussLobatto>;
   verify_meshes(parent_mesh, child_mesh, size);
 
   // For Fourier with SegmentSize::Full, the element-to-mortar projection is

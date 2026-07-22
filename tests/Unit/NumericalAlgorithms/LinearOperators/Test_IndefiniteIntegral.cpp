@@ -60,7 +60,7 @@ template <typename VectorType, Spectral::Basis BasisType,
           Spectral::Quadrature QuadratureType>
 void test_zero_bc() {
   const size_t min_pts = 2;
-  REQUIRE(5 <= Spectral::maximum_number_of_points<BasisType>);
+  REQUIRE(5 <= Spectral::maximum_number_of_points<BasisType, QuadratureType>);
 
   MAKE_GENERATOR(generator);
   UniformCustomDistribution<

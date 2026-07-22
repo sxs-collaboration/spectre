@@ -137,8 +137,10 @@ void test_rdmp() {
   // We lower the maximum number of 1d points in 3d in order to reduce total
   // test runtime.
   const size_t maximum_number_of_points_1d =
-      Dim == 3 ? 7
-               : Spectral::maximum_number_of_points<Spectral::Basis::Legendre>;
+      Dim == 3
+          ? 7
+          : Spectral::maximum_number_of_points<
+                Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto>;
   for (size_t num_pts_1d = 2; num_pts_1d < maximum_number_of_points_1d;
        ++num_pts_1d) {
     test_rdmp_impl<Dim>(past_max_values, past_min_values, 1.0e-4, 1.0e-3,
