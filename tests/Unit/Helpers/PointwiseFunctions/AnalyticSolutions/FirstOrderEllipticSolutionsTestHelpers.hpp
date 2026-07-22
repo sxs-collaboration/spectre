@@ -226,7 +226,9 @@ void verify_smooth_solution(
     PackageFluxesArgs&& package_fluxes_args) {
   INFO("Verify smooth solution");
   const size_t max_points = std::min(
-      Spectral::maximum_number_of_points<Spectral::Basis::Legendre>, 12_st);
+      Spectral::maximum_number_of_points<Spectral::Basis::Legendre,
+                                         Spectral::Quadrature::GaussLobatto>,
+      12_st);
   for (size_t num_points = Spectral::minimum_number_of_points<
            Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto>;
        num_points <= max_points; num_points++) {
@@ -264,7 +266,9 @@ void verify_solution_with_power_law_convergence(
     const double tolerance_offset, const double tolerance_pow) {
   INFO("Verify solution with power-law convergence");
   const size_t max_points = std::min(
-      Spectral::maximum_number_of_points<Spectral::Basis::Legendre>, 12_st);
+      Spectral::maximum_number_of_points<Spectral::Basis::Legendre,
+                                         Spectral::Quadrature::GaussLobatto>,
+      12_st);
   for (size_t num_points = Spectral::minimum_number_of_points<
            Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto>;
        num_points <= max_points; num_points++) {

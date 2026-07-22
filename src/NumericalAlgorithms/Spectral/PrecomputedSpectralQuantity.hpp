@@ -23,7 +23,7 @@ template <Basis BasisType, Quadrature QuadratureType,
           typename SpectralQuantityGenerator>
 const auto& precomputed_spectral_quantity(const size_t num_points) {
   constexpr size_t max_num_points =
-      Spectral::maximum_number_of_points<BasisType>;
+      Spectral::maximum_number_of_points<BasisType, QuadratureType>;
   constexpr size_t min_num_points =
       Spectral::minimum_number_of_points<BasisType, QuadratureType>;
   ASSERT(num_points >= min_num_points,
@@ -46,7 +46,7 @@ template <Basis BasisType, Quadrature QuadratureType,
 const auto& precomputed_spectral_quantity_with_parity(const size_t num_points,
                                                       const Parity parity) {
   constexpr size_t max_num_points =
-      Spectral::maximum_number_of_points<BasisType>;
+      Spectral::maximum_number_of_points<BasisType, QuadratureType>;
   constexpr size_t min_num_points =
       Spectral::minimum_number_of_points<BasisType, QuadratureType>;
   ASSERT(num_points >= min_num_points,
@@ -73,7 +73,7 @@ const auto& precomputed_two_indexed_spectral_quantity(const size_t num_points,
                                                       const size_t m,
                                                       const size_t N) {
   constexpr size_t max_num_points =
-      Spectral::maximum_number_of_points<BasisType>;
+      Spectral::maximum_number_of_points<BasisType, QuadratureType>;
   constexpr size_t min_num_points =
       Spectral::minimum_number_of_points<BasisType, QuadratureType>;
   ASSERT(num_points >= min_num_points,

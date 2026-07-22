@@ -22,7 +22,7 @@ void test() {
   CAPTURE(basis);
   CAPTURE(quadrature);
   for (size_t n = minimum_number_of_points<basis, quadrature>;
-       n <= maximum_number_of_points<basis>; ++n) {
+       n <= maximum_number_of_points<basis, quadrature>; ++n) {
     CAPTURE(n);
     const Matrix& m = integration_matrix<basis, quadrature>(n);
     if (UNLIKELY(n == 1)) {

@@ -65,7 +65,8 @@ void test_exact_differentiation_impl(const Function& max_poly_deg) {
   CAPTURE(BasisType);
   CAPTURE(QuadratureType);
   for (size_t n = Spectral::minimum_number_of_points<BasisType, QuadratureType>;
-       n <= Spectral ::maximum_number_of_points<BasisType>; n++) {
+       n <= Spectral ::maximum_number_of_points<BasisType, QuadratureType>;
+       n++) {
     CAPTURE(n);
     for (size_t p = 0; p <= max_poly_deg(n); p++) {
       CAPTURE(p);
@@ -104,7 +105,8 @@ void test_weak_differentiation() {
   CAPTURE(QuadratureType);
 
   for (size_t n = Spectral::minimum_number_of_points<BasisType, QuadratureType>;
-       n <= Spectral::maximum_number_of_points<BasisType>; n++) {
+       n <= Spectral::maximum_number_of_points<BasisType, QuadratureType>;
+       n++) {
     CAPTURE(n);
     const DataVector& quad_weights =
         Spectral::quadrature_weights<BasisType, QuadratureType>(n);
@@ -182,7 +184,8 @@ void test_linear_filter_impl() {
   CAPTURE(BasisType);
   CAPTURE(QuadratureType);
   for (size_t n = Spectral::minimum_number_of_points<BasisType, QuadratureType>;
-       n <= Spectral::maximum_number_of_points<BasisType>; n++) {
+       n <= Spectral::maximum_number_of_points<BasisType, QuadratureType>;
+       n++) {
     const auto& filter_matrix =
         Spectral::linear_filter_matrix<BasisType, QuadratureType>(n);
     const auto& nodal_to_modal_matrix =
@@ -224,7 +227,9 @@ void test_interpolation_matrix(const DataVector& target_points,
                                const double eps = 0.) {
   DataVector interpolated_u(target_points.size(), 0.);
   for (size_t n = Spectral::minimum_number_of_points<BasisType, QuadratureType>;
-       n <= std::min(Spectral::maximum_number_of_points<BasisType>, 12_st);
+       n <=
+       std::min(Spectral::maximum_number_of_points<BasisType, QuadratureType>,
+                12_st);
        n++) {
     const auto& collocation_pts =
         Spectral::collocation_points<BasisType, QuadratureType>(n);
@@ -339,7 +344,8 @@ template <Spectral::Basis BasisType, Spectral::Quadrature QuadratureType,
           typename Function>
 void test_exact_unit_weight_quadrature(const Function& max_poly_deg) {
   for (size_t n = Spectral::minimum_number_of_points<BasisType, QuadratureType>;
-       n <= Spectral::maximum_number_of_points<BasisType>; n++) {
+       n <= Spectral::maximum_number_of_points<BasisType, QuadratureType>;
+       n++) {
     for (size_t p = 0; p <= max_poly_deg(n); p++) {
       const double analytic_quadrature = unit_polynomial_integral(p);
       test_exact_quadrature<BasisType, QuadratureType>(n, p,
@@ -463,7 +469,7 @@ void test_gauss_points_boundary_interpolation_and_lifting() {
   DataVector interpolated_u_lower(1, 0.);
   DataVector interpolated_u_upper(1, 0.);
   for (size_t n = Spectral::minimum_number_of_points<BasisType, QuadratureType>;
-       n < Spectral::maximum_number_of_points<BasisType>; n++) {
+       n < Spectral::maximum_number_of_points<BasisType, QuadratureType>; n++) {
     CAPTURE(n);
     const auto& collocation_pts =
         Spectral::collocation_points<BasisType, QuadratureType>(n);

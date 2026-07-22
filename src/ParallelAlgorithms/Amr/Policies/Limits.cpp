@@ -16,7 +16,8 @@ namespace amr {
 Limits::Limits()
     : maximum_refinement_level_(ElementId<1>::max_refinement_level),
       maximum_resolution_(
-          Spectral::maximum_number_of_points<Spectral::Basis::Legendre>) {}
+          Spectral::maximum_number_of_points<
+              Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto>) {}
 
 Limits::Limits(
     const std::optional<std::array<size_t, 2>>& refinement_level_bounds,
@@ -30,10 +31,11 @@ Limits::Limits(
                                     : ElementId<1>::max_refinement_level),
       minimum_resolution_(
           resolution_bounds.has_value() ? resolution_bounds.value()[0] : 1),
-      maximum_resolution_(
-          resolution_bounds.has_value()
-              ? resolution_bounds.value()[1]
-              : Spectral::maximum_number_of_points<Spectral::Basis::Legendre>),
+      maximum_resolution_(resolution_bounds.has_value()
+                              ? resolution_bounds.value()[1]
+                              : Spectral::maximum_number_of_points<
+                                    Spectral::Basis::Legendre,
+                                    Spectral::Quadrature::GaussLobatto>),
       error_beyond_limits_(error_beyond_limits) {
   if (minimum_refinement_level_ > ElementId<1>::max_refinement_level) {
     PARSE_ERROR(context,
@@ -60,24 +62,28 @@ Limits::Limits(
                              "' cannot be smaller than '1'.");
   }
   if (minimum_resolution_ >
-      Spectral::maximum_number_of_points<Spectral::Basis::Legendre>) {
-    PARSE_ERROR(
-        context,
-        "NumGridPoints lower bound '" + std::to_string(minimum_resolution_) +
-            "' cannot be larger than '" +
-            std::to_string(
-                Spectral::maximum_number_of_points<Spectral::Basis::Legendre>) +
-            "'.");
+      Spectral::maximum_number_of_points<Spectral::Basis::Legendre,
+                                         Spectral::Quadrature::GaussLobatto>) {
+    PARSE_ERROR(context,
+                "NumGridPoints lower bound '" +
+                    std::to_string(minimum_resolution_) +
+                    "' cannot be larger than '" +
+                    std::to_string(Spectral::maximum_number_of_points<
+                                   Spectral::Basis::Legendre,
+                                   Spectral::Quadrature::GaussLobatto>) +
+                    "'.");
   }
   if (maximum_resolution_ >
-      Spectral::maximum_number_of_points<Spectral::Basis::Legendre>) {
-    PARSE_ERROR(
-        context,
-        "NumGridPoints upper bound '" + std::to_string(maximum_resolution_) +
-            "' cannot be larger than '" +
-            std::to_string(
-                Spectral::maximum_number_of_points<Spectral::Basis::Legendre>) +
-            "'.");
+      Spectral::maximum_number_of_points<Spectral::Basis::Legendre,
+                                         Spectral::Quadrature::GaussLobatto>) {
+    PARSE_ERROR(context,
+                "NumGridPoints upper bound '" +
+                    std::to_string(maximum_resolution_) +
+                    "' cannot be larger than '" +
+                    std::to_string(Spectral::maximum_number_of_points<
+                                   Spectral::Basis::Legendre,
+                                   Spectral::Quadrature::GaussLobatto>) +
+                    "'.");
   }
   if (minimum_refinement_level_ > maximum_refinement_level_) {
     PARSE_ERROR(context,

@@ -63,6 +63,7 @@ spectre_target_headers(
   InterpolationMatrix.hpp
   InverseWeightFunctionValues.hpp
   Legendre.hpp
+  Limits.hpp
   LinearFilteringMatrix.hpp
   LogicalCoordinates.hpp
   MaximumNumberOfPoints.hpp

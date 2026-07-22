@@ -2073,7 +2073,9 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.LogicalDerivs",
       Spectral::minimum_number_of_points<Spectral::Basis::Legendre,
                                          Spectral::Quadrature::GaussLobatto>;
   constexpr size_t max_points =
-      Spectral::maximum_number_of_points<Spectral::Basis::Legendre> / 2;
+      Spectral::maximum_number_of_points<Spectral::Basis::Legendre,
+                                         Spectral::Quadrature::GaussLobatto> /
+      2;
   for (size_t n0 = min_points; n0 <= max_points; ++n0) {
     // To keep test time reasonable we don't check all possible values.
     if (n0 > 6 and n0 != max_points) {
@@ -2251,11 +2253,19 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.PartialDerivs",
   test_partial_derivatives_hollow_cylinder<two_vars<DataVector, 3>,
                                            one_var<DataVector, 3>>();
   const size_t n0 =
-      Spectral::maximum_number_of_points<Spectral::Basis::Legendre> / 2;
+      Spectral::maximum_number_of_points<Spectral::Basis::Legendre,
+                                         Spectral::Quadrature::GaussLobatto> /
+      2;
   const size_t n1 =
-      Spectral::maximum_number_of_points<Spectral::Basis::Legendre> / 2 + 1;
+      Spectral::maximum_number_of_points<Spectral::Basis::Legendre,
+                                         Spectral::Quadrature::GaussLobatto> /
+          2 +
+      1;
   const size_t n2 =
-      Spectral::maximum_number_of_points<Spectral::Basis::Legendre> / 2 - 1;
+      Spectral::maximum_number_of_points<Spectral::Basis::Legendre,
+                                         Spectral::Quadrature::GaussLobatto> /
+          2 -
+      1;
   const Mesh<1> mesh_1d{n0, Spectral::Basis::Legendre,
                         Spectral::Quadrature::GaussLobatto};
   test_partial_derivatives_1d<two_vars<DataVector, 1>>(mesh_1d);

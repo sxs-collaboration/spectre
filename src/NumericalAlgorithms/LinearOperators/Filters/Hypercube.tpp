@@ -270,7 +270,8 @@ const Matrix& Hypercube<Dim, TagList>::filter_matrix(
       half_power_,
       make_static_cache<
           CacheRange<1_st, Spectral::maximum_number_of_points<
-                               Spectral::Basis::Legendre> +
+                               Spectral::Basis::Legendre,
+                               Spectral::Quadrature::GaussLobatto> +
                                1>,
           CacheEnumeration<Spectral::Basis, Spectral::Basis::Legendre,
                            Spectral::Basis::Chebyshev,
@@ -280,15 +281,18 @@ const Matrix& Hypercube<Dim, TagList>::filter_matrix(
                            Spectral::Quadrature::AxialSymmetry,
                            Spectral::Quadrature::SphericalSymmetry>>(
           compute_filter),
-      make_static_cache<CacheRange<
-          1_st, Spectral::maximum_number_of_points<Spectral::Basis::Fourier> +
-                    1>>([compute_filter](const size_t extents) {
+      make_static_cache<
+          CacheRange<1_st, Spectral::maximum_number_of_points<
+                               Spectral::Basis::Fourier,
+                               Spectral::Quadrature::Equiangular> +
+                               1>>([compute_filter](const size_t extents) {
         return compute_filter(extents, Spectral::Basis::Fourier,
                               Spectral::Quadrature::Equiangular);
       }),
       make_static_cache<
           CacheRange<1_st, Spectral::maximum_number_of_points<
-                               Spectral::Basis::ZernikeB1> +
+                               Spectral::Basis::ZernikeB1,
+                               Spectral::Quadrature::GaussRadauUpper> +
                                1>,
           CacheEnumeration<Spectral::Parity, Spectral::Parity::Even,
                            Spectral::Parity::Odd>>(

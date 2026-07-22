@@ -20,7 +20,7 @@ void test() {
   CAPTURE(basis);
   CAPTURE(quadrature);
   // Cannot represent the integral of a constant with a single point
-  for (size_t n = 2; n <= maximum_number_of_points<basis>; ++n) {
+  for (size_t n = 2; n <= maximum_number_of_points<basis, quadrature>; ++n) {
     const DataVector& weights_n = quadrature_weights<basis, quadrature>(n);
     const Mesh<1> mesh{n, basis, quadrature};
     const DataVector& weights_m = quadrature_weights(mesh);

@@ -57,10 +57,10 @@ void test_option_parsing() {
         "ErrorBeyondLimits: False\n";
     const auto limits =
         TestHelpers::test_creation<amr::Limits>(creation_string_3);
-    CHECK(limits ==
-          amr::Limits{
-              0, 3, 1,
-              Spectral::maximum_number_of_points<Spectral::Basis::Legendre>});
+    CHECK(limits == amr::Limits{0, 3, 1,
+                                Spectral::maximum_number_of_points<
+                                    Spectral::Basis::Legendre,
+                                    Spectral::Quadrature::GaussLobatto>});
   }
 
   {

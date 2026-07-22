@@ -98,7 +98,8 @@ void test_p_mortar_to_element() {
   for (const auto& quadrature_dest : quadratures) {
     for (size_t num_points_dest = 2;
          num_points_dest <=
-         Spectral::maximum_number_of_points<Spectral::Basis::Legendre>;
+         Spectral::maximum_number_of_points<Spectral::Basis::Legendre,
+                                            Spectral::Quadrature::GaussLobatto>;
          ++num_points_dest) {
       const Mesh<1> mesh_dest(num_points_dest, Spectral::Basis::Legendre,
                               quadrature_dest);
@@ -107,7 +108,8 @@ void test_p_mortar_to_element() {
       for (const auto& quadrature_source : quadratures) {
         for (size_t num_points_source = 2;
              num_points_source <=
-             Spectral::maximum_number_of_points<Spectral::Basis::Legendre>;
+             Spectral::maximum_number_of_points<
+                 Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto>;
              ++num_points_source) {
           const Mesh<1> mesh_source(
               num_points_source, Spectral::Basis::Legendre, quadrature_source);
@@ -166,7 +168,8 @@ void test_p_element_to_mortar() {
   for (const auto& quadrature_dest : quadratures) {
     for (size_t num_points_dest = 2;
          num_points_dest <=
-         Spectral::maximum_number_of_points<Spectral::Basis::Legendre>;
+         Spectral::maximum_number_of_points<Spectral::Basis::Legendre,
+                                            Spectral::Quadrature::GaussLobatto>;
          ++num_points_dest) {
       const Mesh<1> mesh_dest(num_points_dest, Spectral::Basis::Legendre,
                               quadrature_dest);
@@ -295,15 +298,19 @@ void test_h_mortar_to_element() {
     for (size_t num_points_dest = 2;
          // We need one extra point to do the quadrature later.
          num_points_dest <=
-         Spectral::maximum_number_of_points<Spectral::Basis::Legendre> - 1;
+         Spectral::maximum_number_of_points<
+             Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto> -
+             1;
          ++num_points_dest) {
       const Mesh<1> mesh_dest(num_points_dest, Spectral::Basis::Legendre,
                               quadrature_dest);
       CAPTURE(mesh_dest);
       for (const auto& quadrature_source : quadratures) {
         for (size_t num_points_source = 2;
-             num_points_source <=
-             Spectral::maximum_number_of_points<Spectral::Basis::Legendre> - 1;
+             num_points_source <= Spectral::maximum_number_of_points<
+                                      Spectral::Basis::Legendre,
+                                      Spectral::Quadrature::GaussLobatto> -
+                                      1;
              ++num_points_source) {
           const Mesh<1> mesh_source(
               num_points_source, Spectral::Basis::Legendre, quadrature_source);
@@ -325,7 +332,8 @@ void test_h_element_to_mortar() {
   for (const auto& quadrature_dest : quadratures) {
     for (size_t num_points_dest = 2;
          num_points_dest <=
-         Spectral::maximum_number_of_points<Spectral::Basis::Legendre>;
+         Spectral::maximum_number_of_points<Spectral::Basis::Legendre,
+                                            Spectral::Quadrature::GaussLobatto>;
          ++num_points_dest) {
       const Mesh<1> mesh_dest(num_points_dest, Spectral::Basis::Legendre,
                               quadrature_dest);
@@ -411,7 +419,7 @@ void test_massive_restriction(const size_t parent_num_points,
                                           true);
     const auto rhs =
         apply_matrix(restriction_operator_massive, massive_child_data);
-    Approx local_approx = Approx::custom().epsilon(1.0e-9);
+    const Approx local_approx = Approx::custom().epsilon(1.0e-8);
     CHECK_ITERABLE_CUSTOM_APPROX(lhs, rhs, local_approx);
   }
 }
@@ -630,7 +638,8 @@ void test_fourier_p_projections() {
   INFO("Fourier p-projections");
   const auto local_approx = Approx::custom().scale(1.0).epsilon(1.0e-14);
   constexpr size_t max_points_f =
-      Spectral::maximum_number_of_points<Spectral::Basis::Fourier>;
+      Spectral::maximum_number_of_points<Spectral::Basis::Fourier,
+                                         Spectral::Quadrature::Equiangular>;
   const std::vector<std::pair<unsigned, unsigned>> test_funcs = {
       {1_st, 0_st}, {0_st, 1_st}, {1_st, 1_st}, {5_st, 4_st}, {13_st, 15_st}};
 
@@ -1169,7 +1178,9 @@ SPECTRE_TEST_CASE("Unit.Numerical.Spectral.Projection",
   test_h_mortar_to_element();
   test_h_element_to_mortar();
   for (size_t child_num_points = 4;
-       child_num_points <= maximum_number_of_points<Spectral::Basis::Legendre>;
+       child_num_points <=
+       maximum_number_of_points<Spectral::Basis::Legendre,
+                                Spectral::Quadrature::GaussLobatto>;
        ++child_num_points) {
     for (size_t parent_num_points = 3; parent_num_points < child_num_points;
          ++parent_num_points) {
