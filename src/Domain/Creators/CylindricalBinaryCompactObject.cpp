@@ -38,6 +38,7 @@
 #include "NumericalAlgorithms/RootFinding/QuadraticEquation.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/Spherepack.hpp"
 #include "Options/ParseError.hpp"
+#include "Utilities/MakeArray.hpp"
 
 namespace {
 std::array<double, 3> rotate_to_z_axis(const std::array<double, 3> input) {
@@ -1144,8 +1145,7 @@ Domain<3> CylindricalBinaryCompactObject::create_domain() const {
                                first_cb_side_block);
 
   auto outer_sh_map = make_spherical_shell_coord_map(
-      inner_radius_C, outer_radius_,
-      rotate_from_z_to_x_axis(center_cutting_plane));
+      inner_radius_C, outer_radius_, make_array<3>(0.0));
 
   DirectionMap<3, BlockNeighbors<3>> outer_sh_neighbors;
   outer_sh_neighbors.emplace(
