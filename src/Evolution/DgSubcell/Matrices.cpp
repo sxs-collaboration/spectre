@@ -29,6 +29,7 @@
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Numeric.hpp"
+#include "Utilities/RuntimeCache.hpp"
 #include "Utilities/StaticCache.hpp"
 
 namespace evolution::dg::subcell::fd {
@@ -421,6 +422,144 @@ const Matrix& reconstruction_matrix(const Mesh<Dim>& dg_mesh,
   };
 }
 
+const Matrix& reconstruction_matrix(const Mesh<1>& dg_mesh,
+                                    const size_t subcell_extents,
+                                    const Spectral::Parity parity) {
+  ASSERT(dg_mesh.basis(0) == Spectral::Basis::ZernikeB1 and
+             dg_mesh.quadrature(0) == Spectral::Quadrature::GaussRadauUpper,
+         "reconstruction_matrix with a Parity argument only supports "
+         "ZernikeB1 with GaussRadauUpper quadrature, but got "
+             << dg_mesh);
+  ASSERT(parity != Spectral::Parity::Uninitialized,
+         "Parity must be set when using ZernikeB1");
+  ASSERT(subcell_extents >= dg_mesh.extents(0),
+         "Subcell extents ("
+             << subcell_extents << ") must be >= DG extents ("
+             << dg_mesh.extents(0)
+             << ") for ZernikeB1 reconstruction to be well-posed (P^T P "
+                "would be singular)");
+
+  static const auto cache = make_runtime_cache<
+      CacheRange<
+          Spectral::minimum_number_of_points<
+              Spectral::Basis::ZernikeB1,
+              Spectral::Quadrature::GaussRadauUpper>,
+          Spectral::maximum_number_of_points<Spectral::Basis::ZernikeB1> + 1>,
+      CacheRange<Spectral::minimum_number_of_points<
+                     Spectral::Basis::FiniteDifference,
+                     Spectral::Quadrature::CellCentered>,
+                 Spectral::maximum_number_of_points<
+                     Spectral::Basis::FiniteDifference> +
+                     1>,
+      CacheEnumeration<Spectral::Parity, Spectral::Parity::Even,
+                       Spectral::Parity::Odd>>(
+      [](const size_t n_dg, const size_t n_fd,
+         const Spectral::Parity local_parity) {
+        const Matrix& proj_matrix = projection_matrix(
+            Mesh<1>{n_dg, Spectral::Basis::ZernikeB1,
+                    Spectral::Quadrature::GaussRadauUpper},
+            n_fd, Spectral::Quadrature::CellCentered, local_parity);
+
+        // Compute 2 P^T P (n_dg x n_dg)
+        Matrix two_pt_p(n_dg, n_dg, 0.0);
+        dgemm_<true>('T', 'N', n_dg, n_dg, n_fd, 2.0, proj_matrix.data(),
+                     proj_matrix.spacing(), proj_matrix.data(),
+                     proj_matrix.spacing(), 0.0, two_pt_p.data(),
+                     two_pt_p.spacing());
+
+        // RHS top block: 2 P^T (n_dg x n_fd)
+        Matrix rhs_top(n_dg, n_fd);
+        for (size_t k = 0; k < n_fd; ++k) {
+          for (size_t l = 0; l < n_dg; ++l) {
+            rhs_top(l, k) = 2.0 * proj_matrix(k, l);
+          }
+        }
+
+        // For odd parity, the conservation constraint
+        //
+        //   sum_i w_i^DG u(r_i^DG) = sum_j w_j^FD u(r_j^FD)
+        //
+        // is inconsistent because the DG quadrature points are the roots of
+        // Pi^{m=0}(2*n_dg, r) = Q^0_{2*n_dg} - Q^0_{2*n_dg-2}, which are
+        // optimised for integrating even-parity (m=0) functions Q^0_k. They
+        // are not accurate for odd-parity (m=1) integrands Q^1_k.
+        //
+        // For example, with n_dg=2 (points 0.447, 1.0; weights 0.833, 0.167)
+        // and u(r) = r (the lowest odd-parity basis function):
+        //
+        //   sum_i w_i^DG * r_i  =  0.0787   (DG quadrature, inaccurate for m=1)
+        //   sum_j w_j^FD * r_j  =  0.5000   (6th-order FD, = int_0^1 r dr)
+        //
+        // Imposing this as a constraint via a Lagrange multiplier forces R to
+        // satisfy a false equation, corrupting the reconstruction. The pure
+        // pseudoinverse R = (2 P^T P)^{-1} 2P^T does not impose a conservation
+        // constraint and still satisfies R P = I exactly by construction.
+        if (local_parity == Spectral::Parity::Odd) {
+          // Use the pure pseudoinverse R = (P^T P)^{-1} P^T, which satisfies
+          // R . P = (P^T P)^{-1} (P^T P) = I exactly without relying on any
+          // conservation constraint.
+          const Matrix inv_two_pt_p = inv(two_pt_p);
+          Matrix result(n_dg, n_fd);
+          dgemm_<true>('N', 'N', n_dg, n_fd, n_dg, 1.0, inv_two_pt_p.data(),
+                       inv_two_pt_p.spacing(), rhs_top.data(),
+                       rhs_top.spacing(), 0.0, result.data(), result.spacing());
+          return result;
+        }
+
+        // Even parity: the conservation constraint is self-consistent (see
+        // discussion above), so use Lagrange-constrained least-squares.
+        const size_t aug_size = n_dg + 1;
+        Matrix lhs(aug_size, aug_size, 0.0);
+        for (size_t l = 0; l < n_dg; ++l) {
+          for (size_t j = 0; j < n_dg; ++j) {
+            lhs(l, j) = two_pt_p(l, j);
+          }
+        }
+
+        // Lagrange multiplier row and column (conservation constraint)
+        const DataVector& dg_weights =
+            Spectral::quadrature_weights<Spectral::Basis::ZernikeB1,
+                                         Spectral::Quadrature::GaussRadauUpper>(
+                n_dg);
+        for (size_t i = 0; i < n_dg; ++i) {
+          lhs(i, n_dg) = -dg_weights[i];
+          lhs(n_dg, i) = dg_weights[i];
+        }
+
+        // Fill augmented RHS: rows 0..n_dg-1 hold 2 P^T, row n_dg holds the
+        // FD integration weights. The ZernikeB1 physical domain is [0,1], so
+        // the cell width is 1/n_fd (not 2/n_fd as for Legendre on [-1,1]).
+        Matrix rhs(aug_size, n_fd);
+        for (size_t k = 0; k < n_fd; ++k) {
+          for (size_t l = 0; l < n_dg; ++l) {
+            rhs(l, k) = rhs_top(l, k);
+          }
+        }
+        const double delta = 1.0 / static_cast<double>(n_fd);
+        for (size_t i = 0; i < n_fd; ++i) {
+          rhs(n_dg, i) =
+              delta * get_sixth_order_integration_coefficient(n_fd, i);
+        }
+
+        const Matrix inv_lhs = inv(lhs);
+        Matrix full_recons(aug_size, n_fd);
+        dgemm_<true>('N', 'N', inv_lhs.rows(), n_fd, inv_lhs.columns(), 1.0,
+                     inv_lhs.data(), inv_lhs.spacing(), rhs.data(),
+                     rhs.spacing(), 0.0, full_recons.data(),
+                     full_recons.spacing());
+        // Drop the Lagrange multiplier row
+        Matrix result(n_dg, n_fd);
+        for (size_t i = 0; i < n_dg; ++i) {
+          for (size_t j = 0; j < n_fd; ++j) {
+            result(i, j) = full_recons(i, j);
+          }
+        }
+        return result;
+      });
+
+  return cache(dg_mesh.extents(0), subcell_extents, parity);
+}
+
 const Matrix& projection_matrix(const Mesh<1>& dg_mesh,
                                 const size_t subcell_extents,
                                 const size_t ghost_zone_size, const Side side) {
@@ -432,42 +571,40 @@ const Matrix& projection_matrix(const Mesh<1>& dg_mesh,
   ASSERT(ghost_zone_size <= max_ghost_zone_size and ghost_zone_size >= 2,
          "ghost_zone_size must be in [2, " << max_ghost_zone_size
                                            << " ] but got " << ghost_zone_size);
-  static const auto cache =
-      make_static_cache<
-          CacheRange<
-              Spectral::minimum_number_of_points<
-                  Spectral::Basis::Legendre,
-                  Spectral::Quadrature::GaussLobatto>,
-              Spectral::maximum_number_of_points<Spectral::Basis::Legendre> +
-                  1>,
-          CacheRange<Spectral::minimum_number_of_points<
-                         Spectral::Basis::FiniteDifference,
-                         Spectral::Quadrature::CellCentered>,
-                     Spectral::maximum_number_of_points<
-                         Spectral::Basis::FiniteDifference> +
-                         1>,
-          CacheRange<2_st, max_ghost_zone_size + 1>,
-          CacheEnumeration<Spectral::Quadrature, Spectral::Quadrature::Gauss,
-                           Spectral::Quadrature::GaussLobatto>,
-          CacheEnumeration<Side, Side::Lower, Side::Upper>>(
-          [](const size_t local_num_dg_points, const size_t local_num_fd_points,
-             const size_t local_ghost_zone_size,
-             const Spectral::Quadrature dg_quadrature, const Side local_side) {
-            const DataVector& fd_points = Spectral::collocation_points<
-                Spectral::Basis::FiniteDifference,
-                Spectral::Quadrature::CellCentered>(local_num_fd_points);
-            DataVector target_points(local_ghost_zone_size);
-            for (size_t i = 0; i < local_ghost_zone_size; ++i) {
-              target_points[i] = fd_points[local_side == Side::Lower
-                                               ? i
-                                               : (local_num_fd_points -
-                                                  local_ghost_zone_size + i)];
-            }
-            return Spectral::interpolation_matrix(
-                Mesh<1>{local_num_dg_points, Spectral::Basis::Legendre,
-                        dg_quadrature},
-                target_points);
-          });
+  static const auto cache = make_static_cache<
+      CacheRange<
+          Spectral::minimum_number_of_points<
+              Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto>,
+          Spectral::maximum_number_of_points<Spectral::Basis::Legendre> + 1>,
+      CacheRange<Spectral::minimum_number_of_points<
+                     Spectral::Basis::FiniteDifference,
+                     Spectral::Quadrature::CellCentered>,
+                 Spectral::maximum_number_of_points<
+                     Spectral::Basis::FiniteDifference> +
+                     1>,
+      CacheRange<2_st, max_ghost_zone_size + 1>,
+      CacheEnumeration<Spectral::Quadrature, Spectral::Quadrature::Gauss,
+                       Spectral::Quadrature::GaussLobatto>,
+      CacheEnumeration<Side, Side::Lower, Side::Upper>>(
+      [](const size_t local_num_dg_points, const size_t local_num_fd_points,
+         const size_t local_ghost_zone_size,
+         const Spectral::Quadrature dg_quadrature, const Side local_side) {
+        const DataVector& fd_points =
+            Spectral::collocation_points<Spectral::Basis::FiniteDifference,
+                                         Spectral::Quadrature::CellCentered>(
+                local_num_fd_points);
+        DataVector target_points(local_ghost_zone_size);
+        for (size_t i = 0; i < local_ghost_zone_size; ++i) {
+          target_points[i] = fd_points[local_side == Side::Lower
+                                           ? i
+                                           : (local_num_fd_points -
+                                              local_ghost_zone_size + i)];
+        }
+        return Spectral::interpolation_matrix(
+            Mesh<1>{local_num_dg_points, Spectral::Basis::Legendre,
+                    dg_quadrature},
+            target_points);
+      });
   return cache(dg_mesh.extents(0), subcell_extents, ghost_zone_size,
                dg_mesh.quadrature(0), side);
 }

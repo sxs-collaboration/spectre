@@ -11,10 +11,13 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Matrix.hpp"
 #include "Evolution/DgSubcell/Matrices.hpp"
+#include "NumericalAlgorithms/Spectral/Basis.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
+#include "NumericalAlgorithms/Spectral/Parity.hpp"
 #include "Utilities/Blas.hpp"
 #include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
+#include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeArray.hpp"
@@ -26,7 +29,17 @@ void reconstruct_impl(
     gsl::span<double> dg_u,
     const gsl::span<const double> subcell_u_times_projected_det_jac,
     const Mesh<Dim>& dg_mesh, const Index<Dim>& subcell_extents,
-    const ReconstructionMethod reconstruction_method) {
+    const ReconstructionMethod reconstruction_method,
+    const Spectral::Parity parity) {
+  if (dg_mesh.basis(0) == Spectral::Basis::ZernikeB1) {
+    ASSERT(parity != Spectral::Parity::Uninitialized,
+           "Parity must be set when using ZernikeB1");
+    if (reconstruction_method == ReconstructionMethod::AllDimsAtOnce) {
+      ERROR(
+          "AllDimsAtOnce reconstruction is not supported for ZernikeB1 "
+          "meshes; use DimByDim");
+    }
+  }
   const size_t number_of_components =
       dg_u.size() / dg_mesh.number_of_grid_points();
   if (reconstruction_method == ReconstructionMethod::AllDimsAtOnce) {
@@ -46,8 +59,13 @@ void reconstruct_impl(
     const Matrix empty{};
     auto recons_matrices = make_array<Dim>(std::cref(empty));
     for (size_t d = 0; d < Dim; d++) {
-      gsl::at(recons_matrices, d) = std::cref(reconstruction_matrix(
-          dg_mesh.slice_through(d), Index<1>{subcell_extents[d]}));
+      if (dg_mesh.basis(d) == Spectral::Basis::ZernikeB1) {
+        gsl::at(recons_matrices, d) = std::cref(reconstruction_matrix(
+            dg_mesh.slice_through(d), subcell_extents[d], parity));
+      } else {
+        gsl::at(recons_matrices, d) = std::cref(reconstruction_matrix(
+            dg_mesh.slice_through(d), Index<1>{subcell_extents[d]}));
+      }
     }
     DataVector result{dg_u.data(), dg_u.size()};
     const DataVector u{
@@ -63,7 +81,8 @@ template <size_t Dim>
 void reconstruct(const gsl::not_null<DataVector*> dg_u,
                  const DataVector& subcell_u_times_projected_det_jac,
                  const Mesh<Dim>& dg_mesh, const Index<Dim>& subcell_extents,
-                 const ReconstructionMethod reconstruction_method) {
+                 const ReconstructionMethod reconstruction_method,
+                 const Spectral::Parity parity) {
   ASSERT(subcell_u_times_projected_det_jac.size() == subcell_extents.product(),
          "Incorrect subcell size of u: "
              << subcell_u_times_projected_det_jac.size() << " but should be "
@@ -73,17 +92,18 @@ void reconstruct(const gsl::not_null<DataVector*> dg_u,
       gsl::span<double>{dg_u->data(), dg_u->size()},
       gsl::span<const double>{subcell_u_times_projected_det_jac.data(),
                               subcell_u_times_projected_det_jac.size()},
-      dg_mesh, subcell_extents, reconstruction_method);
+      dg_mesh, subcell_extents, reconstruction_method, parity);
 }
 
 template <size_t Dim>
 DataVector reconstruct(const DataVector& subcell_u_times_projected_det_jac,
                        const Mesh<Dim>& dg_mesh,
                        const Index<Dim>& subcell_extents,
-                       const ReconstructionMethod reconstruction_method) {
+                       const ReconstructionMethod reconstruction_method,
+                       const Spectral::Parity parity) {
   DataVector dg_u{dg_mesh.number_of_grid_points()};
   reconstruct(&dg_u, subcell_u_times_projected_det_jac, dg_mesh,
-              subcell_extents, reconstruction_method);
+              subcell_extents, reconstruction_method, parity);
   return dg_u;
 }
 
@@ -92,14 +112,14 @@ DataVector reconstruct(const DataVector& subcell_u_times_projected_det_jac,
 #define INSTANTIATION(r, data)                                                 \
   template DataVector reconstruct(const DataVector&, const Mesh<DIM(data)>&,   \
                                   const Index<DIM(data)>&,                     \
-                                  ReconstructionMethod);                       \
+                                  ReconstructionMethod, Spectral::Parity);     \
   template void reconstruct(gsl::not_null<DataVector*>, const DataVector&,     \
                             const Mesh<DIM(data)>&, const Index<DIM(data)>&,   \
-                            ReconstructionMethod);                             \
+                            ReconstructionMethod, Spectral::Parity);           \
   template void detail::reconstruct_impl(                                      \
       gsl::span<double> dg_u, const gsl::span<const double>,                   \
       const Mesh<DIM(data)>& dg_mesh, const Index<DIM(data)>& subcell_extents, \
-      ReconstructionMethod);
+      ReconstructionMethod, Spectral::Parity);
 
 GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
 

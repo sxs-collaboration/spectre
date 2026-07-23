@@ -51,7 +51,8 @@ void ResizeAndComputePrims<OrderedListOfRecoverySchemes>::apply(
               &get(get<hydro::Tags::Pressure<DataVector>>(*prim_vars))),
           get(fd_pressure), dg_mesh, subcell_mesh.extents(),
           // Always do dim-by-dim reconstruction because it's fast
-          evolution::dg::subcell::fd ::ReconstructionMethod::DimByDim);
+          evolution::dg::subcell::fd::ReconstructionMethod::DimByDim,
+          Spectral::Parity::Even);
     }
 
     // Compute the spatial metric, inverse spatial metric, and sqrt{det{spatial
