@@ -58,7 +58,7 @@ using namespace std::string_literals;
 constexpr size_t volume_dim = 3;
 constexpr size_t num_blocks = 4;
 
-using TagList = ylm::TensorYlm::filter_detail::sw_vars_list<Frame::Inertial>;
+using TagList = ylm::TensorYlm::filter_detail::csw_vars_list<Frame::Inertial>;
 using SphericalShellFilter = Filters::SphericalShell<TagList>;
 
 std::vector<std::string> domain_block_names() {
