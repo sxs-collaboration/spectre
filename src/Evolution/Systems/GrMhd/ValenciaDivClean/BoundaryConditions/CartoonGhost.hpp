@@ -74,12 +74,7 @@ class CartoonGhost final : public BoundaryCondition,
   using Flux = ::Tags::Flux<T, tmpl::size_t<3>, Frame::Inertial>;
 
  public:
-  using options = tmpl::list<>;
-  static constexpr Options::String help{
-      "Sets FD ghost data based off tensor-component parity. This should only "
-      "be used with cartoon evolution and is automatically handled by the "
-      "domain creators. This class should never be specified as a boundary "
-      "condition in an input file."};
+  static constexpr bool factory_creatable = false;
 
   CartoonGhost() = default;
   CartoonGhost(CartoonGhost&&) = default;
