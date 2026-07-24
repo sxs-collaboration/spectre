@@ -1,10 +1,12 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-set(LIBRARY "Test_ScalarTensorAnalyticData")
+set(LIBRARY "Test_STAnalyticDataScalarField")
 
 set(LIBRARY_SOURCES
-  Test_KerrSphericalHarmonic.cpp
+  Test_Inverser.cpp
+  Test_SuperposedInverser.cpp
+  Test_Zero.cpp
   )
 
 add_test_library(${LIBRARY} "${LIBRARY_SOURCES}")
@@ -14,10 +16,6 @@ target_link_libraries(
   PRIVATE
   DataStructures
   ErrorHandling
-  GeneralRelativitySolutions
-  GhScalarTensorAnalyticData
-  ScalarTensorAnalyticData
-  Options
+  Framework
+  STAnalyticDataScalarField
 )
-
-add_subdirectory(ScalarField)

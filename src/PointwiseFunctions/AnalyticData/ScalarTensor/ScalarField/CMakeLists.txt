@@ -1,14 +1,16 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-set(LIBRARY ScalarTensorAnalyticData)
+set(LIBRARY STAnalyticDataScalarField)
 
 add_spectre_library(${LIBRARY})
 
 spectre_target_sources(
   ${LIBRARY}
   PRIVATE
-  KerrSphericalHarmonic.cpp
+  Inverser.cpp
+  SuperposedInverser.cpp
+  Zero.cpp
   )
 
 spectre_target_headers(
@@ -16,7 +18,10 @@ spectre_target_headers(
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
   AnalyticData.hpp
-  KerrSphericalHarmonic.hpp
+  Factory.hpp
+  Inverser.hpp
+  SuperposedInverser.hpp
+  Zero.hpp
   )
 
 target_link_libraries(
@@ -24,12 +29,8 @@ target_link_libraries(
   PUBLIC
   DataStructures
   ErrorHandling
-  GeneralRelativitySolutions
   CurvedScalarWave
   InitialDataUtilities
   Options
   Serialization
-  SpinWeightedSphericalHarmonics
   )
-
-add_subdirectory(ScalarField)
