@@ -32,6 +32,8 @@ set(_INPUT_FILE_TEST_ENV_VARS "")
 list(APPEND _INPUT_FILE_TEST_ENV_VARS "ASAN_OPTIONS=detect_leaks=0")
 # - Set PYTHONPATH to find Python modules
 list(APPEND _INPUT_FILE_TEST_ENV_VARS "PYTHONPATH=${PYTHONPATH}")
+# - Disable OpenMP because it causes segfaults
+list(APPEND _INPUT_FILE_TEST_ENV_VARS "OMP_NUM_THREADS=1")
 
 function(add_single_input_file_test)
   cmake_parse_arguments(
