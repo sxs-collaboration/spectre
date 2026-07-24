@@ -23,6 +23,7 @@
 #include "Domain/CoordinateMaps/Affine.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.tpp"
+#include "Domain/CoordinateMaps/Frustum.hpp"
 #include "Domain/CoordinateMaps/Identity.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.tpp"
@@ -30,17 +31,21 @@
 #include "Domain/Creators/Tags/Domain.hpp"
 #include "Domain/Creators/Tags/FunctionsOfTime.hpp"
 #include "Domain/Domain.hpp"
+#include "Domain/FunctionsOfTime/PiecewisePolynomial.hpp"
+#include "Domain/FunctionsOfTime/Tags.hpp"
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Tags.hpp"
 #include "Domain/TagsTimeDependent.hpp"
 #include "Evolution/BoundaryCorrection.hpp"
 #include "Evolution/BoundaryCorrectionTags.hpp"
 #include "Evolution/DgSubcell/CellCenteredFlux.hpp"
+#include "Evolution/DgSubcell/GhostZoneInverseJacobian.hpp"
 #include "Evolution/DgSubcell/Mesh.hpp"
 #include "Evolution/DgSubcell/SliceData.hpp"
 #include "Evolution/DgSubcell/Tags/CellCenteredFlux.hpp"
 #include "Evolution/DgSubcell/Tags/Coordinates.hpp"
 #include "Evolution/DgSubcell/Tags/GhostDataForReconstruction.hpp"
+#include "Evolution/DgSubcell/Tags/GhostZoneInverseJacobian.hpp"
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
 #include "Evolution/DgSubcell/Tags/OnSubcellFaces.hpp"
 #include "Evolution/DgSubcell/Tags/ReconstructionOrder.hpp"
@@ -98,6 +103,14 @@ struct DummyEvolutionMetaVars {
   };
 };
 
+template <bool aligned>
+using CoordinateMap = tmpl::conditional_t<
+    aligned,
+    domain::CoordinateMaps::ProductOf3Maps<domain::CoordinateMaps::Affine,
+                                           domain::CoordinateMaps::Affine,
+                                           domain::CoordinateMaps::Affine>,
+    domain::CoordinateMaps::Frustum>;
+
 template <size_t Dim, typename... Maps, typename Solution>
 auto face_centered_gr_tags(
     const Mesh<Dim>& subcell_mesh, const double time,
@@ -130,29 +143,41 @@ auto face_centered_gr_tags(
   return face_centered_gr_vars;
 }
 
+template <bool AlignedCoordinates>
 std::array<double, 5> test(const size_t num_dg_pts,
                            const ::fd::DerivativeOrder fd_derivative_order,
                            std::optional<double> expansion_velocity) {
   using flux_tags =
       db::wrap_tags_in<::Tags::Flux, typename System::flux_variables,
                        tmpl::size_t<3>, Frame::Inertial>;
-  using Affine = domain::CoordinateMaps::Affine;
-  using Affine3D =
-      domain::CoordinateMaps::ProductOf3Maps<Affine, Affine, Affine>;
-  const Affine affine_map{-1.0, 1.0, 1.0, 15.0};
+
+  CoordinateMap<AlignedCoordinates> coordinate_map;
+  if constexpr (AlignedCoordinates) {
+    using Affine = domain::CoordinateMaps::Affine;
+    using Affine3D =
+        domain::CoordinateMaps::ProductOf3Maps<Affine, Affine, Affine>;
+    const Affine affine_map{-1.0, 1.0, 1.0, 15.0};
+    coordinate_map = Affine3D{affine_map, affine_map, affine_map};
+  } else {
+    const std::array<std::array<double, 2>, 4> face_vertices{
+        {{{-5., -5.}}, {{5., 5.}}, {{-3., -3.}}, {{3., 3.}}}};
+    coordinate_map = domain::CoordinateMaps::Frustum(
+        face_vertices, -2., 4., OrientationMap<3>::create_aligned());
+  }
+
   std::vector<Block<3>> blocks;
   blocks.emplace_back(Block<3>(
       domain::make_coordinate_map_base<Frame::BlockLogical, Frame::Inertial>(
-          Affine3D{affine_map, affine_map, affine_map}),
+          coordinate_map),
       0, {}));
   const auto element = domain::create_initial_element(
-      ElementId<3>{0, {SegmentId{2, 2}, SegmentId{2, 2}, SegmentId{2, 2}}},
+      ElementId<3>{0, {SegmentId{3, 2}, SegmentId{3, 2}, SegmentId{3, 2}}},
       blocks,
       std::vector<std::array<size_t, 3>>{std::array<size_t, 3>{{3, 3, 3}}});
   const ElementMap<3, Frame::Grid> element_map{
       element.id(),
       domain::make_coordinate_map_base<Frame::BlockLogical, Frame::Grid>(
-          Affine3D{affine_map, affine_map, affine_map})};
+          coordinate_map)};
   const auto grid_to_inertial_map =
       domain::make_coordinate_map_base<Frame::Grid, Frame::Inertial>(
           domain::CoordinateMaps::Identity<3>{});
@@ -168,7 +193,7 @@ std::array<double, 5> test(const size_t num_dg_pts,
 
   const grmhd::Solutions::BondiMichel soln{1.0, 5.0, 0.05, 1.4, 2.0};
 
-  const double time = 0.0;
+  const double time = 0.5;
   const Mesh<3> dg_mesh{num_dg_pts, Spectral::Basis::Legendre,
                         Spectral::Quadrature::GaussLobatto};
   const Mesh<3> subcell_mesh = evolution::dg::subcell::fd::mesh(dg_mesh);
@@ -177,6 +202,14 @@ std::array<double, 5> test(const size_t num_dg_pts,
       (*grid_to_inertial_map)(element_map(logical_coordinates(subcell_mesh)));
   const auto dg_coords =
       (*grid_to_inertial_map)(element_map(logical_coordinates(dg_mesh)));
+
+  typename evolution::dg::subcell::Tags::GhostZoneInverseJacobian<3>::type
+      ghost_zone_inv_jac{};
+
+  evolution::dg::subcell::GhostZoneInverseJacobian<
+      3, grmhd::ValenciaDivClean::fd::PositivityPreservingAdaptiveOrderPrim>::
+      apply(make_not_null(&ghost_zone_inv_jac), subcell_mesh, element_map,
+            recons);
 
   Variables<typename System::spacetime_variables_tag::tags_list>
       cell_centered_spacetime_vars{subcell_mesh.number_of_grid_points()};
@@ -336,10 +369,16 @@ std::array<double, 5> test(const size_t num_dg_pts,
   Domain<3> dummy_domain{};
   typename evolution::dg::Tags::NormalCovectorAndMagnitude<3>::type
       dummy_normal_covector_and_magnitude{};
-  const double dummy_time{0.0};
+
+  // Test arbitrary function of time to ensure that the grid to inertial
+  // inverse Jacobian is applied properly to the ghost zone.
   std::unordered_map<std::string,
                      std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>
-      dummy_functions_of_time{};
+      functions_of_time{};
+  functions_of_time["translation"] =
+      std::make_unique<domain::FunctionsOfTime::PiecewisePolynomial<2>>(
+          0.0, std::array<DataVector, 3>{{{3, 0.0}, {3, -4.3}, {3, 0.0}}},
+          100.0);
 
   using CellCenteredFluxesTag = evolution::dg::subcell::Tags::CellCenteredFlux<
       typename System::flux_variables, 3>;
@@ -403,7 +442,8 @@ std::array<double, 5> test(const size_t num_dg_pts,
           Parallel::Tags::MetavariablesImpl<DummyEvolutionMetaVars>,
           CellCenteredFluxesTag,
           evolution::dg::subcell::Tags::SubcellOptions<3>,
-          evolution::dg::subcell::Tags::ReconstructionOrder<3>>,
+          evolution::dg::subcell::Tags::ReconstructionOrder<3>,
+          evolution::dg::subcell::Tags::GhostZoneInverseJacobian<3>>,
       db::AddComputeTags<
           ::domain::Tags::LogicalCoordinates<3>,
           // Compute tags for Frame::Grid quantities
@@ -463,15 +503,15 @@ std::array<double, 5> test(const size_t num_dg_pts,
                                  element_map.block_map().get_clone()},
       grid_to_inertial_map->get_clone(), std::move(dummy_domain),
       dg_mesh_velocity, div_dg_mesh_velocity,
-      dummy_normal_covector_and_magnitude, dummy_time,
-      clone_unique_ptrs(dummy_functions_of_time),
-      grmhd::Solutions::SmoothFlow{}, DummyEvolutionMetaVars{},
-      cell_centered_fluxes,
+      dummy_normal_covector_and_magnitude, time,
+      clone_unique_ptrs(functions_of_time), grmhd::Solutions::SmoothFlow{},
+      DummyEvolutionMetaVars{}, cell_centered_fluxes,
       evolution::dg::subcell::SubcellOptions{
           4.0, 1_st, 1.0e-3, 1.0e-4, false, false,
           evolution::dg::subcell::fd::ReconstructionMethod::DimByDim, false,
           std::nullopt, fd_derivative_order, 1, 1, 1},
-      typename evolution::dg::subcell::Tags::ReconstructionOrder<3>::type{});
+      typename evolution::dg::subcell::Tags::ReconstructionOrder<3>::type{},
+      ghost_zone_inv_jac);
 
   db::mutate_apply<ConservativeFromPrimitive>(make_not_null(&box));
 
@@ -531,7 +571,7 @@ std::array<double, 5> test(const size_t num_dg_pts,
            get<Tags::TildeB<>>(output_minus_expected_dt_cons_vars))))}};
 }
 
-// [[TimeOut, 10]]
+// [[TimeOut, 20]]
 SPECTRE_TEST_CASE(
     "Unit.Evolution.Systems.ValenciaDivClean.Subcell.TimeDerivative",
     "[Unit][Evolution]") {
@@ -541,17 +581,47 @@ SPECTRE_TEST_CASE(
   std::array<double, 5> second_order_error_6{};
   std::optional<double> dummy_expansion_velocity{};
   using DO = ::fd::DerivativeOrder;
-  // Note: All the high order cases are commented out because we don't yet
-  // have support for high-order FD on curved meshes.
-  for (const DO fd_do : {
-           DO::Two  // , DO::Four, DO::Six, DO::Eight, DO::Ten
-       }) {
+  // Note: This test case is successful for higher derivative orders as well,
+  // but including so many checks slows down the test case, resulting in
+  // timeouts. Since it is not explicitly necessary to test to highest order,
+  // we comment out these options.
+  for (const DO fd_do :
+       {DO::Two, DO::Four /*, DO::Six , DO::Eight, DO::Ten*/}) {
     CAPTURE(fd_do);
     // This tests sets up a cube [2,3]^3 in a Bondi-Michel spacetime and
     // verifies that the time derivative vanishes. Or, more specifically, that
     // the time derivative decreases with increasing resolution.
-    const auto five_pts_data = test(5, fd_do, dummy_expansion_velocity);
-    const auto six_pts_data = test(6, fd_do, dummy_expansion_velocity);
+    const auto five_pts_data = test<true>(5, fd_do, dummy_expansion_velocity);
+    const auto six_pts_data = test<true>(6, fd_do, dummy_expansion_velocity);
+    if (fd_do == DO::Two) {
+      second_order_error_5 = five_pts_data;
+      second_order_error_6 = six_pts_data;
+    }
+
+    for (size_t i = 0; i < five_pts_data.size(); ++i) {
+      CAPTURE(i);
+      CHECK(gsl::at(six_pts_data, i) < gsl::at(five_pts_data, i));
+      // Check that as we increase the order of the FD derivative the error
+      // decreases.
+      if (previous_error_5.has_value()) {
+        CHECK(gsl::at(five_pts_data, i) < gsl::at(previous_error_5.value(), i));
+      }
+      if (previous_error_6.has_value()) {
+        CHECK(gsl::at(six_pts_data, i) < gsl::at(previous_error_6.value(), i));
+      }
+    }
+    previous_error_5 = five_pts_data;
+    previous_error_6 = six_pts_data;
+  }
+
+  // Repeat the test with non-aligned coordinate map. Note: by DO::Ten we hit an
+  // error floor in this case. Up until this point there is rapid convergence.
+  previous_error_5 = {};
+  previous_error_6 = {};
+  for (const DO fd_do : {DO::Two, DO::Four, DO::Six /*, DO::Eight*/}) {
+    CAPTURE(fd_do);
+    const auto five_pts_data = test<false>(5, fd_do, dummy_expansion_velocity);
+    const auto six_pts_data = test<false>(6, fd_do, dummy_expansion_velocity);
     if (fd_do == DO::Two) {
       second_order_error_5 = five_pts_data;
       second_order_error_6 = six_pts_data;
@@ -579,10 +649,10 @@ SPECTRE_TEST_CASE(
     // verifies that the time derivative is the same when using no mesh
     // velocity and when using a zero mesh velocity
     std::optional<double> zero_expansion_velocity(0.0);
-    const auto data_no_mesh_velocity = test(5, DO::Two,  // DO::Four,
-                                            dummy_expansion_velocity);
-    const auto data_mesh_velocity = test(5, DO::Two,  // DO::Four,
-                                         zero_expansion_velocity);
+    const auto data_no_mesh_velocity =
+        test<true>(5, DO::Four, dummy_expansion_velocity);
+    const auto data_mesh_velocity =
+        test<true>(5, DO::Four, zero_expansion_velocity);
 
     for (size_t i = 0; i < data_no_mesh_velocity.size(); ++i) {
       CAPTURE(i);
@@ -594,17 +664,15 @@ SPECTRE_TEST_CASE(
   // Now use an expansion map.
   previous_error_5 = {};
   previous_error_6 = {};
-  for (const DO fd_do : {
-           DO::Two  // , DO::Four
-       }) {
+  for (const DO fd_do : {DO::Two, DO::Four}) {
     CAPTURE(fd_do);
     std::optional<double> expansion_velocity(0.1);
     // This tests sets up a cube [2,3]^3 in a Bondi-Michel spacetime and
     // verifies that the difference between correct and expected time
     // derivative vanishes. Or, more specifically, that
     // the time derivative decreases with increasing resolution.
-    const auto five_pts_data = test(5, fd_do, expansion_velocity);
-    const auto six_pts_data = test(6, fd_do, expansion_velocity);
+    const auto five_pts_data = test<false>(5, fd_do, expansion_velocity);
+    const auto six_pts_data = test<false>(6, fd_do, expansion_velocity);
     if (fd_do == DO::Two) {
       second_order_error_5 = five_pts_data;
       second_order_error_6 = six_pts_data;

@@ -27,6 +27,7 @@
 #include "Evolution/DgSubcell/ComputeBoundaryTerms.hpp"
 #include "Evolution/DgSubcell/CorrectPackagedData.hpp"
 #include "Evolution/DgSubcell/GetTciDecision.hpp"
+#include "Evolution/DgSubcell/GhostZoneInverseJacobian.hpp"
 #include "Evolution/DgSubcell/NeighborReconstructedFaceSolution.hpp"
 #include "Evolution/DgSubcell/NeighborTciDecision.hpp"
 #include "Evolution/DgSubcell/PerssonTci.hpp"
@@ -534,6 +535,8 @@ struct EvolutionMetavars<tmpl::list<InterpolationTargetTags...>,
           Initialization::TimeStepping<EvolutionMetavars, TimeStepperBase,
                                        false, local_time_stepping>,
           evolution::dg::Initialization::Domain<EvolutionMetavars>,
+          evolution::dg::subcell::GhostZoneInverseJacobian<
+              volume_dim, grmhd::ValenciaDivClean::fd::Tags::Reconstructor>,
           Initialization::TimeStepperHistory<EvolutionMetavars>>,
       Initialization::Actions::AddSimpleTags<
           evolution::dg::BackgroundGrVars<system, EvolutionMetavars>>,
