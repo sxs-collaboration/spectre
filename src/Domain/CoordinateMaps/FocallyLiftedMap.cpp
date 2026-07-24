@@ -16,6 +16,7 @@
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/DereferenceWrapper.hpp"
 #include "Utilities/EqualWithinRoundoff.hpp"
+#include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeWithValue.hpp"
@@ -31,7 +32,20 @@ FocallyLiftedMap<InnerMap>::FocallyLiftedMap(
       proj_center_(proj_center),
       radius_(radius),
       source_is_between_focus_and_target_(source_is_between_focus_and_target),
-      inner_map_(std::move(inner_map)) {}
+      inner_map_(std::move(inner_map)) {
+#ifdef SPECTRE_DEBUG
+  if (source_is_between_focus_and_target) {
+    const double dist_proj = std::sqrt(square(proj_center[0] - center[0]) +
+                                       square(proj_center[1] - center[1]) +
+                                       square(proj_center[2] - center[2]));
+    ASSERT(dist_proj < radius,
+           "When source_is_between_focus_and_target is true, proj_center must "
+           "be strictly inside the sphere (|proj_center - center| < radius). "
+           "Got |proj_center - center| = "
+               << dist_proj << " and radius = " << radius);
+  }
+#endif
+}
 
 template <typename InnerMap>
 template <typename T>

@@ -45,17 +45,35 @@ void scale_factor(const gsl::not_null<tt::remove_cvref_wrap_t<T>*>& result,
                    square(sphere_center[1] - proj_center[1]) +
                    square(sphere_center[2] - proj_center[2]) - square(radius);
   if (src_is_between_proj_and_target) {
-    // Here we assume that src_point is between proj_center and
-    // target_point.  There are three cases: 1) src and proj are both
-    // inside the sphere, 2) src and proj are both outside the sphere,
-    // and 3) proj is outside the sphere and src is inside the sphere.
-    // Note that a root of zero corresponds to target_point = proj_center,
-    // and a root of unity corresponds to target_point = src_point.
-    // To cover all 3 cases, we choose the smallest root that is
-    // greater than or equal to unity. This means for case 2) we are
-    // choosing the point closest to src.
+    // We want the root lambda > 1, i.e. the sphere intersection beyond
+    // src_point from proj_center (lambda=0 is proj_center, lambda=1 is
+    // src_point). The sign of c = |P−C|^2 − R^2 determines the root
+    // structure:
+    //
+    //  (1) P inside, src inside (c < 0): product of roots < 0, so one root
+    //      is positive (the far sphere wall, lambda > 1) and one is negative.
+    //      The smallest root > 0 is the correct one.
+    //
+    //  (2) P outside, src outside (c > 0), sphere beyond src: both roots are
+    //      > 1 (the two sphere-surface intersections past src). The smallest
+    //      root > 0 is the nearer intersection, which is what we want.
+    //
+    //  (3) P outside, src inside (c > 0): roots are lambda in (0,1) and
+    //      lambda>1; threshold 0 would return the wrong root. However,
+    //      FocallyLiftedMap asserts that proj_center is inside the sphere
+    //      whenever src_is_between_proj_and_target=true, so c < 0 always
+    //      holds for valid maps and this case never arises.
+    //
+    //  (4) P inside, src outside (c < 0, out-of-domain): one root is in
+    //      (0,1) and one is negative — no root >= 1 exists. We use threshold
+    //      0 (not 1) so that the positive root is returned rather than
+    //      crashing, giving graceful behavior when the map is evaluated at a
+    //      point outside the source domain.
+    //
+    // Cases (1) and (2) are the valid in-domain configurations; threshold 0
+    // handles both correctly and also gives graceful behavior for case (4).
     *result = smallest_root_greater_than_value_within_roundoff(
-        a, b, make_with_value<ReturnType>(a, c), 1.0);
+        a, b, make_with_value<ReturnType>(a, c), 0.0);
   } else {
     // Here we assume that target_point is between proj_center and
     // src_point. There are three cases: 1) proj is inside the sphere
