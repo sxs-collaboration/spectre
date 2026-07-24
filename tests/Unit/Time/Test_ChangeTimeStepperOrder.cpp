@@ -34,6 +34,7 @@
 #include "Time/ChangeTimeStepperOrder.hpp"
 #include "Time/ChangeTimeStepperOrder.tpp"
 #include "Time/ChooseLtsStepSize.hpp"
+#include "Time/LtsMode.hpp"
 #include "Time/RecordTimeStepperData.hpp"
 #include "Time/RecordTimeStepperData.tpp"
 #include "Time/Slab.hpp"
@@ -42,6 +43,7 @@
 #include "Time/StepperErrorEstimate.hpp"
 #include "Time/Tags/AdaptiveSteppingDiagnostics.hpp"
 #include "Time/Tags/HistoryEvolvedVariables.hpp"
+#include "Time/Tags/LtsMode.hpp"
 #include "Time/Tags/LtsStepChoosers.hpp"
 #include "Time/Tags/MinimumTimeStep.hpp"
 #include "Time/Tags/StepperErrorTolerancesCompute.hpp"
@@ -361,7 +363,7 @@ double run(std::unique_ptr<LtsTimeStepper> time_stepper, const double tolerance,
 
   auto box = db::create<
       db::AddSimpleTags<
-          ::Parallel::Tags::MetavariablesImpl<Metavariables>,
+          ::Parallel::Tags::MetavariablesImpl<Metavariables>, Tags::LtsMode,
           ::Tags::ConcreteTimeStepper<LtsTimeStepper>,
           ::Tags::EventsAndTriggers<Triggers::WhenToCheck::AtSlabs>,
           Tags::VariableOrderAlgorithm, ::Tags::TimeStepId,
@@ -373,8 +375,8 @@ double run(std::unique_ptr<LtsTimeStepper> time_stepper, const double tolerance,
           time_stepper_ref_tags<LtsTimeStepper>,
           ::Tags::StepperErrorEstimatesEnabledCompute<true>,
           ::Tags::StepperErrorTolerancesCompute<System::variables_tag, true>>>(
-      Metavariables{}, std::move(time_stepper), EventsAndTriggers{},
-      VariableOrderAlgorithm(0.1), initial_time_step_id,
+      Metavariables{}, LtsMode::Conservative, std::move(time_stepper),
+      EventsAndTriggers{}, VariableOrderAlgorithm(0.1), initial_time_step_id,
       time_stepper->next_time_id(initial_time_step_id, initial_time_step),
       initial_time_step, slab.start().value(), ::AdaptiveSteppingDiagnostics{},
       std::move(step_choosers), minimum_time_step, std::move(initial_vars),

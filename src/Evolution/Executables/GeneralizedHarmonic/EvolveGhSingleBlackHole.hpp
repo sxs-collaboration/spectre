@@ -284,11 +284,8 @@ struct EvolutionMetavars : public GeneralizedHarmonicTemplateBase<3, UseLts> {
                   evolution::Actions::RunEventsAndTriggers<
                       Triggers::WhenToCheck::AtSlabs>,
                   Actions::ChangeSlabSize,
-                  std::conditional_t<
-                      local_time_stepping,
-                      evolution::dg::Actions::ChangeFixedLtsRatio,
-                      tmpl::list<>>,
-                  step_actions, Actions::MutateApply<AdvanceTime<>>,
+                  evolution::dg::Actions::ChangeFixedLtsRatio, step_actions,
+                  Actions::MutateApply<AdvanceTime<>>,
                   PhaseControl::Actions::ExecutePhaseChange>>>,
           Parallel::PhaseActions<
               Parallel::Phase::PostFailureCleanup,
@@ -325,14 +322,9 @@ struct EvolutionMetavars : public GeneralizedHarmonicTemplateBase<3, UseLts> {
                         get_non_sequential_target_tags<
                             interpolation_target_tags>,
                     tmpl::bind<intrp::Tags::PointInfo, tmpl::_1,
-                               tmpl::pin<tmpl::size_t<volume_dim>>>>,
-                tmpl::conditional_t<
-                    local_time_stepping,
-                    tmpl::list<
-                        evolution::dg::Tags::ChangeFixedLtsRatio::
-                            NumberOfExpectedMessages,
-                        evolution::dg::Tags::ChangeFixedLtsRatio::NewStepSize>,
-                    tmpl::list<>>>,
+                               tmpl::pin<tmpl::size_t<volume_dim>>>>>,
+            evolution::dg::Tags::ChangeFixedLtsRatio::NumberOfExpectedMessages,
+            evolution::dg::Tags::ChangeFixedLtsRatio::NewStepSize,
             Tags::FixedLtsRatio,
             Parallel::Tags::Section<gh_dg_element_array,
                                     evolution::dg::Tags::EqualRateRegionId>,
