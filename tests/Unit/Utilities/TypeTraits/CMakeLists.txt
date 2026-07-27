@@ -23,7 +23,6 @@ set(LIBRARY_SOURCES
   Test_IsMaplike.cpp
   Test_IsStdArrayOfSize.cpp
   Test_IsStreamable.cpp
-  Test_RemoveReferenceWrapper.cpp
   )
 
 add_test_library(${LIBRARY} "${LIBRARY_SOURCES}")

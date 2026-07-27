@@ -8,7 +8,6 @@
 
 #include <array>
 #include <complex>
-#include <functional>
 #include <type_traits>
 #include <vector>
 
@@ -160,14 +159,6 @@ struct NumberOfPoints<std::vector<T>> {
                     [&](const T& t) { return number_of_points(t) == points; }),
         "Inconsistent number of points in vector entries.");
     return points;
-  }
-};
-
-template <typename T>
-struct NumberOfPoints<std::reference_wrapper<T>> {
-  static SPECTRE_ALWAYS_INLINE size_t apply(
-      const std::reference_wrapper<T>& input) {
-    return number_of_points(input.get());
   }
 };
 

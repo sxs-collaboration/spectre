@@ -26,6 +26,5 @@ spectre_target_headers(
   IsStdArray.hpp
   IsStdArrayOfSize.hpp
   IsStreamable.hpp
-  RemoveReferenceWrapper.hpp
   TypeTraits.hpp
   )
