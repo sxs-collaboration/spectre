@@ -1034,11 +1034,7 @@ bool operator!=(const Wedge<Dim>& lhs, const Wedge<Dim>& rhs) {
 
 GENERATE_INSTANTIATIONS(INSTANTIATE_DIM, (2, 3))
 
-GENERATE_INSTANTIATIONS(
-    INSTANTIATE_DTYPE, (2, 3),
-    (double, DataVector,
-     std::reference_wrapper<const double>,
-     std::reference_wrapper<const DataVector>))
+GENERATE_INSTANTIATIONS(INSTANTIATE_DTYPE, (2, 3), (double, DataVector))
 
 GENERATE_INSTANTIATIONS(INSTANTIATE_DTYPE, (2, 3), MAP_AUTODIFF_TYPES)
 

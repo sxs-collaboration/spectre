@@ -708,10 +708,7 @@ bool operator!=(const Frustum& lhs, const Frustum& rhs) {
   Frustum::inv_jacobian(const std::array<DTYPE(data), 3>& source_coords)      \
       const;
 
-GENERATE_INSTANTIATIONS(
-    INSTANTIATE, (double, DataVector,
-                  std::reference_wrapper<const double>,
-                  std::reference_wrapper<const DataVector>))
+GENERATE_INSTANTIATIONS(INSTANTIATE, (double, DataVector))
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, MAP_AUTODIFF_TYPES)
 

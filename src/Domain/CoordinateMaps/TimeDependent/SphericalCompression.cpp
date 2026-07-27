@@ -331,10 +331,7 @@ void SphericalCompression<InteriorMap>::pup(PUP::er& p) {
           std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&         \
           functions_of_time) const;
 
-GENERATE_INSTANTIATIONS(INSTANTIATE, (true, false),
-                        (double, DataVector,
-                         std::reference_wrapper<const double>,
-                         std::reference_wrapper<const DataVector>))
+GENERATE_INSTANTIATIONS(INSTANTIATE, (true, false), (double, DataVector))
 #undef DTYPE
 #undef INSTANTIATE
 

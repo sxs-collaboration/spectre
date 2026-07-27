@@ -232,9 +232,7 @@ bool operator!=(const FlatEndcap& lhs, const FlatEndcap& rhs) {
       const DTYPE(data) & lambda_tilde,                                       \
       const std::array<double, 3>& projection_point) const;
 
-GENERATE_INSTANTIATIONS(INSTANTIATE, (double, DataVector,
-                                      std::reference_wrapper<const double>,
-                                      std::reference_wrapper<const DataVector>))
+GENERATE_INSTANTIATIONS(INSTANTIATE, (double, DataVector))
 
 #undef INSTANTIATE
 #undef DTYPE

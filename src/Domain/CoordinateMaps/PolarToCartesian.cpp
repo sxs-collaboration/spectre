@@ -94,8 +94,5 @@ bool operator!=(const PolarToCartesian& lhs, const PolarToCartesian& rhs) {
   PolarToCartesian::inv_jacobian(                                             \
       const std::array<DTYPE(data), 2>& source_coords) const;
 
-GENERATE_INSTANTIATIONS(INSTANTIATE_DTYPE,
-                        (double, DataVector,
-                         std::reference_wrapper<const double>,
-                         std::reference_wrapper<const DataVector>))
+GENERATE_INSTANTIATIONS(INSTANTIATE_DTYPE, (double, DataVector))
 }  // namespace domain::CoordinateMaps

@@ -217,11 +217,7 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (2, 3))
           std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&        \
           functions_of_time) const;
 
-GENERATE_INSTANTIATIONS(
-    INSTANTIATE, (2, 3),
-    (double, DataVector,
-     std::reference_wrapper<const double>,
-     std::reference_wrapper<const DataVector>))
+GENERATE_INSTANTIATIONS(INSTANTIATE, (2, 3), (double, DataVector))
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (2, 3), MAP_AUTODIFF_TYPES)
 

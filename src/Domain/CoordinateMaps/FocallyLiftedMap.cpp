@@ -415,9 +415,7 @@ GENERATE_INSTANTIATIONS(INSTANTIATE,
                          FocallyLiftedInnerMaps::FlatEndcap,
                          FocallyLiftedInnerMaps::FlatSide,
                          FocallyLiftedInnerMaps::Side),
-                        (double, DataVector,
-                         std::reference_wrapper<const double>,
-                         std::reference_wrapper<const DataVector>))
+                        (double, DataVector))
 
 #undef INSTANTIATE
 #undef DTYPE

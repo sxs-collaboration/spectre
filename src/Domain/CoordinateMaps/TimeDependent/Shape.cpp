@@ -584,9 +584,7 @@ void Shape::pup(PUP::er& p) {
                       double time,                                            \
                       const FunctionsOfTimeMap& functions_of_time) const;
 
-GENERATE_INSTANTIATIONS(INSTANTIATE, (double, DataVector,
-                                      std::reference_wrapper<const double>,
-                                      std::reference_wrapper<const DataVector>))
+GENERATE_INSTANTIATIONS(INSTANTIATE, (double, DataVector))
 #undef DTYPE
 #undef INSTANTIATE
 

@@ -484,9 +484,7 @@ bool operator!=(const Skew& lhs, const Skew& rhs) { return not(lhs == rhs); }
       const std::array<DTYPE(data), 3>& source_coords, double time,            \
       const domain::FunctionsOfTimeMap& functions_of_time) const;
 
-GENERATE_INSTANTIATIONS(INSTANTIATE, (double, DataVector,
-                                      std::reference_wrapper<const double>,
-                                      std::reference_wrapper<const DataVector>))
+GENERATE_INSTANTIATIONS(INSTANTIATE, (double, DataVector))
 
 #undef DTYPE
 #undef INSTANTIATE

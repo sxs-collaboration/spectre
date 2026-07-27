@@ -270,9 +270,7 @@ bool operator!=(const FlatOffsetSphericalWedge& lhs,
   FlatOffsetSphericalWedge::inv_jacobian(                                    \
       const std::array<DTYPE(data), 3>& source_coords) const;
 
-GENERATE_INSTANTIATIONS(INSTANTIATE, (double, DataVector,
-                                      std::reference_wrapper<const double>,
-                                      std::reference_wrapper<const DataVector>))
+GENERATE_INSTANTIATIONS(INSTANTIATE, (double, DataVector))
 
 #undef DTYPE
 #undef INSTANTIATE

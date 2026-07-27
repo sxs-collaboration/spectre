@@ -284,9 +284,7 @@ void d_scale_factor_d_src_point(
       const std::array<double, 3>& proj_center,                           \
       const std::array<double, 3>& sphere_center, const DTYPE(data) & lambda);
 
-GENERATE_INSTANTIATIONS(INSTANTIATE, (double, DataVector,
-                                      std::reference_wrapper<const double>,
-                                      std::reference_wrapper<const DataVector>))
+GENERATE_INSTANTIATIONS(INSTANTIATE, (double, DataVector))
 #undef INSTANTIATE
 #undef DTYPE
 
