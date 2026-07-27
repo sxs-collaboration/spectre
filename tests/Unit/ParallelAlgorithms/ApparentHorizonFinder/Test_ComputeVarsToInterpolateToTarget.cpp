@@ -74,7 +74,7 @@ void test_compute_horizon_volume_quantities(const bool is_time_dependent) {
                     3>{std::array{std::array{0.0, 0.0, 0.0},
                                   std::array{0.0, 0.0, 0.0},
                                   std::array{0.0, 0.0, 0.0}}},
-                true}}
+                true, std::nullopt}}
           : std::nullopt};
   const auto domain = domain_creator.create_domain();
   const auto& functions_of_time = domain_creator.functions_of_time();

@@ -49,7 +49,8 @@ std::string create_option_string(const std::optional<bool> use_non_zero_shape) {
          "TranslationMap:\n"
          "  InitialValues: [[0.1, -3.2, 1.1], [-0.3, 0.5, -0.7],"
          " [0.1, -0.4, 0.02]]\n"
-         "TransitionRotScaleTrans: True"s;
+         "TransitionRotScaleTrans: True\n"
+         "NumberOfRadialShellsWithShapeMap: Auto"s;
 }
 // nullopt implies no shape map at all
 void test(const std::optional<bool> use_non_zero_shape) {
@@ -134,63 +135,130 @@ void test(const std::optional<bool> use_non_zero_shape) {
     time_dep_options.build_maps(center, /* filled */ false, inner_radius,
                                 radial_partitions, outer_radius);
     // Inner shell with shape
-    check_map(time_dep_options.grid_to_distorted_map(0, false, 6),
+    check_map(time_dep_options.grid_to_distorted_map(0, 0, false),
               not use_non_zero_shape.has_value(), false);
-    check_map(time_dep_options.distorted_to_inertial_map(0, false, 6),
+    check_map(time_dep_options.distorted_to_inertial_map(0, false),
               not use_non_zero_shape.has_value(), false);
-    check_map(time_dep_options.grid_to_inertial_map(0, false, false, 6), false,
+    check_map(time_dep_options.grid_to_inertial_map(0, 0, false, false), false,
               false);
     // Shell without shape
-    check_map(time_dep_options.grid_to_distorted_map(6, false, 6), true, false);
-    check_map(time_dep_options.distorted_to_inertial_map(6, false, 6), true,
+    check_map(time_dep_options.grid_to_distorted_map(1, 0, false), true, false);
+    check_map(time_dep_options.distorted_to_inertial_map(1, false), true,
               false);
-    check_map(time_dep_options.grid_to_inertial_map(6, false, false, 6), false,
+    check_map(time_dep_options.grid_to_inertial_map(1, 0, false, false), false,
               false);
     // Inner S2 shell with shape
-    check_map(time_dep_options.grid_to_distorted_map(0, false, 1),
+    check_map(time_dep_options.grid_to_distorted_map(0, 0, false),
               not use_non_zero_shape.has_value(), false);
-    check_map(time_dep_options.distorted_to_inertial_map(0, false, 1),
+    check_map(time_dep_options.distorted_to_inertial_map(0, false),
               not use_non_zero_shape.has_value(), false);
-    check_map(time_dep_options.grid_to_inertial_map(0, false, false, 1), false,
+    check_map(time_dep_options.grid_to_inertial_map(0, 0, false, false), false,
               false);
     // S2 Shell without shape
-    check_map(time_dep_options.grid_to_distorted_map(1, false, 1), true, false);
-    check_map(time_dep_options.distorted_to_inertial_map(1, false, 1), true,
+    check_map(time_dep_options.grid_to_distorted_map(1, 0, false), true, false);
+    check_map(time_dep_options.distorted_to_inertial_map(1, false), true,
               false);
-    check_map(time_dep_options.grid_to_inertial_map(1, false, false, 1), false,
+    check_map(time_dep_options.grid_to_inertial_map(1, 0, false, false), false,
               false);
   }
   {
     INFO("Filled");
-    time_dep_options.build_maps(center, /* filled */ true, inner_radius,
-                                radial_partitions, outer_radius);
+    auto filled_time_dep_options =
+        TestHelpers::test_creation<TimeDependentMapOptions>(
+            create_option_string(use_non_zero_shape));
+    filled_time_dep_options.build_maps(center, /* filled */ true, inner_radius,
+                                       radial_partitions, outer_radius);
     // Inner shell: cube to sphere
-    check_map(time_dep_options.grid_to_distorted_map(0, false, 6),
+    check_map(filled_time_dep_options.grid_to_distorted_map(0, 0, false),
               not use_non_zero_shape.has_value(), false);
-    check_map(time_dep_options.distorted_to_inertial_map(0, false, 6),
+    check_map(filled_time_dep_options.distorted_to_inertial_map(0, false),
               not use_non_zero_shape.has_value(), false);
-    check_map(time_dep_options.grid_to_inertial_map(0, false, false, 6), false,
-              false);
+    check_map(filled_time_dep_options.grid_to_inertial_map(0, 0, false, false),
+              false, false);
     // Shape rolloff region
-    check_map(time_dep_options.grid_to_distorted_map(6, false, 6),
+    check_map(filled_time_dep_options.grid_to_distorted_map(1, 0, false),
               not use_non_zero_shape.has_value(), false);
-    check_map(time_dep_options.distorted_to_inertial_map(6, false, 6),
+    check_map(filled_time_dep_options.distorted_to_inertial_map(1, false),
               not use_non_zero_shape.has_value(), false);
-    check_map(time_dep_options.grid_to_inertial_map(0, false, false, 6), false,
-              false);
+    check_map(filled_time_dep_options.grid_to_inertial_map(1, 0, false, false),
+              false, false);
     // Shell without shape
-    check_map(time_dep_options.grid_to_distorted_map(12, false, 6), true,
+    check_map(filled_time_dep_options.grid_to_distorted_map(2, 0, false), true,
               false);
-    check_map(time_dep_options.distorted_to_inertial_map(12, false, 6), true,
+    check_map(filled_time_dep_options.distorted_to_inertial_map(2, false), true,
               false);
-    check_map(time_dep_options.grid_to_inertial_map(12, false, false, 6), false,
-              false);
+    check_map(filled_time_dep_options.grid_to_inertial_map(2, 0, false, false),
+              false, false);
     // Inner cube
-    check_map(time_dep_options.grid_to_distorted_map(12, true, 6), true, false);
-    check_map(time_dep_options.distorted_to_inertial_map(12, true, 6), true,
+    check_map(filled_time_dep_options.grid_to_distorted_map(2, 0, true), true,
               false);
-    check_map(time_dep_options.grid_to_inertial_map(12, false, true, 6), false,
+    check_map(filled_time_dep_options.distorted_to_inertial_map(2, true), true,
               false);
+    check_map(filled_time_dep_options.grid_to_inertial_map(2, 0, false, true),
+              false, false);
+  }
+
+  {
+    INFO("Explicit shell count");
+    TimeDependentMapOptions time_dep_options_with_two_shape_shells{
+        initial_time,
+        time_dependent_options::ShapeMapOptions<false,
+                                                domain::ObjectLabel::None>{
+            l_max, std::nullopt},
+        std::nullopt,
+        std::nullopt,
+        time_dependent_options::TranslationMapOptions<3>{
+            std::array{std::array<double, 3>{0.1, -3.2, 1.1},
+                       std::array<double, 3>{-0.3, 0.5, -0.7},
+                       std::array<double, 3>{0.1, -0.4, 0.02}}},
+        true,
+        2};
+    time_dep_options_with_two_shape_shells.build_maps(
+        center, /* filled */ false, inner_radius, radial_partitions,
+        outer_radius);
+    for (size_t shell = 0; shell < 3; ++shell) {
+      const bool has_shape = shell < 2;
+      CAPTURE(shell);
+      check_map(time_dep_options_with_two_shape_shells.grid_to_distorted_map(
+                    shell, 0, false),
+                not has_shape, false);
+      check_map(
+          time_dep_options_with_two_shape_shells.distorted_to_inertial_map(
+              shell, false),
+          not has_shape, false);
+    }
+  }
+
+  {
+    INFO("Five of eight shells with shape maps");
+    const std::vector<double> many_radial_partitions{1.0, 1.5, 2.0, 2.5,
+                                                     3.0, 3.5, 3.7};
+    TimeDependentMapOptions many_shell_time_dep_options{
+        initial_time,
+        time_dependent_options::ShapeMapOptions<false,
+                                                domain::ObjectLabel::None>{
+            l_max, std::nullopt},
+        std::nullopt,
+        std::nullopt,
+        time_dependent_options::TranslationMapOptions<3>{
+            std::array{std::array<double, 3>{0.1, -3.2, 1.1},
+                       std::array<double, 3>{-0.3, 0.5, -0.7},
+                       std::array<double, 3>{0.1, -0.4, 0.02}}},
+        true,
+        5};
+    many_shell_time_dep_options.build_maps(center, /* filled */ false,
+                                           inner_radius, many_radial_partitions,
+                                           outer_radius);
+    for (size_t shell = 0; shell < 8; ++shell) {
+      const bool has_shape = shell < 5;
+      CAPTURE(shell);
+      check_map(
+          many_shell_time_dep_options.grid_to_distorted_map(shell, 0, false),
+          not has_shape, false);
+      check_map(
+          many_shell_time_dep_options.distorted_to_inertial_map(shell, false),
+          not has_shape, false);
+    }
   }
 
   const auto functions_of_time =
@@ -213,6 +281,18 @@ void test(const std::optional<bool> use_non_zero_shape) {
                    .get()) == translation_non_zero);
   }
 }
+
+void test_parse_errors() {
+  CHECK_THROWS_WITH(
+      TestHelpers::test_creation<TimeDependentMapOptions>(
+          "InitialTime: 1.5\n"
+          "ShapeMap: None\n"
+          "RotationMap: None\n"
+          "ExpansionMap: None\n"
+          "TranslationMap: None\n"
+          "TransitionRotScaleTrans: True\n"),
+      Catch::Matchers::ContainsSubstring("NumberOfRadialShellsWithShapeMap"));
+}
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Domain.Creators.TimeDependentOptions.Sphere",
@@ -220,5 +300,6 @@ SPECTRE_TEST_CASE("Unit.Domain.Creators.TimeDependentOptions.Sphere",
   test({true});
   test({false});
   test(std::nullopt);
+  test_parse_errors();
 }
 }  // namespace domain::creators::sphere

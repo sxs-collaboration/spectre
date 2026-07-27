@@ -81,6 +81,7 @@ DomainCreator:
       TranslationMap:
         InitialValues: {{ Translation }}
       TransitionRotScaleTrans: True
+      NumberOfRadialShellsWithShapeMap: Auto
     OuterBoundaryCondition:
       ConstraintPreservingBjorhus:
         Type: ConstraintPreservingPhysical

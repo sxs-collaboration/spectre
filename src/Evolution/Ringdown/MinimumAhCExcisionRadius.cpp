@@ -102,8 +102,7 @@ double minimum_ahc_excision_radius(
   const size_t obs_id_at_match_time =
       volume_data.find_observation_id(match_time, match_time_tol);
 
-  const auto serialized_inspiral_domain =
-      volume_data.get_domain();
+  const auto serialized_inspiral_domain = volume_data.get_domain();
   if (not serialized_inspiral_domain.has_value()) {
     ERROR("No domain found in volume files at the specified match time.");
   }
@@ -155,7 +154,8 @@ double minimum_ahc_excision_radius(
                                           rotation_map_options,
                                           expansion_map_options,
                                           translation_map_options,
-                                          true};
+                                          true,
+                                          std::nullopt};
 
   const double ahc_average_radius = ahc_inertial_at_match_time.average_radius();
   const std::array<double, 3> ahc_ringdown_center =

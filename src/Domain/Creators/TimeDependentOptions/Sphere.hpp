@@ -104,21 +104,33 @@ struct TimeDependentMapOptions {
         "shell"};
   };
 
-  using options = tmpl::list<InitialTime, ShapeMapOptions, RotationMapOptions,
-                             ExpansionMapOptions, TranslationMapOptions,
-                             TransitionRotScaleTrans>;
+  struct NumberOfRadialShellsWithShapeMap {
+    using type = Options::Auto<size_t>;
+    static constexpr Options::String help = {
+        "Number of innermost radial shells that use the shape map. This must "
+        "be at least one. A filled Sphere with multiple radial shells requires "
+        "at least two shells with a shape map. For any domain with multiple "
+        "radial shells, at least one outer shell must remain without a shape "
+        "map. Specify 'Auto' to use the default for the domain."};
+  };
+
+  using options =
+      tmpl::list<InitialTime, ShapeMapOptions, RotationMapOptions,
+                 ExpansionMapOptions, TranslationMapOptions,
+                 TransitionRotScaleTrans, NumberOfRadialShellsWithShapeMap>;
   static constexpr Options::String help{
       "The options for all the hard-coded time dependent maps in the "
       "Sphere domain."};
 
   TimeDependentMapOptions() = default;
 
-  TimeDependentMapOptions(double initial_time,
-                          ShapeMapOptionType shape_map_options,
-                          RotationMapOptionType rotation_map_options,
-                          ExpansionMapOptionType expansion_map_options,
-                          TranslationMapOptionType translation_map_options,
-                          bool transition_rot_scale_trans);
+  TimeDependentMapOptions(
+      double initial_time, ShapeMapOptionType shape_map_options,
+      RotationMapOptionType rotation_map_options,
+      ExpansionMapOptionType expansion_map_options,
+      TranslationMapOptionType translation_map_options,
+      bool transition_rot_scale_trans,
+      std::optional<size_t> number_of_radial_shells_with_shape_map);
 
   /*!
    * \brief Create the function of time map using the options that were
@@ -160,10 +172,14 @@ struct TimeDependentMapOptions {
    *
    * For blocks with a shape map, this will be a RotScaleTrans map. For other
    * blocks, this returns `nullptr`.
+   *
+   * \param radial_shell Zero-based index specifying a shell in the `Sphere`
+   * or `SphericalShells` domain, starting at the innermost shell.
+   * \param is_inner_cube Whether the block is the central cube of a filled
+   * sphere.
    */
   MapType<Frame::Distorted, Frame::Inertial> distorted_to_inertial_map(
-      size_t block_number, bool is_inner_cube,
-      size_t num_blocks_per_shell) const;
+      size_t radial_shell, bool is_inner_cube) const;
 
   /*!
    * \brief This will construct the map from `Frame::Grid` to
@@ -171,10 +187,22 @@ struct TimeDependentMapOptions {
    *
    * For blocks with a shape map, this will return the `Shape` map (with a size
    * function of time). For other blocks, this returns `nullptr`.
+   *
+   * \param radial_shell Zero-based index specifying a shell in the `Sphere`
+   * or `SphericalShells` domain, starting at the innermost shell.
+   * \param shape_map_index Index of the wedge direction in the order returned
+   * by `orientations_for_sphere_wrappings`. This is only used for filled
+   * spheres. In that case, the implementation uses the Wedge transition
+   * function and builds two sets of shape maps for the six canonical wedge
+   * directions: indices 0..5 deform the innermost shell and indices 6..11 roll
+   * off the deformation in outer shells. If the sphere is not filled, then
+   * the implementation uses the SphereTransition function and builds only one
+   * shape map, leaving this option unused.
+   * \param is_inner_cube Whether the block is the central cube of a filled
+   * sphere.
    */
   MapType<Frame::Grid, Frame::Distorted> grid_to_distorted_map(
-      size_t block_number, bool is_inner_cube,
-      size_t num_blocks_per_shell) const;
+      size_t radial_shell, size_t shape_map_index, bool is_inner_cube) const;
 
   /*!
    * \brief This will construct the map from `Frame::Grid` to `Frame::Inertial`.
@@ -183,10 +211,24 @@ struct TimeDependentMapOptions {
    * `RotScaleTrans` composition. For other blocks, this returns just the
    * `RotScaleTrans` map. In the outer shell, the `RotScaleTrans` map will
    * transition to zero.
+   *
+   * \param radial_shell Zero-based index specifying a shell in the `Sphere`
+   * or `SphericalShells` domain, starting at the innermost shell.
+   * \param shape_map_index Index of the wedge direction in the order returned
+   * by `orientations_for_sphere_wrappings`. This is only used for filled
+   * spheres. In that case, the implementation uses the Wedge transition
+   * function and builds two sets of shape maps for the six canonical wedge
+   * directions: indices 0..5 deform the innermost shell and indices 6..11 roll
+   * off the deformation in outer shells. If the sphere is not filled, then
+   * the implementation uses the SphereTransition function and builds only one
+   * shape map, leaving this option unused.
+   * \param is_outer_shell Whether the block is in the outermost radial shell.
+   * \param is_central_region Whether the map is for the central cube of a
+   * filled sphere or the excision boundary of an excised sphere.
    */
   MapType<Frame::Grid, Frame::Inertial> grid_to_inertial_map(
-      size_t block_number, bool is_outer_shell, bool is_central_region,
-      size_t num_blocks_per_shell) const;
+      size_t radial_shell, size_t shape_map_index, bool is_outer_shell,
+      bool is_central_region) const;
 
   /*!
    * \brief Whether or not the distorted frame is being used. I.e. whether or
@@ -215,5 +257,6 @@ struct TimeDependentMapOptions {
   ExpansionMapOptionType expansion_map_options_;
   TranslationMapOptionType translation_map_options_;
   bool transition_rot_scale_trans_{false};
+  std::optional<size_t> number_of_radial_shells_with_shape_map_{};
 };
 }  // namespace domain::creators::sphere

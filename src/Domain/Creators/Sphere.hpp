@@ -157,16 +157,19 @@ namespace domain::creators {
  * The Sphere domain creator also has the option to use some hard coded time
  * dependent maps that may be useful in certain scenarios. This method adds the
  * maps in `domain::creators::sphere::TimeDependentMapOptions` to the domain.
- * Currently, the first (inner-most) shell has maps between `Frame::Grid`,
- * `Frame::Distorted`, and `Frame::Inertial` while all subsequent shells only
- * have maps between `Frame::Grid` and `Frame::Inertial`.
- *
- * \note You can only use hard-coded time dependent maps if you have an excision
- * surface. You cannot have a inner cube.
+ * When a shape map is specified, an excised sphere uses it on the innermost
+ * radial shell by default. A filled sphere with multiple radial shells uses it
+ * on at least the two innermost shells: the first shell turns on the
+ * deformation away from the central cube, and the subsequent selected shells
+ * roll it off. At least one outer shell must remain without a shape map, so
+ * this filled configuration requires at least three radial shells. The
+ * `NumberOfRadialShellsWithShapeMap` option can be used to choose more inner
+ * shells. With only one radial shell, a filled sphere does not roll off the
+ * shape map, while an excised sphere rolls it off at the outer boundary.
  *
  * ##### None
- * To not have any time dependent maps, pass a `std::nullopt` to appropriate
- * argument in the constructor. In the input file, simple have
+ * To not have any time dependent maps, pass a `std::nullopt` to the appropriate
+ * argument in the constructor. In the input file, simply have
  * `TimeDependentMaps: None`.
  *
  */

@@ -127,6 +127,11 @@ SphericalShells::SphericalShells(
         std::holds_alternative<sphere::TimeDependentMapOptions>(
             time_dependent_options_.value());
     if (use_hard_coded_maps_) {
+      if (not excise_center_) {
+        PARSE_ERROR(context,
+                    "Hard-coded time-dependent maps are not supported when the "
+                    "SphericalShells center is filled (InnerRadius is zero).");
+      }
       std::get<sphere::TimeDependentMapOptions>(time_dependent_options_.value())
           .build_maps(std::array{0.0, 0.0, 0.0}, false, inner_radius_,
                       radial_partitioning_, outer_radius_);
@@ -198,17 +203,17 @@ Domain<3> SphericalShells::create_domain() const {
       for (size_t block_id = 0; block_id < num_blocks_; block_id++) {
         const bool is_outer_shell = block_id == num_blocks_ - 1;
         block_maps_grid_to_distorted[block_id] =
-            hard_coded_options.grid_to_distorted_map(block_id, false, 1);
+            hard_coded_options.grid_to_distorted_map(block_id, 0, false);
         block_maps_distorted_to_inertial[block_id] =
-            hard_coded_options.distorted_to_inertial_map(block_id, false, 1);
+            hard_coded_options.distorted_to_inertial_map(block_id, false);
         block_maps_grid_to_inertial[block_id] =
-            hard_coded_options.grid_to_inertial_map(block_id, is_outer_shell,
-                                                    false, 1);
+            hard_coded_options.grid_to_inertial_map(block_id, 0, is_outer_shell,
+                                                    false);
       }
 
       domain.inject_time_dependent_map_for_excision_sphere(
           "ExcisionSphere",
-          hard_coded_options.grid_to_inertial_map(0, false, true, 1));
+          hard_coded_options.grid_to_inertial_map(0, 0, false, true));
     } else {
       const auto& time_dependence = std::get<std::unique_ptr<
           domain::creators::time_dependence::TimeDependence<3>>>(
