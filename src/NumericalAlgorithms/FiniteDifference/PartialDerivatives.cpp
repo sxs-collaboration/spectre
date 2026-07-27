@@ -12,6 +12,7 @@
 #include "DataStructures/Transpose.hpp"
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/DirectionMap.hpp"
+#include "NumericalAlgorithms/FiniteDifference/PartialDerivatives.tpp"
 #include "NumericalAlgorithms/Spectral/Basis.hpp"
 #include "NumericalAlgorithms/Spectral/CollocationPoints.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
@@ -37,8 +38,9 @@ struct ComputeImpl<2, UnitStride> {
       // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
       return weights[0] * (q[1] - q[-1]);
     } else {
+      const auto signed_stride = static_cast<ptrdiff_t>(stride);
       // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-      return weights[0] * (q[stride] - q[-stride]);
+      return weights[0] * (q[signed_stride] - q[-signed_stride]);
     }
   }
 
@@ -60,10 +62,11 @@ struct ComputeImpl<4, UnitStride> {
       // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
       return weights[1] * (q[-2] - q[2]) + weights[0] * (q[1] - q[-1]);
     } else {
+      const auto signed_stride = static_cast<ptrdiff_t>(stride);
       // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-      return weights[1] * (q[-2 * stride] - q[2 * stride]) +
+      return weights[1] * (q[-2 * signed_stride] - q[2 * signed_stride]) +
              // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-             weights[0] * (q[stride] - q[-stride]);
+             weights[0] * (q[signed_stride] - q[-signed_stride]);
     }
   }
 
@@ -88,12 +91,13 @@ struct ComputeImpl<6, UnitStride> {
              // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
              weights[0] * (q[1] - q[-1]);
     } else {
+      const auto signed_stride = static_cast<ptrdiff_t>(stride);
       // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-      return weights[2] * (q[3 * stride] - q[-3 * stride]) -
+      return weights[2] * (q[3 * signed_stride] - q[-3 * signed_stride]) -
              // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-             weights[1] * (q[2 * stride] - q[-2 * stride]) +
+             weights[1] * (q[2 * signed_stride] - q[-2 * signed_stride]) +
              // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-             weights[0] * (q[stride] - q[-stride]);
+             weights[0] * (q[signed_stride] - q[-signed_stride]);
     }
   }
 
@@ -118,14 +122,15 @@ struct ComputeImpl<8, UnitStride> {
              // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
              weights[1] * (q[2] - q[-2]) + weights[0] * (q[1] - q[-1]);
     } else {
+      const auto signed_stride = static_cast<ptrdiff_t>(stride);
       // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-      return weights[3] * (q[4 * stride] - q[-4 * stride]) +
+      return weights[3] * (q[4 * signed_stride] - q[-4 * signed_stride]) +
              // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-             weights[2] * (q[3 * stride] - q[-3 * stride]) -
+             weights[2] * (q[3 * signed_stride] - q[-3 * signed_stride]) -
              // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-             weights[1] * (q[2 * stride] - q[-2 * stride]) +
+             weights[1] * (q[2 * signed_stride] - q[-2 * signed_stride]) +
              // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-             weights[0] * (q[stride] - q[-stride]);
+             weights[0] * (q[signed_stride] - q[-signed_stride]);
     }
   }
 
@@ -134,6 +139,46 @@ struct ComputeImpl<8, UnitStride> {
     return {{0.8 * one_over_delta, 0.2 * one_over_delta,
              0.0380952380952381 * one_over_delta,
              -0.0035714285714285713 * one_over_delta}};
+  }
+};
+
+template <bool UnitStride>
+struct ComputeImpl<10, UnitStride> {
+  static constexpr size_t fd_order = 10;
+
+  SPECTRE_ALWAYS_INLINE static double pointwise(
+      const double* const q, const int stride,
+      const std::array<double, 5>& weights) {
+    if constexpr (UnitStride) {
+      ASSERT(stride == 1, "UnitStride is true but got stride " << stride);
+      // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+      return weights[4] * (q[5] - q[-5]) + weights[3] * (q[4] - q[-4]) +
+             // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+             weights[2] * (q[3] - q[-3]) - weights[1] * (q[2] - q[-2]) +
+             // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+             weights[0] * (q[1] - q[-1]);
+    } else {
+      const auto signed_stride = static_cast<ptrdiff_t>(stride);
+      // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+      return weights[4] * (q[5 * signed_stride] - q[-5 * signed_stride]) +
+             // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+             weights[3] * (q[4 * signed_stride] - q[-4 * signed_stride]) +
+             // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+             weights[2] * (q[3 * signed_stride] - q[-3 * signed_stride]) -
+             // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+             weights[1] * (q[2 * signed_stride] - q[-2 * signed_stride]) +
+             // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+             weights[0] * (q[signed_stride] - q[-signed_stride]);
+    }
+  }
+
+  static constexpr std::array<double, 5> derivative_weights(
+      const double one_over_delta) {
+    return {{0.8333333333333334 * one_over_delta,
+             0.2380952380952381 * one_over_delta,
+             0.05952380952380952 * one_over_delta,
+             -0.009920634920634921 * one_over_delta,
+             0.0007936507936507937 * one_over_delta}};
   }
 };
 
@@ -173,6 +218,11 @@ void logical_partial_derivatives_fastest_dim(
              << upper_ghost_data.size());
   const size_t ghost_pts_in_neighbor_data =
       lower_ghost_data.size() / number_of_stripes;
+  ASSERT(ghost_pts_in_neighbor_data >= ghost_zone_for_stencil,
+         "Ghost zone is too small for finite difference derivative order: "
+         "ghost_pts_in_neighbor_data ("
+             << ghost_pts_in_neighbor_data << ") < ghost_zone_for_stencil ("
+             << ghost_zone_for_stencil << ").");
 
   // Precompute derivative weights to minimize FLOPs
   const std::array<double, fd_order / 2> derivative_weights =
@@ -325,7 +375,7 @@ void logical_partial_derivatives_impl(
       buffer = DataVector{volume_vars.size() + lower_ghost.size() +
                           upper_ghost.size() + derivative_size};
     }
-    raw_transpose(make_not_null(&buffer[0]), volume_vars.data(),
+    raw_transpose(make_not_null(buffer.data()), volume_vars.data(),
                   volume_extents[0], volume_vars.size() / volume_extents[0]);
     raw_transpose(make_not_null(&buffer[volume_vars.size()]),
                   lower_ghost.data(), volume_extents[0],
@@ -348,7 +398,7 @@ void logical_partial_derivatives_impl(
 
     logical_partial_derivatives_fastest_dim<DerivativeComputer>(
         make_not_null(&derivative_view),
-        gsl::make_span(&buffer[0], volume_vars.size()),
+        gsl::make_span(buffer.data(), volume_vars.size()),
         gsl::make_span(&buffer[volume_vars.size()], lower_ghost.size()),
         gsl::make_span(&buffer[volume_vars.size() + lower_ghost.size()],
                        upper_ghost.size()),
@@ -387,7 +437,7 @@ void logical_partial_derivatives_impl(
 
       logical_partial_derivatives_fastest_dim<DerivativeComputer>(
           make_not_null(&derivative_view),
-          gsl::make_span(&buffer[0], volume_vars.size()),
+          gsl::make_span(buffer.data(), volume_vars.size()),
           gsl::make_span(&buffer[volume_vars.size()], lower_ghost.size()),
           gsl::make_span(&buffer[volume_vars.size() + lower_ghost.size()],
                          upper_ghost.size()),
@@ -429,6 +479,11 @@ void logical_partial_derivatives_impl(
       break;
     case 8:
       ::fd::logical_partial_derivatives_impl<ComputeImpl<8, true>>(
+          logical_derivatives, buffer, volume_vars, ghost_cell_vars,
+          volume_mesh, number_of_variables);
+      break;
+    case 10:
+      ::fd::logical_partial_derivatives_impl<ComputeImpl<10, true>>(
           logical_derivatives, buffer, volume_vars, ghost_cell_vars,
           volume_mesh, number_of_variables);
       break;

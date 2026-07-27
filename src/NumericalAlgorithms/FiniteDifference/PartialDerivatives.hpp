@@ -26,7 +26,7 @@ namespace fd {
  * \brief Compute the logical partial derivatives using cell-centered finite
  * difference derivatives.
  *
- * Up to 8th order stencils are supported.
+ * Up to 10th order stencils are supported.
  *
  * \note Currently the stride is always one because we transpose the data before
  * reconstruction. However, it may be faster to have a non-unit stride without
