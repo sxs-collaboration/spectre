@@ -8,15 +8,12 @@
 
 #include <array>
 #include <cstddef>
-#include <functional>
 #include <optional>
 #include <utility>
 
 #include "DataStructures/Tensor/Tensor.hpp"
-#include "Utilities/DereferenceWrapper.hpp"
 #include "Utilities/MakeWithValue.hpp"
 #include "Utilities/TMPL.hpp"
-#include "Utilities/TypeTraits/RemoveReferenceWrapper.hpp"
 
 /// \cond
 namespace PUP {
@@ -45,8 +42,7 @@ class ProductOf2Maps {
   ProductOf2Maps(Map1 map1, Map2 map2);
 
   template <typename T>
-  std::array<tt::remove_cvref_wrap_t<T>, dim> operator()(
-      const std::array<T, dim>& source_coords) const;
+  std::array<T, dim> operator()(const std::array<T, dim>& source_coords) const;
 
   /// The inverse function is only callable with doubles because the inverse
   /// might fail if called for a point out of range, and it is unclear
@@ -56,11 +52,11 @@ class ProductOf2Maps {
       const std::array<double, dim>& target_coords) const;
 
   template <typename T>
-  tnsr::Ij<tt::remove_cvref_wrap_t<T>, dim, Frame::NoFrame> inv_jacobian(
+  tnsr::Ij<T, dim, Frame::NoFrame> inv_jacobian(
       const std::array<T, dim>& source_coords) const;
 
   template <typename T>
-  tnsr::Ij<tt::remove_cvref_wrap_t<T>, dim, Frame::NoFrame> jacobian(
+  tnsr::Ij<T, dim, Frame::NoFrame> jacobian(
       const std::array<T, dim>& source_coords) const;
 
   // NOLINTNEXTLINE(google-runtime-references)
@@ -101,18 +97,17 @@ class ProductOf3Maps {
   ProductOf3Maps(Map1 map1, Map2 map2, Map3 map3);
 
   template <typename T>
-  std::array<tt::remove_cvref_wrap_t<T>, dim> operator()(
-      const std::array<T, dim>& source_coords) const;
+  std::array<T, dim> operator()(const std::array<T, dim>& source_coords) const;
 
   std::optional<std::array<double, dim>> inverse(
       const std::array<double, dim>& target_coords) const;
 
   template <typename T>
-  tnsr::Ij<tt::remove_cvref_wrap_t<T>, dim, Frame::NoFrame> inv_jacobian(
+  tnsr::Ij<T, dim, Frame::NoFrame> inv_jacobian(
       const std::array<T, dim>& source_coords) const;
 
   template <typename T>
-  tnsr::Ij<tt::remove_cvref_wrap_t<T>, dim, Frame::NoFrame> jacobian(
+  tnsr::Ij<T, dim, Frame::NoFrame> jacobian(
       const std::array<T, dim>& source_coords) const;
 
   // NOLINTNEXTLINE(google-runtime-references)

@@ -5,7 +5,6 @@
 
 #include <array>
 #include <cstddef>
-#include <functional>
 #include <limits>
 #include <optional>
 #include <string>
@@ -16,10 +15,8 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/CoordinateMaps/TimeDependentHelpers.hpp"
 #include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
-#include "Utilities/DereferenceWrapper.hpp"
 #include "Utilities/MakeWithValue.hpp"
 #include "Utilities/TMPL.hpp"
-#include "Utilities/TypeTraits/RemoveReferenceWrapper.hpp"
 
 /// \cond
 namespace PUP {
@@ -55,7 +52,7 @@ class ProductOf2Maps {
   ProductOf2Maps(Map1 map1, Map2 map2);
 
   template <typename T>
-  std::array<tt::remove_cvref_wrap_t<T>, dim> operator()(
+  std::array<T, dim> operator()(
       const std::array<T, dim>& source_coords, double time,
       const std::unordered_map<
           std::string,
@@ -74,7 +71,7 @@ class ProductOf2Maps {
           functions_of_time) const;
 
   template <typename T>
-  std::array<tt::remove_cvref_wrap_t<T>, dim> frame_velocity(
+  std::array<T, dim> frame_velocity(
       const std::array<T, dim>& source_coords, double time,
       const std::unordered_map<
           std::string,
@@ -82,7 +79,7 @@ class ProductOf2Maps {
           functions_of_time) const;
 
   template <typename T>
-  tnsr::Ij<tt::remove_cvref_wrap_t<T>, dim, Frame::NoFrame> inv_jacobian(
+  tnsr::Ij<T, dim, Frame::NoFrame> inv_jacobian(
       const std::array<T, dim>& source_coords, double time,
       const std::unordered_map<
           std::string,
@@ -90,7 +87,7 @@ class ProductOf2Maps {
           functions_of_time) const;
 
   template <typename T>
-  tnsr::Ij<tt::remove_cvref_wrap_t<T>, dim, Frame::NoFrame> jacobian(
+  tnsr::Ij<T, dim, Frame::NoFrame> jacobian(
       const std::array<T, dim>& source_coords, double time,
       const std::unordered_map<
           std::string,
@@ -147,7 +144,7 @@ class ProductOf3Maps {
   ProductOf3Maps(Map1 map1, Map2 map2, Map3 map3);
 
   template <typename T>
-  std::array<tt::remove_cvref_wrap_t<T>, dim> operator()(
+  std::array<T, dim> operator()(
       const std::array<T, dim>& source_coords, double time,
       const std::unordered_map<
           std::string,
@@ -162,7 +159,7 @@ class ProductOf3Maps {
           functions_of_time) const;
 
   template <typename T>
-  std::array<tt::remove_cvref_wrap_t<T>, dim> frame_velocity(
+  std::array<T, dim> frame_velocity(
       const std::array<T, dim>& source_coords, double time,
       const std::unordered_map<
           std::string,
@@ -170,7 +167,7 @@ class ProductOf3Maps {
           functions_of_time) const;
 
   template <typename T>
-  tnsr::Ij<tt::remove_cvref_wrap_t<T>, dim, Frame::NoFrame> inv_jacobian(
+  tnsr::Ij<T, dim, Frame::NoFrame> inv_jacobian(
       const std::array<T, dim>& source_coords, double time,
       const std::unordered_map<
           std::string,
@@ -178,7 +175,7 @@ class ProductOf3Maps {
           functions_of_time) const;
 
   template <typename T>
-  tnsr::Ij<tt::remove_cvref_wrap_t<T>, dim, Frame::NoFrame> jacobian(
+  tnsr::Ij<T, dim, Frame::NoFrame> jacobian(
       const std::array<T, dim>& source_coords, double time,
       const std::unordered_map<
           std::string,
