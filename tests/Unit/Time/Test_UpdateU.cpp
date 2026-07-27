@@ -49,7 +49,7 @@ struct TwoVariableSystem {
   using variables_tag = tmpl::list<Var, AlternativeVar>;
 };
 
-template <typename System, bool LocalTimeStepping, bool AlternativeUpdates>
+template <typename System, bool AlternativeUpdates>
 void test_integration() {
   using history_tag = Tags::HistoryEvolvedVariables<Var>;
   using alternative_history_tag = Tags::HistoryEvolvedVariables<AlternativeVar>;
@@ -99,7 +99,7 @@ void test_integration() {
         },
         make_not_null(&box), db::get<Tags::TimeStepId>(box), db::get<Var>(box));
 
-    db::mutate_apply<UpdateU<System, LocalTimeStepping>>(make_not_null(&box));
+    db::mutate_apply<UpdateU<System>>(make_not_null(&box));
     CHECK(db::get<Var>(box) == approx(gsl::at(expected_values, substep)));
     if (AlternativeUpdates) {
       CHECK(db::get<AlternativeVar>(box) ==
@@ -121,7 +121,6 @@ void test_integration() {
   }
 }
 
-template <bool LocalTimeStepping>
 void test_stepper_error() {
   using variables_tag = Var;
   using history_tag = Tags::HistoryEvolvedVariables<variables_tag>;
@@ -158,12 +157,10 @@ void test_stepper_error() {
         db::get<variables_tag>(box));
 
     if (repeat_substep) {
-      db::mutate_apply<UpdateU<SingleVariableSystem, LocalTimeStepping>>(
-          make_not_null(&box));
+      db::mutate_apply<UpdateU<SingleVariableSystem>>(make_not_null(&box));
     }
 
-    db::mutate_apply<UpdateU<SingleVariableSystem, LocalTimeStepping>>(
-        make_not_null(&box));
+    db::mutate_apply<UpdateU<SingleVariableSystem>>(make_not_null(&box));
 
     db::mutate<Tags::TimeStepId, Tags::Next<Tags::TimeStepId>, Tags::TimeStep,
                history_tag>(
@@ -211,7 +208,6 @@ void test_stepper_error() {
   CHECK(db::get<error_tag>(box)[1]->errors != first_step_errors);
 }
 
-template <bool LocalTimeStepping>
 void test_errors_for_restart() {
   // We should get low-order errors if we have all of
   //
@@ -255,8 +251,7 @@ void test_errors_for_restart() {
         time_stepper->next_time_id(initial_id, time_step), time_step, true,
         tolerances, 1., std::move(history),
         Tags::StepperErrors<variables_tag>::type{});
-    db::mutate_apply<UpdateU<SingleVariableSystem, LocalTimeStepping>>(
-        make_not_null(&box));
+    db::mutate_apply<UpdateU<SingleVariableSystem>>(make_not_null(&box));
     const auto& errors = db::get<Tags::StepperErrors<variables_tag>>(box)[1];
     if (not errors.has_value()) {
       return Estimates::None;
@@ -287,17 +282,9 @@ void test_errors_for_restart() {
 }
 
 SPECTRE_TEST_CASE("Unit.Time.UpdateU", "[Unit][Time]") {
-  test_integration<SingleVariableSystem, false, false>();
-  test_integration<TwoVariableSystem, false, true>();
-  test_stepper_error<false>();
-  test_errors_for_restart<false>();
-
-  // The mutator's behavior is the same for LTS and GTS.  The flag
-  // only affects the compute tags put into the box.  But the test is
-  // quick, so run it both ways.
-  test_integration<SingleVariableSystem, true, false>();
-  test_integration<TwoVariableSystem, true, true>();
-  test_stepper_error<true>();
-  test_errors_for_restart<true>();
+  test_integration<SingleVariableSystem, false>();
+  test_integration<TwoVariableSystem, true>();
+  test_stepper_error();
+  test_errors_for_restart();
 }
 }  // namespace

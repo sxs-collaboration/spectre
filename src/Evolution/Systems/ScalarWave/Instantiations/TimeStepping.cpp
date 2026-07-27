@@ -14,8 +14,7 @@
   template class ChangeTimeStepperOrder<ScalarWave::System<DIM(data)>>; \
   template class CleanHistory<ScalarWave::System<DIM(data)>>;           \
   template class RecordTimeStepperData<ScalarWave::System<DIM(data)>>;  \
-  template class UpdateU<ScalarWave::System<DIM(data)>, false>;         \
-  template class UpdateU<ScalarWave::System<DIM(data)>, true>;
+  template class UpdateU<ScalarWave::System<DIM(data)>>;
 
 GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
 

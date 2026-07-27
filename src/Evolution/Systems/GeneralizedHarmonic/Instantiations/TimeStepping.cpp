@@ -14,8 +14,7 @@
   template class ChangeTimeStepperOrder<gh::System<DIM(data)>>; \
   template class CleanHistory<gh::System<DIM(data)>>;           \
   template class RecordTimeStepperData<gh::System<DIM(data)>>;  \
-  template class UpdateU<gh::System<DIM(data)>, false>;         \
-  template class UpdateU<gh::System<DIM(data)>, true>;
+  template class UpdateU<gh::System<DIM(data)>>;
 
 GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
 

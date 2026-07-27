@@ -14,8 +14,7 @@
   template class ChangeTimeStepperOrder<CurvedScalarWave::System<DIM(data)>>; \
   template class CleanHistory<CurvedScalarWave::System<DIM(data)>>;           \
   template class RecordTimeStepperData<CurvedScalarWave::System<DIM(data)>>;  \
-  template class UpdateU<CurvedScalarWave::System<DIM(data)>, false>;         \
-  template class UpdateU<CurvedScalarWave::System<DIM(data)>, true>;
+  template class UpdateU<CurvedScalarWave::System<DIM(data)>>;
 
 GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
 

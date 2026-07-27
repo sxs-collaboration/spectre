@@ -443,8 +443,7 @@ struct ScalarTensorTemplateBase {
   template <typename ControlSystems>
   using step_actions = tmpl::list<
       evolution::dg::Actions::ComputeTimeDerivative<
-          volume_dim, system, AllStepChoosers, local_time_stepping,
-          use_dg_element_collection>,
+          volume_dim, system, AllStepChoosers, use_dg_element_collection>,
       evolution::dg::Actions::ApplyBoundaryCorrectionsToTimeDerivative<
           volume_dim, use_dg_element_collection>,
       Actions::MutateApply<RecordTimeStepperData<system>>,
@@ -452,13 +451,10 @@ struct ScalarTensorTemplateBase {
           ::domain::CheckFunctionsOfTimeAreReadyPostprocessor<volume_dim>,
           evolution::dg::ApplyLtsDenseBoundaryCorrections<derived_metavars>>>,
       control_system::Actions::LimitTimeStep<ControlSystems>,
-      Actions::MutateApply<UpdateU<system, local_time_stepping>>,
+      Actions::MutateApply<UpdateU<system>>,
       evolution::dg::Actions::ApplyLtsBoundaryCorrections<
           volume_dim, use_dg_element_collection>,
-      tmpl::conditional_t<
-          local_time_stepping,
-          tmpl::list<Actions::MutateApply<ChangeTimeStepperOrder<system>>>,
-          tmpl::list<>>,
+      Actions::MutateApply<ChangeTimeStepperOrder<system>>,
       Actions::MutateApply<CleanHistory<system>>,
       Actions::MutateApply<evolution::dg::CleanMortarHistory<volume_dim>>,
       dg::Actions::SpectralFilter>;
@@ -466,8 +462,8 @@ struct ScalarTensorTemplateBase {
   template <bool UseControlSystems>
   using initialization_actions = tmpl::list<
       Initialization::Actions::InitializeItems<
-          Initialization::TimeStepping<derived_metavars, TimeStepperBase,
-                                       UseControlSystems, local_time_stepping>,
+          Initialization::TimeStepping<derived_metavars, TimeStepper,
+                                       UseControlSystems, true>,
           evolution::dg::Initialization::Domain<derived_metavars,
                                                 UseControlSystems>,
           Initialization::TimeStepperHistory<derived_metavars>>,

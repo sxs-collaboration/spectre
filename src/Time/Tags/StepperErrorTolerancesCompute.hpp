@@ -37,41 +37,30 @@ struct VariableOrderAlgorithm;
 
 namespace Tags {
 namespace StepperErrorEstimatesEnabledCompute_detail {
-void lts_function(
+void function(
     gsl::not_null<bool*> error_estimates_enabled,
     const ::EventsAndTriggers& events_and_triggers,
     const std::vector<std::unique_ptr<::StepChooser<StepChooserUse::LtsStep>>>&
         step_choosers);
-
-void gts_function(gsl::not_null<bool*> error_estimates_enabled,
-                  const ::EventsAndTriggers& events_and_triggers);
 }  // namespace StepperErrorEstimatesEnabledCompute_detail
 
 /// \ingroup TimeGroup
 /// \brief Searches the StepChoosers for any requesting error estimates.
-template <bool LocalTimeStepping,
-          template <typename> typename CacheTagPrefix = std::type_identity_t>
+template <template <typename> typename CacheTagPrefix = std::type_identity_t>
 struct StepperErrorEstimatesEnabledCompute : db::ComputeTag,
                                              StepperErrorEstimatesEnabled {
   using base = StepperErrorEstimatesEnabled;
   using return_type = type;
-  using argument_tags = tmpl::conditional_t<
-      LocalTimeStepping,
+  using argument_tags =
       tmpl::list<::Tags::EventsAndTriggers<Triggers::WhenToCheck::AtSlabs>,
-                 CacheTagPrefix<::Tags::LtsStepChoosers>>,
-      tmpl::list<::Tags::EventsAndTriggers<Triggers::WhenToCheck::AtSlabs>>>;
+                 CacheTagPrefix<::Tags::LtsStepChoosers>>;
 
-  static constexpr auto function = []() {
-    if constexpr (LocalTimeStepping) {
-      return &StepperErrorEstimatesEnabledCompute_detail::lts_function;
-    } else {
-      return &StepperErrorEstimatesEnabledCompute_detail::gts_function;
-    }
-  }();
+  static constexpr auto function =
+      &StepperErrorEstimatesEnabledCompute_detail::function;
 };
 
 namespace StepperErrorTolerancesCompute_detail {
-void lts_impl(
+void function(
     gsl::not_null<::StepperErrorTolerances*> tolerances,
     const ::EventsAndTriggers& events_and_triggers,
     const std::vector<std::unique_ptr<::StepChooser<StepChooserUse::LtsStep>>>&
@@ -79,31 +68,24 @@ void lts_impl(
     const ::TimeStepper& time_stepper,
     const ::VariableOrderAlgorithm& variable_order_algorithm,
     const std::type_index& tag_type);
-
-void gts_impl(gsl::not_null<::StepperErrorTolerances*> tolerances,
-              const ::EventsAndTriggers& events_and_triggers,
-              const std::type_index& tag_type);
 }  // namespace StepperErrorTolerancesCompute_detail
 
 /// \ingroup TimeGroup
 /// \brief A tag that contains the error tolerances if any StepChooser
 /// requests an error estimate for the variable.
-template <typename EvolvedVariableTag, bool LocalTimeStepping,
+template <typename EvolvedVariableTag,
           template <typename> typename CacheTagPrefix = std::type_identity_t>
 struct StepperErrorTolerancesCompute
     : db::ComputeTag,
       StepperErrorTolerances<EvolvedVariableTag> {
   using base = StepperErrorTolerances<EvolvedVariableTag>;
   using return_type = typename base::type;
-  using argument_tags = tmpl::conditional_t<
-      LocalTimeStepping,
+  using argument_tags =
       tmpl::list<::Tags::EventsAndTriggers<Triggers::WhenToCheck::AtSlabs>,
                  CacheTagPrefix<::Tags::LtsStepChoosers>,
                  CacheTagPrefix<::Tags::TimeStepper<::TimeStepper>>,
-                 CacheTagPrefix<::Tags::VariableOrderAlgorithm>>,
-      tmpl::list<::Tags::EventsAndTriggers<Triggers::WhenToCheck::AtSlabs>>>;
+                 CacheTagPrefix<::Tags::VariableOrderAlgorithm>>;
 
-  // local time stepping
   static void function(
       const gsl::not_null<::StepperErrorTolerances*> tolerances,
       const ::EventsAndTriggers& events_and_triggers,
@@ -112,17 +94,9 @@ struct StepperErrorTolerancesCompute
           step_choosers,
       const ::TimeStepper& time_stepper,
       const ::VariableOrderAlgorithm& variable_order_algorithm) {
-    StepperErrorTolerancesCompute_detail::lts_impl(
+    StepperErrorTolerancesCompute_detail::function(
         tolerances, events_and_triggers, step_choosers, time_stepper,
         variable_order_algorithm, typeid(EvolvedVariableTag));
-  }
-
-  // global time stepping
-  static void function(
-      const gsl::not_null<::StepperErrorTolerances*> tolerances,
-      const ::EventsAndTriggers& events_and_triggers) {
-    StepperErrorTolerancesCompute_detail::gts_impl(
-        tolerances, events_and_triggers, typeid(EvolvedVariableTag));
   }
 };
 }  // namespace Tags

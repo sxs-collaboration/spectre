@@ -49,6 +49,7 @@ EventsAndTriggersAtSteps:
 
 Cce:
   Evolution:
+    LocalTimeStepping: Conservative
     TimeStepper:
       AdamsBashforth:
         Order: 3 # Going to higher order doesn't seem necessary for CCE

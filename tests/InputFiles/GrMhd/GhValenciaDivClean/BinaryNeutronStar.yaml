@@ -20,12 +20,16 @@ ResourceInfo:
 Evolution:
   InitialTime: 0.0
   # The initial time step gets overridden by `ChangeSlabSize` below
-  InitialTimeStep: 0.075
+  InitialTimeStep: &initial_time_step 0.075
+  InitialSlabSize: *initial_time_step
   MinimumTimeStep: 1e-7
-  # Control systems only work with AdamsBashforth
+  LocalTimeStepping: Off
   TimeStepper:
     AdamsMoultonPcMonotonic:
       Order: 3
+  LtsStepChoosers:
+  VariableOrderAlgorithm:
+    GoalOrder: 3
 
 PhaseChangeAndTriggers:
   - Trigger:
@@ -441,6 +445,8 @@ EventsAndTriggersAtSlabs:
         Value: 6000.0 # About 9 orbits plus 1200M post-merger
     Events:
       - Completion
+
+EventsAndTriggersAtSteps:
 
 InterpolationTargets:
   BondiSachsInterpolation:

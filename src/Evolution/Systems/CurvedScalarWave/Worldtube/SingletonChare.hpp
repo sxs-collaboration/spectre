@@ -76,8 +76,8 @@ struct WorldtubeSingleton {
 
   using initialization_actions = tmpl::list<
       ::Initialization::Actions::InitializeItems<
-          ::Initialization::TimeStepping<Metavariables, TimeStepperBase, false,
-                                         local_time_stepping>,
+          ::Initialization::TimeStepping<Metavariables, TimeStepper, false,
+                                         false>,
           Initialization::InitializeEvolvedVariables,
           Initialization::InitializeElementFacesGridCoordinates<Dim>>,
       ::Initialization::Actions::AddComputeTags<
@@ -94,7 +94,7 @@ struct WorldtubeSingleton {
       Actions::SendAccelerationTerms<Metavariables>,
       ::Actions::MutateApply<UpdateAcceleration>,
       ::Actions::MutateApply<RecordTimeStepperData<worldtube_system>>,
-      ::Actions::MutateApply<UpdateU<worldtube_system, local_time_stepping>>,
+      ::Actions::MutateApply<UpdateU<worldtube_system>>,
       ::Actions::MutateApply<CleanHistory<worldtube_system>>,
       Actions::SendToElements<Metavariables>,
       domain::Actions::CheckFunctionsOfTimeAreReady<Dim>>;

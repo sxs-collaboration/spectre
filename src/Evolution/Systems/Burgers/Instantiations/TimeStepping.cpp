@@ -10,5 +10,4 @@
 template class ChangeTimeStepperOrder<Burgers::System>;
 template class CleanHistory<Burgers::System>;
 template class RecordTimeStepperData<Burgers::System>;
-template class UpdateU<Burgers::System, false>;
-template class UpdateU<Burgers::System, true>;
+template class UpdateU<Burgers::System>;

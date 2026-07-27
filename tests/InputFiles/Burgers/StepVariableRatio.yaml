@@ -26,6 +26,7 @@ Evolution:
   InitialSlabSize: 0.01
   InitialTimeStep: 0.001
   MinimumTimeStep: 1e-7
+  LocalTimeStepping: Conservative
   TimeStepper:
     AdamsBashforth:
       Order: 3

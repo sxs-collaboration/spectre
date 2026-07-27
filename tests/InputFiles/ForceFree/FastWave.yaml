@@ -19,10 +19,15 @@ InitialData: &InitialData
 
 Evolution:
   InitialTime: 0.0
-  InitialTimeStep: 0.005
+  InitialTimeStep: &initial_time_step 0.005
+  InitialSlabSize: *initial_time_step
   MinimumTimeStep: 1e-7
+  LocalTimeStepping: Off
   TimeStepper:
     ClassicalRungeKutta4
+  LtsStepChoosers:
+  VariableOrderAlgorithm:
+    GoalOrder: 4
 
 EvolutionSystem:
   ForceFree:
@@ -75,6 +80,8 @@ EventsAndTriggersAtSlabs:
           Values: [2]
     Events:
       - Completion
+
+EventsAndTriggersAtSteps:
 
 EventsAndDenseTriggers:
 

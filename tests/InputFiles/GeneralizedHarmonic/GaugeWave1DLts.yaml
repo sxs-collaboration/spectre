@@ -1,19 +1,18 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-Executable: EvolveGhNoBlackHole3D
+Executable: EvolveGhNoBlackHole1D
 Testing:
   Check: parse;execute
   Timeout: 8
-  Priority: High
 ExpectedOutput:
-  - GhGaugeWave3DVolume0.h5
-  - GhGaugeWave3DReductions.h5
+  - GhGaugeWave1DVolume0.h5
+  - GhGaugeWave1DReductions.h5
 
 ---
 
 Parallelization:
-  ElementDistribution: NumGridPoints
+  ElementDistribution: NumGridPointsAndGridSpacing
 
 ResourceInfo:
   AvoidGlobalProc0: false
@@ -21,14 +20,21 @@ ResourceInfo:
 
 Evolution:
   InitialTime: 0.0
-  InitialTimeStep: &initial_time_step 0.0002
-  InitialSlabSize: *initial_time_step
+  InitialTimeStep: 0.002
+  InitialSlabSize: 0.1
   MinimumTimeStep: 1e-7
-  LocalTimeStepping: Off
+  LocalTimeStepping: Conservative
   TimeStepper:
     AdamsBashforth:
       Order: 3
   LtsStepChoosers:
+    - PreventRapidIncrease
+    - ErrorControl:
+        AbsoluteTolerance: 1.0e-8
+        RelativeTolerance: 1.0e-6
+        SafetyFactor: 0.95
+        MaxFactor: 2.0
+        MinFactor: 0.25
   VariableOrderAlgorithm:
     GoalOrder: 3
 
@@ -58,18 +64,27 @@ PhaseChangeAndTriggers:
 
 InitialData: &InitialData
   GeneralizedHarmonic(GaugeWave):
-    Amplitude: 0.1
-    Wavelength: 1.0
+    Amplitude: 0.5
+    Wavelength: 6.283185307179586
 
 DomainCreator:
-  Brick:
-    LowerBound: [0.0, 0.0, 0.0]
-    UpperBound: [1.0, 1.0, 1.0]
-    Distribution: [Linear, Linear, Linear]
-    InitialRefinement: [1, 1, 1]
-    InitialGridPoints: [5, 5, 5]
-    TimeDependence: None
-    BoundaryConditions: [Periodic, Periodic, Periodic]
+  RotatedIntervals:
+    LowerBound: [0.0]
+    Midpoint: [3.0]
+    UpperBound: [6.283185307179586]
+    InitialRefinement: [1]
+    InitialGridPoints: [[7,7]]
+    TimeDependence:
+      UniformTranslation:
+         InitialTime: 0.0
+         Velocity: [0.5]
+    BoundaryConditions:
+      LowerBoundary:
+        DirichletAnalytic:
+          AnalyticPrescription: *InitialData
+      UpperBoundary:
+        DirichletAnalytic:
+          AnalyticPrescription: *InitialData
 
 EvolutionSystem:
   GeneralizedHarmonic:
@@ -81,24 +96,24 @@ EvolutionSystem:
         Constant: 1.0
         Amplitude: 0.0
         Width: 1.0
-        Center: [0.0, 0.0, 0.0]
+        Center: [0.0]
     DampingFunctionGamma1:
       GaussianPlusConstant:
         Constant: -1.0
         Amplitude: 0.0
         Width: 1.0
-        Center: [0.0, 0.0, 0.0]
+        Center: [0.0]
     DampingFunctionGamma2:
       GaussianPlusConstant:
         Constant: 1.0
         Amplitude: 0.0
         Width: 1.0
-        Center: [0.0, 0.0, 0.0]
+        Center: [0.0]
 
 SpatialDiscretization:
   DiscontinuousGalerkin:
     Formulation: StrongInertial
-    Quadrature: GaussLobatto
+    Quadrature: Gauss
     Filtering:
       - Hypercube:
           HalfPower: 64
@@ -146,7 +161,6 @@ EventsAndTriggersAtSlabs:
             - Phi
             - PointwiseL2Norm(GaugeConstraint)
             - PointwiseL2Norm(ThreeIndexConstraint)
-            - PointwiseL2Norm(FourIndexConstraint)
           InterpolateToMesh: None
           ProjectToMesh: None
           CoordinatesFloatingPointType: Double
@@ -155,7 +169,7 @@ EventsAndTriggersAtSlabs:
   - Trigger:
       Slabs:
         Specified:
-          Values: [2]
+          Values: [5]
     Events:
       - Completion
 
@@ -164,5 +178,5 @@ EventsAndTriggersAtSteps:
 EventsAndDenseTriggers:
 
 Observers:
-  VolumeFileName: "GhGaugeWave3DVolume"
-  ReductionFileName: "GhGaugeWave3DReductions"
+  VolumeFileName: "GhGaugeWave1DVolume"
+  ReductionFileName: "GhGaugeWave1DReductions"

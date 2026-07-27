@@ -354,7 +354,7 @@ struct get_primitive_tags_for_face {
  *   - `evolution::dg::Tags::MortarData<Dim>`
  */
 template <size_t Dim, typename EvolutionSystem, typename DgStepChoosers,
-          bool LocalTimeStepping, bool UseNodegroupDgElements>
+          bool UseNodegroupDgElements>
 struct ComputeTimeDerivative {
   using inbox_tags =
       tmpl::list<evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<
@@ -362,10 +362,7 @@ struct ComputeTimeDerivative {
   using const_global_cache_tags = tmpl::append<
       tmpl::list<::dg::Tags::Formulation, evolution::Tags::BoundaryCorrection,
                  domain::Tags::ExternalBoundaryConditions<Dim>>,
-      tmpl::conditional_t<
-          LocalTimeStepping,
-          typename ChangeStepSize<DgStepChoosers>::const_global_cache_tags,
-          tmpl::list<>>>;
+      typename ChangeStepSize<DgStepChoosers>::const_global_cache_tags>;
 
   template <typename DbTagsList, typename... InboxTags, typename ArrayIndex,
             typename ActionList, typename ParallelComponent,
@@ -389,13 +386,12 @@ struct ComputeTimeDerivative {
 };
 
 template <size_t Dim, typename EvolutionSystem, typename DgStepChoosers,
-          bool LocalTimeStepping, bool UseNodegroupDgElements>
+          bool UseNodegroupDgElements>
 template <typename DbTagsList, typename... InboxTags, typename ArrayIndex,
           typename ActionList, typename ParallelComponent,
           typename Metavariables>
-Parallel::iterable_action_return_t
-ComputeTimeDerivative<Dim, EvolutionSystem, DgStepChoosers, LocalTimeStepping,
-                      UseNodegroupDgElements>::
+Parallel::iterable_action_return_t ComputeTimeDerivative<
+    Dim, EvolutionSystem, DgStepChoosers, UseNodegroupDgElements>::
     apply(db::DataBox<DbTagsList>& box,
           tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
           Parallel::GlobalCache<Metavariables>& cache,
@@ -702,9 +698,7 @@ ComputeTimeDerivative<Dim, EvolutionSystem, DgStepChoosers, LocalTimeStepping,
         }
       });
 
-  if constexpr (LocalTimeStepping) {
-    db::mutate_apply<ChangeStepSize<DgStepChoosers>>(make_not_null(&box));
-  }
+  db::mutate_apply<ChangeStepSize<DgStepChoosers>>(make_not_null(&box));
 
   send_data_for_fluxes<ParallelComponent>(make_not_null(&cache),
                                           make_not_null(&box), volume_fluxes);
@@ -712,11 +706,11 @@ ComputeTimeDerivative<Dim, EvolutionSystem, DgStepChoosers, LocalTimeStepping,
 }
 
 template <size_t Dim, typename EvolutionSystem, typename DgStepChoosers,
-          bool LocalTimeStepping, bool UseNodegroupDgElements>
+          bool UseNodegroupDgElements>
 template <typename ParallelComponent, typename DbTagsList,
           typename Metavariables>
 void ComputeTimeDerivative<Dim, EvolutionSystem, DgStepChoosers,
-                           LocalTimeStepping, UseNodegroupDgElements>::
+                           UseNodegroupDgElements>::
     send_data_for_fluxes(
         const gsl::not_null<Parallel::GlobalCache<Metavariables>*> cache,
         const gsl::not_null<db::DataBox<DbTagsList>*> box,

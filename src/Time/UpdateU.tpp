@@ -19,11 +19,9 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 
-template <typename System, bool LocalTimeStepping,
-          template <typename> typename CacheTagPrefix,
+template <typename System, template <typename> typename CacheTagPrefix,
           typename... VariablesTags>
-void UpdateU<System, LocalTimeStepping, CacheTagPrefix,
-             tmpl::list<VariablesTags...>>::
+void UpdateU<System, CacheTagPrefix, tmpl::list<VariablesTags...>>::
     apply(
         const gsl::not_null<typename VariablesTags::type*>... vars,
         const typename tmpl::has_type<

@@ -10,6 +10,7 @@
 
 #include "DataStructures/DataBox/Tag.hpp"
 #include "Time/LtsMode.hpp"
+#include "Time/OptionTags/LocalTimeStepping.hpp"
 #include "Time/OptionTags/TimeStepper.hpp"
 #include "Time/TimeSteppers/LtsTimeStepper.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"
@@ -36,15 +37,14 @@ template <typename StepperType, bool MonotonicLts = false>
 struct ConcreteTimeStepper : db::SimpleTag {
   using type = std::unique_ptr<StepperType>;
   template <typename Metavars>
-  using option_tags = tmpl::list<::OptionTags::TimeStepper<StepperType>>;
+  using option_tags = tmpl::list<::OptionTags::TimeStepper<StepperType>,
+                                 ::OptionTags::LocalTimeStepping>;
 
   static constexpr bool pass_metavariables = true;
   template <typename Metavars>
   static std::unique_ptr<StepperType> create_from_options(
-      const std::unique_ptr<StepperType>& time_stepper) {
-    const ::LtsMode lts_mode = Metavars::local_time_stepping
-                                   ? ::LtsMode::Conservative
-                                   : ::LtsMode::Off;
+      const std::unique_ptr<StepperType>& time_stepper,
+      const ::LtsMode lts_mode) {
     using factory_types =
         tmpl::at<typename Metavars::factory_creation::factory_classes,
                  StepperType>;

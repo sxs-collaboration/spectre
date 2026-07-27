@@ -21,10 +21,15 @@ ResourceInfo:
 
 Evolution:
   InitialTime: 0.0
-  InitialTimeStep: 0.0002
+  InitialTimeStep: &initial_time_step 0.0002
+  InitialSlabSize: *initial_time_step
   MinimumTimeStep: 1e-7
+  LocalTimeStepping: Off
   TimeStepper:
     DormandPrince5:
+  LtsStepChoosers:
+  VariableOrderAlgorithm:
+    GoalOrder: 5
 
 Amr:
   Criteria:
@@ -150,6 +155,8 @@ EventsAndTriggersAtSlabs:
           Values: [5]
     Events:
       - Completion
+
+EventsAndTriggersAtSteps:
 
 EventsAndDenseTriggers:
 

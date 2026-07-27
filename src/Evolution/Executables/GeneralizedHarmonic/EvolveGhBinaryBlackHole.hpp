@@ -597,8 +597,7 @@ struct EvolutionMetavars {
 
   using step_actions = tmpl::list<
       evolution::dg::Actions::ComputeTimeDerivative<
-          volume_dim, system, AllStepChoosers, local_time_stepping,
-          use_dg_element_collection>,
+          volume_dim, system, AllStepChoosers, use_dg_element_collection>,
       evolution::dg::Actions::ApplyBoundaryCorrectionsToTimeDerivative<
           volume_dim, use_dg_element_collection>,
       Actions::MutateApply<RecordTimeStepperData<system>>,
@@ -606,22 +605,18 @@ struct EvolutionMetavars {
           ::domain::CheckFunctionsOfTimeAreReadyPostprocessor<volume_dim>,
           evolution::dg::ApplyLtsDenseBoundaryCorrections<EvolutionMetavars>>>,
       control_system::Actions::LimitTimeStep<control_systems>,
-      Actions::MutateApply<UpdateU<system, local_time_stepping>>,
+      Actions::MutateApply<UpdateU<system>>,
       evolution::dg::Actions::ApplyLtsBoundaryCorrections<
           volume_dim, use_dg_element_collection>,
-      tmpl::conditional_t<
-          local_time_stepping,
-          tmpl::list<Actions::MutateApply<ChangeTimeStepperOrder<system>>>,
-          tmpl::list<>>,
+      Actions::MutateApply<ChangeTimeStepperOrder<system>>,
       Actions::MutateApply<CleanHistory<system>>,
       Actions::MutateApply<evolution::dg::CleanMortarHistory<volume_dim>>,
       dg::Actions::SpectralFilter>;
 
   using initialization_actions = tmpl::list<
       Initialization::Actions::InitializeItems<
-          Initialization::TimeStepping<EvolutionMetavars, TimeStepperBase,
-                                       use_control_systems,
-                                       local_time_stepping>,
+          Initialization::TimeStepping<EvolutionMetavars, TimeStepper,
+                                       use_control_systems, true>,
           evolution::dg::Initialization::Domain<EvolutionMetavars,
                                                 use_control_systems>,
           ::amr::Initialization::Initialize<volume_dim, EvolutionMetavars>,
@@ -687,10 +682,8 @@ struct EvolutionMetavars {
               Parallel::Phase::Evolve,
               tmpl::flatten<tmpl::list<
                   ::domain::Actions::CheckFunctionsOfTimeAreReady<volume_dim>,
-                  std::conditional_t<local_time_stepping,
-                                     evolution::Actions::RunEventsAndTriggers<
-                                         Triggers::WhenToCheck::AtSteps>,
-                                     tmpl::list<>>,
+                  evolution::Actions::RunEventsAndTriggers<
+                      Triggers::WhenToCheck::AtSteps>,
                   evolution::Actions::RunEventsAndTriggers<
                       Triggers::WhenToCheck::AtSlabs>,
                   Actions::ChangeSlabSize,
@@ -738,7 +731,7 @@ struct EvolutionMetavars {
             volume_dim, typename system::variables_tag::tags_list>,
         ::amr::projectors::DefaultInitialize<
             Initialization::Tags::InitialTimeDelta,
-            Initialization::Tags::InitialSlabSize<local_time_stepping>,
+            Initialization::Tags::InitialSlabSize,
             ::domain::Tags::InitialExtents<volume_dim>,
             ::domain::Tags::InitialRefinementLevels<volume_dim>,
             evolution::dg::Tags::Quadrature,

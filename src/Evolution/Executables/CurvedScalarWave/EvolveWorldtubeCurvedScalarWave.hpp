@@ -230,6 +230,9 @@ struct EvolutionMetavars {
                    tmpl::list<PhaseControl::VisitAndReturn<
                                   Parallel::Phase::LoadBalancing>,
                               PhaseControl::CheckpointAndExitAfterWallclock>>,
+        tmpl::pair<StepChooser<StepChooserUse::LtsStep>,
+                   tmpl::push_back<StepChoosers::standard_step_choosers<system>,
+                                   StepChoosers::ByBlock<volume_dim>>>,
         tmpl::pair<StepChooser<StepChooserUse::Slab>,
                    tmpl::push_back<StepChoosers::standard_slab_choosers<system>,
                                    StepChoosers::ByBlock<volume_dim>>>,
@@ -256,13 +259,12 @@ struct EvolutionMetavars {
       CurvedScalarWave::Worldtube::Actions::IteratePunctureField,
       CurvedScalarWave::Worldtube::Actions::ReceiveWorldtubeData,
       evolution::dg::Actions::ComputeTimeDerivative<
-          volume_dim, system, AllStepChoosers, local_time_stepping,
-          use_dg_element_collection>,
+          volume_dim, system, AllStepChoosers, use_dg_element_collection>,
       evolution::dg::Actions::ApplyBoundaryCorrectionsToTimeDerivative<
           volume_dim, use_dg_element_collection>,
       Actions::MutateApply<RecordTimeStepperData<system>>,
       evolution::Actions::RunEventsAndDenseTriggers<tmpl::list<>>,
-      Actions::MutateApply<UpdateU<system, local_time_stepping>>,
+      Actions::MutateApply<UpdateU<system>>,
       Actions::MutateApply<CleanHistory<system>>,
       Actions::MutateApply<evolution::dg::CleanMortarHistory<volume_dim>>,
       dg::Actions::SpectralFilter>>;
@@ -288,8 +290,8 @@ struct EvolutionMetavars {
 
   using initialization_actions = tmpl::list<
       Initialization::Actions::InitializeItems<
-          Initialization::TimeStepping<EvolutionMetavars, TimeStepperBase,
-                                       false, local_time_stepping>,
+          Initialization::TimeStepping<EvolutionMetavars, TimeStepper, false,
+                                       false>,
           evolution::dg::Initialization::Domain<EvolutionMetavars>,
           Initialization::TimeStepperHistory<EvolutionMetavars>>,
       Initialization::Actions::NonconservativeSystem<system>,
@@ -347,10 +349,8 @@ struct EvolutionMetavars {
               Parallel::Phase::Evolve,
               tmpl::flatten<tmpl::list<
                   domain::Actions::CheckFunctionsOfTimeAreReady<volume_dim>,
-                  std::conditional_t<local_time_stepping,
-                                     evolution::Actions::RunEventsAndTriggers<
-                                         Triggers::WhenToCheck::AtSteps>,
-                                     tmpl::list<>>,
+                  evolution::Actions::RunEventsAndTriggers<
+                      Triggers::WhenToCheck::AtSteps>,
                   evolution::Actions::RunEventsAndTriggers<
                       Triggers::WhenToCheck::AtSlabs>,
                   Actions::ChangeSlabSize, step_actions,

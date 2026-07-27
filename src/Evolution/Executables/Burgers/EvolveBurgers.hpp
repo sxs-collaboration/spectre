@@ -235,20 +235,16 @@ struct EvolutionMetavars {
 
   using dg_step_actions = tmpl::flatten<tmpl::list<
       evolution::dg::Actions::ComputeTimeDerivative<
-          volume_dim, system, AllStepChoosers, local_time_stepping,
-          use_dg_element_collection>,
+          volume_dim, system, AllStepChoosers, use_dg_element_collection>,
       evolution::dg::Actions::ApplyBoundaryCorrectionsToTimeDerivative<
           volume_dim, use_dg_element_collection>,
       Actions::MutateApply<RecordTimeStepperData<system>>,
       evolution::Actions::RunEventsAndDenseTriggers<tmpl::list<
           evolution::dg::ApplyLtsDenseBoundaryCorrections<EvolutionMetavars>>>,
-      Actions::MutateApply<UpdateU<system, local_time_stepping>>,
+      Actions::MutateApply<UpdateU<system>>,
       evolution::dg::Actions::ApplyLtsBoundaryCorrections<
           volume_dim, use_dg_element_collection>,
-      tmpl::conditional_t<
-          local_time_stepping,
-          tmpl::list<Actions::MutateApply<ChangeTimeStepperOrder<system>>>,
-          tmpl::list<>>,
+      Actions::MutateApply<ChangeTimeStepperOrder<system>>,
       tmpl::conditional_t<use_dg_subcell,
                           evolution::dg::subcell::Actions::TciAndRollback<
                               Burgers::subcell::TciOnDgGrid>,
@@ -263,11 +259,9 @@ struct EvolutionMetavars {
       dg_step_actions,
       Actions::Goto<evolution::dg::subcell::Actions::Labels::EndOfSolvers>,
       Actions::Label<evolution::dg::subcell::Actions::Labels::BeginSubcell>,
-      tmpl::conditional_t<local_time_stepping,
-                          // This is just to adjust for FixedLtsRatio, so we
-                          // can pass an empty list of StepChoosers.
-                          Actions::MutateApply<ChangeStepSize<tmpl::list<>>>,
-                          tmpl::list<>>,
+      // This is just to adjust for FixedLtsRatio, so we
+      // can pass an empty list of StepChoosers.
+      Actions::MutateApply<ChangeStepSize<tmpl::list<>>>,
       evolution::dg::subcell::Actions::SendDataForReconstruction<
           volume_dim, Burgers::subcell::GhostVariables,
           use_dg_element_collection>,
@@ -278,7 +272,7 @@ struct EvolutionMetavars {
           Burgers::subcell::TimeDerivative>,
       Actions::MutateApply<RecordTimeStepperData<system>>,
       evolution::Actions::RunEventsAndDenseTriggers<tmpl::list<>>,
-      Actions::MutateApply<UpdateU<system, local_time_stepping>>,
+      Actions::MutateApply<UpdateU<system>>,
       Actions::MutateApply<CleanHistory<system>>,
       Actions::MutateApply<evolution::dg::CleanMortarHistory<volume_dim>>,
       evolution::dg::subcell::Actions::TciAndSwitchToDg<
@@ -305,8 +299,8 @@ struct EvolutionMetavars {
 
   using initialization_actions = tmpl::list<
       Initialization::Actions::InitializeItems<
-          Initialization::TimeStepping<EvolutionMetavars, TimeStepperBase,
-                                       false, local_time_stepping>,
+          Initialization::TimeStepping<EvolutionMetavars, TimeStepper, false,
+                                       true>,
           evolution::dg::Initialization::Domain<EvolutionMetavars>,
           Initialization::TimeStepperHistory<EvolutionMetavars>>,
       Initialization::Actions::ConservativeSystem<system>,
@@ -362,17 +356,15 @@ struct EvolutionMetavars {
 
           Parallel::PhaseActions<
               Parallel::Phase::Evolve,
-              tmpl::flatten<tmpl::list<
-                  std::conditional_t<local_time_stepping,
-                                     evolution::Actions::RunEventsAndTriggers<
-                                         Triggers::WhenToCheck::AtSteps>,
-                                     tmpl::list<>>,
-                  evolution::Actions::RunEventsAndTriggers<
-                      Triggers::WhenToCheck::AtSlabs>,
-                  Actions::ChangeSlabSize,
-                  evolution::dg::Actions::ChangeFixedLtsRatio, step_actions,
-                  Actions::MutateApply<AdvanceTime<>>,
-                  PhaseControl::Actions::ExecutePhaseChange>>>>>;
+              tmpl::flatten<
+                  tmpl::list<evolution::Actions::RunEventsAndTriggers<
+                                 Triggers::WhenToCheck::AtSteps>,
+                             evolution::Actions::RunEventsAndTriggers<
+                                 Triggers::WhenToCheck::AtSlabs>,
+                             Actions::ChangeSlabSize,
+                             evolution::dg::Actions::ChangeFixedLtsRatio,
+                             step_actions, Actions::MutateApply<AdvanceTime<>>,
+                             PhaseControl::Actions::ExecutePhaseChange>>>>>;
 
   struct registration
       : tt::ConformsTo<Parallel::protocols::RegistrationMetavariables> {

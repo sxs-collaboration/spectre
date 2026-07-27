@@ -11,17 +11,14 @@
 
 #define NEUTRINO(data) BOOST_PP_TUPLE_ELEM(0, data)
 
-#define INSTANTIATION(_, data)                                              \
-  template class ChangeTimeStepperOrder<                                    \
-      grmhd::GhValenciaDivClean::System<NEUTRINO(data)>>;                   \
-  template class CleanHistory<                                              \
-      grmhd::GhValenciaDivClean::System<NEUTRINO(data)>>;                   \
-  template class RecordTimeStepperData<                                     \
-      grmhd::GhValenciaDivClean::System<NEUTRINO(data)>>;                   \
-  template class UpdateU<grmhd::GhValenciaDivClean::System<NEUTRINO(data)>, \
-                         false>;                                            \
-  template class UpdateU<grmhd::GhValenciaDivClean::System<NEUTRINO(data)>, \
-                         true>;
+#define INSTANTIATION(_, data)                            \
+  template class ChangeTimeStepperOrder<                  \
+      grmhd::GhValenciaDivClean::System<NEUTRINO(data)>>; \
+  template class CleanHistory<                            \
+      grmhd::GhValenciaDivClean::System<NEUTRINO(data)>>; \
+  template class RecordTimeStepperData<                   \
+      grmhd::GhValenciaDivClean::System<NEUTRINO(data)>>; \
+  template class UpdateU<grmhd::GhValenciaDivClean::System<NEUTRINO(data)>>;
 
 GENERATE_INSTANTIATIONS(INSTANTIATION,
                         (RadiationTransport::NoNeutrinos::System))

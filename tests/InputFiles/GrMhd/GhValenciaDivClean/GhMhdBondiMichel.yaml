@@ -21,11 +21,16 @@ ResourceInfo:
 
 Evolution:
   InitialTime: 0.0
-  InitialTimeStep: 0.0001
+  InitialTimeStep: &initial_time_step 0.0001
+  InitialSlabSize: *initial_time_step
   MinimumTimeStep: 1e-7
+  LocalTimeStepping: Off
   TimeStepper:
     AdamsBashforth:
       Order: 3
+  LtsStepChoosers:
+  VariableOrderAlgorithm:
+    GoalOrder: 3
 
 PhaseChangeAndTriggers:
   - Trigger:
@@ -236,6 +241,8 @@ EventsAndTriggersAtSlabs:
           Values: [2]
     Events:
       - Completion
+
+EventsAndTriggersAtSteps:
 
 ApparentHorizons:
   LMax: 4

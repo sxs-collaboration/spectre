@@ -51,6 +51,7 @@
 #include "Parallel/Reduction.hpp"
 #include "Parallel/TypeTraits.hpp"
 #include "ParallelAlgorithms/Actions/AddComputeTags.hpp"
+#include "ParallelAlgorithms/Actions/AddSimpleTags.hpp"
 #include "ParallelAlgorithms/Actions/InitializeItems.hpp"
 #include "ParallelAlgorithms/Actions/MemoryMonitor/ContributeMemoryData.hpp"
 #include "ParallelAlgorithms/Actions/MutateApply.hpp"
@@ -66,6 +67,7 @@
 #include "ParallelAlgorithms/Amr/Criteria/Tags/Criteria.hpp"
 #include "ParallelAlgorithms/Amr/Criteria/TruncationError.hpp"
 #include "ParallelAlgorithms/Amr/Criteria/Type.hpp"
+#include "ParallelAlgorithms/Amr/Projectors/CopyFromCreatorOrLeaveAsIs.hpp"
 #include "ParallelAlgorithms/Amr/Projectors/DefaultInitialize.hpp"
 #include "ParallelAlgorithms/Amr/Protocols/AmrMetavariables.hpp"
 #include "ParallelAlgorithms/Events/Completion.hpp"
@@ -75,7 +77,7 @@
 #include "ParallelAlgorithms/EventsAndTriggers/LogicalTriggers.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Trigger.hpp"
 #include "Time/AdvanceTime.hpp"
-#include "Time/Tags/StepperErrorTolerancesCompute.hpp"
+#include "Time/NoStepperErrorEstimates.hpp"
 #include "Time/TimeSteppers/Factory.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"
 #include "Time/Triggers/SlabCompares.hpp"
@@ -337,18 +339,18 @@ struct Metavariables {
               Parallel::Phase::Initialization,
               tmpl::list<
                   Initialization::Actions::InitializeItems<
-                      Initialization::TimeStepping<Metavariables,
-                                                   TimeStepperBase, false,
-                                                   local_time_stepping>,
+                      Initialization::TimeStepping<Metavariables, TimeStepper,
+                                                   false, false>,
                       evolution::dg::Initialization::Domain<Metavariables>,
                       ::amr::Initialization::Initialize<volume_dim,
                                                         Metavariables>,
                       Initialization::SetMeshType<Dim>>,
+                  Initialization::Actions::AddSimpleTags<
+                      NoStepperErrorEstimates>,
                   Initialization::Actions::AddComputeTags<tmpl::list<
                       ::domain::Tags::MinimumGridSpacingCompute<
                           Dim, Frame::Inertial>,
-                      ::domain::Tags::FlatLogicalMetricCompute<Dim>,
-                      ::Tags::StepperErrorEstimatesEnabledCompute<false>>>,
+                      ::domain::Tags::FlatLogicalMetricCompute<Dim>>>,
                   Parallel::Actions::TerminatePhase>>,
           Parallel::PhaseActions<
               Parallel::Phase::Register,
@@ -363,29 +365,29 @@ struct Metavariables {
                                             Parallel::Actions::TerminatePhase>>,
           Parallel::PhaseActions<
               Parallel::Phase::Execute,
-              tmpl::flatten<tmpl::list<
-                  Actions::MutateApply<AdvanceTime<>>,
-                  Actions::ExportCoordinates<Dim>,
-                  Actions::FindGlobalMinimumGridSpacing,
-                  std::conditional_t<local_time_stepping,
-                                     evolution::Actions::RunEventsAndTriggers<
-                                         Triggers::WhenToCheck::AtSteps>,
-                                     tmpl::list<>>,
-                  evolution::Actions::RunEventsAndTriggers<
-                      Triggers::WhenToCheck::AtSlabs>,
-                  PhaseControl::Actions::ExecutePhaseChange>>>>>;
+              tmpl::flatten<
+                  tmpl::list<Actions::MutateApply<AdvanceTime<>>,
+                             Actions::ExportCoordinates<Dim>,
+                             Actions::FindGlobalMinimumGridSpacing,
+                             evolution::Actions::RunEventsAndTriggers<
+                                 Triggers::WhenToCheck::AtSteps>,
+                             evolution::Actions::RunEventsAndTriggers<
+                                 Triggers::WhenToCheck::AtSlabs>,
+                             PhaseControl::Actions::ExecutePhaseChange>>>>>;
 
   struct amr : tt::ConformsTo<::amr::protocols::AmrMetavariables> {
     using element_array = dg_element_array;
-    using projectors = tmpl::list<
-        Initialization::ProjectTimeStepping<volume_dim>,
-        evolution::dg::Initialization::ProjectDomain<volume_dim>,
-        ::amr::projectors::DefaultInitialize<
-            Initialization::Tags::InitialTimeDelta,
-            Initialization::Tags::InitialSlabSize<local_time_stepping>,
-            ::domain::Tags::InitialExtents<Dim>,
-            ::domain::Tags::InitialRefinementLevels<Dim>,
-            evolution::dg::Tags::Quadrature>>;
+    using projectors =
+        tmpl::list<Initialization::ProjectTimeStepping<volume_dim>,
+                   evolution::dg::Initialization::ProjectDomain<volume_dim>,
+                   ::amr::projectors::DefaultInitialize<
+                       Initialization::Tags::InitialTimeDelta,
+                       Initialization::Tags::InitialSlabSize,
+                       ::domain::Tags::InitialExtents<Dim>,
+                       ::domain::Tags::InitialRefinementLevels<Dim>,
+                       evolution::dg::Tags::Quadrature>,
+                   ::amr::projectors::CopyFromCreatorOrLeaveAsIs<
+                       Tags::StepperErrorEstimatesEnabled>>;
     static constexpr bool keep_coarse_grids = false;
     static constexpr bool p_refine_only_in_event = false;
   };

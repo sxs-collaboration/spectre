@@ -11,6 +11,7 @@
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/TaggedTuple.hpp"
 #include "DataStructures/VariablesTag.hpp"
+#include "Evolution/Initialization/Evolution.hpp"
 #include "Evolution/Initialization/Tags.hpp"
 #include "Evolution/Systems/Cce/OptionTags.hpp"
 #include "Parallel/AlgorithmExecution.hpp"
@@ -68,11 +69,10 @@ namespace Actions {
  * ```
  * - Removes: nothing
  */
-template <typename EvolvedCoordinatesVariablesTag, typename EvolvedSwshTag,
-          bool local_time_stepping>
+template <typename EvolvedCoordinatesVariablesTag, typename EvolvedSwshTag>
 struct InitializeCharacteristicEvolutionTime {
   using simple_tags_from_options =
-      tmpl::list<Initialization::Tags::InitialSlabSize<local_time_stepping>,
+      tmpl::list<Initialization::Tags::InitialSlabSize,
                  ::Initialization::Tags::InitialTimeDelta>;
 
   using const_global_cache_tags = tmpl::list<
@@ -99,28 +99,21 @@ struct InitializeCharacteristicEvolutionTime {
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) {
-    const double initial_time_value = db::get<Tags::StartTime>(box);
-    const double slab_size =
-        db::get<::Initialization::Tags::InitialSlabSize<local_time_stepping>>(
-            box);
-
-    const Slab single_step_slab{initial_time_value,
-                                initial_time_value + slab_size};
-    const Time initial_time = single_step_slab.start();
-    TimeDelta initial_time_step;
-    const double initial_time_delta =
-        db::get<Initialization::Tags::InitialTimeDelta>(box);
-    if constexpr (local_time_stepping) {
-      initial_time_step =
-          choose_lts_step_size(initial_time, initial_time_delta);
-    } else {
-      (void)initial_time_delta;
-      initial_time_step = initial_time.slab().duration();
-    }
-
     const auto& time_stepper =
         db::get<Tags::CceEvolutionPrefix<::Tags::TimeStepper<TimeStepper>>>(
             box);
+    const double initial_time_value = db::get<Tags::StartTime>(box);
+
+    double unused_slab_size_goal{};
+    db::mutate_apply<
+        tmpl::list<::Tags::Next<::Tags::TimeStepId>, ::Tags::TimeStep>,
+        tmpl::list<>>(
+        Initialization::TimeStepping<Metavariables, TimeStepper, false, true>{},
+        make_not_null(&box), make_not_null(&unused_slab_size_goal),
+        initial_time_value,
+        db::get<::Initialization::Tags::InitialTimeDelta>(box),
+        db::get<::Initialization::Tags::InitialSlabSize>(box), time_stepper,
+        LtsMode::Conservative);
 
     const size_t starting_order =
         visit(
@@ -142,16 +135,11 @@ struct InitializeCharacteristicEvolutionTime {
     typename ::Tags::HistoryEvolvedVariables<evolved_swsh_variables_tag>::type
         swsh_history(starting_order);
     Initialization::mutate_assign<tmpl::list<
-        ::Tags::TimeStepId, ::Tags::Next<::Tags::TimeStepId>, ::Tags::TimeStep,
-        ::Tags::Time,
+        ::Tags::TimeStepId, ::Tags::Time,
         ::Tags::HistoryEvolvedVariables<EvolvedCoordinatesVariablesTag>,
         ::Tags::HistoryEvolvedVariables<evolved_swsh_variables_tag>>>(
-        make_not_null(&box), TimeStepId{},
-        TimeStepId{true,
-                   -static_cast<int64_t>(time_stepper.number_of_past_steps()),
-                   initial_time},
-        initial_time_step, initial_time_value, std::move(coordinate_history),
-        std::move(swsh_history));
+        make_not_null(&box), TimeStepId{}, initial_time_value,
+        std::move(coordinate_history), std::move(swsh_history));
     return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
 };

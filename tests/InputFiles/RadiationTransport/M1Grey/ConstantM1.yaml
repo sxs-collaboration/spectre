@@ -19,13 +19,18 @@ ResourceInfo:
 
 Evolution:
   InitialTime: 0.0
-  InitialTimeStep: 0.01
+  InitialTimeStep: &initial_time_step 0.01
+  InitialSlabSize: *initial_time_step
   MinimumTimeStep: 1e-7
+  LocalTimeStepping: Off
   TimeStepper:
     Rk3Kennedy:
   Imex:
     Mode: SemiImplicit
     SolveTolerance: 1.0e-5
+  LtsStepChoosers:
+  VariableOrderAlgorithm:
+    GoalOrder: 3
 
 PhaseChangeAndTriggers:
 
@@ -84,6 +89,8 @@ EventsAndTriggersAtSlabs:
           Values: [10]
     Events:
       - Completion
+
+EventsAndTriggersAtSteps:
 
 EventsAndDenseTriggers:
 

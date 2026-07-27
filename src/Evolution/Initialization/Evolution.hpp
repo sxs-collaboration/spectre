@@ -4,6 +4,7 @@
 #pragma once
 
 #include <algorithm>
+#include <cmath>
 #include <cstddef>
 #include <cstdint>
 #include <optional>
@@ -80,30 +81,6 @@ struct MortarInfo;
 /// \endcond
 
 namespace Initialization {
-
-namespace detail {
-inline Time initial_time(const bool time_runs_forward,
-                         const double initial_time_value,
-                         const double initial_slab_size) {
-  const Slab initial_slab =
-      time_runs_forward
-          ? Slab::with_duration_from_start(initial_time_value,
-                                           initial_slab_size)
-          : Slab::with_duration_to_end(initial_time_value, initial_slab_size);
-  return time_runs_forward ? initial_slab.start() : initial_slab.end();
-}
-
-template <typename TimeStepper>
-void set_next_time_step_id(const gsl::not_null<TimeStepId*> next_time_step_id,
-                           const Time& initial_time,
-                           const bool time_runs_forward,
-                           const TimeStepper& time_stepper) {
-  *next_time_step_id = TimeStepId(
-      time_runs_forward,
-      -static_cast<int64_t>(time_stepper.number_of_past_steps()), initial_time);
-}
-}  // namespace detail
-
 /// \ingroup InitializationGroup
 /// \brief Initialize items related to time stepping
 ///
@@ -129,14 +106,12 @@ struct TimeStepping {
 
   /// Tags for items fetched by the DataBox and passed to the apply function
   using argument_tags =
-      tmpl::list<::Tags::Time, Tags::InitialTimeDelta,
-                 Tags::InitialSlabSize<AllowLocalTimeStepping>,
-                 ::Tags::TimeStepper<TimeStepperBase>>;
+      tmpl::list<::Tags::Time, Tags::InitialTimeDelta, Tags::InitialSlabSize,
+                 ::Tags::TimeStepper<TimeStepperBase>, ::Tags::LtsMode>;
 
   /// Tags for simple DataBox items that are initialized from input file options
   using simple_tags_from_options =
-      tmpl::list<::Tags::Time, Tags::InitialTimeDelta,
-                 Tags::InitialSlabSize<AllowLocalTimeStepping>>;
+      tmpl::list<::Tags::Time, Tags::InitialTimeDelta, Tags::InitialSlabSize>;
 
   /// Tags for simple DataBox items that are default initialized.
   using default_initialized_simple_tags =
@@ -159,42 +134,44 @@ struct TimeStepping {
   using compute_tags =
       time_stepper_ref_tags<TimeStepperBase, WithControlSystems>;
 
-  /// Given the items fetched from a DataBox by the argument_tags when using
-  /// LTS, mutate the items in the DataBox corresponding to return_tags
   static void apply(const gsl::not_null<TimeStepId*> next_time_step_id,
                     const gsl::not_null<TimeDelta*> time_step,
                     const gsl::not_null<double*> slab_size_goal,
                     const double initial_time_value,
                     const double initial_dt_value,
                     const double initial_slab_size,
-                    const LtsTimeStepper& time_stepper) {
-    const bool time_runs_forward = initial_dt_value > 0.0;
-    const Time initial_time = detail::initial_time(
-        time_runs_forward, initial_time_value, initial_slab_size);
-    detail::set_next_time_step_id(next_time_step_id, initial_time,
-                                  time_runs_forward, time_stepper);
-    *time_step = choose_lts_step_size(initial_time, initial_dt_value);
-    *slab_size_goal =
-        time_runs_forward ? initial_slab_size : -initial_slab_size;
-  }
+                    const TimeStepper& time_stepper, const LtsMode lts_mode) {
+    // Ignore the sign of initial_slab_size for user convenience.  GTS
+    // evolutions can set the initial slab size and time step the same
+    // even if they are negative.
 
-  /// Given the items fetched from a DataBox by the argument_tags, when not
-  /// using LTS, mutate the items in the DataBox corresponding to return_tags
-  static void apply(const gsl::not_null<TimeStepId*> next_time_step_id,
-                    const gsl::not_null<TimeDelta*> time_step,
-                    const gsl::not_null<double*> slab_size_goal,
-                    const double initial_time_value,
-                    const double initial_dt_value,
-                    const double initial_slab_size,
-                    const TimeStepper& time_stepper) {
     const bool time_runs_forward = initial_dt_value > 0.0;
-    const Time initial_time = detail::initial_time(
-        time_runs_forward, initial_time_value, initial_slab_size);
-    detail::set_next_time_step_id(next_time_step_id, initial_time,
-                                  time_runs_forward, time_stepper);
-    *time_step = (time_runs_forward ? 1 : -1) * initial_time.slab().duration();
+    const Slab initial_slab =
+        time_runs_forward
+            ? Slab::with_duration_from_start(initial_time_value,
+                                             std::abs(initial_slab_size))
+            : Slab::with_duration_to_end(initial_time_value,
+                                         std::abs(initial_slab_size));
+    const auto initial_time =
+        time_runs_forward ? initial_slab.start() : initial_slab.end();
+
+    *next_time_step_id =
+        TimeStepId(time_runs_forward,
+                   -static_cast<int64_t>(time_stepper.number_of_past_steps()),
+                   initial_time);
     *slab_size_goal =
-        time_runs_forward ? initial_slab_size : -initial_slab_size;
+        (time_runs_forward ? 1.0 : -1.0) * std::abs(initial_slab_size);
+
+    if (lts_mode == LtsMode::Off) {
+      if (std::abs(initial_slab_size) != std::abs(initial_dt_value)) {
+        ERROR_NO_TRACE(
+            "InitialSlabSize and InitialTimeStep must be equal with "
+            "LocalTimeStepping off.");
+      }
+      *time_step = (time_runs_forward ? 1 : -1) * initial_slab.duration();
+    } else {
+      *time_step = choose_lts_step_size(initial_time, initial_dt_value);
+    }
   }
 };
 

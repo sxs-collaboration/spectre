@@ -11,6 +11,7 @@
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "Helpers/DataStructures/DataBox/TestHelpers.hpp"
 #include "Options/Protocols/FactoryCreation.hpp"
+#include "Time/LtsMode.hpp"
 #include "Time/Tags/TimeStepper.hpp"
 #include "Time/TimeSteppers/AdamsMoultonPc.hpp"
 #include "Time/TimeSteppers/LtsError.hpp"
@@ -55,10 +56,7 @@ static_assert(
                                                    std::bool_constant<false>>,
                               Tags::LtsOrError>>);
 
-template <bool LocalTimeStepping>
 struct Metavariables {
-  static constexpr bool local_time_stepping = LocalTimeStepping;
-
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
     using factory_classes = tmpl::map<
@@ -68,12 +66,14 @@ struct Metavariables {
   };
 };
 
-template <bool LocalTimeStepping, bool MonotonicLts, typename Stepper,
-          typename... Args>
-void try_create(Args&&... args) {
+template <bool MonotonicLts, typename Stepper, typename... TimeStepperArgs>
+void try_create(const LtsMode lts_mode,
+                TimeStepperArgs&&... time_stepper_args) {
   Tags::ConcreteTimeStepper<TimeStepper, MonotonicLts>::
-      template create_from_options<Metavariables<LocalTimeStepping>>(
-          std::make_unique<Stepper>(std::forward<Args>(args)...));
+      template create_from_options<Metavariables>(
+          std::make_unique<Stepper>(
+              std::forward<TimeStepperArgs>(time_stepper_args)...),
+          lts_mode);
 }
 }  // namespace
 
@@ -86,52 +86,59 @@ SPECTRE_TEST_CASE("Unit.Time.Tags.TimeStepper", "[Unit][Time]") {
       "TimeStepper");
   TestHelpers::db::test_reference_tag<Tags::LtsOrError>("TimeStepper");
 
-  register_factory_classes_with_charm<Metavariables<false>>();
+  register_factory_classes_with_charm<Metavariables>();
 
   // Check that everything is allowed in GTS except variable-order
-  try_create<false, false, TimeSteppers::Rk3HesthavenSsp>();
-  try_create<false, false, TimeSteppers::AdamsMoultonPc<false>>(3);
-  try_create<false, false, TimeSteppers::AdamsMoultonPc<true>>(3);
-  try_create<false, true, TimeSteppers::Rk3HesthavenSsp>();
-  try_create<false, true, TimeSteppers::AdamsMoultonPc<false>>(3);
-  try_create<false, true, TimeSteppers::AdamsMoultonPc<true>>(3);
+  try_create<false, TimeSteppers::Rk3HesthavenSsp>(LtsMode::Off);
+  try_create<false, TimeSteppers::AdamsMoultonPc<false>>(LtsMode::Off, 3);
+  try_create<false, TimeSteppers::AdamsMoultonPc<true>>(LtsMode::Off, 3);
+  try_create<true, TimeSteppers::Rk3HesthavenSsp>(LtsMode::Off);
+  try_create<true, TimeSteppers::AdamsMoultonPc<false>>(LtsMode::Off, 3);
+  try_create<true, TimeSteppers::AdamsMoultonPc<true>>(LtsMode::Off, 3);
   CHECK_THROWS_WITH(
-      (try_create<false, false, TimeSteppers::AdamsMoultonPc<false>>(
-          std::nullopt)),
+      (try_create<false, TimeSteppers::AdamsMoultonPc<false>>(LtsMode::Off,
+                                                              std::nullopt)),
       Catch::Matchers::ContainsSubstring(
           "Variable-order TimeSteppers are only supported in evolutions with "
           "local time-stepping."));
 
   // Check that LTS rejects non-LTS steppers
   CHECK_THROWS_WITH(
-      (try_create<true, false, TimeSteppers::Rk3HesthavenSsp>()),
+      (try_create<false, TimeSteppers::Rk3HesthavenSsp>(LtsMode::Conservative)),
       Catch::Matchers::ContainsSubstring(
           "Chosen TimeStepper does not support conservative local "
           "time-stepping.  Valid time steppers for your settings: "
           "(AdamsMoultonPc,AdamsMoultonPcMonotonic)"));
   CHECK_THROWS_WITH(
-      (try_create<true, true, TimeSteppers::Rk3HesthavenSsp>()),
+      (try_create<true, TimeSteppers::Rk3HesthavenSsp>(LtsMode::Conservative)),
       Catch::Matchers::ContainsSubstring(
           "Chosen TimeStepper does not support conservative local "
           "time-stepping.  Valid time steppers for your settings: "
           "(AdamsMoultonPcMonotonic)"));
 
   // Check that LTS rejects non-monotonic steppers if that's required.
-  try_create<true, false, TimeSteppers::AdamsMoultonPc<false>>(3);
-  try_create<true, false, TimeSteppers::AdamsMoultonPc<true>>(3);
-  try_create<true, true, TimeSteppers::AdamsMoultonPc<true>>(3);
+  try_create<false, TimeSteppers::AdamsMoultonPc<false>>(LtsMode::Conservative,
+                                                         3);
+  try_create<false, TimeSteppers::AdamsMoultonPc<true>>(LtsMode::Conservative,
+                                                        3);
+  try_create<true, TimeSteppers::AdamsMoultonPc<true>>(LtsMode::Conservative,
+                                                       3);
   CHECK_THROWS_WITH(
-      (try_create<true, true, TimeSteppers::AdamsMoultonPc<false>>(3)),
+      (try_create<true, TimeSteppers::AdamsMoultonPc<false>>(
+          LtsMode::Conservative, 3)),
       Catch::Matchers::ContainsSubstring(
           "Local time-stepping with control systems requires a monotonic "
           "TimeStepper to avoid deadlocks.  Valid time steppers for your "
           "settings: (AdamsMoultonPcMonotonic)"));
-  try_create<true, false, TimeSteppers::AdamsMoultonPc<false>>(std::nullopt);
-  try_create<true, false, TimeSteppers::AdamsMoultonPc<true>>(std::nullopt);
-  try_create<true, true, TimeSteppers::AdamsMoultonPc<true>>(std::nullopt);
+  try_create<false, TimeSteppers::AdamsMoultonPc<false>>(LtsMode::Conservative,
+                                                         std::nullopt);
+  try_create<false, TimeSteppers::AdamsMoultonPc<true>>(LtsMode::Conservative,
+                                                        std::nullopt);
+  try_create<true, TimeSteppers::AdamsMoultonPc<true>>(LtsMode::Conservative,
+                                                       std::nullopt);
   CHECK_THROWS_WITH(
-      (try_create<true, true, TimeSteppers::AdamsMoultonPc<false>>(
-          std::nullopt)),
+      (try_create<true, TimeSteppers::AdamsMoultonPc<false>>(
+          LtsMode::Conservative, std::nullopt)),
       Catch::Matchers::ContainsSubstring(
           "Local time-stepping with control systems requires a monotonic "
           "TimeStepper to avoid deadlocks.  Valid time steppers for your "

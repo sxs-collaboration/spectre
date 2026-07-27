@@ -32,9 +32,14 @@ PhaseChangeAndTriggers:
 
 Evolution:
   InitialTime: 0.0
-  InitialTimeStep: 0.0001
+  InitialTimeStep: &initial_time_step 0.0001
+  InitialSlabSize: *initial_time_step
   MinimumTimeStep: 1e-7
+  LocalTimeStepping: Off
   TimeStepper: Rk5Tsitouras
+  LtsStepChoosers:
+  VariableOrderAlgorithm:
+    GoalOrder: 5
 
 DomainCreator:
   BinaryCompactObject:
@@ -150,6 +155,8 @@ EventsAndTriggersAtSlabs:
           StepChoosers:
             - Cfl:
                 SafetyFactor: 0.35
+
+EventsAndTriggersAtSteps:
 
 Worldtube:
   ExcisionSphere: ExcisionSphereA

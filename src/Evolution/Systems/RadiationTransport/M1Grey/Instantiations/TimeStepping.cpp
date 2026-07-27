@@ -16,8 +16,4 @@ template class CleanHistory<RadiationTransport::M1Grey::System<
 template class RecordTimeStepperData<RadiationTransport::M1Grey::System<
     tmpl::list<neutrinos::ElectronNeutrinos<1>>>>;
 template class UpdateU<RadiationTransport::M1Grey::System<
-                           tmpl::list<neutrinos::ElectronNeutrinos<1>>>,
-                       false>;
-template class UpdateU<RadiationTransport::M1Grey::System<
-                           tmpl::list<neutrinos::ElectronNeutrinos<1>>>,
-                       true>;
+    tmpl::list<neutrinos::ElectronNeutrinos<1>>>>;

@@ -55,12 +55,16 @@ PhaseChangeAndTriggers:
 Evolution:
   InitialTime: &initial_time 0.0
   # Test backwards evolution in an integration test
-  InitialTimeStep: -0.001
+  InitialTimeStep: &initial_time_step -0.001
+  InitialSlabSize: *initial_time_step
   MinimumTimeStep: 1e-7
+  LocalTimeStepping: Off
   TimeStepper:
     AdamsBashforth:
       Order: 3
-
+  LtsStepChoosers:
+  VariableOrderAlgorithm:
+    GoalOrder: 3
 
 DomainCreator:
   Rectangle:
@@ -117,6 +121,8 @@ EventsAndTriggersAtSlabs:
   #         FloatingPointTypes: [Double]
   #         BlocksToObserve: All
   #     - Completion
+
+EventsAndTriggersAtSteps:
 
 EventsAndDenseTriggers:
   # Test LTS dense output at the initial time

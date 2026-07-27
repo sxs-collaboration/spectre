@@ -57,12 +57,14 @@
 #include "Time/ChangeSlabSize/Tags.hpp"
 #include "Time/ChooseLtsStepSize.hpp"
 #include "Time/History.hpp"
+#include "Time/LtsMode.hpp"
 #include "Time/Slab.hpp"
 #include "Time/StepChoosers/LimitIncrease.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"
 #include "Time/StepperErrorEstimate.hpp"
 #include "Time/Tags/AdaptiveSteppingDiagnostics.hpp"
 #include "Time/Tags/HistoryEvolvedVariables.hpp"
+#include "Time/Tags/LtsMode.hpp"
 #include "Time/Tags/StepNumberWithinSlab.hpp"
 #include "Time/Tags/StepperErrors.hpp"
 #include "Time/Tags/Time.hpp"
@@ -118,15 +120,15 @@ void test_gts() {
       db::AddSimpleTags<
           Parallel::Tags::GlobalCache<TestMetavariables<TimeStepper>>,
           ::Tags::Time, Initialization::Tags::InitialTimeDelta,
-          Initialization::Tags::InitialSlabSize<false>,
+          Initialization::Tags::InitialSlabSize, ::Tags::LtsMode,
           ::Tags::Next<::Tags::TimeStepId>, ::Tags::TimeStep,
           ::Tags::ChangeSlabSize::SlabSizeGoal>,
       tmpl::push_front<time_stepper_ref_tags<TimeStepper>,
                        Parallel::Tags::FromGlobalCache<
                            ::Tags::ConcreteTimeStepper<TimeStepper>,
                            TestMetavariables<TimeStepper>>>>(
-      &global_cache, initial_time, initial_dt, initial_slab_size, TimeStepId{},
-      TimeDelta{}, std::numeric_limits<double>::signaling_NaN());
+      &global_cache, initial_time, initial_dt, initial_slab_size, LtsMode::Off,
+      TimeStepId{}, TimeDelta{}, std::numeric_limits<double>::signaling_NaN());
 
   db::mutate_apply<Initialization::TimeStepping<TestMetavariables<TimeStepper>,
                                                 TimeStepper, false, false>>(
@@ -164,15 +166,16 @@ void test_lts() {
       db::AddSimpleTags<
           Parallel::Tags::GlobalCache<TestMetavariables<LtsTimeStepper>>,
           ::Tags::Time, Initialization::Tags::InitialTimeDelta,
-          Initialization::Tags::InitialSlabSize<true>,
+          Initialization::Tags::InitialSlabSize, ::Tags::LtsMode,
           ::Tags::Next<::Tags::TimeStepId>, ::Tags::TimeStep,
           ::Tags::ChangeSlabSize::SlabSizeGoal>,
       tmpl::push_front<time_stepper_ref_tags<LtsTimeStepper>,
                        Parallel::Tags::FromGlobalCache<
                            ::Tags::ConcreteTimeStepper<LtsTimeStepper>,
                            TestMetavariables<LtsTimeStepper>>>>(
-      &global_cache, initial_time, initial_dt, initial_slab_size, TimeStepId{},
-      TimeDelta{}, std::numeric_limits<double>::signaling_NaN());
+      &global_cache, initial_time, initial_dt, initial_slab_size,
+      LtsMode::Conservative, TimeStepId{}, TimeDelta{},
+      std::numeric_limits<double>::signaling_NaN());
 
   db::mutate_apply<Initialization::TimeStepping<
       TestMetavariables<LtsTimeStepper>, LtsTimeStepper, false, true>>(

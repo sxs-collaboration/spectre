@@ -63,11 +63,16 @@ PhaseChangeAndTriggers:
 Evolution:
   InitialTime: &InitialTime
     0.0
-  InitialTimeStep: 0.001
+  InitialTimeStep: &initial_time_step 0.001
+  InitialSlabSize: *initial_time_step
   MinimumTimeStep: 1e-7
+  LocalTimeStepping: Off
   TimeStepper:
     AdamsBashforth:
       Order: 3
+  LtsStepChoosers:
+  VariableOrderAlgorithm:
+    GoalOrder: 3
 
 DomainCreator:
   Interval:
@@ -152,6 +157,8 @@ EventsAndTriggersAtSlabs:
           FloatingPointTypes: [Double, Float, Float]
           BlocksToObserve: All
 # [observe_event_trigger]
+
+EventsAndTriggersAtSteps:
 
 Observers:
   VolumeFileName: "ScalarWavePlaneWave1DObserveExampleVolume"

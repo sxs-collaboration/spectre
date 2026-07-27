@@ -20,10 +20,15 @@ ResourceInfo:
 
 Evolution:
   InitialTime: 0.0
-  InitialTimeStep: 1.0e-5
+  InitialTimeStep: &initial_time_step 1.0e-5
+  InitialSlabSize: *initial_time_step
   MinimumTimeStep: 1.0e-7
+  LocalTimeStepping: Off
   TimeStepper:
     Rk3HesthavenSsp:
+  LtsStepChoosers:
+  VariableOrderAlgorithm:
+    GoalOrder: 3
 
 PhaseChangeAndTriggers:
 
@@ -282,6 +287,8 @@ EventsAndTriggersAtSlabs:
         Value: 40592
     Events:
       - Completion
+
+EventsAndTriggersAtSteps:
 
 InterpolationTargets:
   BondiSachsInterpolation:

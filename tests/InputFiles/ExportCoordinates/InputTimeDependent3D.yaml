@@ -105,7 +105,9 @@ SpatialDiscretization:
 
 Evolution:
   InitialTime: 0.0
-  InitialTimeStep: 0.5
+  InitialTimeStep: &initial_time_step 0.5
+  InitialSlabSize: *initial_time_step
+  LocalTimeStepping: Off
   TimeStepper:
     AdamsBashforth:
       Order: 1
@@ -121,6 +123,8 @@ EventsAndTriggersAtSlabs:
     Events:
       - MonitorMemory:
           ComponentsToMonitor: All
+
+EventsAndTriggersAtSteps:
 
 Observers:
   VolumeFileName: "ExportCoordinates3DVolume"

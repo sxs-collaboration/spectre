@@ -1103,8 +1103,7 @@ struct component {
           Parallel::Phase::Testing,
           tmpl::list<::evolution::dg::Actions::ComputeTimeDerivative<
               Metavariables::volume_dim, typename Metavariables::system,
-              AllStepChoosers, Metavariables::local_time_stepping,
-              Metavariables::use_nodegroup_dg_elements>>>>;
+              AllStepChoosers, Metavariables::use_nodegroup_dg_elements>>>>;
 };
 
 template <size_t Dim, SystemType SystemTypeIn, bool LocalTimeStepping,
@@ -1304,26 +1303,17 @@ void test_impl(const Spectral::Quadrature quadrature,
     domain.inject_time_dependent_map_for_block(
         1, grid_to_inertial_map->get_clone());
 
-    if constexpr (LocalTimeStepping) {
-      std::vector<std::unique_ptr<StepChooser<StepChooserUse::LtsStep>>>
-          step_choosers;
-      step_choosers.emplace_back(
-          std::make_unique<StepChoosers::Constant>(time_step.value()));
-      return MockRuntimeSystem{
-          {std::vector<std::array<size_t, Dim>>{extents, extents},
-           typename metavars::normal_dot_numerical_flux::type{},
-           std::move(domain), ::LtsMode::Conservative, dg_formulation,
-           std::make_unique<BoundaryTerms<Dim, HasPrims>>(),
-           std::move(boundary_conditions), 1e-8, std::move(step_choosers)}};
-    } else {
-      (void)time_step;
-      return MockRuntimeSystem{
-          {std::vector<std::array<size_t, Dim>>{extents, extents},
-           typename metavars::normal_dot_numerical_flux::type{},
-           std::move(domain), ::LtsMode::Off, dg_formulation,
-           std::make_unique<BoundaryTerms<Dim, HasPrims>>(),
-           std::move(boundary_conditions)}};
-    }
+    std::vector<std::unique_ptr<StepChooser<StepChooserUse::LtsStep>>>
+        step_choosers;
+    step_choosers.emplace_back(
+        std::make_unique<StepChoosers::Constant>(time_step.value()));
+    return MockRuntimeSystem{
+        {std::vector<std::array<size_t, Dim>>{extents, extents},
+         typename metavars::normal_dot_numerical_flux::type{},
+         std::move(domain),
+         LocalTimeStepping ? ::LtsMode::Conservative : ::LtsMode::Off,
+         dg_formulation, std::make_unique<BoundaryTerms<Dim, HasPrims>>(),
+         std::move(boundary_conditions), 1e-8, std::move(step_choosers)}};
   }();
   const auto get_tag = [&runner, &self_id](auto tag_v) -> decltype(auto) {
     using tag = std::decay_t<decltype(tag_v)>;
