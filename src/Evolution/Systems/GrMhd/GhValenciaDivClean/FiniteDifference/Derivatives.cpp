@@ -28,7 +28,8 @@ void spacetime_derivatives(
         volume_evolved_variables,
     const DirectionalIdMap<3, evolution::dg::subcell::GhostData>&
         all_ghost_data,
-    const size_t& deriv_order, const Mesh<3>& volume_mesh,
+    const bool compute_cell_centered_flux, const size_t& deriv_order,
+    const Mesh<3>& volume_mesh,
     const InverseJacobian<DataVector, 3, Frame::ElementLogical,
                           Frame::Inertial>&
         cell_centered_logical_to_inertial_inv_jacobian,
@@ -44,15 +45,26 @@ void spacetime_derivatives(
       number_of_independent_components;
 
   DirectionMap<3, gsl::span<const double>> ghost_cell_spacetime_vars{};
-  using NeighborVariables =
-      Variables<grmhd::GhValenciaDivClean::Tags::
-                    primitive_grmhd_and_spacetime_reconstruction_tags>;
   using FirstGhTag = tmpl::front<
       grmhd::GhValenciaDivClean::Tags::spacetime_reconstruction_tags>;
-
-  fill_neighbor_spacetime_variables<NeighborVariables, FirstGhTag>(
-      make_not_null(&ghost_cell_spacetime_vars), all_ghost_data,
-      number_of_gh_components);
+  if (not compute_cell_centered_flux) {
+    using NeighborVariables =
+        Variables<grmhd::GhValenciaDivClean::Tags::
+                      primitive_grmhd_and_spacetime_reconstruction_tags>;
+    fill_neighbor_spacetime_variables<NeighborVariables, FirstGhTag>(
+        make_not_null(&ghost_cell_spacetime_vars), all_ghost_data,
+        number_of_gh_components);
+  } else {
+    using flux_variables = typename System::flux_variables;
+    using NeighborVariables = Variables<
+        tmpl::append<grmhd::GhValenciaDivClean::Tags::
+                         primitive_grmhd_and_spacetime_reconstruction_tags,
+                     db::wrap_tags_in<::Tags::Flux, flux_variables,
+                                      tmpl::size_t<3>, Frame::Inertial>>>;
+    fill_neighbor_spacetime_variables<NeighborVariables, FirstGhTag>(
+        make_not_null(&ghost_cell_spacetime_vars), all_ghost_data,
+        number_of_gh_components);
+  }
 
   ::fd::partial_derivatives<gradients_tags>(
       result, volume_evolved_variables, ghost_cell_spacetime_vars, volume_mesh,
@@ -77,7 +89,8 @@ void spacetime_derivatives(
           data)>::variables_tag::tags_list>& volume_evolved_variables,      \
       const DirectionalIdMap<3, evolution::dg::subcell::GhostData>&         \
           all_ghost_data,                                                   \
-      const size_t& deriv_order, const Mesh<3>& volume_mesh,                \
+      const bool compute_cell_centered_flux, const size_t& deriv_order,     \
+      const Mesh<3>& volume_mesh,                                           \
       const InverseJacobian<DataVector, 3, Frame::ElementLogical,           \
                             Frame::Inertial>&                               \
           cell_centered_logical_to_inertial_inv_jacobian,                   \
