@@ -525,9 +525,12 @@ class BulgedCube {
   static constexpr bool supports_hessian{true};
 
  private:
+  /// Derivative of the physical coordinates with respect to the first of the
+  /// three passed source coordinates. The Jacobian is assembled from calls
+  /// with permuted arguments, exploiting the symmetry of the map.
   template <typename T>
-  std::array<tt::remove_cvref_wrap_t<T>, 3> xi_derivative(
-      const std::array<T, 3>& source_coords) const;
+  std::array<T, 3> xi_derivative(const T& xi, const T& eta,
+                                 const T& zeta) const;
   friend bool operator==(const BulgedCube& lhs, const BulgedCube& rhs);
 
   double radius_{std::numeric_limits<double>::signaling_NaN()};
