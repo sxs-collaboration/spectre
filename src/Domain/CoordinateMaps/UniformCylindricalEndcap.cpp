@@ -17,7 +17,6 @@
 #include "Domain/CoordinateMaps/CylindricalEndcapHelpers.hpp"
 #include "NumericalAlgorithms/RootFinding/TOMS748.hpp"
 #include "Utilities/ConstantExpressions.hpp"
-#include "Utilities/DereferenceWrapper.hpp"
 #include "Utilities/EqualWithinRoundoff.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Serialization/PupStlCpp11.hpp"
@@ -276,16 +275,15 @@ UniformCylindricalEndcap::UniformCylindricalEndcap(
 }
 
 template <typename T>
-std::array<tt::remove_cvref_wrap_t<T>, 3> UniformCylindricalEndcap::operator()(
+std::array<T, 3> UniformCylindricalEndcap::operator()(
     const std::array<T, 3>& source_coords) const {
-  using ReturnType = tt::remove_cvref_wrap_t<T>;
-  const ReturnType& xbar = source_coords[0];
-  const ReturnType& ybar = source_coords[1];
-  const ReturnType& zbar = source_coords[2];
-  std::array<ReturnType, 3> target_coords{};
-  ReturnType& x = target_coords[0];
-  ReturnType& y = target_coords[1];
-  ReturnType& z = target_coords[2];
+  const T& xbar = source_coords[0];
+  const T& ybar = source_coords[1];
+  const T& zbar = source_coords[2];
+  std::array<T, 3> target_coords{};
+  T& x = target_coords[0];
+  T& y = target_coords[1];
+  T& z = target_coords[2];
 
   // Use y and z as temporary storage to avoid allocations,
   // before setting them to their actual values.
@@ -742,17 +740,14 @@ std::optional<std::array<double, 3>> UniformCylindricalEndcap::inverse(
 }
 
 template <typename T>
-tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame>
-UniformCylindricalEndcap::jacobian(
+tnsr::Ij<T, 3, Frame::NoFrame> UniformCylindricalEndcap::jacobian(
     const std::array<T, 3>& source_coords) const {
-  using ReturnType = tt::remove_cvref_wrap_t<T>;
-  const ReturnType& xbar = source_coords[0];
-  const ReturnType& ybar = source_coords[1];
-  const ReturnType& zbar = source_coords[2];
+  const T& xbar = source_coords[0];
+  const T& ybar = source_coords[1];
+  const T& zbar = source_coords[2];
 
   auto jac =
-      make_with_value<tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame>>(
-          dereference_wrapper(source_coords[0]), 0.0);
+      make_with_value<tnsr::Ij<T, 3, Frame::NoFrame>>(source_coords[0], 0.0);
 
   // Use jacobian components as temporary storage to avoid extra
   // memory allocations.
@@ -802,8 +797,7 @@ UniformCylindricalEndcap::jacobian(
 }
 
 template <typename T>
-tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame>
-UniformCylindricalEndcap::inv_jacobian(
+tnsr::Ij<T, 3, Frame::NoFrame> UniformCylindricalEndcap::inv_jacobian(
     const std::array<T, 3>& source_coords) const {
   return determinant_and_inverse(jacobian(source_coords)).second;
 }
@@ -846,15 +840,14 @@ bool operator!=(const UniformCylindricalEndcap& lhs,
 // Explicit instantiations
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(0, data)
 
-#define INSTANTIATE(_, data)                                                 \
-  template std::array<tt::remove_cvref_wrap_t<DTYPE(data)>, 3>               \
-  UniformCylindricalEndcap::operator()(                                      \
-      const std::array<DTYPE(data), 3>& source_coords) const;                \
-  template tnsr::Ij<tt::remove_cvref_wrap_t<DTYPE(data)>, 3, Frame::NoFrame> \
-  UniformCylindricalEndcap::jacobian(                                        \
-      const std::array<DTYPE(data), 3>& source_coords) const;                \
-  template tnsr::Ij<tt::remove_cvref_wrap_t<DTYPE(data)>, 3, Frame::NoFrame> \
-  UniformCylindricalEndcap::inv_jacobian(                                    \
+#define INSTANTIATE(_, data)                                                \
+  template std::array<DTYPE(data), 3> UniformCylindricalEndcap::operator()( \
+      const std::array<DTYPE(data), 3>& source_coords) const;               \
+  template tnsr::Ij<DTYPE(data), 3, Frame::NoFrame>                         \
+  UniformCylindricalEndcap::jacobian(                                       \
+      const std::array<DTYPE(data), 3>& source_coords) const;               \
+  template tnsr::Ij<DTYPE(data), 3, Frame::NoFrame>                         \
+  UniformCylindricalEndcap::inv_jacobian(                                   \
       const std::array<DTYPE(data), 3>& source_coords) const;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (double, DataVector))

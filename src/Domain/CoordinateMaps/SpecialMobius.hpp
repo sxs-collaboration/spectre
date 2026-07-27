@@ -9,7 +9,6 @@
 #include <optional>
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
-#include "Utilities/TypeTraits/RemoveReferenceWrapper.hpp"
 
 /// \cond
 namespace PUP {
@@ -95,8 +94,7 @@ class SpecialMobius {
   SpecialMobius& operator=(SpecialMobius&&) = default;
 
   template <typename T>
-  std::array<tt::remove_cvref_wrap_t<T>, 3> operator()(
-      const std::array<T, 3>& source_coords) const;
+  std::array<T, 3> operator()(const std::array<T, 3>& source_coords) const;
 
   /// Returns std::nullopt for target_coords outside the unit sphere.
   /// The inverse function is only callable with doubles because the inverse
@@ -107,11 +105,11 @@ class SpecialMobius {
       const std::array<double, 3>& target_coords) const;
 
   template <typename T>
-  tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame> jacobian(
+  tnsr::Ij<T, 3, Frame::NoFrame> jacobian(
       const std::array<T, 3>& source_coords) const;
 
   template <typename T>
-  tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame> inv_jacobian(
+  tnsr::Ij<T, 3, Frame::NoFrame> inv_jacobian(
       const std::array<T, 3>& source_coords) const;
 
   // NOLINTNEXTLINE(google-runtime-references)
@@ -123,11 +121,11 @@ class SpecialMobius {
 
  private:
   template <typename T>
-  std::array<tt::remove_cvref_wrap_t<T>, 3> mobius_distortion(
-      const std::array<T, 3>& coords, double mu) const;
+  std::array<T, 3> mobius_distortion(const std::array<T, 3>& coords,
+                                     double mu) const;
   template <typename T>
-  tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame>
-  mobius_distortion_jacobian(const std::array<T, 3>& coords, double mu) const;
+  tnsr::Ij<T, 3, Frame::NoFrame> mobius_distortion_jacobian(
+      const std::array<T, 3>& coords, double mu) const;
   friend bool operator==(const SpecialMobius& lhs, const SpecialMobius& rhs);
 
   double mu_{std::numeric_limits<double>::signaling_NaN()};

@@ -11,7 +11,6 @@
 #include "Domain/CoordinateMaps/AutodiffInstantiationTypes.hpp"
 #include "Utilities/Autodiff/Autodiff.hpp"
 #include "Utilities/ConstantExpressions.hpp"
-#include "Utilities/DereferenceWrapper.hpp"
 #include "Utilities/EqualWithinRoundoff.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
@@ -28,35 +27,31 @@ SpecialMobius::SpecialMobius(const double mu)
 }
 
 template <typename T>
-std::array<tt::remove_cvref_wrap_t<T>, 3> SpecialMobius::mobius_distortion(
+std::array<T, 3> SpecialMobius::mobius_distortion(
     const std::array<T, 3>& coords, const double mu) const {
-  using ReturnType = tt::remove_cvref_wrap_t<T>;
-  const ReturnType& x = coords[0];
-  const ReturnType& y = coords[1];
-  const ReturnType& z = coords[2];
+  const T& x = coords[0];
+  const T& y = coords[1];
+  const T& z = coords[2];
   const double mu_squared = square(mu);
-  const ReturnType r_squared = square(x) + square(y) + square(z);
-  const ReturnType lambda = 1.0 / (1.0 - 2.0 * mu * x + mu_squared * r_squared);
-  return std::array<ReturnType, 3>{
+  const T r_squared = square(x) + square(y) + square(z);
+  const T lambda = 1.0 / (1.0 - 2.0 * mu * x + mu_squared * r_squared);
+  return std::array<T, 3>{
       {lambda * ((1.0 + mu_squared) * x - mu * (1.0 + r_squared)),
        (1.0 - mu_squared) * lambda * y, (1.0 - mu_squared) * lambda * z}};
 }
 
 template <typename T>
-tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame>
-SpecialMobius::mobius_distortion_jacobian(const std::array<T, 3>& coords,
-                                          const double mu) const {
-  using ReturnType = tt::remove_cvref_wrap_t<T>;
-  const ReturnType& x = coords[0];
-  const ReturnType& y = coords[1];
-  const ReturnType& z = coords[2];
+tnsr::Ij<T, 3, Frame::NoFrame> SpecialMobius::mobius_distortion_jacobian(
+    const std::array<T, 3>& coords, const double mu) const {
+  const T& x = coords[0];
+  const T& y = coords[1];
+  const T& z = coords[2];
   const double mu_squared = square(mu);
-  const ReturnType r_squared = square(x) + square(y) + square(z);
-  const ReturnType common_factor =
+  const T r_squared = square(x) + square(y) + square(z);
+  const T common_factor =
       (mu_squared - 1.0) / square(1.0 - 2.0 * mu * x + mu_squared * r_squared);
   auto jacobian_matrix =
-      make_with_value<tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame>>(
-          dereference_wrapper(coords[0]), 0.0);
+      make_with_value<tnsr::Ij<T, 3, Frame::NoFrame>>(coords[0], 0.0);
 
   get<0, 0>(jacobian_matrix) =
       -(mu_squared * (2.0 * square(x) - r_squared) - 2.0 * mu * x + 1.0) *
@@ -79,7 +74,7 @@ SpecialMobius::mobius_distortion_jacobian(const std::array<T, 3>& coords,
 }
 
 template <typename T>
-std::array<tt::remove_cvref_wrap_t<T>, 3> SpecialMobius::operator()(
+std::array<T, 3> SpecialMobius::operator()(
     const std::array<T, 3>& source_coords) const {
   return mobius_distortion(source_coords, mu_);
 }
@@ -95,14 +90,14 @@ std::optional<std::array<double, 3>> SpecialMobius::inverse(
 }
 
 template <typename T>
-tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame> SpecialMobius::jacobian(
+tnsr::Ij<T, 3, Frame::NoFrame> SpecialMobius::jacobian(
     const std::array<T, 3>& source_coords) const {
   return mobius_distortion_jacobian(source_coords, mu_);
 }
 
 template <typename T>
-tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame>
-SpecialMobius::inv_jacobian(const std::array<T, 3>& source_coords) const {
+tnsr::Ij<T, 3, Frame::NoFrame> SpecialMobius::inv_jacobian(
+    const std::array<T, 3>& source_coords) const {
   return mobius_distortion_jacobian((*this)(source_coords), -mu_);
 }
 
@@ -130,13 +125,11 @@ bool operator!=(const SpecialMobius& lhs, const SpecialMobius& rhs) {
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(0, data)
 
 #define INSTANTIATE(_, data)                                                   \
-  template std::array<tt::remove_cvref_wrap_t<DTYPE(data)>, 3>                 \
-  SpecialMobius::operator()(const std::array<DTYPE(data), 3>& source_coords)   \
-      const;                                                                   \
-  template tnsr::Ij<tt::remove_cvref_wrap_t<DTYPE(data)>, 3, Frame::NoFrame>   \
-  SpecialMobius::jacobian(const std::array<DTYPE(data), 3>& source_coords)     \
-      const;                                                                   \
-  template tnsr::Ij<tt::remove_cvref_wrap_t<DTYPE(data)>, 3, Frame::NoFrame>   \
+  template std::array<DTYPE(data), 3> SpecialMobius::operator()(               \
+      const std::array<DTYPE(data), 3>& source_coords) const;                  \
+  template tnsr::Ij<DTYPE(data), 3, Frame::NoFrame> SpecialMobius::jacobian(   \
+      const std::array<DTYPE(data), 3>& source_coords) const;                  \
+  template tnsr::Ij<DTYPE(data), 3, Frame::NoFrame>                            \
   SpecialMobius::inv_jacobian(const std::array<DTYPE(data), 3>& source_coords) \
       const;
 

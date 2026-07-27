@@ -9,7 +9,6 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/ContainerHelpers.hpp"
-#include "Utilities/DereferenceWrapper.hpp"
 #include "Utilities/EqualWithinRoundoff.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
@@ -28,22 +27,19 @@ EquatorialCompression::EquatorialCompression(const double aspect_ratio,
 }
 
 template <typename T>
-std::array<tt::remove_cvref_wrap_t<T>, 3>
-EquatorialCompression::angular_distortion(const std::array<T, 3>& coords,
-                                          const double inverse_alpha) const {
-  using ReturnType = tt::remove_cvref_wrap_t<T>;
-  const ReturnType& x = coords[0];
-  const ReturnType& y = coords[1];
-  const ReturnType& z = coords[2];
-  const ReturnType rho =
-      sqrt(square((index_pole_axis_ == 0) ? inverse_alpha * x : x) +
-           square((index_pole_axis_ == 1) ? inverse_alpha * y : y) +
-           square((index_pole_axis_ == 2) ? inverse_alpha * z : z));
+std::array<T, 3> EquatorialCompression::angular_distortion(
+    const std::array<T, 3>& coords, const double inverse_alpha) const {
+  const T& x = coords[0];
+  const T& y = coords[1];
+  const T& z = coords[2];
+  const T rho = sqrt(square((index_pole_axis_ == 0) ? inverse_alpha * x : x) +
+                     square((index_pole_axis_ == 1) ? inverse_alpha * y : y) +
+                     square((index_pole_axis_ == 2) ? inverse_alpha * z : z));
 
   // While radius_over_rho is set to sqrt(square(x) + square(y) + square(z)),
   // and this is only the radius, the division by rho is handled in the next
   // line.
-  ReturnType radius_over_rho = sqrt(square(x) + square(y) + square(z));
+  T radius_over_rho = sqrt(square(x) + square(y) + square(z));
   for (size_t i = 0; i < get_size(rho); i++) {
     if (LIKELY(get_element(rho, i) != 0.0)) {
       get_element(radius_over_rho, i) /= get_element(rho, i);
@@ -61,29 +57,26 @@ EquatorialCompression::angular_distortion(const std::array<T, 3>& coords,
     // origin. Therefore we just leave radius_over_rho unchanged (with
     // a value of zero) in the case rho==0.
   }
-  return std::array<ReturnType, 3>{
+  return std::array<T, 3>{
       {radius_over_rho * ((index_pole_axis_ == 0) ? inverse_alpha * x : x),
        radius_over_rho * ((index_pole_axis_ == 1) ? inverse_alpha * y : y),
        radius_over_rho * ((index_pole_axis_ == 2) ? inverse_alpha * z : z)}};
 }
 
 template <typename T>
-tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame>
+tnsr::Ij<T, 3, Frame::NoFrame>
 EquatorialCompression::angular_distortion_jacobian(
     const std::array<T, 3>& coords, const double inverse_alpha) const {
-  using ReturnType = tt::remove_cvref_wrap_t<T>;
-  const ReturnType& x = coords[0];
-  const ReturnType& y = coords[1];
-  const ReturnType& z = coords[2];
-  const ReturnType radius = sqrt(square(x) + square(y) + square(z));
-  const ReturnType rho =
-      sqrt(square((index_pole_axis_ == 0) ? inverse_alpha * x : x) +
-           square((index_pole_axis_ == 1) ? inverse_alpha * y : y) +
-           square((index_pole_axis_ == 2) ? inverse_alpha * z : z));
+  const T& x = coords[0];
+  const T& y = coords[1];
+  const T& z = coords[2];
+  const T radius = sqrt(square(x) + square(y) + square(z));
+  const T rho = sqrt(square((index_pole_axis_ == 0) ? inverse_alpha * x : x) +
+                     square((index_pole_axis_ == 1) ? inverse_alpha * y : y) +
+                     square((index_pole_axis_ == 2) ? inverse_alpha * z : z));
 
   auto jacobian_matrix =
-      make_with_value<tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame>>(
-          dereference_wrapper(coords[0]), 0.0);
+      make_with_value<tnsr::Ij<T, 3, Frame::NoFrame>>(coords[0], 0.0);
 
   for (size_t i = 0; i < 3; i++) {
     for (size_t j = 0; j < 3; j++) {
@@ -135,7 +128,7 @@ EquatorialCompression::angular_distortion_jacobian(
 }
 
 template <typename T>
-std::array<tt::remove_cvref_wrap_t<T>, 3> EquatorialCompression::operator()(
+std::array<T, 3> EquatorialCompression::operator()(
     const std::array<T, 3>& source_coords) const {
   return angular_distortion(source_coords, inverse_aspect_ratio_);
 }
@@ -146,14 +139,13 @@ std::optional<std::array<double, 3>> EquatorialCompression::inverse(
 }
 
 template <typename T>
-tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame>
-EquatorialCompression::jacobian(const std::array<T, 3>& source_coords) const {
+tnsr::Ij<T, 3, Frame::NoFrame> EquatorialCompression::jacobian(
+    const std::array<T, 3>& source_coords) const {
   return angular_distortion_jacobian(source_coords, inverse_aspect_ratio_);
 }
 
 template <typename T>
-tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame>
-EquatorialCompression::inv_jacobian(
+tnsr::Ij<T, 3, Frame::NoFrame> EquatorialCompression::inv_jacobian(
     const std::array<T, 3>& source_coords) const {
   return angular_distortion_jacobian((*this)(source_coords), aspect_ratio_);
 }
@@ -188,15 +180,14 @@ bool operator!=(const EquatorialCompression& lhs,
 // Explicit instantiations
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(0, data)
 
-#define INSTANTIATE(_, data)                                                 \
-  template std::array<tt::remove_cvref_wrap_t<DTYPE(data)>, 3>               \
-  EquatorialCompression::operator()(                                         \
-      const std::array<DTYPE(data), 3>& source_coords) const;                \
-  template tnsr::Ij<tt::remove_cvref_wrap_t<DTYPE(data)>, 3, Frame::NoFrame> \
-  EquatorialCompression::jacobian(                                           \
-      const std::array<DTYPE(data), 3>& source_coords) const;                \
-  template tnsr::Ij<tt::remove_cvref_wrap_t<DTYPE(data)>, 3, Frame::NoFrame> \
-  EquatorialCompression::inv_jacobian(                                       \
+#define INSTANTIATE(_, data)                                             \
+  template std::array<DTYPE(data), 3> EquatorialCompression::operator()( \
+      const std::array<DTYPE(data), 3>& source_coords) const;            \
+  template tnsr::Ij<DTYPE(data), 3, Frame::NoFrame>                      \
+  EquatorialCompression::jacobian(                                       \
+      const std::array<DTYPE(data), 3>& source_coords) const;            \
+  template tnsr::Ij<DTYPE(data), 3, Frame::NoFrame>                      \
+  EquatorialCompression::inv_jacobian(                                   \
       const std::array<DTYPE(data), 3>& source_coords) const;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (double, DataVector))

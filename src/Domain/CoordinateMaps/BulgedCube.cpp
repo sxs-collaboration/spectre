@@ -5,7 +5,6 @@
 
 #include <cmath>
 #include <exception>
-#include <functional>
 #include <limits>
 #include <optional>
 #include <pup.h>
@@ -16,7 +15,6 @@
 #include "NumericalAlgorithms/RootFinding/TOMS748.hpp"
 #include "Utilities/Autodiff/Autodiff.hpp"
 #include "Utilities/ConstantExpressions.hpp"
-#include "Utilities/DereferenceWrapper.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
@@ -103,12 +101,10 @@ BulgedCube::BulgedCube(const double radius, const double sphericity,
 }
 
 template <typename T>
-std::array<tt::remove_cvref_wrap_t<T>, 3> BulgedCube::operator()(
+std::array<T, 3> BulgedCube::operator()(
     const std::array<T, 3>& source_coords) const {
-  using ReturnType = tt::remove_cvref_wrap_t<T>;
-  const auto physical_coordinates = [this](const ReturnType& cap_xi,
-                                           const ReturnType& cap_eta,
-                                           const ReturnType& cap_zeta) {
+  const auto physical_coordinates = [this](const T& cap_xi, const T& cap_eta,
+                                           const T& cap_zeta) {
     const auto one_over_rho_xi = 1.0 / sqrt(2.0 + square(cap_xi));
     const auto one_over_rho_eta = 1.0 / sqrt(2.0 + square(cap_eta));
     const auto one_over_rho_zeta = 1.0 / sqrt(2.0 + square(cap_zeta));
@@ -116,43 +112,41 @@ std::array<tt::remove_cvref_wrap_t<T>, 3> BulgedCube::operator()(
         1.0 / sqrt(1.0 + square(cap_xi) + square(cap_eta));
     const auto one_over_rho_xi_zeta =
         1.0 / sqrt(1.0 + square(cap_xi) + square(cap_zeta));
-    // Making one_over_rho_eta_zeta a ReturnType object instead of an expression
+    // Making one_over_rho_eta_zeta a T object instead of an expression
     // works around a weird issue in GCC-10 release mode (either a bug in the
     // optimizer or an unusual edge-case in Blaze) where the expressions in
     // radial_scaling_vector somehow have their internal pointers that should
     // point to cap_xi, cap_eta, and cap_zeta invalidated. Since the pointer
     // variable is optimized out it's unclear whether the pointer is set to
     // nullptr or something else goes wrong.
-    // Note: we don't use a const ReturnType so that we can reuse the allocation
+    // Note: we don't use a const T so that we can reuse the allocation
     // below.
-    ReturnType one_over_rho_eta_zeta =
+    T one_over_rho_eta_zeta =
         1.0 / sqrt(1.0 + square(cap_eta) + square(cap_zeta));
-    // Note: we don't use a const ReturnType for radial_scaling_factor so that
+    // Note: we don't use a const T for radial_scaling_factor so that
     // we can reuse the allocation below.
-    ReturnType radial_scaling_factor =
+    T radial_scaling_factor =
         radius_ * (1.0 / sqrt(3.0) +
                    sphericity_ * (one_over_rho_eta_zeta + one_over_rho_xi_zeta +
                                   one_over_rho_xi_eta - one_over_rho_xi -
                                   one_over_rho_eta - one_over_rho_zeta));
 
-    ReturnType& physical_x = one_over_rho_eta_zeta;
+    T& physical_x = one_over_rho_eta_zeta;
     physical_x = radial_scaling_factor * cap_xi;
-    ReturnType physical_y = radial_scaling_factor * cap_eta;
-    ReturnType& physical_z = radial_scaling_factor;
+    T physical_y = radial_scaling_factor * cap_eta;
+    T& physical_z = radial_scaling_factor;
     physical_z *= cap_zeta;
-    return std::array<ReturnType, 3>{
+    return std::array<T, 3>{
         {std::move(physical_x), std::move(physical_y), std::move(physical_z)}};
   };
 
   if (use_equiangular_map_) {
-    return physical_coordinates(
-        tan(M_PI_4 * dereference_wrapper(source_coords[0])),
-        tan(M_PI_4 * dereference_wrapper(source_coords[1])),
-        tan(M_PI_4 * dereference_wrapper(source_coords[2])));
+    return physical_coordinates(tan(M_PI_4 * source_coords[0]),
+                                tan(M_PI_4 * source_coords[1]),
+                                tan(M_PI_4 * source_coords[2]));
   }
-  return physical_coordinates(dereference_wrapper(source_coords[0]),
-                              dereference_wrapper(source_coords[1]),
-                              dereference_wrapper(source_coords[2]));
+  return physical_coordinates(source_coords[0], source_coords[1],
+                              source_coords[2]);
 }
 
 std::optional<std::array<double, 3>> BulgedCube::inverse(
@@ -231,17 +225,16 @@ std::array<T, 3> BulgedCube::xi_derivative(const T& xi, const T& eta,
 }
 
 template <typename T>
-tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame> BulgedCube::jacobian(
+tnsr::Ij<T, 3, Frame::NoFrame> BulgedCube::jacobian(
     const std::array<T, 3>& source_coords) const {
-  const auto& xi = dereference_wrapper(source_coords[0]);
-  const auto& eta = dereference_wrapper(source_coords[1]);
-  const auto& zeta = dereference_wrapper(source_coords[2]);
+  const auto& xi = source_coords[0];
+  const auto& eta = source_coords[1];
+  const auto& zeta = source_coords[2];
   const auto dX_dxi = xi_derivative(xi, eta, zeta);
   const auto dX_deta = xi_derivative(eta, xi, zeta);
   const auto dX_dzeta = xi_derivative(zeta, eta, xi);
   auto jacobian_matrix =
-      make_with_value<tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame>>(
-          xi, 0.0);
+      make_with_value<tnsr::Ij<T, 3, Frame::NoFrame>>(xi, 0.0);
 
   get<0, 0>(jacobian_matrix) = dX_dxi[0];
   get<0, 1>(jacobian_matrix) = dX_deta[1];
@@ -256,8 +249,8 @@ tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame> BulgedCube::jacobian(
 }
 
 template <typename T>
-tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame>
-BulgedCube::inv_jacobian(const std::array<T, 3>& source_coords) const {
+tnsr::Ij<T, 3, Frame::NoFrame> BulgedCube::inv_jacobian(
+    const std::array<T, 3>& source_coords) const {
   const auto jac = jacobian(source_coords);
   return determinant_and_inverse(jac).second;
 }
@@ -289,15 +282,13 @@ bool operator!=(const BulgedCube& lhs, const BulgedCube& rhs) {
 // Explicit instantiations
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(0, data)
 
-#define INSTANTIATE(_, data)                                                   \
-  template std::array<tt::remove_cvref_wrap_t<DTYPE(data)>, 3>                 \
-  BulgedCube::operator()(const std::array<DTYPE(data), 3>& source_coords)      \
-      const;                                                                   \
-  template tnsr::Ij<tt::remove_cvref_wrap_t<DTYPE(data)>, 3, Frame::NoFrame>   \
-  BulgedCube::jacobian(const std::array<DTYPE(data), 3>& source_coords) const; \
-  template tnsr::Ij<tt::remove_cvref_wrap_t<DTYPE(data)>, 3, Frame::NoFrame>   \
-  BulgedCube::inv_jacobian(const std::array<DTYPE(data), 3>& source_coords)    \
-      const;
+#define INSTANTIATE(_, data)                                                  \
+  template std::array<DTYPE(data), 3> BulgedCube::operator()(                 \
+      const std::array<DTYPE(data), 3>& source_coords) const;                 \
+  template tnsr::Ij<DTYPE(data), 3, Frame::NoFrame> BulgedCube::jacobian(     \
+      const std::array<DTYPE(data), 3>& source_coords) const;                 \
+  template tnsr::Ij<DTYPE(data), 3, Frame::NoFrame> BulgedCube::inv_jacobian( \
+      const std::array<DTYPE(data), 3>& source_coords) const;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (double, DataVector))
 

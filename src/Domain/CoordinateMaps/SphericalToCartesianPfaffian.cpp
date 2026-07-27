@@ -9,7 +9,6 @@
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
-#include "Utilities/DereferenceWrapper.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/MakeWithValue.hpp"
 
@@ -25,8 +24,7 @@ SphericalToCartesianPfaffian& SphericalToCartesianPfaffian::operator=(
     SphericalToCartesianPfaffian&&) = default;
 
 template <typename T>
-std::array<tt::remove_cvref_wrap_t<T>, 3>
-SphericalToCartesianPfaffian::operator()(
+std::array<T, 3> SphericalToCartesianPfaffian::operator()(
     const std::array<T, 3>& source_coords) const {
   const auto& [r, theta, phi] = source_coords;
   return {
@@ -51,13 +49,10 @@ std::optional<std::array<double, 3>> SphericalToCartesianPfaffian::inverse(
 }
 
 template <typename T>
-tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame>
-SphericalToCartesianPfaffian::jacobian(
+tnsr::Ij<T, 3, Frame::NoFrame> SphericalToCartesianPfaffian::jacobian(
     const std::array<T, 3>& source_coords) const {
   const auto& [r, theta, phi] = source_coords;
-  using DataType = tt::remove_cvref_wrap_t<T>;
-  tnsr::Ij<DataType, 3, Frame::NoFrame> jacobian_matrix{
-      make_with_value<DataType>(dereference_wrapper(r), 0.0)};
+  tnsr::Ij<T, 3, Frame::NoFrame> jacobian_matrix{make_with_value<T>(r, 0.0)};
   // Pfaffian basis means phi components are 1 / sin_theta times those of a
   // coord basis
   const auto& cos_theta = get<2, 0>(jacobian_matrix) = cos(theta);
@@ -76,13 +71,11 @@ SphericalToCartesianPfaffian::jacobian(
 }
 
 template <typename T>
-tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame>
-SphericalToCartesianPfaffian::inv_jacobian(
+tnsr::Ij<T, 3, Frame::NoFrame> SphericalToCartesianPfaffian::inv_jacobian(
     const std::array<T, 3>& source_coords) const {
   const auto& [r, theta, phi] = source_coords;
-  using DataType = tt::remove_cvref_wrap_t<T>;
-  tnsr::Ij<DataType, 3, Frame::NoFrame> inv_jacobian_matrix{
-      make_with_value<DataType>(dereference_wrapper(r), 0.0)};
+  tnsr::Ij<T, 3, Frame::NoFrame> inv_jacobian_matrix{
+      make_with_value<T>(r, 0.0)};
   // Pfaffian basis means phi components are sin_theta times those of a coord
   // basis
   const auto& cos_theta = get<0, 2>(inv_jacobian_matrix) = cos(theta);
@@ -115,15 +108,15 @@ bool operator!=(const SphericalToCartesianPfaffian& lhs,
 
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(0, data)
 
-#define INSTANTIATE_DTYPE(_, data)                                           \
-  template std::array<tt::remove_cvref_wrap_t<DTYPE(data)>, 3>               \
-  SphericalToCartesianPfaffian::operator()(                                  \
-      const std::array<DTYPE(data), 3>& source_coords) const;                \
-  template tnsr::Ij<tt::remove_cvref_wrap_t<DTYPE(data)>, 3, Frame::NoFrame> \
-  SphericalToCartesianPfaffian::jacobian(                                    \
-      const std::array<DTYPE(data), 3>& source_coords) const;                \
-  template tnsr::Ij<tt::remove_cvref_wrap_t<DTYPE(data)>, 3, Frame::NoFrame> \
-  SphericalToCartesianPfaffian::inv_jacobian(                                \
+#define INSTANTIATE_DTYPE(_, data)                            \
+  template std::array<DTYPE(data), 3>                         \
+  SphericalToCartesianPfaffian::operator()(                   \
+      const std::array<DTYPE(data), 3>& source_coords) const; \
+  template tnsr::Ij<DTYPE(data), 3, Frame::NoFrame>           \
+  SphericalToCartesianPfaffian::jacobian(                     \
+      const std::array<DTYPE(data), 3>& source_coords) const; \
+  template tnsr::Ij<DTYPE(data), 3, Frame::NoFrame>           \
+  SphericalToCartesianPfaffian::inv_jacobian(                 \
       const std::array<DTYPE(data), 3>& source_coords) const;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE_DTYPE, (double, DataVector))

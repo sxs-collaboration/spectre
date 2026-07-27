@@ -14,7 +14,6 @@
 #include "Domain/CoordinateMaps/FocallyLiftedMapHelpers.hpp"
 #include "Domain/CoordinateMaps/FocallyLiftedSide.hpp"
 #include "Utilities/ConstantExpressions.hpp"
-#include "Utilities/DereferenceWrapper.hpp"
 #include "Utilities/EqualWithinRoundoff.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
@@ -49,26 +48,23 @@ FocallyLiftedMap<InnerMap>::FocallyLiftedMap(
 
 template <typename InnerMap>
 template <typename T>
-std::array<tt::remove_cvref_wrap_t<T>, 3>
-FocallyLiftedMap<InnerMap>::operator()(
+std::array<T, 3> FocallyLiftedMap<InnerMap>::operator()(
     const std::array<T, 3>& source_coords) const {
-  using ReturnType = tt::remove_cvref_wrap_t<T>;
-
   // Temporary variable that will be re-used to avoid extra
   // allocations.
-  ReturnType temp_scalar{};
+  T temp_scalar{};
 
   // lower_coords are the mapped coords on the surface.
-  std::array<ReturnType, 3> lower_coords{};
-  inner_map_.forward_map(&lower_coords, source_coords);
+  std::array<T, 3> lower_coords{};
+  inner_map_.forward_map(make_not_null(&lower_coords), source_coords);
 
   // upper_coords are the mapped coords on the surface of the sphere.
-  ReturnType& lambda = temp_scalar;
-  FocallyLiftedMapHelpers::scale_factor(
-      &lambda, lower_coords, proj_center_, center_, radius_,
-      source_is_between_focus_and_target_);
+  T& lambda = temp_scalar;
+  FocallyLiftedMapHelpers::scale_factor(make_not_null(&lambda), lower_coords,
+                                        proj_center_, center_, radius_,
+                                        source_is_between_focus_and_target_);
 
-  std::array<ReturnType, 3> upper_coords{};
+  std::array<T, 3> upper_coords{};
   for (size_t i = 0; i < 3; ++i) {
     gsl::at(upper_coords, i) =
         gsl::at(proj_center_, i) +
@@ -77,8 +73,8 @@ FocallyLiftedMap<InnerMap>::operator()(
 
   // mapped_coords goes linearly from lower_coords to upper_coords
   // as sigma goes from 0 to 1.
-  ReturnType& sigma = temp_scalar; // sigma shares memory with lambda.
-  inner_map_.sigma(&sigma, source_coords);
+  T& sigma = temp_scalar;  // sigma shares memory with lambda.
+  inner_map_.sigma(make_not_null(&sigma), source_coords);
 
   // Use upper_coords to store result, so as to save an allocation.
   for (size_t i = 0; i < 3; ++i) {
@@ -91,47 +87,43 @@ FocallyLiftedMap<InnerMap>::operator()(
 
 template <typename InnerMap>
 template <typename T>
-tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame>
-FocallyLiftedMap<InnerMap>::jacobian(
+tnsr::Ij<T, 3, Frame::NoFrame> FocallyLiftedMap<InnerMap>::jacobian(
     const std::array<T, 3>& source_coords) const {
-  using ReturnType = tt::remove_cvref_wrap_t<T>;
-
   // Use these variables to reduce allocations.
-  std::array<ReturnType, 3> temp_vector_one{};
-  std::array<ReturnType, 3> temp_vector_two{};
+  std::array<T, 3> temp_vector_one{};
+  std::array<T, 3> temp_vector_two{};
 
   auto jacobian_matrix =
-      make_with_value<tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame>>(
-          dereference_wrapper(source_coords[0]), 0.0);
+      make_with_value<tnsr::Ij<T, 3, Frame::NoFrame>>(source_coords[0], 0.0);
 
   // lower_coords are the mapped coords on the surface.
-  std::array<ReturnType, 3> lower_coords{};
-  inner_map_.forward_map(&lower_coords, source_coords);
+  std::array<T, 3> lower_coords{};
+  inner_map_.forward_map(make_not_null(&lower_coords), source_coords);
 
-  ReturnType lambda{};
-  FocallyLiftedMapHelpers::scale_factor(
-      &lambda, lower_coords, proj_center_, center_, radius_,
-      source_is_between_focus_and_target_);
+  T lambda{};
+  FocallyLiftedMapHelpers::scale_factor(make_not_null(&lambda), lower_coords,
+                                        proj_center_, center_, radius_,
+                                        source_is_between_focus_and_target_);
 
   // upper_coords are the mapped coords on the surface of the sphere.
-  std::array<ReturnType, 3>& upper_coords = temp_vector_one;
+  std::array<T, 3>& upper_coords = temp_vector_one;
   for (size_t i = 0; i < 3; ++i) {
     gsl::at(upper_coords, i) =
         gsl::at(proj_center_, i) +
         (gsl::at(lower_coords, i) - gsl::at(proj_center_, i)) * lambda;
   }
 
-  std::array<ReturnType, 3>& d_lambda_d_lower_coords = temp_vector_two;
-  FocallyLiftedMapHelpers::d_scale_factor_d_src_point<ReturnType>(
+  std::array<T, 3>& d_lambda_d_lower_coords = temp_vector_two;
+  FocallyLiftedMapHelpers::d_scale_factor_d_src_point<T>(
       &d_lambda_d_lower_coords, upper_coords, proj_center_, center_, lambda);
 
   // Put the inner map's jacobian temporarily into jacobian_matrix.
   // This saves an allocation.
-  inner_map_.jacobian(&jacobian_matrix, source_coords);
+  inner_map_.jacobian(make_not_null(&jacobian_matrix), source_coords);
 
   // Re-use memory of upper_coords in computing sigma_d_lambda_d_xbar.
   // Don't multiply by sigma yet because we don't know it.
-  std::array<ReturnType, 3>& sigma_d_lambda_d_xbar = temp_vector_one;
+  std::array<T, 3>& sigma_d_lambda_d_xbar = temp_vector_one;
   for (size_t j = 0; j < 3; ++j) {
     gsl::at(sigma_d_lambda_d_xbar, j) =
         d_lambda_d_lower_coords[0] * jacobian_matrix.get(0, j);
@@ -142,8 +134,8 @@ FocallyLiftedMap<InnerMap>::jacobian(
   }
 
   // temp_vector_two isn't used anymore, so use its memory for sigma.
-  ReturnType& sigma = temp_vector_two[0];
-  inner_map_.sigma(&sigma, source_coords);
+  T& sigma = temp_vector_two[0];
+  inner_map_.sigma(make_not_null(&sigma), source_coords);
 
   // Now complete computation of sigma_d_lambda_d_xbar.
   for (size_t j = 0; j < 3; ++j) {
@@ -152,7 +144,7 @@ FocallyLiftedMap<InnerMap>::jacobian(
 
   // Do the easiest of the terms involving the inner map,
   // i.e. the first term in Eq. (6) in the documentation.
-  ReturnType& lambda_factor = temp_vector_two[1];
+  T& lambda_factor = temp_vector_two[1];
   lambda_factor = 1.0 - sigma + lambda * sigma;
   for (size_t i = 0; i < 3; ++i) {
     for (size_t j = 0; j < 3; ++j) {
@@ -164,8 +156,8 @@ FocallyLiftedMap<InnerMap>::jacobian(
   // documentation.
   // Note that we explicitly substitute for upper_coords below
   // because we have re-used its memory.
-  std::array<ReturnType, 3>& d_sigma = temp_vector_two;
-  inner_map_.deriv_sigma(&d_sigma, source_coords);
+  std::array<T, 3>& d_sigma = temp_vector_two;
+  inner_map_.deriv_sigma(make_not_null(&d_sigma), source_coords);
   for (size_t i = 0; i < 3; ++i) {
     for (size_t j = 0; j < 3; ++j) {
       jacobian_matrix.get(i, j) +=
@@ -190,22 +182,19 @@ FocallyLiftedMap<InnerMap>::jacobian(
 
 template <typename InnerMap>
 template <typename T>
-tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame>
-FocallyLiftedMap<InnerMap>::inv_jacobian(
+tnsr::Ij<T, 3, Frame::NoFrame> FocallyLiftedMap<InnerMap>::inv_jacobian(
     const std::array<T, 3>& source_coords) const {
-  using ReturnType = tt::remove_cvref_wrap_t<T>;
-
   // lower_coords are the mapped coords on the surface.
-  std::array<ReturnType, 3> lower_coords{};
-  inner_map_.forward_map(&lower_coords, source_coords);
+  std::array<T, 3> lower_coords{};
+  inner_map_.forward_map(make_not_null(&lower_coords), source_coords);
 
-  ReturnType lambda{};
-  FocallyLiftedMapHelpers::scale_factor(
-      &lambda, lower_coords, proj_center_, center_, radius_,
-      source_is_between_focus_and_target_);
+  T lambda{};
+  FocallyLiftedMapHelpers::scale_factor(make_not_null(&lambda), lower_coords,
+                                        proj_center_, center_, radius_,
+                                        source_is_between_focus_and_target_);
 
   // upper_coords are the mapped coords on the surface of the sphere.
-  std::array<ReturnType, 3> upper_coords{};
+  std::array<T, 3> upper_coords{};
   for (size_t i = 0; i < 3; ++i) {
     gsl::at(upper_coords, i) =
         gsl::at(proj_center_, i) +
@@ -213,26 +202,25 @@ FocallyLiftedMap<InnerMap>::inv_jacobian(
   }
 
   // Derivative of lambda
-  std::array<ReturnType, 3> d_lambda_d_lower_coords{};
-  FocallyLiftedMapHelpers::d_scale_factor_d_src_point<ReturnType>(
+  std::array<T, 3> d_lambda_d_lower_coords{};
+  FocallyLiftedMapHelpers::d_scale_factor_d_src_point<T>(
       &d_lambda_d_lower_coords, upper_coords, proj_center_, center_, lambda);
 
   // Lambda_tilde is the scale factor between mapped coords and lower coords.
   // We can compute it with a shortcut because there is a relationship
   // between lambda, lambda_tilde, and sigma.
-  ReturnType sigma {};
-  inner_map_.sigma(&sigma, source_coords);
-  const ReturnType lambda_tilde = 1.0 / (1.0 - sigma * (1.0 - lambda));
+  T sigma{};
+  inner_map_.sigma(make_not_null(&sigma), source_coords);
+  const T lambda_tilde = 1.0 / (1.0 - sigma * (1.0 - lambda));
 
   // Derivative of lambda_tilde
-  std::array<ReturnType, 3> d_lambda_tilde_d_mapped_coords{};
-  inner_map_.deriv_lambda_tilde(&d_lambda_tilde_d_mapped_coords, lower_coords,
-                                lambda_tilde, proj_center_);
+  std::array<T, 3> d_lambda_tilde_d_mapped_coords{};
+  inner_map_.deriv_lambda_tilde(make_not_null(&d_lambda_tilde_d_mapped_coords),
+                                lower_coords, lambda_tilde, proj_center_);
 
   // Deriv of x_0 with respect to x
   auto dx_inner_dx =
-      make_with_value<tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame>>(
-          dereference_wrapper(source_coords[0]), 0.0);
+      make_with_value<tnsr::Ij<T, 3, Frame::NoFrame>>(source_coords[0], 0.0);
   for (size_t i = 0; i < 3; ++i) {
     for (size_t j = 0; j < 3; ++j) {
       dx_inner_dx.get(i, j) = gsl::at(d_lambda_tilde_d_mapped_coords, j) *
@@ -244,9 +232,8 @@ FocallyLiftedMap<InnerMap>::inv_jacobian(
 
   // Deriv of sigma with respect to x,y,z
   auto d_sigma_d_mapped_coords =
-      make_with_value<tnsr::i<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame>>(
-          sigma, 0.0);
-  ReturnType tmp{};
+      make_with_value<tnsr::i<T, 3, Frame::NoFrame>>(sigma, 0.0);
+  T tmp{};
   for (size_t i = 0; i < 3; ++i) {
     tmp = d_lambda_d_lower_coords[0] * dx_inner_dx.get(0, i);
     for (size_t j = 1; j < 3; ++j) {  // first iteration factored out above.
@@ -258,14 +245,13 @@ FocallyLiftedMap<InnerMap>::inv_jacobian(
         (1.0 - lambda);
   }
 
-  tnsr::Ij<ReturnType, 3, Frame::NoFrame> dxbar_dx_inner{};
-  inner_map_.inv_jacobian(&dxbar_dx_inner, source_coords);
-  std::array<tt::remove_cvref_wrap_t<T>, 3> dxbar_dsigma{};
-  inner_map_.dxbar_dsigma(&dxbar_dsigma, source_coords);
+  tnsr::Ij<T, 3, Frame::NoFrame> dxbar_dx_inner{};
+  inner_map_.inv_jacobian(make_not_null(&dxbar_dx_inner), source_coords);
+  std::array<T, 3> dxbar_dsigma{};
+  inner_map_.dxbar_dsigma(make_not_null(&dxbar_dsigma), source_coords);
 
   auto inv_jacobian_matrix =
-      make_with_value<tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame>>(
-          dereference_wrapper(source_coords[0]), 0.0);
+      make_with_value<tnsr::Ij<T, 3, Frame::NoFrame>>(source_coords[0], 0.0);
 
   for (size_t i = 0; i < 3; ++i) {
     for (size_t j = 0; j < 3; ++j) {
@@ -399,15 +385,15 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (FocallyLiftedInnerMaps::Endcap,
 
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(1, data)
 
-#define INSTANTIATE(_, data)                                                 \
-  template std::array<tt::remove_cvref_wrap_t<DTYPE(data)>, 3>               \
-  FocallyLiftedMap<IMAP(data)>::operator()(                                  \
-      const std::array<DTYPE(data), 3>& source_coords) const;                \
-  template tnsr::Ij<tt::remove_cvref_wrap_t<DTYPE(data)>, 3, Frame::NoFrame> \
-  FocallyLiftedMap<IMAP(data)>::jacobian(                                    \
-      const std::array<DTYPE(data), 3>& source_coords) const;                \
-  template tnsr::Ij<tt::remove_cvref_wrap_t<DTYPE(data)>, 3, Frame::NoFrame> \
-  FocallyLiftedMap<IMAP(data)>::inv_jacobian(                                \
+#define INSTANTIATE(_, data)                                  \
+  template std::array<DTYPE(data), 3>                         \
+  FocallyLiftedMap<IMAP(data)>::operator()(                   \
+      const std::array<DTYPE(data), 3>& source_coords) const; \
+  template tnsr::Ij<DTYPE(data), 3, Frame::NoFrame>           \
+  FocallyLiftedMap<IMAP(data)>::jacobian(                     \
+      const std::array<DTYPE(data), 3>& source_coords) const; \
+  template tnsr::Ij<DTYPE(data), 3, Frame::NoFrame>           \
+  FocallyLiftedMap<IMAP(data)>::inv_jacobian(                 \
       const std::array<DTYPE(data), 3>& source_coords) const;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE,

@@ -8,7 +8,6 @@
 
 #include "Domain/CoordinateMaps/AutodiffInstantiationTypes.hpp"
 #include "Utilities/Autodiff/Autodiff.hpp"
-#include "Utilities/DereferenceWrapper.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/MakeWithValue.hpp"
 
@@ -27,7 +26,7 @@ Rotation<2>::Rotation(const double rotation_angle)
 }
 
 template <typename T>
-std::array<tt::remove_cvref_wrap_t<T>, 2> Rotation<2>::operator()(
+std::array<T, 2> Rotation<2>::operator()(
     const std::array<T, 2>& source_coords) const {
   return {{source_coords[0] * get<0, 0>(rotation_matrix_) +
                source_coords[1] * get<0, 1>(rotation_matrix_),
@@ -44,11 +43,10 @@ std::optional<std::array<double, 2>> Rotation<2>::inverse(
 }
 
 template <typename T>
-tnsr::Ij<tt::remove_cvref_wrap_t<T>, 2, Frame::NoFrame> Rotation<2>::jacobian(
+tnsr::Ij<T, 2, Frame::NoFrame> Rotation<2>::jacobian(
     const std::array<T, 2>& source_coords) const {
-  tnsr::Ij<tt::remove_cvref_wrap_t<T>, 2, Frame::NoFrame> jacobian_matrix{
-      make_with_value<tt::remove_cvref_wrap_t<T>>(
-          dereference_wrapper(source_coords[0]), 0.0)};
+  tnsr::Ij<T, 2, Frame::NoFrame> jacobian_matrix{
+      make_with_value<T>(source_coords[0], 0.0)};
   get<0, 0>(jacobian_matrix) = get<0, 0>(rotation_matrix_);
   get<1, 0>(jacobian_matrix) = get<1, 0>(rotation_matrix_);
   get<0, 1>(jacobian_matrix) = get<0, 1>(rotation_matrix_);
@@ -57,11 +55,10 @@ tnsr::Ij<tt::remove_cvref_wrap_t<T>, 2, Frame::NoFrame> Rotation<2>::jacobian(
 }
 
 template <typename T>
-tnsr::Ij<tt::remove_cvref_wrap_t<T>, 2, Frame::NoFrame>
-Rotation<2>::inv_jacobian(const std::array<T, 2>& source_coords) const {
-  tnsr::Ij<tt::remove_cvref_wrap_t<T>, 2, Frame::NoFrame> inv_jacobian_matrix{
-      make_with_value<tt::remove_cvref_wrap_t<T>>(
-          dereference_wrapper(source_coords[0]), 0.0)};
+tnsr::Ij<T, 2, Frame::NoFrame> Rotation<2>::inv_jacobian(
+    const std::array<T, 2>& source_coords) const {
+  tnsr::Ij<T, 2, Frame::NoFrame> inv_jacobian_matrix{
+      make_with_value<T>(source_coords[0], 0.0)};
   get<0, 0>(inv_jacobian_matrix) = get<0, 0>(rotation_matrix_);
   get<1, 0>(inv_jacobian_matrix) = get<0, 1>(rotation_matrix_);
   get<0, 1>(inv_jacobian_matrix) = get<1, 0>(rotation_matrix_);
@@ -123,7 +120,7 @@ Rotation<3>::Rotation(const double rotation_about_z,
 }
 
 template <typename T>
-std::array<tt::remove_cvref_wrap_t<T>, 3> Rotation<3>::operator()(
+std::array<T, 3> Rotation<3>::operator()(
     const std::array<T, 3>& source_coords) const {
   return {{source_coords[0] * get<0, 0>(rotation_matrix_) +
                source_coords[1] * get<0, 1>(rotation_matrix_) +
@@ -151,11 +148,10 @@ std::optional<std::array<double, 3>> Rotation<3>::inverse(
 }
 
 template <typename T>
-tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame> Rotation<3>::jacobian(
+tnsr::Ij<T, 3, Frame::NoFrame> Rotation<3>::jacobian(
     const std::array<T, 3>& source_coords) const {
-  tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame> jacobian_matrix{
-      make_with_value<tt::remove_cvref_wrap_t<T>>(
-          dereference_wrapper(source_coords[0]), 0.0)};
+  tnsr::Ij<T, 3, Frame::NoFrame> jacobian_matrix{
+      make_with_value<T>(source_coords[0], 0.0)};
   get<0, 0>(jacobian_matrix) = get<0, 0>(rotation_matrix_);
   get<1, 0>(jacobian_matrix) = get<1, 0>(rotation_matrix_);
   get<0, 1>(jacobian_matrix) = get<0, 1>(rotation_matrix_);
@@ -169,11 +165,10 @@ tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame> Rotation<3>::jacobian(
 }
 
 template <typename T>
-tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame>
-Rotation<3>::inv_jacobian(const std::array<T, 3>& source_coords) const {
-  tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame> inv_jacobian_matrix{
-      make_with_value<tt::remove_cvref_wrap_t<T>>(
-          dereference_wrapper(source_coords[0]), 0.0)};
+tnsr::Ij<T, 3, Frame::NoFrame> Rotation<3>::inv_jacobian(
+    const std::array<T, 3>& source_coords) const {
+  tnsr::Ij<T, 3, Frame::NoFrame> inv_jacobian_matrix{
+      make_with_value<T>(source_coords[0], 0.0)};
   get<0, 0>(inv_jacobian_matrix) = get<0, 0>(rotation_matrix_);
   get<1, 0>(inv_jacobian_matrix) = get<0, 1>(rotation_matrix_);
   get<0, 1>(inv_jacobian_matrix) = get<1, 0>(rotation_matrix_);
@@ -208,17 +203,14 @@ bool operator!=(const Rotation<3>& lhs, const Rotation<3>& rhs) {
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(1, data)
 
-#define INSTANTIATE(_, data)                                           \
-  template std::array<tt::remove_cvref_wrap_t<DTYPE(data)>, DIM(data)> \
-  Rotation<DIM(data)>::operator()(                                     \
-      const std::array<DTYPE(data), DIM(data)>& source_coords) const;  \
-  template tnsr::Ij<tt::remove_cvref_wrap_t<DTYPE(data)>, DIM(data),   \
-                    Frame::NoFrame>                                    \
-  Rotation<DIM(data)>::jacobian(                                       \
-      const std::array<DTYPE(data), DIM(data)>& source_coords) const;  \
-  template tnsr::Ij<tt::remove_cvref_wrap_t<DTYPE(data)>, DIM(data),   \
-                    Frame::NoFrame>                                    \
-  Rotation<DIM(data)>::inv_jacobian(                                   \
+#define INSTANTIATE(_, data)                                                   \
+  template std::array<DTYPE(data), DIM(data)> Rotation<DIM(data)>::operator()( \
+      const std::array<DTYPE(data), DIM(data)>& source_coords) const;          \
+  template tnsr::Ij<DTYPE(data), DIM(data), Frame::NoFrame>                    \
+  Rotation<DIM(data)>::jacobian(                                               \
+      const std::array<DTYPE(data), DIM(data)>& source_coords) const;          \
+  template tnsr::Ij<DTYPE(data), DIM(data), Frame::NoFrame>                    \
+  Rotation<DIM(data)>::inv_jacobian(                                           \
       const std::array<DTYPE(data), DIM(data)>& source_coords) const;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (2, 3), (double, DataVector))

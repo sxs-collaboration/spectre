@@ -13,7 +13,6 @@
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "PointwiseFunctions/MathFunctions/MathFunction.hpp"
-#include "Utilities/TypeTraits/RemoveReferenceWrapper.hpp"
 
 /// \cond
 namespace domain::FunctionsOfTime {
@@ -173,7 +172,7 @@ class Translation {
   Translation& operator=(const Translation& Translation_Map);
 
   template <typename T>
-  std::array<tt::remove_cvref_wrap_t<T>, Dim> operator()(
+  std::array<T, Dim> operator()(
       const std::array<T, Dim>& source_coords, double time,
       const std::unordered_map<
           std::string,
@@ -192,7 +191,7 @@ class Translation {
           functions_of_time) const;
 
   template <typename T>
-  std::array<tt::remove_cvref_wrap_t<T>, Dim> frame_velocity(
+  std::array<T, Dim> frame_velocity(
       const std::array<T, Dim>& source_coords, double time,
       const std::unordered_map<
           std::string,
@@ -200,7 +199,7 @@ class Translation {
           functions_of_time) const;
 
   template <typename T>
-  tnsr::Ij<tt::remove_cvref_wrap_t<T>, Dim, Frame::NoFrame> inv_jacobian(
+  tnsr::Ij<T, Dim, Frame::NoFrame> inv_jacobian(
       const std::array<T, Dim>& source_coords, double time,
       const std::unordered_map<
           std::string,
@@ -208,7 +207,7 @@ class Translation {
           functions_of_time) const;
 
   template <typename T>
-  tnsr::Ij<tt::remove_cvref_wrap_t<T>, Dim, Frame::NoFrame> jacobian(
+  tnsr::Ij<T, Dim, Frame::NoFrame> jacobian(
       const std::array<T, Dim>& source_coords, double time,
       const std::unordered_map<
           std::string,
@@ -235,7 +234,7 @@ class Translation {
   // velocity based on the option passed in, 0 for translated coordinates, and
   // frame velocity for any other number.
   template <typename T>
-  std::array<tt::remove_cvref_wrap_t<T>, Dim> math_function_helper(
+  std::array<T, Dim> math_function_helper(
       const std::array<T, Dim>& source_coords, double time,
       const std::unordered_map<
           std::string,
@@ -244,7 +243,7 @@ class Translation {
       size_t function_or_deriv_index) const;
 
   template <typename T>
-  std::array<tt::remove_cvref_wrap_t<T>, Dim> piecewise_helper(
+  std::array<T, Dim> piecewise_helper(
       const std::array<T, Dim>& source_coords, double time,
       const std::unordered_map<
           std::string,

@@ -17,7 +17,6 @@
 #include "Domain/CoordinateMaps/TimeDependent/RotationMatrixHelpers.hpp"
 #include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
 #include "Utilities/Autodiff/Autodiff.hpp"
-#include "Utilities/DereferenceWrapper.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/MakeWithValue.hpp"
 #include "Utilities/StdHelpers.hpp"
@@ -31,7 +30,7 @@ Rotation<Dim>::Rotation(std::string function_of_time_name)
 
 template <size_t Dim>
 template <typename T>
-std::array<tt::remove_cvref_wrap_t<T>, Dim> Rotation<Dim>::operator()(
+std::array<T, Dim> Rotation<Dim>::operator()(
     const std::array<T, Dim>& source_coords, const double time,
     const std::unordered_map<
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
@@ -39,7 +38,7 @@ std::array<tt::remove_cvref_wrap_t<T>, Dim> Rotation<Dim>::operator()(
   const Matrix rot_matrix =
       rotation_matrix<Dim>(time, *(functions_of_time.at(f_of_t_name_)));
 
-  std::array<tt::remove_cvref_wrap_t<T>, Dim> result{};
+  std::array<T, Dim> result{};
   for (size_t i = 0; i < Dim; i++) {
     gsl::at(result, i) = rot_matrix(i, 0) * source_coords[0];
     for (size_t j = 1; j < Dim; j++) {
@@ -72,7 +71,7 @@ std::optional<std::array<double, Dim>> Rotation<Dim>::inverse(
 
 template <size_t Dim>
 template <typename T>
-std::array<tt::remove_cvref_wrap_t<T>, Dim> Rotation<Dim>::frame_velocity(
+std::array<T, Dim> Rotation<Dim>::frame_velocity(
     const std::array<T, Dim>& source_coords, const double time,
     const std::unordered_map<
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
@@ -80,7 +79,7 @@ std::array<tt::remove_cvref_wrap_t<T>, Dim> Rotation<Dim>::frame_velocity(
   const Matrix rot_matrix_deriv =
       rotation_matrix_deriv<Dim>(time, *(functions_of_time.at(f_of_t_name_)));
 
-  std::array<tt::remove_cvref_wrap_t<T>, Dim> result{};
+  std::array<T, Dim> result{};
   for (size_t i = 0; i < Dim; i++) {
     gsl::at(result, i) = rot_matrix_deriv(i, 0) * source_coords[0];
     for (size_t j = 1; j < Dim; j++) {
@@ -93,8 +92,7 @@ std::array<tt::remove_cvref_wrap_t<T>, Dim> Rotation<Dim>::frame_velocity(
 
 template <size_t Dim>
 template <typename T>
-tnsr::Ij<tt::remove_cvref_wrap_t<T>, Dim, Frame::NoFrame>
-Rotation<Dim>::jacobian(
+tnsr::Ij<T, Dim, Frame::NoFrame> Rotation<Dim>::jacobian(
     const std::array<T, Dim>& source_coords, const double time,
     const std::unordered_map<
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
@@ -103,9 +101,8 @@ Rotation<Dim>::jacobian(
       rotation_matrix<Dim>(time, *(functions_of_time.at(f_of_t_name_)));
 
   // Make tensor of zeros with correct type
-  auto jacobian_matrix = make_with_value<
-      tnsr::Ij<tt::remove_cvref_wrap_t<T>, Dim, Frame::NoFrame>>(
-      dereference_wrapper(source_coords[0]), 0.0);
+  auto jacobian_matrix =
+      make_with_value<tnsr::Ij<T, Dim, Frame::NoFrame>>(source_coords[0], 0.0);
 
   for (size_t i = 0; i < Dim; i++) {
     for (size_t j = 0; j < Dim; j++) {
@@ -118,8 +115,7 @@ Rotation<Dim>::jacobian(
 
 template <size_t Dim>
 template <typename T>
-tnsr::Ij<tt::remove_cvref_wrap_t<T>, Dim, Frame::NoFrame>
-Rotation<Dim>::inv_jacobian(
+tnsr::Ij<T, Dim, Frame::NoFrame> Rotation<Dim>::inv_jacobian(
     const std::array<T, Dim>& source_coords, const double time,
     const std::unordered_map<
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
@@ -127,9 +123,8 @@ Rotation<Dim>::inv_jacobian(
   const Matrix rot_matrix =
       rotation_matrix<Dim>(time, *(functions_of_time.at(f_of_t_name_)));
 
-  auto inv_jacobian_matrix = make_with_value<
-      tnsr::Ij<tt::remove_cvref_wrap_t<T>, Dim, Frame::NoFrame>>(
-      dereference_wrapper(source_coords[0]), 0.0);
+  auto inv_jacobian_matrix =
+      make_with_value<tnsr::Ij<T, Dim, Frame::NoFrame>>(source_coords[0], 0.0);
 
   // The inverse jacobian is just the inverse rotation matrix, which is the
   // transpose of the rotation matrix.
@@ -184,37 +179,34 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (2, 3))
 #undef INSTANTIATE
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(1, data)
 
-#define INSTANTIATE(_, data)                                                \
-  template std::array<tt::remove_cvref_wrap_t<DTYPE(data)>, DIM(data)>      \
-  Rotation<DIM(data)>::operator()(                                          \
-      const std::array<DTYPE(data), DIM(data)>& source_coords, double time, \
-      const std::unordered_map<                                             \
-          std::string,                                                      \
-          std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&        \
-          functions_of_time) const;                                         \
-  template std::array<tt::remove_cvref_wrap_t<DTYPE(data)>, DIM(data)>      \
-  Rotation<DIM(data)>::frame_velocity(                                      \
-      const std::array<DTYPE(data), DIM(data)>& source_coords,              \
-      const double time,                                                    \
-      const std::unordered_map<                                             \
-          std::string,                                                      \
-          std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&        \
-          functions_of_time) const;                                         \
-  template tnsr::Ij<tt::remove_cvref_wrap_t<DTYPE(data)>, DIM(data),        \
-                    Frame::NoFrame>                                         \
-  Rotation<DIM(data)>::jacobian(                                            \
-      const std::array<DTYPE(data), DIM(data)>& source_coords, double time, \
-      const std::unordered_map<                                             \
-          std::string,                                                      \
-          std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&        \
-          functions_of_time) const;                                         \
-  template tnsr::Ij<tt::remove_cvref_wrap_t<DTYPE(data)>, DIM(data),        \
-                    Frame::NoFrame>                                         \
-  Rotation<DIM(data)>::inv_jacobian(                                        \
-      const std::array<DTYPE(data), DIM(data)>& source_coords, double time, \
-      const std::unordered_map<                                             \
-          std::string,                                                      \
-          std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&        \
+#define INSTANTIATE(_, data)                                                   \
+  template std::array<DTYPE(data), DIM(data)> Rotation<DIM(data)>::operator()( \
+      const std::array<DTYPE(data), DIM(data)>& source_coords, double time,    \
+      const std::unordered_map<                                                \
+          std::string,                                                         \
+          std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&           \
+          functions_of_time) const;                                            \
+  template std::array<DTYPE(data), DIM(data)>                                  \
+  Rotation<DIM(data)>::frame_velocity(                                         \
+      const std::array<DTYPE(data), DIM(data)>& source_coords,                 \
+      const double time,                                                       \
+      const std::unordered_map<                                                \
+          std::string,                                                         \
+          std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&           \
+          functions_of_time) const;                                            \
+  template tnsr::Ij<DTYPE(data), DIM(data), Frame::NoFrame>                    \
+  Rotation<DIM(data)>::jacobian(                                               \
+      const std::array<DTYPE(data), DIM(data)>& source_coords, double time,    \
+      const std::unordered_map<                                                \
+          std::string,                                                         \
+          std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&           \
+          functions_of_time) const;                                            \
+  template tnsr::Ij<DTYPE(data), DIM(data), Frame::NoFrame>                    \
+  Rotation<DIM(data)>::inv_jacobian(                                           \
+      const std::array<DTYPE(data), DIM(data)>& source_coords, double time,    \
+      const std::unordered_map<                                                \
+          std::string,                                                         \
+          std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&           \
           functions_of_time) const;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (2, 3), (double, DataVector))

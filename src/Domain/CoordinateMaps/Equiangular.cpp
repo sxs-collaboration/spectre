@@ -11,7 +11,6 @@
 #include "Domain/CoordinateMaps/AutodiffInstantiationTypes.hpp"
 #include "Utilities/Autodiff/Autodiff.hpp"
 #include "Utilities/ConstantExpressions.hpp"
-#include "Utilities/DereferenceWrapper.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/MakeWithValue.hpp"
 
@@ -33,7 +32,7 @@ Equiangular::Equiangular(const double A, const double B, const double a,
                                            length_of_range_) {}
 
 template <typename T>
-std::array<tt::remove_cvref_wrap_t<T>, 1> Equiangular::operator()(
+std::array<T, 1> Equiangular::operator()(
     const std::array<T, 1>& source_coords) const {
   return {
       {0.5 * (a_ + b_ +
@@ -50,26 +49,24 @@ std::optional<std::array<double, 1>> Equiangular::inverse(
 }
 
 template <typename T>
-tnsr::Ij<tt::remove_cvref_wrap_t<T>, 1, Frame::NoFrame> Equiangular::jacobian(
+tnsr::Ij<T, 1, Frame::NoFrame> Equiangular::jacobian(
     const std::array<T, 1>& source_coords) const {
-  const tt::remove_cvref_wrap_t<T> tan_variable =
+  const T tan_variable =
       tan(m_pi_4_over_length_of_domain_ * (-B_ - A_ + 2.0 * source_coords[0]));
   auto jacobian_matrix =
-      make_with_value<tnsr::Ij<tt::remove_cvref_wrap_t<T>, 1, Frame::NoFrame>>(
-          dereference_wrapper(source_coords[0]), 0.0);
+      make_with_value<tnsr::Ij<T, 1, Frame::NoFrame>>(source_coords[0], 0.0);
   get<0, 0>(jacobian_matrix) =
       linear_jacobian_times_m_pi_4_ * (1.0 + square(tan_variable));
   return jacobian_matrix;
 }
 
 template <typename T>
-tnsr::Ij<tt::remove_cvref_wrap_t<T>, 1, Frame::NoFrame>
-Equiangular::inv_jacobian(const std::array<T, 1>& source_coords) const {
-  const tt::remove_cvref_wrap_t<T> tan_variable =
+tnsr::Ij<T, 1, Frame::NoFrame> Equiangular::inv_jacobian(
+    const std::array<T, 1>& source_coords) const {
+  const T tan_variable =
       tan(m_pi_4_over_length_of_domain_ * (-B_ - A_ + 2.0 * source_coords[0]));
   auto inv_jacobian_matrix =
-      make_with_value<tnsr::Ij<tt::remove_cvref_wrap_t<T>, 1, Frame::NoFrame>>(
-          dereference_wrapper(source_coords[0]), 0.0);
+      make_with_value<tnsr::Ij<T, 1, Frame::NoFrame>>(source_coords[0], 0.0);
   get<0, 0>(inv_jacobian_matrix) =
       linear_inverse_jacobian_over_m_pi_4_ / (1.0 + square(tan_variable));
   return inv_jacobian_matrix;
@@ -114,16 +111,13 @@ bool operator==(const CoordinateMaps::Equiangular& lhs,
 // Explicit instantiations
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(0, data)
 
-#define INSTANTIATE(_, data)                                                 \
-  template std::array<tt::remove_cvref_wrap_t<DTYPE(data)>, 1>               \
-  Equiangular::operator()(const std::array<DTYPE(data), 1>& source_coords)   \
-      const;                                                                 \
-  template tnsr::Ij<tt::remove_cvref_wrap_t<DTYPE(data)>, 1, Frame::NoFrame> \
-  Equiangular::jacobian(const std::array<DTYPE(data), 1>& source_coords)     \
-      const;                                                                 \
-  template tnsr::Ij<tt::remove_cvref_wrap_t<DTYPE(data)>, 1, Frame::NoFrame> \
-  Equiangular::inv_jacobian(const std::array<DTYPE(data), 1>& source_coords) \
-      const;
+#define INSTANTIATE(_, data)                                                   \
+  template std::array<DTYPE(data), 1> Equiangular::operator()(                 \
+      const std::array<DTYPE(data), 1>& source_coords) const;                  \
+  template tnsr::Ij<DTYPE(data), 1, Frame::NoFrame> Equiangular::jacobian(     \
+      const std::array<DTYPE(data), 1>& source_coords) const;                  \
+  template tnsr::Ij<DTYPE(data), 1, Frame::NoFrame> Equiangular::inv_jacobian( \
+      const std::array<DTYPE(data), 1>& source_coords) const;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (double, DataVector))
 

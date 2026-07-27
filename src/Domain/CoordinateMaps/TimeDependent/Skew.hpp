@@ -13,7 +13,6 @@
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
-#include "Utilities/TypeTraits/RemoveReferenceWrapper.hpp"
 
 /// \cond
 namespace PUP {
@@ -175,7 +174,7 @@ class Skew {
   Skew() = default;
 
   template <typename T>
-  std::array<tt::remove_cvref_wrap_t<T>, 3> operator()(
+  std::array<T, 3> operator()(
       const std::array<T, 3>& source_coords, double time,
       const domain::FunctionsOfTimeMap& functions_of_time) const;
 
@@ -188,17 +187,17 @@ class Skew {
       const domain::FunctionsOfTimeMap& functions_of_time) const;
 
   template <typename T>
-  std::array<tt::remove_cvref_wrap_t<T>, 3> frame_velocity(
+  std::array<T, 3> frame_velocity(
       const std::array<T, 3>& source_coords, double time,
       const domain::FunctionsOfTimeMap& functions_of_time) const;
 
   template <typename T>
-  tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame> jacobian(
+  tnsr::Ij<T, 3, Frame::NoFrame> jacobian(
       const std::array<T, 3>& source_coords, double time,
       const domain::FunctionsOfTimeMap& functions_of_time) const;
 
   template <typename T>
-  tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame> inv_jacobian(
+  tnsr::Ij<T, 3, Frame::NoFrame> inv_jacobian(
       const std::array<T, 3>& source_coords, double time,
       const domain::FunctionsOfTimeMap& functions_of_time) const;
 
@@ -215,15 +214,14 @@ class Skew {
 
  private:
   template <typename T>
-  tt::remove_cvref_wrap_t<T> get_width(const std::array<T, 3>& source_coords,
-                                       bool ignore_error = false) const;
+  T get_width(const std::array<T, 3>& source_coords,
+              bool ignore_error = false) const;
 
   template <typename T>
-  std::array<tt::remove_cvref_wrap_t<T>, 3> get_width_deriv(
-      const std::array<T, 3>& source_coords) const;
+  std::array<T, 3> get_width_deriv(const std::array<T, 3>& source_coords) const;
 
   template <typename T>
-  std::array<tt::remove_cvref_wrap_t<T>, 3> map_and_velocity_helper(
+  std::array<T, 3> map_and_velocity_helper(
       const std::array<T, 3>& source_coords, double time,
       const domain::FunctionsOfTimeMap& functions_of_time,
       bool return_velocity) const;

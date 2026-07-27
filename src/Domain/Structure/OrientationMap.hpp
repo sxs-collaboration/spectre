@@ -13,7 +13,6 @@
 #include "Domain/Structure/Side.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Utilities/Gsl.hpp"
-#include "Utilities/TypeTraits/RemoveReferenceWrapper.hpp"
 
 namespace PUP {
 class er;
@@ -191,7 +190,7 @@ std::array<T, VolumeDim> OrientationMap<VolumeDim>::permute_from_neighbor(
 /// (+0.5,+1.0). This is how `discrete_rotation` interprets the
 /// `OrientationMap` passed to it.
 template <size_t VolumeDim, typename T>
-std::array<tt::remove_cvref_wrap_t<T>, VolumeDim> discrete_rotation(
+std::array<T, VolumeDim> discrete_rotation(
     const OrientationMap<VolumeDim>& rotation,
     std::array<T, VolumeDim> source_coords);
 

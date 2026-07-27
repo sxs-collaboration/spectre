@@ -10,7 +10,6 @@
 #include "Domain/Structure/OrientationMap.hpp"
 #include "Domain/Structure/Side.hpp"
 #include "Utilities/Autodiff/Autodiff.hpp"
-#include "Utilities/DereferenceWrapper.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/MakeWithValue.hpp"
 
@@ -33,8 +32,7 @@ DiscreteRotation<VolumeDim>::DiscreteRotation(
 
 template <size_t VolumeDim>
 template <typename T>
-std::array<tt::remove_cvref_wrap_t<T>, VolumeDim>
-DiscreteRotation<VolumeDim>::operator()(
+std::array<T, VolumeDim> DiscreteRotation<VolumeDim>::operator()(
     const std::array<T, VolumeDim>& source_coords) const {
   return discrete_rotation(orientation_, source_coords);
 }
@@ -48,12 +46,11 @@ DiscreteRotation<VolumeDim>::inverse(
 
 template <size_t VolumeDim>
 template <typename T>
-tnsr::Ij<tt::remove_cvref_wrap_t<T>, VolumeDim, Frame::NoFrame>
-DiscreteRotation<VolumeDim>::jacobian(
+tnsr::Ij<T, VolumeDim, Frame::NoFrame> DiscreteRotation<VolumeDim>::jacobian(
     const std::array<T, VolumeDim>& source_coords) const {
-  auto jacobian_matrix = make_with_value<
-      tnsr::Ij<tt::remove_cvref_wrap_t<T>, VolumeDim, Frame::NoFrame>>(
-      dereference_wrapper(source_coords[0]), 0.0);
+  auto jacobian_matrix =
+      make_with_value<tnsr::Ij<T, VolumeDim, Frame::NoFrame>>(source_coords[0],
+                                                              0.0);
   for (size_t d = 0; d < VolumeDim; d++) {
     const auto new_direction =
         orientation_(Direction<VolumeDim>(d, Side::Upper));
@@ -65,12 +62,12 @@ DiscreteRotation<VolumeDim>::jacobian(
 
 template <size_t VolumeDim>
 template <typename T>
-tnsr::Ij<tt::remove_cvref_wrap_t<T>, VolumeDim, Frame::NoFrame>
+tnsr::Ij<T, VolumeDim, Frame::NoFrame>
 DiscreteRotation<VolumeDim>::inv_jacobian(
     const std::array<T, VolumeDim>& source_coords) const {
-  auto inv_jacobian_matrix = make_with_value<
-      tnsr::Ij<tt::remove_cvref_wrap_t<T>, VolumeDim, Frame::NoFrame>>(
-      dereference_wrapper(source_coords[0]), 0.0);
+  auto inv_jacobian_matrix =
+      make_with_value<tnsr::Ij<T, VolumeDim, Frame::NoFrame>>(source_coords[0],
+                                                              0.0);
   for (size_t d = 0; d < VolumeDim; d++) {
     const auto new_direction =
         orientation_(Direction<VolumeDim>(d, Side::Upper));
@@ -101,17 +98,15 @@ template class DiscreteRotation<3>;
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(1, data)
 
-#define INSTANTIATE(_, data)                                           \
-  template std::array<tt::remove_cvref_wrap_t<DTYPE(data)>, DIM(data)> \
-  DiscreteRotation<DIM(data)>::operator()(                             \
-      const std::array<DTYPE(data), DIM(data)>& source_coords) const;  \
-  template tnsr::Ij<tt::remove_cvref_wrap_t<DTYPE(data)>, DIM(data),   \
-                    Frame::NoFrame>                                    \
-  DiscreteRotation<DIM(data)>::jacobian(                               \
-      const std::array<DTYPE(data), DIM(data)>& source_coords) const;  \
-  template tnsr::Ij<tt::remove_cvref_wrap_t<DTYPE(data)>, DIM(data),   \
-                    Frame::NoFrame>                                    \
-  DiscreteRotation<DIM(data)>::inv_jacobian(                           \
+#define INSTANTIATE(_, data)                                          \
+  template std::array<DTYPE(data), DIM(data)>                         \
+  DiscreteRotation<DIM(data)>::operator()(                            \
+      const std::array<DTYPE(data), DIM(data)>& source_coords) const; \
+  template tnsr::Ij<DTYPE(data), DIM(data), Frame::NoFrame>           \
+  DiscreteRotation<DIM(data)>::jacobian(                              \
+      const std::array<DTYPE(data), DIM(data)>& source_coords) const; \
+  template tnsr::Ij<DTYPE(data), DIM(data), Frame::NoFrame>           \
+  DiscreteRotation<DIM(data)>::inv_jacobian(                          \
       const std::array<DTYPE(data), DIM(data)>& source_coords) const;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (double, DataVector))

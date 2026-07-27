@@ -11,7 +11,6 @@
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Domain/CoordinateMaps/Distribution.hpp"
 #include "Domain/Structure/OrientationMap.hpp"
-#include "Utilities/TypeTraits/RemoveReferenceWrapper.hpp"
 
 /// \cond
 namespace PUP {
@@ -306,8 +305,7 @@ class Frustum {
   Frustum& operator=(Frustum&&) = default;
 
   template <typename T>
-  std::array<tt::remove_cvref_wrap_t<T>, 3> operator()(
-      const std::array<T, 3>& source_coords) const;
+  std::array<T, 3> operator()(const std::array<T, 3>& source_coords) const;
 
   /// Returns std::nullopt if \f$z\f$ is at or beyond the \f$z\f$-coordinate of
   /// the apex of the pyramid, tetrahedron, or triangular prism that is
@@ -321,11 +319,11 @@ class Frustum {
       const std::array<double, 3>& target_coords) const;
 
   template <typename T>
-  tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame> jacobian(
+  tnsr::Ij<T, 3, Frame::NoFrame> jacobian(
       const std::array<T, 3>& source_coords) const;
 
   template <typename T>
-  tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame> inv_jacobian(
+  tnsr::Ij<T, 3, Frame::NoFrame> inv_jacobian(
       const std::array<T, 3>& source_coords) const;
 
   // NOLINTNEXTLINE(google-runtime-references)

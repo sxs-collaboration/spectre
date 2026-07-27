@@ -26,7 +26,6 @@
 #include "NumericalAlgorithms/RootFinding/TOMS748.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/ContainerHelpers.hpp"
-#include "Utilities/DereferenceWrapper.hpp"
 #include "Utilities/EqualWithinRoundoff.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
@@ -36,7 +35,6 @@
 #include "Utilities/Serialization/PupStlCpp17.hpp"
 #include "Utilities/StdArrayHelpers.hpp"
 #include "Utilities/StdHelpers.hpp"
-#include "Utilities/TypeTraits/RemoveReferenceWrapper.hpp"
 
 namespace domain::CoordinateMaps::TimeDependent {
 
@@ -67,16 +65,16 @@ RotScaleTrans<Dim>::RotScaleTrans(
 
 template <size_t Dim>
 template <typename T>
-std::array<tt::remove_cvref_wrap_t<T>, Dim> RotScaleTrans<Dim>::operator()(
+std::array<T, Dim> RotScaleTrans<Dim>::operator()(
     const std::array<T, Dim>& source_coords, const double time,
     const std::unordered_map<
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
         functions_of_time) const {
-  std::array<tt::remove_cvref_wrap_t<T>, Dim> result{};
+  std::array<T, Dim> result{};
   for (size_t i = 0; i < Dim; i++) {
     gsl::at(result, i) = gsl::at(source_coords, i);
   }
-  const tt::remove_cvref_wrap_t<T> radius = magnitude(result);
+  const T radius = magnitude(result);
   // Rotation Map
   if (rot_f_of_t_.has_value()) {
     const Matrix rot_matrix = rotation_matrix<Dim>(
@@ -464,18 +462,16 @@ std::optional<std::array<double, Dim>> RotScaleTrans<Dim>::inverse(
 
 template <size_t Dim>
 template <typename T>
-std::array<tt::remove_cvref_wrap_t<T>, Dim> RotScaleTrans<Dim>::frame_velocity(
+std::array<T, Dim> RotScaleTrans<Dim>::frame_velocity(
     const std::array<T, Dim>& source_coords, double time,
     const std::unordered_map<
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
         functions_of_time) const {
-  std::array<tt::remove_cvref_wrap_t<T>, Dim> result =
-      make_with_value<std::array<tt::remove_cvref_wrap_t<T>, Dim>>(
-          dereference_wrapper(source_coords[0]), 0.0);
-  tt::remove_cvref_wrap_t<T> radius =
-      square(dereference_wrapper(source_coords[0]));
+  std::array<T, Dim> result =
+      make_with_value<std::array<T, Dim>>(source_coords[0], 0.0);
+  T radius = square(source_coords[0]);
   for (size_t i = 1; i < Dim; ++i) {
-    radius += square(dereference_wrapper(gsl::at(source_coords, i)));
+    radius += square(gsl::at(source_coords, i));
   }
   radius = sqrt(radius);
   // Rotation map with no expansion
@@ -497,8 +493,7 @@ std::array<tt::remove_cvref_wrap_t<T>, Dim> RotScaleTrans<Dim>::frame_velocity(
                                  ->func_and_deriv(time)[1][0];
     if (region_ == BlockRegion::Inner) {
       for (size_t i = 0; i < Dim; i++) {
-        gsl::at(result, i) +=
-            dereference_wrapper(gsl::at(source_coords, i)) * (dt_a_of_t);
+        gsl::at(result, i) += gsl::at(source_coords, i) * (dt_a_of_t);
       }
     } else if (region_ == BlockRegion::Transition) {
       for (size_t k = 0; k < get_size(radius); k++) {
@@ -513,7 +508,7 @@ std::array<tt::remove_cvref_wrap_t<T>, Dim> RotScaleTrans<Dim>::frame_velocity(
               ((outer_radius_ - inner_radius_) * get_element(radius, k));
           for (size_t i = 0; i < Dim; i++) {
             get_element(gsl::at(result, i), k) +=
-                get_element(dereference_wrapper(gsl::at(source_coords, i)), k) *
+                get_element(gsl::at(source_coords, i), k) *
                 (dt_b_of_t + deriv_radial_scaling_factor);
           }
           // Closer to inner radius
@@ -524,15 +519,14 @@ std::array<tt::remove_cvref_wrap_t<T>, Dim> RotScaleTrans<Dim>::frame_velocity(
               ((outer_radius_ - inner_radius_) * get_element(radius, k));
           for (size_t i = 0; i < Dim; i++) {
             get_element(gsl::at(result, i), k) +=
-                get_element(dereference_wrapper(gsl::at(source_coords, i)), k) *
+                get_element(gsl::at(source_coords, i), k) *
                 (dt_a_of_t + deriv_radial_scaling_factor);
           }
         }
       }
     } else {
       for (size_t i = 0; i < Dim; i++) {
-        gsl::at(result, i) +=
-            dereference_wrapper(gsl::at(source_coords, i)) * (dt_b_of_t);
+        gsl::at(result, i) += gsl::at(source_coords, i) * (dt_b_of_t);
       }
     }
   }
@@ -553,7 +547,7 @@ std::array<tt::remove_cvref_wrap_t<T>, Dim> RotScaleTrans<Dim>::frame_velocity(
     if (region_ == BlockRegion::Inner) {
       for (size_t i = 0; i < Dim; i++) {
         for (size_t j = 0; j < Dim; j++) {
-          gsl::at(result, i) += dereference_wrapper(gsl::at(source_coords, j)) *
+          gsl::at(result, i) += gsl::at(source_coords, j) *
                                 (scale_a_of_t * rot_matrix_deriv(i, j) +
                                  dt_a_of_t * rot_matrix(i, j));
         }
@@ -577,8 +571,7 @@ std::array<tt::remove_cvref_wrap_t<T>, Dim> RotScaleTrans<Dim>::frame_velocity(
           for (size_t i = 0; i < Dim; i++) {
             for (size_t j = 0; j < Dim; j++) {
               get_element(gsl::at(result, i), k) +=
-                  get_element(dereference_wrapper(gsl::at(source_coords, j)),
-                              k) *
+                  get_element(gsl::at(source_coords, j), k) *
                   (rot_matrix_deriv(i, j) *
                        (scale_b_of_t + radial_scaling_factor) +
                    rot_matrix(i, j) *
@@ -598,8 +591,7 @@ std::array<tt::remove_cvref_wrap_t<T>, Dim> RotScaleTrans<Dim>::frame_velocity(
           for (size_t i = 0; i < Dim; i++) {
             for (size_t j = 0; j < Dim; j++) {
               get_element(gsl::at(result, i), k) +=
-                  get_element(dereference_wrapper(gsl::at(source_coords, j)),
-                              k) *
+                  get_element(gsl::at(source_coords, j), k) *
                   (rot_matrix_deriv(i, j) *
                        (scale_a_of_t + radial_scaling_factor) +
                    rot_matrix(i, j) *
@@ -611,7 +603,7 @@ std::array<tt::remove_cvref_wrap_t<T>, Dim> RotScaleTrans<Dim>::frame_velocity(
     } else {
       for (size_t i = 0; i < Dim; i++) {
         for (size_t j = 0; j < Dim; j++) {
-          gsl::at(result, i) += dereference_wrapper(gsl::at(source_coords, j)) *
+          gsl::at(result, i) += gsl::at(source_coords, j) *
                                 (scale_b_of_t * rot_matrix_deriv(i, j) +
                                  dt_b_of_t * rot_matrix(i, j));
         }
@@ -663,20 +655,18 @@ std::array<tt::remove_cvref_wrap_t<T>, Dim> RotScaleTrans<Dim>::frame_velocity(
 
 template <size_t Dim>
 template <typename T>
-tnsr::Ij<tt::remove_cvref_wrap_t<T>, Dim, Frame::NoFrame>
-RotScaleTrans<Dim>::jacobian(
+tnsr::Ij<T, Dim, Frame::NoFrame> RotScaleTrans<Dim>::jacobian(
     const std::array<T, Dim>& source_coords, double time,
     const std::unordered_map<
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
         functions_of_time) const {
-  auto result = make_with_value<
-      tnsr::Ij<tt::remove_cvref_wrap_t<T>, Dim, Frame::NoFrame>>(
-      dereference_wrapper(source_coords[0]), 0.0);
+  auto result =
+      make_with_value<tnsr::Ij<T, Dim, Frame::NoFrame>>(source_coords[0], 0.0);
   // Making the identity in case rotation isn't specified.
   for (size_t i = 0; i < Dim; i++) {
     result.get(i, i) = 1;
   }
-  const tt::remove_cvref_wrap_t<T> radius = magnitude(source_coords);
+  const T radius = magnitude(source_coords);
   // Rotation map with no expansion
   if (rot_f_of_t_.has_value() and not scale_f_of_t_a_.has_value()) {
     const Matrix rot_matrix = rotation_matrix<Dim>(
@@ -714,12 +704,9 @@ RotScaleTrans<Dim>::jacobian(
           for (size_t i = 0; i < Dim; i++) {
             for (size_t j = 0; j < Dim; j++) {
               get_element(result.get(i, j), k) =
-                  alpha *
-                  get_element(dereference_wrapper(gsl::at(source_coords, i)),
-                              k) *
+                  alpha * get_element(gsl::at(source_coords, i), k) *
                   (scale_a_of_t - scale_b_of_t) *
-                  get_element(dereference_wrapper(gsl::at(source_coords, j)),
-                              k) /
+                  get_element(gsl::at(source_coords, j), k) /
                   get_element(radius, k);
             }
             get_element(result.get(i, i), k) +=
@@ -734,12 +721,9 @@ RotScaleTrans<Dim>::jacobian(
           for (size_t i = 0; i < Dim; i++) {
             for (size_t j = 0; j < Dim; j++) {
               get_element(result.get(i, j), k) =
-                  alpha *
-                  get_element(dereference_wrapper(gsl::at(source_coords, i)),
-                              k) *
+                  alpha * get_element(gsl::at(source_coords, i), k) *
                   (scale_a_of_t - scale_b_of_t) *
-                  get_element(dereference_wrapper(gsl::at(source_coords, j)),
-                              k) /
+                  get_element(gsl::at(source_coords, j), k) /
                   get_element(radius, k);
             }
             get_element(result.get(i, i), k) +=
@@ -784,16 +768,13 @@ RotScaleTrans<Dim>::jacobian(
             double rotated_coords = 0;
             for (size_t l = 0; l < Dim; l++) {
               rotated_coords +=
-                  rot_matrix(i, l) *
-                  get_element(dereference_wrapper(gsl::at(source_coords, l)),
-                              k);
+                  rot_matrix(i, l) * get_element(gsl::at(source_coords, l), k);
             }
             for (size_t j = 0; j < Dim; j++) {
               get_element(result.get(i, j), k) =
                   scale_b_of_t * rot_matrix(i, j) +
                   alpha * rotated_coords * (scale_a_of_t - scale_b_of_t) *
-                      get_element(
-                          dereference_wrapper(gsl::at(source_coords, j)), k) /
+                      get_element(gsl::at(source_coords, j), k) /
                       get_element(radius, k) +
                   rot_matrix(i, j) * radial_scaling_factor;
             }
@@ -808,16 +789,13 @@ RotScaleTrans<Dim>::jacobian(
             double rotated_coords = 0;
             for (size_t l = 0; l < Dim; l++) {
               rotated_coords +=
-                  rot_matrix(i, l) *
-                  get_element(dereference_wrapper(gsl::at(source_coords, l)),
-                              k);
+                  rot_matrix(i, l) * get_element(gsl::at(source_coords, l), k);
             }
             for (size_t j = 0; j < Dim; j++) {
               get_element(result.get(i, j), k) =
                   scale_a_of_t * rot_matrix(i, j) +
                   alpha * rotated_coords * (scale_a_of_t - scale_b_of_t) *
-                      get_element(
-                          dereference_wrapper(gsl::at(source_coords, j)), k) /
+                      get_element(gsl::at(source_coords, j), k) /
                       get_element(radius, k) +
                   rot_matrix(i, j) * radial_scaling_factor;
             }
@@ -848,8 +826,7 @@ RotScaleTrans<Dim>::jacobian(
               // \frac{dw}{dr} = \frac{-1.0}{R_{out} - R{in}}
               get_element(result.get(i, j), k) +=
                   deriv_translation_factor *
-                  get_element(dereference_wrapper(gsl::at(source_coords, j)),
-                              k) /
+                  get_element(gsl::at(source_coords, j), k) /
                   get_element(radius, k);
             }
           }
@@ -861,8 +838,7 @@ RotScaleTrans<Dim>::jacobian(
 
 template <size_t Dim>
 template <typename T>
-tnsr::Ij<tt::remove_cvref_wrap_t<T>, Dim, Frame::NoFrame>
-RotScaleTrans<Dim>::inv_jacobian(
+tnsr::Ij<T, Dim, Frame::NoFrame> RotScaleTrans<Dim>::inv_jacobian(
     const std::array<T, Dim>& source_coords, const double time,
     const std::unordered_map<
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
@@ -952,30 +928,28 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (2, 3))
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(1, data)
 
 #define INSTANTIATE(_, data)                                                \
-  template std::array<tt::remove_cvref_wrap_t<DTYPE(data)>, DIM(data)>      \
+  template std::array<DTYPE(data), DIM(data)>                               \
   RotScaleTrans<DIM(data)>::operator()(                                     \
       const std::array<DTYPE(data), DIM(data)>& source_coords, double time, \
       const std::unordered_map<                                             \
           std::string,                                                      \
           std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&        \
           functions_of_time) const;                                         \
-  template std::array<tt::remove_cvref_wrap_t<DTYPE(data)>, DIM(data)>      \
+  template std::array<DTYPE(data), DIM(data)>                               \
   RotScaleTrans<DIM(data)>::frame_velocity(                                 \
       const std::array<DTYPE(data), DIM(data)>& source_coords, double time, \
       const std::unordered_map<                                             \
           std::string,                                                      \
           std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&        \
           functions_of_time) const;                                         \
-  template tnsr::Ij<tt::remove_cvref_wrap_t<DTYPE(data)>, DIM(data),        \
-                    Frame::NoFrame>                                         \
+  template tnsr::Ij<DTYPE(data), DIM(data), Frame::NoFrame>                 \
   RotScaleTrans<DIM(data)>::jacobian(                                       \
       const std::array<DTYPE(data), DIM(data)>& source_coords, double time, \
       const std::unordered_map<                                             \
           std::string,                                                      \
           std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&        \
           functions_of_time) const;                                         \
-  template tnsr::Ij<tt::remove_cvref_wrap_t<DTYPE(data)>, DIM(data),        \
-                    Frame::NoFrame>                                         \
+  template tnsr::Ij<DTYPE(data), DIM(data), Frame::NoFrame>                 \
   RotScaleTrans<DIM(data)>::inv_jacobian(                                   \
       const std::array<DTYPE(data), DIM(data)>& source_coords, double time, \
       const std::unordered_map<                                             \

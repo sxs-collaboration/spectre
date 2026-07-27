@@ -12,7 +12,6 @@
 #include "Domain/CoordinateMaps/CylindricalEndcapHelpers.hpp"
 #include "Domain/CoordinateMaps/FocallyLiftedMapHelpers.hpp"
 #include "Utilities/ConstantExpressions.hpp"
-#include "Utilities/DereferenceWrapper.hpp"
 #include "Utilities/EqualWithinRoundoff.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/MakeWithValue.hpp"
@@ -40,16 +39,13 @@ Endcap::Endcap(const std::array<double, 3>& center, const double radius,
       }()) {}
 
 template <typename T>
-void Endcap::forward_map(
-    const gsl::not_null<std::array<tt::remove_cvref_wrap_t<T>, 3>*>
-        target_coords,
-    const std::array<T, 3>& source_coords) const {
-  using ReturnType = tt::remove_cvref_wrap_t<T>;
-  const ReturnType& xbar = source_coords[0];
-  const ReturnType& ybar = source_coords[1];
-  ReturnType& x = (*target_coords)[0];
-  ReturnType& y = (*target_coords)[1];
-  ReturnType& z = (*target_coords)[2];
+void Endcap::forward_map(const gsl::not_null<std::array<T, 3>*> target_coords,
+                         const std::array<T, 3>& source_coords) const {
+  const T& xbar = source_coords[0];
+  const T& ybar = source_coords[1];
+  T& x = (*target_coords)[0];
+  T& y = (*target_coords)[1];
+  T& z = (*target_coords)[2];
   // Use z and y as temporary storage to avoid allocations,
   // before setting them to their actual values.
   z = sqrt(square(xbar) + square(ybar));
@@ -60,13 +56,11 @@ void Endcap::forward_map(
 }
 
 template <typename T>
-void Endcap::jacobian(const gsl::not_null<tnsr::Ij<tt::remove_cvref_wrap_t<T>,
-                                                   3, Frame::NoFrame>*>
-                          jacobian_out,
-                      const std::array<T, 3>& source_coords) const {
-  using ReturnType = tt::remove_cvref_wrap_t<T>;
-  const ReturnType& xbar = source_coords[0];
-  const ReturnType& ybar = source_coords[1];
+void Endcap::jacobian(
+    const gsl::not_null<tnsr::Ij<T, 3, Frame::NoFrame>*> jacobian_out,
+    const std::array<T, 3>& source_coords) const {
+  const T& xbar = source_coords[0];
+  const T& ybar = source_coords[1];
 
   set_number_of_grid_points(jacobian_out, source_coords);
   // Most of the jacobian components are zero.
@@ -107,13 +101,10 @@ void Endcap::jacobian(const gsl::not_null<tnsr::Ij<tt::remove_cvref_wrap_t<T>,
 
 template <typename T>
 void Endcap::inv_jacobian(
-    const gsl::not_null<
-        tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame>*>
-        inv_jacobian_out,
+    const gsl::not_null<tnsr::Ij<T, 3, Frame::NoFrame>*> inv_jacobian_out,
     const std::array<T, 3>& source_coords) const {
-  using ReturnType = tt::remove_cvref_wrap_t<T>;
-  const ReturnType& xbar = source_coords[0];
-  const ReturnType& ybar = source_coords[1];
+  const T& xbar = source_coords[0];
+  const T& ybar = source_coords[1];
 
   set_number_of_grid_points(inv_jacobian_out, source_coords);
   // Most of the inverse jacobian components are zero.
@@ -203,16 +194,14 @@ std::optional<std::array<double, 3>> Endcap::inverse(
 }
 
 template <typename T>
-void Endcap::sigma(const gsl::not_null<tt::remove_cvref_wrap_t<T>*> sigma_out,
+void Endcap::sigma(const gsl::not_null<T*> sigma_out,
                    const std::array<T, 3>& source_coords) const {
   *sigma_out = 0.5 * (source_coords[2] + 1.0);
 }
 
 template <typename T>
-void Endcap::deriv_sigma(
-    const gsl::not_null<std::array<tt::remove_cvref_wrap_t<T>, 3>*>
-        deriv_sigma_out,
-    const std::array<T, 3>& source_coords) const {
+void Endcap::deriv_sigma(const gsl::not_null<std::array<T, 3>*> deriv_sigma_out,
+                         const std::array<T, 3>& source_coords) const {
   set_number_of_grid_points(deriv_sigma_out, source_coords);
   (*deriv_sigma_out)[0] = 0.0;
   (*deriv_sigma_out)[1] = 0.0;
@@ -221,8 +210,7 @@ void Endcap::deriv_sigma(
 
 template <typename T>
 void Endcap::dxbar_dsigma(
-    const gsl::not_null<std::array<tt::remove_cvref_wrap_t<T>, 3>*>
-        dxbar_dsigma_out,
+    const gsl::not_null<std::array<T, 3>*> dxbar_dsigma_out,
     const std::array<T, 3>& source_coords) const {
   set_number_of_grid_points(dxbar_dsigma_out, source_coords);
   (*dxbar_dsigma_out)[0] = 0.0;
@@ -250,8 +238,7 @@ std::optional<double> Endcap::lambda_tilde(
 
 template <typename T>
 void Endcap::deriv_lambda_tilde(
-    const gsl::not_null<std::array<tt::remove_cvref_wrap_t<T>, 3>*>
-        deriv_lambda_tilde_out,
+    const gsl::not_null<std::array<T, 3>*> deriv_lambda_tilde_out,
     const std::array<T, 3>& target_coords, const T& lambda_tilde,
     const std::array<double, 3>& projection_point) const {
   FocallyLiftedMapHelpers::d_scale_factor_d_src_point(
@@ -283,41 +270,31 @@ bool operator!=(const Endcap& lhs, const Endcap& rhs) {
 // Explicit instantiations
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(0, data)
 
-#define INSTANTIATE(_, data)                                                  \
-  template void Endcap::forward_map(                                          \
-      const gsl::not_null<                                                    \
-          std::array<tt::remove_cvref_wrap_t<DTYPE(data)>, 3>*>               \
-          target_coords,                                                      \
-      const std::array<DTYPE(data), 3>& source_coords) const;                 \
-  template void Endcap::jacobian(                                             \
-      const gsl::not_null<                                                    \
-          tnsr::Ij<tt::remove_cvref_wrap_t<DTYPE(data)>, 3, Frame::NoFrame>*> \
-          jacobian_out,                                                       \
-      const std::array<DTYPE(data), 3>& source_coords) const;                 \
-  template void Endcap::inv_jacobian(                                         \
-      const gsl::not_null<                                                    \
-          tnsr::Ij<tt::remove_cvref_wrap_t<DTYPE(data)>, 3, Frame::NoFrame>*> \
-          inv_jacobian_out,                                                   \
-      const std::array<DTYPE(data), 3>& source_coords) const;                 \
-  template void Endcap::sigma(                                                \
-      const gsl::not_null<tt::remove_cvref_wrap_t<DTYPE(data)>*> sigma_out,   \
-      const std::array<DTYPE(data), 3>& source_coords) const;                 \
-  template void Endcap::deriv_sigma(                                          \
-      const gsl::not_null<                                                    \
-          std::array<tt::remove_cvref_wrap_t<DTYPE(data)>, 3>*>               \
-          deriv_sigma_out,                                                    \
-      const std::array<DTYPE(data), 3>& source_coords) const;                 \
-  template void Endcap::dxbar_dsigma(                                         \
-      const gsl::not_null<                                                    \
-          std::array<tt::remove_cvref_wrap_t<DTYPE(data)>, 3>*>               \
-          dxbar_dsigma_out,                                                   \
-      const std::array<DTYPE(data), 3>& source_coords) const;                 \
-  template void Endcap::deriv_lambda_tilde(                                   \
-      const gsl::not_null<                                                    \
-          std::array<tt::remove_cvref_wrap_t<DTYPE(data)>, 3>*>               \
-          deriv_lambda_tilde_out,                                             \
-      const std::array<DTYPE(data), 3>& target_coords,                        \
-      const DTYPE(data) & lambda_tilde,                                       \
+#define INSTANTIATE(_, data)                                                   \
+  template void Endcap::forward_map(                                           \
+      const gsl::not_null<std::array<DTYPE(data), 3>*> target_coords,          \
+      const std::array<DTYPE(data), 3>& source_coords) const;                  \
+  template void Endcap::jacobian(                                              \
+      const gsl::not_null<tnsr::Ij<DTYPE(data), 3, Frame::NoFrame>*>           \
+          jacobian_out,                                                        \
+      const std::array<DTYPE(data), 3>& source_coords) const;                  \
+  template void Endcap::inv_jacobian(                                          \
+      const gsl::not_null<tnsr::Ij<DTYPE(data), 3, Frame::NoFrame>*>           \
+          inv_jacobian_out,                                                    \
+      const std::array<DTYPE(data), 3>& source_coords) const;                  \
+  template void Endcap::sigma(const gsl::not_null<DTYPE(data)*> sigma_out,     \
+                              const std::array<DTYPE(data), 3>& source_coords) \
+      const;                                                                   \
+  template void Endcap::deriv_sigma(                                           \
+      const gsl::not_null<std::array<DTYPE(data), 3>*> deriv_sigma_out,        \
+      const std::array<DTYPE(data), 3>& source_coords) const;                  \
+  template void Endcap::dxbar_dsigma(                                          \
+      const gsl::not_null<std::array<DTYPE(data), 3>*> dxbar_dsigma_out,       \
+      const std::array<DTYPE(data), 3>& source_coords) const;                  \
+  template void Endcap::deriv_lambda_tilde(                                    \
+      const gsl::not_null<std::array<DTYPE(data), 3>*> deriv_lambda_tilde_out, \
+      const std::array<DTYPE(data), 3>& target_coords,                         \
+      const DTYPE(data) & lambda_tilde,                                        \
       const std::array<double, 3>& projection_point) const;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (double, DataVector))

@@ -22,7 +22,6 @@
 #include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/SpherepackIterator.hpp"
 #include "Utilities/ContainerHelpers.hpp"
-#include "Utilities/DereferenceWrapper.hpp"
 #include "Utilities/EqualWithinRoundoff.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
@@ -222,7 +221,7 @@ Shape& Shape::operator=(Shape&& rhs) {
 }
 
 template <typename T>
-std::array<tt::remove_cvref_wrap_t<T>, 3> Shape::operator()(
+std::array<T, 3> Shape::operator()(
     const std::array<T, 3>& source_coords, const double time,
     const FunctionsOfTimeMap& functions_of_time) const {
   const auto centered_coords = center_coordinates(source_coords);
@@ -249,11 +248,9 @@ std::array<tt::remove_cvref_wrap_t<T>, 3> Shape::operator()(
   // this should be taken care of by the control system but is very hard to
   // debug
 #ifdef SPECTRE_DEBUG
-  using ReturnType = tt::remove_cvref_wrap_t<T>;
-  const ReturnType shift_radii =
-      radial_distortion *
-      transition_func_->operator()(centered_coords, std::nullopt);
-  if constexpr (std::is_same_v<ReturnType, double>) {
+  const T shift_radii = radial_distortion * transition_func_->operator()(
+                                                centered_coords, std::nullopt);
+  if constexpr (std::is_same_v<T, double>) {
     ASSERT(shift_radii < 1., "Coordinates mapped through the center!");
   } else {
     for (const auto& radius : shift_radii) {
@@ -301,7 +298,7 @@ std::optional<std::array<double, 3>> Shape::inverse(
 }
 
 template <typename T>
-std::array<tt::remove_cvref_wrap_t<T>, 3> Shape::frame_velocity(
+std::array<T, 3> Shape::frame_velocity(
     const std::array<T, 3>& source_coords, const double time,
     const FunctionsOfTimeMap& functions_of_time) const {
   const auto centered_coords = center_coordinates(source_coords);
@@ -328,7 +325,7 @@ std::array<tt::remove_cvref_wrap_t<T>, 3> Shape::frame_velocity(
 }
 
 template <typename T>
-tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame> Shape::jacobian(
+tnsr::Ij<T, 3, Frame::NoFrame> Shape::jacobian(
     const std::array<T, 3>& source_coords, const double time,
     const FunctionsOfTimeMap& functions_of_time) const {
   const auto centered_coords = center_coordinates(source_coords);
@@ -355,12 +352,9 @@ tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame> Shape::jacobian(
   auto& radial_distortion = get<0>(theta_phis);
   ylm.interpolate_from_coefs(make_not_null(&radial_distortion), truncated_coefs,
                              interpolation_info);
-
-  using ReturnType = tt::remove_cvref_wrap_t<T>;
-  const ReturnType transition_func =
+  const T transition_func =
       transition_func_->operator()(centered_coords, std::nullopt);
-  tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame> result(
-      get_size(centered_coords[0]));
+  tnsr::Ij<T, 3, Frame::NoFrame> result(get_size(centered_coords[0]));
 
   jacobian_helper(make_not_null(&result), interpolation_info, truncated_coefs,
                   centered_coords, radial_distortion, transition_func, ylm);
@@ -439,7 +433,7 @@ void Shape::coords_frame_velocity_jacobian(
 }
 
 template <typename T>
-tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame> Shape::inv_jacobian(
+tnsr::Ij<T, 3, Frame::NoFrame> Shape::inv_jacobian(
     const std::array<T, 3>& source_coords, const double time,
     const FunctionsOfTimeMap& functions_of_time) const {
   return determinant_and_inverse(
@@ -566,23 +560,19 @@ void Shape::pup(PUP::er& p) {
 }
 
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(0, data)
-#define INSTANTIATE(_, data)                                                  \
-  template std::array<tt::remove_cvref_wrap_t<DTYPE(data)>, 3>                \
-  Shape::operator()(const std::array<DTYPE(data), 3>& source_coords,          \
-                    double time, const FunctionsOfTimeMap& functions_of_time) \
-      const;                                                                  \
-  template std::array<tt::remove_cvref_wrap_t<DTYPE(data)>, 3>                \
-  Shape::frame_velocity(const std::array<DTYPE(data), 3>& source_coords,      \
-                        double time,                                          \
-                        const FunctionsOfTimeMap& functions_of_time) const;   \
-  template tnsr::Ij<tt::remove_cvref_wrap_t<DTYPE(data)>, 3, Frame::NoFrame>  \
-  Shape::jacobian(const std::array<DTYPE(data), 3>& source_coords,            \
-                  double time, const FunctionsOfTimeMap& functions_of_time)   \
-      const;                                                                  \
-  template tnsr::Ij<tt::remove_cvref_wrap_t<DTYPE(data)>, 3, Frame::NoFrame>  \
-  Shape::inv_jacobian(const std::array<DTYPE(data), 3>& source_coords,        \
-                      double time,                                            \
-                      const FunctionsOfTimeMap& functions_of_time) const;
+#define INSTANTIATE(_, data)                                             \
+  template std::array<DTYPE(data), 3> Shape::operator()(                 \
+      const std::array<DTYPE(data), 3>& source_coords, double time,      \
+      const FunctionsOfTimeMap& functions_of_time) const;                \
+  template std::array<DTYPE(data), 3> Shape::frame_velocity(             \
+      const std::array<DTYPE(data), 3>& source_coords, double time,      \
+      const FunctionsOfTimeMap& functions_of_time) const;                \
+  template tnsr::Ij<DTYPE(data), 3, Frame::NoFrame> Shape::jacobian(     \
+      const std::array<DTYPE(data), 3>& source_coords, double time,      \
+      const FunctionsOfTimeMap& functions_of_time) const;                \
+  template tnsr::Ij<DTYPE(data), 3, Frame::NoFrame> Shape::inv_jacobian( \
+      const std::array<DTYPE(data), 3>& source_coords, double time,      \
+      const FunctionsOfTimeMap& functions_of_time) const;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (double, DataVector))
 #undef DTYPE

@@ -9,7 +9,6 @@
 
 #include "DataStructures/Tensor/EagerMath/DeterminantAndInverse.hpp"
 #include "Utilities/ContainerHelpers.hpp"
-#include "Utilities/DereferenceWrapper.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
@@ -30,11 +29,10 @@ KerrHorizonConforming::KerrHorizonConforming(
 }
 
 template <typename T>
-std::array<tt::remove_cvref_wrap_t<T>, 3> KerrHorizonConforming::operator()(
+std::array<T, 3> KerrHorizonConforming::operator()(
     const std::array<T, 3>& source_coords) const {
-  using ReturnType = tt::remove_cvref_wrap_t<T>;
-  std::array<ReturnType, 3> result{};
-  ReturnType& stretch_fac = get<2>(result);
+  std::array<T, 3> result{};
+  T& stretch_fac = get<2>(result);
   stretch_factor_square(make_not_null(&stretch_fac), source_coords);
   stretch_fac = sqrt(stretch_fac);
   for (size_t i = 0; i < 3; ++i) {
@@ -60,22 +58,19 @@ std::optional<std::array<double, 3>> KerrHorizonConforming::inverse(
 }
 
 template <typename T>
-tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame>
-KerrHorizonConforming::jacobian(const std::array<T, 3>& source_coords) const {
-  using ReturnType = tt::remove_cvref_wrap_t<T>;
-
-  tnsr::Ij<ReturnType, 3, Frame::NoFrame> jac(
-      get_size(dereference_wrapper(source_coords[0])));
+tnsr::Ij<T, 3, Frame::NoFrame> KerrHorizonConforming::jacobian(
+    const std::array<T, 3>& source_coords) const {
+  tnsr::Ij<T, 3, Frame::NoFrame> jac(get_size(source_coords[0]));
 
   // use allocations from `jac` for auxiliaries
-  ReturnType& fac = get<0, 0>(jac);
-  ReturnType& source_coords_sq = get<0, 1>(jac);
-  ReturnType& coords_dot_spin = get<0, 2>(jac);
-  ReturnType& subexpr_1 = get<1, 0>(jac);
-  ReturnType& subexpr_2 = get<1, 1>(jac);
+  T& fac = get<0, 0>(jac);
+  T& source_coords_sq = get<0, 1>(jac);
+  T& coords_dot_spin = get<0, 2>(jac);
+  T& subexpr_1 = get<1, 0>(jac);
+  T& subexpr_2 = get<1, 1>(jac);
 
-  std::array<ReturnType, 3> dfac_dx{};
-  if constexpr (std::is_same_v<ReturnType, DataVector>) {
+  std::array<T, 3> dfac_dx{};
+  if constexpr (std::is_same_v<T, DataVector>) {
     dfac_dx[0].set_data_ref(&get<2, 0>(jac));
     dfac_dx[1].set_data_ref(&get<2, 1>(jac));
     dfac_dx[2].set_data_ref(&get<2, 2>(jac));
@@ -94,7 +89,7 @@ KerrHorizonConforming::jacobian(const std::array<T, 3>& source_coords) const {
   }
   dfac_dx = dfac_dx / (square(source_coords_sq) + square(coords_dot_spin));
 
-  const ReturnType sqrt_fac = sqrt(fac);
+  const T sqrt_fac = sqrt(fac);
 
   // not mathematically a part of `dfac_dx` but can be absorbed to avoid
   // allocation for temporary
@@ -110,22 +105,18 @@ KerrHorizonConforming::jacobian(const std::array<T, 3>& source_coords) const {
 }
 
 template <typename T>
-tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame>
-KerrHorizonConforming::inv_jacobian(
+tnsr::Ij<T, 3, Frame::NoFrame> KerrHorizonConforming::inv_jacobian(
     const std::array<T, 3>& source_coords) const {
-  using ReturnType = tt::remove_cvref_wrap_t<T>;
+  tnsr::Ij<T, 3, Frame::NoFrame> inv_jac(get_size(source_coords[0]));
 
-  tnsr::Ij<ReturnType, 3, Frame::NoFrame> inv_jac(
-      get_size(dereference_wrapper(source_coords[0])));
-
-  ReturnType& mapped_mag_sq = get<0, 0>(inv_jac);
-  ReturnType& mapped_mag = get<0, 1>(inv_jac);
-  ReturnType& mapped_dot_spin = get<0, 2>(inv_jac);
-  ReturnType& mapped_sq_min_spin_sq = get<1, 0>(inv_jac);
-  ReturnType& r = get<1, 1>(inv_jac);
-  ReturnType& fac = get<1, 2>(inv_jac);
-  std::array<ReturnType, 3> dr_dx{};
-  if constexpr (std::is_same_v<ReturnType, DataVector>) {
+  T& mapped_mag_sq = get<0, 0>(inv_jac);
+  T& mapped_mag = get<0, 1>(inv_jac);
+  T& mapped_dot_spin = get<0, 2>(inv_jac);
+  T& mapped_sq_min_spin_sq = get<1, 0>(inv_jac);
+  T& r = get<1, 1>(inv_jac);
+  T& fac = get<1, 2>(inv_jac);
+  std::array<T, 3> dr_dx{};
+  if constexpr (std::is_same_v<T, DataVector>) {
     dr_dx[0].set_data_ref(&get<2, 0>(inv_jac));
     dr_dx[1].set_data_ref(&get<2, 1>(inv_jac));
     dr_dx[2].set_data_ref(&get<2, 2>(inv_jac));
@@ -149,7 +140,7 @@ KerrHorizonConforming::inv_jacobian(
 
   // normalized from this point
   mapped = mapped / mapped_mag;
-  const ReturnType r_by_mapped = r / mapped_mag;
+  const T r_by_mapped = r / mapped_mag;
 
   for (size_t i = 0; i < 3; ++i) {
     for (size_t j = 0; j < 3; ++j) {
@@ -163,7 +154,7 @@ KerrHorizonConforming::inv_jacobian(
 
 template <typename T>
 void KerrHorizonConforming::stretch_factor_square(
-    const gsl::not_null<tt::remove_cvref_wrap_t<T>*> result,
+    const gsl::not_null<T*> result,
     const std::array<T, 3>& source_coords) const {
   auto& source_coords_sq = *result;
   source_coords_sq = dot(source_coords, source_coords);
@@ -194,15 +185,14 @@ bool operator!=(const KerrHorizonConforming& lhs,
   return not(lhs == rhs);
 }
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(0, data)
-#define INSTANTIATE(_, data)                                                 \
-  template std::array<tt::remove_cvref_wrap_t<DTYPE(data)>, 3>               \
-  KerrHorizonConforming::operator()(                                         \
-      const std::array<DTYPE(data), 3>& source_coords) const;                \
-  template tnsr::Ij<tt::remove_cvref_wrap_t<DTYPE(data)>, 3, Frame::NoFrame> \
-  KerrHorizonConforming::jacobian(                                           \
-      const std::array<DTYPE(data), 3>& source_coords) const;                \
-  template tnsr::Ij<tt::remove_cvref_wrap_t<DTYPE(data)>, 3, Frame::NoFrame> \
-  KerrHorizonConforming::inv_jacobian(                                       \
+#define INSTANTIATE(_, data)                                             \
+  template std::array<DTYPE(data), 3> KerrHorizonConforming::operator()( \
+      const std::array<DTYPE(data), 3>& source_coords) const;            \
+  template tnsr::Ij<DTYPE(data), 3, Frame::NoFrame>                      \
+  KerrHorizonConforming::jacobian(                                       \
+      const std::array<DTYPE(data), 3>& source_coords) const;            \
+  template tnsr::Ij<DTYPE(data), 3, Frame::NoFrame>                      \
+  KerrHorizonConforming::inv_jacobian(                                   \
       const std::array<DTYPE(data), 3>& source_coords) const;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (double, DataVector))

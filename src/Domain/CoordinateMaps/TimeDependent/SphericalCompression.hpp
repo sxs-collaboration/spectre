@@ -13,7 +13,6 @@
 #include <unordered_set>
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
-#include "Utilities/TypeTraits/RemoveReferenceWrapper.hpp"
 
 /// \cond
 namespace domain::FunctionsOfTime {
@@ -268,7 +267,7 @@ class SphericalCompression {
   SphericalCompression() = default;
 
   template <typename T>
-  std::array<tt::remove_cvref_wrap_t<T>, 3> operator()(
+  std::array<T, 3> operator()(
       const std::array<T, 3>& source_coords, double time,
       const std::unordered_map<
           std::string,
@@ -287,7 +286,7 @@ class SphericalCompression {
           functions_of_time) const;
 
   template <typename T>
-  std::array<tt::remove_cvref_wrap_t<T>, 3> frame_velocity(
+  std::array<T, 3> frame_velocity(
       const std::array<T, 3>& source_coords, double time,
       const std::unordered_map<
           std::string,
@@ -295,7 +294,7 @@ class SphericalCompression {
           functions_of_time) const;
 
   template <typename T>
-  tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame> jacobian(
+  tnsr::Ij<T, 3, Frame::NoFrame> jacobian(
       const std::array<T, 3>& source_coords, double time,
       const std::unordered_map<
           std::string,
@@ -303,7 +302,7 @@ class SphericalCompression {
           functions_of_time) const;
 
   template <typename T>
-  tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame> inv_jacobian(
+  tnsr::Ij<T, 3, Frame::NoFrame> inv_jacobian(
       const std::array<T, 3>& source_coords, double time,
       const std::unordered_map<
           std::string,

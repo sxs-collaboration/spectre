@@ -3,7 +3,6 @@
 
 #include "Domain/Structure/OrientationMap.hpp"
 
-#include <functional>
 #include <ostream>
 #include <pup.h>
 #include <pup_stl.h>
@@ -243,11 +242,10 @@ std::ostream& operator<<(std::ostream& os,
 }
 
 template <size_t VolumeDim, typename T>
-std::array<tt::remove_cvref_wrap_t<T>, VolumeDim> discrete_rotation(
+std::array<T, VolumeDim> discrete_rotation(
     const OrientationMap<VolumeDim>& rotation,
     std::array<T, VolumeDim> source_coords) {
-  using ReturnType = tt::remove_cvref_wrap_t<T>;
-  std::array<ReturnType, VolumeDim> new_coords{};
+  std::array<T, VolumeDim> new_coords{};
   for (size_t i = 0; i < VolumeDim; i++) {
     const auto new_direction = rotation(Direction<VolumeDim>(i, Side::Upper));
     ASSERT(new_direction.side() != Side::Self,
@@ -307,21 +305,18 @@ GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
 
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(1, data)
 
-#define INSTANTIATION(r, data)                                         \
-  template std::array<tt::remove_cvref_wrap_t<DTYPE(data)>, DIM(data)> \
-  discrete_rotation<DIM(data), DTYPE(data)>(                           \
-      const OrientationMap<DIM(data)>& rotation,                       \
+#define INSTANTIATION(r, data)                   \
+  template std::array<DTYPE(data), DIM(data)>    \
+  discrete_rotation<DIM(data), DTYPE(data)>(     \
+      const OrientationMap<DIM(data)>& rotation, \
       std::array<DTYPE(data), DIM(data)> source_coords);
 
-GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3),
-                        (double, DataVector, const double, const DataVector))
+GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3), (double, DataVector))
 
 #ifdef SPECTRE_AUTODIFF
 GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3),
                         (autodiff::SecondOrderDual,
-                         autodiff::SecondOrderDualNum,
-                         const autodiff::SecondOrderDual,
-                         const autodiff::SecondOrderDualNum))
+                         autodiff::SecondOrderDualNum))
 #endif  // SPECTRE_AUTODIFF
 
 #undef INSTANTIATION

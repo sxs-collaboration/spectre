@@ -196,7 +196,7 @@ CylindricalSide::CylindricalSide(const std::array<double, 3>& center_one,
 }
 
 template <typename T>
-std::array<tt::remove_cvref_wrap_t<T>, 3> CylindricalSide::operator()(
+std::array<T, 3> CylindricalSide::operator()(
     const std::array<T, 3>& source_coords) const {
   return impl_.operator()(source_coords);
 }
@@ -207,14 +207,14 @@ std::optional<std::array<double, 3>> CylindricalSide::inverse(
 }
 
 template <typename T>
-tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame>
-CylindricalSide::jacobian(const std::array<T, 3>& source_coords) const {
+tnsr::Ij<T, 3, Frame::NoFrame> CylindricalSide::jacobian(
+    const std::array<T, 3>& source_coords) const {
   return impl_.jacobian(source_coords);
 }
 
 template <typename T>
-tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame>
-CylindricalSide::inv_jacobian(const std::array<T, 3>& source_coords) const {
+tnsr::Ij<T, 3, Frame::NoFrame> CylindricalSide::inv_jacobian(
+    const std::array<T, 3>& source_coords) const {
   return impl_.inv_jacobian(source_coords);
 }
 
@@ -231,13 +231,11 @@ bool operator!=(const CylindricalSide& lhs, const CylindricalSide& rhs) {
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(0, data)
 
 #define INSTANTIATE(_, data)                                                   \
-  template std::array<tt::remove_cvref_wrap_t<DTYPE(data)>, 3>                 \
-  CylindricalSide::operator()(const std::array<DTYPE(data), 3>& source_coords) \
-      const;                                                                   \
-  template tnsr::Ij<tt::remove_cvref_wrap_t<DTYPE(data)>, 3, Frame::NoFrame>   \
-  CylindricalSide::jacobian(const std::array<DTYPE(data), 3>& source_coords)   \
-      const;                                                                   \
-  template tnsr::Ij<tt::remove_cvref_wrap_t<DTYPE(data)>, 3, Frame::NoFrame>   \
+  template std::array<DTYPE(data), 3> CylindricalSide::operator()(             \
+      const std::array<DTYPE(data), 3>& source_coords) const;                  \
+  template tnsr::Ij<DTYPE(data), 3, Frame::NoFrame> CylindricalSide::jacobian( \
+      const std::array<DTYPE(data), 3>& source_coords) const;                  \
+  template tnsr::Ij<DTYPE(data), 3, Frame::NoFrame>                            \
   CylindricalSide::inv_jacobian(                                               \
       const std::array<DTYPE(data), 3>& source_coords) const;
 
