@@ -48,9 +48,14 @@ class ArrayComponentId {
 template <typename ParallelComponent>
 ArrayComponentId::ArrayComponentId(const ParallelComponent* const /*meta*/,
                                    const CkArrayIndex& index)
-    : component_id_(
-          std::hash<std::string>{}(pretty_type::get_name<ParallelComponent>())),
-      array_index_(index) {}
+    : array_index_(index) {
+  // Hashing the pretty name demangles it, which is very expensive for the
+  // long template names of parallel components. Since the result is the same
+  // for every instance of `ParallelComponent`, compute it only once.
+  static const size_t cached_component_id =
+      std::hash<std::string>{}(pretty_type::get_name<ParallelComponent>());
+  component_id_ = cached_component_id;
+}
 
 bool operator==(const ArrayComponentId& lhs, const ArrayComponentId& rhs);
 
