@@ -21,6 +21,10 @@ set(LIBRARY_SOURCES
   Test_ZeroCrossingPredictor.cpp
   )
 
+if(Boost_VERSION VERSION_GREATER_EQUAL 1.81.0)
+  list(APPEND LIBRARY_SOURCES Test_UniformCardinalBSpline.cpp)
+endif()
+
 add_test_library(${LIBRARY} "${LIBRARY_SOURCES}")
 
 target_link_libraries(
