@@ -46,7 +46,7 @@ SPECTRE_TEST_CASE(
   const auto dt_psi_dipole = make_with_random_values<tnsr::i<double, Dim>>(
       make_not_null(&gen), dist, 1);
   const double charge = 0.1;
-  const double mass = 0.1;
+  const double mass = 0.85;
   const double time = 10.;
   const double turn_on_time = 20.;
   const double turn_on_interval = 1.;
