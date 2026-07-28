@@ -18,6 +18,7 @@
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
+#include "NumericalAlgorithms/Spectral/Quadrature.hpp"
 #include "Utilities/Algorithm.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
@@ -31,8 +32,14 @@ Mesh<Dim> mesh(const Mesh<Dim>& old_mesh,
   for (size_t d = 0; d < Dim; ++d) {
     if (gsl::at(flags, d) == amr::Flag::IncreaseResolution) {
       ++gsl::at(new_extents, d);
+      if (old_mesh.quadrature(d) == Spectral::Quadrature::Equiangular) {
+        ++gsl::at(new_extents, d);
+      }
     } else if (gsl::at(flags, d) == amr::Flag::DecreaseResolution) {
       --gsl::at(new_extents, d);
+      if (old_mesh.quadrature(d) == Spectral::Quadrature::Equiangular) {
+        --gsl::at(new_extents, d);
+      }
     }
   }
   return {new_extents, old_mesh.basis(), old_mesh.quadrature()};

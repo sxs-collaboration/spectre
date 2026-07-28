@@ -595,6 +595,112 @@ void test_prevent_element_from_joining_while_splitting() {
   check(stay_stay_stay, stay_stay_stay);
 }
 
+template <size_t Dim>
+void check_h(std::array<amr::Flag, Dim> flags,
+             const std::array<amr::Flag, Dim>& expected_flags,
+             const std::array<domain::Topology, Dim>& topologies) {
+  amr::enforce_h_refinement_topology_restrictions(make_not_null(&flags),
+                                                  topologies);
+  CHECK(flags == expected_flags);
+}
+
+void test_enforce_h_refinement_topology_restrictions() {
+  const auto join = amr::Flag::Join;
+  const auto split = amr::Flag::Split;
+  const auto stay = amr::Flag::DoNothing;
+  const auto h_flags = std::vector{join, stay, split};
+
+  for (const auto first_flag : h_flags) {
+    const auto flags_1d = std::array{first_flag};
+    check_h(flags_1d, flags_1d, domain::topologies::hypercube<1>);
+    check_h(flags_1d, std::array{stay}, domain::topologies::hypertorus<1>);
+    for (const auto second_flag : h_flags) {
+      const auto flags_2d = std::array{first_flag, second_flag};
+      check_h(flags_2d, flags_2d, domain::topologies::hypercube<2>);
+      check_h(flags_2d, std::array{stay, stay},
+              domain::topologies::hypertorus<2>);
+      check_h(flags_2d, std::array{first_flag, stay},
+              domain::topologies::annulus);
+      check_h(flags_2d, std::array{first_flag, stay}, domain::topologies::disk);
+      for (const auto third_flag : h_flags) {
+        const auto flags_3d = std::array{first_flag, second_flag, third_flag};
+        check_h(flags_3d, flags_3d, domain::topologies::hypercube<3>);
+        check_h(flags_3d, std::array{stay, stay, stay},
+                domain::topologies::hypertorus<3>);
+        check_h(flags_3d, std::array{first_flag, stay, stay},
+                domain::topologies::spherical_shell);
+        check_h(flags_3d, std::array{first_flag, stay, third_flag},
+                domain::topologies::cylindrical_shell);
+        check_h(flags_3d, std::array{first_flag, stay, third_flag},
+                domain::topologies::full_cylinder);
+        check_h(flags_3d, std::array{first_flag, stay, stay},
+                domain::topologies::full_sphere);
+        check_h(flags_3d, std::array{first_flag, stay, stay},
+                domain::topologies::cartoon_sphere);
+        check_h(flags_3d, std::array{first_flag, stay, stay},
+                domain::topologies::cartoon_sphere_inner);
+        check_h(flags_3d, std::array{first_flag, second_flag, stay},
+                domain::topologies::cartoon_cylinder);
+        check_h(flags_3d, std::array{first_flag, second_flag, stay},
+                domain::topologies::cartoon_cylinder_inner);
+      }
+    }
+  }
+}
+
+template <size_t Dim>
+void check_p(std::array<amr::Flag, Dim> flags,
+             const std::array<amr::Flag, Dim>& expected_flags,
+             const std::array<domain::Topology, Dim>& topologies) {
+  CAPTURE(topologies);
+  amr::enforce_p_refinement_topology_restrictions(make_not_null(&flags),
+                                                  topologies);
+  CHECK(flags == expected_flags);
+}
+
+void test_enforce_p_refinement_topology_restrictions() {
+  const auto decrease = amr::Flag::DecreaseResolution;
+  const auto increase = amr::Flag::IncreaseResolution;
+  const auto stay = amr::Flag::DoNothing;
+  const auto p_flags = std::vector{decrease, stay, increase};
+
+  for (const auto first_flag : p_flags) {
+    const auto flags_1d = std::array{first_flag};
+    check_p(flags_1d, flags_1d, domain::topologies::hypercube<1>);
+    check_p(flags_1d, flags_1d, domain::topologies::hypertorus<1>);
+    for (const auto second_flag : p_flags) {
+      const auto flags_2d = std::array{first_flag, second_flag};
+      const auto max_flag_12 = std::max(first_flag, second_flag);
+      check_p(flags_2d, flags_2d, domain::topologies::hypercube<2>);
+      check_p(flags_2d, flags_2d, domain::topologies::hypertorus<2>);
+      check_p(flags_2d, flags_2d, domain::topologies::annulus);
+      check_p(flags_2d, make_array<2>(max_flag_12), domain::topologies::disk);
+      for (const auto third_flag : p_flags) {
+        const auto flags_3d = std::array{first_flag, second_flag, third_flag};
+        const auto max_flag_23 = std::max(second_flag, third_flag);
+        const auto max_flag = *(alg::max_element(flags_3d));
+        check_p(flags_3d, flags_3d, domain::topologies::hypercube<3>);
+        check_p(flags_3d, flags_3d, domain::topologies::hypertorus<3>);
+        check_p(flags_3d, std::array{first_flag, max_flag_23, max_flag_23},
+                domain::topologies::spherical_shell);
+        check_p(flags_3d, flags_3d, domain::topologies::cylindrical_shell);
+        check_p(flags_3d, std::array{max_flag_12, max_flag_12, third_flag},
+                domain::topologies::full_cylinder);
+        check_p(flags_3d, make_array<3>(max_flag),
+                domain::topologies::full_sphere);
+        check_p(flags_3d, std::array{first_flag, stay, stay},
+                domain::topologies::cartoon_sphere);
+        check_p(flags_3d, std::array{first_flag, stay, stay},
+                domain::topologies::cartoon_sphere_inner);
+        check_p(flags_3d, std::array{first_flag, second_flag, stay},
+                domain::topologies::cartoon_cylinder);
+        check_p(flags_3d, std::array{first_flag, second_flag, stay},
+                domain::topologies::cartoon_cylinder_inner);
+      }
+    }
+  }
+}
+
 void test_assertions() {
 #ifdef SPECTRE_DEBUG
   const ElementId<1> element_id_1d{0, {{SegmentId(2, 3)}}};
@@ -642,6 +748,43 @@ void test_assertions() {
       amr::is_child_that_creates_parent(element_id_3d, flags_3d_split_join),
       Catch::Matchers::ContainsSubstring(
           "Splitting and joining an Element is not supported"));
+  auto increase_1d = make_array<1>(amr::Flag::IncreaseResolution);
+  auto increase_2d = make_array<2>(amr::Flag::IncreaseResolution);
+  auto increase_3d = make_array<3>(amr::Flag::IncreaseResolution);
+  CHECK_THROWS_WITH(
+      amr::enforce_h_refinement_topology_restrictions(
+          make_not_null(&increase_1d), domain::topologies::hypertorus<1>),
+      Catch::Matchers::ContainsSubstring("Expected h-refinement flag, not"));
+  CHECK_THROWS_WITH(
+      amr::enforce_h_refinement_topology_restrictions(
+          make_not_null(&increase_2d), domain::topologies::hypertorus<2>),
+      Catch::Matchers::ContainsSubstring("Expected h-refinement flag, not"));
+  CHECK_THROWS_WITH(
+      amr::enforce_h_refinement_topology_restrictions(
+          make_not_null(&increase_3d), domain::topologies::hypertorus<3>),
+      Catch::Matchers::ContainsSubstring("Expected h-refinement flag, not"));
+  auto bad_p_2d = std::array{amr::Flag::Split, amr::Flag::Join};
+  auto bad_p_3d = flags_3d_split_join;
+  CHECK_THROWS_WITH(
+      amr::enforce_p_refinement_topology_restrictions(make_not_null(&bad_p_2d),
+                                                      domain::topologies::disk),
+      Catch::Matchers::ContainsSubstring("Expected p-refinement flag, not"));
+  CHECK_THROWS_WITH(
+      amr::enforce_p_refinement_topology_restrictions(
+          make_not_null(&bad_p_2d), domain::topologies::spherical_surface),
+      Catch::Matchers::ContainsSubstring("Expected p-refinement flag, not"));
+  CHECK_THROWS_WITH(
+      amr::enforce_p_refinement_topology_restrictions(
+          make_not_null(&bad_p_3d), domain::topologies::spherical_shell),
+      Catch::Matchers::ContainsSubstring("Expected p-refinement flag, not"));
+  CHECK_THROWS_WITH(
+      amr::enforce_p_refinement_topology_restrictions(
+          make_not_null(&bad_p_3d), domain::topologies::full_sphere),
+      Catch::Matchers::ContainsSubstring("Expected p-refinement flag, not"));
+  CHECK_THROWS_WITH(
+      amr::enforce_p_refinement_topology_restrictions(
+          make_not_null(&bad_p_3d), domain::topologies::full_cylinder),
+      Catch::Matchers::ContainsSubstring("Expected p-refinement flag, not"));
 #endif
 }
 }  // namespace
@@ -656,5 +799,7 @@ SPECTRE_TEST_CASE("Unit.Domain.Amr.Helpers", "[Domain][Unit]") {
   test_ids_of_joining_neighbors();
   test_is_child_that_creates_parent();
   test_prevent_element_from_joining_while_splitting();
+  test_enforce_h_refinement_topology_restrictions();
+  test_enforce_p_refinement_topology_restrictions();
   test_assertions();
 }

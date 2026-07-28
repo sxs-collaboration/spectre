@@ -28,10 +28,14 @@ class ElementId;
 template <size_t VolumeDim>
 class OrientationMap;
 
+namespace domain {
+enum class Topology : uint8_t;
+}  // namespace domain
+
 namespace gsl {
 template <typename>
 class not_null;
-}
+}  // namespace gsl
 /// \endcond
 
 namespace amr {
@@ -135,4 +139,27 @@ bool is_child_that_creates_parent(const ElementId<VolumeDim>& element_id,
 template <size_t VolumeDim>
 bool prevent_element_from_joining_while_splitting(
     gsl::not_null<std::array<Flag, VolumeDim>*> flags);
+
+/// \ingroup AmrGroup
+/// \brief Enforce restrictions on AMR decisions for h-refinement based on the
+/// topologies of the Element.
+///
+/// \details Angular topologies (e.g. S1 or S2) and cartoon topologies (e.g.
+/// (CartoonSphere)  cannot be h-refined.
+template <size_t VolumeDim>
+void enforce_h_refinement_topology_restrictions(
+    gsl::not_null<std::array<Flag, VolumeDim>*> flags,
+    const std::array<domain::Topology, VolumeDim>& topologies);
+
+/// \ingroup AmrGroup
+/// \brief Enforce restrictions on AMR decisions for p-refinement based on the
+/// topologies of the Element.
+///
+/// \details Multi-dimensional topologies (e.g. S2, B2, B3) have relationships
+/// between their extents that must be enforced so that the highest modes
+/// are correctly represented. Cartoon topologies cannot be p-refined.
+template <size_t VolumeDim>
+void enforce_p_refinement_topology_restrictions(
+    [[maybe_unused]] gsl::not_null<std::array<Flag, VolumeDim>*> flags,
+    [[maybe_unused]] const std::array<domain::Topology, VolumeDim>& topologies);
 }  // namespace amr

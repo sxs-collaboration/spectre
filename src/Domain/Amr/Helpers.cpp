@@ -14,6 +14,7 @@
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Structure/OrientationMap.hpp"
 #include "Domain/Structure/SegmentId.hpp"
+#include "Domain/Structure/Topology.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
@@ -203,6 +204,88 @@ bool prevent_element_from_joining_while_splitting(
   return flags_changed;
 }
 
+namespace {
+constexpr auto can_be_h_refined =
+    std::array{domain::Topology::I1, domain::Topology::B1Radial,
+               domain::Topology::B2Radial, domain::Topology::B3Radial};
+constexpr auto cannot_be_h_refined =
+    std::array{domain::Topology::S1,
+               domain::Topology::S2Colatitude,
+               domain::Topology::S2Longitude,
+               domain::Topology::B2Angular,
+               domain::Topology::B3Colatitude,
+               domain::Topology::B3Longitude,
+               domain::Topology::CartoonSphere,
+               domain::Topology::CartoonCylinder};
+}  // namespace
+
+template <size_t VolumeDim>
+void enforce_h_refinement_topology_restrictions(
+    gsl::not_null<std::array<Flag, VolumeDim>*> flags,
+    const std::array<domain::Topology, VolumeDim>& topologies) {
+  for (size_t d = 0; d < VolumeDim; ++d) {
+    auto& flag = gsl::at(*flags, d);
+    const auto topology = gsl::at(topologies, d);
+    if (flag != amr::Flag::DoNothing) {
+      ASSERT(flag == amr::Flag::Split or flag == amr::Flag::Join,
+             "Expected h-refinement flag, not " << flag);
+      if (alg::found(cannot_be_h_refined, topology)) {
+        flag = amr::Flag::DoNothing;
+      } else {
+        ASSERT(alg::found(can_be_h_refined, topology),
+               "Topology " << topology
+                           << " not found in either list can_be_h_refined or "
+                              "cannot_be_h_refined");
+      }
+    }
+  }
+}
+
+template <size_t VolumeDim>
+void enforce_p_refinement_topology_restrictions(
+    gsl::not_null<std::array<Flag, VolumeDim>*> flags,
+    const std::array<domain::Topology, VolumeDim>& topologies) {
+  if constexpr (VolumeDim == 2) {
+    auto& [first_flag, second_flag] = *flags;
+    if ((topologies == domain::topologies::disk or
+         topologies == domain::topologies::spherical_surface) and
+        first_flag != second_flag) {
+      const auto max_flag = std::max(first_flag, second_flag);
+      ASSERT(max_flag != amr::Flag::Split and max_flag != amr::Flag::Join,
+             "Expected p-refinement flag, not " << max_flag);
+      *flags = make_array<2>(max_flag);
+    }
+  } else if constexpr (VolumeDim == 3) {
+    auto& [first_flag, second_flag, third_flag] = *flags;
+    if (topologies == domain::topologies::spherical_shell and
+        second_flag != third_flag) {
+      const auto max_flag = std::max(second_flag, third_flag);
+      ASSERT(max_flag != amr::Flag::Split and max_flag != amr::Flag::Join,
+             "Expected p-refinement flag, not " << max_flag);
+      second_flag = max_flag;
+      third_flag = max_flag;
+    } else if (topologies == domain::topologies::full_cylinder and
+               first_flag != second_flag) {
+      const auto max_flag = std::max(first_flag, second_flag);
+      ASSERT(max_flag != amr::Flag::Split and max_flag != amr::Flag::Join,
+             "Expected p-refinement flag, not " << max_flag);
+      first_flag = max_flag;
+      second_flag = max_flag;
+    } else if (topologies == domain::topologies::full_sphere and
+               (first_flag != second_flag or second_flag != third_flag)) {
+      const auto max_flag = *(alg::max_element(*flags));
+      ASSERT(max_flag != amr::Flag::Split and max_flag != amr::Flag::Join,
+             "Expected p-refinement flag, not " << max_flag);
+      *flags = make_array<3>(max_flag);
+    } else if (topologies[2] == domain::Topology::CartoonSphere) {
+      second_flag = amr::Flag::DoNothing;
+      third_flag = amr::Flag::DoNothing;
+    } else if (topologies[2] == domain::Topology::CartoonCylinder) {
+      third_flag = amr::Flag::DoNothing;
+    }
+  }
+}
+
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 
 #define INSTANTIATE(_, data)                                                   \
@@ -230,7 +313,13 @@ bool prevent_element_from_joining_while_splitting(
       const ElementId<DIM(data)>& element_id,                                  \
       const std::array<Flag, DIM(data)>& flags);                               \
   template bool prevent_element_from_joining_while_splitting(                  \
-      const gsl::not_null<std::array<Flag, DIM(data)>*> flags);
+      const gsl::not_null<std::array<Flag, DIM(data)>*> flags);                \
+  template void enforce_h_refinement_topology_restrictions(                    \
+      const gsl::not_null<std::array<Flag, DIM(data)>*> flags,                 \
+      const std::array<domain::Topology, DIM(data)>& topologies);              \
+  template void enforce_p_refinement_topology_restrictions(                    \
+      const gsl::not_null<std::array<Flag, DIM(data)>*> flags,                 \
+      const std::array<domain::Topology, DIM(data)>& topologies);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
 

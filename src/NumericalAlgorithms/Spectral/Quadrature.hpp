@@ -8,6 +8,8 @@
 #include <iosfwd>
 #include <string>
 
+#include "Utilities/MakeArray.hpp"
+
 /// \cond
 namespace Options {
 class Option;
@@ -80,6 +82,58 @@ Quadrature to_quadrature(const std::string& quadrature);
 
 /// Output operator for a Quadrature.
 std::ostream& operator<<(std::ostream& os, const Quadrature& quadrature);
+
+/// Shortcuts for common Quadrature products where the default value of
+/// I1Quadrature is Quadrature::GaussLobatto
+namespace quadratures {
+template <size_t VolumeDim, Quadrature I1Quadrature = Quadrature::GaussLobatto>
+static constexpr auto hypercube = make_array<VolumeDim>(I1Quadrature);
+
+template <size_t VolumeDim>
+static constexpr auto hypertorus =
+    make_array<VolumeDim>(Quadrature::Equiangular);
+
+template <Quadrature I1Quadrature = Quadrature::GaussLobatto>
+static constexpr auto annulus =
+    std::array{I1Quadrature, Quadrature::Equiangular};
+
+static constexpr auto spherical_surface =
+    std::array{Quadrature::Gauss, Quadrature::Equiangular};
+
+static constexpr auto disk =
+    std::array{Quadrature::GaussRadauUpper, Quadrature::Equiangular};
+
+template <Quadrature I1Quadrature = Quadrature::GaussLobatto>
+static constexpr auto spherical_shell =
+    std::array{I1Quadrature, Quadrature::Gauss, Quadrature::Equiangular};
+
+template <Quadrature I1Quadrature = Quadrature::GaussLobatto>
+static constexpr auto cylindrical_shell =
+    std::array{I1Quadrature, Quadrature::Equiangular, I1Quadrature};
+
+template <Quadrature I1Quadrature = Quadrature::GaussLobatto>
+static constexpr auto full_cylinder = std::array{
+    Quadrature::GaussRadauUpper, Quadrature::Equiangular, I1Quadrature};
+
+static constexpr auto full_sphere = std::array{
+    Quadrature::GaussRadauUpper, Quadrature::Gauss, Quadrature::Equiangular};
+
+template <Quadrature I1Quadrature = Quadrature::GaussLobatto>
+static constexpr auto cartoon_sphere = std::array{
+    I1Quadrature, Quadrature::SphericalSymmetry, Quadrature::SphericalSymmetry};
+
+static constexpr auto cartoon_sphere_inner =
+    std::array{Quadrature::GaussRadauUpper, Quadrature::SphericalSymmetry,
+               Quadrature::SphericalSymmetry};
+
+template <Quadrature I1Quadrature = Quadrature::GaussLobatto>
+static constexpr auto cartoon_cylinder =
+    std::array{I1Quadrature, I1Quadrature, Quadrature::AxialSymmetry};
+
+template <Quadrature I1Quadrature = Quadrature::GaussLobatto>
+static constexpr auto cartoon_cylinder_inner = std::array{
+    Quadrature::GaussRadauUpper, I1Quadrature, Quadrature::AxialSymmetry};
+}  // namespace quadratures
 }  // namespace Spectral
 
 template <>
