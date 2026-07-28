@@ -216,6 +216,20 @@ void test_interface_mesh() {
                 std::array{Spectral::Quadrature::Equiangular,
                            Spectral::Quadrature::GaussLobatto}));
 
+  // B2 cylinder (reoriented: radial is last dim). Arises in Pill blocks where
+  // the cylinder axis is not aligned with the block's first logical direction.
+  const Mesh<3> b2_cyl_rev_mesh{
+      {{5, 7, 3}},
+      {{Spectral::Basis::Legendre, Spectral::Basis::ZernikeB2,
+        Spectral::Basis::ZernikeB2}},
+      {{Spectral::Quadrature::GaussLobatto, Spectral::Quadrature::Equiangular,
+        Spectral::Quadrature::GaussRadauUpper}}};
+  CHECK(b2_cyl_rev_mesh.on_interface(2) ==
+        Mesh<2>({{5, 7}},
+                std::array{Spectral::Basis::Legendre, Spectral::Basis::Fourier},
+                std::array{Spectral::Quadrature::GaussLobatto,
+                           Spectral::Quadrature::Equiangular}));
+
 #ifdef SPECTRE_DEBUG
   // B3: wrong Dim
   CHECK_THROWS_WITH((Mesh<2>{{{3, 7}},
@@ -234,7 +248,7 @@ void test_interface_mesh() {
             Spectral::Quadrature::Equiangular}}}
            .on_interface(1)),
       Catch::Matchers::ContainsSubstring(
-          "A mesh using B3 only has an interface when sliced in the first "
+          "A B3 ball's outer boundary is at the upper end of the radial "
           "dimension"));
   // B3: radial dimension does not use GaussRadauUpper
   CHECK_THROWS_WITH(
@@ -244,7 +258,7 @@ void test_interface_mesh() {
                  Spectral::Quadrature::Equiangular}}}
            .on_interface(0)),
       Catch::Matchers::ContainsSubstring(
-          "A mesh using B3 only has an interface when sliced in the first "
+          "A B3 ball's outer boundary is at the upper end of the radial "
           "dimension"));
   // B3: non-isotropic bases
   CHECK_THROWS_WITH(
@@ -271,7 +285,7 @@ void test_interface_mesh() {
                  Spectral::Quadrature::Equiangular}}}
            .on_interface(1)),
       Catch::Matchers::ContainsSubstring(
-          "A mesh using B2 only has an interface when sliced in the first "
+          "A B2 disk's outer boundary is at the upper end of the radial "
           "dimension"));
   // B2: radial dimension does not use GaussRadauUpper
   CHECK_THROWS_WITH(
@@ -281,9 +295,9 @@ void test_interface_mesh() {
           {{Spectral::Quadrature::Gauss, Spectral::Quadrature::Equiangular}}}
            .on_interface(0)),
       Catch::Matchers::ContainsSubstring(
-          "A mesh using B2 only has an interface when sliced in the first "
+          "A B2 disk's outer boundary is at the upper end of the radial "
           "dimension"));
-  // B2: first two bases are not both ZernikeB2
+  // B2: no ZernikeB2 angular basis in face after slicing radial
   CHECK_THROWS_WITH(
       (Mesh<2>{{{3, 7}},
                {{Spectral::Basis::ZernikeB2, Spectral::Basis::Legendre}},
@@ -291,7 +305,8 @@ void test_interface_mesh() {
                  Spectral::Quadrature::Gauss}}}
            .on_interface(0)),
       Catch::Matchers::ContainsSubstring(
-          "Mesh does not have ZernikeB2 for the first two bases"));
+          "Expected exactly one ZernikeB2 angular basis remaining in the "
+          "face"));
 #endif  // SPECTRE_DEBUG
 }
 
