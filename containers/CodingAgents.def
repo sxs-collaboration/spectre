@@ -111,9 +111,9 @@ From: sxscollaboration/spectre:dev
     apt-get clean
     rm -rf /var/lib/apt/lists/*
 
-    # Install Node.js 20 from NodeSource (this will install node and npm)
-    echo "=== Installing Node.js 20 ==="
-    curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
+    # Install Node.js 24 from NodeSource (this will install node and npm).
+    echo "=== Installing Node.js 24 ==="
+    curl -fsSL https://deb.nodesource.com/setup_24.x | bash -
     apt-get install -y --no-install-recommends nodejs
     # Cleanup apt lists to reduce image size
     apt-get clean
