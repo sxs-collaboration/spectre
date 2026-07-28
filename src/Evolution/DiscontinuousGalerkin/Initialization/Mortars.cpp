@@ -141,8 +141,8 @@ template <size_t Dim>
                     {.interpolator =
                          ::dg::MortarInterpolator<Dim>{
                              element.id(), mortar_id, domain,
-                             volume_mesh.slice_away(direction.dimension()),
-                             neighbor_mesh.at(mortar_id).slice_away(
+                             volume_mesh.on_interface(direction.dimension()),
+                             neighbor_mesh.at(mortar_id).on_interface(
                                  neighbor_orientation(direction.dimension()))},
                      .interface_data_policy =
                          InterfaceDataPolicy::NonconformingSelfInterpolates,
@@ -191,7 +191,7 @@ mortars_apply_impl(const Element<Dim>& element,
   for (const auto& [direction, neighbors] : element.neighbors()) {
     normal_covector_quantities[direction] = std::nullopt;
     const Mesh<Dim - 1> face_mesh =
-        volume_mesh.slice_away(direction.dimension());
+        volume_mesh.on_interface(direction.dimension());
     const domain::FaceType face_type = element.face_types().at(direction);
     switch (face_type) {
       // NOLINTNEXTLINE(bugprone-branch-clone)
@@ -212,9 +212,10 @@ mortars_apply_impl(const Element<Dim>& element,
         for (const auto& neighbor : neighbors) {
           const DirectionalId<Dim> mortar_id{direction, neighbor};
           mortar_meshes.emplace(
-              mortar_id, ::dg::mortar_mesh(
-                             face_mesh, neighbor_mesh.at(mortar_id).slice_away(
-                                            direction.dimension())));
+              mortar_id,
+              ::dg::mortar_mesh(face_mesh,
+                                neighbor_mesh.at(mortar_id).on_interface(
+                                    direction.dimension())));
           // Since no communication needs to happen for boundary conditions
           // the temporal id is not advanced on the boundary, so we only need
           // to initialize it on internal boundaries
@@ -288,12 +289,12 @@ void h_refine_structure(
                domain::FaceType::MultipleNonconforming,
            "This code needs updating to handle nonconforming blocks");
     const auto sliced_away_dimension = direction.dimension();
-    const auto new_face_mesh = new_mesh.slice_away(sliced_away_dimension);
+    const auto new_face_mesh = new_mesh.on_interface(sliced_away_dimension);
     for (const auto& neighbor : neighbors) {
       const DirectionalId<Dim> mortar_id{direction, neighbor};
       const auto& new_neighbor_mesh = neighbor_mesh.at(mortar_id);
       const auto new_mortar_mesh = ::dg::mortar_mesh(
-          new_face_mesh, new_neighbor_mesh.slice_away(sliced_away_dimension));
+          new_face_mesh, new_neighbor_mesh.on_interface(sliced_away_dimension));
       mortar_mesh->emplace(mortar_id, new_mortar_mesh);
       // We only do h refinement at a slab boundary, so we know all
       // the neighbors are aligned with us temporally.
@@ -392,8 +393,8 @@ void ProjectMortars<Dim>::apply(
                domain::FaceType::MultipleNonconforming,
            "This code needs updating to handle nonconforming blocks");
     const auto sliced_away_dimension = direction.dimension();
-    const auto old_face_mesh = old_mesh.slice_away(sliced_away_dimension);
-    const auto new_face_mesh = new_mesh.slice_away(sliced_away_dimension);
+    const auto old_face_mesh = old_mesh.on_interface(sliced_away_dimension);
+    const auto new_face_mesh = new_mesh.on_interface(sliced_away_dimension);
     const bool face_mesh_changed = old_face_mesh != new_face_mesh;
     if (face_mesh_changed) {
       (*normal_covector_and_magnitude)[direction] = std::nullopt;
@@ -402,7 +403,7 @@ void ProjectMortars<Dim>::apply(
       const DirectionalId<Dim> mortar_id{direction, neighbor};
       const auto& new_neighbor_mesh = neighbor_mesh.at(mortar_id);
       const auto new_mortar_mesh = ::dg::mortar_mesh(
-          new_face_mesh, new_neighbor_mesh.slice_away(sliced_away_dimension));
+          new_face_mesh, new_neighbor_mesh.on_interface(sliced_away_dimension));
       if (mortar_mesh->contains(mortar_id)) {
         // Set the mortar mesh, but do not project any existing mesh
         // data.  The mesh needs to have a valid value in order to
@@ -514,8 +515,8 @@ void ProjectMortars<Dim>::apply(
 
   for (const auto& direction : new_element.external_boundaries()) {
     const auto sliced_away_dimension = direction.dimension();
-    const auto old_face_mesh = old_mesh.slice_away(sliced_away_dimension);
-    const auto new_face_mesh = new_mesh.slice_away(sliced_away_dimension);
+    const auto old_face_mesh = old_mesh.on_interface(sliced_away_dimension);
+    const auto new_face_mesh = new_mesh.on_interface(sliced_away_dimension);
     const bool face_mesh_changed = old_face_mesh != new_face_mesh;
     if (face_mesh_changed) {
       (*normal_covector_and_magnitude)[direction] = std::nullopt;
