@@ -20,12 +20,12 @@ if(USE_XSIMD)
     include(FetchContent)
     FetchContent_Declare(xsimd
         GIT_REPOSITORY https://github.com/xtensor-stack/xsimd
-        GIT_TAG 13.2.0
+        GIT_TAG 14.3.0
         ${SPECTRE_FETCHCONTENT_BASE_ARGS}
     )
     FetchContent_MakeAvailable(xsimd)
     set(xsimd_INCLUDE_DIRS ${xsimd_SOURCE_DIR}/include)
-    set(xsimd_VERSION "13.2.0")
+    set(xsimd_VERSION "14.3.0")
     if (NOT CMAKE_VERSION VERSION_GREATER_EQUAL 3.25)
       get_target_property(XSIMD_IID xsimd INTERFACE_INCLUDE_DIRECTORIES)
       set_target_properties(xsimd PROPERTIES INTERFACE_SYSTEM_INCLUDE_DIRECTORIES "${XSIMD_IID}")
