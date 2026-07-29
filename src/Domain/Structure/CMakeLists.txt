@@ -21,6 +21,7 @@ spectre_target_sources(
   HasBoundary.cpp
   Hypercube.cpp
   InitialElementIds.cpp
+  IsValidDgMesh.cpp
   NeighborIsConforming.cpp
   Neighbors.cpp
   ObjectLabel.cpp
@@ -53,6 +54,7 @@ spectre_target_headers(
   Hypercube.hpp
   IndexToSliceAt.hpp
   InitialElementIds.hpp
+  IsValidDgMesh.hpp
   MaxNumberOfNeighbors.hpp
   NeighborIsConforming.hpp
   Neighbors.hpp
