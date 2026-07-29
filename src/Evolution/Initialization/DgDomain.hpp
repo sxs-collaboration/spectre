@@ -30,6 +30,7 @@
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/ElementId.hpp"
+#include "Domain/Structure/IsValidDgMesh.hpp"
 #include "Domain/Tags.hpp"
 #include "Domain/Tags/NeighborMesh.hpp"
 #include "Domain/TagsTimeDependent.hpp"
@@ -44,6 +45,7 @@
 #include "Parallel/Tags/ArrayIndex.hpp"
 #include "ParallelAlgorithms/Amr/Protocols/Projector.hpp"
 #include "ParallelAlgorithms/Initialization/MutateAssign.hpp"
+#include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -155,6 +157,9 @@ struct Domain {
     const Spectral::Basis i1_basis{Spectral::Basis::Legendre};
     *mesh = ::domain::create_initial_mesh(initial_extents, *element, i1_basis,
                                           i1_quadrature);
+    if (not ::domain::is_valid_dg_mesh(*mesh, *element)) {
+      ERROR("Invalid mesh: " << *mesh << " for Element " << *element);
+    }
     const auto& my_block = domain.blocks()[element_id.block_id()];
     *element_map = ElementMap<dim, Frame::Grid>{element_id, my_block};
 
