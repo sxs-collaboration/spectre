@@ -716,6 +716,13 @@ ${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
             && github.event.inputs.clear_ccache == 'yes'
         run: |
           ccache -C
+      - name: Start memory monitor
+        run: |
+          (while true; do
+            echo "$(date -Iseconds) $(free -m | awk '/^Mem:/{print "used="$3"M free="$4"M avail="$7"M"}')"
+            sleep 15
+          done) >> /tmp/mem_monitor.log 2>&1 &
+          disown $!
       - name: Configure build with cmake
         # Notes on the build configuration:
         # - We don't need debug symbols during CI, so we turn them off to reduce
@@ -828,6 +835,16 @@ ${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
         # We currently don't require codecov in our guidelines, so don't fail
         # the CI build if codecov fails to upload
         continue-on-error: true
+      - name: Diagnostics on failure
+        if: failure()
+        run: |
+          set +e
+          echo "=== dmesg (tail) ==="
+          dmesg | tail -n 200 || true
+          echo "=== memory ==="
+          free -h || true
+          echo "=== top ==="
+          ps -eo pid,ppid,cmd,%mem,%cpu,rss,vsz --sort=-rss | head -n 40 || true
       # Test only a few unit tests with nvcc for now because compiling the full
       # suite is too slow and exceed the available memory. We should extend this
       # to the full suite once we have a better solution for the memory issue.
@@ -1020,6 +1037,13 @@ ${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
       - name: Diagnose ccache
         run: |
           ccache -s
+      - name: Upload memory monitor log
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: mem-monitor-${{ matrix.compiler }}-${{ matrix.build_type }}
+          path: /tmp/mem_monitor.log
+          if-no-files-found: ignore
 
   # Build all test executables and run unit tests on macOS
   unit_tests_macos:
