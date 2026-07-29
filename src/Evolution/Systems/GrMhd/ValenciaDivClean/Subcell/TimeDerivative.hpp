@@ -345,7 +345,9 @@ struct TimeDerivative {
                 subcell_mesh.extents().product(), 0.0};
             for (size_t j = 0; j < 3; j++) {
               conormal_in_dir.get(j) = evolution::dg::subcell::fd::project(
-                  inv_jacobian_dg.get(i, j), dg_mesh, subcell_mesh.extents());
+                  inv_jacobian_dg.get(i, j), dg_mesh, subcell_mesh.extents(),
+                  (i == 0) != (j == 0) ? Spectral::Parity::Odd
+                                       : Spectral::Parity::Even);
               lower_outward_conormal_face.get(j) =
                   evolution::dg::subcell::fd::project_to_faces(
                       inv_jacobian_dg.get(i, j), dg_mesh, face_mesh_extents, i,
@@ -353,7 +355,8 @@ struct TimeDerivative {
                                            : Spectral::Parity::Even);
             }
             const auto det_inv_jacobian = evolution::dg::subcell::fd::project(
-                get(det_inv_jacobian_dg), dg_mesh, subcell_mesh.extents());
+                get(det_inv_jacobian_dg), dg_mesh, subcell_mesh.extents(),
+                Spectral::Parity::Even);
             const auto det_inv_jacobian_face =
                 evolution::dg::subcell::fd::project_to_faces(
                     get(det_inv_jacobian_dg), dg_mesh, face_mesh_extents, i,
