@@ -16,6 +16,7 @@
 #include "Domain/Tags.hpp"
 #include "IO/Logging/Tags.hpp"
 #include "IO/Logging/Verbosity.hpp"
+#include "NumericalAlgorithms/Spectral/IsValidDgMesh.hpp"
 #include "Options/String.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Printf/Printf.hpp"
@@ -158,6 +159,9 @@ class RefineMesh : public Event {
           [&old_mesh,
            &overall_decision](const gsl::not_null<Mesh<volume_dim>*> mesh) {
             *mesh = amr::projectors::mesh(old_mesh, overall_decision);
+            if (not Spectral::is_valid_dg_mesh(*mesh)) {
+              ERROR("Invalid mesh: " << *mesh);
+            }
           },
           box);
 
