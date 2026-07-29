@@ -22,6 +22,7 @@ spectre_target_sources(
   IntegrationMatrix.cpp
   InterpolationWeights.cpp
   InterpolationMatrix.cpp
+  IsValidDgMesh.cpp
   LinearFilteringMatrix.cpp
   LogicalCoordinates.cpp
   Mesh.cpp
@@ -62,6 +63,7 @@ spectre_target_headers(
   InterpolationWeights.hpp
   InterpolationMatrix.hpp
   InverseWeightFunctionValues.hpp
+  IsValidDgMesh.hpp
   Legendre.hpp
   Limits.hpp
   LinearFilteringMatrix.hpp
