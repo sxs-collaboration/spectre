@@ -27,7 +27,7 @@ namespace domain::CoordinateMaps {
  * \brief Map from 3D unit right cylindrical shell to a volume that connects
  *  portions of two spherical surfaces.
  *
- * \image html UniformCylSide.svg "A hollow cylinder maps to the shaded region."
+ * \image html UniformCylSide.png "A hollow cylinder maps to the shaded region."
  *
  * \details Consider two spheres with centers \f$C_1\f$ and \f$C_2\f$,
  * and radii \f$R_1\f$ and \f$R_2\f$. Sphere 1 is assumed to be contained
