@@ -1,0 +1,18 @@
+# Distributed under the MIT License.
+# See LICENSE.txt for details.
+
+Machine:
+  Name: Deucalion
+  Description: |
+    Supercomputer at RNCA – Rede Nacional de Computação Avançada
+    (National Advanced Computing Network) installed on the
+    Azurém campus of the University of Minho
+    https://docs.macc.fccn.pt/deucalion/
+  # 2× AMD EPYC 7742 64-core 2.25 GHz
+  DefaultTasksPerNode: 8
+  DefaultProcsPerTask: 16
+  # normal-x86 queue allows up to 64 nodes and up to 48 hours.
+  DefaultQueue: "normal-x86"
+  DefaultTimeLimit: "2-00:00:00"
+  LaunchCommandSingleNode: ["mpirun", "-n", "1"]
+  LaunchCommandLoginNode: []
