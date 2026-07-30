@@ -125,8 +125,6 @@ CircularOrbit::variables(
   const DataVector r_sq_plus_a_sq = square(r) + square(a);
   const DataVector r_sq_plus_a_sq_sq = square(r_sq_plus_a_sq);
   const DataVector sin_theta_squared = 1. - cos_theta_sq;
-  const DataVector sigma_squared =
-      r_sq_plus_a_sq_sq - square(a) * delta * sin_theta_squared;
   tuples::TaggedTuple<Tags::Alpha, Tags::Beta, Tags::Gamma> result{};
   // Hyperboloidal slicing
   ComplexDataVector H;
@@ -138,12 +136,39 @@ CircularOrbit::variables(
     H = make_with_value<ComplexDataVector>(r_star_or_r, 0.);
     dH = make_with_value<ComplexDataVector>(r_star_or_r, 0.);
   }
+  const bool in_u_region =
+      penetrating_horizon_ and r[0] > (*hyperboloidal_slicing_transitions_)[3];
+  const double r_u =
+      penetrating_horizon_ ? (*hyperboloidal_slicing_transitions_)[3] : 0.0;
+
+  DataVector inv_r{};
+  DataVector dsigma_dr{};
+  if (in_u_region) {
+    // Inside u-region, x coordinate is defined as
+    // 2 r_u - r_u^2/r to compactify the wavezone.
+    // Elliptic PDEs will be re-written as a function of
+    // inv_r (1/r) instead of r.
+    inv_r = (2.0 * r_u - r) / (r_u * r_u);
+    dsigma_dr = square(r_u) * square(inv_r);
+  } else {
+    inv_r = 1.0 / r;
+    dsigma_dr = make_with_value<DataVector>(r_star_or_r, 1.0);
+  }
   auto& alpha = get<Tags::Alpha>(result);
   auto& beta = get<Tags::Beta>(result);
   auto& gamma = get<Tags::Gamma>(result);
+  const DataVector one_plus_a_sq_inv_r_sq = 1.0 + square(a) * square(inv_r);
+  const DataVector delta_over_r_sq = one_plus_a_sq_inv_r_sq - 2.0 * M * inv_r;
+  const DataVector one_over_r_sq_plus_a_sq =
+      square(inv_r) / one_plus_a_sq_inv_r_sq;
+  const DataVector r_over_r_sq_plus_a_sq = inv_r / one_plus_a_sq_inv_r_sq;
+  const DataVector sigma_sq_over_r_sq_plus_a_sq_sq =
+      1.0 - square(a) * square(inv_r) * delta_over_r_sq * sin_theta_squared /
+                square(one_plus_a_sq_inv_r_sq);
+
   if (penetrating_horizon_) {
-    get<0>(alpha) = delta / r_sq_plus_a_sq;
-    get<1>(alpha) = 1.0 / r_sq_plus_a_sq;
+    get<0>(alpha) = (delta_over_r_sq / one_plus_a_sq_inv_r_sq) * dsigma_dr;
+    get<1>(alpha) = (square(inv_r) / one_plus_a_sq_inv_r_sq) / dsigma_dr;
   } else {
     get<0>(alpha) = make_with_value<DataVector>(r_star_or_r, 1.0);
     get<1>(alpha) = delta / r_sq_plus_a_sq_sq;
@@ -156,30 +181,31 @@ CircularOrbit::variables(
       continue;
     }
     get(beta)[p] =
-        square(k) *
-            (square(H[p]) - sigma_squared[p] / r_sq_plus_a_sq_sq[p]) +
+        square(k) * (square(H[p]) - sigma_sq_over_r_sq_plus_a_sq_sq[p]) +
         2. * a * m_mode_number_ * k *
-            (2. * M * r[p] / r_sq_plus_a_sq[p] + H[p]) / r_sq_plus_a_sq[p];
-    if (penetrating_horizon_) {
-      get(beta)[p] /= get<0>(alpha)[p];
-    }
+            (2. * M * r_over_r_sq_plus_a_sq[p] + H[p]) *
+            one_over_r_sq_plus_a_sq[p];
+    get(beta)[p] /= get<0>(alpha)[p];
   }
+
   get(beta) +=
       get<1>(alpha) * (m_mode_number_ * (m_mode_number_ + 1) +
-                       2. * M / r * (1. - square(a) / M / r) +
+                       2. * M * inv_r * (1. - square(a) / M * inv_r) +
                        std::complex<double>(0., 2. * a * m_mode_number_) *
-                           (1. + a * omega * H) / r) -
+                           (1. + a * omega * H) * inv_r) -
       std::complex<double>(0., k) * dH;
   get<0>(gamma) =
-      2. * square(a) * delta / (r * r_sq_plus_a_sq_sq) -
-      std::complex<double>(0., 2. * a * m_mode_number_) / r_sq_plus_a_sq -
-      std::complex<double>(0., 2. * k) * H;
+      2. * square(a) * cube(inv_r) * delta_over_r_sq /
+          square(one_plus_a_sq_inv_r_sq) -
+      std::complex<double>(0., 2. * a * m_mode_number_) * square(inv_r) /
+          (one_plus_a_sq_inv_r_sq)-std::complex<double>(0., 2. * k) * H;
   get<1>(gamma) = 2. * m_mode_number_ * cos_theta_or_sq * get<1>(alpha);
+
   if (impose_equatorial_symmetry_) {
     get<1>(gamma) += sin_theta_squared * get<1>(alpha);
     get<1>(gamma) *= 2.0;
   }
- get<1>(alpha) *= sin_theta_squared;
+  get<1>(alpha) *= sin_theta_squared;
   if (impose_equatorial_symmetry_) {
     get<1>(alpha) *= 4. * cos_theta_sq;
   }
