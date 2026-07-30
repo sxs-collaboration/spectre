@@ -171,6 +171,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.OptionTags", "[Unit][Cce]") {
       "  AngularCoordTolerance: 1e-10\n"
       "  MaxIterations: 300\n"
       "  RequireConvergence: false\n"
+      "  MaxAngularSolveError: 1e-3\n"
       "  MaxScriSecondDerivative: 1e-6");
   CHECK_FALSE(
       TestHelpers::test_option_tag<Cce::OptionTags::AnalyticInitializeJ>(

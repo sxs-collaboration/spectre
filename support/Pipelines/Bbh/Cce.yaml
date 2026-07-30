@@ -130,6 +130,7 @@ Cce:
       AngularCoordTolerance: 1e-12
       MaxIterations: 1000
       RequireConvergence: True
+      MaxAngularSolveError: 1e-1
       MaxScriSecondDerivative: 1e-9
 
   StartTime: Auto # Start at the first time in file
