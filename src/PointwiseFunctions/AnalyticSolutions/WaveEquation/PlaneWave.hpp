@@ -79,7 +79,7 @@ class PlaneWave : public evolution::initial_data::InitialData,
   static constexpr Options::String help = {
       "A plane wave solution of the Euclidean wave equation"};
   using tags =
-      tmpl::list<Tags::Psi, Tags::Pi, Tags::Phi<3>, ::Tags::dt<Tags::Psi>,
+      tmpl::list<Tags::Psi, Tags::Pi, Tags::Phi<Dim>, ::Tags::dt<Tags::Psi>,
                  ::Tags::dt<Tags::Pi>, ::Tags::dt<Tags::Phi<Dim>>>;
 
   PlaneWave() = default;
