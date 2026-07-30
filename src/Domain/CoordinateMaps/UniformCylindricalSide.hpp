@@ -39,11 +39,15 @@ namespace domain::CoordinateMaps {
  * located at \f$z = z^{\pm}_{\mathrm{P}2}\f$. We consider two cases for the
  * plane ordering. In the standard configuration (which we call Class A) we have
  * \f$z^{-}_{\mathrm{P}2} \leq z^{-}_{\mathrm{P}1} < z^{+}_{\mathrm{P}1} \leq
- * z^{+}_{\mathrm{P}2}\f$, so the mapped band of sphere 2 contains the mapped
- * band of sphere 1. The map also supports Class B configurations in which the
- * outer sphere's lower cut lies above the inner sphere's lower cut,
- * \f$z^{-}_{\mathrm{P}1} \leq z^{-}_{\mathrm{P}2}\f$ (the z-bands may overlap
- * or be entirely disjoint).
+ * z^{+}_{\mathrm{P}2}\f$, i.e., sphere 2's z-planes are more extremal
+ * (lower bottom, higher top) than sphere 1's. The map also supports Class B
+ * configurations in which the outer sphere's lower cut lies above the inner
+ * sphere's lower cut, \f$z^{-}_{\mathrm{P}1} \leq z^{-}_{\mathrm{P}2}\f$.
+ * In both classes the upper cuts satisfy
+ * \f$z^{+}_{\mathrm{P}1} \leq z^{+}_{\mathrm{P}2}\f$. In Class B the outer
+ * sphere's lower cut can lie anywhere above \f$z^{-}_{\mathrm{P}1}\f$,
+ * including above \f$z^{+}_{\mathrm{P}1}\f$ (i.e., the two z-ranges of the
+ * spheres need not overlap).
  *
  * UniformCylindricalSide maps a 3D unit right cylindrical shell (with
  * coordinates \f$(\bar{x},\bar{y},\bar{z})\f$ such that
@@ -603,7 +607,7 @@ namespace domain::CoordinateMaps {
  * \f}
  *
  * **Class B** (\f$z^{-}_{\mathrm{P}2} > z^{-}_{\mathrm{P}1}\f$):
- * The lower cut of sphere 2 lies above the equator of sphere 2, so
+ * The lower cut of sphere 2 might lie above the equator of sphere 2, so
  * \f$\theta_{2\mathrm{max}}\f$ can be less than \f$\pi/2\f$.  The bounds
  * for \f$\theta_{1\mathrm{min}}\f$, \f$\theta_{2\mathrm{min}}\f$ are
  * unchanged; the bounds on the lower cuts are relaxed:
