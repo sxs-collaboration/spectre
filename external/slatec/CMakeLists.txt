@@ -21,8 +21,12 @@ if(SPECTRE_Fortran_STATIC_LIBS)
     ${LIBRARY}
     PRIVATE
     ${gfortran}
-    ${quadmath}
   )
+  # libquadmath is not shipped on all targets (e.g. aarch64, where `long double`
+  # is already IEEE-128-bit), so only link it when it was actually found.
+  if(quadmath)
+    target_link_libraries(${LIBRARY} PRIVATE ${quadmath})
+  endif()
 endif()
 
 target_link_libraries(

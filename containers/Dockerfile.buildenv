@@ -148,8 +148,13 @@ RUN wget -qO- https://apt.llvm.org/llvm-snapshot.gpg.key | \
 # `ld.lld` so the unversioned linker name keeps resolving.
 RUN apt-get update -y \
     && if [ ${UBUNTU_VERSION} = 18.04 ]; then \
-    apt-get install -y gcc-10 g++-10 gfortran-10 clang-17 lld-17 \
-    && ln -s "$(command -v ld.lld-17)" /usr/bin/ld.lld; \
+    apt-get install -y gcc-13 g++-13 gfortran-13 clang-17 lld-17 \
+    && ln -s "$(command -v ld.lld-17)" /usr/bin/ld.lld \
+    && update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-13 100 \
+        --slave /usr/bin/g++ g++ /usr/bin/g++-13 \
+        --slave /usr/bin/gfortran gfortran /usr/bin/gfortran-13 \
+    && update-alternatives --install /usr/bin/cc cc /usr/bin/gcc-13 100 \
+    && update-alternatives --install /usr/bin/c++ c++ /usr/bin/g++-13 100; \
     else \
     apt-get install -y gcc g++ gfortran clang clang-format clang-tidy cmake lld; \
     fi \
@@ -185,8 +190,8 @@ RUN apt-get update -y \
     && tar xf 0.8.0.tar.gz && mkdir ./yaml-cpp-0.8.0/build \
     && cd ./yaml-cpp-0.8.0/build \
     && cmake \
-    -D CMAKE_C_COMPILER=gcc-10 \
-    -D CMAKE_CXX_COMPILER=g++-10 \
+    -D CMAKE_C_COMPILER=gcc \
+    -D CMAKE_CXX_COMPILER=g++ \
     -D CMAKE_BUILD_TYPE=Release \
     -D YAML_BUILD_SHARED_LIBS=OFF \
     -D BUILD_SHARED_LIBS=OFF \
@@ -200,11 +205,11 @@ RUN apt-get update -y \
     && cd ../.. && rm -rf ./0.8.0.tar.gz ./yaml-cpp-0.8.0 \
     && wget https://archives.boost.io/release/1.83.0/source/boost_1_83_0.tar.gz \
     && tar xf boost_1_83_0.tar.gz && cd boost_1_83_0 \
-    && CC=gcc-10 CXX=g++-10 ./bootstrap.sh \
+    && CC=gcc CXX=g++ ./bootstrap.sh \
     --with-toolset=gcc \
     --with-libraries=program_options \
     --prefix=/usr/local \
-    && echo "using gcc : : g++-10 ;" > ./user-config.jam \
+    && echo "using gcc : : g++ ;" > ./user-config.jam \
     && ./b2 ${PARALLEL_MAKE_ARG} \
     --user-config=./user-config.jam \
     toolset=gcc \
@@ -377,11 +382,36 @@ RUN git clone https://github.com/ianlancetaylor/libbacktrace \
     && make $PARALLEL_MAKE_ARG install \
     && cd .. && rm -rf libbacktrace
 # - LibXSMM
+#
+# Version differs by architecture:
+#  * arm64 builds the 2.0.0 release, which is the first version with native
+#    AArch64 (SVE, NEON/ASIMD) GEMM support - 1.16.1 has no ARM backend. We
+#    build natively and do NOT pass `PLATFORM=1` (`-DLIBXSMM_PLATFORM_FORCE`):
+#    that forces the "unsupported platform" path, which has no native GEMM
+#    kernels and only hands off to BLAS at runtime via dlsym - a handoff that
+#    fails in our fully static binary ("LIBXSMM_GEMM failed").
+#  * x86 stays on the SpECTRE-validated 1.16.1. LibXSMM 2.0.0 rewrote its GEMM
+#    dispatch and produces wrong results for SpECTRE's matrix operations on x86
+#    (Subcell/FD reconstruction tests fail), so we do not adopt it here.
+# On x86 + Ubuntu 18.04 (the static-deploy image) we cap the build at AVX2
+# (`AVX=2`) and disable LibXSMM's dynamic, per-kernel target-attribute
+# intrinsics (`INTRINSICS=1`, i.e. static: compile only for the selected
+# target). Otherwise LibXSMM compiles AVX-512 BF16 kernels (e.g.
+# `vcvtne2ps2bf16`) which the Ubuntu 18.04 assembler (binutils 2.30) cannot
+# assemble. AVX2 also matches the `-march=haswell` target used for the deployed
+# static executables. This is not an issue with gcc-10 because that
+# compiler doesn't emit the AVX-512 BF16 instructions anyway.
+#
+# Note: We must NOT apply this cap to the Ubuntu 22.04 `dev`
+# image: `INTRINSICS=1` compiles even `libxsmm_init` for AVX2, removing
+# LibXSMM's CPUID-guarded runtime dispatch, which breaks the minimum-arch
+# (Nehalem) SDE test. The default build keeps that dispatch and runs on the
+# baseline arch. (22.04 has a new enough assembler anyway.)
 RUN if [ "$TARGETARCH" = "arm64" ] ; then \
-        git clone --single-branch --branch main --depth 1 \
+        git clone --single-branch --branch 2.0.0 --depth 1 \
             https://github.com/libxsmm/libxsmm.git libxsmm \
         && cd libxsmm \
-        && make $PARALLEL_MAKE_ARG PREFIX=/usr/local/ PLATFORM=1 install \
+        && make $PARALLEL_MAKE_ARG PREFIX=/usr/local/ install \
         && cd .. \
         && rm -rf libxsmm; \
     else \
@@ -390,7 +420,11 @@ RUN if [ "$TARGETARCH" = "arm64" ] ; then \
         && tar -xzf libxsmm.tar.gz \
         && mv libxsmm-* libxsmm \
         && cd libxsmm \
-        && make $PARALLEL_MAKE_ARG PREFIX=/usr/local/ install \
+        && if [ "${UBUNTU_VERSION}" = "18.04" ] ; then \
+            make $PARALLEL_MAKE_ARG PREFIX=/usr/local/ AVX=2 INTRINSICS=1 install; \
+        else \
+            make $PARALLEL_MAKE_ARG PREFIX=/usr/local/ install; \
+        fi \
         && cd .. \
         && rm -rf libxsmm libxsmm.tar.gz; \
     fi
@@ -583,18 +617,37 @@ COPY . spectre/
 # the GCC multiarch triplet directory, and OVERRIDE_ARCH=haswell (which emits
 # `-march=haswell -mno-avx512f`) is x86-only. On arm64 we target armv8.2-a since
 # this is what GitHub runners guarantee and also will support Apple M1
-# (ARMv8.4-A), and NVIDIA Grace (ARMv9.0-A) chips.
+# (ARMv8.4-A), and NVIDIA Grace (ARMv9.0-A) chips. On arm64 we also pass
+# `-Wno-psabi` to silence GCC's verbose -Wpsabi notes about the std::pair
+# argument-passing ABI change introduced in GCC 10.1 (harmless here since the
+# whole build uses one GCC, but they flood the log).
+# We build `module_All` first so every Charm++ interface header (`*.decl.h`/
+# `*.def.h`) is generated before the serial (`-j1`) executable compile. Some
+# libraries (e.g. Time) include these headers transitively via GlobalCache.hpp
+# without an explicit dependency on the generating target, so at `-j1` the
+# executable compile can otherwise race ahead of header generation and fail.
+# `QUADMATH_ARG` points the static libquadmath at the GCC multiarch dir on x86,
+# but is empty on arm64: libquadmath is not shipped there (long double is
+# already IEEE-128-bit), and the SpECTRE CMake only links it when found.
+# We point `LIBXSMM_LIBRARIES` at the static `libxsmm.a` because LIBXSMM has no
+# `*_STATIC` cmake option and `find_library` otherwise prefers the shared
+# `libxsmm.so`, which would make the extracted executable fail to run outside
+# the container with "libxsmm.so.2: cannot open shared object file".
 RUN set -e; \
     if [ "$TARGETARCH" = "arm64" ]; then \
-      GCC_TRIPLET=aarch64-linux-gnu; ARCH_ARGS="-D OVERRIDE_ARCH=armv8.2-a"; \
+      GCC_TRIPLET=aarch64-linux-gnu; \
+      ARCH_ARGS="-D OVERRIDE_ARCH=armv8.2-a \
+        -D CMAKE_CXX_FLAGS=-Wno-psabi -D CMAKE_C_FLAGS=-Wno-psabi"; \
+      QUADMATH_ARG=""; \
     else \
       GCC_TRIPLET=x86_64-linux-gnu; ARCH_ARGS="-D OVERRIDE_ARCH=haswell"; \
+      QUADMATH_ARG="-D quadmath=/usr/lib/gcc/$GCC_TRIPLET/13/libquadmath.a"; \
     fi; \
     mkdir spectre/build && cd spectre/build \
     && cmake \
-    -D CMAKE_C_COMPILER=gcc-10 \
-    -D CMAKE_CXX_COMPILER=g++-10 \
-    -D CMAKE_Fortran_COMPILER=gfortran-10 \
+    -D CMAKE_C_COMPILER=gcc-13 \
+    -D CMAKE_CXX_COMPILER=g++-13 \
+    -D CMAKE_Fortran_COMPILER=gfortran-13 \
     -D CMAKE_BUILD_TYPE=Release \
     -D DEBUG_SYMBOLS=OFF \
     -D BUILD_PYTHON_BINDINGS=OFF \
@@ -610,11 +663,14 @@ RUN set -e; \
     -D USE_GIT_HOOKS=OFF \
     $ARCH_ARGS \
     -D USE_LD=gold \
-    -D gfortran=/usr/lib/gcc/$GCC_TRIPLET/10/libgfortran.a \
-    -D quadmath=/usr/lib/gcc/$GCC_TRIPLET/10/libquadmath.a \
+    -D CMAKE_EXE_LINKER_FLAGS="-static-libstdc++ -static-libgcc" \
+    -D gfortran=/usr/lib/gcc/$GCC_TRIPLET/13/libgfortran.a \
+    $QUADMATH_ARG \
+    -D LIBXSMM_LIBRARIES=/usr/local/lib/libxsmm.a \
     -D BUILD_DOCS=OFF \
     -D USE_CCACHE=OFF \
     .. \
-    && make ${PARALLEL_MAKE_ARG} CharacteristicExtract PreprocessCceWorldtube \
+    && make ${PARALLEL_MAKE_ARG} module_All \
+    && make -j1 CharacteristicExtract PreprocessCceWorldtube \
     WriteCceWorldtubeCoordsToFile \
     && ctest -LE unit -R CharacteristicExtract -E KleinGordon
