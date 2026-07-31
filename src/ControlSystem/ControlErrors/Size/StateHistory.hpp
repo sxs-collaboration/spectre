@@ -50,6 +50,9 @@ struct StateHistory {
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& p);
 
+  friend bool operator==(const StateHistory& lhs, const StateHistory& rhs);
+  friend bool operator!=(const StateHistory& lhs, const StateHistory& rhs);
+
  private:
   void initialize_stored_control_errors();
 

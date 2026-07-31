@@ -53,6 +53,21 @@ void Info::reset() {
   // target_drift_velocity = 0.0;
 }
 
+bool operator==(const Info& lhs, const Info& rhs) {
+  const bool states_are_equal =
+      (lhs.state == nullptr and rhs.state == nullptr) or
+      (lhs.state != nullptr and rhs.state != nullptr and
+       lhs.state->number() == rhs.state->number());
+  return states_are_equal and lhs.damping_time == rhs.damping_time and
+         lhs.target_char_speed == rhs.target_char_speed and
+         lhs.target_drift_velocity == rhs.target_drift_velocity and
+         lhs.suggested_time_scale == rhs.suggested_time_scale and
+         lhs.discontinuous_change_has_occurred ==
+             rhs.discontinuous_change_has_occurred;
+}
+
+bool operator!=(const Info& lhs, const Info& rhs) { return not(lhs == rhs); }
+
 void Info::set_all_but_state(const Info& info) {
   damping_time = info.damping_time;
   target_char_speed = info.target_char_speed;

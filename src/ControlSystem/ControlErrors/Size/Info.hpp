@@ -55,6 +55,9 @@ struct Info {
   /// Reset `discontinuous_change_has_occurred` and `suggested_time_scale`
   void reset();
 
+  friend bool operator==(const Info& lhs, const Info& rhs);
+  friend bool operator!=(const Info& lhs, const Info& rhs);
+
  private:
   void set_all_but_state(const Info& info);
 };

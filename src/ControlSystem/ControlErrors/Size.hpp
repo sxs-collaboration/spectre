@@ -233,6 +233,19 @@ struct Size : tt::ConformsTo<protocols::ControlError> {
     double max_allowed_radial_distance{};
     double outward_drift_velocity{};
     double outward_drift_timescale{};
+
+    friend bool operator==(const DeltaRDriftOutwardOptions& lhs,
+                           const DeltaRDriftOutwardOptions& rhs) {
+      return lhs.max_allowed_radial_distance ==
+                 rhs.max_allowed_radial_distance and
+             lhs.outward_drift_velocity == rhs.outward_drift_velocity and
+             lhs.outward_drift_timescale == rhs.outward_drift_timescale;
+    }
+
+    friend bool operator!=(const DeltaRDriftOutwardOptions& lhs,
+                           const DeltaRDriftOutwardOptions& rhs) {
+      return not(lhs == rhs);
+    }
   };
 
   struct DeltaRDriftInwardOptions {
@@ -270,6 +283,19 @@ struct Size : tt::ConformsTo<protocols::ControlError> {
     double min_allowed_radial_distance{};
     double min_allowed_char_speed{};
     double inward_drift_velocity{};
+
+    friend bool operator==(const DeltaRDriftInwardOptions& lhs,
+                           const DeltaRDriftInwardOptions& rhs) {
+      return lhs.min_allowed_radial_distance ==
+                 rhs.min_allowed_radial_distance and
+             lhs.min_allowed_char_speed == rhs.min_allowed_char_speed and
+             lhs.inward_drift_velocity == rhs.inward_drift_velocity;
+    }
+
+    friend bool operator!=(const DeltaRDriftInwardOptions& lhs,
+                           const DeltaRDriftInwardOptions& rhs) {
+      return not(lhs == rhs);
+    }
   };
 
   using options =
@@ -333,6 +359,31 @@ struct Size : tt::ConformsTo<protocols::ControlError> {
   std::deque<std::pair<double, double>> control_error_history() const;
 
   void pup(PUP::er& p);
+
+  friend bool operator==(const Size& lhs, const Size& rhs) {
+    return lhs.smoother_tuner_ == rhs.smoother_tuner_ and
+           lhs.horizon_coef_averager_ == rhs.horizon_coef_averager_ and
+           lhs.info_ == rhs.info_ and
+           lhs.char_speed_predictor_ == rhs.char_speed_predictor_ and
+           lhs.comoving_char_speed_predictor_ ==
+               rhs.comoving_char_speed_predictor_ and
+           lhs.delta_radius_predictor_ == rhs.delta_radius_predictor_ and
+           lhs.drift_limit_char_speed_predictor_ ==
+               rhs.drift_limit_char_speed_predictor_ and
+           lhs.drift_limit_delta_radius_predictor_ ==
+               rhs.drift_limit_delta_radius_predictor_ and
+           lhs.state_history_ == rhs.state_history_ and
+           lhs.legend_ == rhs.legend_ and
+           lhs.subfile_name_ == rhs.subfile_name_ and
+           lhs.delta_r_drift_outward_options_ ==
+               rhs.delta_r_drift_outward_options_ and
+           lhs.delta_r_drift_inward_options_ ==
+               rhs.delta_r_drift_inward_options_;
+  }
+
+  friend bool operator!=(const Size& lhs, const Size& rhs) {
+    return not(lhs == rhs);
+  }
 
   /*!
    * \brief Actually computes the control error.

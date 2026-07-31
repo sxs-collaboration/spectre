@@ -107,10 +107,13 @@ Size<DerivOrder, Horizon>& Size<DerivOrder, Horizon>::operator=(
   char_speed_predictor_ = rhs.char_speed_predictor_;
   comoving_char_speed_predictor_ = rhs.comoving_char_speed_predictor_;
   delta_radius_predictor_ = rhs.delta_radius_predictor_;
+  drift_limit_char_speed_predictor_ = rhs.drift_limit_char_speed_predictor_;
+  drift_limit_delta_radius_predictor_ = rhs.drift_limit_delta_radius_predictor_;
   state_history_ = rhs.state_history_;
   legend_ = rhs.legend_;
   subfile_name_ = rhs.subfile_name_;
   delta_r_drift_outward_options_ = rhs.delta_r_drift_outward_options_;
+  delta_r_drift_inward_options_ = rhs.delta_r_drift_inward_options_;
 
   return *this;
 }
