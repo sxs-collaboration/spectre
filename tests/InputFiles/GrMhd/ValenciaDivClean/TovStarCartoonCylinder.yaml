@@ -45,8 +45,8 @@ EquationOfState:
 
 DomainCreator:
   CartoonCylinder:
-    LowerBounds: [0.0, -8.0]
-    UpperBounds: [8.0, 8.0]
+    LowerBounds: [0.0, -5.0]
+    UpperBounds: [5.0, 5.0]
     InitialRefinement: [1, 1]
     InitialGridPoints: [5, 5]
     Distributions: [Linear, Linear]
