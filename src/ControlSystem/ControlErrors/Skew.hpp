@@ -250,7 +250,7 @@ struct Skew : tt::ConformsTo<protocols::ControlError> {
                           (weight_a * inclination_angle_a_ +
                            weight_b * inclination_angle_b_) /
                           (weight_a + weight_b) -
-                      func;
+                      (1.0 - temporal_transition_function) * func;
     } else {
       control_error *= -1.0;
     }
