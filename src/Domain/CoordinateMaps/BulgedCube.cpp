@@ -191,28 +191,25 @@ std::optional<std::array<double, 3>> BulgedCube::inverse(
 }
 
 template <typename T>
-std::array<tt::remove_cvref_wrap_t<T>, 3> BulgedCube::xi_derivative(
-    const std::array<T, 3>& source_coords) const {
-  using ReturnType = tt::remove_cvref_wrap_t<T>;
-  const auto derivative_lambda = [this](
-      const ReturnType& cap_xi, const ReturnType& cap_eta,
-      const ReturnType& cap_zeta, const auto& cap_xi_deriv) {
-    const ReturnType one_over_rho_xi_cubed =
-        pow<3>(1.0 / sqrt(2.0 + square(cap_xi)));
-    const ReturnType one_over_rho_eta = 1.0 / sqrt(2.0 + square(cap_eta));
-    const ReturnType one_over_rho_zeta = 1.0 / sqrt(2.0 + square(cap_zeta));
-    const ReturnType one_over_rho_xi_eta_cubed =
+std::array<T, 3> BulgedCube::xi_derivative(const T& xi, const T& eta,
+                                           const T& zeta) const {
+  const auto derivative_lambda = [this](const T& cap_xi, const T& cap_eta,
+                                        const T& cap_zeta,
+                                        const auto& cap_xi_deriv) {
+    const T one_over_rho_xi_cubed = pow<3>(1.0 / sqrt(2.0 + square(cap_xi)));
+    const T one_over_rho_eta = 1.0 / sqrt(2.0 + square(cap_eta));
+    const T one_over_rho_zeta = 1.0 / sqrt(2.0 + square(cap_zeta));
+    const T one_over_rho_xi_eta_cubed =
         pow<3>(1.0 / sqrt(1.0 + square(cap_xi) + square(cap_eta)));
-    const ReturnType one_over_rho_xi_zeta_cubed =
+    const T one_over_rho_xi_zeta_cubed =
         pow<3>(1.0 / sqrt(1.0 + square(cap_xi) + square(cap_zeta)));
-    const ReturnType one_over_rho_eta_zeta =
+    const T one_over_rho_eta_zeta =
         1.0 / sqrt(1.0 + square(cap_eta) + square(cap_zeta));
-    const ReturnType common_factor =
-        sphericity_ * radius_ * cap_xi * cap_xi_deriv *
-        (one_over_rho_xi_cubed - one_over_rho_xi_eta_cubed -
-         one_over_rho_xi_zeta_cubed);
+    const T common_factor = sphericity_ * radius_ * cap_xi * cap_xi_deriv *
+                            (one_over_rho_xi_cubed - one_over_rho_xi_eta_cubed -
+                             one_over_rho_xi_zeta_cubed);
 
-    const ReturnType physical_x =
+    const T physical_x =
         radius_ * cap_xi_deriv *
         (1.0 / sqrt(3.0) +
          sphericity_ *
@@ -220,42 +217,31 @@ std::array<tt::remove_cvref_wrap_t<T>, 3> BulgedCube::xi_derivative(
                (1.0 + square(cap_zeta)) * one_over_rho_xi_zeta_cubed -
                2.0 * one_over_rho_xi_cubed) +
               one_over_rho_eta_zeta - one_over_rho_eta - one_over_rho_zeta));
-    const ReturnType physical_y = cap_eta * common_factor;
-    const ReturnType physical_z = cap_zeta * common_factor;
+    const T physical_y = cap_eta * common_factor;
+    const T physical_z = cap_zeta * common_factor;
 
-    return std::array<ReturnType, 3>{{physical_x, physical_y, physical_z}};
+    return std::array<T, 3>{{physical_x, physical_y, physical_z}};
   };
   if (use_equiangular_map_) {
-    return derivative_lambda(
-        tan(M_PI_4 * dereference_wrapper(source_coords[0])),
-        tan(M_PI_4 * dereference_wrapper(source_coords[1])),
-        tan(M_PI_4 * dereference_wrapper(source_coords[2])),
-        ReturnType{M_PI_4 *
-                   (1.0 + square(tan(M_PI_4 *
-                                     dereference_wrapper(source_coords[0]))))});
+    return derivative_lambda(tan(M_PI_4 * xi), tan(M_PI_4 * eta),
+                             tan(M_PI_4 * zeta),
+                             T{M_PI_4 * (1.0 + square(tan(M_PI_4 * xi)))});
   }
-  return derivative_lambda(dereference_wrapper(source_coords[0]),
-                           dereference_wrapper(source_coords[1]),
-                           dereference_wrapper(source_coords[2]), 1.0);
+  return derivative_lambda(xi, eta, zeta, 1.0);
 }
 
 template <typename T>
 tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame> BulgedCube::jacobian(
     const std::array<T, 3>& source_coords) const {
-  const auto dX_dxi = xi_derivative(source_coords);
-  const auto dX_deta = xi_derivative(
-      std::array<std::reference_wrapper<const tt::remove_cvref_wrap_t<T>>, 3>{
-          {std::cref(dereference_wrapper(source_coords[1])),
-           std::cref(dereference_wrapper(source_coords[0])),
-           std::cref(dereference_wrapper(source_coords[2]))}});
-  const auto dX_dzeta = xi_derivative(
-      std::array<std::reference_wrapper<const tt::remove_cvref_wrap_t<T>>, 3>{
-          {std::cref(dereference_wrapper(source_coords[2])),
-           std::cref(dereference_wrapper(source_coords[1])),
-           std::cref(dereference_wrapper(source_coords[0]))}});
+  const auto& xi = dereference_wrapper(source_coords[0]);
+  const auto& eta = dereference_wrapper(source_coords[1]);
+  const auto& zeta = dereference_wrapper(source_coords[2]);
+  const auto dX_dxi = xi_derivative(xi, eta, zeta);
+  const auto dX_deta = xi_derivative(eta, xi, zeta);
+  const auto dX_dzeta = xi_derivative(zeta, eta, xi);
   auto jacobian_matrix =
       make_with_value<tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame>>(
-          dereference_wrapper(source_coords[0]), 0.0);
+          xi, 0.0);
 
   get<0, 0>(jacobian_matrix) = dX_dxi[0];
   get<0, 1>(jacobian_matrix) = dX_deta[1];

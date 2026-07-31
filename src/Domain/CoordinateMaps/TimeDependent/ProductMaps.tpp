@@ -7,7 +7,6 @@
 
 #include <array>
 #include <cstddef>
-#include <functional>
 #include <optional>
 #include <pup.h>
 #include <unordered_set>
@@ -15,7 +14,6 @@
 
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/CoordinateMaps/CoordinateMapHelpers.hpp"
-#include "Utilities/DereferenceWrapper.hpp"
 #include "Utilities/MakeWithValue.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits/CreateIsCallable.hpp"
@@ -26,7 +24,7 @@ namespace TimeDependent {
 namespace product_detail {
 template <typename T, size_t Size, typename Map1, typename Map2, size_t... Is,
           size_t... Js>
-std::array<tt::remove_cvref_wrap_t<T>, Size> apply_map(
+std::array<T, Size> apply_map(
     const std::array<T, Size>& coords, const Map1& map1, const Map2& map2,
     const double time,
     const std::unordered_map<
@@ -34,20 +32,18 @@ std::array<tt::remove_cvref_wrap_t<T>, Size> apply_map(
         functions_of_time,
     std::integer_sequence<size_t, Is...> /*meta*/,
     std::integer_sequence<size_t, Js...> /*meta*/) {
-  using UnwrappedT = tt::remove_cvref_wrap_t<T>;
-  return {
-      {CoordinateMap_detail::apply_map(
-           map1,
-           std::array<std::reference_wrapper<const UnwrappedT>, sizeof...(Is)>{
-               {coords[Is]...}},
-           time, functions_of_time,
-           domain::is_map_time_dependent_t<Map1>{})[Is]...,
-       CoordinateMap_detail::apply_map(
-           map2,
-           std::array<std::reference_wrapper<const UnwrappedT>, sizeof...(Js)>{
-               {coords[Map1::dim + Js]...}},
-           time, functions_of_time,
-           domain::is_map_time_dependent_t<Map2>{})[Js]...}};
+  return {{CoordinateMap_detail::apply_map(
+               map1,
+               std::array<T, sizeof...(Is)>{
+                   {CoordinateMap_detail::view_or_copy(coords[Is])...}},
+               time, functions_of_time,
+               domain::is_map_time_dependent_t<Map1>{})[Is]...,
+           CoordinateMap_detail::apply_map(
+               map2,
+               std::array<T, sizeof...(Js)>{{CoordinateMap_detail::view_or_copy(
+                   coords[Map1::dim + Js])...}},
+               time, functions_of_time,
+               domain::is_map_time_dependent_t<Map2>{})[Js]...}};
 }
 
 template <size_t Size, typename Map1, typename Map2, size_t... Is, size_t... Js>
@@ -74,7 +70,7 @@ std::optional<std::array<double, Size>> apply_inverse(
 
 template <typename T, size_t Size, typename Map1, typename Map2, size_t... Is,
           size_t... Js>
-std::array<tt::remove_cvref_wrap_t<T>, Size> apply_frame_velocity(
+std::array<T, Size> apply_frame_velocity(
     const std::array<T, Size>& coords, const Map1& map1, const Map2& map2,
     const double time,
     const std::unordered_map<
@@ -82,40 +78,37 @@ std::array<tt::remove_cvref_wrap_t<T>, Size> apply_frame_velocity(
         functions_of_time,
     std::integer_sequence<size_t, Is...> /*meta*/,
     std::integer_sequence<size_t, Js...> /*meta*/) {
-  using UnwrappedT = tt::remove_cvref_wrap_t<T>;
-  return {
-      {domain::CoordinateMap_detail::apply_frame_velocity(
-           map1,
-           std::array<std::reference_wrapper<const UnwrappedT>, sizeof...(Is)>{
-               {coords[Is]...}},
-           time, functions_of_time,
-           domain::is_map_time_dependent_t<Map1>{})[Is]...,
-       domain::CoordinateMap_detail::apply_frame_velocity(
-           map2,
-           std::array<std::reference_wrapper<const UnwrappedT>, sizeof...(Js)>{
-               {coords[Map1::dim + Js]...}},
-           time, functions_of_time,
-           domain::is_map_time_dependent_t<Map2>{})[Js]...}};
+  return {{domain::CoordinateMap_detail::apply_frame_velocity(
+               map1,
+               std::array<T, sizeof...(Is)>{
+                   {CoordinateMap_detail::view_or_copy(coords[Is])...}},
+               time, functions_of_time,
+               domain::is_map_time_dependent_t<Map1>{})[Is]...,
+           domain::CoordinateMap_detail::apply_frame_velocity(
+               map2,
+               std::array<T, sizeof...(Js)>{{CoordinateMap_detail::view_or_copy(
+                   coords[Map1::dim + Js])...}},
+               time, functions_of_time,
+               domain::is_map_time_dependent_t<Map2>{})[Js]...}};
 }
 
 template <typename T, size_t Size, typename Map1, typename Map2,
           typename Function, size_t... Is, size_t... Js>
-tnsr::Ij<tt::remove_cvref_wrap_t<T>, Size, Frame::NoFrame> apply_jac(
+tnsr::Ij<T, Size, Frame::NoFrame> apply_jac(
     const std::array<T, Size>& source_coords, const Map1& map1,
     const Map2& map2, const Function func,
     std::integer_sequence<size_t, Is...> /*meta*/,
     std::integer_sequence<size_t, Js...> /*meta*/) {
-  using UnwrappedT = tt::remove_cvref_wrap_t<T>;
   auto map1_jac = func(
-      std::array<std::reference_wrapper<const UnwrappedT>, sizeof...(Is)>{
-          {source_coords[Is]...}},
+      std::array<T, sizeof...(Is)>{
+          {CoordinateMap_detail::view_or_copy(source_coords[Is])...}},
       map1);
-  auto map2_jac = func(
-      std::array<std::reference_wrapper<const UnwrappedT>, sizeof...(Js)>{
-          {source_coords[Map1::dim + Js]...}},
-      map2);
-  tnsr::Ij<UnwrappedT, Size, Frame::NoFrame> jac{
-      make_with_value<UnwrappedT>(dereference_wrapper(source_coords[0]), 0.0)};
+  auto map2_jac =
+      func(std::array<T, sizeof...(Js)>{{CoordinateMap_detail::view_or_copy(
+               source_coords[Map1::dim + Js])...}},
+           map2);
+  tnsr::Ij<T, Size, Frame::NoFrame> jac{
+      make_with_value<T>(source_coords[0], 0.0)};
   for (size_t i = 0; i < Map1::dim; ++i) {
     for (size_t j = 0; j < Map1::dim; ++j) {
       jac.get(i, j) = std::move(map1_jac.get(i, j));
@@ -158,7 +151,7 @@ ProductOf2Maps<Map1, Map2>::ProductOf2Maps(Map1 map1, Map2 map2)
 
 template <typename Map1, typename Map2>
 template <typename T>
-std::array<tt::remove_cvref_wrap_t<T>, ProductOf2Maps<Map1, Map2>::dim>
+std::array<T, ProductOf2Maps<Map1, Map2>::dim>
 ProductOf2Maps<Map1, Map2>::operator()(
     const std::array<T, dim>& source_coords, const double time,
     const std::unordered_map<
@@ -189,8 +182,7 @@ auto ProductOf2Maps<Map1, Map2>::frame_velocity(
     const std::array<T, dim>& source_coords, const double time,
     const std::unordered_map<
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
-        functions_of_time) const
-    -> std::array<tt::remove_cvref_wrap_t<T>, dim> {
+        functions_of_time) const -> std::array<T, dim> {
   return product_detail::apply_frame_velocity(
       source_coords, map1_, map2_, time, functions_of_time,
       std::make_index_sequence<Map1::dim>{},
@@ -199,22 +191,19 @@ auto ProductOf2Maps<Map1, Map2>::frame_velocity(
 
 template <typename Map1, typename Map2>
 template <typename T>
-tnsr::Ij<tt::remove_cvref_wrap_t<T>, ProductOf2Maps<Map1, Map2>::dim,
-         Frame::NoFrame>
+tnsr::Ij<T, ProductOf2Maps<Map1, Map2>::dim, Frame::NoFrame>
 ProductOf2Maps<Map1, Map2>::inv_jacobian(
     const std::array<T, dim>& source_coords, const double time,
     const std::unordered_map<
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
         functions_of_time) const {
-  using UnwrappedT = tt::remove_cvref_wrap_t<T>;
   return product_detail::apply_jac(
       source_coords, map1_, map2_,
       [&time, &functions_of_time](const auto& point, const auto& map) {
         return CoordinateMap_detail::apply_inverse_jacobian(
             map, point, time, functions_of_time,
-            domain::is_jacobian_time_dependent_t<
-                std::decay_t<decltype(map)>,
-                std::reference_wrapper<const UnwrappedT>>{});
+            domain::is_jacobian_time_dependent_t<std::decay_t<decltype(map)>,
+                                                 T>{});
       },
       std::make_index_sequence<Map1::dim>{},
       std::make_index_sequence<Map2::dim>{});
@@ -222,22 +211,19 @@ ProductOf2Maps<Map1, Map2>::inv_jacobian(
 
 template <typename Map1, typename Map2>
 template <typename T>
-tnsr::Ij<tt::remove_cvref_wrap_t<T>, ProductOf2Maps<Map1, Map2>::dim,
-         Frame::NoFrame>
+tnsr::Ij<T, ProductOf2Maps<Map1, Map2>::dim, Frame::NoFrame>
 ProductOf2Maps<Map1, Map2>::jacobian(
     const std::array<T, dim>& source_coords, const double time,
     const std::unordered_map<
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
         functions_of_time) const {
-  using UnwrappedT = tt::remove_cvref_wrap_t<T>;
   return product_detail::apply_jac(
       source_coords, map1_, map2_,
       [&time, &functions_of_time](const auto& point, const auto& map) {
         return CoordinateMap_detail::apply_jacobian(
             map, point, time, functions_of_time,
-            domain::is_jacobian_time_dependent_t<
-                std::decay_t<decltype(map)>,
-                std::reference_wrapper<const UnwrappedT>>{});
+            domain::is_jacobian_time_dependent_t<std::decay_t<decltype(map)>,
+                                                 T>{});
       },
       std::make_index_sequence<Map1::dim>{},
       std::make_index_sequence<Map2::dim>{});
@@ -277,28 +263,27 @@ ProductOf3Maps<Map1, Map2, Map3>::ProductOf3Maps(Map1 map1, Map2 map2,
 
 template <typename Map1, typename Map2, typename Map3>
 template <typename T>
-std::array<tt::remove_cvref_wrap_t<T>, ProductOf3Maps<Map1, Map2, Map3>::dim>
+std::array<T, ProductOf3Maps<Map1, Map2, Map3>::dim>
 ProductOf3Maps<Map1, Map2, Map3>::operator()(
     const std::array<T, dim>& source_coords, const double time,
     const std::unordered_map<
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
         functions_of_time) const {
-  using UnwrappedT = tt::remove_cvref_wrap_t<T>;
   return {
       {CoordinateMap_detail::apply_map(
            map1_,
-           std::array<std::reference_wrapper<const UnwrappedT>, 1>{
-               {source_coords[0]}},
+           std::array<T, 1>{
+               {CoordinateMap_detail::view_or_copy(source_coords[0])}},
            time, functions_of_time, domain::is_map_time_dependent_t<Map1>{})[0],
        CoordinateMap_detail::apply_map(
            map2_,
-           std::array<std::reference_wrapper<const UnwrappedT>, 1>{
-               {source_coords[1]}},
+           std::array<T, 1>{
+               {CoordinateMap_detail::view_or_copy(source_coords[1])}},
            time, functions_of_time, domain::is_map_time_dependent_t<Map2>{})[0],
        CoordinateMap_detail::apply_map(
            map3_,
-           std::array<std::reference_wrapper<const UnwrappedT>, 1>{
-               {source_coords[2]}},
+           std::array<T, 1>{
+               {CoordinateMap_detail::view_or_copy(source_coords[2])}},
            time, functions_of_time,
            domain::is_map_time_dependent_t<Map3>{})[0]}};
 }
@@ -332,102 +317,85 @@ auto ProductOf3Maps<Map1, Map2, Map3>::frame_velocity(
     const std::array<T, dim>& source_coords, const double time,
     const std::unordered_map<
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
-        functions_of_time) const
-    -> std::array<tt::remove_cvref_wrap_t<T>, dim> {
-  using UnwrappedT = tt::remove_cvref_wrap_t<T>;
+        functions_of_time) const -> std::array<T, dim> {
   return {
       {CoordinateMap_detail::apply_frame_velocity(
            map1_,
-           std::array<std::reference_wrapper<const UnwrappedT>, 1>{
-               {source_coords[0]}},
+           std::array<T, 1>{
+               {CoordinateMap_detail::view_or_copy(source_coords[0])}},
            time, functions_of_time, domain::is_map_time_dependent_t<Map1>{})[0],
        CoordinateMap_detail::apply_frame_velocity(
            map2_,
-           std::array<std::reference_wrapper<const UnwrappedT>, 1>{
-               {source_coords[1]}},
+           std::array<T, 1>{
+               {CoordinateMap_detail::view_or_copy(source_coords[1])}},
            time, functions_of_time, domain::is_map_time_dependent_t<Map2>{})[0],
        CoordinateMap_detail::apply_frame_velocity(
            map3_,
-           std::array<std::reference_wrapper<const UnwrappedT>, 1>{
-               {source_coords[2]}},
+           std::array<T, 1>{
+               {CoordinateMap_detail::view_or_copy(source_coords[2])}},
            time, functions_of_time,
            domain::is_map_time_dependent_t<Map3>{})[0]}};
 }
 
 template <typename Map1, typename Map2, typename Map3>
 template <typename T>
-tnsr::Ij<tt::remove_cvref_wrap_t<T>, ProductOf3Maps<Map1, Map2, Map3>::dim,
-         Frame::NoFrame>
+tnsr::Ij<T, ProductOf3Maps<Map1, Map2, Map3>::dim, Frame::NoFrame>
 ProductOf3Maps<Map1, Map2, Map3>::inv_jacobian(
     const std::array<T, dim>& source_coords, const double time,
     const std::unordered_map<
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
         functions_of_time) const {
-  using UnwrappedT = tt::remove_cvref_wrap_t<T>;
-  tnsr::Ij<UnwrappedT, dim, Frame::NoFrame> inv_jacobian_matrix{
-      make_with_value<UnwrappedT>(dereference_wrapper(source_coords[0]), 0.0)};
+  tnsr::Ij<T, dim, Frame::NoFrame> inv_jacobian_matrix{
+      make_with_value<T>(source_coords[0], 0.0)};
   get<0, 0>(inv_jacobian_matrix) =
       get<0, 0>(CoordinateMap_detail::apply_inverse_jacobian(
           map1_,
-          std::array<std::reference_wrapper<const UnwrappedT>, 1>{
-              {source_coords[0]}},
+          std::array<T, 1>{
+              {CoordinateMap_detail::view_or_copy(source_coords[0])}},
           time, functions_of_time,
-          domain::is_jacobian_time_dependent_t<
-              Map1, std::reference_wrapper<const UnwrappedT>>{}));
+          domain::is_jacobian_time_dependent_t<Map1, T>{}));
   get<1, 1>(inv_jacobian_matrix) =
       get<0, 0>(CoordinateMap_detail::apply_inverse_jacobian(
           map2_,
-          std::array<std::reference_wrapper<const UnwrappedT>, 1>{
-              {source_coords[1]}},
+          std::array<T, 1>{
+              {CoordinateMap_detail::view_or_copy(source_coords[1])}},
           time, functions_of_time,
-          domain::is_jacobian_time_dependent_t<
-              Map2, std::reference_wrapper<const UnwrappedT>>{}));
+          domain::is_jacobian_time_dependent_t<Map2, T>{}));
   get<2, 2>(inv_jacobian_matrix) =
       get<0, 0>(CoordinateMap_detail::apply_inverse_jacobian(
           map3_,
-          std::array<std::reference_wrapper<const UnwrappedT>, 1>{
-              {source_coords[2]}},
+          std::array<T, 1>{
+              {CoordinateMap_detail::view_or_copy(source_coords[2])}},
           time, functions_of_time,
-          domain::is_jacobian_time_dependent_t<
-              Map3, std::reference_wrapper<const UnwrappedT>>{}));
+          domain::is_jacobian_time_dependent_t<Map3, T>{}));
   return inv_jacobian_matrix;
 }
 
 template <typename Map1, typename Map2, typename Map3>
 template <typename T>
-tnsr::Ij<tt::remove_cvref_wrap_t<T>, ProductOf3Maps<Map1, Map2, Map3>::dim,
-         Frame::NoFrame>
+tnsr::Ij<T, ProductOf3Maps<Map1, Map2, Map3>::dim, Frame::NoFrame>
 ProductOf3Maps<Map1, Map2, Map3>::jacobian(
     const std::array<T, dim>& source_coords, const double time,
     const std::unordered_map<
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
         functions_of_time) const {
-  using UnwrappedT = tt::remove_cvref_wrap_t<T>;
-  tnsr::Ij<UnwrappedT, dim, Frame::NoFrame> jacobian_matrix{
-      make_with_value<UnwrappedT>(dereference_wrapper(source_coords[0]), 0.0)};
+  tnsr::Ij<T, dim, Frame::NoFrame> jacobian_matrix{
+      make_with_value<T>(source_coords[0], 0.0)};
   get<0, 0>(jacobian_matrix) = get<0, 0>(CoordinateMap_detail::apply_jacobian(
       map1_,
-      std::array<std::reference_wrapper<const UnwrappedT>, 1>{
-          {source_coords[0]}},
+      std::array<T, 1>{{CoordinateMap_detail::view_or_copy(source_coords[0])}},
       time, functions_of_time,
-      domain::is_jacobian_time_dependent_t<
-          Map1, std::reference_wrapper<const UnwrappedT>>{}));
+      domain::is_jacobian_time_dependent_t<Map1, T>{}));
   get<1, 1>(jacobian_matrix) = get<0, 0>(CoordinateMap_detail::apply_jacobian(
       map2_,
-      std::array<std::reference_wrapper<const UnwrappedT>, 1>{
-          {source_coords[1]}},
+      std::array<T, 1>{{CoordinateMap_detail::view_or_copy(source_coords[1])}},
       time, functions_of_time,
-      domain::is_jacobian_time_dependent_t<
-          Map2, std::reference_wrapper<const UnwrappedT>>{}
-
-      ));
+      domain::is_jacobian_time_dependent_t<Map2, T>{}));
   get<2, 2>(jacobian_matrix) = get<0, 0>(CoordinateMap_detail::apply_jacobian(
       map3_,
-      std::array<std::reference_wrapper<const UnwrappedT>, 1>{
-          {source_coords[2]}},
+      std::array<T, 1>{{CoordinateMap_detail::view_or_copy(source_coords[2])}},
       time, functions_of_time,
-      domain::is_jacobian_time_dependent_t<
-          Map3, std::reference_wrapper<const UnwrappedT>>{}));
+      domain::is_jacobian_time_dependent_t<Map3, T>{}));
   return jacobian_matrix;
 }
 template <typename Map1, typename Map2, typename Map3>

@@ -9,6 +9,7 @@
 #include <type_traits>
 #include <unordered_map>
 
+#include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Identity.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
@@ -19,6 +20,20 @@
 
 namespace domain {
 namespace CoordinateMap_detail {
+/// Returns a value that aliases `x` where that is cheaper than copying: a
+/// non-owning view for `DataVector` and a copy for arithmetic types such as
+/// `double`. Coordinate maps that pass (a subset of) their source coordinates
+/// on to another map use this function to avoid copying the underlying data.
+/// Coordinate maps take their source coordinates by const reference, so the
+/// data is never modified through the view. The view must not outlive `x`.
+template <typename T>
+T view_or_copy(const T& x) {
+  if constexpr (std::is_same_v<T, DataVector>) {
+    return {const_cast<double*>(x.data()), x.size()};  // NOLINT
+  } else {
+    return x;
+  }
+}
 /// @{
 /// Call the map passing in the time and FunctionsOfTime if the map is
 /// time-dependent

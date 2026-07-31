@@ -11,7 +11,6 @@
 #include <algorithm>
 #include <array>
 #include <cmath>
-#include <functional>
 #include <limits>
 #include <memory>
 #include <numeric>
@@ -449,29 +448,18 @@ void test_coordinate_map_argument_types(
                    });
     return result;
   };
-  const auto add_reference_wrapper = [](const auto& unwrapped_array) {
-    using Arg = std::decay_t<decltype(unwrapped_array)>;
-    return make_array<std::reference_wrapper<const typename Arg::value_type>,
-                      Map::dim>(unwrapped_array);
-  };
 
   {
     INFO("Test call-operator");
     const auto mapped_point = map(test_point, args...);
-    CHECK_ITERABLE_APPROX(map(add_reference_wrapper(test_point), args...),
-                          mapped_point);
     CHECK_ITERABLE_APPROX(map(make_array_data_vector(test_point), args...),
                           make_array_data_vector(mapped_point));
-    CHECK_ITERABLE_APPROX(
-        map(add_reference_wrapper(make_array_data_vector(test_point)), args...),
-        make_array_data_vector(mapped_point));
   }
 
   // Here, time_args is a const auto& not const Args& because time_args
   // is allowed to be different than Args (which was the reason for the
   // overloader below that calls this function).
-  const auto check_jac = [](const auto& make_arr_data_vec,
-                            const auto& add_ref_wrap, const Map& the_map,
+  const auto check_jac = [](const auto& make_arr_data_vec, const Map& the_map,
                             const std::array<double, Map::dim>& point,
                             const auto&... time_args) {
     const auto make_tensor_data_vector = [](const auto& double_tensor) {
@@ -488,14 +476,8 @@ void test_coordinate_map_argument_types(
     {
       INFO("Test Jacobian");
       const auto expected = the_map.jacobian(point, time_args...);
-      CHECK_ITERABLE_APPROX(the_map.jacobian(add_ref_wrap(point), time_args...),
-                            expected);
       CHECK_ITERABLE_APPROX(
           the_map.jacobian(make_arr_data_vec(point), time_args...),
-          make_tensor_data_vector(expected));
-      CHECK_ITERABLE_APPROX(
-          the_map.jacobian(add_ref_wrap(make_arr_data_vec(point)),
-                           time_args...),
           make_tensor_data_vector(expected));
     }
     {
@@ -511,14 +493,8 @@ void test_coordinate_map_argument_types(
                             using std::max;
                             return max(state, abs(element));
                           }));
-      CHECK_ITERABLE_APPROX(
-          the_map.inv_jacobian(add_ref_wrap(point), time_args...), expected);
       CHECK_ITERABLE_CUSTOM_APPROX(
           the_map.inv_jacobian(make_arr_data_vec(point), time_args...),
-          make_tensor_data_vector(expected), custom_approx);
-      CHECK_ITERABLE_CUSTOM_APPROX(
-          the_map.inv_jacobian(add_ref_wrap(make_arr_data_vec(point)),
-                               time_args...),
           make_tensor_data_vector(expected), custom_approx);
     }
 
@@ -526,10 +502,9 @@ void test_coordinate_map_argument_types(
   };
 
   if constexpr (domain::is_jacobian_time_dependent_t<decltype(map), double>{}) {
-    check_jac(make_array_data_vector, add_reference_wrapper, map, test_point,
-              args...);
+    check_jac(make_array_data_vector, map, test_point, args...);
   } else {
-    check_jac(make_array_data_vector, add_reference_wrapper, map, test_point);
+    check_jac(make_array_data_vector, map, test_point);
   }
 }
 
