@@ -526,6 +526,11 @@ void spin_vector(
          "spin_function size doesn't match ylm physical size: "
              << get(spin_function).size() << " vs " << ylm_physical_size);
 
+  if (spin_magnitude == 0.0) {
+    *result = make_array<3>(0.0);
+    return;
+  }
+
   // Compute very rough center of the measurement frame by simply
   // averaging measurement_frame_coords.  It is ok for this center to
   // be very rough, since it will be corrected below.
