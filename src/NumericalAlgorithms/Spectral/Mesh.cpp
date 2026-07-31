@@ -236,11 +236,10 @@ Mesh<Dim - 1> Mesh<Dim>::on_interface(const size_t d) const {
   // (Fourier) so that the face mesh has the correct basis for the boundary.
   if (basis(d) == Spectral::Basis::ZernikeB3) {
     ASSERT(Dim == 3, "ZernikeB3 should only be used on 3D meshes, got " << Dim);
-    // Can't test interface direction is upper, but that is also an assumption
-    ASSERT(d == 0 and quadrature(d) == Spectral::Quadrature::GaussRadauUpper,
-           "A mesh using B3 only has an interface when sliced in the first "
-           "dimension (not in angular directions), got "
-               << d);
+    ASSERT(quadrature(d) == Spectral::Quadrature::GaussRadauUpper,
+           "A B3 ball's outer boundary is at the upper end of the radial "
+           "dimension (GaussRadauUpper quadrature), but dimension "
+               << d << " has quadrature " << quadrature(d));
     ASSERT(basis() == make_array<Dim>(Spectral::Basis::ZernikeB3),
            "Mesh is using ZernikeB3 basis in a nonisotropic manner, got "
                << basis());
@@ -251,19 +250,18 @@ Mesh<Dim - 1> Mesh<Dim>::on_interface(const size_t d) const {
   if (basis(d) == Spectral::Basis::ZernikeB2) {
     ASSERT(Dim == 2 or Dim == 3,
            "ZernikeB2 should only be used on 2D or 3D meshes, got " << Dim);
-    // Can't test interface direction is upper, but that is also an assumption
-    ASSERT(d == 0 and quadrature(d) == Spectral::Quadrature::GaussRadauUpper,
-           "A mesh using B2 only has an interface when sliced in the first "
-           "dimension (not in angular direction), got "
-               << d);
-    ASSERT(basis(0) == Spectral::Basis::ZernikeB2 and
-               basis(1) == Spectral::Basis::ZernikeB2,
-           "Mesh does not have ZernikeB2 for the first two bases, got "
-               << basis());
+    ASSERT(quadrature(d) == Spectral::Quadrature::GaussRadauUpper,
+           "A B2 disk's outer boundary is at the upper end of the radial "
+           "dimension (GaussRadauUpper quadrature), but dimension "
+               << d << " has quadrature " << quadrature(d));
     auto bases = face.basis();
-    if constexpr (Dim > 1) {
-      bases[0] = Spectral::Basis::Fourier;
-    }
+    ASSERT(
+        std::count(bases.begin(), bases.end(), Spectral::Basis::ZernikeB2) == 1,
+        "Expected exactly one ZernikeB2 angular basis remaining in the "
+        "face after slicing a B2 mesh, got face bases "
+            << face.basis());
+    std::replace(bases.begin(), bases.end(), Spectral::Basis::ZernikeB2,
+                 Spectral::Basis::Fourier);
     return {face.extents().indices(), bases, face.quadrature()};
   }
   return face;

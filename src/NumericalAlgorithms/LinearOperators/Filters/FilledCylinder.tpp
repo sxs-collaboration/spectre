@@ -253,52 +253,62 @@ void FilledCylinder<TagList>::apply_on_boundary(
     /*inv_jac_grid_to_inertial*/,
     const std::optional<Jacobian<DataVector, 3, Frame::Grid, Frame::Inertial>>&
     /*jac_grid_to_inertial*/) const {
-  const bool zernike_0 = mesh.basis(0) == Spectral::Basis::ZernikeB2;
-  const bool zernike_1 = mesh.basis(1) == Spectral::Basis::ZernikeB2;
+  const bool is_disk_face =
+      mesh.basis() == make_array<2>(Spectral::Basis::ZernikeB2);
+  const bool is_mantle_face = (mesh.basis(0) == Spectral::Basis::Fourier and
+                               Filters::detail::is_legendre_or_chebyshev(
+                                   mesh.basis(1), mesh.quadrature(1))) or
+                              (Filters::detail::is_legendre_or_chebyshev(
+                                   mesh.basis(0), mesh.quadrature(0)) and
+                               mesh.basis(1) == Spectral::Basis::Fourier);
   // A filled-cylinder face drops one volume dimension while preserving the
   // order of the remaining two, so the basis (and quadrature) pattern of the
   // 2-D face mesh uniquely identifies which physical directions it spans:
-  //   (ZernikeB2, ZernikeB2)              -> (radial, angular)  [axial face]
-  //   (ZernikeB2/Equiangular, Legendre)   -> (angular, z)       [mantle face]
+  //   (ZernikeB2, ZernikeB2)        -> (radial, angular)  [axial face]
+  //   (Fourier, Legendre)           -> (angular, z)       [mantle face]
+  // Note that the mortar infrastructure converts ZernikeB2/Equiangular to
+  // Fourier/Equiangular
   // A (radial, z) face -- (ZernikeB2/GaussRadauUpper, Legendre) -- would be
   // obtained by slicing away the angular direction, but that direction is
   // periodic and so has no boundary faces; such a face cannot occur and is
   // treated as an error below.
-  if (zernike_0 and zernike_1) {
+  if (is_disk_face) {
     // Axial face: a full disk.
     Spectral::filtering::zernike_b2_disk_filter(
         vars, mesh, 36.0,
         FilledCylinder_detail::to_unsigned(radial_angular_half_power_),
         num_modes_to_kill_);
     return;
+  } else if (mesh.basis(0) == Spectral::Basis::ZernikeB2 or
+             mesh.basis(1) == Spectral::Basis::ZernikeB2) {
+    // The angular direction was sliced: angular direction is periodic and so
+    // has no boundary faces; such a face cannot occur.
+    ERROR(
+        "The FilledCylinder boundary filter was given a (radial, z) face "
+        "(face basis "
+        << mesh.basis(0) << ", " << mesh.basis(1) << " with dim-0 quadrature "
+        << mesh.quadrature(0)
+        << "). Such a face is obtained by slicing away the angular direction "
+           "of the volume mesh, but the angular direction is periodic and so "
+           "has no boundary faces. The boundary filter is only valid on the "
+           "axial face (radial, angular) and the mantle face (angular, z).");
   }
   std::array<std::reference_wrapper<const Matrix>, 2> filter{
       std::cref(empty_matrix_), std::cref(empty_matrix_)};
-  if (zernike_0 and not zernike_1) {
-    // dim 1 is z (Legendre/Chebyshev) and dim 0 is a lone ZernikeB2 direction.
-    if (mesh.quadrature(0) != Spectral::Quadrature::Equiangular) {
-      // dim 0 is the radial direction (GaussRadauUpper), so this is a
-      // (radial, z) face, obtained by slicing away the angular direction. The
-      // angular direction is periodic and so has no boundary faces; such a
-      // face cannot occur.
-      ERROR(
-          "The FilledCylinder boundary filter was given a (radial, z) face "
-          "(face basis "
-          << mesh.basis(0) << ", " << mesh.basis(1) << " with dim-0 quadrature "
-          << mesh.quadrature(0)
-          << "). Such a face is obtained by slicing away the angular direction "
-             "of the volume mesh, but the angular direction is periodic and so "
-             "has no boundary faces. The boundary filter is only valid on the "
-             "axial face (radial, angular) and the mantle face (angular, z).");
+  if (is_mantle_face) {
+    if (mesh.basis(0) == Spectral::Basis::Fourier) {
+      filter[0] = std::cref(angular_filter_matrix(
+          Mesh<1>{mesh.extents(0), Spectral::Basis::Fourier,
+                  Spectral::Quadrature::Equiangular}));
+      filter[1] = std::cref(exponential_filter_matrix(
+          z_half_power_, mesh.slice_through(1), cached_z_filter_));
+    } else {
+      filter[0] = std::cref(exponential_filter_matrix(
+          z_half_power_, mesh.slice_through(1), cached_z_filter_));
+      filter[1] = std::cref(angular_filter_matrix(
+          Mesh<1>{mesh.extents(0), Spectral::Basis::Fourier,
+                  Spectral::Quadrature::Equiangular}));
     }
-    // Mantle face: dim 0 is the angular direction. It is collocated on
-    // equiangular ZernikeB2 points, so it is filtered as Fourier via a matching
-    // Fourier/Equiangular 1-D mesh of the same extent.
-    filter[0] = std::cref(
-        angular_filter_matrix(Mesh<1>{mesh.extents(0), Spectral::Basis::Fourier,
-                                      Spectral::Quadrature::Equiangular}));
-    filter[1] = std::cref(exponential_filter_matrix(
-        z_half_power_, mesh.slice_through(1), cached_z_filter_));
   } else {
     ERROR(
         "FilledCylinder filter called on a face mesh with an unexpected basis "

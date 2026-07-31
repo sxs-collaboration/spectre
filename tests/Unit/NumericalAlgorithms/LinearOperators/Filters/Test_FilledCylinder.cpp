@@ -434,10 +434,11 @@ void test_apply_on_boundary() {
     CHECK_VARIABLES_CUSTOM_APPROX(vars, expected, custom_approx);
   }
 
-  // Mantle (radial) face: slice away dim 0 -> face dims (ZernikeB2/Equiangular
-  // angular, Legendre z). The angular direction is filtered as Fourier.
+  // Mantle face: slice away dim 0, then mortar-converted to Fourier/Equiangular
+  // in the angular direction -> face dims (Fourier/Equiangular angular,
+  // Legendre z).
   {
-    const Mesh<2> face = volume_mesh.slice_away(0);
+    const Mesh<2> face = volume_mesh.on_interface(0);
     const Mesh<1> fourier_angular{face.extents(0), Spectral::Basis::Fourier,
                                   Spectral::Quadrature::Equiangular};
     const auto initial = deterministic_vars<2>(face);
@@ -467,7 +468,13 @@ void test_apply_on_boundary() {
     const auto cutoff_filter =
         CylinderFilter(num_modes_to_kill, std::nullopt, z_half, true,
                        std::nullopt, false, false, std::nullopt, std::nullopt);
-    const Mesh<2> face = volume_mesh.slice_away(0);
+    const Mesh<2> face{
+        std::array<size_t, 2>{volume_mesh.extents(1), volume_mesh.extents(2)},
+        std::array<Spectral::Basis, 2>{Spectral::Basis::Fourier,
+                                       Spectral::Basis::Legendre},
+        std::array<Spectral::Quadrature, 2>{
+            Spectral::Quadrature::Equiangular,
+            Spectral::Quadrature::GaussLobatto}};
     const Mesh<1> fourier_angular{face.extents(0), Spectral::Basis::Fourier,
                                   Spectral::Quadrature::Equiangular};
     const auto initial = deterministic_vars<2>(face);
@@ -506,7 +513,13 @@ void test_apply_on_boundary() {
     const auto identity_filter =
         CylinderFilter(0, std::nullopt, std::nullopt, true, std::nullopt, false,
                        false, std::nullopt, std::nullopt);
-    const Mesh<2> face = volume_mesh.slice_away(0);
+    const Mesh<2> face{
+        std::array<size_t, 2>{volume_mesh.extents(1), volume_mesh.extents(2)},
+        std::array<Spectral::Basis, 2>{Spectral::Basis::Fourier,
+                                       Spectral::Basis::Legendre},
+        std::array<Spectral::Quadrature, 2>{
+            Spectral::Quadrature::Equiangular,
+            Spectral::Quadrature::GaussLobatto}};
     const auto initial = deterministic_vars<2>(face);
     auto vars = initial;
     identity_filter.apply_on_boundary(make_not_null(&vars), face, std::nullopt,
