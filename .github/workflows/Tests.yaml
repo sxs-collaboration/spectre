@@ -210,6 +210,7 @@ jobs:
     container:
       image: ${{ inputs.container || 'sxscollaboration/spectre:dev' }}
     strategy:
+      fail-fast: false
       matrix:
         build_type: [Debug, Release]
     steps:
