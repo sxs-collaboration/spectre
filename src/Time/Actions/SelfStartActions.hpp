@@ -121,21 +121,24 @@ struct InitialValue : db::PrefixTag, db::SimpleTag {
 /// Self-start actions
 namespace Actions {
 namespace detail {
-template <typename System, bool HasPrimitives>
+template <typename System, typename AdditionalVarsToSave, bool HasPrimitives>
 struct vars_to_save_impl {
-  using type = tmpl::flatten<tmpl::list<typename System::variables_tag>>;
+  using type = tmpl::flatten<
+      tmpl::list<typename System::variables_tag, AdditionalVarsToSave>>;
 };
 
-template <typename System>
-struct vars_to_save_impl<System, true> {
+template <typename System, typename AdditionalVarsToSave>
+struct vars_to_save_impl<System, AdditionalVarsToSave, true> {
   using type =
       tmpl::flatten<tmpl::list<typename System::variables_tag,
-                               typename System::primitive_variables_tag>>;
+                               typename System::primitive_variables_tag,
+                               AdditionalVarsToSave>>;
 };
 
-template <typename System>
+template <typename System, typename AdditionalVarsToSave = tmpl::list<>>
 using vars_to_save = typename vars_to_save_impl<
-    System, System::has_primitive_and_conservative_vars>::type;
+    System, AdditionalVarsToSave,
+    System::has_primitive_and_conservative_vars>::type;
 }  // namespace detail
 
 /// \ingroup ActionsGroup
@@ -184,7 +187,8 @@ using vars_to_save = typename vars_to_save_impl<
 /// - Removes: nothing
 /// - Modifies: Tags::TimeStep
 template <typename System,
-          template <typename> typename CacheTagPrefix = std::type_identity_t>
+          template <typename> typename CacheTagPrefix = std::type_identity_t,
+          typename AdditionalVarsToSave = tmpl::list<>>
 struct Initialize {
  private:
   template <typename TagsToSave>
@@ -202,8 +206,9 @@ struct Initialize {
   };
 
  public:
-  using simple_tags = typename StoreInitialValues<tmpl::push_back<
-      detail::vars_to_save<System>, ::Tags::TimeStep>>::simple_tags;
+  using simple_tags = typename StoreInitialValues<
+      tmpl::push_back<detail::vars_to_save<System, AdditionalVarsToSave>,
+                      ::Tags::TimeStep>>::simple_tags;
 
   template <typename DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
@@ -237,8 +242,9 @@ struct Initialize {
     // first real step.
     const TimeDelta self_start_step = initial_step / (values_needed + 1);
 
-    StoreInitialValues<tmpl::push_back<detail::vars_to_save<System>,
-                                       ::Tags::TimeStep>>::apply(box);
+    StoreInitialValues<
+        tmpl::push_back<detail::vars_to_save<System, AdditionalVarsToSave>,
+                        ::Tags::TimeStep>>::apply(box);
     db::mutate<::Tags::TimeStep>(
         [&self_start_step](const gsl::not_null<::TimeDelta*> time_step) {
           *time_step = self_start_step;
@@ -263,7 +269,8 @@ struct Initialize {
 /// - Adds: nothing
 /// - Removes: nothing
 /// - Modifies: nothing
-template <typename ExitTag, typename System>
+template <typename ExitTag, typename System,
+          typename AdditionalVarsToSave = tmpl::list<>>
 struct CheckForCompletion {
   template <typename DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
@@ -278,15 +285,16 @@ struct CheckForCompletion {
         db::get<::Tags::Next<::Tags::TimeStepId>>(box).is_at_slab_boundary();
 
     if (done_with_order) {
-      tmpl::for_each<detail::vars_to_save<System>>([&box](auto tag) {
-        using Tag = tmpl::type_from<decltype(tag)>;
-        db::mutate<Tag>(
-            [](const gsl::not_null<typename Tag::type*> value,
-               const std::tuple<typename Tag::type>& initial_value) {
-              *value = get<0>(initial_value);
-            },
-            make_not_null(&box), db::get<Tags::InitialValue<Tag>>(box));
-      });
+      tmpl::for_each<detail::vars_to_save<System, AdditionalVarsToSave>>(
+          [&box](auto tag) {
+            using Tag = tmpl::type_from<decltype(tag)>;
+            db::mutate<Tag>(
+                [](const gsl::not_null<typename Tag::type*> value,
+                   const std::tuple<typename Tag::type>& initial_value) {
+                  *value = get<0>(initial_value);
+                },
+                make_not_null(&box), db::get<Tags::InitialValue<Tag>>(box));
+          });
     }
 
     // The self start procedure begins with slab number
@@ -451,15 +459,23 @@ struct PhaseEnd;
 /// \tparam StepActions List of actions computing and recording the
 /// system derivative and updating the evolved variables (but not the
 /// time).
+/// \tparam AdditionalVarsToSave List of extra tags to snapshot when
+/// self-start begins and to restore at each order-increase reset, in
+/// addition to the system's evolved (and primitive) variables. Used by
+/// facilities that keep their own time-integrated state, e.g. the
+/// boundary-evolved-fields facility passes its per-face value-map tag.
 ///
 /// \see SelfStart
 template <typename StepActions, typename System,
-          template <typename> typename CacheTagPrefix = std::type_identity_t>
+          template <typename> typename CacheTagPrefix = std::type_identity_t,
+          typename AdditionalVarsToSave = tmpl::list<>>
 using self_start_procedure = tmpl::flatten<tmpl::list<
-// clang-format off
-    SelfStart::Actions::Initialize<System, CacheTagPrefix>,
+    // clang-format off
+    SelfStart::Actions::Initialize<System, CacheTagPrefix,
+                                   AdditionalVarsToSave>,
     ::Actions::Label<detail::PhaseStart>,
-    SelfStart::Actions::CheckForCompletion<detail::PhaseEnd, System>,
+    SelfStart::Actions::CheckForCompletion<detail::PhaseEnd, System,
+                                           AdditionalVarsToSave>,
     ::Actions::MutateApply<AdvanceTime<CacheTagPrefix>>,
     SelfStart::Actions::CheckForOrderIncrease,
     StepActions,
