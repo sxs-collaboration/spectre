@@ -42,6 +42,7 @@ spectre_target_sources(
   )
 
 add_subdirectory(Actions)
+add_subdirectory(BoundaryEvolvedFields)
 add_subdirectory(EqualRateLts)
 add_subdirectory(Initialization)
 add_subdirectory(Limiters)

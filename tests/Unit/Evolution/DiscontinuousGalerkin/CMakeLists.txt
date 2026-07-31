@@ -30,6 +30,7 @@ set(LIBRARY_SOURCES
   Test_UsingSubcell.cpp
   )
 
+add_subdirectory(BoundaryEvolvedFields)
 add_subdirectory(EqualRateLts)
 add_subdirectory(Limiters)
 add_subdirectory(Messages)
