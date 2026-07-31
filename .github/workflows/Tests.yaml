@@ -280,7 +280,7 @@ jobs:
           echo "Running clang-tidy relative to: $UPSTREAM_HASH\n"
 
           git diff -U0 $UPSTREAM_HASH |
-            clang-tidy-diff -path build -p1 -use-color -j4 \
+            clang-tidy-diff -path build -p1 -use-color -j1 \
             -extra-arg=-I/usr/include/hdf5/serial \
             -extra-arg=-I$GITHUB_WORKSPACE/build/_deps/autodiff-src
 
