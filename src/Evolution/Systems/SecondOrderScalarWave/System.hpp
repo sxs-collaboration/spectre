@@ -8,6 +8,7 @@
 
 #include "DataStructures/VariablesTag.hpp"
 #include "Evolution/Systems/SecondOrderScalarWave/Tags.hpp"
+#include "Evolution/Systems/SecondOrderScalarWave/TimeDerivative.hpp"
 #include "Utilities/TMPL.hpp"
 
 /*!
@@ -32,6 +33,13 @@ struct System {
   using variables_tag = ::Tags::Variables<tmpl::list<Tags::Psi, Tags::Pi>>;
   using flux_variables = tmpl::list<>;
   using auxiliary_variables = tmpl::list<Tags::Phi<Dim>>;
-  using gradient_variables = tmpl::list<Tags::Phi<Dim>>;
+  // The time derivative reads only the derivative of Phi, but the evolved
+  // variables must also be listed: `volume_terms` unconditionally instantiates
+  // reads of every evolved variable's derivative for the moving-mesh term, so
+  // a nonconservative system's `gradient_variables` must contain its evolved
+  // variables.
+  using gradient_variables = tmpl::list<Tags::Psi, Tags::Pi, Tags::Phi<Dim>>;
+
+  using compute_volume_time_derivative_terms = TimeDerivative<Dim>;
 };
 }  // namespace SecondOrderScalarWave

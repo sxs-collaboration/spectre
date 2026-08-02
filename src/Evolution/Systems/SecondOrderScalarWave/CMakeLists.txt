@@ -3,7 +3,13 @@
 
 set(LIBRARY SecondOrderScalarWave)
 
-add_spectre_library(${LIBRARY} INTERFACE)
+add_spectre_library(${LIBRARY})
+
+spectre_target_sources(
+  ${LIBRARY}
+  PRIVATE
+  TimeDerivative.cpp
+  )
 
 spectre_target_headers(
   ${LIBRARY}
@@ -12,11 +18,13 @@ spectre_target_headers(
   System.hpp
   Tags.hpp
   TagsDeclarations.hpp
+  TimeDerivative.hpp
   )
 
 target_link_libraries(
   ${LIBRARY}
-  INTERFACE
+  PUBLIC
   DataStructures
+  DiscontinuousGalerkin
   Utilities
   )
