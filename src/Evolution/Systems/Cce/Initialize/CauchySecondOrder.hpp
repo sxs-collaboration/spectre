@@ -28,9 +28,13 @@ namespace Cce::InitializeJ {
  * \details The volume \f$J\f$ is built from the worldtube values of
  * \f$J\f$, \f$\partial_r J\f$, and \f$\partial_y^2 J\f$ computed from the
  * H hypersurface equation. The remaining angular coordinates are determined
- * iteratively to ensure asymptotic flatness. As a safeguard, the
- * initialization aborts if the second radial derivative of \f$J\f$ at scri+
- * of the final solution exceeds `MaxScriSecondDerivative`.
+ * iteratively to ensure asymptotic flatness. The angular solve can eliminate
+ * \f$J\f$ at scri+ only through a well-behaved alteration of the spherical
+ * mesh, so it tolerates only a small asymptotic \f$J\f$; the initialization
+ * aborts if the asymptotic \f$J\f$ in Cauchy coordinates, or the deviation at
+ * any iteration of the solve, exceeds `MaxAngularSolveError`. As a further
+ * safeguard, the initialization aborts if the second radial derivative of
+ * \f$J\f$ at scri+ of the final solution exceeds `MaxScriSecondDerivative`.
  */
 struct CauchySecondOrder : InitializeJ<false> {
   struct AngularCoordinateTolerance {
@@ -59,6 +63,20 @@ struct CauchySecondOrder : InitializeJ<false> {
     static type suggested_value() { return true; }
   };
 
+  struct MaxAngularSolveError {
+    using type = double;
+    static constexpr Options::String help = {
+        "Largest deviation of J from zero at scri+ that the iterative angular "
+        "solve is permitted to encounter. Initialization aborts if the "
+        "asymptotic J in Cauchy coordinates exceeds this value before the "
+        "solve, or if any iteration of the solve exceeds it. Raise this to "
+        "attempt initialization from worldtube data with a larger asymptotic "
+        "strain, at the risk of a poorly behaved angular coordinate map."};
+    static type lower_bound() { return 1.0e-14; }
+    static type upper_bound() { return 1.0e2; }
+    static type suggested_value() { return 1.0e-1; }
+  };
+
   struct MaxScriSecondDerivative {
     using type = double;
     static constexpr Options::String help = {
@@ -72,8 +90,9 @@ struct CauchySecondOrder : InitializeJ<false> {
     static type suggested_value() { return 1.0e-8; }
   };
 
-  using options = tmpl::list<AngularCoordinateTolerance, MaxIterations,
-                             RequireConvergence, MaxScriSecondDerivative>;
+  using options =
+      tmpl::list<AngularCoordinateTolerance, MaxIterations, RequireConvergence,
+                 MaxAngularSolveError, MaxScriSecondDerivative>;
   static constexpr Options::String help = {
       "Second-order initial data generator for the Cauchy CCE evolution."};
 
@@ -81,7 +100,7 @@ struct CauchySecondOrder : InitializeJ<false> {
   explicit CauchySecondOrder(CkMigrateMessage* /*unused*/) {}
 
   CauchySecondOrder(double angular_coordinate_tolerance, size_t max_iterations,
-                    bool require_convergence,
+                    bool require_convergence, double max_angular_solve_error,
                     double max_scri_second_derivative);
 
   CauchySecondOrder() = default;
@@ -130,6 +149,8 @@ struct CauchySecondOrder : InitializeJ<false> {
   double angular_coordinate_tolerance_ =
       std::numeric_limits<double>::signaling_NaN();
   size_t max_iterations_ = 0;
+  double max_angular_solve_error_ =
+      std::numeric_limits<double>::signaling_NaN();
   double max_scri_second_derivative_ =
       std::numeric_limits<double>::signaling_NaN();
 };

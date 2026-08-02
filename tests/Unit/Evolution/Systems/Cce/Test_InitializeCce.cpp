@@ -299,7 +299,7 @@ void test_initialize_j_cauchy_second_order(
   // allow up to 1000 iterations (the option maximum) to reliably converge with
   // `require_convergence = true`.
   const auto initializer =
-      InitializeJ::CauchySecondOrder{1.0e-10, 1000, true, 1.0e-8};
+      InitializeJ::CauchySecondOrder{1.0e-10, 1000, true, 1.0e-1, 1.0e-8};
   db::mutate_apply<InitializeJ::CauchySecondOrder::return_tags,
                    InitializeJ::CauchySecondOrder::argument_tags>(
       initializer, box_to_initialize, make_not_null(&node_lock));
@@ -380,7 +380,21 @@ void test_cauchy_second_order_scri_derivative_error(
   auto node_lock = Parallel::NodeLock{};
   db::mutate_apply<InitializeJ::CauchySecondOrder::return_tags,
                    InitializeJ::CauchySecondOrder::argument_tags>(
-      InitializeJ::CauchySecondOrder{1.0e-10, 1000, true, 1.0e-30},
+      InitializeJ::CauchySecondOrder{1.0e-10, 1000, true, 1.0e-1, 1.0e-30},
+      box_to_initialize, make_not_null(&node_lock));
+}
+
+template <typename DbTags>
+void test_cauchy_second_order_angular_solve_threshold(
+    const gsl::not_null<db::DataBox<DbTags>*> box_to_initialize) {
+  // Before the angular solve the constructed J is generically nonzero at scri+
+  // at the scale of the strain, so an unachievably small `MaxAngularSolveError`
+  // trips the pre-solve guard even on uncorrupted worldtube data. This checks
+  // that the threshold is honored from the option rather than hard-coded.
+  auto node_lock = Parallel::NodeLock{};
+  db::mutate_apply<InitializeJ::CauchySecondOrder::return_tags,
+                   InitializeJ::CauchySecondOrder::argument_tags>(
+      InitializeJ::CauchySecondOrder{1.0e-10, 400, true, 1.0e-14, 1.0e-8},
       box_to_initialize, make_not_null(&node_lock));
 }
 
@@ -398,7 +412,7 @@ void test_cauchy_second_order_asymptotic_j_error(
   auto node_lock = Parallel::NodeLock{};
   db::mutate_apply<InitializeJ::CauchySecondOrder::return_tags,
                    InitializeJ::CauchySecondOrder::argument_tags>(
-      InitializeJ::CauchySecondOrder{1.0e-10, 400, true, 1.0e-8},
+      InitializeJ::CauchySecondOrder{1.0e-10, 400, true, 1.0e-1, 1.0e-8},
       box_to_initialize, make_not_null(&node_lock));
 }
 
@@ -806,6 +820,10 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.InitializeJ", "[Unit][Cce]") {
       Catch::Matchers::ContainsSubstring(
           "The initial J has a second radial derivative at scri+ of "
           "magnitude"));
+  CHECK_THROWS_WITH(test_cauchy_second_order_angular_solve_threshold(
+                        make_not_null(&box_to_initialize)),
+                    Catch::Matchers::ContainsSubstring(
+                        "set by the MaxAngularSolveError option"));
   CHECK_THROWS_WITH(
       test_cauchy_second_order_asymptotic_j_error(
           make_not_null(&box_to_initialize)),

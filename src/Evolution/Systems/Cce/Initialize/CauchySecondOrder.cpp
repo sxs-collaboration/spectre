@@ -28,10 +28,12 @@ namespace Cce::InitializeJ {
 CauchySecondOrder::CauchySecondOrder(const double angular_coordinate_tolerance,
                                      const size_t max_iterations,
                                      const bool require_convergence,
+                                     const double max_angular_solve_error,
                                      const double max_scri_second_derivative)
     : require_convergence_{require_convergence},
       angular_coordinate_tolerance_{angular_coordinate_tolerance},
       max_iterations_{max_iterations},
+      max_angular_solve_error_{max_angular_solve_error},
       max_scri_second_derivative_{max_scri_second_derivative} {}
 
 std::unique_ptr<InitializeJ<false>> CauchySecondOrder::get_clone() const {
@@ -180,22 +182,23 @@ void CauchySecondOrder::operator()(
   // alteration of the spherical mesh, so it tolerates only a small asymptotic
   // J. Guard against a large asymptotic initial J in Cauchy coordinates before
   // attempting the solve, which would otherwise fail less informatively.
-  const double max_angular_solve_error = 1.0e-2;
   const double max_asymptotic_j = max(abs(j_at_scri_view.data()));
-  if (max_asymptotic_j > max_angular_solve_error) {
+  if (max_asymptotic_j > max_angular_solve_error_) {
     ERROR(
         "The asymptotic value of the initial J in Cauchy coordinates has "
         "magnitude "
-        << max_asymptotic_j
-        << ", which is too large for the angular-coordinate solve to "
-           "eliminate. The worldtube data may be incorrect, or the worldtube "
-           "may be too close to the strong-field region. Consider using the "
+        << max_asymptotic_j << ", which exceeds the threshold "
+        << max_angular_solve_error_
+        << " set by the MaxAngularSolveError option, so the "
+           "angular-coordinate solve cannot eliminate it. The worldtube data "
+           "may be incorrect, or the worldtube may be too close to the "
+           "strong-field region. Consider raising the threshold or using the "
            "ConformalFactor initial-data generator instead.");
   }
 
   detail::iteratively_adapt_angular_coordinates(
       cartesian_cauchy_coordinates, angular_cauchy_coordinates, l_max,
-      angular_coordinate_tolerance_, max_iterations_, max_angular_solve_error,
+      angular_coordinate_tolerance_, max_iterations_, max_angular_solve_error_,
       iteration_function, require_convergence_, finalize_function);
 
   // Safeguard: the second-order construction forces the second radial
@@ -237,6 +240,7 @@ void CauchySecondOrder::pup(PUP::er& p) {
   p | require_convergence_;
   p | angular_coordinate_tolerance_;
   p | max_iterations_;
+  p | max_angular_solve_error_;
   p | max_scri_second_derivative_;
 }
 
