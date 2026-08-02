@@ -1,0 +1,175 @@
+# Distributed under the MIT License.
+# See LICENSE.txt for details.
+
+Executable: EvolveValenciaDivClean
+Testing:
+  Check: parse;execute
+  Timeout: 20
+  Priority: High
+ExpectedOutput:
+  - TovStarCartoonCylinderReductions.h5
+
+---
+
+Parallelization:
+  ElementDistribution: NumGridPoints
+
+ResourceInfo:
+  AvoidGlobalProc0: False
+
+Evolution:
+  InitialTime: 0.0
+  InitialTimeStep: &initial_time_step 0.0001
+  InitialSlabSize: *initial_time_step
+  MinimumTimeStep: 1e-7
+  LocalTimeStepping: Off
+  TimeStepper:
+    Rk3HesthavenSsp:
+  LtsStepChoosers:
+  VariableOrderAlgorithm:
+    GoalOrder: 3
+
+PhaseChangeAndTriggers:
+
+InitialData: &InitialData
+  TovStar:
+    CentralDensity: 1.28e-3
+    EquationOfState:
+        PolytropicFluid:
+            PolytropicConstant: 100.0
+            PolytropicExponent: 2.0
+    Coordinates: Isotropic
+
+EquationOfState:
+  FromInitialData
+
+DomainCreator:
+  CartoonCylinder:
+    LowerBounds: [0.0, -5.0]
+    UpperBounds: [5.0, 5.0]
+    InitialRefinement: [1, 1]
+    InitialGridPoints: [5, 5]
+    Distributions: [Linear, Linear]
+    TimeDependence: None
+    BoundaryConditions:
+      - DirichletAnalytic:
+          AnalyticPrescription: *InitialData
+      - DirichletAnalytic:
+          AnalyticPrescription: *InitialData
+
+VariableFixing:
+  FixConservatives:
+    Enable: False
+    CutoffD: &CutoffD 1.1e-15
+    MinimumValueOfD: &MinimumD 1.0e-15
+    CutoffYe: 0.0
+    MinimumValueOfYe: 0.0
+    SafetyFactorForB: &BSafetyFactor 1.0e-12
+    SafetyFactorForS: 1.0e-12
+    SafetyFactorForSCutoffD: 1.0e-8
+    SafetyFactorForSSlope: 0.0001
+    MagneticField: AssumeZero
+  FixToAtmosphere:
+    DensityOfAtmosphere: 1.0e-15
+    DensityCutoff: &AtmosphereDensityCutoff 1.1e-15
+    VelocityLimiting:
+      AtmosphereMaxVelocity: 0.0
+      NearAtmosphereMaxVelocity: 1.0e-4
+      AtmosphereDensityCutoff: 3.0e-15
+      TransitionDensityBound: 3.0e-14
+    KappaLimiting:
+      DensityLowerBound: 2.0e-14
+      EplisonKappaMinus: 1.0e-3
+      DensityUpperBound: 2.0e-13
+      EpsilonKappaMax: 0.01
+      LimitAboveDensityUpperBound: False
+      MinTemperature: FromEos
+
+PrimitiveFromConservative:
+  CutoffDForInversion: *CutoffD
+  DensityWhenSkippingInversion: *MinimumD
+  KastaunMaxLorentzFactor: 10.0
+
+EvolutionSystem:
+  ValenciaDivClean:
+    DampingParameter: 0.0
+
+SpatialDiscretization:
+  BoundaryCorrection:
+    Hll:
+      MagneticFieldMagnitudeForHydro: 1.0e-30
+      LightSpeedDensityCutoff: 1.0e-8
+  DiscontinuousGalerkin:
+    Formulation: StrongInertial
+    Quadrature: GaussLobatto
+    Filtering:
+      - None:
+          BlocksToFilter: All
+    Subcell:
+      TroubledCellIndicator:
+        PerssonTci:
+          Exponent: 4.0
+          NumHighestModes: 1
+        RdmpTci:
+          Delta0: 1.0e-7
+          Epsilon: 1.0e-3
+        FdToDgTci:
+          NumberOfStepsBetweenTciCalls: 1
+          MinTciCallsAfterRollback: 1
+          MinimumClearTcis: 1
+        AlwaysUseSubcells: True
+        EnableExtensionDirections: False
+        UseHalo: False
+        OnlyDgBlocksAndGroups: None
+      SubcellToDgReconstructionMethod: DimByDim
+      FiniteDifferenceDerivativeOrder: 2
+      FdInterpolationOrder: 3
+    TciOptions:
+      MinimumValueOfD: 1.0e-20
+      MinimumValueOfYe: 1.0e-20
+      MinimumValueOfTildeTau: 1.0e-50
+      AtmosphereDensity: *AtmosphereDensityCutoff
+      SafetyFactorForB: *BSafetyFactor
+      MagneticFieldCutoff: DoNotCheckMagneticField
+  SubcellSolver:
+    Reconstructor:
+      PositivityPreservingAdaptiveOrderPrim:
+        Alpha5: 3.8
+        Alpha7: None
+        Alpha9: None
+        LowOrderReconstructor: MonotonisedCentral
+        ReconstructRhoTimesTemperature: True
+
+EventsAndTriggersAtCheckpoints:
+
+EventsAndTriggersAtSlabs:
+  - Trigger:
+      Slabs:
+        EvenlySpaced:
+          Interval: 5
+          Offset: 0
+    Events:
+      - ObserveNorms:
+          SubfileName: Norms
+          TensorsToObserve:
+            - Name: RestMassDensity
+              NormType: L2Norm
+              Components: Individual
+  - Trigger:
+      Slabs:
+        Specified:
+          Values: [10]
+    Events:
+      - Completion
+
+EventsAndTriggersAtSteps:
+
+Observers:
+  VolumeFileName: "TovStarCartoonCylinderVolume"
+  ReductionFileName: "TovStarCartoonCylinderReductions"
+
+EventsAndDenseTriggers:
+
+EventsRunAtCleanup:
+  ObservationValue: -1000.0
+  Events:
