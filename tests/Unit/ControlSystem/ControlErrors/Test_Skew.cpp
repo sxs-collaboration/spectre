@@ -133,6 +133,13 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.ControlErrors.Skew",
       function_of_time =
           std::make_unique<domain::FunctionsOfTime::PiecewisePolynomial<2>>(
               initial_time, make_array<3>(DataVector{2, 0.0}), expiration_time);
+  const DataVector skew_value{0.1, -0.2};
+  const std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>
+      nonzero_function_of_time =
+          std::make_unique<domain::FunctionsOfTime::PiecewisePolynomial<2>>(
+              initial_time,
+              std::array{skew_value, DataVector{2, 0.0}, DataVector{2, 0.0}},
+              expiration_time);
 
   const std::array<double, 3> horizon_center_a{grid_x_coord, 0.0, 0.0};
   const std::array<double, 3> horizon_center_b{-grid_x_coord, 0.0, 0.0};
@@ -143,18 +150,23 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.ControlErrors.Skew",
                                                   horizon_center_b);
 
     // Not activated
-    test_skew(initial_time, horizon_a, horizon_b, function_of_time,
-              DataVector{2, 0.0}, std::nullopt);
+    test_skew(initial_time, horizon_a, horizon_b, nonzero_function_of_time,
+              -skew_value, std::nullopt);
 
-    horizon_a = ylm::Strahlkorper<Frame::Distorted>(l_max, 5.0 * radius,
+    const double horizon_radius = 5.0 * radius;
+    horizon_a = ylm::Strahlkorper<Frame::Distorted>(l_max, horizon_radius,
                                                     horizon_center_a);
-    horizon_b = ylm::Strahlkorper<Frame::Distorted>(l_max, 5.0 * radius,
+    horizon_b = ylm::Strahlkorper<Frame::Distorted>(l_max, horizon_radius,
                                                     horizon_center_b);
 
-    // Activated, but error is still zero because the horizon isn't distorted.
-    // However, we do have a suggested timescale now
-    test_skew(initial_time, horizon_a, horizon_b, function_of_time,
-              DataVector{2, 0.0}, {6.0});
+    // Activated, but the horizon isn't distorted, so only the function of time
+    // contributes to the control error. We also have a suggested timescale now.
+    const double relative_delta_x =
+        (grid_x_coord - horizon_radius) / grid_x_coord;
+    const double transition_function =
+        0.5 * (1.0 - tanh(10.0 * relative_delta_x - 5.0));
+    test_skew(initial_time, horizon_a, horizon_b, nonzero_function_of_time,
+              -(1.0 - transition_function) * skew_value, {6.0});
   }
 
   // Create surface that is just a sphere that's shifted by a constant offset,
