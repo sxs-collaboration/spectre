@@ -293,9 +293,9 @@ bool receive_boundary_data(
       if constexpr (using_subcell_v<Metavariables>) {
         if (time_stepping_policy == TimeSteppingPolicy::EqualRate) {
           evolution::dg::subcell::receive_subcell_data_for_dg<volume_dim>(
-              &db::as_access(*box), mortar_id, received_mortar_data);
+              &db::as_access(*box), received_mortar_id, received_mortar_data);
           evolution::dg::subcell::neighbor_tci_decision<volume_dim>(
-              make_not_null(&db::as_access(*box)), mortar_id,
+              make_not_null(&db::as_access(*box)), received_mortar_id,
               received_mortar_data);
         }
       }
