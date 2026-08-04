@@ -8,6 +8,7 @@
 #include <tuple>
 
 #include "DataStructures/DataBox/DataBox.hpp"
+#include "DataStructures/DataBox/Subitems.hpp"
 #include "DataStructures/TaggedTuple.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
@@ -174,6 +175,25 @@ struct RunEventsAndDenseTriggers {
     using type = typename T::return_tags;
   };
 
+  template <typename VariablesTags>
+  struct DoDenseOutput;
+
+  template <typename... VariablesTags>
+  struct DoDenseOutput<tmpl::list<VariablesTags...>> {
+    using return_tags = tmpl::list<VariablesTags...>;
+    using argument_tags =
+        tmpl::list<::Tags::TimeStepper<TimeStepper>,
+                   ::Tags::HistoryEvolvedVariables<VariablesTags>...>;
+    static bool apply(
+        const gsl::not_null<typename VariablesTags::type*>... vars,
+        const TimeStepper& stepper,
+        const TimeSteppers::History<typename VariablesTags::type>&... history,
+        const double time) {
+      return (... and ((void)(*vars = *history.step_start(time).value),
+                       stepper.dense_update_u(vars, history, time)));
+    }
+  };
+
  public:
   template <typename DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
@@ -184,7 +204,10 @@ struct RunEventsAndDenseTriggers {
       const ArrayIndex& array_index, const ActionList /*meta*/,
       const ParallelComponent* const component) {
     using system = typename Metavariables::system;
-    using variables_tag = typename system::variables_tag;
+    using variables_tags = tmpl::conditional_t<
+        tt::is_a_v<tmpl::list, typename system::variables_tag>,
+        typename system::variables_tag,
+        tmpl::list<typename system::variables_tag>>;
 
     const auto& time_step_id = db::get<::Tags::TimeStepId>(box);
     if (time_step_id.slab_number() < 0) {
@@ -205,13 +228,15 @@ struct RunEventsAndDenseTriggers {
         tmpl::join<tmpl::transform<Postprocessors, get_return_tags<tmpl::_1>>>;
     // The evolved variables will be restored anyway, so no reason to
     // copy them twice.
-    using postprocessor_restore_tags =
-        tmpl::list_difference<postprocessor_return_tags,
-                              typename variables_tag::tags_list>;
+    using postprocessor_restore_tags = tmpl::list_difference<
+        postprocessor_return_tags,
+        tmpl::flatten<tmpl::list<
+            variables_tags,
+            tmpl::transform<variables_tags, db::Subitems<tmpl::_1>>>>>;
 
     StateRestorer<DbTags, tmpl::list<::Tags::Time>> time_restorer(
         make_not_null(&box));
-    StateRestorer<DbTags, tmpl::list<variables_tag>> variables_restorer(
+    StateRestorer<DbTags, variables_tags> variables_restorer(
         make_not_null(&box));
     StateRestorer<DbTags, postprocessor_restore_tags> postprocessor_restorer(
         make_not_null(&box));
@@ -239,21 +264,10 @@ struct RunEventsAndDenseTriggers {
         case TriggeringState::NotReady:
           return {Parallel::AlgorithmExecution::Retry, std::nullopt};
         case TriggeringState::NeedsEvolvedVariables: {
-          using history_tag = ::Tags::HistoryEvolvedVariables<variables_tag>;
-          bool dense_output_succeeded = false;
           variables_restorer.save();
-          db::mutate<variables_tag>(
-              [&dense_output_succeeded, &next_trigger](
-                  gsl::not_null<typename variables_tag::type*> vars,
-                  const TimeStepper& stepper,
-                  const typename history_tag::type& history) {
-                *vars = *history.step_start(next_trigger).value;
-                dense_output_succeeded =
-                    stepper.dense_update_u(vars, history, next_trigger);
-              },
-              make_not_null(&box),
-              db::get<::Tags::TimeStepper<TimeStepper>>(box),
-              db::get<history_tag>(box));
+          const bool dense_output_succeeded =
+              db::mutate_apply<DoDenseOutput<variables_tags>>(
+                  make_not_null(&box), next_trigger);
           if (not dense_output_succeeded) {
             // Need to take another time step
             return {Parallel::AlgorithmExecution::Continue, std::nullopt};
