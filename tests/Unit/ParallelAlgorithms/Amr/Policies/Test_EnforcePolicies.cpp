@@ -55,15 +55,17 @@ void test_1d() {
   const ElementId<1> element_id{0, {{{1, 0}}}};
   const Mesh<1> mesh{3, Spectral::Basis::Legendre, Spectral::Quadrature::Gauss};
   for (const auto flags : all_flags) {
-    for (const auto policy : policies) {
+    for (const auto& policy : policies) {
       test_decision(flags, policy, element_id, mesh, flags);
     }
   }
 
   {
     INFO("Limits");
-    const amr::Policies policy{amr::Isotropy::Anisotropic,
-                               amr::Limits{0, 5, 1, 12}, true, true};
+    const amr::Policies policy{
+        amr::Isotropy::Anisotropic,
+        amr::Limits{{{0, 5}}, {{0, 11}}, std::nullopt, std::nullopt, false},
+        true, true};
     test_decision(join, policy, ElementId<1>{0}, mesh, stay);
     test_decision(split, policy, ElementId<1>{0, {{{5, 2}}}}, mesh, stay);
     test_decision(
@@ -217,11 +219,14 @@ void test_3d() {
                 split_split_split);
 
   // Test error beyond limits
-  isotropic = amr::Policies{amr::Isotropy::Isotropic,
-                            amr::Limits{{{0, 0}}, {{2, 8}}, true}, true, true};
-  anisotropic =
-      amr::Policies{amr::Isotropy::Anisotropic,
-                    amr::Limits{{{0, 0}}, {{2, 8}}, true}, true, true};
+  isotropic = amr::Policies{
+      amr::Isotropy::Isotropic,
+      amr::Limits{{{0, 0}}, {{1, 7}}, std::nullopt, std::nullopt, true}, true,
+      true};
+  anisotropic = amr::Policies{
+      amr::Isotropy::Anisotropic,
+      amr::Limits{{{0, 0}}, {{1, 7}}, std::nullopt, std::nullopt, true}, true,
+      true};
   element_id = ElementId<3>{0};
   test_decision(stay_split_split, anisotropic, element_id, mesh,
                 stay_split_split, true);

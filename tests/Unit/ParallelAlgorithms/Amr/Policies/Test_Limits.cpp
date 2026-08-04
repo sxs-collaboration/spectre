@@ -10,22 +10,60 @@
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "NumericalAlgorithms/Spectral/Basis.hpp"
-#include "NumericalAlgorithms/Spectral/MaximumNumberOfPoints.hpp"
+#include "NumericalAlgorithms/Spectral/Limits.hpp"
+#include "NumericalAlgorithms/Spectral/Quadrature.hpp"
 #include "ParallelAlgorithms/Amr/Policies/Limits.hpp"
 
 namespace {
+constexpr size_t p_max = Spectral::limits::max_i1_polynomial_mode;
+constexpr size_t l_min = Spectral::limits::min_spherical_harmonic_mode;
+constexpr size_t l_max = Spectral::limits::max_spherical_harmonic_mode;
+constexpr size_t m_max = Spectral::limits::max_fourier_mode;
+
 void test_equality() {
   INFO("Equality");
-  CHECK(amr::Limits{0, 3, 1, 5} == amr::Limits{0, 3, 1, 5});
-  CHECK(amr::Limits{0, 3, 1, 5} != amr::Limits{1, 3, 1, 5});
-  CHECK(amr::Limits{0, 3, 1, 5} != amr::Limits{0, 4, 1, 5});
-  CHECK(amr::Limits{0, 3, 1, 5} != amr::Limits{0, 3, 2, 5});
-  CHECK(amr::Limits{0, 3, 1, 5} != amr::Limits{0, 3, 1, 6});
+  const amr::Limits limits{};
+  CHECK(limits ==
+        amr::Limits{
+            {{0, 15}}, {{0, p_max}}, {{0, m_max}}, {{l_min, l_max}}, false});
+  CHECK_FALSE(
+      limits ==
+      amr::Limits{
+          {{4, 15}}, {{0, p_max}}, {{0, m_max}}, {{l_min, l_max}}, false});
+  CHECK_FALSE(
+      limits ==
+      amr::Limits{
+          {{0, 8}}, {{0, p_max}}, {{0, m_max}}, {{l_min, l_max}}, false});
+  CHECK_FALSE(
+      limits ==
+      amr::Limits{
+          {{0, 15}}, {{6, p_max}}, {{0, m_max}}, {{l_min, l_max}}, false});
+  CHECK_FALSE(
+      limits ==
+      amr::Limits{{{0, 15}}, {{0, 6}}, {{0, m_max}}, {{l_min, l_max}}, false});
+  CHECK_FALSE(
+      limits ==
+      amr::Limits{
+          {{0, 15}}, {{0, p_max}}, {{6, m_max}}, {{l_min, l_max}}, false});
+  CHECK_FALSE(
+      limits ==
+      amr::Limits{{{0, 15}}, {{0, p_max}}, {{0, 6}}, {{l_min, l_max}}, false});
+  CHECK_FALSE(
+      limits ==
+      amr::Limits{{{0, 15}}, {{0, p_max}}, {{0, m_max}}, {{6, l_max}}, false});
+  CHECK_FALSE(
+      limits ==
+      amr::Limits{{{0, 15}}, {{0, p_max}}, {{0, m_max}}, {{l_min, 6}}, false});
+  CHECK_FALSE(
+      limits ==
+      amr::Limits{
+          {{0, 15}}, {{0, p_max}}, {{0, m_max}}, {{l_min, l_max}}, true});
 }
 
 void test_pup() {
   INFO("Serialization");
-  test_serialization(amr::Limits{0, 3, 1, 5});
+  test_serialization(amr::Limits{});
+  test_serialization(amr::Limits{{{0, 5}}, {{0, 4}}, {{0, 6}}, {{4, 7}}, true});
 }
 
 void test_option_parsing() {
@@ -33,111 +71,186 @@ void test_option_parsing() {
   {
     const std::string creation_string_1 =
         "RefinementLevel: [0, 3]\n"
-        "NumGridPoints: [1, 5]\n"
+        "NumPolynomialModes: [1, 5]\n"
+        "FourierM: [3, 9]\n"
+        "SphericalHarmonicL: [4, 8]\n"
         "ErrorBeyondLimits: False\n";
     const auto limits =
         TestHelpers::test_creation<amr::Limits>(creation_string_1);
-    CHECK(limits == amr::Limits{0, 3, 1, 5});
+    CHECK(limits == amr::Limits{{{0, 3}}, {{1, 5}}, {{3, 9}}, {{4, 8}}, false});
   }
 
   {
     const std::string creation_string_2 =
         "RefinementLevel: Auto\n"
-        "NumGridPoints: [1, 5]\n"
+        "NumPolynomialModes: [1, 5]\n"
+        "FourierM: [3, 9]\n"
+        "SphericalHarmonicL: [4, 8]\n"
         "ErrorBeyondLimits: False\n";
     const auto limits =
         TestHelpers::test_creation<amr::Limits>(creation_string_2);
-    CHECK(limits == amr::Limits{0, ElementId<1>::max_refinement_level, 1, 5});
+    CHECK(limits == amr::Limits{{{0, ElementId<1>::max_refinement_level}},
+                                {{1, 5}},
+                                {{3, 9}},
+                                {{4, 8}},
+                                false});
   }
 
   {
     const std::string creation_string_3 =
         "RefinementLevel: [0, 3]\n"
-        "NumGridPoints: Auto\n"
+        "NumPolynomialModes: Auto\n"
+        "FourierM: [3, 9]\n"
+        "SphericalHarmonicL: [4, 8]\n"
         "ErrorBeyondLimits: False\n";
     const auto limits =
         TestHelpers::test_creation<amr::Limits>(creation_string_3);
-    CHECK(limits == amr::Limits{0, 3, 1,
-                                Spectral::maximum_number_of_points<
-                                    Spectral::Basis::Legendre,
-                                    Spectral::Quadrature::GaussLobatto>});
+    CHECK(limits == amr::Limits{{{0, 3}},
+                                {{0, Spectral::limits::max_i1_polynomial_mode}},
+                                {{3, 9}},
+                                {{4, 8}},
+                                false});
   }
 
   {
     const std::string creation_string_4 =
-        "RefinementLevel: Auto\n"
-        "NumGridPoints: Auto\n"
+        "RefinementLevel: [0, 3]\n"
+        "NumPolynomialModes: [3, 9]\n"
+        "FourierM: Auto\n"
+        "SphericalHarmonicL: [4, 8]\n"
         "ErrorBeyondLimits: False\n";
     const auto limits =
         TestHelpers::test_creation<amr::Limits>(creation_string_4);
-    CHECK(limits == amr::Limits{});
+    CHECK(limits == amr::Limits{{{0, 3}},
+                                {{3, 9}},
+                                {{0, Spectral::limits::max_fourier_mode}},
+                                {{4, 8}},
+                                false});
   }
 
   {
     const std::string creation_string_5 =
         "RefinementLevel: [0, 3]\n"
-        "NumGridPoints: [1, 5]\n"
+        "NumPolynomialModes: [3, 9]\n"
+        "FourierM: [4, 8]\n"
+        "SphericalHarmonicL: Auto\n"
         "ErrorBeyondLimits: True\n";
     const auto limits =
         TestHelpers::test_creation<amr::Limits>(creation_string_5);
-    CHECK(limits == amr::Limits{{{0, 3}}, {{1, 5}}, true});
+    CHECK(limits ==
+          amr::Limits{{{0, 3}},
+                      {{3, 9}},
+                      {{4, 8}},
+                      {{Spectral::limits::min_spherical_harmonic_mode,
+                        Spectral::limits::max_spherical_harmonic_mode}},
+                      true});
+  }
+
+  {
+    const std::string creation_string_6 =
+        "RefinementLevel: Auto\n"
+        "NumPolynomialModes: Auto\n"
+        "FourierM: Auto\n"
+        "SphericalHarmonicL: Auto\n"
+        "ErrorBeyondLimits: False\n";
+    const auto limits =
+        TestHelpers::test_creation<amr::Limits>(creation_string_6);
+    CHECK(limits == amr::Limits{});
   }
 
   const std::string bad_creation_string_1 =
       "RefinementLevel: [255, 3]\n"
-      "NumGridPoints: [1, 5]\n"
+      "NumPolynomialModes: Auto\n"
+      "FourierM: Auto\n"
+      "SphericalHarmonicL: Auto\n"
       "ErrorBeyondLimits: False\n";
   CHECK_THROWS_WITH(
       TestHelpers::test_creation<amr::Limits>(bad_creation_string_1),
-      Catch::Matchers::ContainsSubstring(
-          "RefinementLevel lower bound '255' cannot be larger than '"));
+      Catch::Matchers::ContainsSubstring("RefinementLevel lower bound '255' "
+                                         "cannot be larger than upper bound"));
 
   const std::string bad_creation_string_2 =
-      "RefinementLevel: [1, 255]\n"
-      "NumGridPoints: [1, 5]\n"
+      "RefinementLevel: [3, 255]\n"
+      "NumPolynomialModes: Auto\n"
+      "FourierM: Auto\n"
+      "SphericalHarmonicL: Auto\n"
       "ErrorBeyondLimits: False\n";
   CHECK_THROWS_WITH(
       TestHelpers::test_creation<amr::Limits>(bad_creation_string_2),
       Catch::Matchers::ContainsSubstring(
-          "RefinementLevel upper bound '255' cannot be larger than '"));
+          "RefinementLevel upper bound '255' "
+          "cannot be larger than refinement limit"));
 
   const std::string bad_creation_string_3 =
-      "RefinementLevel: [0, 3]\n"
-      "NumGridPoints: [0, 5]\n"
+      "RefinementLevel: Auto\n"
+      "NumPolynomialModes: [255, 3]\n"
+      "FourierM: Auto\n"
+      "SphericalHarmonicL: Auto\n"
       "ErrorBeyondLimits: False\n";
   CHECK_THROWS_WITH(
       TestHelpers::test_creation<amr::Limits>(bad_creation_string_3),
-      Catch::Matchers::ContainsSubstring(
-          "NumGridPoints lower bound '0' cannot be smaller than '1'."));
+      Catch::Matchers::ContainsSubstring("NumPolynomialModes lower bound '255' "
+                                         "cannot be larger than upper bound"));
 
   const std::string bad_creation_string_4 =
-      "RefinementLevel: [1, 3]\n"
-      "NumGridPoints: [255, 5]\n"
+      "RefinementLevel: Auto\n"
+      "NumPolynomialModes: [3, 255]\n"
+      "FourierM: Auto\n"
+      "SphericalHarmonicL: Auto\n"
       "ErrorBeyondLimits: False\n";
   CHECK_THROWS_WITH(
       TestHelpers::test_creation<amr::Limits>(bad_creation_string_4),
       Catch::Matchers::ContainsSubstring(
-          "NumGridPoints lower bound '255' cannot be larger than '"));
+          "NumPolynomialModes upper bound '255' "
+          "cannot be larger than Spectral::limits::max_i1_polynomial_mode"));
 
   const std::string bad_creation_string_5 =
-      "RefinementLevel: [1, 3]\n"
-      "NumGridPoints: [1, 0]\n"
+      "RefinementLevel: Auto\n"
+      "NumPolynomialModes: Auto\n"
+      "FourierM: [255, 3]\n"
+      "SphericalHarmonicL: Auto\n"
       "ErrorBeyondLimits: False\n";
   CHECK_THROWS_WITH(
       TestHelpers::test_creation<amr::Limits>(bad_creation_string_5),
-      Catch::Matchers::ContainsSubstring(
-          "NumGridPoints upper bound '0' cannot be smaller than '1'."));
+      Catch::Matchers::ContainsSubstring("FourierM lower bound '255' "
+                                         "cannot be larger than upper bound"));
 
   const std::string bad_creation_string_6 =
-      "RefinementLevel: [1, 3]\n"
-      "NumGridPoints: [1, 255]\n"
+      "RefinementLevel: Auto\n"
+      "NumPolynomialModes: Auto\n"
+      "FourierM: [3, 255]\n"
+      "SphericalHarmonicL: Auto\n"
       "ErrorBeyondLimits: False\n";
   CHECK_THROWS_WITH(
       TestHelpers::test_creation<amr::Limits>(bad_creation_string_6),
       Catch::Matchers::ContainsSubstring(
-          "NumGridPoints upper bound '255' cannot be larger than '"));
-}
+          "FourierM upper bound '255' "
+          "cannot be larger than Spectral::limits::max_fourier_mode"));
 
+  const std::string bad_creation_string_7 =
+      "RefinementLevel: Auto\n"
+      "NumPolynomialModes: Auto\n"
+      "FourierM: Auto\n"
+      "SphericalHarmonicL: [255, 3]\n"
+      "ErrorBeyondLimits: False\n";
+  CHECK_THROWS_WITH(
+      TestHelpers::test_creation<amr::Limits>(bad_creation_string_7),
+      Catch::Matchers::ContainsSubstring("SphericalHarmonicL lower bound '255' "
+                                         "cannot be larger than upper bound"));
+
+  const std::string bad_creation_string_8 =
+      "RefinementLevel: Auto\n"
+      "NumPolynomialModes: Auto\n"
+      "FourierM: Auto\n"
+      "SphericalHarmonicL: [3, 255]\n"
+      "ErrorBeyondLimits: False\n";
+  CHECK_THROWS_WITH(
+      TestHelpers::test_creation<amr::Limits>(bad_creation_string_8),
+      Catch::Matchers::ContainsSubstring(
+          "SphericalHarmonicL upper bound '255' "
+          "cannot be larger than "
+          "Spectral::limits::max_spherical_harmonic_mode"));
+}
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.ParallelAlgorithms.Amr.Limits",
@@ -145,19 +258,4 @@ SPECTRE_TEST_CASE("Unit.ParallelAlgorithms.Amr.Limits",
   test_equality();
   test_pup();
   test_option_parsing();
-#ifdef SPECTRE_DEBUG
-  CHECK_THROWS_WITH(
-      ([]() {
-        amr::Limits limits{2, 1, 1, 5};
-      }()),
-      Catch::Matchers::ContainsSubstring(
-          "The minimum refinement level '2' cannot be larger than "
-          "the maximum refinement level '1'"));
-  CHECK_THROWS_WITH(([]() {
-                      amr::Limits limits{0, 3, 6, 4};
-                    }()),
-                    Catch::Matchers::ContainsSubstring(
-                        "The minimum resolution '6' cannot be larger than the "
-                        "maximum resolution '4'"));
-#endif  // SPECTRE_DEBUG
 }

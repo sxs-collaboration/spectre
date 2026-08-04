@@ -22,6 +22,15 @@ void Policies::pup(PUP::er& p) {
   p | allow_coarsening_;
 }
 
+std::ostream& operator<<(std::ostream& os, const Policies& policies) {
+  os << "Isotropy: " << policies.isotropy() << "\n";
+  os << "EnforceTwoToOneBalanceInNormalDirection: "
+     << policies.enforce_two_to_one_balance_in_normal_direction() << "\n";
+  os << "AllowCoarsening: " << policies.allow_coarsening() << "\n";
+  os << "Limits: " << policies.limits() << "\n";
+  return os;
+}
+
 bool operator==(const Policies& lhs, const Policies& rhs) {
   return lhs.isotropy() == rhs.isotropy() and lhs.limits() == rhs.limits() and
          lhs.enforce_two_to_one_balance_in_normal_direction() ==
