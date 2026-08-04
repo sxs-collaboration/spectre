@@ -21,9 +21,24 @@ class Index;
 
 namespace evolution::dg::subcell::fd {
 /*!
+ * \brief Returns `true` if the DG mesh has a topology compatible with
+ * switching to subcell (finite-difference).
+ *
+ * Only meshes using Legendre, Chebyshev, or Cartoon bases are compatible.
+ * Non-hypercube topologies (e.g., ZernikeB3 for filled balls) return `false`.
+ */
+template <size_t Dim>
+bool dg_mesh_supports_subcell(const Mesh<Dim>& dg_mesh);
+
+/*!
  * \brief Computes the cell-centered finite-difference mesh from the DG mesh,
  * using \f$2N-1\f$ grid points per dimension, where \f$N\f$ is the degree of
  * the DG basis.
+ *
+ * If the DG mesh uses a basis that is not compatible with subcell (i.e.,
+ * `dg_mesh_supports_subcell()` returns `false`), the returned mesh is
+ * uninitialized (`{0_st, Basis::Uninitialized, Quadrature::Uninitialized}`).
+ * The uninitialized mesh should never be used for actual subcell computations.
  */
 template <size_t Dim>
 Mesh<Dim> mesh(const Mesh<Dim>& dg_mesh);
