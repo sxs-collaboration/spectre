@@ -110,7 +110,7 @@ class KerrHorizonConforming {
 
  private:
   template <typename T>
-  void stretch_factor_square(const gsl::not_null<T*> result,
+  void stretch_factor_square(gsl::not_null<T*> result,
                              const std::array<T, 3>& source_coords) const;
 
   std::array<double, 3> spin_parameter_;

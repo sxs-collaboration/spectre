@@ -247,32 +247,31 @@ class Side {
   Side& operator=(Side&&) = default;
 
   template <typename T>
-  void forward_map(const gsl::not_null<std::array<T, 3>*> target_coords,
+  void forward_map(gsl::not_null<std::array<T, 3>*> target_coords,
                    const std::array<T, 3>& source_coords) const;
 
   std::optional<std::array<double, 3>> inverse(
       const std::array<double, 3>& target_coords, double sigma_in) const;
 
   template <typename T>
-  void jacobian(
-      const gsl::not_null<tnsr::Ij<T, 3, Frame::NoFrame>*> jacobian_out,
-      const std::array<T, 3>& source_coords) const;
+  void jacobian(gsl::not_null<tnsr::Ij<T, 3, Frame::NoFrame>*> jacobian_out,
+                const std::array<T, 3>& source_coords) const;
 
   template <typename T>
   void inv_jacobian(
-      const gsl::not_null<tnsr::Ij<T, 3, Frame::NoFrame>*> inv_jacobian_out,
+      gsl::not_null<tnsr::Ij<T, 3, Frame::NoFrame>*> inv_jacobian_out,
       const std::array<T, 3>& source_coords) const;
 
   template <typename T>
-  void sigma(const gsl::not_null<T*> sigma_out,
+  void sigma(gsl::not_null<T*> sigma_out,
              const std::array<T, 3>& source_coords) const;
 
   template <typename T>
-  void deriv_sigma(const gsl::not_null<std::array<T, 3>*> deriv_sigma_out,
+  void deriv_sigma(gsl::not_null<std::array<T, 3>*> deriv_sigma_out,
                    const std::array<T, 3>& source_coords) const;
 
   template <typename T>
-  void dxbar_dsigma(const gsl::not_null<std::array<T, 3>*> dxbar_dsigma_out,
+  void dxbar_dsigma(gsl::not_null<std::array<T, 3>*> dxbar_dsigma_out,
                     const std::array<T, 3>& source_coords) const;
 
   std::optional<double> lambda_tilde(
@@ -282,7 +281,7 @@ class Side {
 
   template <typename T>
   void deriv_lambda_tilde(
-      const gsl::not_null<std::array<T, 3>*> deriv_lambda_tilde_out,
+      gsl::not_null<std::array<T, 3>*> deriv_lambda_tilde_out,
       const std::array<T, 3>& target_coords, const T& lambda_tilde,
       const std::array<double, 3>& projection_point) const;
 
