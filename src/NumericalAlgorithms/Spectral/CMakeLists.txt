@@ -19,6 +19,7 @@ spectre_target_sources(
   DifferentiationMatrix.cpp
   Filtering.cpp
   FiniteDifference.cpp
+  Hash.cpp
   IntegrationMatrix.cpp
   InterpolationWeights.cpp
   InterpolationMatrix.cpp
@@ -59,6 +60,7 @@ spectre_target_headers(
   FilteringB3.hpp
   FilteringB3.tpp
   GetSpectralQuantityForMesh.hpp
+  Hash.hpp
   IntegrationMatrix.hpp
   InterpolationWeights.hpp
   InterpolationMatrix.hpp

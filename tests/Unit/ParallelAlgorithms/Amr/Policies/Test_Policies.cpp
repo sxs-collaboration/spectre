@@ -37,7 +37,8 @@ void test_option_parsing() {
   const auto isotropies =
       std::array{amr::Isotropy::Anisotropic, amr::Isotropy::Isotropic};
   const amr::Limits default_limits{};
-  const amr::Limits specified_limits{1, 5, 3, 7};
+  const amr::Limits specified_limits{
+      {{1, 5}}, {{2, 6}}, std::nullopt, std::nullopt, false};
   for (const auto& [isotropy, enforce_two_to_one, allow_coarsening] :
        cartesian_product(isotropies, std::array{true, false},
                          std::array{true, false})) {
@@ -50,7 +51,9 @@ void test_option_parsing() {
       creation_string << "Isotropy: " << isotropy << "\n";
       creation_string << "Limits:\n"
                       << "  RefinementLevel: [1, 5]\n"
-                      << "  NumGridPoints: [3, 7]\n"
+                      << "  NumPolynomialModes: [2, 6]\n"
+                      << "  FourierM: Auto\n"
+                      << "  SphericalHarmonicL: Auto\n"
                       << "  ErrorBeyondLimits: False\n";
       creation_string << "EnforceTwoToOneBalanceInNormalDirection: "
                       << std::boolalpha << enforce_two_to_one << "\n";
@@ -67,7 +70,9 @@ void test_option_parsing() {
       creation_string << "Isotropy: " << isotropy << "\n";
       creation_string << "Limits:\n"
                       << "  RefinementLevel: Auto\n"
-                      << "  NumGridPoints: Auto\n"
+                      << "  NumPolynomialModes: Auto\n"
+                      << "  FourierM: Auto\n"
+                      << "  SphericalHarmonicL: Auto\n"
                       << "  ErrorBeyondLimits: False\n";
       creation_string << "EnforceTwoToOneBalanceInNormalDirection: "
                       << std::boolalpha << enforce_two_to_one << "\n";

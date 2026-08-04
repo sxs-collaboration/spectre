@@ -82,6 +82,8 @@ class Policies {
   bool allow_coarsening_{true};
 };
 
+std::ostream& operator<<(std::ostream& os, const Policies& policies);
+
 bool operator==(const Policies& lhs, const Policies& rhs);
 
 bool operator!=(const Policies& lhs, const Policies& rhs);
