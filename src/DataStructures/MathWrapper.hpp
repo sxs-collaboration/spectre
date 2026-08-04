@@ -83,6 +83,7 @@ class MathWrapper {
   using scalar_type = typename Impl<>::scalar_type;
 
   T& operator*() const { return data_.data; }
+  T* operator->() const { return &data_.data; }
 
   MathWrapper(MathWrapper&&) = default;
 
@@ -137,23 +138,39 @@ inline MathWrapper<const std::complex<double>> make_math_wrapper(
 
 inline MathWrapper<DataVector> make_math_wrapper(
     const gsl::not_null<DataVector*> data) {
+  if (UNLIKELY(data->size() == 0)) {
+    DataVector empty{};
+    return MathWrapper<DataVector>(&empty);
+  }
   DataVector referencing(data->data(), data->size());
   return MathWrapper<DataVector>(&referencing);
 }
 
 inline MathWrapper<const DataVector> make_math_wrapper(const DataVector& data) {
+  if (UNLIKELY(data.size() == 0)) {
+    DataVector empty{};
+    return MathWrapper<const DataVector>(&empty);
+  }
   DataVector referencing(const_cast<double*>(data.data()), data.size());
   return MathWrapper<const DataVector>(&referencing);
 }
 
 inline MathWrapper<ComplexDataVector> make_math_wrapper(
     const gsl::not_null<ComplexDataVector*> data) {
+  if (UNLIKELY(data->size() == 0)) {
+    ComplexDataVector empty{};
+    return MathWrapper<ComplexDataVector>(&empty);
+  }
   ComplexDataVector referencing(data->data(), data->size());
   return MathWrapper<ComplexDataVector>(&referencing);
 }
 
 inline MathWrapper<const ComplexDataVector> make_math_wrapper(
     const ComplexDataVector& data) {
+  if (UNLIKELY(data.size() == 0)) {
+    ComplexDataVector empty{};
+    return MathWrapper<const ComplexDataVector>(&empty);
+  }
   ComplexDataVector referencing(const_cast<std::complex<double>*>(data.data()),
                                 data.size());
   return MathWrapper<const ComplexDataVector>(&referencing);

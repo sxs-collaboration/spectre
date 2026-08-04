@@ -39,6 +39,9 @@ void test_type(const T& first_value, const T& second_value,
   static_assert(std::is_same_v<math_wrapper_type<const T>,
                                typename ConstWrapper::value_type>);
 
+  CHECK(mutable_source_wrapper.operator->() == &*mutable_source_wrapper);
+  CHECK(const_source_wrapper.operator->() == &*const_source_wrapper);
+
   detail::do_assignment(destination_wrapper, mutable_source_wrapper.to_const());
   CHECK(destination == second_value);
   CHECK(source == second_value);
