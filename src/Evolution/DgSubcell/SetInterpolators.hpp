@@ -90,8 +90,18 @@ struct SetInterpolators {
       const ElementMap<Dim, Frame::Grid>& element_map,
       const ReconstructorType& reconstructor,
       const evolution::dg::subcell::SubcellOptions& subcell_options) {
-    if (alg::found(subcell_options.only_dg_block_ids(),
-                   element.id().block_id())) {
+    // Skip for elements that are DG-only: either in a DG-only block,
+    // bordering a DG-only block, or on a non-subcell-compatible mesh.
+    if (not fd::dg_mesh_supports_subcell(my_dg_mesh) or
+        alg::found(subcell_options.only_dg_block_ids(),
+                   element.id().block_id()) or
+        alg::any_of(
+            element.neighbors(),
+            [&subcell_options](const auto& direction_and_neighbors) {
+              return alg::found(
+                  subcell_options.only_dg_block_ids(),
+                  direction_and_neighbors.second.ids().begin()->block_id());
+            })) {
       return;
     }
     const bool enable_extension_directions =

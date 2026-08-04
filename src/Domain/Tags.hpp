@@ -104,6 +104,13 @@ struct MappedCoordinates
       const typename MapTag::type& element_map,
       const tnsr::I<DataVector, MapTag::dim, typename MapTag::source_frame>&
           source_coords) {
+    if (source_coords.get(0).size() == 0) {
+      // When subcell is not supported on an element due to topology, the
+      // subcell mesh is
+      // {0, Basis::Uninitialized, Quadrature::Uninitialized}. It is never
+      // used, but the compute items still need to run
+      return;
+    }
     *target_coords = element_map(source_coords);
   }
 };

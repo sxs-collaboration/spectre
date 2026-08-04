@@ -69,6 +69,13 @@ struct GhostZoneInverseJacobian {
       const Mesh<Dim>& subcell_mesh,
       const ElementMap<Dim, Frame::Grid>& element_map,
       const ReconstructorType& reconstructor) {
+    // Skip for elements whose topology does not support subcell.
+    // For non-hypercube elements, fd::mesh() returns the DG mesh unchanged,
+    // so the subcell mesh won't have FiniteDifference basis.
+    if (subcell_mesh.basis(0) != Spectral::Basis::FiniteDifference) {
+      return;
+    }
+
     using neighbor_tags = tmpl::list<
         evolution::dg::subcell::Tags::Coordinates<Dim, Frame::Grid>,
         evolution::dg::subcell::fd::Tags::InverseJacobianLogicalToGrid<Dim>>;

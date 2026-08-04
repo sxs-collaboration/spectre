@@ -239,7 +239,9 @@ class SubcellOptions {
   ///
   /// The `DomainCreator` is used to convert block and group names into IDs
   /// and also to check that all listed block names and groups are in the
-  /// domain.
+  /// domain.  In addition, blocks whose topology does not support subcell
+  /// (e.g. spherical shells, filled balls) are automatically added to the
+  /// DG-only list.
   ///
   /// \note This is a workaround since our option parser does not allow us to
   /// retrieve options specified somewhere completely different in the input

@@ -429,6 +429,21 @@ void test(const bool moving_mesh) {
   TestHelpers::db::test_compute_tag<subcell::Tags::ObserverMeshCompute<Dim>>(
       "ObserverMesh");
 }
+void test_logical_coordinates_zero_mesh() {
+  // LogicalCoordinatesCompute must return empty (zero-size) coordinates when
+  // the subcell mesh is the uninitialized sentinel (zero extents), as used for
+  // non-hypercube elements where subcell is not supported
+  const auto box = db::create<
+      tmpl::list<subcell::Tags::Mesh<3>>,
+      db::AddComputeTags<subcell::Tags::LogicalCoordinatesCompute<3>>>(
+      Mesh<3>{0_st, Spectral::Basis::Uninitialized,
+              Spectral::Quadrature::Uninitialized});
+  const auto& coords =
+      db::get<subcell::Tags::Coordinates<3, Frame::ElementLogical>>(box);
+  for (size_t d = 0; d < 3; ++d) {
+    CHECK(coords.get(d).size() == 0);
+  }
+}
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Evolution.Subcell.Tags", "[Evolution][Unit]") {
@@ -460,4 +475,5 @@ SPECTRE_TEST_CASE("Unit.Evolution.Subcell.Tags", "[Evolution][Unit]") {
     test<2>(moving_mesh);
     test<3>(moving_mesh);
   }
+  test_logical_coordinates_zero_mesh();
 }

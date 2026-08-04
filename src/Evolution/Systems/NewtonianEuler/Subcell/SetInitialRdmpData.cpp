@@ -9,6 +9,7 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Evolution/DgSubcell/ActiveGrid.hpp"
+#include "Evolution/DgSubcell/Mesh.hpp"
 #include "Evolution/DgSubcell/PerssonTci.hpp"
 #include "Evolution/DgSubcell/Projection.hpp"
 #include "Evolution/DgSubcell/TwoMeshRdmpTci.hpp"
@@ -23,7 +24,10 @@ void SetInitialRdmpData<Dim>::apply(
         tmpl::list<MassDensityCons, MomentumDensity, EnergyDensity>>& vars,
     const evolution::dg::subcell::ActiveGrid active_grid,
     const Mesh<Dim>& dg_mesh, const Mesh<Dim>& subcell_mesh) {
-  if (active_grid == evolution::dg::subcell::ActiveGrid::Subcell) {
+  // Also skip projection for non-hypercube elements (which can never use
+  // subcell) to avoid projecting onto the invalid subcell mesh
+  if (active_grid == evolution::dg::subcell::ActiveGrid::Subcell or
+      not evolution::dg::subcell::fd::dg_mesh_supports_subcell(dg_mesh)) {
     const Scalar<DataVector>& mass_density = get<MassDensityCons>(vars);
     const Scalar<DataVector>& energy_density = get<EnergyDensity>(vars);
     *rdmp_tci_data = {{max(get(mass_density)), max(get(energy_density))},

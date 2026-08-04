@@ -12,13 +12,17 @@
 #include <utility>
 #include <vector>
 
+#include "Domain/Block.hpp"
 #include "Domain/Creators/DomainCreator.hpp"
+#include "Domain/Domain.hpp"
 #include "Domain/Structure/BlockGroups.hpp"
+#include "Domain/Structure/Topology.hpp"
 #include "Options/Context.hpp"
 #include "Options/Options.hpp"
 #include "Utilities/Algorithm.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
+#include "Utilities/Gsl.hpp"
 #include "Utilities/Serialization/PupStlCpp17.hpp"
 
 namespace evolution::dg::subcell {
@@ -62,6 +66,25 @@ SubcellOptions::SubcellOptions(
   }
 }
 
+namespace {
+bool topology_supports_subcell(const domain::Topology topology) {
+  return topology == domain::Topology::I1 or
+         topology == domain::Topology::B1Radial or
+         topology == domain::Topology::CartoonSphere or
+         topology == domain::Topology::CartoonCylinder;
+}
+
+template <size_t Dim>
+bool block_supports_subcell(const Block<Dim>& block) {
+  for (size_t d = 0; d < Dim; ++d) {
+    if (not topology_supports_subcell(gsl::at(block.topologies(), d))) {
+      return false;
+    }
+  }
+  return true;
+}
+}  // namespace
+
 template <size_t Dim>
 SubcellOptions::SubcellOptions(
     const SubcellOptions& subcell_options_with_block_names,
@@ -71,6 +94,16 @@ SubcellOptions::SubcellOptions(
       subcell_options_with_block_names.only_dg_block_and_group_names_.value_or(
           std::vector<std::string>{}),
       domain_creator.block_names(), domain_creator.block_groups());
+
+  // Auto-detect blocks whose topology does not support subcell (e.g.
+  // spherical shells, filled balls) and add them to the DG-only list.
+  const auto domain = domain_creator.create_domain();
+  for (const auto& block : domain.blocks()) {
+    if (not block_supports_subcell(block) and
+        not alg::found(*only_dg_block_ids_, block.id())) {
+      only_dg_block_ids_->push_back(block.id());
+    }
+  }
 }
 
 void SubcellOptions::pup(PUP::er& p) {
