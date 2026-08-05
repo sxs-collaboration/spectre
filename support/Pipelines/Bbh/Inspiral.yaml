@@ -40,7 +40,12 @@ Next:
 ---
 
 Parallelization:
+{% if not UseCylindricalDomain %}
   ElementDistribution: NumGridPointsAndGridSpacing
+{% else %}
+  # NumGridPointsAndGridSpacing not supported for GTS
+  ElementDistribution: NumGridPoints
+{% endif %}
 
 InitialData:
 {% if SpecDataDirectory is defined %}
@@ -78,6 +83,7 @@ InitialData:
 {% endif %}
 
 DomainCreator:
+{% if not UseCylindricalDomain %}
   BinaryCompactObject:
     ObjectA:
       InnerRadius: &ExcisionRadiusA {{ ExcisionRadiusA }}
@@ -140,7 +146,61 @@ DomainCreator:
       Envelope:       [{{ P + 3 }}, {{ P + 3 }}, {{ P + 5 }}]
       OuterShell0:    [{{ P + 3 }}, {{ P + 3 }}, {{ P + 4 }}]
     UseWorldtube: false
-{% if IdFromEvolution %}
+{% else %}
+  CylindricalBinaryCompactObject:
+    CenterA: &CenterA [&XCoordA {{ XCoordA }}, &YOffset 0.0, &ZOffset 0.0]
+    CenterB: &CenterB [&XCoordB {{ XCoordB }}, *YOffset, *ZOffset]
+    RadiusA: &ExcisionRadiusA {{ ExcisionRadiusA }}
+    RadiusB: &ExcisionRadiusB {{ ExcisionRadiusB }}
+    IncludeInnerSphereA: true
+    IncludeInnerSphereB: true
+    OuterRadius: {{ OuterShellRadius }}
+    # Refine as much as currently possible just to parallelize as much as
+    # possible
+    InitialRefinement:
+      # z refinement for cylindrical block groups
+      InnerA: 1
+      InnerB: 1
+      Outer: 1
+      # radial refinement for spherical shell block groups
+      InnerSphereA: 2
+      InnerSphereB: 2
+      OuterSphere: 2
+    # The following grid points have not been demonstrated to necessarily be the
+    # best choice, but (with consideration of the InitialRefinement above) are
+    # chosen to be in the ballpark of what SpEC equal mass non-spinning Lev1
+    # runs seem to do - at least as much as we can with current limitations on
+    # the amount of refinement and number of grid points in this domain.
+    InitialGridPoints:
+      # [radial_points, z_points] for filled cylinder blocks
+      # - theta_points will be set to (4 * radial_points - 3)
+      CAFilledCylinder: [8, 9]
+      CBFilledCylinder: [8, 9]
+      EAFilledCylinder: [8, 9]
+      EBFilledCylinder: [8, 9]
+      MAFilledCylinder: [18, 10]
+      MBFilledCylinder: [18, 10]
+      # [radial_points, theta_points, z_points] for hollow cylinder blocks
+      # - setting radial_points = (2 * fllled cylinder z_points) because
+      #   filled cylinder z h-refinement = 1
+      # - setting theta_points = filled cylinder theta_points above
+      CACylinder: [18, 15, 7]
+      CBCylinder: [18, 15, 7]
+      EACylinder: [18, 19, 6]
+      EBCylinder: [18, 19, 6]
+      # [radial_points, L_max] for spherical shell block groups
+      InnerSphereA: [12, 20]
+      InnerSphereB: [12, 20]
+      OuterSphere: [20, 13]
+    BoundaryConditions:
+      InnerBoundary:
+        DemandOutgoingCharSpeeds:
+      OuterBoundary:
+        ConstraintPreservingBjorhus:
+          Type: ConstraintPreservingPhysical
+          IncomingWaveProfile: None
+{% endif %}
+  {% if IdFromEvolution %}
     TimeDependentMaps:
       InitialTime: &InitialTime {{ InitialTime }}
       ExpansionMap:
@@ -152,23 +212,31 @@ DomainCreator:
       TranslationMap:
         H5Filename: "{{ FotFilename }}"
         SubfileName: "{{ IdSubfile }}"
+    {% if not UseCylindricalDomain %}
       SkewMap:
         H5Filename: "{{ FotFilename }}"
         SubfileName: "{{ IdSubfile }}"
+    {% else %}
+      SkewMap: None
+    {% endif %}
       ShapeMapA:
         CoefficientTruncationLimit: 1e-16
         H5Filename: "{{ FotFilename }}"
         SubfileName: "{{ IdSubfile }}"
         LMax: Auto
+      {% if not UseCylindricalDomain %}
         TransitionEndsAtCube: True
+      {% endif %}
       ShapeMapB:
         CoefficientTruncationLimit: 1e-16
         H5Filename: "{{ FotFilename }}"
         SubfileName: "{{ IdSubfile }}"
         LMax: Auto
+      {% if not UseCylindricalDomain %}
         TransitionEndsAtCube: True
+      {% endif %}
       GridCenters: None
-{% else %}
+  {% else %}
     TimeDependentMaps:
       InitialTime: &InitialTime 0.0
       ExpansionMap:
@@ -179,51 +247,64 @@ DomainCreator:
         InitialAngularVelocity: [0.0, 0.0, {{ InitialAngularVelocity }}]
       TranslationMap:
         InitialValues: [[0.0, 0.0, 0.0], [0.0, 0.0, 0.0], [0.0, 0.0, 0.0]]
+    {% if not UseCylindricalDomain %}
       SkewMap:
         InitialValuesY: [0.0, 0.0, 0.0]
         InitialValuesZ: [0.0, 0.0, 0.0]
+    {% else %}
+      SkewMap: None
+    {% endif %}
       ShapeMapA:
         LMax: &ShapeLMax 10
         CoefficientTruncationLimit: 1e-16
-  {% if SpecDataDirectory is defined %}
+      {% if SpecDataDirectory is defined %}
         InitialValues: Spherical
-  {% else %}
+      {% else %}
         InitialValues:
           Mass: {{ ExcisionAShapeMass }}
           Spin:
             - {{ ExcisionAShapeSpin_x }}
             - {{ ExcisionAShapeSpin_y }}
             - {{ ExcisionAShapeSpin_z }}
-  {% endif %}
+      {% endif %}
         SizeInitialValues: [0.0, 0.0, 0.0]
+      {% if not UseCylindricalDomain %}
         TransitionEndsAtCube: true
+      {% endif %}
       ShapeMapB:
         LMax: *ShapeLMax
         CoefficientTruncationLimit: 1e-16
-  {% if SpecDataDirectory is defined %}
+      {% if SpecDataDirectory is defined %}
         InitialValues: Spherical
-  {% else %}
+      {% else %}
         InitialValues:
           Mass: {{ ExcisionBShapeMass }}
           Spin:
             - {{ ExcisionBShapeSpin_x }}
             - {{ ExcisionBShapeSpin_y }}
             - {{ ExcisionBShapeSpin_z }}
-  {% endif %}
+      {% endif %}
         SizeInitialValues: [0.0, 0.0, 0.0]
+      {% if not UseCylindricalDomain %}
         TransitionEndsAtCube: true
+      {% endif %}
       GridCenters: None
-{% endif %}
+  {% endif %}
 
 Evolution:
   InitialTime: *InitialTime
-  InitialTimeStep: 0.0002
+  InitialTimeStep: &InitialTimeStep 0.0002
   MinimumTimeStep: 1e-7
+{% if not UseCylindricalDomain %}
   # This is the smallest interval we'd need to observe time step/constraints. If
   # you need it smaller you can edit it, but make sure to change the slab
   # intervals in the EventsAndTriggersAtSlabs
   InitialSlabSize: 0.1
   LocalTimeStepping: Conservative
+{% else %}
+  InitialSlabSize: *InitialTimeStep
+  LocalTimeStepping: Off
+{% endif %}
   VariableOrderAlgorithm:
     GoalOrder: 4
   LtsStepChoosers:
@@ -290,6 +371,7 @@ SpatialDiscretization:
   DiscontinuousGalerkin:
     Formulation: StrongInertial
     Quadrature: GaussLobatto
+  {% if not UseCylindricalDomain %}
     # Half power was determined to filter only the last term up to N = 19
     # since we support up to 20 gridpoints.
     Filtering:
@@ -301,6 +383,41 @@ SpatialDiscretization:
           BoundaryCorrectionFilterOnSubstep: false
           VolumeFilterEveryNSteps: None
           BoundaryCorrectionFilterEveryNSteps: None
+  {% else %}
+    # These have not yet been demonstrated to necessarily be the best settings
+    Filtering:
+      - SphericalShell:
+          NumModesToKill: 4
+          AngularHalfPower: None
+          RadialHalfPower: 64
+          Enable: true
+          BlocksToFilter: [InnerSphereA, InnerSphereB, OuterSphere]
+          VolumeFilterOnSubstep: false
+          BoundaryCorrectionFilterOnSubstep: true
+          VolumeFilterEveryNSteps: 8
+          BoundaryCorrectionFilterEveryNSteps: None
+      - FilledCylinder:
+          NumModesToKill: 1
+          RadialAngularHalfPower: 24
+          ZHalfPower: 24
+          Enable: true
+          BlocksToFilter: [InnerA, InnerB, Outer]
+          VolumeFilterOnSubstep: false
+          BoundaryCorrectionFilterOnSubstep: true
+          VolumeFilterEveryNSteps: 2
+          BoundaryCorrectionFilterEveryNSteps: None
+      - HollowCylinder:
+          NumModesToKill: 1
+          AngularHalfPower: 24
+          RadialHalfPower: 24
+          ZHalfPower: 24
+          Enable: true
+          BlocksToFilter: [InnerA, InnerB, Outer]
+          VolumeFilterOnSubstep: false
+          BoundaryCorrectionFilterOnSubstep: true
+          VolumeFilterEveryNSteps: 2
+          BoundaryCorrectionFilterEveryNSteps: None
+  {% endif %}
 
 Observers:
   VolumeFileName: "BbhVolume"
@@ -334,9 +451,17 @@ PhaseChangeAndTriggers:
   - Trigger:
       Slabs:
         EvenlySpaced:
+        {% if not UseCylindricalDomain %}
           # Trigger checkpoint often enough so it triggers within the last 30
           # minutes of the run
           Interval: 10
+        {% else %}
+          # BCO LTS cadence:
+          #   InitialSlabSize = 0.1, Interval = 10 -> every 1M
+          # So, choosing CBCO GTS cadence to match:
+          #   InitialSlabSize = 0.0002, Interval = 5000 -> every 1M
+          Interval: 5000
+        {% endif %}
           Offset: 0
     PhaseChanges:
       - CheckpointAndExitAfterWallclock:
@@ -359,11 +484,41 @@ EventsAndTriggersAtCheckpoints:
           BlocksToObserve: All
 
 EventsAndTriggersAtSlabs:
-  # Observe time step and cheap constraints every slab
+{% if UseCylindricalDomain %}
+  # Add adaptivity to GTS
+  - Trigger: Always
+    Events:
+      - ChangeSlabSize:
+          DelayChange: 0
+          StepChoosers:
+            - LimitIncrease:
+                Factor: 2
+            - PreventRapidIncrease
+      - ChangeSlabSize:
+          DelayChange: 5
+          StepChoosers:
+            - ErrorControl:
+                # Found that 100x smaller timestep tolerances reduced the noise
+                # in the constraints significantly
+                AbsoluteTolerance: 1e-8
+                RelativeTolerance: 1e-6
+                MaxFactor: 2
+                MinFactor: 0.25
+                SafetyFactor: 0.95
+{% endif %}
   - Trigger:
       Slabs:
         EvenlySpaced:
+        {% if not UseCylindricalDomain %}
+          # Observe time step and cheap constraints every slab
           Interval: 1
+        {% else %}
+          # BCO LTS cadence:
+          #   InitialSlabSize = 0.1, Interval = 1 -> every 0.1M
+          # So, choosing CBCO GTS cadence to match:
+          #   InitialSlabSize = 0.0002, Interval = 500 -> every 0.1M
+          Interval: 500
+        {% endif %}
           Offset: 0
     Events:
       - ObserveTimeStep:
@@ -387,7 +542,15 @@ EventsAndTriggersAtSlabs:
   - Trigger:
       Slabs:
         EvenlySpaced:
+        {% if not UseCylindricalDomain %}
           Interval: 100
+        {% else %}
+          # BCO LTS cadence:
+          #   InitialSlabSize = 0.1, Interval = 100 -> every 10M
+          # So, choosing CBCO GTS cadence to match:
+          #   InitialSlabSize = 0.0002, Interval = 50000 -> every 10M
+          Interval: 50000
+        {% endif %}
           Offset: 0
     Events:
       - ObserveNorms:
@@ -411,7 +574,15 @@ EventsAndTriggersAtSlabs:
   - Trigger:
       Slabs:
         EvenlySpaced:
+        {% if not UseCylindricalDomain %}
           Interval: 5
+        {% else %}
+          # BCO LTS cadence:
+          #   InitialSlabSize = 0.1, Interval = 5 -> every 0.5M
+          # So, choosing CBCO GTS cadence to match:
+          #   InitialSlabSize = 0.0002, Interval = 2500 -> every 0.5M
+          Interval: 2500
+        {% endif %}
           Offset: 0
     Events:
       - ObservationAhA
@@ -422,7 +593,15 @@ EventsAndTriggersAtSlabs:
   - Trigger:
       Slabs:
         EvenlySpaced:
+        {% if not UseCylindricalDomain %}
           Interval: 2000
+        {% else %}
+          # BCO LTS cadence:
+          #   InitialSlabSize = 0.1, Interval = 2000 -> every 200M
+          # So, choosing CBCO GTS cadence to match:
+          #   InitialSlabSize = 0.0002, Interval = 1000000 -> every 200M
+          Interval: 1000000
+        {% endif %}
           Offset: 0
     Events:
       - ObserveFields:
@@ -554,7 +733,12 @@ ApparentHorizons:
       MaxIts: 100
     Verbosity: Quiet
     MaxComputeCoordsRetries: 3
+  {% if not UseCylindricalDomain %}
     BlocksForHorizonFind: ["ObjectAShell", "ObjectACube"]
+  {% else %}
+    BlocksForHorizonFind:
+      - InnerSphereA
+  {% endif %}
   ObservationAhB: &AhB
     Criteria:
     InitialGuess:
@@ -566,7 +750,12 @@ ApparentHorizons:
     FastFlow: *DefaultFastFlow
     Verbosity: Quiet
     MaxComputeCoordsRetries: 3
+  {% if not UseCylindricalDomain %}
     BlocksForHorizonFind: ["ObjectBShell", "ObjectBCube"]
+  {% else %}
+    BlocksForHorizonFind:
+      - InnerSphereB
+  {% endif %}
   ObservationAhC:
     Criteria:
     InitialGuess:
@@ -579,11 +768,16 @@ ApparentHorizons:
     Verbosity: Quiet
     MaxComputeCoordsRetries: 3
     BlocksForHorizonFind:
+    {% if not UseCylindricalDomain %}
       - "ObjectAShell"
       - "ObjectACube"
       - "ObjectBShell"
       - "ObjectBCube"
       - "Envelope"
+    {% else %}
+      - InnerSphereA
+      - InnerSphereB
+    {% endif %}
   ControlSystemAhA: *AhA
   ControlSystemAhB: *AhB
   ControlSystemCharSpeedAhA: *AhA
@@ -631,6 +825,7 @@ ControlSystems:
     ControlError:
   Rotation: *KinematicControlSystem
   Translation: *KinematicControlSystem
+{% if not UseCylindricalDomain %}
   Skew:
     Averager: *KinematicAverager
     Controller: *KinematicController
@@ -643,6 +838,9 @@ ControlSystems:
       IncreaseFactor: *IncreaseFactor
       DecreaseFactor: *DecreaseFactor
     ControlError:
+{% else %}
+  Skew: None
+{% endif %}
   ShapeA:
     Averager: &SizeShapeAverager
       AverageTimescaleFraction: *AvgTimescaleFrac

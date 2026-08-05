@@ -113,6 +113,7 @@ def inspiral_parameters(
     id_input_file: dict,
     id_metadata: dict,
     id_run_dir: Union[str, Path],
+    cylindrical_domain: bool,
     id_subfile_name: Optional[str],
     id_horizons_path: Optional[Union[str, Path]],
 ) -> dict:
@@ -209,7 +210,9 @@ def inspiral_parameters(
         "IdFileGlob": id_file_glob,
         "IdSubfile": id_subfile_name,
         "IdFromEvolution": id_from_evolution,
-        # Domain geometry
+        # Whether to use cylindrical or rectangular BBH domain
+        "UseCylindricalDomain": cylindrical_domain,
+        # Domain geometry in common between cylindrical and rectangular domain
         "ExcisionRadiusA": (
             id_domain_creator["ObjectA"]["InnerRadius"]
             * excision_radius_factor_a
@@ -218,23 +221,38 @@ def inspiral_parameters(
             id_domain_creator["ObjectB"]["InnerRadius"]
             * excision_radius_factor_b
         ),
-        "ObjectOuterRadius": initial_separation / 2.5,
         "XCoordA": id_domain_creator["ObjectA"]["XCoord"],
         "XCoordB": id_domain_creator["ObjectB"]["XCoord"],
-        "CenterOfMassOffset_y": id_domain_creator["CenterOfMassOffset"][0],
-        "CenterOfMassOffset_z": id_domain_creator["CenterOfMassOffset"][1],
-        "EnvelopeRadius": 100.0 / 15.0 * initial_separation,
         # SpEC chooses the outer radius based on a Newtonian estimate of the
         # wave zone (See function AutoRmax in SpEC/Support/Perl/SpEC.pm). This
         # may need to be ported over eventually. The CCE extraction radii may
         # also need to be adjusted to account for different outer shell radii.
         "OuterShellRadius": 600.0 / 15.0 * initial_separation,
-        # Extra resolution for unequal masses (to be replaced with AMR)
-        # This extra refinement was found through trial and error and allowed
-        # mass ratio 6 to evolve through inspiral stably.
-        "ExtraRadRef": round(mass_ratio / 2.0) - 1 if (mass_ratio > 2.0) else 0,
-        "ExtraRadPoints": round(mass_ratio / 5.0) if (mass_ratio > 5.0) else 0,
     }
+
+    if not cylindrical_domain:
+        # Remaining rectangular BBH domain geometry
+        params.update(
+            {
+                "ObjectOuterRadius": initial_separation / 2.5,
+                "CenterOfMassOffset_y": id_domain_creator["CenterOfMassOffset"][
+                    0
+                ],
+                "CenterOfMassOffset_z": id_domain_creator["CenterOfMassOffset"][
+                    1
+                ],
+                "EnvelopeRadius": 100.0 / 15.0 * initial_separation,
+                # Extra resolution for unequal masses (to be replaced with AMR)
+                # This extra refinement was found through trial and error and
+                # allowed mass ratio 6 to evolve through inspiral stably.
+                "ExtraRadRef": (
+                    round(mass_ratio / 2.0) - 1 if (mass_ratio > 2.0) else 0
+                ),
+                "ExtraRadPoints": (
+                    round(mass_ratio / 5.0) if (mass_ratio > 5.0) else 0
+                ),
+            }
+        )
 
     # Initial functions of time (set from ID or load from evolution data)
     if id_from_evolution:
@@ -327,6 +345,7 @@ def _load_spec_id_params(id_params_file: Path) -> dict:
 def inspiral_parameters_spec(
     id_params: dict,
     id_run_dir: Union[str, Path],
+    cylindrical_domain: bool,
 ) -> dict:
     """Determine inspiral parameters from SpEC initial data.
 
@@ -430,6 +449,7 @@ def start_inspiral(
     pipeline_dir: Optional[Union[str, Path]] = None,
     run_dir: Optional[Union[str, Path]] = None,
     segments_dir: Optional[Union[str, Path]] = None,
+    cylindrical_domain: bool = False,
     **scheduler_kwargs,
 ):
     """Schedule an inspiral simulation from initial data.
@@ -464,6 +484,7 @@ def start_inspiral(
         inspiral_params = inspiral_parameters_spec(
             _load_spec_id_params(Path(id_input_file_path)),
             id_run_dir,
+            cylindrical_domain,
         )
     else:
         # Load SpECTRE initial data
@@ -473,33 +494,47 @@ def start_inspiral(
             id_input_file,
             id_metadata,
             id_run_dir,
+            cylindrical_domain,
             id_subfile_name=id_subfile_name,
             id_horizons_path=id_horizons_path,
         )
 
     # Determine resolution
-    if lev is not None:
-        assert (refinement_level is None) and (polynomial_order is None), (
-            "The option 'lev' is mutually exclusive with 'refinement_level' and"
-            " 'polynomial_order'."
+    if not cylindrical_domain:
+        if lev is not None:
+            assert (refinement_level is None) and (polynomial_order is None), (
+                "The option 'lev' is mutually exclusive with 'refinement_level'"
+                " and 'polynomial_order'."
+            )
+            selected_lev = INSPIRAL_LEVS[lev]
+            refinement_level = selected_lev["refinement_level"]
+            polynomial_order = selected_lev["polynomial_order"]
+        else:
+            assert (refinement_level is not None) and (
+                polynomial_order is not None
+            ), (
+                "Resolution not specified. Provide either 'lev' or both"
+                " 'refinement_level' and 'polynomial_order'."
+            )
+        inspiral_params.update(
+            {
+                "Lev": lev,
+                "L": refinement_level,
+                "P": polynomial_order,
+            }
         )
-        selected_lev = INSPIRAL_LEVS[lev]
-        refinement_level = selected_lev["refinement_level"]
-        polynomial_order = selected_lev["polynomial_order"]
     else:
-        assert (refinement_level is not None) and (
-            polynomial_order is not None
-        ), (
-            "Resolution not specified. Provide either 'lev' or both"
-            " 'refinement_level' and 'polynomial_order'."
+        assert (
+            lev is None
+        ), "Cannot currently use --lev with --cylindrical_domain=True."
+        assert refinement_level is None, (
+            "Cannot currently use --refinement-level with "
+            "--cylindrical-domain=True."
         )
-    inspiral_params.update(
-        {
-            "Lev": lev,
-            "L": refinement_level,
-            "P": polynomial_order,
-        }
-    )
+        assert polynomial_order is None, (
+            "Cannot currently use --polynomial-order with "
+            "--cylindrical-domain=True."
+        )
 
     # Set final time for eccentricity control to 2-3 orbits. This can be set
     # more dynamically in the future.
@@ -623,6 +658,13 @@ def start_inspiral(
         " this file does not exist in your ID directory, run 'spectre bbh"
         " postprocess-id' in the ID directory to generate it. Note that this is"
         " not needed if you are starting from a SpEC ID_Params.perl file."
+    ),
+)
+@click.option(
+    "--cylindrical-domain",
+    is_flag=True,
+    help=(
+        "Use the cylindrical BBH domain instead of the rectangular BBH domain."
     ),
 )
 @click.option(
