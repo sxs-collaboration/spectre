@@ -43,7 +43,8 @@ struct TimeStepId;
 
 namespace evolution::dg::Actions::detail {
 template <typename System, size_t Dim, typename BoundaryCorrection,
-          typename TemporaryTags, typename... PackageDataVolumeArgs>
+          typename EvolvedVariablesTags, typename TemporaryTags,
+          typename... PackageDataVolumeArgs>
 void internal_mortar_data_impl(
     const gsl::not_null<
         DirectionMap<Dim, std::optional<Variables<tmpl::list<
@@ -56,8 +57,7 @@ void internal_mortar_data_impl(
     const gsl::not_null<gsl::span<double>*> face_temporaries,
     const gsl::not_null<gsl::span<double>*> packaged_data_buffer,
     const BoundaryCorrection& boundary_correction,
-    const Variables<typename System::variables_tag::tags_list>&
-        volume_evolved_vars,
+    const Variables<EvolvedVariablesTags>& volume_evolved_vars,
     const Variables<
         db::wrap_tags_in<::Tags::Flux, typename System::flux_variables,
                          tmpl::size_t<Dim>, Frame::Inertial>>& volume_fluxes,
@@ -73,7 +73,7 @@ void internal_mortar_data_impl(
     const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
                           Frame::Inertial>& volume_inverse_jacobian,
     const PackageDataVolumeArgs&... package_data_volume_args) {
-  using variables_tags = typename System::variables_tag::tags_list;
+  using variables_tags = EvolvedVariablesTags;
   using flux_variables = typename System::flux_variables;
   using fluxes_tags = db::wrap_tags_in<::Tags::Flux, flux_variables,
                                        tmpl::size_t<Dim>, Frame::Inertial>;
@@ -331,14 +331,14 @@ void internal_mortar_data_impl(
 }
 
 template <typename System, size_t Dim, typename BoundaryCorrection,
-          typename DbTagsList, typename... PackageDataVolumeTags>
+          typename DbTagsList, typename EvolvedVariablesTags,
+          typename... PackageDataVolumeTags>
 void internal_mortar_data(
     const gsl::not_null<db::DataBox<DbTagsList>*> box,
     const gsl::not_null<gsl::span<double>*> face_temporaries,
     const gsl::not_null<gsl::span<double>*> packaged_data_buffer,
     const BoundaryCorrection& boundary_correction,
-    const Variables<typename System::variables_tag::tags_list>
-        evolved_variables,
+    const Variables<EvolvedVariablesTags>& evolved_variables,
     const Variables<
         db::wrap_tags_in<::Tags::Flux, typename System::flux_variables,
                          tmpl::size_t<Dim>, Frame::Inertial>>& volume_fluxes,

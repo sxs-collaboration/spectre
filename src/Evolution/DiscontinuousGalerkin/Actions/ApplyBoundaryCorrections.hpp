@@ -550,6 +550,8 @@ bool receive_boundary_data(
   }
 }
 
+struct FetchFromMetavariables;
+
 /// Apply corrections from boundary communication.
 ///
 /// This is usually used indirectly through
@@ -565,7 +567,7 @@ bool receive_boundary_data(
 /// at ::Tags::Time instead of performing a full step.  This is only
 /// used for local time-stepping.
 template <bool LocalTimeStepping, typename Metavariables, bool DenseOutput,
-          bool ComputeAuxiliary = false>
+          bool ComputeAuxiliary, typename VariablesTag>
 struct ApplyBoundaryCorrections {
   static constexpr bool local_time_stepping = LocalTimeStepping;
   static_assert(local_time_stepping or not DenseOutput,
@@ -575,7 +577,11 @@ struct ApplyBoundaryCorrections {
 
   using system = typename Metavariables::system;
   static constexpr size_t volume_dim = system::volume_dim;
-  using variables_tag = typename system::variables_tag;
+  using variables_tag =
+      tmpl::conditional_t<std::is_same_v<VariablesTag, FetchFromMetavariables>,
+                          typename Metavariables::system::variables_tag,
+                          VariablesTag>;
+
   using FilterTagList = typename variables_tag::tags_list;
   using dt_variables_tag = db::add_tag_prefix<::Tags::dt, variables_tag>;
   using auxiliary_variables_tag = ::Tags::Variables<
@@ -1328,14 +1334,17 @@ struct ApplyBoundaryCorrections {
 };
 
 /// Apply corrections from boundary communication for LTS dense output.
-template <typename Metavariables>
+template <typename Metavariables,
+          typename VariablesTag = FetchFromMetavariables>
 struct ApplyLtsDenseBoundaryCorrections
-    : ApplyBoundaryCorrections<true, Metavariables, true> {};
+    : ApplyBoundaryCorrections<true, Metavariables, true, false, VariablesTag> {
+};
 
 namespace Actions {
 namespace ApplyBoundaryCorrections_detail {
 template <bool LocalTimeStepping, size_t VolumeDim, bool DenseOutput,
-          bool UseNodegroupDgElements, bool ComputeAuxiliary = false>
+          bool UseNodegroupDgElements, bool ComputeAuxiliary,
+          typename VariablesTag>
 struct ActionImpl {
   using inbox_tags =
       tmpl::list<evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<
@@ -1390,8 +1399,9 @@ struct ActionImpl {
       return {Parallel::AlgorithmExecution::Continue, std::nullopt};
     }
 
-    db::mutate_apply<ApplyBoundaryCorrections<LocalTimeStepping, Metavariables,
-                                              DenseOutput, ComputeAuxiliary>>(
+    db::mutate_apply<
+        ApplyBoundaryCorrections<LocalTimeStepping, Metavariables, DenseOutput,
+                                 ComputeAuxiliary, VariablesTag>>(
         make_not_null(&box));
     return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
@@ -1402,10 +1412,12 @@ struct ActionImpl {
  * \brief Computes the boundary corrections for global time-stepping
  * and adds them to the time derivative.
  */
-template <size_t VolumeDim, bool UseNodegroupDgElements>
+template <size_t VolumeDim, bool UseNodegroupDgElements,
+          typename VariablesTag = FetchFromMetavariables>
 struct ApplyBoundaryCorrectionsToTimeDerivative
     : ApplyBoundaryCorrections_detail::ActionImpl<false, VolumeDim, false,
-                                                  UseNodegroupDgElements> {};
+                                                  UseNodegroupDgElements, false,
+                                                  VariablesTag> {};
 
 /*!
  * \brief Receives and lifts the LDG auxiliary boundary corrections into the
@@ -1417,11 +1429,12 @@ struct ApplyBoundaryCorrectionsToTimeDerivative
  * flux. The second step (the physical boundary correction) is done by
  * `ApplyBoundaryCorrectionsToTimeDerivative`.
  */
-template <size_t VolumeDim, bool UseNodegroupDgElements>
+template <size_t VolumeDim, bool UseNodegroupDgElements,
+          typename VariablesTag = FetchFromMetavariables>
 struct ApplyAuxiliaryBoundaryCorrectionsToVariables
-    : ApplyBoundaryCorrections_detail::ActionImpl<false, VolumeDim, false,
-                                                  UseNodegroupDgElements,
-                                                  /*ComputeAuxiliary=*/true> {};
+    : ApplyBoundaryCorrections_detail::ActionImpl<
+          false, VolumeDim, false, UseNodegroupDgElements,
+          /*ComputeAuxiliary=*/true, VariablesTag> {};
 
 /*!
  * \brief Computes the boundary corrections for local time-stepping
@@ -1434,9 +1447,11 @@ struct ApplyAuxiliaryBoundaryCorrectionsToVariables
  * data history, we insert the received temporal id, that is, the current time
  * of the neighbor, along with the boundary correction data.
  */
-template <size_t VolumeDim, bool UseNodegroupDgElements>
+template <size_t VolumeDim, bool UseNodegroupDgElements,
+          typename VariablesTag = FetchFromMetavariables>
 struct ApplyLtsBoundaryCorrections
-    : ApplyBoundaryCorrections_detail::ActionImpl<true, VolumeDim, false,
-                                                  UseNodegroupDgElements> {};
+    : ApplyBoundaryCorrections_detail::ActionImpl<
+          true, VolumeDim, false, UseNodegroupDgElements, false, VariablesTag> {
+};
 }  // namespace Actions
 }  // namespace evolution::dg
