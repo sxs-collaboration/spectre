@@ -612,9 +612,10 @@ struct EvolutionMetavars {
                                        use_control_systems, true>,
           evolution::dg::Initialization::Domain<EvolutionMetavars,
                                                 use_control_systems>,
-          ::amr::Initialization::Initialize<volume_dim, EvolutionMetavars>,
-          Initialization::TimeStepperHistory<EvolutionMetavars>>,
+          ::amr::Initialization::Initialize<volume_dim, EvolutionMetavars>>,
       Initialization::Actions::NonconservativeSystem<system>,
+      Initialization::Actions::InitializeItems<
+          Initialization::TimeStepperHistory<system>>,
       Initialization::Actions::AddComputeTags<tmpl::list<::Tags::DerivCompute<
           typename system::variables_tag, ::domain::Tags::Mesh<volume_dim>,
           ::domain::Tags::InverseJacobian<volume_dim, Frame::ElementLogical,

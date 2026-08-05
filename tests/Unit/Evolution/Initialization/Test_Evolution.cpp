@@ -448,14 +448,13 @@ DtVariablesType make_dt_vars(
 template <size_t Dim>
 void test_initialization() {
   const TimeSteppers::AdamsBashforth ab2{2};
-  const Mesh<Dim> mesh{3, Spectral::Basis::Legendre,
-                       Spectral::Quadrature::GaussLobatto};
+  const VariablesType vars{12};
   DtVariablesType dt_vars{};
-  DtVariablesType expected_dt_vars{mesh.number_of_grid_points()};
+  const DtVariablesType expected_dt_vars{12};
   TimeSteppers::History<VariablesType> history{};
   TimeSteppers::History<VariablesType> expected_history{1};
-  Initialization::TimeStepperHistory<TestMetavariables<Dim>>::apply(
-      make_not_null(&dt_vars), make_not_null(&history), ab2, mesh);
+  Initialization::TimeStepperHistory<TestSystem<Dim>>::apply(
+      make_not_null(&dt_vars), make_not_null(&history), ab2, vars);
   CHECK(dt_vars.size() == expected_dt_vars.size());
   CHECK(history == expected_history);
 }
