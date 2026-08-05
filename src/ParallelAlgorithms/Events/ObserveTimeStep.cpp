@@ -15,7 +15,7 @@ class er;
 
 namespace Events::detail {
 std::string FormatTimeOutput::operator()(
-    const double time, const size_t /* num_points */,
+    const double time, const size_t /* num_degrees_of_freedom */,
     const double /* slab_size */, const double /* min_time_step */,
     const double /* max_time_step */, const double /* effective_time_step */,
     const double min_wall_time, const double max_wall_time) const {

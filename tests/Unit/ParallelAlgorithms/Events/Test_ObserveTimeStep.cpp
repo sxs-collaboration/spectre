@@ -210,7 +210,8 @@ void test_observe(const Observer& observer, const bool backwards_in_time,
   create_element(5, {1, 20});
   create_element(30, {1, 2});
   create_element(10, {1, 2});
-  const size_t expected_num_points = 45;
+  const size_t expected_num_dof =
+      45 * System::variables_tag::type::number_of_independent_components;
   const double expected_slab_size = slab.duration().value();
   const double expected_min_step = expected_slab_size / 20.0;
   const double expected_max_step = expected_slab_size / 2.0;
@@ -248,8 +249,8 @@ void test_observe(const Observer& observer, const bool backwards_in_time,
   CHECK(results->subfile_name == "/time_step_subfile");
   CHECK(results->reduction_names[0] == "TimeName");
   CHECK(std::get<0>(reduction_data.data()) == observation_time);
-  CHECK(results->reduction_names[1] == "NumberOfPoints");
-  CHECK(std::get<1>(reduction_data.data()) == expected_num_points);
+  CHECK(results->reduction_names[1] == "Number of degrees of freedom");
+  CHECK(std::get<1>(reduction_data.data()) == expected_num_dof);
   CHECK(results->reduction_names[2] == "Slab size");
   CHECK(std::get<2>(reduction_data.data()) == expected_slab_size);
   CHECK(results->reduction_names[3] == "Minimum time step");
