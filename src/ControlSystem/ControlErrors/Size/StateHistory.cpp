@@ -67,4 +67,13 @@ void StateHistory::pup(PUP::er& p) {
   p | num_times_to_store_;
   p | stored_control_errors_;
 }
+
+bool operator==(const StateHistory& lhs, const StateHistory& rhs) {
+  return lhs.num_times_to_store_ == rhs.num_times_to_store_ and
+         lhs.stored_control_errors_ == rhs.stored_control_errors_;
+}
+
+bool operator!=(const StateHistory& lhs, const StateHistory& rhs) {
+  return not(lhs == rhs);
+}
 }  // namespace control_system::size

@@ -47,6 +47,7 @@
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
+#include "Utilities/Serialization/Serialize.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace Frame {
@@ -88,6 +89,35 @@ void test_control_error_delta_r() {
                                                   grid_frame_excision_radius);
 
   CHECK(control_error_delta_r == approx(-2.5));
+}
+
+void test_size_error_copy() {
+  using SizeError =
+      control_system::ControlErrors::Size<2, domain::ObjectLabel::A>;
+  const auto original = TestHelpers::test_creation<SizeError, Metavars>(
+      "MaxNumTimesForZeroCrossingPredictor: 4\n"
+      "SmoothAvgTimescaleFraction: 0.25\n"
+      "DeltaRDriftOutwardOptions: None\n"
+      "DeltaRDriftInwardOptions:\n"
+      "  MinAllowedRadialDistance: 0.1\n"
+      "  MinAllowedCharSpeed: 0.2\n"
+      "  InwardDriftVelocity: 0.3\n"
+      "InitialState: Initial\n"
+      "SmootherTuner:\n"
+      "  InitialTimescales: 0.2\n"
+      "  MinTimescale: 1.0e-4\n"
+      "  MaxTimescale: 20.0\n"
+      "  IncreaseThreshold: 2.5e-4\n"
+      "  DecreaseThreshold: 1.0e-3\n"
+      "  IncreaseFactor: 1.01\n"
+      "  DecreaseFactor: 0.98\n");
+  // NOLINTNEXTLINE(performance-unnecessary-copy-initialization)
+  const SizeError copy_constructed{original};
+  SizeError copy_assigned{};
+  copy_assigned = original;
+  CHECK(original == copy_constructed);
+  CHECK(original == copy_assigned);
+  CHECK(original == serialize_and_deserialize(original));
 }
 
 void test_size_error_horizon_higher_res_than_excision() {
@@ -475,6 +505,7 @@ void test_size_error(const double grid_excision_boundary_radius,
 SPECTRE_TEST_CASE("Unit.ControlSystem.SizeError", "[Domain][Unit]") {
   control_system::size::register_derived_with_charm();
   test_control_error_delta_r();
+  test_size_error_copy();
   test_size_error_horizon_higher_res_than_excision();
   // Should go to DeltaR state with error of zero, since ComovingMinCharSpeed
   // will be positive.
