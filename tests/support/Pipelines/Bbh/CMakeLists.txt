@@ -1,6 +1,8 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
+add_dependencies(test-executables bbh)
+
 spectre_add_python_bindings_test(
   "support.Pipelines.Bbh.Cce"
   Test_Cce.py
