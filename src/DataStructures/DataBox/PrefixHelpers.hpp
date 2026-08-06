@@ -3,9 +3,13 @@
 
 #pragma once
 
+#include <cstddef>
+
 #include "Utilities/TMPL.hpp"
 
 /// \cond
+template <size_t Dim, typename TagsList>
+class BoundaryVariables;
 template <typename TagsList>
 class Variables;
 namespace db {
@@ -14,6 +18,8 @@ struct SimpleTag;
 }  // namespace db
 
 namespace Tags {
+template <size_t Dim, typename TagsList>
+struct BoundaryVariables;
 template <typename TagsList>
 struct Variables;
 }  // namespace Tags
@@ -35,6 +41,14 @@ struct add_tag_prefix_impl {
   using type = Prefix<Tag, Args...>;
 };
 
+template <template <typename...> class Prefix, size_t Dim, typename TagList,
+          typename... Args>
+struct add_tag_prefix_impl<Prefix, Tags::BoundaryVariables<Dim, TagList>,
+                           Args...> {
+  using type =
+      Tags::BoundaryVariables<Dim, wrap_tags_in<Prefix, TagList, Args...>>;
+};
+
 template <template <typename...> class Prefix, typename TagList,
           typename... Args>
 struct add_tag_prefix_impl<Prefix, Tags::Variables<TagList>, Args...> {
@@ -43,8 +57,8 @@ struct add_tag_prefix_impl<Prefix, Tags::Variables<TagList>, Args...> {
 }  // namespace detail
 
 /// \ingroup DataBoxTagsGroup
-/// Wrap `Tag` in `Prefix<_, Args...>`, unless `Tag` is a Tags::Variables,
-/// in which case this creates a new Tags::Variables, wrapping each tag in
+/// Wrap `Tag` in `Prefix<_, Args...>`, unless `Tag` is a Tags::Variables or
+/// Tags::BoundaryVariables, in which case this wraps each tag in
 /// `Tag::tags_list` with `Prefix<_, Args...>`.
 template <template <typename...> class Prefix, typename Tag, typename... Args>
 using add_tag_prefix =
@@ -60,6 +74,12 @@ struct remove_tag_prefix_impl<Prefix<WrappedTag, Args...>> {
   using type = WrappedTag;
 };
 
+template <size_t Dim, typename TagList>
+struct remove_tag_prefix_impl<Tags::BoundaryVariables<Dim, TagList>> {
+  using type = Tags::BoundaryVariables<
+      Dim, tmpl::transform<TagList, remove_tag_prefix_impl<tmpl::_1>>>;
+};
+
 template <typename TagList>
 struct remove_tag_prefix_impl<Tags::Variables<TagList>> {
   using type = Tags::Variables<
@@ -69,7 +89,8 @@ struct remove_tag_prefix_impl<Tags::Variables<TagList>> {
 
 /// \ingroup DataBoxTagsGroup
 /// Remove the outer prefix from a prefixed tag `Tag`, or remove the outer
-/// prefix of each tag in `Tag::tags_list` if `Tag` is a Tags::Variables.
+/// prefix of each tag in `Tag::tags_list` if `Tag` is a Tags::Variables or
+/// Tags::BoundaryVariables.
 template <typename Tag>
 using remove_tag_prefix = typename detail::remove_tag_prefix_impl<Tag>::type;
 
@@ -86,6 +107,12 @@ struct remove_all_prefixes_impl<Tag> {
   using type = typename remove_all_prefixes_impl<typename Tag::tag>::type;
 };
 
+template <size_t Dim, typename TagList>
+struct remove_all_prefixes_impl<Tags::BoundaryVariables<Dim, TagList>> {
+  using type = Tags::BoundaryVariables<
+      Dim, tmpl::transform<TagList, remove_all_prefixes_impl<tmpl::_1>>>;
+};
+
 template <typename TagList>
 struct remove_all_prefixes_impl<Tags::Variables<TagList>> {
   using type = Tags::Variables<
@@ -95,7 +122,8 @@ struct remove_all_prefixes_impl<Tags::Variables<TagList>> {
 
 /// \ingroup DataBoxTagsGroup
 /// Completely remove all prefix tags from a Tag, or all prefixes from
-/// the tags in `Tag::tags_list` if `Tag` is a Tags::Variables.
+/// the tags in `Tag::tags_list` if `Tag` is a Tags::Variables or
+/// Tags::BoundaryVariables.
 template <typename Tag>
 using remove_all_prefixes =
     typename detail::remove_all_prefixes_impl<Tag>::type;
@@ -106,6 +134,13 @@ struct prefix_variables {
   using type = T;
 };
 
+template <template <typename...> typename Wrapper, size_t Dim, typename Tags,
+          typename... Args>
+struct prefix_variables<Wrapper, BoundaryVariables<Dim, Tags>, Args...> {
+  using type =
+      BoundaryVariables<Dim, ::db::wrap_tags_in<Wrapper, Tags, Args...>>;
+};
+
 template <template <typename...> typename Wrapper, typename Tags,
           typename... Args>
 struct prefix_variables<Wrapper, Variables<Tags>, Args...> {
@@ -114,8 +149,8 @@ struct prefix_variables<Wrapper, Variables<Tags>, Args...> {
 }  // namespace detail
 
 /// \ingroup DataBoxTagsGroup
-/// \brief Add a prefix to all tags in a Variables, leaving the
-/// argument unchanged if it is not a Variables.
+/// \brief Add a prefix to all tags in a Variables or BoundaryVariables,
+/// leaving the argument unchanged if it is not one of those types.
 ///
 /// \see unprefix_variables, wrap_tags_in
 template <template <typename...> class Wrapper, typename T, typename... Args>
@@ -128,6 +163,11 @@ struct unprefix_variables {
   using type = T;
 };
 
+template <size_t Dim, typename... Tags>
+struct unprefix_variables<BoundaryVariables<Dim, tmpl::list<Tags...>>> {
+  using type = BoundaryVariables<Dim, tmpl::list<tmpl::front<Tags>...>>;
+};
+
 template <typename... Tags>
 struct unprefix_variables<Variables<tmpl::list<Tags...>>> {
   using type = Variables<tmpl::list<tmpl::front<Tags>...>>;
@@ -135,8 +175,9 @@ struct unprefix_variables<Variables<tmpl::list<Tags...>>> {
 }  // namespace detail
 
 /// \ingroup DataBoxTagsGroup
-/// \brief Remove the outer prefix from all tags in a Variables,
-/// leaving the argument unchanged if it is not a Variables.
+/// \brief Remove the outer prefix from all tags in a Variables or
+/// BoundaryVariables, leaving the argument unchanged if it is not one of
+/// those types.
 ///
 /// \see prefix_variables
 template <typename T>
