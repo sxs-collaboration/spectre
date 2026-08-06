@@ -11,6 +11,7 @@ set(LIBRARY_SOURCES
   Test_AreaElement.cpp
   Test_Block.cpp
   Test_BlockAndElementLogicalCoordinates.cpp
+  Test_BoundaryVariables.cpp
   Test_CoordinatesTag.cpp
   Test_CoordsToDifferentFrame.cpp
   Test_CreateInitialElement.cpp
