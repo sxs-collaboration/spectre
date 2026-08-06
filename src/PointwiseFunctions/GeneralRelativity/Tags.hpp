@@ -25,6 +25,16 @@ template <typename DataType, size_t Dim, typename Frame>
 struct SpatialMetric : db::SimpleTag {
   using type = tnsr::ii<DataType, Dim, Frame>;
 };
+
+/*!
+ * \brief The induced spatial metric \f$\gamma_{ab} = g_{ab} + n_a n_b\f$
+ * in spacetime coordinates, where \f$n_a\f$ is the unit normal to the spatial
+ * hypersurface.
+ */
+template <typename DataType, size_t Dim, typename Frame>
+struct InducedSpatialMetric : db::SimpleTag {
+  using type = tnsr::aa<DataType, Dim, Frame>;
+};
 /*!
  * \brief Inverse of the spatial metric.
  */
@@ -293,6 +303,36 @@ struct WeylMagneticScalar : db::SimpleTag {
  */
 template <typename DataType>
 struct WeylTypeD1Scalar : db::SimpleTag {
+  using type = Scalar<DataType>;
+};
+
+/*!
+ * \brief The Gauss-Bonnet scalar \f$G = R_{abcd}R^{abcd} - 4R_{ab}R^{ab} +
+ * R^2\f$ in vacuum.
+ */
+template <typename DataType>
+struct GaussBonnetScalar : db::SimpleTag {
+  using type = Scalar<DataType>;
+};
+
+/*!
+ * \brief The Kretschmann scalar \f$K = R_{abcd}R^{abcd}\f$ in vacuum.
+ *
+ * \details This tag computes only the Weyl contribution to the Kretschmann
+ * scalar, which equals \f$R_{abcd}R^{abcd}\f$ in vacuum. In the presence of
+ * matter, additional terms depending on the Ricci tensor are needed: see
+ * `hydro::Tags::KretschmannScalar` for the complete formula.
+ */
+template <typename DataType>
+struct KretschmannScalar : db::SimpleTag {
+  using type = Scalar<DataType>;
+};
+
+/*!
+ * \brief The Pontryagin scalar \f$P = {}^{*}R_{abcd}R^{abcd}\f$.
+ */
+template <typename DataType>
+struct PontryaginScalar : db::SimpleTag {
   using type = Scalar<DataType>;
 };
 

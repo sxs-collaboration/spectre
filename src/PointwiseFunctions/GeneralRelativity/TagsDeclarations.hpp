@@ -18,6 +18,8 @@ struct InverseSpacetimeMetric;
 template <typename DataType, size_t Dim, typename Frame = Frame::Inertial>
 struct SpatialMetric;
 template <typename DataType, size_t Dim, typename Frame = Frame::Inertial>
+struct InducedSpatialMetric;
+template <typename DataType, size_t Dim, typename Frame = Frame::Inertial>
 struct DetAndInverseSpatialMetric;
 template <typename DataType, size_t Dim, typename Frame = Frame::Inertial>
 struct InverseSpatialMetric;
@@ -91,5 +93,11 @@ template <typename DataType, size_t Dim, typename Frame>
 struct WeylTypeD1;
 template <typename Datatype>
 struct WeylTypeD1Scalar;
+template <typename DataType>
+struct GaussBonnetScalar;
+template <typename DataType>
+struct KretschmannScalar;
+template <typename DataType>
+struct PontryaginScalar;
 }  // namespace Tags
 }  // namespace gr

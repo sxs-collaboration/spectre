@@ -32,6 +32,29 @@ void spatial_metric(
     }
   }
 }
+
+template <typename DataType, size_t SpatialDim, typename Frame>
+tnsr::aa<DataType, SpatialDim, Frame> induced_spatial_metric(
+    const tnsr::aa<DataType, SpatialDim, Frame>& spacetime_metric,
+    const Scalar<DataType>& lapse) {
+  tnsr::aa<DataType, SpatialDim, Frame> result{
+      get_size(get<0, 0>(spacetime_metric))};
+  induced_spatial_metric(make_not_null(&result), spacetime_metric, lapse);
+  return result;
+}
+
+template <typename DataType, size_t SpatialDim, typename Frame>
+void induced_spatial_metric(
+    gsl::not_null<tnsr::aa<DataType, SpatialDim, Frame>*> result,
+    const tnsr::aa<DataType, SpatialDim, Frame>& spacetime_metric,
+    const Scalar<DataType>& lapse) {
+  for (size_t a = 0; a < SpatialDim + 1; a++) {
+    for (size_t b = a; b < SpatialDim + 1; b++) {
+      result->get(a, b) = spacetime_metric.get(a, b);
+    }
+  }
+  result->get(0, 0) += square(get(lapse));
+}
 }  // namespace gr
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
@@ -44,7 +67,16 @@ void spatial_metric(
   template void gr::spatial_metric(                                           \
       const gsl::not_null<tnsr::ii<DTYPE(data), DIM(data), FRAME(data)>*>     \
           spatial_metric,                                                     \
-      const tnsr::aa<DTYPE(data), DIM(data), FRAME(data)>& spacetime_metric);
+      const tnsr::aa<DTYPE(data), DIM(data), FRAME(data)>& spacetime_metric); \
+  template tnsr::aa<DTYPE(data), DIM(data), FRAME(data)>                      \
+  gr::induced_spatial_metric(                                                 \
+      const tnsr::aa<DTYPE(data), DIM(data), FRAME(data)>& spacetime_metric,  \
+      const Scalar<DTYPE(data)>& lapse);                                      \
+  template void gr::induced_spatial_metric(                                   \
+      const gsl::not_null<tnsr::aa<DTYPE(data), DIM(data), FRAME(data)>*>     \
+          result,                                                             \
+      const tnsr::aa<DTYPE(data), DIM(data), FRAME(data)>& spacetime_metric,  \
+      const Scalar<DTYPE(data)>& lapse);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (double, DataVector),
                         (Frame::Grid, Frame::Inertial))

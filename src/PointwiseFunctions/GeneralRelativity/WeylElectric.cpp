@@ -5,7 +5,6 @@
 
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/VectorImpl.hpp"
-#include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeWithValue.hpp"

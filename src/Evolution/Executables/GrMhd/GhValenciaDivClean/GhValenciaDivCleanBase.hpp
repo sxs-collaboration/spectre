@@ -100,6 +100,7 @@
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/TimeDerivativeTerms.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/AllSolutions.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/BoundaryConditions/Factory.hpp"
+#include "Evolution/Systems/GrMhd/ValenciaDivClean/ComovingMagneticFieldMagnitude.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/FixConservatives.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/KastaunEtAl.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/NewmanHamlin.hpp"
@@ -200,6 +201,7 @@
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Christoffel.hpp"
 #include "PointwiseFunctions/GeneralRelativity/DetAndInverseSpatialMetric.hpp"
+#include "PointwiseFunctions/GeneralRelativity/ExtrinsicCurvature.hpp"
 #include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/ConstraintGammas.hpp"
 #include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/ExtrinsicCurvature.hpp"
 #include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/SecondTimeDerivOfSpacetimeMetric.hpp"
@@ -211,13 +213,18 @@
 #include "PointwiseFunctions/GeneralRelativity/Surfaces/Tags.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "PointwiseFunctions/GeneralRelativity/WeylElectric.hpp"
+#include "PointwiseFunctions/GeneralRelativity/WeylMagnetic.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/Factory.hpp"
 #include "PointwiseFunctions/Hydro/LowerSpatialFourVelocity.hpp"
 #include "PointwiseFunctions/Hydro/MassFlux.hpp"
 #include "PointwiseFunctions/Hydro/MassWeightedFluidItems.hpp"
+#include "PointwiseFunctions/Hydro/QuadraticCurvatureScalars.hpp"
+#include "PointwiseFunctions/Hydro/Ricci.hpp"
 #include "PointwiseFunctions/Hydro/SpecificEntropy.hpp"
+#include "PointwiseFunctions/Hydro/StressEnergy.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
 #include "PointwiseFunctions/Hydro/TransportVelocity.hpp"
+#include "PointwiseFunctions/Hydro/WeylElectric.hpp"
 #include "PointwiseFunctions/InitialDataUtilities/Tags/InitialData.hpp"
 #include "PointwiseFunctions/MathFunctions/Factory.hpp"
 #include "PointwiseFunctions/MathFunctions/MathFunction.hpp"
@@ -459,6 +466,28 @@ struct GhValenciaDivCleanTemplateBase<
                                         ::Frame::Inertial>,
           gr::Tags::SpatialRicciScalarCompute<DataVector, volume_dim,
                                               ::Frame::Inertial>,
+          grmhd::ValenciaDivClean::Tags::ComovingMagneticFieldMagnitudeCompute,
+          hydro::Tags::StressEnergyCompute<DataVector>,
+          gr::Tags::InducedSpatialMetricCompute<DataVector, volume_dim,
+                                                ::Frame::Inertial>,
+          hydro::Tags::GrRicciCompute<DataVector>,
+          hydro::Tags::GrRicciScalarCompute<DataVector>,
+          gr::Tags::WeylElectricCompute<DataVector, volume_dim,
+                                        ::Frame::Inertial>,
+          hydro::Tags::WeylElectricCompute<DataVector>,
+          hydro::Tags::WeylElectricScalarCompute<DataVector>,
+          ::Tags::DerivTensorCompute<
+              gr::Tags::ExtrinsicCurvature<DataVector, volume_dim>,
+              ::Events::Tags::ObserverInverseJacobian<
+                  volume_dim, Frame::ElementLogical, Frame::Inertial>,
+              ::Events::Tags::ObserverMesh<volume_dim>>,
+          gr::Tags::CovariantDerivativeOfExtrinsicCurvatureCompute<
+              volume_dim, ::Frame::Inertial>,
+          gr::Tags::WeylMagneticCompute<DataVector, volume_dim,
+                                        ::Frame::Inertial>,
+          gr::Tags::WeylMagneticScalarCompute<DataVector, volume_dim,
+                                              ::Frame::Inertial>,
+          hydro::Tags::KretschmannScalarCompute<DataVector>,
 
           // Constraints
           gh::Tags::GaugeConstraintCompute<volume_dim, domain_frame>,
@@ -510,12 +539,6 @@ struct GhValenciaDivCleanTemplateBase<
           ::Tags::dt<gh::Tags::Pi<DataVector, volume_dim, Frame::Inertial>>,
           gh::Tags::SecondTimeDerivOfSpacetimeMetricCompute<volume_dim,
                                                             Frame::Inertial>,
-          ::Tags::DerivTensorCompute<
-              gr::Tags::ExtrinsicCurvature<DataVector, 3>,
-              ::Events::Tags::ObserverInverseJacobian<
-                  volume_dim, Frame::ElementLogical, Frame::Inertial>,
-              ::Events::Tags::ObserverMesh<volume_dim>>,
-          gr::Tags::WeylElectricCompute<DataVector, 3, Frame::Inertial>,
           gr::Tags::Psi4RealCompute<Frame::Inertial>,
           ::Events::Tags::ObserverMeshVelocity<3>>,
       tmpl::conditional_t<

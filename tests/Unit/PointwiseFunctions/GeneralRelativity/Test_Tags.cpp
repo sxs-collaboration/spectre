@@ -28,6 +28,8 @@ void test_simple_tags() {
   TestHelpers::db::test_simple_tag<gr::Tags::SpatialMetric<Type, Dim, Frame>>(
       "SpatialMetric");
   TestHelpers::db::test_simple_tag<
+      gr::Tags::InducedSpatialMetric<Type, Dim, Frame>>("InducedSpatialMetric");
+  TestHelpers::db::test_simple_tag<
       gr::Tags::InverseSpatialMetric<Type, Dim, Frame>>("InverseSpatialMetric");
   TestHelpers::db::test_simple_tag<gr::Tags::DetSpatialMetric<Type>>(
       "DetSpatialMetric");
