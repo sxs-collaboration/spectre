@@ -10,6 +10,8 @@
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "DataStructures/Variables.hpp"
+#include "DataStructures/VariablesTag.hpp"
 #include "Domain/Tags.hpp"
 #include "NumericalAlgorithms/LinearOperators/Filters/Filter.hpp"
 #include "NumericalAlgorithms/LinearOperators/Filters/None.hpp"
@@ -65,6 +67,7 @@ namespace dg::Actions {
  *   - `volume_dim`
  *   - `variables_tag`
  */
+template <size_t Dim, typename TagList>
 struct SpectralFilter {
   template <typename DbTags, typename... InboxTags, typename ArrayIndex,
             typename ActionList, typename ParallelComponent,
@@ -75,10 +78,6 @@ struct SpectralFilter {
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) {
-    constexpr size_t Dim = Metavariables::system::volume_dim;
-    using variables_tag = typename Metavariables::system::variables_tag;
-    using TagList = typename variables_tag::tags_list;
-
     const auto& filter =
         db::get<Filters::Tags::SpectralFilter<Dim, TagList>>(box);
 
@@ -154,9 +153,9 @@ struct SpectralFilter {
       }
     }
 
-    db::mutate<variables_tag>(
+    db::mutate<::Tags::Variables<TagList>>(
         [&filter, &mesh, &inv_jac,
-         &jac](const gsl::not_null<typename variables_tag::type*> vars) {
+         &jac](const gsl::not_null<Variables<TagList>*> vars) {
           filter.apply_in_volume(vars, mesh, inv_jac, jac);
         },
         make_not_null(&box));

@@ -331,7 +331,8 @@ struct EvolutionMetavars {
                   typename system::primitive_from_conservative>>>,
       Actions::MutateApply<CleanHistory<system>>,
       Actions::MutateApply<evolution::dg::CleanMortarHistory<volume_dim>>,
-      dg::Actions::SpectralFilter>>;
+      dg::Actions::SpectralFilter<volume_dim,
+                                  typename system::variables_tag::tags_list>>>;
 
   struct SubcellOptions {
     static constexpr bool subcell_enabled = use_dg_subcell;
