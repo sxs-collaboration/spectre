@@ -39,6 +39,7 @@ spectre_target_headers(
   Block.hpp
   BlockLogicalCoordinates.hpp
   BoundaryVariables.hpp
+  BoundaryVariablesTag.hpp
   CoordsToDifferentFrame.hpp
   CreateInitialElement.hpp
   Domain.hpp
