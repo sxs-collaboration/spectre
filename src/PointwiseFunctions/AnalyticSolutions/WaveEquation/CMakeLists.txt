@@ -10,6 +10,7 @@ spectre_target_sources(
   PRIVATE
   PlaneWave.cpp
   RegularSphericalWave.cpp
+  SecondOrderWrapper.cpp
   SemidiscretizedDg.cpp
   StandingWave.cpp
   )
@@ -21,6 +22,8 @@ spectre_target_headers(
   Factory.hpp
   PlaneWave.hpp
   RegularSphericalWave.hpp
+  SecondOrderWrapper.hpp
+  SecondOrderWrapper.tpp
   SemidiscretizedDg.hpp
   Solutions.hpp
   StandingWave.hpp
