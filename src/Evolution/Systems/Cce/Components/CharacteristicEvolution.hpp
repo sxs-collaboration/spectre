@@ -26,7 +26,6 @@
 #include "Evolution/Systems/Cce/PrecomputeCceDependencies.hpp"
 #include "Evolution/Systems/Cce/ScriPlusValues.hpp"
 #include "Evolution/Systems/Cce/SwshDerivatives.hpp"
-#include "Evolution/Systems/Cce/System.hpp"
 #include "IO/Observer/ObserverComponent.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Local.hpp"
@@ -105,7 +104,7 @@ struct CharacteristicEvolution {
   static constexpr bool checkpoint_data = true;
   using metavariables = Metavariables;
   static constexpr bool evolve_ccm = Metavariables::evolve_ccm;
-  using cce_system = Cce::System<evolve_ccm>;
+  using cce_system = typename Metavariables::system;
 
   using initialize_action_list = tmpl::list<
       Actions::InitializeCharacteristicEvolutionVariables<Metavariables>,
