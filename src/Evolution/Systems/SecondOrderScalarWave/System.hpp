@@ -7,6 +7,7 @@
 #include <string>
 
 #include "DataStructures/VariablesTag.hpp"
+#include "Evolution/Systems/SecondOrderScalarWave/Characteristics.hpp"
 #include "Evolution/Systems/SecondOrderScalarWave/Tags.hpp"
 #include "Evolution/Systems/SecondOrderScalarWave/TimeDerivative.hpp"
 #include "Utilities/TMPL.hpp"
@@ -41,5 +42,8 @@ struct System {
   using gradient_variables = tmpl::list<Tags::Psi, Tags::Pi, Tags::Phi<Dim>>;
 
   using compute_volume_time_derivative_terms = TimeDerivative<Dim>;
+
+  using compute_largest_characteristic_speed =
+      Tags::ComputeLargestCharacteristicSpeed;
 };
 }  // namespace SecondOrderScalarWave
