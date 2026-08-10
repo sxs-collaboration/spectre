@@ -32,6 +32,7 @@ spectre_target_sources(
   Quadrature.cpp
   QuadratureWeights.cpp
   SegmentSize.cpp
+  ZernikeB2.cpp
   )
 
 spectre_target_headers(
@@ -78,6 +79,7 @@ spectre_target_headers(
   QuadratureWeights.hpp
   SegmentSize.hpp
   SpectralQuantityForMesh.hpp
+  ZernikeB2.hpp
   )
 
 target_link_libraries(

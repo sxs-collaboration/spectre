@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <array>
 #include <cmath>
+#include <cstddef>
 #include <limits>
 #include <vector>
 #include <type_traits>
@@ -21,6 +22,7 @@
 #include "NumericalAlgorithms/Spectral/Basis.hpp"
 #include "NumericalAlgorithms/Spectral/BasisFunctions/Fourier.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
+#include "NumericalAlgorithms/Spectral/ZernikeB2.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/SpherepackIterator.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/EqualWithinRoundoff.hpp"
@@ -40,6 +42,45 @@ void power_monitors(const gsl::not_null<std::array<DataVector, Dim>*> result,
              << ") must match the size of the "
                 "vector ("
              << u.size() << ").");
+  if (mesh.basis(0) == Spectral::Basis::ZernikeB2) {
+    if constexpr (std::is_same_v<VectorType, DataVector>) {
+      if constexpr (Dim > 1) {
+        Spectral::b2_power_monitor_radial(make_not_null(&(*result)[0]), u,
+                                          mesh);
+        Spectral::b2_power_monitor_angular(make_not_null(&(*result)[1]), u,
+                                           mesh);
+        if (Dim == 3) {
+          // Compute the z power monitor directly: for each disk point, extract
+          // and transform the z-strip using a 1D mesh for the z-dimension only.
+          const size_t n_disk = mesh.extents(0) * mesh.extents(1);
+          const size_t n_z = mesh.extents(2);
+          const Mesh<1> z_mesh{n_z, mesh.basis(2), mesh.quadrature(2)};
+          DataVector z_slice(n_z);
+          gsl::at(*result, 2).destructive_resize(n_z);
+          gsl::at(*result, 2) = 0.0;
+          for (size_t i_disk = 0; i_disk < n_disk; ++i_disk) {
+            for (size_t j_z = 0; j_z < n_z; ++j_z) {
+              z_slice[j_z] = u[i_disk + n_disk * j_z];
+            }
+            const auto z_modal = to_modal_coefficients(z_slice, z_mesh);
+            for (size_t k = 0; k < n_z; ++k) {
+              gsl::at(*result, 2)[k] += square(z_modal[k]);
+            }
+          }
+          gsl::at(*result, 2) =
+              sqrt(gsl::at(*result, 2) / static_cast<double>(n_disk));
+        }
+        return;
+      } else {
+        ERROR("Passed mesh is using ZernikeB2 for Dim == 1");
+      }
+    } else {
+      ERROR(
+          "Support for complex numbers with ZernikeB2 power monitor has not "
+          "been tested yet");
+    }
+  }
+
   // Get modal coefficients
   const auto modal_coefficients = to_modal_coefficients(u, mesh);
 
