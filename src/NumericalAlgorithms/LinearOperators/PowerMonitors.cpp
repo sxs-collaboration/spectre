@@ -8,6 +8,8 @@
 #include <cmath>
 #include <limits>
 #include <vector>
+#include <type_traits>
+#include <utility>
 
 #include "DataStructures/ComplexDataVector.hpp"
 #include "DataStructures/ComplexModalVector.hpp"
@@ -16,6 +18,8 @@
 #include "DataStructures/SliceIterator.hpp"
 #include "NumericalAlgorithms/Interpolation/LinearRegression.hpp"
 #include "NumericalAlgorithms/LinearOperators/CoefficientTransforms.hpp"
+#include "NumericalAlgorithms/Spectral/Basis.hpp"
+#include "NumericalAlgorithms/Spectral/BasisFunctions/Fourier.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/SpherepackIterator.hpp"
 #include "Utilities/ConstantExpressions.hpp"
@@ -62,6 +66,27 @@ void power_monitors(const gsl::not_null<std::array<DataVector, Dim>*> result,
       slice_sum = sqrt(slice_sum);
 
       gsl::at(*result, sliced_dim)[index] = slice_sum;
+    }
+
+    // For Fourier dimensions, combine cos and sin power for each wavenumber.
+    // Output size is N/2+1, one entry per distinct wavenumber 0..N/2.
+    if (mesh.basis(sliced_dim) == Spectral::Basis::Fourier) {
+      ASSERT(mesh.extents(sliced_dim) % 2 == 1,
+             "We expect Fourier basis to have an odd number of collocation "
+             "points, got "
+                 << mesh.extents(sliced_dim));
+      const DataVector& raw_pm = gsl::at(*result, sliced_dim);
+      const size_t n_combined = n_stripe / 2 + 1;
+      DataVector combined(n_combined);
+      combined[0] = raw_pm[0];
+      const size_t n_pairs = n_combined - 1;
+      for (size_t m = 1; m <= n_pairs; ++m) {
+        combined[m] = std::hypot(
+            raw_pm[Spectral::Fourier::modal_storage_index(static_cast<int>(m))],
+            raw_pm[Spectral::Fourier::modal_storage_index(
+                -static_cast<int>(m))]);
+      }
+      gsl::at(*result, sliced_dim) = std::move(combined);
     }
   }
 }
