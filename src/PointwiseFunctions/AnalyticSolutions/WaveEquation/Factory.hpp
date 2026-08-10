@@ -25,5 +25,6 @@ namespace SecondOrderScalarWave::Solutions {
 /// wave system
 template <size_t Dim>
 using all_solutions =
-    tmpl::list<SecondOrderWrapper<ScalarWave::Solutions::PlaneWave<Dim>>>;
+    tmpl::list<SecondOrderWrapper<ScalarWave::Solutions::PlaneWave<Dim>>,
+               SecondOrderWrapper<ScalarWave::Solutions::StandingWave<Dim>>>;
 }  // namespace SecondOrderScalarWave::Solutions
