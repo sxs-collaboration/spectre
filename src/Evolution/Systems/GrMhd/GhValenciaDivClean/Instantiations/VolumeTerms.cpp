@@ -82,6 +82,8 @@
       const double& constraint_damping_parameter,                              \
       const ::VariableFixing::FixToAtmosphere<3>& fix_to_atmosphere);          \
   INSTANTIATE_PARTIAL_DERIVATIVES_WITH_SYSTEM(                                 \
+      grmhd::GhValenciaDivClean::System<NEUTRINO(data)>, 3, Frame::Inertial)   \
+  INSTANTIATE_CARTOON_PARTIAL_DERIVATIVES_WITH_SYSTEM(                         \
       grmhd::GhValenciaDivClean::System<NEUTRINO(data)>, 3, Frame::Inertial)
 
 GENERATE_INSTANTIATIONS(INSTANTIATION,

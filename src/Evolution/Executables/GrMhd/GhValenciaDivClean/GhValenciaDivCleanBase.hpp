@@ -448,7 +448,8 @@ struct GhValenciaDivCleanTemplateBase<
               gr::Tags::SpatialChristoffelSecondKind<DataVector, volume_dim>,
               ::Events::Tags::ObserverInverseJacobian<
                   volume_dim, Frame::ElementLogical, Frame::Inertial>,
-              ::Events::Tags::ObserverMesh<volume_dim>>,
+              ::Events::Tags::ObserverMesh<volume_dim>,
+              ::Events::Tags::ObserverCoordinates<volume_dim, Frame::Inertial>>,
           gr::Tags::SpatialRicciCompute<DataVector, volume_dim,
                                         ::Frame::Inertial>,
           gr::Tags::SpatialRicciScalarCompute<DataVector, volume_dim,
@@ -508,7 +509,8 @@ struct GhValenciaDivCleanTemplateBase<
               gr::Tags::ExtrinsicCurvature<DataVector, 3>,
               ::Events::Tags::ObserverInverseJacobian<
                   volume_dim, Frame::ElementLogical, Frame::Inertial>,
-              ::Events::Tags::ObserverMesh<volume_dim>>,
+              ::Events::Tags::ObserverMesh<volume_dim>,
+              ::Events::Tags::ObserverCoordinates<volume_dim, Frame::Inertial>>,
           gr::Tags::WeylElectricCompute<DataVector, 3, Frame::Inertial>,
           gr::Tags::Psi4RealCompute<Frame::Inertial>,
           ::Events::Tags::ObserverMeshVelocity<3>>,
@@ -584,15 +586,17 @@ struct GhValenciaDivCleanTemplateBase<
                          Frame::ElementLogical, Frame::Inertial>,
                      ::Events::Tags::ObserverMeshVelocityCompute<3>>>,
       tmpl::list<analytic_compute, error_compute>,
-      tmpl::list<::Tags::DerivCompute<
-                     typename system::variables_tag,
-                     ::Events::Tags::ObserverMesh<volume_dim>,
-                     ::Events::Tags::ObserverInverseJacobian<
-                         volume_dim, Frame::ElementLogical, Frame::Inertial>,
-                     typename system::gradient_variables>,
-                 gh::gauges::Tags::GaugeAndDerivativeCompute<
-                     volume_dim, ghmhd::GhValenciaDivClean::InitialData::
-                                     analytic_solutions_and_data_list>>>;
+      tmpl::list<
+          ::Tags::DerivCompute<
+              typename system::variables_tag,
+              ::Events::Tags::ObserverMesh<volume_dim>,
+              ::Events::Tags::ObserverInverseJacobian<
+                  volume_dim, Frame::ElementLogical, Frame::Inertial>,
+              typename system::gradient_variables,
+              ::Events::Tags::ObserverCoordinates<volume_dim, Frame::Inertial>>,
+          gh::gauges::Tags::GaugeAndDerivativeCompute<
+              volume_dim, ghmhd::GhValenciaDivClean::InitialData::
+                              analytic_solutions_and_data_list>>>;
 
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {

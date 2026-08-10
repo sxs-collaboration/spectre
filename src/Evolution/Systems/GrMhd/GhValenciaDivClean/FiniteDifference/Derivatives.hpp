@@ -38,10 +38,9 @@ namespace grmhd::GhValenciaDivClean::fd {
  */
 template <typename System>
 void spacetime_derivatives(
-    gsl::not_null<
-        Variables<db::wrap_tags_in<::Tags::deriv,
-                                   typename System::gradients_tags,
-                                   tmpl::size_t<3>, Frame::Inertial>>*>
+    gsl::not_null<Variables<
+        db::wrap_tags_in<::Tags::deriv, typename System::gradients_tags,
+                         tmpl::size_t<3>, Frame::Inertial>>*>
         result,
     const Variables<typename System::variables_tag::tags_list>&
         volume_evolved_variables,
@@ -50,5 +49,6 @@ void spacetime_derivatives(
     const size_t& deriv_order, const Mesh<3>& volume_mesh,
     const InverseJacobian<DataVector, 3, Frame::ElementLogical,
                           Frame::Inertial>&
-        cell_centered_logical_to_inertial_inv_jacobian);
+        cell_centered_logical_to_inertial_inv_jacobian,
+    const tnsr::I<DataVector, 3, Frame::Inertial>& inertial_coords);
 }  // namespace grmhd::GhValenciaDivClean::fd
