@@ -9,6 +9,8 @@ spectre_target_headers(
   Factory.hpp
   FilledCylinder.hpp
   FilledCylinder.tpp
+  FilledSphere.hpp
+  FilledSphere.tpp
   Filter.hpp
   HollowCylinder.hpp
   HollowCylinder.tpp
