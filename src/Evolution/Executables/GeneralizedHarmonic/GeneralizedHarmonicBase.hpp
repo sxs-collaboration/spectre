@@ -135,7 +135,6 @@
 #include "Time/Tags/Time.hpp"
 #include "Time/TimeSequence.hpp"
 #include "Time/TimeSteppers/Factory.hpp"
-#include "Time/TimeSteppers/LtsTimeStepper.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"
 #include "Time/Triggers/TimeTriggers.hpp"
 #include "Time/UpdateU.hpp"
@@ -281,7 +280,7 @@ struct ObserverTags {
                                      non_tensor_compute_tags>;
 };
 
-template <size_t volume_dim, bool LocalTimeStepping>
+template <size_t volume_dim>
 struct FactoryCreation : tt::ConformsTo<Options::protocols::FactoryCreation> {
   using system = gh::System<volume_dim>;
 
@@ -317,7 +316,6 @@ struct FactoryCreation : tt::ConformsTo<Options::protocols::FactoryCreation> {
                        tmpl::conditional_t<volume_dim == 3,
                                            tmpl::list<gh::NumericInitialData>,
                                            tmpl::list<>>>>,
-      tmpl::pair<LtsTimeStepper, TimeSteppers::lts_time_steppers>,
       tmpl::pair<MathFunction<1, Frame::Inertial>,
                  MathFunctions::all_math_functions<1, Frame::Inertial>>,
       tmpl::pair<PhaseChange, PhaseControl::factory_creatable_classes>,
@@ -340,22 +338,17 @@ struct FactoryCreation : tt::ConformsTo<Options::protocols::FactoryCreation> {
 };
 }  // namespace detail
 
-template <size_t VolumeDim, bool LocalTimeStepping>
+template <size_t VolumeDim>
 struct GeneralizedHarmonicTemplateBase {
   static constexpr size_t volume_dim = VolumeDim;
   using system = gh::System<volume_dim>;
-  using TimeStepperBase =
-      tmpl::conditional_t<LocalTimeStepping, LtsTimeStepper, TimeStepper>;
 
-  static constexpr bool local_time_stepping =
-      TimeStepperBase::local_time_stepping;
   static constexpr bool use_dg_element_collection = false;
 
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& /*p*/) {}
 
-  using factory_creation =
-      detail::FactoryCreation<volume_dim, local_time_stepping>;
+  using factory_creation = detail::FactoryCreation<volume_dim>;
 
   using observed_reduction_data_tags =
       observers::collect_reduction_data_tags<tmpl::push_back<

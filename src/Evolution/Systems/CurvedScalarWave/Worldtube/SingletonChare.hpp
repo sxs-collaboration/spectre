@@ -68,11 +68,6 @@ struct WorldtubeSingleton {
   using metavariables = Metavariables;
   using evolved_vars = ::Tags::Variables<
       tmpl::list<CurvedScalarWave::Tags::Psi, CurvedScalarWave::Tags::Pi>>;
-  // LTS not currently supported
-  using TimeStepperBase = TimeStepper;
-
-  static constexpr bool local_time_stepping =
-      TimeStepperBase::local_time_stepping;
 
   using initialization_actions = tmpl::list<
       ::Initialization::Actions::InitializeItems<

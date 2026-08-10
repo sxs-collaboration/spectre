@@ -14,19 +14,16 @@
 #include "PointwiseFunctions/ConstraintDamping/RegisterDerivedWithCharm.hpp"
 #include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 
-// Parameters chosen in CMakeLists.txt
-using metavariables = EvolutionMetavars<USE_LTS>;
-
 extern "C" void CkRegisterMainModule() {
-  Parallel::charmxx::register_main_module<metavariables>();
+  Parallel::charmxx::register_main_module<EvolutionMetavars>();
   Parallel::charmxx::register_init_node_and_proc(
       {&domain::creators::register_derived_with_charm,
        &domain::creators::time_dependence::register_derived_with_charm,
        &domain::FunctionsOfTime::register_derived_with_charm,
        &ConstraintDamping::register_derived_with_charm,
        &control_system::size::register_derived_with_charm,
-       &register_factory_classes_with_charm<metavariables>,
-       &amr::register_callbacks<metavariables,
-                                metavariables::gh_dg_element_array>},
+       &register_factory_classes_with_charm<EvolutionMetavars>,
+       &amr::register_callbacks<EvolutionMetavars,
+                                EvolutionMetavars::gh_dg_element_array>},
       {});
 }

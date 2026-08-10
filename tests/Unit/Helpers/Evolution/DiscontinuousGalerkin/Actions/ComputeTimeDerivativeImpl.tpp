@@ -85,7 +85,6 @@
 #include "Time/Time.hpp"
 #include "Time/TimeStepId.hpp"
 #include "Time/TimeSteppers/AdamsBashforth.hpp"
-#include "Time/TimeSteppers/LtsTimeStepper.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"
 #include "Utilities/Algorithm.hpp"
 #include "Utilities/CloneUniquePtrs.hpp"
@@ -1050,10 +1049,7 @@ struct component {
       domain::Tags::MeshVelocity<Metavariables::volume_dim>,
       domain::Tags::DivMeshVelocity,
       domain::Tags::ElementMap<Metavariables::volume_dim, Frame::Grid>,
-      tmpl::conditional_t<
-          Metavariables::local_time_stepping,
-          tmpl::list<::Tags::ConcreteTimeStepper<LtsTimeStepper>>,
-          tmpl::list<::Tags::ConcreteTimeStepper<TimeStepper>>>>>;
+      ::Tags::ConcreteTimeStepper<TimeStepper>>>;
   using common_compute_tags = tmpl::list<
       domain::Tags::JacobianCompute<Metavariables::volume_dim,
                                     Frame::ElementLogical, Frame::Inertial>,
@@ -1084,8 +1080,7 @@ struct component {
           domain::Tags::InterfaceMesh<Metavariables::volume_dim>>,
       domain::Tags::Slice<internal_directions, Var1>,
       domain::Tags::Slice<internal_directions, Var2<Metavariables::volume_dim>>,
-      time_stepper_ref_tags<tmpl::conditional_t<
-          Metavariables::local_time_stepping, LtsTimeStepper, TimeStepper>>>;
+      time_stepper_ref_tags<TimeStepper>>;
   using compute_tags = tmpl::conditional_t<
       Metavariables::system::has_primitive_and_conservative_vars,
       tmpl::push_front<common_compute_tags,
@@ -1106,14 +1101,13 @@ struct component {
               AllStepChoosers, Metavariables::use_nodegroup_dg_elements>>>>;
 };
 
-template <size_t Dim, SystemType SystemTypeIn, bool LocalTimeStepping,
-          bool UseMovingMesh, bool HasPrimitiveVariables, bool PassVariables,
+template <size_t Dim, SystemType SystemTypeIn, bool UseMovingMesh,
+          bool HasPrimitiveVariables, bool PassVariables,
           bool UseNodegroupDgElements, bool HasAux = false>
 struct Metavariables {
   static constexpr size_t volume_dim = Dim;
   static constexpr SystemType system_type = SystemTypeIn;
   static constexpr bool use_moving_mesh = UseMovingMesh;
-  static constexpr bool local_time_stepping = LocalTimeStepping;
   static constexpr bool pass_variables = PassVariables;
   static constexpr bool use_nodegroup_dg_elements = UseNodegroupDgElements;
   using system =
@@ -1156,12 +1150,12 @@ double dg_package_data(
       mesh_velocity, normal_dot_mesh_velocity, get_tag(VolumeTags{})...);
 }
 
-template <bool LocalTimeStepping, bool UseMovingMesh, size_t Dim,
-          SystemType system_type, bool HasPrims, bool PassVariables,
-          bool UseNodegroupDgElements, bool HasAux = false>
+template <bool UseMovingMesh, size_t Dim, SystemType system_type, bool HasPrims,
+          bool PassVariables, bool UseNodegroupDgElements, bool HasAux = false>
 void test_impl(const Spectral::Quadrature quadrature,
-               const ::dg::Formulation dg_formulation) {
-  CAPTURE(LocalTimeStepping);
+               const ::dg::Formulation dg_formulation,
+               const bool local_time_stepping) {
+  CAPTURE(local_time_stepping);
   CAPTURE(UseMovingMesh);
   CAPTURE(Dim);
   CAPTURE(system_type);
@@ -1170,9 +1164,8 @@ void test_impl(const Spectral::Quadrature quadrature,
   CAPTURE(HasAux);
   CAPTURE(quadrature);
   CAPTURE(dg_formulation);
-  using metavars =
-      Metavariables<Dim, system_type, LocalTimeStepping, UseMovingMesh,
-                    HasPrims, PassVariables, UseNodegroupDgElements, HasAux>;
+  using metavars = Metavariables<Dim, system_type, UseMovingMesh, HasPrims,
+                                 PassVariables, UseNodegroupDgElements, HasAux>;
   register_classes_with_charm<TimeSteppers::AdamsBashforth>();
   register_factory_classes_with_charm<metavars>();
 
@@ -1258,7 +1251,8 @@ void test_impl(const Spectral::Quadrature quadrature,
   const TimeStepId next_time_step_id = time_step_id.next_step(time_step);
 
   MockRuntimeSystem runner = [&dg_formulation, &extents, &south_orientation,
-                              &grid_to_inertial_map, &time_step]() {
+                              &grid_to_inertial_map, &time_step,
+                              &local_time_stepping]() {
     std::vector<DirectionMap<
         Dim, std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>
         boundary_conditions{2};
@@ -1311,7 +1305,7 @@ void test_impl(const Spectral::Quadrature quadrature,
         {std::vector<std::array<size_t, Dim>>{extents, extents},
          typename metavars::normal_dot_numerical_flux::type{},
          std::move(domain),
-         LocalTimeStepping ? ::LtsMode::Conservative : ::LtsMode::Off,
+         local_time_stepping ? ::LtsMode::Conservative : ::LtsMode::Off,
          dg_formulation, std::make_unique<BoundaryTerms<Dim, HasPrims>>(),
          std::move(boundary_conditions), 1e-8, std::move(step_choosers)}};
   }();
@@ -1954,7 +1948,7 @@ void test_impl(const Spectral::Quadrature quadrature,
                             expected_local_face_det_jacobian);
     }
   };
-  if (LocalTimeStepping) {
+  if (local_time_stepping) {
     const auto& east_mortar_data =
         get_tag(::evolution::dg::Tags::MortarDataHistory<Dim>{})
             .at(mortar_id_east)
@@ -2001,7 +1995,7 @@ void test_impl(const Spectral::Quadrature quadrature,
     const DirectionalId<Dim> mortar_id_south{Direction<Dim>::lower_eta(),
                                              south_id};
 
-    if (LocalTimeStepping) {
+    if (local_time_stepping) {
       const auto& south_mortar_data =
           get_tag(::evolution::dg::Tags::MortarDataHistory<Dim>{})
               .at(mortar_id_south)
@@ -2049,7 +2043,7 @@ void test_impl(const Spectral::Quadrature quadrature,
         compute_expected_mortar_data(mortar_id_south.direction(),
                                      mortar_id_south.id(), false));
   }
-  if constexpr (LocalTimeStepping) {
+  if (local_time_stepping) {
     for (const auto& mortar_data :
          get_tag(::evolution::dg::Tags::MortarData<Dim>{})) {
       // When doing local time stepping the MortarData should've been moved into
@@ -2115,36 +2109,33 @@ void test() {
 
   constexpr bool use_nodegroup_dg_elements = false;
 
-  const auto invoke_tests_with_quadrature_and_formulation =
-      [](const Spectral::Quadrature quadrature,
-         const ::dg::Formulation local_dg_formulation) {
-        const auto moving_mesh_helper = [&local_dg_formulation,
-                                         &quadrature](auto moving_mesh) {
-          // PassVariables == false
-          test_impl<false, std::decay_t<decltype(moving_mesh)>::value, Dim,
-                    system_type, UsePrims, false, use_nodegroup_dg_elements>(
-              quadrature, local_dg_formulation);
-          test_impl<true, std::decay_t<decltype(moving_mesh)>::value, Dim,
-                    system_type, UsePrims, false, use_nodegroup_dg_elements>(
-              quadrature, local_dg_formulation);
+  const auto invoke_tests = [](const Spectral::Quadrature quadrature,
+                               const ::dg::Formulation local_dg_formulation,
+                               const bool local_time_stepping) {
+    const auto moving_mesh_helper = [&local_dg_formulation,
+                                     &local_time_stepping,
+                                     &quadrature](auto moving_mesh) {
+      // PassVariables == false
+      test_impl<std::decay_t<decltype(moving_mesh)>::value, Dim, system_type,
+                UsePrims, false, use_nodegroup_dg_elements>(
+          quadrature, local_dg_formulation, local_time_stepping);
 
-          // PassVariables == true
-          test_impl<false, std::decay_t<decltype(moving_mesh)>::value, Dim,
-                    system_type, UsePrims, true, use_nodegroup_dg_elements>(
-              quadrature, local_dg_formulation);
-          test_impl<true, std::decay_t<decltype(moving_mesh)>::value, Dim,
-                    system_type, UsePrims, true, use_nodegroup_dg_elements>(
-              quadrature, local_dg_formulation);
-        };
-        moving_mesh_helper(std::integral_constant<bool, false>{});
-        moving_mesh_helper(std::integral_constant<bool, true>{});
-      };
+      // PassVariables == true
+      test_impl<std::decay_t<decltype(moving_mesh)>::value, Dim, system_type,
+                UsePrims, true, use_nodegroup_dg_elements>(
+          quadrature, local_dg_formulation, local_time_stepping);
+    };
+    moving_mesh_helper(std::integral_constant<bool, false>{});
+    moving_mesh_helper(std::integral_constant<bool, true>{});
+  };
   for (const auto dg_formulation :
        {::dg::Formulation::StrongInertial, ::dg::Formulation::WeakInertial}) {
-    invoke_tests_with_quadrature_and_formulation(
-        Spectral::Quadrature::GaussLobatto, dg_formulation);
-    invoke_tests_with_quadrature_and_formulation(Spectral::Quadrature::Gauss,
-                                                 dg_formulation);
+    for (const auto local_time_stepping : {false, true}) {
+      invoke_tests(Spectral::Quadrature::GaussLobatto, dg_formulation,
+                   local_time_stepping);
+      invoke_tests(Spectral::Quadrature::Gauss, dg_formulation,
+                   local_time_stepping);
+    }
   }
 }
 
@@ -2162,13 +2153,13 @@ void test_LDG() {
         const auto moving_mesh_helper = [&local_dg_formulation,
                                          &quadrature](auto moving_mesh) {
           // PassVariables == false
-          test_impl<false, std::decay_t<decltype(moving_mesh)>::value, Dim,
+          test_impl<std::decay_t<decltype(moving_mesh)>::value, Dim,
                     system_type, false, false, use_nodegroup_dg_elements,
-                    /*HasAux=*/true>(quadrature, local_dg_formulation);
+                    /*HasAux=*/true>(quadrature, local_dg_formulation, false);
           // PassVariables == true
-          test_impl<false, std::decay_t<decltype(moving_mesh)>::value, Dim,
+          test_impl<std::decay_t<decltype(moving_mesh)>::value, Dim,
                     system_type, false, true, use_nodegroup_dg_elements,
-                    /*HasAux=*/true>(quadrature, local_dg_formulation);
+                    /*HasAux=*/true>(quadrature, local_dg_formulation, false);
         };
         moving_mesh_helper(std::integral_constant<bool, false>{});
         moving_mesh_helper(std::integral_constant<bool, true>{});

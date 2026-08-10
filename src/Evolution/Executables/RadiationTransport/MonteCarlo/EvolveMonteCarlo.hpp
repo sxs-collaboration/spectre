@@ -87,7 +87,6 @@
 #include "Time/Tags/TimeStepId.hpp"
 #include "Time/TimeSequence.hpp"
 #include "Time/TimeSteppers/Factory.hpp"
-#include "Time/TimeSteppers/LtsTimeStepper.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"
 #include "Time/Triggers/TimeTriggers.hpp"
 #include "Utilities/Functional.hpp"
@@ -116,9 +115,6 @@ struct EvolutionMetavars {
 
   using system = Particles::MonteCarlo::System;
   using temporal_id = Tags::TimeStepId;
-  using TimeStepperBase = TimeStepper;
-  static constexpr bool local_time_stepping =
-      TimeStepperBase::local_time_stepping;
   static constexpr bool use_dg_subcell = true;
 
   using initial_data_list =

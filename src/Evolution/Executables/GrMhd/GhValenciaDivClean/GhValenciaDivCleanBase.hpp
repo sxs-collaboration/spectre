@@ -234,7 +234,6 @@
 #include "Time/Tags/TimeStepId.hpp"
 #include "Time/TimeSequence.hpp"
 #include "Time/TimeSteppers/Factory.hpp"
-#include "Time/TimeSteppers/LtsTimeStepper.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"
 #include "Time/Triggers/TimeTriggers.hpp"
 #include "Time/UpdateU.hpp"
@@ -265,10 +264,7 @@ struct GhValenciaDivCleanDefaults {
   using domain_frame = Frame::Inertial;
   static constexpr bool use_damped_harmonic_rollon = true;
   using temporal_id = Tags::TimeStepId;
-  using TimeStepperBase = TimeStepper;
 
-  static constexpr bool local_time_stepping =
-      TimeStepperBase::local_time_stepping;
   static constexpr bool use_dg_element_collection = false;
 
   using neutrino_system = RadiationTransport::NoNeutrinos::System;
@@ -353,8 +349,6 @@ struct GhValenciaDivCleanTemplateBase<
   static constexpr bool use_damped_harmonic_rollon =
       defaults::use_damped_harmonic_rollon;
   using temporal_id = typename defaults::temporal_id;
-  using TimeStepperBase = typename defaults::TimeStepperBase;
-  static constexpr bool local_time_stepping = defaults::local_time_stepping;
   static constexpr bool use_dg_element_collection =
       defaults::use_dg_element_collection;
   using system = typename defaults::system;
@@ -651,13 +645,6 @@ struct GhValenciaDivCleanTemplateBase<
         tmpl::pair<MathFunction<1, Frame::Inertial>,
                    MathFunctions::all_math_functions<1, Frame::Inertial>>,
         tmpl::pair<evolution::initial_data::InitialData, initial_data_list>,
-        // Restrict to monotonic time steppers in LTS to avoid control
-        // systems deadlocking.
-        tmpl::pair<
-            LtsTimeStepper,
-            tmpl::conditional_t<use_control_systems,
-                                TimeSteppers::monotonic_lts_time_steppers,
-                                TimeSteppers::lts_time_steppers>>,
         tmpl::pair<PhaseChange, PhaseControl::factory_creatable_classes>,
         tmpl::pair<StepChooser<StepChooserUse::LtsStep>,
                    StepChoosers::standard_step_choosers<system>>,

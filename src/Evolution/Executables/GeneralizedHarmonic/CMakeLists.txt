@@ -45,7 +45,6 @@ function(add_generalized_harmonic_executable_without_horizon DIM)
     ${EXECUTABLE}
     PRIVATE
     DIM=${DIM}
-    USE_LTS=false
     )
   target_link_libraries(${EXECUTABLE} PRIVATE ${LIBS_TO_LINK})
 endfunction()
@@ -70,11 +69,6 @@ target_link_libraries(
   Cce
   ControlSystem
   Deadlock
-  )
-target_compile_definitions(
-  ${SINGLE_BH_EXECUTABLE}
-  PRIVATE
-  USE_LTS=true
   )
 
 

@@ -52,7 +52,6 @@ struct EvolutionMetavars
   static constexpr bool use_damped_harmonic_rollon =
       defaults::use_damped_harmonic_rollon;
   using temporal_id = typename defaults::temporal_id;
-  static constexpr bool local_time_stepping = defaults::local_time_stepping;
   using system = typename defaults::system;
   using analytic_variables_tags = typename defaults::analytic_variables_tags;
   using analytic_solution_fields = typename defaults::analytic_solution_fields;
