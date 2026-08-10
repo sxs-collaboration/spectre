@@ -45,6 +45,7 @@ target_link_libraries(
   ErrorHandling
   Events
   Evolution
+  InitialDataUtilities
   LinearOperators
   Options
   Utilities

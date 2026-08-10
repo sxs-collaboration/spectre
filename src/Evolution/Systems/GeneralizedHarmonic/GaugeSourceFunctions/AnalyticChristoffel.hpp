@@ -95,10 +95,11 @@ class AnalyticChristoffel final : public GaugeCondition {
     // out-of-line instantiation, causing a linker error.
     ASSERT(analytic_prescription_.get() != nullptr,
            "The analytic prescription cannot be nullptr.");
+    // Unwrap wrapper types (e.g. WithNoise) to reach inner analytic solution
     const auto solution_vars = call_with_dynamic_type<
         tuples::tagged_tuple_from_typelist<solution_tags<SpatialDim>>,
         AllSolutionsForChristoffelAnalytic>(
-        analytic_prescription_.get(),
+        &analytic_prescription_->unwrap(),
         [&inertial_coords, &time](const auto* const analytic_solution_or_data) {
           if constexpr (is_analytic_solution_v<std::decay_t<
                             decltype(*analytic_solution_or_data)>>) {

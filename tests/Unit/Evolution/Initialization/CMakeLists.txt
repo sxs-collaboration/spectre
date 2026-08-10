@@ -23,5 +23,6 @@ target_link_libraries(
   Domain
   Evolution
   Hydro
+  InitialDataUtilities
   Utilities
   )

@@ -5,11 +5,13 @@
 
 #include <cstddef>
 #include <limits>
+#include <memory>
 #include <optional>
 #include <string>
 #include <tuple>
 #include <utility>
 #include <variant>
+#include <vector>
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataVector.hpp"
@@ -35,6 +37,7 @@
 #include "Parallel/Phase.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/WrappedGr.tpp"
+#include "PointwiseFunctions/InitialDataUtilities/WithNoise.hpp"
 #include "Time/Tags/Time.hpp"
 #include "Utilities/GetOutput.hpp"
 #include "Utilities/MakeString.hpp"
@@ -150,7 +153,8 @@ struct Metavariables {
     using factory_classes = tmpl::map<tmpl::pair<
         evolution::initial_data::InitialData,
         tmpl::list<NumericInitialData,
-                   gh::Solutions::WrappedGr<gr::Solutions::KerrSchild>>>>;
+                   gh::Solutions::WrappedGr<gr::Solutions::KerrSchild>,
+                   evolution::initial_data::WithNoise>>>;
   };
 };
 
@@ -297,6 +301,79 @@ void test_set_initial_data(
                                (get<Tags::Phi<DataVector, 3>>(kerr_gh_vars)),
                                custom_approx);
 }
+void test_analytic_with_noise() {
+  using element_array = MockElementArray<Metavariables>;
+  using reader_component = MockVolumeDataReader<Metavariables>;
+
+  const gh::Solutions::WrappedGr<gr::Solutions::KerrSchild> kerr{
+      1., {{0., 0., 0.}}, {{0., 0., 0.}}};
+  const Mesh<3> mesh{8, Spectral::Basis::Legendre,
+                     Spectral::Quadrature::GaussLobatto};
+  const auto map =
+      domain::make_coordinate_map<Frame::ElementLogical, Frame::Inertial>(
+          domain::CoordinateMaps::Wedge<3>{
+              2., 4., 1., 1., OrientationMap<3>::create_aligned(), true});
+  const auto logical_coords = logical_coordinates(mesh);
+  const auto coords = map(logical_coords);
+  const auto inv_jacobian = map.inv_jacobian(logical_coords);
+  const auto kerr_gh_vars = kerr.variables(coords, 0., gh_system_vars{});
+  const ElementId<3> element_id{0};
+
+  auto run_with_noise = [&](const double noise_amplitude) {
+    const evolution::initial_data::WithNoise with_noise{
+        std::make_unique<gh::Solutions::WrappedGr<gr::Solutions::KerrSchild>>(
+            kerr),
+        noise_amplitude, 123_st, std::vector<std::string>{"All"}};
+    ActionTesting::MockRuntimeSystem<Metavariables> runner{
+        {with_noise.get_clone()}, {true}};
+    ActionTesting::emplace_nodegroup_component<reader_component>(
+        make_not_null(&runner));
+    ActionTesting::emplace_component_and_initialize<element_array>(
+        make_not_null(&runner), element_id,
+        {tnsr::aa<DataVector, 3>{}, tnsr::aa<DataVector, 3>{},
+         tnsr::iaa<DataVector, 3>{}, mesh, coords, inv_jacobian, 0.});
+    ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Testing);
+    ActionTesting::next_action<element_array>(make_not_null(&runner),
+                                              element_id);
+    return std::make_tuple(
+        ActionTesting::get_databox_tag<
+            element_array, gr::Tags::SpacetimeMetric<DataVector, 3>>(
+            runner, element_id),
+        ActionTesting::get_databox_tag<element_array, Tags::Pi<DataVector, 3>>(
+            runner, element_id),
+        ActionTesting::get_databox_tag<element_array, Tags::Phi<DataVector, 3>>(
+            runner, element_id));
+  };
+
+  {
+    INFO("WithNoise amplitude=0 gives clean analytic result");
+    const auto [g, pi, phi] = run_with_noise(0.0);
+    const Approx custom_approx = Approx::custom().epsilon(1.e-3).scale(1.0);
+    CHECK_ITERABLE_CUSTOM_APPROX(
+        g, (get<gr::Tags::SpacetimeMetric<DataVector, 3>>(kerr_gh_vars)),
+        custom_approx);
+    CHECK_ITERABLE_CUSTOM_APPROX(
+        pi, (get<Tags::Pi<DataVector, 3>>(kerr_gh_vars)), custom_approx);
+    CHECK_ITERABLE_CUSTOM_APPROX(
+        phi, (get<Tags::Phi<DataVector, 3>>(kerr_gh_vars)), custom_approx);
+  }
+
+  {
+    INFO("WithNoise amplitude>0 perturbs the analytic result");
+    const auto [g, pi, phi] = run_with_noise(1.0e-4);
+    const auto& clean_g =
+        get<gr::Tags::SpacetimeMetric<DataVector, 3>>(kerr_gh_vars);
+    bool any_different = false;
+    for (size_t i = 0;
+         i < tnsr::aa<DataVector, 3>::size(); ++i) {
+      if (max(abs(g[i] - clean_g[i])) > 0.0) {
+        any_different = true;
+        break;
+      }
+    }
+    CHECK(any_different);
+  }
+}
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Evolution.Systems.Gh.NumericInitialData",
@@ -355,6 +432,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Gh.NumericInitialData",
       "  Center: [0, 0, 0]\n"
       "  Velocity: [0, 0, 0]",
       false);
+  test_analytic_with_noise();
 }
 
 }  // namespace gh
