@@ -1,20 +1,15 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-set(LIBRARY "PyDomainCreators")
+set(LIBRARY "PyEvolutionSystemsGeneralizedHarmonic")
 
 spectre_python_add_module(
-  Creators
+  GeneralizedHarmonic
   LIBRARY_NAME ${LIBRARY}
-  MODULE_PATH "Domain"
+  MODULE_PATH "Evolution/Systems"
   SOURCES
-  BinaryCompactObject.cpp
   Bindings.cpp
-  Cylinder.cpp
-  DomainCreator.cpp
-  Rectilinear.cpp
-  Sphere.cpp
-  SphericalShells.cpp
+  SphericalShellPowerMonitor.cpp
   PYTHON_FILES
   __init__.py
   )
@@ -23,23 +18,26 @@ spectre_python_headers(
   ${LIBRARY}
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
-  BinaryCompactObject.hpp
-  Cylinder.hpp
-  DomainCreator.hpp
-  Rectilinear.hpp
-  Sphere.hpp
-  SphericalShells.hpp
+  SphericalShellPowerMonitor.hpp
   )
 
 spectre_python_link_libraries(
   ${LIBRARY}
   PRIVATE
-  DomainCreators
+  DataStructures
+  Domain
+  GeneralizedHarmonic
   pybind11::module
+  PythonBindings
+  Spectral
+  SphericalHarmonics
+  Utilities
   )
 
 spectre_python_add_dependencies(
   ${LIBRARY}
-  PyCoordinateMaps
+  PyDataStructures
   PyDomain
+  PySpectral
+  PyTensor
   )

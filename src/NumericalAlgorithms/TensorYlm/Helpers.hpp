@@ -7,6 +7,7 @@
 
 #include <array>
 #include <complex>
+#include <cstddef>
 #include <cstdint>
 
 #include "Utilities/Array.hpp"
@@ -34,6 +35,11 @@ std::array<BasisVector, Rank> to_sphere_basis_vector(
 
 /// Returns minus the spinweight of a tetrad basis vector
 int bv_to_s(BasisVector basis_vector);
+
+/// Returns the spin weight of a tensor structure component in the spherical
+/// basis.
+template <typename TensorStructure>
+int component_spin_weight(size_t component);
 
 /// Computes the symmetry factor S that appears in various equations.
 template <typename Symm>

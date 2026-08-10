@@ -37,3 +37,9 @@ spectre_add_python_bindings_test(
   Test_Sphere.py
   "Unit;Domain"
   PyDomainCreators)
+
+spectre_add_python_bindings_test(
+  "Unit.Domain.Creators.Python.SphericalShells"
+  Test_SphericalShells.py
+  "Unit;Domain"
+  PyDomainCreators)

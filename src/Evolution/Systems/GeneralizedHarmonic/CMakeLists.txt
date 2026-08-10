@@ -13,6 +13,7 @@ spectre_target_sources(
   Constraints.cpp
   Equations.cpp
   SpectralFilter.cpp
+  SphericalShellPowerMonitor.cpp
   TensorYlmTransforms.cpp
   TimeDerivative.cpp
   )
@@ -28,6 +29,7 @@ spectre_target_headers(
   Equations.hpp
   Initialize.hpp
   SpectralFilter.hpp
+  SphericalShellPowerMonitor.hpp
   System.hpp
   Tags.hpp
   TagsDeclarations.hpp
@@ -75,3 +77,4 @@ add_subdirectory(BoundaryConditions)
 add_subdirectory(BoundaryCorrections)
 add_subdirectory(GaugeSourceFunctions)
 add_subdirectory(Instantiations)
+add_subdirectory(Python)

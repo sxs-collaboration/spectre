@@ -8,6 +8,7 @@
 #include "Domain/Creators/Python/DomainCreator.hpp"
 #include "Domain/Creators/Python/Rectilinear.hpp"
 #include "Domain/Creators/Python/Sphere.hpp"
+#include "Domain/Creators/Python/SphericalShells.hpp"
 #include "Domain/Creators/RegisterDerivedWithCharm.hpp"
 #include "Domain/Creators/TimeDependence/RegisterDerivedWithCharm.hpp"
 #include "Utilities/ErrorHandling/SegfaultHandler.hpp"
@@ -28,6 +29,7 @@ PYBIND11_MODULE(_Pybindings, m) {  // NOLINT
   py_bindings::bind_rectilinear(m);
   py_bindings::bind_cylinder(m);
   py_bindings::bind_sphere(m);
+  py_bindings::bind_spherical_shells(m);
   py_bindings::bind_binary_compact_object(m);
 }
 
