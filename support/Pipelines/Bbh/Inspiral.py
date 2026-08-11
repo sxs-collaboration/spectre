@@ -109,6 +109,28 @@ def _constraint_damping_params(
     }
 
 
+def _ah_ab_adaptivity_params() -> dict:
+    """Parameters for adaptive AhA/B resolution.
+
+    These values use the SpEC BBH DoMultipleRuns.input horizon-adaptivity
+    tolerances with the currently fixed representative medium level k = 2.
+    SpECTRE currently supports the Residual and Shape criteria, but not SpEC's
+    SurfaceAreaElement selector.
+    """
+
+    spec_medium_level = 2
+    truncation_error_max = 0.000216536 * 4 ** (-spec_medium_level)
+
+    return {
+        "AhABMaxResidual": truncation_error_max,
+        "AhABMinResidual": truncation_error_max / 10.0,
+        "AhABMaxTruncationError": truncation_error_max,
+        "AhABMinTruncationError": truncation_error_max / 100.0,
+        "AhABMinResolutionL": 6,
+        "AhABMaxPileUpModes": 4,
+    }
+
+
 def inspiral_parameters(
     id_input_file: dict,
     id_metadata: dict,
@@ -295,6 +317,9 @@ def inspiral_parameters(
         )
     )
 
+    # AhA/B apparent horizon adaptivity
+    params.update(_ah_ab_adaptivity_params())
+
     # Store target parameters in the input file
     params["TargetParams"] = yaml.safe_dump(
         {"TargetParams": target_params}
@@ -405,6 +430,9 @@ def inspiral_parameters_spec(
             spin_magnitude_right=spin_magnitude_right,
         )
     )
+
+    # AhA/B apparent horizon adaptivity
+    params.update(_ah_ab_adaptivity_params())
 
     # Store target parameters in the input file
     params["TargetParams"] = yaml.safe_dump(
