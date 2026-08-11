@@ -61,8 +61,8 @@ RAN_CLANG_TIDY=no
 for run_clang_tidy in run-clang-tidy run-clang-tidy.py "${RUN_CLANG_TIDY_BIN}" ;
 do
     if command -v "${run_clang_tidy}" > /dev/null 2>&1; then
-        ${run_clang_tidy} -quiet ${THREADING_FLAG} -p ${BUILD_DIR} \
-                          ${MODIFIED_FILES[@]} || EXIT_CODE=1
+        ${run_clang_tidy} -allow-no-checks -quiet ${THREADING_FLAG} \
+                          -p ${BUILD_DIR} ${MODIFIED_FILES[@]} || EXIT_CODE=1
         RAN_CLANG_TIDY=yes
         break
     fi
