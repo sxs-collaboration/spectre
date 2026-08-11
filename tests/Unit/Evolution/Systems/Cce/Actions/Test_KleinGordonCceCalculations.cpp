@@ -8,6 +8,7 @@
 #include "Evolution/Systems/Cce/Actions/InitializeKleinGordonFirstHypersurface.hpp"
 #include "Evolution/Systems/Cce/KleinGordonSource.hpp"
 #include "Evolution/Systems/Cce/PrecomputeCceDependencies.hpp"
+#include "Evolution/Systems/Cce/WorldtubeConstraint.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
@@ -39,7 +40,8 @@ using swsh_volume_tags_to_generate =
                    Spectral::Swsh::Tags::Eth>>;
 
 using swsh_boundary_tags_to_generate =
-    tmpl::list<Tags::BoundaryValue<Tags::KleinGordonPi>, Tags::BondiUAtScri>;
+    tmpl::list<Tags::BoundaryValue<Tags::KleinGordonPsi>,
+               Tags::BoundaryValue<Tags::KleinGordonPi>, Tags::BondiUAtScri>;
 
 using swsh_volume_tags_to_compute =
     tmpl::list<Tags::KleinGordonSource<Tags::BondiBeta>,
@@ -63,7 +65,8 @@ using swsh_volume_tags_to_compute =
                Tags::RegularIntegrand<Tags::KleinGordonPi>>;
 
 using swsh_boundary_tags_to_compute =
-    tmpl::list<Tags::EvolutionGaugeBoundaryValue<Tags::KleinGordonPi>>;
+    tmpl::list<Tags::EvolutionGaugeBoundaryValue<Tags::KleinGordonPi>,
+               Tags::KleinGordonWorldtubeConstraint>;
 
 using swsh_transform_tags_to_compute = tmpl::list<
     Spectral::Swsh::Tags::SwshTransform<Spectral::Swsh::Tags::Derivative<
@@ -114,7 +117,8 @@ struct mock_kg_characteristic_evolution {
                   integrand_terms_to_compute_for_bondi_variable<
                       Tags::KleinGordonPi>,
                   tmpl::bind<::Actions::MutateApply,
-                             tmpl::bind<ComputeBondiIntegrand, tmpl::_1>>>>>>;
+                             tmpl::bind<ComputeBondiIntegrand, tmpl::_1>>>,
+              ::Actions::MutateApply<ComputeKGWorldtubeConstraint>>>>;
 
   using const_global_cache_tags =
       tmpl::list<Tags::LMax, Tags::NumberOfRadialPoints>;
@@ -130,9 +134,9 @@ struct metavariables {
 // `CalculateIntegrandInputsForTag<Tags::KleinGordonPi>`, the mutators
 // `ComputeKleinGordonSource`,
 // `GaugeAdjustedBoundaryValue<Tags::KleinGordonPi>`,
-// `ComputeBondiIntegrand<Tags::RegularIntegrand<Tags::KleinGordonPi>>`, and
-// `ComputeBondiIntegrand<Tags::PoleOfIntegrand<Tags::KleinGordonPi>>`. The test
-// involves
+// `ComputeBondiIntegrand<Tags::RegularIntegrand<Tags::KleinGordonPi>>`,
+// `ComputeBondiIntegrand<Tags::PoleOfIntegrand<Tags::KleinGordonPi>>`, and
+// `ComputeKGWorldtubeConstraint`. The test involves
 // (a) Fills a bunch of variables with random numbers (filtered so that there is
 // no aliasing in highest modes).
 // (b) Puts those variables in two places: the MockRuntimeSystem runner and a
@@ -240,7 +244,7 @@ void test_klein_gordon_cce_source(const gsl::not_null<Generator*> gen) {
 
   runner.set_phase(Parallel::Phase::Evolve);
 
-  for (int i = 0; i < 9; i++) {
+  for (int i = 0; i < 10; i++) {
     ActionTesting::next_action<component>(make_not_null(&runner), 0);
   }
 
@@ -350,6 +354,30 @@ void test_klein_gordon_cce_source(const gsl::not_null<Generator*> gen) {
         auto expected_result = db::get<tag>(expected_box);
         CHECK(computed_result == expected_result);
       });
+
+  // tests for `ComputeKGWorldtubeConstraint`
+  {
+    auto expected_boundary_value_psi =
+        db::get<Tags::BoundaryValue<Tags::KleinGordonPsi>>(expected_box);
+    auto expected_volume_value_psi =
+        db::get<Tags::KleinGordonPsi>(expected_box);
+    const SpinWeighted<ComplexDataVector, 0> surface_psi;
+    make_const_view(make_not_null(&surface_psi), get(expected_volume_value_psi),
+                    0,
+                    Spectral::Swsh::number_of_swsh_collocation_points(l_max));
+
+    auto computed_result =
+        ActionTesting::get_databox_tag<component,
+                                       Tags::KleinGordonWorldtubeConstraint>(
+            runner, 0);
+
+    auto expected_result = get(expected_boundary_value_psi) - surface_psi;
+
+    Approx custom_approx = Approx::custom().epsilon(1.0e-14).scale(1.0);
+
+    CHECK_ITERABLE_CUSTOM_APPROX(get(computed_result).data(),
+                                 expected_result.data(), custom_approx);
+  }
 }
 }  // namespace
 
