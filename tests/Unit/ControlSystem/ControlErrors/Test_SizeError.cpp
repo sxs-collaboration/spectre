@@ -45,6 +45,7 @@
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/Solutions.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
+#include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/Serialization/Serialize.hpp"
@@ -406,11 +407,9 @@ void test_size_error_one_step(
     const auto control_error_history = error_class.control_error_history();
 
     // These should be identical because the control error class calls the
-    // control_error function. The horizon smoothing averager would normally
-    // make this slightly different, but it needs a few times before it can do
-    // anything. Therefore, the smoothing aspect of the control error from class
-    // is not tested yet. So in the meantime, the initial values for the horizon
-    // coef and its derivatives are the ones specified above
+    // control_error function. The horizon smoothing averager needs several
+    // measurements before it can act, so this first call uses the raw horizon
+    // coefficient and derivative specified above.
     CHECK(control_error_from_class == error.control_error);
 
     CHECK_FALSE(error_class.get_suggested_timescale().has_value());
@@ -459,6 +458,101 @@ void test_size_error_one_step(
     CHECK_FALSE(error_class.get_suggested_timescale().has_value());
     CHECK_FALSE(error_class.discontinuous_change_has_occurred());
     CHECK(control_error_history.empty());
+
+    // The DeltaR state's output is control_error_delta_r itself, which is used
+    // in the following test of the Taylor series used in computing size error
+    if constexpr (std::is_same_v<FinalState,
+                                 control_system::size::States::DeltaR>) {
+      // This instance holds its smoothing timescale fixed at 0.2, so
+      // its private averager can be reproduced independently below.
+      auto smoothing_error_class =
+          size_error{4,
+                     0.25,
+                     TimescaleTuner<true>{std::vector<double>{0.2}, 20.0,
+                                          1.0e-4, 2.5e-4, 1.0, 1.0e-3, 1.0},
+                     std::make_unique<control_system::size::States::Initial>(),
+                     std::nullopt,
+                     std::nullopt};
+      const auto smoother_timescale = DataVector{1, 0.2};
+      auto mirror_horizon_averager = Averager<2>{0.25, true};
+
+      // A quadratic horizon has the nonzero second derivative needed to
+      // test the Taylor series expansion of the horizon coefs used when
+      // computing size error. Three samples build enough history. The fourth
+      // sample produces the nonzero time offset needed to test the
+      // extrapolation.
+      constexpr double horizon_acceleration = 0.2;
+      constexpr size_t number_of_measurements = 4;
+      for (size_t step = 0; step < number_of_measurements; ++step) {
+        const double time_offset = 0.1 * static_cast<double>(step);
+        const double current_time = time + time_offset;
+        const auto current_horizon = ylm::Strahlkorper<Frame::Distorted>{
+            l_max,
+            distorted_horizon_radius +
+                distorted_horizon_velocity * time_offset +
+                0.5 * horizon_acceleration * square(time_offset),
+            center};
+        const auto current_time_deriv_horizon =
+            ylm::Strahlkorper<Frame::Distorted>{
+                l_max,
+                distorted_horizon_velocity + horizon_acceleration * time_offset,
+                center};
+
+        // Pass the analytic horizon and its time derivative to the
+        // production measurement tuple.
+        auto& horizon_measurements =
+            tuples::get<HorizonQuantities>(measurements);
+        tuples::get<ylm::Tags::Strahlkorper<Frame::Distorted>>(
+            horizon_measurements) = current_horizon;
+        tuples::get<::Tags::dt<ylm::Tags::Strahlkorper<Frame::Distorted>>>(
+            horizon_measurements) = current_time_deriv_horizon;
+
+        // Update Mirror Size's averager. Until there is enough history, both
+        // paths use the raw horizon coefficients at the measurement time.
+        mirror_horizon_averager.update(
+            current_time, DataVector{current_horizon.coefficients()[0]},
+            smoother_timescale);
+        const double smoothed_control_error = smoothing_error_class(
+            tuner, cache, current_time, "Size"s, measurements)[0];
+
+        // The first three measurements only build the history needed by the
+        // averagers. Check the result once the fourth measurement produces a
+        // retarded effective time.
+        if (step + 1 < number_of_measurements) {
+          continue;
+        }
+
+        CAPTURE(current_time);
+        const auto& averaged_horizon = mirror_horizon_averager(current_time);
+        REQUIRE(averaged_horizon.has_value());
+        const auto& averaged_horizon_values = averaged_horizon.value();
+        const double average_time =
+            mirror_horizon_averager.average_time(current_time);
+        const double time_from_average = current_time - average_time;
+        CHECK(time_from_average > 0.0);
+
+        // The averager returns the horizon and its derivatives at its effective
+        // time. Extrapolate them to the measurement time just as Size should
+        // before it evaluates the DeltaR control error.
+        const double horizon_00 =
+            averaged_horizon_values[0][0] +
+            time_from_average * averaged_horizon_values[1][0] +
+            0.5 * square(time_from_average) * averaged_horizon_values[2][0];
+        const double dt_horizon_00 =
+            averaged_horizon_values[1][0] +
+            time_from_average * averaged_horizon_values[2][0];
+
+        const auto current_lambda_dt_lambda =
+            function_of_time->func_and_deriv(current_time);
+        // In the DeltaR state this is the class's expected output
+        const double expected_control_error_delta_r =
+            control_system::size::control_error_delta_r(
+                horizon_00, dt_horizon_00, current_lambda_dt_lambda[0][0],
+                current_lambda_dt_lambda[1][0], grid_excision_boundary_radius);
+
+        CHECK(smoothed_control_error == approx(expected_control_error_delta_r));
+      }
+    }
   }
 }
 
