@@ -228,11 +228,12 @@ struct EvolutionMetavars {
       Initialization::Actions::InitializeItems<
           Initialization::TimeStepping<EvolutionMetavars, ImexTimeStepper,
                                        false, true>,
-          evolution::dg::Initialization::Domain<EvolutionMetavars>,
-          Initialization::TimeStepperHistory<EvolutionMetavars>>,
+          evolution::dg::Initialization::Domain<EvolutionMetavars>>,
       Initialization::Actions::AddSimpleTags<
           evolution::dg::BackgroundGrVars<system, EvolutionMetavars>>,
       Initialization::Actions::ConservativeSystem<system>,
+      Initialization::Actions::InitializeItems<
+          Initialization::TimeStepperHistory<system>>,
       evolution::Initialization::Actions::SetVariables<
           domain::Tags::Coordinates<volume_dim, Frame::ElementLogical>>,
       RadiationTransport::M1Grey::Actions::InitializeM1Tags<system>,

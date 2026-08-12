@@ -53,6 +53,7 @@
 #include "Utilities/Literals.hpp"
 #include "Utilities/MakeArray.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
+#include "Utilities/SetNumberOfGridPoints.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
@@ -294,31 +295,41 @@ struct ProjectTimeStepping : tt::ConformsTo<amr::protocols::Projector> {
 /// - Modifies: nothing
 ///
 /// \note HistoryEvolvedVariables is allocated, but needs to be initialized
-template <typename Metavariables>
-struct TimeStepperHistory {
-  static constexpr size_t dim = Metavariables::volume_dim;
-  using variables_tag = typename Metavariables::system::variables_tag;
-  using dt_variables_tag = db::add_tag_prefix<::Tags::dt, variables_tag>;
+/// @{
+template <typename System,
+          template <typename> typename CacheTagPrefix = std::type_identity_t,
+          typename = tmpl::conditional_t<
+              tt::is_a_v<tmpl::list, typename System::variables_tag>,
+              typename System::variables_tag,
+              tmpl::list<typename System::variables_tag>>>
+struct TimeStepperHistory;
 
+template <typename System, template <typename> typename CacheTagPrefix,
+          typename... VariablesTags>
+struct TimeStepperHistory<System, CacheTagPrefix,
+                          tmpl::list<VariablesTags...>> {
   using const_global_cache_tags = tmpl::list<>;
   using mutable_global_cache_tags = tmpl::list<>;
   using simple_tags_from_options = tmpl::list<>;
   using simple_tags =
-      tmpl::list<dt_variables_tag,
-                 ::Tags::HistoryEvolvedVariables<variables_tag>>;
+      tmpl::list<db::add_tag_prefix<::Tags::dt, VariablesTags>...,
+                 ::Tags::HistoryEvolvedVariables<VariablesTags>...>;
   using compute_tags = tmpl::list<>;
 
   using argument_tags =
-      tmpl::list<::Tags::TimeStepper<TimeStepper>, domain::Tags::Mesh<dim>>;
+      tmpl::list<CacheTagPrefix<::Tags::TimeStepper<TimeStepper>>,
+                 VariablesTags...>;
   using return_tags = simple_tags;
 
   static void apply(
-      const gsl::not_null<typename dt_variables_tag::type*> dt_vars,
-      const gsl::not_null<TimeSteppers::History<typename variables_tag::type>*>
-          history,
-      const TimeStepper& time_stepper, const Mesh<dim>& mesh) {
+      const gsl::not_null<typename db::add_tag_prefix<
+          ::Tags::dt, VariablesTags>::type*>... dt_vars,
+      const gsl::not_null<
+          TimeSteppers::History<typename VariablesTags::type>*>... history,
+      const TimeStepper& time_stepper,
+      const typename VariablesTags::type&... vars) {
     // Will be overwritten before use
-    dt_vars->initialize(mesh.number_of_grid_points());
+    expand_pack((set_number_of_grid_points(dt_vars, vars), 0)...);
 
     // All steppers we have that need to start at low order require
     // one additional point per order, so this is the order that
@@ -336,9 +347,10 @@ struct TimeStepperHistory {
             },
             time_stepper.order()) -
         time_stepper.number_of_past_steps();
-    history->integration_order(starting_order);
+    expand_pack((history->integration_order(starting_order), 0)...);
   }
 };
+/// @}
 
 /// \brief Initialize/update items related to time stepper history after an AMR
 /// change

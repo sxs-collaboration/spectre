@@ -264,9 +264,10 @@ struct EvolutionMetavars {
       Initialization::Actions::InitializeItems<
           Initialization::TimeStepping<EvolutionMetavars, TimeStepper, false,
                                        true>,
-          evolution::dg::Initialization::Domain<EvolutionMetavars>,
-          Initialization::TimeStepperHistory<EvolutionMetavars>>,
+          evolution::dg::Initialization::Domain<EvolutionMetavars>>,
       Initialization::Actions::ConservativeSystem<system>,
+      Initialization::Actions::InitializeItems<
+          Initialization::TimeStepperHistory<system>>,
 
       tmpl::conditional_t<
           use_dg_subcell,

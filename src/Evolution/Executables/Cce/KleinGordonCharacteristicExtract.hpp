@@ -15,6 +15,7 @@
 #include "Evolution/Systems/Cce/Events/ObserveFields.hpp"
 #include "Evolution/Systems/Cce/Events/ObserveTimeStep.hpp"
 #include "Evolution/Systems/Cce/Initialize/ConformalFactor.hpp"
+#include "Evolution/Systems/Cce/KleinGordonSystem.hpp"
 #include "IO/Observer/ObserverComponent.hpp"
 #include "Parallel/Algorithms/AlgorithmSingleton.hpp"
 #include "ParallelAlgorithms/Events/Factory.hpp"
@@ -37,7 +38,7 @@ class er;
 
 template <template <typename> class BoundaryComponent>
 struct EvolutionMetavars : CharacteristicExtractDefaults<false> {
-  using system = Cce::System<evolve_ccm>;
+  using system = Cce::KleinGordonSystem<evolve_ccm>;
   using cce_boundary_component = BoundaryComponent<EvolutionMetavars>;
   using cce_base = CharacteristicExtractDefaults<false>;
 

@@ -10,7 +10,6 @@
 #include "Evolution/Systems/Cce/Actions/PrecomputeKleinGordonSourceVariables.hpp"
 #include "Evolution/Systems/Cce/Components/CharacteristicEvolution.hpp"
 #include "Evolution/Systems/Cce/KleinGordonSource.hpp"
-#include "Evolution/Systems/Cce/KleinGordonSystem.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Local.hpp"
 #include "Parallel/Phase.hpp"
@@ -57,7 +56,7 @@ struct KleinGordonCharacteristicEvolution
     : CharacteristicEvolution<Metavariables> {
   using metavariables = Metavariables;
   static constexpr bool evolve_ccm = Metavariables::evolve_ccm;
-  using cce_system = Cce::KleinGordonSystem<evolve_ccm>;
+  using cce_system = typename Metavariables::system;
 
   using cce_base = CharacteristicEvolution<Metavariables>;
   using initialize_action_list = tmpl::append<

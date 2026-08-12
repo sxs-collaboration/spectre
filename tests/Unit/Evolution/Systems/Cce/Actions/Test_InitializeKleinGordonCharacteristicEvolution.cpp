@@ -4,12 +4,15 @@
 #include "Framework/TestingFramework.hpp"
 
 #include "Evolution/Executables/Cce/CharacteristicExtractBase.hpp"
+#include "Evolution/Initialization/Evolution.hpp"
 #include "Evolution/Systems/Cce/Components/KleinGordonCharacteristicEvolution.hpp"
+#include "Evolution/Systems/Cce/KleinGordonSystem.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
 #include "Helpers/Evolution/Systems/Cce/Actions/CharacteristicInitialization.hpp"
 #include "Helpers/Evolution/Systems/Cce/KleinGordonBoundaryTestHelpers.hpp"
+#include "ParallelAlgorithms/Actions/InitializeItems.hpp"
 #include "ParallelAlgorithms/Actions/MutateApply.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
 #include "Time/AdvanceTime.hpp"
@@ -33,14 +36,15 @@ struct mock_klein_gordon_characteristic_evolution {
   using initialize_action_list = tmpl::list<
       Actions::InitializeKleinGordonVariables<Metavariables>,
       Actions::InitializeCharacteristicEvolutionVariables<Metavariables>,
-      Actions::InitializeCharacteristicEvolutionTime<
-          typename Metavariables::evolved_coordinates_variables_tag,
-          typename Metavariables::evolved_swsh_tags>,
+      Actions::InitializeCharacteristicEvolutionTime,
       // advance the time so that the current `TimeStepId` is valid without
       // having to perform self-start.
       ::Actions::MutateApply<AdvanceTime<Tags::CceEvolutionPrefix>>,
       Actions::InitializeCharacteristicEvolutionScri<
           typename Metavariables::scri_values_to_observe, NoSuchType>,
+      Initialization::Actions::InitializeItems<
+          Initialization::TimeStepperHistory<Cce::KleinGordonSystem<false>,
+                                             Tags::CceEvolutionPrefix>>,
       Parallel::Actions::TerminatePhase>;
   using simple_tags_from_options =
       Parallel::get_simple_tags_from_options<initialize_action_list>;

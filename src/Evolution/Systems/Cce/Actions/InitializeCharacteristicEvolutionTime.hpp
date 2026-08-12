@@ -20,7 +20,6 @@
 #include "Time/LtsMode.hpp"
 #include "Time/Slab.hpp"
 #include "Time/Tags/AdaptiveSteppingDiagnostics.hpp"
-#include "Time/Tags/HistoryEvolvedVariables.hpp"
 #include "Time/Tags/LtsMode.hpp"
 #include "Time/Tags/StepNumberWithinSlab.hpp"
 #include "Time/Tags/Time.hpp"
@@ -55,21 +54,8 @@ namespace Actions {
  *  - `Tags::TimeStep`
  *  - `Tags::Time`
  *  - `Tags::AdaptiveSteppingDiagnostics`
- * ```
- * Tags::HistoryEvolvedVariables<
- * metavariables::evolved_coordinates_variables_tag,
- * db::add_tag_prefix<Tags::dt,
- * metavariables::evolved_coordinates_variables_tag>>
- * ```
- *  -
- * ```
- * Tags::HistoryEvolvedVariables<
- * ::Tags::Variables<metavariables::evolved_swsh_tags>,
- * ::Tags::Variables<metavariables::evolved_swsh_dt_tags>>
- * ```
  * - Removes: nothing
  */
-template <typename EvolvedCoordinatesVariablesTag, typename EvolvedSwshTag>
 struct InitializeCharacteristicEvolutionTime {
   using simple_tags_from_options =
       tmpl::list<Initialization::Tags::InitialSlabSize,
@@ -79,13 +65,10 @@ struct InitializeCharacteristicEvolutionTime {
       Tags::CceEvolutionPrefix<::Tags::ConcreteTimeStepper<LtsTimeStepper>>,
       Tags::CceEvolutionPrefix<::Tags::LtsModeForced<LtsMode::Conservative>>>;
 
-  using evolved_swsh_variables_tag = ::Tags::Variables<EvolvedSwshTag>;
-  using simple_tags = tmpl::list<
-      ::Tags::TimeStepId, ::Tags::Next<::Tags::TimeStepId>, ::Tags::TimeStep,
-      ::Tags::Time, ::Tags::StepNumberWithinSlab,
-      ::Tags::AdaptiveSteppingDiagnostics,
-      ::Tags::HistoryEvolvedVariables<EvolvedCoordinatesVariablesTag>,
-      ::Tags::HistoryEvolvedVariables<evolved_swsh_variables_tag>>;
+  using simple_tags =
+      tmpl::list<::Tags::TimeStepId, ::Tags::Next<::Tags::TimeStepId>,
+                 ::Tags::TimeStep, ::Tags::Time, ::Tags::StepNumberWithinSlab,
+                 ::Tags::AdaptiveSteppingDiagnostics>;
   using compute_tags =
       tmpl::transform<time_stepper_ref_tags<LtsTimeStepper>,
                       tmpl::bind<Tags::CceEvolutionPrefix, tmpl::_1>>;
@@ -115,31 +98,8 @@ struct InitializeCharacteristicEvolutionTime {
         db::get<::Initialization::Tags::InitialSlabSize>(box), time_stepper,
         LtsMode::Conservative);
 
-    const size_t starting_order =
-        visit(
-            []<typename Tag>(
-                const std::pair<tmpl::type_<Tag>, typename Tag::type&&> order) {
-              if constexpr (std::is_same_v<Tag,
-                                           TimeSteppers::Tags::FixedOrder>) {
-                return order.second;
-              } else {
-                return order.second.minimum;
-              }
-            },
-            time_stepper.order()) -
-        time_stepper.number_of_past_steps();
-
-    typename ::Tags::HistoryEvolvedVariables<EvolvedCoordinatesVariablesTag>::
-        type coordinate_history(starting_order);
-
-    typename ::Tags::HistoryEvolvedVariables<evolved_swsh_variables_tag>::type
-        swsh_history(starting_order);
-    Initialization::mutate_assign<tmpl::list<
-        ::Tags::TimeStepId, ::Tags::Time,
-        ::Tags::HistoryEvolvedVariables<EvolvedCoordinatesVariablesTag>,
-        ::Tags::HistoryEvolvedVariables<evolved_swsh_variables_tag>>>(
-        make_not_null(&box), TimeStepId{}, initial_time_value,
-        std::move(coordinate_history), std::move(swsh_history));
+    Initialization::mutate_assign<tmpl::list<::Tags::TimeStepId, ::Tags::Time>>(
+        make_not_null(&box), TimeStepId{}, initial_time_value);
     return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
 };

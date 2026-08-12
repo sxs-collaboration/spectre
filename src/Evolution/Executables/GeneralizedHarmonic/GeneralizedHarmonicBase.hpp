@@ -413,9 +413,10 @@ struct GeneralizedHarmonicTemplateBase {
                                        UseControlSystems, true>,
           evolution::dg::Initialization::Domain<DerivedMetavars,
                                                 UseControlSystems>,
-          ::amr::Initialization::Initialize<volume_dim, DerivedMetavars>,
-          Initialization::TimeStepperHistory<DerivedMetavars>>,
+          ::amr::Initialization::Initialize<volume_dim, DerivedMetavars>>,
       Initialization::Actions::NonconservativeSystem<system>,
+      Initialization::Actions::InitializeItems<
+          Initialization::TimeStepperHistory<system>>,
       Initialization::Actions::AddComputeTags<::Tags::DerivCompute<
           typename system::variables_tag, domain::Tags::Mesh<volume_dim>,
           domain::Tags::InverseJacobian<volume_dim, Frame::ElementLogical,

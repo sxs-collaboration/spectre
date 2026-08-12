@@ -520,11 +520,12 @@ struct EvolutionMetavars<tmpl::list<InterpolationTargetTags...>,
                                        true>,
           evolution::dg::Initialization::Domain<EvolutionMetavars>,
           evolution::dg::subcell::GhostZoneInverseJacobian<
-              volume_dim, grmhd::ValenciaDivClean::fd::Tags::Reconstructor>,
-          Initialization::TimeStepperHistory<EvolutionMetavars>>,
+              volume_dim, grmhd::ValenciaDivClean::fd::Tags::Reconstructor>>,
       Initialization::Actions::AddSimpleTags<
           evolution::dg::BackgroundGrVars<system, EvolutionMetavars>>,
       Initialization::Actions::ConservativeSystem<system>,
+      Initialization::Actions::InitializeItems<
+          Initialization::TimeStepperHistory<system>>,
 
       tmpl::conditional_t<
           use_dg_subcell,
