@@ -107,12 +107,67 @@ template <typename T>
 struct get_dg_package_field_tags {
   using type = typename T::dg_package_field_tags;
 };
+template <typename T>
+struct get_dg_auxiliary_package_temporary_tags {
+  using type =
+      get_dg_auxiliary_package_data_temporary_tags_or_default_t<T,
+                                                                tmpl::list<>>;
+};
+template <typename T>
+struct get_dg_auxiliary_package_field_tags {
+  using type =
+      get_dg_auxiliary_package_field_tags_or_default_t<T, tmpl::list<>>;
+};
 template <typename System, typename T>
 struct get_primitive_tags_for_face {
   using type = typename get_primitive_vars<
       System::has_primitive_and_conservative_vars>::template f<T>;
 };
 }  // namespace detail
+
+namespace ComputeTimeDerivative_detail {
+// Shared implementation of the `ComputeTimeDerivative` action
+// (`IsAuxiliary == false`) and the `SendAuxiliaryData` action
+// (`IsAuxiliary == true`). `IsAuxiliary` selects the LDG auxiliary pass: the
+// volume time derivative and timestep-size adjustment are skipped, the boundary
+// data is packaged with the boundary correction's auxiliary package-data
+// interface, and the data is sent on the auxiliary inbox channel. See the
+// documentation of the two public actions.
+template <size_t Dim, typename EvolutionSystem, typename DgStepChoosers,
+          bool UseNodegroupDgElements, bool IsAuxiliary,
+          typename VariablesTag = typename EvolutionSystem::variables_tag>
+struct Impl {
+  using inbox_tags =
+      tmpl::list<evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<
+          Dim, UseNodegroupDgElements, IsAuxiliary>>;
+  using const_global_cache_tags = tmpl::append<
+      tmpl::list<::dg::Tags::Formulation, evolution::Tags::BoundaryCorrection,
+                 domain::Tags::ExternalBoundaryConditions<Dim>>,
+      tmpl::conditional_t<
+          IsAuxiliary, tmpl::list<>,
+          typename ChangeStepSize<DgStepChoosers>::const_global_cache_tags>>;
+
+  template <typename DbTagsList, typename... InboxTags, typename ArrayIndex,
+            typename ActionList, typename ParallelComponent,
+            typename Metavariables>
+  static Parallel::iterable_action_return_t apply(
+      db::DataBox<DbTagsList>& box,
+      tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
+      Parallel::GlobalCache<Metavariables>& cache,
+      const ArrayIndex& /*array_index*/, ActionList /*meta*/,
+      const ParallelComponent* /*meta*/);  // NOLINT const
+
+ private:
+  template <typename ParallelComponent, typename DbTagsList,
+            typename Metavariables>
+  static void send_data_for_fluxes(
+      gsl::not_null<Parallel::GlobalCache<Metavariables>*> cache,
+      gsl::not_null<db::DataBox<DbTagsList>*> box,
+      [[maybe_unused]] const Variables<db::wrap_tags_in<
+          ::Tags::Flux, typename EvolutionSystem::flux_variables,
+          tmpl::size_t<Dim>, Frame::Inertial>>& volume_fluxes);
+};
+}  // namespace ComputeTimeDerivative_detail
 
 /*!
  * \brief Computes the time derivative for a DG time step.
@@ -356,56 +411,31 @@ struct get_primitive_tags_for_face {
 template <size_t Dim, typename EvolutionSystem, typename DgStepChoosers,
           bool UseNodegroupDgElements,
           typename VariablesTag = typename EvolutionSystem::variables_tag>
-struct ComputeTimeDerivative {
-  using inbox_tags =
-      tmpl::list<evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<
-          Dim, UseNodegroupDgElements>>;
-  using const_global_cache_tags = tmpl::append<
-      tmpl::list<::dg::Tags::Formulation, evolution::Tags::BoundaryCorrection,
-                 domain::Tags::ExternalBoundaryConditions<Dim>>,
-      typename ChangeStepSize<DgStepChoosers>::const_global_cache_tags>;
-
-  template <typename DbTagsList, typename... InboxTags, typename ArrayIndex,
-            typename ActionList, typename ParallelComponent,
-            typename Metavariables>
-  static Parallel::iterable_action_return_t apply(
-      db::DataBox<DbTagsList>& box,
-      tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-      Parallel::GlobalCache<Metavariables>& cache,
-      const ArrayIndex& /*array_index*/, ActionList /*meta*/,
-      const ParallelComponent* /*meta*/);  // NOLINT const
-
- private:
-  template <typename ParallelComponent, typename DbTagsList,
-            typename Metavariables>
-  static void send_data_for_fluxes(
-      gsl::not_null<Parallel::GlobalCache<Metavariables>*> cache,
-      gsl::not_null<db::DataBox<DbTagsList>*> box,
-      [[maybe_unused]] const Variables<db::wrap_tags_in<
-          ::Tags::Flux, typename EvolutionSystem::flux_variables,
-          tmpl::size_t<Dim>, Frame::Inertial>>& volume_fluxes);
-};
+struct ComputeTimeDerivative
+    : ComputeTimeDerivative_detail::Impl<Dim, EvolutionSystem, DgStepChoosers,
+                                         UseNodegroupDgElements, false,
+                                         VariablesTag> {};
 
 template <size_t Dim, typename EvolutionSystem, typename DgStepChoosers,
-          bool UseNodegroupDgElements, typename VariablesTag>
+          bool UseNodegroupDgElements, bool IsAuxiliary, typename VariablesTag>
 template <typename DbTagsList, typename... InboxTags, typename ArrayIndex,
           typename ActionList, typename ParallelComponent,
           typename Metavariables>
-Parallel::iterable_action_return_t ComputeTimeDerivative<
-    Dim, EvolutionSystem, DgStepChoosers, UseNodegroupDgElements,
+Parallel::iterable_action_return_t ComputeTimeDerivative_detail::Impl<
+    Dim, EvolutionSystem, DgStepChoosers, UseNodegroupDgElements, IsAuxiliary,
     VariablesTag>::apply(db::DataBox<DbTagsList>& box,
                          tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
                          Parallel::GlobalCache<Metavariables>& cache,
                          const ArrayIndex& /*array_index*/, ActionList /*meta*/,
-                         const ParallelComponent* const /*meta*/) {
+                         const ParallelComponent* const /*meta*/) {  // NOLINT
   static_assert(UseNodegroupDgElements ==
                     Parallel::is_dg_element_collection_v<ParallelComponent>,
-                "The action ComputeTimeDerivative is told by the "
-                "template parameter UseNodegroupDgElements that it is being "
-                "used with a DgElementCollection, but the ParallelComponent "
-                "is not a DgElementCollection. You need to change the "
-                "template parameter on the ComputeTimeDerivative action "
-                "in your action list.");
+                "The ComputeTimeDerivative or SendAuxiliaryData action is "
+                "told by the template parameter UseNodegroupDgElements that "
+                "it is being used with a DgElementCollection, but the "
+                "ParallelComponent is not a DgElementCollection. You need to "
+                "change the template parameter on the action in your action "
+                "list.");
 
   using variables_tag = VariablesTag;
   using dt_variables_tag = db::add_tag_prefix<::Tags::dt, variables_tag>;
@@ -456,17 +486,28 @@ Parallel::iterable_action_return_t ComputeTimeDerivative<
   // runtime, we just gather all possible tags from all possible boundary
   // corrections and lump them into the allocation. This may result in a
   // larger-than-necessary allocation, but it won't be that much larger.
-  using all_dg_package_temporary_tags =
+  using all_dg_package_temporary_tags = tmpl::conditional_t<
+      IsAuxiliary,
+      tmpl::transform<
+          derived_boundary_corrections,
+          detail::get_dg_auxiliary_package_temporary_tags<tmpl::_1>>,
       tmpl::transform<derived_boundary_corrections,
-                      detail::get_dg_package_temporary_tags<tmpl::_1>>;
+                      detail::get_dg_package_temporary_tags<tmpl::_1>>>;
   using all_primitive_tags_for_face =
       tmpl::transform<derived_boundary_corrections,
                       detail::get_primitive_tags_for_face<
                           tmpl::pin<EvolutionSystem>, tmpl::_1>>;
   using fluxes_tags = db::wrap_tags_in<::Tags::Flux, flux_variables,
                                        tmpl::size_t<Dim>, Frame::Inertial>;
+  // The physical boundary correction reads the evolved variables and, for LDG
+  // systems, the auxiliary variables (projected to the face); size the face
+  // buffer accordingly. The auxiliary pass computes the auxiliary variables
+  // but does not read them, so they are not projected there.
+  using projected_auxiliary_vars_tags =
+      tmpl::conditional_t<IsAuxiliary, tmpl::list<>, auxiliary_variables>;
   using dg_package_data_projected_tags =
-      tmpl::list<typename variables_tag::tags_list, fluxes_tags,
+      tmpl::list<typename variables_tag::tags_list,
+                 projected_auxiliary_vars_tags, fluxes_tags,
                  all_dg_package_temporary_tags, all_primitive_tags_for_face>;
   using all_face_temporary_tags =
       tmpl::remove_duplicates<tmpl::flatten<tmpl::push_back<
@@ -476,9 +517,14 @@ Parallel::iterable_action_return_t ComputeTimeDerivative<
   // To avoid additional allocations in internal_mortar_data, we provide a
   // buffer used to compute the packaged data before it has to be projected to
   // the mortar. We get all mortar tags for similar reasons as described above
-  using all_mortar_tags = tmpl::remove_duplicates<tmpl::flatten<
-      tmpl::transform<derived_boundary_corrections,
-                      detail::get_dg_package_field_tags<tmpl::_1>>>>;
+  using all_mortar_tags =
+      tmpl::remove_duplicates<tmpl::flatten<tmpl::conditional_t<
+          IsAuxiliary,
+          tmpl::transform<
+              derived_boundary_corrections,
+              detail::get_dg_auxiliary_package_field_tags<tmpl::_1>>,
+          tmpl::transform<derived_boundary_corrections,
+                          detail::get_dg_package_field_tags<tmpl::_1>>>>>;
 
   // We also don't use the number of volume mesh grid points. We instead use the
   // max number of grid points from each face. That way, our allocation will be
@@ -497,6 +543,10 @@ Parallel::iterable_action_return_t ComputeTimeDerivative<
 
   // Allocate the Variables classes needed for the time derivative
   // computation.
+  //
+  // On the auxiliary pass (`IsAuxiliary==true`) the volume time derivative is
+  // NOT computed, so the volume buffers below are allocated but left
+  // uninitialized.
   //
   // This is factored out so that we will be able to do ADER-DG/CG where a
   // spacetime polynomial is constructed by solving implicit equations in time
@@ -579,84 +629,88 @@ Parallel::iterable_action_return_t ComputeTimeDerivative<
       DgPackagedDataVarsOnFace::number_of_independent_components *
           num_face_temporary_grid_points);
 
-  const Scalar<DataVector>* det_inverse_jacobian = nullptr;
-  if constexpr (tmpl::size<flux_variables>::value != 0) {
-    if (dg_formulation == ::dg::Formulation::WeakInertial) {
-      det_inverse_jacobian = &db::get<
-          domain::Tags::DetInvJacobian<Frame::ElementLogical, Frame::Inertial>>(
-          box);
+  // The auxiliary pass sends boundary data before the volume time
+  // derivative is computed; it does not compute the volume terms.
+  if constexpr (not IsAuxiliary) {
+    const Scalar<DataVector>* det_inverse_jacobian = nullptr;
+    if constexpr (tmpl::size<flux_variables>::value != 0) {
+      if (dg_formulation == ::dg::Formulation::WeakInertial) {
+        det_inverse_jacobian =
+            &db::get<domain::Tags::DetInvJacobian<Frame::ElementLogical,
+                                                  Frame::Inertial>>(box);
+      }
     }
-  }
-  if constexpr (tmpl::size<auxiliary_variables>::value != 0) {
-    static_assert(
-        tmpl::size<tmpl::list_difference<
-                partial_derivative_tags,
-                tmpl::append<typename variables_tag::tags_list,
-                             auxiliary_variables>>>::value == 0,
-        "Every gradient variable must be an evolved variable (in "
-        "variables_tag) or an auxiliary variable (in auxiliary_variables); "
-        "otherwise it is not populated in the combined differentiation "
-        "source.");
-    Variables<detail::evolved_and_auxiliary_vars_tags<EvolutionSystem>>
-        evolved_and_auxiliary_vars{mesh.number_of_grid_points()};
-    evolved_and_auxiliary_vars.assign_subset(db::get<variables_tag>(box));
-    evolved_and_auxiliary_vars.assign_subset(
-        db::get<::Tags::Variables<auxiliary_variables>>(box));
-    db::mutate_apply<
-        tmpl::list<dt_variables_tag>,
-        typename compute_volume_time_derivative_terms::argument_tags>(
-        [&dg_formulation, &div_fluxes, &det_inverse_jacobian,
-         &div_mesh_velocity = db::get<::domain::Tags::DivMeshVelocity>(box),
-         &evolved_and_auxiliary_vars,
-         &inertial_coordinates =
-             db::get<domain::Tags::Coordinates<Dim, Frame::Inertial>>(box),
-         &logical_to_inertial_inv_jacobian =
-             db::get<::domain::Tags::InverseJacobian<Dim, Frame::ElementLogical,
-                                                     Frame::Inertial>>(box),
-         &mesh,
-         &mesh_velocity = db::get<::domain::Tags::MeshVelocity<Dim>>(box),
-         &partial_derivs, &temporaries,
-         &volume_fluxes](const gsl::not_null<Variables<db::wrap_tags_in<
-                             ::Tags::dt, typename variables_tag::tags_list>>*>
-                             dt_vars_ptr,
-                         const auto&... time_derivative_args) {
-          detail::volume_terms<compute_volume_time_derivative_terms>(
-              dt_vars_ptr, make_not_null(&volume_fluxes),
-              make_not_null(&partial_derivs), make_not_null(&temporaries),
-              make_not_null(&div_fluxes), evolved_and_auxiliary_vars,
-              dg_formulation, mesh, inertial_coordinates,
-              logical_to_inertial_inv_jacobian, det_inverse_jacobian,
-              mesh_velocity, div_mesh_velocity, time_derivative_args...);
-        },
-        make_not_null(&box));
-  } else {
-    db::mutate_apply<
-        tmpl::list<dt_variables_tag>,
-        typename compute_volume_time_derivative_terms::argument_tags>(
-        [&dg_formulation, &div_fluxes, &det_inverse_jacobian,
-         &div_mesh_velocity = db::get<::domain::Tags::DivMeshVelocity>(box),
-         &evolved_variables = db::get<variables_tag>(box),
-         &inertial_coordinates =
-             db::get<domain::Tags::Coordinates<Dim, Frame::Inertial>>(box),
-         &logical_to_inertial_inv_jacobian =
-             db::get<::domain::Tags::InverseJacobian<Dim, Frame::ElementLogical,
-                                                     Frame::Inertial>>(box),
-         &mesh,
-         &mesh_velocity = db::get<::domain::Tags::MeshVelocity<Dim>>(box),
-         &partial_derivs, &temporaries,
-         &volume_fluxes](const gsl::not_null<Variables<db::wrap_tags_in<
-                             ::Tags::dt, typename variables_tag::tags_list>>*>
-                             dt_vars_ptr,
-                         const auto&... time_derivative_args) {
-          detail::volume_terms<compute_volume_time_derivative_terms>(
-              dt_vars_ptr, make_not_null(&volume_fluxes),
-              make_not_null(&partial_derivs), make_not_null(&temporaries),
-              make_not_null(&div_fluxes), evolved_variables, dg_formulation,
-              mesh, inertial_coordinates, logical_to_inertial_inv_jacobian,
-              det_inverse_jacobian, mesh_velocity, div_mesh_velocity,
-              time_derivative_args...);
-        },
-        make_not_null(&box));
+    if constexpr (tmpl::size<auxiliary_variables>::value != 0) {
+      static_assert(
+          tmpl::size<tmpl::list_difference<
+                  partial_derivative_tags,
+                  tmpl::append<typename variables_tag::tags_list,
+                               auxiliary_variables>>>::value == 0,
+          "Every gradient variable must be an evolved variable (in "
+          "variables_tag) or an auxiliary variable (in auxiliary_variables); "
+          "otherwise it is not populated in the combined differentiation "
+          "source.");
+      Variables<detail::evolved_and_auxiliary_vars_tags<EvolutionSystem>>
+          evolved_and_auxiliary_vars{mesh.number_of_grid_points()};
+      evolved_and_auxiliary_vars.assign_subset(db::get<variables_tag>(box));
+      evolved_and_auxiliary_vars.assign_subset(
+          db::get<::Tags::Variables<auxiliary_variables>>(box));
+      db::mutate_apply<
+          tmpl::list<dt_variables_tag>,
+          typename compute_volume_time_derivative_terms::argument_tags>(
+          [&dg_formulation, &div_fluxes, &det_inverse_jacobian,
+           &div_mesh_velocity = db::get<::domain::Tags::DivMeshVelocity>(box),
+           &evolved_and_auxiliary_vars,
+           &inertial_coordinates =
+               db::get<domain::Tags::Coordinates<Dim, Frame::Inertial>>(box),
+           &logical_to_inertial_inv_jacobian =
+               db::get<::domain::Tags::InverseJacobian<
+                   Dim, Frame::ElementLogical, Frame::Inertial>>(box),
+           &mesh,
+           &mesh_velocity = db::get<::domain::Tags::MeshVelocity<Dim>>(box),
+           &partial_derivs, &temporaries,
+           &volume_fluxes](const gsl::not_null<Variables<db::wrap_tags_in<
+                               ::Tags::dt, typename variables_tag::tags_list>>*>
+                               dt_vars_ptr,
+                           const auto&... time_derivative_args) {
+            detail::volume_terms<compute_volume_time_derivative_terms>(
+                dt_vars_ptr, make_not_null(&volume_fluxes),
+                make_not_null(&partial_derivs), make_not_null(&temporaries),
+                make_not_null(&div_fluxes), evolved_and_auxiliary_vars,
+                dg_formulation, mesh, inertial_coordinates,
+                logical_to_inertial_inv_jacobian, det_inverse_jacobian,
+                mesh_velocity, div_mesh_velocity, time_derivative_args...);
+          },
+          make_not_null(&box));
+    } else {
+      db::mutate_apply<
+          tmpl::list<dt_variables_tag>,
+          typename compute_volume_time_derivative_terms::argument_tags>(
+          [&dg_formulation, &div_fluxes, &det_inverse_jacobian,
+           &div_mesh_velocity = db::get<::domain::Tags::DivMeshVelocity>(box),
+           &evolved_variables = db::get<variables_tag>(box),
+           &inertial_coordinates =
+               db::get<domain::Tags::Coordinates<Dim, Frame::Inertial>>(box),
+           &logical_to_inertial_inv_jacobian =
+               db::get<::domain::Tags::InverseJacobian<
+                   Dim, Frame::ElementLogical, Frame::Inertial>>(box),
+           &mesh,
+           &mesh_velocity = db::get<::domain::Tags::MeshVelocity<Dim>>(box),
+           &partial_derivs, &temporaries,
+           &volume_fluxes](const gsl::not_null<Variables<db::wrap_tags_in<
+                               ::Tags::dt, typename variables_tag::tags_list>>*>
+                               dt_vars_ptr,
+                           const auto&... time_derivative_args) {
+            detail::volume_terms<compute_volume_time_derivative_terms>(
+                dt_vars_ptr, make_not_null(&volume_fluxes),
+                make_not_null(&partial_derivs), make_not_null(&temporaries),
+                make_not_null(&div_fluxes), evolved_variables, dg_formulation,
+                mesh, inertial_coordinates, logical_to_inertial_inv_jacobian,
+                det_inverse_jacobian, mesh_velocity, div_mesh_velocity,
+                time_derivative_args...);
+          },
+          make_not_null(&box));
+    }
   }
 
   const Variables<detail::get_primitive_vars_tags_from_system<EvolutionSystem>>*
@@ -683,23 +737,37 @@ Parallel::iterable_action_return_t ComputeTimeDerivative<
           // Note: this call mutates:
           //  - evolution::dg::Tags::NormalCovectorAndMagnitude<Dim>,
           //  - evolution::dg::Tags::MortarData<Dim>
-          detail::internal_mortar_data<EvolutionSystem, Dim>(
-              make_not_null(&box), make_not_null(&face_temporaries),
-              make_not_null(&packaged_data_buffer),
-              dynamic_cast<const DerivedCorrection&>(boundary_correction),
-              db::get<variables_tag>(box), volume_fluxes, temporaries,
-              primitive_vars,
-              typename DerivedCorrection::dg_package_data_volume_tags{});
+          if constexpr (IsAuxiliary) {
+            detail::internal_mortar_data<EvolutionSystem, Dim,
+                                         /*ComputeAuxiliary=*/true>(
+                make_not_null(&box), make_not_null(&face_temporaries),
+                make_not_null(&packaged_data_buffer),
+                dynamic_cast<const DerivedCorrection&>(boundary_correction),
+                db::get<variables_tag>(box), volume_fluxes, temporaries,
+                primitive_vars,
+                detail::get_dg_auxiliary_package_data_volume_tags_or_default_t<
+                    DerivedCorrection, tmpl::list<>>{});
+          } else {
+            detail::internal_mortar_data<EvolutionSystem, Dim>(
+                make_not_null(&box), make_not_null(&face_temporaries),
+                make_not_null(&packaged_data_buffer),
+                dynamic_cast<const DerivedCorrection&>(boundary_correction),
+                db::get<variables_tag>(box), volume_fluxes, temporaries,
+                primitive_vars,
+                typename DerivedCorrection::dg_package_data_volume_tags{});
+          }
 
           detail::apply_boundary_conditions_on_all_external_faces<
-              EvolutionSystem, Dim, variables_tag>(
+              EvolutionSystem, Dim, variables_tag, IsAuxiliary>(
               make_not_null(&box),
               dynamic_cast<const DerivedCorrection&>(boundary_correction),
               temporaries, volume_fluxes, partial_derivs, primitive_vars);
         }
       });
 
-  db::mutate_apply<ChangeStepSize<DgStepChoosers>>(make_not_null(&box));
+  if constexpr (not IsAuxiliary) {
+    db::mutate_apply<ChangeStepSize<DgStepChoosers>>(make_not_null(&box));
+  }
 
   send_data_for_fluxes<ParallelComponent>(make_not_null(&cache),
                                           make_not_null(&box), volume_fluxes);
@@ -707,11 +775,12 @@ Parallel::iterable_action_return_t ComputeTimeDerivative<
 }
 
 template <size_t Dim, typename EvolutionSystem, typename DgStepChoosers,
-          bool UseNodegroupDgElements, typename VariablesTag>
+          bool UseNodegroupDgElements, bool IsAuxiliary, typename VariablesTag>
 template <typename ParallelComponent, typename DbTagsList,
           typename Metavariables>
-void ComputeTimeDerivative<Dim, EvolutionSystem, DgStepChoosers,
-                           UseNodegroupDgElements, VariablesTag>::
+void ComputeTimeDerivative_detail::Impl<Dim, EvolutionSystem, DgStepChoosers,
+                                        UseNodegroupDgElements, IsAuxiliary,
+                                        VariablesTag>::
     send_data_for_fluxes(
         const gsl::not_null<Parallel::GlobalCache<Metavariables>*> cache,
         const gsl::not_null<db::DataBox<DbTagsList>*> box,
@@ -853,14 +922,14 @@ void ComputeTimeDerivative<Dim, EvolutionSystem, DgStepChoosers,
             Parallel::Actions::SendDataToElement>(
             receiver_proxy, cache,
             evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<
-                Dim, UseNodegroupDgElements>{},
+                Dim, UseNodegroupDgElements, IsAuxiliary>{},
             neighbor, time_step_id,
             std::make_pair(DirectionalId{direction_from_neighbor, element.id()},
                            std::move(data)));
       } else {
         Parallel::receive_data<
             evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<
-                Dim, UseNodegroupDgElements>>(
+                Dim, UseNodegroupDgElements, IsAuxiliary>>(
             receiver_proxy[neighbor], time_step_id,
             std::make_pair(DirectionalId{direction_from_neighbor, element.id()},
                            std::move(data)));
