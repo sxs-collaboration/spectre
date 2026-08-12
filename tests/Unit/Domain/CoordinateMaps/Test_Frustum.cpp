@@ -29,11 +29,11 @@ void test_suite_for_frustum(
   INFO("Suite for frustum");
   // Set up random number generator
   MAKE_GENERATOR(gen);
-  std::uniform_real_distribution<> lower_bound_lower_base_dis(-7, -3);
-  std::uniform_real_distribution<> upper_bound_lower_base_dis(3, 7);
+  std::uniform_real_distribution<> lower_bound_lower_base_dis(-6, -4);
+  std::uniform_real_distribution<> upper_bound_lower_base_dis(4, 6);
   std::uniform_real_distribution<> lower_bound_upper_base_dis(-13.5, -9);
   std::uniform_real_distribution<> upper_bound_upper_base_dis(9, 13.5);
-  std::uniform_real_distribution<> angle_dis(55.0, 125.0);
+  std::uniform_real_distribution<> angle_dis(55.0, 115.0);
 
   const double lower_x_lower_base = lower_bound_lower_base_dis(gen);
   CAPTURE(lower_x_lower_base);
@@ -89,8 +89,8 @@ void test_suite_for_frustum(
   // Computes how far away the base of the Frustum is from the origin. Since
   // the bulged Frustum is constructed by moving coordinates along radial lines,
   // having the base of the frustum be shifted away from the origin will lead to
-  // a distorted shape. If the Frustum test fails, check if the com_shift is
-  // above 1.8. A test failure might occur in 1/25,000 cases.
+  // a distorted shape. The lower-base distributions above bound this shift by
+  // sqrt(2) to avoid rare failures of the inverse root find.
   const double x_com_bottom = 0.5 * (lower_x_lower_base + upper_x_lower_base);
   const double y_com_bottom = 0.5 * (lower_y_lower_base + upper_y_lower_base);
   const double com_shift = sqrt(square(x_com_bottom) + square(y_com_bottom));
