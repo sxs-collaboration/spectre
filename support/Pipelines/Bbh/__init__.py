@@ -13,6 +13,7 @@ class Bbh(click.Group):
         return [
             "eccentricity-control",
             "find-horizon",
+            "frame-fix",
             "generate-id",
             "postprocess-id",
             "start-inspiral",
@@ -29,6 +30,10 @@ class Bbh(click.Group):
             from .FindHorizon import find_horizon_command
 
             return find_horizon_command
+        elif name == "frame-fix":
+            from .FrameFix import frame_fix_command
+
+            return frame_fix_command
         elif name == "generate-id":
             from .InitialData import generate_id_command
 
