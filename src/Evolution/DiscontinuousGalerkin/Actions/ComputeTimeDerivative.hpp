@@ -354,7 +354,8 @@ struct get_primitive_tags_for_face {
  *   - `evolution::dg::Tags::MortarData<Dim>`
  */
 template <size_t Dim, typename EvolutionSystem, typename DgStepChoosers,
-          bool UseNodegroupDgElements>
+          bool UseNodegroupDgElements,
+          typename VariablesTag = typename EvolutionSystem::variables_tag>
 struct ComputeTimeDerivative {
   using inbox_tags =
       tmpl::list<evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<
@@ -386,17 +387,17 @@ struct ComputeTimeDerivative {
 };
 
 template <size_t Dim, typename EvolutionSystem, typename DgStepChoosers,
-          bool UseNodegroupDgElements>
+          bool UseNodegroupDgElements, typename VariablesTag>
 template <typename DbTagsList, typename... InboxTags, typename ArrayIndex,
           typename ActionList, typename ParallelComponent,
           typename Metavariables>
 Parallel::iterable_action_return_t ComputeTimeDerivative<
-    Dim, EvolutionSystem, DgStepChoosers, UseNodegroupDgElements>::
-    apply(db::DataBox<DbTagsList>& box,
-          tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-          Parallel::GlobalCache<Metavariables>& cache,
-          const ArrayIndex& /*array_index*/, ActionList /*meta*/,
-          const ParallelComponent* const /*meta*/) {  // NOLINT const
+    Dim, EvolutionSystem, DgStepChoosers, UseNodegroupDgElements,
+    VariablesTag>::apply(db::DataBox<DbTagsList>& box,
+                         tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
+                         Parallel::GlobalCache<Metavariables>& cache,
+                         const ArrayIndex& /*array_index*/, ActionList /*meta*/,
+                         const ParallelComponent* const /*meta*/) {
   static_assert(UseNodegroupDgElements ==
                     Parallel::is_dg_element_collection_v<ParallelComponent>,
                 "The action ComputeTimeDerivative is told by the "
@@ -406,7 +407,7 @@ Parallel::iterable_action_return_t ComputeTimeDerivative<
                 "template parameter on the ComputeTimeDerivative action "
                 "in your action list.");
 
-  using variables_tag = typename EvolutionSystem::variables_tag;
+  using variables_tag = VariablesTag;
   using dt_variables_tag = db::add_tag_prefix<::Tags::dt, variables_tag>;
   using partial_derivative_tags = typename EvolutionSystem::gradient_variables;
   using flux_variables = typename EvolutionSystem::flux_variables;
@@ -691,7 +692,7 @@ Parallel::iterable_action_return_t ComputeTimeDerivative<
               typename DerivedCorrection::dg_package_data_volume_tags{});
 
           detail::apply_boundary_conditions_on_all_external_faces<
-              EvolutionSystem, Dim>(
+              EvolutionSystem, Dim, variables_tag>(
               make_not_null(&box),
               dynamic_cast<const DerivedCorrection&>(boundary_correction),
               temporaries, volume_fluxes, partial_derivs, primitive_vars);
@@ -706,18 +707,18 @@ Parallel::iterable_action_return_t ComputeTimeDerivative<
 }
 
 template <size_t Dim, typename EvolutionSystem, typename DgStepChoosers,
-          bool UseNodegroupDgElements>
+          bool UseNodegroupDgElements, typename VariablesTag>
 template <typename ParallelComponent, typename DbTagsList,
           typename Metavariables>
 void ComputeTimeDerivative<Dim, EvolutionSystem, DgStepChoosers,
-                           UseNodegroupDgElements>::
+                           UseNodegroupDgElements, VariablesTag>::
     send_data_for_fluxes(
         const gsl::not_null<Parallel::GlobalCache<Metavariables>*> cache,
         const gsl::not_null<db::DataBox<DbTagsList>*> box,
         [[maybe_unused]] const Variables<db::wrap_tags_in<
             ::Tags::Flux, typename EvolutionSystem::flux_variables,
             tmpl::size_t<Dim>, Frame::Inertial>>& volume_fluxes) {
-  using variables_tag = typename EvolutionSystem::variables_tag;
+  using variables_tag = VariablesTag;
 
   auto& receiver_proxy =
       Parallel::get_parallel_component<ParallelComponent>(*cache);

@@ -75,8 +75,12 @@ class ObserveTimeStepVolume
     : public ObserveConstantsPerElement<System::volume_dim> {
  public:
   static constexpr size_t volume_dim = System::volume_dim;
-  static_assert(not tt::is_a_v<tmpl::list, typename System::variables_tag>,
-                "Split variables systems not handled.");
+  // The variables are only used to get the integration order, which
+  // should be the same for all of them in a split-variables system.
+  using variables_tag = tmpl::conditional_t<
+      tt::is_a_v<tmpl::list, typename System::variables_tag>,
+      tmpl::front<typename System::variables_tag>,
+      typename System::variables_tag>;
 
   /// \cond
   explicit ObserveTimeStepVolume(CkMigrateMessage* m);
@@ -96,11 +100,11 @@ class ObserveTimeStepVolume
   using compute_tags_for_observation_box = tmpl::list<>;
 
   using return_tags = tmpl::list<>;
-  using argument_tags = tmpl::list<
-      ::Tags::Time, ::domain::Tags::FunctionsOfTime,
-      ::domain::Tags::Domain<volume_dim>, ::Tags::TimeStep,
-      domain::Tags::MinimumGridSpacing<volume_dim, Frame::Inertial>,
-      ::Tags::HistoryEvolvedVariables<typename System::variables_tag>>;
+  using argument_tags =
+      tmpl::list<::Tags::Time, ::domain::Tags::FunctionsOfTime,
+                 ::domain::Tags::Domain<volume_dim>, ::Tags::TimeStep,
+                 domain::Tags::MinimumGridSpacing<volume_dim, Frame::Inertial>,
+                 ::Tags::HistoryEvolvedVariables<variables_tag>>;
 
   template <typename Metavariables, typename ParallelComponent>
   void operator()(
@@ -111,8 +115,7 @@ class ObserveTimeStepVolume
           functions_of_time,
       const Domain<volume_dim>& domain, const TimeDelta& time_step,
       const double minimum_grid_spacing,
-      const TimeSteppers::History<typename System::variables_tag::type>&
-          history,
+      const TimeSteppers::History<typename variables_tag::type>& history,
       Parallel::GlobalCache<Metavariables>& cache,
       const ElementId<volume_dim>& element_id,
       const ParallelComponent* const component,
@@ -135,7 +138,6 @@ class ObserveTimeStepVolume
           functions_of_time,
       const Domain<volume_dim>& domain, const ElementId<volume_dim>& element_id,
       const TimeDelta& time_step, double minimum_grid_spacing,
-      const TimeSteppers::History<typename System::variables_tag::type>&
-          history) const;
+      const TimeSteppers::History<typename variables_tag::type>& history) const;
 };
 }  // namespace dg::Events

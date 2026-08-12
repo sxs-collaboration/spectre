@@ -58,8 +58,7 @@ std::vector<TensorComponent> ObserveTimeStepVolume<System>::assemble_data(
         functions_of_time,
     const Domain<volume_dim>& domain, const ElementId<volume_dim>& element_id,
     const TimeDelta& time_step, const double minimum_grid_spacing,
-    const TimeSteppers::History<typename System::variables_tag::type>& history)
-    const {
+    const TimeSteppers::History<typename variables_tag::type>& history) const {
   std::vector<TensorComponent> components = this->allocate_and_insert_coords(
       4, time, functions_of_time, domain, element_id);
   this->add_constant(make_not_null(&components), "Time step",

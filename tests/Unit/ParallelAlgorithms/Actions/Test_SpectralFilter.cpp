@@ -168,24 +168,19 @@ struct ElementArray {
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = int;
   using const_global_cache_tags = tmpl::list<>;
-  using phase_dependent_action_list = tmpl::list<
-      Parallel::PhaseActions<
-          Parallel::Phase::Initialization,
-          tmpl::list<ActionTesting::InitializeDataBox<
-              tmpl::list<VarsTag, MeshTag, ElementTag, StepTag, FilterTag,
-                         InvJacTag, JacTag>>>>,
-      Parallel::PhaseActions<Parallel::Phase::Testing,
-                             tmpl::list<dg::Actions::SpectralFilter>>>;
+  using phase_dependent_action_list =
+      tmpl::list<Parallel::PhaseActions<
+                     Parallel::Phase::Initialization,
+                     tmpl::list<ActionTesting::InitializeDataBox<
+                         tmpl::list<VarsTag, MeshTag, ElementTag, StepTag,
+                                    FilterTag, InvJacTag, JacTag>>>>,
+                 Parallel::PhaseActions<Parallel::Phase::Testing,
+                                        tmpl::list<dg::Actions::SpectralFilter<
+                                            1, tmpl::list<ScalarFieldTag>>>>>;
 };
 
 struct Metavariables {
   using component_list = tmpl::list<ElementArray<Metavariables>>;
-  using const_global_cache_tags = tmpl::list<>;
-
-  struct system {
-    static constexpr size_t volume_dim = 1;
-    using variables_tag = VarsTag;
-  };
 };
 
 InverseJacobian<DataVector, 1, Frame::Grid, Frame::Inertial>

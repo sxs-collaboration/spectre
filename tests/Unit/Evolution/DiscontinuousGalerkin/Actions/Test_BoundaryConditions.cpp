@@ -2834,8 +2834,8 @@ void test_1d(const bool moving_mesh, const dg::Formulation formulation,
     // variables, the auxiliary variables (Var3), and the time derivatives
     // are all unchanged.
     evolution::dg::Actions::detail::
-        apply_boundary_conditions_on_all_external_faces<System, Dim,
-                                                        IsAuxiliary>(
+        apply_boundary_conditions_on_all_external_faces<
+            System, Dim, typename System::variables_tag, IsAuxiliary>(
             make_not_null(&box), BndryTerms{moving_mesh, 0.0}, temporaries,
             volume_fluxes, partial_derivs, primitive_vars_ptr);
     CHECK_ITERABLE_APPROX(
@@ -3020,8 +3020,8 @@ void test_1d(const bool moving_mesh, const dg::Formulation formulation,
         },
         make_not_null(&box));
     evolution::dg::Actions::detail::
-        apply_boundary_conditions_on_all_external_faces<System, Dim,
-                                                        IsAuxiliary>(
+        apply_boundary_conditions_on_all_external_faces<
+            System, Dim, typename System::variables_tag, IsAuxiliary>(
             make_not_null(&box),
             BndryTerms{moving_mesh, outgoing_direction.opposite().sign()},
             temporaries, volume_fluxes, partial_derivs, primitive_vars_ptr);
@@ -3131,8 +3131,8 @@ void test_1d(const bool moving_mesh, const dg::Formulation formulation,
         },
         make_not_null(&box));
     evolution::dg::Actions::detail::
-        apply_boundary_conditions_on_all_external_faces<System, Dim,
-                                                        IsAuxiliary>(
+        apply_boundary_conditions_on_all_external_faces<
+            System, Dim, typename System::variables_tag, IsAuxiliary>(
             make_not_null(&box),
             BndryTerms{moving_mesh, outgoing_direction.opposite().sign()},
             temporaries, volume_fluxes, partial_derivs, primitive_vars_ptr);
@@ -3222,8 +3222,8 @@ void test_1d(const bool moving_mesh, const dg::Formulation formulation,
         },
         make_not_null(&box));
     evolution::dg::Actions::detail::
-        apply_boundary_conditions_on_all_external_faces<System, Dim,
-                                                        IsAuxiliary>(
+        apply_boundary_conditions_on_all_external_faces<
+            System, Dim, typename System::variables_tag, IsAuxiliary>(
             make_not_null(&box),
             BndryTerms{moving_mesh, ghost_direction.sign()}, temporaries,
             volume_fluxes, partial_derivs, primitive_vars_ptr);
@@ -3300,8 +3300,8 @@ void test_1d(const bool moving_mesh, const dg::Formulation formulation,
         },
         make_not_null(&box));
     evolution::dg::Actions::detail::
-        apply_boundary_conditions_on_all_external_faces<System, Dim,
-                                                        IsAuxiliary>(
+        apply_boundary_conditions_on_all_external_faces<
+            System, Dim, typename System::variables_tag, IsAuxiliary>(
             make_not_null(&box),
             BndryTerms{moving_mesh, outgoing_direction.opposite().sign()},
             temporaries, volume_fluxes, partial_derivs, primitive_vars_ptr);
@@ -3432,7 +3432,8 @@ void test_cartoon_mesh_compatibility() {
   // an incompatible mesh.
   CHECK_THROWS_WITH(
       (evolution::dg::Actions::detail::
-           apply_boundary_conditions_on_all_external_faces<TestSystem, 1>(
+           apply_boundary_conditions_on_all_external_faces<
+               TestSystem, 1, typename TestSystem::variables_tag>(
                make_not_null(&box), boundary_correction, temporaries,
                volume_fluxes, partial_derivs, nullptr)),
       Catch::Matchers::ContainsSubstring(
@@ -3485,7 +3486,8 @@ void test_cartoon_mesh_compatibility() {
 
     CHECK_NOTHROW(
         (evolution::dg::Actions::detail::
-             apply_boundary_conditions_on_all_external_faces<TestSystem, 1>(
+             apply_boundary_conditions_on_all_external_faces<
+                 TestSystem, 1, typename TestSystem::variables_tag>(
                  make_not_null(&box2), boundary_correction, temporaries,
                  volume_fluxes, partial_derivs, nullptr)));
   }

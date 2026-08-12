@@ -60,10 +60,10 @@ using ObserveTimeStepReductionData = Parallel::ReductionData<
 struct FormatTimeOutput
     : tt::ConformsTo<observers::protocols::ReductionDataFormatter> {
   using reduction_data = ObserveTimeStepReductionData;
-  std::string operator()(double time, size_t num_points, double slab_size,
-                         double min_time_step, double max_time_step,
-                         double effective_time_step, double min_wall_time,
-                         double max_wall_time) const;
+  std::string operator()(double time, size_t num_degrees_of_freedom,
+                         double slab_size, double min_time_step,
+                         double max_time_step, double effective_time_step,
+                         double min_wall_time, double max_wall_time) const;
   // NOLINTNEXTLINE
   void pup(PUP::er& p);
 };
@@ -74,7 +74,7 @@ struct FormatTimeOutput
  *
  * Writes reduction quantities:
  * - `%Time`
- * - `NumberOfPoints`
+ * - `Number of degrees of freedom`
  * - `%Slab size`
  * - `Minimum time step`
  * - `Maximum time step`
@@ -82,11 +82,11 @@ struct FormatTimeOutput
  *
  * The effective time step is the step size of a global-time-stepping
  * method that would perform a similar amount of work.  This is the
- * harmonic mean of the step size over all grid points:
+ * harmonic mean of the step size over all degrees of freedom:
  *
  * \f{equation}
  * (\Delta t)_{\text{eff}}^{-1} =
- * \frac{\sum_{i \in \text{points}} (\Delta t)_i^{-1}}{N_{\text{points}}}.
+ * \frac{\sum_{i \in \text{dof}} (\Delta t)_i^{-1}}{N_{\text{dof}}}.
  * \f}
  *
  * This corresponds to averaging the number of steps per unit time
@@ -95,8 +95,16 @@ struct FormatTimeOutput
  * All values are reported as positive numbers, even for backwards
  * evolutions.
  */
-template <typename System>
-class ObserveTimeStep : public Event {
+/// @{
+template <typename System,
+          typename = tmpl::conditional_t<
+              tt::is_a_v<tmpl::list, typename System::variables_tag>,
+              typename System::variables_tag,
+              tmpl::list<typename System::variables_tag>>>
+class ObserveTimeStep;
+
+template <typename System, typename... VariablesTags>
+class ObserveTimeStep<System, tmpl::list<VariablesTags...>> : public Event {
  private:
   using ReductionData = Events::detail::ObserveTimeStepReductionData;
 
@@ -133,7 +141,7 @@ class ObserveTimeStep : public Event {
       "\n"
       "Writes reduction quantities:\n"
       "- Time\n"
-      "- NumberOfPoints\n"
+      "- Number of degrees of freedom\n"
       "- Slab size\n"
       "- Minimum time step\n"
       "- Maximum time step\n"
@@ -157,19 +165,18 @@ class ObserveTimeStep : public Event {
   using return_tags = tmpl::list<>;
   // We obtain the grid size from the variables, rather than the mesh,
   // so that this observer is not DG-specific.
-  using argument_tags =
-      tmpl::list<::Tags::TimeStep, typename System::variables_tag>;
+  using argument_tags = tmpl::list<::Tags::TimeStep, VariablesTags...>;
 
   template <typename ArrayIndex, typename ParallelComponent,
             typename Metavariables>
   void operator()(const TimeDelta& time_step,
-                  const typename System::variables_tag::type& variables,
+                  const typename VariablesTags::type&... variables,
                   Parallel::GlobalCache<Metavariables>& cache,
                   const ArrayIndex& array_index,
                   const ParallelComponent* const /*meta*/,
                   const ObservationValue& observation_value) const {
     auto [observation_id, legend, reduction_data, formatter] =
-        assemble_data(time_step, variables, observation_value);
+        assemble_data(time_step, variables..., observation_value);
 
     auto& local_observer = *Parallel::local_branch(
         Parallel::get_parallel_component<
@@ -220,7 +227,7 @@ class ObserveTimeStep : public Event {
 
  private:
   auto assemble_data(const TimeDelta& time_step,
-                     const typename System::variables_tag::type& variables,
+                     const typename VariablesTags::type&... variables,
                      const ObservationValue& observation_value) const
       -> std::tuple<observers::ObservationId, std::vector<std::string>,
                     ReductionData,
@@ -230,4 +237,5 @@ class ObserveTimeStep : public Event {
   bool output_time_;
   bool observe_per_core_;
 };
+/// @}
 }  // namespace Events

@@ -124,8 +124,8 @@ void apply_boundary_condition_on_face(
     tmpl::list<BoundaryCorrectionPackagedDataInputTags...> /*meta*/,
     tmpl::list<BoundaryConditionVolumeTags...> /*meta*/,
     tmpl::list<AuxiliaryCorrectionTags...> /*meta*/) {
-  using variables_tag = typename System::variables_tag;
-  using variables_tags = typename variables_tag::tags_list;
+  using variables_tags = tmpl::list<EvolvedVariablesTags...>;
+  using variables_tag = ::Tags::Variables<variables_tags>;
   using flux_variables = typename System::flux_variables;
   using dt_variables_tags = db::wrap_tags_in<::Tags::dt, variables_tags>;
   using dt_variables_tag = db::add_tag_prefix<::Tags::dt, variables_tag>;
@@ -201,11 +201,10 @@ void apply_boundary_condition_on_face(
       detail::boundary_correction_primitive_tags<
           System::has_primitive_and_conservative_vars, BoundaryCorrection>,
       tmpl::list<>>;
-  using correction_evolved_and_auxiliary_vars_tags = tmpl::conditional_t<
-      uses_ghost_condition,
-      tmpl::append<typename System::variables_tag::tags_list,
-                   auxiliary_variables>,
-      tmpl::list<>>;
+  using correction_evolved_and_auxiliary_vars_tags =
+      tmpl::conditional_t<uses_ghost_condition,
+                          tmpl::append<variables_tags, auxiliary_variables>,
+                          tmpl::list<>>;
 
   // Now combine the tags lists for each type of tag. These are all the tags
   // we need to project from the interior, excluding the inverse spatial
@@ -746,8 +745,9 @@ void apply_boundary_condition_on_face(
  * rather than into the time derivatives, and time-derivative boundary
  * conditions are skipped.
  */
-template <typename System, size_t Dim, bool ComputeAuxiliary = false,
-          typename DbTagsList, typename BoundaryCorrection>
+template <typename System, size_t Dim, typename VariablesTag,
+          bool ComputeAuxiliary = false, typename DbTagsList,
+          typename BoundaryCorrection>
 void apply_boundary_conditions_on_all_external_faces(
     const gsl::not_null<db::DataBox<DbTagsList>*> box,
     const BoundaryCorrection& boundary_correction,
@@ -774,7 +774,7 @@ void apply_boundary_conditions_on_all_external_faces(
           std::is_base_of<domain::BoundaryConditions::MarkAsPeriodic,
                           tmpl::_1>>>;
 
-  using variables_tag = typename System::variables_tag;
+  using variables_tag = VariablesTag;
   using flux_variables = typename System::flux_variables;
   using fluxes_tags = db::wrap_tags_in<::Tags::Flux, flux_variables,
                                        tmpl::size_t<Dim>, Frame::Inertial>;
