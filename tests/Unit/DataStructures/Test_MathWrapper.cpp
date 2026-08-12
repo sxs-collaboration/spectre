@@ -14,6 +14,15 @@
 
 namespace {
 template <typename T>
+void test_zero_sized() {
+  // There's no actual data to reference for zero-sized vectors, but
+  // the code has to run successfully.
+  T vector{};
+  CHECK(make_math_wrapper(vector)->size() == 0);
+  CHECK(make_math_wrapper(&vector)->size() == 0);
+}
+
+template <typename T>
 void test_into_math_wrapper_type_scalar(T value) {
   const auto copy = value;
   auto type_erased = into_math_wrapper_type(std::move(value));
@@ -40,6 +49,9 @@ SPECTRE_TEST_CASE("Unit.Utilities.MathWrapper", "[Unit][Utilities]") {
       std::complex<double>{9.0, 10.0});
   TestHelpers::MathWrapper::test_type<std::array<double, 2>>({1.0, 2.0},
                                                              {3.0, 4.0}, 5.0);
+
+  test_zero_sized<DataVector>();
+  test_zero_sized<ComplexDataVector>();
 
   // [MathWrapper]
   double mutable_double = 1.0;

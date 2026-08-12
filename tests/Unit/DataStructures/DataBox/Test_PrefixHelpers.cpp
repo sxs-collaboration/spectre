@@ -5,6 +5,7 @@
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "DataStructures/VariablesTag.hpp"
+#include "Domain/BoundaryVariablesTag.hpp"
 #include "Helpers/DataStructures/TestTags.hpp"
 #include "Utilities/NoSuchType.hpp"
 #include "Utilities/TMPL.hpp"
@@ -100,6 +101,20 @@ template <typename Arg1, typename Arg2>
 using args_prefix_vars_tag = Tags::Variables<args_prefix_vars_list<Arg1, Arg2>>;
 template <typename Arg1, typename Arg2>
 using prefix_args_vars_tag = Tags::Variables<prefix_args_vars_list<Arg1, Arg2>>;
+
+using bvars_tag = Tags::BoundaryVariables<2, vars_list>;
+using prefix_bvars_tag = Tags::BoundaryVariables<2, prefix_vars_list>;
+using double_prefix_bvars_tag =
+    Tags::BoundaryVariables<2, double_prefix_vars_list>;
+using both_prefix_bvars_tag = Tags::BoundaryVariables<2, both_prefix_vars_list>;
+template <typename Arg1, typename Arg2>
+using args_bvars_tag = Tags::BoundaryVariables<2, args_vars_list<Arg1, Arg2>>;
+template <typename Arg1, typename Arg2>
+using args_prefix_bvars_tag =
+    Tags::BoundaryVariables<2, args_prefix_vars_list<Arg1, Arg2>>;
+template <typename Arg1, typename Arg2>
+using prefix_args_bvars_tag =
+    Tags::BoundaryVariables<2, prefix_args_vars_list<Arg1, Arg2>>;
 }  // namespace
 
 // Test db::add_tag_prefix on Variables tag
@@ -118,6 +133,23 @@ static_assert(
 static_assert(std::is_same_v<
               db::add_tag_prefix<PrefixWithArgs, prefix_vars_tag, int, double>,
               args_prefix_vars_tag<int, double>>);
+
+// Test db::add_tag_prefix on BoundaryVariables tag
+static_assert(
+    std::is_same_v<db::add_tag_prefix<Prefix, bvars_tag>, prefix_bvars_tag>);
+static_assert(
+    std::is_same_v<db::add_tag_prefix<PrefixWithArgs, bvars_tag, int, double>,
+                   args_bvars_tag<int, double>>);
+static_assert(std::is_same_v<db::add_tag_prefix<Prefix, prefix_bvars_tag>,
+                             double_prefix_bvars_tag>);
+static_assert(std::is_same_v<db::add_tag_prefix<Prefix2, prefix_bvars_tag>,
+                             both_prefix_bvars_tag>);
+static_assert(
+    std::is_same_v<db::add_tag_prefix<Prefix, args_bvars_tag<int, double>>,
+                   prefix_args_bvars_tag<int, double>>);
+static_assert(std::is_same_v<
+              db::add_tag_prefix<PrefixWithArgs, prefix_bvars_tag, int, double>,
+              args_prefix_bvars_tag<int, double>>);
 
 // Test db::remove_tag_prefix on tag
 static_assert(std::is_same_v<db::remove_tag_prefix<Prefix<Var>>, Var>);
@@ -148,6 +180,22 @@ static_assert(
 static_assert(
     std::is_same_v<db::remove_tag_prefix<args_prefix_vars_tag<int, double>>,
                    prefix_vars_tag>);
+
+// Test db::remove_tag_prefix on BoundaryVariables tag
+static_assert(
+    std::is_same_v<db::remove_tag_prefix<prefix_bvars_tag>, bvars_tag>);
+static_assert(std::is_same_v<db::remove_tag_prefix<args_bvars_tag<int, double>>,
+                             bvars_tag>);
+static_assert(std::is_same_v<db::remove_tag_prefix<double_prefix_bvars_tag>,
+                             prefix_bvars_tag>);
+static_assert(std::is_same_v<db::remove_tag_prefix<both_prefix_bvars_tag>,
+                             prefix_bvars_tag>);
+static_assert(
+    std::is_same_v<db::remove_tag_prefix<prefix_args_bvars_tag<int, double>>,
+                   args_bvars_tag<int, double>>);
+static_assert(
+    std::is_same_v<db::remove_tag_prefix<args_prefix_bvars_tag<int, double>>,
+                   prefix_bvars_tag>);
 
 // Test db::remove_all_prefixes on tag
 static_assert(std::is_same_v<db::remove_all_prefixes<Prefix<Var>>, Var>);
@@ -180,6 +228,23 @@ static_assert(
     std::is_same_v<db::remove_all_prefixes<args_prefix_vars_tag<int, double>>,
                    vars_tag>);
 
+// Test db::remove_all_prefixes on BoundaryVariables tag
+static_assert(
+    std::is_same_v<db::remove_all_prefixes<prefix_bvars_tag>, bvars_tag>);
+static_assert(std::is_same_v<
+              db::remove_all_prefixes<args_bvars_tag<int, double>>, bvars_tag>);
+static_assert(std::is_same_v<db::remove_all_prefixes<double_prefix_bvars_tag>,
+                             bvars_tag>);
+static_assert(
+    std::is_same_v<db::remove_all_prefixes<both_prefix_bvars_tag>, bvars_tag>);
+static_assert(
+    std::is_same_v<db::remove_all_prefixes<prefix_args_bvars_tag<int, double>>,
+                   bvars_tag>);
+static_assert(
+    std::is_same_v<db::remove_all_prefixes<args_prefix_bvars_tag<int, double>>,
+                   bvars_tag>);
+
+// Test prefix_variables
 static_assert(std::is_same_v<db::prefix_variables<Prefix, double>, double>);
 static_assert(
     std::is_same_v<db::prefix_variables<Prefix, SomeType<int, int, int>>,
@@ -197,7 +262,19 @@ static_assert(
     std::is_same_v<
         db::prefix_variables<PrefixWithArgs, Variables<vars_list>, float, char>,
         Variables<args_vars_list<float, char>>>);
+static_assert(std::is_same_v<
+              db::prefix_variables<Prefix, BoundaryVariables<2, vars_list>>,
+              BoundaryVariables<2, prefix_vars_list>>);
+static_assert(
+    std::is_same_v<
+        db::prefix_variables<Prefix, BoundaryVariables<2, prefix_vars_list>>,
+        BoundaryVariables<2, double_prefix_vars_list>>);
+static_assert(std::is_same_v<
+              db::prefix_variables<
+                  PrefixWithArgs, BoundaryVariables<2, vars_list>, float, char>,
+              BoundaryVariables<2, args_vars_list<float, char>>>);
 
+// Test unprefix_variables
 static_assert(std::is_same_v<db::unprefix_variables<double>, double>);
 static_assert(std::is_same_v<db::unprefix_variables<SomeType<int, int, int>>,
                              SomeType<int, int, int>>);
@@ -212,3 +289,14 @@ static_assert(
 static_assert(std::is_same_v<
               db::unprefix_variables<Variables<args_vars_list<float, char>>>,
               Variables<vars_list>>);
+static_assert(std::is_same_v<
+              db::unprefix_variables<BoundaryVariables<2, prefix_vars_list>>,
+              BoundaryVariables<2, vars_list>>);
+static_assert(
+    std::is_same_v<
+        db::unprefix_variables<BoundaryVariables<2, double_prefix_vars_list>>,
+        BoundaryVariables<2, prefix_vars_list>>);
+static_assert(
+    std::is_same_v<db::unprefix_variables<
+                       BoundaryVariables<2, args_vars_list<float, char>>>,
+                   BoundaryVariables<2, vars_list>>);

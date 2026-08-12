@@ -81,10 +81,10 @@ constexpr bool is_perfect<T, MaxSize, false> = false;
 template <size_t MaxSize, class Key, class ValueType,
           class Hash = std::hash<Key>, class KeyEqual = std::equal_to<Key>>
 class FixedHashMap {
+ public:
   static constexpr bool hash_is_perfect =
       FixedHashMap_detail::is_perfect<Hash, MaxSize>;
 
- public:
   using key_type = Key;
   using mapped_type = ValueType;
   using value_type = std::pair<const key_type, mapped_type>;
