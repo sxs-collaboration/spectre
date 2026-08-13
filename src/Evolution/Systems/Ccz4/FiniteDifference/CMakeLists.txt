@@ -9,6 +9,7 @@ spectre_target_sources(
   ${LIBRARY}
   PRIVATE
   ApplyFilter.cpp
+  Characteristics.cpp
   Derivatives.cpp
   DummyReconstructor.cpp
   EnforceConstrainedEvolution.cpp
@@ -23,6 +24,7 @@ spectre_target_headers(
   HEADERS
   ApplyFilter.hpp
   BoundaryConditionGhostData.hpp
+  Characteristics.hpp
   Derivatives.hpp
   DummyReconstructor.hpp
   EnforceConstrainedEvolution.hpp
