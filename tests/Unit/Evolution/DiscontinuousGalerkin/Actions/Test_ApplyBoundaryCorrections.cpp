@@ -1608,8 +1608,16 @@ void test_deterministic_mortar_interpolation() {
 
   const size_t spherical_harmonic_l = 4;
   const size_t cube_angular_extents = 2;
+  using Excision = domain::creators::NonconformingSphericalShells::Excision;
   const domain::creators::NonconformingSphericalShells creator{
-      1.9, 2.4, 2.9, 0, 1, 2, spherical_harmonic_l, cube_angular_extents};
+      1.9,
+      2.4,
+      2.9,
+      Excision{},
+      std::array<size_t, 2>{size_t{1}, size_t{0}},
+      size_t{0},
+      std::array<size_t, 2>{cube_angular_extents, size_t{2}},
+      std::array<size_t, 2>{spherical_harmonic_l, size_t{2}}};
   const Domain<3> domain = creator.create_domain();
   const auto initial_extents = creator.initial_extents();
   const auto initial_refinement = creator.initial_refinement_levels();

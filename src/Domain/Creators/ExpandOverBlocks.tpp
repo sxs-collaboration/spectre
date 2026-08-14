@@ -42,7 +42,7 @@ std::vector<T> ExpandOverBlocks<T>::operator()(const T& value) const {
     }
     return expanded;
   } else {
-    return {num_blocks_, value};
+    return std::vector<T>(num_blocks_, value);
   }
 }
 

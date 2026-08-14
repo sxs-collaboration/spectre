@@ -103,8 +103,10 @@ void insert_mortar_data(
 }
 
 void test_non_conforming_spheres() {
+  using Excision = domain::creators::NonconformingSphericalShells::Excision;
   const auto creator = domain::creators::NonconformingSphericalShells(
-      2.0, 3.0, 4.0, 0, 2, 5, 8, 11, nullptr, nullptr);
+      2.0, 3.0, 4.0, Excision{}, std::array<size_t, 2>{2_st, 0_st}, 0_st,
+      std::array<size_t, 2>{11_st, 5_st}, std::array<size_t, 2>{8_st, 5_st});
   const auto domain = creator.create_domain();
   const auto refinement_levels = creator.initial_refinement_levels();
   const ElementId<3> shell_id{6};
