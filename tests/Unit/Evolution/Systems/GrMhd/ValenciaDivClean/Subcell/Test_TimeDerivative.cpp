@@ -63,6 +63,8 @@
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/System.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Tags.hpp"
 #include "Evolution/TagsDomain.hpp"
+#include "Evolution/VariableFixing/FixToAtmosphere.hpp"
+#include "Evolution/VariableFixing/Tags.hpp"
 #include "NumericalAlgorithms/FiniteDifference/FallbackReconstructorType.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
 #include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
@@ -443,7 +445,8 @@ std::array<double, 5> test(const size_t num_dg_pts,
           CellCenteredFluxesTag,
           evolution::dg::subcell::Tags::SubcellOptions<3>,
           evolution::dg::subcell::Tags::ReconstructionOrder<3>,
-          evolution::dg::subcell::Tags::GhostZoneInverseJacobian<3>>,
+          evolution::dg::subcell::Tags::GhostZoneInverseJacobian<3>,
+          ::Tags::VariableFixer<VariableFixing::FixToAtmosphere<3>>>,
       db::AddComputeTags<
           ::domain::Tags::LogicalCoordinates<3>,
           // Compute tags for Frame::Grid quantities
@@ -511,7 +514,9 @@ std::array<double, 5> test(const size_t num_dg_pts,
           evolution::dg::subcell::fd::ReconstructionMethod::DimByDim, false,
           std::nullopt, fd_derivative_order, 1, 1, 1},
       typename evolution::dg::subcell::Tags::ReconstructionOrder<3>::type{},
-      ghost_zone_inv_jac);
+      ghost_zone_inv_jac,
+      VariableFixing::FixToAtmosphere<3>{1.0e-30, 1.0e-30, std::nullopt,
+                                         std::nullopt});
 
   db::mutate_apply<ConservativeFromPrimitive>(make_not_null(&box));
 

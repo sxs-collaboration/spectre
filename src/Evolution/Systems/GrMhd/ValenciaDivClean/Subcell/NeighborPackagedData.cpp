@@ -41,6 +41,8 @@
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/FiniteDifference/Tag.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Subcell/ComputeFluxes.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/System.hpp"
+#include "Evolution/VariableFixing/FixToAtmosphere.hpp"
+#include "Evolution/VariableFixing/Tags.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Parity.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
@@ -107,6 +109,9 @@ DirectionalIdMap<3, DataVector> NeighborPackagedData::apply(
 
       const auto& element = db::get<domain::Tags::Element<3>>(box);
       const auto& eos = get<hydro::Tags::GrmhdEquationOfState>(box);
+      const auto& fix_to_atmosphere =
+          db::get<::Tags::VariableFixer<VariableFixing::FixToAtmosphere<3>>>(
+              box);
 
       using dg_package_field_tags =
           typename DerivedCorrection::dg_package_field_tags;
@@ -152,12 +157,13 @@ DirectionalIdMap<3, DataVector> NeighborPackagedData::apply(
 
         call_with_dynamic_type<void, typename grmhd::ValenciaDivClean::fd::
                                          Reconstructor::creatable_classes>(
-            &recons,
-            [&element, &eos, &mortar_id, &ghost_subcell_data, &subcell_mesh,
-             &vars_on_face, &volume_prims](const auto& reconstructor) {
+            &recons, [&element, &eos, &fix_to_atmosphere, &mortar_id,
+                      &ghost_subcell_data, &subcell_mesh, &vars_on_face,
+                      &volume_prims](const auto& reconstructor) {
               reconstructor->reconstruct_fd_neighbor(
                   make_not_null(&vars_on_face), volume_prims, eos, element,
-                  ghost_subcell_data, subcell_mesh, mortar_id.direction());
+                  ghost_subcell_data, subcell_mesh, fix_to_atmosphere,
+                  mortar_id.direction());
             });
 
         // Get the mesh velocity if needed

@@ -109,7 +109,8 @@ void PositivityPreservingAdaptiveOrderPrim::reconstruct(
     const EquationsOfState::EquationOfState<true, ThermodynamicDim>& eos,
     const Element<3>& element,
     const DirectionalIdMap<3, evolution::dg::subcell::GhostData>& ghost_data,
-    const Mesh<3>& subcell_mesh) const {
+    const Mesh<3>& subcell_mesh,
+    const VariableFixing::FixToAtmosphere<3>& fix_to_atmosphere) const {
   DirectionalIdMap<dim, Variables<prims_to_reconstruct_tags>>
       neighbor_variables_data{};
   ::fd::neighbor_data_as_variables<dim>(make_not_null(&neighbor_variables_data),
@@ -132,7 +133,8 @@ void PositivityPreservingAdaptiveOrderPrim::reconstruct(
                             std::numeric_limits<double>::signaling_NaN()));
       },
       volume_prims, eos, element, neighbor_variables_data, subcell_mesh,
-      ghost_zone_size(), false, reconstruct_rho_times_temperature());
+      ghost_zone_size(), false, reconstruct_rho_times_temperature(),
+      &fix_to_atmosphere);
   reconstruct_prims_work<non_positive_tags>(
       vars_on_lower_face, vars_on_upper_face,
       [this](auto upper_face_vars_ptr, auto lower_face_vars_ptr,
@@ -147,7 +149,8 @@ void PositivityPreservingAdaptiveOrderPrim::reconstruct(
                          std::numeric_limits<double>::signaling_NaN()));
       },
       volume_prims, eos, element, neighbor_variables_data, subcell_mesh,
-      ghost_zone_size(), true, reconstruct_rho_times_temperature());
+      ghost_zone_size(), true, reconstruct_rho_times_temperature(),
+      &fix_to_atmosphere);
 }
 
 template <size_t ThermodynamicDim>
@@ -158,6 +161,7 @@ void PositivityPreservingAdaptiveOrderPrim::reconstruct_fd_neighbor(
     const Element<3>& element,
     const DirectionalIdMap<3, evolution::dg::subcell::GhostData>& ghost_data,
     const Mesh<3>& subcell_mesh,
+    const VariableFixing::FixToAtmosphere<3>& fix_to_atmosphere,
     const Direction<3> direction_to_reconstruct) const {
   reconstruct_fd_neighbor_work<positivity_preserving_tags,
                                prims_to_reconstruct_tags>(
@@ -194,7 +198,7 @@ void PositivityPreservingAdaptiveOrderPrim::reconstruct_fd_neighbor(
       },
       subcell_volume_prims, eos, element, ghost_data, subcell_mesh,
       direction_to_reconstruct, ghost_zone_size(), false,
-      reconstruct_rho_times_temperature());
+      reconstruct_rho_times_temperature(), &fix_to_atmosphere);
   reconstruct_fd_neighbor_work<non_positive_tags, prims_to_reconstruct_tags>(
       vars_on_face,
       [this](const auto tensor_component_on_face_ptr,
@@ -229,7 +233,7 @@ void PositivityPreservingAdaptiveOrderPrim::reconstruct_fd_neighbor(
       },
       subcell_volume_prims, eos, element, ghost_data, subcell_mesh,
       direction_to_reconstruct, ghost_zone_size(), true,
-      reconstruct_rho_times_temperature());
+      reconstruct_rho_times_temperature(), &fix_to_atmosphere);
 }
 
 bool PositivityPreservingAdaptiveOrderPrim::reconstruct_rho_times_temperature()
@@ -270,7 +274,8 @@ bool operator!=(const PositivityPreservingAdaptiveOrderPrim& lhs,
       const Element<3>& element,                                            \
       const DirectionalIdMap<3, evolution::dg::subcell::GhostData>&         \
           ghost_data,                                                       \
-      const Mesh<3>& subcell_mesh) const;                                   \
+      const Mesh<3>& subcell_mesh,                                          \
+      const VariableFixing::FixToAtmosphere<3>& fix_to_atmosphere) const;   \
   template void                                                             \
   PositivityPreservingAdaptiveOrderPrim::reconstruct_fd_neighbor(           \
       gsl::not_null<Variables<tags_list_for_reconstruct>*> vars_on_face,    \
@@ -280,6 +285,7 @@ bool operator!=(const PositivityPreservingAdaptiveOrderPrim& lhs,
       const DirectionalIdMap<3, evolution::dg::subcell::GhostData>&         \
           ghost_data,                                                       \
       const Mesh<3>& subcell_mesh,                                          \
+      const VariableFixing::FixToAtmosphere<3>& fix_to_atmosphere,          \
       const Direction<3> direction_to_reconstruct) const;
 
 GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))

@@ -11,6 +11,7 @@
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Domain/Structure/DirectionalIdMap.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/TagsDeclarations.hpp"
+#include "Evolution/VariableFixing/FixToAtmosphere.hpp"
 #include "PointwiseFunctions/GeneralRelativity/TagsDeclarations.hpp"
 #include "PointwiseFunctions/Hydro/TagsDeclarations.hpp"
 #include "Utilities/TMPL.hpp"
@@ -107,7 +108,8 @@ void reconstruct_prims_work(
     const DirectionalIdMap<3, Variables<PrimsTagsSentByNeighbor>>&
         neighbor_data,
     const Mesh<3>& subcell_mesh, size_t ghost_zone_size,
-    bool compute_conservatives, bool reconstruct_density_times_temperature);
+    bool compute_conservatives, bool reconstruct_density_times_temperature,
+    const VariableFixing::FixToAtmosphere<3>* fix_to_atmosphere);
 
 /*!
  * \brief Reconstructs the `PrimTagsForReconstruction` and if
@@ -135,5 +137,6 @@ void reconstruct_fd_neighbor_work(
     const DirectionalIdMap<3, evolution::dg::subcell::GhostData>& ghost_data,
     const Mesh<3>& subcell_mesh, const Direction<3>& direction_to_reconstruct,
     size_t ghost_zone_size, bool compute_conservatives,
-    bool reconstruct_density_times_temperature);
+    bool reconstruct_density_times_temperature,
+    const VariableFixing::FixToAtmosphere<3>* fix_to_atmosphere);
 }  // namespace grmhd::ValenciaDivClean::fd
