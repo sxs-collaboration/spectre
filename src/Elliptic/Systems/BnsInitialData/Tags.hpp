@@ -7,6 +7,8 @@
 
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
+#include "Options/Options.hpp"
+#include "Options/String.hpp"
 
 /// \cond
 class DataVector;
@@ -17,6 +19,14 @@ class DataVector;
  * \brief Items related to solving for irrotational bns initial data
  */
 namespace BnsInitialData::Tags {
+namespace OptionTags {
+struct EulerEnthalpyConstant {
+  using type = double;
+  static constexpr Options::String help =
+      "The Euler Enthalpy constant of the star";
+};
+
+}  // namespace OptionTags
 
 /*!
  * \brief The shift plus a spatial vector \f$ k^i\f$
@@ -65,6 +75,9 @@ struct DerivSpatialRotationalKillingVector : db::SimpleTag {
 
 struct EulerEnthalpyConstant : db::SimpleTag {
   using type = double;
+  using option_tags = tmpl::list<OptionTags::EulerEnthalpyConstant>;
+  static constexpr bool pass_metavariables = false;
+  static double create_from_options(const double value) { return value; };
 };
 
 }  // namespace BnsInitialData::Tags

@@ -8,19 +8,31 @@
 #include <string>
 
 #include "DataStructures/DataVector.hpp"
+#include "Domain/CoordinateMaps/Affine.hpp"
+#include "Domain/CoordinateMaps/CoordinateMap.hpp"
+#include "Domain/CoordinateMaps/ProductMaps.hpp"
+#include "Domain/CoordinateMaps/ProductMaps.tpp"
 #include "Elliptic/Protocols/FirstOrderSystem.hpp"
 #include "Elliptic/Systems/BnsInitialData/Equations.hpp"
 #include "Elliptic/Systems/BnsInitialData/FirstOrderSystem.hpp"
 #include "Framework/CheckWithRandomValues.hpp"
 #include "Framework/SetupLocalPythonEnvironment.hpp"
+#include "Framework/TestCreation.hpp"
+#include "Framework/TestHelpers.hpp"
 #include "Helpers/Domain/CoordinateMaps/TestMapHelpers.hpp"
 #include "Helpers/Elliptic/FirstOrderSystem.hpp"
+#include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
+#include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
+#include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Utilities/MakeString.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
+
+#include "Parallel/Printf/Printf.hpp"
 
 namespace helpers = TestHelpers::elliptic;
 
 namespace {
+
 void test_equations(const DataVector& used_for_size) {
   pypp::check_with_random_values<1>(&BnsInitialData::potential_fluxes,
                                     "Equations", {"potential_fluxes"},
@@ -46,6 +58,7 @@ void test_computers(const DataVector& used_for_size) {
 SPECTRE_TEST_CASE("Unit.Elliptic.Systems.BnsInitialData", "[Unit][Elliptic]") {
   pypp::SetupLocalPythonEnvironment local_python_env{
       "Elliptic/Systems/BnsInitialData"};
+  register_classes_with_charm<EquationsOfState::PolytropicFluid<true>>();
 
   DataVector used_for_size{5};
   test_equations(used_for_size);

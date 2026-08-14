@@ -1,30 +1,32 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
-
-set(LIBRARY BnsInitialDataBoundaryConditions)
+set(LIBRARY BnsInitialDataAnalyticData)
 
 add_spectre_library(${LIBRARY})
 
 spectre_target_sources(
   ${LIBRARY}
   PRIVATE
-  StarSurface.cpp
+  SpectreData.cpp
   )
-
 spectre_target_headers(
   ${LIBRARY}
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
+  SpectreData.hpp
   Factory.hpp
-  StarSurface.hpp
   )
-
 target_link_libraries(
   ${LIBRARY}
   PUBLIC
   DataStructures
-  Elliptic
+  BnsInitialData
+  ErrorHandling
+  Exporter
+  GeneralRelativity
+  GeneralRelativityAnalyticData
   Options
-  Parallel
   Utilities
-  )
+  LinearOperators
+)
+
