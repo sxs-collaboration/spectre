@@ -150,6 +150,10 @@ def start_ringdown(
     inspiral_run_dir = Path(inspiral_run_dir).resolve()
     if inspiral_input_file is None:
         inspiral_input_file = inspiral_run_dir / "Inspiral.yaml"
+    # Keep the path around, since 'inspiral_input_file' is parsed below. It goes
+    # into the ringdown input file so post-processing can follow the chain of
+    # runs that make up the simulation.
+    inspiral_input_file_path = Path(inspiral_input_file).resolve()
 
     if ahc_reductions_path is None:
         ahc_reductions_path = inspiral_run_dir / "BbhReductions.h5"
@@ -397,6 +401,7 @@ def start_ringdown(
         ringdown_input_file_template,
         **ringdown_params,
         **scheduler_kwargs,
+        inspiral_input_file_path=inspiral_input_file_path,
         pipeline_dir=pipeline_dir,
         run_dir=run_dir,
         segments_dir=segments_dir,

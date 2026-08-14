@@ -4,6 +4,9 @@
 Executable: EvolveGhSingleBlackHole
 {{ TargetParams }}
 Lev: {{ Lev | default("None") }}
+# Input file of the run that this evolution continues from. Post-processing
+# follows this chain to find all data that belongs to the simulation.
+ContinuedFrom: {{ inspiral_input_file_path }}
 
 ---
 

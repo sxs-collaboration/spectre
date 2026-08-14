@@ -312,6 +312,16 @@ class TestInitialData(unittest.TestCase):
                 self.test_dir / "Pipeline/000_Ringdown/RingdownShapeCoefs.h5"
             ).exists(),
         )
+        # The chain of runs that make up the simulation is recorded so that
+        # post-processing can follow it
+        with open(
+            self.test_dir / "Ringdown/Segment_0000/Ringdown.yaml"
+        ) as open_input_file:
+            metadata = next(yaml.safe_load_all(open_input_file))
+        self.assertEqual(
+            Path(metadata["ContinuedFrom"]),
+            (self.inspiral_dir / "Inspiral.yaml").resolve(),
+        )
 
 
 if __name__ == "__main__":

@@ -4,6 +4,11 @@
 Executable: EvolveGhBinaryBlackHole
 {{ TargetParams }}
 Lev: {{ Lev | default("None") }}
+{% if IdFromEvolution %}
+# Input file of the run that this evolution continues from. Post-processing
+# follows this chain to find all data that belongs to the simulation.
+ContinuedFrom: {{ id_input_file_path }}
+{% endif %}
 {% if continue_with_ringdown %}
 Next:
   Run: spectre.Pipelines.Bbh.Ringdown:start_ringdown
