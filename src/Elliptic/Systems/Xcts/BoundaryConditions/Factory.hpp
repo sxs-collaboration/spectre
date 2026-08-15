@@ -7,13 +7,17 @@
 #include "Elliptic/Systems/Xcts/BoundaryConditions/ApparentHorizon.hpp"
 #include "Elliptic/Systems/Xcts/BoundaryConditions/Flatness.hpp"
 #include "Elliptic/Systems/Xcts/BoundaryConditions/Robin.hpp"
+#include "Elliptic/Systems/Xcts/BoundaryConditions/SuperposedBoostedBinary.hpp"
+#include "PointwiseFunctions/AnalyticSolutions/Xcts/Factory.hpp"
+#include "PointwiseFunctions/InitialDataUtilities/AnalyticSolution.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace Xcts::BoundaryConditions {
 template <typename System>
-using standard_boundary_conditions =
-    tmpl::list<elliptic::BoundaryConditions::AnalyticSolution<System>,
-               Flatness<System::enabled_equations>,
-               Robin<System::enabled_equations>,
-               ApparentHorizon<System::conformal_geometry>>;
+using standard_boundary_conditions = tmpl::list<
+    elliptic::BoundaryConditions::AnalyticSolution<System>,
+    Flatness<System::enabled_equations>, Robin<System::enabled_equations>,
+    ApparentHorizon<System::conformal_geometry>,
+    SuperposedBoostedBinary<elliptic::analytic_data::AnalyticSolution,
+                            Xcts::Solutions::all_analytic_solutions>>;
 }
