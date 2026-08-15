@@ -64,7 +64,7 @@ DomainCreator:
     InterfaceRadius: 12.0
     OuterRadius: 18.0
     InitialRadialRefinement: 1
-    InitialAngularRefinementOfWedges: 0
+    InitialAngularRefinementOfWedges: 1
     InitialNumberOfRadialGridPoints: 6
     InitialSphericalHarmonicL: 10
     InitialNumberOfAngularGridPointsOfWedges: 6

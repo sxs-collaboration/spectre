@@ -26,6 +26,7 @@
 #include "Domain/Structure/DirectionalIdMap.hpp"
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/ElementId.hpp"
+#include "Domain/Structure/FaceType.hpp"
 #include "Domain/Structure/OrientationMapHelpers.hpp"
 #include "Domain/Structure/TrimMap.hpp"
 #include "Domain/Tags.hpp"
@@ -809,12 +810,22 @@ struct ReceiveDataForReconstruction {
                 subcell_mesh, ghost_zone_size, neighbor_dg_to_fd_interpolants,
                 typename Metavariables::SubcellOptions::GhostVariables::
                     ghost_variables_tag_list{});
-            ASSERT(neighbor_tci_decisions->contains(directional_element_id),
-                   "The NeighorTciDecisions should contain the neighbor ("
-                       << directional_element_id.direction() << ", "
-                       << directional_element_id.id() << ") but doesn't");
-            neighbor_tci_decisions->at(directional_element_id) =
-                boundary_data.tci_status;
+            if (neighbor_tci_decisions->contains(directional_element_id)) {
+              neighbor_tci_decisions->at(directional_element_id) =
+                  boundary_data.tci_status;
+            } else {
+              // TCI decisions for MultipleNonconforming neighbors are not
+              // tracked because those elements are forced to remain on DG.
+              ASSERT(
+                  element.face_types().at(directional_element_id.direction()) ==
+                      domain::FaceType::MultipleNonconforming,
+                  "NeighborTciDecisions does not contain the neighbor ("
+                      << directional_element_id.direction() << ", "
+                      << directional_element_id.id()
+                      << ") but the face is not MultipleNonconforming. "
+                         "This indicates a bug in the initialization of "
+                         "NeighborTciDecisions.");
+            }
           }
         },
         make_not_null(&box),

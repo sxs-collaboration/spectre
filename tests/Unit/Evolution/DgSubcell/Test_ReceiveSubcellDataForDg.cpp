@@ -13,6 +13,7 @@
 #include "Domain/Structure/DirectionalId.hpp"
 #include "Domain/Structure/DirectionalIdMap.hpp"
 #include "Domain/Structure/ElementId.hpp"
+#include "Domain/Tags.hpp"
 #include "Evolution/DgSubcell/GhostData.hpp"
 #include "Evolution/DgSubcell/RdmpTciData.hpp"
 #include "Evolution/DgSubcell/ReceiveSubcellDataForDg.hpp"
@@ -48,11 +49,12 @@ void test() {
   const Mesh<Dim> dg_volume_mesh{2 + 2 * Dim, Spectral::Basis::Legendre,
                                  Spectral::Quadrature::GaussLobatto};
   auto box = db::create<
-      tmpl::list<evolution::dg::subcell::Tags::MeshForGhostData<Dim>,
+      tmpl::list<domain::Tags::Mesh<Dim>,
+                 evolution::dg::subcell::Tags::MeshForGhostData<Dim>,
                  evolution::dg::subcell::Tags::GhostDataForReconstruction<Dim>,
                  evolution::dg::subcell::Tags::DataForRdmpTci>>(
-      DirectionalIdMap<Dim, Mesh<Dim>>{}, std::move(neighbor_data_map),
-      std::move(rdmp_tci_data));
+      dg_volume_mesh, DirectionalIdMap<Dim, Mesh<Dim>>{},
+      std::move(neighbor_data_map), std::move(rdmp_tci_data));
 
   const Mesh<Dim> fd_volume_mesh{2 + 2 * Dim + 1,
                                  Spectral::Basis::FiniteDifference,
@@ -124,6 +126,43 @@ void test() {
   REQUIRE(ghost_meshes.contains(fd_id));
   CHECK(ghost_meshes.at(fd_id) == fd_volume_mesh);
 }
+
+// Elements whose mesh does not support subcell (e.g. spherical shells) must
+// be skipped entirely: they may have more neighbors than the DirectionalIdMap
+// capacity and they never need ghost data.
+template <size_t Dim>
+void test_nonhypercube_mesh() {
+  CAPTURE(Dim);
+
+  evolution::dg::subcell::RdmpTciData rdmp_tci_data{};
+  rdmp_tci_data.max_variables_values = DataVector{1.0, 2.0};
+  rdmp_tci_data.min_variables_values = DataVector{-2.0, 0.1};
+  const auto initial_rdmp = rdmp_tci_data;
+
+  const Mesh<Dim> sph_mesh{4, Spectral::Basis::SphericalHarmonic,
+                           Spectral::Quadrature::Gauss};
+
+  auto box = db::create<
+      tmpl::list<domain::Tags::Mesh<Dim>,
+                 evolution::dg::subcell::Tags::MeshForGhostData<Dim>,
+                 evolution::dg::subcell::Tags::GhostDataForReconstruction<Dim>,
+                 evolution::dg::subcell::Tags::DataForRdmpTci>>(
+      sph_mesh, DirectionalIdMap<Dim, Mesh<Dim>>{}, GhostDataMap<Dim>{},
+      std::move(rdmp_tci_data));
+
+  const DirectionalId<Dim> did{Direction<Dim>::upper_xi(), ElementId<Dim>{0}};
+  evolution::dg::subcell::receive_subcell_data_for_dg<Dim>(
+      make_not_null(&box), did, evolution::dg::BoundaryData<Dim>{});
+
+  // Nothing should have been stored; RDMP data is also unchanged.
+  CHECK(db::get<evolution::dg::subcell::Tags::MeshForGhostData<Dim>>(box)
+            .empty());
+  CHECK(db::get<evolution::dg::subcell::Tags::GhostDataForReconstruction<Dim>>(
+            box)
+            .empty());
+  CHECK(db::get<evolution::dg::subcell::Tags::DataForRdmpTci>(box) ==
+        initial_rdmp);
+}
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Evolution.Subcell.ReceiveSubcellDataForDg",
@@ -131,4 +170,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Subcell.ReceiveSubcellDataForDg",
   test<1>();
   test<2>();
   test<3>();
+  test_nonhypercube_mesh<1>();
+  test_nonhypercube_mesh<2>();
+  test_nonhypercube_mesh<3>();
 }

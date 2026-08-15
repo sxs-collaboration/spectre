@@ -11,11 +11,14 @@
 #include "DataStructures/DataBox/Access.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "Domain/Structure/DirectionalId.hpp"
+#include "Domain/Tags.hpp"
 #include "Evolution/DgSubcell/GhostData.hpp"
+#include "Evolution/DgSubcell/Mesh.hpp"
 #include "Evolution/DgSubcell/Tags/DataForRdmpTci.hpp"
 #include "Evolution/DgSubcell/Tags/GhostDataForReconstruction.hpp"
 #include "Evolution/DgSubcell/Tags/MeshForGhostData.hpp"
 #include "Evolution/DiscontinuousGalerkin/BoundaryData.hpp"
+#include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
@@ -26,6 +29,13 @@ void receive_subcell_data_for_dg(
     const gsl::not_null<db::Access*> box,
     const DirectionalId<VolumeDim>& mortar_id,
     const evolution::dg::BoundaryData<VolumeDim>& received_mortar_data) {
+  // Non-hypercube elements (e.g. spherical shells) cannot use subcell. They
+  // never need ghost data for reconstruction, so skip storing
+  if (not subcell::fd::dg_mesh_supports_subcell(
+          db::get<::domain::Tags::Mesh<VolumeDim>>(*box))) {
+    return;
+  }
+
   db::mutate<subcell::Tags::MeshForGhostData<VolumeDim>,
              subcell::Tags::GhostDataForReconstruction<VolumeDim>,
              subcell::Tags::DataForRdmpTci>(
