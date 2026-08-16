@@ -3,6 +3,7 @@
 
 #include <pybind11/pybind11.h>
 
+#include "Evolution/Systems/GeneralizedHarmonic/Python/FilledSpherePowerMonitor.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Python/SphericalShellPowerMonitor.hpp"
 #include "Utilities/ErrorHandling/SegfaultHandler.hpp"
 
@@ -15,5 +16,6 @@ PYBIND11_MODULE(_Pybindings, m) {  // NOLINT
   py::module_::import("spectre.Domain");
   py::module_::import("spectre.Spectral");
 
+  gh::power_monitor::py_bindings::bind_filled_sphere_power_monitor(m);
   gh::power_monitor::py_bindings::bind_spherical_shell_power_monitor(m);
 }
