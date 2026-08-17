@@ -6,7 +6,6 @@
 #include <algorithm>
 #include <array>
 #include <cstddef>
-#include <functional>
 #include <string>
 #include <type_traits>
 
@@ -21,7 +20,6 @@
 #include "NumericalAlgorithms/Spectral/Basis.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Quadrature.hpp"
-#include "Utilities/DereferenceWrapper.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/GetOutput.hpp"
 #include "Utilities/Gsl.hpp"
@@ -444,49 +442,6 @@ void test_rotation() {
         std::array<double, 3>{{0.5, -1.0, 1.0}});
 }
 
-void test_reference_wrapper() {
-  const OrientationMap<3> rotation(std::array<Direction<3>, 3>{
-      {Direction<3>::upper_eta(), Direction<3>::lower_zeta(),
-       Direction<3>::lower_xi()}});
-
-  // This test will check that these points are not modified.
-  DataVector x_points{-1.0, 1.0, 0.7, 0.0};
-  DataVector y_points{0.25, 1.0, -0.2, 0.0};
-  DataVector z_points{0.0, -0.5, 0.4, 0.0};
-
-  // These variables are not passed to any functions;
-  // they will not be modified by construction.
-  // clang-tidy: local copy is never modified
-  const DataVector x_points_proof = x_points;  // NOLINT
-  const DataVector y_points_proof = y_points;  // NOLINT
-  const DataVector z_points_proof = z_points;  // NOLINT
-
-  // References to the points to be tested:
-  const auto ref_x_points = std::cref(x_points);
-  const auto ref_y_points = std::cref(y_points);
-  const auto ref_z_points = std::cref(z_points);
-
-  // Array of references to the points to be tested.
-  const std::array<const std::reference_wrapper<const DataVector>, 3>
-      test_points{{ref_x_points, ref_y_points, ref_z_points}};
-
-  // The value of new_points is irrelevant to this test.
-  auto new_points = discrete_rotation(rotation, test_points);
-  CHECK(test_points[0].get() == x_points_proof);
-  CHECK(test_points[1].get() == y_points_proof);
-  CHECK(test_points[2].get() == z_points_proof);
-
-  const DataVector new_pt{0.0, 0.5, -0.4, 0.0};
-  new_points[0] = new_pt;
-  new_points[1] = new_pt;
-  new_points[2] = new_pt;
-
-  // Check that modifying new_points does not modify the test points.
-  CHECK(test_points[0].get() == x_points_proof);
-  CHECK(test_points[1].get() == y_points_proof);
-  CHECK(test_points[2].get() == z_points_proof);
-}
-
 void test_only_radial_orientation() {
   const OrientationMap<3> shell_to_wedge(std::array<Direction<3>, 3>{
       Direction<3>::upper_zeta(), Direction<3>::self(), Direction<3>::self()});
@@ -560,7 +515,6 @@ SPECTRE_TEST_CASE("Unit.Domain.Structure.OrientationMap", "[Domain][Unit]") {
 
   test_all_orientations();
   test_rotation();
-  test_reference_wrapper();
 
   test_only_radial_orientation();
   test_errors();

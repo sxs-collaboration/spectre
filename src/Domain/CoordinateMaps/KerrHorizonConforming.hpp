@@ -9,7 +9,6 @@
 
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Utilities/Gsl.hpp"
-#include "Utilities/TypeTraits/RemoveReferenceWrapper.hpp"
 
 namespace domain::CoordinateMaps {
 
@@ -85,18 +84,17 @@ class KerrHorizonConforming {
                                  std::array<double, 3> dimensionless_spin);
 
   template <typename T>
-  std::array<tt::remove_cvref_wrap_t<T>, 3> operator()(
-      const std::array<T, 3>& source_coords) const;
+  std::array<T, 3> operator()(const std::array<T, 3>& source_coords) const;
 
   std::optional<std::array<double, 3>> inverse(
       const std::array<double, 3>& target_coords) const;
 
   template <typename T>
-  tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame> jacobian(
+  tnsr::Ij<T, 3, Frame::NoFrame> jacobian(
       const std::array<T, 3>& source_coords) const;
 
   template <typename T>
-  tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame> inv_jacobian(
+  tnsr::Ij<T, 3, Frame::NoFrame> inv_jacobian(
       const std::array<T, 3>& source_coords) const;
 
   bool is_identity() const {
@@ -112,9 +110,8 @@ class KerrHorizonConforming {
 
  private:
   template <typename T>
-  void stretch_factor_square(
-      const gsl::not_null<tt::remove_cvref_wrap_t<T>*> result,
-      const std::array<T, 3>& source_coords) const;
+  void stretch_factor_square(gsl::not_null<T*> result,
+                             const std::array<T, 3>& source_coords) const;
 
   std::array<double, 3> spin_parameter_;
   double spin_mag_sq_;

@@ -10,7 +10,6 @@
 #include "Domain/CoordinateMaps/FocallyLiftedFlatEndcap.hpp"
 #include "Domain/CoordinateMaps/FocallyLiftedMap.hpp"
 #include "Utilities/ConstantExpressions.hpp"
-#include "Utilities/DereferenceWrapper.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Serialization/PupStlCpp11.hpp"
 
@@ -121,15 +120,12 @@ CylindricalFlatEndcapInterior::CylindricalFlatEndcapInterior(
 }
 
 template <typename T>
-std::array<tt::remove_cvref_wrap_t<T>, 3>
-CylindricalFlatEndcapInterior::operator()(
+std::array<T, 3> CylindricalFlatEndcapInterior::operator()(
     const std::array<T, 3>& source_coords) const {
   // Negate zbar so that zbar=+1 maps to the flat disk and zbar=-1 maps to
   // the far sphere wall, keeping the Jacobian determinant positive.
-  return impl_.operator()(std::array<tt::remove_cvref_wrap_t<T>, 3>{
-      dereference_wrapper(source_coords[0]),
-      dereference_wrapper(source_coords[1]),
-      -dereference_wrapper(source_coords[2])});
+  return impl_.operator()(
+      std::array<T, 3>{source_coords[0], source_coords[1], -source_coords[2]});
 }
 
 std::optional<std::array<double, 3>> CylindricalFlatEndcapInterior::inverse(
@@ -142,13 +138,10 @@ std::optional<std::array<double, 3>> CylindricalFlatEndcapInterior::inverse(
 }
 
 template <typename T>
-tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame>
-CylindricalFlatEndcapInterior::jacobian(
+tnsr::Ij<T, 3, Frame::NoFrame> CylindricalFlatEndcapInterior::jacobian(
     const std::array<T, 3>& source_coords) const {
-  auto jac = impl_.jacobian(std::array<tt::remove_cvref_wrap_t<T>, 3>{
-      dereference_wrapper(source_coords[0]),
-      dereference_wrapper(source_coords[1]),
-      -dereference_wrapper(source_coords[2])});
+  auto jac = impl_.jacobian(
+      std::array<T, 3>{source_coords[0], source_coords[1], -source_coords[2]});
   // Chain rule: d/dzbar = -d/dzbar_eff, so negate column 2.
   for (size_t i = 0; i < 3; ++i) {
     jac.get(i, 2) = -jac.get(i, 2);
@@ -157,13 +150,10 @@ CylindricalFlatEndcapInterior::jacobian(
 }
 
 template <typename T>
-tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame>
-CylindricalFlatEndcapInterior::inv_jacobian(
+tnsr::Ij<T, 3, Frame::NoFrame> CylindricalFlatEndcapInterior::inv_jacobian(
     const std::array<T, 3>& source_coords) const {
-  auto inv_jac = impl_.inv_jacobian(std::array<tt::remove_cvref_wrap_t<T>, 3>{
-      dereference_wrapper(source_coords[0]),
-      dereference_wrapper(source_coords[1]),
-      -dereference_wrapper(source_coords[2])});
+  auto inv_jac = impl_.inv_jacobian(
+      std::array<T, 3>{source_coords[0], source_coords[1], -source_coords[2]});
   // Chain rule: dzbar/dx^i = -dzbar_eff/dx^i, so negate row 2.
   for (size_t i = 0; i < 3; ++i) {
     inv_jac.get(2, i) = -inv_jac.get(2, i);
@@ -185,20 +175,18 @@ bool operator!=(const CylindricalFlatEndcapInterior& lhs,
 
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(0, data)
 
-#define INSTANTIATE(_, data)                                                 \
-  template std::array<tt::remove_cvref_wrap_t<DTYPE(data)>, 3>               \
-  CylindricalFlatEndcapInterior::operator()(                                 \
-      const std::array<DTYPE(data), 3>& source_coords) const;                \
-  template tnsr::Ij<tt::remove_cvref_wrap_t<DTYPE(data)>, 3, Frame::NoFrame> \
-  CylindricalFlatEndcapInterior::jacobian(                                   \
-      const std::array<DTYPE(data), 3>& source_coords) const;                \
-  template tnsr::Ij<tt::remove_cvref_wrap_t<DTYPE(data)>, 3, Frame::NoFrame> \
-  CylindricalFlatEndcapInterior::inv_jacobian(                               \
+#define INSTANTIATE(_, data)                                  \
+  template std::array<DTYPE(data), 3>                         \
+  CylindricalFlatEndcapInterior::operator()(                  \
+      const std::array<DTYPE(data), 3>& source_coords) const; \
+  template tnsr::Ij<DTYPE(data), 3, Frame::NoFrame>           \
+  CylindricalFlatEndcapInterior::jacobian(                    \
+      const std::array<DTYPE(data), 3>& source_coords) const; \
+  template tnsr::Ij<DTYPE(data), 3, Frame::NoFrame>           \
+  CylindricalFlatEndcapInterior::inv_jacobian(                \
       const std::array<DTYPE(data), 3>& source_coords) const;
 
-GENERATE_INSTANTIATIONS(INSTANTIATE, (double, DataVector,
-                                      std::reference_wrapper<const double>,
-                                      std::reference_wrapper<const DataVector>))
+GENERATE_INSTANTIATIONS(INSTANTIATE, (double, DataVector))
 
 #undef DTYPE
 #undef INSTANTIATE

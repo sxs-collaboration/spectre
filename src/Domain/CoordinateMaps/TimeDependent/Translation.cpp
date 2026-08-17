@@ -18,7 +18,6 @@
 #include "NumericalAlgorithms/RootFinding/TOMS748.hpp"
 #include "PointwiseFunctions/MathFunctions/MathFunction.hpp"
 #include "Utilities/ContainerHelpers.hpp"
-#include "Utilities/DereferenceWrapper.hpp"
 #include "Utilities/EqualWithinRoundoff.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
@@ -78,7 +77,7 @@ Translation<Dim>::Translation(const Translation<Dim>& Translation_Map)
 
 template <size_t Dim>
 template <typename T>
-std::array<tt::remove_cvref_wrap_t<T>, Dim> Translation<Dim>::operator()(
+std::array<T, Dim> Translation<Dim>::operator()(
     const std::array<T, Dim>& source_coords, const double time,
     const std::unordered_map<
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
@@ -182,7 +181,7 @@ std::optional<std::array<double, Dim>> Translation<Dim>::inverse(
 }
 template <size_t Dim>
 template <typename T>
-std::array<tt::remove_cvref_wrap_t<T>, Dim> Translation<Dim>::frame_velocity(
+std::array<T, Dim> Translation<Dim>::frame_velocity(
     const std::array<T, Dim>& source_coords, const double time,
     const std::unordered_map<
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
@@ -196,8 +195,7 @@ std::array<tt::remove_cvref_wrap_t<T>, Dim> Translation<Dim>::frame_velocity(
 
 template <size_t Dim>
 template <typename T>
-tnsr::Ij<tt::remove_cvref_wrap_t<T>, Dim, Frame::NoFrame>
-Translation<Dim>::jacobian(
+tnsr::Ij<T, Dim, Frame::NoFrame> Translation<Dim>::jacobian(
     const std::array<T, Dim>& source_coords, const double time,
     const std::unordered_map<
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
@@ -205,12 +203,11 @@ Translation<Dim>::jacobian(
   // If inner radius has a value, then calculate the jacobian for the piecewise
   // translation.
   if (inner_radius_.has_value()) {
-    const tt::remove_cvref_wrap_t<T> radius = magnitude(source_coords);
+    const T radius = magnitude(source_coords);
     const DataVector function_of_time =
         functions_of_time.at(f_of_t_name_)->func(time)[0];
-    auto result = make_with_value<
-        tnsr::Ij<tt::remove_cvref_wrap_t<T>, Dim, Frame::NoFrame>>(
-        dereference_wrapper(source_coords[0]), 0.0);
+    auto result = make_with_value<tnsr::Ij<T, Dim, Frame::NoFrame>>(
+        source_coords[0], 0.0);
     for (size_t i = 0; i < Dim; i++) {
       for (size_t j = 0; j < Dim; j++) {
         for (size_t k = 0; k < get_size(radius); k++) {
@@ -223,7 +220,7 @@ Translation<Dim>::jacobian(
             get_element(result.get(i, j), k) =
                 (-1.0 / (outer_radius_.value() - inner_radius_.value())) *
                 gsl::at(function_of_time, i) *
-                get_element(dereference_wrapper(gsl::at(source_coords, j)), k) /
+                get_element(gsl::at(source_coords, j), k) /
                 get_element(radius, k);
           }
         }
@@ -234,20 +231,19 @@ Translation<Dim>::jacobian(
     // Otherwise calculate the jacobian for the MathFunction translation.
   } else {
     if (f_of_r_ == nullptr) {
-      return identity<Dim>(dereference_wrapper(source_coords[0]));
+      return identity<Dim>(source_coords[0]);
     } else {
-      std::array<tt::remove_cvref_wrap_t<T>, Dim> distance_to_center{};
+      std::array<T, Dim> distance_to_center{};
       for (size_t i = 0; i < Dim; i++) {
         gsl::at(distance_to_center, i) =
             gsl::at(source_coords, i) - gsl::at(center_, i);
       }
-      const tt::remove_cvref_wrap_t<T> radius = magnitude(distance_to_center);
+      const T radius = magnitude(distance_to_center);
       const DataVector function_of_time =
           functions_of_time.at(f_of_t_name_)->func(time)[0];
 
-      auto result = make_with_value<
-          tnsr::Ij<tt::remove_cvref_wrap_t<T>, Dim, Frame::NoFrame>>(
-          dereference_wrapper(source_coords[0]), 0.0);
+      auto result = make_with_value<tnsr::Ij<T, Dim, Frame::NoFrame>>(
+          source_coords[0], 0.0);
       for (size_t i = 0; i < Dim; i++) {
         for (size_t j = 0; j < Dim; j++) {
           for (size_t k = 0; k < get_size(radius); k++) {
@@ -273,14 +269,13 @@ Translation<Dim>::jacobian(
 }
 template <size_t Dim>
 template <typename T>
-tnsr::Ij<tt::remove_cvref_wrap_t<T>, Dim, Frame::NoFrame>
-Translation<Dim>::inv_jacobian(
+tnsr::Ij<T, Dim, Frame::NoFrame> Translation<Dim>::inv_jacobian(
     const std::array<T, Dim>& source_coords, const double time,
     const std::unordered_map<
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
         functions_of_time) const {
   if (f_of_r_ == nullptr and not inner_radius_.has_value()) {
-    return identity<Dim>(dereference_wrapper(source_coords[0]));
+    return identity<Dim>(source_coords[0]);
   } else {
     return determinant_and_inverse(
                jacobian(source_coords, time, functions_of_time))
@@ -290,8 +285,7 @@ Translation<Dim>::inv_jacobian(
 
 template <size_t Dim>
 template <typename T>
-std::array<tt::remove_cvref_wrap_t<T>, Dim>
-Translation<Dim>::math_function_helper(
+std::array<T, Dim> Translation<Dim>::math_function_helper(
     const std::array<T, Dim>& source_coords, double time,
     const std::unordered_map<
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
@@ -305,13 +299,12 @@ Translation<Dim>::math_function_helper(
              << func_or_deriv_of_time.size()
              << ") does not match the dimension of the translation map (" << Dim
              << ").");
-  std::array<tt::remove_cvref_wrap_t<T>, Dim> result{};
+  std::array<T, Dim> result{};
   // sizing the result and getting the radial function value
   for (size_t i = 0; i < Dim; i++) {
     gsl::at(result, i) = gsl::at(source_coords, i);
   }
-  auto radial_function_value = make_with_value<tt::remove_cvref_wrap_t<T>>(
-      dereference_wrapper(source_coords[0]), 1.0);
+  auto radial_function_value = make_with_value<T>(source_coords[0], 1.0);
   if (f_of_r_ != nullptr) {
     radial_function_value = (*f_of_r_)(magnitude(result - center_));
   }
@@ -329,7 +322,7 @@ Translation<Dim>::math_function_helper(
 
 template <size_t Dim>
 template <typename T>
-std::array<tt::remove_cvref_wrap_t<T>, Dim> Translation<Dim>::piecewise_helper(
+std::array<T, Dim> Translation<Dim>::piecewise_helper(
     const std::array<T, Dim>& source_coords, double time,
     const std::unordered_map<
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
@@ -343,12 +336,12 @@ std::array<tt::remove_cvref_wrap_t<T>, Dim> Translation<Dim>::piecewise_helper(
              << func_or_deriv_of_time.size()
              << ") does not match the dimension of the translation map (" << Dim
              << ").");
-  std::array<tt::remove_cvref_wrap_t<T>, Dim> result{};
+  std::array<T, Dim> result{};
   // sizing the result and getting the radial function value
   for (size_t i = 0; i < Dim; i++) {
     gsl::at(result, i) = gsl::at(source_coords, i);
   }
-  const tt::remove_cvref_wrap_t<T> radius = magnitude(result);
+  const T radius = magnitude(result);
   if (function_or_deriv_index == 1) {
     for (size_t i = 0; i < Dim; i++) {
       gsl::at(result, i) = 0.0;
@@ -472,30 +465,28 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(1, data)
 
 #define INSTANTIATE(_, data)                                                \
-  template std::array<tt::remove_cvref_wrap_t<DTYPE(data)>, DIM(data)>      \
+  template std::array<DTYPE(data), DIM(data)>                               \
   Translation<DIM(data)>::operator()(                                       \
       const std::array<DTYPE(data), DIM(data)>& source_coords, double time, \
       const std::unordered_map<                                             \
           std::string,                                                      \
           std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&        \
           functions_of_time) const;                                         \
-  template std::array<tt::remove_cvref_wrap_t<DTYPE(data)>, DIM(data)>      \
+  template std::array<DTYPE(data), DIM(data)>                               \
   Translation<DIM(data)>::frame_velocity(                                   \
       const std::array<DTYPE(data), DIM(data)>& source_coords, double time, \
       const std::unordered_map<                                             \
           std::string,                                                      \
           std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&        \
           functions_of_time) const;                                         \
-  template tnsr::Ij<tt::remove_cvref_wrap_t<DTYPE(data)>, DIM(data),        \
-                    Frame::NoFrame>                                         \
+  template tnsr::Ij<DTYPE(data), DIM(data), Frame::NoFrame>                 \
   Translation<DIM(data)>::jacobian(                                         \
       const std::array<DTYPE(data), DIM(data)>& source_coords, double time, \
       const std::unordered_map<                                             \
           std::string,                                                      \
           std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&        \
           functions_of_time) const;                                         \
-  template tnsr::Ij<tt::remove_cvref_wrap_t<DTYPE(data)>, DIM(data),        \
-                    Frame::NoFrame>                                         \
+  template tnsr::Ij<DTYPE(data), DIM(data), Frame::NoFrame>                 \
   Translation<DIM(data)>::inv_jacobian(                                     \
       const std::array<DTYPE(data), DIM(data)>& source_coords, double time, \
       const std::unordered_map<                                             \
@@ -503,10 +494,7 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
           std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&        \
           functions_of_time) const;
 
-GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3),
-                        (double, DataVector,
-                         std::reference_wrapper<const double>,
-                         std::reference_wrapper<const DataVector>))
+GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (double, DataVector))
 #undef DIM
 #undef DTYPE
 #undef INSTANTIATE

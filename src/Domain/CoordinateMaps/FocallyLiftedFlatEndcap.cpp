@@ -10,7 +10,6 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Utilities/ConstantExpressions.hpp"
-#include "Utilities/DereferenceWrapper.hpp"
 #include "Utilities/EqualWithinRoundoff.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Serialization/PupStlCpp11.hpp"
@@ -32,16 +31,14 @@ FlatEndcap::FlatEndcap(const std::array<double, 3>& center, double radius)
 
 template <typename T>
 void FlatEndcap::forward_map(
-    const gsl::not_null<std::array<tt::remove_cvref_wrap_t<T>, 3>*>
-        target_coords,
+    const gsl::not_null<std::array<T, 3>*> target_coords,
     const std::array<T, 3>& source_coords) const {
-  using ReturnType = tt::remove_cvref_wrap_t<T>;
-  const ReturnType& xbar = source_coords[0];
-  const ReturnType& ybar = source_coords[1];
+  const T& xbar = source_coords[0];
+  const T& ybar = source_coords[1];
 
-  if constexpr (not std::is_same_v<ReturnType, double>) {
+  if constexpr (not std::is_same_v<T, double>) {
     (*target_coords)[2].destructive_resize(
-        static_cast<ReturnType>(source_coords[0]).size());
+        static_cast<T>(source_coords[0]).size());
   }
 
   (*target_coords)[0] = radius_ * xbar + center_[0];
@@ -51,9 +48,7 @@ void FlatEndcap::forward_map(
 
 template <typename T>
 void FlatEndcap::jacobian(
-    const gsl::not_null<
-        tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame>*>
-        jacobian_out,
+    const gsl::not_null<tnsr::Ij<T, 3, Frame::NoFrame>*> jacobian_out,
     const std::array<T, 3>& source_coords) const {
   set_number_of_grid_points(jacobian_out, source_coords);
   // Most of the jacobian components are zero.
@@ -69,9 +64,7 @@ void FlatEndcap::jacobian(
 
 template <typename T>
 void FlatEndcap::inv_jacobian(
-    const gsl::not_null<
-        tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame>*>
-        inv_jacobian_out,
+    const gsl::not_null<tnsr::Ij<T, 3, Frame::NoFrame>*> inv_jacobian_out,
     const std::array<T, 3>& source_coords) const {
   set_number_of_grid_points(inv_jacobian_out, source_coords);
   // Most of the inverse jacobian components are zero.
@@ -103,16 +96,14 @@ std::optional<std::array<double, 3>> FlatEndcap::inverse(
 }
 
 template <typename T>
-void FlatEndcap::sigma(
-    const gsl::not_null<tt::remove_cvref_wrap_t<T>*> sigma_out,
-    const std::array<T, 3>& source_coords) const {
+void FlatEndcap::sigma(const gsl::not_null<T*> sigma_out,
+                       const std::array<T, 3>& source_coords) const {
   *sigma_out = 0.5 * (source_coords[2] + 1.0);
 }
 
 template <typename T>
 void FlatEndcap::deriv_sigma(
-    const gsl::not_null<std::array<tt::remove_cvref_wrap_t<T>, 3>*>
-        deriv_sigma_out,
+    const gsl::not_null<std::array<T, 3>*> deriv_sigma_out,
     const std::array<T, 3>& source_coords) const {
   set_number_of_grid_points(deriv_sigma_out, source_coords);
   (*deriv_sigma_out)[0] = 0.0;
@@ -122,8 +113,7 @@ void FlatEndcap::deriv_sigma(
 
 template <typename T>
 void FlatEndcap::dxbar_dsigma(
-    const gsl::not_null<std::array<tt::remove_cvref_wrap_t<T>, 3>*>
-        dxbar_dsigma_out,
+    const gsl::not_null<std::array<T, 3>*> dxbar_dsigma_out,
     const std::array<T, 3>& source_coords) const {
   set_number_of_grid_points(dxbar_dsigma_out, source_coords);
   (*dxbar_dsigma_out)[0] = 0.0;
@@ -161,8 +151,7 @@ std::optional<double> FlatEndcap::lambda_tilde(
 
 template <typename T>
 void FlatEndcap::deriv_lambda_tilde(
-    const gsl::not_null<std::array<tt::remove_cvref_wrap_t<T>, 3>*>
-        deriv_lambda_tilde_out,
+    const gsl::not_null<std::array<T, 3>*> deriv_lambda_tilde_out,
     const std::array<T, 3>& target_coords, const T& lambda_tilde,
     const std::array<double, 3>& projection_point) const {
   set_number_of_grid_points(deriv_lambda_tilde_out, target_coords);
@@ -195,46 +184,34 @@ bool operator!=(const FlatEndcap& lhs, const FlatEndcap& rhs) {
 // Explicit instantiations
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(0, data)
 
-#define INSTANTIATE(_, data)                                                  \
-  template void FlatEndcap::forward_map(                                      \
-      const gsl::not_null<                                                    \
-          std::array<tt::remove_cvref_wrap_t<DTYPE(data)>, 3>*>               \
-          target_coords,                                                      \
-      const std::array<DTYPE(data), 3>& source_coords) const;                 \
-  template void FlatEndcap::jacobian(                                         \
-      const gsl::not_null<                                                    \
-          tnsr::Ij<tt::remove_cvref_wrap_t<DTYPE(data)>, 3, Frame::NoFrame>*> \
-          jacobian_out,                                                       \
-      const std::array<DTYPE(data), 3>& source_coords) const;                 \
-  template void FlatEndcap::inv_jacobian(                                     \
-      const gsl::not_null<                                                    \
-          tnsr::Ij<tt::remove_cvref_wrap_t<DTYPE(data)>, 3, Frame::NoFrame>*> \
-          inv_jacobian_out,                                                   \
-      const std::array<DTYPE(data), 3>& source_coords) const;                 \
-  template void FlatEndcap::sigma(                                            \
-      const gsl::not_null<tt::remove_cvref_wrap_t<DTYPE(data)>*> sigma_out,   \
-      const std::array<DTYPE(data), 3>& source_coords) const;                 \
-  template void FlatEndcap::deriv_sigma(                                      \
-      const gsl::not_null<                                                    \
-          std::array<tt::remove_cvref_wrap_t<DTYPE(data)>, 3>*>               \
-          deriv_sigma_out,                                                    \
-      const std::array<DTYPE(data), 3>& source_coords) const;                 \
-  template void FlatEndcap::dxbar_dsigma(                                     \
-      const gsl::not_null<                                                    \
-          std::array<tt::remove_cvref_wrap_t<DTYPE(data)>, 3>*>               \
-          dxbar_dsigma_out,                                                   \
-      const std::array<DTYPE(data), 3>& source_coords) const;                 \
-  template void FlatEndcap::deriv_lambda_tilde(                               \
-      const gsl::not_null<                                                    \
-          std::array<tt::remove_cvref_wrap_t<DTYPE(data)>, 3>*>               \
-          deriv_lambda_tilde_out,                                             \
-      const std::array<DTYPE(data), 3>& target_coords,                        \
-      const DTYPE(data) & lambda_tilde,                                       \
+#define INSTANTIATE(_, data)                                                   \
+  template void FlatEndcap::forward_map(                                       \
+      const gsl::not_null<std::array<DTYPE(data), 3>*> target_coords,          \
+      const std::array<DTYPE(data), 3>& source_coords) const;                  \
+  template void FlatEndcap::jacobian(                                          \
+      const gsl::not_null<tnsr::Ij<DTYPE(data), 3, Frame::NoFrame>*>           \
+          jacobian_out,                                                        \
+      const std::array<DTYPE(data), 3>& source_coords) const;                  \
+  template void FlatEndcap::inv_jacobian(                                      \
+      const gsl::not_null<tnsr::Ij<DTYPE(data), 3, Frame::NoFrame>*>           \
+          inv_jacobian_out,                                                    \
+      const std::array<DTYPE(data), 3>& source_coords) const;                  \
+  template void FlatEndcap::sigma(                                             \
+      const gsl::not_null<DTYPE(data)*> sigma_out,                             \
+      const std::array<DTYPE(data), 3>& source_coords) const;                  \
+  template void FlatEndcap::deriv_sigma(                                       \
+      const gsl::not_null<std::array<DTYPE(data), 3>*> deriv_sigma_out,        \
+      const std::array<DTYPE(data), 3>& source_coords) const;                  \
+  template void FlatEndcap::dxbar_dsigma(                                      \
+      const gsl::not_null<std::array<DTYPE(data), 3>*> dxbar_dsigma_out,       \
+      const std::array<DTYPE(data), 3>& source_coords) const;                  \
+  template void FlatEndcap::deriv_lambda_tilde(                                \
+      const gsl::not_null<std::array<DTYPE(data), 3>*> deriv_lambda_tilde_out, \
+      const std::array<DTYPE(data), 3>& target_coords,                         \
+      const DTYPE(data) & lambda_tilde,                                        \
       const std::array<double, 3>& projection_point) const;
 
-GENERATE_INSTANTIATIONS(INSTANTIATE, (double, DataVector,
-                                      std::reference_wrapper<const double>,
-                                      std::reference_wrapper<const DataVector>))
+GENERATE_INSTANTIATIONS(INSTANTIATE, (double, DataVector))
 
 #undef INSTANTIATE
 #undef DTYPE

@@ -10,7 +10,6 @@
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Utilities/Gsl.hpp"
-#include "Utilities/TypeTraits/RemoveReferenceWrapper.hpp"
 
 /// Holds helper functions for use with
 /// domain::CoordinateMaps::FocallyLiftedMap.
@@ -80,7 +79,7 @@ namespace domain::CoordinateMaps::FocallyLiftedMapHelpers {
  *
  */
 template <typename T>
-void scale_factor(const gsl::not_null<tt::remove_cvref_wrap_t<T>*>& result,
+void scale_factor(const gsl::not_null<T*>& result,
                   const std::array<T, 3>& src_point,
                   const std::array<double, 3>& proj_center,
                   const std::array<double, 3>& sphere_center, double radius,
@@ -156,10 +155,10 @@ std::optional<double> try_scale_factor(
  * `radius` is \f$R\f$.
  */
 template <typename T>
-void d_scale_factor_d_src_point(
-    const gsl::not_null<std::array<tt::remove_cvref_wrap_t<T>, 3>*>& result,
-    const std::array<T, 3>& intersection_point,
-    const std::array<double, 3>& proj_center,
-    const std::array<double, 3>& sphere_center, const T& lambda);
+void d_scale_factor_d_src_point(const gsl::not_null<std::array<T, 3>*>& result,
+                                const std::array<T, 3>& intersection_point,
+                                const std::array<double, 3>& proj_center,
+                                const std::array<double, 3>& sphere_center,
+                                const T& lambda);
 
 }  // namespace domain::CoordinateMaps::FocallyLiftedMapHelpers

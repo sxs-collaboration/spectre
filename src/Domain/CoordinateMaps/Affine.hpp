@@ -11,7 +11,6 @@
 #include <optional>
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
-#include "Utilities/TypeTraits/RemoveReferenceWrapper.hpp"
 
 /// \cond
 namespace PUP {
@@ -48,8 +47,7 @@ class Affine {
   Affine& operator=(Affine&&) = default;
 
   template <typename T>
-  std::array<tt::remove_cvref_wrap_t<T>, 1> operator()(
-      const std::array<T, 1>& source_coords) const;
+  std::array<T, 1> operator()(const std::array<T, 1>& source_coords) const;
 
   /// The inverse function is only callable with doubles because the inverse
   /// might fail if called for a point out of range, and it is unclear
@@ -59,11 +57,11 @@ class Affine {
       const std::array<double, 1>& target_coords) const;
 
   template <typename T>
-  tnsr::Ij<tt::remove_cvref_wrap_t<T>, 1, Frame::NoFrame> jacobian(
+  tnsr::Ij<T, 1, Frame::NoFrame> jacobian(
       const std::array<T, 1>& source_coords) const;
 
   template <typename T>
-  tnsr::Ij<tt::remove_cvref_wrap_t<T>, 1, Frame::NoFrame> inv_jacobian(
+  tnsr::Ij<T, 1, Frame::NoFrame> inv_jacobian(
       const std::array<T, 1>& source_coords) const;
 
   // NOLINTNEXTLINE(google-runtime-references)

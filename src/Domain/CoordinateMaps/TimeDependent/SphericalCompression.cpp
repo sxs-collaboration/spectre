@@ -19,7 +19,6 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
-#include "Utilities/DereferenceWrapper.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
@@ -28,9 +27,6 @@
 #include "Utilities/StdHelpers.hpp"
 
 namespace {
-template <typename T>
-using ResultType = tt::remove_cvref_wrap_t<T>;
-
 // Evaluate \f$\lambda_{00}(t) * Y_{00} = \lambda_{00}(t) / sqrt{4\pi}\f$.
 double lambda00_y00(
     const std::string& f_of_t_name, const double time,
@@ -53,9 +49,9 @@ double dt_lambda00_y00(
 
 // Evaluate \f$\rho^i = \xi^i - C^i\f$ or \f$r^i = x^i - C^i\f$.
 template <typename T>
-std::array<ResultType<T>, 3> radial_position(
-    const std::array<T, 3>& coords, const std::array<double, 3>& center) {
-  std::array<ResultType<T>, 3> result{};
+std::array<T, 3> radial_position(const std::array<T, 3>& coords,
+                                 const std::array<double, 3>& center) {
+  std::array<T, 3> result{};
   for (size_t i = 0; i < 3; ++i) {
     gsl::at(result, i) = gsl::at(coords, i) - gsl::at(center, i);
   }
@@ -68,10 +64,12 @@ std::array<ResultType<T>, 3> radial_position(
 // velocity (if input is initially zero and lambda_y is lambda00'(t)
 // /sqrt(4*M_PI)).
 template <bool InteriorMap, typename T>
-void correct_mapped_coordinate_or_frame_velocity(
-    const gsl::not_null<ResultType<T>*> input, const T& source_radial_coord,
-    const T& source_radius, const double lambda_y, const double min_radius,
-    const double max_radius) {
+void correct_mapped_coordinate_or_frame_velocity(const gsl::not_null<T*> input,
+                                                 const T& source_radial_coord,
+                                                 const T& source_radius,
+                                                 const double lambda_y,
+                                                 const double min_radius,
+                                                 const double max_radius) {
   if constexpr (InteriorMap) {
     *input -= lambda_y * source_radial_coord / min_radius;
   } else {
@@ -86,7 +84,7 @@ bool check_radius(const T& radius, const double min_radius,
   auto radius_in_expected_range =
       [](const T& source_radius, const double min_rad, const double max_rad) {
         constexpr double eps = 100 * std::numeric_limits<double>::epsilon();
-        if constexpr (std::is_floating_point<ResultType<T>>::value) {
+        if constexpr (std::is_floating_point<T>::value) {
           if constexpr (InteriorMap) {
             return source_radius <= min_rad + eps;
           } else {
@@ -141,16 +139,16 @@ SphericalCompression<InteriorMap>::SphericalCompression(
 
 template <bool InteriorMap>
 template <typename T>
-std::array<ResultType<T>, 3> SphericalCompression<InteriorMap>::operator()(
+std::array<T, 3> SphericalCompression<InteriorMap>::operator()(
     const std::array<T, 3>& source_coords, const double time,
     const std::unordered_map<
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
         functions_of_time) const {
-  const std::array<ResultType<T>, 3> source_rad_position{
+  const std::array<T, 3> source_rad_position{
       radial_position(source_coords, center_)};
-  const ResultType<T> source_radius{magnitude(source_rad_position)};
+  const T source_radius{magnitude(source_rad_position)};
   check_source_radius<InteriorMap>(source_radius, min_radius_, max_radius_);
-  std::array<ResultType<T>, 3> result{};
+  std::array<T, 3> result{};
   for (size_t i = 0; i < 3; ++i) {
     gsl::at(result, i) = gsl::at(source_coords, i);
     correct_mapped_coordinate_or_frame_velocity<InteriorMap>(
@@ -198,17 +196,16 @@ std::optional<std::array<double, 3>> SphericalCompression<InteriorMap>::inverse(
 
 template <bool InteriorMap>
 template <typename T>
-std::array<ResultType<T>, 3> SphericalCompression<InteriorMap>::frame_velocity(
+std::array<T, 3> SphericalCompression<InteriorMap>::frame_velocity(
     const std::array<T, 3>& source_coords, const double time,
     const std::unordered_map<
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
         functions_of_time) const {
-  const std::array<ResultType<T>, 3> source_rad_position{
+  const std::array<T, 3> source_rad_position{
       radial_position(source_coords, center_)};
-  const ResultType<T> source_radius{magnitude(source_rad_position)};
+  const T source_radius{magnitude(source_rad_position)};
   check_source_radius<InteriorMap>(source_radius, min_radius_, max_radius_);
-  auto result =
-      make_with_value<std::array<ResultType<T>, 3>>(source_radius, 0.0);
+  auto result = make_with_value<std::array<T, 3>>(source_radius, 0.0);
   for (size_t i = 0; i < 3; ++i) {
     gsl::at(result, i) = 0.0;
     correct_mapped_coordinate_or_frame_velocity<InteriorMap>(
@@ -221,21 +218,18 @@ std::array<ResultType<T>, 3> SphericalCompression<InteriorMap>::frame_velocity(
 
 template <bool InteriorMap>
 template <typename T>
-tnsr::Ij<ResultType<T>, 3, Frame::NoFrame>
-SphericalCompression<InteriorMap>::jacobian(
+tnsr::Ij<T, 3, Frame::NoFrame> SphericalCompression<InteriorMap>::jacobian(
     const std::array<T, 3>& source_coords, const double time,
     const std::unordered_map<
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
         functions_of_time) const {
-  const std::array<ResultType<T>, 3> source_rad_position{
+  const std::array<T, 3> source_rad_position{
       radial_position(source_coords, center_)};
-  const ResultType<T> source_radius{magnitude(source_rad_position)};
+  const T source_radius{magnitude(source_rad_position)};
   const double lambda_y{lambda00_y00(f_of_t_name_, time, functions_of_time)};
   check_source_radius<InteriorMap>(source_radius, min_radius_, max_radius_);
-  auto jacobian_matrix{
-      make_with_value<tnsr::Ij<ResultType<T>, 3, Frame::NoFrame>>(
-          dereference_wrapper(source_coords[0]),
-          std::numeric_limits<double>::signaling_NaN())};
+  auto jacobian_matrix{make_with_value<tnsr::Ij<T, 3, Frame::NoFrame>>(
+      source_coords[0], std::numeric_limits<double>::signaling_NaN())};
   for (size_t i = 0; i < 3; ++i) {
     for (size_t j = 0; j < 3; ++j) {
       if constexpr (not InteriorMap) {
@@ -262,8 +256,7 @@ SphericalCompression<InteriorMap>::jacobian(
 
 template <bool InteriorMap>
 template <typename T>
-tnsr::Ij<ResultType<T>, 3, Frame::NoFrame>
-SphericalCompression<InteriorMap>::inv_jacobian(
+tnsr::Ij<T, 3, Frame::NoFrame> SphericalCompression<InteriorMap>::inv_jacobian(
     const std::array<T, 3>& source_coords, const double time,
     const std::unordered_map<
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
@@ -301,40 +294,37 @@ void SphericalCompression<InteriorMap>::pup(PUP::er& p) {
 #define INTERIOR_MAP(data) BOOST_PP_TUPLE_ELEM(0, data)
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(1, data)
 
-#define INSTANTIATE(_, data)                                                 \
-  template std::array<tt::remove_cvref_wrap_t<DTYPE(data)>, 3>               \
-  SphericalCompression<INTERIOR_MAP(data)>::operator()(                      \
-      const std::array<DTYPE(data), 3>& source_coords, const double time,    \
-      const std::unordered_map<                                              \
-          std::string,                                                       \
-          std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&         \
-          functions_of_time) const;                                          \
-  template std::array<tt::remove_cvref_wrap_t<DTYPE(data)>, 3>               \
-  SphericalCompression<INTERIOR_MAP(data)>::frame_velocity(                  \
-      const std::array<DTYPE(data), 3>& source_coords, const double time,    \
-      const std::unordered_map<                                              \
-          std::string,                                                       \
-          std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&         \
-          functions_of_time) const;                                          \
-  template tnsr::Ij<tt::remove_cvref_wrap_t<DTYPE(data)>, 3, Frame::NoFrame> \
-  SphericalCompression<INTERIOR_MAP(data)>::jacobian(                        \
-      const std::array<DTYPE(data), 3>& source_coords, double time,          \
-      const std::unordered_map<                                              \
-          std::string,                                                       \
-          std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&         \
-          functions_of_time) const;                                          \
-  template tnsr::Ij<tt::remove_cvref_wrap_t<DTYPE(data)>, 3, Frame::NoFrame> \
-  SphericalCompression<INTERIOR_MAP(data)>::inv_jacobian(                    \
-      const std::array<DTYPE(data), 3>& source_coords, double time,          \
-      const std::unordered_map<                                              \
-          std::string,                                                       \
-          std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&         \
+#define INSTANTIATE(_, data)                                              \
+  template std::array<DTYPE(data), 3>                                     \
+  SphericalCompression<INTERIOR_MAP(data)>::operator()(                   \
+      const std::array<DTYPE(data), 3>& source_coords, const double time, \
+      const std::unordered_map<                                           \
+          std::string,                                                    \
+          std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&      \
+          functions_of_time) const;                                       \
+  template std::array<DTYPE(data), 3>                                     \
+  SphericalCompression<INTERIOR_MAP(data)>::frame_velocity(               \
+      const std::array<DTYPE(data), 3>& source_coords, const double time, \
+      const std::unordered_map<                                           \
+          std::string,                                                    \
+          std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&      \
+          functions_of_time) const;                                       \
+  template tnsr::Ij<DTYPE(data), 3, Frame::NoFrame>                       \
+  SphericalCompression<INTERIOR_MAP(data)>::jacobian(                     \
+      const std::array<DTYPE(data), 3>& source_coords, double time,       \
+      const std::unordered_map<                                           \
+          std::string,                                                    \
+          std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&      \
+          functions_of_time) const;                                       \
+  template tnsr::Ij<DTYPE(data), 3, Frame::NoFrame>                       \
+  SphericalCompression<INTERIOR_MAP(data)>::inv_jacobian(                 \
+      const std::array<DTYPE(data), 3>& source_coords, double time,       \
+      const std::unordered_map<                                           \
+          std::string,                                                    \
+          std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&      \
           functions_of_time) const;
 
-GENERATE_INSTANTIATIONS(INSTANTIATE, (true, false),
-                        (double, DataVector,
-                         std::reference_wrapper<const double>,
-                         std::reference_wrapper<const DataVector>))
+GENERATE_INSTANTIATIONS(INSTANTIATE, (true, false), (double, DataVector))
 #undef DTYPE
 #undef INSTANTIATE
 

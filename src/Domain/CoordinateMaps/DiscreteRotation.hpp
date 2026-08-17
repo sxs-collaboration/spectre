@@ -9,7 +9,6 @@
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Domain/Structure/OrientationMap.hpp"
-#include "Utilities/TypeTraits/RemoveReferenceWrapper.hpp"
 
 /// \cond
 namespace PUP {
@@ -42,7 +41,7 @@ class DiscreteRotation {
   DiscreteRotation& operator=(DiscreteRotation&&) = default;
 
   template <typename T>
-  std::array<tt::remove_cvref_wrap_t<T>, VolumeDim> operator()(
+  std::array<T, VolumeDim> operator()(
       const std::array<T, VolumeDim>& source_coords) const;
 
   /// The inverse function is only callable with doubles because the inverse
@@ -53,11 +52,11 @@ class DiscreteRotation {
       const std::array<double, VolumeDim>& target_coords) const;
 
   template <typename T>
-  tnsr::Ij<tt::remove_cvref_wrap_t<T>, VolumeDim, Frame::NoFrame> jacobian(
+  tnsr::Ij<T, VolumeDim, Frame::NoFrame> jacobian(
       const std::array<T, VolumeDim>& source_coords) const;
 
   template <typename T>
-  tnsr::Ij<tt::remove_cvref_wrap_t<T>, VolumeDim, Frame::NoFrame> inv_jacobian(
+  tnsr::Ij<T, VolumeDim, Frame::NoFrame> inv_jacobian(
       const std::array<T, VolumeDim>& source_coords) const;
 
   // NOLINTNEXTLINE(google-runtime-references)

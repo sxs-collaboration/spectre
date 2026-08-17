@@ -21,7 +21,6 @@
 #include "NumericalAlgorithms/RootFinding/TOMS748.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/ContainerHelpers.hpp"
-#include "Utilities/DereferenceWrapper.hpp"
 #include "Utilities/EqualWithinRoundoff.hpp"
 #include "Utilities/ErrorHandling/CaptureForError.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
@@ -31,7 +30,6 @@
 #include "Utilities/StdArrayHelpers.hpp"
 #include "Utilities/StdHelpers.hpp"
 #include "Utilities/StlStreamDeclarations.hpp"
-#include "Utilities/TypeTraits/RemoveReferenceWrapper.hpp"
 
 namespace domain::CoordinateMaps::TimeDependent {
 
@@ -53,7 +51,7 @@ Skew::Skew(std::string function_of_time_name,
 }
 
 template <typename T>
-std::array<tt::remove_cvref_wrap_t<T>, 3> Skew::operator()(
+std::array<T, 3> Skew::operator()(
     const std::array<T, 3>& source_coords, const double time,
     const domain::FunctionsOfTimeMap& functions_of_time) const {
   return map_and_velocity_helper(source_coords, time, functions_of_time, false);
@@ -144,29 +142,27 @@ std::optional<std::array<double, 3>> Skew::inverse(
 }
 
 template <typename T>
-std::array<tt::remove_cvref_wrap_t<T>, 3> Skew::frame_velocity(
+std::array<T, 3> Skew::frame_velocity(
     const std::array<T, 3>& source_coords, const double time,
     const domain::FunctionsOfTimeMap& functions_of_time) const {
   return map_and_velocity_helper(source_coords, time, functions_of_time, true);
 }
 
 template <typename T>
-tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame> Skew::jacobian(
+tnsr::Ij<T, 3, Frame::NoFrame> Skew::jacobian(
     const std::array<T, 3>& source_coords, const double time,
     const domain::FunctionsOfTimeMap& functions_of_time) const {
-  using ResultT = tt::remove_cvref_wrap_t<T>;
-
   check_for_singular_map(source_coords, time, functions_of_time);
 
-  const ResultT width = get_width(source_coords);
-  const std::array<ResultT, 3> width_deriv = get_width_deriv(source_coords);
+  const T width = get_width(source_coords);
+  const std::array<T, 3> width_deriv = get_width_deriv(source_coords);
 
   const auto& function_of_time = functions_of_time.at(f_of_t_name_);
   const DataVector func = function_of_time->func_and_deriv(time)[0];
   ASSERT(func.size() == 2, "Expected a function of time with size 2, not "
                                << func.size() << " in the Skew map.");
 
-  auto result = identity<3>(dereference_wrapper(source_coords[0]));
+  auto result = identity<3>(source_coords[0]);
 
   const DataVector tan_func = -1.0 * tan(func);
   // Temporarily use component to avoid allocation
@@ -182,7 +178,7 @@ tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame> Skew::jacobian(
 }
 
 template <typename T>
-tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame> Skew::inv_jacobian(
+tnsr::Ij<T, 3, Frame::NoFrame> Skew::inv_jacobian(
     const std::array<T, 3>& source_coords, const double time,
     const domain::FunctionsOfTimeMap& functions_of_time) const {
   return determinant_and_inverse(
@@ -191,14 +187,12 @@ tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame> Skew::inv_jacobian(
 }
 
 template <typename T>
-tt::remove_cvref_wrap_t<T> Skew::get_width(
-    const std::array<T, 3>& source_coords, const bool ignore_error) const {
-  using ResultT = tt::remove_cvref_wrap_t<T>;
+T Skew::get_width(const std::array<T, 3>& source_coords,
+                  const bool ignore_error) const {
   // Will be reused for result
-  ResultT lambda =
-      one_over_outer_radius_squared_ * dot(source_coords, source_coords);
+  T lambda = one_over_outer_radius_squared_ * dot(source_coords, source_coords);
 
-  ResultT& result = lambda;
+  T& result = lambda;
 
   // Go point by point because we have to check roundoff
   for (size_t i = 0; i < get_size(result); i++) {
@@ -211,10 +205,9 @@ tt::remove_cvref_wrap_t<T> Skew::get_width(
       get_element(result, i) = 0.5 * (1.0 + cos(M_PI * get_element(lambda, i)));
     } else {
       using ::operator<<;
-      const std::vector<double> bad_point{
-          get_element(dereference_wrapper(source_coords[0]), i),
-          get_element(dereference_wrapper(source_coords[1]), i),
-          get_element(dereference_wrapper(source_coords[2]), i)};
+      const std::vector<double> bad_point{get_element(source_coords[0], i),
+                                          get_element(source_coords[1], i),
+                                          get_element(source_coords[2], i)};
       ERROR("Skew map: Source coordinate "
             << bad_point << " not in valid region. Lambda is "
             << get_element(lambda, i) << ". Center is " << center_
@@ -226,14 +219,12 @@ tt::remove_cvref_wrap_t<T> Skew::get_width(
 }
 
 template <typename T>
-std::array<tt::remove_cvref_wrap_t<T>, 3> Skew::get_width_deriv(
+std::array<T, 3> Skew::get_width_deriv(
     const std::array<T, 3>& source_coords) const {
-  using ResultT = tt::remove_cvref_wrap_t<T>;
-
-  const ResultT lambda =
+  const T lambda =
       one_over_outer_radius_squared_ * dot(source_coords, source_coords);
 
-  std::array<ResultT, 3> grad_width{};
+  std::array<T, 3> grad_width{};
   for (size_t i = 0; i < 3; i++) {
     gsl::at(grad_width, i) = gsl::at(source_coords, i);
   }
@@ -249,10 +240,9 @@ std::array<tt::remove_cvref_wrap_t<T>, 3> Skew::get_width_deriv(
       }
     } else if (get_element(lambda, i) < 0.0 or get_element(lambda, i) > 1.0) {
       using ::operator<<;
-      const std::vector<double> bad_point{
-          get_element(dereference_wrapper(source_coords[0]), i),
-          get_element(dereference_wrapper(source_coords[1]), i),
-          get_element(dereference_wrapper(source_coords[2]), i)};
+      const std::vector<double> bad_point{get_element(source_coords[0], i),
+                                          get_element(source_coords[1], i),
+                                          get_element(source_coords[2], i)};
       ERROR("Skew map: Source coordinate "
             << bad_point << " not in valid region. Lambda is "
             << get_element(lambda, i) << ". Center is " << center_
@@ -264,18 +254,15 @@ std::array<tt::remove_cvref_wrap_t<T>, 3> Skew::get_width_deriv(
 }
 
 template <typename T>
-std::array<tt::remove_cvref_wrap_t<T>, 3> Skew::map_and_velocity_helper(
+std::array<T, 3> Skew::map_and_velocity_helper(
     const std::array<T, 3>& source_coords, const double time,
     const FunctionsOfTimeMap& functions_of_time,
     const bool return_velocity) const {
-  using ResultT = tt::remove_cvref_wrap_t<T>;
-
   check_for_singular_map(source_coords, time, functions_of_time);
 
-  std::array<ResultT, 3> result{};
+  std::array<T, 3> result{};
   if (return_velocity) {
-    result = make_array<3>(
-        make_with_value<ResultT>(dereference_wrapper(source_coords[0]), 0.0));
+    result = make_array<3>(make_with_value<T>(source_coords[0], 0.0));
   } else {
     for (size_t i = 0; i < 3; i++) {
       gsl::at(result, i) = gsl::at(source_coords, i);
@@ -283,7 +270,7 @@ std::array<tt::remove_cvref_wrap_t<T>, 3> Skew::map_and_velocity_helper(
   }
 
   // Currently result is the source coords, but with the proper return type
-  const ResultT width = get_width(source_coords);
+  const T width = get_width(source_coords);
 
   const auto& function_of_time = functions_of_time.at(f_of_t_name_);
   const auto func_and_deriv = function_of_time->func_and_deriv(time);
@@ -338,8 +325,7 @@ void Skew::check_for_singular_map(
   (void)functions_of_time;
 
 #ifdef SPECTRE_DEBUG
-  using ResultT = tt::remove_cvref_wrap_t<T>;
-  const ResultT lambda =
+  const T lambda =
       one_over_outer_radius_squared_ * dot(source_coords, source_coords);
 
   const auto& function_of_time = functions_of_time.at(f_of_t_name_);
@@ -352,14 +338,12 @@ void Skew::check_for_singular_map(
   CAPTURE_FOR_ERROR(tan_func0);
   CAPTURE_FOR_ERROR(tan_func1);
 
-  const ResultT tan_sum =
-      -1.0 * (tan(func[0]) * (source_coords[1] - center_[1]) +
-              tan(func[1]) * (source_coords[2] - center_[2]));
+  const T tan_sum = -1.0 * (tan(func[0]) * (source_coords[1] - center_[1]) +
+                            tan(func[1]) * (source_coords[2] - center_[2]));
 
-  std::array<double, 3> temporary_point{
-      get_element(dereference_wrapper(source_coords[0]), 0),
-      get_element(dereference_wrapper(source_coords[1]), 0),
-      get_element(dereference_wrapper(source_coords[2]), 0)};
+  std::array<double, 3> temporary_point{get_element(source_coords[0], 0),
+                                        get_element(source_coords[1], 0),
+                                        get_element(source_coords[2], 0)};
 
   // We can check if the map is singular by checking if the x-deriv of the map
   // is negative. If it is, then it means the map is not one-to-one and our grid
@@ -376,9 +360,9 @@ void Skew::check_for_singular_map(
       continue;
     }
 
-    temporary_point[0] = get_element(dereference_wrapper(source_coords[0]), i);
-    temporary_point[1] = get_element(dereference_wrapper(source_coords[1]), i);
-    temporary_point[2] = get_element(dereference_wrapper(source_coords[2]), i);
+    temporary_point[0] = get_element(source_coords[0], i);
+    temporary_point[1] = get_element(source_coords[1], i);
+    temporary_point[2] = get_element(source_coords[2], i);
 
     // Can't check if x=0 and we are at the outer boundary, because then the
     // largest_x below is just zero and we won't be able to find roots.
@@ -453,40 +437,33 @@ bool operator!=(const Skew& lhs, const Skew& rhs) { return not(lhs == rhs); }
 
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(0, data)
 
-#define INSTANTIATE(_, data)                                                   \
-  template std::array<tt::remove_cvref_wrap_t<DTYPE(data)>, 3>                 \
-  Skew::operator()(const std::array<DTYPE(data), 3>& source_coords,            \
-                   double time,                                                \
-                   const domain::FunctionsOfTimeMap& functions_of_time) const; \
-  template std::array<tt::remove_cvref_wrap_t<DTYPE(data)>, 3>                 \
-  Skew::frame_velocity(                                                        \
-      const std::array<DTYPE(data), 3>& source_coords, const double time,      \
-      const domain::FunctionsOfTimeMap& functions_of_time) const;              \
-  template tnsr::Ij<tt::remove_cvref_wrap_t<DTYPE(data)>, 3, Frame::NoFrame>   \
-  Skew::jacobian(const std::array<DTYPE(data), 3>& source_coords, double time, \
-                 const domain::FunctionsOfTimeMap& functions_of_time) const;   \
-  template tnsr::Ij<tt::remove_cvref_wrap_t<DTYPE(data)>, 3, Frame::NoFrame>   \
-  Skew::inv_jacobian(                                                          \
-      const std::array<DTYPE(data), 3>& source_coords, double time,            \
-      const domain::FunctionsOfTimeMap& functions_of_time) const;              \
-  template tt::remove_cvref_wrap_t<DTYPE(data)> Skew::get_width(               \
-      const std::array<DTYPE(data), 3>& source_coords,                         \
-      const bool ignore_error) const;                                          \
-  template std::array<tt::remove_cvref_wrap_t<DTYPE(data)>, 3>                 \
-  Skew::get_width_deriv(const std::array<DTYPE(data), 3>& source_coords)       \
-      const;                                                                   \
-  template std::array<tt::remove_cvref_wrap_t<DTYPE(data)>, 3>                 \
-  Skew::map_and_velocity_helper(                                               \
-      const std::array<DTYPE(data), 3>& source_coords, double time,            \
-      const domain::FunctionsOfTimeMap& functions_of_time,                     \
-      bool return_velocity) const;                                             \
-  template void Skew::check_for_singular_map(                                  \
-      const std::array<DTYPE(data), 3>& source_coords, double time,            \
+#define INSTANTIATE(_, data)                                              \
+  template std::array<DTYPE(data), 3> Skew::operator()(                   \
+      const std::array<DTYPE(data), 3>& source_coords, double time,       \
+      const domain::FunctionsOfTimeMap& functions_of_time) const;         \
+  template std::array<DTYPE(data), 3> Skew::frame_velocity(               \
+      const std::array<DTYPE(data), 3>& source_coords, const double time, \
+      const domain::FunctionsOfTimeMap& functions_of_time) const;         \
+  template tnsr::Ij<DTYPE(data), 3, Frame::NoFrame> Skew::jacobian(       \
+      const std::array<DTYPE(data), 3>& source_coords, double time,       \
+      const domain::FunctionsOfTimeMap& functions_of_time) const;         \
+  template tnsr::Ij<DTYPE(data), 3, Frame::NoFrame> Skew::inv_jacobian(   \
+      const std::array<DTYPE(data), 3>& source_coords, double time,       \
+      const domain::FunctionsOfTimeMap& functions_of_time) const;         \
+  template DTYPE(data)                                                    \
+      Skew::get_width(const std::array<DTYPE(data), 3>& source_coords,    \
+                      const bool ignore_error) const;                     \
+  template std::array<DTYPE(data), 3> Skew::get_width_deriv(              \
+      const std::array<DTYPE(data), 3>& source_coords) const;             \
+  template std::array<DTYPE(data), 3> Skew::map_and_velocity_helper(      \
+      const std::array<DTYPE(data), 3>& source_coords, double time,       \
+      const domain::FunctionsOfTimeMap& functions_of_time,                \
+      bool return_velocity) const;                                        \
+  template void Skew::check_for_singular_map(                             \
+      const std::array<DTYPE(data), 3>& source_coords, double time,       \
       const domain::FunctionsOfTimeMap& functions_of_time) const;
 
-GENERATE_INSTANTIATIONS(INSTANTIATE, (double, DataVector,
-                                      std::reference_wrapper<const double>,
-                                      std::reference_wrapper<const DataVector>))
+GENERATE_INSTANTIATIONS(INSTANTIATE, (double, DataVector))
 
 #undef DTYPE
 #undef INSTANTIATE

@@ -11,7 +11,6 @@
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Domain/CoordinateMaps/Distribution.hpp"
 #include "Domain/Structure/OrientationMap.hpp"
-#include "Utilities/TypeTraits/RemoveReferenceWrapper.hpp"
 
 /// \cond
 namespace PUP {
@@ -935,8 +934,7 @@ class Wedge {
   Wedge& operator=(Wedge&&) = default;
 
   template <typename T>
-  std::array<tt::remove_cvref_wrap_t<T>, Dim> operator()(
-      const std::array<T, Dim>& source_coords) const;
+  std::array<T, Dim> operator()(const std::array<T, Dim>& source_coords) const;
 
   /// For a \f$+z\f$-oriented `Wedge`, returns invalid if \f$z<=0\f$
   /// or if \f$(x,y,z)\f$ is on or outside the cone defined
@@ -954,11 +952,11 @@ class Wedge {
       const std::array<double, Dim>& target_coords) const;
 
   template <typename T>
-  tnsr::Ij<tt::remove_cvref_wrap_t<T>, Dim, Frame::NoFrame> jacobian(
+  tnsr::Ij<T, Dim, Frame::NoFrame> jacobian(
       const std::array<T, Dim>& source_coords) const;
 
   template <typename T>
-  tnsr::Ij<tt::remove_cvref_wrap_t<T>, Dim, Frame::NoFrame> inv_jacobian(
+  tnsr::Ij<T, Dim, Frame::NoFrame> inv_jacobian(
       const std::array<T, Dim>& source_coords) const;
 
   // NOLINTNEXTLINE(google-runtime-references)
@@ -1011,8 +1009,7 @@ class Wedge {
    * \param lowercase_xi_or_eta the logical coordinate $\xi$ or $\eta$ to map
    */
   template <bool FuncIsXi, typename T>
-  tt::remove_cvref_wrap_t<T> get_cap_angular_function(
-      const T& lowercase_xi_or_eta) const;
+  T get_cap_angular_function(const T& lowercase_xi_or_eta) const;
 
   /*!
    * \brief Factors out the calculation of \f$\Xi'(\xi)\f$ and $\mathrm{H}'$
@@ -1025,8 +1022,7 @@ class Wedge {
    * \param lowercase_xi_or_eta the logical coordinate $\xi$ or $\eta$ to map
    */
   template <bool FuncIsXi, typename T>
-  tt::remove_cvref_wrap_t<T> get_deriv_cap_angular_function(
-      const T& lowercase_xi_or_eta) const;
+  T get_deriv_cap_angular_function(const T& lowercase_xi_or_eta) const;
 
   /*!
    * \brief Factors out the calculation of $\vec{\rho}$
@@ -1047,9 +1043,8 @@ class Wedge {
    * \param cap the function(s) \f$\Xi\f$ (and $\mathrm{H}$ in 3D)
    */
   template <typename T>
-  std::array<tt::remove_cvref_wrap_t<T>, Dim> get_rho_vec(
-      const std::array<double, Dim>& rotated_focus,
-      const std::array<tt::remove_cvref_wrap_t<T>, Dim - 1>& cap) const;
+  std::array<T, Dim> get_rho_vec(const std::array<double, Dim>& rotated_focus,
+                                 const std::array<T, Dim - 1>& cap) const;
 
   /*!
    * \brief Factors out the calculation of $1/\rho$
@@ -1071,9 +1066,8 @@ class Wedge {
    * \param cap the function(s) \f$\Xi\f$ (and $\mathrm{H}$ in 3D)
    */
   template <typename T>
-  tt::remove_cvref_wrap_t<T> get_one_over_rho(
-      const std::array<double, Dim>& rotated_focus,
-      const std::array<tt::remove_cvref_wrap_t<T>, Dim - 1>& cap) const;
+  T get_one_over_rho(const std::array<double, Dim>& rotated_focus,
+                     const std::array<T, Dim - 1>& cap) const;
 
   /*!
    * \brief Factors out the calculation of $S(\zeta)$ needed for the map and the
@@ -1139,7 +1133,7 @@ class Wedge {
    * \param zeta the radial source coordinate
    */
   template <typename T>
-  tt::remove_cvref_wrap_t<T> get_s_factor(const T& zeta) const;
+  T get_s_factor(const T& zeta) const;
   /*!
    * \brief Factors out the calculation of $S'(\zeta)$ needed for the Jacobian
    *
@@ -1175,8 +1169,7 @@ class Wedge {
    * \param s_factor $S(\zeta)$ (see `get_s_factor()`)
    */
   template <typename T>
-  tt::remove_cvref_wrap_t<T> get_s_factor_deriv(const T& zeta,
-                                                const T& s_factor) const;
+  T get_s_factor_deriv(const T& zeta, const T& s_factor) const;
 
   /*!
    * \brief Factors out the calculation of $z_{\Lambda}$ needed for the map and
@@ -1206,12 +1199,10 @@ class Wedge {
    * \param s_factor $S(\zeta)$ (see `get_s_factor()`)
    */
   template <typename T>
-  tt::remove_cvref_wrap_t<T> get_generalized_z(const T& zeta,
-                                               const T& one_over_rho,
-                                               const T& s_factor) const;
+  T get_generalized_z(const T& zeta, const T& one_over_rho,
+                      const T& s_factor) const;
   template <typename T>
-  tt::remove_cvref_wrap_t<T> get_generalized_z(const T& zeta,
-                                               const T& one_over_rho) const;
+  T get_generalized_z(const T& zeta, const T& one_over_rho) const;
   /*!
    * \brief Factors out the calculation of $\partial_i z_{\Lambda}$ needed for
    * the Jacobian
@@ -1248,10 +1239,10 @@ class Wedge {
    * (see Wedge)
    */
   template <typename T>
-  std::array<tt::remove_cvref_wrap_t<T>, Dim> get_d_generalized_z(
+  std::array<T, Dim> get_d_generalized_z(
       const T& zeta, const T& one_over_rho, const T& s_factor,
-      const std::array<tt::remove_cvref_wrap_t<T>, Dim - 1>& cap_deriv,
-      const std::array<tt::remove_cvref_wrap_t<T>, Dim>& rho_vec) const;
+      const std::array<T, Dim - 1>& cap_deriv,
+      const std::array<T, Dim>& rho_vec) const;
 
   template <size_t LocalDim>
   // NOLINTNEXTLINE(readability-redundant-declaration)

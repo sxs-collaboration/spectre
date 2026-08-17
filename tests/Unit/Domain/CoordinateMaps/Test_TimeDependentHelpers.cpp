@@ -11,7 +11,6 @@
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Domain/CoordinateMaps/TimeDependentHelpers.hpp"
-#include "Utilities/TypeTraits/RemoveReferenceWrapper.hpp"
 
 class DataVector;
 
@@ -25,7 +24,7 @@ struct TimeDepMap {
   static constexpr size_t dim = Dim;
 
   template <typename T>
-  std::array<tt::remove_cvref_wrap_t<T>, Dim> operator()(
+  std::array<T, Dim> operator()(
       const std::array<T, Dim>& source_coords, double time,
       const std::unordered_map<
           std::string,
@@ -37,8 +36,7 @@ struct TimeIndepMap {
   static constexpr size_t dim = Dim;
 
   template <typename T>
-  std::array<tt::remove_cvref_wrap_t<T>, Dim> operator()(
-      const std::array<T, Dim>& source_coords) const;
+  std::array<T, Dim> operator()(const std::array<T, Dim>& source_coords) const;
 };
 
 template <size_t Dim>
@@ -46,7 +44,7 @@ struct TimeDepJac {
   static constexpr size_t dim = Dim;
 
   template <typename T>
-  tnsr::Ij<tt::remove_cvref_wrap_t<T>, Dim, Frame::NoFrame> jacobian(
+  tnsr::Ij<T, Dim, Frame::NoFrame> jacobian(
       const std::array<T, Dim>& source_coords, double time,
       const std::unordered_map<
           std::string,
@@ -58,7 +56,7 @@ struct TimeIndepJac {
   static constexpr size_t dim = Dim;
 
   template <typename T>
-  tnsr::Ij<tt::remove_cvref_wrap_t<T>, Dim, Frame::NoFrame> jacobian(
+  tnsr::Ij<T, Dim, Frame::NoFrame> jacobian(
       const std::array<T, Dim>& source_coords) const;
 };
 }  // namespace

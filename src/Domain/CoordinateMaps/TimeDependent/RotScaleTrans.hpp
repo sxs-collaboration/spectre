@@ -13,7 +13,6 @@
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "PointwiseFunctions/MathFunctions/MathFunction.hpp"
-#include "Utilities/TypeTraits/RemoveReferenceWrapper.hpp"
 
 /// \cond
 namespace domain::FunctionsOfTime {
@@ -287,7 +286,7 @@ class RotScaleTrans {
   RotScaleTrans& operator=(const RotScaleTrans& RotScaleTrans_Map) = default;
 
   template <typename T>
-  std::array<tt::remove_cvref_wrap_t<T>, Dim> operator()(
+  std::array<T, Dim> operator()(
       const std::array<T, Dim>& source_coords, double time,
       const std::unordered_map<
           std::string,
@@ -306,7 +305,7 @@ class RotScaleTrans {
           functions_of_time) const;
 
   template <typename T>
-  std::array<tt::remove_cvref_wrap_t<T>, Dim> frame_velocity(
+  std::array<T, Dim> frame_velocity(
       const std::array<T, Dim>& source_coords, double time,
       const std::unordered_map<
           std::string,
@@ -314,7 +313,7 @@ class RotScaleTrans {
           functions_of_time) const;
 
   template <typename T>
-  tnsr::Ij<tt::remove_cvref_wrap_t<T>, Dim, Frame::NoFrame> inv_jacobian(
+  tnsr::Ij<T, Dim, Frame::NoFrame> inv_jacobian(
       const std::array<T, Dim>& source_coords, double time,
       const std::unordered_map<
           std::string,
@@ -322,7 +321,7 @@ class RotScaleTrans {
           functions_of_time) const;
 
   template <typename T>
-  tnsr::Ij<tt::remove_cvref_wrap_t<T>, Dim, Frame::NoFrame> jacobian(
+  tnsr::Ij<T, Dim, Frame::NoFrame> jacobian(
       const std::array<T, Dim>& source_coords, double time,
       const std::unordered_map<
           std::string,

@@ -17,7 +17,6 @@
 #include "Utilities/Algorithm.hpp"
 #include "Utilities/Autodiff/Autodiff.hpp"
 #include "Utilities/ConstantExpressions.hpp"
-#include "Utilities/DereferenceWrapper.hpp"
 #include "Utilities/EqualWithinRoundoff.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
@@ -250,8 +249,7 @@ Wedge<Dim>::Wedge(
 
 template <size_t Dim>
 template <bool FuncIsXi, typename T>
-tt::remove_cvref_wrap_t<T> Wedge<Dim>::get_cap_angular_function(
-    const T& lowercase_xi_or_eta) const {
+T Wedge<Dim>::get_cap_angular_function(const T& lowercase_xi_or_eta) const {
   constexpr auto cap_index = static_cast<size_t>(not FuncIsXi);
   if (opening_angles_.has_value() and
       opening_angles_distribution_.has_value()) {
@@ -269,10 +267,8 @@ tt::remove_cvref_wrap_t<T> Wedge<Dim>::get_cap_angular_function(
 
 template <size_t Dim>
 template <bool FuncIsXi, typename T>
-tt::remove_cvref_wrap_t<T> Wedge<Dim>::get_deriv_cap_angular_function(
+T Wedge<Dim>::get_deriv_cap_angular_function(
     const T& lowercase_xi_or_eta) const {
-  using ReturnType = tt::remove_cvref_wrap_t<T>;
-
   constexpr auto cap_index = static_cast<size_t>(not FuncIsXi);
   if (opening_angles_.has_value() and
       opening_angles_distribution_.has_value()) {
@@ -284,35 +280,33 @@ tt::remove_cvref_wrap_t<T> Wedge<Dim>::get_deriv_cap_angular_function(
                      square(cos(
                          0.5 * opening_angles_distribution_.value()[cap_index] *
                          lowercase_xi_or_eta))
-               : make_with_value<ReturnType>(lowercase_xi_or_eta, 1.0);
+               : make_with_value<T>(lowercase_xi_or_eta, 1.0);
   } else {
     return with_equiangular_map_
                ? M_PI_4 / square(cos(M_PI_4 * lowercase_xi_or_eta))
-               : make_with_value<ReturnType>(lowercase_xi_or_eta, 1.0);
+               : make_with_value<T>(lowercase_xi_or_eta, 1.0);
   }
 }
 
 template <size_t Dim>
 template <typename T>
-std::array<tt::remove_cvref_wrap_t<T>, Dim> Wedge<Dim>::get_rho_vec(
+std::array<T, Dim> Wedge<Dim>::get_rho_vec(
     const std::array<double, Dim>& rotated_focus,
-    const std::array<tt::remove_cvref_wrap_t<T>, Dim - 1>& cap) const {
-  using ReturnType = tt::remove_cvref_wrap_t<T>;
-
+    const std::array<T, Dim - 1>& cap) const {
   ASSERT(cube_half_length_.has_value() !=
              (rotated_focus == make_array<Dim, double>(0.0)),
          "The rotated focus should be zero for a centered Wedge and non-zero "
          "for an offset Wedge.");
   const bool zero_offset = not cube_half_length_.has_value();
 
-  std::array<ReturnType, Dim> rho_vec{};
+  std::array<T, Dim> rho_vec{};
   rho_vec[polar_coord] =
       zero_offset
           ? cap[0]
           : (cap[0] - rotated_focus[polar_coord] / cube_half_length_.value());
   rho_vec[radial_coord] =
-      zero_offset ? make_with_value<ReturnType>(cap[0], 1.0)
-                  : make_with_value<ReturnType>(cap[0], 1.0) -
+      zero_offset ? make_with_value<T>(cap[0], 1.0)
+                  : make_with_value<T>(cap[0], 1.0) -
                         rotated_focus[radial_coord] / cube_half_length_.value();
   if constexpr (Dim == 3) {
     rho_vec[azimuth_coord] =
@@ -326,12 +320,9 @@ std::array<tt::remove_cvref_wrap_t<T>, Dim> Wedge<Dim>::get_rho_vec(
 
 template <size_t Dim>
 template <typename T>
-tt::remove_cvref_wrap_t<T> Wedge<Dim>::get_one_over_rho(
-    const std::array<double, Dim>& rotated_focus,
-    const std::array<tt::remove_cvref_wrap_t<T>, Dim - 1>& cap) const {
-  using ReturnType = tt::remove_cvref_wrap_t<T>;
-
-  ReturnType one_over_rho;
+T Wedge<Dim>::get_one_over_rho(const std::array<double, Dim>& rotated_focus,
+                               const std::array<T, Dim - 1>& cap) const {
+  T one_over_rho;
 
   ASSERT(cube_half_length_.has_value() !=
              (rotated_focus == make_array<Dim, double>(0.0)),
@@ -361,7 +352,7 @@ tt::remove_cvref_wrap_t<T> Wedge<Dim>::get_one_over_rho(
 
 template <size_t Dim>
 template <typename T>
-tt::remove_cvref_wrap_t<T> Wedge<Dim>::get_s_factor(const T& zeta) const {
+T Wedge<Dim>::get_s_factor(const T& zeta) const {
   if (radial_distribution_ == Distribution::Linear) {
     return (sphere_zero_ + sphere_rate_ * zeta);
   } else if (radial_distribution_ == Distribution::Logarithmic) {
@@ -383,8 +374,7 @@ tt::remove_cvref_wrap_t<T> Wedge<Dim>::get_s_factor(const T& zeta) const {
 
 template <size_t Dim>
 template <typename T>
-tt::remove_cvref_wrap_t<T> Wedge<Dim>::get_s_factor_deriv(
-    const T& zeta, const T& s_factor) const {
+T Wedge<Dim>::get_s_factor_deriv(const T& zeta, const T& s_factor) const {
   if (radial_distribution_ == Distribution::Linear) {
     return make_with_value<T>(zeta, sphere_rate_);
   } else if (radial_distribution_ == Distribution::Logarithmic) {
@@ -417,8 +407,8 @@ tt::remove_cvref_wrap_t<T> Wedge<Dim>::get_s_factor_deriv(
 
 template <size_t Dim>
 template <typename T>
-tt::remove_cvref_wrap_t<T> Wedge<Dim>::get_generalized_z(
-    const T& zeta, const T& one_over_rho, const T& s_factor) const {
+T Wedge<Dim>::get_generalized_z(const T& zeta, const T& one_over_rho,
+                                const T& s_factor) const {
   if (radial_distribution_ == Distribution::Linear) {
     return s_factor * one_over_rho +
            (scaled_frustum_zero_ + scaled_frustum_rate_ * zeta);
@@ -432,23 +422,20 @@ tt::remove_cvref_wrap_t<T> Wedge<Dim>::get_generalized_z(
 
 template <size_t Dim>
 template <typename T>
-tt::remove_cvref_wrap_t<T> Wedge<Dim>::get_generalized_z(
-    const T& zeta, const T& one_over_rho) const {
+T Wedge<Dim>::get_generalized_z(const T& zeta, const T& one_over_rho) const {
   return get_generalized_z(zeta, one_over_rho, get_s_factor(zeta));
 }
 
 template <size_t Dim>
 template <typename T>
-std::array<tt::remove_cvref_wrap_t<T>, Dim> Wedge<Dim>::get_d_generalized_z(
+std::array<T, Dim> Wedge<Dim>::get_d_generalized_z(
     const T& zeta, const T& one_over_rho, const T& s_factor,
-    const std::array<tt::remove_cvref_wrap_t<T>, Dim - 1>& cap_deriv,
-    const std::array<tt::remove_cvref_wrap_t<T>, Dim>& rho_vec) const {
-  using ReturnType = tt::remove_cvref_wrap_t<T>;
+    const std::array<T, Dim - 1>& cap_deriv,
+    const std::array<T, Dim>& rho_vec) const {
+  const T one_over_rho_cubed = pow<3>(one_over_rho);
+  const T s_factor_over_rho_cubed = s_factor * one_over_rho_cubed;
 
-  const ReturnType one_over_rho_cubed = pow<3>(one_over_rho);
-  const ReturnType s_factor_over_rho_cubed = s_factor * one_over_rho_cubed;
-
-  std::array<ReturnType, Dim> d_generalized_z{};
+  std::array<T, Dim> d_generalized_z{};
   // Polar angle
   d_generalized_z[polar_coord] =
       -s_factor_over_rho_cubed * cap_deriv[0] * rho_vec[polar_coord];
@@ -459,7 +446,7 @@ std::array<tt::remove_cvref_wrap_t<T>, Dim> Wedge<Dim>::get_d_generalized_z(
         sphere_rate_ * one_over_rho + scaled_frustum_rate_;
   } else if (radial_distribution_ == Distribution::Logarithmic or
              radial_distribution_ == Distribution::Inverse) {
-    const ReturnType s_factor_deriv = get_s_factor_deriv(zeta, s_factor);
+    const T s_factor_deriv = get_s_factor_deriv(zeta, s_factor);
     d_generalized_z[radial_coord] = s_factor_deriv * one_over_rho;
   } else {
     ERROR("Unsupported radial distribution: " << radial_distribution_);
@@ -475,15 +462,13 @@ std::array<tt::remove_cvref_wrap_t<T>, Dim> Wedge<Dim>::get_d_generalized_z(
 
 template <size_t Dim>
 template <typename T>
-std::array<tt::remove_cvref_wrap_t<T>, Dim> Wedge<Dim>::operator()(
+std::array<T, Dim> Wedge<Dim>::operator()(
     const std::array<T, Dim>& source_coords) const {
-  using ReturnType = tt::remove_cvref_wrap_t<T>;
-
   // Radial coordinate
-  const ReturnType& zeta = source_coords[radial_coord];
+  const T& zeta = source_coords[radial_coord];
 
   // Polar angle
-  ReturnType xi = source_coords[polar_coord];
+  T xi = source_coords[polar_coord];
   if (halves_to_use_ == WedgeHalves::UpperOnly) {
     xi += 1.0;
     xi *= 0.5;
@@ -492,18 +477,18 @@ std::array<tt::remove_cvref_wrap_t<T>, Dim> Wedge<Dim>::operator()(
     xi *= 0.5;
   }
 
-  std::array<ReturnType, Dim - 1> cap{};
+  std::array<T, Dim - 1> cap{};
   cap[0] = get_cap_angular_function<true>(xi);
   if constexpr (Dim == 3) {
     // Azimuthal angle
-    const ReturnType& eta = source_coords[azimuth_coord];
+    const T& eta = source_coords[azimuth_coord];
     cap[1] = get_cap_angular_function<false>(eta);
   }
 
   const auto rotated_focus =
       discrete_rotation(orientation_of_wedge_.inverse_map(), focal_offset_);
-  const ReturnType one_over_rho = get_one_over_rho<T>(rotated_focus, cap);
-  const ReturnType generalized_z = get_generalized_z(zeta, one_over_rho);
+  const T one_over_rho = get_one_over_rho<T>(rotated_focus, cap);
+  const T generalized_z = get_generalized_z(zeta, one_over_rho);
 
   ASSERT(cube_half_length_.has_value() !=
              (rotated_focus == make_array<Dim, double>(0.0)),
@@ -511,7 +496,7 @@ std::array<tt::remove_cvref_wrap_t<T>, Dim> Wedge<Dim>::operator()(
          "for an offset Wedge.");
   const bool zero_offset = not cube_half_length_.has_value();
 
-  std::array<ReturnType, Dim> physical_coords{};
+  std::array<T, Dim> physical_coords{};
   physical_coords[radial_coord] =
       zero_offset ? generalized_z
                   : generalized_z * (1.0 - rotated_focus[radial_coord] /
@@ -676,15 +661,13 @@ std::optional<std::array<double, Dim>> Wedge<Dim>::inverse(
 
 template <size_t Dim>
 template <typename T>
-tnsr::Ij<tt::remove_cvref_wrap_t<T>, Dim, Frame::NoFrame> Wedge<Dim>::jacobian(
+tnsr::Ij<T, Dim, Frame::NoFrame> Wedge<Dim>::jacobian(
     const std::array<T, Dim>& source_coords) const {
-  using ReturnType = tt::remove_cvref_wrap_t<T>;
-
   // Radial coordinate
-  const ReturnType& zeta = source_coords[radial_coord];
+  const T& zeta = source_coords[radial_coord];
 
   // Polar angle
-  ReturnType xi = source_coords[polar_coord];
+  T xi = source_coords[polar_coord];
   if (halves_to_use_ == WedgeHalves::UpperOnly) {
     xi += 1.0;
     xi *= 0.5;
@@ -693,33 +676,31 @@ tnsr::Ij<tt::remove_cvref_wrap_t<T>, Dim, Frame::NoFrame> Wedge<Dim>::jacobian(
     xi *= 0.5;
   }
 
-  std::array<ReturnType, Dim - 1> cap{};
-  std::array<ReturnType, Dim - 1> cap_deriv{};
+  std::array<T, Dim - 1> cap{};
+  std::array<T, Dim - 1> cap_deriv{};
   cap[0] = get_cap_angular_function<true>(xi);
   cap_deriv[0] = get_deriv_cap_angular_function<true>(xi);
   if constexpr (Dim == 3) {
     // Azimuthal angle
-    const ReturnType& eta = source_coords[azimuth_coord];
+    const T& eta = source_coords[azimuth_coord];
     cap[1] = get_cap_angular_function<false>(eta);
     cap_deriv[1] = get_deriv_cap_angular_function<false>(eta);
   }
 
   const auto rotated_focus =
       discrete_rotation(orientation_of_wedge_.inverse_map(), focal_offset_);
-  const std::array<ReturnType, Dim> rho_vec =
-      get_rho_vec<T>(rotated_focus, cap);
-  const ReturnType one_over_rho = 1.0 / magnitude(rho_vec);
-  const ReturnType s_factor = get_s_factor(zeta);
-  const ReturnType generalized_z =
-      get_generalized_z(zeta, one_over_rho, s_factor);
-  const std::array<ReturnType, Dim> d_generalized_z =
+  const std::array<T, Dim> rho_vec = get_rho_vec<T>(rotated_focus, cap);
+  const T one_over_rho = 1.0 / magnitude(rho_vec);
+  const T s_factor = get_s_factor(zeta);
+  const T generalized_z = get_generalized_z(zeta, one_over_rho, s_factor);
+  const std::array<T, Dim> d_generalized_z =
       get_d_generalized_z(zeta, one_over_rho, s_factor, cap_deriv, rho_vec);
 
   auto jacobian_matrix =
-      make_with_value<tnsr::Ij<ReturnType, Dim, Frame::NoFrame>>(xi, 0.0);
+      make_with_value<tnsr::Ij<T, Dim, Frame::NoFrame>>(xi, 0.0);
 
   // Derivative by polar angle
-  std::array<ReturnType, Dim> dxyz_dxi{};
+  std::array<T, Dim> dxyz_dxi{};
   dxyz_dxi[radial_coord] = rho_vec[radial_coord] * d_generalized_z[polar_coord];
   dxyz_dxi[polar_coord] = rho_vec[polar_coord] * d_generalized_z[polar_coord] +
                           cap_deriv[0] * generalized_z;
@@ -736,7 +717,7 @@ tnsr::Ij<tt::remove_cvref_wrap_t<T>, Dim, Frame::NoFrame> Wedge<Dim>::jacobian(
     }
   }
 
-  std::array<ReturnType, Dim> dX_dlogical =
+  std::array<T, Dim> dX_dlogical =
       discrete_rotation(orientation_of_wedge_, std::move(dxyz_dxi));
   get<0, polar_coord>(jacobian_matrix) = dX_dlogical[0];
   get<1, polar_coord>(jacobian_matrix) = dX_dlogical[1];
@@ -746,7 +727,7 @@ tnsr::Ij<tt::remove_cvref_wrap_t<T>, Dim, Frame::NoFrame> Wedge<Dim>::jacobian(
 
   // Derivative by azimuthal angle
   if constexpr (Dim == 3) {
-    std::array<ReturnType, Dim> dxyz_deta{};
+    std::array<T, Dim> dxyz_deta{};
     dxyz_deta[radial_coord] =
         rho_vec[radial_coord] * d_generalized_z[azimuth_coord];
 
@@ -765,7 +746,7 @@ tnsr::Ij<tt::remove_cvref_wrap_t<T>, Dim, Frame::NoFrame> Wedge<Dim>::jacobian(
   }
 
   // Derivative by radial coordinate
-  std::array<ReturnType, Dim> dxyz_dzeta{};
+  std::array<T, Dim> dxyz_dzeta{};
   dxyz_dzeta[radial_coord] =
       rho_vec[radial_coord] * d_generalized_z[radial_coord];
   dxyz_dzeta[polar_coord] =
@@ -788,15 +769,13 @@ tnsr::Ij<tt::remove_cvref_wrap_t<T>, Dim, Frame::NoFrame> Wedge<Dim>::jacobian(
 
 template <size_t Dim>
 template <typename T>
-tnsr::Ij<tt::remove_cvref_wrap_t<T>, Dim, Frame::NoFrame>
-Wedge<Dim>::inv_jacobian(const std::array<T, Dim>& source_coords) const {
-  using ReturnType = tt::remove_cvref_wrap_t<T>;
-
+tnsr::Ij<T, Dim, Frame::NoFrame> Wedge<Dim>::inv_jacobian(
+    const std::array<T, Dim>& source_coords) const {
   // Radial coordinate
-  const ReturnType& zeta = source_coords[radial_coord];
+  const T& zeta = source_coords[radial_coord];
 
   // Polar angle
-  ReturnType xi = source_coords[polar_coord];
+  T xi = source_coords[polar_coord];
   if (halves_to_use_ == WedgeHalves::UpperOnly) {
     xi += 1.0;
     xi *= 0.5;
@@ -805,40 +784,35 @@ Wedge<Dim>::inv_jacobian(const std::array<T, Dim>& source_coords) const {
     xi *= 0.5;
   }
 
-
-  std::array<ReturnType, Dim - 1> cap{};
-  std::array<ReturnType, Dim - 1> cap_deriv{};
+  std::array<T, Dim - 1> cap{};
+  std::array<T, Dim - 1> cap_deriv{};
   cap[0] = get_cap_angular_function<true>(xi);
   cap_deriv[0] = get_deriv_cap_angular_function<true>(xi);
   if constexpr (Dim == 3) {
     // Azimuthal angle
-    const ReturnType& eta = source_coords[azimuth_coord];
+    const T& eta = source_coords[azimuth_coord];
     cap[1] = get_cap_angular_function<false>(eta);
     cap_deriv[1] = get_deriv_cap_angular_function<false>(eta);
   }
 
   const auto rotated_focus =
       discrete_rotation(orientation_of_wedge_.inverse_map(), focal_offset_);
-  const std::array<ReturnType, Dim> rho_vec =
-      get_rho_vec<T>(rotated_focus, cap);
-  const ReturnType one_over_rho = 1.0 / magnitude(rho_vec);
-  const ReturnType s_factor = get_s_factor(zeta);
-  const ReturnType generalized_z =
-      get_generalized_z(zeta, one_over_rho, s_factor);
-  const ReturnType one_over_generalized_z = 1.0 / generalized_z;
-  const std::array<ReturnType, Dim> d_generalized_z =
+  const std::array<T, Dim> rho_vec = get_rho_vec<T>(rotated_focus, cap);
+  const T one_over_rho = 1.0 / magnitude(rho_vec);
+  const T s_factor = get_s_factor(zeta);
+  const T generalized_z = get_generalized_z(zeta, one_over_rho, s_factor);
+  const T one_over_generalized_z = 1.0 / generalized_z;
+  const std::array<T, Dim> d_generalized_z =
       get_d_generalized_z(zeta, one_over_rho, s_factor, cap_deriv, rho_vec);
-  const ReturnType one_over_d_generalized_z_dzeta =
-      1.0 / d_generalized_z[radial_coord];
-  const ReturnType one_over_rho_z = 1.0 / rho_vec[radial_coord];
-  const ReturnType scaled_z_frustum =
-      scaled_frustum_zero_ + scaled_frustum_rate_ * zeta;
+  const T one_over_d_generalized_z_dzeta = 1.0 / d_generalized_z[radial_coord];
+  const T one_over_rho_z = 1.0 / rho_vec[radial_coord];
+  const T scaled_z_frustum = scaled_frustum_zero_ + scaled_frustum_rate_ * zeta;
 
   auto inv_jacobian_matrix =
-      make_with_value<tnsr::Ij<ReturnType, Dim, Frame::NoFrame>>(xi, 0.0);
+      make_with_value<tnsr::Ij<T, Dim, Frame::NoFrame>>(xi, 0.0);
 
   // Derivatives of polar angle
-  std::array<ReturnType, Dim> dxi_dxyz{};
+  std::array<T, Dim> dxi_dxyz{};
   dxi_dxyz[polar_coord] = 1.0 / (generalized_z * cap_deriv[0]);
   // Implement Scalings:
   if (halves_to_use_ != WedgeHalves::Both) {
@@ -849,10 +823,10 @@ Wedge<Dim>::inv_jacobian(const std::array<T, Dim>& source_coords) const {
       -dxi_dxyz[polar_coord] * one_over_rho_z * rho_vec[polar_coord];
 
   if constexpr (Dim == 3) {
-    dxi_dxyz[azimuth_coord] = make_with_value<ReturnType>(xi, 0.0);
+    dxi_dxyz[azimuth_coord] = make_with_value<T>(xi, 0.0);
   }
 
-  std::array<ReturnType, Dim> dlogical_dX =
+  std::array<T, Dim> dlogical_dX =
       discrete_rotation(orientation_of_wedge_, std::move(dxi_dxyz));
   get<polar_coord, 0>(inv_jacobian_matrix) = dlogical_dX[0];
   get<polar_coord, 1>(inv_jacobian_matrix) = dlogical_dX[1];
@@ -863,10 +837,10 @@ Wedge<Dim>::inv_jacobian(const std::array<T, Dim>& source_coords) const {
   // Derivatives of radial coordinate
 
   // a common term that appears in the Jacobian, see Wedge docs
-  const ReturnType T_factor =
+  const T T_factor =
       s_factor * one_over_d_generalized_z_dzeta * pow<3>(one_over_rho);
 
-  std::array<ReturnType, Dim> dzeta_dxyz{};
+  std::array<T, Dim> dzeta_dxyz{};
   dzeta_dxyz[polar_coord] =
       T_factor * rho_vec[polar_coord] * one_over_generalized_z;
   dzeta_dxyz[radial_coord] =
@@ -887,8 +861,8 @@ Wedge<Dim>::inv_jacobian(const std::array<T, Dim>& source_coords) const {
 
   if constexpr (Dim == 3) {
     // Derivatives of azimuthal angle
-    std::array<ReturnType, Dim> deta_dxyz{};
-    deta_dxyz[polar_coord] = make_with_value<ReturnType>(xi, 0.0);
+    std::array<T, Dim> deta_dxyz{};
+    deta_dxyz[polar_coord] = make_with_value<T>(xi, 0.0);
     deta_dxyz[azimuth_coord] = 1.0 / (generalized_z * cap_deriv[1]);
     deta_dxyz[radial_coord] =
         -deta_dxyz[azimuth_coord] * one_over_rho_z * rho_vec[azimuth_coord];
@@ -1019,26 +993,19 @@ bool operator!=(const Wedge<Dim>& lhs, const Wedge<Dim>& rhs) {
   template bool operator!=(const Wedge<DIM(data)>& lhs,  \
                            const Wedge<DIM(data)>& rhs);
 
-#define INSTANTIATE_DTYPE(_, data)                                     \
-  template std::array<tt::remove_cvref_wrap_t<DTYPE(data)>, DIM(data)> \
-  Wedge<DIM(data)>::operator()(                                        \
-      const std::array<DTYPE(data), DIM(data)>& source_coords) const;  \
-  template tnsr::Ij<tt::remove_cvref_wrap_t<DTYPE(data)>, DIM(data),   \
-                    Frame::NoFrame>                                    \
-  Wedge<DIM(data)>::jacobian(                                          \
-      const std::array<DTYPE(data), DIM(data)>& source_coords) const;  \
-  template tnsr::Ij<tt::remove_cvref_wrap_t<DTYPE(data)>, DIM(data),   \
-                    Frame::NoFrame>                                    \
-  Wedge<DIM(data)>::inv_jacobian(                                      \
+#define INSTANTIATE_DTYPE(_, data)                                          \
+  template std::array<DTYPE(data), DIM(data)> Wedge<DIM(data)>::operator()( \
+      const std::array<DTYPE(data), DIM(data)>& source_coords) const;       \
+  template tnsr::Ij<DTYPE(data), DIM(data), Frame::NoFrame>                 \
+  Wedge<DIM(data)>::jacobian(                                               \
+      const std::array<DTYPE(data), DIM(data)>& source_coords) const;       \
+  template tnsr::Ij<DTYPE(data), DIM(data), Frame::NoFrame>                 \
+  Wedge<DIM(data)>::inv_jacobian(                                           \
       const std::array<DTYPE(data), DIM(data)>& source_coords) const;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE_DIM, (2, 3))
 
-GENERATE_INSTANTIATIONS(
-    INSTANTIATE_DTYPE, (2, 3),
-    (double, DataVector,
-     std::reference_wrapper<const double>,
-     std::reference_wrapper<const DataVector>))
+GENERATE_INSTANTIATIONS(INSTANTIATE_DTYPE, (2, 3), (double, DataVector))
 
 GENERATE_INSTANTIATIONS(INSTANTIATE_DTYPE, (2, 3), MAP_AUTODIFF_TYPES)
 

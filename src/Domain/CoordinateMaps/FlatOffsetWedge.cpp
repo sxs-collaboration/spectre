@@ -13,7 +13,6 @@
 #include "DataStructures/Tensor/EagerMath/DeterminantAndInverse.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Utilities/ConstantExpressions.hpp"
-#include "Utilities/DereferenceWrapper.hpp"
 #include "Utilities/EqualWithinRoundoff.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Serialization/PupStlCpp11.hpp"
@@ -97,16 +96,15 @@ FlatOffsetWedge::FlatOffsetWedge(double lower_face_y_half_width,
 }
 
 template <typename T>
-std::array<tt::remove_cvref_wrap_t<T>, 3> FlatOffsetWedge::operator()(
+std::array<T, 3> FlatOffsetWedge::operator()(
     const std::array<T, 3>& source_coords) const {
-  using ReturnType = tt::remove_cvref_wrap_t<T>;
-  const ReturnType& xi = source_coords[0];
-  const ReturnType& eta = source_coords[1];
-  const ReturnType& zeta = source_coords[2];
-  std::array<ReturnType, 3> target_coords{};
-  ReturnType& x = target_coords[0];
-  ReturnType& y = target_coords[1];
-  ReturnType& z = target_coords[2];
+  const T& xi = source_coords[0];
+  const T& eta = source_coords[1];
+  const T& zeta = source_coords[2];
+  std::array<T, 3> target_coords{};
+  T& x = target_coords[0];
+  T& y = target_coords[1];
+  T& z = target_coords[2];
 
   const double q = 0.5 * lower_face_x_width_ / outer_radius_;
 
@@ -172,16 +170,14 @@ std::optional<std::array<double, 3>> FlatOffsetWedge::inverse(
 }
 
 template <typename T>
-tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame>
-FlatOffsetWedge::jacobian(const std::array<T, 3>& source_coords) const {
-  using ReturnType = tt::remove_cvref_wrap_t<T>;
-  const ReturnType& xi = source_coords[0];
-  const ReturnType& eta = source_coords[1];
-  const ReturnType& zeta = source_coords[2];
+tnsr::Ij<T, 3, Frame::NoFrame> FlatOffsetWedge::jacobian(
+    const std::array<T, 3>& source_coords) const {
+  const T& xi = source_coords[0];
+  const T& eta = source_coords[1];
+  const T& zeta = source_coords[2];
 
   auto jac =
-      make_with_value<tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame>>(
-          dereference_wrapper(source_coords[0]), 0.0);
+      make_with_value<tnsr::Ij<T, 3, Frame::NoFrame>>(source_coords[0], 0.0);
 
   const double q = 0.5 * lower_face_x_width_ / outer_radius_;
 
@@ -218,8 +214,8 @@ FlatOffsetWedge::jacobian(const std::array<T, 3>& source_coords) const {
 }
 
 template <typename T>
-tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame>
-FlatOffsetWedge::inv_jacobian(const std::array<T, 3>& source_coords) const {
+tnsr::Ij<T, 3, Frame::NoFrame> FlatOffsetWedge::inv_jacobian(
+    const std::array<T, 3>& source_coords) const {
   return determinant_and_inverse(jacobian(source_coords)).second;
 }
 
@@ -250,19 +246,15 @@ bool operator!=(const FlatOffsetWedge& lhs, const FlatOffsetWedge& rhs) {
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(0, data)
 
 #define INSTANTIATE(_, data)                                                   \
-  template std::array<tt::remove_cvref_wrap_t<DTYPE(data)>, 3>                 \
-  FlatOffsetWedge::operator()(const std::array<DTYPE(data), 3>& source_coords) \
-      const;                                                                   \
-  template tnsr::Ij<tt::remove_cvref_wrap_t<DTYPE(data)>, 3, Frame::NoFrame>   \
-  FlatOffsetWedge::jacobian(const std::array<DTYPE(data), 3>& source_coords)   \
-      const;                                                                   \
-  template tnsr::Ij<tt::remove_cvref_wrap_t<DTYPE(data)>, 3, Frame::NoFrame>   \
+  template std::array<DTYPE(data), 3> FlatOffsetWedge::operator()(             \
+      const std::array<DTYPE(data), 3>& source_coords) const;                  \
+  template tnsr::Ij<DTYPE(data), 3, Frame::NoFrame> FlatOffsetWedge::jacobian( \
+      const std::array<DTYPE(data), 3>& source_coords) const;                  \
+  template tnsr::Ij<DTYPE(data), 3, Frame::NoFrame>                            \
   FlatOffsetWedge::inv_jacobian(                                               \
       const std::array<DTYPE(data), 3>& source_coords) const;
 
-GENERATE_INSTANTIATIONS(INSTANTIATE, (double, DataVector,
-                                      std::reference_wrapper<const double>,
-                                      std::reference_wrapper<const DataVector>))
+GENERATE_INSTANTIATIONS(INSTANTIATE, (double, DataVector))
 
 #undef DTYPE
 #undef INSTANTIATE

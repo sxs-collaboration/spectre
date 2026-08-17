@@ -6,7 +6,6 @@
 #include <array>
 #include <complex>
 #include <cstddef>
-#include <functional>
 #include <vector>
 
 #include "DataStructures/TaggedTuple.hpp"
@@ -130,15 +129,6 @@ SPECTRE_TEST_CASE("Unit.DataStructures.MakeWithValue",
                     Catch::Matchers::ContainsSubstring(
                         "Cannot get number of points from empty std::vector"));
 #endif  // SPECTRE_DEBUG
-
-  // std::reference_wrapper is only usable as input.
-  {
-    Makeable used_for_size{3, 1.1};
-    check_make_with_value(1.3, std::ref(used_for_size), 1.3);
-    check_make_with_value(Makeable{3, 8.3}, std::ref(used_for_size), 8.3);
-    check_make_with_value(1.3, std::cref(used_for_size), 1.3);
-    check_make_with_value(Makeable{3, 8.3}, std::cref(used_for_size), 8.3);
-  }
 
   test_make_tagged_tuple();
 }

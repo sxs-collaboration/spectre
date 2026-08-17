@@ -10,7 +10,6 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "NumericalAlgorithms/RootFinding/TOMS748.hpp"
-#include "Utilities/DereferenceWrapper.hpp"
 #include "Utilities/EqualWithinRoundoff.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
@@ -69,21 +68,18 @@ CylindricalSphericalShell::CylindricalSphericalShell(const double x_inner_lower,
 }
 
 template <typename T>
-std::array<tt::remove_cvref_wrap_t<T>, 3> CylindricalSphericalShell::operator()(
+std::array<T, 3> CylindricalSphericalShell::operator()(
     const std::array<T, 3>& source_coords) const {
-  using ReturnType = tt::remove_cvref_wrap_t<T>;
-  const ReturnType& xi = source_coords[0];
-  const ReturnType& eta = source_coords[1];
-  const ReturnType& zeta = source_coords[2];
-  const ReturnType alpha = 0.5 * (xi + 1.0);
-  const ReturnType beta = 0.5 * (zeta + 1.0);
-  const ReturnType x_inner =
-      x_inner_lower_ + beta * (x_inner_upper_ - x_inner_lower_);
-  const ReturnType x_outer =
-      x_outer_lower_ + beta * (x_outer_upper_ - x_outer_lower_);
-  const ReturnType r_outer = sqrt(r_sphere_ * r_sphere_ - x_outer * x_outer);
-  const ReturnType x = (1.0 - alpha) * x_inner + alpha * x_outer;
-  const ReturnType r = r_inner_ * (1.0 - alpha) + alpha * r_outer;
+  const T& xi = source_coords[0];
+  const T& eta = source_coords[1];
+  const T& zeta = source_coords[2];
+  const T alpha = 0.5 * (xi + 1.0);
+  const T beta = 0.5 * (zeta + 1.0);
+  const T x_inner = x_inner_lower_ + beta * (x_inner_upper_ - x_inner_lower_);
+  const T x_outer = x_outer_lower_ + beta * (x_outer_upper_ - x_outer_lower_);
+  const T r_outer = sqrt(r_sphere_ * r_sphere_ - x_outer * x_outer);
+  const T x = (1.0 - alpha) * x_inner + alpha * x_outer;
+  const T r = r_inner_ * (1.0 - alpha) + alpha * r_outer;
   return {x, r * cos(eta), r * sin(eta)};
 }
 
@@ -157,35 +153,32 @@ std::optional<std::array<double, 3>> CylindricalSphericalShell::inverse(
 }
 
 template <typename T>
-tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame>
-CylindricalSphericalShell::jacobian(
+tnsr::Ij<T, 3, Frame::NoFrame> CylindricalSphericalShell::jacobian(
     const std::array<T, 3>& source_coords) const {
-  using DataType = tt::remove_cvref_wrap_t<T>;
-  const DataType& xi = source_coords[0];
-  const DataType& eta = source_coords[1];
-  const DataType& zeta = source_coords[2];
-  tnsr::Ij<DataType, 3, Frame::NoFrame> jac{
-      make_with_value<DataType>(dereference_wrapper(xi), 0.0)};
-  const DataType alpha = 0.5 * (xi + 1.0);
-  const DataType beta = 0.5 * (zeta + 1.0);
+  const T& xi = source_coords[0];
+  const T& eta = source_coords[1];
+  const T& zeta = source_coords[2];
+  tnsr::Ij<T, 3, Frame::NoFrame> jac{make_with_value<T>(xi, 0.0)};
+  const T alpha = 0.5 * (xi + 1.0);
+  const T beta = 0.5 * (zeta + 1.0);
   const double delta_x_inner = x_inner_upper_ - x_inner_lower_;
   const double delta_x_outer = x_outer_upper_ - x_outer_lower_;
-  const DataType x_inner = x_inner_lower_ + beta * delta_x_inner;
-  const DataType x_outer = x_outer_lower_ + beta * delta_x_outer;
-  const DataType r_outer = sqrt(r_sphere_ * r_sphere_ - x_outer * x_outer);
-  const DataType r = r_inner_ * (1.0 - alpha) + alpha * r_outer;
+  const T x_inner = x_inner_lower_ + beta * delta_x_inner;
+  const T x_outer = x_outer_lower_ + beta * delta_x_outer;
+  const T r_outer = sqrt(r_sphere_ * r_sphere_ - x_outer * x_outer);
+  const T r = r_inner_ * (1.0 - alpha) + alpha * r_outer;
   // Partial derivatives of x(alpha,beta) and r(alpha,beta):
   //   dx/dxi  = (x_outer - x_inner)/2
   //   dx/dzeta = ((1-alpha)*delta_x_inner + alpha*delta_x_outer)/2
   //   dr/dxi  = (r_outer - r_inner_)/2
   //   dr/dzeta = alpha * (-x_outer/r_outer) * delta_x_outer / 2
-  const DataType dx_dxi = 0.5 * (x_outer - x_inner);
-  const DataType dx_dzeta =
+  const T dx_dxi = 0.5 * (x_outer - x_inner);
+  const T dx_dzeta =
       0.5 * ((1.0 - alpha) * delta_x_inner + alpha * delta_x_outer);
-  const DataType dr_dxi = 0.5 * (r_outer - r_inner_);
-  const DataType dr_dzeta = 0.5 * alpha * (-x_outer / r_outer) * delta_x_outer;
-  const DataType cos_eta = cos(eta);
-  const DataType sin_eta = sin(eta);
+  const T dr_dxi = 0.5 * (r_outer - r_inner_);
+  const T dr_dzeta = 0.5 * alpha * (-x_outer / r_outer) * delta_x_outer;
+  const T cos_eta = cos(eta);
+  const T sin_eta = sin(eta);
   // Row 0: d(x)/d(xi, eta, zeta)
   get<0, 0>(jac) = dx_dxi;
   get<0, 1>(jac) = 0.0;
@@ -202,34 +195,31 @@ CylindricalSphericalShell::jacobian(
 }
 
 template <typename T>
-tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame>
-CylindricalSphericalShell::inv_jacobian(
+tnsr::Ij<T, 3, Frame::NoFrame> CylindricalSphericalShell::inv_jacobian(
     const std::array<T, 3>& source_coords) const {
-  using DataType = tt::remove_cvref_wrap_t<T>;
-  const DataType& xi = source_coords[0];
-  const DataType& eta = source_coords[1];
-  const DataType& zeta = source_coords[2];
-  tnsr::Ij<DataType, 3, Frame::NoFrame> inv_jac{
-      make_with_value<DataType>(dereference_wrapper(xi), 0.0)};
-  const DataType alpha = 0.5 * (xi + 1.0);
-  const DataType beta = 0.5 * (zeta + 1.0);
+  const T& xi = source_coords[0];
+  const T& eta = source_coords[1];
+  const T& zeta = source_coords[2];
+  tnsr::Ij<T, 3, Frame::NoFrame> inv_jac{make_with_value<T>(xi, 0.0)};
+  const T alpha = 0.5 * (xi + 1.0);
+  const T beta = 0.5 * (zeta + 1.0);
   const double delta_x_inner = x_inner_upper_ - x_inner_lower_;
   const double delta_x_outer = x_outer_upper_ - x_outer_lower_;
-  const DataType x_inner = x_inner_lower_ + beta * delta_x_inner;
-  const DataType x_outer = x_outer_lower_ + beta * delta_x_outer;
-  const DataType r_outer = sqrt(r_sphere_ * r_sphere_ - x_outer * x_outer);
-  const DataType r = r_inner_ * (1.0 - alpha) + alpha * r_outer;
-  const DataType dx_dxi = 0.5 * (x_outer - x_inner);
-  const DataType dx_dzeta =
+  const T x_inner = x_inner_lower_ + beta * delta_x_inner;
+  const T x_outer = x_outer_lower_ + beta * delta_x_outer;
+  const T r_outer = sqrt(r_sphere_ * r_sphere_ - x_outer * x_outer);
+  const T r = r_inner_ * (1.0 - alpha) + alpha * r_outer;
+  const T dx_dxi = 0.5 * (x_outer - x_inner);
+  const T dx_dzeta =
       0.5 * ((1.0 - alpha) * delta_x_inner + alpha * delta_x_outer);
-  const DataType dr_dxi = 0.5 * (r_outer - r_inner_);
-  const DataType dr_dzeta = 0.5 * alpha * (-x_outer / r_outer) * delta_x_outer;
-  const DataType cos_eta = cos(eta);
-  const DataType sin_eta = sin(eta);
+  const T dr_dxi = 0.5 * (r_outer - r_inner_);
+  const T dr_dzeta = 0.5 * alpha * (-x_outer / r_outer) * delta_x_outer;
+  const T cos_eta = cos(eta);
+  const T sin_eta = sin(eta);
   // The Jacobian determinant is det(J) = r * D_reduced where
   //   D_reduced = dx_dzeta * dr_dxi - dx_dxi * dr_dzeta.
   // The inverse Jacobian entries follow from the adjugate formula.
-  const DataType D_reduced = dx_dzeta * dr_dxi - dx_dxi * dr_dzeta;
+  const T D_reduced = dx_dzeta * dr_dxi - dx_dxi * dr_dzeta;
   // Row 0: d(xi)/d(x, y, z)
   get<0, 0>(inv_jac) = -dr_dzeta / D_reduced;
   get<0, 1>(inv_jac) = dx_dzeta * cos_eta / D_reduced;
@@ -278,19 +268,16 @@ bool operator!=(const CylindricalSphericalShell& lhs,
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(0, data)
 
 #define INSTANTIATE(_, data)                                                 \
-  template std::array<tt::remove_cvref_wrap_t<DTYPE(data)>, 3>               \
-  CylindricalSphericalShell::operator()(                                     \
+  template std::array<DTYPE(data), 3> CylindricalSphericalShell::operator()( \
       const std::array<DTYPE(data), 3>& source_coords) const;                \
-  template tnsr::Ij<tt::remove_cvref_wrap_t<DTYPE(data)>, 3, Frame::NoFrame> \
+  template tnsr::Ij<DTYPE(data), 3, Frame::NoFrame>                          \
   CylindricalSphericalShell::jacobian(                                       \
       const std::array<DTYPE(data), 3>& source_coords) const;                \
-  template tnsr::Ij<tt::remove_cvref_wrap_t<DTYPE(data)>, 3, Frame::NoFrame> \
+  template tnsr::Ij<DTYPE(data), 3, Frame::NoFrame>                          \
   CylindricalSphericalShell::inv_jacobian(                                   \
       const std::array<DTYPE(data), 3>& source_coords) const;
 
-GENERATE_INSTANTIATIONS(INSTANTIATE, (double, DataVector,
-                                      std::reference_wrapper<const double>,
-                                      std::reference_wrapper<const DataVector>))
+GENERATE_INSTANTIATIONS(INSTANTIATE, (double, DataVector))
 
 #undef DTYPE
 #undef INSTANTIATE

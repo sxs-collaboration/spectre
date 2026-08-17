@@ -6,10 +6,8 @@
 #include "Utilities/Autodiff/Autodiff.hpp"
 
 #ifdef SPECTRE_AUTODIFF
-#define MAP_AUTODIFF_TYPES                                  \
-  (autodiff::SecondOrderDual, autodiff::SecondOrderDualNum, \
-   std::reference_wrapper<const autodiff::SecondOrderDual>, \
-   std::reference_wrapper<const autodiff::SecondOrderDualNum>)
+#define MAP_AUTODIFF_TYPES \
+  (autodiff::SecondOrderDual, autodiff::SecondOrderDualNum)
 #else
 #define MAP_AUTODIFF_TYPES
 #endif

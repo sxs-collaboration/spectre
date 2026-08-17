@@ -17,7 +17,6 @@
 #include "NumericalAlgorithms/SphericalHarmonics/SpherepackIterator.hpp"
 #include "Parallel/FifoCache.hpp"
 #include "Utilities/Gsl.hpp"
-#include "Utilities/TypeTraits/RemoveReferenceWrapper.hpp"
 
 /// \cond
 namespace domain::FunctionsOfTime {
@@ -239,7 +238,7 @@ class Shape {
   Shape& operator=(Shape&& rhs);
 
   template <typename T>
-  std::array<tt::remove_cvref_wrap_t<T>, 3> operator()(
+  std::array<T, 3> operator()(
       const std::array<T, 3>& source_coords, double time,
       const FunctionsOfTimeMap& functions_of_time) const;
 
@@ -248,17 +247,17 @@ class Shape {
       const FunctionsOfTimeMap& functions_of_time) const;
 
   template <typename T>
-  std::array<tt::remove_cvref_wrap_t<T>, 3> frame_velocity(
+  std::array<T, 3> frame_velocity(
       const std::array<T, 3>& source_coords, double time,
       const FunctionsOfTimeMap& functions_of_time) const;
 
   template <typename T>
-  tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame> jacobian(
+  tnsr::Ij<T, 3, Frame::NoFrame> jacobian(
       const std::array<T, 3>& source_coords, double time,
       const FunctionsOfTimeMap& functions_of_time) const;
 
   template <typename T>
-  tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame> inv_jacobian(
+  tnsr::Ij<T, 3, Frame::NoFrame> inv_jacobian(
       const std::array<T, 3>& source_coords, double time,
       const FunctionsOfTimeMap& functions_of_time) const;
 
@@ -304,16 +303,14 @@ class Shape {
   mutable SpherepackCache spherepack_cache_{cache_capacity_};
 
   template <typename T>
-  std::array<tt::remove_cvref_wrap_t<T>, 3> center_coordinates(
-      const std::array<T, 3>& coords) const {
+  std::array<T, 3> center_coordinates(const std::array<T, 3>& coords) const {
     return {coords[0] - center_[0], coords[1] - center_[1],
             coords[2] - center_[2]};
   }
 
   template <typename T>
-  void center_coordinates(
-      gsl::not_null<std::array<tt::remove_cvref_wrap_t<T>, 3>*> result,
-      const std::array<T, 3>& coords) const {
+  void center_coordinates(gsl::not_null<std::array<T, 3>*> result,
+                          const std::array<T, 3>& coords) const {
     for (size_t i = 0; i < 3; ++i) {
       gsl::at(*result, i) = gsl::at(coords, i) - gsl::at(center_, i);
     }

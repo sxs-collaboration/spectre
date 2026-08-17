@@ -11,7 +11,6 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/CoordinateMaps/FocallyLiftedMapHelpers.hpp"
 #include "Utilities/ConstantExpressions.hpp"
-#include "Utilities/DereferenceWrapper.hpp"
 #include "Utilities/EqualWithinRoundoff.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/MakeWithValue.hpp"
@@ -51,17 +50,14 @@ Side::Side(const std::array<double, 3>& center, const double radius,
 }
 
 template <typename T>
-void Side::forward_map(
-    const gsl::not_null<std::array<tt::remove_cvref_wrap_t<T>, 3>*>
-        target_coords,
-    const std::array<T, 3>& source_coords) const {
-  using ReturnType = tt::remove_cvref_wrap_t<T>;
-  const ReturnType& xbar = source_coords[0];
-  const ReturnType& ybar = source_coords[1];
-  const ReturnType& zbar = source_coords[2];
-  ReturnType& x = (*target_coords)[0];
-  ReturnType& y = (*target_coords)[1];
-  ReturnType& z = (*target_coords)[2];
+void Side::forward_map(const gsl::not_null<std::array<T, 3>*> target_coords,
+                       const std::array<T, 3>& source_coords) const {
+  const T& xbar = source_coords[0];
+  const T& ybar = source_coords[1];
+  const T& zbar = source_coords[2];
+  T& x = (*target_coords)[0];
+  T& y = (*target_coords)[1];
+  T& z = (*target_coords)[2];
   // Use z and y as temporary storage to avoid allocations,
   // before setting them to their actual values.
   z = theta_max_ + 0.5 * (theta_min_ - theta_max_) * (1.0 + zbar);
@@ -75,14 +71,12 @@ void Side::forward_map(
 }
 
 template <typename T>
-void Side::jacobian(const gsl::not_null<tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3,
-                                                 Frame::NoFrame>*>
-                        jacobian_out,
-                    const std::array<T, 3>& source_coords) const {
-  using ReturnType = tt::remove_cvref_wrap_t<T>;
-  const ReturnType& xbar = source_coords[0];
-  const ReturnType& ybar = source_coords[1];
-  const ReturnType& zbar = source_coords[2];
+void Side::jacobian(
+    const gsl::not_null<tnsr::Ij<T, 3, Frame::NoFrame>*> jacobian_out,
+    const std::array<T, 3>& source_coords) const {
+  const T& xbar = source_coords[0];
+  const T& ybar = source_coords[1];
+  const T& zbar = source_coords[2];
 
   set_number_of_grid_points(jacobian_out, source_coords);
 
@@ -120,14 +114,12 @@ void Side::jacobian(const gsl::not_null<tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3,
 }
 
 template <typename T>
-void Side::inv_jacobian(const gsl::not_null<tnsr::Ij<tt::remove_cvref_wrap_t<T>,
-                                                     3, Frame::NoFrame>*>
-                            inv_jacobian_out,
-                        const std::array<T, 3>& source_coords) const {
-  using ReturnType = tt::remove_cvref_wrap_t<T>;
-  const ReturnType& xbar = source_coords[0];
-  const ReturnType& ybar = source_coords[1];
-  const ReturnType& zbar = source_coords[2];
+void Side::inv_jacobian(
+    const gsl::not_null<tnsr::Ij<T, 3, Frame::NoFrame>*> inv_jacobian_out,
+    const std::array<T, 3>& source_coords) const {
+  const T& xbar = source_coords[0];
+  const T& ybar = source_coords[1];
+  const T& zbar = source_coords[2];
 
   set_number_of_grid_points(inv_jacobian_out, source_coords);
 
@@ -183,19 +175,16 @@ std::optional<std::array<double, 3>> Side::inverse(
 }
 
 template <typename T>
-void Side::sigma(const gsl::not_null<tt::remove_cvref_wrap_t<T>*> sigma_out,
+void Side::sigma(const gsl::not_null<T*> sigma_out,
                  const std::array<T, 3>& source_coords) const {
   *sigma_out = sqrt(square(source_coords[0]) + square(source_coords[1])) - 1.0;
 }
 
 template <typename T>
-void Side::deriv_sigma(
-    const gsl::not_null<std::array<tt::remove_cvref_wrap_t<T>, 3>*>
-        deriv_sigma_out,
-    const std::array<T, 3>& source_coords) const {
-  using ReturnType = tt::remove_cvref_wrap_t<T>;
-  const ReturnType& xbar = source_coords[0];
-  const ReturnType& ybar = source_coords[1];
+void Side::deriv_sigma(const gsl::not_null<std::array<T, 3>*> deriv_sigma_out,
+                       const std::array<T, 3>& source_coords) const {
+  const T& xbar = source_coords[0];
+  const T& ybar = source_coords[1];
   set_number_of_grid_points(deriv_sigma_out, source_coords);
 
   // Use as temp storage to reduce allocations.
@@ -208,10 +197,8 @@ void Side::deriv_sigma(
 }
 
 template <typename T>
-void Side::dxbar_dsigma(
-    const gsl::not_null<std::array<tt::remove_cvref_wrap_t<T>, 3>*>
-        dxbar_dsigma_out,
-    const std::array<T, 3>& source_coords) const {
+void Side::dxbar_dsigma(const gsl::not_null<std::array<T, 3>*> dxbar_dsigma_out,
+                        const std::array<T, 3>& source_coords) const {
   deriv_sigma(dxbar_dsigma_out, source_coords);
 }
 
@@ -227,8 +214,7 @@ std::optional<double> Side::lambda_tilde(
 
 template <typename T>
 void Side::deriv_lambda_tilde(
-    const gsl::not_null<std::array<tt::remove_cvref_wrap_t<T>, 3>*>
-        deriv_lambda_tilde_out,
+    const gsl::not_null<std::array<T, 3>*> deriv_lambda_tilde_out,
     const std::array<T, 3>& target_coords, const T& lambda_tilde,
     const std::array<double, 3>& projection_point) const {
   FocallyLiftedMapHelpers::d_scale_factor_d_src_point(
@@ -259,46 +245,34 @@ bool operator!=(const Side& lhs, const Side& rhs) { return not(lhs == rhs); }
 // Explicit instantiations
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(0, data)
 
-#define INSTANTIATE(_, data)                                                  \
-  template void Side::forward_map(                                            \
-      const gsl::not_null<                                                    \
-          std::array<tt::remove_cvref_wrap_t<DTYPE(data)>, 3>*>               \
-          target_coords,                                                      \
-      const std::array<DTYPE(data), 3>& source_coords) const;                 \
-  template void Side::jacobian(                                               \
-      const gsl::not_null<                                                    \
-          tnsr::Ij<tt::remove_cvref_wrap_t<DTYPE(data)>, 3, Frame::NoFrame>*> \
-          jacobian_out,                                                       \
-      const std::array<DTYPE(data), 3>& source_coords) const;                 \
-  template void Side::inv_jacobian(                                           \
-      const gsl::not_null<                                                    \
-          tnsr::Ij<tt::remove_cvref_wrap_t<DTYPE(data)>, 3, Frame::NoFrame>*> \
-          inv_jacobian_out,                                                   \
-      const std::array<DTYPE(data), 3>& source_coords) const;                 \
-  template void Side::sigma(                                                  \
-      const gsl::not_null<tt::remove_cvref_wrap_t<DTYPE(data)>*> sigma_out,   \
-      const std::array<DTYPE(data), 3>& source_coords) const;                 \
-  template void Side::deriv_sigma(                                            \
-      const gsl::not_null<                                                    \
-          std::array<tt::remove_cvref_wrap_t<DTYPE(data)>, 3>*>               \
-          deriv_sigma_out,                                                    \
-      const std::array<DTYPE(data), 3>& source_coords) const;                 \
-  template void Side::dxbar_dsigma(                                           \
-      const gsl::not_null<                                                    \
-          std::array<tt::remove_cvref_wrap_t<DTYPE(data)>, 3>*>               \
-          dxbar_dsigma_out,                                                   \
-      const std::array<DTYPE(data), 3>& source_coords) const;                 \
-  template void Side::deriv_lambda_tilde(                                     \
-      const gsl::not_null<                                                    \
-          std::array<tt::remove_cvref_wrap_t<DTYPE(data)>, 3>*>               \
-          deriv_lambda_tilde_out,                                             \
-      const std::array<DTYPE(data), 3>& target_coords,                        \
-      const DTYPE(data) & lambda_tilde,                                       \
+#define INSTANTIATE(_, data)                                                   \
+  template void Side::forward_map(                                             \
+      const gsl::not_null<std::array<DTYPE(data), 3>*> target_coords,          \
+      const std::array<DTYPE(data), 3>& source_coords) const;                  \
+  template void Side::jacobian(                                                \
+      const gsl::not_null<tnsr::Ij<DTYPE(data), 3, Frame::NoFrame>*>           \
+          jacobian_out,                                                        \
+      const std::array<DTYPE(data), 3>& source_coords) const;                  \
+  template void Side::inv_jacobian(                                            \
+      const gsl::not_null<tnsr::Ij<DTYPE(data), 3, Frame::NoFrame>*>           \
+          inv_jacobian_out,                                                    \
+      const std::array<DTYPE(data), 3>& source_coords) const;                  \
+  template void Side::sigma(const gsl::not_null<DTYPE(data)*> sigma_out,       \
+                            const std::array<DTYPE(data), 3>& source_coords)   \
+      const;                                                                   \
+  template void Side::deriv_sigma(                                             \
+      const gsl::not_null<std::array<DTYPE(data), 3>*> deriv_sigma_out,        \
+      const std::array<DTYPE(data), 3>& source_coords) const;                  \
+  template void Side::dxbar_dsigma(                                            \
+      const gsl::not_null<std::array<DTYPE(data), 3>*> dxbar_dsigma_out,       \
+      const std::array<DTYPE(data), 3>& source_coords) const;                  \
+  template void Side::deriv_lambda_tilde(                                      \
+      const gsl::not_null<std::array<DTYPE(data), 3>*> deriv_lambda_tilde_out, \
+      const std::array<DTYPE(data), 3>& target_coords,                         \
+      const DTYPE(data) & lambda_tilde,                                        \
       const std::array<double, 3>& projection_point) const;
 
-GENERATE_INSTANTIATIONS(INSTANTIATE, (double, DataVector,
-                                      std::reference_wrapper<const double>,
-                                      std::reference_wrapper<const DataVector>))
+GENERATE_INSTANTIATIONS(INSTANTIATE, (double, DataVector))
 
 #undef INSTANTIATE
 #undef DTYPE

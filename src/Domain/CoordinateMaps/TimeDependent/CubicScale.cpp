@@ -20,14 +20,12 @@
 #include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
 #include "NumericalAlgorithms/RootFinding/TOMS748.hpp"
 #include "Utilities/ConstantExpressions.hpp"
-#include "Utilities/DereferenceWrapper.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeWithValue.hpp"
 #include "Utilities/StdArrayHelpers.hpp"
 #include "Utilities/StdHelpers.hpp"
-#include "Utilities/TypeTraits/RemoveReferenceWrapper.hpp"
 
 namespace domain::CoordinateMaps::TimeDependent {
 
@@ -48,7 +46,7 @@ CubicScale<Dim>::CubicScale(const double outer_boundary,
 
 template <size_t Dim>
 template <typename T>
-std::array<tt::remove_cvref_wrap_t<T>, Dim> CubicScale<Dim>::operator()(
+std::array<T, Dim> CubicScale<Dim>::operator()(
     const std::array<T, Dim>& source_coords, const double time,
     const std::unordered_map<
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
@@ -57,7 +55,7 @@ std::array<tt::remove_cvref_wrap_t<T>, Dim> CubicScale<Dim>::operator()(
 
   if (functions_of_time_equal_) {
     // optimization for linear radial scaling
-    std::array<tt::remove_cvref_wrap_t<T>, Dim> result{};
+    std::array<T, Dim> result{};
     for (size_t i = 0; i < Dim; ++i) {
       gsl::at(result, i) = a_of_t * gsl::at(source_coords, i);
     }
@@ -66,16 +64,15 @@ std::array<tt::remove_cvref_wrap_t<T>, Dim> CubicScale<Dim>::operator()(
 
   const double b_of_t = functions_of_time.at(f_of_t_b_)->func(time)[0][0];
 
-  tt::remove_cvref_wrap_t<T> rho_squared =
-      square(dereference_wrapper(source_coords[0]));
+  T rho_squared = square(source_coords[0]);
   for (size_t i = 1; i < Dim; ++i) {
-    rho_squared += square(dereference_wrapper(gsl::at(source_coords, i)));
+    rho_squared += square(gsl::at(source_coords, i));
   }
   // Reuse rho^2 allocation
   rho_squared = a_of_t + (b_of_t - a_of_t) * square(one_over_outer_boundary_) *
                              rho_squared;
 
-  std::array<tt::remove_cvref_wrap_t<T>, Dim> result{};
+  std::array<T, Dim> result{};
   for (size_t i = 0; i < Dim - 1; ++i) {
     gsl::at(result, i) = gsl::at(source_coords, i) * rho_squared;
   }
@@ -164,7 +161,7 @@ std::optional<std::array<double, Dim>> CubicScale<Dim>::inverse(
 
 template <size_t Dim>
 template <typename T>
-std::array<tt::remove_cvref_wrap_t<T>, Dim> CubicScale<Dim>::frame_velocity(
+std::array<T, Dim> CubicScale<Dim>::frame_velocity(
     const std::array<T, Dim>& source_coords, const double time,
     const std::unordered_map<
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
@@ -174,7 +171,7 @@ std::array<tt::remove_cvref_wrap_t<T>, Dim> CubicScale<Dim>::frame_velocity(
 
   if (functions_of_time_equal_) {
     // optimization for linear radial scaling
-    std::array<tt::remove_cvref_wrap_t<T>, Dim> result{};
+    std::array<T, Dim> result{};
     for (size_t i = 0; i < Dim; ++i) {
       gsl::at(result, i) = dt_a_of_t * gsl::at(source_coords, i);
     }
@@ -184,16 +181,15 @@ std::array<tt::remove_cvref_wrap_t<T>, Dim> CubicScale<Dim>::frame_velocity(
   const double dt_b_of_t =
       functions_of_time.at(f_of_t_b_)->func_and_deriv(time)[1][0];
 
-  tt::remove_cvref_wrap_t<T> rho_squared =
-      square(dereference_wrapper(source_coords[0]));
+  T rho_squared = square(source_coords[0]);
   for (size_t i = 1; i < Dim; ++i) {
-    rho_squared += square(dereference_wrapper(gsl::at(source_coords, i)));
+    rho_squared += square(gsl::at(source_coords, i));
   }
   // Reuse rho^2 allocation
   rho_squared = dt_a_of_t + (dt_b_of_t - dt_a_of_t) *
                                 square(one_over_outer_boundary_) * rho_squared;
 
-  std::array<tt::remove_cvref_wrap_t<T>, Dim> result{};
+  std::array<T, Dim> result{};
   for (size_t i = 0; i < Dim - 1; ++i) {
     gsl::at(result, i) = gsl::at(source_coords, i) * rho_squared;
   }
@@ -204,8 +200,7 @@ std::array<tt::remove_cvref_wrap_t<T>, Dim> CubicScale<Dim>::frame_velocity(
 
 template <size_t Dim>
 template <typename T>
-tnsr::Ij<tt::remove_cvref_wrap_t<T>, Dim, Frame::NoFrame>
-CubicScale<Dim>::jacobian(
+tnsr::Ij<T, Dim, Frame::NoFrame> CubicScale<Dim>::jacobian(
     const std::array<T, Dim>& source_coords, const double time,
     const std::unordered_map<
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
@@ -214,9 +209,8 @@ CubicScale<Dim>::jacobian(
 
   if (functions_of_time_equal_) {
     // optimization for linear radial scaling
-    auto jac{make_with_value<
-        tnsr::Ij<tt::remove_cvref_wrap_t<T>, Dim, Frame::NoFrame>>(
-        dereference_wrapper(source_coords[0]), 0.0)};
+    auto jac{make_with_value<tnsr::Ij<T, Dim, Frame::NoFrame>>(source_coords[0],
+                                                               0.0)};
     for (size_t i = 0; i < Dim; ++i) {
       jac.get(i, i) = a_of_t;
     }
@@ -225,10 +219,9 @@ CubicScale<Dim>::jacobian(
 
   const double b_of_t = functions_of_time.at(f_of_t_b_)->func(time)[0][0];
 
-  tt::remove_cvref_wrap_t<T> rho_squared =
-      square(dereference_wrapper(source_coords[0]));
+  T rho_squared = square(source_coords[0]);
   for (size_t i = 1; i < Dim; ++i) {
-    rho_squared += square(dereference_wrapper(gsl::at(source_coords, i)));
+    rho_squared += square(gsl::at(source_coords, i));
   }
   const double rho_squared_coeff =
       (b_of_t - a_of_t) * square(one_over_outer_boundary_);
@@ -238,7 +231,7 @@ CubicScale<Dim>::jacobian(
   const double coeff =
       2.0 * (b_of_t - a_of_t) * square(one_over_outer_boundary_);
 
-  tnsr::Ij<tt::remove_cvref_wrap_t<T>, Dim, Frame::NoFrame> jac{};
+  tnsr::Ij<T, Dim, Frame::NoFrame> jac{};
   for (size_t i = 0; i < Dim; ++i) {
     for (size_t j = 0; j < Dim; ++j) {
       if (i == j) {
@@ -256,8 +249,7 @@ CubicScale<Dim>::jacobian(
 
 template <size_t Dim>
 template <typename T>
-tnsr::Ij<tt::remove_cvref_wrap_t<T>, Dim, Frame::NoFrame>
-CubicScale<Dim>::inv_jacobian(
+tnsr::Ij<T, Dim, Frame::NoFrame> CubicScale<Dim>::inv_jacobian(
     const std::array<T, Dim>& source_coords, const double time,
     const std::unordered_map<
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
@@ -266,9 +258,8 @@ CubicScale<Dim>::inv_jacobian(
 
   if (functions_of_time_equal_) {
     // optimization for linear radial scaling
-    auto inv_jac{make_with_value<
-        tnsr::Ij<tt::remove_cvref_wrap_t<T>, Dim, Frame::NoFrame>>(
-        dereference_wrapper(source_coords[0]), 0.0)};
+    auto inv_jac{make_with_value<tnsr::Ij<T, Dim, Frame::NoFrame>>(
+        source_coords[0], 0.0)};
     const double one_over_a = 1.0 / a_of_t;
     for (size_t i = 0; i < Dim; ++i) {
       inv_jac.get(i, i) = one_over_a;
@@ -278,12 +269,11 @@ CubicScale<Dim>::inv_jacobian(
 
   const double b_of_t = functions_of_time.at(f_of_t_b_)->func(time)[0][0];
 
-  tt::remove_cvref_wrap_t<T> rho_squared =
-      square(dereference_wrapper(source_coords[0]));
+  T rho_squared = square(source_coords[0]);
   for (size_t i = 1; i < Dim; ++i) {
-    rho_squared += square(dereference_wrapper(gsl::at(source_coords, i)));
+    rho_squared += square(gsl::at(source_coords, i));
   }
-  tnsr::Ij<tt::remove_cvref_wrap_t<T>, Dim, Frame::NoFrame> inv_jac{};
+  tnsr::Ij<T, Dim, Frame::NoFrame> inv_jac{};
   get<0, 0>(inv_jac) =
       1.0 / (a_of_t + (b_of_t - a_of_t) * square(one_over_outer_boundary_) *
                           rho_squared);
@@ -363,46 +353,41 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
 
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(1, data)
 
-#define INSTANTIATE(_, data)                                           \
-  template std::array<tt::remove_cvref_wrap_t<DTYPE(data)>, DIM(data)> \
-  CubicScale<DIM(data)>::operator()(                                   \
-      const std::array<DTYPE(data), DIM(data)>& source_coords,         \
-      const double time,                                               \
-      const std::unordered_map<                                        \
-          std::string,                                                 \
-          std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&   \
-          functions_of_time) const;                                    \
-  template std::array<tt::remove_cvref_wrap_t<DTYPE(data)>, DIM(data)> \
-  CubicScale<DIM(data)>::frame_velocity(                               \
-      const std::array<DTYPE(data), DIM(data)>& source_coords,         \
-      const double time,                                               \
-      const std::unordered_map<                                        \
-          std::string,                                                 \
-          std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&   \
-          functions_of_time) const;                                    \
-  template tnsr::Ij<tt::remove_cvref_wrap_t<DTYPE(data)>, DIM(data),   \
-                    Frame::NoFrame>                                    \
-  CubicScale<DIM(data)>::jacobian(                                     \
-      const std::array<DTYPE(data), DIM(data)>& source_coords,         \
-      const double time,                                               \
-      const std::unordered_map<                                        \
-          std::string,                                                 \
-          std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&   \
-          functions_of_time) const;                                    \
-  template tnsr::Ij<tt::remove_cvref_wrap_t<DTYPE(data)>, DIM(data),   \
-                    Frame::NoFrame>                                    \
-  CubicScale<DIM(data)>::inv_jacobian(                                 \
-      const std::array<DTYPE(data), DIM(data)>& source_coords,         \
-      const double time,                                               \
-      const std::unordered_map<                                        \
-          std::string,                                                 \
-          std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&   \
+#define INSTANTIATE(_, data)                                         \
+  template std::array<DTYPE(data), DIM(data)>                        \
+  CubicScale<DIM(data)>::operator()(                                 \
+      const std::array<DTYPE(data), DIM(data)>& source_coords,       \
+      const double time,                                             \
+      const std::unordered_map<                                      \
+          std::string,                                               \
+          std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>& \
+          functions_of_time) const;                                  \
+  template std::array<DTYPE(data), DIM(data)>                        \
+  CubicScale<DIM(data)>::frame_velocity(                             \
+      const std::array<DTYPE(data), DIM(data)>& source_coords,       \
+      const double time,                                             \
+      const std::unordered_map<                                      \
+          std::string,                                               \
+          std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>& \
+          functions_of_time) const;                                  \
+  template tnsr::Ij<DTYPE(data), DIM(data), Frame::NoFrame>          \
+  CubicScale<DIM(data)>::jacobian(                                   \
+      const std::array<DTYPE(data), DIM(data)>& source_coords,       \
+      const double time,                                             \
+      const std::unordered_map<                                      \
+          std::string,                                               \
+          std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>& \
+          functions_of_time) const;                                  \
+  template tnsr::Ij<DTYPE(data), DIM(data), Frame::NoFrame>          \
+  CubicScale<DIM(data)>::inv_jacobian(                               \
+      const std::array<DTYPE(data), DIM(data)>& source_coords,       \
+      const double time,                                             \
+      const std::unordered_map<                                      \
+          std::string,                                               \
+          std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>& \
           functions_of_time) const;
 
-GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3),
-                        (double, DataVector,
-                         std::reference_wrapper<const double>,
-                         std::reference_wrapper<const DataVector>))
+GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (double, DataVector))
 #undef DIM
 #undef DTYPE
 #undef INSTANTIATE

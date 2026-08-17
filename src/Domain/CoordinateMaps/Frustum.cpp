@@ -20,7 +20,6 @@
 #include "NumericalAlgorithms/RootFinding/GslMultiRoot.hpp"
 #include "Utilities/Autodiff/Autodiff.hpp"
 #include "Utilities/ConstantExpressions.hpp"
-#include "Utilities/DereferenceWrapper.hpp"
 #include "Utilities/EqualWithinRoundoff.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/ErrorHandling/Exceptions.hpp"
@@ -145,14 +144,12 @@ Frustum::Frustum(const std::array<std::array<double, 2>, 4>& face_vertices,
 }
 
 template <typename T>
-std::array<tt::remove_cvref_wrap_t<T>, 3> Frustum::operator()(
+std::array<T, 3> Frustum::operator()(
     const std::array<T, 3>& source_coords) const {
-  using ReturnType = tt::remove_cvref_wrap_t<T>;
-
-  const ReturnType& xi = source_coords[0];
-  const ReturnType& eta = source_coords[1];
-  const ReturnType& zeta = source_coords[2];
-  ReturnType cap_zeta;
+  const T& xi = source_coords[0];
+  const T& eta = source_coords[1];
+  const T& zeta = source_coords[2];
+  T cap_zeta;
   if (zeta_distribution_ == Distribution::Projective) {
     cap_zeta = (w_minus_ + w_plus_ * zeta) / (w_plus_ + w_minus_ * zeta);
   } else if (zeta_distribution_ == Distribution::Linear) {
@@ -173,53 +170,47 @@ std::array<tt::remove_cvref_wrap_t<T>, 3> Frustum::operator()(
         "Only the distributions Linear, Projective, and Logarithmic are "
         "supported.");
   }
-  const ReturnType& cap_xi_zero =
-      equiangular_map_at_inner_ ? tan(M_PI_4 * xi) : xi;
+  const T& cap_xi_zero = equiangular_map_at_inner_ ? tan(M_PI_4 * xi) : xi;
   const double one_plus_phi_square = 1.0 + phi_ * phi_;
-  const ReturnType& cap_xi_upper =
-      equiangular_map_at_outer_
-          ? one_plus_phi_square * one_over_tan_half_opening_angle_ *
-                    tan(half_opening_angle_ * (xi + phi_) /
-                        one_plus_phi_square) -
-                phi_
-          : xi;
-  const ReturnType& cap_xi_transition = 0.5 * (1.0 + cap_zeta) * cap_xi_upper +
-                                        0.5 * (1.0 - cap_zeta) * cap_xi_zero;
+  const T& cap_xi_upper = equiangular_map_at_outer_
+                              ? one_plus_phi_square *
+                                        one_over_tan_half_opening_angle_ *
+                                        tan(half_opening_angle_ * (xi + phi_) /
+                                            one_plus_phi_square) -
+                                    phi_
+                              : xi;
+  const T& cap_xi_transition = 0.5 * (1.0 + cap_zeta) * cap_xi_upper +
+                               0.5 * (1.0 - cap_zeta) * cap_xi_zero;
 
-  const ReturnType& cap_eta_zero =
-      equiangular_map_at_inner_ ? tan(M_PI_4 * eta) : eta;
-  const ReturnType& cap_eta_upper =
-      equiangular_map_at_outer_ ? tan(M_PI_4 * eta) : eta;
-  const ReturnType& cap_eta_transition =
-      0.5 * (1.0 + cap_zeta) * cap_eta_upper +
-      0.5 * (1.0 - cap_zeta) * cap_eta_zero;
+  const T& cap_eta_zero = equiangular_map_at_inner_ ? tan(M_PI_4 * eta) : eta;
+  const T& cap_eta_upper = equiangular_map_at_outer_ ? tan(M_PI_4 * eta) : eta;
+  const T& cap_eta_transition = 0.5 * (1.0 + cap_zeta) * cap_eta_upper +
+                                0.5 * (1.0 - cap_zeta) * cap_eta_zero;
 
-  ReturnType physical_x =
+  T physical_x =
       sigma_x_ + delta_x_xi_ * cap_xi_transition +
       (delta_x_zeta_ + delta_x_xi_zeta_ * cap_xi_transition) * cap_zeta;
-  ReturnType physical_y =
+  T physical_y =
       sigma_y_ + delta_y_eta_ * cap_eta_transition +
       (delta_y_zeta_ + delta_y_eta_zeta_ * cap_eta_transition) * cap_zeta;
-  ReturnType physical_z = sigma_z_ + delta_z_zeta_ * cap_zeta;
+  T physical_z = sigma_z_ + delta_z_zeta_ * cap_zeta;
   if (sphericity_ > 0.0) {
-    const ReturnType upper_surface_x =
-        sigma_x_ + delta_x_xi_ * cap_xi_upper +
-        (delta_x_zeta_ + delta_x_xi_zeta_ * cap_xi_upper);
-    const ReturnType upper_surface_y =
+    const T upper_surface_x = sigma_x_ + delta_x_xi_ * cap_xi_upper +
+                              (delta_x_zeta_ + delta_x_xi_zeta_ * cap_xi_upper);
+    const T upper_surface_y =
         sigma_y_ + delta_y_eta_ * cap_eta_upper +
         (delta_y_zeta_ + delta_y_eta_zeta_ * cap_eta_upper);
     const double upper_surface_z = sigma_z_ + delta_z_zeta_;
-    const ReturnType upper_surface_r =
+    const T upper_surface_r =
         sqrt(square(upper_surface_x) + square(upper_surface_y) +
              (square(upper_surface_z)));
-    const ReturnType correction_coefficient = 0.5 * sphericity_ *
-                                              (1.0 + cap_zeta) *
-                                              (radius_ / upper_surface_r - 1.0);
+    const T correction_coefficient = 0.5 * sphericity_ * (1.0 + cap_zeta) *
+                                     (radius_ / upper_surface_r - 1.0);
     physical_x += correction_coefficient * upper_surface_x;
     physical_y += correction_coefficient * upper_surface_y;
     physical_z += correction_coefficient * upper_surface_z;
   }
-  std::array<ReturnType, 3> physical_coords{
+  std::array<T, 3> physical_coords{
       {std::move(physical_x), std::move(physical_y), std::move(physical_z)}};
   return discrete_rotation(orientation_of_frustum_, std::move(physical_coords));
 }
@@ -349,21 +340,20 @@ std::optional<std::array<double, 3>> Frustum::inverse(
 }
 
 template <typename T>
-tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame> Frustum::jacobian(
+tnsr::Ij<T, 3, Frame::NoFrame> Frustum::jacobian(
     const std::array<T, 3>& source_coords) const {
-  using ReturnType = tt::remove_cvref_wrap_t<T>;
-  const ReturnType& xi = source_coords[0];
-  const ReturnType& eta = source_coords[1];
-  const ReturnType& zeta = source_coords[2];
-  ReturnType cap_zeta;
-  ReturnType cap_zeta_deriv;
+  const T& xi = source_coords[0];
+  const T& eta = source_coords[1];
+  const T& zeta = source_coords[2];
+  T cap_zeta;
+  T cap_zeta_deriv;
   if (zeta_distribution_ == Distribution::Projective) {
     cap_zeta = (w_minus_ + w_plus_ * zeta) / (w_plus_ + w_minus_ * zeta);
     cap_zeta_deriv = (square(w_plus_) - square(w_minus_)) /
                      square(w_plus_ + zeta * w_minus_);
   } else if (zeta_distribution_ == Distribution::Linear) {
     cap_zeta = zeta;
-    cap_zeta_deriv = make_with_value<ReturnType>(zeta, 1.0);
+    cap_zeta_deriv = make_with_value<T>(zeta, 1.0);
   } else if (zeta_distribution_ == Distribution::Logarithmic) {
     ASSERT(
         zeta_distribution_value_.has_value(),
@@ -381,61 +371,56 @@ tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame> Frustum::jacobian(
         "Only the distributions Linear, Projective, and Logarithmic are "
         "supported.");
   }
-  const ReturnType& cap_xi_zero =
-      equiangular_map_at_inner_ ? tan(M_PI_4 * xi) : xi;
+  const T& cap_xi_zero = equiangular_map_at_inner_ ? tan(M_PI_4 * xi) : xi;
   const double one_plus_phi_square = 1.0 + phi_ * phi_;
-  const ReturnType& cap_xi_upper =
-      equiangular_map_at_outer_
-          ? one_plus_phi_square * one_over_tan_half_opening_angle_ *
-                    tan(half_opening_angle_ * (xi + phi_) /
-                        one_plus_phi_square) -
-                phi_
-          : xi;
-  const ReturnType& cap_xi_transition =
+  const T& cap_xi_upper = equiangular_map_at_outer_
+                              ? one_plus_phi_square *
+                                        one_over_tan_half_opening_angle_ *
+                                        tan(half_opening_angle_ * (xi + phi_) /
+                                            one_plus_phi_square) -
+                                    phi_
+                              : xi;
+  const T& cap_xi_transition =
       (equiangular_map_at_outer_ or equiangular_map_at_inner_)
           ? 0.5 * (1.0 + cap_zeta) * cap_xi_upper +
                 0.5 * (1.0 - cap_zeta) * cap_xi_zero
           : xi;
 
-  const ReturnType& cap_eta_zero =
-      equiangular_map_at_inner_ ? tan(M_PI_4 * eta) : eta;
-  const ReturnType& cap_eta_upper =
-      equiangular_map_at_outer_ ? tan(M_PI_4 * eta) : eta;
-  const ReturnType& cap_eta_transition =
-      0.5 * (1.0 + cap_zeta) * cap_eta_upper +
-      0.5 * (1.0 - cap_zeta) * cap_eta_zero;
+  const T& cap_eta_zero = equiangular_map_at_inner_ ? tan(M_PI_4 * eta) : eta;
+  const T& cap_eta_upper = equiangular_map_at_outer_ ? tan(M_PI_4 * eta) : eta;
+  const T& cap_eta_transition = 0.5 * (1.0 + cap_zeta) * cap_eta_upper +
+                                0.5 * (1.0 - cap_zeta) * cap_eta_zero;
 
-  const ReturnType& cap_xi_zero_deriv =
-      equiangular_map_at_inner_ ? M_PI_4 * (1.0 + square(cap_xi_zero))
-                                : make_with_value<ReturnType>(xi, 1.0);
-  const ReturnType& cap_xi_upper_deriv =
+  const T& cap_xi_zero_deriv = equiangular_map_at_inner_
+                                   ? M_PI_4 * (1.0 + square(cap_xi_zero))
+                                   : make_with_value<T>(xi, 1.0);
+  const T& cap_xi_upper_deriv =
       equiangular_map_at_outer_
           ? one_over_tan_half_opening_angle_ * half_opening_angle_ *
                 (1.0 + square(tan(half_opening_angle_ * (xi + phi_) /
                                   one_plus_phi_square)))
-          : make_with_value<ReturnType>(xi, 1.0);
+          : make_with_value<T>(xi, 1.0);
 
-  const ReturnType& cap_xi_transition_deriv =
+  const T& cap_xi_transition_deriv =
       (equiangular_map_at_inner_ or equiangular_map_at_outer_)
           ? 0.5 * (1.0 + cap_zeta) * cap_xi_upper_deriv +
                 0.5 * (1.0 - cap_zeta) * cap_xi_zero_deriv
-          : make_with_value<ReturnType>(xi, 1.0);
+          : make_with_value<T>(xi, 1.0);
 
-  const ReturnType& cap_eta_zero_deriv =
-      equiangular_map_at_inner_ ? M_PI_4 * (1.0 + square(cap_eta_zero))
-                                : make_with_value<ReturnType>(eta, 1.0);
-  const ReturnType& cap_eta_upper_deriv =
-      equiangular_map_at_outer_ ? M_PI_4 * (1.0 + square(cap_eta_upper))
-                                : make_with_value<ReturnType>(eta, 1.0);
-  const ReturnType& cap_eta_transition_deriv =
+  const T& cap_eta_zero_deriv = equiangular_map_at_inner_
+                                    ? M_PI_4 * (1.0 + square(cap_eta_zero))
+                                    : make_with_value<T>(eta, 1.0);
+  const T& cap_eta_upper_deriv = equiangular_map_at_outer_
+                                     ? M_PI_4 * (1.0 + square(cap_eta_upper))
+                                     : make_with_value<T>(eta, 1.0);
+  const T& cap_eta_transition_deriv =
       (equiangular_map_at_inner_ or equiangular_map_at_outer_)
           ? 0.5 * (1.0 + cap_zeta) * cap_eta_upper_deriv +
                 0.5 * (1.0 - cap_zeta) * cap_eta_zero_deriv
-          : make_with_value<ReturnType>(eta, 1.0);
+          : make_with_value<T>(eta, 1.0);
 
   auto jacobian_matrix =
-      make_with_value<tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame>>(
-          dereference_wrapper(source_coords[0]), 0.0);
+      make_with_value<tnsr::Ij<T, 3, Frame::NoFrame>>(source_coords[0], 0.0);
 
   // dX_dxi
   const auto mapped_xi =
@@ -464,16 +449,15 @@ tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame> Frustum::jacobian(
   }
 
   // dX_dzeta
-  std::array<ReturnType, 3> dX_dzeta = discrete_rotation(
+  std::array<T, 3> dX_dzeta = discrete_rotation(
       orientation_of_frustum_,
-      std::array<ReturnType, 3>{
-          {delta_x_zeta_ + delta_x_xi_zeta_ * cap_xi_transition +
-               (delta_x_xi_ + delta_x_xi_zeta_ * cap_zeta) * 0.5 *
-                   (cap_xi_upper - cap_xi_zero),
-           delta_y_zeta_ + delta_y_eta_zeta_ * cap_eta_transition +
-               (delta_y_eta_ + delta_y_eta_zeta_ * cap_zeta) * 0.5 *
-                   (cap_eta_upper - cap_eta_zero),
-           make_with_value<ReturnType>(zeta, delta_z_zeta_)}});
+      std::array<T, 3>{{delta_x_zeta_ + delta_x_xi_zeta_ * cap_xi_transition +
+                            (delta_x_xi_ + delta_x_xi_zeta_ * cap_zeta) * 0.5 *
+                                (cap_xi_upper - cap_xi_zero),
+                        delta_y_zeta_ + delta_y_eta_zeta_ * cap_eta_transition +
+                            (delta_y_eta_ + delta_y_eta_zeta_ * cap_zeta) *
+                                0.5 * (cap_eta_upper - cap_eta_zero),
+                        make_with_value<T>(zeta, delta_z_zeta_)}});
 
   if (zeta_distribution_ != Distribution::Linear) {
     dX_dzeta[0] *= cap_zeta_deriv;
@@ -486,35 +470,33 @@ tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame> Frustum::jacobian(
   get<2, 2>(jacobian_matrix) = dX_dzeta[2];
 
   if (sphericity_ > 0.0) {
-    const ReturnType flat_frustum_x = sigma_x_ + delta_x_xi_ * cap_xi_upper +
-                                      delta_x_zeta_ +
-                                      delta_x_xi_zeta_ * cap_xi_upper;
+    const T flat_frustum_x = sigma_x_ + delta_x_xi_ * cap_xi_upper +
+                             delta_x_zeta_ + delta_x_xi_zeta_ * cap_xi_upper;
 
-    const ReturnType flat_frustum_y = sigma_y_ + delta_y_eta_ * cap_eta_upper +
-                                      delta_y_zeta_ +
-                                      delta_y_eta_zeta_ * cap_eta_upper;
+    const T flat_frustum_y = sigma_y_ + delta_y_eta_ * cap_eta_upper +
+                             delta_y_zeta_ + delta_y_eta_zeta_ * cap_eta_upper;
 
     const double flat_frustum_z = sigma_z_ + delta_z_zeta_;
 
-    const ReturnType one_over_mag_flat =
+    const T one_over_mag_flat =
         1.0 / sqrt(square(flat_frustum_x) + square(flat_frustum_y) +
                    square(flat_frustum_z));
 
-    const ReturnType flat_frustum_x_hat = flat_frustum_x * one_over_mag_flat;
+    const T flat_frustum_x_hat = flat_frustum_x * one_over_mag_flat;
 
-    const ReturnType flat_frustum_y_hat = flat_frustum_y * one_over_mag_flat;
+    const T flat_frustum_y_hat = flat_frustum_y * one_over_mag_flat;
 
-    const ReturnType flat_frustum_z_hat = flat_frustum_z * one_over_mag_flat;
+    const T flat_frustum_z_hat = flat_frustum_z * one_over_mag_flat;
 
-    const ReturnType r_over_mag_flat = radius_ * one_over_mag_flat;
+    const T r_over_mag_flat = radius_ * one_over_mag_flat;
 
     const double s_over_two = 0.5 * sphericity_;
 
     // delta_dX_dxi
-    std::array<ReturnType, 3> delta_dX_dxi = discrete_rotation(
+    std::array<T, 3> delta_dX_dxi = discrete_rotation(
         orientation_of_frustum_,
         s_over_two * (1.0 + cap_zeta) * (delta_x_xi_ + delta_x_xi_zeta_) *
-            std::array<ReturnType, 3>{
+            std::array<T, 3>{
                 {(r_over_mag_flat * (1.0 - square(flat_frustum_x_hat)) - 1.0),
                  -1.0 * r_over_mag_flat * flat_frustum_y_hat *
                      flat_frustum_x_hat,
@@ -532,10 +514,10 @@ tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame> Frustum::jacobian(
     get<2, 0>(jacobian_matrix) += delta_dX_dxi[2];
 
     // delta_dX_deta
-    std::array<ReturnType, 3> delta_dX_deta = discrete_rotation(
+    std::array<T, 3> delta_dX_deta = discrete_rotation(
         orientation_of_frustum_,
         s_over_two * (1.0 + cap_zeta) * (delta_y_eta_ + delta_y_eta_zeta_) *
-            std::array<ReturnType, 3>{
+            std::array<T, 3>{
                 {-1.0 * r_over_mag_flat * flat_frustum_x_hat *
                      flat_frustum_y_hat,
                  r_over_mag_flat * (1.0 - square(flat_frustum_y_hat)) - 1.0,
@@ -553,12 +535,11 @@ tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame> Frustum::jacobian(
     get<2, 1>(jacobian_matrix) += delta_dX_deta[2];
 
     // delta_dX_dzeta
-    std::array<ReturnType, 3> delta_dX_dzeta = discrete_rotation(
+    std::array<T, 3> delta_dX_dzeta = discrete_rotation(
         orientation_of_frustum_,
         s_over_two * (r_over_mag_flat - 1.0) *
-            std::array<ReturnType, 3>{
-                {flat_frustum_x, flat_frustum_y,
-                 make_with_value<ReturnType>(zeta, flat_frustum_z)}});
+            std::array<T, 3>{{flat_frustum_x, flat_frustum_y,
+                              make_with_value<T>(zeta, flat_frustum_z)}});
 
     if (zeta_distribution_ != Distribution::Linear) {
       delta_dX_dzeta[0] *= cap_zeta_deriv;
@@ -574,7 +555,7 @@ tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame> Frustum::jacobian(
 }
 
 template <typename T>
-tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame> Frustum::inv_jacobian(
+tnsr::Ij<T, 3, Frame::NoFrame> Frustum::inv_jacobian(
     const std::array<T, 3>& source_coords) const {
   const auto jac = jacobian(source_coords);
   return determinant_and_inverse(jac).second;
@@ -699,19 +680,15 @@ bool operator!=(const Frustum& lhs, const Frustum& rhs) {
 // Explicit instantiations
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(0, data)
 
-#define INSTANTIATE(_, data)                                                  \
-  template std::array<tt::remove_cvref_wrap_t<DTYPE(data)>, 3>                \
-  Frustum::operator()(const std::array<DTYPE(data), 3>& source_coords) const; \
-  template tnsr::Ij<tt::remove_cvref_wrap_t<DTYPE(data)>, 3, Frame::NoFrame>  \
-  Frustum::jacobian(const std::array<DTYPE(data), 3>& source_coords) const;   \
-  template tnsr::Ij<tt::remove_cvref_wrap_t<DTYPE(data)>, 3, Frame::NoFrame>  \
-  Frustum::inv_jacobian(const std::array<DTYPE(data), 3>& source_coords)      \
-      const;
+#define INSTANTIATE(_, data)                                               \
+  template std::array<DTYPE(data), 3> Frustum::operator()(                 \
+      const std::array<DTYPE(data), 3>& source_coords) const;              \
+  template tnsr::Ij<DTYPE(data), 3, Frame::NoFrame> Frustum::jacobian(     \
+      const std::array<DTYPE(data), 3>& source_coords) const;              \
+  template tnsr::Ij<DTYPE(data), 3, Frame::NoFrame> Frustum::inv_jacobian( \
+      const std::array<DTYPE(data), 3>& source_coords) const;
 
-GENERATE_INSTANTIATIONS(
-    INSTANTIATE, (double, DataVector,
-                  std::reference_wrapper<const double>,
-                  std::reference_wrapper<const DataVector>))
+GENERATE_INSTANTIATIONS(INSTANTIATE, (double, DataVector))
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, MAP_AUTODIFF_TYPES)
 

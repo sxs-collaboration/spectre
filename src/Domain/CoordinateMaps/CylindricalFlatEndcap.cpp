@@ -9,7 +9,6 @@
 #include "Domain/CoordinateMaps/FocallyLiftedFlatEndcap.hpp"
 #include "Domain/CoordinateMaps/FocallyLiftedMap.hpp"
 #include "Utilities/ConstantExpressions.hpp"
-#include "Utilities/DereferenceWrapper.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Serialization/PupStlCpp11.hpp"
 
@@ -64,7 +63,7 @@ CylindricalFlatEndcap::CylindricalFlatEndcap(
 }
 
 template <typename T>
-std::array<tt::remove_cvref_wrap_t<T>, 3> CylindricalFlatEndcap::operator()(
+std::array<T, 3> CylindricalFlatEndcap::operator()(
     const std::array<T, 3>& source_coords) const {
   return impl_.operator()(source_coords);
 }
@@ -75,14 +74,13 @@ std::optional<std::array<double, 3>> CylindricalFlatEndcap::inverse(
 }
 
 template <typename T>
-tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame>
-CylindricalFlatEndcap::jacobian(const std::array<T, 3>& source_coords) const {
+tnsr::Ij<T, 3, Frame::NoFrame> CylindricalFlatEndcap::jacobian(
+    const std::array<T, 3>& source_coords) const {
   return impl_.jacobian(source_coords);
 }
 
 template <typename T>
-tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame>
-CylindricalFlatEndcap::inv_jacobian(
+tnsr::Ij<T, 3, Frame::NoFrame> CylindricalFlatEndcap::inv_jacobian(
     const std::array<T, 3>& source_coords) const {
   return impl_.inv_jacobian(source_coords);
 }
@@ -101,20 +99,17 @@ bool operator!=(const CylindricalFlatEndcap& lhs,
 // Explicit instantiations
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(0, data)
 
-#define INSTANTIATE(_, data)                                                 \
-  template std::array<tt::remove_cvref_wrap_t<DTYPE(data)>, 3>               \
-  CylindricalFlatEndcap::operator()(                                         \
-      const std::array<DTYPE(data), 3>& source_coords) const;                \
-  template tnsr::Ij<tt::remove_cvref_wrap_t<DTYPE(data)>, 3, Frame::NoFrame> \
-  CylindricalFlatEndcap::jacobian(                                           \
-      const std::array<DTYPE(data), 3>& source_coords) const;                \
-  template tnsr::Ij<tt::remove_cvref_wrap_t<DTYPE(data)>, 3, Frame::NoFrame> \
-  CylindricalFlatEndcap::inv_jacobian(                                       \
+#define INSTANTIATE(_, data)                                             \
+  template std::array<DTYPE(data), 3> CylindricalFlatEndcap::operator()( \
+      const std::array<DTYPE(data), 3>& source_coords) const;            \
+  template tnsr::Ij<DTYPE(data), 3, Frame::NoFrame>                      \
+  CylindricalFlatEndcap::jacobian(                                       \
+      const std::array<DTYPE(data), 3>& source_coords) const;            \
+  template tnsr::Ij<DTYPE(data), 3, Frame::NoFrame>                      \
+  CylindricalFlatEndcap::inv_jacobian(                                   \
       const std::array<DTYPE(data), 3>& source_coords) const;
 
-GENERATE_INSTANTIATIONS(INSTANTIATE, (double, DataVector,
-                                      std::reference_wrapper<const double>,
-                                      std::reference_wrapper<const DataVector>))
+GENERATE_INSTANTIATIONS(INSTANTIATE, (double, DataVector))
 
 #undef DTYPE
 #undef INSTANTIATE

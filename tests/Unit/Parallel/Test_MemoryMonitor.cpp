@@ -30,7 +30,6 @@
 #include "Utilities/Numeric.hpp"
 #include "Utilities/Serialization/Serialize.hpp"
 #include "Utilities/TMPL.hpp"
-#include "Utilities/TypeTraits/RemoveReferenceWrapper.hpp"
 
 namespace {
 template <typename Metavariables>

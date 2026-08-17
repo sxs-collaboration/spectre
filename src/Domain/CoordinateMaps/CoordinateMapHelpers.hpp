@@ -13,10 +13,8 @@
 #include "DataStructures/Tensor/Identity.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
-#include "Utilities/DereferenceWrapper.hpp"
 #include "Utilities/ErrorHandling/FloatingPointExceptions.hpp"
 #include "Utilities/Gsl.hpp"
-#include "Utilities/TypeTraits/RemoveReferenceWrapper.hpp"
 
 namespace domain {
 namespace CoordinateMap_detail {
@@ -124,9 +122,8 @@ auto apply_inverse_map(
   if (LIKELY(not the_map.is_identity())) {
     return the_map.inverse(target_points);
   }
-  using UnwrappedT = tt::remove_cvref_wrap_t<T>;
   std::decay_t<decltype(the_map.inverse(target_points))> result{
-      std::array<UnwrappedT, Dim>{}};
+      std::array<T, Dim>{}};
   for (size_t i = 0; i < target_points.size(); ++i) {
     gsl::at(*result, i) = gsl::at(target_points, i);
   }
@@ -163,9 +160,7 @@ auto apply_frame_velocity(
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
     /*functions_of_time*/,
     const std::false_type /*is_time_independent*/) {
-  return make_array<Map::dim, tt::remove_cvref_wrap_t<T>>(
-      make_with_value<tt::remove_cvref_wrap_t<T>>(
-          dereference_wrapper(source_points[0]), 0.0));
+  return make_array<Map::dim, T>(make_with_value<T>(source_points[0], 0.0));
 }
 
 template <typename T, size_t Dim, typename Map>
@@ -201,7 +196,7 @@ auto apply_jacobian(
   if (LIKELY(not the_map.is_identity())) {
     return the_map.jacobian(source_points);
   }
-  return identity<Dim>(dereference_wrapper(source_points[0]));
+  return identity<Dim>(source_points[0]);
 }
 
 template <typename T, size_t Dim, typename Map>
@@ -223,7 +218,7 @@ auto apply_jacobian(
   if (LIKELY(not the_map.is_identity())) {
     return the_map.jacobian(source_points, t, functions_of_time);
   }
-  return identity<Dim>(dereference_wrapper(source_points[0]));
+  return identity<Dim>(source_points[0]);
 }
 /// @}
 
@@ -240,7 +235,7 @@ auto apply_inverse_jacobian(
   if (LIKELY(not the_map.is_identity())) {
     return the_map.inv_jacobian(source_points);
   }
-  return identity<Dim>(dereference_wrapper(source_points[0]));
+  return identity<Dim>(source_points[0]);
 }
 
 template <typename T, size_t Dim, typename Map>
@@ -262,7 +257,7 @@ auto apply_inverse_jacobian(
   if (LIKELY(not the_map.is_identity())) {
     return the_map.inv_jacobian(source_points, t, functions_of_time);
   }
-  return identity<Dim>(dereference_wrapper(source_points[0]));
+  return identity<Dim>(source_points[0]);
 }
 /// @}
 }  // namespace CoordinateMap_detail

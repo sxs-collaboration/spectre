@@ -14,7 +14,6 @@
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Domain/CoordinateMaps/FocallyLiftedFlatEndcap.hpp"
 #include "Domain/CoordinateMaps/FocallyLiftedMap.hpp"
-#include "Utilities/TypeTraits/RemoveReferenceWrapper.hpp"
 
 /// \cond
 namespace PUP {
@@ -95,18 +94,17 @@ class CylindricalFlatEndcap {
   CylindricalFlatEndcap& operator=(CylindricalFlatEndcap&&) = default;
 
   template <typename T>
-  std::array<tt::remove_cvref_wrap_t<T>, 3> operator()(
-      const std::array<T, 3>& source_coords) const;
+  std::array<T, 3> operator()(const std::array<T, 3>& source_coords) const;
 
   std::optional<std::array<double, 3>> inverse(
       const std::array<double, 3>& target_coords) const;
 
   template <typename T>
-  tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame> jacobian(
+  tnsr::Ij<T, 3, Frame::NoFrame> jacobian(
       const std::array<T, 3>& source_coords) const;
 
   template <typename T>
-  tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame> inv_jacobian(
+  tnsr::Ij<T, 3, Frame::NoFrame> inv_jacobian(
       const std::array<T, 3>& source_coords) const;
 
   // NOLINTNEXTLINE(google-runtime-references)
