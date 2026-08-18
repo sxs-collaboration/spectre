@@ -54,12 +54,7 @@ template <typename SystemBoundaryConditionBaseClass>
 struct Cartoon final : public SystemBoundaryConditionBaseClass,
                        public MarkAsCartoon {
  public:
-  using options = tmpl::list<>;
-  static constexpr Options::String help{
-      "Cartoon boundary condition, to be used in systems that do not implement "
-      "Subcell.\n\nNote: This should never be used as an external boundary, it "
-      "is only used on specific cartoon-system boundaries that are "
-      "automatically handled in the domain creators."};
+  static constexpr bool factory_creatable = false;
   static std::string name() { return "Cartoon"; }
 
   Cartoon() = default;
