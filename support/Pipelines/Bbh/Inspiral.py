@@ -20,6 +20,10 @@ from spectre.support.Schedule import schedule, scheduler_options
 logger = logging.getLogger(__name__)
 
 INSPIRAL_INPUT_FILE_TEMPLATE = Path(__file__).parent / "Inspiral.yaml"
+# Executable of the next pipeline step. It is named here rather than read out
+# of the step's input file template, because which executable that step runs is
+# the caller's choice, and a caller can substitute a different one.
+RINGDOWN_EXECUTABLE = "EvolveGhSingleBlackHole"
 
 # Resolution levels defined in terms of p-refinement
 # To be replaced once AMR is used.
@@ -545,11 +549,18 @@ def start_inspiral(
         # make this smarter later (e.g. scale with the number of elements).
         scheduler_kwargs["num_procs"] = 180
 
+    # Copy the ringdown executable to the bin directory as well, so the
+    # handoff to it doesn't have to reach back into the build directory
+    copy_extra_executables = (
+        [RINGDOWN_EXECUTABLE] if continue_with_ringdown else []
+    )
+
     # Schedule!
     return schedule(
         inspiral_input_file_template,
         **inspiral_params,
         **scheduler_kwargs,
+        copy_extra_executables=copy_extra_executables,
         continue_with_ringdown=continue_with_ringdown,
         eccentricity_control=eccentricity_control,
         id_input_file_path=Path(id_input_file_path).resolve(),

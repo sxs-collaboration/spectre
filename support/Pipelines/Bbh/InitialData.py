@@ -19,6 +19,11 @@ from spectre.support.Schedule import schedule, scheduler_options
 logger = logging.getLogger(__name__)
 
 ID_INPUT_FILE_TEMPLATE = Path(__file__).parent / "InitialData.yaml"
+# Executables of the later pipeline steps. They are named here rather than read
+# out of the steps' input file templates, because which executable a step runs
+# is the caller's choice, and a caller can substitute a different one.
+INSPIRAL_EXECUTABLE = "EvolveGhBinaryBlackHole"
+RINGDOWN_EXECUTABLE = "EvolveGhSingleBlackHole"
 
 TargetParams = Literal[
     "MassRatio",
@@ -370,11 +375,18 @@ def generate_id(
         {"TargetParams": target_params}
     ).strip()
 
+    # Copy the executables of the later pipeline steps to the bin directory
+    # too, so the handoff to them doesn't reach back into the build directory
+    copy_extra_executables = (
+        [INSPIRAL_EXECUTABLE, RINGDOWN_EXECUTABLE] if evolve else []
+    )
+
     # Schedule!
     return schedule(
         id_input_file_template,
         **id_params,
         **scheduler_kwargs,
+        copy_extra_executables=copy_extra_executables,
         control=control,
         evolve=evolve,
         eccentricity_control=eccentricity_control,

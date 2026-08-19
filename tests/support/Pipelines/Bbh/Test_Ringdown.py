@@ -82,6 +82,7 @@ class TestInitialData(unittest.TestCase):
             polynomial_order=5,
             segments_dir=self.test_dir / "Inspiral",
             scheduler=None,
+            create_bin=False,
             submit=False,
             executable=str(self.bin_dir / "EvolveGhBinaryBlackHole"),
         )
@@ -274,6 +275,7 @@ class TestInitialData(unittest.TestCase):
                     "-E",
                     str(self.bin_dir / "EvolveGhSingleBlackHole"),
                     "--no-submit",
+                    "--no-create-bin",
                 ]
             )
         except SystemExit as e:
@@ -297,6 +299,7 @@ class TestInitialData(unittest.TestCase):
                     "-E",
                     str(self.bin_dir / "EvolveGhSingleBlackHole"),
                     "--no-submit",
+                    "--no-create-bin",
                 ]
             )
         except SystemExit as e:

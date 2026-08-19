@@ -126,6 +126,7 @@ class TestInitialData(unittest.TestCase):
                     "-o",
                     str(self.test_dir),
                     "--no-submit",
+                    "--no-create-bin",
                 ]
             )
         except SystemExit as e:
@@ -143,6 +144,7 @@ class TestInitialData(unittest.TestCase):
                     "--evolve",
                     "--eccentricity-control",
                     "--no-submit",
+                    "--no-create-bin",
                 ]
             )
         except SystemExit as e:
@@ -195,7 +197,7 @@ class TestInitialData(unittest.TestCase):
                     "eccentricity_control": True,
                     "negative_expansion_bc": True,
                     "scheduler": "None",
-                    "copy_executable": "None",
+                    "create_bin": False,
                     "submit_script_template": "None",
                     "submit": True,
                 },

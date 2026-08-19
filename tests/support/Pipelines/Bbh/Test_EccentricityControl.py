@@ -139,6 +139,7 @@ class TestEccentricityControl(unittest.TestCase):
             pipeline_dir=self.test_dir,
             plot_output_dir=self.test_dir,
             scheduler=None,
+            create_bin=False,
             submit=False,
         )
 
@@ -156,6 +157,7 @@ class TestEccentricityControl(unittest.TestCase):
                 self.test_dir,
                 "--no-schedule",
                 "--no-submit",
+                "--no-create-bin",
             ],
             catch_exceptions=False,
         )
