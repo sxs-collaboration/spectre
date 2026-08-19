@@ -26,7 +26,8 @@ spectre_add_python_bindings_test(
   "support.BinDirectory"
   Test_BinDirectory.py
   "Python"
-  None)
+  None
+  TIMEOUT 120)
 
 spectre_add_python_bindings_test(
   "support.DirectoryStructure"
@@ -56,4 +57,5 @@ spectre_add_python_bindings_test(
   "support.Python.Schedule"
   Test_Schedule.py
   "Python"
-  None)
+  None
+  TIMEOUT 20)

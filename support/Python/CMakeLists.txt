@@ -22,24 +22,6 @@ spectre_python_add_module(
   Yaml.py
 )
 
-if(MACHINE)
-  message(STATUS "Selected machine: ${MACHINE}")
-  configure_file(
-    ${CMAKE_SOURCE_DIR}/support/Machines/${MACHINE}.yaml
-    ${SPECTRE_PYTHON_PREFIX}/support/Machine.yaml
-    )
-  configure_file(
-    ${CMAKE_SOURCE_DIR}/support/SubmitScripts/SubmitTemplateBase.sh
-    ${SPECTRE_PYTHON_PREFIX}/support/SubmitTemplateBase.sh
-    @ONLY
-    )
-  configure_file(
-    ${CMAKE_SOURCE_DIR}/support/SubmitScripts/${MACHINE}.sh
-    ${SPECTRE_PYTHON_PREFIX}/support/SubmitTemplate.sh
-    @ONLY
-    )
-endif()
-
 # Generate shell completion scripts. These don't usually change, so they are
 # committed to the source code and configured to the build dir. See the
 # [click docs](https://click.palletsprojects.com/shell-completion/)

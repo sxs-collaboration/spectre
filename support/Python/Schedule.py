@@ -12,11 +12,15 @@ from typing import Optional, Sequence, Union
 
 import click
 import jinja2
-import jinja2.meta
 import numpy as np
 import yaml
 from rich.pretty import pretty_repr
 
+from spectre.support.BinDirectory import (
+    BIN_DIR_NAME,
+    SUBMIT_SCRIPT_TEMPLATE,
+    BinDirectory,
+)
 from spectre.support.DirectoryStructure import (
     Checkpoint,
     Segment,
@@ -30,32 +34,39 @@ from spectre.tools.ValidateInputFile import validate_input_file
 from spectre.Visualization.ReadInputFile import find_phase_change
 
 logger = logging.getLogger(__name__)
-
-# CMake configures the submit script templates for the current machine to this
-# path
-default_submit_script_template = Path(__file__).parent / "SubmitTemplate.sh"
+machine = this_machine(raise_exception=False)
 
 
-def _resolve_executable(executable: Union[str, Path]) -> Path:
-    """Look up the 'executable' in the PATH
+def _resolve_executable(
+    executable: Union[str, Path], bin_dir: Optional[BinDirectory] = None
+) -> Path:
+    """The absolute path of the 'executable'
 
+    Looks in the 'bin_dir' first, if one is given, and then in the 'PATH'.
     Raises 'ValueError' if the executable is not found.
+
+    The 'bin_dir' comes first because a simulation that has an executable
+    frozen runs that one, whatever the environment offers.
     """
     logger.debug(f"Resolving executable: {executable}")
+    if bin_dir:
+        in_bin_dir = bin_dir.executable(executable)
+        if in_bin_dir.is_file():
+            return in_bin_dir
     # This default bin dir is already added in spectre.__main__.py, but only
     # when running the CLI. It is the bin dir of the build directory that
-    # contains this script. When running Python code outside the CLI this should
-    # also be the default bin dir.
-    default_bin_dir = Path(__file__).parent.parent.parent.parent.resolve()
-    path = os.environ["PATH"] + ":" + str(default_bin_dir)
+    # contains this script, or the simulation's bin directory when running from
+    # one. When running Python code outside the CLI this should also be the
+    # default bin dir.
+    path = os.environ["PATH"] + ":" + str(BinDirectory.this().path.resolve())
     which_exec = shutil.which(executable, path=path)
-    if not which_exec:
-        raise ValueError(
-            f"Executable not found: {executable}. Make sure it is compiled. To"
-            " look for executables in a specific build directory make sure it"
-            " is in the 'PATH' or use the 'spectre --build-dir / -b' option."
-        )
-    return Path(which_exec).resolve()
+    if which_exec:
+        return Path(which_exec).resolve()
+    raise ValueError(
+        f"Executable not found: {executable}. Make sure it is compiled. To"
+        " look for executables in a specific build directory make sure it"
+        " is in the 'PATH' or use the 'spectre --build-dir / -b' option."
+    )
 
 
 def _write_or_overwrite(
@@ -80,45 +91,6 @@ def _write_or_overwrite(
     path.write_text(text)
 
 
-def _copy_to_dir(src_file: Path, dest_dir: Path, force: bool = False) -> Path:
-    """Copy the 'src_file' to the 'dest_dir', keeping the file name the same
-
-    Returns the path to the new file.
-    """
-    assert src_file.is_file()
-    assert dest_dir.is_dir()
-    if src_file.resolve().parent == dest_dir.resolve():
-        return src_file
-    dest = (dest_dir / src_file.name).resolve()
-    if dest.exists() and not force:
-        raise OSError(
-            f"File already exists at '{dest}'. Retry with "
-            "'force' ('--force' / '-f') to overwrite."
-        )
-    logging.debug(f"Copy file: {src_file} -> {dest}")
-    shutil.copy(src_file, dest)
-    return dest
-
-
-def _copy_submit_script_template(
-    submit_script_template: Path,
-    dest_dir: Path,
-    template_env: jinja2.Environment,
-    force: bool = False,
-) -> Path:
-    dest = _copy_to_dir(submit_script_template, dest_dir, force=force)
-    # Also copy all referenced templates (the "SubmitBase.sh" parent template)
-    syntax_tree = template_env.parse(dest.read_text())
-    for referenced_template in jinja2.meta.find_referenced_templates(
-        syntax_tree
-    ):
-        referenced_template_src = (
-            submit_script_template.resolve().parent / referenced_template
-        )
-        _copy_to_dir(referenced_template_src, dest_dir, force=force)
-    return dest
-
-
 def schedule(
     input_file_template: Union[str, Path],
     scheduler: Optional[Union[str, Sequence]],
@@ -126,7 +98,9 @@ def schedule(
     executable: Optional[Union[str, Path]] = None,
     run_dir: Optional[Union[str, Path]] = None,
     segments_dir: Optional[Union[str, Path]] = None,
-    copy_executable: Optional[bool] = None,
+    create_bin: Optional[bool] = None,
+    bin_dir: Optional[Union[str, Path]] = None,
+    copy_extra_executables: Optional[Sequence[Union[str, Path]]] = None,
     job_name: Optional[str] = None,
     submit_script_template: Optional[Union[str, Path]] = None,
     from_checkpoint: Optional[Union[str, Path, Checkpoint]] = None,
@@ -155,9 +129,54 @@ def schedule(
     'PATH'. If unspecified, the 'Executable' listed in the input file metadata
     is used.
 
-    By default, the executable and submit scripts will be copied to the segments
-    directory to support resubmissions (see below). See the 'copy_executable'
-    argument docs for details on controlling this behavior.
+    # The bin directory
+
+    By default the scheduled job runs from a 'bin' directory of the simulation
+    instead of from the build directory, so that recompiling, switching
+    branches or deleting the build directory can't change or break queued jobs,
+    later segments, or later pipeline steps.
+
+    Which bin directory a run uses is decided by looking for it: the search
+    starts at the 'run_dir' and works outwards, and the nearest hit wins (see
+    'BinDirectory.find'). Runs in subdirectories of a simulation (e.g.
+    eccentricity-control iterations, resolution branches) therefore share its
+    bin directory rather than creating their own. The search never leaves the
+    simulation, so a run tree placed below an unrelated simulation does not pick
+    up that simulation's bin directory. A build directory's 'bin' is a hit like
+    any other: a run tree sitting directly in a build directory runs from it,
+    and nothing is copied.
+
+    Only when the search finds none is one created, and then for the simulation
+    as a whole rather than for this run alone: in the 'pipeline_dir' if there
+    is one, so all steps of a pipeline share it, otherwise in the
+    'segments_dir', otherwise in the 'run_dir'. Its path is recorded in the
+    scheduler context, so later segments find it again. It is created once and
+    never updated implicitly: a file already in it is kept rather than
+    replaced, so moving a running simulation onto new code means replacing
+    files there by hand, at your own risk.
+    Note that creating a bin directory fails if the build is configured with
+    'BUILD_SHARED_LIBS=ON', because such executables load shared libraries out
+    of the build directory and would stop working when it changes.
+
+    The default submit script template is one of the support files next to the
+    bin directory. If you want to change how later segments or pipeline steps
+    are submitted, edit '<simulation>/support/SubmitTemplate.sh'. If you provide
+    a different submit script template (through `--submit-script-template`), its
+    path is passed on to later segments, but it is not copied into the bin
+    directory, so it must remain available at the same path for later segments
+    to find it.
+
+    An executable is looked up in the bin directory before the 'PATH': that is
+    what makes a simulation run the same binary throughout. An executable that
+    the bin directory does not hold yet is resolved in the environment and
+    copied in. To freeze all pipeline executables at the start, provide them to
+    'copy_extra_executables'.
+
+    Running the executable directly (no 'scheduler') does not create a bin
+    directory by default, because nothing runs unsupervised afterwards, but
+    'create_bin' still creates one when it is set explicitly. A direct run does
+    use a bin directory that already exists, and adds its executable to it, so
+    it runs the same copy the scheduled jobs of that simulation do.
 
     # Segments and run directories
 
@@ -170,11 +189,16 @@ def schedule(
 
     \b
     ```sh
-    # Copy of the executable
-    MyExecutable
-    # Copy of the submit script template (base and machine-specific)
-    SubmitTemplateBase.sh
-    SubmitTemplate.sh
+    # Everything the scheduled jobs run from (see above)
+    bin/
+        MyExecutable
+        spectre
+        python/
+    # Support files, copied from the build directory
+    support/
+        Machine.yaml
+        SubmitTemplateBase.sh
+        SubmitTemplate.sh
     # One segment per day
     Segment_0000/
         InputFile.yaml
@@ -206,7 +230,7 @@ def schedule(
           For example, the additional '**kwargs' can include parameters
           controlling resolution in the input file.
         - 'executable_name': Just the name of the executable (basename of the
-          'executable' path).
+          'executable' as given).
 
     2. 'run_dir' and 'segments_dir':
 
@@ -225,6 +249,7 @@ def schedule(
         - 'input_file': Relative path to the configured input file (in the
           'run_dir').
         - 'out_file': Absolute path to the log file (in the 'run_dir').
+        - 'executable': Absolute path to the executable that will run.
         - 'spectre_cli': Absolute path to the SpECTRE CLI.
         - Typical additional parameters used in submit scripts are 'queue' and
           'time_limit'.
@@ -276,21 +301,26 @@ def schedule(
       segments_dir: The directory in which a new segment is created as the
         'run_dir'. Mutually exclusive with 'run_dir'.
         Can be a Jinja template (see above).
-      copy_executable: Copy the executable to the run or segments directory.
-        By default (when set to 'None'):
-          - If '--run-dir' / '-o' is set, don't copy.
-          - If '--segments-dir' / '-O' is set, copy to segments directory to
-            support resubmission.
-        When set to 'True':
-          - If '--run-dir' / '-o' is set, copy to the run directory.
-          - If '--segments-dir' / '-O' is set, copy to segments directory to
-            support resubmission. Still don't copy to individual segments.
-        When set to 'False': Never copy.
+      create_bin: Create a bin directory for the simulation, and run from it.
+        By default (when set to 'None'), create one if a 'pipeline_dir' or a
+        'segments_dir' is set, i.e. for any run that will be continued, and only
+        if a 'scheduler' is used (job submission). When set to 'True', create
+        one also for a plain '--run-dir' / '-o' run. When set to 'False', run
+        from the build directory. This controls only creation: an existing bin
+        directory, here or in an enclosing directory, is used either way.
+      bin_dir: Optional. Path to the simulation's bin directory. Defaults to
+        'bin' in the 'pipeline_dir', 'segments_dir' or 'run_dir' (in that
+        order of preference). Set automatically for later segments, because it
+        is recorded in the context file.
+      copy_extra_executables: Optional. Additional executables to copy into the
+        bin directory, e.g. the executables of later pipeline steps, which
+        have to be there before the handoff to them happens. They are resolved
+        like the 'executable'.
       job_name: Optional. A string describing the job.
         Can be a Jinja template (see above). (Default: executable name)
-      submit_script_template: Optional. Path to a submit script. It will be
-        copied to the 'run_dir' if a 'scheduler' is set. Can be a Jinja template
-        (see above). (Default: value of 'default_submit_script_template')
+      submit_script_template: Optional. Path to a submit script, used as
+        described above. Can be a Jinja template (see above). (Default:
+        'support/SubmitTemplate.sh' next to the bin directory)
       from_checkpoint: Optional. Path to a checkpoint directory.
       input_file_name: Optional. Filename of the input file in the 'run_dir'.
         (Default: basename of the 'input_file_template')
@@ -332,13 +362,10 @@ def schedule(
         input_file_name = input_file_template.resolve().name
     if no_schedule:
         scheduler = None
-    if scheduler and not submit_script_template:
-        submit_script_template = default_submit_script_template
     if isinstance(from_checkpoint, Checkpoint):
         from_checkpoint = from_checkpoint.path
     if from_checkpoint:
         from_checkpoint = Path(from_checkpoint).resolve()
-
     # Snapshot function arguments for template substitutions
     kwargs.update(extra_params)
     del extra_params
@@ -367,7 +394,6 @@ def schedule(
         return
 
     # Resolve number of cores, nodes, etc.
-    machine = this_machine(raise_exception=False)
     num_procs = kwargs.get("num_procs")
     num_nodes = kwargs.get("num_nodes")
     num_slurm_tasks = None
@@ -441,16 +467,18 @@ def schedule(
                 "or list one in the input file metadata "
                 "as 'Executable:'."
             ) from err
-    executable = _resolve_executable(executable)
-    logger.info(f"Running with executable: {executable}")
-    # Only set executable name because the path may change if we copy it later
-    context.update(executable_name=executable.name)
+    # Only the name is needed here, to render the job name and the run
+    # directory. Where the executable actually is gets settled further below,
+    # because that answer depends on the bin directory, which is looked for at
+    # the run directory.
+    executable_name = Path(executable).name
+    context.update(executable_name=executable_name)
 
     # Resolve job_name
     if job_name:
         job_name = template_env.from_string(job_name).render(context).strip()
     else:
-        job_name = executable.name
+        job_name = executable_name
     context.update(job_name=job_name)
 
     # Resolve run_dir and segments_dir
@@ -544,6 +572,62 @@ def schedule(
     logger.info(f"Configure run directory '{run_dir}'")
     run_dir.mkdir(parents=True, exist_ok=True)
 
+    # Resolve the existing bin directory of the simulation. Pipelines pass a
+    # 'pipeline_dir' as an additional parameter, and all steps of a pipeline
+    # share one bin directory.
+    pipeline_dir = kwargs.get("pipeline_dir")
+    if bin_dir:
+        bin_dir = BinDirectory(Path(bin_dir).resolve())
+        if not bin_dir.path.exists():
+            # The recorded path is stale, so the simulation directory was
+            # probably moved or renamed. Fall through to the ordinary look-up
+            # below.
+            logger.warning(
+                "The bin directory recorded for this run does not exist:"
+                f" '{bin_dir.path}'. Looking for another one."
+            )
+            bin_dir = None
+    if not bin_dir:
+        # Look for the simulation's bin directory whether or not there is a
+        # scheduler: a run that executes directly still belongs to the
+        # simulation and uses its executables. 'create_bin' governs only
+        # whether one is created.
+        bin_dir = BinDirectory.find(run_dir)
+        if bin_dir:
+            logger.debug(
+                f"Using the bin directory of the simulation: '{bin_dir.path}'"
+            )
+
+    # Resolve the executables now that the bin directory is known
+    executable = _resolve_executable(executable, bin_dir)
+    extra_executables = [
+        _resolve_executable(extra_executable, bin_dir)
+        for extra_executable in (copy_extra_executables or [])
+    ]
+
+    # Create the bin directory if needed
+    if create_bin is None:
+        create_bin = bool(pipeline_dir or segments_dir) and scheduler
+    if not bin_dir and create_bin:
+        bin_dir = BinDirectory.create(
+            path=(
+                Path(pipeline_dir or segments_dir or run_dir) / BIN_DIR_NAME
+            ).resolve(),
+        )
+    # Now the bin dir is fully resolved
+    if bin_dir:
+        context.update(bin_dir=bin_dir.path)
+    context.update(create_bin=create_bin)
+
+    # Copy the executables into the bin dir if they're not already there, and
+    # update the executable paths to point to the bin dir
+    if bin_dir:
+        executable = bin_dir.add(executable)
+        for extra_executable in extra_executables:
+            bin_dir.add(extra_executable)
+    context.update(executable=executable)
+    logger.info(f"Running with executable: {executable}")
+
     # Configure input file
     input_file_path = run_dir / input_file_name
     context.update(input_file=input_file_name)
@@ -590,10 +674,6 @@ def schedule(
         from spectre.tools.CleanOutput import clean_output
 
         clean_output(input_file=input_file_path, output_dir=run_dir, force=True)
-
-    # Copy executable to run directory if enabled
-    if copy_executable and not segments_dir:
-        executable = _copy_to_dir(executable, run_dir, force=force)
 
     # If requested, run executable directly and return early
     if not scheduler:
@@ -683,28 +763,18 @@ def schedule(
             )
         return process
 
-    # Copy executable to segments directory
-    if (copy_executable or copy_executable is None) and segments_dir:
-        executable = _copy_to_dir(executable, segments_dir, force=force)
-    context.update(executable=executable, copy_executable=copy_executable)
-
-    # Resolve CLI for resubmissions
-    # This is the path of the `spectre` CLI where this script is installed.
-    # We may have to make this more robust for resubmissions if we run into
-    # problems or unexpected behavior.
-    spectre_cli = Path(__file__).parent.parent.parent.parent / "spectre"
-    if spectre_cli:
-        context.update(spectre_cli=spectre_cli)
+    # The CLI that the job calls for resubmissions and handoffs
+    spectre_cli = (bin_dir or BinDirectory.this()).spectre_cli
+    context.update(spectre_cli=spectre_cli)
 
     # Configure submit script
-    submit_script_template = Path(submit_script_template).resolve()
-    if segments_dir:
-        submit_script_template = _copy_submit_script_template(
-            submit_script_template,
-            segments_dir,
-            template_env=template_env,
-            force=force,
-        )
+    # Render from the simulation's frozen support files, or from the build
+    # directory if not available.
+    support_dir = (bin_dir or BinDirectory.this()).support_dir.resolve()
+    if submit_script_template:
+        submit_script_template = Path(submit_script_template).resolve()
+    else:
+        submit_script_template = support_dir / SUBMIT_SCRIPT_TEMPLATE
     context.update(submit_script_template=submit_script_template)
     logger.debug(
         f"Configure submit script template '{submit_script_template}' with"
@@ -712,7 +782,9 @@ def schedule(
     )
     # Use a FileSystemLoader to support template inheritance
     submit_script_template_env = template_env.overlay(
-        loader=jinja2.FileSystemLoader(submit_script_template.parent)
+        loader=jinja2.FileSystemLoader(
+            [submit_script_template.parent, support_dir]
+        )
     )
     rendered_submit_script = submit_script_template_env.get_template(
         submit_script_template.name
@@ -880,22 +952,18 @@ def scheduler_options(f):
         ),
     )
     @click.option(
-        "--copy-executable/--no-copy-executable",
+        "--create-bin/--no-create-bin",
         default=None,
         help=(
-            "Copy the executable to the run or segments directory. "
-            "(1) When no flag is specified: "
-            "If '--run-dir' / '-o' is set, don't copy. "
-            "If '--segments-dir' / '-O' is set, copy to segments "
-            "directory to support resubmission. "
-            "(2) When '--copy-executable' is specified: "
-            "If '--run-dir' / '-o' is set, copy to the run "
-            "directory. "
-            "If '--segments-dir' / '-O' is set, copy to segments "
-            "directory to support resubmission. Still don't copy to "
-            "individual segments. "
-            "(3) When '--no-copy-executable' is specified: "
-            "Never copy."
+            "Create a bin directory for the simulation and run from it (see "
+            "main help text). "
+            "(1) When no flag is specified: create one if the run will be "
+            "continued and submitted, i.e. if a pipeline directory or "
+            "'--segments-dir' / '-O' is set and a scheduler is used. "
+            "(2) When '--create-bin' is specified: create one also for a plain "
+            "'--run-dir' / '-o' run. "
+            "(3) When '--no-create-bin' is specified: run from the build "
+            "directory."
         ),
     )
     @click.option(
@@ -938,10 +1006,8 @@ def scheduler_options(f):
     # Scheduling options
     @click.option(
         "--scheduler",
-        default=("sbatch" if default_submit_script_template.exists() else None),
-        show_default=(
-            True if default_submit_script_template.exists() else "none"
-        ),
+        default=("sbatch" if machine else None),
+        show_default=(True if machine else "none"),
         help="The scheduler invoked to queue jobs on the machine.",
     )
     @click.option(
@@ -952,11 +1018,11 @@ def scheduler_options(f):
     @click.option(
         "--submit-script-template",
         default=None,
-        show_default=str(default_submit_script_template),
+        show_default="support/SubmitTemplate.sh next to the bin directory",
         # No `type=click.Path` because this can be a Jinja template
         help=(
-            "Path to a submit script. "
-            "It will be copied to the 'run_dir'. It can be a [Jinja template]("
+            "Path to a submit script (see main help text). It can be a "
+            "[Jinja template]("
             "https://jinja.palletsprojects.com/en/3.0.x/templates/) "
             "(see main help text for possible placeholders)."
         ),
