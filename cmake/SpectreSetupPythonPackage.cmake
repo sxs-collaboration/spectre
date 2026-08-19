@@ -63,17 +63,12 @@ if (ENABLE_PYTHON)
   # file. Therefore we disable file locking here to avoid crashing simulations.
   # Better solutions are described in H5File.hpp.
   string(APPEND PYTHON_EXEC_ENV_VARS " HDF5_USE_FILE_LOCKING=FALSE")
-  configure_file(
-    "${CMAKE_SOURCE_DIR}/cmake/SpectrePythonExecutable.sh"
-    "${CMAKE_BINARY_DIR}/tmp/spectre")
-  file(COPY "${CMAKE_BINARY_DIR}/tmp/spectre"
-    DESTINATION "${CMAKE_BINARY_DIR}/bin"
-    FILE_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ
-      GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
 
+  # '@ONLY' because the script uses shell '${...}' expansions that CMake must
+  # not touch
   configure_file(
     "${CMAKE_SOURCE_DIR}/cmake/SpectrePythonExecutable.sh"
-    "${CMAKE_BINARY_DIR}/tmp/spectre")
+    "${CMAKE_BINARY_DIR}/tmp/spectre" @ONLY)
   file(COPY "${CMAKE_BINARY_DIR}/tmp/spectre"
     DESTINATION "${CMAKE_BINARY_DIR}/bin"
     FILE_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ
@@ -84,7 +79,7 @@ if (ENABLE_PYTHON)
   set(PYTHON_EXE_COMMAND "")
   configure_file(
     "${CMAKE_SOURCE_DIR}/cmake/SpectrePythonExecutable.sh"
-    "${CMAKE_BINARY_DIR}/tmp/python-spectre")
+    "${CMAKE_BINARY_DIR}/tmp/python-spectre" @ONLY)
   file(COPY "${CMAKE_BINARY_DIR}/tmp/python-spectre"
     DESTINATION "${CMAKE_BINARY_DIR}/bin"
     FILE_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ

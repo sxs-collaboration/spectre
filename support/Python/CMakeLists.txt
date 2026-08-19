@@ -10,6 +10,7 @@ particular supercomputer" OFF)
 spectre_python_add_module(
   support
   PYTHON_FILES
+  BinDirectory.py
   CheckSpecImport.py
   CliExceptions.py
   DirectoryStructure.py
