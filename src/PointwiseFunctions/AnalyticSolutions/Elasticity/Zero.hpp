@@ -7,10 +7,12 @@
 #include <pup.h>
 
 #include "DataStructures/DataBox/Prefixes.hpp"
+#include "DataStructures/DataVector.hpp"
 #include "DataStructures/TaggedTuple.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Elliptic/Systems/Elasticity/Tags.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
+#include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Options/String.hpp"
 #include "PointwiseFunctions/InitialDataUtilities/AnalyticSolution.hpp"
 #include "Utilities/MakeWithValue.hpp"
@@ -64,6 +66,15 @@ class Zero : public elliptic::analytic_data::AnalyticSolution {
                                                    supported_tags>>::value == 0,
                   "The requested tag is not supported");
     return {make_with_value<typename RequestedTags::type>(x, 0.)...};
+  }
+
+  template <typename... RequestedTags>
+  tuples::TaggedTuple<RequestedTags...> variables(
+      const tnsr::I<DataVector, Dim>& x, const Mesh<Dim>& /*mesh*/,
+      const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
+                            Frame::Inertial>& /*inv_jacobian*/,
+      tmpl::list<RequestedTags...> meta) const {
+    return variables(x, meta);
   }
 };
 

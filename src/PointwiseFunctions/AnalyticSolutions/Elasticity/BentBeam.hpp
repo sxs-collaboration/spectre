@@ -8,10 +8,12 @@
 
 #include "DataStructures/CachedTempBuffer.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
+#include "DataStructures/DataVector.hpp"
 #include "DataStructures/TaggedTuple.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Elliptic/Systems/Elasticity/Tags.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
+#include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Options/String.hpp"
 #include "PointwiseFunctions/Elasticity/ConstitutiveRelations/IsotropicHomogeneous.hpp"
 #include "PointwiseFunctions/InitialDataUtilities/AnalyticSolution.hpp"
@@ -187,6 +189,15 @@ class BentBeam : public elliptic::analytic_data::AnalyticSolution {
     const VarsComputer computer{x, length_, height_, bending_moment_,
                                 constitutive_relation_};
     return {cache.get_var(computer, RequestedTags{})...};
+  }
+
+  template <typename... RequestedTags>
+  tuples::TaggedTuple<RequestedTags...> variables(
+      const tnsr::I<DataVector, 2>& x, const Mesh<2>& /*mesh*/,
+      const InverseJacobian<DataVector, 2, Frame::ElementLogical,
+                            Frame::Inertial>& /*inv_jacobian*/,
+      tmpl::list<RequestedTags...> meta) const {
+    return variables(x, meta);
   }
 
   /// NOLINTNEXTLINE(google-runtime-references)

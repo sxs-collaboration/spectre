@@ -62,6 +62,7 @@
 #include "PointwiseFunctions/AnalyticSolutions/Poisson/Lorentzian.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Poisson/ProductOfSinusoids.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
+#include "PointwiseFunctions/InitialDataUtilities/InitialGuess.hpp"
 #include "Utilities/CartesianProduct.hpp"
 #include "Utilities/Literals.hpp"
 #include "Utilities/MakeArray.hpp"
@@ -190,6 +191,8 @@ struct Metavariables {
             tmpl::list<elliptic::BoundaryConditions::AnalyticSolution<System>>>,
         tmpl::pair<elliptic::analytic_data::AnalyticSolution,
                    tmpl::list<AnalyticSolution>>,
+        tmpl::pair<elliptic::analytic_data::InitialGuess,
+                   tmpl::list<AnalyticSolution>>,
         tmpl::pair<AnalyticSolution, tmpl::list<AnalyticSolution>>,
         tmpl::pair<::amr::Criterion, tmpl::list<::amr::Criteria::Random<
                                          amr::Criteria::Type::p>>>>;
@@ -278,8 +281,7 @@ struct ModifiedPoissonSystemLinearized
   struct modify_boundary_data {
     static constexpr double omega = 0.3;
     using argument_tags = tmpl::list<>;
-    using argument_tags_linearized =
-        tmpl::list<domain::Tags::Element<Dim>>;
+    using argument_tags_linearized = tmpl::list<domain::Tags::Element<Dim>>;
     static void apply(
         const gsl::not_null<Scalar<DataVector>*> /*field*/,
         const gsl::not_null<Scalar<DataVector>*> /*normal_dot_flux*/,
@@ -345,6 +347,15 @@ struct ModifiedPoissonSolution : Poisson::Solutions::ProductOfSinusoids<Dim> {
     }
     return vars;
   }
+
+  template <typename... RequestedTags>
+  tuples::TaggedTuple<RequestedTags...> variables(
+      const tnsr::I<DataVector, Dim>& x, const Mesh<Dim>& /*mesh*/,
+      const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
+                            Frame::Inertial>& /*inv_jacobian*/,
+      tmpl::list<RequestedTags...> meta) const {
+    return variables(x, meta);
+  }
 };
 
 template <size_t Dim>
@@ -374,14 +385,13 @@ struct ModifiedPoissonSolutionLinearized
     if (get<0>(x)[0] <= 0.5) {
       return vars;
     }
-    constexpr double omega = ModifiedPoissonSystemLinearized<
-        Dim>::modify_boundary_data::omega;
+    constexpr double omega =
+        ModifiedPoissonSystemLinearized<Dim>::modify_boundary_data::omega;
     const DataVector mult_factor = 1. - omega * (get<0>(x) - 0.5);
     using FieldTag = Poisson::Tags::Field<DataVector>;
     using DerivTag =
         ::Tags::deriv<FieldTag, tmpl::size_t<Dim>, Frame::Inertial>;
-    using FluxTag =
-        ::Tags::Flux<FieldTag, tmpl::size_t<Dim>, Frame::Inertial>;
+    using FluxTag = ::Tags::Flux<FieldTag, tmpl::size_t<Dim>, Frame::Inertial>;
     using SourceTag = ::Tags::FixedSource<FieldTag>;
     // Parent's field and d_x field are needed for the derivative and source
     // perturbations regardless of which tags were requested.
@@ -397,8 +407,7 @@ struct ModifiedPoissonSolutionLinearized
     if constexpr (tmpl::list_contains_v<tmpl::list<RequestedTags...>,
                                         DerivTag>) {
       auto& d = get<DerivTag>(vars);
-      d.get(0) =
-          -omega * get(parent_field) + mult_factor * parent_deriv.get(0);
+      d.get(0) = -omega * get(parent_field) + mult_factor * parent_deriv.get(0);
       for (size_t i = 1; i < Dim; ++i) {
         d.get(i) *= mult_factor;
       }
@@ -406,8 +415,7 @@ struct ModifiedPoissonSolutionLinearized
     if constexpr (tmpl::list_contains_v<tmpl::list<RequestedTags...>,
                                         FluxTag>) {
       auto& f = get<FluxTag>(vars);
-      f.get(0) =
-          -omega * get(parent_field) + mult_factor * parent_deriv.get(0);
+      f.get(0) = -omega * get(parent_field) + mult_factor * parent_deriv.get(0);
       for (size_t i = 1; i < Dim; ++i) {
         f.get(i) *= mult_factor;
       }
@@ -421,10 +429,26 @@ struct ModifiedPoissonSolutionLinearized
     }
     return vars;
   }
+
+  template <typename... RequestedTags>
+  tuples::TaggedTuple<RequestedTags...> variables(
+      const tnsr::I<DataVector, Dim>& x, const Mesh<Dim>& /*mesh*/,
+      const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
+                            Frame::Inertial>& /*inv_jacobian*/,
+      tmpl::list<RequestedTags...> meta) const {
+    return variables(x, meta);
+  }
 };
 
 template <size_t Dim>
-PUP::able::PUP_ID ModifiedPoissonSolutionLinearized<Dim>::my_PUP_ID = 0;  // NOLINT
+PUP::able::PUP_ID ModifiedPoissonSolutionLinearized<Dim>::my_PUP_ID =  // NOLINT
+    0;
+
+template <typename System, bool Linearized, typename AnalyticSolution>
+void register_dg_operator_factory_classes() {
+  register_factory_classes_with_charm<
+      Metavariables<System, Linearized, AnalyticSolution>>();
+}
 
 template <
     typename System, bool Linearized, typename AnalyticSolution,
@@ -463,7 +487,8 @@ void test_dg_operator(
   using PrimalFluxesVars = typename primal_fluxes_vars_tag::type;
   using OperatorAppliedToVars = typename operator_applied_to_vars_tag::type;
 
-  register_factory_classes_with_charm<Metavars>();
+  register_dg_operator_factory_classes<System, Linearized,
+                                       AnalyticSolution>();
 
   // Get a list of all elements in the domain
   auto domain = domain_creator.create_domain();
@@ -507,9 +532,8 @@ void test_dg_operator(
       ::Verbosity::Debug}};
 
   // DataBox shortcuts
-  const auto get_tag =
-      [&runner](auto tag_v,
-                const ElementId<Dim>& local_element_id) -> const auto& {
+  const auto get_tag = [&runner](
+      auto tag_v, const ElementId<Dim>& local_element_id) -> const auto& {
     using tag = std::decay_t<decltype(tag_v)>;
     return ActionTesting::get_databox_tag<element_array, tag>(runner,
                                                               local_element_id);
@@ -954,6 +978,8 @@ SPECTRE_TEST_CASE("Unit.Elliptic.DG.Operator", "[Unit][Elliptic]") {
         Poisson::FirstOrderSystem<2, Poisson::Geometry::FlatCartesian>;
     const Poisson::Solutions::ProductOfSinusoids<2> analytic_solution{
         {{M_PI, M_PI}}};
+    register_dg_operator_factory_classes<
+        system, true, Poisson::Solutions::ProductOfSinusoids<2>>();
     {
       INFO("Regression tests");
       const auto dirichlet_bc =
@@ -1082,6 +1108,8 @@ SPECTRE_TEST_CASE("Unit.Elliptic.DG.Operator", "[Unit][Elliptic]") {
         Poisson::FirstOrderSystem<3, Poisson::Geometry::FlatCartesian>;
     const Poisson::Solutions::ProductOfSinusoids<3> analytic_solution{
         {{M_PI, M_PI, M_PI}}};
+    register_dg_operator_factory_classes<
+        system, true, Poisson::Solutions::ProductOfSinusoids<3>>();
     {
       INFO("Regression tests");
       const auto dirichlet_bc =
@@ -1387,6 +1415,9 @@ SPECTRE_TEST_CASE("Unit.Elliptic.DG.Operator", "[Unit][Elliptic]") {
                                   ComplexDataVector>;
     const Poisson::Solutions::ProductOfSinusoids<2, ComplexDataVector>
         analytic_solution{{{M_PI, M_PI}}};
+    register_dg_operator_factory_classes<
+        system, true,
+        Poisson::Solutions::ProductOfSinusoids<2, ComplexDataVector>>();
     const auto dirichlet_bc =
         elliptic::BoundaryConditions::AnalyticSolution<system>{
             analytic_solution.get_clone(),
@@ -1602,6 +1633,8 @@ SPECTRE_TEST_CASE("Unit.Elliptic.DG.Operator", "[Unit][Elliptic]") {
     INFO("2D with modified boundary data");
     using system = ModifiedPoissonSystem<2>;
     const ModifiedPoissonSolution<2> analytic_solution{{{M_PI, M_PI}}};
+    register_dg_operator_factory_classes<system, true,
+                                         ModifiedPoissonSolution<2>>();
     const auto dirichlet_bc =
         elliptic::BoundaryConditions::AnalyticSolution<system>{
             analytic_solution.get_clone(),
@@ -1640,6 +1673,8 @@ SPECTRE_TEST_CASE("Unit.Elliptic.DG.Operator", "[Unit][Elliptic]") {
     using system = ModifiedPoissonSystemLinearized<2>;
     const ModifiedPoissonSolutionLinearized<2> analytic_solution{
         {{M_PI, M_PI}}};
+    register_dg_operator_factory_classes<
+        system, true, ModifiedPoissonSolutionLinearized<2>>();
     const auto dirichlet_bc =
         elliptic::BoundaryConditions::AnalyticSolution<system>{
             analytic_solution.get_clone(),

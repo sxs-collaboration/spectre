@@ -8,10 +8,12 @@
 #include <pup.h>
 
 #include "DataStructures/DataBox/Prefixes.hpp"
+#include "DataStructures/DataVector.hpp"
 #include "DataStructures/TaggedTuple.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Elliptic/Systems/Xcts/Tags.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
+#include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Options/Context.hpp"
 #include "Options/String.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
@@ -178,6 +180,15 @@ class ConstantDensityStar : public elliptic::analytic_data::AnalyticSolution {
                   "The generic template will recurse infinitely if only one "
                   "tag is being retrieved.");
     return {tuples::get<Tags>(variables(x, tmpl::list<Tags>{}))...};
+  }
+
+  template <typename... Tags>
+  tuples::TaggedTuple<Tags...> variables(
+      const tnsr::I<DataVector, 3, Frame::Inertial>& x, const Mesh<3>& /*mesh*/,
+      const InverseJacobian<DataVector, 3, Frame::ElementLogical,
+                            Frame::Inertial>& /*inv_jacobian*/,
+      tmpl::list<Tags...> meta) const {
+    return variables(x, meta);
   }
 
   // NOLINTNEXTLINE(google-runtime-references)

@@ -9,6 +9,7 @@ spectre_target_sources(
   ${LIBRARY}
   PRIVATE
   Binary.cpp
+  KerrSchildTeukolsky.cpp
   )
 
 spectre_target_headers(
@@ -19,6 +20,7 @@ spectre_target_headers(
   Binary.hpp
   CommonVariables.hpp
   CommonVariables.tpp
+  KerrSchildTeukolsky.hpp
   )
 
 target_link_libraries(
@@ -27,10 +29,13 @@ target_link_libraries(
   DataStructures
   ErrorHandling
   GeneralRelativity
+  GeneralRelativitySolutions
   Hydro
+  InitialDataUtilities
   LinearOperators
   Options
   Parallel
+  Serialization
   Spectral
   Utilities
   PRIVATE

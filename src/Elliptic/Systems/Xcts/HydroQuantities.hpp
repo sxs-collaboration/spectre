@@ -3,6 +3,9 @@
 
 #pragma once
 
+#include <type_traits>
+#include <utility>
+
 #include "DataStructures/DataBox/MetavariablesTag.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
@@ -18,6 +21,19 @@
 #include "Utilities/TMPL.hpp"
 
 namespace Xcts::Tags {
+namespace detail {
+
+template <typename Background, typename HydroTags, typename = std::void_t<>>
+struct has_hydro_variables : std::false_type {};
+
+template <typename Background, typename HydroTags>
+struct has_hydro_variables<
+    Background, HydroTags,
+    std::void_t<decltype(std::declval<const Background&>().variables(
+        std::declval<const tnsr::I<DataVector, 3, Frame::Inertial>&>(),
+        HydroTags{}))>> : std::true_type {};
+
+}  // namespace detail
 
 /*!
  * \brief MHD quantities retrieved from the background solution/data
@@ -46,8 +62,14 @@ struct HydroQuantitiesCompute : ::Tags::Variables<HydroTags>, db::ComputeTag {
                  elliptic::analytic_data::Background>;
     *result = call_with_dynamic_type<Variables<HydroTags>, background_classes>(
         &background, [&inertial_coords](const auto* const derived) {
-          return variables_from_tagged_tuple(
-              derived->variables(inertial_coords, HydroTags{}));
+          using derived_type = std::decay_t<decltype(*derived)>;
+          if constexpr (detail::has_hydro_variables<derived_type,
+                                                    HydroTags>::value) {
+            return variables_from_tagged_tuple(
+                derived->variables(inertial_coords, HydroTags{}));
+          } else {
+            return Variables<HydroTags>{inertial_coords.begin()->size(), 0.};
+          }
         });
   }
 };

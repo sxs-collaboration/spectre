@@ -17,6 +17,9 @@
 #include "Elliptic/Actions/InitializeAnalyticSolution.hpp"
 #include "Elliptic/Tags.hpp"
 #include "Framework/ActionTesting.hpp"
+#include "NumericalAlgorithms/Spectral/Basis.hpp"
+#include "NumericalAlgorithms/Spectral/Mesh.hpp"
+#include "NumericalAlgorithms/Spectral/Quadrature.hpp"
 #include "Options/Protocols/FactoryCreation.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/Phase.hpp"
@@ -59,13 +62,17 @@ struct AnalyticSolution : elliptic::analytic_data::AnalyticSolution {
   }
 
   static tuples::TaggedTuple<ScalarFieldTag> variables(
-      const tnsr::I<DataVector, 1>& x, tmpl::list<ScalarFieldTag> /*meta*/) {
+      const tnsr::I<DataVector, 1>& x, const Mesh<1>& /*mesh*/,
+      const InverseJacobian<DataVector, 1, Frame::ElementLogical,
+                            Frame::Inertial>& /*inv_jacobian*/,
+      tmpl::list<ScalarFieldTag> /*meta*/) {
     Scalar<DataVector> solution{2. * get<0>(x)};
     return {std::move(solution)};
   }
 };
 
 PUP::able::PUP_ID AnalyticSolution::my_PUP_ID = 0;  // NOLINT
+
 #pragma GCC diagnostic pop
 
 template <typename Metavariables>
@@ -78,7 +85,9 @@ struct ElementArray {
           Parallel::Phase::Initialization,
           tmpl::list<ActionTesting::InitializeDataBox<
               tmpl::list<domain::Tags::Mesh<1>,
-                         domain::Tags::Coordinates<1, Frame::Inertial>>>>>,
+                         domain::Tags::Coordinates<1, Frame::Inertial>,
+                         domain::Tags::InverseJacobian<1, Frame::ElementLogical,
+                                                       Frame::Inertial>>>>>,
 
       Parallel::PhaseActions<
           Parallel::Phase::Testing,
@@ -112,24 +121,28 @@ void test_initialize_analytic_solution(
 
   register_factory_classes_with_charm<metavariables>();
 
-  const auto initialize_analytic_solution =
-      [&inertial_coords](auto analytic_solution_or_data) {
-        ActionTesting::MockRuntimeSystem<metavariables> runner{
-            {std::move(analytic_solution_or_data)}};
-        const ElementId<1> element_id{0};
-        ActionTesting::emplace_component_and_initialize<element_array>(
-            &runner, element_id, {Mesh<1>{}, inertial_coords});
-        ActionTesting::set_phase(make_not_null(&runner),
-                                 Parallel::Phase::Testing);
-        for (size_t i = 0; i < 2; ++i) {
-          ActionTesting::next_action<element_array>(make_not_null(&runner),
-                                                    element_id);
-        }
-        return ActionTesting::get_databox_tag<
-            element_array,
-            ::Tags::AnalyticSolutions<tmpl::list<ScalarFieldTag>>>(
-            runner, element_id);
-      };
+  const auto initialize_analytic_solution = [&inertial_coords](
+                                                auto
+                                                    analytic_solution_or_data) {
+    ActionTesting::MockRuntimeSystem<metavariables> runner{
+        {std::move(analytic_solution_or_data)}};
+    const ElementId<1> element_id{0};
+    const Mesh<1> mesh{4, Spectral::Basis::Legendre,
+                       Spectral::Quadrature::GaussLobatto};
+    InverseJacobian<DataVector, 1, Frame::ElementLogical, Frame::Inertial>
+        inv_jacobian{static_cast<size_t>(4)};
+    get<0, 0>(inv_jacobian) = 3.;
+    ActionTesting::emplace_component_and_initialize<element_array>(
+        &runner, element_id, {mesh, inertial_coords, inv_jacobian});
+    ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Testing);
+    for (size_t i = 0; i < 2; ++i) {
+      ActionTesting::next_action<element_array>(make_not_null(&runner),
+                                                element_id);
+    }
+    return ActionTesting::get_databox_tag<
+        element_array, ::Tags::AnalyticSolutions<tmpl::list<ScalarFieldTag>>>(
+        runner, element_id);
+  };
 
   {
     INFO("Analytic solution is available");

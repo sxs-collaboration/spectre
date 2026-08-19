@@ -83,6 +83,7 @@
 #include "PointwiseFunctions/Elasticity/ConstitutiveRelations/IsotropicHomogeneous.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "PointwiseFunctions/InitialDataUtilities/Background.hpp"
+#include "PointwiseFunctions/InitialDataUtilities/InitialGuess.hpp"
 #include "Utilities/CartesianProduct.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeArray.hpp"
@@ -512,6 +513,7 @@ struct Metavariables {
             tmpl::list<elliptic::BoundaryConditions::AnalyticSolution<System>>>,
         tmpl::pair<elliptic::analytic_data::Background,
                    tmpl::list<RandomBackground<volume_dim>>>,
+        tmpl::pair<elliptic::analytic_data::InitialGuess, tmpl::list<>>,
         tmpl::pair<::amr::Criterion, tmpl::list<::amr::Criteria::Random<
                                          amr::Criteria::Type::p>>>>;
   };
@@ -636,8 +638,7 @@ void test_subdomain_operator(
         logging::Tags::Verbosity<::amr::OptionTags::AmrGroup>>{
         std::move(domain), domain_creator.functions_of_time(),
         std::move(boundary_conditions),
-        std::make_unique<RandomBackground<Dim>>(),
-        std::vector<size_t>{},
+        std::make_unique<RandomBackground<Dim>>(), std::vector<size_t>{},
         max_overlap.has_value() ? std::optional<size_t>(overlap) : std::nullopt,
         ::Verbosity::Verbose, penalty_parameter, use_massive_dg_operator,
         quadrature, ::dg::Formulation::StrongInertial, std::move(amr_criteria),

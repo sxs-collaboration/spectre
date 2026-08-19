@@ -14,6 +14,7 @@
 #include "Options/Protocols/FactoryCreation.hpp"
 #include "PointwiseFunctions/AnalyticData/Xcts/Binary.hpp"
 #include "PointwiseFunctions/AnalyticData/Xcts/CommonVariables.hpp"
+#include "PointwiseFunctions/AnalyticData/Xcts/KerrSchildTeukolsky.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Xcts/Factory.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Xcts/TovStar.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/PolytropicFluid.hpp"
@@ -21,6 +22,7 @@
 #include "PointwiseFunctions/Hydro/Tags.hpp"
 #include "PointwiseFunctions/InitialDataUtilities/AnalyticSolution.hpp"
 #include "PointwiseFunctions/InitialDataUtilities/Background.hpp"
+#include "Utilities/MakeWithValue.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -32,6 +34,7 @@ struct Metavariables {
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
     using analytic_solutions_and_data = tmpl::push_back<
         Xcts::Solutions::all_analytic_solutions,
+        Xcts::AnalyticData::KerrSchildTeukolsky,
         Xcts::AnalyticData::Binary<elliptic::analytic_data::AnalyticSolution,
                                    Xcts::Solutions::all_analytic_solutions>>;
     using factory_classes =
@@ -77,6 +80,28 @@ SPECTRE_TEST_CASE("Unit.Elliptic.Systems.Xcts.HydroQuantities",
   const auto expected_u_i =
       make_with_value<tnsr::i<DataVector, 3>>(DataVector(2), 0.);
   CHECK_ITERABLE_APPROX(u_i, expected_u_i);
+
+  const auto no_hydro_box = db::create<
+      db::AddSimpleTags<
+          domain::Tags::Coordinates<3, Frame::Inertial>,
+          gr::Tags::SpatialMetric<DataVector, 3>,
+          elliptic::Tags::Background<elliptic::analytic_data::Background>,
+          Parallel::Tags::MetavariablesImpl<Metavariables>>,
+      db::AddComputeTags<Tags::HydroQuantitiesCompute<hydro_tags>,
+                         hydro::Tags::LowerSpatialFourVelocityCompute>>(
+      x, spatial_metric,
+      std::unique_ptr<elliptic::analytic_data::Background>(
+          std::make_unique<AnalyticData::KerrSchildTeukolsky>()),
+      Metavariables{});
+  tmpl::for_each<hydro_tags>([&no_hydro_box, &x](const auto tag_v) {
+    using tag = tmpl::type_from<std::decay_t<decltype(tag_v)>>;
+    CHECK_ITERABLE_APPROX(db::get<tag>(no_hydro_box),
+                          make_with_value<typename tag::type>(x, 0.));
+  });
+  const auto no_hydro_u_i = db::get<
+      hydro::Tags::LowerSpatialFourVelocity<DataVector, 3, Frame::Inertial>>(
+      no_hydro_box);
+  CHECK_ITERABLE_APPROX(no_hydro_u_i, expected_u_i);
 }
 
 }  // namespace Xcts
