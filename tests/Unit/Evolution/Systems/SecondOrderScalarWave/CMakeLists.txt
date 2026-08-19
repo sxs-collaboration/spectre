@@ -4,6 +4,7 @@
 set(LIBRARY Test_SecondOrderScalarWave)
 
 set(LIBRARY_SOURCES
+  Test_Characteristics.cpp
   Test_System.cpp
   Test_Tags.cpp
   Test_TimeDerivative.cpp
@@ -15,6 +16,10 @@ target_link_libraries(
   ${LIBRARY}
   PRIVATE
   DataStructures
+  Domain
+  MathFunctions
   SecondOrderScalarWave
+  Spectral
   Utilities
+  WaveEquationSolutions
   )
