@@ -142,10 +142,8 @@ void FilledSphere<TagList>::set_blocks_to_filter(
 
 template <typename TagList>
 bool FilledSphere<TagList>::supports_mesh(const Mesh<3>& mesh) const {
-  return mesh.basis() == make_array<3>(Spectral::Basis::ZernikeB3) and
-         mesh.quadrature() == std::array{Spectral::Quadrature::GaussRadauUpper,
-                                         Spectral::Quadrature::Gauss,
-                                         Spectral::Quadrature::Equiangular} and
+  return mesh.basis() == Spectral::bases::full_sphere and
+         mesh.quadrature() == Spectral::quadratures::full_sphere and
          (mesh.extents(0) == mesh.extents(1) / 2 + 1 and
           2 * mesh.extents(1) - 1 == mesh.extents(2));
 }
