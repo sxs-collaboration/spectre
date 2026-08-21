@@ -183,6 +183,7 @@ RUN apt-get update -y \
         libgsl-dev \
         libssl-dev \
         libhdf5-dev hdf5-tools \
+        libfftw3-dev \
         libarpack2-dev \
         libbenchmark-dev \
     && if [ ${UBUNTU_VERSION} = 18.04 ]; then \
@@ -226,17 +227,16 @@ RUN apt-get update -y \
         libboost-thread-dev libboost-tools-dev; \
     fi
 
-# Install Python packages
-# We only install packages that are needed by the build system (e.g. to compile
-# Python bindings or build documentation) or used by Python code that is
-# unit-tested. Any other packages can be installed on-demand.
-# - We use python-is-python3 because on Ubuntu 20.04 /usr/bin/python was removed
-#   to aid in tracking down anything that depends on python 2. However, many
-#   scripts use `/usr/bin/env python` to find python so restore it.
-# - We install h5py explicitly from binary so that cross compilation is quicker.
-COPY support/Python/requirements.txt requirements.txt
-COPY support/Python/dev_requirements.txt dev_requirements.txt
+# Install Python.
+#
+# Set up the Python environment in /opt/venv. It is prepended to the PATH, so
+# `python`, `python3`, `pip` and `pip3` all resolve to it and `pip install` just
+# works. Ubuntu marks its system Python as "externally managed" (PEP 668) and
+# refuses `pip install` into it, so a venv is the supported way to install
+# packages.
 ENV DEBIAN_FRONTEND noninteractive
+ENV VIRTUAL_ENV=/opt/venv
+ENV PATH="${VIRTUAL_ENV}/bin:${PATH}"
 RUN apt-get update -y \
     && if [ ${UBUNTU_VERSION} = 18.04 ]; then \
     apt-get install -y zlib1g-dev libncurses5-dev libgdbm-dev libnss3-dev \
@@ -247,14 +247,22 @@ RUN apt-get update -y \
     && ./configure --enable-optimizations && make ${PARALLEL_MAKE_ARG} \
     && make altinstall && cd ../ \
     && rm -rf ./Python-3.10.1.tgz ./Python-3.10.1 \
-    && python3.10 -m pip install --upgrade pip \
-    && pip3.10 --no-cache-dir install --only-binary=h5py -r requirements.txt \
-    -r dev_requirements.txt; \
+    && python3.10 -m venv "${VIRTUAL_ENV}"; \
     else \
-    apt-get install -y python3-pip python-is-python3 pkg-config \
-    && pip3 --no-cache-dir install --only-binary=h5py -r requirements.txt \
-    -r dev_requirements.txt; \
+    apt-get install -y python3-dev python3-venv pkg-config \
+    && python3 -m venv "${VIRTUAL_ENV}"; \
     fi \
+    && python -m pip install --upgrade pip
+
+# Install Python packages. We only install packages that are needed by the
+# build system (e.g. to compile Python bindings or build documentation) or used
+# by Python code that is unit-tested. Any other packages can be installed
+# on-demand.
+# - Install h5py explicitly from binary so that cross compilation is quicker.
+COPY support/Python/requirements.txt requirements.txt
+COPY support/Python/dev_requirements.txt dev_requirements.txt
+RUN python -m pip --no-cache-dir install --only-binary=h5py \
+        -r requirements.txt -r dev_requirements.txt \
     && rm requirements.txt dev_requirements.txt
 
 # Enable bash-completion by installing it and then adding it to the .bashrc file
