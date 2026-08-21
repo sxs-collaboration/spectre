@@ -1032,7 +1032,6 @@ ${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
       fail-fast: false
       matrix:
         os:
-          - macos-15-intel
           - macos-15
     runs-on: ${{ matrix.os }}
     env:
