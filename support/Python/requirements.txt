@@ -31,3 +31,5 @@ pyyaml
 # Rich: to format CLI output and tracebacks
 rich >= 12.0.0
 scipy
+# SimulationSupport: shared routines for SpEC and SpECTRE
+SimulationSupport @ git+https://github.com/sxs-collaboration/SimulationSupport.git@50e6a22084d955f9d0bbd4285a11c7c05e4d3a04

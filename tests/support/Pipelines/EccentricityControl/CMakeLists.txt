@@ -8,10 +8,4 @@ if (SpEC_FOUND)
     "Python"
     None
     TIMEOUT 60)
-  spectre_add_python_bindings_test(
-    "support.Pipelines.EccentricityControl.InitialOrbitalParameters"
-    Test_InitialOrbitalParameters.py
-    "Python"
-    None
-    TIMEOUT 60)
 endif()
