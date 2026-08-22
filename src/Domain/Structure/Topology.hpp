@@ -40,7 +40,9 @@ namespace domain {
 /// Topology::I1
 ///
 /// \note Currently the hybrid DG-Subcell scheme can be used only in Elements
-/// for which all dimensions have Topology::I1
+/// whose topologies are all among I1, B1Radial, CartoonSphere, and
+/// CartoonCylinder.  Elements with other topologies are automatically treated
+/// as DG-only.
 enum class Topology : uint8_t {
   Uninitialized = 0,
   I1 = 1,

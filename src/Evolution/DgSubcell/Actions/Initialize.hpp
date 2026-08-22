@@ -174,7 +174,10 @@ struct SetSubcellGrid {
                             first_block_id);
         });
 
+    // Non-hypercube topologies (e.g. spherical shells) can never use subcell
+    // and are automatically treated as DG-only.
     const bool subcell_allowed_in_element =
+        fd::dg_mesh_supports_subcell(dg_mesh) and
         not alg::found(subcell_options.only_dg_block_ids(),
                        element.id().block_id()) and
         not bordering_dg_block;

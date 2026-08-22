@@ -101,6 +101,13 @@ struct BackgroundGrVars : tt::ConformsTo<db::protocols::Mutator> {
       const tnsr::I<DataVector, volume_dim, Frame::Inertial>&
           subcell_inertial_coords,
       const bool did_rollback, const T& solution_or_data) {
+    // Skip for elements whose topology does not support subcell.
+    // For non-hypercube elements, fd::mesh() returns the DG mesh unchanged,
+    // so the subcell mesh won't have FiniteDifference basis.
+    if (subcell_mesh.basis(0) != Spectral::Basis::FiniteDifference) {
+      return;
+    }
+
     const size_t num_subcell_pts = subcell_mesh.number_of_grid_points();
 
     if (gsl::at(*subcell_face_gr_vars, 0).number_of_grid_points() != 0) {

@@ -26,6 +26,7 @@
 #include "Evolution/DgSubcell/Actions/Labels.hpp"
 #include "Evolution/DgSubcell/ActiveGrid.hpp"
 #include "Evolution/DgSubcell/GhostData.hpp"
+#include "Evolution/DgSubcell/Mesh.hpp"
 #include "Evolution/DgSubcell/NeighborRdmpAndVolumeData.hpp"
 #include "Evolution/DgSubcell/Projection.hpp"
 #include "Evolution/DgSubcell/RdmpTci.hpp"
@@ -66,6 +67,10 @@ namespace evolution::dg::subcell::Actions {
 /*!
  * \brief Run the troubled-cell indicator on the candidate solution and perform
  * the time step rollback if needed.
+ *
+ * Elements that cannot use subcell (e.g. non-hypercube topology or DG-only
+ * blocks) skip the TCI entirely, set the TCI decision to 0, clear ghost data,
+ * and continue.
  *
  * Interior cells are marked as troubled if
  * `subcell_options.always_use_subcells()` is `true`, or if either the RDMP
@@ -155,13 +160,30 @@ struct TciAndRollback {
                             first_block_id);
         });
 
-    // Subcell is allowed in the element if 2 conditions are met:
-    // (i)  The current element block id is not marked as DG only
-    // (ii) The current element is not bordering a DG only block.
+    // Subcell is allowed in the element if 3 conditions are met:
+    // (i)   The DG mesh topology supports subcell
+    // (ii)  The current element block id is not marked as DG only
+    // (iii) The current element is not bordering a DG only block.
     const bool subcell_allowed_in_element =
+        fd::dg_mesh_supports_subcell(dg_mesh) and
         not alg::found(subcell_options.only_dg_block_ids(),
                        element.id().block_id()) and
         not bordering_dg_block;
+
+    // Elements that can never use subcell (e.g. non-hypercube topology or
+    // DG-only blocks) should skip the TCI entirely, since the TCI projects
+    // to the subcell mesh which is unsupported for these elements.
+    if (not subcell_allowed_in_element) {
+      db::mutate<Tags::TciDecision,
+                 subcell::Tags::GhostDataForReconstruction<Dim>>(
+          [](const gsl::not_null<int*> tci_decision_ptr,
+             const auto neighbor_data_ptr) {
+            *tci_decision_ptr = 0;
+            neighbor_data_ptr->clear();
+          },
+          make_not_null(&box));
+      return {Parallel::AlgorithmExecution::Continue, std::nullopt};
+    }
 
     // The reason we pass in the persson_exponent explicitly instead of
     // leaving it to the user is because the value of the exponent that
@@ -172,8 +194,7 @@ struct TciAndRollback {
     // exponent it should use, and to keep the interface between the TCIs
     // consistent, we also pass the exponent in separately here.
     std::tuple<int, RdmpTciData> tci_result = db::mutate_apply<TciMutator>(
-        make_not_null(&box), subcell_options.persson_exponent(),
-        not subcell_allowed_in_element);
+        make_not_null(&box), subcell_options.persson_exponent(), false);
 
     const int tci_decision = std::get<0>(tci_result);
     db::mutate<Tags::TciDecision>(
@@ -186,15 +207,15 @@ struct TciAndRollback {
 
     // If either:
     //
-    // 1. we are not allowed to do subcell in this block
-    // 2. the element is at an outer boundary _and_ we aren't allow to go to
-    //    subcell at an outer boundary.
+    // 1. we are not allowed to do subcell in this block (handled by the
+    //    early return above)
+    // 2. the element is at an outer boundary _and_ we aren't allowed to go
+    //    to subcell at an outer boundary.
     // 3. the cell is not troubled
     //
     // then we can remove the current neighbor data and update the RDMP TCI
     // data.
-    if (not subcell_allowed_in_element or
-        (cell_has_external_boundary and
+    if ((cell_has_external_boundary and
          not subcell_enabled_at_external_boundary) or
         not cell_is_troubled) {
       db::mutate<subcell::Tags::GhostDataForReconstruction<Dim>,

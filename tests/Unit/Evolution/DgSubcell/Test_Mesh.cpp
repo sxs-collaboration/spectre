@@ -180,31 +180,33 @@ void test_cartoon_mesh() {
     CHECK(evolution::dg::subcell::fd::dg_mesh(subcell_axial, BasisType,
                                               QuadratureType) == dg_axial);
   }
+  // mesh(): unsupported bases return the uninitialized sentinel rather than
+  // asserting, since subcell is never used on such elements.
+  {
+    const Mesh<3> zernike_b2_cartoon{
+        {{3, 1, 1}},
+        {Spectral::Basis::ZernikeB2, Spectral::Basis::Cartoon,
+         Spectral::Basis::Cartoon},
+        {Spectral::Quadrature::GaussRadauUpper,
+         Spectral::Quadrature::SphericalSymmetry,
+         Spectral::Quadrature::SphericalSymmetry}};
+    CHECK(evolution::dg::subcell::fd::mesh(zernike_b2_cartoon) ==
+          Mesh<3>{0_st, Spectral::Basis::Uninitialized,
+                  Spectral::Quadrature::Uninitialized});
+    // FiniteDifference is also not a valid DG basis, so it returns the
+    // uninitialized sentinel.
+    const Mesh<3> fd_cartoon{
+        {{3, 3, 1}},
+        {Spectral::Basis::FiniteDifference, BasisType,
+         Spectral::Basis::Cartoon},
+        {Spectral::Quadrature::CellCentered, QuadratureType,
+         Spectral::Quadrature::AxialSymmetry}};
+    CHECK(evolution::dg::subcell::fd::mesh(fd_cartoon) ==
+          Mesh<3>{0_st, Spectral::Basis::Uninitialized,
+                  Spectral::Quadrature::Uninitialized});
+  }
 
 #ifdef SPECTRE_DEBUG
-  // mesh() assert: non-Legendre/Chebyshev dimension mixed with Cartoon
-  CHECK_THROWS_WITH(
-      evolution::dg::subcell::fd::mesh(
-          Mesh<3>{{{3, 1, 1}},
-                  {Spectral::Basis::ZernikeB2, Spectral::Basis::Cartoon,
-                   Spectral::Basis::Cartoon},
-                  {Spectral::Quadrature::GaussRadauUpper,
-                   Spectral::Quadrature::SphericalSymmetry,
-                   Spectral::Quadrature::SphericalSymmetry}}),
-      Catch::Matchers::ContainsSubstring(
-          "The DG mesh that is being converted to subcell can only mix "
-          "Legendre, Chebyshev, or ZernikeB1 with Cartoon"));
-  CHECK_THROWS_WITH(
-      evolution::dg::subcell::fd::mesh(
-          Mesh<3>{{{3, 3, 1}},
-                  {Spectral::Basis::FiniteDifference, BasisType,
-                   Spectral::Basis::Cartoon},
-                  {Spectral::Quadrature::CellCentered, QuadratureType,
-                   Spectral::Quadrature::AxialSymmetry}}),
-      Catch::Matchers::ContainsSubstring(
-          "The DG mesh that is being converted to subcell can only mix "
-          "Legendre, Chebyshev, or ZernikeB1 with Cartoon"));
-
   // dg_mesh() assert: non-FiniteDifference dimension mixed with Cartoon
   CHECK_THROWS_WITH(
       evolution::dg::subcell::fd::dg_mesh(
@@ -265,4 +267,67 @@ SPECTRE_TEST_CASE("Unit.Evolution.Subcell.FD.Mesh", "[Evolution][Unit]") {
   test_cartoon_mesh<Spectral::Basis::Chebyshev, Spectral::Quadrature::Gauss>();
   test_zernike_b1_cartoon_mesh();
   print_comparison_point_computation();
+
+  INFO("Test dg_mesh_supports_subcell");
+  {
+    CHECK(evolution::dg::subcell::fd::dg_mesh_supports_subcell(Mesh<1>{
+        5, Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto}));
+    CHECK(evolution::dg::subcell::fd::dg_mesh_supports_subcell(Mesh<2>{
+        5, Spectral::Basis::Chebyshev, Spectral::Quadrature::GaussLobatto}));
+    CHECK(evolution::dg::subcell::fd::dg_mesh_supports_subcell(
+        Mesh<3>{5, Spectral::Basis::Legendre, Spectral::Quadrature::Gauss}));
+    CHECK(evolution::dg::subcell::fd::dg_mesh_supports_subcell(
+        Mesh<3>{{{5, 1, 1}},
+                {Spectral::Basis::Legendre, Spectral::Basis::Cartoon,
+                 Spectral::Basis::Cartoon},
+                {Spectral::Quadrature::GaussLobatto,
+                 Spectral::Quadrature::SphericalSymmetry,
+                 Spectral::Quadrature::SphericalSymmetry}}));
+    CHECK(evolution::dg::subcell::fd::dg_mesh_supports_subcell(
+        Mesh<3>{{{5, 1, 1}},
+                {Spectral::Basis::ZernikeB1, Spectral::Basis::Cartoon,
+                 Spectral::Basis::Cartoon},
+                {Spectral::Quadrature::GaussRadauUpper,
+                 Spectral::Quadrature::SphericalSymmetry,
+                 Spectral::Quadrature::SphericalSymmetry}}));
+
+    CHECK_FALSE(evolution::dg::subcell::fd::dg_mesh_supports_subcell(Mesh<3>{
+        {{5, 5, 9}},
+        {Spectral::Basis::ZernikeB3, Spectral::Basis::ZernikeB3,
+         Spectral::Basis::ZernikeB3},
+        {Spectral::Quadrature::GaussRadauUpper, Spectral::Quadrature::Gauss,
+         Spectral::Quadrature::Equiangular}}));
+    CHECK_FALSE(evolution::dg::subcell::fd::dg_mesh_supports_subcell(Mesh<3>{
+        {{5, 6, 11}},
+        {Spectral::Basis::SphericalHarmonic, Spectral::Basis::SphericalHarmonic,
+         Spectral::Basis::SphericalHarmonic},
+        {Spectral::Quadrature::GaussLobatto, Spectral::Quadrature::Gauss,
+         Spectral::Quadrature::Equiangular}}));
+    CHECK_FALSE(evolution::dg::subcell::fd::dg_mesh_supports_subcell(
+        Mesh<1>{5, Spectral::Basis::FiniteDifference,
+                Spectral::Quadrature::CellCentered}));
+  }
+
+  INFO("Test fd::mesh with unsupported bases");
+  {
+    const Mesh<3> zernike_b3_mesh{
+        {{5, 5, 9}},
+        {Spectral::Basis::ZernikeB3, Spectral::Basis::ZernikeB3,
+         Spectral::Basis::ZernikeB3},
+        {Spectral::Quadrature::GaussRadauUpper, Spectral::Quadrature::Gauss,
+         Spectral::Quadrature::Equiangular}};
+    CHECK(evolution::dg::subcell::fd::mesh(zernike_b3_mesh) ==
+          Mesh<3>{0_st, Spectral::Basis::Uninitialized,
+                  Spectral::Quadrature::Uninitialized});
+
+    const Mesh<3> spherical_harmonic_mesh{
+        {{5, 6, 11}},
+        {Spectral::Basis::SphericalHarmonic, Spectral::Basis::SphericalHarmonic,
+         Spectral::Basis::SphericalHarmonic},
+        {Spectral::Quadrature::GaussLobatto, Spectral::Quadrature::Gauss,
+         Spectral::Quadrature::Equiangular}};
+    CHECK(evolution::dg::subcell::fd::mesh(spherical_harmonic_mesh) ==
+          Mesh<3>{0_st, Spectral::Basis::Uninitialized,
+                  Spectral::Quadrature::Uninitialized});
+  }
 }

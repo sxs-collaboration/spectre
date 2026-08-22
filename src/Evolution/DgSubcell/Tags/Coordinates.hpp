@@ -49,9 +49,17 @@ struct LogicalCoordinatesCompute
   using base = Coordinates<VolumeDim, Frame::ElementLogical>;
   using return_type = typename base::type;
   using argument_tags = tmpl::list<Mesh<VolumeDim>>;
-  static constexpr auto function = static_cast<void (*)(
-      gsl::not_null<return_type*>, const ::Mesh<VolumeDim>&)>(
-      &logical_coordinates<VolumeDim>);
+  static void function(const gsl::not_null<return_type*> logical_coords,
+                       const ::Mesh<VolumeDim>& mesh) {
+    if (mesh.number_of_grid_points() == 0) {
+      // When subcell is not supported on an element due to topology, the
+      // subcell mesh is
+      // {0, Basis::Uninitialized, Quadrature::Uninitialized}. It is never
+      // used, but the compute items still need to run: leave coordinates empty.
+      return;
+    }
+    logical_coordinates(logical_coords, mesh);
+  }
 };
 
 /// The inertial coordinates on the subcell grid

@@ -7,6 +7,7 @@
 #include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Evolution/DgSubcell/ActiveGrid.hpp"
+#include "Evolution/DgSubcell/Mesh.hpp"
 #include "Evolution/DgSubcell/Projection.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 
@@ -18,7 +19,10 @@ void SetInitialRdmpData::apply(
     const tnsr::I<DataVector, 3, Frame::Inertial>& tilde_b,
     const evolution::dg::subcell::ActiveGrid active_grid,
     const Mesh<3>& dg_mesh, const Mesh<3>& subcell_mesh) {
-  if (active_grid == evolution::dg::subcell::ActiveGrid::Subcell) {
+  // Also skip projection for non-hypercube elements (which can never use
+  // subcell) to avoid projecting onto the invalid subcell mesh
+  if (active_grid == evolution::dg::subcell::ActiveGrid::Subcell or
+      not evolution::dg::subcell::fd::dg_mesh_supports_subcell(dg_mesh)) {
     const Scalar<DataVector> tilde_e_magnitude = magnitude(tilde_e);
     const Scalar<DataVector> tilde_b_magnitude = magnitude(tilde_b);
 

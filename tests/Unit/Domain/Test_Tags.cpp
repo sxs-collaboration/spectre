@@ -159,6 +159,26 @@ void test_compute_tags() {
       expected_jacobian);
 }
 
+void test_mapped_coordinates_zero_size() {
+  // MappedCoordinates must return empty (zero-size) coordinates when the
+  // source coordinates are zero-size, as arises for non-hypercube elements
+  // where the subcell logical coordinates are left empty
+  constexpr size_t dim = 3;
+  auto map = element_map<dim>();
+  const tnsr::I<DataVector, dim, Frame::ElementLogical> empty_logical_coords{};
+  const auto box = db::create<
+      tmpl::list<Tags::ElementMap<dim, Frame::Grid>,
+                 Tags::Coordinates<dim, Frame::ElementLogical>>,
+      db::AddComputeTags<Tags::MappedCoordinates<
+          Tags::ElementMap<dim, Frame::Grid>,
+          Tags::Coordinates<dim, Frame::ElementLogical>, Tags::Coordinates>>>(
+      std::move(map), empty_logical_coords);
+  const auto& grid_coords = db::get<Tags::Coordinates<dim, Frame::Grid>>(box);
+  for (size_t d = 0; d < dim; ++d) {
+    CHECK(grid_coords.get(d).size() == 0);
+  }
+}
+
 SPECTRE_TEST_CASE("Unit.Domain.Tags", "[Unit][Domain]") {
   test_simple_tags<1>();
   test_simple_tags<2>();
@@ -167,6 +187,8 @@ SPECTRE_TEST_CASE("Unit.Domain.Tags", "[Unit][Domain]") {
   test_compute_tags<1>();
   test_compute_tags<2>();
   test_compute_tags<3>();
+
+  test_mapped_coordinates_zero_size();
 }
 }  // namespace
 }  // namespace domain

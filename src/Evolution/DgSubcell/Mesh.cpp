@@ -16,6 +16,20 @@
 
 namespace evolution::dg::subcell::fd {
 template <size_t Dim>
+bool dg_mesh_supports_subcell(const Mesh<Dim>& dg_mesh) {
+  for (size_t d = 0; d < Dim; ++d) {
+    const auto basis_d = dg_mesh.basis(d);
+    if (basis_d != Spectral::Basis::Legendre and
+        basis_d != Spectral::Basis::Chebyshev and
+        basis_d != Spectral::Basis::Cartoon and
+        basis_d != Spectral::Basis::ZernikeB1) {
+      return false;
+    }
+  }
+  return true;
+}
+
+template <size_t Dim>
 void verify_subcell_mesh(const Mesh<Dim>& subcell_mesh, const bool neighbor) {
   const std::string neighbor_str = neighbor ? " neighbor" : "";
   if constexpr (Dim == 3) {
@@ -66,6 +80,12 @@ void verify_subcell_mesh(const Mesh<Dim>& subcell_mesh, const bool neighbor) {
 
 template <size_t Dim>
 Mesh<Dim> mesh(const Mesh<Dim>& dg_mesh) {
+  if (not dg_mesh_supports_subcell(dg_mesh)) {
+    // Non-hypercube topology.  Return uninitialized mesh: subcell should never
+    // be used on this element.
+    return Mesh<Dim>{0_st, Spectral::Basis::Uninitialized,
+                     Spectral::Quadrature::Uninitialized};
+  }
   if (dg_mesh.basis(Dim - 1) != Spectral::Basis::Cartoon) {
     ASSERT(dg_mesh.basis() == make_array<Dim>(Spectral::Basis::Legendre) or
                dg_mesh.basis() == make_array<Dim>(Spectral::Basis::Chebyshev),
@@ -209,6 +229,9 @@ Mesh<Dim> dg_mesh(const Mesh<Dim>& subcell_mesh, const Spectral::Basis basis,
   return Mesh<Dim>{extents, basis, quadrature};
 }
 
+template bool dg_mesh_supports_subcell(const Mesh<1>& dg_mesh);
+template bool dg_mesh_supports_subcell(const Mesh<2>& dg_mesh);
+template bool dg_mesh_supports_subcell(const Mesh<3>& dg_mesh);
 template void verify_subcell_mesh(const Mesh<1>& subcell_mesh,
                                   const bool neighbor);
 template void verify_subcell_mesh(const Mesh<2>& subcell_mesh,

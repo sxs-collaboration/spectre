@@ -352,9 +352,13 @@ void test_impl(const bool rdmp_fails, const bool tci_fails,
   const bool self_block_dg_only =
       alg::found(subcell_options.only_dg_block_ids(), element.id().block_id());
 
-  // assign value of passed in variable.  Used as a test in apply() above
-  metavars::expected_evolve_on_dg_after_tci_failure =
-      bordering_dg_block or self_block_dg_only;
+  const bool subcell_allowed_in_element =
+      not self_block_dg_only and not bordering_dg_block;
+
+  // When subcell is not allowed, the TCI is skipped entirely (early return),
+  // so evolve_on_dg_after_tci_failure is never checked.  When subcell IS
+  // allowed, the TCI always receives false for this parameter.
+  metavars::expected_evolve_on_dg_after_tci_failure = false;
 
   const int tci_decision{-1};
 
@@ -551,18 +555,25 @@ void test_impl(const bool rdmp_fails, const bool tci_fails,
     CHECK(active_grid_from_box == evolution::dg::subcell::ActiveGrid::Dg);
     CHECK_FALSE(did_rollback_from_box);
 
-    const auto subcell_vars = evolution::dg::subcell::fd::project(
-        evolved_vars, dg_mesh,
-        evolution::dg::subcell::fd::mesh(dg_mesh).extents());
-    const evolution::dg::subcell::RdmpTciData expected_rdmp_data{
-        {std::max(max(get(get<Var1>(evolved_vars))),
-                  max(get(get<Var1>(subcell_vars))))},
-        {std::min(min(get(get<Var1>(evolved_vars))),
-                  min(get(get<Var1>(subcell_vars))))}};
-
-    CHECK(ActionTesting::get_databox_tag<
-              comp, evolution::dg::subcell::Tags::DataForRdmpTci>(runner, 0) ==
-          expected_rdmp_data);
+    if (subcell_allowed_in_element) {
+      // TCI was invoked and updated RDMP data
+      const auto subcell_vars = evolution::dg::subcell::fd::project(
+          evolved_vars, dg_mesh,
+          evolution::dg::subcell::fd::mesh(dg_mesh).extents());
+      const evolution::dg::subcell::RdmpTciData expected_rdmp_data{
+          {std::max(max(get(get<Var1>(evolved_vars))),
+                    max(get(get<Var1>(subcell_vars))))},
+          {std::min(min(get(get<Var1>(evolved_vars))),
+                    min(get(get<Var1>(subcell_vars))))}};
+      CHECK(ActionTesting::get_databox_tag<
+                comp, evolution::dg::subcell::Tags::DataForRdmpTci>(
+                runner, 0) == expected_rdmp_data);
+    } else {
+      // Early return: RDMP data unchanged from initial value
+      CHECK(ActionTesting::get_databox_tag<
+                comp, evolution::dg::subcell::Tags::DataForRdmpTci>(
+                runner, 0) == initial_rdmp_tci_data);
+    }
 
     CHECK(time_stepper_history_from_box.size() == time_stepper_history.size());
     CHECK(time_stepper_history_from_box.substeps().size() ==
@@ -595,9 +606,16 @@ void test_impl(const bool rdmp_fails, const bool tci_fails,
         runner, 0);
     CHECK(ghost_data_for_reconstruction.empty());
   }
-  CHECK(ActionTesting::get_databox_tag<
-            comp, evolution::dg::subcell::Tags::TciDecision>(runner, 0) ==
-        (metavars::tci_invoked ? (rdmp_fails ? 10 : (tci_fails ? 5 : 0)) : -1));
+  // When subcell is not allowed in the element, the TCI is skipped and the
+  // decision is explicitly set to 0.  Otherwise the TCI is invoked and the
+  // decision comes from its return value.
+  const int expected_tci_decision =
+      subcell_allowed_in_element ? (rdmp_fails ? 10 : (tci_fails ? 5 : 0)) : 0;
+  CHECK(metavars::tci_invoked == subcell_allowed_in_element);
+  CHECK(
+      ActionTesting::get_databox_tag<comp,
+                                     evolution::dg::subcell::Tags::TciDecision>(
+          runner, 0) == expected_tci_decision);
 }
 
 template <size_t Dim>
