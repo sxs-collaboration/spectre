@@ -77,7 +77,7 @@ include(SpectreSetSiteName)
 # early so we can rely on a consistent Python version in the build system.
 option(ENABLE_PYTHON "Enable Python" ON)
 if (ENABLE_PYTHON)
-  find_package(Python 3.8 REQUIRED)
+  find_package(Python 3.10 REQUIRED)
   # Define the location of Python code in the build directory. Unit tests etc. can
   # add this location to their `PYTHONPATH`.
   set(SPECTRE_PYTHON_PREFIX_PARENT "${CMAKE_BINARY_DIR}/bin/python")

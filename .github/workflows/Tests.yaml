@@ -440,7 +440,7 @@ jobs:
             # Note: currently disabled because of some unknown upstream issue
             # test_3d_rendering: ON
             # Need Python version consistent with ParaView
-            PYTHON_VERSION: "3.9"
+            # PYTHON_VERSION: "3.9"
           # Test with Kokkos enabled but without CUDA
           - compiler: gcc-10
             build_type: Release
@@ -452,12 +452,14 @@ jobs:
           # the documentation build
           # - compiler: gcc-11
           #   build_type: Debug
-          # Test with Python 3.8 so that we retain backwards compatibility. We
-          # keep track of Python versions on supercomputers in this issue:
+          # Test with newer Python. Once the container has a Python version
+          # above 3.10 (current minimum) we should also test the minimum Python
+          # version so that we retain backwards compatibility.
+          # We keep track of Python versions on supercomputers in this issue:
           # https://github.com/sxs-collaboration/spectre/issues/442
           - compiler: gcc-11
             build_type: Release
-            PYTHON_VERSION: "3.8"
+            PYTHON_VERSION: "3.14"
             # Disable building executable for this build for now because it
             # exceeds the available memory. See issue:
             # https://github.com/sxs-collaboration/spectre/issues/5472
