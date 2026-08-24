@@ -83,8 +83,39 @@ if (ENABLE_PYTHON)
   set(SPECTRE_PYTHON_PREFIX_PARENT "${CMAKE_BINARY_DIR}/bin/python")
   get_filename_component(
     SPECTRE_PYTHON_PREFIX_PARENT "${SPECTRE_PYTHON_PREFIX_PARENT}" ABSOLUTE)
-  set(SPECTRE_PYTHON_SITE_PACKAGES "${CMAKE_BINARY_DIR}/lib/\
+  # Extract the site-packages directory. Python installations can have different
+  # layouts for where they install packages (in particular, Debian/Ubuntu uses
+  # `dist-packages` instead of `site-packages`), so we query Python for the
+  # correct location and fix the `Python_SITELIB` variable. CMake's `FindPython`
+  # module does not do this. We do the same for where `pip install --prefix`
+  # will install packages.
+  execute_process(
+      COMMAND "${Python_EXECUTABLE}" -c "import sys, sysconfig;\
+print(';'.join([\
+  sysconfig.get_path('purelib'),\
+  sysconfig.get_path('purelib', vars={\
+    'base': sys.argv[1], 'platbase': sys.argv[1]})\
+]))"
+          "${CMAKE_BINARY_DIR}"
+      RESULT_VARIABLE _SITELIB_RESULT
+      OUTPUT_VARIABLE _SITELIB_PATHS
+      OUTPUT_STRIP_TRAILING_WHITESPACE
+  )
+  if (_SITELIB_RESULT EQUAL 0)
+    list(GET _SITELIB_PATHS 0 PYTHON_TRUE_SITELIB)
+    if (NOT Python_SITELIB STREQUAL PYTHON_TRUE_SITELIB)
+      set(Python_SITELIB "${PYTHON_TRUE_SITELIB}" CACHE PATH FORCE
+        "Corrected Python site-packages directory")
+      message(STATUS
+        "Corrected Python site-packages directory: ${Python_SITELIB}")
+    endif()
+    list(GET _SITELIB_PATHS 1 SPECTRE_PYTHON_SITE_PACKAGES)
+  else()
+    message(WARNING "Failed to determine Python site-packages directory, "
+      "using default value: ${Python_SITELIB}")
+    set(SPECTRE_PYTHON_SITE_PACKAGES "${CMAKE_BINARY_DIR}/lib/\
 python${Python_VERSION_MAJOR}.${Python_VERSION_MINOR}/site-packages")
+  endif()
   set(PYTHONPATH "${SPECTRE_PYTHON_PREFIX_PARENT}:\
 ${SPECTRE_PYTHON_SITE_PACKAGES}")
   if(DEFINED ENV{PYTHONPATH})
