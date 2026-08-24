@@ -461,18 +461,17 @@ WORKDIR /work
 # building with Charm++ in the `tmp` directories.
 #
 # We build  with debug symbols to make debugging Charm++-interoperability
-# easier for people, and build with O2 to reduce build size.
-RUN wget https://raw.githubusercontent.com/sxs-collaboration/spectre/develop/support/Charm/v7.0.0.patch
-
-RUN git clone --single-branch --branch v7.0.1 --depth 1 \
-        https://github.com/UIUC-PPL/charm charm_7_0_0 \
-    && cd /work/charm_7_0_0 \
-    && git checkout v7.0.1 \
-    && git apply /work/v7.0.0.patch \
+# easier for people, and build with O2 to reduce build size. Charm++ 8.0.0
+# advertises compatibility with CMake 3.4, which CMake 4 no longer supports.
+RUN git clone --single-branch --branch v8.0.0 --depth 1 \
+        https://github.com/UIUC-PPL/charm charm \
+    && cd /work/charm \
+    && sed -i 's/cmake_minimum_required(VERSION 3.4...3.5)/cmake_minimum_required(VERSION 3.5)/' CMakeLists.txt \
     && ./build charm++ multicore-linux-${CHARM_ARCH} gcc \
         ${PARALLEL_MAKE_ARG} -g -O2 --build-shared --with-production \
-    && rm -r /work/charm_7_0_0/doc /work/charm_7_0_0/examples
-ENV CHARM_ROOT="/work/charm_7_0_0/multicore-linux-${CHARM_ARCH}-gcc"
+        --disable-tls \
+    && rm -r /work/charm/doc /work/charm/examples
+ENV CHARM_ROOT="/work/charm/multicore-linux-${CHARM_ARCH}-gcc"
 
 # Set the environment variable SPECTRE_CONTAINER so we can check if we are
 # inside a container (0 is true in bash)

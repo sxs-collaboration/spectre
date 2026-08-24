@@ -509,7 +509,7 @@ jobs:
             # Test compatibility with oldest supported CMake version
             CMAKE_VERSION: "3.18.2"
             # Use an MPI version of Charm
-            CHARM_ROOT: /work/charm_7_0_0/mpi-linux-x86_64-smp-clang
+            CHARM_ROOT: /work/charm/mpi-linux-x86_64-smp-clang
             # MPI running tests is a bit slower than multicore
             TEST_TIMEOUT_FACTOR: 3
             # If MPI should be tested
@@ -698,8 +698,9 @@ jobs:
         working-directory: /work
         run: |
           apt-get install -y libopenmpi-dev
-          cd /work/charm_7_0_0 && ./build charm++ mpi-linux-x86_64-smp clang \
-          -j ${NUMBER_OF_CORES} -g0 -O1 --build-shared --with-production
+          cd /work/charm && ./build charm++ mpi-linux-x86_64-smp clang \
+            -j ${NUMBER_OF_CORES} -g0 -O1 --build-shared --with-production \
+            --disable-tls
 
       # Assign a unique cache key for every run.
       # - We will save the cache using this unique key, but only on the develop
