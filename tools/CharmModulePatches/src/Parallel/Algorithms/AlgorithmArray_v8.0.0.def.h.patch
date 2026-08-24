@@ -1,8 +1,7 @@
 diff --git a/src/Parallel/Algorithms/AlgorithmArray.def.h~ b/src/Parallel/Algorithms/AlgorithmArray.def.h
-index a2eea60..b353f76 100644
 --- a/src/Parallel/Algorithms/AlgorithmArray.def.h~
 +++ b/src/Parallel/Algorithms/AlgorithmArray.def.h
-@@ -564,16 +564,17 @@ void CProxyElement_AlgorithmArray <ParallelComponent, SpectreArrayIndex> ::recei
+@@ -564,19 +564,20 @@
  /* DEFS: void receive_data(const typename ReceiveTag::temporal_id &impl_noname_7, const ReceiveData_t &impl_noname_8, bool enable_if_disabled);
   */
  template <class ParallelComponent, class SpectreArrayIndex> 
@@ -22,8 +21,12 @@ index a2eea60..b353f76 100644
 +  _TRACE_CREATION_DETAILED(&env, (CkIndex_AlgorithmArray <ParallelComponent, SpectreArrayIndex> ::template idx_receive_data_marshall10<ReceiveTag, ReceiveData_t>()));
    _TRACE_CREATION_DONE(1);
    CmiObjId projID = ((CkArrayIndex&)ckGetIndex()).getProjectionID();
-   _TRACE_BEGIN_EXECUTE_DETAILED(CpvAccess(curPeEvent),ForArrayEltMsg,(CkIndex_AlgorithmArray <ParallelComponent, SpectreArrayIndex> ::template idx_receive_data_marshall10<ReceiveTag, ReceiveData_t>()),CkMyPe(), 0, &projID, obj);
-@@ -674,7 +675,7 @@ bool CProxyElement_AlgorithmArray <ParallelComponent, SpectreArrayIndex> ::invok
+-  _TRACE_BEGIN_EXECUTE_DETAILED(CpvAccess(curPeEvent),ForArrayEltMsg,(CkIndex_AlgorithmArray <ParallelComponent, SpectreArrayIndex> ::template idx_receive_data_marshall10<ReceiveTag, ReceiveData_t>()),CkMyPe(), 0, &projID, obj);
++  _TRACE_BEGIN_EXECUTE_DETAILED((CpvInitialized(curPeEvent) ? CpvAccess(curPeEvent) : 0),ForArrayEltMsg,(CkIndex_AlgorithmArray <ParallelComponent, SpectreArrayIndex> ::template idx_receive_data_marshall10<ReceiveTag, ReceiveData_t>()),CkMyPe(), 0, &projID, obj);
+ #if CMK_LBDB_ON
+     const auto id = obj->ckGetID().getElementID();
+   int impl_off=0;
+@@ -674,10 +675,10 @@
    envelope env;
    env.setTotalsize(0);
    env.setMsgtype(ForArrayEltMsg);
@@ -31,8 +34,12 @@ index a2eea60..b353f76 100644
 +  _TRACE_CREATION_DETAILED(&env, (CkIndex_AlgorithmArray <ParallelComponent, SpectreArrayIndex> ::template idx_invoke_iterable_action_void<ThisAction, PhaseIndex, DataBoxIndex>()));
    _TRACE_CREATION_DONE(1);
    CmiObjId projID = ((CkArrayIndex&)ckGetIndex()).getProjectionID();
-   _TRACE_BEGIN_EXECUTE_DETAILED(CpvAccess(curPeEvent),ForArrayEltMsg,(CkIndex_AlgorithmArray <ParallelComponent, SpectreArrayIndex> ::template idx_invoke_iterable_action_void<ThisAction, PhaseIndex, DataBoxIndex>()),CkMyPe(), 0, &projID, obj);
-@@ -1427,7 +1428,7 @@ template <class ParallelComponent, class SpectreArrayIndex>
+-  _TRACE_BEGIN_EXECUTE_DETAILED(CpvAccess(curPeEvent),ForArrayEltMsg,(CkIndex_AlgorithmArray <ParallelComponent, SpectreArrayIndex> ::template idx_invoke_iterable_action_void<ThisAction, PhaseIndex, DataBoxIndex>()),CkMyPe(), 0, &projID, obj);
++  _TRACE_BEGIN_EXECUTE_DETAILED((CpvInitialized(curPeEvent) ? CpvAccess(curPeEvent) : 0),ForArrayEltMsg,(CkIndex_AlgorithmArray <ParallelComponent, SpectreArrayIndex> ::template idx_invoke_iterable_action_void<ThisAction, PhaseIndex, DataBoxIndex>()),CkMyPe(), 0, &projID, obj);
+ #if CMK_LBDB_ON
+ #endif
+ #if CMK_CHARMDEBUG
+@@ -1427,7 +1428,7 @@
  template <class ReceiveTag, class MessageType>
  int CkIndex_AlgorithmArray <ParallelComponent, SpectreArrayIndex> ::reg_receive_data_MessageType() {
    int epidx = CkRegisterEp<ReceiveTag, MessageType>("receive_data(MessageType* impl_msg)",
