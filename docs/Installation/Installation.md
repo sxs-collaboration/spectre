@@ -194,11 +194,11 @@ use a container or follow the \ref quick_start_install.
 
 #### Required:
 
-* [GCC](https://gcc.gnu.org/) 10.0 or later,
-[Clang](https://clang.llvm.org/) 13.0 or later (see
+* [GCC](https://gcc.gnu.org/) 11.0 or later,
+[Clang](https://clang.llvm.org/) 17.0 or later (see
 [here](https://apt.llvm.org/) for how to get newer versions of clang through
 apt), or AppleClang 13.0.0 or later
-* [CMake](https://cmake.org/) 3.18.0 or later
+* [CMake](https://cmake.org/) 3.22.0 or later
 * [Git](https://git-scm.com/)
 * BLAS & LAPACK (e.g. [OpenBLAS](http://www.openblas.net))
 * [Boost](http://www.boost.org/) 1.60.0 or later
