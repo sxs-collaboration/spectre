@@ -628,7 +628,7 @@ jobs:
         if: matrix.KOKKOS == 'ON'
         working-directory: /work
         run: |
-          KOKKOS_VERSION=4.4.00
+          KOKKOS_VERSION=5.2.1
           wget -O kokkos.tar.gz "https://github.com/kokkos/kokkos/releases/download/${KOKKOS_VERSION}/kokkos-${KOKKOS_VERSION}.tar.gz"
           tar -xzf kokkos.tar.gz && mv kokkos-* kokkos && cd kokkos
           mkdir build && cd build
