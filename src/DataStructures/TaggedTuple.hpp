@@ -31,12 +31,6 @@ class er;
  */
 namespace tuples {
 
-#if __cplusplus >= 201402L
-#define TUPLES_LIB_CONSTEXPR_CXX_14 constexpr
-#else
-#define TUPLES_LIB_CONSTEXPR_CXX_14
-#endif
-
 namespace tuples_detail {
 
 template <class T>
@@ -167,11 +161,7 @@ class TaggedTupleLeaf<Tag, false> {
   ~TaggedTupleLeaf() = default;
 
   // Note: name get_data instead of get to enable structured binding support.
-#if __cplusplus < 201402L
-  value_type& get_data() { return value_; }
-#else
   constexpr value_type& get_data() { return value_; }
-#endif
   constexpr const value_type& get_data() const { return value_; }
 
   bool swap(TaggedTupleLeaf& t) {
@@ -208,11 +198,7 @@ class TaggedTupleLeaf<Tag, true> : private Tag::type {
   ~TaggedTupleLeaf() = default;
 
   // Note: name get_data instead of get to enable structured binding support.
-#if __cplusplus < 201402L
-  value_type& get_data() { return static_cast<value_type&>(*this); }
-#else
   constexpr value_type& get_data() { return static_cast<value_type&>(*this); }
-#endif
 
   constexpr const value_type& get_data() const {
     return static_cast<const value_type&>(*this);
@@ -549,15 +535,14 @@ inline constexpr typename tmpl::at_c<tmpl::list<Tags...>, I>::type& get(
 namespace tuples_detail {
 struct equal {
   template <class T, class U>
-  static TUPLES_LIB_CONSTEXPR_CXX_14 void apply(T const& lhs, U const& rhs,
-                                                bool* result) {
+  static constexpr void apply(T const& lhs, U const& rhs, bool* result) {
     *result = *result and lhs == rhs;
   }
 };
 
 template <class... LTags, class... RTags>
-TUPLES_LIB_CONSTEXPR_CXX_14 bool tuple_equal_impl(
-    TaggedTuple<LTags...> const& lhs, TaggedTuple<RTags...> const& rhs) {
+constexpr bool tuple_equal_impl(TaggedTuple<LTags...> const& lhs,
+                                TaggedTuple<RTags...> const& rhs) {
   bool equal = true;
   // This short circuits in the sense that the operator== is only evaluated if
   // the result thus far is true
@@ -570,25 +555,24 @@ TUPLES_LIB_CONSTEXPR_CXX_14 bool tuple_equal_impl(
 template <class... LTags, class... RTags,
           typename std::enable_if<sizeof...(LTags) == sizeof...(RTags)>::type* =
               nullptr>
-TUPLES_LIB_CONSTEXPR_CXX_14 bool operator==(TaggedTuple<LTags...> const& lhs,
-                                            TaggedTuple<RTags...> const& rhs) {
+constexpr bool operator==(TaggedTuple<LTags...> const& lhs,
+                          TaggedTuple<RTags...> const& rhs) {
   return tuples_detail::tuple_equal_impl(lhs, rhs);
 }
 
 template <class... LTags, class... RTags,
           typename std::enable_if<sizeof...(LTags) == sizeof...(RTags)>::type* =
               nullptr>
-TUPLES_LIB_CONSTEXPR_CXX_14 bool operator!=(TaggedTuple<LTags...> const& lhs,
-                                            TaggedTuple<RTags...> const& rhs) {
+constexpr bool operator!=(TaggedTuple<LTags...> const& lhs,
+                          TaggedTuple<RTags...> const& rhs) {
   return not(lhs == rhs);
 }
 
 namespace tuples_detail {
 struct less {
   template <class T, class U>
-  static TUPLES_LIB_CONSTEXPR_CXX_14 void apply(T const& lhs, U const& rhs,
-                                                bool* last_rhs_less_lhs,
-                                                bool* result) {
+  static constexpr void apply(T const& lhs, U const& rhs,
+                              bool* last_rhs_less_lhs, bool* result) {
     if (*result or *last_rhs_less_lhs) {
       return;
     }
@@ -601,8 +585,8 @@ struct less {
 };
 
 template <class... LTags, class... RTags>
-TUPLES_LIB_CONSTEXPR_CXX_14 bool tuple_less_impl(
-    TaggedTuple<LTags...> const& lhs, TaggedTuple<RTags...> const& rhs) {
+constexpr bool tuple_less_impl(TaggedTuple<LTags...> const& lhs,
+                               TaggedTuple<RTags...> const& rhs) {
   bool result = false;
   bool last_rhs_less_lhs = false;
   static_cast<void>(
@@ -616,32 +600,32 @@ TUPLES_LIB_CONSTEXPR_CXX_14 bool tuple_less_impl(
 template <class... LTags, class... RTags,
           typename std::enable_if<sizeof...(LTags) == sizeof...(RTags)>::type* =
               nullptr>
-TUPLES_LIB_CONSTEXPR_CXX_14 bool operator<(TaggedTuple<LTags...> const& lhs,
-                                           TaggedTuple<RTags...> const& rhs) {
+constexpr bool operator<(TaggedTuple<LTags...> const& lhs,
+                         TaggedTuple<RTags...> const& rhs) {
   return tuples_detail::tuple_less_impl(lhs, rhs);
 }
 
 template <class... LTags, class... RTags,
           typename std::enable_if<sizeof...(LTags) == sizeof...(RTags)>::type* =
               nullptr>
-TUPLES_LIB_CONSTEXPR_CXX_14 bool operator>(TaggedTuple<LTags...> const& lhs,
-                                           TaggedTuple<RTags...> const& rhs) {
+constexpr bool operator>(TaggedTuple<LTags...> const& lhs,
+                         TaggedTuple<RTags...> const& rhs) {
   return rhs < lhs;
 }
 
 template <class... LTags, class... RTags,
           typename std::enable_if<sizeof...(LTags) == sizeof...(RTags)>::type* =
               nullptr>
-TUPLES_LIB_CONSTEXPR_CXX_14 bool operator<=(TaggedTuple<LTags...> const& lhs,
-                                            TaggedTuple<RTags...> const& rhs) {
+constexpr bool operator<=(TaggedTuple<LTags...> const& lhs,
+                          TaggedTuple<RTags...> const& rhs) {
   return not(rhs < lhs);
 }
 
 template <class... LTags, class... RTags,
           typename std::enable_if<sizeof...(LTags) == sizeof...(RTags)>::type* =
               nullptr>
-TUPLES_LIB_CONSTEXPR_CXX_14 bool operator>=(TaggedTuple<LTags...> const& lhs,
-                                            TaggedTuple<RTags...> const& rhs) {
+constexpr bool operator>=(TaggedTuple<LTags...> const& lhs,
+                          TaggedTuple<RTags...> const& rhs) {
   return not(lhs < rhs);
 }
 
