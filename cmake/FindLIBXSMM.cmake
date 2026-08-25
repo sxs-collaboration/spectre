@@ -13,7 +13,7 @@ endif()
 
 # find the LIBXSMM include directory
 find_path(LIBXSMM_INCLUDE_DIRS libxsmm.h
-  PATH_SUFFIXES include
+  PATH_SUFFIXES include include/libxsmm
   HINTS ${LIBXSMM_ROOT})
 
 find_library(LIBXSMM_LIBRARIES

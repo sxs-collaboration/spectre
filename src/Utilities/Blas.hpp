@@ -222,6 +222,19 @@ inline void dgemm_<true>(const char& TRANSA, const char& TRANSB,
     return;
   }
 
+  // LIBXSMM's GEMM kernels only implement ALPHA == 1 and BETA in {0, 1}. Up to
+  // v1.16.1 it forwarded any other values to the BLAS library, but since
+  // v2.0.0 it silently computes as if ALPHA == 1 and BETA == 1 instead, which
+  // gives wrong results (e.g. Evolution/DgSubcell/Matrices.cpp passes
+  // ALPHA == 2). Take the BLAS path for the values LIBXSMM doesn't handle.
+  if (ALPHA != 1.0 or (BETA != 0.0 and BETA != 1.0)) {
+    blas_detail::dgemm_(
+        TRANSA, TRANSB, gsl::narrow_cast<int>(M), gsl::narrow_cast<int>(N),
+        gsl::narrow_cast<int>(K), ALPHA, A, gsl::narrow_cast<int>(LDA), B,
+        gsl::narrow_cast<int>(LDB), BETA, C, gsl::narrow_cast<int>(LDC), 1, 1);
+    return;
+  }
+
   const auto m = gsl::narrow_cast<int>(M);
   const auto n = gsl::narrow_cast<int>(N);
   const auto k = gsl::narrow_cast<int>(K);
