@@ -1,7 +1,7 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-cmake_minimum_required(VERSION 3.18.0)
+cmake_minimum_required(VERSION 3.22.0)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 
@@ -28,10 +28,6 @@ unset(${SPECTRE_NAME}_VERSION_PATCH)
 # The `cmake_minimum_required` above sets policies to `NEW` that are compatible
 # with the given minimum cmake version. Here we overwrite policies that we
 # have back-ported in our cmake code.
-# - We use test names with '.' characters in them
-if (CMAKE_VERSION VERSION_GREATER_EQUAL 3.19)
-  cmake_policy(SET CMP0110 NEW)
-endif ()
 # - We allow both uppercase and case-preserved hints in `find_package` calls, so
 #   `PACKAGENAME_ROOT` and `PackageName_ROOT` are both searched in
 #   `FindPackageName.cmake` (NEW behavior). The OLD behavior was to search only

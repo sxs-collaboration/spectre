@@ -502,7 +502,7 @@ jobs:
           - compiler: clang-21
             build_type: Release
             # Test compatibility with oldest supported CMake version
-            CMAKE_VERSION: "3.18.2"
+            CMAKE_VERSION: "3.22.0"
             # Use an MPI version of Charm
             CHARM_ROOT: /work/charm/mpi-linux-x86_64-smp-clang
             # MPI running tests is a bit slower than multicore
