@@ -142,12 +142,7 @@ jobs:
           git fetch --tags https://github.com/sxs-collaboration/spectre
       - name: Install Python dependencies
         run: |
-          pip3 install -r .github/scripts/requirements-release.txt
-          pip3 install -r support/Python/dev_requirements.txt
-      - name: Test tools
-        run: |
-          python3 -m unittest discover -p 'Test_CompileReleaseNotes.py' \
-            tests.tools -v
+          python3 -m pip install -r support/Python/dev_requirements.txt
       - name: Check Python formatting
         run: |
           cd $GITHUB_WORKSPACE
@@ -163,9 +158,21 @@ jobs:
         run: |
           cd $GITHUB_WORKSPACE
           ./tools/CheckFiles.sh
+      # Install the pinned release dependencies in a separate environment so
+      # they don't downgrade the container's packages for the other steps
+      - name: Install release dependencies
+        run: |
+          python3 -m venv /work/release-venv
+          /work/release-venv/bin/python -m pip install \
+            -r .github/scripts/requirements-release.txt
+          echo "RELEASE_PYTHON=/work/release-venv/bin/python" >> $GITHUB_ENV
+      - name: Test tools
+        run: |
+          $RELEASE_PYTHON -m unittest discover \
+            -p 'Test_CompileReleaseNotes.py' tests.tools -v
       - name: Check metadata
         run: |
-          python3 tools/CheckMetadata.py
+          $RELEASE_PYTHON tools/CheckMetadata.py
       - name: Check the metadata is consistent with the releases
         # No need to check this on forks. They would need to set a Zenodo token
         # for this test. Also disable on PRs because they don't have access to
@@ -174,16 +181,17 @@ jobs:
           github.repository == 'sxs-collaboration/spectre'
             && github.event_name != 'pull_request'
         run: |
-          python3 .github/scripts/Release.py prepare -vv --check-only \
+          $RELEASE_PYTHON .github/scripts/Release.py prepare -vv --check-only \
             --zenodo-token ${{ secrets.ZENODO_READONLY_TOKEN }} \
             --github-token ${{ secrets.GITHUB_TOKEN }}
-          python3 .github/scripts/Release.py publish -vv --check-only \
+          $RELEASE_PYTHON .github/scripts/Release.py publish -vv --check-only \
             --zenodo-token ${{ secrets.ZENODO_READONLY_TOKEN }} \
             --github-token ${{ secrets.GITHUB_TOKEN }} \
             --auto-publish
       - name: Check release notes
         run: |
-          python3 tools/CompileReleaseNotes.py -vv -o release_notes.md \
+          $RELEASE_PYTHON tools/CompileReleaseNotes.py -vv \
+            -o release_notes.md \
             --github-token ${{ secrets.GITHUB_TOKEN }}
       - name: Upload release notes
         uses: actions/upload-artifact@v7
@@ -1293,10 +1301,10 @@ ${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
           token: ${{ secrets.GH_TOKEN_RELEASE }}
       - uses: actions/setup-python@v6
         with:
-          python-version: '3.8'
+          python-version: '3.14'
       - name: Install Python dependencies
         run: |
-          pip3 install -r .github/scripts/requirements-release.txt
+          python3 -m pip install -r .github/scripts/requirements-release.txt
       # We use the current date as tag name, unless a tag name was specified
       # as input to the `workflow_dispatch` event
       - name: Determine release version

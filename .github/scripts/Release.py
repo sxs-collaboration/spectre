@@ -5,6 +5,7 @@
 
 import datetime
 import difflib
+import json
 import logging
 import operator
 import os
@@ -16,11 +17,11 @@ import urllib
 from typing import List
 
 import git
+import jsonschema
 import pybtex.database
 import requests
 import uplink
 import yaml
-from cffconvert.citation import Citation
 from pybtex.backends.plaintext import Backend as PlaintextBackend
 from pybtex.style.formatting.plain import Style as PlainStyle
 
@@ -30,6 +31,11 @@ VERSION_PATTERN = r"(\d{4})\.(\d{2})\.(\d{2})(\.\d+)?"
 PUBLICATION_DATE_PATTERN = r"\d{4}-\d{2}-\d{2}"
 DOI_PATTERN = r"10\.\d{4,9}/zenodo\.\d+"
 ZENODO_ID_PATTERN = r"\d+"
+# Schema for the Citation File Format (CFF), fetched for the 'cff-version'
+# declared in the CITATION.cff file
+CFF_SCHEMA_URL = (
+    "https://citation-file-format.github.io/{cff_version}/schema.json"
+)
 
 
 def report_check_only(msg: str):
@@ -377,6 +383,29 @@ def collect_citation_metadata(
     }
 
 
+def validate_citation_file(citation_file_content: str):
+    """Validates the CITATION.cff file against the Citation File Format schema
+
+    Downloads the schema for the 'cff-version' that the file declares from
+    https://citation-file-format.github.io and validates against it.
+
+    Args:
+      citation_file_content: Content of the CITATION.cff file
+
+    Raises:
+      jsonschema.ValidationError: If the file doesn't match the schema
+    """
+    citation_data = yaml.safe_load(citation_file_content)
+    schema_url = CFF_SCHEMA_URL.format(cff_version=citation_data["cff-version"])
+    logger.debug(f"Downloading CFF schema: {schema_url}")
+    schema_response = requests.get(schema_url)
+    schema_response.raise_for_status()
+    # The schema expects that YAML 'date' objects have been cast to strings, so
+    # round-trip the data through JSON to convert them
+    citation_data = json.loads(json.dumps(citation_data, default=str))
+    jsonschema.validate(citation_data, schema_response.json())
+
+
 def build_bibtex_entry(metadata: dict):
     """Builds a BibTeX entry that we suggest people cite in publications
 
@@ -618,7 +647,7 @@ def prepare(
     citation_file_content += yaml.safe_dump(citation_data, allow_unicode=True)
     write_file_or_check(citation_file, citation_file_content)
     # Validate the CFF file
-    Citation(citation_file_content, src=citation_file).validate()
+    validate_citation_file(citation_file_content)
 
     # Get the BibTeX entry and write to file
     bibtex_entry = build_bibtex_entry(metadata)
