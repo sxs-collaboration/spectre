@@ -1,34 +1,9 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-import itertools
 import re
-import sys
 
 import gdb
-
-if sys.version_info[0] > 2:
-    Iterator = object
-    imap = map
-    izip = zip
-    long = int
-else:
-    ### Python 2 stuff
-    class Iterator:
-        """Compatibility mixin for iterators
-
-        Instead of writing next() methods for iterators, write
-        __next__() methods and use this mixin to make them work in
-        Python 2 as well as Python 3.
-
-        Idea stolen from the "six" documentation:
-        <http://pythonhosted.org/six/#six.Iterator>
-        """
-
-        def next(self):
-            return self.__next__()
-
-    from itertools import imap, izip
 
 
 class VectorImplPrinter:
@@ -36,7 +11,7 @@ class VectorImplPrinter:
     modal counterparts
     """
 
-    class _iterator(Iterator):
+    class _iterator:
         def __init__(self, start, num_entries):
             self.item = start
             self.finish = start + num_entries
@@ -77,7 +52,7 @@ class VectorImplPrinter:
 class GslSpanPrinter:
     "Print a gsl::span"
 
-    class _iterator(Iterator):
+    class _iterator:
         def __init__(self, start, num_entries):
             self.item = start
             self.finish = start + num_entries
@@ -118,7 +93,7 @@ class GslSpanPrinter:
 class TensorPrinter:
     "Print a Tensor"
 
-    class _iterator(Iterator):
+    class _iterator:
         def __init__(self, component_suffix_eval_string, start, num_entries):
             self.component_suffix_eval_string = component_suffix_eval_string
             self.item = start
@@ -188,7 +163,7 @@ class TensorPrinter:
 class VariablesPrinter:
     "Print a Variables"
 
-    class _iterator(Iterator):
+    class _iterator:
         def __init__(self, head, empty):
             self.head = head
             self.count = 0

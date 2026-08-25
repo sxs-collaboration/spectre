@@ -100,13 +100,7 @@ template <typename T>
 struct ToPyObject<
     T, Requires<std::is_same_v<typename std::decay<T>::type, std::string>>> {
   static PyObject* convert(const T& t) {
-#if PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION == 7
-    return PyString_FromString(t.c_str());
-#elif PY_MAJOR_VERSION == 3
     return PyUnicode_FromString(t.c_str());
-#else
-    static_assert(false, "Only works on Python 2.7 and 3.x")
-#endif
   }
 };
 
@@ -123,13 +117,7 @@ struct ToPyObject<
     T, Requires<std::is_same_v<typename std::decay<T>::type, int> or
                 std::is_same_v<typename std::decay<T>::type, short>>> {
   static PyObject* convert(const T& t) {
-#if PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION == 7
-    return PyInt_FromLong(t);
-#elif PY_MAJOR_VERSION == 3
     return PyLong_FromLong(t);
-#else
-    static_assert(false, "Only works on Python 2.7 and 3.x")
-#endif
   }
 };
 
@@ -254,15 +242,8 @@ struct FromPyObject<long, std::nullptr_t> {
   static long convert(PyObject* t) {
     if (t == nullptr) {
       throw std::runtime_error{"Received null PyObject."};
-#if PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION == 7
-    } else if (not PyInt_Check(t) and not PyLong_Check(t)) {
-#elif PY_MAJOR_VERSION == 3
       // clang-tidy: hicpp-signed-bitwise
     } else if (not PyLong_Check(t)) {  // NOLINT
-#else
-    } else {
-      static_assert(false, "Only works on Python 2.7 and 3.x")
-#endif
       const std::string python_type{Py_TYPE(t)->tp_name};
       throw std::runtime_error{
           "Cannot convert non-long/int type to long. Got " + python_type};
@@ -276,15 +257,8 @@ struct FromPyObject<unsigned long, std::nullptr_t> {
   static unsigned long convert(PyObject* t) {
     if (t == nullptr) {
       throw std::runtime_error{"Received null PyObject."};
-#if PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION == 7
-    } else if (not PyInt_Check(t) and not PyLong_Check(t)) {
-#elif PY_MAJOR_VERSION == 3
       // clang-tidy: hicpp-signed-bitwise
     } else if (not PyLong_Check(t)) {  // NOLINT
-#else
-    } else {
-      static_assert(false, "Only works on Python 2.7 and 3.x");
-#endif
       const std::string python_type{Py_TYPE(t)->tp_name};
       throw std::runtime_error{
           "Cannot convert non-long/int type to long. Got " + python_type};
@@ -326,21 +300,11 @@ struct FromPyObject<std::string, std::nullptr_t> {
   static std::string convert(PyObject* t) {
     if (t == nullptr) {
       throw std::runtime_error{"Received null PyObject."};
-#if PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION == 7
-    } else if (not PyString_CheckExact(t)) {
-#elif PY_MAJOR_VERSION == 3
     } else if (not PyUnicode_CheckExact(t)) {
-#else
-    } else {
-      static_assert(false, "Only works on Python 2.7 and 3.x")
-#endif
       const std::string python_type{Py_TYPE(t)->tp_name};
       throw std::runtime_error{
           "Cannot convert non-string type to string. Got " + python_type};
     }
-#if PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION == 7
-    return std::string(PyString_AsString(t));
-#elif PY_MAJOR_VERSION == 3
     PyObject* tascii = PyUnicode_AsASCIIString(t);
     if (nullptr == tascii) {
       throw std::runtime_error{"Cannot convert to ASCII string."};
@@ -348,9 +312,6 @@ struct FromPyObject<std::string, std::nullptr_t> {
     std::string str = PyBytes_AsString(tascii);
     Py_DECREF(tascii);  // NOLINT
     return str;
-#else
-    static_assert(false, "Only works on Python 2.7 and 3.x")
-#endif
   }
 };
 
