@@ -230,21 +230,16 @@ jobs:
       - name: Trust checkout
         run: |
           git config --global --add safe.directory $GITHUB_WORKSPACE
-      # Some cpp20 features aren't supported until clang-tidy-16. See:
-      # https://stackoverflow.com/questions/46114214/lambda-implicit-capture-fails-with-variable-declared-from-structured-binding#comment135007519_46115028
-      # The clang-tidy-diff tool doesn't report exit codes until version
-      # 18.1.0, so we grab the version that does:
-      # https://github.com/llvm/llvm-project/commit/4294bca5e4f6e6e8cfdbd9fbe8751c5e5415fd47
-      - name: Install clang-tidy-16
+      # Use the clang-tidy that comes with the container. It ships the
+      # 'clang-tidy-diff.py' helper as well, but only under its versioned name,
+      # so look that up from the clang-tidy version.
+      - name: Locate clang-tidy
         run: |
-          apt-get update -y
-          apt-get remove -y clang-tidy clang-tidy-14
-          apt-get install -y clang-tidy-16
-          ln -s /usr/bin/clang-tidy-16 /usr/bin/clang-tidy
-          wget https://raw.githubusercontent.com/llvm/llvm-project/4294bca5e4f6e6e8cfdbd9fbe8751c5e5415fd47/clang-tools-extra/clang-tidy/tool/clang-tidy-diff.py
-          chmod +x clang-tidy-diff.py
-          mv clang-tidy-diff.py /usr/bin/clang-tidy-diff.py
-          ln -s /usr/bin/clang-tidy-diff.py /usr/bin/clang-tidy-diff
+          clang-tidy --version
+          LLVM_VERSION=$(clang-tidy --version \
+            | sed -n 's/.*LLVM version \([0-9]*\).*/\1/p')
+          echo "CLANG_TIDY_DIFF=/usr/bin/clang-tidy-diff-${LLVM_VERSION}.py" \
+            >> $GITHUB_ENV
       - name: Configure annotations
         # Has to be accessible outside the container, see issue:
         # https://github.com/actions/toolkit/issues/305
@@ -266,8 +261,8 @@ jobs:
           mkdir build && cd build
 
           cmake
-          -D CMAKE_C_COMPILER=clang-14
-          -D CMAKE_CXX_COMPILER=clang++-14
+          -D CMAKE_C_COMPILER=clang
+          -D CMAKE_CXX_COMPILER=clang++
           -D CMAKE_Fortran_COMPILER=gfortran
           -D CHARM_ROOT=${CHARM_ROOT}
           -D CMAKE_BUILD_TYPE=${{ matrix.build_type }}
@@ -288,7 +283,7 @@ jobs:
           echo "Running clang-tidy relative to: $UPSTREAM_HASH\n"
 
           git diff -U0 $UPSTREAM_HASH |
-            clang-tidy-diff -path build -p1 -use-color -j1 \
+            $CLANG_TIDY_DIFF -path build -p1 -use-color -j1 \
             -extra-arg=-I/usr/include/hdf5/serial \
             -extra-arg=-I$GITHUB_WORKSPACE/build/_deps/autodiff-src
 
@@ -334,7 +329,7 @@ jobs:
         uses: actions/cache/restore@v5
         id: restore-ccache
         env:
-          CACHE_KEY_PREFIX: ccache-gcc-11-Debug-pch-ON
+          CACHE_KEY_PREFIX: ccache-gcc-15-Debug-pch-ON
         with:
           path: /work/ccache
           key: "${{ env.CACHE_KEY_PREFIX }}-${{ github.run_id }}"
@@ -349,9 +344,9 @@ jobs:
           mkdir build && cd build
 
           cmake
-          -D CMAKE_C_COMPILER=gcc-11
-          -D CMAKE_CXX_COMPILER=g++-11
-          -D CMAKE_Fortran_COMPILER=gfortran-11
+          -D CMAKE_C_COMPILER=gcc
+          -D CMAKE_CXX_COMPILER=g++
+          -D CMAKE_Fortran_COMPILER=gfortran
           -D CMAKE_CXX_FLAGS="-Werror"
           -D OVERRIDE_ARCH=x86-64
           -D CHARM_ROOT=${CHARM_ROOT}
@@ -427,10 +422,15 @@ jobs:
         # We have a sparse clang test configuration to reduce the amount of
         # GitHub cache space we use. GCC being the production compiler on
         # supercomputers means we need to thoroughly test it.
+        # The oldest compiler tested here is the oldest one we claim to
+        # support in docs/Installation/Installation.md, so keep the two in
+        # sync. Compilers older than the container's default need the
+        # container's libstdc++ on the link line, which the 'parse-compiler'
+        # action arranges.
         compiler:
-          - gcc-10
           - gcc-11
           - gcc-13
+          - gcc-15
         build_type: [Debug, Release]
         include:
           # Generate code coverage report for a single build
@@ -439,35 +439,30 @@ jobs:
           #   build_type: Debug
           #   COVERAGE: ON
           #   TEST_TIMEOUT_FACTOR: 3
-          # This configuration seems to run consistently slower than newer gcc
-          # or clang builds, so we increase the test timeout a bit
-          - compiler: gcc-10
+          - compiler: gcc-13
             build_type: Debug
-            TEST_TIMEOUT_FACTOR: 2
             # Test 3D rendering with ParaView
             # Note: currently disabled because of some unknown upstream issue
             # test_3d_rendering: ON
             # Need Python version consistent with ParaView
             # PYTHON_VERSION: "3.9"
           # Test with Kokkos enabled but without CUDA
-          - compiler: gcc-10
+          - compiler: gcc-13
             build_type: Release
             KOKKOS: ON
             # Disable FMA optimizations to avoid this issue:
             # https://github.com/sxs-collaboration/spectre/issues/5145
             EXTRA_CXX_FLAGS: "-mno-fma"
-          # Don't modify the gcc-11 Debug build so its cache can be reused for
+          # Don't modify the gcc-15 Debug build so its cache can be reused for
           # the documentation build
-          # - compiler: gcc-11
+          # - compiler: gcc-15
           #   build_type: Debug
-          # Test with newer Python. Once the container has a Python version
-          # above 3.10 (current minimum) we should also test the minimum Python
-          # version so that we retain backwards compatibility.
-          # We keep track of Python versions on supercomputers in this issue:
-          # https://github.com/sxs-collaboration/spectre/issues/442
           - compiler: gcc-11
             build_type: Release
-            PYTHON_VERSION: "3.14"
+            # Test the minimum Python version in this build. We keep track of
+            # Python versions on supercomputers in this issue:
+            # https://github.com/sxs-collaboration/spectre/issues/442
+            PYTHON_VERSION: "3.10"
             # Disable building executable for this build for now because it
             # exceeds the available memory. See issue:
             # https://github.com/sxs-collaboration/spectre/issues/5472
@@ -475,7 +470,7 @@ jobs:
           # Test building with static libraries. Do so with clang in release
           # mode because these builds use up little disk space compared to GCC
           # builds or clang Debug builds
-          - compiler: clang-13
+          - compiler: clang-17
             build_type: Release
             BUILD_SHARED_LIBS: OFF
             use_xsimd: ON
@@ -487,13 +482,13 @@ jobs:
           # Use this test also to build and test all input files with "normal"
           # or higher priority. The other configurations only test input files
           # with "high" priority to reduce the total build time.
-          - compiler: clang-13
+          - compiler: clang-17
             build_type: Debug
             use_pch: OFF
             unit_tests: OFF
             input_file_tests_min_priority: "normal"
           # Test with ASAN
-          - compiler: clang-14
+          - compiler: clang-21
             build_type: Debug
             # When building with ASAN we also need python bindings to be
             # disabled because otherwise we get link errors. See issue:
@@ -504,7 +499,7 @@ jobs:
             BUILD_PYTHON_BINDINGS: OFF
             MEMORY_ALLOCATOR: JEMALLOC
             TEST_TIMEOUT_FACTOR: 2
-          - compiler: clang-14
+          - compiler: clang-21
             build_type: Release
             # Test compatibility with oldest supported CMake version
             CMAKE_VERSION: "3.18.2"
@@ -517,8 +512,9 @@ jobs:
             # Test `install` target with clang in Release mode because it uses
             # little disk space
             install: ON
-          # Test compiling with nvcc and CUDA
-          - compiler: nvcc-12-6
+          # Test compiling with nvcc and CUDA. Choose a CUDA version that is
+          # compatible with the container's default gcc.
+          - compiler: nvcc-13-3
             SPECTRE_AUTODIFF: OFF
             CUDA: ON
             KOKKOS: ON
@@ -543,6 +539,10 @@ jobs:
             BUILD_PYTHON_BINDINGS: OFF
             # Disable warnings as nvcc emits a lot of them from system headers
             ENABLE_WARNINGS: OFF
+            # xsimd 14.3.0 (its latest release) picks a `__builtin_shuffle`
+            # code path under nvcc that GCC 15 rejects outright, and we don't
+            # need vectorization to test that the CUDA build compiles.
+            use_xsimd: "OFF"
 
     container:
       image: ${{ inputs.container || 'sxscollaboration/spectre:dev' }}
@@ -616,8 +616,12 @@ jobs:
           elif [[ $COMPILER_ID = clang ]]; then
             apt-get install -y $CC $FC
           elif [[ $COMPILER_ID = nvcc ]]; then
-            # Install CUDA
-            wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-keyring_1.1-1_all.deb
+            # Install CUDA from NVIDIA's apt repository for the Ubuntu version
+            # of the container. Deriving the repository name here means the
+            # container can be upgraded without editing this URL.
+            CUDA_REPOS=https://developer.download.nvidia.com/compute/cuda/repos
+            UBUNTU_REPO=ubuntu$(. /etc/os-release && echo ${VERSION_ID/./})
+            wget ${CUDA_REPOS}/${UBUNTU_REPO}/x86_64/cuda-keyring_1.1-1_all.deb
             dpkg -i cuda-keyring_1.1-1_all.deb
             apt-get update -y
             apt-get install -y cuda-nvcc-${COMPILER_VERSION} \
@@ -1399,23 +1403,23 @@ ${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
       fail-fast: false
       matrix:
         compiler:
-          - gcc-10
           - gcc-11
-          - clang-13
-          - clang-14
+          - gcc-13
+          - clang-17
+          - clang-21
         include:
-          - sde_arch: ("-nhm;nehalem" "-snb;sandybridge" "-hsw;haswell"
-              "-skl;skylake" "-icx;icelake-server")
-            compiler: gcc-10
           - sde_arch: ("-nhm;nehalem" "-snb;sandybridge" "-hsw;haswell"
               "-skl;skylake" "-icx;icelake-server")
             compiler: gcc-11
           - sde_arch: ("-nhm;nehalem" "-snb;sandybridge" "-hsw;haswell"
               "-skl;skylake" "-icx;icelake-server")
-            compiler: clang-13
+            compiler: gcc-13
+          - sde_arch: ("-nhm;nehalem" "-snb;sandybridge" "-hsw;haswell"
+              "-skl;skylake" "-icx;icelake-server")
+            compiler: clang-17
           - sde_arch: ("-nhm;nehalem" "-snb;sandybridge" "-hsw;haswell"
               "-skl;skylake" "-icx;icelake-server" "-tgl;tigerlake")
-            compiler: clang-14
+            compiler: clang-21
     container:
       image: ${{ inputs.container || 'sxscollaboration/spectre:dev' }}
       env:
