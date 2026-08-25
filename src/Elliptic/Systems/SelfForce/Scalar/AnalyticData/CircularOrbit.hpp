@@ -172,7 +172,7 @@ namespace ScalarSelfForce::AnalyticData {
  * Jacobian $J \equiv d\sigma/dr = r_u^2/r^2$ are continuous ($C^1$) at the
  * transition ($J=1$ there), so no coordinate jump condition is needed.
  *
- * Since $\partial_r = J \partial_\sigma$, the flux form must be rewritten
+ * Since $\partial_\sigma = J \partial_\r$, the flux form must be rewritten
  * in terms of $\sigma$-derivatives. Dividing the transformed equation by
  * $J$ to match the generic structure of first order flux form gives the
  * substitutions

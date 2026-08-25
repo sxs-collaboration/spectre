@@ -52,9 +52,9 @@ DomainCreator:
     # Order of dimensions is (r, cos(theta))
     BlockBounds:
       # Puncture position is at r = 10.
+      # outer_radius = 2 * r_u
       - [1.866025403784, 5., 6., &worldtube_right 14,
          25., &outer_radius 50] # r
-         # outer_radius = 2 * r_u
       - [-1., -0.5, 0.5, 1.]  # cos(theta)
     Distributions:
       # r

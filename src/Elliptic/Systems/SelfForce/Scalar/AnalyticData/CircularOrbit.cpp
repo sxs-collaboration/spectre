@@ -104,8 +104,6 @@ CircularOrbit::variables(
     // NOLINTNEXTLINE
     r.set_data_ref(const_cast<DataVector*>(&r_star_or_r));
     r_minus_r_plus = r - r_plus;
-    r_star = gr::tortoise_radius_from_boyer_lindquist_minus_r_plus(
-        r_minus_r_plus, M, black_hole_spin_);
   } else {
     // NOLINTNEXTLINE
     r_star.set_data_ref(const_cast<DataVector*>(&r_star_or_r));
@@ -125,6 +123,8 @@ CircularOrbit::variables(
   const DataVector r_sq_plus_a_sq = square(r) + square(a);
   const DataVector r_sq_plus_a_sq_sq = square(r_sq_plus_a_sq);
   const DataVector sin_theta_squared = 1. - cos_theta_sq;
+  const DataVector sigma_squared =
+      r_sq_plus_a_sq_sq - square(a) * delta * sin_theta_squared;
   tuples::TaggedTuple<Tags::Alpha, Tags::Beta, Tags::Gamma> result{};
   // Hyperboloidal slicing
   ComplexDataVector H;
@@ -144,12 +144,12 @@ CircularOrbit::variables(
   DataVector inv_r{};
   DataVector dsigma_dr{};
   if (in_u_region) {
-    // Inside u-region, x coordinate is defined as
-    // 2 r_u - r_u^2/r to compactify the wavezone.
-    // Elliptic PDEs will be re-written as a function of
-    // inv_r (1/r) instead of r.
-    inv_r = (2.0 * r_u - r) / (r_u * r_u);
-    dsigma_dr = square(r_u) * square(inv_r);
+  // sigma = 2*r_u - r_u^2/r  =>  1/r = (2*r_u - sigma) / r_u^2.
+  // The domain coordinate here is actually sigma, not the physical
+  // Boyer-Lindquist radius, in this region.
+  const DataVector& sigma = get<0>(x);
+  inv_r = (2.0 * r_u - sigma) / (r_u * r_u);
+  dsigma_dr = square(r_u) * square(inv_r);
   } else {
     inv_r = 1.0 / r;
     dsigma_dr = make_with_value<DataVector>(r_star_or_r, 1.0);
@@ -159,16 +159,14 @@ CircularOrbit::variables(
   auto& gamma = get<Tags::Gamma>(result);
   const DataVector one_plus_a_sq_inv_r_sq = 1.0 + square(a) * square(inv_r);
   const DataVector delta_over_r_sq = one_plus_a_sq_inv_r_sq - 2.0 * M * inv_r;
-  const DataVector one_over_r_sq_plus_a_sq =
-      square(inv_r) / one_plus_a_sq_inv_r_sq;
-  const DataVector r_over_r_sq_plus_a_sq = inv_r / one_plus_a_sq_inv_r_sq;
-  const DataVector sigma_sq_over_r_sq_plus_a_sq_sq =
-      1.0 - square(a) * square(inv_r) * delta_over_r_sq * sin_theta_squared /
-                square(one_plus_a_sq_inv_r_sq);
 
   if (penetrating_horizon_) {
     get<0>(alpha) = (delta_over_r_sq / one_plus_a_sq_inv_r_sq) * dsigma_dr;
-    get<1>(alpha) = (square(inv_r) / one_plus_a_sq_inv_r_sq) / dsigma_dr;
+    if (in_u_region){
+    get<1>(alpha) = 1.0 / (square(r_u) * one_plus_a_sq_inv_r_sq);
+    } else {
+    get<1>(alpha) = 1.0 / r_sq_plus_a_sq;
+    }
   } else {
     get<0>(alpha) = make_with_value<DataVector>(r_star_or_r, 1.0);
     get<1>(alpha) = delta / r_sq_plus_a_sq_sq;
@@ -180,12 +178,22 @@ CircularOrbit::variables(
       // division by zero.
       continue;
     }
+    if (in_u_region){
     get(beta)[p] =
-        square(k) * (square(H[p]) - sigma_sq_over_r_sq_plus_a_sq_sq[p]) +
+        (square(k) * square(a) * delta_over_r_sq[p] * sin_theta_squared[p] +
         2. * a * m_mode_number_ * k *
-            (2. * M * r_over_r_sq_plus_a_sq[p] + H[p]) *
-            one_over_r_sq_plus_a_sq[p];
-    get(beta)[p] /= get<0>(alpha)[p];
+            (2. * M * inv_r[p] + one_plus_a_sq_inv_r_sq[p])) /
+        (one_plus_a_sq_inv_r_sq[p] * delta_over_r_sq[p] * square(r_u));
+    } else {
+    get(beta)[p] =
+        square(k) *
+            (square(H[p]) - sigma_squared[p] / r_sq_plus_a_sq_sq[p]) +
+        2. * a * m_mode_number_ * k *
+            (2. * M * r[p] / r_sq_plus_a_sq[p] + H[p]) / r_sq_plus_a_sq[p];
+    if (penetrating_horizon_) {
+      get(beta)[p] /= get<0>(alpha)[p];
+    }
+    }
   }
 
   get(beta) +=
@@ -277,8 +285,6 @@ CircularOrbit::variables(
     // NOLINTNEXTLINE
     r.set_data_ref(const_cast<DataVector*>(&r_star_or_r));
     r_minus_r_plus = r - r_plus;
-    r_star = gr::tortoise_radius_from_boyer_lindquist_minus_r_plus(
-        r_minus_r_plus, M, black_hole_spin_);
   } else {
     // NOLINTNEXTLINE
     r_star.set_data_ref(const_cast<DataVector*>(&r_star_or_r));
