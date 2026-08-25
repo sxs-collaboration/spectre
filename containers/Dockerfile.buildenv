@@ -30,7 +30,7 @@
 #         # or arm64 depending on your CPU. Docker builds the image in a way
 #         # that when someone clones it, depending on their CPU architecture,
 #         # they will get either the amd64 or arm64 version.
-#   Ubuntu version: 22.04 (default)
+#   Ubuntu version: 26.04 (default)
 #   --platform linux/amd64,linux/arm64
 #   --target dev
 #   -t sxscollaboration/spectre:dev
@@ -113,9 +113,9 @@
 #    That is, it uses Ubuntu 18.04. Both AMD64 and ARM64 are supported (replace
 #    linux/amd64 with linux/arm64), while newer versions of Ubuntu will limit
 #    compatibility.
-ARG UBUNTU_VERSION=22.04
+ARG UBUNTU_VERSION=26.04
 FROM ubuntu:${UBUNTU_VERSION} AS base
-ARG UBUNTU_VERSION=22.04
+ARG UBUNTU_VERSION=26.04
 
 # See
 # https://docs.docker.com/engine/reference/builder/#automatic-platform-args-in-the-global-scope
@@ -127,18 +127,20 @@ RUN apt-get update -y \
     && apt-get install -y software-properties-common wget git file \
     && add-apt-repository ppa:ubuntu-toolchain-r/test
 
-# Add LLVM apt repository for newer versions of clang
+# Add LLVM apt repository for newer versions of clang.
+# Then lower the priority of apt.llvm.org so packages default to Ubuntu.
 RUN wget -qO- https://apt.llvm.org/llvm-snapshot.gpg.key | \
     tee /etc/apt/trusted.gpg.d/apt.llvm.org.asc \
     && if [ ${UBUNTU_VERSION} = 18.04 ]; then \
     add-apt-repository -y \
     'deb http://apt.llvm.org/bionic/ llvm-toolchain-bionic-17 main'; \
-    elif [ ${UBUNTU_VERSION} = 22.04 ]; then \
-    add-apt-repository -y \
-    'deb http://apt.llvm.org/jammy/ llvm-toolchain-jammy-16 main'; \
     else \
-    exit 1; \
-    fi
+    add-apt-repository -y \
+    "deb http://apt.llvm.org/$(lsb_release -cs)/ llvm-toolchain-$(lsb_release -cs) main"; \
+    fi \
+    && echo 'Package: *\n\
+Pin: origin apt.llvm.org\n\
+Pin-Priority: 100\n' > /etc/apt/preferences.d/llvm-apt-repo
 
 # Install compilers and build tools
 #
@@ -187,9 +189,9 @@ RUN apt-get update -y \
         libarpack2-dev \
         libbenchmark-dev \
     && if [ ${UBUNTU_VERSION} = 18.04 ]; then \
-    wget https://github.com/jbeder/yaml-cpp/archive/refs/tags/0.8.0.tar.gz \
-    && tar xf 0.8.0.tar.gz && mkdir ./yaml-cpp-0.8.0/build \
-    && cd ./yaml-cpp-0.8.0/build \
+    wget https://github.com/jbeder/yaml-cpp/archive/refs/tags/yaml-cpp-0.9.0.tar.gz \
+    && tar xf yaml-cpp-0.9.0.tar.gz && mkdir ./yaml-cpp-yaml-cpp-0.9.0/build \
+    && cd ./yaml-cpp-yaml-cpp-0.9.0/build \
     && cmake \
     -D CMAKE_C_COMPILER=gcc \
     -D CMAKE_CXX_COMPILER=g++ \
@@ -203,7 +205,7 @@ RUN apt-get update -y \
     -D CMAKE_INSTALL_PREFIX=/usr/local \
     .. \
     && make ${PARALLEL_MAKE_ARG} && make install \
-    && cd ../.. && rm -rf ./0.8.0.tar.gz ./yaml-cpp-0.8.0 \
+    && cd ../.. && rm -rf ./yaml-cpp-0.9.0.tar.gz ./yaml-cpp-yaml-cpp-0.9.0 \
     && wget https://archives.boost.io/release/1.83.0/source/boost_1_83_0.tar.gz \
     && tar xf boost_1_83_0.tar.gz && cd boost_1_83_0 \
     && CC=gcc CXX=g++ ./bootstrap.sh \
@@ -281,11 +283,11 @@ RUN apt-get update -y \
 # Note: because we only cross-compile the latest Ubuntu version we support,
 # we just delete the executables on Ubuntu 18.04 and disable doxygen and ccache.
 FROM --platform=$BUILDPLATFORM tonistiigi/xx AS xx
-FROM --platform=$BUILDPLATFORM ubuntu:22.04 AS xbuild
+FROM --platform=$BUILDPLATFORM ubuntu:26.04 AS xbuild
 WORKDIR /root
 COPY --from=xx / /
 ARG TARGETPLATFORM
-ARG UBUNTU_VERSION=22.04
+ARG UBUNTU_VERSION=26.04
 ARG PARALLEL_MAKE_ARG=-j4
 
 # Install build dependencies for the host system
@@ -297,10 +299,10 @@ RUN apt-get update -y \
 # We need libstd++ to work on the target arch that we are cross-compiling for
 RUN xx-apt-get update -y \
     && xx-apt-get install -y --no-install-recommends \
-    libc6-dev libstdc++-10-dev
+    libc6-dev libstdc++-15-dev
 
 # - Ccache
-RUN wget https://github.com/ccache/ccache/releases/download/v4.8.2/ccache-4.8.2.tar.gz -O ccache.tar.gz \
+RUN wget https://github.com/ccache/ccache/releases/download/v4.13.6/ccache-4.13.6.tar.gz -O ccache.tar.gz \
     && tar -xzf ccache.tar.gz \
     && mv ccache-* ccache \
     && cd ccache \
@@ -325,7 +327,7 @@ RUN wget https://github.com/doxygen/doxygen/archive/Release_1_14_0.tar.gz -O dox
 #          actual copy into the spectre container below.
 #
 FROM base AS xbuild-test
-ARG UBUNTU_VERSION=22.04
+ARG UBUNTU_VERSION=26.04
 COPY --from=xbuild /root/ccache/build/ccache /usr/local/bin
 RUN ccache --version
 COPY --from=xbuild /root/doxygen/build/bin/doxygen /usr/local/bin
@@ -356,7 +358,7 @@ ENV TEX_ARCH=aarch64
 
 FROM base-${TARGETARCH} AS dev
 ARG TARGETARCH
-ARG UBUNTU_VERSION=22.04
+ARG UBUNTU_VERSION=26.04
 
 ARG PARALLEL_MAKE_ARG=-j4
 ARG DEBIAN_FRONTEND=noninteractive
@@ -383,6 +385,9 @@ RUN wget https://github.com/catchorg/Catch2/archive/refs/tags/v3.14.0.tar.gz -O 
 COPY --from=xbuild /root/ccache/build/ccache /usr/local/bin
 # - Doxygen
 COPY --from=xbuild /root/doxygen/build/bin/doxygen /usr/local/bin
+RUN if [ ${UBUNTU_VERSION} = 18.04 ]; then \
+    rm /usr/local/bin/ccache /usr/local/bin/doxygen; \
+    fi
 # - Libbacktrace
 RUN git clone https://github.com/ianlancetaylor/libbacktrace \
     && cd libbacktrace \
@@ -465,7 +470,7 @@ RUN apt-get update -y \
 # If this mirror is ever unavailable, swap to another core mirror serving the
 # live `tlnet` (see https://ctan.org/mirrors), or fall back to a frozen historic
 # snapshot under https://texlive.info/historic/systems/texlive/<year>/tlnet-final .
-RUN if [ ${UBUNTU_VERSION} = 22.04 ]; then \
+RUN if [ ${UBUNTU_VERSION} = 26.04 ]; then \
     mkdir /work/texlive && cd /work/texlive \
     && wget https://ctan.math.illinois.edu/systems/texlive/tlnet/install-tl-unx.tar.gz \
     && tar -xzf install-tl-unx.tar.gz \
@@ -496,7 +501,7 @@ WORKDIR /work
 FROM sxscollaboration/spectre:dev AS deploy
 ARG BUILDARCH
 ARG TARGETARCH
-ARG UBUNTU_VERSION=22.04
+ARG UBUNTU_VERSION=26.04
 ARG PARALLEL_MAKE_ARG=-j2
 
 COPY . spectre/
@@ -535,7 +540,7 @@ CMD ["--help"]
 FROM deploy AS demo
 ARG BUILDARCH
 ARG TARGETARCH
-ARG UBUNTU_VERSION=22.04
+ARG UBUNTU_VERSION=26.04
 ARG PARALLEL_MAKE_ARG=-j4
 
 # vim and emacs for editing files

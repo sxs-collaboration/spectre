@@ -7,6 +7,8 @@ description: |
   Parse the compiler name and version from the input and set the environment
   variables CC, CXX, FC, COMPILER_ID, and COMPILER_VERSION.
   For nvcc, it sets CC, CXX, and FC to the host compilers (gcc, g++, gfortran).
+  For GCC older than the container's default, also sets LDFLAGS so it links
+  the container's libstdc++ (see below).
 
 inputs:
   compiler:
@@ -27,17 +29,33 @@ runs:
           elif [[ $COMPILER_ID = clang ]]; then
             CC=clang-${COMPILER_VERSION};
             CXX=clang++-${COMPILER_VERSION};
-            FC=gfortran-11;
+            FC=gfortran;
           elif [[ $COMPILER_ID = nvcc ]]; then
             # Set host compilers
             CC=gcc;
             CXX=g++;
-            FC=gfortran-11;
+            FC=gfortran;
           fi
         fi
         echo "CC=$CC" >> $GITHUB_ENV
         echo "CXX=$CXX" >> $GITHUB_ENV
         echo "FC=$FC" >> $GITHUB_ENV
+        # Get older GCC versions working in the container: old GCC versions use
+        # their own old libstdc++, which fails to link dependencies built with
+        # newer GCC in the container (e.g. Catch2, yaml-cpp). So, override the
+        # linker to use the container's newer libstdc++ instead. It's backwards
+        # compatible with the old GCC, so this works. The compile still uses the
+        # selected compiler and its own libstdc++ headers, so this still tests
+        # that the code compiles with it.
+        DEFAULT_GCC_VERSION=$(gcc -dumpversion | cut -d. -f1)
+        if [[ $COMPILER_ID = gcc ]] \
+            && (( COMPILER_VERSION < DEFAULT_GCC_VERSION )); then
+          LIBSTDCXX_DIR=/work/libstdc++-default
+          mkdir -p ${LIBSTDCXX_DIR}
+          ln -sf "$(gcc -print-file-name=libstdc++.so.6)" \
+            ${LIBSTDCXX_DIR}/libstdc++.so
+          echo "LDFLAGS=-L${LIBSTDCXX_DIR}" >> $GITHUB_ENV
+        fi
         echo "COMPILER_ID=$COMPILER_ID" >> $GITHUB_ENV
         echo "COMPILER_VERSION=$COMPILER_VERSION" >> $GITHUB_ENV
       shell: bash
