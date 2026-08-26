@@ -13,6 +13,7 @@
 #include "DataStructures/TaggedTuple.hpp"
 #include "Domain/Structure/DirectionalId.hpp"
 #include "Domain/Structure/Element.hpp"
+#include "Domain/Structure/FaceType.hpp"
 #include "Domain/Tags.hpp"
 #include "Evolution/DgSubcell/ActiveGrid.hpp"
 #include "Evolution/DgSubcell/GhostData.hpp"
@@ -189,18 +190,33 @@ struct SetSubcellGrid {
     constexpr bool subcell_enabled_at_external_boundary =
         Metavariables::SubcellOptions::subcell_enabled_at_external_boundary;
 
-    db::mutate<Tags::NeighborTciDecisions<Dim>>(
-        [&element](const auto neighbor_decisions_ptr) {
-          neighbor_decisions_ptr->clear();
-          for (const auto& [direction, neighbors_in_direction] :
-               element.neighbors()) {
-            for (const auto& neighbor : neighbors_in_direction.ids()) {
-              neighbor_decisions_ptr->insert(
-                  std::pair{DirectionalId<Dim>{direction, neighbor}, 0});
+    // Non-hypercube elements (e.g. spherical shells) cannot use subcell and may
+    // have > 24 neighbors, which would overflow the fixed-size
+    // DirectionalIdMap, so their map is left empty. Hypercube elements that
+    // are forced to DG (e.g. because they border a DG-only block) still have
+    // a bounded neighbor count and continue to track TCI decisions normally.
+    //
+    // Within a hypercube element, also skip MultipleNonconforming directions.
+    // These arise on the "one" side of a many-to-one interface where
+    // bordering a non-hypercube element
+    if (fd::dg_mesh_supports_subcell(dg_mesh)) {
+      db::mutate<Tags::NeighborTciDecisions<Dim>>(
+          [&element](const auto neighbor_decisions_ptr) {
+            neighbor_decisions_ptr->clear();
+            for (const auto& [direction, neighbors_in_direction] :
+                 element.neighbors()) {
+              if (element.face_types().at(direction) ==
+                  domain::FaceType::MultipleNonconforming) {
+                continue;
+              }
+              for (const auto& neighbor : neighbors_in_direction.ids()) {
+                neighbor_decisions_ptr->insert(
+                    std::pair{DirectionalId<Dim>{direction, neighbor}, 0});
+              }
             }
-          }
-        },
-        make_not_null(&box));
+          },
+          make_not_null(&box));
+    }
 
     db::mutate_apply<
         tmpl::list<Tags::ActiveGrid, Tags::DidRollback,
@@ -541,15 +557,34 @@ struct SetInitialGridFromTciData {
 
       db::mutate<evolution::dg::subcell::Tags::NeighborTciDecisions<Dim>>(
           [&element, &received](const auto neighbor_tci_decisions_ptr) {
+            // Non-hypercube elements (e.g. spherical shells) have an empty
+            // NeighborTciDecisions map (see SetSubcellGrid) and will remain
+            // on DG regardless of neighbor TCI decisions.
+            if (neighbor_tci_decisions_ptr->empty()) {
+              return;
+            }
             for (const auto& [directional_element_id,
                               neighbor_initial_tci_data] : received->second) {
-              (void)element;
               ASSERT(neighbor_initial_tci_data.tci_status.has_value(),
                      "Neighbor in direction "
                          << directional_element_id.direction()
                          << " with element ID " << directional_element_id.id()
                          << " of " << element.id()
                          << " didn't send initial TCI decision correctly");
+              if (not neighbor_tci_decisions_ptr->contains(
+                      directional_element_id)) {
+                // TCI decisions for MultipleNonconforming neighbors are not
+                // tracked because those elements are forced to remain on DG.
+                ASSERT(element.face_types().at(
+                           directional_element_id.direction()) ==
+                           domain::FaceType::MultipleNonconforming,
+                       "NeighborTciDecisions does not contain the neighbor "
+                           << directional_element_id
+                           << " but the face is not MultipleNonconforming. "
+                              "This indicates a bug in the initialization of "
+                              "NeighborTciDecisions.");
+                continue;
+              }
               neighbor_tci_decisions_ptr->at(directional_element_id) =
                   neighbor_initial_tci_data.tci_status.value();
             }

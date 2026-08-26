@@ -3,17 +3,16 @@
 
 #pragma once
 
+#include <boost/functional/hash.hpp>
 #include <cstddef>
 #include <iomanip>
 #include <map>
 #include <sstream>
 #include <string>
+#include <unordered_map>
 #include <utility>
 
-#include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/DirectionalId.hpp"
-#include "Domain/Structure/DirectionalIdMap.hpp"
-#include "Domain/Structure/ElementId.hpp"
 #include "Evolution/DgSubcell/InitialTciData.hpp"
 #include "Utilities/Gsl.hpp"
 
@@ -21,13 +20,22 @@ namespace evolution::dg::subcell::Tags {
 /*!
  * \brief Inbox tag for communicating the RDMP and TCI status/decision during
  * initialization.
+ *
+ * \note The inner map uses `std::unordered_map` rather than
+ * `DirectionalIdMap` because elements at non-conforming interfaces (e.g.
+ *  inner wedges bordering a spherical shell) can have more than
+ * `maximum_number_of_neighbors(Dim)` neighbors sending messages. This inbox
+ * is only populated during initialization and is erased after use, so the
+ * heap-allocation cost is negligible.
  */
 template <size_t Dim>
 struct InitialTciData {
   using temporal_id = int;
   using type =
       std::map<temporal_id,
-               DirectionalIdMap<Dim, evolution::dg::subcell::InitialTciData>>;
+               std::unordered_map<DirectionalId<Dim>,
+                                  evolution::dg::subcell::InitialTciData,
+                                  boost::hash<DirectionalId<Dim>>>>;
 
   template <typename ReceiveDataType>
   static bool insert_into_inbox(const gsl::not_null<type*> inbox,
