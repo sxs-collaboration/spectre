@@ -142,12 +142,7 @@ jobs:
           git fetch --tags https://github.com/sxs-collaboration/spectre
       - name: Install Python dependencies
         run: |
-          pip3 install -r .github/scripts/requirements-release.txt
-          pip3 install -r support/Python/dev_requirements.txt
-      - name: Test tools
-        run: |
-          python3 -m unittest discover -p 'Test_CompileReleaseNotes.py' \
-            tests.tools -v
+          python3 -m pip install -r support/Python/dev_requirements.txt
       - name: Check Python formatting
         run: |
           cd $GITHUB_WORKSPACE
@@ -163,9 +158,21 @@ jobs:
         run: |
           cd $GITHUB_WORKSPACE
           ./tools/CheckFiles.sh
+      # Install the pinned release dependencies in a separate environment so
+      # they don't downgrade the container's packages for the other steps
+      - name: Install release dependencies
+        run: |
+          python3 -m venv /work/release-venv
+          /work/release-venv/bin/python -m pip install \
+            -r .github/scripts/requirements-release.txt
+          echo "RELEASE_PYTHON=/work/release-venv/bin/python" >> $GITHUB_ENV
+      - name: Test tools
+        run: |
+          $RELEASE_PYTHON -m unittest discover \
+            -p 'Test_CompileReleaseNotes.py' tests.tools -v
       - name: Check metadata
         run: |
-          python3 tools/CheckMetadata.py
+          $RELEASE_PYTHON tools/CheckMetadata.py
       - name: Check the metadata is consistent with the releases
         # No need to check this on forks. They would need to set a Zenodo token
         # for this test. Also disable on PRs because they don't have access to
@@ -174,16 +181,17 @@ jobs:
           github.repository == 'sxs-collaboration/spectre'
             && github.event_name != 'pull_request'
         run: |
-          python3 .github/scripts/Release.py prepare -vv --check-only \
+          $RELEASE_PYTHON .github/scripts/Release.py prepare -vv --check-only \
             --zenodo-token ${{ secrets.ZENODO_READONLY_TOKEN }} \
             --github-token ${{ secrets.GITHUB_TOKEN }}
-          python3 .github/scripts/Release.py publish -vv --check-only \
+          $RELEASE_PYTHON .github/scripts/Release.py publish -vv --check-only \
             --zenodo-token ${{ secrets.ZENODO_READONLY_TOKEN }} \
             --github-token ${{ secrets.GITHUB_TOKEN }} \
             --auto-publish
       - name: Check release notes
         run: |
-          python3 tools/CompileReleaseNotes.py -vv -o release_notes.md \
+          $RELEASE_PYTHON tools/CompileReleaseNotes.py -vv \
+            -o release_notes.md \
             --github-token ${{ secrets.GITHUB_TOKEN }}
       - name: Upload release notes
         uses: actions/upload-artifact@v7
@@ -440,7 +448,7 @@ jobs:
             # Note: currently disabled because of some unknown upstream issue
             # test_3d_rendering: ON
             # Need Python version consistent with ParaView
-            PYTHON_VERSION: "3.9"
+            # PYTHON_VERSION: "3.9"
           # Test with Kokkos enabled but without CUDA
           - compiler: gcc-10
             build_type: Release
@@ -452,12 +460,14 @@ jobs:
           # the documentation build
           # - compiler: gcc-11
           #   build_type: Debug
-          # Test with Python 3.8 so that we retain backwards compatibility. We
-          # keep track of Python versions on supercomputers in this issue:
+          # Test with newer Python. Once the container has a Python version
+          # above 3.10 (current minimum) we should also test the minimum Python
+          # version so that we retain backwards compatibility.
+          # We keep track of Python versions on supercomputers in this issue:
           # https://github.com/sxs-collaboration/spectre/issues/442
           - compiler: gcc-11
             build_type: Release
-            PYTHON_VERSION: "3.8"
+            PYTHON_VERSION: "3.14"
             # Disable building executable for this build for now because it
             # exceeds the available memory. See issue:
             # https://github.com/sxs-collaboration/spectre/issues/5472
@@ -650,19 +660,21 @@ jobs:
       - name: Install Python version
         if: matrix.PYTHON_VERSION
         run: |
+          VIRTUAL_ENV=/work/python${{ matrix.PYTHON_VERSION }}-venv
           add-apt-repository ppa:deadsnakes/ppa
           apt install -y python${{ matrix.PYTHON_VERSION }}-dev \
-            python${{ matrix.PYTHON_VERSION }}-venv \
-            python${{ matrix.PYTHON_VERSION }}-distutils
-          update-alternatives --install /usr/bin/python3 python3 \
-            /usr/bin/python${{ matrix.PYTHON_VERSION }} 1
+            python${{ matrix.PYTHON_VERSION }}-venv
+          python${{ matrix.PYTHON_VERSION }} -m venv $VIRTUAL_ENV
+          $VIRTUAL_ENV/bin/python -m pip install --upgrade pip
+          echo "VIRTUAL_ENV=$VIRTUAL_ENV" >> $GITHUB_ENV
+          echo "$VIRTUAL_ENV/bin" >> $GITHUB_PATH
       - name: Install Python dependencies
         if: matrix.PYTHON_VERSION
         run: |
-          python${{ matrix.PYTHON_VERSION }} -m pip install \
+          python3 -m pip install \
             -r support/Python/requirements.txt \
             -r support/Python/dev_requirements.txt
-          python${{ matrix.PYTHON_VERSION }} -m pip list -v
+          python3 -m pip list -v
       - name: Install ParaView
         if: matrix.test_3d_rendering == 'ON'
         working-directory: /work
@@ -732,7 +744,6 @@ ${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
           ENABLE_WARNINGS=${{ matrix.ENABLE_WARNINGS }}
           WERROR="${{ matrix.WERROR != 'OFF' && '-Werror' || '' }}"
           CXX_FLAGS="${WERROR} ${{ matrix.EXTRA_CXX_FLAGS }}"
-          PYTHON_VERSION=${{ matrix.PYTHON_VERSION }}
           BUILD_PYTHON_BINDINGS=${{ matrix.BUILD_PYTHON_BINDINGS }}
           BUILD_SHARED_LIBS=${{ matrix.BUILD_SHARED_LIBS }}
           KOKKOS=${{ matrix.KOKKOS }}
@@ -754,7 +765,6 @@ ${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
           -D CMAKE_C_COMPILER=${CC}
           -D CMAKE_CXX_COMPILER=${CXX}
           -D CMAKE_Fortran_COMPILER=${FC}
-          -D Python_EXECUTABLE=/usr/bin/python${PYTHON_VERSION:-'3'}
           -D CMAKE_CXX_FLAGS="${CXX_FLAGS}"
           -D OVERRIDE_ARCH=x86-64
           -D ENABLE_WARNINGS=${ENABLE_WARNINGS:-'ON'}
@@ -962,7 +972,6 @@ ${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
           ENABLE_WARNINGS=${{ matrix.ENABLE_WARNINGS }}
           WERROR="${{ matrix.WERROR != 'OFF' && '-Werror' || '' }}"
           CXX_FLAGS="${WERROR} ${{ matrix.EXTRA_CXX_FLAGS }}"
-          PYTHON_VERSION=${{ matrix.PYTHON_VERSION }}
           BUILD_PYTHON_BINDINGS=${{ matrix.BUILD_PYTHON_BINDINGS }}
           MATRIX_CHARM_ROOT=${{ matrix.CHARM_ROOT }}
           MEMORY_ALLOCATOR=${{ matrix.MEMORY_ALLOCATOR }};
@@ -973,7 +982,6 @@ ${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
           -D CMAKE_C_COMPILER=${CC}
           -D CMAKE_CXX_COMPILER=${CXX}
           -D CMAKE_Fortran_COMPILER=${FC}
-          -D Python_EXECUTABLE=/usr/bin/python${PYTHON_VERSION:-'3'}
           -D CMAKE_CXX_FLAGS="${CXX_FLAGS}"
           -D OVERRIDE_ARCH=x86-64
           -D ENABLE_WARNINGS=${ENABLE_WARNINGS:-'ON'}
@@ -1030,14 +1038,14 @@ ${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
       fail-fast: false
       matrix:
         os:
-          - macos-15-intel
           - macos-15
     runs-on: ${{ matrix.os }}
     env:
       # We install some low-level dependencies with Homebrew. They get picked up
       # by `spack external find`.
       SPECTRE_BREW_DEPS: >-  # Line breaks are spaces, no trailing newline
-        autoconf automake boost catch2 ccache cmake gsl hdf5 openblas yaml-cpp xsimd
+        autoconf automake boost catch2 ccache cmake gsl fftw hdf5 openblas
+        yaml-cpp xsimd
       # We install these packages with Spack and cache them. The full specs are
       # listed below. This list is only needed to create the cache.
       SPECTRE_SPACK_DEPS: blaze charmpp libxsmm
@@ -1143,6 +1151,7 @@ ${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
         run: |
           source $HOME/spack/share/spack/setup-env.sh
           spack env activate spectre
+          pip install --upgrade pip
           pip install -r support/Python/requirements.txt
       # Replace the ccache directory that building the dependencies may have
       # generated with the cached ccache directory.
@@ -1292,10 +1301,10 @@ ${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
           token: ${{ secrets.GH_TOKEN_RELEASE }}
       - uses: actions/setup-python@v6
         with:
-          python-version: '3.8'
+          python-version: '3.14'
       - name: Install Python dependencies
         run: |
-          pip3 install -r .github/scripts/requirements-release.txt
+          python3 -m pip install -r .github/scripts/requirements-release.txt
       # We use the current date as tag name, unless a tag name was specified
       # as input to the `workflow_dispatch` event
       - name: Determine release version

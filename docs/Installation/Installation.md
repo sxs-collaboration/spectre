@@ -206,7 +206,7 @@ apt), or AppleClang 13.0.0 or later
 * [GNU make](https://www.gnu.org/software/make/)
 * [HDF5](https://support.hdfgroup.org/HDF5/) (non-mpi version on macOS)
   \cite Hdf5
-* [Python](https://www.python.org/) 3.8 or later.
+* [Python](https://www.python.org/) 3.10 or later.
 * [Charm++](http://charm.cs.illinois.edu/) 7.0.0, or later (8 preferred).
   See also \ref building-charm. \cite Charmpp1 \cite Charmpp2 \cite Charmpp3
 
