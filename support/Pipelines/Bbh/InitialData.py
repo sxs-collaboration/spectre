@@ -128,7 +128,7 @@ def id_parameters(
     # Extra radial refinement and log map strength scale logarithmically with
     # mass ratio to resolve the small black hole.
     q = target_params["MassA"] / target_params["MassB"]
-    cube_b_log_map_strength = 1.0 + 0.15 * np.log(q)
+    object_b_log_map_strength = 1.0 + 0.15 * np.log(q)
     extra_radial_refinement_l = round(0.3 * np.log(q))
     extra_radial_refinement_p = round(0.9 * np.log(q))
     assert (
@@ -152,7 +152,7 @@ def id_parameters(
         "ObjectAOuterRadius": separation / 3.75,
         "ObjectBOuterRadius": separation / 3.75 / q,
         "CubeScale": 1.0,
-        "CubeBLogMapStrength": cube_b_log_map_strength,
+        "ObjectBLogMapStrength": object_b_log_map_strength,
         "OrbitalAngularVelocity": orbital_angular_velocity,
         "RadialExpansionVelocity": radial_expansion_velocity,
         "ConformalSpinRight_x": chi_A[0],

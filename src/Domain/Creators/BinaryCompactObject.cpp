@@ -473,7 +473,8 @@ BinaryCompactObject::BinaryCompactObject(
           " try using "
               << length_inner_cube_ / (2.5 * cube_scale));
     }
-    if (object_a.use_logarithmic_map and not object_a.is_excised()) {
+    if (object_a.shell_log_map_strength.has_value() and
+        not object_a.is_excised()) {
       PARSE_ERROR(
           context,
           "Using a logarithmically spaced radial grid in the part "
@@ -511,7 +512,8 @@ BinaryCompactObject::BinaryCompactObject(
           " try using "
               << length_inner_cube_ / (2.5 * cube_scale));
     }
-    if (object_b.use_logarithmic_map and not object_b.is_excised()) {
+    if (object_b.shell_log_map_strength.has_value() and
+        not object_b.is_excised()) {
       PARSE_ERROR(
           context,
           "Using a logarithmically spaced radial grid in the part "
@@ -792,14 +794,14 @@ Domain<3> BinaryCompactObject::create_domain() const {
   const std::vector<domain::CoordinateMaps::Distribution>
       object_A_radial_distribution{
           ((not use_single_block_a_) and
-           std::get<Object>(object_A_).use_logarithmic_map)
+           std::get<Object>(object_A_).shell_log_map_strength.has_value())
               ? domain::CoordinateMaps::Distribution::Logarithmic
               : domain::CoordinateMaps::Distribution::Linear};
 
   const std::vector<domain::CoordinateMaps::Distribution>
       object_B_radial_distribution{
           ((not use_single_block_b_) and
-           std::get<Object>(object_B_).use_logarithmic_map)
+           std::get<Object>(object_B_).shell_log_map_strength.has_value())
               ? domain::CoordinateMaps::Distribution::Logarithmic
               : domain::CoordinateMaps::Distribution::Linear};
 
@@ -898,25 +900,34 @@ Domain<3> BinaryCompactObject::create_domain() const {
                 offset_b_optional, false, {}, object_B_radial_distribution),
             translation_B);
     Maps maps_cube_B;
-    const double cube_b_R_in = object_b.outer_radius;
-    const double cube_b_R_out = sqrt(3.0) * 0.5 * length_inner_cube_;
-    const double alpha = object_b.cube_b_log_map_strength;
-    const double physical_r0 = (cube_b_R_in * cube_b_R_out * (1.0 - alpha)) /
-                               (cube_b_R_in - alpha * cube_b_R_out);
-    const double logical_r0 =
-        (2.0 * physical_r0 - (cube_b_R_out + cube_b_R_in)) /
-        (cube_b_R_out - cube_b_R_in);
-    for (auto& wedge :
-         sph_wedge_coordinate_maps(cube_b_R_in, cube_b_R_out, 1.0, 0.0,
-                                   use_equiangular_map_, offset_b_optional)) {
-      const auto grid_distribution = RadialInterval3D{
-          Identity{}, Identity{},
-          Interval{-1., 1., -1., 1.,
-                   domain::CoordinateMaps::Distribution::Logarithmic,
-                   logical_r0}};
-      maps_cube_B.emplace_back(
-          make_coordinate_map_base<Frame::BlockLogical, Frame::Inertial>(
-              grid_distribution, std::move(wedge), translation_B));
+    if (object_b.cube_log_map_strength.has_value()) {
+      const double cube_b_R_in = object_b.outer_radius;
+      const double cube_b_R_out = sqrt(3.0) * 0.5 * length_inner_cube_;
+      const double alpha = object_b.cube_log_map_strength.value();
+      const double physical_r0 = (cube_b_R_in * cube_b_R_out * (1.0 - alpha)) /
+                                 (cube_b_R_in - alpha * cube_b_R_out);
+      const double logical_r0 =
+          (2.0 * physical_r0 - (cube_b_R_out + cube_b_R_in)) /
+          (cube_b_R_out - cube_b_R_in);
+      for (auto& wedge :
+           sph_wedge_coordinate_maps(cube_b_R_in, cube_b_R_out, 1.0, 0.0,
+                                     use_equiangular_map_, offset_b_optional)) {
+        const auto grid_distribution = RadialInterval3D{
+            Identity{}, Identity{},
+            Interval{-1., 1., -1., 1.,
+                     domain::CoordinateMaps::Distribution::Logarithmic,
+                     logical_r0}};
+        maps_cube_B.emplace_back(
+            make_coordinate_map_base<Frame::BlockLogical, Frame::Inertial>(
+                grid_distribution, std::move(wedge), translation_B));
+      }
+    } else {
+      maps_cube_B = domain::make_vector_coordinate_map_base<Frame::BlockLogical,
+                                                            Frame::Inertial, 3>(
+          sph_wedge_coordinate_maps(
+              object_b.outer_radius, sqrt(3.0) * 0.5 * length_inner_cube_, 1.0,
+              0.0, use_equiangular_map_, offset_b_optional),
+          translation_B);
     }
     std::move(maps_center_B.begin(), maps_center_B.end(),
               std::back_inserter(maps));

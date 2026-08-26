@@ -92,8 +92,8 @@ DomainCreator:
             {% else %}
             NegativeExpansion: None
             {% endif %}
-      UseLogarithmicMap: True
-      CubeBLogMapStrength: 1.0
+      ShellLogMapStrength: 1.0
+      CubeLogMapStrength: 1.0
     ObjectB:
       InnerRadius: {{ ExcisionRadiusLeft }}
       OuterRadius: {{ ObjectBOuterRadius }}
@@ -112,8 +112,8 @@ DomainCreator:
             {% else %}
             NegativeExpansion: None
             {% endif %}
-      UseLogarithmicMap: True
-      CubeBLogMapStrength: {{ CubeBLogMapStrength }}
+      ShellLogMapStrength: {{ ObjectBLogMapStrength }}
+      CubeLogMapStrength: {{ ObjectBLogMapStrength }}
     CenterOfMassOffset: [*y_offset, *z_offset]
     Envelope:
       Radius: &outer_shell_inner_radius {{ EnvelopeRadius }}
