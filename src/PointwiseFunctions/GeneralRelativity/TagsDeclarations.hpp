@@ -70,6 +70,8 @@ struct SpatialRicciScalar;
 template <typename DataType>
 struct Psi4Real;
 template <typename DataType>
+struct Psi4Imag;
+template <typename DataType>
 struct EnergyDensity;
 template <typename DataType>
 struct StressTrace;

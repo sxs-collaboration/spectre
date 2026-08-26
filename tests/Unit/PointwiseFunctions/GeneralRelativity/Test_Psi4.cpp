@@ -18,6 +18,7 @@
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
 #include "Helpers/PointwiseFunctions/GeneralRelativity/TestHelpers.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Psi4.hpp"
+#include "PointwiseFunctions/GeneralRelativity/Psi4Imag.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Psi4Real.hpp"
 #include "PointwiseFunctions/GeneralRelativity/TagsDeclarations.hpp"
 #include "PointwiseFunctions/GeneralRelativity/WeylPropagating.hpp"
@@ -27,6 +28,8 @@ template <typename RealDataType>
 void test_compute_item_in_databox(const RealDataType& used_for_size_real) {
   TestHelpers::db::test_compute_tag<gr::Tags::Psi4RealCompute<Frame::Inertial>>(
       "Psi4Real");
+  TestHelpers::db::test_compute_tag<gr::Tags::Psi4ImagCompute<Frame::Inertial>>(
+      "Psi4Imag");
 
   MAKE_GENERATOR(generator);
   std::uniform_real_distribution<> distribution(0.1, 3.0);
@@ -60,14 +63,20 @@ void test_compute_item_in_databox(const RealDataType& used_for_size_real) {
           gr::Tags::SpatialMetric<RealDataType, 3>,
           gr::Tags::InverseSpatialMetric<RealDataType, 3>,
           domain::Tags::Coordinates<3, Frame::Inertial>>,
-      db::AddComputeTags<gr::Tags::Psi4RealCompute<Frame::Inertial>>>(
+      db::AddComputeTags<gr::Tags::Psi4RealCompute<Frame::Inertial>,
+                         gr::Tags::Psi4ImagCompute<Frame::Inertial>>>(
       spatial_ricci, extrinsic_curvature, cov_deriv_extrinsic_curvature,
       spatial_metric, inv_spatial_metric, inertial_coords);
-  const auto expected = gr::psi_4_real(
+  const auto psi_4_real_expected = gr::psi_4_real(
       spatial_ricci, extrinsic_curvature, cov_deriv_extrinsic_curvature,
       spatial_metric, inv_spatial_metric, inertial_coords);
   CHECK_ITERABLE_APPROX((db::get<gr::Tags::Psi4Real<RealDataType>>(box)),
-                        expected);
+                        psi_4_real_expected);
+  const auto psi_4_imag_expected = gr::psi_4_imag(
+      spatial_ricci, extrinsic_curvature, cov_deriv_extrinsic_curvature,
+      spatial_metric, inv_spatial_metric, inertial_coords);
+  CHECK_ITERABLE_APPROX((db::get<gr::Tags::Psi4Imag<RealDataType>>(box)),
+                        psi_4_imag_expected);
 }
 
 template <typename RealDataType, typename ComplexDataType>
