@@ -21,6 +21,7 @@ spectre_target_headers(
   Tags.hpp
   TagsDeclarations.hpp
   TimeDerivative.hpp
+  UpdateAuxiliaryVariables.hpp
   )
 
 target_link_libraries(
@@ -29,5 +30,6 @@ target_link_libraries(
   DataStructures
   DiscontinuousGalerkin
   Domain
+  LinearOperators
   Utilities
   )
