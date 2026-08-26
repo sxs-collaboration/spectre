@@ -791,20 +791,6 @@ Domain<3> BinaryCompactObject::create_domain() const {
   using Maps = std::vector<std::unique_ptr<
       CoordinateMapBase<Frame::BlockLogical, Frame::Inertial, 3>>>;
 
-  const std::vector<domain::CoordinateMaps::Distribution>
-      object_A_radial_distribution{
-          ((not use_single_block_a_) and
-           std::get<Object>(object_A_).shell_log_map_strength.has_value())
-              ? domain::CoordinateMaps::Distribution::Logarithmic
-              : domain::CoordinateMaps::Distribution::Linear};
-
-  const std::vector<domain::CoordinateMaps::Distribution>
-      object_B_radial_distribution{
-          ((not use_single_block_b_) and
-           std::get<Object>(object_B_).shell_log_map_strength.has_value())
-              ? domain::CoordinateMaps::Distribution::Logarithmic
-              : domain::CoordinateMaps::Distribution::Linear};
-
   Maps maps{};
 
   // ObjectA/B is on the right/left, respectively.
@@ -822,6 +808,76 @@ Domain<3> BinaryCompactObject::create_domain() const {
              1.0 + center_of_mass_offset_[0]},
       Affine{-1.0, 1.0, -1.0 + center_of_mass_offset_[1],
              1.0 + center_of_mass_offset_[1]}};
+
+  // Build the coordinate maps for one radial layer (shell or cube) around an
+  // object. When `log_map_strength` is specified, a log radial redistribution
+  // is applied before the (linear) wedge map by composing a 1D Interval log
+  // map in the radial (zeta) direction. A strength of 1.0 places the log-map
+  // physical origin ("singularity position") at radius 0; larger values move it
+  // toward the inner radius, concentrating grid points near the object.
+  // When `log_map_strength` is unset the layer uses a linear radial grid.
+  const auto construct_object_layer_maps =
+      [this](
+          const double r_in, const double r_out, const double inner_sphericity,
+          const double outer_sphericity,
+          const std::optional<double>& log_map_strength,
+          const std::optional<std::pair<double, std::array<double, 3>>>& offset,
+          const Affine3D& translation_map) -> Maps {
+    auto wedge_maps = sph_wedge_coordinate_maps(r_in, r_out, inner_sphericity,
+                                                outer_sphericity,
+                                                use_equiangular_map_, offset);
+    // If no log map is requested, return the wedge maps combined with the
+    // translation map.
+    if (not log_map_strength.has_value()) {
+      return domain::make_vector_coordinate_map_base<Frame::BlockLogical,
+                                                     Frame::Inertial, 3>(
+          std::move(wedge_maps), translation_map);
+    }
+    // We define three radial coordinates:
+    //   - zeta: linearly-distributed logical coordinate in [-1, 1];
+    //   - zeta_log: logarithmically-distributed logical coordinate in [-1, 1];
+    //   - r: physical radius in [r_in, r_out].
+    // Hence, we define two maps:
+    //   - Log map zeta_log(zeta):
+    //       ln(zeta_log - zeta_log_0) = (1 + zeta)/2 ln(1 - zeta_log_0)
+    //                                 + (1 - zeta)/2 ln(-1 - zeta_log_0),
+    //     where zeta_log_0 < -1 is the "logical position" of the log map's
+    //     origin.
+    //   - Wedge map r(zeta_log), affine along each radial ray:
+    //       r(zeta_log) = (1-zeta_log)/2 r_in + (1+zeta_log)/2 r_out.
+    //     This is exact and isotropic for the spherical shell (sphere ->
+    //     sphere). For the cube (sphere -> flat face) it is still affine along
+    //     each ray, but r_out is the corner distance and is smaller in other
+    //     directions, so the concentration is direction-dependent.
+    // Composing these two maps, we get r(zeta) = r(zeta_log(zeta)):
+    //   ln(r - r_0) = (1 + zeta)/2 ln(r_out - r_0)
+    //               + (1 - zeta)/2 ln(r_in - r_0),
+    // where r_0 < r_in is the "physical position" of the log map's origin.
+    // For the log map zeta_log(zeta), we need to specify zeta_log_0, but it is
+    // easier to specify r_0 because the ratio of the radial Jacobian
+    // (J := dr/dzeta) at the outer (zeta=+1) vs inner (zeta=-1) boundaries is
+    //   J_out / J_in = (r_out - r_0) / (r_in - r_0) := alpha r_out / r_in,
+    // where alpha >= 1 is `log_map_strength`, which we use to parametrize r_0.
+    // Once we specify alpha, we can invert the Jacobian ratio above to get
+    //   r_0 = (r_in r_out (1 - alpha)) / (r_in - alpha r_out).
+    // Then, we can invert the wedge/affine relation r(zeta_log) to get
+    //   zeta_log_0 = (2 r_0 - (r_out + r_in)) / (r_out - r_in).
+    const double alpha = log_map_strength.value();
+    const double r_0 = (r_in * r_out * (1.0 - alpha)) / (r_in - alpha * r_out);
+    const double zeta_log_0 = (2.0 * r_0 - (r_out + r_in)) / (r_out - r_in);
+    Maps layer_maps{};
+    for (auto& wedge_map : wedge_maps) {
+      const auto log_map = RadialInterval3D{
+          Identity{}, Identity{},
+          Interval{-1., 1., -1., 1.,
+                   domain::CoordinateMaps::Distribution::Logarithmic,
+                   zeta_log_0}};
+      layer_maps.emplace_back(
+          make_coordinate_map_base<Frame::BlockLogical, Frame::Inertial>(
+              log_map, std::move(wedge_map), translation_map));
+    }
+    return layer_maps;
+  };
 
   // Two blocks covering the compact objects and their immediate neighborhood
   if (use_single_block_a_) {
@@ -848,21 +904,16 @@ Domain<3> BinaryCompactObject::create_domain() const {
             : std::make_optional(std::make_pair(
                   length_inner_cube_ * 0.5,
                   std::array<double, 3>{{offset_x_coord_a_, 0.0, 0.0}}));
-    Maps maps_center_A =
-        domain::make_vector_coordinate_map_base<Frame::BlockLogical,
-                                                Frame::Inertial, 3>(
-            sph_wedge_coordinate_maps(
-                object_a.inner_radius, object_a.outer_radius,
-                inner_sphericity_A, 1.0, use_equiangular_map_,
-                offset_a_optional, false, {}, object_A_radial_distribution),
-            translation_A);
-    Maps maps_cube_A =
-        domain::make_vector_coordinate_map_base<Frame::BlockLogical,
-                                                Frame::Inertial, 3>(
-            sph_wedge_coordinate_maps(
-                object_a.outer_radius, sqrt(3.0) * 0.5 * length_inner_cube_,
-                1.0, 0.0, use_equiangular_map_, offset_a_optional),
-            translation_A);
+    Maps maps_center_A = construct_object_layer_maps(
+        object_a.inner_radius, object_a.outer_radius, inner_sphericity_A,
+        /*outer_sphericity=*/1.0, object_a.shell_log_map_strength,
+        offset_a_optional, translation_A);
+    // The cube's outer radius is the center-to-corner distance
+    // (sqrt(3)/2 * side length), i.e. the sphere circumscribing the cube.
+    Maps maps_cube_A = construct_object_layer_maps(
+        object_a.outer_radius, /*r_out=*/sqrt(3.0) * 0.5 * length_inner_cube_,
+        /*inner_sphericity=*/1.0, /*outer_sphericity=*/0.0,
+        object_a.cube_log_map_strength, offset_a_optional, translation_A);
     std::move(maps_center_A.begin(), maps_center_A.end(),
               std::back_inserter(maps));
     std::move(maps_cube_A.begin(), maps_cube_A.end(), std::back_inserter(maps));
@@ -891,44 +942,16 @@ Domain<3> BinaryCompactObject::create_domain() const {
             : std::make_optional(std::make_pair(
                   length_inner_cube_ * 0.5,
                   std::array<double, 3>{{offset_x_coord_b_, 0.0, 0.0}}));
-    Maps maps_center_B =
-        domain::make_vector_coordinate_map_base<Frame::BlockLogical,
-                                                Frame::Inertial, 3>(
-            sph_wedge_coordinate_maps(
-                object_b.inner_radius, object_b.outer_radius,
-                inner_sphericity_B, 1.0, use_equiangular_map_,
-                offset_b_optional, false, {}, object_B_radial_distribution),
-            translation_B);
-    Maps maps_cube_B;
-    if (object_b.cube_log_map_strength.has_value()) {
-      const double cube_b_R_in = object_b.outer_radius;
-      const double cube_b_R_out = sqrt(3.0) * 0.5 * length_inner_cube_;
-      const double alpha = object_b.cube_log_map_strength.value();
-      const double physical_r0 = (cube_b_R_in * cube_b_R_out * (1.0 - alpha)) /
-                                 (cube_b_R_in - alpha * cube_b_R_out);
-      const double logical_r0 =
-          (2.0 * physical_r0 - (cube_b_R_out + cube_b_R_in)) /
-          (cube_b_R_out - cube_b_R_in);
-      for (auto& wedge :
-           sph_wedge_coordinate_maps(cube_b_R_in, cube_b_R_out, 1.0, 0.0,
-                                     use_equiangular_map_, offset_b_optional)) {
-        const auto grid_distribution = RadialInterval3D{
-            Identity{}, Identity{},
-            Interval{-1., 1., -1., 1.,
-                     domain::CoordinateMaps::Distribution::Logarithmic,
-                     logical_r0}};
-        maps_cube_B.emplace_back(
-            make_coordinate_map_base<Frame::BlockLogical, Frame::Inertial>(
-                grid_distribution, std::move(wedge), translation_B));
-      }
-    } else {
-      maps_cube_B = domain::make_vector_coordinate_map_base<Frame::BlockLogical,
-                                                            Frame::Inertial, 3>(
-          sph_wedge_coordinate_maps(
-              object_b.outer_radius, sqrt(3.0) * 0.5 * length_inner_cube_, 1.0,
-              0.0, use_equiangular_map_, offset_b_optional),
-          translation_B);
-    }
+    Maps maps_center_B = construct_object_layer_maps(
+        object_b.inner_radius, object_b.outer_radius, inner_sphericity_B,
+        /*outer_sphericity=*/1.0, object_b.shell_log_map_strength,
+        offset_b_optional, translation_B);
+    // The cube's outer radius is the center-to-corner distance
+    // (sqrt(3)/2 * side length), i.e. the sphere circumscribing the cube.
+    Maps maps_cube_B = construct_object_layer_maps(
+        object_b.outer_radius, /*r_out=*/sqrt(3.0) * 0.5 * length_inner_cube_,
+        /*inner_sphericity=*/1.0, /*outer_sphericity=*/0.0,
+        object_b.cube_log_map_strength, offset_b_optional, translation_B);
     std::move(maps_center_B.begin(), maps_center_B.end(),
               std::back_inserter(maps));
     std::move(maps_cube_B.begin(), maps_cube_B.end(), std::back_inserter(maps));
