@@ -20,6 +20,17 @@ die() {
     exit 1
 }
 
+# Set locale information, so grep behaves consistently across systems.
+# We set it globally here so scripts that source this one also get the
+# settings, but only set the particular variables we are about so as
+# to affect those scripts as little as possible.  If the user set
+# LC_ALL we assume they did so intentionally and don't want us to
+# ignore it, but it will break our checks so we error.
+test -n "${LC_ALL}" && die "Cannot run file tests with LC_ALL set"
+export LC_COLLATE=C
+export LC_CTYPE=$(locale -a | grep --max-count=1 '\.utf8$')
+test -n "${LC_CTYPE}" || die "Cannot find a UTF-8 locale"
+
 # Option to enable color in grep or the empty string if grep does not
 # support color
 color_option=''
@@ -326,6 +337,11 @@ long_lines_test() {
     test_check pass foo.cpp "// \\image ${eighty}"$'\n'
     test_check pass foo.cpp "// \\link ${eighty}"$'\n'
     test_check pass foo.cpp "// \\endlink ${eighty}"$'\n'
+    local multibyte
+    printf -v multibyte '\xf0\x9f\x98\x82' # U+1F602: 4 bytes in UTF-8
+    local tenmultibyte=${multibyte}${multibyte}${multibyte}${multibyte}\
+${multibyte}${multibyte}${multibyte}${multibyte}${multibyte}${multibyte}
+    test_check pass foo.cpp "${tenmultibyte}${tenmultibyte}${tenmultibyte}"$'\n'
 }
 standard_checks+=(long_lines)
 
