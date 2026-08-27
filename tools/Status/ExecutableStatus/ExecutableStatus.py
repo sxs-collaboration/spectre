@@ -13,7 +13,7 @@ import numpy as np
 import pandas as pd
 
 from spectre.IO.H5 import to_dataframe
-from spectre.support.DirectoryStructure import list_segments
+from spectre.support.DirectoryStructure import Segment, list_segments
 from spectre.Visualization.ReadInputFile import find_event
 
 logger = logging.getLogger(__name__)
@@ -21,10 +21,15 @@ logger = logging.getLogger(__name__)
 
 def list_reduction_files(job: dict, input_file: dict):
     reductions_file_name = input_file["Observers"]["ReductionFileName"] + ".h5"
-    if job["SegmentsDir"]:
+    segment = Segment.match(job["WorkDir"]) if job["SegmentsDir"] else None
+    if segment:
+        # Collect only the segments of this run. Segments of other executables
+        # can share the directory, e.g. the ringdown that continues an inspiral,
+        # and they write to a file of the same name.
         reduction_files = [
-            segment_dir.path / reductions_file_name
-            for segment_dir in list_segments(job["SegmentsDir"])
+            other_segment.path / reductions_file_name
+            for other_segment in list_segments(job["SegmentsDir"])
+            if other_segment.label == segment.label
         ]
     else:
         reduction_files = [Path(job["WorkDir"]) / reductions_file_name]
