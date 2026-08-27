@@ -42,22 +42,6 @@ def report_check_only(msg: str):
     logger.info(f"CHECK ONLY: {msg}")
 
 
-def new_version_id_from_response(response):
-    """Retrieves the ID of the new version draft from the API response
-
-    The "New version" action of the Zenodo API returns the ID of the created
-    version draft in the 'links' section, as documented
-    [here](https://developers.zenodo.org/#new-version). This function parses the
-    ID out of the link.
-    """
-    new_version_url = response.json()["links"]["latest_draft"]
-    return int(
-        pathlib.PurePosixPath(
-            urllib.parse.urlparse(new_version_url).path
-        ).parts[-1]
-    )
-
-
 def raise_for_status(response):
     try:
         response.raise_for_status()
@@ -96,13 +80,24 @@ class Zenodo(uplink.Consumer):
         """Checks whether the record is the latest version."""
         pass
 
-    @uplink.response_handler(new_version_id_from_response)
-    @uplink.post("deposit/depositions/{id}/actions/newversion")
+    @uplink.returns.json(key="id", type=int)
+    @uplink.post("records/{id}/versions")
     def new_version(self, latest_version_id: uplink.Path(name="id")):
-        """Invoke the "New version" action on a deposition.
+        """Creates a draft for a new version of a published record.
+
+        Zenodo returns the existing draft if one was created before, so this
+        can be called repeatedly, e.g. when an earlier release attempt failed
+        before publishing the draft.
+
+        Note that we deliberately don't use the "New version" action of the
+        legacy deposit API here, because it also imports the files of the
+        previous version into the draft. That import fails when it runs a
+        second time on the same draft, which makes the legacy action
+        impossible to re-run. We don't need those files anyway, since the
+        `publish` subprogram uploads the archive of the new release.
 
         Returns:
-          The ID of the new version.
+          The ID of the new version draft.
         """
         pass
 
@@ -605,7 +600,7 @@ def prepare(
             open_metadata_file.write(content_new)
             open_metadata_file.truncate()
     logger.info(f"Inserted new version info into '{metadata_file}'.")
-    # Also update the the metadata dict to make sure we don't accidentally use
+    # Also update the metadata dict to make sure we don't accidentally use
     # the old values somewhere
     metadata["Version"] = version_name
     metadata["PublicationDate"] = publication_date
