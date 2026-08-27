@@ -662,11 +662,14 @@ void test_uniform_cylindrical_side_class_b() {
   // Randomized test: aligned x,y centers.
   // With horizontal_dist=0:
   //   alpha_minus = pi/2 > 1.1*(pi-theta_max_one) for theta_max_one in
-  //     [0.62pi, 0.83pi] (since pi - theta_max_one < 0.38pi < pi/2).
+  //     [0.56pi, 0.83pi] (since 1.1*(pi - 0.56pi) = 0.484pi < pi/2).
   //   alpha_plus = atan2(positive, negative) > pi/2 > 1.1*theta_min_one for
   //     theta_min_one in [0.2pi, 0.38pi].
   // Both alpha conditions are automatically satisfied, greatly simplifying
   // parameter generation.
+  //
+  // Parameters are drawn in dependency order so every subsequent range is
+  // valid. This ordering eliminates feasibility-check early exits
   MAKE_GENERATOR(gen);
   std::uniform_real_distribution<> unit_dis(0.0, 1.0);
   std::uniform_real_distribution<> interval_dis(-1.0, 1.0);
@@ -692,20 +695,13 @@ void test_uniform_cylindrical_side_class_b() {
                                             center_one_z};
   CAPTURE(center_one);
 
-  // Upper cut of sphere_two: theta_min_two in [theta_min_two_lo,
-  // theta_min_two_hi].
-  const double theta_min_two_lo = 0.2;
-  const double theta_min_two_hi = 0.38;
-  const double z_plus_two =
-      center_two[2] +
-      radius_two * cos((theta_min_two_lo +
-                        (theta_min_two_hi - theta_min_two_lo) * unit_dis(gen)) *
-                       M_PI);
-  CAPTURE(z_plus_two);
+  // Minimum z-separation between adjacent planes.
+  const double z_sep_frac = 0.04;
 
-  // Lower cut of sphere_one: theta_max_one in [theta_max_one_lo,
-  // theta_max_one_hi].
-  const double theta_max_one_lo = 0.62;
+  // Step 1: Draw the lower cut of sphere_one freely.
+  // theta_max_one in [0.56pi, 0.83pi] gives cos(theta_max_one) in
+  // [-0.978, -0.187], so z_minus_one is always below center_one_z.
+  const double theta_max_one_lo = 0.56;
   const double theta_max_one_hi = 0.83;
   const double z_minus_one =
       center_one_z +
@@ -714,40 +710,69 @@ void test_uniform_cylindrical_side_class_b() {
                        M_PI);
   CAPTURE(z_minus_one);
 
-  // Upper cut of sphere_one: must satisfy z_plus_one <= z_plus_two -
-  // z_sep*R2 and theta_min_one in [theta_min_one_lo, theta_min_one_hi].
-  const double z_sep_frac = 0.04;
+  // Step 2: Draw the upper cut of sphere_one.
+  // theta_min_one in [0.2pi, 0.38pi] constrains z_plus_one to
+  //   [center_one_z + radius_one*cos(0.38pi),
+  //    center_one_z + radius_one*cos(0.2pi)]
+  //   = [center_one_z - 0.309*radius_one, center_one_z + 0.809*radius_one].
+  // The Class B separation requires z_plus_one >= z_minus_one + 2*sep*R2.
+  // The range [z_plus_one_lo, z_plus_one_hi] is nonempty:
+  //   hi - lo >= 0.996*radius_one - 0.08*radius_two
+  //           >= 0.010*radius_two > 0
+  // using radius_one >= 0.09*radius_two and the worst-case z_minus_one
+  // (= center_one_z - 0.187*radius_one at theta_max_one = 0.56pi).
   const double theta_min_one_lo = 0.2;
   const double theta_min_one_hi = 0.38;
-  const double cos_theta_min_one_upper = std::min(
-      cos(theta_min_one_lo * M_PI),
-      (z_plus_two - z_sep_frac * radius_two - center_one_z) / radius_one);
-  const double cos_theta_min_one_lower = cos(theta_min_one_hi * M_PI);
-  if (cos_theta_min_one_upper < cos_theta_min_one_lower) {
-    // Parameter draw infeasible; skip this run.
-    return;
-  }
+  const double z_plus_one_lo =
+      std::max(z_minus_one + 2.0 * z_sep_frac * radius_two,
+               center_one_z + radius_one * cos(theta_min_one_hi * M_PI));
+  const double z_plus_one_hi =
+      center_one_z + radius_one * cos(theta_min_one_lo * M_PI);
+  REQUIRE(z_plus_one_lo <= z_plus_one_hi);
   const double z_plus_one =
-      center_one_z + radius_one * (cos_theta_min_one_lower +
-                                   unit_dis(gen) * (cos_theta_min_one_upper -
-                                                    cos_theta_min_one_lower));
+      z_plus_one_lo + unit_dis(gen) * (z_plus_one_hi - z_plus_one_lo);
   CAPTURE(z_plus_one);
 
-  // Class B lower cut of sphere_two: z_minus_two in
-  //   [z_minus_one + z_sep*R2, min(z_plus_one - z_sep*R2,
-  //                                center_two[2] +
-  //                                cos(theta_max_two_upper*pi)*R2)].
-  // The upper bound keeps cos_theta_max_two < cos(theta_max_two_upper*pi).
+  // Step 3: Draw the upper cut of sphere_two.
+  // theta_min_two in [0.2pi, 0.38pi] constrains z_plus_two to
+  //   [center_two[2] - 0.309*radius_two, center_two[2] + 0.809*radius_two].
+  // We also require z_plus_two >= z_plus_one + sep*R2.
+  // The range [z_plus_two_lo, z_plus_two_hi] is nonempty because
+  //   z_plus_one <= center_one_z + 0.809*radius_one
+  //             <= center_two[2] + 0.465*radius_two,
+  // so z_plus_one + sep*R2 <= center_two[2] + 0.505*radius_two
+  //                         < center_two[2] + 0.809*radius_two.
+  const double theta_min_two_lo = 0.2;
+  const double theta_min_two_hi = 0.38;
+  const double z_plus_two_lo =
+      std::max(center_two[2] + radius_two * cos(theta_min_two_hi * M_PI),
+               z_plus_one + z_sep_frac * radius_two);
+  const double z_plus_two_hi =
+      center_two[2] + radius_two * cos(theta_min_two_lo * M_PI);
+  REQUIRE(z_plus_two_lo <= z_plus_two_hi);
+  const double z_plus_two =
+      z_plus_two_lo + unit_dis(gen) * (z_plus_two_hi - z_plus_two_lo);
+  CAPTURE(z_plus_two);
+
+  // Step 4: Draw the Class B lower cut of sphere_two.
+  // z_minus_two in [z_minus_one + sep*R2,
+  //                 min(z_plus_one - sep*R2,
+  //                     center_two[2] + cos(0.15pi)*R2)].
+  // Nonempty because z_plus_one >= z_minus_one + 2*sep*R2 (step 2), which
+  // guarantees z_plus_one - sep*R2 >= z_minus_one + sep*R2.
+  // The cos(0.15pi)*R2 arm of the min is never the binding constraint in this
+  // parameterization: z_plus_one <= center_two[2] + 0.465*radius_two (step 3),
+  // so z_plus_one - sep*R2 <= center_two[2] + 0.425*radius_two, which is
+  // always less than center_two[2] + cos(0.15pi)*radius_two
+  // = center_two[2] + 0.891*radius_two.  It is kept as a safety guard so that
+  // theta_max_two > 0.15pi remains enforced if the parameter ranges above are
+  // ever widened.
   const double theta_max_two_upper = 0.15;
   const double z_minus_two_lo = z_minus_one + z_sep_frac * radius_two;
   const double z_minus_two_hi =
       std::min(z_plus_one - z_sep_frac * radius_two,
                center_two[2] + cos(theta_max_two_upper * M_PI) * radius_two);
-  CAPTURE(z_minus_two_lo);
-  CAPTURE(z_minus_two_hi);
-  if (z_minus_two_lo >= z_minus_two_hi) {
-    return;  // Degenerate draw; skip.
-  }
+  REQUIRE(z_minus_two_lo <= z_minus_two_hi);
   const double z_minus_two =
       z_minus_two_lo + unit_dis(gen) * (z_minus_two_hi - z_minus_two_lo);
   CAPTURE(z_minus_two);
@@ -780,11 +805,11 @@ void test_uniform_cylindrical_side_class_b() {
                     .has_value());
   }
 
-  // Class B lower cone: at z = z_minus_one the cone radius equals
-  // r1*sin(theta_max_one) < radius_one, so rho = rho_outside_factor*radius_one
-  // is always strictly outside the cone at that z.  The point is also always
-  // inside sphere_two (verified analytically for the parameter ranges above).
-  if (z_minus_two > z_minus_one) {
+  // Class B lower cone: z_minus_two > z_minus_one is guaranteed by
+  // construction (step 4).  At z = z_minus_one the cone radius equals
+  // R1*sin(theta_max_one) < radius_one, so rho = 1.5*radius_one is always
+  // strictly outside the cone and inside sphere_two.
+  {
     const double rho_outside_factor = 1.5;
     CHECK_FALSE(map.inverse({{center_two[0],
                               center_two[1] + rho_outside_factor * radius_one,

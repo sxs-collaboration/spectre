@@ -45,9 +45,8 @@ namespace domain::CoordinateMaps {
  * sphere's lower cut, \f$z^{-}_{\mathrm{P}1} \leq z^{-}_{\mathrm{P}2}\f$.
  * In both classes the upper cuts satisfy
  * \f$z^{+}_{\mathrm{P}1} \leq z^{+}_{\mathrm{P}2}\f$. In Class B the outer
- * sphere's lower cut can lie anywhere above \f$z^{-}_{\mathrm{P}1}\f$,
- * including above \f$z^{+}_{\mathrm{P}1}\f$ (i.e., the two z-ranges of the
- * spheres need not overlap).
+ * sphere's lower cut can lie above \f$z^{-}_{\mathrm{P}1}\f$, including above
+ * \f$z^{+}_{\mathrm{P}1}\f$ but not above \f$z^{+}_{\mathrm{P}2}\f$ .
  *
  * UniformCylindricalSide maps a 3D unit right cylindrical shell (with
  * coordinates \f$(\bar{x},\bar{y},\bar{z})\f$ such that

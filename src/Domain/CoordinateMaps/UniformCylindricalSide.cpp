@@ -117,8 +117,9 @@ UniformCylindricalSide::UniformCylindricalSide(
              << z_plane_plus_one << ", z_plane_plus_two=" << z_plane_plus_two
              << ", z_plane_minus_one=" << z_plane_minus_one
              << ", z_plane_minus_two=" << z_plane_minus_two);
-  // In Class B (z_plane_minus_two > z_plane_minus_one), the outer sphere's
-  // mapped band must still be non-inverted.  In Class A this is guaranteed
+  // In Class B (z_plane_minus_two > z_plane_minus_one), we still must have
+  // z_plane_plus_two > z_plane_minus_two or else the map is singular at some
+  // point between sphere 1 and sphere 2.  In Class A this is guaranteed
   // implicitly by the theta bounds on sphere_two, but those bounds are relaxed
   // in Class B, so we check it explicitly here (runs in both debug and
   // release).
