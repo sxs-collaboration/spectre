@@ -252,11 +252,12 @@ def generate_id(
       pipeline_dir: Directory of the simulation, in which the pipeline
         creates its runs. Required when 'evolve' is set to True. The initial
         data runs in the 'ID' directory of the next eccentricity-control
-        iteration, e.g. 'Ecc0/ID'.
+        iteration, e.g. 'Ecc0/ID/0000_InitialData'.
       run_dir: Directory where the initial data is generated. Mutually exclusive
         with 'pipeline_dir'.
-      segments_dir: Directory where the evolution data is generated. Mutually
-        exclusive with 'pipeline_dir' and 'run_dir'.
+      segments_dir: Directory in which the initial-data run is created. Every
+        run of the control loop is a new segment in it. Mutually exclusive with
+        'pipeline_dir' and 'run_dir'.
       out_file_name: Optional. Name of the log file. (Default: "spectre.out")
     """
     logger.warning(
@@ -267,29 +268,29 @@ def generate_id(
     # Resolve directories
     if pipeline_dir:
         pipeline_dir = Path(pipeline_dir).resolve()
-    assert segments_dir is None, (
-        "Initial data generation doesn't use segments at the moment. Specify"
-        " '--run-dir' / '-o' or '--pipeline-dir' / '-d' instead."
-    )
     if evolve:
         assert pipeline_dir is not None, (
             "Specify a '--pipeline-dir' / '-d' to evolve the initial data."
             " Don't specify a '--run-dir' / '-o' because it will be created in"
             " the 'pipeline_dir' automatically."
         )
-        assert run_dir is None, (
+        assert run_dir is None and segments_dir is None, (
             "Specify the '--pipeline-dir' / '-d' rather than '--run-dir' / '-o'"
-            " when evolving the initial data. Directories for the initial data,"
-            " evolution, etc will be created in the 'pipeline_dir'"
-            " automatically."
+            " or '--segments-dir' / '-O' when evolving the initial data."
+            " Directories for the initial data, evolution, etc will be created"
+            " in the 'pipeline_dir' automatically."
         )
-    # If there is a pipeline directory, set run directory as well. The initial
-    # data starts a new eccentricity-control iteration.
-    if pipeline_dir and not run_dir:
-        run_dir = EccIteration.next(pipeline_dir).id_dir
-    # If we run a control loop, then run initial data in a subdirectory
+    # If there is a pipeline directory, set the segments directory as well. The
+    # initial data starts a new eccentricity-control iteration.
+    if pipeline_dir and not run_dir and not segments_dir:
+        segments_dir = EccIteration.next(pipeline_dir).id_dir
     if control:
-        run_dir = f"{run_dir}/ControlParams_000"
+        # Every run of the control loop is a segment, so the initial data runs
+        # in a segment rather than directly in the 'run_dir'
+        if run_dir and not segments_dir:
+            segments_dir = run_dir
+            run_dir = None
+        # Collect the logs of all runs in the control loop in a single file
         out_file_name = f"../{out_file_name}"
 
     # Determine orbital parameters

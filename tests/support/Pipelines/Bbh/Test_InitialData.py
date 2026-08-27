@@ -131,7 +131,7 @@ class TestInitialData(unittest.TestCase):
         except SystemExit as e:
             self.assertEqual(e.code, 0)
         self.assertTrue(
-            (self.test_dir / "ControlParams_000/InitialData.yaml").exists()
+            (self.test_dir / "0000_InitialData/InitialData.yaml").exists()
         )
         # Test with pipeline directory
         try:
@@ -149,7 +149,7 @@ class TestInitialData(unittest.TestCase):
             self.assertEqual(e.code, 0)
         with open(
             self.test_dir
-            / "Pipeline/Ecc0/ID/ControlParams_000/InitialData.yaml",
+            / "Pipeline/Ecc0/ID/0000_InitialData/InitialData.yaml",
             "r",
         ) as open_input_file:
             metadata = next(yaml.safe_load_all(open_input_file))
