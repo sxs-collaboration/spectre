@@ -587,6 +587,34 @@ void test_power_monitors_fourier_multidim(
     CHECK_ITERABLE_APPROX(pm[2], expected_z);
   }
 }
+
+void test_power_monitors_b2_cylinder() {
+  // Regression test: exact analytical values for u = r * cos(phi) * z.
+  // Test of underlying implementation is in ../Spectral/Test_ZernikeB2.cpp
+    const size_t n_r = 3;
+    const size_t n_phi = 5;
+    const size_t n_z = 4;
+    const size_t M = n_phi / 2;
+    const Mesh<3> mesh{{n_r, n_phi, n_z},
+                       {Spectral::Basis::ZernikeB2, Spectral::Basis::ZernikeB2,
+                        Spectral::Basis::Legendre},
+                       {Spectral::Quadrature::GaussRadauUpper,
+                        Spectral::Quadrature::Equiangular,
+                        Spectral::Quadrature::GaussLobatto}};
+    const auto coords = logical_coordinates(mesh);
+    const DataVector r = 0.5 * (get<0>(coords) + 1.0);
+    const DataVector& phi = get<1>(coords);
+    const DataVector& z = get<2>(coords);
+    const DataVector u = r * cos(phi) * z;
+    const auto pm = PowerMonitors::power_monitors(u, mesh);
+    CHECK(pm[0].size() == n_r);
+    CHECK_ITERABLE_APPROX(pm[0], (DataVector{0.0, sqrt(3.0) / 10.0, 0.0}));
+    CHECK(pm[1].size() == M + 1);
+    CHECK_ITERABLE_APPROX(pm[1], (DataVector{0.0, sqrt(15.0) / 20.0, 0.0}));
+    CHECK(pm[2].size() == n_z);
+    CHECK_ITERABLE_APPROX(pm[2],
+                          (DataVector{0.0, sqrt(30.0) / 10.0, 0.0, 0.0}));
+}
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.PowerMonitors",
@@ -603,4 +631,5 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.PowerMonitors",
   test_spherical_shell_angular_power_monitor();
   test_power_monitors_fourier(make_not_null(&gen));
   test_power_monitors_fourier_multidim(make_not_null(&gen));
+  test_power_monitors_b2_cylinder();
 }

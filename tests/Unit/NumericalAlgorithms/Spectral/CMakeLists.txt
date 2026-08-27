@@ -43,6 +43,7 @@ set(LIBRARY_SOURCES
   Test_QuadratureWeights.cpp
   Test_SegmentSize.cpp
   Test_Spectral.cpp
+  Test_ZernikeB2.cpp
   Test_ZernikeGaussRadauUpper.cpp
   )
 
