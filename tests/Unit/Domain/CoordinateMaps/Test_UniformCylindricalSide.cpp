@@ -5,12 +5,12 @@
 
 #include <array>
 #include <cmath>
+#include <numbers>
 #include <optional>
 #include <random>
 
 #include "Domain/CoordinateMaps/UniformCylindricalSide.hpp"
 #include "Helpers/Domain/CoordinateMaps/TestMapHelpers.hpp"
-#include "NumericalAlgorithms/RootFinding/TOMS748.hpp"
 
 namespace domain {
 
@@ -24,7 +24,7 @@ void test_uniform_cylindrical_side_planes_equal(
   MAKE_GENERATOR(gen);
   std::uniform_real_distribution<> unit_dis(0.0, 1.0);
   std::uniform_real_distribution<> interval_dis(-1.0, 1.0);
-  std::uniform_real_distribution<> angle_dis(0.0, 2.0 * M_PI);
+  std::uniform_real_distribution<> angle_dis(0.0, 2.0 * std::numbers::pi);
 
   // Choose some random center for sphere_two
   const std::array<double, 3> center_two = {
@@ -44,7 +44,7 @@ void test_uniform_cylindrical_side_planes_equal(
   const double angle_one_plus =
       min_angle_one_plus +
       (max_angle_one_plus - min_angle_one_plus) * unit_dis(gen);
-  const double z_plane_frac_plus_one = cos(angle_one_plus * M_PI);
+  const double z_plane_frac_plus_one = cos(angle_one_plus * std::numbers::pi);
 
   // Choose z_plane_frac_minus_one=(z_plane_minus_one-center_one[2])/radius_one
   // (note that this quantity is < 0).
@@ -57,7 +57,7 @@ void test_uniform_cylindrical_side_planes_equal(
   const double z_plane_frac_minus_one =
       -cos((min_angle_one_minus +
             (max_angle_one_minus - min_angle_one_minus) * unit_dis(gen)) *
-           M_PI);
+           std::numbers::pi);
 
   // Choose an angle for the positive z-plane
   // Don't go too close to the edge if angle_one_plus is large.
@@ -67,7 +67,7 @@ void test_uniform_cylindrical_side_planes_equal(
       center_two[2] +
       cos((min_angle_shared +
            (max_angle_shared - min_angle_shared) * unit_dis(gen)) *
-          M_PI) *
+          std::numbers::pi) *
           radius_two;
   const double z_plane_plus_one = z_plane_plus_two;
   CAPTURE(z_plane_plus_two);
@@ -84,13 +84,13 @@ void test_uniform_cylindrical_side_planes_equal(
           ? 0.4
           : std::min(0.4, acos((center_two[2] - z_plane_plus_two) / radius_two +
                                0.18) /
-                              M_PI);
+                              std::numbers::pi);
   CHECK(min_angle_two < max_angle_two);
 
   const double z_plane_minus_two =
       center_two[2] -
       cos((min_angle_two + (max_angle_two - min_angle_two) * unit_dis(gen)) *
-          M_PI) *
+          std::numbers::pi) *
           radius_two;
   CAPTURE(z_plane_minus_two);
 
@@ -177,7 +177,7 @@ void test_uniform_cylindrical_side() {
   MAKE_GENERATOR(gen);
   std::uniform_real_distribution<> unit_dis(0.0, 1.0);
   std::uniform_real_distribution<> interval_dis(-1.0, 1.0);
-  std::uniform_real_distribution<> angle_dis(0.0, 2.0 * M_PI);
+  std::uniform_real_distribution<> angle_dis(0.0, 2.0 * std::numbers::pi);
 
   // Choose some random center for sphere_two
   const std::array<double, 3> center_two = {
@@ -198,7 +198,8 @@ void test_uniform_cylindrical_side() {
   // too close to the edge.
   const double z_plane_plus_two =
       center_two[2] +
-      cos((min_angle + (max_angle - min_angle) * unit_dis(gen)) * M_PI) *
+      cos((min_angle + (max_angle - min_angle) * unit_dis(gen)) *
+          std::numbers::pi) *
           radius_two;
   CAPTURE(z_plane_plus_two);
 
@@ -207,19 +208,20 @@ void test_uniform_cylindrical_side() {
   // too close to the edge.
   const double z_plane_minus_two =
       center_two[2] -
-      cos((min_angle + (max_angle - min_angle) * unit_dis(gen)) * M_PI) *
+      cos((min_angle + (max_angle - min_angle) * unit_dis(gen)) *
+          std::numbers::pi) *
           radius_two;
   CAPTURE(z_plane_minus_two);
 
   // Choose z_plane_frac_plus_one=(z_plane_plus_one-center_one[2])/radius_one
-  const double z_plane_frac_plus_one =
-      cos((min_angle + (max_angle - min_angle) * unit_dis(gen)) * M_PI);
+  const double z_plane_frac_plus_one = cos(
+      (min_angle + (max_angle - min_angle) * unit_dis(gen)) * std::numbers::pi);
 
   // Choose
   // z_plane_frac_minus_one=(z_plane_minus_one-center_one[2])/radius_one (note
   // that this quantity is < 0).
-  const double z_plane_frac_minus_one =
-      -cos((min_angle + (max_angle - min_angle) * unit_dis(gen)) * M_PI);
+  const double z_plane_frac_minus_one = -cos(
+      (min_angle + (max_angle - min_angle) * unit_dis(gen)) * std::numbers::pi);
 
   // Compute the minimum allowed value of the angle alpha_plus.
   const double theta_max_plus_one = acos(z_plane_frac_plus_one);
@@ -284,7 +286,7 @@ void test_uniform_cylindrical_side() {
     // satisfied, then alpha_minus > min_alpha_minus imposes no additional
     // restriction on radius.
     const double max_radius_one_for_alpha_plus =
-        min_alpha_plus > 0.5 * M_PI
+        min_alpha_plus > 0.5 * std::numbers::pi
             ? std::numeric_limits<double>::max()
             : std::min(
                   radius_two * sin(theta_max_plus_two) /
@@ -294,7 +296,7 @@ void test_uniform_cylindrical_side() {
                       (1.0 - cos(theta_max_plus_one) -
                        sin(theta_max_plus_one) * tan(min_alpha_plus)));
     const double max_radius_one_for_alpha_minus =
-        min_alpha_minus > 0.5 * M_PI
+        min_alpha_minus > 0.5 * std::numbers::pi
             ? std::numeric_limits<double>::max()
             : std::min(radius_two * sin(theta_max_minus_two) /
                            sin(theta_max_minus_one),
@@ -442,12 +444,12 @@ void test_uniform_cylindrical_side() {
         CHECK(alpha_minus_if_rho_is_zero >= min_alpha_minus);
 
         const double max_rho_alpha_plus_first_term =
-            abs(min_alpha_plus - 0.5 * M_PI) < 1.e-4
+            abs(min_alpha_plus - 0.5 * std::numbers::pi) < 1.e-4
                 ? 0.0
                 : (z_plane_plus_two - z_plane_plus_one) / tan(min_alpha_plus);
 
         const double max_rho_alpha_minus_first_term =
-            abs(min_alpha_minus - 0.5 * M_PI) < 1.e-4
+            abs(min_alpha_minus - 0.5 * std::numbers::pi) < 1.e-4
                 ? 0.0
                 : (z_plane_minus_one - z_plane_minus_two) /
                       tan(min_alpha_minus);
@@ -534,8 +536,8 @@ void test_uniform_cylindrical_side_class_b() {
     INFO("Concentric spheres");
     const double r1 = 0.9;
     const double r2 = 3.0;
-    const double theta_min = 0.2 * M_PI;
-    const double theta_max = 0.75 * M_PI;
+    const double theta_min = 0.2 * std::numbers::pi;
+    const double theta_max = 0.75 * std::numbers::pi;
     const double z_plus_one = r1 * cos(theta_min);
     const double z_minus_one = r1 * cos(theta_max);
     const double z_plus_two = r2 * cos(theta_min);
@@ -587,8 +589,8 @@ void test_uniform_cylindrical_side_class_b() {
     const double r1 = 1.1;
     const double r2 = 4.0;
     const double center_one_z = 0.5;
-    const double theta_upper = 0.25 * M_PI;
-    const double theta_lower = 0.75 * M_PI;
+    const double theta_upper = 0.25 * std::numbers::pi;
+    const double theta_lower = 0.75 * std::numbers::pi;
     const double z_plus_one = center_one_z + r1 * cos(theta_upper);
     const double z_minus_one = center_one_z + r1 * cos(theta_lower);
     const double z_plus_two = r2 * cos(theta_upper);
@@ -707,7 +709,7 @@ void test_uniform_cylindrical_side_class_b() {
       center_one_z +
       radius_one * cos((theta_max_one_lo +
                         (theta_max_one_hi - theta_max_one_lo) * unit_dis(gen)) *
-                       M_PI);
+                       std::numbers::pi);
   CAPTURE(z_minus_one);
 
   // Step 2: Draw the upper cut of sphere_one.
@@ -723,11 +725,11 @@ void test_uniform_cylindrical_side_class_b() {
   // (= center_one_z - 0.187*radius_one at theta_max_one = 0.56pi).
   const double theta_min_one_lo = 0.2;
   const double theta_min_one_hi = 0.38;
-  const double z_plus_one_lo =
-      std::max(z_minus_one + 2.0 * z_sep_frac * radius_two,
-               center_one_z + radius_one * cos(theta_min_one_hi * M_PI));
+  const double z_plus_one_lo = std::max(
+      z_minus_one + 2.0 * z_sep_frac * radius_two,
+      center_one_z + radius_one * cos(theta_min_one_hi * std::numbers::pi));
   const double z_plus_one_hi =
-      center_one_z + radius_one * cos(theta_min_one_lo * M_PI);
+      center_one_z + radius_one * cos(theta_min_one_lo * std::numbers::pi);
   REQUIRE(z_plus_one_lo <= z_plus_one_hi);
   const double z_plus_one =
       z_plus_one_lo + unit_dis(gen) * (z_plus_one_hi - z_plus_one_lo);
@@ -744,11 +746,11 @@ void test_uniform_cylindrical_side_class_b() {
   //                         < center_two[2] + 0.809*radius_two.
   const double theta_min_two_lo = 0.2;
   const double theta_min_two_hi = 0.38;
-  const double z_plus_two_lo =
-      std::max(center_two[2] + radius_two * cos(theta_min_two_hi * M_PI),
-               z_plus_one + z_sep_frac * radius_two);
+  const double z_plus_two_lo = std::max(
+      center_two[2] + radius_two * cos(theta_min_two_hi * std::numbers::pi),
+      z_plus_one + z_sep_frac * radius_two);
   const double z_plus_two_hi =
-      center_two[2] + radius_two * cos(theta_min_two_lo * M_PI);
+      center_two[2] + radius_two * cos(theta_min_two_lo * std::numbers::pi);
   REQUIRE(z_plus_two_lo <= z_plus_two_hi);
   const double z_plus_two =
       z_plus_two_lo + unit_dis(gen) * (z_plus_two_hi - z_plus_two_lo);
@@ -769,9 +771,9 @@ void test_uniform_cylindrical_side_class_b() {
   // ever widened.
   const double theta_max_two_upper = 0.15;
   const double z_minus_two_lo = z_minus_one + z_sep_frac * radius_two;
-  const double z_minus_two_hi =
-      std::min(z_plus_one - z_sep_frac * radius_two,
-               center_two[2] + cos(theta_max_two_upper * M_PI) * radius_two);
+  const double z_minus_two_hi = std::min(
+      z_plus_one - z_sep_frac * radius_two,
+      center_two[2] + cos(theta_max_two_upper * std::numbers::pi) * radius_two);
   REQUIRE(z_minus_two_lo <= z_minus_two_hi);
   const double z_minus_two =
       z_minus_two_lo + unit_dis(gen) * (z_minus_two_hi - z_minus_two_lo);
@@ -838,10 +840,10 @@ void test_assert_checks() {
   const std::array<double, 3> c0{0.0, 0.0, 0.0};
   const double r2 = 3.0;
   const double r1 = 0.9;
-  const double zp1 = r1 * cos(0.2 * M_PI);
-  const double zm1 = r1 * cos(0.8 * M_PI);
-  const double zp2 = r2 * cos(0.2 * M_PI);
-  const double zm2 = r2 * cos(0.8 * M_PI);
+  const double zp1 = r1 * cos(0.2 * std::numbers::pi);
+  const double zm1 = r1 * cos(0.8 * std::numbers::pi);
+  const double zp2 = r2 * cos(0.2 * std::numbers::pi);
+  const double zm2 = r2 * cos(0.8 * std::numbers::pi);
 
   // Basic radius violations
   CHECK_THROWS_WITH(
@@ -879,46 +881,52 @@ void test_assert_checks() {
   }
 
   // Sphere-one theta bounds
-  CHECK_THROWS_WITH((CoordinateMaps::UniformCylindricalSide(
-                        c0, c0, r1, r2, r1 * cos(0.45 * M_PI), zm1, zp2, zm2)),
-                    Catch::Matchers::ContainsSubstring(
-                        "z_plane_plus_one is too close to the center"));
-  CHECK_THROWS_WITH((CoordinateMaps::UniformCylindricalSide(
-                        c0, c0, r1, r2, r1 * cos(0.1 * M_PI), zm1, zp2, zm2)),
-                    Catch::Matchers::ContainsSubstring(
-                        "z_plane_plus_one is too far from the center"));
-  CHECK_THROWS_WITH((CoordinateMaps::UniformCylindricalSide(
-                        c0, c0, r1, r2, zp1, r1 * cos(0.55 * M_PI), zp2, zm2)),
-                    Catch::Matchers::ContainsSubstring(
-                        "z_plane_minus_one is too close to the center"));
-  CHECK_THROWS_WITH((CoordinateMaps::UniformCylindricalSide(
-                        c0, c0, r1, r2, zp1, r1 * cos(0.9 * M_PI), zp2, zm2)),
-                    Catch::Matchers::ContainsSubstring(
-                        "z_plane_minus_one is too far from the center"));
+  CHECK_THROWS_WITH(
+      (CoordinateMaps::UniformCylindricalSide(
+          c0, c0, r1, r2, r1 * cos(0.45 * std::numbers::pi), zm1, zp2, zm2)),
+      Catch::Matchers::ContainsSubstring(
+          "z_plane_plus_one is too close to the center"));
+  CHECK_THROWS_WITH(
+      (CoordinateMaps::UniformCylindricalSide(
+          c0, c0, r1, r2, r1 * cos(0.1 * std::numbers::pi), zm1, zp2, zm2)),
+      Catch::Matchers::ContainsSubstring(
+          "z_plane_plus_one is too far from the center"));
+  CHECK_THROWS_WITH(
+      (CoordinateMaps::UniformCylindricalSide(
+          c0, c0, r1, r2, zp1, r1 * cos(0.55 * std::numbers::pi), zp2, zm2)),
+      Catch::Matchers::ContainsSubstring(
+          "z_plane_minus_one is too close to the center"));
+  CHECK_THROWS_WITH(
+      (CoordinateMaps::UniformCylindricalSide(
+          c0, c0, r1, r2, zp1, r1 * cos(0.9 * std::numbers::pi), zp2, zm2)),
+      Catch::Matchers::ContainsSubstring(
+          "z_plane_minus_one is too far from the center"));
 
   // Sphere-two theta bounds
   {
     const double r1_s = 0.3;
-    const double zp1_s = r1_s * cos(0.2 * M_PI);
-    const double zm1_s = r1_s * cos(0.8 * M_PI);
-    CHECK_THROWS_WITH(
-        (CoordinateMaps::UniformCylindricalSide(c0, c0, r1_s, r2, zp1_s, zm1_s,
-                                                r2 * cos(0.45 * M_PI), zm2)),
-        Catch::Matchers::ContainsSubstring(
-            "z_plane_plus_two is too close to the south pole"));
+    const double zp1_s = r1_s * cos(0.2 * std::numbers::pi);
+    const double zm1_s = r1_s * cos(0.8 * std::numbers::pi);
+    CHECK_THROWS_WITH((CoordinateMaps::UniformCylindricalSide(
+                          c0, c0, r1_s, r2, zp1_s, zm1_s,
+                          r2 * cos(0.45 * std::numbers::pi), zm2)),
+                      Catch::Matchers::ContainsSubstring(
+                          "z_plane_plus_two is too close to the south pole"));
   }
   CHECK_THROWS_WITH((CoordinateMaps::UniformCylindricalSide(c0, c0, r1, r2, zp1,
                                                             zm1, zp2, -0.85)),
                     Catch::Matchers::ContainsSubstring(
                         "z_plane_minus_two is too close to the north pole"));
-  CHECK_THROWS_WITH((CoordinateMaps::UniformCylindricalSide(
-                        c0, c0, r1, r2, zp1, zm1, r2 * cos(0.1 * M_PI), zm2)),
-                    Catch::Matchers::ContainsSubstring(
-                        "z_plane_plus_two is too close to the north pole"));
-  CHECK_THROWS_WITH((CoordinateMaps::UniformCylindricalSide(
-                        c0, c0, r1, r2, zp1, zm1, zp2, r2 * cos(0.9 * M_PI))),
-                    Catch::Matchers::ContainsSubstring(
-                        "z_plane_minus_two is too close to the south pole"));
+  CHECK_THROWS_WITH(
+      (CoordinateMaps::UniformCylindricalSide(
+          c0, c0, r1, r2, zp1, zm1, r2 * cos(0.1 * std::numbers::pi), zm2)),
+      Catch::Matchers::ContainsSubstring(
+          "z_plane_plus_two is too close to the north pole"));
+  CHECK_THROWS_WITH(
+      (CoordinateMaps::UniformCylindricalSide(
+          c0, c0, r1, r2, zp1, zm1, zp2, r2 * cos(0.9 * std::numbers::pi))),
+      Catch::Matchers::ContainsSubstring(
+          "z_plane_minus_two is too close to the south pole"));
 
   // Both pairs of z-planes equal
   CHECK_THROWS_WITH(
