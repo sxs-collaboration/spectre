@@ -16,6 +16,8 @@
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/FiniteDifference/ReconstructWork.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/FiniteDifference/Reconstructor.hpp"
+#include "Evolution/VariableFixing/FixToAtmosphere.hpp"
+#include "Evolution/VariableFixing/Tags.hpp"
 #include "NumericalAlgorithms/FiniteDifference/FallbackReconstructorType.hpp"
 #include "Options/Auto.hpp"
 #include "Options/Context.hpp"
@@ -165,7 +167,8 @@ class PositivityPreservingAdaptiveOrderPrim : public Reconstructor {
       tmpl::list<::Tags::Variables<hydro::grmhd_tags<DataVector>>,
                  hydro::Tags::GrmhdEquationOfState, domain::Tags::Element<dim>,
                  evolution::dg::subcell::Tags::GhostDataForReconstruction<dim>,
-                 evolution::dg::subcell::Tags::Mesh<dim>>;
+                 evolution::dg::subcell::Tags::Mesh<dim>,
+                 ::Tags::VariableFixer<VariableFixing::FixToAtmosphere<dim>>>;
 
   template <size_t ThermodynamicDim>
   void reconstruct(
@@ -180,7 +183,8 @@ class PositivityPreservingAdaptiveOrderPrim : public Reconstructor {
       const Element<dim>& element,
       const DirectionalIdMap<dim, evolution::dg::subcell::GhostData>&
           ghost_data,
-      const Mesh<dim>& subcell_mesh) const;
+      const Mesh<dim>& subcell_mesh,
+      const VariableFixing::FixToAtmosphere<dim>& fix_to_atmosphere) const;
 
   template <size_t ThermodynamicDim>
   void reconstruct_fd_neighbor(
@@ -191,6 +195,7 @@ class PositivityPreservingAdaptiveOrderPrim : public Reconstructor {
       const DirectionalIdMap<dim, evolution::dg::subcell::GhostData>&
           ghost_data,
       const Mesh<dim>& subcell_mesh,
+      const VariableFixing::FixToAtmosphere<dim>& fix_to_atmosphere,
       Direction<dim> direction_to_reconstruct) const;
 
   bool reconstruct_rho_times_temperature() const override;

@@ -65,7 +65,8 @@ void MonotonicityPreserving5Prim::reconstruct(
     const EquationsOfState::EquationOfState<true, ThermodynamicDim>& eos,
     const Element<dim>& element,
     const DirectionalIdMap<dim, evolution::dg::subcell::GhostData>& ghost_data,
-    const Mesh<dim>& subcell_mesh) const {
+    const Mesh<dim>& subcell_mesh,
+    const VariableFixing::FixToAtmosphere<dim>& fix_to_atmosphere) const {
   DirectionalIdMap<dim, Variables<prims_to_reconstruct_tags>>
       neighbor_variables_data{};
   ::fd::neighbor_data_as_variables<dim>(make_not_null(&neighbor_variables_data),
@@ -83,7 +84,8 @@ void MonotonicityPreserving5Prim::reconstruct(
             epsilon_);
       },
       volume_prims, eos, element, neighbor_variables_data, subcell_mesh,
-      ghost_zone_size(), true, reconstruct_rho_times_temperature());
+      ghost_zone_size(), true, reconstruct_rho_times_temperature(),
+      &fix_to_atmosphere);
 }
 
 template <size_t ThermodynamicDim>
@@ -94,6 +96,7 @@ void MonotonicityPreserving5Prim::reconstruct_fd_neighbor(
     const Element<dim>& element,
     const DirectionalIdMap<dim, evolution::dg::subcell::GhostData>& ghost_data,
     const Mesh<dim>& subcell_mesh,
+    const VariableFixing::FixToAtmosphere<dim>& fix_to_atmosphere,
     const Direction<dim> direction_to_reconstruct) const {
   reconstruct_fd_neighbor_work<prims_to_reconstruct_tags,
                                prims_to_reconstruct_tags>(
@@ -126,7 +129,7 @@ void MonotonicityPreserving5Prim::reconstruct_fd_neighbor(
       },
       subcell_volume_prims, eos, element, ghost_data, subcell_mesh,
       direction_to_reconstruct, ghost_zone_size(), true,
-      reconstruct_rho_times_temperature());
+      reconstruct_rho_times_temperature(), &fix_to_atmosphere);
 }
 
 bool MonotonicityPreserving5Prim::reconstruct_rho_times_temperature() const {
@@ -158,7 +161,8 @@ bool operator!=(const MonotonicityPreserving5Prim& lhs,
       const Element<3>& element,                                            \
       const DirectionalIdMap<3, evolution::dg::subcell::GhostData>&         \
           ghost_data,                                                       \
-      const Mesh<3>& subcell_mesh) const;                                   \
+      const Mesh<3>& subcell_mesh,                                          \
+      const VariableFixing::FixToAtmosphere<3>& fix_to_atmosphere) const;   \
   template void MonotonicityPreserving5Prim::reconstruct_fd_neighbor(       \
       gsl::not_null<Variables<tags_list_for_reconstruct>*> vars_on_face,    \
       const Variables<hydro::grmhd_tags<DataVector>>& subcell_volume_prims, \
@@ -167,6 +171,7 @@ bool operator!=(const MonotonicityPreserving5Prim& lhs,
       const DirectionalIdMap<3, evolution::dg::subcell::GhostData>&         \
           ghost_data,                                                       \
       const Mesh<3>& subcell_mesh,                                          \
+      const VariableFixing::FixToAtmosphere<3>& fix_to_atmosphere,          \
       const Direction<3> direction_to_reconstruct) const;
 
 GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
