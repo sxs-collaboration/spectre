@@ -156,6 +156,11 @@ authors:
   family-names: Corso
   given-names: Nicholas
   orcid: https://orcid.org/0000-0002-0088-2563
+- affiliation: Theoretical Astrophysics, Walter Burke Institute for Theoretical Physics,
+    California Institute of Technology, Pasadena, CA 91125, USA
+  family-names: Da Re
+  given-names: Guido
+  orcid: https://orcid.org/0009-0007-2006-094X
 - affiliation: Max Planck Institute for Gravitational Physics (Albert Einstein Institute),
     Am Mühlenberg 1, Potsdam 14476, Germany
   family-names: Dittmer
@@ -350,8 +355,8 @@ authors:
   given-names: Jooheon
   orcid: https://orcid.org/0000-0002-3251-0924
 cff-version: 1.2.0
-date-released: 2026-06-30
-doi: 10.5281/zenodo.21065180
+date-released: 2026-08-27
+doi: 10.5281/zenodo.22125118
 keywords:
 - Software
 - Astrophysics
@@ -1069,4 +1074,4 @@ references:
 repository-code: https://github.com/sxs-collaboration/spectre
 title: SpECTRE
 url: https://spectre-code.org
-version: 2026.06.30
+version: 2026.08.27
