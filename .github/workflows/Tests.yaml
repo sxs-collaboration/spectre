@@ -1337,6 +1337,15 @@ ${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
             echo "Nothing changed since last release $(git describe release)."
             exit 1
           fi
+          # Fail early if 'develop' has changed since this workflow was
+          # dispatched
+          REMOTE_DEVELOP=$(git ls-remote origin refs/heads/develop | cut -f 1)
+          if [ "$(git rev-parse HEAD)" != "$REMOTE_DEVELOP" ]; then
+            echo "'develop' has moved to $REMOTE_DEVELOP since this workflow"
+            echo "was dispatched for $(git rev-parse HEAD). Dispatch the"
+            echo "workflow again to release the current state of 'develop'."
+            exit 1
+          fi
       - name: Reserve Zenodo DOI and prepare repository
         run: |
           python3 .github/scripts/Release.py prepare -vv \
