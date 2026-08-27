@@ -358,9 +358,32 @@ execute_process(
   WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/tmp/
   ERROR_VARIABLE CHARM_MODULEINIT_ERROR
   )
+# Append a weak `CkRegisterMainModule`. `libck` expects it from the executable,
+# but only a generated main module defines it, so executables without one (e.g.
+# `ConvertComposeTable`) fail to link. They never call it, hence the abort,
+# which also catches an executable linked without its main module instead of
+# letting Charm++ hang with no main chare. It goes into the generated file
+# because `tools/WrapExecutableLinker.sh` stubs out every `*.cpp.o` on the link
+# line, which would break a source file of its own. Copy it with
+# `configure_file` so its timestamp only changes with its contents: this object
+# file is a link dependency of every executable.
+file(READ ${CMAKE_BINARY_DIR}/tmp/CharmModuleInit.C CHARM_MODULEINIT_CONTENTS)
+file(WRITE ${CMAKE_BINARY_DIR}/tmp/CharmModuleInitWithMainModule.C
+  "${CHARM_MODULEINIT_CONTENTS}"
+  "#include <cstdio>\n"
+  "#include <cstdlib>\n"
+  "extern \"C\" __attribute__((weak)) void CkRegisterMainModule() {\n"
+  "  fprintf(stderr,\n"
+  "          \"No Charm++ main module was registered. This executable was \"\n"
+  "          \"linked without the object file that defines its main \"\n"
+  "          \"module.\\n\");\n"
+  "  abort();\n"
+  "}\n"
+  )
 configure_file(
-  ${CMAKE_BINARY_DIR}/tmp/CharmModuleInit.C
-  ${CMAKE_BINARY_DIR}
+  ${CMAKE_BINARY_DIR}/tmp/CharmModuleInitWithMainModule.C
+  ${CMAKE_BINARY_DIR}/CharmModuleInit.C
+  COPYONLY
   )
 add_library(CharmModuleInit OBJECT ${CMAKE_BINARY_DIR}/CharmModuleInit.C)
 # -w -- suppress all warnings because this is charm-generated source
