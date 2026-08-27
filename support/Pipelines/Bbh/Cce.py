@@ -9,7 +9,10 @@ from typing import Optional, Sequence, Union
 import click
 
 from spectre.IO.H5.CombineH5Dat import combine_h5_dat
-from spectre.support.DirectoryStructure import PipelineStep, list_pipeline_steps
+from spectre.Pipelines.EccentricityControl.DirectoryStructure import (
+    EccIteration,
+)
+from spectre.support.DirectoryStructure import Segment
 from spectre.support.Schedule import schedule, scheduler_options
 
 logger = logging.getLogger(__name__)
@@ -21,6 +24,7 @@ def run_cce(
     bondi_sachs_data: Union[Union[str, Path], Sequence[Union[str, Path]]],
     force: bool = False,
     cce_input_file_template: Union[str, Path] = CCE_INPUT_FILE_TEMPLATE,
+    lev: Optional[int] = None,
     pipeline_dir: Optional[Union[str, Path]] = None,
     run_dir: Optional[Union[str, Path]] = None,
     segments_dir: Optional[Union[str, Path]] = None,
@@ -37,11 +41,17 @@ def run_cce(
     details.
 
     Arguments:
-        bondi_sachs_data: Path to one or more files containing Bondi-Sachs data
-        pipeline_dir: Directory where steps in the pipeline are created.
-        run_dir: Directory where the CCE executable is run. Mutually exclusive
+      bondi_sachs_data: Path to one or more files containing Bondi-Sachs data
+      lev: Resolution of the simulation that the waveforms are extracted from.
+        Required when running in a 'pipeline_dir', because it determines the
+        directory that CCE runs in.
+      pipeline_dir: Directory of the simulation, in which the pipeline
+        creates its runs.
+      run_dir: Directory where the CCE executable is run. Mutually exclusive
         with 'pipeline_dir'.
-        cce_input_file_template: Input file template for CCE. This should be a
+      segments_dir: Directory in which the CCE run is created. Mutually
+        exclusive with 'pipeline_dir' and 'run_dir'.
+      cce_input_file_template: Input file template for CCE. This should be a
         yaml file that defines the steps in the CCE pipeline.
     """
     logger.warning(
@@ -49,26 +59,25 @@ def run_cce(
         " input files."
     )
 
-    if not any([pipeline_dir, run_dir]):
+    if not any([pipeline_dir, run_dir, segments_dir]):
         raise ValueError(
-            "Specify either '--run-dir' / '-o' or '--pipeline-dir' / '-d'."
+            "Specify a '--run-dir' / '-o', a '--segments-dir' / '-O', or a"
+            " '--pipeline-dir' / '-d'."
         )
-    # If there is a pipeline directory, set run directory as well
+    # Resolve the run directory. CCE writes no checkpoints, so it always runs in
+    # a single run directory rather than in a series of segments.
     if pipeline_dir:
         pipeline_dir = Path(pipeline_dir).resolve()
-    if segments_dir:
-        raise ValueError(
-            "CCE does not use segments at the moment. Specify"
-            " '--run-dir' / '-o' or '--pipeline-dir' / '-d' instead."
+        assert lev is not None, (
+            "Specify a '--lev' when running in a '--pipeline-dir' / '-d',"
+            " because it determines the directory that CCE runs in. Specify a"
+            " '--run-dir' / '-o' or '--segments-dir' / '-O' to choose the"
+            " directory yourself."
         )
-    if pipeline_dir and not run_dir:
-        pipeline_steps = list_pipeline_steps(pipeline_dir)
-        if pipeline_steps:  # Check if the list is not empty
-            run_dir = pipeline_steps[-1].next(label="Cce").path
-        else:
-            run_dir = PipelineStep.first(
-                directory=pipeline_dir, label="Cce"
-            ).path
+        # Run in the directory of the resolution we extract from
+        segments_dir = EccIteration.current(pipeline_dir).lev_dir(lev)
+    if segments_dir and not run_dir:
+        run_dir = Segment.next(segments_dir, label="Cce").path
 
     # Check number of arguments. If one, check file ends with extraction radius.
     # For multiple files, ensure all extraction radii are the same and combine
@@ -141,7 +150,6 @@ def run_cce(
         **scheduler_kwargs,
         pipeline_dir=pipeline_dir,
         run_dir=run_dir,
-        segments_dir=segments_dir,
     )
 
 
@@ -172,13 +180,22 @@ def run_cce(
     show_default=True,
 )
 @click.option(
+    "--lev",
+    type=int,
+    help=(
+        "Resolution of the simulation that the waveforms are extracted from."
+        " Required with '--pipeline-dir' / '-d', because it determines the"
+        " directory that CCE runs in."
+    ),
+)
+@click.option(
     "--pipeline-dir",
     "-d",
     type=click.Path(
         writable=True,
         path_type=Path,
     ),
-    help="Directory where steps in the pipeline are created.",
+    help="Directory of the simulation, in which the pipeline creates its runs.",
 )
 @scheduler_options
 def run_cce_command(**kwargs):

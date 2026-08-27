@@ -149,7 +149,7 @@ class TestInitialData(unittest.TestCase):
             self.assertEqual(e.code, 0)
         with open(
             self.test_dir
-            / "Pipeline/000_InitialData/ControlParams_000/InitialData.yaml",
+            / "Pipeline/Ecc0/ID/ControlParams_000/InitialData.yaml",
             "r",
         ) as open_input_file:
             metadata = next(yaml.safe_load_all(open_input_file))

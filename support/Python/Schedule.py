@@ -165,8 +165,9 @@ def schedule(
     executable will run (but not both). If you specify a 'run_dir', the
     executable will run in it directly. If you specify a 'segments_dir', a new
     segment will be created and used as the 'run_dir'. Segments are named with
-    incrementing integers and continue the run from the previous segment. For
-    example, the following is a typical 'segments_dir':
+    incrementing integers, followed by a label that is the name of the input
+    file, and continue the run from the previous segment. For example, the
+    following is a typical 'segments_dir':
 
     \b
     ```sh
@@ -176,8 +177,8 @@ def schedule(
     SubmitTemplateBase.sh
     SubmitTemplate.sh
     # One segment per day
-    Segment_0000/
-        InputFile.yaml
+    0000_Inspiral/
+        Inspiral.yaml
         Submit.sh
         Output.h5
         # Occasional checkpoints, and a checkpoint before termination
@@ -185,7 +186,9 @@ def schedule(
             Checkpoint_0000/
             Checkpoint_0001/...
     # Next segment continues from last checkpoint of previous segment
-    Segment_0001/...
+    0001_Inspiral/...
+    # A pipeline can continue with another executable in the same sequence
+    0002_Ringdown/...
     ```
 
     You can omit the 'run_dir' if the current working directory already contains
@@ -486,10 +489,10 @@ def schedule(
             template_env.from_string(str(segments_dir)).render(context).strip()
         )
         all_segments = list_segments(segments_dir)
-        if all_segments:
-            run_dir = all_segments[-1].next.path
-        else:
-            run_dir = Segment.first(segments_dir).path
+        # Label the segment with the name of the input file, e.g. "Inspiral"
+        run_dir = Segment.next(
+            segments_dir, label=Path(input_file_name).stem
+        ).path
         if all_segments and not from_checkpoint:
             # A new segment that doesn't continue from a checkpoint starts a
             # new run in the same directory. That's how a pipeline proceeds to

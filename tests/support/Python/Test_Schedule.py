@@ -127,22 +127,22 @@ NUM_TASKS_PER_NODE={{ num_slurm_tasks | default (5) }}
             metadata_option="MetaOpt",
         )
         self.assertEqual(
-            sorted(self.test_dir.glob("Segment*")),
-            [self.test_dir / "Segment_0000"],
+            sorted(self.test_dir.glob("[0-9]*_InputFile")),
+            [self.test_dir / "0000_InputFile"],
         )
         self.assertEqual(
-            sorted(self.test_dir.glob("Segment*/InputFile.yaml")),
-            [self.test_dir / "Segment_0000/InputFile.yaml"],
+            sorted(self.test_dir.glob("[0-9]*_InputFile/InputFile.yaml")),
+            [self.test_dir / "0000_InputFile/InputFile.yaml"],
         )
 
         # Create next segment
         # - Can't continue from an earlier checkpoint than the last
         earlier_checkpoint = Checkpoint.match(
-            self.test_dir / "Segment_0000/Checkpoints/Checkpoint_0000"
+            self.test_dir / "0000_InputFile/Checkpoints/Checkpoint_0000"
         )
         earlier_checkpoint.path.mkdir(parents=True)
         last_checkpoint = Checkpoint.match(
-            self.test_dir / "Segment_0000/Checkpoints/Checkpoint_0001"
+            self.test_dir / "0000_InputFile/Checkpoints/Checkpoint_0001"
         )
         last_checkpoint.path.mkdir(parents=True)
         with self.assertRaisesRegex(AssertionError, "continue from the last"):
@@ -182,7 +182,7 @@ NUM_TASKS_PER_NODE={{ num_slurm_tasks | default (5) }}
         )
         self.assertEqual(
             [segment.path.name for segment in list_segments(self.test_dir)],
-            ["Segment_0000", "Segment_0001", "Segment_0002"],
+            ["0000_InputFile", "0001_InputFile", "0002_InputFile"],
         )
 
     def test_schedule(self):
@@ -200,33 +200,33 @@ NUM_TASKS_PER_NODE={{ num_slurm_tasks | default (5) }}
         self.assertEqual(
             sorted(self.test_dir.glob("Segments/**/*")),
             [
-                self.test_dir / "Segments/Segment_0000",
-                self.test_dir / "Segments/Segment_0000/InputFile.yaml",
-                self.test_dir / "Segments/Segment_0000/SchedulerContext.yaml",
-                self.test_dir / "Segments/Segment_0000/Submit.sh",
-                self.test_dir / "Segments/Segment_0000/jobid.txt",
-                self.test_dir / "Segments/Segment_0000/out.txt",
+                self.test_dir / "Segments/0000_InputFile",
+                self.test_dir / "Segments/0000_InputFile/InputFile.yaml",
+                self.test_dir / "Segments/0000_InputFile/SchedulerContext.yaml",
+                self.test_dir / "Segments/0000_InputFile/Submit.sh",
+                self.test_dir / "Segments/0000_InputFile/jobid.txt",
+                self.test_dir / "Segments/0000_InputFile/out.txt",
                 self.test_dir / "Segments/SubmitTemplate.sh",
                 self.test_dir / "Segments/SubmitTemplateBase.sh",
                 self.test_dir / "Segments/TestExec",
             ],
         )
         self.assertEqual(
-            (self.test_dir / "Segments/Segment_0000/jobid.txt").read_text(),
+            (self.test_dir / "Segments/0000_InputFile/jobid.txt").read_text(),
             "000",
         )
         self.assertEqual(
-            (self.test_dir / "Segments/Segment_0000/out.txt")
+            (self.test_dir / "Segments/0000_InputFile/out.txt")
             .read_text()
             .split(),
             [
                 "--input-file",
-                str(self.test_dir / "Segments/Segment_0000/InputFile.yaml"),
+                str(self.test_dir / "Segments/0000_InputFile/InputFile.yaml"),
                 "--check-options",
             ],
         )
         with open(
-            self.test_dir / "Segments/Segment_0000/SchedulerContext.yaml", "r"
+            self.test_dir / "Segments/0000_InputFile/SchedulerContext.yaml", "r"
         ) as open_context_file:
             context = yaml.safe_load(open_context_file)
         self.assertDictEqual(
@@ -246,10 +246,10 @@ NUM_TASKS_PER_NODE={{ num_slurm_tasks | default (5) }}
                 input_file_template=str(self.test_dir / "InputFile.yaml"),
                 job_name="TestExec",
                 out_file=str(
-                    self.test_dir / "Segments/Segment_0000/spectre.out"
+                    self.test_dir / "Segments/0000_InputFile/spectre.out"
                 ),
                 out_file_name="spectre.out",
-                run_dir=str(self.test_dir / "Segments/Segment_0000"),
+                run_dir=str(self.test_dir / "Segments/0000_InputFile"),
                 scheduler=["echo", "Submitted batch job 000"],
                 segments_dir=str(self.test_dir / "Segments"),
                 spectre_cli=str(self.spectre_cli),
@@ -261,7 +261,7 @@ NUM_TASKS_PER_NODE={{ num_slurm_tasks | default (5) }}
             ),
         )
         self.assertEqual(
-            (self.test_dir / "Segments/Segment_0000/Submit.sh").read_text(),
+            (self.test_dir / "Segments/0000_InputFile/Submit.sh").read_text(),
             """\
 SPECTRE_EXECUTABLE={executable}
 SPECTRE_CLI={spectre_cli}
@@ -275,12 +275,13 @@ NUM_TASKS_PER_NODE=5
 
         # Resubmit from the first segment using `schedule`
         checkpoint = Checkpoint.match(
-            self.test_dir / "Segments/Segment_0000/Checkpoints/Checkpoint_0000"
+            self.test_dir
+            / "Segments/0000_InputFile/Checkpoints/Checkpoint_0000"
         )
         checkpoint.path.mkdir(parents=True)
         schedule(
             input_file_template=self.test_dir
-            / "Segments/Segment_0000/InputFile.yaml",
+            / "Segments/0000_InputFile/InputFile.yaml",
             scheduler=["echo", "Submitted batch job 001"],
             submit_script_template=self.test_dir / "Segments/SubmitTemplate.sh",
             executable=self.test_dir / "Segments/TestExec",
@@ -291,18 +292,19 @@ NUM_TASKS_PER_NODE=5
             submit=True,
         )
         self.assertEqual(
-            (self.test_dir / "Segments/Segment_0001/jobid.txt").read_text(),
+            (self.test_dir / "Segments/0001_InputFile/jobid.txt").read_text(),
             "001",
         )
 
         # Resubmit from the second segment using `resubmit`
         checkpoint = Checkpoint.match(
-            self.test_dir / "Segments/Segment_0001/Checkpoints/Checkpoint_0000"
+            self.test_dir
+            / "Segments/0001_InputFile/Checkpoints/Checkpoint_0000"
         )
         checkpoint.path.mkdir(parents=True)
         resubmit(self.test_dir / "Segments", submit=True)
         self.assertEqual(
-            (self.test_dir / "Segments/Segment_0002/jobid.txt").read_text(),
+            (self.test_dir / "Segments/0002_InputFile/jobid.txt").read_text(),
             "001",
         )
 
@@ -344,7 +346,8 @@ NUM_TASKS_PER_NODE=5
             catch_exceptions=False,
         )
         checkpoint = Checkpoint.match(
-            self.test_dir / "Segments/Segment_0000/Checkpoints/Checkpoint_0000"
+            self.test_dir
+            / "Segments/0000_InputFile/Checkpoints/Checkpoint_0000"
         )
         checkpoint.path.mkdir(parents=True)
         runner.invoke(

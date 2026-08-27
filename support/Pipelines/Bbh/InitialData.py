@@ -13,7 +13,9 @@ from rich.pretty import pretty_repr
 from SimulationSupport.EccentricityControl.InitialOrbitalParameters import (
     initial_orbital_parameters,
 )
-from spectre.support.DirectoryStructure import PipelineStep, list_pipeline_steps
+from spectre.Pipelines.EccentricityControl.DirectoryStructure import (
+    EccIteration,
+)
 from spectre.support.Schedule import schedule, scheduler_options
 
 logger = logging.getLogger(__name__)
@@ -247,9 +249,10 @@ def generate_id(
         be inside of the apparent horizons. This helps to find horizons and
         start an evolution from the initial data without extrapolation.
         (default: True)
-      pipeline_dir: Directory where steps in the pipeline are created. Required
-        when 'evolve' is set to True. The initial data will be created in a
-        subdirectory '001_InitialData'.
+      pipeline_dir: Directory of the simulation, in which the pipeline
+        creates its runs. Required when 'evolve' is set to True. The initial
+        data runs in the 'ID' directory of the next eccentricity-control
+        iteration, e.g. 'Ecc0/ID'.
       run_dir: Directory where the initial data is generated. Mutually exclusive
         with 'pipeline_dir'.
       segments_dir: Directory where the evolution data is generated. Mutually
@@ -280,15 +283,10 @@ def generate_id(
             " evolution, etc will be created in the 'pipeline_dir'"
             " automatically."
         )
-    # If there is a pipeline directory, set run directory as well
+    # If there is a pipeline directory, set run directory as well. The initial
+    # data starts a new eccentricity-control iteration.
     if pipeline_dir and not run_dir:
-        pipeline_steps = list_pipeline_steps(pipeline_dir)
-        if pipeline_steps:  # Check if the list is not empty
-            run_dir = pipeline_steps[-1].next(label="InitialData").path
-        else:
-            run_dir = PipelineStep.first(
-                directory=pipeline_dir, label="InitialData"
-            ).path
+        run_dir = EccIteration.next(pipeline_dir).id_dir
     # If we run a control loop, then run initial data in a subdirectory
     if control:
         run_dir = f"{run_dir}/ControlParams_000"
@@ -558,7 +556,7 @@ def generate_id(
         writable=True,
         path_type=Path,
     ),
-    help="Directory where steps in the pipeline are created.",
+    help="Directory of the simulation, in which the pipeline creates its runs.",
 )
 @scheduler_options
 def generate_id_command(

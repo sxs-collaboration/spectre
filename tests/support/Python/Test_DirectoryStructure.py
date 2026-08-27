@@ -9,10 +9,8 @@ from pathlib import Path
 from spectre.Informer import unit_test_build_path
 from spectre.support.DirectoryStructure import (
     Checkpoint,
-    PipelineStep,
     Segment,
     list_checkpoints,
-    list_pipeline_steps,
     list_segments,
 )
 from spectre.support.Logging import configure_logging
@@ -40,56 +38,51 @@ class TestDirectoryStructure(unittest.TestCase):
         self.assertEqual(list_checkpoints(self.test_dir), [checkpoint])
 
     def test_segments(self):
-        first_segment = Segment.first(self.test_dir)
+        # The first segment in an empty directory starts the numbering at zero
+        self.assertIsNone(Segment.last(self.test_dir))
+        first_segment = Segment.next(self.test_dir, label="Inspiral")
         self.assertEqual(
-            first_segment, Segment(path=self.test_dir / "Segment_0000", id=0)
+            first_segment,
+            Segment(
+                path=self.test_dir / "0000_Inspiral", id=0, label="Inspiral"
+            ),
         )
         self.assertEqual(Segment.match(first_segment.path), first_segment)
-
-        segment = Segment.match(self.test_dir / "Segment_0003")
-        self.assertEqual(
-            segment, Segment(path=self.test_dir / "Segment_0003", id=3)
-        )
-
-        next_segment = segment.next
-        self.assertEqual(next_segment.id, 4)
-        self.assertEqual(next_segment.path.name, "Segment_0004")
-        self.assertEqual(
-            next_segment.path.resolve().parent, segment.path.resolve().parent
-        )
+        self.assertIsNone(Segment.match(self.test_dir / "NotASegment"))
 
         self.assertEqual(list_segments(self.test_dir), [])
         first_segment.path.mkdir()
-        segment.path.mkdir()
-        next_segment.path.mkdir()
-        self.assertEqual(
-            list_segments(self.test_dir), [first_segment, segment, next_segment]
-        )
+        self.assertEqual(list_segments(self.test_dir), [first_segment])
+        self.assertEqual(Segment.last(self.test_dir), first_segment)
 
-    def test_pipeline_steps(self):
-        first_step = PipelineStep.first(self.test_dir, "InitialData")
+        # The next segment continues the numbering, and can have a different
+        # label because a pipeline can continue with another executable
+        next_segment = Segment.next(self.test_dir, label="Ringdown")
         self.assertEqual(
-            first_step,
-            PipelineStep(
-                path=self.test_dir / "000_InitialData",
-                id=0,
-                label="InitialData",
+            next_segment,
+            Segment(
+                path=self.test_dir / "0001_Ringdown", id=1, label="Ringdown"
             ),
         )
-        self.assertEqual(PipelineStep.match(first_step.path), first_step)
-
-        next_step = first_step.next("Processing")
-        self.assertEqual(next_step.id, 1)
-        self.assertEqual(next_step.path.name, "001_Processing")
+        next_segment.path.mkdir()
         self.assertEqual(
-            next_step.path.resolve().parent, first_step.path.resolve().parent
+            list_segments(self.test_dir), [first_segment, next_segment]
         )
+        self.assertEqual(Segment.last(self.test_dir), next_segment)
 
-        self.assertEqual(list_pipeline_steps(self.test_dir), [])
-        first_step.path.mkdir()
-        next_step.path.mkdir()
+        # Checkpoints are stored in the segment
         self.assertEqual(
-            list_pipeline_steps(self.test_dir), [first_step, next_step]
+            next_segment.checkpoints_dir, next_segment.path / "Checkpoints"
+        )
+        self.assertEqual(next_segment.checkpoints, [])
+        (next_segment.checkpoints_dir / "Checkpoint_0000").mkdir(parents=True)
+        self.assertEqual(
+            next_segment.checkpoints,
+            [
+                Checkpoint(
+                    path=next_segment.checkpoints_dir / "Checkpoint_0000", id=0
+                )
+            ],
         )
 
 

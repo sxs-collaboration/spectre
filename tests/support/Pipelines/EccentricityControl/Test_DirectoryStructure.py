@@ -41,6 +41,9 @@ class TestDirectoryStructure(unittest.TestCase):
             EccIteration.match(first_iteration.path), first_iteration
         )
         self.assertIsNone(EccIteration.match(self.test_dir / "NotAnIteration"))
+        self.assertNotEqual(
+            EccIteration.match(self.test_dir / "Ecc1"), first_iteration
+        )
 
         first_iteration.path.mkdir()
         self.assertEqual(list_ecc_iterations(self.test_dir), [first_iteration])
