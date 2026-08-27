@@ -136,16 +136,6 @@ NUM_TASKS_PER_NODE={{ num_slurm_tasks | default (5) }}
         )
 
         # Create next segment
-        # - Can't continue without a previous checkpoint
-        with self.assertRaisesRegex(AssertionError, "continue from the last"):
-            schedule(
-                input_file_template=self.input_file_template,
-                scheduler=None,
-                executable=self.executable,
-                segments_dir=self.test_dir,
-                extra_option="TestOpt",
-                metadata_option="MetaOpt",
-            )
         # - Can't continue from an earlier checkpoint than the last
         earlier_checkpoint = Checkpoint.match(
             self.test_dir / "Segment_0000/Checkpoints/Checkpoint_0000"
@@ -174,6 +164,25 @@ NUM_TASKS_PER_NODE={{ num_slurm_tasks | default (5) }}
             from_checkpoint=last_checkpoint,
             extra_option="TestOpt",
             metadata_option="MetaOpt",
+        )
+        # - Starting a new run without continuing from a checkpoint is allowed,
+        #   but warns. This is how a pipeline proceeds to the next executable in
+        #   the same directory.
+        with self.assertLogs(level="WARNING") as captured_logs:
+            schedule(
+                input_file_template=self.input_file_template,
+                scheduler=None,
+                executable=self.executable,
+                segments_dir=self.test_dir,
+                extra_option="TestOpt",
+                metadata_option="MetaOpt",
+            )
+        self.assertIn(
+            "not continuing from a checkpoint", "\n".join(captured_logs.output)
+        )
+        self.assertEqual(
+            [segment.path.name for segment in list_segments(self.test_dir)],
+            ["Segment_0000", "Segment_0001", "Segment_0002"],
         )
 
     def test_schedule(self):

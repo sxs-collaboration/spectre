@@ -490,14 +490,19 @@ def schedule(
             run_dir = all_segments[-1].next.path
         else:
             run_dir = Segment.first(segments_dir).path
-    if segments_dir and all_segments:
+        if all_segments and not from_checkpoint:
+            # A new segment that doesn't continue from a checkpoint starts a
+            # new run in the same directory. That's how a pipeline proceeds to
+            # the next executable, but it may also be a mistake, so warn.
+            logger.warning(
+                f"Found existing segments in directory '{segments_dir}', but"
+                " you're not continuing from a checkpoint in them. Starting a"
+                f" new run in '{run_dir}'. Use '--from-last-checkpoint' to"
+                " continue from the last checkpoint in this directory instead."
+            )
+    if segments_dir and all_segments and from_checkpoint:
         # Make sure we're continuing the last checkpoint of the last segment.
         # This requirement can be relaxed in the future if needed.
-        assert from_checkpoint, (
-            f"Found existing segments in directory '{segments_dir}'. Use"
-            " '--from-last-checkpoint' to continue from the last"
-            " checkpoint in this directory."
-        )
         last_segment = all_segments[-1]
         assert (
             from_checkpoint.parent == last_segment.checkpoints_dir.resolve()
@@ -875,8 +880,9 @@ def scheduler_options(f):
         # No `type=click.Path` because this can be a Jinja template
         help=(
             "The directory in which to create the next segment. "
-            "Requires '--from-checkpoint' or '--from-last-checkpoint' "
-            "unless starting the first segment."
+            "Continue the previous segment with '--from-checkpoint' or "
+            "'--from-last-checkpoint', or start a new run in the same "
+            "directory."
         ),
     )
     @click.option(
