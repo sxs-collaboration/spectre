@@ -5,6 +5,7 @@ set(LIBRARY "Test_Exporter")
 
 set(LIBRARY_SOURCES
   Test_Exporter.cpp
+  Test_ModalTimeSeriesReader.cpp
   Test_SpacetimeInterpolator.cpp
   )
 
@@ -15,9 +16,11 @@ target_link_libraries(
   PRIVATE
   DataStructures
   DomainCreators
+  DomainStructure
   Exporter
   H5
   Informer
+  LinearOperators
   Serialization
   Spectral
   Utilities
