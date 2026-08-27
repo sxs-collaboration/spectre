@@ -34,6 +34,7 @@ void test_simple_tags() {
   TestHelpers::db::test_simple_tag<
       gh::Tags::SpacetimeChristoffelFirstKindThirdIndexUp<Dim>>(
       "SpacetimeChristoffelFirstKindThirdIndexUp");
+  TestHelpers::db::test_simple_tag<gh::Tags::TwoGaugeHUp<Dim>>("TwoGaugeHUp");
 }
 
 SPECTRE_TEST_CASE("Unit.Evolution.Systems.GeneralizedHarmonic.DuDtTempTags",

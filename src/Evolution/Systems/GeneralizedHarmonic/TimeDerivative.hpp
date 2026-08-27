@@ -100,9 +100,11 @@ namespace gh {
  * `evolution::dg::Actions::detail::volume_terms()`.
  *
  * \warning When using harmonic gauge,
- * gr::Tags::SqrtDetSpatialMetric<DataVector> and
- * gr::Tags::SpacetimeChristoffelSecondKind<Dim, Frame::Inertial, DataVector>
- * are not computed. In Debug mode, they are filled with with signaling NaNs.
+ * gr::Tags::SqrtDetSpatialMetric<DataVector> is not computed. In Debug mode,
+ * it is filled with signaling NaNs.
+ *
+ * \warning When using harmonic gauge, Tags::TwoGaugeHUp is not computed. In
+ * Debug mode, it is filled with signaling NaNs.
  */
 template <class AllSolutionsForChristoffelAnalytic, size_t Dim>
 struct TimeDerivative {
@@ -125,9 +127,7 @@ struct TimeDerivative {
       gr::Tags::SqrtDetSpatialMetric<DataVector>,
       gr::Tags::InverseSpacetimeMetric<DataVector, Dim>,
       gr::Tags::SpacetimeChristoffelFirstKind<DataVector, Dim>,
-      gr::Tags::SpacetimeChristoffelSecondKind<DataVector, Dim>,
-      gr::Tags::TraceSpacetimeChristoffelFirstKind<DataVector, Dim>,
-      gr::Tags::SpacetimeNormalVector<DataVector, Dim>>;
+      Tags::TwoGaugeHUp<Dim>, gr::Tags::SpacetimeNormalVector<DataVector, Dim>>;
   using argument_tags =
       tmpl::list<gr::Tags::SpacetimeMetric<DataVector, Dim>,
                  Tags::Pi<DataVector, Dim>, Tags::Phi<DataVector, Dim>,
@@ -172,8 +172,7 @@ struct TimeDerivative {
       gsl::not_null<Scalar<DataVector>*> sqrt_det_spatial_metric,
       gsl::not_null<tnsr::AA<DataVector, Dim>*> inverse_spacetime_metric,
       gsl::not_null<tnsr::abb<DataVector, Dim>*> christoffel_first_kind,
-      gsl::not_null<tnsr::Abb<DataVector, Dim>*> christoffel_second_kind,
-      gsl::not_null<tnsr::a<DataVector, Dim>*> trace_christoffel,
+      gsl::not_null<tnsr::A<DataVector, Dim>*> two_gauge_h_up,
       gsl::not_null<tnsr::A<DataVector, Dim>*> normal_spacetime_vector,
       const tnsr::iaa<DataVector, Dim>& d_spacetime_metric,
       const tnsr::iaa<DataVector, Dim>& d_pi,

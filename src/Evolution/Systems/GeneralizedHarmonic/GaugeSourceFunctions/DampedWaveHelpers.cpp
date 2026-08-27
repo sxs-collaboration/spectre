@@ -26,8 +26,8 @@ template <typename DataType, size_t SpatialDim, typename Frame>
 void spatial_weight_function(const gsl::not_null<Scalar<DataType>*> weight,
                              const tnsr::I<DataType, SpatialDim, Frame>& coords,
                              const double sigma_r) {
-  const auto r_squared = dot_product(coords, coords);
-  get(*weight) = exp(-get(r_squared) / pow<2>(sigma_r));
+  dot_product(weight, coords, coords);
+  get(*weight) = exp(-get(*weight) / pow<2>(sigma_r));
 }
 
 template <typename DataType, size_t SpatialDim, typename Frame>

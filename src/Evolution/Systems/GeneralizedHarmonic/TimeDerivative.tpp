@@ -8,8 +8,6 @@
 #include <cstddef>
 
 #include "DataStructures/DataVector.hpp"
-#include "DataStructures/Tensor/EagerMath/RaiseOrLowerIndex.hpp"
-#include "DataStructures/Tensor/EagerMath/Trace.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Evolution/DiscontinuousGalerkin/TimeDerivativeDecisions.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/DuDtTempTags.hpp"
@@ -66,8 +64,7 @@ TimeDerivative<AllSolutionsForChristoffelAnalytic, Dim>::apply(
     const gsl::not_null<Scalar<DataVector>*> sqrt_det_spatial_metric,
     const gsl::not_null<tnsr::AA<DataVector, Dim>*> inverse_spacetime_metric,
     const gsl::not_null<tnsr::abb<DataVector, Dim>*> christoffel_first_kind,
-    const gsl::not_null<tnsr::Abb<DataVector, Dim>*> christoffel_second_kind,
-    const gsl::not_null<tnsr::a<DataVector, Dim>*> trace_christoffel,
+    const gsl::not_null<tnsr::A<DataVector, Dim>*> two_gauge_h_up,
     const gsl::not_null<tnsr::A<DataVector, Dim>*> normal_spacetime_vector,
     const tnsr::iaa<DataVector, Dim>& d_spacetime_metric,
     const tnsr::iaa<DataVector, Dim>& d_pi,
@@ -128,8 +125,6 @@ TimeDerivative<AllSolutionsForChristoffelAnalytic, Dim>::apply(
 
   gr::christoffel_first_kind(christoffel_first_kind,
                              da_spacetime_metric.value());
-  trace_last_indices(trace_christoffel, *christoffel_first_kind,
-                     *inverse_spacetime_metric);
   gr::spacetime_normal_vector(normal_spacetime_vector, *lapse, *shift);
 
   get(*gamma1gamma2) = get(gamma1) * get(gamma2);
@@ -184,6 +179,16 @@ TimeDerivative<AllSolutionsForChristoffelAnalytic, Dim>::apply(
               christoffel_first_kind->get(mu, nu, beta);
         }
       }
+      // The trace of the Christoffel symbol of the first kind,
+      // \f$g^{bc}\Gamma_{abc} = \Gamma_{ab}{}^{b}\f$, is the diagonal (in the
+      // traced-and-raised index) of `christoffel_first_kind_3_up`. Accumulate
+      // it here to avoid a separate full contraction over the metric.
+      if (nu == 0) {
+        gauge_constraint->get(mu) = christoffel_first_kind_3_up->get(mu, 0, 0);
+      } else {
+        gauge_constraint->get(mu) +=
+            christoffel_first_kind_3_up->get(mu, nu, nu);
+      }
     }
   }
 
@@ -237,7 +242,6 @@ TimeDerivative<AllSolutionsForChristoffelAnalytic, Dim>::apply(
   const DataVector& gamma1p1 = get(*gamma1_plus_1);
 
   for (size_t mu = 0; mu < Dim + 1; ++mu) {
-    gauge_constraint->get(mu) = trace_christoffel->get(mu);
     for (size_t nu = mu; nu < Dim + 1; ++nu) {
       shift_dot_three_index_constraint->get(mu, nu) =
           get<0>(*shift) * three_index_constraint->get(0, mu, nu);
@@ -260,8 +264,6 @@ TimeDerivative<AllSolutionsForChristoffelAnalytic, Dim>::apply(
   if (not using_harmonic_gauge) {
     // Compute gauge condition.
     get(*sqrt_det_spatial_metric) = sqrt(get(*det_spatial_metric));
-    raise_or_lower_first_index(christoffel_second_kind, *christoffel_first_kind,
-                               *inverse_spacetime_metric);
   }
   gauges::dispatch<AllSolutionsForChristoffelAnalytic, Dim>(
       gauge_function, spacetime_deriv_gauge_function, *lapse, *shift,
@@ -273,6 +275,19 @@ TimeDerivative<AllSolutionsForChristoffelAnalytic, Dim>::apply(
     // the other temporary tags.
     for (size_t nu = 0; nu < Dim + 1; ++nu) {
       gauge_constraint->get(nu) += gauge_function->get(nu);
+    }
+
+    // Computing 2 H^a avoids constructing the full Christoffel symbol of the
+    // second kind just to contract it with H_a below.
+    for (size_t alpha = 0; alpha < Dim + 1; ++alpha) {
+      two_gauge_h_up->get(alpha) = 2.0 *
+                                   inverse_spacetime_metric->get(alpha, 0) *
+                                   gauge_function->get(0);
+      for (size_t beta = 1; beta < Dim + 1; ++beta) {
+        two_gauge_h_up->get(alpha) +=
+            2.0 * inverse_spacetime_metric->get(alpha, beta) *
+            gauge_function->get(beta);
+      }
     }
   }
 
@@ -346,9 +361,8 @@ TimeDerivative<AllSolutionsForChristoffelAnalytic, Dim>::apply(
       for (size_t delta = 0; delta < Dim + 1; ++delta) {
         dt_pi->get(mu, nu) -= 2 * pi.get(mu, delta) * pi_2_up->get(nu, delta);
         if (not using_harmonic_gauge) {
-          dt_pi->get(mu, nu) += 2 *
-                                christoffel_second_kind->get(delta, mu, nu) *
-                                gauge_function->get(delta);
+          dt_pi->get(mu, nu) += christoffel_first_kind->get(delta, mu, nu) *
+                                two_gauge_h_up->get(delta);
         }
         for (size_t n = 0; n < Dim; ++n) {
           dt_pi->get(mu, nu) +=

@@ -114,8 +114,7 @@ struct TimeDerivative {
       gsl::not_null<Scalar<DataVector>*> sqrt_det_spatial_metric,
       gsl::not_null<tnsr::AA<DataVector, dim>*> inverse_spacetime_metric,
       gsl::not_null<tnsr::abb<DataVector, dim>*> christoffel_first_kind,
-      gsl::not_null<tnsr::Abb<DataVector, dim>*> christoffel_second_kind,
-      gsl::not_null<tnsr::a<DataVector, dim>*> trace_christoffel,
+      gsl::not_null<tnsr::A<DataVector, dim>*> two_gauge_h_up,
       gsl::not_null<tnsr::A<DataVector, dim>*> normal_spacetime_vector,
 
       // Scalar temporal variables

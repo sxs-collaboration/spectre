@@ -76,8 +76,7 @@ evolution::dg::TimeDerivativeDecisions<3> TimeDerivative::apply(
     const gsl::not_null<Scalar<DataVector>*> sqrt_det_spatial_metric,
     const gsl::not_null<tnsr::AA<DataVector, dim>*> inverse_spacetime_metric,
     const gsl::not_null<tnsr::abb<DataVector, dim>*> christoffel_first_kind,
-    const gsl::not_null<tnsr::Abb<DataVector, dim>*> christoffel_second_kind,
-    const gsl::not_null<tnsr::a<DataVector, dim>*> trace_christoffel,
+    const gsl::not_null<tnsr::A<DataVector, dim>*> two_gauge_h_up,
     const gsl::not_null<tnsr::A<DataVector, dim>*> normal_spacetime_vector,
 
     // Scalar temporal variables
@@ -140,8 +139,7 @@ evolution::dg::TimeDerivativeDecisions<3> TimeDerivative::apply(
           three_index_constraint, phi_1_up, phi_3_up,
           christoffel_first_kind_3_up, lapse, shift, inverse_spatial_metric,
           det_spatial_metric, sqrt_det_spatial_metric, inverse_spacetime_metric,
-          christoffel_first_kind, christoffel_second_kind, trace_christoffel,
-          normal_spacetime_vector,
+          christoffel_first_kind, two_gauge_h_up, normal_spacetime_vector,
 
           // GH argument variables
           d_spacetime_metric, d_pi, d_phi, spacetime_metric, pi, phi, gamma0,
