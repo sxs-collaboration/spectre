@@ -16,6 +16,9 @@ each time a pull request is submitted or updated.  GitHub Actions will also
 launch these build jobs each time you push to a branch on your fork of SpECTRE
 if you enable it. GitHub Actions is also used to deploy releases of the code.
 
+A separate pipeline runs on HPC hardware at CSCS after a pull request is merged,
+see \ref cscs_ci_guide.
+
 For pull requests, you can view the GitHub Actions CI build by clicking on the
 `Checks` tab. Near the bottom of the `Conversation` tab a summary of the CI
 results are presented. You can view all of the GitHub Actions runs by clicking

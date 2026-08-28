@@ -12,6 +12,8 @@ See LICENSE.txt for details.
 
 ### Continuous Integration
 Explanations on our automated tests and deployments can be found here.
+- \subpage cscs_ci_guide "CSCS CI" runs a short binary black hole simulation on
+  the Eiger cluster on every merge to `develop`.
 - \subpage dev_guide_automatic_versioning
 
 ### CoordinateMap Guide

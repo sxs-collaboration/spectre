@@ -1,0 +1,148 @@
+# Distributed under the MIT License.
+# See LICENSE.txt for details.
+
+# Continuous integration pipeline that runs on "Eiger", a CPU-only cluster of
+# the Alps infrastructure at the Swiss National Supercomputing Centre (CSCS).
+#
+# It builds a container image with the binary black hole executables and then
+# runs a short binary black hole simulation on a compute node. It runs on every
+# merge to `develop`, but not on pull requests, because it consumes a
+# compute-node allocation.
+#
+# This file is the entry point of the pipeline. The path to this file, the list
+# of CI-enabled branches, the list of trusted users, the GitHub notification
+# token and the Slurm account are all configured on the CSCS CI setup page
+# (https://cicd-ext-mw.cscs.ch/ci/overview), not in this repository. See
+# `docs/DevGuide/CscsCi.md` for the setup instructions.
+
+include:
+  - remote: 'https://gitlab.com/cscs-ci/recipes/-/raw/master/templates/v2/.ci-ext.yml'
+
+# The pipeline is primarily restricted to `develop` by the CI-enabled branches
+# on the CI setup page. This is a second line of defense for pull requests that
+# are opened from a branch of the main repository rather than from a fork.
+# Note that `CI_PIPELINE_SOURCE` is always "trigger" on this service and that
+# `rules: changes` does not work, but matching on the branch name does.
+workflow:
+  rules:
+    # Escape hatch so a trusted user can trigger a run from a pull request with
+    # the comment: cscs-ci run eiger;CSCS_CI_FORCE_RUN=1
+    - if: $CSCS_CI_FORCE_RUN
+    # TODO: `alps_ci` is here to bring the pipeline up. Remove it, leaving only
+    # `develop`, before merging.
+    - if: $CI_COMMIT_REF_NAME =~ /^(develop|alps_ci)$/
+    - when: never
+
+stages:
+  - seed
+  - build
+  - test
+  - cache
+
+variables:
+  # Image with the compiled executables. The 'public' path segment makes it
+  # pullable by anyone within the CSCS network, which is useful for debugging a
+  # failed pipeline on a login node.
+  SPECTRE_IMAGE: $CSCS_REGISTRY_PATH/public/spectre-eiger:$CI_COMMIT_SHORT_SHA
+  # Moving tag pointing at the most recent image, used to carry the ccache
+  # forward from one pipeline run to the next.
+  SPECTRE_CCACHE_IMAGE: $CSCS_REGISTRY_PATH/public/spectre-eiger:ccache
+
+# Create the ':ccache' tag if it does not exist yet, so that the build below
+# always has an image to take a ccache from. `if-not-exists` makes this a no-op
+# once the tag exists, i.e. on every run after the first. It also heals the
+# case where the registry has expired the tag.
+seed ccache image:
+  stage: seed
+  extends: .container-builder-cscs-zen2
+  variables:
+    DOCKERFILE: .cscs-ci/Dockerfile.retag
+    PERSIST_IMAGE_NAME: $SPECTRE_CCACHE_IMAGE
+    CSCS_REBUILD_POLICY: if-not-exists
+    DOCKER_BUILD_ARGS: '["FROM_IMAGE=docker.io/sxscollaboration/spectre:dev"]'
+
+build image:
+  stage: build
+  extends: .container-builder-cscs-zen2
+  needs: [seed ccache image]
+  # Compiling the executables from scratch takes a few hours. With a warm
+  # ccache it is much faster. The GitLab default job timeout is only 1 hour.
+  timeout: '5h'
+  variables:
+    DOCKERFILE: .cscs-ci/Dockerfile.eiger
+    PERSIST_IMAGE_NAME: $SPECTRE_IMAGE
+    CSCS_REBUILD_POLICY: always
+    # Build on disk rather than in a tmpfs. A SpECTRE build directory is tens
+    # of GB, which would otherwise count against the memory limit below.
+    CSCS_BUILD_IN_MEMORY: 'FALSE'
+    # The builder injects NUM_PROCS = the CPU limit as a build argument,
+    # which is what the Dockerfile passes to `make -j`.
+    KUBERNETES_CPU_REQUEST: '16'
+    KUBERNETES_CPU_LIMIT: '16'
+    KUBERNETES_MEMORY_REQUEST: '32Gi'
+    KUBERNETES_MEMORY_LIMIT: '96Gi'
+    # EXEC_PROCS bounds the phase that compiles the executables. Two of them
+    # at once were measured to exhaust 23 GB, so budget ~12 GB per job: 2 jobs
+    # against the 96 GiB limit above leaves a wide margin. Raise it only
+    # together with KUBERNETES_MEMORY_LIMIT.
+    DOCKER_BUILD_ARGS: '["EXEC_PROCS=2",
+      "CCACHE_IMAGE=$SPECTRE_CCACHE_IMAGE"]'
+
+bbh regression:
+  stage: test
+  extends: .container-runner-eiger-zen2
+  needs: [build image]
+  image: $SPECTRE_IMAGE
+  # Generous, to absorb the queue wait. The allocation itself is limited by
+  # SLURM_TIMELIMIT below.
+  timeout: '4h'
+  script:
+    - /work/spectre/.cscs-ci/RunBbhRegression.sh "$CI_PROJECT_DIR/BbhRegression"
+  variables:
+    # The scripts are already in the image, so there is no reason to clone the
+    # repository onto the cluster filesystem again. If it turns out that the
+    # job's working directory is not usable without a checkout, switch this to
+    # 'fetch' and run the script from the checkout instead of from the image.
+    GIT_STRATEGY: none
+    # Charm++ in the container is a 'multicore' build, i.e. a single process
+    # with worker threads that cannot span nodes. So we request a single Slurm
+    # task with all cores of one Eiger node and let Charm++ spawn the worker
+    # threads with '+p' (SPECTRE_NUM_PROCS below).
+    SLURM_JOB_NUM_NODES: 1
+    SLURM_NTASKS: 1
+    SLURM_CPUS_PER_TASK: 128
+    # Must be quoted: unquoted, the runner converts the value to seconds, but
+    # Slurm reads a bare integer as minutes.
+    SLURM_TIMELIMIT: "01:30:00"
+    USE_MPI: 'NO'
+    # Number of Charm++ worker threads ('+p'). Fewer than the 128 cores of the
+    # node because the test runs a small domain, so more threads would mostly
+    # buy communication overhead.
+    SPECTRE_NUM_PROCS: '64'
+    # Time (in units of the total mass M) at which the evolution terminates.
+    SPECTRE_FINAL_TIME: '10.0'
+  artifacts:
+    when: always
+    expire_in: 1 month
+    paths:
+      - BbhRegression/RunBbhRegression.log
+      # Normalized timings (M/hr and friends). Nothing is asserted about them
+      # yet; keep them so a step-change performance regression is visible when
+      # comparing runs, and so a tolerance can eventually be set from the
+      # measured run-to-run spread rather than guessed.
+      - BbhRegression/performance.json
+      - BbhRegression/**/*.yaml
+      - BbhRegression/**/dat/**/*.dat
+
+# Advance the ':ccache' tag to the image that was just built, so the next
+# pipeline run starts from its ccache. This only pulls and pushes an image, it
+# does not rebuild anything.
+update ccache tag:
+  stage: cache
+  extends: .container-builder-cscs-zen2
+  needs: [build image]
+  variables:
+    DOCKERFILE: .cscs-ci/Dockerfile.retag
+    PERSIST_IMAGE_NAME: $SPECTRE_CCACHE_IMAGE
+    CSCS_REBUILD_POLICY: always
+    DOCKER_BUILD_ARGS: '["FROM_IMAGE=$SPECTRE_IMAGE"]'

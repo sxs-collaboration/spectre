@@ -1,0 +1,12 @@
+# Distributed under the MIT License.
+# See LICENSE.txt for details.
+
+# Moves a tag onto an image that was built earlier in the pipeline, without
+# rebuilding it. The CSCS container builder pushes exactly one tag per job
+# (`PERSIST_IMAGE_NAME`), so this trivial recipe is how `.cscs-ci/Eiger.yml`
+# advances the ':ccache' tag to the image it just built. That image carries the
+# ccache directory that the next build starts from, see
+# `.cscs-ci/Dockerfile.eiger`.
+
+ARG FROM_IMAGE
+FROM ${FROM_IMAGE}

@@ -1,0 +1,128 @@
+# Distributed under the MIT License.
+# See LICENSE.txt for details.
+
+# Container image for the CSCS continuous integration pipeline defined in
+# `.cscs-ci/Eiger.yml`. It compiles the executables needed for the short binary
+# black hole regression test that runs on the CSCS "Eiger" cluster.
+#
+# This image is NOT published. It is built by the `container-builder-cscs-zen2`
+# runner into the CSCS-internal container registry, where it is pulled by the
+# `container-runner-eiger-zen2` runner and eventually expires. The images we
+# publish are defined in `containers/Dockerfile.buildenv`.
+#
+# To build and test this image locally you have to override the architecture,
+# since your machine is probably not an AMD EPYC Rome. The base image is
+# multi-arch, so Docker builds natively for your machine: use `x86-64` on an
+# Intel or AMD machine and `armv8-a` on Apple Silicon.
+#
+#   docker build -f .cscs-ci/Dockerfile.eiger --build-arg NUM_PROCS=8 \
+#     --build-arg OVERRIDE_ARCH=armv8-a -t spectre:cscs-ci .
+#   docker run --rm -it spectre:cscs-ci bash -c \
+#     'SPECTRE_NUM_PROCS=8 SPECTRE_FINAL_TIME=1.0 \
+#      /work/spectre/.cscs-ci/RunBbhRegression.sh /tmp/BbhRegression'
+#
+# See `docs/DevGuide/CscsCi.md` for details.
+
+ARG BASE_IMAGE=docker.io/sxscollaboration/spectre:dev
+
+# Image that carries the ccache from the previous pipeline run. Registry layer
+# caching does not help us because `COPY . /work/spectre/` invalidates the
+# compile layer on every source change, so instead we carry the ccache
+# directory forward inside the image itself. The default is the base image,
+# whose ccache directory is empty, so the very first build works before the
+# ':ccache' tag exists.
+ARG CCACHE_IMAGE=docker.io/sxscollaboration/spectre:dev
+
+FROM ${CCACHE_IMAGE} AS ccache_source
+RUN mkdir -p /root/.ccache
+
+
+FROM ${BASE_IMAGE}
+
+# Architecture to compile for. The Kubernetes build pod and the Eiger compute
+# nodes are different machines, so we must not use the default `-march=native`.
+# Eiger nodes have AMD EPYC 7742 (Rome / Zen 2) CPUs.
+ARG OVERRIDE_ARCH=znver2
+
+# Number of parallel compile jobs. The CSCS container builder injects
+# `NUM_PROCS` automatically, set to the number of CPU cores assigned to the
+# build pod (`KUBERNETES_CPU_LIMIT`), so the parallelism is controlled from
+# `.cscs-ci/Eiger.yml` by setting that limit.
+ARG NUM_PROCS=4
+
+# Parallelism for the executables. Each executable is a single enormous
+# translation unit, so they are built with much less parallelism than
+# everything else. Measured: compiling just two of them concurrently
+# (`SolveXcts` and `EvolveGhBinaryBlackHole`) exhausts 23 GB, so budget at
+# least ~12 GB per job here. Note this phase also builds the remaining
+# libraries, so it is the slow part of the build.
+ARG EXEC_PROCS=1
+
+# Same ccache configuration as the GitHub Actions CI, see
+# `docs/DevGuide/GitHubActions.md`. The cache is capped and compressed because
+# it stays in the image, which is pulled onto an Eiger compute node.
+COPY --from=ccache_source /root/.ccache /root/.ccache
+ENV CCACHE_DIR=/root/.ccache
+ENV CCACHE_MAXSIZE=2G
+ENV CCACHE_COMPRESS=1
+ENV CCACHE_COMPRESSLEVEL=5
+ENV CCACHE_COMPILERCHECK=content
+
+COPY . /work/spectre/
+
+# Configure and compile.
+# - We compile with GCC rather than Clang, even though SpECTRE generally
+#   prefers Clang, because the published `sxscollaboration/spectre:dev` image
+#   currently ships Clang 14, which is below the minimum of 17 that
+#   `cmake/CheckCompilerVersion.cmake` requires. Its GCC 11 does meet the
+#   minimum, and it is also the compiler that Charm++ was built with in that
+#   image. Switch to Clang once a newer `dev` image has been published.
+# - Do NOT set `MACHINE`: that would make `spectre.support.Schedule` default to
+#   submitting jobs with `sbatch`, which is not reachable from inside the
+#   container. Without it the CLI runs executables directly, which is what we
+#   want inside the allocation that the CSCS runner already made.
+# - Only the two executables this test runs are built. The `bbh` target of
+#   `support/Pipelines/Bbh` would also build `CharacteristicExtract` and
+#   `EvolveGhSingleBlackHole`, which land in the slow serial phase below and
+#   are never used here. `cli` (which pulls in `all-pybindings`) is needed
+#   because the pipeline is driven through Python.
+# - The build is split into three phases to bound peak memory, the same way
+#   that `containers/Dockerfile.buildenv` and the GitHub Actions workflow do
+#   it. `module_All` generates every Charm++ interface header first, because
+#   some libraries include them transitively without an explicit dependency and
+#   would otherwise race at low parallelism. Then everything that compiles
+#   cheaply is built in parallel, and only the executables are built with
+#   `EXEC_PROCS` jobs.
+# - Object files are deleted in the same layer to keep the image small. They
+#   are only needed for linking.
+RUN cd /work/spectre && mkdir build && cd build \
+    && ccache -pz \
+    && cmake \
+      -D CMAKE_C_COMPILER=gcc \
+      -D CMAKE_CXX_COMPILER=g++ \
+      -D CMAKE_Fortran_COMPILER=gfortran \
+      -D CMAKE_BUILD_TYPE=Release \
+      -D DEBUG_SYMBOLS=OFF \
+      -D BUILD_PYTHON_BINDINGS=ON \
+      -D BUILD_DOCS=OFF \
+      -D BUILD_TESTING=OFF \
+      -D MEMORY_ALLOCATOR=SYSTEM \
+      -D USE_GIT_HOOKS=OFF \
+      -D USE_CCACHE=ON \
+      -D OVERRIDE_ARCH=${OVERRIDE_ARCH} \
+      .. \
+    && echo "Compiling -j${NUM_PROCS}, executables -j${EXEC_PROCS}" \
+    && make -j${NUM_PROCS} module_All \
+    && make -j${NUM_PROCS} cli \
+    && make -j${EXEC_PROCS} SolveXcts EvolveGhBinaryBlackHole \
+    && ccache -s \
+    && find . -name '*.o' -delete
+
+ENV SPECTRE_HOME=/work/spectre
+ENV PATH="${SPECTRE_HOME}/build/bin:${PATH}"
+ENV PYTHONPATH="${SPECTRE_HOME}/build/bin/python"
+
+# Note: deliberately no ENTRYPOINT. The published `deploy` image sets the
+# `spectre` CLI as its entrypoint, which would break GitLab CI because it runs
+# the job script with a shell.
+WORKDIR /work/spectre
