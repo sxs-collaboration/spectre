@@ -73,7 +73,7 @@ spectre_add_python_bindings_test(
   Test_PlotPowerMonitors.py
   "unit;visualization;python"
   PyEvolutionSystemsGeneralizedHarmonic
-  TIMEOUT 10)
+  TIMEOUT 30)
 
 spectre_add_python_bindings_test(
   "Unit.Visualization.Python.PlotSizeControl"
@@ -108,5 +108,13 @@ spectre_add_python_bindings_test(
   "unit;visualization;python"
   None
   TIMEOUT 10)
+
+if(BUILD_PYTHON_BINDINGS)
+  # Test_PlotPowerMonitors imports the ScalarWave bindings for the '--sh' SW
+  # and CSW paths, in addition to the GeneralizedHarmonic ones it declares
+  # above. spectre_add_python_bindings_test takes only a single
+  # PY_MODULE_DEPENDENCY, so declare the second module here
+  add_dependencies(unit-tests PyEvolutionSystemsScalarWave)
+endif()
 
 add_subdirectory(Render3D)
