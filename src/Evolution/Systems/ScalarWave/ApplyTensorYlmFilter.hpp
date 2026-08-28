@@ -24,8 +24,13 @@ namespace ylm::TensorYlm {
 /// tested independently in the unit tests.
 namespace filter_detail {
 
+/// Variables list for the ScalarWave evolved fields, parameterized by \p Frame.
+/// Use `Frame::Inertial` for the external interface (inertial-frame data) and
+/// `Frame::Grid` for internal intermediate storage where \f$\Phi_i\f$ is
+/// temporarily held in the grid frame during spherical-harmonic filtering.
+template <typename Frame>
 using sw_vars_list = tmpl::list<::ScalarWave::Tags::Psi, ::ScalarWave::Tags::Pi,
-                                ::ScalarWave::Tags::Phi<3>>;
+                                ::ScalarWave::Tags::Phi<3, Frame>>;
 
 /*!
  * \brief Transforms spatial tensors into a different frame, ignoring hessians.
@@ -48,8 +53,8 @@ using sw_vars_list = tmpl::list<::ScalarWave::Tags::Psi, ::ScalarWave::Tags::Pi,
  */
 template <typename SrcFrame, typename DestFrame>
 void transform_spatial_tensors_to_different_frame_without_hessians(
-    gsl::not_null<Variables<sw_vars_list>*> dest,
-    const Variables<sw_vars_list>& src,
+    gsl::not_null<Variables<sw_vars_list<DestFrame>>*> dest,
+    const Variables<sw_vars_list<SrcFrame>>& src,
     const InverseJacobian<DataVector, 3, SrcFrame, DestFrame>& jac);
 
 }  // namespace filter_detail
@@ -79,7 +84,11 @@ void transform_spatial_tensors_to_different_frame_without_hessians(
  * number of spectral coefficients, and both are different than the
  * size of the Spherepack storage array.
  *
- * \param sw_vars Scalar wave variables at collocation points.
+ * \param sw_vars ScalarWave variables in the inertial frame
+ *   (`sw_vars_list<Frame::Inertial>`). Internally, \f$\Phi_i\f$ is
+ *   frame-transformed to the grid frame before filtering and transformed back
+ *   afterward; `sw_vars` is updated in-place and remains in the inertial frame
+ *   on exit.
  * \param temp_storage Temporary storage for scalar wave variables,
  *   allocated outside apply_tensor_ylm_filter. See above for size requirements.
  * \param jac_inertial_to_grid Jacobian taking V_x from inertial to grid.
@@ -91,8 +100,10 @@ void transform_spatial_tensors_to_different_frame_without_hessians(
  */
 template <>
 void apply_tensor_ylm_filter(
-    gsl::not_null<Variables<filter_detail::sw_vars_list>*> sw_vars,
-    gsl::not_null<Variables<filter_detail::sw_vars_list>*> temp_storage,
+    gsl::not_null<Variables<filter_detail::sw_vars_list<Frame::Inertial>>*>
+        sw_vars,
+    gsl::not_null<Variables<filter_detail::sw_vars_list<Frame::Inertial>>*>
+        temp_storage,
     const InverseJacobian<DataVector, 3, Frame::Inertial, Frame::Grid>&
         jac_inertial_to_grid,
     const InverseJacobian<DataVector, 3, Frame::Grid, Frame::Inertial>&
