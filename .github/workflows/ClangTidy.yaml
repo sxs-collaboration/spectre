@@ -17,7 +17,7 @@ jobs:
       || github.ref != 'refs/heads/develop'
     runs-on: ubuntu-latest
     container:
-      image: ${{ inputs.container || 'sxscollaboration/spectre:dev' }}
+      image: ${{ inputs.container || 'nilsvu/spectre:dev' }}
     strategy:
       fail-fast: false
       matrix:
