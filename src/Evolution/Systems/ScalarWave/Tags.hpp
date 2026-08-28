@@ -40,9 +40,9 @@ struct Pi : db::SimpleTag {
  * \details If \f$\Psi\f$ is the scalar field then we define
  * \f$\Phi_{i} = \partial_i \Psi\f$
  */
-template <size_t Dim>
+template <size_t Dim, typename Frame>
 struct Phi : db::SimpleTag {
-  using type = tnsr::i<DataVector, Dim, Frame::Inertial>;
+  using type = tnsr::i<DataVector, Dim, Frame>;
 };
 
 struct ConstraintGamma2 : db::SimpleTag {

@@ -25,7 +25,7 @@ class DataVector;
 namespace ScalarWave::Tags {
 struct Psi;
 struct Pi;
-template <size_t Dim>
+template <size_t Dim, typename Frame>
 struct Phi;
 }  // namespace ScalarWave::Tags
 namespace Tags {
@@ -78,9 +78,9 @@ class PlaneWave : public evolution::initial_data::InitialData,
 
   static constexpr Options::String help = {
       "A plane wave solution of the Euclidean wave equation"};
-  using tags =
-      tmpl::list<Tags::Psi, Tags::Pi, Tags::Phi<Dim>, ::Tags::dt<Tags::Psi>,
-                 ::Tags::dt<Tags::Pi>, ::Tags::dt<Tags::Phi<Dim>>>;
+  using tags = tmpl::list<Tags::Psi, Tags::Pi, Tags::Phi<Dim, Frame::Inertial>,
+                          ::Tags::dt<Tags::Psi>, ::Tags::dt<Tags::Pi>,
+                          ::Tags::dt<Tags::Phi<Dim, Frame::Inertial>>>;
 
   PlaneWave() = default;
   PlaneWave(std::array<double, Dim> wave_vector, std::array<double, Dim> center,
@@ -125,9 +125,10 @@ class PlaneWave : public evolution::initial_data::InitialData,
   tnsr::ii<T, Dim> d2psi_dxdx(const tnsr::I<T, Dim>& x, double t) const;
 
   /// Retrieve the evolution variables at time `t` and spatial coordinates `x`
-  tuples::TaggedTuple<Tags::Psi, Tags::Pi, Tags::Phi<Dim>> variables(
-      const tnsr::I<DataVector, Dim>& x, double t,
-      tmpl::list<Tags::Psi, Tags::Pi, Tags::Phi<Dim>> /*meta*/) const;
+  tuples::TaggedTuple<Tags::Psi, Tags::Pi, Tags::Phi<Dim, Frame::Inertial>>
+  variables(const tnsr::I<DataVector, Dim>& x, double t,
+            tmpl::list<Tags::Psi, Tags::Pi,
+                       Tags::Phi<Dim, Frame::Inertial>> /*meta*/) const;
 
   /// Retrieve the time derivative of the evolution variables at time `t` and
   /// spatial coordinates `x`
@@ -135,10 +136,11 @@ class PlaneWave : public evolution::initial_data::InitialData,
   /// \note This function's expected use case is setting the past time
   /// derivative values for Adams-Bashforth-like steppers.
   tuples::TaggedTuple<::Tags::dt<Tags::Psi>, ::Tags::dt<Tags::Pi>,
-                      ::Tags::dt<Tags::Phi<Dim>>>
-  variables(const tnsr::I<DataVector, Dim>& x, double t,
-            tmpl::list<::Tags::dt<Tags::Psi>, ::Tags::dt<Tags::Pi>,
-                       ::Tags::dt<Tags::Phi<Dim>>> /*meta*/) const;
+                      ::Tags::dt<Tags::Phi<Dim, Frame::Inertial>>>
+  variables(
+      const tnsr::I<DataVector, Dim>& x, double t,
+      tmpl::list<::Tags::dt<Tags::Psi>, ::Tags::dt<Tags::Pi>,
+                 ::Tags::dt<Tags::Phi<Dim, Frame::Inertial>>> /*meta*/) const;
 
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& p) override;

@@ -23,8 +23,8 @@ namespace ylm::TensorYlm {
 namespace filter_detail {
 template <typename SrcFrame, typename DestFrame>
 void transform_spatial_tensors_to_different_frame_without_hessians(
-    const gsl::not_null<Variables<sw_vars_list>*> dest,
-    const Variables<sw_vars_list>& src,
+    const gsl::not_null<Variables<sw_vars_list<DestFrame>>*> dest,
+    const Variables<sw_vars_list<SrcFrame>>& src,
     const InverseJacobian<DataVector, 3, SrcFrame, DestFrame>& jac) {
   const auto& [src_psi, src_pi, src_phi] = src;
   auto& [dest_psi, dest_pi, dest_phi] = *dest;
@@ -43,7 +43,7 @@ void transform_spatial_tensors_to_different_frame_without_hessians(
 }  // namespace filter_detail
 
 template <>
-void fill_tensor_ylm_filters<filter_detail::sw_vars_list>(
+void fill_tensor_ylm_filters<filter_detail::sw_vars_list<Frame::Inertial>>(
     const gsl::not_null<FilterMatrixHolder*> matrix, const size_t ell_max,
     const size_t number_of_ell_modes_to_kill,
     const std::optional<size_t> half_power,
@@ -72,8 +72,12 @@ void fill_tensor_ylm_filters<filter_detail::sw_vars_list>(
 
 template <>
 void apply_tensor_ylm_filter(
-    const gsl::not_null<Variables<filter_detail::sw_vars_list>*> sw_vars,
-    const gsl::not_null<Variables<filter_detail::sw_vars_list>*> temp_storage,
+    const gsl::not_null<
+        Variables<filter_detail::sw_vars_list<Frame::Inertial>>*>
+        sw_vars,
+    const gsl::not_null<
+        Variables<filter_detail::sw_vars_list<Frame::Inertial>>*>
+        temp_storage,
     const InverseJacobian<DataVector, 3, Frame::Inertial, Frame::Grid>&
         jac_inertial_to_grid,
     const InverseJacobian<DataVector, 3, Frame::Grid, Frame::Inertial>&
@@ -106,16 +110,16 @@ void apply_tensor_ylm_filter(
   // (and we should not use any them simultaneously) and one
   // Variables that points into sw_vars (which we should not use
   // simultaneously with sw_vars).
-  Variables<filter_detail::sw_vars_list> sw_spectral_vars(temp_storage->data(),
-                                                          temp_storage->size());
-  Variables<filter_detail::sw_vars_list> temp_grid_vars(sw_vars->data(),
-                                                        sw_vars->size());
+  Variables<filter_detail::sw_vars_list<Frame::Grid>> sw_spectral_vars(
+      temp_storage->data(), temp_storage->size());
+  Variables<filter_detail::sw_vars_list<Frame::Grid>> temp_grid_vars(
+      sw_vars->data(), sw_vars->size());
   // The following Variables uses sw_vars->size() which is smaller
   // than temp_storage->size().
   ASSERT(sw_vars->size() <= temp_storage->size(),
          "Should have " << sw_vars->size() << " <= " << temp_storage->size());
-  Variables<filter_detail::sw_vars_list> temp_sw_vars(temp_storage->data(),
-                                                      sw_vars->size());
+  Variables<filter_detail::sw_vars_list<Frame::Grid>> temp_sw_vars(
+      temp_storage->data(), sw_vars->size());
 
   // 1. Multiply by inverse Jacobians to get into (mostly) grid frame.
   //    It's not really the grid frame because there are no Hessian
@@ -142,7 +146,7 @@ void apply_tensor_ylm_filter(
   // src: sw_spectral_vars
   // dest: sw_spectral_vars
   // but using temp_grid_vars as temp storage for each tensor
-  tmpl::for_each<filter_detail::sw_vars_list>(
+  tmpl::for_each<filter_detail::sw_vars_list<Frame::Grid>>(
       [&sw_spectral_vars, &temp_grid_vars, radial_extents,
        &filter_matrices]<class Tag>(const tmpl::type_<Tag> /*meta*/) {
         // Different compilers disagree on whether radial_extents
@@ -235,26 +239,36 @@ void apply_tensor_ylm_filter(
 
 namespace filter_detail {
 
-template void nodal_to_modal_ylm<sw_vars_list>(
-    gsl::not_null<Variables<sw_vars_list>*> modal,
-    const Variables<sw_vars_list>& nodal, const ::ylm::Spherepack& ylm,
-    size_t radial_extents);
+template void nodal_to_modal_ylm<sw_vars_list<Frame::Grid>>(
+    gsl::not_null<Variables<sw_vars_list<Frame::Grid>>*> modal,
+    const Variables<sw_vars_list<Frame::Grid>>& nodal,
+    const ::ylm::Spherepack& ylm, size_t radial_extents);
 
-template void modal_to_nodal_ylm<sw_vars_list>(
-    gsl::not_null<Variables<sw_vars_list>*> modal,
-    const Variables<sw_vars_list>& nodal, const ::ylm::Spherepack& ylm,
-    size_t radial_extents);
+template void nodal_to_modal_ylm<sw_vars_list<Frame::Inertial>>(
+    gsl::not_null<Variables<sw_vars_list<Frame::Inertial>>*> modal,
+    const Variables<sw_vars_list<Frame::Inertial>>& nodal,
+    const ::ylm::Spherepack& ylm, size_t radial_extents);
+
+template void modal_to_nodal_ylm<sw_vars_list<Frame::Grid>>(
+    gsl::not_null<Variables<sw_vars_list<Frame::Grid>>*> modal,
+    const Variables<sw_vars_list<Frame::Grid>>& nodal,
+    const ::ylm::Spherepack& ylm, size_t radial_extents);
+
+template void modal_to_nodal_ylm<sw_vars_list<Frame::Inertial>>(
+    gsl::not_null<Variables<sw_vars_list<Frame::Inertial>>*> modal,
+    const Variables<sw_vars_list<Frame::Inertial>>& nodal,
+    const ::ylm::Spherepack& ylm, size_t radial_extents);
 
 template void transform_spatial_tensors_to_different_frame_without_hessians<
     Frame::Grid, Frame::Inertial>(
-    gsl::not_null<Variables<sw_vars_list>*> dest,
-    const Variables<sw_vars_list>& src,
+    gsl::not_null<Variables<sw_vars_list<Frame::Inertial>>*> dest,
+    const Variables<sw_vars_list<Frame::Grid>>& src,
     const InverseJacobian<DataVector, 3, Frame::Grid, Frame::Inertial>& jac);
 
 template void transform_spatial_tensors_to_different_frame_without_hessians<
     Frame::Inertial, Frame::Grid>(
-    gsl::not_null<Variables<sw_vars_list>*> dest,
-    const Variables<sw_vars_list>& src,
+    gsl::not_null<Variables<sw_vars_list<Frame::Grid>>*> dest,
+    const Variables<sw_vars_list<Frame::Inertial>>& src,
     const InverseJacobian<DataVector, 3, Frame::Inertial, Frame::Grid>& jac);
 }  // namespace filter_detail
 }  // namespace ylm::TensorYlm
