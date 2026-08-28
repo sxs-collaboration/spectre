@@ -145,7 +145,7 @@ void test_conserved_quantities_kerr_schild() {
   std::vector<std::array<double, 6>> states{};
   std::vector<double> times{};
   BoostObserver observer{states, times};
-#if defined(__GNUC__) && !defined(__clang__) && __GNUC__ == 13
+#if defined(__GNUC__) && !defined(__clang__) && __GNUC__ >= 13
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wuninitialized"
 #endif
@@ -156,7 +156,7 @@ void test_conserved_quantities_kerr_schild() {
               std::array<double, 6>>()),
       BoostGeodesicIntegrator{kerr_schild}, initial_state, 0.0, t_max, 1e-5,
       observer);
-#if defined(__GNUC__) && !defined(__clang__) && __GNUC__ == 13
+#if defined(__GNUC__) && !defined(__clang__) && __GNUC__ >= 13
 #pragma GCC diagnostic pop
 #endif
 

@@ -6,13 +6,15 @@ include(AddCxxFlag)
 # On systems where we can't use -isystem (Cray), we don't want
 # all the warnings enabled because we get flooded with system warnings.
 option(ENABLE_WARNINGS "Enable the default warning level" ON)
+# `-Wdisabled-optimization` is deliberately not enabled. It reports that the
+# compiler gave up on an optimization because a function exceeded an internal
+# size limit, which our template-heavy code hits routinely and cannot act on.
 if(${ENABLE_WARNINGS})
   create_cxx_flags_target(
     "-W;\
 -Wall;\
 -Wcast-align;\
 -Wcast-qual;\
--Wdisabled-optimization;\
 -Wdocumentation;\
 -Wextra;\
 -Wformat-nonliteral;\
