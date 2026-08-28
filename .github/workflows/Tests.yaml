@@ -54,7 +54,7 @@ on:
         description: >
           Container to use for builds
         required: false
-        default: 'sxscollaboration/spectre:dev'
+        default: 'nilsvu/spectre:dev'
   # Allow running this workflow as a job in another workflow. This is used to
   # test a new Docker container before publishing it.
   workflow_call:
@@ -64,7 +64,7 @@ on:
           Container to use for builds
         required: false
         type: string
-        default: 'sxscollaboration/spectre:dev'
+        default: 'nilsvu/spectre:dev'
 
 # Cancel all other queued or in-progress runs of this workflow when it is
 # scheduled, so repeated pushes to a branch or a PR don't block CI. Repeated
@@ -113,7 +113,7 @@ jobs:
     name: Files and formatting
     runs-on: ubuntu-latest
     container:
-      image: ${{ inputs.container || 'sxscollaboration/spectre:dev' }}
+      image: ${{ inputs.container || 'nilsvu/spectre:dev' }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v5
@@ -216,7 +216,7 @@ jobs:
       || github.ref != 'refs/heads/develop'
     runs-on: ubuntu-latest
     container:
-      image: ${{ inputs.container || 'sxscollaboration/spectre:dev' }}
+      image: ${{ inputs.container || 'nilsvu/spectre:dev' }}
     strategy:
       fail-fast: false
       matrix:
@@ -295,7 +295,7 @@ jobs:
     needs: check_files_and_formatting
     runs-on: ubuntu-latest
     container:
-      image: ${{ inputs.container || 'sxscollaboration/spectre:dev' }}
+      image: ${{ inputs.container || 'nilsvu/spectre:dev' }}
       env:
         CCACHE_DIR: /work/ccache
         CCACHE_READONLY: 1
@@ -545,7 +545,7 @@ jobs:
             use_xsimd: "OFF"
 
     container:
-      image: ${{ inputs.container || 'sxscollaboration/spectre:dev' }}
+      image: ${{ inputs.container || 'nilsvu/spectre:dev' }}
       volumes:
         - /usr/local:/mnt/host-usr-local
         - /usr/share:/mnt/host-usr-share
@@ -889,6 +889,8 @@ ${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
       # Delete unused cache entries before uploading the cache
       - name: Clean up ccache
         if: github.ref == 'refs/heads/develop'
+          || github.head_ref == 'upgrade_container'
+          || github.ref == 'refs/heads/upgrade_container'
         run: |
           now=$(date +%s)
           job_duration=$((now - ${{ steps.start.outputs.time }}))
@@ -896,8 +898,15 @@ ${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
       # Save the cache after everything has been built. Also save on failure or
       # on cancellation (`always()`) because a partial cache is better than no
       # cache.
+      #
+      # TEMPORARY, REMOVE BEFORE MERGING: also save on the container-upgrade
+      # branch, which needs to warm its own cache because the new container
+      # invalidates every entry. `head_ref` is the branch a pull request comes
+      # from; `ref` is `refs/pull/<n>/merge` there, so it only matches pushes.
       - name: Save ccache
-        if: always() && github.ref == 'refs/heads/develop'
+        if: always() && (github.ref == 'refs/heads/develop'
+          || github.head_ref == 'upgrade_container'
+          || github.ref == 'refs/heads/upgrade_container')
         uses: actions/cache/save@v5
         with:
           path: /work/ccache
@@ -1226,14 +1235,20 @@ ${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
         working-directory: build
         run: |
           make test-executables
+      # TEMPORARY, REMOVE BEFORE MERGING: also save on the container-upgrade
+      # branch, as in the Linux job above.
       - name: Clean up ccache
         if: github.ref == 'refs/heads/develop'
+          || github.head_ref == 'upgrade_container'
+          || github.ref == 'refs/heads/upgrade_container'
         run: |
           now=$(date +%s)
           job_duration=$((now - ${{ steps.start.outputs.time }}))
           ccache --evict-older-than "${job_duration}s"
       - name: Save ccache
-        if: always() && github.ref == 'refs/heads/develop'
+        if: always() && (github.ref == 'refs/heads/develop'
+          || github.head_ref == 'upgrade_container'
+          || github.ref == 'refs/heads/upgrade_container')
         uses: actions/cache/save@v5
         with:
           path: ~/ccache
@@ -1421,7 +1436,7 @@ ${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
               "-skl;skylake" "-icx;icelake-server" "-tgl;tigerlake")
             compiler: clang-21
     container:
-      image: ${{ inputs.container || 'sxscollaboration/spectre:dev' }}
+      image: ${{ inputs.container || 'nilsvu/spectre:dev' }}
       env:
         # See the unit test job for the reasons for these configuration choices
         CXXFLAGS: "-Werror"
