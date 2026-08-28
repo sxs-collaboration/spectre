@@ -33,7 +33,7 @@
 #include "Evolution/DgSubcell/PerssonTci.hpp"
 #include "Evolution/DgSubcell/PrepareNeighborData.hpp"
 #include "Evolution/DgSubcell/SetInterpolators.hpp"
-#include "Evolution/DgSubcell/SubcellEqualRateRegion.hpp"
+#include "Evolution/DgSubcell/SubcellAndNonconformingEqualRateRegions.hpp"
 #include "Evolution/DgSubcell/Tags/MethodOrder.hpp"
 #include "Evolution/DgSubcell/Tags/ObserverCoordinates.hpp"
 #include "Evolution/DgSubcell/Tags/ObserverMesh.hpp"
@@ -508,12 +508,11 @@ struct EvolutionMetavars<tmpl::list<InterpolationTargetTags...>,
   using dg_registration_list =
       tmpl::list<observers::Actions::RegisterEventsWithObservers>;
 
-  using equal_rate_regions = tmpl::flatten<
-      tmpl::list<evolution::dg::NonconformingEqualRateRegions<volume_dim>,
-                 tmpl::conditional_t<
-                     use_dg_subcell,
-                     evolution::dg::subcell::SubcellEqualRateRegion<volume_dim>,
-                     tmpl::list<>>>>;
+  using equal_rate_regions = tmpl::conditional_t<
+      use_dg_subcell,
+      tmpl::list<evolution::dg::subcell::
+                     SubcellAndNonconformingEqualRateRegions<volume_dim>>,
+      tmpl::list<evolution::dg::NonconformingEqualRateRegions<volume_dim>>>;
 
   using initialization_actions = tmpl::flatten<tmpl::list<
       Initialization::Actions::InitializeItems<
