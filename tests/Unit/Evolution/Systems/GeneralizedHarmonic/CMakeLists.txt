@@ -24,6 +24,7 @@ set(LIBRARY_SOURCES
   Test_Constraints.cpp
   Test_DuDt.cpp
   Test_DuDtTempTags.cpp
+  Test_FilledSpherePowerMonitor.cpp
   Test_Fluxes.cpp
   Test_SphericalShellPowerMonitor.cpp
   Test_System.cpp
@@ -54,5 +55,6 @@ target_link_libraries(
   MathFunctions
   Options
   Spectral
+  SphericalHarmonics
   Utilities
 )

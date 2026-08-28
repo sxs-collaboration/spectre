@@ -29,7 +29,7 @@ from spectre.Visualization.Plot import (
 logger = logging.getLogger(__name__)
 
 
-def gh_shell_tensor_component_names(
+def gh_sh_tensor_component_names(
     spacetime_metric_name: str, pi_name: str, phi_name: str
 ):
     return (
@@ -45,7 +45,7 @@ def gh_shell_tensor_component_names(
     )
 
 
-def plot_gh_shell_power_monitors(
+def plot_gh_power_monitors(
     volfiles: Union[spectre_h5.H5Vol, Iterable[spectre_h5.H5Vol]],
     obs_id: int,
     block_or_group_names: Sequence[str],
@@ -59,14 +59,13 @@ def plot_gh_shell_power_monitors(
     figsize: Optional[Tuple[float, float]] = None,
 ):
     if domain.dim != 3:
-        raise click.UsageError(
-            "GH shell power monitors require 3D volume data."
-        )
+        raise click.UsageError("GH power monitors require 3D volume data.")
     from spectre.Evolution.Systems.GeneralizedHarmonic import (
+        gh_b3_power_monitors,
         gh_shell_power_monitors,
     )
 
-    tensor_components = gh_shell_tensor_component_names(
+    tensor_components = gh_sh_tensor_component_names(
         spacetime_metric_name, pi_name, phi_name
     )
     num_cols = len(variables_to_plot)
@@ -99,13 +98,21 @@ def plot_gh_shell_power_monitors(
             is None
         ):
             continue
+        if all(basis == Basis.ZernikeB3 for basis in element.mesh.basis()):
+            monitor_fn = gh_b3_power_monitors
+        elif any(
+            basis == Basis.SphericalHarmonic for basis in element.mesh.basis()
+        ):
+            monitor_fn = gh_shell_power_monitors
+        else:
+            continue
 
         if tensor_data.dtype != np.float64:
             tensor_data = tensor_data.astype(np.float64)
         spacetime_metric = metric_type(tensor_data[:metric_size])
         pi = pi_type(tensor_data[metric_size : metric_size + pi_size])
         phi = phi_type(tensor_data[metric_size + pi_size :])
-        monitors = gh_shell_power_monitors(
+        monitors = monitor_fn(
             spacetime_metric,
             pi,
             phi,
@@ -134,9 +141,9 @@ def plot_gh_shell_power_monitors(
         ax.xaxis.set_major_locator(MaxNLocator(integer=True))
         if fixed_y_limits is not None:
             ax.set_ylim(*fixed_y_limits)
-    if plotted_elements <= 12 and plotted_elements > 0:
+    if 0 < plotted_elements <= 12:
         axes[0][-1].legend(loc="best", fontsize="small")
-    fig.suptitle(f"GH shell power monitors at observation {obs_id}")
+    fig.suptitle(f"GH power monitors at observation {obs_id}")
     fig.tight_layout()
     return fig
 
@@ -442,11 +449,13 @@ def plot_power_monitors(
     "--over-time", "-T", is_flag=True, help="Plot power monitors over time."
 )
 @click.option(
-    "--gh-shell",
+    "--gh-sh",
     is_flag=True,
     help=(
-        "Compute Generalized Harmonic spherical-shell power monitors for "
-        "SpacetimeMetric/Pi/Phi. This computes one monitor per element."
+        "Compute Generalized Harmonic power monitors for SpacetimeMetric/Pi/Phi"
+        " using the TensorYlm basis. Handles shell (SphericalHarmonic) and"
+        " filled-sphere (ZernikeB3) elements automatically. This computes one"
+        " monitor per element."
     ),
 )
 @click.option(
@@ -468,20 +477,20 @@ def plot_power_monitors(
     help="Volume-data tensor name for the GH Phi variable.",
 )
 @click.option(
-    "--gh-shell-variable",
-    "gh_shell_variables",
+    "--gh-sh-variable",
+    "gh_sh_variables",
     multiple=True,
     type=click.Choice(["SpacetimeMetric", "Pi", "Phi"]),
     help=(
-        "GH variable to plot in '--gh-shell' mode. Can be specified multiple "
+        "GH variable to plot in '--gh-sh' mode. Can be specified multiple "
         "times. Defaults to all three variables."
     ),
 )
 @click.option(
-    "--gh-shell-frame-prefix",
+    "--gh-sh-frame-prefix",
     type=click.Path(file_okay=False, dir_okay=False, writable=True),
     help=(
-        "When used with '--gh-shell --over-time', write one PNG frame per "
+        "When used with '--gh-sh --over-time', write one PNG frame per "
         "observation with this filename prefix."
     ),
 )
@@ -489,7 +498,7 @@ def plot_power_monitors(
     "--fixed-y-limits",
     nargs=2,
     type=float,
-    help="Fixed y-axis limits for GH shell movie frames.",
+    help="Fixed y-axis limits for GH spherical harmonic movie frames.",
 )
 @click.option(
     "--skip-filtered-modes",
@@ -515,12 +524,12 @@ def plot_power_monitors_command(
     list_elements,
     element_patterns,
     over_time,
-    gh_shell,
+    gh_sh,
     gh_spacetime_metric,
     gh_pi,
     gh_phi,
-    gh_shell_variables,
-    gh_shell_frame_prefix,
+    gh_sh_variables,
+    gh_sh_frame_prefix,
     fixed_y_limits,
     **kwargs,
 ):
@@ -546,15 +555,15 @@ def plot_power_monitors_command(
             "Specify an observation '--step' or '--time', or specify"
             " '--over-time' (but not both)."
         )
-    if not gh_shell and not vars:
+    if not gh_sh and not vars:
         raise click.UsageError(
             "Specify '--var' / '-y' to select a variable to plot, or use "
-            "'--gh-shell'."
+            "'--gh-sh'."
         )
-    if gh_shell and over_time and not gh_shell_frame_prefix:
+    if gh_sh and over_time and not gh_sh_frame_prefix:
         raise click.UsageError(
-            "Specify '--gh-shell-frame-prefix' when using "
-            "'--gh-shell --over-time' so one plot can be written for each "
+            "Specify '--gh-sh-frame-prefix' when using "
+            "'--gh-sh --over-time' so one plot can be written for each "
             "observation."
         )
 
@@ -622,11 +631,11 @@ def plot_power_monitors_command(
         open_h5_file.close()
         return
 
-    if gh_shell:
+    if gh_sh:
         # This option applies only to the standard logical-dimension power
-        # monitors, not to GH shell power monitors.
+        # monitors, not to GH power monitors.
         kwargs.pop("skip_filtered_modes")
-        variables_to_plot = gh_shell_variables or (
+        variables_to_plot = gh_sh_variables or (
             "SpacetimeMetric",
             "Pi",
             "Phi",
@@ -649,11 +658,11 @@ def plot_power_monitors_command(
                 rich.progress.TimeRemainingColumn(),
             )
             task = progress.add_task(
-                "Writing GH shell frames", total=len(all_obs_ids)
+                "Writing GH frames", total=len(all_obs_ids)
             )
             with progress:
                 for obs_id_i, obs_time_i in zip(all_obs_ids, all_obs_times):
-                    fig = plot_gh_shell_power_monitors(
+                    fig = plot_gh_power_monitors(
                         open_volfiles(h5_files, subfile_name, obs_id_i),
                         obs_id=obs_id_i,
                         domain=domain,
@@ -667,7 +676,7 @@ def plot_power_monitors_command(
                         **kwargs,
                     )
                     fig.savefig(
-                        f"{gh_shell_frame_prefix}_"
+                        f"{gh_sh_frame_prefix}_"
                         f"{obs_id_i:012d}_t{obs_time_i:.12g}.png"
                     )
                     plt.close(fig)
@@ -675,7 +684,7 @@ def plot_power_monitors_command(
             return
 
         open_h5_file.close()
-        return plot_gh_shell_power_monitors(
+        return plot_gh_power_monitors(
             open_volfiles(h5_files, subfile_name, obs_id),
             obs_id=obs_id,
             domain=domain,

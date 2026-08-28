@@ -16,7 +16,7 @@ from spectre.IO.H5 import ElementVolumeData, TensorComponent
 from spectre.Spectral import Basis, Mesh, Quadrature, logical_coordinates
 from spectre.Visualization.PlotPowerMonitors import (
     find_block_or_group,
-    gh_shell_tensor_component_names,
+    gh_sh_tensor_component_names,
     plot_power_monitors_command,
 )
 
@@ -52,7 +52,7 @@ class TestPlotPowerMonitors(unittest.TestCase):
         )
         logical_coords = np.asarray(logical_coordinates(shell_mesh))
         profile = 2.0 + 0.1 * logical_coords[0]
-        component_names = gh_shell_tensor_component_names(
+        component_names = gh_sh_tensor_component_names(
             "SpacetimeMetric", "Pi", "Phi"
         )
         self.gh_h5_filename = os.path.join(self.test_dir, "gh_voldata.h5")
@@ -158,7 +158,7 @@ class TestPlotPowerMonitors(unittest.TestCase):
         self.assertTrue(os.path.exists(self.plot_filename))
         os.remove(self.plot_filename)
 
-    def test_gh_shell_cli(self):
+    def test_gh_sh_cli(self):
         runner = CliRunner()
         result = runner.invoke(
             plot_power_monitors_command,
@@ -170,8 +170,8 @@ class TestPlotPowerMonitors(unittest.TestCase):
                 "-1",
                 "-b",
                 self.shell_block_name,
-                "--gh-shell",
-                "--gh-shell-variable",
+                "--gh-sh",
+                "--gh-sh-variable",
                 "Pi",
                 "-o",
                 self.plot_filename,
@@ -190,14 +190,14 @@ class TestPlotPowerMonitors(unittest.TestCase):
                 "GhVolumeData",
                 "-b",
                 self.shell_block_name,
-                "--gh-shell",
+                "--gh-sh",
                 "--over-time",
             ],
         )
         self.assertEqual(result.exit_code, 2, result.output)
-        self.assertIn("--gh-shell-frame-prefix", result.output)
+        self.assertIn("--gh-sh-frame-prefix", result.output)
 
-        frame_prefix = os.path.join(self.test_dir, "gh_shell")
+        frame_prefix = os.path.join(self.test_dir, "gh_sh")
         result = runner.invoke(
             plot_power_monitors_command,
             [
@@ -206,9 +206,9 @@ class TestPlotPowerMonitors(unittest.TestCase):
                 "GhVolumeData",
                 "-b",
                 self.shell_block_name,
-                "--gh-shell",
+                "--gh-sh",
                 "--over-time",
-                "--gh-shell-frame-prefix",
+                "--gh-sh-frame-prefix",
                 frame_prefix,
             ],
             catch_exceptions=False,
@@ -217,7 +217,7 @@ class TestPlotPowerMonitors(unittest.TestCase):
         frame_files = [
             filename
             for filename in os.listdir(self.test_dir)
-            if filename.startswith("gh_shell_") and filename.endswith(".png")
+            if filename.startswith("gh_sh_") and filename.endswith(".png")
         ]
         self.assertEqual(len(frame_files), 2)
 
