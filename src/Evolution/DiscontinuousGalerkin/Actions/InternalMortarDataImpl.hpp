@@ -14,6 +14,7 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
+#include "DataStructures/VariablesTag.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/FaceNormal.hpp"
 #include "Domain/Structure/Direction.hpp"
@@ -42,9 +43,9 @@ struct TimeStepId;
 /// \endcond
 
 namespace evolution::dg::Actions::detail {
-template <typename System, size_t Dim, typename BoundaryCorrection,
-          typename EvolvedVariablesTags, typename TemporaryTags,
-          typename... PackageDataVolumeArgs>
+template <typename System, size_t Dim, bool ComputeAuxiliary = false,
+          typename BoundaryCorrection, typename EvolvedVariablesTags,
+          typename TemporaryTags, typename... PackageDataVolumeArgs>
 void internal_mortar_data_impl(
     const gsl::not_null<
         DirectionMap<Dim, std::optional<Variables<tmpl::list<
@@ -58,6 +59,13 @@ void internal_mortar_data_impl(
     const gsl::not_null<gsl::span<double>*> packaged_data_buffer,
     const BoundaryCorrection& boundary_correction,
     const Variables<EvolvedVariablesTags>& volume_evolved_vars,
+    // The physical boundary correction may read the auxiliary variables,
+    // so they are projected to the face for the physical pass.
+    // No-op when there are no auxiliary variables or during the
+    // auxiliary pass (which computes them but does not read them).
+    const Variables<
+        get_auxiliary_variables_or_default_t<System, tmpl::list<>>>* const
+        volume_auxiliary_variables,
     const Variables<
         db::wrap_tags_in<::Tags::Flux, typename System::flux_variables,
                          tmpl::size_t<Dim>, Frame::Inertial>>& volume_fluxes,
@@ -74,19 +82,29 @@ void internal_mortar_data_impl(
                           Frame::Inertial>& volume_inverse_jacobian,
     const PackageDataVolumeArgs&... package_data_volume_args) {
   using variables_tags = EvolvedVariablesTags;
+  using auxiliary_variables =
+      get_auxiliary_variables_or_default_t<System, tmpl::list<>>;
   using flux_variables = typename System::flux_variables;
   using fluxes_tags = db::wrap_tags_in<::Tags::Flux, flux_variables,
                                        tmpl::size_t<Dim>, Frame::Inertial>;
-  using temporary_tags_for_face =
-      typename BoundaryCorrection::dg_package_data_temporary_tags;
+  using temporary_tags_for_face = tmpl::conditional_t<
+      ComputeAuxiliary,
+      get_dg_auxiliary_package_data_temporary_tags_or_default_t<
+          BoundaryCorrection, tmpl::list<>>,
+      typename BoundaryCorrection::dg_package_data_temporary_tags>;
   using primitive_tags_for_face = typename detail::get_primitive_vars<
       System::has_primitive_and_conservative_vars>::
       template f<BoundaryCorrection>;
-  using mortar_tags_list = typename BoundaryCorrection::dg_package_field_tags;
-
+  using mortar_tags_list =
+      tmpl::conditional_t<ComputeAuxiliary,
+                          get_dg_auxiliary_package_field_tags_or_default_t<
+                              BoundaryCorrection, tmpl::list<>>,
+                          typename BoundaryCorrection::dg_package_field_tags>;
+  using projected_auxiliary_vars_tags =
+      tmpl::conditional_t<ComputeAuxiliary, tmpl::list<>, auxiliary_variables>;
   using dg_package_data_projected_tags =
-      tmpl::append<variables_tags, fluxes_tags, temporary_tags_for_face,
-                   primitive_tags_for_face>;
+      tmpl::append<variables_tags, projected_auxiliary_vars_tags, fluxes_tags,
+                   temporary_tags_for_face, primitive_tags_for_face>;
   using FieldsOnFace = Variables<tmpl::remove_duplicates<tmpl::push_back<
       tmpl::append<dg_package_data_projected_tags,
                    detail::inverse_spatial_metric_tag<System>>,
@@ -136,6 +154,17 @@ void internal_mortar_data_impl(
     ::dg::project_contiguous_data_to_boundary(make_not_null(&fields_on_face),
                                               volume_evolved_vars, volume_mesh,
                                               direction);
+    if constexpr (not ComputeAuxiliary and
+                  tmpl::size<auxiliary_variables>::value != 0) {
+      ASSERT(volume_auxiliary_variables != nullptr,
+             "The auxiliary variables must be provided to the physical pass "
+             "when the system has auxiliary variables.");
+      ::dg::project_tensors_to_boundary<auxiliary_variables>(
+          make_not_null(&fields_on_face), *volume_auxiliary_variables,
+          volume_mesh, direction);
+    } else {
+      (void)volume_auxiliary_variables;
+    }
     if constexpr (tmpl::size<fluxes_tags>::value != 0) {
       ::dg::project_contiguous_data_to_boundary(make_not_null(&fields_on_face),
                                                 volume_fluxes, volume_mesh,
@@ -284,12 +313,21 @@ void internal_mortar_data_impl(
       packaged_data.set_data_ref(packaged_data_buffer->data(), total_face_size);
     }
 
-    detail::dg_package_data<System>(
-        make_not_null(&packaged_data), boundary_correction, fields_on_face,
-        get<evolution::dg::Tags::NormalCovector<Dim>>(
-            *normal_covector_and_magnitude_ptr->at(direction)),
-        face_mesh_velocity, dg_package_data_projected_tags{},
-        package_data_volume_args...);
+    if constexpr (ComputeAuxiliary) {
+      detail::dg_auxiliary_package_data<System>(
+          make_not_null(&packaged_data), boundary_correction, fields_on_face,
+          get<evolution::dg::Tags::NormalCovector<Dim>>(
+              *normal_covector_and_magnitude_ptr->at(direction)),
+          face_mesh_velocity, dg_package_data_projected_tags{},
+          package_data_volume_args...);
+    } else {
+      detail::dg_package_data<System>(
+          make_not_null(&packaged_data), boundary_correction, fields_on_face,
+          get<evolution::dg::Tags::NormalCovector<Dim>>(
+              *normal_covector_and_magnitude_ptr->at(direction)),
+          face_mesh_velocity, dg_package_data_projected_tags{},
+          package_data_volume_args...);
+    }
 
     // Perform step 3
     // This will only do something if neighbors are conforming and either
@@ -330,9 +368,9 @@ void internal_mortar_data_impl(
   }
 }
 
-template <typename System, size_t Dim, typename BoundaryCorrection,
-          typename DbTagsList, typename EvolvedVariablesTags,
-          typename... PackageDataVolumeTags>
+template <typename System, size_t Dim, bool ComputeAuxiliary = false,
+          typename BoundaryCorrection, typename DbTagsList,
+          typename EvolvedVariablesTags, typename... PackageDataVolumeTags>
 void internal_mortar_data(
     const gsl::not_null<db::DataBox<DbTagsList>*> box,
     const gsl::not_null<gsl::span<double>*> face_temporaries,
@@ -348,10 +386,19 @@ void internal_mortar_data(
     const Variables<get_primitive_vars_tags_from_system<System>>* const
         primitive_vars,
     tmpl::list<PackageDataVolumeTags...> /*meta*/) {
+  using auxiliary_variables =
+      get_auxiliary_variables_or_default_t<System, tmpl::list<>>;
+  const Variables<auxiliary_variables>* volume_auxiliary_variables = nullptr;
+  if constexpr (not ComputeAuxiliary and
+                tmpl::size<auxiliary_variables>::value != 0) {
+    volume_auxiliary_variables =
+        &db::get<::Tags::Variables<auxiliary_variables>>(*box);
+  }
   db::mutate<evolution::dg::Tags::NormalCovectorAndMagnitude<Dim>,
              evolution::dg::Tags::MortarData<Dim>>(
       [&boundary_correction, &face_temporaries, &packaged_data_buffer,
        &element = db::get<domain::Tags::Element<Dim>>(*box), &evolved_variables,
+       volume_auxiliary_variables,
        &logical_to_inertial_inverse_jacobian =
            db::get<domain::Tags::InverseJacobian<Dim, Frame::ElementLogical,
                                                  Frame::Inertial>>(*box),
@@ -364,13 +411,13 @@ void internal_mortar_data(
        &primitive_vars, &temporaries, &volume_fluxes](
           const auto normal_covector_and_magnitude_ptr,
           const auto mortar_data_ptr, const auto&... package_data_volume_args) {
-        detail::internal_mortar_data_impl<System>(
+        detail::internal_mortar_data_impl<System, Dim, ComputeAuxiliary>(
             normal_covector_and_magnitude_ptr, mortar_data_ptr,
             face_temporaries, packaged_data_buffer, boundary_correction,
-            evolved_variables, volume_fluxes, temporaries, primitive_vars,
-            element, mesh, mortar_meshes, mortar_infos, moving_mesh_map,
-            mesh_velocity, logical_to_inertial_inverse_jacobian,
-            package_data_volume_args...);
+            evolved_variables, volume_auxiliary_variables, volume_fluxes,
+            temporaries, primitive_vars, element, mesh, mortar_meshes,
+            mortar_infos, moving_mesh_map, mesh_velocity,
+            logical_to_inertial_inverse_jacobian, package_data_volume_args...);
       },
       box, db::get<PackageDataVolumeTags>(*box)...);
 }

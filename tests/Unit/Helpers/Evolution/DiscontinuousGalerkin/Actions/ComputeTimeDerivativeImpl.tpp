@@ -858,6 +858,62 @@ struct BoundaryTerms final : public ::evolution::BoundaryCorrection {
     return max(get(*max_abs_char_speed));
   }
 
+  // Nonconservative system with a LDG auxiliary variable
+  double dg_package_data(
+      const gsl::not_null<Scalar<DataVector>*> out_normal_dot_flux_var1,
+      const gsl::not_null<tnsr::I<DataVector, Dim, Frame::Inertial>*>
+          out_normal_dot_flux_var2,
+      const gsl::not_null<Scalar<DataVector>*> out_var1,
+      const gsl::not_null<tnsr::I<DataVector, Dim, Frame::Inertial>*> out_var2,
+      const gsl::not_null<Scalar<DataVector>*> max_abs_char_speed,
+
+      const Scalar<DataVector>& var1,
+      const tnsr::I<DataVector, Dim, Frame::Inertial>& var2,
+      const Scalar<DataVector>& var_aux,
+
+      const Scalar<DataVector>& var3_squared,
+
+      const tnsr::i<DataVector, Dim, Frame::Inertial>& normal_covector,
+      const std::optional<tnsr::I<DataVector, Dim, Frame::Inertial>>&
+          mesh_velocity,
+      const std::optional<Scalar<DataVector>>& normal_dot_mesh_velocity) const {
+    dg_package_data(out_normal_dot_flux_var1, out_normal_dot_flux_var2,
+                    out_var1, out_var2, max_abs_char_speed, var1, var2,
+                    var3_squared, normal_covector, mesh_velocity,
+                    normal_dot_mesh_velocity);
+    get(*out_var1) += get(var_aux);
+    return max(get(*max_abs_char_speed));
+  }
+
+  // Mixed system with a LDG auxiliary variable
+  double dg_package_data(
+      const gsl::not_null<Scalar<DataVector>*> out_normal_dot_flux_var1,
+      const gsl::not_null<tnsr::I<DataVector, Dim, Frame::Inertial>*>
+          out_normal_dot_flux_var2,
+      const gsl::not_null<Scalar<DataVector>*> out_var1,
+      const gsl::not_null<tnsr::I<DataVector, Dim, Frame::Inertial>*> out_var2,
+      const gsl::not_null<Scalar<DataVector>*> max_abs_char_speed,
+
+      const Scalar<DataVector>& var1,
+      const tnsr::I<DataVector, Dim, Frame::Inertial>& var2,
+      const Scalar<DataVector>& var_aux,
+
+      const tnsr::IJ<DataVector, Dim, Frame::Inertial>& flux_var2,
+
+      const Scalar<DataVector>& var3_squared,
+
+      const tnsr::i<DataVector, Dim, Frame::Inertial>& normal_covector,
+      const std::optional<tnsr::I<DataVector, Dim, Frame::Inertial>>&
+          mesh_velocity,
+      const std::optional<Scalar<DataVector>>& normal_dot_mesh_velocity) const {
+    dg_package_data(out_normal_dot_flux_var1, out_normal_dot_flux_var2,
+                    out_var1, out_var2, max_abs_char_speed, var1, var2,
+                    flux_var2, var3_squared, normal_covector, mesh_velocity,
+                    normal_dot_mesh_velocity);
+    get(*out_var1) += get(var_aux);
+    return max(get(*max_abs_char_speed));
+  }
+
   // Mixed system with prims
   /// [bt_mp]
   double dg_package_data(
@@ -1754,6 +1810,8 @@ void test_impl(const Spectral::Quadrature quadrature,
   // interfaces are called. Working out all the numbers explicitly would be
   // tedious.
   using variables_tags = typename variables_tag::tags_list;
+  using aux_tags_for_face =
+      tmpl::conditional_t<HasAux, tmpl::list<VarAux>, tmpl::list<>>;
   using temporary_tags_for_face = tmpl::list<Var3Squared>;
   using primitive_tags_for_face = tmpl::conditional_t<
       system::has_primitive_and_conservative_vars,
@@ -1802,20 +1860,26 @@ void test_impl(const Spectral::Quadrature quadrature,
       mesh.number_of_grid_points()};
   get(get<Var3Squared>(volume_temporaries)) = square(get(var3));
   const auto compute_expected_mortar_data =
-      [&element, &expected_fluxes, &face_normals, &get_tag, &mesh,
+      [&aux_vars, &element, &expected_fluxes, &face_normals, &get_tag, &mesh,
        &mesh_velocity, &mortar_meshes, &mortar_infos, &volume_temporaries,
        &variables_before_compute_time_derivatives](
           const Direction<Dim>& local_direction,
           const ElementId<Dim>& local_neighbor_id, const bool local_data) {
         const auto& face_mesh = mesh.slice_away(local_direction.dimension());
         // First project data to the face in the direction of the mortar
-        Variables<
-            tmpl::append<variables_tags, fluxes_tags, temporary_tags_for_face,
-                         primitive_tags_for_face>>
+        Variables<tmpl::append<variables_tags, aux_tags_for_face, fluxes_tags,
+                               temporary_tags_for_face,
+                               primitive_tags_for_face>>
             fields_on_face{face_mesh.number_of_grid_points()};
         ::dg::project_contiguous_data_to_boundary(
             make_not_null(&fields_on_face),
             variables_before_compute_time_derivatives, mesh, local_direction);
+        if constexpr (HasAux) {
+          ::dg::project_tensors_to_boundary<tmpl::list<VarAux>>(
+              make_not_null(&fields_on_face), aux_vars, mesh, local_direction);
+        } else {
+          (void)aux_vars;
+        }
         if constexpr (tmpl::size<fluxes_tags>::value != 0) {
           ::dg::project_contiguous_data_to_boundary(
               make_not_null(&fields_on_face), expected_fluxes, mesh,

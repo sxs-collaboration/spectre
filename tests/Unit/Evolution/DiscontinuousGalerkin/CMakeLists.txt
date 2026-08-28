@@ -8,6 +8,7 @@ set(LIBRARY_SOURCES
   Actions/Test_BoundaryConditions.cpp
   Actions/Test_ComputeTimeDerivative.cpp
   Actions/Test_NormalCovectorAndMagnitude.cpp
+  Actions/Test_SendAuxiliaryData.cpp
   Initialization/Test_Mortars.cpp
   Initialization/Test_ProjectSpectralFilters.cpp
   Initialization/Test_QuadratureTag.cpp
