@@ -7,6 +7,7 @@
 #include <string>
 
 #include "DataStructures/VariablesTag.hpp"
+#include "Evolution/Systems/SecondOrderScalarWave/BoundaryConditions/BoundaryCondition.hpp"
 #include "Evolution/Systems/SecondOrderScalarWave/Characteristics.hpp"
 #include "Evolution/Systems/SecondOrderScalarWave/Tags.hpp"
 #include "Evolution/Systems/SecondOrderScalarWave/TimeDerivative.hpp"
@@ -26,6 +27,8 @@ namespace SecondOrderScalarWave {
 template <size_t Dim>
 struct System {
   static std::string name() { return "SecondOrderScalarWave"; }
+
+  using boundary_conditions_base = BoundaryConditions::BoundaryCondition<Dim>;
 
   static constexpr bool is_in_flux_conservative_form = false;
   static constexpr bool has_primitive_and_conservative_vars = false;
