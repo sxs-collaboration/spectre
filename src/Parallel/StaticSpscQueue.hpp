@@ -106,6 +106,8 @@ class StaticSpscQueue {
     while (next_write_index == read_index_cache_) {
       read_index_cache_ = read_index_.load(std::memory_order_acquire);
     }
+    // Destroy the object this slot already holds (see `data_`).
+    data_[write_index + padding_].~T();
     new (&data_[write_index + padding_]) T(std::forward<Args>(args)...);
     write_index_.store(next_write_index, std::memory_order_release);
   }
@@ -132,6 +134,8 @@ class StaticSpscQueue {
         return false;
       }
     }
+    // Destroy the object this slot already holds (see `data_`).
+    data_[write_index + padding_].~T();
     new (&data_[write_index + padding_]) T(std::forward<Args>(args)...);
     write_index_.store(next_write_index, std::memory_order_release);
     return true;
@@ -206,7 +210,9 @@ class StaticSpscQueue {
            "Can't pop an element from an empty queue. read_index: "
                << read_index << " write_index " << write_index);
 #endif  // SPECTRE_DEBUG
+    // Leave a live object behind (see `data_`).
     data_[read_index + padding_].~T();
+    new (&data_[read_index + padding_]) T{};
     auto next_read_index = read_index + 1;
     if (next_read_index == capacity_) {
       next_read_index = 0;
@@ -248,6 +254,8 @@ class StaticSpscQueue {
 
  private:
   static constexpr size_t capacity_ = Capacity + 1;
+  // Every slot holds a live object, so the array's destructor destroys each
+  // element exactly once. `emplace` and `pop` maintain this.
   std::array<T, capacity_ + 2 * padding_> data_{};
 
   // Align to cache line size in order to avoid false sharing
