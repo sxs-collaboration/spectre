@@ -5,6 +5,7 @@ set(LIBRARY Test_SecondOrderScalarWave)
 
 set(LIBRARY_SOURCES
   BoundaryConditions/Test_Periodic.cpp
+  BoundaryCorrections/Test_LaxFriedrichs.cpp
   Test_Characteristics.cpp
   Test_System.cpp
   Test_Tags.cpp
