@@ -11,7 +11,6 @@
 #include "NumericalAlgorithms/Spectral/Limits.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Quadrature.hpp"
-#include "Utilities/Algorithm.hpp"
 #include "Utilities/Gsl.hpp"
 
 namespace Spectral {

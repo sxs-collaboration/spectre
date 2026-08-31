@@ -4,7 +4,6 @@
 #include "Framework/TestingFramework.hpp"
 
 #include <array>
-#include <cstddef>
 
 #include "Domain/Structure/DirectionMap.hpp"
 #include "Domain/Structure/Element.hpp"

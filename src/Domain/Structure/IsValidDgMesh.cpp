@@ -3,7 +3,6 @@
 
 #include "Domain/Structure/IsValidDgMesh.hpp"
 
-#include <array>
 #include <cstddef>
 
 #include "Domain/Structure/Element.hpp"
