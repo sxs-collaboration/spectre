@@ -59,8 +59,10 @@ void test(
 SPECTRE_TEST_CASE("Unit.Evolution.DG.MortarInfo", "[Unit][Evolution]") {
   test<1>({{}}, std::nullopt);
   test<2>({{Spectral::SegmentSize::Full}}, std::nullopt);
+  using Excision = domain::creators::NonconformingSphericalShells::Excision;
   const auto creator = domain::creators::NonconformingSphericalShells(
-      2.0, 3.0, 4.0, 0, 0, 5, 8, 11, nullptr, nullptr);
+      2.0, 3.0, 4.0, Excision{}, std::array<size_t, 2>{0_st, 0_st}, 0_st,
+      std::array<size_t, 2>{11_st, 5_st}, std::array<size_t, 2>{8_st, 5_st});
   const auto domain = creator.create_domain();
   test<3>(
       {{Spectral::SegmentSize::UpperHalf, Spectral::SegmentSize::LowerHalf}},

@@ -63,14 +63,20 @@ DomainCreator:
     InnerRadius: 5.0
     InterfaceRadius: 12.0
     OuterRadius: 18.0
-    InitialRadialRefinement: 1
-    InitialAngularRefinementOfWedges: 1
-    InitialNumberOfRadialGridPoints: 6
-    InitialSphericalHarmonicL: 10
-    InitialNumberOfAngularGridPointsOfWedges: 6
-    InnerBoundaryCondition:
-      DirichletAnalytic:
-        AnalyticPrescription: *InitialData
+    Interior:
+      FillWithSphericity: 0.
+    InitialCubeRefinement: [1, 1]
+    InitialSHRefinement: 0
+    InitialCubeGridPoints: [6, 6]
+    InitialSHGridPoints: [10, 5]
+    RadialPartitioning:
+      - []
+      - []
+    RadialDistribution:
+      - [Linear]
+      - [Linear]
+    UseEquiangularMap: False
+    TimeDependentMaps: None
     OuterBoundaryCondition:
       DirichletAnalytic:
         AnalyticPrescription: *InitialData

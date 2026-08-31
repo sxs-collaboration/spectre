@@ -8,6 +8,7 @@
 
 namespace domain {
 
+template class ExpandOverBlocks<size_t>;
 template class ExpandOverBlocks<std::array<size_t, 1>>;
 template class ExpandOverBlocks<std::array<size_t, 2>>;
 template class ExpandOverBlocks<std::array<size_t, 3>>;

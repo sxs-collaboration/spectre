@@ -602,9 +602,11 @@ void test(const Spectral::Quadrature quadrature) {
 void test_nonconforming_blocks() {
   using metavars = Metavariables<3>;
   using component = Component<metavars>;
+  using Excision = domain::creators::NonconformingSphericalShells::Excision;
 
   const auto creator = domain::creators::NonconformingSphericalShells(
-      2.0, 3.0, 4.0, 0, 0, 5, 7, 11, nullptr, nullptr);
+      2.0, 3.0, 4.0, Excision{}, std::array<size_t, 2>{0_st, 0_st}, 0_st,
+      std::array<size_t, 2>{11_st, 5_st}, std::array<size_t, 2>{7_st, 5_st});
   auto domain = creator.create_domain();
   const auto initial_refinement = creator.initial_refinement_levels();
   const auto initial_extents = creator.initial_extents();

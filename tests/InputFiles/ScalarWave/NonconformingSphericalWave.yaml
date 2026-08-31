@@ -55,14 +55,20 @@ DomainCreator:
     InnerRadius: 1.9
     InterfaceRadius: 2.4
     OuterRadius: 2.9
-    InitialRadialRefinement: 0
-    InitialAngularRefinementOfWedges: 1
-    InitialNumberOfRadialGridPoints: 5
-    InitialSphericalHarmonicL: 4
-    InitialNumberOfAngularGridPointsOfWedges: 5
-    InnerBoundaryCondition:
-      DirichletAnalytic:
-        AnalyticPrescription: *InitialData
+    Interior:
+      FillWithSphericity: 0.
+    InitialCubeRefinement: [0, 0]
+    InitialSHRefinement: 0
+    InitialCubeGridPoints: [4, 4]
+    InitialSHGridPoints: [6, 5]
+    RadialPartitioning:
+      - []
+      - []
+    RadialDistribution:
+      - [Linear]
+      - [Linear]
+    UseEquiangularMap: False
+    TimeDependentMaps: None
     OuterBoundaryCondition:
       DirichletAnalytic:
         AnalyticPrescription: *InitialData
@@ -72,10 +78,24 @@ SpatialDiscretization:
     UpwindPenalty:
   DiscontinuousGalerkin:
     Filtering:
-      # Scalar Wave doesn't yet have Ylm filtering implemented.
-      # That will be needed for stable evolutions.
-      - None:
+      - Hypercube:
+          HalfPower: 128
+          Enable: True
           BlocksToFilter: All
+          VolumeFilterOnSubstep: true
+          BoundaryCorrectionFilterOnSubstep: false
+          VolumeFilterEveryNSteps: None
+          BoundaryCorrectionFilterEveryNSteps: None
+      - SphericalShell:
+          NumModesToKill: 1
+          AngularHalfPower: 128
+          RadialHalfPower: 128
+          BlocksToFilter: All
+          Enable: true
+          VolumeFilterOnSubstep: true
+          BoundaryCorrectionFilterOnSubstep: false
+          VolumeFilterEveryNSteps: None
+          BoundaryCorrectionFilterEveryNSteps: None
     Formulation: StrongInertial
     Quadrature: GaussLobatto
 
