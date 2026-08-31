@@ -55,6 +55,7 @@ target_link_libraries(
   LinearOperators
   Logging
   Options
+  Parallel
   Printf
   SphericalHarmonics
   Strahlkorper
@@ -65,7 +66,6 @@ target_link_libraries(
   INTERFACE
   Initialization
   Observer
-  Parallel
   )
 
 add_subdirectory(Callbacks)
