@@ -114,9 +114,9 @@ class Limits {
   size_t minimum_refinement_level_{0};
   size_t maximum_refinement_level_{16};
   std::unordered_map<std::pair<Spectral::Basis, Spectral::Quadrature>, size_t>
-      minimum_resolution_{};
+      minimum_resolution_;
   std::unordered_map<std::pair<Spectral::Basis, Spectral::Quadrature>, size_t>
-      maximum_resolution_{};
+      maximum_resolution_;
   bool error_beyond_limits_{false};
 };
 

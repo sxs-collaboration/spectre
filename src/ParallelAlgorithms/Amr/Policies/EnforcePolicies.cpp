@@ -5,7 +5,6 @@
 
 #include "Domain/Amr/Flag.hpp"
 #include "Domain/Structure/ElementId.hpp"
-#include "NumericalAlgorithms/Spectral/Limits.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "ParallelAlgorithms/Amr/Policies/Isotropy.hpp"
 #include "ParallelAlgorithms/Amr/Policies/Limits.hpp"

@@ -11,7 +11,6 @@
 #include "Framework/TestHelpers.hpp"
 #include "NumericalAlgorithms/Spectral/Basis.hpp"
 #include "NumericalAlgorithms/Spectral/Limits.hpp"
-#include "NumericalAlgorithms/Spectral/Quadrature.hpp"
 #include "ParallelAlgorithms/Amr/Policies/Limits.hpp"
 
 namespace {

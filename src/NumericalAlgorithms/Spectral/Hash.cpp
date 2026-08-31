@@ -8,7 +8,7 @@
 #include <utility>
 
 #include "NumericalAlgorithms/Spectral/Basis.hpp"
-#include "NumericalAlgorithms/Spectral/Limits.hpp"
+#include "NumericalAlgorithms/Spectral/Quadrature.hpp"
 
 // clang-tidy: do not modify std namespace (okay for hash)
 namespace std {  // NOLINT
