@@ -22,6 +22,7 @@ target_link_libraries(
   DomainCreators
   ErrorHandling
   Framework
+  H5
   Spectral
 
   PUBLIC

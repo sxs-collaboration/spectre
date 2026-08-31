@@ -23,6 +23,7 @@ target_link_libraries(
   ${LIBRARY}
   PRIVATE
   Boost::boost
+  Cce
   DataStructures
   DiscontinuousGalerkin
   Domain
