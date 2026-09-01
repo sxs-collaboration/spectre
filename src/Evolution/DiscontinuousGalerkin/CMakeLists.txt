@@ -8,6 +8,7 @@ spectre_target_headers(
   AtomicInboxBoundaryData.hpp
   BackgroundGrVars.hpp
   BoundaryData.hpp
+  BoundaryEvolvedVariables.hpp
   CleanMortarHistory.hpp
   DgElementArray.hpp
   InboxBoundaryData.hpp
