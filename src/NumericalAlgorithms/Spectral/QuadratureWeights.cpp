@@ -79,4 +79,6 @@ template const DataVector& quadrature_weights<Basis::FiniteDifference,
                                               Quadrature::FaceCentered>(size_t);
 template const DataVector&
     quadrature_weights<Basis::Fourier, Quadrature::Equiangular>(size_t);
+template const DataVector&
+    quadrature_weights<Basis::HalfFourier, Quadrature::Equiangular>(size_t);
 }  // namespace Spectral

@@ -45,6 +45,12 @@ constexpr uint8_t basis_shift = 4;
  * which the expected solution is smooth.  A Mesh with this Basis cannot be
  * split by h-refinement in this dimension.
  *
+ * \note Choose `HalfFourier` for a dimension that is spatially periodic and in
+ * which the expected solution is smooth and each tensor component has a
+ * definite parity, i.e. and be expanded purely in terms of either sines or
+ * cosines. A Mesh with this Basis cannot be split by h-refinement in this
+ * dimension.
+ *
  * \note Choose two consecutive dimensions to have `SphericalHarmonic` to choose
  * a spherical harmonic basis.  By convention, the first dimension represents
  * the polar/zenith angle (or colatitude), while the second dimension represents
@@ -83,11 +89,12 @@ enum class Basis : uint8_t {
   ZernikeB1 = 6 << basis_shift,
   ZernikeB2 = 7 << basis_shift,
   ZernikeB3 = 8 << basis_shift,
-  Cartoon = 9 << basis_shift
+  Cartoon = 9 << basis_shift,
+  HalfFourier = 10 << basis_shift
 };
 
 /// All possible values of Basis
-std::array<Basis, 10> all_bases();
+std::array<Basis, 11> all_bases();
 
 /// Convert a string to a Basis enum.
 Basis to_basis(const std::string& basis);

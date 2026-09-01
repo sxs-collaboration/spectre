@@ -21,6 +21,7 @@ SPECTRE_TEST_CASE("Unit.Spectral.Basis", "[NumericalAlgorithms][Unit]") {
   CHECK(get_output(Spectral::Basis::ZernikeB2) == "ZernikeB2");
   CHECK(get_output(Spectral::Basis::ZernikeB3) == "ZernikeB3");
   CHECK(get_output(Spectral::Basis::Cartoon) == "Cartoon");
+  CHECK(get_output(Spectral::Basis::HalfFourier) == "HalfFourier");
 
   for (const auto basis : Spectral::all_bases()) {
     CHECK(basis ==

@@ -8,6 +8,7 @@ set(LIBRARY "Test_Spectral")
 set(LIBRARY_SOURCES
   BasisFunctions/Test_Chebyshev.cpp
   BasisFunctions/Test_Fourier.cpp
+  BasisFunctions/Test_HalfFourier.cpp
   BasisFunctions/Test_Jacobi.cpp
   BasisFunctions/Test_Legendre.cpp
   BasisFunctions/Test_Zernike.cpp

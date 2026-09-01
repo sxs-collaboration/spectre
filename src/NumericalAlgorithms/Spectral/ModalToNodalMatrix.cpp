@@ -4,6 +4,8 @@
 #include "NumericalAlgorithms/Spectral/ModalToNodalMatrix.hpp"
 
 #include <cstddef>
+#include <cmath>
+#include <numbers>
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Matrix.hpp"
@@ -12,6 +14,7 @@
 #include "NumericalAlgorithms/Spectral/CollocationPoints.hpp"
 #include "NumericalAlgorithms/Spectral/GetSpectralQuantityForMesh.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
+#include "NumericalAlgorithms/Spectral/Parity.hpp"
 #include "NumericalAlgorithms/Spectral/PrecomputedSpectralQuantity.hpp"
 #include "NumericalAlgorithms/Spectral/Quadrature.hpp"
 #include "NumericalAlgorithms/Spectral/SpectralQuantityForMesh.hpp"
@@ -71,6 +74,34 @@ struct TwoIndexedModalToNodalMatrixGenerator {
     return vandermonde_matrix;
   }
 };
+
+template <Basis BasisType, Quadrature QuadratureType>
+struct ModalToNodalMatrixWithParityGenerator {
+  Matrix operator()(const size_t num_points, const Parity parity) const {
+    static_assert(BasisType == Basis::HalfFourier);
+    ASSERT(parity != Parity::Uninitialized,
+           "Passed parity must be set to either Even or Odd");
+    const double pi_over_n = std::numbers::pi / static_cast<double>(num_points);
+    Matrix vandermonde_matrix(num_points, num_points);
+    if (parity == Parity::Even) {
+      for (size_t j = 0; j < num_points; ++j) {
+        const double phi_j = pi_over_n * (static_cast<double>(j) + 0.5);
+        vandermonde_matrix(j, 0) = 1.0;
+        for (size_t k = 1; k < num_points; ++k) {
+          vandermonde_matrix(j, k) = cos(static_cast<double>(k) * phi_j);
+        }
+      }
+    } else {
+      for (size_t j = 0; j < num_points; ++j) {
+        const double phi_j = pi_over_n * (static_cast<double>(j) + 0.5);
+        for (size_t k = 1; k <= num_points; ++k) {
+          vandermonde_matrix(j, k - 1) = sin(static_cast<double>(k) * phi_j);
+        }
+      }
+    }
+    return vandermonde_matrix;
+  }
+};
 }  // namespace
 
 PRECOMPUTED_SPECTRAL_QUANTITY(modal_to_nodal_matrix, Matrix,
@@ -90,6 +121,15 @@ PRECOMPUTED_TWO_INDEXED_SPECTRAL_QUANTITY(modal_to_nodal_matrix, Matrix,
 TWO_INDEXED_SPECTRAL_QUANTITY_FOR_MESH(modal_to_nodal_matrix, Matrix)
 
 #undef TWO_INDEXED_SPECTRAL_QUANTITY_FOR_MESH
+
+PRECOMPUTED_SPECTRAL_QUANTITY_WITH_PARITY(modal_to_nodal_matrix, Matrix,
+                                          ModalToNodalMatrixWithParityGenerator)
+
+#undef PRECOMPUTED_SPECTRAL_QUANTITY_WITH_PARITY
+
+SPECTRAL_QUANTITY_WITH_PARITY_FOR_MESH(modal_to_nodal_matrix, Matrix)
+
+#undef SPECTRAL_QUANTITY_WITH_PARITY_FOR_MESH
 
 template const Matrix&
     modal_to_nodal_matrix<Basis::Cartoon, Quadrature::AxialSymmetry>(size_t);
@@ -111,6 +151,9 @@ template const Matrix& modal_to_nodal_matrix<
     Basis::ZernikeB2, Quadrature::GaussRadauUpper>(size_t, size_t, size_t);
 template const Matrix& modal_to_nodal_matrix<
     Basis::ZernikeB3, Quadrature::GaussRadauUpper>(size_t, size_t, size_t);
+template const Matrix&
+    modal_to_nodal_matrix<Basis::HalfFourier, Quadrature::Equiangular>(size_t,
+                                                                       Parity);
 // Some compilers require these instantiations to exist
 template const Matrix& modal_to_nodal_matrix<Basis::FiniteDifference,
                                              Quadrature::CellCentered>(size_t);

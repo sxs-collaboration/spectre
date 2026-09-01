@@ -11,6 +11,7 @@ template <size_t>
 class Mesh;
 namespace Spectral {
 enum class Basis : uint8_t;
+enum class Parity : uint8_t;
 enum class Quadrature : uint8_t;
 }  // namespace Spectral
 /// \endcond
@@ -69,4 +70,26 @@ const Matrix& modal_to_nodal_matrix(const Mesh<1>& mesh);
  * \see modal_to_nodal_matrix(size_t, size_t, size_t)
  */
 const Matrix& modal_to_nodal_matrix(const Mesh<1>& mesh, size_t m, size_t N);
+
+/*!
+ * \brief %Matrix used to transform from the spectral coefficients (modes) of a
+ * function to its nodal coefficients, for a parity-dependent basis such as
+ * `Basis::HalfFourier`.
+ *
+ * \param num_points The number of collocation points
+ * \param parity The parity of the function (`Parity::Even` or `Parity::Odd`)
+ *
+ * \see modal_to_nodal_matrix(size_t)
+ */
+template <Basis BasisType, Quadrature QuadratureType>
+const Matrix& modal_to_nodal_matrix(size_t num_points, Parity parity);
+
+/*!
+ * \brief Transformation matrix from modal to nodal coefficients for a
+ * one-dimensional mesh with a parity-dependent basis such as
+ * `Basis::HalfFourier`.
+ *
+ * \see modal_to_nodal_matrix(size_t, Parity)
+ */
+const Matrix& modal_to_nodal_matrix(const Mesh<1>& mesh, Parity parity);
 }  // namespace Spectral

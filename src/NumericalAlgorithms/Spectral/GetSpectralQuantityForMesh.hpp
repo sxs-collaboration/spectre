@@ -8,6 +8,7 @@
 
 #include "NumericalAlgorithms/Spectral/Basis.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
+#include "NumericalAlgorithms/Spectral/Parity.hpp"
 #include "NumericalAlgorithms/Spectral/Quadrature.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 
@@ -186,4 +187,26 @@ decltype(auto) get_two_indexed_spectral_quantity_for_mesh(F&& f,
   }
 }
 
+template <typename F>
+decltype(auto) get_spectral_quantity_with_parity_for_mesh(
+    F&& f, const Mesh<1>& mesh, const Spectral::Parity parity) {
+  const auto num_points = mesh.extents(0);
+  switch (mesh.basis(0)) {
+    case Basis::HalfFourier:
+      switch (mesh.quadrature(0)) {
+        case Quadrature::Equiangular:
+          return std::forward<F>(f)(
+              std::integral_constant<Basis, Basis::HalfFourier>{},
+              std::integral_constant<Quadrature, Quadrature::Equiangular>{},
+              num_points, parity);
+        default:
+          ERROR("Missing quadrature case for two-indexed spectral quantity");
+      }
+    default:
+      ERROR(
+          "Missing basis case for parity-dependent spectral quantity. The "
+          "missing basis is: "
+          << mesh.basis(0));
+  }
+}
 }  // namespace Spectral::detail
