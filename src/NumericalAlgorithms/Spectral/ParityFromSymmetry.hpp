@@ -22,9 +22,9 @@
 
 namespace Spectral {
 /*!
- * \brief A compile-time function to determine parity, with respect to the
- * \f$x\f$ coordinate in an axisymmetric spacetime, of tensors in a Variables
- *
+ * \brief A compile-time function to determine parity of tensors in a
+ * Variables in an axisymmetric spacetime.
+
  * \details In a \f$d\f$-dimensional space where fields are regular everywhere
  * (particularly at the axis), we utilize the fact that smoothness corresponds
  * to a well-defined Taylor expansion in all \f$d\f$ coordinates. Viewing the
@@ -46,10 +46,20 @@ namespace Spectral {
  * only have even powers of \f$x\f$, and for an odd number of \f$x\f$-indices,
  * the expansion must have purely odd powers of \f$x\f$.
  *
- * The primary use-case for this is axisymmetric Cartoon simulations, where
- * elements touching the symmetry axis require ZernikeB1 bases for numerical
- * stability. These bases require knowledge of component parity for certain
- * operations (differentiation, interpolation, etc.).
+ * The above argument holds for operations related to the `ZernikeB1` basis,
+ * which is used only in the \f$x\f$-direction of cartoon
+ * simulations.
+ *
+ * The primary use-case is axisymmetric Cartoon simulations, where
+ * elements touching the symmetry axis require ZernikeB1 in the \f$x\f$
+ * direction bases for numerical stability. These bases require knowledge of
+ * component parity for certain operations (differentiation, interpolation,
+ * etc.). However, the true axial symmetry maps \f$(x, y, z) \to (-x, y,
+ * -z)\f$. Both the \f$x\f$-direction and the \f$z\f$-direction flip sign,
+ * contributing \f$(-1)^{n_x + n_z}\f$ per component. This is relevant for
+ * operations with the `HalfFourier` basis when used in an axisymmetric
+ * spacetime. Use `IncludeZ = true` for HalfFourier-based differentiation in
+ * the azimuthal direction.
  *
  * The returned array, alternating values for even/odd, stores the number of
  * next components with the same parity. When there are any neighboring parities
@@ -59,7 +69,7 @@ namespace Spectral {
  * The first returned `size_t` is the number of even components, while the
  * second is the number of odd components.
  */
-template <typename VariablesTags>
+template <typename VariablesTags, bool IncludeZ = false>
 constexpr std::tuple<
     std::array<size_t,
                Variables<VariablesTags>::number_of_independent_components + 1>,
@@ -69,17 +79,25 @@ compute_parity_list() {
       Variables<VariablesTags>::number_of_independent_components + 1;
   std::array<size_t, N> parity_run_lengths{};
 
-  const auto is_x_coordinate_index = [](const IndexType index_type,
-                                        const size_t index_value) {
-    return (index_type == IndexType::Spacetime and index_value == 1) or
-           (index_type == IndexType::Spatial and index_value == 0);
+  // x (spatial index 0 / spacetime index 1) always flips sign.
+  // z (spatial index 2 / spacetime index 3) flips sign only when IncludeZ.
+  const auto is_flipping_index = [](const IndexType index_type,
+                                    const size_t index_value) {
+    const bool is_x =
+        (index_type == IndexType::Spacetime and index_value == 1) or
+        (index_type == IndexType::Spatial and index_value == 0);
+    const bool is_z =
+        IncludeZ and
+        ((index_type == IndexType::Spacetime and index_value == 3) or
+         (index_type == IndexType::Spatial and index_value == 2));
+    return is_x or is_z;
   };
 
   size_t run_index = 0;
   bool current_parity_is_even = true;
   tmpl::for_each<VariablesTags>([&parity_run_lengths, &run_index,
                                  &current_parity_is_even,
-                                 &is_x_coordinate_index]<typename TensorTag>(
+                                 &is_flipping_index]<typename TensorTag>(
                                     tmpl::type_<TensorTag> /*meta*/) {
     using tensor_type = typename TensorTag::type;
     constexpr auto index_types = tensor_type::index_types();
@@ -88,16 +106,16 @@ compute_parity_list() {
     for (size_t component_index = 0; component_index < tensor_size;
          ++component_index) {
       const auto tensor_index = tensor_type::get_tensor_index(component_index);
-      size_t x_coordinate_count = 0;
+      size_t flipping_index_count = 0;
       for (size_t index_position = 0; index_position < index_types.size();
            ++index_position) {
-        if (is_x_coordinate_index(gsl::at(index_types, index_position),
-                                  gsl::at(tensor_index, index_position))) {
-          ++x_coordinate_count;
+        if (is_flipping_index(gsl::at(index_types, index_position),
+                              gsl::at(tensor_index, index_position))) {
+          ++flipping_index_count;
         }
       }
       // If current parity doesn't match last
-      const bool component_is_even = (x_coordinate_count % 2 == 0);
+      const bool component_is_even = (flipping_index_count % 2 == 0);
       if (component_is_even != current_parity_is_even) {
         ++run_index;
         current_parity_is_even = !current_parity_is_even;
@@ -117,35 +135,30 @@ compute_parity_list() {
 }
 
 /*!
- * \brief A compile-time function to determine parity, with respect to the
- * \f$x\f$ coordinate in an axisymmetric spacetime, of a tensor.
+ * \brief A compile-time function to determine parity of a tensor for an
+ * axisymmetric spacetime.
  *
- * \see `compute_parity_list(Variables)`
+ * \see `compute_parity_list`
  */
-template <typename TensorType>
+template <typename TensorType, bool IncludeZ = false>
   requires(tt::is_a_v<Tensor, TensorType>)
 constexpr std::tuple<std::array<size_t, TensorType::size() + 1>, size_t, size_t>
 compute_parity_list() {
   using tensor_type = Tensor<DataVector, typename TensorType::symmetry,
                              typename TensorType::index_list>;
   using vars_list = ::Tags::convert_to_temp_tensors<tmpl::list<tensor_type>, 0>;
-  return compute_parity_list<vars_list>();
+  return compute_parity_list<vars_list, IncludeZ>();
 }
 /*!
  * \brief Returns a compile-time array mapping each component index of
- * `TensorType` to its `Parity` (Even or Odd) based on the number of
- * \f$x\f$-coordinate indices, for use in an axisymmetric spacetime with the
- * Cartoon method.
- *
- * A component is `Parity::Even` if it has an even number of
- * \f$x\f$-coordinate indices, or `Parity::Odd` otherwise.
+ * `TensorType` to its `Parity` (Even or Odd) for an axisymmetric spacetime.
  *
  * \see `compute_parity_list`
  */
-template <typename TensorType>
+template <typename TensorType, bool IncludeZ = false>
   requires(tt::is_a_v<Tensor, TensorType>)
 constexpr std::array<Parity, TensorType::size()> make_component_parity_array() {
-  constexpr auto parity_info = compute_parity_list<TensorType>();
+  constexpr auto parity_info = compute_parity_list<TensorType, IncludeZ>();
   constexpr auto parity_list = std::get<0>(parity_info);
   constexpr size_t N = TensorType::size();
   std::array<Parity, N> result{};

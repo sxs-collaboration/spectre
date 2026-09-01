@@ -176,20 +176,71 @@ void test_make_component_parity_array() {
   }
 }
 
+// Tests for IncludeZ=true (rotation by pi about y-axis: both x and z flip),
+// used by HalfFourier differentiation.
+void test_include_z_parity() {
+  // Spacetime covector (t,x,y,z): x (index 1) and z (index 3) flip.
+  const tnsr::a<double, 3> tensor_a{1};
+  const auto [tensor_a_list, a_even, a_odd] =
+      compute_parity_list<tnsr::a<double, 3>, true>();
+  const std::array<size_t, tensor_a.size() + 1> tensor_a_expected_list{1, 1, 1,
+                                                                       1, 0};
+  CHECK(tensor_a_list == tensor_a_expected_list);
+  CHECK(a_even == 2);
+  CHECK(a_odd == 2);
+
+  constexpr auto i_result =
+      make_component_parity_array<tnsr::i<DataVector, 3>, true>();
+  static_assert(i_result[0] == Parity::Odd);
+  static_assert(i_result[1] == Parity::Even);
+  static_assert(i_result[2] == Parity::Odd);
+
+  constexpr auto ii_result =
+      make_component_parity_array<tnsr::ii<DataVector, 3>, true>();
+  static_assert(ii_result[0] == Parity::Even);
+  static_assert(ii_result[1] == Parity::Odd);
+  static_assert(ii_result[2] == Parity::Even);
+  static_assert(ii_result[3] == Parity::Even);
+  static_assert(ii_result[4] == Parity::Odd);
+  static_assert(ii_result[5] == Parity::Even);
+}
+
 void test_gh_system() {
   using gh_tags = gh::System<3>::gradients_tags;
-  const auto [gh_list, gh_even, gh_odd] = compute_parity_list<gh_tags>();
 
-  const std::array<size_t,
-                   Variables<gh_tags>::number_of_independent_components + 1>
-      expected_list{1, 1, 3, 2, 4, 1, 3, 2, 3, 1, 3, 3, 2, 1, 2, 1, 3,
-                    2, 1, 3, 2, 1, 2, 1, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-  CHECK(gh_list == expected_list);
-  CHECK(gh_even == 31);
-  CHECK(gh_odd == 19);
-  CHECK(gh_even + gh_odd ==
-        Variables<gh_tags>::number_of_independent_components);
+  // x-only parity (IncludeZ=false, default): only x (spacetime index 1,
+  // spatial index 0) flips.
+  {
+    const auto [gh_list, gh_even, gh_odd] = compute_parity_list<gh_tags>();
+    const std::array<size_t,
+                     Variables<gh_tags>::number_of_independent_components + 1>
+        expected_list{1, 1, 3, 2, 4, 1, 3, 2, 3, 1, 3, 3, 2, 1, 2, 1, 3,
+                      2, 1, 3, 2, 1, 2, 1, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+    CHECK(gh_list == expected_list);
+    CHECK(gh_even == 31);
+    CHECK(gh_odd == 19);
+    CHECK(gh_even + gh_odd ==
+          Variables<gh_tags>::number_of_independent_components);
+  }
+
+  // x+z parity (IncludeZ=true): rotation by pi about y-axis, both x
+  // (spacetime index 1, spatial index 0) and z (spacetime index 3, spatial
+  // index 2) flip.
+  {
+    const auto [gh_list, gh_even, gh_odd] =
+        compute_parity_list<gh_tags, true>();
+    const std::array<size_t,
+                     Variables<gh_tags>::number_of_independent_components + 1>
+        expected_list{1, 1, 1, 1, 1, 1, 2, 1, 2, 1, 1, 1, 1, 1, 2, 1, 1,
+                      1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+                      1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0};
+    CHECK(gh_list == expected_list);
+    CHECK(gh_even == 26);
+    CHECK(gh_odd == 24);
+    CHECK(gh_even + gh_odd ==
+          Variables<gh_tags>::number_of_independent_components);
+  }
 }
 }  // namespace
 
@@ -198,6 +249,7 @@ SPECTRE_TEST_CASE("Unit.Numerical.Spectral.ParityFromSymmetry",
   test_basic_functionality();
   test_expected_properties();
   test_constexpr();
+  test_include_z_parity();
   test_gh_system();
   test_make_component_parity_array();
 }
