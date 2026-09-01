@@ -52,6 +52,9 @@ namespace {
 using ExpirationTimeMap = std::unordered_map<std::string, double>;
 using CylBCO = ::domain::creators::CylindricalBinaryCompactObject;
 using TimeDepOptions = domain::creators::bco::TimeDependentMapOptions<true>;
+using RefinementMap = std::unordered_map<std::string, size_t>;
+using GridPointsMap = std::unordered_map<
+    std::string, std::variant<std::array<size_t, 3>, std::array<size_t, 2>>>;
 
 std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
 create_inner_boundary_condition() {
@@ -88,51 +91,14 @@ std::pair<std::vector<std::string>,
 block_names_and_groups(const bool include_inner_sphere_A,
                        const bool include_inner_sphere_B) {
   std::vector<std::string> block_names{
-      "CAFilledCylinderCenter", "CAFilledCylinderEast",
-      "CAFilledCylinderNorth",  "CAFilledCylinderWest",
-      "CAFilledCylinderSouth",  "CACylinderEast",
-      "CACylinderNorth",        "CACylinderWest",
-      "CACylinderSouth",        "EAFilledCylinderCenter",
-      "EAFilledCylinderEast",   "EAFilledCylinderNorth",
-      "EAFilledCylinderWest",   "EAFilledCylinderSouth",
-      "EACylinderEast",         "EACylinderNorth",
-      "EACylinderWest",         "EACylinderSouth",
-      "EBFilledCylinderCenter", "EBFilledCylinderEast",
-      "EBFilledCylinderNorth",  "EBFilledCylinderWest",
-      "EBFilledCylinderSouth",  "EBCylinderEast",
-      "EBCylinderNorth",        "EBCylinderWest",
-      "EBCylinderSouth",        "MAFilledCylinderCenter",
-      "MAFilledCylinderEast",   "MAFilledCylinderNorth",
-      "MAFilledCylinderWest",   "MAFilledCylinderSouth",
-      "MBFilledCylinderCenter", "MBFilledCylinderEast",
-      "MBFilledCylinderNorth",  "MBFilledCylinderWest",
-      "MBFilledCylinderSouth",  "CBFilledCylinderCenter",
-      "CBFilledCylinderEast",   "CBFilledCylinderNorth",
-      "CBFilledCylinderWest",   "CBFilledCylinderSouth",
-      "CBCylinderEast",         "CBCylinderNorth",
-      "CBCylinderWest",         "CBCylinderSouth"};
+      "CAFilledCylinder", "CACylinder", "EAFilledCylinder", "EACylinder",
+      "EBFilledCylinder", "EBCylinder", "MAFilledCylinder", "MBFilledCylinder",
+      "CBFilledCylinder", "CBCylinder"};
   std::unordered_map<std::string, std::unordered_set<std::string>> block_groups{
       {"Outer",
-       {{"CAFilledCylinderCenter", "CBCylinderEast", "CAFilledCylinderEast",
-         "CAFilledCylinderNorth", "CBFilledCylinderNorth", "CACylinderEast",
-         "CBFilledCylinderEast", "CAFilledCylinderSouth", "CACylinderNorth",
-         "CAFilledCylinderWest", "CACylinderWest", "CACylinderSouth",
-         "CBFilledCylinderCenter", "CBFilledCylinderWest",
-         "CBFilledCylinderSouth", "CBCylinderNorth", "CBCylinderWest",
-         "CBCylinderSouth"}}},
-      {"InnerA",
-       {"EAFilledCylinderCenter", "MAFilledCylinderNorth", "EACylinderSouth",
-        "EAFilledCylinderSouth", "EACylinderNorth", "EACylinderWest",
-        "MAFilledCylinderCenter", "EAFilledCylinderNorth",
-        "EAFilledCylinderWest", "MAFilledCylinderSouth", "EACylinderEast",
-        "MAFilledCylinderEast", "EAFilledCylinderEast",
-        "MAFilledCylinderWest"}},
-      {"InnerB",
-       {"EBFilledCylinderEast", "MBFilledCylinderEast", "EBFilledCylinderSouth",
-        "EBFilledCylinderNorth", "EBFilledCylinderWest", "EBCylinderEast",
-        "MBFilledCylinderWest", "EBCylinderNorth", "EBCylinderSouth",
-        "EBCylinderWest", "MBFilledCylinderCenter", "EBFilledCylinderCenter",
-        "MBFilledCylinderNorth", "MBFilledCylinderSouth"}}};
+       {{"CAFilledCylinder", "CBCylinder", "CBFilledCylinder", "CACylinder"}}},
+      {"InnerA", {"EAFilledCylinder", "MAFilledCylinder", "EACylinder"}},
+      {"InnerB", {"EBFilledCylinder", "MBFilledCylinder", "EBCylinder"}}};
 
   if (include_inner_sphere_A) {
     block_names.insert(block_names.end(), {"InnerAShell0"});
@@ -178,7 +144,7 @@ std::string create_option_string(
     const bool with_additional_outer_radial_refinement,
     const bool with_additional_grid_points, const bool include_inner_sphere_A,
     const bool include_inner_sphere_B, const bool add_boundary_condition,
-    const bool use_equiangular_map, const std::array<double, 3>& center_objectA,
+    const std::array<double, 3>& center_objectA,
     const std::array<double, 3>& center_objectB,
     const double inner_radius_objectA, const double inner_radius_objectB,
     const double outer_radius) {
@@ -226,28 +192,30 @@ std::string create_option_string(
       [&include_inner_sphere_A, &include_inner_sphere_B](
           const bool is_h_refinement, const bool include_extra,
           const size_t value) {
-        const std::string same = "[" + get_output(value) + "," +
-                                 get_output(value) + "," + get_output(value) +
-                                 "]";
-        const std::string one_more = "[" + get_output(value + 1) + "," +
-                                     get_output(value) + "," +
-                                     get_output(value) + "]";
-        const std::string shell_same =
-            is_h_refinement ? get_output(value) : same;
-        const std::string shell_one_more =
-            is_h_refinement ? get_output(value + 1) : one_more;
+        const std::string same =
+            is_h_refinement
+                ? get_output(value)
+                : "[" + get_output(value) + "," + get_output(value) + "]";
+        const std::string sphere_one_more =
+            is_h_refinement
+                ? get_output(value + 1)
+                : "[" + get_output(value + 1) + "," + get_output(value) + "]";
+        const std::string cyl_one_more =
+            is_h_refinement
+                ? get_output(value + 1)
+                : "[" + get_output(value) + "," + get_output(value + 1) + "]";
         std::string result{};
         if (include_extra) {
-          result += "\n    Outer: " + one_more;
+          result += "\n    Outer: " + cyl_one_more;
           result += "\n    InnerA: " + same;
-          result += "\n    InnerB: " + one_more;
+          result += "\n    InnerB: " + cyl_one_more;
           if (include_inner_sphere_A) {
-            result += "\n    InnerSphereA: " + shell_same;
+            result += "\n    InnerSphereA: " + same;
           }
           if (include_inner_sphere_B) {
-            result += "\n    InnerSphereB: " + shell_same;
+            result += "\n    InnerSphereB: " + sphere_one_more;
           }
-          result += "\n    OuterSphere: " + shell_one_more;
+          result += "\n    OuterSphere: " + sphere_one_more;
         } else {
           result = " " + get_output(value);
         }
@@ -261,11 +229,10 @@ std::string create_option_string(
          "\n  CenterB: " + stringize(center_objectB) +
          "\n  RadiusB: " + stringize(inner_radius_objectB) +
          "\n  OuterRadius: " + stringize(outer_radius) +
-         "\n  UseEquiangularMap: " + stringize(use_equiangular_map) +
          "\n  IncludeInnerSphereA: " + stringize(include_inner_sphere_A) +
          "\n  IncludeInnerSphereB: " + stringize(include_inner_sphere_B) +
          "\n  InitialRefinement:" +
-         initial_structure(true, with_additional_outer_radial_refinement, 1) +
+         initial_structure(true, with_additional_outer_radial_refinement, 0) +
          "\n  InitialGridPoints:" +
          initial_structure(false, with_additional_grid_points, 3) + "\n" +
          time_dependence + boundary_conditions;
@@ -491,54 +458,54 @@ void test_parse_errors() {
   CHECK_THROWS_WITH(
       domain::creators::CylindricalBinaryCompactObject(
           {{2.0, 0.05, 0.0}}, {-5.0, 0.05, 0.0}, 1.0, 0.4, false, false, 1.0,
-          false, 1_st, 3_st, std::nullopt, create_inner_boundary_condition(),
+          1_st, 3_st, std::nullopt, create_inner_boundary_condition(),
           create_outer_boundary_condition(), Options::Context{false, {}, 1, 1}),
       Catch::Matchers::ContainsSubstring("OuterRadius is too small"));
   CHECK_THROWS_WITH(
       domain::creators::CylindricalBinaryCompactObject(
           {{-2.0, 0.05, 0.0}}, {-5.0, 0.05, 0.0}, 1.0, 0.4, false, false, 25.0,
-          false, 1_st, 3_st, std::nullopt, create_inner_boundary_condition(),
+          1_st, 3_st, std::nullopt, create_inner_boundary_condition(),
           create_outer_boundary_condition(), Options::Context{false, {}, 1, 1}),
       Catch::Matchers::ContainsSubstring(
           "The x-coordinate of the input CenterA is expected to be positive"));
   CHECK_THROWS_WITH(
       domain::creators::CylindricalBinaryCompactObject(
           {{2.0, 0.05, 0.0}}, {5.0, 0.05, 0.0}, 1.0, 0.4, false, false, 25.0,
-          false, 1_st, 3_st, std::nullopt, create_inner_boundary_condition(),
+          1_st, 3_st, std::nullopt, create_inner_boundary_condition(),
           create_outer_boundary_condition(), Options::Context{false, {}, 1, 1}),
       Catch::Matchers::ContainsSubstring(
           "The x-coordinate of the input CenterB is expected to be negative"));
   CHECK_THROWS_WITH(
       domain::creators::CylindricalBinaryCompactObject(
           {{2.0, 0.05, 0.0}}, {-5.0, 0.05, 0.0}, -1.0, 0.4, false, false, 25.0,
-          false, 1_st, 3_st, std::nullopt, create_inner_boundary_condition(),
+          1_st, 3_st, std::nullopt, create_inner_boundary_condition(),
           create_outer_boundary_condition(), Options::Context{false, {}, 1, 1}),
       Catch::Matchers::ContainsSubstring("RadiusA and RadiusB are expected "
                                          "to be positive"));
   CHECK_THROWS_WITH(
       domain::creators::CylindricalBinaryCompactObject(
           {{2.0, 0.05, 0.0}}, {-5.0, 0.05, 0.0}, 1.0, -0.4, false, false, 25.0,
-          false, 1_st, 3_st, std::nullopt, create_inner_boundary_condition(),
+          1_st, 3_st, std::nullopt, create_inner_boundary_condition(),
           create_outer_boundary_condition(), Options::Context{false, {}, 1, 1}),
       Catch::Matchers::ContainsSubstring("RadiusA and RadiusB are expected "
                                          "to be positive"));
   CHECK_THROWS_WITH(
       domain::creators::CylindricalBinaryCompactObject(
           {{2.0, 0.05, 0.0}}, {-5.0, 0.05, 0.0}, 0.15, 0.4, false, false, 25.0,
-          false, 1_st, 3_st, std::nullopt, create_inner_boundary_condition(),
+          1_st, 3_st, std::nullopt, create_inner_boundary_condition(),
           create_outer_boundary_condition(), Options::Context{false, {}, 1, 1}),
       Catch::Matchers::ContainsSubstring(
           "RadiusA should not be smaller than RadiusB"));
   CHECK_THROWS_WITH(
       domain::creators::CylindricalBinaryCompactObject(
           {{2.0, 0.05, 0.0}}, {-1.0, 0.05, 0.0}, 1.0, 0.4, false, false, 25.0,
-          false, 1_st, 3_st, std::nullopt, create_inner_boundary_condition(),
+          1_st, 3_st, std::nullopt, create_inner_boundary_condition(),
           create_outer_boundary_condition(), Options::Context{false, {}, 1, 1}),
       Catch::Matchers::ContainsSubstring("We expect |x_A| <= |x_B|"));
   CHECK_THROWS_WITH(
       domain::creators::CylindricalBinaryCompactObject(
           {{4.0, 0.0, 0.0}}, {-4.0, 0.0, 0.0}, 1.0, 1.0, false, false, 25.0,
-          false, 1_st, 3_st,
+          1_st, 3_st,
           TimeDepOptions{
               0.0, std::nullopt,
               domain::creators::time_dependent_options::RotationMapOptions<
@@ -553,7 +520,7 @@ void test_parse_errors() {
   CHECK_THROWS_WITH(
       domain::creators::CylindricalBinaryCompactObject(
           {{2.0, 0.05, 0.0}}, {-5.0, 0.05, 0.0}, 1.0, 0.4, false, false, 25.0,
-          false, 1_st, 3_st, std::nullopt, create_inner_boundary_condition(),
+          1_st, 3_st, std::nullopt, create_inner_boundary_condition(),
           std::make_unique<TestHelpers::domain::BoundaryConditions::
                                TestPeriodicBoundaryCondition<3>>(),
           Options::Context{false, {}, 1, 1}),
@@ -562,7 +529,7 @@ void test_parse_errors() {
   CHECK_THROWS_WITH(
       domain::creators::CylindricalBinaryCompactObject(
           {{2.0, 0.05, 0.0}}, {-5.0, 0.05, 0.0}, 1.0, 0.4, false, false, 25.0,
-          false, 1_st, 3_st, std::nullopt,
+          1_st, 3_st, std::nullopt,
           std::make_unique<TestHelpers::domain::BoundaryConditions::
                                TestPeriodicBoundaryCondition<3>>(),
           create_outer_boundary_condition(), Options::Context{false, {}, 1, 1}),
@@ -571,7 +538,7 @@ void test_parse_errors() {
   CHECK_THROWS_WITH(
       domain::creators::CylindricalBinaryCompactObject(
           {{2.0, 0.05, 0.0}}, {-5.0, 0.05, 0.0}, 1.0, 0.4, false, false, 25.0,
-          false, 1_st, 3_st, std::nullopt, nullptr,
+          1_st, 3_st, std::nullopt, nullptr,
           create_outer_boundary_condition(), Options::Context{false, {}, 1, 1}),
       Catch::Matchers::ContainsSubstring(
           "Must specify either both inner and outer boundary "
@@ -579,51 +546,45 @@ void test_parse_errors() {
   CHECK_THROWS_WITH(
       domain::creators::CylindricalBinaryCompactObject(
           {{2.0, 0.05, 0.0}}, {-5.0, 0.05, 0.0}, 1.0, 0.4, false, false, 25.0,
-          false, 1_st, 3_st, std::nullopt, create_inner_boundary_condition(),
+          1_st, 3_st, std::nullopt, create_inner_boundary_condition(),
           nullptr, Options::Context{false, {}, 1, 1}),
       Catch::Matchers::ContainsSubstring(
           "Must specify either both inner and outer boundary "
           "conditions or neither."));
-  // InitialRefinement and InitialGridPoints
+  // InitialGridPoints
   CHECK_THROWS_WITH(
       domain::creators::CylindricalBinaryCompactObject(
           {{2.0, 0.05, 0.0}}, {-3.0, 0.05, 0.0}, 1.0, 0.4, false, false, 25.0,
-          false, std::array<size_t, 3>{1_st, 1_st, 1_st}, 3_st, std::nullopt,
-          create_inner_boundary_condition(), create_outer_boundary_condition(),
-          Options::Context{false, {}, 1, 1}),
-      Catch::Matchers::ContainsSubstring("Angular h-refinement"));
+          1_st, 4_st, std::nullopt, create_inner_boundary_condition(),
+          create_outer_boundary_condition(), Options::Context{false, {}, 1, 1}),
+      Catch::Matchers::ContainsSubstring("odd number of angular grid points"));
   CHECK_THROWS_WITH(
       domain::creators::CylindricalBinaryCompactObject(
           {{2.0, 0.05, 0.0}}, {-3.0, 0.05, 0.0}, 1.0, 0.4, false, false, 25.0,
-          false, 1_st, std::array<size_t, 3>{{3_st, 4_st, 5_st}}, std::nullopt,
-          create_inner_boundary_condition(), create_outer_boundary_condition(),
-          Options::Context{false, {}, 1, 1}),
-      Catch::Matchers::ContainsSubstring("must have L_max = M_max"));
+          1_st, 1_st, std::nullopt, create_inner_boundary_condition(),
+          create_outer_boundary_condition(), Options::Context{false, {}, 1, 1}),
+      Catch::Matchers::ContainsSubstring(
+          "must have more than 2 radial grid points"));
 }
 
 // This matches the structure in the option string
-std::unordered_map<std::string, std::variant<std::array<size_t, 3>, size_t>>
-make_initial_refinement(const size_t initial_value,
-                        const bool include_inner_sphere_A,
-                        const bool include_inner_sphere_B) {
-  std::unordered_map<std::string, std::variant<std::array<size_t, 3>, size_t>>
-      initial_map;
-  const std::array<size_t, 3> same{initial_value, initial_value, initial_value};
-  const std::array<size_t, 3> one_more{initial_value + 1, initial_value,
-                                       initial_value};
-  const size_t shell_same = initial_value;
-  const size_t shell_one_more = initial_value + 1;
+std::unordered_map<std::string, size_t> make_initial_refinement(
+    const size_t initial_value, const bool include_inner_sphere_A,
+    const bool include_inner_sphere_B) {
+  std::unordered_map<std::string, size_t> initial_map;
+  const size_t same = initial_value;
+  const size_t one_more = initial_value + 1;
 
   initial_map["Outer"] = one_more;
   initial_map["InnerA"] = same;
   initial_map["InnerB"] = one_more;
   if (include_inner_sphere_A) {
-    initial_map["InnerSphereA"] = shell_same;
+    initial_map["InnerSphereA"] = same;
   }
   if (include_inner_sphere_B) {
-    initial_map["InnerSphereB"] = shell_same;
+    initial_map["InnerSphereB"] = one_more;
   }
-  initial_map["OuterSphere"] = shell_one_more;
+  initial_map["OuterSphere"] = one_more;
 
   return initial_map;
 }
@@ -637,22 +598,21 @@ make_initial_grid_points(const size_t initial_value,
   std::unordered_map<std::string,
                      std::variant<std::array<size_t, 3>, std::array<size_t, 2>>>
       initial_map;
-  const std::array<size_t, 3> same{initial_value, initial_value, initial_value};
-  const std::array<size_t, 3> one_more{initial_value + 1, initial_value,
-                                       initial_value};
-  const std::array<size_t, 2> shell_same{initial_value, initial_value};
-  const std::array<size_t, 2> shell_one_more{initial_value + 1, initial_value};
 
-  initial_map["Outer"] = one_more;
+  const std::array<size_t, 2> same{initial_value, initial_value};
+  const std::array<size_t, 2> sphere_one_more{initial_value + 1, initial_value};
+  const std::array<size_t, 2> cyl_one_more{initial_value, initial_value + 1};
+
+  initial_map["Outer"] = cyl_one_more;
   initial_map["InnerA"] = same;
-  initial_map["InnerB"] = one_more;
+  initial_map["InnerB"] = cyl_one_more;
   if (include_inner_sphere_A) {
-    initial_map["InnerSphereA"] = shell_same;
+    initial_map["InnerSphereA"] = same;
   }
   if (include_inner_sphere_B) {
-    initial_map["InnerSphereB"] = shell_same;
+    initial_map["InnerSphereB"] = sphere_one_more;
   }
-  initial_map["OuterSphere"] = shell_one_more;
+  initial_map["OuterSphere"] = sphere_one_more;
 
   return initial_map;
 }
@@ -662,7 +622,7 @@ void test_cylindrical_bbh() {
 
   const std::vector<double> times_to_check{{1.0, 2.3}};
 
-  constexpr size_t refinement = 1;
+  constexpr size_t refinement = 0;
   constexpr size_t grid_points = 3;
 
   const double separation = 9.0;
@@ -672,17 +632,16 @@ void test_cylindrical_bbh() {
   // loop go over {true, false}
   const bool with_sphere_e = false;
   for (auto [include_inner_sphere_A, include_inner_sphere_B,
-             use_equiangular_map, with_additional_outer_radial_refinement,
+             with_additional_outer_radial_refinement,
              with_additional_grid_points, with_time_dependence,
              with_control_systems, with_boundary_conditions] :
        random_sample<5>(
            cartesian_product(make_array(true, false), make_array(true, false),
-                             make_array(true, false), make_array(true, false),
+                             make_array(true, false),
                              make_array(true, false), make_array(true, false),
                              make_array(true, false), make_array(true, false)),
            make_not_null(&gen))) {
     CAPTURE(with_sphere_e);
-    CAPTURE(use_equiangular_map);
     CAPTURE(with_boundary_conditions);
     CAPTURE(with_additional_outer_radial_refinement);
     CAPTURE(with_additional_grid_points);
@@ -741,7 +700,6 @@ void test_cylindrical_bbh() {
         include_inner_sphere_A,
         include_inner_sphere_B,
         outer_radius,
-        use_equiangular_map,
         initial_refinement,
         initial_grid_points,
         std::move(time_dep_opts),
@@ -756,9 +714,9 @@ void test_cylindrical_bbh() {
         create_option_string(
             with_time_dependence, with_additional_outer_radial_refinement,
             with_additional_grid_points, include_inner_sphere_A,
-            include_inner_sphere_B, with_boundary_conditions,
-            use_equiangular_map, center_objectA, center_objectB,
-            inner_radius_objectA, inner_radius_objectB, outer_radius),
+            include_inner_sphere_B, with_boundary_conditions, center_objectA,
+            center_objectB, inner_radius_objectA, inner_radius_objectB,
+            outer_radius),
         cyl_binary_compact_object, with_boundary_conditions);
   }
 }
@@ -766,12 +724,6 @@ void test_cylindrical_bbh() {
 // Make sure initial refinement and initial grid points for different blocks
 // are set to the correct values based on the input
 void test_initial_extents_and_refinement() {
-  using RefinementMap =
-      std::unordered_map<std::string,
-                         std::variant<std::array<size_t, 3>, size_t>>;
-  using GridPointsMap = std::unordered_map<
-      std::string, std::variant<std::array<size_t, 3>, std::array<size_t, 2>>>;
-
   const std::array<double, 3> center_A{{2.0, 0.05, 0.0}};
   const std::array<double, 3> center_B{{-2.0, 0.05, 0.0}};
   const double radius_A = 1.0;
@@ -779,24 +731,20 @@ void test_initial_extents_and_refinement() {
   const bool include_inner_sphere_A = true;
   const bool include_inner_sphere_B = true;
   const double outer_radius = 100.0;
-  const bool use_equiangular_map = false;
 
   // Set h and p refinement globally with one number
   const size_t global_refinement = 1;
-  const size_t global_grid_points = 12;
+  const size_t global_grid_points = 13;
 
   // Set h and p refinement locally per block group
   const RefinementMap local_refinement =
-      RefinementMap{{"InnerA", std::array<size_t, 3>{1, 1, 1}},
-                    {"InnerB", std::array<size_t, 3>{2, 2, 2}},
-                    {"Outer", std::array<size_t, 3>{2, 2, 2}},
-                    {"InnerSphereA", size_t{0}},
-                    {"InnerSphereB", size_t{1}},
-                    {"OuterSphere", size_t{2}}};
+      RefinementMap{{"InnerA", size_t{1}},       {"InnerB", size_t{0}},
+                    {"Outer", size_t{1}},        {"InnerSphereA", size_t{0}},
+                    {"InnerSphereB", size_t{1}}, {"OuterSphere", size_t{2}}};
   const GridPointsMap local_grid_points =
-      GridPointsMap{{"InnerA", std::array<size_t, 3>{5, 5, 5}},
-                    {"InnerB", std::array<size_t, 3>{7, 7, 7}},
-                    {"Outer", std::array<size_t, 3>{9, 9, 9}},
+      GridPointsMap{{"InnerA", std::array<size_t, 2>{5, 7}},
+                    {"InnerB", std::array<size_t, 2>{7, 9}},
+                    {"Outer", std::array<size_t, 2>{9, 11}},
                     {"InnerSphereA", std::array<size_t, 2>{4, 6}},
                     {"InnerSphereB", std::array<size_t, 2>{6, 8}},
                     {"OuterSphere", std::array<size_t, 2>{8, 10}}};
@@ -805,7 +753,7 @@ void test_initial_extents_and_refinement() {
   const auto cbco_global_creator =
       domain::creators::CylindricalBinaryCompactObject(
           center_A, center_B, radius_A, radius_B, include_inner_sphere_A,
-          include_inner_sphere_B, outer_radius, use_equiangular_map,
+          include_inner_sphere_B, outer_radius,
           global_refinement, global_grid_points, std::nullopt,
           create_inner_boundary_condition(), create_outer_boundary_condition(),
           Options::Context{false, {}, 1, 1});
@@ -820,7 +768,7 @@ void test_initial_extents_and_refinement() {
   const auto cbco_local_creator =
       domain::creators::CylindricalBinaryCompactObject(
           center_A, center_B, radius_A, radius_B, include_inner_sphere_A,
-          include_inner_sphere_B, outer_radius, use_equiangular_map,
+          include_inner_sphere_B, outer_radius,
           local_refinement, local_grid_points, std::nullopt,
           create_inner_boundary_condition(), create_outer_boundary_condition(),
           Options::Context{false, {}, 1, 1});
@@ -841,6 +789,7 @@ void test_initial_extents_and_refinement() {
     ASSERT(block_name_global == block_name_local,
            "This test assumes both test domains have the same block names in "
            "the same order.");
+    CAPTURE(block_name_global);
 
     std::array<size_t, 3> expected_refinement_from_global{};
     std::array<size_t, 3> expected_extents_from_global{};
@@ -849,42 +798,55 @@ void test_initial_extents_and_refinement() {
     // Set expected h and p refinement
     if (block_groups.at("InnerSphereA").contains(block_name_global)) {
       expected_refinement_from_global = {{1, 0, 0}};
-      expected_extents_from_global = {{12, ylm::Spherepack::n_theta_points(12),
-                                       ylm::Spherepack::n_phi_points(12)}};
+      expected_extents_from_global = {{13, ylm::Spherepack::n_theta_points(13),
+                                       ylm::Spherepack::n_phi_points(13)}};
       expected_refinement_from_local = {{0, 0, 0}};
       expected_extents_from_local = {{4, ylm::Spherepack::n_theta_points(6),
                                       ylm::Spherepack::n_phi_points(6)}};
     } else if (block_groups.at("InnerSphereB").contains(block_name_global)) {
       expected_refinement_from_global = {{1, 0, 0}};
-      expected_extents_from_global = {{12, ylm::Spherepack::n_theta_points(12),
-                                       ylm::Spherepack::n_phi_points(12)}};
+      expected_extents_from_global = {{13, ylm::Spherepack::n_theta_points(13),
+                                       ylm::Spherepack::n_phi_points(13)}};
       expected_refinement_from_local = {{1, 0, 0}};
       expected_extents_from_local = {{6, ylm::Spherepack::n_theta_points(8),
                                       ylm::Spherepack::n_phi_points(8)}};
     } else if (block_groups.at("OuterSphere").contains(block_name_global)) {
       expected_refinement_from_global = {{1, 0, 0}};
-      expected_extents_from_global = {{12, ylm::Spherepack::n_theta_points(12),
-                                       ylm::Spherepack::n_phi_points(12)}};
+      expected_extents_from_global = {{13, ylm::Spherepack::n_theta_points(13),
+                                       ylm::Spherepack::n_phi_points(13)}};
       expected_refinement_from_local = {{2, 0, 0}};
       expected_extents_from_local = {{8, ylm::Spherepack::n_theta_points(10),
                                       ylm::Spherepack::n_phi_points(10)}};
     } else if (block_groups.at("InnerA").contains(block_name_global)) {
-      expected_refinement_from_global = {{1, 1, 1}};
-      expected_extents_from_global = {{12, 12, 12}};
-      expected_refinement_from_local = {{1, 1, 1}};
-      expected_extents_from_local = {{5, 5, 5}};
+      expected_refinement_from_global = {{0, 0, 1}};
+      expected_refinement_from_local = {{0, 0, 1}};
+      expected_extents_from_local = {{5, 17, 7}};
+      if (block_name_global.find("Filled") != std::string::npos) {
+        expected_extents_from_global = {{13, 49, 13}};
+      } else {
+        expected_extents_from_global = {{13, 13, 13}};
+      }
     } else if (block_groups.at("InnerB").contains(block_name_global)) {
-      expected_refinement_from_global = {{1, 1, 1}};
-      expected_extents_from_global = {{12, 12, 12}};
-      expected_refinement_from_local = {{2, 2, 2}};
-      expected_extents_from_local = {{7, 7, 7}};
+      expected_refinement_from_global = {{0, 0, 1}};
+      expected_refinement_from_local = {{0, 0, 0}};
+      expected_extents_from_local = {{7, 25, 9}};
+      if (block_name_global.find("Filled") != std::string::npos) {
+        expected_extents_from_global = {{13, 49, 13}};
+      } else {
+        expected_extents_from_global = {{13, 13, 13}};
+      }
     } else if (block_groups.at("Outer").contains(block_name_global)) {
-      expected_refinement_from_global = {{1, 1, 1}};
-      expected_extents_from_global = {{12, 12, 12}};
-      expected_refinement_from_local = {{2, 2, 2}};
-      expected_extents_from_local = {{9, 9, 9}};
+      expected_refinement_from_global = {{0, 0, 1}};
+      expected_refinement_from_local = {{0, 0, 1}};
+      expected_extents_from_local = {{9, 33, 11}};
+      if (block_name_global.find("Filled") != std::string::npos) {
+        expected_extents_from_global = {{13, 49, 13}};
+      } else {
+        expected_extents_from_global = {{13, 13, 13}};
+      }
     } else {
-      ERROR("Block name not found in block groups.");
+      ERROR("Block name " << block_name_global
+                          << " not found in block groups.");
     }
 
     // Get actual h and p refinement constructed

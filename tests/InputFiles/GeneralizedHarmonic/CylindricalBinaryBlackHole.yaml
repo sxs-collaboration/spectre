@@ -48,10 +48,37 @@ DomainCreator:
     RadiusB: &RadiusB 0.45825
     IncludeInnerSphereA: true
     IncludeInnerSphereB: true
-    UseEquiangularMap: true
     OuterRadius: 300.0
-    InitialRefinement: 2
-    InitialGridPoints: 7
+    InitialRefinement:
+      # z refinement for cylindrical block groups
+      InnerA: 1
+      InnerB: 1
+      Outer: 1
+      # radial refinement for spherical shell block groups
+      InnerSphereA: 1
+      InnerSphereB: 1
+      OuterSphere: 1
+    InitialGridPoints:
+      # [radial_points, z_points] for filled cylinders
+      # - theta_points will be set to 4 * radial_points - 3 = 21
+      CAFilledCylinder: [6, 9]
+      CBFilledCylinder: [6, 9]
+      EAFilledCylinder: [6, 9]
+      EBFilledCylinder: [6, 9]
+      MAFilledCylinder: [6, 9]
+      MBFilledCylinder: [6, 9]
+      # [radial_points, theta_points, z_points] for hollow cylinders
+      # - setiing radial_points = 2 * fllled cylinders' z_points because
+      #   filled cylinders' z refinement = 1
+      # - setting theta_points = filled cylinders' theta_points above
+      CACylinder: [18, 21, 7]
+      CBCylinder: [18, 21, 7]
+      EACylinder: [18, 21, 7]
+      EBCylinder: [18, 21, 7]
+      # [radial_points, L_max] for spherical shell block groups
+      InnerSphereA: [12, 20]
+      InnerSphereB: [12, 20]
+      OuterSphere: [20, 13]
     BoundaryConditions:
       InnerBoundary:
         DemandOutgoingCharSpeeds:

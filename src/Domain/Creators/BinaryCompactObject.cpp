@@ -80,7 +80,8 @@ void validate_initial_grid_points(
     const Options::Context& context,
     const BinaryCompactObject::InitialGridPoints::type&
         initial_number_of_grid_points,
-    const std::unordered_set<std::string>& spherical_harmonic_shell_names) {
+    const std::unordered_set<std::string>& spherical_harmonic_shell_names,
+    const std::unordered_set<std::string>& filled_cylinder_names) {
   if (std::holds_alternative<
           std::unordered_map<std::string, std::variant<std::array<size_t, 3>,
                                                        std::array<size_t, 2>>>>(
@@ -89,31 +90,56 @@ void validate_initial_grid_points(
         std::unordered_map<std::string, std::variant<std::array<size_t, 3>,
                                                      std::array<size_t, 2>>>>(
         initial_number_of_grid_points);
-    for (const auto& [block_name, extents] : grid_points_map) {
-      const bool is_spherical_harmonic_block =
-          spherical_harmonic_shell_names.contains(block_name);
-      if (is_spherical_harmonic_block) {
+    for (const auto& [name, extents] : grid_points_map) {
+      const bool is_spherical_harmonic =
+          spherical_harmonic_shell_names.contains(name);
+      const bool is_filled_cylinder = filled_cylinder_names.contains(name);
+      ASSERT(not(is_spherical_harmonic and is_filled_cylinder),
+             "Block or group '"
+                 << name
+                 << "' cannot be both a spherical-harmonic shell block/group "
+                    "and a cylinder block/group. ");
+      if (is_spherical_harmonic) {
         if (std::holds_alternative<std::array<size_t, 3>>(extents)) {
-          PARSE_ERROR(context, "Block '"
-                                   << block_name
-                                   << "' is a spherical-harmonic shell block. "
-                                      "Specify its grid points as "
-                                      "[radial_points, L_max], not array<3>.");
+          PARSE_ERROR(context,
+                      "Block or group '"
+                          << name
+                          << "' is a spherical-harmonic shell block/group. "
+                             "Specify its grid points as "
+                             "[radial_points, L_max], not array<3>.");
+        }
+      } else if (is_filled_cylinder) {
+        if (std::holds_alternative<std::array<size_t, 3>>(extents)) {
+          PARSE_ERROR(
+              context,
+              "Block or group '"
+                  << name
+                  << "' is a filled cylinder block or group containing one. "
+                     "Specify its grid points as "
+                     "[radial_points, z_points], not array<3>.");
         }
       } else {
         if (std::holds_alternative<std::array<size_t, 2>>(extents)) {
-          if (not spherical_harmonic_shell_names.empty()) {
-            PARSE_ERROR(context,
-                        "Specifying 2 grid points for block '"
-                            << block_name
-                            << "' is only valid for spherical-harmonic "
-                               "shell blocks (OuterShell0, etc.).");
-          } else {
+          if (not spherical_harmonic_shell_names.empty() or
+              not filled_cylinder_names.empty()) {
             PARSE_ERROR(
                 context,
-                "Specifying 2 grid points (block '"
-                    << block_name
-                    << "') is only valid for spherical-harmonic shell blocks.");
+                "Specifying 2 grid points for block or group '"
+                    << name
+                    << "' is only valid for spherical-harmonic "
+                       "shell blocks (OuterShell0, etc.), "
+                       "spherical-harmonic block groups "
+                       "(OuterSphere, etc.), filled cylinder "
+                       "blocks (CAFilledCylinder, etc.), or block groups "
+                       "containing filled cylinder blocks (InnerA, etc.).");
+          } else {
+            PARSE_ERROR(context,
+                        "Specifying 2 grid points (block or group '"
+                            << name
+                            << "') is only valid for spherical-harmonic shell "
+                               "blocks, spherical-harmonic block groups, "
+                               "filled cylinder blocks, or block groups "
+                               "containing filled cylinder blocks.");
           }
         }
       }
@@ -124,40 +150,66 @@ void validate_initial_grid_points(
 void validate_initial_refinement(
     const Options::Context& context,
     const BinaryCompactObject::InitialRefinement::type& initial_refinement,
-    const std::unordered_set<std::string>& spherical_harmonic_shell_names) {
+    const std::unordered_set<std::string>& spherical_harmonic_shell_names,
+    const std::unordered_set<std::string>& cylinder_names) {
   if (std::holds_alternative<std::unordered_map<
           std::string, std::variant<std::array<size_t, 3>, size_t>>>(
           initial_refinement)) {
     const auto& refinement_map = std::get<std::unordered_map<
         std::string, std::variant<std::array<size_t, 3>, size_t>>>(
         initial_refinement);
-    for (const auto& [block_name, ref] : refinement_map) {
-      const bool is_spherical_harmonic_block =
-          spherical_harmonic_shell_names.contains(block_name);
-      if (is_spherical_harmonic_block) {
+    for (const auto& [name, ref] : refinement_map) {
+      const bool is_spherical_harmonic =
+          spherical_harmonic_shell_names.contains(name);
+      const bool is_cylinder = cylinder_names.contains(name);
+      ASSERT(not(is_spherical_harmonic and is_cylinder),
+             "Block or group '"
+                 << name
+                 << "' cannot be both a spherical-harmonic shell block/group "
+                    "and a cylinder block/group. ");
+      if (is_spherical_harmonic) {
         if (std::holds_alternative<std::array<size_t, 3>>(ref)) {
           PARSE_ERROR(context,
-                      "Block '"
-                          << block_name
-                          << "' is a spherical-harmonic shell block. "
+                      "Block or group '"
+                          << name
+                          << "' is a spherical-harmonic shell block/group. "
                              "Specify its refinement as a single number "
                              "(radial only), not array<3>. Angular "
                              "h-refinement is not supported for these blocks.");
         }
+      } else if (is_cylinder) {
+        if (std::holds_alternative<std::array<size_t, 3>>(ref)) {
+          PARSE_ERROR(
+              context,
+              "Block or group '"
+                  << name
+                  << "' is a cylinder block/group. "
+                     "Specify its refinement as a single number "
+                     "(z only), not array<3>. Radial and angular "
+                     "h-refinement are not supported for these blocks.");
+        }
       } else {
         if (std::holds_alternative<size_t>(ref)) {
-          if (not spherical_harmonic_shell_names.empty()) {
-            PARSE_ERROR(context,
-                        "Per-block single-number refinement for block '"
-                            << block_name
-                            << "' is only valid for spherical-harmonic "
-                               "shell blocks (OuterShell0, etc.).");
-          } else {
+          if (not spherical_harmonic_shell_names.empty() or
+              not cylinder_names.empty()) {
             PARSE_ERROR(
                 context,
-                "Per-block single-number refinement in map syntax (block '"
-                    << block_name
-                    << "') is only valid for spherical-harmonic shell blocks.");
+                "Per-block single-number refinement for block or group '"
+                    << name
+                    << "' is only valid for spherical-harmonic "
+                       "shell blocks (OuterShell0, etc.), "
+                       "spherical-harmonic shell block groups "
+                       "(OuterSphere, etc.), cylinder blocks "
+                       "(CAFilledCylinder, etc.), or cylinder block "
+                       "groups (InnerA, etc.).");
+          } else {
+            PARSE_ERROR(context,
+                        "Per-block single-number refinement in map syntax "
+                        "(block or group '"
+                            << name
+                            << "') is only valid for spherical-harmonic shell "
+                               "blocks/groups "
+                               "or cylinder blocks/groups.");
           }
         }
       }
@@ -167,21 +219,30 @@ void validate_initial_refinement(
 
 std::vector<std::array<size_t, 3>> set_initial_refinement(
     const ExpandOverBlocks<std::array<size_t, 3>>& expand_over_blocks,
-    const BinaryCompactObject::InitialRefinement::type& initial_refinement) {
+    const BinaryCompactObject::InitialRefinement::type& initial_refinement,
+    const std::unordered_set<std::string>& spherical_harmonic_shell_names,
+    const std::unordered_set<std::string>& cylinder_names) {
   return std::visit(
-      [&expand_over_blocks]<typename V>(
+      [&expand_over_blocks, &spherical_harmonic_shell_names,
+       &cylinder_names]<typename V>(
           const V& v) -> std::vector<std::array<size_t, 3>> {
         if constexpr (std::is_same_v<
                           V,
                           std::unordered_map<
                               std::string,
                               std::variant<std::array<size_t, 3>, size_t>>>) {
-          const auto converted = [&v]() {
+          const auto converted = [&v, &spherical_harmonic_shell_names,
+                                  &cylinder_names]() {
             std::unordered_map<std::string, std::array<size_t, 3>> result;
             for (const auto& [name, val] : v) {
-              if (std::holds_alternative<size_t>(val)) {
+              if (std::holds_alternative<size_t>(val) and
+                  spherical_harmonic_shell_names.contains(name)) {
                 const size_t r = std::get<size_t>(val);
                 result[name] = {r, 0, 0};
+              } else if (std::holds_alternative<size_t>(val) and
+                         cylinder_names.contains(name)) {
+                const size_t z = std::get<size_t>(val);
+                result[name] = {0, 0, z};
               } else {
                 result[name] = std::get<std::array<size_t, 3>>(val);
               }
@@ -198,21 +259,43 @@ std::vector<std::array<size_t, 3>> set_initial_refinement(
 
 std::vector<std::array<size_t, 3>> set_initial_grid_points(
     const ExpandOverBlocks<std::array<size_t, 3>>& expand_over_blocks,
-    const BinaryCompactObject::InitialGridPoints::type& initial_grid_points) {
+    const BinaryCompactObject::InitialGridPoints::type& initial_grid_points,
+    const std::unordered_set<std::string>& spherical_harmonic_shell_names,
+    const std::unordered_set<std::string>& filled_cylinder_names) {
   return std::visit(
-      [&expand_over_blocks]<typename V>(
+      [&expand_over_blocks, &spherical_harmonic_shell_names,
+       &filled_cylinder_names]<typename V>(
           const V& v) -> std::vector<std::array<size_t, 3>> {
         if constexpr (std::is_same_v<
                           V, std::unordered_map<
                                  std::string,
                                  std::variant<std::array<size_t, 3>,
                                               std::array<size_t, 2>>>>) {
-          const auto converted = [&v]() {
+          const auto converted = [&v, &spherical_harmonic_shell_names,
+                                  &filled_cylinder_names]() {
             std::unordered_map<std::string, std::array<size_t, 3>> result;
             for (const auto& [name, val] : v) {
-              if (std::holds_alternative<std::array<size_t, 2>>(val)) {
+              if (std::holds_alternative<std::array<size_t, 2>>(val) and
+                  spherical_harmonic_shell_names.contains(name)) {
                 const auto& a2 = std::get<std::array<size_t, 2>>(val);
                 result[name] = {a2[0], a2[1], a2[1]};
+              } else if (std::holds_alternative<std::array<size_t, 2>>(val) and
+                         filled_cylinder_names.contains(name)) {
+                const auto& a2 = std::get<std::array<size_t, 2>>(val);
+                // note:
+                // radial_points = (theta_modes / 2) + 1 + (theta_modes % 2), so
+                // one could have odd or even theta_modes for the same
+                // radial_points. Choosing the even theta_modes for the same
+                // radial_points means:
+                //   theta_modes = 2 * (radial_points - 1)
+                //   theta_points = 2 * theta_modes + 1 = 4 * radial_modes - 3
+                // Choosing the odd theta_modes for the same radial_points
+                // means:
+                //   theta_modes = 2 * (radial_points - 2) + 1
+                //   theta_points = 2 * theta_modes + 1 = 4 * radial_modes - 5
+                // Here, we choose the even case to get one extra theta_mode out
+                // of radial_points.
+                result[name] = {a2[0], 4 * a2[0] - 3, a2[1]};
               } else {
                 result[name] = std::get<std::array<size_t, 3>>(val);
               }
@@ -581,14 +664,15 @@ BinaryCompactObject::BinaryCompactObject(
       block_names_, block_groups_};
 
   try {
-    initial_refinement_ =
-        bco::set_initial_refinement(expand_over_blocks, initial_refinement);
+    initial_refinement_ = bco::set_initial_refinement(
+        expand_over_blocks, initial_refinement, spherical_harmonic_shell_names);
   } catch (const std::exception& error) {
     PARSE_ERROR(context, "Invalid 'InitialRefinement': " << error.what());
   }
   try {
     initial_number_of_grid_points_ = bco::set_initial_grid_points(
-        expand_over_blocks, initial_number_of_grid_points);
+        expand_over_blocks, initial_number_of_grid_points,
+        spherical_harmonic_shell_names);
   } catch (const std::exception& error) {
     PARSE_ERROR(context, "Invalid 'InitialGridPoints': " << error.what());
   }
