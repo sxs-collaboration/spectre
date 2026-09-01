@@ -7,5 +7,4 @@ spectre_python_add_module(
   PYTHON_FILES
   __init__.py
   EccentricityControlParams.py
-  InitialOrbitalParameters.py
 )

@@ -10,7 +10,7 @@ import numpy as np
 import yaml
 from rich.pretty import pretty_repr
 
-from spectre.Pipelines.EccentricityControl.InitialOrbitalParameters import (
+from SimulationSupport.EccentricityControl.InitialOrbitalParameters import (
     initial_orbital_parameters,
 )
 from spectre.support.DirectoryStructure import PipelineStep, list_pipeline_steps
@@ -232,7 +232,7 @@ def generate_id(
     'support.Pipelines.Bbh.EccentricityControl' for details. If unspecified,
     initial guesses for the orbital parameters are obtained with the function
     'initial_orbital_parameters' in
-    'support.Pipelines.EccentricityControl.InitialOrbitalParameters'.
+    'SimulationSupport.EccentricityControl.InitialOrbitalParameters'.
 
     Scheduling options:
       id_input_file_template: Input file template where parameters are inserted.
