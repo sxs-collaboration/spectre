@@ -32,6 +32,7 @@
 #include "Domain/Structure/InitialElementIds.hpp"
 #include "Domain/Structure/Neighbors.hpp"
 #include "Domain/Structure/OrientationMap.hpp"
+#include "Domain/Structure/OrientationMapHelpers.hpp"
 #include "Domain/Structure/Side.hpp"
 #include "Domain/Structure/Topology.hpp"
 #include "Framework/TestHelpers.hpp"
@@ -274,7 +275,8 @@ void check_block_face_grid_points_align(
     const std::unordered_map<
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
         functions_of_time = {}) {
-  const auto direction = find_direction_to_neighbor(host_block, neighbor_block);
+  const auto host_direction =
+      find_direction_to_neighbor(host_block, neighbor_block);
   const auto orientation =
       find_neighbor_orientation(host_block, neighbor_block);
   // Set up a Mesh on the shared face. Corner points are already checked by
@@ -282,28 +284,28 @@ void check_block_face_grid_points_align(
   // GaussLobatto points are used so that endpoints are also checked since
   // physical_separation cannot be called for cylindrical blocks since they do
   // not have corners.
-  Mesh<VolumeDim - 1> face_mesh;
+  Mesh<VolumeDim - 1> host_face_mesh;
   if constexpr (VolumeDim == 3) {
     if (host_block.topologies()[VolumeDim - 1] ==
       domain::Topology::CartoonCylinder) {
-      face_mesh = Mesh<VolumeDim - 1>{
+      host_face_mesh = Mesh<VolumeDim - 1>{
           {3, 1},
           {Spectral::Basis::Legendre, Spectral::Basis::Cartoon},
           {Spectral::Quadrature::Gauss, Spectral::Quadrature::AxialSymmetry}};
     } else if (host_block.topologies() == domain::topologies::full_cylinder) {
       if (neighbor_block.topologies() == domain::topologies::full_cylinder and
-          (direction == Direction<VolumeDim>::upper_zeta() or
-           direction == Direction<VolumeDim>::lower_zeta())) {
-        face_mesh = Mesh<VolumeDim - 1>{
+          (host_direction == Direction<VolumeDim>::upper_zeta() or
+           host_direction == Direction<VolumeDim>::lower_zeta())) {
+        host_face_mesh = Mesh<VolumeDim - 1>{
             {3, 9},
             {Spectral::Basis::ZernikeB2, Spectral::Basis::ZernikeB2},
             {Spectral::Quadrature::GaussRadauUpper,
              Spectral::Quadrature::Equiangular}};
       } else if (neighbor_block.topologies() ==
                      domain::topologies::cylindrical_shell and
-                 (direction == Direction<VolumeDim>::upper_xi() or
-                  direction == Direction<VolumeDim>::lower_xi())) {
-        face_mesh = Mesh<VolumeDim - 1>{
+                 (host_direction == Direction<VolumeDim>::upper_xi() or
+                  host_direction == Direction<VolumeDim>::lower_xi())) {
+        host_face_mesh = Mesh<VolumeDim - 1>{
             {9, 5},
             {Spectral::Basis::ZernikeB2, Spectral::Basis::Legendre},
             {Spectral::Quadrature::Equiangular,
@@ -321,36 +323,36 @@ void check_block_face_grid_points_align(
       // NOLINTBEGIN
       if (neighbor_block.topologies() ==
               domain::topologies::cylindrical_shell and
-          (direction == Direction<VolumeDim>::upper_xi() or
-           direction == Direction<VolumeDim>::lower_xi())) {
-        face_mesh = Mesh<VolumeDim - 1>{
+          (host_direction == Direction<VolumeDim>::upper_xi() or
+           host_direction == Direction<VolumeDim>::lower_xi())) {
+        host_face_mesh = Mesh<VolumeDim - 1>{
             {3, 9},
             {Spectral::Basis::Fourier, Spectral::Basis::Legendre},
             {Spectral::Quadrature::Equiangular,
              Spectral::Quadrature::GaussLobatto}};
       } else if (neighbor_block.topologies() ==
                      domain::topologies::cylindrical_shell and
-                 (direction == Direction<VolumeDim>::upper_zeta() or
-                  direction == Direction<VolumeDim>::lower_zeta())) {
-        face_mesh = Mesh<VolumeDim - 1>{
+                 (host_direction == Direction<VolumeDim>::upper_zeta() or
+                  host_direction == Direction<VolumeDim>::lower_zeta())) {
+        host_face_mesh = Mesh<VolumeDim - 1>{
             {9, 5},
             {Spectral::Basis::Legendre, Spectral::Basis::Fourier},
             {Spectral::Quadrature::GaussLobatto,
              Spectral::Quadrature::Equiangular}};
       } else if (neighbor_block.topologies() ==
                      domain::topologies::full_cylinder and
-                 (direction == Direction<VolumeDim>::upper_zeta() or
-                  direction == Direction<VolumeDim>::lower_zeta())) {
-        face_mesh = Mesh<VolumeDim - 1>{
+                 (host_direction == Direction<VolumeDim>::upper_zeta() or
+                  host_direction == Direction<VolumeDim>::lower_zeta())) {
+        host_face_mesh = Mesh<VolumeDim - 1>{
             {9, 5},
             {Spectral::Basis::Legendre, Spectral::Basis::Fourier},
             {Spectral::Quadrature::GaussLobatto,
              Spectral::Quadrature::Equiangular}};
       } else if (neighbor_block.topologies() ==
                      domain::topologies::spherical_shell and
-                 (direction == Direction<VolumeDim>::upper_xi() or
-                  direction == Direction<VolumeDim>::lower_xi())) {
-        face_mesh = Mesh<VolumeDim - 1>{
+                 (host_direction == Direction<VolumeDim>::upper_xi() or
+                  host_direction == Direction<VolumeDim>::lower_xi())) {
+        host_face_mesh = Mesh<VolumeDim - 1>{
             {3, 9},
             {Spectral::Basis::Fourier, Spectral::Basis::Legendre},
             {Spectral::Quadrature::Equiangular,
@@ -368,44 +370,39 @@ void check_block_face_grid_points_align(
           "check_block_face_grid_points_align() is not implemented for "
           "spherical shell host blocks.");
     } else {
-      face_mesh = Mesh<VolumeDim - 1>{3_st, Spectral::Basis::Legendre,
-                                    Spectral::Quadrature::Gauss};
+      host_face_mesh = Mesh<VolumeDim - 1>{3_st, Spectral::Basis::Legendre,
+                                           Spectral::Quadrature::Gauss};
     }
   } else if (host_block.topologies()[VolumeDim - 1] ==
       domain::Topology::CartoonCylinder) {
     ERROR("Cartoon basis used with non 3D mesh, got dim = " << VolumeDim);
   } else {
-    face_mesh = Mesh<VolumeDim - 1>{3_st, Spectral::Basis::Legendre,
-                                    Spectral::Quadrature::Gauss};
+    host_face_mesh = Mesh<VolumeDim - 1>{3_st, Spectral::Basis::Legendre,
+                                         Spectral::Quadrature::Gauss};
   }
 
-  // We want block logical coordinates on face_mesh on the host side and the
-  // neighbor. The following returns element logical coordinates in the host
-  // frame, which we then copy into tensors holding block logical coordinates,
-  // taking into account the OrientationMap between the host and neighbor
-  // blocks.
-  tnsr::I<DataVector, VolumeDim, Frame::ElementLogical> xi =
-      interface_logical_coordinates(face_mesh, direction);
-  tnsr::I<DataVector, VolumeDim, Frame::BlockLogical> xi_host{};
-  tnsr::I<DataVector, VolumeDim, Frame::BlockLogical> xi_neighbor{};
+  // Neighbor's interface mesh and direction in its own frame
+  const Mesh<VolumeDim - 1> neighbor_face_mesh = orient_mesh_on_slice(
+      host_face_mesh, host_direction.dimension(), orientation);
+  const auto neighbor_direction = orientation(host_direction.opposite());
+
+  // We want block logical coordinates of the face mesh on the host side and the
+  // neighbor. The following returns the host's element logical coordinates in
+  // its own frame and the neighbor's element logical coordinates in its own
+  // frame. We then copy these values into tensors holding block logical
+  // coordinates.
+  const tnsr::I<DataVector, VolumeDim, Frame::ElementLogical> xi_host =
+      interface_logical_coordinates(host_face_mesh, host_direction);
+  const tnsr::I<DataVector, VolumeDim, Frame::ElementLogical> xi_neighbor =
+      interface_logical_coordinates(neighbor_face_mesh, neighbor_direction);
+  tnsr::I<DataVector, VolumeDim, Frame::BlockLogical> xi_host_block_logical{};
+  tnsr::I<DataVector, VolumeDim, Frame::BlockLogical>
+      xi_neighbor_block_logical{};
   for (size_t d = 0; d < VolumeDim; ++d) {
     // assume an Element covering the Block which maps element logical
     // coordinates to block logical coordinates with the identity map
-    xi_host[d] = xi[d];
-    const auto dth_upper_direction_in_neighbor_frame =
-        orientation(Direction<VolumeDim>(d, Side::Upper));
-    // This takes into account the permutation of dimensions induced by the
-    // OrientationMap
-    xi_neighbor[dth_upper_direction_in_neighbor_frame.dimension()] = xi[d];
-    // There is a sign flip if this is the dimension of the direction to the
-    // neighbor as the logical coord is -1/+1 on the lower/upper side of the
-    // block.
-    // There is also a sign flip if the mapped upper direction becomes a lower
-    // direction
-    if ((dth_upper_direction_in_neighbor_frame.side() == Side::Lower) xor
-        (d == direction.dimension())) {
-      xi_neighbor[dth_upper_direction_in_neighbor_frame.dimension()] *= -1.0;
-    }
+    xi_host_block_logical[d] = xi_host[d];
+    xi_neighbor_block_logical[d] = xi_neighbor[d];
   }
   if (host_block.is_time_dependent() != neighbor_block.is_time_dependent()) {
     ERROR(
@@ -414,8 +411,8 @@ void check_block_face_grid_points_align(
         << std::boolalpha << host_block.is_time_dependent()
         << " and neighbor_block has: " << neighbor_block.is_time_dependent());
   }
-  CAPTURE(xi_host);
-  CAPTURE(xi_neighbor);
+  CAPTURE(xi_host_block_logical);
+  CAPTURE(xi_neighbor_block_logical);
   // Check that each grid point on the face Mesh has the same grid and
   // inertial coordinates when mapped from the logical coordinates of each
   // Block.
@@ -431,20 +428,49 @@ void check_block_face_grid_points_align(
         neighbor_block.moving_mesh_logical_to_grid_map();
     const auto& neighbor_map_grid_to_inertial =
         neighbor_block.moving_mesh_grid_to_inertial_map();
-    const auto x_grid_self = host_map_logical_to_grid(xi_host);
-    const auto x_grid_neighbor = neighbor_map_logical_to_grid(xi_neighbor);
-    CHECK_ITERABLE_APPROX(x_grid_self, x_grid_neighbor);
+    const auto x_grid_self = host_map_logical_to_grid(xi_host_block_logical);
+    const auto x_grid_neighbor =
+        neighbor_map_logical_to_grid(xi_neighbor_block_logical);
     const auto x_inertial_self =
         host_map_grid_to_inertial(x_grid_self, time, functions_of_time);
     const auto x_inertial_neighbor =
         neighbor_map_grid_to_inertial(x_grid_neighbor, time, functions_of_time);
-    CHECK_ITERABLE_APPROX(x_inertial_self, x_inertial_neighbor);
+
+    tnsr::I<DataVector, VolumeDim, Frame::Grid> x_grid_self_in_neighbor_frame{};
+    tnsr::I<DataVector, VolumeDim, Frame::Inertial>
+        x_inertial_self_in_neighbor_frame{};
+    for (size_t d = 0; d < VolumeDim; d++) {
+      // We use orient_variables_on_slice() to map the grid points, as this is
+      // what is used to reorient and copy data to a shared grid point between
+      // neighbor blocks
+      x_grid_self_in_neighbor_frame[d] =
+          orient_variables_on_slice(x_grid_self[d], host_face_mesh.extents(),
+                                    host_direction.dimension(), orientation);
+      x_inertial_self_in_neighbor_frame[d] = orient_variables_on_slice(
+          x_inertial_self[d], host_face_mesh.extents(),
+          host_direction.dimension(), orientation);
+    }
+
+    CHECK_ITERABLE_APPROX(x_grid_self_in_neighbor_frame, x_grid_neighbor);
+    CHECK_ITERABLE_APPROX(x_inertial_self_in_neighbor_frame,
+                          x_inertial_neighbor);
   } else {
     const auto& host_map = host_block.stationary_map();
     const auto& neighbor_map = neighbor_block.stationary_map();
-    const auto x_self = host_map(xi_host);
-    const auto x_neighbor = neighbor_map(xi_neighbor);
-    CHECK_ITERABLE_APPROX(x_self, x_neighbor);
+    const auto x_self = host_map(xi_host_block_logical);
+    const auto x_neighbor = neighbor_map(xi_neighbor_block_logical);
+
+    tnsr::I<DataVector, VolumeDim, Frame::Inertial> x_self_in_neighbor_frame{};
+    for (size_t d = 0; d < VolumeDim; d++) {
+      // We use orient_variables_on_slice() to map the grid points, as this is
+      // what is used to reorient and copy data to a shared grid point between
+      // neighbor blocks
+      x_self_in_neighbor_frame[d] =
+          orient_variables_on_slice(x_self[d], host_face_mesh.extents(),
+                                    host_direction.dimension(), orientation);
+    }
+
+    CHECK_ITERABLE_APPROX(x_self_in_neighbor_frame, x_neighbor);
   }
 }
 
