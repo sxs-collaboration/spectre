@@ -135,6 +135,23 @@ void logical_coordinates(
         }
         break;
       }
+      case Spectral::Basis::HalfFourier: {
+        switch (mesh.quadrature(d)) {
+          case Spectral::Quadrature::Equiangular: {
+            const size_t n_phi = mesh.extents(d);
+            const double pi_over_n_phi = std::numbers::pi / n_phi;
+            for (IndexIterator<VolumeDim> index(mesh.extents()); index;
+                 ++index) {
+              logical_coords->get(d)[index.collapsed_index()] =
+                  pi_over_n_phi * (index()[d] + 0.5);
+            }
+            break;
+          }
+          default:
+            ERROR("Quadrature must be Equiangular for Basis HalfFourier");
+        }
+        break;
+      }
       // NOLINTNEXTLINE(bugprone-branch-clone)
       case Spectral::Basis::Chebyshev:
         [[fallthrough]];
