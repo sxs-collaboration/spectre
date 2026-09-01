@@ -90,7 +90,7 @@ git clone https://github.com/UIUC-PPL/charm
 pushd charm
 git checkout v8.0.0
 ./build charm++ multicore-darwin-arm8 --with-production -g3 -j --build-shared \
-  --disable-tls
+  --disable-tls -DCMK_NO_ISO_MALLOC=1
 popd
 
 # The following dependencies are optional! They will be installed in the build

@@ -1103,8 +1103,12 @@ ${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
             https://github.com/UIUC-PPL/charm
           cd charm
           CHARM_CONFIG="multicore-darwin-arm8"
+          # `-DCMK_NO_ISO_MALLOC=1` disables Charm++'s isomalloc, which is
+          # unusable on macOS 26 and causes random segfaults. See the
+          # "Building Charm++" section in docs/Installation/Installation.md.
           ./build charm++ $CHARM_CONFIG \
-            --with-production -g3 -j --build-shared --disable-tls
+            --with-production -g3 -j --build-shared --disable-tls \
+            -DCMK_NO_ISO_MALLOC=1
           echo "CHARM_ROOT=$PWD/$CHARM_CONFIG" >> $GITHUB_ENV
       # Configure, build and run tests. See the `unit_tests` job above for
       # details.
