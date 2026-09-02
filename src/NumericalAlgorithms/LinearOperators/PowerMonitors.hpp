@@ -6,14 +6,14 @@
 #include <array>
 #include <cstddef>
 #include <limits>
+#include <vector>
 
+#include "DataStructures/DataVector.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
+#include "NumericalAlgorithms/TensorYlm/Helpers.hpp"
+#include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
-
-/// \cond
-class DataVector;
-/// \endcond
 
 /*!
  * \brief Items for assessing truncation error in spectral methods.
@@ -238,4 +238,146 @@ DataVector spherical_shell_angular_power_monitor(
     const DataVector& tensor_ylm_component, const Mesh<3>& mesh,
     int spin_weight, bool zero_m_is_real);
 /// @}
+
+/*!
+ * \brief Return the RMS radial power monitor across all components of a
+ * tensor on a spherical shell.
+ *
+ * Combines `spherical_shell_radial_power_monitor` for each of
+ * `tensor.size()` components in quadrature, normalized by the number of
+ * components.
+ */
+template <typename TensorType>
+DataVector spherical_shell_tensor_radial_power_monitor(const TensorType& tensor,
+                                                       const Mesh<3>& mesh) {
+  DataVector squared_power(mesh.extents(0), 0.0);
+  DataVector component_power{};
+  for (size_t component = 0; component < tensor.size(); ++component) {
+    spherical_shell_radial_power_monitor(make_not_null(&component_power),
+                                         tensor[component], mesh);
+    squared_power += square(component_power);
+  }
+  squared_power = sqrt(squared_power / static_cast<double>(tensor.size()));
+  return squared_power;
+}
+
+/*!
+ * \brief Number of independent TensorYlm coefficients contributing to
+ * angular degree `ell`, summed over `radial_extents` radial points.
+ *
+ * Returns 0 when `ell < |spin_weight|`, since spin-weighted spherical
+ * harmonics vanish there (such terms are then excluded from
+ * `accumulate_spherical_shell_tensor_angular_power()`'s sum and normalization).
+ * See `SpherepackIterator` for the meaning of `zero_m_is_real`.
+ */
+size_t spherical_shell_number_of_angular_coefficients(size_t ell,
+                                                      int spin_weight,
+                                                      bool zero_m_is_real,
+                                                      size_t radial_extents);
+
+/*!
+ * \brief Accumulate weighted-squared angular TensorYlm power and mode counts
+ * for all components of a tensor on a spherical shell.
+ *
+ * Adds to `weighted_squared_power` and `counts` in place, so this can be
+ * called repeatedly to combine several tensors into the same angular power
+ * monitor before calling `normalize_spherical_shell_angular_power`.
+ */
+template <typename TensorType>
+void accumulate_spherical_shell_tensor_angular_power(
+    const gsl::not_null<DataVector*> weighted_squared_power,
+    const gsl::not_null<std::vector<size_t>*> counts, const TensorType& tensor,
+    const Mesh<3>& mesh) {
+  const size_t radial_extents = mesh.extents(0);
+  const size_t ell_max = mesh.extents(1) - 1;
+  constexpr bool zero_m_is_real = TensorType::rank() == 0;
+  DataVector component_power{};
+  for (size_t component = 0; component < tensor.size(); ++component) {
+    const int spin_weight = ylm::TensorYlm::helpers::component_spin_weight<
+        typename TensorType::structure>(component);
+    spherical_shell_angular_power_monitor(make_not_null(&component_power),
+                                          tensor[component], mesh, spin_weight,
+                                          zero_m_is_real);
+    for (size_t ell = 0; ell <= ell_max; ++ell) {
+      const size_t component_count =
+          spherical_shell_number_of_angular_coefficients(
+              ell, spin_weight, zero_m_is_real, radial_extents);
+      (*weighted_squared_power)[ell] +=
+          static_cast<double>(component_count) * square(component_power[ell]);
+      (*counts)[ell] += component_count;
+    }
+  }
+}
+
+/*!
+ * \brief Normalize an angular power monitor accumulator in place.
+ *
+ * Sets `power[ell] = sqrt(power[ell] / counts[ell])`, or 0 when
+ * `counts[ell] == 0`.
+ */
+void normalize_spherical_shell_angular_power(gsl::not_null<DataVector*> power,
+                                             const std::vector<size_t>& counts);
+
+/*!
+ * \brief Accumulate squared ZernikeB3 Jacobi spectral coefficients for one
+ * TensorYlm component into radial and angular power bins.
+ *
+ * `spec_buf` has layout `spec_buf[s * n_r + i_r]` where `s` is the SPHEREPACK
+ * offset and `i_r` is the radial collocation index. Modes are binned radially
+ * via `radial_mode = (n_total + 1) / 2` where `n_total = l + 2 * k_spec`, and
+ * angularly by degree \f$\ell\f$. Modes with `l < |spin_weight|` are skipped.
+ *
+ * `offsets_by_l` must be pre-computed for the correct `zero_m_is_real` value
+ * of this component. `gathered` and `modal_buf` are caller-owned scratch
+ * buffers of size `max_n_modes_l * n_r` each, where
+ * `max_n_modes_l = 2 * (l_max + 1)`.
+ */
+void accumulate_b3_tensor_component_sums(
+    gsl::not_null<DataVector*> sum_sq_radial,
+    gsl::not_null<DataVector*> counts_radial,
+    gsl::not_null<DataVector*> sum_sq_angular,
+    gsl::not_null<DataVector*> counts_angular, const double* spec_buf,
+    size_t n_r, size_t n_r_max, int spin_weight,
+    const std::vector<std::vector<size_t>>& offsets_by_l, double* gathered,
+    double* modal_buf);
+
+/*!
+ * \brief Accumulate squared ZernikeB3 spectral coefficients for all components
+ * of a TensorYlm tensor into radial and angular power bins.
+ *
+ * Selects `offsets_by_l_real` for rank-0 (scalar) tensors and
+ * `offsets_by_l_complex` for all higher-rank tensors. The spin weight for each
+ * component is determined from the tensor structure.
+ */
+template <typename TensorType>
+void accumulate_b3_tensor_sums(
+    gsl::not_null<DataVector*> sum_sq_radial,
+    gsl::not_null<DataVector*> counts_radial,
+    gsl::not_null<DataVector*> sum_sq_angular,
+    gsl::not_null<DataVector*> counts_angular, const TensorType& tensor,
+    size_t n_r, size_t n_r_max,
+    const std::vector<std::vector<size_t>>& offsets_by_l_real,
+    const std::vector<std::vector<size_t>>& offsets_by_l_complex,
+    double* gathered, double* modal_buf) {
+  constexpr bool zero_m_is_real = TensorType::rank() == 0;
+  const auto& offsets_by_l =
+      zero_m_is_real ? offsets_by_l_real : offsets_by_l_complex;
+  for (size_t component = 0; component < tensor.size(); ++component) {
+    const int spin_weight = ylm::TensorYlm::helpers::component_spin_weight<
+        typename TensorType::structure>(component);
+    accumulate_b3_tensor_component_sums(
+        sum_sq_radial, counts_radial, sum_sq_angular, counts_angular,
+        tensor[component].data(), n_r, n_r_max, spin_weight, offsets_by_l,
+        gathered, modal_buf);
+  }
+}
+
+/*!
+ * \brief Normalize a B3 power monitor accumulator in place.
+ *
+ * Sets `result[i] = sqrt(sum_sq[i] / counts[i])`, or 0 when `counts[i] == 0`.
+ */
+void normalize_b3_power(gsl::not_null<DataVector*> result,
+                        const DataVector& sum_sq, const DataVector& counts);
+
 }  // namespace PowerMonitors
