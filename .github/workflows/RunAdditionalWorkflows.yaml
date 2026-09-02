@@ -1,0 +1,20 @@
+# Distributed under the MIT License.
+# See LICENSE.txt for details.
+
+# Additional workflows to run.  This can be used to test new workflows or
+# modifications to existing workflows.
+name:  Additional workflows
+
+# Only run the additional workflows manually to allow targeted testing
+on:
+  workflow_dispatch:
+  push:
+
+# Cancel in-progress runs if the workflow is triggered again
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  clang-tidy-d:
+    uses: $/.github/workflows/ClangdTidy.yaml

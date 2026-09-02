@@ -1,0 +1,78 @@
+# Distributed under the MIT License.
+# See LICENSE.txt for details.
+
+# Lint with clangd-tidy. We check only code that changed relative to the
+# nearest common ancestor commit with `sxs-collaboration/spectre/develop`.
+name: Clangd-tidy
+
+on: workflow_call
+
+jobs:
+  clangd_tidy:
+    name: Clangd-tidy
+    if: >
+      (github.event_name == 'pull_request'
+       && github.repository == 'sxs-collaboration/spectre'
+       && github.base_ref == 'develop')
+      || github.ref != 'refs/heads/develop'
+    runs-on: ubuntu-latest
+    container:
+      image: ${{ inputs.container || 'sxscollaboration/spectre:dev' }}
+    strategy:
+      fail-fast: false
+      matrix:
+        build_type: [Debug, Release]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      # Work around https://github.com/actions/checkout/issues/760
+      - name: Trust checkout
+        run: |
+          git config --global --add safe.directory $GITHUB_WORKSPACE
+      # Install clangd-tidy
+      - name: Install clangd-tidy
+        run: |
+          apt-get install -y clangd
+          pip3 install clangd-tidy
+      - name: Fetch sxs-collaboration/spectre/develop
+        run: >
+          cd $GITHUB_WORKSPACE
+
+          git remote add upstream
+          https://github.com/sxs-collaboration/spectre.git
+
+          git remote -v
+
+          git fetch upstream develop
+      - name: Configure with cmake
+        run: >
+          mkdir build && cd build
+
+          cmake
+          -D CMAKE_C_COMPILER=clang-14
+          -D CMAKE_CXX_COMPILER=clang++-14
+          -D CMAKE_Fortran_COMPILER=gfortran
+          -D CHARM_ROOT=${CHARM_ROOT}
+          -D CMAKE_BUILD_TYPE=${{ matrix.build_type }}
+          -D OVERRIDE_ARCH=x86-64
+          -D USE_CCACHE=OFF
+          -D USE_PCH=OFF
+          -D DEBUG_SYMBOLS=OFF
+          -D BUILD_PYTHON_BINDINGS=ON
+          -D SPECTRE_AUTODIFF=ON
+          -D SPECTRE_FETCH_MISSING_DEPS=ON
+          $GITHUB_WORKSPACE
+
+          make -j4 module_All Libsharp-external
+      - name: Check clangd-tidy
+        run: >
+          UPSTREAM_HASH=$(git merge-base HEAD upstream/develop)
+
+          echo "Running clangd-tidy relative to: $UPSTREAM_HASH\n"
+
+          git diff -U0 $UPSTREAM_HASH |
+            clangd-tidy-diff -p build --pass-arg p1 --pass-arg use-color \
+            --pass-arg j1 --pass-arg "extra-arg=-I/usr/include/hdf5/serial" \
+            --pass-arg "extra-arg=-I$GITHUB_WORKSPACE/build/_deps/autodiff-src"
