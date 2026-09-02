@@ -49,11 +49,9 @@ def plot_size_control(
             diagnostics_data = h5file.get(diagnostics_file_name)
             if diagnostics_data is None:
                 raise RequiredChoiceError(
-                    (
-                        "Unable to open diagnostic file"
-                        f" '{diagnostics_file_name}' from h5 file"
-                        f" {h5_filename}."
-                    ),
+                    "Unable to open diagnostic file"
+                    f" '{diagnostics_file_name}' from h5 file"
+                    f" {h5_filename}.",
                     choices=available_subfiles(h5file, extension=".dat"),
                 )
 

@@ -317,10 +317,8 @@ class TestPlotCce(unittest.TestCase):
 
         self.assertNotEqual(result.exit_code, 0, result.output)
         self.assertIn(
-            (
-                "Either specify the correct extraction radius, or remove the"
-                " option altogether."
-            ),
+            "Either specify the correct extraction radius, or remove the"
+            " option altogether.",
             result.output,
         )
 

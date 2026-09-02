@@ -72,8 +72,8 @@ def _control_system_params(
         "MaxDampingTimescale": max_damping_timescale,
         "KinematicTimescale": kinematic_timescale,
         "MinSkewTimescale": 5.0 * min_kinematic_timescale,
-        "SkewTimescale": 0.5 * (
-            5.0 * min_kinematic_timescale + max_damping_timescale
+        "SkewTimescale": (
+            0.5 * (5.0 * min_kinematic_timescale + max_damping_timescale)
         ),
         "SizeATimescale": size_a_timescale,
         "SizeBTimescale": size_b_timescale,
@@ -197,10 +197,8 @@ def inspiral_parameters(
             )
         else:
             raise RequiredChoiceError(
-                (
-                    "Specify '--id-subfile-name' to select a subfile containing"
-                    " volume data."
-                ),
+                "Specify '--id-subfile-name' to select a subfile containing"
+                " volume data.",
                 choices=id_subfiles,
             )
 

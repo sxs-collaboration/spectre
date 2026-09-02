@@ -113,7 +113,7 @@ class Element:
 
 
 def stripped_element_name(
-    element_id: Union[str, ElementId[1], ElementId[2], ElementId[3]]
+    element_id: Union[str, ElementId[1], ElementId[2], ElementId[3]],
 ) -> bool:
     """The element name without the leading and trailing square bracket
 

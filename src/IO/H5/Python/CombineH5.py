@@ -106,10 +106,8 @@ def combine_h5_vol_command(
     if not subfile_name:
         spectre_file = spectre_h5.H5File(h5files[0], "r")
         raise RequiredChoiceError(
-            (
-                "Specify '--subfile-name' / '-d' to select a"
-                " subfile containing volume data."
-            ),
+            "Specify '--subfile-name' / '-d' to select a"
+            " subfile containing volume data.",
             choices=spectre_file.all_vol_files(),
         )
 

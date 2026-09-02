@@ -17,12 +17,7 @@ def exponential_coupling_prime_prime(psi, lambda_coeff, gamma_coeff):
 
 
 def quarticpolynomial_coupling(psi, linear, quadratic, cubic, quartic):
-    return (
-        linear * psi
-        + quadratic * psi**2
-        + cubic * psi**3
-        + quartic * psi**4
-    )
+    return linear * psi + quadratic * psi**2 + cubic * psi**3 + quartic * psi**4
 
 
 def quarticpolynomial_coupling_prime(psi, linear, quadratic, cubic, quartic):

@@ -53,10 +53,8 @@ def plot_control_system(
         control_system_dir = h5file.get("ControlSystems")
         if control_system_dir is None:
             raise RequiredChoiceError(
-                (
-                    "Unable to open group 'ControlSystems' from h5 file"
-                    f" {h5_filename}."
-                ),
+                "Unable to open group 'ControlSystems' from h5 file"
+                f" {h5_filename}.",
                 choices=available_subfiles(h5file, extension=".dat"),
             )
 
@@ -78,10 +76,8 @@ def plot_control_system(
         subfile = h5file.get(subfile_path)
         if subfile_path is None:
             raise RequiredChoiceError(
-                (
-                    f"Unable to open control system subfile '{subfile_path}'"
-                    f" from h5 file {h5_filename}."
-                ),
+                f"Unable to open control system subfile '{subfile_path}'"
+                f" from h5 file {h5_filename}.",
                 choices=available_subfiles(h5file, extension=".dat"),
             )
 

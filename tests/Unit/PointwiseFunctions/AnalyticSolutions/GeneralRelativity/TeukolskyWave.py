@@ -302,10 +302,7 @@ def _perturbation_and_dt_perturbation(
             radius_from_center**2 * radial_l * angular_thetaphi * sin_theta
         )
         spherical_metric[2, 2] += (
-            radius_from_center**2
-            * radial_l
-            * angular_phi_phi
-            * sin_theta**2
+            radius_from_center**2 * radial_l * angular_phi_phi * sin_theta**2
         )
 
         propagation_sign = 1.0 if direction == "ingoing" else -1.0
@@ -345,10 +342,7 @@ def _perturbation_and_dt_perturbation(
             radius_from_center**2 * dt_radial_l * angular_thetaphi * sin_theta
         )
         dt_spherical_metric[2, 2] += (
-            radius_from_center**2
-            * dt_radial_l
-            * angular_phi_phi
-            * sin_theta**2
+            radius_from_center**2 * dt_radial_l * angular_phi_phi * sin_theta**2
         )
 
     spherical_metric = spherical_metric + np.triu(spherical_metric, 1).T

@@ -915,10 +915,8 @@ def transform_volume_data_command(
             )
         else:
             raise RequiredChoiceError(
-                (
-                    "Specify '--subfile-name' / '-d' to select a"
-                    " subfile containing volume data."
-                ),
+                "Specify '--subfile-name' / '-d' to select a"
+                " subfile containing volume data.",
                 choices=available_subfile_names,
             )
 

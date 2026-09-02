@@ -147,18 +147,14 @@ class TestMetadata(unittest.TestCase):
         self.assertEqual(
             sorted(authors_devs_list, key=lambda a: a["Name"]),
             authors_devs_list,
-            (
-                "'Developers' author list should be ordered alphabetically "
-                "by last name"
-            ),
+            "'Developers' author list should be ordered alphabetically "
+            "by last name",
         )
         self.assertEqual(
             sorted(authors_contribs_list, key=lambda a: a["Name"]),
             authors_contribs_list,
-            (
-                "'Contributors' author list should be ordered alphabetically "
-                "by last name"
-            ),
+            "'Contributors' author list should be ordered alphabetically "
+            "by last name",
         )
 
         # Check all authors
@@ -166,10 +162,8 @@ class TestMetadata(unittest.TestCase):
             split_name = name.split(", ")
             self.assertTrue(
                 len(split_name) == 2 or len(split_name) == 3,
-                (
-                    f"Name '{name}' should be formatted "
-                    "'Last name[, Jr.], First name'"
-                ),
+                f"Name '{name}' should be formatted "
+                "'Last name[, Jr.], First name'",
             )
             if len(split_name) == 3:
                 last_name, jr, first_name = split_name
@@ -202,10 +196,8 @@ class TestMetadata(unittest.TestCase):
                 self.assertIn(
                     affiliation,
                     self.metadata["Affiliations"],
-                    (
-                        "Please use an existing affiliation or add a new one to"
-                        " the main 'Affiliations' list in this file."
-                    ),
+                    "Please use an existing affiliation or add a new one to"
+                    " the main 'Affiliations' list in this file.",
                 )
             self.assertIn("GitHub", author)
 
@@ -288,11 +280,9 @@ class TestMetadata(unittest.TestCase):
             self.assertEqual(
                 journal_macros,
                 [],
-                (
-                    f"Journal names in '{bibliography_file}' should be written"
-                    " out directly because Doxygen does not expand LaTeX"
-                    f" macros: {journal_macros}"
-                ),
+                f"Journal names in '{bibliography_file}' should be written"
+                " out directly because Doxygen does not expand LaTeX"
+                f" macros: {journal_macros}",
             )
 
 

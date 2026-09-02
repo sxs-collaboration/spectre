@@ -121,9 +121,7 @@ class TestIterElements(unittest.TestCase):
                 npt.assert_allclose(element.inv_jacobian.get(0, 0) * np.pi, 2.0)
                 npt.assert_allclose(element.inv_jacobian.get(1, 1) * np.pi, 1.0)
                 npt.assert_allclose(element.inv_jacobian.get(2, 2) * np.pi, 1.0)
-                npt.assert_allclose(
-                    element.det_jacobian.get() / np.pi**3, 0.5
-                )
+                npt.assert_allclose(element.det_jacobian.get() / np.pi**3, 0.5)
                 for j in range(3):
                     for k in range(j):
                         npt.assert_allclose(

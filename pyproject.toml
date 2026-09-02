@@ -7,13 +7,15 @@ build-backend = "setuptools.build_meta"
 
 [tool.black]
 line-length = 80
-target-version = ["py310", "py311"]
-required-version = "23.3.0"
+target-version = ["py310", "py311", "py312", "py313", "py314"]
+required-version = "26.5.1"
 # Enable experimental string processing so long strings are wrapped
-# automatically. This is very convenient but not quite stable yet. Stability of
-# this feature is tracked in this issue:
+# automatically. This is very convenient but not quite stable yet, so black
+# keeps it in its "unstable" tier that has to be enabled explicitly on top of
+# the "preview" style. Stability of this feature is tracked in this issue:
 # https://github.com/psf/black/issues/2188
 preview = true
+enable-unstable-feature = ["string_processing"]
 # Skip external code since modifying it can be an issue with GPL-licensed code.
 extend-exclude = '''
 (

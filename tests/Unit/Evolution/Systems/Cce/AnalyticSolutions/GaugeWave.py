@@ -112,8 +112,7 @@ def dr_spherical_metric(sin_theta, cos_theta, t, r, m, f, a, tpeak, duration):
     ) + (1.0 + du_wave_func / r) * (
         -2.0 * m / r**2
         + 2.0 * m / r**2 * (du_wave_func / r + wave_func / r**2)
-        + (1.0 - 2.0 * m / r)
-        * (-du_wave_func / r**2 - 2.0 * wave_func / r**3)
+        + (1.0 - 2.0 * m / r) * (-du_wave_func / r**2 - 2.0 * wave_func / r**3)
     )
     dr_g_rr = (du_wave_func / r**2 + 2.0 * wave_func / r**3) * (
         1.0
@@ -122,8 +121,7 @@ def dr_spherical_metric(sin_theta, cos_theta, t, r, m, f, a, tpeak, duration):
     ) + (1.0 - du_wave_func / r - wave_func / r**2) * (
         -2.0 * m / r**2
         + 2.0 * m / r**2 * (du_wave_func / r + wave_func / r**2)
-        + (1.0 - 2.0 * m / r)
-        * (-du_wave_func / r**2 - 2.0 * wave_func / r**3)
+        + (1.0 - 2.0 * m / r) * (-du_wave_func / r**2 - 2.0 * wave_func / r**3)
     )
     return array(
         [

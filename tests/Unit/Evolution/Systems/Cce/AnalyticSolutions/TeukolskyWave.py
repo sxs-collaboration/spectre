@@ -16,11 +16,7 @@ def pulse_profile_coefficient_a(t, r, a, k):
         * a
         * np.exp(-(u**2) / k**2)
         / (k**4 * r**5)
-        * (
-            3.0 * k**4
-            + 4.0 * r**2 * u**2
-            - 2.0 * k**2 * r * (r + 3.0 * u)
-        )
+        * (3.0 * k**4 + 4.0 * r**2 * u**2 - 2.0 * k**2 * r * (r + 3.0 * u))
     )
 
 
@@ -99,11 +95,7 @@ def dt_pulse_profile_coefficient_c(t, r, a, k):
             16.0 * r**4 * u**5
             + 21.0 * k**8 * (r + u)
             - 16.0 * k**2 * r**3 * u**3 * (5.0 * r + u)
-            + 12.0
-            * k**4
-            * r**2
-            * u
-            * (5.0 * r**2 + 4 * r * u + 3 * u**2)
+            + 12.0 * k**4 * r**2 * u * (5.0 * r**2 + 4 * r * u + 3 * u**2)
             - 6.0 * k**6 * r * (2.0 * r**2 + 9.0 * r * u + 7.0 * u**2)
         )
     )
@@ -114,9 +106,7 @@ def dr_pulse_profile_coefficient_a(t, r, a, k):
     return -dt_pulse_profile_coefficient_a(t, r, a, k) + 3.0 * a * np.exp(
         -(u**2) / k**2
     ) / (k**4 * r**6) * (
-        -15.0 * k**4
-        - 12.0 * r**2 * u**2
-        + 6.0 * k**2 * r * (r + 4.0 * u)
+        -15.0 * k**4 - 12.0 * r**2 * u**2 + 6.0 * k**2 * r * (r + 4.0 * u)
     )
 
 

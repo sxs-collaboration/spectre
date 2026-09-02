@@ -14,9 +14,7 @@ except ImportError:
 
 
 def pi(x, amplitude, radius, width, l, m):
-    radial = amplitude * np.exp(
-        -((np.linalg.norm(x) - radius) ** 2) / width**2
-    )
+    radial = amplitude * np.exp(-((np.linalg.norm(x) - radius) ** 2) / width**2)
     theta = np.arctan2(np.sqrt(x[0] ** 2 + x[1] ** 2), x[2])
     phi = np.arctan2(x[1], x[0])
     angular = sph_harm_y(l, m, theta, phi)

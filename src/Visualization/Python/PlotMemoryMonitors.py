@@ -77,10 +77,8 @@ def plot_memory_monitors_command(
         memory_monitor_dir = h5file.get("MemoryMonitors")
         if memory_monitor_dir is None:
             raise RequiredChoiceError(
-                (
-                    "Unable to open group 'MemoryMonitors' from h5 file"
-                    f" {h5_filename}."
-                ),
+                "Unable to open group 'MemoryMonitors' from h5 file"
+                f" {h5_filename}.",
                 choices=available_subfiles(h5file, extension=".dat"),
             )
 
@@ -96,10 +94,8 @@ def plot_memory_monitors_command(
         subfile = h5file.get(subfile_path)
         if subfile_path is None:
             raise RequiredChoiceError(
-                (
-                    f"Unable to open memory subfile '{subfile_path}'"
-                    f" from h5 file {h5_filename}."
-                ),
+                f"Unable to open memory subfile '{subfile_path}'"
+                f" from h5 file {h5_filename}.",
                 choices=available_subfiles(h5file, extension=".dat"),
             )
 
