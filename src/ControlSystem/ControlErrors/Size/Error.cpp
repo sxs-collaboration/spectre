@@ -44,6 +44,7 @@ ErrorDiagnostics control_error(
         predictor_drift_limit_delta_radius,
     const double time, const double control_error_delta_r,
     const std::optional<double> control_error_delta_r_outward,
+    const std::optional<double> approx_max_relative_delta_r,
     const std::optional<double> max_allowed_radial_distance,
     const std::optional<double> inward_drift_velocity,
     const std::optional<double> min_allowed_radial_distance,
@@ -249,9 +250,13 @@ ErrorDiagnostics control_error(
   // average_radial_distance, but all the logic other than those
   // changes remains unchanged.
   // Such a change is possible to make, but we do not (yet) make it here.
+  //
+  // We also compute average_radial distance if approx_max_relative_delta_r
+  // has a value.
   const std::optional<double> average_radial_distance =
       (max_allowed_radial_distance.has_value() or
-       min_allowed_radial_distance.has_value())
+       min_allowed_radial_distance.has_value() or
+       approx_max_relative_delta_r.has_value())
           ? std::optional<double>(
                 gr::surfaces::surface_integral_of_scalar(
                     area_element, radial_distance, excision_boundary) /
@@ -264,7 +269,7 @@ ErrorDiagnostics control_error(
       info,
       StateUpdateArgs{min_char_speed, min_comoving_char_speed, horizon_00,
                       control_error_delta_r, average_radial_distance,
-                      max_allowed_radial_distance,
+                      max_allowed_radial_distance, approx_max_relative_delta_r,
                       avg_distorted_normal_dot_unit_coord_vector,
                       inward_drift_velocity, min_allowed_radial_distance,
                       min_allowed_char_speed,
@@ -316,6 +321,7 @@ ErrorDiagnostics control_error(
           predictor_drift_limit_delta_radius,                                  \
       double time, double control_error_delta_r,                               \
       std::optional<double> control_error_delta_r_outward,                     \
+      std::optional<double> approx_max_relative_delta_r,                       \
       std::optional<double> max_allowed_radial_distance,                       \
       std::optional<double> inward_drift_velocity,                             \
       std::optional<double> min_allowed_radial_distance,                       \
