@@ -537,6 +537,15 @@ ApparentHorizons:
   LMax: 33
   ObservationAhA: &AhA
     Criteria:
+      - Residual:
+          MinResidual: {{ AhABMinResidual }}
+          MaxResidual: {{ AhABMaxResidual }}
+          MinResolutionL: {{ AhABMinResolutionL }}
+      - Shape:
+          MinTruncationError: {{ AhABMinTruncationError }}
+          MaxTruncationError: {{ AhABMaxTruncationError }}
+          MaxPileUpModes: {{ AhABMaxPileUpModes }}
+          MinResolutionL: {{ AhABMinResolutionL }}
     InitialGuess:
       InitialL: &ObsLMax 10
       InitialShape:
@@ -557,6 +566,15 @@ ApparentHorizons:
     BlocksForHorizonFind: ["ObjectAShell", "ObjectACube"]
   ObservationAhB: &AhB
     Criteria:
+      - Residual:
+          MinResidual: {{ AhABMinResidual }}
+          MaxResidual: {{ AhABMaxResidual }}
+          MinResolutionL: {{ AhABMinResolutionL }}
+      - Shape:
+          MinTruncationError: {{ AhABMinTruncationError }}
+          MaxTruncationError: {{ AhABMaxTruncationError }}
+          MaxPileUpModes: {{ AhABMaxPileUpModes }}
+          MinResolutionL: {{ AhABMinResolutionL }}
     InitialGuess:
       InitialL: *ObsLMax
       InitialShape:

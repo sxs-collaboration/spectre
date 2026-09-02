@@ -117,6 +117,21 @@ class TestInspiral(unittest.TestCase):
         self.assertEqual(params["Gamma0OriginWidth"], 50.0)
         self.assertEqual(params["Gamma1Width"], 200.0)
 
+        # AhA/B apparent horizon adaptivity
+        ah_ab_max_tolerance = 0.000216536 * 4 ** (-2)
+        self.assertAlmostEqual(params["AhABMaxResidual"], ah_ab_max_tolerance)
+        self.assertAlmostEqual(
+            params["AhABMinResidual"], ah_ab_max_tolerance / 10.0
+        )
+        self.assertAlmostEqual(
+            params["AhABMaxTruncationError"], ah_ab_max_tolerance
+        )
+        self.assertAlmostEqual(
+            params["AhABMinTruncationError"], ah_ab_max_tolerance / 100.0
+        )
+        self.assertEqual(params["AhABMinResolutionL"], 6)
+        self.assertEqual(params["AhABMaxPileUpModes"], 4)
+
     def test_cli(self):
         common_args = [
             str(self.id_dir / "InitialData.yaml"),
@@ -150,6 +165,40 @@ class TestInspiral(unittest.TestCase):
         self.assertTrue(
             (self.test_dir / "Inspiral/Segment_0000/Inspiral.yaml").exists()
         )
+
+        with open(
+            self.test_dir / "Inspiral/Segment_0000/Inspiral.yaml", "r"
+        ) as open_input_file:
+            _, input_file = yaml.safe_load_all(open_input_file)
+        ah_ab_max_tolerance = 0.000216536 * 4 ** (-2)
+        ah_ab_min_residual = ah_ab_max_tolerance / 10.0
+        ah_ab_min_truncation_error = ah_ab_max_tolerance / 100.0
+        expected_ah_ab_criteria = [
+            {
+                "Residual": {
+                    "MinResidual": ah_ab_min_residual,
+                    "MaxResidual": ah_ab_max_tolerance,
+                    "MinResolutionL": 6,
+                }
+            },
+            {
+                "Shape": {
+                    "MinTruncationError": ah_ab_min_truncation_error,
+                    "MaxTruncationError": ah_ab_max_tolerance,
+                    "MaxPileUpModes": 4,
+                    "MinResolutionL": 6,
+                }
+            },
+        ]
+        self.assertEqual(
+            input_file["ApparentHorizons"]["ObservationAhA"]["Criteria"],
+            expected_ah_ab_criteria,
+        )
+        self.assertEqual(
+            input_file["ApparentHorizons"]["ObservationAhB"]["Criteria"],
+            expected_ah_ab_criteria,
+        )
+
         # Test with pipeline directory and lev specified
         try:
             start_inspiral_command(
