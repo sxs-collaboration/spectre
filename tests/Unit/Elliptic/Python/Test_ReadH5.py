@@ -20,6 +20,10 @@ class TestReadH5(unittest.TestCase):
         self.test_dir = os.path.join(
             unit_test_build_path(), "Elliptic/Python/ReadH5"
         )
+        try:
+            shutil.rmtree(self.test_dir)
+        except FileNotFoundError:
+            pass
         os.makedirs(self.test_dir, exist_ok=True)
 
     def tearDown(self):
