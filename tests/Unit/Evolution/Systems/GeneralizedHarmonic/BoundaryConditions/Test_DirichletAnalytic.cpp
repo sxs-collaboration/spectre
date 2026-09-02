@@ -3,9 +3,18 @@
 
 #include "Framework/TestingFramework.hpp"
 
+#include <array>
+#include <cstddef>
+#include <memory>
+#include <optional>
+#include <string>
+#include <vector>
+
 #include "DataStructures/DataBox/DataBox.hpp"
+#include "DataStructures/DataVector.hpp"
 #include "DataStructures/Index.hpp"
 #include "DataStructures/TaggedTuple.hpp"
+#include "DataStructures/Tensor/Tensor.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/BoundaryConditions/DirichletAnalytic.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/BoundaryConditions/Factory.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/BoundaryCorrections/UpwindPenalty.hpp"
@@ -19,6 +28,7 @@
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/WrappedGr.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
+#include "PointwiseFunctions/InitialDataUtilities/WithNoise.hpp"
 #include "PointwiseFunctions/MathFunctions/Gaussian.hpp"
 #include "PointwiseFunctions/MathFunctions/MathFunction.hpp"
 #include "Time/Tags/Time.hpp"
@@ -114,6 +124,77 @@ void test() {
                           helpers::Tags::Range<gh::Tags::ConstraintGamma2>>{
           std::array{0.0, 1.0}, std::array{0.0, 1.0}});
 }
+// Verify that DirichletAnalytic unwraps WithNoise and uses only the inner
+// analytic solution for boundary values, so noise has no effect on the BC.
+template <size_t Dim>
+void test_with_noise_unwrapping() {
+  CAPTURE(Dim);
+  const size_t n_pts = 3;
+
+  const double amplitude = 0.2;
+  const double wavelength = 10.0;
+  auto make_gauge_wave = [&]() {
+    return std::make_unique<
+        gh::Solutions::WrappedGr<gr::Solutions::GaugeWave<Dim>>>(amplitude,
+                                                                 wavelength);
+  };
+
+  const gh::BoundaryConditions::DirichletAnalytic<Dim> bc_plain{
+      make_gauge_wave()};
+  const gh::BoundaryConditions::DirichletAnalytic<Dim> bc_with_noise{
+      std::make_unique<evolution::initial_data::WithNoise>(
+          make_gauge_wave(), 1.0, 132_st, std::vector<std::string>{"All"})};
+
+  tnsr::I<DataVector, Dim, Frame::Inertial> coords{n_pts};
+  for (size_t d = 0; d < Dim; ++d) {
+    for (size_t i = 0; i < n_pts; ++i) {
+      coords.get(d)[i] =
+          0.1 * static_cast<double>(i + 1) + 0.05 * static_cast<double>(d);
+    }
+  }
+  const tnsr::i<DataVector, Dim, Frame::Inertial> normal_covector{n_pts, 0.0};
+  const tnsr::I<DataVector, Dim, Frame::Inertial> normal_vector{n_pts, 0.0};
+  const Scalar<DataVector> interior_gamma1{DataVector(n_pts, 0.1)};
+  const Scalar<DataVector> interior_gamma2{DataVector(n_pts, 0.5)};
+  const double time = 0.5;
+
+  tnsr::aa<DataVector, Dim> g_plain{n_pts};
+  tnsr::aa<DataVector, Dim> pi_plain{n_pts};
+  tnsr::iaa<DataVector, Dim> phi_plain{n_pts};
+  Scalar<DataVector> lapse_plain{n_pts};
+  Scalar<DataVector> gamma1_plain{n_pts};
+  Scalar<DataVector> gamma2_plain{n_pts};
+  tnsr::I<DataVector, Dim> shift_plain{n_pts};
+  tnsr::II<DataVector, Dim> inv_spatial_plain{n_pts};
+  bc_plain.dg_ghost(make_not_null(&g_plain), make_not_null(&pi_plain),
+                    make_not_null(&phi_plain), make_not_null(&gamma1_plain),
+                    make_not_null(&gamma2_plain), make_not_null(&lapse_plain),
+                    make_not_null(&shift_plain),
+                    make_not_null(&inv_spatial_plain), std::nullopt,
+                    normal_covector, normal_vector, coords, interior_gamma1,
+                    interior_gamma2, time);
+
+  tnsr::aa<DataVector, Dim> g_noise{n_pts};
+  tnsr::aa<DataVector, Dim> pi_noise{n_pts};
+  tnsr::iaa<DataVector, Dim> phi_noise{n_pts};
+  Scalar<DataVector> lapse_noise{n_pts};
+  Scalar<DataVector> gamma1_noise{n_pts};
+  Scalar<DataVector> gamma2_noise{n_pts};
+  tnsr::I<DataVector, Dim> shift_noise{n_pts};
+  tnsr::II<DataVector, Dim> inv_spatial_noise{n_pts};
+  bc_with_noise.dg_ghost(
+      make_not_null(&g_noise), make_not_null(&pi_noise),
+      make_not_null(&phi_noise), make_not_null(&gamma1_noise),
+      make_not_null(&gamma2_noise), make_not_null(&lapse_noise),
+      make_not_null(&shift_noise), make_not_null(&inv_spatial_noise),
+      std::nullopt, normal_covector, normal_vector, coords, interior_gamma1,
+      interior_gamma2, time);
+
+  // WithNoise is unwrapped for BCs: results must be identical to the plain BC
+  CHECK_ITERABLE_APPROX(g_plain, g_noise);
+  CHECK_ITERABLE_APPROX(pi_plain, pi_noise);
+  CHECK_ITERABLE_APPROX(phi_plain, phi_noise);
+}
 }  // namespace
 
 SPECTRE_TEST_CASE(
@@ -123,4 +204,7 @@ SPECTRE_TEST_CASE(
   test<1>();
   test<2>();
   test<3>();
+  test_with_noise_unwrapping<1>();
+  test_with_noise_unwrapping<2>();
+  test_with_noise_unwrapping<3>();
 }

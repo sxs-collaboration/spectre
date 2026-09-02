@@ -26,6 +26,7 @@ target_link_libraries(
   ${LIBRARY}
   PRIVATE
   DataStructures
+  InitialDataUtilities
   MathFunctions
   ScalarWave
   Time

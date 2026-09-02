@@ -61,11 +61,13 @@ std::optional<std::string> DirichletAnalytic<Dim>::dg_ghost(
     const tnsr::I<DataVector, Dim, Frame::Inertial>& coords,
     const Scalar<DataVector>& interior_gamma2,
     [[maybe_unused]] const double time) const {
+  // Unwrap wrapper types (e.g. WithNoise) so boundary conditions use the
+  // inner analytic solution, not the noisy initial data wrapper.
   auto boundary_values = call_with_dynamic_type<
       tuples::TaggedTuple<ScalarWave::Tags::Psi, ScalarWave::Tags::Pi,
                           ScalarWave::Tags::Phi<Dim>>,
       tmpl::append<ScalarWave::Solutions::all_solutions<Dim>>>(
-      analytic_prescription_.get(),
+      &analytic_prescription_->unwrap(),
       [&coords, &time](const auto* const analytic_solution_or_data) {
         if constexpr (is_analytic_solution_v<
                           std::decay_t<decltype(*analytic_solution_or_data)>>) {
