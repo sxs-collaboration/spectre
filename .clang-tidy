@@ -119,6 +119,8 @@ CheckOptions:
   # The fix for this is not supported by GCC 9.
   - key: modernize-loop-convert.UseCxx20ReverseRanges
     value: false
+  - key: -enable-check-profile
+    value: true
 WarningsAsErrors: '*'
 # It is unclear if the header filter actually works or how to use it so
 # just include all headers

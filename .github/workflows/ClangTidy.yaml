@@ -1,15 +1,15 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-# Lint with clangd-tidy. We check only code that changed relative to the
+# Lint with clang-tidy. We check only code that changed relative to the
 # nearest common ancestor commit with `sxs-collaboration/spectre/develop`.
-name: Clangd-tidy
+name: Clang-tidy
 
 on: workflow_call
 
 jobs:
-  clangd_tidy:
-    name: Clangd-tidy
+  clang_tidy:
+    name: Clang-tidy
     if: >
       (github.event_name == 'pull_request'
        && github.repository == 'sxs-collaboration/spectre'
@@ -22,7 +22,7 @@ jobs:
       fail-fast: false
       matrix:
         build_type: [Debug, Release]
-        clangd_version: [14, 15, 16]
+        clang_version: [14, 15, 16]
     steps:
       - name: Checkout repository
         uses: actions/checkout@v5
@@ -32,14 +32,17 @@ jobs:
       - name: Trust checkout
         run: |
           git config --global --add safe.directory $GITHUB_WORKSPACE
-      # Install clangd-tidy
-      - name: Install clangd-tidy
+      - name: Install clang-tidy-${{ matrix.clang_version }}
         run: |
           apt-get update -y
-          apt-get install -y clangd-${{ matrix.clangd_version }}
-          ln -s /usr/bin/clangd-${{ matrix.clangd_version }} /usr/bin/clangd
-          clangd --version
-          pip3 install clangd-tidy
+          apt-get remove -y clang-tidy clang-tidy-14
+          apt-get install -y clang-tidy-${{ matrix.clang_version }} \
+            clang-${{ matrix.clang_version }}
+          ln -s /usr/bin/clang-tidy-${{ matrix.clang_version }} \
+            /usr/bin/clang-tidy
+          ln -s /usr/bin/clang-tidy-diff-${{ matrix.clang_version }}.py \
+            /usr/bin/clang-tidy-diff.py
+          ln -s /usr/bin/clang-tidy-diff.py /usr/bin/clang-tidy-diff
       - name: Fetch sxs-collaboration/spectre/develop
         run: >
           cd $GITHUB_WORKSPACE
@@ -55,8 +58,8 @@ jobs:
           mkdir build && cd build
 
           cmake
-          -D CMAKE_C_COMPILER=clang-14
-          -D CMAKE_CXX_COMPILER=clang++-14
+          -D CMAKE_C_COMPILER=clang-${{ matrix.clang_version }}
+          -D CMAKE_CXX_COMPILER=clang++-${{ matrix.clang_version }}
           -D CMAKE_Fortran_COMPILER=gfortran
           -D CHARM_ROOT=${CHARM_ROOT}
           -D CMAKE_BUILD_TYPE=${{ matrix.build_type }}
@@ -70,13 +73,13 @@ jobs:
           $GITHUB_WORKSPACE
 
           make -j4 module_All Libsharp-external
-      - name: Check clangd-tidy
+      - name: Check clang-tidy
         run: >
           UPSTREAM_HASH=$(git merge-base HEAD upstream/develop)
 
-          echo "Running clangd-tidy relative to: $UPSTREAM_HASH\n"
+          echo "Running clang-tidy relative to: $UPSTREAM_HASH\n"
 
           git diff -U0 $UPSTREAM_HASH |
-            clangd-tidy-diff -p build --pass-arg p1 --pass-arg use-color \
-            --pass-arg j1 --pass-arg "extra-arg=-I/usr/include/hdf5/serial" \
-            --pass-arg "extra-arg=-I$GITHUB_WORKSPACE/build/_deps/autodiff-src"
+            clang-tidy-diff -path build -p1 -use-color -j1 -timeout 600 \
+            -extra-arg=-I/usr/include/hdf5/serial \
+            -extra-arg=-I$GITHUB_WORKSPACE/build/_deps/autodiff-src

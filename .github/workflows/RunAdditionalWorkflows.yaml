@@ -18,3 +18,7 @@ concurrency:
 jobs:
   clang-tidy-d:
     uses: $/.github/workflows/ClangdTidy.yaml
+  clang-tidy:
+    uses: $/.github/workflows/ClangTidy.yaml
+  clang-tidy-ci:
+    uses: $/.github/workflows/ClangTidyCi.yaml
