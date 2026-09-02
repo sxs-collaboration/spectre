@@ -11,5 +11,5 @@
 /// indent each new line with `indentation`. The first line is also indented.
 ///
 /// Single words longer than `line_length` are hyphenated.
-std::string wrap_text(std::string str, size_t line_length,
+std::string wrap_text(const std::string str, size_t line_length,
                       const std::string& indentation = "");
