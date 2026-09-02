@@ -19,7 +19,7 @@ void correct_weyl_scalars_for_inertial_time(
   const auto& eth_u =
       get<Tags::EthInertialRetardedTime>(*weyl_correction_variables);
   get(psi_0) += 2.0 * get(eth_u) * get(psi_1) +
-               0.75 * square(get(eth_u)) * get(psi_2) +
+               1.5 * square(get(eth_u)) * get(psi_2) +
                0.5 * pow<3>(get(eth_u)) * get(psi_3) +
                0.0625 * pow<4>(get(eth_u)) * get(psi_4);
   get(psi_1) += 1.5 * get(eth_u) * get(psi_2) +

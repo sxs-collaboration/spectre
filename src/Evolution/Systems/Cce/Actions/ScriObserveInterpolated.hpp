@@ -80,10 +80,16 @@ void correct_weyl_scalars_for_inertial_time(
  * formulas, we need to adjust the signs and factors of two to be compatible
  * with our definitions of \f$\eth\f$ and choice of Newman-Penrose tetrad.
  *
+ * The coefficient of \f$\left(\eth u^\prime\right)^2\Psi_2^{(3)}\f$ in
+ * \f$\Psi_0^{\prime(5)}\f$ is incorrectly given as \f$3/4\f$ in
+ * \cite Moxon2020gha, Eq. (94b), and in \cite Moxon2021gbv, Eq. (B2g) of the
+ * arXiv version. The value \f$3/2\f$ below agrees with the BMS transformation
+ * in \cite Boyle:2015nqa, Eqs. (17a--e).
+ *
  * \f{align*}{
  * \Psi_0^{\prime (5)}
  * =&  \Psi_0^{(5)} + 2 \eth u^\prime \Psi_1^{(4)}
- * + \frac{3}{4} \left(\eth u^\prime\right)^2 \Psi_2^{(3)}
+ * + \frac{3}{2} \left(\eth u^\prime\right)^2 \Psi_2^{(3)}
  * + \frac{1}{2} \left( \eth u^\prime\right)^3  \Psi_3^{(2)}
  * + \frac{1}{16} \left(\eth u^\prime\right)^4 \Psi_4^{(1)}, \\
  * \Psi_1^{\prime (4)}
