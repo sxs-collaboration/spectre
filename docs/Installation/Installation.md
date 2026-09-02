@@ -519,6 +519,17 @@ Here are a few notes:
   instructions](https://github.com/UIUC-PPL/charm#building-dynamic-libraries)).
 - Passing the `--disable-tls` option to `build` or `-D DISABLE_TLS=ON` to
   cmake is required for SpECTRE's Python bindings to work.
+- On macOS, pass `-DCMK_NO_ISO_MALLOC=1` to `build` to disable Charm++'s
+  isomalloc. To find a free region of virtual address space, isomalloc probes
+  candidate addresses with `mmap(..., MAP_FIXED)` followed by `munmap`. Since
+  `MAP_FIXED` silently replaces any mapping that already exists at that
+  address, the probe destroys memory that is already in use. Starting with
+  macOS 26 the system allocator places its zones in the address range that
+  isomalloc probes, so executables randomly segfault a few percent of the time
+  when they touch the memory that was unmapped. SpECTRE doesn't use isomalloc
+  (it has no threaded entry methods and doesn't migrate threads), so disabling
+  it has no downside. Alternatively, run executables with the `+noisomalloc`
+  command-line flag.
 - When compiling Charm++ you can specify the compiler using, for example,
   ```
   ./build LIBS ARCH clang
