@@ -11,6 +11,7 @@ target_link_libraries(
   Exporter
   GeneralRelativity
   GeneralRelativitySolutions
+  H5
   IO
   Logging
   Options
