@@ -43,7 +43,10 @@ def dg_package_data(
             0.0 * phi
             if normal_dot_mesh_velocity is None
             else -normal_dot_mesh_velocity
-            * (phi - np.einsum("ijj->i", normal_covector, normal_covector, phi))
+            * (
+                phi
+                - np.einsum("i,j,j->i", normal_covector, normal_covector, phi)
+            )
         ),
         char_speed_v_plus,
         char_speed_v_minus,

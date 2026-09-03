@@ -895,13 +895,9 @@ void test_boundary_correction_with_python(
       db::wrap_tags_in<::Tags::Flux, flux_variables, tmpl::size_t<FaceDim + 1>,
                        Frame::Inertial>;
 
-  for (const auto use_moving_mesh : {
-           false  // , true
-       }) {
-    for (const auto dg_formulation : {
-             ::dg::Formulation::
-                 StrongInertial  // , ::dg::Formulation::WeakInertial
-         }) {
+  for (const auto use_moving_mesh : {false, true}) {
+    for (const auto dg_formulation :
+         {::dg::Formulation::StrongInertial, ::dg::Formulation::WeakInertial}) {
       detail::test_with_python<System, ConversionClassList, variables_tags>(
           generator, python_module, python_dg_package_data_function,
           python_dg_boundary_terms_function, correction, face_mesh, volume_data,
