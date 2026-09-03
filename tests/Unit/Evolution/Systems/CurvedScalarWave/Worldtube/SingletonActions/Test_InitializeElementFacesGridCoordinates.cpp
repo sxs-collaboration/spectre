@@ -116,12 +116,12 @@ SPECTRE_TEST_CASE(
             0.5, 3., 8.,
             std::make_optional(
                 domain::creators::BinaryCompactObject::Excision{nullptr}),
-            false},
+            std::nullopt},
         domain::creators::BinaryCompactObject::Object{
             1.5, 3., -5.,
             std::make_optional(
                 domain::creators::BinaryCompactObject::Excision{nullptr}),
-            false},
+            std::nullopt},
         std::array<double, 2>{{0.1, 0.2}},
         30.,
         50.,
