@@ -210,6 +210,11 @@ jobs:
   clang_tidy:
     uses: $/.github/workflows/ClangTidy.yaml
 
+  # Lint with clangd-tidy. We check only code that changed relative to the
+  # nearest common ancestor commit with `sxs-collaboration/spectre/develop`.
+  clang-tidy-d:
+    uses: $/.github/workflows/ClangdTidy.yaml
+
   # Build the documentation and check for problems, then upload as a workflow
   # artifact and deploy to gh-pages.
   doc_check:
