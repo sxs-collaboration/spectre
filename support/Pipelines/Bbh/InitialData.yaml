@@ -112,8 +112,8 @@ DomainCreator:
             {% else %}
             NegativeExpansion: None
             {% endif %}
-      ShellLogMapStrength: {{ ObjectBLogMapStrength }}
-      CubeLogMapStrength: {{ ObjectBLogMapStrength }}
+      ShellLogMapStrength: 1.0
+      CubeLogMapStrength: {{ ObjectBCubeLogMapStrength }}
     CenterOfMassOffset: [*y_offset, *z_offset]
     Envelope:
       Radius: &outer_shell_inner_radius {{ EnvelopeRadius }}
