@@ -12,6 +12,7 @@
 #include <string>
 #include <type_traits>
 
+#include "DataStructures/ApplyMatrices.hpp"
 #include "DataStructures/ComplexDataVector.hpp"
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
@@ -21,6 +22,7 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Index.hpp"
 #include "DataStructures/IndexIterator.hpp"
+#include "DataStructures/Matrix.hpp"
 #include "DataStructures/Tags/TempTensor.hpp"
 #include "DataStructures/Tensor/Metafunctions.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
@@ -42,6 +44,7 @@
 #include "Evolution/DgSubcell/Tags/ObserverMesh.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/DataStructures/DataBox/TestHelpers.hpp"
+#include "Helpers/DataStructures/MakeWithRandomValues.hpp"
 #include "Helpers/NumericalAlgorithms/Spectral/DiskTestFunctions.hpp"
 #include "Helpers/NumericalAlgorithms/SphericalHarmonics/YlmTestFunctions.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
@@ -50,6 +53,7 @@
 #include "NumericalAlgorithms/Spectral/BasisFunctions/Fourier.hpp"
 #include "NumericalAlgorithms/Spectral/BasisFunctions/Zernike.hpp"
 #include "NumericalAlgorithms/Spectral/CollocationPoints.hpp"
+#include "NumericalAlgorithms/Spectral/DifferentiationMatrix.hpp"
 #include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
 #include "NumericalAlgorithms/Spectral/MaximumNumberOfPoints.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
@@ -2064,7 +2068,91 @@ void test_partial_derivatives_zernikeb1_cartoon(const size_t n_x) {
   const Approx local_approx = Approx::custom().epsilon(1e-12).scale(1.0);
   CHECK_VARIABLES_CUSTOM_APPROX(computed_d_vars, expected_d_vars, local_approx);
 }
+
+// Compares the fixed-size fast-path kernels (used automatically by
+// `logical_partial_derivatives` and `partial_derivatives` for
+// Legendre/Chebyshev meshes with all extents in [2, 20]) against the generic
+// dgemm+transpose pipeline, via `apply_matrices`, on random data for every
+// extent the kernels are instantiated for. The two implementations sum in a
+// different order, so agreement is to roundoff rather than bitwise.
+template <size_t Dim>
+void test_fast_path_vs_generic() {
+  MAKE_GENERATOR(gen);
+  std::uniform_real_distribution<double> dist{-1.0, 1.0};
+  using vars_tags = two_vars<DataVector, Dim>;
+  constexpr size_t number_of_components =
+      Variables<vars_tags>::number_of_independent_components;
+  const Approx local_approx = Approx::custom().epsilon(1e-10).scale(1.0);
+  for (size_t extent = 2; extent <= 20; ++extent) {
+    std::array<size_t, Dim> extents{};
+    extents[0] = extent;
+    if constexpr (Dim > 1) {
+      extents[1] = extent == 20 ? 20 : extent + 1;
+    }
+    if constexpr (Dim > 2) {
+      extents[2] = extent == 2 ? 2 : extent - 1;
+    }
+    const Mesh<Dim> mesh{extents, Spectral::Basis::Legendre,
+                         Spectral::Quadrature::GaussLobatto};
+    const size_t number_of_grid_points = mesh.number_of_grid_points();
+    Variables<vars_tags> u{number_of_grid_points};
+    fill_with_random_values(make_not_null(&u), make_not_null(&gen),
+                            make_not_null(&dist));
+    InverseJacobian<DataVector, Dim, Frame::ElementLogical, Frame::Grid>
+        inverse_jacobian{number_of_grid_points};
+    fill_with_random_values(make_not_null(&inverse_jacobian),
+                            make_not_null(&gen), make_not_null(&dist));
+
+    // Reference logical derivatives from the generic infrastructure; empty
+    // matrices act as the identity in apply_matrices.
+    std::array<Variables<vars_tags>, Dim> expected_logical{};
+    for (size_t d = 0; d < Dim; ++d) {
+      gsl::at(expected_logical, d).initialize(number_of_grid_points);
+      std::array<Matrix, Dim> matrices{};
+      gsl::at(matrices, d) =
+          Spectral::differentiation_matrix(mesh.slice_through(d));
+      apply_matrices(make_not_null(&gsl::at(expected_logical, d)), matrices, u,
+                     mesh.extents());
+    }
+    const auto logical_derivs = logical_partial_derivatives<vars_tags>(u, mesh);
+    for (size_t d = 0; d < Dim; ++d) {
+      CHECK_VARIABLES_CUSTOM_APPROX(gsl::at(logical_derivs, d),
+                                    gsl::at(expected_logical, d), local_approx);
+    }
+
+    // Reference full derivatives: contract the reference logical derivatives
+    // with the inverse Jacobian.
+    using deriv_tags = db::wrap_tags_in<Tags::deriv, vars_tags,
+                                        tmpl::size_t<Dim>, Frame::Grid>;
+    Variables<deriv_tags> expected_du{number_of_grid_points};
+    for (size_t c = 0; c < number_of_components; ++c) {
+      for (size_t i = 0; i < Dim; ++i) {
+        DataVector expected_component{
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+            expected_du.data() + ((c * Dim + i) * number_of_grid_points),
+            number_of_grid_points};
+        expected_component = 0.0;
+        for (size_t d = 0; d < Dim; ++d) {
+          const DataVector logical_component{
+              // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+              gsl::at(expected_logical, d).data() + (c * number_of_grid_points),
+              number_of_grid_points};
+          expected_component += inverse_jacobian.get(d, i) * logical_component;
+        }
+      }
+    }
+    const auto du = partial_derivatives<vars_tags>(u, mesh, inverse_jacobian);
+    CHECK_VARIABLES_CUSTOM_APPROX(du, expected_du, local_approx);
+  }
+}
 }  // namespace
+
+SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.PartialDerivs.FastPath",
+                  "[NumericalAlgorithms][LinearOperators][Unit]") {
+  test_fast_path_vs_generic<1>();
+  test_fast_path_vs_generic<2>();
+  test_fast_path_vs_generic<3>();
+}
 
 // [[Timeout, 60]]
 SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.LogicalDerivs",
