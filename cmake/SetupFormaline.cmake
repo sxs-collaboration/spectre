@@ -22,6 +22,7 @@ set(SPECTRE_FORMALINE_LOCATIONS
   CLAUDE.md
   cmake
   CMakeLists.txt
+  CMakePresets.json
   containers
   docs
   external

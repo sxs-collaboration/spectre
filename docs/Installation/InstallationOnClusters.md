@@ -101,7 +101,8 @@ you do not need to install any dependencies, so you can skip steps 5 and 6.
 
 ## Mbot at Cornell
 
-Follow steps 1-3 of the general instructions.
+Follow steps 1-2 of the general instructions (clone SpECTRE and set
+`SPECTRE_HOME`).
 
 The only modules you need to load on `mbot` are `gcc/11.4.0 spectre-deps`.
 This  will load everything you need, including LLVM/Clang. You
@@ -109,13 +110,10 @@ can source the environment file by running
 `. $SPECTRE_HOME/support/Environments/mbot.sh` and load the modules using
 `spectre_load_modules`. This offers two functions, `spectre_run_cmake_gcc`
 and `spectre_run_cmake_clang` for the different compilers.
-These both default to `Release` mode. If you are developing code, please use
-either `spectre_run_cmake_clang -D CMAKE_BUILD_TYPE=Debug` or
-`spectre_run_cmake_clang -D SPECTRE_DEBUG=ON` (you can also use gcc).
-The second command with `SPECTRE_DEBUG=ON` enables sanity checks and
-optimizations. This means it can be used in production-level runs to ensure
-there aren't any subtle bugs that might only arise after a decently
-long simulation.
+You can use these functions, or run `cmake --preset release-debug` yourself.
+More presets (clang builds, debug builds) are available in
+`support/Environments/MbotPresets.json` (see
+\ref cmake_presets "configuring with CMake presets").
 
 ## Sonic at ICTS-TIFR
 

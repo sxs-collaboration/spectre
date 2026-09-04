@@ -8,6 +8,7 @@ spectre_setup_modules() {
 }
 
 spectre_load_modules() {
+    export SPECTRE_MACHINE=Mbot
     # The order here is important
     module load gcc/11.4.0
     module load spectre-deps > /dev/null 2>&1
@@ -25,19 +26,7 @@ spectre_run_cmake_gcc() {
         return 1
     fi
     spectre_load_modules > /dev/null 2>&1
-    cmake -D CMAKE_C_COMPILER=gcc \
-          -D CMAKE_CXX_COMPILER=g++ \
-          -D CMAKE_Fortran_COMPILER=gfortran \
-          -D CHARM_ROOT=$CHARM_ROOT \
-          -D CMAKE_BUILD_TYPE=Release \
-          -D MEMORY_ALLOCATOR=JEMALLOC \
-          -D BUILD_PYTHON_BINDINGS=ON \
-          -D ENABLE_PARAVIEW=ON \
-          -D MACHINE=Mbot \
-          -D USE_XSIMD=yes \
-          -D DEBUG_SYMBOLS=OFF \
-          "$@" \
-          $SPECTRE_HOME
+    cmake -S $SPECTRE_HOME -B . --preset release-debug "$@"
 }
 
 spectre_run_cmake_clang() {
@@ -46,16 +35,5 @@ spectre_run_cmake_clang() {
         return 1
     fi
     spectre_load_modules > /dev/null 2>&1
-    cmake -D CMAKE_C_COMPILER=clang \
-          -D CMAKE_CXX_COMPILER=clang++ \
-          -D CMAKE_Fortran_COMPILER=gfortran \
-          -D CHARM_ROOT=$CHARM_ROOT \
-          -D CMAKE_BUILD_TYPE=Release \
-          -D MEMORY_ALLOCATOR=JEMALLOC \
-          -D BUILD_PYTHON_BINDINGS=ON \
-          -D ENABLE_PARAVIEW=ON \
-          -D MACHINE=Mbot \
-          -D USE_XSIMD=yes \
-          "$@" \
-          $SPECTRE_HOME
+    cmake -S $SPECTRE_HOME -B . --preset release-debug-clang "$@"
 }
