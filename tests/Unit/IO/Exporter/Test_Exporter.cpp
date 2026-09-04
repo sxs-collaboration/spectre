@@ -157,8 +157,8 @@ SPECTRE_TEST_CASE("Unit.IO.Exporter", "[Unit]") {
     INFO("Extrapolation into BBH excisions");
     using Object = domain::creators::BinaryCompactObject::Object;
     const domain::creators::BinaryCompactObject domain_creator{
-        Object{1., 4., 8., true, true},
-        Object{0.8, 2.5, -6., true, true},
+        Object{1., 4., 8., true, std::optional<double>{1.0}},
+        Object{0.8, 2.5, -6., true, std::optional<double>{1.0}},
         std::array<double, 2>{{0., 0.}},
         60.,
         300.,
