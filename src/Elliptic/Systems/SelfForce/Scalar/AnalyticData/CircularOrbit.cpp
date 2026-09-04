@@ -96,17 +96,27 @@ CircularOrbit::variables(
   const double k = m_mode_number_ * omega;
 
   // Resolve coordinates
-  const auto& r_star_or_r = get<0>(x);
+  const auto& r_star_or_r_or_sigma = get<0>(x);
+  const double r_u =
+      penetrating_horizon_ ? (*hyperboloidal_slicing_transitions_)[3] : 0.0;
+  const bool in_u_region =
+      penetrating_horizon_ and r_star_or_r_or_sigma[0] > r_u;
   DataVector r;
   DataVector r_star;
   DataVector r_minus_r_plus;
   if (penetrating_horizon_) {
-    // NOLINTNEXTLINE
-    r.set_data_ref(const_cast<DataVector*>(&r_star_or_r));
+    if (in_u_region) {
+      // The domain coordinate here is sigma = 2*r_u - r_u^2/r, not the
+      // physical Boyer-Lindquist radius. Invert to get the true r.
+      r = square(r_u) / (2.0 * r_u - r_star_or_r_or_sigma);
+    } else {
+      // NOLINTNEXTLINE
+      r.set_data_ref(const_cast<DataVector*>(&r_star_or_r_or_sigma));
+    }
     r_minus_r_plus = r - r_plus;
   } else {
     // NOLINTNEXTLINE
-    r_star.set_data_ref(const_cast<DataVector*>(&r_star_or_r));
+    r_star.set_data_ref(const_cast<DataVector*>(&r_star_or_r_or_sigma));
     r_minus_r_plus = gr::boyer_lindquist_radius_minus_r_plus_from_tortoise(
         r_star, M, black_hole_spin_);
     r = r_minus_r_plus + r_plus;
@@ -131,28 +141,17 @@ CircularOrbit::variables(
   ComplexDataVector dH;
   if (hyperboloidal_slicing_transitions_.has_value()) {
     std::tie(H, dH) = boost_function_and_deriv(
-        r_star_or_r, hyperboloidal_slicing_transitions_.value());
+        r_star_or_r_or_sigma, hyperboloidal_slicing_transitions_.value());
   } else {
-    H = make_with_value<ComplexDataVector>(r_star_or_r, 0.);
-    dH = make_with_value<ComplexDataVector>(r_star_or_r, 0.);
+    H = make_with_value<ComplexDataVector>(r_star_or_r_or_sigma, 0.);
+    dH = make_with_value<ComplexDataVector>(r_star_or_r_or_sigma, 0.);
   }
-  const bool in_u_region =
-      penetrating_horizon_ and r[0] > (*hyperboloidal_slicing_transitions_)[3];
-  const double r_u =
-      penetrating_horizon_ ? (*hyperboloidal_slicing_transitions_)[3] : 0.0;
-
-  DataVector inv_r{};
+  const DataVector inv_r = 1.0 / r;
   DataVector dsigma_dr{};
   if (in_u_region) {
-  // sigma = 2*r_u - r_u^2/r  =>  1/r = (2*r_u - sigma) / r_u^2.
-  // The domain coordinate here is actually sigma, not the physical
-  // Boyer-Lindquist radius, in this region.
-  const DataVector& sigma = get<0>(x);
-  inv_r = (2.0 * r_u - sigma) / (r_u * r_u);
-  dsigma_dr = square(r_u) * square(inv_r);
+    dsigma_dr = square(r_u) * square(inv_r);
   } else {
-    inv_r = 1.0 / r;
-    dsigma_dr = make_with_value<DataVector>(r_star_or_r, 1.0);
+    dsigma_dr = make_with_value<DataVector>(r_star_or_r_or_sigma, 1.0);
   }
   auto& alpha = get<Tags::Alpha>(result);
   auto& beta = get<Tags::Beta>(result);
@@ -162,37 +161,36 @@ CircularOrbit::variables(
 
   if (penetrating_horizon_) {
     get<0>(alpha) = (delta_over_r_sq / one_plus_a_sq_inv_r_sq) * dsigma_dr;
-    if (in_u_region){
-    get<1>(alpha) = 1.0 / (square(r_u) * one_plus_a_sq_inv_r_sq);
+    if (in_u_region) {
+      get<1>(alpha) = 1.0 / (square(r_u) * one_plus_a_sq_inv_r_sq);
     } else {
-    get<1>(alpha) = 1.0 / r_sq_plus_a_sq;
+      get<1>(alpha) = 1.0 / r_sq_plus_a_sq;
     }
   } else {
-    get<0>(alpha) = make_with_value<DataVector>(r_star_or_r, 1.0);
+    get<0>(alpha) = make_with_value<DataVector>(r_star_or_r_or_sigma, 1.0);
     get<1>(alpha) = delta / r_sq_plus_a_sq_sq;
   }
-  get(beta) = make_with_value<ComplexDataVector>(r_star_or_r, 0.);
+  get(beta) = make_with_value<ComplexDataVector>(r_star_or_r_or_sigma, 0.);
   for (size_t p = 0; p < get(beta).size(); ++p) {
     if (penetrating_horizon_ and equal_within_roundoff(r[p], r_plus)) {
       // The following terms are zero at the horizon. Skip them to avoid
       // division by zero.
       continue;
     }
-    if (in_u_region){
-    get(beta)[p] =
-        (square(k) * square(a) * delta_over_r_sq[p] * sin_theta_squared[p] +
-        2. * a * m_mode_number_ * k *
-            (2. * M * inv_r[p] + one_plus_a_sq_inv_r_sq[p])) /
-        (one_plus_a_sq_inv_r_sq[p] * delta_over_r_sq[p] * square(r_u));
+    if (in_u_region) {
+      get(beta)[p] =
+          (square(k) * square(a) * delta_over_r_sq[p] * sin_theta_squared[p] +
+           2. * a * m_mode_number_ * k *
+               (2. * M * inv_r[p] + one_plus_a_sq_inv_r_sq[p])) /
+          (one_plus_a_sq_inv_r_sq[p] * delta_over_r_sq[p] * square(r_u));
     } else {
-    get(beta)[p] =
-        square(k) *
-            (square(H[p]) - sigma_squared[p] / r_sq_plus_a_sq_sq[p]) +
-        2. * a * m_mode_number_ * k *
-            (2. * M * r[p] / r_sq_plus_a_sq[p] + H[p]) / r_sq_plus_a_sq[p];
-    if (penetrating_horizon_) {
-      get(beta)[p] /= get<0>(alpha)[p];
-    }
+      get(beta)[p] =
+          square(k) * (square(H[p]) - sigma_squared[p] / r_sq_plus_a_sq_sq[p]) +
+          2. * a * m_mode_number_ * k *
+              (2. * M * r[p] / r_sq_plus_a_sq[p] + H[p]) / r_sq_plus_a_sq[p];
+      if (penetrating_horizon_) {
+        get(beta)[p] /= get<0>(alpha)[p];
+      }
     }
   }
 
@@ -262,32 +260,32 @@ CircularOrbit::variables(
                                            2.0 * a * sqrt(M * r_0)));
     effsource_set_particle(&xp, e, l, 0.);
   }
-  const auto& r_star_or_r = get<0>(x);
+  const auto& r_star_or_r_or_sigma = get<0>(x);
   if (hyperboloidal_slicing_transitions_.has_value() and
-      ((min(r_star_or_r) < (*hyperboloidal_slicing_transitions_)[1] and
-        not equal_within_roundoff(min(r_star_or_r),
+      ((min(r_star_or_r_or_sigma) < (*hyperboloidal_slicing_transitions_)[1] and
+        not equal_within_roundoff(min(r_star_or_r_or_sigma),
                                   (*hyperboloidal_slicing_transitions_)[1])) or
-       (max(r_star_or_r) > (*hyperboloidal_slicing_transitions_)[2] and
-        not equal_within_roundoff(max(r_star_or_r),
+       (max(r_star_or_r_or_sigma) > (*hyperboloidal_slicing_transitions_)[2] and
+        not equal_within_roundoff(max(r_star_or_r_or_sigma),
                                   (*hyperboloidal_slicing_transitions_)[2])))) {
     ERROR(
         "The effective source is only valid where no hyperboloidal slicing is "
         "applied, which is in the radial range ["
         << (*hyperboloidal_slicing_transitions_)[1] << ", "
         << (*hyperboloidal_slicing_transitions_)[2]
-        << "], but was requested in the range [" << min(r_star_or_r) << ", "
-        << max(r_star_or_r) << "]");
+        << "], but was requested in the range [" << min(r_star_or_r_or_sigma)
+        << ", " << max(r_star_or_r_or_sigma) << "]");
   }
   DataVector r;
   DataVector r_star;
   DataVector r_minus_r_plus;
   if (penetrating_horizon_) {
     // NOLINTNEXTLINE
-    r.set_data_ref(const_cast<DataVector*>(&r_star_or_r));
+    r.set_data_ref(const_cast<DataVector*>(&r_star_or_r_or_sigma));
     r_minus_r_plus = r - r_plus;
   } else {
     // NOLINTNEXTLINE
-    r_star.set_data_ref(const_cast<DataVector*>(&r_star_or_r));
+    r_star.set_data_ref(const_cast<DataVector*>(&r_star_or_r_or_sigma));
     r_minus_r_plus = gr::boyer_lindquist_radius_minus_r_plus_from_tortoise(
         r_star, M, black_hole_spin_);
     r = r_minus_r_plus + r_plus;
