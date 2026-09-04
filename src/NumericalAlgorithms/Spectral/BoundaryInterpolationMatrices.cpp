@@ -25,9 +25,9 @@ const std::pair<Matrix, Matrix>& boundary_interpolation_matrices(
       QuadratureType == Spectral::Quadrature::Gauss,
       "We only compute the boundary interpolation for Gauss quadrature "
       "since for Gauss-Lobatto you can just copy values off the volume.");
-  static const auto cache = make_static_cache<
-      CacheRange<Spectral::minimum_number_of_points<BasisType, QuadratureType>,
-                 Spectral::maximum_number_of_points<BasisType> + 1>>(
+  static const auto cache = make_static_cache<CacheRange<
+      Spectral::minimum_number_of_points<BasisType, QuadratureType>,
+      Spectral::maximum_number_of_points<BasisType, QuadratureType> + 1>>(
       [](const size_t local_num_points) {
         return std::pair<Matrix, Matrix>{
             interpolation_matrix<BasisType, QuadratureType>(local_num_points,

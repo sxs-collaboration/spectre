@@ -125,9 +125,8 @@ void test_limiting_two_neighbors() {
   using Limiter = Krivodonova<dim, tmpl::list<ScalarTag<0>, VectorTag<dim, 0>>>;
   // Use non-unity but close alpha values to make the math easier but still
   // test thoroughly.
-  Limiter krivodonova{
-      make_array<Spectral::maximum_number_of_points<Spectral::Basis::Legendre>>(
-          0.99)};
+  Limiter krivodonova{make_array<Spectral::maximum_number_of_points<
+      Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto>>(0.99)};
 
   NeighborData<dim, typename Limiter::PackagedData> neighbor_data{};
 
@@ -262,9 +261,8 @@ void test_limiting_different_values_different_tensors() {
   using Limiter = Krivodonova<dim, tmpl::list<ScalarTag<0>, VectorTag<dim, 0>>>;
   // Use non-unity but close alpha values to make the math easier but still
   // test thoroughly.
-  Limiter krivodonova{
-      make_array<Spectral::maximum_number_of_points<Spectral::Basis::Legendre>>(
-          0.99)};
+  const Limiter krivodonova{make_array<Spectral::maximum_number_of_points<
+      Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto>>(0.99)};
 
   NeighborData<dim, typename Limiter::PackagedData> neighbor_data{};
 
@@ -320,7 +318,9 @@ void run() {
   INFO("Testing 1d limiter");
   for (size_t order = Spectral::minimum_number_of_points<
            Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto>;
-       order < Spectral::maximum_number_of_points<Spectral::Basis::Legendre>;
+       order <
+       Spectral::maximum_number_of_points<Spectral::Basis::Legendre,
+                                          Spectral::Quadrature::GaussLobatto>;
        ++order) {
     test_package_data(order);
   }
@@ -819,9 +819,8 @@ void test_limiting_different_values_different_tensors() {
   using Limiter = Krivodonova<dim, tmpl::list<ScalarTag<0>, VectorTag<dim, 0>>>;
   // Use non-unity but close alpha values to make the math easier but still
   // test thoroughly.
-  Limiter krivodonova{
-      make_array<Spectral::maximum_number_of_points<Spectral::Basis::Legendre>>(
-          0.99)};
+  const Limiter krivodonova{make_array<Spectral::maximum_number_of_points<
+      Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto>>(0.99)};
 
   NeighborData<dim, typename Limiter::PackagedData> neighbor_data{};
 
@@ -923,9 +922,8 @@ void run() {
   using Limiter = Krivodonova<dim, tmpl::list<ScalarTag<0>>>;
   // Use non-unity but close alpha values to make the math easier but still
   // test thoroughly.
-  Limiter krivodonova{
-      make_array<Spectral::maximum_number_of_points<Spectral::Basis::Legendre>>(
-          0.99)};
+  Limiter krivodonova{make_array<Spectral::maximum_number_of_points<
+      Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto>>(0.99)};
 
   NeighborData<dim, typename Limiter::PackagedData> neighbor_data{};
 
@@ -2553,9 +2551,8 @@ void test_limiting_different_values_different_tensors() {
   using Limiter = Krivodonova<dim, tmpl::list<ScalarTag<0>, VectorTag<dim, 0>>>;
   // Use non-unity but close alpha values to make the math easier but still
   // test thoroughly.
-  Limiter krivodonova{
-      make_array<Spectral::maximum_number_of_points<Spectral::Basis::Legendre>>(
-          0.99)};
+  const Limiter krivodonova{make_array<Spectral::maximum_number_of_points<
+      Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto>>(0.99)};
 
   NeighborData<dim, typename Limiter::PackagedData> neighbor_data{};
 
@@ -2786,9 +2783,8 @@ void run() {
   using Limiter = Krivodonova<dim, tmpl::list<ScalarTag<0>, VectorTag<dim, 0>>>;
   // Use non-unity but close alpha values to make the math easier but still
   // test thoroughly.
-  Limiter krivodonova{
-      make_array<Spectral::maximum_number_of_points<Spectral::Basis::Legendre>>(
-          0.99)};
+  Limiter krivodonova{make_array<Spectral::maximum_number_of_points<
+      Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto>>(0.99)};
 
   NeighborData<dim, typename Limiter::PackagedData> neighbor_data{};
 

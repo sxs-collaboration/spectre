@@ -54,8 +54,9 @@ ModalVector modal_derivative(const ModalVector& coeffs) {
 // carried out using the orthogonality relations between these basis functions.
 double compute_sum_of_legendre_derivs(
     const size_t number_of_modes, const size_t m, const size_t n,
-    const std::array<
-        double, Spectral::maximum_number_of_points<Spectral::Basis::Legendre>>&
+    const std::array<double, Spectral::maximum_number_of_points<
+                                 Spectral::Basis::Legendre,
+                                 Spectral::Quadrature::GaussLobatto>>&
         weights_for_derivatives) {
   ModalVector coeffs_m(number_of_modes, 0.);
   coeffs_m[m] = 1.;
@@ -110,11 +111,12 @@ Matrix compute_indicator_matrix(
     const Index<VolumeDim>& extents) {
   Matrix result(extents.product() - 1, extents.product() - 1);
 
-  const std::array<
-      double, Spectral::maximum_number_of_points<Spectral::Basis::Legendre>>
+  const std::array<double, Spectral::maximum_number_of_points<
+                               Spectral::Basis::Legendre,
+                               Spectral::Quadrature::GaussLobatto>>
       weights_for_derivatives = [&derivative_weight]() {
-        auto weights = make_array<
-            Spectral::maximum_number_of_points<Spectral::Basis::Legendre>>(1.);
+        auto weights = make_array<Spectral::maximum_number_of_points<
+            Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto>>(1.);
         if (derivative_weight ==
             Limiters::Weno_detail::DerivativeWeight::PowTwoEll) {
           for (size_t l = 0; l < weights.size(); ++l) {
@@ -184,7 +186,8 @@ const Matrix& cached_indicator_matrix_from_mesh_index(
   // Oscillation indicator needs at least two grid points
   constexpr size_t min = 2;
   constexpr size_t max =
-      Spectral::maximum_number_of_points<Spectral::Basis::Legendre>;
+      Spectral::maximum_number_of_points<Spectral::Basis::Legendre,
+                                         Spectral::Quadrature::GaussLobatto>;
   if constexpr (VolumeDim == 1) {
     const auto cache = make_static_cache<CacheEnumerationDerivativeWeight,
                                          CacheRange<min, max>>(

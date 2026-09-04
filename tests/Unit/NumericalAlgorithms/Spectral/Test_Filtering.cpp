@@ -33,7 +33,8 @@ void test_exponential_filter(const double alpha, const unsigned half_power,
   CAPTURE(eps);
   for (size_t num_pts =
            Spectral::minimum_number_of_points<BasisType, QuadratureType>;
-       num_pts <= Spectral::maximum_number_of_points<BasisType>; ++num_pts) {
+       num_pts <= Spectral::maximum_number_of_points<BasisType, QuadratureType>;
+       ++num_pts) {
     CAPTURE(num_pts);
     const Mesh<1> mesh{num_pts, BasisType, QuadratureType};
     ModalVector initial_modal_coeffs(num_pts);
@@ -152,7 +153,8 @@ void test_zero_lowest_modes() {
   CAPTURE(QuadratureType);
   for (size_t num_pts =
            Spectral::minimum_number_of_points<BasisType, QuadratureType>;
-       num_pts <= Spectral::maximum_number_of_points<BasisType>; ++num_pts) {
+       num_pts <= Spectral::maximum_number_of_points<BasisType, QuadratureType>;
+       ++num_pts) {
     CAPTURE(num_pts);
     for (size_t number_of_modes_to_filter = 0;
          number_of_modes_to_filter < num_pts; ++number_of_modes_to_filter) {
@@ -189,7 +191,8 @@ void test_zero_lowest_modes_zernike_b1() {
   const Approx local_approx = Approx::custom().epsilon(1.0e-12).scale(1.0);
   for (size_t num_pts = 2;
        num_pts <=
-       Spectral::maximum_number_of_points<Spectral::Basis::ZernikeB1>;
+       Spectral::maximum_number_of_points<
+           Spectral::Basis::ZernikeB1, Spectral::Quadrature::GaussRadauUpper>;
        ++num_pts) {
     CAPTURE(num_pts);
     const Mesh<1> mesh{num_pts, Spectral::Basis::ZernikeB1,
@@ -246,7 +249,8 @@ void test_zero_highest_modes() {
   CAPTURE(QuadratureType);
   for (size_t num_pts =
            Spectral::minimum_number_of_points<BasisType, QuadratureType>;
-       num_pts <= Spectral::maximum_number_of_points<BasisType>; ++num_pts) {
+       num_pts <= Spectral::maximum_number_of_points<BasisType, QuadratureType>;
+       ++num_pts) {
     CAPTURE(num_pts);
     // Zeroing modes is a round trip through the modal<->nodal transforms, so
     // the retained modes are reproduced and the dropped modes vanish to

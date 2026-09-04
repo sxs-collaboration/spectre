@@ -112,7 +112,9 @@ SPECTRE_TEST_CASE(
                    0.292042683679680, 0.224889342063126, 0.133305990851071,
                    1.0 / 45.0});
   }
-  if (Spectral::maximum_number_of_points<Spectral::Basis::Legendre> >= 20) {
+  if (Spectral::maximum_number_of_points<Spectral::Basis::Legendre,
+                                         Spectral::Quadrature::GaussLobatto> >=
+      20) {
     SECTION("Check 20 points") {
       test_points_and_weights(
           20,

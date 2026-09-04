@@ -28,7 +28,9 @@ Amr:
     Isotropy: Anisotropic
     Limits:
       RefinementLevel: [0, 8]
-      NumGridPoints: Auto
+      NumPolynomialModes: Auto
+      FourierM: Auto
+      SphericalHarmonicL: Auto
       ErrorBeyondLimits: False
     AllowCoarsening: False
   MaxCoarseLevels: Auto

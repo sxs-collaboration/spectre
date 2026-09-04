@@ -19,7 +19,7 @@ template <Spectral::Basis BasisType, Spectral::Quadrature QuadratureType,
           typename SpectralQuantityGenerator>
 const auto& precomputed_spectral_quantity(const size_t num_points) {
   constexpr size_t max_num_points =
-      Spectral::maximum_number_of_points<BasisType>;
+      Spectral::maximum_number_of_points<BasisType, QuadratureType>;
   constexpr size_t min_num_points =
       Spectral::minimum_number_of_points<BasisType, QuadratureType>;
   ASSERT(num_points >= min_num_points,

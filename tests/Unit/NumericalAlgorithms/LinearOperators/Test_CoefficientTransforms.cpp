@@ -103,7 +103,7 @@ template <typename ModalVectorType, typename NodalVectorType,
           typename Generator>
 void test_1d(const gsl::not_null<Generator*> generator) {
   UniformCustomDistribution<size_t> dist{
-      1, Spectral::maximum_number_of_points<Basis> - 1};
+      1, Spectral::maximum_number_of_points<Basis, Quadrature> - 1};
   const size_t order = dist(*generator);
   // Start at 1st order so we are independent of the minimum number of
   // coefficients.
@@ -126,7 +126,7 @@ void test_2d(const gsl::not_null<Generator*> generator) {
   // Start at one higher order so we can drop one order in the y-direction.
   UniformCustomDistribution<size_t> dist{
       Spectral::minimum_number_of_points<Basis, Quadrature> + 1,
-      Spectral::maximum_number_of_points<Basis> - 1};
+      Spectral::maximum_number_of_points<Basis, Quadrature> - 1};
   const size_t order = dist(*generator);
   CAPTURE(order);
   const Mesh<2> mesh({{order + 1, order}}, Basis, Quadrature);
@@ -152,7 +152,7 @@ void test_3d(const gsl::not_null<Generator*> generator) {
   // two in z-direction.
   UniformCustomDistribution<size_t> dist{
       Spectral::minimum_number_of_points<Basis, Quadrature> + 2,
-      Spectral::maximum_number_of_points<Basis> - 2};
+      Spectral::maximum_number_of_points<Basis, Quadrature> - 2};
   const size_t order = dist(*generator);
   CAPTURE(order);
   const Mesh<3> mesh({{order + 1, order, order - 1}}, Basis, Quadrature);
