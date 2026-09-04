@@ -59,14 +59,19 @@ jobs:
       - name: Install python dependencies
         run: >
           pip3 install numpy h5py gdown
+      # The files in Google Drive carry a date suffix in their names so that
+      # the data used by older releases stays available when we regenerate
+      # them. Pass '-O' so the local names don't depend on the Drive names:
+      # the steps below and CheckCceOutput.py expect these exact names.
+      # CheckCceOutput.py itself lives in the repo, not in Google Drive.
       - name: Download extra data to include for CCE
         run: |
           gdown \
-          "https://drive.google.com/uc?id=1CmgLLfuLod8stc13EtmjHUvBoIgSVD-Y"
+          "https://drive.google.com/uc?id=1CmgLLfuLod8stc13EtmjHUvBoIgSVD-Y" \
+          -O BondiSachsCceR0200.h5
           gdown \
-          "https://drive.google.com/uc?id=1mN1oFQ7UcB1wsiXw9dphwAprQqufLia0"
-          gdown \
-          "https://drive.google.com/uc?id=1yYMM4PVUec9pIjKTxI4aCpo0Umqconr8"
+          "https://drive.google.com/uc?id=1eVzLmVi_m6qK8EGkgQ201TojhIm9FsYN" \
+          -O CharacteristicExtractReduction_Expected.h5
       - name: Copy CCE executables from the container
         run: >
           mkdir CceExecutables;
@@ -75,6 +80,9 @@ jobs:
 
           cp ./tests/InputFiles/Cce/CharacteristicExtract.yaml
           ./CceExecutables/CharacteristicExtract.yaml
+
+          cp ./tests/InputFiles/Cce/CheckCceOutput.py
+          ./CceExecutables/Tests/CheckCceOutput.py
 
           cp
           ./tests/InputFiles/PreprocessCceWorldtube/PreprocessCceWorldtube.yaml
@@ -101,7 +109,6 @@ jobs:
       - name: Test CCE executable outside of container
         run: |
           mv BondiSachsCceR0200.h5 ./CceExecutables/Tests/
-          mv CheckCceOutput.py ./CceExecutables/Tests/
           mv CharacteristicExtractReduction_Expected.h5 \
           ./CceExecutables/Tests/
 
