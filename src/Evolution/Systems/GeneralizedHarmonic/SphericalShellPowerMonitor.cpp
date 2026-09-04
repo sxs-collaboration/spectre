@@ -15,9 +15,7 @@
 #include "NumericalAlgorithms/SphericalHarmonics/Spherepack.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/SpherepackCache.hpp"
 #include "NumericalAlgorithms/TensorYlm/CartToSphere.hpp"
-#include "NumericalAlgorithms/TensorYlm/Helpers.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
-#include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Gsl.hpp"
 
@@ -26,83 +24,6 @@ namespace {
 
 constexpr size_t radial_monitor_index = 0;
 constexpr size_t angular_monitor_index = 1;
-
-template <typename TensorType>
-DataVector tensor_radial_power_monitor(const TensorType& tensor,
-                                       const Mesh<3>& mesh) {
-  DataVector squared_power(mesh.extents(0), 0.0);
-  DataVector component_power{};
-  for (size_t component = 0; component < tensor.size(); ++component) {
-    PowerMonitors::spherical_shell_radial_power_monitor(
-        make_not_null(&component_power), tensor[component], mesh);
-    squared_power += square(component_power);
-  }
-  squared_power = sqrt(squared_power / static_cast<double>(tensor.size()));
-  return squared_power;
-}
-
-size_t number_of_angular_coefficients(const size_t ell, const int spin_weight,
-                                      const bool zero_m_is_real,
-                                      const size_t radial_extents) {
-  // If l < |s|, spin weighted spherical harmonics vanish, so just return
-  // 0. In accumulate_tensor_angular_power, this will cause such terms to
-  // not contribute to accumulated tensor angular power.
-  if (ell < static_cast<size_t>(std::abs(spin_weight))) {
-    return 0;
-  }
-  // Spherepack stores real and imaginary parts separately. For real scalars,
-  // m=0 has only a real coefficient, so there are 1 + 2*l coefficients at
-  // each l. TensorYlm components are generally complex and retain both parts
-  // at m=0, giving 2*(l+1) coefficients. zero_m_is_real says whether we
-  // are dealing with a real scalar or not; coefficients_at_ell is set
-  // accordingly. See the help text of `SpherepackIterator` for details on the
-  // zero_m_is_real parameter.
-  const size_t coefficients_at_ell =
-      zero_m_is_real ? 2 * ell + 1 : 2 * (ell + 1);
-  // Every angular coefficient occurs independently at each radial point.
-  return radial_extents * coefficients_at_ell;
-}
-
-template <typename TensorType>
-void accumulate_tensor_angular_power(
-    const gsl::not_null<DataVector*> weighted_squared_power,
-    const gsl::not_null<std::vector<size_t>*> counts, const TensorType& tensor,
-    const Mesh<3>& mesh) {
-  const size_t radial_extents = mesh.extents(0);
-  const size_t ell_max = mesh.extents(1) - 1;
-  constexpr bool zero_m_is_real = TensorType::rank() == 0;
-  DataVector component_power{};
-  for (size_t component = 0; component < tensor.size(); ++component) {
-    const int spin_weight = ylm::TensorYlm::helpers::component_spin_weight<
-        typename TensorType::structure>(component);
-    PowerMonitors::spherical_shell_angular_power_monitor(
-        make_not_null(&component_power), tensor[component], mesh, spin_weight,
-        zero_m_is_real);
-    for (size_t ell = 0; ell <= ell_max; ++ell) {
-      const size_t component_count = number_of_angular_coefficients(
-          ell, spin_weight, zero_m_is_real, radial_extents);
-      (*weighted_squared_power)[ell] +=
-          static_cast<double>(component_count) * square(component_power[ell]);
-      (*counts)[ell] += component_count;
-    }
-  }
-}
-
-void normalize_angular_power(const gsl::not_null<DataVector*> power,
-                             const std::vector<size_t>& counts) {
-  if (power->size() != counts.size()) {
-    ERROR(
-        "The angular power and count buffers must have the same size, but "
-        "got "
-        << power->size() << " and " << counts.size() << ".");
-  }
-  for (size_t ell = 0; ell < power->size(); ++ell) {
-    (*power)[ell] =
-        counts[ell] == 0
-            ? 0.0
-            : sqrt((*power)[ell] / static_cast<double>(counts[ell]));
-  }
-}
 
 }  // namespace
 
@@ -165,13 +86,17 @@ GhShellPowerMonitors gh_shell_power_monitors(
   const auto& spherepack = ylm::get_spherepack_cache(ell_max);
 
   GhShellPowerMonitors result{};
-  result.spacetime_metric[radial_monitor_index] = tensor_radial_power_monitor(
-      get<gr::Tags::SpacetimeMetric<DataVector, 3, Frame::Inertial>>(gh_vars),
-      mesh);
-  result.pi[radial_monitor_index] = tensor_radial_power_monitor(
-      get<gh::Tags::Pi<DataVector, 3, Frame::Inertial>>(gh_vars), mesh);
-  result.phi[radial_monitor_index] = tensor_radial_power_monitor(
-      get<gh::Tags::Phi<DataVector, 3, Frame::Inertial>>(gh_vars), mesh);
+  result.spacetime_metric[radial_monitor_index] =
+      PowerMonitors::spherical_shell_tensor_radial_power_monitor(
+          get<gr::Tags::SpacetimeMetric<DataVector, 3, Frame::Inertial>>(
+              gh_vars),
+          mesh);
+  result.pi[radial_monitor_index] =
+      PowerMonitors::spherical_shell_tensor_radial_power_monitor(
+          get<gh::Tags::Pi<DataVector, 3, Frame::Inertial>>(gh_vars), mesh);
+  result.phi[radial_monitor_index] =
+      PowerMonitors::spherical_shell_tensor_radial_power_monitor(
+          get<gh::Tags::Phi<DataVector, 3, Frame::Inertial>>(gh_vars), mesh);
 
   fill_cart_to_sphere_matrices(cart_to_sphere_matrices, ell_max);
   Variables<ylm::TensorYlm::filter_detail::gh_spatial_vars_list<Frame::Grid>>
@@ -194,69 +119,69 @@ GhShellPowerMonitors gh_shell_power_monitors(
   std::vector<size_t> phi_counts(ell_max + 1, 0);
 
   namespace detail = ylm::TensorYlm::filter_detail;
-  accumulate_tensor_angular_power(
+  PowerMonitors::accumulate_spherical_shell_tensor_angular_power(
       make_not_null(&result.spacetime_metric[angular_monitor_index]),
       make_not_null(&metric_counts),
       get<detail::Tags::Metric00<DataVector>>(
           gh_spatial_tensor_ylm_coefficients),
       mesh);
-  accumulate_tensor_angular_power(
+  PowerMonitors::accumulate_spherical_shell_tensor_angular_power(
       make_not_null(&result.spacetime_metric[angular_monitor_index]),
       make_not_null(&metric_counts),
       get<detail::Tags::Metrick0<DataVector, 3, Frame::Grid>>(
           gh_spatial_tensor_ylm_coefficients),
       mesh);
-  accumulate_tensor_angular_power(
+  PowerMonitors::accumulate_spherical_shell_tensor_angular_power(
       make_not_null(&result.spacetime_metric[angular_monitor_index]),
       make_not_null(&metric_counts),
       get<detail::Tags::Metrickj<DataVector, 3, Frame::Grid>>(
           gh_spatial_tensor_ylm_coefficients),
       mesh);
 
-  accumulate_tensor_angular_power(
+  PowerMonitors::accumulate_spherical_shell_tensor_angular_power(
       make_not_null(&result.pi[angular_monitor_index]),
       make_not_null(&pi_counts),
       get<detail::Tags::Pi00<DataVector>>(gh_spatial_tensor_ylm_coefficients),
       mesh);
-  accumulate_tensor_angular_power(
+  PowerMonitors::accumulate_spherical_shell_tensor_angular_power(
       make_not_null(&result.pi[angular_monitor_index]),
       make_not_null(&pi_counts),
       get<detail::Tags::Pik0<DataVector, 3, Frame::Grid>>(
           gh_spatial_tensor_ylm_coefficients),
       mesh);
-  accumulate_tensor_angular_power(
+  PowerMonitors::accumulate_spherical_shell_tensor_angular_power(
       make_not_null(&result.pi[angular_monitor_index]),
       make_not_null(&pi_counts),
       get<detail::Tags::Pikj<DataVector, 3, Frame::Grid>>(
           gh_spatial_tensor_ylm_coefficients),
       mesh);
 
-  accumulate_tensor_angular_power(
+  PowerMonitors::accumulate_spherical_shell_tensor_angular_power(
       make_not_null(&result.phi[angular_monitor_index]),
       make_not_null(&phi_counts),
       get<detail::Tags::Phik00<DataVector, 3, Frame::Grid>>(
           gh_spatial_tensor_ylm_coefficients),
       mesh);
-  accumulate_tensor_angular_power(
+  PowerMonitors::accumulate_spherical_shell_tensor_angular_power(
       make_not_null(&result.phi[angular_monitor_index]),
       make_not_null(&phi_counts),
       get<detail::Tags::Phiki0<DataVector, 3, Frame::Grid>>(
           gh_spatial_tensor_ylm_coefficients),
       mesh);
-  accumulate_tensor_angular_power(
+  PowerMonitors::accumulate_spherical_shell_tensor_angular_power(
       make_not_null(&result.phi[angular_monitor_index]),
       make_not_null(&phi_counts),
       get<detail::Tags::Phikij<DataVector, 3, Frame::Grid>>(
           gh_spatial_tensor_ylm_coefficients),
       mesh);
 
-  normalize_angular_power(
+  PowerMonitors::normalize_spherical_shell_angular_power(
       make_not_null(&result.spacetime_metric[angular_monitor_index]),
       metric_counts);
-  normalize_angular_power(make_not_null(&result.pi[angular_monitor_index]),
-                          pi_counts);
-  normalize_angular_power(make_not_null(&result.phi[angular_monitor_index]),
-                          phi_counts);
+  PowerMonitors::normalize_spherical_shell_angular_power(
+      make_not_null(&result.pi[angular_monitor_index]), pi_counts);
+  PowerMonitors::normalize_spherical_shell_angular_power(
+      make_not_null(&result.phi[angular_monitor_index]), phi_counts);
   return result;
 }
 
