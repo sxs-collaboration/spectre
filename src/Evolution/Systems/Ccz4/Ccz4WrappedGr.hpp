@@ -8,6 +8,7 @@
 #include <string>
 
 #include "DataStructures/DataBox/Prefixes.hpp"
+#include "DataStructures/DataVector.hpp"
 #include "DataStructures/TaggedTuple.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Evolution/Systems/Ccz4/Tags.hpp"
@@ -19,7 +20,6 @@
 #include "Utilities/TMPL.hpp"
 
 /// \cond
-class DataVector;
 namespace PUP {
 class er;
 }  // namespace PUP
@@ -31,6 +31,15 @@ namespace Ccz4::Solutions {
  * the analytic solution and then adds a function that returns
  * any combination of the Ccz4 evolution variables.
  * Specifically, see `Ccz4::fd::System`.
+ *
+ * The wrapper returns the everywhere-nonnegative lapse
+ * \f$|\alpha|\f$ in place of the wrapped solution's lapse \f$\alpha\f$, with
+ * the lapse derivative and time derivative scaled by
+ * \f$\mathrm{sgn}(\alpha)\f$ (where \f$\mathrm{sgn}(0) := 0\f$). For
+ * solutions with positive lapse this is an exact no-op. For solutions whose
+ * lapse is negative somewhere (e.g. the lapse of
+ * `gr::Solutions::HighSpinKerrPuncture` inside its throat) the sign flip is
+ * pure gauge: the spatial metric and extrinsic curvature are unchanged.
  */
 template <typename SolutionType>
 class Ccz4WrappedGr : public virtual evolution::initial_data::InitialData,
@@ -95,10 +104,7 @@ class Ccz4WrappedGr : public virtual evolution::initial_data::InitialData,
   tuples::TaggedTuple<Tags...> variables(
       const tnsr::I<DataVector, volume_dim>& x, const double t,
       tmpl::list<Tags...> /*meta*/) const {
-    // Get the underlying solution's variables using the solution's tags list,
-    // store in IntermediateVariables
-    const IntermediateVars& intermediate_vars = SolutionType::variables(
-        x, t, typename SolutionType::template tags<DataVector>{});
+    const IntermediateVars intermediate_vars = make_intermediate_vars(x, t);
 
     return {
         get<Tags>(variables(x, t, tmpl::list<Tags>{}, intermediate_vars))...};
@@ -108,8 +114,7 @@ class Ccz4WrappedGr : public virtual evolution::initial_data::InitialData,
   tuples::TaggedTuple<Tag> variables(const tnsr::I<DataVector, volume_dim>& x,
                                      const double t,
                                      tmpl::list<Tag> /*meta*/) const {
-    const IntermediateVars& intermediate_vars = SolutionType::variables(
-        x, t, typename SolutionType::template tags<DataVector>{});
+    const IntermediateVars intermediate_vars = make_intermediate_vars(x, t);
     return {get<Tag>(variables(x, t, tmpl::list<Tag>{}, intermediate_vars))};
   }
 
@@ -119,10 +124,7 @@ class Ccz4WrappedGr : public virtual evolution::initial_data::InitialData,
   tuples::TaggedTuple<Tags...> variables(
       const tnsr::I<DataVector, volume_dim>& x,
       tmpl::list<Tags...> /*meta*/) const {
-    // Get the underlying solution's variables using the solution's tags list,
-    // store in IntermediateVariables
-    const IntermediateVars intermediate_vars = SolutionType::variables(
-        x, typename SolutionType::template tags<DataVector>{});
+    const IntermediateVars intermediate_vars = make_intermediate_vars(x);
 
     return {get<Tags>(variables(x, tmpl::list<Tags>{}, intermediate_vars))...};
   }
@@ -130,8 +132,7 @@ class Ccz4WrappedGr : public virtual evolution::initial_data::InitialData,
   template <typename Tag>
   tuples::TaggedTuple<Tag> variables(const tnsr::I<DataVector, volume_dim>& x,
                                      tmpl::list<Tag> /*meta*/) const {
-    const IntermediateVars intermediate_vars = SolutionType::variables(
-        x, typename SolutionType::template tags<DataVector>{});
+    const IntermediateVars intermediate_vars = make_intermediate_vars(x);
     return {get<Tag>(variables(x, tmpl::list<Tag>{}, intermediate_vars))};
   }
 
@@ -139,11 +140,37 @@ class Ccz4WrappedGr : public virtual evolution::initial_data::InitialData,
   void pup(PUP::er& p) override;
 
  private:
-  // Preprocessor logic to avoid declaring variables() functions for
-  // tags other than the three the wrapper adds (i.e., other than
-  // Ccz4::Tags::ConformalMetric, Ccz4::Tags::ConformalFactor,
-  // Ccz4:Tags::ATilde, gr::Tags::TraceExtrinsicCurvature,
-  // Ccz4::Tags::Theta, Ccz4::Tags::GammaHat)
+  // Computes the wrapped solution's variables and applies the nonnegative
+  // lapse: the lapse is replaced by its absolute
+  // value, and the lapse derivative and time derivative are scaled by
+  // sign(lapse), with sign(0) := 0. Every tag the wrapper returns,
+  // passed through or derived, must be computed from the IntermediateVars
+  // returned here, never by calling the solution directly, so that any
+  // lapse-dependent quantity added in the future automatically sees the
+  // corrected gauge.
+  template <typename... OptionalTime>
+  IntermediateVars make_intermediate_vars(
+      const tnsr::I<DataVector, volume_dim>& x, OptionalTime... time) const {
+    IntermediateVars vars = SolutionType::variables(
+        x, time..., typename SolutionType::template tags<DataVector>{});
+    // The sign must be taken before the lapse is replaced
+    const DataVector sgn_of_lapse =
+        sign(get(get<gr::Tags::Lapse<DataVector>>(vars)));
+    for (size_t i = 0; i < volume_dim; ++i) {
+      get<DerivLapse>(vars).get(i) *= sgn_of_lapse;
+    }
+    get(get<TimeDerivLapse>(vars)) *= sgn_of_lapse;
+    get(get<gr::Tags::Lapse<DataVector>>(vars)) =
+        abs(get(get<gr::Tags::Lapse<DataVector>>(vars)));
+    return vars;
+  }
+
+  // The generic overloads below pass the wrapped solution's tags through
+  // from the IntermediateVars; the explicit overloads compute the seven
+  // tags the wrapper adds (Ccz4::Tags::ConformalMetric,
+  // Ccz4::Tags::ConformalFactor, Ccz4::Tags::ATilde,
+  // gr::Tags::TraceExtrinsicCurvature, Ccz4::Tags::Theta,
+  // Ccz4::Tags::GammaHat, Ccz4::Tags::AuxiliaryShiftB)
   using TagShift = gr::Tags::Shift<DataVector, volume_dim>;
   using TagSpatialMetric = gr::Tags::SpatialMetric<DataVector, volume_dim>;
   using TagInverseSpatialMetric =
