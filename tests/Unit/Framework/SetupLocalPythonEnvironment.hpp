@@ -33,15 +33,10 @@ struct SetupLocalPythonEnvironment {
   /// \endcond
 
  private:
-// In order to use NumPy's API, import_array() must be called. However it is a
-// macro which contains a return statement, returning NULL in python 3 and void
-// in python 2. As such it needs to be factored into its own function which
-// returns either nullptr or void depending on the version.
-#if PY_MAJOR_VERSION == 3
+  // In order to use NumPy's API, import_array() must be called. However it is
+  // a macro that contains a return statement, returning NULL. As such it needs
+  // to be factored into its own function that returns a nullptr.
   static std::nullptr_t init_numpy();
-#else
-  static void init_numpy();
-#endif
   static bool initialized;
   static bool finalized;
 };

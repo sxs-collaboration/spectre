@@ -65,9 +65,11 @@ def ringdown_parameters(
         ),
         "IdFileGlobSubgroup": fot_vol_subfile,
         # Store target parameters in the input file
-        "TargetParams": yaml.safe_dump(
-            {"TargetParams": inspiral_metadata["TargetParams"]}
-        ).strip(),
+        "TargetParams": (
+            yaml.safe_dump(
+                {"TargetParams": inspiral_metadata["TargetParams"]}
+            ).strip()
+        ),
     }
 
 

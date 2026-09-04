@@ -76,9 +76,7 @@ def momentum_density(
         * specific_enthalpy
         * lorentz_factor**2
         * spatial_velocity
-        + comoving_magnetic_field_squared
-        * lorentz_factor**2
-        * spatial_velocity
+        + comoving_magnetic_field_squared * lorentz_factor**2 * spatial_velocity
         - magnetic_field_dot_spatial_velocity * magnetic_field
         - magnetic_field_dot_spatial_velocity**2
         * lorentz_factor**2

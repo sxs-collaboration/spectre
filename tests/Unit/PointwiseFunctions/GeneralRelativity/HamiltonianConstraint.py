@@ -18,7 +18,5 @@ def hamiltonian_constraint_in_vacuum(
         extrinsic_curvature,
     )
     return (
-        ricci_scalar
-        + trace_extrinsic_curvature**2
-        - extrinsic_curvature_square
+        ricci_scalar + trace_extrinsic_curvature**2 - extrinsic_curvature_square
     )

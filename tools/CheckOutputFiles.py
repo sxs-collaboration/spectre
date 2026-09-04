@@ -118,18 +118,14 @@ class H5Check:
                     self.unit_test.assertEqual(
                         test_data.shape,
                         expected_data.shape,
-                        (
-                            "test and expected h5 datasets must have identical"
-                            " sizes."
-                        ),
+                        "test and expected h5 datasets must have identical"
+                        " sizes.",
                     )
                     self.unit_test.assertEqual(
                         test_data.dtype,
                         expected_data.dtype,
-                        (
-                            "test and expected h5 datasets must have identical"
-                            " types."
-                        ),
+                        "test and expected h5 datasets must have identical"
+                        " types.",
                     )
                     if test_data.dtype == float or test_data.dtype == complex:
                         # numpy testing doesn't print the full array nor does it

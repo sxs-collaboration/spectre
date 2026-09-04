@@ -16,7 +16,7 @@ class TestGrSolutions(unittest.TestCase):
     def test_kerr_schild(self):
         solution = KerrSchild(mass=1.0, dimensionless_spin=[0.0, 0.0, 0.0])
         # Check some quantities at the horizon
-        (lapse, trace_K) = solution.variables(
+        lapse, trace_K = solution.variables(
             np.array([[2.0], [0.0], [0.0]]),
             ["Lapse", "TraceExtrinsicCurvature"],
         ).values()

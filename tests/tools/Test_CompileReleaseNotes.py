@@ -31,19 +31,15 @@ class TestCompileReleaseNotes(unittest.TestCase):
         self.assertEqual(
             str(last_release),
             expected_tag_name,
-            (
-                f"The last release '{last_release}' doesn't match the expected "
-                f"tag name '{expected_tag_name}' listed in the repo metadata."
-            ),
+            f"The last release '{last_release}' doesn't match the expected "
+            f"tag name '{expected_tag_name}' listed in the repo metadata.",
         )
         also_last_release = get_last_release(repo, head_rev=last_release)
         self.assertEqual(
             last_release,
             also_last_release,
-            (
-                f"Should find the last release '{last_release}' when HEAD is"
-                f" the release tag, but found '{also_last_release}'."
-            ),
+            f"Should find the last release '{last_release}' when HEAD is"
+            f" the release tag, but found '{also_last_release}'.",
         )
         earlier_release = get_last_release(
             repo, head_rev=str(last_release) + "~1"
@@ -51,10 +47,8 @@ class TestCompileReleaseNotes(unittest.TestCase):
         self.assertNotEqual(
             earlier_release,
             last_release,
-            (
-                "Should find an earlier release when HEAD is before "
-                f"'{last_release}', not the same release."
-            ),
+            "Should find an earlier release when HEAD is before "
+            f"'{last_release}', not the same release.",
         )
 
     def test_get_merged_pull_requests(self):
@@ -70,10 +64,8 @@ class TestCompileReleaseNotes(unittest.TestCase):
         )
         self.assertTrue(
             len(merged_prs) > 0,
-            (
-                "Failed to parse pull request corresponding to last merge "
-                f"commit before release {last_release}: '{last_merge_commit}' "
-            ),
+            "Failed to parse pull request corresponding to last merge "
+            f"commit before release {last_release}: '{last_merge_commit}' ",
         )
 
     def test_get_upgrade_instructions(self):
@@ -87,11 +79,9 @@ class TestCompileReleaseNotes(unittest.TestCase):
             """))
         self.assertEqual(
             upgrade_instructions,
-            (
-                "- Add the option `Evolution.InitialTime` to evolution input"
-                " files.\n  Set it to the value `0.` to keep the behavior the"
-                " same as before."
-            ),
+            "- Add the option `Evolution.InitialTime` to evolution input"
+            " files.\n  Set it to the value `0.` to keep the behavior the"
+            " same as before.",
         )
         self.assertIsNone(
             get_upgrade_instructions(

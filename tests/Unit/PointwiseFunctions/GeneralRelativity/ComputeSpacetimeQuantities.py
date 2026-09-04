@@ -18,9 +18,7 @@ def lapse(shift, spacetime_metric):
 def spacetime_metric(lapse, shift, spatial_metric):
     dim = shift.size
     psi = np.zeros([dim + 1, dim + 1])
-    psi[0, 0] = -(lapse**2) + np.einsum(
-        "m,n,mn", shift, shift, spatial_metric
-    )
+    psi[0, 0] = -(lapse**2) + np.einsum("m,n,mn", shift, shift, spatial_metric)
     psi[1:, 0] = np.einsum("mi,m->i", spatial_metric, shift)
     psi[0, 1:] = psi[1:, 0]
     psi[1:, 1:] = spatial_metric
@@ -33,9 +31,7 @@ def inverse_spacetime_metric(lapse, shift, inverse_spatial_metric):
     inv_psi[0, 0] = -1.0 / lapse**2
     inv_psi[1:, 0] = shift / lapse**2
     inv_psi[0, 1:] = inv_psi[1:, 0]
-    inv_psi[1:, 1:] = (
-        inverse_spatial_metric - np.outer(shift, shift) / lapse**2
-    )
+    inv_psi[1:, 1:] = inverse_spatial_metric - np.outer(shift, shift) / lapse**2
     return inv_psi
 
 

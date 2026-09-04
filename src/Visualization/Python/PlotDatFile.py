@@ -134,10 +134,8 @@ def plot_dat_command(
         # Print available subfiles and exit
         if not subfile_name:
             raise RequiredChoiceError(
-                (
-                    "Specify '--subfile-name' / '-d' to select a"
-                    " subfile containing data to plot."
-                ),
+                "Specify '--subfile-name' / '-d' to select a"
+                " subfile containing data to plot.",
                 choices=available_subfiles(h5file, extension=".dat"),
             )
 

@@ -128,10 +128,8 @@ def plot_cce(
         cce_subfile = h5file.get(cce_subfile_name)
         if cce_subfile is None:
             raise RequiredChoiceError(
-                (
-                    f"Could not find Cce subfile {cce_subfile} in H5 file"
-                    f" {h5_filename}."
-                ),
+                f"Could not find Cce subfile {cce_subfile} in H5 file"
+                f" {h5_filename}.",
                 choices=cce_subfiles,
             )
 

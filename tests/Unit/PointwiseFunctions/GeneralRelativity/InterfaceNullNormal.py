@@ -16,9 +16,7 @@ def interface_outgoing_null_normal(
             interface_normal_vector_or_one_form,
             shift,
         )
-    result[1:] = (
-        result[1:] + (2.0**-0.5) * interface_normal_vector_or_one_form
-    )
+    result[1:] = result[1:] + (2.0**-0.5) * interface_normal_vector_or_one_form
     return result
 
 
@@ -34,7 +32,5 @@ def interface_incoming_null_normal(
             interface_normal_vector_or_one_form,
             shift,
         )
-    result[1:] = (
-        result[1:] - (2.0**-0.5) * interface_normal_vector_or_one_form
-    )
+    result[1:] = result[1:] - (2.0**-0.5) * interface_normal_vector_or_one_form
     return result

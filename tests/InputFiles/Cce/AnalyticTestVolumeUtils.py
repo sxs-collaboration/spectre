@@ -1,8 +1,7 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-"""Utilities shared between volume CCE tests.
-"""
+"""Utilities shared between volume CCE tests."""
 
 import os
 import re
@@ -35,9 +34,7 @@ def load_cce_volume_field(vol_f, obsid, name):
     """
 
     obsid_path = f"/CceVolumeData/VolumeData.vol/ObservationId{obsid}"
-    (number_of_radial_shells, l_max, _) = vol_f[f"{obsid_path}/total_extents"][
-        ()
-    ]
+    number_of_radial_shells, l_max, _ = vol_f[f"{obsid_path}/total_extents"][()]
     field = vol_f[f"{obsid_path}/{name}"][()]
     field = field.view(np.complex128).reshape(
         [int(number_of_radial_shells), int((l_max + 1) ** 2)]

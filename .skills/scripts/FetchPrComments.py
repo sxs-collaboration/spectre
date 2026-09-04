@@ -92,10 +92,8 @@ def fetch_review_threads(pr_number, repo=None):
 
     if threads_data.get("pageInfo", {}).get("hasNextPage"):
         print(
-            (
-                "WARNING: PR has more than 100 review threads. "
-                "Only the first 100 are shown."
-            ),
+            "WARNING: PR has more than 100 review threads. "
+            "Only the first 100 are shown.",
             file=sys.stderr,
         )
 

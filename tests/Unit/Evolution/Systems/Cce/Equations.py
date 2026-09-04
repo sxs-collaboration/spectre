@@ -12,9 +12,7 @@ def integrand_for_beta(dy_j, j, one_minus_y):
     dy_j_jbar = j * dy_jbar + jbar * dy_j
     k_squared = 1.0 + j * jbar
     return (
-        one_minus_y
-        / 8.0
-        * (dy_j * dy_jbar - dy_j_jbar**2 / (4.0 * k_squared))
+        one_minus_y / 8.0 * (dy_j * dy_jbar - dy_j_jbar**2 / (4.0 * k_squared))
     )
 
 
@@ -243,10 +241,7 @@ def integrand_for_h_regular_part(
             + w * dy_j_jbar**2 / (16.0 * k_squared)
         )
         + one_minus_y**2
-        * (
-            -dy_j * dy_jbar / (8.0 * r)
-            + dy_j_jbar**2 / (32.0 * k_squared * r)
-        )
+        * (-dy_j * dy_jbar / (8.0 * r) + dy_j_jbar**2 / (32.0 * k_squared * r))
     )
 
     script_cj = 1.0 / 2.0 * ethbar_j * k * (eth_beta - 1.0 / 2.0 * q)

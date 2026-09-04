@@ -582,10 +582,8 @@ def plot_power_monitors_command(
         return
     elif not block_or_group_names:
         raise RequiredChoiceError(
-            (
-                "Specify '--block' / '-b' to select (possibly multiple) blocks"
-                " or block groups to analyze."
-            ),
+            "Specify '--block' / '-b' to select (possibly multiple) blocks"
+            " or block groups to analyze.",
             choices=all_block_groups + all_block_names,
         )
     # Validate block and group names

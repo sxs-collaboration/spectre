@@ -300,10 +300,8 @@ def render_1d_command(
     # Print available subfile names and exit
     if not subfile_name:
         raise RequiredChoiceError(
-            (
-                "Specify '--subfile-name' / '-d' to select a"
-                " subfile containing 1D volume data."
-            ),
+            "Specify '--subfile-name' / '-d' to select a"
+            " subfile containing 1D volume data.",
             choices=open_h5_files[0].all_vol_files(),
         )
 

@@ -61,9 +61,7 @@ def neutrino_source_jacobian(
 
     denom = 1.0 / (1.0 + 2.0 * fluid_lorentz_factor**2)
 
-    scaled_comoving_energy_density = (
-        closure_factor**2 * comoving_energy_density
-    )
+    scaled_comoving_energy_density = closure_factor**2 * comoving_energy_density
 
     h_difference_s_coef = fluid_lorentz_factor * (
         fluid_velocity_norm - tilde_e * s_dot_fluid_velocity_normalized

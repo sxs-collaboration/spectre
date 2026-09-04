@@ -52,9 +52,9 @@ SetupLocalPythonEnvironment::SetupLocalPythonEnvironment(
     if (PyStatus_Exception(status) != 0) {
       Py_ExitStatusException(status);
     }
-    // Don't produce the __pycache__ dir (python 3.2 and newer) or the .pyc
-    // files (python 2.7) in the tests directory to avoid cluttering the source
-    // tree. The overhead of not having the compile files is <= 0.01s
+    // Don't produce the __pycache__ dir in the tests directory to avoid
+    // cluttering the source tree. The overhead of not having the compiled
+    // files is <= 0.01s
     config.write_bytecode = 0;
     status = Py_InitializeFromConfig(&config);
     if (PyStatus_Exception(status) != 0) {
@@ -78,14 +78,10 @@ SetupLocalPythonEnvironment::SetupLocalPythonEnvironment(
                       cur_dir_relative_to_unit_test_path);
 }
 
-#if PY_MAJOR_VERSION == 3
 std::nullptr_t SetupLocalPythonEnvironment::init_numpy() {
   import_array();
   return nullptr;
 }
-#else
-void SetupLocalPythonEnvironment::init_numpy() { import_array(); }
-#endif
 
 void SetupLocalPythonEnvironment::finalize_env() {
   if (not finalized and initialized) {

@@ -88,10 +88,8 @@ def generate_tetrahedral_connectivity(
             )
         else:
             raise RequiredChoiceError(
-                (
-                    "Specify '--subfile-name' / '-d' to select a"
-                    " subfile containing volume data."
-                ),
+                "Specify '--subfile-name' / '-d' to select a"
+                " subfile containing volume data.",
                 choices=subfiles,
             )
 

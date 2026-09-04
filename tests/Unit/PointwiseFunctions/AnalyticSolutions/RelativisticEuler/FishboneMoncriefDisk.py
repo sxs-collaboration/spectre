@@ -85,9 +85,7 @@ def sigma(r_sqrd, sin_theta_sqrd, a):
 
 
 def ucase_a(r_sqrd, sin_theta_sqrd, m, a):
-    return (r_sqrd + a**2) ** 2 - delta(
-        r_sqrd, m, a
-    ) * sin_theta_sqrd * a**2
+    return (r_sqrd + a**2) ** 2 - delta(r_sqrd, m, a) * sin_theta_sqrd * a**2
 
 
 def boyer_lindquist_gtf(r_sqrd, sin_theta_sqrd, m, a):
