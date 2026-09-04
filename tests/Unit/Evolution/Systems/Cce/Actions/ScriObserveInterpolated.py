@@ -165,7 +165,7 @@ def compute_ScriPlus_Psi0(
     return (
         psi0
         + 2.0 * psi1 * eth_u
-        + 0.75 * psi2 * eth_u**2
+        + 1.5 * psi2 * eth_u**2
         + 0.5 * psi3 * eth_u**3
         + 0.0625 * psi4 * eth_u**4
     )
