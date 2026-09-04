@@ -198,8 +198,9 @@ void Tabulated3D<IsRelativistic>::initialize(const h5::EosTable& spectre_eos) {
             std::log(specific_entropy[index_spectre]);
 
         // Determine specific enthalpy minimum
-        double h = 1. + table_point[Epsilon] +
-                   table_point[Pressure] / std::exp(log_density[iR]);
+        const double h = 1. + eps[index_spectre] +
+                         press_MeV_to_geom * pressure[index_spectre] /
+                             std::exp(log_density[iR]);
         enthalpy_minimum = std::min(enthalpy_minimum, h);
         // NOLINTEND(cppcoreguidelines-pro-bounds-pointer-arithmetic)
       }
