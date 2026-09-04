@@ -30,6 +30,11 @@ namespace evolution::dg::subcell {
 /// Generator for `EqualRateRegions` labeling all elements that are
 /// allowed to do subcell and their neighbors.  The inverse of the
 /// `OnlyDgBlocksAndGroups` input file option.
+///
+/// \note When subcell is combined with nonconforming block boundaries (e.g.,
+/// `domain::creators::NonconformingSphericalShells`), use
+/// `SubcellAndNonconformingEqualRateRegions` instead of pairing this class
+/// with `NonconformingEqualRateRegions`.
 template <size_t Dim>
 class SubcellEqualRateRegion {
  public:
