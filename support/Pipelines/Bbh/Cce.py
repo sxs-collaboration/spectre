@@ -36,6 +36,10 @@ def run_cce(
     options are forwarded to the 'schedule' command. See 'schedule' docs for
     details.
 
+    Once CCE is done, the waveforms are transformed into the correct BMS frame
+    with 'spectre bbh frame-fix'. This runs in the same job, so the wallclock
+    limit ('--time-limit' / '-t') must cover it as well.
+
     Arguments:
         bondi_sachs_data: Path to one or more files containing Bondi-Sachs data
         pipeline_dir: Directory where steps in the pipeline are created.

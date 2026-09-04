@@ -655,8 +655,30 @@ because the data at future null infinity is in the wrong Bondi-Metzner-Sachs
 (BMS) frame. In order to put this data into the correct BMS frame, the
 [SXS Collaboration](https://github.com/sxs-collaboration) offers a python/numba
 code called [scri](https://github.com/moble/scri) to do these transformations.
-See their documentation for how to install/run/plot a waveform at future null
-infinity in the correct BMS frame.
+
+We wrap scri in a CLI that maps the CCE output to the superrest frame and writes
+the result in the same format as the raw CCE output:
+
+```
+spectre bbh frame-fix CharacteristicExtractReduction.h5
+```
+
+This writes `CharacteristicExtractReductionFrameFixed.h5`, which you can plot
+with `spectre plot cce` just like the raw output. Run
+`spectre bbh frame-fix -h` to see the available options. The two that matter
+most are `--t-0-superrest` and `--padding-time`, which select the time window
+that determines the BMS transformation. **That window must not contain junk
+radiation**, so check the defaults against your simulation. If a run is slow,
+`--superrest-dt` determines the transformation from data that is sampled more
+coarsely in time, which doesn't change the resolution of the output.
+
+The BBH pipeline (`spectre bbh run-cce`) runs the frame fixing automatically
+once CCE completes, as part of the same job. Note that the job's wallclock limit has
+to cover the frame fixing as well as the CCE evolution.
+
+\note The `EthInertialRetardedTime` dataset is a diagnostic of the coordinate
+transformation that CCE itself performed. The frame fixing supersedes that
+transformation, so the dataset is filled with NaN in the frame-fixed output.
 
 Below is a plot of the imaginary part of the 2,2 component for the strain when
 plotted using the raw output from SpECTRE CCE and BMS frame-fixing with scri.
@@ -665,9 +687,9 @@ doesn't decay back down to zero during the ringdown. This is because of the
 improper BMS frame that the SpECTRE CCE waveform is in. A supertranslation must
 be applied to transform the waveform into the correct BMS frame. See
 \cite Mitman2024review for a review of BMS transformations and gravitational
-memory. To perform the frame fixing, see
+memory, and
 [this tutorial](https://scri.readthedocs.io/en/latest/tutorial_abd.html#loading-cce-data-and-adjusting-the-bms-frame)
-in scri.
+in scri for the transformation that `spectre bbh frame-fix` performs.
 
 \image html im_h22.png "Imaginary part of 2,2 component of the strain"
 
