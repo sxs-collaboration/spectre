@@ -5,11 +5,14 @@
 
 #include <cstddef>
 
+#include "DataStructures/Tensor/IndexType.hpp"
+#include "DataStructures/Tensor/TypeAliases.hpp"
+
 /// \brief Tags for the ScalarWave evolution system
 namespace ScalarWave::Tags {
 struct Psi;
 struct Pi;
-template <size_t Dim>
+template <size_t Dim, typename Frame = Frame::Inertial>
 struct Phi;
 
 struct ConstraintGamma2;

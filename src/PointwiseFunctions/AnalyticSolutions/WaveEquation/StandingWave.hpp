@@ -23,7 +23,7 @@ class DataVector;
 namespace ScalarWave::Tags {
 struct Psi;
 struct Pi;
-template <size_t Dim>
+template <size_t Dim, typename Frame>
 struct Phi;
 }  // namespace ScalarWave::Tags
 namespace Tags {
@@ -84,9 +84,9 @@ class StandingWave : public evolution::initial_data::InitialData,
       "Psi = A sin(k.(x-x0)) cos(omega t), with omega = |k|. "
       "At t=0, Pi=0 so the wave has equal left- and right-moving components."};
 
-  using tags =
-      tmpl::list<Tags::Psi, Tags::Pi, Tags::Phi<Dim>, ::Tags::dt<Tags::Psi>,
-                 ::Tags::dt<Tags::Pi>, ::Tags::dt<Tags::Phi<Dim>>>;
+  using tags = tmpl::list<Tags::Psi, Tags::Pi, Tags::Phi<Dim, Frame::Inertial>,
+                          ::Tags::dt<Tags::Psi>, ::Tags::dt<Tags::Pi>,
+                          ::Tags::dt<Tags::Phi<Dim, Frame::Inertial>>>;
 
   StandingWave() = default;
   StandingWave(std::array<double, Dim> wave_vector,
@@ -107,16 +107,18 @@ class StandingWave : public evolution::initial_data::InitialData,
   /// \endcond
 
   /// Retrieve the evolution variables at time `t` and spatial coordinates `x`
-  tuples::TaggedTuple<Tags::Psi, Tags::Pi, Tags::Phi<Dim>> variables(
-      const tnsr::I<DataVector, Dim>& x, double t,
-      tmpl::list<Tags::Psi, Tags::Pi, Tags::Phi<Dim>> /*meta*/) const;
+  tuples::TaggedTuple<Tags::Psi, Tags::Pi, Tags::Phi<Dim, Frame::Inertial>>
+  variables(const tnsr::I<DataVector, Dim>& x, double t,
+            tmpl::list<Tags::Psi, Tags::Pi,
+                       Tags::Phi<Dim, Frame::Inertial>> /*meta*/) const;
 
   /// Retrieve the time derivatives of the evolution variables
   tuples::TaggedTuple<::Tags::dt<Tags::Psi>, ::Tags::dt<Tags::Pi>,
-                      ::Tags::dt<Tags::Phi<Dim>>>
-  variables(const tnsr::I<DataVector, Dim>& x, double t,
-            tmpl::list<::Tags::dt<Tags::Psi>, ::Tags::dt<Tags::Pi>,
-                       ::Tags::dt<Tags::Phi<Dim>>> /*meta*/) const;
+                      ::Tags::dt<Tags::Phi<Dim, Frame::Inertial>>>
+  variables(
+      const tnsr::I<DataVector, Dim>& x, double t,
+      tmpl::list<::Tags::dt<Tags::Psi>, ::Tags::dt<Tags::Pi>,
+                 ::Tags::dt<Tags::Phi<Dim, Frame::Inertial>>> /*meta*/) const;
 
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& p) override;

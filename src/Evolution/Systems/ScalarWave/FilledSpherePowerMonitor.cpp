@@ -1,7 +1,7 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "Evolution/Systems/GeneralizedHarmonic/FilledSpherePowerMonitor.hpp"
+#include "Evolution/Systems/ScalarWave/FilledSpherePowerMonitor.hpp"
 
 #include <algorithm>
 #include <cstddef>
@@ -11,7 +11,7 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Structure.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
-#include "Evolution/Systems/GeneralizedHarmonic/TensorYlmTransforms.hpp"
+#include "Evolution/Systems/ScalarWave/Tags.hpp"
 #include "NumericalAlgorithms/LinearOperators/PowerMonitors.hpp"
 #include "NumericalAlgorithms/Spectral/Basis.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
@@ -19,12 +19,13 @@
 #include "NumericalAlgorithms/SphericalHarmonics/Spherepack.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/SpherepackCache.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/SpherepackIterator.hpp"
+#include "NumericalAlgorithms/TensorYlm/ApplyFilter.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MemoryHelpers.hpp"
 
-namespace gh::power_monitor {
+namespace ScalarWave::power_monitor {
 namespace {
 
 constexpr size_t radial_monitor_index = 0;
@@ -32,10 +33,10 @@ constexpr size_t angular_monitor_index = 1;
 
 }  // namespace
 
-GhFilledSpherePowerMonitors gh_filled_sphere_power_monitors(
-    const gsl::not_null<CartToSphereMatrices*> cart_to_sphere_matrices,
-    const Variables<ylm::TensorYlm::filter_detail::gh_spacetime_vars_list>&
-        gh_vars,
+SwFilledSpherePowerMonitors sw_filled_sphere_power_monitors(
+    const gsl::not_null<SwCartToSphereMatrix*> cart_to_sphere_matrix,
+    const Variables<
+        ylm::TensorYlm::filter_detail::sw_vars_list<Frame::Inertial>>& sw_vars,
     const Mesh<3>& mesh,
     const InverseJacobian<DataVector, 3, Frame::Inertial, Frame::Grid>&
         jac_inertial_to_grid) {
@@ -44,7 +45,7 @@ GhFilledSpherePowerMonitors gh_filled_sphere_power_monitors(
       mesh.quadrature(1) != Spectral::Quadrature::Gauss or
       mesh.quadrature(2) != Spectral::Quadrature::Equiangular) {
     ERROR(
-        "GH filled-sphere power monitors require a ZernikeB3 mesh with "
+        "SW filled-sphere power monitors require a ZernikeB3 mesh with "
         "quadratures (GaussRadauUpper, Gauss, Equiangular), but the mesh is "
         << mesh);
   }
@@ -53,7 +54,7 @@ GhFilledSpherePowerMonitors gh_filled_sphere_power_monitors(
   const size_t m_max = (mesh.extents(2) - 1) / 2;
   if (l_max != m_max) {
     ERROR(
-        "GH filled-sphere power monitors require l_max == m_max, but got "
+        "SW filled-sphere power monitors require l_max == m_max, but got "
         "l_max = "
         << l_max << " and m_max = " << m_max << ".");
   }
@@ -70,7 +71,7 @@ GhFilledSpherePowerMonitors gh_filled_sphere_power_monitors(
   const auto& spherepack = ylm::get_spherepack_cache(l_max);
 
   // Precompute SPHEREPACK offsets grouped by l for both zero_m_is_real cases.
-  // zero_m_is_real=true: scalars (rank-0 TensorYlm); false: all higher ranks.
+  // zero_m_is_real=true: scalars Psi and Pi (rank-0); false: co-vector Phi.
   std::vector<std::vector<size_t>> offsets_by_l_real(l_max + 1);
   for (ylm::SpherepackIterator it{l_max, l_max, 1, true}; it; ++it) {
     offsets_by_l_real[it.l()].push_back(it());
@@ -85,7 +86,7 @@ GhFilledSpherePowerMonitors gh_filled_sphere_power_monitors(
   //   [accum region]   12 DataVector accumulator views (zero-initialised)
   //
   // Scratch layout: 2 * max_n_modes_l * n_r  (max_n_modes_l = 2*(l_max+1))
-  // Accum layout (per GH variable, 3 variables total):
+  // Accum layout (per SW variable, 3 variables total):
   //   sum_sq_radial | counts_radial | sum_sq_angular | counts_angular
   const size_t max_n_modes_l = 2 * (l_max + 1);
   const size_t n_angular = l_max + 1;
@@ -100,31 +101,57 @@ GhFilledSpherePowerMonitors gh_filled_sphere_power_monitors(
   double* const accum_start = buf.get() + scratch_size;      // NOLINT
   std::fill(accum_start, accum_start + accum_size, 0.0);     // NOLINT
 
-  fill_cart_to_sphere_matrices(cart_to_sphere_matrices, l_max);
+  // Transform SW variables to TensorYlm spectral coefficients.
+  // Frame-transform Phi to the grid frame; Psi and Pi are scalars (unchanged).
+  namespace fd = ylm::TensorYlm::filter_detail;
 
-  Variables<ylm::TensorYlm::filter_detail::gh_spatial_vars_list<Frame::Grid>>
-      gh_spatial_tensor_ylm_coefficients(n_r * spherepack.spectral_size());
-  Variables<ylm::TensorYlm::filter_detail::gh_spatial_vars_list<Frame::Grid>>
-      temp_storage(n_r * spherepack.spectral_size());
-  ylm::TensorYlm::gh_variables_to_tensor_ylm_coefficients(
-      make_not_null(&gh_spatial_tensor_ylm_coefficients),
-      make_not_null(&temp_storage), gh_vars, jac_inertial_to_grid,
-      cart_to_sphere_matrices->i.value(), cart_to_sphere_matrices->ii.value(),
-      cart_to_sphere_matrices->ij.value(), cart_to_sphere_matrices->ijj.value(),
-      spherepack, n_r);
+  const size_t n_phys = mesh.number_of_grid_points();
+  const size_t n_spec = n_r * spherepack.spectral_size();
 
+  Variables<fd::sw_vars_list<Frame::Grid>> sw_grid_frame(n_phys);
+  fd::transform_spatial_tensors_to_different_frame_without_hessians<
+      Frame::Inertial, Frame::Grid>(make_not_null(&sw_grid_frame), sw_vars,
+                                    jac_inertial_to_grid);
+
+  // SH analysis (nodal to modal) in the angular directions.
+  Variables<fd::sw_vars_list<Frame::Grid>> sw_modal(n_spec);
+  fd::nodal_to_modal_ylm(make_not_null(&sw_modal), sw_grid_frame, spherepack,
+                         n_r);
+
+  // Apply Cartesian-to-TensorYlm transform to Phi SH coefficients.
+  fill_sw_cart_to_sphere_matrix(cart_to_sphere_matrix, l_max);
+  Variables<fd::sw_vars_list<Frame::Grid>> phi_tensor_ylm_vars(n_spec);
+  for (auto& comp :
+       get<ScalarWave::Tags::Phi<3, Frame::Grid>>(phi_tensor_ylm_vars)) {
+    comp = 0.0;
+  }
+  {
+    const gsl::span<double> src(
+        get<ScalarWave::Tags::Phi<3, Frame::Grid>>(sw_modal)[0].data(),
+        3 * n_spec);
+    gsl::span<double> dest(
+        get<ScalarWave::Tags::Phi<3, Frame::Grid>>(phi_tensor_ylm_vars)[0]
+            .data(),
+        3 * n_spec);
+    for (size_t offset = 0; offset < n_r; ++offset) {
+      cart_to_sphere_matrix->i->increment_multiply_on_right(
+          make_not_null(&dest), offset, n_r, src, offset, n_r);
+    }
+  }
+
+  // Set up accumulator DataVector views into the flat buffer.
   double* ap = accum_start;
-  DataVector metric_sum_sq_radial{};
-  metric_sum_sq_radial.set_data_ref(ap, n_r);
+  DataVector psi_sum_sq_radial{};
+  psi_sum_sq_radial.set_data_ref(ap, n_r);
   ap += n_r;  // NOLINT
-  DataVector metric_counts_radial{};
-  metric_counts_radial.set_data_ref(ap, n_r);
+  DataVector psi_counts_radial{};
+  psi_counts_radial.set_data_ref(ap, n_r);
   ap += n_r;  // NOLINT
-  DataVector metric_sum_sq_angular{};
-  metric_sum_sq_angular.set_data_ref(ap, n_angular);
+  DataVector psi_sum_sq_angular{};
+  psi_sum_sq_angular.set_data_ref(ap, n_angular);
   ap += n_angular;  // NOLINT
-  DataVector metric_counts_angular{};
-  metric_counts_angular.set_data_ref(ap, n_angular);
+  DataVector psi_counts_angular{};
+  psi_counts_angular.set_data_ref(ap, n_angular);
   ap += n_angular;  // NOLINT
 
   DataVector pi_sum_sq_radial{};
@@ -152,89 +179,34 @@ GhFilledSpherePowerMonitors gh_filled_sphere_power_monitors(
   DataVector phi_counts_angular{};
   phi_counts_angular.set_data_ref(ap, n_angular);
 
-  namespace detail = ylm::TensorYlm::filter_detail;
+  // Psi: scalar (rank-0), zero_m_is_real=true, spin_weight=0.
+  PowerMonitors::accumulate_b3_tensor_sums(
+      make_not_null(&psi_sum_sq_radial), make_not_null(&psi_counts_radial),
+      make_not_null(&psi_sum_sq_angular), make_not_null(&psi_counts_angular),
+      get<ScalarWave::Tags::Psi>(sw_modal), n_r, n_r_max, offsets_by_l_real,
+      offsets_by_l_complex, gathered, modal_buf);
 
-  // Metric: Metric00 (scalar), Metrick0 (vector), Metrickj (sym rank-2).
-  PowerMonitors::accumulate_b3_tensor_sums(
-      make_not_null(&metric_sum_sq_radial),
-      make_not_null(&metric_counts_radial),
-      make_not_null(&metric_sum_sq_angular),
-      make_not_null(&metric_counts_angular),
-      get<detail::Tags::Metric00<DataVector>>(
-          gh_spatial_tensor_ylm_coefficients),
-      n_r, n_r_max, offsets_by_l_real, offsets_by_l_complex, gathered,
-      modal_buf);
-  PowerMonitors::accumulate_b3_tensor_sums(
-      make_not_null(&metric_sum_sq_radial),
-      make_not_null(&metric_counts_radial),
-      make_not_null(&metric_sum_sq_angular),
-      make_not_null(&metric_counts_angular),
-      get<detail::Tags::Metrick0<DataVector, 3, Frame::Grid>>(
-          gh_spatial_tensor_ylm_coefficients),
-      n_r, n_r_max, offsets_by_l_real, offsets_by_l_complex, gathered,
-      modal_buf);
-  PowerMonitors::accumulate_b3_tensor_sums(
-      make_not_null(&metric_sum_sq_radial),
-      make_not_null(&metric_counts_radial),
-      make_not_null(&metric_sum_sq_angular),
-      make_not_null(&metric_counts_angular),
-      get<detail::Tags::Metrickj<DataVector, 3, Frame::Grid>>(
-          gh_spatial_tensor_ylm_coefficients),
-      n_r, n_r_max, offsets_by_l_real, offsets_by_l_complex, gathered,
-      modal_buf);
-
-  // Pi: Pi00 (scalar), Pik0 (vector), Pikj (sym rank-2).
+  // Pi: scalar (rank-0), zero_m_is_real=true, spin_weight=0.
   PowerMonitors::accumulate_b3_tensor_sums(
       make_not_null(&pi_sum_sq_radial), make_not_null(&pi_counts_radial),
       make_not_null(&pi_sum_sq_angular), make_not_null(&pi_counts_angular),
-      get<detail::Tags::Pi00<DataVector>>(gh_spatial_tensor_ylm_coefficients),
-      n_r, n_r_max, offsets_by_l_real, offsets_by_l_complex, gathered,
-      modal_buf);
-  PowerMonitors::accumulate_b3_tensor_sums(
-      make_not_null(&pi_sum_sq_radial), make_not_null(&pi_counts_radial),
-      make_not_null(&pi_sum_sq_angular), make_not_null(&pi_counts_angular),
-      get<detail::Tags::Pik0<DataVector, 3, Frame::Grid>>(
-          gh_spatial_tensor_ylm_coefficients),
-      n_r, n_r_max, offsets_by_l_real, offsets_by_l_complex, gathered,
-      modal_buf);
-  PowerMonitors::accumulate_b3_tensor_sums(
-      make_not_null(&pi_sum_sq_radial), make_not_null(&pi_counts_radial),
-      make_not_null(&pi_sum_sq_angular), make_not_null(&pi_counts_angular),
-      get<detail::Tags::Pikj<DataVector, 3, Frame::Grid>>(
-          gh_spatial_tensor_ylm_coefficients),
-      n_r, n_r_max, offsets_by_l_real, offsets_by_l_complex, gathered,
-      modal_buf);
+      get<ScalarWave::Tags::Pi>(sw_modal), n_r, n_r_max, offsets_by_l_real,
+      offsets_by_l_complex, gathered, modal_buf);
 
-  // Phi: Phik00 (vector), Phiki0 (rank-2), Phikij (rank-3 sym on last 2).
+  // Phi: co-vector (rank-1), zero_m_is_real=false, spin_weight from TensorYlm.
   PowerMonitors::accumulate_b3_tensor_sums(
       make_not_null(&phi_sum_sq_radial), make_not_null(&phi_counts_radial),
       make_not_null(&phi_sum_sq_angular), make_not_null(&phi_counts_angular),
-      get<detail::Tags::Phik00<DataVector, 3, Frame::Grid>>(
-          gh_spatial_tensor_ylm_coefficients),
-      n_r, n_r_max, offsets_by_l_real, offsets_by_l_complex, gathered,
-      modal_buf);
-  PowerMonitors::accumulate_b3_tensor_sums(
-      make_not_null(&phi_sum_sq_radial), make_not_null(&phi_counts_radial),
-      make_not_null(&phi_sum_sq_angular), make_not_null(&phi_counts_angular),
-      get<detail::Tags::Phiki0<DataVector, 3, Frame::Grid>>(
-          gh_spatial_tensor_ylm_coefficients),
-      n_r, n_r_max, offsets_by_l_real, offsets_by_l_complex, gathered,
-      modal_buf);
-  PowerMonitors::accumulate_b3_tensor_sums(
-      make_not_null(&phi_sum_sq_radial), make_not_null(&phi_counts_radial),
-      make_not_null(&phi_sum_sq_angular), make_not_null(&phi_counts_angular),
-      get<detail::Tags::Phikij<DataVector, 3, Frame::Grid>>(
-          gh_spatial_tensor_ylm_coefficients),
-      n_r, n_r_max, offsets_by_l_real, offsets_by_l_complex, gathered,
-      modal_buf);
+      get<ScalarWave::Tags::Phi<3, Frame::Grid>>(phi_tensor_ylm_vars), n_r,
+      n_r_max, offsets_by_l_real, offsets_by_l_complex, gathered, modal_buf);
 
-  GhFilledSpherePowerMonitors result{};
+  SwFilledSpherePowerMonitors result{};
   PowerMonitors::normalize_b3_power(
-      make_not_null(&result.spacetime_metric[radial_monitor_index]),
-      metric_sum_sq_radial, metric_counts_radial);
+      make_not_null(&result.psi[radial_monitor_index]), psi_sum_sq_radial,
+      psi_counts_radial);
   PowerMonitors::normalize_b3_power(
-      make_not_null(&result.spacetime_metric[angular_monitor_index]),
-      metric_sum_sq_angular, metric_counts_angular);
+      make_not_null(&result.psi[angular_monitor_index]), psi_sum_sq_angular,
+      psi_counts_angular);
   PowerMonitors::normalize_b3_power(
       make_not_null(&result.pi[radial_monitor_index]), pi_sum_sq_radial,
       pi_counts_radial);
@@ -250,4 +222,4 @@ GhFilledSpherePowerMonitors gh_filled_sphere_power_monitors(
   return result;
 }
 
-}  // namespace gh::power_monitor
+}  // namespace ScalarWave::power_monitor

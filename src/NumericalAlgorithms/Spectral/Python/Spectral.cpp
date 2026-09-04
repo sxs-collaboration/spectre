@@ -32,6 +32,7 @@ void bind_spectral(py::module& m) {
   py::enum_<Spectral::Quadrature>(m, "Quadrature")
       .value("Gauss", Spectral::Quadrature::Gauss)
       .value("GaussLobatto", Spectral::Quadrature::GaussLobatto)
+      .value("GaussRadauUpper", Spectral::Quadrature::GaussRadauUpper)
       .value("CellCentered", Spectral::Quadrature::CellCentered)
       .value("FaceCentered", Spectral::Quadrature::FaceCentered)
       .value("Equiangular", Spectral::Quadrature::Equiangular);

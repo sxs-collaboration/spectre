@@ -23,7 +23,7 @@ class DataVector;
 namespace ScalarWave::Tags {
 struct Pi;
 struct Psi;
-template <size_t Dim>
+template <size_t Dim, typename Frame>
 struct Phi;
 }  // namespace ScalarWave::Tags
 namespace Tags {
@@ -79,9 +79,9 @@ class RegularSphericalWave : public evolution::initial_data::InitialData,
       "A spherical wave solution of the Euclidean wave equation that is "
       "regular at the origin"};
 
-  using tags =
-      tmpl::list<Tags::Psi, Tags::Pi, Tags::Phi<3>, ::Tags::dt<Tags::Psi>,
-                 ::Tags::dt<Tags::Pi>, ::Tags::dt<Tags::Phi<3>>>;
+  using tags = tmpl::list<Tags::Psi, Tags::Pi, Tags::Phi<3, Frame::Inertial>,
+                          ::Tags::dt<Tags::Psi>, ::Tags::dt<Tags::Pi>,
+                          ::Tags::dt<Tags::Phi<3, Frame::Inertial>>>;
 
   RegularSphericalWave() = default;
   explicit RegularSphericalWave(
@@ -101,15 +101,17 @@ class RegularSphericalWave : public evolution::initial_data::InitialData,
   WRAPPED_PUPable_decl_template(RegularSphericalWave);
   /// \endcond
 
-  tuples::TaggedTuple<Tags::Psi, Tags::Pi, Tags::Phi<3>> variables(
-      const tnsr::I<DataVector, 3>& x, double t,
-      tmpl::list<Tags::Psi, Tags::Pi, Tags::Phi<3>> /*meta*/) const;
+  tuples::TaggedTuple<Tags::Psi, Tags::Pi, Tags::Phi<3, Frame::Inertial>>
+  variables(const tnsr::I<DataVector, 3>& x, double t,
+            tmpl::list<Tags::Psi, Tags::Pi,
+                       Tags::Phi<3, Frame::Inertial>> /*meta*/) const;
 
   tuples::TaggedTuple<::Tags::dt<Tags::Psi>, ::Tags::dt<Tags::Pi>,
-                      ::Tags::dt<Tags::Phi<3>>>
-  variables(const tnsr::I<DataVector, 3>& x, double t,
-            tmpl::list<::Tags::dt<Tags::Psi>, ::Tags::dt<Tags::Pi>,
-                       ::Tags::dt<Tags::Phi<3>>> /*meta*/) const;
+                      ::Tags::dt<Tags::Phi<3, Frame::Inertial>>>
+  variables(
+      const tnsr::I<DataVector, 3>& x, double t,
+      tmpl::list<::Tags::dt<Tags::Psi>, ::Tags::dt<Tags::Pi>,
+                 ::Tags::dt<Tags::Phi<3, Frame::Inertial>>> /*meta*/) const;
 
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& p) override;
