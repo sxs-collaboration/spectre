@@ -42,5 +42,10 @@ if(USE_GIT_HOOKS AND Git_FOUND AND EXISTS ${CMAKE_SOURCE_DIR}/.git)
       ${GIT_HOOKS_DIR}/CheckFileSize.py
       @ONLY
       )
+    configure_file(
+      ${CMAKE_SOURCE_DIR}/tools/Hooks/post-checkout.sh
+      ${GIT_HOOKS_DIR}/post-checkout
+      COPYONLY
+      )
   endif()
 endif()

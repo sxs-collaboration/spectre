@@ -12,9 +12,9 @@
   CMakeUserPresets.json following support/Environments/, or fall back to
   `-D CMAKE_BUILD_TYPE=Debug`. Prefer clang over gcc if both are available. More
   options in docs/Installation/BuildSystem.md.
-- In a git worktree, symlink the git-ignored CMakeUserPresets.json from the main
-  checkout. Suggest adding a `post-checkout` git hook in `.git/hooks` to create
-  the symlink automatically.
+- Git worktrees work like the main checkout: a `post-checkout` git hook symlinks
+  the git-ignored personal files (CMakeUserPresets.json, AGENTS.local.md, ...)
+  from the main checkout. Symlink them by hand if the hook wasn't installed yet.
 - Never build `all`. Build only the targets you need (find them in the closest
   CMakeLists.txt).
 

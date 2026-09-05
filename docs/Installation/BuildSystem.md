@@ -118,6 +118,9 @@ machine-specific configuration that supplies the compilers and dependency paths.
   the correct presets through `CMakePresets.json` in the repository root). Use
   the environment shell scripts in support/Environments/ to load
   modules and set `SPECTRE_MACHINE`.
+- **In git worktrees**, the `post-checkout` hook installed by CMake (see
+  `USE_GIT_HOOKS`) symlinks `CMakeUserPresets.json` and other git-ignored
+  personal files from the main checkout, so `cmake --preset` works right away.
 
 ## Commonly Used CMake flags {#common_cmake_flags}
 The following are common flags used to control building SpECTRE with CMake (in
