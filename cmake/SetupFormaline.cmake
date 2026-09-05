@@ -9,7 +9,6 @@ set(SPECTRE_FORMALINE_LOCATIONS
   .claude
   .clang-format
   .clang-tidy
-  .claude
   .codecov.yaml
   .codex
   .devcontainer
