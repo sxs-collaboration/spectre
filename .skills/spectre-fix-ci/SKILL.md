@@ -17,7 +17,15 @@ After the script returns:
    and what the error was.
 2. **Identify source locations**: find file paths and line numbers in the
    error output that point to the failing code.
-3. **Suggest next steps**: propose a fix or further investigation.
+3. **Classify the failure**: compile, unit-test assertion, timeout,
+   infrastructure/dependency, formatting, clang-tidy, docs, or unknown.
+4. **Timeouts**: if tests only timed out, rerun each timed-out test serially
+   before changing code.
+5. **Tolerance failures**: investigate numerical stability or real `src` bugs
+   before relaxing tolerances.
+6. **Suggest next steps**: propose a fix or further investigation. If the
+   failure looks unrelated to the PR, say why and identify the component that
+   failed.
 
 If the context window seems too narrow to understand the failure, re-run
 with `--context 150` for more surrounding lines.
