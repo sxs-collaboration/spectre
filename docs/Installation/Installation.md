@@ -384,14 +384,10 @@ To build with the Docker image:
     To add a new shell, run `docker exec -it CONTAINER_NAME /bin/bash`
     (or `docker exec -it CONTAINER_ID /bin/bash`) from
     a terminal outside the container.
-  * In step 4 above, technically docker allows you to say
-    `-v $SPECTRE_ROOT/:/my/new/path` to map `$SPECTRE_ROOT` outside the
-    container to any path you want inside the container, but **do not do this**.
-    Compiling inside the container sets up git hooks in SPECTRE_ROOT that
-    contain hardcoded pathnames to SPECTRE_ROOT *as seen from inside the
-    container*. So if your source paths inside and outside the container are
-    different, commands like `git commit` run *from outside the container* will
-    die with `No such file or directory`.
+  * Compiling inside the container sets up git hooks that contain paths to
+    tools like Python *as seen from inside the container*, so `git commit` run
+    *from outside the container* may fail with `No such file or directory`.
+    Pass `-D USE_GIT_HOOKS=OFF` to CMake to avoid this.
   * If you want to use Docker within VSCode, take a look at our
     [quick start guide](../DevGuide/QuickStartDockerVSCode.md) for using Docker
     with VSCode.

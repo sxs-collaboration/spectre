@@ -358,7 +358,8 @@ alphabetical order):
   - Use git hooks to perform some sanity checks so that small goofs are caught
     before they are committed. These checks are particularly useful because they
     also run automatically on \ref github_actions_guide "CI" and must pass
-    before pull requests are merged.
+    before pull requests are merged. The hooks are shared between all git
+    worktrees of the repository and use the tools of the last configured build.
     (default is `ON`)
 - USE_LD
   - Override the automatically chosen linker. The options are `ld`, `gold`, and
