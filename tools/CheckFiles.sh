@@ -212,6 +212,7 @@ fi
 # Exclude files that are generated, out of our control, etc.
 find . \
      -type f \
+     ! -path './.git' \
      ! -path './.git/*' \
      ! -path './build*' \
      ! -path './docs/*' \
@@ -224,6 +225,8 @@ find . \
      ! -name 'CircularOrbitCoeffs.cpp' \
      ! -name 'CircularOrbitConvertEffsource.cpp' \
      ! -name '*~' \
+     ! -name 'AGENTS.local.md' \
+     ! -name 'CLAUDE.local.md' \
      ! -name deploy_key.enc \
      -print0 \
         | run_checks "${standard_checks[@]}" "${ci_checks[@]}"
