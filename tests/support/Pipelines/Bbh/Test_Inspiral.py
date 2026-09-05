@@ -158,6 +158,7 @@ class TestInspiral(unittest.TestCase):
                     "-O",
                     str(self.test_dir / "Inspiral"),
                     "--no-submit",
+                    "--no-create-bin",
                 ]
             )
         except SystemExit as e:
@@ -210,6 +211,7 @@ class TestInspiral(unittest.TestCase):
                     str(self.test_dir / "Pipeline"),
                     "--continue-with-ringdown",
                     "--no-submit",
+                    "--no-create-bin",
                 ]
             )
         except SystemExit as e:
@@ -229,7 +231,7 @@ class TestInspiral(unittest.TestCase):
                     "pipeline_dir": str(self.test_dir.resolve() / "Pipeline"),
                     "lev": -2,
                     "scheduler": "None",
-                    "copy_executable": "None",
+                    "create_bin": False,
                     "submit_script_template": "None",
                     "submit": True,
                 },
@@ -246,6 +248,7 @@ class TestInspiral(unittest.TestCase):
                     str(self.test_dir / "Pipeline"),
                     "--eccentricity-control",
                     "--no-submit",
+                    "--no-create-bin",
                 ]
             )
         except SystemExit as e:
@@ -276,7 +279,7 @@ class TestInspiral(unittest.TestCase):
                         INSPIRAL_INPUT_FILE_TEMPLATE
                     ),
                     "scheduler": "None",
-                    "copy_executable": "None",
+                    "create_bin": False,
                     "submit_script_template": "None",
                     "submit": True,
                 },

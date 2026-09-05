@@ -2,8 +2,11 @@
 # See LICENSE.txt for details.
 
 import logging
+import os
+import re
 import shutil
 import stat
+import subprocess
 import unittest
 from pathlib import Path
 
@@ -11,6 +14,8 @@ import yaml
 from click.testing import CliRunner
 
 from spectre.Informer import unit_test_build_path, unit_test_src_path
+from spectre.support.BinDirectory import BinDirectory
+from spectre.support.DirectoryStructure import PipelineStep
 from spectre.support.Logging import configure_logging
 from spectre.support.Resubmit import resubmit, resubmit_command
 from spectre.support.Schedule import (
@@ -26,10 +31,17 @@ from spectre.support.Schedule import (
 class TestSchedule(unittest.TestCase):
     def setUp(self):
         self.test_dir = Path(unit_test_build_path(), "Schedule").resolve()
-        self.test_dir.mkdir(parents=True, exist_ok=True)
-        self.spectre_cli = (
-            Path(unit_test_build_path()).parent.parent / "bin/spectre"
-        )
+        # Start from a clean directory. A bin directory left behind by an
+        # interrupted run would be reused instead of created, which changes
+        # what these tests exercise.
+        shutil.rmtree(self.test_dir, ignore_errors=True)
+        self.test_dir.mkdir(parents=True)
+        self.build_bin_dir = Path(unit_test_build_path()).parent.parent / "bin"
+        self.build_lib_dir = Path(unit_test_build_path()).parent.parent / "lib"
+        self.spectre_cli = BinDirectory.this().spectre_cli
+        # The source tree. A scheduled run must not reference it, or the build
+        # directory's 'bin', once it has a bin directory of its own.
+        self.source_dir = Path(unit_test_src_path()).parent.parent
 
         # Create an executable that just outputs all arguments passed to it
         self.executable = self.test_dir / "TestExec"
@@ -177,6 +189,9 @@ NUM_TASKS_PER_NODE={{ num_slurm_tasks | default (5) }}
         )
 
     def test_schedule(self):
+        # This tests the layout without a bin directory ('--no-create-bin'),
+        # which is also the layout of runs scheduled before bin directories
+        # existed. See 'test_bin_directory' for the default layout.
         # Submit a batch job to create the first segment
         schedule(
             input_file_template=self.input_file_template,
@@ -184,6 +199,7 @@ NUM_TASKS_PER_NODE={{ num_slurm_tasks | default (5) }}
             submit_script_template=self.submit_script_template,
             executable=self.executable,
             segments_dir=self.test_dir / "Segments",
+            create_bin=False,
             extra_option="TestOpt",
             metadata_option="MetaOpt",
             submit=True,
@@ -197,10 +213,12 @@ NUM_TASKS_PER_NODE={{ num_slurm_tasks | default (5) }}
                 self.test_dir / "Segments/Segment_0000/Submit.sh",
                 self.test_dir / "Segments/Segment_0000/jobid.txt",
                 self.test_dir / "Segments/Segment_0000/out.txt",
-                self.test_dir / "Segments/SubmitTemplate.sh",
-                self.test_dir / "Segments/SubmitTemplateBase.sh",
-                self.test_dir / "Segments/TestExec",
             ],
+            msg=(
+                "Without a bin directory the submit script template is"
+                " rendered where it is, so no copy lands in the segments"
+                " directory"
+            ),
         )
         self.assertEqual(
             (self.test_dir / "Segments/Segment_0000/jobid.txt").read_text(),
@@ -225,8 +243,8 @@ NUM_TASKS_PER_NODE={{ num_slurm_tasks | default (5) }}
             dict(
                 clean_output=False,
                 context_file_name="SchedulerContext.yaml",
-                copy_executable=None,
-                executable=str(self.test_dir / "Segments/TestExec"),
+                create_bin=False,
+                executable=str(self.executable),
                 executable_name="TestExec",
                 extra_option="TestOpt",
                 metadata_option="MetaOpt",
@@ -246,9 +264,7 @@ NUM_TASKS_PER_NODE={{ num_slurm_tasks | default (5) }}
                 spectre_cli=str(self.spectre_cli),
                 submit=True,
                 submit_script_name="Submit.sh",
-                submit_script_template=str(
-                    self.test_dir / "Segments/SubmitTemplate.sh"
-                ),
+                submit_script_template=str(self.submit_script_template),
             ),
         )
         self.assertEqual(
@@ -259,7 +275,7 @@ SPECTRE_CLI={spectre_cli}
 NUM_NODES=1
 NUM_TASKS_PER_NODE=5
 """.format(
-                executable=self.test_dir / "Segments/TestExec",
+                executable=self.executable,
                 spectre_cli=self.spectre_cli,
             ),
         )
@@ -273,9 +289,10 @@ NUM_TASKS_PER_NODE=5
             input_file_template=self.test_dir
             / "Segments/Segment_0000/InputFile.yaml",
             scheduler=["echo", "Submitted batch job 001"],
-            submit_script_template=self.test_dir / "Segments/SubmitTemplate.sh",
-            executable=self.test_dir / "Segments/TestExec",
+            submit_script_template=self.submit_script_template,
+            executable=self.executable,
             segments_dir=self.test_dir / "Segments",
+            create_bin=False,
             from_checkpoint=checkpoint,
             extra_option="TestOpt",
             metadata_option="MetaOpt",
@@ -296,6 +313,43 @@ NUM_TASKS_PER_NODE=5
             (self.test_dir / "Segments/Segment_0002/jobid.txt").read_text(),
             "001",
         )
+
+    def test_direct_runs_use_the_bin_directory(self):
+        # A directly executed run belongs to the simulation just as much as a
+        # scheduled one, so it runs the copy in the simulation's bin directory
+        # rather than the build directory's. (Whether a direct run *creates*
+        # one is covered in 'Test_BinDirectory'.)
+        def run_in(target_dir, **kwargs):
+            schedule(
+                input_file_template=self.input_file_template,
+                scheduler=None,
+                executable=self.executable,
+                segments_dir=target_dir,
+                extra_option="TestOpt",
+                metadata_option="MetaOpt",
+                **kwargs,
+            )
+
+        # An existing bin directory is used, and its copy of the executable is
+        # the one that runs
+        has_one = self.test_dir / "HasOne"
+        bin_dir = BinDirectory(has_one / "bin")
+        bin_dir.path.mkdir(parents=True)
+        bin_dir.spectre_cli.write_text("#!/bin/bash\n")
+        frozen = bin_dir.path / self.executable.name
+        frozen.write_text("#!/bin/bash\necho from-bin $@ > out.txt\n")
+        frozen.chmod(frozen.stat().st_mode | stat.S_IEXEC)
+        run_in(has_one)
+        out_file = has_one / "Segment_0000/out.txt"
+        self.assertTrue(out_file.read_text().startswith("from-bin"))
+
+        # An executable it has not frozen yet is added, so the next run of it
+        # uses the same copy
+        empty_bin = self.test_dir / "EmptyBin"
+        BinDirectory(empty_bin / "bin").path.mkdir(parents=True)
+        BinDirectory(empty_bin / "bin").spectre_cli.write_text("#!/bin/bash\n")
+        run_in(empty_bin)
+        self.assertTrue((empty_bin / "bin" / self.executable.name).is_file())
 
     def test_cli(self):
         runner = CliRunner()
@@ -322,6 +376,7 @@ NUM_TASKS_PER_NODE=5
                 str(self.executable),
                 "-O",
                 str(self.test_dir / "Segments"),
+                "--no-create-bin",
                 "-p",
                 "extra_option=TestOpt",
                 "-p",

@@ -23,6 +23,13 @@ if (BUILD_PYTHON_BINDINGS AND NOT PY_DEV_MODE)
 endif()
 
 spectre_add_python_bindings_test(
+  "support.BinDirectory"
+  Test_BinDirectory.py
+  "Python"
+  None
+  TIMEOUT 120)
+
+spectre_add_python_bindings_test(
   "support.DirectoryStructure"
   Test_DirectoryStructure.py
   "Python"
@@ -50,4 +57,5 @@ spectre_add_python_bindings_test(
   "support.Python.Schedule"
   Test_Schedule.py
   "Python"
-  None)
+  None
+  TIMEOUT 20)

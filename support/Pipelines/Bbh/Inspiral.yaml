@@ -13,7 +13,7 @@ Next:
     lev: {{ Lev }}
     pipeline_dir: {{ pipeline_dir }}
     scheduler: {{ scheduler | default("None") }}
-    copy_executable: {{ copy_executable | default("None") }}
+    create_bin: {{ create_bin | default("None") }}
     submit_script_template: {{ submit_script_template | default("None") }}
     submit: True
 {% elif eccentricity_control %}
@@ -32,7 +32,7 @@ Next:
     inspiral_input_file_template: {{ input_file_template | default("None") }}
     # Scheduler options
     scheduler: {{ scheduler | default("None") }}
-    copy_executable: {{ copy_executable | default("None") }}
+    create_bin: {{ create_bin | default("None") }}
     submit_script_template: {{ submit_script_template | default("None") }}
     submit: True
 {% endif %}
