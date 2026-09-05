@@ -68,7 +68,7 @@ if(SPECTRE_KOKKOS)
     include(FetchContent)
     FetchContent_Declare(Kokkos
       GIT_REPOSITORY https://github.com/kokkos/kokkos.git
-      GIT_TAG 4.4.00
+      GIT_TAG 5.2.1
       GIT_SHALLOW TRUE
       ${SPECTRE_FETCHCONTENT_BASE_ARGS}
     )

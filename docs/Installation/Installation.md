@@ -194,11 +194,11 @@ use a container or follow the \ref quick_start_install.
 
 #### Required:
 
-* [GCC](https://gcc.gnu.org/) 10.0 or later,
-[Clang](https://clang.llvm.org/) 13.0 or later (see
+* [GCC](https://gcc.gnu.org/) 11.0 or later,
+[Clang](https://clang.llvm.org/) 17.0 or later (see
 [here](https://apt.llvm.org/) for how to get newer versions of clang through
 apt), or AppleClang 13.0.0 or later
-* [CMake](https://cmake.org/) 3.18.0 or later
+* [CMake](https://cmake.org/) 3.22.0 or later
 * [Git](https://git-scm.com/)
 * BLAS & LAPACK (e.g. [OpenBLAS](http://www.openblas.net))
 * [Boost](http://www.boost.org/) 1.60.0 or later
@@ -356,7 +356,7 @@ To build with the Docker image:
    You will end up in a bash shell in the docker container,
    as root (you need to be root).
    Within the container, the files in `$SPECTRE_ROOT` are available and Charm++
-   is installed in `/work/charm_7_0_0`. For the following steps, stay inside the
+   is installed in `/work/charm`. For the following steps, stay inside the
    docker container as root.
 4. Proceed with [building SpECTRE](#building-spectre).
 
@@ -535,8 +535,8 @@ Follow these steps:
    you may create more later, e.g., `build-clang-Debug`. Then, `cd` into the
    build directory.
 2. Determine the location of your Charm++ installation. In the Docker container
-   it is `/work/charm_7_0_0/multicore-linux-x86_64-gcc` for GCC builds and
-   `/work/charm_7_0_0/mpi-linux-x86_64-smp-clang` for clang builds. For Spack
+   it is `/work/charm/multicore-linux-x86_64-gcc` for GCC builds and
+   `/work/charm/mpi-linux-x86_64-smp-clang` for clang builds. For Spack
    installations you can determine it with
    `spack location --install-dir charmpp`. We refer to the install directory as
    `CHARM_ROOT` below.

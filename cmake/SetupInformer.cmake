@@ -1,6 +1,14 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
+# CMake 3.27 introduced linker-generated dependency files. The Ubuntu 22.04
+# container used CMake 3.22, but the Ubuntu 26.04 container uses CMake 4.2 and
+# generates these files. The executable linker wrapper injects temporary object
+# files into the link command and removes them after linking. Recording those
+# objects as prerequisites would therefore relink the executable on every
+# subsequent build because the objects no longer exist.
+set(CMAKE_LINK_DEPENDS_USE_LINKER FALSE)
+
 # Configure info from build to give access to unit test path,
 # SpECTRE version, etc. (things known at CMake time)
 configure_file(

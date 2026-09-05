@@ -159,29 +159,22 @@ function(create_c_flags_target FLAGS_TO_CHECK TARGET_NAME)
   create_compile_flags_target(C c "${FLAGS_TO_CHECK}" "${TARGET_NAME}")
 endfunction()
 
-set(CMAKE_SUPPORTS_LINK_OPTIONS OFF)
-if(CMAKE_VERSION VERSION_EQUAL 3.13 OR CMAKE_VERSION VERSION_GREATER 3.13)
-  set(CMAKE_SUPPORTS_LINK_OPTIONS ON)
-endif(CMAKE_VERSION VERSION_EQUAL 3.13 OR CMAKE_VERSION VERSION_GREATER 3.13)
+# Creates a target named TARGET_NAME that, if the linker flag FLAG_TO_CHECK
+# is supported, defines ${FLAG_TO_CHECK} as an INTERFACE_LINK_OPTION
+function(create_cxx_link_flag_target FLAG_TO_CHECK TARGET_NAME)
+  include(CheckLinkerFlag)
+  unset(CXX_LINKER_FLAG_WORKS CACHE)
+  set(CMAKE_REQUIRED_QUIET 1)
+  check_linker_flag(CXX ${FLAG_TO_CHECK} CXX_LINKER_FLAG_WORKS)
+  unset(CMAKE_REQUIRED_QUIET)
 
-if(CMAKE_SUPPORTS_LINK_OPTIONS)
-  # Creates a target named TARGET_NAME that, if the linker flag FLAG_TO_CHECK
-  # is supported, defines ${FLAG_TO_CHECK} as an INTERFACE_LINK_OPTION
-  function(create_cxx_link_flag_target FLAG_TO_CHECK TARGET_NAME)
-    include(CheckLinkerFlag)
-    unset(CXX_LINKER_FLAG_WORKS CACHE)
-    set(CMAKE_REQUIRED_QUIET 1)
-    check_linker_flag(CXX ${FLAG_TO_CHECK} CXX_LINKER_FLAG_WORKS)
-    unset(CMAKE_REQUIRED_QUIET)
-
-    add_library(${TARGET_NAME} INTERFACE)
-    if(CXX_LINKER_FLAG_WORKS)
-      set_property(TARGET ${TARGET_NAME}
-        APPEND PROPERTY
-        INTERFACE_LINK_OPTIONS $<$<COMPILE_LANGUAGE:CXX>:${FLAG_TO_CHECK}>)
-    endif()
-  endfunction()
-endif(CMAKE_SUPPORTS_LINK_OPTIONS)
+  add_library(${TARGET_NAME} INTERFACE)
+  if(CXX_LINKER_FLAG_WORKS)
+    set_property(TARGET ${TARGET_NAME}
+      APPEND PROPERTY
+      INTERFACE_LINK_OPTIONS $<$<COMPILE_LANGUAGE:CXX>:${FLAG_TO_CHECK}>)
+  endif()
+endfunction()
 
 # Checks if a flag is supported by the linker and adds it if it is
 function(check_and_add_cxx_link_flag FLAG_TO_CHECK)
