@@ -20,7 +20,9 @@ from spectre.Evolution.Ringdown.ComputeRingdownShapeAndTranslationFoT import (
 from spectre.IO.H5.FunctionsOfTimeFromVolume import (
     functions_of_time_from_volume,
 )
-from spectre.support.DirectoryStructure import PipelineStep, list_pipeline_steps
+from spectre.Pipelines.EccentricityControl.DirectoryStructure import (
+    EccIteration,
+)
 from spectre.support.Schedule import schedule, scheduler_options
 
 logger = logging.getLogger(__name__)
@@ -168,20 +170,19 @@ def start_ringdown(
     if pipeline_dir:
         pipeline_dir = Path(pipeline_dir).resolve()
     if pipeline_dir and not segments_dir and not run_dir:
-        pipeline_steps = list_pipeline_steps(pipeline_dir)
-        if pipeline_steps:
-            segments_dir = pipeline_steps[-1].next(label="Ringdown").path
-        else:
-            segments_dir = PipelineStep.first(
-                directory=pipeline_dir, label="Ringdown"
-            ).path
+        assert lev is not None, (
+            "Specify a '--lev' when running in a '--pipeline-dir' / '-d',"
+            " because it determines the directory that the ringdown runs in."
+            " Specify a '--run-dir' / '-o' or '--segments-dir' / '-O' to choose"
+            " the directory yourself."
+        )
+        # Continue in the same directory as the inspiral
+        segments_dir = EccIteration.current(pipeline_dir).lev_dir(lev)
 
     if path_to_output_h5 == None:
-        ringdown_dir = Path(segments_dir or run_dir)
-        ringdown_dir.mkdir(parents=True, exist_ok=True)
-        path_to_output_h5 = (
-            Path(ringdown_dir).resolve() / "RingdownShapeCoefs.h5"
-        )
+        output_dir = Path(segments_dir or run_dir)
+        output_dir.mkdir(parents=True, exist_ok=True)
+        path_to_output_h5 = Path(output_dir).resolve() / "RingdownShapeCoefs.h5"
     else:
         path_to_output_h5 = Path(path_to_output_h5).resolve()
 
@@ -569,7 +570,7 @@ def start_ringdown(
         writable=True,
         path_type=Path,
     ),
-    help="Directory where steps in the pipeline are created.",
+    help="Directory of the simulation, in which the pipeline creates its runs.",
 )
 @scheduler_options
 def start_ringdown_command(**kwargs):

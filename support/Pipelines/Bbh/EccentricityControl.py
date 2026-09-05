@@ -18,7 +18,6 @@ from spectre.Pipelines.EccentricityControl.EccentricityControlParams import (
     eccentricity_control_params,
     eccentricity_control_params_options,
 )
-from spectre.support.DirectoryStructure import PipelineStep, list_pipeline_steps
 from spectre.support.Schedule import scheduler_options
 
 logger = logging.getLogger(__name__)
@@ -67,14 +66,17 @@ def eccentricity_control(
     Arguments:
       h5_files: files that contain the trajectory data
       id_input_file_path: path to the input file of the initial data run
-      pipeline_dir: directory where the pipeline outputs are stored.
+      pipeline_dir: Directory of the simulation, in which the pipeline
+        creates its runs.
       evolve: Evolve the initial data after generation to continue eccentricity
         control. You can disable this to generate only the new initial data if
         you want to manually start the next inspiral.
       branch_levs_when_complete: Optional list of levs to start when
-        eccentricity control is complete. Each lev will run in a separate
-        subdirectory. If no levs are specified, the simulation will just stop
-        after eccentricity control. See `Inspiral.INSPIRAL_LEVS` for the
+        eccentricity control is complete. Each lev continues in the 'Lev'
+        subdirectory of the current eccentricity-control iteration, so the lev
+        that was just run continues its sequence of segments and others branch
+        into a new directory. If no levs are specified, the simulation will just
+        stop after eccentricity control. See `Inspiral.INSPIRAL_LEVS` for the
         definition of the levs.
       inspiral_input_file_path: Path to the input file for the inspiral run.
         Required only if `branch_levs_when_complete` is specified, as the
@@ -118,15 +120,9 @@ def eccentricity_control(
     ):
         logger.info("Eccentricity control complete.")
         if branch_levs_when_complete:
-            # Continue inspiral in a subdirectory for each lev
+            # Continue the inspiral at each lev. The lev that we just ran
+            # continues in the same directory, others branch into a new one.
             for lev in branch_levs_when_complete:
-                lev_label = f"Lev{lev}"
-                pipeline_steps = list_pipeline_steps(pipeline_dir)
-                lev_dir = (
-                    pipeline_steps[-1].next(label=lev_label)
-                    if pipeline_steps
-                    else PipelineStep.first(pipeline_dir, label=lev_label)
-                )
                 start_inspiral(
                     # Start from inspiral data
                     id_input_file_path=inspiral_input_file_path,
@@ -135,7 +131,7 @@ def eccentricity_control(
                     lev=lev,
                     inspiral_input_file_template=inspiral_input_file_template,
                     continue_with_ringdown=True,
-                    pipeline_dir=lev_dir.path,
+                    pipeline_dir=pipeline_dir,
                     **scheduler_kwargs,
                 )
         return
@@ -185,7 +181,7 @@ def eccentricity_control(
         writable=True,
         path_type=Path,
     ),
-    help="Directory where steps in the pipeline are created.",
+    help="Directory of the simulation, in which the pipeline creates its runs.",
 )
 @click.option(
     "--evolve/--no-evolve",

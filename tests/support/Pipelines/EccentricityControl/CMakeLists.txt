@@ -1,6 +1,12 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
+spectre_add_python_bindings_test(
+  "support.Pipelines.EccentricityControl.DirectoryStructure"
+  Test_DirectoryStructure.py
+  "Python"
+  None)
+
 if (SpEC_FOUND)
   spectre_add_python_bindings_test(
     "support.Pipelines.EccentricityControl.EccentricityControlParams"

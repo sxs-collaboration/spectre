@@ -12,6 +12,7 @@ import yaml
 import spectre.IO.H5 as spectre_h5
 from spectre.IO.H5 import to_dataframe
 from spectre.Pipelines.Bbh.InitialData import TargetParams, generate_id
+from spectre.support.DirectoryStructure import Segment
 
 logger = logging.getLogger(__name__)
 
@@ -171,8 +172,11 @@ def control_id(
         orbital_angular_velocity=orbital_angular_velocity,
     )
 
-    # Prepare file and legends to output diagnostic data
-    output_filename = f"{id_run_dir}/../ControlParams.h5"
+    # Prepare file and legends to output diagnostic data. Every run of the
+    # control loop is a segment in the initial-data directory, so the diagnostic
+    # data goes next to them.
+    id_dir = Path(id_run_dir).resolve().parent
+    output_filename = str(id_dir / "ControlParams.h5")
     residual_legend = []
     jacobian_legend = []
     for param in control_params:
@@ -206,8 +210,6 @@ def control_id(
                 f" Control of BBH Parameters ({iteration}) "
                 "=========================================="
             )
-            control_run_dir = f"{id_run_dir}/../ControlParams_{iteration:03}"
-
             # Start with initial free data choices and update the ones being
             # controlled in `control_params` with the numeric value from `u`
             free_data = initial_free_data.copy()
@@ -218,12 +220,13 @@ def control_id(
                 else:
                     free_data[key] = [next(u_iterator) for _ in range(3)]
 
-            # Run ID and find horizons
+            # Run ID and find horizons. The run continues the sequence of
+            # initial-data runs in the 'id_dir', like any other run.
             generate_id(
                 target_params,
                 **free_data,
                 separation=separation,
-                run_dir=control_run_dir,
+                segments_dir=id_dir,
                 control=False,
                 evolve=False,
                 scheduler=None,
@@ -231,6 +234,7 @@ def control_id(
                 polynomial_order=polynomial_order,
                 negative_expansion_bc=negative_expansion_bc,
             )
+            control_run_dir = str(Segment.last(id_dir).path)
 
         # Initialize dictionary to hold the measured physical parameters
         measured_params: Dict[TargetParams, Union[float, Sequence[float]]] = {}

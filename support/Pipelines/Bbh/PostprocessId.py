@@ -88,7 +88,8 @@ def postprocess_id(
         for details.
       evolve: Evolve the initial data after postprocessing (default: False).
       negative_expansion_bc: Place the excisions inside of apparent horizons.
-      pipeline_dir: Directory where steps in the pipeline are created.
+      pipeline_dir: Directory of the simulation, in which the pipeline
+        creates its runs.
         Required if 'evolve' is set to True.
     """
     # Read input file
@@ -230,7 +231,7 @@ def postprocess_id(
     "--pipeline-dir",
     "-d",
     type=click.Path(writable=True, path_type=Path),
-    help="Directory where steps in the pipeline are created.",
+    help="Directory of the simulation, in which the pipeline creates its runs.",
 )
 @click.option(
     "--horizon-l-max",

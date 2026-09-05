@@ -25,8 +25,8 @@ class TestCce(unittest.TestCase):
         # Set up directories to hold input and output files
         self.inspiral_dir = self.test_dir / "Inspiral"
         self.ringdown_dir = self.test_dir / "Ringdown"
-        self.inspiral_seg_dir = self.inspiral_dir / "Segment_0000"
-        self.ringdown_seg_dir = self.ringdown_dir / "Segment_0000"
+        self.inspiral_seg_dir = self.inspiral_dir / "0000_Inspiral"
+        self.ringdown_seg_dir = self.ringdown_dir / "0000_Ringdown"
         if os.path.exists(self.inspiral_dir):
             shutil.rmtree(self.inspiral_dir)
         if os.path.exists(self.ringdown_dir):
@@ -176,6 +176,37 @@ class TestCce(unittest.TestCase):
             standalone_mode=False,
         )
         self.assertTrue((self.test_dir / "02_Output/Cce.yaml").exists())
+        # Run in a pipeline directory, where CCE continues the sequence of runs
+        # of the resolution that the waveforms are extracted from
+        run_cce_command.main(
+            args=[
+                self.inspiral_input_file_path,
+                "--pipeline-dir",
+                str(self.test_dir / "Pipeline"),
+                "--lev",
+                "1",
+                "-E",
+                str(self.bin_dir / "CharacteristicExtract"),
+                "--no-submit",
+            ],
+            standalone_mode=False,
+        )
+        self.assertTrue(
+            (self.test_dir / "Pipeline/Ecc0/Lev1/0000_Cce/Cce.yaml").exists()
+        )
+        # Run in a segments directory
+        run_cce_command.main(
+            args=[
+                self.inspiral_input_file_path,
+                "--segments-dir",
+                str(self.test_dir / "Segments"),
+                "-E",
+                str(self.bin_dir / "CharacteristicExtract"),
+                "--no-submit",
+            ],
+            standalone_mode=False,
+        )
+        self.assertTrue((self.test_dir / "Segments/0000_Cce/Cce.yaml").exists())
 
 
 if __name__ == "__main__":

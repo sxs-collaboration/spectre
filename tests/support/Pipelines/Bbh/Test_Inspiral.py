@@ -46,7 +46,7 @@ class TestInspiral(unittest.TestCase):
             submit=False,
             executable=str(self.bin_dir / "SolveXcts"),
         )
-        self.id_dir = self.test_dir / "ID"
+        self.id_run_dir = self.test_dir / "ID"
         # Purposefully not in the ID directory
         self.horizons_filename = self.test_dir / "Horizons.h5"
         with spectre_h5.H5File(
@@ -62,18 +62,18 @@ class TestInspiral(unittest.TestCase):
         shutil.rmtree(self.test_dir, ignore_errors=True)
 
     def test_inspiral_parameters(self):
-        with open(self.id_dir / "InitialData.yaml") as open_input_file:
+        with open(self.id_run_dir / "InitialData.yaml") as open_input_file:
             id_metadata, id_input_file = yaml.safe_load_all(open_input_file)
         params = inspiral_parameters(
             id_input_file=id_input_file,
             id_metadata=id_metadata,
-            id_run_dir=self.id_dir,
+            id_run_dir=self.id_run_dir,
             id_subfile_name="VolumeData",
             id_horizons_path=self.horizons_filename,
         )
         self.assertEqual(
             params["IdFileGlob"],
-            str((self.id_dir).resolve() / "BbhVolume*.h5"),
+            str((self.id_run_dir).resolve() / "BbhVolume*.h5"),
         )
         self.assertEqual(params["IdSubfile"], "VolumeData")
         self.assertAlmostEqual(params["ExcisionRadiusA"], 1.116 * 1.0385 * 0.82)
@@ -134,7 +134,7 @@ class TestInspiral(unittest.TestCase):
 
     def test_cli(self):
         common_args = [
-            str(self.id_dir / "InitialData.yaml"),
+            str(self.id_run_dir / "InitialData.yaml"),
             "--id-subfile-name",
             "VolumeData",
             "--id-horizons-path",
@@ -163,11 +163,11 @@ class TestInspiral(unittest.TestCase):
         except SystemExit as e:
             self.assertEqual(e.code, 0)
         self.assertTrue(
-            (self.test_dir / "Inspiral/Segment_0000/Inspiral.yaml").exists()
+            (self.test_dir / "Inspiral/0000_Inspiral/Inspiral.yaml").exists()
         )
 
         with open(
-            self.test_dir / "Inspiral/Segment_0000/Inspiral.yaml", "r"
+            self.test_dir / "Inspiral/0000_Inspiral/Inspiral.yaml", "r"
         ) as open_input_file:
             _, input_file = yaml.safe_load_all(open_input_file)
         ah_ab_max_tolerance = 0.000216536 * 4 ** (-2)
@@ -215,7 +215,7 @@ class TestInspiral(unittest.TestCase):
         except SystemExit as e:
             self.assertEqual(e.code, 0)
         with open(
-            self.test_dir / "Pipeline/000_Inspiral/Segment_0000/Inspiral.yaml",
+            self.test_dir / "Pipeline/Ecc0/Lev-2/0000_Inspiral/Inspiral.yaml",
             "r",
         ) as open_input_file:
             metadata = next(yaml.safe_load_all(open_input_file))
@@ -251,7 +251,7 @@ class TestInspiral(unittest.TestCase):
         except SystemExit as e:
             self.assertEqual(e.code, 0)
         with open(
-            self.test_dir / "Pipeline/001_Inspiral/Segment_0000/Inspiral.yaml",
+            self.test_dir / "Pipeline/Ecc0/Lev-2/0001_Inspiral/Inspiral.yaml",
             "r",
         ) as open_input_file:
             metadata = next(yaml.safe_load_all(open_input_file))
@@ -262,9 +262,9 @@ class TestInspiral(unittest.TestCase):
             {
                 "Run": modulename + ":eccentricity_control",
                 "With": {
-                    "h5_files": "../Segment_*/BbhReductions.h5",
+                    "h5_files": "../*_Inspiral/BbhReductions.h5",
                     "id_input_file_path": str(
-                        self.id_dir.resolve() / "InitialData.yaml"
+                        self.id_run_dir.resolve() / "InitialData.yaml"
                     ),
                     "plot_output_dir": "./",
                     "ecc_params_output_file": "../EccentricityParams.yaml",

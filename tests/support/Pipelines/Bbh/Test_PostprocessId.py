@@ -42,7 +42,7 @@ class TestPostprocessId(unittest.TestCase):
             submit=False,
             executable=str(self.bin_dir / "SolveXcts"),
         )
-        self.id_dir = self.test_dir / "ID"
+        self.id_run_dir = self.test_dir / "ID"
 
     def tearDown(self):
         shutil.rmtree(self.test_dir, ignore_errors=True)
@@ -55,7 +55,7 @@ class TestPostprocessId(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "Number of observations"):
             postprocess_id_command(
                 [
-                    str(self.id_dir / "InitialData.yaml"),
+                    str(self.id_run_dir / "InitialData.yaml"),
                 ]
             )
 

@@ -65,8 +65,8 @@ class TestInitialData(unittest.TestCase):
             submit=False,
             executable=str(self.bin_dir / "SolveXcts"),
         )
-        self.id_dir = self.test_dir / "ID"
-        self.horizons_filename = self.id_dir / "Horizons.h5"
+        self.id_run_dir = self.test_dir / "ID"
+        self.horizons_filename = self.id_run_dir / "Horizons.h5"
         with spectre_h5.H5File(
             str(self.horizons_filename.resolve()), "a"
         ) as horizons_file:
@@ -85,7 +85,7 @@ class TestInitialData(unittest.TestCase):
             submit=False,
             executable=str(self.bin_dir / "EvolveGhBinaryBlackHole"),
         )
-        self.inspiral_dir = self.test_dir / "Inspiral" / "Segment_0000"
+        self.inspiral_dir = self.test_dir / "Inspiral" / "0000_Inspiral"
         # Making fake reduction data with simple derivative
         self.inspiral_reduction_data = self.inspiral_dir / "BbhReductions.h5"
         with spectre_h5.H5File(
@@ -279,7 +279,7 @@ class TestInitialData(unittest.TestCase):
         except SystemExit as e:
             self.assertEqual(e.code, 0)
         self.assertTrue(
-            (self.test_dir / "Ringdown/Segment_0000/Ringdown.yaml").exists()
+            (self.test_dir / "Ringdown/0000_Ringdown/Ringdown.yaml").exists()
         )
         self.assertTrue(
             (self.test_dir / "RingdownCoefs.h5").exists(),
@@ -303,13 +303,12 @@ class TestInitialData(unittest.TestCase):
             self.assertEqual(e.code, 0)
         self.assertTrue(
             (
-                self.test_dir
-                / "Pipeline/000_Ringdown/Segment_0000/Ringdown.yaml"
+                self.test_dir / "Pipeline/Ecc0/Lev1/0000_Ringdown/Ringdown.yaml"
             ).exists()
         )
         self.assertTrue(
             (
-                self.test_dir / "Pipeline/000_Ringdown/RingdownShapeCoefs.h5"
+                self.test_dir / "Pipeline/Ecc0/Lev1/RingdownShapeCoefs.h5"
             ).exists(),
         )
 

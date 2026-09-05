@@ -6,5 +6,6 @@ spectre_python_add_module(
   MODULE_PATH Pipelines
   PYTHON_FILES
   __init__.py
+  DirectoryStructure.py
   EccentricityControlParams.py
 )

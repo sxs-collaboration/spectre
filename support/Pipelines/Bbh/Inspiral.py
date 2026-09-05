@@ -13,8 +13,10 @@ from rich.pretty import pretty_repr
 
 import spectre.IO.H5 as spectre_h5
 from spectre.IO.H5 import available_subfiles, open_volfiles, select_observation
+from spectre.Pipelines.EccentricityControl.DirectoryStructure import (
+    EccIteration,
+)
 from spectre.support.CliExceptions import RequiredChoiceError
-from spectre.support.DirectoryStructure import PipelineStep, list_pipeline_steps
 from spectre.support.Schedule import schedule, scheduler_options
 
 logger = logging.getLogger(__name__)
@@ -553,13 +555,15 @@ def start_inspiral(
             " 'pipeline_dir' automatically."
         )
     if pipeline_dir and not run_dir and not segments_dir:
-        pipeline_steps = list_pipeline_steps(pipeline_dir)
-        if pipeline_steps:  # Check if the list is not empty
-            segments_dir = pipeline_steps[-1].next(label="Inspiral").path
-        else:
-            segments_dir = PipelineStep.first(
-                directory=pipeline_dir, label="Inspiral"
-            ).path
+        assert lev is not None, (
+            "Specify a '--lev' when running in a '--pipeline-dir' / '-d',"
+            " because it determines the directory that the evolution runs in."
+            " Specify a '--run-dir' / '-o' or '--segments-dir' / '-O' to choose"
+            " the directory yourself."
+        )
+        # Continue the current eccentricity-control iteration at this
+        # resolution
+        segments_dir = EccIteration.current(pipeline_dir).lev_dir(lev)
 
     # Determine resource allocation
     if (
@@ -695,7 +699,7 @@ def start_inspiral(
         writable=True,
         path_type=Path,
     ),
-    help="Directory where steps in the pipeline are created.",
+    help="Directory of the simulation, in which the pipeline creates its runs.",
 )
 @scheduler_options
 def start_inspiral_command(**kwargs):
