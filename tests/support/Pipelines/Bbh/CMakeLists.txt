@@ -8,14 +8,12 @@ spectre_add_python_bindings_test(
   None
   TIMEOUT 60)
 
-if (SpEC_FOUND)
-  spectre_add_python_bindings_test(
-    "support.Pipelines.Bbh.EccentricityControl"
-    Test_EccentricityControl.py
-    "Python"
-    None
-    TIMEOUT 20)
-endif()
+spectre_add_python_bindings_test(
+  "support.Pipelines.Bbh.EccentricityControl"
+  Test_EccentricityControl.py
+  "Python"
+  None
+  TIMEOUT 20)
 
 spectre_add_python_bindings_test(
   "support.Pipelines.Bbh.FindHorizon"
