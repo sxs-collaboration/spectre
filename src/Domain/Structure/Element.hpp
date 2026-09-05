@@ -64,6 +64,18 @@ class Element {
     return internal_boundaries_;
   }
 
+  /// The directions of the faces of the Element that are boundaries, i.e. that
+  /// are either internal boundaries (shared with a neighbor) or external
+  /// boundaries. This is the union of `internal_boundaries()` and
+  /// `external_boundaries()`. It excludes directions of topological type
+  /// (`domain::FaceType::Topological`), such as the angular directions of a
+  /// spherical shell, which have no neighbor and are not external boundaries
+  /// either. Iterate over this instead of `Direction::all_directions()` to skip
+  /// topological directions.
+  const std::unordered_set<Direction<VolumeDim>>& all_boundaries() const {
+    return all_boundaries_;
+  }
+
   /// A unique ID for the Element.
   const ElementId<VolumeDim>& id() const { return id_; }
 
@@ -73,7 +85,7 @@ class Element {
   /// The number of neighbors this element has
   size_t number_of_neighbors() const { return number_of_neighbors_; }
 
-  /// The topology in each dimensio of this Element
+  /// The topology in each dimension of this Element
   const std::array<domain::Topology, VolumeDim>& topologies() const {
     return topologies_;
   }
@@ -92,6 +104,7 @@ class Element {
   size_t number_of_neighbors_{};
   std::unordered_set<Direction<VolumeDim>> external_boundaries_{};
   std::unordered_set<Direction<VolumeDim>> internal_boundaries_{};
+  std::unordered_set<Direction<VolumeDim>> all_boundaries_{};
   std::array<domain::Topology, VolumeDim> topologies_;
   DirectionMap<VolumeDim, domain::FaceType> face_types_{};
 };
