@@ -604,7 +604,6 @@ void test_equivalence() {
   CHECK(NotNoExceptCompare{1} != NotNoExceptCompare{0});
   CHECK_FALSE(NotNoExceptCompare{1} != NotNoExceptCompare{1});
 
-#if __cplusplus >= 201402L
   {
     constexpr tuples::TaggedTuple<relational_tags::Int0, relational_tags::Int1,
                                   relational_tags::Int2>
@@ -636,7 +635,6 @@ void test_equivalence() {
     static_assert(t0 != t4,
                   "Failed testing Unit.Utilities.TaggedTuple.relational");
   }
-#endif
 }
 
 struct lex_time_compared {
@@ -770,7 +768,6 @@ void test_relational() {
     CHECK(t0 <= t2);
     CHECK(global_time_mock == 28);
   }
-#if __cplusplus >= 201402L
   {
     // Check constexpr lexicographical comparison
     constexpr tuples::TaggedTuple<
@@ -793,7 +790,6 @@ void test_relational() {
     static_assert(t0 >= t2, "Failed testing relational operators");
     static_assert(t0 >= t3, "Failed testing relational operators");
   }
-#endif
 }
 
 static_assert(

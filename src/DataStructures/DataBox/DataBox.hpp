@@ -797,6 +797,8 @@ struct tag_and_bases<Tag, Others...>
 
 template <typename... Tags>
 auto DataBox<tmpl::list<Tags...>>::compute_tag_graphs() -> TagGraphs {
+  // The member function pointers below are `static_cast` explicitly because
+  // deducing them makes nvcc name the host-only members in device code.
   TagGraphs result{};
   // Compute graphs for retrieving tags
   const auto process_tag = [&result]<typename ConcreteTag>(
@@ -807,7 +809,8 @@ auto DataBox<tmpl::list<Tags...>>::compute_tag_graphs() -> TagGraphs {
           const std::string tag_name = pretty_type::get_name<Tag>();
           detail::set_or_null_if_ambiguous(
               make_not_null(&result.tag_retrieval_functions), tag_name,
-              &DataBox::template get_item_as_void_pointer<ConcreteTag>);
+              static_cast<const void* (DataBox::*)() const>(
+                  &DataBox::template get_item_as_void_pointer<ConcreteTag>));
           result.tag_aliases[concrete_tag_name].push_back(tag_name);
         });
   };
@@ -852,7 +855,8 @@ auto DataBox<tmpl::list<Tags...>>::compute_tag_graphs() -> TagGraphs {
           result.tags_and_dependents[argument_tag].push_back(tag_name);
         }
         result.tags_and_reset_functions[tag_name] =
-            &DataBox::template reset_compute_item<compute_tag>;
+            static_cast<bool (DataBox::*)()>(
+                &DataBox::template reset_compute_item<compute_tag>);
       });
 
   // Set mutation function
@@ -863,8 +867,9 @@ auto DataBox<tmpl::list<Tags...>>::compute_tag_graphs() -> TagGraphs {
           const std::string tag_name = pretty_type::get_name<Tag>();
           detail::set_or_null_if_ambiguous(
               make_not_null(&result.tag_mutate_functions), tag_name,
-              &DataBox::template get_item_as_void_pointer_for_mutate<
-                  MutableTag>);
+              static_cast<void* (DataBox::*)()>(
+                  &DataBox::template get_item_as_void_pointer_for_mutate<
+                      MutableTag>));
           detail::set_or_null_if_ambiguous(
               make_not_null(&result.mutate_mutable_subitems_functions),
               tag_name,
@@ -873,7 +878,9 @@ auto DataBox<tmpl::list<Tags...>>::compute_tag_graphs() -> TagGraphs {
           detail::set_or_null_if_ambiguous(
               make_not_null(&result.reset_compute_items_after_mutate_functions),
               tag_name,
-              &DataBox::template reset_compute_items_after_mutate<MutableTag>);
+              static_cast<void (DataBox::*)()>(
+                  &DataBox::template reset_compute_items_after_mutate<
+                      MutableTag>));
         });
   });
   return result;
