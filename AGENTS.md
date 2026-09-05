@@ -13,8 +13,8 @@
   `-D CMAKE_BUILD_TYPE=Debug`. Prefer clang over gcc if both are available. More
   options in docs/Installation/BuildSystem.md.
 - In a git worktree, symlink the git-ignored CMakeUserPresets.json from the main
-  checkout and pass `-D USE_GIT_HOOKS=OFF` to CMake. Suggest adding a
-  `post-checkout` git hook in `.git/hooks` to create the symlink automatically.
+  checkout. Suggest adding a `post-checkout` git hook in `.git/hooks` to create
+  the symlink automatically.
 - Never build `all`. Build only the targets you need (find them in the closest
   CMakeLists.txt).
 
