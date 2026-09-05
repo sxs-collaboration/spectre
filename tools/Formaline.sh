@@ -8,7 +8,8 @@
 formaline_archive_name=spectre_$1
 formaline_dir=@CMAKE_BINARY_DIR@/tmp/
 pushd @CMAKE_SOURCE_DIR@ >/dev/null
-if [ -d "./.git" ]; then
+# .git is a file in worktrees
+if [ -e "./.git" ]; then
     git ls-tree --full-tree --name-only HEAD \
         | xargs tar -czf ${formaline_dir}/${formaline_archive_name}.tar.gz
 else
