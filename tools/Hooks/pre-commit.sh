@@ -3,7 +3,8 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-. @CMAKE_SOURCE_DIR@/tools/FileTestDefs.sh
+# Git runs hooks from the top level of the worktree
+. ./tools/FileTestDefs.sh
 
 ###############################################################################
 # Get list of non-deleted file names, which we need below.
@@ -25,7 +26,7 @@ found_error=0
 
 ###############################################################################
 # Check the file size
-@Python_EXECUTABLE@ @CMAKE_SOURCE_DIR@/.git/hooks/CheckFileSize.py
+@Python_EXECUTABLE@ "$(dirname "$0")/CheckFileSize.py"
 [ "$?" -ne 0 ] && found_error=1
 
 printf '%s\0' "${commit_files[@]}" | run_checks "${standard_checks[@]}"
@@ -43,11 +44,11 @@ if [ $? -eq 0 ]; then
     if [ -n "$clang_format_diff" ] \
         && [[ "$clang_format_diff" != *"no modified files to format"* ]] \
         && [[ "$clang_format_diff" != *"did not modify any files"* ]]; then
-        echo "$clang_format_diff" > @CMAKE_SOURCE_DIR@/.clang_format_diff.patch
+        echo "$clang_format_diff" > .clang_format_diff.patch
         echo "Found C++ formatting errors."
         echo "Please run 'git clang-format' in the repository."
         echo "You can also apply the patch directly:"
-        echo "git apply @CMAKE_SOURCE_DIR@/.clang_format_diff.patch"
+        echo "git apply .clang_format_diff.patch"
         echo ""
     fi
 fi
