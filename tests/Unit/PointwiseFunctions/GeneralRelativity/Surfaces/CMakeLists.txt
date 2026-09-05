@@ -6,6 +6,7 @@ set(LIBRARY "Test_GrSurfaces")
 set(LIBRARY_SOURCES
   Test_ComputeItems.cpp
   Test_GrSurfaces.cpp
+  Test_ReggeWheelerZerilli.cpp
   Test_Tags.cpp
   )
 
@@ -17,11 +18,14 @@ target_link_libraries(
   ApparentHorizonFinder
   DataStructures
   GeneralRelativity
+  GeneralRelativitySolutions
+  GeneralizedHarmonic
   GrSurfaces
   GrSurfacesHelpers
   SphericalHarmonics
-  Strahlkorper
   SphericalHarmonicsHelpers
-  XctsSolutions
+  SpinWeightedSphericalHarmonics
+  Strahlkorper
   Utilities
+  XctsSolutions
 )
