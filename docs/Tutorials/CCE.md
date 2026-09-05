@@ -528,15 +528,33 @@ in a supported environment is a simple command:
 You may notice at the beginning you get some warnings that look like
 
 ```
-Warning: iterative angular solve did not reach target tolerance 1.000000e-13.
-Exited after 300 iterations, achieving final maximum over collocation points
+Warning: iterative angular solve did not reach target tolerance 3.000000e-11.
+Exited after 1000 iterations, achieving final maximum over collocation points
  for deviation from target of 2.073455e-08
 Proceeding with evolution using the partial result from partial angular solve.
 ```
 
 This is normal and expected. All it means is that initially an angular solve
-didn't hit a tolerance. We've found that it never really reaches the tolerance
-of 1e-13, but we still keep this tolerance so it gets as low as possible.
+didn't hit a tolerance, and CCE carries on using the partial result. You only
+get this warning when the `InitializeJ` scheme is configured with
+`RequireConvergence: False`.
+
+The `CharacteristicExtract.yaml` that ships with the release instead sets
+`RequireConvergence: True` under `CauchySecondOrder`, which turns the same
+condition into a fatal error rather than a warning:
+
+```
+Initial data iterative angular solve did not reach target tolerance 3e-11.
+Exited after 1000 iterations, achieving final
+maximum over collocation points deviation of J from target of 5.6e-11
+```
+
+If you hit this with your own worldtube data, the angular solve has plateaued
+above `AngularCoordTolerance`. That tolerance is empirical rather than
+physical, so raising it to sit just above the plateau is a reasonable fix, as
+is setting `RequireConvergence: False` to fall back to the warning above.
+Raising `MaxIterations` typically does not help: the residual tends to plateau
+rather than creep down, so the extra iterations buy nothing.
 
 After this, you'll likely see some output like
 

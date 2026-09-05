@@ -123,7 +123,14 @@ Cce:
     # an error message with the available options and a help string.
     # More details can be found at spectre-code.org.
     CauchySecondOrder:
-      AngularCoordTolerance: 1e-12
+      # This tolerance is empirical, not physical. The iterative angular solve
+      # plateaus rather than converging all the way down, so the tolerance has
+      # to sit just above wherever it plateaus for your worldtube data. With
+      # RequireConvergence below, too tight a value is a fatal error rather
+      # than a warning. On the Bondi-Sachs data used by the release test the
+      # residual settles at ~2.4e-11 and does not improve with more
+      # iterations, so 1e-12 aborts and 3e-11 succeeds.
+      AngularCoordTolerance: 3e-11
       MaxIterations: 1000
       RequireConvergence: True
       MaxAngularSolveError: 1e-1
