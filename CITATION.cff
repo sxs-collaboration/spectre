@@ -196,6 +196,12 @@ authors:
   family-names: Huang
   given-names: Chenhang
   orcid: https://orcid.org/0000-0003-2617-1011
+- affiliation: Nicholas and Lee Begovich Center for Gravitational-Wave Physics and
+    Astronomy, California State University, Fullerton, Fullerton, California 92831,
+    USA
+  family-names: Hury
+  given-names: Eric
+  orcid: https://orcid.org/0009-0006-4835-9655
 - affiliation: Cornell Center for Astrophysics and Planetary Science, Cornell University,
     Ithaca, New York 14853, USA
   family-names: Iozzo
@@ -355,8 +361,8 @@ authors:
   given-names: Jooheon
   orcid: https://orcid.org/0000-0002-3251-0924
 cff-version: 1.2.0
-date-released: 2026-08-27
-doi: 10.5281/zenodo.22125118
+date-released: 2026-09-05
+doi: 10.5281/zenodo.22433001
 keywords:
 - Software
 - Astrophysics
@@ -1074,4 +1080,4 @@ references:
 repository-code: https://github.com/sxs-collaboration/spectre
 title: SpECTRE
 url: https://spectre-code.org
-version: 2026.08.27
+version: 2026.09.05
