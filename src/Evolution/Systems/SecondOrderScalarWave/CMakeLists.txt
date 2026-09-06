@@ -33,6 +33,8 @@ target_link_libraries(
   DomainBoundaryConditions
   LinearOperators
   Utilities
+  PRIVATE
+  WaveEquationSolutions
   )
 
 add_subdirectory(BoundaryConditions)
