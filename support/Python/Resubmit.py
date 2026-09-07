@@ -37,8 +37,8 @@ def resubmit(
     # Resolve last segment
     all_segments = list_segments(segments_dir)
     assert all_segments, (
-        f"Directory '{segments_dir}' contains no segments "
-        f"that match the pattern '{Segment.NAME_PATTERN.pattern}'."
+        f"Directory '{segments_dir}' contains no segments that match the "
+        f"pattern '{Segment.NAME_PATTERN.pattern}', e.g. '0000_Inspiral'."
     )
     last_segment = all_segments[-1]
     if segment:

@@ -20,7 +20,7 @@ Next:
 Next:
   Run: spectre.Pipelines.Bbh.EccentricityControl:eccentricity_control
   With:
-    h5_files: "../Segment_*/BbhReductions.h5"
+    h5_files: "../*_Inspiral/BbhReductions.h5"
     id_input_file_path: {{ id_input_file_path }}
     plot_output_dir: ./
     ecc_params_output_file: "../EccentricityParams.yaml"
