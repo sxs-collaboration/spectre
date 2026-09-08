@@ -4,26 +4,21 @@
 #include "Evolution/Systems/GeneralizedHarmonic/FilledSpherePowerMonitor.hpp"
 
 #include <algorithm>
-#include <cmath>
 #include <cstddef>
 #include <memory>
 #include <vector>
 
 #include "DataStructures/DataVector.hpp"
-#include "DataStructures/Matrix.hpp"
 #include "DataStructures/Tensor/Structure.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/TensorYlmTransforms.hpp"
+#include "NumericalAlgorithms/LinearOperators/PowerMonitors.hpp"
 #include "NumericalAlgorithms/Spectral/Basis.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
-#include "NumericalAlgorithms/Spectral/NodalToModalMatrix.hpp"
 #include "NumericalAlgorithms/Spectral/Quadrature.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/Spherepack.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/SpherepackCache.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/SpherepackIterator.hpp"
-#include "NumericalAlgorithms/TensorYlm/Helpers.hpp"
-#include "Utilities/Blas.hpp"
-#include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Gsl.hpp"
@@ -34,106 +29,6 @@ namespace {
 
 constexpr size_t radial_monitor_index = 0;
 constexpr size_t angular_monitor_index = 1;
-
-// Accumulate squared B3 Jacobi spectral coefficients from one TensorYlm
-// component into both radial and angular sums in a single pass.
-//
-// `spec_buf` has layout spec_buf[s * n_r + i_r]: SPHEREPACK offset s at
-// radial collocation point i_r. Groups by radial mode = (n_total+1)/2 and by
-// angular degree l, where n_total = l + 2*k_spec. Modes with l < |spin_weight|
-// are skipped.
-//
-// `offsets_by_l` must be pre-grouped for the correct zero_m_is_real value.
-// `gathered` and `modal_buf` are caller-owned scratch buffers of size
-// max_n_modes_l * n_r each (max_n_modes_l = 2*(l_max+1)).
-void accumulate_b3_tensor_component_sums(
-    const gsl::not_null<DataVector*> sum_sq_radial,
-    const gsl::not_null<DataVector*> counts_radial,
-    const gsl::not_null<DataVector*> sum_sq_angular,
-    const gsl::not_null<DataVector*> counts_angular,
-    const double* const spec_buf, const size_t n_r, const size_t n_r_max,
-    const int spin_weight, const std::vector<std::vector<size_t>>& offsets_by_l,
-    double* const gathered, double* const modal_buf) {
-  const size_t l_max = offsets_by_l.size() - 1;
-  const auto abs_spin_weight = static_cast<size_t>(std::abs(spin_weight));
-
-  for (size_t l = 0; l <= l_max; ++l) {
-    if (l < abs_spin_weight) {
-      // Spin-weighted spherical harmonics vanish for l < |s|; skip.
-      continue;
-    }
-    const size_t spectral_size_l = (n_r_max - l + 2) / 2;
-    const auto& offsets = offsets_by_l[l];
-    const size_t n_modes_l = offsets.size();
-
-    // Gather radial profiles for all same-l SH modes into a contiguous buffer.
-    // Layout: gathered[k * n_r + i_r] for the k-th offset at this l.
-    for (size_t k = 0; k < n_modes_l; ++k) {
-      std::copy(spec_buf + offsets[k] * n_r,        // NOLINT
-                spec_buf + (offsets[k] + 1) * n_r,  // NOLINT
-                gathered + k * n_r);                // NOLINT
-    }
-
-    // Apply the Jacobi NTM for angular degree l:
-    //   modal_buf[spectral_size_l x n_modes_l]
-    //     = NTM_l[spectral_size_l x n_r] * gathered[n_r x n_modes_l].
-    const auto& ntm =
-        Spectral::nodal_to_modal_matrix<Spectral::Basis::ZernikeB3,
-                                        Spectral::Quadrature::GaussRadauUpper>(
-            n_r, l, n_r_max);
-    dgemm_<true>('N', 'N', spectral_size_l, n_modes_l, n_r, 1.0, ntm.data(),
-                 ntm.spacing(), gathered, n_r, 0.0, modal_buf, spectral_size_l);
-
-    // Accumulate squared Jacobi coefficients into radial and angular bins.
-    for (size_t k_spec = 0; k_spec < spectral_size_l; ++k_spec) {
-      const size_t n_total = l + 2 * k_spec;
-      const size_t radial_mode = (n_total + 1) / 2;
-      for (size_t col = 0; col < n_modes_l; ++col) {
-        const double coeff_sq =
-            square(modal_buf[k_spec + spectral_size_l * col]);  // NOLINT
-        (*sum_sq_radial)[radial_mode] += coeff_sq;
-        (*counts_radial)[radial_mode] += 1.0;
-        (*sum_sq_angular)[l] += coeff_sq;
-        (*counts_angular)[l] += 1.0;
-      }
-    }
-  }
-}
-
-// Accumulate B3 spectral sums for all components of a TensorYlm tensor.
-// Selects offsets_by_l_real (for scalars) or offsets_by_l_complex (rank > 0)
-// based on the tensor rank
-template <typename TensorType>
-void accumulate_b3_tensor_sums(
-    const gsl::not_null<DataVector*> sum_sq_radial,
-    const gsl::not_null<DataVector*> counts_radial,
-    const gsl::not_null<DataVector*> sum_sq_angular,
-    const gsl::not_null<DataVector*> counts_angular, const TensorType& tensor,
-    const size_t n_r, const size_t n_r_max,
-    const std::vector<std::vector<size_t>>& offsets_by_l_real,
-    const std::vector<std::vector<size_t>>& offsets_by_l_complex,
-    double* const gathered, double* const modal_buf) {
-  constexpr bool zero_m_is_real = TensorType::rank() == 0;
-  const auto& offsets_by_l =
-      zero_m_is_real ? offsets_by_l_real : offsets_by_l_complex;
-  for (size_t component = 0; component < tensor.size(); ++component) {
-    const int spin_weight = ylm::TensorYlm::helpers::component_spin_weight<
-        typename TensorType::structure>(component);
-    accumulate_b3_tensor_component_sums(
-        sum_sq_radial, counts_radial, sum_sq_angular, counts_angular,
-        tensor[component].data(), n_r, n_r_max, spin_weight, offsets_by_l,
-        gathered, modal_buf);
-  }
-}
-
-// Normalize: result[i] = sqrt(sum_sq[i] / counts[i]), or 0 if counts[i] == 0.
-void normalize_b3_power(const gsl::not_null<DataVector*> result,
-                        const DataVector& sum_sq, const DataVector& counts) {
-  result->destructive_resize(sum_sq.size());
-  for (size_t i = 0; i < sum_sq.size(); ++i) {
-    (*result)[i] = counts[i] == 0.0 ? 0.0 : sqrt(sum_sq[i] / counts[i]);
-  }
-}
 
 }  // namespace
 
@@ -260,15 +155,16 @@ GhFilledSpherePowerMonitors gh_filled_sphere_power_monitors(
   namespace detail = ylm::TensorYlm::filter_detail;
 
   // Metric: Metric00 (scalar), Metrick0 (vector), Metrickj (sym rank-2).
-  accumulate_b3_tensor_sums(make_not_null(&metric_sum_sq_radial),
-                            make_not_null(&metric_counts_radial),
-                            make_not_null(&metric_sum_sq_angular),
-                            make_not_null(&metric_counts_angular),
-                            get<detail::Tags::Metric00<DataVector>>(
-                                gh_spatial_tensor_ylm_coefficients),
-                            n_r, n_r_max, offsets_by_l_real,
-                            offsets_by_l_complex, gathered, modal_buf);
-  accumulate_b3_tensor_sums(
+  PowerMonitors::accumulate_b3_tensor_sums(
+      make_not_null(&metric_sum_sq_radial),
+      make_not_null(&metric_counts_radial),
+      make_not_null(&metric_sum_sq_angular),
+      make_not_null(&metric_counts_angular),
+      get<detail::Tags::Metric00<DataVector>>(
+          gh_spatial_tensor_ylm_coefficients),
+      n_r, n_r_max, offsets_by_l_real, offsets_by_l_complex, gathered,
+      modal_buf);
+  PowerMonitors::accumulate_b3_tensor_sums(
       make_not_null(&metric_sum_sq_radial),
       make_not_null(&metric_counts_radial),
       make_not_null(&metric_sum_sq_angular),
@@ -277,7 +173,7 @@ GhFilledSpherePowerMonitors gh_filled_sphere_power_monitors(
           gh_spatial_tensor_ylm_coefficients),
       n_r, n_r_max, offsets_by_l_real, offsets_by_l_complex, gathered,
       modal_buf);
-  accumulate_b3_tensor_sums(
+  PowerMonitors::accumulate_b3_tensor_sums(
       make_not_null(&metric_sum_sq_radial),
       make_not_null(&metric_counts_radial),
       make_not_null(&metric_sum_sq_angular),
@@ -288,20 +184,20 @@ GhFilledSpherePowerMonitors gh_filled_sphere_power_monitors(
       modal_buf);
 
   // Pi: Pi00 (scalar), Pik0 (vector), Pikj (sym rank-2).
-  accumulate_b3_tensor_sums(
+  PowerMonitors::accumulate_b3_tensor_sums(
       make_not_null(&pi_sum_sq_radial), make_not_null(&pi_counts_radial),
       make_not_null(&pi_sum_sq_angular), make_not_null(&pi_counts_angular),
       get<detail::Tags::Pi00<DataVector>>(gh_spatial_tensor_ylm_coefficients),
       n_r, n_r_max, offsets_by_l_real, offsets_by_l_complex, gathered,
       modal_buf);
-  accumulate_b3_tensor_sums(
+  PowerMonitors::accumulate_b3_tensor_sums(
       make_not_null(&pi_sum_sq_radial), make_not_null(&pi_counts_radial),
       make_not_null(&pi_sum_sq_angular), make_not_null(&pi_counts_angular),
       get<detail::Tags::Pik0<DataVector, 3, Frame::Grid>>(
           gh_spatial_tensor_ylm_coefficients),
       n_r, n_r_max, offsets_by_l_real, offsets_by_l_complex, gathered,
       modal_buf);
-  accumulate_b3_tensor_sums(
+  PowerMonitors::accumulate_b3_tensor_sums(
       make_not_null(&pi_sum_sq_radial), make_not_null(&pi_counts_radial),
       make_not_null(&pi_sum_sq_angular), make_not_null(&pi_counts_angular),
       get<detail::Tags::Pikj<DataVector, 3, Frame::Grid>>(
@@ -310,21 +206,21 @@ GhFilledSpherePowerMonitors gh_filled_sphere_power_monitors(
       modal_buf);
 
   // Phi: Phik00 (vector), Phiki0 (rank-2), Phikij (rank-3 sym on last 2).
-  accumulate_b3_tensor_sums(
+  PowerMonitors::accumulate_b3_tensor_sums(
       make_not_null(&phi_sum_sq_radial), make_not_null(&phi_counts_radial),
       make_not_null(&phi_sum_sq_angular), make_not_null(&phi_counts_angular),
       get<detail::Tags::Phik00<DataVector, 3, Frame::Grid>>(
           gh_spatial_tensor_ylm_coefficients),
       n_r, n_r_max, offsets_by_l_real, offsets_by_l_complex, gathered,
       modal_buf);
-  accumulate_b3_tensor_sums(
+  PowerMonitors::accumulate_b3_tensor_sums(
       make_not_null(&phi_sum_sq_radial), make_not_null(&phi_counts_radial),
       make_not_null(&phi_sum_sq_angular), make_not_null(&phi_counts_angular),
       get<detail::Tags::Phiki0<DataVector, 3, Frame::Grid>>(
           gh_spatial_tensor_ylm_coefficients),
       n_r, n_r_max, offsets_by_l_real, offsets_by_l_complex, gathered,
       modal_buf);
-  accumulate_b3_tensor_sums(
+  PowerMonitors::accumulate_b3_tensor_sums(
       make_not_null(&phi_sum_sq_radial), make_not_null(&phi_counts_radial),
       make_not_null(&phi_sum_sq_angular), make_not_null(&phi_counts_angular),
       get<detail::Tags::Phikij<DataVector, 3, Frame::Grid>>(
@@ -333,20 +229,24 @@ GhFilledSpherePowerMonitors gh_filled_sphere_power_monitors(
       modal_buf);
 
   GhFilledSpherePowerMonitors result{};
-  normalize_b3_power(
+  PowerMonitors::normalize_b3_power(
       make_not_null(&result.spacetime_metric[radial_monitor_index]),
       metric_sum_sq_radial, metric_counts_radial);
-  normalize_b3_power(
+  PowerMonitors::normalize_b3_power(
       make_not_null(&result.spacetime_metric[angular_monitor_index]),
       metric_sum_sq_angular, metric_counts_angular);
-  normalize_b3_power(make_not_null(&result.pi[radial_monitor_index]),
-                     pi_sum_sq_radial, pi_counts_radial);
-  normalize_b3_power(make_not_null(&result.pi[angular_monitor_index]),
-                     pi_sum_sq_angular, pi_counts_angular);
-  normalize_b3_power(make_not_null(&result.phi[radial_monitor_index]),
-                     phi_sum_sq_radial, phi_counts_radial);
-  normalize_b3_power(make_not_null(&result.phi[angular_monitor_index]),
-                     phi_sum_sq_angular, phi_counts_angular);
+  PowerMonitors::normalize_b3_power(
+      make_not_null(&result.pi[radial_monitor_index]), pi_sum_sq_radial,
+      pi_counts_radial);
+  PowerMonitors::normalize_b3_power(
+      make_not_null(&result.pi[angular_monitor_index]), pi_sum_sq_angular,
+      pi_counts_angular);
+  PowerMonitors::normalize_b3_power(
+      make_not_null(&result.phi[radial_monitor_index]), phi_sum_sq_radial,
+      phi_counts_radial);
+  PowerMonitors::normalize_b3_power(
+      make_not_null(&result.phi[angular_monitor_index]), phi_sum_sq_angular,
+      phi_counts_angular);
   return result;
 }
 

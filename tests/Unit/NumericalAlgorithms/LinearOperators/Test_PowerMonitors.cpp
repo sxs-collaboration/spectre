@@ -17,6 +17,7 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Index.hpp"
 #include "DataStructures/ModalVector.hpp"
+#include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "NumericalAlgorithms/LinearOperators/CoefficientTransforms.hpp"
@@ -27,6 +28,8 @@
 #include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Quadrature.hpp"
+#include "NumericalAlgorithms/SphericalHarmonics/Spherepack.hpp"
+#include "NumericalAlgorithms/SphericalHarmonics/SpherepackCache.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/SpherepackIterator.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Gsl.hpp"
@@ -615,6 +618,180 @@ void test_power_monitors_b2_cylinder() {
     CHECK_ITERABLE_APPROX(pm[2],
                           (DataVector{0.0, sqrt(30.0) / 10.0, 0.0, 0.0}));
 }
+void test_normalize_b3_power() {
+  const DataVector sum_sq{4.0, 0.0, 9.0};
+  const DataVector counts{4.0, 0.0, 9.0};
+  DataVector result{};
+  PowerMonitors::normalize_b3_power(make_not_null(&result), sum_sq, counts);
+  CHECK_ITERABLE_APPROX(result, (DataVector{1.0, 0.0, 1.0}));
+}
+
+// Minimal sanity check: a single pure ZernikeB3 Jacobi mode at angular degree
+// l_ang and radial Jacobi degree n_jacobi should only contribute power to
+// the angular bin l_ang and the radial bin (l_ang + 2 * n_jacobi + 1) / 2
+void test_accumulate_b3_tensor_sums_scalar() {
+  const size_t n_r = 3;
+  const size_t l_max = 2;
+  const size_t n_r_max = 2 * n_r - 2;
+
+  const auto& spherepack = ylm::get_spherepack_cache(l_max);
+  const size_t n_spectral = spherepack.spectral_size();
+
+  std::vector<std::vector<size_t>> offsets_by_l_real(l_max + 1);
+  for (ylm::SpherepackIterator it{l_max, l_max, 1, true}; it; ++it) {
+    offsets_by_l_real[it.l()].push_back(it());
+  }
+  std::vector<std::vector<size_t>> offsets_by_l_complex(l_max + 1);
+  for (ylm::SpherepackIterator it{l_max, l_max, 1, false}; it; ++it) {
+    offsets_by_l_complex[it.l()].push_back(it());
+  }
+
+  const size_t l_ang = 1;
+  const size_t n_jacobi = 0;
+  ylm::SpherepackIterator iter{l_max, l_max};
+  iter.set(l_ang, 0, ylm::SpherepackIterator::CoefficientArray::a);
+  const size_t s = iter();
+
+  const DataVector& radial_pts =
+      Spectral::collocation_points<Spectral::Basis::ZernikeB3,
+                                   Spectral::Quadrature::GaussRadauUpper>(n_r);
+  const DataVector radial_profile =
+      Spectral::compute_basis_function_value<Spectral::Basis::ZernikeB3>(
+          l_ang + 2 * n_jacobi, l_ang, radial_pts);
+
+  Scalar<DataVector> component{DataVector(n_spectral * n_r, 0.0)};
+  for (size_t i_r = 0; i_r < n_r; ++i_r) {
+    get(component)[s * n_r + i_r] = radial_profile[i_r];
+  }
+
+  const size_t max_n_modes_l = 2 * (l_max + 1);
+  std::vector<double> gathered(max_n_modes_l * n_r);
+  std::vector<double> modal_buf(max_n_modes_l * n_r);
+
+  DataVector sum_sq_radial(n_r, 0.0);
+  DataVector counts_radial(n_r, 0.0);
+  DataVector sum_sq_angular(l_max + 1, 0.0);
+  DataVector counts_angular(l_max + 1, 0.0);
+
+  PowerMonitors::accumulate_b3_tensor_sums(
+      make_not_null(&sum_sq_radial), make_not_null(&counts_radial),
+      make_not_null(&sum_sq_angular), make_not_null(&counts_angular), component,
+      n_r, n_r_max, offsets_by_l_real, offsets_by_l_complex, gathered.data(),
+      modal_buf.data());
+
+  DataVector angular_power{};
+  PowerMonitors::normalize_b3_power(make_not_null(&angular_power),
+                                    sum_sq_angular, counts_angular);
+  DataVector radial_power{};
+  PowerMonitors::normalize_b3_power(make_not_null(&radial_power), sum_sq_radial,
+                                    counts_radial);
+
+  const size_t expected_radial_mode = (l_ang + 2 * n_jacobi + 1) / 2;
+  // The angular monitor at l_ang averages over all radial Jacobi degrees k at
+  // that l (spectral_size_l) as well as all SH modes at that l
+  // (2 * l_ang + 1); only one of those (k, m) pairs is excited here.
+  const size_t spectral_size_l = (n_r_max - l_ang + 2) / 2;
+  const size_t scalar_modes_at_l = spectral_size_l * (2 * l_ang + 1);
+  CHECK(angular_power[l_ang] ==
+        approx(1.0 / sqrt(static_cast<double>(scalar_modes_at_l))));
+  for (size_t l = 0; l <= l_max; ++l) {
+    if (l != l_ang) {
+      CHECK(angular_power[l] == approx(0.0));
+    }
+  }
+  CHECK(radial_power[expected_radial_mode] > 0.0);
+  for (size_t r = 0; r < n_r; ++r) {
+    if (r != expected_radial_mode) {
+      CHECK(radial_power[r] == approx(0.0));
+    }
+  }
+}
+
+void test_spherical_shell_tensor_radial_power_monitor() {
+  const Mesh<3> mesh = shell_mesh(3, 2);
+  const DataVector radial_profile{1.0, -0.5, 2.0};
+  const std::array<double, 3> scales{1.0, 2.0, 3.0};
+
+  tnsr::i<DataVector, 3> tensor{};
+  for (size_t d = 0; d < 3; ++d) {
+    DataVector component(mesh.number_of_grid_points(), 0.0);
+    set_constant_angular_radial_profile(make_not_null(&component), mesh,
+                                        radial_profile, gsl::at(scales, d));
+    tensor.get(d) = component;
+  }
+
+  ModalVector radial_modes(radial_profile.size(), 0.0);
+  to_modal_coefficients(make_not_null(&radial_modes), radial_profile,
+                        mesh.slice_through(0));
+  DataVector expected(radial_profile.size(), 0.0);
+  for (size_t i = 0; i < expected.size(); ++i) {
+    double sum_sq = 0.0;
+    for (size_t d = 0; d < 3; ++d) {
+      const double val = gsl::at(scales, d) * std::abs(radial_modes[i]);
+      sum_sq += val * val;
+    }
+    expected[i] = sqrt(sum_sq / 3.0);
+  }
+
+  const auto result =
+      PowerMonitors::spherical_shell_tensor_radial_power_monitor(tensor, mesh);
+  CHECK_ITERABLE_APPROX(result, expected);
+}
+
+void test_spherical_shell_number_of_angular_coefficients() {
+  // l < |spin_weight| vanishes.
+  CHECK(PowerMonitors::spherical_shell_number_of_angular_coefficients(
+            0, 1, false, 4) == 0);
+  // zero_m_is_real=true: 2*ell+1 coefficients per radial point.
+  CHECK(PowerMonitors::spherical_shell_number_of_angular_coefficients(
+            2, 0, true, 4) == 4_st * (2 * 2 + 1));
+  // zero_m_is_real=false: 2*(ell+1) coefficients per radial point.
+  CHECK(PowerMonitors::spherical_shell_number_of_angular_coefficients(
+            2, 0, false, 4) == 4_st * 2 * (2 + 1));
+}
+
+// Minimal sanity check: for a single scalar (spin weight 0) TensorYlm
+// component with a constant value at each angular degree, the accumulated and
+// normalized angular power monitor should recover that value exactly, and
+// accumulating twice into the same buffers should not change the normalized
+// result
+void test_accumulate_and_normalize_spherical_shell_angular_power() {
+  const Mesh<3> mesh = shell_mesh(2, 2);
+  const size_t radial_extents = mesh.extents(0);
+  DataVector coefficients(
+      ylm::SpherepackIterator{2, 2, 1, true}.spherepack_array_size() *
+          radial_extents,
+      0.0);
+  for (ylm::SpherepackIterator it{2, 2, 1, true}; it; ++it) {
+    for (size_t r = 0; r < radial_extents; ++r) {
+      coefficients[it() * radial_extents + r] = static_cast<double>(it.l() + 1);
+    }
+  }
+  const Scalar<DataVector> scalar_tensor{coefficients};
+
+  DataVector weighted_squared_power(mesh.extents(1), 0.0);
+  std::vector<size_t> counts(mesh.extents(1), 0);
+  PowerMonitors::accumulate_spherical_shell_tensor_angular_power(
+      make_not_null(&weighted_squared_power), make_not_null(&counts),
+      scalar_tensor, mesh);
+  PowerMonitors::normalize_spherical_shell_angular_power(
+      make_not_null(&weighted_squared_power), counts);
+  CHECK_ITERABLE_APPROX(weighted_squared_power, (DataVector{1.0, 2.0, 3.0}));
+
+  DataVector weighted_squared_power_twice(mesh.extents(1), 0.0);
+  std::vector<size_t> counts_twice(mesh.extents(1), 0);
+  PowerMonitors::accumulate_spherical_shell_tensor_angular_power(
+      make_not_null(&weighted_squared_power_twice),
+      make_not_null(&counts_twice), scalar_tensor, mesh);
+  PowerMonitors::accumulate_spherical_shell_tensor_angular_power(
+      make_not_null(&weighted_squared_power_twice),
+      make_not_null(&counts_twice), scalar_tensor, mesh);
+  PowerMonitors::normalize_spherical_shell_angular_power(
+      make_not_null(&weighted_squared_power_twice), counts_twice);
+  CHECK_ITERABLE_APPROX(weighted_squared_power_twice,
+                        (DataVector{1.0, 2.0, 3.0}));
+}
+
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.PowerMonitors",
@@ -632,4 +809,9 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.PowerMonitors",
   test_power_monitors_fourier(make_not_null(&gen));
   test_power_monitors_fourier_multidim(make_not_null(&gen));
   test_power_monitors_b2_cylinder();
+  test_spherical_shell_tensor_radial_power_monitor();
+  test_spherical_shell_number_of_angular_coefficients();
+  test_accumulate_and_normalize_spherical_shell_angular_power();
+  test_normalize_b3_power();
+  test_accumulate_b3_tensor_sums_scalar();
 }
