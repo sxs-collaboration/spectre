@@ -7,6 +7,7 @@
 #include <memory>
 #include <string>
 #include <unordered_map>
+#include <vector>
 
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/DataVector.hpp"
@@ -40,6 +41,7 @@
 #include "PointwiseFunctions/Hydro/EquationsOfState/Factory.hpp"
 #include "PointwiseFunctions/InitialDataUtilities/InitialData.hpp"
 #include "PointwiseFunctions/InitialDataUtilities/Tags/InitialData.hpp"
+#include "PointwiseFunctions/InitialDataUtilities/WithNoise.hpp"
 #include "Time/Tags/Time.hpp"
 #include "Utilities/CloneUniquePtrs.hpp"
 #include "Utilities/ConstantExpressions.hpp"
@@ -414,6 +416,108 @@ void test_analytic_data() {
         get<PrimVar>(prim_var));
 }
 
+template <size_t Dim>
+struct MetavariablesWithNoise {
+  static constexpr size_t volume_dim = Dim;
+  using component_list = tmpl::list<component<Dim, MetavariablesWithNoise>>;
+  using system = System<Dim, false>;
+  using temporal_id = TimeId;
+  struct factory_creation
+      : tt::ConformsTo<Options::protocols::FactoryCreation> {
+    using factory_classes =
+        tmpl::map<tmpl::pair<evolution::initial_data::InitialData,
+                             tmpl::list<SystemAnalyticSolution,
+                                        evolution::initial_data::WithNoise>>>;
+  };
+  using const_global_cache_tags =
+      tmpl::list<evolution::initial_data::Tags::InitialData>;
+};
+
+template <size_t Dim>
+void test_with_noise() {
+  using metavars = MetavariablesWithNoise<Dim>;
+  using comp = component<Dim, metavars>;
+  const double initial_time = 1.3;
+  const double expiration_time = 2.5;
+
+  {
+    INFO("WithNoise amplitude=0 gives exact analytic result");
+    ActionTesting::MockRuntimeSystem<metavars> runner{
+        {std::unique_ptr<evolution::initial_data::InitialData>(
+            std::make_unique<evolution::initial_data::WithNoise>(
+                std::make_unique<SystemAnalyticSolution>(),
+                /*amplitude=*/0.0, /*seed=*/size_t{42},
+                /*variables=*/std::vector<std::string>{"All"}))}};
+    const auto inertial_coords = emplace_component<Dim>(
+        make_not_null(&runner), initial_time, expiration_time);
+    ActionTesting::next_action<comp>(make_not_null(&runner), 0);
+    const auto expected_vars = SystemAnalyticSolution{}.variables(
+        inertial_coords, initial_time, tmpl::list<Var, NonConservativeVar>{});
+    CHECK(ActionTesting::get_databox_tag<comp, Var>(runner, 0) ==
+          get<Var>(expected_vars));
+    CHECK(ActionTesting::get_databox_tag<comp, NonConservativeVar>(runner, 0) ==
+          get<NonConservativeVar>(expected_vars));
+  }
+
+  {
+    INFO("WithNoise amplitude>0 perturbs the analytic result");
+    ActionTesting::MockRuntimeSystem<metavars> runner{
+        {std::unique_ptr<evolution::initial_data::InitialData>(
+            std::make_unique<evolution::initial_data::WithNoise>(
+                std::make_unique<SystemAnalyticSolution>(),
+                /*amplitude=*/1.0, /*seed=*/size_t{42},
+                /*variables=*/std::vector<std::string>{"All"}))}};
+    const auto inertial_coords = emplace_component<Dim>(
+        make_not_null(&runner), initial_time, expiration_time);
+    ActionTesting::next_action<comp>(make_not_null(&runner), 0);
+    const auto& result_var =
+        ActionTesting::get_databox_tag<comp, Var>(runner, 0);
+    const auto analytic_var = get<Var>(SystemAnalyticSolution{}.variables(
+        inertial_coords, initial_time, tmpl::list<Var>{}));
+    bool any_perturbed = false;
+    for (size_t i = 0; i < get(result_var).size() and not any_perturbed; ++i) {
+      if (get(result_var)[i] != get(analytic_var)[i]) {
+        any_perturbed = true;
+      }
+    }
+    CHECK(any_perturbed);
+  }
+
+  {
+    INFO("WithNoise only noises the named variable, leaving others unchanged");
+    ActionTesting::MockRuntimeSystem<metavars> runner{
+        {std::unique_ptr<evolution::initial_data::InitialData>(
+            std::make_unique<evolution::initial_data::WithNoise>(
+                std::make_unique<SystemAnalyticSolution>(),
+                /*amplitude=*/1.0, /*seed=*/size_t{42},
+                /*variables=*/std::vector<std::string>{"Var"}))}};
+    const auto inertial_coords = emplace_component<Dim>(
+        make_not_null(&runner), initial_time, expiration_time);
+    ActionTesting::next_action<comp>(make_not_null(&runner), 0);
+
+    // Var should be perturbed away from the analytic value.
+    const auto& result_var =
+        ActionTesting::get_databox_tag<comp, Var>(runner, 0);
+    const auto analytic_var = get<Var>(SystemAnalyticSolution{}.variables(
+        inertial_coords, initial_time, tmpl::list<Var>{}));
+    bool var_perturbed = false;
+    for (size_t i = 0; i < get(result_var).size() and not var_perturbed; ++i) {
+      if (get(result_var)[i] != get(analytic_var)[i]) {
+        var_perturbed = true;
+      }
+    }
+    CHECK(var_perturbed);
+
+    // NonConservativeVar was not listed -> must match the analytic solution.
+    const auto& result_nc =
+        ActionTesting::get_databox_tag<comp, NonConservativeVar>(runner, 0);
+    const auto analytic_nc =
+        get<NonConservativeVar>(SystemAnalyticSolution{}.variables(
+            inertial_coords, initial_time, tmpl::list<NonConservativeVar>{}));
+    CHECK(get(result_nc) == get(analytic_nc));
+  }
+}
+
 template <size_t Dim, bool HasPrimitives>
 void test_impl() {
   // Test setting variables from analytic solution
@@ -433,12 +537,14 @@ void test() {
 
   test_impl<Dim, true>();
   test_impl<Dim, false>();
+  test_with_noise<Dim>();
 }
 
 SPECTRE_TEST_CASE("Unit.Evolution.Initialization.SetVariables",
                   "[Unit][Evolution][Actions]") {
   domain::FunctionsOfTime::register_derived_with_charm();
-  register_classes_with_charm<SystemAnalyticData, SystemAnalyticSolution>();
+  register_classes_with_charm<SystemAnalyticData, SystemAnalyticSolution,
+                              evolution::initial_data::WithNoise>();
   test<1>();
   test<2>();
   test<3>();

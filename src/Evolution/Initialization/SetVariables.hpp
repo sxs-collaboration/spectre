@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "DataStructures/DataBox/DataBox.hpp"
+#include "DataStructures/DataBox/TagName.hpp"
 #include "DataStructures/TaggedTuple.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Domain/CoordinateMaps/Tags.hpp"
@@ -25,10 +26,13 @@
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
 #include "PointwiseFunctions/InitialDataUtilities/InitialData.hpp"
 #include "PointwiseFunctions/InitialDataUtilities/Tags/InitialData.hpp"
+#include "PointwiseFunctions/InitialDataUtilities/WithNoise.hpp"
 #include "Time/Tags/Time.hpp"
+#include "Utilities/Algorithm.hpp"
 #include "Utilities/CallWithDynamicType.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/StdHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
@@ -42,9 +46,18 @@ namespace evolution::Initialization::Actions {
 /// \ingroup InitializationGroup
 /// \brief Sets variables needed for evolution of hyperbolic systems
 ///
+/// Supports analytic solutions, analytic data, and
+/// `evolution::initial_data::WithNoise` wrappers. For `WithNoise`, the inner
+/// analytic solution sets variables normally, then uniform random noise is
+/// added to the requested evolution variables.
+///
 /// Uses:
 /// - DataBox:
 ///   * `CoordinatesTag`
+///   * `domain::CoordinateMaps::Tags::CoordinateMap` (for `WithNoise`)
+///   * `domain::Tags::ElementMap` (for `WithNoise`)
+///   * `domain::Tags::FunctionsOfTime` (for `WithNoise`)
+///   * `::Tags::Time`
 /// - GlobalCache:
 ///   * `evolution::initial_data::Tags::InitialData`
 ///
@@ -78,6 +91,75 @@ struct SetVariables {
           if constexpr (is_analytic_data_v<initial_data_subclass> or
                         is_analytic_solution_v<initial_data_subclass>) {
             impl<Metavariables>(make_not_null(&box), *data_or_solution);
+          } else if constexpr (std::is_same_v<
+                                   initial_data_subclass,
+                                   evolution::initial_data::WithNoise>) {
+            // Dispatch on the inner solution to set variables normally.
+            call_with_dynamic_type<void, derived_classes>(
+                &data_or_solution->solution(), [&box](const auto* const inner) {
+                  using inner_type = std::decay_t<decltype(*inner)>;
+                  if constexpr (is_analytic_data_v<inner_type> or
+                                is_analytic_solution_v<inner_type>) {
+                    impl<Metavariables>(make_not_null(&box), *inner);
+                  } else {
+                    ERROR(
+                        "WithNoise: the inner Solution must be an analytic "
+                        "solution or analytic data. Numeric initial data "
+                        "cannot be wrapped by WithNoise.");
+                  }
+                });
+            // Compute inertial coordinates for per-element seed mixing.
+            const double initial_time = db::get<::Tags::Time>(box);
+            const auto inertial_coords =
+                db::get<::domain::CoordinateMaps::Tags::CoordinateMap<
+                    Metavariables::volume_dim, Frame::Grid, Frame::Inertial>>(
+                    box)(db::get<::domain::Tags::ElementMap<
+                             Metavariables::volume_dim, Frame::Grid>>(box)(
+                             db::get<LogicalCoordinatesTag>(box)),
+                         initial_time,
+                         db::get<::domain::Tags::FunctionsOfTime>(box));
+            const size_t element_seed =
+                evolution::initial_data::make_element_seed(
+                    data_or_solution->seed(), inertial_coords);
+            // Apply noise to each requested variable in variables_tag.
+            using variables_tag = typename Metavariables::system::variables_tag;
+            const auto& targets = data_or_solution->variables();
+            const bool noise_all = alg::found(targets, std::string{"All"});
+            // Validate variable names against the actual tags list.
+            if (not noise_all) {
+              std::vector<std::string> valid_names{};
+              tmpl::for_each<typename variables_tag::tags_list>(
+                  [&valid_names]<typename Tag>(tmpl::type_<Tag> /*meta*/) {
+                    valid_names.push_back(db::tag_name<Tag>());
+                  });
+              for (const auto& target : targets) {
+                if (not alg::found(valid_names, target)) {
+                  ERROR("WithNoise: unknown variable name '"
+                        << target
+                        << "'. Valid names for this system are: " << valid_names
+                        << ". Use [\"All\"] to noise every variable.");
+                }
+              }
+            }
+            size_t component_offset = 0;
+            db::mutate<variables_tag>(
+                [&targets, noise_all, &data_or_solution, element_seed,
+                 &component_offset](
+                    const gsl::not_null<typename variables_tag::type*> vars) {
+                  tmpl::for_each<typename variables_tag::tags_list>(
+                      [&]<typename Tag>(tmpl::type_<Tag> /*meta*/) {
+                        if (noise_all or
+                            alg::found(targets, db::tag_name<Tag>())) {
+                          evolution::initial_data::add_noise_to_tensor(
+                              make_not_null(&get<Tag>(*vars)),
+                              data_or_solution->amplitude(), element_seed,
+                              component_offset);
+                        }
+                        component_offset +=
+                            std::decay_t<typename Tag::type>::size();
+                      });
+                },
+                make_not_null(&box));
           } else {
             ERROR(
                 "Trying to use "

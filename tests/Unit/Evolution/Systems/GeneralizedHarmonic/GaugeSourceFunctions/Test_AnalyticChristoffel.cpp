@@ -6,6 +6,8 @@
 #include <cstddef>
 #include <limits>
 #include <memory>
+#include <string>
+#include <vector>
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/EagerMath/DeterminantAndInverse.hpp"
@@ -36,6 +38,7 @@
 #include "PointwiseFunctions/GeneralRelativity/SpacetimeNormalVector.hpp"
 #include "PointwiseFunctions/GeneralRelativity/SpatialMetric.hpp"
 #include "PointwiseFunctions/InitialDataUtilities/InitialData.hpp"
+#include "PointwiseFunctions/InitialDataUtilities/WithNoise.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 #include "Utilities/Serialization/Serialize.hpp"
@@ -190,6 +193,52 @@ void test_ks(const Mesh<3>& mesh) {
   }
   CHECK_ITERABLE_APPROX(d4_gauge_h, expected_d4_gauge_h);
 }
+// Verify that AnalyticChristoffel::gauge_and_spacetime_derivative unwraps a
+// WithNoise wrapper and produces the same result as using the inner solution
+// directly, so noise has no effect on the gauge condition.
+template <size_t Dim>
+void test_with_noise_unwrapping(const Mesh<Dim>& mesh) {
+  const double amplitude = 0.0012;
+  const double wavelength = 1.4;
+  auto make_gauge_wave = [&]() {
+    return std::make_unique<
+        gh::Solutions::WrappedGr<gr::Solutions::GaugeWave<Dim>>>(amplitude,
+                                                                 wavelength);
+  };
+
+  const double time = 1.2;
+  const auto coord_map = make_coord_map<Dim>();
+  const auto logical_coords = logical_coordinates(mesh);
+  const tnsr::I<DataVector, Dim, Frame::Inertial> inertial_coords =
+      coord_map(logical_coords);
+  const auto inverse_jacobian = coord_map.inv_jacobian(logical_coords);
+  const size_t num_points = mesh.number_of_grid_points();
+
+  // Plain AnalyticChristoffel
+  const gh::gauges::AnalyticChristoffel plain_gauge{make_gauge_wave()};
+  tnsr::a<DataVector, Dim, Frame::Inertial> gauge_h_plain(num_points);
+  tnsr::ab<DataVector, Dim, Frame::Inertial> d4_gauge_h_plain(num_points);
+  gh::gauges::dispatch<gh::Solutions::all_solutions<Dim>>(
+      make_not_null(&gauge_h_plain), make_not_null(&d4_gauge_h_plain), {}, {},
+      {}, {}, {}, {}, {}, {}, {}, mesh, time, inertial_coords, inverse_jacobian,
+      plain_gauge);
+
+  // AnalyticChristoffel wrapping WithNoise (large amplitude to catch any
+  // leakage)
+  const gh::gauges::AnalyticChristoffel noisy_gauge{
+      std::make_unique<evolution::initial_data::WithNoise>(
+          make_gauge_wave(), 1.0, 9_st, std::vector<std::string>{"All"})};
+  tnsr::a<DataVector, Dim, Frame::Inertial> gauge_h_noisy(num_points);
+  tnsr::ab<DataVector, Dim, Frame::Inertial> d4_gauge_h_noisy(num_points);
+  gh::gauges::dispatch<gh::Solutions::all_solutions<Dim>>(
+      make_not_null(&gauge_h_noisy), make_not_null(&d4_gauge_h_noisy), {}, {},
+      {}, {}, {}, {}, {}, {}, {}, mesh, time, inertial_coords, inverse_jacobian,
+      noisy_gauge);
+
+  // WithNoise is unwrapped: gauge results must be identical to the plain case
+  CHECK_ITERABLE_APPROX(gauge_h_plain, gauge_h_noisy);
+  CHECK_ITERABLE_APPROX(d4_gauge_h_plain, d4_gauge_h_noisy);
+}
 }  // namespace
 
 SPECTRE_TEST_CASE(
@@ -208,5 +257,11 @@ SPECTRE_TEST_CASE(
     test_gauge_wave<3>(
         {5, basis_and_quadrature.first, basis_and_quadrature.second});
     test_ks({5, basis_and_quadrature.first, basis_and_quadrature.second});
+    test_with_noise_unwrapping<1>(
+        {5, basis_and_quadrature.first, basis_and_quadrature.second});
+    test_with_noise_unwrapping<2>(
+        {5, basis_and_quadrature.first, basis_and_quadrature.second});
+    test_with_noise_unwrapping<3>(
+        {5, basis_and_quadrature.first, basis_and_quadrature.second});
   }
 }

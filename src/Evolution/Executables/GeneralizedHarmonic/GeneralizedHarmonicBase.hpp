@@ -126,6 +126,7 @@
 #include "PointwiseFunctions/GeneralRelativity/WeylTypeD1.hpp"
 #include "PointwiseFunctions/InitialDataUtilities/InitialData.hpp"
 #include "PointwiseFunctions/InitialDataUtilities/Tags/InitialData.hpp"
+#include "PointwiseFunctions/InitialDataUtilities/WithNoise.hpp"
 #include "PointwiseFunctions/MathFunctions/Factory.hpp"
 #include "PointwiseFunctions/MathFunctions/MathFunction.hpp"
 #include "Time/ChangeTimeStepperOrder.hpp"
@@ -315,6 +316,7 @@ struct FactoryCreation : tt::ConformsTo<Options::protocols::FactoryCreation> {
       tmpl::pair<
           evolution::initial_data::InitialData,
           tmpl::append<gh::Solutions::all_solutions<volume_dim>,
+                       tmpl::list<evolution::initial_data::WithNoise>,
                        tmpl::conditional_t<volume_dim == 3,
                                            tmpl::list<gh::NumericInitialData>,
                                            tmpl::list<>>>>,

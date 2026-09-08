@@ -58,9 +58,11 @@ struct AnalyticSolutionsCompute
       const evolution::initial_data::InitialData& initial_data,
       const tnsr::I<DataVector, Dim, Frame::Inertial>& inertial_coords,
       const double time) {
+    // Unwrap wrapper types (e.g. WithNoise) to reach the underlying analytic
+    // solution for error computation.
     call_with_dynamic_type<void, InitialDataList>(
-        &initial_data, [&analytic_solution, &inertial_coords,
-                        time](const auto* const data_or_solution) {
+        &initial_data.unwrap(), [&analytic_solution, &inertial_coords,
+                                 time](const auto* const data_or_solution) {
           function(analytic_solution, *data_or_solution, inertial_coords, time);
         });
   }
