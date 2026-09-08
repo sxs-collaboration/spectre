@@ -45,6 +45,7 @@
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Formulation.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Tags.hpp"
 #include "NumericalAlgorithms/LinearOperators/Filters/Factory.hpp"
+#include "NumericalAlgorithms/LinearOperators/Filters/FilledSphere.hpp"
 #include "NumericalAlgorithms/LinearOperators/Filters/SphericalShell.hpp"
 #include "NumericalAlgorithms/LinearOperators/Filters/Tag.hpp"
 #include "Options/Protocols/FactoryCreation.hpp"
@@ -233,7 +234,9 @@ struct EvolutionMetavars {
                 tmpl::conditional_t<
                     volume_dim == 3,
                     tmpl::list<Filters::SphericalShell<
-                        typename system::variables_tag::tags_list>>,
+                                   typename system::variables_tag::tags_list>,
+                               Filters::FilledSphere<
+                                   typename system::variables_tag::tags_list>>,
                     tmpl::list<>>>>>;
   };
 
