@@ -299,6 +299,12 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.EquationsOfState.Tabulated3D",
 
   eos.initialize(compose_eos);
 
+  // The table stores pressure and shifted energy logarithmically, but the
+  // enthalpy lower bound must be computed from physical values without the log.
+  // h_min < 1 is physical when bound matter has less energy per baryon than
+  // the neutron mass used for normalization.
+  CHECK(eos.specific_enthalpy_lower_bound() == approx(0.9923212708074246));
+
   test_against_reference_values(eos);
 
   // Test serialization
