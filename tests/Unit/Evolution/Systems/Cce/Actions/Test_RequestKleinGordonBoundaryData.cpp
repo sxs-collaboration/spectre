@@ -3,49 +3,52 @@
 
 #include "Framework/TestingFramework.hpp"
 
+#include <array>
+#include <cstddef>
+#include <memory>
+#include <optional>
+#include <string>
+
 #include "Evolution/Executables/Cce/CharacteristicExtractBase.hpp"
 #include "Evolution/Systems/Cce/Actions/InitializeCharacteristicEvolutionTime.hpp"
 #include "Evolution/Systems/Cce/Actions/InitializeCharacteristicEvolutionVariables.hpp"
 #include "Evolution/Systems/Cce/Actions/InitializeKleinGordonVariables.hpp"
 #include "Evolution/Systems/Cce/Actions/RequestBoundaryData.hpp"
-#include "Evolution/Systems/Cce/Components/KleinGordonCharacteristicEvolution.hpp"
-#include "Evolution/Systems/Cce/IntegrandInputSteps.hpp"
+#include "Evolution/Systems/Cce/OptionTags.hpp"
+#include "Evolution/Systems/Cce/Tags.hpp"
+#include "Framework/ActionTesting.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
 #include "Helpers/Evolution/Systems/Cce/Actions/WorldtubeBoundaryMocking.hpp"
 #include "Helpers/Evolution/Systems/Cce/KleinGordonBoundaryTestHelpers.hpp"
 #include "NumericalAlgorithms/Interpolation/BarycentricRationalSpanInterpolator.hpp"
+#include "Options/Protocols/FactoryCreation.hpp"
+#include "Parallel/ParallelComponentHelpers.hpp"
+#include "Parallel/Phase.hpp"
+#include "Parallel/PhaseDependentActionList.hpp"
 #include "ParallelAlgorithms/Actions/MutateApply.hpp"
+#include "ParallelAlgorithms/Actions/TerminatePhase.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
 #include "Time/AdvanceTime.hpp"
 #include "Time/LtsMode.hpp"
+#include "Time/StepChoosers/StepChooser.hpp"
 #include "Time/Tags/StepperErrorEstimatesEnabled.hpp"
 #include "Time/TimeSteppers/AdamsBashforth.hpp"
+#include "Time/TimeSteppers/LtsTimeStepper.hpp"
+#include "Utilities/FileSystem.hpp"
 #include "Utilities/Gsl.hpp"
-#include "Utilities/MakeVector.hpp"
+#include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
+#include "Utilities/TMPL.hpp"
 
 namespace Cce {
-namespace Actions {
-namespace {
-std::vector<double> times_requested;  // NOLINT
-template <typename BoundaryComponent, typename EvolutionComponent>
-struct MockBoundaryComputeAndSendToEvolution {
-  template <typename ParallelComponent, typename... DbTags,
-            typename Metavariables, typename ArrayIndex,
-            Requires<tmpl2::flat_any_v<std::is_same_v<
-                ::Tags::Variables<
-                    typename Metavariables::cce_boundary_communication_tags>,
-                DbTags>...>> = nullptr>
-  static void apply(const db::DataBox<tmpl::list<DbTags...>>& /*box*/,
-                    const Parallel::GlobalCache<Metavariables>& /*cache*/,
-                    const ArrayIndex& /*array_index*/, const TimeStepId& time) {
-    times_requested.push_back(time.substep_time());
-  }
-};
-}  // namespace
-}  // namespace Actions
+template <class Metavariables>
+struct KleinGordonCharacteristicEvolution;
+template <class Metavariables>
+struct KleinGordonH5WorldtubeBoundary;
+}  // namespace Cce
 
+namespace Cce {
 namespace {
 template <typename Metavariables>
 struct mock_kg_characteristic_evolution {
@@ -118,7 +121,10 @@ struct test_metavariables : CharacteristicExtractDefaults<false> {
   };
 
   using component_list =
-      tmpl::list<mock_klein_gordon_h5_worldtube_boundary<test_metavariables>,
+      tmpl::list<mock_worldtube_boundary<
+                     test_metavariables,
+                     KleinGordonH5WorldtubeBoundary<test_metavariables>,
+                     mock_kg_characteristic_evolution<test_metavariables>>,
                  mock_kg_characteristic_evolution<test_metavariables>>;
 };
 
@@ -141,8 +147,9 @@ template <typename Generator>
 void test_klein_gordon_boundary_data(const gsl::not_null<Generator*> gen) {
   using evolution_component =
       mock_kg_characteristic_evolution<test_metavariables>;
-  using worldtube_component =
-      mock_klein_gordon_h5_worldtube_boundary<test_metavariables>;
+  using worldtube_component = mock_worldtube_boundary<
+      test_metavariables, KleinGordonH5WorldtubeBoundary<test_metavariables>,
+      evolution_component>;
   register_classes_with_charm<TimeSteppers::AdamsBashforth>();
   const size_t number_of_radial_points = 10;
   const size_t l_max = 8;
@@ -219,16 +226,21 @@ void test_klein_gordon_boundary_data(const gsl::not_null<Generator*> gen) {
   // the first response
   ActionTesting::invoke_queued_simple_action<worldtube_component>(
       make_not_null(&runner), 0);
-  CHECK(Actions::times_requested.size() == 1);
-  CHECK(Actions::times_requested[0] == start_time);
+  CHECK(Actions::MockBoundaryComputeAndSendToEvolution<
+            test_metavariables>::times_requested.size() == 1);
+  CHECK(Actions::MockBoundaryComputeAndSendToEvolution<
+            test_metavariables>::times_requested[0] == start_time);
 
   // the second request (the next substep)
   ActionTesting::next_action<evolution_component>(make_not_null(&runner), 0);
   // the second response
   ActionTesting::invoke_queued_simple_action<worldtube_component>(
       make_not_null(&runner), 0);
-  CHECK(Actions::times_requested.size() == 2);
-  CHECK(Actions::times_requested[1] == start_time + target_step_size * 0.75);
+  CHECK(Actions::MockBoundaryComputeAndSendToEvolution<
+            test_metavariables>::times_requested.size() == 2);
+  CHECK(Actions::MockBoundaryComputeAndSendToEvolution<
+            test_metavariables>::times_requested[1] ==
+        start_time + target_step_size * 0.75);
   if (file_system::check_if_file_exists(filename)) {
     file_system::rm(filename, true);
   }

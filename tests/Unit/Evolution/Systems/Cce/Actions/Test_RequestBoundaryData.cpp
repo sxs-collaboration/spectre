@@ -5,26 +5,30 @@
 
 #include <array>
 #include <cstddef>
-#include <limits>
 #include <memory>
 #include <optional>
 #include <string>
-#include <vector>
 
-#include "DataStructures/DataBox/DataBox.hpp"
-#include "Evolution/Systems/Cce/Actions/InitializeWorldtubeBoundary.hpp"
+#include "DataStructures/VariablesTag.hpp"
+#include "Evolution/Systems/Cce/Actions/InitializeCharacteristicEvolutionTime.hpp"
+#include "Evolution/Systems/Cce/Actions/InitializeCharacteristicEvolutionVariables.hpp"
 #include "Evolution/Systems/Cce/Actions/RequestBoundaryData.hpp"
 #include "Evolution/Systems/Cce/BoundaryData.hpp"
-#include "Evolution/Systems/Cce/Components/CharacteristicEvolution.hpp"
+#include "Evolution/Systems/Cce/Equations.hpp"
 #include "Evolution/Systems/Cce/IntegrandInputSteps.hpp"
+#include "Evolution/Systems/Cce/OptionTags.hpp"
+#include "Evolution/Systems/Cce/Tags.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
 #include "Helpers/Evolution/Systems/Cce/Actions/WorldtubeBoundaryMocking.hpp"
 #include "Helpers/Evolution/Systems/Cce/BoundaryTestHelpers.hpp"
 #include "NumericalAlgorithms/Interpolation/BarycentricRationalSpanInterpolator.hpp"
+#include "NumericalAlgorithms/SpinWeightedSphericalHarmonics/SwshTags.hpp"
 #include "Options/Protocols/FactoryCreation.hpp"
+#include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/Phase.hpp"
+#include "Parallel/PhaseDependentActionList.hpp"
 #include "ParallelAlgorithms/Actions/MutateApply.hpp"
 #include "ParallelAlgorithms/Actions/TerminatePhase.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
@@ -32,39 +36,23 @@
 #include "Time/LtsMode.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"
 #include "Time/Tags/StepperErrorEstimatesEnabled.hpp"
-#include "Time/TimeStepId.hpp"
 #include "Time/TimeSteppers/AdamsBashforth.hpp"
 #include "Time/TimeSteppers/LtsTimeStepper.hpp"
-#include "Time/TimeSteppers/TimeStepper.hpp"
 #include "Utilities/FileSystem.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Literals.hpp"
-#include "Utilities/MakeVector.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace Cce {
-namespace Actions {
-namespace {
-std::vector<double> times_requested;
-template <typename BoundaryComponent, typename EvolutionComponent>
-struct MockBoundaryComputeAndSendToEvolution {
-  template <typename ParallelComponent, typename... DbTags,
-            typename Metavariables, typename ArrayIndex,
-            Requires<tmpl2::flat_any_v<std::is_same_v<
-                ::Tags::Variables<
-                    typename Metavariables::cce_boundary_communication_tags>,
-                DbTags>...>> = nullptr>
-  static void apply(const db::DataBox<tmpl::list<DbTags...>>& /*box*/,
-                    const Parallel::GlobalCache<Metavariables>& /*cache*/,
-                    const ArrayIndex& /*array_index*/, const TimeStepId& time) {
-    times_requested.push_back(time.substep_time());
-  }
-};
-}  // namespace
-}  // namespace Actions
+template <class Metavariables>
+struct CharacteristicEvolution;
+template <class Metavariables>
+struct H5WorldtubeBoundary;
+}  // namespace Cce
 
+namespace Cce {
 namespace {
 template <typename Metavariables>
 struct mock_characteristic_evolution {
@@ -150,12 +138,14 @@ struct test_metavariables {
                  Cce::Tags::ScriPlusFactor<Cce::Tags::Psi4>>;
 
   using ccm_psi0 = tmpl::list<
-          Cce::Tags::BoundaryValue<Cce::Tags::Psi0Match>,
-          Cce::Tags::BoundaryValue<Cce::Tags::Dlambda<Cce::Tags::Psi0Match>>>;
+      Cce::Tags::BoundaryValue<Cce::Tags::Psi0Match>,
+      Cce::Tags::BoundaryValue<Cce::Tags::Dlambda<Cce::Tags::Psi0Match>>>;
 
-  using component_list =
-      tmpl::list<mock_h5_worldtube_boundary<test_metavariables>,
-                 mock_characteristic_evolution<test_metavariables>>;
+  using component_list = tmpl::list<
+      mock_worldtube_boundary<
+          test_metavariables, H5WorldtubeBoundary<test_metavariables>,
+          mock_characteristic_evolution<test_metavariables>>,
+      mock_characteristic_evolution<test_metavariables>>;
 
   static constexpr bool evolve_ccm = false;
 };
@@ -164,7 +154,10 @@ struct test_metavariables {
 SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.Actions.RequestBoundaryData",
                   "[Unit][Cce]") {
   using evolution_component = mock_characteristic_evolution<test_metavariables>;
-  using worldtube_component = mock_h5_worldtube_boundary<test_metavariables>;
+  using worldtube_component =
+      mock_worldtube_boundary<test_metavariables,
+                              H5WorldtubeBoundary<test_metavariables>,
+                              evolution_component>;
   register_classes_with_charm<TimeSteppers::AdamsBashforth>();
   const size_t number_of_radial_points = 10;
   const size_t l_max = 8;
@@ -227,7 +220,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.Actions.RequestBoundaryData",
   for (size_t i = 0; i < 5; ++i) {
     ActionTesting::next_action<evolution_component>(make_not_null(&runner), 0);
   }
-  for(size_t i = 0; i < 3; ++i) {
+  for (size_t i = 0; i < 3; ++i) {
     ActionTesting::next_action<worldtube_component>(make_not_null(&runner), 0);
   }
   ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Evolve);
@@ -237,16 +230,21 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.Actions.RequestBoundaryData",
   // the first response
   ActionTesting::invoke_queued_simple_action<worldtube_component>(
       make_not_null(&runner), 0);
-  CHECK(Actions::times_requested.size() == 1);
-  CHECK(Actions::times_requested[0] == start_time);
+  CHECK(Actions::MockBoundaryComputeAndSendToEvolution<
+            test_metavariables>::times_requested.size() == 1);
+  CHECK(Actions::MockBoundaryComputeAndSendToEvolution<
+            test_metavariables>::times_requested[0] == start_time);
 
   // the second request (the next substep)
   ActionTesting::next_action<evolution_component>(make_not_null(&runner), 0);
   // the second response
   ActionTesting::invoke_queued_simple_action<worldtube_component>(
       make_not_null(&runner), 0);
-  CHECK(Actions::times_requested.size() == 2);
-  CHECK(Actions::times_requested[1] == start_time + target_step_size * 0.75);
+  CHECK(Actions::MockBoundaryComputeAndSendToEvolution<
+            test_metavariables>::times_requested.size() == 2);
+  CHECK(Actions::MockBoundaryComputeAndSendToEvolution<
+            test_metavariables>::times_requested[1] ==
+        start_time + target_step_size * 0.75);
   if (file_system::check_if_file_exists(filename)) {
     file_system::rm(filename, true);
   }
