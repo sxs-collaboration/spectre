@@ -955,6 +955,26 @@ prevent_cklocalbranch_test() {
 }
 standard_checks+=(prevent_cklocalbranch)
 
+# Check for unnamed namespaces in headers.  These are basically always
+# ODR violations if the header is included in more than one
+# translation unit.
+header_unnamed_namespace() {
+    is_includible "$1" && staged_grep -q "namespace *{" "$1"
+}
+header_unnamed_namespace_report() {
+    echo "Found unnamed namespaces in headers.  Use detail namespaces instead."
+    pretty_grep "namespace *{" "$@"
+}
+header_unnamed_namespace_test() {
+    test_check pass foo.cpp 'namespace Foo {'
+    test_check pass foo.hpp 'namespace Foo {'
+    test_check pass foo.tpp 'namespace Foo {'
+    test_check pass foo.cpp 'namespace {'
+    test_check fail foo.hpp 'namespace {'
+    test_check fail foo.tpp 'namespace {'
+}
+standard_checks+=(header_unnamed_namespace)
+
 # if test is enabled: redefines staged_grep to run tests on files that
 # are not in git
 [ "$1" = --test ] && staged_grep() { grep "$@"; } && \
