@@ -42,10 +42,6 @@
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 
-namespace {
-struct DummySystem {};
-}  // namespace
-
 /// \page RandomAmrExecutablePage RandomAmr Executable
 /// The RandomAmr executable is being used to develop the mechanics of
 /// adaptive mesh refinement.
@@ -56,6 +52,8 @@ struct DummySystem {};
 /// \brief The metavariables for the RandomAmr executable
 template <size_t Dim, bool KeepCoarseGrids>
 struct RandomAmrMetavars {
+  struct DummySystem {};
+
   static constexpr size_t volume_dim = Dim;
   using system = DummySystem;
 

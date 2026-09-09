@@ -30,14 +30,6 @@
 
 namespace evolution::dg {
 
-namespace {
-CREATE_GET_TYPE_ALIAS_OR_DEFAULT(flux_spacetime_variables_tag)
-
-struct EmptyStruct {
-  using tags_list = tmpl::list<>;
-};
-}  // namespace
-
 /*!
  * \brief Allocate or assign background general relativity quantities needed
  * for evolution systems run on a curved spacetime without solving Einstein
@@ -49,6 +41,14 @@ struct EmptyStruct {
  */
 template <typename System, typename Metavariables>
 struct BackgroundGrVars : tt::ConformsTo<db::protocols::Mutator> {
+ private:
+  CREATE_GET_TYPE_ALIAS_OR_DEFAULT(flux_spacetime_variables_tag)
+
+  struct EmptyStruct {
+    using tags_list = tmpl::list<>;
+  };
+
+ public:
   static constexpr size_t volume_dim = System::volume_dim;
 
   // Collect all the GR quantities used in the templated evolution system

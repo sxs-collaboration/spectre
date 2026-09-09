@@ -19,6 +19,7 @@ spectre_target_sources(
   Packet.cpp
   Scattering.cpp
   SwapGrTags.cpp
+  TakeTimeStep.cpp
   TemplatedLocalFunctions.cpp
   )
 
