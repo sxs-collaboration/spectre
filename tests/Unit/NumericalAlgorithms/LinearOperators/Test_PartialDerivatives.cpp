@@ -22,6 +22,7 @@
 #include "DataStructures/Index.hpp"
 #include "DataStructures/IndexIterator.hpp"
 #include "DataStructures/Tags/TempTensor.hpp"
+#include "DataStructures/Tensor/IndexType.hpp"
 #include "DataStructures/Tensor/Metafunctions.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
@@ -29,6 +30,7 @@
 #include "Domain/CoordinateMaps/Affine.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.tpp"
+#include "Domain/CoordinateMaps/DiscreteRotation.hpp"
 #include "Domain/CoordinateMaps/Identity.hpp"
 #include "Domain/CoordinateMaps/PolarToCartesian.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
@@ -54,6 +56,7 @@
 #include "NumericalAlgorithms/Spectral/MaximumNumberOfPoints.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/MinimumNumberOfPoints.hpp"
+#include "NumericalAlgorithms/Spectral/ParityFromSymmetry.hpp"
 #include "NumericalAlgorithms/Spectral/Quadrature.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/RealSphericalHarmonics.hpp"
 #include "Time/Tags/Time.hpp"
@@ -647,6 +650,93 @@ void test_logical_partial_derivatives_disk(const size_t n_r,
         ERROR("Cannot get here");
     }
   }
+  const auto du = logical_partial_derivatives<GradientTags>(u, mesh);
+  const Approx local_approx = Approx::custom().epsilon(1.0e-13).scale(1.0);
+  CHECK_VARIABLES_CUSTOM_APPROX(du[0], du_expected[0], local_approx);
+  CHECK_VARIABLES_CUSTOM_APPROX(du[1], du_expected[1], local_approx);
+  // We've checked that du is correct, now test that taking derivatives of
+  // individual tensors gets the matching result.
+  test_logical_partial_derivative_per_tensor(du, u, mesh);
+}
+
+template <typename VariableTags, typename GradientTags = VariableTags>
+void test_logical_partial_derivatives_half_annulus(const size_t n_r,
+                                                   const size_t n_phi) {
+  CAPTURE(n_r);
+  CAPTURE(n_phi);
+  const Mesh<2> mesh{
+      {n_r, n_phi},
+      {Spectral::Basis::Legendre, Spectral::Basis::HalfFourier},
+      {Spectral::Quadrature::GaussLobatto, Spectral::Quadrature::Equiangular}};
+  const auto x = logical_coordinates(mesh);
+  const DataVector& r = x[0];
+  const DataVector& phi = x[1];
+  const size_t num_grid_points = mesh.number_of_grid_points();
+
+  const auto max_radial_pow = static_cast<double>(n_r - 1);
+  const DataVector xi_a = pow(r, max_radial_pow);
+  const DataVector d_xi_a = max_radial_pow == 0
+                                ? DataVector(num_grid_points, 0.0)
+                                : max_radial_pow * pow(r, max_radial_pow - 1.0);
+
+  // Determine per-component phi-parity at compile time from tensor symmetries.
+  // HalfFourier uses IncludeZ=true (rotation by pi about y: both x and z flip).
+  constexpr size_t n_comp =
+      Variables<VariableTags>::number_of_independent_components;
+  constexpr auto parity_info =
+      Spectral::compute_parity_list<VariableTags, true>();
+  constexpr auto parity_run_lengths = std::get<0>(parity_info);
+  std::array<Spectral::Parity, n_comp> component_parity{};
+  {
+    size_t ic = 0;
+    bool is_even = true;
+    for (const auto seg_size : parity_run_lengths) {
+      if (seg_size == 0) {
+        if (is_even) {
+          is_even = false;
+          continue;
+        } else {
+          break;
+        }
+      }
+      for (size_t k = 0; k < seg_size; ++k, ++ic) {
+        gsl::at(component_parity, ic) =
+            is_even ? Spectral::Parity::Even : Spectral::Parity::Odd;
+      }
+      is_even = not is_even;
+    }
+  }
+
+  Variables<VariableTags> u{num_grid_points};
+  for (size_t ic = 0; ic < n_comp; ++ic) {
+    DataVector comp(u.data() + ic * num_grid_points, num_grid_points);
+    if (gsl::at(component_parity, ic) == Spectral::Parity::Odd) {
+      comp = xi_a * sin(phi);
+    } else {
+      comp = xi_a * cos(phi);
+    }
+  }
+
+  std::array<Variables<GradientTags>, 2> du_expected{};
+  du_expected[0].initialize(num_grid_points);
+  du_expected[1].initialize(num_grid_points);
+
+  constexpr size_t n_grad_comp =
+      Variables<GradientTags>::number_of_independent_components;
+  for (size_t ic = 0; ic < n_grad_comp; ++ic) {
+    DataVector du_dr(du_expected[0].data() + ic * num_grid_points,
+                     num_grid_points);
+    DataVector du_dphi(du_expected[1].data() + ic * num_grid_points,
+                       num_grid_points);
+    if (gsl::at(component_parity, ic) == Spectral::Parity::Odd) {
+      du_dr = d_xi_a * sin(phi);
+      du_dphi = xi_a * cos(phi);
+    } else {
+      du_dr = d_xi_a * cos(phi);
+      du_dphi = -xi_a * sin(phi);
+    }
+  }
+
   const auto du = logical_partial_derivatives<GradientTags>(u, mesh);
   const Approx local_approx = Approx::custom().epsilon(1.0e-13).scale(1.0);
   CHECK_VARIABLES_CUSTOM_APPROX(du[0], du_expected[0], local_approx);
@@ -1269,7 +1359,8 @@ DataVector cartoon_dfunc(size_t deriv_index,
 }
 
 template <bool Spherical>
-void test_cartoon_partial_derivatives(const double x_start) {
+void test_cartoon_partial_derivatives(const double x_start,
+                                      const bool test_half_fourier = false) {
   Mesh<3> mesh;
   tnsr::I<DataVector, 3, Frame::Grid> coords;
   InverseJacobian<DataVector, 3, Frame::ElementLogical, Frame::Grid>
@@ -1301,29 +1392,67 @@ void test_cartoon_partial_derivatives(const double x_start) {
     coords = map(logical_coordinates(mesh));
   } else {
     // axial symmetry
-    const size_t num_x_grid_pts = 6;
+    const size_t num_x_grid_pts = 7;
     const double x_end = 3.25;
-    const size_t num_y_grid_pts = 7;
+    const size_t num_y_grid_pts = 6;
+    const size_t num_phi_grid_pts = 11;
     const double y_start = -2.5;
     const double y_end = 4.0;
 
-    mesh = Mesh<3>{{{num_x_grid_pts, num_y_grid_pts, 1}},
-                   {{Spectral::Basis::Legendre, Spectral::Basis::Legendre,
-                     Spectral::Basis::Cartoon}},
-                   {{Spectral::Quadrature::GaussLobatto,
-                     Spectral::Quadrature::GaussLobatto,
-                     Spectral::Quadrature::AxialSymmetry}}};
+    mesh =
+        test_half_fourier
+            ? Mesh<3>{{{num_x_grid_pts, num_phi_grid_pts, 1}},
+                      {{Spectral::Basis::Legendre, Spectral::Basis::HalfFourier,
+                        Spectral::Basis::Cartoon}},
+                      {{Spectral::Quadrature::GaussLobatto,
+                        Spectral::Quadrature::Equiangular,
+                        Spectral::Quadrature::AxialSymmetry}}}
+            : Mesh<3>{{{num_x_grid_pts, num_y_grid_pts, 1}},
+                      {{Spectral::Basis::Legendre, Spectral::Basis::Legendre,
+                        Spectral::Basis::Cartoon}},
+                      {{Spectral::Quadrature::GaussLobatto,
+                        Spectral::Quadrature::GaussLobatto,
+                        Spectral::Quadrature::AxialSymmetry}}};
 
     const Affine affine_x_map(-1.0, 1.0, x_start, x_end);
     const Affine affine_y_map(-1.0, 1.0, y_start, y_end);
 
-    using Cartoon_map_combination =
-        domain::CoordinateMaps::ProductOf3Maps<Affine, Affine, Identity1D>;
-    const domain::CoordinateMap<Frame::ElementLogical, Frame::Grid,
-                                Cartoon_map_combination>
-        map{{affine_x_map, affine_y_map, identity_cartoon_map}};
-    inv_jacobian = map.inv_jacobian(logical_coordinates(mesh));
-    coords = map(logical_coordinates(mesh));
+    if (test_half_fourier) {
+      using Cartoon_map_combination =
+          domain::CoordinateMaps::ProductOf3Maps<Affine, Identity1D,
+                                                 Identity1D>;
+      // HalfFourier parity (phi -> -phi) must match the cartoon x -> -x
+      // parity, so x  must be odd under phi -> -phi. We need to rotate the
+      // coordinates so the cartoon symmetry axis x=0 lies at the HalfFourier
+      // boundaries phi = 0, pi
+      const auto map =
+          domain::make_coordinate_map<Frame::ElementLogical, Frame::Grid>(
+              Cartoon_map_combination{affine_x_map, identity_cartoon_map,
+                                      identity_cartoon_map},
+              domain::CoordinateMaps::ProductOf2Maps<
+                  domain::CoordinateMaps::PolarToCartesian,
+                  domain::CoordinateMaps::Identity<1>>{
+                  domain::CoordinateMaps::PolarToCartesian{},
+                  domain::CoordinateMaps::Identity<1>{}},
+              domain::CoordinateMaps::ProductOf2Maps<
+                  domain::CoordinateMaps::DiscreteRotation<2>,
+                  domain::CoordinateMaps::Identity<1>>{
+                  domain::CoordinateMaps::DiscreteRotation<2>{OrientationMap<2>{
+                      std::array<Direction<2>, 2>{Direction<2>::upper_eta(),
+                                                  Direction<2>::lower_xi()}}},
+                  domain::CoordinateMaps::Identity<1>{}});
+
+      inv_jacobian = map.inv_jacobian(logical_coordinates(mesh));
+      coords = map(logical_coordinates(mesh));
+    } else {
+      using Cartoon_map_combination =
+          domain::CoordinateMaps::ProductOf3Maps<Affine, Affine, Identity1D>;
+      const domain::CoordinateMap<Frame::ElementLogical, Frame::Grid,
+                                  Cartoon_map_combination>
+          map{{affine_x_map, affine_y_map, identity_cartoon_map}};
+      inv_jacobian = map.inv_jacobian(logical_coordinates(mesh));
+      coords = map(logical_coordinates(mesh));
+    }
   }
 
   using Tempabc =
@@ -1349,7 +1478,7 @@ void test_cartoon_partial_derivatives(const double x_start) {
   // The point of these prefactors is to ensure the tensors respect the
   // symmetry of the spacetime: it is not sufficient that each component
   // follows the symmetry, rather the entire tensor must satisfy
-  // \mathcal{L}_\xi (tensor) = 0. Each rank has it's own form of prefactor
+  // \mathcal{L}_\xi (tensor) = 0. Each rank has its own form of prefactor
   Variables<VarTags> prefactor_vars{mesh.number_of_grid_points()};
 
   using TempiA =
@@ -1410,7 +1539,7 @@ void test_cartoon_partial_derivatives(const double x_start) {
     get<2>(vector) = get<2>(one_form) = DataVector(dv_size, 0.0);
     get<3>(vector) = get<3>(one_form) = get<0>(coords);
 
-    // \partial_i of x_a is (0, \delta_i2, 0, \delta_i0)
+    // \partial_i of x_a is (0, -1 * \delta_i2, 0, \delta_i0)
     for (size_t i = 0; i < index_dim<0>(d_vector); ++i) {
       for (size_t a = 0; a < index_dim<1>(d_vector); ++a) {
         if (i == 2 and a == 1) {
@@ -1484,7 +1613,7 @@ void test_cartoon_partial_derivatives(const double x_start) {
   // metric, which though not a tensor mathematically still must obey
   // \mathcal{L}_\xi \Phi_{iab} = 0
   // Using the form
-  // x_a x_b x_c + \delta_ab x_c \delta_ac x_b \delta_bc x_a
+  // x_a x_b x_c + \delta_ab x_c + \delta_ac x_b + \delta_bc x_a
   for (size_t a = 0; a < index_dim<0>(rank3); ++a) {
     for (size_t b = 0; b < index_dim<1>(rank3); ++b) {
       for (size_t c = 0; c < index_dim<2>(rank3); ++c) {
@@ -1507,8 +1636,8 @@ void test_cartoon_partial_derivatives(const double x_start) {
       }
     }
   }
-  // \partial_i of (x_a x_b x_c + \delta_ab x_c \delta_ac x_b \delta_bc x_a) is
-  // \delta_ia x_b x_c + \delta_ib x_a x_c + \delta_ic x_a x_b +
+  // \partial_i of (x_a x_b x_c + \delta_ab x_c + \delta_ac x_b + \delta_bc x_a)
+  // is \delta_ia x_b x_c + \delta_ib x_a x_c + \delta_ic x_a x_b +
   //   \delta_ab \delta_ic + \delta_ac \delta_ib + \delta_bc \delta_ia
   for (size_t i = 0; i < index_dim<0>(d_rank3); ++i) {
     for (size_t a = 0; a < index_dim<1>(d_rank3); ++a) {
@@ -2198,6 +2327,12 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.LogicalDerivs",
       }
     }
   }
+  for (size_t n_r = 2; n_r <= 5; ++n_r) {
+    for (size_t n_phi = 3; n_phi <= 7; n_phi += 2) {
+      test_logical_partial_derivatives_half_annulus<two_vars<DataVector, 2>>(
+          n_r, n_phi);
+    }
+  }
 #ifdef SPECTRE_DEBUG
   CHECK_THROWS_WITH(
       (test_logical_partial_derivatives_disk<two_vars<DataVector, 2>>(2, 7)),
@@ -2222,6 +2357,11 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.LogicalDerivs",
                                                                             4)),
       Catch::Matchers::ContainsSubstring(
           "ZernikeB3 radial resolution is insufficient"));
+  CHECK_THROWS_WITH(
+      (test_logical_partial_derivatives_half_annulus<two_vars<DataVector, 2>>(
+          2, 4)),
+      Catch::Matchers::ContainsSubstring(
+          "HalfFourier must have an odd number of gridpoints "));
 #endif  // SPECTRE_DEBUG
 
   for (size_t n_r = 3; n_r <= 8; ++n_r) {
@@ -2284,6 +2424,8 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.PartialDerivs",
   // testing without L'Hopital
   test_cartoon_partial_derivatives<true>(1.0);
   test_cartoon_partial_derivatives<false>(1.0);
+  // testing with HalfFourier basis
+  test_cartoon_partial_derivatives<false>(1.0, true);
 
   test_cartoon_partial_derivative_and_choosers();
 

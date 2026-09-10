@@ -21,6 +21,7 @@
 #include "NumericalAlgorithms/Spectral/ModalToNodalMatrix.hpp"
 #include "NumericalAlgorithms/Spectral/NodalToModalMatrix.hpp"
 #include "NumericalAlgorithms/Spectral/Parity.hpp"
+#include "NumericalAlgorithms/Spectral/ParityFromSymmetry.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/Spherepack.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/SpherepackCache.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/SpherepackIterator.hpp"
@@ -503,6 +504,56 @@ void logical_partial_derivative(
       ERROR(
           "Support for complex numbers with cylinder is not yet implemented "
           "for logical_partial_derivative.");
+    }
+  } else if (Dim == 2 and mesh.basis(1) == Spectral::Basis::HalfFourier) {
+    if constexpr (std::is_same_v<typename DataType::value_type, double>) {
+      ASSERT(
+          mesh.basis(0) == Spectral::Basis::Legendre or
+              mesh.basis(0) == Spectral::Basis::Chebyshev,
+          "Only I1 bases (and Cartoon) should be paired with HalfFourier, got "
+              << mesh.basis(0));
+      const size_t n_r = mesh.extents(0);
+      const size_t n_phi = mesh.extents(1);
+      ASSERT(n_phi % 2 == 1,
+             "HalfFourier must have an odd number of gridpoints for the "
+             "even/odd modal spaces to have the same max degree, got "
+                 << n_phi);
+      const Matrix& D_r =
+          Spectral::differentiation_matrix(mesh.slice_through(0));
+      const Matrix& D_even =
+          Spectral::differentiation_matrix<Spectral::Basis::HalfFourier,
+                                           Spectral::Quadrature::Equiangular>(
+              n_phi, Spectral::Parity::Even);
+      const Matrix& D_odd =
+          Spectral::differentiation_matrix<Spectral::Basis::HalfFourier,
+                                           Spectral::Quadrature::Equiangular>(
+              n_phi, Spectral::Parity::Odd);
+      constexpr auto component_parities = Spectral::make_component_parity_array<
+          Tensor<DataType, SymmList, IndexList>>();
+      for (size_t storage_index = 0; storage_index < u.size();
+           ++storage_index) {
+        const auto u_tensor_index = u.get_tensor_index(storage_index);
+        // r-derivative: standard I1 differentiation
+        partial_derivatives_detail::apply_matrix_in_first_dim(
+            // NOLINTNEXTLINE(readability-redundant-smartptr-get)
+            logical_derivative_of_u->get(prepend(u_tensor_index, 0_st)).data(),
+            u[storage_index].data(), D_r, num_grid_points);
+        // phi-derivative: even-parity components use D_even, odd use D_odd
+        const Matrix& D_phi =
+            gsl::at(component_parities, storage_index) == Spectral::Parity::Even
+                ? D_even
+                : D_odd;
+        dgemm_<true>(
+            'N', 'T', n_r, n_phi, n_phi, 1.0, u[storage_index].data(), n_r,
+            D_phi.data(), D_phi.spacing(), 0.0,
+            // NOLINTNEXTLINE(readability-redundant-smartptr-get)
+            logical_derivative_of_u->get(prepend(u_tensor_index, 1_st)).data(),
+            n_r);
+      }
+    } else {
+      ERROR(
+          "Support for complex numbers with a HalfFourier basis is not yet "
+          "implemented for logical_partial_derivative.");
     }
   } else {
     const Matrix empty_matrix{};

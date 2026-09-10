@@ -1031,6 +1031,15 @@ struct LogicalImpl<2, VariableTags, DerivativeTags> {
             "Support for complex numbers with a disk is not yet "
             "implemented for logical_partial_derivative.");
       }
+    } else if (UNLIKELY(mesh.basis(1) == Spectral::Basis::HalfFourier)) {
+      if constexpr (std::is_same_v<ValueType, double>) {
+        half_fourier_apply(logical_du, partial_u_wrt_eta, u_eta_fastest, u,
+                           mesh);
+      } else {
+        ERROR(
+            "Support for complex numbers with a HalfFourier basis is not yet "
+            "implemented for logical_partial_derivative.");
+      }
     } else {
       auto& logical_partial_derivatives_of_u = *logical_du;
       const size_t deriv_size =
@@ -1263,6 +1272,129 @@ struct LogicalImpl<2, VariableTags, DerivativeTags> {
 
     raw_transpose(make_not_null((*logical_du)[0]), local_buffer2.data(),
                   num_components_times_xi_slices, mesh.extents(0));
+  }
+
+  // Only used for 3D cartoon evolutions with axial symmetry
+  template <typename T>
+  static void half_fourier_apply(
+      const gsl::not_null<std::array<double*, Dim>*> logical_du,
+      Variables<T>* const local_buffer1,
+      Variables<DerivativeTags>* const local_buffer2,
+      const Variables<VariableTags>& u, const Mesh<2>& mesh) {
+    const size_t n_r = mesh.extents(0);
+    const size_t n_phi = mesh.extents(1);
+    ASSERT(n_phi % 2 == 1,
+           "HalfFourier must have an odd number of gridpoints for the even/odd "
+           "modal spaces to have the same max degree, got "
+               << n_phi);
+    constexpr size_t n_comp =
+        Variables<DerivativeTags>::number_of_independent_components;
+    const size_t block_size = n_r * n_phi;
+    const size_t deriv_size = n_comp * block_size;
+
+    // Dim 0: r-derivative
+    const Matrix& D_r = Spectral::differentiation_matrix(mesh.slice_through(0));
+    apply_matrix_in_first_dim((*logical_du)[0], u.data(), D_r, deriv_size);
+
+    // Dim 1: phi-derivative using a parity-split BLAS strategy.
+    const Matrix& D_even =
+        Spectral::differentiation_matrix<Spectral::Basis::HalfFourier,
+                                         Spectral::Quadrature::Equiangular>(
+            n_phi, Spectral::Parity::Even);
+    const Matrix& D_odd =
+        Spectral::differentiation_matrix<Spectral::Basis::HalfFourier,
+                                         Spectral::Quadrature::Equiangular>(
+            n_phi, Spectral::Parity::Odd);
+
+    // HalfFourier uses rotation-by-pi-about-y parity (both x and z flip).
+    constexpr auto parity_info =
+        Spectral::compute_parity_list<DerivativeTags, true>();
+    constexpr auto parity_list = std::get<0>(parity_info);
+    constexpr size_t n_even_comp = std::get<1>(parity_info);
+    constexpr size_t n_odd_comp = std::get<2>(parity_info);
+
+    // Partition local_buffer1 into [even_buf | odd_buf] and local_buffer2 into
+    // [even_result | odd_result]
+    double* const even_buf = local_buffer1->data();
+    double* const odd_buf = local_buffer1->data() + n_even_comp * block_size;
+    double* const even_result = local_buffer2->data();
+    double* const odd_result = local_buffer2->data() + n_even_comp * block_size;
+
+    // Transpose each component from r-first to phi-first and gather by parity.
+    {
+      size_t variable_index = 0;
+      size_t even_idx = 0;
+      size_t odd_idx = 0;
+      bool is_even = true;
+      for (const auto seg_size : parity_list) {
+        if (seg_size == 0) {
+          if (is_even) {
+            is_even = false;
+            continue;
+          } else {
+            break;
+          }
+        }
+        if (is_even) {
+          for (size_t k = 0; k < seg_size; ++k, ++variable_index, ++even_idx) {
+            // NOLINTNEXTLINE
+            raw_transpose(make_not_null(even_buf + even_idx * block_size),
+                          u.data() + block_size * variable_index, n_r, n_phi);
+          }
+        } else {
+          for (size_t k = 0; k < seg_size; ++k, ++variable_index, ++odd_idx) {
+            // NOLINTNEXTLINE
+            raw_transpose(make_not_null(odd_buf + odd_idx * block_size),
+                          u.data() + block_size * variable_index, n_r, n_phi);
+          }
+        }
+        is_even = not is_even;
+      }
+    }
+
+    if constexpr (n_even_comp > 0) {
+      apply_matrix_in_first_dim(even_result, even_buf, D_even,
+                                n_even_comp * block_size, false);
+    }
+    if constexpr (n_odd_comp > 0) {
+      apply_matrix_in_first_dim(odd_result, odd_buf, D_odd,
+                                n_odd_comp * block_size, false);
+    }
+
+    // Transpose back from phi-first to r-first and scatter by parity to output.
+    double* const p_dphi = (*logical_du)[1];
+    {
+      size_t variable_index = 0;
+      size_t even_idx = 0;
+      size_t odd_idx = 0;
+      bool is_even = true;
+      for (const auto seg_size : parity_list) {
+        if (seg_size == 0) {
+          if (is_even) {
+            is_even = false;
+            continue;
+          } else {
+            break;
+          }
+        }
+        if (is_even) {
+          for (size_t k = 0; k < seg_size; ++k, ++variable_index, ++even_idx) {
+            // NOLINTNEXTLINE
+            raw_transpose(make_not_null(p_dphi + block_size * variable_index),
+                          even_result + even_idx * block_size,  // NOLINT
+                          n_phi, n_r);
+          }
+        } else {
+          for (size_t k = 0; k < seg_size; ++k, ++variable_index, ++odd_idx) {
+            // NOLINTNEXTLINE
+            raw_transpose(make_not_null(p_dphi + block_size * variable_index),
+                          odd_result + odd_idx * block_size,  // NOLINT
+                          n_phi, n_r);
+          }
+        }
+        is_even = not is_even;
+      }
+    }
   }
 };
 
