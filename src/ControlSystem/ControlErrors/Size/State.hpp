@@ -38,15 +38,22 @@ struct StateUpdateArgs {
   /// is in state Label::DeltaR.
   /// This is Q in Eq. 96 of \cite Hemberger2012jz.
   double control_error_delta_r;
-  /// average_radial_distance is the average distance between the horizon and
-  /// the excision boundary. Used only for state DeltaRDriftOutward.
-  /// If std::nullopt, then DeltaRDriftOutward will not be used.
+  /// average_radial_distance is the average distance between the
+  /// horizon and the excision boundary. Used for state
+  /// DeltaRDriftOutward, for DeltaRDriftInward, and for reducing
+  /// timescale when horizon is too large.
   std::optional<double> average_radial_distance;
   /// max_allowed_radial_distance is the minimum distance between the horizon
   /// and the excision boundary that will trigger state
   /// Label::DeltaRDriftOutward.  If std::nullopt, then DeltaRDriftOutward
   /// will never be triggered.
   std::optional<double> max_allowed_radial_distance;
+  /// approx_max_relative_delta_r is the maximum value that the
+  /// control system encourages (but does not enforce) for relative
+  /// delta r.  It does this encouragement by decreasing the timescale
+  /// where appropriate. If std::nullopt, then no such encouragement
+  /// is done.
+  std::optional<double> approx_max_relative_delta_r;
   /// avg_distorted_normal_dot_unit_coord_vector is the same quantity as
   /// ControlErrorArgs::avg_distorted_normal_dot_unit_coord_vector.
   double avg_distorted_normal_dot_unit_coord_vector;

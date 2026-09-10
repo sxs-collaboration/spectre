@@ -170,6 +170,7 @@ ErrorDiagnostics control_error(
         predictor_drift_limit_delta_radius,
     double time, double control_error_delta_r,
     std::optional<double> control_error_delta_r_outward,
+    std::optional<double> approx_max_relative_delta_r,
     std::optional<double> max_allowed_radial_distance,
     std::optional<double> inward_drift_velocity,
     std::optional<double> min_allowed_radial_distance,
