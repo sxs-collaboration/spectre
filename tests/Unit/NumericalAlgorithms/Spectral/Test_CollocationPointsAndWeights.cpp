@@ -20,7 +20,7 @@ void test() {
   CAPTURE(basis);
   CAPTURE(quadrature);
   for (size_t n = minimum_number_of_points<basis, quadrature>;
-       n <= maximum_number_of_points<basis>; ++n) {
+       n <= maximum_number_of_points<basis, quadrature>; ++n) {
     CAPTURE(n);
     const auto& [xi, w] =
         compute_collocation_points_and_weights<basis, quadrature>(n);
@@ -49,7 +49,7 @@ void test_radial_zernike() {
   CAPTURE(quadrature);
   const Approx custom_approx = Approx::custom().epsilon(1.e-12).scale(1.0);
   for (size_t n = minimum_number_of_points<basis, quadrature>;
-       n <= maximum_number_of_points<basis>; ++n) {
+       n <= maximum_number_of_points<basis, quadrature>; ++n) {
     CAPTURE(n);
     const auto& [xi, w] =
         compute_collocation_points_and_weights<basis, quadrature>(n);

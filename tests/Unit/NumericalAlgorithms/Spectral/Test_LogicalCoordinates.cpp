@@ -9,6 +9,7 @@
 #include <string>
 
 #include "DataStructures/DataVector.hpp"
+#include "DataStructures/Tensor/Slice.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/CoordinateMaps/Affine.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
@@ -20,6 +21,7 @@
 #include "Domain/Tags.hpp"
 #include "Helpers/DataStructures/DataBox/TestHelpers.hpp"
 #include "NumericalAlgorithms/Spectral/Basis.hpp"
+#include "NumericalAlgorithms/Spectral/Limits.hpp"
 #include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Quadrature.hpp"
@@ -41,24 +43,29 @@ void test_spherical_logical_coords() {
     const auto xi_expected = ylm.theta_phi_points();
     CHECK(get<0>(xi_s2) == xi_expected[0]);
     CHECK(get<1>(xi_s2) == xi_expected[1]);
+    const size_t nr = l / 2 + 1;
     const Mesh<3> mesh_b3{
-        {1, nth, nph},
+        {nr, nth, nph},
         {Spectral::Basis::ZernikeB3, Spectral::Basis::ZernikeB3,
          Spectral::Basis::ZernikeB3},
         {Spectral::Quadrature::GaussRadauUpper, Spectral::Quadrature::Gauss,
          Spectral::Quadrature::Equiangular}};
     const auto xi_b3 = logical_coordinates(mesh_b3);
-    CHECK(get<1>(xi_b3) == xi_expected[0]);
-    CHECK(get<2>(xi_b3) == xi_expected[1]);
+    const auto sliced_xi_b3 = data_on_slice(xi_b3, mesh_b3.extents(), 0, 0);
+    CHECK(get<1>(sliced_xi_b3) == xi_expected[0]);
+    CHECK(get<2>(sliced_xi_b3) == xi_expected[1]);
   }
 }
 
 void test_radial_zernike_logical_coords() {
+  const auto quadrature = Spectral::Quadrature::GaussRadauUpper;
   for (const auto& basis :
        {Spectral::Basis::ZernikeB1, Spectral::Basis::ZernikeB2,
         Spectral::Basis::ZernikeB3}) {
-    for (size_t n = 2; n < 5; ++n) {
-      const Mesh<1> mesh{n, basis, Spectral::Quadrature::GaussRadauUpper};
+    CAPTURE(basis);
+    for (size_t n = Spectral::limits::min(basis, quadrature); n < 5; ++n) {
+      CAPTURE(n);
+      const Mesh<1> mesh{n, basis, quadrature};
       const auto xi = logical_coordinates(mesh);
       CHECK(get<0>(xi)[n - 1] == approx(1.0));
       if (n >= 4) {

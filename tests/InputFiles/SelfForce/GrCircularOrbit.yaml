@@ -104,7 +104,9 @@ Amr:
     Isotropy: Anisotropic
     EnforceTwoToOneBalanceInNormalDirection: True
     Limits:
-      NumGridPoints: Auto
+      NumPolynomialModes: Auto
+      FourierM: Auto
+      SphericalHarmonicL: Auto
       RefinementLevel: Auto
       ErrorBeyondLimits: True
     AllowCoarsening: True

@@ -6,7 +6,6 @@
 #include "Domain/Amr/Flag.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
-#include "NumericalAlgorithms/Spectral/MinimumNumberOfPoints.hpp"
 #include "ParallelAlgorithms/Amr/Policies/Isotropy.hpp"
 #include "ParallelAlgorithms/Amr/Policies/Limits.hpp"
 #include "ParallelAlgorithms/Amr/Policies/Policies.hpp"
@@ -56,16 +55,15 @@ void enforce_policies(const gsl::not_null<std::array<Flag, Dim>*> amr_decision,
       error_if_beyond_limits(d, "MaximumRefinement");
       gsl::at(*amr_decision, d) = Flag::DoNothing;
     }
-    const size_t minimum_resolution = std::max(
-        limits.minimum_resolution(), Spectral::detail::minimum_number_of_points(
-                                         mesh.basis(d), mesh.quadrature(d)));
     if (gsl::at(*amr_decision, d) == Flag::DecreaseResolution and
-        mesh.extents(d) <= minimum_resolution) {
+        mesh.extents(d) <=
+            limits.minimum_resolution(mesh.basis(d), mesh.quadrature(d))) {
       error_if_beyond_limits(d, "MinimumResolution");
       gsl::at(*amr_decision, d) = Flag::DoNothing;
     }
     if (gsl::at(*amr_decision, d) == Flag::IncreaseResolution and
-        mesh.extents(d) >= limits.maximum_resolution()) {
+        mesh.extents(d) >=
+            limits.maximum_resolution(mesh.basis(d), mesh.quadrature(d))) {
       error_if_beyond_limits(d, "MaximumResolution");
       gsl::at(*amr_decision, d) = Flag::DoNothing;
     }

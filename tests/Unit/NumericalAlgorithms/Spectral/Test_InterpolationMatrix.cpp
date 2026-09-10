@@ -31,7 +31,7 @@ void test(const DataVector& target_pts) {
                                  ? Approx::custom().epsilon(5.0e-12).scale(1.0)
                                  : Approx::custom().epsilon(5.0e-13).scale(1.0);
   for (size_t n = minimum_number_of_points<basis, quadrature>;
-       n <= maximum_number_of_points<basis>; ++n) {
+       n <= maximum_number_of_points<basis, quadrature>; ++n) {
     CAPTURE(n);
     // If target points are source points, matrix should be identity
     const DataVector xi = collocation_points<basis, quadrature>(n);
@@ -68,7 +68,8 @@ void test_zernike_b1(const DataVector& target_pts) {
   constexpr Quadrature quadrature = Quadrature::GaussRadauUpper;
   const size_t num_target_pts = target_pts.size();
   for (size_t num_points = minimum_number_of_points<basis, quadrature>;
-       num_points <= maximum_number_of_points<basis>; ++num_points) {
+       num_points <= maximum_number_of_points<basis, quadrature>;
+       ++num_points) {
     CAPTURE(num_points);
     const Approx custom_approx = Approx::custom().epsilon(5.0e-13).scale(1.0);
     const DataVector& xi = collocation_points<basis, quadrature>(num_points);
