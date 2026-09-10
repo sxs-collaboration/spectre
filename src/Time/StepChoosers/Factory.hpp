@@ -30,8 +30,7 @@ using common_step_choosers = tmpl::push_back<
         tmpl::list<StepChoosers::Cfl<Frame::Inertial, System>,
                    StepChoosers::ElementSizeCfl<System::volume_dim, System>>,
         tmpl::list<>>,
-    StepChoosers::Constant,
-    StepChoosers::ErrorControl<Use, typename System::variables_tag>,
+    StepChoosers::Constant, StepChoosers::ErrorControl<Use, System>,
     StepChoosers::LimitIncrease, StepChoosers::Maximum,
     StepChoosers::PreventRapidIncrease<System>>;
 }  // namespace Factory_detail

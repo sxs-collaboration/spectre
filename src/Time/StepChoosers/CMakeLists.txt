@@ -6,6 +6,7 @@ spectre_target_sources(
   PRIVATE
   ByBlock.cpp
   Constant.cpp
+  ErrorControl.cpp
   LimitIncrease.cpp
   Maximum.cpp
   PreventRapidIncrease.cpp

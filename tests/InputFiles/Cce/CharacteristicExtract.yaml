@@ -81,18 +81,7 @@ Cce:
       - Constant: 0.1 # Don't take steps bigger than 0.1M
       - LimitIncrease:
           Factor: 2
-      - ErrorControl(SwshVars):
-          AbsoluteTolerance: 1e-9
-          RelativeTolerance: 1e-7
-          # These factors control how much the time step is changed at once.
-          MaxFactor: 2
-          MinFactor: 0.25
-          # How close to the "perfect" time step we take. Since the "perfect"
-          # value assumes a linear system, we need some safety factor since our
-          # system is nonlinear, and also so that we reduce how often we retake
-          # time steps.
-          SafetyFactor: 0.9
-      - ErrorControl(CoordVars):
+      - ErrorControl:
           AbsoluteTolerance: 1e-9
           RelativeTolerance: 1e-8
           # These factors control how much the time step is changed at once.

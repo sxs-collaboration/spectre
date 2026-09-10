@@ -24,14 +24,6 @@ struct CharacteristicExtractDefaults {
   static constexpr bool evolve_ccm = system::evolve_ccm;
   using evolved_swsh_dt_tags = tmpl::list<Cce::Tags::BondiH>;
 
-  struct swsh_vars_selector {
-    static std::string name() { return "SwshVars"; }
-  };
-
-  struct coord_vars_selector {
-    static std::string name() { return "CoordVars"; }
-  };
-
   using cce_boundary_communication_tags =
       Cce::Tags::characteristic_worldtube_boundary_tags<
           Cce::Tags::BoundaryValue>;
@@ -107,13 +99,7 @@ struct CharacteristicExtractDefaults {
   using cce_step_choosers =
       tmpl::list<StepChoosers::Constant, StepChoosers::LimitIncrease,
                  StepChoosers::Maximum,
-                 StepChoosers::ErrorControl<StepChooserUse::LtsStep,
-                                            typename system::evolved_swsh_tag,
-                                            swsh_vars_selector>,
-                 StepChoosers::ErrorControl<
-                     StepChooserUse::LtsStep,
-                     typename system::evolved_coordinates_variables_tag,
-                     coord_vars_selector>>;
+                 StepChoosers::ErrorControl<StepChooserUse::LtsStep, system>>;
   using cce_slab_choosers =
       tmpl::list<StepChoosers::Constant, StepChoosers::LimitIncrease,
                  StepChoosers::Maximum, StepChoosers::StepToTimes>;

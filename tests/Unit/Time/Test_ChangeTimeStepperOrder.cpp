@@ -316,7 +316,7 @@ struct System {
 };
 
 using ErrorControl =
-    StepChoosers::ErrorControl<StepChooserUse::LtsStep, System::variables_tag>;
+    StepChoosers::ErrorControl<StepChooserUse::LtsStep, System>;
 
 struct Metavariables {
   using system = System;
