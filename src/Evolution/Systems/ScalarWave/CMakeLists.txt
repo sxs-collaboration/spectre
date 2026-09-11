@@ -13,8 +13,10 @@ spectre_target_sources(
   Constraints.cpp
   EnergyDensity.cpp
   Equations.cpp
+  FilledSpherePowerMonitor.cpp
   MomentumDensity.cpp
   SpectralFilter.cpp
+  SphericalShellPowerMonitor.cpp
   TimeDerivative.cpp
   )
 
@@ -27,8 +29,10 @@ spectre_target_headers(
   Constraints.hpp
   EnergyDensity.hpp
   Equations.hpp
+  FilledSpherePowerMonitor.hpp
   Initialize.hpp
   MomentumDensity.hpp
+  SphericalShellPowerMonitor.hpp
   System.hpp
   Tags.hpp
   TagsDeclarations.hpp
@@ -47,6 +51,9 @@ target_link_libraries(
   Evolution
   LinearOperators
   Options
+  Spectral
+  SphericalHarmonics
+  TensorYlm
   Utilities
   INTERFACE
   Initialization
@@ -59,3 +66,4 @@ target_link_libraries(
 add_subdirectory(BoundaryConditions)
 add_subdirectory(BoundaryCorrections)
 add_subdirectory(Instantiations)
+add_subdirectory(Python)
