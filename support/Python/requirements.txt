@@ -32,4 +32,4 @@ pyyaml
 rich >= 12.0.0
 scipy
 # SimulationSupport: shared routines for SpEC and SpECTRE
-SimulationSupport @ git+https://github.com/sxs-collaboration/SimulationSupport.git@50e6a22084d955f9d0bbd4285a11c7c05e4d3a04
+SimulationSupport @ git+https://github.com/sxs-collaboration/SimulationSupport.git@0b73ea057a6a8915e57cfc37a7c8cb0630a834ad
