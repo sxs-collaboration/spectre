@@ -468,12 +468,54 @@ void test_RotScaleTrans() {
       test_inv_jacobian(rot_scale_trans_map_outer, point_to_check, t,
                         f_of_t_list);
     };
+    const auto check_all_maps_argument_types =
+        [&](const std::array<double, Dim>& point_to_check) {
+          test_coordinate_map_argument_types(rot_map, point_to_check, t,
+                                             f_of_t_list);
+          test_coordinate_map_argument_types(scale_map_inner, point_to_check, t,
+                                             f_of_t_list);
+          test_coordinate_map_argument_types(scale_map_transition,
+                                             point_to_check, t, f_of_t_list);
+          test_coordinate_map_argument_types(scale_map_outer, point_to_check, t,
+                                             f_of_t_list);
+          test_coordinate_map_argument_types(trans_map_inner, point_to_check, t,
+                                             f_of_t_list);
+          test_coordinate_map_argument_types(trans_map_transition,
+                                             point_to_check, t, f_of_t_list);
+          test_coordinate_map_argument_types(trans_map_outer, point_to_check, t,
+                                             f_of_t_list);
+          test_coordinate_map_argument_types(rot_scale_map_inner,
+                                             point_to_check, t, f_of_t_list);
+          test_coordinate_map_argument_types(rot_scale_map_transition,
+                                             point_to_check, t, f_of_t_list);
+          test_coordinate_map_argument_types(rot_scale_map_outer,
+                                             point_to_check, t, f_of_t_list);
+          test_coordinate_map_argument_types(rot_trans_map_inner,
+                                             point_to_check, t, f_of_t_list);
+          test_coordinate_map_argument_types(rot_trans_map_transition,
+                                             point_to_check, t, f_of_t_list);
+          test_coordinate_map_argument_types(rot_trans_map_outer,
+                                             point_to_check, t, f_of_t_list);
+          test_coordinate_map_argument_types(scale_trans_map_inner,
+                                             point_to_check, t, f_of_t_list);
+          test_coordinate_map_argument_types(scale_trans_map_transition,
+                                             point_to_check, t, f_of_t_list);
+          test_coordinate_map_argument_types(scale_trans_map_outer,
+                                             point_to_check, t, f_of_t_list);
+          test_coordinate_map_argument_types(rot_scale_trans_map_inner,
+                                             point_to_check, t, f_of_t_list);
+          test_coordinate_map_argument_types(rot_scale_trans_map_transition,
+                                             point_to_check, t, f_of_t_list);
+          test_coordinate_map_argument_types(rot_scale_trans_map_outer,
+                                             point_to_check, t, f_of_t_list);
+        };
 
     if (radius <= inner_radius) {
       check_inner_maps_inverse(point_xi);
     } else {
       check_transition_maps_inverse(point_xi);
     }
+    check_all_maps_argument_types(point_xi);
     check_all_maps_frame_velocity(point_xi);
     check_all_maps_jacobian(point_xi);
     check_all_maps_jacobian(point_xi_dv);
@@ -483,6 +525,7 @@ void test_RotScaleTrans() {
     } else {
       check_outer_maps_inverse(far_point_xi);
     }
+    check_all_maps_argument_types(far_point_xi);
     check_all_maps_frame_velocity(far_point_xi);
     check_all_maps_jacobian(far_point_xi);
 
