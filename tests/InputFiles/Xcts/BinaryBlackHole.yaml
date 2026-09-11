@@ -114,7 +114,8 @@ DomainCreator:
             Rotation: [0., 0., 0.]
             Lapse: *kerr_right
             NegativeExpansion: *kerr_right
-      UseLogarithmicMap: True
+      ShellLogMapStrength: 1.0
+      CubeLogMapStrength: None
     ObjectB:
       InnerRadius: 0.8
       OuterRadius: 4.
@@ -126,7 +127,8 @@ DomainCreator:
             Rotation: [0., 0., 0.]
             Lapse: *kerr_left
             NegativeExpansion: *kerr_left
-      UseLogarithmicMap: True
+      ShellLogMapStrength: 1.0
+      CubeLogMapStrength: None
     CenterOfMassOffset: [*y_offset, *z_offset]
     Envelope:
       Radius: &outer_shell_inner_radius 60.

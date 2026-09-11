@@ -562,6 +562,16 @@ class Wedge final : public ShapeMapTransitionFunction {
   Axis axis_{};
   bool reverse_{false};
 
+  // The center is stored with RELATIVE error delta_center / center ~ eps, so
+  // its ABSOLUTE error is delta_center ~ |center| * eps. Coordinates centered
+  // around this center inherit that absolute error, delta_centered_coords ~
+  // |center| * eps, which must be accounted for when checking whether a point
+  // is in the interior or exterior region. We therefore use |center| as the
+  // `scale` argument of equal_within_roundoff(). Derived from
+  // `inner_surface_.center` (computed once in the constructor; recomputed when
+  // unpacking).
+  double roundoff_scale_{};
+
   static constexpr double eps_ = std::numeric_limits<double>::epsilon() * 100;
 };
 }  // namespace domain::CoordinateMaps::ShapeMapTransitionFunctions

@@ -280,8 +280,8 @@ void test_interpolate_on_element(
       if constexpr (OffCenter) {
         using BCO = domain::creators::BinaryCompactObject;
         return std::make_unique<BCO>(
-            BCO::Object{0.9, 2.9, 4.0, true, true},
-            BCO::Object{0.9, 2.9, -4.0, true, true},
+            BCO::Object{0.9, 2.9, 4.0, true, std::optional<double>{1.0}},
+            BCO::Object{0.9, 2.9, -4.0, true, std::optional<double>{1.0}},
             std::array<double, 2>{{0.1, 0.2}}, 20.0, 100.0, 1.0,
             // Only object B needs to have the refinement for this test
             std::unordered_map<std::string, std::array<size_t, 3>>{
