@@ -5,71 +5,41 @@
 
 #include "Evolution/Particles/MonteCarlo/TemplatedLocalFunctions.hpp"
 
+#include <array>
+#include <cstddef>
+#include <optional>
+#include <random>
+#include <vector>
+
 #include "DataStructures/DataVector.hpp"
+#include "DataStructures/Index.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
-#include "Domain/Structure/DirectionalIdMap.hpp"
 #include "Evolution/Particles/MonteCarlo/CellVolume.hpp"
 #include "Evolution/Particles/MonteCarlo/NeutrinoInteractionTable.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/MakeWithValue.hpp"
+
+/// \cond
+template <size_t Dim, typename T>
+class DirectionalIdMap;
+namespace EquationsOfState {
+template <bool IsRelativistic, size_t ThermodynamicDim>
+class EquationOfState;
+}  // namespace EquationsOfState
+namespace Particles::MonteCarlo {
+struct Packet;
+}  // namespace Particles::MonteCarlo
+/// \endcond
 
 namespace Particles::MonteCarlo {
 
-namespace {
-
+namespace TakeTimeStep_detail {
 void combine_ghost_data(
     gsl::not_null<DataVector*> with_ghost_data, const Mesh<3> local_mesh,
     const size_t num_ghost_zones, const DataVector& local_data,
-    const DirectionalIdMap<3, std::optional<DataVector>>& ghost_data) {
-  const Index<3> local_extents = local_mesh.extents();
-  Index<3> ghost_extents = local_extents;
-  for (size_t d = 0; d < 3; d++) {
-    ghost_extents[d] += 2 * num_ghost_zones;
-  }
-  for (size_t i = 0; i < local_mesh.extents(0); ++i) {
-    for (size_t j = 0; j < local_mesh.extents(1); ++j) {
-      for (size_t k = 0; k < local_mesh.extents(2); ++k) {
-        (*with_ghost_data)[collapsed_index(
-            Index<3>{i + num_ghost_zones, j + num_ghost_zones,
-                     k + num_ghost_zones},
-            ghost_extents)] =
-            local_data[collapsed_index(Index<3>{i, j, k}, local_extents)];
-      }
-    }
-  }
-  // Loop over each direction. We assume at most one neighbor in each
-  // direction.
-  for (auto& [direction_id, ghost_data_dir] : ghost_data) {
-    if (ghost_data_dir) {
-      const size_t dimension = direction_id.direction().dimension();
-      const Side side = direction_id.direction().side();
-      Index<3> ghost_zone_extents = local_extents;
-      ghost_zone_extents[dimension] = num_ghost_zones;
-      for (size_t i = 0; i < ghost_zone_extents[0]; ++i) {
-        for (size_t j = 0; j < ghost_zone_extents[1]; ++j) {
-          for (size_t k = 0; k < ghost_zone_extents[2]; ++k) {
-            const Index<3> ghost_index_3d{i, j, k};
-            const size_t ghost_index =
-                collapsed_index(ghost_index_3d, ghost_zone_extents);
-            Index<3> extended_index_3d{i + num_ghost_zones, j + num_ghost_zones,
-                                       k + num_ghost_zones};
-            extended_index_3d[dimension] = (side == Side::Lower)
-                                               ? ghost_index_3d[dimension]
-                                               : local_extents[dimension] +
-                                                     num_ghost_zones +
-                                                     ghost_index_3d[dimension];
-            const size_t extended_index =
-                collapsed_index(extended_index_3d, ghost_extents);
-            (*with_ghost_data)[extended_index] =
-                ghost_data_dir.value()[ghost_index];
-          }
-        }
-      }
-    }
-  }
-}
-
-}  // namespace
+    const DirectionalIdMap<3, std::optional<DataVector>>& ghost_data);
+}  // namespace TakeTimeStep_detail
 
 template <size_t EnergyBins, size_t NeutrinoSpecies>
 void TemplatedLocalFunctions<EnergyBins, NeutrinoSpecies>::
@@ -178,15 +148,18 @@ void TemplatedLocalFunctions<EnergyBins, NeutrinoSpecies>::
       make_with_value<Scalar<DataVector>>(zero_dv_ghost_zones, 0.0);
   Scalar<DataVector> cell_light_crossing_time_with_ghost =
       make_with_value<Scalar<DataVector>>(zero_dv_ghost_zones, time_step);
-  combine_ghost_data(&get(rest_mass_density_with_ghost), mesh, num_ghost_zones,
-                     get(rest_mass_density), rest_mass_density_ghost);
-  combine_ghost_data(&get(electron_fraction_with_ghost), mesh, num_ghost_zones,
-                     get(electron_fraction), electron_fraction_ghost);
-  combine_ghost_data(&get(temperature_with_ghost), mesh, num_ghost_zones,
-                     get(temperature), temperature_ghost);
-  combine_ghost_data(&get(cell_light_crossing_time_with_ghost), mesh,
-                     num_ghost_zones, get(cell_light_crossing_time),
-                     cell_light_crossing_time_ghost);
+  TakeTimeStep_detail::combine_ghost_data(
+      &get(rest_mass_density_with_ghost), mesh, num_ghost_zones,
+      get(rest_mass_density), rest_mass_density_ghost);
+  TakeTimeStep_detail::combine_ghost_data(
+      &get(electron_fraction_with_ghost), mesh, num_ghost_zones,
+      get(electron_fraction), electron_fraction_ghost);
+  TakeTimeStep_detail::combine_ghost_data(&get(temperature_with_ghost), mesh,
+                                          num_ghost_zones, get(temperature),
+                                          temperature_ghost);
+  TakeTimeStep_detail::combine_ghost_data(
+      &get(cell_light_crossing_time_with_ghost), mesh, num_ghost_zones,
+      get(cell_light_crossing_time), cell_light_crossing_time_ghost);
 
   this->implicit_monte_carlo_interaction_rates(
       &emissivity_in_cell, &absorption_opacity, &scattering_opacity,

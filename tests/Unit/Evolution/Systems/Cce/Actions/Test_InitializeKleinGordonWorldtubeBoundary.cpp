@@ -3,13 +3,37 @@
 
 #include "Framework/TestingFramework.hpp"
 
+#include <array>
+#include <cstddef>
+#include <memory>
+#include <optional>
+#include <string>
+
+#include "DataStructures/TaggedTuple.hpp"
+#include "Evolution/Systems/Cce/BoundaryData.hpp"
+#include "Evolution/Systems/Cce/OptionTags.hpp"
+#include "Evolution/Systems/Cce/Tags.hpp"
+#include "Framework/ActionTesting.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
 #include "Helpers/Evolution/Systems/Cce/Actions/WorldtubeBoundaryMocking.hpp"
 #include "Helpers/Evolution/Systems/Cce/KleinGordonBoundaryTestHelpers.hpp"
 #include "NumericalAlgorithms/Interpolation/BarycentricRationalSpanInterpolator.hpp"
+#include "NumericalAlgorithms/SpinWeightedSphericalHarmonics/SwshCollocation.hpp"
+#include "Parallel/ParallelComponentHelpers.hpp"
+#include "Parallel/Phase.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
+#include "Utilities/FileSystem.hpp"
 #include "Utilities/Gsl.hpp"
+
+namespace Cce {
+template <class Metavariables>
+struct KleinGordonH5WorldtubeBoundary;
+}  // namespace Cce
+namespace Tags {
+template <typename TagsList>
+struct Variables;
+}  // namespace Tags
 
 namespace Cce {
 
@@ -20,10 +44,9 @@ struct KleinGordonH5Metavariables {
       Tags::characteristic_worldtube_boundary_tags<Tags::BoundaryValue>;
   using klein_gordon_boundary_communication_tags =
       Tags::klein_gordon_worldtube_boundary_tags;
-  using component_list = tmpl::list<
-      mock_klein_gordon_h5_worldtube_boundary<KleinGordonH5Metavariables>>;
-
-  static constexpr bool evolve_ccm = false;
+  using component_list = tmpl::list<mock_worldtube_boundary<
+      KleinGordonH5Metavariables,
+      KleinGordonH5WorldtubeBoundary<KleinGordonH5Metavariables>>>;
 };
 
 // This function tests the action
@@ -46,8 +69,9 @@ struct KleinGordonH5Metavariables {
 // whether the tags are in the expected state.
 template <typename Generator>
 void test_klein_gordon_h5_initialization(const gsl::not_null<Generator*> gen) {
-  using component =
-      mock_klein_gordon_h5_worldtube_boundary<KleinGordonH5Metavariables>;
+  using component = mock_worldtube_boundary<
+      KleinGordonH5Metavariables,
+      KleinGordonH5WorldtubeBoundary<KleinGordonH5Metavariables>>;
   const size_t l_max = 8;
   const size_t end_time = 100.0;
   const size_t start_time = 0.0;

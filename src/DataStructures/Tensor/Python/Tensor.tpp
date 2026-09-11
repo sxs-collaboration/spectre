@@ -24,7 +24,10 @@ namespace py = pybind11;
 
 namespace py_bindings {
 
-namespace {
+// Used to generate Python class names for Tensor types
+enum class TensorKind { Scalar, Tnsr, Jacobian };
+
+namespace Tensor_detail {
 
 template <typename DataType>
 std::string dtype_to_name() {
@@ -36,9 +39,6 @@ std::string dtype_to_name() {
     return "";
   }
 }
-
-// Used to generate Python class names for Tensor types
-enum class TensorKind { Scalar, Tnsr, Jacobian };
 
 template <typename TensorType, TensorKind Kind>
 std::string class_name(const std::string& name) {
@@ -80,12 +80,14 @@ struct GetImpl<TensorType, std::integer_sequence<size_t, Is...>> {
     return tensor.get_storage_index(args...);
   }
 };
+}  // namespace Tensor_detail
 
 template <typename TensorType, TensorKind Kind>
 void bind_tensor_impl(py::module& m, const std::string& name) {  // NOLINT
   auto tensor =
-      py::class_<TensorType>(m, class_name<TensorType, Kind>(name).c_str(),
-                             py::buffer_protocol())
+      py::class_<TensorType>(
+          m, Tensor_detail::class_name<TensorType, Kind>(name).c_str(),
+          py::buffer_protocol())
           .def_property_readonly_static(
               "rank",
               [](const py::object& /*t*/) { return TensorType::rank(); })
@@ -136,8 +138,9 @@ void bind_tensor_impl(py::module& m, const std::string& name) {  // NOLINT
                 return t.component_suffix(storage_index);
               },
               py::arg("storage_index"))
-          .def("get", &GetImpl<TensorType>::get)
-          .def("get_storage_index", &GetImpl<TensorType>::get_storage_index)
+          .def("get", &Tensor_detail::GetImpl<TensorType>::get)
+          .def("get_storage_index",
+               &Tensor_detail::GetImpl<TensorType>::get_storage_index)
           // NOLINTNEXTLINE(misc-redundant-expression)
           .def(py::self == py::self)
           // NOLINTNEXTLINE(misc-redundant-expression)
@@ -220,7 +223,6 @@ void bind_tensor_impl(py::module& m, const std::string& name) {  // NOLINT
     py::implicitly_convertible<py::array, TensorType>();
   }
 }
-}  // namespace
 
 template <size_t Dim>
 void bind_tensor(py::module& m) {

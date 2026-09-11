@@ -5,21 +5,20 @@
 
 #include <array>
 #include <cstddef>
+#include <limits>
 #include <memory>
 #include <optional>
 #include <string>
-#include <utility>
 
-#include "DataStructures/Variables.hpp"
-#include "Domain/Structure/ElementId.hpp"
-#include "Evolution/Systems/Cce/Actions/InitializeWorldtubeBoundary.hpp"
+#include "DataStructures/TaggedTuple.hpp"
+#include "Evolution/Systems/Cce/AnalyticBoundaryDataManager.hpp"
 #include "Evolution/Systems/Cce/AnalyticSolutions/RobinsonTrautman.hpp"
 #include "Evolution/Systems/Cce/AnalyticSolutions/RotatingSchwarzschild.hpp"
 #include "Evolution/Systems/Cce/BoundaryData.hpp"
-#include "Evolution/Systems/Cce/Components/WorldtubeBoundary.hpp"
+#include "Evolution/Systems/Cce/InterfaceManagers/GhLocalTimeStepping.hpp"
 #include "Evolution/Systems/Cce/InterfaceManagers/GhLockstep.hpp"
+#include "Evolution/Systems/Cce/OptionTags.hpp"
 #include "Evolution/Systems/Cce/Tags.hpp"
-#include "Evolution/Systems/Cce/WorldtubeDataManager.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
@@ -27,66 +26,65 @@
 #include "Helpers/Evolution/Systems/Cce/BoundaryTestHelpers.hpp"
 #include "NumericalAlgorithms/Interpolation/BarycentricRationalSpanInterpolator.hpp"
 #include "NumericalAlgorithms/SpinWeightedSphericalHarmonics/SwshCollocation.hpp"
+#include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/Phase.hpp"
-#include "ParallelAlgorithms/Actions/TerminatePhase.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
+#include "Time/Tags/TimeStepper.hpp"
 #include "Time/TimeSteppers/AdamsMoultonPc.hpp"
-#include "Time/TimeSteppers/TimeStepper.hpp"
+#include "Time/TimeSteppers/LtsTimeStepper.hpp"
 #include "Utilities/FileSystem.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/Literals.hpp"
+#include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
+#include "Utilities/TMPL.hpp"
+
+namespace Cce {
+template <class Metavariables>
+struct AnalyticWorldtubeBoundary;
+template <class Metavariables>
+struct GhWorldtubeBoundary;
+template <class Metavariables>
+struct H5WorldtubeBoundary;
+}  // namespace Cce
+namespace Tags {
+template <typename TagsList>
+struct Variables;
+}  // namespace Tags
 
 namespace Cce {
 
 namespace {
 
-template <typename Metavariables>
-struct mock_analytic_worldtube_boundary {
-  using initialize_action_list =
-      tmpl::list<Actions::InitializeWorldtubeBoundary<
-                     AnalyticWorldtubeBoundary<Metavariables>>,
-                 Parallel::Actions::TerminatePhase>;
-  using simple_tags_from_options =
-      Parallel::get_simple_tags_from_options<initialize_action_list>;
-
-  using metavariables = Metavariables;
-  using chare_type = ActionTesting::MockArrayChare;
-  using array_index = size_t;
-
-  using simple_tags = tmpl::list<>;
-  using phase_dependent_action_list =
-      tmpl::list<Parallel::PhaseActions<Parallel::Phase::Initialization,
-                                        initialize_action_list>,
-                 Parallel::PhaseActions<Parallel::Phase::Evolve, tmpl::list<>>>;
-  using const_global_cache_tags = tmpl::list<
-      Tags::CceEvolutionPrefix<::Tags::ConcreteTimeStepper<LtsTimeStepper>>>;
-};
-
 struct H5Metavariables {
   using cce_boundary_communication_tags =
       Tags::characteristic_worldtube_boundary_tags<Tags::BoundaryValue>;
   using component_list =
-      tmpl::list<mock_h5_worldtube_boundary<H5Metavariables>>;
-  static constexpr bool evolve_ccm = false;
+      tmpl::list<mock_worldtube_boundary<H5Metavariables,
+                                         H5WorldtubeBoundary<H5Metavariables>>>;
 };
 
 struct GhMetavariables {
   using cce_boundary_communication_tags =
       Tags::characteristic_worldtube_boundary_tags<Tags::BoundaryValue>;
   using component_list =
-      tmpl::list<mock_gh_worldtube_boundary<GhMetavariables>>;
-  static constexpr bool evolve_ccm = false;
+      tmpl::list<mock_worldtube_boundary<GhMetavariables,
+                                         GhWorldtubeBoundary<GhMetavariables>>>;
 };
 
 struct AnalyticMetavariables {
   using cce_boundary_communication_tags =
       Tags::characteristic_worldtube_boundary_tags<Tags::BoundaryValue>;
-  using component_list =
-      tmpl::list<mock_analytic_worldtube_boundary<AnalyticMetavariables>>;
+  using component_list = tmpl::list<mock_worldtube_boundary<
+      AnalyticMetavariables, AnalyticWorldtubeBoundary<AnalyticMetavariables>>>;
+  using const_global_cache_tags = tmpl::list<
+      Tags::CceEvolutionPrefix<::Tags::ConcreteTimeStepper<LtsTimeStepper>>>;
 };
 
 template <typename Generator>
 void test_h5_initialization(const gsl::not_null<Generator*> gen) {
-  using component = mock_h5_worldtube_boundary<H5Metavariables>;
+  using component =
+      mock_worldtube_boundary<H5Metavariables,
+                              H5WorldtubeBoundary<H5Metavariables>>;
   const size_t l_max = 8;
   const size_t end_time = 100.0;
   const size_t start_time = 0.0;
@@ -158,7 +156,9 @@ void test_h5_initialization(const gsl::not_null<Generator*> gen) {
 }
 
 void test_gh_initialization() {
-  using component = mock_gh_worldtube_boundary<GhMetavariables>;
+  using component =
+      mock_worldtube_boundary<GhMetavariables,
+                              GhWorldtubeBoundary<GhMetavariables>>;
   const size_t l_max = 8;
   const double extraction_radius = 100.0;
   ActionTesting::MockRuntimeSystem<GhMetavariables> runner{
@@ -193,7 +193,9 @@ void test_gh_initialization() {
 
 template <typename SolutionType>
 void test_analytic_initialization() {
-  using component = mock_analytic_worldtube_boundary<AnalyticMetavariables>;
+  using component =
+      mock_worldtube_boundary<AnalyticMetavariables,
+                              AnalyticWorldtubeBoundary<AnalyticMetavariables>>;
   const size_t l_max = 8;
   const double extraction_radius = 20.0;
   register_classes_with_charm<TimeSteppers::AdamsMoultonPc<false>>();

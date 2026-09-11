@@ -4,111 +4,77 @@
 #pragma once
 
 #include <cstddef>
+#include <type_traits>
+#include <vector>
 
-#include "Evolution/Systems/Cce/Actions/BoundaryComputeAndSendToEvolution.hpp"
 #include "Evolution/Systems/Cce/Actions/InitializeWorldtubeBoundary.hpp"
-#include "Evolution/Systems/Cce/BoundaryData.hpp"
-#include "Evolution/Systems/Cce/Components/WorldtubeBoundary.hpp"
-#include "Evolution/Systems/Cce/Tags.hpp"
 #include "Framework/ActionTesting.hpp"
-#include "NumericalAlgorithms/SpinWeightedSphericalHarmonics/SwshTags.hpp"
+#include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/Phase.hpp"
+#include "Parallel/PhaseDependentActionList.hpp"
 #include "ParallelAlgorithms/Actions/TerminatePhase.hpp"
+#include "Time/TimeStepId.hpp"
 #include "Utilities/TMPL.hpp"
 
-namespace Cce {
 /// \cond
-namespace {  // NOLINT
-struct test_metavariables;
-template <typename Metavariables>
-struct mock_characteristic_evolution;
-template <typename Metavariables>
-struct mock_kg_characteristic_evolution;
-}  // namespace
-namespace Actions {
-namespace {  // NOLINT
+namespace Cce::Actions {
 template <typename BoundaryComponent, typename EvolutionComponent>
-struct MockBoundaryComputeAndSendToEvolution;
-}  // namespace
-}  // namespace Actions
+struct BoundaryComputeAndSendToEvolution;
+}  // namespace Cce::Actions
+namespace Parallel {
+template <typename Metavariables>
+class GlobalCache;
+}  // namespace Parallel
+namespace Tags {
+template <typename TagsList>
+struct Variables;
+}  // namespace Tags
+namespace db {
+template <typename TagsList>
+class DataBox;
+}  // namespace db
 /// \endcond
 
+namespace Cce {
+namespace Actions {
 template <typename Metavariables>
-struct mock_h5_worldtube_boundary {
-  using component_being_mocked = H5WorldtubeBoundary<Metavariables>;
-  using replace_these_simple_actions =
-      tmpl::list<Actions::BoundaryComputeAndSendToEvolution<
-          H5WorldtubeBoundary<Metavariables>,
-          mock_characteristic_evolution<test_metavariables>>>;
-  using with_these_simple_actions =
-      tmpl::list<Actions::MockBoundaryComputeAndSendToEvolution<
-          H5WorldtubeBoundary<Metavariables>,
-          mock_characteristic_evolution<test_metavariables>>>;
+struct MockBoundaryComputeAndSendToEvolution {
+  template <typename ParallelComponent, typename... DbTags, typename ArrayIndex>
+    requires(... or
+             std::is_same_v<
+                 ::Tags::Variables<
+                     typename Metavariables::cce_boundary_communication_tags>,
+                 DbTags>)
+  static void apply(const db::DataBox<tmpl::list<DbTags...>>& /*box*/,
+                    const Parallel::GlobalCache<Metavariables>& /*cache*/,
+                    const ArrayIndex& /*array_index*/, const TimeStepId& time) {
+    times_requested.push_back(time.substep_time());
+  }
 
-  using initialize_action_list = tmpl::list<
-      Actions::InitializeWorldtubeBoundary<H5WorldtubeBoundary<Metavariables>>,
-      Parallel::Actions::TerminatePhase>;
-  using simple_tags_from_options =
-      Parallel::get_simple_tags_from_options<initialize_action_list>;
-
-  using metavariables = Metavariables;
-  using chare_type = ActionTesting::MockArrayChare;
-  using array_index = size_t;
-
-  using simple_tags = tmpl::list<>;
-  using phase_dependent_action_list =
-      tmpl::list<Parallel::PhaseActions<Parallel::Phase::Initialization,
-                                        initialize_action_list>,
-                 Parallel::PhaseActions<Parallel::Phase::Evolve, tmpl::list<>>>;
+  // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
+  static std::vector<double> times_requested;
 };
-
 template <typename Metavariables>
-struct mock_gh_worldtube_boundary {
-  using component_being_mocked = GhWorldtubeBoundary<Metavariables>;
-  using replace_these_simple_actions =
+std::vector<double>
+    // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
+    MockBoundaryComputeAndSendToEvolution<Metavariables>::times_requested;
+}  // namespace Actions
+
+template <typename Metavariables, typename ComponentBeingMocked,
+          typename MockCharacteristicComponent = void>
+struct mock_worldtube_boundary {
+  using component_being_mocked = ComponentBeingMocked;
+  using replace_these_simple_actions = tmpl::conditional_t<
+      std::is_void_v<MockCharacteristicComponent>, tmpl::list<>,
       tmpl::list<Actions::BoundaryComputeAndSendToEvolution<
-          GhWorldtubeBoundary<Metavariables>,
-          mock_characteristic_evolution<test_metavariables>>>;
-  using with_these_simple_actions =
-      tmpl::list<Actions::MockBoundaryComputeAndSendToEvolution<
-          GhWorldtubeBoundary<Metavariables>,
-          mock_characteristic_evolution<test_metavariables>>>;
-
-  using initialize_action_list = tmpl::list<
-      Actions::InitializeWorldtubeBoundary<GhWorldtubeBoundary<Metavariables>>,
-      Parallel::Actions::TerminatePhase>;
-  using simple_tags_from_options =
-      Parallel::get_simple_tags_from_options<initialize_action_list>;
-
-  using metavariables = Metavariables;
-  using chare_type = ActionTesting::MockArrayChare;
-  using array_index = size_t;
-
-  using simple_tags = tmpl::list<>;
-  using phase_dependent_action_list =
-      tmpl::list<Parallel::PhaseActions<Parallel::Phase::Initialization,
-                                        initialize_action_list>,
-                 Parallel::PhaseActions<Parallel::Phase::Evolve, tmpl::list<>>>;
-  using const_global_cache_tags =
-      Parallel::get_const_global_cache_tags_from_actions<
-    phase_dependent_action_list>;
-};
-
-template <typename Metavariables>
-struct mock_klein_gordon_h5_worldtube_boundary {
-  using component_being_mocked = KleinGordonH5WorldtubeBoundary<Metavariables>;
-  using replace_these_simple_actions =
-      tmpl::list<Actions::BoundaryComputeAndSendToEvolution<
-          KleinGordonH5WorldtubeBoundary<Metavariables>,
-          mock_kg_characteristic_evolution<test_metavariables>>>;
-  using with_these_simple_actions =
-      tmpl::list<Actions::MockBoundaryComputeAndSendToEvolution<
-          KleinGordonH5WorldtubeBoundary<Metavariables>,
-          mock_kg_characteristic_evolution<test_metavariables>>>;
+          ComponentBeingMocked, MockCharacteristicComponent>>>;
+  using with_these_simple_actions = tmpl::conditional_t<
+      std::is_void_v<MockCharacteristicComponent>, tmpl::list<>,
+      tmpl::list<
+          Actions::MockBoundaryComputeAndSendToEvolution<Metavariables>>>;
 
   using initialize_action_list =
-      tmpl::list<Actions::InitializeWorldtubeBoundary<
-                     KleinGordonH5WorldtubeBoundary<Metavariables>>,
+      tmpl::list<Actions::InitializeWorldtubeBoundary<ComponentBeingMocked>,
                  Parallel::Actions::TerminatePhase>;
   using simple_tags_from_options =
       Parallel::get_simple_tags_from_options<initialize_action_list>;
