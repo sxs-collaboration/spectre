@@ -7,6 +7,7 @@ spectre_target_headers(
   HEADERS
   AtomicInboxBoundaryData.hpp
   BackgroundGrVars.hpp
+  BlockSupportsSubcell.hpp
   BoundaryData.hpp
   BoundaryEvolvedVariables.hpp
   CleanMortarHistory.hpp
