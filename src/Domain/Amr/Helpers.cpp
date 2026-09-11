@@ -210,6 +210,7 @@ constexpr auto can_be_h_refined =
                domain::Topology::B2Radial, domain::Topology::B3Radial};
 constexpr auto cannot_be_h_refined =
     std::array{domain::Topology::S1,
+               domain::Topology::HalfS1,
                domain::Topology::S2Colatitude,
                domain::Topology::S2Longitude,
                domain::Topology::B2Angular,

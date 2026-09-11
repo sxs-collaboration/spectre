@@ -56,6 +56,8 @@ std::array<Spectral::Basis, Dim> make_basis(
         return Spectral::Basis::Cartoon;
       case (domain::Topology::B1Radial):
         return Spectral::Basis::ZernikeB1;
+      case (domain::Topology::HalfS1):
+        return Spectral::Basis::HalfFourier;
       default:
         ERROR("Invalid topology");
     }
@@ -78,6 +80,8 @@ std::array<Spectral::Quadrature, Dim> make_quadrature(
           }
           // NOLINTNEXTLINE(bugprone-branch-clone)
           case (domain::Topology::S1):
+            [[fallthrough]];
+          case (domain::Topology::HalfS1):
             [[fallthrough]];
           case (domain::Topology::S2Longitude):
             [[fallthrough]];
@@ -110,9 +114,10 @@ template <size_t Dim>
 bool is_angularly_refined(const std::array<domain::Topology, Dim>& topologies,
                           const ElementId<Dim>& element_id) {
   constexpr std::array angular_topologies{
-      domain::Topology::S1,          domain::Topology::B2Angular,
-      domain::Topology::S2Longitude, domain::Topology::S2Colatitude,
-      domain::Topology::B3Longitude, domain::Topology::B3Colatitude};
+      domain::Topology::S1,           domain::Topology::HalfS1,
+      domain::Topology::B2Angular,    domain::Topology::S2Longitude,
+      domain::Topology::S2Colatitude, domain::Topology::B3Longitude,
+      domain::Topology::B3Colatitude};
 
   return std::ranges::any_of(
       angular_topologies, [&topologies, &element_id](const auto topology) {
