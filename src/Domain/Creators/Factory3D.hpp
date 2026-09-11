@@ -6,6 +6,7 @@
 #include <cstddef>
 
 #include "Domain/Creators/AlignedLattice.hpp"
+#include "Domain/Creators/AngularCartoonSphere2D.hpp"
 #include "Domain/Creators/AngularCylinder.hpp"
 #include "Domain/Creators/BinaryCompactObject.hpp"
 #include "Domain/Creators/CartoonCylinder.hpp"
@@ -27,10 +28,12 @@ namespace DomainCreators_detail {
 template <>
 struct domain_creators<3> {
   using type = tmpl::list<
-      domain::creators::AlignedLattice<3>, domain::creators::AngularCylinder,
-      domain::creators::BinaryCompactObject, domain::creators::Brick,
-      domain::creators::CartoonCylinder, domain::creators::CartoonSphere1D,
-      domain::creators::CartoonSphere2D, domain::creators::Cylinder,
+      domain::creators::AlignedLattice<3>,
+      domain::creators::AngularCartoonSphere2D,
+      domain::creators::AngularCylinder, domain::creators::BinaryCompactObject,
+      domain::creators::Brick, domain::creators::CartoonCylinder,
+      domain::creators::CartoonSphere1D, domain::creators::CartoonSphere2D,
+      domain::creators::Cylinder,
       domain::creators::CylindricalBinaryCompactObject,
       domain::creators::FrustalCloak,
       domain::creators::NonconformingSphericalShells,
