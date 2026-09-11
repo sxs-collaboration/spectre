@@ -5,6 +5,7 @@
 
 #include <cstddef>
 #include <memory>
+#include <optional>
 #include <pup.h>
 #include <pup_stl.h>
 #include <string>
@@ -17,8 +18,8 @@
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Structure/Side.hpp"
-#include "Evolution/DgSubcell/Tags/SubcellOptions.hpp"
 #include "Evolution/DiscontinuousGalerkin/EqualRateLts/EqualRateRegions.tpp"
+#include "Evolution/DiscontinuousGalerkin/OnlyDgBlockIds.hpp"
 #include "Utilities/Algorithm.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
@@ -29,18 +30,17 @@ namespace evolution::dg::subcell {
 template <size_t Dim>
 SubcellAndNonconformingEqualRateRegions<Dim>::
     SubcellAndNonconformingEqualRateRegions(
-        const SubcellOptions& subcell_options,
+        const std::optional<std::vector<std::string>>&
+            only_dg_block_and_group_names,
         const std::unique_ptr<DomainCreator<Dim>>& domain_creator) {
-  // Reconstruct the  SubcellOptions to get the auto-detected
-  // only_dg_block_ids (non-hypercube topology blocks plus user-specified
-  // OnlyDgBlocksAndGroups).
-  const auto real_subcell_options =
-      Tags::SubcellOptions<Dim>::create_from_options(subcell_options,
-                                                     domain_creator);
-  only_dg_block_ids_ = real_subcell_options.only_dg_block_ids();
-
   const Domain<Dim> domain = domain_creator->create_domain();
   const auto initial_levels = domain_creator->initial_refinement_levels();
+
+  // The DG-only blocks are the non-hypercube topology blocks plus the
+  // user-specified OnlyDgBlocksAndGroups
+  only_dg_block_ids_ = evolution::dg::compute_only_dg_block_ids(
+      only_dg_block_and_group_names, domain_creator->block_names(),
+      domain_creator->block_groups(), domain.blocks());
 
   // Categorize each nonconforming interface (a block face with more than one
   // neighbor) as either:

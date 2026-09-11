@@ -243,6 +243,7 @@ SpatialDiscretization:
           BoundaryCorrectionFilterOnSubstep: false
           VolumeFilterEveryNSteps: None
           BoundaryCorrectionFilterEveryNSteps: None
+    OnlyDgBlocksAndGroups: [Envelope, OuterShell0, OuterShell1, OuterShell2]
     Subcell:
       TroubledCellIndicator:
         PerssonTci:
@@ -258,7 +259,6 @@ SpatialDiscretization:
         AlwaysUseSubcells: false
         EnableExtensionDirections: false
         UseHalo: false
-        OnlyDgBlocksAndGroups: [Envelope, OuterShell0, OuterShell1, OuterShell2]
       SubcellToDgReconstructionMethod: DimByDim
       FiniteDifferenceDerivativeOrder: 2
       FdInterpolationOrder: 1

@@ -27,6 +27,7 @@
 #include "Evolution/DgSubcell/Tags/Interpolators.hpp"
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
 #include "Evolution/DgSubcell/Tags/SubcellOptions.hpp"
+#include "Evolution/DiscontinuousGalerkin/OnlyDgBlockIds.hpp"
 #include "NumericalAlgorithms/Interpolation/IrregularInterpolant.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
@@ -65,7 +66,8 @@ struct SetInterpolators {
                  evolution::dg::subcell::Tags::Mesh<Dim>,
                  evolution::dg::subcell::Tags::Mesh<Dim>,
                  ::domain::Tags::ElementMap<Dim, Frame::Grid>, ReconstructorTag,
-                 evolution::dg::subcell::Tags::SubcellOptions<Dim>>;
+                 evolution::dg::subcell::Tags::SubcellOptions<Dim>,
+                 evolution::dg::Tags::OnlyDgBlockIds<Dim>>;
 
   template <typename ReconstructorType>
   static void apply(
@@ -89,17 +91,17 @@ struct SetInterpolators {
       const Mesh<Dim>& neighbor_fd_mesh,
       const ElementMap<Dim, Frame::Grid>& element_map,
       const ReconstructorType& reconstructor,
-      const evolution::dg::subcell::SubcellOptions& subcell_options) {
+      const evolution::dg::subcell::SubcellOptions& subcell_options,
+      const std::vector<size_t>& only_dg_block_ids) {
     // Skip for elements that are DG-only: either in a DG-only block,
     // bordering a DG-only block, or on a non-subcell-compatible mesh.
     if (not fd::dg_mesh_supports_subcell(my_dg_mesh) or
-        alg::found(subcell_options.only_dg_block_ids(),
-                   element.id().block_id()) or
+        alg::found(only_dg_block_ids, element.id().block_id()) or
         alg::any_of(
             element.neighbors(),
-            [&subcell_options](const auto& direction_and_neighbors) {
+            [&only_dg_block_ids](const auto& direction_and_neighbors) {
               return alg::found(
-                  subcell_options.only_dg_block_ids(),
+                  only_dg_block_ids,
                   direction_and_neighbors.second.ids().begin()->block_id());
             })) {
       return;
