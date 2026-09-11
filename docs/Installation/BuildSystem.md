@@ -118,6 +118,8 @@ machine-specific configuration that supplies the compilers and dependency paths.
   the correct presets through `CMakePresets.json` in the repository root). Use
   the environment shell scripts in support/Environments/ to load
   modules and set `SPECTRE_MACHINE`.
+- **In git worktrees**, `CMakeUserPresets.json` is symlinked from the main
+  checkout by a git hook, see `USE_GIT_HOOKS` below.
 
 ## Commonly Used CMake flags {#common_cmake_flags}
 The following are common flags used to control building SpECTRE with CMake (in
@@ -358,7 +360,10 @@ alphabetical order):
   - Use git hooks to perform some sanity checks so that small goofs are caught
     before they are committed. These checks are particularly useful because they
     also run automatically on \ref github_actions_guide "CI" and must pass
-    before pull requests are merged.
+    before pull requests are merged. The hooks are shared between all git
+    worktrees of the repository and use the tools of the last configured build.
+    A `post-checkout` hook also symlinks git-ignored personal files such as
+    `CMakeUserPresets.json` from the main checkout into new worktrees.
     (default is `ON`)
 - USE_LD
   - Override the automatically chosen linker. The options are `ld`, `gold`, and
