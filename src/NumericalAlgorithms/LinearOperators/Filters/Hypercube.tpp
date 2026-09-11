@@ -134,6 +134,8 @@ bool Hypercube<Dim, TagList>::supports_mesh(const Mesh<Dim>& mesh) const {
         (basis == Spectral::Basis::Cartoon and
          (quadrature == Spectral::Quadrature::AxialSymmetry or
           quadrature == Spectral::Quadrature::SphericalSymmetry)) or
+        (basis == Spectral::Basis::HalfFourier and
+         quadrature == Spectral::Quadrature::Equiangular and d == 1) or
         (basis == Spectral::Basis::ZernikeB1 and
          quadrature == Spectral::Quadrature::GaussRadauUpper and d == 0);
     if (not supported) {
@@ -177,8 +179,14 @@ void Hypercube<Dim, TagList>::apply_in_volume(
         Jacobian<DataVector, Dim, Frame::Grid, Frame::Inertial>>&
     /*jac_grid_to_inertial*/) const {
   if (mesh.basis(0) == Spectral::Basis::ZernikeB1) {
-    apply_zernikeb1_filter(vars, mesh);
+    apply_parity_filter<false>(vars, mesh, 0);
     return;
+  }
+  if constexpr (Dim > 1) {
+    if (mesh.basis(1) == Spectral::Basis::HalfFourier) {
+      apply_parity_filter<true>(vars, mesh, 1);
+      return;
+    }
   }
   const Matrix empty{};
   std::array<std::reference_wrapper<const Matrix>, Dim> filter =
@@ -199,9 +207,21 @@ void Hypercube<Dim, TagList>::apply_on_boundary(
         Jacobian<DataVector, Dim, Frame::Grid, Frame::Inertial>>&
     /*jac_grid_to_inertial*/) const {
   if constexpr (Dim > 1) {
-    if (mesh.basis(0) == Spectral::Basis::ZernikeB1) {
-      apply_zernikeb1_filter(vars, mesh);
-      return;
+    // A slice through a volume mesh can place the parity-dependent basis in
+    // any direction, so search for it rather than assuming a fixed direction.
+    for (size_t d = 0; d < Dim - 1; ++d) {
+      if (mesh.basis(d) == Spectral::Basis::ZernikeB1) {
+        ASSERT(d == 0,
+               "ZernikeB1 is only supported in direction 0 of the Hypercube "
+               "filter, but found it in direction "
+                   << d << ". Mesh: " << mesh);
+        apply_parity_filter<false>(vars, mesh, d);
+        return;
+      }
+      if (mesh.basis(d) == Spectral::Basis::HalfFourier) {
+        apply_parity_filter<true>(vars, mesh, d);
+        return;
+      }
     }
     const Matrix empty{};
     std::array<std::reference_wrapper<const Matrix>, Dim - 1> filter =
@@ -217,36 +237,54 @@ void Hypercube<Dim, TagList>::apply_on_boundary(
 }
 
 template <size_t Dim, typename TagList>
-template <size_t LocalDim>
-void Hypercube<Dim, TagList>::apply_zernikeb1_filter(
-    const gsl::not_null<Variables<TagList>*> vars,
-    const Mesh<LocalDim>& mesh) const {
+template <bool IncludeZ, size_t LocalDim>
+void Hypercube<Dim, TagList>::apply_parity_filter(
+    const gsl::not_null<Variables<TagList>*> vars, const Mesh<LocalDim>& mesh,
+    const size_t parity_dimension) const {
+  ASSERT(parity_dimension < LocalDim,
+         "The parity dimension must be less than the mesh dimension "
+             << LocalDim << ", but is " << parity_dimension << ".");
+  ASSERT(mesh.basis(parity_dimension) == Spectral::Basis::ZernikeB1 or
+             mesh.basis(parity_dimension) == Spectral::Basis::HalfFourier,
+         "Passed mesh at parity_dimension ("
+             << parity_dimension
+             << ") is not a parity-dependent basis. Mesh: " << mesh);
   const Matrix empty{};
-  // Direction 0 uses the parity-dependent ZernikeB1 filter matrix.
-  // Directions 1..LocalDim-1 use the ordinary parity-independent filter matrix.
+
+  // Every direction except `parity_dimension` is parity independent, so apply
+  // those once to the whole Variables
+  std::array<std::reference_wrapper<const Matrix>, LocalDim>
+      parity_independent_filter = make_array<LocalDim>(std::cref(empty));
+  for (size_t d = 0; d < LocalDim; ++d) {
+    if (d == parity_dimension) {
+      continue;
+    }
+    ASSERT(mesh.basis(d) != Spectral::Basis::ZernikeB1 and
+               mesh.basis(d) != Spectral::Basis::HalfFourier,
+           "Only one direction of the Hypercube filter may use a "
+           "parity-dependent basis, but direction "
+               << parity_dimension << " and direction " << d << " both do.");
+    gsl::at(parity_independent_filter, d) =
+        std::cref(filter_matrix(mesh.slice_through(d)));
+  }
+  *vars = apply_matrices(parity_independent_filter, *vars, mesh.extents());
+
+  // Matrices acting in different dimensions commute, so the parity-dependent
+  // direction can be applied afterwards, component by component.
   std::array<std::reference_wrapper<const Matrix>, LocalDim> filter_even =
       make_array<LocalDim>(std::cref(empty));
   std::array<std::reference_wrapper<const Matrix>, LocalDim> filter_odd =
       make_array<LocalDim>(std::cref(empty));
-  gsl::at(filter_even, 0) =
-      std::cref(filter_matrix(mesh.slice_through(0), Spectral::Parity::Even));
-  gsl::at(filter_odd, 0) =
-      std::cref(filter_matrix(mesh.slice_through(0), Spectral::Parity::Odd));
-  for (size_t d = 1; d < LocalDim; ++d) {
-    ASSERT(mesh.basis(d) != Spectral::Basis::ZernikeB1,
-           "ZernikeB1 is only supported in direction 0 of the Hypercube "
-           "filter.");
-    const Matrix& m = filter_matrix(mesh.slice_through(d));
-    gsl::at(filter_even, d) = std::cref(m);
-    gsl::at(filter_odd, d) = std::cref(m);
-  }
-  // Apply per tensor component, selecting the even or odd filter based on the
-  // component's radial parity (determined by the number of x-direction
-  // indices).
+  const Mesh<1> parity_slice = mesh.slice_through(parity_dimension);
+  gsl::at(filter_even, parity_dimension) =
+      std::cref(filter_matrix(parity_slice, Spectral::Parity::Even));
+  gsl::at(filter_odd, parity_dimension) =
+      std::cref(filter_matrix(parity_slice, Spectral::Parity::Odd));
+
   tmpl::for_each<TagList>([&]<typename Tag>(tmpl::type_<Tag> /*meta*/) {
     auto& tensor = get<Tag>(*vars);
     constexpr auto parities =
-        Spectral::make_component_parity_array<typename Tag::type>();
+        Spectral::make_component_parity_array<typename Tag::type, IncludeZ>();
     for (size_t i = 0; i < tensor.size(); ++i) {
       const auto& f = gsl::at(parities, i) == Spectral::Parity::Even
                           ? filter_even
@@ -302,6 +340,20 @@ const Matrix& Hypercube<Dim, TagList>::filter_matrix(
                 Mesh<1>{extents, Spectral::Basis::ZernikeB1,
                         Spectral::Quadrature::GaussRadauUpper},
                 36.0, half_power, local_parity);
+          }),
+      make_static_cache<
+          CacheRange<1_st, Spectral::maximum_number_of_points<
+                               Spectral::Basis::HalfFourier,
+                               Spectral::Quadrature::Equiangular> +
+                               1>,
+          CacheEnumeration<Spectral::Parity, Spectral::Parity::Even,
+                           Spectral::Parity::Odd>>(
+          [half_power = half_power_](const size_t extents,
+                                     const Spectral::Parity local_parity) {
+            return Spectral::filtering::exponential_filter(
+                Mesh<1>{extents, Spectral::Basis::HalfFourier,
+                        Spectral::Quadrature::Equiangular},
+                36.0, half_power, local_parity);
           }));
   if (std::get<0>(cache) != half_power_) {
     ERROR("Filter was cached with half power = "
@@ -314,6 +366,9 @@ const Matrix& Hypercube<Dim, TagList>::filter_matrix(
   }
   if (mesh.basis(0) == Spectral::Basis::ZernikeB1) {
     return std::get<3>(cache)(mesh.extents(0), parity);
+  }
+  if (mesh.basis(0) == Spectral::Basis::HalfFourier) {
+    return std::get<4>(cache)(mesh.extents(0), parity);
   }
   return std::get<1>(cache)(mesh.extents(0), mesh.basis(0), mesh.quadrature(0));
 }

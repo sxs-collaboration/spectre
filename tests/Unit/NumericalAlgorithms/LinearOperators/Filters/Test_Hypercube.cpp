@@ -395,21 +395,29 @@ void test_apply_on_boundary() {
   }
 }
 
-// Reference implementation for ZernikeB1 filtering: direction 0 uses a
-// parity-dependent exponential_filter, directions 1..LocalDim-1 use the
-// ordinary (parity-independent) filter. Applied per tensor component based
-// on each component's radial parity.
-template <size_t LocalDim, size_t VarDim>
-Variables<TagList<VarDim>> expected_filtered_zernikeb1(
+// Reference implementation for parity-aware filtering: `ParityDim` uses a
+// parity-dependent exponential_filter, every other direction uses the ordinary
+// (parity-independent) filter. Applied per tensor component based on each
+// component's parity. `IncludeZ` selects the symmetry used to assign component
+// parities: `false` for ZernikeB1, `true` for HalfFourier
+template <bool IncludeZ, size_t LocalDim, size_t VarDim>
+Variables<TagList<VarDim>> expected_filtered_with_parity(
     const Mesh<LocalDim>& mesh, const Variables<TagList<VarDim>>& initial,
-    const unsigned half_power) {
+    const unsigned half_power, const size_t parity_dimension) {
   std::array<Matrix, LocalDim> filter_even{};
   std::array<Matrix, LocalDim> filter_odd{};
-  gsl::at(filter_even, 0) = Spectral::filtering::exponential_filter(
-      mesh.slice_through(0), 36.0, half_power, Spectral::Parity::Even);
-  gsl::at(filter_odd, 0) = Spectral::filtering::exponential_filter(
-      mesh.slice_through(0), 36.0, half_power, Spectral::Parity::Odd);
-  for (size_t d = 1; d < LocalDim; ++d) {
+  gsl::at(filter_even, parity_dimension) =
+      Spectral::filtering::exponential_filter(
+          mesh.slice_through(parity_dimension), 36.0, half_power,
+          Spectral::Parity::Even);
+  gsl::at(filter_odd, parity_dimension) =
+      Spectral::filtering::exponential_filter(
+          mesh.slice_through(parity_dimension), 36.0, half_power,
+          Spectral::Parity::Odd);
+  for (size_t d = 0; d < LocalDim; ++d) {
+    if (d == parity_dimension) {
+      continue;
+    }
     const Matrix f = Spectral::filtering::exponential_filter(
         mesh.slice_through(d), 36.0, half_power);
     gsl::at(filter_even, d) = f;
@@ -421,7 +429,7 @@ Variables<TagList<VarDim>> expected_filtered_zernikeb1(
     const auto& in_tensor = get<tag>(initial);
     auto& out_tensor = get<tag>(result);
     constexpr auto parities =
-        Spectral::make_component_parity_array<typename tag::type>();
+        Spectral::make_component_parity_array<typename tag::type, IncludeZ>();
     for (size_t i = 0; i < in_tensor.size(); ++i) {
       const auto& f = gsl::at(parities, i) == Spectral::Parity::Even
                           ? filter_even
@@ -432,31 +440,34 @@ Variables<TagList<VarDim>> expected_filtered_zernikeb1(
   return result;
 }
 
-// Verifies that the ZernikeB1 filter genuinely selects the parity-appropriate
-// (Even vs Odd) filter for each tensor component in the ZernikeB1 direction.
-// Each component must match the correct-parity filter (positive check), and
-// must differ from the opposite-parity filter (negative check), confirming the
-// parity selection is actually exercised rather than a no-op. Requires both an
-// even- and an odd-parity component to be present in the test data.
-template <size_t LocalDim, size_t VarDim>
-void check_zernikeb1_parity_selection(
-    const Mesh<LocalDim>& mesh, const Variables<TagList<VarDim>>& initial,
-    const Variables<TagList<VarDim>>& filtered, const unsigned half_power,
-    Approx custom_approx) {
-  const Matrix even_dir0 = Spectral::filtering::exponential_filter(
-      mesh.slice_through(0), 36.0, half_power, Spectral::Parity::Even);
-  const Matrix odd_dir0 = Spectral::filtering::exponential_filter(
-      mesh.slice_through(0), 36.0, half_power, Spectral::Parity::Odd);
-  // The Even and Odd ZernikeB1 filters must differ, otherwise the parity
-  // selection below would be vacuous.
-  CHECK_FALSE(even_dir0 == odd_dir0);
+// Verifies that the filter genuinely selects the parity-appropriate (Even vs
+// Odd) matrix for each tensor component in `parity_dimension`. Each component
+// must match the correct-parity filter, confirming the parity selection is
+// actually exercised rather than a no-op. Requires both an even- and an
+// odd-parity component to be present in the test data.
+template <bool IncludeZ, size_t LocalDim, size_t VarDim>
+void check_parity_selection(const Mesh<LocalDim>& mesh,
+                            const Variables<TagList<VarDim>>& initial,
+                            const Variables<TagList<VarDim>>& filtered,
+                            const unsigned half_power,
+                            const size_t parity_dimension,
+                            Approx custom_approx) {
+  const Matrix even_matrix = Spectral::filtering::exponential_filter(
+      mesh.slice_through(parity_dimension), 36.0, half_power,
+      Spectral::Parity::Even);
+  const Matrix odd_matrix = Spectral::filtering::exponential_filter(
+      mesh.slice_through(parity_dimension), 36.0, half_power,
+      Spectral::Parity::Odd);
+  // The Even and Odd filters must differ, otherwise the parity selection below
+  // would be vacuous.
+  CHECK_FALSE(even_matrix == odd_matrix);
   std::array<Matrix, LocalDim> correct_filter{};
-  std::array<Matrix, LocalDim> wrong_filter{};
-  for (size_t d = 1; d < LocalDim; ++d) {
-    const Matrix f = Spectral::filtering::exponential_filter(
+  for (size_t d = 0; d < LocalDim; ++d) {
+    if (d == parity_dimension) {
+      continue;
+    }
+    gsl::at(correct_filter, d) = Spectral::filtering::exponential_filter(
         mesh.slice_through(d), 36.0, half_power);
-    gsl::at(correct_filter, d) = f;
-    gsl::at(wrong_filter, d) = f;
   }
   bool checked_even = false;
   bool checked_odd = false;
@@ -464,14 +475,22 @@ void check_zernikeb1_parity_selection(
     const auto& in_tensor = get<Tag>(initial);
     const auto& filtered_tensor = get<Tag>(filtered);
     constexpr auto parities =
-        Spectral::make_component_parity_array<typename Tag::type>();
+        Spectral::make_component_parity_array<typename Tag::type, IncludeZ>();
     for (size_t i = 0; i < in_tensor.size(); ++i) {
       const bool is_even = gsl::at(parities, i) == Spectral::Parity::Even;
-      gsl::at(correct_filter, 0) = is_even ? even_dir0 : odd_dir0;
+      gsl::at(correct_filter, parity_dimension) =
+          is_even ? even_matrix : odd_matrix;
       const DataVector correct_result =
           apply_matrices(correct_filter, in_tensor[i], mesh.extents());
       CHECK_ITERABLE_CUSTOM_APPROX(filtered_tensor[i], correct_result,
                                    custom_approx);
+      // The opposite-parity filter must give a different answer, so that the
+      // check above really does pin down which matrix was used.
+      gsl::at(correct_filter, parity_dimension) =
+          is_even ? odd_matrix : even_matrix;
+      const DataVector wrong_result =
+          apply_matrices(correct_filter, in_tensor[i], mesh.extents());
+      CHECK_FALSE(filtered_tensor[i] == wrong_result);
       (is_even ? checked_even : checked_odd) = true;
     }
   });
@@ -503,8 +522,8 @@ void test_apply_zernikeb1_volume() {
     auto vars = initial_vars;
     filter.apply_in_volume(make_not_null(&vars), mesh, std::nullopt,
                            std::nullopt);
-    const auto expected =
-        expected_filtered_zernikeb1(mesh, initial_vars, kFilterHalfPower);
+    const auto expected = expected_filtered_with_parity<false>(
+        mesh, initial_vars, kFilterHalfPower, 0);
     CHECK_VARIABLES_CUSTOM_APPROX(vars, expected, custom_approx);
   }
 
@@ -531,8 +550,8 @@ void test_apply_zernikeb1_volume() {
       auto vars = initial_vars;
       filter.apply_in_volume(make_not_null(&vars), mesh, std::nullopt,
                              std::nullopt);
-      const auto expected =
-          expected_filtered_zernikeb1(mesh, initial_vars, kFilterHalfPower);
+      const auto expected = expected_filtered_with_parity<false>(
+          mesh, initial_vars, kFilterHalfPower, 0);
       CHECK_VARIABLES_CUSTOM_APPROX(vars, expected, custom_approx);
 
       // Confirm the Legendre (direction 1) filter is actually applied:
@@ -579,11 +598,11 @@ void test_apply_zernikeb1_boundary() {
     auto face_vars = initial_face_vars;
     filter.apply_on_boundary(make_not_null(&face_vars), face_mesh, std::nullopt,
                              std::nullopt);
-    const auto expected = expected_filtered_zernikeb1(
-        face_mesh, initial_face_vars, kFilterHalfPower);
+    const auto expected = expected_filtered_with_parity<false>(
+        face_mesh, initial_face_vars, kFilterHalfPower, 0);
     CHECK_VARIABLES_CUSTOM_APPROX(face_vars, expected, custom_approx);
-    check_zernikeb1_parity_selection(face_mesh, initial_face_vars, face_vars,
-                                     kFilterHalfPower, custom_approx);
+    check_parity_selection<false>(face_mesh, initial_face_vars, face_vars,
+                                  kFilterHalfPower, 0, custom_approx);
   }
 
   // Boundary face of a CartoonCylinder2D innermost block obtained by slicing
@@ -611,8 +630,8 @@ void test_apply_zernikeb1_boundary() {
       auto face_vars = initial_face_vars;
       filter.apply_on_boundary(make_not_null(&face_vars), face_mesh,
                                std::nullopt, std::nullopt);
-      const auto expected = expected_filtered_zernikeb1(
-          face_mesh, initial_face_vars, kFilterHalfPower);
+      const auto expected = expected_filtered_with_parity<false>(
+          face_mesh, initial_face_vars, kFilterHalfPower, 0);
       CHECK_VARIABLES_CUSTOM_APPROX(face_vars, expected, custom_approx);
 
       // Confirm the Legendre (direction 1) filter is applied on the boundary
@@ -628,6 +647,119 @@ void test_apply_zernikeb1_boundary() {
           dir0_only_filter, get(get<Tags::ScalarVar>(initial_face_vars)),
           face_mesh.extents());
       CHECK_FALSE(get(get<Tags::ScalarVar>(face_vars)) == scalar_dir0_only);
+    }
+  }
+
+#ifdef SPECTRE_DEBUG
+  {
+    const Mesh<2> face_mesh{
+        std::array<size_t, 2>{3, 4},
+        std::array<Spectral::Basis, 2>{Spectral::Basis::Legendre,
+                                       Spectral::Basis::ZernikeB1},
+        std::array<Spectral::Quadrature, 2>{
+            Spectral::Quadrature::GaussLobatto,
+            Spectral::Quadrature::GaussRadauUpper}};
+    auto face_vars = deterministic_vars<2, 3>(face_mesh);
+    const auto filter =
+        HypercubeFilter<3>(kFilterHalfPower, true, std::nullopt, false, false,
+                           std::nullopt, std::nullopt);
+    CHECK_THROWS_WITH(
+        filter.apply_on_boundary(make_not_null(&face_vars), face_mesh,
+                                 std::nullopt, std::nullopt),
+        Catch::Matchers::ContainsSubstring(
+            "ZernikeB1 is only supported in direction 0"));
+  }
+#endif  // SPECTRE_DEBUG
+}
+
+Mesh<3> half_fourier_volume_mesh(const size_t n_r, const size_t n_phi) {
+  return Mesh<3>{
+      std::array<size_t, 3>{n_r, n_phi, 1},
+      std::array<Spectral::Basis, 3>{Spectral::Basis::Legendre,
+                                     Spectral::Basis::HalfFourier,
+                                     Spectral::Basis::Cartoon},
+      std::array<Spectral::Quadrature, 3>{Spectral::Quadrature::GaussLobatto,
+                                          Spectral::Quadrature::Equiangular,
+                                          Spectral::Quadrature::AxialSymmetry}};
+}
+
+void test_apply_half_fourier_volume() {
+  INFO("apply_in_volume HalfFourier");
+  const Approx custom_approx = Approx::custom().epsilon(5.0e-13);
+
+  for (size_t n_r = 2; n_r <= 6; ++n_r) {
+    for (size_t n_phi = 2; n_phi <= 7; ++n_phi) {
+      CAPTURE(n_r);
+      CAPTURE(n_phi);
+      const Mesh<3> mesh = half_fourier_volume_mesh(n_r, n_phi);
+      const auto initial_vars = deterministic_vars<3>(mesh);
+      const auto filter =
+          HypercubeFilter<3>(kFilterHalfPower, true, std::nullopt, false, false,
+                             std::nullopt, std::nullopt);
+      auto vars = initial_vars;
+      filter.apply_in_volume(make_not_null(&vars), mesh, std::nullopt,
+                             std::nullopt);
+      const auto expected = expected_filtered_with_parity<true>(
+          mesh, initial_vars, kFilterHalfPower, 1);
+      CHECK_VARIABLES_CUSTOM_APPROX(vars, expected, custom_approx);
+      check_parity_selection<true>(mesh, initial_vars, vars, kFilterHalfPower,
+                                   1, custom_approx);
+
+      // The parity assignment must use the (x, z) -> (-x, -z) symmetry, not
+      // the x -> -x symmetry that ZernikeB1 uses. For a 3-vector the two
+      // disagree on the z-component, so the IncludeZ = false reference must
+      // differ from what the filter produced.
+      const auto wrong_symmetry_expected = expected_filtered_with_parity<false>(
+          mesh, initial_vars, kFilterHalfPower, 1);
+      CHECK_FALSE(get<Tags::VectorVar<3>>(vars).get(2) ==
+                  get<Tags::VectorVar<3>>(wrong_symmetry_expected).get(2));
+
+      // Confirm the Legendre (direction 0) filter is actually applied:
+      // filtering only the HalfFourier direction leaves direction 0 untouched,
+      // so the full result must differ from that direction-1-only result.
+      const Matrix empty{};
+      const Matrix even_matrix = Spectral::filtering::exponential_filter(
+          mesh.slice_through(1), 36.0, kFilterHalfPower,
+          Spectral::Parity::Even);
+      auto dir1_only_filter = make_array<3>(std::cref(empty));
+      gsl::at(dir1_only_filter, 1) = std::cref(even_matrix);
+      const DataVector scalar_dir1_only = apply_matrices(
+          dir1_only_filter, get(get<Tags::ScalarVar>(initial_vars)),
+          mesh.extents());
+      CHECK_FALSE(get(get<Tags::ScalarVar>(vars)) == scalar_dir1_only);
+    }
+  }
+}
+
+void test_apply_half_fourier_boundary() {
+  INFO("apply_on_boundary HalfFourier");
+  const Approx custom_approx = Approx::custom().epsilon(5.0e-13);
+
+  for (size_t n_r = 2; n_r <= 5; ++n_r) {
+    for (size_t n_phi = 2; n_phi <= 6; ++n_phi) {
+      CAPTURE(n_r);
+      CAPTURE(n_phi);
+      const Mesh<3> volume_mesh = half_fourier_volume_mesh(n_r, n_phi);
+
+      for (const auto [sliced_away_dimension, parity_dimension] :
+           std::array<std::array<size_t, 2>, 2>{{{0, 0}, {2, 1}}}) {
+        CAPTURE(sliced_away_dimension);
+        CAPTURE(parity_dimension);
+        const Mesh<2> face_mesh = volume_mesh.slice_away(sliced_away_dimension);
+        const auto initial_face_vars = deterministic_vars<2, 3>(face_mesh);
+        const auto filter =
+            HypercubeFilter<3>(kFilterHalfPower, true, std::nullopt, false,
+                               false, std::nullopt, std::nullopt);
+        auto face_vars = initial_face_vars;
+        filter.apply_on_boundary(make_not_null(&face_vars), face_mesh,
+                                 std::nullopt, std::nullopt);
+        const auto expected = expected_filtered_with_parity<true>(
+            face_mesh, initial_face_vars, kFilterHalfPower, parity_dimension);
+        CHECK_VARIABLES_CUSTOM_APPROX(face_vars, expected, custom_approx);
+        check_parity_selection<true>(face_mesh, initial_face_vars, face_vars,
+                                     kFilterHalfPower, parity_dimension,
+                                     custom_approx);
+      }
     }
   }
 }
@@ -852,6 +984,37 @@ void test_supports_mesh() {
           Spectral::Quadrature::Gauss, Spectral::Quadrature::GaussRadauUpper,
           Spectral::Quadrature::AxialSymmetry}}));
 
+  // HalfFourier is only supported in direction 1, which is where the
+  // `AngularCartoonSphere2D` block mesh (Legendre, HalfFourier, Cartoon) puts
+  // it.
+  CHECK(f3.supports_mesh(Mesh<3>{
+      std::array<size_t, 3>{4, 5, 1},
+      std::array<Spectral::Basis, 3>{Spectral::Basis::Legendre,
+                                     Spectral::Basis::HalfFourier,
+                                     Spectral::Basis::Cartoon},
+      std::array<Spectral::Quadrature, 3>{
+          Spectral::Quadrature::GaussLobatto, Spectral::Quadrature::Equiangular,
+          Spectral::Quadrature::AxialSymmetry}}));
+  // HalfFourier in any other direction -> false, because `apply_in_volume`
+  // only dispatches the parity-aware path on direction 1.
+  CHECK_FALSE(f1.supports_mesh(Mesh<1>{5, Spectral::Basis::HalfFourier,
+                                       Spectral::Quadrature::Equiangular}));
+  CHECK_FALSE(f3.supports_mesh(Mesh<3>{
+      std::array<size_t, 3>{5, 4, 1},
+      std::array<Spectral::Basis, 3>{Spectral::Basis::HalfFourier,
+                                     Spectral::Basis::Legendre,
+                                     Spectral::Basis::Cartoon},
+      std::array<Spectral::Quadrature, 3>{
+          Spectral::Quadrature::Equiangular, Spectral::Quadrature::GaussLobatto,
+          Spectral::Quadrature::AxialSymmetry}}));
+  // HalfFourier with the wrong quadrature -> false.
+  CHECK_FALSE(f2.supports_mesh(Mesh<2>{
+      std::array<size_t, 2>{4, 5},
+      std::array<Spectral::Basis, 2>{Spectral::Basis::Legendre,
+                                     Spectral::Basis::HalfFourier},
+      std::array<Spectral::Quadrature, 2>{Spectral::Quadrature::GaussLobatto,
+                                          Spectral::Quadrature::Gauss}}));
+
   // Multi-dim: one unsupported dim -> false.
   CHECK_FALSE(f2.supports_mesh(Mesh<2>{
       std::array<size_t, 2>{3, 3},
@@ -957,4 +1120,6 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.Filter.Cube",
   test_cartoon();
   test_apply_zernikeb1_volume();
   test_apply_zernikeb1_boundary();
+  test_apply_half_fourier_volume();
+  test_apply_half_fourier_boundary();
 }
