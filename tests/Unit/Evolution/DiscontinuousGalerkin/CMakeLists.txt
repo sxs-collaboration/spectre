@@ -16,6 +16,7 @@ set(LIBRARY_SOURCES
   Initialization/Test_SpectralFilters.cpp
   Test_AtomicInboxBoundaryData.cpp
   Test_BackgroundGrVars.cpp
+  Test_BlockSupportsSubcell.cpp
   Test_BoundaryCorrectionsHelper.cpp
   Test_BoundaryData.cpp
   Test_BoundaryEvolvedVariables.cpp
