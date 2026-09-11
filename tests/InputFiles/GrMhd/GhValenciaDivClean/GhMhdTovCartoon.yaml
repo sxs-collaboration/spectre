@@ -165,6 +165,7 @@ SpatialDiscretization:
           BoundaryCorrectionFilterOnSubstep: false
           VolumeFilterEveryNSteps: None
           BoundaryCorrectionFilterEveryNSteps: None
+    OnlyDgBlocksAndGroups: [Shell0]
     Subcell:
       FdInterpolationOrder: 3
       TroubledCellIndicator:
@@ -181,7 +182,6 @@ SpatialDiscretization:
         AlwaysUseSubcells: true
         EnableExtensionDirections: false
         UseHalo: false
-        OnlyDgBlocksAndGroups: [Shell0]
       SubcellToDgReconstructionMethod: DimByDim
       FiniteDifferenceDerivativeOrder: 2
     TciOptions:

@@ -14,9 +14,6 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
 #include "DataStructures/VariablesTag.hpp"
-#include "Domain/BoundaryConditions/BoundaryCondition.hpp"
-#include "Domain/Creators/DomainCreator.hpp"
-#include "Domain/Domain.hpp"
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/DirectionMap.hpp"
 #include "Domain/Structure/DirectionalIdMap.hpp"
@@ -154,30 +151,6 @@ DirectionalIdMap<Dim, Mesh<Dim>> compute_neighbor_meshes(
   return result;
 }
 
-// TestCreator class needed for subcell options specified below
-template <size_t Dim>
-class TestCreator : public DomainCreator<Dim> {
-  Domain<Dim> create_domain() const override { return Domain<Dim>{}; }
-  std::vector<DirectionMap<
-      Dim, std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>
-  external_boundary_conditions() const override {
-    return {};
-  }
-
-  std::vector<std::string> block_names() const override {
-    return {"Block0", "Block1"};
-  }
-
-  std::vector<std::array<size_t, Dim>> initial_extents() const override {
-    return {};
-  }
-
-  std::vector<std::array<size_t, Dim>> initial_refinement_levels()
-      const override {
-    return {};
-  }
-};
-
 template <size_t Dim>
 void test(const bool all_neighbors_are_doing_dg,
           const ::fd::DerivativeOrder fd_derivative_order) {
@@ -209,17 +182,19 @@ void test(const bool all_neighbors_are_doing_dg,
   const bool use_halo = false;
 
   // set subcell options
-  const evolution::dg::subcell::SubcellOptions& subcell_options =
-      evolution::dg::subcell::SubcellOptions{
-          evolution::dg::subcell::SubcellOptions{
-              4.0, 1_st, 1.0e-3, 1.0e-4, always_use_subcell, false,
-              evolution::dg::subcell::fd::ReconstructionMethod::DimByDim,
-              use_halo,
-              all_neighbors_are_doing_dg
-                  ? std::optional{std::vector<std::string>{"Block1"}}
-                  : std::optional<std::vector<std::string>>{},
-              fd_derivative_order, 1, 1, 1},
-          TestCreator<Dim>{}};
+  const evolution::dg::subcell::SubcellOptions subcell_options{
+      4.0,
+      1_st,
+      1.0e-3,
+      1.0e-4,
+      always_use_subcell,
+      false,
+      evolution::dg::subcell::fd::ReconstructionMethod::DimByDim,
+      use_halo,
+      fd_derivative_order,
+      1,
+      1,
+      1};
 
   Interps fd_to_fd_neighbor_interpolants{};
   Interps dg_to_fd_neighbor_interpolants{};
