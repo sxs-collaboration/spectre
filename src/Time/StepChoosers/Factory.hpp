@@ -5,6 +5,7 @@
 
 #include <cstddef>
 
+#include "Time/StepChoosers/ByBlock.hpp"
 #include "Time/StepChoosers/Cfl.hpp"
 #include "Time/StepChoosers/Constant.hpp"
 #include "Time/StepChoosers/ElementSizeCfl.hpp"
@@ -12,6 +13,7 @@
 #include "Time/StepChoosers/LimitIncrease.hpp"
 #include "Time/StepChoosers/Maximum.hpp"
 #include "Time/StepChoosers/PreventRapidIncrease.hpp"
+#include "Time/StepChoosers/Random.hpp"
 #include "Time/StepChoosers/StepToTimes.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -30,9 +32,10 @@ using common_step_choosers = tmpl::push_back<
         tmpl::list<StepChoosers::Cfl<Frame::Inertial, System>,
                    StepChoosers::ElementSizeCfl<System::volume_dim, System>>,
         tmpl::list<>>,
-    StepChoosers::Constant, StepChoosers::ErrorControl<Use, System>,
-    StepChoosers::LimitIncrease, StepChoosers::Maximum,
-    StepChoosers::PreventRapidIncrease<System>>;
+    StepChoosers::ByBlock<System::volume_dim>, StepChoosers::Constant,
+    StepChoosers::ErrorControl<Use, System>, StepChoosers::LimitIncrease,
+    StepChoosers::Maximum, StepChoosers::PreventRapidIncrease<System>,
+    StepChoosers::Random<System::volume_dim>>;
 }  // namespace Factory_detail
 
 template <typename System, bool HasCharSpeedFunctions = true>

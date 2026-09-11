@@ -113,7 +113,6 @@
 #include "Time/ChangeSlabSize/Action.hpp"
 #include "Time/CleanHistory.hpp"
 #include "Time/RecordTimeStepperData.hpp"
-#include "Time/StepChoosers/ByBlock.hpp"
 #include "Time/StepChoosers/Factory.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"
 #include "Time/Tags/Time.hpp"
@@ -226,11 +225,9 @@ struct EvolutionMetavars {
                                   Parallel::Phase::LoadBalancing>,
                               PhaseControl::CheckpointAndExitAfterWallclock>>,
         tmpl::pair<StepChooser<StepChooserUse::LtsStep>,
-                   tmpl::push_back<StepChoosers::standard_step_choosers<system>,
-                                   StepChoosers::ByBlock<volume_dim>>>,
+                   StepChoosers::standard_step_choosers<system>>,
         tmpl::pair<StepChooser<StepChooserUse::Slab>,
-                   tmpl::push_back<StepChoosers::standard_slab_choosers<system>,
-                                   StepChoosers::ByBlock<volume_dim>>>,
+                   StepChoosers::standard_slab_choosers<system>>,
         tmpl::pair<TimeSequence<double>,
                    TimeSequences::all_time_sequences<double>>,
         tmpl::pair<TimeSequence<std::uint64_t>,
