@@ -26,6 +26,11 @@ except ImportError:
 
 import yaml
 
+from spectre.support.BinDirectory import BinDirectory
+
+# CMake configures the selected machine's description to this path
+default_machinefile_path = BinDirectory.this().path / "Machine.yaml"
+
 
 @dataclass(frozen=True)
 class Machine(yaml.YAMLObject):
@@ -102,7 +107,7 @@ class UnknownMachineError(Exception):
 
 @cache
 def this_machine(
-    machinefile_path=os.path.join(os.path.dirname(__file__), "Machine.yaml"),
+    machinefile_path=default_machinefile_path,
     raise_exception=True,
 ) -> Machine:
     """Determine the machine we are running on.
