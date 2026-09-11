@@ -30,6 +30,7 @@ set(LIBRARY_SOURCES
   Test_MortarTags.cpp
   Test_NormalVectorTags.cpp
   Test_OnlyDgBlockIds.cpp
+  Test_SubcellElementDistribution.cpp
   Test_TimeSteppingPolicy.cpp
   Test_UsingSubcell.cpp
   )
