@@ -5,11 +5,17 @@
 
 #include <cstddef>
 
+/// \cond
+namespace Frame {
+struct Inertial;
+}  // namespace Frame
+/// \endcond
+
 /// \brief Tags for the ScalarWave evolution system
 namespace ScalarWave::Tags {
 struct Psi;
 struct Pi;
-template <size_t Dim>
+template <size_t Dim, typename Frame = Frame::Inertial>
 struct Phi;
 
 struct ConstraintGamma2;
