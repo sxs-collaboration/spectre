@@ -49,6 +49,7 @@
 #include "Evolution/DgSubcell/Tags/TciCallsSinceRollback.hpp"
 #include "Evolution/DgSubcell/Tags/TciGridHistory.hpp"
 #include "Evolution/DgSubcell/Tags/TciStatus.hpp"
+#include "Evolution/DiscontinuousGalerkin/OnlyDgBlockIds.hpp"
 #include "Evolution/Initialization/SetVariables.hpp"
 #include "Evolution/Initialization/Tags.hpp"
 #include "Framework/ActionTesting.hpp"
@@ -274,15 +275,14 @@ void test(const bool always_use_subcell, const bool interior_element,
       {std::unique_ptr<evolution::initial_data::InitialData>(
            std::make_unique<SystemAnalyticSolution>()),
        evolution::dg::subcell::SubcellOptions{
-           evolution::dg::subcell::SubcellOptions{
-               4.1, 1_st, 1.0e-3, 1.0e-4, always_use_subcell, false,
-               evolution::dg::subcell::fd::ReconstructionMethod::DimByDim,
-               false,
-               allow_subcell_in_block
-                   ? std::optional<std::vector<std::string>>{}
-                   : std::optional{std::vector<std::string>{"Block0"}},
-               ::fd::DerivativeOrder::Two, 1, 1, 1},
-           TestCreator<Dim>{}}}};
+           4.1, 1_st, 1.0e-3, 1.0e-4, always_use_subcell, false,
+           evolution::dg::subcell::fd::ReconstructionMethod::DimByDim, false,
+           ::fd::DerivativeOrder::Two, 1, 1, 1},
+       evolution::dg::compute_only_dg_block_ids(
+           allow_subcell_in_block
+               ? std::optional<std::vector<std::string>>{}
+               : std::optional{std::vector<std::string>{"Block0"}},
+           TestCreator<Dim>{})}};
   metavars::FdInitialDataTci::invoked = false;
   metavars::SetInitialRdmpData::invoked = false;
 
@@ -674,12 +674,11 @@ void test_cartoon() {
       {std::unique_ptr<evolution::initial_data::InitialData>(
            std::make_unique<SystemAnalyticSolution>()),
        evolution::dg::subcell::SubcellOptions{
-           evolution::dg::subcell::SubcellOptions{
-               4.1, 4_st, 1.0e-3, 1.0e-4, false, false,
-               evolution::dg::subcell::fd::ReconstructionMethod::DimByDim,
-               false, std::optional<std::vector<std::string>>{},
-               ::fd::DerivativeOrder::Two, 1, 1, 1},
-           TestCreator<3>{}}}};
+           4.1, 4_st, 1.0e-3, 1.0e-4, false, false,
+           evolution::dg::subcell::fd::ReconstructionMethod::DimByDim, false,
+           ::fd::DerivativeOrder::Two, 1, 1, 1},
+       evolution::dg::compute_only_dg_block_ids(
+           std::optional<std::vector<std::string>>{}, TestCreator<3>{})}};
 
   const ElementId<3> self_id3{0};
   const Element<3> isolated_element{self_id3, {}};

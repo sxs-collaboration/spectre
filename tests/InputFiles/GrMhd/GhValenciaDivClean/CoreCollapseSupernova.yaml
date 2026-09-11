@@ -163,6 +163,7 @@ SpatialDiscretization:
           BoundaryCorrectionFilterOnSubstep: false
           VolumeFilterEveryNSteps: None
           BoundaryCorrectionFilterEveryNSteps: None
+    OnlyDgBlocksAndGroups: None
     Subcell:
       TroubledCellIndicator:
         PerssonTci:
@@ -178,7 +179,6 @@ SpatialDiscretization:
         AlwaysUseSubcells: true
         EnableExtensionDirections: false
         UseHalo: false
-        OnlyDgBlocksAndGroups: None
       SubcellToDgReconstructionMethod: DimByDim
       FiniteDifferenceDerivativeOrder: 6
       FdInterpolationOrder: 1

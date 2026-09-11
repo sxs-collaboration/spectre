@@ -68,6 +68,7 @@ SpatialDiscretization:
     Filtering:
       - None:
           BlocksToFilter: All
+    OnlyDgBlocksAndGroups: [Block(0), Block(4)]
     Subcell:
       TroubledCellIndicator:
         PerssonTci:
@@ -83,7 +84,6 @@ SpatialDiscretization:
         AlwaysUseSubcells: false
         EnableExtensionDirections: false
         UseHalo: false
-        OnlyDgBlocksAndGroups: [Block(0), Block(4)]
       SubcellToDgReconstructionMethod: DimByDim
       FiniteDifferenceDerivativeOrder: 2
       FdInterpolationOrder: 1

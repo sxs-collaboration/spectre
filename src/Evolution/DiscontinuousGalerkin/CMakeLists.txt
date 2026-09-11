@@ -21,6 +21,8 @@ spectre_target_headers(
   MortarInfo.hpp
   MortarTags.hpp
   NormalVectorTags.hpp
+  OnlyDgBlockIds.hpp
+  OptionTags.hpp
   TimeDerivativeDecisions.hpp
   TimeSteppingPolicy.hpp
   UsingSubcell.hpp
@@ -40,6 +42,7 @@ spectre_target_sources(
   MortarData.cpp
   MortarDataHolder.cpp
   MortarInfo.cpp
+  OnlyDgBlockIds.cpp
   TimeSteppingPolicy.cpp
   )
 

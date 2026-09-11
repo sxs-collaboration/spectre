@@ -43,6 +43,7 @@
 #include "Evolution/DgSubcell/Tags/SubcellOptions.hpp"
 #include "Evolution/DgSubcell/Tags/TciStatus.hpp"
 #include "Evolution/DiscontinuousGalerkin/InboxTags.hpp"
+#include "Evolution/DiscontinuousGalerkin/OnlyDgBlockIds.hpp"
 #include "NumericalAlgorithms/Interpolation/IrregularInterpolant.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Parallel/AlgorithmExecution.hpp"
@@ -136,6 +137,8 @@ struct TciAndRollback {
 
     const SubcellOptions& subcell_options =
         db::get<Tags::SubcellOptions<Dim>>(box);
+    const std::vector<size_t>& only_dg_block_ids =
+        db::get<evolution::dg::Tags::OnlyDgBlockIds<Dim>>(box);
     bool cell_is_troubled =
         subcell_options.always_use_subcells() or
         (subcell_options.use_halo() and [&box]() -> bool {
@@ -150,14 +153,13 @@ struct TciAndRollback {
         }());
 
     // Loop over block neighbors and if neighbor id is inside of
-    // subcell_options.only_dg_block_ids(), then bordering DG-only block
+    // only_dg_block_ids, then bordering DG-only block
     const bool bordering_dg_block = alg::any_of(
         element.neighbors(),
-        [&subcell_options](const auto& direction_and_neighbor) {
+        [&only_dg_block_ids](const auto& direction_and_neighbor) {
           const size_t first_block_id =
               direction_and_neighbor.second.ids().begin()->block_id();
-          return alg::found(subcell_options.only_dg_block_ids(),
-                            first_block_id);
+          return alg::found(only_dg_block_ids, first_block_id);
         });
 
     // Subcell is allowed in the element if 3 conditions are met:
@@ -166,8 +168,7 @@ struct TciAndRollback {
     // (iii) The current element is not bordering a DG only block.
     const bool subcell_allowed_in_element =
         fd::dg_mesh_supports_subcell(dg_mesh) and
-        not alg::found(subcell_options.only_dg_block_ids(),
-                       element.id().block_id()) and
+        not alg::found(only_dg_block_ids, element.id().block_id()) and
         not bordering_dg_block;
 
     // Elements that can never use subcell (e.g. non-hypercube topology or

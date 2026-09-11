@@ -491,7 +491,7 @@ void test_cartoon_fd_time_derivative() {
         evolution::dg::subcell::SubcellOptions{
             1.0e8, 1_st, 1.0e-4, 1.0e-5, false, false,
             evolution::dg::subcell::fd::ReconstructionMethod::DimByDim, false,
-            std::nullopt, ::fd::DerivativeOrder::Two, 2, 2, 2},
+            ::fd::DerivativeOrder::Two, 2, 2, 2},
         typename evolution::dg::subcell::Tags::ReconstructionOrder<3>::type{},
         ghost_zone_inv_jac);
     db::mutate_apply<grmhd::ValenciaDivClean::ConservativeFromPrimitive>(

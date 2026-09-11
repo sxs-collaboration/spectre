@@ -35,6 +35,7 @@
 #include "Evolution/DgSubcell/Tags/TciCallsSinceRollback.hpp"
 #include "Evolution/DgSubcell/Tags/TciGridHistory.hpp"
 #include "Evolution/DgSubcell/Tags/TciStatus.hpp"
+#include "Evolution/DiscontinuousGalerkin/OnlyDgBlockIds.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Parallel/AlgorithmExecution.hpp"
 #include "Time/History.hpp"
@@ -175,7 +176,7 @@ struct TciAndSwitchToDg {
     // This should never be run if we are prohibited from using subcell on this
     // element.
     ASSERT(not alg::found(
-               subcell_options.only_dg_block_ids(),
+               db::get<evolution::dg::Tags::OnlyDgBlockIds<Dim>>(box),
                db::get<::domain::Tags::Element<Dim>>(box).id().block_id()),
            "Should never use subcell on element "
                << db::get<domain::Tags::Element<Dim>>(box).id());

@@ -28,11 +28,8 @@
 #include "Domain/Structure/InitialElementIds.hpp"
 #include "Domain/Structure/OrientationMap.hpp"
 #include "Domain/Structure/Topology.hpp"
-#include "Evolution/DgSubcell/ReconstructionMethod.hpp"
 #include "Evolution/DgSubcell/SubcellAndNonconformingEqualRateRegions.hpp"
-#include "Evolution/DgSubcell/SubcellOptions.hpp"
 #include "Evolution/DiscontinuousGalerkin/EqualRateLts/EqualRateRegionGenerator.hpp"
-#include "NumericalAlgorithms/FiniteDifference/DerivativeOrder.hpp"
 #include "Utilities/Algorithm.hpp"
 #include "Utilities/Serialization/Serialize.hpp"
 
@@ -207,27 +204,6 @@ class NonconformingCreator : public DomainCreator<2> {
   }
 };
 
-// Build SubcellOptions.  Annulus blocks are excluded from subcell
-// automatically by topology; square blocks can be forced DG-only by passing
-// their names in `only_dg`.
-evolution::dg::subcell::SubcellOptions make_subcell_options(
-    std::optional<std::vector<std::string>> only_dg = std::nullopt) {
-  return {4.0,
-          1,
-          2.0e-3,
-          2.0e-4,
-          false,
-          false,
-          evolution::dg::subcell::fd::ReconstructionMethod::DimByDim,
-          false,
-          std::move(only_dg),
-          fd::DerivativeOrder::Two,
-          1,
-          1,
-          1,
-          1};
-}
-
 void check_regions(
     const evolution::dg::subcell::SubcellAndNonconformingEqualRateRegions<2>&
         combined) {
@@ -356,10 +332,10 @@ void check_transitive_regions() {
   const std::unique_ptr<DomainCreator<2>> domain_creator =
       std::make_unique<TransitiveNonconformingCreator>();
   // Blocks 9 and 10 are squares (hypercubes) so must be forced DG-only.
-  const auto subcell_opts = make_subcell_options({{"9", "10"}});
+  const std::optional<std::vector<std::string>> only_dg_blocks{{"9", "10"}};
 
   const evolution::dg::subcell::SubcellAndNonconformingEqualRateRegions<2>
-      combined(subcell_opts, domain_creator);
+      combined(only_dg_blocks, domain_creator);
 
   // Post-processing must have absorbed "Nonconforming8", leaving only Subcell.
   const auto regions = combined.regions();
@@ -401,10 +377,10 @@ void check_separable_regions() {
   const std::unique_ptr<DomainCreator<2>> domain_creator =
       std::make_unique<SeparableNonconformingCreator>();
   // Blocks 9 and 10 are squares (hypercubes) so must be forced DG-only.
-  const auto subcell_opts = make_subcell_options({{"9", "10"}});
+  const std::optional<std::vector<std::string>> only_dg_blocks{{"9", "10"}};
 
   const evolution::dg::subcell::SubcellAndNonconformingEqualRateRegions<2>
-      combined(subcell_opts, domain_creator);
+      combined(only_dg_blocks, domain_creator);
 
   // Post-processing must have left "Nonconforming8" intact
   const auto regions = combined.regions();
@@ -454,11 +430,11 @@ void check_separable_regions() {
 void check_no_overlap() {
   const std::unique_ptr<DomainCreator<2>> domain_creator =
       std::make_unique<NonconformingCreator>();
-  const auto subcell_opts =
-      make_subcell_options({{"0", "1", "3", "4", "6", "7"}});
+  const std::optional<std::vector<std::string>> only_dg_blocks{
+      {"0", "1", "3", "4", "6", "7"}};
 
   const evolution::dg::subcell::SubcellAndNonconformingEqualRateRegions<2>
-      combined(subcell_opts, domain_creator);
+      combined(only_dg_blocks, domain_creator);
 
   const auto regions = combined.regions();
   CHECK(regions.size() == 5);
@@ -514,10 +490,10 @@ SPECTRE_TEST_CASE(
     "[Evolution][Unit]") {
   const std::unique_ptr<DomainCreator<2>> domain_creator =
       std::make_unique<NonconformingCreator>();
-  const auto subcell_opts = make_subcell_options();
+  const std::optional<std::vector<std::string>> only_dg_blocks{};
 
   const evolution::dg::subcell::SubcellAndNonconformingEqualRateRegions<2>
-      combined(subcell_opts, domain_creator);
+      combined(only_dg_blocks, domain_creator);
   check_regions(combined);
   check_regions(serialize_and_deserialize(combined));
 

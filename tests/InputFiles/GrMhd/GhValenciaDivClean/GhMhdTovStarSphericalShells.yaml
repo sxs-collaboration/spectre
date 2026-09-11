@@ -176,6 +176,7 @@ SpatialDiscretization:
           BoundaryCorrectionFilterOnSubstep: false
           VolumeFilterEveryNSteps: None
           BoundaryCorrectionFilterEveryNSteps: None
+    OnlyDgBlocksAndGroups: None # non-hypercube blocks automatically DG
     Subcell:
       TroubledCellIndicator:
         PerssonTci:
@@ -191,7 +192,6 @@ SpatialDiscretization:
         AlwaysUseSubcells: true
         EnableExtensionDirections: false
         UseHalo: false
-        OnlyDgBlocksAndGroups: None # non-hypercube blocks automatically DG
       SubcellToDgReconstructionMethod: DimByDim
       FiniteDifferenceDerivativeOrder: 2
       FdInterpolationOrder: 1

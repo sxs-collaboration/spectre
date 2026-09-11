@@ -131,6 +131,7 @@ SpatialDiscretization:
     Filtering:
       - None:
           BlocksToFilter: All
+    OnlyDgBlocksAndGroups: None
     Subcell:
       TroubledCellIndicator:
         PerssonTci:
@@ -146,7 +147,6 @@ SpatialDiscretization:
         AlwaysUseSubcells: False # Enable to test FD convergence
         EnableExtensionDirections: False
         UseHalo: False
-        OnlyDgBlocksAndGroups: None
       SubcellToDgReconstructionMethod: DimByDim
       FiniteDifferenceDerivativeOrder: 2
       FdInterpolationOrder: 3 # Can be reduced for simpler domains
