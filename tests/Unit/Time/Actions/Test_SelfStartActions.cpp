@@ -369,7 +369,7 @@ using not_self_start_action = std::negation<std::disjunction<
 // is run first (as that would often lead to an infinite loop).
 // Returns true if the last action jumped.
 template <typename Stop, typename Whitelist, bool MultipleHistories,
-          bool HasPrimitives, bool BoundaryVariables = false>
+          bool HasPrimitives, bool BoundaryVariables>
 bool run_past(
     const gsl::not_null<
         MockRuntimeSystem<HasPrimitives, MultipleHistories, BoundaryVariables>*>
@@ -401,7 +401,7 @@ bool run_past(
   }
 }
 
-template <bool BoundaryVariables = false>
+template <bool BoundaryVariables>
 void test_actions(const size_t order, const int step_denominator) {
   using component = Component<Metavariables<false, false, BoundaryVariables>>;
   using var_entries = tmpl::flatten<tmpl::list<typename Metavariables<
@@ -441,8 +441,8 @@ void test_actions(const size_t order, const int step_denominator) {
     CHECK(get<0>(ActionTesting::get_databox_tag<
                  component, SelfStart::Tags::InitialValue<Tags::TimeStep>>(
               runner, 0)) == initial_time_step);
-    tmpl::for_each<var_entries>([&runner, &expected](auto tag_v) {
-      using Tag = tmpl::type_from<decltype(tag_v)>;
+    tmpl::for_each<var_entries>([&runner, &expected]<typename Tag>(
+                                    tmpl::type_<Tag> /*meta*/) {
       CHECK(get<0>(ActionTesting::get_databox_tag<
                    component, SelfStart::Tags::InitialValue<Tag>>(runner, 0)) ==
             tuples::get<Tag>(expected));
@@ -465,8 +465,8 @@ void test_actions(const size_t order, const int step_denominator) {
             run_past<tt::is_a<SelfStart::Actions::CheckForCompletion, tmpl::_1>,
                      not_self_start_action>(make_not_null(&runner));
         CHECK(not jumped);
-        tmpl::for_each<var_entries>([&runner, &current_order](auto tag_v) {
-          using Tag = tmpl::type_from<decltype(tag_v)>;
+        tmpl::for_each<var_entries>([&runner, &current_order]<typename Tag>(
+                                        tmpl::type_<Tag> /*meta*/) {
           CHECK(ActionTesting::get_databox_tag<
                     component, Tags::HistoryEvolvedVariables<Tag>>(runner, 0)
                     .integration_order() == current_order);
@@ -515,8 +515,8 @@ void test_actions(const size_t order, const int step_denominator) {
         ActionTesting::get_databox_tag<component, Tags::Next<Tags::TimeStepId>>(
             runner, 0) ==
         TimeStepId(forward_in_time, 0, initial_time + initial_time_step));
-    tmpl::for_each<var_entries>([&runner, &expected, &order](auto tag_v) {
-      using Tag = tmpl::type_from<decltype(tag_v)>;
+    tmpl::for_each<var_entries>([&runner, &expected, &order]<typename Tag>(
+                                    tmpl::type_<Tag> /*meta*/) {
       CHECK(ActionTesting::get_databox_tag<component, Tag>(runner, 0) ==
             tuples::get<Tag>(expected));
       CHECK(ActionTesting::get_databox_tag<component,
