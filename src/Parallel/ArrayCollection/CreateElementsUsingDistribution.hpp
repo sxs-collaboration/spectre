@@ -14,8 +14,10 @@
 #include "Domain/Block.hpp"
 #include "Domain/ElementDistribution.hpp"
 #include "Domain/Structure/ElementId.hpp"
+#include "Domain/Structure/InitialElementIds.hpp"
 #include "Parallel/DomainDiagnosticInfo.hpp"
 #include "Parallel/GlobalCache.hpp"
+#include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/Numeric.hpp"
 
 /// \cond
@@ -32,6 +34,14 @@ namespace Parallel {
  * The `func` is called with `(element_id, target_proc, target_node)` allowing
  * the `func` to insert the element with `element_id` on the target processor
  * and node.
+ *
+ * The `weighting_extents_override`, if present, gives per-block extents to use
+ * instead of `initial_extents` only when computing the cost of elements for
+ * the distribution (e.g. to weight subcell-capable elements by their
+ * finite-difference grid rather than their DG grid). Only blocks whose
+ * weighting extents differ from `initial_extents` need an entry; blocks not
+ * found in the map use `initial_extents`. The actual `initial_extents` are
+ * always used for everything else, e.g. the diagnostics below.
  */
 template <typename F, size_t Dim, typename Metavariables>
 void create_elements_using_distribution(
@@ -45,16 +55,39 @@ void create_elements_using_distribution(
     const size_t number_of_procs, const size_t number_of_nodes,
     const size_t num_of_procs_to_use,
     const Parallel::GlobalCache<Metavariables>& local_cache,
-    const bool print_diagnostics) {
+    const bool print_diagnostics,
+    const std::optional<std::unordered_map<size_t, std::array<size_t, Dim>>>&
+        weighting_extents_override = std::nullopt) {
   // Only need the element distribution if the element weight has a value
   // because then we have to use the space filling curve and not just use round
   // robin.
   domain::BlockZCurveProcDistribution<Dim> element_distribution{};
   if (element_weight.has_value()) {
+    std::optional<std::vector<std::array<size_t, Dim>>>
+        weighting_extents_buffer{};
+    if (weighting_extents_override.has_value()) {
+      weighting_extents_buffer = initial_extents;
+      const size_t num_blocks = weighting_extents_buffer->size();
+      for (const auto& block_id_and_extents :
+           weighting_extents_override.value()) {
+        ASSERT(block_id_and_extents.first < num_blocks,
+               "The weighting extents override contains block ID "
+                   << block_id_and_extents.first << " but there are only "
+                   << num_blocks << " blocks.");
+        (*weighting_extents_buffer)[block_id_and_extents.first] =
+            block_id_and_extents.second;
+      }
+    }
+    const std::vector<std::array<size_t, Dim>>& weighting_extents =
+        weighting_extents_buffer.has_value() ? weighting_extents_buffer.value()
+                                             : initial_extents;
     const std::unordered_map<ElementId<Dim>, double> element_costs =
         domain::get_element_costs(blocks, initial_refinement_levels,
-                                  initial_extents, element_weight.value(),
+                                  weighting_extents, element_weight.value(),
                                   i1_basis, i1_quadrature);
+    // Only the element costs depend on the weighting extents. The distribution
+    // itself just ASSERTs that `initial_extents` has one entry per block, so
+    // pass the true extents here.
     element_distribution = domain::BlockZCurveProcDistribution<Dim>{
         element_costs,   num_of_procs_to_use, blocks, initial_refinement_levels,
         initial_extents, procs_to_ignore};

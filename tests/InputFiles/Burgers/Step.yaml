@@ -11,6 +11,7 @@ Testing:
 
 Parallelization:
   ElementDistribution: NumGridPointsAndGridSpacing
+  UseSubcellGridPointsForDistribution: False
 
 ResourceInfo:
   AvoidGlobalProc0: false

@@ -12,6 +12,7 @@ ExpectedOutput:
 
 Parallelization:
   ElementDistribution: NumGridPoints
+  UseSubcellGridPointsForDistribution: true
 
 ResourceInfo:
   AvoidGlobalProc0: false
