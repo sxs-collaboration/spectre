@@ -5,6 +5,7 @@ set(LIBRARY "Test_DomainCreators")
 
 set(LIBRARY_SOURCES
   Test_AlignedLattice.cpp
+  Test_AngularCartoonSphere2D.cpp
   Test_AngularCylinder.cpp
   Test_AngularDisk.cpp
   Test_BinaryCompactObject.cpp
