@@ -2,12 +2,12 @@
 # See LICENSE.txt for details.
 
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
-  if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 9.1)
-    message(FATAL_ERROR "GCC version must be at least 9.1")
+  if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 11.0)
+    message(FATAL_ERROR "GCC version must be at least 11.0")
   endif ()
 elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
-  if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 13.0)
-    message(FATAL_ERROR "Clang version must be at least 13.0")
+  if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 17.0)
+    message(FATAL_ERROR "Clang version must be at least 17.0")
   endif ()
 elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel")
   message(FATAL_ERROR "Intel compiler is not supported.")
