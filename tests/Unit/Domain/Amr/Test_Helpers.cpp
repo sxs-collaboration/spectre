@@ -643,6 +643,8 @@ void test_enforce_h_refinement_topology_restrictions() {
                 domain::topologies::cartoon_cylinder);
         check_h(flags_3d, std::array{first_flag, second_flag, stay},
                 domain::topologies::cartoon_cylinder_inner);
+        check_h(flags_3d, std::array{first_flag, stay, stay},
+                domain::topologies::cartoon_cylinder_annulus);
       }
     }
   }
