@@ -60,6 +60,12 @@ void check(const bool time_runs_forward) {
         TimeStepId(time_runs_forward, 4, start + step / 2, 2, step / 4,
                    (start + step * 17 / 32).value()));
 
+  CHECK(TimeStepId(time_runs_forward, 4, start + step / 2).skip_to_step() ==
+        start + step / 2);
+  CHECK(TimeStepId(time_runs_forward, 4, start + step / 2, 2, step / 4,
+                   (start + step * 5 / 8).value())
+            .skip_to_step() == start + step * 3 / 4);
+
   const TimeStepId id(time_runs_forward, 4, start + step / 3, 2, step / 2,
                       (start + step / 2).value());
   CHECK(id.step_size() == step / 2);
