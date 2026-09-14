@@ -65,10 +65,12 @@ std::array<double, 3> flip_about_xy_plane(const std::array<double, 3> input) {
 namespace domain::creators {
 CylindricalBinaryCompactObject::CylindricalBinaryCompactObject(
     std::array<double, 3> center_A, std::array<double, 3> center_B,
-    double radius_A, double radius_B, bool include_inner_sphere_A,
-    bool include_inner_sphere_B, double outer_radius,
+    double radius_A, double radius_B,
     const typename InitialRefinement::type& initial_refinement,
     const typename InitialGridPoints::type& initial_grid_points,
+    typename OuterSphereOptions::type outer_sphere_options,
+    std::optional<InnerSphereAOptions> inner_sphere_A_options,
+    std::optional<InnerSphereBOptions> inner_sphere_B_options,
     std::optional<bco::TimeDependentMapOptions<true>> time_dependent_options,
     std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
         inner_boundary_condition,
@@ -79,9 +81,9 @@ CylindricalBinaryCompactObject::CylindricalBinaryCompactObject(
       center_B_(rotate_to_z_axis(center_B)),
       radius_A_(radius_A),
       radius_B_(radius_B),
-      include_inner_sphere_A_(include_inner_sphere_A),
-      include_inner_sphere_B_(include_inner_sphere_B),
-      outer_radius_(outer_radius),
+      outer_sphere_options_(std::move(outer_sphere_options)),
+      inner_sphere_A_options_(std::move(inner_sphere_A_options)),
+      inner_sphere_B_options_(std::move(inner_sphere_B_options)),
       inner_boundary_condition_(std::move(inner_boundary_condition)),
       outer_boundary_condition_(std::move(outer_boundary_condition)),
       time_dependent_options_(std::move(time_dependent_options)) {
@@ -110,7 +112,8 @@ CylindricalBinaryCompactObject::CylindricalBinaryCompactObject(
   }
   // The value 3.0 * (center_A_[2] - center_B_[2]) is what is
   // chosen in SpEC as the inner radius of the innermost outer sphere.
-  if (outer_radius_ < 3.0 * (center_A_[2] - center_B_[2])) {
+  if (outer_sphere_options_.outer_radius_ <
+      3.0 * (center_A_[2] - center_B_[2])) {
     PARSE_ERROR(context,
                 "OuterRadius is too small. Please increase it "
                 "beyond "
@@ -167,27 +170,55 @@ CylindricalBinaryCompactObject::CylindricalBinaryCompactObject(
   z_cutting_plane_ = cut_spheres_offset_factor_ *
                      ((1.0 - xi) * center_B_[2] + xi * center_A_[2]);
 
-  // outer_radius_A is the outer radius of the inner sphere A, if it exists.
-  // If the inner sphere A does not exist, then outer_radius_A is the same
+  // outer_radius_A_ is the outer radius of the inner sphere A, if it exists.
+  // If the inner sphere A does not exist, then outer_radius_A_ is the same
   // as radius_A_.
   // If the inner sphere does exist, the algorithm for computing
-  // outer_radius_A is the same as in SpEC when there is one inner shell.
+  // outer_radius_A_ is the same as in SpEC when there is one inner shell.
+  const bool include_inner_sphere_A = inner_sphere_A_options_.has_value();
   outer_radius_A_ =
-      include_inner_sphere_A_
-          ? radius_A_ +
-                0.5 * (std::abs(z_cutting_plane_ - center_A_[2]) - radius_A_)
+      include_inner_sphere_A
+          ? inner_sphere_A_options_->outer_radius_.value_or(
+                radius_A_ +
+                0.5 * (std::abs(z_cutting_plane_ - center_A_[2]) - radius_A_))
           : radius_A_;
+  if (outer_radius_A_ < radius_A_) {
+    PARSE_ERROR(context,
+                "The outer radius for InnerSphereA is smaller than the "
+                "excision radius: outer radius = "
+                    << outer_radius_A_ << ", excision radius = " << radius_A_);
+  } else if (outer_radius_A_ >= std::abs(z_cutting_plane_ - center_A_[2])) {
+    PARSE_ERROR(context,
+                "The outer radius for InnerSphereA is greater than the "
+                "distance to the cutting plane: outer radius = "
+                    << outer_radius_A_ << ", distance to cutting plane = "
+                    << std::abs(z_cutting_plane_ - center_A_[2]));
+  }
 
-  // outer_radius_B is the outer radius of the inner sphere B, if it exists.
-  // If the inner sphere B does not exist, then outer_radius_B is the same
+  // outer_radius_B_ is the outer radius of the inner sphere B, if it exists.
+  // If the inner sphere B does not exist, then outer_radius_B_ is the same
   // as radius_B_.
   // If the inner sphere does exist, the algorithm for computing
-  // outer_radius_B is the same as in SpEC when there is one inner shell.
+  // outer_radius_B_ is the same as in SpEC when there is one inner shell.
+  const bool include_inner_sphere_B = inner_sphere_B_options_.has_value();
   outer_radius_B_ =
-      include_inner_sphere_B_
-          ? radius_B_ +
-                0.5 * (std::abs(z_cutting_plane_ - center_B_[2]) - radius_B_)
+      include_inner_sphere_B
+          ? inner_sphere_B_options_->outer_radius_.value_or(
+                radius_B_ +
+                0.5 * (std::abs(z_cutting_plane_ - center_B_[2]) - radius_B_))
           : radius_B_;
+  if (outer_radius_B_ < radius_B_) {
+    PARSE_ERROR(context,
+                "The outer radius for InnerSphereB is smaller than the "
+                "excision radius: outer radius = "
+                    << outer_radius_B_ << ", excision radius = " << radius_B_);
+  } else if (outer_radius_B_ >= std::abs(z_cutting_plane_ - center_B_[2])) {
+    PARSE_ERROR(context,
+                "The outer radius for InnerSphereB is greater than the "
+                "distance to the cutting plane: outer radius = "
+                    << outer_radius_B_ << ", distance to cutting plane = "
+                    << std::abs(z_cutting_plane_ - center_B_[2]));
+  }
 
   // Add SphereE blocks if necessary.  Note that
   // https://arxiv.org/abs/1206.3015 has a mistake just above
@@ -503,7 +534,7 @@ CylindricalBinaryCompactObject::CylindricalBinaryCompactObject(
                    0.5 * (center_A_aligned[2] + center_B_aligned[2])},
         std::array{radius_A_, outer_radius_A_},
         std::array{radius_B_, outer_radius_B_}, false, false,
-        inner_common_radius, outer_radius_);
+        inner_common_radius, outer_sphere_options_.outer_radius_);
   }
 }
 
@@ -779,10 +810,13 @@ Domain<3> CylindricalBinaryCompactObject::create_domain() const {
   // Excision spheres
   std::unordered_map<std::string, ExcisionSphere<3>> excision_spheres{};
 
+  const bool include_inner_sphere_A = inner_sphere_A_options_.has_value();
+  const bool include_inner_sphere_B = inner_sphere_B_options_.has_value();
+
   std::unordered_map<size_t, Direction<3>> abutting_directions_A;
   const size_t inner_shell_A_block = 10;
   size_t inner_shell_B_block = inner_shell_A_block;
-  if (include_inner_sphere_A_) {
+  if (include_inner_sphere_A) {
     // LCOV_EXCL_START
     abutting_directions_A.emplace(inner_shell_A_block,
                                   Direction<3>::lower_xi());
@@ -804,7 +838,7 @@ Domain<3> CylindricalBinaryCompactObject::create_domain() const {
           abutting_directions_A});
 
   std::unordered_map<size_t, Direction<3>> abutting_directions_B;
-  if (include_inner_sphere_B_) {
+  if (include_inner_sphere_B) {
     // LCOV_EXCL_START
     abutting_directions_B.emplace(inner_shell_B_block,
                                   Direction<3>::lower_xi());
@@ -968,7 +1002,7 @@ Domain<3> CylindricalBinaryCompactObject::create_domain() const {
       {{Direction<3>::upper_xi(), Direction<3>::self(), Direction<3>::self()}}};
   const auto cyl_side_to_shell = shell_to_cyl_side.inverse_map();
 
-  if (include_inner_sphere_A_) {
+  if (include_inner_sphere_A) {
     // EA Filled Cylinder
     add_block_neighbor(inner_neighbors, ea_endcap_block, inner_shell_A_block,
                        Direction<3>::lower_zeta(),
@@ -982,7 +1016,7 @@ Domain<3> CylindricalBinaryCompactObject::create_domain() const {
                        upper_cyl_endcap_to_upper_shell, false);
   }
 
-  if (include_inner_sphere_B_) {
+  if (include_inner_sphere_B) {
     // EB Filled Cylinder
     add_block_neighbor(inner_neighbors, eb_endcap_block, inner_shell_B_block,
                        Direction<3>::upper_zeta(),
@@ -1067,7 +1101,7 @@ Domain<3> CylindricalBinaryCompactObject::create_domain() const {
       };
 
   // (b) SH inner shell blocks for InnerSphereA.
-  if (include_inner_sphere_A_) {
+  if (include_inner_sphere_A) {
     // upper_xi → EA endcap, EA side, and MA blocks
     // (non-conforming, multi-neighbor).
     std::unordered_set<size_t> inner_a_cyl_ids;
@@ -1102,7 +1136,7 @@ Domain<3> CylindricalBinaryCompactObject::create_domain() const {
   }
 
   // (c) SH inner shell blocks for InnerSphereB.
-  if (include_inner_sphere_B_) {
+  if (include_inner_sphere_B) {
     // upper_xi → EB endcap, EB side, and MB blocks
     // (non-conforming, multi-neighbor).
     std::unordered_set<size_t> inner_b_cyl_ids;
@@ -1158,7 +1192,7 @@ Domain<3> CylindricalBinaryCompactObject::create_domain() const {
                                        cb_side_block, shell_to_cyl_side);
 
   auto outer_sh_map = make_spherical_shell_coord_map(
-      inner_radius_C, outer_radius_, make_array<3>(0.0));
+      inner_radius_C, outer_sphere_options_.outer_radius_, make_array<3>(0.0));
 
   DirectionMap<3, BlockNeighbors<3>> outer_sh_neighbors;
   outer_sh_neighbors.emplace(
@@ -1175,7 +1209,7 @@ Domain<3> CylindricalBinaryCompactObject::create_domain() const {
       Domain<3>{std::move(blocks), std::move(excision_spheres), block_groups_};
 
   if (time_dependent_options_.has_value()) {
-    ASSERT(include_inner_sphere_A_ and include_inner_sphere_B_,
+    ASSERT(include_inner_sphere_A and include_inner_sphere_B,
            "When using time dependent maps for the CylindricalBBH domain, you "
            "must include both inner spheres.");
     // Default initialize everything to nullptr so that we only need to set the
@@ -1271,31 +1305,34 @@ CylindricalBinaryCompactObject::external_boundary_conditions() const {
   const size_t mb_endcap_block = block_positions_.at("MBFilledCylinder");
   const size_t outer_shell_block = block_positions_.at("OuterShell0");
 
-  if (not include_inner_sphere_A_) {
-      // EA Filled Cylinder
-      boundary_conditions[ea_endcap_block][Direction<3>::lower_zeta()] =
-          inner_boundary_condition_->get_clone();
-      // MA Filled Cylinder
-      boundary_conditions[ma_endcap_block][Direction<3>::upper_zeta()] =
-          inner_boundary_condition_->get_clone();
-      // EA Cylinder
-      boundary_conditions[ea_side_block][Direction<3>::lower_xi()] =
-          inner_boundary_condition_->get_clone();
+  const bool include_inner_sphere_A = inner_sphere_A_options_.has_value();
+  const bool include_inner_sphere_B = inner_sphere_B_options_.has_value();
+
+  if (not include_inner_sphere_A) {
+    // EA Filled Cylinder
+    boundary_conditions[ea_endcap_block][Direction<3>::lower_zeta()] =
+        inner_boundary_condition_->get_clone();
+    // MA Filled Cylinder
+    boundary_conditions[ma_endcap_block][Direction<3>::upper_zeta()] =
+        inner_boundary_condition_->get_clone();
+    // EA Cylinder
+    boundary_conditions[ea_side_block][Direction<3>::lower_xi()] =
+        inner_boundary_condition_->get_clone();
   } else {
     boundary_conditions[block_positions_.at("InnerAShell0")]
                        [Direction<3>::lower_xi()] =
                            inner_boundary_condition_->get_clone();
   }
-  if (not include_inner_sphere_B_) {
-      // EB Filled Cylinder
-      boundary_conditions[eb_endcap_block][Direction<3>::upper_zeta()] =
-          inner_boundary_condition_->get_clone();
-      // MB Filled Cylinder
-      boundary_conditions[mb_endcap_block][Direction<3>::lower_zeta()] =
-          inner_boundary_condition_->get_clone();
-      // EB Cylinder
-      boundary_conditions[eb_side_block][Direction<3>::lower_xi()] =
-          inner_boundary_condition_->get_clone();
+  if (not include_inner_sphere_B) {
+    // EB Filled Cylinder
+    boundary_conditions[eb_endcap_block][Direction<3>::upper_zeta()] =
+        inner_boundary_condition_->get_clone();
+    // MB Filled Cylinder
+    boundary_conditions[mb_endcap_block][Direction<3>::lower_zeta()] =
+        inner_boundary_condition_->get_clone();
+    // EB Cylinder
+    boundary_conditions[eb_side_block][Direction<3>::lower_xi()] =
+        inner_boundary_condition_->get_clone();
   } else {
     boundary_conditions[block_positions_.at("InnerBShell0")]
                        [Direction<3>::lower_xi()] =

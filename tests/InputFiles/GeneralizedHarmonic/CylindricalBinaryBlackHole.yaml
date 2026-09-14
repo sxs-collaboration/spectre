@@ -46,9 +46,12 @@ DomainCreator:
     CenterB: &CenterB [&XCoordB -7.683, 0.0, 0.0]
     RadiusA: &RadiusA 0.45825
     RadiusB: &RadiusB 0.45825
-    IncludeInnerSphereA: true
-    IncludeInnerSphereB: true
-    OuterRadius: 300.0
+    InnerSphereA:
+      OuterRadius: Auto
+    InnerSphereB:
+      OuterRadius: Auto
+    OuterSphere:
+      OuterRadius: 300.0
     InitialRefinement:
       # z refinement for cylindrical block groups
       InnerA: 1
