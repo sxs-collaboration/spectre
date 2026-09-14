@@ -115,6 +115,9 @@ CREATE_GET_STATIC_MEMBER_VARIABLE_OR_DEFAULT(evolves_boundary_variables)
 
 // Detect if the boundary condition declares a `boundary_field_time_derivatives`
 // method.
+//
+// Detection takes the member's address, which does not resolve for an
+// overloaded or templated method, so those are reported as absent.
 template <typename BoundaryCondition>
 constexpr bool has_boundary_field_time_derivatives_v = requires {
   &BoundaryCondition::boundary_field_time_derivatives;
