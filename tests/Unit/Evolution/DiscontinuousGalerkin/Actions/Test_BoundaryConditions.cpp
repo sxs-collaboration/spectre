@@ -10,6 +10,8 @@
 #include <optional>
 #include <pup.h>
 #include <string>
+#include <tuple>
+#include <type_traits>
 #include <unordered_map>
 #include <utility>
 
@@ -28,6 +30,8 @@
 #include "Domain/BoundaryConditions/Cartoon.hpp"
 #include "Domain/BoundaryConditions/None.hpp"
 #include "Domain/BoundaryConditions/Periodic.hpp"
+#include "Domain/BoundaryVariables.hpp"
+#include "Domain/BoundaryVariablesTag.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.tpp"
 #include "Domain/CoordinateMaps/Identity.hpp"
@@ -35,9 +39,11 @@
 #include "Domain/Creators/Tags/ExternalBoundaryConditions.hpp"
 #include "Domain/Creators/Tags/FunctionsOfTime.hpp"
 #include "Domain/Domain.hpp"
+#include "Domain/Tags.hpp"
 #include "Evolution/BoundaryConditions/Type.hpp"
 #include "Evolution/BoundaryCorrection.hpp"
 #include "Evolution/DiscontinuousGalerkin/Actions/BoundaryConditionsImpl.hpp"
+#include "Evolution/DiscontinuousGalerkin/BoundaryEvolvedVariables.hpp"
 #include "Helpers/Evolution/DiscontinuousGalerkin/Actions/SystemType.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Formulation.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/LiftFromBoundary.hpp"
@@ -52,6 +58,7 @@
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/Serialization/CharmPupable.hpp"
 #include "Utilities/TMPL.hpp"
+#include "Utilities/TypeTraits/IsA.hpp"
 
 namespace {
 // We use offsets and then fill the Variables with offset+DataVector index
@@ -64,6 +71,9 @@ constexpr double offset_partial_derivs = 3000.0;
 constexpr double offset_primitive_vars = 7000.0;
 constexpr double offset_boundary_condition = 10000.0;
 constexpr double offset_boundary_correction = 20000.0;
+constexpr double offset_boundary_fields = 30000.0;
+constexpr double offset_boundary_field_dt = 40000.0;
+constexpr double offset_boundary_field_dt_seed = 50000.0;
 const std::array expected_velocities{1.2, -1.4, 0.3};
 
 namespace Tags {
@@ -110,6 +120,15 @@ struct PrimVar2 : db::SimpleTag {
 template <size_t Dim>
 struct InverseSpatialMetric : db::SimpleTag {
   using type = tnsr::II<DataVector, Dim, Frame::Inertial>;
+};
+
+// Interior inputs requested only by boundary_field_time_derivatives
+struct BoundaryFieldTimeDerivativePrimitiveInput : db::SimpleTag {
+  using type = Scalar<DataVector>;
+};
+
+struct BoundaryFieldTimeDerivativeTemporaryInput : db::SimpleTag {
+  using type = Scalar<DataVector>;
 };
 }  // namespace Tags
 
@@ -2568,6 +2587,193 @@ template <typename System>
 // NOLINTNEXTLINE
 PUP::able::PUP_ID GhostAndTimeDerivative<System>::my_PUP_ID = 0;
 
+using BoundaryVar1 = evolution::dg::Tags::BoundaryValue<Tags::Var1>;
+
+template <typename System, template <typename> class Base>
+class WithBoundaryFields : public Base<System> {
+ public:
+  WithBoundaryFields() = default;
+  template <typename... Args>
+  explicit WithBoundaryFields(const bool mesh_is_moving, Args&&... args)
+      : Base<System>(mesh_is_moving, std::forward<Args>(args)...),
+        mesh_is_moving_(mesh_is_moving) {}
+  WithBoundaryFields(WithBoundaryFields&&) = default;
+  WithBoundaryFields& operator=(WithBoundaryFields&&) = default;
+  WithBoundaryFields(const WithBoundaryFields&) = default;
+  WithBoundaryFields& operator=(const WithBoundaryFields&) = default;
+  ~WithBoundaryFields() override = default;
+
+  explicit WithBoundaryFields(CkMigrateMessage* msg) : Base<System>(msg) {}
+
+  WRAPPED_PUPable_decl_base_template(
+      domain::BoundaryConditions::BoundaryCondition, WithBoundaryFields);
+
+  auto get_clone() const -> std::unique_ptr<
+      domain::BoundaryConditions::BoundaryCondition> override {
+    return std::make_unique<WithBoundaryFields<System, Base>>(*this);
+  }
+
+  // NOLINTNEXTLINE(google-runtime-references)
+  void pup(PUP::er& p) override {
+    Base<System>::pup(p);
+    p | mesh_is_moving_;
+  }
+
+  static constexpr bool evolves_boundary_variables = true;
+
+  using boundary_field_time_derivatives_evolved_variables_tags =
+      tmpl::list<Tags::Var1>;
+  using boundary_field_time_derivatives_primitive_tags = tmpl::conditional_t<
+      System::has_primitive_and_conservative_vars,
+      tmpl::list<Tags::BoundaryFieldTimeDerivativePrimitiveInput>,
+      tmpl::list<>>;
+  using boundary_field_time_derivatives_temporary_tags = tmpl::list<
+      Tags::BoundaryFieldTimeDerivativeTemporaryInput,
+      domain::Tags::Coordinates<System::volume_dim, Frame::Inertial>>;
+
+  // The `BoundaryConditionsImpl` calls `dg_ghost` for a boundary condition
+  // with boundary evolved fields as
+  //   dg_ghost(not_null outputs..., [not_null inv_spatial_metric],
+  //            face_mesh_velocity, covector,
+  //            stored boundary values...,   <- spliced in by the impl
+  //            interior fields and volume args...),
+  // i.e. all `gsl::not_null` outputs lead, followed by the mesh velocity and
+  // the normal covector, and then the stored boundary values. Counting the
+  // `gsl::not_null` arguments therefore locates the single stored value at
+  // index (number of outputs) + 2 (in 1D).
+  // This single variadic overload checks that value and forwards the
+  // remaining arguments to be checked in `Base<System>::dg_ghost`,
+  template <typename... Args>
+  std::optional<std::string> dg_ghost(const Args&... args) const {
+    constexpr size_t number_of_outputs =
+        (0_st + ... +
+         (tt::is_a_v<gsl::not_null, std::decay_t<Args>> ? 1_st : 0_st));
+    constexpr size_t boundary_value_index = number_of_outputs + 2;
+    const auto args_tuple = std::forward_as_tuple(args...);
+    const Scalar<DataVector>& boundary_var1 =
+        std::get<boundary_value_index>(args_tuple);
+    CHECK_ITERABLE_APPROX(
+        get(boundary_var1),
+        DataVector(get(boundary_var1).size(), offset_boundary_fields));
+    // Forward args but skip the boundary value
+    return dg_ghost_delegate(
+        args_tuple, std::make_index_sequence<boundary_value_index>{},
+        std::make_index_sequence<sizeof...(Args) - boundary_value_index - 1>{});
+  }
+
+  // With-prims (9-arg) overload of `boundary_field_time_derivatives`.
+  std::optional<std::string> boundary_field_time_derivatives(
+      const gsl::not_null<Scalar<DataVector>*> dt_boundary_var1,
+      const std::optional<tnsr::I<DataVector, System::volume_dim,
+                                  Frame::Inertial>>& face_mesh_velocity,
+      const tnsr::i<DataVector, System::volume_dim, Frame::Inertial>&
+          outward_directed_normal_covector,
+      const Scalar<DataVector>& boundary_var1, const Scalar<DataVector>& var1,
+      const Scalar<DataVector>& primitive_input,
+      const Scalar<DataVector>& temporary_input,
+      const tnsr::I<DataVector, System::volume_dim, Frame::Inertial>& coords,
+      const double volume_number) const {
+    check_boundary_field_time_derivative_inputs(
+        face_mesh_velocity, outward_directed_normal_covector, boundary_var1,
+        var1, temporary_input, coords, volume_number);
+    // PrimVar1 (scalar) = offset, PrimVar2 (one component) = offset + 1,
+    // and the appended BoundaryFieldTimeDerivativePrimitiveInput = offset + 2
+    CHECK_ITERABLE_APPROX(
+        get(primitive_input),
+        DataVector(get(primitive_input).size(), offset_primitive_vars + 2.0));
+    get(*dt_boundary_var1) = offset_boundary_field_dt;
+    return std::nullopt;
+  }
+
+  // Without-prims (8-arg) overload of `boundary_field_time_derivatives`.
+  std::optional<std::string> boundary_field_time_derivatives(
+      const gsl::not_null<Scalar<DataVector>*> dt_boundary_var1,
+      const std::optional<tnsr::I<DataVector, System::volume_dim,
+                                  Frame::Inertial>>& face_mesh_velocity,
+      const tnsr::i<DataVector, System::volume_dim, Frame::Inertial>&
+          outward_directed_normal_covector,
+      const Scalar<DataVector>& boundary_var1, const Scalar<DataVector>& var1,
+      const Scalar<DataVector>& temporary_input,
+      const tnsr::I<DataVector, System::volume_dim, Frame::Inertial>& coords,
+      const double volume_number) const {
+    check_boundary_field_time_derivative_inputs(
+        face_mesh_velocity, outward_directed_normal_covector, boundary_var1,
+        var1, temporary_input, coords, volume_number);
+    get(*dt_boundary_var1) = offset_boundary_field_dt;
+    return std::nullopt;
+  }
+
+ private:
+  // Calls the base mock system's `dg_ghost` with arguments except the single
+  // stored boundary value
+  template <typename Tuple, size_t... Head, size_t... Tail>
+  std::optional<std::string> dg_ghost_delegate(
+      const Tuple& args_tuple, std::index_sequence<Head...> /*meta*/,
+      std::index_sequence<Tail...> /*meta*/) const {
+    return Base<System>::dg_ghost(
+        std::get<Head>(args_tuple)...,
+        std::get<sizeof...(Head) + 1 + Tail>(args_tuple)...);
+  }
+
+  void check_boundary_field_time_derivative_inputs(
+      const std::optional<tnsr::I<DataVector, System::volume_dim,
+                                  Frame::Inertial>>& face_mesh_velocity,
+      const tnsr::i<DataVector, System::volume_dim, Frame::Inertial>&
+          outward_directed_normal_covector,
+      const Scalar<DataVector>& boundary_var1, const Scalar<DataVector>& var1,
+      const Scalar<DataVector>& temporary_input,
+      const tnsr::I<DataVector, System::volume_dim, Frame::Inertial>& coords,
+      const double volume_number) const {
+    static_assert(System::volume_dim == 1);
+    const size_t num_pts = get(var1).size();
+    REQUIRE(face_mesh_velocity.has_value() == mesh_is_moving_);
+    if (mesh_is_moving_) {
+      CHECK_ITERABLE_APPROX(
+          face_mesh_velocity->get(0),
+          DataVector(num_pts, gsl::at(expected_velocities, 0)));
+    }
+    // The normalized covector is n_x / sqrt(n_x g^xx n_x) =
+    // sign(n_x) / sqrt(g^xx). For has_inverse_spatial_metric being true,
+    // g^xx = offset_temporaries + 1 (the temporary after
+    // TempVar); else, g^xx = 1.
+    const double normalization_factor = System::has_inverse_spatial_metric
+                                            ? sqrt(offset_temporaries + 1.0)
+                                            : 1.0;
+    for (size_t j = 0; j < num_pts; ++j) {
+      CHECK((approx(outward_directed_normal_covector.get(0)[j]) ==
+                 1.0 / normalization_factor or
+             approx(outward_directed_normal_covector.get(0)[j]) ==
+                 -1.0 / normalization_factor));
+    }
+    // Negative normal means lower face (x = -1), else upper face (x = 0).
+    // `test_1d` uses a single element (both faces external) covering
+    // x in [-1, 0] under identity maps.
+    const double expected_coord =
+        outward_directed_normal_covector.get(0)[0] < 0.0 ? -1.0 : 0.0;
+    CHECK_ITERABLE_APPROX(coords.get(0), DataVector(num_pts, expected_coord));
+    CHECK_ITERABLE_APPROX(get(boundary_var1),
+                          DataVector(num_pts, offset_boundary_fields));
+    CHECK_ITERABLE_APPROX(get(var1), DataVector(num_pts, offset_evolved_vars));
+    // TempVar (scalar) = offset,
+    // InverseSpatialMetric (one component) = offset + 1 if provided,
+    // then the appended BoundaryFieldTimeDerivativeTemporaryInput
+    // = offset + 2 (has_inverse_spatial_metric) or offset + 1
+    CHECK_ITERABLE_APPROX(
+        get(temporary_input),
+        DataVector(num_pts,
+                   offset_temporaries + 1.0 +
+                       (System::has_inverse_spatial_metric ? 1.0 : 0.0)));
+    // The value of the gridless Tags::BoundaryConditionVolumeTag in the box.
+    CHECK(volume_number == 2.5);
+  }
+
+  bool mesh_is_moving_{false};
+};
+
+template <typename System, template <typename> class Base>
+// NOLINTNEXTLINE
+PUP::able::PUP_ID WithBoundaryFields<System, Base>::my_PUP_ID = 0;
+
 template <bool AddTypeAlias, size_t Dim>
 struct InverseSpatialMetricTagImpl {
   using inverse_spatial_metric_tag = Tags::InverseSpatialMetric<Dim>;
@@ -2613,6 +2819,44 @@ struct System
   };
 };
 
+// Mock system whose `variables_tag` is a `tmpl::list` without
+// `::Tags::BoundaryVariables` entry
+template <size_t Dim, SystemType SysType, bool HasPrimitiveVariables,
+          bool HasInverseSpatialMetric>
+struct SystemWithoutBoundaryVariables
+    : System<Dim, SysType, HasPrimitiveVariables, HasInverseSpatialMetric> {
+  using base =
+      System<Dim, SysType, HasPrimitiveVariables, HasInverseSpatialMetric>;
+  using boundary_conditions_base =
+      BoundaryCondition<SystemWithoutBoundaryVariables>;
+  using variables_tag = tmpl::list<typename base::variables_tag>;
+};
+
+// Mock system whose `variables_tag` is a tmpl::list with
+// `::Tags::BoundaryVariables` entry
+template <size_t Dim, SystemType SysType, bool HasPrimitiveVariables,
+          bool HasInverseSpatialMetric>
+struct SystemWithBoundaryVariables
+    : System<Dim, SysType, HasPrimitiveVariables, HasInverseSpatialMetric> {
+  using base =
+      System<Dim, SysType, HasPrimitiveVariables, HasInverseSpatialMetric>;
+  using boundary_conditions_base =
+      BoundaryCondition<SystemWithBoundaryVariables>;
+  using variables_tag =
+      tmpl::list<typename base::variables_tag,
+                 ::Tags::BoundaryVariables<Dim, tmpl::list<BoundaryVar1>>>;
+  using primitive_variables_tag = ::Tags::Variables<tmpl::conditional_t<
+      HasPrimitiveVariables,
+      tmpl::push_back<typename base::primitive_variables_tag::tags_list,
+                      Tags::BoundaryFieldTimeDerivativePrimitiveInput>,
+      tmpl::list<>>>;
+  struct compute_volume_time_derivative_terms {
+    using temporary_tags = tmpl::push_back<
+        typename base::compute_volume_time_derivative_terms::temporary_tags,
+        Tags::BoundaryFieldTimeDerivativeTemporaryInput>;
+  };
+};
+
 // Note: DemandOutgoingCharSpeeds is intentionally first so it gets applied
 // first. This makes the test easier because the other BCs modify the time
 // derivatives.
@@ -2632,12 +2876,22 @@ using boundary_conditions_with_cartoon =
                domain::BoundaryConditions::Cartoon<BoundaryCondition<System>>>;
 
 template <typename System>
+using boundary_conditions_with_boundary_fields =
+    tmpl::push_back<standard_boundary_conditions<System>,
+                    WithBoundaryFields<System, Ghost>,
+                    WithBoundaryFields<System, TimeDerivative>,
+                    WithBoundaryFields<System, GhostAndTimeDerivative>>;
+
+template <typename System>
 struct Metavariables {
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
-    using factory_classes =
-        tmpl::map<tmpl::pair<BoundaryCondition<System>,
-                             standard_boundary_conditions<System>>>;
+    using factory_classes = tmpl::map<
+        tmpl::pair<BoundaryCondition<System>,
+                   tmpl::conditional_t<
+                       evolution::dg::system_has_boundary_variables_v<System>,
+                       boundary_conditions_with_boundary_fields<System>,
+                       standard_boundary_conditions<System>>>>;
   };
 };
 
@@ -2693,8 +2947,26 @@ void test_1d(const bool moving_mesh, const dg::Formulation formulation,
       instantiate_periodic_for_gcc_8{};
   static_assert(System::volume_dim == 1);
 
-  using dt_variables_tag =
-      db::add_tag_prefix<::Tags::dt, typename System::variables_tag>;
+  using volume_variables_tag = tmpl::conditional_t<
+      tt::is_a_v<tmpl::list, typename System::variables_tag>,
+      tmpl::front<typename System::variables_tag>,
+      typename System::variables_tag>;
+  constexpr bool has_boundary_fields =
+      evolution::dg::system_has_boundary_variables_v<System>;
+
+  using GhostBc =
+      tmpl::conditional_t<has_boundary_fields,
+                          WithBoundaryFields<System, Ghost>, Ghost<System>>;
+  using TimeDerivativeBc =
+      tmpl::conditional_t<has_boundary_fields,
+                          WithBoundaryFields<System, TimeDerivative>,
+                          TimeDerivative<System>>;
+  using GhostAndTimeDerivativeBc =
+      tmpl::conditional_t<has_boundary_fields,
+                          WithBoundaryFields<System, GhostAndTimeDerivative>,
+                          GhostAndTimeDerivative<System>>;
+
+  using dt_variables_tag = db::add_tag_prefix<::Tags::dt, volume_variables_tag>;
   const Mesh<Dim> mesh{5, Spectral::Basis::Legendre, quadrature};
   const ElementId<Dim> self_id{0, {{{1, 0}}}};
   const Element<Dim> element{self_id, {}};
@@ -2711,11 +2983,10 @@ void test_1d(const bool moving_mesh, const dg::Formulation formulation,
       functions_of_time{};
   std::optional<tnsr::I<DataVector, Dim, Frame::Inertial>> mesh_velocity{};
   if (moving_mesh) {
-    const std::array<double, 3> velocities = {{1.2, -1.4, 0.3}};
     mesh_velocity =
         tnsr::I<DataVector, Dim, Frame::Inertial>{mesh.number_of_grid_points()};
     for (size_t i = 0; i < Dim; ++i) {
-      mesh_velocity->get(i) = gsl::at(velocities, i);
+      mesh_velocity->get(i) = gsl::at(expected_velocities, i);
     }
   }
   // Set the Jacobian to not be the identity because otherwise bugs creep in
@@ -2737,10 +3008,10 @@ void test_1d(const bool moving_mesh, const dg::Formulation formulation,
   const double boundary_correction_auxiliary_volume_tag_number{4.5};
 
   Variables<
-      db::wrap_tags_in<::Tags::dt, typename System::variables_tag::tags_list>>
+      db::wrap_tags_in<::Tags::dt, typename volume_variables_tag::tags_list>>
       dt_evolved_vars{mesh.number_of_grid_points()};
   fill_variables(make_not_null(&dt_evolved_vars), offset_dt_evolved_vars);
-  Variables<typename System::variables_tag::tags_list> evolved_vars{
+  Variables<typename volume_variables_tag::tags_list> evolved_vars{
       mesh.number_of_grid_points()};
   fill_variables(make_not_null(&evolved_vars), offset_evolved_vars);
   // Storage for the auxiliary variables. In the physical pass they are
@@ -2798,7 +3069,7 @@ void test_1d(const bool moving_mesh, const dg::Formulation formulation,
         0, grid_to_inertial_map->get_clone());
   }
 
-  using simple_tags = tmpl::list<
+  using common_simple_tags = tmpl::list<
       Parallel::Tags::MetavariablesImpl<Metavariables<System>>,
       domain::Tags::Domain<Dim>, domain::Tags::ExternalBoundaryConditions<Dim>,
       domain::Tags::Mesh<Dim>, domain::Tags::Element<Dim>,
@@ -2811,21 +3082,112 @@ void test_1d(const bool moving_mesh, const dg::Formulation formulation,
                                     Frame::Inertial>,
       domain::Tags::DetInvJacobian<Frame::ElementLogical, Frame::Inertial>,
       evolution::dg::Tags::NormalCovectorAndMagnitude<Dim>,
-      typename System::variables_tag,
+      volume_variables_tag,
       ::Tags::Variables<typename System::auxiliary_variables>, dt_variables_tag,
       Tags::BoundaryConditionVolumeTag, Tags::BoundaryCorrectionVolumeTag,
       Tags::BoundaryCorrectionAuxiliaryVolumeTag, ::dg::Tags::Formulation>;
   using compute_tags = tmpl::list<>;
 
-  auto box = db::create<simple_tags, compute_tags>(
-      Metavariables<System>{}, std::move(domain),
-      std::move(external_boundary_conditions), mesh, element,
-      std::move(element_map), grid_to_inertial_map->get_clone(), time,
-      clone_unique_ptrs(functions_of_time), mesh_velocity, inv_jacobian,
-      det_inv_jacobian, normal_covector_and_magnitude, evolved_vars,
-      auxiliary_vars, dt_evolved_vars, boundary_condition_volume_tag_number,
-      boundary_correction_volume_tag_number,
-      boundary_correction_auxiliary_volume_tag_number, formulation);
+  auto box = [&]() {
+    if constexpr (has_boundary_fields) {
+      using boundary_variables_tag =
+          evolution::dg::boundary_variables_tag<System>;
+      using dt_boundary_variables_tag =
+          db::add_tag_prefix<::Tags::dt, boundary_variables_tag>;
+      using simple_tags =
+          tmpl::push_back<common_simple_tags, boundary_variables_tag,
+                          dt_boundary_variables_tag>;
+      return db::create<simple_tags, compute_tags>(
+          Metavariables<System>{}, std::move(domain),
+          std::move(external_boundary_conditions), mesh, element,
+          std::move(element_map), grid_to_inertial_map->get_clone(), time,
+          clone_unique_ptrs(functions_of_time), mesh_velocity, inv_jacobian,
+          det_inv_jacobian, normal_covector_and_magnitude, evolved_vars,
+          auxiliary_vars, dt_evolved_vars, boundary_condition_volume_tag_number,
+          boundary_correction_volume_tag_number,
+          boundary_correction_auxiliary_volume_tag_number, formulation,
+          typename boundary_variables_tag::type{},
+          typename dt_boundary_variables_tag::type{});
+    } else {
+      using simple_tags = common_simple_tags;
+      return db::create<simple_tags, compute_tags>(
+          Metavariables<System>{}, std::move(domain),
+          std::move(external_boundary_conditions), mesh, element,
+          std::move(element_map), grid_to_inertial_map->get_clone(), time,
+          clone_unique_ptrs(functions_of_time), mesh_velocity, inv_jacobian,
+          det_inv_jacobian, normal_covector_and_magnitude, evolved_vars,
+          auxiliary_vars, dt_evolved_vars, boundary_condition_volume_tag_number,
+          boundary_correction_volume_tag_number,
+          boundary_correction_auxiliary_volume_tag_number, formulation);
+    }
+  }();
+
+  const auto reseed_boundary_storage =
+      [&](const auto box_ptr, const std::vector<Direction<Dim>>& directions) {
+        if constexpr (has_boundary_fields) {
+          using boundary_variables_tag =
+              evolution::dg::boundary_variables_tag<System>;
+          using dt_boundary_variables_tag =
+              db::add_tag_prefix<::Tags::dt, boundary_variables_tag>;
+          DirectionMap<Dim, size_t> points_per_direction{};
+          for (const auto& direction : directions) {
+            points_per_direction[direction] =
+                mesh.slice_away(direction.dimension()).number_of_grid_points();
+          }
+          db::mutate<boundary_variables_tag, dt_boundary_variables_tag>(
+              [&points_per_direction, &directions](const auto storage_ptr,
+                                                   const auto dt_storage_ptr) {
+                storage_ptr->initialize(points_per_direction);
+                dt_storage_ptr->initialize(points_per_direction);
+                for (const auto& direction : directions) {
+                  get(get<BoundaryVar1>(storage_ptr->variables().at(
+                      direction))) = offset_boundary_fields;
+                  get(get<::Tags::dt<BoundaryVar1>>(
+                      dt_storage_ptr->variables().at(direction))) =
+                      offset_boundary_field_dt_seed;
+                }
+              },
+              box_ptr);
+        } else {
+          (void)box_ptr;
+          (void)directions;
+        }
+      };
+
+  // Check boundary field is not changed, and dt boundary field is updated in
+  // the physical pass, but not in the auxiliary pass
+  const auto check_boundary_storage =
+      [](const auto& local_box, const std::vector<Direction<Dim>>& directions) {
+        if constexpr (has_boundary_fields) {
+          using boundary_variables_tag =
+              evolution::dg::boundary_variables_tag<System>;
+          using dt_boundary_variables_tag =
+              db::add_tag_prefix<::Tags::dt, boundary_variables_tag>;
+          const auto& storage = db::get<boundary_variables_tag>(local_box);
+          const auto& dt_storage =
+              db::get<dt_boundary_variables_tag>(local_box);
+          CHECK(storage.variables().size() == directions.size());
+          CHECK(dt_storage.variables().size() == directions.size());
+          for (const auto& direction : directions) {
+            REQUIRE(storage.variables().count(direction) == 1);
+            REQUIRE(dt_storage.variables().count(direction) == 1);
+            const DataVector& stored_value =
+                get(get<BoundaryVar1>(storage.variables().at(direction)));
+            CHECK_ITERABLE_APPROX(
+                stored_value,
+                DataVector(stored_value.size(), offset_boundary_fields));
+            const DataVector& dt_value = get(get<::Tags::dt<BoundaryVar1>>(
+                dt_storage.variables().at(direction)));
+            CHECK_ITERABLE_APPROX(
+                dt_value, DataVector(dt_value.size(),
+                                     IsAuxiliary ? offset_boundary_field_dt_seed
+                                                 : offset_boundary_field_dt));
+          }
+        } else {
+          (void)local_box;
+          (void)directions;
+        }
+      };
 
   {
     INFO("DemandOutgoingCharSpeeds only");
@@ -2835,7 +3197,7 @@ void test_1d(const bool moving_mesh, const dg::Formulation formulation,
     // are all unchanged.
     evolution::dg::Actions::detail::
         apply_boundary_conditions_on_all_external_faces<
-            System, Dim, typename System::variables_tag, IsAuxiliary>(
+            System, Dim, volume_variables_tag, IsAuxiliary>(
             make_not_null(&box), BndryTerms{moving_mesh, 0.0}, temporaries,
             volume_fluxes, partial_derivs, primitive_vars_ptr);
     CHECK_ITERABLE_APPROX(
@@ -2861,6 +3223,8 @@ void test_1d(const bool moving_mesh, const dg::Formulation formulation,
                             DataVector(mesh.number_of_grid_points(),
                                        offset_dt_evolved_vars + 1 + i));
     }
+
+    check_boundary_storage(box, {});
   }
 
   const auto expected_ghost_dt_correction = [&box, &formulation, &mesh](
@@ -2999,7 +3363,7 @@ void test_1d(const bool moving_mesh, const dg::Formulation formulation,
     // Reset the evolved, auxiliary, and time-derivative variables to their
     // baseline values.
     db::mutate<domain::Tags::ExternalBoundaryConditions<Dim>,
-               typename System::variables_tag,
+               volume_variables_tag,
                ::Tags::Variables<typename System::auxiliary_variables>,
                dt_variables_tag>(
         [&moving_mesh, &outgoing_direction](
@@ -3009,7 +3373,7 @@ void test_1d(const bool moving_mesh, const dg::Formulation formulation,
                                 domain::BoundaryConditions::BoundaryCondition>>
               boundary_conditions{};
           boundary_conditions[outgoing_direction.opposite()] =
-              std::make_unique<Ghost<System>>(moving_mesh);
+              std::make_unique<GhostBc>(moving_mesh);
           boundary_conditions[outgoing_direction] =
               std::make_unique<DemandOutgoingCharSpeeds<System>>(moving_mesh);
           (*all_boundary_conditions)[0] = std::move(boundary_conditions);
@@ -3019,12 +3383,15 @@ void test_1d(const bool moving_mesh, const dg::Formulation formulation,
           fill_variables(dt_vars_ptr, offset_dt_evolved_vars);
         },
         make_not_null(&box));
+    reseed_boundary_storage(make_not_null(&box),
+                            {outgoing_direction.opposite()});
     evolution::dg::Actions::detail::
         apply_boundary_conditions_on_all_external_faces<
-            System, Dim, typename System::variables_tag, IsAuxiliary>(
+            System, Dim, volume_variables_tag, IsAuxiliary>(
             make_not_null(&box),
             BndryTerms{moving_mesh, outgoing_direction.opposite().sign()},
             temporaries, volume_fluxes, partial_derivs, primitive_vars_ptr);
+    check_boundary_storage(box, {outgoing_direction.opposite()});
 
     // The physical pass lifts the ghost correction into the time derivatives;
     // the auxiliary pass leaves them untouched.
@@ -3074,7 +3441,7 @@ void test_1d(const bool moving_mesh, const dg::Formulation formulation,
     const Mesh<Dim> mesh_gl{5, Spectral::Basis::Legendre,
                             Spectral::Quadrature::GaussLobatto};
     Variables<
-        db::wrap_tags_in<::Tags::dt, typename System::variables_tag::tags_list>>
+        db::wrap_tags_in<::Tags::dt, typename volume_variables_tag::tags_list>>
         dt_correction_gl{mesh_gl.number_of_grid_points(), 0.0};
     const size_t boundary_index =
         dt_direction.side() == Side::Lower
@@ -3109,7 +3476,7 @@ void test_1d(const bool moving_mesh, const dg::Formulation formulation,
     // Reset the evolved, auxiliary, and time-derivative variables to their
     // baseline values.
     db::mutate<domain::Tags::ExternalBoundaryConditions<Dim>,
-               typename System::variables_tag,
+               volume_variables_tag,
                ::Tags::Variables<typename System::auxiliary_variables>,
                dt_variables_tag>(
         [&moving_mesh, &outgoing_direction](
@@ -3119,8 +3486,8 @@ void test_1d(const bool moving_mesh, const dg::Formulation formulation,
                                 domain::BoundaryConditions::BoundaryCondition>>
               boundary_conditions{};
           boundary_conditions[outgoing_direction.opposite()] =
-              std::make_unique<TimeDerivative<System>>(moving_mesh,
-                                                       offset_dt_evolved_vars);
+              std::make_unique<TimeDerivativeBc>(moving_mesh,
+                                                 offset_dt_evolved_vars);
           boundary_conditions[outgoing_direction] =
               std::make_unique<DemandOutgoingCharSpeeds<System>>(moving_mesh);
           (*all_boundary_conditions)[0] = std::move(boundary_conditions);
@@ -3130,12 +3497,15 @@ void test_1d(const bool moving_mesh, const dg::Formulation formulation,
           fill_variables(dt_vars_ptr, offset_dt_evolved_vars);
         },
         make_not_null(&box));
+    reseed_boundary_storage(make_not_null(&box),
+                            {outgoing_direction.opposite()});
     evolution::dg::Actions::detail::
         apply_boundary_conditions_on_all_external_faces<
-            System, Dim, typename System::variables_tag, IsAuxiliary>(
+            System, Dim, volume_variables_tag, IsAuxiliary>(
             make_not_null(&box),
             BndryTerms{moving_mesh, outgoing_direction.opposite().sign()},
             temporaries, volume_fluxes, partial_derivs, primitive_vars_ptr);
+    check_boundary_storage(box, {outgoing_direction.opposite()});
 
     auto expected_dt_evolved_vars = dt_evolved_vars;
     if constexpr (not IsAuxiliary) {
@@ -3198,7 +3568,7 @@ void test_1d(const bool moving_mesh, const dg::Formulation formulation,
     // Reset the evolved, auxiliary, and time-derivative variables to their
     // baseline values.
     db::mutate<domain::Tags::ExternalBoundaryConditions<Dim>,
-               typename System::variables_tag,
+               volume_variables_tag,
                ::Tags::Variables<typename System::auxiliary_variables>,
                dt_variables_tag>(
         [&expected_dt_var1 =
@@ -3210,10 +3580,10 @@ void test_1d(const bool moving_mesh, const dg::Formulation formulation,
                                 domain::BoundaryConditions::BoundaryCondition>>
               boundary_conditions{};
           boundary_conditions[ghost_direction.opposite()] =
-              std::make_unique<TimeDerivative<System>>(
-                  moving_mesh, get(expected_dt_var1)[0]);
+              std::make_unique<TimeDerivativeBc>(moving_mesh,
+                                                 get(expected_dt_var1)[0]);
           boundary_conditions[ghost_direction] =
-              std::make_unique<Ghost<System>>(moving_mesh);
+              std::make_unique<GhostBc>(moving_mesh);
           (*all_boundary_conditions)[0] = std::move(boundary_conditions);
 
           fill_variables(vars_ptr, offset_evolved_vars);
@@ -3221,12 +3591,16 @@ void test_1d(const bool moving_mesh, const dg::Formulation formulation,
           fill_variables(dt_vars_ptr, offset_dt_evolved_vars);
         },
         make_not_null(&box));
+
+    reseed_boundary_storage(make_not_null(&box),
+                            {ghost_direction, ghost_direction.opposite()});
     evolution::dg::Actions::detail::
         apply_boundary_conditions_on_all_external_faces<
-            System, Dim, typename System::variables_tag, IsAuxiliary>(
+            System, Dim, volume_variables_tag, IsAuxiliary>(
             make_not_null(&box),
             BndryTerms{moving_mesh, ghost_direction.sign()}, temporaries,
             volume_fluxes, partial_derivs, primitive_vars_ptr);
+    check_boundary_storage(box, {ghost_direction, ghost_direction.opposite()});
 
     if constexpr (not IsAuxiliary) {
       expected_dt_evolved_vars +=
@@ -3279,7 +3653,7 @@ void test_1d(const bool moving_mesh, const dg::Formulation formulation,
     // Reset the evolved, auxiliary, and time-derivative variables to their
     // baseline values.
     db::mutate<domain::Tags::ExternalBoundaryConditions<Dim>,
-               typename System::variables_tag,
+               volume_variables_tag,
                ::Tags::Variables<typename System::auxiliary_variables>,
                dt_variables_tag>(
         [&moving_mesh, &outgoing_direction](
@@ -3289,7 +3663,7 @@ void test_1d(const bool moving_mesh, const dg::Formulation formulation,
                                 domain::BoundaryConditions::BoundaryCondition>>
               boundary_conditions{};
           boundary_conditions[outgoing_direction.opposite()] =
-              std::make_unique<GhostAndTimeDerivative<System>>(moving_mesh);
+              std::make_unique<GhostAndTimeDerivativeBc>(moving_mesh);
           boundary_conditions[outgoing_direction] =
               std::make_unique<DemandOutgoingCharSpeeds<System>>(moving_mesh);
           (*all_boundary_conditions)[0] = std::move(boundary_conditions);
@@ -3299,12 +3673,15 @@ void test_1d(const bool moving_mesh, const dg::Formulation formulation,
           fill_variables(dt_vars_ptr, offset_dt_evolved_vars);
         },
         make_not_null(&box));
+    reseed_boundary_storage(make_not_null(&box),
+                            {outgoing_direction.opposite()});
     evolution::dg::Actions::detail::
         apply_boundary_conditions_on_all_external_faces<
-            System, Dim, typename System::variables_tag, IsAuxiliary>(
+            System, Dim, volume_variables_tag, IsAuxiliary>(
             make_not_null(&box),
             BndryTerms{moving_mesh, outgoing_direction.opposite().sign()},
             temporaries, volume_fluxes, partial_derivs, primitive_vars_ptr);
+    check_boundary_storage(box, {outgoing_direction.opposite()});
 
     auto expected_dt_evolved_vars = dt_evolved_vars;
     if constexpr (not IsAuxiliary) {
@@ -3493,6 +3870,28 @@ void test_cartoon_mesh_compatibility() {
   }
 }
 
+template <SystemType SysType, bool HasPrimitiveVariables,
+          bool HasInverseSpatialMetric>
+using all_variables_tag_shapes = tmpl::list<
+    System<1, SysType, HasPrimitiveVariables, HasInverseSpatialMetric>,
+    SystemWithoutBoundaryVariables<1, SysType, HasPrimitiveVariables,
+                                   HasInverseSpatialMetric>,
+    SystemWithBoundaryVariables<1, SysType, HasPrimitiveVariables,
+                                HasInverseSpatialMetric>>;
+
+using systems_to_test = tmpl::append<
+    all_variables_tag_shapes<SystemType::Conservative, false, false>,
+    all_variables_tag_shapes<SystemType::Conservative, true, false>,
+    all_variables_tag_shapes<SystemType::Nonconservative, false, false>,
+    all_variables_tag_shapes<SystemType::Mixed, false, false>,
+    all_variables_tag_shapes<SystemType::Mixed, true, false>,
+    all_variables_tag_shapes<SystemType::Conservative, false, true>,
+    all_variables_tag_shapes<SystemType::Conservative, true, true>,
+    all_variables_tag_shapes<SystemType::Nonconservative, false, true>,
+    all_variables_tag_shapes<SystemType::Mixed, false, true>,
+    all_variables_tag_shapes<SystemType::Mixed, true, true>>;
+
+// [[TimeOut, 5]]
 SPECTRE_TEST_CASE("Unit.Evolution.DG.ComputeTimeDerivative.BoundaryConditions",
                   "[Unit][Evolution][Actions]") {
   // The test proceeds as follows:
@@ -3515,71 +3914,22 @@ SPECTRE_TEST_CASE("Unit.Evolution.DG.ComputeTimeDerivative.BoundaryConditions",
          {Spectral::Quadrature::Gauss, Spectral::Quadrature::GaussLobatto}) {
       for (const dg::Formulation formulation :
            {dg::Formulation::WeakInertial, dg::Formulation::StrongInertial}) {
-        // Second last template parameter on System:
-        // - true: has primitive variables
-        // - false: no primitive variables
-
-        // last template parameter on System being `false` means flat background
-        test_1d<System<1, SystemType::Conservative, false, false>>(
-            moving_mesh, formulation, quadrature);
-        test_1d<System<1, SystemType::Conservative, true, false>>(
-            moving_mesh, formulation, quadrature);
-
-        test_1d<System<1, SystemType::Nonconservative, false, false>>(
-            moving_mesh, formulation, quadrature);
-
-        test_1d<System<1, SystemType::Mixed, false, false>>(
-            moving_mesh, formulation, quadrature);
-        test_1d<System<1, SystemType::Mixed, true, false>>(
-            moving_mesh, formulation, quadrature);
-
-        // last template parameter on System being `true` means curved
-        // background
-        test_1d<System<1, SystemType::Conservative, false, true>>(
-            moving_mesh, formulation, quadrature);
-        test_1d<System<1, SystemType::Conservative, true, true>>(
-            moving_mesh, formulation, quadrature);
-
-        test_1d<System<1, SystemType::Nonconservative, false, true>>(
-            moving_mesh, formulation, quadrature);
-
-        test_1d<System<1, SystemType::Mixed, false, true>>(
-            moving_mesh, formulation, quadrature);
-        test_1d<System<1, SystemType::Mixed, true, true>>(
-            moving_mesh, formulation, quadrature);
+        tmpl::for_each<systems_to_test>(
+            [&moving_mesh, &formulation, &quadrature]<typename SystemToTest>(
+                tmpl::type_<SystemToTest> /*meta*/) {
+              test_1d<SystemToTest>(moving_mesh, formulation, quadrature);
+            });
       }
 
-      // auxiliary-pass analogues across the same System configurations. The
+      // auxiliary-pass analogues across the same system configurations. The
       // LDG auxiliary pass is designed for the strong formulation only, so it
       // is not run with WeakInertial.
-      // last template parameter on System being `false` means flat background
-      test_1d<System<1, SystemType::Conservative, false, false>, true>(
-          moving_mesh, dg::Formulation::StrongInertial, quadrature);
-      test_1d<System<1, SystemType::Conservative, true, false>, true>(
-          moving_mesh, dg::Formulation::StrongInertial, quadrature);
-
-      test_1d<System<1, SystemType::Nonconservative, false, false>, true>(
-          moving_mesh, dg::Formulation::StrongInertial, quadrature);
-
-      test_1d<System<1, SystemType::Mixed, false, false>, true>(
-          moving_mesh, dg::Formulation::StrongInertial, quadrature);
-      test_1d<System<1, SystemType::Mixed, true, false>, true>(
-          moving_mesh, dg::Formulation::StrongInertial, quadrature);
-
-      // last template parameter on System being `true` means curved
-      // background
-      test_1d<System<1, SystemType::Conservative, false, true>, true>(
-          moving_mesh, dg::Formulation::StrongInertial, quadrature);
-      test_1d<System<1, SystemType::Conservative, true, true>, true>(
-          moving_mesh, dg::Formulation::StrongInertial, quadrature);
-
-      test_1d<System<1, SystemType::Nonconservative, false, true>, true>(
-          moving_mesh, dg::Formulation::StrongInertial, quadrature);
-
-      test_1d<System<1, SystemType::Mixed, false, true>, true>(
-          moving_mesh, dg::Formulation::StrongInertial, quadrature);
-      test_1d<System<1, SystemType::Mixed, true, true>, true>(
-          moving_mesh, dg::Formulation::StrongInertial, quadrature);
+      tmpl::for_each<systems_to_test>(
+          [&moving_mesh, &quadrature]<typename SystemToTest>(
+              tmpl::type_<SystemToTest> /*meta*/) {
+            test_1d<SystemToTest, true>(
+                moving_mesh, dg::Formulation::StrongInertial, quadrature);
+          });
     }
   }
   test_cartoon_mesh_compatibility();
