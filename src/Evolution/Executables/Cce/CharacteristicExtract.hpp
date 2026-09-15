@@ -49,8 +49,7 @@ class er;
 /// \endcond
 
 template <template <typename> class BoundaryComponent>
-struct EvolutionMetavars : CharacteristicExtractDefaults<false> {
-  using system = Cce::System<evolve_ccm>;
+struct EvolutionMetavars : CharacteristicExtractDefaults<Cce::System<false>> {
   using cce_boundary_component = BoundaryComponent<EvolutionMetavars>;
 
   using component_list =

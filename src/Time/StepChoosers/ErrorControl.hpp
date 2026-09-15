@@ -3,9 +3,10 @@
 
 #pragma once
 
-#include <algorithm>
+#include <array>
 #include <cmath>
 #include <limits>
+#include <optional>
 #include <pup.h>
 #include <string>
 #include <type_traits>
@@ -16,17 +17,26 @@
 #include "Options/String.hpp"
 #include "Time/RequestsStepperErrorTolerances.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"
+#include "Time/StepperErrorEstimate.hpp"
 #include "Time/StepperErrorTolerances.hpp"
 #include "Time/Tags/StepperErrors.hpp"
 #include "Time/TimeStepRequest.hpp"
 #include "Utilities/Serialization/CharmPupable.hpp"
 #include "Utilities/TMPL.hpp"
+#include "Utilities/TypeTraits/IsA.hpp"
 
 /// \cond
 struct NoSuchType;
 /// \endcond
 
 namespace StepChoosers {
+namespace ErrorControl_detail {
+template <typename StepChooserUse>
+std::optional<double> goal_from_variable(
+    const std::array<std::optional<StepperErrorEstimate>, 2>& errors,
+    double min_factor, double max_factor, double safety_factor);
+}  // namespace ErrorControl_detail
+
 /*!
  * \brief Sets a goal based on time-stepper truncation error.
  *
@@ -88,17 +98,18 @@ namespace StepChoosers {
  * the restriction of step size changes to factors of two was found to
  * interfere with the more gradual increase chosen by the PI
  * controller.
- *
- * \note The template parameter `ErrorControlSelector` is used to disambiguate
- * in the input-file options between `ErrorControl` step choosers that are
- * based on different variables. This is needed if multiple systems are evolved
- * in the same executable. The name used for the input file includes
- * `ErrorControlSelector::name()` if it is provided.
  */
-template <typename StepChooserUse, typename EvolvedVariableTag,
-          typename ErrorControlSelector = NoSuchType>
-class ErrorControl : public StepChooser<StepChooserUse>,
-                     public RequestsStepperErrorTolerances {
+template <typename StepChooserUse, typename System,
+          typename = tmpl::conditional_t<
+              tt::is_a_v<tmpl::list, typename System::variables_tag>,
+              typename System::variables_tag,
+              tmpl::list<typename System::variables_tag>>>
+class ErrorControl;
+
+template <typename StepChooserUse, typename System, typename... VariablesTags>
+class ErrorControl<StepChooserUse, System, tmpl::list<VariablesTags...>>
+    : public StepChooser<StepChooserUse>,
+      public RequestsStepperErrorTolerances {
  public:
   /// \cond
   ErrorControl() = default;
@@ -106,14 +117,6 @@ class ErrorControl : public StepChooser<StepChooserUse>,
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(ErrorControl);  // NOLINT
   /// \endcond
-
-  static std::string name() {
-    if constexpr (std::is_same_v<ErrorControlSelector, NoSuchType>) {
-      return "ErrorControl";
-    } else {
-      return "ErrorControl(" + ErrorControlSelector::name() + ")";
-    }
-  }
 
   struct AbsoluteTolerance {
     using type = double;
@@ -164,40 +167,22 @@ class ErrorControl : public StepChooser<StepChooserUse>,
         min_factor_{min_factor},
         safety_factor_{safety_factor} {}
 
-  using argument_tags = tmpl::list<::Tags::StepperErrors<EvolvedVariableTag>>;
+  using argument_tags = tmpl::list<::Tags::StepperErrors<VariablesTags>...>;
 
   TimeStepRequest operator()(
-      const typename ::Tags::StepperErrors<EvolvedVariableTag>::type& errors,
+      const typename ::Tags::StepperErrors<VariablesTags>::type&... errors,
       const double /*previous_step*/) const {
-    // Do not request that the step size be changed if there isn't a new error
-    // estimate
-    if (not errors[1].has_value()) {
-      return {};
+    const std::array goals{
+        ErrorControl_detail::goal_from_variable<StepChooserUse>(
+            errors, min_factor_, max_factor_, safety_factor_)...};
+    std::optional<double> tightest_goal{};
+    for (const auto& goal : goals) {
+      if (goal.has_value() and (not tightest_goal.has_value() or
+                                std::abs(*goal) < std::abs(*tightest_goal))) {
+        tightest_goal = goal;
+      }
     }
-    double new_step;
-    if (std::is_same_v<StepChooserUse, ::StepChooserUse::LtsStep> or
-        not errors[0].has_value() or errors[0]->order != errors[1]->order) {
-      new_step =
-          errors[1]->step_size.value() *
-          std::clamp(safety_factor_ *
-                         pow(1.0 / std::max(errors[1]->step_error(), 1e-14),
-                             1.0 / (errors[1]->order + 1)),
-                     min_factor_, max_factor_);
-    } else {
-      // From simple advice from Numerical Recipes 17.2.1 regarding a heuristic
-      // for PI step control.
-      const double alpha_factor = 0.7 / (errors[1]->order + 1);
-      const double beta_factor = 0.4 / (errors[0]->order + 1);
-      new_step =
-          errors[1]->step_size.value() *
-          std::clamp(
-              safety_factor_ *
-                  pow(1.0 / std::max(errors[1]->step_error(), 1e-14),
-                      alpha_factor) *
-                  pow(std::max(errors[0]->step_error(), 1e-14), beta_factor),
-              min_factor_, max_factor_);
-    }
-    return ::TimeStepRequest{.size_goal = new_step};
+    return ::TimeStepRequest{.size_goal = tightest_goal};
   }
 
   bool uses_local_data() const override { return true; }
@@ -206,10 +191,10 @@ class ErrorControl : public StepChooser<StepChooserUse>,
 
   std::unordered_map<std::type_index, StepperErrorTolerances> tolerances()
       const override {
-    return {{typeid(EvolvedVariableTag),
+    return {{typeid(VariablesTags),
              {.estimates = StepperErrorTolerances::Estimates::StepperOrder,
               .absolute = absolute_tolerance_,
-              .relative = relative_tolerance_}}};
+              .relative = relative_tolerance_}}...};
   }
 
   void pup(PUP::er& p) override {  // NOLINT
@@ -229,9 +214,10 @@ class ErrorControl : public StepChooser<StepChooserUse>,
   double safety_factor_ = std::numeric_limits<double>::signaling_NaN();
 };
 /// \cond
-template <typename StepChooserUse, typename EvolvedVariableTag,
-          typename ErrorControlSelector>
-PUP::able::PUP_ID ErrorControl<StepChooserUse, EvolvedVariableTag,
-                               ErrorControlSelector>::my_PUP_ID = 0;  // NOLINT
+template <typename StepChooserUse, typename System, typename... VariablesTags>
+PUP::able::PUP_ID
+    ErrorControl<StepChooserUse, System,
+                 tmpl::list<VariablesTags...>>::my_PUP_ID =  // NOLINT
+    0;
 /// \endcond
 }  // namespace StepChoosers

@@ -23,10 +23,6 @@
 #include "ParallelAlgorithms/EventsAndTriggers/EventsAndTriggers.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/LogicalTriggers.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Trigger.hpp"
-#include "Time/StepChoosers/Constant.hpp"
-#include "Time/StepChoosers/ErrorControl.hpp"
-#include "Time/StepChoosers/LimitIncrease.hpp"
-#include "Time/StepChoosers/Maximum.hpp"
 #include "Time/TimeSteppers/Factory.hpp"
 #include "Time/Triggers/TimeTriggers.hpp"
 
@@ -37,13 +33,11 @@ class er;
 /// \endcond
 
 template <template <typename> class BoundaryComponent>
-struct EvolutionMetavars : CharacteristicExtractDefaults<false> {
-  using system = Cce::KleinGordonSystem<evolve_ccm>;
+struct EvolutionMetavars
+    : CharacteristicExtractDefaults<Cce::KleinGordonSystem<false>> {
   using cce_boundary_component = BoundaryComponent<EvolutionMetavars>;
-  using cce_base = CharacteristicExtractDefaults<false>;
+  using cce_base = CharacteristicExtractDefaults<Cce::KleinGordonSystem<false>>;
 
-  using evolved_swsh_tags = tmpl::append<cce_base::evolved_swsh_tags,
-                                         tmpl::list<Cce::Tags::KleinGordonPsi>>;
   using evolved_swsh_dt_tags =
       tmpl::append<cce_base::evolved_swsh_dt_tags,
                    tmpl::list<Cce::Tags::KleinGordonPi>>;
@@ -57,16 +51,6 @@ struct EvolutionMetavars : CharacteristicExtractDefaults<false> {
 
   using klein_gordon_scri_tags =
       tmpl::list<Cce::Tags::ScriPlus<Cce::Tags::KleinGordonPi>>;
-
-  using cce_step_choosers =
-      tmpl::list<StepChoosers::Constant, StepChoosers::LimitIncrease,
-                 StepChoosers::Maximum,
-                 StepChoosers::ErrorControl<StepChooserUse::LtsStep,
-                                            Tags::Variables<evolved_swsh_tags>,
-                                            swsh_vars_selector>,
-                 StepChoosers::ErrorControl<StepChooserUse::LtsStep,
-                                            evolved_coordinates_variables_tag,
-                                            coord_vars_selector>>;
 
   using klein_gordon_pre_swsh_derivative_tags =
       tmpl::list<Cce::Tags::Dy<Cce::Tags::Dy<Cce::Tags::KleinGordonPsi>>,

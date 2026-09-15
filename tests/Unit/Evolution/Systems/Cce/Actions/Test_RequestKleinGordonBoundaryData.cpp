@@ -14,6 +14,7 @@
 #include "Evolution/Systems/Cce/Actions/InitializeCharacteristicEvolutionVariables.hpp"
 #include "Evolution/Systems/Cce/Actions/InitializeKleinGordonVariables.hpp"
 #include "Evolution/Systems/Cce/Actions/RequestBoundaryData.hpp"
+#include "Evolution/Systems/Cce/KleinGordonSystem.hpp"
 #include "Evolution/Systems/Cce/OptionTags.hpp"
 #include "Evolution/Systems/Cce/Tags.hpp"
 #include "Framework/ActionTesting.hpp"
@@ -89,10 +90,9 @@ struct mock_kg_characteristic_evolution {
                          mock_kg_characteristic_evolution<Metavariables>>>>>;
 };
 
-struct test_metavariables : CharacteristicExtractDefaults<false> {
-  using cce_base = CharacteristicExtractDefaults<false>;
-  using evolved_swsh_tags = tmpl::append<cce_base::evolved_swsh_tags,
-                                         tmpl::list<Cce::Tags::KleinGordonPsi>>;
+struct test_metavariables
+    : CharacteristicExtractDefaults<Cce::KleinGordonSystem<false>> {
+  using cce_base = CharacteristicExtractDefaults<Cce::KleinGordonSystem<false>>;
   using evolved_swsh_dt_tags =
       tmpl::append<cce_base::evolved_swsh_dt_tags,
                    tmpl::list<Cce::Tags::KleinGordonPi>>;

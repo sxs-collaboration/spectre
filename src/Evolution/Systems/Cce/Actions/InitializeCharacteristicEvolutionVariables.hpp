@@ -44,7 +44,7 @@ CREATE_GET_TYPE_ALIAS_OR_DEFAULT(compute_tags)
  * \ref DataBoxGroup changes:
  * - Modifies: nothing
  * - Adds:
- *  - `metavariables::evolved_coordinates_variables_tag`
+ *  - `metavariables::system::evolved_coordinates_variables_tag`
  *  - `Tags::Variables<metavariables::cce_angular_coordinate_tags>`
  *  - `Tags::Variables<metavariables::cce_scri_tags>`
  *  -
@@ -84,9 +84,9 @@ struct InitializeCharacteristicEvolutionVariables {
   using angular_coordinates_variables_tag =
       ::Tags::Variables<typename Metavariables::cce_angular_coordinate_tags>;
   using coordinate_variables_tag =
-      typename Metavariables::evolved_coordinates_variables_tag;
+      typename Metavariables::system::evolved_coordinates_variables_tag;
   using evolved_swsh_variables_tag =
-      ::Tags::Variables<typename Metavariables::evolved_swsh_tags>;
+      typename Metavariables::system::evolved_swsh_tag;
   using ccm_tag = ::Tags::Variables<typename Metavariables::ccm_psi0>;
 
   using simple_tags_for_evolution = tmpl::list<

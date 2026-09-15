@@ -124,17 +124,21 @@ namespace Cce {
 
 template <bool EvolveCcm>
 struct System {
+  static constexpr bool evolve_ccm = EvolveCcm;
   static constexpr size_t volume_dim = 3;
+
+  using evolved_swsh_tag = ::Tags::Variables<tmpl::list<Cce::Tags::BondiJ>>;
+  using evolved_coordinates_variables_tag = ::Tags::Variables<
+      tmpl::conditional_t<EvolveCcm,
+                          tmpl::list<Cce::Tags::CauchyCartesianCoords,
+                                     Cce::Tags::PartiallyFlatCartesianCoords,
+                                     Cce::Tags::InertialRetardedTime>,
+                          tmpl::list<Cce::Tags::CauchyCartesianCoords,
+                                     Cce::Tags::InertialRetardedTime>>>;
+
   using variables_tag =
-      tmpl::list<::Tags::Variables<tmpl::list<Tags::BondiJ>>,
-                 ::Tags::Variables<tmpl::conditional_t<
-                     EvolveCcm,
-                     tmpl::list<Cce::Tags::CauchyCartesianCoords,
-                                Cce::Tags::PartiallyFlatCartesianCoords,
-                                Cce::Tags::InertialRetardedTime>,
-                     tmpl::list<Cce::Tags::CauchyCartesianCoords,
-                                Cce::Tags::InertialRetardedTime>>>>;
+      tmpl::list<evolved_swsh_tag, evolved_coordinates_variables_tag>;
 
   static constexpr bool has_primitive_and_conservative_vars = false;
 };
-}
+}  // namespace Cce

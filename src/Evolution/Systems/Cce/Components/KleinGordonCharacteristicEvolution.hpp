@@ -38,10 +38,10 @@ namespace Cce {
  *  - `Initialization`
  *  - `Evolve`
  * - Modified type aliases in comparison to CharacteristicEvolution:
- *  - `evolved_swsh_tags`: The spin-weighted quantities to be evolved (
- * `KleinGordonPsi` and `BondiJ`).
+ *  - `system::evolved_swsh_tag`: The spin-weighted quantities to be evolved
+ * (`KleinGordonPsi` and `BondiJ`).
  *  - `evolved_swsh_dt_tags`: The spin-weighed quantities associated that are to
- * act as the time derivative to evolve `evolved_swsh_tags` (`KleinGordonPi` and
+ * act as the time derivative to evolve `evolved_swsh_tag` (`KleinGordonPi` and
  * `BondiH`).
  * - Additional type aliases related to the scalar field:
  *  - `klein_gordon_boundary_communication_tags`:  A typelist of tags that will

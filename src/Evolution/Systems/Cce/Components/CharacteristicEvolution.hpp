@@ -61,12 +61,12 @@ struct CceEvolutionLabelTag {};
  *  - `Initialization`
  *  - `Evolve`
  * - Type aliases:
- *  - `evolved_coordinates_variables_tag`: A `Tags::Variables` with real-valued
- * tensors associated with coordinates that must be evolved.
- *  - `evolved_swsh_tags`: The spin-weighted quantities to be evolved (typically
- * `BondiJ`).
+ *  - `system::evolved_coordinates_variables_tag`: A `Tags::Variables` with
+ * real-valued tensors associated with coordinates that must be evolved.
+ *  - `system::evolved_swsh_tag`: The spin-weighted quantities to be evolved
+ * (typically `BondiJ`).
  *  - `evolved_swsh_dt_tags`: The spin-weighed quantities associated that are to
- * act as the time derivative to evolve `evolved_swsh_tags` (typically
+ * act as the time derivative to evolve `evolved_swsh_tag` (typically
  * `BondiH`).
  *  - `cce_boundary_communication_tags`: A typelist of tags that will be
  * communicated between the worldtube boundary component and the extraction

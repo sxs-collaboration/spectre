@@ -3,20 +3,29 @@
 
 #pragma once
 
-#include <cmath>
-#include <optional>
 #include <pup.h>
 
 #include "Options/String.hpp"
 #include "Time/History.hpp"
-#include "Time/SlabRoundingError.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"
-#include "Time/Tags/HistoryEvolvedVariables.hpp"
 #include "Time/TimeStepRequest.hpp"
 #include "Utilities/Serialization/CharmPupable.hpp"
 #include "Utilities/TMPL.hpp"
+#include "Utilities/TypeTraits/IsA.hpp"
+
+/// \cond
+namespace Tags {
+template <typename Tag>
+struct HistoryEvolvedVariables;
+}  // namespace Tags
+/// \endcond
 
 namespace StepChoosers {
+namespace PreventRapidIncrease_detail {
+template <typename T>
+bool limit_from_history(const TimeSteppers::ConstUntypedHistory<T>& history,
+                        double last_step);
+}  // namespace PreventRapidIncrease_detail
 /// Limits the time step to prevent multistep integrator instabilities.
 ///
 /// Avoids instabilities due to rapid increases in the step size by
@@ -24,9 +33,18 @@ namespace StepChoosers {
 /// time-stepper history increased.  If there have been recent step
 /// size increases, the new size bound is the size of the most recent
 /// step, otherwise no restriction is imposed.
-template <typename VariablesTag>
-class PreventRapidIncrease : public StepChooser<StepChooserUse::Slab>,
-                             public StepChooser<StepChooserUse::LtsStep> {
+/// @{
+template <typename System,
+          typename = tmpl::conditional_t<
+              tt::is_a_v<tmpl::list, typename System::variables_tag>,
+              typename System::variables_tag,
+              tmpl::list<typename System::variables_tag>>>
+class PreventRapidIncrease;
+
+template <typename System, typename... VariablesTags>
+class PreventRapidIncrease<System, tmpl::list<VariablesTags...>>
+    : public StepChooser<StepChooserUse::Slab>,
+      public StepChooser<StepChooserUse::LtsStep> {
  public:
   /// \cond
   PreventRapidIncrease() = default;
@@ -40,33 +58,17 @@ class PreventRapidIncrease : public StepChooser<StepChooserUse::Slab>,
   using options = tmpl::list<>;
 
   using argument_tags =
-      tmpl::list<::Tags::HistoryEvolvedVariables<VariablesTag>>;
+      tmpl::list<::Tags::HistoryEvolvedVariables<VariablesTags>...>;
 
   TimeStepRequest operator()(
-      const ::TimeSteppers::History<typename VariablesTag::type>& history,
+      const ::TimeSteppers::History<typename VariablesTags::type>&... histories,
       const double last_step) const {
-    if (history.size() < 2) {
+    if ((... or PreventRapidIncrease_detail::limit_from_history(
+                    histories.untyped(), last_step))) {
+      return {.size = last_step};
+    } else {
       return {};
     }
-
-    const double sloppiness =
-        slab_rounding_error(history.front().time_step_id.step_time());
-    std::optional<Time> previous_time{};
-    double newer_step = abs(last_step);
-    for (auto record = history.rbegin(); record != history.rend(); ++record) {
-      const Time time = record->time_step_id.step_time();
-      if (previous_time.has_value()) {
-        const double this_step = abs(*previous_time - time).value();
-        // Potential roundoff error comes from the inability to make
-        // slabs exactly the same length.
-        if (this_step < newer_step - sloppiness) {
-          return {.size = last_step};
-        }
-        newer_step = this_step;
-      }
-      previous_time.emplace(time);
-    }
-    return {};
   }
 
   bool uses_local_data() const override { return false; }
@@ -78,9 +80,12 @@ class PreventRapidIncrease : public StepChooser<StepChooserUse::Slab>,
     StepChooser<StepChooserUse::LtsStep>::pup(p);
   }
 };
+/// @}
 
 /// \cond
-template <typename VariablesTag>
-PUP::able::PUP_ID PreventRapidIncrease<VariablesTag>::my_PUP_ID = 0;  // NOLINT
+template <typename System, typename... VariablesTags>
+PUP::able::PUP_ID PreventRapidIncrease<
+    System, tmpl::list<VariablesTags...>>::my_PUP_ID =  // NOLINT
+    0;
 /// \endcond
 }  // namespace StepChoosers

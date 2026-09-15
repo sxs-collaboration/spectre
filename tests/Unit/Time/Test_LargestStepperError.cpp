@@ -50,4 +50,13 @@ SPECTRE_TEST_CASE("Unit.Time.LargestStepperError", "[Unit][Time]") {
     CHECK(largest_stepper_error(values, errors, mostly_rel) ==
           approx(largest_stepper_error(values[1], errors[1], mostly_rel)));
   }
+
+  {
+    const DataVector values{};
+    const DataVector errors{};
+    const StepperErrorTolerances mostly_abs{.absolute = 2.0, .relative = 0.1};
+    const StepperErrorTolerances mostly_rel{.absolute = 0.1, .relative = 2.0};
+    CHECK(largest_stepper_error(values, errors, mostly_abs) == 0.0);
+    CHECK(largest_stepper_error(values, errors, mostly_rel) == 0.0);
+  }
 }

@@ -45,41 +45,44 @@ struct EvolvedVar2 : db::SimpleTag {
   using type = tnsr::i<DataVector, 2>;
 };
 
-using EvolvedVariablesTag =
-    Tags::Variables<tmpl::list<EvolvedVar1, EvolvedVar2>>;
-
-struct ErrorControlSelecter {
-  static std::string name() { return "SelectorLabel"; }
+struct OneVarSystem {
+  using variables_tag = Tags::Variables<tmpl::list<EvolvedVar1, EvolvedVar2>>;
 };
 
+struct SplitVarSystem {
+  using variables_tag = tmpl::list<Tags::Variables<tmpl::list<EvolvedVar1>>,
+                                   Tags::Variables<tmpl::list<EvolvedVar2>>>;
+};
+
+template <typename System>
 struct Metavariables {
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
-    using factory_classes = tmpl::map<
-        tmpl::pair<StepChooser<StepChooserUse::LtsStep>,
-                   tmpl::list<StepChoosers::ErrorControl<
-                       StepChooserUse::LtsStep, EvolvedVariablesTag>>>,
-        tmpl::pair<StepChooser<StepChooserUse::Slab>,
-                   tmpl::list<StepChoosers::ErrorControl<
-                       StepChooserUse::Slab, EvolvedVariablesTag>>>>;
+    using factory_classes =
+        tmpl::map<tmpl::pair<StepChooser<StepChooserUse::LtsStep>,
+                             tmpl::list<StepChoosers::ErrorControl<
+                                 StepChooserUse::LtsStep, System>>>,
+                  tmpl::pair<StepChooser<StepChooserUse::Slab>,
+                             tmpl::list<StepChoosers::ErrorControl<
+                                 StepChooserUse::Slab, System>>>>;
   };
 };
 
 template <typename StepChooserUse>
 std::optional<double> get_suggestion(
-    const StepChoosers::ErrorControl<StepChooserUse, EvolvedVariablesTag>&
+    const StepChoosers::ErrorControl<StepChooserUse, OneVarSystem>&
         error_control,
     const std::optional<StepperErrorEstimate>& error,
     const std::optional<StepperErrorEstimate>& previous_error,
     const double previous_step) {
-  auto box = db::create<
-      db::AddSimpleTags<Parallel::Tags::MetavariablesImpl<Metavariables>,
-                        Tags::StepperErrors<EvolvedVariablesTag>>>(
-      Metavariables{}, std::array{previous_error, error});
+  auto box = db::create<db::AddSimpleTags<
+      Parallel::Tags::MetavariablesImpl<Metavariables<OneVarSystem>>,
+      Tags::StepperErrors<OneVarSystem::variables_tag>>>(
+      Metavariables<OneVarSystem>{}, std::array{previous_error, error});
 
   const std::unique_ptr<StepChooser<StepChooserUse>> error_control_base =
       std::make_unique<
-          StepChoosers::ErrorControl<StepChooserUse, EvolvedVariablesTag>>(
+          StepChoosers::ErrorControl<StepChooserUse, OneVarSystem>>(
           error_control);
 
   const auto result =
@@ -94,9 +97,62 @@ std::optional<double> get_suggestion(
 }
 
 template <typename StepChooserUse>
+TimeStepRequest get_two_vars_suggestion(
+    const StepChoosers::ErrorControl<StepChooserUse, SplitVarSystem>&
+        error_control,
+    const std::array<std::optional<StepperErrorEstimate>, 2>& first_errors,
+    const std::array<std::optional<StepperErrorEstimate>, 2>& second_errors,
+    const double previous_step) {
+  auto box = db::create<db::AddSimpleTags<
+      Parallel::Tags::MetavariablesImpl<Metavariables<SplitVarSystem>>,
+      Tags::StepperErrors<tmpl::front<SplitVarSystem::variables_tag>>,
+      Tags::StepperErrors<tmpl::back<SplitVarSystem::variables_tag>>>>(
+      Metavariables<SplitVarSystem>{}, first_errors, second_errors);
+
+  const std::unique_ptr<StepChooser<StepChooserUse>> error_control_base =
+      std::make_unique<
+          StepChoosers::ErrorControl<StepChooserUse, SplitVarSystem>>(
+          error_control);
+
+  const auto result = error_control(first_errors, second_errors, previous_step);
+  CHECK(error_control_base->desired_step(previous_step, box) == result);
+  CHECK(serialize_and_deserialize(error_control)(first_errors, second_errors,
+                                                 previous_step) == result);
+  CHECK(serialize_and_deserialize(error_control_base)
+            ->desired_step(previous_step, box) == result);
+  return result;
+}
+
+template <typename StepChooserUse>
+std::optional<double> get_suggestion(
+    const StepChoosers::ErrorControl<StepChooserUse, SplitVarSystem>&
+        error_control,
+    const std::optional<StepperErrorEstimate>& error,
+    const std::optional<StepperErrorEstimate>& previous_error,
+    const double previous_step) {
+  const std::array test_errors{previous_error, error};
+  const std::array<std::optional<StepperErrorEstimate>, 2> no_errors{};
+
+  const auto result = get_two_vars_suggestion(error_control, test_errors,
+                                              no_errors, previous_step);
+  CHECK(result == TimeStepRequest{.size_goal = result.size_goal});
+  CHECK(get_two_vars_suggestion(error_control, no_errors, test_errors,
+                                previous_step) == result);
+  if (error.has_value()) {
+    auto smaller_errors = test_errors;
+    *gsl::at(smaller_errors[1]->errors, smaller_errors[1]->order) *= 0.8;
+    CHECK(get_two_vars_suggestion(error_control, test_errors, smaller_errors,
+                                  previous_step) == result);
+    // NOLINTNEXTLINE(readability-suspicious-call-argument)
+    CHECK(get_two_vars_suggestion(error_control, smaller_errors, test_errors,
+                                  previous_step) == result);
+  }
+  return result.size_goal;
+}
+
+template <typename StepChooserUse, typename System>
 void test_chooser() {
-  using ErrorControl =
-      StepChoosers::ErrorControl<StepChooserUse, EvolvedVariablesTag>;
+  using ErrorControl = StepChoosers::ErrorControl<StepChooserUse, System>;
 
   const std::vector<size_t> stepper_orders{2_st, 5_st};
   for (const bool time_runs_forward : {true, false}) {
@@ -123,11 +179,30 @@ void test_chooser() {
       {
         INFO("Test successful step");
         const ErrorControl error_control{5.0e-4, 1.0e-3, 2.0, 0.5, 0.95};
-        CHECK(error_control.tolerances().at(typeid(EvolvedVariablesTag)) ==
+        if constexpr (std::is_same_v<System, OneVarSystem>) {
+          CHECK(
+              error_control.tolerances().at(
+                  typeid(OneVarSystem::variables_tag)) ==
               StepperErrorTolerances{
                   .estimates = StepperErrorTolerances::Estimates::StepperOrder,
                   .absolute = 5.0e-4,
                   .relative = 1.0e-3});
+        } else {
+          CHECK(
+              error_control.tolerances().at(
+                  typeid(tmpl::front<SplitVarSystem::variables_tag>)) ==
+              StepperErrorTolerances{
+                  .estimates = StepperErrorTolerances::Estimates::StepperOrder,
+                  .absolute = 5.0e-4,
+                  .relative = 1.0e-3});
+          CHECK(
+              error_control.tolerances().at(
+                  typeid(tmpl::back<SplitVarSystem::variables_tag>)) ==
+              StepperErrorTolerances{
+                  .estimates = StepperErrorTolerances::Estimates::StepperOrder,
+                  .absolute = 5.0e-4,
+                  .relative = 1.0e-3});
+        }
         const auto first_result = get_suggestion(
             error_control, {step_errors(0.0, 0.3)}, {}, unit_step);
         REQUIRE(first_result.has_value());
@@ -192,33 +267,24 @@ void test_chooser() {
   // test option creation
   TestHelpers::test_factory_creation<
       StepChooser<StepChooserUse>,
-      StepChoosers::ErrorControl<StepChooserUse, EvolvedVariablesTag>>(
+      StepChoosers::ErrorControl<StepChooserUse, System>>(
       "ErrorControl:\n"
       "  SafetyFactor: 0.95\n"
       "  AbsoluteTolerance: 1.0e-5\n"
       "  RelativeTolerance: 1.0e-4\n"
       "  MaxFactor: 2.1\n"
       "  MinFactor: 0.5");
-  TestHelpers::test_factory_creation<
-      StepChooser<StepChooserUse>,
-      StepChoosers::ErrorControl<StepChooserUse, EvolvedVariablesTag,
-                                 ErrorControlSelecter>>(
-      "ErrorControl(SelectorLabel):\n"
-      "  SafetyFactor: 0.95\n"
-      "  AbsoluteTolerance: 1.0e-5\n"
-      "  RelativeTolerance: 1.0e-4\n"
-      "  MaxFactor: 2.1\n"
-      "  MinFactor: 0.5");
 
-  CHECK(StepChoosers::ErrorControl<StepChooserUse, EvolvedVariablesTag,
-                                   ErrorControlSelecter>{}
-            .uses_local_data());
+  CHECK(StepChoosers::ErrorControl<StepChooserUse, System>{}.uses_local_data());
 }
 
 SPECTRE_TEST_CASE("Unit.Time.StepChoosers.ErrorControl", "[Unit][Time]") {
-  register_factory_classes_with_charm<Metavariables>();
+  register_factory_classes_with_charm<Metavariables<OneVarSystem>>();
+  register_factory_classes_with_charm<Metavariables<SplitVarSystem>>();
 
-  test_chooser<StepChooserUse::Slab>();
-  test_chooser<StepChooserUse::LtsStep>();
+  test_chooser<StepChooserUse::Slab, OneVarSystem>();
+  test_chooser<StepChooserUse::LtsStep, OneVarSystem>();
+  test_chooser<StepChooserUse::Slab, SplitVarSystem>();
+  test_chooser<StepChooserUse::LtsStep, SplitVarSystem>();
 }
 }  // namespace

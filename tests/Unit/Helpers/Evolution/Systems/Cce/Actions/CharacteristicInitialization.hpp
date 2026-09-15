@@ -36,13 +36,13 @@ void check_characteristic_initialization(
   const auto& coordinates_history = ActionTesting::get_databox_tag<
       EvolutionComponent,
       ::Tags::HistoryEvolvedVariables<
-          typename Metavariables::evolved_coordinates_variables_tag>>(runner,
-                                                                      0);
+          typename Metavariables::system::evolved_coordinates_variables_tag>>(
+      runner, 0);
   CHECK(coordinates_history.size() == 0);
   const auto& evolved_swsh_history = ActionTesting::get_databox_tag<
-      EvolutionComponent, ::Tags::HistoryEvolvedVariables<::Tags::Variables<
-                              typename Metavariables::evolved_swsh_tags>>>(
-      runner, 0);
+      EvolutionComponent,
+      ::Tags::HistoryEvolvedVariables<
+          typename Metavariables::system::evolved_swsh_tag>>(runner, 0);
   CHECK(evolved_swsh_history.size() == 0);
 
   // the tensor storage variables inserted during the `CharacteristicTags` step
@@ -57,13 +57,14 @@ void check_characteristic_initialization(
 
   const auto& coordinate_variables = ActionTesting::get_databox_tag<
       EvolutionComponent,
-      typename Metavariables::evolved_coordinates_variables_tag>(runner, 0);
+      typename Metavariables::system::evolved_coordinates_variables_tag>(runner,
+                                                                         0);
   CHECK(coordinate_variables.number_of_grid_points() ==
         Spectral::Swsh::number_of_swsh_collocation_points(l_max));
 
   const auto& dt_coordinate_variables = ActionTesting::get_databox_tag<
       EvolutionComponent,
-      db::add_tag_prefix<::Tags::dt, typename Metavariables::
+      db::add_tag_prefix<::Tags::dt, typename Metavariables::system::
                                          evolved_coordinates_variables_tag>>(
       runner, 0);
   CHECK(dt_coordinate_variables.number_of_grid_points() ==
@@ -93,8 +94,8 @@ void check_characteristic_initialization(
             number_of_radial_points);
 
   const auto& evolved_swsh_variables = ActionTesting::get_databox_tag<
-      EvolutionComponent,
-      ::Tags::Variables<typename Metavariables::evolved_swsh_tags>>(runner, 0);
+      EvolutionComponent, typename Metavariables::system::evolved_swsh_tag>(
+      runner, 0);
   CHECK(evolved_swsh_variables.number_of_grid_points() ==
         Spectral::Swsh::number_of_swsh_collocation_points(l_max) *
             number_of_radial_points);

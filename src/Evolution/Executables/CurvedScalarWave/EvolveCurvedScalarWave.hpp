@@ -109,7 +109,6 @@
 #include "Time/ChangeTimeStepperOrder.hpp"
 #include "Time/CleanHistory.hpp"
 #include "Time/RecordTimeStepperData.hpp"
-#include "Time/StepChoosers/ByBlock.hpp"
 #include "Time/StepChoosers/Factory.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"
 #include "Time/Tags/Time.hpp"
@@ -234,13 +233,11 @@ struct EvolutionMetavars {
                    MathFunctions::all_math_functions<1, Frame::Inertial>>,
         tmpl::pair<PhaseChange, PhaseControl::factory_creatable_classes>,
         tmpl::pair<StepChooser<StepChooserUse::LtsStep>,
-                   tmpl::push_back<StepChoosers::standard_step_choosers<system>,
-                                   StepChoosers::ByBlock<volume_dim>>>,
+                   StepChoosers::standard_step_choosers<system>>,
         tmpl::pair<StepChooser<StepChooserUse::Slab>,
                    tmpl::push_back<
                        StepChoosers::standard_slab_choosers<system>,
-                       evolution::dg::StepChoosers::FixedLtsRatio<volume_dim>,
-                       StepChoosers::ByBlock<volume_dim>>>,
+                       evolution::dg::StepChoosers::FixedLtsRatio<volume_dim>>>,
         tmpl::pair<TimeSequence<double>,
                    TimeSequences::all_time_sequences<double>>,
         tmpl::pair<TimeSequence<std::uint64_t>,

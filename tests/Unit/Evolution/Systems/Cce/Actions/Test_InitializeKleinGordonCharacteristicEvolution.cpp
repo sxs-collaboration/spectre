@@ -59,10 +59,9 @@ struct mock_klein_gordon_characteristic_evolution {
                  Parallel::PhaseActions<Parallel::Phase::Evolve, tmpl::list<>>>;
 };
 
-struct metavariables : CharacteristicExtractDefaults<false> {
-  using cce_base = CharacteristicExtractDefaults<false>;
-  using evolved_swsh_tags = tmpl::append<cce_base::evolved_swsh_tags,
-                                         tmpl::list<Cce::Tags::KleinGordonPsi>>;
+struct metavariables
+    : CharacteristicExtractDefaults<Cce::KleinGordonSystem<false>> {
+  using cce_base = CharacteristicExtractDefaults<Cce::KleinGordonSystem<false>>;
   using evolved_swsh_dt_tags =
       tmpl::append<cce_base::evolved_swsh_dt_tags,
                    tmpl::list<Cce::Tags::KleinGordonPi>>;
