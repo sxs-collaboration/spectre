@@ -391,6 +391,8 @@ To build with the Docker image:
   * If you want to use Docker within VSCode, take a look at our
     [quick start guide](../DevGuide/QuickStartDockerVSCode.md) for using Docker
     with VSCode.
+  * The `agents` image adds coding agents and the tools they use. You can use
+    it as a complete development environment.
 
 ## Using Singularity to obtain a SpECTRE environment
 
@@ -448,6 +450,13 @@ To build SpECTRE with Singularity you must:
 - Since the data you modify lives on the host OS there is no need to worry about
   losing any data, needing to clean up old containers, or sharing data between
   containers and the host.
+- To use the coding-agents image (see the Docker section above), build
+  `containers/CodingAgents.def`. It pulls the image and installs the latest
+  coding agents on top, so rebuild it whenever they release a new version:
+  ```
+  apptainer build --fakeroot SpectreAi.sif containers/CodingAgents.def
+  ```
+  See the definition file for how to bind a scratch directory to `/tmp`.
 
 ## Using Spack to set up a SpECTRE environment
 

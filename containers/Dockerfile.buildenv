@@ -42,7 +42,7 @@
 #   -t sxscollaboration/spectre:dev1804
 #   --build-arg UBUNTU_VERSION=18.04
 #
-# Docker must be run as root on your machine. There are 4 different images in
+# Docker must be run as root on your machine. There are several images in
 # this Dockerfile, but you can ignore the 'deploy_static_execs_and_libs' since
 # it's only used in CI. Here is how to build them for x86_64 (for Apple Silicon,
 # replace linux/amd64 with linux/arm64):
@@ -77,6 +77,12 @@
 #   #   https://docs.docker.com/build/building/multi-platform/#getting-started
 #
 #   docker buildx build --target dev -t sxscollaboration/spectre:dev \
+#                 --platform linux/amd64,linux/arm64 \
+#                 -f ./containers/Dockerfile.buildenv --push .
+#
+# 2. `agents` Adds coding agents and the tools they use on top of `dev`.
+#
+#   docker buildx build --target agents -t sxscollaboration/spectre:agents \
 #                 --platform linux/amd64,linux/arm64 \
 #                 -f ./containers/Dockerfile.buildenv --push .
 #
@@ -351,10 +357,12 @@ RUN /work/cmake --version \
 FROM base AS base-amd64
 ENV CHARM_ARCH=x86_64
 ENV TEX_ARCH=x86_64
+ENV CUDA_ARCH=x86_64
 
 FROM base AS base-arm64
 ENV CHARM_ARCH=arm8
 ENV TEX_ARCH=aarch64
+ENV CUDA_ARCH=sbsa
 
 FROM base-${TARGETARCH} AS dev
 ARG TARGETARCH
@@ -488,6 +496,102 @@ RUN apt-get -y clean
 
 WORKDIR /work
 
+
+# Development container with coding agents (Claude Code, Codex, Copilot) and the
+# tools they use, so agents can develop, build and run SpECTRE and SpEC in one
+# image.
+FROM dev AS agents
+ARG TARGETARCH
+ARG UBUNTU_VERSION=26.04
+ARG PARALLEL_MAKE_ARG=-j4
+ARG DEBIAN_FRONTEND=noninteractive
+ARG CUDA_VERSION=13.3
+ARG KOKKOS_VERSION=5.2.1
+ARG PETSC_VERSION=3.25.5
+
+# Disable OpenBLAS threading
+ENV OPENBLAS_NUM_THREADS=1
+
+# Install basic tools
+# - clangd and common debugging and profiling tools on top of the `dev` image.
+# - Bubblewrap is the sandbox backend of Codex on Linux.
+RUN apt-get update -y \
+    && apt-get install -y --no-install-recommends \
+        less git procps man-db unzip gnupg2 curl ca-certificates gh \
+        iputils-ping netcat-openbsd lynx dnsutils aggregate jq nano vim \
+        emacs-nox tmux screen time inotify-tools psmisc lsof rsync strace \
+        hwloc pciutils ripgrep valgrind heaptrack elfutils numactl bc \
+        libgoogle-perftools4 bubblewrap clangd lldb \
+    && apt-get -y clean
+
+# CUDA compiler and Kokkos' nvcc_wrapper to build SpECTRE with Kokkos + CUDA,
+# matching the CI build. Kokkos itself is not installed because it has to be
+# compiled for the GPU architecture it runs on. SpECTRE fetches and builds it
+# when configured with SPECTRE_KOKKOS=ON and SPECTRE_FETCH_MISSING_DEPS=ON.
+RUN CUDA_REPOS=https://developer.download.nvidia.com/compute/cuda/repos \
+    && UBUNTU_REPO=ubuntu$(echo ${UBUNTU_VERSION} | tr -d .) \
+    && wget ${CUDA_REPOS}/${UBUNTU_REPO}/${CUDA_ARCH}/cuda-keyring_1.1-1_all.deb \
+    && dpkg -i cuda-keyring_1.1-1_all.deb \
+    && rm cuda-keyring_1.1-1_all.deb \
+    && apt-get update -y \
+    && apt-get install -y cuda-nvcc-$(echo ${CUDA_VERSION} | tr . -) \
+    && apt-get -y clean \
+    && KOKKOS_RELEASES=https://github.com/kokkos/kokkos/releases/download \
+    && wget -O kokkos.tar.gz \
+        ${KOKKOS_RELEASES}/${KOKKOS_VERSION}/kokkos-${KOKKOS_VERSION}.tar.gz \
+    && tar -xzf kokkos.tar.gz kokkos-${KOKKOS_VERSION}/bin/nvcc_wrapper \
+    && mv kokkos-${KOKKOS_VERSION}/bin/nvcc_wrapper /usr/local/bin/ \
+    && rm -r kokkos.tar.gz kokkos-${KOKKOS_VERSION}
+ENV CUDA_HOME="/usr/local/cuda-${CUDA_VERSION}"
+ENV PATH="${CUDA_HOME}/bin:${PATH}"
+
+# MPI and PETSc for SpEC
+RUN apt-get update -y \
+    && apt-get install -y libopenmpi-dev git-annex bear \
+    && apt-get -y clean \
+    && wget https://web.cels.anl.gov/projects/petsc/download/release-snapshots/petsc-${PETSC_VERSION}.tar.gz \
+    && tar -xzf petsc-${PETSC_VERSION}.tar.gz \
+    && cd petsc-${PETSC_VERSION} \
+    && python ./configure --prefix=/usr/local --with-mpi-dir=/usr \
+        --enable-debug=0 --COPTFLAGS=-O3 --CXXOPTFLAGS=-O3 --FOPTFLAGS=-O3 \
+        --with-hdf5=0 --download-hdf5=0 \
+    && make MAKE_NP=4 \
+    && make install \
+    && ldconfig \
+    && cd .. && rm -r petsc-${PETSC_VERSION} petsc-${PETSC_VERSION}.tar.gz
+
+# ParaView with Python, as in the `demo` image. Append it to the PATH so the
+# bundled Python doesn't shadow the container's Python.
+RUN if [ "$TARGETARCH" != "arm64" ] ; then \
+        wget -O paraview.tar.gz --no-check-certificate "https://www.paraview.org/paraview-downloads/download.php?submit=Download&version=v5.10&type=binary&os=Linux&downloadFile=ParaView-5.10.1-osmesa-MPI-Linux-Python3.9-x86_64.tar.gz" \
+        && tar -xzf paraview.tar.gz \
+        && rm paraview.tar.gz \
+        && mv ParaView-* /opt/paraview; \
+    fi
+ENV PATH="${PATH}:/opt/paraview/bin"
+
+# Install coding agents
+RUN curl -fsSL https://deb.nodesource.com/setup_24.x | bash - \
+    && apt-get install -y --no-install-recommends nodejs \
+    && apt-get -y clean \
+    && npm install -g @anthropic-ai/claude-code @openai/codex @github/copilot
+
+# Install pyright to help coding agents understand Python code better
+RUN python -m pip --no-cache-dir install pyright
+# Install a wrapper that installs the clangd and pyright plugins for Claude Code
+# before launching it
+COPY --chmod=755 <<'EOF' /usr/local/bin/claude
+#!/bin/bash
+if ! /usr/bin/claude plugin list 2>/dev/null | grep -q "clangd-lsp"; then
+    /usr/bin/claude plugin marketplace update claude-plugins-official || true
+    /usr/bin/claude plugin install clangd-lsp@claude-plugins-official || true
+fi
+if ! /usr/bin/claude plugin list 2>/dev/null | grep -q "pyright"; then
+    /usr/bin/claude plugin marketplace update claude-plugins-official || true
+    /usr/bin/claude plugin install pyright-lsp@claude-plugins-official || true
+fi
+exec env ENABLE_LSP_TOOL=1 /usr/bin/claude "$@"
+EOF
 
 # Deploy compiled executables to an image that can be run on HPC systems.
 # - We could also compile in the dev container and then copy the executables to
