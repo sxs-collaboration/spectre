@@ -90,8 +90,9 @@ void test_projection_matrix() {
           }
           DataVector ghost_cell_centered_values(ghost_points, 0.0);
           auto ghost_projection_mat = make_array<Dim>(std::cref(empty));
-          ghost_projection_mat[0] = std::cref(projection_matrix(
-              dg_mesh, subcell_mesh.extents(0), ghost_points, side));
+          ghost_projection_mat[0] = std::cref(
+              projection_matrix(dg_mesh, subcell_mesh.extents(0), ghost_points,
+                                side, Spectral::Parity::Uninitialized));
           apply_matrices(make_not_null(&ghost_cell_centered_values),
                          ghost_projection_mat, nodal_coeffs, dg_mesh.extents());
           CHECK_ITERABLE_APPROX(ghost_cell_centered_values,
@@ -105,19 +106,19 @@ void test_projection_matrix() {
     CHECK_THROWS_WITH(
         projection_matrix(Mesh<1>{3, Spectral::Basis::Legendre,
                                   Spectral::Quadrature::GaussLobatto},
-                          5, 1, Side::Lower),
+                          5, 1, Side::Lower, Spectral::Parity::Uninitialized),
         Catch::Matchers::ContainsSubstring("ghost_zone_size must be"));
     CHECK_THROWS_WITH(
         projection_matrix(Mesh<1>{3, Spectral::Basis::Legendre,
                                   Spectral::Quadrature::GaussLobatto},
-                          5, 6, Side::Lower),
+                          5, 6, Side::Lower, Spectral::Parity::Uninitialized),
         Catch::Matchers::ContainsSubstring("ghost_zone_size must be"));
     CHECK_THROWS_WITH(
         projection_matrix(Mesh<1>{3, Spectral::Basis::Chebyshev,
                                   Spectral::Quadrature::GaussLobatto},
-                          5, 1, Side::Lower),
+                          5, 1, Side::Lower, Spectral::Parity::Uninitialized),
         Catch::Matchers::ContainsSubstring(
-            "FD Subcell projection only supports Legendre basis"));
+            "only supports Legendre or ZernikeB1"));
   }
 #endif
 }
@@ -491,6 +492,63 @@ void test_zernike_b1_projection_matrix() {
   }
 }
 
+// The ghost zone projection matrix is used when a neighbor sends DG volume
+// data and we project it directly onto our ghost zones. It must agree with the
+// rows of the full projection matrix that correspond to those ghost zone
+// cells
+void test_zernike_b1_ghost_zone_projection_matrix() {
+  constexpr Spectral::Basis basis = Spectral::Basis::ZernikeB1;
+  constexpr Spectral::Quadrature quadrature =
+      Spectral::Quadrature::GaussRadauUpper;
+  const Approx custom_approx = Approx::custom().epsilon(1.0e-12).scale(1.);
+
+  for (size_t n_dg = 3_st; n_dg <= 6; ++n_dg) {
+    CAPTURE(n_dg);
+    const Mesh<1> dg_mesh{n_dg, basis, quadrature};
+    const size_t n_fd = 2 * n_dg - 1;
+    for (const auto parity : {Spectral::Parity::Even, Spectral::Parity::Odd}) {
+      CAPTURE(parity);
+      const Matrix& full_matrix = projection_matrix(
+          dg_mesh, n_fd, Spectral::Quadrature::CellCentered, parity);
+      for (size_t ghost_zone_size = 2; ghost_zone_size <= 5;
+           ++ghost_zone_size) {
+        CAPTURE(ghost_zone_size);
+        for (const auto side : {Side::Lower, Side::Upper}) {
+          CAPTURE(side);
+          const Matrix& ghost_matrix =
+              projection_matrix(dg_mesh, n_fd, ghost_zone_size, side, parity);
+          REQUIRE(ghost_matrix.rows() == ghost_zone_size);
+          REQUIRE(ghost_matrix.columns() == n_dg);
+          const size_t first_row =
+              side == Side::Lower ? 0 : n_fd - ghost_zone_size;
+          for (size_t i = 0; i < ghost_zone_size; ++i) {
+            for (size_t j = 0; j < n_dg; ++j) {
+              CHECK(ghost_matrix(i, j) ==
+                    custom_approx(full_matrix(first_row + i, j)));
+            }
+          }
+        }
+      }
+    }
+  }
+
+  // The even- and odd-parity matrices must actually differ, otherwise the
+  // parity-split projection in `insert_or_update_neighbor_volume_data` would
+  // be pointless and a test that mixed up the parities would still pass
+  const Mesh<1> dg_mesh{5, basis, quadrature};
+  CHECK(
+      projection_matrix(dg_mesh, 9, 3_st, Side::Upper,
+                        Spectral::Parity::Even) !=
+      projection_matrix(dg_mesh, 9, 3_st, Side::Upper, Spectral::Parity::Odd));
+
+#ifdef SPECTRE_DEBUG
+  CHECK_THROWS_WITH(projection_matrix(dg_mesh, 9, 3_st, Side::Upper,
+                                      Spectral::Parity::Uninitialized),
+                    Catch::Matchers::ContainsSubstring(
+                        "Parity must be set when using ZernikeB1"));
+#endif
+}
+
 void test_zernike_b1_reconstruction_matrix() {
   constexpr Spectral::Basis basis = Spectral::Basis::ZernikeB1;
   constexpr Spectral::Quadrature quadrature =
@@ -613,6 +671,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Subcell.Fd.ProjectionMatrix",
   test_cartoon_mixed_matrices<10, Spectral::Quadrature::GaussLobatto>();
   test_cartoon_mixed_matrices<10, Spectral::Quadrature::Gauss>();
   test_zernike_b1_projection_matrix();
+  test_zernike_b1_ghost_zone_projection_matrix();
 }
 
 // [[TimeOut, 10]]

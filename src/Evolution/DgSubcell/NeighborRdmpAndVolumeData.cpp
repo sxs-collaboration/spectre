@@ -42,8 +42,7 @@ void project_zernike_b1_ghost_data(
     const Mesh<3>& subcell_mesh, const size_t number_of_ghost_zones,
     const Direction<3>& direction, const gsl::span<const size_t> parity_list,
     const size_t num_even, const size_t num_odd) {
-  ASSERT(neighbor_mesh.basis(0) == Spectral::Basis::ZernikeB1 and
-             direction.dimension() != 0,
+  ASSERT(neighbor_mesh.basis(0) == Spectral::Basis::ZernikeB1,
          "Neighbor setup is not appropriate to call ZernikeB1-specific "
          "projection, got neighbor mesh = "
              << neighbor_mesh << ", direction = " << direction);
@@ -61,17 +60,13 @@ void project_zernike_b1_ghost_data(
       // NOLINTNEXTLINE(modernize-avoid-c-arrays)
       cpp20::make_unique_for_overwrite<double[]>(
           (num_even + num_odd) * (num_dg_pts + num_ghost_pts_per_var));
-  DataVector even_input{};
-  even_input.set_data_ref(&buffer[0], num_even * num_dg_pts);
-  DataVector odd_input{};
-  odd_input.set_data_ref(&buffer[num_even * num_dg_pts], num_odd * num_dg_pts);
-  DataVector even_output{};
-  even_input.set_data_ref(&buffer[(num_even + num_odd) * num_dg_pts],
-                          num_even * num_ghost_pts_per_var);
-  DataVector odd_output{};
-  odd_input.set_data_ref(&buffer[(num_even + num_odd) * num_dg_pts +
-                                 num_even * num_ghost_pts_per_var],
-                         num_odd * num_ghost_pts_per_var);
+  DataVector even_input{&buffer[0], num_even * num_dg_pts};
+  DataVector odd_input{&buffer[num_even * num_dg_pts], num_odd * num_dg_pts};
+  DataVector even_output{&buffer[(num_even + num_odd) * num_dg_pts],
+                         num_even * num_ghost_pts_per_var};
+  DataVector odd_output{&buffer[(num_even + num_odd) * num_dg_pts +
+                                num_even * num_ghost_pts_per_var],
+                        num_odd * num_ghost_pts_per_var};
 
   // Sort input components into even/odd parity buffers
   const double* p_in = neighbor_data_without_rdmp_vars.data();
@@ -103,17 +98,29 @@ void project_zernike_b1_ghost_data(
   const Matrix empty{};
   auto even_ghost_mat = make_array<3>(std::cref(empty));
   auto odd_ghost_mat = make_array<3>(std::cref(empty));
-  even_ghost_mat[0] = std::cref(fd::projection_matrix(
-      neighbor_mesh.slice_through(0), subcell_mesh.extents(0),
-      Spectral::Quadrature::CellCentered, Spectral::Parity::Even));
-  odd_ghost_mat[0] = std::cref(fd::projection_matrix(
-      neighbor_mesh.slice_through(0), subcell_mesh.extents(0),
-      Spectral::Quadrature::CellCentered, Spectral::Parity::Odd));
+  if (direction.dimension() == 0) {
+    even_ghost_mat[0] = std::cref(fd::projection_matrix(
+        neighbor_mesh.slice_through(0), subcell_mesh.extents(0),
+        number_of_ghost_zones, direction.opposite().side(),
+        Spectral::Parity::Even));
+    odd_ghost_mat[0] = std::cref(fd::projection_matrix(
+        neighbor_mesh.slice_through(0), subcell_mesh.extents(0),
+        number_of_ghost_zones, direction.opposite().side(),
+        Spectral::Parity::Odd));
+  } else {
+    even_ghost_mat[0] = std::cref(fd::projection_matrix(
+        neighbor_mesh.slice_through(0), subcell_mesh.extents(0),
+        Spectral::Quadrature::CellCentered, Spectral::Parity::Even));
+    odd_ghost_mat[0] = std::cref(fd::projection_matrix(
+        neighbor_mesh.slice_through(0), subcell_mesh.extents(0),
+        Spectral::Quadrature::CellCentered, Spectral::Parity::Odd));
+  }
   for (size_t i = 1; i < 3; ++i) {
     if (i == direction.dimension()) {
       const auto& ghost_mat = fd::projection_matrix(
           neighbor_mesh.slice_through(i), subcell_mesh.extents(i),
-          number_of_ghost_zones, direction.opposite().side());
+          number_of_ghost_zones, direction.opposite().side(),
+          Spectral::Parity::Uninitialized);
       gsl::at(even_ghost_mat, i) = std::cref(ghost_mat);
       gsl::at(odd_ghost_mat, i) = std::cref(ghost_mat);
     } else {
@@ -177,7 +184,10 @@ void insert_or_update_neighbor_volume_data_impl(
         neighbor_dg_to_fd_interpolants,
     const gsl::span<const size_t> parity_list, const size_t num_even,
     const size_t num_odd) {
-  fd::verify_subcell_mesh(neighbor_mesh, true);
+  if (neighbor_mesh.basis(0) == Spectral::Basis::FiniteDifference) {
+    // Only check if neighbor is using a FD mesh
+    fd::verify_subcell_mesh(neighbor_mesh, true);
+  }
   ASSERT(neighbor_subcell_data.size() != 0,
          "neighbor_subcell_data must be non-empty");
   const size_t end_of_volume_data =
@@ -255,10 +265,10 @@ void insert_or_update_neighbor_volume_data_impl(
           end_of_volume_data};
 
       if constexpr (Dim == 3) {
-        if (neighbor_mesh.basis(0) == Spectral::Basis::ZernikeB1 and
-            direction.dimension() != 0) {
-          // ZernikeB1 is in dimension 0 and is not the ghost direction, so
-          // we need to project even- and odd-parity components separately.
+        if (neighbor_mesh.basis(0) == Spectral::Basis::ZernikeB1) {
+          // The ZernikeB1 spectral space in dimension 0 depends on the parity
+          // of each component, so we must project the even- and odd-parity
+          // components separately.
           project_zernike_b1_ghost_data(
               make_not_null(&computed_ghost_data),
               neighbor_data_without_rdmp_vars, number_of_vars, neighbor_mesh,
@@ -275,7 +285,8 @@ void insert_or_update_neighbor_volume_data_impl(
         if (i == direction.dimension()) {
           gsl::at(ghost_projection_mat, i) = std::cref(fd::projection_matrix(
               neighbor_mesh.slice_through(i), subcell_mesh.extents(i),
-              number_of_ghost_zones, direction.opposite().side()));
+              number_of_ghost_zones, direction.opposite().side(),
+              Spectral::Parity::Uninitialized));
         } else {
           gsl::at(ghost_projection_mat, i) = std::cref(fd::projection_matrix(
               neighbor_mesh.slice_through(i), subcell_mesh.extents(i),
