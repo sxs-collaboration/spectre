@@ -41,6 +41,7 @@
 #include "Utilities/NoSuchType.hpp"
 #include "Utilities/Serialization/Serialize.hpp"
 #include "Utilities/TMPL.hpp"
+#include "Utilities/TypeTraits/IsA.hpp"
 
 namespace TestHelpers::evolution::dg {
 /// Tags for testing DG code
@@ -219,7 +220,13 @@ void test_boundary_condition_with_python_impl(
   CAPTURE(pretty_type::name<BoundaryCorrection>());
   const size_t number_of_points_on_face = face_points.product();
 
-  using variables_tag = typename System::variables_tag;
+  // For a system with a list-valued `variables_tag` (containing boundary
+  // variables), the helper tests the first entry, which holds the volume
+  // variables.
+  using variables_tag = tmpl::conditional_t<
+      tt::is_a_v<tmpl::list, typename System::variables_tag>,
+      tmpl::front<typename System::variables_tag>,
+      typename System::variables_tag>;
   using variables_tags = typename variables_tag::tags_list;
   using auxiliary_variables =
       ::evolution::dg::Actions::detail::get_auxiliary_variables_or_default_t<
@@ -599,7 +606,13 @@ void test_boundary_condition_with_python(
   static_assert(std::is_final_v<std::decay_t<BoundaryCondition>>,
                 "All boundary condition classes must be marked `final`.");
   static_assert(tt::is_a_v<tmpl::list, ExtraTagsForPythonFromDataBox>);
-  using variables_tags = typename System::variables_tag::tags_list;
+  // For a system with a list-valued `variables_tag` (containing boundary
+  // variables), the helper tests the first entry, which holds the volume
+  // variables.
+  using variables_tags = typename tmpl::conditional_t<
+      tt::is_a_v<tmpl::list, typename System::variables_tag>,
+      tmpl::front<typename System::variables_tag>,
+      typename System::variables_tag>::tags_list;
   using auxiliary_variables =
       ::evolution::dg::Actions::detail::get_auxiliary_variables_or_default_t<
           System, tmpl::list<>>;

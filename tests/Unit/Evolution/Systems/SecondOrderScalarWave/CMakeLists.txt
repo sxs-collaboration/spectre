@@ -21,6 +21,7 @@ target_link_libraries(
   PRIVATE
   DataStructures
   Domain
+  Evolution
   LinearOperators
   MathFunctions
   SecondOrderScalarWave
