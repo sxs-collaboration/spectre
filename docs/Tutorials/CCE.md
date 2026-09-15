@@ -556,6 +556,16 @@ is setting `RequireConvergence: False` to fall back to the warning above.
 Raising `MaxIterations` typically does not help: the residual tends to plateau
 rather than creep down, so the extra iterations buy nothing.
 
+`CauchySecondOrder` also requires a `DuDrJInterpolator`. The second-order match
+needs the worldtube \f$\partial_u \partial_r J\f$, which is built by
+differentiating the worldtube data in time, and it wants a *low* interpolation
+order for it (a barycentric order of 2 to 4) so that high-frequency content of
+the worldtube stays out of the initial data. That is the opposite of what the
+evolution wants for the values it interpolates every step, which is why this is
+a separate option from `H5Interpolator` rather than reusing it. It must not ask
+for a wider stencil than `H5Interpolator` does, since the derivative is taken
+inside the buffer that `H5Interpolator` sizes.
+
 After this, you'll likely see some output like
 
 ```

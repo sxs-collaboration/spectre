@@ -25,19 +25,30 @@
 
 namespace Cce::InitializeJ {
 
-CauchySecondOrder::CauchySecondOrder(const double angular_coordinate_tolerance,
-                                     const size_t max_iterations,
-                                     const bool require_convergence,
-                                     const double max_angular_solve_error,
-                                     const double max_scri_second_derivative)
+CauchySecondOrder::CauchySecondOrder(
+    const double angular_coordinate_tolerance, const size_t max_iterations,
+    const bool require_convergence, const double max_angular_solve_error,
+    const double max_scri_second_derivative,
+    std::unique_ptr<intrp::SpanInterpolator> du_dr_j_interpolator)
     : require_convergence_{require_convergence},
       angular_coordinate_tolerance_{angular_coordinate_tolerance},
       max_iterations_{max_iterations},
       max_angular_solve_error_{max_angular_solve_error},
-      max_scri_second_derivative_{max_scri_second_derivative} {}
+      max_scri_second_derivative_{max_scri_second_derivative},
+      du_dr_j_interpolator_{std::move(du_dr_j_interpolator)} {}
 
 std::unique_ptr<InitializeJ<false>> CauchySecondOrder::get_clone() const {
-  return std::make_unique<CauchySecondOrder>(*this);
+  return std::make_unique<CauchySecondOrder>(
+      angular_coordinate_tolerance_, max_iterations_, require_convergence_,
+      max_angular_solve_error_, max_scri_second_derivative_,
+      du_dr_j_interpolator());
+}
+
+std::unique_ptr<intrp::SpanInterpolator>
+CauchySecondOrder::du_dr_j_interpolator() const {
+  return du_dr_j_interpolator_ == nullptr
+             ? std::unique_ptr<intrp::SpanInterpolator>{}
+             : du_dr_j_interpolator_->get_clone();
 }
 
 void CauchySecondOrder::operator()(
@@ -242,6 +253,7 @@ void CauchySecondOrder::pup(PUP::er& p) {
   p | max_iterations_;
   p | max_angular_solve_error_;
   p | max_scri_second_derivative_;
+  p | du_dr_j_interpolator_;
 }
 
 PUP::able::PUP_ID CauchySecondOrder::my_PUP_ID = 0;  // NOLINT

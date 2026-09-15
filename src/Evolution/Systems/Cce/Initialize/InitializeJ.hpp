@@ -13,6 +13,7 @@
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Evolution/Systems/Cce/GaugeTransformBoundaryData.hpp"
 #include "Evolution/Systems/Cce/Tags.hpp"
+#include "NumericalAlgorithms/Interpolation/SpanInterpolator.hpp"
 #include "NumericalAlgorithms/SpinWeightedSphericalHarmonics/SwshCollocation.hpp"
 #include "NumericalAlgorithms/SpinWeightedSphericalHarmonics/SwshDerivatives.hpp"
 #include "NumericalAlgorithms/SpinWeightedSphericalHarmonics/SwshInterpolation.hpp"
@@ -368,6 +369,20 @@ struct InitializeJ<true> : public PUP::able {
 
   virtual std::unique_ptr<InitializeJ<true>> get_clone() const = 0;
 
+  /// \brief The interpolator this generator wants used to build the worldtube
+  /// boundary value of \f$\partial_u \partial_r J\f$, or `nullptr` to use the
+  /// evolution's `H5Interpolator`.
+  ///
+  /// \details That boundary value is consumed by the initial data alone, so a
+  /// generator is free to choose its own time-interpolation order for it
+  /// without affecting the evolution. Each call returns a fresh clone, so the
+  /// result is the caller's to keep; call it once and hold the result rather
+  /// than calling it for each property to be inspected.
+  virtual std::unique_ptr<intrp::SpanInterpolator> du_dr_j_interpolator()
+      const {
+    return nullptr;
+  }
+
   // Each derived class declares its own `return_tags` and `argument_tags` and
   // implements a non-virtual `operator()`; the dispatch below picks the
   // correct dynamic type and forwards through `db::mutate_apply`.
@@ -426,6 +441,20 @@ struct InitializeJ<false> : public PUP::able {
   WRAPPED_PUPable_abstract(InitializeJ);  // NOLINT
 
   virtual std::unique_ptr<InitializeJ<false>> get_clone() const = 0;
+
+  /// \brief The interpolator this generator wants used to build the worldtube
+  /// boundary value of \f$\partial_u \partial_r J\f$, or `nullptr` to use the
+  /// evolution's `H5Interpolator`.
+  ///
+  /// \details That boundary value is consumed by the initial data alone, so a
+  /// generator is free to choose its own time-interpolation order for it
+  /// without affecting the evolution. Each call returns a fresh clone, so the
+  /// result is the caller's to keep; call it once and hold the result rather
+  /// than calling it for each property to be inspected.
+  virtual std::unique_ptr<intrp::SpanInterpolator> du_dr_j_interpolator()
+      const {
+    return nullptr;
+  }
 
   // Each derived class declares its own `return_tags` and `argument_tags` and
   // implements a non-virtual `operator()` whose signature matches those tags.
