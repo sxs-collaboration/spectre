@@ -11,6 +11,7 @@
 #include "DataStructures/SpinWeighted.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Evolution/Systems/Cce/Initialize/InitializeJ.hpp"
+#include "NumericalAlgorithms/Interpolation/SpanInterpolator.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Serialization/CharmPupable.hpp"
 #include "Utilities/TMPL.hpp"
@@ -35,6 +36,13 @@ namespace Cce::InitializeJ {
  * any iteration of the solve, exceeds `MaxAngularSolveError`. As a further
  * safeguard, the initialization aborts if the second radial derivative of
  * \f$J\f$ at scri+ of the final solution exceeds `MaxScriSecondDerivative`.
+ *
+ * The worldtube \f$\partial_u \partial_r J\f$ that enters the H hypersurface
+ * equation is obtained by differentiating the worldtube \f$\partial_r J\f$ in
+ * time with `DuDrJInterpolator`, which this generator supplies to the worldtube
+ * data manager. It is separate from the evolution's `H5Interpolator` because
+ * the match wants a low interpolation order for that derivative while the
+ * evolution wants a high one for the values it interpolates every step.
  */
 struct CauchySecondOrder : InitializeJ<false> {
   struct AngularCoordinateTolerance {
@@ -52,7 +60,7 @@ struct CauchySecondOrder : InitializeJ<false> {
     static constexpr Options::String help = {
         "Number of linearized inversion iterations."};
     static type lower_bound() { return 10; }
-    static type upper_bound() { return 1000; }
+    static type upper_bound() { return 2000; }
     static type suggested_value() { return 300; }
   };
 
@@ -90,22 +98,39 @@ struct CauchySecondOrder : InitializeJ<false> {
     static type suggested_value() { return 1.0e-8; }
   };
 
-  using options =
-      tmpl::list<AngularCoordinateTolerance, MaxIterations, RequireConvergence,
-                 MaxAngularSolveError, MaxScriSecondDerivative>;
+  struct DuDrJInterpolator {
+    using type = std::unique_ptr<intrp::SpanInterpolator>;
+    static constexpr Options::String help = {
+        "Interpolator used to time-differentiate the worldtube Dr(J) into the "
+        "Du(Dr(J)) that this generator matches to. That boundary value feeds "
+        "the initial data alone, so this is independent of `H5Interpolator`: "
+        "the evolution wants a high interpolation order, while the "
+        "second-order match wants a low one (a barycentric order of 2 to 4), "
+        "which keeps the high-frequency content of the worldtube out of the "
+        "initial data."};
+  };
+
+  using options = tmpl::list<AngularCoordinateTolerance, MaxIterations,
+                             RequireConvergence, MaxAngularSolveError,
+                             MaxScriSecondDerivative, DuDrJInterpolator>;
   static constexpr Options::String help = {
       "Second-order initial data generator for the Cauchy CCE evolution."};
 
   WRAPPED_PUPable_decl_template(CauchySecondOrder);  // NOLINT
   explicit CauchySecondOrder(CkMigrateMessage* /*unused*/) {}
 
-  CauchySecondOrder(double angular_coordinate_tolerance, size_t max_iterations,
-                    bool require_convergence, double max_angular_solve_error,
-                    double max_scri_second_derivative);
+  CauchySecondOrder(
+      double angular_coordinate_tolerance, size_t max_iterations,
+      bool require_convergence, double max_angular_solve_error,
+      double max_scri_second_derivative,
+      std::unique_ptr<intrp::SpanInterpolator> du_dr_j_interpolator);
 
   CauchySecondOrder() = default;
 
   std::unique_ptr<InitializeJ> get_clone() const override;
+
+  std::unique_ptr<intrp::SpanInterpolator> du_dr_j_interpolator()
+      const override;
 
   // Per-class tag lists. The flexible dispatch in `InitializeJ<false>` reads
   // these via `call_with_dynamic_type` so this generator can request more
@@ -153,5 +178,6 @@ struct CauchySecondOrder : InitializeJ<false> {
       std::numeric_limits<double>::signaling_NaN();
   double max_scri_second_derivative_ =
       std::numeric_limits<double>::signaling_NaN();
+  std::unique_ptr<intrp::SpanInterpolator> du_dr_j_interpolator_;
 };
 }  // namespace Cce::InitializeJ

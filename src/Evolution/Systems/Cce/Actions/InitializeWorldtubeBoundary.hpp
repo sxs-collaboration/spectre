@@ -6,6 +6,7 @@
 #include <cstddef>
 #include <optional>
 #include <tuple>
+#include <type_traits>
 #include <utility>
 
 #include "DataStructures/DataBox/DataBox.hpp"
@@ -80,6 +81,27 @@ struct InitializeWorldtubeBoundaryBase {
         }
       }
     }
+    // Pass the initial-data generator's interpolator to the worldtube data
+    // manager, which computes the boundary value of Du<Dr<BondiJ>>.
+    if constexpr (std::is_same_v<Tags::H5WorldtubeBoundaryDataManager,
+                                 tmpl::front<ManagerTags>> and
+                  requires { Metavariables::evolve_ccm; }) {
+      using generator_tag = Tags::InitializeJ<Metavariables::evolve_ccm>;
+      if constexpr (db::tag_is_retrievable_v<generator_tag,
+                                             db::DataBox<DataBoxTagsList>>) {
+        auto du_dr_j_interpolator =
+            db::get<generator_tag>(box).du_dr_j_interpolator();
+        if (du_dr_j_interpolator != nullptr) {
+          db::mutate<Tags::H5WorldtubeBoundaryDataManager>(
+              [&du_dr_j_interpolator](const auto data_manager) {
+                (*data_manager)
+                    ->set_du_dr_j_interpolator(std::move(du_dr_j_interpolator));
+              },
+              make_not_null(&box));
+        }
+      }
+    }
+
     const size_t l_max = db::get<Tags::LMax>(box);
 
     Initialization::mutate_assign<simple_tags>(

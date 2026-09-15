@@ -3,8 +3,12 @@
 
 #include "Framework/TestingFramework.hpp"
 
+#include <complex>
 #include <cstddef>
 #include <limits>
+#include <memory>
+#include <string>
+#include <vector>
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/SpinWeighted.hpp"
@@ -27,13 +31,21 @@
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
 #include "Helpers/NumericalAlgorithms/SpinWeightedSphericalHarmonics/SwshTestHelpers.hpp"
+#include "NumericalAlgorithms/Interpolation/BarycentricRationalSpanInterpolator.hpp"
+// Required when registering all SpanInterpolator subclasses with Charm++.
+#include "NumericalAlgorithms/Interpolation/CubicSpanInterpolator.hpp"  // IWYU pragma: keep
+#include "NumericalAlgorithms/Interpolation/LinearSpanInterpolator.hpp"  // IWYU pragma: keep
+#include "NumericalAlgorithms/Interpolation/SpanInterpolator.hpp"
 #include "NumericalAlgorithms/SpinWeightedSphericalHarmonics/SwshCollocation.hpp"
 #include "NumericalAlgorithms/SpinWeightedSphericalHarmonics/SwshFiltering.hpp"
 #include "Parallel/NodeLock.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 #include "Utilities/Serialization/Serialize.hpp"
 
 namespace Cce {
+
+namespace {
 
 template <template <typename> typename BoundaryTag, typename DbTags>
 void check_boundary_and_asymptotic_j(
@@ -288,6 +300,41 @@ void test_initialize_j_no_radiation(
   }
 }
 
+// The interpolator `CauchySecondOrder` hands to the worldtube data manager for
+// the Du(Dr(J)) boundary value. These tests supply that boundary value directly
+// rather than through a manager, so it is only carried along and serialized.
+std::unique_ptr<intrp::SpanInterpolator> make_du_dr_j_interpolator() {
+  return std::make_unique<intrp::BarycentricRationalSpanInterpolator>(2_st,
+                                                                      2_st);
+}
+
+// The interpolator the generator hands to the worldtube data manager has to
+// survive the trip into the GlobalCache and back out of a checkpoint.
+void test_cauchy_second_order_interpolator_round_trip() {
+  const InitializeJ::CauchySecondOrder with_interpolator{
+      1.0e-10, 400, true, 1.0e-1, 1.0e-8, make_du_dr_j_interpolator()};
+  REQUIRE(with_interpolator.du_dr_j_interpolator() != nullptr);
+  CHECK(with_interpolator.du_dr_j_interpolator()
+            ->required_number_of_points_before_and_after() == 2);
+
+  const auto clone = with_interpolator.get_clone();
+  REQUIRE(clone->du_dr_j_interpolator() != nullptr);
+  CHECK(clone->du_dr_j_interpolator()
+            ->required_number_of_points_before_and_after() == 2);
+
+  const auto round_tripped = serialize_and_deserialize(with_interpolator);
+  REQUIRE(round_tripped.du_dr_j_interpolator() != nullptr);
+  CHECK(round_tripped.du_dr_j_interpolator()
+            ->required_number_of_points_before_and_after() == 2);
+
+  // A generator that asks for nothing leaves the manager on `H5Interpolator`.
+  const InitializeJ::CauchySecondOrder without_interpolator{
+      1.0e-10, 400, true, 1.0e-1, 1.0e-8, nullptr};
+  CHECK(without_interpolator.du_dr_j_interpolator() == nullptr);
+  CHECK(without_interpolator.get_clone()->du_dr_j_interpolator() == nullptr);
+  CHECK(InitializeJ::InverseCubic<false>{}.du_dr_j_interpolator() == nullptr);
+}
+
 template <typename DbTags>
 void test_initialize_j_cauchy_second_order(
     const gsl::not_null<db::DataBox<DbTags>*> box_to_initialize,
@@ -295,11 +342,11 @@ void test_initialize_j_cauchy_second_order(
   auto node_lock = Parallel::NodeLock{};
   // The angular coordinates are adapted iteratively (as in NoIncomingRadiation
   // and ConformalFactor). For randomly generated data the linearized solve
-  // occasionally needs more than a few hundred iterations to reach 1e-10, so we
-  // allow up to 1000 iterations (the option maximum) to reliably converge with
+  // occasionally needs more than a few hundred iterations to reach 1e-10, so
+  // we allow up to 1000 iterations to reliably converge with
   // `require_convergence = true`.
-  const auto initializer =
-      InitializeJ::CauchySecondOrder{1.0e-10, 1000, true, 1.0e-1, 1.0e-8};
+  const auto initializer = InitializeJ::CauchySecondOrder{
+      1.0e-10, 1000, true, 1.0e-1, 1.0e-8, make_du_dr_j_interpolator()};
   db::mutate_apply<InitializeJ::CauchySecondOrder::return_tags,
                    InitializeJ::CauchySecondOrder::argument_tags>(
       initializer, box_to_initialize, make_not_null(&node_lock));
@@ -380,7 +427,8 @@ void test_cauchy_second_order_scri_derivative_error(
   auto node_lock = Parallel::NodeLock{};
   db::mutate_apply<InitializeJ::CauchySecondOrder::return_tags,
                    InitializeJ::CauchySecondOrder::argument_tags>(
-      InitializeJ::CauchySecondOrder{1.0e-10, 1000, true, 1.0e-1, 1.0e-30},
+      InitializeJ::CauchySecondOrder{1.0e-10, 1000, true, 1.0e-1, 1.0e-30,
+                                     make_du_dr_j_interpolator()},
       box_to_initialize, make_not_null(&node_lock));
 }
 
@@ -394,7 +442,8 @@ void test_cauchy_second_order_angular_solve_threshold(
   auto node_lock = Parallel::NodeLock{};
   db::mutate_apply<InitializeJ::CauchySecondOrder::return_tags,
                    InitializeJ::CauchySecondOrder::argument_tags>(
-      InitializeJ::CauchySecondOrder{1.0e-10, 400, true, 1.0e-14, 1.0e-8},
+      InitializeJ::CauchySecondOrder{1.0e-10, 400, true, 1.0e-14, 1.0e-8,
+                                     make_du_dr_j_interpolator()},
       box_to_initialize, make_not_null(&node_lock));
 }
 
@@ -412,7 +461,8 @@ void test_cauchy_second_order_asymptotic_j_error(
   auto node_lock = Parallel::NodeLock{};
   db::mutate_apply<InitializeJ::CauchySecondOrder::return_tags,
                    InitializeJ::CauchySecondOrder::argument_tags>(
-      InitializeJ::CauchySecondOrder{1.0e-10, 400, true, 1.0e-1, 1.0e-8},
+      InitializeJ::CauchySecondOrder{1.0e-10, 400, true, 1.0e-1, 1.0e-8,
+                                     make_du_dr_j_interpolator()},
       box_to_initialize, make_not_null(&node_lock));
 }
 
@@ -630,8 +680,13 @@ void test_initialize_j_conformal_factor(
   CHECK(only_vary_gauge_d_streamed == "OnlyVaryGaugeD");
 }
 
+}  // namespace
+
 // [[TimeOut, 10]]
 SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.InitializeJ", "[Unit][Cce]") {
+  // `CauchySecondOrder` holds an interpolator, so serializing it needs the
+  // derived span interpolators registered.
+  register_derived_classes_with_charm<intrp::SpanInterpolator>();
   MAKE_GENERATOR(generator);
   UniformCustomDistribution<size_t> sdist{5, 6};
   const size_t l_max = sdist(generator);
@@ -820,6 +875,12 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.InitializeJ", "[Unit][Cce]") {
       Catch::Matchers::ContainsSubstring(
           "The initial J has a second radial derivative at scri+ of "
           "magnitude"));
+  {
+    INFO(
+        "Check the second-order generator's Du(Dr(J)) interpolator survives "
+        "cloning and serialization");
+    test_cauchy_second_order_interpolator_round_trip();
+  }
   CHECK_THROWS_WITH(test_cauchy_second_order_angular_solve_threshold(
                         make_not_null(&box_to_initialize)),
                     Catch::Matchers::ContainsSubstring(
