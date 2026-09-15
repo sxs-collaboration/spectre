@@ -221,6 +221,9 @@ void test_boundary_condition_with_python_impl(
 
   using variables_tag = typename System::variables_tag;
   using variables_tags = typename variables_tag::tags_list;
+  using auxiliary_variables =
+      ::evolution::dg::Actions::detail::get_auxiliary_variables_or_default_t<
+          System, tmpl::list<>>;
   using flux_variables = typename System::flux_variables;
   using dt_variables_tags = db::wrap_tags_in<::Tags::dt, variables_tags>;
 
@@ -430,8 +433,8 @@ void test_boundary_condition_with_python_impl(
             System::has_primitive_and_conservative_vars>::
             template f<BoundaryCorrection>;
     using tags_on_exterior_face = tmpl::remove_duplicates<tmpl::append<
-        variables_tags, fluxes_tags, correction_temp_tags, correction_prim_tags,
-        inverse_spatial_metric_list,
+        variables_tags, auxiliary_variables, fluxes_tags, correction_temp_tags,
+        correction_prim_tags, inverse_spatial_metric_list,
         tmpl::list<
             ::evolution::dg::Actions::detail::OneOverNormalVectorMagnitude,
             ::evolution::dg::Actions::detail::NormalVector<FaceDim + 1>,
@@ -597,6 +600,9 @@ void test_boundary_condition_with_python(
                 "All boundary condition classes must be marked `final`.");
   static_assert(tt::is_a_v<tmpl::list, ExtraTagsForPythonFromDataBox>);
   using variables_tags = typename System::variables_tag::tags_list;
+  using auxiliary_variables =
+      ::evolution::dg::Actions::detail::get_auxiliary_variables_or_default_t<
+          System, tmpl::list<>>;
   using flux_variables = typename System::flux_variables;
   using fluxes_tags =
       db::wrap_tags_in<::Tags::Flux, flux_variables, tmpl::size_t<FaceDim + 1>,
@@ -624,7 +630,7 @@ void test_boundary_condition_with_python(
         using BoundaryCorrection =
             tmpl::type_from<decltype(boundary_correction_v)>;
         using package_data_input_tags = tmpl::append<
-            variables_tags, fluxes_tags,
+            variables_tags, auxiliary_variables, fluxes_tags,
             typename BoundaryCorrection::dg_package_data_temporary_tags,
             typename ::evolution::dg::Actions::detail::get_primitive_vars<
                 System::has_primitive_and_conservative_vars>::
