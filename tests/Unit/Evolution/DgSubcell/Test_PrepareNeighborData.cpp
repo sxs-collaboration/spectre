@@ -357,6 +357,121 @@ void test(const bool all_neighbors_are_doing_dg,
     CHECK(*std::prev(data_in_direction.end(), 1) == approx(-1.0));
   }
 }
+
+// Elements on non-hypercube blocks can never do FD. Check that we send
+// unprojected DG volume data both when a neighbor is such an element and when
+// we are one ourselves
+void test_non_hypercube(const bool own_mesh_is_non_hypercube,
+                        const ::fd::DerivativeOrder fd_derivative_order) {
+  CAPTURE(own_mesh_is_non_hypercube);
+  CAPTURE(fd_derivative_order);
+  constexpr size_t Dim = 3;
+  using Interps = DirectionalIdMap<Dim, std::optional<intrp::Irregular<Dim>>>;
+  using variables_tag = ::Tags::Variables<tmpl::list<Var1>>;
+
+  // Mimics the mesh of a filled cylinder, `domain::topologies::full_cylinder`.
+  const Mesh<Dim> non_hypercube_mesh{
+      std::array{3_st, 5_st, 5_st},
+      std::array{Spectral::Basis::ZernikeB2, Spectral::Basis::ZernikeB2,
+                 Spectral::Basis::Legendre},
+      std::array{Spectral::Quadrature::GaussRadauUpper,
+                 Spectral::Quadrature::Equiangular,
+                 Spectral::Quadrature::GaussLobatto}};
+  const Mesh<Dim> hypercube_mesh{5, Spectral::Basis::Legendre,
+                                 Spectral::Quadrature::GaussLobatto};
+  const Mesh<Dim> dg_mesh =
+      own_mesh_is_non_hypercube ? non_hypercube_mesh : hypercube_mesh;
+  // Uninitialized whenever the DG mesh doesn't support subcell.
+  const Mesh<Dim> subcell_mesh = evolution::dg::subcell::fd::mesh(dg_mesh);
+  const Element<Dim> element = create_element<Dim>();
+
+  // Exactly one neighbor is on a non-hypercube block, the rest are ordinary
+  // hypercube DG elements. None of them is doing FD.
+  DirectionalIdMap<Dim, Mesh<Dim>> neighbor_meshes{};
+  bool already_set_non_hypercube = false;
+  for (const auto& [direction, neighbors] : element.neighbors()) {
+    for (const auto& neighbor : neighbors) {
+      neighbor_meshes.insert(std::pair{
+          DirectionalId<Dim>{direction, neighbor},
+          already_set_non_hypercube ? hypercube_mesh : non_hypercube_mesh});
+      already_set_non_hypercube = true;
+    }
+  }
+
+  Variables<tmpl::list<Var1>> vars{dg_mesh.number_of_grid_points(), 0.0};
+  get(get<Var1>(vars)) = get<0>(logical_coordinates(dg_mesh));
+  using flux_tag = ::Tags::Flux<Var1, tmpl::size_t<Dim>, Frame::Inertial>;
+  Variables<tmpl::list<flux_tag>> volume_fluxes{dg_mesh.number_of_grid_points(),
+                                                0.0};
+  for (size_t i = 0; i < Dim; ++i) {
+    get<flux_tag>(volume_fluxes).get(i) = logical_coordinates(dg_mesh).get(i);
+  }
+
+  const evolution::dg::subcell::SubcellOptions subcell_options{
+      4.0,
+      1_st,
+      1.0e-3,
+      1.0e-4,
+      false,
+      false,
+      evolution::dg::subcell::fd::ReconstructionMethod::DimByDim,
+      false,
+      std::nullopt,
+      fd_derivative_order,
+      1,
+      1,
+      1};
+
+  auto box = db::create<tmpl::list<
+      Tags::Reconstructor, domain::Tags::Mesh<Dim>,
+      evolution::dg::subcell::Tags::Mesh<Dim>, domain::Tags::Element<Dim>,
+      variables_tag, evolution::dg::subcell::Tags::DataForRdmpTci,
+      domain::Tags::NeighborMesh<Dim>,
+      evolution::dg::subcell::Tags::SubcellOptions<Dim>,
+      evolution::dg::subcell::Tags::InterpolatorsFromFdToNeighborFd<Dim>,
+      evolution::dg::subcell::Tags::InterpolatorsFromDgToNeighborFd<Dim>>>(
+      std::make_unique<DummyReconstructor>(), dg_mesh, subcell_mesh, element,
+      vars, evolution::dg::subcell::RdmpTciData{{1.0}, {-1.0}}, neighbor_meshes,
+      subcell_options, Interps{}, Interps{});
+
+  std::optional<Mesh<Dim>> ghost_data_mesh{std::nullopt};
+  DirectionMap<Dim, DataVector> data_for_neighbors{};
+  evolution::dg::subcell::prepare_neighbor_data<Metavariables<Dim>>(
+      make_not_null(&data_for_neighbors), make_not_null(&ghost_data_mesh),
+      make_not_null(&box), volume_fluxes);
+
+  // We must have taken the unprojected-DG-volume-data branch.
+  CHECK(ghost_data_mesh.value() == dg_mesh);
+
+  Variables<tmpl::list<Var1>> expected_vars = vars;
+  get(get<Var1>(expected_vars)) *= 2.0;
+  const bool need_fluxes = fd_derivative_order != ::fd::DerivativeOrder::Two;
+  DataVector expected_data{expected_vars.size() +
+                           (need_fluxes ? volume_fluxes.size() : 0)};
+  std::copy(get(get<Var1>(expected_vars)).begin(),
+            get(get<Var1>(expected_vars)).end(), expected_data.begin());
+  if (need_fluxes) {
+    std::copy(volume_fluxes.data(),
+              std::next(volume_fluxes.data(),
+                        static_cast<std::ptrdiff_t>(volume_fluxes.size())),
+              std::next(expected_data.begin(),
+                        static_cast<std::ptrdiff_t>(expected_vars.size())));
+  }
+
+  for (const auto& direction : expected_neighbor_directions<Dim>()) {
+    CAPTURE(direction);
+    REQUIRE(data_for_neighbors.contains(direction));
+    const auto& data_in_direction = data_for_neighbors.at(direction);
+    REQUIRE(data_in_direction.size() == expected_data.size() + 2);
+    CHECK_ITERABLE_APPROX(
+        expected_data,
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
+        (DataVector{const_cast<double*>(data_in_direction.data()),
+                    data_in_direction.size() - 2}));
+    CHECK(*std::prev(data_in_direction.end(), 2) == approx(1.0));
+    CHECK(*std::prev(data_in_direction.end(), 1) == approx(-1.0));
+  }
+}
 }  // namespace
 
 // [[TimeOut, 10]]
@@ -369,5 +484,6 @@ SPECTRE_TEST_CASE("Unit.Evolution.Subcell.PrepareNeighborData",
     test<1>(all_neighbors_are_doing_dg, fd_deriv_order);
     test<2>(all_neighbors_are_doing_dg, fd_deriv_order);
     test<3>(all_neighbors_are_doing_dg, fd_deriv_order);
+    test_non_hypercube(all_neighbors_are_doing_dg, fd_deriv_order);
   }
 }
