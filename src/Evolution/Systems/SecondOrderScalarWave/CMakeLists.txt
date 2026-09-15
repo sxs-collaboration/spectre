@@ -31,6 +31,7 @@ target_link_libraries(
   DiscontinuousGalerkin
   Domain
   DomainBoundaryConditions
+  Evolution
   LinearOperators
   Utilities
   PRIVATE
