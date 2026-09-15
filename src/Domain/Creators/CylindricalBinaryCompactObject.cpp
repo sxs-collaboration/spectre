@@ -14,6 +14,7 @@
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.tpp"
 #include "Domain/CoordinateMaps/DiscreteRotation.hpp"
+#include "Domain/CoordinateMaps/Distribution.hpp"
 #include "Domain/CoordinateMaps/Identity.hpp"
 #include "Domain/CoordinateMaps/Interval.hpp"
 #include "Domain/CoordinateMaps/PolarToCartesian.hpp"
@@ -1078,14 +1079,10 @@ Domain<3> CylindricalBinaryCompactObject::create_domain() const {
   using Affine = CoordinateMaps::Affine;
   auto make_spherical_shell_coord_map =
       [](const double inner_radius, const double outer_radius,
-         const std::array<double, 3>& aligned_center) {
+         const std::array<double, 3>& aligned_center,
+         const ::domain::CoordinateMaps::Distribution radial_distribution) {
         CoordinateMaps::Interval radial_map{
-            -1.0,
-            1.0,
-            inner_radius,
-            outer_radius,
-            ::domain::CoordinateMaps::Distribution::Linear,
-            0.0};
+            -1.0, 1.0, inner_radius, outer_radius, radial_distribution, 0.0};
         return make_coordinate_map_base<Frame::BlockLogical, Frame::Inertial>(
             CoordinateMaps::ProductOf2Maps<CoordinateMaps::Interval,
                                            CoordinateMaps::Identity<2>>{
@@ -1121,7 +1118,8 @@ Domain<3> CylindricalBinaryCompactObject::create_domain() const {
         upper_shell_to_upper_cyl_endcap);
 
     auto inner_a_sh_map = make_spherical_shell_coord_map(
-        radius_A_, outer_radius_A_, rotate_from_z_to_x_axis(center_A_));
+        radius_A_, outer_radius_A_, rotate_from_z_to_x_axis(center_A_),
+        inner_sphere_A_options_->radial_distribution_);
 
     DirectionMap<3, BlockNeighbors<3>> inner_a_sh_neighbors;
     inner_a_sh_neighbors.emplace(
@@ -1156,7 +1154,8 @@ Domain<3> CylindricalBinaryCompactObject::create_domain() const {
         upper_shell_to_lower_cyl_endcap);
 
     auto inner_b_sh_map = make_spherical_shell_coord_map(
-        radius_B_, outer_radius_B_, rotate_from_z_to_x_axis(center_B_));
+        radius_B_, outer_radius_B_, rotate_from_z_to_x_axis(center_B_),
+        inner_sphere_B_options_->radial_distribution_);
 
     DirectionMap<3, BlockNeighbors<3>> inner_b_sh_neighbors;
     inner_b_sh_neighbors.emplace(
@@ -1192,7 +1191,8 @@ Domain<3> CylindricalBinaryCompactObject::create_domain() const {
                                        cb_side_block, shell_to_cyl_side);
 
   auto outer_sh_map = make_spherical_shell_coord_map(
-      inner_radius_C, outer_sphere_options_.outer_radius_, make_array<3>(0.0));
+      inner_radius_C, outer_sphere_options_.outer_radius_, make_array<3>(0.0),
+      ::domain::CoordinateMaps::Distribution::Linear);
 
   DirectionMap<3, BlockNeighbors<3>> outer_sh_neighbors;
   outer_sh_neighbors.emplace(

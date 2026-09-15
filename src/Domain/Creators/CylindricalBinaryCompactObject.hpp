@@ -33,6 +33,7 @@
 namespace domain {
 namespace CoordinateMaps {
 class Affine;
+enum class Distribution;
 template <size_t Dim>
 class Identity;
 class Interval;
@@ -219,13 +220,25 @@ class CylindricalBinaryCompactObject : public DomainCreator<3> {
           "Outer radius of InnerSphereA, or Auto to have it chosen for you."};
     };
 
-    using options = tmpl::list<OuterRadius>;
+    struct RadialDistribution {
+      static std::string name() { return "RadialDistribution"; }
+      using type = domain::CoordinateMaps::Distribution;
+      static constexpr Options::String help = {
+          "Select the radial distribution of grid points for InnerSphereA."};
+    };
+
+    using options = tmpl::list<OuterRadius, RadialDistribution>;
 
     InnerSphereAOptions() = default;
-    explicit InnerSphereAOptions(std::optional<double> outer_radius)
-        : outer_radius_(outer_radius) {}
+    explicit InnerSphereAOptions(
+        std::optional<double> outer_radius,
+        const domain::CoordinateMaps::Distribution radial_distribution)
+        : outer_radius_(outer_radius),
+          radial_distribution_(radial_distribution) {}
 
     std::optional<double> outer_radius_;
+    domain::CoordinateMaps::Distribution radial_distribution_{
+        domain::CoordinateMaps::Distribution::Logarithmic};
   };
   struct InnerSphereBOptions {
    public:
@@ -242,13 +255,25 @@ class CylindricalBinaryCompactObject : public DomainCreator<3> {
           "Outer radius of InnerSphereB, or Auto to have it chosen for you."};
     };
 
-    using options = tmpl::list<OuterRadius>;
+    struct RadialDistribution {
+      static std::string name() { return "RadialDistribution"; }
+      using type = domain::CoordinateMaps::Distribution;
+      static constexpr Options::String help = {
+          "Select the radial distribution of grid points for InnerSphereB."};
+    };
+
+    using options = tmpl::list<OuterRadius, RadialDistribution>;
 
     InnerSphereBOptions() = default;
-    explicit InnerSphereBOptions(std::optional<double> outer_radius)
-        : outer_radius_(outer_radius) {}
+    explicit InnerSphereBOptions(
+        std::optional<double> outer_radius,
+        const domain::CoordinateMaps::Distribution radial_distribution)
+        : outer_radius_(outer_radius),
+          radial_distribution_(radial_distribution) {}
 
     std::optional<double> outer_radius_;
+    domain::CoordinateMaps::Distribution radial_distribution_{
+        domain::CoordinateMaps::Distribution::Logarithmic};
   };
   struct OuterSphereOptions {
    public:
