@@ -147,7 +147,9 @@ std::vector<amr::Info<3>> valid_parent_info<3>() {
 template <size_t Dim>
 TestHelpers::amr::valid_info_t<Dim> valid_parent_neighbor_info(
     const Element<Dim>& element,
-    const std::array<::amr::Flag, Dim>& element_flags) {
+    const std::array<::amr::Flag, Dim>& element_flags,
+    const gsl::not_null<std::mt19937*> generator,
+    const std::optional<size_t> number_of_samples = std::nullopt) {
   TestHelpers::amr::valid_info_t<Dim> result{};
   const auto valid_lower_xi_neighbor_info =
       TestHelpers::amr::valid_neighbor_info(
@@ -157,13 +159,36 @@ TestHelpers::amr::valid_info_t<Dim> valid_parent_neighbor_info(
       TestHelpers::amr::valid_neighbor_info(
           element.id(), element_flags,
           element.neighbors().at(Direction<Dim>::upper_xi()));
-  for (const auto& lower_xi_neighbor_info : valid_lower_xi_neighbor_info) {
-    for (const auto& upper_xi_neighbor_info : valid_upper_xi_neighbor_info) {
+  if (number_of_samples.has_value()) {
+    const auto n = number_of_samples.value();
+    result.reserve(n);
+    const auto lower_xi_samples =
+        random_sample(n, valid_lower_xi_neighbor_info, generator);
+    const auto upper_xi_samples =
+        random_sample(n, valid_upper_xi_neighbor_info, generator);
+    // if either sampled vector has less than n elements, random_sample returns
+    // the full vector
+    for (size_t i = 0;
+         i < std::min(lower_xi_samples.size(), upper_xi_samples.size()); ++i) {
+      const auto& lower_xi_neighbor_info = lower_xi_samples[i];
+      const auto& upper_xi_neighbor_info = upper_xi_samples[i];
       auto joined_flags = lower_xi_neighbor_info;
       for (const auto& flags : upper_xi_neighbor_info) {
         joined_flags.emplace(flags);
       }
       result.emplace_back(joined_flags);
+    }
+  } else {
+    result.reserve(valid_lower_xi_neighbor_info.size() *
+                   valid_upper_xi_neighbor_info.size());
+    for (const auto& lower_xi_neighbor_info : valid_lower_xi_neighbor_info) {
+      for (const auto& upper_xi_neighbor_info : valid_upper_xi_neighbor_info) {
+        auto joined_flags = lower_xi_neighbor_info;
+        for (const auto& flags : upper_xi_neighbor_info) {
+          joined_flags.emplace(flags);
+        }
+        result.emplace_back(joined_flags);
+      }
     }
   }
   return result;
@@ -180,9 +205,8 @@ void test(const gsl::not_null<std::mt19937*> generator) {
       CAPTURE(parent);
       for (const auto& parent_info : valid_parent_info<Dim>()) {
         CAPTURE(parent_info);
-        for (const auto& parent_neighbor_info : random_sample(
-                 3, valid_parent_neighbor_info(parent, parent_info.flags),
-                 generator)) {
+        for (const auto& parent_neighbor_info : valid_parent_neighbor_info(
+                 parent, parent_info.flags, generator, 3)) {
           CAPTURE(parent_neighbor_info);
           for (const auto& child_id :
                amr::ids_of_children(parent_id, parent_info.flags)) {
@@ -204,7 +228,6 @@ void test(const gsl::not_null<std::mt19937*> generator) {
 }
 }  // namespace
 
-// [[TimeOut, 30]]
 SPECTRE_TEST_CASE("Unit.Domain.Amr.NeighborsOfChild", "[Domain][Unit]") {
   MAKE_GENERATOR(generator);
   test<1>(make_not_null(&generator));
