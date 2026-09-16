@@ -20,4 +20,5 @@ SPECTRE_TEST_CASE("Unit.Domain.Structure.Topology", "[Domain][Unit]") {
   CHECK(get_output(domain::Topology::B3Longitude) == "B3Longitude");
   CHECK(get_output(domain::Topology::CartoonSphere) == "CartoonSphere");
   CHECK(get_output(domain::Topology::CartoonCylinder) == "CartoonCylinder");
+  CHECK(get_output(domain::Topology::HalfS1) == "HalfS1");
 }
