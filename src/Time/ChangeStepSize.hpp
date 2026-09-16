@@ -40,6 +40,12 @@ struct TimeStepId;
 template <typename StepperInterface>
 struct TimeStepper;
 }  // namespace Tags
+namespace evolution::dg::Tags {
+template <size_t Dim>
+struct MortarDataHistory;
+template <size_t Dim>
+struct MortarInfo;
+}  // namespace evolution::dg::Tags
 /// \endcond
 
 /// \brief Adjust the step size for local time stepping.
@@ -88,8 +94,47 @@ struct ChangeStepSize {
     const auto& step_choosers =
         db::get<CacheTagPrefix<Tags::LtsStepChoosers>>(*box);
 
-    using history_tags = ::Tags::get_all_history_tags<DbTags>;
     bool can_change_step_size = true;
+
+    // We can't do LTS in extrapolated mode unless we have enough data
+    // to extrapolate from.  This mutator is used for non-DG
+    // evolutions, so there might be no mortar history at all.
+    tmpl::for_each<tmpl::range<size_t, 1, 4>>(
+        [&]<size_t Dim>(tmpl::type_<tmpl::size_t<Dim>> /*meta*/) {
+          if (not can_change_step_size) {
+            return;
+          }
+          using mortar_history_tag =
+              evolution::dg::Tags::MortarDataHistory<Dim>;
+          if constexpr (db::tag_is_retrievable_v<mortar_history_tag,
+                                                 db::DataBox<DbTags>>) {
+            const auto& mortar_histories = db::get<mortar_history_tag>(*box);
+            const auto& mortar_infos =
+                db::get<evolution::dg::Tags::MortarInfo<Dim>>(*box);
+            for (const auto& [mortar_id, mortar_info] : mortar_infos) {
+              const auto policy = mortar_info.time_stepping_policy();
+              if (policy == LtsMode::Extrapolated) {
+                const auto& side_history =
+                    mortar_histories.at(mortar_id).remote();
+                // We need integration_order points to interpolate,
+                // but this is run before receiving data for the
+                // current time so we'll have one more when we get to
+                // the interpolation.  We know we will be receiving
+                // data for the current time because we can't do LTS
+                // until we have enough data to interpolate.
+                if (side_history.empty() or
+                    side_history.size() < side_history.integration_order(
+                                              side_history.size() - 1) -
+                                              1) {
+                  can_change_step_size = false;
+                  return;
+                }
+              }
+            }
+          }
+        });
+
+    using history_tags = ::Tags::get_all_history_tags<DbTags>;
     tmpl::for_each<history_tags>([&box, &can_change_step_size, &time_stepper,
                                   &time_step_id](auto tag_v) {
       if (not can_change_step_size) {

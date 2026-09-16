@@ -14,6 +14,14 @@
 #include "DataStructures/DataBox/MetavariablesTag.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
+#include "DataStructures/TaggedTuple.hpp"
+#include "Domain/Structure/Direction.hpp"
+#include "Domain/Structure/DirectionalId.hpp"
+#include "Domain/Structure/DirectionalIdMap.hpp"
+#include "Domain/Structure/ElementId.hpp"
+#include "Evolution/DiscontinuousGalerkin/MortarData.hpp"
+#include "Evolution/DiscontinuousGalerkin/MortarInfo.hpp"
+#include "Evolution/DiscontinuousGalerkin/MortarTags.hpp"
 #include "Options/Protocols/FactoryCreation.hpp"
 #include "Time/AdaptiveSteppingDiagnostics.hpp"
 #include "Time/ChangeStepSize.hpp"
@@ -58,11 +66,14 @@ struct Metavariables {
   };
 };
 
-template <typename StepChoosersToUse = AllStepChoosers>
+template <typename StepChoosersToUse = AllStepChoosers, typename... ExtraTags>
 void check(const bool time_runs_forward,
            std::unique_ptr<LtsTimeStepper> time_stepper,
+           // NOLINTNEXTLINE(performance-unnecessary-value-param)
            TimeSteppers::History<double> history, const Time& time,
-           const double request, const TimeDelta& expected_step) {
+           const double request, const TimeDelta& expected_step,
+           [[maybe_unused]] tuples::TaggedTuple<ExtraTags...> extra_tags =
+               tuples::TaggedTuple<>{}) {
   CAPTURE(time);
   CAPTURE(request);
 
@@ -82,14 +93,19 @@ void check(const bool time_runs_forward,
           Tags::ConcreteTimeStepper<LtsTimeStepper>, Tags::MinimumTimeStep,
           Tags::TimeStepId, Tags::Next<Tags::TimeStepId>, Tags::TimeStep,
           Tags::LtsStepChoosers, Tags::HistoryEvolvedVariables<Var>,
-          Tags::AdaptiveSteppingDiagnostics>,
+          Tags::AdaptiveSteppingDiagnostics, ExtraTags...>,
       db::AddComputeTags<time_stepper_ref_tags<LtsTimeStepper>>>(
       Metavariables{}, LtsMode::Conservative, std::move(time_stepper), 1e-8,
       TimeStepId(time_runs_forward, 0, time, 1, initial_step_size,
                  time.value()),
       TimeStepId(time_runs_forward, 0, time + initial_step_size),
       initial_step_size, std::move(choosers), std::move(history),
-      AdaptiveSteppingDiagnostics{1, 2, 3, 4, 5});
+      AdaptiveSteppingDiagnostics{.number_of_slabs = 1,
+                                  .number_of_slab_size_changes = 2,
+                                  .number_of_steps = 3,
+                                  .number_of_step_fraction_changes = 4,
+                                  .number_of_step_rejections = 5},
+      std::move(get<ExtraTags>(extra_tags))...);
 
   // Nothing should happen on a substep
   db::mutate_apply<ChangeStepSize<StepChoosersToUse>>(make_not_null(&box));
@@ -201,6 +217,55 @@ void test_gts() {
   CHECK(db::get<Tags::TimeStep>(box) == initial_step);
   CHECK(db::get<Tags::Next<Tags::TimeStepId>>(box) == next_id);
 }
+
+template <size_t Dim>
+void test_extrapolated_dg() {
+  using MortarTags =
+      tuples::TaggedTuple<evolution::dg::Tags::MortarDataHistory<Dim>,
+                          evolution::dg::Tags::MortarInfo<Dim>>;
+  const DirectionalId<Dim> neighbor(Direction<Dim>::upper_xi(),
+                                    ElementId<Dim>{3});
+
+  const Slab slab(-5., -2.);
+  const double slab_length = slab.duration().value();
+
+  MortarTags mortar_tags{};
+  // No mortars allows change
+  check(true, std::make_unique<TimeSteppers::AdamsBashforth>(1), {},
+        slab.start() + slab.duration() / 4, slab_length / 5.,
+        slab.duration() / 8, mortar_tags);
+
+  get<evolution::dg::Tags::MortarInfo<Dim>>(mortar_tags)[neighbor]
+      .time_stepping_policy() = LtsMode::Conservative;
+  const auto mortar_history =
+      get<evolution::dg::Tags::MortarDataHistory<Dim>>(mortar_tags)[neighbor]
+          .remote();
+
+  // Conservative mortar allows change
+  check(true, std::make_unique<TimeSteppers::AdamsBashforth>(1), {},
+        slab.start() + slab.duration() / 4, slab_length / 5.,
+        slab.duration() / 8, mortar_tags);
+
+  get<evolution::dg::Tags::MortarInfo<Dim>>(mortar_tags)[neighbor]
+      .time_stepping_policy() = LtsMode::Extrapolated;
+
+  // Extrapolated mortar prevents change
+  check(true, std::make_unique<TimeSteppers::AdamsBashforth>(1), {},
+        slab.start() + slab.duration() / 4, slab_length / 5.,
+        slab.duration() / 4, mortar_tags);
+
+  mortar_history.insert(TimeStepId(true, 0, slab.start()), 3, {});
+  check(true, std::make_unique<TimeSteppers::AdamsBashforth>(1), {},
+        slab.start() + slab.duration() / 4, slab_length / 5.,
+        slab.duration() / 4, mortar_tags);
+
+  mortar_history.insert(
+      TimeStepId(true, 0, slab.start() + slab.duration() / 16), 3, {});
+  // ... until there is enough history
+  check(true, std::make_unique<TimeSteppers::AdamsBashforth>(1), {},
+        slab.start() + slab.duration() / 4, slab_length / 5.,
+        slab.duration() / 8, mortar_tags);
+}
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Time.Actions.ChangeStepSize", "[Unit][Time][Actions]") {
@@ -246,4 +311,7 @@ SPECTRE_TEST_CASE("Unit.Time.Actions.ChangeStepSize", "[Unit][Time][Actions]") {
 
   test_fixed_lts_ratio();
   test_gts();
+  test_extrapolated_dg<1>();
+  test_extrapolated_dg<2>();
+  test_extrapolated_dg<3>();
 }
