@@ -358,9 +358,9 @@ void test(const bool all_neighbors_are_doing_dg,
   }
 }
 
-// Elements on non-hypercube blocks can never do FD. Check that we send
-// unprojected DG volume data both when a neighbor is such an element and when
-// we are one ourselves
+// Elements on non-hypercube blocks (excluding cartoon blocks) can never do
+// FD. Check that we send unprojected DG volume data both when a neighbor is
+// such an element and when we are one ourselves
 void test_non_hypercube(const bool own_mesh_is_non_hypercube,
                         const ::fd::DerivativeOrder fd_derivative_order) {
   CAPTURE(own_mesh_is_non_hypercube);
@@ -369,7 +369,7 @@ void test_non_hypercube(const bool own_mesh_is_non_hypercube,
   using Interps = DirectionalIdMap<Dim, std::optional<intrp::Irregular<Dim>>>;
   using variables_tag = ::Tags::Variables<tmpl::list<Var1>>;
 
-  // Mimics the mesh of a filled cylinder, `domain::topologies::full_cylinder`.
+  // Mesh of a filled cylinder
   const Mesh<Dim> non_hypercube_mesh{
       std::array{3_st, 5_st, 5_st},
       std::array{Spectral::Basis::ZernikeB2, Spectral::Basis::ZernikeB2,

@@ -17,6 +17,8 @@
 #include "Domain/Structure/DirectionalId.hpp"
 #include "Domain/Structure/DirectionalIdMap.hpp"
 #include "Domain/Structure/Element.hpp"
+#include "Domain/Structure/Neighbors.hpp"
+#include "Domain/Structure/OrientationMap.hpp"
 #include "Evolution/DgSubcell/GhostData.hpp"
 #include "Evolution/DgSubcell/Matrices.hpp"
 #include "Evolution/DgSubcell/Mesh.hpp"
@@ -259,6 +261,28 @@ void insert_or_update_neighbor_volume_data_impl(
     } else {
       // If our neighbor is in our block we can do simple dim-by-dim
       // interpolation.
+      //
+      // Note: everything below treats `direction` as if it were also the
+      // neighbor's direction. The aligned orientation is guaranteed here
+      // because a neighbor can only have a non-aligned orientation if it is
+      // in a different Block (all Elements within a Block share the same
+      // orientation), and every cross-Block neighbor has an entry in
+      // `neighbor_dg_to_fd_interpolants` which takes the above branch
+      ASSERT(
+          element.neighbors().count(direction) == 0 or
+              element.neighbors()
+                  .at(direction)
+                  .orientation(directional_element_id.id())
+                  .is_aligned(),
+          "Projecting neighbor DG volume data dimension-by-dimension requires "
+          "an aligned orientation, but the neighbor "
+              << directional_element_id.id() << " in direction " << direction
+              << " has orientation "
+              << element.neighbors().at(direction).orientation(
+                     directional_element_id.id())
+              << ". Non-aligned neighbors must be handled by an entry in "
+                 "InterpolatorsFromNeighborDgToFd. Current element: "
+              << element);
       const DataVector neighbor_data_without_rdmp_vars{
           // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
           const_cast<double*>(neighbor_subcell_data.data()),
