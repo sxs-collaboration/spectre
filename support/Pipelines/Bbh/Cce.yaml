@@ -11,6 +11,13 @@ BondiSachsData: "{{ BondiSachsData }}"
 FilesCombined: |
 {{ FilesCombined | indent(2, true) }}
 
+# Transform the waveforms into the correct BMS frame once CCE is done. This runs
+# in the same job as CCE, so make sure the wallclock limit covers it as well.
+Next:
+  Run: spectre.Pipelines.Bbh.FrameFix:frame_fix
+  With:
+    cce_reduction_file: ./CharacteristicExtractReduction.h5
+
 ---
 # Start of the input file that controls the CCE evolution.
 

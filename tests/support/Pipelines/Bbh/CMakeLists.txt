@@ -25,6 +25,13 @@ spectre_add_python_bindings_test(
   TIMEOUT 20)
 
 spectre_add_python_bindings_test(
+  "support.Pipelines.Bbh.FrameFix"
+  Test_FrameFix.py
+  "Python"
+  None
+  TIMEOUT 60)
+
+spectre_add_python_bindings_test(
   "support.Pipelines.Bbh.InitialData"
   Test_InitialData.py
   "Python"
