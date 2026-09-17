@@ -205,32 +205,30 @@ class CylindricalBinaryCompactObject : public DomainCreator<3> {
     static constexpr Options::String help = {
         "Grid-coordinate radius of grid boundary around Object B."};
   };
-  struct InnerSphereAOptions {
-   public:
-    using type = Options::Auto<InnerSphereAOptions, Options::AutoLabel::None>;
-    static std::string name() { return "InnerSphereA"; }
+
+  /// Options for InnerSphereA and InnerSphereB
+  struct InnerSphere {
     static constexpr Options::String help = {
-        "Options for InnerSphereA, an extra spherical layer of Blocks around "
-        "Object A. Specify 'None' to exclude InnerSphereA."};
+        "Options for an inner sphere, an extra spherical layer of Blocks "
+        "around one of the objects. Specify 'None' to exclude."};
 
     struct OuterRadius {
-      static std::string name() { return "OuterRadius"; }
       using type = Options::Auto<double>;
       static constexpr Options::String help = {
-          "Outer radius of InnerSphereA, or Auto to have it chosen for you."};
+          "Outer radius of the inner sphere, or Auto to have it chosen for "
+          "you."};
     };
 
     struct RadialDistribution {
-      static std::string name() { return "RadialDistribution"; }
       using type = domain::CoordinateMaps::Distribution;
       static constexpr Options::String help = {
-          "Select the radial distribution of grid points for InnerSphereA."};
+          "The radial distribution of grid points for the inner sphere."};
     };
 
     using options = tmpl::list<OuterRadius, RadialDistribution>;
 
-    InnerSphereAOptions() = default;
-    explicit InnerSphereAOptions(
+    InnerSphere() = default;
+    explicit InnerSphere(
         std::optional<double> outer_radius,
         const domain::CoordinateMaps::Distribution radial_distribution)
         : outer_radius_(outer_radius),
@@ -240,41 +238,17 @@ class CylindricalBinaryCompactObject : public DomainCreator<3> {
     domain::CoordinateMaps::Distribution radial_distribution_{
         domain::CoordinateMaps::Distribution::Logarithmic};
   };
-  struct InnerSphereBOptions {
-   public:
-    using type = Options::Auto<InnerSphereBOptions, Options::AutoLabel::None>;
-    static std::string name() { return "InnerSphereB"; }
-    static constexpr Options::String help = {
-        "Options for InnerSphereB, an extra spherical layer of Blocks around "
-        "Object B. Specify 'None' to exclude InnerSphereB."};
 
-    struct OuterRadius {
-      static std::string name() { return "OuterRadius"; }
-      using type = Options::Auto<double>;
-      static constexpr Options::String help = {
-          "Outer radius of InnerSphereB, or Auto to have it chosen for you."};
-    };
-
-    struct RadialDistribution {
-      static std::string name() { return "RadialDistribution"; }
-      using type = domain::CoordinateMaps::Distribution;
-      static constexpr Options::String help = {
-          "Select the radial distribution of grid points for InnerSphereB."};
-    };
-
-    using options = tmpl::list<OuterRadius, RadialDistribution>;
-
-    InnerSphereBOptions() = default;
-    explicit InnerSphereBOptions(
-        std::optional<double> outer_radius,
-        const domain::CoordinateMaps::Distribution radial_distribution)
-        : outer_radius_(outer_radius),
-          radial_distribution_(radial_distribution) {}
-
-    std::optional<double> outer_radius_;
-    domain::CoordinateMaps::Distribution radial_distribution_{
-        domain::CoordinateMaps::Distribution::Logarithmic};
+  struct InnerSphereA {
+    using type = Options::Auto<InnerSphere, Options::AutoLabel::None>;
+    static constexpr Options::String help = {"Options for InnerSphereA."};
   };
+
+  struct InnerSphereB {
+    using type = Options::Auto<InnerSphere, Options::AutoLabel::None>;
+    static constexpr Options::String help = {"Options for InnerSphereB."};
+  };
+
   struct OuterSphereOptions {
    public:
     using type = OuterSphereOptions;
@@ -282,7 +256,6 @@ class CylindricalBinaryCompactObject : public DomainCreator<3> {
     static constexpr Options::String help = {"Options for OuterSphere."};
 
     struct OuterRadius {
-      static std::string name() { return "OuterRadius"; }
       using type = double;
       static constexpr Options::String help = {"Outer radius of OuterSphere."};
     };
@@ -379,8 +352,8 @@ class CylindricalBinaryCompactObject : public DomainCreator<3> {
   template <typename Metavariables>
   using options = tmpl::append<
       tmpl::list<CenterA, CenterB, RadiusA, RadiusB, InitialRefinement,
-                 InitialGridPoints, OuterSphereOptions, InnerSphereAOptions,
-                 InnerSphereBOptions, TimeDependentMaps>,
+                 InitialGridPoints, OuterSphereOptions, InnerSphereA,
+                 InnerSphereB, TimeDependentMaps>,
       tmpl::conditional_t<
           domain::BoundaryConditions::has_boundary_conditions_base_v<
               typename Metavariables::system>,
@@ -405,8 +378,8 @@ class CylindricalBinaryCompactObject : public DomainCreator<3> {
       const typename InitialRefinement::type& initial_refinement,
       const typename InitialGridPoints::type& initial_grid_points,
       typename OuterSphereOptions::type outer_sphere_options,
-      std::optional<InnerSphereAOptions> inner_sphere_A_options = std::nullopt,
-      std::optional<InnerSphereBOptions> inner_sphere_B_options = std::nullopt,
+      std::optional<InnerSphere> inner_sphere_A = std::nullopt,
+      std::optional<InnerSphere> inner_sphere_B = std::nullopt,
       std::optional<bco::TimeDependentMapOptions<true>> time_dependent_options =
           std::nullopt,
       std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
@@ -468,8 +441,8 @@ class CylindricalBinaryCompactObject : public DomainCreator<3> {
   typename std::vector<std::array<size_t, 3>> initial_refinement_{};
   typename std::vector<std::array<size_t, 3>> initial_grid_points_{};
   typename OuterSphereOptions::type outer_sphere_options_{};
-  std::optional<InnerSphereAOptions> inner_sphere_A_options_{};
-  std::optional<InnerSphereBOptions> inner_sphere_B_options_{};
+  std::optional<InnerSphere> inner_sphere_A_{};
+  std::optional<InnerSphere> inner_sphere_B_{};
   // cut_spheres_offset_factor_ is eta in Eq. (A.9) of
   // https://arxiv.org/abs/1206.3015.  cut_spheres_offset_factor_
   // could be set to unity to simplify the equations.  Here we fix it

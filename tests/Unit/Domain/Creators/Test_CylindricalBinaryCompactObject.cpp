@@ -53,8 +53,7 @@
 namespace {
 using ExpirationTimeMap = std::unordered_map<std::string, double>;
 using CylBCO = ::domain::creators::CylindricalBinaryCompactObject;
-using InnerSphereAOptions = CylBCO::InnerSphereAOptions;
-using InnerSphereBOptions = CylBCO::InnerSphereBOptions;
+using InnerSphere = CylBCO::InnerSphere;
 using OuterSphereOptions = CylBCO::OuterSphereOptions;
 using TimeDepOptions = domain::creators::bco::TimeDependentMapOptions<true>;
 using RefinementMap = std::unordered_map<std::string, size_t>;
@@ -231,13 +230,13 @@ std::string create_option_string(
       "  OuterSphere:\n"
       "    OuterRadius: " +
       stringize(outer_radius) + "\n"};
-  const std::string inner_sphere_A_options{
+  const std::string inner_sphere_A{
       include_inner_sphere_A ? ("  InnerSphereA:\n"
                                 "    OuterRadius: Auto\n"
                                 "    RadialDistribution: " +
                                 get_output(radial_distribution_A) + "\n")
                              : "  InnerSphereA: None\n"};
-  const std::string inner_sphere_B_options{
+  const std::string inner_sphere_B{
       include_inner_sphere_B ? ("  InnerSphereB:\n"
                                 "    OuterRadius: Auto\n"
                                 "    RadialDistribution: " +
@@ -250,8 +249,8 @@ std::string create_option_string(
          "\n  RadiusA: " + stringize(inner_radius_objectA) +
          "\n  CenterB: " + stringize(center_objectB) +
          "\n  RadiusB: " + stringize(inner_radius_objectB) + "\n" +
-         outer_sphere_options + inner_sphere_A_options +
-         inner_sphere_B_options + "\n  InitialRefinement:" +
+         outer_sphere_options + inner_sphere_A + inner_sphere_B +
+         "\n  InitialRefinement:" +
          initial_structure(true, with_additional_outer_radial_refinement, 0) +
          "\n  InitialGridPoints:" +
          initial_structure(false, with_additional_grid_points, 3) + "\n" +
@@ -485,9 +484,8 @@ void test_parse_errors() {
   CHECK_THROWS_WITH(
       domain::creators::CylindricalBinaryCompactObject(
           {{2.0, 0.05, 0.0}}, {-5.0, 0.05, 0.0}, 1.0, 0.4, 1_st, 3_st,
-          OuterSphereOptions{25.0},
-          InnerSphereAOptions{0.9, Distribution::Linear},
-          InnerSphereBOptions{1.0, Distribution::Linear}, std::nullopt,
+          OuterSphereOptions{25.0}, InnerSphere{0.9, Distribution::Linear},
+          InnerSphere{1.0, Distribution::Linear}, std::nullopt,
           create_inner_boundary_condition(), create_outer_boundary_condition(),
           Options::Context{false, {}, 1, 1}),
       Catch::Matchers::ContainsSubstring(
@@ -495,9 +493,8 @@ void test_parse_errors() {
   CHECK_THROWS_WITH(
       domain::creators::CylindricalBinaryCompactObject(
           {{2.0, 0.05, 0.0}}, {-5.0, 0.05, 0.0}, 1.0, 0.4, 1_st, 3_st,
-          OuterSphereOptions{25.0},
-          InnerSphereAOptions{1.5, Distribution::Logarithmic},
-          InnerSphereBOptions{0.3, Distribution::Logarithmic}, std::nullopt,
+          OuterSphereOptions{25.0}, InnerSphere{1.5, Distribution::Logarithmic},
+          InnerSphere{0.3, Distribution::Logarithmic}, std::nullopt,
           create_inner_boundary_condition(), create_outer_boundary_condition(),
           Options::Context{false, {}, 1, 1}),
       Catch::Matchers::ContainsSubstring(
@@ -505,9 +502,8 @@ void test_parse_errors() {
   CHECK_THROWS_WITH(
       domain::creators::CylindricalBinaryCompactObject(
           {{2.0, 0.05, 0.0}}, {-2.0, 0.05, 0.0}, 1.0, 1.0, 1_st, 3_st,
-          OuterSphereOptions{25.0},
-          InnerSphereAOptions{2.1, Distribution::Logarithmic},
-          InnerSphereBOptions{1.0, Distribution::Logarithmic}, std::nullopt,
+          OuterSphereOptions{25.0}, InnerSphere{2.1, Distribution::Logarithmic},
+          InnerSphere{1.0, Distribution::Logarithmic}, std::nullopt,
           create_inner_boundary_condition(), create_outer_boundary_condition(),
           Options::Context{false, {}, 1, 1}),
       Catch::Matchers::ContainsSubstring(
@@ -515,9 +511,8 @@ void test_parse_errors() {
   CHECK_THROWS_WITH(
       domain::creators::CylindricalBinaryCompactObject(
           {{2.0, 0.05, 0.0}}, {-2.0, 0.05, 0.0}, 1.0, 1.0, 1_st, 3_st,
-          OuterSphereOptions{25.0},
-          InnerSphereAOptions{1.0, Distribution::Inverse},
-          InnerSphereBOptions{2.1, Distribution::Inverse}, std::nullopt,
+          OuterSphereOptions{25.0}, InnerSphere{1.0, Distribution::Inverse},
+          InnerSphere{2.1, Distribution::Inverse}, std::nullopt,
           create_inner_boundary_condition(), create_outer_boundary_condition(),
           Options::Context{false, {}, 1, 1}),
       Catch::Matchers::ContainsSubstring(
@@ -749,16 +744,14 @@ void test_cylindrical_bbh() {
     const double inner_radius_objectA = 2.0 * mass_ratio / (1.0 + mass_ratio);
     const double inner_radius_objectB = 2.0 / (1.0 + mass_ratio);
 
-    const std::optional<InnerSphereAOptions> inner_sphere_A_options =
-        include_inner_sphere_A
-            ? std::optional<InnerSphereAOptions>{InnerSphereAOptions{
-                  std::nullopt, radial_distribution_A}}
-            : std::nullopt;
-    const std::optional<InnerSphereBOptions> inner_sphere_B_options =
-        include_inner_sphere_B
-            ? std::optional<InnerSphereBOptions>{InnerSphereBOptions{
-                  std::nullopt, radial_distribution_B}}
-            : std::nullopt;
+    const std::optional<InnerSphere> inner_sphere_A =
+        include_inner_sphere_A ? std::optional<InnerSphere>{InnerSphere{
+                                     std::nullopt, radial_distribution_A}}
+                               : std::nullopt;
+    const std::optional<InnerSphere> inner_sphere_B =
+        include_inner_sphere_B ? std::optional<InnerSphere>{InnerSphere{
+                                     std::nullopt, radial_distribution_B}}
+                               : std::nullopt;
 
     CylBCO::InitialRefinement::type initial_refinement{};
     CylBCO::InitialGridPoints::type initial_grid_points{};
@@ -789,8 +782,8 @@ void test_cylindrical_bbh() {
         initial_refinement,
         initial_grid_points,
         OuterSphereOptions{outer_radius},
-        inner_sphere_A_options,
-        inner_sphere_B_options,
+        inner_sphere_A,
+        inner_sphere_B,
         std::move(time_dep_opts),
         with_boundary_conditions ? create_inner_boundary_condition() : nullptr,
         with_boundary_conditions ? create_outer_boundary_condition() : nullptr};
@@ -840,25 +833,22 @@ void test_initial_extents_and_refinement() {
                     {"OuterSphere", std::array<size_t, 2>{8, 10}}};
 
   const OuterSphereOptions outer_sphere_options{outer_radius};
-  const std::optional<InnerSphereAOptions> inner_sphere_A_options =
-      include_inner_sphere_A
-          ? std::optional<InnerSphereAOptions>{InnerSphereAOptions{
-                std::nullopt, Distribution::Linear}}
-          : std::nullopt;
-  const std::optional<InnerSphereBOptions> inner_sphere_B_options =
-      include_inner_sphere_B
-          ? std::optional<InnerSphereBOptions>{InnerSphereBOptions{
-                std::nullopt, Distribution::Linear}}
-          : std::nullopt;
+  const std::optional<InnerSphere> inner_sphere_A =
+      include_inner_sphere_A ? std::optional<InnerSphere>{InnerSphere{
+                                   std::nullopt, Distribution::Linear}}
+                             : std::nullopt;
+  const std::optional<InnerSphere> inner_sphere_B =
+      include_inner_sphere_B ? std::optional<InnerSphere>{InnerSphere{
+                                   std::nullopt, Distribution::Linear}}
+                             : std::nullopt;
 
   // Domain created from global h and p refinement
   const auto cbco_global_creator =
       domain::creators::CylindricalBinaryCompactObject(
           center_A, center_B, radius_A, radius_B, global_refinement,
-          global_grid_points, outer_sphere_options, inner_sphere_A_options,
-          inner_sphere_B_options, std::nullopt,
-          create_inner_boundary_condition(), create_outer_boundary_condition(),
-          Options::Context{false, {}, 1, 1});
+          global_grid_points, outer_sphere_options, inner_sphere_A,
+          inner_sphere_B, std::nullopt, create_inner_boundary_condition(),
+          create_outer_boundary_condition(), Options::Context{false, {}, 1, 1});
   const std::vector<std::array<size_t, 3>> global_initial_refinement_levels =
       cbco_global_creator.initial_refinement_levels();
   const std::vector<std::array<size_t, 3>> global_initial_extents =
@@ -870,10 +860,9 @@ void test_initial_extents_and_refinement() {
   const auto cbco_local_creator =
       domain::creators::CylindricalBinaryCompactObject(
           center_A, center_B, radius_A, radius_B, local_refinement,
-          local_grid_points, outer_sphere_options, inner_sphere_A_options,
-          inner_sphere_B_options, std::nullopt,
-          create_inner_boundary_condition(), create_outer_boundary_condition(),
-          Options::Context{false, {}, 1, 1});
+          local_grid_points, outer_sphere_options, inner_sphere_A,
+          inner_sphere_B, std::nullopt, create_inner_boundary_condition(),
+          create_outer_boundary_condition(), Options::Context{false, {}, 1, 1});
   const std::vector<std::array<size_t, 3>> local_initial_refinement_levels =
       cbco_local_creator.initial_refinement_levels();
   const std::vector<std::array<size_t, 3>> local_initial_extents =

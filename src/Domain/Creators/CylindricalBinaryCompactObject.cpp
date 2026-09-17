@@ -70,8 +70,8 @@ CylindricalBinaryCompactObject::CylindricalBinaryCompactObject(
     const typename InitialRefinement::type& initial_refinement,
     const typename InitialGridPoints::type& initial_grid_points,
     typename OuterSphereOptions::type outer_sphere_options,
-    std::optional<InnerSphereAOptions> inner_sphere_A_options,
-    std::optional<InnerSphereBOptions> inner_sphere_B_options,
+    std::optional<InnerSphere> inner_sphere_A,
+    std::optional<InnerSphere> inner_sphere_B,
     std::optional<bco::TimeDependentMapOptions<true>> time_dependent_options,
     std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
         inner_boundary_condition,
@@ -83,8 +83,8 @@ CylindricalBinaryCompactObject::CylindricalBinaryCompactObject(
       radius_A_(radius_A),
       radius_B_(radius_B),
       outer_sphere_options_(std::move(outer_sphere_options)),
-      inner_sphere_A_options_(std::move(inner_sphere_A_options)),
-      inner_sphere_B_options_(std::move(inner_sphere_B_options)),
+      inner_sphere_A_(std::move(inner_sphere_A)),
+      inner_sphere_B_(std::move(inner_sphere_B)),
       inner_boundary_condition_(std::move(inner_boundary_condition)),
       outer_boundary_condition_(std::move(outer_boundary_condition)),
       time_dependent_options_(std::move(time_dependent_options)) {
@@ -176,10 +176,10 @@ CylindricalBinaryCompactObject::CylindricalBinaryCompactObject(
   // as radius_A_.
   // If the inner sphere does exist, the algorithm for computing
   // outer_radius_A_ is the same as in SpEC when there is one inner shell.
-  const bool include_inner_sphere_A = inner_sphere_A_options_.has_value();
+  const bool include_inner_sphere_A = inner_sphere_A_.has_value();
   outer_radius_A_ =
       include_inner_sphere_A
-          ? inner_sphere_A_options_->outer_radius_.value_or(
+          ? inner_sphere_A_->outer_radius_.value_or(
                 radius_A_ +
                 0.5 * (std::abs(z_cutting_plane_ - center_A_[2]) - radius_A_))
           : radius_A_;
@@ -201,10 +201,10 @@ CylindricalBinaryCompactObject::CylindricalBinaryCompactObject(
   // as radius_B_.
   // If the inner sphere does exist, the algorithm for computing
   // outer_radius_B_ is the same as in SpEC when there is one inner shell.
-  const bool include_inner_sphere_B = inner_sphere_B_options_.has_value();
+  const bool include_inner_sphere_B = inner_sphere_B_.has_value();
   outer_radius_B_ =
       include_inner_sphere_B
-          ? inner_sphere_B_options_->outer_radius_.value_or(
+          ? inner_sphere_B_->outer_radius_.value_or(
                 radius_B_ +
                 0.5 * (std::abs(z_cutting_plane_ - center_B_[2]) - radius_B_))
           : radius_B_;
@@ -811,8 +811,8 @@ Domain<3> CylindricalBinaryCompactObject::create_domain() const {
   // Excision spheres
   std::unordered_map<std::string, ExcisionSphere<3>> excision_spheres{};
 
-  const bool include_inner_sphere_A = inner_sphere_A_options_.has_value();
-  const bool include_inner_sphere_B = inner_sphere_B_options_.has_value();
+  const bool include_inner_sphere_A = inner_sphere_A_.has_value();
+  const bool include_inner_sphere_B = inner_sphere_B_.has_value();
 
   std::unordered_map<size_t, Direction<3>> abutting_directions_A;
   const size_t inner_shell_A_block = 10;
@@ -1119,7 +1119,7 @@ Domain<3> CylindricalBinaryCompactObject::create_domain() const {
 
     auto inner_a_sh_map = make_spherical_shell_coord_map(
         radius_A_, outer_radius_A_, rotate_from_z_to_x_axis(center_A_),
-        inner_sphere_A_options_->radial_distribution_);
+        inner_sphere_A_->radial_distribution_);
 
     DirectionMap<3, BlockNeighbors<3>> inner_a_sh_neighbors;
     inner_a_sh_neighbors.emplace(
@@ -1155,7 +1155,7 @@ Domain<3> CylindricalBinaryCompactObject::create_domain() const {
 
     auto inner_b_sh_map = make_spherical_shell_coord_map(
         radius_B_, outer_radius_B_, rotate_from_z_to_x_axis(center_B_),
-        inner_sphere_B_options_->radial_distribution_);
+        inner_sphere_B_->radial_distribution_);
 
     DirectionMap<3, BlockNeighbors<3>> inner_b_sh_neighbors;
     inner_b_sh_neighbors.emplace(
@@ -1305,8 +1305,8 @@ CylindricalBinaryCompactObject::external_boundary_conditions() const {
   const size_t mb_endcap_block = block_positions_.at("MBFilledCylinder");
   const size_t outer_shell_block = block_positions_.at("OuterShell0");
 
-  const bool include_inner_sphere_A = inner_sphere_A_options_.has_value();
-  const bool include_inner_sphere_B = inner_sphere_B_options_.has_value();
+  const bool include_inner_sphere_A = inner_sphere_A_.has_value();
+  const bool include_inner_sphere_B = inner_sphere_B_.has_value();
 
   if (not include_inner_sphere_A) {
     // EA Filled Cylinder
