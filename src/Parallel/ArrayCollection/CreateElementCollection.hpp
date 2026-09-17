@@ -3,9 +3,11 @@
 
 #pragma once
 
+#include <array>
 #include <cstddef>
 #include <optional>
 #include <tuple>
+#include <unordered_map>
 #include <unordered_set>
 #include <utility>
 #include <vector>
@@ -20,6 +22,7 @@
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Tags/ElementDistribution.hpp"
 #include "Evolution/DiscontinuousGalerkin/Initialization/QuadratureTag.hpp"
+#include "Evolution/DiscontinuousGalerkin/SubcellElementDistribution.hpp"
 #include "NumericalAlgorithms/Spectral/Basis.hpp"
 #include "NumericalAlgorithms/Spectral/Quadrature.hpp"
 #include "Parallel/AlgorithmExecution.hpp"
@@ -77,8 +80,7 @@ struct CreateElementCollection {
       Parallel::Tags::ElementLocations<Dim>, Tags::NumberOfElementsTerminated>;
   using compute_tags = tmpl::list<>;
   using const_global_cache_tags =
-      tmpl::list<::domain::Tags::Domain<Dim>,
-                 ::domain::Tags::ElementDistribution>;
+      ::evolution::dg::element_distribution_cache_tags<Metavariables, Dim>;
 
   using return_tag_list = tmpl::append<simple_tags, compute_tags>;
 
@@ -109,6 +111,10 @@ struct CreateElementCollection {
 
     const auto& blocks = domain.blocks();
 
+    const auto weighting_extents_override =
+        ::evolution::dg::weighting_extents_override_from_cache(local_cache,
+                                                               initial_extents);
+
     const size_t total_num_elements = [&blocks, &initial_refinement_levels]() {
       size_t result = 0;
       for (const auto& block : blocks) {
@@ -138,7 +144,7 @@ struct CreateElementCollection {
         // The below arguments control how the elements are mapped to the
         // hardware.
         procs_to_ignore, number_of_procs, number_of_nodes, num_of_procs_to_use,
-        local_cache, my_node == 0);
+        local_cache, my_node == 0, weighting_extents_override);
 
     tuples::tagged_tuple_from_typelist<SimpleTagsFromOptions>
         initialization_items = db::copy_items<SimpleTagsFromOptions>(box);

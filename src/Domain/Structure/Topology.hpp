@@ -62,6 +62,14 @@ enum class Topology : uint8_t {
 /// Output operator for a Topology.
 std::ostream& operator<<(std::ostream& os, Topology topology);
 
+/// \brief Whether the hybrid DG-subcell scheme can be used in a dimension
+/// with this `Topology`.
+constexpr bool topology_supports_subcell(const Topology topology) {
+  return topology == Topology::I1 or topology == Topology::B1Radial or
+         topology == Topology::CartoonSphere or
+         topology == Topology::CartoonCylinder;
+}
+
 namespace topologies {
 template <size_t VolumeDim>
 static constexpr auto hypercube = make_array<VolumeDim>(Topology::I1);

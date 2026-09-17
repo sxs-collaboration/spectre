@@ -5,38 +5,32 @@
 
 #include <cstddef>
 #include <memory>
+#include <optional>
 #include <pup.h>
 #include <pup_stl.h>
 #include <string>
 #include <unordered_map>
+#include <vector>
 
 #include "Domain/Structure/ElementId.hpp"
-#include "Evolution/DgSubcell/Tags/SubcellOptions.hpp"
 #include "Evolution/DiscontinuousGalerkin/EqualRateLts/EqualRateRegions.tpp"
 #include "Evolution/DiscontinuousGalerkin/EqualRateLts/NonconformingEqualRateRegions.hpp"
+#include "Evolution/DiscontinuousGalerkin/OnlyDgBlockIds.hpp"
 #include "Utilities/Algorithm.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 
 template <size_t VolumeDim>
 class DomainCreator;
-namespace evolution::dg::subcell {
-class SubcellOptions;
-}  // namespace evolution::dg::subcell
 
 namespace evolution::dg::subcell {
 template <size_t Dim>
 SubcellEqualRateRegion<Dim>::SubcellEqualRateRegion(
-    const SubcellOptions& subcell_options,
-    const std::unique_ptr<DomainCreator<Dim>>& domain_creator) {
-  // We need the version of the subcell options from the cache, but we
-  // only have access to the parsed options here, so we have to
-  // recreate it.
-  const auto real_subcell_options =
-      Tags::SubcellOptions<Dim>::create_from_options(subcell_options,
-                                                     domain_creator);
-  only_dg_block_ids_ = real_subcell_options.only_dg_block_ids();
-}
+    const std::optional<std::vector<std::string>>&
+        only_dg_block_and_group_names,
+    const std::unique_ptr<DomainCreator<Dim>>& domain_creator)
+    : only_dg_block_ids_(evolution::dg::compute_only_dg_block_ids(
+          only_dg_block_and_group_names, *domain_creator)) {}
 
 template <size_t Dim>
 std::unordered_map<std::string, size_t> SubcellEqualRateRegion<Dim>::regions()

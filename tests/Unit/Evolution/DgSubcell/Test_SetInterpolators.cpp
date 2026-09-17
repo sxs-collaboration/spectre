@@ -4,7 +4,7 @@
 #include "Framework/TestingFramework.hpp"
 
 #include <cstddef>
-#include <optional>
+#include <vector>
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
@@ -27,6 +27,7 @@
 #include "Evolution/DgSubcell/SubcellOptions.hpp"
 #include "Evolution/DgSubcell/Tags/Coordinates.hpp"
 #include "Evolution/DgSubcell/Tags/SubcellOptions.hpp"
+#include "Evolution/DiscontinuousGalerkin/OnlyDgBlockIds.hpp"
 #include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
 
 namespace {
@@ -76,7 +77,7 @@ void test(const bool enable_extension, const size_t fd_to_fd_interp_order) {
   evolution::dg::subcell::SubcellOptions subcell_options(
       4.0, 1, 2.0e-3, 2.0e-4, enable_extension, enable_extension,
       evolution::dg::subcell::fd::ReconstructionMethod::DimByDim, false,
-      std::nullopt, ::fd::DerivativeOrder::Two, 1, 1, 1, fd_to_fd_interp_order);
+      ::fd::DerivativeOrder::Two, 1, 1, 1, fd_to_fd_interp_order);
 
   const ::Mesh<Dim> dg_mesh{6, Spectral::Basis::Legendre,
                             Spectral::Quadrature::GaussLobatto};
@@ -146,7 +147,8 @@ void test(const bool enable_extension, const size_t fd_to_fd_interp_order) {
           ::domain::Tags::Element<Dim>, ::domain::Tags::Domain<Dim>,
           domain::Tags::Mesh<Dim>, evolution::dg::subcell::Tags::Mesh<Dim>,
           ::domain::Tags::ElementMap<Dim, Frame::Grid>, Tags::Reconstructor,
-          evolution::dg::subcell::Tags::SubcellOptions<Dim>>,
+          evolution::dg::subcell::Tags::SubcellOptions<Dim>,
+          evolution::dg::Tags::OnlyDgBlockIds<Dim>>,
       db::AddComputeTags<
           domain::Tags::LogicalCoordinates<Dim>,
           domain::Tags::MappedCoordinates<
@@ -164,7 +166,8 @@ void test(const bool enable_extension, const size_t fd_to_fd_interp_order) {
       typename ExtensionDirections<Dim>::type{}, element,
       Domain<Dim>{std::move(blocks)}, dg_mesh, subcell_mesh,
       ElementMap{element_id, make_grid_map<Dim, Frame::Grid>(0)},
-      std::make_unique<DummyReconstructor>(), subcell_options);
+      std::make_unique<DummyReconstructor>(), subcell_options,
+      std::vector<size_t>{});
   db::mutate_apply<
       evolution::dg::subcell::SetInterpolators<Dim, Tags::Reconstructor>>(
       make_not_null(&box));

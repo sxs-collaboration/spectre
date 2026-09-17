@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include <array>
 #include <cstddef>
 #include <functional>
 #include <unordered_map>
@@ -21,6 +22,7 @@
 #include "Domain/Structure/InitialElementIds.hpp"
 #include "Domain/Tags/ElementDistribution.hpp"
 #include "Evolution/DiscontinuousGalerkin/Initialization/QuadratureTag.hpp"
+#include "Evolution/DiscontinuousGalerkin/SubcellElementDistribution.hpp"
 #include "NumericalAlgorithms/Spectral/Basis.hpp"
 #include "NumericalAlgorithms/Spectral/Quadrature.hpp"
 #include "Parallel/Algorithms/AlgorithmArray.hpp"
@@ -57,8 +59,8 @@ struct DgElementArray {
   using phase_dependent_action_list = PhaseDepActionList;
   using array_index = ElementId<volume_dim>;
 
-  using const_global_cache_tags = tmpl::list<domain::Tags::Domain<volume_dim>,
-                                             domain::Tags::ElementDistribution>;
+  using const_global_cache_tags =
+      evolution::dg::element_distribution_cache_tags<Metavariables, volume_dim>;
 
   using simple_tags_from_options = Parallel::get_simple_tags_from_options<
       Parallel::get_initialization_actions_list<phase_dependent_action_list>>;
@@ -114,6 +116,10 @@ void DgElementArray<Metavariables, PhaseDepActionList>::allocate_array(
 
   const auto& blocks = domain.blocks();
 
+  const auto weighting_extents_override =
+      evolution::dg::weighting_extents_override_from_cache(local_cache,
+                                                           initial_extents);
+
   Parallel::create_elements_using_distribution(
       [&dg_element_array, &global_cache, &initialization_items](
           const ElementId<volume_dim>& element_id, const size_t target_proc,
@@ -125,6 +131,6 @@ void DgElementArray<Metavariables, PhaseDepActionList>::allocate_array(
       i1_basis, i1_quadrature,
 
       procs_to_ignore, number_of_procs, number_of_nodes, num_of_procs_to_use,
-      local_cache, true);
+      local_cache, true, weighting_extents_override);
   dg_element_array.doneInserting();
 }

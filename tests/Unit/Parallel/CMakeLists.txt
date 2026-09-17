@@ -191,10 +191,13 @@ target_link_libraries(
   Actions
   DataStructures
   DataStructuresHelpers
+  Domain
+  DomainCreators
   DomainStructure
   ObserverHelpers
   Options
   Parallel
+  ParallelArrayCollection
   Serialization
   SystemUtilities
   Utilities

@@ -10,6 +10,7 @@
 #include <unordered_set>
 #include <utility>
 #include <variant>
+#include <vector>
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
@@ -58,6 +59,7 @@
 #include "Evolution/DiscontinuousGalerkin/BoundaryData.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarDataHolder.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarInfo.hpp"
+#include "Evolution/DiscontinuousGalerkin/OnlyDgBlockIds.hpp"
 #include "Evolution/DiscontinuousGalerkin/TimeSteppingPolicy.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
@@ -133,7 +135,8 @@ struct component {
                      ::domain::Tags::ElementMap<Dim, Frame::Grid>>,
           tmpl::list<>>,
       evolution::dg::subcell::Tags::ExtensionDirections<Dim>,
-      evolution::dg::subcell::Tags::SubcellOptions<Dim>>>;
+      evolution::dg::subcell::Tags::SubcellOptions<Dim>,
+      evolution::dg::Tags::OnlyDgBlockIds<Dim>>>;
 
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
       Parallel::Phase::Initialization,
@@ -380,7 +383,8 @@ void test(const bool use_cell_centered_flux) {
            Interps{},
            Interps{},
            ExtensionDirs{},
-           SubcellOptions{}});
+           SubcellOptions{},
+           std::vector<size_t>{}});
       ++neighbor_tci_decision;
     }
   }
@@ -390,7 +394,7 @@ void test(const bool use_cell_centered_flux) {
   SubcellOptions subcell_options(
       4.0, 1, 2.0e-3, 2.0e-4, false, false,
       evolution::dg::subcell::fd::ReconstructionMethod::DimByDim, false,
-      std::nullopt, ::fd::DerivativeOrder::Two, 1, 1, 1);
+      ::fd::DerivativeOrder::Two, 1, 1, 1);
   const int self_tci_decision = 100;
   ActionTesting::emplace_array_component_and_initialize<comp>(
       &runner, ActionTesting::NodeId{0}, ActionTesting::LocalCoreId{0}, self_id,
@@ -404,7 +408,8 @@ void test(const bool use_cell_centered_flux) {
        typename domain::Tags::NeighborMesh<Dim>::type{},
        typename evolution::dg::subcell::Tags::MeshForGhostData<Dim>::type{},
        cell_centered_flux, fd_to_neighbor_fd_interpolants,
-       neighbor_dg_to_fd_interpolants, extension_directions, subcell_options});
+       neighbor_dg_to_fd_interpolants, extension_directions, subcell_options,
+       std::vector<size_t>{}});
 
   using ghost_data_tag =
       evolution::dg::subcell::Tags::GhostDataForReconstruction<Dim>;
@@ -941,7 +946,7 @@ void test_receive_and_send_data(const bool enable_extension,
   const SubcellOptions subcell_options(
       4.0, 1, 2.0e-3, 2.0e-4, enable_extension, enable_extension,
       evolution::dg::subcell::fd::ReconstructionMethod::DimByDim, false,
-      std::nullopt, ::fd::DerivativeOrder::Two, 1, 1, 1);
+      ::fd::DerivativeOrder::Two, 1, 1, 1);
   const ::Mesh<3> dg_mesh{6, Spectral::Basis::Legendre,
                           Spectral::Quadrature::GaussLobatto};
   const ::Mesh<3> subcell_mesh = evolution::dg::subcell::fd::mesh(dg_mesh);
@@ -1027,7 +1032,7 @@ void test_receive_and_send_data(const bool enable_extension,
          cell_centered_flux, fd_to_neighbor_fd_interpolants,
          neighbor_dg_to_fd_interpolants, dg_to_neighbor_fd_interpolants,
          ElementMap<3, Frame::Grid>{element_id, blocks[element_id.block_id()]},
-         extension_directions, subcell_options});
+         extension_directions, subcell_options, std::vector<size_t>{}});
   }
 
   // SetInterpolator
