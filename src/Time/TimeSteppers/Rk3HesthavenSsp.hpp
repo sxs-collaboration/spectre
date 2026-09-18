@@ -64,6 +64,8 @@ class Rk3HesthavenSsp : public TimeStepper {
 
   bool monotonic() const override;
 
+  bool dense_output_uses_fsal() const override;
+
   uint64_t number_of_substeps() const override;
 
   uint64_t number_of_substeps_for_error() const override;

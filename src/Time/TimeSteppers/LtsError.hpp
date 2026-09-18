@@ -64,6 +64,8 @@ class LtsError : public LtsTimeStepper {
 
   [[noreturn]] bool monotonic() const override;
 
+  [[noreturn]] bool dense_output_uses_fsal() const override;
+
   [[noreturn]] TimeStepId next_time_id(
       const TimeStepId& current_id, const TimeDelta& time_step) const override;
 

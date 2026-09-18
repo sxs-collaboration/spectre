@@ -244,6 +244,14 @@ class TimeStepper : public PUP::able {
   /// are monotonic, which can be violated during initialization.
   virtual bool monotonic() const = 0;
 
+  /// Whether dense output makes use of the first-same-as-last
+  /// optimization.  Time steppers using this require the history to
+  /// contain the RHS evaluation for the end of a step before dense
+  /// output can be performed for that step.  Time steppers not using
+  /// this will delete any substep data after the final substep of
+  /// each step.
+  virtual bool dense_output_uses_fsal() const = 0;
+
   /// The TimeStepId after the current substep
   virtual TimeStepId next_time_id(const TimeStepId& current_id,
                                   const TimeDelta& time_step) const = 0;

@@ -90,6 +90,8 @@ class RungeKutta : public virtual TimeStepper {
 
   bool monotonic() const override;
 
+  bool dense_output_uses_fsal() const override;
+
   TimeStepId next_time_id(const TimeStepId& current_id,
                           const TimeDelta& time_step) const override;
 

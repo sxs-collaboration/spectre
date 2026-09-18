@@ -31,6 +31,8 @@ double Rk3HesthavenSsp::stable_step() const {
 
 bool Rk3HesthavenSsp::monotonic() const { return false; }
 
+bool Rk3HesthavenSsp::dense_output_uses_fsal() const { return true; }
+
 uint64_t Rk3HesthavenSsp::number_of_substeps() const { return 3; }
 
 uint64_t Rk3HesthavenSsp::number_of_substeps_for_error() const { return 3; }

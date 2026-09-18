@@ -32,6 +32,8 @@ size_t RungeKutta::number_of_past_steps() const { return 0; }
 
 bool RungeKutta::monotonic() const { return false; }
 
+bool RungeKutta::dense_output_uses_fsal() const { return true; }
+
 namespace {
 TimeStepId next_time_id_from_substeps(
     const TimeStepId& current_id, const TimeDelta& time_step,

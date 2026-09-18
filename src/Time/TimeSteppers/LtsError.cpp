@@ -53,6 +53,8 @@ LtsError::order() const {
 
 [[noreturn]] bool LtsError::monotonic() const { gts_error(); }
 
+[[noreturn]] bool LtsError::dense_output_uses_fsal() const { gts_error(); }
+
 [[noreturn]] TimeStepId LtsError::next_time_id(
     const TimeStepId& /*current_id*/, const TimeDelta& /*time_step*/) const {
   gts_error();

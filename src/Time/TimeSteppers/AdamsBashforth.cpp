@@ -91,6 +91,8 @@ double AdamsBashforth::stable_step() const {
 
 bool AdamsBashforth::monotonic() const { return true; }
 
+bool AdamsBashforth::dense_output_uses_fsal() const { return false; }
+
 TimeStepId AdamsBashforth::next_time_id(const TimeStepId& current_id,
                                         const TimeDelta& time_step) const {
   ASSERT(current_id.substep() == 0, "Adams-Bashforth should not have substeps");
