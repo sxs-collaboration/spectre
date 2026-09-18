@@ -3,8 +3,17 @@
 
 #include "Framework/TestingFramework.hpp"
 
+#include <algorithm>
+#include <array>
+#include <cmath>
+#include <complex>
 #include <cstddef>
+#include <memory>
+#include <optional>
+#include <string>
 #include <type_traits>
+#include <utility>
+#include <vector>
 
 #include "DataStructures/ComplexDataVector.hpp"
 #include "DataStructures/ComplexModalVector.hpp"
@@ -434,15 +443,20 @@ class SimplePolyBondiBufferUpdater
       Spectral::Swsh::Tags::SwshTransform>;
 
   SimplePolyBondiBufferUpdater() = default;
+  // `dr_j_power` shapes the time dependence Dr(J) = dr_j_slope * t^power; the
+  // default of 1 leaves a derivative every interpolation order gets exactly
+  // right, which is what the callers testing other things want.
   SimplePolyBondiBufferUpdater(DataVector time_buffer, const size_t l_max,
                                const double r_amplitude,
                                const double dr_j_slope,
-                               const double extraction_radius)
+                               const double extraction_radius,
+                               const size_t dr_j_power = 1)
       : time_buffer_{std::move(time_buffer)},
         l_max_{l_max},
         r_amplitude_{r_amplitude},
         dr_j_slope_{dr_j_slope},
-        extraction_radius_{extraction_radius} {}
+        extraction_radius_{extraction_radius},
+        dr_j_power_{dr_j_power} {}
 
   // NOLINTNEXTLINE
   WRAPPED_PUPable_decl_base_template(WorldtubeBufferUpdater<tags_for_writing>,
@@ -491,7 +505,9 @@ class SimplePolyBondiBufferUpdater
         Spectral::Swsh::goldberg_mode_index(l_max_, 2_st, 0);
     for (size_t ti = 0; ti < span_size; ++ti) {
       dr_j_buffer[(dr_j_mode_index * span_size) + ti] = std::complex<double>{
-          dr_j_slope_ * time_buffer_[(*time_span_start) + ti], 0.0};
+          dr_j_slope_ * std::pow(time_buffer_[(*time_span_start) + ti],
+                                 static_cast<double>(dr_j_power_)),
+          0.0};
     }
 
     return time_buffer_[std::min(*time_span_end - interpolator_length + 1,
@@ -522,6 +538,7 @@ class SimplePolyBondiBufferUpdater
     p | r_amplitude_;
     p | dr_j_slope_;
     p | extraction_radius_;
+    p | dr_j_power_;
   }
 
  private:
@@ -530,6 +547,7 @@ class SimplePolyBondiBufferUpdater
   double r_amplitude_ = 0.0;
   double dr_j_slope_ = 0.0;
   double extraction_radius_ = 100.0;
+  size_t dr_j_power_ = 1;
 };
 
 template <typename T>
@@ -589,6 +607,115 @@ void test_bondi_data_manager_du_dr_j() {
           .scale(1.0);
   CHECK_ITERABLE_CUSTOM_APPROX(computed_du_dr_j, expected_du_dr_j,
                                interpolator_approx);
+}
+
+void test_bondi_data_manager_du_dr_j_interpolator() {
+  INFO("BondiWorldtubeDataManager::set_du_dr_j_interpolator");
+  // This file's own buffer updater is not among the factory-creatable ones, so
+  // the round trip below has to be told about it.
+  register_classes_with_charm<SimplePolyBondiBufferUpdater>();
+  const size_t l_max = 8;
+  const size_t buffer_size = 4;
+  const double r_amplitude = 100.0;
+  const double dr_j_slope = 0.25;
+  const double extraction_radius = 100.0;
+  // A Dr(J) that varies as t^5, so the interpolation order used for its time
+  // derivative is visible in the answer; with the linear default every order
+  // is exact and the substitution could not be observed.
+  const size_t dr_j_power = 5;
+
+  DataVector time_buffer{30};
+  for (size_t i = 0; i < time_buffer.size(); ++i) {
+    time_buffer[i] = 1.0 + 0.1 * static_cast<double>(i);
+  }
+  const double target_time = 1.5 + 1.0e-3;
+
+  const auto populate = [&](const size_t du_dr_j_order) {
+    BondiWorldtubeDataManager data_manager{
+        std::make_unique<SimplePolyBondiBufferUpdater>(
+            time_buffer, l_max, r_amplitude, dr_j_slope, extraction_radius,
+            dr_j_power),
+        l_max, buffer_size,
+        std::make_unique<intrp::BarycentricRationalSpanInterpolator>(4u, 5u)};
+    if (du_dr_j_order != 0) {
+      data_manager.set_du_dr_j_interpolator(
+          std::make_unique<intrp::BarycentricRationalSpanInterpolator>(
+              du_dr_j_order, du_dr_j_order));
+    }
+    Variables<Tags::characteristic_worldtube_boundary_tags<Tags::BoundaryValue>>
+        boundary_variables{
+            Spectral::Swsh::number_of_swsh_collocation_points(l_max)};
+    Parallel::NodeLock hdf5_lock{};
+    data_manager.populate_hypersurface_boundary_data(
+        make_not_null(&boundary_variables), target_time,
+        make_not_null(&hdf5_lock));
+    return std::make_pair(std::move(boundary_variables),
+                          data_manager.get_clone());
+  };
+
+  const auto [shared, shared_clone] = populate(0);
+  const auto [substituted, substituted_clone] = populate(1);
+
+  // d/dt (slope t^power) at the target time, which the high-order default
+  // reproduces and a 3-point stencil does not.
+  const auto& dr_bondi_j =
+      get(get<Tags::BoundaryValue<Tags::Dr<Tags::BondiJ>>>(shared)).data();
+  const ComplexDataVector expected_du_dr_j =
+      static_cast<double>(dr_j_power) * dr_bondi_j / target_time;
+  const auto& shared_du_dr_j =
+      get(get<Tags::BoundaryValue<Tags::Du<Tags::Dr<Tags::BondiJ>>>>(shared))
+          .data();
+  const auto& substituted_du_dr_j =
+      get(get<Tags::BoundaryValue<Tags::Du<Tags::Dr<Tags::BondiJ>>>>(
+              substituted))
+          .data();
+  const double scale = max(abs(expected_du_dr_j));
+  const double shared_error = max(abs(shared_du_dr_j - expected_du_dr_j));
+  const double substituted_error =
+      max(abs(substituted_du_dr_j - expected_du_dr_j));
+  INFO("error against the analytic derivative: "
+       << shared_error << " on H5Interpolator, " << substituted_error
+       << " on the substituted order-1 interpolator, of " << scale);
+  // The substitution took effect: the low order is decisively worse, and it is
+  // the only thing that changed.
+  CHECK(shared_error < 1.0e-8 * scale);
+  CHECK(substituted_error > 1.0e-4 * scale);
+
+  tmpl::for_each<
+      Tags::characteristic_worldtube_boundary_tags<Tags::BoundaryValue>>(
+      [&shared_values = shared, &substituted_values = substituted](auto tag_v) {
+        using tag = tmpl::type_from<decltype(tag_v)>;
+        if constexpr (std::is_same_v<tag, Tags::BoundaryValue<Tags::Du<
+                                              Tags::Dr<Tags::BondiJ>>>>) {
+          CHECK(max(abs(get(get<tag>(shared_values)).data() -
+                        get(get<tag>(substituted_values)).data())) > 0.0);
+        } else {
+          CHECK_ITERABLE_APPROX(get(get<tag>(shared_values)).data(),
+                                get(get<tag>(substituted_values)).data());
+        }
+      });
+
+  // A clone and a round trip through Charm++ keep the substituted interpolator,
+  // so a manager migrated between nodes does not silently revert.
+  const auto check_preserved = [&](const auto& manager,
+                                   const ComplexDataVector& expected) {
+    Variables<Tags::characteristic_worldtube_boundary_tags<Tags::BoundaryValue>>
+        boundary_variables{
+            Spectral::Swsh::number_of_swsh_collocation_points(l_max)};
+    Parallel::NodeLock hdf5_lock{};
+    manager->populate_hypersurface_boundary_data(
+        make_not_null(&boundary_variables), target_time,
+        make_not_null(&hdf5_lock));
+    CHECK_ITERABLE_APPROX(
+        get(get<Tags::BoundaryValue<Tags::Du<Tags::Dr<Tags::BondiJ>>>>(
+                boundary_variables))
+            .data(),
+        expected);
+  };
+  check_preserved(shared_clone, shared_du_dr_j);
+  check_preserved(substituted_clone, substituted_du_dr_j);
+  check_preserved(serialize_and_deserialize(substituted_clone),
+                  substituted_du_dr_j);
 }
 
 template <typename DataManager, typename DummyUpdater, typename Generator>
@@ -1218,6 +1345,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.ReadBoundaryDataH5",
                                                 BondiBufferUpdater>(
         make_not_null(&gen));
     test_bondi_data_manager_du_dr_j();
+    test_bondi_data_manager_du_dr_j_interpolator();
   }
   {
     INFO("Testing monotonically increasing times");

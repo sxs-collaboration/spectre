@@ -6,6 +6,7 @@
 #include <cstddef>
 #include <optional>
 #include <tuple>
+#include <type_traits>
 #include <utility>
 
 #include "DataStructures/DataBox/DataBox.hpp"
@@ -80,6 +81,41 @@ struct InitializeWorldtubeBoundaryBase {
         }
       }
     }
+    if constexpr (std::is_same_v<Tags::H5WorldtubeBoundaryDataManager,
+                                 tmpl::front<ManagerTags>>) {
+      // The `Du<Dr<BondiJ>>` boundary value is consumed by the initial-data
+      // generator alone, so the generator -- not `H5Interpolator` -- chooses
+      // the interpolation order it is built with. Which specialization the
+      // component carries follows `evolve_ccm`, and a mock that carries
+      // neither (a unit test of the boundary by itself) keeps `H5Interpolator`.
+      const auto take_interpolator_from = [&box](auto generator_tag_v) {
+        using generator_tag = tmpl::type_from<decltype(generator_tag_v)>;
+        auto du_dr_j_interpolator =
+            db::get<generator_tag>(box).du_dr_j_interpolator();
+        if (du_dr_j_interpolator != nullptr) {
+          db::mutate<Tags::H5WorldtubeBoundaryDataManager>(
+              [&du_dr_j_interpolator](const auto data_manager) {
+                (*data_manager)
+                    ->set_du_dr_j_interpolator(std::move(du_dr_j_interpolator));
+              },
+              make_not_null(&box));
+        }
+      };
+      // Asking which specialization is retrievable would be ambiguous: a
+      // databox can expose both (an analytic boundary uses the
+      // `evolve_ccm = false` generator even in a CCM evolution), and an ordered
+      // fallback would then silently pick one of them. The component's own
+      // generator is the one keyed on `evolve_ccm`, so ask the metavariables
+      // directly. A mock that defines neither keeps `H5Interpolator`.
+      if constexpr (requires { Metavariables::evolve_ccm; }) {
+        using generator_tag = Tags::InitializeJ<Metavariables::evolve_ccm>;
+        if constexpr (db::tag_is_retrievable_v<generator_tag,
+                                               db::DataBox<DataBoxTagsList>>) {
+          take_interpolator_from(tmpl::type_<generator_tag>{});
+        }
+      }
+    }
+
     const size_t l_max = db::get<Tags::LMax>(box);
 
     Initialization::mutate_assign<simple_tags>(
