@@ -113,9 +113,13 @@ const Matrix& reconstruction_matrix(const Mesh<1>& dg_mesh,
  * FD. In this case we need to project the DG volume data onto the ghost zone
  * cells.
  *
+ * The parity parameter is required for ZernikeB1 bases, and is ignored for
+ * others.
+ *
  * \note Currently assumes a max ghost zone size of `5` and a minimum ghost zone
  * size of 2.
  */
 const Matrix& projection_matrix(const Mesh<1>& dg_mesh, size_t subcell_extents,
-                                size_t ghost_zone_size, Side side);
+                                size_t ghost_zone_size, Side side,
+                                Spectral::Parity parity);
 }  // namespace evolution::dg::subcell::fd
