@@ -524,6 +524,8 @@ Here are a few notes:
   instructions](https://github.com/UIUC-PPL/charm#building-dynamic-libraries)).
 - Passing the `--disable-tls` option to `build` or `-D DISABLE_TLS=ON` to
   cmake is required for SpECTRE's Python bindings to work.
+- On macOS, pass `-DCMK_NO_ISO_MALLOC=1` to `build` to disable Charm++'s
+  isomalloc. See issue https://github.com/charmplusplus/charm/issues/3995.
 - When compiling Charm++ you can specify the compiler using, for example,
   ```
   ./build LIBS ARCH clang
