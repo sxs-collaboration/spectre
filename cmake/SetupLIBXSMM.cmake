@@ -16,10 +16,10 @@ if (NOT LIBXSMM_FOUND)
 
   FetchContent_GetProperties(xsmm)
   if(NOT xsmm_POPULATED)
-    # Need an unreleased version to be compatible with newer glibc versions
     FetchContent_Populate(xsmm
       GIT_REPOSITORY https://github.com/libxsmm/libxsmm.git
-      GIT_TAG 10b7dc82b3c46157e76eb40e4e959555f895b24d
+      GIT_TAG 2.1.0
+      GIT_SHALLOW TRUE
       SUBBUILD_DIR ${CMAKE_BINARY_DIR}/_deps/xsmm-subbuild
       SOURCE_DIR ${CMAKE_BINARY_DIR}/_deps/xsmm-src
       BINARY_DIR ${CMAKE_BINARY_DIR}/_deps/xsmm-build

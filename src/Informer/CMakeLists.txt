@@ -74,13 +74,11 @@ set_target_properties(
   CXX_COMPILER_LAUNCHER
   "${Python_EXECUTABLE};${CMAKE_BINARY_DIR}/Informer/InfoAtLinkExtractFlags.py"
   )
-if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.15)
-  set_target_properties(
-    ${INFO_AT_LINK_LIB}
-    PROPERTIES
-    ADDITIONAL_CLEAN_FILES
-    ${CMAKE_BINARY_DIR}/Informer/InfoAtLink_flags.txt
-    )
-endif()
+set_target_properties(
+  ${INFO_AT_LINK_LIB}
+  PROPERTIES
+  ADDITIONAL_CLEAN_FILES
+  ${CMAKE_BINARY_DIR}/Informer/InfoAtLink_flags.txt
+  )
 
 add_subdirectory(Python)
