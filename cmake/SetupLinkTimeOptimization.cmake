@@ -17,6 +17,7 @@ if(_RESULT AND SPECTRE_LTO)
 else()
   target_link_options(SpectreFlags
     INTERFACE
-    -fno-lto)
+    -fno-lto
+    -Wl,--print-memory-usage)
   message(STATUS "Link-time optimizations disabled (no LTO)")
 endif()
