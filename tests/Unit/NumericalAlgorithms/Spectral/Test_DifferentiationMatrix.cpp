@@ -23,7 +23,7 @@ void test() {
   CAPTURE(quadrature);
   const auto custom_approx = Approx::custom().epsilon(5.0e-13).scale(1.0);
   for (size_t n = minimum_number_of_points<basis, quadrature>;
-       n <= maximum_number_of_points<basis>; ++n) {
+       n <= maximum_number_of_points<basis, quadrature>; ++n) {
     CAPTURE(n);
     const Matrix& m = differentiation_matrix<basis, quadrature>(n);
     const DataVector one{n, 1.0};
@@ -39,7 +39,7 @@ void test_with_parity() {
   CAPTURE(quadrature);
   const auto custom_approx = Approx::custom().epsilon(5.0e-13).scale(1.0);
   for (size_t n = minimum_number_of_points<basis, quadrature>;
-       n <= maximum_number_of_points<basis>; ++n) {
+       n <= maximum_number_of_points<basis, quadrature>; ++n) {
     CAPTURE(n);
     const Matrix& m_even =
         differentiation_matrix<basis, quadrature>(n, Parity::Even);

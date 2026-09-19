@@ -21,8 +21,8 @@
 #include "NumericalAlgorithms/Spectral/CollocationPoints.hpp"
 #include "NumericalAlgorithms/Spectral/CollocationPointsAndWeights.hpp"
 #include "NumericalAlgorithms/Spectral/DifferentiationMatrix.hpp"
+#include "NumericalAlgorithms/Spectral/Limits.hpp"
 #include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
-#include "NumericalAlgorithms/Spectral/MaximumNumberOfPoints.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/ModalToNodalMatrix.hpp"
 #include "NumericalAlgorithms/Spectral/NodalToModalMatrix.hpp"
@@ -32,53 +32,62 @@
 
 namespace {
 template <size_t Dim>
-void test_derivatives(const size_t num_points) {
-  const Approx custom_approx =
-      num_points > 9 ? Approx::custom().epsilon(1.0e-12).scale(1.0)
-                     : Approx::custom().epsilon(1.0e-13).scale(1.0);
-  // Testing differeniation for polynomials exactly representable, so
-  // up to power = num_points
+void test_derivatives() {
   constexpr Spectral::Basis basis = Dim == 1   ? Spectral::Basis::ZernikeB1
                                     : Dim == 2 ? Spectral::Basis::ZernikeB2
                                                : Spectral::Basis::ZernikeB3;
   CAPTURE(basis);
-  CAPTURE(num_points);
-  const Mesh<1> mesh{num_points, basis, Spectral::Quadrature::GaussRadauUpper};
-  const auto coords = logical_coordinates(mesh);
-  const DataVector r = 0.5 * (get<0>(coords) + 1.0);
-  const auto f = [](const size_t power, const DataVector& x) {
-    return integer_pow(x, static_cast<int>(power));
-  };
-  const auto d_f = [](const size_t power, const DataVector& x) {
-    return static_cast<double>(power) *
-           integer_pow(x, static_cast<int>(power) - 1);
-  };
-  auto& diff_matrix_even =
-      Spectral::differentiation_matrix<basis,
-                                       Spectral::Quadrature::GaussRadauUpper>(
-          num_points, Spectral::Parity::Even);
-  auto& diff_matrix_odd =
-      Spectral::differentiation_matrix<basis,
-                                       Spectral::Quadrature::GaussRadauUpper>(
-          num_points, Spectral::Parity::Odd);
-  for (size_t power = 0; power <= num_points; ++power) {
-    CAPTURE(power);
+  const auto quadrature = Spectral::Quadrature::GaussRadauUpper;
+  // Being unaware of tabulated points and weights for Zernike
+  // basis functions specifically with Gauss-Radau quadrature, we
+  // test whether the basis can correctly take the derivatives of exactly
+  // representable function
+  for (size_t num_points = Spectral::limits::min(basis, quadrature);
+       num_points <= Spectral::limits::max(basis, quadrature); ++num_points) {
+    const Approx custom_approx =
+        num_points > 9 ? Approx::custom().epsilon(1.0e-12).scale(1.0)
+                       : Approx::custom().epsilon(1.0e-13).scale(1.0);
+    // Testing differeniation for polynomials exactly representable, so
+    // up to power = num_points
+    CAPTURE(num_points);
+    const Mesh<1> mesh{num_points, basis,
+                       Spectral::Quadrature::GaussRadauUpper};
+    const auto coords = logical_coordinates(mesh);
+    const DataVector r = 0.5 * (get<0>(coords) + 1.0);
+    const auto f = [](const size_t power, const DataVector& x) {
+      return integer_pow(x, static_cast<int>(power));
+    };
+    const auto d_f = [](const size_t power, const DataVector& x) {
+      return static_cast<double>(power) *
+             integer_pow(x, static_cast<int>(power) - 1);
+    };
+    auto& diff_matrix_even =
+        Spectral::differentiation_matrix<basis,
+                                         Spectral::Quadrature::GaussRadauUpper>(
+            num_points, Spectral::Parity::Even);
+    auto& diff_matrix_odd =
+        Spectral::differentiation_matrix<basis,
+                                         Spectral::Quadrature::GaussRadauUpper>(
+            num_points, Spectral::Parity::Odd);
+    for (size_t power = 0; power <= num_points; ++power) {
+      CAPTURE(power);
 
-    DataVector my_function(num_points);
-    my_function = f(power, r);
+      DataVector my_function(num_points);
+      my_function = f(power, r);
 
-    DataVector expected_derivative(num_points);
-    expected_derivative =
-        power > 0 ? d_f(power, r) : DataVector(num_points, 0.0);
+      DataVector expected_derivative(num_points);
+      expected_derivative =
+          power > 0 ? d_f(power, r) : DataVector(num_points, 0.0);
 
-    DataVector evaluated_derivative(num_points);
-    // manually inserting 2 from above affine map (handled automatically
-    // in partial_derivatives())
-    evaluated_derivative =
-        2.0 * (power % 2 == 0 ? apply_matrix(diff_matrix_even, my_function)
-                              : apply_matrix(diff_matrix_odd, my_function));
-    CHECK_ITERABLE_CUSTOM_APPROX(evaluated_derivative, expected_derivative,
-                                 custom_approx);
+      DataVector evaluated_derivative(num_points);
+      // manually inserting 2 from above affine map (handled automatically
+      // in partial_derivatives())
+      evaluated_derivative =
+          2.0 * (power % 2 == 0 ? apply_matrix(diff_matrix_even, my_function)
+                                : apply_matrix(diff_matrix_odd, my_function));
+      CHECK_ITERABLE_CUSTOM_APPROX(evaluated_derivative, expected_derivative,
+                                   custom_approx);
+    }
   }
 }
 
@@ -91,7 +100,8 @@ void test_transform_identity() {
                                                : Spectral::Basis::ZernikeB3;
   CAPTURE(basis);
   const Approx custom_approx = Approx::custom().epsilon(2.0e-12).scale(1.0);
-  for (size_t n = 2; n <= Spectral::maximum_number_of_points<basis> / 2; ++n) {
+  for (size_t n = Spectral::limits::min(basis, quadrature);
+       n <= Spectral::limits::max(basis, quadrature) / 2; ++n) {
     for (size_t N = 0; N < 2 * n - 1; ++N) {
       CAPTURE(N);
       const DataVector xi = Spectral::collocation_points<basis, quadrature>(n);
@@ -145,7 +155,8 @@ void test_weight_at_upper() {
     }
   };
 
-  for (size_t n = 2; n < Spectral::maximum_number_of_points<basis>; ++n) {
+  for (size_t n = Spectral::limits::min(basis, quadrature);
+       n < Spectral::limits::max(basis, quadrature); ++n) {
     CAPTURE(n);
     const DataVector& weights =
         Spectral::quadrature_weights<basis, quadrature>(n);
@@ -157,17 +168,9 @@ void test_weight_at_upper() {
 SPECTRE_TEST_CASE(
     "Unit.Numerical.Spectral.ZernikeGaussRadauUpper.PointsAndWeights",
     "[NumericalAlgorithms][Spectral][Unit]") {
-  // Being unaware of tabulated points and weights for Zernike
-  // basis functions specifically with Gauss-Radau quadrature, we
-  // test whether the basis can correctly take the derivatives of exactly
-  // representable function
-  for (size_t i = 1;
-       i <= Spectral::maximum_number_of_points<Spectral::Basis::ZernikeB2>;
-       ++i) {
-    test_derivatives<1>(i);
-    test_derivatives<2>(i);
-    test_derivatives<3>(i);
-  }
+  test_derivatives<1>();
+  test_derivatives<2>();
+  test_derivatives<3>();
   test_weight_at_upper<1>();
   test_weight_at_upper<2>();
   test_weight_at_upper<3>();

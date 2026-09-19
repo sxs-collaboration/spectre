@@ -55,6 +55,7 @@ Checks: '*,
 -hicpp-*,
 # We use pragma once instead of include guards,
 -llvm-header-guard,
+-portability-avoid-pragma-once,
 # Makes code less portable because some implementation-defined STL,
 # types can be pointers or not.  Same as,
 # readability-qualified-auto below,
@@ -96,6 +97,8 @@ Checks: '*,
 -misc-confusable-identifiers,
 # We do not care about building with MSVC,
 -portability-template-virtual-member-function,
+# Just silly... wants parentheses like (2*x)+1,
+-readability-math-missing-parentheses,
 # Same as llvm-qualified-auto above.,
 -readability-qualified-auto,
 # Access specifiers can be useful to structure code,
@@ -122,5 +125,6 @@ CheckOptions:
 WarningsAsErrors: '*'
 # It is unclear if the header filter actually works or how to use it so
 # just include all headers
-HeaderFilterRegex: ''
+ExcludeHeaderFilterRegex: '(/usr/local/include/.*)'
+HeaderFilterRegex: '.*'
 FormatStyle:     none

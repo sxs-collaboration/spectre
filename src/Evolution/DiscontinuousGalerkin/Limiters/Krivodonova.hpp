@@ -439,8 +439,9 @@ class Krivodonova<VolumeDim, tmpl::list<Tags...>> {
    * \brief The \f$\alpha_i\f$ values in the Krivodonova algorithm.
    */
   struct Alphas {
-    using type = std::array<
-        double, Spectral::maximum_number_of_points<Spectral::Basis::Legendre>>;
+    using type = std::array<double, Spectral::maximum_number_of_points<
+                                        Spectral::Basis::Legendre,
+                                        Spectral::Quadrature::GaussLobatto>>;
     static constexpr Options::String help = {
         "The alpha parameters of the Krivodonova limiter"};
   };
@@ -466,8 +467,9 @@ class Krivodonova<VolumeDim, tmpl::list<Tags...>> {
       "necessary."};
 
   explicit Krivodonova(
-      std::array<double,
-                 Spectral::maximum_number_of_points<Spectral::Basis::Legendre>>
+      std::array<double, Spectral::maximum_number_of_points<
+                             Spectral::Basis::Legendre,
+                             Spectral::Quadrature::GaussLobatto>>
           alphas,
       bool disable_for_debugging = false, const Options::Context& context = {});
 
@@ -544,17 +546,19 @@ class Krivodonova<VolumeDim, tmpl::list<Tags...>> {
       const typename Tag::type& nodal_tensor, const Mesh<Dim>& mesh) const;
 
   std::array<double,
-             Spectral::maximum_number_of_points<Spectral::Basis::Legendre>>
-      alphas_ = make_array<
-          Spectral::maximum_number_of_points<Spectral::Basis::Legendre>>(
+             Spectral::maximum_number_of_points<
+                 Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto>>
+      alphas_ = make_array<Spectral::maximum_number_of_points<
+          Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto>>(
           std::numeric_limits<double>::signaling_NaN());
   bool disable_for_debugging_{false};
 };
 
 template <size_t VolumeDim, typename... Tags>
 Krivodonova<VolumeDim, tmpl::list<Tags...>>::Krivodonova(
-    std::array<double,
-               Spectral::maximum_number_of_points<Spectral::Basis::Legendre>>
+    std::array<double, Spectral::maximum_number_of_points<
+                           Spectral::Basis::Legendre,
+                           Spectral::Quadrature::GaussLobatto>>
         alphas,
     bool disable_for_debugging, const Options::Context& context)
     : alphas_(alphas), disable_for_debugging_(disable_for_debugging) {

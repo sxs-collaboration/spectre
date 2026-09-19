@@ -538,6 +538,7 @@ jobs:
         run: |
           add-apt-repository ppa:ubuntu-toolchain-r/test
           apt-get update -y
+          apt-get install -y time
           if [[ $COMPILER_ID = gcc ]]; then
             apt-get install -y $CC $CXX $FC
           elif [[ $COMPILER_ID = clang ]]; then

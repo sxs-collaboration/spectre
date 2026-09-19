@@ -46,7 +46,7 @@ endif()
 
 # Invoke compiler through ccache
 set(CMAKE_CXX_COMPILER_LAUNCHER
-  ${_CCACHE_LAUNCHER_ENV_VARS} ${REAL_CCACHE_EXEC})
+  ${_CCACHE_LAUNCHER_ENV_VARS} ${REAL_CCACHE_EXEC} "/usr/bin/time;-f;Target: %C | Peak RAM: %M KB")
 set(CMAKE_C_COMPILER_LAUNCHER ${CMAKE_CXX_COMPILER_LAUNCHER})
 message(STATUS "Using ccache for compilation. It is invoked as: "
   "${CMAKE_CXX_COMPILER_LAUNCHER}")
