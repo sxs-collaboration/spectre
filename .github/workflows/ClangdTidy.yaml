@@ -34,8 +34,7 @@ jobs:
       # Install clangd-tidy
       - name: Install clangd-tidy
         run: |
-          apt-get install -y clangd-17
-          ln -s /usr/bin/clangd-17 /usr/bin/clangd
+          apt-get install -y clangd
           pip3 install clangd-tidy
       - name: Fetch sxs-collaboration/spectre/develop
         run: >
