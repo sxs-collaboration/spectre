@@ -54,8 +54,8 @@ namespace Tags {
  *   \Psi_m(r,\theta) e^{im\Delta\phi(r)} e^{im(\phi - \Omega t)}
  * \end{equation}
  *
- * where $\Delta\phi(r) = \frac{a}{r_\plus - r_\minus}
- * \ln(\frac{r-r_\plus}{r-r_\minus})$.
+ * where $\Delta\phi(r) = \frac{a}{r_+ - r_-}
+ * \ln(\frac{r-r_+}{r-r_-})$.
  */
 struct MMode : db::SimpleTag {
   using type = Scalar<ComplexDataVector>;

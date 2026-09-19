@@ -52,18 +52,19 @@ DomainCreator:
     # Order of dimensions is (r, cos(theta))
     BlockBounds:
       # Puncture position is at r = 10.
+      # outer_radius = 2 * r_u
       - [1.866025403784, 5., 6., &worldtube_right 14,
-         25., &outer_radius 1e4] # r_*
+         25., &outer_radius 50] # r
       - [-1., -0.5, 0.5, 1.]  # cos(theta)
     Distributions:
-      # r_*
-      - [Linear, Linear, Linear, Linear, &outer_shell_distribution Inverse]
+      # r
+      - [Linear, Linear, Linear, Linear, Linear]
       # cos(theta)
       - [Linear, Linear, Linear]
     SingularityPositions:
-      # r_*
+      # r
       - [-51., -51., -51., 0., 0.]
-      # os(theta)
+      # cos(theta)
       - [-2., -2., -2.]
     InitialGridPoints: [4, 4]
     InitialLevels: [0, 0]
@@ -121,14 +122,7 @@ DomainCreator:
     BoundaryConditions:
       # Radial boundary conditions
       - Lower: None
-        Upper:
-          Sommerfeld:
-            BlackHoleMass: *bh_mass
-            BlackHoleSpin: *bh_spin
-            OrbitalRadius: *orbital_radius
-            MModeNumber: *m_mode_number
-            HyperboloidalSlicing: True
-            Order: 2
+        Upper: None
       # Angular boundary conditions
       - None
 
@@ -216,10 +210,7 @@ EventsAndTriggersAtIterations:
           CoordinatesFloatingPointType: Double
           FloatingPointTypes: [Double]
 
-RadiallyCompressedCoordinates:
-  InnerRadius: *worldtube_right
-  OuterRadius: *outer_radius
-  Compression: *outer_shell_distribution
+RadiallyCompressedCoordinates: None
 
 BuildMatrix:
   MatrixSubfileName: None
