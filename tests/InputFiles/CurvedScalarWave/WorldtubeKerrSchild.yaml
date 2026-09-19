@@ -52,14 +52,16 @@ DomainCreator:
       XCoord: -1e-64
       Interior:
         ExciseWithBoundaryCondition: DemandOutgoingCharSpeeds
-      UseLogarithmicMap: false
+      ShellLogMapStrength: None
+      CubeLogMapStrength: None
     ObjectA:
       InnerRadius: 1.6
       OuterRadius: 2.
       XCoord: *XCoordWorldtube
       Interior:
         ExciseWithBoundaryCondition: Worldtube
-      UseLogarithmicMap: false
+      ShellLogMapStrength: None
+      CubeLogMapStrength: None
     CenterOfMassOffset: [0., 0.]
     CubeScale: 1.0
     Envelope:
