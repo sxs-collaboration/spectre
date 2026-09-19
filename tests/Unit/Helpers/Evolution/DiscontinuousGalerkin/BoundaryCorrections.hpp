@@ -22,6 +22,7 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Evolution/DiscontinuousGalerkin/Actions/ComputeTimeDerivativeHelpers.hpp"
+#include "Evolution/DiscontinuousGalerkin/BoundaryEvolvedVariables.hpp"
 #include "Framework/Pypp.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
@@ -35,7 +36,6 @@
 #include "Utilities/StdHelpers/RetrieveUniquePtr.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits/CreateHasTypeAlias.hpp"
-#include "Utilities/TypeTraits/IsA.hpp"
 
 namespace TestHelpers::evolution::dg {
 /// Indicate if the boundary correction should be zero when the solution is
@@ -186,11 +186,11 @@ void test_boundary_correction_conservation_impl(
                 "spatial metric.");
   Approx custom_approx = Approx::custom().epsilon(eps).scale(1.0);
 
-  // For a system with a list-valued `variables_tag` (containing boundary
-  // variables), the helper tests the first entry, which holds the volume
+  // For a system with boundary-evolved variables, the helper tests the first
+  // entry of the list-valued `variables_tag`, which holds the volume
   // variables.
   using variables_tags = typename tmpl::conditional_t<
-      tt::is_a_v<tmpl::list, typename System::variables_tag>,
+      ::evolution::dg::system_has_boundary_variables_v<System>,
       tmpl::front<typename System::variables_tag>,
       typename System::variables_tag>::tags_list;
   using auxiliary_variables =
@@ -997,11 +997,11 @@ void test_boundary_correction_with_python(
       typename BoundaryCorrection::dg_package_data_temporary_tags;
   using package_primitive_tags = detail::get_correction_primitive_vars<
       System::has_primitive_and_conservative_vars, BoundaryCorrection>;
-  // For a system with a list-valued `variables_tag` (containing boundary
-  // variables), the helper tests the first entry, which holds the volume
+  // For a system with boundary-evolved variables, the helper tests the first
+  // entry of the list-valued `variables_tag`, which holds the volume
   // variables.
   using variables_tags = typename tmpl::conditional_t<
-      tt::is_a_v<tmpl::list, typename System::variables_tag>,
+      ::evolution::dg::system_has_boundary_variables_v<System>,
       tmpl::front<typename System::variables_tag>,
       typename System::variables_tag>::tags_list;
   using auxiliary_variables =
@@ -1094,11 +1094,11 @@ void test_auxiliary_boundary_correction_with_python(
     const std::tuple<ExtraPythonArgs...>& extra_python_args = {}) {
   static_assert(std::is_final_v<std::decay_t<BoundaryCorrection>>,
                 "All boundary correction classes must be marked `final`.");
-  // For a system with a list-valued `variables_tag` (containing boundary
-  // variables), the helper tests the first entry, which holds the volume
+  // For a system with boundary-evolved variables, the helper tests the first
+  // entry of the list-valued `variables_tag`, which holds the volume
   // variables.
   using variables_tags = typename tmpl::conditional_t<
-      tt::is_a_v<tmpl::list, typename System::variables_tag>,
+      ::evolution::dg::system_has_boundary_variables_v<System>,
       tmpl::front<typename System::variables_tag>,
       typename System::variables_tag>::tags_list;
   using auxiliary_variables =

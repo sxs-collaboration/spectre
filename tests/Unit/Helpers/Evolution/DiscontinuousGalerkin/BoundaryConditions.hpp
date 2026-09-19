@@ -29,6 +29,7 @@
 #include "Evolution/BoundaryConditions/Type.hpp"
 #include "Evolution/DiscontinuousGalerkin/Actions/ComputeTimeDerivativeHelpers.hpp"
 #include "Evolution/DiscontinuousGalerkin/Actions/NormalCovectorAndMagnitude.hpp"
+#include "Evolution/DiscontinuousGalerkin/BoundaryEvolvedVariables.hpp"
 #include "Framework/Pypp.hpp"
 #include "Framework/PyppFundamentals.hpp"
 #include "Framework/TestCreation.hpp"
@@ -220,11 +221,11 @@ void test_boundary_condition_with_python_impl(
   CAPTURE(pretty_type::name<BoundaryCorrection>());
   const size_t number_of_points_on_face = face_points.product();
 
-  // For a system with a list-valued `variables_tag` (containing boundary
-  // variables), the helper tests the first entry, which holds the volume
+  // For a system with boundary-evolved variables, the helper tests the first
+  // entry of the list-valued `variables_tag`, which holds the volume
   // variables.
   using variables_tag = tmpl::conditional_t<
-      tt::is_a_v<tmpl::list, typename System::variables_tag>,
+      ::evolution::dg::system_has_boundary_variables_v<System>,
       tmpl::front<typename System::variables_tag>,
       typename System::variables_tag>;
   using variables_tags = typename variables_tag::tags_list;
@@ -606,11 +607,11 @@ void test_boundary_condition_with_python(
   static_assert(std::is_final_v<std::decay_t<BoundaryCondition>>,
                 "All boundary condition classes must be marked `final`.");
   static_assert(tt::is_a_v<tmpl::list, ExtraTagsForPythonFromDataBox>);
-  // For a system with a list-valued `variables_tag` (containing boundary
-  // variables), the helper tests the first entry, which holds the volume
+  // For a system with boundary-evolved variables, the helper tests the first
+  // entry of the list-valued `variables_tag`, which holds the volume
   // variables.
   using variables_tags = typename tmpl::conditional_t<
-      tt::is_a_v<tmpl::list, typename System::variables_tag>,
+      ::evolution::dg::system_has_boundary_variables_v<System>,
       tmpl::front<typename System::variables_tag>,
       typename System::variables_tag>::tags_list;
   using auxiliary_variables =
