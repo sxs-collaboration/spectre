@@ -2740,10 +2740,8 @@ class WithBoundaryFields : public Base<System> {
                                             ? sqrt(offset_temporaries + 1.0)
                                             : 1.0;
     for (size_t j = 0; j < num_pts; ++j) {
-      CHECK((approx(outward_directed_normal_covector.get(0)[j]) ==
-                 1.0 / normalization_factor or
-             approx(outward_directed_normal_covector.get(0)[j]) ==
-                 -1.0 / normalization_factor));
+      CHECK((approx(abs(outward_directed_normal_covector.get(0)[j])) ==
+             1.0 / normalization_factor));
     }
     // Negative normal means lower face (x = -1), else upper face (x = 0).
     // `test_1d` uses a single element (both faces external) covering
