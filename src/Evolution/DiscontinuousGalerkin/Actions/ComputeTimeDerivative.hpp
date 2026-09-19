@@ -650,7 +650,8 @@ Parallel::iterable_action_return_t ComputeTimeDerivative_detail::Impl<
           "variables_tag) or an auxiliary variable (in auxiliary_variables); "
           "otherwise it is not populated in the combined differentiation "
           "source.");
-      Variables<detail::evolved_and_auxiliary_vars_tags<EvolutionSystem>>
+      Variables<detail::evolved_and_auxiliary_vars_tags<EvolutionSystem,
+                                                        variables_tag>>
           evolved_and_auxiliary_vars{mesh.number_of_grid_points()};
       evolved_and_auxiliary_vars.assign_subset(db::get<variables_tag>(box));
       evolved_and_auxiliary_vars.assign_subset(
