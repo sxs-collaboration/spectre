@@ -472,10 +472,6 @@ void TovSolution::integrate(
           Scalar<double>{central_mass_density},
           central_specific_internal_energy, central_pressure)));
 
-  int status = 0;
-  char* demangled = abi::__cxa_demangle(typeid(equation_of_state).name(),
-                                        nullptr, nullptr, &status);
-  free(demangled);
   // check if the error in the third order estimate is of order del_H^4
   // due to the 4th order finite difference derivative used to compute d^2edp^2.
   // If not, we use the fallback threshold instead of the one computed
