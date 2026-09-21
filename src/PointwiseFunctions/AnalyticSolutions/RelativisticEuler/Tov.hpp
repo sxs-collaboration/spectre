@@ -74,7 +74,7 @@ namespace RelativisticEuler::Solutions {
  * Note that Lindblom's paper labels the independent variable as \f$h\f$.
  * However the \f$h\f$ in Lindblom's paper is **not** the specific enthalpy but
  * its logarithm, \f$\ln(h)\f$. In the code, this variable is often referred to
- * as `H`.
+ * as \f$H\f$.
  *
  * The ODEs are solved numerically when this class is constructed, and the
  * quantities \f$m(r)/r\f$ and \f$\ln(h)\f$ are interpolated and exposed as
@@ -91,11 +91,11 @@ namespace RelativisticEuler::Solutions {
  * initial integration step, then uses higher-order terms to estimate
  * the radius at which this Taylor series is valid.
  *
- * * Here,
+ * Here,
  * \f$H = \ln(h)\f$ is the log of the specific enthalpy,
  * \f$H_c\f$ is its central value, and \f$e_c\f$ and \f$p_c\f$
  * are the central energy density and pressure. The coefficient
- * \f$e_1\f$ is given by
+ * \f$e_1\f$ is given by:
  *
  * \f{equation}
  * e_1 = -\frac{1}{c_s^2}(e_c+p_c).
@@ -108,20 +108,24 @@ namespace RelativisticEuler::Solutions {
  *
  * \f{align}
  * \frac{\mathrm{d}u}{\mathrm{d}H} &=
- * -\frac{3}{2\pi(e_c + 3p_c)}
+ * -u_1 - 2u_2(H_c-H) - \mathcal{O}((H_c-H)^2)
+ * \\
+ * &= -\frac{3}{2\pi(e_c + 3p_c)}
  * -2\frac{15(3p_c-e_c)-9e_1}
  * {20\pi(e_c+3p_c)^2}(H_c-H) + \mathcal{O}((H_c-H)^2)
  * \\
- * \frac{\mathrm{d}v}{\mathrm{d}H} &=
- * -\frac{2e_c}{e_c+3p_c}
+ * \frac{\mathrm{d}v}{\mathrm{d}H}&=
+ * -v_1 - 2v_2(H_c-H) - \mathcal{O}((H_c-H)^2)
+ * \\
+ * &= -\frac{2e_c}{e_c+3p_c}
  * -2\frac{5e_c(3p_c-e_c)+3(e_c+6p_c)e_1}
  * {5(e_c+3p_c)^2}(H_c-H) + \mathcal{O}((H_c-H)^2)
  * \f}
  *
- * where the first-order terms of these expansions are identical to those
- * in \cite Lindblom1998dp.
+ * where the first-order terms of these expansions agree with those in
+ * \cite Lindblom1998dp.
  *
- * The coefficients through second-order of the Taylor series expansion are
+ * The coefficients through second order of the Taylor series expansion are
  * calculated exactly, and the third-order coefficients are estimated using a
  * 4th-order finite difference approximation of the second derivative of energy
  * density with respect to pressure. The third-order coefficients are used
@@ -131,11 +135,12 @@ namespace RelativisticEuler::Solutions {
  * the full Lindblom TOV equations.
  *
  * The threshold is calculated by solving the following quadratic equation
- * for \f$\delta H\f$ (and its analogue for \f$\delta H\f$ in the v equation):
+ * for \f$\Delta H = H_c - H\f$ (and its analogue for \f$\Delta H\f$ in the v
+ * equation):
  * \f[
  * |3u_3|(\Delta H)^2
  * \leq
- * \left(|u_1|+|u_2|\Delta H\right)\epsilon_{\mathrm{machine}}
+ * \left(|u_1|+|2u_2|\Delta H\right)\epsilon_{\mathrm{machine}}
  * \f]
  *
  * If the threshold calculated from the third-order estimate is invalid,
