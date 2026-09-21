@@ -320,9 +320,8 @@ void CalculateScriPlusValue<Tags::ScriPlus<Tags::Psi0>>::apply(
                   (number_of_radial_points - 1) * number_of_angular_points,
                   number_of_angular_points);
 
-  // extra 1/2 factor to agree with SXS tetrad normalization
   get(*psi_0) = -pow<3>(get(boundary_r)) *
-                (3.0 * conj(dy_j_at_scri) * square(dy_j_at_scri) -
+                (1.5 * conj(dy_j_at_scri) * square(dy_j_at_scri) -
                  2.0 * dy_dy_dy_j_at_scri);
 }
 
