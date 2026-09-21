@@ -451,6 +451,19 @@ struct GaugeAdjustedBoundaryValue<Tags::BondiW> {
  * the explicit \f$\hat x^{\hat A}\f$ arguments on the right-hand side imply
  * interpolation operations, and \f$K = \sqrt{1 + J \bar J}\f$,
  * \f$\hat K = \sqrt{1 + \hat J \hat{\bar J}}\f$.
+ *
+ * The interpolated source-gauge angular metric is
+ *
+ * \f{align*}{
+ * J(\hat x^{\hat A}) &=
+ *   \frac{\hat d^2\hat J+\hat c^2\hat{\bar J}
+ *         -2\hat c\hat d\hat K}{4\hat\omega^2}, &
+ * K(\hat x^{\hat A}) &=
+ *   \sqrt{1+J(\hat x^{\hat A})\bar J(\hat x^{\hat A})}.
+ * \f}
+ *
+ * These expressions follow by inverting Eqs. (32) and (33b) of
+ * \cite Moxon2020gha.
  */
 template <>
 struct GaugeAdjustedBoundaryValue<Tags::BondiH> {

@@ -296,10 +296,12 @@ void GaugeAdjustedBoundaryValue<Tags::BondiH>::apply_impl(
                                    std::integral_constant<int, 2>>>(
           computation_buffers));
   interpolated_j =
-      0.25 * (square(gauge_d) * evolution_gauge_j +
-              square(gauge_c) * conj(evolution_gauge_j) -
-              2.0 * gauge_c * gauge_d *
-                  sqrt(1.0 + evolution_gauge_j * conj(evolution_gauge_j)));
+      0.25 *
+      (square(gauge_d) * evolution_gauge_j +
+       square(gauge_c) * conj(evolution_gauge_j) -
+       2.0 * gauge_c * gauge_d *
+           sqrt(1.0 + evolution_gauge_j * conj(evolution_gauge_j))) /
+      square(omega);
 
   auto& interpolated_k =
       get(get<::Tags::SpinWeighted<::Tags::TempScalar<1, ComplexDataVector>,
