@@ -81,6 +81,14 @@ TimeStepId TimeStepId::next_substep(const TimeDelta& step_size,
           step_size, new_time};
 }
 
+Time TimeStepId::skip_to_step() const {
+  Time result = step_time();
+  if (substep() != 0) {
+    result += step_size();
+  }
+  return result;
+}
+
 void TimeStepId::canonicalize() {
   if (time_runs_forward() ? step_time_.is_at_slab_end()
                           : step_time_.is_at_slab_start()) {

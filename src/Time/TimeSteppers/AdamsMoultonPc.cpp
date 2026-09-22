@@ -104,6 +104,11 @@ bool AdamsMoultonPc<Monotonic>::monotonic() const {
 }
 
 template <bool Monotonic>
+bool AdamsMoultonPc<Monotonic>::dense_output_uses_fsal() const {
+  return false;
+}
+
+template <bool Monotonic>
 TimeStepId AdamsMoultonPc<Monotonic>::next_time_id(
     const TimeStepId& current_id, const TimeDelta& time_step) const {
   switch (current_id.substep()) {

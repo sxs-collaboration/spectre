@@ -383,11 +383,18 @@ void check_dense_output(
           stepper.number_of_past_steps());
       auto step = step_size;
       for (;;) {
+        if (time_id.substep() == 0 and not stepper.dense_output_uses_fsal()) {
+          CHECK(history.substeps().empty());
+        }
         history.insert(time_id, y, y);
         if (before(time, (time_id.step_time() + step).value())) {
           // Make sure the initial value is preserved.
           y = 2.0 * *history.step_start(time).value;
           if (stepper.dense_update_u(make_not_null(&y), history, time)) {
+            if (time != time_id.step_time().value()) {
+              CHECK(stepper.dense_output_uses_fsal() ==
+                    before(time, time_id.step_time().value()));
+            }
             return y - *history.step_start(time).value;
           }
           REQUIRE(not before(time, time_id.step_time().value()));

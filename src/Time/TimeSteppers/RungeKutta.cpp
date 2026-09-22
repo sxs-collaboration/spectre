@@ -32,6 +32,11 @@ size_t RungeKutta::number_of_past_steps() const { return 0; }
 
 bool RungeKutta::monotonic() const { return false; }
 
+bool RungeKutta::dense_output_uses_fsal() const {
+  const auto& tableau = butcher_tableau();
+  return tableau.dense_coefficients.size() > tableau.result_coefficients.size();
+}
+
 namespace {
 TimeStepId next_time_id_from_substeps(
     const TimeStepId& current_id, const TimeDelta& time_step,
@@ -168,6 +173,16 @@ std::optional<StepperErrorEstimate> RungeKutta::update_u_impl(
 template <typename T>
 void RungeKutta::clean_history_impl(
     const MutableUntypedHistory<T>& history) const {
+  if (not dense_output_uses_fsal() and
+      history.substeps().size() + 1 == number_of_substeps()) {
+    ASSERT(number_of_substeps() == number_of_substeps_for_error(),
+           "The current interface of this function does not distinguish "
+           "between error-estimating and non-error-estimating substep "
+           "patterns, but the provided tableau requires different behavior "
+           "for the two cases.  The interface needs to be changed to support "
+           "this tableau.");
+    history.clear_substeps();
+  }
   if (history.at_step_start()) {
     history.clear_substeps();
     if (history.size() > 1) {
@@ -187,12 +202,15 @@ bool RungeKutta::dense_update_u_impl(const gsl::not_null<T*> u,
   if (time == step_start) {
     return true;
   }
-  if (not history.at_step_start()) {
+  const bool uses_fsal = dense_output_uses_fsal();
+  if ((uses_fsal and history.size() == 1) or
+      history.substeps().size() + 1 < number_of_substeps()) {
     return false;
   }
-  const double step_end = history.back().time_step_id.step_time().value();
+  const double step_end =
+      history.substeps().front().time_step_id.skip_to_step().value();
   const evolution_less<double> before{step_end > step_start};
-  if (history.size() == 1 or not before(time, step_end)) {
+  if (not before(time, step_end)) {
     return false;
   }
   const double step_size = step_end - step_start;
@@ -203,9 +221,7 @@ bool RungeKutta::dense_update_u_impl(const gsl::not_null<T*> u,
 
   const auto& tableau = butcher_tableau();
 
-  const auto number_of_dense_coefficients = tableau.dense_coefficients.size();
-  const size_t number_of_substep_terms = std::min(
-      tableau.result_coefficients.size(), number_of_dense_coefficients);
+  const size_t number_of_substep_terms = tableau.result_coefficients.size();
   for (size_t i = 0; i < number_of_substep_terms; ++i) {
     const double coef =
         evaluate_polynomial(tableau.dense_coefficients[i], output_fraction);
@@ -215,7 +231,7 @@ bool RungeKutta::dense_update_u_impl(const gsl::not_null<T*> u,
     }
   }
 
-  if (number_of_dense_coefficients > number_of_substep_terms) {
+  if (uses_fsal) {
     // We use the derivative at the end of the step.
     const double coef =
         evaluate_polynomial(tableau.dense_coefficients.back(), output_fraction);

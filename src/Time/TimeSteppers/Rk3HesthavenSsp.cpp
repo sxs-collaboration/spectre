@@ -31,6 +31,8 @@ double Rk3HesthavenSsp::stable_step() const {
 
 bool Rk3HesthavenSsp::monotonic() const { return false; }
 
+bool Rk3HesthavenSsp::dense_output_uses_fsal() const { return false; }
+
 uint64_t Rk3HesthavenSsp::number_of_substeps() const { return 3; }
 
 uint64_t Rk3HesthavenSsp::number_of_substeps_for_error() const { return 3; }
@@ -106,7 +108,7 @@ std::optional<StepperErrorEstimate> Rk3HesthavenSsp::update_u_impl(
 template <typename T>
 void Rk3HesthavenSsp::clean_history_impl(
     const MutableUntypedHistory<T>& history) const {
-  if (history.at_step_start()) {
+  if (history.substeps().size() == 2) {
     history.clear_substeps();
   }
   if (history.size() > 1) {
@@ -123,14 +125,11 @@ bool Rk3HesthavenSsp::dense_update_u_impl(const gsl::not_null<T*> u,
   if (time == step_start) {
     return true;
   }
-  if (not history.at_step_start()) {
+  if (history.substeps().size() != 2) {
     return false;
   }
-  const double step_end = history.back().time_step_id.step_time().value();
-  const evolution_less<double> before{step_end > step_start};
-  if (history.size() == 1 or not before(time, step_end)) {
-    return false;
-  }
+  const double step_end =
+      history.substeps().front().time_step_id.skip_to_step().value();
   const double step_size = step_end - step_start;
   const double output_fraction = (time - step_start) / step_size;
   ASSERT(output_fraction >= 0.0, "Attempting dense output at time "

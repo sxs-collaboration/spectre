@@ -56,6 +56,10 @@ class TimeStepId {
   TimeStepId next_substep(const TimeDelta& step_size,
                           double step_fraction) const;
 
+  /// Returns the time of the next step if called on a substep, or the
+  /// current time if called on a full step.
+  Time skip_to_step() const;
+
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& p);
 

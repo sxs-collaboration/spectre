@@ -43,7 +43,6 @@
 #include "Time/Tags/TimeStepper.hpp"
 #include "Time/TimeStepId.hpp"
 #include "Time/TimeSteppers/Heun2.hpp"
-#include "Time/TimeSteppers/TimeStepper.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Literals.hpp"
@@ -462,10 +461,6 @@ void test_solve_implicit_sector(const imex::Mode solve_mode) {
 
   db::mutate_apply<imex::SolveImplicitSector<variables_tag, sector>>(
       make_not_null(&box));
-  db::mutate<history_tag>(
-      [](const gsl::not_null<typename history_tag::type*> history,
-         const TimeStepper& stepper) { stepper.clean_history(history); },
-      make_not_null(&box), db::get<Tags::TimeStepper<TimeStepper>>(box));
 
   const double dt = time_step.value();
   const auto final_vars = db::get<variables_tag>(box);
@@ -561,38 +556,15 @@ void test_solve_implicit_sector(const imex::Mode solve_mode) {
   CHECK_ITERABLE_APPROX(get<Var2>(final_vars), expected_var2);
   CHECK_ITERABLE_APPROX(get<Var3>(final_vars), expected_var3);
 
-  CHECK(db::get<history_tag>(box).size() == 1);
-  CHECK(db::get<history_tag>(box).substeps().empty());
-
   simulate_explicit_step(make_not_null(&box),
                          initial_time_step_id.next_substep(time_step, 1.0));
   performing_step_with_no_implicit_term = true;
   db::mutate_apply<imex::SolveImplicitSector<variables_tag, sector>>(
       make_not_null(&box));
   performing_step_with_no_implicit_term = false;
-  db::mutate<history_tag>(
-      [](const gsl::not_null<typename history_tag::type*> history,
-         const TimeStepper& stepper) { stepper.clean_history(history); },
-      make_not_null(&box), db::get<Tags::TimeStepper<TimeStepper>>(box));
   CHECK_ITERABLE_APPROX(get<Var2>(db::get<variables_tag>(box)),
                         expected_var2_final);
   CHECK_ITERABLE_APPROX(get<Var3>(db::get<variables_tag>(box)), expected_var3);
-
-  CHECK(db::get<history_tag>(box).size() == 1);
-  CHECK(db::get<history_tag>(box).substeps().size() == 1);
-
-  // Take another substep just to test the history cleanup.
-  simulate_explicit_step(make_not_null(&box),
-                         initial_time_step_id.next_step(time_step));
-  db::mutate_apply<imex::SolveImplicitSector<variables_tag, sector>>(
-      make_not_null(&box));
-  db::mutate<history_tag>(
-      [](const gsl::not_null<typename history_tag::type*> history,
-         const TimeStepper& stepper) { stepper.clean_history(history); },
-      make_not_null(&box), db::get<Tags::TimeStepper<TimeStepper>>(box));
-
-  CHECK(db::get<history_tag>(box).size() == 1);
-  CHECK(db::get<history_tag>(box).substeps().empty());
 }
 
 struct ResettingTestSector : tt::ConformsTo<imex::protocols::ImplicitSector> {
