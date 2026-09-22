@@ -124,8 +124,7 @@ void Averager<DerivOrder>::update(const double time, const DataVector& raw_q,
     // update the weights and effective time
     const double old_weight = weight_k_;
     weight_k_ = (tau_m + old_weight) * tau_avg / (tau_m + tau_avg);
-    tau_k_ = (time * tau_m + tau_k_ * old_weight) * tau_avg /
-             (weight_k_ * (tau_m + tau_avg));
+    tau_k_ = (time * tau_m + tau_k_ * old_weight) / (tau_m + old_weight);
 
     std::array<DataVector, DerivOrder + 1> raw_derivs = get_derivs();
     // use raw value if not using `average_0th_deriv_of_q`
@@ -138,8 +137,8 @@ void Averager<DerivOrder>::update(const double time, const DataVector& raw_q,
     for (size_t i = start_ind; i <= DerivOrder; i++) {
       gsl::at(*averaged_values_, i) =
           (gsl::at(raw_derivs, i) * tau_m +
-           gsl::at(*averaged_values_, i) * old_weight) *
-          tau_avg / (weight_k_ * (tau_m + tau_avg));
+           gsl::at(*averaged_values_, i) * old_weight) /
+          (tau_m + old_weight);
     }
   }
 }
