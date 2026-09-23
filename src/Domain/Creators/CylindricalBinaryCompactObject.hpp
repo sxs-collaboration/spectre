@@ -6,6 +6,7 @@
 #include <array>
 #include <cstddef>
 #include <memory>
+#include <optional>
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
@@ -97,9 +98,9 @@ namespace domain::creators {
  * spherical shells inside the "EA" and "EB" blocks, and the caption
  * of Figure 20 indicates that there are additional spherical shells
  * outside the "CA" and "CB" blocks; `CylindricalBinaryCompactObject`
- * has these extra shells inside "EA" only if the option `IncludeInnerSphereA`
- * is true, and it has the extra shells inside "EB" only if the option
- * `IncludeInnerSphereB` is true. If the shells are absent, then the "EA" and
+ * has these extra shells inside "EA" only if the option `InnerSphereA`
+ * is not `None`, and it has the extra shells inside "EB" only if the option
+ * `InnerSphereB` is not `None`. If the shells are absent, then the "EA" and
  * "EB" blocks extend to the excision boundaries.
  *
  * The Blocks are named as follows:
@@ -112,15 +113,15 @@ namespace domain::creators {
  * - OuterShell0 is the single shell in a Block group called "OuterSphere" and
  *   it borders the outer boundary.
  * - The Block group called "InnerA" consists of all the EA, and MA
- *   blocks. They all border the inner boundary "A" if
- *   `IncludeInnerSphereA` is false.
- * - If `IncludeInnerSphereA` is true, InnerAShell0 is the single shell in a
+ *   blocks. They all border the inner boundary "A" if `InnerSphereA` is not
+ *   `None`.
+ * - If `InnerSphereA` is not `None`, InnerAShell0 is the single shell in a
  *   Block group called "InnerSphereA" and it borders the inner excision
  *   boundary "A".
  * - The Block group called "InnerB" consists of all the EB, and MB
- *   blocks. They all border the inner boundary "B" if
- *   `IncludeInnerSphereB` is false.
- * - If `IncludeInnerSphereB` is true, InnerBShell0 is the single shell in a
+ *   blocks. They all border the inner boundary "B" if `InnerSphereB` is not
+ *   `None`.
+ * - If `InnerSphereB` is true, InnerBShell0 is the single shell in a
  *   Block group called "InnerSphereB" and it borders the inner excision
  *   boundary "B".
  *
@@ -203,20 +204,60 @@ class CylindricalBinaryCompactObject : public DomainCreator<3> {
     static constexpr Options::String help = {
         "Grid-coordinate radius of grid boundary around Object B."};
   };
-  struct IncludeInnerSphereA {
-    using type = bool;
+
+  /// Options for InnerSphereA and InnerSphereB
+  struct InnerSphere {
     static constexpr Options::String help = {
-        "Add an extra spherical layer of Blocks around Object A."};
+        "Options for an inner sphere, an extra spherical layer of Blocks "
+        "around one of the objects. Specify 'None' to exclude."};
+
+    struct OuterRadius {
+      using type = Options::Auto<double>;
+      static constexpr Options::String help = {
+          "Outer radius of the inner sphere, or Auto to have it chosen for "
+          "you."};
+    };
+
+    using options = tmpl::list<OuterRadius>;
+
+    InnerSphere() = default;
+    explicit InnerSphere(std::optional<double> outer_radius)
+        : outer_radius_(outer_radius) {}
+
+    std::optional<double> outer_radius_;
   };
-  struct IncludeInnerSphereB {
-    using type = bool;
-    static constexpr Options::String help = {
-        "Add an extra spherical layer of Blocks around Object B."};
+
+  struct InnerSphereA {
+    using type = Options::Auto<InnerSphere, Options::AutoLabel::None>;
+    static constexpr Options::String help = {"Options for InnerSphereA."};
   };
-  struct OuterRadius {
-    using type = double;
-    static constexpr Options::String help = {
-        "Grid-coordinate radius of outer boundary."};
+
+  struct InnerSphereB {
+    using type = Options::Auto<InnerSphere, Options::AutoLabel::None>;
+    static constexpr Options::String help = {"Options for InnerSphereB."};
+  };
+
+  struct OuterSphereOptions {
+   public:
+    static constexpr Options::String help = {"Options for OuterSphere."};
+
+    struct OuterRadius {
+      using type = double;
+      static constexpr Options::String help = {"Outer radius of OuterSphere."};
+    };
+
+    using options = tmpl::list<OuterRadius>;
+
+    OuterSphereOptions() = default;
+    explicit OuterSphereOptions(const double outer_radius)
+        : outer_radius_(outer_radius) {}
+
+    double outer_radius_;
+  };
+
+  struct OuterSphere {
+    using type = OuterSphereOptions;
+    static constexpr Options::String help = {"Options for OuterSphere."};
   };
 
   struct InitialRefinement {
@@ -301,9 +342,9 @@ class CylindricalBinaryCompactObject : public DomainCreator<3> {
 
   template <typename Metavariables>
   using options = tmpl::append<
-      tmpl::list<CenterA, CenterB, RadiusA, RadiusB, IncludeInnerSphereA,
-                 IncludeInnerSphereB, OuterRadius,
-                 InitialRefinement, InitialGridPoints, TimeDependentMaps>,
+      tmpl::list<CenterA, CenterB, RadiusA, RadiusB, InitialRefinement,
+                 InitialGridPoints, OuterSphere, InnerSphereA, InnerSphereB,
+                 TimeDependentMaps>,
       tmpl::conditional_t<
           domain::BoundaryConditions::has_boundary_conditions_base_v<
               typename Metavariables::system>,
@@ -324,10 +365,12 @@ class CylindricalBinaryCompactObject : public DomainCreator<3> {
 
   CylindricalBinaryCompactObject(
       std::array<double, 3> center_A, std::array<double, 3> center_B,
-      double radius_A, double radius_B, bool include_inner_sphere_A,
-      bool include_inner_sphere_B, double outer_radius,
+      double radius_A, double radius_B,
       const typename InitialRefinement::type& initial_refinement,
       const typename InitialGridPoints::type& initial_grid_points,
+      typename OuterSphere::type outer_sphere,
+      std::optional<InnerSphere> inner_sphere_A = std::nullopt,
+      std::optional<InnerSphere> inner_sphere_B = std::nullopt,
       std::optional<bco::TimeDependentMapOptions<true>> time_dependent_options =
           std::nullopt,
       std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
@@ -386,11 +429,11 @@ class CylindricalBinaryCompactObject : public DomainCreator<3> {
   double radius_B_{};
   double outer_radius_A_{};
   double outer_radius_B_{};
-  bool include_inner_sphere_A_{};
-  bool include_inner_sphere_B_{};
-  double outer_radius_{};
   typename std::vector<std::array<size_t, 3>> initial_refinement_{};
   typename std::vector<std::array<size_t, 3>> initial_grid_points_{};
+  typename OuterSphere::type outer_sphere_{};
+  std::optional<InnerSphere> inner_sphere_A_{};
+  std::optional<InnerSphere> inner_sphere_B_{};
   // cut_spheres_offset_factor_ is eta in Eq. (A.9) of
   // https://arxiv.org/abs/1206.3015.  cut_spheres_offset_factor_
   // could be set to unity to simplify the equations.  Here we fix it
