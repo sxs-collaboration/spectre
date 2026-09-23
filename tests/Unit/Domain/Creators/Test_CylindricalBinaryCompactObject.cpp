@@ -459,48 +459,48 @@ void test_parse_errors() {
       domain::creators::CylindricalBinaryCompactObject(
           {{2.0, 0.05, 0.0}}, {-5.0, 0.05, 0.0}, 1.0, 0.4, false, false, 1.0,
           1_st, 3_st, std::nullopt, create_inner_boundary_condition(),
-          create_outer_boundary_condition(), Options::Context{false, {}, 1, 1}),
+          create_outer_boundary_condition()),
       Catch::Matchers::ContainsSubstring("OuterRadius is too small"));
   CHECK_THROWS_WITH(
       domain::creators::CylindricalBinaryCompactObject(
           {{-2.0, 0.05, 0.0}}, {-5.0, 0.05, 0.0}, 1.0, 0.4, false, false, 25.0,
           1_st, 3_st, std::nullopt, create_inner_boundary_condition(),
-          create_outer_boundary_condition(), Options::Context{false, {}, 1, 1}),
+          create_outer_boundary_condition()),
       Catch::Matchers::ContainsSubstring(
           "The x-coordinate of the input CenterA is expected to be positive"));
   CHECK_THROWS_WITH(
       domain::creators::CylindricalBinaryCompactObject(
           {{2.0, 0.05, 0.0}}, {5.0, 0.05, 0.0}, 1.0, 0.4, false, false, 25.0,
           1_st, 3_st, std::nullopt, create_inner_boundary_condition(),
-          create_outer_boundary_condition(), Options::Context{false, {}, 1, 1}),
+          create_outer_boundary_condition()),
       Catch::Matchers::ContainsSubstring(
           "The x-coordinate of the input CenterB is expected to be negative"));
   CHECK_THROWS_WITH(
       domain::creators::CylindricalBinaryCompactObject(
           {{2.0, 0.05, 0.0}}, {-5.0, 0.05, 0.0}, -1.0, 0.4, false, false, 25.0,
           1_st, 3_st, std::nullopt, create_inner_boundary_condition(),
-          create_outer_boundary_condition(), Options::Context{false, {}, 1, 1}),
+          create_outer_boundary_condition()),
       Catch::Matchers::ContainsSubstring("RadiusA and RadiusB are expected "
                                          "to be positive"));
   CHECK_THROWS_WITH(
       domain::creators::CylindricalBinaryCompactObject(
           {{2.0, 0.05, 0.0}}, {-5.0, 0.05, 0.0}, 1.0, -0.4, false, false, 25.0,
           1_st, 3_st, std::nullopt, create_inner_boundary_condition(),
-          create_outer_boundary_condition(), Options::Context{false, {}, 1, 1}),
+          create_outer_boundary_condition()),
       Catch::Matchers::ContainsSubstring("RadiusA and RadiusB are expected "
                                          "to be positive"));
   CHECK_THROWS_WITH(
       domain::creators::CylindricalBinaryCompactObject(
           {{2.0, 0.05, 0.0}}, {-5.0, 0.05, 0.0}, 0.15, 0.4, false, false, 25.0,
           1_st, 3_st, std::nullopt, create_inner_boundary_condition(),
-          create_outer_boundary_condition(), Options::Context{false, {}, 1, 1}),
+          create_outer_boundary_condition()),
       Catch::Matchers::ContainsSubstring(
           "RadiusA should not be smaller than RadiusB"));
   CHECK_THROWS_WITH(
       domain::creators::CylindricalBinaryCompactObject(
           {{2.0, 0.05, 0.0}}, {-1.0, 0.05, 0.0}, 1.0, 0.4, false, false, 25.0,
           1_st, 3_st, std::nullopt, create_inner_boundary_condition(),
-          create_outer_boundary_condition(), Options::Context{false, {}, 1, 1}),
+          create_outer_boundary_condition()),
       Catch::Matchers::ContainsSubstring("We expect |x_A| <= |x_B|"));
   CHECK_THROWS_WITH(
       domain::creators::CylindricalBinaryCompactObject(
@@ -512,8 +512,7 @@ void test_parse_errors() {
                   false>{std::array{0.0, 0.0, 0.0}},
               std::nullopt, std::nullopt, std::nullopt, std::nullopt,
               std::nullopt},
-          create_inner_boundary_condition(), create_outer_boundary_condition(),
-          Options::Context{false, {}, 1, 1}),
+          create_inner_boundary_condition(), create_outer_boundary_condition()),
       Catch::Matchers::ContainsSubstring(
           "To use the CylindricalBBH domain with time-dependent maps"));
   // Boundary condition errors
@@ -522,8 +521,7 @@ void test_parse_errors() {
           {{2.0, 0.05, 0.0}}, {-5.0, 0.05, 0.0}, 1.0, 0.4, false, false, 25.0,
           1_st, 3_st, std::nullopt, create_inner_boundary_condition(),
           std::make_unique<TestHelpers::domain::BoundaryConditions::
-                               TestPeriodicBoundaryCondition<3>>(),
-          Options::Context{false, {}, 1, 1}),
+                               TestPeriodicBoundaryCondition<3>>()),
       Catch::Matchers::ContainsSubstring("Cannot have periodic boundary "
                                          "conditions with a binary domain"));
   CHECK_THROWS_WITH(
@@ -532,22 +530,20 @@ void test_parse_errors() {
           1_st, 3_st, std::nullopt,
           std::make_unique<TestHelpers::domain::BoundaryConditions::
                                TestPeriodicBoundaryCondition<3>>(),
-          create_outer_boundary_condition(), Options::Context{false, {}, 1, 1}),
+          create_outer_boundary_condition()),
       Catch::Matchers::ContainsSubstring("Cannot have periodic boundary "
                                          "conditions with a binary domain"));
   CHECK_THROWS_WITH(
       domain::creators::CylindricalBinaryCompactObject(
           {{2.0, 0.05, 0.0}}, {-5.0, 0.05, 0.0}, 1.0, 0.4, false, false, 25.0,
-          1_st, 3_st, std::nullopt, nullptr,
-          create_outer_boundary_condition(), Options::Context{false, {}, 1, 1}),
+          1_st, 3_st, std::nullopt, nullptr, create_outer_boundary_condition()),
       Catch::Matchers::ContainsSubstring(
           "Must specify either both inner and outer boundary "
           "conditions or neither."));
   CHECK_THROWS_WITH(
       domain::creators::CylindricalBinaryCompactObject(
           {{2.0, 0.05, 0.0}}, {-5.0, 0.05, 0.0}, 1.0, 0.4, false, false, 25.0,
-          1_st, 3_st, std::nullopt, create_inner_boundary_condition(),
-          nullptr, Options::Context{false, {}, 1, 1}),
+          1_st, 3_st, std::nullopt, create_inner_boundary_condition(), nullptr),
       Catch::Matchers::ContainsSubstring(
           "Must specify either both inner and outer boundary "
           "conditions or neither."));
@@ -556,13 +552,13 @@ void test_parse_errors() {
       domain::creators::CylindricalBinaryCompactObject(
           {{2.0, 0.05, 0.0}}, {-3.0, 0.05, 0.0}, 1.0, 0.4, false, false, 25.0,
           1_st, 4_st, std::nullopt, create_inner_boundary_condition(),
-          create_outer_boundary_condition(), Options::Context{false, {}, 1, 1}),
+          create_outer_boundary_condition()),
       Catch::Matchers::ContainsSubstring("odd number of angular grid points"));
   CHECK_THROWS_WITH(
       domain::creators::CylindricalBinaryCompactObject(
           {{2.0, 0.05, 0.0}}, {-3.0, 0.05, 0.0}, 1.0, 0.4, false, false, 25.0,
           1_st, 1_st, std::nullopt, create_inner_boundary_condition(),
-          create_outer_boundary_condition(), Options::Context{false, {}, 1, 1}),
+          create_outer_boundary_condition()),
       Catch::Matchers::ContainsSubstring(
           "must have more than 2 radial grid points"));
 }
@@ -753,10 +749,9 @@ void test_initial_extents_and_refinement() {
   const auto cbco_global_creator =
       domain::creators::CylindricalBinaryCompactObject(
           center_A, center_B, radius_A, radius_B, include_inner_sphere_A,
-          include_inner_sphere_B, outer_radius,
-          global_refinement, global_grid_points, std::nullopt,
-          create_inner_boundary_condition(), create_outer_boundary_condition(),
-          Options::Context{false, {}, 1, 1});
+          include_inner_sphere_B, outer_radius, global_refinement,
+          global_grid_points, std::nullopt, create_inner_boundary_condition(),
+          create_outer_boundary_condition());
   const std::vector<std::array<size_t, 3>> global_initial_refinement_levels =
       cbco_global_creator.initial_refinement_levels();
   const std::vector<std::array<size_t, 3>> global_initial_extents =
@@ -768,10 +763,9 @@ void test_initial_extents_and_refinement() {
   const auto cbco_local_creator =
       domain::creators::CylindricalBinaryCompactObject(
           center_A, center_B, radius_A, radius_B, include_inner_sphere_A,
-          include_inner_sphere_B, outer_radius,
-          local_refinement, local_grid_points, std::nullopt,
-          create_inner_boundary_condition(), create_outer_boundary_condition(),
-          Options::Context{false, {}, 1, 1});
+          include_inner_sphere_B, outer_radius, local_refinement,
+          local_grid_points, std::nullopt, create_inner_boundary_condition(),
+          create_outer_boundary_condition());
   const std::vector<std::array<size_t, 3>> local_initial_refinement_levels =
       cbco_local_creator.initial_refinement_levels();
   const std::vector<std::array<size_t, 3>> local_initial_extents =
