@@ -48,8 +48,10 @@ DomainCreator:
     RadiusB: &RadiusB 0.45825
     InnerSphereA:
       OuterRadius: Auto
+      RadialDistribution: Logarithmic
     InnerSphereB:
       OuterRadius: Auto
+      RadialDistribution: Logarithmic
     OuterSphere:
       OuterRadius: 300.0
     InitialRefinement:

@@ -33,6 +33,7 @@
 namespace domain {
 namespace CoordinateMaps {
 class Affine;
+enum class Distribution;
 template <size_t Dim>
 class Identity;
 class Interval;
@@ -218,13 +219,24 @@ class CylindricalBinaryCompactObject : public DomainCreator<3> {
           "you."};
     };
 
-    using options = tmpl::list<OuterRadius>;
+    struct RadialDistribution {
+      using type = domain::CoordinateMaps::Distribution;
+      static constexpr Options::String help = {
+          "The radial distribution of grid points for the inner sphere."};
+    };
+
+    using options = tmpl::list<OuterRadius, RadialDistribution>;
 
     InnerSphere() = default;
-    explicit InnerSphere(std::optional<double> outer_radius)
-        : outer_radius_(outer_radius) {}
+    explicit InnerSphere(
+        std::optional<double> outer_radius,
+        const domain::CoordinateMaps::Distribution radial_distribution)
+        : outer_radius_(outer_radius),
+          radial_distribution_(radial_distribution) {}
 
     std::optional<double> outer_radius_;
+    domain::CoordinateMaps::Distribution radial_distribution_{
+        domain::CoordinateMaps::Distribution::Logarithmic};
   };
 
   struct InnerSphereA {
