@@ -16,9 +16,11 @@
 #include "DataStructures/Tensor/EagerMath/DeterminantAndInverse.hpp"
 #include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "DataStructures/Tensor/TypeAliases.hpp"
 #include "NumericalAlgorithms/Interpolation/PolynomialInterpolation.hpp"
 #include "PointwiseFunctions/GeneralRelativity/ExtrinsicCurvature.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
+#include "PointwiseFunctions/Hydro/EquationsOfState/Barotropic3D.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/PolytropicFluid.hpp"
 #include "PointwiseFunctions/Hydro/SpecificEnthalpy.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
@@ -57,11 +59,13 @@ CstSolution::CstSolution(const std::string& filename, const bool is_polytrope,
   radius_.destructive_resize(num_grid_points_);
   cos_theta_.destructive_resize(num_grid_points_);
   rest_mass_density_.destructive_resize(num_grid_points_);
-  fluid_velocity_.destructive_resize(num_grid_points_);
+  internal_energy_density_.destructive_resize(num_grid_points_);
+  electron_fraction_.destructive_resize(num_grid_points_);
   alpha_.destructive_resize(num_grid_points_);
   rho_.destructive_resize(num_grid_points_);
   gamma_.destructive_resize(num_grid_points_);
   omega_.destructive_resize(num_grid_points_);
+  fluid_velocity_.destructive_resize(num_grid_points_);
 
   // Import the data and rescale.
   // If the `PolytropicConstant` option was specified in the input file,
@@ -87,7 +91,8 @@ CstSolution::CstSolution(const std::string& filename, const bool is_polytrope,
       // Note that cos(theta) is between 0 and 1.
       const size_t index = num_angular_points_ * i + j;
       cst_file >> radius_[index] >> cos_theta_[index] >>
-          rest_mass_density_[index] >> alpha_[index] >> rho_[index] >>
+          rest_mass_density_[index] >> internal_energy_density_[index] >>
+          electron_fraction_[index] >> alpha_[index] >> rho_[index] >>
           gamma_[index] >> omega_[index] >> fluid_velocity_[index];
       if (is_polytrope) {
         radius_[index] *= pow(polytropic_constant, 0.5 * polytropic_index_);
@@ -98,6 +103,8 @@ CstSolution::CstSolution(const std::string& filename, const bool is_polytrope,
         fluid_velocity_[index] *=
             pow(polytropic_constant, -0.5 * polytropic_index_) /
             equatorial_radius_;
+        internal_energy_density_[index] *=
+            pow(polytropic_constant, -polytropic_index_);
       } else {
         radius_[index] *= sqrt(kappa_norm) / hydro::units::cgs::length_unit;
         rest_mass_density_[index] *=
@@ -108,6 +115,8 @@ CstSolution::CstSolution(const std::string& filename, const bool is_polytrope,
         fluid_velocity_[index] *= (hydro::units::cgs::speed_of_light /
                                    (equatorial_radius_ * sqrt(kappa_norm))) *
                                   hydro::units::cgs::time_unit;
+        internal_energy_density_[index] *=
+            1.e15 / hydro::units::cgs::rest_mass_density_unit;
       }
     }
   }
@@ -139,11 +148,13 @@ void CstSolution::pup(PUP::er& p) {
   p | radius_;
   p | cos_theta_;
   p | rest_mass_density_;
-  p | fluid_velocity_;
+  p | internal_energy_density_;
+  p | electron_fraction_;
   p | alpha_;
   p | rho_;
   p | gamma_;
   p | omega_;
+  p | fluid_velocity_;
 }
 
 namespace {
@@ -184,7 +195,7 @@ void hydro_interpolation(const gsl::not_null<double*> target_var,
 }
 }  // namespace
 
-std::array<double, 6> CstSolution::interpolate(
+std::array<double, 8> CstSolution::interpolate(
     const double target_radius, const double target_cos_theta,
     const bool interpolate_hydro_vars) const {
   constexpr size_t stencil_size = 4;
@@ -255,11 +266,13 @@ std::array<double, 6> CstSolution::interpolate(
 
   // We first interpolate in cos(theta) and then in radius.
   std::array<double, stencil_size> rest_mass_density_rad_stencil{};
-  std::array<double, stencil_size> fluid_velocity_rad_stencil{};
+  std::array<double, stencil_size> internal_energy_density_rad_stencil{};
+  std::array<double, stencil_size> electron_fraction_rad_stencil{};
   std::array<double, stencil_size> alpha_rad_stencil{};
   std::array<double, stencil_size> rho_rad_stencil{};
   std::array<double, stencil_size> gamma_rad_stencil{};
   std::array<double, stencil_size> omega_rad_stencil{};
+  std::array<double, stencil_size> fluid_velocity_rad_stencil{};
   // Since the radius is not contiguous, we need to copy the radius into a
   // contiguous buffer. radius_for_stencil is that buffer.
   std::array<double, stencil_size> radius_for_stencil{};
@@ -286,6 +299,22 @@ std::array<double, 6> CstSolution::interpolate(
               &gsl::at(rest_mass_density_rad_stencil, stencil_rad_index)),
           max_density_ratio_for_linear_interpolation_, target_abs_cos_theta,
           density_span, cos_theta_span);
+      hydro_interpolation<stencil_size>(
+          make_not_null(
+              &gsl::at(internal_energy_density_rad_stencil, stencil_rad_index)),
+          max_density_ratio_for_linear_interpolation_, target_abs_cos_theta,
+          gsl::make_span(
+              &internal_energy_density_[radial_index + angular_stencil_index],
+              stencil_size),
+          cos_theta_span);
+      hydro_interpolation<stencil_size>(
+          make_not_null(
+              &gsl::at(electron_fraction_rad_stencil, stencil_rad_index)),
+          max_density_ratio_for_linear_interpolation_, target_abs_cos_theta,
+          gsl::make_span(
+              &electron_fraction_[radial_index + angular_stencil_index],
+              stencil_size),
+          cos_theta_span);
       hydro_interpolation<stencil_size>(
           make_not_null(
               &gsl::at(fluid_velocity_rad_stencil, stencil_rad_index)),
@@ -324,37 +353,52 @@ std::array<double, 6> CstSolution::interpolate(
   // Do radial interpolation
   double error_y = 0.0;
   double target_rest_mass_density{std::numeric_limits<double>::signaling_NaN()};
-  double target_fluid_velocity{std::numeric_limits<double>::signaling_NaN()};
+  double target_internal_energy_density{
+      std::numeric_limits<double>::signaling_NaN()};
+  double target_electron_fraction{std::numeric_limits<double>::signaling_NaN()};
   double target_alpha{std::numeric_limits<double>::signaling_NaN()};
   double target_rho{std::numeric_limits<double>::signaling_NaN()};
   double target_gamma{std::numeric_limits<double>::signaling_NaN()};
   double target_omega{std::numeric_limits<double>::signaling_NaN()};
-  const auto radius_span = gsl::make_span(&radius_for_stencil[0], stencil_size);
+  double target_fluid_velocity{std::numeric_limits<double>::signaling_NaN()};
+  const auto radius_span =
+      gsl::make_span(radius_for_stencil.data(), stencil_size);
   if (interpolate_hydro_vars) {
     hydro_interpolation<stencil_size>(
         make_not_null(&target_rest_mass_density),
         max_density_ratio_for_linear_interpolation_, target_radius,
-        gsl::make_span(&rest_mass_density_rad_stencil[0], stencil_size),
+        gsl::make_span(rest_mass_density_rad_stencil.data(), stencil_size),
+        radius_span);
+    hydro_interpolation<stencil_size>(
+        make_not_null(&target_internal_energy_density),
+        max_density_ratio_for_linear_interpolation_, target_radius,
+        gsl::make_span(internal_energy_density_rad_stencil.data(),
+                       stencil_size),
+        radius_span);
+    hydro_interpolation<stencil_size>(
+        make_not_null(&target_electron_fraction),
+        max_density_ratio_for_linear_interpolation_, target_radius,
+        gsl::make_span(electron_fraction_rad_stencil.data(), stencil_size),
         radius_span);
     hydro_interpolation<stencil_size>(
         make_not_null(&target_fluid_velocity),
         // Note: we use max density ratio for velocity
         max_density_ratio_for_linear_interpolation_, target_radius,
-        gsl::make_span(&fluid_velocity_rad_stencil[0], stencil_size),
+        gsl::make_span(fluid_velocity_rad_stencil.data(), stencil_size),
         radius_span);
   }
   intrp::polynomial_interpolation<stencil_size - 1>(
       make_not_null(&target_alpha), make_not_null(&error_y), target_radius,
-      gsl::make_span(&alpha_rad_stencil[0], stencil_size), radius_span);
+      gsl::make_span(alpha_rad_stencil.data(), stencil_size), radius_span);
   intrp::polynomial_interpolation<stencil_size - 1>(
       make_not_null(&target_rho), make_not_null(&error_y), target_radius,
-      gsl::make_span(&rho_rad_stencil[0], stencil_size), radius_span);
+      gsl::make_span(rho_rad_stencil.data(), stencil_size), radius_span);
   intrp::polynomial_interpolation<stencil_size - 1>(
       make_not_null(&target_gamma), make_not_null(&error_y), target_radius,
-      gsl::make_span(&gamma_rad_stencil[0], stencil_size), radius_span);
+      gsl::make_span(gamma_rad_stencil.data(), stencil_size), radius_span);
   intrp::polynomial_interpolation<stencil_size - 1>(
       make_not_null(&target_omega), make_not_null(&error_y), target_radius,
-      gsl::make_span(&omega_rad_stencil[0], stencil_size), radius_span);
+      gsl::make_span(omega_rad_stencil.data(), stencil_size), radius_span);
 
   if (interpolate_hydro_vars) {
     if (UNLIKELY(target_rest_mass_density < 0.0)) {
@@ -372,9 +416,13 @@ std::array<double, 6> CstSolution::interpolate(
   return {
       {interpolate_hydro_vars ? target_rest_mass_density
                               : std::numeric_limits<double>::signaling_NaN(),
-       interpolate_hydro_vars ? target_fluid_velocity
+       interpolate_hydro_vars ? target_internal_energy_density
                               : std::numeric_limits<double>::signaling_NaN(),
-       target_alpha, target_rho, target_gamma, target_omega}};
+       interpolate_hydro_vars ? target_electron_fraction
+                              : std::numeric_limits<double>::signaling_NaN(),
+       target_alpha, target_rho, target_gamma, target_omega,
+       interpolate_hydro_vars ? target_fluid_velocity
+                              : std::numeric_limits<double>::signaling_NaN()}};
 }
 
 namespace {
@@ -417,14 +465,15 @@ RotatingStar::RotatingStar(std::string rot_ns_filename,
       polytropic_constant_(polytropic_constant),
       polytropic_exponent_{1.0 + 1.0 / cst_solution_.polytropic_index()},
       is_polytrope_{true} {
-  equation_of_state_ =
-      std::make_unique<EquationsOfState::PolytropicFluid<true>>(
-          polytropic_constant_, polytropic_exponent_);
+  equation_of_state_ = std::make_unique<
+      EquationsOfState::Barotropic3D<EquationsOfState::PolytropicFluid<true>>>(
+      EquationsOfState::PolytropicFluid<true>(polytropic_constant_,
+                                              polytropic_exponent_));
 }
 
 RotatingStar::RotatingStar(
     std::string rot_ns_filename,
-    std::unique_ptr<EquationsOfState::EquationOfState<true, 1>>
+    std::unique_ptr<EquationsOfState::EquationOfState<true, 3>>
         equation_of_state)
     : rot_ns_filename_(std::move(rot_ns_filename)),
       cst_solution_{rot_ns_filename_, false},
@@ -503,18 +552,23 @@ void RotatingStar::interpolate_vars_if_necessary(
   }
   const size_t num_points = get_size(vars->radius);
   vars->rest_mass_density = make_with_value<DataType>(num_points, 0.0);
+  vars->internal_energy_density = make_with_value<DataType>(num_points, 0.0);
+  vars->electron_fraction = make_with_value<DataType>(num_points, 0.0);
   vars->fluid_velocity = make_with_value<DataType>(num_points, 0.0);
   vars->metric_data =
       typename IntermediateVariables<DataType>::MetricData(num_points);
   for (size_t i = 0; i < num_points; ++i) {
-    const std::array<double, 6> interpolated_data = cst_solution_.interpolate(
+    const std::array<double, 8> interpolated_data = cst_solution_.interpolate(
         get_element(vars->radius, i), get_element(vars->cos_theta, i), true);
     get_element(vars->rest_mass_density.value(), i) = interpolated_data[0];
-    get_element(vars->fluid_velocity.value(), i) = interpolated_data[1];
-    get_element(vars->metric_data->alpha, i) = interpolated_data[2];
-    get_element(vars->metric_data->rho, i) = interpolated_data[3];
-    get_element(vars->metric_data->gamma, i) = interpolated_data[4];
-    get_element(vars->metric_data->omega, i) = interpolated_data[5];
+    get_element(vars->internal_energy_density.value(), i) =
+        interpolated_data[1];
+    get_element(vars->electron_fraction.value(), i) = interpolated_data[2];
+    get_element(vars->metric_data->alpha, i) = interpolated_data[3];
+    get_element(vars->metric_data->rho, i) = interpolated_data[4];
+    get_element(vars->metric_data->gamma, i) = interpolated_data[5];
+    get_element(vars->metric_data->omega, i) = interpolated_data[6];
+    get_element(vars->fluid_velocity.value(), i) = interpolated_data[7];
   }
 }
 
@@ -553,30 +607,30 @@ void RotatingStar::interpolate_deriv_vars_if_necessary(
         typename IntermediateVariables<DataType>::MetricData(num_points);
 
     for (size_t i = 0; i < num_points; ++i) {
-      const std::array<double, 6> interpolated_data = cst_solution_.interpolate(
+      const std::array<double, 8> interpolated_data = cst_solution_.interpolate(
           get_element(gsl::at(vars->radius_upper, d), i),
           get_element(gsl::at(vars->cos_theta_upper, d), i), false);
       get_element(gsl::at(vars->metric_data_upper.value(), d).alpha, i) =
-          interpolated_data[2];
-      get_element(gsl::at(vars->metric_data_upper.value(), d).rho, i) =
           interpolated_data[3];
-      get_element(gsl::at(vars->metric_data_upper.value(), d).gamma, i) =
+      get_element(gsl::at(vars->metric_data_upper.value(), d).rho, i) =
           interpolated_data[4];
-      get_element(gsl::at(vars->metric_data_upper.value(), d).omega, i) =
+      get_element(gsl::at(vars->metric_data_upper.value(), d).gamma, i) =
           interpolated_data[5];
+      get_element(gsl::at(vars->metric_data_upper.value(), d).omega, i) =
+          interpolated_data[6];
     }
     for (size_t i = 0; i < num_points; ++i) {
-      const std::array<double, 6> interpolated_data = cst_solution_.interpolate(
+      const std::array<double, 8> interpolated_data = cst_solution_.interpolate(
           get_element(gsl::at(vars->radius_lower, d), i),
           get_element(gsl::at(vars->cos_theta_lower, d), i), false);
       get_element(gsl::at(vars->metric_data_lower.value(), d).alpha, i) =
-          interpolated_data[2];
-      get_element(gsl::at(vars->metric_data_lower.value(), d).rho, i) =
           interpolated_data[3];
-      get_element(gsl::at(vars->metric_data_lower.value(), d).gamma, i) =
+      get_element(gsl::at(vars->metric_data_lower.value(), d).rho, i) =
           interpolated_data[4];
-      get_element(gsl::at(vars->metric_data_lower.value(), d).omega, i) =
+      get_element(gsl::at(vars->metric_data_lower.value(), d).gamma, i) =
           interpolated_data[5];
+      get_element(gsl::at(vars->metric_data_lower.value(), d).omega, i) =
+          interpolated_data[6];
     }
   }
 }
@@ -692,8 +746,10 @@ RotatingStar::variables(
     tmpl::list<hydro::Tags::RestMassDensity<DataType>> /*meta*/) const {
   interpolate_vars_if_necessary(vars);
   using std::max;
-  return {Scalar<DataType>{
-      DataType{max(atmosphere_floor_, vars->rest_mass_density.value())}}};
+  const double minimum_rest_mass_density = max(
+      atmosphere_floor_, equation_of_state_->rest_mass_density_lower_bound());
+  return {Scalar<DataType>{DataType{
+      max(minimum_rest_mass_density, vars->rest_mass_density.value())}}};
 }
 
 template <typename DataType>
@@ -717,9 +773,15 @@ tuples::TaggedTuple<hydro::Tags::Temperature<DataType>> RotatingStar::variables(
     const gsl::not_null<IntermediateVariables<DataType>*> vars,
     const tnsr::I<DataType, 3>& x,
     tmpl::list<hydro::Tags::Temperature<DataType>> /*meta*/) const {
-  const auto rest_mass_density = get<hydro::Tags::RestMassDensity<DataType>>(
-      variables(vars, x, tmpl::list<hydro::Tags::RestMassDensity<DataType>>{}));
-  return {equation_of_state_->temperature_from_density(rest_mass_density)};
+  interpolate_vars_if_necessary(vars);
+  return {equation_of_state_->temperature_from_density_and_energy(
+      get<hydro::Tags::RestMassDensity<DataType>>(variables(
+          vars, x, tmpl::list<hydro::Tags::RestMassDensity<DataType>>{})),
+      get<hydro::Tags::SpecificInternalEnergy<DataType>>(variables(
+          vars, x,
+          tmpl::list<hydro::Tags::SpecificInternalEnergy<DataType>>{})),
+      get<hydro::Tags::ElectronFraction<DataType>>(variables(
+          vars, x, tmpl::list<hydro::Tags::ElectronFraction<DataType>>{})))};
 }
 
 template <typename DataType>
@@ -727,9 +789,15 @@ tuples::TaggedTuple<hydro::Tags::Pressure<DataType>> RotatingStar::variables(
     const gsl::not_null<IntermediateVariables<DataType>*> vars,
     const tnsr::I<DataType, 3>& x,
     tmpl::list<hydro::Tags::Pressure<DataType>> /*meta*/) const {
-  return {equation_of_state_->pressure_from_density(
+  interpolate_vars_if_necessary(vars);
+  return {equation_of_state_->pressure_from_density_and_energy(
       get<hydro::Tags::RestMassDensity<DataType>>(variables(
-          vars, x, tmpl::list<hydro::Tags::RestMassDensity<DataType>>{})))};
+          vars, x, tmpl::list<hydro::Tags::RestMassDensity<DataType>>{})),
+      get<hydro::Tags::SpecificInternalEnergy<DataType>>(variables(
+          vars, x,
+          tmpl::list<hydro::Tags::SpecificInternalEnergy<DataType>>{})),
+      get<hydro::Tags::ElectronFraction<DataType>>(variables(
+          vars, x, tmpl::list<hydro::Tags::ElectronFraction<DataType>>{})))};
 }
 
 template <typename DataType>
@@ -738,21 +806,46 @@ RotatingStar::variables(
     const gsl::not_null<IntermediateVariables<DataType>*> vars,
     const tnsr::I<DataType, 3>& x,
     tmpl::list<hydro::Tags::SpecificInternalEnergy<DataType>> /*meta*/) const {
-  return {equation_of_state_->specific_internal_energy_from_density(
-      get<hydro::Tags::RestMassDensity<DataType>>(variables(
-          vars, x, tmpl::list<hydro::Tags::RestMassDensity<DataType>>{})))};
+  interpolate_vars_if_necessary(vars);
+  const auto rest_mass_density = get<hydro::Tags::RestMassDensity<DataType>>(
+      variables(vars, x, tmpl::list<hydro::Tags::RestMassDensity<DataType>>{}));
+  const auto electron_fraction =
+      get<hydro::Tags::ElectronFraction<DataType>>(variables(
+          vars, x, tmpl::list<hydro::Tags::ElectronFraction<DataType>>{}));
+  auto specific_internal_energy =
+      make_with_value<Scalar<DataType>>(get<0>(x), 0.0);
+  using std::max;
+  for (size_t i = 0; i < get_size(get<0>(x)); ++i) {
+    const auto rho_i = get_element(get(rest_mass_density), i);
+    const auto epsilon_bar_i =
+        get_element(vars->internal_energy_density.value(), i);
+    // Note: `RotNS` stores internal energy density, not specific internal
+    // energy, so this must be converted.
+    get_element(get(specific_internal_energy), i) =
+        max({atmosphere_floor_,
+             equation_of_state_->specific_internal_energy_lower_bound(
+                 rho_i, get_element(get(electron_fraction), i)),
+             (epsilon_bar_i - rho_i) / rho_i});
+  }
+  return {std::move(specific_internal_energy)};
 }
 
 template <typename DataType>
 tuples::TaggedTuple<hydro::Tags::ElectronFraction<DataType>>
 RotatingStar::variables(
-    const gsl::not_null<IntermediateVariables<DataType>*> /* vars */,
-    const tnsr::I<DataType, 3>& x,
+    const gsl::not_null<IntermediateVariables<DataType>*> vars,
+    const tnsr::I<DataType, 3>& /*x*/,
     tmpl::list<hydro::Tags::ElectronFraction<DataType>> /*meta*/) const {
-
-  auto ye = make_with_value<Scalar<DataType>>(x, 0.1);
-
-  return {std::move(ye)};
+  interpolate_vars_if_necessary(vars);
+  const double ye_min = equation_of_state_->electron_fraction_lower_bound();
+  const double ye_max = equation_of_state_->electron_fraction_upper_bound();
+  auto electron_fraction = make_with_value<Scalar<DataType>>(vars->radius, 0.0);
+  using std::clamp;
+  for (size_t i = 0; i < get_size(vars->radius); ++i) {
+    get_element(get(electron_fraction), i) =
+        clamp(get_element(vars->electron_fraction.value(), i), ye_min, ye_max);
+  }
+  return {std::move(electron_fraction)};
 }
 
 template <typename DataType>
@@ -1049,8 +1142,8 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (double, DataVector))
 
 GENERATE_INSTANTIATIONS(
     INSTANTIATE_SCALARS, (double, DataVector),
-    (hydro::Tags::RestMassDensity, hydro::Tags::ElectronFraction,
-     hydro::Tags::SpecificInternalEnergy, hydro::Tags::Pressure,
+    (hydro::Tags::RestMassDensity, hydro::Tags::SpecificInternalEnergy,
+     hydro::Tags::ElectronFraction, hydro::Tags::Pressure,
      hydro::Tags::Temperature, hydro::Tags::DivergenceCleaningField,
      hydro::Tags::LorentzFactor, hydro::Tags::SpecificEnthalpy, gr::Tags::Lapse,
      gr::Tags::SqrtDetSpatialMetric))
