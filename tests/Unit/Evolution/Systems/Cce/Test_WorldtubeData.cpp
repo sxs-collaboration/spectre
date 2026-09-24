@@ -3,8 +3,17 @@
 
 #include "Framework/TestingFramework.hpp"
 
+#include <algorithm>
+#include <array>
+#include <cmath>
+#include <complex>
 #include <cstddef>
+#include <memory>
+#include <optional>
+#include <string>
 #include <type_traits>
+#include <utility>
+#include <vector>
 
 #include "DataStructures/ComplexDataVector.hpp"
 #include "DataStructures/ComplexModalVector.hpp"
@@ -36,6 +45,7 @@
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/FileSystem.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 #include "Utilities/Serialization/Serialize.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -434,15 +444,20 @@ class SimplePolyBondiBufferUpdater
       Spectral::Swsh::Tags::SwshTransform>;
 
   SimplePolyBondiBufferUpdater() = default;
+  // `dr_j_power` shapes the time dependence Dr(J) = dr_j_slope * t^power; the
+  // default of 1 leaves a derivative every interpolation order gets exactly
+  // right, which is what the callers testing other things want.
   SimplePolyBondiBufferUpdater(DataVector time_buffer, const size_t l_max,
                                const double r_amplitude,
                                const double dr_j_slope,
-                               const double extraction_radius)
+                               const double extraction_radius,
+                               const size_t dr_j_power = 1)
       : time_buffer_{std::move(time_buffer)},
         l_max_{l_max},
         r_amplitude_{r_amplitude},
         dr_j_slope_{dr_j_slope},
-        extraction_radius_{extraction_radius} {}
+        extraction_radius_{extraction_radius},
+        dr_j_power_{dr_j_power} {}
 
   // NOLINTNEXTLINE
   WRAPPED_PUPable_decl_base_template(WorldtubeBufferUpdater<tags_for_writing>,
@@ -491,7 +506,9 @@ class SimplePolyBondiBufferUpdater
         Spectral::Swsh::goldberg_mode_index(l_max_, 2_st, 0);
     for (size_t ti = 0; ti < span_size; ++ti) {
       dr_j_buffer[(dr_j_mode_index * span_size) + ti] = std::complex<double>{
-          dr_j_slope_ * time_buffer_[(*time_span_start) + ti], 0.0};
+          dr_j_slope_ * std::pow(time_buffer_[(*time_span_start) + ti],
+                                 static_cast<double>(dr_j_power_)),
+          0.0};
     }
 
     return time_buffer_[std::min(*time_span_end - interpolator_length + 1,
@@ -522,6 +539,7 @@ class SimplePolyBondiBufferUpdater
     p | r_amplitude_;
     p | dr_j_slope_;
     p | extraction_radius_;
+    p | dr_j_power_;
   }
 
  private:
@@ -530,6 +548,7 @@ class SimplePolyBondiBufferUpdater
   double r_amplitude_ = 0.0;
   double dr_j_slope_ = 0.0;
   double extraction_radius_ = 100.0;
+  size_t dr_j_power_ = 1;
 };
 
 template <typename T>
@@ -589,6 +608,185 @@ void test_bondi_data_manager_du_dr_j() {
           .scale(1.0);
   CHECK_ITERABLE_CUSTOM_APPROX(computed_du_dr_j, expected_du_dr_j,
                                interpolator_approx);
+}
+
+void test_bondi_data_manager_du_dr_j_interpolator() {
+  INFO("BondiWorldtubeDataManager::set_du_dr_j_interpolator");
+  // This file's own buffer updater is not among the factory-creatable ones, so
+  // the round trip below has to be told about it.
+  register_classes_with_charm<SimplePolyBondiBufferUpdater>();
+  const size_t l_max = 8;
+  const size_t buffer_size = 4;
+  const double r_amplitude = 100.0;
+  const double dr_j_slope = 0.25;
+  const double extraction_radius = 100.0;
+  // A Dr(J) that varies as t^5, so the interpolation order used for its time
+  // derivative is visible in the answer; with the linear default every order
+  // is exact and the substitution could not be observed.
+  const size_t dr_j_power = 5;
+
+  DataVector time_buffer{30};
+  for (size_t i = 0; i < time_buffer.size(); ++i) {
+    time_buffer[i] = 1.0 + (0.1 * static_cast<double>(i));
+  }
+  const double target_time = 1.5 + 1.0e-3;
+
+  const auto populate = [&](const size_t du_dr_j_order) {
+    BondiWorldtubeDataManager data_manager{
+        std::make_unique<SimplePolyBondiBufferUpdater>(
+            time_buffer, l_max, r_amplitude, dr_j_slope, extraction_radius,
+            dr_j_power),
+        l_max, buffer_size,
+        std::make_unique<intrp::BarycentricRationalSpanInterpolator>(4u, 5u)};
+    if (du_dr_j_order != 0) {
+      data_manager.set_du_dr_j_interpolator(
+          std::make_unique<intrp::BarycentricRationalSpanInterpolator>(
+              du_dr_j_order, du_dr_j_order));
+    }
+    Variables<Tags::characteristic_worldtube_boundary_tags<Tags::BoundaryValue>>
+        boundary_variables{
+            Spectral::Swsh::number_of_swsh_collocation_points(l_max)};
+    // The lock is only held for the duration of the call below; the manager
+    // does not keep a reference to it, so a local is fine here.
+    Parallel::NodeLock hdf5_lock{};
+    data_manager.populate_hypersurface_boundary_data(
+        make_not_null(&boundary_variables), target_time,
+        make_not_null(&hdf5_lock));
+    return std::make_pair(std::move(boundary_variables),
+                          data_manager.get_clone());
+  };
+
+  const auto [shared, shared_clone] = populate(0);
+  const auto [substituted, substituted_clone] = populate(1);
+
+  // d/dt (slope t^power) at the target time, which the high-order default
+  // reproduces and a 3-point stencil does not.
+  const auto& dr_bondi_j =
+      get(get<Tags::BoundaryValue<Tags::Dr<Tags::BondiJ>>>(shared)).data();
+  const ComplexDataVector expected_du_dr_j =
+      static_cast<double>(dr_j_power) * dr_bondi_j / target_time;
+  const auto& shared_du_dr_j =
+      get(get<Tags::BoundaryValue<Tags::Du<Tags::Dr<Tags::BondiJ>>>>(shared))
+          .data();
+  const auto& substituted_du_dr_j =
+      get(get<Tags::BoundaryValue<Tags::Du<Tags::Dr<Tags::BondiJ>>>>(
+              substituted))
+          .data();
+  const double scale = max(abs(expected_du_dr_j));
+  const double shared_error = max(abs(shared_du_dr_j - expected_du_dr_j));
+  const double substituted_error =
+      max(abs(substituted_du_dr_j - expected_du_dr_j));
+  // The order-(4,5) default gets 6 buffer points, so it interpolates the
+  // degree-5 Dr(J) exactly and its derivative is right to roundoff.
+  CHECK(shared_error < 1.0e-8 * scale);
+  // The substituted order-1 interpolator gets 2 points, so its derivative is
+  // the secant slope over one buffer spacing h = 0.1, which differs from the
+  // derivative at the target time by about (h / 2) d^2/dt^2 (t^power), i.e. a
+  // relative error of (h / 2) (power - 1) / t ~ 0.13. That is decades above
+  // the roundoff-level error the default makes, and 1e-2 sits far enough
+  // below 0.13 not to depend on exactly where the 2-point span lands.
+  CHECK(substituted_error > 1.0e-2 * scale);
+
+  tmpl::for_each<Tags::characteristic_worldtube_boundary_tags<
+      Tags::BoundaryValue>>([&shared_values = shared,
+                             &substituted_values = substituted]<typename Tag>(
+                                tmpl::type_<Tag> /*meta*/) {
+    if constexpr (std::is_same_v<Tag, Tags::BoundaryValue<
+                                          Tags::Du<Tags::Dr<Tags::BondiJ>>>>) {
+      CHECK(max(abs(get(get<Tag>(shared_values)).data() -
+                    get(get<Tag>(substituted_values)).data())) > 0.0);
+    } else {
+      CHECK_ITERABLE_APPROX(get(get<Tag>(shared_values)).data(),
+                            get(get<Tag>(substituted_values)).data());
+    }
+  });
+
+  // A clone and a round trip through Charm++ keep the substituted interpolator,
+  // so a manager migrated between nodes does not silently revert.
+  const auto check_preserved = [&](const auto& manager,
+                                   const ComplexDataVector& expected) {
+    Variables<Tags::characteristic_worldtube_boundary_tags<Tags::BoundaryValue>>
+        boundary_variables{
+            Spectral::Swsh::number_of_swsh_collocation_points(l_max)};
+    Parallel::NodeLock hdf5_lock{};
+    manager->populate_hypersurface_boundary_data(
+        make_not_null(&boundary_variables), target_time,
+        make_not_null(&hdf5_lock));
+    CHECK_ITERABLE_APPROX(
+        get(get<Tags::BoundaryValue<Tags::Du<Tags::Dr<Tags::BondiJ>>>>(
+                boundary_variables))
+            .data(),
+        expected);
+  };
+  check_preserved(shared_clone, shared_du_dr_j);
+  check_preserved(substituted_clone, substituted_du_dr_j);
+  check_preserved(serialize_and_deserialize(substituted_clone),
+                  substituted_du_dr_j);
+}
+
+// Both rejections of a `DuDrJInterpolator` request: one the Bondi manager makes
+// when the interpolator wants a wider stencil than the buffer it would be used
+// in, and one the base class makes for a manager that has no `Du<Dr<BondiJ>>`
+// to build in the first place.
+void test_du_dr_j_interpolator_errors() {
+  INFO("set_du_dr_j_interpolator rejections");
+  const size_t l_max = 8;
+  const size_t buffer_size = 4;
+  const double r_amplitude = 100.0;
+  const double dr_j_slope = 0.25;
+  const double extraction_radius = 100.0;
+
+  DataVector time_buffer{30};
+  for (size_t i = 0; i < time_buffer.size(); ++i) {
+    time_buffer[i] = 1.0 + (0.1 * static_cast<double>(i));
+  }
+
+  const auto make_bondi_manager = [&](const size_t h5_order) {
+    return BondiWorldtubeDataManager{
+        std::make_unique<SimplePolyBondiBufferUpdater>(
+            time_buffer, l_max, r_amplitude, dr_j_slope, extraction_radius),
+        l_max, buffer_size,
+        std::make_unique<intrp::BarycentricRationalSpanInterpolator>(h5_order,
+                                                                     h5_order)};
+  };
+
+  // `H5Interpolator` at order 2 sizes the buffer for 2 points before and
+  // after, so an order-6 `DuDrJInterpolator`, which wants 4, does not fit.
+  auto too_wide = make_bondi_manager(2_st);
+  CHECK_THROWS_WITH(
+      too_wide.set_du_dr_j_interpolator(
+          std::make_unique<intrp::BarycentricRationalSpanInterpolator>(6_st,
+                                                                       6_st)),
+      Catch::Matchers::ContainsSubstring(
+          "`DuDrJInterpolator` must not be of higher order than "
+          "`H5Interpolator`"));
+  // Equal orders fit, as does anything narrower, and `nullptr` is always
+  // accepted.
+  auto fits = make_bondi_manager(6_st);
+  fits.set_du_dr_j_interpolator(
+      std::make_unique<intrp::BarycentricRationalSpanInterpolator>(6_st, 6_st));
+  fits.set_du_dr_j_interpolator(
+      std::make_unique<intrp::BarycentricRationalSpanInterpolator>(2_st, 2_st));
+  fits.set_du_dr_j_interpolator(nullptr);
+
+  // A manager that does not produce `Du<Dr<BondiJ>>` inherits the base-class
+  // implementation, which refuses the request rather than dropping it.
+  MetricWorldtubeDataManager metric_manager{
+      std::make_unique<DummyBufferUpdater<ComplexModalVector>>(
+          time_buffer,
+          gr::Solutions::KerrSchild{1.0, {{0.0, 0.0, 0.0}}, {{0.0, 0.0, 0.0}}},
+          extraction_radius, 0.0, 0.0, l_max),
+      l_max, buffer_size,
+      std::make_unique<intrp::BarycentricRationalSpanInterpolator>(3_st, 4_st),
+      false};
+  CHECK_THROWS_WITH(
+      metric_manager.set_du_dr_j_interpolator(
+          std::make_unique<intrp::BarycentricRationalSpanInterpolator>(2_st,
+                                                                       2_st)),
+      Catch::Matchers::ContainsSubstring(
+          "does not produce the `Du<Dr<BondiJ>>` boundary value"));
+  // `nullptr` means nothing was asked for, so it is accepted.
+  metric_manager.set_du_dr_j_interpolator(nullptr);
 }
 
 template <typename DataManager, typename DummyUpdater, typename Generator>
@@ -1218,6 +1416,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.ReadBoundaryDataH5",
                                                 BondiBufferUpdater>(
         make_not_null(&gen));
     test_bondi_data_manager_du_dr_j();
+    test_bondi_data_manager_du_dr_j_interpolator();
+    test_du_dr_j_interpolator_errors();
   }
   {
     INFO("Testing monotonically increasing times");

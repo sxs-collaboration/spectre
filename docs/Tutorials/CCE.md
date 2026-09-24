@@ -529,7 +529,7 @@ You may notice at the beginning you get some warnings that look like
 
 ```
 Warning: iterative angular solve did not reach target tolerance 3.000000e-11.
-Exited after 1000 iterations, achieving final maximum over collocation points
+Exited after 1500 iterations, achieving final maximum over collocation points
  for deviation from target of 2.073455e-08
 Proceeding with evolution using the partial result from partial angular solve.
 ```
@@ -545,7 +545,7 @@ condition into a fatal error rather than a warning:
 
 ```
 Initial data iterative angular solve did not reach target tolerance 3e-11.
-Exited after 1000 iterations, achieving final
+Exited after 1500 iterations, achieving final
 maximum over collocation points deviation of J from target of 5.6e-11
 ```
 
@@ -555,6 +555,16 @@ physical, so raising it to sit just above the plateau is a reasonable fix, as
 is setting `RequireConvergence: False` to fall back to the warning above.
 Raising `MaxIterations` typically does not help: the residual tends to plateau
 rather than creep down, so the extra iterations buy nothing.
+
+`CauchySecondOrder` also requires a `DuDrJInterpolator`. The second-order match
+needs the worldtube \f$\partial_u \partial_r J\f$, which is built by
+differentiating the worldtube data in time, and it wants a *low* interpolation
+order for it (a barycentric order of 2 to 4) so that high-frequency content of
+the worldtube stays out of the initial data. That is the opposite of what the
+evolution wants for the values it interpolates every step, which is why this is
+a separate option from `H5Interpolator` rather than reusing it. It must not ask
+for a wider stencil than `H5Interpolator` does, since the derivative is taken
+inside the buffer that `H5Interpolator` sizes.
 
 After this, you'll likely see some output like
 

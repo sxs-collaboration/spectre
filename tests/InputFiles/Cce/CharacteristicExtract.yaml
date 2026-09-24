@@ -120,10 +120,18 @@ Cce:
       # residual settles at ~2.4e-11 and does not improve with more
       # iterations, so 1e-12 aborts and 3e-11 succeeds.
       AngularCoordTolerance: 3e-11
-      MaxIterations: 1000
+      MaxIterations: 1500
       RequireConvergence: True
       MaxAngularSolveError: 1e-1
       MaxScriSecondDerivative: 1e-9
+      # The worldtube Du(Dr(J)) that the second-order match uses is built with
+      # this interpolator rather than with `H5Interpolator` below: the initial
+      # data wants a low order here (2 to 4), while the evolution wants a high
+      # one for the values it interpolates every step.
+      DuDrJInterpolator:
+        BarycentricRationalSpanInterpolator:
+          MinOrder: 2
+          MaxOrder: 2
 
   StartTime: Auto # Start at the first time in file
   EndTime: Auto   # End at the last time in file

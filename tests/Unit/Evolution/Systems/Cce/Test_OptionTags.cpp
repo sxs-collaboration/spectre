@@ -31,7 +31,11 @@
 #include "Framework/TestCreation.hpp"
 #include "Helpers/DataStructures/DataBox/TestHelpers.hpp"
 #include "Helpers/Evolution/Systems/Cce/BoundaryTestHelpers.hpp"
+// Option parsing instantiates every class in
+// SpanInterpolator::creatable_classes.
+#include "NumericalAlgorithms/Interpolation/BarycentricRationalSpanInterpolator.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/Interpolation/CubicSpanInterpolator.hpp"
+#include "NumericalAlgorithms/Interpolation/LinearSpanInterpolator.hpp"  // IWYU pragma: keep
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
 #include "Time/OptionTags/TimeStepper.hpp"
 #include "Time/Tags/TimeStepper.hpp"
@@ -172,7 +176,11 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.OptionTags", "[Unit][Cce]") {
       "  MaxIterations: 300\n"
       "  RequireConvergence: false\n"
       "  MaxAngularSolveError: 1e-3\n"
-      "  MaxScriSecondDerivative: 1e-6");
+      "  MaxScriSecondDerivative: 1e-6\n"
+      "  DuDrJInterpolator:\n"
+      "    BarycentricRationalSpanInterpolator:\n"
+      "      MinOrder: 2\n"
+      "      MaxOrder: 2");
   CHECK_FALSE(
       TestHelpers::test_option_tag<Cce::OptionTags::AnalyticInitializeJ>(
           "FromAnalyticSolution")
