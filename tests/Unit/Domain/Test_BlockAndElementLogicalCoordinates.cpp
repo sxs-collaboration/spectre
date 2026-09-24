@@ -35,6 +35,7 @@
 #include "Domain/Structure/ElementSearchTree.hpp"
 #include "Domain/Structure/InitialElementIds.hpp"
 #include "Framework/TestHelpers.hpp"
+#include "Utilities/Algorithm.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Literals.hpp"
 #include "Utilities/MakeArray.hpp"
@@ -873,6 +874,21 @@ void test_element_ids_are_uniquely_determined() {
     CHECK(coord_holder.offsets == shuffled_coord_holder.offsets);
   }
   CHECK(points_found == n_pts);
+
+  // Each point is contained in exactly one element, and that element is the
+  // one found above
+  for (size_t offset = 0; offset < n_pts; ++offset) {
+    const auto& x_block_logical = block_logical_points[offset]->data;
+    INFO(x_block_logical);
+    size_t num_containing_elements = 0;
+    for (const auto& element_id : element_ids) {
+      if (element_contains(x_block_logical, element_id)) {
+        ++num_containing_elements;
+        CHECK(alg::found(result_unshuffled.at(element_id).offsets, offset));
+      }
+    }
+    CHECK(num_containing_elements == 1);
+  }
 }
 
 void test_block_logical_coordinates_with_roundoff_error() {
