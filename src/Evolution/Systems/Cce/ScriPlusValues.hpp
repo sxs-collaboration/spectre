@@ -295,11 +295,14 @@ struct CalculateScriPlusValue<Tags::ScriPlus<Tags::Psi1>> {
  * has the form (in the coordinates used for regularity preserving CCE)
  *
  * \f{align*}{
- * \Psi_0^{(5)} = \frac{3}{2}\left(\frac{1}{4}\bar J^{(1)} J^{(1)} {}^2
- * - J^{(3)}\right)
+ * \Psi_0^{(5)} = \frac{3}{16}\bar J^{(1)}\left(J^{(1)}\right)^2
+ * - \frac{3}{2}J^{(3)}.
  * \f}
  *
- * where \f$A^{(n)}\f$ is the \f$1/r^n\f$ part of \f$A\f$ evaluated at
+ * This follows by expanding the finite-radius implementation of Eq. (91a) of
+ * \cite Moxon2020gha, which uses the vacuum beta hypersurface equation.
+ *
+ * Here \f$A^{(n)}\f$ is the \f$1/r^n\f$ part of \f$A\f$ evaluated at
  * \f$\mathcal I^+\f$, so for any quantity \f$A\f$,
  *
  * \f{align*}{
@@ -308,7 +311,13 @@ struct CalculateScriPlusValue<Tags::ScriPlus<Tags::Psi1>> {
  * \f}
  *
  * where the expansion is determined by the conversion between Bondi and
- * numerical radii \f$r = 2 R / (1 - y)\f$.
+ * numerical radii \f$r = 2 R / (1 - y)\f$. Consequently, with
+ * \f$j_1=(\partial_yJ)|_{y=1}\f$ and
+ * \f$j_3=(\partial_y^3J)|_{y=1}\f$,
+ *
+ * \f{align*}{
+ * \Psi_0^{(5)}=-R^3\left(\frac{3}{2}\bar j_1j_1^2-2j_3\right).
+ * \f}
  */
 template <>
 struct CalculateScriPlusValue<Tags::ScriPlus<Tags::Psi0>> {

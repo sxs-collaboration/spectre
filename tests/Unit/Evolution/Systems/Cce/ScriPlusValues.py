@@ -121,11 +121,12 @@ def psi_1(
 
 
 def psi_0(dy_bondi_j, dy_dy_dy_bondi_j, boundary_r):
-    return 1.5 * (
-        0.25
+    return (
+        3.0
+        / 16.0
         * (-2.0 * boundary_r * np.conj(dy_bondi_j))
         * (-2.0 * boundary_r * dy_bondi_j) ** 2
-        + 4.0 / 3.0 * boundary_r**3 * dy_dy_dy_bondi_j
+        + 2.0 * boundary_r**3 * dy_dy_dy_bondi_j
     )
 
 
