@@ -25,6 +25,9 @@ Save the diff. Extract the list of changed files categorized by type (C++
 
 Create a task list tracking all review steps.
 
+Read `references/reviewer-feedback-checklist.md`. Use it as an additional
+checklist throughout the review and provide it to review agents in Step 4.
+
 ## Step 2: Formatting Checks (run in parallel)
 
 ### C++ (clang-format)
@@ -89,11 +92,14 @@ Verify:
 ### Commit Messages (local mode only)
 Check no commit starts with (case-insensitive): fixup, wip, fixme, deleteme,
 rebaseme, testing, rebase.
+Check co-author trailers are in commit messages, separated from the body by a
+blank line, so GitHub recognizes them.
 
 ## Step 4: Code Review (2 Parallel Agents)
 
 Launch 2 parallel agents. Provide each with the full diff and the
-SpECTRE code rules reference shown above.
+SpECTRE code rules reference shown above, plus
+`references/reviewer-feedback-checklist.md`.
 
 ### Agent A: Style, Patterns & Idioms
 Instructions for the agent:
@@ -104,6 +110,9 @@ Instructions for the agent:
   operation, a loop that looks like it reimplements an existing utility), use
   `grep -r` in `src/DataStructures/Tensor/EagerMath/`, `src/DataStructures/`,
   `src/NumericalAlgorithms/`, or `src/Utilities/` to find an existing utility
+- Check the recurring reviewer-feedback checklist, especially commit hygiene,
+  formatting churn, CMake ordering, includes, existing local helpers, and API
+  naming/documentation
 - Only flag issues in lines that the diff introduces (not pre-existing code)
 - For each finding: `file:line`, severity (`critical`/`important`/`suggestion`),
   explanation
@@ -119,6 +128,9 @@ Instructions for the agent:
 - Check that new source files have corresponding tests (`src/Foo/Bar.hpp` ->
   `tests/Unit/Foo/Test_Bar.cpp`)
 - Check that new `.cpp`/`.hpp` files are listed in their `CMakeLists.txt`
+- Check the recurring reviewer-feedback checklist, especially weak tests,
+  tolerance relaxations, missing ASSERT/ERROR tests, unnecessary allocations,
+  copies, expensive recomputation, NaN handling, and unclear numerical docs
 - Only flag issues introduced by the diff
 - For each finding: `file:line`, severity, explanation
 - Check for potentially problematic floating point math like:
