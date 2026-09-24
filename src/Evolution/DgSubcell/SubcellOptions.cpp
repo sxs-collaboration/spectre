@@ -47,26 +47,19 @@ SubcellOptions::SubcellOptions(
 }
 
 void SubcellOptions::pup(PUP::er& p) {
-  size_t version = 0;
-  p | version;
-  // Remember to increment the version number when making changes to this
-  // function. Retain support for unpacking data written by previous versions
-  // whenever possible. See `Domain` docs for details.
-  if (version >= 0) {
-    p | persson_exponent_;
-    p | persson_num_highest_modes_;
-    p | rdmp_delta0_;
-    p | rdmp_epsilon_;
-    p | always_use_subcells_;
-    p | enable_extension_directions_;
-    p | reconstruction_method_;
-    p | use_halo_;
-    p | fd_to_fd_interp_order_;
-    p | finite_difference_derivative_order_;
-    p | number_of_steps_between_tci_calls_;
-    p | min_tci_calls_after_rollback_;
-    p | min_clear_tci_before_dg_;
-  }
+  p | persson_exponent_;
+  p | persson_num_highest_modes_;
+  p | rdmp_delta0_;
+  p | rdmp_epsilon_;
+  p | always_use_subcells_;
+  p | enable_extension_directions_;
+  p | reconstruction_method_;
+  p | use_halo_;
+  p | fd_to_fd_interp_order_;
+  p | finite_difference_derivative_order_;
+  p | number_of_steps_between_tci_calls_;
+  p | min_tci_calls_after_rollback_;
+  p | min_clear_tci_before_dg_;
 }
 
 bool operator==(const SubcellOptions& lhs, const SubcellOptions& rhs) {

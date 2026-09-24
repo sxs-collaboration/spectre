@@ -5,7 +5,6 @@
 
 #include <array>
 #include <cstddef>
-#include <optional>
 #include <unordered_map>
 #include <vector>
 
@@ -32,12 +31,9 @@ namespace evolution::dg {
  * \f$N\f$ DG grid points in `initial_extents`, matching the subcell mesh built
  * by `evolution::dg::subcell::fd::mesh`. Blocks in `only_dg_block_ids` are
  * omitted from the returned map, since they always run on the DG grid.
- *
- * Returns `std::nullopt` if every block is in `only_dg_block_ids`, since then
- * there is nothing to override.
  */
 template <size_t Dim>
-std::optional<std::unordered_map<size_t, std::array<size_t, Dim>>>
+std::unordered_map<size_t, std::array<size_t, Dim>>
 compute_weighting_extents_override(
     const std::vector<size_t>& only_dg_block_ids,
     const std::vector<std::array<size_t, Dim>>& initial_extents);
@@ -115,8 +111,8 @@ weighting_extents_override_from_cache(
     const std::vector<std::array<size_t, Dim>>& initial_extents) {
   if constexpr (using_subcell_v<Metavariables>) {
     if (Parallel::get<Tags::UseSubcellGridPointsForDistribution>(cache)) {
-      return compute_weighting_extents_override(
-          Parallel::get<Tags::OnlyDgBlockIds<Dim>>(cache), initial_extents);
+      return {compute_weighting_extents_override(
+          Parallel::get<Tags::OnlyDgBlockIds<Dim>>(cache), initial_extents)};
     }
   }
   return std::nullopt;

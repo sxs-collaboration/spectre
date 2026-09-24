@@ -27,26 +27,23 @@ void test_compute_weighting_extents_override() {
   // 2 * N - 1 grid points per dimension
   const auto overrides = evolution::dg::compute_weighting_extents_override(
       std::vector<size_t>{1, 2}, initial_extents);
-  REQUIRE(overrides.has_value());
-  CHECK(overrides->size() == 2);
-  CHECK(overrides->at(0) == std::array<size_t, 3>{{5, 7, 9}});
-  CHECK(overrides->at(3) == std::array<size_t, 3>{{13, 5, 5}});
-  CHECK(overrides->count(1) == 0);
-  CHECK(overrides->count(2) == 0);
+  CHECK(overrides.size() == 2);
+  CHECK(overrides.at(0) == std::array<size_t, 3>{{5, 7, 9}});
+  CHECK(overrides.at(3) == std::array<size_t, 3>{{13, 5, 5}});
+  CHECK(not overrides.contains(1));
+  CHECK(not overrides.contains(2));
 
   // No DG-only blocks means every block is overridden
   const auto all_overridden = evolution::dg::compute_weighting_extents_override(
       std::vector<size_t>{}, initial_extents);
-  REQUIRE(all_overridden.has_value());
-  CHECK(all_overridden->size() == initial_extents.size());
-  CHECK(all_overridden->at(1) == std::array<size_t, 3>{{11, 11, 11}});
-  CHECK(all_overridden->at(2) == std::array<size_t, 3>{{3, 3, 3}});
+  CHECK(all_overridden.size() == initial_extents.size());
+  CHECK(all_overridden.at(1) == std::array<size_t, 3>{{11, 11, 11}});
+  CHECK(all_overridden.at(2) == std::array<size_t, 3>{{3, 3, 3}});
 
-  // If every block is DG-only there is nothing to override, so we get back
-  // `std::nullopt` rather than an empty map
-  CHECK_FALSE(evolution::dg::compute_weighting_extents_override(
-                  std::vector<size_t>{0, 1, 2, 3}, initial_extents)
-                  .has_value());
+  // If every block is DG-only there is nothing to override
+  CHECK(evolution::dg::compute_weighting_extents_override(
+            std::vector<size_t>{0, 1, 2, 3}, initial_extents)
+            .empty());
 
   // The order of `only_dg_block_ids` must not matter
   CHECK(evolution::dg::compute_weighting_extents_override(
@@ -55,8 +52,8 @@ void test_compute_weighting_extents_override() {
   // 1D check
   const auto overrides_1d = evolution::dg::compute_weighting_extents_override(
       std::vector<size_t>{}, std::vector<std::array<size_t, 1>>{{{4}}});
-  REQUIRE(overrides_1d.has_value());
-  CHECK(overrides_1d->at(0) == std::array<size_t, 1>{{7}});
+  CHECK(overrides_1d.size() == 1);
+  CHECK(overrides_1d.at(0) == std::array<size_t, 1>{{7}});
 
 #ifdef SPECTRE_DEBUG
   CHECK_THROWS_WITH(
@@ -105,26 +102,23 @@ struct Metavars {
   };
 };
 
-void test_element_distribution_cache_tags() {
-  // Without DG-subcell support the subcell tags must be absent, since the
-  // options they are built from do not exist in those executables
-  static_assert(
-      std::is_same_v<
-          evolution::dg::element_distribution_cache_tags<Metavars<false>, 2>,
-          tmpl::list<domain::Tags::Domain<2>,
-                     domain::Tags::ElementDistribution>>);
-  static_assert(
-      std::is_same_v<
-          evolution::dg::element_distribution_cache_tags<Metavars<true>, 2>,
-          tmpl::list<domain::Tags::Domain<2>, domain::Tags::ElementDistribution,
-                     evolution::dg::Tags::UseSubcellGridPointsForDistribution,
-                     evolution::dg::Tags::OnlyDgBlockIds<2>>>);
-}
-}  // namespace
+// Without DG-subcell support the subcell tags must be absent, since the
+// options they are built from do not exist in those executables
+static_assert(
+    std::is_same_v<
+        evolution::dg::element_distribution_cache_tags<Metavars<false>, 2>,
+        tmpl::list<domain::Tags::Domain<2>,
+                   domain::Tags::ElementDistribution>>);
+static_assert(
+    std::is_same_v<
+        evolution::dg::element_distribution_cache_tags<Metavars<true>, 2>,
+        tmpl::list<domain::Tags::Domain<2>, domain::Tags::ElementDistribution,
+                   evolution::dg::Tags::UseSubcellGridPointsForDistribution,
+                   evolution::dg::Tags::OnlyDgBlockIds<2>>>);
 
 SPECTRE_TEST_CASE("Unit.Evolution.DG.SubcellElementDistribution",
                   "[Unit][Evolution]") {
   test_compute_weighting_extents_override();
   test_tag();
-  test_element_distribution_cache_tags();
 }
+}  // namespace

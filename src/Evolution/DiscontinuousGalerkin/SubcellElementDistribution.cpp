@@ -5,7 +5,6 @@
 
 #include <array>
 #include <cstddef>
-#include <optional>
 #include <unordered_map>
 #include <vector>
 
@@ -16,7 +15,7 @@
 
 namespace evolution::dg {
 template <size_t Dim>
-std::optional<std::unordered_map<size_t, std::array<size_t, Dim>>>
+std::unordered_map<size_t, std::array<size_t, Dim>>
 compute_weighting_extents_override(
     const std::vector<size_t>& only_dg_block_ids,
     const std::vector<std::array<size_t, Dim>>& initial_extents) {
@@ -37,19 +36,15 @@ compute_weighting_extents_override(
       overrides[block_id] = weighting_extents;
     }
   }
-  if (overrides.empty()) {
-    return std::nullopt;
-  }
   return overrides;
 }
 
 #define GET_DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 
-#define INSTANTIATION(r, data)                                       \
-  template std::optional<                                            \
-      std::unordered_map<size_t, std::array<size_t, GET_DIM(data)>>> \
-  compute_weighting_extents_override(                                \
-      const std::vector<size_t>& only_dg_block_ids,                  \
+#define INSTANTIATION(r, data)                                           \
+  template std::unordered_map<size_t, std::array<size_t, GET_DIM(data)>> \
+  compute_weighting_extents_override(                                    \
+      const std::vector<size_t>& only_dg_block_ids,                      \
       const std::vector<std::array<size_t, GET_DIM(data)>>& initial_extents);
 
 GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
