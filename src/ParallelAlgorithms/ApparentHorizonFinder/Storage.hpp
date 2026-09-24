@@ -148,11 +148,14 @@ struct SingleTimeStorage {
    * \brief Elements in which we have found points to interpolate to in previous
    * iterations, to try first before searching all elements.
    *
-   * This is not only a performance optimization, but also important for
-   * robustness. If we try to interpolate from elements in a different order in
-   * each iteration, then points that lie directly on element boundaries can
-   * fluctuate in interpolated value, preventing convergence (see
-   * https://github.com/sxs-collaboration/spectre/issues/3899).
+   * This is only a performance optimization. The interpolated values don't
+   * depend on the order because points that lie directly on shared element
+   * boundaries are always assigned to the same element (see
+   * `element_contains`). Otherwise, the interpolated values at these points
+   * would fluctuate with the order in which element data arrives, which can
+   * prevent convergence (see
+   * https://github.com/sxs-collaboration/spectre/issues/3899) and makes
+   * simulations nondeterministic.
    */
   std::vector<ElementId<3>> element_order{};
   /*!
