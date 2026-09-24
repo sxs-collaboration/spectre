@@ -85,12 +85,9 @@ void create_elements_using_distribution(
         domain::get_element_costs(blocks, initial_refinement_levels,
                                   weighting_extents, element_weight.value(),
                                   i1_basis, i1_quadrature);
-    // Only the element costs depend on the weighting extents. The distribution
-    // itself just ASSERTs that `initial_extents` has one entry per block, so
-    // pass the true extents here.
     element_distribution = domain::BlockZCurveProcDistribution<Dim>{
-        element_costs,   num_of_procs_to_use, blocks, initial_refinement_levels,
-        initial_extents, procs_to_ignore};
+        element_costs, num_of_procs_to_use, blocks, initial_refinement_levels,
+        procs_to_ignore};
   }
 
   // Will be used to print domain diagnostic info

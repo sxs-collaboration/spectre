@@ -96,9 +96,7 @@ SPECTRE_TEST_CASE(
   // Directly verify the override is equivalent to substituting the
   // overridden extents into `initial_extents` when computing the element
   // costs, which is what `create_elements_using_distribution` does
-  // internally. Note that the production code passes the *true*
-  // `initial_extents` to `BlockZCurveProcDistribution`, which only uses them
-  // to sanity check their size, so that is what we do here too.
+  // internally.
   const auto domain = domain_creator.create_domain();
   std::vector<std::array<size_t, 2>> manually_merged_extents =
       domain_creator.initial_extents();
@@ -108,26 +106,9 @@ SPECTRE_TEST_CASE(
       manually_merged_extents, domain::ElementWeight::NumGridPoints,
       Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto);
   const domain::BlockZCurveProcDistribution<2> expected_distribution{
-      expected_costs,
-      4,
-      domain.blocks(),
-      domain_creator.initial_refinement_levels(),
-      domain_creator.initial_extents(),
-      std::unordered_set<size_t>{}};
+      expected_costs, 4, domain.blocks(),
+      domain_creator.initial_refinement_levels(), std::unordered_set<size_t>{}};
   for (const auto& [element_id, proc] : overridden_distribution) {
     CHECK(proc == expected_distribution.get_proc_for_element(element_id));
-  }
-
-  // `BlockZCurveProcDistribution` must not care which of the two extents it
-  // is given, since the costs it distributes already account for the
-  // override. The production code relies on this.
-  const domain::BlockZCurveProcDistribution<2>
-      expected_distribution_weighting_extents{
-          expected_costs,          4,
-          domain.blocks(),         domain_creator.initial_refinement_levels(),
-          manually_merged_extents, std::unordered_set<size_t>{}};
-  for (const auto& [element_id, proc] : overridden_distribution) {
-    CHECK(proc == expected_distribution_weighting_extents.get_proc_for_element(
-                      element_id));
   }
 }

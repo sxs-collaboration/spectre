@@ -104,9 +104,8 @@ struct DefaultElementsAllocator
                                     initial_extents, element_weight.value(),
                                     basis, quadrature);
       element_distribution = domain::BlockZCurveProcDistribution<Dim>{
-          element_costs,   num_of_procs_to_use,
-          blocks,          initial_refinement_levels,
-          initial_extents, procs_to_ignore};
+          element_costs, num_of_procs_to_use, blocks, initial_refinement_levels,
+          procs_to_ignore};
     }
 
     // Will be used to print domain diagnostic info
