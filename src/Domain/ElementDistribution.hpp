@@ -148,14 +148,13 @@ struct BlockZCurveProcDistribution {
 
   /// The `number_of_procs_with_elements` argument represents how many procs
   /// will have elements. This is not necessarily equal to the total number of
-  /// procs because some global procs may be ignored by the sixth argument
+  /// procs because some global procs may be ignored by the fifth argument
   /// `global_procs_to_ignore`.
   BlockZCurveProcDistribution(
       const std::unordered_map<ElementId<Dim>, double>& element_costs,
       size_t number_of_procs_with_elements,
       const std::vector<Block<Dim>>& blocks,
       const std::vector<std::array<size_t, Dim>>& initial_refinement_levels,
-      const std::vector<std::array<size_t, Dim>>& initial_extents,
       const std::unordered_set<size_t>& global_procs_to_ignore = {});
 
   /// Gets the suggested processor number for a particular `ElementId`,

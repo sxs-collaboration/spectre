@@ -175,7 +175,7 @@ void test_uniform_element_distribution_construction(
 
   const domain::BlockZCurveProcDistribution<Dim> element_distribution(
       costs, number_of_procs_with_elements, blocks, initial_refinement_levels,
-      initial_extents, global_procs_to_ignore);
+      global_procs_to_ignore);
   const auto proc_map = element_distribution.block_element_distribution();
 
   const size_t total_procs =
@@ -268,7 +268,7 @@ void test_weighted_element_distribution_construction(
 
   const domain::BlockZCurveProcDistribution<Dim> element_distribution(
       costs, number_of_procs_with_elements, blocks, initial_refinement_levels,
-      initial_extents, global_procs_to_ignore);
+      global_procs_to_ignore);
   const auto proc_map = element_distribution.block_element_distribution();
 
   const size_t total_procs =
@@ -455,7 +455,7 @@ void test_proc_retrieval(
 
   const domain::BlockZCurveProcDistribution<Dim> element_distribution(
       costs, number_of_procs_with_elements, blocks, initial_refinement_levels,
-      initial_extents, global_procs_to_ignore);
+      global_procs_to_ignore);
   const auto proc_map = element_distribution.block_element_distribution();
 
   const size_t total_number_of_procs =
