@@ -736,11 +736,16 @@ ${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
         working-directory: build
         run: |
           ! grep -A 6 "CMake Warning" ./CMakeOutput.txt
+      - name: Build libs
+        if:  matrix.CUDA != 'ON'
+        working-directory: build
+        run: |
+          make -j${NUMBER_OF_CORES} libs
       - name: Build unit tests
         if: matrix.unit_tests != 'OFF'
         working-directory: build
         run: |
-          make -j${NUMBER_OF_CORES} unit-tests
+          make -j2 unit-tests
       - name: Run unit tests
         if: matrix.unit_tests != 'OFF' && matrix.COVERAGE != 'ON'
         working-directory: build
