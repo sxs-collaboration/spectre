@@ -11,7 +11,6 @@
 #include <vector>
 
 #include "DataStructures/TaggedTuple.hpp"
-#include "Domain/Block.hpp"
 #include "Domain/Creators/AlignedLattice.hpp"
 #include "Domain/ElementDistribution.hpp"
 #include "Domain/Structure/ElementId.hpp"
@@ -19,7 +18,6 @@
 #include "NumericalAlgorithms/Spectral/Quadrature.hpp"
 #include "Parallel/ArrayCollection/CreateElementsUsingDistribution.hpp"
 #include "Parallel/GlobalCache.hpp"
-#include "Utilities/TMPL.hpp"
 
 namespace {
 struct Metavars {

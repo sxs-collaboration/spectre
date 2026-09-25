@@ -8,7 +8,6 @@
 #include <memory>
 #include <optional>
 #include <string>
-#include <unordered_map>
 #include <vector>
 
 #include "Domain/Block.hpp"
@@ -23,7 +22,6 @@
 #include "Framework/TestCreation.hpp"
 #include "Helpers/DataStructures/DataBox/TestHelpers.hpp"
 #include "Utilities/Algorithm.hpp"
-#include "Utilities/ConstantExpressions.hpp"
 
 namespace {
 // A domain creator with a mix of subcell-capable and subcell-incapable

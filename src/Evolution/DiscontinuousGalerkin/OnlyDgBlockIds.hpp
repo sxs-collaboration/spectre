@@ -14,7 +14,6 @@
 #include "DataStructures/DataBox/Tag.hpp"
 #include "Domain/Creators/OptionTags.hpp"
 #include "Evolution/DiscontinuousGalerkin/OptionTags.hpp"
-#include "Utilities/TMPL.hpp"
 
 /// \cond
 template <size_t VolumeDim>

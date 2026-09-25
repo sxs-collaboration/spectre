@@ -16,7 +16,6 @@
 #include "Evolution/DiscontinuousGalerkin/SubcellElementDistribution.hpp"
 #include "Framework/TestCreation.hpp"
 #include "Helpers/DataStructures/DataBox/TestHelpers.hpp"
-#include "Utilities/TMPL.hpp"
 
 namespace {
 void test_compute_weighting_extents_override() {
