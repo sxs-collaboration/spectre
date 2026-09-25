@@ -96,10 +96,11 @@ Matrix q_integration_matrix(const size_t number_of_points) {
 const Matrix& precomputed_cce_q_integrator(
     const size_t number_of_radial_grid_points) {
   static const auto lazy_matrix_cache = make_static_cache<CacheRange<
-      1_st, Spectral::maximum_number_of_points<Spectral::Basis::Legendre> + 1>>(
-      [](const size_t local_number_of_radial_points) {
-        return q_integration_matrix(local_number_of_radial_points);
-      });
+      1_st, Spectral::maximum_number_of_points<
+                Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto> +
+                1>>([](const size_t local_number_of_radial_points) {
+    return q_integration_matrix(local_number_of_radial_points);
+  });
   return lazy_matrix_cache(number_of_radial_grid_points);
 }
 

@@ -20,6 +20,7 @@
 #include "Domain/Structure/DirectionalIdMap.hpp"
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/ElementId.hpp"
+#include "Domain/Structure/IsValidDgMesh.hpp"
 #include "Domain/Structure/Neighbors.hpp"
 #include "Domain/Tags.hpp"
 #include "Domain/Tags/NeighborMesh.hpp"
@@ -27,6 +28,7 @@
 #include "Parallel/ElementRegistration.hpp"
 #include "ParallelAlgorithms/Amr/Projectors/Mesh.hpp"
 #include "ParallelAlgorithms/Initialization/MutateAssign.hpp"
+#include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -86,6 +88,9 @@ struct InitializeParent {
     }
     Mesh<volume_dim> parent_mesh =
         amr::projectors::parent_mesh(projected_children_meshes);
+    if (not domain::is_valid_dg_mesh(parent_mesh, parent)) {
+      ERROR("Invalid mesh " << parent_mesh << " for Element " << parent);
+    }
 
     // Default initialization of amr::Tags::Info and amr::Tags::NeighborInfo
     // is okay

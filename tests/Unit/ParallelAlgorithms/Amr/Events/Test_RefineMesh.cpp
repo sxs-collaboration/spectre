@@ -192,8 +192,10 @@ void test(const Event& event, const Event& observe_event) {
   const Element<1> element{element_id, neighbors};
   const Mesh<1> mesh{std::array{3_st}, Spectral::Basis::Legendre,
                      Spectral::Quadrature::GaussLobatto};
-  const amr::Policies policies{amr::Isotropy::Anisotropic,
-                               amr::Limits{0, 0, 3, 5}, true, true};
+  const amr::Policies policies{
+      amr::Isotropy::Anisotropic,
+      amr::Limits{{{0, 0}}, {{2, 4}}, std::nullopt, std::nullopt, false}, true,
+      true};
   const Slab slab(3.4, 6.7);
   const TimeStepId time_step_id(true, 5, slab.start());
   const auto later_time_step_id =
@@ -279,9 +281,10 @@ void test(const Event& event, const Event& observe_event) {
                                          domain::Tags::Element<1>>(
               runner, element_id) == element);
 
-    const amr::Policies error_policies{amr::Isotropy::Anisotropic,
-                                       amr::Limits{{{0, 0}}, {{3, 5}}, true},
-                                       true, true};
+    const amr::Policies error_policies{
+        amr::Isotropy::Anisotropic,
+        amr::Limits{{{0, 0}}, {{2, 4}}, std::nullopt, std::nullopt, true}, true,
+        true};
     db::mutate<amr::Tags::Policies>(
         [&](const gsl::not_null<amr::Policies*> box_policies) {
           *box_policies = error_policies;
