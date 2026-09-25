@@ -553,8 +553,8 @@ def start_inspiral(
         )
     else:
         assert (
-            lev is None
-        ), "Cannot currently use --lev with --cylindrical_domain=True."
+            lev is not None
+        ), "Must specify --lev with --cylindrical_domain=True."
         assert refinement_level is None, (
             "Cannot currently use --refinement-level with "
             "--cylindrical-domain=True."
@@ -562,6 +562,12 @@ def start_inspiral(
         assert polynomial_order is None, (
             "Cannot currently use --polynomial-order with "
             "--cylindrical-domain=True."
+        )
+
+        inspiral_params.update(
+            {
+                "Lev": lev,
+            }
         )
 
     # Set final time for eccentricity control to 2-3 orbits. This can be set

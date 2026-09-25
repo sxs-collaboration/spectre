@@ -169,24 +169,29 @@ DomainCreator:
     # chosen to be in the ballpark of what SpEC equal mass non-spinning Lev1
     # runs seem to do - at least as much as we can with current limitations on
     # the amount of refinement and number of grid points in this domain.
+    #
+    # Note that --lev currently controls the number of grid points. This is a
+    # temporary stand-in, as Lev is not calibrated yet to match SpEC or the BCO
+    # domain. However, --lev 1 should give intial grid points informed by SpEC's
+    # Lev1 initial grid points.
     InitialGridPoints:
       # [radial_points, z_points] for filled cylinder blocks
       # - theta_points will be set to (4 * radial_points - 3)
-      CAFilledCylinder: [6, 18]
-      CBFilledCylinder: [6, 18]
-      EAFilledCylinder: [8, 18]
-      EBFilledCylinder: [8, 18]
-      MAFilledCylinder: [18, 18]
-      MBFilledCylinder: [18, 18]
+      CAFilledCylinder: [{{ 6 + Lev - 1 }}, {{ 18 + Lev - 1 }}]
+      CBFilledCylinder: [{{ 6 + Lev - 1 }}, {{ 18 + Lev - 1 }}]
+      EAFilledCylinder: [{{ 6 + Lev - 1 }}, {{ 18 + Lev - 1 }}]
+      EBFilledCylinder: [{{ 6 + Lev - 1 }}, {{ 18 + Lev - 1 }}]
+      MAFilledCylinder: [{{ 18 + Lev - 1 }}, {{ 18 + Lev - 1 }}]
+      MBFilledCylinder: [{{ 18 + Lev - 1 }}, {{ 18 + Lev - 1 }}]
       # [radial_points, theta_points, z_points] for hollow cylinder blocks
-      CACylinder: [18, 15, 12]
-      CBCylinder: [18, 15, 12]
-      EACylinder: [18, 19, 12]
-      EBCylinder: [18, 19, 12]
+      CACylinder: [{{ 18 + Lev - 1 }}, {{ 15 + 2 * Lev - 2 }}, {{ 12 + Lev - 1 }}]
+      CBCylinder: [{{ 18 + Lev - 1 }}, {{ 15 + 2 * Lev - 2 }}, {{ 12 + Lev - 1 }}]
+      EACylinder: [{{ 18 + Lev - 1 }}, {{ 19 + 2 * Lev - 2 }}, {{ 12 + Lev - 1 }}]
+      EBCylinder: [{{ 18 + Lev - 1 }}, {{ 19 + 2 * Lev - 2 }}, {{ 12 + Lev - 1 }}]
       # [radial_points, L_max] for spherical shell block groups
-      InnerSphereA: [12, 19]
-      InnerSphereB: [12, 19]
-      OuterSphere: [11, 13]
+      InnerSphereA: [{{ 12 + Lev - 1 }}, {{ 19 + Lev - 1 }}]
+      InnerSphereB: [{{ 12 + Lev - 1 }}, {{ 19 + Lev - 1 }}]
+      OuterSphere: [{{ 11 + Lev - 1 }}, {{ 13 + Lev - 1 }}]
     BoundaryConditions:
       InnerBoundary:
         DemandOutgoingCharSpeeds:
