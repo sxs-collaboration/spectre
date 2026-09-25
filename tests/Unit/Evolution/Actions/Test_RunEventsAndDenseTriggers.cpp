@@ -4,6 +4,7 @@
 #include "Framework/TestingFramework.hpp"
 
 #include <cstddef>
+#include <cstdint>
 #include <limits>
 #include <memory>
 #include <optional>
@@ -25,6 +26,7 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
 #include "DataStructures/VariablesTag.hpp"
+#include "Domain/BoundaryVariablesTag.hpp"
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/DirectionMap.hpp"
 #include "Domain/Structure/DirectionalIdMap.hpp"
@@ -34,6 +36,7 @@
 #include "Domain/Tags.hpp"
 #include "Domain/Tags/NeighborMesh.hpp"
 #include "Evolution/Actions/RunEventsAndDenseTriggers.hpp"
+#include "Evolution/DiscontinuousGalerkin/BoundaryEvolvedVariables.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Options/Protocols/FactoryCreation.hpp"
@@ -84,6 +87,35 @@ using EvolvedVariables2 = Variables<tmpl::list<EvolvedVar2>>;
 using variables_tag1 = Tags::Variables<tmpl::list<EvolvedVar>>;
 using variables_tag2 = Tags::Variables<tmpl::list<EvolvedVar2>>;
 
+enum class SystemVars : uint8_t {
+  Single,
+  Split,
+  SplitBoundary,
+  SplitEmptyBoundary
+};
+
+using BoundaryVar = evolution::dg::Tags::BoundaryValue<EvolvedVar>;
+using boundary_variables_tag =
+    Tags::BoundaryVariables<1, tmpl::list<BoundaryVar>>;
+using BoundaryVars = boundary_variables_tag::type;
+
+template <SystemVars Vars, typename Container>
+Container make_boundary_values(const double volume_value) {
+  Container boundary_values{};
+  if constexpr (Vars == SystemVars::SplitBoundary) {
+    using tag = tmpl::front<typename Container::tags_list>;
+    DirectionMap<1, size_t> points_per_direction{};
+    points_per_direction[Direction<1>::lower_xi()] = 1;
+    points_per_direction[Direction<1>::upper_xi()] = 1;
+    boundary_values.initialize(std::move(points_per_direction));
+    get(get<tag>(boundary_values.variables().at(Direction<1>::lower_xi()))) =
+        3.0 * volume_value;
+    get(get<tag>(boundary_values.variables().at(Direction<1>::upper_xi()))) =
+        4.0 * volume_value;
+  }
+  return boundary_values;
+}
+
 template <typename T, typename Label = void>
 struct PostprocessedVar : db::SimpleTag {
   using type = T;
@@ -98,8 +130,8 @@ using extra_data =
     tmpl::list<PostprocessedVar<Scalar<DataVector>, labels::A>,
                PostprocessedVar<Scalar<DataVector>, labels::B>,
                PostprocessedVar<Scalar<double>>, PostprocessedVar<std::string>>;
-using all_data =
-    tmpl::push_front<extra_data, ::Tags::Time, EvolvedVar, EvolvedVar2>;
+using all_data = tmpl::push_front<extra_data, ::Tags::Time, EvolvedVar,
+                                  EvolvedVar2, boundary_variables_tag>;
 using DataTuple = tuples::tagged_tuple_from_typelist<all_data>;
 
 const tuples::tagged_tuple_from_typelist<extra_data> initial_extra_data{
@@ -176,7 +208,7 @@ class TestTrigger : public DenseTrigger {
 
 PUP::able::PUP_ID TestTrigger::my_PUP_ID = 0;  // NOLINT
 
-template <bool SplitVars>
+template <SystemVars Vars>
 struct TestEvent : public Event {
   TestEvent() = default;
   explicit TestEvent(CkMigrateMessage* const /*msg*/) {}
@@ -258,11 +290,15 @@ struct TestEvent : public Event {
       });
       // We never do postprocessing on vars2 in the test, but
       // initialize all it's values to 2*vars1 if it is used.
-      if constexpr (SplitVars) {
+      if constexpr (Vars == SystemVars::Split) {
         CHECK(get(get<EvolvedVar2>(calls[i])) == 2.0 * get(expected_evolved));
       } else {
         CHECK(get(get<EvolvedVar2>(calls[i])).size() == 0);
       }
+      // Likewise for the boundary container, which holds 3*vars1 and 4*vars1
+      // on its two faces for SplitBoundary and is empty otherwise.
+      CHECK(get<boundary_variables_tag>(calls[i]) ==
+            make_boundary_values<Vars, BoundaryVars>(get(expected_evolved)[0]));
     }
     calls.clear();
   }
@@ -273,18 +309,20 @@ struct TestEvent : public Event {
   static std::vector<DataTuple> calls;
 };
 
-template <bool SplitVars>
+template <SystemVars Vars>
 // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
-std::vector<DataTuple> TestEvent<SplitVars>::calls{};
+std::vector<DataTuple> TestEvent<Vars>::calls{};
 
-template <bool SplitVars>
-PUP::able::PUP_ID TestEvent<SplitVars>::my_PUP_ID = 0;  // NOLINT
+template <SystemVars Vars>
+PUP::able::PUP_ID TestEvent<Vars>::my_PUP_ID = 0;  // NOLINT
 
-template <bool SplitVars>
+template <SystemVars Vars>
 struct System {
-  using variables_tag =
-      tmpl::conditional_t<SplitVars, tmpl::list<variables_tag1, variables_tag2>,
-                          variables_tag1>;
+  using variables_tag = tmpl::conditional_t<
+      Vars == SystemVars::Single, variables_tag1,
+      tmpl::conditional_t<Vars == SystemVars::Split,
+                          tmpl::list<variables_tag1, variables_tag2>,
+                          tmpl::list<variables_tag1, boundary_variables_tag>>>;
 };
 
 template <typename Metavariables>
@@ -298,6 +336,8 @@ struct Component {
       Tags::HistoryEvolvedVariables<::Tags::Variables<tmpl::list<EvolvedVar>>>,
       Tags::Variables<tmpl::list<EvolvedVar2>>,
       Tags::HistoryEvolvedVariables<::Tags::Variables<tmpl::list<EvolvedVar2>>>,
+      boundary_variables_tag,
+      Tags::HistoryEvolvedVariables<boundary_variables_tag>,
       ::Tags::EventsAndDenseTriggers, domain::Tags::NeighborMesh<1>,
       domain::Tags::Element<1>>;
   using compute_tags = time_stepper_ref_tags<TimeStepper>;
@@ -312,10 +352,10 @@ struct Component {
               typename Metavariables::postprocessors>>>>;
 };
 
-template <bool SplitVars, typename Postprocessors>
+template <SystemVars Vars, typename Postprocessors>
 struct Metavariables {
   using postprocessors = Postprocessors;
-  using system = System<SplitVars>;
+  using system = System<Vars>;
   using component_list = tmpl::list<Component<Metavariables>>;
   using const_global_cache_tags =
       tmpl::list<Tags::ConcreteTimeStepper<TimeStepper>>;
@@ -323,7 +363,7 @@ struct Metavariables {
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
     using factory_classes =
         tmpl::map<tmpl::pair<DenseTrigger, tmpl::list<TestTrigger>>,
-                  tmpl::pair<Event, tmpl::list<TestEvent<SplitVars>>>>;
+                  tmpl::pair<Event, tmpl::list<TestEvent<Vars>>>>;
   };
 };
 
@@ -350,18 +390,20 @@ bool run_if_ready(
   return was_ready;
 }
 
-template <bool SplitVars, typename TestCase>
+template <SystemVars Vars, typename TestCase>
 void test(const bool time_runs_forward) {
-  using metavars = Metavariables<SplitVars, typename TestCase::postprocessors>;
+  using metavars = Metavariables<Vars, typename TestCase::postprocessors>;
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<metavars>;
   using component = Component<metavars>;
-  using TestEvent = ::TestEvent<SplitVars>;
+  using TestEvent = ::TestEvent<Vars>;
   using DtEvolvedVariables1 =
       db::prefix_variables<::Tags::dt, EvolvedVariables1>;
   using DtEvolvedVariables2 =
       db::prefix_variables<::Tags::dt, EvolvedVariables2>;
+  using DtBoundaryVars = db::prefix_variables<::Tags::dt, BoundaryVars>;
   using History = TimeSteppers::History<EvolvedVariables1>;
   using History2 = TimeSteppers::History<EvolvedVariables2>;
+  using BoundaryVarsHistory = TimeSteppers::History<BoundaryVars>;
 
   const Slab slab(0.0, 4.0);
   const TimeStepId time_step_id(time_runs_forward, 0,
@@ -379,11 +421,17 @@ void test(const bool time_runs_forward) {
   const EvolvedVariables1 center_vars =
       initial_vars + 0.5 * step_size * deriv_vars;
   const EvolvedVariables2 initial_vars2 =
-      SplitVars ? 2.0 * initial_vars : EvolvedVariables2{};
+      Vars == SystemVars::Split ? 2.0 * initial_vars : EvolvedVariables2{};
   const EvolvedVariables2 stored_vars2 =
-      SplitVars ? 2.0 * stored_vars : EvolvedVariables2{};
+      Vars == SystemVars::Split ? 2.0 * stored_vars : EvolvedVariables2{};
   const DtEvolvedVariables2 deriv_vars2 =
-      SplitVars ? 2.0 * deriv_vars : DtEvolvedVariables2{};
+      Vars == SystemVars::Split ? 2.0 * deriv_vars : DtEvolvedVariables2{};
+  const auto initial_boundary = make_boundary_values<Vars, BoundaryVars>(
+      get(get<EvolvedVar>(initial_vars))[0]);
+  const auto stored_boundary = make_boundary_values<Vars, BoundaryVars>(
+      get(get<EvolvedVar>(stored_vars))[0]);
+  const auto deriv_boundary = make_boundary_values<Vars, DtBoundaryVars>(
+      get(get<::Tags::dt<EvolvedVar>>(deriv_vars))[0]);
 
   const auto set_up_component =
       [&](const gsl::not_null<MockRuntimeSystem*> runner,
@@ -393,9 +441,16 @@ void test(const bool time_runs_forward) {
         History history(1);
         history.insert(time_step_id, initial_vars, deriv_vars);
         History2 history2{};
-        if constexpr (SplitVars) {
+        if constexpr (Vars == SystemVars::Split) {
           history2 = History2(1);
           history2.insert(time_step_id, initial_vars2, deriv_vars2);
+        }
+        BoundaryVarsHistory boundary_history{};
+        if constexpr (Vars == SystemVars::SplitBoundary or
+                      Vars == SystemVars::SplitEmptyBoundary) {
+          boundary_history = BoundaryVarsHistory(1);
+          boundary_history.insert(time_step_id, initial_boundary,
+                                  deriv_boundary);
         }
 
         EventsAndDenseTriggers::ConstructionType events_and_dense_triggers{};
@@ -414,7 +469,8 @@ void test(const bool time_runs_forward) {
               runner, ActionTesting::NodeId{0}, ActionTesting::LocalCoreId{0},
               0, {}, time_step_id, exact_step_size, start_time,
               std::optional<double>{}, stored_vars, std::move(history),
-              stored_vars2, std::move(history2),
+              stored_vars2, std::move(history2), stored_boundary,
+              std::move(boundary_history),
               EventsAndDenseTriggers(std::move(events_and_dense_triggers)),
               typename domain::Tags::NeighborMesh<1>::type{},
               Element<1>{ElementId<1>{0}, {}},
@@ -793,7 +849,8 @@ EventsAndDenseTriggers make_events_and_dense_triggers() {
         {std::make_unique<TestTrigger>(start_time, trigger_time, is_triggered,
                                        next_trigger),
          make_vector<std::unique_ptr<Event>>(
-             std::make_unique<TestEvent<false>>(needs_evolved_variables))});
+             std::make_unique<TestEvent<SystemVars::Single>>(
+                 needs_evolved_variables))});
   }
   return EventsAndDenseTriggers(std::move(events_and_dense_triggers));
 }
@@ -877,23 +934,31 @@ void test_h_join() {
 
 SPECTRE_TEST_CASE("Unit.Evolution.RunEventsAndDenseTriggers",
                   "[Unit][Evolution][Actions]") {
+  using system_list =
+      tmpl::integral_list<SystemVars, SystemVars::Single, SystemVars::Split,
+                          SystemVars::SplitBoundary,
+                          SystemVars::SplitEmptyBoundary>;
+  using test_case_list =
+      tmpl::list<test_cases::NoPostprocessors, test_cases::NotReady,
+                 test_cases::PostprocessA, test_cases::PostprocessAll,
+                 test_cases::PostprocessEvolved>;
+
   register_classes_with_charm<TimeSteppers::AdamsBashforth,
                               TimeSteppers::Rk3HesthavenSsp>();
-  register_factory_classes_with_charm<Metavariables<false, tmpl::list<>>>();
-  register_factory_classes_with_charm<Metavariables<true, tmpl::list<>>>();
+  tmpl::for_each<system_list>(
+      []<typename VarsConstant>(tmpl::type_<VarsConstant> /*meta*/) {
+        register_factory_classes_with_charm<
+            Metavariables<VarsConstant::value, tmpl::list<>>>();
+      });
 
   for (const auto time_runs_forward : {true, false}) {
-    test<false, test_cases::NoPostprocessors>(time_runs_forward);
-    test<false, test_cases::NotReady>(time_runs_forward);
-    test<false, test_cases::PostprocessA>(time_runs_forward);
-    test<false, test_cases::PostprocessAll>(time_runs_forward);
-    test<false, test_cases::PostprocessEvolved>(time_runs_forward);
-
-    test<true, test_cases::NoPostprocessors>(time_runs_forward);
-    test<true, test_cases::NotReady>(time_runs_forward);
-    test<true, test_cases::PostprocessA>(time_runs_forward);
-    test<true, test_cases::PostprocessAll>(time_runs_forward);
-    test<true, test_cases::PostprocessEvolved>(time_runs_forward);
+    tmpl::for_each<system_list>([time_runs_forward]<typename VarsConstant>(
+                                    tmpl::type_<VarsConstant> /*meta*/) {
+      tmpl::for_each<test_case_list>([time_runs_forward]<typename TestCase>(
+                                         tmpl::type_<TestCase> /*meta*/) {
+        test<VarsConstant::value, TestCase>(time_runs_forward);
+      });
+    });
   }
   static_assert(tt::assert_conforms_to_v<
                 evolution::Actions::ProjectRunEventsAndDenseTriggers,
