@@ -122,8 +122,29 @@ Cce:
       AngularCoordTolerance: 3e-11
       MaxIterations: 1500
       RequireConvergence: True
+      # Initialization aborts if max|J| at scri+ in the Cauchy-gauge initial
+      # data, or during the angular iterations, exceeds MaxAngularSolveError.
+      # A larger max|J| usually means the worldtube is too close to the
+      # strong-field region for its data to be resolved at their angular
+      # resolution.
       MaxAngularSolveError: 1e-1
-      MaxScriSecondDerivative: 1e-9
+      # The partially flat gauge condition on the second asymptotic
+      # coefficient determines J^(2), the coefficient of (1 - y)^2 in the
+      # Cauchy-gauge ansatz, which is solved by fixed-point iteration from
+      # J^(2) = 0. The iteration stops once the largest change of J^(2) over
+      # the angular collocation points in one pass falls below J2Tolerance.
+      J2Tolerance: 1e-14
+      # With RequireConvergence, initialization aborts if J2Tolerance is not
+      # reached within J2MaxIterations passes. Each pass gains roughly
+      # 2 log10(1/rho) digits, where rho = max(|J^(0)|, |J^(1)|) is the size
+      # of the two leading coefficients of the ansatz, so rho ~ 5e-2 needs
+      # about six.
+      J2MaxIterations: 10
+      # Initialization aborts if, after the gauge transformation,
+      # max|J2| = max|(1/2) Dy^2 J| at scri+ exceeds MaxPartiallyFlatJ2. The
+      # J^(2) solve makes J2 vanish up to discretization error, so a larger
+      # value usually means the resolution is too low for the data.
+      MaxPartiallyFlatJ2: 1e-12
       # The worldtube Du(Dr(J)) that the second-order match uses is built with
       # this interpolator rather than with `H5Interpolator` below: the initial
       # data wants a low order here (2 to 4), while the evolution wants a high

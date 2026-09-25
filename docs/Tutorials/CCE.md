@@ -556,6 +556,35 @@ is setting `RequireConvergence: False` to fall back to the warning above.
 Raising `MaxIterations` typically does not help: the residual tends to plateau
 rather than creep down, so the extra iterations buy nothing.
 
+After transforming the initial data to the partially flat gauge, the initializer
+prints the maximum absolute values of both constraints over the angular grid:
+\f$J_0 = J|_{\mathcal{I}^+}\f$ and
+\f$J_2 = \frac{1}{2}\partial_y^2 J|_{\mathcal{I}^+}\f$, the coefficient of
+\f$(1-y)^2\f$. These diagnostics are printed on successful initialization as
+well as before reporting a failure of the angular solve to converge. The
+\f$J_2\f$ norm is also checked: the \f$J^{(2)}\f$ solve described below makes
+\f$J_2\f$ vanish up to discretization error, and initialization stops if it
+exceeds `MaxPartiallyFlatJ2`, which usually means the angular or radial
+resolution is too low for the worldtube data.
+
+`CauchySecondOrder` also solves a small fixed-point problem before the angular
+solve. Matching the worldtube \f$J\f$, \f$\partial_r J\f$ and
+\f$\partial_y^2 J\f$ fixes three of the four coefficients of the Cauchy-gauge
+radial ansatz. The partially flat gauge condition on the second asymptotic
+coefficient determines the fourth, \f$J^{(2)}\f$, as the root of a contraction
+mapping. `J2MaxIterations` and `J2Tolerance` control that iteration, which
+starts from \f$J^{(2)} = 0\f$. Each pass gains roughly
+\f$2\log_{10}(1/\rho)\f$ digits, where
+\f$\rho = \max(\|J^{(0)}\|_\infty, \|J^{(1)}\|_\infty)\f$ is the size of the
+two leading radial coefficients of the Cauchy-gauge ansatz. Reaching the
+supplied `J2Tolerance: 1e-14` therefore takes about two passes when
+\f$\rho \sim 10^{-3}\f$ and about six when \f$\rho \sim 5\times 10^{-2}\f$.
+Note that `MaxAngularSolveError` bounds only \f$J^{(0)}\f$, not \f$J^{(1)}\f$. The
+iteration is only guaranteed to contract when \f$\rho\f$ is at most a few
+times \f$10^{-2}\f$. A failure to converge within `J2MaxIterations` is an
+error when `RequireConvergence` is true and a warning otherwise, as for the
+angular solve.
+
 `CauchySecondOrder` also requires a `DuDrJInterpolator`. The second-order match
 needs the worldtube \f$\partial_u \partial_r J\f$, which is built by
 differentiating the worldtube data in time, and it wants a *low* interpolation
