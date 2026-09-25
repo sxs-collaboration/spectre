@@ -179,6 +179,17 @@ def soln_temperature_long(
     return soln_temperature(coords, time)
 
 
+def soln_spatial_metric_long(
+    face_mesh_velocity,
+    outward_directed_normal_covector,
+    outward_directed_normal_vector,
+    coords,
+    time,
+    dim,
+):
+    return soln_spatial_metric(coords, time)
+
+
 def soln_tilde_d(
     face_mesh_velocity,
     outward_directed_normal_covector,
@@ -930,6 +941,17 @@ def data_electron_fraction_long(
     dim,
 ):
     return _data_electron_fraction
+
+
+def data_spatial_metric(
+    face_mesh_velocity,
+    outward_directed_normal_covector,
+    outward_directed_normal_vector,
+    coords,
+    time,
+    dim,
+):
+    return np.identity(3)
 
 
 def data_rest_mass_density(

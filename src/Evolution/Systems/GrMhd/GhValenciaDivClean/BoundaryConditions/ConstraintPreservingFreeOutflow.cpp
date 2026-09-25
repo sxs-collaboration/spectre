@@ -58,6 +58,8 @@ std::optional<std::string> ConstraintPreservingFreeOutflow::dg_ghost(
     const gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*> shift,
     const gsl::not_null<tnsr::i<DataVector, 3, Frame::Inertial>*>
         spatial_velocity_one_form,
+    const gsl::not_null<tnsr::ii<DataVector, 3, Frame::Inertial>*>
+        spatial_metric,
     const gsl::not_null<Scalar<DataVector>*> rest_mass_density,
     const gsl::not_null<Scalar<DataVector>*> electron_fraction,
     const gsl::not_null<Scalar<DataVector>*> temperature,
@@ -123,9 +125,9 @@ std::optional<std::string> ConstraintPreservingFreeOutflow::dg_ghost(
                tilde_d_flux, tilde_ye_flux, tilde_tau_flux, tilde_s_flux,
                tilde_b_flux, tilde_phi_flux,
 
-               lapse, shift, spatial_velocity_one_form, rest_mass_density,
-               electron_fraction, temperature, spatial_velocity,
-               inv_spatial_metric,
+               lapse, shift, spatial_velocity_one_form, spatial_metric,
+               rest_mass_density, electron_fraction, temperature,
+               spatial_velocity, inv_spatial_metric,
 
                face_mesh_velocity, normal_covector, normal_vector,
 
