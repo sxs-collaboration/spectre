@@ -6,7 +6,6 @@
 #include <cstddef>
 #include <limits>
 #include <memory>
-#include <string>
 
 #include "DataStructures/SpinWeighted.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
@@ -137,9 +136,8 @@ size_t solve_asymptotic_j2(gsl::not_null<ComplexDataVector*> j2,
  * \f$J\f$ at scri+ only through a well-behaved alteration of the spherical
  * mesh, so it tolerates only a small asymptotic \f$J\f$; the initialization
  * aborts if the asymptotic \f$J\f$ in Cauchy coordinates, or the deviation at
- * any iteration of the solve, exceeds `MaxAngularSolveError`. With
- * `RequireConvergence`, both solves must converge within their iteration
- * budgets. After the gauge transformation,
+ * any iteration of the solve, exceeds `MaxCauchyJ0`. Both solves must
+ * converge within their iteration budgets. After the gauge transformation,
  * initialization prints the maximum absolute values of the partially flat
  * constraints \f$J_0 = J|_{\mathcal{I}^+}\f$ and
  * \f$J_2 = \frac{1}{2}\partial_y^2 J|_{\mathcal{I}^+}\f$, and aborts if
@@ -153,44 +151,24 @@ size_t solve_asymptotic_j2(gsl::not_null<ComplexDataVector*> j2,
  * evolution wants a high one for the values it interpolates every step.
  */
 struct CauchySecondOrder : InitializeJ<false> {
-  struct AngularCoordinateTolerance {
+  struct J0Tolerance {
     using type = double;
-    static std::string name() { return "AngularCoordTolerance"; }
     static constexpr Options::String help = {
-        "Tolerance of initial angular coordinates for CCE"};
+        "Tolerance on the maximum absolute value of J at scri+ in the "
+        "partially flat gauge, used by the initial angular coordinate solve."};
     static type lower_bound() { return 1.0e-14; }
     static type upper_bound() { return 1.0e-3; }
-    static type suggested_value() { return 1.0e-12; }
+    static type suggested_value() { return 5.0e-12; }
   };
 
-  struct MaxIterations {
+  struct J0MaxIterations {
     using type = size_t;
     static constexpr Options::String help = {
-        "Number of linearized inversion iterations."};
+        "Maximum number of angular coordinate iterations to reach J0Tolerance. "
+        "Initialization aborts if the solve does not converge."};
     static type lower_bound() { return 10; }
     static type upper_bound() { return 2000; }
     static type suggested_value() { return 300; }
-  };
-
-  struct RequireConvergence {
-    using type = bool;
-    static constexpr Options::String help = {
-        "If true, initialization will error if it hits MaxIterations"};
-    static type suggested_value() { return true; }
-  };
-
-  struct MaxAngularSolveError {
-    using type = double;
-    static constexpr Options::String help = {
-        "Largest deviation of J from zero at scri+ that the iterative angular "
-        "solve is permitted to encounter. Initialization aborts if the "
-        "asymptotic J in Cauchy coordinates exceeds this value before the "
-        "solve, or if any iteration of the solve exceeds it. Raise this to "
-        "attempt initialization from worldtube data with a larger asymptotic "
-        "strain, at the risk of a poorly behaved angular coordinate map."};
-    static type lower_bound() { return 1.0e-14; }
-    static type upper_bound() { return 1.0e2; }
-    static type suggested_value() { return 1.0e-1; }
   };
 
   struct J2Tolerance {
@@ -215,12 +193,25 @@ struct CauchySecondOrder : InitializeJ<false> {
         "max|J^(0)| and max|J^(1)|, the leading coefficients of the "
         "Cauchy-gauge ansatz. Reaching 1e-14 takes about two passes for "
         "rho ~ 1e-3 and about six for rho ~ 5e-2. "
-        "Failing to converge within a nonzero budget is an error when "
-        "RequireConvergence is true, and a warning otherwise. "
+        "Failing to converge within a nonzero budget aborts initialization. "
         "Zero skips the solve and leaves J^(2) = 0, which does not satisfy "
         "the partially flat gauge condition."};
     static type upper_bound() { return 100; }
     static type suggested_value() { return 10; }
+  };
+
+  struct MaxCauchyJ0 {
+    using type = double;
+    static constexpr Options::String help = {
+        "Largest allowed max|J0| in the Cauchy-gauge initial guess, where J0 "
+        "is J at scri+. The same bound also limits the transformed J0 during "
+        "the angular iterations as a divergence guard. Exceeding either "
+        "bound aborts initialization. J0Tolerance sets the convergence target "
+        "in the partially flat gauge. Larger bounds allow larger asymptotic "
+        "strains but risk a poorly behaved angular coordinate map."};
+    static type lower_bound() { return 1.0e-14; }
+    static type upper_bound() { return 1.0e2; }
+    static type suggested_value() { return 5.0e-2; }
   };
 
   struct MaxPartiallyFlatJ2 {
@@ -249,9 +240,8 @@ struct CauchySecondOrder : InitializeJ<false> {
   };
 
   using options =
-      tmpl::list<AngularCoordinateTolerance, MaxIterations, RequireConvergence,
-                 MaxAngularSolveError, J2Tolerance, J2MaxIterations,
-                 MaxPartiallyFlatJ2, DuDrJInterpolator>;
+      tmpl::list<J0Tolerance, J0MaxIterations, MaxCauchyJ0, J2Tolerance,
+                 J2MaxIterations, MaxPartiallyFlatJ2, DuDrJInterpolator>;
   static constexpr Options::String help = {
       "Second-order initial data generator for the Cauchy CCE evolution."};
 
@@ -259,8 +249,7 @@ struct CauchySecondOrder : InitializeJ<false> {
   explicit CauchySecondOrder(CkMigrateMessage* /*unused*/) {}
 
   CauchySecondOrder(
-      double angular_coordinate_tolerance, size_t max_iterations,
-      bool require_convergence, double max_angular_solve_error,
+      double j0_tolerance, size_t j0_max_iterations, double max_cauchy_j0,
       double j2_tolerance, size_t j2_max_iterations,
       double max_partially_flat_j2,
       std::unique_ptr<intrp::SpanInterpolator> du_dr_j_interpolator);
@@ -310,12 +299,9 @@ struct CauchySecondOrder : InitializeJ<false> {
   void pup(PUP::er& p) override;
 
  private:
-  bool require_convergence_ = true;
-  double angular_coordinate_tolerance_ =
-      std::numeric_limits<double>::signaling_NaN();
-  size_t max_iterations_ = 0;
-  double max_angular_solve_error_ =
-      std::numeric_limits<double>::signaling_NaN();
+  double j0_tolerance_ = std::numeric_limits<double>::signaling_NaN();
+  size_t j0_max_iterations_ = 0;
+  double max_cauchy_j0_ = std::numeric_limits<double>::signaling_NaN();
   double j2_tolerance_ = std::numeric_limits<double>::signaling_NaN();
   size_t j2_max_iterations_ = 0;
   double max_partially_flat_j2_ = std::numeric_limits<double>::signaling_NaN();

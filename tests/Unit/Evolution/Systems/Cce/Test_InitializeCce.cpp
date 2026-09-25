@@ -316,8 +316,7 @@ std::unique_ptr<intrp::SpanInterpolator> make_du_dr_j_interpolator() {
 // survive the trip into the GlobalCache and back out of a checkpoint.
 void test_cauchy_second_order_interpolator_round_trip() {
   const InitializeJ::CauchySecondOrder with_interpolator{
-      1.0e-10, 400, true,    1.0e-1,
-      1.0e-14, 10,  1.0e-12, make_du_dr_j_interpolator()};
+      1.0e-10, 400, 1.0e-1, 1.0e-14, 10, 1.0e-12, make_du_dr_j_interpolator()};
   REQUIRE(with_interpolator.du_dr_j_interpolator() != nullptr);
   CHECK(with_interpolator.du_dr_j_interpolator()
             ->required_number_of_points_before_and_after() == 2);
@@ -334,7 +333,7 @@ void test_cauchy_second_order_interpolator_round_trip() {
 
   // A generator that asks for nothing leaves the manager on `H5Interpolator`.
   const InitializeJ::CauchySecondOrder without_interpolator{
-      1.0e-10, 400, true, 1.0e-1, 1.0e-14, 10, 1.0e-12, nullptr};
+      1.0e-10, 400, 1.0e-1, 1.0e-14, 10, 1.0e-12, nullptr};
   CHECK(without_interpolator.du_dr_j_interpolator() == nullptr);
   CHECK(without_interpolator.get_clone()->du_dr_j_interpolator() == nullptr);
   CHECK(InitializeJ::InverseCubic<false>{}.du_dr_j_interpolator() == nullptr);
@@ -485,8 +484,8 @@ void test_cauchy_second_order_j2_convergence_error(
   auto node_lock = Parallel::NodeLock{};
   db::mutate_apply<InitializeJ::CauchySecondOrder::return_tags,
                    InitializeJ::CauchySecondOrder::argument_tags>(
-      InitializeJ::CauchySecondOrder{1.0e-10, 1000, true, 1.0e-1, 1.0e-16, 1,
-                                     1.0e-12, make_du_dr_j_interpolator()},
+      InitializeJ::CauchySecondOrder{1.0e-10, 1000, 1.0e-1, 1.0e-16, 1, 1.0e-12,
+                                     make_du_dr_j_interpolator()},
       box_to_initialize, make_not_null(&node_lock));
 }
 
@@ -500,7 +499,7 @@ void test_cauchy_second_order_j2_threshold_error(
   auto node_lock = Parallel::NodeLock{};
   db::mutate_apply<InitializeJ::CauchySecondOrder::return_tags,
                    InitializeJ::CauchySecondOrder::argument_tags>(
-      InitializeJ::CauchySecondOrder{1.0e-10, 1000, true, 1.0e-1, 1.0e-14, 10,
+      InitializeJ::CauchySecondOrder{1.0e-10, 1000, 1.0e-1, 1.0e-14, 10,
                                      1.0e-30, make_du_dr_j_interpolator()},
       box_to_initialize, make_not_null(&node_lock));
 }
@@ -512,8 +511,8 @@ void test_cauchy_second_order_j0_convergence_error(
   auto node_lock = Parallel::NodeLock{};
   db::mutate_apply<InitializeJ::CauchySecondOrder::return_tags,
                    InitializeJ::CauchySecondOrder::argument_tags>(
-      InitializeJ::CauchySecondOrder{1.0e-14, 10, true, 1.0e-1, 1.0e-14, 10,
-                                     1.0e-12, make_du_dr_j_interpolator()},
+      InitializeJ::CauchySecondOrder{1.0e-14, 10, 1.0e-1, 1.0e-14, 10, 1.0e-12,
+                                     make_du_dr_j_interpolator()},
       box_to_initialize, make_not_null(&node_lock));
 }
 
@@ -528,8 +527,8 @@ void test_initialize_j_cauchy_second_order(
   // violation so the solve below can be checked to remove it.
   db::mutate_apply<InitializeJ::CauchySecondOrder::return_tags,
                    InitializeJ::CauchySecondOrder::argument_tags>(
-      InitializeJ::CauchySecondOrder{1.0e-10, 1000, true, 1.0e-1, 1.0e-14, 0,
-                                     1.0e-12, make_du_dr_j_interpolator()},
+      InitializeJ::CauchySecondOrder{1.0e-10, 1000, 1.0e-1, 1.0e-14, 0, 1.0e-12,
+                                     make_du_dr_j_interpolator()},
       box_to_initialize, make_not_null(&node_lock));
   const double scri_j2_without_solve =
       max_scri_j2(box_to_initialize, l_max, number_of_radial_points);
@@ -539,8 +538,7 @@ void test_initialize_j_cauchy_second_order(
   // occasionally needs more than a few hundred iterations to reach 1e-10, so
   // we allow up to 1000 iterations to reliably converge.
   const auto initializer = InitializeJ::CauchySecondOrder{
-      1.0e-10, 1000, true,    1.0e-1,
-      1.0e-14, 10,   1.0e-12, make_du_dr_j_interpolator()};
+      1.0e-10, 1000, 1.0e-1, 1.0e-14, 10, 1.0e-12, make_du_dr_j_interpolator()};
   db::mutate_apply<InitializeJ::CauchySecondOrder::return_tags,
                    InitializeJ::CauchySecondOrder::argument_tags>(
       initializer, box_to_initialize, make_not_null(&node_lock));
@@ -613,13 +611,13 @@ template <typename DbTags>
 void test_cauchy_second_order_cauchy_j0_threshold(
     const gsl::not_null<db::DataBox<DbTags>*> box_to_initialize) {
   // Before the angular solve the constructed J is generically nonzero at scri+
-  // at the scale of the strain, so an unachievably small `MaxAngularSolveError`
+  // at the scale of the strain, so an unachievably small `MaxCauchyJ0`
   // trips the pre-solve guard even on uncorrupted worldtube data. This checks
   // that the threshold is honored from the option rather than hard-coded.
   auto node_lock = Parallel::NodeLock{};
   db::mutate_apply<InitializeJ::CauchySecondOrder::return_tags,
                    InitializeJ::CauchySecondOrder::argument_tags>(
-      InitializeJ::CauchySecondOrder{1.0e-10, 400, true, 1.0e-14, 1.0e-14, 10,
+      InitializeJ::CauchySecondOrder{1.0e-10, 400, 1.0e-14, 1.0e-14, 10,
                                      1.0e-12, make_du_dr_j_interpolator()},
       box_to_initialize, make_not_null(&node_lock));
 }
@@ -638,8 +636,8 @@ void test_cauchy_second_order_asymptotic_j_error(
   auto node_lock = Parallel::NodeLock{};
   db::mutate_apply<InitializeJ::CauchySecondOrder::return_tags,
                    InitializeJ::CauchySecondOrder::argument_tags>(
-      InitializeJ::CauchySecondOrder{1.0e-10, 400, true, 1.0e-1, 1.0e-14, 10,
-                                     1.0e-12, make_du_dr_j_interpolator()},
+      InitializeJ::CauchySecondOrder{1.0e-10, 400, 1.0e-1, 1.0e-14, 10, 1.0e-12,
+                                     make_du_dr_j_interpolator()},
       box_to_initialize, make_not_null(&node_lock));
 }
 
@@ -1075,10 +1073,10 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.InitializeJ", "[Unit][Cce]") {
           make_not_null(&box_to_initialize)),
       Catch::Matchers::ContainsSubstring("The initial J^(2) fixed-point solve "
                                          "did not reach target tolerance"));
-  CHECK_THROWS_WITH(test_cauchy_second_order_cauchy_j0_threshold(
-                        make_not_null(&box_to_initialize)),
-                    Catch::Matchers::ContainsSubstring(
-                        "set by the MaxAngularSolveError option"));
+  CHECK_THROWS_WITH(
+      test_cauchy_second_order_cauchy_j0_threshold(
+          make_not_null(&box_to_initialize)),
+      Catch::Matchers::ContainsSubstring("set by the MaxCauchyJ0 option"));
   CHECK_THROWS_WITH(
       test_cauchy_second_order_asymptotic_j_error(
           make_not_null(&box_to_initialize)),

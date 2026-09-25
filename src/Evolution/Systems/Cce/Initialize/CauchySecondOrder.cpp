@@ -89,15 +89,13 @@ size_t solve_asymptotic_j2(const gsl::not_null<ComplexDataVector*> j2,
 }  // namespace CauchySecondOrder_detail
 
 CauchySecondOrder::CauchySecondOrder(
-    const double angular_coordinate_tolerance, const size_t max_iterations,
-    const bool require_convergence, const double max_angular_solve_error,
-    const double j2_tolerance, const size_t j2_max_iterations,
-    const double max_partially_flat_j2,
+    const double j0_tolerance, const size_t j0_max_iterations,
+    const double max_cauchy_j0, const double j2_tolerance,
+    const size_t j2_max_iterations, const double max_partially_flat_j2,
     std::unique_ptr<intrp::SpanInterpolator> du_dr_j_interpolator)
-    : require_convergence_{require_convergence},
-      angular_coordinate_tolerance_{angular_coordinate_tolerance},
-      max_iterations_{max_iterations},
-      max_angular_solve_error_{max_angular_solve_error},
+    : j0_tolerance_{j0_tolerance},
+      j0_max_iterations_{j0_max_iterations},
+      max_cauchy_j0_{max_cauchy_j0},
       j2_tolerance_{j2_tolerance},
       j2_max_iterations_{j2_max_iterations},
       max_partially_flat_j2_{max_partially_flat_j2},
@@ -105,9 +103,8 @@ CauchySecondOrder::CauchySecondOrder(
 
 std::unique_ptr<InitializeJ<false>> CauchySecondOrder::get_clone() const {
   return std::make_unique<CauchySecondOrder>(
-      angular_coordinate_tolerance_, max_iterations_, require_convergence_,
-      max_angular_solve_error_, j2_tolerance_, j2_max_iterations_,
-      max_partially_flat_j2_, du_dr_j_interpolator());
+      j0_tolerance_, j0_max_iterations_, max_cauchy_j0_, j2_tolerance_,
+      j2_max_iterations_, max_partially_flat_j2_, du_dr_j_interpolator());
 }
 
 std::unique_ptr<intrp::SpanInterpolator>
@@ -174,19 +171,19 @@ void CauchySecondOrder::operator()(
   // further: the fixed-point solve below contracts only for small data too, so
   // it would otherwise fail first and less informatively.
   const double max_asymptotic_j = max(abs(j0_at_zero));
-  if (max_asymptotic_j > max_angular_solve_error_) {
+  if (max_asymptotic_j > max_cauchy_j0_) {
     ERROR(
         "The asymptotic value of the initial J in Cauchy coordinates has "
         "magnitude "
         << max_asymptotic_j << ", which exceeds the threshold "
-        << max_angular_solve_error_
-        << " set by the MaxAngularSolveError option, so the "
-           "angular-coordinate solve is unlikely to converge. This usually "
-           "means the worldtube is too close to the strong-field region for "
-           "the worldtube data to be resolved at their angular resolution. Use "
-           "a worldtube at a larger extraction radius or worldtube data with a "
-           "higher angular resolution. Raising MaxAngularSolveError only lets "
-           "the angular solve start; it does not make it converge.");
+        << max_cauchy_j0_
+        << " set by the MaxCauchyJ0 option, so the angular-coordinate solve "
+           "is unlikely to converge. This usually means the worldtube is too "
+           "close to the strong-field region for the worldtube data to be "
+           "resolved at their angular resolution. Use a worldtube at a larger "
+           "extraction radius or worldtube data with a higher angular "
+           "resolution. Raising MaxCauchyJ0 only lets the angular solve "
+           "start; it does not make it converge.");
   }
 
   // Solve the gauge constraint on x by fixed-point iteration from x = 0; see
@@ -209,23 +206,14 @@ void CauchySecondOrder::operator()(
     }
     // Written as `not (a < b)` to match the loop condition of the solve.
     if (not(j2_step < j2_tolerance_)) {
-      if (require_convergence_) {
-        ERROR(
-            "The initial J^(2) fixed-point solve did not reach target "
-            "tolerance "
-            << j2_tolerance_ << " after " << j2_iterations
-            << " iterations (last step " << j2_step
-            << "). Increase J2MaxIterations or loosen J2Tolerance. If the "
-               "step is not shrinking, the worldtube data are too large for "
-               "the iteration to contract.");
-      } else {
-        Parallel::printf(
-            "Warning: the initial J^(2) fixed-point solve did not reach "
-            "target tolerance %e after %zu iterations (last step %e).\n"
-            "Proceeding with the initial data built from the partial "
-            "result.\n",
-            j2_tolerance_, j2_iterations, j2_step);
-      }
+      ERROR(
+          "The initial J^(2) fixed-point solve did not reach target "
+          "tolerance "
+          << j2_tolerance_ << " after " << j2_iterations
+          << " iterations (last step " << j2_step
+          << "). Increase J2MaxIterations or loosen J2Tolerance. If the step "
+             "is not shrinking, the worldtube data are too large for the "
+             "iteration to contract.");
     }
   }
   ComplexDataVector j0{number_of_angular_points};
@@ -364,8 +352,8 @@ void CauchySecondOrder::operator()(
 
   detail::iteratively_adapt_angular_coordinates(
       cartesian_cauchy_coordinates, angular_cauchy_coordinates, l_max,
-      angular_coordinate_tolerance_, max_iterations_, max_angular_solve_error_,
-      iteration_function, require_convergence_, finalize_function);
+      j0_tolerance_, j0_max_iterations_, max_cauchy_j0_, iteration_function,
+      /*require_convergence=*/true, finalize_function);
 
   // Written as `not (a <= b)` so that a NaN also aborts.
   if (not(max_scri_j2 <= max_partially_flat_j2_)) {
@@ -383,10 +371,9 @@ void CauchySecondOrder::operator()(
 }
 
 void CauchySecondOrder::pup(PUP::er& p) {
-  p | require_convergence_;
-  p | angular_coordinate_tolerance_;
-  p | max_iterations_;
-  p | max_angular_solve_error_;
+  p | j0_tolerance_;
+  p | j0_max_iterations_;
+  p | max_cauchy_j0_;
   p | j2_tolerance_;
   p | j2_max_iterations_;
   p | max_partially_flat_j2_;

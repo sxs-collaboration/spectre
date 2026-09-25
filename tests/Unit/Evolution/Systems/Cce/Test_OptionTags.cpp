@@ -172,13 +172,12 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.OptionTags", "[Unit][Cce]") {
       "InverseCubic");
   TestHelpers::test_option_tag<Cce::OptionTags::InitializeJ<false>>(
       "CauchySecondOrder:\n"
-      "  AngularCoordTolerance: 1e-10\n"
-      "  MaxIterations: 300\n"
-      "  RequireConvergence: false\n"
-      "  MaxAngularSolveError: 1e-3\n"
+      "  J0Tolerance: 5e-12\n"
+      "  J0MaxIterations: 300\n"
       "  J2Tolerance: 1e-14\n"
-      "  J2MaxIterations: 10\n"
+      "  J2MaxIterations: 5\n"
       "  MaxPartiallyFlatJ2: 1e-12\n"
+      "  MaxCauchyJ0: 5e-2\n"
       "  DuDrJInterpolator:\n"
       "    BarycentricRationalSpanInterpolator:\n"
       "      MinOrder: 2\n"

@@ -267,7 +267,7 @@ void test_h5_du_dr_j_interpolator_injection(
         tuples::tagged_tuple_from_typelist<
             Parallel::get_const_global_cache_tags<H5InitializeJMetavariables>>{
             std::make_unique<InitializeJ::CauchySecondOrder>(
-                1.0e-11, 1500, true, 1.0e-1, 1.0e-14, 10, 1.0e-12,
+                1.0e-11, 1500, 1.0e-1, 1.0e-14, 10, 1.0e-12,
                 std::make_unique<intrp::BarycentricRationalSpanInterpolator>(
                     du_dr_j_order, du_dr_j_order)),
             l_max, extraction_radius, end_time, start_time}};
