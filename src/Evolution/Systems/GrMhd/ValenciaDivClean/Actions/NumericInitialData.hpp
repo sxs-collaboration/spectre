@@ -68,7 +68,8 @@ class NumericInitialData : public evolution::initial_data::InitialData {
       tmpl::list<hydro::Tags::RestMassDensity<DataVector>,
                  hydro::Tags::LowerSpatialFourVelocity<DataVector, 3>>;
   using optional_primitive_vars =
-      tmpl::list<hydro::Tags::ElectronFraction<DataVector>,
+      tmpl::list<hydro::Tags::Temperature<DataVector>,
+                 hydro::Tags::ElectronFraction<DataVector>,
                  hydro::Tags::MagneticField<DataVector, 3>>;
   using primitive_vars_option_tags =
       tmpl::append<db::wrap_tags_in<VarName, required_primitive_vars,
@@ -173,7 +174,7 @@ class NumericInitialData : public evolution::initial_data::InitialData {
     });
   }
 
-  template <typename... AllTags, size_t ThermodynamicDim>
+  template <typename... AllTags>
   void set_initial_data(
       const gsl::not_null<Scalar<DataVector>*> rest_mass_density,
       const gsl::not_null<Scalar<DataVector>*> electron_fraction,
@@ -186,17 +187,17 @@ class NumericInitialData : public evolution::initial_data::InitialData {
       const gsl::not_null<Scalar<DataVector>*> temperature,
       const gsl::not_null<tuples::TaggedTuple<AllTags...>*> numeric_data,
       const tnsr::II<DataVector, 3>& inv_spatial_metric,
-      const EquationsOfState::EquationOfState<true, ThermodynamicDim>&
-          equation_of_state) const {
+      const EquationsOfState::EquationOfState<true, 3>& equation_of_state)
+      const {
     // Rest mass density from dataset
     *rest_mass_density =
         std::move(get<hydro::Tags::RestMassDensity<DataVector>>(*numeric_data));
     const size_t num_points = get(*rest_mass_density).size();
     // Electron fraction from dataset or constant value
-    const std::variant<double, std::string>& electron_fraction_selection =
-        get<VarName<hydro::Tags::ElectronFraction<DataVector>,
-                    std::bool_constant<false>>>(selected_variables_);
-    if (std::holds_alternative<std::string>(electron_fraction_selection)) {
+    if (const std::variant<double, std::string>& electron_fraction_selection =
+            get<VarName<hydro::Tags::ElectronFraction<DataVector>,
+                        std::bool_constant<false>>>(selected_variables_);
+        std::holds_alternative<std::string>(electron_fraction_selection)) {
       *electron_fraction = std::move(
           get<hydro::Tags::ElectronFraction<DataVector>>(*numeric_data));
     } else {
@@ -204,6 +205,19 @@ class NumericInitialData : public evolution::initial_data::InitialData {
           std::get<double>(electron_fraction_selection);
       set_number_of_grid_points(electron_fraction, num_points);
       get(*electron_fraction) = constant_electron_fraction;
+    }
+    // Temperature from dataset or constant value
+    if (const std::variant<double, std::string>& temperature_selection =
+            get<VarName<hydro::Tags::Temperature<DataVector>,
+                        std::bool_constant<false>>>(selected_variables_);
+        std::holds_alternative<std::string>(temperature_selection)) {
+      *temperature =
+          std::move(get<hydro::Tags::Temperature<DataVector>>(*numeric_data));
+    } else {
+      const double constant_temperature =
+          std::get<double>(temperature_selection);
+      set_number_of_grid_points(temperature, num_points);
+      get(*temperature) = constant_temperature;
     }
     // Velocity and Lorentz factor from u_i dataset
     // W = 1 + W^2 v_i v^i
@@ -236,47 +250,17 @@ class NumericInitialData : public evolution::initial_data::InitialData {
         }
         get(*lorentz_factor)[i] = 1.;
       } else {
-        if constexpr (ThermodynamicDim == 1) {
-          get(*specific_internal_energy)[i] =
-              get(equation_of_state.specific_internal_energy_from_density(
-                  Scalar<double>(local_rest_mass_density)));
-          get(*pressure)[i] = get(equation_of_state.pressure_from_density(
-              Scalar<double>(local_rest_mass_density)));
-          get(*temperature)[i] = get(equation_of_state.temperature_from_density(
-              Scalar<double>(local_rest_mass_density)));
-        } else if constexpr (ThermodynamicDim == 2) {
-          get(*specific_internal_energy)[i] =
-              get(equation_of_state
-                      .specific_internal_energy_from_density_and_temperature(
-                          Scalar<double>(local_rest_mass_density),
-                          Scalar<double>(0.)));
-          get(*pressure)[i] =
-              get(equation_of_state.pressure_from_density_and_energy(
-                  Scalar<double>(local_rest_mass_density),
-                  Scalar<double>(get(*specific_internal_energy)[i])));
-          get(*temperature)[i] =
-              get(equation_of_state.temperature_from_density_and_energy(
-                  Scalar<double>(local_rest_mass_density),
-                  Scalar<double>(get(*specific_internal_energy)[i])));
-        } else {
-          // Loaded the electron fraction previously.
-          get(*specific_internal_energy)[i] =
-              get(equation_of_state
-                      .specific_internal_energy_from_density_and_temperature(
-                          Scalar<double>(local_rest_mass_density),
-                          Scalar<double>(0.),
-                          Scalar<double>(get(*electron_fraction)[i])));
-          get(*pressure)[i] =
-              get(equation_of_state.pressure_from_density_and_energy(
-                  Scalar<double>(local_rest_mass_density),
-                  Scalar<double>(get(*specific_internal_energy)[i]),
-                  Scalar<double>(get(*electron_fraction)[i])));
-          get(*temperature)[i] =
-              get(equation_of_state.temperature_from_density_and_energy(
-                  Scalar<double>(local_rest_mass_density),
-                  Scalar<double>(get(*specific_internal_energy)[i]),
-                  Scalar<double>(get(*electron_fraction)[i])));
-        }
+        get(*specific_internal_energy)[i] =
+            get(equation_of_state
+                    .specific_internal_energy_from_density_and_temperature(
+                        Scalar<double>(local_rest_mass_density),
+                        Scalar<double>(get(*temperature)[i]),
+                        Scalar<double>(get(*electron_fraction)[i])));
+        get(*pressure)[i] =
+            get(equation_of_state.pressure_from_density_and_temperature(
+                Scalar<double>(local_rest_mass_density),
+                Scalar<double>(get(*temperature)[i]),
+                Scalar<double>(get(*electron_fraction)[i])));
       }
     }
     // Magnetic field from dataset or constant value
