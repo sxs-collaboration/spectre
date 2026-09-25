@@ -34,14 +34,14 @@ EqualRateRegions<Dim, tmpl::list<RegionGenerators...>,
       std::forward_as_tuple(args...));
   tmpl::for_each<tmpl::range<size_t, 0, sizeof...(RegionGenerators)>>(
       [&]<size_t N>(tmpl::type_<tmpl::size_t<N>> /*meta*/) {
-        get<N>(generators_) = std::apply(
+        std::get<N>(generators_) = std::apply(
             [](const auto&... gen_args) {
               return std::tuple_element_t<N, decltype(generators_)>(
                   gen_args...);
             },
-            get<N>(generator_args));
+            std::get<N>(generator_args));
 
-        auto new_regions = get<N>(generators_).regions();
+        auto new_regions = std::get<N>(generators_).regions();
         while (not new_regions.empty()) {
           auto region = new_regions.extract(new_regions.begin());
           const bool inserted =
@@ -78,8 +78,9 @@ bool EqualRateRegions<Dim, tmpl::list<RegionGenerators...>,
     is_in_region(const EqualRateRegionId& region,
                  const ElementId<Dim>& element) const {
   return [&]<size_t... N>(std::index_sequence<N...> /*meta*/) {
-    return (... or (region.type == N and
-                    get<N>(generators_).is_in_region(region.label, element)));
+    return (... or
+            (region.type == N and
+             std::get<N>(generators_).is_in_region(region.label, element)));
   }(std::make_index_sequence<sizeof...(RegionGenerators)>{});
 }
 

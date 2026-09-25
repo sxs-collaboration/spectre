@@ -143,7 +143,6 @@ BlockZCurveProcDistribution<Dim>::BlockZCurveProcDistribution(
     const size_t number_of_procs_with_elements,
     const std::vector<Block<Dim>>& blocks,
     const std::vector<std::array<size_t, Dim>>& initial_refinement_levels,
-    const std::vector<std::array<size_t, Dim>>& initial_extents,
     const std::unordered_set<size_t>& global_procs_to_ignore) {
   const size_t num_blocks = blocks.size();
 
@@ -154,8 +153,6 @@ BlockZCurveProcDistribution<Dim>::BlockZCurveProcDistribution(
   ASSERT(
       initial_refinement_levels.size() == num_blocks,
       "`initial_refinement_levels` is not the same size as number of blocks");
-  ASSERT(initial_extents.size() == num_blocks,
-         "`initial_extents` is not the same size as number of blocks");
 
   size_t num_elements = 0;
   std::vector<size_t> num_elements_by_block(num_blocks);

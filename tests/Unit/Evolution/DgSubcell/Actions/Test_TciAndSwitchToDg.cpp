@@ -44,6 +44,7 @@
 #include "Evolution/DgSubcell/Tags/TciCallsSinceRollback.hpp"
 #include "Evolution/DgSubcell/Tags/TciGridHistory.hpp"
 #include "Evolution/DgSubcell/Tags/TciStatus.hpp"
+#include "Evolution/DiscontinuousGalerkin/OnlyDgBlockIds.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
@@ -115,7 +116,8 @@ struct Metavariables {
   using system = System<Dim>;
   using analytic_variables_tags = typename system::variables_tag::tags_list;
   using const_global_cache_tags =
-      tmpl::list<evolution::dg::subcell::Tags::SubcellOptions<Dim>>;
+      tmpl::list<evolution::dg::subcell::Tags::SubcellOptions<Dim>,
+                 evolution::dg::Tags::OnlyDgBlockIds<Dim>>;
 
   // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
   static bool rdmp_fails;
@@ -244,16 +246,17 @@ void test_impl(
 
   using comp = component<Dim, metavars>;
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<metavars>;
-  MockRuntimeSystem runner{{evolution::dg::subcell::SubcellOptions{
-      evolution::dg::subcell::SubcellOptions{
-          4.0, 1_st, 1.0e-3, 1.0e-4, always_use_subcell, false, recons_method,
-          use_halo,
-          test_block_id_assert
-              ? std::optional{std::vector<std::string>{"Block0"}}
-              : std::optional<std::vector<std::string>>{},
-          ::fd::DerivativeOrder::Two, number_of_steps_between_tci_calls,
-          min_tci_calls_after_rollback, minimum_clear_tcis},
-      TestCreator<Dim>{}}}};
+  MockRuntimeSystem runner{
+      {evolution::dg::subcell::SubcellOptions{
+           4.0, 1_st, 1.0e-3, 1.0e-4, always_use_subcell, false, recons_method,
+           use_halo, ::fd::DerivativeOrder::Two,
+           number_of_steps_between_tci_calls, min_tci_calls_after_rollback,
+           minimum_clear_tcis},
+       evolution::dg::compute_only_dg_block_ids(
+           test_block_id_assert
+               ? std::optional{std::vector<std::string>{"Block0"}}
+               : std::optional<std::vector<std::string>>{},
+           TestCreator<Dim>{})}};
 
   TimeStepId time_step_id{false, self_starting ? -1 : 1, Slab{1.0, 2.0}.end()};
   const TimeDelta step_size{Slab{1.0, 2.0}, {-1, 10}};

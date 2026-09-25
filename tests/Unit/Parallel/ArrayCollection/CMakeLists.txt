@@ -3,6 +3,7 @@
 
 set(LIBRARY_SOURCES
   ${LIBRARY_SOURCES}
+  ArrayCollection/Test_CreateElementsUsingDistribution.cpp
   ArrayCollection/Test_IsDgElementArrayMember.cpp
   ArrayCollection/Test_IsDgElementCollection.cpp
   ArrayCollection/Test_Tags.cpp

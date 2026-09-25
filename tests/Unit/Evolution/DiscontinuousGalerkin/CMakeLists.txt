@@ -17,6 +17,7 @@ set(LIBRARY_SOURCES
   Initialization/Test_SpectralFilters.cpp
   Test_AtomicInboxBoundaryData.cpp
   Test_BackgroundGrVars.cpp
+  Test_BlockSupportsSubcell.cpp
   Test_BoundaryCorrectionsHelper.cpp
   Test_BoundaryData.cpp
   Test_BoundaryEvolvedVariables.cpp
@@ -29,6 +30,8 @@ set(LIBRARY_SOURCES
   Test_MortarInfo.cpp
   Test_MortarTags.cpp
   Test_NormalVectorTags.cpp
+  Test_OnlyDgBlockIds.cpp
+  Test_SubcellElementDistribution.cpp
   Test_TimeSteppingPolicy.cpp
   Test_UsingSubcell.cpp
   )

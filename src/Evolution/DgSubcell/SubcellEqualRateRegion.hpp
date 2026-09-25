@@ -5,12 +5,13 @@
 
 #include <cstddef>
 #include <memory>
+#include <optional>
 #include <string>
 #include <unordered_map>
 #include <vector>
 
 #include "Domain/Creators/OptionTags.hpp"
-#include "Evolution/DgSubcell/Tags/SubcellOptions.hpp"
+#include "Evolution/DiscontinuousGalerkin/OptionTags.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
@@ -21,9 +22,6 @@ class ElementId;
 namespace PUP {
 class er;
 }  // namespace PUP
-namespace evolution::dg::subcell {
-class SubcellOptions;
-}  // namespace evolution::dg::subcell
 /// \endcond
 
 namespace evolution::dg::subcell {
@@ -40,11 +38,13 @@ class SubcellEqualRateRegion {
  public:
   SubcellEqualRateRegion() = default;
 
-  using creation_tags = tmpl::list<OptionTags::SubcellOptions,
-                                   domain::OptionTags::DomainCreator<Dim>>;
+  using creation_tags =
+      tmpl::list<evolution::dg::OptionTags::OnlyDgBlocksAndGroups,
+                 domain::OptionTags::DomainCreator<Dim>>;
 
   SubcellEqualRateRegion(
-      const SubcellOptions& subcell_options,
+      const std::optional<std::vector<std::string>>&
+          only_dg_block_and_group_names,
       const std::unique_ptr<DomainCreator<Dim>>& domain_creator);
 
   std::unordered_map<std::string, size_t> regions() const;
