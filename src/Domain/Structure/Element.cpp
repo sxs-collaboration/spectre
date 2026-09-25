@@ -34,6 +34,7 @@ Element<VolumeDim>::Element(ElementId<VolumeDim> id, Neighbors_t neighbors,
     if (it_to_neighbors_in_this_direction == neighbors_.end()) {
       if (has_boundary_in_this_direction) {
         external_boundaries_.emplace(direction);
+        all_boundaries_.emplace(direction);
         face_types_.emplace(direction, domain::FaceType::External);
       } else {
         face_types_.emplace(direction, domain::FaceType::Topological);
@@ -48,6 +49,7 @@ Element<VolumeDim>::Element(ElementId<VolumeDim> id, Neighbors_t neighbors,
              "Topologies: "
                  << topologies_ << "; Direction: " << direction);
       internal_boundaries_.emplace(direction);
+      all_boundaries_.emplace(direction);
       if (neighbors_in_this_direction.are_conforming()) {
         const auto& orientation =
             neighbors_in_this_direction.orientations().begin()->second;
@@ -84,6 +86,7 @@ void Element<VolumeDim>::pup(PUP::er& p) {
   p | number_of_neighbors_;
   p | external_boundaries_;
   p | internal_boundaries_;
+  p | all_boundaries_;
   p | topologies_;
   p | face_types_;
 }
@@ -94,6 +97,7 @@ bool operator==(const Element<VolumeDim>& lhs, const Element<VolumeDim>& rhs) {
          lhs.number_of_neighbors() == rhs.number_of_neighbors() and
          lhs.external_boundaries() == rhs.external_boundaries() and
          lhs.internal_boundaries() == rhs.internal_boundaries() and
+         lhs.all_boundaries() == rhs.all_boundaries() and
          lhs.topologies() == rhs.topologies() and
          lhs.face_types() == rhs.face_types();
 }

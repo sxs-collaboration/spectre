@@ -254,6 +254,8 @@ struct InitializeSubdomain {
       const gsl::not_null<db::DataBox<DbTagsList>*> box,
       const LinearSolver::Schwarz::OverlapId<Dim>& overlap_id) {
     const auto& background = db::get<BackgroundTag>(*box);
+    const auto& element =
+        db::get<overlaps_tag<domain::Tags::Element<Dim>>>(*box).at(overlap_id);
     DirectionMap<Dim, Variables<typename System::background_fields>>
         face_background_fields{};
     elliptic::util::mutate_apply_at<
@@ -266,7 +268,7 @@ struct InitializeSubdomain {
                        domain::Tags::InverseJacobian<Dim, Frame::ElementLogical,
                                                      Frame::Inertial>>>,
         tmpl::list<>>(
-        [&background, &face_background_fields, &box](
+        [&background, &face_background_fields, &box, &element](
             const gsl::not_null<Variables<typename System::background_fields>*>
                 background_fields,
             const tnsr::I<DataVector, Dim>& inertial_coords,
@@ -276,7 +278,7 @@ struct InitializeSubdomain {
           *background_fields = elliptic::util::get_analytic_data<
               typename System::background_fields>(
               background, *box, inertial_coords, mesh, inv_jacobian);
-          for (const auto& direction : Direction<Dim>::all_directions()) {
+          for (const auto& direction : element.all_boundaries()) {
             // Slice the background fields to the face instead of evaluating
             // them on the face coords to avoid re-computing them, and because
             // this is also what the DG operator currently does. The result is
@@ -303,8 +305,6 @@ struct InitializeSubdomain {
               },
               box);
         };
-    const auto& element =
-        db::get<overlaps_tag<domain::Tags::Element<Dim>>>(*box).at(overlap_id);
     for (const auto& direction : element.internal_boundaries()) {
       tmpl::for_each<background_fields_internal>(
           [&mutate_assign_face_background_field, &direction](auto tag_v) {

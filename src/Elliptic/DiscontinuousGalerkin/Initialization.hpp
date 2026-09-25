@@ -5,6 +5,7 @@
 
 #include <array>
 #include <cstddef>
+#include <optional>
 #include <type_traits>
 #include <unordered_map>
 #include <utility>
@@ -45,6 +46,7 @@
 #include "NumericalAlgorithms/DiscontinuousGalerkin/ProjectToBoundary.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Tags.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
+#include "NumericalAlgorithms/Spectral/Basis.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Quadrature.hpp"
 #include "NumericalAlgorithms/Spectral/SegmentSize.hpp"
@@ -403,11 +405,27 @@ struct InitializeFacesAndMortars : tt::ConformsTo<::amr::protocols::Projector> {
       }
     };
     ASSERT(
-        alg::all_of(mesh.quadrature(),
-                    [&mesh](const auto t) { return t == mesh.quadrature(0); }),
-        "This function is implemented assuming the quadrature is isotropic");
+        [&mesh]() {
+          // The quadrature must be isotropic, ignoring spherical-harmonic
+          // angular directions (which necessarily use a different quadrature
+          // than the radial Legendre direction).
+          std::optional<Spectral::Quadrature> reference_quadrature{};
+          for (size_t d = 0; d < Dim; ++d) {
+            if (mesh.basis(d) == Spectral::Basis::SphericalHarmonic) {
+              continue;
+            }
+            if (not reference_quadrature.has_value()) {
+              reference_quadrature = mesh.quadrature(d);
+            } else if (mesh.quadrature(d) != *reference_quadrature) {
+              return false;
+            }
+          }
+          return true;
+        }(),
+        "This function is implemented assuming the quadrature is isotropic "
+        "(ignoring spherical-harmonic angular directions).");
     // Faces
-    for (const auto& direction : Direction<Dim>::all_directions()) {
+    for (const auto& direction : element.all_boundaries()) {
       const auto face_mesh = mesh.slice_away(direction.dimension());
       (*face_directions)[direction] = direction;
       // Possible optimization: Not all systems need the coordinates on internal
@@ -571,7 +589,7 @@ struct InitializeBackground : tt::ConformsTo<::amr::protocols::Projector> {
                  domain::Tags::Faces<Dim, ::Tags::Variables<BackgroundFields>>>;
   using argument_tags =
       tmpl::list<domain::Tags::Coordinates<Dim, Frame::Inertial>,
-                 domain::Tags::Mesh<Dim>,
+                 domain::Tags::Mesh<Dim>, domain::Tags::Element<Dim>,
                  domain::Tags::InverseJacobian<Dim, Frame::ElementLogical,
                                                Frame::Inertial>,
                  BackgroundTag, Parallel::Tags::Metavariables>;
@@ -583,6 +601,7 @@ struct InitializeBackground : tt::ConformsTo<::amr::protocols::Projector> {
       const gsl::not_null<DirectionMap<Dim, Variables<BackgroundFields>>*>
           face_background_fields,
       const tnsr::I<DataVector, Dim>& inertial_coords, const Mesh<Dim>& mesh,
+      const Element<Dim>& element,
       const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
                             Frame::Inertial>& inv_jacobian,
       const BackgroundBase& background, const Metavariables& /*meta*/,
@@ -609,7 +628,7 @@ struct InitializeBackground : tt::ConformsTo<::amr::protocols::Projector> {
                   inertial_coords, mesh, inv_jacobian, BackgroundFields{}));
             });
     // Background fields on faces
-    for (const auto& direction : Direction<Dim>::all_directions()) {
+    for (const auto& direction : element.all_boundaries()) {
       // Possible optimization: Only the background fields in the
       // System::fluxes_computer::argument_tags are needed on internal faces.
       // On Gauss grids we could evaluate the background directly on the faces
