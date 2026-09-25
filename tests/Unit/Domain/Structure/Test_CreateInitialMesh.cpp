@@ -276,6 +276,25 @@ SPECTRE_TEST_CASE("Unit.Domain.Structure.CreateInitialMesh", "[Domain][Unit]") {
     }
   }
   {
+    INFO("cartoon_cylinder_annulus");
+    const Element<3> cartoon_annulus(
+        element_id_3d, {}, domain::topologies::cartoon_cylinder_annulus);
+    for (const auto& i1_basis :
+         {Spectral::Basis::Legendre, Spectral::Basis::Chebyshev}) {
+      for (const auto& i1_quadrature :
+           {Spectral::Quadrature::GaussLobatto, Spectral::Quadrature::Gauss}) {
+        CHECK(
+            create_initial_mesh({{{3, 5, 1}}}, cartoon_annulus, i1_basis,
+                                i1_quadrature) ==
+            Mesh<3>{{{3, 5, 1}},
+                    std::array{i1_basis, Spectral::Basis::HalfFourier,
+                               Spectral::Basis::Cartoon},
+                    std::array{i1_quadrature, Spectral::Quadrature::Equiangular,
+                               Spectral::Quadrature::AxialSymmetry}});
+      }
+    }
+  }
+  {
     const ElementId<3> element_id_on_axis{
         0, std::array{SegmentId{1, 0}, SegmentId{0, 0}, SegmentId{0, 0}}};
     const ElementId<3> element_id_off_axis{
@@ -352,6 +371,16 @@ SPECTRE_TEST_CASE("Unit.Domain.Structure.CreateInitialMesh", "[Domain][Unit]") {
       create_initial_mesh(
           {{{3, 4}}}, Block<2>{nullptr, 0, {}, "", domain::topologies::disk},
           ElementId<2>{0, {{SegmentId{1, 0}, SegmentId{1, 1}}}},
+          Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto),
+      Catch::Matchers::ContainsSubstring(
+          "Angular dimensions cannot be angularly refined"));
+  CHECK_THROWS_WITH(
+      create_initial_mesh(
+          {{{3, 5, 1}}},
+          Block<3>{
+              nullptr, 0, {}, "", domain::topologies::cartoon_cylinder_annulus},
+          ElementId<3>{0,
+                       {{SegmentId{0, 0}, SegmentId{1, 0}, SegmentId{0, 0}}}},
           Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto),
       Catch::Matchers::ContainsSubstring(
           "Angular dimensions cannot be angularly refined"));
