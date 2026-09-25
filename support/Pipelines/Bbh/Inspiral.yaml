@@ -183,7 +183,7 @@ DomainCreator:
         InitialValuesY: [0.0, 0.0, 0.0]
         InitialValuesZ: [0.0, 0.0, 0.0]
       ShapeMapA:
-        LMax: &ShapeLMax 10
+        LMax: &ShapeLMax 33
         CoefficientTruncationLimit: 1e-16
   {% if SpecDataDirectory is defined %}
         InitialValues: Spherical
