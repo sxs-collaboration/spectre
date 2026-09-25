@@ -72,9 +72,10 @@ struct TimeDerivativeTerms {
       gr::Tags::TraceSpatialChristoffelSecondKind<DataVector, 3>,
       EnthalpyTimesDensityWSquaredPlusBSquared,
 
-      // Need lapse, shift, and inverse spatial metric to be projected to the
-      // boundary for Riemann solvers.
+      // Need lapse, shift, spatial metric, and inverse spatial metric to be
+      // projected to the boundary for Riemann solvers.
       gr::Tags::Lapse<DataVector>, gr::Tags::Shift<DataVector, 3>,
+      gr::Tags::SpatialMetric<DataVector, 3>,
       gr::Tags::InverseSpatialMetric<DataVector, 3>>;
   using argument_tags =
       tmpl::list<grmhd::ValenciaDivClean::Tags::TildeD,
@@ -147,6 +148,8 @@ struct TimeDerivativeTerms {
 
       gsl::not_null<Scalar<DataVector>*> temp_lapse,
       gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*> temp_shift,
+      gsl::not_null<tnsr::ii<DataVector, 3, Frame::Inertial>*>
+          temp_spatial_metric,
       gsl::not_null<tnsr::II<DataVector, 3, Frame::Inertial>*>
           temp_inverse_spatial_metric,
 

@@ -912,6 +912,7 @@ void test_cartoon_dg_time_derivative() {
         // Temp spacetime vars
         make_not_null(&get<gr::Tags::Lapse<DataVector>>(temp_vars)),
         make_not_null(&get<gr::Tags::Shift<DataVector, 3>>(temp_vars)),
+        make_not_null(&get<gr::Tags::SpatialMetric<DataVector, 3>>(temp_vars)),
         make_not_null(
             &get<gr::Tags::InverseSpatialMetric<DataVector, 3>>(temp_vars)),
 

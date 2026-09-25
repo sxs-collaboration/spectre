@@ -98,6 +98,8 @@ void test_stuffs(const bool reflect_both) {
           helpers::Tags::PythonFunctionName<hydro::Tags::SpatialVelocityOneForm<
               DataVector, 3, Frame::Inertial>>,
           helpers::Tags::PythonFunctionName<
+              gr::Tags::SpatialMetric<DataVector, 3>>,
+          helpers::Tags::PythonFunctionName<
               hydro::Tags::RestMassDensity<DataVector>>,
           helpers::Tags::PythonFunctionName<
               hydro::Tags::ElectronFraction<DataVector>>,
@@ -124,6 +126,7 @@ void test_stuffs(const bool reflect_both) {
           "lapse",
           "shift",
           "spatial_velocity_one_form",
+          "spatial_metric",
           "rest_mass_density",
           "electron_fraction",
           "temperature",
