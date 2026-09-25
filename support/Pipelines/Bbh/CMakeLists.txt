@@ -11,6 +11,7 @@ spectre_python_add_module(
   ControlId.py
   EccentricityControl.py
   FindHorizon.py
+  FrameFix.py
   InitialData.py
   InitialData.yaml
   Inspiral.py

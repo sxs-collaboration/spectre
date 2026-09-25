@@ -7,6 +7,7 @@ import unittest
 from pathlib import Path
 
 import numpy as np
+import yaml
 
 import spectre.IO.H5 as spectre_h5
 from spectre.Informer import unit_test_build_path
@@ -163,6 +164,18 @@ class TestCce(unittest.TestCase):
         self.assertTrue((self.test_dir / "01_Output/Cce.yaml").exists())
         self.assertTrue(
             (self.test_dir / "01_Output/combinedBondiSachsCceR0200.h5").exists()
+        )
+        # Frame fixing runs in the same job once CCE is done
+        with open(self.test_dir / "01_Output/Cce.yaml") as open_input_file:
+            metadata = next(yaml.safe_load_all(open_input_file))
+        self.assertEqual(
+            metadata["Next"],
+            {
+                "Run": "spectre.Pipelines.Bbh.FrameFix:frame_fix",
+                "With": {
+                    "cce_reduction_file": "./CharacteristicExtractReduction.h5",
+                },
+            },
         )
         run_cce_command.main(
             args=[
