@@ -66,7 +66,7 @@ namespace ScalarSelfForce::AnalyticData {
  * - Use $r$ as the radial coordinate instead of $r_\star$. This has two
  *   advantages: first, the horizon is placed at a finite radius rather than
  *   $r_\star \rightarrow -\infty$; second, the flux component normal to the
- *   boundary vanishes at the horizon ($r=r_{\plus}$), which reduces to
+ *   boundary vanishes at the horizon ($r=r_+$), which reduces to
  *   simple regularity conditions.
 
  * Written this way, the equations are regular at the poles and converge
@@ -93,7 +93,7 @@ namespace ScalarSelfForce::AnalyticData {
  * decomposition used in \cite Vu:2026ypc Eq. (2.16) as:
  * \begin{align}
  *   \Psi_m^P &= \frac{r}{2 \pi \sin(\theta)^{|m|}}
- *     e^{i m \left( \varphi - \phi\right)} \Phi_m^\mathrm{Wardell} \\
+ *     e^{-i m \left( \varphi - \phi\right)} \Phi_m^\mathrm{Wardell} \\
  *   S_m^\mathrm{eff} &= \frac{r}{2 \pi \sin(\theta)^{|m|}}
  *     e^{-i m \left( \varphi - \phi\right)}
  *     \frac{\Delta\,(r^2 + a^2\cos^2\theta)}{(r^2 + a^2)^2}
@@ -158,6 +158,35 @@ namespace ScalarSelfForce::AnalyticData {
  *     \left.\frac{\partial \Psi_m}{\partial r_*}\right|_{r_*=(r_*^u)^-} =
  *     -im\Omega\Psi_m\big|_{r_*=r_*^u}
  * \end{align}
+ *
+ * \par Compactification
+ * To resolve the large wavezone without truncating the domain at a large
+ * but finite $R$, we compactify the $u$ region to $r=\infty$.
+ * With $r_u$ the radius at the $t$-$u$ transition, we redefine
+ * the domain coordinate as
+ * \begin{align}
+ *   \sigma = 2 r_u - \frac{r_u^2}{r} \text{,}
+ * \end{align}
+ * so $\sigma \rightarrow r_u$ as $r \rightarrow r_u$ and $\sigma
+ * \rightarrow 2 r_u$ as $r \rightarrow \infty$. Both $\sigma$ and its
+ * Jacobian $J \equiv d\sigma/dr = r_u^2/r^2$ are continuous ($C^1$) at the
+ * transition ($J=1$ there), so no coordinate jump condition is needed.
+ *
+ * Since $\partial_\sigma = J \partial_\r$, the flux form must be rewritten
+ * in terms of $\sigma$-derivatives. Dividing the transformed equation by
+ * $J$ to match the generic structure of first order flux form gives the
+ * substitutions
+ * \begin{align}
+ *   &\alpha_r \rightarrow \alpha_r J, &&
+ *   \alpha_\theta \rightarrow \alpha_\theta / J, \\
+ *   &\beta \rightarrow \beta / J, &&
+ *   \gamma_\theta \rightarrow \gamma_\theta / J
+ * \end{align}
+ * with $S_m = 0$ in the $u$ region. As $r\rightarrow\infty$, $J\rightarrow
+ * 0$, so the radial flux vanishes, removing the need for the approximate
+ * (Bayliss-Turkel) outer boundary condition. To avoid $\infty/\infty$
+ * terms, all coefficients are written as functions of $1/r$ rather than
+ * $r$.
  */
 class CircularOrbit : public elliptic::analytic_data::Background,
                       public elliptic::analytic_data::InitialGuess {
