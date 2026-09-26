@@ -11,13 +11,15 @@ SourceDomainCreator:
       OuterRadius: 4.
       XCoord: &x_right 7.683
       ExciseInterior: True
-      UseLogarithmicMap: True
+      ShellLogMapStrength: 1.0
+      CubeLogMapStrength: None
     ObjectB:
       InnerRadius: 0.45
       OuterRadius: 4.
       XCoord: &x_left -7.683
       ExciseInterior: True
-      UseLogarithmicMap: True
+      ShellLogMapStrength: 1.0
+      CubeLogMapStrength: None
     CenterOfMassOffset: [0., 0.]
     Envelope:
       Radius: 60.
@@ -42,13 +44,15 @@ TargetDomainCreator:
       OuterRadius: 6.
       XCoord: *x_right
       ExciseInterior: True
-      UseLogarithmicMap: true
+      ShellLogMapStrength: 1.0
+      CubeLogMapStrength: None
     ObjectB:
       InnerRadius: 0.46
       OuterRadius: 6.
       XCoord: *x_left
       ExciseInterior: True
-      UseLogarithmicMap: true
+      ShellLogMapStrength: 1.0
+      CubeLogMapStrength: None
     CenterOfMassOffset: [0., 0.]
     Envelope:
       Radius: 100.
