@@ -9,6 +9,7 @@
 #include <iterator>
 #include <limits>
 #include <memory>
+#include <numeric>
 #include <optional>
 #include <random>
 #include <unordered_map>
@@ -35,6 +36,8 @@
 #include "Domain/Structure/ElementSearchTree.hpp"
 #include "Domain/Structure/InitialElementIds.hpp"
 #include "Framework/TestHelpers.hpp"
+#include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
+#include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Utilities/Algorithm.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Literals.hpp"
@@ -954,6 +957,61 @@ void test_block_logical_coordinates_with_roundoff_error() {
   CHECK(get<1>(block_logical_coords[5]->data) < 1.0);
   CHECK(get<0>(block_logical_coords[6]->data) < 1.0);
 }
+
+// Points on shared block boundaries must be assigned to the block with the
+// smallest ID, independent of the `block_order` used to accelerate the search.
+// Otherwise the result depends on the order in which points are processed.
+void test_block_order_independence() {
+  const auto sphere = domain::creators::Sphere(
+      1., 3., domain::creators::Sphere::InnerCube{0.}, 0_st, 3_st, true);
+  const auto domain = sphere.create_domain();
+
+  // Collect Gauss-Lobatto grid points of all blocks, which include points on
+  // block faces, edges, and corners
+  const Mesh<3> mesh{3, Spectral::Basis::Legendre,
+                     Spectral::Quadrature::GaussLobatto};
+  const auto element_logical_coords = logical_coordinates(mesh);
+  tnsr::I<DataVector, 3, Frame::BlockLogical> logical_coords{};
+  for (size_t d = 0; d < 3; ++d) {
+    logical_coords.get(d) = element_logical_coords.get(d);
+  }
+  std::vector<tnsr::I<double, 3>> points{};
+  for (const auto& block : domain.blocks()) {
+    const auto block_coords = block.stationary_map()(logical_coords);
+    for (size_t i = 0; i < mesh.number_of_grid_points(); ++i) {
+      points.push_back(tnsr::I<double, 3>{
+          {get<0>(block_coords)[i], get<1>(block_coords)[i],
+           get<2>(block_coords)[i]}});
+    }
+  }
+
+  // Search without a block order, i.e., in order of block IDs
+  std::vector<BlockLogicalCoords<3>> expected{};
+  expected.reserve(points.size());
+  for (const auto& point : points) {
+    expected.push_back(block_logical_coordinates_single_point(point, domain));
+    REQUIRE(expected.back().has_value());
+  }
+
+  // Search with a block order, processing points in random order so the block
+  // order evolves differently
+  MAKE_GENERATOR(gen);
+  std::vector<size_t> point_order(points.size());
+  std::iota(point_order.begin(), point_order.end(), 0_st);
+  for (size_t repeat = 0; repeat < 5; ++repeat) {
+    std::shuffle(point_order.begin(), point_order.end(), gen);
+    std::vector<size_t> block_order{};
+    for (const size_t p : point_order) {
+      CAPTURE(points[p]);
+      const auto result = block_logical_coordinates_single_point(
+          points[p], domain, std::numeric_limits<double>::signaling_NaN(), {},
+          make_not_null(&block_order));
+      REQUIRE(result.has_value());
+      CHECK(result->id == expected[p]->id);
+      CHECK(result->data == expected[p]->data);
+    }
+  }
+}
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Domain.BlockAndElementLogicalCoords",
@@ -976,4 +1034,5 @@ SPECTRE_TEST_CASE("Unit.Domain.BlockAndElementLogicalCoords",
   test_block_logical_coordinates1fail();
   test_element_ids_are_uniquely_determined();
   test_block_logical_coordinates_with_roundoff_error();
+  test_block_order_independence();
 }
