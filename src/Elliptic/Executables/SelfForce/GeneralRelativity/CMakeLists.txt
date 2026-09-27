@@ -38,6 +38,7 @@ target_link_libraries(
   ParallelSchwarz
   PhaseControl
   GrSelfForce
+  GrSelfForceAmrCriteria
   GrSelfForceAnalyticData
   GrSelfForceBoundaryConditions
   )
