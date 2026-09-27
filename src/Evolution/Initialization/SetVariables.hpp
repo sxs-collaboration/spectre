@@ -14,6 +14,7 @@
 #include "Domain/CoordinateMaps/Tags.hpp"
 #include "Domain/Tags.hpp"
 #include "Domain/TagsTimeDependent.hpp"
+#include "Evolution/DiscontinuousGalerkin/BoundaryEvolvedVariables.hpp"
 #include "Evolution/Initialization/InitialData.hpp"
 #include "Evolution/Initialization/Tags.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
@@ -53,7 +54,12 @@ namespace evolution::Initialization::Actions {
 /// - Removes: nothing
 /// - Modifies:
 ///   * System::variables_tag (if system has no primitive variables)
-///   * System::primitive_variables_tag (if system has primitive variables)
+///   * System::primitive_variables_tag and the
+///     System::non_conservative_variables in System::variables_tag (if system
+///     has primitive variables)
+///
+/// For a system with boundary-evolved variables, only the first entry of
+/// System::variables_tag, which holds the volume variables, is modified.
 template <typename LogicalCoordinatesTag>
 struct SetVariables {
   using simple_tags_from_options = tmpl::list<::Tags::Time>;
@@ -104,6 +110,10 @@ struct SetVariables {
             initial_time, db::get<::domain::Tags::FunctionsOfTime>(*box));
 
     using system = typename Metavariables::system;
+    using variables_tag = tmpl::conditional_t<
+        evolution::dg::system_has_boundary_variables_v<system>,
+        tmpl::front<typename system::variables_tag>,
+        typename system::variables_tag>;
 
     if constexpr (Metavariables::system::has_primitive_and_conservative_vars) {
       using primitives_tag = typename system::primitive_variables_tag;
@@ -120,7 +130,6 @@ struct SetVariables {
           box);
       using non_conservative_variables =
           typename system::non_conservative_variables;
-      using variables_tag = typename system::variables_tag;
       if constexpr (not std::is_same_v<non_conservative_variables,
                                        tmpl::list<>>) {
         db::mutate<variables_tag>(
@@ -135,8 +144,6 @@ struct SetVariables {
             box);
       }
     } else {
-      using variables_tag = typename system::variables_tag;
-
       // Set initial data from analytic solution
       if constexpr (not std::is_same_v<typename variables_tag::tags_list,
                                        tmpl::list<>>) {

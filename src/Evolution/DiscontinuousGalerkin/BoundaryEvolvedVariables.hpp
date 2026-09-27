@@ -64,6 +64,10 @@ struct boundary_variables_tag_impl<VariablesTag> {
           (value ? 1 : 0),
       "A list-valued variables_tag must contain at most one "
       "::Tags::BoundaryVariables entry, and it must be the last entry.");
+  static_assert(not value or tmpl::size<VariablesTag>::value == 2,
+                "A list-valued variables_tag with a ::Tags::BoundaryVariables "
+                "entry must contain exactly two entries: the volume variables "
+                "followed by the boundary variables.");
   using type = tmpl::conditional_t<value, back, NoSuchType>;
 };
 }  // namespace detail
@@ -71,7 +75,8 @@ struct boundary_variables_tag_impl<VariablesTag> {
 /// \ingroup DiscontinuousGalerkinGroup
 /// \brief Whether the system declares boundary-evolved variables, i.e.
 /// whether `System::variables_tag` is a `tmpl::list` whose last entry is a
-/// `::Tags::BoundaryVariables`.
+/// `::Tags::BoundaryVariables`. Such a list has exactly two entries, the first
+/// holding the volume variables.
 template <typename System>
 constexpr bool system_has_boundary_variables_v =
     detail::boundary_variables_tag_impl<typename System::variables_tag>::value;

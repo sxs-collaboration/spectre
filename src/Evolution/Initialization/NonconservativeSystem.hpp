@@ -13,6 +13,7 @@
 #include "DataStructures/TaggedTuple.hpp"
 #include "DataStructures/VariablesTag.hpp"
 #include "Evolution/DiscontinuousGalerkin/Actions/ComputeTimeDerivativeHelpers.hpp"
+#include "Evolution/DiscontinuousGalerkin/BoundaryEvolvedVariables.hpp"
 #include "Evolution/Initialization/InitialData.hpp"
 #include "Parallel/AlgorithmExecution.hpp"
 #include "Parallel/GlobalCache.hpp"
@@ -40,7 +41,8 @@ namespace Actions {
 ///
 /// DataBox changes:
 /// - Adds:
-///   * System::variables_tag
+///   * System::variables_tag (for a system with boundary-evolved variables,
+///     only its first entry, which holds the volume variables)
 ///   * `::Tags::Variables<System::auxiliary_variables>` (only if the system
 ///     declares a non-empty `auxiliary_variables`)
 ///
@@ -51,7 +53,11 @@ struct NonconservativeSystem {
   static_assert(not System::is_in_flux_conservative_form,
                 "System is in flux conservative form");
   static constexpr size_t dim = System::volume_dim;
-  using variables_tag = typename System::variables_tag;
+
+  using variables_tag = tmpl::conditional_t<
+      evolution::dg::system_has_boundary_variables_v<System>,
+      tmpl::front<typename System::variables_tag>,
+      typename System::variables_tag>;
   using auxiliary_variables =
       evolution::dg::Actions::detail::get_auxiliary_variables_or_default_t<
           System, tmpl::list<>>;

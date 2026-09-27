@@ -10,7 +10,9 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
 #include "DataStructures/VariablesTag.hpp"
+#include "Domain/BoundaryVariablesTag.hpp"
 #include "Domain/Tags.hpp"
+#include "Evolution/DiscontinuousGalerkin/BoundaryEvolvedVariables.hpp"
 #include "Evolution/Initialization/NonconservativeSystem.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "NumericalAlgorithms/Spectral/Basis.hpp"
@@ -29,12 +31,17 @@ struct AuxVar : db::SimpleTag {
   using type = Scalar<DataVector>;
 };
 
-template <size_t Dim>
+template <size_t Dim, bool HasBoundaryVariables>
 struct System {
   static constexpr bool is_in_flux_conservative_form = false;
   static constexpr bool has_primitive_and_conservative_vars = false;
   static constexpr size_t volume_dim = Dim;
-  using variables_tag = Tags::Variables<tmpl::list<Var>>;
+  using variables_tag = tmpl::conditional_t<
+      HasBoundaryVariables,
+      tmpl::list<Tags::Variables<tmpl::list<Var>>,
+                 Tags::BoundaryVariables<
+                     Dim, tmpl::list<evolution::dg::Tags::BoundaryValue<Var>>>>,
+      Tags::Variables<tmpl::list<Var>>>;
   using auxiliary_variables = tmpl::list<AuxVar>;
 };
 
@@ -54,16 +61,16 @@ struct component {
                      typename Metavariables::system>>>>;
 };
 
-template <size_t Dim>
+template <size_t Dim, bool HasBoundaryVariables>
 struct Metavariables {
   using component_list = tmpl::list<component<Dim, Metavariables>>;
-  using system = System<Dim>;
+  using system = System<Dim, HasBoundaryVariables>;
   using const_global_cache_tag_list = tmpl::list<>;
 };
 
-template <size_t Dim>
+template <size_t Dim, bool HasBoundaryVariables>
 void test() {
-  using metavars = Metavariables<Dim>;
+  using metavars = Metavariables<Dim, HasBoundaryVariables>;
   using comp = component<Dim, metavars>;
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<metavars>;
   MockRuntimeSystem runner{{}};
@@ -86,8 +93,11 @@ void test() {
 
 SPECTRE_TEST_CASE("Unit.Evolution.Initialization.NonconservativeSystem",
                   "[Unit][Evolution][Actions]") {
-  test<1>();
-  test<2>();
-  test<3>();
+  test<1, false>();
+  test<2, false>();
+  test<3, false>();
+  test<1, true>();
+  test<2, true>();
+  test<3, true>();
 }
 }  // namespace
