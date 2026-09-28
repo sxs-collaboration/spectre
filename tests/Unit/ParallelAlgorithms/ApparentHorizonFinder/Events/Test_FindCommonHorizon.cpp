@@ -25,6 +25,7 @@
 #include "Domain/Creators/RegisterDerivedWithCharm.hpp"
 #include "Domain/Creators/Tags/Domain.hpp"
 #include "Domain/Structure/ElementId.hpp"
+#include "Domain/Structure/Topology.hpp"
 #include "Domain/Tags.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
 #include "Framework/ActionTesting.hpp"
@@ -160,7 +161,8 @@ void common_horizon_event() {
   using metavars = MockMetavariables;
   constexpr size_t Dim = metavars::volume_dim;
   const ElementId<Dim> element_id(0);
-  const Element<Dim> element{element_id, {}};
+  const Element<Dim> element{
+      element_id, {}, domain::topologies::hypercube<Dim>};
 
   using obs_component = MockObserver<metavars>;
   using horizon_component = MockHorizonComponent<metavars>;

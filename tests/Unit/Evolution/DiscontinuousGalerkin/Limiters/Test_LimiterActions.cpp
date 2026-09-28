@@ -32,6 +32,7 @@
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Structure/Neighbors.hpp"
 #include "Domain/Structure/OrientationMap.hpp"
+#include "Domain/Structure/Topology.hpp"
 #include "Domain/Tags.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "NumericalAlgorithms/LinearOperators/MeanValue.hpp"
@@ -189,11 +190,13 @@ SPECTRE_TEST_CASE("Unit.Evolution.DG.Limiters.LimiterActions.Generic",
 
   {
     Element<2> element(
-        self_id, {{Direction<2>::lower_xi(), {{west_id}, block_orientation}},
-                  {Direction<2>::upper_xi(),
-                   {{east_id}, OrientationMap<2>::create_aligned()}},
-                  {Direction<2>::upper_eta(),
-                   {{south_id}, OrientationMap<2>::create_aligned()}}});
+        self_id,
+        {{Direction<2>::lower_xi(), {{west_id}, block_orientation}},
+         {Direction<2>::upper_xi(),
+          {{east_id}, OrientationMap<2>::create_aligned()}},
+         {Direction<2>::upper_eta(),
+          {{south_id}, OrientationMap<2>::create_aligned()}}},
+        domain::topologies::hypercube<2>);
     ActionTesting::emplace_component_and_initialize<my_component>(
         &runner, self_id,
         {0, mesh, element,
@@ -206,7 +209,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.DG.Limiters.LimiterActions.Generic",
                                     const Direction<2>& direction,
                                     const OrientationMap<2>& orientation,
                                     const Scalar<DataVector>& var) {
-    const Element<2> element(id, {{direction, {{self_id}, orientation}}});
+    const Element<2> element(id, {{direction, {{self_id}, orientation}}},
+                             domain::topologies::hypercube<2>);
     auto map = ElementMap<2, Frame::Inertial>(id, coordmap->get_clone());
     ActionTesting::emplace_component_and_initialize<my_component>(
         &runner, id, {0, mesh, element, std::move(map), var});
@@ -311,7 +315,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.DG.Limiters.LimiterActions.NoNeighbors",
   const Mesh<2> mesh{
       {{3, 4}}, Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto};
   const ElementId<2> self_id(1, {{{2, 0}, {1, 0}}});
-  const Element<2> element(self_id, {});
+  const Element<2> element(self_id, {}, domain::topologies::hypercube<2>);
 
   auto input_var = Scalar<DataVector>(mesh.number_of_grid_points(), 1234.);
 

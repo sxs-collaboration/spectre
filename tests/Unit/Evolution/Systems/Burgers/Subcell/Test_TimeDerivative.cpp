@@ -25,6 +25,7 @@
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Structure/Neighbors.hpp"
+#include "Domain/Structure/Topology.hpp"
 #include "Domain/Tags.hpp"
 #include "Domain/TagsTimeDependent.hpp"
 #include "Evolution/BoundaryCorrection.hpp"
@@ -93,7 +94,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Burgers.Subcell.TimeDerivative",
     neighbors[gsl::at(Direction<1>::all_directions(), i)] = Neighbors<1>{
         {ElementId<1>{i + 1, {}}}, OrientationMap<1>::create_aligned()};
   }
-  const Element<1> element{ElementId<1>{0, {}}, neighbors};
+  const Element<1> element{ElementId<1>{0, {}}, neighbors,
+                           domain::topologies::hypercube<1>};
 
   const size_t num_dg_pts = 5;
   const Mesh<1> dg_mesh{num_dg_pts, Spectral::Basis::Legendre,

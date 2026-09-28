@@ -24,6 +24,7 @@
 #include "Domain/Structure/Neighbors.hpp"
 #include "Domain/Structure/OrientationMap.hpp"
 #include "Domain/Structure/SegmentId.hpp"
+#include "Domain/Structure/Topology.hpp"
 #include "Domain/Tags.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
@@ -206,26 +207,30 @@ void test() {
       element_1_id,
       DirectionMap<1, Neighbors<1>>{
           {Direction<1>::upper_xi(),
-           Neighbors<1>{std::unordered_set{element_2_id}, aligned}}}};
+           Neighbors<1>{std::unordered_set{element_2_id}, aligned}}},
+      domain::topologies::hypercube<1>};
   const Element<1> element_2{
       element_2_id,
       DirectionMap<1, Neighbors<1>>{
           {Direction<1>::lower_xi(),
            Neighbors<1>{std::unordered_set{element_1_id}, aligned}},
           {Direction<1>::upper_xi(),
-           Neighbors<1>{std::unordered_set{element_3_id}, aligned}}}};
+           Neighbors<1>{std::unordered_set{element_3_id}, aligned}}},
+      domain::topologies::hypercube<1>};
   const Element<1> element_3{
       element_3_id,
       DirectionMap<1, Neighbors<1>>{
           {Direction<1>::lower_xi(),
            Neighbors<1>{std::unordered_set{element_2_id}, aligned}},
           {Direction<1>::upper_xi(),
-           Neighbors<1>{std::unordered_set{element_4_id}, aligned}}}};
+           Neighbors<1>{std::unordered_set{element_4_id}, aligned}}},
+      domain::topologies::hypercube<1>};
   const Element<1> element_4{
       element_4_id,
       DirectionMap<1, Neighbors<1>>{
           {Direction<1>::lower_xi(),
-           Neighbors<1>{std::unordered_set{element_3_id}, aligned}}}};
+           Neighbors<1>{std::unordered_set{element_3_id}, aligned}}},
+      domain::topologies::hypercube<1>};
 
   const Mesh<1> element_1_mesh{std::array{3_st}, Spectral::Basis::Legendre,
                                Spectral::Quadrature::GaussLobatto};
@@ -362,7 +367,8 @@ void test() {
             {Direction<1>::lower_xi(),
              Neighbors<1>{std::unordered_set{new_parent_id}, aligned}},
             {Direction<1>::upper_xi(),
-             Neighbors<1>{std::unordered_set{new_lower_child_id}, aligned}}}};
+             Neighbors<1>{std::unordered_set{new_lower_child_id}, aligned}}},
+        domain::topologies::hypercube<1>};
     DirectionalIdMap<1, Mesh<1>> expected_element_3_neighbor_meshes;
     expected_element_3_neighbor_meshes.emplace(
         std::pair{DirectionalId{Direction<1>::lower_xi(), new_parent_id},

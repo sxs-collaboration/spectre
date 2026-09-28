@@ -38,6 +38,7 @@
 #include "Domain/Creators/Tags/ExternalBoundaryConditions.hpp"
 #include "Domain/Creators/Tags/FunctionsOfTime.hpp"
 #include "Domain/Domain.hpp"
+#include "Domain/Structure/Topology.hpp"
 #include "Domain/Tags.hpp"
 #include "Evolution/BoundaryConditions/Type.hpp"
 #include "Evolution/BoundaryCorrection.hpp"
@@ -2966,7 +2967,7 @@ void test_1d(const bool moving_mesh, const dg::Formulation formulation,
   using dt_variables_tag = db::add_tag_prefix<::Tags::dt, volume_variables_tag>;
   const Mesh<Dim> mesh{5, Spectral::Basis::Legendre, quadrature};
   const ElementId<Dim> self_id{0, {{{1, 0}}}};
-  const Element<Dim> element{self_id, {}};
+  const Element<Dim> element{self_id, {}, domain::topologies::hypercube<Dim>};
   ElementMap<Dim, Frame::Grid> element_map{
       self_id,
       domain::make_coordinate_map_base<Frame::BlockLogical, Frame::Grid>(
@@ -3730,7 +3731,7 @@ void test_cartoon_mesh_compatibility() {
                                  Spectral::Quadrature::GaussLobatto};
 
   const ElementId<1> element_id{0};
-  const Element<1> element{element_id, {}};
+  const Element<1> element{element_id, {}, domain::topologies::hypercube<1>};
   const double boundary_condition_volume_tag_number{2.5};
   const double boundary_correction_volume_tag_number{3.5};
 

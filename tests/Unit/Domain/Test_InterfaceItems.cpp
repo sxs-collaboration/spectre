@@ -38,6 +38,7 @@
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Structure/Neighbors.hpp"
+#include "Domain/Structure/Topology.hpp"
 #include "Domain/Tags.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/DataStructures/DataBox/TestHelpers.hpp"
@@ -157,7 +158,8 @@ void test_interface_items() {
   Element<dim> element{ElementId<3>(0),
                        {{Direction<dim>::lower_xi(), neighbors},
                         {Direction<dim>::upper_xi(), neighbors},
-                        {Direction<dim>::upper_zeta(), neighbors}}};
+                        {Direction<dim>::upper_zeta(), neighbors}},
+                       domain::topologies::hypercube<dim>};
 
   std::unordered_map<Direction<dim>, NoCopy<2>> internal_nocopy_map_item;
   internal_nocopy_map_item.emplace(Direction<dim>::lower_xi(), NoCopy<2>{});

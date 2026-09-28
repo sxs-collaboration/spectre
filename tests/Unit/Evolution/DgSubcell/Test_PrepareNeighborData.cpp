@@ -21,6 +21,7 @@
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Structure/OrientationMap.hpp"
 #include "Domain/Structure/OrientationMapHelpers.hpp"
+#include "Domain/Structure/Topology.hpp"
 #include "Domain/Tags.hpp"
 #include "Domain/Tags/NeighborMesh.hpp"
 #include "Evolution/DgSubcell/Mesh.hpp"
@@ -113,7 +114,8 @@ Element<Dim> create_element() {
     }
   }
 
-  return Element<Dim>{ElementId<Dim>{0, {}}, neighbors};
+  return Element<Dim>{ElementId<Dim>{0, {}}, neighbors,
+                      domain::topologies::hypercube<Dim>};
 }
 
 template <size_t Dim>

@@ -19,6 +19,7 @@
 #include "Domain/Structure/DirectionMap.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Structure/Neighbors.hpp"
+#include "Domain/Structure/Topology.hpp"
 #include "Domain/Tags.hpp"
 #include "NumericalAlgorithms/Spectral/Basis.hpp"
 #include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
@@ -87,7 +88,8 @@ TensorType make_tensor(const tnsr::I<DataVector, Dim, Frame::ElementLogical>& x,
 template <size_t Dim>
 void test_p_refine() {
   const ElementId<Dim> element_id{0};
-  const Element<Dim> element{element_id, DirectionMap<Dim, Neighbors<Dim>>{}};
+  const Element<Dim> element{element_id, DirectionMap<Dim, Neighbors<Dim>>{},
+                             domain::topologies::hypercube<Dim>};
   const Mesh<Dim> old_mesh{4, Spectral::Basis::Legendre,
                            Spectral::Quadrature::GaussLobatto};
   std::array<size_t, Dim> new_extents{};
@@ -131,8 +133,8 @@ void test_h_refine() {
       tuples::TaggedTuple<domain::Tags::Element<Dim>, domain::Tags::Mesh<Dim>,
                           Tag0, Tag1<Dim>, Tag2<Dim>>;
   const ElementData parent_data{
-      Element<Dim>{parent_element_id, {}}, mesh,
-      make_tensor<typename Tag0::type>(parent_x, 1.0),
+      Element<Dim>{parent_element_id, {}, domain::topologies::hypercube<Dim>},
+      mesh, make_tensor<typename Tag0::type>(parent_x, 1.0),
       make_tensor<typename Tag1<Dim>::type>(parent_x, 4.0),
       make_tensor<typename Tag2<Dim>::type>(parent_x, 8.0)};
 
@@ -148,10 +150,11 @@ void test_h_refine() {
     }
     children_data.emplace(
         child_id,
-        ElementData{Element<Dim>{child_id, {}}, mesh,
-                    make_tensor<typename Tag0::type>(child_x, 1.0),
-                    make_tensor<typename Tag1<Dim>::type>(child_x, 4.0),
-                    make_tensor<typename Tag2<Dim>::type>(child_x, 8.0)});
+        ElementData{
+            Element<Dim>{child_id, {}, domain::topologies::hypercube<Dim>},
+            mesh, make_tensor<typename Tag0::type>(child_x, 1.0),
+            make_tensor<typename Tag1<Dim>::type>(child_x, 4.0),
+            make_tensor<typename Tag2<Dim>::type>(child_x, 8.0)});
   }
 
   for (const auto& [child_id, child_data] : children_data) {
@@ -214,18 +217,19 @@ void test_nonuniform_join() {
     }
     children_data.emplace(
         child_id,
-        ElementData{Element<Dim>{child_id, {}}, child_mesh,
-                    make_tensor<typename Tag0::type>(child_x, 1.0),
-                    make_tensor<typename Tag1<Dim>::type>(child_x, 4.0),
-                    make_tensor<typename Tag2<Dim>::type>(child_x, 8.0)});
+        ElementData{
+            Element<Dim>{child_id, {}, domain::topologies::hypercube<Dim>},
+            child_mesh, make_tensor<typename Tag0::type>(child_x, 1.0),
+            make_tensor<typename Tag1<Dim>::type>(child_x, 4.0),
+            make_tensor<typename Tag2<Dim>::type>(child_x, 8.0)});
   }
 
   const auto parent_mesh = amr::projectors::parent_mesh(children_meshes);
   const auto parent_x = logical_coordinates(parent_mesh);
 
   const ElementData parent_data{
-      Element<Dim>{parent_element_id, {}}, parent_mesh,
-      make_tensor<typename Tag0::type>(parent_x, 1.0),
+      Element<Dim>{parent_element_id, {}, domain::topologies::hypercube<Dim>},
+      parent_mesh, make_tensor<typename Tag0::type>(parent_x, 1.0),
       make_tensor<typename Tag1<Dim>::type>(parent_x, 4.0),
       make_tensor<typename Tag2<Dim>::type>(parent_x, 8.0)};
 

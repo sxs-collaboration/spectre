@@ -26,6 +26,7 @@
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Structure/Neighbors.hpp"
+#include "Domain/Structure/Topology.hpp"
 #include "Domain/Tags.hpp"
 #include "Domain/TagsTimeDependent.hpp"
 #include "Evolution/BoundaryCorrection.hpp"
@@ -100,7 +101,8 @@ void test_neighbor_packaged_data(const size_t num_dg_pts_per_dimension,
         Neighbors<Dim>{{ElementId<Dim>{i + 1, {}}},
                        OrientationMap<Dim>::create_aligned()};
   }
-  const Element<Dim> element{ElementId<Dim>{0, {}}, element_neighbors};
+  const Element<Dim> element{ElementId<Dim>{0, {}}, element_neighbors,
+                             domain::topologies::hypercube<Dim>};
 
   // generate random U on the dg mesh and project it to subcell mesh
   const Mesh<Dim> dg_mesh{num_dg_pts_per_dimension, Spectral::Basis::Legendre,

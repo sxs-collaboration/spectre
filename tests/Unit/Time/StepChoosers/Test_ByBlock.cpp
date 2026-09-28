@@ -11,6 +11,7 @@
 #include "DataStructures/DataBox/MetavariablesTag.hpp"
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/ElementId.hpp"
+#include "Domain/Structure/Topology.hpp"
 #include "Domain/Tags.hpp"
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
@@ -48,7 +49,9 @@ void test_by_block() {
 
   const double current_step = std::numeric_limits<double>::infinity();
   for (size_t block = 0; block < 3; ++block) {
-    const Element<volume_dim> element(ElementId<volume_dim>(block), {});
+    const Element<volume_dim> element(
+        ElementId<volume_dim>(block), {},
+        domain::topologies::hypercube<volume_dim>);
     auto box = db::create<
         db::AddSimpleTags<Parallel::Tags::MetavariablesImpl<Metavariables>,
                           domain::Tags::Element<volume_dim>>>(Metavariables{},

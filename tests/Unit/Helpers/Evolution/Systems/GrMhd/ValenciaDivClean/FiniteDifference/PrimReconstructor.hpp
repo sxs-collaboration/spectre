@@ -25,6 +25,7 @@
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Structure/Neighbors.hpp"
+#include "Domain/Structure/Topology.hpp"
 #include "Evolution/DgSubcell/GhostData.hpp"
 #include "Evolution/DgSubcell/SliceData.hpp"
 #include "Evolution/DiscontinuousGalerkin/Actions/NormalCovectorAndMagnitude.hpp"
@@ -129,7 +130,8 @@ void test_prim_reconstructor_impl(
     neighbors[gsl::at(Direction<3>::all_directions(), i)] = Neighbors<3>{
         {ElementId<3>{i + 1, {}}}, OrientationMap<3>::create_aligned()};
   }
-  const Element<3> element{ElementId<3>{0, {}}, neighbors};
+  const Element<3> element{ElementId<3>{0, {}}, neighbors,
+                           domain::topologies::hypercube<3>};
   const auto compute_solution = [](const auto& coords) {
     Variables<prim_tags_for_reconstruction> vars{get<0>(coords).size(), 0.0};
     for (size_t i = 0; i < 3; ++i) {

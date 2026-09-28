@@ -16,6 +16,7 @@
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Structure/Neighbors.hpp"
 #include "Domain/Structure/OrientationMap.hpp"
+#include "Domain/Structure/Topology.hpp"
 #include "Domain/Tags.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarTags.hpp"
 #include "Framework/ActionTesting.hpp"
@@ -189,7 +190,8 @@ void test(const Event& event, const Event& observe_event) {
   neighbors.emplace(
       Direction<1>::lower_xi(),
       Neighbors({ElementId<1>{2}}, OrientationMap<1>::create_aligned()));
-  const Element<1> element{element_id, neighbors};
+  const Element<1> element{element_id, neighbors,
+                           domain::topologies::hypercube<1>};
   const Mesh<1> mesh{std::array{3_st}, Spectral::Basis::Legendre,
                      Spectral::Quadrature::GaussLobatto};
   const amr::Policies policies{

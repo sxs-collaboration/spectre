@@ -23,6 +23,7 @@
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/ElementId.hpp"
+#include "Domain/Structure/Topology.hpp"
 #include "Evolution/DiscontinuousGalerkin/Limiters/Weno.hpp"
 #include "Evolution/DiscontinuousGalerkin/Limiters/WenoType.hpp"
 #include "Evolution/DiscontinuousGalerkin/NormalVectorTags.hpp"
@@ -704,7 +705,8 @@ void test_neuler_weno_flattener() {
   const auto mesh = Mesh<VolumeDim>(2, Spectral::Basis::Legendre,
                                     Spectral::Quadrature::GaussLobatto);
   // We use an element with no neighbors so the limiter does nothing
-  const auto element = Element<VolumeDim>{ElementId<VolumeDim>(0), {}};
+  const auto element = Element<VolumeDim>{
+      ElementId<VolumeDim>(0), {}, domain::topologies::hypercube<VolumeDim>};
   const auto element_size = make_array<VolumeDim>(0.6);
   // inv_jac = logical volume / inertial volume
   const Scalar<DataVector> det_inv_logical_to_inertial_jacobian{DataVector(

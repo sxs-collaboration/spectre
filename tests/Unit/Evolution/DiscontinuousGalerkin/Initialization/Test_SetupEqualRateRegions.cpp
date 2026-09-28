@@ -20,6 +20,7 @@
 #include "Domain/Structure/OrientationMap.hpp"
 #include "Domain/Structure/SegmentId.hpp"
 #include "Domain/Structure/Side.hpp"
+#include "Domain/Structure/Topology.hpp"
 #include "Domain/Tags.hpp"
 #include "Evolution/DiscontinuousGalerkin/EqualRateLts/EqualRateRegions.hpp"
 #include "Evolution/DiscontinuousGalerkin/EqualRateLts/EqualRateRegions.tpp"
@@ -157,7 +158,8 @@ void test() {
       }
 
       // NOLINTNEXTLINE(misc-const-correctness) - is moved
-      Element<Dim> element(element_id, std::move(initialize_neighbors));
+      Element<Dim> element(element_id, std::move(initialize_neighbors),
+                           domain::topologies::hypercube<Dim>);
 
       DirectionalIdMap<Dim, evolution::dg::MortarInfo<Dim>>
           initial_mortar_infos{};

@@ -21,6 +21,7 @@
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Structure/IsValidDgMesh.hpp"
 #include "Domain/Structure/Neighbors.hpp"
+#include "Domain/Structure/Topology.hpp"
 #include "Domain/Tags.hpp"
 #include "Domain/Tags/NeighborMesh.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
@@ -69,7 +70,8 @@ struct InitializeChild {
         tuples::get<::domain::Tags::Mesh<volume_dim>>(parent_items);
     auto neighbors = amr::neighbors_of_child(parent, parent_info,
                                              parent_neighbor_info, child_id);
-    Element<volume_dim> child(child_id, std::move(neighbors.first));
+    Element<volume_dim> child(child_id, std::move(neighbors.first),
+                              domain::topologies::hypercube<volume_dim>);
     Mesh<volume_dim> child_mesh =
         amr::projectors::mesh(parent_mesh, parent_info.flags);
     if (not domain::is_valid_dg_mesh(child_mesh, child)) {

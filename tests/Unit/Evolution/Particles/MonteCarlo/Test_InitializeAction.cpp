@@ -13,6 +13,7 @@
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/DirectionalIdMap.hpp"
 #include "Domain/Structure/ElementId.hpp"
+#include "Domain/Structure/Topology.hpp"
 #include "Domain/Tags.hpp"
 #include "Evolution/DgSubcell/ActiveGrid.hpp"
 #include "Evolution/DgSubcell/Mesh.hpp"
@@ -152,7 +153,8 @@ void test_initialize_monte_carlo() {
                  Direction<Dim>::upper_zeta()}};
   neighbors[Direction<Dim>::lower_eta()] =
       Neighbors<Dim>{{south_id}, orientation};
-  const Element<Dim> element{self_id, neighbors};
+  const Element<Dim> element{self_id, neighbors,
+                             domain::topologies::hypercube<Dim>};
 
   using evolved_vars_tags = tmpl::list<Var1>;
   Variables<evolved_vars_tags> evolved_vars{n_pts};

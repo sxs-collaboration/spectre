@@ -22,6 +22,7 @@
 #include "Domain/Structure/CreateInitialMesh.hpp"
 #include "Domain/Structure/DirectionalIdMap.hpp"
 #include "Domain/Structure/ElementId.hpp"
+#include "Domain/Structure/Topology.hpp"
 #include "Domain/Tags.hpp"
 #include "Domain/Tags/NeighborMesh.hpp"
 #include "Elliptic/DiscontinuousGalerkin/Tags.hpp"
@@ -122,7 +123,7 @@ struct InitializeElement : tt::ConformsTo<amr::protocols::Projector> {
         element_id, block.stationary_map().get_clone()};
     auto inertial_coords = element_map(logical_coords);
     // Only needed for element ID, so don't initialize neighbors
-    Element<1> element{element_id, {}};
+    Element<1> element{element_id, {}, ::domain::topologies::hypercube<1>};
     DirectionalIdMap<1, Mesh<1>> neighbor_meshes{};
     // Initialize data
     const size_t element_index = helpers_distributed::get_index(element_id);

@@ -10,6 +10,7 @@
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Structure/Neighbors.hpp"
+#include "Domain/Structure/Topology.hpp"
 #include "Domain/Tags.hpp"
 
 namespace domain {
@@ -122,17 +123,18 @@ SPECTRE_TEST_CASE("Unit.Domain.InterfaceHelpers", "[Unit][Domain]") {
       // [ X | ]-> xi
       {{0, {{{1, 0}}}},
        {{Direction<1>::upper_xi(),
-         {{{0, {{{1, 1}}}}}, OrientationMap<1>::create_aligned()}}}},
+         {{{0, {{{1, 1}}}}}, OrientationMap<1>::create_aligned()}}},
+       domain::topologies::hypercube<1>},
       {Direction<1>::upper_xi()}, {{Direction<1>::upper_xi(), 2.}},
       {{Direction<1>::upper_xi(), 5.}});
   test_interface_apply<1, Tags::InternalDirections<1>>(
       // Reference element has no internal directions:
       // [ X ]-> xi
-      {{0, {{{0, 0}}}}, {}}, {}, {}, {});
+      {{0, {{{0, 0}}}}, {}, domain::topologies::hypercube<1>}, {}, {}, {});
   test_interface_apply<1, Tags::BoundaryDirectionsInterior<1>>(
       // Reference element has two boundary directions:
       // [ X ]-> xi
-      {{0, {{{0, 0}}}}, {}},
+      {{0, {{{0, 0}}}}, {}, domain::topologies::hypercube<1>},
       {Direction<1>::lower_xi(), Direction<1>::upper_xi()},
       {{Direction<1>::lower_xi(), 2.}, {Direction<1>::upper_xi(), 3.}},
       {{Direction<1>::lower_xi(), 5.}, {Direction<1>::upper_xi(), 7.}});
@@ -144,7 +146,8 @@ SPECTRE_TEST_CASE("Unit.Domain.InterfaceHelpers", "[Unit][Domain]") {
       // +-+-+> xi
       {{0, {{{1, 0}, {0, 0}}}},
        {{Direction<2>::upper_xi(),
-         {{{0, {{{1, 1}, {0, 0}}}}}, OrientationMap<2>::create_aligned()}}}},
+         {{{0, {{{1, 1}, {0, 0}}}}}, OrientationMap<2>::create_aligned()}}},
+       domain::topologies::hypercube<2>},
       {Direction<2>::upper_xi()}, {{Direction<2>::upper_xi(), 2.}},
       {{Direction<2>::upper_xi(), 5.}});
 }

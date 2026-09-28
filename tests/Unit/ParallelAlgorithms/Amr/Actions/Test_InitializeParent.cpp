@@ -21,6 +21,7 @@
 #include "Domain/Structure/Neighbors.hpp"
 #include "Domain/Structure/OrientationMap.hpp"
 #include "Domain/Structure/SegmentId.hpp"
+#include "Domain/Structure/Topology.hpp"
 #include "Domain/Tags.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "Framework/MockRuntimeSystem.hpp"
@@ -164,7 +165,8 @@ void test() {
   child_1_neighbors.emplace(
       Direction<3>::upper_eta(),
       Neighbors<3>{std::unordered_set{child_3_id}, aligned});
-  Element<3> child_1{child_1_id, std::move(child_1_neighbors)};
+  Element<3> child_1{child_1_id, std::move(child_1_neighbors),
+                     domain::topologies::hypercube<3>};
   Mesh<3> child_1_mesh{std::array{3_st, 4_st, 3_st}, Spectral::Basis::Legendre,
                        Spectral::Quadrature::GaussLobatto};
   amr::Info<3> child_1_info{std::array{amr::Flag::Join, amr::Flag::Join,
@@ -184,7 +186,8 @@ void test() {
   child_2_neighbors.emplace(
       Direction<3>::upper_eta(),
       Neighbors<3>{std::unordered_set{child_3_id}, aligned});
-  Element<3> child_2{child_2_id, std::move(child_2_neighbors)};
+  Element<3> child_2{child_2_id, std::move(child_2_neighbors),
+                     domain::topologies::hypercube<3>};
   Mesh<3> child_2_mesh{std::array{4_st, 3_st, 4_st}, Spectral::Basis::Legendre,
                        Spectral::Quadrature::GaussLobatto};
   amr::Info<3> child_2_info{std::array{amr::Flag::Join, amr::Flag::Join,
@@ -204,7 +207,8 @@ void test() {
   child_3_neighbors.emplace(
       Direction<3>::upper_eta(),
       Neighbors<3>{std::unordered_set{neighbor_5_id}, b2_orientation});
-  Element<3> child_3{child_3_id, std::move(child_3_neighbors)};
+  Element<3> child_3{child_3_id, std::move(child_3_neighbors),
+                     domain::topologies::hypercube<3>};
   Mesh<3> child_3_mesh{std::array{4_st, 4_st, 3_st}, Spectral::Basis::Legendre,
                        Spectral::Quadrature::GaussLobatto};
   amr::Info<3> child_3_info{
@@ -305,7 +309,8 @@ void test() {
   expected_parent_neighbors.emplace(
       Direction<3>::upper_eta(),
       Neighbors<3>{std::unordered_set{neighbor_5_id}, b2_orientation});
-  Element<3> expected_parent{parent_id, std::move(expected_parent_neighbors)};
+  Element<3> expected_parent{parent_id, std::move(expected_parent_neighbors),
+                             domain::topologies::hypercube<3>};
 
   DirectionalIdMap<3, Mesh<3>> expected_parent_neighbor_mesh{};
   expected_parent_neighbor_mesh.emplace(
