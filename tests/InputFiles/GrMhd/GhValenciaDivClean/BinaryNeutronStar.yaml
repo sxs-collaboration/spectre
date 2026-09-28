@@ -578,6 +578,7 @@ InitialData:
     HydroVariables:
       RestMassDensity: RestMassDensity
       LowerSpatialFourVelocity: LowerSpatialFourVelocity
+      Temperature: 0.
       ElectronFraction: 0.15
       MagneticField: 0.
     DensityCutoff: *AtmosphereDensityCutoff
