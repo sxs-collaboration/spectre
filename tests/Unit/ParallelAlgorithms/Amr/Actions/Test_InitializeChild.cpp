@@ -23,6 +23,7 @@
 #include "Domain/Structure/Neighbors.hpp"
 #include "Domain/Structure/OrientationMap.hpp"
 #include "Domain/Structure/SegmentId.hpp"
+#include "Domain/Structure/Topology.hpp"
 #include "Domain/Tags.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "Framework/MockRuntimeSystem.hpp"
@@ -88,7 +89,8 @@ void test() {
   parent_neighbors.emplace(
       Direction<2>::upper_xi(),
       Neighbors<2>{std::unordered_set{parent_upper_neighbor_id}, aligned});
-  Element<2> parent{parent_id, std::move(parent_neighbors)};
+  Element<2> parent{parent_id, std::move(parent_neighbors),
+                    domain::topologies::hypercube<2>};
   Mesh<2> parent_mesh{3, Spectral::Basis::Legendre,
                       Spectral::Quadrature::GaussLobatto};
   const Mesh<2> expected_child_mesh{std::array{3_st, 4_st},
@@ -129,8 +131,8 @@ void test() {
       Neighbors<2>{std::unordered_set{expected_child_upper_neighbor_id_0,
                                       expected_child_upper_neighbor_id_1},
                    aligned});
-  const Element<2> expected_child{child_id,
-                                  std::move(expected_child_neighbors)};
+  const Element<2> expected_child{child_id, std::move(expected_child_neighbors),
+                                  domain::topologies::hypercube<2>};
   DirectionalIdMap<2, Mesh<2>> expected_child_neighbor_mesh{};
   expected_child_neighbor_mesh.emplace(
       DirectionalId<2>{Direction<2>::lower_xi(), sibling_id},

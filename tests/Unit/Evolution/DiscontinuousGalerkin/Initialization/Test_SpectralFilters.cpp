@@ -16,6 +16,7 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/ElementId.hpp"
+#include "Domain/Structure/Topology.hpp"
 #include "Domain/Tags.hpp"
 #include "Evolution/DiscontinuousGalerkin/Initialization/SpectralFilters.hpp"
 #include "Evolution/DiscontinuousGalerkin/Initialization/SpectralFilters.tpp"
@@ -61,7 +62,8 @@ auto make_box(FilterVec<Dim> filters, const size_t block_id,
       domain::Tags::Mesh<Dim>, Filters::Tags::SpectralFilter<Dim, TagList>>>(
       std::move(filters),
       Element<Dim>{ElementId<Dim>{block_id},
-                   typename Element<Dim>::Neighbors_t{}},
+                   typename Element<Dim>::Neighbors_t{},
+                   domain::topologies::hypercube<Dim>},
       Mesh<Dim>{extents, Spectral::Basis::Legendre,
                 Spectral::Quadrature::GaussLobatto},
       FilterPtr<Dim>{nullptr});

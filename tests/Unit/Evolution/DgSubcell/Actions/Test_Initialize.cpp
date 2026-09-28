@@ -27,6 +27,7 @@
 #include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/ElementId.hpp"
+#include "Domain/Structure/Topology.hpp"
 #include "Domain/Tags.hpp"
 #include "Evolution/DgSubcell/Actions/Initialize.hpp"
 #include "Evolution/DgSubcell/ActiveGrid.hpp"
@@ -299,7 +300,8 @@ void test(const bool always_use_subcell, const bool interior_element,
       ++id_count;
     }
   }
-  const Element<Dim> element{self_id, neighbors};
+  const Element<Dim> element{self_id, neighbors,
+                             domain::topologies::hypercube<Dim>};
   const auto logical_coords = logical_coordinates(dg_mesh);
   const auto make_element_map = [](const auto& element_id) {
     return ElementMap<Dim, Frame::Grid>{
@@ -342,7 +344,8 @@ void test(const bool always_use_subcell, const bool interior_element,
           &runner, ActionTesting::NodeId{0}, ActionTesting::LocalCoreId{0},
           neighbor_id,
           {neighbor_time, dg_mesh,
-           Element<Dim>{neighbor_id, neighbor_neighbors},
+           Element<Dim>{neighbor_id, neighbor_neighbors,
+                        domain::topologies::hypercube<Dim>},
            clone_unique_ptrs(functions_of_time), logical_coords,
            make_element_map(neighbor_id), grid_to_inertial_map->get_clone(),
            Variables<tmpl::list<Var1>>{subcell_mesh.number_of_grid_points()},
@@ -681,7 +684,8 @@ void test_cartoon() {
            std::optional<std::vector<std::string>>{}, TestCreator<3>{})}};
 
   const ElementId<3> self_id3{0};
-  const Element<3> isolated_element{self_id3, {}};
+  const Element<3> isolated_element{
+      self_id3, {}, domain::topologies::hypercube<3>};
   const auto logical_coords3 = logical_coordinates(cartoon_dg_mesh);
   const auto make_element_map3 = [](const auto& element_id) {
     return ElementMap<3, Frame::Grid>{

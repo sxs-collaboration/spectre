@@ -27,6 +27,7 @@
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Structure/Neighbors.hpp"
 #include "Domain/Structure/OrientationMap.hpp"
+#include "Domain/Structure/Topology.hpp"
 #include "Domain/Tags.hpp"
 #include "Evolution/DiscontinuousGalerkin/BoundaryEvolvedVariables.hpp"
 #include "Evolution/DiscontinuousGalerkin/Initialization/BoundaryEvolvedVariables.hpp"
@@ -173,7 +174,7 @@ auto make_element_and_bcs(const bool any_opts_in) {
   typename Element<Dim>::Neighbors_t neighbors{};
   neighbors[Direction<Dim>::upper_eta()] =
       Neighbors<Dim>{{neighbor_eta_id}, orientation};
-  Element<Dim> element{self_id, neighbors};
+  Element<Dim> element{self_id, neighbors, domain::topologies::hypercube<Dim>};
 
   std::vector<DirectionMap<
       Dim, std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>

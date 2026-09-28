@@ -25,6 +25,7 @@
 #include "Domain/FunctionsOfTime/RegisterDerivedWithCharm.hpp"
 #include "Domain/FunctionsOfTime/Tags.hpp"
 #include "Domain/Structure/ElementId.hpp"
+#include "Domain/Structure/Topology.hpp"
 #include "Domain/Tags.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "Framework/TestCreation.hpp"
@@ -279,7 +280,8 @@ SPECTRE_TEST_CASE("Unit.ApparentHorizonFinder.FindApparentHorizonEvent",
       Parallel::Tags::MetavariablesImpl<metavars>,
       typename MockHorizonMetavars::time_tag, ::Events::Tags::ObserverMesh<3>,
       domain::Tags::Element<3>, ::Tags::Variables<ah::source_vars<3>>>>(
-      metavars{}, observation_time, mesh, Element<3>{element_id, {}}, vars);
+      metavars{}, observation_time, mesh,
+      Element<3>{element_id, {}, domain::topologies::hypercube<3>}, vars);
 
   const metavars::event event{dependency};
   const metavars::event serialized_event = serialize_and_deserialize(event);

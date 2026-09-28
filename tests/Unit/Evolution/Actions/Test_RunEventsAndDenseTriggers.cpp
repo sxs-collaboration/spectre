@@ -33,6 +33,7 @@
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Structure/Neighbors.hpp"
+#include "Domain/Structure/Topology.hpp"
 #include "Domain/Tags.hpp"
 #include "Domain/Tags/NeighborMesh.hpp"
 #include "Evolution/Actions/RunEventsAndDenseTriggers.hpp"
@@ -473,7 +474,7 @@ void test(const bool time_runs_forward) {
               std::move(boundary_history),
               EventsAndDenseTriggers(std::move(events_and_dense_triggers)),
               typename domain::Tags::NeighborMesh<1>::type{},
-              Element<1>{ElementId<1>{0}, {}},
+              Element<1>{ElementId<1>{0}, {}, domain::topologies::hypercube<1>},
               get<tmpl::type_from<decltype(tags_v)>>(initial_extra_data)...);
         });
         ActionTesting::set_phase(runner, Parallel::Phase::Testing);
@@ -866,7 +867,8 @@ void test_p_refine() {
           make_not_null(&box))
           .next_trigger(box);
 
-  const Element<1> element{ElementId<1>{0}, DirectionMap<1, Neighbors<1>>{}};
+  const Element<1> element{ElementId<1>{0}, DirectionMap<1, Neighbors<1>>{},
+                           domain::topologies::hypercube<1>};
   const Mesh<1> mesh{2, Spectral::Basis::Legendre,
                      Spectral::Quadrature::GaussLobatto};
   db::mutate_apply<evolution::Actions::ProjectRunEventsAndDenseTriggers>(

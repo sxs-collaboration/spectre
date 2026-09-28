@@ -18,6 +18,7 @@
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Structure/Neighbors.hpp"
+#include "Domain/Structure/Topology.hpp"
 #include "Evolution/DgSubcell/CorrectPackagedData.hpp"
 #include "Evolution/DgSubcell/Mesh.hpp"
 #include "Evolution/DgSubcell/Projection.hpp"
@@ -58,7 +59,8 @@ void test() {
     neighbors[gsl::at(Direction<Dim>::all_directions(), i)] = Neighbors<Dim>{
         {ElementId<Dim>{i + 1, {}}}, OrientationMap<Dim>::create_aligned()};
   }
-  const Element<Dim> element{ElementId<Dim>{0, {}}, neighbors};
+  const Element<Dim> element{ElementId<Dim>{0, {}}, neighbors,
+                             domain::topologies::hypercube<Dim>};
   const TimeStepId time_step_id{true, 1, Time{Slab{1.1, 4.4}, {3, 10}}};
 
   CAPTURE(volume_dg_mesh);

@@ -13,6 +13,7 @@
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/DirectionMap.hpp"
 #include "Domain/Structure/Element.hpp"
+#include "Domain/Structure/Topology.hpp"
 #include "Domain/Tags.hpp"
 #include "Domain/Tags/FaceNormal.hpp"
 #include "Domain/Tags/Faces.hpp"
@@ -41,7 +42,8 @@ SPECTRE_TEST_CASE("Unit.Elliptic.BoundaryConditions.BoundaryFields",
          {Direction<Dim>::lower_eta(),
           {{ElementId<Dim>{1}}, OrientationMap<Dim>::create_aligned()}},
          {Direction<Dim>::upper_eta(),
-          {{ElementId<Dim>{1}}, OrientationMap<Dim>::create_aligned()}}}};
+          {{ElementId<Dim>{1}}, OrientationMap<Dim>::create_aligned()}}},
+        domain::topologies::hypercube<Dim>};
     tnsr::i<DataVector, Dim> face_normal{size_t{3}, 0.};
     get<0>(face_normal) = -1.;
     DirectionMap<Dim, tnsr::i<DataVector, Dim>> face_normals{

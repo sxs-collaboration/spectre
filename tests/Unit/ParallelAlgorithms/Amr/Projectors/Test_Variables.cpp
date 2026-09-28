@@ -20,6 +20,7 @@
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Structure/Neighbors.hpp"
 #include "Domain/Structure/Side.hpp"
+#include "Domain/Structure/Topology.hpp"
 #include "Domain/Tags.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/DataStructures/TestTags.hpp"
@@ -72,7 +73,8 @@ VariablesType make_vars(
 template <size_t Dim>
 void test_p_refine() {
   const ElementId<Dim> element_id{0};
-  const Element<Dim> element{element_id, DirectionMap<Dim, Neighbors<Dim>>{}};
+  const Element<Dim> element{element_id, DirectionMap<Dim, Neighbors<Dim>>{},
+                             domain::topologies::hypercube<Dim>};
   const Mesh<Dim> old_mesh{4, Spectral::Basis::Legendre,
                            Spectral::Quadrature::GaussLobatto};
   std::array<size_t, Dim> new_extents{};
@@ -103,15 +105,16 @@ template <size_t Dim>
 void test_h_refine() {
   const ElementId<Dim> parent_element_id{0};
   const Element<Dim> parent_element{parent_element_id,
-                                    DirectionMap<Dim, Neighbors<Dim>>{}};
+                                    DirectionMap<Dim, Neighbors<Dim>>{},
+                                    domain::topologies::hypercube<Dim>};
   const std::array children_element_ids{
       parent_element_id.id_of_child(0, Side::Lower),
       parent_element_id.id_of_child(0, Side::Upper)};
   const std::array children_elements{
-      Element<Dim>{children_element_ids[0],
-                   DirectionMap<Dim, Neighbors<Dim>>{}},
-      Element<Dim>{children_element_ids[1],
-                   DirectionMap<Dim, Neighbors<Dim>>{}}};
+      Element<Dim>{children_element_ids[0], DirectionMap<Dim, Neighbors<Dim>>{},
+                   domain::topologies::hypercube<Dim>},
+      Element<Dim>{children_element_ids[1], DirectionMap<Dim, Neighbors<Dim>>{},
+                   domain::topologies::hypercube<Dim>}};
   const Mesh<Dim> mesh{4, Spectral::Basis::Legendre,
                        Spectral::Quadrature::GaussLobatto};
   const auto parent_logical_coords = logical_coordinates(mesh);
@@ -179,15 +182,16 @@ template <size_t Dim>
 void test_nonuniform_join() {
   const ElementId<Dim> parent_element_id{0};
   const Element<Dim> parent_element{parent_element_id,
-                                    DirectionMap<Dim, Neighbors<Dim>>{}};
+                                    DirectionMap<Dim, Neighbors<Dim>>{},
+                                    domain::topologies::hypercube<Dim>};
   const std::array children_element_ids{
       parent_element_id.id_of_child(0, Side::Lower),
       parent_element_id.id_of_child(0, Side::Upper)};
   const std::array children_elements{
-      Element<Dim>{children_element_ids[0],
-                   DirectionMap<Dim, Neighbors<Dim>>{}},
-      Element<Dim>{children_element_ids[1],
-                   DirectionMap<Dim, Neighbors<Dim>>{}}};
+      Element<Dim>{children_element_ids[0], DirectionMap<Dim, Neighbors<Dim>>{},
+                   domain::topologies::hypercube<Dim>},
+      Element<Dim>{children_element_ids[1], DirectionMap<Dim, Neighbors<Dim>>{},
+                   domain::topologies::hypercube<Dim>}};
   std::vector<Mesh<Dim>> children_meshes{};
   {
     std::array<size_t, Dim> extents{};

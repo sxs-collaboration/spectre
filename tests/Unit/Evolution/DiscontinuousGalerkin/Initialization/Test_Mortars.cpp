@@ -30,6 +30,7 @@
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Structure/Neighbors.hpp"
 #include "Domain/Structure/SegmentId.hpp"
+#include "Domain/Structure/Topology.hpp"
 #include "Domain/Tags.hpp"
 #include "Domain/Tags/NeighborMesh.hpp"
 #include "Evolution/DiscontinuousGalerkin/InboxTags.hpp"
@@ -220,7 +221,8 @@ struct Test<1> {
         Neighbors<1>{{east_id}, OrientationMap<1>::create_aligned()};
     neighbor_meshes[interface_mortar_id] =
         Mesh<1>{initial_extents[0], Spectral::Basis::Legendre, quadrature};
-    const Element<1> element{element_id, neighbors};
+    const Element<1> element{element_id, neighbors,
+                             domain::topologies::hypercube<1>};
     const TimeStepId time_step_id{true, 3, Time{Slab{0.2, 3.4}, {3, 100}}};
     const TimeStepId next_time_step_id{true, 3, Time{Slab{0.2, 3.4}, {6, 100}}};
 
@@ -288,7 +290,8 @@ struct Test<2> {
     neighbor_meshes[interface_mortar_id_south] =
         Mesh<2>{initial_extents[0], Spectral::Basis::Legendre, quadrature};
 
-    const Element<2> element{element_id, neighbors};
+    const Element<2> element{element_id, neighbors,
+                             domain::topologies::hypercube<2>};
     const TimeStepId time_step_id{true, 3, Time{Slab{0.2, 3.4}, {3, 100}}};
     const TimeStepId next_time_step_id{true, 3, Time{Slab{0.2, 3.4}, {6, 100}}};
 
@@ -375,7 +378,8 @@ struct Test<3> {
     neighbor_meshes[interface_mortar_id_top] =
         Mesh<3>{initial_extents[0], Spectral::Basis::Legendre, quadrature};
 
-    const Element<3> element{element_id, neighbors};
+    const Element<3> element{element_id, neighbors,
+                             domain::topologies::hypercube<3>};
     const TimeStepId time_step_id{true, 3, Time{Slab{0.2, 3.4}, {3, 100}}};
     const TimeStepId next_time_step_id{true, 3, Time{Slab{0.2, 3.4}, {6, 100}}};
 
@@ -697,7 +701,7 @@ Element<1> make_element<1>() {
   DirectionMap<1, Neighbors<1>> neighbors{};
   neighbors[Direction<1>::upper_xi()] =
       Neighbors<1>{{neighbor_id}, OrientationMap<1>::create_aligned()};
-  return Element<1>{element_id, neighbors};
+  return Element<1>{element_id, neighbors, domain::topologies::hypercube<1>};
 }
 
 template <>
@@ -710,7 +714,7 @@ Element<2> make_element<2>() {
       Neighbors<2>{{east_id}, OrientationMap<2>::create_aligned()};
   neighbors[Direction<2>::lower_eta()] =
       Neighbors<2>{{south_id}, OrientationMap<2>::create_aligned()};
-  return Element<2>{element_id, neighbors};
+  return Element<2>{element_id, neighbors, domain::topologies::hypercube<2>};
 }
 
 template <>
@@ -730,7 +734,7 @@ Element<3> make_element<3>() {
       Neighbors<3>{{front_id}, OrientationMap<3>::create_aligned()};
   neighbors[Direction<3>::upper_zeta()] =
       Neighbors<3>{{top_id}, OrientationMap<3>::create_aligned()};
-  return Element<3>{element_id, neighbors};
+  return Element<3>{element_id, neighbors, domain::topologies::hypercube<3>};
 }
 
 template <size_t Dim>
@@ -1218,7 +1222,8 @@ void test_h_refinement(const bool local_time_stepping) {
          {mortar_id_b.direction(), Neighbors<2>({mortar_id_b.id()}, rotated)},
          {mortar_id_c.direction(), Neighbors<2>({mortar_id_c.id()}, aligned)},
          {mortar_id_d.direction(),
-          Neighbors<2>({mortar_id_d.id(), mortar_id_e.id()}, aligned)}});
+          Neighbors<2>({mortar_id_d.id(), mortar_id_e.id()}, aligned)}},
+        domain::topologies::hypercube<2>);
 
     get<domain::Tags::NeighborMesh<2>>(orig_single_items) = {
         {mortar_id_a, orig_mesh},
@@ -1293,7 +1298,8 @@ void test_h_refinement(const bool local_time_stepping) {
        {mortar_id_f.direction(), Neighbors<2>({mortar_id_f.id()}, rotated)},
        {mortar_id_g.direction(),
         Neighbors<2>({mortar_id_g.id(), mortar_id_h.id()}, aligned)},
-       {mortar_id_i.direction(), Neighbors<2>({mortar_id_i.id()}, aligned)}});
+       {mortar_id_i.direction(), Neighbors<2>({mortar_id_i.id()}, aligned)}},
+      domain::topologies::hypercube<2>);
 
   const auto& orig_neighbor_meshes =
       get<domain::Tags::NeighborMesh<2>>(orig_single_items);
@@ -1603,15 +1609,17 @@ void test_h_refinement(const bool local_time_stepping) {
             const gsl::not_null<Mesh<2>*> mesh,
             const gsl::not_null<::dg::MortarMap<2, Mesh<2>>*> neighbor_meshes) {
           *local_lts_mode = lts_mode;
-          *element = Element<2>(
-              id_nw, {{mortar_id_a.direction(),
-                       Neighbors<2>({mortar_id_a.id()}, rotated)},
-                      {mortar_id_f.direction(),
-                       Neighbors<2>({mortar_id_f.id()}, rotated)},
-                      {mortar_id_nw_ne.direction(),
-                       Neighbors<2>({mortar_id_nw_ne.id()}, aligned)},
-                      {mortar_id_nw_sw.direction(),
-                       Neighbors<2>({mortar_id_nw_sw.id()}, aligned)}});
+          *element =
+              Element<2>(id_nw,
+                         {{mortar_id_a.direction(),
+                           Neighbors<2>({mortar_id_a.id()}, rotated)},
+                          {mortar_id_f.direction(),
+                           Neighbors<2>({mortar_id_f.id()}, rotated)},
+                          {mortar_id_nw_ne.direction(),
+                           Neighbors<2>({mortar_id_nw_ne.id()}, aligned)},
+                          {mortar_id_nw_sw.direction(),
+                           Neighbors<2>({mortar_id_nw_sw.id()}, aligned)}},
+                         domain::topologies::hypercube<2>);
           *mesh = orig_mesh;
           *neighbor_meshes = {
               {mortar_id_a, refined_single_neighbor_meshes.at(mortar_id_a)},
@@ -1689,15 +1697,17 @@ void test_h_refinement(const bool local_time_stepping) {
             const gsl::not_null<Mesh<2>*> mesh,
             const gsl::not_null<::dg::MortarMap<2, Mesh<2>>*> neighbor_meshes) {
           *local_lts_mode = lts_mode;
-          *element = Element<2>(
-              id_ne, {{mortar_id_a.direction(),
-                       Neighbors<2>({mortar_id_a.id()}, rotated)},
-                      {mortar_id_ne_nw.direction(),
-                       Neighbors<2>({mortar_id_ne_nw.id()}, aligned)},
-                      {mortar_id_g.direction(),
-                       Neighbors<2>({mortar_id_g.id()}, aligned)},
-                      {mortar_id_ne_se.direction(),
-                       Neighbors<2>({mortar_id_ne_se.id()}, aligned)}});
+          *element =
+              Element<2>(id_ne,
+                         {{mortar_id_a.direction(),
+                           Neighbors<2>({mortar_id_a.id()}, rotated)},
+                          {mortar_id_ne_nw.direction(),
+                           Neighbors<2>({mortar_id_ne_nw.id()}, aligned)},
+                          {mortar_id_g.direction(),
+                           Neighbors<2>({mortar_id_g.id()}, aligned)},
+                          {mortar_id_ne_se.direction(),
+                           Neighbors<2>({mortar_id_ne_se.id()}, aligned)}},
+                         domain::topologies::hypercube<2>);
           *mesh = orig_mesh;
           *neighbor_meshes = {
               {mortar_id_a, refined_single_neighbor_meshes.at(mortar_id_a)},
@@ -1775,15 +1785,17 @@ void test_h_refinement(const bool local_time_stepping) {
             const gsl::not_null<Mesh<2>*> mesh,
             const gsl::not_null<::dg::MortarMap<2, Mesh<2>>*> neighbor_meshes) {
           *local_lts_mode = lts_mode;
-          *element = Element<2>(
-              id_sw, {{mortar_id_sw_nw.direction(),
-                       Neighbors<2>({mortar_id_sw_nw.id()}, aligned)},
-                      {mortar_id_f.direction(),
-                       Neighbors<2>({mortar_id_f.id()}, rotated)},
-                      {mortar_id_sw_se.direction(),
-                       Neighbors<2>({mortar_id_sw_se.id()}, aligned)},
-                      {mortar_id_i.direction(),
-                       Neighbors<2>({mortar_id_i.id()}, aligned)}});
+          *element =
+              Element<2>(id_sw,
+                         {{mortar_id_sw_nw.direction(),
+                           Neighbors<2>({mortar_id_sw_nw.id()}, aligned)},
+                          {mortar_id_f.direction(),
+                           Neighbors<2>({mortar_id_f.id()}, rotated)},
+                          {mortar_id_sw_se.direction(),
+                           Neighbors<2>({mortar_id_sw_se.id()}, aligned)},
+                          {mortar_id_i.direction(),
+                           Neighbors<2>({mortar_id_i.id()}, aligned)}},
+                         domain::topologies::hypercube<2>);
           *mesh = orig_mesh;
           *neighbor_meshes = {
               {mortar_id_sw_nw, orig_mesh},
@@ -1858,15 +1870,17 @@ void test_h_refinement(const bool local_time_stepping) {
             const gsl::not_null<Mesh<2>*> mesh,
             const gsl::not_null<::dg::MortarMap<2, Mesh<2>>*> neighbor_meshes) {
           *local_lts_mode = lts_mode;
-          *element = Element<2>(
-              id_se, {{mortar_id_se_ne.direction(),
-                       Neighbors<2>({mortar_id_se_ne.id()}, aligned)},
-                      {mortar_id_se_sw.direction(),
-                       Neighbors<2>({mortar_id_se_sw.id()}, aligned)},
-                      {mortar_id_g.direction(),
-                       Neighbors<2>({mortar_id_h.id()}, aligned)},
-                      {mortar_id_i.direction(),
-                       Neighbors<2>({mortar_id_i.id()}, aligned)}});
+          *element =
+              Element<2>(id_se,
+                         {{mortar_id_se_ne.direction(),
+                           Neighbors<2>({mortar_id_se_ne.id()}, aligned)},
+                          {mortar_id_se_sw.direction(),
+                           Neighbors<2>({mortar_id_se_sw.id()}, aligned)},
+                          {mortar_id_g.direction(),
+                           Neighbors<2>({mortar_id_h.id()}, aligned)},
+                          {mortar_id_i.direction(),
+                           Neighbors<2>({mortar_id_i.id()}, aligned)}},
+                         domain::topologies::hypercube<2>);
           *mesh = orig_mesh;
           *neighbor_meshes = {
               {mortar_id_se_ne, orig_mesh},
@@ -1982,7 +1996,8 @@ void test_h_refinement_mortar_sizes_local_impl(
   }
   const Element<3> old_element(
       self_id,
-      {{direction, Neighbors<3>(std::move(old_neighbors), orientation)}});
+      {{direction, Neighbors<3>(std::move(old_neighbors), orientation)}},
+      domain::topologies::hypercube<3>);
 
   // Post-refinement data
   std::unordered_set<ElementId<3>> neighbors{};
@@ -2007,7 +2022,8 @@ void test_h_refinement_mortar_sizes_local_impl(
   }
   // NOLINTNEXTLINE(misc-const-correctness) - false positive - object is moved
   Element<3> element(
-      self_id, {{direction, Neighbors<3>(std::move(neighbors), orientation)}});
+      self_id, {{direction, Neighbors<3>(std::move(neighbors), orientation)}},
+      domain::topologies::hypercube<3>);
 
   auto box = db::create<db::AddSimpleTags<
       domain::Tags::Domain<3>, ::Tags::LtsMode, Tags::MortarData<3>,
@@ -2107,7 +2123,8 @@ void test_h_refinement_mortar_sizes_remote_impl_split(
   }
   Element<3> parent_element(
       parent_id,
-      {{direction, Neighbors<3>(std::move(parent_neighbors), orientation)}});
+      {{direction, Neighbors<3>(std::move(parent_neighbors), orientation)}},
+      domain::topologies::hypercube<3>);
 
   const tuples::TaggedTuple<domain::Tags::Element<3>, ::Tags::TimeStepId,
                             mortar_data_history_tag>
@@ -2143,7 +2160,8 @@ void test_h_refinement_mortar_sizes_remote_impl_split(
   }
   // NOLINTNEXTLINE(misc-const-correctness) - false positive - object is moved
   Element<3> element(
-      self_id, {{direction, Neighbors<3>(std::move(neighbors), orientation)}});
+      self_id, {{direction, Neighbors<3>(std::move(neighbors), orientation)}},
+      domain::topologies::hypercube<3>);
 
   auto box = db::create<db::AddSimpleTags<
       domain::Tags::Domain<3>, ::Tags::LtsMode, Tags::MortarData<3>,
@@ -2243,7 +2261,8 @@ void test_h_refinement_mortar_sizes_remote_impl_join(
   }
   // NOLINTNEXTLINE(misc-const-correctness) - false positive - object is moved
   Element<3> element(
-      self_id, {{direction, Neighbors<3>(std::move(neighbors), orientation)}});
+      self_id, {{direction, Neighbors<3>(std::move(neighbors), orientation)}},
+      domain::topologies::hypercube<3>);
 
   auto box = db::create<db::AddSimpleTags<
       domain::Tags::Domain<3>, ::Tags::LtsMode, Tags::MortarData<3>,

@@ -20,6 +20,7 @@
 #include "DataStructures/VariablesTag.hpp"
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/ElementId.hpp"
+#include "Domain/Structure/Topology.hpp"
 #include "Domain/Tags.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "NumericalAlgorithms/LinearOperators/Filters/Filter.hpp"
@@ -203,8 +204,8 @@ void run_action(std::unique_ptr<Filter> filter_ptr, const double initial_value,
       {Vars(5, initial_value),
        Mesh<1>{5, Spectral::Basis::Legendre,
                Spectral::Quadrature::GaussLobatto},
-       Element<1>{ElementId<1>{0}, {}}, step_number,
-       std::unique_ptr<FilterBase>(std::move(filter_ptr)),
+       Element<1>{ElementId<1>{0}, {}, domain::topologies::hypercube<1>},
+       step_number, std::unique_ptr<FilterBase>(std::move(filter_ptr)),
        make_identity_inv_jac(), make_identity_jac()});
   ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Testing);
   ActionTesting::next_action<element_array>(make_not_null(&runner), 0);

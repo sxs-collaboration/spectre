@@ -22,6 +22,7 @@
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Structure/IsValidDgMesh.hpp"
 #include "Domain/Structure/Neighbors.hpp"
+#include "Domain/Structure/Topology.hpp"
 #include "Domain/Tags.hpp"
 #include "Domain/Tags/NeighborMesh.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
@@ -74,7 +75,8 @@ struct InitializeParent {
     }
     auto parent_neighbors = amr::neighbors_of_parent(
         parent_id, children_elements_and_neighbor_info);
-    Element<volume_dim> parent(parent_id, std::move(parent_neighbors.first));
+    Element<volume_dim> parent(parent_id, std::move(parent_neighbors.first),
+                               domain::topologies::hypercube<volume_dim>);
 
     std::vector<Mesh<volume_dim>> projected_children_meshes{};
     projected_children_meshes.reserve(children_items.size());

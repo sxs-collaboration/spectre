@@ -23,6 +23,7 @@
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Structure/Neighbors.hpp"
+#include "Domain/Structure/Topology.hpp"
 #include "Evolution/BoundaryCorrection.hpp"
 #include "Evolution/BoundaryCorrectionTags.hpp"
 #include "Evolution/DgSubcell/Mesh.hpp"
@@ -79,7 +80,8 @@ void test_subcell_timederivative() {
     neighbors[gsl::at(Direction<Dim>::all_directions(), i)] = Neighbors<Dim>{
         {ElementId<Dim>{i + 1, {}}}, OrientationMap<Dim>::create_aligned()};
   }
-  const Element<Dim> element{ElementId<Dim>{0, {}}, neighbors};
+  const Element<Dim> element{ElementId<Dim>{0, {}}, neighbors,
+                             domain::topologies::hypercube<Dim>};
 
   const size_t num_dg_pts_per_dimension = 5;
   const Mesh<Dim> dg_mesh{num_dg_pts_per_dimension, Spectral::Basis::Legendre,

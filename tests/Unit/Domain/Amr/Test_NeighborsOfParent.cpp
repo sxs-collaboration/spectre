@@ -24,6 +24,7 @@
 #include "Domain/Structure/Neighbors.hpp"
 #include "Domain/Structure/SegmentId.hpp"
 #include "Domain/Structure/Side.hpp"
+#include "Domain/Structure/Topology.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "NumericalAlgorithms/Spectral/Basis.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
@@ -53,7 +54,8 @@ void test_periodic_interval() {
   child_1_neighbors.emplace(
       Direction<1>::upper_xi(),
       Neighbors<1>{std::unordered_set{child_2_id}, aligned});
-  const Element<1> child_1{child_1_id, std::move(child_1_neighbors)};
+  const Element<1> child_1{child_1_id, std::move(child_1_neighbors),
+                           domain::topologies::hypercube<1>};
   const std::unordered_map<ElementId<1>, amr::Info<1>> child_1_neighbor_info{
       {child_2_id, {{{amr::Flag::Join}}, parent_mesh}}};
 
@@ -64,7 +66,8 @@ void test_periodic_interval() {
   child_2_neighbors.emplace(
       Direction<1>::upper_xi(),
       Neighbors<1>{std::unordered_set{child_1_id}, aligned});
-  const Element<1> child_2{child_2_id, std::move(child_2_neighbors)};
+  const Element<1> child_2{child_2_id, std::move(child_2_neighbors),
+                           domain::topologies::hypercube<1>};
   const std::unordered_map<ElementId<1>, amr::Info<1>> child_2_neighbor_info{
       {child_1_id, {{{amr::Flag::Join}}, parent_mesh}}};
 
@@ -119,7 +122,8 @@ void test_interval() {
   child_1_neighbors.emplace(
       Direction<1>::upper_xi(),
       Neighbors<1>{std::unordered_set{child_2_id}, aligned});
-  const Element<1> child_1{child_1_id, std::move(child_1_neighbors)};
+  const Element<1> child_1{child_1_id, std::move(child_1_neighbors),
+                           domain::topologies::hypercube<1>};
   const std::unordered_map<ElementId<1>, amr::Info<1>> child_1_neighbor_info{
       {lower_neighbor_id, {{{amr::Flag::DoNothing}}, lower_neighbor_mesh}},
       {child_2_id, {{{amr::Flag::Join}}, parent_mesh}}};
@@ -131,7 +135,8 @@ void test_interval() {
   child_2_neighbors.emplace(
       Direction<1>::upper_xi(),
       Neighbors<1>{std::unordered_set{upper_neighbor_id}, flipped});
-  const Element<1> child_2{child_2_id, std::move(child_2_neighbors)};
+  const Element<1> child_2{child_2_id, std::move(child_2_neighbors),
+                           domain::topologies::hypercube<1>};
   const std::unordered_map<ElementId<1>, amr::Info<1>> child_2_neighbor_info{
       {child_1_id, {{{amr::Flag::Join}}, parent_mesh}},
       {upper_neighbor_id, {{{amr::Flag::Split}}, upper_neighbor_mesh}}};
@@ -198,7 +203,8 @@ void test_rectangle() {
   child_1_neighbors.emplace(
       Direction<2>::upper_eta(),
       Neighbors<2>{std::unordered_set{child_3_id}, aligned});
-  const Element<2> child_1{child_1_id, std::move(child_1_neighbors)};
+  const Element<2> child_1{child_1_id, std::move(child_1_neighbors),
+                           domain::topologies::hypercube<2>};
   const std::unordered_map<ElementId<2>, amr::Info<2>> child_1_neighbor_info{
       {neighbor_1_id, amr::Info<2>{neighbor_1_flags, mesh}},
       {child_2_id, amr::Info<2>{join_join, mesh}},
@@ -217,7 +223,8 @@ void test_rectangle() {
   child_2_neighbors.emplace(
       Direction<2>::upper_eta(),
       Neighbors<2>{std::unordered_set{child_4_id}, aligned});
-  const Element<2> child_2{child_2_id, std::move(child_2_neighbors)};
+  const Element<2> child_2{child_2_id, std::move(child_2_neighbors),
+                           domain::topologies::hypercube<2>};
   const std::unordered_map<ElementId<2>, amr::Info<2>> child_2_neighbor_info{
       {child_1_id, amr::Info<2>{join_join, mesh}},
       {child_4_id, amr::Info<2>{join_join, mesh}},
@@ -236,7 +243,8 @@ void test_rectangle() {
   child_3_neighbors.emplace(
       Direction<2>::upper_eta(),
       Neighbors<2>{std::unordered_set{child_1_id}, aligned});
-  const Element<2> child_3{child_3_id, std::move(child_3_neighbors)};
+  const Element<2> child_3{child_3_id, std::move(child_3_neighbors),
+                           domain::topologies::hypercube<2>};
   const std::unordered_map<ElementId<2>, amr::Info<2>> child_3_neighbor_info{
       {neighbor_1_id, amr::Info<2>{neighbor_1_flags, mesh}},
       {child_1_id, amr::Info<2>{join_join, mesh}},
@@ -255,7 +263,8 @@ void test_rectangle() {
   child_4_neighbors.emplace(
       Direction<2>::upper_eta(),
       Neighbors<2>{std::unordered_set{child_2_id}, aligned});
-  const Element<2> child_4{child_4_id, std::move(child_4_neighbors)};
+  const Element<2> child_4{child_4_id, std::move(child_4_neighbors),
+                           domain::topologies::hypercube<2>};
   const std::unordered_map<ElementId<2>, amr::Info<2>> child_4_neighbor_info{
       {child_2_id, amr::Info<2>{join_join, mesh}},
       {child_3_id, amr::Info<2>{join_join, mesh}},

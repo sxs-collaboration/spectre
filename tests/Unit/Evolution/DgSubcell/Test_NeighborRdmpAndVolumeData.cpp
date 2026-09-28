@@ -23,6 +23,7 @@
 #include "Domain/Structure/Neighbors.hpp"
 #include "Domain/Structure/OrientationMap.hpp"
 #include "Domain/Structure/OrientationMapHelpers.hpp"
+#include "Domain/Structure/Topology.hpp"
 #include "Evolution/DgSubcell/GhostData.hpp"
 #include "Evolution/DgSubcell/Matrices.hpp"
 #include "Evolution/DgSubcell/Mesh.hpp"
@@ -67,7 +68,8 @@ void test_ghost_data_matches_projected_volume(const Mesh<3>& neighbor_dg_mesh,
   neighbors.insert(std::pair{
       direction, Neighbors<Dim>{{neighbor_id.id()},
                                 OrientationMap<Dim>::create_aligned()}});
-  const Element<Dim> element{ElementId<Dim>{0}, neighbors};
+  const Element<Dim> element{ElementId<Dim>{0}, neighbors,
+                             domain::topologies::hypercube<Dim>};
 
   DataVector received_dg_data{
       (number_of_components * neighbor_dg_mesh.number_of_grid_points()) +
@@ -237,7 +239,8 @@ void test() {
                               2 * number_of_rdmp_vars};
   alg::iota(received_dg_data, *std::prev(received_fd_data.end()) + 1.0);
 
-  const Element<Dim> element{ElementId<Dim>{0}, neighbors};
+  const Element<Dim> element{ElementId<Dim>{0}, neighbors,
+                             domain::topologies::hypercube<Dim>};
 
   DataVector expected_neighbor_data_from_upper_xi{received_fd_data.size() -
                                                   2 * number_of_rdmp_vars};

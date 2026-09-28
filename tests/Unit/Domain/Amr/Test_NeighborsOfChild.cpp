@@ -23,6 +23,7 @@
 #include "Domain/Structure/Neighbors.hpp"
 #include "Domain/Structure/SegmentId.hpp"
 #include "Domain/Structure/Side.hpp"
+#include "Domain/Structure/Topology.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/Domain/Amr/NeighborFlagHelpers.hpp"
 #include "Helpers/Domain/Structure/NeighborHelpers.hpp"
@@ -87,7 +88,8 @@ std::vector<Element<Dim>> valid_elements(
     typename Element<Dim>::Neighbors_t neighbors{};
     neighbors.emplace(Direction<Dim>::lower_xi(), lower_xi_neighbors);
     neighbors.emplace(Direction<Dim>::upper_xi(), upper_xi_neighbors);
-    result.emplace_back(element_id, std::move(neighbors));
+    result.emplace_back(element_id, std::move(neighbors),
+                        domain::topologies::hypercube<Dim>);
   }
   return result;
 }

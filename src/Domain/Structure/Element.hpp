@@ -39,11 +39,9 @@ class Element {
   /// \param id a unique identifier for the Element.
   /// \param neighbors info about the Elements that share an interface
   /// with this Element.
-  /// \param topologies domain::Topology in each dimension (default value is
-  /// domain::Topology::I1)
+  /// \param topologies domain::Topology in each dimension
   Element(ElementId<VolumeDim> id, Neighbors_t neighbors,
-          std::array<domain::Topology, VolumeDim> topologies =
-              make_array<VolumeDim>(domain::Topology::I1));
+          std::array<domain::Topology, VolumeDim> topologies);
 
   /// Default needed for serialization
   Element() = default;

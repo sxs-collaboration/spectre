@@ -18,6 +18,7 @@
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Structure/Neighbors.hpp"
+#include "Domain/Structure/Topology.hpp"
 #include "Evolution/DiscontinuousGalerkin/Initialization/ProjectSpectralFilters.hpp"
 #include "NumericalAlgorithms/LinearOperators/Filters/Filter.hpp"
 #include "NumericalAlgorithms/LinearOperators/Filters/Hypercube.hpp"
@@ -55,7 +56,8 @@ std::unique_ptr<Filters::Filter<Dim, TagList>> make_hypercube() {
 
 void test_p_refinement() {
   const ElementId<Dim> element_id{0};
-  const Element<Dim> element{element_id, DirectionMap<Dim, Neighbors<Dim>>{}};
+  const Element<Dim> element{element_id, DirectionMap<Dim, Neighbors<Dim>>{},
+                             domain::topologies::hypercube<Dim>};
   const Mesh<Dim> mesh{2, Spectral::Basis::Legendre,
                        Spectral::Quadrature::GaussLobatto};
   auto box = db::create<db::AddSimpleTags<FilterTag>>(make_none());

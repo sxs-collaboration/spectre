@@ -28,6 +28,7 @@
 #include "Domain/Creators/Rectilinear.hpp"
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/ElementId.hpp"
+#include "Domain/Structure/Topology.hpp"
 #include "Domain/Tags.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "Framework/CheckWithRandomValues.hpp"
@@ -115,7 +116,8 @@ void test_observe(
       domain::Tags::Coordinates<volume_dim, Frame::Inertial>;
 
   const ElementId<volume_dim> element_id(0);
-  const Element<volume_dim> element(element_id, {});
+  const Element<volume_dim> element(element_id, {},
+                                    domain::topologies::hypercube<volume_dim>);
   // NOTE: The coordinate map is not actually what is used to compute the
   // coordinates.
   const domain::creators::Rectilinear<volume_dim> rectilinear{

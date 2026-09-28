@@ -15,6 +15,7 @@
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "DataStructures/Variables.hpp"
 #include "DataStructures/VariablesTag.hpp"
+#include "Domain/Structure/Topology.hpp"
 #include "Domain/Tags.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "Framework/TestCreation.hpp"
@@ -106,8 +107,9 @@ void run_event(
   auto databox = db::create<db::AddSimpleTags<
       domain::Tags::Element<2>, domain::Tags::Coordinates<2, Frame::Inertial>,
       TestTags::ScalarVar, TestTags::OptionalScalar>>(
-      Element<2>{ElementId<2>{0}, {}}, std::move(coordinates),
-      std::move(scalar_var), std::move(optional_scalar));
+      Element<2>{ElementId<2>{0}, {}, domain::topologies::hypercube<2>},
+      std::move(coordinates), std::move(scalar_var),
+      std::move(optional_scalar));
 
   auto obs_box = make_observation_box<tmpl::filter<
       TooBig::compute_tags_for_observation_box, db::is_compute_tag<tmpl::_1>>>(

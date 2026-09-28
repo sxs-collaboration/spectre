@@ -26,6 +26,7 @@
 #include "Domain/Creators/Tags/InitialExtents.hpp"
 #include "Domain/Creators/Tags/InitialRefinementLevels.hpp"
 #include "Domain/Structure/InitialElementIds.hpp"
+#include "Domain/Structure/Topology.hpp"
 #include "Domain/Tags.hpp"
 #include "Evolution/BoundaryCorrection.hpp"
 #include "Evolution/DgSubcell/Tags/TciStatus.hpp"
@@ -642,7 +643,8 @@ void test_impl(const Spectral::Quadrature quadrature,
   order_to_send_neighbor_data_in.push_back(
       DirectionalId<Dim>{Direction<Dim>::upper_xi(), east_id});
 
-  const Element<Dim> element{self_id, neighbors};
+  const Element<Dim> element{self_id, neighbors,
+                             domain::topologies::hypercube<Dim>};
 
   std::vector<Block<Dim>> blocks{Dim == 1 ? 1 : 2};
   if constexpr (Dim == 1) {
@@ -1436,7 +1438,8 @@ void test_receive_order() {
       Neighbors<1>{{west_id}, OrientationMap<1>::create_aligned()};
   neighbors[Direction<1>::upper_xi()] =
       Neighbors<1>{{east_id}, OrientationMap<1>::create_aligned()};
-  const Element<1> element{self_id, std::move(neighbors)};
+  const Element<1> element{self_id, std::move(neighbors),
+                           domain::topologies::hypercube<1>};
 
   const DirectionalId west_mortar{Direction<1>::lower_xi(), west_id};
   const DirectionalId east_mortar{Direction<1>::upper_xi(), east_id};
@@ -1899,7 +1902,8 @@ void run_boundary_filter_test_1d_gts(
   DirectionMap<Dim, Neighbors<Dim>> neighbors{};
   neighbors[Direction<Dim>::upper_xi()] =
       Neighbors<Dim>{{east_id}, OrientationMap<Dim>::create_aligned()};
-  const Element<Dim> element{self_id, std::move(neighbors)};
+  const Element<Dim> element{self_id, std::move(neighbors),
+                             domain::topologies::hypercube<Dim>};
 
   std::vector<Block<Dim>> blocks{1};
   blocks[0] = Block<Dim>(nullptr, 0, {});

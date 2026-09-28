@@ -16,6 +16,7 @@
 #include "Domain/FunctionsOfTime/SettleToConstantQuaternion.hpp"
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/ElementId.hpp"
+#include "Domain/Structure/Topology.hpp"
 #include "Domain/Tags.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "Framework/MockRuntimeSystemFreeFunctions.hpp"
@@ -102,11 +103,13 @@ void test_action() {
   ActionTesting::emplace_array_component_and_initialize<component>(
       make_not_null(&runner), ActionTesting::NodeId{0},
       ActionTesting::LocalCoreId{0}, element_id_zero,
-      {::Element<3>{element_id_zero, {}}, time_step_id, time});
+      {::Element<3>{element_id_zero, {}, domain::topologies::hypercube<3>},
+       time_step_id, time});
   ActionTesting::emplace_array_component_and_initialize<component>(
       make_not_null(&runner), ActionTesting::NodeId{0},
       ActionTesting::LocalCoreId{0}, element_id_nonzero,
-      {::Element<3>{element_id_nonzero, {}}, time_step_id, time});
+      {::Element<3>{element_id_nonzero, {}, domain::topologies::hypercube<3>},
+       time_step_id, time});
 
   ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Testing);
 
