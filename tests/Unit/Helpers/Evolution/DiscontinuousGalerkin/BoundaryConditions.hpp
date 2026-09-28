@@ -23,6 +23,7 @@
 #include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
+#include "DataStructures/VariablesTag.hpp"
 #include "Domain/BoundaryConditions/BoundaryCondition.hpp"
 #include "Domain/BoundaryConditions/Periodic.hpp"
 #include "Domain/Tags.hpp"
@@ -73,6 +74,15 @@ struct PythonFunctionName {
 template <typename BoundaryCorrection = NoSuchType>
 struct PythonFunctionForErrorMessage {
   using boundary_correction = BoundaryCorrection;
+  using type = std::string;
+};
+
+/// The name of the python function that returns the error message of
+/// `boundary_field_time_derivatives`.
+///
+/// Must be given for a boundary condition that evolves boundary variables. The
+/// python function must return `None` if there shouldn't be an error message.
+struct PythonFunctionForBoundaryFieldDtErrorMessage {
   using type = std::string;
 };
 }  // namespace Tags
@@ -172,7 +182,8 @@ void apply_boundary_condition_impl(
 template <typename BoundaryConditionHelper, typename AllTagsOnExteriorFaceList,
           typename BoundaryCondition, typename AllTagsOnFaceList,
           typename... BoundaryCorrectionPackagedDataInputTags,
-          typename... TagsFromFace, typename... VolumeArgs, size_t Dim>
+          typename... BoundaryFieldTags, typename... TagsFromFace,
+          typename... VolumeArgs, size_t Dim>
 void apply_boundary_condition_dg_ghost_impl(
     BoundaryConditionHelper& boundary_condition_helper,
     const gsl::not_null<Variables<AllTagsOnExteriorFaceList>*>
@@ -181,15 +192,17 @@ void apply_boundary_condition_dg_ghost_impl(
     const Variables<AllTagsOnFaceList>& fields_on_interior_face,
     const std::optional<tnsr::I<DataVector, Dim>>& face_mesh_velocity,
     const tnsr::i<DataVector, Dim, Frame::Inertial>& interior_normal_covector,
+    const Variables<tmpl::list<BoundaryFieldTags...>>& boundary_field_values,
     tmpl::list<BoundaryCorrectionPackagedDataInputTags...> /*meta*/,
     tmpl::list<TagsFromFace...> /*meta*/, const VolumeArgs&... volume_args) {
   const std::optional<std::string> error_message = boundary_condition.dg_ghost(
       get<BoundaryCorrectionPackagedDataInputTags>(fields_on_exterior_face)...,
       face_mesh_velocity, interior_normal_covector,
+      get<BoundaryFieldTags>(boundary_field_values)...,
       get<TagsFromFace>(fields_on_interior_face)..., volume_args...);
-  boundary_condition_helper(error_message,
-                            get<TagsFromFace>(fields_on_interior_face)...,
-                            volume_args...);
+  boundary_condition_helper(
+      error_message, get<BoundaryFieldTags>(boundary_field_values)...,
+      get<TagsFromFace>(fields_on_interior_face)..., volume_args...);
 }
 
 template <typename System, typename ConversionClassList,
@@ -277,12 +290,25 @@ void test_boundary_condition_with_python_impl(
       bcondition_interior_temp_tags, bcondition_interior_dt_evolved_vars_tags,
       bcondition_interior_deriv_evolved_vars_tags>>;
 
+  constexpr bool evolves_boundary_variables =
+      ::evolution::dg::evolves_boundary_variables_v<BoundaryCondition>;
+  using boundary_field_tags = typename tmpl::conditional_t<
+      evolves_boundary_variables,
+      ::evolution::dg::boundary_variables_tag<System>,
+      ::Tags::Variables<tmpl::list<>>>::tags_list;
+  // The interior arguments of `boundary_field_time_derivatives` can be
+  // different from those of `dg_ghost`.
+  using bftd_interior_tags =
+      ::evolution::dg::boundary_field_time_derivatives_interior_tags<
+          BoundaryCondition>;
+
   std::uniform_real_distribution<> dist(-1., 1.);
 
   // Fill all fields with random values in [-1,1), then, for each tag with a
   // specified range, overwrite with new random values in [min,max)
   Variables<tmpl::remove_duplicates<
-      tmpl::append<bcondition_interior_tags, inverse_spatial_metric_list>>>
+      tmpl::append<bcondition_interior_tags, inverse_spatial_metric_list,
+                   bftd_interior_tags>>>
       interior_face_fields{number_of_points_on_face};
   fill_with_random_values(make_not_null(&interior_face_fields), generator,
                           make_not_null(&dist));
@@ -327,6 +353,13 @@ void test_boundary_condition_with_python_impl(
             generator, make_not_null(&local_dist), number_of_points_on_face);
   }
 
+  // Random current values of the boundary-evolved variables, passed to
+  // `dg_ghost` and `boundary_field_time_derivatives`.
+  Variables<boundary_field_tags> boundary_field_values{
+      number_of_points_on_face};
+  fill_with_random_values(make_not_null(&boundary_field_values), generator,
+                          make_not_null(&dist));
+
   if constexpr (BoundaryCondition::bc_type ==
                 ::evolution::BoundaryConditions::Type::
                     DemandOutgoingCharSpeeds) {
@@ -352,7 +385,7 @@ void test_boundary_condition_with_python_impl(
           CAPTURE(python_error_message.value_or(""));
           CAPTURE(error_msg.value_or(""));
           REQUIRE(python_error_message.has_value() == error_msg.has_value());
-          if (python_error_message.has_value() and error_msg.has_value()) {
+          if (python_error_message.has_value()) {
             std::smatch matcher{};
             CHECK(std::regex_search(*error_msg, matcher,
                                     std::regex{*python_error_message}));
@@ -391,7 +424,7 @@ void test_boundary_condition_with_python_impl(
       CAPTURE(python_error_message.value_or(""));
       CAPTURE(error_msg.value_or(""));
       REQUIRE(python_error_message.has_value() == error_msg.has_value());
-      if (python_error_message.has_value() and error_msg.has_value()) {
+      if (python_error_message.has_value()) {
         std::smatch matcher{};
         CHECK(std::regex_search(*error_msg, matcher,
                                 std::regex{*python_error_message}));
@@ -430,6 +463,84 @@ void test_boundary_condition_with_python_impl(
         db::get<BoundaryConditionVolumeTags>(box_of_volume_data)...);
   }
 
+  if constexpr (evolves_boundary_variables) {
+    using dt_boundary_field_tags =
+        db::wrap_tags_in<::Tags::dt, boundary_field_tags>;
+    Variables<dt_boundary_field_tags> dt_boundary_field_values{
+        number_of_points_on_face};
+    auto apply_bc = [&boundary_condition, &boundary_field_values,
+                     &box_of_volume_data, &dt_boundary_field_values, epsilon,
+                     &face_mesh_velocity, &interior_normal_covector,
+                     &python_boundary_condition_functions,
+                     &python_module](const auto&... face_and_volume_args) {
+      (void)box_of_volume_data;
+      tmpl::as_pack<boundary_field_tags>([&]<typename... BoundaryFieldTags>(
+                                             tmpl::type_<BoundaryFieldTags>...
+                                             /*meta*/) {
+        const std::optional<std::string> error_msg =
+            boundary_condition.boundary_field_time_derivatives(
+                make_not_null(&get<::Tags::dt<BoundaryFieldTags>>(
+                    dt_boundary_field_values))...,
+                face_mesh_velocity, interior_normal_covector,
+                get<BoundaryFieldTags>(boundary_field_values)...,
+                face_and_volume_args...);
+
+        const std::string& python_error_msg_function =
+            tuples::get<Tags::PythonFunctionForBoundaryFieldDtErrorMessage>(
+                python_boundary_condition_functions);
+        const auto python_error_message =
+            call_for_error_message<ConversionClassList>(
+                python_module, python_error_msg_function, face_mesh_velocity,
+                interior_normal_covector,
+                get<BoundaryFieldTags>(boundary_field_values)...,
+                face_and_volume_args...,
+                db::get<ExtraTagsForPythonFromDataBox>(box_of_volume_data)...);
+        CAPTURE(python_error_msg_function);
+        CAPTURE(python_error_message.value_or(""));
+        CAPTURE(error_msg.value_or(""));
+        REQUIRE(python_error_message.has_value() == error_msg.has_value());
+        if (python_error_message.has_value()) {
+          std::smatch matcher{};
+          CHECK(std::regex_search(*error_msg, matcher,
+                                  std::regex{*python_error_message}));
+          return;
+        }
+
+        // Check that the values were set correctly
+        tmpl::for_each<dt_boundary_field_tags>(
+            [&]<typename DtVarTag>(tmpl::type_<DtVarTag>
+                                   /*meta*/) {
+              const std::string& python_tag_function =
+                  get_python_tag_function<DtVarTag, NoSuchType>(
+                      python_boundary_condition_functions);
+              CAPTURE(python_tag_function);
+              CAPTURE(pretty_type::short_name<DtVarTag>());
+              typename DtVarTag::type python_result{};
+              try {
+                python_result =
+                    pypp::call<typename DtVarTag::type, ConversionClassList>(
+                        python_module, python_tag_function, face_mesh_velocity,
+                        interior_normal_covector,
+                        get<BoundaryFieldTags>(boundary_field_values)...,
+                        face_and_volume_args...,
+                        db::get<ExtraTagsForPythonFromDataBox>(
+                            box_of_volume_data)...);
+              } catch (const std::exception& e) {
+                INFO("Failed python call with '" << e.what() << "'");
+                // Use REQUIRE(false) to print all the CAPTURE variables
+                REQUIRE(false);
+              }
+              CHECK_ITERABLE_CUSTOM_APPROX(
+                  get<DtVarTag>(dt_boundary_field_values), python_result,
+                  Approx::custom().epsilon(epsilon).scale(1.0));
+            });
+      });
+    };
+    apply_boundary_condition_impl(
+        apply_bc, interior_face_fields, bftd_interior_tags{},
+        db::get<BoundaryConditionVolumeTags>(box_of_volume_data)...);
+  }
+
   if constexpr (uses_ghost) {
     using fluxes_tags =
         db::wrap_tags_in<::Tags::Flux, flux_variables,
@@ -454,7 +565,7 @@ void test_boundary_condition_with_python_impl(
                      &python_boundary_condition_functions,
                      &python_module]<typename... Ts>(
                         const std::optional<std::string>& error_msg,
-                        const Ts&... interior_face_and_volume_args) {
+                        const Ts&... face_and_volume_args) {
       (void)box_of_volume_data;
       const std::string& python_error_msg_function =
           get_python_error_message_function<BoundaryCorrection>(
@@ -462,18 +573,16 @@ void test_boundary_condition_with_python_impl(
       const auto python_error_message =
           call_for_error_message<ConversionClassList>(
               python_module, python_error_msg_function, face_mesh_velocity,
-              interior_normal_covector, interior_face_and_volume_args...,
+              interior_normal_covector, face_and_volume_args...,
               db::get<ExtraTagsForPythonFromDataBox>(box_of_volume_data)...);
       CAPTURE(python_error_msg_function);
       CAPTURE(python_error_message.value_or(""));
       CAPTURE(error_msg.value_or(""));
       REQUIRE(python_error_message.has_value() == error_msg.has_value());
-      if (python_error_message.has_value() and error_msg.has_value()) {
+      if (python_error_message.has_value()) {
         std::smatch matcher{};
         CHECK(std::regex_search(*error_msg, matcher,
                                 std::regex{*python_error_message}));
-      }
-      if (python_error_message.has_value()) {
         return;
       }
 
@@ -493,7 +602,7 @@ void test_boundary_condition_with_python_impl(
               python_result = pypp::call<typename BoundaryCorrectionTag::type,
                                          ConversionClassList>(
                   python_module, python_tag_function, face_mesh_velocity,
-                  interior_normal_covector, interior_face_and_volume_args...,
+                  interior_normal_covector, face_and_volume_args...,
                   db::get<ExtraTagsForPythonFromDataBox>(
                       box_of_volume_data)...);
             } catch (const std::exception& e) {
@@ -512,6 +621,7 @@ void test_boundary_condition_with_python_impl(
     apply_boundary_condition_dg_ghost_impl(
         apply_bc, make_not_null(&exterior_face_fields), boundary_condition,
         interior_face_fields, face_mesh_velocity, interior_normal_covector,
+        boundary_field_values,
         tmpl::append<tmpl::list<BoundaryCorrectionPackagedDataInputTags...>,
                      inverse_spatial_metric_list>{},
         bcondition_interior_tags{},
@@ -570,6 +680,13 @@ using get_boundary_conditions = typename get_boundary_conditions_impl<T>::type;
  *   give the name of the python function for each return argument. The tags are
  *   the input to the `package_data` function for Ghost boundary conditions, and
  *   `::Tags::dt<evolved_var_tag>` for time derivative boundary conditions.
+ * - For a boundary condition that evolves boundary variables, random
+ *   boundary-evolved values are passed to `dg_ghost` (and its python functions)
+ *   right after the normal covector, and `boundary_field_time_derivatives` is
+ *   tested too. `Tags::PythonFunctionName<::Tags::dt<Tag>>` names the python
+ *   function for each boundary-evolved variable `Tag`, and
+ *   `Tags::PythonFunctionForBoundaryFieldDtErrorMessage` names its
+ *   error function.
  * - `factory_string` is a string used to create the boundary condition from the
  *   factory
  * - `face_points` is the grid points on the interface. Generally 5 grid points
