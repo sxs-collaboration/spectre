@@ -30,10 +30,7 @@ struct Element;
 namespace StepChoosers {
 /// Changes the step size pseudo-randomly.  Values are distributed
 /// uniformly in $\log(dt)$.  The current step is always accepted.
-///
-/// \note This debugging StepChooser is not included in the
-/// `standard_step_choosers` list, but can be added to the
-/// `factory_creation` struct in the metavariables.
+/// \note This StepChooser is for debugging.
 template <size_t VolumeDim>
 class Random : public StepChooser<StepChooserUse::Slab>,
                public StepChooser<StepChooserUse::LtsStep> {
