@@ -13,6 +13,7 @@
 #include <cstddef>
 #include <functional>
 #include <limits>
+#include <optional>
 #include <ostream>
 #include <pup.h>
 #include <string>
@@ -153,7 +154,7 @@ double deriv_estimate(
                 Scalar<double>{std::exp(central_log_enthalpy)}));
 
   const double central_pressure =
-      specific_enthalpy == 1.0  // get presesure at center
+      specific_enthalpy == 1.0  // get pressure at center
           ? 0.0
           : get(equation_of_state.pressure_from_density(
                 Scalar<double>{central_rest_mass_density}));
@@ -233,8 +234,8 @@ the dynamically calculated threshold for the Taylor series expansion,
 which is used to start the integration of the TOV equations at a small
 radius away from the center of the star.
 */
-std::pair<double, double> third_order_estimate(
-    const double central_log_enthalpy, const double delH,
+double third_order_u_estimate(
+    const double central_log_enthalpy, const double d2edp2,
     const EquationsOfState::EquationOfState<true, 1>& equation_of_state) {
   const double specific_enthalpy = std::exp(central_log_enthalpy);
   const double central_rest_mass_density =  // get rmd at center
@@ -263,14 +264,14 @@ std::pair<double, double> third_order_estimate(
       Scalar<double>{central_specific_internal_energy},
       Scalar<double>{std::exp(central_log_enthalpy)}, equation_of_state));
   const double dedp = 1.0 / sound_speed_squared;
-  const double d2edp2 =
-      deriv_estimate(central_log_enthalpy, delH, equation_of_state);
   const double e_1 = -dedp * (central_energy_density + central_pressure);
   const double e_2 = 0.5 * (central_energy_density + central_pressure) *
                      ((central_energy_density + central_pressure) * d2edp2 +
                       dedp * (1 + dedp));
   const double sum_ec_3pc = central_energy_density + 3.0 * central_pressure;
 
+  // u_3 coefficient depends on the second order derivative, so this is an
+  // estimate
   const double u_3 = (3.0 * central_pressure - 5.0 * central_energy_density) /
                          (4.0 * M_PI * std::pow(sum_ec_3pc, 2)) -
                      (3.0 * e_2) / (14.0 * M_PI * std::pow(sum_ec_3pc, 2)) +
@@ -279,6 +280,43 @@ std::pair<double, double> third_order_estimate(
                        765.0 * central_pressure)) /
                          (700.0 * M_PI * std::pow(sum_ec_3pc, 3));
 
+  return u_3;
+}
+
+double third_order_v(
+    const double central_log_enthalpy,
+    const EquationsOfState::EquationOfState<true, 1>& equation_of_state) {
+  const double specific_enthalpy = std::exp(central_log_enthalpy);
+  const double central_rest_mass_density =  // get rmd at center
+      specific_enthalpy == 1.0
+          ? 0.0
+          : get(equation_of_state.rest_mass_density_from_enthalpy(
+                Scalar<double>{std::exp(central_log_enthalpy)}));
+
+  const double central_pressure =
+      specific_enthalpy == 1.0  // get pressure at center
+          ? 0.0
+          : get(equation_of_state.pressure_from_density(
+                Scalar<double>{central_rest_mass_density}));
+
+  const double central_energy_density =  // get energy density at center
+      std::exp(central_log_enthalpy) * central_rest_mass_density -
+      central_pressure;
+
+  const double
+      central_specific_internal_energy =  // get specific internal energy
+      get(equation_of_state.specific_internal_energy_from_density(
+          Scalar<double>{central_rest_mass_density}));
+
+  const double sound_speed_squared = get(hydro::sound_speed_squared(
+      Scalar<double>{central_rest_mass_density},
+      Scalar<double>{central_specific_internal_energy},
+      Scalar<double>{std::exp(central_log_enthalpy)}, equation_of_state));
+  const double dedp = 1.0 / sound_speed_squared;
+  const double e_1 = -dedp * (central_energy_density + central_pressure);
+  const double sum_ec_3pc = central_energy_density + 3.0 * central_pressure;
+
+  // the v_3 coefficient does not depend on the second order derivative.
   const double v_3 =
       (central_energy_density *
        (3.0 * central_pressure - 5.0 * central_energy_density)) /
@@ -294,7 +332,8 @@ std::pair<double, double> third_order_estimate(
        3.0 * (11.0 * central_energy_density + 81.0 * central_pressure) *
            std::pow(e_1, 2)) /
           (175.0 * std::pow(sum_ec_3pc, 3));
-  return std::pair<double, double>{u_3, v_3};
+
+  return v_3;
 }
 
 /*This function calculates a fallback threshold for
@@ -307,7 +346,7 @@ of the TOV equations at a small radius away from the center
 of the star, as a third order expansion should be valid for
 at least as large a radius as the second order expansion.
 */
-std::pair<double, double> fallback_thresh(
+double fallback_thresh(
     const std::pair<std::vector<double>, std::vector<double>>&
         expansion_coeffs_result,
     const double eps) {
@@ -318,44 +357,76 @@ std::pair<double, double> fallback_thresh(
 
   const double u_thresh = std::abs(u_1 / (2 * u_2)) * eps;
   const double v_thresh = std::abs(v_1 / (2 * v_2)) * eps;
-  return std::pair<double, double>(u_thresh, v_thresh);
+  return std::min(u_thresh, v_thresh);
 }
 /*This function calculates the third-order threshold or returns
 nullopt if the threshold is invalid.
 */
-std::optional<double> find_thresh(
+std::optional<double> find_u_thresh(
     const std::pair<std::vector<double>, std::vector<double>>&
         expansion_coeffs_result,
-    const std::pair<double, double>& third_order_estimate_result,
-    const double eps) {
+    const double& third_order_u_estimate_result, const double eps) {
   const double u_1 = expansion_coeffs_result.first[0];
   const double u_2 = expansion_coeffs_result.first[1];
-  const double u_3 = third_order_estimate_result.first;
+  const double u_3 = third_order_u_estimate_result;
+
+  if (u_3 == 0.0) {
+    // calling real_roots with a=0 will throw an error, so we
+    // return nullopt if u_3 is zero, which means
+    // the third-order estimate is invalid and we should use the
+    // fallback threshold instead.
+    return std::nullopt;
+  } else {
+    // Use the quadratic equation solver to find the threshold
+    const double u_a = 3 * std::abs(u_3);
+    const double u_b = -2 * std::abs(u_2) * eps;
+    const double u_c = -std::abs(u_1) * eps;
+    // since product of roots is u_c/u_a < 0 for all expansion coefficients,
+    // the roots will always be real and of opposite sign, so we can use the
+    // real_roots function to find the roots of the quadratic equation.
+    // real_roots returns roots in increasing order, so the first root is the
+    // negative root and the second root is the positive root, which is the
+    // threshold we want to return.
+
+    std::optional<std::array<double, 2>> u_roots = real_roots(u_a, u_b, u_c);
+
+    if (u_roots.has_value() and u_roots.value()[1] > 0) {
+      const double u_thresh = u_roots.value()[1];  // positive root
+      return u_thresh;
+    } else {
+      return std::nullopt;
+    }
+  }
+}
+
+std::optional<double> find_v_thresh(
+    const std::pair<std::vector<double>, std::vector<double>>&
+        expansion_coeffs_result,
+    const double& third_order_v_result, const double eps) {
   const double v_1 = expansion_coeffs_result.second[0];
   const double v_2 = expansion_coeffs_result.second[1];
-  const double v_3 = third_order_estimate_result.second;
+  const double v_3 = third_order_v_result;
 
-  // Use the quadratic equation solver to find the threshold
-  const double u_a = 3 * std::abs(u_3);
-  const double u_b = -2 * std::abs(u_2) * eps;
-  const double u_c = -std::abs(u_1) * eps;
-
-  std::optional<std::array<double, 2>> u_roots = real_roots(u_a, u_b, u_c);
-
-  const double v_a = 3 * std::abs(v_3);
-  const double v_b = -2 * std::abs(v_2) * eps;
-  const double v_c = -std::abs(v_1) * eps;
-
-  std::optional<std::array<double, 2>> v_roots = real_roots(v_a, v_b, v_c);
-
-  if (u_roots.has_value() and v_roots.has_value()) {
-    const double u_thresh =
-        std::min(std::abs(u_roots.value()[0]), std::abs(u_roots.value()[1]));
-    const double v_thresh =
-        std::min(std::abs(v_roots.value()[0]), std::abs(v_roots.value()[1]));
-    return std::min(u_thresh, v_thresh);
-  } else {
+  if (v_3 == 0.0) {
+    // calling real_roots with a=0 will throw an error, so we
+    // return nullopt if either u_3 or v_3 is zero, which means
+    // the third-order estimate is invalid and we should use the
+    // fallback threshold instead.
     return std::nullopt;
+  } else {
+    const double v_a = 3 * std::abs(v_3);
+    const double v_b = -2 * std::abs(v_2) * eps;
+    const double v_c = -std::abs(v_1) * eps;
+    // same logic as above for the v roots
+
+    std::optional<std::array<double, 2>> v_roots = real_roots(v_a, v_b, v_c);
+
+    if (v_roots.has_value() and v_roots.value()[1] > 0) {
+      const double v_thresh = v_roots.value()[1];  // positive root
+      return v_thresh;
+    } else {
+      return std::nullopt;
+    }
   }
 }
 
@@ -472,99 +543,82 @@ void TovSolution::integrate(
           Scalar<double>{central_mass_density},
           central_specific_internal_energy, central_pressure)));
 
+  std::pair<std::vector<double>, std::vector<double>> expansion_coeffs_result =
+      expansion_coeffs(
+          central_log_enthalpy,
+          equation_of_state);  // calculate known expansion coefficients
+
   // check if the error in the third order estimate is of order del_H^4
   // due to the 4th order finite difference derivative used to compute d^2edp^2.
+  // Do this with a quick check from the Richardson extrapolation.
   // If not, we use the fallback threshold instead of the one computed
   // from the quadratic equation roots.
-  const double strict_dH = std::pow(eps, 1.0 / 2.0) * central_log_enthalpy;
+  // 4th order finite difference estimations have an optimal step size of order
+  // eps^(1/5), but use eps^(1/6) here because we will be halving the step size
+  // twice to check the order of convergence, and we want to avoid straying too
+  // far from the optimal step size.
+  const double dH0 = std::pow(eps, 1.0 / 6.0) * central_log_enthalpy;
+  const double dH1 = dH0 / 2.0;
+  const double dH2 = dH0 / 4.0;
 
-  const std::vector<double> test_dH = {
-      std::pow(eps, 1.0 / 3.0) * central_log_enthalpy,
-      std::pow(eps, 1.0 / 4.0) * central_log_enthalpy,
-      std::pow(eps, 1.0 / 5.0) * central_log_enthalpy,
-      std::pow(eps, 1.0 / 6.0) * central_log_enthalpy};
+  const double d2edp2_0 =
+      deriv_estimate(central_log_enthalpy, dH0, equation_of_state);
+  const double d2edp2_1 =
+      deriv_estimate(central_log_enthalpy, dH1, equation_of_state);
+  const double d2edp2_2 =
+      deriv_estimate(central_log_enthalpy, dH2, equation_of_state);
 
-  const double strict_d2edp2 =
-      deriv_estimate(central_log_enthalpy, strict_dH, equation_of_state);
+  bool passed_order4_test =
+      (std::isfinite(d2edp2_0) and std::isfinite(d2edp2_1) and
+       std::isfinite(d2edp2_2));
 
-  bool passed_order4_test = true;
+  const double expected_ratio = 2.0 * 2.0 * 2.0 * 2.0;    // 2^4 = 16
+  const double richardson_extrapolation_tolerance = 0.1;  // 10% tolerance
 
-  for (const double& dH : test_dH) {
-    const double test_d2edp2 =
-        deriv_estimate(central_log_enthalpy, dH, equation_of_state);
-    if (!equal_within_roundoff(std::abs(strict_d2edp2) * std::pow(dH, 4),
-                               std::abs(test_d2edp2) * std::pow(strict_dH, 4.0),
-                               1E-2)) {
-      // test gets failed
-      passed_order4_test = false;
-    }
-  }
-  int depth_used = 0;
-  std::pair<std::vector<double>, std::vector<double>> expansion_coeffs_result =
-      expansion_coeffs(central_log_enthalpy, equation_of_state);
+  const double fallback_thresh_val =
+      fallback_thresh(expansion_coeffs_result, eps);
+  double thresh = fallback_thresh_val;  // default to fallback threshold
 
-  std::pair<double, double> third_order_estimate_result = third_order_estimate(
-      central_log_enthalpy, std::pow(eps, 1.0 / 5.0) * central_log_enthalpy,
-      equation_of_state);
+  if (passed_order4_test) {
+    const double delta_num = d2edp2_1 - d2edp2_0;
+    const double delta_den = d2edp2_2 - d2edp2_1;
+    passed_order4_test =
+        (delta_den != 0.0 and delta_num != 0.0 and std::isfinite(delta_num) and
+         std::isfinite(delta_den) and std::isfinite(delta_num / delta_den));
+    if (passed_order4_test) {
+      const double richardson_extrapolation_ratio = delta_num / delta_den;
+      passed_order4_test =
+          (std::abs(richardson_extrapolation_ratio - expected_ratio) <=
+           richardson_extrapolation_tolerance * expected_ratio);
+      if (passed_order4_test) {
+        const double d2edp2_richardson =
+            (expected_ratio * d2edp2_2 - d2edp2_1) / (expected_ratio - 1.0);
 
-  std::optional<double> thresh =
-      find_thresh(expansion_coeffs_result, third_order_estimate_result, eps);
+        const double third_order_u_val = third_order_u_estimate(
+            central_log_enthalpy, d2edp2_richardson, equation_of_state);
+        const double third_order_v_val =
+            third_order_v(central_log_enthalpy, equation_of_state);
 
-  double fallback_thresh_val =
-      std::min(fallback_thresh(expansion_coeffs_result, eps).first,
-               fallback_thresh(expansion_coeffs_result, eps).second);
+        std::optional<double> thresh_O3 = std::min(
+            find_u_thresh(expansion_coeffs_result, third_order_u_val, eps),
+            find_v_thresh(expansion_coeffs_result, third_order_v_val, eps));
 
-  // if the threshold is not valid, we use the fallback threshold instead.
-  // we check that the estimate of the threshold is positive and greater
-  // than the fallback threshold, and that the third order estimate
-  // is valid. we also check that the threshold converges to a value
-  // that is close to the previous estimate of the threshold,
-  // and that the threshold is not zero. if any of these conditions
-  // are not met, we use the fallback threshold instead.
-  bool use_fallback_thresh = false;
-  if (!thresh.has_value() or !passed_order4_test or
-      fallback_thresh_val > thresh.value() or thresh.value() == 0.0) {
-    thresh = fallback_thresh_val;
-    use_fallback_thresh = true;
-    depth_used = -1;
-  } else {
-    std::pair<double, double> third_order_test = third_order_estimate(
-        central_log_enthalpy, thresh.value(), equation_of_state);
-
-    std::optional<double> thresh_test =
-        find_thresh(expansion_coeffs_result, third_order_test, eps);
-
-    if (thresh_test.has_value() and thresh_test.value() > 0.0 and
-        thresh_test.value() > fallback_thresh_val) {
-      std::pair<double, double> third_order_test2 = third_order_estimate(
-          central_log_enthalpy, thresh_test.value(), equation_of_state);
-      std::optional<double> thresh_test2 =
-          find_thresh(expansion_coeffs_result, third_order_test2, eps);
-
-      if (thresh_test2.has_value() and thresh_test2.value() > 0.0 and
-          thresh_test2.value() > fallback_thresh_val) {
-        if (std::abs(thresh_test2.value() - thresh_test.value()) >=
-                std::abs(thresh_test.value() - thresh.value()) or
-            thresh_test2.value() < fallback_thresh_val) {
-          thresh = fallback_thresh_val;
-          use_fallback_thresh = true;
-          depth_used = -1;
-        } else {
-          depth_used = 2;
-          thresh = thresh_test2.value();
+        // if the threshold is not valid, we use the fallback threshold instead.
+        // we check that the estimate of the threshold is positive and greater
+        // than the fallback threshold, and that the third order estimate
+        // is valid.
+        if (thresh_O3.has_value() and
+            fallback_thresh_val < thresh_O3.value() and
+            thresh_O3.value() > 0.0 and std::isfinite(thresh_O3.value())) {
+          thresh = thresh_O3.value();
         }
-      } else {
-        depth_used = 1;
-        thresh = thresh_test.value();
       }
-    } else {
-      thresh = thresh.value();
     }
   }
 
   lindblom_rhs<CoordSystem>(
       make_not_null(&dvars), vars, central_log_enthalpy, central_log_enthalpy,
-      expansion_coeffs_result, thresh.value(),
+      expansion_coeffs_result, thresh,
       equation_of_state);  // this is the INITIAL step, so we use
                            // central_log_enthalpy for both args
   double initial_step =
@@ -585,7 +639,7 @@ void TovSolution::integrate(
                const double local_enthalpy) {
         return lindblom_rhs<CoordSystem>(
             &local_dvars, local_vars, local_enthalpy, central_log_enthalpy,
-            expansion_coeffs_result, thresh.value(),
+            expansion_coeffs_result, thresh,
             equation_of_state);  // passed central_log_enthalpy to the RHS
                                  // function for use in the near-center
                                  // expansion
