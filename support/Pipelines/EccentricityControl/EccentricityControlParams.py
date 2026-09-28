@@ -7,7 +7,7 @@ import functools
 import glob
 import logging
 from pathlib import Path
-from typing import Dict, Literal, Optional, Sequence, Tuple, Union
+from typing import Dict, Optional, Sequence, Union
 
 import click
 import h5py
@@ -15,29 +15,17 @@ import numpy as np
 import pandas as pd
 import yaml
 
+from SimulationSupport.EccentricityControl.EccentricityControlParams import (
+    EccentricityParams,
+)
+from SimulationSupport.EccentricityControl.EccentricityControlParams import (
+    eccentricity_control_params as compute_eccentricity_control_params,
+)
 from spectre.IO.H5 import to_dataframe
-from spectre.support.CheckSpecImport import check_spec_import
 from spectre.support.Yaml import SafeDumper
 from spectre.Visualization.PlotTrajectories import import_A_and_B
 
 logger = logging.getLogger(__name__)
-
-# Keys of the dictionary returned by eccentricity_control_params
-EccentricityParams = Literal[
-    "Eccentricity",
-    "EccentricityError",
-    "Omega0",
-    "Adot0",
-    "D0",
-    "DeltaOmega0",
-    "DeltaAdot0",
-    "DeltaD0",
-    "NewOmega0",
-    "NewAdot0",
-    "NewD0",
-    "Tmin",
-    "Tmax",
-]
 
 DEFAULT_AHA_TRAJECTORIES = "ApparentHorizons/ControlSystemAhA_Centers.dat"
 DEFAULT_AHB_TRAJECTORIES = "ApparentHorizons/ControlSystemAhB_Centers.dat"
@@ -59,8 +47,9 @@ def eccentricity_control_params(
 
     The eccentricity is estimated from the trajectories of the binary objects
     and updates to the orbital parameters are suggested to drive the orbit to
-    the target eccentricity, using SpEC's OmegaDotEccRemoval.py. Currently
-    supports only circular target orbits (target eccentricity = 0).
+    the target eccentricity, using the routines in the SimulationSupport
+    package. Currently supports only circular target orbits (target
+    eccentricity = 0).
 
     Arguments:
       h5_files: Paths to the H5 files containing the trajectory data (e.g.
@@ -78,7 +67,7 @@ def eccentricity_control_params(
         quantities measured on apparent horizon B (masses and spins).
       tmin: (Optional) The lower time bound for the eccentricity estimate.
         Used to remove initial junk and transients in the data. If unspecified,
-        uses SpEC's 'OmegaDotEccRemoval.FindTmin' to estimate it.
+        SimulationSupport will estimate it.
       tmax: (Optional) The upper time bound for the eccentricity estimate.
         A reasonable value would include 2-3 orbits.
         Default is '500 + 5 * pi / Omega0'.
@@ -88,16 +77,6 @@ def eccentricity_control_params(
     Returns:
         Dictionary with the keys listed in 'EccentricityParams'.
     """
-    # Import functions from SpEC until we have ported them over
-    check_spec_import(
-        contains_commit="ecfabf1ce78daeacbdd026625a02215c8e84af0e",
-    )
-    from OmegaDotEccRemoval import (
-        ComputeOmegaAndDerivsFromFile,
-        FindTmin,
-        performAllFits,
-    )
-
     # Make sure h5_files is a sequence
     if isinstance(h5_files, str):
         h5_files = glob.glob(h5_files)
@@ -110,9 +89,6 @@ def eccentricity_control_params(
         id_metadata, id_input_file = yaml.safe_load_all(open_input_file)
     target_params = id_metadata["TargetParams"]
     target_eccentricity = target_params["Eccentricity"]
-    assert (
-        target_eccentricity == 0.0
-    ), "Only circular orbits are currently supported for eccentricity control."
     id_binary = id_input_file["Background"]["Binary"]
     Omega0 = id_binary["AngularVelocity"]
     adot0 = id_binary["Expansion"]
@@ -122,19 +98,8 @@ def eccentricity_control_params(
     traj_A, traj_B = import_A_and_B(
         h5_files, subfile_name_aha_trajectories, subfile_name_ahb_trajectories
     )
-    t, Omega, dOmegadt, OmegaVec = ComputeOmegaAndDerivsFromFile(traj_A, traj_B)
 
-    # Set time bounds if not provided
-    if tmin is None:
-        tmin = max(FindTmin(t, dOmegadt, 500), t[0])
-    if tmax is None:
-        tmax = min(500 + 5 * np.pi / Omega0, t[-1])
-    logger.info(
-        "Estimating eccentricity from trajectory data in time range"
-        f" {tmin:.3f} to {tmax:.3f}."
-    )
-
-    # Load horizon parameters from evolution data at reference time (tmin)
+    # Load horizon parameters from evolution data at the reference time
     def get_horizons_data(reductions_file):
         with h5py.File(reductions_file, "r") as open_h5file:
             horizons_data = []
@@ -183,60 +148,22 @@ def eccentricity_control_params(
             logger.warning("No horizon spins found in data, ignoring spins.")
             sA = sB = None
 
-    # Call into SpEC's OmegaDotEccRemoval.py
-    # Despite the name, this SpEC function takes arrays of data
-    eccentricity, delta_Omega0, delta_adot0, delta_D0, ecc_std_dev, _ = (
-        performAllFits(
-            XA=traj_A,
-            XB=traj_B,
-            t=t,
-            Omega=Omega,
-            dOmegadt=dOmegadt,
-            OmegaVec=OmegaVec,
-            mA=mA,
-            mB=mB,
-            sA=sA,
-            sB=sB,
-            IDparam_omega0=Omega0,
-            IDparam_adot0=adot0,
-            IDparam_D0=D0,
-            tmin=tmin,
-            tmax=tmax,
-            tref=tmin,
-            opt_freq_filter=True,
-            opt_varpro=True,
-            opt_type="bbh",
-            opt_tmin=tmin,
-            opt_improved_Omega0_update=True,
-            check_periastron_advance=True,
-            plot_output_dir=plot_output_dir,
-            Source="",
-        )
+    # Estimate the eccentricity and compute updates to the orbital parameters
+    ecc_params = compute_eccentricity_control_params(
+        trajectory_a=traj_A,
+        trajectory_b=traj_B,
+        separation=D0,
+        orbital_angular_velocity=Omega0,
+        radial_expansion_velocity=adot0,
+        mass_a=mA,
+        mass_b=mB,
+        spin_a=sA,
+        spin_b=sB,
+        tmin=tmin,
+        tmax=tmax,
+        target_eccentricity=target_eccentricity,
+        plot_output_dir=plot_output_dir,
     )
-    logger.info(
-        f"Eccentricity estimate is {eccentricity:g} +/- {ecc_std_dev:e}."
-        " Update orbital parameters as follows"
-        f" for target eccentricity {target_eccentricity:g} (choose two):\n"
-        f"Omega0 += {delta_Omega0:e} -> {Omega0 + delta_Omega0:.8g}\n"
-        f"adot0 += {delta_adot0:e} -> {adot0 + delta_adot0:e}\n"
-        f"D0 += {delta_D0:e} -> {D0 + delta_D0:.8g}"
-    )
-    # These keys must correspond to 'EccentricityParams'
-    ecc_params = {
-        "Eccentricity": eccentricity,
-        "EccentricityError": ecc_std_dev,
-        "Omega0": Omega0,
-        "Adot0": adot0,
-        "D0": D0,
-        "DeltaOmega0": delta_Omega0,
-        "DeltaAdot0": delta_adot0,
-        "DeltaD0": delta_D0,
-        "NewOmega0": Omega0 + delta_Omega0,
-        "NewAdot0": adot0 + delta_adot0,
-        "NewD0": D0 + delta_D0,
-        "Tmin": tmin,
-        "Tmax": tmax,
-    }
     if ecc_params_output_file:
         with open(ecc_params_output_file, "w") as open_file:
             yaml.dump(ecc_params, open_file, Dumper=SafeDumper)

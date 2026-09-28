@@ -79,6 +79,7 @@ class TestEccentricityControl(unittest.TestCase):
                 "DimensionlessSpinA": [0.0, 0.0, 0.0],
                 "DimensionlessSpinB": [0.0, 0.0, 0.0],
                 "Eccentricity": 0.0,
+                "EccentricityAbsoluteTolerance": 1e-3,
             },
             "Next": {
                 "With": {
