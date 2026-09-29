@@ -18,7 +18,7 @@
 #include "Domain/CoordinateMaps/DiscreteRotation.hpp"
 #include "Domain/CoordinateMaps/Distribution.hpp"
 #include "Domain/Creators/DomainCreator.hpp"
-#include "Domain/Creators/TimeDependence/TimeDependence.hpp"
+#include "Domain/Creators/TimeDependence/Factory.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/Structure/DirectionMap.hpp"
 #include "Options/Context.hpp"
