@@ -54,14 +54,23 @@ void element_weight(
   set_number_of_grid_points(weight, logical_coords);
   get(*weight) = 1.;
   for (size_t d = 0; d < Dim; ++d) {
+    const bool has_overlap_lower =
+        external_boundaries.find(Direction<Dim>{d, Side::Lower}) ==
+        external_boundaries.end();
+    const bool has_overlap_upper =
+        external_boundaries.find(Direction<Dim>{d, Side::Upper}) ==
+        external_boundaries.end();
+    if (not has_overlap_lower and not has_overlap_upper) {
+      // No overlap in this dimension (e.g. a closed/topological direction such
+      // as the angular directions of a spherical shell), so there is no
+      // weighting to apply and the overlap width is unused.
+      continue;
+    }
     ASSERT(gsl::at(overlap_widths, d) > 0,
            "Don't try to apply weighting when the overlap has zero width.");
-    apply_element_weight(
-        weight, logical_coords.get(d), gsl::at(overlap_widths, d),
-        external_boundaries.find(Direction<Dim>{d, Side::Lower}) ==
-            external_boundaries.end(),
-        external_boundaries.find(Direction<Dim>{d, Side::Upper}) ==
-            external_boundaries.end());
+    apply_element_weight(weight, logical_coords.get(d),
+                         gsl::at(overlap_widths, d), has_overlap_lower,
+                         has_overlap_upper);
   }
 }
 
@@ -117,11 +126,19 @@ void intruding_weight(
     };
     // Apply weighting perpendicular to the overlap direction
     for (size_t d = 0; (d == direction.dimension() ? ++d : d) < Dim; ++d) {
+      const bool has_overlap_lower = has_overlap(d, Side::Lower);
+      const bool has_overlap_upper = has_overlap(d, Side::Upper);
+      if (not has_overlap_lower and not has_overlap_upper) {
+        // No overlap in this dimension (e.g. a closed/topological direction
+        // such as the angular directions of a spherical shell), so there is no
+        // weighting to apply and the overlap width is unused.
+        continue;
+      }
       ASSERT(gsl::at(overlap_widths, d) > 0,
              "Don't try to apply weighting when the overlap has zero width.");
-      apply_element_weight(
-          weight, logical_coords.get(d), gsl::at(overlap_widths, d),
-          has_overlap(d, Side::Lower), has_overlap(d, Side::Upper));
+      apply_element_weight(weight, logical_coords.get(d),
+                           gsl::at(overlap_widths, d), has_overlap_lower,
+                           has_overlap_upper);
     }
     // Add contributions from the corners and edges of the subdomain
     // These contributions account for the corner- and edge-neighbors not being
