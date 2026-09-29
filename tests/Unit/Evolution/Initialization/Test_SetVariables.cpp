@@ -14,6 +14,7 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
 #include "DataStructures/VariablesTag.hpp"
+#include "Domain/BoundaryVariablesTag.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.tpp"
 #include "Domain/CoordinateMaps/Identity.hpp"
@@ -23,7 +24,10 @@
 #include "Domain/FunctionsOfTime/PiecewisePolynomial.hpp"
 #include "Domain/FunctionsOfTime/RegisterDerivedWithCharm.hpp"
 #include "Domain/FunctionsOfTime/Tags.hpp"
+#include "Domain/Structure/Direction.hpp"
+#include "Domain/Structure/DirectionMap.hpp"
 #include "Domain/Tags.hpp"
+#include "Evolution/DiscontinuousGalerkin/BoundaryEvolvedVariables.hpp"
 #include "Evolution/Initialization/SetVariables.hpp"
 #include "Evolution/Initialization/Tags.hpp"
 #include "Framework/ActionTesting.hpp"
@@ -68,6 +72,10 @@ struct PrimVar : db::SimpleTag {
 struct EquationOfStateTag : db::SimpleTag {
   using type = std::unique_ptr<EquationsOfState::EquationOfState<true, 1>>;
 };
+
+template <size_t Dim>
+using boundary_variables_tag = Tags::BoundaryVariables<
+    Dim, tmpl::list<evolution::dg::Tags::BoundaryValue<Var>>>;
 
 struct SystemAnalyticSolution : public MarkAsAnalyticSolution,
                                 public evolution::initial_data::InitialData {
@@ -218,7 +226,8 @@ struct SystemAnalyticData : public MarkAsAnalyticData,
 // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
 PUP::able::PUP_ID SystemAnalyticData::my_PUP_ID = 0;
 
-template <size_t Dim, bool HasPrimitiveAndConservativeVars>
+template <size_t Dim, bool HasPrimitiveAndConservativeVars,
+          bool HasBoundaryVariables>
 struct System {
   // is_in_flux_conservative_form is unused
   static constexpr bool is_in_flux_conservative_form = false;
@@ -226,7 +235,11 @@ struct System {
       HasPrimitiveAndConservativeVars;
   using non_conservative_variables = tmpl::list<NonConservativeVar>;
   static constexpr size_t volume_dim = Dim;
-  using variables_tag = Tags::Variables<tmpl::list<Var, NonConservativeVar>>;
+  using variables_tag = tmpl::conditional_t<
+      HasBoundaryVariables,
+      tmpl::list<Tags::Variables<tmpl::list<Var, NonConservativeVar>>,
+                 boundary_variables_tag<Dim>>,
+      Tags::Variables<tmpl::list<Var, NonConservativeVar>>>;
   using primitive_variables_tag = Tags::Variables<tmpl::list<PrimVar>>;
 };
 
@@ -238,14 +251,14 @@ struct component {
   using const_global_cache_tag_list = tmpl::list<>;
 
   using initial_tags =
-      tmpl::list<Tags::Time,
-                 domain::Tags::FunctionsOfTimeInitialize,
+      tmpl::list<Tags::Time, domain::Tags::FunctionsOfTimeInitialize,
                  domain::Tags::Coordinates<Dim, Frame::ElementLogical>,
                  domain::Tags::ElementMap<Dim, Frame::Grid>,
                  domain::CoordinateMaps::Tags::CoordinateMap<Dim, Frame::Grid,
                                                              Frame::Inertial>,
                  Tags::Variables<tmpl::list<Var, NonConservativeVar>>,
-                 Tags::Variables<tmpl::list<PrimVar>>>;
+                 Tags::Variables<tmpl::list<PrimVar>>,
+                 boundary_variables_tag<Dim>>;
 
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
       Parallel::Phase::Initialization,
@@ -261,8 +274,9 @@ auto emplace_component(
     const double initial_time, const double expiration_time) {
   using comp = component<Dim, Metavariables>;
 
-  const auto logical_coords = logical_coordinates(Mesh<Dim>{
-      5, Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto});
+  const Mesh<Dim> mesh{5, Spectral::Basis::Legendre,
+                       Spectral::Quadrature::GaussLobatto};
+  const auto logical_coords = logical_coordinates(mesh);
   ElementMap<Dim, Frame::Grid> logical_to_grid_map{
       ElementId<Dim>{0},
       domain::make_coordinate_map_base<Frame::BlockLogical, Frame::Grid>(
@@ -285,11 +299,15 @@ auto emplace_component(
       get<0>(logical_coords).size(), 8.9999);
   Variables<tmpl::list<PrimVar>> prim_var(get<0>(logical_coords).size(),
                                           9.9999);
+  typename boundary_variables_tag<Dim>::type boundary_vars{
+      DirectionMap<Dim, size_t>{{Direction<Dim>::upper_xi(),
+                                 mesh.slice_away(0).number_of_grid_points()}},
+      7.9999};
   ActionTesting::emplace_component_and_initialize<comp>(
       runner, 0,
       {initial_time, clone_unique_ptrs(functions_of_time), logical_coords,
        std::move(logical_to_grid_map), grid_to_inertial_map->get_clone(), var,
-       prim_var});
+       prim_var, std::move(boundary_vars)});
   return (*grid_to_inertial_map)(
       ActionTesting::get_databox_tag<
           comp, domain::Tags::ElementMap<Dim, Frame::Grid>>(*runner,
@@ -297,18 +315,19 @@ auto emplace_component(
       initial_time, functions_of_time);
 }
 
-template <size_t Dim, bool HasPrimitives>
+template <size_t Dim, bool HasPrimitives, bool HasBoundaryVariables>
 struct MetavariablesAnalyticSolution {
   static constexpr size_t volume_dim = Dim;
   using analytic_solution = SystemAnalyticSolution;
   using component_list =
       tmpl::list<component<Dim, MetavariablesAnalyticSolution>>;
   using equation_of_state_tag = EquationOfStateTag;
-  using system = System<Dim, HasPrimitives>;
-  using analytic_variables_tags =
-      tmpl::conditional_t<HasPrimitives,
-                          typename system::primitive_variables_tag::tags_list,
-                          typename system::variables_tag::tags_list>;
+  using system = System<Dim, HasPrimitives, HasBoundaryVariables>;
+  using analytic_variables_tags = tmpl::conditional_t<
+      HasPrimitives, typename system::primitive_variables_tag::tags_list,
+      typename tmpl::conditional_t<HasBoundaryVariables,
+                                   tmpl::front<typename system::variables_tag>,
+                                   typename system::variables_tag>::tags_list>;
   using temporal_id = TimeId;
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
@@ -320,9 +339,10 @@ struct MetavariablesAnalyticSolution {
       tmpl::list<evolution::initial_data::Tags::InitialData>;
 };
 
-template <size_t Dim, bool HasPrimitives>
+template <size_t Dim, bool HasPrimitives, bool HasBoundaryVariables>
 void test_analytic_solution() {
-  using metavars = MetavariablesAnalyticSolution<Dim, HasPrimitives>;
+  using metavars =
+      MetavariablesAnalyticSolution<Dim, HasPrimitives, HasBoundaryVariables>;
   using comp = component<Dim, metavars>;
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<metavars>;
   MockRuntimeSystem runner{
@@ -336,6 +356,9 @@ void test_analytic_solution() {
       get<0>(inertial_coords).size(), 8.9999);
   Variables<tmpl::list<PrimVar>> prim_var(get<0>(inertial_coords).size(),
                                           9.9999);
+  const auto boundary_vars =
+      ActionTesting::get_databox_tag<comp, boundary_variables_tag<Dim>>(runner,
+                                                                        0);
 
   // Invoke the SetVariables action on the runner
   ActionTesting::next_action<comp>(make_not_null(&runner), 0);
@@ -353,19 +376,25 @@ void test_analytic_solution() {
         get<NonConservativeVar>(var));
   CHECK(ActionTesting::get_databox_tag<comp, PrimVar>(runner, 0) ==
         get<PrimVar>(prim_var));
+  // Boundary variable is initialized by
+  // evolution::dg::Initialization::BoundaryEvolvedVariables, SetVariables
+  // should not change its value.
+  CHECK(ActionTesting::get_databox_tag<comp, boundary_variables_tag<Dim>>(
+            runner, 0) == boundary_vars);
 }
 
-template <size_t Dim, bool HasPrimitives>
+template <size_t Dim, bool HasPrimitives, bool HasBoundaryVariables>
 struct MetavariablesAnalyticData {
   static constexpr size_t volume_dim = Dim;
   using analytic_data = SystemAnalyticData;
   using component_list = tmpl::list<component<Dim, MetavariablesAnalyticData>>;
   using equation_of_state_tag = EquationOfStateTag;
-  using system = System<Dim, HasPrimitives>;
-  using analytic_variables_tags =
-      tmpl::conditional_t<HasPrimitives,
-                          typename system::primitive_variables_tag::tags_list,
-                          typename system::variables_tag::tags_list>;
+  using system = System<Dim, HasPrimitives, HasBoundaryVariables>;
+  using analytic_variables_tags = tmpl::conditional_t<
+      HasPrimitives, typename system::primitive_variables_tag::tags_list,
+      typename tmpl::conditional_t<HasBoundaryVariables,
+                                   tmpl::front<typename system::variables_tag>,
+                                   typename system::variables_tag>::tags_list>;
   using temporal_id = TimeId;
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
@@ -377,9 +406,10 @@ struct MetavariablesAnalyticData {
       tmpl::list<evolution::initial_data::Tags::InitialData>;
 };
 
-template <size_t Dim, bool HasPrimitives>
+template <size_t Dim, bool HasPrimitives, bool HasBoundaryVariables>
 void test_analytic_data() {
-  using metavars = MetavariablesAnalyticData<Dim, HasPrimitives>;
+  using metavars =
+      MetavariablesAnalyticData<Dim, HasPrimitives, HasBoundaryVariables>;
   using comp = component<Dim, metavars>;
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<metavars>;
   MockRuntimeSystem runner = []() {
@@ -395,6 +425,9 @@ void test_analytic_data() {
       get<0>(inertial_coords).size(), 8.9999);
   Variables<tmpl::list<PrimVar>> prim_var(get<0>(inertial_coords).size(),
                                           9.9999);
+  const auto boundary_vars =
+      ActionTesting::get_databox_tag<comp, boundary_variables_tag<Dim>>(runner,
+                                                                        0);
 
   // Invoke the SetVariables action on the runner
   ActionTesting::next_action<comp>(make_not_null(&runner), 0);
@@ -412,14 +445,16 @@ void test_analytic_data() {
         get<NonConservativeVar>(var));
   CHECK(ActionTesting::get_databox_tag<comp, PrimVar>(runner, 0) ==
         get<PrimVar>(prim_var));
+  CHECK(ActionTesting::get_databox_tag<comp, boundary_variables_tag<Dim>>(
+            runner, 0) == boundary_vars);
 }
 
-template <size_t Dim, bool HasPrimitives>
+template <size_t Dim, bool HasPrimitives, bool HasBoundaryVariables>
 void test_impl() {
   // Test setting variables from analytic solution
-  test_analytic_solution<Dim, HasPrimitives>();
+  test_analytic_solution<Dim, HasPrimitives, HasBoundaryVariables>();
   // Test setting variables from analytic data
-  test_analytic_data<Dim, HasPrimitives>();
+  test_analytic_data<Dim, HasPrimitives, HasBoundaryVariables>();
 }
 
 template <size_t Dim>
@@ -431,8 +466,10 @@ void test() {
           Frame::Grid, Frame::Inertial,
           domain::CoordinateMaps::TimeDependent::CubicScale<Dim>>>();
 
-  test_impl<Dim, true>();
-  test_impl<Dim, false>();
+  test_impl<Dim, true, false>();
+  test_impl<Dim, false, false>();
+  test_impl<Dim, true, true>();
+  test_impl<Dim, false, true>();
 }
 
 SPECTRE_TEST_CASE("Unit.Evolution.Initialization.SetVariables",
