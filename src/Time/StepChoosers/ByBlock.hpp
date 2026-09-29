@@ -28,10 +28,7 @@ class er;
 
 namespace StepChoosers {
 /// Sets a goal specified per-block.
-///
-/// \note This debugging StepChooser is not included in the
-/// `standard_step_choosers` list, but can be added to the
-/// `factory_creation` struct in the metavariables.
+/// \note This StepChooser is for debugging.
 template <size_t Dim>
 class ByBlock : public StepChooser<StepChooserUse::Slab>,
                 public StepChooser<StepChooserUse::LtsStep> {
