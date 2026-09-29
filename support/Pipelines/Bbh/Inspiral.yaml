@@ -255,7 +255,7 @@ DomainCreator:
       SkewMap: None
     {% endif %}
       ShapeMapA:
-        LMax: &ShapeLMax 10
+        LMax: &ShapeLMax 33
         CoefficientTruncationLimit: 1e-16
       {% if SpecDataDirectory is defined %}
         InitialValues: Spherical
