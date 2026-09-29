@@ -17,8 +17,8 @@
 #include "Domain/Structure/InitialElementIds.hpp"
 #include "Evolution/DiscontinuousGalerkin/EqualRateLts/EqualRateRegions.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarInfo.hpp"
-#include "Evolution/DiscontinuousGalerkin/TimeSteppingPolicy.hpp"
 #include "Parallel/ArrayIndex.hpp"
+#include "Time/LtsMode.hpp"
 #include "Time/Time.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
@@ -85,7 +85,7 @@ void SetupLocalEqualRateRegion<Dim>::apply(
     }
 
     if (neighbor_is_in_region) {
-      info.time_stepping_policy() = TimeSteppingPolicy::EqualRate;
+      info.time_stepping_policy() = LtsMode::Off;
     }
   }
 }

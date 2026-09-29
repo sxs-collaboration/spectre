@@ -13,6 +13,8 @@
 
 std::ostream& operator<<(std::ostream& os, LtsMode value) {
   switch (value) {
+    case LtsMode::Uninitialized:
+      return os << "Uninitialized";
     case LtsMode::Off:
       return os << "Off";
     case LtsMode::Conservative:

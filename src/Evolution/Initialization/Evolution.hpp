@@ -22,7 +22,6 @@
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarInfo.hpp"
-#include "Evolution/DiscontinuousGalerkin/TimeSteppingPolicy.hpp"
 #include "Evolution/Initialization/Tags.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Projection.hpp"
@@ -410,7 +409,7 @@ struct ProjectTimeStepperHistory : tt::ConformsTo<amr::protocols::Projector> {
         mortar_info, &get<evolution::dg::Tags::MortarInfo<dim>>(parent_items),
         {});
     switch (time_stepping_policy) {
-      case evolution::dg::TimeSteppingPolicy::Conservative: {
+      case LtsMode::Conservative: {
         if (time_stepper.number_of_past_steps() != 0) {
           ERROR_NO_TRACE(
               "Cannot perform h-refinement with LTS steppers requiring "
@@ -435,7 +434,7 @@ struct ProjectTimeStepperHistory : tt::ConformsTo<amr::protocols::Projector> {
         }
         break;
       }
-      case evolution::dg::TimeSteppingPolicy::EqualRate: {
+      case LtsMode::Off: {
         const auto& parent_id =
             get<domain::Tags::Element<dim>>(parent_items).id();
         const auto& parent_mesh = get<domain::Tags::Mesh<dim>>(parent_items);
@@ -473,7 +472,7 @@ struct ProjectTimeStepperHistory : tt::ConformsTo<amr::protocols::Projector> {
         time_stepping_policy_for_h_refinement<Tags...>(mortar_info, {},
                                                        {&children_items});
     switch (time_stepping_policy) {
-      case evolution::dg::TimeSteppingPolicy::Conservative: {
+      case LtsMode::Conservative: {
         if (time_stepper.number_of_past_steps() != 0) {
           ERROR_NO_TRACE(
               "Cannot perform h-refinement with LTS steppers requiring "
@@ -501,7 +500,7 @@ struct ProjectTimeStepperHistory : tt::ConformsTo<amr::protocols::Projector> {
         }
         break;
       }
-      case evolution::dg::TimeSteppingPolicy::EqualRate: {
+      case LtsMode::Off: {
         bool first_child = true;
         for (const auto& [child_id, child_items] : children_items) {
           const auto& child_mesh = get<domain::Tags::Mesh<dim>>(child_items);
@@ -534,8 +533,7 @@ struct ProjectTimeStepperHistory : tt::ConformsTo<amr::protocols::Projector> {
 
  private:
   template <typename... Tags>
-  static evolution::dg::TimeSteppingPolicy
-  time_stepping_policy_for_h_refinement(
+  static LtsMode time_stepping_policy_for_h_refinement(
       const DirectionalIdMap<dim, evolution::dg::MortarInfo<dim>>&
           element_infos,
       const std::optional<gsl::not_null<
@@ -543,7 +541,7 @@ struct ProjectTimeStepperHistory : tt::ConformsTo<amr::protocols::Projector> {
           parent_infos,
       const std::optional<gsl::not_null<const std::unordered_map<
           ElementId<dim>, tuples::TaggedTuple<Tags...>>*>>& children_items) {
-    std::optional<evolution::dg::TimeSteppingPolicy> policy{};
+    std::optional<LtsMode> policy{};
     const auto process_infos =
         [&policy](const DirectionalIdMap<dim, evolution::dg::MortarInfo<dim>>&
                       infos) {

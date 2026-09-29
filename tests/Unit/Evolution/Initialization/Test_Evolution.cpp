@@ -39,7 +39,6 @@
 #include "Domain/Tags.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarInfo.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarTags.hpp"
-#include "Evolution/DiscontinuousGalerkin/TimeSteppingPolicy.hpp"
 #include "Evolution/Initialization/Evolution.hpp"
 #include "Evolution/Initialization/Tags.hpp"
 #include "Framework/TestHelpers.hpp"
@@ -494,13 +493,11 @@ DirectionalIdMap<Dim, evolution::dg::MortarInfo<Dim>> make_mortar_info(
   DirectionalIdMap<Dim, evolution::dg::MortarInfo<Dim>> info{};
   for (const auto& [direction, neighbors] : element.neighbors()) {
     for (const auto& neighbor : neighbors) {
-      info.emplace(
-          DirectionalId{direction, neighbor},
-          evolution::dg::MortarInfo<Dim>{
-              {.time_stepping_policy =
-                   local_time_stepping
-                       ? evolution::dg::TimeSteppingPolicy::Conservative
-                       : evolution::dg::TimeSteppingPolicy::EqualRate}});
+      info.emplace(DirectionalId{direction, neighbor},
+                   evolution::dg::MortarInfo<Dim>{
+                       {.time_stepping_policy = local_time_stepping
+                                                    ? LtsMode::Conservative
+                                                    : LtsMode::Off}});
     }
   }
   ASSERT(not(local_time_stepping and info.empty()),

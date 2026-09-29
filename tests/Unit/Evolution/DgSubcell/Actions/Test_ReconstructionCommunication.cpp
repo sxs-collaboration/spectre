@@ -61,12 +61,12 @@
 #include "Evolution/DiscontinuousGalerkin/MortarDataHolder.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarInfo.hpp"
 #include "Evolution/DiscontinuousGalerkin/OnlyDgBlockIds.hpp"
-#include "Evolution/DiscontinuousGalerkin/TimeSteppingPolicy.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Parallel/Phase.hpp"
 #include "ParallelAlgorithms/Actions/MutateApply.hpp"
+#include "Time/LtsMode.hpp"
 #include "Time/Slab.hpp"
 #include "Time/Tags/HistoryEvolvedVariables.hpp"
 #include "Time/Tags/TimeStepId.hpp"
@@ -332,16 +332,16 @@ void test(const bool use_cell_centered_flux) {
   MortarData mortar_data{};
   MortarMesh mortar_mesh{};
   MortarNextId mortar_next_id{};
-  mortar_info[east_neighbor_id] = evolution::dg::MortarInfo<Dim>{
-      {.time_stepping_policy = evolution::dg::TimeSteppingPolicy::EqualRate}};
+  mortar_info[east_neighbor_id] =
+      evolution::dg::MortarInfo<Dim>{{.time_stepping_policy = LtsMode::Off}};
   mortar_data[east_neighbor_id] = {};
   mortar_mesh[east_neighbor_id] = {dg_mesh.slice_away(0)};
   mortar_next_id[east_neighbor_id] = {};
   if constexpr (Dim > 1) {
     const DirectionalId<Dim> south_neighbor_id{Direction<Dim>::lower_eta(),
                                                south_id};
-    mortar_info[south_neighbor_id] = evolution::dg::MortarInfo<Dim>{
-        {.time_stepping_policy = evolution::dg::TimeSteppingPolicy::EqualRate}};
+    mortar_info[south_neighbor_id] =
+        evolution::dg::MortarInfo<Dim>{{.time_stepping_policy = LtsMode::Off}};
     mortar_data[south_neighbor_id] = {};
     mortar_mesh[south_neighbor_id] = {dg_mesh.slice_away(1)};
     mortar_next_id[south_neighbor_id] = {};
@@ -1009,8 +1009,7 @@ void test_receive_and_send_data(const bool enable_extension,
         neighbor_decision.insert(std::pair{mortar_id, 100});
 
         mortar_info[mortar_id] = evolution::dg::MortarInfo<Dim>{
-            {.time_stepping_policy =
-                 evolution::dg::TimeSteppingPolicy::EqualRate}};
+            {.time_stepping_policy = LtsMode::Off}};
         mortar_data[mortar_id] = {};
         mortar_mesh[mortar_id] = dg_mesh.slice_away(direction.dimension());
         mortar_next_id[mortar_id] = {};

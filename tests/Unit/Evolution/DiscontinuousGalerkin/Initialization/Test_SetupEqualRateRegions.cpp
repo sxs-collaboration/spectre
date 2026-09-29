@@ -28,7 +28,6 @@
 #include "Evolution/DiscontinuousGalerkin/Initialization/SetupEqualRateRegions.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarInfo.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarTags.hpp"
-#include "Evolution/DiscontinuousGalerkin/TimeSteppingPolicy.hpp"
 #include "Time/LtsMode.hpp"
 #include "Time/Slab.hpp"
 #include "Time/Tags/FixedLtsRatio.hpp"
@@ -96,26 +95,20 @@ void test() {
       const size_t lts_ratio = 32;
 
       std::optional<size_t> expected_ratio{};
-      std::unordered_map<Side, evolution::dg::TimeSteppingPolicy>
-          expected_policy{};
-      expected_policy[Side::Upper] =
-          evolution::dg::TimeSteppingPolicy::Conservative;
-      expected_policy[Side::Lower] =
-          evolution::dg::TimeSteppingPolicy::Conservative;
+      std::unordered_map<Side, LtsMode> expected_policy{};
+      expected_policy[Side::Upper] = LtsMode::Conservative;
+      expected_policy[Side::Lower] = LtsMode::Conservative;
 
       // For the test, block 1 is a region, and blocks 2 and 3 are a
       // second region.  The upper side is internal to the block and
       // the lower side goes to the next block.
       if (block == 1 or block == 3) {
         expected_ratio.emplace(lts_ratio);
-        expected_policy[Side::Upper] =
-            evolution::dg::TimeSteppingPolicy::EqualRate;
+        expected_policy[Side::Upper] = LtsMode::Off;
       } else if (block == 2) {
         expected_ratio.emplace(lts_ratio);
-        expected_policy[Side::Upper] =
-            evolution::dg::TimeSteppingPolicy::EqualRate;
-        expected_policy[Side::Lower] =
-            evolution::dg::TimeSteppingPolicy::EqualRate;
+        expected_policy[Side::Upper] = LtsMode::Off;
+        expected_policy[Side::Lower] = LtsMode::Off;
       }
 
       auto lower_segments = make_array<Dim>(SegmentId(0, 0));
@@ -169,11 +162,11 @@ void test() {
             conforming == Nonconforming::Small) {
           for (const auto& neighbor : neighbors) {
             initial_mortar_infos[{direction, neighbor}].time_stepping_policy() =
-                evolution::dg::TimeSteppingPolicy::Conservative;
+                LtsMode::Conservative;
           }
         } else {
           initial_mortar_infos[{direction, element_id}].time_stepping_policy() =
-              evolution::dg::TimeSteppingPolicy::Conservative;
+              LtsMode::Conservative;
         }
       }
       const auto mortar_info_size = initial_mortar_infos.size();

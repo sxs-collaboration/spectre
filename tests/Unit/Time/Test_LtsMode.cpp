@@ -16,6 +16,8 @@ void test_mode(const LtsMode mode, const std::string& name) {
 }
 
 SPECTRE_TEST_CASE("Unit.Time.LtsMode", "[Unit][Time]") {
+  // Uninitialized mode is not parsable.
+  CHECK(get_output(LtsMode::Uninitialized) == "Uninitialized");
 #define TEST_LTS_MODE(mode) test_mode(LtsMode::mode, #mode)
   TEST_LTS_MODE(Off);
   TEST_LTS_MODE(Conservative);

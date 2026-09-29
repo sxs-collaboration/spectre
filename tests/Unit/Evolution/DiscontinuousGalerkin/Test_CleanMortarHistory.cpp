@@ -20,8 +20,8 @@
 #include "Evolution/DiscontinuousGalerkin/MortarData.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarInfo.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarTags.hpp"
-#include "Evolution/DiscontinuousGalerkin/TimeSteppingPolicy.hpp"
 #include "Time/BoundaryHistory.hpp"
+#include "Time/LtsMode.hpp"
 #include "Time/Slab.hpp"
 #include "Time/Tags/TimeStepper.hpp"
 #include "Time/TimeStepId.hpp"
@@ -48,13 +48,11 @@ SPECTRE_TEST_CASE("Unit.Evolution.DG.CleanMortarHistory", "[Unit][Evolution]") {
   const std::array gts_mortars{
       DirectionalId<2>{{Direction<2>::Axis::Eta, Side::Lower}, ElementId<2>{}}};
   for (const auto& mortar : lts_mortars) {
-    mortar_infos[mortar].time_stepping_policy() =
-        evolution::dg::TimeSteppingPolicy::Conservative;
+    mortar_infos[mortar].time_stepping_policy() = LtsMode::Conservative;
     mortar_histories.emplace(mortar, boundary_history);
   }
   for (const auto& mortar : gts_mortars) {
-    mortar_infos[mortar].time_stepping_policy() =
-        evolution::dg::TimeSteppingPolicy::EqualRate;
+    mortar_infos[mortar].time_stepping_policy() = LtsMode::Off;
     mortar_histories[mortar];
   }
 

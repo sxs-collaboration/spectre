@@ -31,7 +31,6 @@
 #include "Evolution/DiscontinuousGalerkin/MortarInfo.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarTags.hpp"
 #include "Evolution/DiscontinuousGalerkin/NormalVectorTags.hpp"
-#include "Evolution/DiscontinuousGalerkin/TimeSteppingPolicy.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/MortarHelpers.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/SegmentSize.hpp"
@@ -165,7 +164,7 @@ struct Mortars {
     typename Tags::MortarDataHistory<Dim>::type boundary_data_history{};
     for (const auto& mortar_id_and_data : mortar_data) {
       if (mortar_infos.at(mortar_id_and_data.first).time_stepping_policy() ==
-          TimeSteppingPolicy::Conservative) {
+          LtsMode::Conservative) {
         // default initialize data
         boundary_data_history[mortar_id_and_data.first];
       }
@@ -275,7 +274,7 @@ struct ProjectMortars : tt::ConformsTo<amr::protocols::Projector> {
       for (const auto& neighbor : neighbors) {
         const DirectionalId<Dim> mortar_id{direction, neighbor};
         if (mortar_infos->at(mortar_id).time_stepping_policy() !=
-            TimeSteppingPolicy::Conservative) {
+            LtsMode::Conservative) {
           continue;
         }
         if (const auto old_history = old_histories.find(mortar_id);
@@ -347,7 +346,7 @@ struct ProjectMortars : tt::ConformsTo<amr::protocols::Projector> {
       for (const auto& neighbor : neighbors) {
         const DirectionalId<Dim> mortar_id{direction, neighbor};
         if (mortar_infos->at(mortar_id).time_stepping_policy() !=
-            TimeSteppingPolicy::Conservative) {
+            LtsMode::Conservative) {
           continue;
         }
         std::optional<typename mortar_data_history_type::mapped_type>
