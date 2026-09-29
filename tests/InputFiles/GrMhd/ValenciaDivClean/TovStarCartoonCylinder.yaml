@@ -13,6 +13,7 @@ ExpectedOutput:
 
 Parallelization:
   ElementDistribution: NumGridPoints
+  UseSubcellGridPointsForDistribution: False
 
 ResourceInfo:
   AvoidGlobalProc0: False
@@ -105,6 +106,7 @@ SpatialDiscretization:
     Filtering:
       - None:
           BlocksToFilter: All
+    OnlyDgBlocksAndGroups: None
     Subcell:
       TroubledCellIndicator:
         PerssonTci:
@@ -120,7 +122,6 @@ SpatialDiscretization:
         AlwaysUseSubcells: True
         EnableExtensionDirections: False
         UseHalo: False
-        OnlyDgBlocksAndGroups: None
       SubcellToDgReconstructionMethod: DimByDim
       FiniteDifferenceDerivativeOrder: 2
       FdInterpolationOrder: 3

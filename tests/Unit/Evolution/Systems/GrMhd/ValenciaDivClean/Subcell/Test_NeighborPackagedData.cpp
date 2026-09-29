@@ -281,7 +281,7 @@ double test(const size_t num_dg_pts) {
       evolution::dg::subcell::SubcellOptions{
           4.0, 1_st, 1.0e-3, 1.0e-4, false, false,
           evolution::dg::subcell::fd::ReconstructionMethod::DimByDim, false,
-          std::nullopt, ::fd::DerivativeOrder::Two, 1, 1, 1},
+          ::fd::DerivativeOrder::Two, 1, 1, 1},
       VariableFixing::FixToAtmosphere<3>{1.0e-30, 1.0e-30, std::nullopt,
                                          std::nullopt});
   db::mutate_apply<ConservativeFromPrimitive>(make_not_null(&box));

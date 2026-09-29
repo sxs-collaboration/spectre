@@ -251,19 +251,9 @@ void test(const bool moving_mesh) {
       grid_to_inertial_map->get_clone(), clone_unique_ptrs(functions_of_time),
       time, dg_mesh, subcell::ActiveGrid::Dg, tci_decision, ReconsOrder{},
       evolution::dg::subcell::SubcellOptions{
-          4.0,
-          1_st,
-          1.0e-7,
-          1.0e-7,
-          false,
-          false,
-          evolution::dg::subcell::fd::ReconstructionMethod::DimByDim,
-          false,
-          {},
-          ::fd::DerivativeOrder::Two,
-          1,
-          1,
-          1});
+          4.0, 1_st, 1.0e-7, 1.0e-7, false, false,
+          evolution::dg::subcell::fd::ReconstructionMethod::DimByDim, false,
+          ::fd::DerivativeOrder::Two, 1, 1, 1});
   const auto check_box = [&active_coords_box, &grid_to_inertial_map,
                           &moving_mesh,
                           &tci_decision](const Mesh<Dim>& expected_mesh) {

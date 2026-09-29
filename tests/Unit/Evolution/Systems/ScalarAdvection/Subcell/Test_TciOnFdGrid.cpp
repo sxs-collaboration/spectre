@@ -74,7 +74,6 @@ void test(const TestThis& test_this) {
       false,
       evolution::dg::subcell::fd::ReconstructionMethod::DimByDim,
       false,
-      std::nullopt,
       fd::DerivativeOrder::Two,
       1,
       1,

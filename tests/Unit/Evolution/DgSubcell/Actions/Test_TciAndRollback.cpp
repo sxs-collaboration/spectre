@@ -41,6 +41,7 @@
 #include "Evolution/DgSubcell/Tags/SubcellOptions.hpp"
 #include "Evolution/DgSubcell/Tags/TciGridHistory.hpp"
 #include "Evolution/DgSubcell/Tags/TciStatus.hpp"
+#include "Evolution/DiscontinuousGalerkin/OnlyDgBlockIds.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
@@ -138,7 +139,8 @@ struct Metavariables {
   using system = System<Dim, HasPrims>;
   using analytic_variables_tags = typename system::variables_tag::tags_list;
   using const_global_cache_tags =
-      tmpl::list<evolution::dg::subcell::Tags::SubcellOptions<Dim>>;
+      tmpl::list<evolution::dg::subcell::Tags::SubcellOptions<Dim>,
+                 evolution::dg::Tags::OnlyDgBlockIds<Dim>>;
 
   // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
   static bool rdmp_fails;
@@ -287,20 +289,28 @@ void test_impl(const bool rdmp_fails, const bool tci_fails,
   // Sets neighboring block "Block1" to DG-only, if disable_subcell_in_block ==
   // true.
   using comp = component<Dim, metavars>;
-  const evolution::dg::subcell::SubcellOptions& subcell_options =
-      evolution::dg::subcell::SubcellOptions{
-          evolution::dg::subcell::SubcellOptions{
-              4.0, 1_st, 1.0e-3, 1.0e-4, always_use_subcell, false,
-              evolution::dg::subcell::fd::ReconstructionMethod::DimByDim,
-              use_halo,
-              disable_subcell_in_block
-                  ? std::optional{std::vector<std::string>{"Block1"}}
-                  : std::optional<std::vector<std::string>>{},
-              ::fd::DerivativeOrder::Two, 1, 1, 1},
-          TestCreator<Dim>{}};
+  const evolution::dg::subcell::SubcellOptions subcell_options{
+      4.0,
+      1_st,
+      1.0e-3,
+      1.0e-4,
+      always_use_subcell,
+      false,
+      evolution::dg::subcell::fd::ReconstructionMethod::DimByDim,
+      use_halo,
+      ::fd::DerivativeOrder::Two,
+      1,
+      1,
+      1};
+  const std::vector<size_t> only_dg_block_ids =
+      evolution::dg::compute_only_dg_block_ids(
+          disable_subcell_in_block
+              ? std::optional{std::vector<std::string>{"Block1"}}
+              : std::optional<std::vector<std::string>>{},
+          TestCreator<Dim>{});
 
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<metavars>;
-  MockRuntimeSystem runner{{subcell_options}};
+  MockRuntimeSystem runner{{subcell_options, only_dg_block_ids}};
 
   const TimeStepId time_step_id{false, self_starting ? -1 : 1,
                                 Slab{1.0, 2.0}.end()};
@@ -343,14 +353,14 @@ void test_impl(const bool rdmp_fails, const bool tci_fails,
   // test FD/DG element neighbor disable_subcell_in_block
   const bool bordering_dg_block = alg::any_of(
       element.neighbors(),
-      [&subcell_options](const auto& direction_and_neighbor) {
+      [&only_dg_block_ids](const auto& direction_and_neighbor) {
         const size_t first_block_id =
             direction_and_neighbor.second.ids().begin()->block_id();
-        return alg::found(subcell_options.only_dg_block_ids(), first_block_id);
+        return alg::found(only_dg_block_ids, first_block_id);
       });
 
   const bool self_block_dg_only =
-      alg::found(subcell_options.only_dg_block_ids(), element.id().block_id());
+      alg::found(only_dg_block_ids, element.id().block_id());
 
   const bool subcell_allowed_in_element =
       not self_block_dg_only and not bordering_dg_block;

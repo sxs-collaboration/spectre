@@ -6,6 +6,7 @@
 #include <array>
 #include <cstddef>
 #include <memory>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -13,11 +14,8 @@
 #include "Domain/Creators/AlignedLattice.hpp"
 #include "Domain/Creators/DomainCreator.hpp"
 #include "Domain/Structure/ElementId.hpp"
-#include "Evolution/DgSubcell/ReconstructionMethod.hpp"
 #include "Evolution/DgSubcell/SubcellEqualRateRegion.hpp"
-#include "Evolution/DgSubcell/SubcellOptions.hpp"
 #include "Evolution/DiscontinuousGalerkin/EqualRateLts/EqualRateRegionGenerator.hpp"
-#include "NumericalAlgorithms/FiniteDifference/DerivativeOrder.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Literals.hpp"
 #include "Utilities/MakeArray.hpp"
@@ -51,11 +49,6 @@ void test() {
   const size_t corner_block = 0;
   const size_t center_block = (pow<Dim>(3) - 1) / 2;
 
-  const evolution::dg::subcell::SubcellOptions subcell_opts(
-      4.0, 1, 2.0e-3, 2.0e-4, false, false,
-      evolution::dg::subcell::fd::ReconstructionMethod::DimByDim, false,
-      only_dg_blocks, fd::DerivativeOrder::Two, 1, 1, 1, 1);
-
   const auto check_regions =
       [&](const evolution::dg::subcell::SubcellEqualRateRegion<Dim>&
               subcell_regions) {
@@ -79,8 +72,8 @@ void test() {
         }
       };
 
-  const evolution::dg::subcell::SubcellEqualRateRegion<Dim> subcell_regions(
-      subcell_opts, domain_creator);
+  const evolution::dg::subcell::SubcellEqualRateRegion<Dim> subcell_regions{
+      std::optional<std::vector<std::string>>{only_dg_blocks}, domain_creator};
   check_regions(subcell_regions);
   check_regions(serialize_and_deserialize(subcell_regions));
 }

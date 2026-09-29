@@ -40,6 +40,7 @@
 #include "Evolution/DgSubcell/Tags/TciCallsSinceRollback.hpp"
 #include "Evolution/DgSubcell/Tags/TciGridHistory.hpp"
 #include "Evolution/DgSubcell/Tags/TciStatus.hpp"
+#include "Evolution/DiscontinuousGalerkin/OnlyDgBlockIds.hpp"
 #include "Evolution/Initialization/SetVariables.hpp"
 #include "NumericalAlgorithms/Interpolation/IrregularInterpolant.hpp"
 #include "NumericalAlgorithms/Spectral/Basis.hpp"
@@ -102,7 +103,9 @@ namespace evolution::dg::subcell::Actions {
  */
 template <size_t Dim, typename System, bool UseNumericInitialData>
 struct SetSubcellGrid {
-  using const_global_cache_tags = tmpl::list<Tags::SubcellOptions<Dim>>;
+  using const_global_cache_tags =
+      tmpl::list<Tags::SubcellOptions<Dim>,
+                 evolution::dg::Tags::OnlyDgBlockIds<Dim>>;
 
   using simple_tags = tmpl::list<
       Tags::ActiveGrid, Tags::DidRollback, Tags::TciGridHistory,
@@ -150,6 +153,8 @@ struct SetSubcellGrid {
       const ParallelComponent* const /*meta*/) {
     const SubcellOptions& subcell_options =
         db::get<Tags::SubcellOptions<Dim>>(box);
+    const std::vector<size_t>& only_dg_block_ids =
+        db::get<evolution::dg::Tags::OnlyDgBlockIds<Dim>>(box);
     const Mesh<Dim>& dg_mesh = db::get<::domain::Tags::Mesh<Dim>>(box);
     const Mesh<Dim>& subcell_mesh = db::get<subcell::Tags::Mesh<Dim>>(box);
     const Element<Dim>& element = db::get<::domain::Tags::Element<Dim>>(box);
@@ -165,22 +170,20 @@ struct SetSubcellGrid {
     }
 
     // Loop over block neighbors and if neighbor id is inside of
-    // subcell_options.only_dg_block_ids(), then bordering DG-only block
+    // only_dg_block_ids, then bordering DG-only block
     const bool bordering_dg_block = alg::any_of(
         element.neighbors(),
-        [&subcell_options](const auto& direction_and_neighbor) {
+        [&only_dg_block_ids](const auto& direction_and_neighbor) {
           const size_t first_block_id =
               direction_and_neighbor.second.ids().begin()->block_id();
-          return alg::found(subcell_options.only_dg_block_ids(),
-                            first_block_id);
+          return alg::found(only_dg_block_ids, first_block_id);
         });
 
     // Non-hypercube topologies (e.g. spherical shells) can never use subcell
     // and are automatically treated as DG-only.
     const bool subcell_allowed_in_element =
         fd::dg_mesh_supports_subcell(dg_mesh) and
-        not alg::found(subcell_options.only_dg_block_ids(),
-                       element.id().block_id()) and
+        not alg::found(only_dg_block_ids, element.id().block_id()) and
         not bordering_dg_block;
     const bool cell_is_not_on_external_boundary =
         db::get<::domain::Tags::Element<Dim>>(box)
