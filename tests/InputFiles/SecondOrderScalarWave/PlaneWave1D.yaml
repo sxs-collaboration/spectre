@@ -1,0 +1,139 @@
+# Distributed under the MIT License.
+# See LICENSE.txt for details.
+
+Executable: EvolveSecondOrderScalarWave1D
+Testing:
+  Check: parse;execute_check_output
+  Priority: High
+ExpectedOutput:
+  - SecondOrderScalarWavePlaneWave1DReductions.h5
+  - SecondOrderScalarWavePlaneWave1DVolume0.h5
+OutputFileChecks:
+  - Label: Error norms
+    Subfile: /Errors.dat
+    FileGlob: SecondOrderScalarWavePlaneWave1DReductions.h5
+    SkipColumns: [0, 1, 2]
+    ExpectedData:
+      - [0.0, 0.0]
+      - [4.608349085562428e-09, 9.190591336534818e-06]
+      - [1.832897894006548e-08, 1.822506425946439e-05]
+      - [4.100623886620041e-08, 2.7105415978370065e-05]
+      - [7.24875449279e-08, 3.583361653041484e-05]
+      - [1.1262165980210818e-07, 4.4411623554232566e-05]
+    AbsoluteTolerance: 1e-13
+
+---
+
+Parallelization:
+  ElementDistribution: NumGridPoints
+
+ResourceInfo:
+  AvoidGlobalProc0: false
+
+InitialData: &InitialData
+  SecondOrderPlaneWave:
+    WaveVector: [1.0]
+    Center: [0.0]
+    Profile:
+      Sinusoid:
+        Amplitude: 1.0
+        Wavenumber: 1.0
+        Phase: 0.0
+
+PhaseChangeAndTriggers:
+  - Trigger:
+      Slabs:
+        EvenlySpaced:
+          Interval: 3
+          Offset: 0
+    PhaseChanges:
+      - VisitAndReturn(WriteCheckpoint)
+
+Evolution:
+  InitialTime: 0.0
+  InitialTimeStep: &initial_time_step 0.001
+  InitialSlabSize: *initial_time_step
+  MinimumTimeStep: 1e-7
+  LocalTimeStepping: Off
+  TimeStepper:
+    AdamsBashforth:
+      Order: 3
+  LtsStepChoosers:
+  VariableOrderAlgorithm:
+    GoalOrder: 3
+
+RandomizeInitialData: None
+
+DomainCreator:
+  RotatedIntervals:
+    LowerBound: [0.0]
+    Midpoint: [3.14159]
+    UpperBound: [6.283185307179586]
+    InitialRefinement: [1]
+    InitialGridPoints: [[7, 5]]
+    TimeDependence: None
+    BoundaryConditions:
+      LowerBoundary:
+        DirichletAnalytic:
+          AnalyticPrescription: *InitialData
+      UpperBoundary:
+        DirichletAnalytic:
+          AnalyticPrescription: *InitialData
+
+SpatialDiscretization:
+  BoundaryCorrection:
+    LaxFriedrichs:
+      Tau: 1.0
+  DiscontinuousGalerkin:
+    Formulation: StrongInertial
+    Quadrature: GaussLobatto
+    Filtering:
+      - Hypercube:
+          HalfPower: 128
+          Enable: false
+          BlocksToFilter: All
+          VolumeFilterOnSubstep: true
+          BoundaryCorrectionFilterOnSubstep: false
+          VolumeFilterEveryNSteps: None
+          BoundaryCorrectionFilterEveryNSteps: None
+
+EventsAndTriggersAtSlabs:
+  - Trigger:
+      Slabs:
+        EvenlySpaced:
+          Interval: 1
+          Offset: 0
+    Events:
+      - ObserveNorms:
+          SubfileName: Errors
+          TensorsToObserve:
+            - Name: Error(Psi)
+              NormType: L2Norm
+              Components: Sum
+            - Name: Error(Pi)
+              NormType: L2Norm
+              Components: Sum
+  - Trigger:
+      Slabs:
+        Specified:
+          Values: [5]
+    Events:
+      - Completion
+
+EventsAndTriggersAtCheckpoints:
+  - Trigger: Always
+    Events:
+      - ObserveFields:
+          SubfileName: CheckpointVolumeData
+          VariablesToObserve: ["Psi", "Pi"]
+          InterpolateToMesh: None
+          ProjectToMesh: None
+          CoordinatesFloatingPointType: Double
+          FloatingPointTypes: [Double]
+          BlocksToObserve: All
+
+EventsAndDenseTriggers:
+
+Observers:
+  VolumeFileName: "SecondOrderScalarWavePlaneWave1DVolume"
+  ReductionFileName: "SecondOrderScalarWavePlaneWave1DReductions"
