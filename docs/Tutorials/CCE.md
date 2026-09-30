@@ -66,7 +66,7 @@ few pre-built executables within, including the ones listed above in the
 our \ref installation instructions for how start the container.
 
 The input files can be found within the container at
-`/work/spectre/tests/InputFiles/`.
+`/sxscollaboration/spectre/tests/InputFiles/`.
 
 ### From source
 
