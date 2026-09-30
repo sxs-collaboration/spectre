@@ -482,7 +482,9 @@ void test_with_noise() {
         {std::unique_ptr<evolution::initial_data::InitialData>(
             std::make_unique<evolution::initial_data::WithNoise>(
                 std::make_unique<SystemAnalyticSolution>(),
-                /*amplitude=*/0.0, /*seed=*/size_t{42},
+                /*amplitude=*/0.0,
+                evolution::initial_data::NoiseAmplitudeType::Absolute,
+                /*seed=*/size_t{42},
                 /*variables=*/std::vector<std::string>{"All"}))}};
     const auto inertial_coords = emplace_component<Dim>(
         make_not_null(&runner), initial_time, expiration_time);
@@ -501,7 +503,9 @@ void test_with_noise() {
         {std::unique_ptr<evolution::initial_data::InitialData>(
             std::make_unique<evolution::initial_data::WithNoise>(
                 std::make_unique<SystemAnalyticSolution>(),
-                /*amplitude=*/1.0, /*seed=*/size_t{42},
+                /*amplitude=*/1.0,
+                evolution::initial_data::NoiseAmplitudeType::Absolute,
+                /*seed=*/size_t{42},
                 /*variables=*/std::vector<std::string>{"All"}))}};
     const auto inertial_coords = emplace_component<Dim>(
         make_not_null(&runner), initial_time, expiration_time);
@@ -531,7 +535,9 @@ void test_with_noise() {
         {std::unique_ptr<evolution::initial_data::InitialData>(
             std::make_unique<evolution::initial_data::WithNoise>(
                 std::make_unique<SystemAnalyticSolution>(),
-                /*amplitude=*/1.0, /*seed=*/size_t{42},
+                /*amplitude=*/1.0,
+                evolution::initial_data::NoiseAmplitudeType::Absolute,
+                /*seed=*/size_t{42},
                 /*variables=*/std::vector<std::string>{"Var"}))}};
     const auto inertial_coords = emplace_component<Dim>(
         make_not_null(&runner), initial_time, expiration_time);

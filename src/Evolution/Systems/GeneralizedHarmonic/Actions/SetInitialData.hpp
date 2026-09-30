@@ -40,7 +40,6 @@
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Serialization/CharmPupable.hpp"
-#include "Utilities/StdHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
@@ -405,20 +404,21 @@ struct SetInitialData {
       }
     }
     size_t component_offset = 0;
-    tmpl::for_each<evolved_vars_list>([&]<typename Tag>(
-                                          tmpl::type_<Tag> /*meta*/) {
-      const size_t this_offset = component_offset;
-      if (noise_all or alg::found(targets, db::tag_name<Tag>())) {
-        db::mutate<Tag>(
-            [&with_noise, element_seed,
-             this_offset](const gsl::not_null<typename Tag::type*> tensor) {
-              evolution::initial_data::add_noise_to_tensor(
-                  tensor, with_noise.amplitude(), element_seed, this_offset);
-            },
-            box);
-      }
-      component_offset += std::decay_t<typename Tag::type>::size();
-    });
+    tmpl::for_each<evolved_vars_list>(
+        [&]<typename Tag>(tmpl::type_<Tag> /*meta*/) {
+          const size_t this_offset = component_offset;
+          if (noise_all or alg::found(targets, db::tag_name<Tag>())) {
+            db::mutate<Tag>(
+                [&with_noise, element_seed,
+                 this_offset](const gsl::not_null<typename Tag::type*> tensor) {
+                  evolution::initial_data::add_noise_to_tensor(
+                      tensor, with_noise.amplitude(),
+                      with_noise.amplitude_type(), element_seed, this_offset);
+                },
+                box);
+          }
+          component_offset += std::decay_t<typename Tag::type>::size();
+        });
     return result;
   }
 

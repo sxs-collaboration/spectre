@@ -33,7 +33,6 @@
 #include "Utilities/CallWithDynamicType.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Gsl.hpp"
-#include "Utilities/StdHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
@@ -100,6 +99,15 @@ struct SetVariables {
           } else if constexpr (std::is_same_v<
                                    initial_data_subclass,
                                    evolution::initial_data::WithNoise>) {
+            // For these systems the noise would be added to the conservative
+            // variables, which are later recomputed from the (unperturbed)
+            // primitives by `UpdateConservatives`, silently erasing it.
+            static_assert(
+                not Metavariables::system::has_primitive_and_conservative_vars,
+                "WithNoise does not yet support systems with primitive "
+                "variables: noise would be added to the conservative "
+                "variables, which are overwritten when they are recomputed "
+                "from the primitives.");
             // Dispatch on the inner solution to set variables normally.
             call_with_dynamic_type<void, derived_classes>(
                 &data_or_solution->solution(), [&box](const auto* const inner) {
@@ -164,7 +172,8 @@ struct SetVariables {
                             alg::found(targets, db::tag_name<Tag>())) {
                           evolution::initial_data::add_noise_to_tensor(
                               make_not_null(&get<Tag>(*vars)),
-                              data_or_solution->amplitude(), element_seed,
+                              data_or_solution->amplitude(),
+                              data_or_solution->amplitude_type(), element_seed,
                               component_offset);
                         }
                         component_offset +=

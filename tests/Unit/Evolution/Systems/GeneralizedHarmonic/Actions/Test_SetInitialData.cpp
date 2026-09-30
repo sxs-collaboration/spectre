@@ -323,7 +323,8 @@ void test_analytic_with_noise() {
     const evolution::initial_data::WithNoise with_noise{
         std::make_unique<gh::Solutions::WrappedGr<gr::Solutions::KerrSchild>>(
             kerr),
-        noise_amplitude, 123_st, std::vector<std::string>{"All"}};
+        noise_amplitude, evolution::initial_data::NoiseAmplitudeType::Absolute,
+        123_st, std::vector<std::string>{"All"}};
     ActionTesting::MockRuntimeSystem<Metavariables> runner{
         {with_noise.get_clone()}, {true}};
     ActionTesting::emplace_nodegroup_component<reader_component>(
@@ -364,8 +365,7 @@ void test_analytic_with_noise() {
     const auto& clean_g =
         get<gr::Tags::SpacetimeMetric<DataVector, 3>>(kerr_gh_vars);
     bool any_different = false;
-    for (size_t i = 0;
-         i < tnsr::aa<DataVector, 3>::size(); ++i) {
+    for (size_t i = 0; i < tnsr::aa<DataVector, 3>::size(); ++i) {
       if (max(abs(g[i] - clean_g[i])) > 0.0) {
         any_different = true;
         break;

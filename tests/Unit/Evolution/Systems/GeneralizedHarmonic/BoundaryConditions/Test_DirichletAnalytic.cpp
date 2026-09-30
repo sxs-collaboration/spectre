@@ -14,7 +14,6 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Index.hpp"
 #include "DataStructures/TaggedTuple.hpp"
-#include "DataStructures/Tensor/Tensor.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/BoundaryConditions/DirichletAnalytic.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/BoundaryConditions/Factory.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/BoundaryCorrections/UpwindPenalty.hpp"
@@ -143,7 +142,9 @@ void test_with_noise_unwrapping() {
       make_gauge_wave()};
   const gh::BoundaryConditions::DirichletAnalytic<Dim> bc_with_noise{
       std::make_unique<evolution::initial_data::WithNoise>(
-          make_gauge_wave(), 1.0, 132_st, std::vector<std::string>{"All"})};
+          make_gauge_wave(), 1.0,
+          evolution::initial_data::NoiseAmplitudeType::Absolute, 132_st,
+          std::vector<std::string>{"All"})};
 
   tnsr::I<DataVector, Dim, Frame::Inertial> coords{n_pts};
   for (size_t d = 0; d < Dim; ++d) {

@@ -227,7 +227,9 @@ void test_with_noise_unwrapping(const Mesh<Dim>& mesh) {
   // leakage)
   const gh::gauges::AnalyticChristoffel noisy_gauge{
       std::make_unique<evolution::initial_data::WithNoise>(
-          make_gauge_wave(), 1.0, 9_st, std::vector<std::string>{"All"})};
+          make_gauge_wave(), 1.0,
+          evolution::initial_data::NoiseAmplitudeType::Absolute, 9_st,
+          std::vector<std::string>{"All"})};
   tnsr::a<DataVector, Dim, Frame::Inertial> gauge_h_noisy(num_points);
   tnsr::ab<DataVector, Dim, Frame::Inertial> d4_gauge_h_noisy(num_points);
   gh::gauges::dispatch<gh::Solutions::all_solutions<Dim>>(

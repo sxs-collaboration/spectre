@@ -166,7 +166,9 @@ void test_with_noise_unwrapping() {
   // Boundary condition with a WithNoise wrapper (non-zero amplitude)
   const ScalarWave::BoundaryConditions::DirichletAnalytic<Dim> bc_with_noise{
       std::make_unique<evolution::initial_data::WithNoise>(
-          make_plane_wave(), /*amplitude=*/1.0, /*seed=*/size_t{42},
+          make_plane_wave(), /*amplitude=*/1.0,
+          evolution::initial_data::NoiseAmplitudeType::Absolute,
+          /*seed=*/size_t{42},
           /*variables=*/std::vector<std::string>{"All"})};
 
   tnsr::I<DataVector, Dim, Frame::Inertial> coords{n_pts};
