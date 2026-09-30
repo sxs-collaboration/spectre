@@ -403,7 +403,7 @@ ModalTimeSeriesReader<Dim>::modal_time_series(
           num_points);
       std::visit(
           Overloader{[&nodal_data](const DataVector& data) {
-                       std::copy(data.begin(), data.end(), nodal_data.begin());
+                       std::ranges::copy(data, nodal_data.begin());
                      },
                      [&nodal_data](const std::vector<float>& data) {
                        std::transform(data.begin(), data.end(),

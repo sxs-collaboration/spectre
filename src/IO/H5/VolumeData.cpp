@@ -1061,8 +1061,8 @@ TensorComponent VolumeData::get_tensor_component(
     const size_t observation_id, const std::string& tensor_component,
     const size_t offset, const size_t length) const {
   const std::string path = "ObservationId" + std::to_string(observation_id);
-  detail::OpenGroup observation_group(volume_data_group_.id(), path,
-                                      AccessType::ReadOnly);
+  const detail::OpenGroup observation_group(volume_data_group_.id(), path,
+                                            AccessType::ReadOnly);
 
   const hid_t dataset_id =
       h5::open_dataset(observation_group.id(), tensor_component);
@@ -1081,8 +1081,8 @@ TensorComponent VolumeData::get_tensor_component(
   hsize_t dataset_length = 0;
   CHECK_H5(H5Sget_simple_extent_dims(dataspace_id, &dataset_length, nullptr),
            "Failed to get the size of dataset '" << tensor_component << "'");
-  const hsize_t h5_offset = static_cast<hsize_t>(offset);
-  const hsize_t h5_length = static_cast<hsize_t>(length);
+  const auto h5_offset = static_cast<hsize_t>(offset);
+  const auto h5_length = static_cast<hsize_t>(length);
   if (length == 0 or h5_offset > dataset_length or
       h5_length > dataset_length - h5_offset) {
     h5::close_dataspace(dataspace_id);
