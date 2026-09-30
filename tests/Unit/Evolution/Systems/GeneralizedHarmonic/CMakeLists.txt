@@ -51,6 +51,7 @@ target_link_libraries(
   GeneralRelativitySolutions
   GeneralizedHarmonic
   Importers
+  InitialDataUtilities
   LinearOperators
   MathFunctions
   Options
