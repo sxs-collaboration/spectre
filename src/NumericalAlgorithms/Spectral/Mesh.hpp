@@ -8,6 +8,7 @@
 
 #include <array>
 #include <cstddef>
+#include <cstdint>
 
 #include "DataStructures/Index.hpp"
 #include "NumericalAlgorithms/Spectral/Basis.hpp"
@@ -15,6 +16,7 @@
 #include "Options/String.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/Kokkos/KokkosMacros.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TypeTraits.hpp"
 #include "Utilities/TypeTraits/IsInteger.hpp"
@@ -46,6 +48,9 @@ class er;
  *
  * \note Because we use a compact bit representation for the mesh, the number
  * of grid points/extents must be fewer than 256 per dimension.
+ *
+ * A `Mesh` is trivially copyable, so it can be passed to Kokkos kernels by
+ * value.
  *
  * \tparam Dim the number of dimensions of the computational grid.
  */
@@ -99,8 +104,8 @@ class Mesh {
    * independent of the value of `isotropic_extents`, and the `basis` and
    * `quadrature` are ignored.
    */
-  Mesh(size_t isotropic_extents, Spectral::Basis basis,
-       Spectral::Quadrature quadrature);
+  KOKKOS_FUNCTION Mesh(size_t isotropic_extents, Spectral::Basis basis,
+                       Spectral::Quadrature quadrature);
 
   /*!
    * \brief Construct a computational grid where each dimension can have a
@@ -115,8 +120,8 @@ class Mesh {
    * \note A `Mesh<0>` extends over no dimensions so the `basis` and
    * `quadrature` are ignored.
    */
-  Mesh(const std::array<size_t, Dim>& extents, Spectral::Basis basis,
-       Spectral::Quadrature quadrature);
+  KOKKOS_FUNCTION Mesh(const std::array<size_t, Dim>& extents,
+                       Spectral::Basis basis, Spectral::Quadrature quadrature);
 
   /*!
    * \brief Construct a computational grid where each dimension can have both a
@@ -128,20 +133,21 @@ class Mesh {
    * \param quadratures The choice of quadratures to compute
    * the collocation points per dimension
    */
-  Mesh(const std::array<size_t, Dim>& extents,
-       const std::array<Spectral::Basis, Dim>& bases,
-       const std::array<Spectral::Quadrature, Dim>& quadratures);
+  KOKKOS_FUNCTION Mesh(
+      const std::array<size_t, Dim>& extents,
+      const std::array<Spectral::Basis, Dim>& bases,
+      const std::array<Spectral::Quadrature, Dim>& quadratures);
 
   /*!
    * \brief The number of grid points in each dimension of the grid.
    */
-  Index<Dim> extents() const;
+  KOKKOS_FUNCTION Index<Dim> extents() const;
 
   /*!
    * \brief The number of grid points in dimension \p d of the grid
    * (zero-indexed).
    */
-  size_t extents(size_t d) const;
+  KOKKOS_FUNCTION size_t extents(size_t d) const;
 
   /*!
    * \brief The total number of grid points in all dimensions.
@@ -152,7 +158,7 @@ class Mesh {
    * \note A zero-dimensional mesh has one grid point, since it is the slice
    * through a one-dimensional mesh (a line).
    */
-  size_t number_of_grid_points() const;
+  KOKKOS_FUNCTION size_t number_of_grid_points() const;
 
   /*!
    * \brief Returns the 1-dimensional index corresponding to the `Dim`
@@ -162,27 +168,27 @@ class Mesh {
    *
    * \see collapsed_index()
    */
-  size_t storage_index(const Index<Dim>& index) const;
+  KOKKOS_FUNCTION size_t storage_index(const Index<Dim>& index) const;
 
   /*!
    * \brief The basis chosen in each dimension of the grid.
    */
-  std::array<Spectral::Basis, Dim> basis() const;
+  KOKKOS_FUNCTION std::array<Spectral::Basis, Dim> basis() const;
 
   /*!
    * \brief The basis chosen in dimension \p d of the grid (zero-indexed).
    */
-  Spectral::Basis basis(size_t d) const;
+  KOKKOS_FUNCTION Spectral::Basis basis(size_t d) const;
 
   /*!
    * \brief The quadrature chosen in each dimension of the grid.
    */
-  std::array<Spectral::Quadrature, Dim> quadrature() const;
+  KOKKOS_FUNCTION std::array<Spectral::Quadrature, Dim> quadrature() const;
 
   /*!
    * \brief The quadrature chosen in dimension \p d of the grid (zero-indexed).
    */
-  Spectral::Quadrature quadrature(size_t d) const;
+  KOKKOS_FUNCTION Spectral::Quadrature quadrature(size_t d) const;
 
   /*!
    * \brief Returns a Mesh with dimension \p d removed (zero-indexed).
@@ -191,7 +197,7 @@ class Mesh {
    */
   // clang-tidy: incorrectly reported redundancy in template expression
   template <size_t N = Dim, Requires<(N > 0 and N == Dim)> = nullptr>  // NOLINT
-  Mesh<Dim - 1> slice_away(size_t d) const;
+  KOKKOS_FUNCTION Mesh<Dim - 1> slice_away(size_t d) const;
 
   /*!
    * \brief Returns the interface Mesh for a DG boundary in direction \p d.
@@ -206,7 +212,7 @@ class Mesh {
    */
   // clang-tidy: incorrectly reported redundancy in template expression
   template <size_t N = Dim, Requires<(N > 0 and N == Dim)> = nullptr>  // NOLINT
-  Mesh<Dim - 1> on_interface(size_t d) const;
+  KOKKOS_FUNCTION Mesh<Dim - 1> on_interface(size_t d) const;
 
   /*!
    * \brief Returns a Mesh with the dimensions \p d, ... present (zero-indexed).
@@ -219,7 +225,7 @@ class Mesh {
    * \see slice_away()
    */
   template <typename... D, Requires<(sizeof...(D) <= Dim)> = nullptr>
-  Mesh<sizeof...(D)> slice_through(D... d) const {
+  KOKKOS_FUNCTION Mesh<sizeof...(D)> slice_through(D... d) const {
     static_assert(std::conjunction_v<tt::is_integer<D>...>,
                   "The dimensions must be integers.");
     const std::array<size_t, sizeof...(D)> dims{{static_cast<size_t>(d)...}};
@@ -232,7 +238,8 @@ class Mesh {
    * \see slice_through() The templated overload of this function
    */
   template <size_t SliceDim, Requires<(SliceDim <= Dim)> = nullptr>
-  Mesh<SliceDim> slice_through(const std::array<size_t, SliceDim>& dims) const;
+  KOKKOS_FUNCTION Mesh<SliceDim> slice_through(
+      const std::array<size_t, SliceDim>& dims) const;
 
   /*!
    * \brief Returns the Meshes representing 1D slices of this Mesh.
@@ -241,7 +248,7 @@ class Mesh {
    * `d` from `0` to `Dim - 1` except in dimension 0 where
    * `slice_through(d)` is not defined.
    */
-  std::array<Mesh<1>, Dim> slices() const;
+  KOKKOS_FUNCTION std::array<Mesh<1>, Dim> slices() const;
 
   // clang-tidy: runtime-references
   // NOLINTNEXTLINE(google-runtime-references)
@@ -252,7 +259,8 @@ class Mesh {
   friend class Mesh;
 
   template <size_t LocalDim>
-  friend bool operator==(const Mesh<LocalDim>& lhs, const Mesh<LocalDim>& rhs);
+  friend KOKKOS_FUNCTION bool operator==(const Mesh<LocalDim>& lhs,
+                                         const Mesh<LocalDim>& rhs);
 
   // - 8 bits per extent = 3 * 8 = 24 bits = 3 bytes
   //   This limits us to 255 extent per direction. Since FD is 2N-1 DG, this
@@ -269,14 +277,14 @@ class Mesh {
  * If `Dim` is zero, then `true` is always returned.
  */
 template <size_t Dim>
-bool is_isotropic(const Mesh<Dim>& mesh);
+KOKKOS_FUNCTION bool is_isotropic(const Mesh<Dim>& mesh);
 
 /// \cond HIDDEN_SYMBOLS
 template <size_t Dim>
-bool operator==(const Mesh<Dim>& lhs, const Mesh<Dim>& rhs);
+KOKKOS_FUNCTION bool operator==(const Mesh<Dim>& lhs, const Mesh<Dim>& rhs);
 
 template <size_t Dim>
-bool operator!=(const Mesh<Dim>& lhs, const Mesh<Dim>& rhs);
+KOKKOS_FUNCTION bool operator!=(const Mesh<Dim>& lhs, const Mesh<Dim>& rhs);
 
 template <size_t Dim>
 std::ostream& operator<<(std::ostream& os, const Mesh<Dim>& mesh);
