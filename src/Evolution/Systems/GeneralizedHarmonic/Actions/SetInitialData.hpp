@@ -7,9 +7,11 @@
 #include <pup.h>
 #include <string>
 #include <variant>
+#include <vector>
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
+#include "DataStructures/DataBox/TagName.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/TaggedTuple.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
@@ -17,6 +19,7 @@
 #include "Domain/Tags.hpp"
 #include "Evolution/Initialization/InitialData.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/GaugeSourceFunctions/SetPiAndPhiFromConstraints.hpp"
+#include "Evolution/Systems/GeneralizedHarmonic/System.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
 #include "IO/Importers/Actions/ReadVolumeData.hpp"
 #include "IO/Importers/ElementDataReader.hpp"
@@ -26,13 +29,18 @@
 #include "Parallel/AlgorithmExecution.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
+#include "PointwiseFunctions/AnalyticData/AnalyticData.hpp"
+#include "PointwiseFunctions/AnalyticSolutions/AnalyticSolution.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "PointwiseFunctions/InitialDataUtilities/InitialData.hpp"
 #include "PointwiseFunctions/InitialDataUtilities/Tags/InitialData.hpp"
+#include "PointwiseFunctions/InitialDataUtilities/WithNoise.hpp"
+#include "Utilities/Algorithm.hpp"
 #include "Utilities/CallWithDynamicType.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Serialization/CharmPupable.hpp"
+#include "Utilities/StdHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
@@ -338,6 +346,80 @@ struct SetInitialData {
         reader_component, initial_data.importer_options(),
         initial_data.volume_data_id(), std::move(selected_fields));
     return {Parallel::AlgorithmExecution::Continue, std::nullopt};
+  }
+
+  // WithNoise initial data — applies analytic inner solution then adds noise
+  template <typename DbTagsList, typename Metavariables, typename ArrayIndex,
+            typename ParallelComponent>
+  static Parallel::iterable_action_return_t apply(
+      const gsl::not_null<db::DataBox<DbTagsList>*> box,
+      const evolution::initial_data::WithNoise& with_noise,
+      Parallel::GlobalCache<Metavariables>& cache,
+      const ArrayIndex& array_index,
+      const ParallelComponent* const parallel_component) {
+    static constexpr size_t Dim = Metavariables::volume_dim;
+    // Dispatch on the inner solution to set GH variables normally.
+    using initial_data_classes =
+        tmpl::at<typename Metavariables::factory_creation::factory_classes,
+                 evolution::initial_data::InitialData>;
+    const auto result =
+        call_with_dynamic_type<Parallel::iterable_action_return_t,
+                               initial_data_classes>(
+            &with_noise.solution(),
+            [&box, &cache, &array_index, &parallel_component](
+                const auto* const inner) -> Parallel::iterable_action_return_t {
+              using inner_type = std::decay_t<decltype(*inner)>;
+              if constexpr (is_analytic_data_v<inner_type> or
+                            is_analytic_solution_v<inner_type>) {
+                return apply(box, *inner, cache, array_index,
+                             parallel_component);
+              } else {
+                ERROR(
+                    "WithNoise: the inner Solution must be an analytic "
+                    "solution or analytic data. Numeric initial data "
+                    "cannot be wrapped by WithNoise.");
+              }
+            });
+    // Compute inertial-coordinate-based per-element seed.
+    const size_t element_seed = evolution::initial_data::make_element_seed(
+        with_noise.seed(),
+        db::get<domain::Tags::Coordinates<Dim, Frame::Inertial>>(*box));
+    // Apply noise to each evolved GH variable.
+    using evolved_vars_list =
+        typename gh::System<Dim>::variables_tag::tags_list;
+    const auto& targets = with_noise.variables();
+    const bool noise_all = alg::found(targets, std::string{"All"});
+    // Validate variable names against the system's evolved variables.
+    if (not noise_all) {
+      std::vector<std::string> valid_names{};
+      tmpl::for_each<evolved_vars_list>(
+          [&valid_names]<typename Tag>(tmpl::type_<Tag> /*meta*/) {
+            valid_names.push_back(db::tag_name<Tag>());
+          });
+      for (const auto& target : targets) {
+        if (not alg::found(valid_names, target)) {
+          ERROR("WithNoise: unknown variable name '"
+                << target << "'. Valid names for this system are: "
+                << valid_names << ". Use [\"All\"] to noise every variable.");
+        }
+      }
+    }
+    size_t component_offset = 0;
+    tmpl::for_each<evolved_vars_list>([&]<typename Tag>(
+                                          tmpl::type_<Tag> /*meta*/) {
+      const size_t this_offset = component_offset;
+      if (noise_all or alg::found(targets, db::tag_name<Tag>())) {
+        db::mutate<Tag>(
+            [&with_noise, element_seed,
+             this_offset](const gsl::not_null<typename Tag::type*> tensor) {
+              evolution::initial_data::add_noise_to_tensor(
+                  tensor, with_noise.amplitude(), element_seed, this_offset);
+            },
+            box);
+      }
+      component_offset += std::decay_t<typename Tag::type>::size();
+    });
+    return result;
   }
 
   // "AnalyticData"-type initial data
