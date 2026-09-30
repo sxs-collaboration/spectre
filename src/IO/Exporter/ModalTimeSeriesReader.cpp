@@ -370,7 +370,8 @@ ModalTimeSeriesReader<Dim>::modal_time_series(
   Series series(num_components,
                 std::vector<std::vector<double>>(
                     num_points, std::vector<double>(num_observations)));
-  DataVector nodal_data(num_points);
+  // Left empty so the DataVector read from the file can be moved in
+  DataVector nodal_data{};
   ModalVector modal_data(num_points);
   for (size_t obs_index = 0; obs_index < num_observations; ++obs_index) {
     const auto& obs_cache = file_cache_->observations[obs_index];
@@ -398,27 +399,18 @@ ModalTimeSeriesReader<Dim>::modal_time_series(
     const size_t offset = obs_cache.grid_offsets[grid_index];
     for (size_t component_index = 0; component_index < num_components;
          ++component_index) {
-      // This currently reads the data of all elements in the file and
-      // discards all but this element's subset. Reading only the subset is a
-      // possible optimization, see docs of `modal_time_series`.
-      const auto tensor_component = volfile.get_tensor_component(
-          obs_cache.obs_id, tensor_components_[component_index]);
+      auto tensor_component = volfile.get_tensor_component(
+          obs_cache.obs_id, tensor_components_[component_index], offset,
+          num_points);
       std::visit(
           Overloader{
-              [&nodal_data, &offset, &num_points](const DataVector& data) {
-                std::copy_n(data.begin() + static_cast<std::ptrdiff_t>(offset),
-                            static_cast<std::ptrdiff_t>(num_points),
-                            nodal_data.begin());
-              },
-              [&nodal_data, &offset,
-               &num_points](const std::vector<float>& data) {
-                std::transform(
-                    data.begin() + static_cast<std::ptrdiff_t>(offset),
-                    data.begin() +
-                        static_cast<std::ptrdiff_t>(offset + num_points),
-                    nodal_data.begin(), [](const float value) {
-                      return static_cast<double>(value);
-                    });
+              [&nodal_data](DataVector& data) { nodal_data = std::move(data); },
+              [&nodal_data, &num_points](const std::vector<float>& data) {
+                nodal_data.destructive_resize(num_points);
+                std::ranges::transform(data, nodal_data.begin(),
+                                       [](const float value) {
+                                         return static_cast<double>(value);
+                                       });
               }},
           tensor_component.data);
       to_modal_coefficients(make_not_null(&modal_data), nodal_data, mesh);

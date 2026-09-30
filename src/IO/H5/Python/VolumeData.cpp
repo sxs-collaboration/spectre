@@ -42,8 +42,15 @@ void bind_h5vol(py::module& m) {
            py::arg("observation_id"))
       .def("list_tensor_components", &h5::VolumeData::list_tensor_components,
            py::arg("observation_id"))
-      .def("get_tensor_component", &h5::VolumeData::get_tensor_component,
+      .def("get_tensor_component",
+           py::overload_cast<size_t, const std::string&>(
+               &h5::VolumeData::get_tensor_component, py::const_),
            py::arg("observation_id"), py::arg("tensor_component"))
+      .def("get_tensor_component",
+           py::overload_cast<size_t, const std::string&, size_t, size_t>(
+               &h5::VolumeData::get_tensor_component, py::const_),
+           py::arg("observation_id"), py::arg("tensor_component"),
+           py::arg("offset"), py::arg("length"))
       .def("get_extents", &h5::VolumeData::get_extents,
            py::arg("observation_id"))
       .def("get_quadratures", &h5::VolumeData::get_quadratures,
