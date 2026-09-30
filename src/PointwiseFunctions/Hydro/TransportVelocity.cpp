@@ -3,20 +3,26 @@
 
 #include "TransportVelocity.hpp"
 
+#include <type_traits>
+
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/Kokkos/KokkosCore.hpp"
 #include "Utilities/SetNumberOfGridPoints.hpp"
 
 namespace hydro {
 
 template <typename DataType, size_t Dim, typename Fr>
-void transport_velocity(const gsl::not_null<tnsr::I<DataType, Dim, Fr>*> result,
-                        const tnsr::I<DataType, Dim, Fr>& spatial_velocity,
-                        const Scalar<DataType>& lapse,
-                        const tnsr::I<DataType, Dim, Fr>& shift) {
-  set_number_of_grid_points(result, lapse);
+KOKKOS_FUNCTION void transport_velocity(
+    const gsl::not_null<tnsr::I<DataType, Dim, Fr>*> result,
+    const tnsr::I<DataType, Dim, Fr>& spatial_velocity,
+    const Scalar<DataType>& lapse, const tnsr::I<DataType, Dim, Fr>& shift) {
+  // Resizing is a host-only operation and not needed for `double`
+  if constexpr (not std::is_same_v<DataType, double>) {
+    set_number_of_grid_points(result, lapse);
+  }
   for (size_t i = 0; i < Dim; i++) {
     result->get(i) = spatial_velocity.get(i) * get(lapse) - shift.get(i);
   }
@@ -34,8 +40,13 @@ void transport_velocity(const gsl::not_null<tnsr::I<DataType, Dim, Fr>*> result,
       const Scalar<DTYPE(data)>& lapse,                                     \
       const tnsr::I<DTYPE(data), DIM(data), FRAME(data)>& shift);
 
+GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (double),
+                        (Frame::Grid, Frame::Inertial))
+// The `DataVector` versions are never called on the device
+#ifndef SPECTRE_KOKKOS_DEVICE_PASS
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (DataVector),
                         (Frame::Grid, Frame::Inertial))
+#endif  // SPECTRE_KOKKOS_DEVICE_PASS
 
 #undef DIM
 #undef DTYPE
