@@ -189,6 +189,16 @@ class VolumeData : public h5::Object {
   TensorComponent get_tensor_component(
       size_t observation_id, const std::string& tensor_component) const;
 
+  /*!\brief Read a contiguous subset of a rank-1 tensor component dataset.
+   *
+   * This overload avoids loading data for every grid when only one grid is
+   * needed. Use `offset_and_length_for_grid()` to obtain `offset` and
+   * `length` from the grid names and extents at the observation.
+   */
+  TensorComponent get_tensor_component(size_t observation_id,
+                                       const std::string& tensor_component,
+                                       size_t offset, size_t length) const;
+
   /// Read the extents of all the grids stored in the file at the observation id
   /// `observation_id`
   std::vector<std::vector<size_t>> get_extents(size_t observation_id) const;

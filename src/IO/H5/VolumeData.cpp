@@ -31,6 +31,7 @@
 #include "IO/H5/TensorData.hpp"
 #include "IO/H5/Type.hpp"
 #include "IO/H5/Version.hpp"
+#include "IO/H5/Wrappers.hpp"
 #include "NumericalAlgorithms/Spectral/Basis.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Quadrature.hpp"
@@ -1054,6 +1055,100 @@ TensorComponent VolumeData::get_tensor_component(
   } else {
     ERROR("Unknown H5 type " << h5_data_type);
   }
+}
+
+TensorComponent VolumeData::get_tensor_component(
+    const size_t observation_id, const std::string& tensor_component,
+    const size_t offset, const size_t length) const {
+  const std::string path = "ObservationId" + std::to_string(observation_id);
+  detail::OpenGroup observation_group(volume_data_group_.id(), path,
+                                      AccessType::ReadOnly);
+
+  const hid_t dataset_id =
+      h5::open_dataset(observation_group.id(), tensor_component);
+  const hid_t dataspace_id = h5::open_dataspace(dataset_id);
+  const int rank = H5Sget_simple_extent_ndims(dataspace_id);
+  CHECK_H5(rank,
+           "Failed to get the rank of dataset '" << tensor_component << "'");
+  if (rank != 1) {
+    h5::close_dataspace(dataspace_id);
+    h5::close_dataset(dataset_id);
+    ERROR(
+        "Reading a subset of a tensor component requires a rank-1 dataset, "
+        "but dataset '"
+        << tensor_component << "' has rank " << rank << ".");
+  }
+  hsize_t dataset_length = 0;
+  CHECK_H5(H5Sget_simple_extent_dims(dataspace_id, &dataset_length, nullptr),
+           "Failed to get the size of dataset '" << tensor_component << "'");
+  const hsize_t h5_offset = static_cast<hsize_t>(offset);
+  const hsize_t h5_length = static_cast<hsize_t>(length);
+  if (length == 0 or h5_offset > dataset_length or
+      h5_length > dataset_length - h5_offset) {
+    h5::close_dataspace(dataspace_id);
+    h5::close_dataset(dataset_id);
+    ERROR("Requested offset "
+          << offset << " and length " << length << " from dataset '"
+          << tensor_component << "' of length " << dataset_length
+          << ". The requested subset must be non-empty and lie within the "
+             "dataset.");
+  }
+  CHECK_H5(H5Sselect_hyperslab(dataspace_id, H5S_SELECT_SET, &h5_offset,
+                               nullptr, &h5_length, nullptr),
+           "Failed to select a subset of dataset '" << tensor_component << "'");
+  const hid_t memory_space_id = H5Screate_simple(1, &h5_length, &h5_length);
+  CHECK_H5(memory_space_id,
+           "Failed to create a memory space for reading dataset '"
+               << tensor_component << "'");
+  const hid_t h5_data_type = H5Dget_type(dataset_id);
+  CHECK_H5(h5_data_type,
+           "Failed to get the type of dataset '" << tensor_component << "'");
+
+  const auto read_subset = [&dataset_id, &dataspace_id, &memory_space_id,
+                            &length, &tensor_component](auto type_to_get_v) {
+    using type_to_get = tmpl::type_from<decltype(type_to_get_v)>;
+    type_to_get data(length);
+    CHECK_H5(
+        H5Dread(dataset_id,
+                h5::h5_type<tt::get_fundamental_type_t<type_to_get>>(),
+                memory_space_id, dataspace_id, h5::h5p_default(), data.data()),
+        "Failed to read a subset of dataset '" << tensor_component << "'");
+    return data;
+  };
+
+  TensorComponent result{};
+  if (h5::types_equal(h5_data_type, h5::h5_type<float>())) {
+    result = {tensor_component, read_subset(tmpl::type_<std::vector<float>>{})};
+  } else if (h5::types_equal(h5_data_type, h5::h5_type<double>())) {
+    result = {tensor_component, read_subset(tmpl::type_<DataVector>{})};
+  } else if (h5::types_equal(h5_data_type, h5::h5_type<int>())) {
+    const auto stored = read_subset(tmpl::type_<std::vector<int>>{});
+    DataVector data(stored.size());
+    std::ranges::copy(stored.begin(), stored.end(), data.begin());
+    result = {tensor_component, std::move(data)};
+  } else if (h5::types_equal(h5_data_type, h5::h5_type<unsigned int>())) {
+    const auto stored = read_subset(tmpl::type_<std::vector<unsigned int>>{});
+    DataVector data(stored.size());
+    std::ranges::copy(stored.begin(), stored.end(), data.begin());
+    result = {tensor_component, std::move(data)};
+  } else if (h5::types_equal(h5_data_type, h5::h5_type<unsigned long>())) {
+    const auto stored = read_subset(tmpl::type_<std::vector<unsigned long>>{});
+    DataVector data(stored.size());
+    std::ranges::copy(stored.begin(), stored.end(), data.begin());
+    result = {tensor_component, std::move(data)};
+  } else {
+    const hid_t unknown_type = h5_data_type;
+    CHECK_H5(H5Tclose(h5_data_type), "Failed to close a datatype");
+    CHECK_H5(H5Sclose(memory_space_id), "Failed to close a memory space");
+    h5::close_dataspace(dataspace_id);
+    h5::close_dataset(dataset_id);
+    ERROR("Unknown H5 type " << unknown_type);
+  }
+  CHECK_H5(H5Tclose(h5_data_type), "Failed to close a datatype");
+  CHECK_H5(H5Sclose(memory_space_id), "Failed to close a memory space");
+  h5::close_dataspace(dataspace_id);
+  h5::close_dataset(dataset_id);
+  return result;
 }
 
 std::vector<std::vector<size_t>> VolumeData::get_extents(
