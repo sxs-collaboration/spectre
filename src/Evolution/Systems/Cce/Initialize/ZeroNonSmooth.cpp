@@ -119,7 +119,9 @@ void ZeroNonSmooth::operator()(
   detail::iteratively_adapt_angular_coordinates(
       cartesian_cauchy_coordinates, angular_cauchy_coordinates, l_max,
       angular_coordinate_tolerance_, max_iterations_, 1.0e-2,
-      iteration_function, require_convergence_);
+      iteration_function,
+      require_convergence_ ? detail::UnconvergedAngularSolve::Error
+                           : detail::UnconvergedAngularSolve::Warn);
 }
 
 void ZeroNonSmooth::pup(PUP::er& p) {
