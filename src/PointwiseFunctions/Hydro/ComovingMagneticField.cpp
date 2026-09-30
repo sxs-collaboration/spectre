@@ -7,6 +7,7 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/Kokkos/KokkosCore.hpp"
 
 namespace hydro {
 
@@ -43,7 +44,7 @@ tnsr::A<DataType, 3> comoving_magnetic_field(
 }
 
 template <typename DataType>
-void comoving_magnetic_field_one_form(
+KOKKOS_FUNCTION void comoving_magnetic_field_one_form(
     const gsl::not_null<tnsr::a<DataType, 3>*> result,
     const tnsr::i<DataType, 3>& spatial_velocity_one_form,
     const tnsr::i<DataType, 3>& magnetic_field_one_form,
@@ -110,12 +111,6 @@ Scalar<DataType> comoving_magnetic_field_squared(
       const tnsr::I<DTYPE(data), 3>&, const tnsr::I<DTYPE(data), 3>&,        \
       const Scalar<DTYPE(data)>&, const Scalar<DTYPE(data)>&,                \
       const tnsr::I<DTYPE(data), 3>&, const Scalar<DTYPE(data)>&);           \
-  template void comoving_magnetic_field_one_form(                            \
-      const gsl::not_null<tnsr::a<DTYPE(data), 3>*>                          \
-          comoving_magnetic_field_one_form_result,                           \
-      const tnsr::i<DTYPE(data), 3>&, const tnsr::i<DTYPE(data), 3>&,        \
-      const Scalar<DTYPE(data)>&, const Scalar<DTYPE(data)>&,                \
-      const tnsr::I<DTYPE(data), 3>&, const Scalar<DTYPE(data)>&);           \
   template tnsr::a<DTYPE(data), 3> comoving_magnetic_field_one_form(         \
       const tnsr::i<DTYPE(data), 3>&, const tnsr::i<DTYPE(data), 3>&,        \
       const Scalar<DTYPE(data)>&, const Scalar<DTYPE(data)>&,                \
@@ -129,7 +124,22 @@ Scalar<DataType> comoving_magnetic_field_squared(
 
 GENERATE_INSTANTIATIONS(INSTANTIATION, (double, DataVector))
 
+// Called in Kokkos kernels, so only the `DataVector` version is host-only
+#define INSTANTIATION_DEVICE(r, data)                                 \
+  template void comoving_magnetic_field_one_form(                     \
+      const gsl::not_null<tnsr::a<DTYPE(data), 3>*>                   \
+          comoving_magnetic_field_one_form_result,                    \
+      const tnsr::i<DTYPE(data), 3>&, const tnsr::i<DTYPE(data), 3>&, \
+      const Scalar<DTYPE(data)>&, const Scalar<DTYPE(data)>&,         \
+      const tnsr::I<DTYPE(data), 3>&, const Scalar<DTYPE(data)>&);
+
+GENERATE_INSTANTIATIONS(INSTANTIATION_DEVICE, (double))
+#ifndef SPECTRE_KOKKOS_DEVICE_PASS
+GENERATE_INSTANTIATIONS(INSTANTIATION_DEVICE, (DataVector))
+#endif  // SPECTRE_KOKKOS_DEVICE_PASS
+
 #undef DTYPE
 #undef INSTANTIATION
+#undef INSTANTIATION_DEVICE
 
 }  // namespace hydro
