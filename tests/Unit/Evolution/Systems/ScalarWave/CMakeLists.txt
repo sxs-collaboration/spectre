@@ -31,6 +31,7 @@ target_link_libraries(
   PRIVATE
   DataStructures
   Domain
+  InitialDataUtilities
   LinearOperators
   MathFunctions
   ScalarWave
