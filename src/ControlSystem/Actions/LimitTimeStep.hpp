@@ -9,6 +9,7 @@
 
 #include "ControlSystem/CombinedName.hpp"
 #include "ControlSystem/Metafunctions.hpp"
+#include "ControlSystem/Tags/IsActiveMap.hpp"
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "Parallel/AlgorithmExecution.hpp"
 #include "Parallel/ArrayCollection/IsDgElementCollection.hpp"
@@ -179,6 +180,9 @@ struct LimitTimeStep {
         return;
       }
 
+      const auto& is_active_map =
+          Parallel::get<control_system::Tags::IsActiveMap>(cache);
+
       // Calculate group_expiration
       Parallel::mutable_cache_item_is_ready<domain::Tags::FunctionsOfTime>(
           cache,
@@ -186,7 +190,7 @@ struct LimitTimeStep {
           [&](const auto& functions_of_time) {
             tmpl::for_each<group>([&](auto system) {
               using System = tmpl::type_from<decltype(system)>;
-              if (not ready) {
+              if (not ready or not is_active_map.at(System::name())) {
                 return;
               }
               const auto& fot = *functions_of_time.at(System::name());

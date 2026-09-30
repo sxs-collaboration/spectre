@@ -16,6 +16,7 @@
 #include "ControlSystem/Actions/LimitTimeStep.hpp"
 #include "ControlSystem/FutureMeasurements.hpp"
 #include "ControlSystem/Tags/FutureMeasurements.hpp"
+#include "ControlSystem/Tags/IsActiveMap.hpp"
 #include "ControlSystem/Tags/MeasurementTimescales.hpp"
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
@@ -76,7 +77,8 @@ struct Component {
   using array_index = ElementId<3>;
   using mutable_global_cache_tags =
       tmpl::list<control_system::Tags::MeasurementTimescales,
-                 domain::Tags::FunctionsOfTime>;
+                 domain::Tags::FunctionsOfTime,
+                 control_system::Tags::IsActiveMap>;
   using simple_tags =
       db::AddSimpleTags<control_system::Tags::FutureMeasurements<systemsA>,
                         control_system::Tags::FutureMeasurements<systemsB>,
@@ -155,6 +157,10 @@ void test(const std::string& test_label, const double initial_time,
   if (fot_updatesC.has_value()) {
     functions_of_time["LabelC"] = setup_fot(*fot_updatesC);
   }
+  control_system::Tags::IsActiveMap::type is_active_map{
+      {"LabelA", fot_updatesA.has_value()},
+      {"LabelB", fot_updatesB.has_value()},
+      {"LabelC", fot_updatesC.has_value()}};
 
   const auto setup_measurements =
       [&initial_time](
@@ -181,8 +187,9 @@ void test(const std::string& test_label, const double initial_time,
   using MockRuntimeSystem =
       ActionTesting::MockRuntimeSystem<Metavariables<control_systems>>;
   using component = Component<Metavariables<control_systems>>;
-  MockRuntimeSystem runner{
-      {1e-8}, {std::move(timescales), std::move(functions_of_time)}};
+  MockRuntimeSystem runner{{1e-8},
+                           {std::move(timescales), std::move(functions_of_time),
+                            std::move(is_active_map)}};
   ActionTesting::emplace_array_component_and_initialize<component>(
       make_not_null(&runner), ActionTesting::NodeId{0},
       ActionTesting::LocalCoreId{0}, element_id,
@@ -286,6 +293,12 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.Actions.LimitTimeStep",
        {{0.0, 1.0}, {5.0, nan}},
        Updates{{0.0, arbitrary}, {5.0, nan}},  // goal range [2, 5]
        Updates{{0.0, arbitrary}, {6.0, nan}});  // goal range [2, 6]
+  test("Inactive system in active group", 1.0, 7.0, 5.0,
+       {{0.0, infinity}, {infinity, nan}},
+       std::nullopt,
+       {{0.0, 1.0}, {5.0, nan}},
+       Updates{{0.0, arbitrary}, {5.0, nan}},  // goal range [2, 5]
+       std::nullopt);
   test("Limited by expiration, 2 measurements", 1.0, 6.0, 5.0,
        {{0.0, 2.0}, {10.0, nan}},
        Updates{{0.0, arbitrary}, {6.0, nan}},  // goal range [4, 6]
