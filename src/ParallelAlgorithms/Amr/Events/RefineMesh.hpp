@@ -156,9 +156,11 @@ class RefineMesh : public Event {
                   flag == amr::Flag::DecreaseResolution);
         })) {
       db::mutate<::domain::Tags::Mesh<volume_dim>>(
-          [&old_mesh,
+          [&old_mesh_and_element,
            &overall_decision](const gsl::not_null<Mesh<volume_dim>*> mesh) {
-            *mesh = amr::projectors::mesh(old_mesh, overall_decision);
+            *mesh = amr::projectors::p_refined_mesh(
+                old_mesh_and_element.first, overall_decision,
+                old_mesh_and_element.second.topologies());
             if (not Spectral::is_valid_dg_mesh(*mesh)) {
               ERROR("Invalid mesh: " << *mesh);
             }
@@ -167,7 +169,7 @@ class RefineMesh : public Event {
 
       if (verbosity >= Verbosity::Debug) {
         Parallel::printf(
-            "Increasing order of element %s: %s -> %s\n", element_id,
+            "Changing order of element %s: %s -> %s\n", element_id,
             old_mesh.extents(),
             db::get<::domain::Tags::Mesh<volume_dim>>(*box).extents());
       }

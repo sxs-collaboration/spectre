@@ -198,7 +198,7 @@ struct EvaluateRefinementCriteria {
       }
     }
 
-    const auto new_mesh = amr::projectors::new_mesh(
+    const auto new_mesh = amr::projectors::new_mesh_to_communicate_to_neighbors(
         get<::domain::Tags::Mesh<volume_dim>>(box), overall_decision,
         my_element, my_neighbors_amr_info);
 
