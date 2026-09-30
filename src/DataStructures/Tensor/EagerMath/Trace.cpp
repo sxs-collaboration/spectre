@@ -8,6 +8,7 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
+#include "Utilities/Kokkos/KokkosCore.hpp"
 
 template <typename DataType, typename Index0, typename Index1>
 void trace_last_indices(
@@ -34,7 +35,7 @@ void trace_last_indices(
 }
 
 template <typename DataType, typename Index0>
-void trace(
+KOKKOS_FUNCTION void trace(
     const gsl::not_null<Scalar<DataType>*> trace,
     const Tensor<DataType, Symmetry<1, 1>, index_list<Index0, Index0>>& tensor,
     const Tensor<DataType, Symmetry<1, 1>,
@@ -101,9 +102,15 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (double, DataVector),
                    index_list<change_index_up_lo<INDEX0(data)>,     \
                               change_index_up_lo<INDEX0(data)>>>& metric);
 
-GENERATE_INSTANTIATIONS(INSTANTIATE2, (1, 2, 3), (double, DataVector),
+GENERATE_INSTANTIATIONS(INSTANTIATE2, (1, 2, 3), (double),
                         (Frame::Grid, Frame::Distorted, Frame::Inertial),
                         (SpatialIndex, SpacetimeIndex), (UpLo::Lo, UpLo::Up))
+// The `DataVector` versions are never called on the device
+#ifndef SPECTRE_KOKKOS_DEVICE_PASS
+GENERATE_INSTANTIATIONS(INSTANTIATE2, (1, 2, 3), (DataVector),
+                        (Frame::Grid, Frame::Distorted, Frame::Inertial),
+                        (SpatialIndex, SpacetimeIndex), (UpLo::Lo, UpLo::Up))
+#endif  // SPECTRE_KOKKOS_DEVICE_PASS
 
 #undef DIM
 #undef DTYPE

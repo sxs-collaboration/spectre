@@ -5,6 +5,7 @@
 
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/Kokkos/KokkosCore.hpp"
 #include "Utilities/MakeWithValue.hpp"
 
 /// @{
@@ -52,7 +53,7 @@ Tensor<DataType, Symmetry<1>, index_list<Index0>> trace_last_indices(
  * can be spatial or spacetime indices.
  */
 template <typename DataType, typename Index0>
-void trace(
+KOKKOS_FUNCTION void trace(
     gsl::not_null<Scalar<DataType>*> trace,
     const Tensor<DataType, Symmetry<1, 1>, index_list<Index0, Index0>>& tensor,
     const Tensor<DataType, Symmetry<1, 1>,

@@ -10,6 +10,7 @@
 
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Utilities/ContainerHelpers.hpp"
+#include "Utilities/Kokkos/KokkosCore.hpp"
 #include "Utilities/MakeWithValue.hpp"
 
 /// @{
@@ -60,7 +61,7 @@ Scalar<DataTypeResult> dot_product(
 template <typename DataTypeLhs, typename DataTypeRhs, typename Index,
           typename DataTypeResult = decltype(blaze::evaluate(DataTypeLhs() *
                                                              DataTypeRhs()))>
-void dot_product(
+KOKKOS_FUNCTION void dot_product(
     // NOLINTNEXTLINE(readability-avoid-const-params-in-decls) false positive
     const gsl::not_null<Scalar<DataTypeResult>*> dot_product,
     const Tensor<DataTypeLhs, Symmetry<1>, index_list<Index>>& vector_a,

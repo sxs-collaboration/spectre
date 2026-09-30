@@ -5,6 +5,7 @@
 
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/Kokkos/KokkosCore.hpp"
 #include "Utilities/MakeWithValue.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -67,7 +68,7 @@ raise_or_lower_first_index(
  * \f$g_{ab}\f$.
  */
 template <typename DataTypeTensor, typename DataTypeMetric, typename Index0>
-void raise_or_lower_index(
+KOKKOS_FUNCTION void raise_or_lower_index(
     gsl::not_null<Tensor<DataTypeTensor, Symmetry<1>,
                          index_list<change_index_up_lo<Index0>>>*>
         result,
