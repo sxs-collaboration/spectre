@@ -243,15 +243,16 @@ struct AdjustDomain {
                     flag == amr::Flag::DecreaseResolution);
           })) {
         db::mutate<::domain::Tags::Mesh<volume_dim>>(
-            [&old_mesh,
+            [&old_mesh, &old_element,
              &my_amr_flags](const gsl::not_null<Mesh<volume_dim>*> mesh) {
-              *mesh = amr::projectors::mesh(old_mesh, my_amr_flags);
+              *mesh = amr::projectors::p_refined_mesh(old_mesh, my_amr_flags,
+                                                      old_element.topologies());
             },
             make_not_null(&box));
 
         if (verbosity >= Verbosity::Debug) {
           Parallel::printf(
-              "Increasing order of element %s: %s -> %s\n", element_id,
+              "Changing order of element %s: %s -> %s\n", element_id,
               old_mesh.extents(),
               db::get<::domain::Tags::Mesh<volume_dim>>(box).extents());
         }

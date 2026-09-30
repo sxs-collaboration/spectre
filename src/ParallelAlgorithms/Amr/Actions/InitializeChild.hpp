@@ -72,8 +72,8 @@ struct InitializeChild {
                                              parent_neighbor_info, child_id);
     Element<volume_dim> child(child_id, std::move(neighbors.first),
                               domain::topologies::hypercube<volume_dim>);
-    Mesh<volume_dim> child_mesh =
-        amr::projectors::mesh(parent_mesh, parent_info.flags);
+    Mesh<volume_dim> child_mesh = amr::projectors::child_mesh(
+        parent_mesh, child_id, parent_info.flags, parent.topologies());
     if (not domain::is_valid_dg_mesh(child_mesh, child)) {
       ERROR("Invalid mesh " << child_mesh << " for Element " << child);
     }

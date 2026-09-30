@@ -81,12 +81,14 @@ struct InitializeParent {
     std::vector<Mesh<volume_dim>> projected_children_meshes{};
     projected_children_meshes.reserve(children_items.size());
     for (const auto& [child_id, child_items] : children_items) {
+      const auto& child =
+          tuples::get<::domain::Tags::Element<volume_dim>>(child_items);
       const auto& child_mesh =
           tuples::get<::domain::Tags::Mesh<volume_dim>>(child_items);
       const auto& child_flags =
           tuples::get<amr::Tags::Info<volume_dim>>(child_items).flags;
-      projected_children_meshes.emplace_back(
-          amr::projectors::mesh(child_mesh, child_flags));
+      projected_children_meshes.emplace_back(amr::projectors::p_refined_mesh(
+          child_mesh, child_flags, child.topologies()));
     }
     Mesh<volume_dim> parent_mesh =
         amr::projectors::parent_mesh(projected_children_meshes);

@@ -106,9 +106,9 @@ struct UpdateAmrDecision {
             .enforce_two_to_one_balance_in_normal_direction());
 
     auto& my_new_mesh = my_amr_info.new_mesh;
-    my_new_mesh =
-        amr::projectors::new_mesh(get<::domain::Tags::Mesh<volume_dim>>(box),
-                                  my_amr_flags, element, my_neighbors_amr_info);
+    my_new_mesh = amr::projectors::new_mesh_to_communicate_to_neighbors(
+        get<::domain::Tags::Mesh<volume_dim>>(box), my_amr_flags, element,
+        my_neighbors_amr_info);
 
     if (my_amr_decision_changed or my_new_mesh != my_initial_new_mesh) {
       auto& amr_element_array =
