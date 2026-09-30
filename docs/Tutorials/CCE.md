@@ -525,42 +525,47 @@ in a supported environment is a simple command:
 ./CharacteristicExtract --input-file CharacteristicExtract.yaml
 ```
 
-The `CauchySecondOrder` initializer adapts the angular coordinates to reduce
-\f$J\f$ at scri+ in the partially flat gauge below `J0Tolerance`. The supplied
-input file sets `J0Tolerance: 5e-12`, `J0MaxIterations: 1500`, and
-`MaxCauchyJ0: 5e-2`. Initialization stops if the angular solve does not
-converge within this iteration budget. `MaxCauchyJ0` bounds the magnitude of
-\f$J\f$ at scri+ in the Cauchy-gauge initial guess. The same bound also limits
-the transformed \f$J\f$ during the angular iterations as a divergence guard.
-Exceeding either bound stops initialization.
+The `CauchySecondOrder` initializer adapts the angular coordinates to make
+\f$J_0 = J|_{\mathcal{I}^+}\f$ vanish in the partially flat gauge, in up to two
+stages that share the `J0MaxIterations` budget. A potential-based solve first
+runs to its minimum in a few passes. If that brings \f$\max|J_0|\f$ within
+`J0Tolerance`, its map is the solution. Otherwise linearized sweeps continue
+until \f$\max|J_0|\f$ stops improving (by less than 1% over the last 50
+sweeps) or the budget runs out. The supplied input file sets
+`J0Tolerance: 5e-12`, `J0MaxIterations: 1500`, and `MaxCauchyJ0: 5e-2`.
+`MaxCauchyJ0` bounds the magnitude of \f$J\f$ at scri+ in the Cauchy-gauge
+initial guess. The same bound also limits the transformed \f$J\f$ during the
+angular iterations as a divergence guard. Exceeding either bound stops
+initialization.
 
 After transforming the initial data to the partially flat gauge, the initializer
-prints the maximum absolute values of both constraints over the angular grid:
-\f$J_0 = J|_{\mathcal{I}^+}\f$ and
+prints a summary of both solves and the maximum absolute values of both
+constraints over the angular grid, \f$J_0\f$ and
 \f$J_2 = \frac{1}{2}\partial_y^2 J|_{\mathcal{I}^+}\f$, the coefficient of
-\f$(1-y)^2\f$. These diagnostics are printed on successful initialization as
-well as before reporting a failure of the angular solve to converge. The
-\f$J_2\f$ norm is also checked: the \f$J^{(2)}\f$ solve described below makes
-\f$J_2\f$ vanish up to discretization error, and initialization stops if it
-exceeds `MaxPartiallyFlatJ2`, which usually means the angular or radial
-resolution is too low for the worldtube data.
-
-If the angular solve does not converge, initialization stops with an error
-like
+\f$(1-y)^2\f$. For HybTest 001 at \f$R = 100M\f$ with `LMax: 20` it reads
+(long lines wrapped):
 
 ```
-Initial data iterative angular solve did not reach target tolerance 5e-12.
-Exited after 1500 iterations, achieving final
-maximum over collocation points deviation of J from target of 2.1e-11
+CauchySecondOrder initial data:
+  J^(2) fixed point: 2 passes, last change of J^(2) 6.828636e-17 (J2Tolerance
+    1.000000e-14)
+  J0 angular solve: 1394 iterations = 4 potential passes (reaching max|J0|
+    3.387280e-11) + 1390 linearized sweeps
+  partially flat constraints at scri+: max|J0| = 1.6469519047383257e-12
+    (J0Tolerance 5.000000e-12), max|J2| = 2.0354096531992744e-15
+    (MaxPartiallyFlatJ2 1.000000e-12)
 ```
 
-This usually means the solve has reached a floor set by the angular resolution
-rather than converging slowly. The floor rises with the size of \f$J\f$ at
-scri+ in the Cauchy gauge, so it is mostly a concern for worldtubes at small
-extraction radii. Raising `J0MaxIterations` does not help, since the residual
-plateaus instead of creeping down. Instead, raise `J0Tolerance` to sit just
-above the reported final deviation, increase `LMax`, or use a worldtube at a
-larger extraction radius.
+Initialization stops if \f$\max|J_0|\f$ exceeds `J0Tolerance` or
+\f$\max|J_2|\f$ exceeds `MaxPartiallyFlatJ2`, which usually means the
+resolution is too low for the worldtube data. The angular solve drives
+\f$J_0\f$ down to a floor set by the angular resolution, which rises with the
+size of \f$J\f$ at scri+ in the Cauchy gauge, so it is mostly a concern for
+worldtubes at small extraction radii. If the error reports that the solve
+stopped once \f$\max|J_0|\f$ had stopped improving, raising `J0MaxIterations`
+does not help. Instead, increase `LMax`, use a worldtube at a larger extraction
+radius, or raise `J0Tolerance` to sit just above the reported
+\f$\max|J_0|\f$.
 
 `CauchySecondOrder` also solves a small fixed-point problem before the angular
 solve. Matching the worldtube \f$J\f$, \f$\partial_r J\f$ and
@@ -576,8 +581,9 @@ supplied `J2Tolerance: 1e-14` therefore takes about two passes when
 \f$\rho \sim 10^{-3}\f$ and about six when \f$\rho \sim 5\times 10^{-2}\f$.
 Note that `MaxCauchyJ0` bounds only \f$J^{(0)}\f$, not \f$J^{(1)}\f$. The
 iteration is only guaranteed to contract when \f$\rho\f$ is at most a few
-times \f$10^{-2}\f$. A failure to converge within `J2MaxIterations` stops
-initialization, as it does for the angular solve.
+times \f$10^{-2}\f$. Unlike the angular solve, whose result is judged by
+`J0Tolerance`, a failure to converge within `J2MaxIterations` stops
+initialization.
 
 `CauchySecondOrder` also requires a `DuDrJInterpolator`. The second-order match
 needs the worldtube \f$\partial_u \partial_r J\f$, which is built by

@@ -136,12 +136,24 @@ size_t solve_asymptotic_j2(gsl::not_null<ComplexDataVector*> j2,
  * \f$J\f$ at scri+ only through a well-behaved alteration of the spherical
  * mesh, so it tolerates only a small asymptotic \f$J\f$; the initialization
  * aborts if the asymptotic \f$J\f$ in Cauchy coordinates, or the deviation at
- * any iteration of the solve, exceeds `MaxCauchyJ0`. Both solves must
- * converge within their iteration budgets. After the gauge transformation,
- * initialization prints the maximum absolute values of the partially flat
- * constraints \f$J_0 = J|_{\mathcal{I}^+}\f$ and
+ * any iteration of the solve, exceeds `MaxCauchyJ0`.
+ *
+ * The angular solve runs in up to two stages that share the `J0MaxIterations`
+ * budget. A potential-based solve
+ * (`detail::adapt_angular_coordinates_via_potential`) first runs to its
+ * minimum, which takes a few passes. If that brings \f$\max|J_0|\f$, with
+ * \f$J_0 = J|_{\mathcal{I}^+}\f$ in the partially flat gauge, within
+ * `J0Tolerance`, its map is the solution. Otherwise linearized sweeps continue
+ * from it until the smallest \f$\max|J_0|\f$ reached has improved by less
+ * than 1% over the last 50 sweeps, or the budget runs out. Both stages keep
+ * the best map they evaluated.
+ *
+ * The \f$J^{(2)}\f$ solve must converge within its iteration budget. After
+ * the gauge transformation, initialization prints a summary of both solves and
+ * the maximum absolute values of the partially flat constraints \f$J_0\f$ and
  * \f$J_2 = \frac{1}{2}\partial_y^2 J|_{\mathcal{I}^+}\f$, and aborts if
- * \f$\max|J_2|\f$ exceeds `MaxPartiallyFlatJ2`.
+ * \f$\max|J_0|\f$ exceeds `J0Tolerance` or \f$\max|J_2|\f$ exceeds
+ * `MaxPartiallyFlatJ2`.
  *
  * The worldtube \f$\partial_u \partial_r J\f$ that enters the H hypersurface
  * equation is obtained by differentiating the worldtube \f$\partial_r J\f$ in
@@ -151,24 +163,34 @@ size_t solve_asymptotic_j2(gsl::not_null<ComplexDataVector*> j2,
  * evolution wants a high one for the values it interpolates every step.
  */
 struct CauchySecondOrder : InitializeJ<false> {
+  /// The linearized sweeps continue while the smallest \f$\max|J_0|\f$
+  /// reached improves by at least the fraction `j0_plateau_improvement` over
+  /// `j0_plateau_sweeps` sweeps.
+  static constexpr size_t j0_plateau_sweeps = 50;
+  static constexpr double j0_plateau_improvement = 1.0e-2;
+
   struct J0Tolerance {
     using type = double;
     static constexpr Options::String help = {
-        "Tolerance on the maximum absolute value of J at scri+ in the "
-        "partially flat gauge, used by the initial angular coordinate solve."};
-    static type lower_bound() { return 1.0e-14; }
-    static type upper_bound() { return 1.0e-3; }
+        "Largest allowed max|J0| = max|J| at scri+ in the partially flat "
+        "gauge. The potential solve that runs first is enough if it reaches "
+        "this value; otherwise linearized sweeps follow until J0 stops "
+        "improving, and initialization aborts if it is still above this "
+        "value."};
+    static type lower_bound() { return 1.0e-16; }
+    static type upper_bound() { return 1.0; }
     static type suggested_value() { return 5.0e-12; }
   };
 
   struct J0MaxIterations {
     using type = size_t;
     static constexpr Options::String help = {
-        "Maximum number of angular coordinate iterations to reach J0Tolerance. "
-        "Initialization aborts if the solve does not converge."};
+        "Largest number of angular coordinate iterations, shared by the "
+        "potential solve and the linearized sweeps that follow it if it does "
+        "not reach J0Tolerance."};
     static type lower_bound() { return 10; }
     static type upper_bound() { return 2000; }
-    static type suggested_value() { return 300; }
+    static type suggested_value() { return 1500; }
   };
 
   struct J2Tolerance {
@@ -206,8 +228,8 @@ struct CauchySecondOrder : InitializeJ<false> {
         "Largest allowed max|J0| in the Cauchy-gauge initial guess, where J0 "
         "is J at scri+. The same bound also limits the transformed J0 during "
         "the angular iterations as a divergence guard. Exceeding either "
-        "bound aborts initialization. J0Tolerance sets the convergence target "
-        "in the partially flat gauge. Larger bounds allow larger asymptotic "
+        "bound aborts initialization. J0Tolerance bounds J0 in the partially "
+        "flat gauge. Larger bounds allow larger asymptotic "
         "strains but risk a poorly behaved angular coordinate map."};
     static type lower_bound() { return 1.0e-14; }
     static type upper_bound() { return 1.0e2; }

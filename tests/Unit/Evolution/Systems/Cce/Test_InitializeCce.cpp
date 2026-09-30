@@ -3,15 +3,19 @@
 
 #include "Framework/TestingFramework.hpp"
 
+#include <algorithm>
 #include <cmath>
 #include <complex>
 #include <cstddef>
 #include <limits>
 #include <memory>
+#include <random>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "DataStructures/ComplexDataVector.hpp"
+#include "DataStructures/ComplexModalVector.hpp"
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/SpinWeighted.hpp"
@@ -41,6 +45,8 @@
 #include "NumericalAlgorithms/Interpolation/SpanInterpolator.hpp"
 #include "NumericalAlgorithms/SpinWeightedSphericalHarmonics/SwshCollocation.hpp"
 #include "NumericalAlgorithms/SpinWeightedSphericalHarmonics/SwshFiltering.hpp"
+#include "NumericalAlgorithms/SpinWeightedSphericalHarmonics/SwshInterpolation.hpp"
+#include "NumericalAlgorithms/SpinWeightedSphericalHarmonics/SwshTransform.hpp"
 #include "Parallel/NodeLock.hpp"
 #include "Utilities/ErrorHandling/FloatingPointExceptions.hpp"
 #include "Utilities/Gsl.hpp"
@@ -304,6 +310,193 @@ void test_initialize_j_no_radiation(
   }
 }
 
+// A smooth spin-weight-2 field on the sphere with the amplitude of a typical
+// asymptotic strain, for driving the angular-coordinate solves directly.
+SpinWeighted<ComplexDataVector, 2> make_asymptotic_j(
+    const gsl::not_null<std::mt19937*> generator, const size_t l_max) {
+  UniformCustomDistribution<double> dist(1.0e-5, 1.0e-4);
+  SpinWeighted<ComplexModalVector, 2> modes{
+      Spectral::Swsh::size_of_libsharp_coefficient_vector(l_max)};
+  Spectral::Swsh::TestHelpers::generate_swsh_modes<2>(
+      make_not_null(&modes.data()), generator, make_not_null(&dist), 1, l_max);
+  auto asymptotic_j = Spectral::Swsh::inverse_swsh_transform(l_max, 1, modes);
+  Spectral::Swsh::filter_swsh_boundary_quantity(make_not_null(&asymptotic_j),
+                                                l_max, l_max / 2);
+  return asymptotic_j;
+}
+
+// `asymptotic_j` interpolated to the current map, and the same J expressed in
+// the map's coordinates, which is what the angular solves drive to zero.
+struct AsymptoticJInMap {
+  ComplexDataVector interpolated_j;
+  ComplexDataVector interpolated_k;
+  ComplexDataVector omega_squared;
+  ComplexDataVector transformed_j;
+};
+
+AsymptoticJInMap asymptotic_j_in_map(
+    const SpinWeighted<ComplexDataVector, 2>& asymptotic_j,
+    const Scalar<SpinWeighted<ComplexDataVector, 2>>& gauge_c,
+    const Scalar<SpinWeighted<ComplexDataVector, 0>>& gauge_d,
+    const Spectral::Swsh::SwshInterpolator& interpolator) {
+  const ComplexDataVector& c = get(gauge_c).data();
+  const ComplexDataVector& d = get(gauge_d).data();
+  SpinWeighted<ComplexDataVector, 2> interpolated_j{asymptotic_j.size()};
+  interpolator.interpolate(make_not_null(&interpolated_j), asymptotic_j);
+  AsymptoticJInMap result{};
+  result.interpolated_j = interpolated_j.data();
+  result.interpolated_k =
+      sqrt(1.0 + result.interpolated_j * conj(result.interpolated_j));
+  result.omega_squared = 0.25 * (d * conj(d) - c * conj(c));
+  result.transformed_j = 0.25 *
+                         (square(conj(d)) * result.interpolated_j +
+                          square(c) * conj(result.interpolated_j) +
+                          2.0 * c * conj(d) * result.interpolated_k) /
+                         result.omega_squared;
+  return result;
+}
+
+// Drive the potential solve directly: it must remove a small smooth asymptotic
+// J, stop at its plateau rather than its pass cap, and hand back the best map
+// it evaluated, so that a longer solve is never worse than a shorter one.
+void test_potential_angular_solve(const gsl::not_null<std::mt19937*> generator,
+                                  const size_t l_max) {
+  const auto asymptotic_j = make_asymptotic_j(generator, l_max);
+  const auto target_function =
+      [&asymptotic_j](
+          const gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 2>>*>
+              gauge_c_target,
+          const Scalar<SpinWeighted<ComplexDataVector, 2>>& gauge_c,
+          const Scalar<SpinWeighted<ComplexDataVector, 0>>& gauge_d,
+          const Spectral::Swsh::SwshInterpolator& interpolator) {
+        const auto in_map =
+            asymptotic_j_in_map(asymptotic_j, gauge_c, gauge_d, interpolator);
+        get(*gauge_c_target).data() = -conj(get(gauge_d).data()) *
+                                      in_map.interpolated_j /
+                                      (1.0 + in_map.interpolated_k);
+        return max(abs(in_map.transformed_j));
+      };
+  const size_t number_of_angular_points =
+      Spectral::Swsh::number_of_swsh_collocation_points(l_max);
+  const auto solve = [&](const size_t max_steps) {
+    tnsr::i<DataVector, 3> cartesian_coordinates{number_of_angular_points};
+    tnsr::i<DataVector, 2, ::Frame::Spherical<::Frame::Inertial>>
+        angular_coordinates{number_of_angular_points};
+    return InitializeJ::detail::adapt_angular_coordinates_via_potential(
+        make_not_null(&cartesian_coordinates),
+        make_not_null(&angular_coordinates), l_max, /*tolerance=*/0.0,
+        max_steps, /*error_threshold=*/1.0, target_function,
+        InitializeJ::detail::UnconvergedAngularSolve::Silent,
+        InitializeJ::detail::NoOpFinalize{}, /*initialize_coordinates=*/true);
+  };
+
+  // Without a step the map is the identity, whose residual is J itself.
+  const auto unchanged = solve(0);
+  CHECK(unchanged.number_of_coordinate_updates == 0);
+  CHECK(approx(unchanged.max_error) == max(abs(asymptotic_j.data())));
+
+  // The plateau test cannot fire before the third pass, so these solves use
+  // their whole budget, and each is at least as good as the one before.
+  double previous_max_error = unchanged.max_error;
+  for (size_t max_steps = 1; max_steps < 3; ++max_steps) {
+    const auto result = solve(max_steps);
+    CHECK(result.number_of_coordinate_updates == max_steps);
+    CHECK(result.max_error <= previous_max_error);
+    previous_max_error = result.max_error;
+  }
+
+  // At these small l_max the solve stalls a few orders of magnitude below its
+  // input, at a floor set by the angular resolution (1e-9 to 7e-9 for inputs
+  // of 1e-4 and above), so the check is relative to the input.
+  const size_t pass_cap = 20;
+  const auto converged = solve(pass_cap);
+  CAPTURE(unchanged.max_error);
+  CAPTURE(converged.max_error);
+  CAPTURE(converged.number_of_coordinate_updates);
+  CHECK(converged.number_of_coordinate_updates < pass_cap);
+  CHECK(converged.max_error <= previous_max_error);
+  CHECK(converged.max_error < 1.0e-3 * unchanged.max_error);
+}
+
+// Drive the linearized sweeps directly with the convergence test
+// `CauchySecondOrder` supplies, a `ResidualPlateau`. On slowly contracting
+// random data they may still be improving when the budget runs out.
+void test_linearized_angular_solve(const gsl::not_null<std::mt19937*> generator,
+                                   const size_t l_max) {
+  using InitializeJ::detail::UnconvergedAngularSolve;
+  const auto asymptotic_j = make_asymptotic_j(generator, l_max);
+  const size_t number_of_angular_points =
+      Spectral::Swsh::number_of_swsh_collocation_points(l_max);
+  constexpr size_t plateau_sweeps = 50;
+  const double improvement_tolerance = 1.0e-2;
+  InitializeJ::detail::ResidualPlateau plateau{plateau_sweeps};
+  const auto iteration_function =
+      [&asymptotic_j, &plateau](
+          const gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 2>>*>
+              gauge_c_step,
+          const gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 0>>*>
+              gauge_d_step,
+          const Scalar<SpinWeighted<ComplexDataVector, 2>>& gauge_c,
+          const Scalar<SpinWeighted<ComplexDataVector, 0>>& gauge_d,
+          const Spectral::Swsh::SwshInterpolator& interpolator) {
+        const auto in_map =
+            asymptotic_j_in_map(asymptotic_j, gauge_c, gauge_d, interpolator);
+        const double max_error = max(abs(in_map.transformed_j));
+        plateau.record(max_error);
+        get(*gauge_c_step).data() =
+            -0.5 * in_map.transformed_j * in_map.omega_squared /
+            (get(gauge_d).data() * in_map.interpolated_k);
+        get(*gauge_d_step).data() = get(*gauge_c_step).data() *
+                                    conj(get(gauge_c).data()) /
+                                    conj(get(gauge_d).data());
+        return max_error;
+      };
+  const auto stopped_improving = [&plateau](const double /*max_error*/,
+                                            const double tolerance) {
+    return plateau.stopped_improving(tolerance);
+  };
+  const auto solve = [&](const size_t max_steps, const auto& has_converged,
+                         const UnconvergedAngularSolve if_unconverged) {
+    tnsr::i<DataVector, 3> cartesian_coordinates{number_of_angular_points};
+    tnsr::i<DataVector, 2, ::Frame::Spherical<::Frame::Inertial>>
+        angular_coordinates{number_of_angular_points};
+    plateau = InitializeJ::detail::ResidualPlateau{plateau_sweeps};
+    return InitializeJ::detail::iteratively_adapt_angular_coordinates(
+        make_not_null(&cartesian_coordinates),
+        make_not_null(&angular_coordinates), l_max, improvement_tolerance,
+        max_steps, /*error_threshold=*/1.0, iteration_function, if_unconverged,
+        InitializeJ::detail::NoOpFinalize{}, /*initialize_coordinates=*/true,
+        has_converged);
+  };
+
+  const size_t budget = 500;
+  const auto converged =
+      solve(budget, stopped_improving, UnconvergedAngularSolve::Silent);
+  CAPTURE(converged.number_of_coordinate_updates);
+  CAPTURE(converged.max_error);
+  CHECK(converged.number_of_coordinate_updates >= plateau_sweeps);
+  CHECK(converged.number_of_coordinate_updates <= budget);
+  if (converged.number_of_coordinate_updates < budget) {
+    CHECK(plateau.stopped_improving(improvement_tolerance));
+  }
+  CHECK(converged.max_error < 1.0e-3 * max(abs(asymptotic_j.data())));
+
+  // A test that never passes stops the solve at its budget, which is an error
+  // only when the caller asks for one.
+  const auto never_converged = [](const double /*max_error*/,
+                                  const double /*tolerance*/) { return false; };
+  const size_t short_budget = 3;
+  CHECK(solve(short_budget, never_converged, UnconvergedAngularSolve::Silent)
+            .number_of_coordinate_updates == short_budget);
+  CHECK_NOTHROW(
+      solve(short_budget, never_converged, UnconvergedAngularSolve::Warn));
+  CHECK_THROWS_WITH(
+      solve(short_budget, never_converged, UnconvergedAngularSolve::Error),
+      Catch::Matchers::ContainsSubstring(
+          "Initial data iterative angular solve did not reach target "
+          "tolerance"));
+}
+
 // The interpolator `CauchySecondOrder` hands to the worldtube data manager for
 // the Du(Dr(J)) boundary value. These tests supply that boundary value directly
 // rather than through a manager, so it is only carried along and serialized.
@@ -494,26 +687,61 @@ void test_cauchy_second_order_j2_threshold_error(
     const gsl::not_null<db::DataBox<DbTags>*> box_to_initialize) {
   // The J^(2) solve leaves a small discretization residual in J2 after the
   // gauge transformation, so an unachievably small `MaxPartiallyFlatJ2` trips
-  // the check. Allow enough angular iterations (as in the successful case) for
-  // the angular solve to converge first.
+  // the check. The J0 check comes first, so bound J0 loosely enough for a short
+  // angular solve to pass it.
   auto node_lock = Parallel::NodeLock{};
   db::mutate_apply<InitializeJ::CauchySecondOrder::return_tags,
                    InitializeJ::CauchySecondOrder::argument_tags>(
-      InitializeJ::CauchySecondOrder{1.0e-10, 1000, 1.0e-1, 1.0e-14, 10,
-                                     1.0e-30, make_du_dr_j_interpolator()},
+      InitializeJ::CauchySecondOrder{
+          /*j0_tolerance=*/1.0e-6, /*j0_max_iterations=*/10,
+          /*max_cauchy_j0=*/1.0e-1, /*j2_tolerance=*/1.0e-14,
+          /*j2_max_iterations=*/10, /*max_partially_flat_j2=*/1.0e-30,
+          make_du_dr_j_interpolator()},
       box_to_initialize, make_not_null(&node_lock));
 }
 
 template <typename DbTags>
-void test_cauchy_second_order_j0_convergence_error(
+void test_cauchy_second_order_j0_threshold_error(
     const gsl::not_null<db::DataBox<DbTags>*> box_to_initialize) {
-  // Ten angular iterations cannot reach this tolerance for these data.
+  // The angular solve stops at a J0 set by the angular resolution rather than
+  // zero, so an unachievably small `J0Tolerance` trips the check. With
+  // a budget shorter than the plateau window the sweeps cannot yet tell
+  // whether J0 has stopped improving, so the error suggests a larger budget.
   auto node_lock = Parallel::NodeLock{};
   db::mutate_apply<InitializeJ::CauchySecondOrder::return_tags,
                    InitializeJ::CauchySecondOrder::argument_tags>(
-      InitializeJ::CauchySecondOrder{1.0e-14, 10, 1.0e-1, 1.0e-14, 10, 1.0e-12,
-                                     make_du_dr_j_interpolator()},
+      InitializeJ::CauchySecondOrder{
+          /*j0_tolerance=*/1.0e-30, /*j0_max_iterations=*/10,
+          /*max_cauchy_j0=*/1.0e-1, /*j2_tolerance=*/1.0e-14,
+          /*j2_max_iterations=*/10, /*max_partially_flat_j2=*/1.0e-12,
+          make_du_dr_j_interpolator()},
       box_to_initialize, make_not_null(&node_lock));
+}
+
+template <typename DbTags>
+void test_cauchy_second_order_potential_suffices(
+    const gsl::not_null<db::DataBox<DbTags>*> box_to_initialize) {
+  // The potential solve reaches about 1e-9 on these data, within 1e-6, so no
+  // linearized sweeps run: budgets of 21 and 2000 iterations, which both leave
+  // it its 20 passes, must give the same J bit for bit.
+  auto node_lock = Parallel::NodeLock{};
+  const auto initialize = [&box_to_initialize,
+                           &node_lock](const size_t j0_max_iterations) {
+    db::mutate_apply<InitializeJ::CauchySecondOrder::return_tags,
+                     InitializeJ::CauchySecondOrder::argument_tags>(
+        InitializeJ::CauchySecondOrder{
+            /*j0_tolerance=*/1.0e-6, j0_max_iterations,
+            /*max_cauchy_j0=*/1.0e-1, /*j2_tolerance=*/1.0e-14,
+            /*j2_max_iterations=*/10, /*max_partially_flat_j2=*/1.0e-12,
+            make_du_dr_j_interpolator()},
+        box_to_initialize, make_not_null(&node_lock));
+    return std::pair{db::get<Tags::BondiJ>(*box_to_initialize),
+                     db::get<Tags::CauchyCartesianCoords>(*box_to_initialize)};
+  };
+  const auto small_budget = initialize(21);
+  const auto large_budget = initialize(2000);
+  CHECK(small_budget.first == large_budget.first);
+  CHECK(small_budget.second == large_budget.second);
 }
 
 template <typename DbTags>
@@ -524,21 +752,30 @@ void test_initialize_j_cauchy_second_order(
   // Without the J^(2) solve the constructed J keeps J^(2) = 0 in the Cauchy
   // gauge, which violates the partially flat condition on the second
   // asymptotic coefficient after the gauge transformation. Record that
-  // violation so the solve below can be checked to remove it.
+  // violation so the solve below can be checked to remove it. A short angular
+  // solve is enough for this reference value.
   db::mutate_apply<InitializeJ::CauchySecondOrder::return_tags,
                    InitializeJ::CauchySecondOrder::argument_tags>(
-      InitializeJ::CauchySecondOrder{1.0e-10, 1000, 1.0e-1, 1.0e-14, 0, 1.0e-12,
-                                     make_du_dr_j_interpolator()},
+      InitializeJ::CauchySecondOrder{
+          /*j0_tolerance=*/1.0e-6, /*j0_max_iterations=*/10,
+          /*max_cauchy_j0=*/1.0e-1, /*j2_tolerance=*/1.0e-14,
+          /*j2_max_iterations=*/0, /*max_partially_flat_j2=*/1.0e-12,
+          make_du_dr_j_interpolator()},
       box_to_initialize, make_not_null(&node_lock));
   const double scri_j2_without_solve =
       max_scri_j2(box_to_initialize, l_max, number_of_radial_points);
 
-  // The angular coordinates are adapted iteratively (as in NoIncomingRadiation
-  // and ConformalFactor). For randomly generated data the linearized solve
-  // occasionally needs more than a few hundred iterations to reach 1e-10, so
-  // we allow up to 1000 iterations to reliably converge.
-  const auto initializer = InitializeJ::CauchySecondOrder{
-      1.0e-10, 1000, 1.0e-1, 1.0e-14, 10, 1.0e-12, make_du_dr_j_interpolator()};
+  // The potential solve reaches a few times 1e-9 on these small grids, so the
+  // linearized sweeps usually take over. 300 of them bring J0 below the bound,
+  // even where they would need more to stop improving.
+  const auto initializer =
+      InitializeJ::CauchySecondOrder{/*j0_tolerance=*/1.0e-9,
+                                     /*j0_max_iterations=*/300,
+                                     /*max_cauchy_j0=*/1.0e-1,
+                                     /*j2_tolerance=*/1.0e-14,
+                                     /*j2_max_iterations=*/10,
+                                     /*max_partially_flat_j2=*/1.0e-12,
+                                     make_du_dr_j_interpolator()};
   db::mutate_apply<InitializeJ::CauchySecondOrder::return_tags,
                    InitializeJ::CauchySecondOrder::argument_tags>(
       initializer, box_to_initialize, make_not_null(&node_lock));
@@ -588,8 +825,9 @@ void test_initialize_j_cauchy_second_order(
   }
 
   // Check both partially flat constraints on the final initial data: the
-  // angular solve drives J0 = J at scri+ below its tolerance, and the J^(2)
-  // solve removes most of the J2 = 0.5 * Dy^2 J violation left without it.
+  // angular solve drives J0 = J at scri+ below `J0Tolerance`, and the
+  // J^(2) solve removes most of the J2 = 0.5 * Dy^2 J violation left without
+  // it.
   // The J^(2) constraint is exact in the Cauchy gauge, but it is nonlinear, so
   // interpolating J to the adapted angular coordinates at this small l_max
   // leaves a residual of a few to about fifteen percent of the violation
@@ -599,7 +837,7 @@ void test_initialize_j_cauchy_second_order(
   make_const_view(make_not_null(&scri_j), get(initialized_j),
                   number_of_angular_points * (number_of_radial_points - 1),
                   number_of_angular_points);
-  CHECK(max(abs(scri_j.data())) < 1.0e-10);
+  CHECK(max(abs(scri_j.data())) < 1.0e-9);
   const double scri_j2_with_solve =
       max_scri_j2(box_to_initialize, l_max, number_of_radial_points);
   CAPTURE(scri_j2_without_solve);
@@ -1050,10 +1288,24 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.InitializeJ", "[Unit][Cce]") {
                     Catch::Matchers::ContainsSubstring(
                         "set by the MaxPartiallyFlatJ2 option"));
   CHECK_THROWS_WITH(
-      test_cauchy_second_order_j0_convergence_error(
+      test_cauchy_second_order_j0_threshold_error(
           make_not_null(&box_to_initialize)),
-      Catch::Matchers::ContainsSubstring("Initial data iterative angular solve "
-                                         "did not reach target tolerance"));
+      Catch::Matchers::ContainsSubstring("set by the J0Tolerance option") and
+          Catch::Matchers::ContainsSubstring(
+              "so raising J0MaxIterations may help"));
+  {
+    INFO("Check the potential angular-coordinate solve");
+    test_potential_angular_solve(make_not_null(&generator), l_max);
+  }
+  {
+    INFO("Check the linearized angular-coordinate solve");
+    test_linearized_angular_solve(make_not_null(&generator), l_max);
+  }
+  {
+    INFO("Check that the potential solve alone suffices within a loose bound");
+    CHECK_NOTHROW(test_cauchy_second_order_potential_suffices(
+        make_not_null(&box_to_initialize)));
+  }
   {
     INFO(
         "Check the second-order generator's Du(Dr(J)) interpolator survives "
