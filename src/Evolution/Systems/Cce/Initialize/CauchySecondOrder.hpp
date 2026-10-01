@@ -6,6 +6,7 @@
 #include <cstddef>
 #include <limits>
 #include <memory>
+#include <string>
 
 #include "DataStructures/SpinWeighted.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
@@ -102,6 +103,22 @@ size_t solve_asymptotic_j2(gsl::not_null<ComplexDataVector*> j2,
                            const ComplexDataVector& j0_at_zero,
                            const ComplexDataVector& j1_at_zero,
                            double tolerance, size_t max_iterations);
+
+/*!
+ * \brief The sentence of the `J0Tolerance` error that says whether raising
+ * `J0MaxIterations` can help.
+ *
+ * \details Empty if no linearized sweeps ran. Otherwise it says whether the
+ * sweeps stopped because \f$\max|J_0|\f$ had stopped improving
+ * (`stopped_improving`), ran out of budget while it was still improving, or
+ * ran out of budget before the `CauchySecondOrder::j0_plateau_sweeps` sweeps
+ * that telling the two apart takes. If the budget `j0_max_iterations` is
+ * already at the upper bound of the `J0MaxIterations` option, it says so
+ * instead of suggesting a larger budget.
+ */
+std::string j0_max_iterations_hint(size_t number_of_linearized_sweeps,
+                                   bool stopped_improving,
+                                   size_t j0_max_iterations);
 }  // namespace CauchySecondOrder_detail
 
 /*!
@@ -163,11 +180,17 @@ size_t solve_asymptotic_j2(gsl::not_null<ComplexDataVector*> j2,
  * evolution wants a high one for the values it interpolates every step.
  */
 struct CauchySecondOrder : InitializeJ<false> {
+  /// The largest number of passes of the potential solve. It reaches its
+  /// minimum within a few, so this cap only bounds its cost on data it cannot
+  /// solve.
+  static constexpr size_t max_potential_passes = 20;
   /// The linearized sweeps continue while the smallest \f$\max|J_0|\f$
   /// reached improves by at least the fraction `j0_plateau_improvement` over
   /// `j0_plateau_sweeps` sweeps.
+  /// @{
   static constexpr size_t j0_plateau_sweeps = 50;
   static constexpr double j0_plateau_improvement = 1.0e-2;
+  /// @}
 
   struct J0Tolerance {
     using type = double;

@@ -30,6 +30,7 @@
 #include "NumericalAlgorithms/SpinWeightedSphericalHarmonics/SwshTags.hpp"
 #include "Options/ParseOptions.hpp"
 #include "Utilities/ConstantExpressions.hpp"
+#include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Serialization/PupStlCpp17.hpp"
 #include "Utilities/TMPL.hpp"

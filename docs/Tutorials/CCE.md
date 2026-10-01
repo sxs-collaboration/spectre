@@ -542,8 +542,8 @@ After transforming the initial data to the partially flat gauge, the initializer
 prints a summary of both solves and the maximum absolute values of both
 constraints over the angular grid, \f$J_0\f$ and
 \f$J_2 = \frac{1}{2}\partial_y^2 J|_{\mathcal{I}^+}\f$, the coefficient of
-\f$(1-y)^2\f$. For HybTest 001 at \f$R = 100M\f$ with `LMax: 20` it reads
-(long lines wrapped):
+\f$(1-y)^2\f$. For a binary black hole worldtube at \f$R = 100M\f$ with
+`LMax: 20` it reads, for example (long lines wrapped):
 
 ```
 CauchySecondOrder initial data:

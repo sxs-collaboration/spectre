@@ -34,6 +34,7 @@
 #include "Evolution/Systems/Cce/OptionTags.hpp"
 #include "Evolution/Systems/Cce/PreSwshDerivatives.hpp"
 #include "Evolution/Systems/Cce/PrecomputeCceDependencies.hpp"
+#include "Evolution/Systems/Cce/Tags.hpp"
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
@@ -43,13 +44,16 @@
 #include "NumericalAlgorithms/Interpolation/CubicSpanInterpolator.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/Interpolation/LinearSpanInterpolator.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/Interpolation/SpanInterpolator.hpp"
+#include "NumericalAlgorithms/SpinWeightedSphericalHarmonics/SwshCoefficients.hpp"
 #include "NumericalAlgorithms/SpinWeightedSphericalHarmonics/SwshCollocation.hpp"
 #include "NumericalAlgorithms/SpinWeightedSphericalHarmonics/SwshFiltering.hpp"
 #include "NumericalAlgorithms/SpinWeightedSphericalHarmonics/SwshInterpolation.hpp"
 #include "NumericalAlgorithms/SpinWeightedSphericalHarmonics/SwshTransform.hpp"
 #include "Parallel/NodeLock.hpp"
+#include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/ErrorHandling/FloatingPointExceptions.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/Literals.hpp"
 #include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 #include "Utilities/Serialization/Serialize.hpp"
 
@@ -315,14 +319,11 @@ void test_initialize_j_no_radiation(
 SpinWeighted<ComplexDataVector, 2> make_asymptotic_j(
     const gsl::not_null<std::mt19937*> generator, const size_t l_max) {
   UniformCustomDistribution<double> dist(1.0e-5, 1.0e-4);
-  SpinWeighted<ComplexModalVector, 2> modes{
-      Spectral::Swsh::size_of_libsharp_coefficient_vector(l_max)};
-  Spectral::Swsh::TestHelpers::generate_swsh_modes<2>(
-      make_not_null(&modes.data()), generator, make_not_null(&dist), 1, l_max);
-  auto asymptotic_j = Spectral::Swsh::inverse_swsh_transform(l_max, 1, modes);
-  Spectral::Swsh::filter_swsh_boundary_quantity(make_not_null(&asymptotic_j),
-                                                l_max, l_max / 2);
-  return asymptotic_j;
+  Scalar<SpinWeighted<ComplexDataVector, 2>> asymptotic_j{
+      Spectral::Swsh::number_of_swsh_collocation_points(l_max)};
+  assign_random_swsh_boundary_value<2>(make_not_null(&asymptotic_j), generator,
+                                       make_not_null(&dist), l_max);
+  return get(asymptotic_j);
 }
 
 // `asymptotic_j` interpolated to the current map, and the same J expressed in
@@ -405,10 +406,10 @@ void test_potential_angular_solve(const gsl::not_null<std::mt19937*> generator,
     previous_max_error = result.max_error;
   }
 
-  // At these small l_max the solve stalls a few orders of magnitude below its
-  // input, at a floor set by the angular resolution (1e-9 to 7e-9 for inputs
-  // of 1e-4 and above), so the check is relative to the input.
-  const size_t pass_cap = 20;
+  // The solve stalls at a floor of its own, a few orders of magnitude below its
+  // input, so the check is relative to the input. It gets there well within
+  // the pass cap `CauchySecondOrder` gives it.
+  const size_t pass_cap = InitializeJ::CauchySecondOrder::max_potential_passes;
   const auto converged = solve(pass_cap);
   CAPTURE(unchanged.max_error);
   CAPTURE(converged.max_error);
@@ -418,20 +419,53 @@ void test_potential_angular_solve(const gsl::not_null<std::mt19937*> generator,
   CHECK(converged.max_error < 1.0e-3 * unchanged.max_error);
 }
 
-// Drive the linearized sweeps directly with the convergence test
-// `CauchySecondOrder` supplies, a `ResidualPlateau`. On slowly contracting
-// random data they may still be improving when the budget runs out.
+// `ResidualPlateau` judges the running minimum of the residuals, and only once
+// a full window of passes follows the entry it compares with.
+void test_residual_plateau() {
+  constexpr size_t window = 3;
+  constexpr double tolerance = 0.1;
+  // The number of residuals recorded when `stopped_improving` first holds, or
+  // zero if it never does.
+  const auto passes_to_plateau = [](const std::vector<double>& residuals) {
+    InitializeJ::detail::ResidualPlateau plateau{window};
+    for (size_t i = 0; i < residuals.size(); ++i) {
+      plateau.record(residuals[i]);
+      if (plateau.stopped_improving(tolerance)) {
+        return i + 1;
+      }
+    }
+    return 0_st;
+  };
+  // Nothing is decided before `window + 1` residuals are recorded.
+  CHECK(passes_to_plateau({1.0, 1.0, 1.0, 1.0}) == window + 1);
+  // An improvement of 15% keeps the solve going for `window` more passes.
+  CHECK(passes_to_plateau({1.0, 1.0, 1.0, 0.85, 0.85, 0.85, 0.85}) ==
+        2 * window + 1);
+  // A descent by 10% per pass has not stopped improving, one by 1% has.
+  CHECK(passes_to_plateau({1.0, 0.9, 0.81, 0.729, 0.6561}) == 0);
+  CHECK(passes_to_plateau({1.0, 0.99, 0.9801, 0.970299}) == window + 1);
+  // Only the running minimum counts, so a rising residual has stopped
+  // improving, and a residual of zero cannot improve.
+  CHECK(passes_to_plateau({1.0, 2.0, 4.0, 8.0}) == window + 1);
+  CHECK(passes_to_plateau({0.0, 0.0, 0.0, 0.0}) == window + 1);
+}
+
+// Drive the linearized sweeps directly: a convergence test that holds stops
+// them, the solve hands back the best map it evaluated, and a solve that runs
+// out of budget is reported as the caller asks.
 void test_linearized_angular_solve(const gsl::not_null<std::mt19937*> generator,
                                    const size_t l_max) {
   using InitializeJ::detail::UnconvergedAngularSolve;
   const auto asymptotic_j = make_asymptotic_j(generator, l_max);
   const size_t number_of_angular_points =
       Spectral::Swsh::number_of_swsh_collocation_points(l_max);
-  constexpr size_t plateau_sweeps = 50;
-  const double improvement_tolerance = 1.0e-2;
-  InitializeJ::detail::ResidualPlateau plateau{plateau_sweeps};
+  // The residual of every evaluation, in order. The sweeps step towards the
+  // root until `sweeps_towards_root` residuals are recorded, and far away from
+  // it after that.
+  std::vector<double> residuals{};
+  size_t sweeps_towards_root = std::numeric_limits<size_t>::max();
   const auto iteration_function =
-      [&asymptotic_j, &plateau](
+      [&asymptotic_j, &residuals, &sweeps_towards_root](
           const gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 2>>*>
               gauge_c_step,
           const gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 0>>*>
@@ -442,59 +476,69 @@ void test_linearized_angular_solve(const gsl::not_null<std::mt19937*> generator,
         const auto in_map =
             asymptotic_j_in_map(asymptotic_j, gauge_c, gauge_d, interpolator);
         const double max_error = max(abs(in_map.transformed_j));
-        plateau.record(max_error);
+        const double step_scale =
+            residuals.size() < sweeps_towards_root ? 1.0 : -100.0;
+        residuals.push_back(max_error);
         get(*gauge_c_step).data() =
-            -0.5 * in_map.transformed_j * in_map.omega_squared /
+            -0.5 * step_scale * in_map.transformed_j * in_map.omega_squared /
             (get(gauge_d).data() * in_map.interpolated_k);
         get(*gauge_d_step).data() = get(*gauge_c_step).data() *
                                     conj(get(gauge_c).data()) /
                                     conj(get(gauge_d).data());
         return max_error;
       };
-  const auto stopped_improving = [&plateau](const double /*max_error*/,
-                                            const double tolerance) {
-    return plateau.stopped_improving(tolerance);
-  };
-  const auto solve = [&](const size_t max_steps, const auto& has_converged,
+  const auto solve = [&](const size_t max_steps, const double tolerance,
+                         const auto& has_converged,
                          const UnconvergedAngularSolve if_unconverged) {
     tnsr::i<DataVector, 3> cartesian_coordinates{number_of_angular_points};
     tnsr::i<DataVector, 2, ::Frame::Spherical<::Frame::Inertial>>
         angular_coordinates{number_of_angular_points};
-    plateau = InitializeJ::detail::ResidualPlateau{plateau_sweeps};
+    residuals.clear();
     return InitializeJ::detail::iteratively_adapt_angular_coordinates(
         make_not_null(&cartesian_coordinates),
-        make_not_null(&angular_coordinates), l_max, improvement_tolerance,
-        max_steps, /*error_threshold=*/1.0, iteration_function, if_unconverged,
+        make_not_null(&angular_coordinates), l_max, tolerance, max_steps,
+        /*error_threshold=*/1.0, iteration_function, if_unconverged,
         InitializeJ::detail::NoOpFinalize{}, /*initialize_coordinates=*/true,
         has_converged);
   };
 
-  const size_t budget = 500;
-  const auto converged =
-      solve(budget, stopped_improving, UnconvergedAngularSolve::Silent);
-  CAPTURE(converged.number_of_coordinate_updates);
-  CAPTURE(converged.max_error);
-  CHECK(converged.number_of_coordinate_updates >= plateau_sweeps);
-  CHECK(converged.number_of_coordinate_updates <= budget);
-  if (converged.number_of_coordinate_updates < budget) {
-    CHECK(plateau.stopped_improving(improvement_tolerance));
+  {
+    INFO("A convergence test that holds stops the sweeps");
+    // Two sweeps towards the root, then one far away from it, and a test that
+    // holds once the map that one leads to is evaluated.
+    sweeps_towards_root = 2;
+    constexpr size_t number_of_evaluations = 4;
+    const auto result = solve(
+        /*max_steps=*/10, /*tolerance=*/0.0,
+        [&residuals](const double /*max_error*/, const double /*tolerance*/) {
+          return residuals.size() == number_of_evaluations;
+        },
+        UnconvergedAngularSolve::Error);
+    CHECK(result.number_of_coordinate_updates == number_of_evaluations - 1);
+    // The last sweep made the map worse, so the solve rewinds to the best map
+    // and evaluates it once more, which reproduces its residual bit for bit.
+    REQUIRE(residuals.size() == number_of_evaluations + 1);
+    CHECK(result.max_error < residuals.front());
+    CHECK(residuals[number_of_evaluations - 1] > result.max_error);
+    CHECK(result.max_error == std::ranges::min(residuals));
+    CHECK(residuals.back() == result.max_error);
   }
-  CHECK(converged.max_error < 1.0e-3 * max(abs(asymptotic_j.data())));
-
-  // A test that never passes stops the solve at its budget, which is an error
-  // only when the caller asks for one.
-  const auto never_converged = [](const double /*max_error*/,
-                                  const double /*tolerance*/) { return false; };
-  const size_t short_budget = 3;
-  CHECK(solve(short_budget, never_converged, UnconvergedAngularSolve::Silent)
-            .number_of_coordinate_updates == short_budget);
-  CHECK_NOTHROW(
-      solve(short_budget, never_converged, UnconvergedAngularSolve::Warn));
-  CHECK_THROWS_WITH(
-      solve(short_budget, never_converged, UnconvergedAngularSolve::Error),
-      Catch::Matchers::ContainsSubstring(
-          "Initial data iterative angular solve did not reach target "
-          "tolerance"));
+  {
+    INFO("Running out of budget is an error only when the caller asks");
+    // No residual falls below a tolerance of zero.
+    sweeps_towards_root = std::numeric_limits<size_t>::max();
+    const InitializeJ::detail::ResidualBelowTolerance below_tolerance{};
+    const size_t budget = 3;
+    CHECK(solve(budget, 0.0, below_tolerance, UnconvergedAngularSolve::Silent)
+              .number_of_coordinate_updates == budget);
+    CHECK_NOTHROW(
+        solve(budget, 0.0, below_tolerance, UnconvergedAngularSolve::Warn));
+    CHECK_THROWS_WITH(
+        solve(budget, 0.0, below_tolerance, UnconvergedAngularSolve::Error),
+        Catch::Matchers::ContainsSubstring(
+            "Initial data iterative angular solve did not reach target "
+            "tolerance"));
+  }
 }
 
 // The interpolator `CauchySecondOrder` hands to the worldtube data manager for
@@ -704,9 +748,9 @@ template <typename DbTags>
 void test_cauchy_second_order_j0_threshold_error(
     const gsl::not_null<db::DataBox<DbTags>*> box_to_initialize) {
   // The angular solve stops at a J0 set by the angular resolution rather than
-  // zero, so an unachievably small `J0Tolerance` trips the check. With
-  // a budget shorter than the plateau window the sweeps cannot yet tell
-  // whether J0 has stopped improving, so the error suggests a larger budget.
+  // zero, so an unachievably small `J0Tolerance` trips the check. With a budget
+  // shorter than the plateau window the sweeps cannot yet tell whether J0 has
+  // stopped improving, so the error suggests a larger budget.
   auto node_lock = Parallel::NodeLock{};
   db::mutate_apply<InitializeJ::CauchySecondOrder::return_tags,
                    InitializeJ::CauchySecondOrder::argument_tags>(
@@ -721,9 +765,9 @@ void test_cauchy_second_order_j0_threshold_error(
 template <typename DbTags>
 void test_cauchy_second_order_potential_suffices(
     const gsl::not_null<db::DataBox<DbTags>*> box_to_initialize) {
-  // The potential solve reaches about 1e-9 on these data, within 1e-6, so no
-  // linearized sweeps run: budgets of 21 and 2000 iterations, which both leave
-  // it its 20 passes, must give the same J bit for bit.
+  // The potential solve reaches a few times 1e-9 on these data, well within
+  // 1e-6, so no linearized sweeps run: the smallest budget that leaves it all
+  // its passes and a large one must give the same J bit for bit.
   auto node_lock = Parallel::NodeLock{};
   const auto initialize = [&box_to_initialize,
                            &node_lock](const size_t j0_max_iterations) {
@@ -738,10 +782,57 @@ void test_cauchy_second_order_potential_suffices(
     return std::pair{db::get<Tags::BondiJ>(*box_to_initialize),
                      db::get<Tags::CauchyCartesianCoords>(*box_to_initialize)};
   };
-  const auto small_budget = initialize(21);
+  const auto small_budget =
+      initialize(InitializeJ::CauchySecondOrder::max_potential_passes + 1);
   const auto large_budget = initialize(2000);
   CHECK(small_budget.first == large_budget.first);
   CHECK(small_budget.second == large_budget.second);
+}
+
+// What the `J0Tolerance` error says about raising `J0MaxIterations`, which
+// depends on whether and how the linearized sweeps stopped, and on whether
+// `J0MaxIterations` can be raised at all.
+void test_cauchy_second_order_j0_max_iterations_hint() {
+  using InitializeJ::CauchySecondOrder_detail::j0_max_iterations_hint;
+  constexpr size_t plateau_sweeps =
+      InitializeJ::CauchySecondOrder::j0_plateau_sweeps;
+  const size_t largest_budget =
+      InitializeJ::CauchySecondOrder::J0MaxIterations::upper_bound();
+  const size_t budget = largest_budget - 1;
+  // Without linearized sweeps the map of the potential solve was accepted.
+  CHECK(j0_max_iterations_hint(0, false, budget).empty());
+  CHECK_THAT(j0_max_iterations_hint(plateau_sweeps, true, budget),
+             Catch::Matchers::ContainsSubstring(
+                 "had stopped improving, so raising J0MaxIterations will not "
+                 "help"));
+  CHECK_THAT(j0_max_iterations_hint(plateau_sweeps, false, budget),
+             Catch::Matchers::ContainsSubstring(
+                 "while max|J0| was still improving, so raising "
+                 "J0MaxIterations may help"));
+  CHECK_THAT(j0_max_iterations_hint(plateau_sweeps - 1, false, budget),
+             Catch::Matchers::ContainsSubstring(
+                 "after " + std::to_string(plateau_sweeps - 1) +
+                 " linearized sweeps, fewer than the " +
+                 std::to_string(plateau_sweeps) +
+                 " it needs to tell whether max|J0| has stopped improving, so "
+                 "raising J0MaxIterations may help"));
+
+  // At the upper bound of `J0MaxIterations` the hint must not suggest raising
+  // it, however the sweeps stopped.
+  CHECK_THAT(j0_max_iterations_hint(plateau_sweeps, true, largest_budget),
+             Catch::Matchers::ContainsSubstring(
+                 "had stopped improving, so raising J0MaxIterations will not "
+                 "help"));
+  for (const size_t number_of_sweeps : {plateau_sweeps - 1, plateau_sweeps}) {
+    CAPTURE(number_of_sweeps);
+    CHECK_THAT(
+        j0_max_iterations_hint(number_of_sweeps, false, largest_budget),
+        Catch::Matchers::ContainsSubstring(
+            "before max|J0| had stopped improving, but J0MaxIterations is "
+            "already at its largest allowed value " +
+            std::to_string(largest_budget)) and
+            not Catch::Matchers::ContainsSubstring("may help"));
+  }
 }
 
 template <typename DbTags>
@@ -765,12 +856,11 @@ void test_initialize_j_cauchy_second_order(
   const double scri_j2_without_solve =
       max_scri_j2(box_to_initialize, l_max, number_of_radial_points);
 
-  // The potential solve reaches a few times 1e-9 on these small grids, so the
-  // linearized sweeps usually take over. 300 of them bring J0 below the bound,
-  // even where they would need more to stop improving.
-  const auto initializer =
-      InitializeJ::CauchySecondOrder{/*j0_tolerance=*/1.0e-9,
-                                     /*j0_max_iterations=*/300,
+  // A serialized copy of the generator must give the same J. Settings with
+  // which the potential solve alone suffices keep this cheap.
+  const auto potential_only_initializer =
+      InitializeJ::CauchySecondOrder{/*j0_tolerance=*/1.0e-6,
+                                     /*j0_max_iterations=*/10,
                                      /*max_cauchy_j0=*/1.0e-1,
                                      /*j2_tolerance=*/1.0e-14,
                                      /*j2_max_iterations=*/10,
@@ -778,20 +868,34 @@ void test_initialize_j_cauchy_second_order(
                                      make_du_dr_j_interpolator()};
   db::mutate_apply<InitializeJ::CauchySecondOrder::return_tags,
                    InitializeJ::CauchySecondOrder::argument_tags>(
-      initializer, box_to_initialize, make_not_null(&node_lock));
-
+      potential_only_initializer, box_to_initialize, make_not_null(&node_lock));
   // note we want to copy here to compare against the next version of the
   // computation
   // NOLINTNEXTLINE(performance-unnecessary-copy-initialization)
-  const auto initialized_j = db::get<Tags::BondiJ>(*box_to_initialize);
+  const auto potential_only_j = db::get<Tags::BondiJ>(*box_to_initialize);
   const auto serialized_and_deserialized_initializer =
-      serialize_and_deserialize(initializer);
+      serialize_and_deserialize(potential_only_initializer);
   db::mutate_apply<InitializeJ::CauchySecondOrder::return_tags,
                    InitializeJ::CauchySecondOrder::argument_tags>(
       serialized_and_deserialized_initializer, box_to_initialize,
       make_not_null(&node_lock));
-  CHECK_ITERABLE_APPROX(get(initialized_j).data(),
+  CHECK_ITERABLE_APPROX(get(potential_only_j).data(),
                         get(db::get<Tags::BondiJ>(*box_to_initialize)).data());
+
+  // The potential solve reaches a few times 1e-9 on these small grids, so the
+  // linearized sweeps usually take over. 300 of them bring J0 below the bound,
+  // even where they would need more to stop improving.
+  db::mutate_apply<InitializeJ::CauchySecondOrder::return_tags,
+                   InitializeJ::CauchySecondOrder::argument_tags>(
+      InitializeJ::CauchySecondOrder{/*j0_tolerance=*/1.0e-9,
+                                     /*j0_max_iterations=*/300,
+                                     /*max_cauchy_j0=*/1.0e-1,
+                                     /*j2_tolerance=*/1.0e-14,
+                                     /*j2_max_iterations=*/10,
+                                     /*max_partially_flat_j2=*/1.0e-12,
+                                     make_du_dr_j_interpolator()},
+      box_to_initialize, make_not_null(&node_lock));
+  const auto& initialized_j = db::get<Tags::BondiJ>(*box_to_initialize);
 
   // generate the gauge quantities so the boundary data can be compared in the
   // evolution gauge.
@@ -825,9 +929,8 @@ void test_initialize_j_cauchy_second_order(
   }
 
   // Check both partially flat constraints on the final initial data: the
-  // angular solve drives J0 = J at scri+ below `J0Tolerance`, and the
-  // J^(2) solve removes most of the J2 = 0.5 * Dy^2 J violation left without
-  // it.
+  // angular solve drives J0 = J at scri+ below `J0Tolerance`, and the J^(2)
+  // solve removes most of the J2 = 0.5 * Dy^2 J violation left without it.
   // The J^(2) constraint is exact in the Cauchy gauge, but it is nonlinear, so
   // interpolating J to the adapted angular coordinates at this small l_max
   // leaves a residual of a few to about fifteen percent of the violation
@@ -1292,10 +1395,15 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.InitializeJ", "[Unit][Cce]") {
           make_not_null(&box_to_initialize)),
       Catch::Matchers::ContainsSubstring("set by the J0Tolerance option") and
           Catch::Matchers::ContainsSubstring(
-              "so raising J0MaxIterations may help"));
+              "it needs to tell whether max|J0| has stopped improving, so "
+              "raising J0MaxIterations may help"));
   {
     INFO("Check the potential angular-coordinate solve");
     test_potential_angular_solve(make_not_null(&generator), l_max);
+  }
+  {
+    INFO("Check the plateau test of the linearized sweeps");
+    test_residual_plateau();
   }
   {
     INFO("Check the linearized angular-coordinate solve");
@@ -1305,6 +1413,10 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.InitializeJ", "[Unit][Cce]") {
     INFO("Check that the potential solve alone suffices within a loose bound");
     CHECK_NOTHROW(test_cauchy_second_order_potential_suffices(
         make_not_null(&box_to_initialize)));
+  }
+  {
+    INFO("Check what the J0Tolerance error says about J0MaxIterations");
+    test_cauchy_second_order_j0_max_iterations_hint();
   }
   {
     INFO(
