@@ -356,8 +356,8 @@ To build with the Docker image:
    You will end up in a bash shell in the docker container,
    as root (you need to be root).
    Within the container, the files in `$SPECTRE_ROOT` are available and Charm++
-   is installed in `/work/charm`. For the following steps, stay inside the
-   docker container as root.
+   is installed in `/sxscollaboration/charm`. For the following steps, stay
+   inside the docker container as root.
 4. Proceed with [building SpECTRE](#building-spectre).
 
 **Notes:**
@@ -537,14 +537,14 @@ Once you have set up your development environment you can compile SpECTRE.
 Follow these steps:
 
 1. Create a build directory where you would like to compile SpECTRE. In the
-   Docker container you could create, e.g., `/work/spectre-build`. It can be
-   useful to add a descriptive label to the name of the build directory since
-   you may create more later, e.g., `build-clang-Debug`. Then, `cd` into the
-   build directory.
+   Docker container you could create, e.g.,
+   `/sxscollaboration/spectre-build`. It can be useful to add a descriptive
+   label to the name of the build directory since you may create more later,
+   e.g., `build-clang-Debug`. Then, `cd` into the build directory.
 2. Determine the location of your Charm++ installation. In the Docker container
-   it is `/work/charm/multicore-linux-x86_64-gcc` for GCC builds and
-   `/work/charm/mpi-linux-x86_64-smp-clang` for clang builds. For Spack
-   installations you can determine it with
+   it is `/sxscollaboration/charm/multicore-linux-x86_64-gcc` for GCC builds and
+   `/sxscollaboration/charm/mpi-linux-x86_64-smp-clang` for clang builds. For
+   Spack installations you can determine it with
    `spack location --install-dir charmpp`. We refer to the install directory as
    `CHARM_ROOT` below.
 3. In your new SpECTRE build directory, configure the build with CMake:

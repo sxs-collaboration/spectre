@@ -338,12 +338,12 @@ COPY --from=xbuild /root/ccache/build/ccache /usr/local/bin
 RUN ccache --version
 COPY --from=xbuild /root/doxygen/build/bin/doxygen /usr/local/bin
 RUN doxygen --version
-COPY --from=xbuild /usr/local/bin/cmake /work/
-RUN /work/cmake --version \
+COPY --from=xbuild /usr/local/bin/cmake /sxscollaboration/
+RUN /sxscollaboration/cmake --version \
     && if [ ${UBUNTU_VERSION} = 18.04 ]; then \
     rm /usr/local/bin/ccache /usr/local/bin/doxygen; \
     else \
-    mv /work/cmake /usr/local/bin; \
+    mv /sxscollaboration/cmake /usr/local/bin; \
     fi
 
 
@@ -427,7 +427,7 @@ RUN wget http://github.com/xtensor-stack/xsimd/archive/refs/tags/14.3.0.tar.gz -
 # Update ld cache to find shared libs in /usr/local/lib/
 RUN ldconfig
 
-WORKDIR /work
+WORKDIR /sxscollaboration
 # Download and build the Charm++ version used by SpECTRE
 # We check out only a specific branch in order to reduce the repo size.
 #
@@ -442,13 +442,13 @@ WORKDIR /work
 # advertises compatibility with CMake 3.4, which CMake 4 no longer supports.
 RUN git clone --single-branch --branch v8.0.0 --depth 1 \
         https://github.com/UIUC-PPL/charm charm \
-    && cd /work/charm \
+    && cd /sxscollaboration/charm \
     && sed -i 's/cmake_minimum_required(VERSION 3.4...3.5)/cmake_minimum_required(VERSION 3.5)/' CMakeLists.txt \
     && ./build charm++ multicore-linux-${CHARM_ARCH} gcc \
         ${PARALLEL_MAKE_ARG} -g -O2 --build-shared --with-production \
         --disable-tls \
-    && rm -r /work/charm/doc /work/charm/examples
-ENV CHARM_ROOT="/work/charm/multicore-linux-${CHARM_ARCH}-gcc"
+    && rm -r /sxscollaboration/charm/doc /sxscollaboration/charm/examples
+ENV CHARM_ROOT="/sxscollaboration/charm/multicore-linux-${CHARM_ARCH}-gcc"
 
 # Set the environment variable SPECTRE_CONTAINER so we can check if we are
 # inside a container (0 is true in bash)
@@ -479,7 +479,7 @@ RUN apt-get update -y \
 # live `tlnet` (see https://ctan.org/mirrors), or fall back to a frozen historic
 # snapshot under https://texlive.info/historic/systems/texlive/<year>/tlnet-final .
 RUN if [ ${UBUNTU_VERSION} = 26.04 ]; then \
-    mkdir /work/texlive && cd /work/texlive \
+    mkdir /sxscollaboration/texlive && cd /sxscollaboration/texlive \
     && wget https://ctan.math.illinois.edu/systems/texlive/tlnet/install-tl-unx.tar.gz \
     && tar -xzf install-tl-unx.tar.gz \
     && rm install-tl-unx.tar.gz \
@@ -487,14 +487,14 @@ RUN if [ ${UBUNTU_VERSION} = 26.04 ]; then \
     && install-tl-*/install-tl -profile=texlive.profile \
         -repository https://ctan.math.illinois.edu/systems/texlive/tlnet \
     && rm -r install-tl-* texlive.profile install-tl.log \
-    && /work/texlive/bin/${TEX_ARCH}-linux/tlmgr install bibtex \
+    && /sxscollaboration/texlive/bin/${TEX_ARCH}-linux/tlmgr install bibtex \
     ; fi
-ENV PATH="${PATH}:/work/texlive/bin/${TEX_ARCH}-linux"
+ENV PATH="${PATH}:/sxscollaboration/texlive/bin/${TEX_ARCH}-linux"
 
 # Remove the apt-get cache in order to reduce image size
 RUN apt-get -y clean
 
-WORKDIR /work
+WORKDIR /sxscollaboration
 
 
 # Development container with coding agents (Claude Code, Codex, Copilot) and the
@@ -632,7 +632,7 @@ RUN if [ "$TARGETARCH" = "$BUILDARCH" ] ; then \
         && make ${PARALLEL_MAKE_ARG} SolveXcts \
     ; fi
 
-ENV SPECTRE_HOME /work/spectre
+ENV SPECTRE_HOME /sxscollaboration/spectre
 ENV PATH $SPECTRE_HOME/build/bin:$PATH
 ENV PYTHONPATH $SPECTRE_HOME/build/bin/python:$PYTHONPATH
 
@@ -685,7 +685,7 @@ ARG TARGETARCH
 ARG UBUNTU_VERSION=18.04
 ARG PARALLEL_MAKE_ARG=-j4
 
-WORKDIR /work
+WORKDIR /sxscollaboration
 
 COPY . spectre/
 

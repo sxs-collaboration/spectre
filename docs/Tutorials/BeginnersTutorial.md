@@ -64,7 +64,8 @@ notebooks. To do so, append another `-p` option with your specified port, e.g.
 `-p 8000:8000`. You can chain as many `-p` options as you want to expose more
 ports.
 
-The SpECTRE repository is located at `/work/spectre` inside the container.
+The SpECTRE repository is located at `/sxscollaboration/spectre` inside the
+container.
 
 
 ### With a Terminal {#with_terminal}
@@ -86,14 +87,15 @@ and run the following commands.
 
 1. `Remote-Containers: Attach to Running Container` - you should see the
    container `spectre_demo` that's currently running. Select that.
-2. `File: Open Folder` - select `/work/spectre` which is where the repo is.
+2. `File: Open Folder` - select `/sxscollaboration/spectre` which is where the
+   repo is.
 
 Now you're in the container within VSCode! The terminal in VSCode will look
 identical to the one if you hadn't used VSCode.
 
-\note Any changes you make inside `/work/spectre` will be lost once you stop the
-container. If you'd like your changes to persist, get rid of the `--rm` flag in
-the `docker create` command.
+\note Any changes you make inside `/sxscollaboration/spectre` will be lost once
+you stop the container. If you'd like your changes to persist, get rid of the
+`--rm` flag in the `docker create` command.
 
 ## Compiling the code
 
@@ -104,7 +106,7 @@ The container already has a SpECTRE build pre-configured. Go to the build
 directory and compile the executables that we will use in this tutorial:
 
 ```sh
-cd /work/spectre/build
+cd /sxscollaboration/spectre/build
 make -j2 ExportCoordinates3D EvolveScalarAdvection2D all-pybindings
 ```
 
@@ -112,9 +114,9 @@ This will compile the code on two cores. If you'd like to use more cores, use
 the `-j N` option where `N` is the number of cores.
 
 Once the executables are compiled they will be available in the
-`/work/spectre/build/bin` directory. The container already has this directory
-added to the `PATH` environment variable, so you can run executables from the
-command line right away:
+`/sxscollaboration/spectre/build/bin` directory. The container already has this
+directory added to the `PATH` environment variable, so you can run executables
+from the command line right away:
 
 ```sh
 spectre --help
@@ -135,13 +137,13 @@ the coordinates of a binary black hole domain.
 Make a directory where you will run everything:
 
 ```
-mkdir /work/runs
-cd /work/runs
+mkdir /sxscollaboration/runs
+cd /sxscollaboration/runs
 ```
 
 Copy over the input file
-`/work/spectre/tests/InputFiles/ExportCoordinates/InputTimeDependent3D.yaml`
-into your `/work/runs` directory. To run the executable, do
+`/sxscollaboration/spectre/tests/InputFiles/ExportCoordinates/InputTimeDependent3D.yaml`
+into your `/sxscollaboration/runs` directory. To run the executable, do
 
 ```
 spectre run --no-schedule -j 4 InputTimeDependent3D.yaml
@@ -296,7 +298,7 @@ aren't familiar with YAML, it's a file type that uses key-value pairs to create
 actual objects in our C++ code. Feel free to experiment with keys and values in
 our input files. If you're unsure about what a key or value should be, we offer
 an easy way to check the options in the input file without running a whole
-simulation. In your `/work/runs` directory, if you run
+simulation. In your `/sxscollaboration/runs` directory, if you run
 
 ```
 spectre validate InputTimeDependent3D.yaml
@@ -410,10 +412,10 @@ ScalarAdvection::Solutions::Kuzmin Kuzmin \endlink problem using the
 `EvolveScalarAdvection2D` executable. This is a simple test problem that
 rotates a set of geometric shapes with uniform angular velocity, which can be
 used to evaluate how well a numerical code can handle discontinuities stably
-over time. Inside the container make a new directory `/work/runs2` where you
-will run it. Also copy the default input file in
-`/work/spectre/tests/InputFiles/ScalarAdvection/Kuzmin2D.yaml` to this new
-`/work/runs2` directory.
+over time. Inside the container make a new directory `/sxscollaboration/runs2`
+where you will run it. Also copy the default input file in
+`/sxscollaboration/spectre/tests/InputFiles/ScalarAdvection/Kuzmin2D.yaml` to
+this new `/sxscollaboration/runs2` directory.
 
 ### Changing the Default Input File
 
@@ -562,7 +564,7 @@ ScalarAdvection::Solutions::Kuzmin Kuzmin \endlink system and add a new feature
 to the solution profile!
 
 You can find the files for the Kuzmin system at
-`/work/spectre/src/PointwiseFunctions/AnalyticSolutions/ScalarAdvection/
+`/sxscollaboration/spectre/src/PointwiseFunctions/AnalyticSolutions/ScalarAdvection/
 Kuzmin.?pp`.
 In the `hpp` file, you'll see a lot of Doxygen documentation and then the actual
 Kuzmin class. The only function that you will need to care about is
@@ -611,14 +613,14 @@ to resolve it.
 ### Re-building SpECTRE
 
 Once you have your feature coded up, go ahead and save your changes. Now we will
-build SpECTRE! Go to the `/work/spectre/build` directory. This is where you have
-to be in order to build SpECTRE. We use [CMake](https://cmake.org/) to configure
-our build directory. However, since the executables are already pre-built, this
-means the build directory is already configured! So you don't have to worry
-about `CMake` for now. If you wanted to reconfigure, for example using a
-different compiler, then you'd have to run `CMake`. If you want to learn more
-about how we use `CMake`, take a look at the \ref common_cmake_flags developers
-guide.
+build SpECTRE! Go to the `/sxscollaboration/spectre/build` directory. This is
+where you have to be in order to build SpECTRE. We use
+[CMake](https://cmake.org/) to configure our build directory. However, since the
+executables are already pre-built, this means the build directory is already
+configured! So you don't have to worry about `CMake` for now. If you wanted to
+reconfigure, for example using a different compiler, then you'd have to run
+`CMake`. If you want to learn more about how we use `CMake`, take a look at the
+\ref common_cmake_flags developers guide.
 
 To build the Kuzmin executable, run
 
@@ -629,11 +631,11 @@ make EvolveScalarAdvection2D
 This should be very fast because you only edited a `cpp` file. Congrats! You've
 just built SpECTRE!
 
-Now re-run the executable in your `/work/runs2` directory. Hopefully everything
-works and you get some output. When you plot it in Paraview, it should look
-almost the same as before except your feature will be there too rotating with
-the others! How cool! You can also see if your feature needs FD or DG more by
-how much it switches back and forth.
+Now re-run the executable in your `/sxscollaboration/runs2` directory. Hopefully
+everything works and you get some output. When you plot it in Paraview, it
+should look almost the same as before except your feature will be there too
+rotating with the others! How cool! You can also see if your feature needs FD or
+DG more by how much it switches back and forth.
 
 Experiment some more with either different features or different resolution!
 
@@ -653,6 +655,6 @@ make ExecutableName
 ```
 
 and then you can copy the default input file from
-`/work/spectre/tests/InputFiles` and run it. Running an executable with the
-`--help` flag will give a description of what system is being evolved and the
-input options necessary.
+`/sxscollaboration/spectre/tests/InputFiles` and run it. Running an executable
+with the `--help` flag will give a description of what system is being evolved
+and the input options necessary.
