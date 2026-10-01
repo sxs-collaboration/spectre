@@ -75,11 +75,12 @@ struct InitializeParent {
     }
     auto parent_neighbors = amr::neighbors_of_parent(
         parent_id, children_elements_and_neighbor_info);
-    Element<volume_dim> parent(parent_id, std::move(parent_neighbors.first),
-                               domain::topologies::hypercube<volume_dim>);
 
     std::vector<Mesh<volume_dim>> projected_children_meshes{};
     projected_children_meshes.reserve(children_items.size());
+    auto parent_topologies =
+        make_array<volume_dim>(domain::Topology::Uninitialized);
+    bool parent_has_bn_topology = false;
     for (const auto& [child_id, child_items] : children_items) {
       const auto& child =
           tuples::get<::domain::Tags::Element<volume_dim>>(child_items);
@@ -87,9 +88,29 @@ struct InitializeParent {
           tuples::get<::domain::Tags::Mesh<volume_dim>>(child_items);
       const auto& child_flags =
           tuples::get<amr::Tags::Info<volume_dim>>(child_items).flags;
+      const auto& child_topologies = child.topologies();
       projected_children_meshes.emplace_back(amr::projectors::p_refined_mesh(
-          child_mesh, child_flags, child.topologies()));
+          child_mesh, child_flags, child_topologies));
+      if (not parent_has_bn_topology and
+          child_topologies != parent_topologies) {
+        const domain::Topology first_topology = child_topologies[0];
+        const bool child_has_bn_topology =
+            first_topology == domain::Topology::B1Radial or
+            first_topology == domain::Topology::B2Radial or
+            first_topology == domain::Topology::B3Radial;
+        if (child_has_bn_topology or
+            parent_topologies ==
+                make_array<volume_dim>(domain::Topology::Uninitialized)) {
+          parent_topologies = child_topologies;
+          parent_has_bn_topology = child_has_bn_topology;
+        } else {
+          ERROR("Expect all topologies to be the same, not "
+                << parent_topologies << " and " << child_topologies);
+        }
+      }
     }
+    Element<volume_dim> parent(parent_id, std::move(parent_neighbors.first),
+                               parent_topologies);
     Mesh<volume_dim> parent_mesh =
         amr::projectors::parent_mesh(projected_children_meshes);
     if (not domain::is_valid_dg_mesh(parent_mesh, parent)) {
