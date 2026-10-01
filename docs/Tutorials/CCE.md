@@ -527,11 +527,12 @@ in a supported environment is a simple command:
 
 The `CauchySecondOrder` initializer adapts the angular coordinates to make
 \f$J_0 = J|_{\mathcal{I}^+}\f$ vanish in the partially flat gauge, in up to two
-stages that share the `J0MaxIterations` budget. A potential-based solve first
-runs to its minimum in a few passes. If that brings \f$\max|J_0|\f$ within
-`J0Tolerance`, its map is the solution. Otherwise linearized sweeps continue
-until \f$\max|J_0|\f$ stops improving (by less than 1% over the last 50
-sweeps) or the budget runs out. The supplied input file sets
+stages that together take at most `J0MaxIterations` iterations. A
+potential-based solve first runs to its minimum in a few iterations. If that
+brings \f$\max|J_0|\f$ within `J0Tolerance`, its map is the solution.
+Otherwise linearized sweeps continue until \f$\max|J_0|\f$ stops improving (by
+less than 1% over the last 50 sweeps) or until the two stages together have
+taken `J0MaxIterations` iterations. The supplied input file sets
 `J0Tolerance: 5e-12`, `J0MaxIterations: 1500`, and `MaxCauchyJ0: 5e-2`.
 `MaxCauchyJ0` bounds the magnitude of \f$J\f$ at scri+ in the Cauchy-gauge
 initial guess. The same bound also limits the transformed \f$J\f$ during the
@@ -542,30 +543,36 @@ After transforming the initial data to the partially flat gauge, the initializer
 prints a summary of both solves and the maximum absolute values of both
 constraints over the angular grid, \f$J_0\f$ and
 \f$J_2 = \frac{1}{2}\partial_y^2 J|_{\mathcal{I}^+}\f$, the coefficient of
-\f$(1-y)^2\f$. For HybTest 001 at \f$R = 100M\f$ with `LMax: 20` it reads
-(long lines wrapped):
+\f$(1-y)^2\f$. For a binary black hole worldtube at \f$R = 100M\f$ with
+`LMax: 20` it reads, for example (long lines wrapped):
 
 ```
 CauchySecondOrder initial data:
-  J^(2) fixed point: 2 passes, last change of J^(2) 6.828636e-17 (J2Tolerance
-    1.000000e-14)
-  J0 angular solve: 1394 iterations = 4 potential passes (reaching max|J0|
-    3.387280e-11) + 1390 linearized sweeps
+  J^(2) fixed point: 2 iterations, last change of J^(2) 6.828636e-17
+    (J2Tolerance 1.000000e-14)
+  J0 angular solve: 1394 iterations = 4 potential iterations (reaching
+    max|J0| 3.387280e-11) + 1390 linearized sweeps
   partially flat constraints at scri+: max|J0| = 1.6469519047383257e-12
     (J0Tolerance 5.000000e-12), max|J2| = 2.0354096531992744e-15
     (MaxPartiallyFlatJ2 1.000000e-12)
 ```
 
 Initialization stops if \f$\max|J_0|\f$ exceeds `J0Tolerance` or
-\f$\max|J_2|\f$ exceeds `MaxPartiallyFlatJ2`, which usually means the
-resolution is too low for the worldtube data. The angular solve drives
-\f$J_0\f$ down to a floor set by the angular resolution, which rises with the
-size of \f$J\f$ at scri+ in the Cauchy gauge, so it is mostly a concern for
-worldtubes at small extraction radii. If the error reports that the solve
-stopped once \f$\max|J_0|\f$ had stopped improving, raising `J0MaxIterations`
-does not help. Instead, increase `LMax`, use a worldtube at a larger extraction
-radius, or raise `J0Tolerance` to sit just above the reported
-\f$\max|J_0|\f$.
+\f$\max|J_2|\f$ exceeds `MaxPartiallyFlatJ2`. The angular solve drives
+\f$J_0\f$ down to a floor, which rises with the size of \f$J\f$ at scri+ in the
+Cauchy gauge and with the power in the high-\f$\ell\f$ modes of the worldtube
+data, so it is mostly a concern for worldtubes at small extraction radii. When
+\f$\max|J_0|\f$ cannot reach `J0Tolerance`, the worldtube data from the Cauchy
+simulation are usually the cause: the spherical-harmonic modes of \f$J\f$ do not
+decay with \f$\ell\f$, and their power is spread almost evenly across them.
+Raising the CCE `LMax`, at which the initial data are computed, does not help
+then, since it adds no information that the worldtube data do not contain. It
+lowers the floor only if the modes still decay beyond the current `LMax`. If the
+error reports that the solve stopped once \f$\max|J_0|\f$ had stopped
+improving, raising `J0MaxIterations` does not help either. Instead,
+[check how the modes of the worldtube \f$J\f$ decay](#worldtube_data_looks)
+with \f$\ell\f$, use a worldtube at a larger extraction radius, or raise
+`J0Tolerance` to sit just above the reported \f$\max|J_0|\f$.
 
 `CauchySecondOrder` also solves a small fixed-point problem before the angular
 solve. Matching the worldtube \f$J\f$, \f$\partial_r J\f$ and
@@ -573,11 +580,11 @@ solve. Matching the worldtube \f$J\f$, \f$\partial_r J\f$ and
 radial ansatz. The partially flat gauge condition on the second asymptotic
 coefficient determines the fourth, \f$J^{(2)}\f$, as the root of a contraction
 mapping. `J2MaxIterations` and `J2Tolerance` control that iteration, which
-starts from \f$J^{(2)} = 0\f$. Each pass gains roughly
+starts from \f$J^{(2)} = 0\f$. Each iteration gains roughly
 \f$2\log_{10}(1/\rho)\f$ digits, where
 \f$\rho = \max(\|J^{(0)}\|_\infty, \|J^{(1)}\|_\infty)\f$ is the size of the
 two leading radial coefficients of the Cauchy-gauge ansatz. Reaching the
-supplied `J2Tolerance: 1e-14` therefore takes about two passes when
+supplied `J2Tolerance: 1e-14` therefore takes about two iterations when
 \f$\rho \sim 10^{-3}\f$ and about six when \f$\rho \sim 5\times 10^{-2}\f$.
 Note that `MaxCauchyJ0` bounds only \f$J^{(0)}\f$, not \f$J^{(1)}\f$. The
 iteration is only guaranteed to contract when \f$\rho\f$ is at most a few

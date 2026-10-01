@@ -9,12 +9,15 @@
 #include <cstddef>
 #include <limits>
 #include <memory>
+#include <string>
 #include <utility>
 
 #include "DataStructures/ComplexDataVector.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/SpinWeighted.hpp"
+#include "DataStructures/Tags.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
+#include "DataStructures/Variables.hpp"
 #include "Evolution/Systems/Cce/Initialize/ComputeSecondOrderRadialDerivativeJ.hpp"
 #include "Evolution/Systems/Cce/Initialize/InitializeJ.hpp"
 #include "Evolution/Systems/Cce/LinearOperators.hpp"
@@ -23,20 +26,18 @@
 #include "NumericalAlgorithms/Spectral/CollocationPoints.hpp"
 #include "NumericalAlgorithms/Spectral/Quadrature.hpp"
 #include "NumericalAlgorithms/SpinWeightedSphericalHarmonics/SwshCollocation.hpp"
+#include "NumericalAlgorithms/SpinWeightedSphericalHarmonics/SwshInterpolation.hpp"
 #include "Parallel/NodeLock.hpp"
 #include "Parallel/Printf/Printf.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Literals.hpp"
+#include "Utilities/MakeString.hpp"
 
 namespace Cce::InitializeJ {
 
 namespace {
-// The potential solve reaches its resolution-limited minimum within a few
-// passes, so this cap only bounds the cost of data it cannot solve.
-constexpr size_t max_potential_passes = 20;
-
 // `max(abs(...))` can drop a NaN that is not the first element, so check every
 // element explicitly.
 bool all_finite(const ComplexDataVector& values) {
@@ -73,9 +74,8 @@ size_t solve_asymptotic_j2(const gsl::not_null<ComplexDataVector*> j2,
   ComplexDataVector j0 = j0_at_zero;
   ComplexDataVector j1 = j1_at_zero;
   size_t iterations = 0;
-  // Written as `not (a < b)` so that a NaN step continues rather than ends the
-  // iteration as if converged.
-  while (iterations < max_iterations and not(*final_step < tolerance)) {
+  while (iterations < max_iterations and
+         (std::isnan(*final_step) or *final_step >= tolerance)) {
     const DataVector k1 = real(j0 * conj(j1)) / sqrt(1.0 + real(j0 * conj(j0)));
     const ComplexDataVector next_j2 =
         0.5 * j0 * (real(j1 * conj(j1)) - k1 * k1);
@@ -90,6 +90,38 @@ size_t solve_asymptotic_j2(const gsl::not_null<ComplexDataVector*> j2,
     j1 = j1_at_zero + j1_x_coefficient * (*j2);
   }
   return iterations;
+}
+
+std::string j0_max_iterations_hint(const size_t number_of_linearized_sweeps,
+                                   const bool stopped_improving,
+                                   const size_t j0_max_iterations) {
+  if (number_of_linearized_sweeps == 0) {
+    return "";
+  }
+  if (stopped_improving) {
+    return "The angular solve stopped once max|J0| had stopped improving, so "
+           "raising J0MaxIterations will not help. ";
+  }
+  const size_t largest_j0_max_iterations =
+      CauchySecondOrder::J0MaxIterations::upper_bound();
+  if (j0_max_iterations >= largest_j0_max_iterations) {
+    return MakeString{}
+           << "The angular solve was stopped by J0MaxIterations before max|J0| "
+              "had stopped improving, but J0MaxIterations is already at its "
+              "largest allowed value "
+           << largest_j0_max_iterations << ". ";
+  }
+  if (number_of_linearized_sweeps < CauchySecondOrder::j0_plateau_sweeps) {
+    return MakeString{}
+           << "The angular solve was stopped by J0MaxIterations after "
+           << number_of_linearized_sweeps
+           << " linearized sweeps, fewer than the "
+           << CauchySecondOrder::j0_plateau_sweeps
+           << " it needs to tell whether max|J0| has stopped improving, so "
+              "raising J0MaxIterations may help. ";
+  }
+  return "The angular solve was stopped by J0MaxIterations while max|J0| was "
+         "still improving, so raising J0MaxIterations may help. ";
 }
 }  // namespace CauchySecondOrder_detail
 
@@ -192,8 +224,8 @@ void CauchySecondOrder::operator()(
   }
 
   // Solve the gauge constraint on x by fixed-point iteration from x = 0; see
-  // `CauchySecondOrder_detail::solve_asymptotic_j2`. A zero iteration budget
-  // keeps x = 0.
+  // `CauchySecondOrder_detail::solve_asymptotic_j2`. With J2MaxIterations = 0
+  // it keeps x = 0.
   ComplexDataVector j2{number_of_angular_points, 0.0};
   double j2_step = std::numeric_limits<double>::infinity();
   const size_t j2_iterations = CauchySecondOrder_detail::solve_asymptotic_j2(
@@ -209,8 +241,7 @@ void CauchySecondOrder::operator()(
              "values, or they are far too large for the iteration to "
              "contract. Check the worldtube data.");
     }
-    // Written as `not (a < b)` to match the loop condition of the solve.
-    if (not(j2_step < j2_tolerance_)) {
+    if (j2_step >= j2_tolerance_) {
       ERROR(
           "The initial J^(2) fixed-point solve did not reach target "
           "tolerance "
@@ -249,33 +280,20 @@ void CauchySecondOrder::operator()(
                   (number_of_radial_points - 1) * number_of_angular_points,
                   number_of_angular_points);
 
-  Variables<
-      tmpl::list<::Tags::SpinWeighted<::Tags::TempScalar<0, ComplexDataVector>,
-                                      std::integral_constant<int, 2>>,
-                 ::Tags::SpinWeighted<::Tags::TempScalar<1, ComplexDataVector>,
-                                      std::integral_constant<int, 0>>,
-                 ::Tags::SpinWeighted<::Tags::TempScalar<2, ComplexDataVector>,
-                                      std::integral_constant<int, 0>>,
-                 ::Tags::SpinWeighted<::Tags::TempScalar<3, ComplexDataVector>,
-                                      std::integral_constant<int, 2>>>>
+  Variables<tmpl::list<::Tags::TempSpinWeightedScalar<0, 2>,
+                       ::Tags::TempSpinWeightedScalar<1, 0>,
+                       ::Tags::TempSpinWeightedScalar<2, 0>,
+                       ::Tags::TempSpinWeightedScalar<3, 2>>>
       iteration_buffers{number_of_angular_points};
 
   auto& evolution_gauge_surface_j =
-      get(get<::Tags::SpinWeighted<::Tags::TempScalar<0, ComplexDataVector>,
-                                   std::integral_constant<int, 2>>>(
-          iteration_buffers));
+      get(get<::Tags::TempSpinWeightedScalar<0, 2>>(iteration_buffers));
   auto& interpolated_k =
-      get(get<::Tags::SpinWeighted<::Tags::TempScalar<1, ComplexDataVector>,
-                                   std::integral_constant<int, 0>>>(
-          iteration_buffers));
+      get(get<::Tags::TempSpinWeightedScalar<1, 0>>(iteration_buffers));
   auto& gauge_omega =
-      get<::Tags::SpinWeighted<::Tags::TempScalar<2, ComplexDataVector>,
-                               std::integral_constant<int, 0>>>(
-          iteration_buffers);
+      get<::Tags::TempSpinWeightedScalar<2, 0>>(iteration_buffers);
   auto& asymptotic_j_hat =
-      get(get<::Tags::SpinWeighted<::Tags::TempScalar<3, ComplexDataVector>,
-                                   std::integral_constant<int, 2>>>(
-          iteration_buffers));
+      get(get<::Tags::TempSpinWeightedScalar<3, 2>>(iteration_buffers));
 
   // J at scri+ interpolated to the current map, and transformed to its
   // coordinates (`asymptotic_j_hat`), which both angular solves drive to zero.
@@ -309,12 +327,9 @@ void CauchySecondOrder::operator()(
                    : std::numeric_limits<double>::quiet_NaN();
       };
 
-  // The linearized sweeps stop once max|J0| stops improving.
-  detail::ResidualPlateau j0_plateau{j0_plateau_sweeps};
-
   const auto iteration_function =
       [&transform_asymptotic_j, &interpolated_k, &gauge_omega,
-       &asymptotic_j_hat, &j0_plateau](
+       &asymptotic_j_hat](
           const gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 2>>*>
               gauge_c_step,
           const gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 0>>*>
@@ -324,7 +339,6 @@ void CauchySecondOrder::operator()(
           const Spectral::Swsh::SwshInterpolator& iteration_interpolator) {
         const double max_error =
             transform_asymptotic_j(gauge_c, gauge_d, iteration_interpolator);
-        j0_plateau.record(max_error);
         get(*gauge_c_step).data() =
             -0.5 * asymptotic_j_hat.data() * square(get(gauge_omega).data()) /
             (get(gauge_d).data() * interpolated_k.data());
@@ -340,9 +354,7 @@ void CauchySecondOrder::operator()(
   double max_scri_j2 = std::numeric_limits<double>::signaling_NaN();
 
   // The Jacobian for which the transformed asymptotic J vanishes,
-  // c_* = -conj(d) J^(0) / (1 + K^(0)). The algebraically equal
-  // conj(d) (1 - K^(0)) / conj(J^(0)) loses about four digits to cancellation
-  // when |J^(0)| ~ 1e-5.
+  // c_* = -conj(d) J^(0) / (1 + K^(0)).
   const auto target_function =
       [&transform_asymptotic_j, &interpolated_k, &evolution_gauge_surface_j](
           const gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 2>>*>
@@ -403,19 +415,21 @@ void CauchySecondOrder::operator()(
       };
 
   // The potential solve runs to its minimum, so it has no tolerance of its own;
-  // the check below decides what follows. It leaves the linearized sweeps at
-  // least one iteration of the budget.
-  const size_t potential_pass_budget =
+  // the check below decides what follows. It takes at most
+  // `max_potential_iterations` iterations, and fewer than J0MaxIterations, so
+  // that at least one linearized sweep can follow.
+  const size_t potential_iteration_limit =
       std::min(j0_max_iterations_ > 0 ? j0_max_iterations_ - 1 : 0_st,
-               max_potential_passes);
+               max_potential_iterations);
   const auto potential_result = detail::adapt_angular_coordinates_via_potential(
       cartesian_cauchy_coordinates, angular_cauchy_coordinates, l_max,
-      /*tolerance=*/0.0, potential_pass_budget, max_cauchy_j0_, target_function,
-      detail::UnconvergedAngularSolve::Silent, detail::NoOpFinalize{},
+      /*tolerance=*/0.0, potential_iteration_limit, max_cauchy_j0_,
+      target_function, detail::UnconvergedAngularSolve::Silent,
+      detail::NoOpFinalize{},
       /*initialize_coordinates=*/true);
-  const size_t potential_passes = potential_result.number_of_coordinate_updates;
+  const size_t potential_iterations =
+      potential_result.number_of_coordinate_updates;
 
-  bool linearized_solve_used = false;
   size_t linearized_sweeps = 0;
   bool j0_stagnated = false;
   if (potential_result.max_error <= j0_tolerance_) {
@@ -427,63 +441,58 @@ void CauchySecondOrder::operator()(
         detail::UnconvergedAngularSolve::Silent, finalize_function,
         /*initialize_coordinates=*/false);
   } else {
-    // Continue from the potential solve's map with the linearized sweeps, on
-    // the rest of the budget. Running out of it is not an error by itself: the
-    // J0 check below decides.
+    // Continue from the potential solve's map with the linearized sweeps until
+    // max|J0| stops improving, or until the two stages together have taken
+    // J0MaxIterations iterations. Reaching J0MaxIterations is not an error by
+    // itself: the J0 check below decides.
     const size_t remaining_iterations =
-        j0_max_iterations_ > potential_passes
-            ? j0_max_iterations_ - potential_passes
+        j0_max_iterations_ > potential_iterations
+            ? j0_max_iterations_ - potential_iterations
             : 0_st;
+    detail::ResidualPlateau j0_plateau{j0_plateau_sweeps};
     const auto linearized_result =
         detail::iteratively_adapt_angular_coordinates(
             cartesian_cauchy_coordinates, angular_cauchy_coordinates, l_max,
             j0_plateau_improvement, remaining_iterations, max_cauchy_j0_,
             iteration_function, detail::UnconvergedAngularSolve::Silent,
             finalize_function, /*initialize_coordinates=*/false,
-            [&j0_plateau, &j0_stagnated](const double /*max_error*/,
+            [&j0_plateau, &j0_stagnated](const double max_error,
                                          const double tolerance) {
+              j0_plateau.record(max_error);
               j0_stagnated = j0_plateau.stopped_improving(tolerance);
               return j0_stagnated;
             });
-    linearized_solve_used = true;
     linearized_sweeps = linearized_result.number_of_coordinate_updates;
   }
 
   // Printed before the checks below, so that it also precedes a failure.
   Parallel::printf(
       "CauchySecondOrder initial data:\n"
-      "  J^(2) fixed point: %zu passes, last change of J^(2) %e (J2Tolerance "
-      "%e)\n"
-      "  J0 angular solve: %zu iterations = %zu potential passes (reaching "
+      "  J^(2) fixed point: %zu iterations, last change of J^(2) %e "
+      "(J2Tolerance %e)\n"
+      "  J0 angular solve: %zu iterations = %zu potential iterations (reaching "
       "max|J0| %e) + %zu linearized sweeps\n"
       "  partially flat constraints at scri+: max|J0| = %.16e "
       "(J0Tolerance %e), max|J2| = %.16e (MaxPartiallyFlatJ2 %e)\n",
       j2_iterations, j2_step, j2_tolerance_,
-      potential_passes + linearized_sweeps, potential_passes,
+      potential_iterations + linearized_sweeps, potential_iterations,
       potential_result.max_error, linearized_sweeps, max_scri_j0, j0_tolerance_,
       max_scri_j2, max_partially_flat_j2_);
 
-  // Written as `not (a <= b)` so that a NaN also aborts.
-  if (not(max_scri_j0 <= j0_tolerance_)) {
+  if (std::isnan(max_scri_j0) or max_scri_j0 > j0_tolerance_) {
     ERROR(
         "After the gauge transformation the initial J has max|J0| = max|J| "
         "at scri+ of "
         << max_scri_j0 << ", which exceeds the threshold " << j0_tolerance_
         << " set by the J0Tolerance option. "
-        << (not linearized_solve_used ? ""
-            : j0_stagnated
-                ? "The angular solve stopped once max|J0| had stopped "
-                  "improving, so raising J0MaxIterations will not help. "
-                : "The angular solve was stopped by J0MaxIterations while "
-                  "max|J0| was still improving, so raising J0MaxIterations "
-                  "may help. ")
-        << "The floor that max|J0| reaches rises with max|J| at scri+ in the "
-           "Cauchy gauge, so increase LMax, use a worldtube at a larger "
-           "extraction radius, or raise J0Tolerance.");
+        << CauchySecondOrder_detail::j0_max_iterations_hint(
+               linearized_sweeps, j0_stagnated, j0_max_iterations_)
+        << "This usually means the spherical-harmonic modes of the worldtube "
+           "J do not decay with l. Use a worldtube at a larger extraction "
+           "radius or raise J0Tolerance.");
   }
 
-  // Written as `not (a <= b)` so that a NaN also aborts.
-  if (not(max_scri_j2 <= max_partially_flat_j2_)) {
+  if (std::isnan(max_scri_j2) or max_scri_j2 > max_partially_flat_j2_) {
     ERROR(
         "After the gauge transformation the initial J has max|J2| = "
         "max|(1/2) Dy^2 J| at scri+ of "

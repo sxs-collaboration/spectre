@@ -130,12 +130,14 @@ Cce:
       # coefficient determines J^(2), the coefficient of (1 - y)^2 in the
       # Cauchy-gauge ansatz, which is solved by fixed-point iteration from
       # J^(2) = 0. The iteration stops once the largest change of J^(2) over
-      # the angular collocation points in one pass falls below J2Tolerance.
+      # the angular collocation points in one iteration falls below
+      # J2Tolerance.
       J2Tolerance: 1e-14
       # Initialization aborts if J2Tolerance is not reached within
-      # J2MaxIterations passes. Each pass gains roughly 2 log10(1/rho)
-      # digits, where rho = max(|J^(0)|, |J^(1)|) is the size of the two
-      # leading coefficients of the ansatz, so rho ~ 5e-2 needs about six.
+      # J2MaxIterations iterations. Each iteration gains roughly
+      # 2 log10(1/rho) digits, where rho = max(|J^(0)|, |J^(1)|) is the size
+      # of the two leading coefficients of the ansatz, so rho ~ 5e-2 needs
+      # about six.
       J2MaxIterations: 10
       # Initialization aborts if, after the gauge transformation,
       # max|J2| = max|(1/2) Dy^2 J| at scri+ exceeds MaxPartiallyFlatJ2. The

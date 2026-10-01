@@ -6,6 +6,7 @@
 #include <cstddef>
 #include <limits>
 #include <memory>
+#include <string>
 
 #include "DataStructures/SpinWeighted.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
@@ -82,14 +83,14 @@ void radial_ansatz_coefficients(gsl::not_null<ComplexDataVector*> j0,
  * \|\tilde J^{(1)}(0)\|_\infty)\f$ into itself and is a contraction there
  * whenever \f$\varrho \lesssim 7\times 10^{-2}\f$, so the iteration from
  * \f$x = 0\f$ converges to the unique root. The Lipschitz constant of
- * \f$\Phi\f$ is of order \f$\varrho^2\f$, so each pass gains roughly
+ * \f$\Phi\f$ is of order \f$\varrho^2\f$, so each iteration gains roughly
  * \f$2\log_{10}(1/\varrho)\f$ digits: reaching \f$10^{-14}\f$ takes about two
- * passes for \f$\varrho \sim 10^{-3}\f$ and about six for
+ * iterations for \f$\varrho \sim 10^{-3}\f$ and about six for
  * \f$\varrho \sim 5\times 10^{-2}\f$.
  *
  * Iteration stops once the largest change of \f$x\f$ over the collocation
- * points falls below `tolerance`, or after `max_iterations` passes.
- * `max_iterations` of zero performs no passes and leaves \f$x = 0\f$.
+ * points falls below `tolerance`, or after `max_iterations` iterations.
+ * `max_iterations` of zero performs no iterations and leaves \f$x = 0\f$.
  *
  * \returns the number of iterations performed; `final_step` is set to the
  * largest change of \f$x\f$ on the last of them (infinite if none were taken).
@@ -102,6 +103,23 @@ size_t solve_asymptotic_j2(gsl::not_null<ComplexDataVector*> j2,
                            const ComplexDataVector& j0_at_zero,
                            const ComplexDataVector& j1_at_zero,
                            double tolerance, size_t max_iterations);
+
+/*!
+ * \brief The sentence of the `J0Tolerance` error that says whether raising
+ * `J0MaxIterations` can help.
+ *
+ * \details Empty if no linearized sweeps ran. Otherwise it says whether the
+ * sweeps stopped because \f$\max|J_0|\f$ had stopped improving
+ * (`stopped_improving`), or because the angular solve reached
+ * `j0_max_iterations` iterations, either while \f$\max|J_0|\f$ was still
+ * improving or before the `CauchySecondOrder::j0_plateau_sweeps` sweeps that
+ * telling the two apart takes. If `j0_max_iterations` is already at the upper
+ * bound of the `J0MaxIterations` option, it says so instead of suggesting a
+ * larger value.
+ */
+std::string j0_max_iterations_hint(size_t number_of_linearized_sweeps,
+                                   bool stopped_improving,
+                                   size_t j0_max_iterations);
 }  // namespace CauchySecondOrder_detail
 
 /*!
@@ -126,10 +144,11 @@ size_t solve_asymptotic_j2(gsl::not_null<ComplexDataVector*> j2,
  * coefficient an affine function of \f$x \equiv \tilde J^{(2)}\f$, that
  * constraint is a fixed-point problem \f$x = \Phi(x)\f$, which is solved by
  * iterating from \f$x = 0\f$ to `J2Tolerance` within at most `J2MaxIterations`
- * passes (the map is a contraction whenever the worldtube data are small enough
- * that \f$\max(\|J^{(0)}\|_\infty, \|\tilde J^{(1)}\|_\infty)\f$ is at
+ * iterations (the map is a contraction whenever the worldtube data are small
+ * enough that \f$\max(\|J^{(0)}\|_\infty, \|\tilde J^{(1)}\|_\infty)\f$ is at
  * most a few times \f$10^{-2}\f$; see
- * `CauchySecondOrder_detail::solve_asymptotic_j2` for the number of passes).
+ * `CauchySecondOrder_detail::solve_asymptotic_j2` for the number of
+ * iterations).
  *
  * The remaining angular coordinates are determined
  * iteratively to ensure asymptotic flatness. The angular solve can eliminate
@@ -138,22 +157,22 @@ size_t solve_asymptotic_j2(gsl::not_null<ComplexDataVector*> j2,
  * aborts if the asymptotic \f$J\f$ in Cauchy coordinates, or the deviation at
  * any iteration of the solve, exceeds `MaxCauchyJ0`.
  *
- * The angular solve runs in up to two stages that share the `J0MaxIterations`
- * budget. A potential-based solve
+ * The angular solve runs in up to two stages, which together take at most
+ * `J0MaxIterations` iterations. A potential-based solve
  * (`detail::adapt_angular_coordinates_via_potential`) first runs to its
- * minimum, which takes a few passes. If that brings \f$\max|J_0|\f$, with
+ * minimum, which takes a few iterations. If that brings \f$\max|J_0|\f$, with
  * \f$J_0 = J|_{\mathcal{I}^+}\f$ in the partially flat gauge, within
  * `J0Tolerance`, its map is the solution. Otherwise linearized sweeps continue
  * from it until the smallest \f$\max|J_0|\f$ reached has improved by less
- * than 1% over the last 50 sweeps, or the budget runs out. Both stages keep
- * the best map they evaluated.
+ * than 1% over the last 50 sweeps, or until the two stages together have taken
+ * `J0MaxIterations` iterations. Both stages keep the best map they evaluated.
  *
- * The \f$J^{(2)}\f$ solve must converge within its iteration budget. After
- * the gauge transformation, initialization prints a summary of both solves and
- * the maximum absolute values of the partially flat constraints \f$J_0\f$ and
- * \f$J_2 = \frac{1}{2}\partial_y^2 J|_{\mathcal{I}^+}\f$, and aborts if
- * \f$\max|J_0|\f$ exceeds `J0Tolerance` or \f$\max|J_2|\f$ exceeds
- * `MaxPartiallyFlatJ2`.
+ * The \f$J^{(2)}\f$ solve must converge within `J2MaxIterations` iterations.
+ * After the gauge transformation, initialization prints a summary of both
+ * solves and the maximum absolute values of the partially flat constraints
+ * \f$J_0\f$ and \f$J_2 = \frac{1}{2}\partial_y^2 J|_{\mathcal{I}^+}\f$, and
+ * aborts if \f$\max|J_0|\f$ exceeds `J0Tolerance` or \f$\max|J_2|\f$
+ * exceeds `MaxPartiallyFlatJ2`.
  *
  * The worldtube \f$\partial_u \partial_r J\f$ that enters the H hypersurface
  * equation is obtained by differentiating the worldtube \f$\partial_r J\f$ in
@@ -163,11 +182,17 @@ size_t solve_asymptotic_j2(gsl::not_null<ComplexDataVector*> j2,
  * evolution wants a high one for the values it interpolates every step.
  */
 struct CauchySecondOrder : InitializeJ<false> {
+  /// The largest number of iterations of the potential solve. It reaches its
+  /// minimum within a few, so this cap only bounds its cost on data it cannot
+  /// solve.
+  static constexpr size_t max_potential_iterations = 20;
   /// The linearized sweeps continue while the smallest \f$\max|J_0|\f$
   /// reached improves by at least the fraction `j0_plateau_improvement` over
   /// `j0_plateau_sweeps` sweeps.
+  /// @{
   static constexpr size_t j0_plateau_sweeps = 50;
   static constexpr double j0_plateau_improvement = 1.0e-2;
+  /// @}
 
   struct J0Tolerance {
     using type = double;
@@ -210,12 +235,13 @@ struct CauchySecondOrder : InitializeJ<false> {
   struct J2MaxIterations {
     using type = size_t;
     static constexpr Options::String help = {
-        "Largest number of fixed-point passes used to determine J^(2). Each "
-        "pass gains roughly 2 log10(1/rho) digits, where rho is the larger of "
-        "max|J^(0)| and max|J^(1)|, the leading coefficients of the "
-        "Cauchy-gauge ansatz. Reaching 1e-14 takes about two passes for "
-        "rho ~ 1e-3 and about six for rho ~ 5e-2. "
-        "Failing to converge within a nonzero budget aborts initialization. "
+        "Largest number of fixed-point iterations used to determine J^(2). "
+        "Each iteration gains roughly 2 log10(1/rho) digits, where rho is "
+        "the larger of max|J^(0)| and max|J^(1)|, the leading coefficients "
+        "of the Cauchy-gauge ansatz. Reaching 1e-14 takes about two "
+        "iterations for rho ~ 1e-3 and about six for rho ~ 5e-2. "
+        "If this is nonzero and the iteration has not converged after this "
+        "many iterations, initialization aborts. "
         "Zero skips the solve and leaves J^(2) = 0, which does not satisfy "
         "the partially flat gauge condition."};
     static type upper_bound() { return 100; }

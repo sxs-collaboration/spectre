@@ -4,6 +4,7 @@
 #include "Evolution/Systems/Cce/Initialize/InitializeJ.hpp"
 
 #include <algorithm>
+#include <cmath>
 #include <complex>
 #include <cstddef>
 #include <memory>
@@ -36,22 +37,31 @@ void unit_sphere_eth_cartesian_coordinates(
     const size_t l_max) {
   const size_t number_of_angular_points =
       Spectral::Swsh::number_of_swsh_collocation_points(l_max);
-  tnsr::i<DataVector, 3> cartesian_coordinates{number_of_angular_points};
-  tnsr::i<DataVector, 2, ::Frame::Spherical<::Frame::Inertial>>
-      angular_coordinates{number_of_angular_points};
+  Variables<
+      tmpl::list<::Tags::Tempi<0, 3>,
+                 ::Tags::Tempi<1, 2, ::Frame::Spherical<::Frame::Inertial>>>>
+      coordinate_buffers{number_of_angular_points};
+  auto& [cartesian_coordinates, angular_coordinates] = coordinate_buffers;
   Spectral::Swsh::create_angular_and_cartesian_coordinates(
       make_not_null(&cartesian_coordinates),
       make_not_null(&angular_coordinates), l_max);
-  SpinWeighted<ComplexDataVector, 0> x{number_of_angular_points};
-  SpinWeighted<ComplexDataVector, 0> y{number_of_angular_points};
-  SpinWeighted<ComplexDataVector, 0> z{number_of_angular_points};
-  x.data() = std::complex<double>(1.0, 0.0) * get<0>(cartesian_coordinates);
-  y.data() = std::complex<double>(1.0, 0.0) * get<1>(cartesian_coordinates);
-  z.data() = std::complex<double>(1.0, 0.0) * get<2>(cartesian_coordinates);
+
+  // the Cartesian coordinates as spin-weight-0 functions, to take their eth
+  Variables<tmpl::list<::Tags::TempSpinWeightedScalar<0, 0>,
+                       ::Tags::TempSpinWeightedScalar<1, 0>,
+                       ::Tags::TempSpinWeightedScalar<2, 0>>>
+      swsh_buffers{number_of_angular_points};
+  auto& [x, y, z] = swsh_buffers;
+  get(x).data() =
+      std::complex<double>(1.0, 0.0) * get<0>(cartesian_coordinates);
+  get(y).data() =
+      std::complex<double>(1.0, 0.0) * get<1>(cartesian_coordinates);
+  get(z).data() =
+      std::complex<double>(1.0, 0.0) * get<2>(cartesian_coordinates);
   Spectral::Swsh::angular_derivatives<
       tmpl::list<Spectral::Swsh::Tags::Eth, Spectral::Swsh::Tags::Eth,
-                 Spectral::Swsh::Tags::Eth>>(l_max, 1, eth_x, eth_y, eth_z, x,
-                                             y, z);
+                 Spectral::Swsh::Tags::Eth>>(l_max, 1, eth_x, eth_y, eth_z,
+                                             get(x), get(y), get(z));
 }
 
 void update_angular_coordinates_and_jacobians(
@@ -100,8 +110,7 @@ bool ResidualPlateau::stopped_improving(const double tolerance) const {
 
 void check_angular_solve_error_threshold(const double max_error,
                                          const double error_threshold) {
-  // Written as `not (a <= b)` so that a NaN also aborts.
-  if (not(max_error <= error_threshold)) {
+  if (std::isnan(max_error) or max_error > error_threshold) {
     ERROR(
         "Iterative solve for surface coordinates of initial data failed. The "
         "strain is too large to be fully eliminated by a well-behaved "
@@ -118,25 +127,35 @@ void check_angular_solve_error_threshold(const double max_error,
 void report_unconverged_angular_solve(
     const UnconvergedAngularSolve if_unconverged, const double tolerance,
     const size_t number_of_iterations, const double max_error) {
-  if (if_unconverged == UnconvergedAngularSolve::Error) {
-    ERROR(
-        "Initial data iterative angular solve did not reach "
-        "target tolerance "
-        << tolerance << ".\n"
-        << "Exited after " << number_of_iterations
-        << " iterations, achieving final\n"
-           "maximum over collocation points deviation of J from target of "
-        << max_error);
-  }
-  if (if_unconverged == UnconvergedAngularSolve::Warn) {
-    Parallel::printf(
-        "Warning: iterative angular solve did not reach "
-        "target tolerance %e.\n"
-        "Exited after %zu iterations, achieving final maximum over "
-        "collocation points for deviation from target of %e\n"
-        "Proceeding with evolution using the partial result from partial "
-        "angular solve.\n",
-        tolerance, number_of_iterations, max_error);
+  switch (if_unconverged) {
+    case UnconvergedAngularSolve::Error:
+      ERROR(
+          "Initial data iterative angular solve did not reach "
+          "target tolerance "
+          << tolerance << ".\n"
+          << "Exited after " << number_of_iterations
+          << " iterations, achieving final\n"
+             "maximum over collocation points deviation of J from target of "
+          << max_error);
+    case UnconvergedAngularSolve::Warn:
+      Parallel::printf(
+          "Warning: iterative angular solve did not reach "
+          "target tolerance %e.\n"
+          "Exited after %zu iterations, achieving final maximum over "
+          "collocation points for deviation from target of %e\n"
+          "Proceeding with evolution using the partial result from partial "
+          "angular solve.\n",
+          tolerance, number_of_iterations, max_error);
+      return;
+    case UnconvergedAngularSolve::Silent:
+      return;
+    case UnconvergedAngularSolve::Uninitialized:
+      ERROR("UnconvergedAngularSolve was not set; pass Error, Warn or Silent.");
+    default:  // LCOV_EXCL_LINE
+      // LCOV_EXCL_START
+      ERROR("An unknown value of UnconvergedAngularSolve was passed: "
+            << static_cast<int>(if_unconverged));
+      // LCOV_EXCL_STOP
   }
 }
 }  // namespace detail
