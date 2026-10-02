@@ -123,6 +123,109 @@ void test_fourier_exponential_filter() {
 #endif  // SPECTRE_DEBUG
 }
 
+void test_half_fourier_exponential_filter() {
+  const Approx local_approx = Approx::custom().epsilon(1.0e-11).scale(1.0);
+
+  const std::vector<size_t> num_pts_list{1, 2, 3, 4, 5, 12, 15};
+  const std::vector<double> alphas{10.0, 20.0, 36.0};
+  const std::vector<unsigned> half_powers{2, 4, 8};
+
+  for (const size_t num_pts : num_pts_list) {
+    CAPTURE(num_pts);
+    const Mesh<1> mesh{num_pts, Spectral::Basis::HalfFourier,
+                       Spectral::Quadrature::Equiangular};
+    const DataVector& phi =
+        Spectral::collocation_points<Spectral::Basis::HalfFourier,
+                                     Spectral::Quadrature::Equiangular>(
+            num_pts);
+
+    for (const double alpha : alphas) {
+      CAPTURE(alpha);
+      for (const unsigned half_power : half_powers) {
+        CAPTURE(half_power);
+        const Matrix even_filter = Spectral::filtering::exponential_filter(
+            mesh, alpha, half_power, Spectral::Parity::Even);
+        const Matrix odd_filter = Spectral::filtering::exponential_filter(
+            mesh, alpha, half_power, Spectral::Parity::Odd);
+        CHECK(even_filter.rows() == num_pts);
+        CHECK(odd_filter.rows() == num_pts);
+
+        const auto filter_mode = [&num_pts](const Matrix& filter,
+                                            const DataVector& nodal_values) {
+          DataVector result(num_pts, 0.0);
+          dgemv_('N', num_pts, num_pts, 1.0, filter.data(), filter.spacing(),
+                 nodal_values.data(), 1, 0.0, result.data(), 1);
+          return result;
+        };
+
+        // A single grid point cannot resolve anything beyond the constant, so
+        // the filter is the identity
+        if (num_pts == 1) {
+          const DataVector constant_vals(num_pts, 1.0);
+          CHECK_ITERABLE_CUSTOM_APPROX(filter_mode(even_filter, constant_vals),
+                                       constant_vals, local_approx);
+          CHECK_ITERABLE_CUSTOM_APPROX(filter_mode(odd_filter, constant_vals),
+                                       constant_vals, local_approx);
+          continue;
+        }
+
+        // The weight depends only on the wavenumber
+        const double order = static_cast<double>(num_pts) - 1.0;
+        const auto expected_weight = [&alpha, &half_power,
+                                      &order](const size_t k) {
+          return k == 0 ? 1.0
+                        : exp(-alpha * pow(static_cast<double>(k) / order,
+                                           2 * half_power));
+        };
+
+        // Even parity: the spectral space is cos(k phi) for k = 0, ..., N-1.
+        // The constant mode is retained exactly.
+        for (size_t k = 0; k < num_pts; ++k) {
+          CAPTURE(k);
+          const DataVector cos_vals = cos(static_cast<double>(k) * phi);
+          CHECK_ITERABLE_CUSTOM_APPROX(filter_mode(even_filter, cos_vals),
+                                       expected_weight(k) * cos_vals,
+                                       local_approx);
+        }
+
+        // Odd parity: the spectral space is sin(k phi) for k = 1, ..., N. Modes
+        // k = 1, ..., N-1 get exactly the same weight as the cosine of the same
+        // wavenumber
+        for (size_t k = 1; k < num_pts; ++k) {
+          CAPTURE(k);
+          const DataVector sin_vals = sin(static_cast<double>(k) * phi);
+          CHECK_ITERABLE_CUSTOM_APPROX(filter_mode(odd_filter, sin_vals),
+                                       expected_weight(k) * sin_vals,
+                                       local_approx);
+        }
+
+        // The Nyquist sine is visible on the grid but must be removed.
+        {
+          const DataVector nyquist_sine =
+              sin(static_cast<double>(num_pts) * phi);
+          // Guard against a vacuous check: the Nyquist sine really is visible
+          // on this grid.
+          CHECK(max(abs(nyquist_sine)) > 0.5);
+          CHECK_ITERABLE_CUSTOM_APPROX(filter_mode(odd_filter, nyquist_sine),
+                                       DataVector(num_pts, 0.0), local_approx);
+          // The Nyquist cosine, by contrast, is identically zero on the grid.
+          CHECK_ITERABLE_CUSTOM_APPROX(cos(static_cast<double>(num_pts) * phi),
+                                       DataVector(num_pts, 0.0), local_approx);
+        }
+      }
+    }
+  }
+
+#ifdef SPECTRE_DEBUG
+  CHECK_THROWS_WITH(Spectral::filtering::exponential_filter(
+                        Mesh<1>{5, Spectral::Basis::HalfFourier,
+                                Spectral::Quadrature::Equiangular},
+                        36.0, 8),
+                    Catch::Matchers::ContainsSubstring(
+                        "Need parity to be set to filter HalfFourier"));
+#endif  // SPECTRE_DEBUG
+}
+
 SPECTRE_TEST_CASE("Unit.Numerical.Spectral.ExponentialFilter",
                   "[NumericalAlgorithms][Spectral][Unit]") {
   const std::vector<double> alphas{10.0, 20.0, 30.0, 40.0};
@@ -144,6 +247,7 @@ SPECTRE_TEST_CASE("Unit.Numerical.Spectral.ExponentialFilter",
     }
   }
   test_fourier_exponential_filter();
+  test_half_fourier_exponential_filter();
 }
 
 template <Spectral::Basis BasisType, Spectral::Quadrature QuadratureType>

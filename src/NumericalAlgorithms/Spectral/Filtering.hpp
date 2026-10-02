@@ -39,8 +39,12 @@ namespace filtering {
  * For filtering the Fourier basis, both \f$\cos\f$ and \f$\sin\f$
  * contributions to a given \f$m\f$-mode are equally weighted.
  *
- * The Parity argument is only used for ZernikeB1 bases, where the modal space
- * is parity dependent.
+ * The Parity argument is only used for ZernikeB1 and HalfFourier bases, where
+ * the modal space is parity dependent.
+ *
+ * For the HalfFourier basis, \f$\cos(k\phi)\f$ and \f$\sin(k\phi)\f$ with the
+ * same wavenumber \f$k\f$ are weighted equally, and the odd-parity Nyquist mode
+ * \f$\sin(N\phi)\f$ is removed.
  *
  * \note The filter matrix is not cached by the function because it depends on a
  * double, an integer, and the mesh, which could make caching very memory

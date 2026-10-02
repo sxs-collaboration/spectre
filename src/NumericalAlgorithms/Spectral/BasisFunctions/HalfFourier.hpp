@@ -43,6 +43,11 @@ namespace Spectral {
  * problems on a cylinder, where the azimuthal direction covers only half a
  * circle due to the reflection symmetry, and the parity boundary conditions
  * are internal to the spectral representation.
+ *
+ * \note The odd-parity space includes the Nyquist mode \f$\sin(N\phi)\f$,
+ * whose derivative vanishes at every collocation point. Nonlinear terms can
+ * alias into it, so evolutions should filter it out;
+ * `Spectral::filtering::exponential_filter` does this.
  */
 class HalfFourier {
  public:
@@ -93,7 +98,8 @@ class HalfFourier {
    * n \cos(n\phi_i) \sin(n\phi_j)
    * \f]
    *
-   * Note that \f$D^{\text{even}} = -(D^{\text{odd}})^T\f$.
+   * Note that \f$D^{\text{even}} = -(D^{\text{odd}})^T\f$. The sum stops at
+   * \f$N-1\f$ rather than \f$N\f$ because \f$\cos(N\phi_i) = 0\f$.
    */
   static Matrix odd_differentiation_matrix(size_t num_points);
 
