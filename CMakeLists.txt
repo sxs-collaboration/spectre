@@ -11,6 +11,12 @@ file(WRITE "${CMAKE_BINARY_DIR}/BuildInfo.txt" "")
 # Determine the project version and other metadata
 include(SpectreLoadMetadata)
 
+# Try to auto-detect the machine from its hostname if MACHINE was not set
+# explicitly. Done early and in pure CMake since this runs before Python
+# or anything else is found. Running before project() allows us to inject
+# machine-specific configurations as well.
+include(SetupMachine)
+
 # Set up the project. Notes:
 # - Fortran is needed for SPHEREPACK
 project(${SPECTRE_NAME} VERSION ${SPECTRE_VERSION} LANGUAGES CXX C Fortran)

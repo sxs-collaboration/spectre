@@ -10,6 +10,8 @@ Machine:
   # Split one physical 56 core node into two charm nodes
   DefaultTasksPerNode: 2
   DefaultProcsPerTask: 28
+  HostnameRegex: '^(login[0-9]|hpc-[0-9][0-9]-[0-9][0-9])\.cm\.cluster$'
+  LoginNodeRegex: '^login[0-9]\.cm\.cluster$'
   DefaultQueue: "expansion"
   DefaultTimeLimit: "1-00:00:00"
   LaunchCommandSingleNode: ["mpirun", "-n", "1"]
