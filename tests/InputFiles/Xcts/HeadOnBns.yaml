@@ -48,13 +48,15 @@ DomainCreator:
       OuterRadius: &star_radius 9.709353324763269
       XCoord: *x_right
       Interior: Auto
-      UseLogarithmicMap: False
+      ShellLogMapStrength: None
+      CubeLogMapStrength: None
     ObjectB:
       InnerRadius: 4.
       OuterRadius: *star_radius
       XCoord: *x_left
       Interior: Auto
-      UseLogarithmicMap: False
+      ShellLogMapStrength: None
+      CubeLogMapStrength: None
     CenterOfMassOffset: [*y_offset, *z_offset]
     Envelope:
       Radius: &outer_shell_inner_radius 120.
