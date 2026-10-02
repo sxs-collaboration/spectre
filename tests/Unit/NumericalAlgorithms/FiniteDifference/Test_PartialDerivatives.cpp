@@ -651,7 +651,7 @@ SPECTRE_TEST_CASE("Unit.FiniteDifference.PartialDerivatives",
   test_asserts_and_errors();
   MAKE_GENERATOR(generator);
   std::uniform_real_distribution<> dist{-1.0, 1.0};
-  for (const size_t fd_order : {2_st, 4_st, 6_st, 8_st}) {
+  for (const size_t fd_order : {2_st, 4_st, 6_st, 8_st, 10_st}) {
     test<1>(make_not_null(&generator), make_not_null(&dist), fd_order + 2,
             fd_order);
     test<2>(make_not_null(&generator), make_not_null(&dist), fd_order + 2,
