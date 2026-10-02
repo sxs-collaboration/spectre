@@ -45,6 +45,43 @@ void apply_matrix_in_first_dim(std::complex<double>* result,
                                const std::complex<double>* input,
                                const Matrix& matrix, size_t size,
                                bool add_to_result = false);
+
+// Transpose-free differentiation along all logical dimensions using
+// fixed-size kernels (dispatched on the extent of the contracted dimension),
+// writing the logical derivatives directly without the dgemm+transpose
+// pipeline. Returns false when the mesh is not supported (basis other than
+// Legendre/Chebyshev, or an extent outside the instantiated kernel range);
+// the caller must then fall back to the generic implementation.
+bool logical_derivatives_fast_path(const std::array<double*, 1>& logical_derivs,
+                                   const double* u,
+                                   size_t number_of_independent_components,
+                                   const Mesh<1>& mesh);
+bool logical_derivatives_fast_path(const std::array<double*, 2>& logical_derivs,
+                                   const double* u,
+                                   size_t number_of_independent_components,
+                                   const Mesh<2>& mesh);
+bool logical_derivatives_fast_path(const std::array<double*, 3>& logical_derivs,
+                                   const double* u,
+                                   size_t number_of_independent_components,
+                                   const Mesh<3>& mesh);
+
+// As above, but additionally contracts with the inverse Jacobian one
+// component at a time, so the logical derivatives stay cache-resident and are
+// never written to main memory. `du` must have room for
+// `Dim * number_of_independent_components` components laid out as
+// [component][derivative index][grid points], matching
+// `partial_derivatives_impl`. `inverse_jacobian[d * Dim + i]` must point to
+// the (logical d, inertial i) component. Returns false when the mesh is not
+// supported.
+bool fused_partial_derivatives_fast_path(
+    double* du, const double* u, size_t number_of_independent_components,
+    const Mesh<1>& mesh, const std::array<const double*, 1>& inverse_jacobian);
+bool fused_partial_derivatives_fast_path(
+    double* du, const double* u, size_t number_of_independent_components,
+    const Mesh<2>& mesh, const std::array<const double*, 4>& inverse_jacobian);
+bool fused_partial_derivatives_fast_path(
+    double* du, const double* u, size_t number_of_independent_components,
+    const Mesh<3>& mesh, const std::array<const double*, 9>& inverse_jacobian);
 }  // namespace partial_derivatives_detail
 
 /// @{
