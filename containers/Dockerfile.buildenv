@@ -129,9 +129,13 @@ ARG UBUNTU_VERSION=26.04
 ARG TARGETARCH
 
 # Install add-apt-repository and basic tools
+#
+# libnss-sss is needed for getting usernames inside the container
+# on HPC systems and is a small install (300kB).
 RUN apt-get update -y \
     && apt-get install -y software-properties-common wget git file \
-    && add-apt-repository ppa:ubuntu-toolchain-r/test
+    && add-apt-repository ppa:ubuntu-toolchain-r/test \
+    && apt-get install -y --no-install-recommends libnss-sss
 
 # Add LLVM apt repository for newer versions of clang.
 # Then lower the priority of apt.llvm.org so packages default to Ubuntu.
