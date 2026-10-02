@@ -89,6 +89,24 @@ bool segment_contains(const double x_block_logical,
 }  // namespace
 
 template <size_t Dim>
+bool element_contains(
+    const tnsr::I<double, Dim, Frame::BlockLogical>& x_block_logical,
+    const ElementId<Dim>& element_id) {
+  for (size_t d = 0; d < Dim; ++d) {
+    if (element_id.segment_id(d).refinement_level() == 0) {
+      // Don't need to check bounds as segment is root segment of the block
+      continue;
+    }
+    const double up = element_id.segment_id(d).endpoint(Side::Upper);
+    const double lo = element_id.segment_id(d).endpoint(Side::Lower);
+    if (not segment_contains(x_block_logical.get(d), lo, up)) {
+      return false;
+    }
+  }
+  return true;
+}
+
+template <size_t Dim>
 std::unordered_map<ElementId<Dim>, ElementLogicalCoordHolder<Dim>>
 element_logical_coordinates(
     const std::vector<ElementId<Dim>>& element_ids,
@@ -115,31 +133,12 @@ element_logical_coordinates(
       const auto& element_id = element_ids[index];
       if (element_id.block_id() == block_id.get_index()) {
         // This element is in this block; now check if the point is in
-        // this element.
-        const auto x_elem =
-            element_logical_coordinates(x_block_logical, element_id);
-        if (not x_elem.has_value()) {
-          continue;
-        }
-        // Disambiguate points on shared element boundaries
-        bool is_contained = true;
-        for (size_t d = 0; d < Dim; ++d) {
-          if (element_id.segment_id(d).refinement_level() == 0) {
-            // Don't need to check bounds as segment is root segment of the
-            // block
-            continue;
-          }
-          const double up = element_id.segment_id(d).endpoint(Side::Upper);
-          const double lo = element_id.segment_id(d).endpoint(Side::Lower);
-          const double x_block_log = x_block_logical.get(d);
-          if (not segment_contains(x_block_log, lo, up)) {
-            is_contained = false;
-            break;
-          }
-        }
-        if (is_contained) {
+        // this element, disambiguating points on shared element boundaries.
+        if (element_contains(x_block_logical, element_id)) {
+          const auto x_elem =
+              element_logical_coordinates(x_block_logical, element_id).value();
           for (size_t d = 0; d < Dim; ++d) {
-            gsl::at(x_element_logical[index], d).push_back(x_elem->get(d));
+            gsl::at(x_element_logical[index], d).push_back(x_elem.get(d));
           }
           offsets[index].push_back(offset);
           // Found a matching element, so we don't need to check other
@@ -176,6 +175,9 @@ element_logical_coordinates(
 #define INSTANTIATE(_, data)                                                  \
   template std::optional<tnsr::I<double, DIM(data), Frame::ElementLogical>>   \
   element_logical_coordinates(                                                \
+      const tnsr::I<double, DIM(data), Frame::BlockLogical>& x_block_logical, \
+      const ElementId<DIM(data)>& element_id);                                \
+  template bool element_contains(                                              \
       const tnsr::I<double, DIM(data), Frame::BlockLogical>& x_block_logical, \
       const ElementId<DIM(data)>& element_id);                                \
   template std::optional<                                                     \

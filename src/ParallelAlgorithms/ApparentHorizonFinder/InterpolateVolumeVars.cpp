@@ -69,16 +69,19 @@ bool interpolate_volume_data(
       // Skip points that are not in this block
       continue;
     }
-    const auto element_logical_coords =
-        element_logical_coordinates(block_coord_holders[p]->data, element_id);
-    if (not element_logical_coords.has_value()) {
-      // Skip points that are not in this element
+    // Skip points that are not in this element. Points on shared element
+    // boundaries are assigned to exactly one element so the interpolated
+    // values don't depend on the order in which element data arrives.
+    if (not element_contains(block_coord_holders[p]->data, element_id)) {
       continue;
     }
     // Collect points in this element
+    const auto element_logical_coords =
+        element_logical_coordinates(block_coord_holders[p]->data, element_id)
+            .value();
     offsets.push_back(p);
     for (size_t d = 0; d < 3; ++d) {
-      gsl::at(x_element_logical, d).push_back(element_logical_coords->get(d));
+      gsl::at(x_element_logical, d).push_back(element_logical_coords.get(d));
     }
   }  // for block_logical_coords
 
