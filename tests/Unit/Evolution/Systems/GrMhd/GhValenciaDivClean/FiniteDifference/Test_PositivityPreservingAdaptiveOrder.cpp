@@ -215,6 +215,7 @@ void test_neighbor_positivity(const Reconstructor& reconstructor) {
   }
 }
 
+// [[TimeOut, 30]]
 SPECTRE_TEST_CASE("Unit.Evolution.Systems.GrMhd.GhValenciaDivClean.Fd.Ppao",
                   "[Unit][Evolution]") {
   using NeutrinoTransportSystem = RadiationTransport::NoNeutrinos::System;
@@ -263,34 +264,28 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.GrMhd.GhValenciaDivClean.Fd.Ppao",
           3.8, std::nullopt, std::nullopt,
           fd::reconstruction::FallbackReconstructorType::MonotonisedCentral,
           ::VariableFixing::FixReconstructedStateToAtmosphere::Always, false});
-  // Can't use high-order reconstruction yet. We'll enable these tests later.
-  //
-  // CHECK(
-  //     grmhd::GhValenciaDivClean::fd::PositivityPreservingAdaptiveOrderPrim<
-  //         System>{
-  //         3.7, std::nullopt, std::nullopt,
-  //         fd::reconstruction::FallbackReconstructorType::MonotonisedCentral,
-  //         ::VariableFixing::FixReconstructedStateToAtmosphere::Always, false}
-  //         !=
-  //     grmhd::GhValenciaDivClean::fd::PositivityPreservingAdaptiveOrderPrim<
-  //         System>{
-  //         3.7, 3.5, std::nullopt,
-  //         fd::reconstruction::FallbackReconstructorType::MonotonisedCentral,
-  //         ::VariableFixing::FixReconstructedStateToAtmosphere::Always,
-  //         false});
-  // CHECK(
-  //     grmhd::GhValenciaDivClean::fd::PositivityPreservingAdaptiveOrderPrim<
-  //         System>{
-  //         3.7, std::nullopt, std::nullopt,
-  //         fd::reconstruction::FallbackReconstructorType::MonotonisedCentral,
-  //         ::VariableFixing::FixReconstructedStateToAtmosphere::Always, false}
-  //         !=
-  //     grmhd::GhValenciaDivClean::fd::PositivityPreservingAdaptiveOrderPrim<
-  //         System>{
-  //         3.7, std::nullopt, 3.6,
-  //         fd::reconstruction::FallbackReconstructorType::MonotonisedCentral,
-  //         ::VariableFixing::FixReconstructedStateToAtmosphere::Always,
-  //         false});
+  CHECK(
+      grmhd::GhValenciaDivClean::fd::PositivityPreservingAdaptiveOrderPrim<
+          System>{
+          3.7, std::nullopt, std::nullopt,
+          fd::reconstruction::FallbackReconstructorType::MonotonisedCentral,
+          ::VariableFixing::FixReconstructedStateToAtmosphere::Always, false} !=
+      grmhd::GhValenciaDivClean::fd::PositivityPreservingAdaptiveOrderPrim<
+          System>{
+          3.7, 3.5, std::nullopt,
+          fd::reconstruction::FallbackReconstructorType::MonotonisedCentral,
+          ::VariableFixing::FixReconstructedStateToAtmosphere::Always, false});
+  CHECK(
+      grmhd::GhValenciaDivClean::fd::PositivityPreservingAdaptiveOrderPrim<
+          System>{
+          3.7, std::nullopt, std::nullopt,
+          fd::reconstruction::FallbackReconstructorType::MonotonisedCentral,
+          ::VariableFixing::FixReconstructedStateToAtmosphere::Always, false} !=
+      grmhd::GhValenciaDivClean::fd::PositivityPreservingAdaptiveOrderPrim<
+          System>{
+          3.7, std::nullopt, 3.6,
+          fd::reconstruction::FallbackReconstructorType::MonotonisedCentral,
+          ::VariableFixing::FixReconstructedStateToAtmosphere::Always, false});
   CHECK(grmhd::GhValenciaDivClean::fd::PositivityPreservingAdaptiveOrderPrim<
             System>{
             3.7, std::nullopt, std::nullopt,
@@ -320,7 +315,50 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.GrMhd.GhValenciaDivClean.Fd.Ppao",
           fd::reconstruction::FallbackReconstructorType::MonotonisedCentral,
           ::VariableFixing::FixReconstructedStateToAtmosphere::Never, true});
   helpers::test_prim_reconstructor(10, *ppao_from_options);
-
   test_neighbor_positivity(*ppao_from_options);
+
+  auto mc = fd::reconstruction::FallbackReconstructorType::MonotonisedCentral;
+  using PPAO =
+      grmhd::GhValenciaDivClean::fd::PositivityPreservingAdaptiveOrderPrim<
+          System>;
+  // Test alpha_7 (ghost_zone_size = 4, 7th-order reconstruction stencil).
+  // Use 2*ghost_zone_size-2 = 6 pts to match ValenciaDivClean test pattern.
+  {
+    const PPAO recons_alpha7{
+        4.0,
+        4.0,
+        std::nullopt,
+        mc,
+        ::VariableFixing::FixReconstructedStateToAtmosphere::Never,
+        false};
+    helpers::test_prim_reconstructor(6, recons_alpha7);
+    test_neighbor_positivity(recons_alpha7);
+  }
+  // Test alpha_9 (ghost_zone_size = 5, 9th-order reconstruction stencil).
+  // Use 2*ghost_zone_size-2 = 8 pts to match ValenciaDivClean test pattern.
+  {
+    const PPAO recons_alpha9{
+        4.0,
+        std::nullopt,
+        4.0,
+        mc,
+        ::VariableFixing::FixReconstructedStateToAtmosphere::Never,
+        false};
+    helpers::test_prim_reconstructor(8, recons_alpha9);
+    test_neighbor_positivity(recons_alpha9);
+  }
+  // Test both alpha_7 and alpha_9 set (ghost_zone_size = 5).
+  // Use 2*ghost_zone_size-2 = 8 pts.
+  {
+    const PPAO recons_alpha7_alpha9{
+        4.0,
+        4.0,
+        4.0,
+        mc,
+        ::VariableFixing::FixReconstructedStateToAtmosphere::Never,
+        false};
+    helpers::test_prim_reconstructor(8, recons_alpha7_alpha9);
+    test_neighbor_positivity(recons_alpha7_alpha9);
+  }
 }
 }  // namespace

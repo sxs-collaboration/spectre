@@ -76,11 +76,9 @@ PositivityPreservingAdaptiveOrderPrim<System>::
     PARSE_ERROR(context, "None is not an allowed low-order reconstructor.");
   }
   if (alpha_7.has_value()) {
-    PARSE_ERROR(context, "Alpha7 hasn't been tested.");
     six_to_the_alpha_7_ = pow(6.0, alpha_7.value());
   }
   if (alpha_9.has_value()) {
-    PARSE_ERROR(context, "Alpha9 hasn't been tested.");
     eight_to_the_alpha_9_ = pow(8.0, alpha_9.value());
   }
   set_function_pointers();
@@ -167,12 +165,28 @@ void PositivityPreservingAdaptiveOrderPrim<System>::reconstruct(
                         eight_to_the_alpha_9_.value_or(
                             std::numeric_limits<double>::signaling_NaN()));
       },
-      [](auto upper_face_vars_ptr, auto lower_face_vars_ptr,
-         const auto& volume_vars, const auto& ghost_cell_vars,
-         const auto& subcell_extents, const size_t number_of_variables) {
-        ::fd::reconstruction::unlimited<4>(
-            upper_face_vars_ptr, lower_face_vars_ptr, volume_vars,
-            ghost_cell_vars, subcell_extents, number_of_variables);
+      [this](auto upper_face_vars_ptr, auto lower_face_vars_ptr,
+             const auto& volume_vars, const auto& ghost_cell_vars,
+             const auto& subcell_extents, const size_t number_of_variables) {
+        switch (ghost_zone_size()) {
+          case 3:
+            ::fd::reconstruction::unlimited<4>(
+                upper_face_vars_ptr, lower_face_vars_ptr, volume_vars,
+                ghost_cell_vars, subcell_extents, number_of_variables);
+            break;
+          case 4:
+            ::fd::reconstruction::unlimited<6>(
+                upper_face_vars_ptr, lower_face_vars_ptr, volume_vars,
+                ghost_cell_vars, subcell_extents, number_of_variables);
+            break;
+          case 5:
+            ::fd::reconstruction::unlimited<8>(
+                upper_face_vars_ptr, lower_face_vars_ptr, volume_vars,
+                ghost_cell_vars, subcell_extents, number_of_variables);
+            break;
+          default:
+            ERROR("Unsupported ghost_zone_size: " << ghost_zone_size());
+        }
       },
       [](const auto vars_on_face_ptr) {
         const auto& spacetime_metric =
@@ -216,12 +230,28 @@ void PositivityPreservingAdaptiveOrderPrim<System>::reconstruct(
                      eight_to_the_alpha_9_.value_or(
                          std::numeric_limits<double>::signaling_NaN()));
       },
-      [](auto upper_face_vars_ptr, auto lower_face_vars_ptr,
-         const auto& volume_vars, const auto& ghost_cell_vars,
-         const auto& subcell_extents, const size_t number_of_variables) {
-        ::fd::reconstruction::unlimited<4>(
-            upper_face_vars_ptr, lower_face_vars_ptr, volume_vars,
-            ghost_cell_vars, subcell_extents, number_of_variables);
+      [this](auto upper_face_vars_ptr, auto lower_face_vars_ptr,
+             const auto& volume_vars, const auto& ghost_cell_vars,
+             const auto& subcell_extents, const size_t number_of_variables) {
+        switch (ghost_zone_size()) {
+          case 3:
+            ::fd::reconstruction::unlimited<4>(
+                upper_face_vars_ptr, lower_face_vars_ptr, volume_vars,
+                ghost_cell_vars, subcell_extents, number_of_variables);
+            break;
+          case 4:
+            ::fd::reconstruction::unlimited<6>(
+                upper_face_vars_ptr, lower_face_vars_ptr, volume_vars,
+                ghost_cell_vars, subcell_extents, number_of_variables);
+            break;
+          case 5:
+            ::fd::reconstruction::unlimited<8>(
+                upper_face_vars_ptr, lower_face_vars_ptr, volume_vars,
+                ghost_cell_vars, subcell_extents, number_of_variables);
+            break;
+          default:
+            ERROR("Unsupported ghost_zone_size: " << ghost_zone_size());
+        }
       },
       [](const auto vars_on_face_ptr) {
         const auto& spacetime_metric =
@@ -338,18 +368,40 @@ void PositivityPreservingAdaptiveOrderPrim<System>::reconstruct_fd_neighbor(
             eight_to_the_alpha_9_.value_or(
                 std::numeric_limits<double>::signaling_NaN()));
       },
-      [](const auto tensor_component_on_face_ptr,
-         const auto& tensor_component_volume,
-         const auto& tensor_component_neighbor,
-         const Index<dim>& subcell_extents,
-         const Index<dim>& ghost_data_extents,
-         const Direction<dim>& local_direction_to_reconstruct) {
-        ::fd::reconstruction::reconstruct_neighbor<
-            Side::Lower,
-            ::fd::reconstruction::detail::UnlimitedReconstructor<4>>(
-            tensor_component_on_face_ptr, tensor_component_volume,
-            tensor_component_neighbor, subcell_extents, ghost_data_extents,
-            local_direction_to_reconstruct);
+      [this](const auto tensor_component_on_face_ptr,
+             const auto& tensor_component_volume,
+             const auto& tensor_component_neighbor,
+             const Index<dim>& subcell_extents,
+             const Index<dim>& ghost_data_extents,
+             const Direction<dim>& local_direction_to_reconstruct) {
+        switch (ghost_zone_size()) {
+          case 3:
+            ::fd::reconstruction::reconstruct_neighbor<
+                Side::Lower,
+                ::fd::reconstruction::detail::UnlimitedReconstructor<4>>(
+                tensor_component_on_face_ptr, tensor_component_volume,
+                tensor_component_neighbor, subcell_extents, ghost_data_extents,
+                local_direction_to_reconstruct);
+            break;
+          case 4:
+            ::fd::reconstruction::reconstruct_neighbor<
+                Side::Lower,
+                ::fd::reconstruction::detail::UnlimitedReconstructor<6>>(
+                tensor_component_on_face_ptr, tensor_component_volume,
+                tensor_component_neighbor, subcell_extents, ghost_data_extents,
+                local_direction_to_reconstruct);
+            break;
+          case 5:
+            ::fd::reconstruction::reconstruct_neighbor<
+                Side::Lower,
+                ::fd::reconstruction::detail::UnlimitedReconstructor<8>>(
+                tensor_component_on_face_ptr, tensor_component_volume,
+                tensor_component_neighbor, subcell_extents, ghost_data_extents,
+                local_direction_to_reconstruct);
+            break;
+          default:
+            ERROR("Unsupported ghost_zone_size: " << ghost_zone_size());
+        }
       },
       [this](const auto tensor_component_on_face_ptr,
              const auto& tensor_component_volume,
@@ -366,18 +418,40 @@ void PositivityPreservingAdaptiveOrderPrim<System>::reconstruct_fd_neighbor(
             eight_to_the_alpha_9_.value_or(
                 std::numeric_limits<double>::signaling_NaN()));
       },
-      [](const auto tensor_component_on_face_ptr,
-         const auto& tensor_component_volume,
-         const auto& tensor_component_neighbor,
-         const Index<dim>& subcell_extents,
-         const Index<dim>& ghost_data_extents,
-         const Direction<dim>& local_direction_to_reconstruct) {
-        ::fd::reconstruction::reconstruct_neighbor<
-            Side::Upper,
-            ::fd::reconstruction::detail::UnlimitedReconstructor<4>>(
-            tensor_component_on_face_ptr, tensor_component_volume,
-            tensor_component_neighbor, subcell_extents, ghost_data_extents,
-            local_direction_to_reconstruct);
+      [this](const auto tensor_component_on_face_ptr,
+             const auto& tensor_component_volume,
+             const auto& tensor_component_neighbor,
+             const Index<dim>& subcell_extents,
+             const Index<dim>& ghost_data_extents,
+             const Direction<dim>& local_direction_to_reconstruct) {
+        switch (ghost_zone_size()) {
+          case 3:
+            ::fd::reconstruction::reconstruct_neighbor<
+                Side::Upper,
+                ::fd::reconstruction::detail::UnlimitedReconstructor<4>>(
+                tensor_component_on_face_ptr, tensor_component_volume,
+                tensor_component_neighbor, subcell_extents, ghost_data_extents,
+                local_direction_to_reconstruct);
+            break;
+          case 4:
+            ::fd::reconstruction::reconstruct_neighbor<
+                Side::Upper,
+                ::fd::reconstruction::detail::UnlimitedReconstructor<6>>(
+                tensor_component_on_face_ptr, tensor_component_volume,
+                tensor_component_neighbor, subcell_extents, ghost_data_extents,
+                local_direction_to_reconstruct);
+            break;
+          case 5:
+            ::fd::reconstruction::reconstruct_neighbor<
+                Side::Upper,
+                ::fd::reconstruction::detail::UnlimitedReconstructor<8>>(
+                tensor_component_on_face_ptr, tensor_component_volume,
+                tensor_component_neighbor, subcell_extents, ghost_data_extents,
+                local_direction_to_reconstruct);
+            break;
+          default:
+            ERROR("Unsupported ghost_zone_size: " << ghost_zone_size());
+        }
       },
       [](const auto vars_on_face_ptr) {
         const auto& spacetime_metric =
