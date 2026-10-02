@@ -120,6 +120,20 @@ void characteristic_speeds_approximate_mhd(
 
 /// @{
 /*!
+ * \brief Labels for the characteristic speeds of the relativistic hydrodynamics
+ * system.
+ *
+ * \see `grmhd::ValenciaDivClean::characteristic_speeds_hydro`
+ */
+enum HydroSpeed : uint32_t {
+  NormalDotVelocity = 0,
+  LambdaPlus = 1,
+  LambdaMinus = 2
+};
+/// @}
+
+/// @{
+/*!
  * \brief Compute the characteristic speeds for the relativistic hydrodynamics
  * system in the Eulerian frame.
  *
@@ -151,37 +165,144 @@ void characteristic_speeds_approximate_mhd(
  * c_s^2 &= \frac{1}{h}\left(\chi + \kappa \frac{p}{\rho^2}\right) ,
  * \f}
  *
- * The returned array has size 3 and contains the unique characteristic speeds:
- *  - `char_speeds[0]`: \f$v_n\f$ (degenerate eigenvalue, multiplicity 4 if the
- * electron fraction is included),
- *  - `char_speeds[1]`: \f$\lambda_+\f$ (right-propagating acoustic mode),
- *  - `char_speeds[2]`: \f$\lambda_-\f$ (left-propagating acoustic mode).
+ * The returned tensor has index 0..2:
+ * - `characteristic_speeds.get(0)`: degenerate speed \f$v_n\f$
+ * - `characteristic_speeds.get(1)`: acoustic speed \f$\lambda_+\f$
+ * - `characteristic_speeds.get(2)`: acoustic speed \f$\lambda_-\f$
+ *
+ * \see `grmhd::ValenciaDivClean::numerical_characteristics` for how these
+ * speeds are paired with characteristic modes and characteristic projectors.
  */
 
 template <size_t ThermodynamicDim>
 void characteristic_speeds_hydro(
-    gsl::not_null<std::array<DataVector, 3>*> pchar_speeds,
+    gsl::not_null<tnsr::i<DataVector, 3>*> characteristic_speeds,
+
+    /* primitive variables */
     const tnsr::I<DataVector, 3, Frame::Inertial>& spatial_velocity,
     const Scalar<DataVector>& rest_mass_density,
     const Scalar<DataVector>& specific_internal_energy,
-    const Scalar<DataVector>& specific_enthalpy,
     const Scalar<DataVector>& electron_fraction,
+
+    /* other helpful quantities */
     const Scalar<DataVector>& lorentz_factor,
-    const tnsr::i<DataVector, 3>& unit_normal,
+    const Scalar<DataVector>& specific_enthalpy,
     const tnsr::ii<DataVector, 3, Frame::Inertial>& spatial_metric,
+    const tnsr::i<DataVector, 3>& unit_normal,
     const EquationsOfState::EquationOfState<true, ThermodynamicDim>&
         equation_of_state);
 
 template <size_t ThermodynamicDim>
-std::array<DataVector, 3> characteristic_speeds_hydro(
+tnsr::i<DataVector, 3> characteristic_speeds_hydro(
     const tnsr::I<DataVector, 3, Frame::Inertial>& spatial_velocity,
     const Scalar<DataVector>& rest_mass_density,
     const Scalar<DataVector>& specific_internal_energy,
-    const Scalar<DataVector>& specific_enthalpy,
     const Scalar<DataVector>& electron_fraction,
     const Scalar<DataVector>& lorentz_factor,
-    const tnsr::i<DataVector, 3>& unit_normal,
+    const Scalar<DataVector>& specific_enthalpy,
     const tnsr::ii<DataVector, 3, Frame::Inertial>& spatial_metric,
+    const tnsr::i<DataVector, 3>& unit_normal,
+    const EquationsOfState::EquationOfState<true, ThermodynamicDim>&
+        equation_of_state);
+/// @}
+
+/// @{
+/**
+ * \brief Compute the characteristic matrix for relativistic hydrodynamics +
+ * composition ($Y_e$), in a given direction.
+ *
+ * \see `grmhd::ValenciaDivClean::numerical_characteristics` for the
+ * conventions relating this matrix to characteristic speeds, modes, and
+ * projectors.
+ */
+template <size_t ThermodynamicDim>
+void flux_jacobian_hydro(
+    gsl::not_null<tnsr::iJ<DataVector, 6>*> characteristic_matrix,
+
+    /* primitive variables */
+    const tnsr::I<DataVector, 3, Frame::Inertial>& spatial_velocity,
+    const Scalar<DataVector>& rest_mass_density,
+    const Scalar<DataVector>& specific_internal_energy,
+    const Scalar<DataVector>& electron_fraction,
+
+    /* other helpful quantities */
+    const Scalar<DataVector>& lorentz_factor,
+    const Scalar<DataVector>& specific_enthalpy,
+    const tnsr::ii<DataVector, 3, Frame::Inertial>& spatial_metric,
+    const tnsr::II<DataVector, 3, Frame::Inertial>& inv_spatial_metric,
+    const tnsr::i<DataVector, 3>& unit_normal,
+    const EquationsOfState::EquationOfState<true, ThermodynamicDim>&
+        equation_of_state);
+/// @}
+
+/// @{
+/**
+ * \brief Compute numerical characteristic speeds, characteristic projectors
+ * (left eigenvectors), and characteristic modes (right eigenvectors) for
+ * a given characterisitc matrix.
+ *
+ * \note Currently, this function only supports building the eigensystem for
+ * relativistic hydrodynamics (no magnetic field) with composition dependence
+ * ($Y_e$).
+ *
+ * We label the characteristic matrix in a given direction, $A_{m}{}^{n}$, such
+ * that the index $m$ labels rows and the index $n$ labels columns.
+ *
+ * With this choice of indices, the $i$th left eigensystem is given by
+ * \begin{equation}
+ *   \sum_m L^{im} A_{m}{}^{n} = \lambda_{(i)} L^{in},
+ * \end{equation}
+ * where $\lambda_{(i)}$ is the $i$th eigenvalue / characteristic speed.
+ * Similarly, the $i$th right eigensystem is given by
+ * \begin{equation}
+ *   \sum_n R_{in} A_{m}{}^{n} = \lambda_{(i)} R_{im}.
+ * \end{equation}
+ *
+ * We provide the characteristics in the following types:
+ * - Eigenvalues $\lambda_{(i)}$: `tnsr::i<DataVector, 6> characteristic_speeds`
+ * - Right eigenvectors $R_{in}$: `tnsr::ij<DataVector, 6> characteristic_modes`
+ * - Left eigenvectors $L^{im}$: `tnsr::IJ<DataVector, 6>
+ *   characteristic_projectors`
+ *
+ * Note that the indices $i$, $m$, and $n$ are not tensorial. They simply label
+ * the eigensystem, rows of the matrix, and columns of the matrix, respectively.
+ * We make the conventions (raised or lowered) presented above to clearly
+ * distinguish which indices (first or second) of the matrix get contracted
+ * with which eigenvectors (left or right).
+ *
+ * We refer to the left eigenvectors as "projectors" because they are used to
+ * project a state into the characteristic basis. Similarly, we refer to the
+ * right eigenvectors as "modes" because they are used to reconstruct the state.
+ * For example, consider a state vector $U_{m}$ that can be represented in the
+ * characteristic basis as
+ * \begin{equation}
+ *   U_{m} = \sum_i w^{i} R_{im}.
+ * \end{equation}
+ * Then, the characteristic fields $w^{i}$ can be obtained by projecting the
+ * state vector $U_{m}$ into the characteristic basis using the left
+ * eigenvectors:
+ * \begin{equation}
+ *   w^{i} = \sum_m L^{im} U_{m}.
+ * \end{equation}
+ */
+template <size_t ThermodynamicDim>
+void numerical_characteristics(
+    gsl::not_null<tnsr::i<DataVector, 6>*> characteristic_speeds,
+    gsl::not_null<tnsr::ij<DataVector, 6>*> characteristic_modes,
+    gsl::not_null<tnsr::IJ<DataVector, 6>*> characteristic_projectors,
+
+    /* primitive variables */
+    const tnsr::I<DataVector, 3, Frame::Inertial>& spatial_velocity,
+    const Scalar<DataVector>& rest_mass_density,
+    const Scalar<DataVector>& specific_internal_energy,
+    const Scalar<DataVector>& electron_fraction,
+
+    /* other helpful quantities */
+    const Scalar<DataVector>& lorentz_factor,
+    const Scalar<DataVector>& specific_enthalpy,
+    const tnsr::ii<DataVector, 3, Frame::Inertial>& spatial_metric,
+    const tnsr::II<DataVector, 3, Frame::Inertial>& inv_spatial_metric,
+    const tnsr::i<DataVector, 3>& unit_normal,
     const EquationsOfState::EquationOfState<true, ThermodynamicDim>&
         equation_of_state);
 /// @}
