@@ -20,7 +20,7 @@
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "Domain/Creators/DomainCreator.hpp"
 #include "Domain/Creators/Sphere.hpp"
-#include "Domain/Creators/TimeDependence/TimeDependence.hpp"
+#include "Domain/Creators/TimeDependence/Factory.hpp"
 #include "Domain/Creators/TimeDependentOptions/Sphere.hpp"
 #include "Options/Auto.hpp"
 #include "Options/Context.hpp"

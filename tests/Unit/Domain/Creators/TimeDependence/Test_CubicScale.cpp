@@ -18,7 +18,7 @@
 #include "Domain/CoordinateMaps/CoordinateMap.tpp"
 #include "Domain/CoordinateMaps/TimeDependent/CubicScale.hpp"
 #include "Domain/Creators/TimeDependence/CubicScale.hpp"
-#include "Domain/Creators/TimeDependence/TimeDependence.hpp"
+#include "Domain/Creators/TimeDependence/Factory.hpp"
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"

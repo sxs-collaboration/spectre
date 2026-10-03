@@ -11,7 +11,7 @@
 #include <vector>
 
 #include "Domain/Creators/DomainCreator.hpp"
-#include "Domain/Creators/TimeDependence/TimeDependence.hpp"
+#include "Domain/Creators/TimeDependence/Factory.hpp"
 #include "Options/Context.hpp"
 #include "Options/String.hpp"
 #include "Utilities/TMPL.hpp"
