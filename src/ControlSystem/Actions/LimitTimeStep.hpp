@@ -188,6 +188,12 @@ struct LimitTimeStep {
           cache,
           Parallel::make_array_component_id<ParallelComponent>(array_index),
           [&](const auto& functions_of_time) {
+            // Reset default readiness state to true because
+            // mutable_cache_item_is_ready() calls this lambda twice. The first
+            // call may have set ready = false, but FoT could have been updated
+            // before the second call, so we default to true and then do a fresh
+            // readiness check from the fresh FoT below.
+            ready = true;
             tmpl::for_each<group>([&](auto system) {
               using System = tmpl::type_from<decltype(system)>;
               if (not ready or not is_active_map.at(System::name())) {
