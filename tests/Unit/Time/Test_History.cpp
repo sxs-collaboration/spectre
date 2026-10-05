@@ -103,6 +103,7 @@ void test_history() {
   using UntypedVars = typename History::UntypedVars;
   using ConstUntyped = TimeSteppers::ConstUntypedHistory<UntypedVars>;
   using MutableUntyped = TimeSteppers::MutableUntypedHistory<UntypedVars>;
+  using Record = TimeSteppers::StepRecord<Vars>;
 
   const Slab slab(0.0, 1.0);
 
@@ -725,6 +726,26 @@ void test_history() {
   CHECK(history.integration_order() == copy.integration_order());
   CHECK(history.empty());
   CHECK(history.substeps().empty());
+
+  history.insert(Record{.time_step_id = TimeStepId(true, 0, step_time),
+                        .value = std::optional{make_value(10.0)},
+                        .derivative = make_deriv(100.0)});
+  // [(1/2, 10, 100)] []
+  CHECK(const_history.size() == 1);
+  CHECK(const_history.substeps().empty());
+  CHECK(const_history[0].value == std::optional{make_value(10.0)});
+  CHECK(const_history[0].derivative == make_deriv(100.0));
+
+  history.insert(Record{
+      .time_step_id = TimeStepId(true, 0, step_time, 1, step_size,
+                                 (step_time + slab.duration() / 4).value()),
+      .value = std::nullopt,
+      .derivative = make_deriv(110.0)});
+  // [(1/2, 10, 100)] [1/2: (1, X, 110)]
+  CHECK(const_history.size() == 1);
+  CHECK(const_history.substeps().size() == 1);
+  CHECK(not const_history.substeps()[0].value.has_value());
+  CHECK(const_history.substeps()[0].derivative == make_deriv(110.0));
 
   {
     History a{2};
