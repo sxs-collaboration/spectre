@@ -162,10 +162,11 @@ jobs:
       # they don't downgrade the container's packages for the other steps
       - name: Install release dependencies
         run: |
-          python3 -m venv /work/release-venv
-          /work/release-venv/bin/python -m pip install \
+          python3 -m venv /sxscollaboration/release-venv
+          /sxscollaboration/release-venv/bin/python -m pip install \
             -r .github/scripts/requirements-release.txt
-          echo "RELEASE_PYTHON=/work/release-venv/bin/python" >> $GITHUB_ENV
+          echo "RELEASE_PYTHON=/sxscollaboration/release-venv/bin/python" \
+            >> $GITHUB_ENV
       - name: Test tools
         run: |
           $RELEASE_PYTHON -m unittest discover \
@@ -224,7 +225,7 @@ jobs:
     container:
       image: ${{ inputs.container || 'sxscollaboration/spectre:dev' }}
       env:
-        CCACHE_DIR: /work/ccache
+        CCACHE_DIR: /sxscollaboration/ccache
         CCACHE_READONLY: 1
         CCACHE_COMPILERCHECK: content
         CCACHE_BASEDIR: $GITHUB_WORKSPACE
@@ -244,13 +245,13 @@ jobs:
         id: release-notes
         with:
           name: release-notes
-          path: /work
+          path: /sxscollaboration
       - name: Append release notes to changelog
         # The sed command escapes @ symbols at beginning of words (GitHub
         # usernames) so they aren't interpreted as Doxygen commands
         run: |
           echo "" >> docs/Changelog.md
-          cat /work/release_notes.md | sed 's/\(\B\@\)/\\\1/g' \
+          cat /sxscollaboration/release_notes.md | sed 's/\(\B\@\)/\\\1/g' \
             >> docs/Changelog.md
       - name: Restore ccache
         uses: actions/cache/restore@v5
@@ -258,7 +259,7 @@ jobs:
         env:
           CACHE_KEY_PREFIX: ccache-gcc-15-Debug-pch-ON
         with:
-          path: /work/ccache
+          path: /sxscollaboration/ccache
           key: "${{ env.CACHE_KEY_PREFIX }}-${{ github.run_id }}"
           restore-keys: |
             ${{ env.CACHE_KEY_PREFIX }}-
@@ -431,7 +432,7 @@ jobs:
             # Test compatibility with oldest supported CMake version
             CMAKE_VERSION: "3.22.0"
             # Use an MPI version of Charm
-            CHARM_ROOT: /work/charm/mpi-linux-x86_64-smp-clang
+            CHARM_ROOT: /sxscollaboration/charm/mpi-linux-x86_64-smp-clang
             # MPI running tests is a bit slower than multicore
             TEST_TIMEOUT_FACTOR: 3
             # If MPI should be tested
@@ -479,9 +480,9 @@ jobs:
         - /opt:/mnt/host-opt
       env:
         # We make sure to use a fixed absolute path for the ccache directory
-        CCACHE_DIR: /work/ccache
+        CCACHE_DIR: /sxscollaboration/ccache
         # Use a separate temp directory to conserve cache space on GitHub
-        CCACHE_TEMPDIR: /work/ccache-tmp
+        CCACHE_TEMPDIR: /sxscollaboration/ccache-tmp
         # Control the max cache size. We evict unused entries in a step below to
         # make sure that each build only uses what it need of this max size.
         CCACHE_MAXSIZE: "2G"
@@ -557,7 +558,7 @@ jobs:
           fi
       - name: Install Kokkos
         if: matrix.KOKKOS == 'ON'
-        working-directory: /work
+        working-directory: /sxscollaboration
         run: |
           KOKKOS_VERSION=5.2.1
           wget -O kokkos.tar.gz "https://github.com/kokkos/kokkos/releases/download/${KOKKOS_VERSION}/kokkos-${KOKKOS_VERSION}.tar.gz"
@@ -582,7 +583,7 @@ jobs:
       # Install specific CMake version if requested
       - name: Install CMake version
         if: matrix.CMAKE_VERSION
-        working-directory: /work
+        working-directory: /sxscollaboration
         run: |
           CMAKE_VERSION=${{ matrix.CMAKE_VERSION }}
           wget -O cmake-install.sh "https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/cmake-${CMAKE_VERSION}-linux-x86_64.sh"
@@ -591,7 +592,7 @@ jobs:
       - name: Install Python version
         if: matrix.PYTHON_VERSION
         run: |
-          VIRTUAL_ENV=/work/python${{ matrix.PYTHON_VERSION }}-venv
+          VIRTUAL_ENV=/sxscollaboration/python${{ matrix.PYTHON_VERSION }}-venv
           add-apt-repository ppa:deadsnakes/ppa
           apt install -y python${{ matrix.PYTHON_VERSION }}-dev \
             python${{ matrix.PYTHON_VERSION }}-venv
@@ -608,7 +609,7 @@ jobs:
           python3 -m pip list -v
       - name: Install ParaView
         if: matrix.test_3d_rendering == 'ON'
-        working-directory: /work
+        working-directory: /sxscollaboration
         # Can't just `apt-get install python3-paraview` because we need the
         # headless build of ParaView. So we download a binary from paraview.org
         # (which is built for a specific Python version unfortunately).
@@ -626,10 +627,10 @@ jobs:
           echo "PYTHONPATH=$PYTHONPATH" >> $GITHUB_ENV
       - name: Install MPI and Charm++
         if: matrix.USE_MPI == 'ON'
-        working-directory: /work
+        working-directory: /sxscollaboration
         run: |
           apt-get install -y libopenmpi-dev
-          cd /work/charm && ./build charm++ mpi-linux-x86_64-smp clang \
+          cd /sxscollaboration/charm && ./build charm++ mpi-linux-x86_64-smp clang \
             -j ${NUMBER_OF_CORES} -g0 -O1 --build-shared --with-production \
             --disable-tls
 
@@ -646,7 +647,7 @@ jobs:
           CACHE_KEY_PREFIX: "ccache-${{ matrix.compiler }}-\
 ${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
         with:
-          path: /work/ccache
+          path: /sxscollaboration/ccache
           key: "${{ env.CACHE_KEY_PREFIX }}-${{ github.run_id }}"
           restore-keys: |
             ${{ env.CACHE_KEY_PREFIX }}-
@@ -726,7 +727,7 @@ ${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
           -D SPECTRE_UNIT_TEST_TIMEOUT_FACTOR=${TEST_TIMEOUT_FACTOR:-'1'}
           -D SPECTRE_INPUT_FILE_TEST_TIMEOUT_FACTOR=${TEST_TIMEOUT_FACTOR:-'1'}
           -D SPECTRE_PYTHON_TEST_TIMEOUT_FACTOR=${TEST_TIMEOUT_FACTOR:-'1'}
-          -D CMAKE_INSTALL_PREFIX=/work/spectre_install
+          -D CMAKE_INSTALL_PREFIX=/sxscollaboration/spectre_install
           -D BUILD_DOCS=OFF
           -D SPECTRE_AUTODIFF=${SPECTRE_AUTODIFF:-'ON'}
           -D SPECTRE_FETCH_MISSING_DEPS=ON
@@ -832,7 +833,7 @@ ${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
         if: always() && github.ref == 'refs/heads/develop'
         uses: actions/cache/save@v5
         with:
-          path: /work/ccache
+          path: /sxscollaboration/ccache
           key: ${{ steps.restore-ccache.outputs.cache-primary-key }}
       - name: Print size of build directory
         working-directory: build
@@ -862,7 +863,7 @@ ${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
           make install
       - name: Print size of install directory
         if: matrix.install == 'ON'
-        working-directory: /work/spectre_install
+        working-directory: /sxscollaboration/spectre_install
         # Remove files post-install to reduce disk space for later on.
         run: |
           pwd
@@ -1306,14 +1307,14 @@ ${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
             apt-get install -y $CC $FC
           fi
       - name: Install Intel SDE
-        working-directory: /work
+        working-directory: /sxscollaboration
         run: |
           wget -O sde-external.tar.xz https://ci-mirrors.rust-lang.org/sde-external-10.8.0-2026-03-15-lin.tar.xz
           tar -xJf sde-external.tar.xz
           mv sde-external-* sde
           rm sde-*
       - name: Configure, build, and run tests
-        working-directory: /work
+        working-directory: /sxscollaboration
         # Notes on the build configuration:
         # - We don't need debug symbols during CI, so we turn them off to reduce
         #   memory usage.
@@ -1325,7 +1326,7 @@ ${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
             SDE_FLAG=`echo ${ARCH_PARAM} | cut -d";" -f1`
             echo "CMake arch flag: $OVERRIDE_ARCH"
             echo "Intel SDE arch flag: $SDE_FLAG"
-            cd /work
+            cd /sxscollaboration
             BUILD_DIR=build$OVERRIDE_ARCH
             mkdir $BUILD_DIR && cd $BUILD_DIR
 
@@ -1351,7 +1352,7 @@ ${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
 
             make -j4 TestArchitectureVectorization
 
-            /work/sde/sde ${SDE_FLAG}\
+            /sxscollaboration/sde/sde ${SDE_FLAG}\
             -- ./bin/TestArchitectureVectorization [Unit]
           done
 

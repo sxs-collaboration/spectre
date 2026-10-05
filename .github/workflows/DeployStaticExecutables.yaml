@@ -97,14 +97,14 @@ jobs:
           ./CceExecutables/PreprocessCceWorldtube/AdmSecondOrderDriverPreprocessCceWorldtube.yaml
 
           docker cp
-          static-execs:/work/spectre/build/bin/CharacteristicExtract
+          static-execs:/sxscollaboration/spectre/build/bin/CharacteristicExtract
           ./CceExecutables/
 
-          docker cp static-execs:/work/spectre/build/bin/PreprocessCceWorldtube
+          docker cp static-execs:/sxscollaboration/spectre/build/bin/PreprocessCceWorldtube
           ./CceExecutables/PreprocessCceWorldtube/
 
           docker cp
-          static-execs:/work/spectre/build/bin/WriteCceWorldtubeCoordsToFile
+          static-execs:/sxscollaboration/spectre/build/bin/WriteCceWorldtubeCoordsToFile
           ./CceExecutables/PreprocessCceWorldtube/
       - name: Test CCE executable outside of container
         run: |

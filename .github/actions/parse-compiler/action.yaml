@@ -50,7 +50,7 @@ runs:
         DEFAULT_GCC_VERSION=$(gcc -dumpversion | cut -d. -f1)
         if [[ $COMPILER_ID = gcc ]] \
             && (( COMPILER_VERSION < DEFAULT_GCC_VERSION )); then
-          LIBSTDCXX_DIR=/work/libstdc++-default
+          LIBSTDCXX_DIR=/sxscollaboration/libstdc++-default
           mkdir -p ${LIBSTDCXX_DIR}
           ln -sf "$(gcc -print-file-name=libstdc++.so.6)" \
             ${LIBSTDCXX_DIR}/libstdc++.so
