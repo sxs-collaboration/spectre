@@ -29,6 +29,7 @@
 #include "Domain/Structure/Topology.hpp"
 #include "Options/Context.hpp"
 #include "Options/ParseError.hpp"
+#include "Utilities/Algorithm.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Gsl.hpp"
 
@@ -95,7 +96,13 @@ CartoonCylinder::CartoonCylinder(
                 "The lower bound for the x dimension must be >= 0, but got "
                     << gsl::at(lower_bounds_, 0) << ".");
   }
-  if (cartoon_boundary_condition_ == nullptr) {
+  // Check if cartoon boundary condition is not provided
+  const bool has_boundary_conditions = alg::any_of(
+      boundary_conditions_, [](const auto& lower_and_upper_conditions) {
+        return lower_and_upper_conditions[0] != nullptr or
+               lower_and_upper_conditions[1] != nullptr;
+      });
+  if (cartoon_boundary_condition_ == nullptr and has_boundary_conditions) {
     PARSE_ERROR(
         context,
         "CartoonCylinder should only be used with systems that have a "
