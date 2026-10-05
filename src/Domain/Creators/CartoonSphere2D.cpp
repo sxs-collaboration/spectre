@@ -165,7 +165,11 @@ CartoonSphere2D::CartoonSphere2D(
                 "Cannot have periodic boundary conditions on a 2D sphere.");
   }
 
-  if (cartoon_boundary_condition_ == nullptr) {
+  // Check if cartoon boundary condition is not provided
+  if (cartoon_boundary_condition_ == nullptr and
+      (outer_boundary_condition_ != nullptr or
+       (not fill_interior_ and
+        std::get<Excision>(interior_).boundary_condition != nullptr))) {
     PARSE_ERROR(
         context,
         "CartoonSphere2D should only be used with systems that have a "

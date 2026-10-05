@@ -127,7 +127,9 @@ CartoonSphere1D::CartoonSphere1D(
   use_zernike_ = inner_bound_ == 0.0;
 
   // Check if cartoon boundary condition is not provided
-  if (cartoon_boundary_condition_ == nullptr) {
+  if (cartoon_boundary_condition_ == nullptr and
+      (inner_boundary_condition_ != nullptr or
+       outer_boundary_condition_ != nullptr)) {
     PARSE_ERROR(
         context,
         "CartoonSphere1D should only be used with systems that have a "
