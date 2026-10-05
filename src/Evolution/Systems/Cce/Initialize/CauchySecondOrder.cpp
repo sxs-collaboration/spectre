@@ -99,16 +99,16 @@ std::string j0_max_iterations_hint(const size_t number_of_linearized_sweeps,
     return "";
   }
   if (stopped_improving) {
-    return "The angular solve stopped once max|J0| had stopped improving, so "
-           "raising J0MaxIterations will not help. ";
+    return "The angular solve stopped once max|J^(0)| had stopped improving, "
+           "so raising J0MaxIterations will not help. ";
   }
   const size_t largest_j0_max_iterations =
       CauchySecondOrder::J0MaxIterations::upper_bound();
   if (j0_max_iterations >= largest_j0_max_iterations) {
     return MakeString{}
-           << "The angular solve was stopped by J0MaxIterations before max|J0| "
-              "had stopped improving, but J0MaxIterations is already at its "
-              "largest allowed value "
+           << "The angular solve was stopped by J0MaxIterations before "
+              "max|J^(0)| had stopped improving, but J0MaxIterations is "
+              "already at its largest allowed value "
            << largest_j0_max_iterations << ". ";
   }
   if (number_of_linearized_sweeps < CauchySecondOrder::j0_plateau_sweeps) {
@@ -117,20 +117,20 @@ std::string j0_max_iterations_hint(const size_t number_of_linearized_sweeps,
            << number_of_linearized_sweeps
            << " linearized sweeps, fewer than the "
            << CauchySecondOrder::j0_plateau_sweeps
-           << " it needs to tell whether max|J0| has stopped improving, so "
+           << " it needs to tell whether max|J^(0)| has stopped improving, so "
               "raising J0MaxIterations may help. ";
   }
-  return "The angular solve was stopped by J0MaxIterations while max|J0| was "
-         "still improving, so raising J0MaxIterations may help. ";
+  return "The angular solve was stopped by J0MaxIterations while max|J^(0)| "
+         "was still improving, so raising J0MaxIterations may help. ";
 }
 }  // namespace CauchySecondOrder_detail
 
 CauchySecondOrder::CauchySecondOrder(
-    const double j0_tolerance, const size_t j0_max_iterations,
+    const double max_partially_flat_j0, const size_t j0_max_iterations,
     const double max_cauchy_j0, const double j2_tolerance,
     const size_t j2_max_iterations, const double max_partially_flat_j2,
     std::unique_ptr<intrp::SpanInterpolator> du_dr_j_interpolator)
-    : j0_tolerance_{j0_tolerance},
+    : max_partially_flat_j0_{max_partially_flat_j0},
       j0_max_iterations_{j0_max_iterations},
       max_cauchy_j0_{max_cauchy_j0},
       j2_tolerance_{j2_tolerance},
@@ -140,7 +140,7 @@ CauchySecondOrder::CauchySecondOrder(
 
 std::unique_ptr<InitializeJ<false>> CauchySecondOrder::get_clone() const {
   return std::make_unique<CauchySecondOrder>(
-      j0_tolerance_, j0_max_iterations_, max_cauchy_j0_, j2_tolerance_,
+      max_partially_flat_j0_, j0_max_iterations_, max_cauchy_j0_, j2_tolerance_,
       j2_max_iterations_, max_partially_flat_j2_, du_dr_j_interpolator());
 }
 
@@ -234,8 +234,8 @@ void CauchySecondOrder::operator()(
   if (j2_max_iterations_ > 0) {
     if (std::isnan(j2_step)) {
       ERROR(
-          "The initial J^(2) fixed-point solve produced a non-finite J^(2) "
-          "after "
+          "The initial Cauchy-gauge J^(2) fixed-point solve produced a "
+          "non-finite J^(2) after "
           << j2_iterations
           << " iterations. Either the worldtube data contain non-finite "
              "values, or they are far too large for the iteration to "
@@ -243,8 +243,8 @@ void CauchySecondOrder::operator()(
     }
     if (j2_step >= j2_tolerance_) {
       ERROR(
-          "The initial J^(2) fixed-point solve did not reach target "
-          "tolerance "
+          "The initial Cauchy-gauge J^(2) fixed-point solve did not reach "
+          "target tolerance "
           << j2_tolerance_ << " after " << j2_iterations
           << " iterations (last step " << j2_step
           << "). Increase J2MaxIterations or loosen J2Tolerance. If the step "
@@ -432,7 +432,7 @@ void CauchySecondOrder::operator()(
 
   size_t linearized_sweeps = 0;
   bool j0_stagnated = false;
-  if (potential_result.max_error <= j0_tolerance_) {
+  if (potential_result.max_error <= max_partially_flat_j0_) {
     // The potential solve's map is the solution. Evaluate it once more, without
     // a step, to apply the gauge transformation to the volume J.
     detail::adapt_angular_coordinates_via_potential(
@@ -442,9 +442,9 @@ void CauchySecondOrder::operator()(
         /*initialize_coordinates=*/false);
   } else {
     // Continue from the potential solve's map with the linearized sweeps until
-    // max|J0| stops improving, or until the two stages together have taken
+    // max|J^(0)| stops improving, or until the two stages together have taken
     // J0MaxIterations iterations. Reaching J0MaxIterations is not an error by
-    // itself: the J0 check below decides.
+    // itself: the J^(0) check below decides.
     const size_t remaining_iterations =
         j0_max_iterations_ > potential_iterations
             ? j0_max_iterations_ - potential_iterations
@@ -468,33 +468,33 @@ void CauchySecondOrder::operator()(
   // Printed before the checks below, so that it also precedes a failure.
   Parallel::printf(
       "CauchySecondOrder initial data:\n"
-      "  J^(2) fixed point: %zu iterations, last change of J^(2) %e "
-      "(J2Tolerance %e)\n"
-      "  J0 angular solve: %zu iterations = %zu potential iterations (reaching "
-      "max|J0| %e) + %zu linearized sweeps\n"
-      "  partially flat constraints at scri+: max|J0| = %.16e "
-      "(J0Tolerance %e), max|J2| = %.16e (MaxPartiallyFlatJ2 %e)\n",
+      "  Cauchy-gauge J^(2) fixed point: %zu iterations, last change of J^(2) "
+      "%e (J2Tolerance %e)\n"
+      "  partially flat J^(0) angular solve: %zu iterations = %zu potential "
+      "iterations (reaching max|J^(0)| %e) + %zu linearized sweeps\n"
+      "  partially flat constraints: max|J^(0)| = %.16e (MaxPartiallyFlatJ0 "
+      "%e), max|J^(2)| = %.16e (MaxPartiallyFlatJ2 %e)\n",
       j2_iterations, j2_step, j2_tolerance_,
       potential_iterations + linearized_sweeps, potential_iterations,
-      potential_result.max_error, linearized_sweeps, max_scri_j0, j0_tolerance_,
-      max_scri_j2, max_partially_flat_j2_);
+      potential_result.max_error, linearized_sweeps, max_scri_j0,
+      max_partially_flat_j0_, max_scri_j2, max_partially_flat_j2_);
 
-  if (std::isnan(max_scri_j0) or max_scri_j0 > j0_tolerance_) {
+  if (std::isnan(max_scri_j0) or max_scri_j0 > max_partially_flat_j0_) {
     ERROR(
-        "After the gauge transformation the initial J has max|J0| = max|J| "
+        "After the gauge transformation the initial J has max|J^(0)| = max|J| "
         "at scri+ of "
-        << max_scri_j0 << ", which exceeds the threshold " << j0_tolerance_
-        << " set by the J0Tolerance option. "
+        << max_scri_j0 << ", which exceeds the threshold "
+        << max_partially_flat_j0_ << " set by the MaxPartiallyFlatJ0 option. "
         << CauchySecondOrder_detail::j0_max_iterations_hint(
                linearized_sweeps, j0_stagnated, j0_max_iterations_)
         << "This usually means the spherical-harmonic modes of the worldtube "
            "J do not decay with l. Use a worldtube at a larger extraction "
-           "radius or raise J0Tolerance.");
+           "radius or raise MaxPartiallyFlatJ0.");
   }
 
   if (std::isnan(max_scri_j2) or max_scri_j2 > max_partially_flat_j2_) {
     ERROR(
-        "After the gauge transformation the initial J has max|J2| = "
+        "After the gauge transformation the initial J has max|J^(2)| = "
         "max|(1/2) Dy^2 J| at scri+ of "
         << max_scri_j2 << ", which exceeds the threshold "
         << max_partially_flat_j2_
@@ -507,7 +507,7 @@ void CauchySecondOrder::operator()(
 }
 
 void CauchySecondOrder::pup(PUP::er& p) {
-  p | j0_tolerance_;
+  p | max_partially_flat_j0_;
   p | j0_max_iterations_;
   p | max_cauchy_j0_;
   p | j2_tolerance_;

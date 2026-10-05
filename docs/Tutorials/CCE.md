@@ -456,21 +456,16 @@ a bit on why we chose some of those parameters.
   input file. See the input file referenced above for a (commented-out) example,
   and the documentation of the class `Cce::Events::ObserveFields` for details.
 
-### Initial data on the null hypersurface
+### Initial data on the null hypersurface {#cce_initial_data}
 
-Choosing initial data on the initial null hypersurface is a non-trivial task and
-is an active area of research. We want initial data that will reduce the amount
-of CCE junk radiation as much as possible, while also having the initial data
-work for as many cases as possible.
-
-SpECTRE currently has four different methods to choose the initial data on
-the null hypersurface. In order from most recommended to least recommended,
-these are:
+`CauchySecondOrder`, described [below](#cce_cauchy_second_order), is the best
+method to choose the initial data on the null hypersurface, and the example
+input file uses it. If it fails for your worldtube data, the following methods
+are available as fallbacks, in order of preference:
 
 - `ConformalFactor`: Try to make initial time coordinate as inertial as
   possible at \f$\mathscr{I}^+\f$ with a smart choice of the conformal factor.
-  This will work for many cases, but not all. But will produce the best initial
-  data when it does work.
+  This works for many cases, but not all.
 - `InverseCubic`: Ansatz where \f$J = A/r + B/r^3\f$. This is very robust and
   almost never fails, but contains a lot of CCE junk radiation compared to
   `ConformalFactor`.
@@ -478,6 +473,132 @@ these are:
 - `NoIncomingRadiation`: Make \f$\Psi_0 = 0\f$; this does not actually lead
   to no incoming radiation, since \f$\Psi_0\f$ and \f$\Psi_4\f$ both include
   incoming and outgoing radiation.
+
+#### CauchySecondOrder {#cce_cauchy_second_order}
+
+CCE works in the compactified radial coordinate \f$\tilde y = 1 - 2R/r\f$,
+where \f$R\f$ is the worldtube radius, so that the worldtube \f$\Gamma\f$ is at
+\f$\tilde y = -1\f$ and \f$\mathscr{I}^+\f$ is at \f$\tilde y = 1\f$. Here
+\f$\tilde J\f$ denotes \f$J\f$ in the Cauchy coordinates, built on the
+worldtube from the Cauchy angular coordinates, and \f$\breve J\f$ its
+counterpart in the partially flat coordinates used for the evolution.
+\f$\tilde J^{(n)}\f$ and \f$\breve J^{(n)}\f$ are their coefficients of
+\f$(1 - \tilde y)^n\f$. The initial data must satisfy the partially flat
+conditions \f$\breve J^{(0)} = 0\f$ and \f$\breve J^{(2)} = 0\f$. Both
+coefficients then remain zero throughout the evolution, which in the partially
+flat gauge prevents logarithmic terms from arising.
+
+`CauchySecondOrder` matches the initial \f$\tilde J\f$ on the initial null
+hypersurface \f$\Sigma_0\f$ to the worldtube value \f$\tilde J|_\Gamma\f$ and
+its first two radial derivatives in the Cauchy gauge, using the ansatz
+
+\f{align*}{
+  \tilde J(\tilde y; x) = \tilde J^{(0)}(x) + \tilde J^{(1)}(x)\,(1 - \tilde y)
+    + x\,(1 - \tilde y)^2 + \tilde J^{(3)}(x)\,(1 - \tilde y)^3 .
+\f}
+
+The three matching conditions determine \f$\tilde J^{(0)}\f$,
+\f$\tilde J^{(1)}\f$ and \f$\tilde J^{(3)}\f$ as functions of
+\f$x = \tilde J^{(2)}\f$, which is left to be determined by the remaining
+partially flat condition \f$\breve J^{(2)} = 0\f$. Expressed in Cauchy-gauge
+quantities, this condition is a nonlinear equation \f$x = \Phi(x)\f$. It is
+solved by iterating \f$x_{k+1} = \Phi(x_k)\f$ from \f$x_0 = 0\f$ until the
+largest change in \f$x\f$ over the angular collocation points falls below
+`J2Tolerance`.
+
+Of the required radial derivatives, the Cauchy simulation supplies only
+\f$\partial_r J|_\Gamma\f$, or equivalently
+\f$\partial_{\tilde y}\tilde J|_\Gamma = (R/2)\,\partial_r J|_\Gamma\f$. The
+second derivative \f$\partial_{\tilde y}^2\tilde J|_\Gamma\f$ is obtained by
+inverting the characteristic \f$H\f$-hypersurface equation at the worldtube,
+which uses only quantities already stored in the worldtube data, together with
+the time derivative \f$\partial_{\tilde u}\partial_r J|_\Gamma\f$. This time
+derivative is computed by interpolating the stored time series of
+\f$\partial_r J|_\Gamma\f$ and differentiating the interpolant.
+
+With these, the construction consists of three steps:
+
+1. Match the initial \f$\tilde J\f$ on \f$\Sigma_0\f$ to the worldtube value and
+   its first two radial derivatives in the Cauchy gauge, and solve the
+   fixed-point problem for \f$x\f$.
+2. Use the resulting \f$\tilde J^{(0)}\f$ to solve the Beltrami problem
+   \f$\breve J^{(0)} = 0\f$ for the initial angular map
+   \f$\hat\phi^{\hat A}(u_0, \phi^A)\f$ from the Cauchy to the partially flat
+   angular coordinates.
+3. Transform the whole profile into the partially flat gauge with this map.
+
+The transformed profile preserves the worldtube matching and satisfies both
+partially flat conditions: \f$\breve J^{(0)} = 0\f$ through the angular map and
+\f$\breve J^{(2)} = 0\f$ through the root \f$x\f$.
+
+In step 2, the condition \f$\breve J^{(0)} = 0\f$ is solved in closed form at
+each angular point, which specifies the target angular Jacobian of the map at
+every point of the sphere. The map is then recovered iteratively. A
+potential-based solve generates each displacement of the map from a single
+spin-weight-1 potential, determined by the difference between the current and
+the target Jacobian, and reaches its minimum residual within a few iterations.
+If that does not bring \f$\max|\breve J^{(0)}|\f$ below `MaxPartiallyFlatJ0`,
+linearized iterations continue from its map until \f$\max|\breve J^{(0)}|\f$
+stops improving.
+
+The options of `CauchySecondOrder` are:
+
+- `MaxPartiallyFlatJ0`: the largest \f$\max|\breve J^{(0)}|\f$ accepted after
+  step 3.
+- `J0MaxIterations`: the largest number of iterations of the angular solve of
+  step 2, potential-based and linearized together.
+- `MaxCauchyJ0`: the largest \f$\max|\tilde J^{(0)}|\f$ accepted, which also
+  bounds \f$\max|\breve J^{(0)}|\f$ during the iterations of step 2.
+- `J2Tolerance`: the tolerance on the largest change in \f$x\f$ at which
+  the fixed-point iteration of step 1 stops.
+- `J2MaxIterations`: initialization aborts if the fixed-point iteration does
+  not reach `J2Tolerance` within this many iterations.
+- `MaxPartiallyFlatJ2`: the largest \f$\max|\breve J^{(2)}|\f$ accepted after
+  step 3.
+- `DuDrJInterpolator`: the interpolator of the stored time series of
+  \f$\partial_r J|_\Gamma\f$ whose derivative gives
+  \f$\partial_{\tilde u}\partial_r J|_\Gamma\f$. The high-order barycentric
+  interpolant used for the worldtube data (`H5Interpolator`) can introduce
+  numerical artifacts when the evolution starts at \f$t_0 = 0\f$ with large
+  worldtube data at very small extraction radii. These artifacts can distort
+  the spin-weighted spherical harmonic mode content of
+  \f$\partial_{\tilde u}\partial_r J|_\Gamma\f$ enough to prevent the angular
+  solve from finding a solution. Second-order interpolation resolves these
+  problems while giving numerically indistinguishable results for well-behaved
+  simulations. `DuDrJInterpolator` must not use a wider stencil than
+  `H5Interpolator`.
+
+After building the initial data, `CauchySecondOrder` prints a summary of steps
+1 and 2 and of \f$\max|\breve J^{(0)}|\f$ and \f$\max|\breve J^{(2)}|\f$ over
+the angular grid. In it, the Cauchy-gauge \f$J^{(2)}\f$ is \f$x\f$, and the
+partially flat \f$J^{(0)}\f$ and \f$J^{(2)}\f$ are \f$\breve J^{(0)}\f$ and
+\f$\breve J^{(2)}\f$. For a binary black hole worldtube at \f$R = 100M\f$ with
+`LMax: 20` it reads, for example (long lines wrapped):
+
+```
+CauchySecondOrder initial data:
+  Cauchy-gauge J^(2) fixed point: 2 iterations, last change of J^(2)
+    6.828636e-17 (J2Tolerance 1.000000e-14)
+  partially flat J^(0) angular solve: 1394 iterations = 4 potential
+    iterations (reaching max|J^(0)| 3.387280e-11) + 1390 linearized sweeps
+  partially flat constraints: max|J^(0)| = 1.6469519047383257e-12
+    (MaxPartiallyFlatJ0 5.000000e-12), max|J^(2)| = 2.0354096531992744e-15
+    (MaxPartiallyFlatJ2 1.000000e-12)
+```
+
+Initialization stops if \f$\max|\breve J^{(0)}|\f$ exceeds
+`MaxPartiallyFlatJ0` or \f$\max|\breve J^{(2)}|\f$ exceeds
+`MaxPartiallyFlatJ2`. The angular solve can bring \f$\breve J^{(0)}\f$ only
+down to a floor, which rises with the size of \f$\tilde J^{(0)}\f$, so it is
+mostly a concern for worldtubes at small extraction radii. When
+\f$\max|\breve J^{(0)}|\f$ cannot reach `MaxPartiallyFlatJ0`, the worldtube
+data are usually the cause: the spherical-harmonic modes of \f$J\f$
+[do not decay](#worldtube_data_looks) with \f$\ell\f$. Raising the CCE `LMax`
+lowers the floor only if the modes still decay beyond the current `LMax`. If
+the error reports that \f$\max|\breve J^{(0)}|\f$ had stopped improving,
+raising `J0MaxIterations` does not help either. Instead, use a worldtube at a
+larger extraction radius, or raise `MaxPartiallyFlatJ0` to sit just above the
+reported \f$\max|\breve J^{(0)}|\f$.
 
 ### Rechunking worldtube data
 
@@ -525,82 +646,9 @@ in a supported environment is a simple command:
 ./CharacteristicExtract --input-file CharacteristicExtract.yaml
 ```
 
-The `CauchySecondOrder` initializer adapts the angular coordinates to make
-\f$J_0 = J|_{\mathcal{I}^+}\f$ vanish in the partially flat gauge, in up to two
-stages that together take at most `J0MaxIterations` iterations. A
-potential-based solve first runs to its minimum in a few iterations. If that
-brings \f$\max|J_0|\f$ within `J0Tolerance`, its map is the solution.
-Otherwise linearized sweeps continue until \f$\max|J_0|\f$ stops improving (by
-less than 1% over the last 50 sweeps) or until the two stages together have
-taken `J0MaxIterations` iterations. The supplied input file sets
-`J0Tolerance: 5e-12`, `J0MaxIterations: 1500`, and `MaxCauchyJ0: 5e-2`.
-`MaxCauchyJ0` bounds the magnitude of \f$J\f$ at scri+ in the Cauchy-gauge
-initial guess. The same bound also limits the transformed \f$J\f$ during the
-angular iterations as a divergence guard. Exceeding either bound stops
-initialization.
-
-After transforming the initial data to the partially flat gauge, the initializer
-prints a summary of both solves and the maximum absolute values of both
-constraints over the angular grid, \f$J_0\f$ and
-\f$J_2 = \frac{1}{2}\partial_y^2 J|_{\mathcal{I}^+}\f$, the coefficient of
-\f$(1-y)^2\f$. For a binary black hole worldtube at \f$R = 100M\f$ with
-`LMax: 20` it reads, for example (long lines wrapped):
-
-```
-CauchySecondOrder initial data:
-  J^(2) fixed point: 2 iterations, last change of J^(2) 6.828636e-17
-    (J2Tolerance 1.000000e-14)
-  J0 angular solve: 1394 iterations = 4 potential iterations (reaching
-    max|J0| 3.387280e-11) + 1390 linearized sweeps
-  partially flat constraints at scri+: max|J0| = 1.6469519047383257e-12
-    (J0Tolerance 5.000000e-12), max|J2| = 2.0354096531992744e-15
-    (MaxPartiallyFlatJ2 1.000000e-12)
-```
-
-Initialization stops if \f$\max|J_0|\f$ exceeds `J0Tolerance` or
-\f$\max|J_2|\f$ exceeds `MaxPartiallyFlatJ2`. The angular solve drives
-\f$J_0\f$ down to a floor, which rises with the size of \f$J\f$ at scri+ in the
-Cauchy gauge and with the power in the high-\f$\ell\f$ modes of the worldtube
-data, so it is mostly a concern for worldtubes at small extraction radii. When
-\f$\max|J_0|\f$ cannot reach `J0Tolerance`, the worldtube data from the Cauchy
-simulation are usually the cause: the spherical-harmonic modes of \f$J\f$ do not
-decay with \f$\ell\f$, and their power is spread almost evenly across them.
-Raising the CCE `LMax`, at which the initial data are computed, does not help
-then, since it adds no information that the worldtube data do not contain. It
-lowers the floor only if the modes still decay beyond the current `LMax`. If the
-error reports that the solve stopped once \f$\max|J_0|\f$ had stopped
-improving, raising `J0MaxIterations` does not help either. Instead,
-[check how the modes of the worldtube \f$J\f$ decay](#worldtube_data_looks)
-with \f$\ell\f$, use a worldtube at a larger extraction radius, or raise
-`J0Tolerance` to sit just above the reported \f$\max|J_0|\f$.
-
-`CauchySecondOrder` also solves a small fixed-point problem before the angular
-solve. Matching the worldtube \f$J\f$, \f$\partial_r J\f$ and
-\f$\partial_y^2 J\f$ fixes three of the four coefficients of the Cauchy-gauge
-radial ansatz. The partially flat gauge condition on the second asymptotic
-coefficient determines the fourth, \f$J^{(2)}\f$, as the root of a contraction
-mapping. `J2MaxIterations` and `J2Tolerance` control that iteration, which
-starts from \f$J^{(2)} = 0\f$. Each iteration gains roughly
-\f$2\log_{10}(1/\rho)\f$ digits, where
-\f$\rho = \max(\|J^{(0)}\|_\infty, \|J^{(1)}\|_\infty)\f$ is the size of the
-two leading radial coefficients of the Cauchy-gauge ansatz. Reaching the
-supplied `J2Tolerance: 1e-14` therefore takes about two iterations when
-\f$\rho \sim 10^{-3}\f$ and about six when \f$\rho \sim 5\times 10^{-2}\f$.
-Note that `MaxCauchyJ0` bounds only \f$J^{(0)}\f$, not \f$J^{(1)}\f$. The
-iteration is only guaranteed to contract when \f$\rho\f$ is at most a few
-times \f$10^{-2}\f$. Unlike the angular solve, whose result is judged by
-`J0Tolerance`, a failure to converge within `J2MaxIterations` stops
-initialization.
-
-`CauchySecondOrder` also requires a `DuDrJInterpolator`. The second-order match
-needs the worldtube \f$\partial_u \partial_r J\f$, which is built by
-differentiating the worldtube data in time, and it wants a *low* interpolation
-order for it (a barycentric order of 2 to 4) so that high-frequency content of
-the worldtube stays out of the initial data. That is the opposite of what the
-evolution wants for the values it interpolates every step, which is why this is
-a separate option from `H5Interpolator` rather than reusing it. It must not ask
-for a wider stencil than `H5Interpolator` does, since the derivative is taken
-inside the buffer that `H5Interpolator` sizes.
+The initial data are built first. `CauchySecondOrder` prints
+[a summary of them](#cce_cauchy_second_order) and stops if they do not meet its
+tolerances.
 
 After this, you'll likely see some output like
 

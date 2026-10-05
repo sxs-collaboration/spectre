@@ -747,7 +747,7 @@ void test_cauchy_second_order_j2_threshold_error(
   db::mutate_apply<InitializeJ::CauchySecondOrder::return_tags,
                    InitializeJ::CauchySecondOrder::argument_tags>(
       InitializeJ::CauchySecondOrder{
-          /*j0_tolerance=*/1.0e-6, /*j0_max_iterations=*/10,
+          /*max_partially_flat_j0=*/1.0e-6, /*j0_max_iterations=*/10,
           /*max_cauchy_j0=*/1.0e-1, /*j2_tolerance=*/1.0e-14,
           /*j2_max_iterations=*/10, /*max_partially_flat_j2=*/1.0e-30,
           make_du_dr_j_interpolator()},
@@ -758,14 +758,14 @@ template <typename DbTags>
 void test_cauchy_second_order_j0_threshold_error(
     const gsl::not_null<db::DataBox<DbTags>*> box_to_initialize) {
   // The angular solve stops at a J0 set by the angular resolution rather than
-  // zero, so an unachievably small `J0Tolerance` trips the check. With fewer
-  // iterations than the plateau window the sweeps cannot yet tell whether J0
-  // has stopped improving, so the error suggests raising J0MaxIterations.
+  // zero, so an unachievably small `MaxPartiallyFlatJ0` trips the check. With
+  // fewer iterations than the plateau window the sweeps cannot yet tell whether
+  // J0 has stopped improving, so the error suggests raising J0MaxIterations.
   auto node_lock = Parallel::NodeLock{};
   db::mutate_apply<InitializeJ::CauchySecondOrder::return_tags,
                    InitializeJ::CauchySecondOrder::argument_tags>(
       InitializeJ::CauchySecondOrder{
-          /*j0_tolerance=*/1.0e-30, /*j0_max_iterations=*/10,
+          /*max_partially_flat_j0=*/1.0e-30, /*j0_max_iterations=*/10,
           /*max_cauchy_j0=*/1.0e-1, /*j2_tolerance=*/1.0e-14,
           /*j2_max_iterations=*/10, /*max_partially_flat_j2=*/1.0e-12,
           make_du_dr_j_interpolator()},
@@ -784,7 +784,7 @@ void test_cauchy_second_order_potential_suffices(
     db::mutate_apply<InitializeJ::CauchySecondOrder::return_tags,
                      InitializeJ::CauchySecondOrder::argument_tags>(
         InitializeJ::CauchySecondOrder{
-            /*j0_tolerance=*/1.0e-6, j0_max_iterations,
+            /*max_partially_flat_j0=*/1.0e-6, j0_max_iterations,
             /*max_cauchy_j0=*/1.0e-1, /*j2_tolerance=*/1.0e-14,
             /*j2_max_iterations=*/10, /*max_partially_flat_j2=*/1.0e-12,
             make_du_dr_j_interpolator()},
@@ -799,9 +799,9 @@ void test_cauchy_second_order_potential_suffices(
   CHECK(few_iterations.second == many_iterations.second);
 }
 
-// What the `J0Tolerance` error says about raising `J0MaxIterations`, which
-// depends on whether and how the linearized sweeps stopped, and on whether
-// `J0MaxIterations` can be raised at all.
+// What the `MaxPartiallyFlatJ0` error says about raising `J0MaxIterations`,
+// which depends on whether and how the linearized sweeps stopped, and on
+// whether `J0MaxIterations` can be raised at all.
 void test_cauchy_second_order_j0_max_iterations_hint() {
   using InitializeJ::CauchySecondOrder_detail::j0_max_iterations_hint;
   constexpr size_t plateau_sweeps =
@@ -817,15 +817,16 @@ void test_cauchy_second_order_j0_max_iterations_hint() {
                  "help"));
   CHECK_THAT(j0_max_iterations_hint(plateau_sweeps, false, max_iterations),
              Catch::Matchers::ContainsSubstring(
-                 "while max|J0| was still improving, so raising "
+                 "while max|J^(0)| was still improving, so raising "
                  "J0MaxIterations may help"));
-  CHECK_THAT(j0_max_iterations_hint(plateau_sweeps - 1, false, max_iterations),
-             Catch::Matchers::ContainsSubstring(
-                 "after " + std::to_string(plateau_sweeps - 1) +
-                 " linearized sweeps, fewer than the " +
-                 std::to_string(plateau_sweeps) +
-                 " it needs to tell whether max|J0| has stopped improving, so "
-                 "raising J0MaxIterations may help"));
+  CHECK_THAT(
+      j0_max_iterations_hint(plateau_sweeps - 1, false, max_iterations),
+      Catch::Matchers::ContainsSubstring(
+          "after " + std::to_string(plateau_sweeps - 1) +
+          " linearized sweeps, fewer than the " +
+          std::to_string(plateau_sweeps) +
+          " it needs to tell whether max|J^(0)| has stopped improving, so "
+          "raising J0MaxIterations may help"));
 
   // At the upper bound of `J0MaxIterations` the hint must not suggest raising
   // it, however the sweeps stopped.
@@ -839,7 +840,7 @@ void test_cauchy_second_order_j0_max_iterations_hint() {
     CHECK_THAT(
         j0_max_iterations_hint(number_of_sweeps, false, largest_max_iterations),
         Catch::Matchers::ContainsSubstring(
-            "before max|J0| had stopped improving, but J0MaxIterations is "
+            "before max|J^(0)| had stopped improving, but J0MaxIterations is "
             "already at its largest allowed value " +
             std::to_string(largest_max_iterations)) and
             not Catch::Matchers::ContainsSubstring("may help"));
@@ -859,7 +860,7 @@ void test_initialize_j_cauchy_second_order(
   db::mutate_apply<InitializeJ::CauchySecondOrder::return_tags,
                    InitializeJ::CauchySecondOrder::argument_tags>(
       InitializeJ::CauchySecondOrder{
-          /*j0_tolerance=*/1.0e-6, /*j0_max_iterations=*/10,
+          /*max_partially_flat_j0=*/1.0e-6, /*j0_max_iterations=*/10,
           /*max_cauchy_j0=*/1.0e-1, /*j2_tolerance=*/1.0e-14,
           /*j2_max_iterations=*/0, /*max_partially_flat_j2=*/1.0e-12,
           make_du_dr_j_interpolator()},
@@ -870,7 +871,7 @@ void test_initialize_j_cauchy_second_order(
   // A serialized copy of the generator must give the same J. Settings with
   // which the potential solve alone suffices keep this cheap.
   const auto potential_only_initializer =
-      InitializeJ::CauchySecondOrder{/*j0_tolerance=*/1.0e-6,
+      InitializeJ::CauchySecondOrder{/*max_partially_flat_j0=*/1.0e-6,
                                      /*j0_max_iterations=*/10,
                                      /*max_cauchy_j0=*/1.0e-1,
                                      /*j2_tolerance=*/1.0e-14,
@@ -898,7 +899,7 @@ void test_initialize_j_cauchy_second_order(
   // even where they would need more to stop improving.
   db::mutate_apply<InitializeJ::CauchySecondOrder::return_tags,
                    InitializeJ::CauchySecondOrder::argument_tags>(
-      InitializeJ::CauchySecondOrder{/*j0_tolerance=*/1.0e-9,
+      InitializeJ::CauchySecondOrder{/*max_partially_flat_j0=*/1.0e-9,
                                      /*j0_max_iterations=*/300,
                                      /*max_cauchy_j0=*/1.0e-1,
                                      /*j2_tolerance=*/1.0e-14,
@@ -940,10 +941,10 @@ void test_initialize_j_cauchy_second_order(
   }
 
   // Check both partially flat constraints on the final initial data: the
-  // angular solve drives J0 = J at scri+ below `J0Tolerance`, and the J^(2)
-  // solve removes most of the J2 = 0.5 * Dy^2 J violation left without it.
-  // The J^(2) constraint is exact in the Cauchy gauge, but it is nonlinear, so
-  // interpolating J to the adapted angular coordinates at this small l_max
+  // angular solve drives J0 = J at scri+ below `MaxPartiallyFlatJ0`, and the
+  // J^(2) solve removes most of the J2 = 0.5 * Dy^2 J violation left without
+  // it. The J^(2) constraint is exact in the Cauchy gauge, but it is nonlinear,
+  // so interpolating J to the adapted angular coordinates at this small l_max
   // leaves a residual of a few to about fifteen percent of the violation
   // (checked over many random seeds). Hence the relative comparison rather
   // than an absolute tolerance.
@@ -1404,9 +1405,10 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.InitializeJ", "[Unit][Cce]") {
   CHECK_THROWS_WITH(
       test_cauchy_second_order_j0_threshold_error(
           make_not_null(&box_to_initialize)),
-      Catch::Matchers::ContainsSubstring("set by the J0Tolerance option") and
+      Catch::Matchers::ContainsSubstring(
+          "set by the MaxPartiallyFlatJ0 option") and
           Catch::Matchers::ContainsSubstring(
-              "it needs to tell whether max|J0| has stopped improving, so "
+              "it needs to tell whether max|J^(0)| has stopped improving, so "
               "raising J0MaxIterations may help"));
   {
     INFO("Check the potential angular-coordinate solve");
@@ -1426,7 +1428,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.InitializeJ", "[Unit][Cce]") {
         make_not_null(&box_to_initialize)));
   }
   {
-    INFO("Check what the J0Tolerance error says about J0MaxIterations");
+    INFO("Check what the MaxPartiallyFlatJ0 error says about J0MaxIterations");
     test_cauchy_second_order_j0_max_iterations_hint();
   }
   {
@@ -1446,8 +1448,9 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.InitializeJ", "[Unit][Cce]") {
   CHECK_THROWS_WITH(
       test_cauchy_second_order_j2_convergence_error(
           make_not_null(&box_to_initialize)),
-      Catch::Matchers::ContainsSubstring("The initial J^(2) fixed-point solve "
-                                         "did not reach target tolerance"));
+      Catch::Matchers::ContainsSubstring(
+          "The initial Cauchy-gauge J^(2) fixed-point solve did not reach "
+          "target tolerance"));
   CHECK_THROWS_WITH(
       test_cauchy_second_order_cauchy_j0_threshold(
           make_not_null(&box_to_initialize)),
