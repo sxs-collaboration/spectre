@@ -172,6 +172,8 @@ class MutableUntypedHistory : public ConstUntypedHistory<T> {
   virtual void pop_front() const = 0;
 
   virtual void clear_substeps() const = 0;
+
+  virtual void clear() const = 0;
 };
 #if defined(__GNUC__) and not defined(__clang__)
 #pragma GCC diagnostic pop
@@ -418,6 +420,11 @@ class History
 
     void clear_substeps() const override {
       history_->clear_substeps();
+      this->reinitialize(*history_);
+    }
+
+    void clear() const override {
+      history_->clear();
       this->reinitialize(*history_);
     }
 

@@ -747,6 +747,12 @@ void test_history() {
   CHECK(not const_history.substeps()[0].value.has_value());
   CHECK(const_history.substeps()[0].derivative == make_deriv(110.0));
 
+  static_cast<const MutableUntyped&>(history.untyped()).clear();
+  // [] []
+  CHECK(history.integration_order() == copy.integration_order());
+  CHECK(history.empty());
+  CHECK(history.substeps().empty());
+
   {
     History a{2};
     History b{3};
