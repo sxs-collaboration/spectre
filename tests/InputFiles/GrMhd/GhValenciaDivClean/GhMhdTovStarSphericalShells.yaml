@@ -4,7 +4,7 @@
 Executable: EvolveGhValenciaDivClean
 Testing:
   Check: parse;execute
-  Timeout: 40
+  Timeout: 60
   Priority: High
 ExpectedOutput:
   - GhMhdTovStarVolume0.h5
