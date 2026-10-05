@@ -30,7 +30,6 @@ TimeSteppers::History<Variables<tmpl::list<Var>>> create_history() {
   history.insert(
       TimeStepId(true, 0, slab.start(), 1, slab.duration(), slab.end().value()),
       {5, 0.0}, {5, 0.0});
-  history.insert(TimeStepId(true, 1, slab.end()), {5, 0.0}, {5, 0.0});
   return history;
 }
 
@@ -51,9 +50,9 @@ SPECTRE_TEST_CASE("Unit.Evolution.Imex.CleanHistory", "[Unit][Evolution]") {
 
   CHECK(
       db::get<imex::Tags::ImplicitHistory<helpers::Sector<helpers::Var1>>>(box)
-          .size() == 1);
+          .empty());
   CHECK(
       db::get<imex::Tags::ImplicitHistory<helpers::Sector<helpers::Var2>>>(box)
-          .size() == 1);
+          .empty());
 }
 }  // namespace
