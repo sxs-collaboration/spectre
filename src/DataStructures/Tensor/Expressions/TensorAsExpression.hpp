@@ -15,7 +15,6 @@
 #include "DataStructures/Tensor/Expressions/DataTypeSupport.hpp"
 #include "DataStructures/Tensor/Expressions/SpatialSpacetimeIndex.hpp"
 #include "DataStructures/Tensor/Expressions/TensorExpression.hpp"
-#include "DataStructures/Tensor/Tensor.hpp"
 #include "Utilities/Algorithm.hpp"
 #include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
@@ -23,6 +22,11 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
+
+/// \cond
+template <typename X, typename Symm, typename IndexList>
+class Tensor;
+/// \endcond
 
 namespace tenex {
 namespace detail {
