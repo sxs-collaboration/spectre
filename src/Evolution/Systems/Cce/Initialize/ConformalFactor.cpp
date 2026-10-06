@@ -30,6 +30,7 @@
 #include "NumericalAlgorithms/SpinWeightedSphericalHarmonics/SwshTags.hpp"
 #include "Options/ParseOptions.hpp"
 #include "Utilities/ConstantExpressions.hpp"
+#include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Serialization/PupStlCpp17.hpp"
 #include "Utilities/TMPL.hpp"
@@ -358,7 +359,10 @@ void ConformalFactor::operator()(
   detail::iteratively_adapt_angular_coordinates(
       cartesian_cauchy_coordinates, angular_cauchy_coordinates, l_max,
       angular_coordinate_tolerance_, max_iterations_, 1.0e-2,
-      iteration_function, require_convergence_, finalize_function);
+      iteration_function,
+      require_convergence_ ? detail::UnconvergedAngularSolve::Error
+                           : detail::UnconvergedAngularSolve::Warn,
+      finalize_function);
 
   const DataVector one_minus_y_collocation =
       1.0 - Spectral::collocation_points<Spectral::Basis::Legendre,

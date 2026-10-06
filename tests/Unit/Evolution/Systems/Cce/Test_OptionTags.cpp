@@ -172,7 +172,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.OptionTags", "[Unit][Cce]") {
       "InverseCubic");
   TestHelpers::test_option_tag<Cce::OptionTags::InitializeJ<false>>(
       "CauchySecondOrder:\n"
-      "  J0Tolerance: 5e-12\n"
+      "  MaxPartiallyFlatJ0: 5e-12\n"
       "  J0MaxIterations: 300\n"
       "  J2Tolerance: 1e-14\n"
       "  J2MaxIterations: 5\n"

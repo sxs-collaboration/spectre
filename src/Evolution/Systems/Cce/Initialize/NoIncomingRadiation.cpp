@@ -15,6 +15,7 @@
 #include "NumericalAlgorithms/Spectral/Basis.hpp"
 #include "NumericalAlgorithms/Spectral/CollocationPoints.hpp"
 #include "NumericalAlgorithms/Spectral/Quadrature.hpp"
+#include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeString.hpp"
 #include "Utilities/Serialization/CharmPupable.hpp"
@@ -216,7 +217,10 @@ void NoIncomingRadiation::operator()(
   detail::iteratively_adapt_angular_coordinates(
       cartesian_cauchy_coordinates, angular_cauchy_coordinates, l_max,
       angular_coordinate_tolerance_, max_iterations_, 1.0e-2,
-      iteration_function, require_convergence_, finalize_function);
+      iteration_function,
+      require_convergence_ ? detail::UnconvergedAngularSolve::Error
+                           : detail::UnconvergedAngularSolve::Warn,
+      finalize_function);
 }
 
 void NoIncomingRadiation::pup(PUP::er& p) {
