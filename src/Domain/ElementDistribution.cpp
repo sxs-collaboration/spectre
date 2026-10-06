@@ -191,6 +191,7 @@ BlockZCurveProcDistribution<Dim>::BlockZCurveProcDistribution(
   size_t element_num_of_block = 0;
   double cost_remaining = total_cost;
   size_t number_of_ignored_procs_so_far = 0;
+  size_t total_elements_left_to_distribute = num_elements;
   // distribute Elements to all but the final proc
   for (size_t i = 0; i < number_of_procs_with_elements - 1; ++i) {
     size_t global_proc_number = i + number_of_ignored_procs_so_far;
@@ -236,26 +237,46 @@ BlockZCurveProcDistribution<Dim>::BlockZCurveProcDistribution(
           num_elements_distributed_to_proc = 1;
           total_elements_distributed_to_proc = 1;
           element_num_of_block++;
+          total_elements_left_to_distribute--;
         } else {
           const double current_cost_diff =
               abs(target_cost_per_proc - cost_spent_on_proc);
           const double next_cost_diff =
               abs(target_cost_per_proc - (cost_spent_on_proc + element_cost));
 
-          if (current_cost_diff <= next_cost_diff) {
-            // if the current proc cost is closer to the target cost than if we
-            // were to add one more element, then we're done adding elements to
-            // this proc and don't add the current one
+          // This `if` skips adding the current element to the current proc if
+          // either of the following criteria are met:
+          //
+          // (1) If we have less elements left to distribute than processors
+          // left to distribute to, don't add the current element to to the
+          // current proc, and move on to the next proc. This ensures that when
+          // our total number of elements to distribute is less than our total
+          // number of procs to distribute to, we only put one element on each
+          // proc and the only unused procs are unavoidable because there are
+          // less elements than procs. It also ensures that even if we don't
+          // have less total elements than total procs, we don't leave any proc
+          // unused due to elements piling up too much on early procs and then
+          // ending up in a situation later in the element distribution loop
+          // with more procs left than elements left, leading to unused procs.
+          //
+          // (2) If the current proc cost is closer to the target cost than if
+          // we were to add one more element, then we're done adding elements to
+          // this proc and don't add the current one.
+          if ((total_elements_left_to_distribute <
+               number_of_procs_with_elements - i) or
+              (current_cost_diff <= next_cost_diff)) {
             add_more_elements_to_proc = false;
           } else {
-            // otherwise, the current proc cost is farther from the target then
-            // if we were to add one more element, so we add the current element
-            // to the current proc
+            // Otherwise, (1) we have more elements left to ditrsibute than
+            // procs left to distribute to and (2) the current proc cost is
+            // farther from the target than if we were to add one more element,
+            // so we add the current element to the current proc.
             cost_spent_on_proc += element_cost;
             cost_remaining -= element_cost;
             num_elements_distributed_to_proc++;
             total_elements_distributed_to_proc++;
             element_num_of_block++;
+            total_elements_left_to_distribute--;
           }
         }
       }
