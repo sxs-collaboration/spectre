@@ -109,7 +109,7 @@ void test_half_plane_geometry() {
       inner_radius,
       outer_radius,
       {},
-      {Distribution::Linear},
+      Distribution::Linear,
       std::array<size_t, 2>{{4, 5}},
       std::vector<size_t>{0},
       nullptr,
@@ -249,20 +249,31 @@ void test_multiple_shells() {
       build_coord_maps(inner_radius, outer_radius, radial_partitioning,
                        radial_distribution));
 
-  // A single grid-point pair is broadcast to every shell.
+  // A single grid-point pair, distribution, and refinement level are broadcast
+  // to every shell.
   const domain::creators::AngularCartoonSphere2D broadcast_creator{
       inner_radius,
       outer_radius,
       radial_partitioning,
-      radial_distribution,
+      Distribution::Logarithmic,
       std::array<size_t, 2>{{6, 9}},
-      std::vector<size_t>{1, 1, 1},
+      size_t{1},
       nullptr,
       create_boundary_condition(),
       create_boundary_condition()};
   CHECK(broadcast_creator.initial_extents() ==
         std::vector<std::array<size_t, 3>>{
             {{6, 9, 1}}, {{6, 9, 1}}, {{6, 9, 1}}});
+  CHECK(broadcast_creator.initial_refinement_levels() ==
+        std::vector<std::array<size_t, 3>>{
+            {{1, 0, 0}}, {{1, 0, 0}}, {{1, 0, 0}}});
+  test_domain_construction(
+      TestHelpers::domain::creators::test_domain_creator(broadcast_creator,
+                                                         true),
+      expected_neighbors, expected_externals,
+      build_coord_maps(
+          inner_radius, outer_radius, radial_partitioning,
+          std::vector<Distribution>(3, Distribution::Logarithmic)));
 }
 
 void test_no_boundary_conditions() {
@@ -271,7 +282,7 @@ void test_no_boundary_conditions() {
       1.0,
       3.0,
       {1.5},
-      {Distribution::Linear, Distribution::Linear},
+      std::vector<Distribution>{Distribution::Linear, Distribution::Linear},
       std::array<size_t, 2>{{4, 5}},
       std::vector<size_t>{0, 0}};
   CHECK(creator.external_boundary_conditions().empty());
@@ -282,26 +293,26 @@ void test_no_boundary_conditions() {
 
 void test_errors() {
   INFO("AngularCartoonSphere2D error conditions");
-  const Options::Context context{
-      .top_level = false, .context = {}, .line = 1, .column = 1};
+  const Options::Context context{};
   const std::array<size_t, 2> grid_points{{4, 5}};
 
   CHECK_THROWS_WITH(
       domain::creators::AngularCartoonSphere2D(
-          0.0, 2.0, {}, {Distribution::Linear}, grid_points,
+          0.0, 2.0, {}, Distribution::Linear, grid_points,
           std::vector<size_t>{0}, nullptr, nullptr, nullptr, context),
       Catch::Matchers::ContainsSubstring("InnerRadius must be positive"));
 
   CHECK_THROWS_WITH(
       domain::creators::AngularCartoonSphere2D(
-          2.0, 1.0, {}, {Distribution::Linear}, grid_points,
+          2.0, 1.0, {}, Distribution::Linear, grid_points,
           std::vector<size_t>{0}, nullptr, nullptr, nullptr, context),
       Catch::Matchers::ContainsSubstring(
           "InnerRadius must be smaller than OuterRadius"));
 
   CHECK_THROWS_WITH(
       domain::creators::AngularCartoonSphere2D(
-          1.0, 4.0, {2.0}, {Distribution::Linear, Distribution::Linear},
+          1.0, 4.0, {2.0},
+          std::vector<Distribution>{Distribution::Linear, Distribution::Linear},
           grid_points, std::vector<size_t>{0}, nullptr, nullptr, nullptr,
           context),
       Catch::Matchers::ContainsSubstring(
@@ -310,7 +321,8 @@ void test_errors() {
   CHECK_THROWS_WITH(
       domain::creators::AngularCartoonSphere2D(
           1.0, 4.0, {3.0, 2.0},
-          {Distribution::Linear, Distribution::Linear, Distribution::Linear},
+          std::vector<Distribution>{Distribution::Linear, Distribution::Linear,
+                                    Distribution::Linear},
           grid_points, std::vector<size_t>{0, 0, 0}, nullptr, nullptr, nullptr,
           context),
       Catch::Matchers::ContainsSubstring(
@@ -319,7 +331,8 @@ void test_errors() {
   CHECK_THROWS_WITH(
       domain::creators::AngularCartoonSphere2D(
           1.0, 4.0, {2.0, 2.0},
-          {Distribution::Linear, Distribution::Linear, Distribution::Linear},
+          std::vector<Distribution>{Distribution::Linear, Distribution::Linear,
+                                    Distribution::Linear},
           grid_points, std::vector<size_t>{0, 0, 0}, nullptr, nullptr, nullptr,
           context),
       Catch::Matchers::ContainsSubstring(
@@ -327,7 +340,8 @@ void test_errors() {
 
   CHECK_THROWS_WITH(
       domain::creators::AngularCartoonSphere2D(
-          1.0, 4.0, {0.5}, {Distribution::Linear, Distribution::Linear},
+          1.0, 4.0, {0.5},
+          std::vector<Distribution>{Distribution::Linear, Distribution::Linear},
           grid_points, std::vector<size_t>{0, 0}, nullptr, nullptr, nullptr,
           context),
       Catch::Matchers::ContainsSubstring(
@@ -335,7 +349,8 @@ void test_errors() {
 
   CHECK_THROWS_WITH(
       domain::creators::AngularCartoonSphere2D(
-          1.0, 4.0, {5.0}, {Distribution::Linear, Distribution::Linear},
+          1.0, 4.0, {5.0},
+          std::vector<Distribution>{Distribution::Linear, Distribution::Linear},
           grid_points, std::vector<size_t>{0, 0}, nullptr, nullptr, nullptr,
           context),
       Catch::Matchers::ContainsSubstring(
@@ -343,14 +358,16 @@ void test_errors() {
 
   CHECK_THROWS_WITH(
       domain::creators::AngularCartoonSphere2D(
-          1.0, 4.0, {2.0}, {Distribution::Linear}, grid_points,
-          std::vector<size_t>{0, 0}, nullptr, nullptr, nullptr, context),
+          1.0, 4.0, {2.0}, std::vector<Distribution>{Distribution::Linear},
+          grid_points, std::vector<size_t>{0, 0}, nullptr, nullptr, nullptr,
+          context),
       Catch::Matchers::ContainsSubstring(
           "RadialDistribution must have one entry per radial block"));
 
   CHECK_THROWS_WITH(
       domain::creators::AngularCartoonSphere2D(
-          1.0, 4.0, {2.0}, {Distribution::Linear, Distribution::Linear},
+          1.0, 4.0, {2.0},
+          std::vector<Distribution>{Distribution::Linear, Distribution::Linear},
           std::vector<std::array<size_t, 2>>{{{4, 5}}},
           std::vector<size_t>{0, 0}, nullptr, nullptr, nullptr, context),
       Catch::Matchers::ContainsSubstring(
@@ -359,17 +376,17 @@ void test_errors() {
   // An even number of azimuthal grid points is fine: unlike the full Fourier
   // basis, HalfFourier has no odd-extent requirement.
   CHECK_NOTHROW(domain::creators::AngularCartoonSphere2D(
-      1.0, 2.0, {}, {Distribution::Linear}, std::array<size_t, 2>{{4, 6}},
+      1.0, 2.0, {}, Distribution::Linear, std::array<size_t, 2>{{4, 6}},
       std::vector<size_t>{0}, nullptr, nullptr, nullptr, context));
 
   CHECK_THROWS_WITH(domain::creators::AngularCartoonSphere2D(
-                        1.0, 2.0, {}, {Distribution::Linear}, grid_points,
+                        1.0, 2.0, {}, Distribution::Linear, grid_points,
                         std::vector<size_t>{0}, nullptr,
                         create_boundary_condition(), nullptr, context),
                     Catch::Matchers::ContainsSubstring(
                         "Either both InnerBoundary and OuterBoundary"));
   CHECK_THROWS_WITH(domain::creators::AngularCartoonSphere2D(
-                        1.0, 2.0, {}, {Distribution::Linear}, grid_points,
+                        1.0, 2.0, {}, Distribution::Linear, grid_points,
                         std::vector<size_t>{0}, nullptr, nullptr,
                         create_boundary_condition(), context),
                     Catch::Matchers::ContainsSubstring(
@@ -377,7 +394,7 @@ void test_errors() {
 
   CHECK_THROWS_WITH(
       domain::creators::AngularCartoonSphere2D(
-          1.0, 2.0, {}, {Distribution::Linear}, grid_points,
+          1.0, 2.0, {}, Distribution::Linear, grid_points,
           std::vector<size_t>{0}, nullptr,
           std::make_unique<TestHelpers::domain::BoundaryConditions::
                                TestNoneBoundaryCondition<3>>(),
@@ -386,7 +403,7 @@ void test_errors() {
           "None boundary condition is not supported"));
   CHECK_THROWS_WITH(
       domain::creators::AngularCartoonSphere2D(
-          1.0, 2.0, {}, {Distribution::Linear}, grid_points,
+          1.0, 2.0, {}, Distribution::Linear, grid_points,
           std::vector<size_t>{0}, nullptr, create_boundary_condition(),
           std::make_unique<TestHelpers::domain::BoundaryConditions::
                                TestNoneBoundaryCondition<3>>(),
@@ -396,7 +413,7 @@ void test_errors() {
 
   CHECK_THROWS_WITH(
       domain::creators::AngularCartoonSphere2D(
-          1.0, 2.0, {}, {Distribution::Linear}, grid_points,
+          1.0, 2.0, {}, Distribution::Linear, grid_points,
           std::vector<size_t>{0}, nullptr,
           std::make_unique<TestHelpers::domain::BoundaryConditions::
                                TestPeriodicBoundaryCondition<3>>(),
@@ -405,7 +422,7 @@ void test_errors() {
           "Cannot have periodic boundary conditions on a 2D sphere"));
   CHECK_THROWS_WITH(
       domain::creators::AngularCartoonSphere2D(
-          1.0, 2.0, {}, {Distribution::Linear}, grid_points,
+          1.0, 2.0, {}, Distribution::Linear, grid_points,
           std::vector<size_t>{0}, nullptr, create_boundary_condition(),
           std::make_unique<TestHelpers::domain::BoundaryConditions::
                                TestPeriodicBoundaryCondition<3>>(),
@@ -450,6 +467,36 @@ void test_factory() {
   CHECK(cartoon_creator->initial_refinement_levels() ==
         std::vector<std::array<size_t, 3>>{{{1, 0, 0}}, {{2, 0, 0}}});
   check_topologies(cartoon_creator->create_domain());
+
+  // Scalar RadialDistribution and InitialRefinementInR are broadcast.
+  const auto broadcast_creator = TestHelpers::test_option_tag<
+      domain::OptionTags::DomainCreator<3>,
+      TestHelpers::domain::BoundaryConditions::
+          MetavariablesWithBoundaryConditions<
+              3, domain::creators::AngularCartoonSphere2D>>(
+      "AngularCartoonSphere2D:\n"
+      "  InnerRadius: 1.0\n"
+      "  OuterRadius: 4.0\n"
+      "  RadialPartitioning: [2.0]\n"
+      "  RadialDistribution: Linear\n"
+      "  InitialGridPoints: [4, 6]\n"
+      "  InitialRefinementInR: 1\n"
+      "  TimeDependence: None\n"
+      "  BoundaryConditions:\n"
+      "    InnerBoundary:\n"
+      "      TestBoundaryCondition:\n"
+      "        Direction: lower-xi\n"
+      "        BlockId: 0\n"
+      "    OuterBoundary:\n"
+      "      TestBoundaryCondition:\n"
+      "        Direction: lower-xi\n"
+      "        BlockId: 0\n");
+  const auto* const cartoon_broadcast_creator =
+      dynamic_cast<const domain::creators::AngularCartoonSphere2D*>(
+          broadcast_creator.get());
+  REQUIRE(cartoon_broadcast_creator != nullptr);
+  CHECK(cartoon_broadcast_creator->initial_refinement_levels() ==
+        std::vector<std::array<size_t, 3>>{{{1, 0, 0}}, {{1, 0, 0}}});
 }
 
 SPECTRE_TEST_CASE("Unit.Domain.Creators.AngularCartoonSphere2D",

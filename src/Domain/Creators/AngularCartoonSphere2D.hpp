@@ -103,18 +103,16 @@ class AngularCartoonSphere2D : public DomainCreator<3> {
 
   /// \brief Distribution of grid points in each radial block
   struct RadialDistribution {
-    using type = std::vector<domain::CoordinateMaps::Distribution>;
+    using type =
+        std::variant<domain::CoordinateMaps::Distribution,
+                     std::vector<domain::CoordinateMaps::Distribution>>;
     static constexpr Options::String help = {
         "Distribution of grid points in the radial direction for each "
-        "radial block. Must have one entry per radial block."};
+        "radial block. If one distribution is given it is applied to all "
+        "shells, otherwise specify one per shell."};
   };
 
-  /*!
-   * \brief Initial number of \f$[r, \phi]\f$ grid points in each shell
-   *
-   * \details Can be a single pair that is applied to every shell, or one pair
-   * per shell.
-   */
+  /// \brief Initial number of \f$[r, \phi]\f$ grid points in each shell
   struct InitialGridPoints {
     using type =
         std::variant<std::array<size_t, 2>, std::vector<std::array<size_t, 2>>>;
@@ -126,11 +124,12 @@ class AngularCartoonSphere2D : public DomainCreator<3> {
 
   /// \brief Initial refinement level in the radial direction of each shell
   struct InitialRefinementInR {
-    using type = std::vector<size_t>;
+    using type = std::variant<size_t, std::vector<size_t>>;
     static constexpr Options::String help = {
         "Initial refinement level in the radial direction for each radial "
-        "block. Must have one entry per radial block. The azimuthal and "
-        "Cartoon directions cannot be h-refined."};
+        "block. If one level is given it is applied to all shells, otherwise "
+        "specify one per shell. The azimuthal and Cartoon directions cannot "
+        "be h-refined."};
   };
 
   /// \brief Time dependence of the domain
@@ -242,7 +241,7 @@ class AngularCartoonSphere2D : public DomainCreator<3> {
   typename InnerRadius::type inner_radius_{};
   typename OuterRadius::type outer_radius_{};
   typename RadialPartitioning::type radial_partitioning_;
-  typename RadialDistribution::type radial_distribution_;
+  std::vector<domain::CoordinateMaps::Distribution> radial_distribution_;
   std::vector<std::array<size_t, 2>> initial_grid_points_;
   std::vector<size_t> initial_refinement_in_r_;
   std::unique_ptr<domain::creators::time_dependence::TimeDependence<3>>

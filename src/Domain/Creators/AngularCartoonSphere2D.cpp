@@ -38,6 +38,28 @@ struct BlockLogical;
 }  // namespace Frame
 
 namespace domain::creators {
+namespace {
+// Broadcasts a single value to every radial block, or checks that a
+// per-block vector has one entry per radial block.
+template <typename T>
+std::vector<T> expand_over_blocks(std::variant<T, std::vector<T>> input,
+                                  const size_t num_blocks,
+                                  const std::string& option_name,
+                                  const Options::Context& context) {
+  if (std::holds_alternative<T>(input)) {
+    return std::vector<T>(num_blocks, std::get<T>(input));
+  }
+  auto result = std::get<std::vector<T>>(std::move(input));
+  if (result.size() != num_blocks) {
+    PARSE_ERROR(context, option_name << " must have one entry per radial block "
+                                        "(num_blocks = "
+                                     << num_blocks << "), but has size "
+                                     << result.size() << ".");
+  }
+  return result;
+}
+}  // namespace
+
 AngularCartoonSphere2D::AngularCartoonSphere2D(
     const typename InnerRadius::type inner_radius,
     const typename OuterRadius::type outer_radius,
@@ -55,8 +77,6 @@ AngularCartoonSphere2D::AngularCartoonSphere2D(
     : inner_radius_(inner_radius),
       outer_radius_(outer_radius),
       radial_partitioning_(std::move(radial_partitioning)),
-      radial_distribution_(std::move(radial_distribution)),
-      initial_refinement_in_r_(std::move(initial_refinement_in_r)),
       time_dependence_(std::move(time_dependence)) {
   if (time_dependence_ == nullptr) {
     time_dependence_ =
@@ -103,13 +123,9 @@ AngularCartoonSphere2D::AngularCartoonSphere2D(
 
   num_blocks_ = 1 + radial_partitioning_.size();
 
-  if (initial_refinement_in_r_.size() != num_blocks_) {
-    PARSE_ERROR(context,
-                "InitialRefinementInR must have one entry per radial block "
-                "(num_blocks = "
-                    << num_blocks_ << "), but has size "
-                    << initial_refinement_in_r_.size() << ".");
-  }
+  initial_refinement_in_r_ =
+      expand_over_blocks(std::move(initial_refinement_in_r), num_blocks_,
+                         "InitialRefinementInR", context);
 
   if (not radial_partitioning_.empty()) {
     if (not std::ranges::is_sorted(radial_partitioning_)) {
@@ -134,29 +150,12 @@ AngularCartoonSphere2D::AngularCartoonSphere2D(
     }
   }
 
-  if (radial_distribution_.size() != num_blocks_) {
-    PARSE_ERROR(context,
-                "RadialDistribution must have one entry per radial block "
-                "(num_blocks = "
-                    << num_blocks_ << "), but has size "
-                    << radial_distribution_.size() << ".");
-  }
-
-  // Expand the grid points over the radial blocks.
-  if (std::holds_alternative<std::array<size_t, 2>>(initial_grid_points)) {
-    initial_grid_points_ = std::vector<std::array<size_t, 2>>(
-        num_blocks_, std::get<std::array<size_t, 2>>(initial_grid_points));
-  } else {
-    initial_grid_points_ =
-        std::get<std::vector<std::array<size_t, 2>>>(initial_grid_points);
-    if (initial_grid_points_.size() != num_blocks_) {
-      PARSE_ERROR(context,
-                  "InitialGridPoints must have one entry per radial block "
-                  "(num_blocks = "
-                      << num_blocks_ << "), but has size "
-                      << initial_grid_points_.size() << ".");
-    }
-  }
+  radial_distribution_ =
+      expand_over_blocks(std::move(radial_distribution), num_blocks_,
+                         "RadialDistribution", context);
+  initial_grid_points_ =
+      expand_over_blocks(std::move(initial_grid_points), num_blocks_,
+                         "InitialGridPoints", context);
 
   // Build block names and groups.
   block_names_.reserve(num_blocks_);
