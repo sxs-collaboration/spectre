@@ -61,8 +61,10 @@ def characteristic_speeds_hydro(
     y_plus = (factor + cs * d / (lorentz_factor * lorentz_factor)) / denom
     y_minus = (factor - cs * d / (lorentz_factor * lorentz_factor)) / denom
 
-    return [
-        normal_velocity,
-        float(y_plus),
-        float(y_minus),
-    ]
+    return np.array(
+        [
+            normal_velocity,
+            float(y_plus),
+            float(y_minus),
+        ]
+    )
