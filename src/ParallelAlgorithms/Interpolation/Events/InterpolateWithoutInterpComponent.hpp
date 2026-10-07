@@ -19,6 +19,7 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Index.hpp"
 #include "Domain/BlockLogicalCoordinates.hpp"
+#include "Domain/ConcentricShell.hpp"
 #include "Domain/Creators/Tags/Domain.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/ElementLogicalCoordinates.hpp"
@@ -199,24 +200,32 @@ class InterpolateWithoutInterpComponent<VolumeDim, InterpolationTargetTag,
       // mapping points that are clearly not in this element; whether a point
       // belongs to this element is decided exactly by
       // `block_logical_coordinates_single_point` and
-      // `element_logical_coordinates`. The bounds are computed from the grid
-      // points, which do not sample the full extent of curved elements (e.g.
-      // the center of a curved face is not a grid point for an even number of
-      // grid points). A point on such a face that is assigned to this element
-      // must not be filtered out here, otherwise no element sends it and the
-      // target never completes. Therefore pad the bounds by an estimate of how
-      // far the element extends beyond them, plus a small multiple of their
-      // range to account for roundoff.
+      // `element_logical_coordinates`
+      //
+      // If this element is a spherical-harmonic shell concentric with the
+      // sphere target, the radial bounds decide whether a point is in the
+      // element and the x,y,z bounds are not needed. Otherwise, the bounds
+      // are computed from the grid points, pad the bounds by an estimate of
+      // how far the element extends beyond them plus a small multiple of
+      // their range to account for roundoff.
+      const std::optional<std::pair<double, double>> shell_radial_extent =
+          domain::concentric_shell_radial_extent(dg_mesh, radii);
       const auto roundoff = [](const std::pair<double, double>& bounds) {
         return (bounds.second - bounds.first) *
                std::numeric_limits<double>::epsilon() * 100.0;
       };
-      const double radius_padding = domain::extrema_padding(dg_mesh, radii) +
-                                    roundoff(gsl::at(min_max_coordinates, 3));
-      const double min_radius =
-          std::max(gsl::at(min_max_coordinates, 3).first - radius_padding, 0.0);
-      const double max_radius =
-          gsl::at(min_max_coordinates, 3).second + radius_padding;
+      double min_radius = 0.0;
+      double max_radius = 0.0;
+      if (shell_radial_extent.has_value()) {
+        min_radius = shell_radial_extent->first;
+        max_radius = shell_radial_extent->second;
+      } else {
+        const double radius_padding = domain::extrema_padding(dg_mesh, radii) +
+                                      roundoff(gsl::at(min_max_coordinates, 3));
+        min_radius = std::max(
+            gsl::at(min_max_coordinates, 3).first - radius_padding, 0.0);
+        max_radius = gsl::at(min_max_coordinates, 3).second + radius_padding;
+      }
       size_t offset_index = 0;
       // Check if any radii of the target are within the radii of our element
       for (double radius : radii_of_sphere_target) {
@@ -242,8 +251,10 @@ class InterpolateWithoutInterpComponent<VolumeDim, InterpolationTargetTag,
         return;
       }
 
-      // Get the padded x,y,z bounds
-      for (size_t i = 0; i < VolumeDim; i++) {
+      // Get the padded x,y,z bounds. A concentric shell covers all angles, so
+      // it doesn't need them.
+      const bool check_cartesian_bounds = not shell_radial_extent.has_value();
+      for (size_t i = 0; check_cartesian_bounds and i < VolumeDim; i++) {
         const auto [min, max] = alg::minmax_element(coordinates.get(i));
         gsl::at(min_max_coordinates, i).first = *min;
         gsl::at(min_max_coordinates, i).second = *max;
@@ -286,8 +297,9 @@ class InterpolateWithoutInterpComponent<VolumeDim, InterpolationTargetTag,
         for (size_t i = 0; i < VolumeDim; i++) {
           const double coord = target_points_to_check.get(i)[index];
           // If a point is outside any of the padded bounding box, skip it
-          if (coord < gsl::at(min_max_coordinates, i).first or
-              coord > gsl::at(min_max_coordinates, i).second) {
+          if (check_cartesian_bounds and
+              (coord < gsl::at(min_max_coordinates, i).first or
+               coord > gsl::at(min_max_coordinates, i).second)) {
             skip_point = true;
             break;
           }
