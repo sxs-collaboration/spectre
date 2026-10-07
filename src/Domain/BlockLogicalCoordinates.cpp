@@ -3,6 +3,7 @@
 
 #include "Domain/BlockLogicalCoordinates.hpp"
 
+#include <cmath>
 #include <cstddef>
 #include <vector>
 
@@ -13,6 +14,7 @@
 #include "Domain/Domain.hpp"
 #include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
 #include "Domain/Structure/BlockId.hpp"
+#include "Utilities/Algorithm.hpp"
 #include "Utilities/EqualWithinRoundoff.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
@@ -155,10 +157,8 @@ BlockLogicalCoords<Dim> block_logical_coordinates_single_point(
     const std::optional<gsl::not_null<std::vector<size_t>*>> block_order) {
   // Check which block this point is in. Each point will be in one
   // and only one block, unless it is on a shared boundary.  In that
-  // case, choose the first matching block (and this block will have
-  // the smallest block_id).
-  // In case a block_order is provided, it is no longer guaranteed that the
-  // block with the smallest block_id is chosen.
+  // case, choose the matching block with the smallest block_id (also when a
+  // block_order is provided, see below).
   if (block_order.has_value() and block_order.value()->empty()) {
     // If the block order is empty, fill it with the list of blocks in the
     // domain
@@ -171,14 +171,42 @@ BlockLogicalCoords<Dim> block_logical_coordinates_single_point(
   ASSERT(num_blocks <= domain.blocks().size(),
          "The block order has more entries than the domain has blocks.");
   for (size_t i = 0; i < num_blocks; ++i) {
-    const size_t block_id =
-        block_order.has_value() ? (*block_order.value())[i] : i;
+    size_t block_id = block_order.has_value() ? (*block_order.value())[i] : i;
     ASSERT(block_id < domain.blocks().size(),
            "Block ID " << block_id << " is out of bounds.");
-    const auto& block = domain.blocks()[block_id];
     auto x_logical = block_logical_coordinates_single_point(
-        input_point, block, time, functions_of_time);
+        input_point, domain.blocks()[block_id], time, functions_of_time);
     if (x_logical.has_value()) {
+      // A point on a shared block boundary must be assigned to the block with
+      // the smallest ID, independent of the block order. Otherwise the result
+      // depends on the order in which points are processed (through the updates
+      // to the block order below), which makes interpolation nondeterministic
+      // because fields can be discontinuous across block boundaries. So if the
+      // point is on a face of this block (points within roundoff of a face were
+      // snapped to it above), check the blocks with smaller IDs first.
+      if (block_order.has_value() and block_id > 0 and
+          alg::any_of(*x_logical, [](const double x_logical_component) {
+            return abs(x_logical_component) == 1.0;
+          })) {
+        for (size_t lower_block_id = 0; lower_block_id < block_id;
+             ++lower_block_id) {
+          // Respect a block order that is restricted to a subset of blocks
+          if (num_blocks < domain.blocks().size() and
+              not alg::found(*block_order.value(), lower_block_id)) {
+            continue;
+          }
+          auto x_logical_in_lower_block =
+              block_logical_coordinates_single_point(
+                  input_point, domain.blocks()[lower_block_id], time,
+                  functions_of_time);
+          if (x_logical_in_lower_block.has_value()) {
+            block_id = lower_block_id;
+            x_logical = std::move(x_logical_in_lower_block);
+            break;
+          }
+        }
+      }
+      const auto& block = domain.blocks()[block_id];
       if (block_order.has_value()) {
         // Push this block to the front of the priority order
         auto& order = *block_order.value();
