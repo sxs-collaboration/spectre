@@ -444,7 +444,6 @@ class BinaryCompactObject : public DomainCreator<3> {
   struct InitialRefinement {
     using type = std::variant<
         size_t, std::array<size_t, 3>, std::vector<std::array<size_t, 3>>,
-        std::unordered_map<std::string, std::array<size_t, 3>>,
         std::unordered_map<std::string,
                            std::variant<std::array<size_t, 3>, size_t>>>;
     static constexpr Options::String help = {
