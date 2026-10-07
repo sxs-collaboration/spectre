@@ -45,6 +45,7 @@ struct ScalarFieldTag : db::SimpleTag {
 struct System {
   static constexpr size_t volume_dim = 1;
   using primal_fields = tmpl::list<ScalarFieldTag>;
+  using background_fields = tmpl::list<>;
 };
 
 struct Background : elliptic::analytic_data::Background {
