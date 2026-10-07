@@ -234,7 +234,7 @@ the dynamically calculated threshold for the Taylor series expansion,
 which is used to start the integration of the TOV equations at a small
 radius away from the center of the star.
 */
-double third_order_u_estimate(
+std::vector<double> third_order_estimate(
     const double central_log_enthalpy, const double d2edp2,
     const EquationsOfState::EquationOfState<true, 1>& equation_of_state) {
   const double specific_enthalpy = std::exp(central_log_enthalpy);
@@ -280,49 +280,11 @@ double third_order_u_estimate(
                        765.0 * central_pressure)) /
                          (700.0 * M_PI * std::pow(sum_ec_3pc, 3));
 
-  return u_3;
-}
-
-double third_order_v(
-    const double central_log_enthalpy,
-    const EquationsOfState::EquationOfState<true, 1>& equation_of_state) {
-  const double specific_enthalpy = std::exp(central_log_enthalpy);
-  const double central_rest_mass_density =  // get rmd at center
-      specific_enthalpy == 1.0
-          ? 0.0
-          : get(equation_of_state.rest_mass_density_from_enthalpy(
-                Scalar<double>{std::exp(central_log_enthalpy)}));
-
-  const double central_pressure =
-      specific_enthalpy == 1.0  // get pressure at center
-          ? 0.0
-          : get(equation_of_state.pressure_from_density(
-                Scalar<double>{central_rest_mass_density}));
-
-  const double central_energy_density =  // get energy density at center
-      std::exp(central_log_enthalpy) * central_rest_mass_density -
-      central_pressure;
-
-  const double
-      central_specific_internal_energy =  // get specific internal energy
-      get(equation_of_state.specific_internal_energy_from_density(
-          Scalar<double>{central_rest_mass_density}));
-
-  const double sound_speed_squared = get(hydro::sound_speed_squared(
-      Scalar<double>{central_rest_mass_density},
-      Scalar<double>{central_specific_internal_energy},
-      Scalar<double>{std::exp(central_log_enthalpy)}, equation_of_state));
-  const double dedp = 1.0 / sound_speed_squared;
-  const double e_1 = -dedp * (central_energy_density + central_pressure);
-  const double sum_ec_3pc = central_energy_density + 3.0 * central_pressure;
-
-  // the v_3 coefficient does not depend on the second order derivative.
   const double v_3 =
       (central_energy_density *
        (3.0 * central_pressure - 5.0 * central_energy_density)) /
           (3.0 * std::pow(sum_ec_3pc, 2)) +
-      (2.0 * (2.0 * central_energy_density + 9.0 * central_pressure) *
-       central_energy_density) /
+      (2.0 * (2.0 * central_energy_density + 9.0 * central_pressure) * e_2) /
           (7.0 * std::pow(sum_ec_3pc, 2)) -
       (5.0 *
            (46.0 * std::pow(central_energy_density, 2) +
@@ -333,7 +295,7 @@ double third_order_v(
            std::pow(e_1, 2)) /
           (175.0 * std::pow(sum_ec_3pc, 3));
 
-  return v_3;
+  return {u_3, v_3};
 }
 
 /*This function calculates a fallback threshold for
@@ -357,76 +319,51 @@ double fallback_thresh(
 
   const double u_thresh = std::abs(u_1 / (2 * u_2)) * eps;
   const double v_thresh = std::abs(v_1 / (2 * v_2)) * eps;
+
   return std::min(u_thresh, v_thresh);
 }
 /*This function calculates the third-order threshold or returns
 nullopt if the threshold is invalid.
 */
-std::optional<double> find_u_thresh(
+std::optional<double> find_thresh(
     const std::pair<std::vector<double>, std::vector<double>>&
         expansion_coeffs_result,
-    const double& third_order_u_estimate_result, const double eps) {
+    const std::vector<double>& third_order_estimate_result, const double eps) {
   const double u_1 = expansion_coeffs_result.first[0];
   const double u_2 = expansion_coeffs_result.first[1];
-  const double u_3 = third_order_u_estimate_result;
-
-  if (u_3 == 0.0) {
-    // calling real_roots with a=0 will throw an error, so we
-    // return nullopt if u_3 is zero, which means
-    // the third-order estimate is invalid and we should use the
-    // fallback threshold instead.
-    return std::nullopt;
-  } else {
-    // Use the quadratic equation solver to find the threshold
-    const double u_a = 3 * std::abs(u_3);
-    const double u_b = -2 * std::abs(u_2) * eps;
-    const double u_c = -std::abs(u_1) * eps;
-    // since product of roots is u_c/u_a < 0 for all expansion coefficients,
-    // the roots will always be real and of opposite sign, so we can use the
-    // real_roots function to find the roots of the quadratic equation.
-    // real_roots returns roots in increasing order, so the first root is the
-    // negative root and the second root is the positive root, which is the
-    // threshold we want to return.
-
-    std::optional<std::array<double, 2>> u_roots = real_roots(u_a, u_b, u_c);
-
-    if (u_roots.has_value() and u_roots.value()[1] > 0) {
-      const double u_thresh = u_roots.value()[1];  // positive root
-      return u_thresh;
-    } else {
-      return std::nullopt;
-    }
-  }
-}
-
-std::optional<double> find_v_thresh(
-    const std::pair<std::vector<double>, std::vector<double>>&
-        expansion_coeffs_result,
-    const double& third_order_v_result, const double eps) {
+  const double u_3 = third_order_estimate_result[0];
   const double v_1 = expansion_coeffs_result.second[0];
   const double v_2 = expansion_coeffs_result.second[1];
-  const double v_3 = third_order_v_result;
+  const double v_3 = third_order_estimate_result[1];
 
-  if (v_3 == 0.0) {
-    // calling real_roots with a=0 will throw an error, so we
-    // return nullopt if either u_3 or v_3 is zero, which means
-    // the third-order estimate is invalid and we should use the
-    // fallback threshold instead.
-    return std::nullopt;
-  } else {
-    const double v_a = 3 * std::abs(v_3);
-    const double v_b = -2 * std::abs(v_2) * eps;
-    const double v_c = -std::abs(v_1) * eps;
-    // same logic as above for the v roots
+  // Use the quadratic equation solver to find the threshold
+  const double u_a = 3 * std::abs(u_3);
+  const double u_b = -2 * std::abs(u_2) * eps;
+  const double u_c = -std::abs(u_1) * eps;
 
-    std::optional<std::array<double, 2>> v_roots = real_roots(v_a, v_b, v_c);
+  std::optional<std::array<double, 2>> u_roots = real_roots(u_a, u_b, u_c);
 
-    if (v_roots.has_value() and v_roots.value()[1] > 0) {
-      const double v_thresh = v_roots.value()[1];  // positive root
-      return v_thresh;
-    } else {
+  const double v_a = 3 * std::abs(v_3);
+  const double v_b = -2 * std::abs(v_2) * eps;
+  const double v_c = -std::abs(v_1) * eps;
+
+  std::optional<std::array<double, 2>> v_roots = real_roots(v_a, v_b, v_c);
+
+  if (u_roots.has_value() and v_roots.has_value()) {
+    if (u_roots.value()[0] < 0.0 and u_roots.value()[1] < 0.0) {
+      // If both roots are negative, return nullopt
       return std::nullopt;
     }
+    if (v_roots.value()[0] < 0.0 and v_roots.value()[1] < 0.0) {
+      return std::nullopt;
+    }
+    const double u_thresh =
+        std::min(std::abs(u_roots.value()[0]), std::abs(u_roots.value()[1]));
+    const double v_thresh =
+        std::min(std::abs(v_roots.value()[0]), std::abs(v_roots.value()[1]));
+    return std::min(u_thresh, v_thresh);
+  } else {
+    return std::nullopt;
   }
 }
 
@@ -594,14 +531,11 @@ void TovSolution::integrate(
         const double d2edp2_richardson =
             (expected_ratio * d2edp2_2 - d2edp2_1) / (expected_ratio - 1.0);
 
-        const double third_order_u_val = third_order_u_estimate(
+        const auto third_order_vals = third_order_estimate(
             central_log_enthalpy, d2edp2_richardson, equation_of_state);
-        const double third_order_v_val =
-            third_order_v(central_log_enthalpy, equation_of_state);
 
-        std::optional<double> thresh_O3 = std::min(
-            find_u_thresh(expansion_coeffs_result, third_order_u_val, eps),
-            find_v_thresh(expansion_coeffs_result, third_order_v_val, eps));
+        std::optional<double> thresh_O3 =
+            find_thresh(expansion_coeffs_result, third_order_vals, eps);
 
         // if the threshold is not valid, we use the fallback threshold instead.
         // we check that the estimate of the threshold is positive and greater
