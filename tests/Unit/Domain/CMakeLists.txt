@@ -13,6 +13,7 @@ set(LIBRARY_SOURCES
   Test_BlockAndElementLogicalCoordinates.cpp
   Test_BoundaryVariables.cpp
   Test_BoundaryVariablesTag.cpp
+  Test_ConcentricShell.cpp
   Test_CoordinatesTag.cpp
   Test_CoordsToDifferentFrame.cpp
   Test_CreateInitialElement.cpp
