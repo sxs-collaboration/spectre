@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include <algorithm>
 #include <array>
 #include <cstddef>
 #include <limits>
@@ -21,12 +22,14 @@
 #include "Domain/Creators/Tags/Domain.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/ElementLogicalCoordinates.hpp"
+#include "Domain/ExtremaPadding.hpp"
 #include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
 #include "Domain/Structure/BlockId.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Tags.hpp"
 #include "IO/Logging/Verbosity.hpp"
 #include "NumericalAlgorithms/Interpolation/IrregularInterpolant.hpp"
+#include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Options/String.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
@@ -120,7 +123,7 @@ class InterpolateWithoutInterpComponent<VolumeDim, InterpolationTargetTag,
       typename InterpolationTargetTag::temporal_id,
       Tags::PointInfo<InterpolationTargetTag, tmpl::size_t<VolumeDim>>,
       ::Events::Tags::ObserverMesh<VolumeDim>,
-      // We always grab the DG coords because we use them to create a
+      // We always grab the DG mesh and coords because we use them to create a
       // bounding box for the sphere target optimization. DG coords
       // have points on the boundary, while FD coords don't. If we
       // had used FD coords, it's possible a target point would fall
@@ -128,13 +131,14 @@ class InterpolateWithoutInterpComponent<VolumeDim, InterpolationTargetTag,
       // would be outside our bounding box, and thus wouldn't get
       // interpolated to. We avoid this by always using DG coords,
       // even if the mesh is FD.
+      domain::Tags::Mesh<VolumeDim>,
       domain::Tags::Coordinates<VolumeDim, frame>, SourceVarTags...>;
 
   template <typename ParallelComponent, typename Metavariables>
   void operator()(
       const typename InterpolationTargetTag::temporal_id::type& temporal_id,
       const tnsr::I<DataVector, VolumeDim, frame>& all_target_points,
-      const Mesh<VolumeDim>& mesh,
+      const Mesh<VolumeDim>& mesh, const Mesh<VolumeDim>& dg_mesh,
       const tnsr::I<DataVector, VolumeDim, frame> coordinates,
       const typename SourceVarTags::type&... source_vars_input,
       Parallel::GlobalCache<Metavariables>& cache,
@@ -162,22 +166,23 @@ class InterpolateWithoutInterpComponent<VolumeDim, InterpolationTargetTag,
                       typename InterpolationTargetTag::compute_target_points>) {
       static_assert(VolumeDim == 3,
                     "Sphere target can only be used for VolumeDim = 3.");
-      // Extremum for x, y, z, r
+      // Extrema of x, y, z, and the radius r from the center of the sphere
       std::array<std::pair<double, double>, 4> min_max_coordinates{};
 
       const auto& sphere =
           Parallel::get<Tags::Sphere<InterpolationTargetTag>>(cache);
       const std::array<double, 3>& center = sphere.center;
 
-      // Calculate r^2 from center of sphere because sqrt is expensive
-      DataVector radii_squared{get<0>(coordinates).size(), 0.0};
+      // Calculate r from center of sphere
+      DataVector radii{get<0>(coordinates).size(), 0.0};
       for (size_t i = 0; i < VolumeDim; i++) {
-        radii_squared += square(coordinates.get(i) - gsl::at(center, i));
+        radii += square(coordinates.get(i) - gsl::at(center, i));
       }
+      radii = sqrt(radii);
 
       // Compute min and max
       {
-        const auto [min, max] = alg::minmax_element(radii_squared);
+        const auto [min, max] = alg::minmax_element(radii);
         min_max_coordinates[3].first = *min;
         min_max_coordinates[3].second = *max;
       }
@@ -190,18 +195,32 @@ class InterpolateWithoutInterpComponent<VolumeDim, InterpolationTargetTag,
       // second size_t = total bounds to use/check
       std::optional<std::pair<size_t, size_t>> offset_and_num_points{};
 
-      // Have a very small buffer just in case of roundoff
-      double epsilon =
-          (min_max_coordinates[3].second - min_max_coordinates[3].first) *
-          std::numeric_limits<double>::epsilon() * 100.0;
+      // The radial and x,y,z bounds below are only a cheap filter to avoid
+      // mapping points that are clearly not in this element; whether a point
+      // belongs to this element is decided exactly by
+      // `block_logical_coordinates_single_point` and
+      // `element_logical_coordinates`. The bounds are computed from the grid
+      // points, which do not sample the full extent of curved elements (e.g.
+      // the center of a curved face is not a grid point for an even number of
+      // grid points). A point on such a face that is assigned to this element
+      // must not be filtered out here, otherwise no element sends it and the
+      // target never completes. Therefore pad the bounds by an estimate of how
+      // far the element extends beyond them, plus a small multiple of their
+      // range to account for roundoff.
+      const auto roundoff = [](const std::pair<double, double>& bounds) {
+        return (bounds.second - bounds.first) *
+               std::numeric_limits<double>::epsilon() * 100.0;
+      };
+      const double radius_padding = domain::extrema_padding(dg_mesh, radii) +
+                                    roundoff(gsl::at(min_max_coordinates, 3));
+      const double min_radius =
+          std::max(gsl::at(min_max_coordinates, 3).first - radius_padding, 0.0);
+      const double max_radius =
+          gsl::at(min_max_coordinates, 3).second + radius_padding;
       size_t offset_index = 0;
       // Check if any radii of the target are within the radii of our element
       for (double radius : radii_of_sphere_target) {
-        const double square_radius = square(radius);
-        if (square_radius >=
-                (gsl::at(min_max_coordinates, 3).first - epsilon) and
-            square_radius <=
-                (gsl::at(min_max_coordinates, 3).second + epsilon)) {
+        if (radius >= min_radius and radius <= max_radius) {
           if (offset_and_num_points.has_value()) {
             offset_and_num_points->second += number_of_angular_points;
           } else {
@@ -223,11 +242,16 @@ class InterpolateWithoutInterpComponent<VolumeDim, InterpolationTargetTag,
         return;
       }
 
-      // Get the x,y,z bounds
+      // Get the padded x,y,z bounds
       for (size_t i = 0; i < VolumeDim; i++) {
         const auto [min, max] = alg::minmax_element(coordinates.get(i));
         gsl::at(min_max_coordinates, i).first = *min;
         gsl::at(min_max_coordinates, i).second = *max;
+        const double padding =
+            domain::extrema_padding(dg_mesh, coordinates.get(i)) +
+            roundoff(gsl::at(min_max_coordinates, i));
+        gsl::at(min_max_coordinates, i).first -= padding;
+        gsl::at(min_max_coordinates, i).second += padding;
       }
 
       const tnsr::I<DataVector, VolumeDim, frame> target_points_to_check{};
@@ -261,12 +285,9 @@ class InterpolateWithoutInterpComponent<VolumeDim, InterpolationTargetTag,
         skip_point = false;
         for (size_t i = 0; i < VolumeDim; i++) {
           const double coord = target_points_to_check.get(i)[index];
-          epsilon = (gsl::at(min_max_coordinates, i).second -
-                     gsl::at(min_max_coordinates, i).first) *
-                    std::numeric_limits<double>::epsilon() * 100.0;
-          // If a point is outside any of the bounding box, skip it
-          if (coord < (gsl::at(min_max_coordinates, i).first - epsilon) or
-              coord > (gsl::at(min_max_coordinates, i).second + epsilon)) {
+          // If a point is outside any of the padded bounding box, skip it
+          if (coord < gsl::at(min_max_coordinates, i).first or
+              coord > gsl::at(min_max_coordinates, i).second) {
             skip_point = true;
             break;
           }

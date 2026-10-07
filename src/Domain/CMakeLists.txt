@@ -20,6 +20,7 @@ spectre_target_sources(
   ElementMap.cpp
   ElementToBlockLogicalMap.cpp
   ExcisionSphere.cpp
+  ExtremaPadding.cpp
   FaceNormal.cpp
   FlatLogicalMetric.cpp
   InterfaceLogicalCoordinates.cpp
@@ -49,6 +50,7 @@ spectre_target_headers(
   ElementMap.hpp
   ElementToBlockLogicalMap.hpp
   ExcisionSphere.hpp
+  ExtremaPadding.hpp
   FaceNormal.hpp
   FlatLogicalMetric.hpp
   InterfaceComputeTags.hpp
