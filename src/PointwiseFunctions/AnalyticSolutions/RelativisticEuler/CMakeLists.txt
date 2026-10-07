@@ -38,6 +38,8 @@ target_link_libraries(
   HydroSolutions
   Options
   Serialization
+  PRIVATE
+  RootFinding
   )
 
 add_subdirectory(Python)
