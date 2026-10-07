@@ -304,22 +304,12 @@ struct SetLocalMortarData {
 
         const TimeStepId past_time_step_id{true, 3,
                                            Time{Slab{0.2, 3.4}, {1, 4}}};
-        // In LTS, pass an incorrect slab end for the east element to
-        // simulate the slab size changing.  This previously caused
-        // a bug when a slab-size change happened at a time only
-        // needed on the remote side.
-        const auto remote_past_time_step_id =
-            LocalTimeStepping
-                ? direction == Direction<Metavariables::volume_dim>::upper_xi()
-                      ? TimeStepId{true, 3, Time{Slab{0.2, 1.3}, {0, 4}}}
-                      : past_time_step_id
-                : time_step_id;
         db::mutate<evolution::dg::Tags::MortarNextTemporalId<
             Metavariables::volume_dim>>(
-            [&mortar_id, &remote_past_time_step_id](
-                const auto mortar_next_temporal_id_ptr) {
+            [&mortar_id, &past_time_step_id,
+             &time_step_id](const auto mortar_next_temporal_id_ptr) {
               mortar_next_temporal_id_ptr->at(mortar_id) =
-                  remote_past_time_step_id;
+                  LocalTimeStepping ? past_time_step_id : time_step_id;
             },
             make_not_null(&box));
         if (LocalTimeStepping) {
@@ -583,7 +573,10 @@ void test_impl(const Spectral::Quadrature quadrature,
   // higher-order on the element doing nontrivial LTS to test that the
   // correct TimeStepId is stored in the history, as at slab
   // boundaries only the local TimeStepId is used for equal-order
-  // boundaries.
+  // boundaries.  This should no longer be an issue, as previously the
+  // TimeStepId stored in the MortarNextTemporalId could have the
+  // wrong slab, but this is now fixed, but it doesn't complicate the
+  // test much so it is left in.
   const size_t common_integration_order = 2;
   const size_t east_integration_order = 3;
   const TimeSteppers::AdamsBashforth time_stepper{std::nullopt};
@@ -702,13 +695,13 @@ void test_impl(const Spectral::Quadrature quadrature,
   const TimeStepId local_next_time_step_id{true, 3,
                                            Time{Slab{0.2, 3.4}, {3, 4}}};
   const std::vector<TimeStepId> east_id_time_steps{
-      {true, 3, Time{Slab{0.2, 3.4}, {0, 8}}},
       {true, 3, Time{Slab{0.2, 3.4}, {2, 8}}},
+      {true, 3, Time{Slab{0.2, 3.4}, {3, 8}}},
       {true, 3, Time{Slab{0.2, 3.4}, {4, 8}}},
       {true, 3, Time{Slab{0.2, 3.4}, {5, 8}}},
       {true, 3, Time{Slab{0.2, 3.4}, {6, 8}}}};
   const std::vector<TimeStepId> east_id_next_time_steps{
-      {true, 3, Time{Slab{0.2, 3.4}, {2, 8}}},
+      {true, 3, Time{Slab{0.2, 3.4}, {3, 8}}},
       {true, 3, Time{Slab{0.2, 3.4}, {4, 8}}},
       {true, 3, Time{Slab{0.2, 3.4}, {5, 8}}},
       {true, 3, Time{Slab{0.2, 3.4}, {6, 8}}},
