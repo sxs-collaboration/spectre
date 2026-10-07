@@ -29,6 +29,7 @@
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Tags.hpp"
 #include "IO/Logging/Verbosity.hpp"
+#include "NumericalAlgorithms/Interpolation/InterpolateOnSphericalShell.hpp"
 #include "NumericalAlgorithms/Interpolation/IrregularInterpolant.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Options/String.hpp"
@@ -147,6 +148,7 @@ class InterpolateWithoutInterpComponent<VolumeDim, InterpolationTargetTag,
       const ParallelComponent* const /*meta*/,
       const ObservationValue& /*observation_value*/) const {
     std::vector<BlockLogicalCoords<VolumeDim>> block_logical_coords{};
+    [[maybe_unused]] bool use_spherical_shell_interpolation = false;
 
     std::stringstream ss{};
     ss << std::setprecision(std::numeric_limits<double>::digits10 + 4)
@@ -274,6 +276,8 @@ class InterpolateWithoutInterpComponent<VolumeDim, InterpolationTargetTag,
                         all_target_points.get(i), offset_and_num_points->first,
                         offset_and_num_points->second);
       }
+
+      use_spherical_shell_interpolation = shell_radial_extent.has_value();
 
       // To break out of inner loop and skip the point
       bool skip_point = false;
@@ -416,11 +420,20 @@ class InterpolateWithoutInterpComponent<VolumeDim, InterpolationTargetTag,
                                     source_vars_input)...);
     }
 
-    // 2. Set up interpolator
-    intrp::Irregular<VolumeDim> interpolator(
-        mesh, element_coord_holder.element_logical_coords);
+    // 2. Interpolate
+    auto interpolated_vars = [&]() {
+      if constexpr (VolumeDim == 3) {
+        if (use_spherical_shell_interpolation) {
+          return intrp::interpolate_on_spherical_shell(
+              interp_vars, mesh, element_coord_holder.element_logical_coords);
+        }
+      }
+      return intrp::Irregular<VolumeDim>(
+                 mesh, element_coord_holder.element_logical_coords)
+          .interpolate(interp_vars);
+    }();
 
-    // 3. Interpolate and send interpolated data to target
+    // 3. Send interpolated data to target
     auto& receiver_proxy = Parallel::get_parallel_component<
         InterpolationTarget<Metavariables, InterpolationTargetTag>>(cache);
     Parallel::simple_action<
@@ -428,7 +441,7 @@ class InterpolateWithoutInterpComponent<VolumeDim, InterpolationTargetTag,
         receiver_proxy,
         std::vector<Variables<
             typename InterpolationTargetTag::vars_to_interpolate_to_target>>(
-            {interpolator.interpolate(interp_vars)}),
+            {std::move(interpolated_vars)}),
         block_logical_coords,
         std::vector<std::vector<size_t>>({element_coord_holder.offsets}),
         temporal_id);
