@@ -8,6 +8,7 @@
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "IO/H5/AccessType.hpp"
+#include "IO/H5/Dat.hpp"
 #include "IO/H5/File.hpp"
 #include "IO/Observer/Helpers.hpp"
 #include "IO/Observer/Tags.hpp"
