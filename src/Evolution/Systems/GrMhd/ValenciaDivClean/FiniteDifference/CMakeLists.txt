@@ -7,6 +7,7 @@ spectre_target_sources(
   MonotonicityPreserving5.cpp
   MonotonisedCentral.cpp
   PositivityPreservingAdaptiveOrder.cpp
+  Ppm.cpp
   Reconstructor.cpp
   RegisterDerivedWithCharm.cpp
   Wcns5z.cpp
@@ -22,6 +23,7 @@ spectre_target_headers(
   MonotonicityPreserving5.hpp
   MonotonisedCentral.hpp
   PositivityPreservingAdaptiveOrder.hpp
+  Ppm.hpp
   Reconstructor.hpp
   ReconstructWork.hpp
   ReconstructWork.tpp

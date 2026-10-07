@@ -1,0 +1,147 @@
+// Distributed under the MIT License.
+// See LICENSE.txt for details.
+
+#pragma once
+
+#include <array>
+#include <cstddef>
+#include <memory>
+#include <utility>
+
+#include "DataStructures/DataBox/PrefixHelpers.hpp"
+#include "DataStructures/DataBox/Prefixes.hpp"
+#include "DataStructures/Tensor/TypeAliases.hpp"
+#include "Domain/Structure/DirectionalIdMap.hpp"
+#include "Domain/Tags.hpp"
+#include "Evolution/DgSubcell/Tags/GhostDataForReconstruction.hpp"
+#include "Evolution/DgSubcell/Tags/Mesh.hpp"
+#include "Evolution/Systems/GrMhd/ValenciaDivClean/FiniteDifference/ReconstructWork.hpp"
+#include "Evolution/Systems/GrMhd/ValenciaDivClean/FiniteDifference/Reconstructor.hpp"
+#include "Evolution/Systems/GrMhd/ValenciaDivClean/Tags.hpp"
+#include "Options/String.hpp"
+#include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
+#include "PointwiseFunctions/Hydro/Tags.hpp"
+#include "Utilities/Serialization/CharmPupable.hpp"
+#include "Utilities/TMPL.hpp"
+
+/// \cond
+class DataVector;
+template <size_t Dim>
+class Direction;
+template <size_t Dim>
+class Element;
+template <size_t Dim>
+class ElementId;
+namespace EquationsOfState {
+template <bool IsRelativistic, size_t ThermodynamicDim>
+class EquationOfState;
+}  // namespace EquationsOfState
+template <size_t Dim>
+class Mesh;
+namespace gsl {
+template <typename T>
+class not_null;
+}  // namespace gsl
+namespace PUP {
+class er;
+}  // namespace PUP
+template <typename TagsList>
+class Variables;
+namespace evolution::dg::subcell {
+class GhostData;
+}  // namespace evolution::dg::subcell
+/// \endcond
+
+namespace grmhd::ValenciaDivClean::fd {
+/*!
+ * \brief PPM (Piecewise Parabolic Method) reconstruction. See
+ * ::fd::reconstruction::ppm() for details.
+ */
+class PpmPrim : public Reconstructor {
+ private:
+  // pressure -> temperature
+  using prims_to_reconstruct_tags =
+      tmpl::list<hydro::Tags::RestMassDensity<DataVector>,
+                 hydro::Tags::ElectronFraction<DataVector>,
+                 hydro::Tags::Temperature<DataVector>,
+                 hydro::Tags::LorentzFactorTimesSpatialVelocity<DataVector, 3>,
+                 hydro::Tags::MagneticField<DataVector, 3>,
+                 hydro::Tags::DivergenceCleaningField<DataVector>>;
+
+ public:
+  static constexpr size_t dim = 3;
+
+  struct ReconstructRhoTimesTemperature {
+    using type = bool;
+    static constexpr Options::String help = {
+        "If 'true' then we reconstruct the rho*T, if 'false' we reconstruct "
+        "T."};
+  };
+
+  using options = tmpl::list<ReconstructRhoTimesTemperature>;
+  static constexpr Options::String help{
+      "PPM (Piecewise Parabolic Method) reconstruction scheme using primitive "
+      "variables."};
+
+  PpmPrim() = default;
+  PpmPrim(PpmPrim&&) = default;
+  PpmPrim& operator=(PpmPrim&&) = default;
+  PpmPrim(const PpmPrim&) = default;
+  PpmPrim& operator=(const PpmPrim&) = default;
+  ~PpmPrim() override = default;
+
+  explicit PpmPrim(bool reconstruct_rho_times_temperature);
+
+  explicit PpmPrim(CkMigrateMessage* msg);
+
+  WRAPPED_PUPable_decl_base_template(Reconstructor, PpmPrim);
+
+  auto get_clone() const -> std::unique_ptr<Reconstructor> override;
+
+  static constexpr bool use_adaptive_order = false;
+
+  void pup(PUP::er& p) override;
+
+  size_t ghost_zone_size() const override { return 2; }
+
+  using reconstruction_argument_tags =
+      tmpl::list<::Tags::Variables<hydro::grmhd_tags<DataVector>>,
+                 hydro::Tags::GrmhdEquationOfState, domain::Tags::Element<dim>,
+                 evolution::dg::subcell::Tags::GhostDataForReconstruction<dim>,
+                 evolution::dg::subcell::Tags::Mesh<dim>>;
+
+  template <size_t ThermodynamicDim>
+  void reconstruct(
+      gsl::not_null<std::array<Variables<tags_list_for_reconstruct>, dim>*>
+          vars_on_lower_face,
+      gsl::not_null<std::array<Variables<tags_list_for_reconstruct>, dim>*>
+          vars_on_upper_face,
+      const Variables<hydro::grmhd_tags<DataVector>>& volume_prims,
+      const EquationsOfState::EquationOfState<true, ThermodynamicDim>& eos,
+      const Element<dim>& element,
+      const DirectionalIdMap<dim, evolution::dg::subcell::GhostData>&
+          ghost_data,
+      const Mesh<dim>& subcell_mesh) const;
+
+  /// Called by an element doing DG when the neighbor is doing subcell.
+  template <size_t ThermodynamicDim>
+  void reconstruct_fd_neighbor(
+      gsl::not_null<Variables<tags_list_for_reconstruct>*> vars_on_face,
+      const Variables<hydro::grmhd_tags<DataVector>>& subcell_volume_prims,
+      const EquationsOfState::EquationOfState<true, ThermodynamicDim>& eos,
+      const Element<dim>& element,
+      const DirectionalIdMap<dim, evolution::dg::subcell::GhostData>&
+          ghost_data,
+      const Mesh<dim>& subcell_mesh,
+      Direction<dim> direction_to_reconstruct) const;
+
+  bool reconstruct_rho_times_temperature() const override;
+
+ private:
+  bool reconstruct_rho_times_temperature_{false};
+};
+
+bool operator==(const PpmPrim& lhs, const PpmPrim& rhs);
+
+bool operator!=(const PpmPrim& lhs, const PpmPrim& rhs);
+}  // namespace grmhd::ValenciaDivClean::fd

@@ -9,6 +9,7 @@ spectre_target_sources(
   Filters.cpp
   MonotonisedCentral.cpp
   PositivityPreservingAdaptiveOrder.cpp
+  Ppm.cpp
   Reconstructor.cpp
   RegisterDerivedWithCharm.cpp
   Wcns5z.cpp
@@ -27,6 +28,7 @@ spectre_target_headers(
   FiniteDifference.hpp
   MonotonisedCentral.hpp
   PositivityPreservingAdaptiveOrder.hpp
+  Ppm.hpp
   ReconstructWork.hpp
   ReconstructWork.tpp
   Reconstructor.hpp

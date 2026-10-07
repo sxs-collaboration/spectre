@@ -22,6 +22,8 @@ class MonotonisedCentralPrim;
 template <typename System>
 class PositivityPreservingAdaptiveOrderPrim;
 template <typename System>
+class PpmPrim;
+template <typename System>
 class Wcns5zPrim;
 /// \endcond
 
@@ -48,7 +50,7 @@ class Reconstructor : public PUP::able {
   using system = System;
   using creatable_classes =
       tmpl::list<MonotonisedCentralPrim<System>,
-                 PositivityPreservingAdaptiveOrderPrim<System>,
+                 PositivityPreservingAdaptiveOrderPrim<System>, PpmPrim<System>,
                  Wcns5zPrim<System>>;
 
   virtual std::unique_ptr<Reconstructor<System>> get_clone() const = 0;
