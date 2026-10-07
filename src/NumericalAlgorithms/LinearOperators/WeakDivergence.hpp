@@ -3,22 +3,37 @@
 
 #pragma once
 
+#include <array>
 #include <cstddef>
+#include <functional>
 #include <type_traits>
+#include <utility>
 
+#include "DataStructures/ApplyMatrices.hpp"
+#include "DataStructures/Index.hpp"
 #include "DataStructures/Matrix.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Transpose.hpp"
 #include "DataStructures/Variables.hpp"
 #include "NumericalAlgorithms/LinearOperators/Divergence.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
+#include "NumericalAlgorithms/Spectral/Basis.hpp"
 #include "NumericalAlgorithms/Spectral/DifferentiationMatrix.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Utilities/Blas.hpp"
 #include "Utilities/ContainerHelpers.hpp"
+#include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Literals.hpp"
 #include "Utilities/TMPL.hpp"
+
+namespace weak_divergence_detail {
+/// The weak differentiation matrices for the two coupled angular directions of
+/// a spherical-harmonic basis, i.e. `M_ang^{-1} G^T M_ang` for the theta and
+/// phi components of the Pfaffian gradient `G`. See the definition for details.
+const std::pair<Matrix, Matrix>&
+spherical_harmonic_weak_flux_differentiation_matrices(size_t l_max);
+}  // namespace weak_divergence_detail
 
 /*!
  * \ingroup NumericalAlgorithmsGroup
@@ -169,6 +184,57 @@ void weak_divergence(
           divergence_of_fluxes->data(), data_buffer.data(), xi_weak_div_matrix,
           data_buffer.size(), true);
     } else if constexpr (Dim == 3) {
+      if (mesh.basis(1) == Spectral::Basis::SphericalHarmonic) {
+        if constexpr (std::is_same_v<ValueType, double>) {
+          // The radial direction (xi) is a Legendre slice with a standard weak
+          // differentiation matrix. The two angular directions (theta, phi) are
+          // handled together with the angular weak differentiation matrices
+          // `M_ang^{-1} G^T M_ang`, applied over the combined angular index.
+          static const Matrix identity_matrix{};
+          const Matrix& xi_weak_div_matrix =
+              Spectral::weak_flux_differentiation_matrix(mesh.slice_through(0));
+          const auto& [theta_weak_div_matrix, phi_weak_div_matrix] =
+              weak_divergence_detail::
+                  spherical_harmonic_weak_flux_differentiation_matrices(
+                      mesh.extents(1) - 1);
+          const Index<2> angular_extents{mesh.extents(0),
+                                         theta_weak_div_matrix.rows()};
+          Variables<tmpl::list<ResultTags...>> data_buffer{
+              divergence_of_fluxes->number_of_grid_points()};
+          // Radial (xi) contribution (overwrites the result)
+          EXPAND_PACK_LEFT_TO_RIGHT(transform_to_logical_frame(
+              tmpl::type_<FluxTags>{}, tmpl::type_<ResultTags>{},
+              make_not_null(&data_buffer),
+              std::integral_constant<size_t, 0>{}));
+          partial_derivatives_detail::apply_matrix_in_first_dim(
+              divergence_of_fluxes->data(), data_buffer.data(),
+              xi_weak_div_matrix, data_buffer.size(), false);
+          // Angular (theta) contribution
+          EXPAND_PACK_LEFT_TO_RIGHT(transform_to_logical_frame(
+              tmpl::type_<FluxTags>{}, tmpl::type_<ResultTags>{},
+              make_not_null(&data_buffer),
+              std::integral_constant<size_t, 1>{}));
+          *divergence_of_fluxes += apply_matrices(
+              std::array<std::reference_wrapper<const Matrix>, 2>{
+                  {std::cref(identity_matrix),
+                   std::cref(theta_weak_div_matrix)}},
+              data_buffer, angular_extents);
+          // Angular (phi) contribution
+          EXPAND_PACK_LEFT_TO_RIGHT(transform_to_logical_frame(
+              tmpl::type_<FluxTags>{}, tmpl::type_<ResultTags>{},
+              make_not_null(&data_buffer),
+              std::integral_constant<size_t, 2>{}));
+          *divergence_of_fluxes += apply_matrices(
+              std::array<std::reference_wrapper<const Matrix>, 2>{
+                  {std::cref(identity_matrix), std::cref(phi_weak_div_matrix)}},
+              data_buffer, angular_extents);
+          return;
+        } else {
+          ERROR(
+              "weak_divergence with a spherical-harmonic basis is not "
+              "implemented for complex data.");
+        }
+      }
       Variables<tmpl::list<ResultTags...>> data_buffer0{
           divergence_of_fluxes->number_of_grid_points()};
       Variables<tmpl::list<ResultTags...>> data_buffer1{
