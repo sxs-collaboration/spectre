@@ -17,6 +17,7 @@ import numpy as np
 import yaml
 from rich.pretty import pretty_repr
 
+from spectre.support.BinDirectory import BinDirectory
 from spectre.support.DirectoryStructure import (
     Checkpoint,
     Segment,
@@ -33,7 +34,7 @@ logger = logging.getLogger(__name__)
 
 # CMake configures the submit script templates for the current machine to this
 # path
-default_submit_script_template = Path(__file__).parent / "SubmitTemplate.sh"
+default_submit_script_template = BinDirectory.this().path / "SubmitTemplate.sh"
 
 
 def _resolve_executable(executable: Union[str, Path]) -> Path:
@@ -46,8 +47,7 @@ def _resolve_executable(executable: Union[str, Path]) -> Path:
     # when running the CLI. It is the bin dir of the build directory that
     # contains this script. When running Python code outside the CLI this should
     # also be the default bin dir.
-    default_bin_dir = Path(__file__).parent.parent.parent.parent.resolve()
-    path = os.environ["PATH"] + ":" + str(default_bin_dir)
+    path = os.environ["PATH"] + ":" + str(BinDirectory.this().path.resolve())
     which_exec = shutil.which(executable, path=path)
     if not which_exec:
         raise ValueError(
