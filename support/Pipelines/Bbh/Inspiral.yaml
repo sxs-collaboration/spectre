@@ -156,10 +156,18 @@ DomainCreator:
     OuterSphere:
       OuterRadius: {{ OuterShellRadius }}
     InitialRefinement:
-      # z refinement for cylindrical block groups
-      InnerA: 0
-      InnerB: 0
-      Outer: 0
+      # [r, z] refinement for filled cylinder blocks
+      CAFilledCylinder: [0, 1]
+      CBFilledCylinder: [0, 1]
+      EAFilledCylinder: [0, 1]
+      EBFilledCylinder: [0, 1]
+      MAFilledCylinder: [1, 1]
+      MBFilledCylinder: [1, 1]
+      # [r, z] refinement for hollow cylinder blocks
+      CACylinder: [1, 0]
+      CBCylinder: [1, 0]
+      EACylinder: [1, 0]
+      EBCylinder: [1, 0]
       # radial refinement for spherical shell block groups
       InnerSphereA: 2
       InnerSphereB: 2
@@ -175,19 +183,18 @@ DomainCreator:
     # domain. However, --lev 1 should give intial grid points informed by SpEC's
     # Lev1 initial grid points.
     InitialGridPoints:
-      # [radial_points, z_points] for filled cylinder blocks
-      # - theta_points will be set to (4 * radial_points - 3)
-      CAFilledCylinder: [{{ 5 + Lev  }}, {{ 17 + Lev  }}]
-      CBFilledCylinder: [{{ 5 + Lev  }}, {{ 17 + Lev  }}]
-      EAFilledCylinder: [{{ 5 + Lev  }}, {{ 17 + Lev  }}]
-      EBFilledCylinder: [{{ 5 + Lev  }}, {{ 17 + Lev  }}]
-      MAFilledCylinder: [{{ 17 + Lev  }}, {{ 17 + Lev  }}]
-      MBFilledCylinder: [{{ 17 + Lev  }}, {{ 17 + Lev  }}]
+      # [radial_points, theta_points, z_points] for filled cylinder blocks
+      CAFilledCylinder: [{{ 5 + Lev  }}, {{ 8 + Lev  }}]
+      CBFilledCylinder: [{{ 5 + Lev  }}, {{ 8 + Lev  }}]
+      EAFilledCylinder: [{{ 5 + Lev  }}, {{ 8 + Lev  }}]
+      EBFilledCylinder: [{{ 5 + Lev  }}, {{ 8 + Lev  }}]
+      MAFilledCylinder: [{{ 9 + Lev  }}, {{ 9 + Lev  }}]
+      MBFilledCylinder: [{{ 9 + Lev  }}, {{ 9 + Lev  }}]
       # [radial_points, theta_points, z_points] for hollow cylinder blocks
-      CACylinder: [{{ 17 + Lev  }}, {{ 13 + 2 * Lev }}, {{ 11 + Lev  }}]
-      CBCylinder: [{{ 17 + Lev  }}, {{ 13 + 2 * Lev }}, {{ 11 + Lev  }}]
-      EACylinder: [{{ 17 + Lev  }}, {{ 17 + 2 * Lev }}, {{ 11 + Lev  }}]
-      EBCylinder: [{{ 17 + Lev  }}, {{ 17 + 2 * Lev }}, {{ 11 + Lev  }}]
+      CACylinder: [{{ 10 + Lev  }}, {{ 13 + 2 * Lev }}, {{ 11 + Lev  }}]
+      CBCylinder: [{{ 10 + Lev  }}, {{ 13 + 2 * Lev }}, {{ 11 + Lev  }}]
+      EACylinder: [{{ 10 + Lev  }}, {{ 17 + 2 * Lev }}, {{ 11 + Lev  }}]
+      EBCylinder: [{{ 10 + Lev  }}, {{ 17 + 2 * Lev }}, {{ 11 + Lev  }}]
       # [radial_points, L_max] for spherical shell block groups
       InnerSphereA: [{{ 11 + Lev  }}, {{ 18 + Lev  }}]
       InnerSphereB: [{{ 11 + Lev  }}, {{ 18 + Lev  }}]
