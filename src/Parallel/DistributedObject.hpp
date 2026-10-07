@@ -9,6 +9,7 @@
 #include <exception>
 #include <initializer_list>
 #include <limits>
+#include <memory>
 #include <mutex>
 #include <optional>
 #include <ostream>
@@ -44,6 +45,7 @@
 #include "Parallel/Printf/Printf.hpp"
 #include "Parallel/Tags/ArrayIndex.hpp"
 #include "Parallel/Tags/DistributedObjectTags.hpp"
+#include "Parallel/Tags/Info.hpp"
 #include "Parallel/TypeTraits.hpp"
 #include "ParallelAlgorithms/Initialization/MutateAssign.hpp"
 #include "Utilities/Algorithm.hpp"
@@ -351,46 +353,6 @@ class DistributedObject<ParallelComponent,
   /// Check if an algorithm should continue being evaluated
   constexpr bool get_terminate() const { return terminate_; }
 
-  /// @{
-  /// Wrappers for charm++ informational functions.
-
-  /// Number of processing elements
-  inline int number_of_procs() const { return sys::number_of_procs(); }
-
-  /// %Index of my processing element.
-  inline int my_proc() const { return sys::my_proc(); }
-
-  /// Number of nodes.
-  inline int number_of_nodes() const { return sys::number_of_nodes(); }
-
-  /// %Index of my node.
-  inline int my_node() const { return sys::my_node(); }
-
-  /// Number of processing elements on the given node.
-  inline int procs_on_node(const int node_index) const {
-    return sys::procs_on_node(node_index);
-  }
-
-  /// The local index of my processing element on my node.
-  /// This is in the interval 0, ..., procs_on_node(my_node()) - 1.
-  inline int my_local_rank() const { return sys::my_local_rank(); }
-
-  /// %Index of first processing element on the given node.
-  inline int first_proc_on_node(const int node_index) const {
-    return sys::first_proc_on_node(node_index);
-  }
-
-  /// %Index of the node for the given processing element.
-  inline int node_of(const int proc_index) const {
-    return sys::node_of(proc_index);
-  }
-
-  /// The local index for the given processing element on its node.
-  inline int local_rank_of(const int proc_index) const {
-    return sys::local_rank_of(proc_index);
-  }
-  /// @}
-
   // Invoke the static `apply` method of `ThisAction`. The if constexprs are for
   // handling the cases where the `apply` method returns a tuple of one, two,
   // or three elements, in order:
@@ -532,7 +494,7 @@ DistributedObject<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
     ::Initialization::mutate_assign<
         tmpl::push_back<distributed_object_tags, InitializationTags...>>(
         make_not_null(&box_), metavariables{}, array_index_,
-        global_cache_proxy_,
+        global_cache_proxy_, std::make_unique<Info>(),
         std::move(get<InitializationTags>(initialization_items))...);
   } catch (const std::exception& exception) {
     initiate_shutdown(exception);
@@ -563,7 +525,7 @@ DistributedObject<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
     phase_bookmarks_ = std::move(phase_bookmarks);
     ::Initialization::mutate_assign<distributed_object_tags>(
         make_not_null(&box_), metavariables{}, array_index_,
-        global_cache_proxy_);
+        global_cache_proxy_, std::make_unique<Info>());
     callback->invoke();
   } catch (const std::exception& exception) {
     initiate_shutdown(exception);
@@ -728,9 +690,17 @@ void DistributedObject<
   } else if (p.isUnpacking()) {
     box_ = decltype(box_){};
     inboxes_ = decltype(inboxes_){};
-    db::mutate<Tags::GlobalCacheProxy<metavariables>>(
-        [&](const gsl::not_null<CProxy_GlobalCache<metavariables>*> proxy) {
+    db::mutate<Tags::MetavariablesImpl<metavariables>,
+               Tags::ArrayIndex<array_index>,
+               Tags::GlobalCacheProxy<metavariables>, Tags::Info>(
+        [&](const gsl::not_null<metavariables*> metavars,
+            const gsl::not_null<array_index*> index,
+            const gsl::not_null<CProxy_GlobalCache<metavariables>*> proxy,
+            const gsl::not_null<std::unique_ptr<::sys::Info>*> info) {
+          *metavars = metavariables{};
+          *index = array_index_;
           *proxy = global_cache_proxy_;
+          *info = std::make_unique<Info>();
         },
         make_not_null(&box_));
   }

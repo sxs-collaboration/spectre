@@ -475,7 +475,7 @@ class MockDistributedObjectProxy
   MockDistributedObjectProxy() = default;
 
   MockDistributedObjectProxy(
-      size_t mock_node, size_t mock_local_core,
+      int mock_node, int mock_local_core,
       MockDistributedObject<Component>& mock_distributed_object, Inbox& inbox)
       : mock_node_(mock_node),
         mock_local_core_(mock_local_core),
@@ -527,21 +527,17 @@ class MockDistributedObjectProxy
   void perform_algorithm(const bool /*restart_if_terminated*/) {}
 
   MockDistributedObject<Component>* ckLocal() {
-    return (mock_distributed_object_->my_node() ==
-                static_cast<int>(mock_node_) and
-            mock_distributed_object_->my_local_rank() ==
-                static_cast<int>(mock_local_core_))
+    return (mock_distributed_object_->my_node() == mock_node_ and
+            mock_distributed_object_->my_local_rank() == mock_local_core_)
                ? mock_distributed_object_
                : nullptr;
   }
 
   MockDistributedObject<Component>* ckLocalBranch() {
-    return (mock_distributed_object_->my_node() ==
-                static_cast<int>(mock_node_) and
+    return (mock_distributed_object_->my_node() == mock_node_ and
             (std::is_same_v<MockNodeGroupChare,
                             typename Component::chare_type> or
-             mock_distributed_object_->my_local_rank() ==
-                 static_cast<int>(mock_local_core_)))
+             mock_distributed_object_->my_local_rank() == mock_local_core_))
                ? mock_distributed_object_
                : nullptr;
   }
@@ -577,8 +573,8 @@ class MockDistributedObjectProxy
   // that this MockDistributedObjectProxy lives on.  This is different
   // than the (mock) node and core that the referred-to MockDistributedObject
   // lives on.
-  size_t mock_node_{0};
-  size_t mock_local_core_{0};
+  int mock_node_{0};
+  int mock_local_core_{0};
   MockDistributedObject<Component>* mock_distributed_object_{nullptr};
   Inbox* inbox_{nullptr};
 };
@@ -631,8 +627,8 @@ class MockCollectionOfDistributedObjectsProxy
   }
 
   void set_data(CollectionOfMockDistributedObjects* mock_distributed_objects,
-                Inboxes* inboxes, const size_t mock_node,
-                const size_t mock_local_core, const size_t mock_global_core) {
+                Inboxes* inboxes, const int mock_node,
+                const int mock_local_core, const int mock_global_core) {
     mock_distributed_objects_ = mock_distributed_objects;
     inboxes_ = inboxes;
     mock_node_ = mock_node;
@@ -669,9 +665,11 @@ class MockCollectionOfDistributedObjectsProxy
   // of the array is the node index.
   MockDistributedObject<Component>* ckLocalBranch() {
     if constexpr (std::is_same_v<ChareType, MockGroupChare>) {
-      return std::addressof(mock_distributed_objects_->at(mock_global_core_));
+      return std::addressof(mock_distributed_objects_->at(
+          static_cast<size_t>(mock_global_core_)));
     } else if constexpr (std::is_same_v<ChareType, MockNodeGroupChare>) {
-      return std::addressof(mock_distributed_objects_->at(mock_node_));
+      return std::addressof(
+          mock_distributed_objects_->at(static_cast<size_t>(mock_node_)));
     } else {
       static_assert(std::is_same_v<Component, NoSuchType>,
                     "Do not call ckLocalBranch for arrays or singletons");
@@ -686,8 +684,8 @@ class MockCollectionOfDistributedObjectsProxy
     static_assert(std::is_same_v<ChareType, MockSingletonChare>,
                   "Do not call ckLocal for other than a Singleton");
     auto& object = mock_distributed_objects_->at(0);
-    return (object.my_node() == static_cast<int>(mock_node_) and
-            object.my_local_rank() == static_cast<int>(mock_local_core_))
+    return (object.my_node() == mock_node_ and
+            object.my_local_rank() == mock_local_core_)
                ? std::addressof(object)
                : nullptr;
   }
@@ -752,9 +750,9 @@ class MockCollectionOfDistributedObjectsProxy
   // MockCollectionOfDistributedObjectsProxy lives on.  This is
   // different than the (mock) nodes and cores that each element of the
   // referred-to CollectionOfMockDistributedObjects lives on.
-  size_t mock_node_{0};
-  size_t mock_local_core_{0};
-  size_t mock_global_core_{0};
+  int mock_node_{0};
+  int mock_local_core_{0};
+  int mock_global_core_{0};
 };
 }  // namespace ActionTesting_detail
 

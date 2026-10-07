@@ -73,6 +73,7 @@ jobs:
           echo "Running clangd-tidy relative to: $UPSTREAM_HASH\n"
 
           git diff -U0 $UPSTREAM_HASH |
-            clangd-tidy-diff -p build --pass-arg p1 --pass-arg use-color \
-            --pass-arg j1 --pass-arg "extra-arg=-I/usr/include/hdf5/serial" \
+            clangd-tidy-diff -p build --pass-arg fail-on-severity=error \
+            --pass-arg allow-extensions=cpp,hpp,tpp --pass-arg j1 \
+            --pass-arg "extra-arg=-I/usr/include/hdf5/serial" \
             --pass-arg "extra-arg=-I$GITHUB_WORKSPACE/build/_deps/autodiff-src"

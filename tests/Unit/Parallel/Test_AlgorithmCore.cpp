@@ -481,9 +481,10 @@ struct add_vectors_to_box_and_send {
         make_not_null(&box));
 
     BoundaryMessage<3>* boundary_message = new BoundaryMessage<3>(
-        0, 4, false, true, Parallel::my_node<size_t>(cache),
-        Parallel::my_proc<size_t>(cache), -2, 3, time_step_id, time_step_id, {},
-        {}, {}, {}, nullptr, const_cast<double*>(db::get<Vector0>(box).data()));
+        0, 4, false, true, static_cast<size_t>(Parallel::my_node(cache)),
+        static_cast<size_t>(Parallel::my_proc(cache)), -2, 3, time_step_id,
+        time_step_id, {}, {}, {}, {}, nullptr,
+        const_cast<double*>(db::get<Vector0>(box).data()));
 
     // Send to myself because everybody is on the same node and it's easier to
     // check that pointers are the same between my own Vector0 and Vector1 than

@@ -113,8 +113,8 @@ struct ElementsAllocator
         get<domain::Tags::ElementDistribution>(local_cache);
     std::optional<size_t> max_coarse_levels =
         get<Tags::InitialCoarseLevels<OptionsGroup>>(local_cache);
-    const size_t number_of_procs =
-        Parallel::number_of_procs<size_t>(local_cache);
+    const auto number_of_procs =
+        static_cast<size_t>(Parallel::number_of_procs(local_cache));
     const size_t num_iterations =
         get<Convergence::Tags::Iterations<OptionsGroup>>(local_cache);
     if (UNLIKELY(num_iterations == 0)) {

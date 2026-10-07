@@ -21,12 +21,14 @@ struct EmptyMetavars {
 };
 
 void test_diagnostic_info() {
-  std::vector<size_t> procs_per_node{2, 7, 5};
+  std::vector<int> procs_per_node{2, 7, 5};
   Parallel::GlobalCache<EmptyMetavars> cache{
       tuples::TaggedTuple<>{}, {}, procs_per_node};
 
-  const size_t number_of_cores = Parallel::number_of_procs<size_t>(cache);
-  const size_t number_of_nodes = Parallel::number_of_nodes<size_t>(cache);
+  const auto number_of_cores =
+      static_cast<size_t>(Parallel::number_of_procs(cache));
+  const auto number_of_nodes =
+      static_cast<size_t>(Parallel::number_of_nodes(cache));
 
   std::vector<size_t> elements_per_core(number_of_cores, 0_st);
   std::vector<size_t> elements_per_node(number_of_nodes, 0_st);
@@ -37,9 +39,8 @@ void test_diagnostic_info() {
   alg::iota(grid_points_per_core, 10_st);
 
   size_t starting_core = 0;
-  size_t ending_core = procs_per_node[0];
   for (size_t i = 0; i < procs_per_node.size(); i++) {
-    ending_core = starting_core + procs_per_node[i];
+    auto ending_core = starting_core + static_cast<size_t>(procs_per_node[i]);
     for (size_t j = starting_core; j < ending_core; j++) {
       elements_per_node[i] += elements_per_core[j];
       grid_points_per_node[i] += grid_points_per_core[j];

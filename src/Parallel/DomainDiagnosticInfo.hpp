@@ -28,8 +28,10 @@ std::string diagnostic_info(const size_t total_number_of_blocks,
       alg::accumulate(elements_per_node, 0_st);
   const size_t total_number_of_grid_points =
       alg::accumulate(grid_points_per_node, 0_st);
-  const size_t number_of_cores = Parallel::number_of_procs<size_t>(cache);
-  const size_t number_of_nodes = Parallel::number_of_nodes<size_t>(cache);
+  const auto number_of_cores =
+      static_cast<size_t>(Parallel::number_of_procs(cache));
+  const auto number_of_nodes =
+      static_cast<size_t>(Parallel::number_of_nodes(cache));
 
   // Sanity checks
   ASSERT(total_number_of_elements == alg::accumulate(elements_per_core, 0_st),

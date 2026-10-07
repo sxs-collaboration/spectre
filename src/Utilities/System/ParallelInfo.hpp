@@ -72,14 +72,4 @@ int local_rank_of(int proc_index);
  * \brief The elapsed wall time in seconds.
  */
 double wall_time();
-
-/// @{
-/// \ingroup UtilitiesGroup
-/// \brief Format the wall time in DD-HH:MM:SS format.
-///
-/// If the walltime is shorter than a day, omit the `DD-` part.
-std::string pretty_wall_time(double total_seconds);
-
-std::string pretty_wall_time();
-/// @}
 }  // namespace sys

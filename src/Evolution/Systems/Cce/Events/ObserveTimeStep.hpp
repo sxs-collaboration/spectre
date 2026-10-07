@@ -19,7 +19,7 @@
 #include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
 #include "Time/Time.hpp"
 #include "Utilities/Serialization/CharmPupable.hpp"
-#include "Utilities/System/ParallelInfo.hpp"
+#include "Utilities/System/PrettyWallTime.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond

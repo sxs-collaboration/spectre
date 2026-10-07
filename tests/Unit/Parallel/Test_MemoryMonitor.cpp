@@ -307,10 +307,10 @@ void test_contribute_memory_data(const gsl::not_null<Gen*> gen,
 
   // 4 mock nodes, 3 mock cores per node
   const size_t num_nodes = 4;
-  const size_t num_procs_per_node = 3;
-  const size_t num_procs = num_nodes * num_procs_per_node;
+  const int num_procs_per_node = 3;
+  const size_t num_procs = num_nodes * static_cast<size_t>(num_procs_per_node);
   ActionTesting::MockRuntimeSystem<metavars> runner{
-      {}, {}, std::vector<size_t>(num_nodes, num_procs_per_node)};
+      {}, {}, std::vector<int>(num_nodes, num_procs_per_node)};
 
   setup_runner(make_not_null(&runner));
 
@@ -399,9 +399,9 @@ void test_process_array(const gsl::not_null<Gen*> gen) {
 
   // 4 mock nodes, 3 mock cores per node
   const size_t num_nodes = 4;
-  const size_t num_procs_per_node = 3;
+  const int num_procs_per_node = 3;
   ActionTesting::MockRuntimeSystem<metavars> runner{
-      {}, {}, std::vector<size_t>(num_nodes, num_procs_per_node)};
+      {}, {}, std::vector<int>(num_nodes, num_procs_per_node)};
 
   setup_runner(make_not_null(&runner));
 
@@ -434,9 +434,9 @@ void test_process_singleton() {
 
   // 4 mock nodes, 3 mock cores per node
   const size_t num_nodes = 4;
-  const size_t num_procs_per_node = 3;
+  const int num_procs_per_node = 3;
   ActionTesting::MockRuntimeSystem<metavars> runner{
-      {}, {}, std::vector<size_t>(num_nodes, num_procs_per_node)};
+      {}, {}, std::vector<int>(num_nodes, num_procs_per_node)};
 
   setup_runner(make_not_null(&runner));
 
@@ -506,10 +506,10 @@ void test_monitor_memory_event() {
 
   // 4 mock nodes, 3 mock cores per node
   const size_t num_nodes = 4;
-  const size_t num_procs_per_node = 3;
-  const size_t num_procs = num_nodes * num_procs_per_node;
+  const int num_procs_per_node = 3;
+  const size_t num_procs = num_nodes * static_cast<size_t>(num_procs_per_node);
   ActionTesting::MockRuntimeSystem<event_metavars> runner{
-      {}, {}, std::vector<size_t>(num_nodes, num_procs_per_node)};
+      {}, {}, std::vector<int>(num_nodes, num_procs_per_node)};
 
   setup_runner(make_not_null(&runner));
 
@@ -536,9 +536,13 @@ void test_monitor_memory_event() {
       ActionTesting::get_databox_tag<dg_elem_comp<event_metavars>,
                                      domain::Tags::Element<3>>(runner, 0);
 
+  const auto& parallel_info =
+      ActionTesting::get_databox_tag<dg_elem_comp<event_metavars>,
+                                     Parallel::Tags::Info>(runner, 0);
+
   // Run the event. This will queue a lot of actions
   const double time = 1.4;
-  monitor_memory(element, cache, 0,
+  monitor_memory(element, parallel_info, cache, 0,
                  std::add_pointer_t<dg_elem_comp<event_metavars>>{},
                  {"TimeName", time});
 
@@ -652,6 +656,7 @@ void test_monitor_memory_event() {
 }
 
 SPECTRE_TEST_CASE("Unit.Parallel.MemoryMonitor", "[Unit][Parallel]") {
+  register_classes_with_charm<ActionTesting::MockInfo>();
   MAKE_GENERATOR(gen);
   test_tags();
   // First only test the ContributeMemoryData action (second arg false)

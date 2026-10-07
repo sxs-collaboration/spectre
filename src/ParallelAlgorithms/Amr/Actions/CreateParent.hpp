@@ -44,8 +44,7 @@ struct CreateParent {
       const ElementId<Metavariables::volume_dim>& child_id,
       std::deque<ElementId<Metavariables::volume_dim>> sibling_ids_to_collect,
       const std::unordered_map<Parallel::Phase, size_t> child_phase_bookmarks) {
-    if (CHARM_VERSION_MAJOR < 8 and
-        Parallel::number_of_procs<size_t>(cache) > 1) {
+    if (CHARM_VERSION_MAJOR < 8 and Parallel::number_of_procs(cache) > 1) {
       ERROR_NO_TRACE(
           "Dynamically creating elements in parallel executables is broken "
           "until charm 8.");
