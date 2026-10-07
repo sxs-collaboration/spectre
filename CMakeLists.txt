@@ -66,6 +66,7 @@ set(CMAKE_SKIP_INSTALL_ALL_DEPENDENCY ON)
 
 set(CMAKE_VERBOSE_MAKEFILE OFF)
 
+include(SpectreMachine)
 include(SpectreGetGitHash)
 include(SpectreSetSiteName)
 
