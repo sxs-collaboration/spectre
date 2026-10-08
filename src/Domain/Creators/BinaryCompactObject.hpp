@@ -701,6 +701,7 @@ void validate_initial_refinement(
  * \param initial_number_of_grid_points the initial grid points from options
  * \param spherical_harmonic_shell_names the names of spherical shell blocks
  * or groups that use spherical harmonics
+ * \param hollow_cylinder_names the names of hollow cylindrical blocks
  * \param filled_cylinder_names the names of filled cylindrical blocks or groups
  * containing them
  */
@@ -709,6 +710,7 @@ void validate_initial_grid_points(
     const BinaryCompactObject::InitialGridPoints::type&
         initial_number_of_grid_points,
     const std::unordered_set<std::string>& spherical_harmonic_shell_names,
+    const std::unordered_set<std::string>& hollow_cylinder_names = {},
     const std::unordered_set<std::string>& filled_cylinder_names = {});
 
 /*!

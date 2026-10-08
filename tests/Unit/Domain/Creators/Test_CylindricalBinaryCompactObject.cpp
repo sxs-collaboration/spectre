@@ -614,6 +614,17 @@ void test_parse_errors() {
           create_inner_boundary_condition(), create_outer_boundary_condition()),
       Catch::Matchers::ContainsSubstring(
           "must have more than 2 radial grid points"));
+  CHECK_THROWS_WITH(
+      domain::creators::CylindricalBinaryCompactObject(
+          {{2.0, 0.05, 0.0}}, {-3.0, 0.05, 0.0}, 1.0, 0.4, 1_st,
+          GridPointsMap{{"Outer", std::array<size_t, 3>{3, 15, 5}},
+                        {"InnerA", std::array<size_t, 2>{3, 5}},
+                        {"InnerB", std::array<size_t, 2>{3, 5}},
+                        {"OuterSphere", std::array<size_t, 2>{3, 6}}},
+          OuterSphereOptions{25.0}, std::nullopt, std::nullopt, std::nullopt,
+          create_inner_boundary_condition(), create_outer_boundary_condition()),
+      Catch::Matchers::ContainsSubstring(
+          "(4 * num_r_points - 3) >= num_theta_points"));
 }
 
 // This matches the structure in the option string
@@ -811,7 +822,7 @@ void test_initial_extents_and_refinement() {
                     {"OuterSphere", size_t{2}}};
   const GridPointsMap local_grid_points =
       GridPointsMap{{"InnerA", std::array<size_t, 2>{5, 7}},
-                    {"InnerB", std::array<size_t, 2>{7, 9}},
+                    {"InnerB", std::array<size_t, 3>{7, 23, 9}},
                     {"Outer", std::array<size_t, 2>{9, 11}},
                     {"InnerSphereA", std::array<size_t, 2>{4, 6}},
                     {"InnerSphereB", std::array<size_t, 2>{6, 8}},
@@ -905,7 +916,7 @@ void test_initial_extents_and_refinement() {
     } else if (block_groups.at("InnerB").contains(block_name_global)) {
       expected_refinement_from_global = {{1, 0, 1}};
       expected_refinement_from_local = {{1, 0, 0}};
-      expected_extents_from_local = {{7, 25, 9}};
+      expected_extents_from_local = {{7, 23, 9}};
       if (block_name_global.find("Filled") != std::string::npos) {
         expected_extents_from_global = {{13, 49, 13}};
       } else {

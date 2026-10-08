@@ -81,6 +81,7 @@ void validate_initial_grid_points(
     const BinaryCompactObject::InitialGridPoints::type&
         initial_number_of_grid_points,
     const std::unordered_set<std::string>& spherical_harmonic_shell_names,
+    const std::unordered_set<std::string>& hollow_cylinder_names,
     const std::unordered_set<std::string>& filled_cylinder_names) {
   if (std::holds_alternative<
           std::unordered_map<std::string, std::variant<std::array<size_t, 3>,
@@ -93,12 +94,23 @@ void validate_initial_grid_points(
     for (const auto& [name, extents] : grid_points_map) {
       const bool is_spherical_harmonic =
           spherical_harmonic_shell_names.contains(name);
+      const bool is_hollow_cylinder = hollow_cylinder_names.contains(name);
       const bool is_filled_cylinder = filled_cylinder_names.contains(name);
+      ASSERT(not(is_spherical_harmonic and is_hollow_cylinder),
+             "Block or group '"
+                 << name
+                 << "' cannot be both a spherical-harmonic shell block/group "
+                    "and a hollow cylinder block/group. ");
       ASSERT(not(is_spherical_harmonic and is_filled_cylinder),
              "Block or group '"
                  << name
                  << "' cannot be both a spherical-harmonic shell block/group "
-                    "and a cylinder block/group. ");
+                    "and a filled cylinder block/group. ");
+      ASSERT(not(is_hollow_cylinder and is_filled_cylinder),
+             "Block or group '"
+                 << name
+                 << "' cannot be both a hollow cylinder block/group "
+                    "and a filled cylinder block/group. ");
       if (is_spherical_harmonic) {
         if (std::holds_alternative<std::array<size_t, 3>>(extents)) {
           PARSE_ERROR(context,
@@ -108,39 +120,38 @@ void validate_initial_grid_points(
                              "Specify its grid points as "
                              "[radial_points, L_max], not array<3>.");
         }
-      } else if (is_filled_cylinder) {
-        if (std::holds_alternative<std::array<size_t, 3>>(extents)) {
+      } else if (is_hollow_cylinder) {
+        if (std::holds_alternative<std::array<size_t, 2>>(extents)) {
           PARSE_ERROR(
               context,
               "Block or group '"
                   << name
-                  << "' is a filled cylinder block or group containing one. "
+                  << "' is a hollow cylinder block or group containing one. "
                      "Specify its grid points as "
-                     "[radial_points, z_points], not array<3>.");
+                     "[radial_points, theta_points, z_points], not array<2>.");
         }
-      } else {
-        if (std::holds_alternative<std::array<size_t, 2>>(extents)) {
-          if (not spherical_harmonic_shell_names.empty() or
-              not filled_cylinder_names.empty()) {
-            PARSE_ERROR(
-                context,
-                "Specifying 2 grid points for block or group '"
-                    << name
-                    << "' is only valid for spherical-harmonic "
-                       "shell blocks (OuterShell0, etc.), "
-                       "spherical-harmonic block groups "
-                       "(OuterSphere, etc.), filled cylinder "
-                       "blocks (CAFilledCylinder, etc.), or block groups "
-                       "containing filled cylinder blocks (InnerA, etc.).");
-          } else {
-            PARSE_ERROR(context,
-                        "Specifying 2 grid points (block or group '"
-                            << name
-                            << "') is only valid for spherical-harmonic shell "
-                               "blocks, spherical-harmonic block groups, "
-                               "filled cylinder blocks, or block groups "
-                               "containing filled cylinder blocks.");
-          }
+      } else if (not is_filled_cylinder and
+                 std::holds_alternative<std::array<size_t, 2>>(extents)) {
+        if (not spherical_harmonic_shell_names.empty() or
+            not filled_cylinder_names.empty()) {
+          PARSE_ERROR(
+              context,
+              "Specifying 2 grid points for block or group '"
+                  << name
+                  << "' is only valid for spherical-harmonic "
+                     "shell blocks (OuterShell0, etc.), "
+                     "spherical-harmonic block groups "
+                     "(OuterSphere, etc.), filled cylinder "
+                     "blocks (CAFilledCylinder, etc.), or block groups "
+                     "containing filled cylinder blocks (InnerA, etc.).");
+        } else {
+          PARSE_ERROR(context,
+                      "Specifying 2 grid points (block or group '"
+                          << name
+                          << "') is only valid for spherical-harmonic shell "
+                             "blocks, spherical-harmonic block groups, "
+                             "filled cylinder blocks, or block groups "
+                             "containing filled cylinder blocks.");
         }
       }
     }

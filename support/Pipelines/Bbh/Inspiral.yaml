@@ -184,12 +184,12 @@ DomainCreator:
     # Lev1 initial grid points.
     InitialGridPoints:
       # [radial_points, theta_points, z_points] for filled cylinder blocks
-      CAFilledCylinder: [{{ 5 + Lev  }}, {{ 8 + Lev  }}]
-      CBFilledCylinder: [{{ 5 + Lev  }}, {{ 8 + Lev  }}]
-      EAFilledCylinder: [{{ 5 + Lev  }}, {{ 8 + Lev  }}]
-      EBFilledCylinder: [{{ 5 + Lev  }}, {{ 8 + Lev  }}]
-      MAFilledCylinder: [{{ 9 + Lev  }}, {{ 9 + Lev  }}]
-      MBFilledCylinder: [{{ 9 + Lev  }}, {{ 9 + Lev  }}]
+      CAFilledCylinder: [{{ 5 + Lev  }}, {{ 13 + 2 * Lev }}, {{ 8 + Lev  }}]
+      CBFilledCylinder: [{{ 5 + Lev  }}, {{ 13 + 2 * Lev }}, {{ 8 + Lev  }}]
+      EAFilledCylinder: [{{ 5 + Lev  }}, {{ 17 + 2 * Lev }}, {{ 8 + Lev  }}]
+      EBFilledCylinder: [{{ 5 + Lev  }}, {{ 17 + 2 * Lev }}, {{ 8 + Lev  }}]
+      MAFilledCylinder: [{{ 9 + Lev  }}, {{ 15 + 2 * Lev }}, {{ 9 + Lev  }}]
+      MBFilledCylinder: [{{ 9 + Lev  }}, {{ 15 + 2 * Lev }}, {{ 9 + Lev  }}]
       # [radial_points, theta_points, z_points] for hollow cylinder blocks
       CACylinder: [{{ 10 + Lev  }}, {{ 13 + 2 * Lev }}, {{ 11 + Lev  }}]
       CBCylinder: [{{ 10 + Lev  }}, {{ 13 + 2 * Lev }}, {{ 11 + Lev  }}]
