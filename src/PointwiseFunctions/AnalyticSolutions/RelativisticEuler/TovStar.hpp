@@ -215,7 +215,7 @@ struct TovVariables {
   void operator()(gsl::not_null<Scalar<DataType>*> lorentz_factor,
                   gsl::not_null<Cache*> cache,
                   hydro::Tags::LorentzFactor<DataType> /*meta*/) const;
-  void operator()(gsl::not_null<tnsr::I<DataType, 3>*> spatial_velocity,
+  virtual void operator()(gsl::not_null<tnsr::I<DataType, 3>*> spatial_velocity,
                   gsl::not_null<Cache*> cache,
                   hydro::Tags::SpatialVelocity<DataType, 3> /*meta*/) const;
   virtual void operator()(
