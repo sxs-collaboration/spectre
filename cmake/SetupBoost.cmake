@@ -104,11 +104,13 @@ set_property(TARGET Boost::boost
 # Some older versions of boost don't play nice with new versions of Clang and
 # GCC-12. We can just blanket enable the BOOST_NO_CXX98_FUNCTION_BASE macro,
 # which is what boost does anyway with newer versions.
+if(Boost_VERSION VERSION_LESS 1.81.0)
 set_property(TARGET Boost::boost
   APPEND PROPERTY
   INTERFACE_COMPILE_DEFINITIONS
   $<$<COMPILE_LANGUAGE:CXX>:BOOST_NO_CXX98_FUNCTION_BASE>
 )
+endif()
 
 # With newer versions of boost, sometimes there are internal boost warnings
 # about deprecated headers. This disables those as we have no control over what
