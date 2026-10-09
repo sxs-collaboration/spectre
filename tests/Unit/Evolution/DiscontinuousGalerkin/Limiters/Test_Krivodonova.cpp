@@ -20,6 +20,7 @@
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Structure/OrientationMap.hpp"
+#include "Domain/Structure/Topology.hpp"
 #include "Evolution/DiscontinuousGalerkin/Limiters/Krivodonova.hpp"
 #include "NumericalAlgorithms/LinearOperators/CoefficientTransforms.hpp"
 #include "NumericalAlgorithms/Spectral/Basis.hpp"
@@ -130,7 +131,8 @@ void test_limiting_two_neighbors() {
 
   NeighborData<dim, typename Limiter::PackagedData> neighbor_data{};
 
-  const Element<dim> element(ElementId<dim>{0}, {});
+  const Element<dim> element(ElementId<dim>{0}, {},
+                             domain::topologies::hypercube<dim>);
   // We don't care about the ElementId for these tests, just the direction.
   Limiter::PackagedData& package_data_upper = neighbor_data[DirectionalId<dim>{
       Direction<dim>::upper_xi(), ElementId<dim>{0}}];
@@ -266,7 +268,8 @@ void test_limiting_different_values_different_tensors() {
 
   NeighborData<dim, typename Limiter::PackagedData> neighbor_data{};
 
-  const Element<dim> element(ElementId<dim>{0}, {});
+  const Element<dim> element(ElementId<dim>{0}, {},
+                             domain::topologies::hypercube<dim>);
   // We don't care about the ElementId for these tests, just the direction.
   Limiter::PackagedData& package_data_up_xi = neighbor_data[DirectionalId<dim>{
       Direction<dim>::upper_xi(), ElementId<dim>{0}}];
@@ -824,7 +827,8 @@ void test_limiting_different_values_different_tensors() {
 
   NeighborData<dim, typename Limiter::PackagedData> neighbor_data{};
 
-  const Element<dim> element(ElementId<dim>{0}, {});
+  const Element<dim> element(ElementId<dim>{0}, {},
+                             domain::topologies::hypercube<dim>);
   // We don't care about the ElementId for these tests, just the direction.
   Limiter::PackagedData& package_data_up_xi = neighbor_data[DirectionalId<dim>{
       Direction<dim>::upper_xi(), ElementId<dim>{0}}];
@@ -927,7 +931,8 @@ void run() {
 
   NeighborData<dim, typename Limiter::PackagedData> neighbor_data{};
 
-  const Element<dim> element(ElementId<dim>{0}, {});
+  const Element<dim> element(ElementId<dim>{0}, {},
+                             domain::topologies::hypercube<dim>);
   // We don't care about the ElementId for these tests, just the direction.
   Limiter::PackagedData& package_data_up_xi = neighbor_data[DirectionalId<dim>{
       Direction<dim>::upper_xi(), ElementId<dim>{0}}];
@@ -2556,7 +2561,8 @@ void test_limiting_different_values_different_tensors() {
 
   NeighborData<dim, typename Limiter::PackagedData> neighbor_data{};
 
-  const Element<dim> element(ElementId<dim>{0}, {});
+  const Element<dim> element(ElementId<dim>{0}, {},
+                             domain::topologies::hypercube<dim>);
   // We don't care about the ElementId for these tests, just the direction.
   Limiter::PackagedData& package_data_up_xi = neighbor_data[DirectionalId<dim>{
       Direction<dim>::upper_xi(), ElementId<dim>{0}}];
@@ -2788,7 +2794,8 @@ void run() {
 
   NeighborData<dim, typename Limiter::PackagedData> neighbor_data{};
 
-  const Element<dim> element(ElementId<dim>{0}, {});
+  const Element<dim> element(ElementId<dim>{0}, {},
+                             domain::topologies::hypercube<dim>);
   // We don't care about the ElementId for these tests, just the direction.
   Limiter::PackagedData& package_data_up_xi = neighbor_data[DirectionalId<dim>{
       Direction<dim>::upper_xi(), ElementId<dim>{0}}];

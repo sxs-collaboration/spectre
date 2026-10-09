@@ -16,6 +16,7 @@
 #include "Domain/Structure/CreateInitialMesh.hpp"
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/ElementId.hpp"
+#include "Domain/Structure/IsValidDgMesh.hpp"
 #include "Domain/Tags.hpp"
 #include "Domain/Tags/NeighborMesh.hpp"
 #include "Evolution/DiscontinuousGalerkin/Initialization/QuadratureTag.hpp"
@@ -69,6 +70,9 @@ struct Domain {
     const Spectral::Basis i1_basis{Spectral::Basis::Legendre};
     *mesh = ::domain::create_initial_mesh(initial_extents, *element, i1_basis,
                                           i1_quadrature);
+    if (not ::domain::is_valid_dg_mesh(*mesh, *element)) {
+      ERROR("Invalid mesh: " << *mesh << " for Element " << *element);
+    }
   }
 };
 }  // namespace amr::Initialization

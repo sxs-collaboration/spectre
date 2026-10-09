@@ -11,6 +11,7 @@
 #include "DataStructures/Variables.hpp"
 #include "DataStructures/VariablesTag.hpp"
 #include "Domain/Structure/ElementId.hpp"
+#include "Domain/Structure/Topology.hpp"
 #include "Domain/Tags.hpp"
 #include "Evolution/DgSubcell/ActiveGrid.hpp"
 #include "Evolution/DgSubcell/Mesh.hpp"
@@ -93,7 +94,8 @@ void test_fluid_coupling() {
 
   const DirectionMap<Dim, Neighbors<Dim>> neighbors{};
   const ElementId<Dim> self_id = ElementId<Dim>{0, {{{1, 0}, {0, 0}, {0, 0}}}};
-  const Element<Dim> element{self_id, neighbors};
+  const Element<Dim> element{self_id, neighbors,
+                             domain::topologies::hypercube<Dim>};
 
   using evolved_vars_tags = tmpl::list<Var1>;
   Variables<evolved_vars_tags> evolved_vars{n_pts};

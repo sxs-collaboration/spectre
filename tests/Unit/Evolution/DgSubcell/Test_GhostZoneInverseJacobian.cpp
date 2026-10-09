@@ -16,6 +16,7 @@
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Structure/Neighbors.hpp"
+#include "Domain/Structure/Topology.hpp"
 #include "Domain/Tags.hpp"
 #include "Evolution/DgSubcell/GhostZoneInverseJacobian.hpp"
 #include "Evolution/DgSubcell/Mesh.hpp"
@@ -59,7 +60,8 @@ void test() {
       evolution::dg::subcell::fd::Tags::InverseJacobianLogicalToGrid<Dim>>;
 
   const ElementId<Dim> element_id{0};
-  const Element<Dim> element{element_id, {}};
+  const Element<Dim> element{
+      element_id, {}, domain::topologies::hypercube<Dim>};
 
   CoordinateMap<Dim> coordinate_map;
   if constexpr (Dim == 3) {

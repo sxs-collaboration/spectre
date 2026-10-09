@@ -15,6 +15,7 @@
 #include "Domain/Creators/RegisterDerivedWithCharm.hpp"
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/ElementId.hpp"
+#include "Domain/Structure/Topology.hpp"
 #include "Domain/Tags.hpp"
 #include "Elliptic/Systems/Elasticity/Actions/InitializeConstitutiveRelation.hpp"
 #include "Framework/ActionTesting.hpp"
@@ -108,7 +109,8 @@ SPECTRE_TEST_CASE("Unit.Elasticity.Actions.InitializeConstitutiveRelation",
   for (const auto& element_id : {element_id_layer1, element_id_layer2}) {
     ActionTesting::emplace_component_and_initialize<element_array>(
         &runner, element_id,
-        {Element<Dim>{element_id, {}}, std::unordered_set<ElementId<Dim>>{}});
+        {Element<Dim>{element_id, {}, domain::topologies::hypercube<Dim>},
+         std::unordered_set<ElementId<Dim>>{}});
   }
   ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Testing);
   for (const auto& element_id : {element_id_layer1, element_id_layer2}) {

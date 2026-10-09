@@ -139,10 +139,10 @@ class SphericalShells : public DomainCreator<3> {
    */
   struct InitialSphericalHarmonicL {
     using type = size_t;
-    static size_t lower_bound() { return 6; }
+    static size_t lower_bound() { return 2; }
     static constexpr Options::String help = {
         "Initial spherical harmonic resolution specified as the highest "
-        "spherical harmonic represented on the grid.  Minimum value is 6."};
+        "spherical harmonic represented on the grid.  Minimum value is 2."};
   };
 
   /*!

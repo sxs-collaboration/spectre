@@ -13,6 +13,7 @@
 #include "DataStructures/DataBox/MetavariablesTag.hpp"
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/ElementId.hpp"
+#include "Domain/Structure/Topology.hpp"
 #include "Domain/Tags.hpp"
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
@@ -89,8 +90,10 @@ double get_suggestion(const double min, const double max, const size_t seed,
 
 template <typename Use>
 void test_random() {
-  const Element<volume_dim> element1(ElementId<volume_dim>(1), {});
-  const Element<volume_dim> element2(ElementId<volume_dim>(2), {});
+  const Element<volume_dim> element1(ElementId<volume_dim>(1), {},
+                                     domain::topologies::hypercube<volume_dim>);
+  const Element<volume_dim> element2(ElementId<volume_dim>(2), {},
+                                     domain::topologies::hypercube<volume_dim>);
   const TimeStepId time1(true, 0, Slab(0.0, 1.0).start());
   const TimeStepId time2(true, 0, Slab(0.0, 1.0).end());
 

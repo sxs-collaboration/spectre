@@ -8,6 +8,7 @@
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/Neighbors.hpp"
 #include "Domain/Structure/Side.hpp"
+#include "Domain/Structure/Topology.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
 #include "NumericalAlgorithms/Spectral/Basis.hpp"
@@ -126,7 +127,8 @@ void test_weights(const Mesh<Dim>& mesh,
               .first->second;
       for (size_t i = 0; i < two_to_the(Dim - 1); ++i) {
         direction_neighbors.add_ids({ElementId<Dim>{i + 1}});
-        const Element<Dim> element{ElementId<Dim>{0}, neighbors};
+        const Element<Dim> element{ElementId<Dim>{0}, neighbors,
+                                   domain::topologies::hypercube<Dim>};
         if (max_overlap.has_value()) {
           for (size_t max_overlap_i = 1; max_overlap_i <= max_overlap;
                ++max_overlap_i) {

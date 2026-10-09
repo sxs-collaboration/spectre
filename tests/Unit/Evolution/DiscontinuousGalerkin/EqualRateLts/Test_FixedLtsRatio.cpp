@@ -14,6 +14,7 @@
 #include "DataStructures/DataBox/MetavariablesTag.hpp"
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/ElementId.hpp"
+#include "Domain/Structure/Topology.hpp"
 #include "Domain/Tags.hpp"
 #include "Evolution/DiscontinuousGalerkin/EqualRateLts/EqualRateRegions.hpp"
 #include "Evolution/DiscontinuousGalerkin/EqualRateLts/EqualRateRegions.tpp"
@@ -165,7 +166,7 @@ void test(const std::optional<double>& expected_goal,
   const auto time_step = slab.duration() / 2;
 
   const Element<Dim> element(ElementId<Dim>(fixed_ratio.has_value() ? 0 : 1),
-                             {});
+                             {}, domain::topologies::hypercube<Dim>);
 
   for (const auto& time_sign : {1, -1}) {
     CAPTURE(time_sign);

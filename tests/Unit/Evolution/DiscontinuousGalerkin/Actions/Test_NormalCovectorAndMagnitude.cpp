@@ -19,6 +19,7 @@
 #include "Domain/InterfaceComputeTags.hpp"
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/DirectionMap.hpp"
+#include "Domain/Structure/Topology.hpp"
 #include "Domain/Tags.hpp"
 #include "Evolution/DiscontinuousGalerkin/Actions/NormalCovectorAndMagnitude.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
@@ -146,7 +147,8 @@ auto create_box(const size_t number_of_grid_points_per_dim,
     neighbors[Direction<Dim>::upper_zeta()] =
         Neighbors<Dim>{{up_id}, OrientationMap<Dim>::create_aligned()};
   }
-  const Element<Dim> element{self_id, neighbors};
+  const Element<Dim> element{self_id, neighbors,
+                             domain::topologies::hypercube<Dim>};
 
   DirectionMap<Dim, std::optional<Variables<
                         tmpl::list<evolution::dg::Tags::MagnitudeOfNormal,

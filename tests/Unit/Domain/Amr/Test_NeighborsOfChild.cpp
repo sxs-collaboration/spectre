@@ -23,6 +23,7 @@
 #include "Domain/Structure/Neighbors.hpp"
 #include "Domain/Structure/SegmentId.hpp"
 #include "Domain/Structure/Side.hpp"
+#include "Domain/Structure/Topology.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/Domain/Amr/NeighborFlagHelpers.hpp"
 #include "Helpers/Domain/Structure/NeighborHelpers.hpp"
@@ -87,7 +88,8 @@ std::vector<Element<Dim>> valid_elements(
     typename Element<Dim>::Neighbors_t neighbors{};
     neighbors.emplace(Direction<Dim>::lower_xi(), lower_xi_neighbors);
     neighbors.emplace(Direction<Dim>::upper_xi(), upper_xi_neighbors);
-    result.emplace_back(element_id, std::move(neighbors));
+    result.emplace_back(element_id, std::move(neighbors),
+                        domain::topologies::hypercube<Dim>);
   }
   return result;
 }
@@ -227,6 +229,71 @@ void test(const gsl::not_null<std::mt19937*> generator) {
     }
   }
 }
+
+void test_b2() {
+  const ElementId<2> parent_id{0, std::array{SegmentId{2, 0}, SegmentId{0, 0}}};
+  const ElementId<2> parent_upper_neighbor_id{
+      0, std::array{SegmentId{2, 1}, SegmentId{0, 0}}};
+  DirectionMap<2, Neighbors<2>> parent_neighbors{};
+  const OrientationMap<2> aligned = OrientationMap<2>::create_aligned();
+  parent_neighbors.emplace(
+      Direction<2>::upper_xi(),
+      Neighbors<2>{std::unordered_set{parent_upper_neighbor_id}, aligned});
+  const Element<2> parent{parent_id, std::move(parent_neighbors),
+                          domain::topologies::disk};
+  const Mesh<2> lower_child_mesh{std::array{3_st, 9_st}, Spectral::bases::disk,
+                                 Spectral::quadratures::disk};
+  const Mesh<2> upper_child_mesh{std::array{3_st, 9_st},
+                                 Spectral::bases::annulus<>,
+                                 Spectral::quadratures::annulus<>};
+  const amr::Info<2> parent_info{
+      std::array{amr::Flag::Split, amr::Flag::DoNothing}, upper_child_mesh};
+  const Mesh<2> neighbor_mesh{std::array{4_st, 5_st},
+                              Spectral::bases::annulus<>,
+                              Spectral::quadratures::annulus<>};
+  std::unordered_map<ElementId<2>, amr::Info<2>> parent_neighbor_info;
+  parent_neighbor_info.emplace(
+      parent_upper_neighbor_id,
+      amr::Info<2>{std::array{amr::Flag::DoNothing, amr::Flag::DoNothing},
+                   neighbor_mesh});
+  const ElementId<2> lower_child_id{
+      0, std::array{SegmentId{3, 0}, SegmentId{0, 0}}};
+  const ElementId<2> upper_child_id{
+      0, std::array{SegmentId{3, 1}, SegmentId{0, 0}}};
+  const auto [lower_child_neighbors, lower_child_neighbor_meshes] =
+      amr::neighbors_of_child(parent, parent_info, parent_neighbor_info,
+                              lower_child_id);
+  DirectionMap<2, Neighbors<2>> expected_lower_child_neighbors{};
+  expected_lower_child_neighbors.emplace(
+      Direction<2>::upper_xi(),
+      Neighbors<2>{std::unordered_set{upper_child_id}, aligned});
+  CHECK(lower_child_neighbors == expected_lower_child_neighbors);
+  DirectionalIdMap<2, Mesh<2>> expected_lower_child_neighbor_meshes{};
+  expected_lower_child_neighbor_meshes.emplace(
+      DirectionalId<2>{Direction<2>::upper_xi(), upper_child_id},
+      upper_child_mesh);
+  CHECK(lower_child_neighbor_meshes == expected_lower_child_neighbor_meshes);
+
+  const auto [upper_child_neighbors, upper_child_neighbor_meshes] =
+      amr::neighbors_of_child(parent, parent_info, parent_neighbor_info,
+                              upper_child_id);
+  DirectionMap<2, Neighbors<2>> expected_upper_child_neighbors{};
+  expected_upper_child_neighbors.emplace(
+      Direction<2>::lower_xi(),
+      Neighbors<2>{std::unordered_set{lower_child_id}, aligned});
+  expected_upper_child_neighbors.emplace(
+      Direction<2>::upper_xi(),
+      Neighbors<2>{std::unordered_set{parent_upper_neighbor_id}, aligned});
+  CHECK(upper_child_neighbors == expected_upper_child_neighbors);
+  DirectionalIdMap<2, Mesh<2>> expected_upper_child_neighbor_meshes{};
+  expected_upper_child_neighbor_meshes.emplace(
+      DirectionalId<2>{Direction<2>::lower_xi(), lower_child_id},
+      lower_child_mesh);
+  expected_upper_child_neighbor_meshes.emplace(
+      DirectionalId<2>{Direction<2>::upper_xi(), parent_upper_neighbor_id},
+      neighbor_mesh);
+  CHECK(upper_child_neighbor_meshes == expected_upper_child_neighbor_meshes);
+}
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Domain.Amr.NeighborsOfChild", "[Domain][Unit]") {
@@ -234,4 +301,5 @@ SPECTRE_TEST_CASE("Unit.Domain.Amr.NeighborsOfChild", "[Domain][Unit]") {
   test<1>(make_not_null(&generator));
   test<2>(make_not_null(&generator));
   test<3>(make_not_null(&generator));
+  test_b2();
 }

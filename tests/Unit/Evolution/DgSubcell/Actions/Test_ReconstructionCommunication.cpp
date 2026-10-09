@@ -32,6 +32,7 @@
 #include "Domain/Structure/DirectionalIdMap.hpp"
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/ElementId.hpp"
+#include "Domain/Structure/Topology.hpp"
 #include "Domain/Tags.hpp"
 #include "Domain/Tags/NeighborMesh.hpp"
 #include "Evolution/DgSubcell/Actions/ReconstructionCommunication.hpp"
@@ -289,7 +290,8 @@ void test(const bool use_cell_centered_flux) {
     neighbors[Direction<Dim>::lower_eta()] =
         Neighbors<Dim>{{south_id}, orientation};
   }
-  const Element<Dim> element{self_id, neighbors};
+  const Element<Dim> element{self_id, neighbors,
+                             domain::topologies::hypercube<Dim>};
 
   using NeighborDataMap =
       DirectionalIdMap<Dim, evolution::dg::subcell::GhostData>;
@@ -702,7 +704,8 @@ Element<Dim> create_element(const std::vector<Block<Dim>>& blocks,
             : blocks[self_block_id].neighbors().at(direction).orientation(
                   neighbor_id.block_id())};
   }
-  return Element<Dim>{self_id, std::move(neighbors)};
+  return Element<Dim>{self_id, std::move(neighbors),
+                      domain::topologies::hypercube<Dim>};
 }
 
 void add_rdmp_data_to_datavector(

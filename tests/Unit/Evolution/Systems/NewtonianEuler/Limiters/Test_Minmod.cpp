@@ -24,6 +24,7 @@
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/ElementId.hpp"
+#include "Domain/Structure/Topology.hpp"
 #include "Evolution/DiscontinuousGalerkin/Limiters/Minmod.hpp"
 #include "Evolution/DiscontinuousGalerkin/Limiters/MinmodImpl.hpp"
 #include "Evolution/DiscontinuousGalerkin/Limiters/MinmodType.hpp"
@@ -532,7 +533,8 @@ void test_neuler_minmod_flattener() {
   const auto mesh = Mesh<VolumeDim>(2, Spectral::Basis::Legendre,
                                     Spectral::Quadrature::GaussLobatto);
   // We use an element with no neighbors so the limiter does nothing
-  const auto element = Element<VolumeDim>{ElementId<VolumeDim>(0), {}};
+  const auto element = Element<VolumeDim>{
+      ElementId<VolumeDim>(0), {}, domain::topologies::hypercube<VolumeDim>};
   const auto logical_coords = logical_coordinates(mesh);
   const auto element_size = make_array<VolumeDim>(0.6);
   // inv_jac = logical volume / inertial volume

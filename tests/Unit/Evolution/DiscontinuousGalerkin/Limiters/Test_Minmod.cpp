@@ -27,6 +27,7 @@
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Structure/Neighbors.hpp"
 #include "Domain/Structure/OrientationMap.hpp"
+#include "Domain/Structure/Topology.hpp"
 #include "Evolution/DiscontinuousGalerkin/Limiters/Minmod.hpp"
 #include "Evolution/DiscontinuousGalerkin/Limiters/MinmodHelpers.hpp"
 #include "Evolution/DiscontinuousGalerkin/Limiters/MinmodImpl.hpp"
@@ -1135,7 +1136,8 @@ void test_minmod_impl_two_lower_xi_neighbors() {
                                   root_segment.id_of_child(Side::Upper)}})},
             OrientationMap<2>::create_aligned()}},
           {Direction<2>::upper_xi(),
-           TestHelpers::Limiters::make_neighbor_with_id<2>(2)}}};
+           TestHelpers::Limiters::make_neighbor_with_id<2>(2)}},
+      domain::topologies::hypercube<2>};
   const auto mesh =
       Mesh<2>(3, Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto);
   const auto logical_coords = logical_coordinates(mesh);
@@ -1302,7 +1304,8 @@ void test_minmod_impl_four_upper_xi_neighbors() {
                 ElementId<3>(
                     2, {root_segment, root_segment.id_of_child(Side::Upper),
                         root_segment.id_of_child(Side::Upper)})},
-            OrientationMap<3>::create_aligned()}}}};
+            OrientationMap<3>::create_aligned()}}},
+      domain::topologies::hypercube<3>};
   const auto mesh =
       Mesh<3>(3, Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto);
   const auto logical_coords = logical_coordinates(mesh);

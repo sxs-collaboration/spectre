@@ -10,6 +10,7 @@
 #include "Domain/Structure/DirectionalIdMap.hpp"
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/ElementId.hpp"
+#include "Domain/Structure/Topology.hpp"
 #include "Domain/Structure/TrimMap.hpp"
 #include "Utilities/Gsl.hpp"
 
@@ -26,7 +27,8 @@ void test_remove_nonexistent_neighbors() {
     map_to_trim[DirectionalId<Dim>{gsl::at(Direction<Dim>::all_directions(), i),
                                    id}] = i * i + 10;  // Assign some number
   }
-  const Element<Dim> element{ElementId<Dim>{0, {}}, neighbors};
+  const Element<Dim> element{ElementId<Dim>{0, {}}, neighbors,
+                             domain::topologies::hypercube<Dim>};
   // Add extra neighbors that will be removed
   for (size_t i = 0; i < 2 * Dim and Dim > 1; ++i) {
     ElementId<Dim> id{i + 100, {}};

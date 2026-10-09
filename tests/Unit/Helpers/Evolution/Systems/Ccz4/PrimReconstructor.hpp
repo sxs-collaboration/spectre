@@ -24,6 +24,7 @@
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Structure/Neighbors.hpp"
+#include "Domain/Structure/Topology.hpp"
 #include "Evolution/DgSubcell/GhostData.hpp"
 #include "Evolution/DgSubcell/SliceData.hpp"
 #include "Evolution/Systems/Ccz4/ATilde.hpp"
@@ -217,7 +218,8 @@ inline Element<3> set_element(const bool skip_last = false) {
     neighbors[gsl::at(Direction<3>::all_directions(), i)] = Neighbors<3>{
         {ElementId<3>{i + 1, {}}}, OrientationMap<3>::create_aligned()};
   }
-  return Element<3>{ElementId<3>{0, {}}, neighbors};
+  return Element<3>{ElementId<3>{0, {}}, neighbors,
+                    domain::topologies::hypercube<3>};
 }
 
 inline tnsr::I<DataVector, 3, Frame::ElementLogical> set_logical_coordinates(

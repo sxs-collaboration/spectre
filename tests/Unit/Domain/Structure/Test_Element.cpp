@@ -17,6 +17,7 @@
 #include "Domain/Structure/Neighbors.hpp"
 #include "Domain/Structure/OrientationMap.hpp"
 #include "Domain/Structure/Side.hpp"
+#include "Domain/Structure/Topology.hpp"
 #include "Domain/Tags.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Utilities/GetOutput.hpp"
@@ -28,7 +29,8 @@ void check_element_work(const typename Element<VolumeDim>::Neighbors_t&
                             neighbors_in_largest_dimension,
                         const size_t expected_number_of_neighbors) {
   const ElementId<VolumeDim> id{5};
-  const Element<VolumeDim> element(id, neighbors_in_largest_dimension);
+  const Element<VolumeDim> element(id, neighbors_in_largest_dimension,
+                                   domain::topologies::hypercube<VolumeDim>);
 
   CHECK(element.id() == id);
   CHECK(element.neighbors() == neighbors_in_largest_dimension);
@@ -55,16 +57,19 @@ void check_element_work(const typename Element<VolumeDim>::Neighbors_t&
   CHECK(element == element);
   CHECK_FALSE(element != element);
 
-  const Element<VolumeDim> element_diff_id(ElementId<VolumeDim>(3),
-                                           neighbors_in_largest_dimension);
+  const Element<VolumeDim> element_diff_id(
+      ElementId<VolumeDim>(3), neighbors_in_largest_dimension,
+      domain::topologies::hypercube<VolumeDim>);
   CHECK(element != element_diff_id);
   CHECK_FALSE(element == element_diff_id);
 
   const Element<VolumeDim> element_diff_neighbors(
-      id, typename Element<VolumeDim>::Neighbors_t{
-              {Direction<VolumeDim>::lower_xi(),
-               neighbors_in_largest_dimension.at(
-                   Direction<VolumeDim>(VolumeDim - 1, Side::Upper))}});
+      id,
+      typename Element<VolumeDim>::Neighbors_t{
+          {Direction<VolumeDim>::lower_xi(),
+           neighbors_in_largest_dimension.at(
+               Direction<VolumeDim>(VolumeDim - 1, Side::Upper))}},
+      domain::topologies::hypercube<VolumeDim>);
   CHECK(element != element_diff_neighbors);
   CHECK_FALSE(element == element_diff_neighbors);
 
@@ -159,10 +164,9 @@ void check_element_3d() {
 }
 
 void check_spherical_shell() {
-  const Element<3> spherical_shell(
-      ElementId<3>{5}, DirectionMap<3, Neighbors<3>>{},
-      std::array{domain::Topology::I1, domain::Topology::S2Colatitude,
-                 domain::Topology::S2Longitude});
+  const Element<3> spherical_shell(ElementId<3>{5},
+                                   DirectionMap<3, Neighbors<3>>{},
+                                   domain::topologies::spherical_shell);
   CHECK(spherical_shell.external_boundaries().size() == 2);
   CHECK(
       spherical_shell.external_boundaries().contains(Direction<3>::lower_xi()));
@@ -196,7 +200,7 @@ void check_assert() {
         const DirectionMap<1, Neighbors<1>> neighbors{
             {Direction<1>::lower_xi(), element_neighbors}};
         const Element<1> loop(ElementId<1>{2}, neighbors,
-                              std::array{domain::Topology::S1});
+                              domain::topologies::hypertorus<1>);
       }()),
       Catch::Matchers::ContainsSubstring(
           "Cannot specify a neighbor in a direction with no boundary"));
@@ -214,7 +218,7 @@ void test_nonconforming_blocks() {
                {1, 2, 3, 4},
                {{1, aligned}, {2, aligned}, {3, aligned}, {4, aligned}},
                false}}},
-      "Annulus", std::array{domain::Topology::I1, domain::Topology::S1});
+      "Annulus", domain::topologies::annulus);
   blocks.emplace_back(
       nullptr, 1,
       DirectionMap<2, BlockNeighbors<2>>{
@@ -222,7 +226,7 @@ void test_nonconforming_blocks() {
            BlockNeighbors<2>{{0}, {{0, aligned}}, false}},
           {Direction<2>::lower_eta(), BlockNeighbors<2>{2, aligned}},
           {Direction<2>::upper_eta(), BlockNeighbors<2>{4, aligned}}},
-      "North", std::array{domain::Topology::I1, domain::Topology::I1});
+      "North", domain::topologies::hypercube<2>);
   blocks.emplace_back(
       nullptr, 2,
       DirectionMap<2, BlockNeighbors<2>>{
@@ -230,7 +234,7 @@ void test_nonconforming_blocks() {
            BlockNeighbors<2>{{0}, {{0, aligned}}, false}},
           {Direction<2>::lower_eta(), BlockNeighbors<2>{3, aligned}},
           {Direction<2>::upper_eta(), BlockNeighbors<2>{1, aligned}}},
-      "East", std::array{domain::Topology::I1, domain::Topology::I1});
+      "East", domain::topologies::hypercube<2>);
   blocks.emplace_back(
       nullptr, 3,
       DirectionMap<2, BlockNeighbors<2>>{
@@ -238,7 +242,7 @@ void test_nonconforming_blocks() {
            BlockNeighbors<2>{{0}, {{0, aligned}}, false}},
           {Direction<2>::lower_eta(), BlockNeighbors<2>{4, aligned}},
           {Direction<2>::upper_eta(), BlockNeighbors<2>{2, aligned}}},
-      "South", std::array{domain::Topology::I1, domain::Topology::I1});
+      "South", domain::topologies::hypercube<2>);
   blocks.emplace_back(
       nullptr, 4,
       DirectionMap<2, BlockNeighbors<2>>{
@@ -246,7 +250,7 @@ void test_nonconforming_blocks() {
            BlockNeighbors<2>{{0}, {{0, aligned}}, false}},
           {Direction<2>::lower_eta(), BlockNeighbors<2>{1, aligned}},
           {Direction<2>::upper_eta(), BlockNeighbors<2>{3, aligned}}},
-      "West", std::array{domain::Topology::I1, domain::Topology::I1});
+      "West", domain::topologies::hypercube<2>);
   const std::vector<std::array<size_t, 2>> initial_refinement_levels{
       std::array{2_st, 0_st}, std::array{0_st, 1_st}, std::array{0_st, 1_st},
       std::array{0_st, 1_st}, std::array{0_st, 1_st}};

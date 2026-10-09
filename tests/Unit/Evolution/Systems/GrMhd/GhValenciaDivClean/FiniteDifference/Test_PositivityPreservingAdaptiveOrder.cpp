@@ -22,6 +22,7 @@
 #include "Domain/Structure/Neighbors.hpp"
 #include "Domain/Structure/OrientationMap.hpp"
 #include "Domain/Structure/Side.hpp"
+#include "Domain/Structure/Topology.hpp"
 #include "Evolution/DgSubcell/GhostData.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/FiniteDifference/Factory.hpp"
@@ -79,7 +80,8 @@ void test_neighbor_positivity(const Reconstructor& reconstructor) {
       Neighbors<3>{{ElementId<3>{1, {}}}, OrientationMap<3>::create_aligned()};
   element_neighbors[Direction<3>::lower_xi()] =
       Neighbors<3>{{ElementId<3>{2, {}}}, OrientationMap<3>::create_aligned()};
-  const Element<3> element{ElementId<3>{0, {}}, std::move(element_neighbors)};
+  const Element<3> element{ElementId<3>{0, {}}, std::move(element_neighbors),
+                           domain::topologies::hypercube<3>};
 
   const Mesh<3> subcell_mesh{{{11, 1, 1}},
                              Spectral::Basis::FiniteDifference,
