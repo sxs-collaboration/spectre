@@ -19,14 +19,6 @@ uint8_t combine(const Spectral::Basis basis,
                 const Spectral::Quadrature quadrature) {
   return static_cast<uint8_t>(basis) bitor static_cast<uint8_t>(quadrature);
 }
-
-Spectral::Basis extract_basis(const uint8_t bits) {
-  return static_cast<Spectral::Basis>(0b11110000 bitand bits);
-}
-
-Spectral::Quadrature extract_quadrature(const uint8_t bits) {
-  return static_cast<Spectral::Quadrature>(0b00001111 bitand bits);
-}
 }  // namespace
 
 template <size_t Dim>
@@ -173,20 +165,15 @@ std::array<Spectral::Basis, Dim> Mesh<Dim>::basis() const {
   if constexpr (Dim == 0) {
     return {};
   } else if constexpr (Dim == 1) {
-    return {extract_basis(quadrature_and_basis_[0])};
+    return {Mesh_detail::extract_basis(quadrature_and_basis_[0])};
   } else if constexpr (Dim == 2) {
-    return {extract_basis(quadrature_and_basis_[0]),
-            extract_basis(quadrature_and_basis_[1])};
+    return {Mesh_detail::extract_basis(quadrature_and_basis_[0]),
+            Mesh_detail::extract_basis(quadrature_and_basis_[1])};
   } else {
-    return {extract_basis(quadrature_and_basis_[0]),
-            extract_basis(quadrature_and_basis_[1]),
-            extract_basis(quadrature_and_basis_[2])};
+    return {Mesh_detail::extract_basis(quadrature_and_basis_[0]),
+            Mesh_detail::extract_basis(quadrature_and_basis_[1]),
+            Mesh_detail::extract_basis(quadrature_and_basis_[2])};
   }
-}
-
-template <size_t Dim>
-Spectral::Basis Mesh<Dim>::basis(const size_t d) const {
-  return extract_basis(gsl::at(quadrature_and_basis_, d));
 }
 
 template <size_t Dim>
@@ -194,20 +181,15 @@ std::array<Spectral::Quadrature, Dim> Mesh<Dim>::quadrature() const {
   if constexpr (Dim == 0) {
     return {};
   } else if constexpr (Dim == 1) {
-    return {extract_quadrature(quadrature_and_basis_[0])};
+    return {Mesh_detail::extract_quadrature(quadrature_and_basis_[0])};
   } else if constexpr (Dim == 2) {
-    return {extract_quadrature(quadrature_and_basis_[0]),
-            extract_quadrature(quadrature_and_basis_[1])};
+    return {Mesh_detail::extract_quadrature(quadrature_and_basis_[0]),
+            Mesh_detail::extract_quadrature(quadrature_and_basis_[1])};
   } else {
-    return {extract_quadrature(quadrature_and_basis_[0]),
-            extract_quadrature(quadrature_and_basis_[1]),
-            extract_quadrature(quadrature_and_basis_[2])};
+    return {Mesh_detail::extract_quadrature(quadrature_and_basis_[0]),
+            Mesh_detail::extract_quadrature(quadrature_and_basis_[1]),
+            Mesh_detail::extract_quadrature(quadrature_and_basis_[2])};
   }
-}
-
-template <size_t Dim>
-Spectral::Quadrature Mesh<Dim>::quadrature(const size_t d) const {
-  return extract_quadrature(gsl::at(quadrature_and_basis_, d));
 }
 
 template <size_t Dim>

@@ -5,6 +5,7 @@
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/Kokkos/KokkosCore.hpp"
 
 namespace hydro {
 
@@ -56,7 +57,7 @@ tnsr::A<DataType, 3> comoving_magnetic_field(
     const Scalar<DataType>& lapse);
 
 template <typename DataType>
-void comoving_magnetic_field_one_form(
+KOKKOS_FUNCTION void comoving_magnetic_field_one_form(
     gsl::not_null<tnsr::a<DataType, 3>*> result,
     const tnsr::i<DataType, 3>& spatial_velocity_one_form,
     const tnsr::i<DataType, 3>& magnetic_field_one_form,

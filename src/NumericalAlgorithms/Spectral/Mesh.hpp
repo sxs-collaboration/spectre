@@ -8,6 +8,7 @@
 
 #include <array>
 #include <cstddef>
+#include <cstdint>
 
 #include "DataStructures/Index.hpp"
 #include "NumericalAlgorithms/Spectral/Basis.hpp"
@@ -15,6 +16,7 @@
 #include "Options/String.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/Kokkos/KokkosCore.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TypeTraits.hpp"
 #include "Utilities/TypeTraits/IsInteger.hpp"
@@ -24,6 +26,17 @@ namespace PUP {
 class er;
 }  // namespace PUP
 /// \endcond
+
+namespace Mesh_detail {
+// The basis and quadrature are stored as two sets of 4 bits in a uint8_t
+constexpr Spectral::Basis extract_basis(const uint8_t bits) {
+  return static_cast<Spectral::Basis>(0b11110000 bitand bits);
+}
+
+constexpr Spectral::Quadrature extract_quadrature(const uint8_t bits) {
+  return static_cast<Spectral::Quadrature>(0b00001111 bitand bits);
+}
+}  // namespace Mesh_detail
 
 /*!
  * \ingroup DataStructuresGroup
@@ -171,8 +184,15 @@ class Mesh {
 
   /*!
    * \brief The basis chosen in dimension \p d of the grid (zero-indexed).
+   *
+   * Can be called in Kokkos kernels.
    */
-  Spectral::Basis basis(size_t d) const;
+  KOKKOS_FUNCTION Spectral::Basis basis(const size_t d) const {
+    SPECTRE_KOKKOS_ASSERT(
+        d < quadrature_and_basis_.size(),
+        "Dimension " << d << " is out of bounds for a " << Dim << "D mesh.");
+    return Mesh_detail::extract_basis(quadrature_and_basis_[d]);
+  }
 
   /*!
    * \brief The quadrature chosen in each dimension of the grid.
@@ -181,8 +201,15 @@ class Mesh {
 
   /*!
    * \brief The quadrature chosen in dimension \p d of the grid (zero-indexed).
+   *
+   * Can be called in Kokkos kernels.
    */
-  Spectral::Quadrature quadrature(size_t d) const;
+  KOKKOS_FUNCTION Spectral::Quadrature quadrature(const size_t d) const {
+    SPECTRE_KOKKOS_ASSERT(
+        d < quadrature_and_basis_.size(),
+        "Dimension " << d << " is out of bounds for a " << Dim << "D mesh.");
+    return Mesh_detail::extract_quadrature(quadrature_and_basis_[d]);
+  }
 
   /*!
    * \brief Returns a Mesh with dimension \p d removed (zero-indexed).
