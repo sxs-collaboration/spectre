@@ -9,6 +9,7 @@ spectre_target_sources(
   ${LIBRARY}
   PRIVATE
   NumericData.cpp
+  WithNoise.cpp
   )
 
 spectre_target_headers(
@@ -20,11 +21,13 @@ spectre_target_headers(
   InitialData.hpp
   InitialGuess.hpp
   NumericData.hpp
+  WithNoise.hpp
   )
 
 target_link_libraries(
   ${LIBRARY}
   PUBLIC
+  Boost::boost
   DataStructures
   Exporter
   Options

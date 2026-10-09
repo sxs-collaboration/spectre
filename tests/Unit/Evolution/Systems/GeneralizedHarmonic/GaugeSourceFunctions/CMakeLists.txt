@@ -25,6 +25,7 @@ target_link_libraries(
   FunctionsOfTime
   GeneralRelativity
   GeneralizedHarmonic
+  InitialDataUtilities
   LinearOperators
   Options
   Parallel
