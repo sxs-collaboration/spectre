@@ -33,7 +33,6 @@ CMakeUserPresets.json
 .dir-locals.el
 .cquery_cached_index
 .ycm_extra_conf.py
-.clangd
 .cache
 .projectile-cache.eld
 
