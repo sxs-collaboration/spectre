@@ -91,16 +91,14 @@ SPECTRE_TEST_CASE("Unit.GrSelfForce.Actions.InitializeEffectiveSource",
   const auto element_unregularized =
       ElementId<2>{0, {{SegmentId{2, 3}, SegmentId{2, 1}}}};
 
-  ActionTesting::MockRuntimeSystem<Metavariables> runner{
-      tuples::TaggedTuple<background_tag, domain::Tags::Domain<2>,
-                          domain::Tags::FunctionsOfTimeInitialize,
-                          elliptic::dg::Tags::Massive,
-                          elliptic::dg::Tags::Quadrature,
-                          GrSelfForce::Tags::NullSlicingBlocks<2>>{
-          std::make_unique<GrSelfForce::AnalyticData::CircularOrbit>(1.0, 0.0,
-                                                                     6.0, 1),
-          domain_creator.create_domain(), domain_creator.functions_of_time(),
-          false, Spectral::Quadrature::GaussLobatto, std::vector<size_t>{}}};
+  ActionTesting::MockRuntimeSystem<Metavariables> runner{tuples::TaggedTuple<
+      background_tag, domain::Tags::Domain<2>,
+      domain::Tags::FunctionsOfTimeInitialize, elliptic::dg::Tags::Massive,
+      elliptic::dg::Tags::Quadrature, GrSelfForce::Tags::NullSlicingBlocks<2>>{
+      std::make_unique<GrSelfForce::AnalyticData::CircularOrbit>(
+          1.0, 0.0, 6.0, 1, std::nullopt, false),
+      domain_creator.create_domain(), domain_creator.functions_of_time(), false,
+      Spectral::Quadrature::GaussLobatto, std::vector<size_t>{}}};
   const ::Tags::Mortars<domain::Tags::Coordinates<2, Frame::Inertial>, 2>::type
       empty_mortar_coords{};
   ActionTesting::emplace_component_and_initialize<element_array>(
