@@ -55,6 +55,10 @@ if(NOT ${KOKKOS_CXX_COMPILER_ID} STREQUAL "NVIDIA")
   list(APPEND LIBRARY_SOURCES Test_TaggedVariant.cpp)
 endif()
 
+if (TARGET Kokkos::kokkos)
+  list(APPEND LIBRARY_SOURCES Test_VariablesKokkos.cpp)
+endif()
+
 add_subdirectory(DataBox)
 add_subdirectory(Tensor)
 
