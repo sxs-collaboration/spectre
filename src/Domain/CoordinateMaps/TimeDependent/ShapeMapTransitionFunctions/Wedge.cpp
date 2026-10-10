@@ -82,7 +82,8 @@ Wedge::Wedge(const std::array<double, 3>& inner_center,
       outer_surface_(outer_center, outer_radius, outer_sphericity),
       projection_center_(inner_surface_.center - outer_surface_.center),
       axis_(axis),
-      reverse_(reverse) {
+      reverse_(reverse),
+      roundoff_scale_(magnitude(inner_surface_.center)) {
   if (projection_center_ != std::array{0.0, 0.0, 0.0} and
       inner_surface_.sphericity != 1.0) {
     ERROR(
@@ -416,21 +417,20 @@ T Wedge::call_impl(const std::array<T, 3>& source_coords,
     const std::array<double, 3> point{get_element(source_coords[0], i),
                                       get_element(source_coords[1], i),
                                       get_element(source_coords[2], i)};
-    if (get_element(centered_coords_magnitude, i) <
-        (1.0 - eps_) * get_element(inner_distance, i)) {
+    const double radius = get_element(centered_coords_magnitude, i);
+    const double inner = get_element(inner_distance, i);
+    const double outer = get_element(outer_distance, i);
+    if (radius < inner and
+        not equal_within_roundoff(radius, inner, eps_, roundoff_scale_)) {
       ERROR("Wedge transition called with centered coordinate "
-            << point << " (with radius "
-            << get_element(centered_coords_magnitude, i)
-            << ") which is inside the inner surface ("
-            << get_element(inner_distance, i)
+            << point << " (with radius " << radius
+            << ") which is inside the inner surface (" << inner
             << ") while the axis was not 'Interior' (" << axis_ << ")");
-    } else if (get_element(centered_coords_magnitude, i) >
-               (1.0 + eps_) * get_element(outer_distance, i)) {
+    } else if (radius > outer and not equal_within_roundoff(radius, outer, eps_,
+                                                            roundoff_scale_)) {
       ERROR("Wedge transition called with centered coordinate "
-            << point << " (with radius "
-            << get_element(centered_coords_magnitude, i)
-            << ") which is outside the outer surface ("
-            << get_element(outer_distance, i) << ").");
+            << point << " (with radius " << radius
+            << ") which is outside the outer surface (" << outer << ").");
     }
   }
 #endif
@@ -485,8 +485,9 @@ std::optional<double> Wedge::original_radius_over_radius(
   if (not reverse_) {
     // Check if we are within the interior region or at the inner surface. The
     // formula is simplified at the inner surface
-    if (centered_coords_magnitude + radial_distortion <
-        (1.0 - eps_) * inner_distance) {
+    if (centered_coords_magnitude + radial_distortion < inner_distance and
+        not equal_within_roundoff(centered_coords_magnitude + radial_distortion,
+                                  inner_distance, eps_, roundoff_scale_)) {
       // Int: Unless the axis_ is Interior, this block doesn't contain this
       // point
       if (axis_ != Axis::Interior) {
@@ -549,10 +550,12 @@ std::optional<double> Wedge::original_radius_over_radius(
   // transition region. If we are reversed and inside the inner surface, we
   // return nullopt. If we aren't reversed and beyond the outer surface we
   // return nullopt because we could still be in the interior region.
-  if ((not reverse_ and
-       centered_coords_magnitude > (1.0 + eps_) * outer_distance) or
-      (reverse_ and
-       centered_coords_magnitude < (1.0 - eps_) * inner_distance)) {
+  if ((not reverse_ and centered_coords_magnitude > outer_distance and
+       not equal_within_roundoff(centered_coords_magnitude, outer_distance,
+                                 eps_, roundoff_scale_)) or
+      (reverse_ and centered_coords_magnitude < inner_distance and
+       not equal_within_roundoff(centered_coords_magnitude, inner_distance,
+                                 eps_, roundoff_scale_))) {
     return std::nullopt;
   }
 
@@ -597,7 +600,9 @@ std::optional<double> Wedge::original_radius_over_radius(
   if (reverse_) {
     if (equal_within_roundoff(original_radius, outer_distance)) {
       return {1.0 + radial_distortion / centered_coords_magnitude};
-    } else if (original_radius > (1.0 + eps_) * outer_distance) {
+    } else if (original_radius > outer_distance and
+               not equal_within_roundoff(original_radius, outer_distance, eps_,
+                                         roundoff_scale_)) {
       return std::nullopt;
     }
   }
@@ -661,21 +666,20 @@ std::array<T, 3> Wedge::gradient_impl(
     const std::array<double, 3> point{get_element(source_coords[0], i),
                                       get_element(source_coords[1], i),
                                       get_element(source_coords[2], i)};
-    if (get_element(centered_coords_magnitude, i) <
-        (1.0 - eps_) * get_element(inner_distance, i)) {
+    const double radius = get_element(centered_coords_magnitude, i);
+    const double inner = get_element(inner_distance, i);
+    const double outer = get_element(outer_distance, i);
+    if (radius < inner and
+        not equal_within_roundoff(radius, inner, eps_, roundoff_scale_)) {
       ERROR("Wedge transition called with centered coordinate "
-            << point << " (with radius "
-            << get_element(centered_coords_magnitude, i)
-            << ") which is inside the inner surface ("
-            << get_element(inner_distance, i)
+            << point << " (with radius " << radius
+            << ") which is inside the inner surface (" << inner
             << ") while the axis was not 'Interior' (" << axis_ << ")");
-    } else if (get_element(centered_coords_magnitude, i) >
-               (1.0 + eps_) * get_element(outer_distance, i)) {
+    } else if (radius > outer and not equal_within_roundoff(radius, outer, eps_,
+                                                            roundoff_scale_)) {
       ERROR("Wedge transition called with centered coordinate "
-            << point << " (with radius "
-            << get_element(centered_coords_magnitude, i)
-            << ") which is outside the outer surface ("
-            << get_element(outer_distance, i) << ").");
+            << point << " (with radius " << radius
+            << ") which is outside the outer surface (" << outer << ").");
     }
   }
 #endif
@@ -824,6 +828,8 @@ void Wedge::pup(PUP::er& p) {
     axis_ = static_cast<Axis>(axis + 1);
     projection_center_ = std::array{0.0, 0.0, 0.0};
   }
+  // Derived from the inner center, so recompute rather than serialize.
+  roundoff_scale_ = magnitude(inner_surface_.center);
 }
 
 Wedge::Wedge(CkMigrateMessage* const msg) : ShapeMapTransitionFunction(msg) {}

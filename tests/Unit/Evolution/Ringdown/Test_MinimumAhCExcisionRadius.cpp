@@ -213,8 +213,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.Ringdown.MinimumAhCExcisionRadius",
 
   using Object = domain::creators::BinaryCompactObject::Object;
   const domain::creators::BinaryCompactObject domain_creator_bco{
-      Object{0.2, 0.5, 1.0, true, true},
-      Object{0.1, 0.5, -1.5, true, true},
+      Object{0.2, 0.5, 1.0, true, std::optional<double>{1.0}},
+      Object{0.1, 0.5, -1.5, true, std::optional<double>{1.0}},
       std::array<double, 2>{{0.0, 0.0}},
       60.0,
       300.0,
