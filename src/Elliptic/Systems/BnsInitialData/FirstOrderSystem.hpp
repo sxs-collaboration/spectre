@@ -14,6 +14,7 @@
 #include "Elliptic/Systems/BnsInitialData/Tags.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
 #include "PointwiseFunctions/GeneralRelativity/TagsDeclarations.hpp"
+#include "PointwiseFunctions/Hydro/Tags.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -76,6 +77,7 @@ struct FirstOrderSystem
       ::Tags::Flux<velocity_potential, tmpl::size_t<3>, Frame::Inertial>>;
 
   using background_fields = tmpl::list<
+      hydro::Tags::RestMassDensity<DataVector>,
       gr::Tags::InverseSpatialMetric<DataVector, 3>,
       gr::Tags::SpatialChristoffelSecondKindContracted<DataVector, 3>,
       gr::Tags::Lapse<DataVector>,

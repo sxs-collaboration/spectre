@@ -1,7 +1,7 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-set(LIBRARY IrrotationalBnsBoundaryConditions)
+set(LIBRARY BnsInitialDataBoundaryConditions)
 
 add_spectre_library(${LIBRARY})
 

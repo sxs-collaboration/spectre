@@ -112,45 +112,45 @@ Scalar<DataType> specific_enthalpy_squared(
 template <typename DataType>
 void spatial_rotational_killing_vector(
     const gsl::not_null<tnsr::I<DataType, 3>*> result,
-    const tnsr::I<DataType, 3>& x, const double orbital_angular_velocity,
-    const Scalar<DataType>& sqrt_det_spatial_metric) {
-  // Cross product involves volume element in arbitrary coordinates
-  set_number_of_grid_points(result, sqrt_det_spatial_metric);
-  get<0>(*result) =
-      -get(sqrt_det_spatial_metric) * get<1>(x) * orbital_angular_velocity;
-  get<1>(*result) =
-      get(sqrt_det_spatial_metric) * get<0>(x) * orbital_angular_velocity;
+    const tnsr::I<DataType, 3>& x, const double orbital_angular_velocity) {
+  set_number_of_grid_points(result, x);
+  // We do not use the correct spatial metric to do the cross product
+  // but we anticipate this is a small effect.
+  get<0>(*result) = -get<1>(x) * orbital_angular_velocity;
+  get<1>(*result) = get<0>(x) * orbital_angular_velocity;
   get<2>(*result) = 0.0;
 }
 
 template <typename DataType>
 tnsr::I<DataType, 3> spatial_rotational_killing_vector(
-    const tnsr::I<DataType, 3>& x, const double orbital_angular_velocity,
-    const Scalar<DataType>& sqrt_det_spatial_metric) {
+    const tnsr::I<DataType, 3>& x, const double orbital_angular_velocity) {
   tnsr::I<DataType, 3> buffer{};
   spatial_rotational_killing_vector(make_not_null(&buffer), x,
-                                    orbital_angular_velocity,
-                                    sqrt_det_spatial_metric);
+                                    orbital_angular_velocity);
   return buffer;
 }
 
 template <typename DataType>
 void divergence_spatial_rotational_killing_vector(
     const gsl::not_null<Scalar<DataType>*> result,
-    const tnsr::I<DataType, 3>& x, const double /*orbital_angular_velocity*/,
-    const Scalar<DataType>& /*sqrt_det_spatial_metric*/) {
+    const tnsr::I<DataType, 3>& x, const double orbital_angular_velocity,
+    const tnsr::i<DataType, 3>& christoffel_second_kind_contracted) {
   set_number_of_grid_points(result, x);
-  std::fill(result->begin(), result->end(), 0.0);
+  const auto rotational_killing_vector =
+      spatial_rotational_killing_vector(x, orbital_angular_velocity);
+
+  tenex::evaluate<>(result, rotational_killing_vector(ti::I) *
+                                christoffel_second_kind_contracted(ti::i));
 }
 
 template <typename DataType>
 Scalar<DataType> divergence_spatial_rotational_killing_vector(
     const tnsr::I<DataType, 3>& x, const double orbital_angular_velocity,
-    const Scalar<DataType>& sqrt_det_spatial_metric) {
+    const tnsr::i<DataType, 3>& christoffel_second_kind_contracted) {
   Scalar<DataType> buffer{};
-  divergence_spatial_rotational_killing_vector(make_not_null(&buffer), x,
-                                               orbital_angular_velocity,
-                                               sqrt_det_spatial_metric);
+  divergence_spatial_rotational_killing_vector(
+      make_not_null(&buffer), x, orbital_angular_velocity,
+      christoffel_second_kind_contracted);
   return buffer;
 }
 
@@ -201,18 +201,16 @@ Scalar<DataType> divergence_spatial_rotational_killing_vector(
       double euler_enthalpy_constant);                                       \
   template void spatial_rotational_killing_vector(                           \
       gsl::not_null<tnsr::I<DTYPE(data), 3>*> result,                        \
-      const tnsr::I<DTYPE(data), 3>& x, double orbital_angular_velocity,     \
-      const Scalar<DTYPE(data)>& determinant_spatial_metric);                \
+      const tnsr::I<DTYPE(data), 3>& x, double orbital_angular_velocity);    \
   template tnsr::I<DTYPE(data), 3> spatial_rotational_killing_vector(        \
-      const tnsr::I<DTYPE(data), 3>& x, double orbital_angular_velocity,     \
-      const Scalar<DTYPE(data)>& sqrt_det_spatial_metric);                   \
+      const tnsr::I<DTYPE(data), 3>& x, double orbital_angular_velocity);    \
   template void divergence_spatial_rotational_killing_vector(                \
       gsl::not_null<Scalar<DTYPE(data)>*> result,                            \
       const tnsr::I<DTYPE(data), 3>& x, double orbital_angular_velocity,     \
-      const Scalar<DTYPE(data)>& determinant_spatial_metric);                \
+      const tnsr::i<DTYPE(data), 3>& christoffel_second_kind_contracted);    \
   template Scalar<DTYPE(data)> divergence_spatial_rotational_killing_vector( \
       const tnsr::I<DTYPE(data), 3>& x, double orbital_angular_velocity,     \
-      const Scalar<DTYPE(data)>& sqrt_det_spatial_metric);
+      const tnsr::i<DTYPE(data), 3>& christoffel_second_kind_contracted);
 
 GENERATE_INSTANTIATIONS(INSTANTIATION, (double, DataVector))
 
