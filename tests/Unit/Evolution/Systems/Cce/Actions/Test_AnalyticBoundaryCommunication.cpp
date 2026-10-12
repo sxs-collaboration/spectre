@@ -196,7 +196,8 @@ SPECTRE_TEST_CASE(
   const AnalyticBoundaryDataManager analytic_manager{
       l_max, extraction_radius,
       std::make_unique<Cce::Solutions::RotatingSchwarzschild>(extraction_radius,
-                                                              1.0, frequency)};
+                                                              1.0, frequency),
+      0.05};
   runner.set_phase(Parallel::Phase::Initialization);
   ActionTesting::emplace_component<evolution_component>(
       &runner, 0, target_step_size, target_step_size,

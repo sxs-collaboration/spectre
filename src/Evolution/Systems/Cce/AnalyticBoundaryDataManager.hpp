@@ -17,6 +17,7 @@
 #include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
 #include "IO/Observer/ObserverComponent.hpp"
 #include "IO/Observer/ReductionActions.hpp"
+#include "NumericalAlgorithms/Interpolation/SpanInterpolator.hpp"
 #include "NumericalAlgorithms/SpinWeightedSphericalHarmonics/SwshCoefficients.hpp"
 #include "NumericalAlgorithms/SpinWeightedSphericalHarmonics/SwshTransform.hpp"
 #include "Parallel/GlobalCache.hpp"
@@ -43,12 +44,14 @@ class AnalyticBoundaryDataManager {
 
   AnalyticBoundaryDataManager(
       size_t l_max, double extraction_radius,
-      std::unique_ptr<Solutions::WorldtubeData> generator);
+      std::unique_ptr<Solutions::WorldtubeData> generator,
+      double du_dr_j_stencil_step);
 
   /*!
    * \brief Update the `boundary_data_variables` entries for all tags in
-   * `Tags::characteristic_worldtube_boundary_tags` to the boundary data from
-   * the analytic solution at  `time`.
+   * `Tags::characteristic_worldtube_boundary_tags` except `Du<Dr<BondiJ>>`
+   * (see `populate_du_dr_j`) to the boundary data from the analytic solution
+   * at  `time`.
    *
    * \details This class retrieves metric boundary data from the
    * `Cce::Solutions::WorldtubeData` derived class that represents an analytic
@@ -67,6 +70,28 @@ class AnalyticBoundaryDataManager {
   void write_news(Parallel::GlobalCache<Metavariables>& cache,
                   double time) const;
 
+  /*!
+   * \brief Update the `Du<Dr<BondiJ>>` entry of `boundary_data_variables` at
+   * `time` if an interpolator was given with `set_du_dr_j_interpolator`.
+   *
+   * \details Samples `Dr<BondiJ>` from the analytic solution at
+   * `2 * interpolator->required_number_of_points_before_and_after()` times
+   * spaced by `Cce::OptionTags::DuDrJStencilStep` and centered on `time`, and
+   * differentiates it with the interpolator.
+   */
+  void populate_du_dr_j(
+      gsl::not_null<Variables<
+          Tags::characteristic_worldtube_boundary_tags<Tags::BoundaryValue>>*>
+          boundary_data_variables,
+      double time) const;
+
+  /// Set the interpolator used by `populate_du_dr_j`. Without one (the
+  /// default, or after passing `nullptr`), `populate_du_dr_j` does nothing.
+  void set_du_dr_j_interpolator(
+      std::unique_ptr<intrp::SpanInterpolator> interpolator);
+
+  double get_du_dr_j_stencil_step() const { return du_dr_j_stencil_step_; }
+
   size_t get_l_max() const { return l_max_; }
 
   const Solutions::WorldtubeData& get_generator() const { return *generator_; }
@@ -79,6 +104,8 @@ class AnalyticBoundaryDataManager {
   size_t l_max_ = 0;
   std::unique_ptr<Solutions::WorldtubeData> generator_;
   double extraction_radius_ = std::numeric_limits<double>::signaling_NaN();
+  std::unique_ptr<intrp::SpanInterpolator> du_dr_j_interpolator_;
+  double du_dr_j_stencil_step_ = std::numeric_limits<double>::signaling_NaN();
 };
 
 template <typename ParallelComponent, typename Metavariables>
