@@ -169,12 +169,10 @@ def compute_ringdown_shape_and_translation_fot(
     # that are absent from lower-resolution AhC finds.
     fit_lmax = min(ahc_lmax_for_fit_list)
 
-    target_spherepack = Spherepack(fit_lmax, fit_lmax)
     shape_coefs_for_fit_list = []
     for coefs, lmax in zip(
         shape_and_translation_coefs[0], ahc_lmax_for_fit_list
     ):
-        source_spherepack = Spherepack(lmax, lmax)
         if lmax > fit_lmax:
             logger.debug(
                 "Restricting AhC coefficients from LMax %s to %s for the "
@@ -183,7 +181,9 @@ def compute_ringdown_shape_and_translation_fot(
                 fit_lmax,
             )
         shape_coefs_for_fit_list.append(
-            source_spherepack.prolong_or_restrict(coefs, target_spherepack)
+            Spherepack.prolong_or_restrict(
+                coefs, lmax, lmax, fit_lmax, fit_lmax
+            )
         )
 
     shape_coefs_at_different_times_for_fit = np.array(shape_coefs_for_fit_list)
