@@ -151,12 +151,22 @@ def compute_ringdown_shape_and_translation_fot(
     if len(shape_and_translation_coefs[0]) != len(ahc_lmax_for_fit_list):
         raise ValueError(
             "The number of AhC coefficient sets does not match the number "
-            "of AhC L values selected for the ringdown fit:"
+            "of AhC L values selected for the ringdown fit: "
             f"{len(shape_and_translation_coefs[0])} coefficient sets and "
-            f"{len(ahc_lmax_for_fit_list)} L values"
+            f"{len(ahc_lmax_for_fit_list)} L values."
         )
 
     ahc_times_for_fit = np.array(ahc_times_for_fit_list)
+    if len(ahc_lmax_for_fit_list) == 0:
+        raise ValueError(
+            "No AhC finds were selected for the ringdown fit. Check that "
+            "`number_of_ahc_finds_for_fit` includes AhC times at or before "
+            "`match_time`."
+        )
+
+    # Fit only modes that are present at every selected AhC time. Prolonging to
+    # the maximum LMax would introduce discontinuous time derivatives for modes
+    # that are absent from lower-resolution AhC finds.
     fit_lmax = min(ahc_lmax_for_fit_list)
 
     target_spherepack = Spherepack(fit_lmax, fit_lmax)
