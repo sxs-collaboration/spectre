@@ -89,6 +89,12 @@ def compute_ringdown_shape_and_translation_fot(
     functions of time and the Inertial-frame AhC strahlkorper measured from the
     inspiral.
 
+    If the selected AhC finds have different LMax values, the fit is performed
+    at the minimum LMax among those finds. Higher-resolution coefficient sets
+    are restricted to that common resolution so the fit only uses modes
+    available at every selected time, rather than padding missing higher modes
+    with zeros.
+
     Arguments:
     path_to_volume_data: The full path to any volume data containing the
     functions of time at the time of AhC finds.
