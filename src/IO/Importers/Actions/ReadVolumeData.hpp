@@ -6,8 +6,10 @@
 #include <algorithm>
 #include <cstddef>
 #include <optional>
+#include <set>
 #include <string>
 #include <tuple>
+#include <unordered_set>
 #include <variant>
 #include <vector>
 
@@ -437,7 +439,7 @@ struct ReadAllVolumeDataAndDistribute {
 
     // This is the subset of elements that reside on this node. They have
     // registered themselves before. Our job is to fill them with volume data.
-    std::unordered_set<ElementId<Dim>> target_element_ids{};
+    std::set<ElementId<Dim>> target_element_ids{};
     for (const auto& target_element : get<Tags::RegisteredElements<Dim>>(box)) {
       const auto& element_array_component_id = target_element.first;
       const CkArrayIndex& raw_element_index =
