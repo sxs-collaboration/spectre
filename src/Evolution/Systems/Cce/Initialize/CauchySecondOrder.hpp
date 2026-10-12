@@ -333,6 +333,8 @@ struct CauchySecondOrder : InitializeJ<false> {
   std::unique_ptr<intrp::SpanInterpolator> du_dr_j_interpolator()
       const override;
 
+  bool needs_du_dr_j() const override { return true; }
+
   // Per-class tag lists. The flexible dispatch in `InitializeJ<false>` reads
   // these via `call_with_dynamic_type` so this generator can request more
   // worldtube boundary values than the simpler sibling classes do.

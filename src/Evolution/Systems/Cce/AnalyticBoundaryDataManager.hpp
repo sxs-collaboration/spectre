@@ -17,6 +17,7 @@
 #include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
 #include "IO/Observer/ObserverComponent.hpp"
 #include "IO/Observer/ReductionActions.hpp"
+#include "NumericalAlgorithms/Interpolation/SpanInterpolator.hpp"
 #include "NumericalAlgorithms/SpinWeightedSphericalHarmonics/SwshCoefficients.hpp"
 #include "NumericalAlgorithms/SpinWeightedSphericalHarmonics/SwshTransform.hpp"
 #include "Parallel/GlobalCache.hpp"
@@ -43,7 +44,8 @@ class AnalyticBoundaryDataManager {
 
   AnalyticBoundaryDataManager(
       size_t l_max, double extraction_radius,
-      std::unique_ptr<Solutions::WorldtubeData> generator);
+      std::unique_ptr<Solutions::WorldtubeData> generator,
+      double du_dr_j_stencil_step = 0.5);
 
   /*!
    * \brief Update the `boundary_data_variables` entries for all tags in
@@ -67,6 +69,45 @@ class AnalyticBoundaryDataManager {
   void write_news(Parallel::GlobalCache<Metavariables>& cache,
                   double time) const;
 
+  /*!
+   * \brief The spacing (in units of the worldtube time) of the time stencil
+   * on which the analytic solution is sampled to build the boundary value of
+   * `Du<Dr<BondiJ>>`.
+   *
+   * \details Choose a finite, positive spacing that resolves the shortest
+   * timescale of the analytic solution. Too small a spacing amplifies
+   * roundoff, while too large a spacing causes truncation error or aliasing
+   * that increasing the interpolation order cannot fix. The spacing can be
+   * configured with the `Cce: DuDrJStencilStep` option.
+   */
+  double get_du_dr_j_stencil_step() const { return du_dr_j_stencil_step_; }
+
+  /*!
+   * \brief Build the boundary value of `Du<Dr<BondiJ>>` with `interpolator`
+   * in `populate_hypersurface_boundary_data`.
+   *
+   * \details `create_bondi_boundary_data` does not produce that boundary
+   * value, and unlike `BondiWorldtubeDataManager` this manager has no stored
+   * time series of `Dr<BondiJ>` to differentiate. Instead, it evaluates
+   * `Dr<BondiJ>` from the analytic solution on a uniform stencil of
+   * `2 * interpolator->required_number_of_points_before_and_after()` times
+   * spaced by `get_du_dr_j_stencil_step()` and centered on the requested time.
+   * It differentiates this stencil with `interpolator`. As in
+   * `BondiWorldtubeDataManager`, the derivative is taken along the worldtube.
+   *
+   * Without an interpolator (the default, or after passing `nullptr`) the
+   * boundary value of `Du<Dr<BondiJ>>` is left untouched, which avoids the
+   * additional evaluations of the analytic solution when no initial-data
+   * generator needs it.
+   *
+   * Robinson-Trautman data does not support this centered stencil: requests
+   * for past times restart its internal evolution, and times before its
+   * initial time are outside its evolved interval. Supplying a non-null
+   * interpolator for that solution is an error.
+   */
+  void set_du_dr_j_interpolator(
+      std::unique_ptr<intrp::SpanInterpolator> interpolator);
+
   size_t get_l_max() const { return l_max_; }
 
   const Solutions::WorldtubeData& get_generator() const { return *generator_; }
@@ -79,6 +120,8 @@ class AnalyticBoundaryDataManager {
   size_t l_max_ = 0;
   std::unique_ptr<Solutions::WorldtubeData> generator_;
   double extraction_radius_ = std::numeric_limits<double>::signaling_NaN();
+  std::unique_ptr<intrp::SpanInterpolator> du_dr_j_interpolator_;
+  double du_dr_j_stencil_step_ = 0.5;
 };
 
 template <typename ParallelComponent, typename Metavariables>

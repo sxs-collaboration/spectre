@@ -4,12 +4,14 @@
 #include "Framework/TestingFramework.hpp"
 
 #include <array>
+#include <complex>
 #include <cstddef>
 #include <limits>
 #include <memory>
 #include <optional>
 #include <string>
 #include <unordered_map>
+#include <vector>
 
 #include "DataStructures/ComplexDataVector.hpp"
 #include "DataStructures/TaggedTuple.hpp"
@@ -19,6 +21,7 @@
 #include "Evolution/Systems/Cce/AnalyticSolutions/RotatingSchwarzschild.hpp"
 #include "Evolution/Systems/Cce/BoundaryData.hpp"
 #include "Evolution/Systems/Cce/Initialize/CauchySecondOrder.hpp"
+#include "Evolution/Systems/Cce/Initialize/ConformalFactor.hpp"
 #include "Evolution/Systems/Cce/Initialize/InitializeJ.hpp"
 #include "Evolution/Systems/Cce/InterfaceManagers/GhLocalTimeStepping.hpp"
 #include "Evolution/Systems/Cce/InterfaceManagers/GhLockstep.hpp"
@@ -34,11 +37,13 @@
 #include "NumericalAlgorithms/Interpolation/CubicSpanInterpolator.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/Interpolation/LinearSpanInterpolator.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/SpinWeightedSphericalHarmonics/SwshCollocation.hpp"
+#include "Options/Context.hpp"
 #include "Parallel/NodeLock.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/Phase.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
 #include "Time/Tags/TimeStepper.hpp"
+#include "Time/TimeSteppers/AdamsBashforth.hpp"
 #include "Time/TimeSteppers/AdamsMoultonPc.hpp"
 #include "Time/TimeSteppers/LtsTimeStepper.hpp"
 #include "Utilities/FileSystem.hpp"
@@ -106,6 +111,24 @@ struct AnalyticMetavariables {
       Tags::characteristic_worldtube_boundary_tags<Tags::BoundaryValue>;
   using component_list = tmpl::list<mock_worldtube_boundary<
       AnalyticMetavariables, AnalyticWorldtubeBoundary<AnalyticMetavariables>>>;
+  using const_global_cache_tags = tmpl::list<
+      Tags::CceEvolutionPrefix<::Tags::ConcreteTimeStepper<LtsTimeStepper>>>;
+};
+
+// As above, the shared mock does not carry the initial-data generator.
+template <typename Metavariables>
+struct MockAnalyticWorldtubeBoundaryWithInitializeJ
+    : mock_worldtube_boundary<Metavariables,
+                              AnalyticWorldtubeBoundary<Metavariables>> {
+  using const_global_cache_tags = tmpl::list<Tags::InitializeJ<false>>;
+};
+
+struct AnalyticInitializeJMetavariables {
+  using cce_boundary_communication_tags =
+      Tags::characteristic_worldtube_boundary_tags<Tags::BoundaryValue>;
+  using component_list =
+      tmpl::list<MockAnalyticWorldtubeBoundaryWithInitializeJ<
+          AnalyticInitializeJMetavariables>>;
   using const_global_cache_tags = tmpl::list<
       Tags::CceEvolutionPrefix<::Tags::ConcreteTimeStepper<LtsTimeStepper>>>;
 };
@@ -378,6 +401,112 @@ void test_analytic_initialization() {
   CHECK(get(get<Tags::BoundaryValue<Tags::BondiBeta>>(variables)).size() ==
         Spectral::Swsh::number_of_swsh_collocation_points(l_max));
 }
+
+// The analytic manager builds `Du<Dr<J>>` only for a generator that needs it,
+// and then with the generator's interpolator.
+void test_analytic_du_dr_j_interpolator_injection() {
+  using metavariables = AnalyticInitializeJMetavariables;
+  using component = MockAnalyticWorldtubeBoundaryWithInitializeJ<metavariables>;
+  using du_dr_j_tag = Tags::BoundaryValue<Tags::Du<Tags::Dr<Tags::BondiJ>>>;
+  const size_t l_max = 8;
+  const double extraction_radius = 20.0;
+  const double time = 1.0;
+  const size_t number_of_angular_points =
+      Spectral::Swsh::number_of_swsh_collocation_points(l_max);
+  const ComplexDataVector untouched_du_dr_j{number_of_angular_points,
+                                            std::complex<double>(-3.0, 7.0)};
+  register_classes_with_charm<TimeSteppers::AdamsBashforth>();
+  register_derived_classes_with_charm<intrp::SpanInterpolator>();
+  register_derived_classes_with_charm<InitializeJ::InitializeJ<false>>();
+
+  const auto boundary_du_dr_j = [&time, &untouched_du_dr_j](
+                                    const AnalyticBoundaryDataManager&
+                                        manager) {
+    Variables<Tags::characteristic_worldtube_boundary_tags<Tags::BoundaryValue>>
+        boundary_variables{number_of_angular_points};
+    get(get<du_dr_j_tag>(boundary_variables)).data() = untouched_du_dr_j;
+    manager.populate_hypersurface_boundary_data(
+        make_not_null(&boundary_variables), time);
+    return ComplexDataVector{get(get<du_dr_j_tag>(boundary_variables)).data()};
+  };
+  const auto make_manager = [&extraction_radius,
+                             &l_max](const bool use_robinson_trautman = false) {
+    if (use_robinson_trautman) {
+      return AnalyticBoundaryDataManager{
+          l_max, extraction_radius,
+          std::make_unique<Solutions::RobinsonTrautman>(
+              std::vector<std::complex<double>>{}, extraction_radius, l_max,
+              1.0e-10, 0.0, Options::Context{})};
+    }
+    return AnalyticBoundaryDataManager{
+        l_max, extraction_radius,
+        std::make_unique<Solutions::RotatingSchwarzschild>(extraction_radius,
+                                                           1.0, 0.1)};
+  };
+  const auto initialized_du_dr_j =
+      [&boundary_du_dr_j, &extraction_radius, &make_manager](
+          std::unique_ptr<InitializeJ::InitializeJ<false>> generator,
+          const bool use_robinson_trautman = false) {
+        tuples::tagged_tuple_from_typelist<
+            Parallel::get_const_global_cache_tags<metavariables>>
+            cache_items{};
+        get<Tags::CceEvolutionPrefix<
+            ::Tags::ConcreteTimeStepper<LtsTimeStepper>>>(cache_items) =
+            std::make_unique<::TimeSteppers::AdamsBashforth>(3);
+        get<Tags::InitializeJ<false>>(cache_items) = std::move(generator);
+        get<Tags::LMax>(cache_items) = l_max;
+        get<Tags::ExtractionRadiusSimple>(cache_items) = extraction_radius;
+        get<Tags::SpecifiedEndTime>(cache_items) = 100.0;
+        get<Tags::SpecifiedStartTime>(cache_items) = 0.0;
+        ActionTesting::MockRuntimeSystem<metavariables> runner{
+            std::move(cache_items)};
+        ActionTesting::set_phase(make_not_null(&runner),
+                                 Parallel::Phase::Initialization);
+        ActionTesting::emplace_component<component>(
+            &runner, 0, make_manager(use_robinson_trautman));
+        for (size_t i = 0; i < 3; ++i) {
+          ActionTesting::next_action<component>(make_not_null(&runner), 0);
+        }
+        ActionTesting::set_phase(make_not_null(&runner),
+                                 Parallel::Phase::Evolve);
+        return boundary_du_dr_j(
+            ActionTesting::get_databox_tag<component,
+                                           Tags::AnalyticBoundaryDataManager>(
+                runner, 0));
+      };
+  const auto make_cauchy_second_order =
+      [](std::unique_ptr<intrp::SpanInterpolator> interpolator) {
+        return std::make_unique<InitializeJ::CauchySecondOrder>(
+            1.0e-11, 1500, 1.0e-1, 1.0e-14, 10, 1.0e-12,
+            std::move(interpolator));
+      };
+
+  auto expected_manager = make_manager();
+  expected_manager.set_du_dr_j_interpolator(
+      std::make_unique<intrp::BarycentricRationalSpanInterpolator>(4_st, 4_st));
+  const ComplexDataVector expected_du_dr_j = boundary_du_dr_j(expected_manager);
+  CHECK(expected_du_dr_j != untouched_du_dr_j);
+  CHECK(initialized_du_dr_j(make_cauchy_second_order(
+            std::make_unique<intrp::BarycentricRationalSpanInterpolator>(
+                4_st, 4_st))) == expected_du_dr_j);
+
+  CHECK(initialized_du_dr_j(std::make_unique<InitializeJ::ConformalFactor>()) ==
+        untouched_du_dr_j);
+
+  CHECK_THROWS_WITH(
+      initialized_du_dr_j(make_cauchy_second_order(nullptr)),
+      Catch::Matchers::ContainsSubstring("supplied no interpolator"));
+  CHECK_THROWS_WITH(
+      initialized_du_dr_j(
+          make_cauchy_second_order(
+              std::make_unique<intrp::BarycentricRationalSpanInterpolator>(
+                  2_st, 2_st)),
+          true),
+      Catch::Matchers::ContainsSubstring(
+          "RobinsonTrautman does not support the centered time stencil"));
+  CHECK(initialized_du_dr_j(std::make_unique<InitializeJ::ConformalFactor>(),
+                            true) == untouched_du_dr_j);
+}
 }  // namespace
 
 SPECTRE_TEST_CASE(
@@ -388,6 +517,7 @@ SPECTRE_TEST_CASE(
   test_h5_du_dr_j_interpolator_injection(make_not_null(&gen));
   test_gh_initialization();
   test_analytic_initialization<Solutions::RotatingSchwarzschild>();
+  test_analytic_du_dr_j_interpolator_injection();
   CHECK_THROWS_WITH(
       (test_analytic_initialization<Solutions::RobinsonTrautman>()),
       Catch::Matchers::ContainsSubstring(
