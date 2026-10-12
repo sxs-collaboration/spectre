@@ -151,7 +151,9 @@ def compute_ringdown_shape_and_translation_fot(
     if len(shape_and_translation_coefs[0]) != len(ahc_lmax_for_fit_list):
         raise ValueError(
             "The number of AhC coefficient sets does not match the number "
-            "of AhC L values selected for the ringdown fit."
+            "of AhC L values selected for the ringdown fit:"
+            f"{len(shape_and_translation_coefs[0])} coefficient sets and "
+            f"{len(ahc_lmax_for_fit_list)} L values"
         )
 
     ahc_times_for_fit = np.array(ahc_times_for_fit_list)
