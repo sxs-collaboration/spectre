@@ -175,6 +175,13 @@ def compute_ringdown_shape_and_translation_fot(
         shape_and_translation_coefs[0], ahc_lmax_for_fit_list
     ):
         source_spherepack = Spherepack(lmax, lmax)
+        if lmax > fit_lmax:
+            logger.debug(
+                "Restricting AhC coefficients from LMax %s to %s for the "
+                "ringdown fit.",
+                lmax,
+                fit_lmax,
+            )
         shape_coefs_for_fit_list.append(
             source_spherepack.prolong_or_restrict(coefs, target_spherepack)
         )
