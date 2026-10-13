@@ -12,6 +12,7 @@
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/ObservationBox.hpp"
 #include "Domain/Amr/Flag.hpp"
+#include "Domain/Amr/Helpers.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Tags.hpp"
 #include "IO/Logging/Tags.hpp"
@@ -126,6 +127,10 @@ class RefineMesh : public Event {
              "The criterion '" << typeid(*criterion).name()
                                << "' requested h-refinement, but claims to be "
                                   "for p-refinement.");
+      const auto& topologies =
+          db::get<::domain::Tags::Element<volume_dim>>(*box).topologies();
+      enforce_p_refinement_topology_restrictions(make_not_null(&decision),
+                                                 topologies);
       for (size_t d = 0; d < volume_dim; ++d) {
         overall_decision[d] = std::max(overall_decision[d], decision[d]);
       }
