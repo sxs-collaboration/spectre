@@ -6,6 +6,7 @@
 #include <pup.h>
 #include <pup_stl.h>
 
+#include "Utilities/Algorithm.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/StdHelpers.hpp"
 
@@ -20,12 +21,12 @@ std::ostream& operator<<(std::ostream& os, const Index<N>& i) {
 }
 
 template <size_t Dim>
-bool operator==(const Index<Dim>& lhs, const Index<Dim>& rhs) {
-  return std::equal(lhs.begin(), lhs.end(), rhs.begin());
+KOKKOS_FUNCTION bool operator==(const Index<Dim>& lhs, const Index<Dim>& rhs) {
+  return alg::equal(lhs.indices(), rhs.indices());
 }
 
 template <size_t Dim>
-bool operator!=(const Index<Dim>& lhs, const Index<Dim>& rhs) {
+KOKKOS_FUNCTION bool operator!=(const Index<Dim>& lhs, const Index<Dim>& rhs) {
   return not(lhs == rhs);
 }
 
