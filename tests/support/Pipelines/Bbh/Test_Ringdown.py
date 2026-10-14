@@ -39,7 +39,7 @@ from spectre.Pipelines.Bbh.Ringdown import (
 from spectre.support.Logging import configure_logging
 
 
-class TestInitialData(unittest.TestCase):
+class TestRingdown(unittest.TestCase):
     def setUp(self):
         self.test_dir = Path(
             unit_test_build_path(), "support/Pipelines/Bbh/Ringdown"

@@ -23,6 +23,12 @@ if (BUILD_PYTHON_BINDINGS AND NOT PY_DEV_MODE)
 endif()
 
 spectre_add_python_bindings_test(
+  "support.BinDirectory"
+  Test_BinDirectory.py
+  "Python"
+  None)
+
+spectre_add_python_bindings_test(
   "support.DirectoryStructure"
   Test_DirectoryStructure.py
   "Python"

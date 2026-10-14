@@ -24,6 +24,8 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import List, Optional, Union
 
+from spectre.support.BinDirectory import BIN_DIR_NAME, BinDirectory
+
 logger = logging.getLogger(__name__)
 
 
@@ -91,6 +93,7 @@ class Segment:
     ```
     SEGMENTS_DIR/
         0000_Inspiral/
+            bin/
             Inspiral.yaml
             Submit.sh
             Output.h5
@@ -149,6 +152,14 @@ class Segment:
     def input_file(self) -> Path:
         """The input file for the segment (has the same name as the label)"""
         return self.path / f"{self.label}.yaml"
+
+    @property
+    def bin_dir(self) -> BinDirectory:
+        """Directory that holds the executables this segment runs
+
+        Can be a copy or a symlink. See 'spectre.support.BinDirectory'.
+        """
+        return BinDirectory(self.path / BIN_DIR_NAME)
 
     @property
     def checkpoints_dir(self) -> Path:
