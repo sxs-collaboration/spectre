@@ -10,6 +10,9 @@ See LICENSE.txt for details.
 ### Charm++ Interface
 - \subpage load_balancing_notes "Load Balancing Notes and Recommendations"
 
+### Coding Agents and LLMs
+- \subpage coding_agents_llms "Using coding agents with SpECTRE"
+
 ### Continuous Integration
 Explanations on our automated tests and deployments can be found here.
 - \subpage dev_guide_automatic_versioning
