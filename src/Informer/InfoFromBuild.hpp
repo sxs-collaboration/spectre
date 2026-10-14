@@ -67,6 +67,12 @@ std::string spectre_version();
 
 /*!
  * \ingroup LoggingGroup
+ * \brief The name of the current machine being used.
+ */
+std::string spectre_machine_name();
+
+/*!
+ * \ingroup LoggingGroup
  * \brief Returns the path to the Unit test directory.
  */
 std::string unit_test_src_path();
