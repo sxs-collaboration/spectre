@@ -46,6 +46,9 @@ jobs:
           git remote -v
 
           git fetch upstream develop
+      # Kokkos' debug bounds checks format their error messages in a way that
+      # clang-tidy's static analyzer reports as out-of-bounds accesses (false
+      # positives in Kokkos code), so they are disabled for linting.
       - name: Configure with cmake
         run: >
           mkdir build && cd build
@@ -63,6 +66,8 @@ jobs:
           -D BUILD_PYTHON_BINDINGS=ON
           -D SPECTRE_AUTODIFF=ON
           -D SPECTRE_FETCH_MISSING_DEPS=ON
+          -D SPECTRE_KOKKOS=ON
+          -D Kokkos_ENABLE_DEBUG_BOUNDS_CHECK=OFF
           $GITHUB_WORKSPACE
 
           make -j4 module_All Libsharp-external
