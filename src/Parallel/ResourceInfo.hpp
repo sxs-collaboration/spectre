@@ -641,8 +641,8 @@ bool operator!=(const ResourceInfo<Metavars>& lhs,
 template <typename Metavariables>
 template <typename Cache>
 void ResourceInfo<Metavariables>::build_singleton_map(const Cache& cache) {
-  const size_t num_procs = Parallel::number_of_procs<size_t>(cache);
-  const size_t num_nodes = Parallel::number_of_nodes<size_t>(cache);
+  const auto num_procs = static_cast<size_t>(Parallel::number_of_procs(cache));
+  const auto num_nodes = static_cast<size_t>(Parallel::number_of_nodes(cache));
 
   // We don't do procs_to_ignore_.size() here because the auto singletons who
   // requested to be exclusive haven't been assigned yet so their procs haven't
@@ -695,7 +695,8 @@ void ResourceInfo<Metavariables>::build_singleton_map(const Cache& cache) {
         const auto proc = singleton_map.second;
 
         if (exclusive and proc.has_value()) {
-          ++singletons_on_each_node[Parallel::node_of<size_t>(*proc, cache)];
+          ++singletons_on_each_node[static_cast<size_t>(
+              Parallel::node_of(*proc, cache))];
         }
       });
 
@@ -720,7 +721,7 @@ void ResourceInfo<Metavariables>::build_singleton_map(const Cache& cache) {
       // right now because we haven't included any nonexclusive singletons in
       // singletons_on_each_node yet.
       if (not(singletons_on_each_node[i] <
-              Parallel::procs_on_node<size_t>(i, cache))) {
+              static_cast<size_t>(Parallel::procs_on_node(i, cache)))) {
         continue;
       }
 
@@ -759,7 +760,8 @@ break_auto_exclusive_loops:
         ++current_node;
       }
 
-      size_t proc = Parallel::first_proc_on_node<size_t>(current_node, cache);
+      auto proc = static_cast<size_t>(
+          Parallel::first_proc_on_node(current_node, cache));
       // Don't place two exclusive singletons on the same proc, but also if
       // a singleton requested a specific proc, whether or not it is
       // exclusive, we can't place an exclusive singleton on that proc. That
@@ -811,7 +813,8 @@ break_auto_exclusive_loops:
   // per node
   for (const auto& proc : requested_nonexclusive_procs_) {
     ++*nonexclusive_singletons_on_each_proc[proc];
-    ++singletons_on_each_node[Parallel::node_of<size_t>(proc, cache)];
+    ++singletons_on_each_node[static_cast<size_t>(
+        Parallel::node_of(proc, cache))];
   }
 
   size_t remaining_auto_nonexclusive_singletons =
@@ -823,8 +826,8 @@ break_auto_exclusive_loops:
       singletons_on_each_node.begin(), singletons_on_each_node.end());
   while (remaining_auto_nonexclusive_singletons > 0) {
     for (size_t i = 0; i < num_nodes; i++) {
-      const int first_proc = Parallel::first_proc_on_node<int>(i, cache);
-      const int procs_on_node = Parallel::procs_on_node<int>(i, cache);
+      const int first_proc = Parallel::first_proc_on_node(i, cache);
+      const int procs_on_node = Parallel::procs_on_node(i, cache);
       const int first_proc_next_node = first_proc + procs_on_node;
 
       auto first_proc_iter =
@@ -932,7 +935,7 @@ break_auto_nonexclusive_loops:
     // Print some diagnostic info to stdout for each singleton. This can aid in
     // debugging.
     ss << pretty_type::name<component>();
-    ss << " on node " << Parallel::node_of<int>(*singleton_map.second, cache);
+    ss << " on node " << Parallel::node_of(*singleton_map.second, cache);
     ss << ", global proc " << *singleton_map.second;
     ss << ", exclusive = " << std::boolalpha << singleton_map.first << "\n";
   });

@@ -344,21 +344,20 @@ struct CheckParallelInfo {
       SPECTRE_PARALLEL_REQUIRE(cache.my_proc() == sys::my_proc());
       SPECTRE_PARALLEL_REQUIRE(cache.my_node() == sys::my_node());
       SPECTRE_PARALLEL_REQUIRE(cache.my_local_rank() == sys::my_local_rank());
-      SPECTRE_PARALLEL_REQUIRE(Parallel::number_of_procs<int>(cache) ==
+      SPECTRE_PARALLEL_REQUIRE(Parallel::number_of_procs(cache) ==
                                sys::number_of_procs());
-      SPECTRE_PARALLEL_REQUIRE(Parallel::number_of_nodes<int>(cache) ==
+      SPECTRE_PARALLEL_REQUIRE(Parallel::number_of_nodes(cache) ==
                                sys::number_of_nodes());
-      SPECTRE_PARALLEL_REQUIRE(Parallel::procs_on_node<int>(0, cache) ==
+      SPECTRE_PARALLEL_REQUIRE(Parallel::procs_on_node(0, cache) ==
                                sys::procs_on_node(0));
-      SPECTRE_PARALLEL_REQUIRE(Parallel::first_proc_on_node<int>(0, cache) ==
+      SPECTRE_PARALLEL_REQUIRE(Parallel::first_proc_on_node(0, cache) ==
                                sys::first_proc_on_node(0));
-      SPECTRE_PARALLEL_REQUIRE(Parallel::node_of<int>(0, cache) ==
-                               sys::node_of(0));
-      SPECTRE_PARALLEL_REQUIRE(Parallel::local_rank_of<int>(0, cache) ==
+      SPECTRE_PARALLEL_REQUIRE(Parallel::node_of(0, cache) == sys::node_of(0));
+      SPECTRE_PARALLEL_REQUIRE(Parallel::local_rank_of(0, cache) ==
                                sys::local_rank_of(0));
-      SPECTRE_PARALLEL_REQUIRE(Parallel::my_proc<int>(cache) == sys::my_proc());
-      SPECTRE_PARALLEL_REQUIRE(Parallel::my_node<int>(cache) == sys::my_node());
-      SPECTRE_PARALLEL_REQUIRE(Parallel::my_local_rank<int>(cache) ==
+      SPECTRE_PARALLEL_REQUIRE(Parallel::my_proc(cache) == sys::my_proc());
+      SPECTRE_PARALLEL_REQUIRE(Parallel::my_node(cache) == sys::my_node());
+      SPECTRE_PARALLEL_REQUIRE(Parallel::my_local_rank(cache) ==
                                sys::my_local_rank());
     }
   }
@@ -403,8 +402,7 @@ struct CheckMemoryMonitorRelatedMethods {
       // object whether that object be a group or nodegroup. If this is run on
       // more than one core, this will still run, but the values will be
       // incorrect for the test
-      SPECTRE_PARALLEL_REQUIRE(Parallel::number_of_procs<int>(local_cache) ==
-                               1);
+      SPECTRE_PARALLEL_REQUIRE(Parallel::number_of_procs(local_cache) == 1);
       cache_size_ = size_of_object_in_bytes(local_cache) / 1.0e6;
     } else if (next_phase == Parallel::Phase::Cleanup) {
       auto hdf5_lock =

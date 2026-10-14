@@ -83,20 +83,21 @@ void test_reduction_observer(const bool observe_per_core) {
           std::unordered_map<
               std::string,
               std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>{}};
-  const std::vector<size_t> num_cores_per_node{1, 2};
-  const size_t num_cores = alg::accumulate(num_cores_per_node, size_t{0});
+  const std::vector<int> num_cores_per_node{1, 2};
+  const int num_cores = alg::accumulate(num_cores_per_node, 0);
   ActionTesting::MockRuntimeSystem<metavariables> runner{
       std::move(cache_data), {}, num_cores_per_node};
   ActionTesting::emplace_group_component<obs_component>(&runner);
-  for (size_t core_id = 0; core_id < num_cores; ++core_id) {
-    for (size_t i = 0; i < 2; ++i) {
+  for (int core_id = 0; core_id < num_cores; ++core_id) {
+    for (int i = 0; i < 2; ++i) {
       ActionTesting::next_action<obs_component>(make_not_null(&runner),
                                                 core_id);
     }
   }
   ActionTesting::emplace_nodegroup_component<obs_writer>(&runner);
-  for (size_t node_id = 0; node_id < num_cores_per_node.size(); ++node_id) {
-    for (size_t i = 0; i < 2; ++i) {
+  for (int node_id = 0; std::cmp_less(node_id, num_cores_per_node.size());
+       ++node_id) {
+    for (int i = 0; i < 2; ++i) {
       ActionTesting::next_action<obs_writer>(make_not_null(&runner), node_id);
     }
   }
@@ -108,13 +109,15 @@ void test_reduction_observer(const bool observe_per_core) {
                                               {1, {{{1, 0}, {2, 3}}}},
                                               {1, {{{1, 0}, {5, 4}}}},
                                               {0, {{{1, 0}, {1, 0}}}}};
-  const auto get_node_id = [](const ElementId<2>& id) { return id.block_id(); };
+  const auto get_node_id = [](const ElementId<2>& id) {
+    return static_cast<int>(id.block_id());
+  };
   const auto get_local_core_id = [](const ElementId<2>& id) {
-    return id.segment_ids()[0].index();
+    return static_cast<int>(id.segment_ids()[0].index());
   };
   const auto get_global_core_id = [](const ElementId<2>& id) {
     // Only works for the specific setup of {1, 2} cores per node
-    return id.block_id() + id.segment_ids()[0].index();
+    return static_cast<int>(id.block_id() + id.segment_ids()[0].index());
   };
   for (const auto& id : element_ids) {
     ActionTesting::emplace_array_component<element_comp>(
@@ -253,7 +256,8 @@ void test_reduction_observer(const bool observe_per_core) {
     // Invoke the threaded action 'CollectReductionDataOnNode'
     for (size_t node_id = 0; node_id < num_cores_per_node.size(); ++node_id) {
       for (size_t local_core_id = 0;
-           local_core_id < num_cores_per_node.at(node_id); ++local_core_id) {
+           std::cmp_less(local_core_id, num_cores_per_node.at(node_id));
+           ++local_core_id) {
         runner.invoke_queued_threaded_action<obs_writer>(node_id);
       }
     }

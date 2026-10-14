@@ -22,11 +22,13 @@
 #include "Parallel/CharmMain.tpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/InboxInserters.hpp"
+#include "Parallel/Info.hpp"
 #include "Parallel/Local.hpp"
 #include "Parallel/Main.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
+#include "Parallel/Tags/Info.hpp"
 #include "Parallel/Tags/ResourceInfo.hpp"
 #include "ParallelAlgorithms/Initialization/MutateAssign.hpp"
 #include "Utilities/Gsl.hpp"
@@ -106,6 +108,8 @@ struct CheckLog {
         component_name + " invoked action InitializeLog\n" + component_name +
         " invoked action MutateLog\n";
     SPECTRE_PARALLEL_REQUIRE(log == expected_log);
+    const auto& info = db::get<Parallel::Tags::Info>(box);
+    SPECTRE_PARALLEL_REQUIRE(info.number_of_nodes() == 1);
     return {Parallel::AlgorithmExecution::Pause, std::nullopt};
   }
 };
@@ -133,6 +137,8 @@ struct CheckNonCheckpointedLog {
     SPECTRE_PARALLEL_REQUIRE(
         db::get<Parallel::Tags::ResourceInfo<Metavariables>>(box) ==
         cache.get_resource_info());
+    const auto& info = db::get<Parallel::Tags::Info>(box);
+    SPECTRE_PARALLEL_REQUIRE(info.number_of_nodes() == 1);
     return {Parallel::AlgorithmExecution::Pause, std::nullopt};
   }
 };

@@ -125,17 +125,20 @@ class MockRuntimeSystem {
   /// Construct from the tuple of GlobalCache objects.
   explicit MockRuntimeSystem(
       CacheTuple cache_contents, MutableCacheTuple mutable_cache_contents = {},
-      const std::vector<size_t>& number_of_mock_cores_on_each_mock_node = {1})
+      const std::vector<int>& number_of_mock_cores_on_each_mock_node = {1})
       : mock_global_cores_([&number_of_mock_cores_on_each_mock_node]() {
           std::unordered_map<NodeId,
                              std::unordered_map<LocalCoreId, GlobalCoreId>>
               mock_global_cores{};
-          size_t global_core = 0;
-          for (size_t node = 0;
-               node < number_of_mock_cores_on_each_mock_node.size(); ++node) {
+          int global_core = 0;
+          for (int node = 0; std::cmp_less(
+                   node, number_of_mock_cores_on_each_mock_node.size());
+               ++node) {
             std::unordered_map<LocalCoreId, GlobalCoreId> global_cores;
-            for (size_t local_core = 0;
-                 local_core < number_of_mock_cores_on_each_mock_node[node];
+            for (int local_core = 0;
+                 local_core <
+                 number_of_mock_cores_on_each_mock_node[static_cast<size_t>(
+                     node)];
                  ++local_core, ++global_core) {
               global_cores.insert(
                   {LocalCoreId{local_core}, GlobalCoreId{global_core}});
@@ -148,12 +151,14 @@ class MockRuntimeSystem {
             [&number_of_mock_cores_on_each_mock_node]() {
               std::unordered_map<GlobalCoreId, std::pair<NodeId, LocalCoreId>>
                   mock_nodes_and_local_cores{};
-              size_t global_core = 0;
-              for (size_t node = 0;
-                   node < number_of_mock_cores_on_each_mock_node.size();
+              int global_core = 0;
+              for (int node = 0; std::cmp_less(
+                       node, number_of_mock_cores_on_each_mock_node.size());
                    ++node) {
-                for (size_t local_core = 0;
-                     local_core < number_of_mock_cores_on_each_mock_node[node];
+                for (int local_core = 0;
+                     local_core <
+                     number_of_mock_cores_on_each_mock_node[static_cast<size_t>(
+                         node)];
                      ++local_core, ++global_core) {
                   mock_nodes_and_local_cores.insert(
                       {GlobalCoreId{global_core},
@@ -171,21 +176,22 @@ class MockRuntimeSystem {
     // on a chosen node and core, via `emplace_component`.
     for (const auto& [global_core_id, node_and_local_core] :
          mock_nodes_and_local_cores_) {
-      const size_t global_core = global_core_id.value;
+      const int global_core = global_core_id.value;
       // Note that lambdas cannot capture structured bindings,
       // so we define node and local_core here.
       const auto& node = node_and_local_core.first.value;
       const auto& local_core = node_and_local_core.second.value;
-      caches_.at(global_core) = std::make_unique<GlobalCache>(
-          serialize_and_deserialize(cache_contents),
-          serialize_and_deserialize(mutable_cache_contents),
-          number_of_mock_cores_on_each_mock_node, static_cast<int>(global_core),
-          static_cast<int>(node), static_cast<int>(local_core));
+      caches_.at(static_cast<size_t>(global_core)) =
+          std::make_unique<GlobalCache>(
+              serialize_and_deserialize(cache_contents),
+              serialize_and_deserialize(mutable_cache_contents),
+              number_of_mock_cores_on_each_mock_node, global_core, node,
+              local_core);
       tmpl::for_each<typename Metavariables::component_list>(
           [this, &global_core, &node, &local_core](auto component) {
             using Component = tmpl::type_from<decltype(component)>;
             Parallel::get_parallel_component<Component>(
-                *caches_.at(global_core))
+                *caches_.at(static_cast<size_t>(global_core)))
                 .set_data(&tuples::get<MockDistributedObjectsTag<Component>>(
                               mock_distributed_objects_),
                           &tuples::get<InboxesTag<Component>>(inboxes_), node,
@@ -200,7 +206,7 @@ class MockRuntimeSystem {
   MockRuntimeSystem(
       tuples::TaggedTuple<CacheTags...> cache_contents,
       tuples::TaggedTuple<MutableCacheTags...> mutable_cache_contents = {},
-      const std::vector<size_t>& number_of_mock_cores_on_each_mock_node = {1})
+      const std::vector<int>& number_of_mock_cores_on_each_mock_node = {1})
       : MockRuntimeSystem(
             tuples::reorder<CacheTuple>(std::move(cache_contents)),
             tuples::reorder<MutableCacheTuple>(
@@ -217,7 +223,9 @@ class MockRuntimeSystem {
         MockDistributedObject<Component>(
             node_id, local_core_id, mock_global_cores_,
             mock_nodes_and_local_cores_, array_index,
-            caches_.at(mock_global_cores_.at(node_id).at(local_core_id).value)
+            caches_
+                .at(static_cast<size_t>(
+                    mock_global_cores_.at(node_id).at(local_core_id).value))
                 .get(),
             // Next line inserts element into inboxes_ and returns ptr to it.
             &(tuples::get<InboxesTag<Component>>(inboxes_)[array_index]),
@@ -239,7 +247,9 @@ class MockRuntimeSystem {
         MockDistributedObject<Component>(
             node_id, local_core_id, mock_global_cores_,
             mock_nodes_and_local_cores_, array_index,
-            caches_.at(mock_global_cores_.at(node_id).at(local_core_id).value)
+            caches_
+                .at(static_cast<size_t>(
+                    mock_global_cores_.at(node_id).at(local_core_id).value))
                 .get(),
             // Next line inserts element into inboxes_ and returns ptr to it.
             &(tuples::get<InboxesTag<Component>>(inboxes_)[array_index]),
@@ -255,14 +265,15 @@ class MockRuntimeSystem {
     // Emplace once for each core, index by global_core.
     for (const auto& [global_core_id, node_and_local_core] :
          mock_nodes_and_local_cores_) {
-      const size_t global_core = global_core_id.value;
-      const typename Component::array_index array_index = global_core;
+      const int global_core = global_core_id.value;
+      const auto array_index =
+          static_cast<typename Component::array_index>(global_core);
       mock_distributed_objects<Component>().emplace(
           array_index,
           MockDistributedObject<Component>(
               node_and_local_core.first, node_and_local_core.second,
               mock_global_cores_, mock_nodes_and_local_cores_, array_index,
-              caches_.at(global_core).get(),
+              caches_.at(static_cast<size_t>(global_core)).get(),
               // Next line inserts element into inboxes_ and returns ptr to it.
               &(tuples::get<InboxesTag<Component>>(inboxes_)[array_index]),
               std::forward<Options>(opts)...));
@@ -277,16 +288,16 @@ class MockRuntimeSystem {
         "emplace_nodegroup_component expects a MockNodeGroupChare");
     // Emplace once for each node, index by node number.
     for (const auto& [node, local_and_global_cores] : mock_global_cores_) {
-      const typename Component::array_index array_index = node.value;
+      const auto array_index =
+          static_cast<typename Component::array_index>(node.value);
       // Use first proc on each node as global_core
-      const size_t global_core =
-          local_and_global_cores.at(LocalCoreId{0}).value;
+      const int global_core = local_and_global_cores.at(LocalCoreId{0}).value;
       mock_distributed_objects<Component>().emplace(
           array_index,
           MockDistributedObject<Component>(
               node, LocalCoreId{0}, mock_global_cores_,
               mock_nodes_and_local_cores_, array_index,
-              caches_.at(global_core).get(),
+              caches_.at(static_cast<size_t>(global_core)).get(),
               // Next line inserts element into inboxes_ and returns ptr to it.
               &(tuples::get<InboxesTag<Component>>(inboxes_)[array_index]),
               std::forward<Options>(opts)...));
@@ -321,7 +332,8 @@ class MockRuntimeSystem {
                 node_id, local_core_id, mock_global_cores_,
                 mock_nodes_and_local_cores_, array_index,
                 caches_
-                    .at(mock_global_cores_.at(node_id).at(local_core_id).value)
+                    .at(static_cast<size_t>(
+                        mock_global_cores_.at(node_id).at(local_core_id).value))
                     .get(),
                 // Next line inserts element into inboxes_ and returns ptr to
                 // it.
@@ -358,7 +370,8 @@ class MockRuntimeSystem {
                 node_id, local_core_id, mock_global_cores_,
                 mock_nodes_and_local_cores_, array_index,
                 caches_
-                    .at(mock_global_cores_.at(node_id).at(local_core_id).value)
+                    .at(static_cast<size_t>(
+                        mock_global_cores_.at(node_id).at(local_core_id).value))
                     .get(),
                 // Next line inserts element into inboxes_ and returns ptr to
                 // it.
@@ -389,15 +402,16 @@ class MockRuntimeSystem {
       // InitialDataBox action does a std::move.
       detail::get_initialization<Component>::initialize_databox_action::
           set_initial_values(initial_values);
-      const size_t global_core = global_core_id.value;
-      const typename Component::array_index array_index = global_core;
+      const int global_core = global_core_id.value;
+      const auto array_index =
+          static_cast<typename Component::array_index>(global_core);
       auto [iterator, emplace_was_successful] =
           mock_distributed_objects<Component>().emplace(
               array_index,
               MockDistributedObject<Component>(
                   node_and_local_core.first, node_and_local_core.second,
                   mock_global_cores_, mock_nodes_and_local_cores_, array_index,
-                  caches_.at(global_core).get(),
+                  caches_.at(static_cast<size_t>(global_core)).get(),
                   // Next line inserts element into inboxes_ and returns ptr to
                   // it.
                   &(tuples::get<InboxesTag<Component>>(inboxes_)[array_index]),
@@ -428,17 +442,17 @@ class MockRuntimeSystem {
       // InitialDataBox action does a std::move.
       detail::get_initialization<Component>::initialize_databox_action::
           set_initial_values(initial_values);
-      const typename Component::array_index array_index = node.value;
+      const auto array_index =
+          static_cast<typename Component::array_index>(node.value);
       // Use first proc on each node as global_core
-      const size_t global_core =
-          local_and_global_cores.at(LocalCoreId{0}).value;
+      const int global_core = local_and_global_cores.at(LocalCoreId{0}).value;
       auto [iterator, emplace_was_successful] =
           mock_distributed_objects<Component>().emplace(
               array_index,
               MockDistributedObject<Component>(
                   node, LocalCoreId{0}, mock_global_cores_,
                   mock_nodes_and_local_cores_, array_index,
-                  caches_.at(global_core).get(),
+                  caches_.at(static_cast<size_t>(global_core)).get(),
                   // Next line inserts element into inboxes_ and returns ptr to
                   // it.
                   &(tuples::get<InboxesTag<Component>>(inboxes_)[array_index]),

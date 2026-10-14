@@ -5,7 +5,7 @@
 
 #include <string>
 
-#include "Utilities/System/ParallelInfo.hpp"
+#include "Utilities/System/PrettyWallTime.hpp"
 
 namespace sys {
 namespace {
@@ -23,7 +23,7 @@ void test() {
   test_time(123456.7, "01-10:17:36");
 }
 
-SPECTRE_TEST_CASE("Unit.Utilities.ParallelInfo", "[Unit][Utilities]") {
+SPECTRE_TEST_CASE("Unit.Utilities.PrettyWallTime", "[Unit][Utilities]") {
   test();
 }
 }  // namespace

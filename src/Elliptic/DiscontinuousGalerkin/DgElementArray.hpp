@@ -86,10 +86,10 @@ struct DefaultElementsAllocator
     const auto& initial_refinement_levels =
         get<domain::Tags::InitialRefinementLevels<Dim>>(initialization_items);
 
-    const size_t number_of_procs =
-        Parallel::number_of_procs<size_t>(local_cache);
-    const size_t number_of_nodes =
-        Parallel::number_of_nodes<size_t>(local_cache);
+    const auto number_of_procs =
+        static_cast<size_t>(Parallel::number_of_procs(local_cache));
+    const auto number_of_nodes =
+        static_cast<size_t>(Parallel::number_of_nodes(local_cache));
     const size_t num_of_procs_to_use = number_of_procs - procs_to_ignore.size();
 
     const auto& blocks = domain.blocks();
@@ -130,8 +130,8 @@ struct DefaultElementsAllocator
           element_array(element_id)
               .insert(global_cache, initialization_items, target_proc);
 
-          const size_t target_node =
-              Parallel::node_of<size_t>(target_proc, local_cache);
+          const auto target_node =
+              static_cast<size_t>(Parallel::node_of(target_proc, local_cache));
           ++elements_per_core[target_proc];
           ++elements_per_node[target_node];
           grid_points_per_core[target_proc] += grid_points_per_element;
@@ -147,8 +147,8 @@ struct DefaultElementsAllocator
           element_array(ElementId<Dim>(element_ids[i]))
               .insert(global_cache, initialization_items, which_proc);
 
-          const size_t target_node =
-              Parallel::node_of<size_t>(which_proc, local_cache);
+          const auto target_node =
+              static_cast<size_t>(Parallel::node_of(which_proc, local_cache));
           ++elements_per_core[which_proc];
           ++elements_per_node[target_node];
           grid_points_per_core[which_proc] += grid_points_per_element;

@@ -11,6 +11,7 @@ template <typename Index>
 struct ArrayIndex;
 template <typename Metavariables>
 struct GlobalCacheProxy;
+struct Info;
 template <typename Metavariables>
 struct MetavariablesImpl;
 /// \endcond
@@ -23,5 +24,5 @@ struct MetavariablesImpl;
 template <typename Metavariables, typename Index>
 using distributed_object_tags =
     tmpl::list<Tags::MetavariablesImpl<Metavariables>, Tags::ArrayIndex<Index>,
-               Tags::GlobalCacheProxy<Metavariables>>;
+               Tags::GlobalCacheProxy<Metavariables>, Tags::Info>;
 }  // namespace Parallel::Tags

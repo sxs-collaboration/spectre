@@ -8,6 +8,7 @@
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "IO/H5/AccessType.hpp"
+#include "IO/H5/Dat.hpp"
 #include "IO/H5/File.hpp"
 #include "IO/Observer/Helpers.hpp"
 #include "IO/Observer/Tags.hpp"
@@ -60,7 +61,7 @@ struct WriteSimpleData {
       h5::H5File<h5::AccessType::ReadWrite> h5file(
           file_prefix +
               std::to_string(
-                  Parallel::my_node<int>(*Parallel::local_branch(my_proxy))) +
+                  Parallel::my_node(*Parallel::local_branch(my_proxy))) +
               ".h5",
           true, observers::input_source_from_cache(cache));
       const size_t version_number = 0;

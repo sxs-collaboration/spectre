@@ -109,8 +109,10 @@ void DgElementArray<Metavariables, PhaseDepActionList>::allocate_array(
   const std::optional<domain::ElementWeight>& element_weight =
       Parallel::get<domain::Tags::ElementDistribution>(local_cache);
 
-  const size_t number_of_procs = Parallel::number_of_procs<size_t>(local_cache);
-  const size_t number_of_nodes = Parallel::number_of_nodes<size_t>(local_cache);
+  const auto number_of_procs =
+      static_cast<size_t>(Parallel::number_of_procs(local_cache));
+  const auto number_of_nodes =
+      static_cast<size_t>(Parallel::number_of_nodes(local_cache));
   const size_t num_of_procs_to_use = number_of_procs - procs_to_ignore.size();
 
   const auto& blocks = domain.blocks();

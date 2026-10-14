@@ -11,6 +11,7 @@
 #include "Parallel/Printf/Printf.hpp"
 #include "Utilities/StdHelpers.hpp"
 #include "Utilities/System/ParallelInfo.hpp"
+#include "Utilities/System/PrettyWallTime.hpp"
 
 void Informer::print_startup_info(CkArgMsg* msg) {
   std::stringstream ss{};

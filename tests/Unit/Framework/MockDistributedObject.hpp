@@ -24,6 +24,7 @@
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/MetavariablesTag.hpp"
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
+#include "Framework/MockInfo.hpp"
 #include "Parallel/AlgorithmExecution.hpp"
 #include "Parallel/AlgorithmMetafunctions.hpp"
 #include "Parallel/GlobalCache.hpp"
@@ -32,6 +33,7 @@
 #include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "Parallel/Tags/ArrayIndex.hpp"
+#include "Parallel/Tags/Info.hpp"
 #include "ParallelAlgorithms/Initialization/MutateAssign.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Gsl.hpp"
@@ -106,86 +108,6 @@ using item_type_if_contained_t =
     typename item_type_if_contained<Tag, DataBoxType>::type;
 }  // namespace detail
 
-/// Wraps a size_t representing the node number.  This is so the user
-/// can write things like `emplace_array_component(NodeId{3},...)`  instead of
-/// `emplace_array_component(3,...)`.
-struct NodeId {
-  size_t value;
-};
-
-inline bool operator==(const NodeId& lhs, const NodeId& rhs) {
-  return lhs.value == rhs.value;
-}
-
-inline bool operator!=(const NodeId& lhs, const NodeId& rhs) {
-  return not(lhs==rhs);
-}
-
-/// Wraps a size_t representing the local core number. This is so the
-/// user can write things like
-/// `emplace_array_component(NodeId{3},LocalCoreId{2},...)`  instead of
-/// `emplace_array_component(3,2,...)`.
-///
-/// The local core number is unique for each core on the same node,
-/// but cores on different nodes can have the same local core number.
-/// For example, if there are 3 nodes with 2
-/// cores each, then the cores on the first node have local core numbers
-/// 0 and 1, the cores on the second node also have local core numbers
-/// 0 and 1, and so on.
-struct LocalCoreId {
-  size_t value;
-};
-
-inline bool operator==(const LocalCoreId& lhs, const LocalCoreId& rhs) {
-  return lhs.value == rhs.value;
-}
-
-inline bool operator!=(const LocalCoreId& lhs, const LocalCoreId& rhs) {
-  return not(lhs==rhs);
-}
-
-/// Wraps a size_t representing the global core number.
-///
-/// The global core number is unique for each core, even if the cores
-/// are on different nodes.  For example, if there are 3 nodes with 2
-/// cores each, the global core number goes from 0 through 5 to label
-/// each of the 6 cores, and no two cores have the same global core
-/// number.
-struct GlobalCoreId {
-  size_t value;
-};
-
-inline bool operator==(const GlobalCoreId& lhs, const GlobalCoreId& rhs) {
-  return lhs.value == rhs.value;
-}
-
-inline bool operator!=(const GlobalCoreId& lhs, const GlobalCoreId& rhs) {
-  return not(lhs==rhs);
-}
-}  // namespace ActionTesting
-
-namespace std {
-template <>
-struct hash<ActionTesting::NodeId> {
-  size_t operator()(const ActionTesting::NodeId& t) const { return t.value; }
-};
-
-template <>
-struct hash<ActionTesting::LocalCoreId> {
-  size_t operator()(const ActionTesting::LocalCoreId& t) const {
-    return t.value;
-  }
-};
-
-template <>
-struct hash<ActionTesting::GlobalCoreId> {
-  size_t operator()(const ActionTesting::GlobalCoreId& t) const {
-    return t.value;
-  }
-};
-}  // namespace std
-
-namespace ActionTesting {
 /// MockDistributedObject mocks the DistributedObject class. It should not be
 /// considered as part of the user interface.
 ///
@@ -336,7 +258,8 @@ class MockDistributedObject {
   using initial_tags = tmpl::flatten<tmpl::list<
       Parallel::Tags::MetavariablesImpl<metavariables>,
       Parallel::Tags::ArrayIndex<array_index>,
-      Parallel::Tags::GlobalCache<metavariables>, simple_tags_from_options,
+      Parallel::Tags::GlobalCache<metavariables>, Parallel::Tags::Info,
+      simple_tags_from_options,
       db::wrap_tags_in<Parallel::Tags::FromGlobalCache, all_cache_tags,
                        metavariables>,
       Parallel::Algorithm_detail::action_list_simple_tags<Component>,
@@ -365,8 +288,10 @@ class MockDistributedObject {
         inboxes_(inboxes) {
     ::Initialization::mutate_assign<tmpl::push_front<
         simple_tags_from_options, Parallel::Tags::ArrayIndex<array_index>,
-        Parallel::Tags::GlobalCache<metavariables>>>(
+        Parallel::Tags::GlobalCache<metavariables>, Parallel::Tags::Info>>(
         make_not_null(&box_), array_index_, global_cache_,
+        std::make_unique<MockInfo>(node_id, local_core_id, mock_global_cores_,
+                                   mock_nodes_and_local_cores_),
         std::forward<Options>(opts)...);
   }
 
@@ -715,8 +640,8 @@ class MockDistributedObject {
   bool performing_action_ = false;
   Parallel::Phase phase_{Parallel::Phase::Initialization};
 
-  size_t mock_node_{0};
-  size_t mock_local_core_{0};
+  int mock_node_{0};
+  int mock_local_core_{0};
   // mock_global_cores[node][local_core] is the global_core.
   std::unordered_map<NodeId, std::unordered_map<LocalCoreId, GlobalCoreId>>
       mock_global_cores_{};
@@ -847,9 +772,9 @@ int MockDistributedObject<Component>::number_of_procs() const {
 
 template <typename Component>
 int MockDistributedObject<Component>::my_proc() const {
-  return static_cast<int>(mock_global_cores_.at(NodeId{mock_node_})
-                              .at(LocalCoreId{mock_local_core_})
-                              .value);
+  return mock_global_cores_.at(NodeId{mock_node_})
+      .at(LocalCoreId{mock_local_core_})
+      .value;
 }
 
 template <typename Component>
@@ -859,43 +784,34 @@ int MockDistributedObject<Component>::number_of_nodes() const {
 
 template <typename Component>
 int MockDistributedObject<Component>::my_node() const {
-  return static_cast<int>(mock_node_);
+  return mock_node_;
 }
 
 template <typename Component>
 int MockDistributedObject<Component>::procs_on_node(
     const int node_index) const {
-  return static_cast<int>(
-      mock_global_cores_.at(NodeId{static_cast<size_t>(node_index)}).size());
+  return mock_global_cores_.at(NodeId{node_index}).size();
 }
 
 template <typename Component>
 int MockDistributedObject<Component>::my_local_rank() const {
-  return static_cast<int>(mock_local_core_);
+  return mock_local_core_;
 }
 
 template <typename Component>
 int MockDistributedObject<Component>::first_proc_on_node(
     const int node_index) const {
-  return static_cast<int>(
-      mock_global_cores_.at(NodeId{static_cast<size_t>(node_index)})
-          .at(LocalCoreId{0})
-          .value);
+  return mock_global_cores_.at(NodeId{node_index}).at(LocalCoreId{0}).value;
 }
 
 template <typename Component>
 int MockDistributedObject<Component>::node_of(const int proc_index) const {
-  return static_cast<int>(mock_nodes_and_local_cores_
-                              .at(GlobalCoreId{static_cast<size_t>(proc_index)})
-                              .first.value);
+  return mock_nodes_and_local_cores_.at(GlobalCoreId{proc_index}).first.value;
 }
 
 template <typename Component>
 int MockDistributedObject<Component>::local_rank_of(
     const int proc_index) const {
-  return static_cast<int>(mock_nodes_and_local_cores_
-                              .at(GlobalCoreId{static_cast<size_t>(proc_index)})
-                              .second.value);
+  return mock_nodes_and_local_cores_.at(GlobalCoreId{proc_index}).second.value;
 }
-
 }  // namespace ActionTesting

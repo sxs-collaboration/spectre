@@ -7,7 +7,7 @@
 #include <sstream>
 #include <string>
 
-#include "Utilities/System/ParallelInfo.hpp"
+#include "Utilities/System/PrettyWallTime.hpp"
 
 namespace PUP {
 class er;

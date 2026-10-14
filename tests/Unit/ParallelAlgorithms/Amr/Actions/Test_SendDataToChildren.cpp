@@ -23,6 +23,7 @@
 #include "Domain/Structure/SegmentId.hpp"
 #include "Domain/Tags.hpp"
 #include "Framework/ActionTesting.hpp"
+#include "Framework/MockInfo.hpp"
 #include "Helpers/Domain/Amr/RegistrationHelpers.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Parallel/Phase.hpp"
@@ -130,6 +131,7 @@ struct Metavariables {
 };
 
 void test() {
+  register_classes_with_charm<ActionTesting::MockInfo>();
   const auto parent = create_parent();
   const ElementId<1>& parent_id = parent.id();
   const auto parent_mesh = create_parent_mesh();

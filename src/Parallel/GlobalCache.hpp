@@ -256,8 +256,8 @@ class GlobalCache
   /// Constructor meant to be used in the ActionTesting framework.
   GlobalCache(ConstTagsTuple const_global_cache,
               MutableTagsTuple mutable_global_cache = {},
-              std::vector<size_t> procs_per_node = {1}, const int my_proc = 0,
-              const int my_node = 0, const int my_local_rank = 0);
+              std::vector<int> procs_per_node = {1}, int my_proc = 0,
+              int my_node = 0, int my_local_rank = 0);
 
   /// Constructor meant to be used in charm-aware settings (with a Main proxy).
   GlobalCache(ConstTagsTuple const_global_cache,
@@ -442,13 +442,13 @@ class GlobalCache
   int my_proc_{0};
   int my_node_{0};
   int my_local_rank_{0};
-  std::vector<size_t> procs_per_node_{1};
+  std::vector<int> procs_per_node_{1};
 };
 
 template <typename Metavariables>
 GlobalCache<Metavariables>::GlobalCache(ConstTagsTuple const_global_cache,
                                         MutableTagsTuple mutable_global_cache,
-                                        std::vector<size_t> procs_per_node,
+                                        std::vector<int> procs_per_node,
                                         const int my_proc, const int my_node,
                                         const int my_local_rank)
     : const_global_cache_(std::move(const_global_cache)),
@@ -680,7 +680,7 @@ void GlobalCache<Metavariables>::compute_size_for_memory_monitor(
     auto& mem_monitor_proxy = Parallel::get_parallel_component<
         mem_monitor::MemoryMonitor<Metavariables>>(*this);
 
-    const int my_node = Parallel::my_node<int>(*this);
+    const int my_node = Parallel::my_node(*this);
 
     Parallel::simple_action<
         mem_monitor::ContributeMemoryData<GlobalCache<Metavariables>>>(
@@ -802,13 +802,13 @@ int GlobalCache<Metavariables>::node_of(const int proc_index) const {
     // in Test_AlgorithmGlobalCache.cpp
     return sys::node_of(proc_index);  // LCOV_EXCL_LINE
   } else {
-    size_t procs_so_far = 0;
-    size_t node = 0;
-    while (procs_so_far <= static_cast<size_t>(proc_index)) {
-      procs_so_far += procs_per_node_[node];
+    int procs_so_far = 0;
+    int node = 0;
+    while (procs_so_far <= proc_index) {
+      procs_so_far += procs_per_node_[static_cast<size_t>(node)];
       ++node;
     }
-    return static_cast<int>(--node);
+    return --node;
   }
 }
 

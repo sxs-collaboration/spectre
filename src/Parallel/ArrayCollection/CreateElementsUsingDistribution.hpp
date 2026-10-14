@@ -110,8 +110,8 @@ void create_elements_using_distribution(
       for (const auto& element_id : element_ids) {
         const size_t target_proc =
             element_distribution.get_proc_for_element(element_id);
-        const size_t target_node =
-            Parallel::node_of<size_t>(target_proc, local_cache);
+        const auto target_node =
+            static_cast<size_t>(Parallel::node_of(target_proc, local_cache));
         func(element_id, target_proc, target_node);
 
         ++elements_per_core[target_proc];
@@ -125,8 +125,8 @@ void create_elements_using_distribution(
           which_proc = which_proc + 1 == number_of_procs ? 0 : which_proc + 1;
         }
         const size_t target_proc = which_proc;
-        const size_t target_node =
-            Parallel::node_of<size_t>(which_proc, local_cache);
+        const auto target_node =
+            static_cast<size_t>(Parallel::node_of(which_proc, local_cache));
         const ElementId<Dim> element_id(element_ids[i]);
         func(element_id, target_proc, target_node);
 
