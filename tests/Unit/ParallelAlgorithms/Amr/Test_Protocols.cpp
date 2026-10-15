@@ -17,7 +17,8 @@ struct Metavariables {
     using projectors =
         tmpl::list<Initialization::ProjectTimeStepping<1>,
                    evolution::dg::Initialization::ProjectDomain<1>>;
-    [[maybe_unused]] static constexpr bool keep_coarse_grids = false;
+    static constexpr bool keep_coarse_grids = false;
+    static constexpr bool p_refine_only_in_event = false;
   };
   // [amr_projectors]
 };
