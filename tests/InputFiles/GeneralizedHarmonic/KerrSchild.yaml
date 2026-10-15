@@ -173,6 +173,8 @@ EventsAndTriggersAtSlabs:
             - Name: Error(Phi)
               NormType: L2Norm
               Components: Sum
+          BlocksToObserve: All
+          ReductionScope: WholeDomain
       - ObserveNorms:
           SubfileName: Norms
           TensorsToObserve:
@@ -188,6 +190,8 @@ EventsAndTriggersAtSlabs:
           - Name: PointwiseL2Norm(FourIndexConstraint)
             NormType: L2Norm
             Components: Sum
+          BlocksToObserve: All
+          ReductionScope: WholeDomain
   - Trigger:
       Slabs:
         EvenlySpaced:

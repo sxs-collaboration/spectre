@@ -3,6 +3,7 @@
 
 #include "Framework/TestingFramework.hpp"
 
+#include <array>
 #include <cstddef>
 #include <memory>
 #include <optional>
@@ -27,6 +28,10 @@
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.tpp"
 #include "Domain/CoordinateMaps/SphericalToCartesianPfaffian.hpp"
+#include "Domain/Domain.hpp"
+#include "Domain/Structure/Element.hpp"
+#include "Domain/Structure/ElementId.hpp"
+#include "Domain/Structure/Topology.hpp"
 #include "Domain/Tags.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "Framework/TestCreation.hpp"
@@ -190,6 +195,29 @@ struct Metavariables {
   };
 };
 
+// Four disjoint unit cubes named Shell0, Shell1, Shell2, and Cube, with the
+// three shells in the group Shells.
+Domain<3> make_test_domain() {
+  using Affine = domain::CoordinateMaps::Affine;
+  using Affine3D =
+      domain::CoordinateMaps::ProductOf3Maps<Affine, Affine, Affine>;
+  std::vector<std::unique_ptr<
+      domain::CoordinateMapBase<Frame::BlockLogical, Frame::Inertial, 3>>>
+      maps{};
+  for (size_t block_id = 0; block_id < 4; ++block_id) {
+    const double lower_x = 2.0 * static_cast<double>(block_id);
+    maps.push_back(
+        domain::make_coordinate_map_base<Frame::BlockLogical, Frame::Inertial>(
+            Affine3D{Affine{-1.0, 1.0, lower_x, lower_x + 1.0},
+                     Affine{-1.0, 1.0, 0.0, 1.0},
+                     Affine{-1.0, 1.0, 0.0, 1.0}}));
+  }
+  return Domain<3>{std::move(maps),
+                   {},
+                   {"Shell0", "Shell1", "Shell2", "Cube"},
+                   {{"Shells", {"Shell0", "Shell1", "Shell2"}}}};
+}
+
 template <typename ArraySectionIdTag, typename ObserveEvent>
 void test(const std::unique_ptr<ObserveEvent> observe,
           const Spectral::Basis basis, const Spectral::Quadrature quadrature,
@@ -218,14 +246,16 @@ void test(const std::unique_ptr<ObserveEvent> observe,
                                                       array_index);
   ActionTesting::emplace_group_component<observer_component>(&runner);
 
-  auto box = db::create<
-      db::AddSimpleTags<Parallel::Tags::MetavariablesImpl<metavariables>,
-                        ::Events::Tags::ObserverMesh<3>,
-                        ::Events::Tags::ObserverDetInvJacobian<
-                            Frame::ElementLogical, Frame::Inertial>,
-                        Tags::Variables<typename decltype(vars)::tags_list>,
-                        observers::Tags::ObservationKey<ArraySectionIdTag>>>(
-      metavariables{}, mesh, det_inv_jacobian, vars, section);
+  auto box = db::create<db::AddSimpleTags<
+      Parallel::Tags::MetavariablesImpl<metavariables>, domain::Tags::Domain<3>,
+      domain::Tags::Element<3>, ::Events::Tags::ObserverMesh<3>,
+      ::Events::Tags::ObserverDetInvJacobian<Frame::ElementLogical,
+                                             Frame::Inertial>,
+      Tags::Variables<typename decltype(vars)::tags_list>,
+      observers::Tags::ObservationKey<ArraySectionIdTag>>>(
+      metavariables{}, make_test_domain(),
+      Element<3>{array_index, {}, domain::topologies::hypercube<3>}, mesh,
+      det_inv_jacobian, vars, section);
 
   const auto ids_to_register =
       observers::get_registration_observation_type_and_key(*observe, box);
@@ -427,15 +457,17 @@ void test_b2_b3(const std::unique_ptr<ObserveEvent> observe,
                                                       array_index);
   ActionTesting::emplace_group_component<observer_component>(&runner);
 
-  auto box = db::create<
-      db::AddSimpleTags<Parallel::Tags::MetavariablesImpl<metavariables>,
-                        ::Events::Tags::ObserverMesh<3>,
-                        ::Events::Tags::ObserverDetInvJacobian<
-                            Frame::ElementLogical, Frame::Inertial>,
-                        ::Events::Tags::ObserverCoordinates<3, Frame::Inertial>,
-                        Tags::Variables<typename decltype(vars)::tags_list>,
-                        observers::Tags::ObservationKey<ArraySectionIdTag>>>(
-      metavariables{}, mesh, det_inv_jacobian, inertial_coords, vars, section);
+  auto box = db::create<db::AddSimpleTags<
+      Parallel::Tags::MetavariablesImpl<metavariables>, domain::Tags::Domain<3>,
+      domain::Tags::Element<3>, ::Events::Tags::ObserverMesh<3>,
+      ::Events::Tags::ObserverDetInvJacobian<Frame::ElementLogical,
+                                             Frame::Inertial>,
+      ::Events::Tags::ObserverCoordinates<3, Frame::Inertial>,
+      Tags::Variables<typename decltype(vars)::tags_list>,
+      observers::Tags::ObservationKey<ArraySectionIdTag>>>(
+      metavariables{}, make_test_domain(),
+      Element<3>{array_index, {}, domain::topologies::hypercube<3>}, mesh,
+      det_inv_jacobian, inertial_coords, vars, section);
 
   auto obs_box = make_observation_box<
       tmpl::filter<typename ObserveNormsEvent<
@@ -577,15 +609,17 @@ void test_cartoon(const std::unique_ptr<ObserveEvent> observe,
                                                       array_index);
   ActionTesting::emplace_group_component<observer_component>(&runner);
 
-  auto box = db::create<
-      db::AddSimpleTags<Parallel::Tags::MetavariablesImpl<metavariables>,
-                        ::Events::Tags::ObserverMesh<3>,
-                        ::Events::Tags::ObserverDetInvJacobian<
-                            Frame::ElementLogical, Frame::Inertial>,
-                        ::Events::Tags::ObserverCoordinates<3, Frame::Inertial>,
-                        Tags::Variables<typename decltype(vars)::tags_list>,
-                        observers::Tags::ObservationKey<ArraySectionIdTag>>>(
-      metavariables{}, mesh, det_inv_jacobian, inertial_coords, vars, section);
+  auto box = db::create<db::AddSimpleTags<
+      Parallel::Tags::MetavariablesImpl<metavariables>, domain::Tags::Domain<3>,
+      domain::Tags::Element<3>, ::Events::Tags::ObserverMesh<3>,
+      ::Events::Tags::ObserverDetInvJacobian<Frame::ElementLogical,
+                                             Frame::Inertial>,
+      ::Events::Tags::ObserverCoordinates<3, Frame::Inertial>,
+      Tags::Variables<typename decltype(vars)::tags_list>,
+      observers::Tags::ObservationKey<ArraySectionIdTag>>>(
+      metavariables{}, make_test_domain(),
+      Element<3>{array_index, {}, domain::topologies::hypercube<3>}, mesh,
+      det_inv_jacobian, inertial_coords, vars, section);
 
   auto obs_box = make_observation_box<
       tmpl::filter<typename ObserveNormsEvent<
@@ -699,6 +733,181 @@ void test_cartoon(const std::unique_ptr<ObserveEvent> observe,
   }
   CHECK(results.volume_integral_values[3] == approx(0.0));
 }
+
+template <typename ArraySectionIdTag>
+std::unique_ptr<Event> create_block_event(const std::string& blocks_to_observe,
+                                          const std::string& reduction_scope) {
+  return serialize_and_deserialize(
+      TestHelpers::test_creation<std::unique_ptr<Event>,
+                                 Metavariables<3, ArraySectionIdTag>>(
+          "ObserveNorms:\n"
+          "  SubfileName: reduction0\n"
+          "  TensorsToObserve:\n"
+          "  - Name: Var0\n"
+          "    NormType: Max\n"
+          "    Components: Individual\n"
+          "  BlocksToObserve: " +
+          blocks_to_observe +
+          "\n"
+          "  ReductionScope: " +
+          reduction_scope + "\n"));
+}
+
+// Runs the event on one element in each block of the test domain and checks
+// the subfile it registers for and contributes to. An entry of
+// `expected_subfiles` is `std::nullopt` if the block should not be observed.
+template <typename ArraySectionIdTag>
+void test_blocks_to_observe(
+    const std::string& blocks_to_observe, const std::string& reduction_scope,
+    const std::optional<std::string>& section,
+    const std::array<std::optional<std::string>, 4>& expected_subfiles) {
+  CAPTURE(blocks_to_observe);
+  CAPTURE(reduction_scope);
+  CAPTURE(section);
+  using metavariables = Metavariables<3, ArraySectionIdTag>;
+  using element_component = ElementComponent<metavariables>;
+  using observer_component = MockObserverComponent<metavariables>;
+  const auto observe =
+      create_block_event<ArraySectionIdTag>(blocks_to_observe, reduction_scope);
+  const Mesh<3> mesh{3, Spectral::Basis::Legendre,
+                     Spectral::Quadrature::GaussLobatto};
+  const size_t num_points = mesh.number_of_grid_points();
+  // Each element is a unit cube, so the volume is 1
+  const Scalar<DataVector> det_inv_jacobian(num_points, cube(2.0));
+  Variables<tmpl::list<Var0, Var1>> vars(num_points);
+  // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+  std::iota(vars.data(), vars.data() + vars.size(), 1.0);
+
+  for (size_t block_id = 0; block_id < 4; ++block_id) {
+    CAPTURE(block_id);
+    const ElementId<3> element_id{block_id};
+    ActionTesting::MockRuntimeSystem<metavariables> runner{{}};
+    ActionTesting::emplace_component<element_component>(make_not_null(&runner),
+                                                        element_id);
+    ActionTesting::emplace_group_component<observer_component>(&runner);
+    auto box = db::create<
+        db::AddSimpleTags<Parallel::Tags::MetavariablesImpl<metavariables>,
+                          domain::Tags::Domain<3>, domain::Tags::Element<3>,
+                          ::Events::Tags::ObserverMesh<3>,
+                          ::Events::Tags::ObserverDetInvJacobian<
+                              Frame::ElementLogical, Frame::Inertial>,
+                          Tags::Variables<typename decltype(vars)::tags_list>,
+                          observers::Tags::ObservationKey<ArraySectionIdTag>>>(
+        metavariables{}, make_test_domain(),
+        Element<3>{element_id, {}, domain::topologies::hypercube<3>}, mesh,
+        det_inv_jacobian, vars, section);
+
+    const auto& expected_subfile = expected_subfiles.at(block_id);
+    const auto ids_to_register =
+        observers::get_registration_observation_type_and_key(*observe, box);
+    REQUIRE(ids_to_register.has_value() == expected_subfile.has_value());
+    if (expected_subfile.has_value()) {
+      CHECK(ids_to_register->first == observers::TypeOfObservation::Reduction);
+      CHECK(ids_to_register->second ==
+            observers::ObservationKey(*expected_subfile + ".dat"));
+    }
+
+    MockContributeReductionData::results = {};
+    auto obs_box = make_observation_box<
+        tmpl::filter<typename ObserveNormsEvent<
+                         ArraySectionIdTag>::compute_tags_for_observation_box,
+                     db::is_compute_tag<tmpl::_1>>>(make_not_null(&box));
+    observe->run(make_not_null(&obs_box),
+                 ActionTesting::cache<element_component>(runner, element_id),
+                 element_id, std::add_pointer_t<element_component>{},
+                 {"TimeName", 2.0});
+    if (not expected_subfile.has_value()) {
+      CHECK(ActionTesting::is_simple_action_queue_empty<observer_component>(
+          runner, 0));
+      continue;
+    }
+    ActionTesting::invoke_queued_simple_action<observer_component>(
+        make_not_null(&runner), 0);
+    const auto& results = MockContributeReductionData::results;
+    CHECK(results.observation_id.observation_key() ==
+          observers::ObservationKey(*expected_subfile + ".dat"));
+    CHECK(results.subfile_name == *expected_subfile);
+    CHECK(results.number_of_grid_points == num_points);
+    CHECK(results.volume == approx(1.0));
+    CHECK(results.reduction_names ==
+          std::vector<std::string>{"TimeName", "NumberOfPoints", "Volume",
+                                   "Max(Var0)"});
+    CHECK(results.max_values == std::vector<double>{27.0});
+  }
+}
+
+void test_reduction_scope() {
+  const std::string whole{"/reduction0"};
+  const auto per = [](const std::string& name) -> std::optional<std::string> {
+    return "/reduction0/" + name;
+  };
+  const std::optional<std::string> none{};
+  // Block 0-2 are Shell0-Shell2 (group Shells), block 3 is Cube
+  test_blocks_to_observe<void>("All", "WholeDomain", std::nullopt,
+                               {{whole, whole, whole, whole}});
+  test_blocks_to_observe<void>(
+      "All", "ByBlock", std::nullopt,
+      {{per("Shell0"), per("Shell1"), per("Shell2"), per("Cube")}});
+  test_blocks_to_observe<void>(
+      "All", "ByBlockOrGroup", std::nullopt,
+      {{per("Shell0"), per("Shell1"), per("Shell2"), per("Cube")}});
+  test_blocks_to_observe<void>("[Shells]", "WholeDomain", std::nullopt,
+                               {{whole, whole, whole, none}});
+  test_blocks_to_observe<void>("[Shell1, Cube]", "WholeDomain", std::nullopt,
+                               {{none, whole, none, whole}});
+  test_blocks_to_observe<void>(
+      "[Shells]", "ByBlock", std::nullopt,
+      {{per("Shell0"), per("Shell1"), per("Shell2"), none}});
+  // Overlapping entries are fine when reducing by individual block
+  test_blocks_to_observe<void>(
+      "[Shells, Shell0, Cube]", "ByBlock", std::nullopt,
+      {{per("Shell0"), per("Shell1"), per("Shell2"), per("Cube")}});
+  test_blocks_to_observe<void>(
+      "[Shells, Cube]", "ByBlockOrGroup", std::nullopt,
+      {{per("Shells"), per("Shells"), per("Shells"), per("Cube")}});
+  test_blocks_to_observe<void>("[Shell2]", "ByBlockOrGroup", std::nullopt,
+                               {{none, none, per("Shell2"), none}});
+  // Sections are applied before the block suffix
+  test_blocks_to_observe<TestSectionIdTag>(
+      "[Shells]", "ByBlock", "Section0",
+      {{"/reduction0Section0/Shell0", "/reduction0Section0/Shell1",
+        "/reduction0Section0/Shell2", none}});
+  test_blocks_to_observe<TestSectionIdTag>(
+      "[Shells]", "WholeDomain", "Section0",
+      {{"/reduction0Section0", "/reduction0Section0", "/reduction0Section0",
+        none}});
+  test_blocks_to_observe<TestSectionIdTag>("All", "ByBlock", std::nullopt,
+                                           {{none, none, none, none}});
+
+  // Errors are raised when the elements register
+  const auto check_registration_error = [](const std::string& blocks_to_observe,
+                                           const std::string& reduction_scope,
+                                           const size_t block_id,
+                                           const std::string& expected_error) {
+    using metavariables = Metavariables<3, void>;
+    const auto observe =
+        create_block_event<void>(blocks_to_observe, reduction_scope);
+    const auto box = db::create<
+        db::AddSimpleTags<Parallel::Tags::MetavariablesImpl<metavariables>,
+                          domain::Tags::Domain<3>, domain::Tags::Element<3>,
+                          observers::Tags::ObservationKey<void>>>(
+        metavariables{}, make_test_domain(),
+        Element<3>{
+            ElementId<3>{block_id}, {}, domain::topologies::hypercube<3>},
+        std::optional<std::string>{std::nullopt});
+    CHECK_THROWS_WITH(
+        observers::get_registration_observation_type_and_key(*observe, box),
+        Catch::Matchers::ContainsSubstring(expected_error));
+  };
+  check_registration_error(
+      "[Shells, Shell0]", "ByBlockOrGroup", 0,
+      "With ReductionScope 'ByBlockOrGroup' each block can be in at most one "
+      "entry of BlocksToObserve");
+  check_registration_error(
+      "[NoBlock]", "WholeDomain", 0,
+      "The block or group 'NoBlock' is not one of the block names or groups "
+      "of the domain.");
+}
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Evolution.ObserveNorms", "[Unit][Evolution]") {
@@ -781,6 +990,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.ObserveNorms", "[Unit][Evolution]") {
     - Name: Var1
       NormType: Min
       Components: Sum
+    BlocksToObserve: All
+    ReductionScope: WholeDomain
         )");
   // [input_file_examples]
   auto serialized_event = serialize_and_deserialize(factory_event);
@@ -799,6 +1010,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.ObserveNorms", "[Unit][Evolution]") {
     - Name: Var0
       NormType: Max
       Components: Individual
+    BlocksToObserve: [Shells]
+    ReductionScope: ByBlock
         )");
   }
 
@@ -851,18 +1064,21 @@ SPECTRE_TEST_CASE("Unit.Evolution.ObserveNorms", "[Unit][Evolution]") {
 
     auto box = db::create<
         db::AddSimpleTags<Parallel::Tags::MetavariablesImpl<metavariables>,
+                          domain::Tags::Domain<3>, domain::Tags::Element<3>,
                           ::Events::Tags::ObserverMesh<3>,
                           ::Events::Tags::ObserverDetInvJacobian<
                               Frame::ElementLogical, Frame::Inertial>,
                           Tags::Variables<typename decltype(vars)::tags_list>,
                           observers::Tags::ObservationKey<void>>>(
-        metavariables{}, mesh, det_inv_jacobian, vars,
-        std::optional<std::string>{std::nullopt});
+        metavariables{}, make_test_domain(),
+        Element<3>{array_index, {}, domain::topologies::hypercube<3>}, mesh,
+        det_inv_jacobian, vars, std::optional<std::string>{std::nullopt});
 
     const auto observe = std::make_unique<ObserveNormsEvent<void>>(
         ObserveNormsEvent<void>{"reduction0",
                                 {{"Var0", "L1Norm", "Individual"},
-                                 {"Var0", "L1IntegralNorm", "Individual"}}});
+                                 {"Var0", "L1IntegralNorm", "Individual"},
+                                 {"Var0", "Max", "Sum"}}});
 
     auto obs_box = make_observation_box<tmpl::filter<
         typename ObserveNormsEvent<void>::compute_tags_for_observation_box,
@@ -881,6 +1097,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.ObserveNorms", "[Unit][Evolution]") {
     // and V=1). Both should be 1.0, not -1.0, proving abs() is applied.
     CHECK(results.l1_norm_values[0] == approx(1.0));
     CHECK(results.l1_integral_norm_values[0] == approx(1.0));
+    // The max over components of a negative tensor must be negative
+    CHECK(results.max_values == std::vector<double>{-1.0});
   }
 
   // varrying `Spherical` to test both spherical and axial symmetry, as well
@@ -946,4 +1164,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.ObserveNorms", "[Unit][Evolution]") {
                                    {"Var1", "VolumeIntegral", "Sum"},
                                    {"Var1", "VolumeIntegral", "Individual"}}}),
       std::nullopt);
+
+  register_factory_classes_with_charm<Metavariables<3, TestSectionIdTag>>();
+  test_reduction_scope();
 }

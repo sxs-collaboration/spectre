@@ -205,6 +205,8 @@ EventsAndTriggersAtIterations:
             - Name: MomentumConstraint
               NormType: L2Norm
               Components: Individual
+          BlocksToObserve: All
+          ReductionScope: WholeDomain
       - ObserveFields:
           SubfileName: VolumeData
           VariablesToObserve:

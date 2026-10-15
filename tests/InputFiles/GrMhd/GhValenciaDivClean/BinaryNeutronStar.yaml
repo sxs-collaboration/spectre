@@ -340,6 +340,8 @@ EventsAndTriggersAtSlabs:
             - Name: RestMassDensity
               NormType: Max
               Components: Individual
+          BlocksToObserve: All
+          ReductionScope: WholeDomain
       - ObserveNorms:
           SubfileName: Constraints
           TensorsToObserve:
@@ -352,6 +354,8 @@ EventsAndTriggersAtSlabs:
           - Name: PointwiseL2Norm(ConstraintEnergy)
             NormType: L2Norm
             Components: Sum
+          BlocksToObserve: All
+          ReductionScope: WholeDomain
 
   - Trigger:
       Slabs:
@@ -374,6 +378,8 @@ EventsAndTriggersAtSlabs:
           - Name: Lapse
             NormType: Min
             Components: Individual
+          BlocksToObserve: All
+          ReductionScope: WholeDomain
       - ObserveNorms:
           SubfileName: FluidQuantities
           TensorsToObserve:
@@ -386,6 +392,8 @@ EventsAndTriggersAtSlabs:
           - Name: TildeDUnboundUtCriterion
             NormType: VolumeIntegral
             Components: Individual
+          BlocksToObserve: All
+          ReductionScope: WholeDomain
 
   - Trigger:
       Slabs:

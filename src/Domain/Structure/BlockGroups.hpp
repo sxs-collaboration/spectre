@@ -46,6 +46,30 @@ std::unordered_set<std::string> expand_block_groups_to_block_names(
         block_groups);
 
 /*!
+ * \brief The entries of \p block_or_group_names that contain the block
+ * \p block_name
+ *
+ * An entry contains the block if it is the name of the block itself or the name
+ * of a group that includes the block. Throws a `std::invalid_argument`
+ * exception if any of the input names are not in \p all_block_names or
+ * \p block_groups.
+ *
+ * \param block_name The name of the block to look for
+ * \param block_or_group_names Block or group names to search
+ * \param all_block_names All block names in the domain
+ * \param block_groups All block groups
+ * \return The entries of \p block_or_group_names that contain the block, in
+ * the order they appear in \p block_or_group_names. Empty if no entry contains
+ * the block.
+ */
+std::vector<std::string> block_or_group_names_containing_block(
+    const std::string& block_name,
+    const std::vector<std::string>& block_or_group_names,
+    const std::vector<std::string>& all_block_names,
+    const std::unordered_map<std::string, std::unordered_set<std::string>>&
+        block_groups);
+
+/*!
  * \brief Sorted block IDs corresponding to the given block or group names.
  *
  * Throws a `std::invalid_argument` exception if any of the input names are not

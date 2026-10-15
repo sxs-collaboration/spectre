@@ -7,6 +7,7 @@
 #include <cstddef>
 #include <limits>
 #include <string>
+#include <unordered_map>
 #include <utility>
 #include <vector>
 
@@ -86,7 +87,7 @@ void fill_norm_values_and_names(
   } else if (tensor_component == "Sum") {
     double value = 0.0;
     if (tensor_norm_type == "Max") {
-      value = std::numeric_limits<double>::min();
+      value = std::numeric_limits<double>::lowest();
     } else if (tensor_norm_type == "Min") {
       value = std::numeric_limits<double>::max();
     }
