@@ -10,6 +10,7 @@ spectre_target_sources(
   PRIVATE
   Binary.cpp
   KerrSchildTeukolsky.cpp
+  BinaryWithGravitationalWaves.cpp
   )
 
 spectre_target_headers(
@@ -18,6 +19,7 @@ spectre_target_headers(
   HEADERS
   AnalyticData.hpp
   Binary.hpp
+  BinaryWithGravitationalWaves.hpp
   CommonVariables.hpp
   CommonVariables.tpp
   KerrSchildTeukolsky.hpp
@@ -36,6 +38,7 @@ target_link_libraries(
   Options
   Parallel
   Serialization
+  SpecialRelativity
   Spectral
   Utilities
   PRIVATE
