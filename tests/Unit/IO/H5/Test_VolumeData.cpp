@@ -401,7 +401,21 @@ void test() {
     CHECK(get<DataType>(
               volume_file.get_tensor_component(observation_ids[i], "U").data) ==
           extra_tensor_component);
+    DataType expected_subset(5);
+    std::copy_n(extra_tensor_component.begin() + 3, expected_subset.size(),
+                expected_subset.begin());
+    const auto subset = volume_file.get_tensor_component(
+        observation_ids[i], "U", 3, expected_subset.size());
+    CHECK(subset.name == "U");
+    CHECK(get<DataType>(subset.data) == expected_subset);
   }
+
+  CHECK_THROWS_WITH(
+      volume_file.get_tensor_component(observation_ids.front(), "U", 14, 3),
+      Catch::Matchers::ContainsSubstring("must be non-empty and lie within"));
+  CHECK_THROWS_WITH(
+      volume_file.get_tensor_component(observation_ids.front(), "U", 0, 0),
+      Catch::Matchers::ContainsSubstring("must be non-empty and lie within"));
 
   {
     INFO("offset_and_length_for_grid");

@@ -117,12 +117,8 @@ class ModalTimeSeriesReader {
    *
    * Metadata of the file in which the element resides is cached between
    * calls, so requesting elements in the order of `elements()` is most
-   * efficient (this is also why this function is not const).
-   *
-   * Reading the volume data is currently not optimized: every observation of
-   * a tensor component is read from disk once per element residing in the
-   * file. Reading only the element's subset of the data would avoid this
-   * amplification without changing this interface.
+   * efficient (this is also why this function is not const). Only the subset
+   * of each tensor component dataset belonging to this element is read.
    */
   Series modal_time_series(const ElementId<Dim>& element_id);
 
