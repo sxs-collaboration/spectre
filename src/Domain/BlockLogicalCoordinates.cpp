@@ -5,6 +5,7 @@
 
 #include <cmath>
 #include <cstddef>
+#include <optional>
 #include <vector>
 
 #include "DataStructures/IdPair.hpp"
@@ -14,6 +15,8 @@
 #include "Domain/Domain.hpp"
 #include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
 #include "Domain/Structure/BlockId.hpp"
+#include "Domain/Structure/Direction.hpp"
+#include "Domain/Structure/Side.hpp"
 #include "Utilities/Algorithm.hpp"
 #include "Utilities/EqualWithinRoundoff.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
@@ -184,12 +187,28 @@ BlockLogicalCoords<Dim> block_logical_coordinates_single_point(
       // because fields can be discontinuous across block boundaries. So if the
       // point is on a face of this block (points within roundoff of a face were
       // snapped to it above), check the blocks with smaller IDs first.
-      if (block_order.has_value() and block_id > 0 and
-          alg::any_of(*x_logical, [](const double x_logical_component) {
-            return abs(x_logical_component) == 1.0;
-          })) {
+      // A point on a single face can only be shared with the neighbors across
+      // that face (none if it's an external boundary), so we only check those.
+      // Points on edges or corners can also be shared with blocks that aren't
+      // face neighbors, so we check all blocks with smaller IDs.
+      size_t num_faces = 0;
+      std::optional<Direction<Dim>> face{};
+      for (size_t d = 0; d < Dim; ++d) {
+        if (abs(x_logical->get(d)) == 1.0) {
+          ++num_faces;
+          face = Direction<Dim>(
+              d, x_logical->get(d) > 0.0 ? Side::Upper : Side::Lower);
+        }
+      }
+      if (block_order.has_value() and block_id > 0 and num_faces > 0) {
+        const auto& neighbors = domain.blocks()[block_id].neighbors();
         for (size_t lower_block_id = 0; lower_block_id < block_id;
              ++lower_block_id) {
+          if (num_faces == 1 and
+              not(neighbors.contains(*face) and
+                  neighbors.at(*face).ids().contains(lower_block_id))) {
+            continue;
+          }
           // Respect a block order that is restricted to a subset of blocks
           if (num_blocks < domain.blocks().size() and
               not alg::found(*block_order.value(), lower_block_id)) {
