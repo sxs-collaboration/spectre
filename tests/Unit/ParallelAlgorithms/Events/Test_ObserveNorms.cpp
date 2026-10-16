@@ -1077,7 +1077,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.ObserveNorms", "[Unit][Evolution]") {
     const auto observe = std::make_unique<ObserveNormsEvent<void>>(
         ObserveNormsEvent<void>{"reduction0",
                                 {{"Var0", "L1Norm", "Individual"},
-                                 {"Var0", "L1IntegralNorm", "Individual"}}});
+                                 {"Var0", "L1IntegralNorm", "Individual"},
+                                 {"Var0", "Max", "Sum"}}});
 
     auto obs_box = make_observation_box<tmpl::filter<
         typename ObserveNormsEvent<void>::compute_tags_for_observation_box,
@@ -1096,6 +1097,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.ObserveNorms", "[Unit][Evolution]") {
     // and V=1). Both should be 1.0, not -1.0, proving abs() is applied.
     CHECK(results.l1_norm_values[0] == approx(1.0));
     CHECK(results.l1_integral_norm_values[0] == approx(1.0));
+    // The max over components of a negative tensor must be negative
+    CHECK(results.max_values == std::vector<double>{-1.0});
   }
 
   // varrying `Spherical` to test both spherical and axial symmetry, as well
