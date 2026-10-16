@@ -23,6 +23,7 @@
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Structure/Neighbors.hpp"
+#include "Domain/Structure/Topology.hpp"
 #include "Evolution/DiscontinuousGalerkin/Limiters/HwenoImpl.hpp"
 #include "Evolution/DiscontinuousGalerkin/Limiters/WenoHelpers.hpp"
 #include "Evolution/DiscontinuousGalerkin/Limiters/WenoOscillationIndicator.hpp"
@@ -221,7 +222,8 @@ void test_constrained_fit_1d(const Spectral::Quadrature quadrature =
         Element<1>::Neighbors_t{
             // lower_xi is external boundary
             {Direction<1>::upper_xi(),
-             TestHelpers::Limiters::make_neighbor_with_id<1>(1)}}};
+             TestHelpers::Limiters::make_neighbor_with_id<1>(1)}},
+        domain::topologies::hypercube<1>};
     auto neighbor_data_at_lower_xi_bdry = neighbor_data;
     neighbor_data_at_lower_xi_bdry.erase(lower_xi_neighbor);
 
@@ -266,7 +268,8 @@ void test_constrained_fit_1d(const Spectral::Quadrature quadrature =
             {Direction<1>::lower_xi(),
              TestHelpers::Limiters::make_neighbor_with_id<1>(1)}
             // upper_xi is external boundary
-        }};
+        },
+        domain::topologies::hypercube<1>};
     auto neighbor_data_at_upper_xi_bdry = neighbor_data;
     neighbor_data_at_upper_xi_bdry.erase(upper_xi_neighbor);
 
@@ -536,7 +539,8 @@ void test_constrained_fit_2d_vector(const Spectral::Quadrature quadrature =
              TestHelpers::Limiters::make_neighbor_with_id<2>(1)},
             // lower_eta is external boundary
             {Direction<2>::upper_eta(),
-             TestHelpers::Limiters::make_neighbor_with_id<2>(4)}}};
+             TestHelpers::Limiters::make_neighbor_with_id<2>(4)}},
+        domain::topologies::hypercube<2>};
     auto neighbor_data_at_lower_eta_bdry = neighbor_data;
     neighbor_data_at_lower_eta_bdry.erase(lower_eta_neighbor);
 
@@ -918,7 +922,8 @@ void test_constrained_fit_3d(const Spectral::Quadrature quadrature =
             {Direction<3>::lower_zeta(),
              TestHelpers::Limiters::make_neighbor_with_id<3>(5)},
             {Direction<3>::upper_zeta(),
-             TestHelpers::Limiters::make_neighbor_with_id<3>(6)}}};
+             TestHelpers::Limiters::make_neighbor_with_id<3>(6)}},
+        domain::topologies::hypercube<3>};
     auto neighbor_data_two_bdries = neighbor_data;
     neighbor_data_two_bdries.erase(lower_xi_neighbor);
     neighbor_data_two_bdries.erase(lower_eta_neighbor);

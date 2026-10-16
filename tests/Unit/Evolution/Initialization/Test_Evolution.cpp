@@ -35,6 +35,7 @@
 #include "Domain/Structure/OrientationMap.hpp"
 #include "Domain/Structure/SegmentId.hpp"
 #include "Domain/Structure/Side.hpp"
+#include "Domain/Structure/Topology.hpp"
 #include "Domain/Tags.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarInfo.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarTags.hpp"
@@ -222,7 +223,8 @@ void check(const db::DataBox<DbTagList>& box,
 
 void test_p_refine() {
   const ElementId<1> element_id{0};
-  const Element<1> element{element_id, DirectionMap<1, Neighbors<1>>{}};
+  const Element<1> element{element_id, DirectionMap<1, Neighbors<1>>{},
+                           domain::topologies::hypercube<1>};
   const Mesh<1> mesh{2, Spectral::Basis::Legendre,
                      Spectral::Quadrature::GaussLobatto};
   const Slab slab(0., 1.);
@@ -541,7 +543,8 @@ void check(const TimeSteppers::History<VariablesType>& original_history,
 template <size_t Dim>
 void test_p_refine() {
   const ElementId<Dim> element_id{0};
-  const Element<Dim> element{element_id, DirectionMap<Dim, Neighbors<Dim>>{}};
+  const Element<Dim> element{element_id, DirectionMap<Dim, Neighbors<Dim>>{},
+                             domain::topologies::hypercube<Dim>};
   const Mesh<Dim> old_mesh{4, Spectral::Basis::Legendre,
                            Spectral::Quadrature::GaussLobatto};
   std::array<size_t, Dim> new_extents{};
@@ -636,7 +639,8 @@ ElementData element_data(
         neighbor->first,
         Neighbors<3>({neighbor->second}, OrientationMap<3>::create_aligned()));
   }
-  Element<3> element(element_id, std::move(neighbors));
+  Element<3> element(element_id, std::move(neighbors),
+                     domain::topologies::hypercube<3>);
   auto mortar_info = make_mortar_info(element, false);
   std::uniform_real_distribution<double> dist(-1.0, 1.0);
   auto value0 = make_with_random_values<variables_tag::type>(
@@ -924,7 +928,8 @@ old_h_refinement_items(
                       Neighbors<Dim>({neighbor->second},
                                      OrientationMap<Dim>::create_aligned()));
   }
-  Element<Dim> element(element_id, std::move(neighbors));
+  Element<Dim> element(element_id, std::move(neighbors),
+                       domain::topologies::hypercube<Dim>);
   auto mortar_info = make_mortar_info(element, neighbor.has_value());
   return {std::move(element),
           std::move(mortar_info),
@@ -946,7 +951,8 @@ TimeDelta test_h_refine_lts_split(
   child_neighbors.emplace(Direction<3>::upper_eta(),
                           Neighbors<3>(parent_id.id_of_child(1, Side::Upper),
                                        OrientationMap<3>::create_aligned()));
-  const Element<3> child_element{child_id, std::move(child_neighbors)};
+  const Element<3> child_element{child_id, std::move(child_neighbors),
+                                 domain::topologies::hypercube<3>};
   const Mesh<3> mesh(5, Spectral::Basis::Legendre,
                      Spectral::Quadrature::GaussLobatto);
   const TimeStepId time_step_id(true, 5, old_time_step.slab().start());
@@ -992,7 +998,8 @@ TimeDelta test_h_refine_lts_join(
     const TimeDelta& old_time_step1,
     const std::optional<double>& first_order_error1) {
   const ElementId<3> parent_id(3, {});
-  const Element<3> parent_element(parent_id, {});
+  const Element<3> parent_element(parent_id, {},
+                                  domain::topologies::hypercube<3>);
   const ElementId<3> child0_id = parent_id.id_of_child(1, Side::Lower);
   const ElementId<3> child1_id = parent_id.id_of_child(1, Side::Upper);
   const Mesh<3> mesh(5, Spectral::Basis::Legendre,

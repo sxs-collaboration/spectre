@@ -16,6 +16,7 @@
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Structure/Neighbors.hpp"
 #include "Domain/Structure/OrientationMap.hpp"
+#include "Domain/Structure/Topology.hpp"
 #include "Domain/Tags.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarTags.hpp"
 #include "Framework/ActionTesting.hpp"
@@ -87,16 +88,18 @@ PUP::able::PUP_ID BadCriterion::my_PUP_ID = 0;  // NOLINT
 
 template <typename Metavariables>
 struct ElementComponent {
+  static constexpr size_t volume_dim = Metavariables::volume_dim;
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
-  using array_index = ElementId<1>;
+  using array_index = ElementId<volume_dim>;
   using const_global_cache_tags =
       tmpl::list<amr::Criteria::Tags::Criteria,
                  logging::Tags::Verbosity<amr::OptionTags::AmrGroup>>;
   using simple_tags =
-      tmpl::list<domain::Tags::Element<1>, domain::Tags::Mesh<1>,
-                 amr::Tags::Policies, ::Tags::TimeStepId,
-                 evolution::dg::Tags::MortarNextTemporalId<1>>;
+      tmpl::list<domain::Tags::Element<volume_dim>,
+                 domain::Tags::Mesh<volume_dim>, amr::Tags::Policies,
+                 ::Tags::TimeStepId,
+                 evolution::dg::Tags::MortarNextTemporalId<volume_dim>>;
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
       Parallel::Phase::Initialization,
       tmpl::list<ActionTesting::InitializeDataBox<simple_tags>>>>;
@@ -189,7 +192,8 @@ void test(const Event& event, const Event& observe_event) {
   neighbors.emplace(
       Direction<1>::lower_xi(),
       Neighbors({ElementId<1>{2}}, OrientationMap<1>::create_aligned()));
-  const Element<1> element{element_id, neighbors};
+  const Element<1> element{element_id, neighbors,
+                           domain::topologies::hypercube<1>};
   const Mesh<1> mesh{std::array{3_st}, Spectral::Basis::Legendre,
                      Spectral::Quadrature::GaussLobatto};
   const amr::Policies policies{
@@ -353,10 +357,84 @@ void test(const Event& event, const Event& observe_event) {
   }
 #endif
 }
+
+struct B2Metavariables {
+  static constexpr size_t volume_dim = 2;
+  using component_list = tmpl::list<ElementComponent<B2Metavariables>>;
+  struct factory_creation
+      : tt::ConformsTo<Options::protocols::FactoryCreation> {
+    using factory_classes = tmpl::map<
+        tmpl::pair<Event, tmpl::list<amr::Events::RefineMesh>>,
+        tmpl::pair<amr::Criterion, tmpl::list<amr::Criteria::DriveToTarget<
+                                       2, amr::Criteria::Type::p>>>>;
+  };
+
+  struct amr : tt::ConformsTo<::amr::protocols::AmrMetavariables> {
+    using projectors =
+        tmpl::list<::amr::projectors::DefaultInitialize<
+                       Parallel::Tags::GlobalCache<B2Metavariables>>,
+                   ::amr::projectors::CopyFromCreatorOrLeaveAsIs<
+                       ::domain::Tags::Element<2>>>;
+  };
+};
+
+void test_b2() {
+  INFO("Test enforce topology p-refinement restrictions");
+  using element_component = ElementComponent<B2Metavariables>;
+  const amr::Events::RefineMesh event{};
+
+  CHECK(event.needs_evolved_variables());
+
+  const ElementId<2> element_id{0};
+  const Element<2> element{element_id, DirectionMap<2, Neighbors<2>>{},
+                           domain::topologies::disk};
+  const Mesh<2> mesh{std::array{3_st, 9_st}, Spectral::bases::disk,
+                     Spectral::quadratures::disk};
+  const amr::Policies policies{
+      amr::Isotropy::Anisotropic,
+      amr::Limits{{{0, 0}}, {{2, 4}}, std::nullopt, std::nullopt, false}, true,
+      true};
+  const Slab slab(3.4, 6.7);
+  const TimeStepId time_step_id(true, 5, slab.start());
+  DirectionalIdMap<2, TimeStepId> aligned_neighbor_times{};
+
+  std::vector<std::unique_ptr<amr::Criterion>> criteria{};
+  // this criteria will choose flags (increase, decrease) to drive the extents
+  // towards (5,5), but the topology restriction will change the flags to
+  // (increase, increase) which will increase the radial resolution by 1 and
+  // the angular resolution by 4
+  criteria.emplace_back(
+      std::make_unique<amr::Criteria::DriveToTarget<2, amr::Criteria::Type::p>>(
+          std::array{5_st, 5_st},
+          std::array{amr::Flag::DoNothing, amr::Flag::DoNothing}));
+  ActionTesting::MockRuntimeSystem<B2Metavariables> runner{
+      {std::move(criteria), ::Verbosity::Debug}};
+
+  ActionTesting::emplace_component_and_initialize<element_component>(
+      &runner, element_id,
+      {element, mesh, policies, time_step_id, aligned_neighbor_times});
+  auto& box = ActionTesting::get_databox<element_component>(
+      make_not_null(&runner), element_id);
+  auto obs_box = make_observation_box<tmpl::list<>>(make_not_null(&box));
+  event.run(make_not_null(&obs_box),
+            ActionTesting::cache<element_component>(runner, element_id),
+            element_id, std::add_pointer_t<element_component>{},
+            {.name = "Time", .value = -1.0});
+
+  const Mesh<2> expected_mesh{std::array{4_st, 13_st}, Spectral::bases::disk,
+                              Spectral::quadratures::disk};
+  CHECK(
+      ActionTesting::get_databox_tag<element_component, domain::Tags::Mesh<2>>(
+          runner, element_id) == expected_mesh);
+  CHECK(ActionTesting::get_databox_tag<element_component,
+                                       domain::Tags::Element<2>>(
+            runner, element_id) == element);
+}
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Amr.Events.RefineMesh", "[Unit][ParallelAlgorithms]") {
   register_factory_classes_with_charm<Metavariables>();
+  register_factory_classes_with_charm<B2Metavariables>();
   const amr::Events::RefineMesh event{};
   const amr::Events::ObserveAmrStats<1> observe_event{true, false};
   test(event, observe_event);
@@ -373,4 +451,5 @@ SPECTRE_TEST_CASE("Unit.Amr.Events.RefineMesh", "[Unit][ParallelAlgorithms]") {
   test(*option_event, *option_observe_event);
   test(*serialize_and_deserialize(option_event),
        *serialize_and_deserialize(option_observe_event));
+  test_b2();
 }

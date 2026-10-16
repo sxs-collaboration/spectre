@@ -25,9 +25,11 @@ SPECTRE_TEST_CASE("Unit.Domain.Structure.CreateInitialMesh", "[Domain][Unit]") {
   const ElementId<3> element_id_3d{0};
   {
     INFO("From Element");
-    const Element<1> interval(element_id_1d, {});
-    const Element<2> rectangle(element_id_2d, {});
-    const Element<3> brick(element_id_3d, {});
+    const Element<1> interval(element_id_1d, {},
+                              domain::topologies::hypercube<1>);
+    const Element<2> rectangle(element_id_2d, {},
+                               domain::topologies::hypercube<2>);
+    const Element<3> brick(element_id_3d, {}, domain::topologies::hypercube<3>);
     for (const auto& i1_basis :
          {Spectral::Basis::Legendre, Spectral::Basis::Chebyshev}) {
       for (const auto& i1_quadrature :
@@ -76,9 +78,12 @@ SPECTRE_TEST_CASE("Unit.Domain.Structure.CreateInitialMesh", "[Domain][Unit]") {
   }
   {
     INFO("Another element");
-    const Element<1> interval(ElementId<1>{1}, {});
-    const Element<2> rectangle(ElementId<2>{1}, {});
-    const Element<3> brick(ElementId<3>{1}, {});
+    const Element<1> interval(ElementId<1>{1}, {},
+                              domain::topologies::hypercube<1>);
+    const Element<2> rectangle(ElementId<2>{1}, {},
+                               domain::topologies::hypercube<2>);
+    const Element<3> brick(ElementId<3>{1}, {},
+                           domain::topologies::hypercube<3>);
     for (const auto& i1_basis :
          {Spectral::Basis::Legendre, Spectral::Basis::Chebyshev}) {
       for (const auto& i1_quadrature :

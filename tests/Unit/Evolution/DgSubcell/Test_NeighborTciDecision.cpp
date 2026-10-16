@@ -14,6 +14,7 @@
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Structure/Neighbors.hpp"
 #include "Domain/Structure/OrientationMap.hpp"
+#include "Domain/Structure/Topology.hpp"
 #include "Domain/Tags.hpp"
 #include "Evolution/DgSubcell/NeighborTciDecision.hpp"
 #include "Evolution/DgSubcell/Tags/TciStatus.hpp"
@@ -37,7 +38,8 @@ Element<Dim> make_test_element() {
       {ElementId<Dim>{2}, ElementId<Dim>{3}}, nc_orientations, false};
   return Element<Dim>{ElementId<Dim>{1},
                       {{Direction<Dim>::lower_xi(), conforming_nbrs},
-                       {Direction<Dim>::upper_xi(), nc_nbrs}}};
+                       {Direction<Dim>::upper_xi(), nc_nbrs}},
+                      domain::topologies::hypercube<Dim>};
 }
 
 template <size_t Dim>

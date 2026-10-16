@@ -21,6 +21,7 @@
 #include "Domain/Structure/Neighbors.hpp"
 #include "Domain/Structure/OrientationMap.hpp"
 #include "Domain/Structure/SegmentId.hpp"
+#include "Domain/Structure/Topology.hpp"
 #include "Domain/Tags.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "Framework/MockRuntimeSystem.hpp"
@@ -54,8 +55,9 @@ struct Component {
       tmpl::list<ActionTesting::InitializeDataBox<simple_tags>>>>;
 };
 
+template <size_t Dim>
 struct Metavariables {
-  static constexpr size_t volume_dim = 3;
+  static constexpr size_t volume_dim = Dim;
   using component_list = tmpl::list<Component<Metavariables>,
                                     TestHelpers::amr::Registrar<Metavariables>>;
   // [registration_metavariables]
@@ -164,7 +166,8 @@ void test() {
   child_1_neighbors.emplace(
       Direction<3>::upper_eta(),
       Neighbors<3>{std::unordered_set{child_3_id}, aligned});
-  Element<3> child_1{child_1_id, std::move(child_1_neighbors)};
+  Element<3> child_1{child_1_id, std::move(child_1_neighbors),
+                     domain::topologies::hypercube<3>};
   Mesh<3> child_1_mesh{std::array{3_st, 4_st, 3_st}, Spectral::Basis::Legendre,
                        Spectral::Quadrature::GaussLobatto};
   amr::Info<3> child_1_info{std::array{amr::Flag::Join, amr::Flag::Join,
@@ -184,7 +187,8 @@ void test() {
   child_2_neighbors.emplace(
       Direction<3>::upper_eta(),
       Neighbors<3>{std::unordered_set{child_3_id}, aligned});
-  Element<3> child_2{child_2_id, std::move(child_2_neighbors)};
+  Element<3> child_2{child_2_id, std::move(child_2_neighbors),
+                     domain::topologies::hypercube<3>};
   Mesh<3> child_2_mesh{std::array{4_st, 3_st, 4_st}, Spectral::Basis::Legendre,
                        Spectral::Quadrature::GaussLobatto};
   amr::Info<3> child_2_info{std::array{amr::Flag::Join, amr::Flag::Join,
@@ -204,7 +208,8 @@ void test() {
   child_3_neighbors.emplace(
       Direction<3>::upper_eta(),
       Neighbors<3>{std::unordered_set{neighbor_5_id}, b2_orientation});
-  Element<3> child_3{child_3_id, std::move(child_3_neighbors)};
+  Element<3> child_3{child_3_id, std::move(child_3_neighbors),
+                     domain::topologies::hypercube<3>};
   Mesh<3> child_3_mesh{std::array{4_st, 4_st, 3_st}, Spectral::Basis::Legendre,
                        Spectral::Quadrature::GaussLobatto};
   amr::Info<3> child_3_info{
@@ -262,9 +267,9 @@ void test() {
                     neighbor_mesh}}};
 
   using TaggedTupleType =
-      tuples::TaggedTuple<Parallel::Tags::MetavariablesImpl<Metavariables>,
+      tuples::TaggedTuple<Parallel::Tags::MetavariablesImpl<Metavariables<3>>,
                           Parallel::Tags::ArrayIndex<ElementId<3>>,
-                          Parallel::Tags::GlobalCache<Metavariables>,
+                          Parallel::Tags::GlobalCache<Metavariables<3>>,
                           domain::Tags::Element<3>, domain::Tags::Mesh<3>,
                           domain::Tags::NeighborMesh<3>, amr::Tags::Info<3>,
                           amr::Tags::NeighborInfo<3>>;
@@ -272,21 +277,21 @@ void test() {
   DirectionalIdMap<3, Mesh<3>> unused_child_neighbor_mesh{};
   children_items.emplace(
       child_1_id,
-      TaggedTupleType{Metavariables{}, child_1_id, nullptr, std::move(child_1),
-                      std::move(child_1_mesh), unused_child_neighbor_mesh,
-                      std::move(child_1_info),
+      TaggedTupleType{Metavariables<3>{}, child_1_id, nullptr,
+                      std::move(child_1), std::move(child_1_mesh),
+                      unused_child_neighbor_mesh, std::move(child_1_info),
                       std::move(child_1_neighbor_info)});
   children_items.emplace(
       child_2_id,
-      TaggedTupleType{Metavariables{}, child_2_id, nullptr, std::move(child_2),
-                      std::move(child_2_mesh), unused_child_neighbor_mesh,
-                      std::move(child_2_info),
+      TaggedTupleType{Metavariables<3>{}, child_2_id, nullptr,
+                      std::move(child_2), std::move(child_2_mesh),
+                      unused_child_neighbor_mesh, std::move(child_2_info),
                       std::move(child_2_neighbor_info)});
   children_items.emplace(
       child_3_id,
-      TaggedTupleType{Metavariables{}, child_3_id, nullptr, std::move(child_3),
-                      std::move(child_3_mesh), unused_child_neighbor_mesh,
-                      std::move(child_3_info),
+      TaggedTupleType{Metavariables<3>{}, child_3_id, nullptr,
+                      std::move(child_3), std::move(child_3_mesh),
+                      unused_child_neighbor_mesh, std::move(child_3_info),
                       std::move(child_3_neighbor_info)});
 
   DirectionMap<3, Neighbors<3>> expected_parent_neighbors{};
@@ -305,7 +310,8 @@ void test() {
   expected_parent_neighbors.emplace(
       Direction<3>::upper_eta(),
       Neighbors<3>{std::unordered_set{neighbor_5_id}, b2_orientation});
-  Element<3> expected_parent{parent_id, std::move(expected_parent_neighbors)};
+  Element<3> expected_parent{parent_id, std::move(expected_parent_neighbors),
+                             domain::topologies::hypercube<3>};
 
   DirectionalIdMap<3, Mesh<3>> expected_parent_neighbor_mesh{};
   expected_parent_neighbor_mesh.emplace(
@@ -336,10 +342,10 @@ void test() {
   const std::unordered_map<ElementId<3>, amr::Info<3>>
       expected_parent_neighbor_info{};
 
-  using array_component = Component<Metavariables>;
-  using registrar = TestHelpers::amr::Registrar<Metavariables>;
+  using array_component = Component<Metavariables<3>>;
+  using registrar = TestHelpers::amr::Registrar<Metavariables<3>>;
 
-  ActionTesting::MockRuntimeSystem<Metavariables> runner{{}};
+  ActionTesting::MockRuntimeSystem<Metavariables<3>> runner{{}};
   ActionTesting::emplace_group_component<registrar>(&runner);
   ActionTesting::emplace_component<array_component>(&runner, parent_id);
   CHECK(ActionTesting::get_databox_tag<registrar,
@@ -371,9 +377,136 @@ void test() {
                                        TestHelpers::amr::RegisteredElements<3>>(
             runner, 0) == std::unordered_set{parent_id});
 }
+
+void test_b2() {
+  const SegmentId s_00{0, 0};
+  const SegmentId s_10{1, 0};
+  const SegmentId s_11{1, 1};
+  const OrientationMap<2> aligned = OrientationMap<2>::create_aligned();
+
+  const ElementId<2> parent_id{0, std::array{s_00, s_00}};
+  const ElementId<2> child_1_id{0, std::array{s_10, s_00}};
+  const ElementId<2> child_2_id{0, std::array{s_11, s_00}};
+  const ElementId<2> neighbor_id{1, std::array{s_00, s_00}};
+
+  const std::array join{amr::Flag::Join, amr::Flag::DoNothing};
+  const std::array neighbor_flags{amr::Flag::IncreaseResolution,
+                                  amr::Flag::IncreaseResolution};
+
+  Mesh<2> child_1_mesh{std::array{3_st, 9_st}, Spectral::bases::disk,
+                       Spectral::quadratures::disk};
+  Mesh<2> child_2_mesh{std::array{4_st, 11_st}, Spectral::bases::annulus<>,
+                       Spectral::quadratures::annulus<>};
+  const Mesh<2> expected_parent_mesh{std::array{4_st, 13_st},
+                                     Spectral::bases::disk,
+                                     Spectral::quadratures::disk};
+  const Mesh<2> neighbor_mesh{std::array{4_st, 5_st},
+                              Spectral::bases::annulus<>,
+                              Spectral::quadratures::annulus<>};
+
+  DirectionMap<2, Neighbors<2>> child_1_neighbors{};
+  child_1_neighbors.emplace(
+      Direction<2>::upper_xi(),
+      Neighbors<2>{std::unordered_set{child_2_id}, aligned});
+  Element<2> child_1{child_1_id, std::move(child_1_neighbors),
+                     domain::topologies::disk};
+  amr::Info<2> child_1_info{std::array{amr::Flag::Join, amr::Flag::DoNothing},
+                            expected_parent_mesh};
+  std::unordered_map<ElementId<2>, amr::Info<2>> child_1_neighbor_info{
+      {child_2_id, amr::Info<2>{join, child_2_mesh}}};
+
+  DirectionMap<2, Neighbors<2>> child_2_neighbors{};
+  child_2_neighbors.emplace(
+      Direction<2>::lower_xi(),
+      Neighbors<2>{std::unordered_set{child_1_id}, aligned});
+  child_2_neighbors.emplace(
+      Direction<2>::upper_xi(),
+      Neighbors<2>{std::unordered_set{neighbor_id}, aligned});
+  Element<2> child_2{child_2_id, std::move(child_2_neighbors),
+                     domain::topologies::annulus};
+  amr::Info<2> child_2_info{std::array{amr::Flag::Join, amr::Flag::DoNothing},
+                            expected_parent_mesh};
+  std::unordered_map<ElementId<2>, amr::Info<2>> child_2_neighbor_info{
+      {child_1_id, amr::Info<2>{join, child_1_mesh}},
+      {neighbor_id, amr::Info<2>{neighbor_flags, neighbor_mesh}}};
+
+  using TaggedTupleType =
+      tuples::TaggedTuple<Parallel::Tags::MetavariablesImpl<Metavariables<2>>,
+                          Parallel::Tags::ArrayIndex<ElementId<2>>,
+                          Parallel::Tags::GlobalCache<Metavariables<2>>,
+                          domain::Tags::Element<2>, domain::Tags::Mesh<2>,
+                          domain::Tags::NeighborMesh<2>, amr::Tags::Info<2>,
+                          amr::Tags::NeighborInfo<2>>;
+  std::unordered_map<ElementId<2>, TaggedTupleType> children_items;
+  DirectionalIdMap<2, Mesh<2>> unused_child_neighbor_mesh{};
+  children_items.emplace(
+      child_1_id,
+      TaggedTupleType{Metavariables<2>{}, child_1_id, nullptr,
+                      std::move(child_1), std::move(child_1_mesh),
+                      unused_child_neighbor_mesh, std::move(child_1_info),
+                      std::move(child_1_neighbor_info)});
+  children_items.emplace(
+      child_2_id,
+      TaggedTupleType{Metavariables<2>{}, child_2_id, nullptr,
+                      std::move(child_2), std::move(child_2_mesh),
+                      unused_child_neighbor_mesh, std::move(child_2_info),
+                      std::move(child_2_neighbor_info)});
+
+  DirectionMap<2, Neighbors<2>> expected_parent_neighbors{};
+  expected_parent_neighbors.emplace(
+      Direction<2>::upper_xi(),
+      Neighbors<2>{std::unordered_set{neighbor_id}, aligned});
+  Element<2> expected_parent{parent_id, std::move(expected_parent_neighbors),
+                             domain::topologies::disk};
+
+  DirectionalIdMap<2, Mesh<2>> expected_parent_neighbor_mesh{};
+  expected_parent_neighbor_mesh.emplace(
+      DirectionalId<2>{Direction<2>::upper_xi(), neighbor_id}, neighbor_mesh);
+
+  const amr::Info<2> expected_parent_info{
+      std::array{amr::Flag::Undefined, amr::Flag::Undefined}, Mesh<2>{}};
+  const std::unordered_map<ElementId<2>, amr::Info<2>>
+      expected_parent_neighbor_info{};
+
+  using array_component = Component<Metavariables<2>>;
+  using registrar = TestHelpers::amr::Registrar<Metavariables<2>>;
+
+  ActionTesting::MockRuntimeSystem<Metavariables<2>> runner{{}};
+  ActionTesting::emplace_group_component<registrar>(&runner);
+  ActionTesting::emplace_component<array_component>(&runner, parent_id);
+  CHECK(ActionTesting::get_databox_tag<registrar,
+                                       TestHelpers::amr::RegisteredElements<2>>(
+            runner, 0)
+            .empty());
+  ActionTesting::simple_action<array_component, amr::Actions::InitializeParent>(
+      make_not_null(&runner), parent_id, children_items);
+  CHECK(
+      ActionTesting::get_databox_tag<array_component, domain::Tags::Element<2>>(
+          runner, parent_id) == expected_parent);
+  CHECK(ActionTesting::get_databox_tag<array_component, domain::Tags::Mesh<2>>(
+            runner, parent_id) == expected_parent_mesh);
+  CHECK(ActionTesting::get_databox_tag<array_component,
+                                       domain::Tags::NeighborMesh<2>>(
+            runner, parent_id) == expected_parent_neighbor_mesh);
+  CHECK(ActionTesting::get_databox_tag<array_component, amr::Tags::Info<2>>(
+            runner, parent_id) == expected_parent_info);
+  CHECK(ActionTesting::get_databox_tag<array_component,
+                                       amr::Tags::NeighborInfo<2>>(
+            runner, parent_id) == expected_parent_neighbor_info);
+  CHECK(ActionTesting::get_databox_tag<registrar,
+                                       TestHelpers::amr::RegisteredElements<2>>(
+            runner, 0)
+            .empty());
+  ActionTesting::invoke_queued_simple_action<registrar>(make_not_null(&runner),
+                                                        0);
+  CHECK(ActionTesting::get_databox_tag<registrar,
+                                       TestHelpers::amr::RegisteredElements<2>>(
+            runner, 0) == std::unordered_set{parent_id});
+}
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Amr.Actions.InitializeParent",
                   "[Unit][ParallelAlgorithms]") {
   test();
+  test_b2();
 }

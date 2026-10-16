@@ -14,6 +14,7 @@
 #include "Domain/Creators/Sphere.hpp"
 #include "Domain/Structure/Neighbors.hpp"
 #include "Domain/Structure/OrientationMap.hpp"
+#include "Domain/Structure/Topology.hpp"
 #include "Domain/Tags.hpp"
 #include "Evolution/DiscontinuousGalerkin/OnlyDgBlockIds.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/System.hpp"
@@ -48,7 +49,8 @@ SPECTRE_TEST_CASE(
       ElementId<3>{0, {}},
       {{Direction<3>::lower_xi(),
         Neighbors<3>{ElementId<3>{5, {}},
-                     OrientationMap<3>::create_aligned()}}}};
+                     OrientationMap<3>::create_aligned()}}},
+      domain::topologies::hypercube<3>};
   auto box_in_dg_only =
       db::create<tmpl::list<DtVarsTag, evolution::dg::Tags::OnlyDgBlockIds<3>,
                             domain::Tags::Element<3>>>(
@@ -63,7 +65,8 @@ SPECTRE_TEST_CASE(
       ElementId<3>{0, {}},
       {{Direction<3>::lower_xi(),
         Neighbors<3>{ElementId<3>{6, {}},
-                     OrientationMap<3>::create_aligned()}}}};
+                     OrientationMap<3>::create_aligned()}}},
+      domain::topologies::hypercube<3>};
   auto box_neighboring_dg_only =
       db::create<tmpl::list<DtVarsTag, evolution::dg::Tags::OnlyDgBlockIds<3>,
                             domain::Tags::Element<3>>>(
@@ -90,7 +93,8 @@ SPECTRE_TEST_CASE(
       ElementId<3>{6, {}},
       {{Direction<3>::lower_xi(),
         Neighbors<3>{ElementId<3>{6, {}},
-                     OrientationMap<3>::create_aligned()}}}};
+                     OrientationMap<3>::create_aligned()}}},
+      domain::topologies::hypercube<3>};
   auto box_neighboring_and_in_dg_only =
       db::create<tmpl::list<DtVarsTag, evolution::dg::Tags::OnlyDgBlockIds<3>,
                             domain::Tags::Element<3>>>(

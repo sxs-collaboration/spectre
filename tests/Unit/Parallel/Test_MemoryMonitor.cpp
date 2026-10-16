@@ -10,6 +10,7 @@
 #include "DataStructures/Matrix.hpp"
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/ElementId.hpp"
+#include "Domain/Structure/Topology.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "Helpers/DataStructures/DataBox/TestHelpers.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
@@ -185,7 +186,7 @@ void setup_runner(
                                       dg_elem_comp<Metavariables>>) {
     // FakeDgElementArray that's actually a singleton
     const ElementId<3> element_id{0};
-    const Element<3> element{element_id, {}};
+    const Element<3> element{element_id, {}, domain::topologies::hypercube<3>};
     ActionTesting::emplace_singleton_component_and_initialize<
         dg_elem_comp<Metavariables>>(runner, ActionTesting::NodeId{0},
                                      ActionTesting::LocalCoreId{0}, {element});

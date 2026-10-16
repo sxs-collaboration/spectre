@@ -15,6 +15,7 @@
 #include "Domain/Structure/Neighbors.hpp"
 #include "Domain/Structure/OrientationMap.hpp"
 #include "Domain/Structure/Side.hpp"
+#include "Domain/Structure/Topology.hpp"
 #include "Evolution/DiscontinuousGalerkin/Limiters/WenoGridHelpers.hpp"
 #include "Helpers/Evolution/DiscontinuousGalerkin/Limiters/TestHelpers.hpp"
 #include "NumericalAlgorithms/Spectral/Basis.hpp"
@@ -50,11 +51,12 @@ void test_check_element_no_href() {
                                          OrientationMap<2>::create_aligned());
 
   const Element<2> element(
-      self_id, Element<2>::Neighbors_t{
-                   {Direction<2>::lower_xi(), lower_xi_neighbors},
-                   {Direction<2>::upper_xi(), upper_xi_neighbors},
-                   {Direction<2>::lower_eta(), lower_eta_neighbors},
-                   {Direction<2>::upper_eta(), upper_eta_neighbors}});
+      self_id,
+      Element<2>::Neighbors_t{{Direction<2>::lower_xi(), lower_xi_neighbors},
+                              {Direction<2>::upper_xi(), upper_xi_neighbors},
+                              {Direction<2>::lower_eta(), lower_eta_neighbors},
+                              {Direction<2>::upper_eta(), upper_eta_neighbors}},
+      domain::topologies::hypercube<2>);
 
   CHECK(Limiters::Weno_detail::
             check_element_has_one_similar_neighbor_in_direction(

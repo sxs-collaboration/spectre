@@ -29,6 +29,7 @@
 #include "Domain/SizeOfElement.hpp"
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/ElementId.hpp"
+#include "Domain/Structure/Topology.hpp"
 #include "Domain/Tags.hpp"
 #include "Evolution/DiscontinuousGalerkin/Limiters/Minmod.hpp"
 #include "Evolution/DiscontinuousGalerkin/Limiters/MinmodType.hpp"
@@ -114,7 +115,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.DG.Limiters.LimiterActions.Minmod",
   const Mesh<2> mesh{3, Spectral::Basis::Legendre,
                      Spectral::Quadrature::GaussLobatto};
   const ElementId<2> self_id(1, {{{2, 0}, {1, 0}}});
-  const Element<2> element(self_id, {});
+  const Element<2> element(self_id, {}, domain::topologies::hypercube<2>);
 
   using Affine = domain::CoordinateMaps::Affine;
   using Affine2D = domain::CoordinateMaps::ProductOf2Maps<Affine, Affine>;

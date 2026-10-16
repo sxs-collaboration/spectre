@@ -21,6 +21,7 @@
 #include "Domain/Structure/Neighbors.hpp"
 #include "Domain/Structure/OrientationMap.hpp"
 #include "Domain/Structure/SegmentId.hpp"
+#include "Domain/Structure/Topology.hpp"
 #include "Domain/Tags.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
@@ -99,7 +100,8 @@ void test() {
   parent_neighbors.emplace(
       Direction<1>::upper_xi(),
       Neighbors<1>{std::unordered_set{parent_upper_neighbor_id}, aligned});
-  Element<1> parent{parent_id, std::move(parent_neighbors)};
+  Element<1> parent{parent_id, std::move(parent_neighbors),
+                    domain::topologies::hypercube<1>};
   Mesh<1> parent_mesh{3, Spectral::Basis::Legendre,
                       Spectral::Quadrature::GaussLobatto};
   Mesh<1> lower_neighbor_mesh{2, Spectral::Basis::Legendre,

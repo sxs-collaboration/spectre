@@ -21,6 +21,7 @@
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Structure/Neighbors.hpp"
+#include "Domain/Structure/Topology.hpp"
 #include "Evolution/DgSubcell/GhostData.hpp"
 #include "Evolution/DgSubcell/SliceData.hpp"
 #include "Evolution/Systems/NewtonianEuler/ConservativeFromPrimitive.hpp"
@@ -119,7 +120,8 @@ void test_prim_reconstructor_impl(
     neighbors[gsl::at(Direction<Dim>::all_directions(), i)] = Neighbors<Dim>{
         {ElementId<Dim>{i + 1, {}}}, OrientationMap<Dim>::create_aligned()};
   }
-  const Element<Dim> element{ElementId<Dim>{0, {}}, neighbors};
+  const Element<Dim> element{ElementId<Dim>{0, {}}, neighbors,
+                             domain::topologies::hypercube<Dim>};
   const auto compute_solution = [](const auto& coords) {
     Variables<prim_tags_for_reconstruction> vars{get<0>(coords).size(), 0.0};
     for (size_t i = 0; i < Dim; ++i) {

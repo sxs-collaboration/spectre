@@ -24,6 +24,7 @@
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/DirectionalIdMap.hpp"
 #include "Domain/Structure/ElementId.hpp"
+#include "Domain/Structure/Topology.hpp"
 #include "Domain/Tags.hpp"
 #include "Evolution/DgSubcell/Actions/TciAndRollback.hpp"
 #include "Evolution/DgSubcell/ActiveGrid.hpp"
@@ -238,7 +239,8 @@ Element<Dim> create_element(const bool with_neighbors) {
           {ElementId<Dim>{i + 1, {}}}, OrientationMap<Dim>::create_aligned()};
     }
   }
-  return Element<Dim>{ElementId<Dim>{0, {}}, neighbors};
+  return Element<Dim>{ElementId<Dim>{0, {}}, neighbors,
+                      domain::topologies::hypercube<Dim>};
 }
 
 template <size_t Dim>

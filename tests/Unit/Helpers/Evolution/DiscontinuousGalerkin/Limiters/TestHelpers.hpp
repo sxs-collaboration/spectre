@@ -37,7 +37,8 @@ Element<VolumeDim> make_element(const std::unordered_set<Direction<VolumeDim>>&
       neighbors[dir] = make_neighbor_with_id<VolumeDim>(index);
     }
   }
-  return Element<VolumeDim>{ElementId<VolumeDim>{0}, neighbors};
+  return Element<VolumeDim>{ElementId<VolumeDim>{0}, neighbors,
+                            domain::topologies::hypercube<VolumeDim>};
 }
 
 }  // namespace Limiters

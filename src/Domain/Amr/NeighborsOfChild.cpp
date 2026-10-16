@@ -23,6 +23,7 @@
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/StdHelpers.hpp"
 
 namespace amr {
 template <size_t VolumeDim>
@@ -70,7 +71,11 @@ neighbors_of_child(
     }
   }
 
-  for (const auto& direction : parent.external_boundaries()) {
+  const auto& internal_directions = parent.internal_boundaries();
+  for (const auto& direction : Direction<VolumeDim>::all_directions()) {
+    if (internal_directions.contains(direction)) {
+      continue;
+    }
     const auto dim = direction.dimension();
     if (gsl::at(parent_info.flags, dim) == Flag::Split and
         has_potential_sibling(child_id, direction)) {
@@ -78,7 +83,46 @@ neighbors_of_child(
       result.first.emplace(
           direction, Neighbors<VolumeDim>{
                          {id}, OrientationMap<VolumeDim>::create_aligned()});
-      result.second.insert({{direction, id}, parent_info.new_mesh});
+      if (parent.external_boundaries().contains(direction)) {
+        result.second.insert({{direction, id}, parent_info.new_mesh});
+      } else {
+        // This is a Bn topology
+        const auto new_parent_mesh = parent_info.new_mesh;
+        const auto extents = new_parent_mesh.extents().indices();
+        const auto& topologies = parent.topologies();
+        if constexpr (VolumeDim == 2) {
+          using ::operator<<;
+          ASSERT(topologies == domain::topologies::disk,
+                 "Expected a disk, not " << topologies);
+          result.second.insert({{direction, id},
+                                Mesh<VolumeDim>{extents, Spectral::bases::disk,
+                                                Spectral::quadratures::disk}});
+        } else if constexpr (VolumeDim == 3) {
+          auto bases = new_parent_mesh.basis();
+          auto quadratures = new_parent_mesh.quadrature();
+          if (topologies == domain::topologies::full_sphere) {
+            result.second.insert(
+                {{direction, id},
+                 Mesh<VolumeDim>{extents, Spectral::bases::full_sphere,
+                                 Spectral::quadratures::full_sphere}});
+          } else if (topologies == domain::topologies::full_cylinder) {
+            bases[0] = Spectral::Basis::ZernikeB2;
+            bases[1] = Spectral::Basis::ZernikeB2;
+            quadratures[0] = Spectral::Quadrature::GaussRadauUpper;
+            result.second.insert(
+                {{direction, id},
+                 Mesh<VolumeDim>{extents, bases, quadratures}});
+          } else {
+            ASSERT(bases[2] == Spectral::Basis::Cartoon,
+                   "Expected Mesh with Cartoon basis, not " << new_parent_mesh);
+            bases[0] = Spectral::Basis::ZernikeB1;
+            quadratures[0] = Spectral::Quadrature::GaussRadauUpper;
+            result.second.insert(
+                {{direction, id},
+                 Mesh<VolumeDim>{extents, bases, quadratures}});
+          }
+        }
+      }
     }
   }
 

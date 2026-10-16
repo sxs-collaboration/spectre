@@ -21,6 +21,7 @@
 #include "Domain/Structure/Neighbors.hpp"
 #include "Domain/Structure/SegmentId.hpp"
 #include "Domain/Structure/Side.hpp"
+#include "Domain/Structure/Topology.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/StdHelpers.hpp"
 
@@ -100,7 +101,8 @@ Element<1> make_element(
                       Neighbors<1>{{upper_xi_neighbor_ids},
                                    OrientationMap<1>::create_aligned()});
   }
-  return Element<1>{element_id, std::move(neighbors)};
+  return Element<1>{element_id, std::move(neighbors),
+                    domain::topologies::hypercube<1>};
 }
 
 Element<2> make_element(
@@ -130,7 +132,8 @@ Element<2> make_element(
                       Neighbors<2>{{upper_eta_neighbor_ids},
                                    OrientationMap<2>::create_aligned()});
   }
-  return Element<2>{element_id, std::move(neighbors)};
+  return Element<2>{element_id, std::move(neighbors),
+                    domain::topologies::hypercube<2>};
 }
 
 template <bool EnforceTwoToOneInNormalDirection>

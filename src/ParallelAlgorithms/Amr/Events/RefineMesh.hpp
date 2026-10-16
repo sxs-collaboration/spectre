@@ -12,6 +12,7 @@
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/ObservationBox.hpp"
 #include "Domain/Amr/Flag.hpp"
+#include "Domain/Amr/Helpers.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Tags.hpp"
 #include "IO/Logging/Tags.hpp"
@@ -126,6 +127,10 @@ class RefineMesh : public Event {
              "The criterion '" << typeid(*criterion).name()
                                << "' requested h-refinement, but claims to be "
                                   "for p-refinement.");
+      const auto& topologies =
+          db::get<::domain::Tags::Element<volume_dim>>(*box).topologies();
+      enforce_p_refinement_topology_restrictions(make_not_null(&decision),
+                                                 topologies);
       for (size_t d = 0; d < volume_dim; ++d) {
         overall_decision[d] = std::max(overall_decision[d], decision[d]);
       }
@@ -156,9 +161,11 @@ class RefineMesh : public Event {
                   flag == amr::Flag::DecreaseResolution);
         })) {
       db::mutate<::domain::Tags::Mesh<volume_dim>>(
-          [&old_mesh,
+          [&old_mesh_and_element,
            &overall_decision](const gsl::not_null<Mesh<volume_dim>*> mesh) {
-            *mesh = amr::projectors::mesh(old_mesh, overall_decision);
+            *mesh = amr::projectors::p_refined_mesh(
+                old_mesh_and_element.first, overall_decision,
+                old_mesh_and_element.second.topologies());
             if (not Spectral::is_valid_dg_mesh(*mesh)) {
               ERROR("Invalid mesh: " << *mesh);
             }
@@ -167,7 +174,7 @@ class RefineMesh : public Event {
 
       if (verbosity >= Verbosity::Debug) {
         Parallel::printf(
-            "Increasing order of element %s: %s -> %s\n", element_id,
+            "Changing order of element %s: %s -> %s\n", element_id,
             old_mesh.extents(),
             db::get<::domain::Tags::Mesh<volume_dim>>(*box).extents());
       }

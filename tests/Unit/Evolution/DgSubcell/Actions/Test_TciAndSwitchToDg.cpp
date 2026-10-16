@@ -24,6 +24,7 @@
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/DirectionalIdMap.hpp"
 #include "Domain/Structure/ElementId.hpp"
+#include "Domain/Structure/Topology.hpp"
 #include "Domain/Tags.hpp"
 #include "Evolution/DgSubcell/Actions/TciAndSwitchToDg.hpp"
 #include "Evolution/DgSubcell/ActiveGrid.hpp"
@@ -348,7 +349,8 @@ void test_impl(
        ghost_data, tci_decision, rdmp_tci_data, tci_grid_history,
        tci_calls_since_rollback, steps_since_tci_call, evolved_vars,
        time_stepper_history, make_time_stepper(multistep_time_stepper),
-       neighbor_decisions, Element<Dim>{ElementId<Dim>{0}, {}},
+       neighbor_decisions,
+       Element<Dim>{ElementId<Dim>{0}, {}, domain::topologies::hypercube<Dim>},
        typename evolution::dg::subcell::Tags::CellCenteredFlux<
            typename metavars::system::flux_variables, Dim>::type::value_type{
            subcell_mesh.number_of_grid_points()}});

@@ -39,6 +39,7 @@
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Structure/OrientationMap.hpp"
 #include "Domain/Structure/Side.hpp"
+#include "Domain/Structure/Topology.hpp"
 #include "Domain/Tags.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/DataStructures/DataBox/TestHelpers.hpp"
@@ -169,7 +170,8 @@ void check_time_dependent(
           Tags::InterfaceCompute<
               Directions<Dim>,
               Tags::UnnormalizedFaceNormalMovingMeshCompute<Dim>>>>(
-      Element<Dim>(element_id, {}), get_directions<Dim>(),
+      Element<Dim>(element_id, {}, domain::topologies::hypercube<Dim>),
+      get_directions<Dim>(),
       Mesh<Dim>{3, Spectral::Basis::Legendre,
                 Spectral::Quadrature::GaussLobatto},
       ElementMap<Dim, Frame::Grid>(element_id,
@@ -384,7 +386,7 @@ void test_compute_item() {
                                  Tags::UnnormalizedFaceNormalCompute<2>>,
           Tags::InterfaceCompute<Directions<2>,
                                  Tags::UnnormalizedFaceNormalCompute<2>>>>(
-      Element<2>(ElementId<2>(0), {}),
+      Element<2>(ElementId<2>(0), {}, domain::topologies::hypercube<2>),
       std::unordered_set<Direction<2>>{Direction<2>::upper_xi(),
                                        Direction<2>::lower_eta()},
       Mesh<2>{2, Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto},
@@ -443,7 +445,7 @@ void test_compute_item() {
                                  Tags::InterfaceMesh<2>>,
           Tags::InterfaceCompute<Tags::BoundaryDirectionsInterior<2>,
                                  Tags::UnnormalizedFaceNormalCompute<2>>>>(
-      Element<2>(ElementId<2>(0), {}),
+      Element<2>(ElementId<2>(0), {}, domain::topologies::hypercube<2>),
       Mesh<2>{2, Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto},
       ElementMap<2, Frame::Inertial>(
           ElementId<2>(0),

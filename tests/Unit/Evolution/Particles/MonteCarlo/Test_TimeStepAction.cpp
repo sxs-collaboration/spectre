@@ -13,6 +13,7 @@
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/DirectionalIdMap.hpp"
 #include "Domain/Structure/ElementId.hpp"
+#include "Domain/Structure/Topology.hpp"
 #include "Domain/Tags.hpp"
 #include "Domain/Tags/NeighborMesh.hpp"
 #include "Evolution/DgSubcell/ActiveGrid.hpp"
@@ -162,7 +163,8 @@ void test_advance_packets() {
 
   const DirectionMap<Dim, Neighbors<Dim>> neighbors{};
   const ElementId<Dim> self_id = ElementId<Dim>{0, {{{1, 0}, {0, 0}, {0, 0}}}};
-  const Element<Dim> element{self_id, neighbors};
+  const Element<Dim> element{self_id, neighbors,
+                             domain::topologies::hypercube<Dim>};
 
   using NeighborDataMap =
       DirectionalIdMap<Dim, Particles::MonteCarlo::McGhostZoneData<Dim>>;

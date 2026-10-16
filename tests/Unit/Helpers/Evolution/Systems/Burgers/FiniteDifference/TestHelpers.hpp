@@ -22,6 +22,7 @@
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Structure/Neighbors.hpp"
+#include "Domain/Structure/Topology.hpp"
 #include "Evolution/DgSubcell/GhostData.hpp"
 #include "Evolution/DgSubcell/SliceData.hpp"
 #include "Evolution/Systems/Burgers/FiniteDifference/Reconstructor.hpp"
@@ -91,7 +92,8 @@ void test_reconstructor(const size_t num_pts,
     neighbors[gsl::at(Direction<1>::all_directions(), i)] = Neighbors<1>{
         {ElementId<1>{i + 1, {}}}, OrientationMap<1>::create_aligned()};
   }
-  const Element<1> element{ElementId<1>{0, {}}, neighbors};
+  const Element<1> element{ElementId<1>{0, {}}, neighbors,
+                           domain::topologies::hypercube<1>};
 
   // a simple, linear form of the scalar field U for testing purpose
   //   * U(x)   = x + 1       (for 1D)

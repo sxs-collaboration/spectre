@@ -18,6 +18,7 @@
 #include "Domain/ElementMap.hpp"
 #include "Domain/Structure/BlockNeighbors.hpp"
 #include "Domain/Structure/ElementId.hpp"
+#include "Domain/Structure/Topology.hpp"
 #include "Domain/Tags.hpp"
 #include "Evolution/DgSubcell/CombineVolumeGhostData.hpp"
 #include "Evolution/DgSubcell/GhostZoneLogicalCoordinates.hpp"
@@ -108,7 +109,8 @@ void test(const bool enable_extension, const size_t fd_to_fd_interp_order) {
         std::pair{Direction<Dim>::lower_xi(),
                   Neighbors<Dim>{{lower_xi_id.id()}, orientation}});
   }
-  const Element<Dim> element{element_id, element_neighbors};
+  const Element<Dim> element{element_id, element_neighbors,
+                             domain::topologies::hypercube<Dim>};
 
   DirectionMap<Dim, BlockNeighbors<Dim>> block0_neighbors{};
   block0_neighbors[Direction<Dim>::lower_xi()] =

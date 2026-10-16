@@ -35,6 +35,7 @@
 #include "Domain/Structure/DirectionalIdMap.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Structure/OrientationMapHelpers.hpp"
+#include "Domain/Structure/Topology.hpp"
 #include "Domain/Tags.hpp"
 #include "Domain/TagsTimeDependent.hpp"
 #include "Evolution/BoundaryConditions/Type.hpp"
@@ -1289,7 +1290,8 @@ void test_impl(const Spectral::Quadrature quadrature,
   std::array<size_t, Dim> extents{};
   alg::iota(extents, 2_st);
   const Mesh<Dim> mesh{extents, Spectral::Basis::Legendre, quadrature};
-  const Element<Dim> element{self_id, neighbors};
+  const Element<Dim> element{self_id, neighbors,
+                             domain::topologies::hypercube<Dim>};
 
   DirectionalIdMap<Dim, Mesh<Dim>> neighbor_mesh{};
   for (const auto& [direction, direction_neighbors] : neighbors) {
