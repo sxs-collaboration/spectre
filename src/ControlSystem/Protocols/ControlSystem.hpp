@@ -106,7 +106,8 @@ struct ControlSystem {
     using control_error = typename ConformingType::control_error;
     static_assert(tt::assert_conforms_to_v<control_error, ControlError>);
 
-    static constexpr size_t deriv_order = ConformingType::deriv_order;
+    static_assert(
+        std::is_same_v<decltype(ConformingType::deriv_order), const size_t>);
 
     using process_measurement_argument_tags =
         tmpl::transform<typename measurement::submeasurements,

@@ -4,6 +4,7 @@
 #pragma once
 
 #include <string>
+#include <type_traits>
 
 #include "ParallelAlgorithms/ApparentHorizonFinder/Destination.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/Protocols/Callback.hpp"
@@ -59,9 +60,11 @@ struct HorizonMetavars {
     using compute_tags_on_element =
         typename ConformingType::compute_tags_on_element;
 
-    static constexpr Destination destination = ConformingType::destination;
+    static_assert(std::is_same_v<decltype(ConformingType::destination),
+                                 const Destination>);
 
-    static std::string name() { return ConformingType::name(); }
+    static_assert(
+        std::is_same_v<decltype(ConformingType::name()), std::string>);
   };
 };
 }  // namespace ah::protocols

@@ -56,9 +56,11 @@ struct AmrMetavariables {
     static_assert(
         tmpl::all<projectors,
                   tt::assert_conforms_to<tmpl::_1, Projector>>::value);
-    static constexpr bool keep_coarse_grids = ConformingType::keep_coarse_grids;
-    static constexpr bool p_refine_only_in_event =
-        ConformingType::p_refine_only_in_event;
+    static_assert(std::is_same_v<decltype(ConformingType::keep_coarse_grids),
+                                 const bool>);
+    static_assert(
+        std::is_same_v<decltype(ConformingType::p_refine_only_in_event),
+                       const bool>);
   };
 };
 }  // namespace amr::protocols
