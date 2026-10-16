@@ -109,12 +109,9 @@ template <typename T>
 void Rk3HesthavenSsp::clean_history_impl(
     const MutableUntypedHistory<T>& history) const {
   if (history.substeps().size() == 2) {
-    history.clear_substeps();
+    history.clear();
   }
-  if (history.size() > 1) {
-    history.pop_front();
-  }
-  ASSERT(history.size() == 1, "Too much history supplied.");
+  ASSERT(history.size() <= 1, "Too much history supplied.");
 }
 
 template <typename T>
