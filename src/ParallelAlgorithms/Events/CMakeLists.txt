@@ -55,6 +55,7 @@ target_link_libraries(
   INTERFACE
   DataStructures
   Domain
+  DomainCreators
   ErrorHandling
   EventsAndTriggers
   H5

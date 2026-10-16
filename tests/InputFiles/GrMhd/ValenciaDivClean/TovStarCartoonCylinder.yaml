@@ -156,6 +156,8 @@ EventsAndTriggersAtSlabs:
             - Name: RestMassDensity
               NormType: L2Norm
               Components: Individual
+          BlocksToObserve: All
+          ReductionScope: WholeDomain
   - Trigger:
       Slabs:
         Specified:
