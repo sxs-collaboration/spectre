@@ -84,6 +84,8 @@ class DampingFunction : public PUP::able {
 };
 }  // namespace ConstraintDamping
 
+// NOLINTBEGIN(misc-header-include-cycle)
 #include "PointwiseFunctions/ConstraintDamping/Constant.hpp"
 #include "PointwiseFunctions/ConstraintDamping/GaussianPlusConstant.hpp"
 #include "PointwiseFunctions/ConstraintDamping/TimeDependentTripleGaussian.hpp"
+// NOLINTEND(misc-header-include-cycle)
