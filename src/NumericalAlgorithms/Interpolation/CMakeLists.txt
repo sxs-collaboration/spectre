@@ -33,6 +33,7 @@ spectre_target_headers(
   CardinalInterpolator.hpp
   CubicSpanInterpolator.hpp
   CubicSpline.hpp
+  InterpolateOnSphericalShell.hpp
   IrregularInterpolant.hpp
   LagrangePolynomial.hpp
   LinearRegression.hpp

@@ -9,6 +9,7 @@ set(LIBRARY_SOURCES
   Test_BarycentricRational.cpp
   Test_CardinalInterpolator.cpp
   Test_CubicSpline.cpp
+  Test_InterpolateOnSphericalShell.cpp
   Test_IrregularInterpolant.cpp
   Test_LagrangePolynomial.cpp
   Test_MultiLinearSpanInterpolation.cpp
