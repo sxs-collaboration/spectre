@@ -341,25 +341,25 @@ class EvolutionStatus(ExecutableStatus):
         )
         st.plotly_chart(fig)
 
-        # Plot AMR stats if available
-        def get_amr_observations(reduction_files):
+        # Plot grid stats if available
+        def get_grid_observations(reduction_files):
             for reductions_file in reduction_files:
                 with h5py.File(reductions_file, "r") as open_h5file:
-                    if "Amr.dat" in open_h5file:
-                        yield to_dataframe(open_h5file["Amr.dat"]).set_index(
-                            "Time"
-                        )
+                    if "GridStats.dat" in open_h5file:
+                        yield to_dataframe(
+                            open_h5file["GridStats.dat"]
+                        ).set_index("Time")
 
-        all_amr_observations = list(get_amr_observations(reduction_files))
-        if len(all_amr_observations) > 0:
-            amr_stats = pd.concat(all_amr_observations)
-            st.subheader("AMR")
+        all_grid_observations = list(get_grid_observations(reduction_files))
+        if len(all_grid_observations) > 0:
+            grid_stats = pd.concat(all_grid_observations)
+            st.subheader("Grid")
 
             # Plot total num points over time
             fig = px.line(time_steps["NumberOfPoints"])
             fig.add_scatter(
-                x=amr_stats.index,
-                y=amr_stats["TotalNumPoints"],
+                x=grid_stats.index,
+                y=grid_stats["NumPoints"],
                 mode="lines+markers",
             )
             fig.update_layout(
@@ -372,23 +372,24 @@ class EvolutionStatus(ExecutableStatus):
             # Plot points per element per dimension over time
             fig = go.Figure()
             colors = pc.qualitative.Plotly
-            for dim in range((len(amr_stats.columns) - 3) // 3):
-                avg_p = (
-                    amr_stats[f"NumPointsPerDim_{dim}"]
-                    / amr_stats["NumElements"]
-                )
-                min_p = amr_stats[f"MinPointsPerDim_{dim}"]
-                max_p = amr_stats[f"MaxPointsPerDim_{dim}"]
+            num_dims = sum(
+                column.startswith("AvgPointsPerDim_")
+                for column in grid_stats.columns
+            )
+            for dim in range(num_dims):
+                avg_p = grid_stats[f"AvgPointsPerDim_{dim}"]
+                min_p = grid_stats[f"MinPointsPerDim_{dim}"]
+                max_p = grid_stats[f"MaxPointsPerDim_{dim}"]
                 color = colors[dim]
                 fig.add_scatter(
-                    x=amr_stats.index,
+                    x=grid_stats.index,
                     y=avg_p,
                     mode="lines",
                     name=f"Avg points per element (d={dim})",
                     line=dict(color=color),
                 )
                 fig.add_scatter(
-                    x=amr_stats.index,
+                    x=grid_stats.index,
                     y=min_p,
                     mode="lines",
                     opacity=0.5,
@@ -396,7 +397,7 @@ class EvolutionStatus(ExecutableStatus):
                     line=dict(color=color),
                 )
                 fig.add_scatter(
-                    x=amr_stats.index,
+                    x=grid_stats.index,
                     y=max_p,
                     mode="lines",
                     opacity=0.5,
