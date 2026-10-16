@@ -3,6 +3,8 @@
 
 #pragma once
 
+#include <cstddef>
+
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "Time/AdaptiveSteppingDiagnostics.hpp"
 #include "Time/Slab.hpp"
@@ -25,6 +27,10 @@ template <typename StepperInterface>
 struct TimeStepper;
 }  // namespace Tags
 class TimeStepper;
+namespace evolution::dg::Tags {
+template <size_t Dim>
+struct MortarNextTemporalId;
+}  // namespace evolution::dg::Tags
 /// \endcond
 
 /// \ingroup TimeGroup
@@ -82,6 +88,39 @@ void change_slab_size(const gsl::not_null<db::DataBox<DbTags>*> box,
   const auto new_next_time_step_id =
       db::get<Tags::TimeStepper<TimeStepper>>(*box).next_time_id(
           new_time_step_id, new_time_step);
+
+  // For DG evolutions, we need to correct the slab size stored in
+  // MortarNextTemporalId.  This function should work for non-DG
+  // evolution and should not depend on the DG headers, so we get all
+  // the types from the DataBox.
+  tmpl::for_each<tmpl::range<size_t, 1, 4>>(
+      [&]<size_t Dim>(tmpl::type_<tmpl::size_t<Dim>> /*meta*/) {
+        using mortar_next_temporal_id_tag =
+            evolution::dg::Tags::MortarNextTemporalId<Dim>;
+        if constexpr (db::tag_is_retrievable_v<mortar_next_temporal_id_tag,
+                                               db::DataBox<DbTags>>) {
+          db::mutate_apply<tmpl::list<mortar_next_temporal_id_tag>,
+                           tmpl::list<::Tags::Next<::Tags::TimeStepId>>>(
+              [&new_next_time_step_id, &new_time_step_id, &old_time_step_id](
+                  const auto mortar_next_temporal_ids,
+                  const TimeStepId& old_next_time_step_id) {
+                for (auto& [mortar_id, temporal_id] :
+                     *mortar_next_temporal_ids) {
+                  if (temporal_id == old_time_step_id) {
+                    temporal_id = new_time_step_id;
+                  } else {
+                    ASSERT(temporal_id == old_next_time_step_id,
+                           "Don't know how to translate "
+                               << temporal_id << " to new slab.  Only know "
+                               << old_time_step_id << " and "
+                               << old_next_time_step_id);
+                    temporal_id = new_next_time_step_id;
+                  }
+                }
+              },
+              box);
+        }
+      });
 
   db::mutate_apply<
       tmpl::push_front<Tags::get_all_history_tags<DbTags>,

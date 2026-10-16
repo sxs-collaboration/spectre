@@ -252,12 +252,10 @@ bool receive_boundary_data(
       }
     }
 
-    // *time_to_process represents the same temporal event as this,
-    // but may have an out-of-date slab size because the
-    // MortarNextTemporalId data can be sent before the slab size is
-    // chosen.  It is important that the corrected version be what is
-    // inserted into the boundary history.
-    const TimeStepId processing_time = messages_to_process->first;
+    ASSERT(time_to_process->step_time().slab() ==
+               messages_to_process->first.step_time().slab(),
+           "Inconsistent slabs in " << *time_to_process << " and "
+                                    << messages_to_process->first);
     std::unordered_map<Direction<volume_dim>, std::vector<size_t>>
         contributors_multiple_non_conforming_neighbors{};
 
@@ -279,13 +277,13 @@ bool receive_boundary_data(
               ? received_mortar_id
               : DirectionalId<volume_dim>{direction, element.id()};
 
-      ASSERT(mortar_next_time_step_ids.at(mortar_id) == processing_time or
+      ASSERT(mortar_next_time_step_ids.at(mortar_id) == *time_to_process or
                  contributors_multiple_non_conforming_neighbors.contains(
                      direction),
              "Processing wrong time for mortar "
                  << mortar_id << "\nExpected "
                  << mortar_next_time_step_ids.at(mortar_id)
-                 << " but processing " << processing_time);
+                 << " but processing " << *time_to_process);
 
       const auto& time_stepping_policy =
           mortar_infos.at(mortar_id).time_stepping_policy();
@@ -371,7 +369,7 @@ bool receive_boundary_data(
                        "Must receive neighbor boundary correction data when "
                        "not using DG-subcell. Mortar ID is: ("
                            << mortar_id.direction() << "," << mortar_id.id()
-                           << ") and TimeStepId is " << processing_time);
+                           << ") and TimeStepId is " << *time_to_process);
                 MortarData<volume_dim> neighbor_mortar_data{};
                 neighbor_mortar_data.face_mesh = neighbor_face_mesh;
                 neighbor_mortar_data.mortar_mesh =
@@ -391,7 +389,8 @@ bool receive_boundary_data(
                     ASSERT(neighbor_mortar_data.mortar_data.has_value(),
                            "Did not receive mortar data for " << mortar_id);
                     boundary_data_history->at(mortar_id).remote().insert(
-                        processing_time, received_mortar_data.integration_order,
+                        *time_to_process,
+                        received_mortar_data.integration_order,
                         std::move(neighbor_mortar_data));
                     boundary_data_history->at(mortar_id).remote().for_each(
                         project_boundary_mortar_data);
