@@ -194,7 +194,11 @@ void Hypercube<Dim, TagList>::apply_in_volume(
   for (size_t d = 0; d < Dim; d++) {
     gsl::at(filter, d) = std::cref(filter_matrix(mesh.slice_through(d)));
   }
-  *vars = apply_matrices(filter, *vars, mesh.extents());
+  if (vars->is_owning()) {
+    *vars = apply_matrices(filter, *vars, mesh.extents());
+  } else {
+    vars->assign_subset(apply_matrices(filter, *vars, mesh.extents()));
+  }
 }
 
 template <size_t Dim, typename TagList>
@@ -229,7 +233,11 @@ void Hypercube<Dim, TagList>::apply_on_boundary(
     for (size_t d = 0; d < Dim - 1; d++) {
       gsl::at(filter, d) = std::cref(filter_matrix(mesh.slice_through(d)));
     }
-    *vars = apply_matrices(filter, *vars, mesh.extents());
+    if (vars->is_owning()) {
+      *vars = apply_matrices(filter, *vars, mesh.extents());
+    } else {
+      vars->assign_subset(apply_matrices(filter, *vars, mesh.extents()));
+    }
   } else {
     (void)vars;
     (void)mesh;
@@ -267,7 +275,12 @@ void Hypercube<Dim, TagList>::apply_parity_filter(
     gsl::at(parity_independent_filter, d) =
         std::cref(filter_matrix(mesh.slice_through(d)));
   }
-  *vars = apply_matrices(parity_independent_filter, *vars, mesh.extents());
+  if (vars->is_owning()) {
+    *vars = apply_matrices(parity_independent_filter, *vars, mesh.extents());
+  } else {
+    vars->assign_subset(
+        apply_matrices(parity_independent_filter, *vars, mesh.extents()));
+  }
 
   // Matrices acting in different dimensions commute, so the parity-dependent
   // direction can be applied afterwards, component by component.
