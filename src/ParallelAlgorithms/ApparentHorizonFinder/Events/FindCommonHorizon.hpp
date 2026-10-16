@@ -42,8 +42,12 @@ namespace ah::Events {
  * \brief Event that combines the `ah::Events::FindApparentHorizon` event with
  * `dg::Events::ObserveFields` specifically for common horizon finding.
  *
- * \details This is just a thin wrapper around each event and doesn't do
- * anything extra.
+ * \details The volume data is sent to the `observers::ObserverWriter` with the
+ * name of the \p HorizonMetavars as its dependency, so the ObserverWriter
+ * holds the data until the horizon finder reports with
+ * `ah::callbacks::SendDependencyToObserverWriter` whether the horizon find
+ * succeeded (then the data is written to disk) or failed (then the data is
+ * dropped). Other than that, this is just a thin wrapper around each event.
  */
 template <typename HorizonMetavars, typename Tensors,
           typename NonTensorComputeTagsList = tmpl::list<>>
@@ -87,7 +91,8 @@ class FindCommonHorizon<HorizonMetavars, tmpl::list<Tensors...>,
       : observe_fields_event_(subfile_name, coordinates_floating_point_type,
                               floating_point_types, variables_to_observe,
                               active_block_or_block_groups, interpolation_mesh,
-                              projection_mesh, std::nullopt, context),
+                              projection_mesh,
+                              std::optional<std::string>{name()}, context),
         horizon_find_event_(subfile_name) {}
 
   using compute_tags_for_observation_box = tmpl::remove_duplicates<tmpl::append<
