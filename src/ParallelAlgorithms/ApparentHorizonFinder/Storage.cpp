@@ -78,6 +78,7 @@ void SingleTimeStorage<Fr>::pup(PUP::er& p) {
   p | current_iteration;
   p | previous_iteration_surface;
   p | destination;
+  p | dependency;
   p | time_is_ready;
 }
 
@@ -88,6 +89,7 @@ bool operator==(const SingleTimeStorage<Fr>& lhs,
          lhs.current_iteration == rhs.current_iteration and
          lhs.previous_iteration_surface == rhs.previous_iteration_surface and
          lhs.destination == rhs.destination and
+         lhs.dependency == rhs.dependency and
          lhs.time_is_ready == rhs.time_is_ready;
 }
 template <typename Fr>

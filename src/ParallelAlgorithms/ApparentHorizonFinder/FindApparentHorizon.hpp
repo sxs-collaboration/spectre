@@ -6,6 +6,7 @@
 #include <cstddef>
 #include <limits>
 #include <optional>
+#include <string>
 #include <type_traits>
 #include <utility>
 #include <vector>
@@ -53,8 +54,9 @@ struct get_tags {
  * volume data, finds the apparent horizon, and calls the callbacks after the
  * horizon is found.
  *
- * \details First, the volume variables `ah::vars_to_interpolate_to_target` are
- * put into the `ah::Tags::Storage`. Then, we try to set the
+ * \details First, the volume variables `ah::vars_to_interpolate_to_target`
+ * and the \p dependency are put into the `ah::Tags::Storage` for the incoming
+ * time. Then, we try to set the
  * `ah::Tags::CurrentTime` with the `ah::set_current_time` function. Once we
  * have a current time, we ensure the functions of time are up-to-date at this
  * current time with `ah::check_if_current_time_is_ready`. If they are not,
@@ -70,8 +72,18 @@ struct get_tags {
  * we call the callbacks with `ah::invoke_callbacks` and then clean up the
  * horizon finer with `ah::clean_up_horizon_finder`. Then we try to set a new
  * current time and the process starts over again. If `FastFlow` never
- * converges, we call the `horizon_find_failure_callbacks` from the
- * \p HorizonMetavars.
+ * converges or the interpolation fails, we call the
+ * `horizon_find_failure_callbacks` from the \p HorizonMetavars.
+ *
+ * The \p dependency is the name of the volume data that an
+ * `observers::ObserverWriter` holds for the incoming time until the horizon
+ * find at that time succeeds or fails (see
+ * `ah::callbacks::SendDependencyToObserverWriter`), or `std::nullopt` if there
+ * is no such data. Since this action can receive volume data for a later time
+ * while it is still working on the current time, the dependency is stored per
+ * time and copied from the storage of the current time into
+ * `ah::Tags::Dependency` right before the callbacks for that time are invoked,
+ * on success (in `ah::invoke_callbacks`) as well as on failure.
  */
 template <typename HorizonMetavars>
 struct FindApparentHorizon {
@@ -126,8 +138,8 @@ struct FindApparentHorizon {
         db::get_mutable_reference<ah::Tags::BlockSearchOrder>(
             make_not_null(&box));
 
-    // Add volume variables and destination to the box if they haven't already
-    // been received
+    // Add volume variables, destination, and dependency to the storage if they
+    // haven't already been received
     if (not vars_have_already_been_received) {
       auto& current_time_storage = all_storage[incoming_time];
       current_time_storage.all_volume_variables.emplace(
@@ -135,6 +147,7 @@ struct FindApparentHorizon {
           ah::Storage::VolumeVariables<frame>{
               incoming_mesh, std::move(incoming_vars_to_interpolate)});
       current_time_storage.destination = HorizonMetavars::destination;
+      current_time_storage.dependency = dependency;
     }
 
     // ========================================================================
@@ -181,6 +194,21 @@ struct FindApparentHorizon {
              "Current time doesn't have any data.");
 
       auto& current_time_storage = all_storage.at(current_time);
+
+      // Makes the dependency of the current time available to the failure
+      // callbacks, e.g. so `ah::callbacks::SendDependencyToObserverWriter` can
+      // tell the ObserverWriter to drop the volume data it holds for this
+      // time. `ah::invoke_callbacks` does the same for the success callbacks.
+      const auto set_dependency_for_failure_callbacks =
+          [&box, &current_time_storage]() {
+            db::mutate<ah::Tags::Dependency>(
+                [&current_time_storage](
+                    const gsl::not_null<std::optional<std::string>*>
+                        dependency_in_box) {
+                  *dependency_in_box = current_time_storage.dependency;
+                },
+                make_not_null(&box));
+          };
 
       // Only check if the current time is ready once
       if (UNLIKELY(not current_time_storage.time_is_ready)) {
@@ -264,6 +292,7 @@ struct FindApparentHorizon {
               // callback is used in
               // HorizonMetavars::horizon_find_failure_callbacks
               // (ErrorOnFailedApparentHorizon or IgnoreFailedApparentHorizon)
+              set_dependency_for_failure_callbacks();
               tmpl::for_each<
                   typename HorizonMetavars::horizon_find_failure_callbacks>(
                   [&]<typename Callback>(tmpl::type_<Callback> /*meta*/) {
@@ -412,6 +441,7 @@ struct FindApparentHorizon {
             continue;
           } else if (not has_converged) {
             // This will possibly throw an error
+            set_dependency_for_failure_callbacks();
             tmpl::for_each<
                 typename HorizonMetavars::horizon_find_failure_callbacks>(
                 [&](auto callback_v) {
@@ -484,7 +514,7 @@ struct FindApparentHorizon {
           // We have converged to the apparent horizon. Invoke the callbacks and
           // clean up for the next horizon find
           invoke_callbacks<HorizonMetavars>(make_not_null(&box), cache,
-                                            dependency, status_and_info.first);
+                                            status_and_info.first);
 
           if (debug_print) {
             Parallel::printf(
