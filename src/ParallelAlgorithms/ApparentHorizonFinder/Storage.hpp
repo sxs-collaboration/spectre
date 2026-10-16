@@ -7,6 +7,7 @@
 #include <optional>
 #include <pup.h>
 #include <set>
+#include <string>
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
@@ -167,6 +168,17 @@ struct SingleTimeStorage {
    * \brief The `ah::Destination` for this horizon find.
    */
   Destination destination{};
+  /*!
+   * \brief The dependency that was sent along with the volume data for this
+   * horizon find, if any.
+   *
+   * \details This is copied into `ah::Tags::Dependency` right before the
+   * callbacks for this horizon find are invoked, on success as well as on
+   * failure, so that e.g. `ah::callbacks::SendDependencyToObserverWriter` can
+   * tell the ObserverWriter whether to write or drop the volume data it holds
+   * for this time.
+   */
+  std::optional<std::string> dependency = std::nullopt;
   /*!
    * \brief Whether we have checked if the functions of time are up to date for
    * this horizon find.

@@ -66,7 +66,10 @@ struct MockContributeVolumeData {
       ElementVolumeData&& /*received_volume_data*/,
       const std::optional<std::vector<char>>& /*serialized_functions_of_time*/,
       const std::optional<std::string>& dependency = std::nullopt) {
-    CHECK(dependency == std::optional{"InterpolationTargetA"});
+    // The volume data must be sent with the name of the horizon finder as its
+    // dependency. Otherwise the ObserverWriter writes the volume data
+    // immediately instead of waiting for the horizon find to succeed or fail.
+    CHECK(dependency == std::optional<std::string>{"MockHorizonMetavars"});
   }
 };
 
@@ -263,6 +266,12 @@ void common_horizon_event() {
   // individually tested, here we only check we have the correct number of
   // queued actions on each component.
   check_results(1);
+
+  // Invoke the queued ContributeVolumeData action so the mock checks the
+  // dependency that was sent with the volume data.
+  ActionTesting::invoke_queued_simple_action<obs_component>(
+      make_not_null(&runner), 0);
+  CHECK(ActionTesting::is_simple_action_queue_empty<obs_component>(runner, 0));
 }
 }  // namespace
 

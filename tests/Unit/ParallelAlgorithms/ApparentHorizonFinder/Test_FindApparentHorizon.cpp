@@ -8,6 +8,7 @@
 #include <cstddef>
 #include <memory>
 #include <optional>
+#include <string>
 #include <vector>
 
 #include "DataStructures/DataBox/DataBox.hpp"
@@ -74,6 +75,25 @@
 #include "Utilities/TMPL.hpp"
 
 namespace {
+// The dependency sent with the volume data is made unique per time so the
+// callbacks can check that they see the dependency of the current time rather
+// than the one of the incoming time (the volume data of different times is
+// sent in random order below).
+std::optional<std::string> dependency_base{};  // NOLINT
+std::optional<std::string> dependency_at_time(
+    const LinkedMessageId<double>& time) {
+  if (not dependency_base.has_value()) {
+    return std::nullopt;
+  }
+  return dependency_base.value() + " at t=" + std::to_string(time.id);
+}
+
+template <typename DbTags>
+void check_dependency(const db::DataBox<DbTags>& box) {
+  CHECK(db::get<ah::Tags::Dependency>(box) ==
+        dependency_at_time(db::get<ah::Tags::CurrentTime>(box).value()));
+}
+
 size_t callback_failure_count = 0;                                  // NOLINT
 FastFlow::Status callback_failure_mode = FastFlow::Status::AbsTol;  // NOLINT
 template <typename HorizonMetavars, size_t Index>
@@ -92,6 +112,7 @@ struct TestHorizonFindFailureCallback
         box, cache, failure_reason);
     ++callback_failure_count;
     callback_failure_mode = failure_reason;
+    check_dependency(box);
   }
 };
 
@@ -108,6 +129,7 @@ struct TestHorizonFindCallback : tt::ConformsTo<ah::protocols::Callback> {
                     const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const FastFlow::Status /*status*/) {
     ++callback_count;
+    check_dependency(box);
 
     const auto& strahlkorper = get<ylm::Tags::Strahlkorper<Fr>>(box);
     // Test that InverseSpatialMetric can be retrieved from the
@@ -206,6 +228,8 @@ void test_apparent_horizon(
       check_callbacks_v<typename horizon_metavars::horizon_find_callbacks>);
   static_assert(check_callbacks_v<
                 typename horizon_metavars::horizon_find_failure_callbacks>);
+
+  dependency_base = dependency;
 
   // The initial guess for the horizon search is a sphere of radius 2.8M unless
   // we are in the Distorted frame, then we pick 2.2 so it's within the blocks
@@ -421,7 +445,7 @@ void test_apparent_horizon(
       ActionTesting::queue_simple_action<
           component, ah::FindApparentHorizon<horizon_metavars>>(
           make_not_null(&runner), 0, time, element_id, mesh, target_vars,
-          dependency);
+          dependency_at_time(time));
     }
   }
 
@@ -521,7 +545,7 @@ SPECTRE_TEST_CASE("Unit.ApparentHorizonFinder.FindApparentHorizon",
 
   // Failure tests
   test_apparent_horizon<Frame::Inertial, ah::Destination::ControlSystem, true>(
-      3, 3, 1.0, {{0.0, 0.0, 0.0}}, true);
+      3, 3, 1.0, {{0.0, 0.0, 0.0}}, true, dependency);
   CHECK(callback_count == 0);
   CHECK(callback_failure_count == 6);
   CHECK(callback_failure_mode == FastFlow::Status::InterpolationFailure);
