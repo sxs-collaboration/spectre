@@ -137,9 +137,10 @@ EventsAndTriggersAtSlabs:
           Offset: 0
     Events:
       - RefineMesh
-      - ObserveAmrStats:
+      - ObserveGridStats:
           PrintToTerminal: True
-          ObservePerCore: True
+          BlocksToObserve: All
+          ReductionScope: WholeDomain
   - Trigger:
       Slabs:
         Specified:
