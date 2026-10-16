@@ -21,8 +21,8 @@ struct create_from_yaml;
 
 namespace Events {
 /*!
- * \brief How reduction events like `Events::ObserveNorms` group elements into
- * reductions
+ * \brief How reduction events like `Events::ObserveNorms` and
+ * `Events::ObserveGridStats` group elements into reductions
  *
  * - `WholeDomain`: a single reduction over all observed elements.
  * - `ByBlock`: a separate reduction for each observed block.
