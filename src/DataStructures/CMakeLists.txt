@@ -72,6 +72,7 @@ spectre_target_headers(
   TempBuffer.hpp
   Transpose.hpp
   Variables.hpp
+  VariablesKokkos.hpp
   VariablesTag.hpp
   VectorImpl.hpp
   )
@@ -86,6 +87,7 @@ target_link_libraries(
   ErrorHandling
   Options
   Serialization
+  SpectreKokkos
   Utilities
   )
 
