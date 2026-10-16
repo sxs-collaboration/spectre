@@ -552,11 +552,36 @@ void test_equality() {
   }
 }
 
+void test_errors() {
+  const std::string full_message =
+      "Unable to insert element into FixedHashMap of maximum size 2 because "
+      "it is full. If the current size (2) is not equal to the maximum size";
+  FixedHashMap<2, int, int> map{};
+  map.emplace(1, 2);
+  map.emplace(3, 4);
+  const int key = 5;
+  const std::pair value(5, 6);
+  CHECK_THROWS_WITH(map.insert(value),
+                    Catch::Matchers::ContainsSubstring(full_message));
+  CHECK_THROWS_WITH(map.insert(std::pair(5, 6)),
+                    Catch::Matchers::ContainsSubstring(full_message));
+  CHECK_THROWS_WITH(map.emplace(5, 6),
+                    Catch::Matchers::ContainsSubstring(full_message));
+  CHECK_THROWS_WITH(map.insert_or_assign(key, 6),
+                    Catch::Matchers::ContainsSubstring(full_message));
+  CHECK_THROWS_WITH(map.insert_or_assign(5, 6),
+                    Catch::Matchers::ContainsSubstring(full_message));
+  CHECK_THROWS_WITH(map[5], Catch::Matchers::ContainsSubstring(full_message));
+  CHECK_THROWS_WITH((FixedHashMap<2, int, int>{{1, 2}, {3, 4}, {5, 6}}),
+                    Catch::Matchers::ContainsSubstring(full_message));
+}
+
 SPECTRE_TEST_CASE("Unit.DataStructures.FixedHashMap",
                   "[DataStructures][Unit]") {
   test_direction_key<4>();
   test_repeated_key<size_t>();
   test_repeated_key<NonCopyableSizeT>();
   test_equality();
+  test_errors();
 }
 }  // namespace
