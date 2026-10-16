@@ -41,7 +41,6 @@
 #include "ParallelAlgorithms/Actions/FunctionsOfTimeAreReady.hpp"
 #include "ParallelAlgorithms/Actions/MutateApply.hpp"
 #include "ParallelAlgorithms/Amr/Events/ObserveAmrCriteria.hpp"
-#include "ParallelAlgorithms/Amr/Events/ObserveAmrStats.hpp"
 #include "ParallelAlgorithms/Amr/Events/RefineMesh.hpp"
 #include "ParallelAlgorithms/Amr/Projectors/CopyFromCreatorOrLeaveAsIs.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/Callbacks/FailedHorizonFind.hpp"
@@ -54,6 +53,7 @@
 #include "ParallelAlgorithms/ApparentHorizonFinder/HorizonAliases.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/KerrSchild.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/Protocols/HorizonMetavars.hpp"
+#include "ParallelAlgorithms/Events/ObserveGridStats.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Actions/RunEventsOnFailure.hpp"
 #include "ParallelAlgorithms/Interpolation/Actions/ElementInitInterpPoints.hpp"
 #include "ParallelAlgorithms/Interpolation/Actions/InitializeInterpolationTarget.hpp"
@@ -191,18 +191,21 @@ struct EvolutionMetavars : public GeneralizedHarmonicTemplateBase<3> {
                    tmpl::list<ylm::InitialShapes::Sphere<Frame::Distorted>,
                               ylm::InitialShapes::FromFile<Frame::Distorted>,
                               ah::InitialShapes::KerrSchild<Frame::Distorted>>>,
-        tmpl::pair<Event,
-                   tmpl::flatten<tmpl::list<
-                       ah::Events::FindApparentHorizon<ApparentHorizon>,
-                       control_system::metafunctions::control_system_events<
-                           control_systems>,
-                       control_system::CleanFunctionsOfTime,
-                       intrp::Events::InterpolateWithoutInterpComponent<
-                           3, BondiSachs, source_vars_no_deriv>,
-                       intrp::Events::InterpolateWithoutInterpComponent<
-                           3, ExcisionBoundary, ::ah::source_vars<volume_dim>>,
-                       amr::Events::RefineMesh,
-                       amr::Events::ObserveAmrStats<volume_dim>>>>,
+        tmpl::pair<
+            Event,
+            tmpl::flatten<tmpl::list<
+                ah::Events::FindApparentHorizon<ApparentHorizon>,
+                control_system::metafunctions::control_system_events<
+                    control_systems>,
+                control_system::CleanFunctionsOfTime,
+                intrp::Events::InterpolateWithoutInterpComponent<
+                    3, BondiSachs, source_vars_no_deriv>,
+                intrp::Events::InterpolateWithoutInterpComponent<
+                    3, ExcisionBoundary, ::ah::source_vars<volume_dim>>,
+                amr::Events::RefineMesh,
+                Events::ObserveGridStats<
+                    volume_dim, typename detail::ObserverTags<
+                                    volume_dim>::non_tensor_compute_tags>>>>,
         tmpl::pair<DenseTrigger,
                    control_system::control_system_triggers<control_systems>>,
         tmpl::pair<control_system::size::State,

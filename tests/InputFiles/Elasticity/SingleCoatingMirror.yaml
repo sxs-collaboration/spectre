@@ -143,12 +143,16 @@ EventsAndTriggersAtIterations:
             - Name: Error(Displacement)
               NormType: L2Norm
               Components: Sum
+          BlocksToObserve: All
+          ReductionScope: WholeDomain
       - ObserveNorms: &volume_integrals
           SubfileName: VolumeIntegrals
           TensorsToObserve:
             - Name: PotentialEnergyDensity
               NormType: VolumeIntegral
               Components: Individual
+          BlocksToObserve: All
+          ReductionScope: WholeDomain
       - ObserveNormsPerLayer: *error_norms
       - ObserveNormsPerLayer: *volume_integrals
       - ObserveFields:

@@ -34,6 +34,8 @@ EventsAndTriggersAtSlabs:
             - Name: Error(Pi)
               NormType: L2Norm
               Components: Sum
+          BlocksToObserve: All
+          ReductionScope: WholeDomain
       - ObserveFields:
           SubfileName: FieldsFinal
           VariablesToObserve: [Psi]

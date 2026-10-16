@@ -142,6 +142,8 @@ EventsAndTriggersAtSlabs:
             - Name: PointwiseL2Norm(TwoIndexConstraint)
               NormType: L2Norm
               Components: Individual
+          BlocksToObserve: All
+          ReductionScope: WholeDomain
 
 EventsAndTriggersAtSteps:
 

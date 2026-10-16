@@ -131,6 +131,8 @@ EventsAndTriggersAtSlabs:
             - Name: Error(Pi)
               NormType: L2Norm
               Components: Sum
+          BlocksToObserve: All
+          ReductionScope: WholeDomain
   - Trigger: Always
     Events:
       - Completion

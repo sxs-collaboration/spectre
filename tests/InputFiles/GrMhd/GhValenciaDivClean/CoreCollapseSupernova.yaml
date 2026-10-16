@@ -228,18 +228,24 @@ EventsAndTriggersAtSlabs:
             - Name: RestMassDensity
               NormType: Max
               Components: Individual
+          BlocksToObserve: All
+          ReductionScope: WholeDomain
       - ObserveNorms:
           SubfileName: min_data_lapse
           TensorsToObserve:
             - Name: Lapse
               NormType: Min
               Components: Individual
+          BlocksToObserve: All
+          ReductionScope: WholeDomain
       - ObserveNorms:
           SubfileName: max_three_index_constraint
           TensorsToObserve:
             - Name: PointwiseL2Norm(ThreeIndexConstraint)
               NormType: Max
               Components: Individual
+          BlocksToObserve: All
+          ReductionScope: WholeDomain
 
   - Trigger:
       Slabs:

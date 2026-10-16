@@ -111,6 +111,8 @@ EventsAndTriggersAtIterations:
             - Name: Error(Field)
               NormType: L2Norm
               Components: Sum
+          BlocksToObserve: All
+          ReductionScope: WholeDomain
       - ObserveFields:
           SubfileName: VolumeData
           VariablesToObserve: [Field]

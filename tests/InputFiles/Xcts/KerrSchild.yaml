@@ -222,6 +222,8 @@ EventsAndTriggersAtIterations:
             - Name: Error(ShiftExcess)
               NormType: L2Norm
               Components: Sum
+          BlocksToObserve: All
+          ReductionScope: WholeDomain
   - Trigger: HasConverged
     Events:
       - ObserveNorms:
@@ -233,6 +235,8 @@ EventsAndTriggersAtIterations:
             - Name: MomentumConstraint
               NormType: L2Norm
               Components: Individual
+          BlocksToObserve: All
+          ReductionScope: WholeDomain
       - ObserveFields:
           SubfileName: VolumeData
           VariablesToObserve:
