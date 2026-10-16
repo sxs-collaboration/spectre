@@ -12,6 +12,7 @@ set(LIBRARY_SOURCES
   Test_ObserveNorms.cpp
   Test_ObserveTimeStep.cpp
   Test_ObserveTimeStepVolume.cpp
+  Test_ReductionScope.cpp
   Test_Tags.cpp
   )
 

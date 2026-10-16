@@ -14,6 +14,7 @@ spectre_target_sources(
   ObserveDataBox.cpp
   ObserveNorms.cpp
   ObserveTimeStep.cpp
+  ReductionScope.cpp
   )
 
 spectre_target_headers(
@@ -35,6 +36,7 @@ spectre_target_headers(
   ObserveTimeStep.tpp
   ObserveTimeStepVolume.hpp
   ObserveTimeStepVolume.tpp
+  ReductionScope.hpp
   Tags.hpp
   )
 
@@ -42,6 +44,7 @@ target_link_libraries(
   ${LIBRARY}
   PUBLIC
   Charmxx::pup
+  DomainStructure
   LinearOperators
   Observer
   Options
@@ -52,7 +55,6 @@ target_link_libraries(
   INTERFACE
   DataStructures
   Domain
-  DomainStructure
   ErrorHandling
   EventsAndTriggers
   H5
