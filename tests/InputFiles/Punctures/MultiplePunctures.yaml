@@ -186,6 +186,8 @@ EventsAndTriggersAtIterations:
             - Name: AdmMassIntegrand
               NormType: VolumeIntegral
               Components: Individual
+          BlocksToObserve: All
+          ReductionScope: WholeDomain
 
 BuildMatrix:
   MatrixSubfileName: None

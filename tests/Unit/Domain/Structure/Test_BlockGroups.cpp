@@ -44,6 +44,26 @@ SPECTRE_TEST_CASE("Unit.Domain.BlockGroups", "[Domain][Unit]") {
                              block_groups) == std::vector<size_t>{0, 1});
   CHECK(block_ids_from_names({"Block1", "Group1"}, all_block_names,
                              block_groups) == std::vector<size_t>{0, 1});
+
+  CHECK(block_or_group_names_containing_block(
+            "Block1", {"Group2", "Block1", "Group1"}, all_block_names,
+            block_groups) == std::vector<std::string>{"Block1", "Group1"});
+  CHECK(block_or_group_names_containing_block("Block3", {"Group2"},
+                                              all_block_names, block_groups) ==
+        std::vector<std::string>{"Group2"});
+  CHECK(block_or_group_names_containing_block("Block2", {"Group2", "Block1"},
+                                              all_block_names, block_groups)
+            .empty());
+  CHECK(block_or_group_names_containing_block("Block1", {}, all_block_names,
+                                              block_groups)
+            .empty());
+  // Unknown names are an error even if an earlier entry already matched
+  CHECK_THROWS_WITH(
+      block_or_group_names_containing_block("Block1", {"Block1", "NoBlock"},
+                                            all_block_names, block_groups),
+      Catch::Matchers::ContainsSubstring(
+          "The block or group 'NoBlock' is not one of the block names or "
+          "groups of the domain."));
 }
 
 }  // namespace domain

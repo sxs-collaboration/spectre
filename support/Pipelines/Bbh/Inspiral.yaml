@@ -496,6 +496,8 @@ EventsAndTriggersAtSlabs:
           - Name: PointwiseL2Norm(ThreeIndexConstraint)
             NormType: L2Norm
             Components: Sum
+          BlocksToObserve: All
+          ReductionScope: WholeDomain
   # Observe constraint energy more sparsely because it is expensive to compute.
   # Also use it for ErrorIfDataTooBig so we only compute it once.
   - Trigger:
@@ -513,6 +515,8 @@ EventsAndTriggersAtSlabs:
           - Name: NormalizedConstraintEnergy
             NormType: L2Norm
             Components: Sum
+          BlocksToObserve: All
+          ReductionScope: WholeDomain
       - ErrorIfDataTooBig:
           Threshold: 10
           VariablesToCheck: [ConstraintEnergy]

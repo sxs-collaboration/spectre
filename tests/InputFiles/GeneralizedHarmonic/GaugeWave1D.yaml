@@ -142,6 +142,8 @@ EventsAndTriggersAtSlabs:
             - Name: Error(Phi)
               NormType: L2Norm
               Components: Sum
+          BlocksToObserve: All
+          ReductionScope: WholeDomain
   - Trigger:
       Slabs:
         EvenlySpaced:

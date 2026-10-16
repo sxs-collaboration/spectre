@@ -115,6 +115,8 @@ EventsAndTriggersAtSlabs:
   #           - Name: Error(Pi)
   #             NormType: L2Norm
   #             Components: Sum
+  #         BlocksToObserve: All
+  #         ReductionScope: WholeDomain
   #     - ObserveFields:
   #         SubfileName: FieldsFinal
   #         VariablesToObserve: [Psi]
@@ -145,6 +147,8 @@ EventsAndDenseTriggers:
             - Name: Error(Pi)
               NormType: L2Norm
               Components: Sum
+          BlocksToObserve: All
+          ReductionScope: WholeDomain
 
 Observers:
   VolumeFileName: "ScalarWavePlaneWave2DVolume"

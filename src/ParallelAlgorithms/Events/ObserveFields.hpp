@@ -11,7 +11,6 @@
 #include <string>
 #include <type_traits>
 #include <unordered_map>
-#include <unordered_set>
 #include <utility>
 #include <vector>
 
@@ -42,7 +41,6 @@
 #include "ParallelAlgorithms/Events/Tags.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
-#include "Utilities/Algorithm.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Literals.hpp"
@@ -443,12 +441,11 @@ class ObserveFields<VolumeDim, tmpl::list<Tensors...>,
     if (not active_block_or_block_groups_.has_value()) {
       return true;
     }
-    const std::unordered_set<std::string> block_names =
-        domain::expand_block_groups_to_block_names(
-            active_block_or_block_groups_.value(), domain.block_names(),
-            domain.block_groups());
-    return alg::found(block_names,
-                      domain.blocks().at(element_id.block_id()).name());
+    return not domain::block_or_group_names_containing_block(
+                   domain.blocks().at(element_id.block_id()).name(),
+                   active_block_or_block_groups_.value(), domain.block_names(),
+                   domain.block_groups())
+                   .empty();
   }
 
   std::string subfile_path_;
