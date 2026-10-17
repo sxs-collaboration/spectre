@@ -105,8 +105,11 @@ example `Preferences: Open User Settings`.
 ## Reopen the SpECTRE repository in the development container
 
 Open the command palette by hitting `Cmd+Shift+P` (macOS) or `Ctrl+Shift+P`
-(Linux or Windows) and run the command `Remote-Containers: Reopen in container`
-by starting to type a few letters of this command and then hitting `Enter`.
+(Linux or Windows) and run the command `Dev Containers: Reopen in container`
+by starting to type a few letters of this command and then hitting `Enter`. You
+should be prompted with a few different containers to choose from. Select the
+one named `SpECTRE development environment`. This will give you a minimally
+working SpECTRE environment for development.
 
 Visual Studio Code will download and run the container and drop you into a fully
 configured environment where you can proceed to compile and run SpECTRE. This
@@ -116,15 +119,20 @@ of the download.
 
 If you are interested to learn more about how this feature works you can
 read through the [VS Code documentation on remote containers](https://code.visualstudio.com/docs/remote/containers)
-and inspect the `.devcontainer/devcontainer.json` file that's included in the
-SpECTRE repository.
+and inspect the `.devcontainer/dev/devcontainer.json` file that's included in
+the SpECTRE repository.
 
-\note If you look into the `.devcontainer/devcontainer.json` file, you'll see we
+\note If you look into the `.devcontainer/dev/devcontainer.json` file,
+you'll see we
 are using the `sxscollaboration/spectre:dev` container. We also offer other
-containers. The `sxscollaboration/spectre:ci` container has more compilers and
+containers. The `.devcontainer/ci/devcontainer.json` file uses the
+`sxscollaboration/spectre:ci` container and has more compilers. The
+`.devcontainer/demo/devcontainer.json` file uses
 the `sxscollaboration/spectre:demo` container has a couple pre-built
-executables. If you'd like to build in a different container, just switch the
-image name in the json file and reopen in the new container.
+executables. If you'd like to build in a different container, type in the
+command palette `Dev Containers: Switch Containers` or
+`Dev Containers: Reopen in Container` (depending on if you are in or out of a
+container, respectively) and select the one you want.
 
 ## Configure, compile and run SpECTRE
 
