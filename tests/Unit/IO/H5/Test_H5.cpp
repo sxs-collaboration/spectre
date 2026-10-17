@@ -18,6 +18,7 @@
 #include "DataStructures/BoostMultiArray.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Matrix.hpp"
+#include "Helpers/IO/H5Identifiers.hpp"
 #include "IO/H5/AccessType.hpp"
 #include "IO/H5/CheckH5.hpp"
 #include "IO/H5/Dat.hpp"
@@ -279,10 +280,14 @@ void test_list_files() {
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.IO.H5", "[Unit][IO][H5]") {
+  const auto h5_identifiers = TestHelpers::io::snapshot_h5_identifiers();
   test_types_equal();
   test_read_data();
   test_check_if_object_exists();
   test_contains_attribute_false();
+  // None of the above may leak HDF5 handles. Tests that throw from inside the
+  // h5 library are excluded since those legitimately leave handles open.
+  TestHelpers::io::check_no_leaked_h5_identifiers(h5_identifiers);
   test_errors();
   test_list_files();
 }

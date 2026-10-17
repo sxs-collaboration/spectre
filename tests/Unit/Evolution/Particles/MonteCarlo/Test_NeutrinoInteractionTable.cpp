@@ -5,6 +5,7 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Evolution/Particles/MonteCarlo/NeutrinoInteractionTable.hpp"
 #include "Framework/TestingFramework.hpp"
+#include "Helpers/IO/H5Identifiers.hpp"
 #include "Informer/InfoFromBuild.hpp"
 
 namespace {
@@ -93,8 +94,11 @@ SPECTRE_TEST_CASE("Unit.Evolution.Particles.MonteCarloInteractionTable",
   const std::string h5_file_name{
       unit_test_src_path() +
       "Evolution/Particles/MonteCarlo/NuLib_TestTable.h5"};
+  const auto h5_identifiers = TestHelpers::io::snapshot_h5_identifiers();
   const Particles::MonteCarlo::NeutrinoInteractionTable<4, 3> interaction_table(
       h5_file_name);
+  // The table file must be closed again after it has been read
+  TestHelpers::io::check_no_leaked_h5_identifiers(h5_identifiers);
   const double minimum_temperature = 0.0;
 
   const size_t dv_size = 4;

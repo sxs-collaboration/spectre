@@ -24,6 +24,7 @@
 #include "Domain/FunctionsOfTime/PiecewisePolynomial.hpp"
 #include "Domain/FunctionsOfTime/RegisterDerivedWithCharm.hpp"
 #include "Helpers/Domain/BoundaryConditions/BoundaryCondition.hpp"
+#include "Helpers/IO/H5Identifiers.hpp"
 #include "Helpers/IO/VolumeData.hpp"
 #include "IO/H5/AccessType.hpp"
 #include "IO/H5/CheckH5.hpp"
@@ -526,6 +527,7 @@ void test() {
     CHECK(read_observation_value_attribute() ==
           approx(fot_observation_value_base + 0.1));
   }
+  CHECK_H5(H5Pclose(fapl_id), "Failed to close file access property list.");
 
   if (file_system::check_if_file_exists(h5_file_name)) {
     file_system::rm(h5_file_name, true);
@@ -2296,6 +2298,7 @@ void test_b3_ball() {
 
 // [[TimeOut, 20]]
 SPECTRE_TEST_CASE("Unit.IO.H5.VolumeData", "[Unit][IO][H5]") {
+  const auto h5_identifiers = TestHelpers::io::snapshot_h5_identifiers();
   test<DataVector>();
   test<std::vector<float>>();
   test_cartoon();
@@ -2318,6 +2321,9 @@ SPECTRE_TEST_CASE("Unit.IO.H5.VolumeData", "[Unit][IO][H5]") {
   test_element_id_and_block_id();
   test_element_id_non_standard_names();
   test_mixed_connectivity_multi_element();
+  // None of the above may leak HDF5 handles. The error tests below throw from
+  // inside the h5 library and so legitimately leave handles open.
+  TestHelpers::io::check_no_leaked_h5_identifiers(h5_identifiers);
 
 #ifdef SPECTRE_DEBUG
   CHECK_THROWS_WITH(
