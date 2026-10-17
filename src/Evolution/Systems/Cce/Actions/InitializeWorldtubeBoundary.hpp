@@ -100,6 +100,45 @@ struct InitializeWorldtubeBoundaryBase {
               make_not_null(&box));
         }
       }
+    } else if constexpr (std::is_same_v<Tags::AnalyticBoundaryDataManager,
+                                        tmpl::front<ManagerTags>>) {
+      // The analytic manager builds Du<Dr<BondiJ>> only when given an
+      // interpolator, so pass it the generator's whenever the generator needs
+      // that boundary value.
+      if constexpr (db::tag_is_retrievable_v<Tags::InitializeJ<false>,
+                                             db::DataBox<DataBoxTagsList>>) {
+        const auto& generator = db::get<Tags::InitializeJ<false>>(box);
+        if (generator.needs_du_dr_j()) {
+          auto du_dr_j_interpolator = generator.du_dr_j_interpolator();
+          if (du_dr_j_interpolator == nullptr) {
+            ERROR(
+                "The initial-data generator needs the `Du<Dr<BondiJ>>` "
+                "worldtube boundary value, but supplied no interpolator to "
+                "build it with. Set the generator's `DuDrJInterpolator` "
+                "option.");
+          }
+          db::mutate<Tags::AnalyticBoundaryDataManager>(
+              [&du_dr_j_interpolator](const auto analytic_manager) {
+                analytic_manager->set_du_dr_j_interpolator(
+                    std::move(du_dr_j_interpolator));
+              },
+              make_not_null(&box));
+        }
+      }
+    } else {
+      // Any other manager: a generator that needs `Du<Dr<BondiJ>>` would
+      // silently read an unset buffer, so refuse rather than produce wrong
+      // initial data.
+      if constexpr (db::tag_is_retrievable_v<Tags::InitializeJ<false>,
+                                             db::DataBox<DataBoxTagsList>>) {
+        if (db::get<Tags::InitializeJ<false>>(box).needs_du_dr_j()) {
+          ERROR(
+              "The initial-data generator needs the `Du<Dr<BondiJ>>` worldtube "
+              "boundary value, but this worldtube data manager does not "
+              "produce it. Use a different generator, or add support for that "
+              "boundary value to the manager.");
+        }
+      }
     }
 
     const size_t l_max = db::get<Tags::LMax>(box);

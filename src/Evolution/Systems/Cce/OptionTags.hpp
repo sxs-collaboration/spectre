@@ -218,6 +218,21 @@ struct AnalyticInitializeJ {
       "analytic solution."};
   using group = Cce;
 };
+
+/// Time spacing for differentiating analytic worldtube data.
+struct DuDrJStencilStep {
+  using type = double;
+  static constexpr Options::String help{
+      "Time spacing for the centered stencil used to compute Du(Dr(J)) from "
+      "analytic worldtube data. Choose a positive spacing that resolves the "
+      "shortest solution timescale; interpolation order cannot remove "
+      "aliasing from undersampling. Used only when InitializeJ requires "
+      "Du(Dr(J))."};
+  static double lower_bound() { return std::numeric_limits<double>::min(); }
+  static double upper_bound() { return std::numeric_limits<double>::max(); }
+  static double suggested_value() { return 0.5; }
+  using group = Cce;
+};
 }  // namespace OptionTags
 
 /// \brief Initialization tags for CCE
@@ -608,14 +623,16 @@ struct AnalyticBoundaryDataManager : db::SimpleTag {
   using type = ::Cce::AnalyticBoundaryDataManager;
   using option_tags =
       tmpl::list<OptionTags::ExtractionRadius, Spectral::Swsh::OptionTags::LMax,
-                 OptionTags::AnalyticSolution>;
+                 OptionTags::AnalyticSolution, OptionTags::DuDrJStencilStep>;
 
   static constexpr bool pass_metavariables = false;
   static Cce::AnalyticBoundaryDataManager create_from_options(
       const double extraction_radius, const size_t l_max,
-      const std::unique_ptr<Cce::Solutions::WorldtubeData>& worldtube_data) {
+      const std::unique_ptr<Cce::Solutions::WorldtubeData>& worldtube_data,
+      const double du_dr_j_stencil_step) {
     return ::Cce::AnalyticBoundaryDataManager(l_max, extraction_radius,
-                                              worldtube_data->get_clone());
+                                              worldtube_data->get_clone(),
+                                              du_dr_j_stencil_step);
   }
 };
 

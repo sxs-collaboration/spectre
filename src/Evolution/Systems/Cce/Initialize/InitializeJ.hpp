@@ -605,6 +605,18 @@ struct InitializeJ<true> : public PUP::able {
     return nullptr;
   }
 
+  /// \brief Whether this generator consumes the worldtube boundary value of
+  /// \f$\partial_u \partial_r J\f$.
+  ///
+  /// \details A worldtube data manager that cannot produce that boundary value
+  /// leaves it unset, and the generator would silently build its initial data
+  /// from whatever the buffer happened to hold, so
+  /// `Actions::InitializeWorldtubeBoundary` aborts instead. Declaring the need
+  /// here rather than inferring it from `du_dr_j_interpolator` being non-null
+  /// keeps the two independent: the interpolator says HOW the value is built,
+  /// this says WHETHER it is needed at all.
+  virtual bool needs_du_dr_j() const { return false; }
+
   // Each derived class declares its own `return_tags` and `argument_tags` and
   // implements a non-virtual `operator()`; the dispatch below picks the
   // correct dynamic type and forwards through `db::mutate_apply`.
@@ -675,6 +687,18 @@ struct InitializeJ<false> : public PUP::able {
       const {
     return nullptr;
   }
+
+  /// \brief Whether this generator consumes the worldtube boundary value of
+  /// \f$\partial_u \partial_r J\f$.
+  ///
+  /// \details A worldtube data manager that cannot produce that boundary value
+  /// leaves it unset, and the generator would silently build its initial data
+  /// from whatever the buffer happened to hold, so
+  /// `Actions::InitializeWorldtubeBoundary` aborts instead. Declaring the need
+  /// here rather than inferring it from `du_dr_j_interpolator` being non-null
+  /// keeps the two independent: the interpolator says HOW the value is built,
+  /// this says WHETHER it is needed at all.
+  virtual bool needs_du_dr_j() const { return false; }
 
   // Each derived class declares its own `return_tags` and `argument_tags` and
   // implements a non-virtual `operator()` whose signature matches those tags.

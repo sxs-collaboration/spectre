@@ -75,6 +75,9 @@ Cce:
   # initialization provided by the analytic solution.
   InitializeJ: FromAnalyticSolution
 
+  # Used only by initial-data generators that require Du(Dr(J)).
+  DuDrJStencilStep: 0.05
+
   AnalyticSolution:
     BouncingBlackHole:
       Period: 40.0
