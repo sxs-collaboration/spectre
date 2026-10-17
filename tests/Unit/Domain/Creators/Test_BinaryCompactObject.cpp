@@ -154,14 +154,15 @@ void test_connectivity() {
           multiple_outer_shells
               ? std::vector<double>{0.5 * (envelope_radius + outer_radius)}
               : std::vector<double>{};
-      std::unordered_map<std::string, std::array<size_t, 3>> refinement{
-          {"ObjectAShell", {{1, 1, 1}}},
-          {"ObjectACube", {{1, 1, 1}}},
-          {"ObjectBShell", {{1, 1, 1}}},
-          {"ObjectBCube", {{1, 1, 1}}},
-          {"Envelope", {{1, 1, 1}}},
-          // Add some radial refinement in outer shell
-          {"OuterShell0", {{1, 1, 4}}}};
+      std::unordered_map<std::string,
+                         std::variant<std::array<size_t, 3>, size_t>>
+          refinement{{"ObjectAShell", std::array<size_t, 3>{{1, 1, 1}}},
+                     {"ObjectACube", std::array<size_t, 3>{{1, 1, 1}}},
+                     {"ObjectBShell", std::array<size_t, 3>{{1, 1, 1}}},
+                     {"ObjectBCube", std::array<size_t, 3>{{1, 1, 1}}},
+                     {"Envelope", std::array<size_t, 3>{{1, 1, 1}}},
+                     // Add some radial refinement in outer shell
+                     {"OuterShell0", std::array<size_t, 3>{{1, 1, 4}}}};
       if (multiple_outer_shells) {
         refinement["OuterShell1"] = std::array{1_st, 1_st, 2_st};
       }
@@ -584,12 +585,12 @@ void test_bns_domain_with_cubes() {
   const auto radial_distribution_outer_shell = Distribution::Inverse;
   constexpr bool with_boundary_conditions = true;
 
-  std::unordered_map<std::string, std::array<size_t, 3>> refinement{
-      {"ObjectA", {{1, 1, 1}}},
-      {"ObjectB", {{1, 1, 1}}},
-      {"Envelope", {{1, 1, 1}}},
-      {"OuterShell0", {{1, 1, 4}}},
-      {"OuterShell1", {{1, 1, 2}}}};
+  std::unordered_map<std::string, std::variant<std::array<size_t, 3>, size_t>>
+      refinement{{"ObjectA", std::array<size_t, 3>{{1, 1, 1}}},
+                 {"ObjectB", std::array<size_t, 3>{{1, 1, 1}}},
+                 {"Envelope", std::array<size_t, 3>{{1, 1, 1}}},
+                 {"OuterShell0", std::array<size_t, 3>{{1, 1, 4}}},
+                 {"OuterShell1", std::array<size_t, 3>{{1, 1, 2}}}};
 
   for (const auto cube_scale : cube_scales) {
     const domain::creators::BinaryCompactObject binary_compact_object{

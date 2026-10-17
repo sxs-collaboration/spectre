@@ -8,6 +8,7 @@
 #include <cmath>
 #include <cstddef>
 #include <random>
+#include <variant>
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
@@ -284,7 +285,8 @@ void test_interpolate_on_element(
             BCO::Object{0.9, 2.9, -4.0, true, true},
             std::array<double, 2>{{0.1, 0.2}}, 20.0, 100.0, 1.0,
             // Only object B needs to have the refinement for this test
-            std::unordered_map<std::string, std::array<size_t, 3>>{
+            std::unordered_map<std::string,
+                               std::variant<std::array<size_t, 3>, size_t>>{
                 {"ObjectAShell", std::array{0_st, 0_st, 0_st}},
                 {"ObjectACube", std::array{0_st, 0_st, 0_st}},
                 {"ObjectBShell", std::array{2_st, 2_st, 2_st}},
