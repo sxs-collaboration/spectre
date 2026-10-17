@@ -51,6 +51,8 @@ NeutrinoInteractionTable<EnergyBins, NeutrinoSpecies>::NeutrinoInteractionTable(
     const std::string& filename) {
   const hid_t file_id =
       H5Fopen(filename.c_str(), H5F_ACC_RDONLY, h5::h5p_default());
+  CHECK_H5(file_id,
+           "Failed to open neutrino interaction table '" << filename << "'");
 
   const size_t n_points_density = static_cast<size_t>(
       h5::read_data<1, std::vector<int> >(file_id, "nrho")[0]);
@@ -242,6 +244,8 @@ NeutrinoInteractionTable<EnergyBins, NeutrinoSpecies>::NeutrinoInteractionTable(
       }
     }
   }
+  CHECK_H5(H5Fclose(file_id),
+           "Failed to close neutrino interaction table '" << filename << "'");
   initialize_interpolator();
 }
 

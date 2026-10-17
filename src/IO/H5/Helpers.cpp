@@ -236,6 +236,15 @@ void write_data(const hid_t group_id, const std::vector<T>& data,
   ASSERT(alg::none_of(extents, [](const size_t extent) { return extent == 0; }),
          "Got zero extent when trying to write data.");
 
+  if (H5Lexists(group_id, name.c_str(), h5::h5p_default()) != 0) {
+    if (not overwrite_existing) {
+      ERROR("Dataset already exists with name '" << name << "'.");
+    }
+    // Possible optimization: resize existing dataset if it has the same
+    // dimensions.
+    CHECK_H5(H5Ldelete(group_id, name.c_str(), h5::h5p_default()),
+             "Failed to delete existing dataset");
+  }
   const std::vector<hsize_t> dims(extents.begin(), extents.end());
   const hid_t space_id = H5Screate_simple(dims.size(), dims.data(), nullptr);
   CHECK_H5(space_id, "Failed to create dataspace");
@@ -280,19 +289,15 @@ void write_data(const hid_t group_id, const std::vector<T>& data,
                  << name);
   }
 
-  if (H5Lexists(group_id, name.c_str(), h5::h5p_default()) != 0) {
-    if (not overwrite_existing) {
-      ERROR("Dataset already exists with name '" << name << "'.");
-    }
-    // Possible optimization: resize existing dataset if it has the same
-    // dimensions.
-    CHECK_H5(H5Ldelete(group_id, name.c_str(), h5::h5p_default()),
-             "Failed to delete existing dataset");
-  }
   const hid_t dataset_id =
       H5Dcreate2(group_id, name.c_str(), contained_type, space_id,
                  h5::h5p_default(), property_list, h5::h5p_default());
   CHECK_H5(dataset_id, "Failed to create dataset");
+  // The dataset holds its own copy of the creation properties.
+  if (property_list != h5::h5p_default()) {
+    CHECK_H5(H5Pclose(property_list),
+             "Failed to close property list for dataset " << name);
+  }
   CHECK_H5(H5Dwrite(dataset_id, contained_type, h5::h5s_all(), h5::h5s_all(),
                     h5::h5p_default(), static_cast<const void*>(data.data())),
            "Failed to write data to dataset");
@@ -302,10 +307,6 @@ void write_data(const hid_t group_id, const std::vector<T>& data,
 
 void write_data(const hid_t group_id, const DataVector& data,
                 const std::string& name, const bool overwrite_existing) {
-  const auto number_of_points = static_cast<hsize_t>(data.size());
-  const hid_t space_id = H5Screate_simple(1, &number_of_points, nullptr);
-  CHECK_H5(space_id, "Failed to create dataspace");
-  const hid_t contained_type = h5::h5_type<double>();
   if (H5Lexists(group_id, name.c_str(), h5::h5p_default()) != 0) {
     if (not overwrite_existing) {
       ERROR("Dataset already exists with name '" << name << "'.");
@@ -315,6 +316,10 @@ void write_data(const hid_t group_id, const DataVector& data,
     CHECK_H5(H5Ldelete(group_id, name.c_str(), h5::h5p_default()),
              "Failed to delete existing dataset");
   }
+  const auto number_of_points = static_cast<hsize_t>(data.size());
+  const hid_t space_id = H5Screate_simple(1, &number_of_points, nullptr);
+  CHECK_H5(space_id, "Failed to create dataspace");
+  const hid_t contained_type = h5::h5_type<double>();
   const hid_t dataset_id =
       H5Dcreate2(group_id, name.c_str(), contained_type, space_id,
                  h5::h5p_default(), h5::h5p_default(), h5::h5p_default());
@@ -562,20 +567,21 @@ void write_to_attribute(const hid_t location_id, const std::string& name,
                         const Type& value) {
   const hid_t space_id = H5Screate(H5S_SCALAR);
   CHECK_H5(space_id, "Failed to create scalar");
-  const hid_t att_id = H5Acreate2(location_id, name.c_str(), h5_type<Type>(),
-                                  space_id, h5p_default(), h5p_default());
+  // For std::string this allocates a new datatype that must be closed below.
+  // For fundamental types it is a predefined type that must not be closed.
+  const hid_t type_id = h5_type<Type>();
+  const hid_t att_id = H5Acreate2(location_id, name.c_str(), type_id, space_id,
+                                  h5p_default(), h5p_default());
   CHECK_H5(att_id, "Failed to create attribute '" << name << "'");
   if constexpr (std::is_same_v<Type, std::string>) {
     const auto cstr = value.c_str();
-    const hid_t str_id = h5_type<Type>();
-    CHECK_H5(H5Awrite(att_id, str_id, &cstr),
+    CHECK_H5(H5Awrite(att_id, type_id, &cstr),
              "Failed to write value: " << value);
-    CHECK_H5(H5Tclose(str_id),
+    CHECK_H5(H5Tclose(type_id),
              "Failed to close string attribute '" << name << "'");
   } else {
-    CHECK_H5(
-        H5Awrite(att_id, h5_type<Type>(), static_cast<const void*>(&value)),
-        "Failed to write value: " << value);
+    CHECK_H5(H5Awrite(att_id, type_id, static_cast<const void*>(&value)),
+             "Failed to write value: " << value);
   }
   CHECK_H5(H5Aclose(att_id), "Failed to close attribute '" << name << "'");
   CHECK_H5(H5Sclose(space_id), "Unable to close dataspace");
@@ -636,17 +642,23 @@ std::vector<T> read_rank1_attribute(const hid_t group_id,
   {  // Check that the datatype in the file matches what we are reading.
     const hid_t datatype_id = H5Aget_type(attr_id);
     CHECK_H5(datatype_id, "Failed to get datatype from attribute " << name);
-    const hid_t datatype = H5Tget_native_type(datatype_id, H5T_DIR_DESCEND);
-    const auto size = H5Tget_size(datatype);
-    if (UNLIKELY(sizeof(T) != size)) {
-      ERROR("The read HDF5 type of the attribute ("
-            << datatype
-            << ") has a different size than the type we are reading. The "
-               "stored size is "
-            << size << " while the expected size is " << sizeof(T));
-    }
+    const hid_t native_datatype_id =
+        H5Tget_native_type(datatype_id, H5T_DIR_DESCEND);
+    CHECK_H5(native_datatype_id,
+             "Failed to get native datatype from attribute " << name);
+    const auto size = H5Tget_size(native_datatype_id);
+    CHECK_H5(
+        H5Tclose(native_datatype_id),
+        "Failed to close native datatype while reading attribute " << name);
     CHECK_H5(H5Tclose(datatype_id),
              "Failed to close datatype while reading attribute " << name);
+    if (UNLIKELY(sizeof(T) != size)) {
+      ERROR("The HDF5 type of the attribute '"
+            << name << "' has a different size than the type "
+            << pretty_type::short_name<T>()
+            << " we are reading. The stored size is " << size
+            << " while the expected size is " << sizeof(T));
+    }
   }
   const auto size = [&attr_id, &name] {
     const hid_t dataspace_id = H5Aget_space(attr_id);
@@ -739,12 +751,12 @@ std::vector<std::string> read_rank1_attribute<std::string>(
   CHECK_H5(type_in_file,
            "Failed to read attribute type from file. Attribute name is '"
                << name << "'");
-  if (H5Tis_variable_str(type_in_file) < 0) {
-    char* type_name_ptr = H5Tget_tag(type_in_file);
-    const std::string type_name{type_name_ptr};
-    ERROR("The attribute type should be a variable string but got "
-          << type_name);
-    free(type_name_ptr);  // NOLINT
+  const htri_t is_variable_string = H5Tis_variable_str(type_in_file);
+  CHECK_H5(is_variable_string, "Failed to query whether attribute '"
+                                   << name << "' is a variable string");
+  if (is_variable_string == 0) {
+    ERROR("The attribute '" << name
+                            << "' should be a variable string but is not.");
   }
   if (H5Tget_cset(type_in_file) != H5T_CSET_ASCII) {
     ERROR("Expected ASCII-encoded string but got H5T_cset_t of value "
@@ -765,6 +777,8 @@ std::vector<std::string> read_rank1_attribute<std::string>(
   CHECK_H5(H5Aclose(attribute_id), "Failed to close attribute");
   CHECK_H5(H5Sclose(dataspace_id), "Failed to close space_id");
   CHECK_H5(H5Tclose(memtype), "Failed to close memtype");
+  CHECK_H5(H5Tclose(type_in_file),
+           "Failed to close datatype of attribute '" << name << "'");
   return result;
 }
 

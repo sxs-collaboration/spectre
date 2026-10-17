@@ -73,6 +73,8 @@ H5File<Access_t>::H5File(std::string file_name, bool append_to_file,
                          << std::boolalpha << file_exists
                          << ". Writing from directory: " << file_system::cwd()
                          << ". Trying to open in mode: " << Access_t);
+  // The file holds its own copy of the access properties.
+  CHECK_H5(H5Pclose(fapl_id), "Failed to close file access property list.");
   if (not file_exists) {
     close_current_object();
     insert_header();
