@@ -7,11 +7,12 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/Kokkos/KokkosCore.hpp"
 
 namespace hydro {
 
 template <typename DataType>
-void comoving_magnetic_field(
+KOKKOS_FUNCTION void comoving_magnetic_field(
     const gsl::not_null<tnsr::A<DataType, 3>*> result,
     const tnsr::I<DataType, 3>& spatial_velocity,
     const tnsr::I<DataType, 3>& magnetic_field,
@@ -29,7 +30,7 @@ void comoving_magnetic_field(
 }
 
 template <typename DataType>
-tnsr::A<DataType, 3> comoving_magnetic_field(
+KOKKOS_FUNCTION tnsr::A<DataType, 3> comoving_magnetic_field(
     const tnsr::I<DataType, 3>& spatial_velocity,
     const tnsr::I<DataType, 3>& magnetic_field,
     const Scalar<DataType>& magnetic_field_dot_spatial_velocity,
@@ -43,7 +44,7 @@ tnsr::A<DataType, 3> comoving_magnetic_field(
 }
 
 template <typename DataType>
-void comoving_magnetic_field_one_form(
+KOKKOS_FUNCTION void comoving_magnetic_field_one_form(
     const gsl::not_null<tnsr::a<DataType, 3>*> result,
     const tnsr::i<DataType, 3>& spatial_velocity_one_form,
     const tnsr::i<DataType, 3>& magnetic_field_one_form,
@@ -62,7 +63,7 @@ void comoving_magnetic_field_one_form(
 }
 
 template <typename DataType>
-tnsr::a<DataType, 3> comoving_magnetic_field_one_form(
+KOKKOS_FUNCTION tnsr::a<DataType, 3> comoving_magnetic_field_one_form(
     const tnsr::i<DataType, 3>& spatial_velocity_one_form,
     const tnsr::i<DataType, 3>& magnetic_field_one_form,
     const Scalar<DataType>& magnetic_field_dot_spatial_velocity,
@@ -77,7 +78,7 @@ tnsr::a<DataType, 3> comoving_magnetic_field_one_form(
 }
 
 template <typename DataType>
-void comoving_magnetic_field_squared(
+KOKKOS_FUNCTION void comoving_magnetic_field_squared(
     const gsl::not_null<Scalar<DataType>*> result,
     const Scalar<DataType>& magnetic_field_squared,
     const Scalar<DataType>& magnetic_field_dot_spatial_velocity,
@@ -87,7 +88,7 @@ void comoving_magnetic_field_squared(
 }
 
 template <typename DataType>
-Scalar<DataType> comoving_magnetic_field_squared(
+KOKKOS_FUNCTION Scalar<DataType> comoving_magnetic_field_squared(
     const Scalar<DataType>& magnetic_field_squared,
     const Scalar<DataType>& magnetic_field_dot_spatial_velocity,
     const Scalar<DataType>& lorentz_factor) {
@@ -127,7 +128,12 @@ Scalar<DataType> comoving_magnetic_field_squared(
       const Scalar<DTYPE(data)>&, const Scalar<DTYPE(data)>&,                \
       const Scalar<DTYPE(data)>&);
 
-GENERATE_INSTANTIATIONS(INSTANTIATION, (double, DataVector))
+// The functions can be called in Kokkos kernels for `double`s, so the
+// `DataVector` versions are only compiled for the host
+GENERATE_INSTANTIATIONS(INSTANTIATION, (double))
+#ifndef SPECTRE_KOKKOS_DEVICE_PASS
+GENERATE_INSTANTIATIONS(INSTANTIATION, (DataVector))
+#endif  // SPECTRE_KOKKOS_DEVICE_PASS
 
 #undef DTYPE
 #undef INSTANTIATION

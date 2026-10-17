@@ -10,6 +10,7 @@
 
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Utilities/ContainerHelpers.hpp"
+#include "Utilities/Kokkos/KokkosCore.hpp"
 #include "Utilities/MakeWithValue.hpp"
 
 /// @{
@@ -20,11 +21,14 @@
  * \details
  * Returns \f$A^a B^b \delta_{ab}\f$ for input vectors \f$A^a\f$ and \f$B^b\f$
  * or \f$A_a B_b \delta^{ab}\f$ for input one forms \f$A_a\f$ and \f$B_b\f$.
+ *
+ * These functions can be called in Kokkos kernels with `double`s.
  */
+SPECTRE_KOKKOS_DISABLE_EXEC_CHECK
 template <typename DataTypeLhs, typename DataTypeRhs, typename Index,
           typename DataTypeResult = decltype(blaze::evaluate(DataTypeLhs() *
                                                              DataTypeRhs()))>
-void dot_product(
+KOKKOS_FUNCTION void dot_product(
     const gsl::not_null<Scalar<DataTypeResult>*> dot_product,
     const Tensor<DataTypeLhs, Symmetry<1>, index_list<Index>>& vector_a,
     const Tensor<DataTypeRhs, Symmetry<1>, index_list<Index>>& vector_b) {
@@ -34,13 +38,14 @@ void dot_product(
   }
 }
 
+SPECTRE_KOKKOS_DISABLE_EXEC_CHECK
 template <typename DataTypeLhs, typename DataTypeRhs, typename Index,
           typename DataTypeResult = decltype(blaze::evaluate(DataTypeLhs() *
                                                              DataTypeRhs()))>
-Scalar<DataTypeResult> dot_product(
+KOKKOS_FUNCTION Scalar<DataTypeResult> dot_product(
     const Tensor<DataTypeLhs, Symmetry<1>, index_list<Index>>& vector_a,
     const Tensor<DataTypeRhs, Symmetry<1>, index_list<Index>>& vector_b) {
-  Scalar<DataTypeResult> dot_product(get_size(get<0>(vector_a)));
+  Scalar<DataTypeResult> dot_product{};
   ::dot_product(make_not_null(&dot_product), vector_a, vector_b);
   return dot_product;
 }
@@ -56,11 +61,14 @@ Scalar<DataTypeResult> dot_product(
  * input one form \f$B_b\f$
  * or \f$A_a B^b \delta^a_b\f$ for input one form \f$A_a\f$ and
  * input vector \f$B^b\f$.
+ *
+ * These functions can be called in Kokkos kernels with `double`s.
  */
+SPECTRE_KOKKOS_DISABLE_EXEC_CHECK
 template <typename DataTypeLhs, typename DataTypeRhs, typename Index,
           typename DataTypeResult = decltype(blaze::evaluate(DataTypeLhs() *
                                                              DataTypeRhs()))>
-void dot_product(
+KOKKOS_FUNCTION void dot_product(
     // NOLINTNEXTLINE(readability-avoid-const-params-in-decls) false positive
     const gsl::not_null<Scalar<DataTypeResult>*> dot_product,
     const Tensor<DataTypeLhs, Symmetry<1>, index_list<Index>>& vector_a,
@@ -72,14 +80,15 @@ void dot_product(
   }
 }
 
+SPECTRE_KOKKOS_DISABLE_EXEC_CHECK
 template <typename DataTypeLhs, typename DataTypeRhs, typename Index,
           typename DataTypeResult = decltype(blaze::evaluate(DataTypeLhs() *
                                                              DataTypeRhs()))>
-Scalar<DataTypeResult> dot_product(
+KOKKOS_FUNCTION Scalar<DataTypeResult> dot_product(
     const Tensor<DataTypeLhs, Symmetry<1>, index_list<Index>>& vector_a,
     const Tensor<DataTypeRhs, Symmetry<1>,
                  index_list<change_index_up_lo<Index>>>& vector_b) {
-  Scalar<DataTypeResult> dot_product(get_size(get<0>(vector_a)));
+  Scalar<DataTypeResult> dot_product{};
   ::dot_product(make_not_null(&dot_product), vector_a, vector_b);
   return dot_product;
 }
@@ -95,12 +104,15 @@ Scalar<DataTypeResult> dot_product(
  * \f$A^a\f$ is vector_a, and \f$B^b\f$ is vector_b.
  * Or, returns \f$g^{ab} A_a B_b\f$ when given one forms \f$A_a\f$
  * and \f$B_b\f$ with an inverse metric \f$g^{ab}\f$.
+ *
+ * These functions can be called in Kokkos kernels with `double`s.
  */
+SPECTRE_KOKKOS_DISABLE_EXEC_CHECK
 template <typename DataTypeLhs, typename DataTypeRhs, typename DataTypeMetric,
           typename Index,
           typename DataTypeResult = decltype(blaze::evaluate(
               DataTypeLhs() * DataTypeRhs() * DataTypeMetric()))>
-void dot_product(
+KOKKOS_FUNCTION void dot_product(
     const gsl::not_null<Scalar<DataTypeResult>*> dot_product,
     const Tensor<DataTypeLhs, Symmetry<1>, index_list<Index>>& vector_a,
     const Tensor<DataTypeRhs, Symmetry<1>, index_list<Index>>& vector_b,
@@ -146,17 +158,18 @@ void dot_product(
   }
 }
 
+SPECTRE_KOKKOS_DISABLE_EXEC_CHECK
 template <typename DataTypeLhs, typename DataTypeRhs, typename DataTypeMetric,
           typename Index,
           typename DataTypeResult = decltype(blaze::evaluate(
               DataTypeLhs() * DataTypeRhs() * DataTypeMetric()))>
-Scalar<DataTypeResult> dot_product(
+KOKKOS_FUNCTION Scalar<DataTypeResult> dot_product(
     const Tensor<DataTypeLhs, Symmetry<1>, index_list<Index>>& vector_a,
     const Tensor<DataTypeRhs, Symmetry<1>, index_list<Index>>& vector_b,
     const Tensor<DataTypeMetric, Symmetry<1, 1>,
                  index_list<change_index_up_lo<Index>,
                             change_index_up_lo<Index>>>& metric) {
-  Scalar<DataTypeResult> dot_product(get_size(get<0>(vector_a)));
+  Scalar<DataTypeResult> dot_product{};
   ::dot_product(make_not_null(&dot_product), vector_a, vector_b, metric);
   return dot_product;
 }
