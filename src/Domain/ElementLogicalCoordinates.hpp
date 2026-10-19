@@ -31,13 +31,30 @@ class IdPair;
  * the element logical coordinates of the point.
  *
  * Points on the element boundary are considered to be in the element and will
- * have element logical coordinates of -1 or 1. See the other function overload
- * for handling multiple points and disambiguating points on shared element
- * boundaries.
+ * have element logical coordinates of -1 or 1. Use `element_contains` or the
+ * other function overload for handling multiple points to disambiguate points
+ * on shared element boundaries.
  */
 template <size_t Dim>
 std::optional<tnsr::I<double, Dim, Frame::ElementLogical>>
 element_logical_coordinates(
+    const tnsr::I<double, Dim, Frame::BlockLogical>& x_block_logical,
+    const ElementId<Dim>& element_id);
+
+/*!
+ * \brief Whether the element contains the point, assigning points on shared
+ * element boundaries to exactly one element
+ *
+ * A point on the boundary of an element is considered contained in that
+ * element only if it is on the lower bound of the element, or if it is on the
+ * upper bound of the element and that upper bound coincides with the upper
+ * bound of the block. This means that each point in a block is contained in one
+ * and only one element of the block, independent of the order in which
+ * elements are checked. See the overload of `element_logical_coordinates` that
+ * takes a list of element IDs for details.
+ */
+template <size_t Dim>
+bool element_contains(
     const tnsr::I<double, Dim, Frame::BlockLogical>& x_block_logical,
     const ElementId<Dim>& element_id);
 
