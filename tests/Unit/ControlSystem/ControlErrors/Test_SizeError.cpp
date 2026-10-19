@@ -536,11 +536,8 @@ void test_size_error_one_step(
         // before it evaluates the DeltaR control error.
         const double horizon_00 =
             averaged_horizon_values[0][0] +
-            time_from_average * averaged_horizon_values[1][0] +
-            0.5 * square(time_from_average) * averaged_horizon_values[2][0];
-        const double dt_horizon_00 =
-            averaged_horizon_values[1][0] +
-            time_from_average * averaged_horizon_values[2][0];
+            time_from_average * averaged_horizon_values[1][0];
+        const double dt_horizon_00 = averaged_horizon_values[1][0];
 
         const auto current_lambda_dt_lambda =
             function_of_time->func_and_deriv(current_time);
