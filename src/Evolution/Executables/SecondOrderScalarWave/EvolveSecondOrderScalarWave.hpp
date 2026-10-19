@@ -244,6 +244,8 @@ struct EvolutionMetavars {
               Parallel::Phase::Evolve,
               tmpl::flatten<
                   tmpl::list<evolution::Actions::RunEventsAndTriggers<
+                                 Triggers::WhenToCheck::AtSteps>,
+                             evolution::Actions::RunEventsAndTriggers<
                                  Triggers::WhenToCheck::AtSlabs>,
                              Actions::ChangeSlabSize, step_actions,
                              Actions::MutateApply<AdvanceTime<>>,
@@ -261,7 +263,7 @@ struct EvolutionMetavars {
                  dg_element_array>;
 
   static constexpr Options::String help{
-      "Evolve a second-order in space scalar save in Dim spatial dimensions "
+      "Evolve a second-order in space scalar wave in Dim spatial dimensions "
       "using the local discontinuous Galerkin (LDG) method."};
 
   static constexpr auto default_phase_order = std::array<Parallel::Phase, 5>{
