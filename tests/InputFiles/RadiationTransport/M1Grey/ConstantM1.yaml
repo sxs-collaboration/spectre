@@ -83,6 +83,8 @@ EventsAndTriggersAtSlabs:
             - Name: Error(TildeS_ElectronNeutrinos1)
               NormType: L2Norm
               Components: Sum
+          BlocksToObserve: All
+          ReductionScope: WholeDomain
   - Trigger:
       Slabs:
         Specified:

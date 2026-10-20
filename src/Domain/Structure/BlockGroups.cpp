@@ -14,6 +14,22 @@
 #include "Utilities/StdHelpers.hpp"
 
 namespace domain {
+namespace {
+[[noreturn]] void error_unknown_block_or_group(
+    const std::string& block_or_group_name,
+    const std::vector<std::string>& all_block_names,
+    const std::unordered_map<std::string, std::unordered_set<std::string>>&
+        block_groups) {
+  using ::operator<<;
+  ERROR_AS("The block or group '"
+               << block_or_group_name
+               << "' is not one of the block names or groups of the domain. "
+                  "The known block groups are "
+               << keys_of(block_groups) << " and the known block names are "
+               << all_block_names,
+           std::invalid_argument);
+}
+}  // namespace
 
 bool block_is_in_group(
     const std::string& block_name, const std::string& block_or_group_name,
@@ -45,18 +61,36 @@ std::unordered_set<std::string> expand_block_groups_to_block_names(
                block_name_it != all_block_names.end()) {
       expanded_block_names.insert(*block_name_it);
     } else {
-      using ::operator<<;
-      ERROR_AS(
-          "The block or group '"
-              << block_or_group_name
-              << "' is not one of the block names or groups of the domain. "
-                 "The known block groups are "
-              << keys_of(block_groups) << " and the known block names are "
-              << all_block_names,
-          std::invalid_argument);
+      error_unknown_block_or_group(block_or_group_name, all_block_names,
+                                   block_groups);
     }
   }
   return expanded_block_names;
+}
+
+std::vector<std::string> block_or_group_names_containing_block(
+    const std::string& block_name,
+    const std::vector<std::string>& block_or_group_names,
+    const std::vector<std::string>& all_block_names,
+    const std::unordered_map<std::string, std::unordered_set<std::string>>&
+        block_groups) {
+  std::vector<std::string> result{};
+  for (const auto& block_or_group_name : block_or_group_names) {
+    if (const auto block_group_it = block_groups.find(block_or_group_name);
+        block_group_it != block_groups.end()) {
+      if (block_group_it->second.contains(block_name)) {
+        result.push_back(block_or_group_name);
+      }
+    } else if (alg::found(all_block_names, block_or_group_name)) {
+      if (block_or_group_name == block_name) {
+        result.push_back(block_or_group_name);
+      }
+    } else {
+      error_unknown_block_or_group(block_or_group_name, all_block_names,
+                                   block_groups);
+    }
+  }
+  return result;
 }
 
 std::vector<size_t> block_ids_from_names(

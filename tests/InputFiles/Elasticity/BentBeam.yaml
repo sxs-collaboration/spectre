@@ -103,6 +103,8 @@ EventsAndTriggersAtIterations:
             - Name: Error(Displacement)
               NormType: L2Norm
               Components: Sum
+          BlocksToObserve: All
+          ReductionScope: WholeDomain
       - ObserveFields:
           SubfileName: VolumeData
           VariablesToObserve:

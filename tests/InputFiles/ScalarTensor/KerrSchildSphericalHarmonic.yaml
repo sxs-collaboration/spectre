@@ -170,6 +170,8 @@ EventsAndTriggersAtSlabs:
           - Name: PointwiseL2Norm(ThreeIndexConstraint)
             NormType: L2Norm
             Components: Sum
+          BlocksToObserve: All
+          ReductionScope: WholeDomain
   - Trigger:
       Slabs:
         EvenlySpaced:
