@@ -8,8 +8,9 @@ At a high level, describe what this PR does.
 
 <!--
 If this PR makes changes that other people should be aware of when upgrading
-their code, describe what they should do between the two UPGRADE INSTRUCTIONS
-lines below.
+their code, such as adding new input file options, describe what users should
+do between the two UPGRADE INSTRUCTIONS lines below.  PRs that do not require
+any action should leave this blank.
 -->
 <!-- UPGRADE INSTRUCTIONS -->
 
