@@ -173,25 +173,27 @@ std::optional<StepperErrorEstimate> RungeKutta::update_u_impl(
 template <typename T>
 void RungeKutta::clean_history_impl(
     const MutableUntypedHistory<T>& history) const {
-  if (not dense_output_uses_fsal() and
-      history.substeps().size() + 1 == number_of_substeps()) {
+  if (not dense_output_uses_fsal()) {
     ASSERT(number_of_substeps() == number_of_substeps_for_error(),
            "The current interface of this function does not distinguish "
            "between error-estimating and non-error-estimating substep "
            "patterns, but the provided tableau requires different behavior "
            "for the two cases.  The interface needs to be changed to support "
            "this tableau.");
-    history.clear_substeps();
-  }
-  if (history.at_step_start()) {
-    history.clear_substeps();
-    if (history.size() > 1) {
-      history.pop_front();
+    if (history.substeps().size() + 1 == number_of_substeps()) {
+      history.clear();
     }
   } else {
-    history.discard_value(history.substeps().back().time_step_id);
+    if (history.at_step_start()) {
+      history.clear_substeps();
+      if (history.size() > 1) {
+        history.pop_front();
+      }
+    } else {
+      history.discard_value(history.substeps().back().time_step_id);
+    }
   }
-  ASSERT(history.size() == 1, "Have more than one step after cleanup.");
+  ASSERT(history.size() <= 1, "Have more than one step after cleanup.");
 }
 
 template <typename T>

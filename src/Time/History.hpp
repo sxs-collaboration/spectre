@@ -172,6 +172,8 @@ class MutableUntypedHistory : public ConstUntypedHistory<T> {
   virtual void pop_front() const = 0;
 
   virtual void clear_substeps() const = 0;
+
+  virtual void clear() const = 0;
 };
 #if defined(__GNUC__) and not defined(__clang__)
 #pragma GCC diagnostic pop
@@ -421,6 +423,11 @@ class History
       this->reinitialize(*history_);
     }
 
+    void clear() const override {
+      history_->clear();
+      this->reinitialize(*history_);
+    }
+
    private:
     friend History;
 
@@ -543,6 +550,15 @@ class History
   void insert(const TimeStepId& time_step_id, NoValue /*unused*/,
               const DerivVars& derivative);
   /// @}
+
+  /// Insert a new entry into the history.  It will be inserted as a
+  /// step or substep as appropriate.
+  ///
+  /// The supplied record's `time_step_id` must be later than the
+  /// current latest entry, and if the substep of `time_step_id` is
+  /// nonzero, the id must be consistent with the existing data for
+  /// the current step.
+  void insert(StepRecord<Vars> record);
 
   /// Insert a new entry in the history by modifying the fields of the
   /// record directly, instead of passing a value to copy.
@@ -745,6 +761,30 @@ void History<Vars>::insert(const TimeStepId& time_step_id, NoValue /*unused*/,
               [&](const gsl::not_null<DerivVars*> record_derivative) {
                 *record_derivative = derivative;
               });
+}
+
+template <typename Vars>
+void History<Vars>::insert(StepRecord<Vars> record) {
+  ASSERT(this->empty() or record.time_step_id > this->back().time_step_id,
+         "New entry at " << record.time_step_id
+         << " must be later than previous entry at "
+         << this->back().time_step_id);
+  const size_t substep = record.time_step_id.substep();
+  if (substep == 0) {
+    step_values_.push_back(std::move(record));
+  } else {
+    ASSERT(not this->empty(), "Cannot insert substep into empty history.");
+    ASSERT(record.time_step_id.step_time() ==
+               this->back().time_step_id.step_time(),
+           "Cannot insert substep " << record.time_step_id
+           << " of different step " << this->back().time_step_id);
+    ASSERT(substep == substeps().size() + 1,
+           "Cannot insert substep " << substep << " following "
+           << substeps().size());
+    ASSERT(substep_values_.size() < substep_values_.max_size(),
+           "Cannot insert new substep because the History is full.");
+    substep_values_.push_back(std::move(record));
+  }
 }
 
 template <typename Vars>
@@ -951,10 +991,6 @@ template <typename ValueFunc, typename DerivativeFunc>
 void History<Vars>::insert_impl(const TimeStepId& time_step_id,
                                 ValueFunc&& value_inserter,
                                 DerivativeFunc&& derivative_inserter) {
-  ASSERT(this->empty() or time_step_id > this->back().time_step_id,
-         "New entry at " << time_step_id
-         << " must be later than previous entry at "
-         << this->back().time_step_id);
   discard_value(&latest_value_if_discarded_);
   StepRecord<Vars> record{};
   record.time_step_id = time_step_id;
@@ -974,21 +1010,7 @@ void History<Vars>::insert_impl(const TimeStepId& time_step_id,
   std::forward<DerivativeFunc>(derivative_inserter)(
       make_not_null(&record.derivative));
 
-  const size_t substep = time_step_id.substep();
-  if (substep == 0) {
-    step_values_.push_back(std::move(record));
-  } else {
-    ASSERT(not this->empty(), "Cannot insert substep into empty history.");
-    ASSERT(time_step_id.step_time() == this->back().time_step_id.step_time(),
-           "Cannot insert substep " << time_step_id << " of different step "
-           << this->back().time_step_id);
-    ASSERT(substep == substeps().size() + 1,
-           "Cannot insert substep " << substep << " following "
-           << substeps().size());
-    ASSERT(substep_values_.size() < substep_values_.max_size(),
-           "Cannot insert new substep because the History is full.");
-    substep_values_.push_back(std::move(record));
-  }
+  insert(std::move(record));
 }
 
 template <typename Vars>
