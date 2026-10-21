@@ -12,6 +12,7 @@ spectre_target_sources(
   ObserveAdaptiveSteppingDiagnostics.cpp
   ObserveConstantsPerElement.cpp
   ObserveDataBox.cpp
+  ObserveGridStats.cpp
   ObserveNorms.cpp
   ObserveTimeStep.cpp
   ReductionScope.cpp
@@ -31,6 +32,7 @@ spectre_target_headers(
   ObserveDataBox.hpp
   ObserveAtExtremum.hpp
   ObserveFields.hpp
+  ObserveGridStats.hpp
   ObserveNorms.hpp
   ObserveTimeStep.hpp
   ObserveTimeStep.tpp

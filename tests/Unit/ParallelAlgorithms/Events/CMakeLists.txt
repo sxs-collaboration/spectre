@@ -9,6 +9,7 @@ set(LIBRARY_SOURCES
   Test_ObserveAdaptiveSteppingDiagnostics.cpp
   Test_ObserveAtExtremum.cpp
   Test_ObserveFields.cpp
+  Test_ObserveGridStats.cpp
   Test_ObserveNorms.cpp
   Test_ObserveTimeStep.cpp
   Test_ObserveTimeStepVolume.cpp
