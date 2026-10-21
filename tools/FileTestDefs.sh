@@ -697,6 +697,62 @@ mutable_test() {
 }
 standard_checks+=(mutable)
 
+# Check for standard library algorithms in source files with Kokkos device
+# code. They can give wrong results in Kokkos kernels without any error, see
+# the "GPU support" page of the dev guide.
+device_std_algorithms_regex='std::(ranges::|views::|(sort|stable_sort|'\
+'partial_sort|nth_element|unique|equal|lexicographical_compare|mismatch|'\
+'copy|copy_n|copy_if|copy_backward|move_backward|fill|fill_n|rotate|reverse|'\
+'count|count_if|find|find_if|find_if_not|all_of|any_of|none_of|for_each|'\
+'for_each_n|transform|accumulate|reduce|inner_product|partial_sum|iota|'\
+'lcm|gcd|min_element|max_element|minmax_element|lower_bound|upper_bound|'\
+'binary_search|equal_range|partition|partition_point|remove|remove_if|'\
+'replace|replace_if|next_permutation|prev_permutation|is_sorted|search|'\
+'merge|adjacent_find|adjacent_difference|transform_reduce|sample|shuffle)\()'
+device_std_algorithms() {
+    [[ $1 =~ ^src/ ]] && is_c++ "$1" && \
+        whitelist "$1" 'src/Utilities/Algorithm.hpp$' && \
+        staged_grep -q -E 'KOKKOS_(FUNCTION|INLINE_FUNCTION|LAMBDA)' "$1" && \
+        staged_grep -E "${device_std_algorithms_regex}" "$1" | \
+            check_nolint spectre-device-std "$1" | \
+            grep -v -E -q '^ *(//|\* )'
+}
+device_std_algorithms_report() {
+    echo "Found standard library algorithms in files with Kokkos device code."
+    echo "They aren't supported in device code. Use the 'alg::' functions"
+    echo "instead, and mark host-only code with"
+    echo "'// NOLINT(spectre-device-std)'. See the 'GPU support' dev guide page."
+    pretty_grep ${color_option:+--color=no} -E \
+                "${device_std_algorithms_regex}" "$@" | \
+        check_nolint spectre-device-std "$@" | \
+        grep -v -E '^([^:]*:){2} *(//|\* )'
+}
+device_std_algorithms_test() {
+    local kernel='KOKKOS_FUNCTION void f();'$'\n'
+    test_check pass src/foo.cpp "${kernel}"'alg::sort(a);'
+    test_check pass src/foo.cpp "${kernel}"'std::move(a); std::max(a, b);'
+    test_check pass src/foo.cpp "${kernel}"'std::array<double, 3> a{};'
+    test_check fail src/foo.cpp "${kernel}"'std::sort(a.begin(), a.end());'
+    test_check fail src/foo.hpp "${kernel}"'return std::equal(a, b, c);'
+    test_check fail src/foo.tpp "${kernel}"'std::ranges::sort(a);'
+    test_check fail src/foo.cpp "${kernel}"'for (int i : std::views::iota(0, 3))'
+    test_check fail src/foo.cpp \
+               'KOKKOS_LAMBDA(const int i) {}'$'\n''std::copy(a, b, c);'
+    test_check fail src/foo.cpp \
+               'KOKKOS_INLINE_FUNCTION void f();'$'\n''std::count(a, b, 1);'
+    test_check pass src/foo.cpp 'void f();'$'\n''std::sort(a.begin(), a.end());'
+    test_check pass tests/foo.cpp "${kernel}"'std::sort(a.begin(), a.end());'
+    test_check pass src/foo.cpp "${kernel}"'// std::sort(a.begin(), a.end());'
+    test_check pass src/foo.cpp "${kernel}"' * std::sort(a.begin(), a.end());'
+    test_check pass src/foo.cpp \
+               "${kernel}"'std::sort(a, b);  // NOLINT(spectre-device-std)'
+    test_check pass src/foo.cpp "${kernel}"'// NOLINTNEXTLINE(spectre-device-std)'\
+$'\n''std::sort(a, b);'
+    test_check pass src/Utilities/Algorithm.hpp \
+               "${kernel}"'std::sort(a.begin(), a.end());'
+}
+standard_checks+=(device_std_algorithms)
+
 # Check for struct TD and class TD asking to remove it
 struct_td() {
     is_c++ "$1" && staged_grep -q "\(struct TD;\|class TD;\)" "$1"
