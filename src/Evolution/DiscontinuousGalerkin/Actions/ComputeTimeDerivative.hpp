@@ -42,7 +42,6 @@
 #include "Evolution/DiscontinuousGalerkin/MortarInfo.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarTags.hpp"
 #include "Evolution/DiscontinuousGalerkin/NormalVectorTags.hpp"
-#include "Evolution/DiscontinuousGalerkin/TimeSteppingPolicy.hpp"
 #include "Evolution/DiscontinuousGalerkin/UsingSubcell.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Formulation.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/MortarHelpers.hpp"
@@ -61,6 +60,7 @@
 #include "Parallel/Invoke.hpp"
 #include "Time/BoundaryHistory.hpp"
 #include "Time/ChangeStepSize.hpp"
+#include "Time/LtsMode.hpp"
 #include "Utilities/Algorithm.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
@@ -943,7 +943,7 @@ void ComputeTimeDerivative_detail::Impl<Dim, EvolutionSystem, DgStepChoosers,
   // non-allocating set type.
   DirectionMap<Dim, bool> mortar_history_directions{};
   for (const auto& [mortar, info] : mortar_info) {
-    if (info.time_stepping_policy() == TimeSteppingPolicy::Conservative) {
+    if (info.time_stepping_policy() == LtsMode::Conservative) {
       mortar_history_directions.emplace(mortar.direction(), true);
     }
   }
@@ -1048,7 +1048,7 @@ void ComputeTimeDerivative_detail::Impl<Dim, EvolutionSystem, DgStepChoosers,
                                  ? element.id()
                                  : neighbor};
               if (mortar_info.at(mortar_id).time_stepping_policy() !=
-                  TimeSteppingPolicy::Conservative) {
+                  LtsMode::Conservative) {
                 continue;
               }
               auto& local_mortar_data = mortar_data->at(mortar_id).local();

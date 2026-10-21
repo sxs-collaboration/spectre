@@ -17,8 +17,8 @@
 #include "Evolution/DiscontinuousGalerkin/MortarDataHolder.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarInfo.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarTags.hpp"
-#include "Evolution/DiscontinuousGalerkin/TimeSteppingPolicy.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
+#include "Time/LtsMode.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/Gsl.hpp"
 
@@ -33,8 +33,7 @@ void neighbor_reconstructed_face_solution(
     const auto& mortar_data =
         db::get<evolution::dg::Tags::MortarData<VolumeDim>>(*box);
     for (const auto& [mortar_id, data] : mortar_data) {
-      if (mortar_infos.at(mortar_id).time_stepping_policy() ==
-              TimeSteppingPolicy::EqualRate and
+      if (mortar_infos.at(mortar_id).time_stepping_policy() == LtsMode::Off and
           not data.neighbor().mortar_data.has_value()) {
         mortars_to_reconstruct_to.push_back(mortar_id);
       }

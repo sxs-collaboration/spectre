@@ -24,10 +24,10 @@
 #include "Evolution/DiscontinuousGalerkin/MortarDataHolder.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarInfo.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarTags.hpp"
-#include "Evolution/DiscontinuousGalerkin/TimeSteppingPolicy.hpp"
 #include "NumericalAlgorithms/Spectral/Basis.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Quadrature.hpp"
+#include "Time/LtsMode.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -93,11 +93,9 @@ void test() {
     ghost_data[fd_id].neighbor_ghost_data_for_reconstruction() =
         DataVector(2 * Dim + 1, static_cast<double>(d) + 4.0);
     mortar_info_in[dg_id].time_stepping_policy() =
-        d == 2 ? evolution::dg::TimeSteppingPolicy::Conservative
-               : evolution::dg::TimeSteppingPolicy::EqualRate;
+        d == 2 ? LtsMode::Conservative : LtsMode::Off;
     mortar_info_in[fd_id].time_stepping_policy() =
-        d == 2 ? evolution::dg::TimeSteppingPolicy::Conservative
-               : evolution::dg::TimeSteppingPolicy::EqualRate;
+        d == 2 ? LtsMode::Conservative : LtsMode::Off;
   }
 
   auto box = db::create<

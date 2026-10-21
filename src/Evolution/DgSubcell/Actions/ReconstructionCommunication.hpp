@@ -54,12 +54,12 @@
 #include "Evolution/DiscontinuousGalerkin/MortarData.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarDataHolder.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarTags.hpp"
-#include "Evolution/DiscontinuousGalerkin/TimeSteppingPolicy.hpp"
 #include "NumericalAlgorithms/Interpolation/IrregularInterpolant.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Parallel/AlgorithmExecution.hpp"
 #include "Parallel/ArrayCollection/IsDgElementCollection.hpp"
 #include "Parallel/GlobalCache.hpp"
+#include "Time/LtsMode.hpp"
 #include "Time/Tags/HistoryEvolvedVariables.hpp"
 #include "Time/TimeStepId.hpp"
 #include "Utilities/Algorithm.hpp"
@@ -150,7 +150,7 @@ struct SendDataForReconstruction {
     ASSERT(alg::all_of(db::get<evolution::dg::Tags::MortarInfo<Dim>>(box),
                        [](const auto& mortar) {
                          return mortar.second.time_stepping_policy() ==
-                                TimeSteppingPolicy::EqualRate;
+                                LtsMode::Off;
                        }),
            "Cannot send subcell data from "
                << element.id() << " across an LTS mortar: "

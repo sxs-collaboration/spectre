@@ -17,7 +17,6 @@
 #include "Evolution/DiscontinuousGalerkin/MortarDataHolder.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarInfo.hpp"
 #include "Evolution/DiscontinuousGalerkin/NormalVectorTags.hpp"
-#include "Evolution/DiscontinuousGalerkin/TimeSteppingPolicy.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/MortarHelpers.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Quadrature.hpp"
@@ -85,17 +84,6 @@ template <size_t Dim>
     const Mesh<Dim>& volume_mesh,
     const ::dg::MortarMap<Dim, Mesh<Dim>>& neighbor_mesh,
     const LtsMode lts_mode) {
-  TimeSteppingPolicy time_stepping_policy{};
-  switch (lts_mode) {
-    case LtsMode::Off:
-      time_stepping_policy = TimeSteppingPolicy::EqualRate;
-      break;
-    case LtsMode::Conservative:
-      time_stepping_policy = TimeSteppingPolicy::Conservative;
-      break;
-    default:
-      ERROR("Unhandled LtsMode: " << lts_mode);
-  }
   ::dg::MortarMap<Dim, MortarInfo<Dim>> result{};
   for (const auto& [direction, neighbors] : element.neighbors()) {
     const domain::FaceType face_type = element.face_types().at(direction);
@@ -127,7 +115,7 @@ template <size_t Dim>
                                    neighbor_orientation.is_aligned()
                                        ? InterfaceDataPolicy::CopyProject
                                        : InterfaceDataPolicy::OrientCopyProject,
-                               .time_stepping_policy = time_stepping_policy}});
+                               .time_stepping_policy = lts_mode}});
         }
         break;
       case (domain::FaceType::SingleNonconforming):
@@ -146,7 +134,7 @@ template <size_t Dim>
                                  neighbor_orientation(direction.dimension()))},
                      .interface_data_policy =
                          InterfaceDataPolicy::NonconformingSelfInterpolates,
-                     .time_stepping_policy = time_stepping_policy}});
+                     .time_stepping_policy = lts_mode}});
           }
         }
         break;
@@ -162,7 +150,7 @@ template <size_t Dim>
             MortarInfo<Dim>{
                 {.interface_data_policy =
                      InterfaceDataPolicy::NonconformingNeighborInterpolates,
-                 .time_stepping_policy = time_stepping_policy}});
+                 .time_stepping_policy = lts_mode}});
         break;
       }
       default:

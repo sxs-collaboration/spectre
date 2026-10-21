@@ -14,11 +14,21 @@ struct create_from_yaml;
 }  // namespace Options
 /// \endcond
 
-/// Version of local time-stepping in use
+/// Version of local time-stepping in use, either overall or in a
+/// particular calculation.
 enum class LtsMode : uint8_t {
+  /// Default value is uninitialized.
+  Uninitialized,
   /// Global time-stepping
+  ///
+  /// Communicated boundary corrections will be added directly to the
+  /// volume RHS calculation, and algorithms that are not
+  /// local-time-stepping aware (such as subcell) can be used.
   Off,
   /// Conservative local time-stepping using an LtsTimeStepper
+  ///
+  /// A flux-conservative boundary integral will be performed to
+  /// couple elements.
   Conservative,
 };
 

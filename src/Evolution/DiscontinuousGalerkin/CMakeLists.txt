@@ -25,7 +25,6 @@ spectre_target_headers(
   OptionTags.hpp
   SubcellElementDistribution.hpp
   TimeDerivativeDecisions.hpp
-  TimeSteppingPolicy.hpp
   UsingSubcell.hpp
   )
 
@@ -45,7 +44,6 @@ spectre_target_sources(
   MortarInfo.cpp
   OnlyDgBlockIds.cpp
   SubcellElementDistribution.cpp
-  TimeSteppingPolicy.cpp
   )
 
 add_subdirectory(Actions)

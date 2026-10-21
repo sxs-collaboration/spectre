@@ -7,8 +7,8 @@
 #include "Domain/Structure/DirectionalIdMap.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarData.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarInfo.hpp"
-#include "Evolution/DiscontinuousGalerkin/TimeSteppingPolicy.hpp"
 #include "Time/BoundaryHistory.hpp"
+#include "Time/LtsMode.hpp"
 #include "Time/TimeSteppers/LtsTimeStepper.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
@@ -28,13 +28,13 @@ void CleanMortarHistory<Dim>::apply(
     const auto time_stepping_policy =
         mortar_info.at(mortar_id).time_stepping_policy();
     switch (time_stepping_policy) {
-      case TimeSteppingPolicy::EqualRate:
+      case LtsMode::Off:
         break;
-      case TimeSteppingPolicy::Conservative:
+      case LtsMode::Conservative:
         time_stepper.clean_boundary_history(make_not_null(&hist));
         break;
       default:
-        ERROR("Unhandled TimeSteppingPolicy: " << time_stepping_policy);
+        ERROR("Unhandled time-stepping policy: " << time_stepping_policy);
     }
   }
 }

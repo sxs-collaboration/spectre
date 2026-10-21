@@ -38,7 +38,6 @@
 #include "Evolution/DiscontinuousGalerkin/MortarDataHolder.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarTags.hpp"
 #include "Evolution/DiscontinuousGalerkin/NormalVectorTags.hpp"
-#include "Evolution/DiscontinuousGalerkin/TimeSteppingPolicy.hpp"
 #include "Evolution/DiscontinuousGalerkin/UsingSubcell.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Formulation.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/LiftFlux.hpp"
@@ -58,6 +57,7 @@
 #include "Parallel/GlobalCache.hpp"
 #include "Time/BoundaryHistory.hpp"
 #include "Time/EvolutionOrdering.hpp"
+#include "Time/LtsMode.hpp"
 #include "Time/SelfStart.hpp"
 #include "Time/Tags/StepNumberWithinSlab.hpp"
 #include "Time/Time.hpp"
@@ -163,13 +163,13 @@ bool receive_boundary_data(
       const auto& time_stepping_policy =
           mortar_infos.at(mortar_id).time_stepping_policy();
       switch (time_stepping_policy) {
-        case TimeSteppingPolicy::EqualRate:
+        case LtsMode::Off:
           if (LocalTimeStepping or
               mortar_next_time_step_id > db::get<::Tags::TimeStepId>(*box)) {
             continue;
           }
           break;
-        case TimeSteppingPolicy::Conservative:
+        case LtsMode::Conservative:
           if constexpr (not LocalTimeStepping) {
             continue;
           } else {
@@ -186,7 +186,7 @@ bool receive_boundary_data(
           }
           break;
         default:
-          ERROR("Unhandled TimeSteppingPolicy: " << time_stepping_policy);
+          ERROR("Unhandled time-stepping policy: " << time_stepping_policy);
       }
 
       time_to_process.emplace(mortar_next_time_step_id);
@@ -289,7 +289,7 @@ bool receive_boundary_data(
           mortar_infos.at(mortar_id).time_stepping_policy();
 
       if constexpr (using_subcell_v<Metavariables>) {
-        if (time_stepping_policy == TimeSteppingPolicy::EqualRate) {
+        if (time_stepping_policy == LtsMode::Off) {
           evolution::dg::subcell::receive_subcell_data_for_dg<volume_dim>(
               &db::as_access(*box), received_mortar_id, received_mortar_data);
           evolution::dg::subcell::neighbor_tci_decision<volume_dim>(
@@ -342,17 +342,17 @@ bool receive_boundary_data(
 
                 mortar_meshes->at(mortar_id) = mortar_mesh;
                 switch (time_stepping_policy) {
-                  case TimeSteppingPolicy::EqualRate:
+                  case LtsMode::Off:
                     p_project_mortar_data(
                         make_not_null(&gts_mortar_data->at(mortar_id).local()),
                         mortar_mesh);
                     break;
-                  case TimeSteppingPolicy::Conservative:
+                  case LtsMode::Conservative:
                     boundary_data_history->at(mortar_id).local().for_each(
                         project_boundary_mortar_data);
                     break;
                   default:
-                    ERROR("Unhandled TimeSteppingPolicy: "
+                    ERROR("Unhandled time-stepping policy: "
                           << time_stepping_policy);
                 }
 
@@ -377,7 +377,7 @@ bool receive_boundary_data(
                 neighbor_mortar_data.mortar_data =
                     std::move(received_mortar_data.boundary_correction_data);
                 switch (time_stepping_policy) {
-                  case TimeSteppingPolicy::EqualRate:
+                  case LtsMode::Off:
                     if (neighbor_mortar_data.mortar_data.has_value()) {
                       p_project_mortar_data(
                           make_not_null(&neighbor_mortar_data), mortar_mesh);
@@ -385,7 +385,7 @@ bool receive_boundary_data(
                     gts_mortar_data->at(mortar_id).neighbor() =
                         std::move(neighbor_mortar_data);
                     break;
-                  case TimeSteppingPolicy::Conservative:
+                  case LtsMode::Conservative:
                     ASSERT(neighbor_mortar_data.mortar_data.has_value(),
                            "Did not receive mortar data for " << mortar_id);
                     boundary_data_history->at(mortar_id).remote().insert(
@@ -396,7 +396,7 @@ bool receive_boundary_data(
                         project_boundary_mortar_data);
                     break;
                   default:
-                    ERROR("Unhandled TimeSteppingPolicy: "
+                    ERROR("Unhandled time-stepping policy: "
                           << time_stepping_policy);
                 }
                 break;
@@ -783,18 +783,18 @@ struct ApplyBoundaryCorrections {
     for (const auto& [mortar, info] : mortar_infos) {
       const auto& time_stepping_policy = info.time_stepping_policy();
       switch (time_stepping_policy) {
-        case TimeSteppingPolicy::EqualRate:
+        case LtsMode::Off:
           if (not local_time_stepping) {
             mortars_to_act_on.emplace(mortar, true);
           }
           break;
-        case TimeSteppingPolicy::Conservative:
+        case LtsMode::Conservative:
           if (local_time_stepping) {
             mortars_to_act_on.emplace(mortar, true);
           }
           break;
         default:
-          ERROR("Unhandled TimeSteppingPolicy: " << time_stepping_policy);
+          ERROR("Unhandled time-stepping policy: " << time_stepping_policy);
       }
     }
     if (mortars_to_act_on.empty()) {
