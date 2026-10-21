@@ -1,7 +1,7 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-if (NOT TARGET Kokkos::kokkos)
+if (NOT SPECTRE_KOKKOS)
   return()
 endif()
 
