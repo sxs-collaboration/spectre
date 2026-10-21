@@ -48,3 +48,24 @@ following configuration options:
 
 - `Kokkos_ENABLE_CUDA_CONSTEXPR=ON`
 - `Kokkos_ENABLE_CUDA_RELOCATABLE_DEVICE_CODE`
+
+## Writing code for devices
+
+Most of SpECTRE is built without Kokkos, so code for devices must also compile,
+and be checked by tools like clang-tidy, in builds without Kokkos:
+
+- Annotate functions that should be callable on the device with
+  `KOKKOS_FUNCTION` from `Utilities/Kokkos/KokkosCore.hpp`. The annotation does
+  nothing in builds without Kokkos, so no other changes are needed.
+- Put code that uses Kokkos types, such as `Kokkos::View` or
+  `Kokkos::parallel_for`, in a separate file named after its host counterpart
+  with a `Kokkos` suffix, e.g. `VariablesKokkos.hpp`. Wrap everything after the
+  includes in `#ifdef SPECTRE_KOKKOS`, which is defined when building with
+  Kokkos. Add Kokkos-only tests to the build only `if(SPECTRE_KOKKOS)`. Avoid
+  `#ifdef SPECTRE_KOKKOS` branches within files shared with host code.
+- Specify the layout of multi-dimensional views explicitly, e.g.
+  `Kokkos::View<double**, Kokkos::LayoutLeft>`. The default layout differs
+  between backends, so code that relies on it can work on a GPU but fail on the
+  host, or vice versa.
+- Test device code by comparing against its host counterpart. The tests run on
+  the host backend in CI, which has no GPUs.

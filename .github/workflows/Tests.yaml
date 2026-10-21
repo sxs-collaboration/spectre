@@ -369,6 +369,8 @@ jobs:
           #   TEST_TIMEOUT_FACTOR: 3
           - compiler: gcc-13
             build_type: Debug
+            # Test Kokkos code with assertions and bounds checks enabled
+            KOKKOS: ON
             # Test 3D rendering with ParaView
             # Note: currently disabled because of some unknown upstream issue
             # test_3d_rendering: ON
@@ -573,6 +575,7 @@ jobs:
             -D Kokkos_ARCH_${{ matrix.KOKKOS_ARCH || 'X86_64' }}=ON \
             -D Kokkos_ENABLE_CUDA_CONSTEXPR=ON \
             -D Kokkos_ENABLE_CUDA_RELOCATABLE_DEVICE_CODE=ON \
+            -D Kokkos_ENABLE_DEBUG_BOUNDS_CHECK=${{ matrix.build_type == 'Debug' && 'ON' || 'OFF' }} \
             -D CMAKE_POSITION_INDEPENDENT_CODE=ON
           make -j ${NUMBER_OF_CORES} install
           cd ../../ && rm -rf kokkos.tar.gz kokkos

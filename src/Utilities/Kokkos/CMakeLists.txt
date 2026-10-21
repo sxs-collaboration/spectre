@@ -12,7 +12,7 @@ spectre_target_headers(
   KokkosCore.hpp
 )
 
-if(TARGET Kokkos::kokkos)
+if(SPECTRE_KOKKOS)
   target_link_libraries(
     ${LIBRARY}
     INTERFACE

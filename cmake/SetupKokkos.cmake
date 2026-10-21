@@ -74,6 +74,9 @@ if(SPECTRE_KOKKOS)
     )
     FetchContent_MakeAvailable(Kokkos)
   endif()
+
+  set_property(TARGET SpectreFlags
+    APPEND PROPERTY INTERFACE_COMPILE_DEFINITIONS SPECTRE_KOKKOS)
 endif()
 
 # Determine if the compiler is NVIDIA's nvcc (if not already determined by
