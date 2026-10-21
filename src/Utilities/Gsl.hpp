@@ -790,6 +790,8 @@ template <class ElementType, std::ptrdiff_t FirstExtent,
           std::ptrdiff_t SecondExtent>
 constexpr bool operator==(span<ElementType, FirstExtent> l,
                           span<ElementType, SecondExtent> r) {
+  // gsl::span isn't used in device code
+  // NOLINTNEXTLINE(spectre-device-std)
   return std::equal(l.begin(), l.end(), r.begin(), r.end());
 }
 
@@ -802,6 +804,8 @@ constexpr bool operator!=(span<ElementType, Extent> l,
 template <class ElementType, std::ptrdiff_t Extent>
 constexpr bool operator<(span<ElementType, Extent> l,
                          span<ElementType, Extent> r) {
+  // gsl::span isn't used in device code
+  // NOLINTNEXTLINE(spectre-device-std)
   return std::lexicographical_compare(l.begin(), l.end(), r.begin(), r.end());
 }
 
