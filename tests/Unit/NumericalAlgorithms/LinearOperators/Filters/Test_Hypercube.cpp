@@ -347,11 +347,46 @@ void test_apply_in_volume() {
       auto vars = initial_vars;
       filter.apply_in_volume(make_not_null(&vars), mesh, std::nullopt,
                              std::nullopt);
+      CHECK(vars.is_owning());
       const auto expected =
           expected_filtered<Dim, Dim>(mesh, initial_vars, kFilterHalfPower);
       CHECK_VARIABLES_CUSTOM_APPROX(vars, expected, custom_approx);
+
+      auto backing_vars = initial_vars;
+      auto view = backing_vars.template reference_with_different_prefixes<
+          Variables<TagList<Dim>>>();
+      const auto* const original_data = backing_vars.data();
+      REQUIRE_FALSE(view.is_owning());
+      filter.apply_in_volume(make_not_null(&view), mesh, std::nullopt,
+                             std::nullopt);
+      CHECK_FALSE(view.is_owning());
+      CHECK(view.data() == original_data);
+      CHECK_VARIABLES_CUSTOM_APPROX(backing_vars, expected, custom_approx);
     }
   }
+}
+
+template <size_t Dim>
+Variables<TagList<Dim>> filter_boundary_with_reference_check(
+    const HypercubeFilter<Dim>& filter, const Mesh<Dim - 1>& face_mesh,
+    const Variables<TagList<Dim>>& initial_face_vars) {
+  auto face_vars = initial_face_vars;
+  filter.apply_on_boundary(make_not_null(&face_vars), face_mesh, std::nullopt,
+                           std::nullopt);
+  CHECK(face_vars.is_owning());
+
+  auto backing_vars = initial_face_vars;
+  auto view = backing_vars.template reference_with_different_prefixes<
+      Variables<TagList<Dim>>>();
+  const auto* const original_data = backing_vars.data();
+  REQUIRE_FALSE(view.is_owning());
+  filter.apply_on_boundary(make_not_null(&view), face_mesh, std::nullopt,
+                           std::nullopt);
+  CHECK_FALSE(view.is_owning());
+  CHECK(view.data() == original_data);
+  CHECK_VARIABLES_CUSTOM_APPROX(backing_vars, face_vars,
+                                Approx::custom().epsilon(5.0e-13));
+  return face_vars;
 }
 
 template <size_t Dim, Spectral::Basis BasisType,
@@ -386,9 +421,8 @@ void test_apply_on_boundary() {
     const auto filter =
         HypercubeFilter<Dim>(kFilterHalfPower, true, std::nullopt, false, false,
                              std::nullopt, std::nullopt);
-    auto face_vars = initial_face_vars;
-    filter.apply_on_boundary(make_not_null(&face_vars), face_mesh, std::nullopt,
-                             std::nullopt);
+    const auto face_vars = filter_boundary_with_reference_check(
+        filter, face_mesh, initial_face_vars);
     const auto expected = expected_filtered<Dim, Dim - 1>(
         face_mesh, initial_face_vars, kFilterHalfPower);
     CHECK_VARIABLES_CUSTOM_APPROX(face_vars, expected, custom_approx);
@@ -595,9 +629,8 @@ void test_apply_zernikeb1_boundary() {
     const auto filter =
         HypercubeFilter<3>(kFilterHalfPower, true, std::nullopt, false, false,
                            std::nullopt, std::nullopt);
-    auto face_vars = initial_face_vars;
-    filter.apply_on_boundary(make_not_null(&face_vars), face_mesh, std::nullopt,
-                             std::nullopt);
+    const auto face_vars = filter_boundary_with_reference_check(
+        filter, face_mesh, initial_face_vars);
     const auto expected = expected_filtered_with_parity<false>(
         face_mesh, initial_face_vars, kFilterHalfPower, 0);
     CHECK_VARIABLES_CUSTOM_APPROX(face_vars, expected, custom_approx);
@@ -627,9 +660,8 @@ void test_apply_zernikeb1_boundary() {
       const auto filter =
           HypercubeFilter<3>(kFilterHalfPower, true, std::nullopt, false, false,
                              std::nullopt, std::nullopt);
-      auto face_vars = initial_face_vars;
-      filter.apply_on_boundary(make_not_null(&face_vars), face_mesh,
-                               std::nullopt, std::nullopt);
+      const auto face_vars = filter_boundary_with_reference_check(
+          filter, face_mesh, initial_face_vars);
       const auto expected = expected_filtered_with_parity<false>(
           face_mesh, initial_face_vars, kFilterHalfPower, 0);
       CHECK_VARIABLES_CUSTOM_APPROX(face_vars, expected, custom_approx);
@@ -750,9 +782,8 @@ void test_apply_half_fourier_boundary() {
         const auto filter =
             HypercubeFilter<3>(kFilterHalfPower, true, std::nullopt, false,
                                false, std::nullopt, std::nullopt);
-        auto face_vars = initial_face_vars;
-        filter.apply_on_boundary(make_not_null(&face_vars), face_mesh,
-                                 std::nullopt, std::nullopt);
+        const auto face_vars = filter_boundary_with_reference_check(
+            filter, face_mesh, initial_face_vars);
         const auto expected = expected_filtered_with_parity<true>(
             face_mesh, initial_face_vars, kFilterHalfPower, parity_dimension);
         CHECK_VARIABLES_CUSTOM_APPROX(face_vars, expected, custom_approx);
