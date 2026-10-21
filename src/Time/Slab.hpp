@@ -114,4 +114,4 @@ struct hash<Slab> {
 
 // Needs to be included so various return types are complete, but
 // cannot be included at the top because Time.hpp includes this file.
-#include "Time/Time.hpp"
+#include "Time/Time.hpp"  // NOLINT(misc-header-include-cycle)

@@ -692,9 +692,11 @@ struct InitializeJ<false> : public PUP::able {
 }  // namespace InitializeJ
 }  // namespace Cce
 
+// NOLINTBEGIN(misc-header-include-cycle)
 #include "Evolution/Systems/Cce/AnalyticSolutions/LinearizedBondiSachsInitializeJ.hpp"
 #include "Evolution/Systems/Cce/Initialize/CauchySecondOrder.hpp"
 #include "Evolution/Systems/Cce/Initialize/ConformalFactor.hpp"
 #include "Evolution/Systems/Cce/Initialize/InverseCubic.hpp"
 #include "Evolution/Systems/Cce/Initialize/NoIncomingRadiation.hpp"
 #include "Evolution/Systems/Cce/Initialize/ZeroNonSmooth.hpp"
+// NOLINTEND(misc-header-include-cycle)
