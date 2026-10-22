@@ -43,6 +43,7 @@ target_link_libraries(
   Boost::boost
   Charmxx::charmxx
   PUBLIC
+  SpectreKokkos
   SystemUtilities
   )
 
