@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "Utilities/Gsl.hpp"
+#include "Utilities/Kokkos/KokkosMacros.hpp"
 #include "Utilities/MakeWithValue.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -43,10 +44,14 @@ struct SetNumberOfGridPointsImpl;
 /// be used as the number of points, otherwise it will be interpreted
 /// as data on a collection of grid points.
 ///
+/// This can be called in Kokkos kernels for types that don't need resizing,
+/// such as `double`s and tensors of `double`s, for which it does nothing.
+///
 /// \see SetNumberOfGridPointsImpls, make_with_value
+SPECTRE_KOKKOS_DISABLE_EXEC_CHECK
 template <typename T, typename U>
-void set_number_of_grid_points(const gsl::not_null<T*> result,
-                               const U& pattern) {
+KOKKOS_FUNCTION void set_number_of_grid_points(const gsl::not_null<T*> result,
+                                               const U& pattern) {
   (void)result;
   (void)pattern;
   if constexpr (not SetNumberOfGridPointsImpls::SetNumberOfGridPointsImpl<
