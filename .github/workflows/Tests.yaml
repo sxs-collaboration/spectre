@@ -790,6 +790,7 @@ ${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
           make -j${NUMBER_OF_CORES} \
             Test_DataStructures \
             Test_EagerMath \
+            Test_Hydro \
             Test_Tensor \
             Test_Kokkos \
             Test_Spectral \
@@ -799,6 +800,7 @@ ${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
           # have GPU hardware.
           # ./bin/Test_DataStructures
           # ./bin/Test_EagerMath
+          # ./bin/Test_Hydro
           # ./bin/Test_Tensor
           # ./bin/Test_Kokkos
           # ./bin/Test_Spectral

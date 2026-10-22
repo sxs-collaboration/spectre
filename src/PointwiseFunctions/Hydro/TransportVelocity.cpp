@@ -7,15 +7,16 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/Kokkos/KokkosMacros.hpp"
 #include "Utilities/SetNumberOfGridPoints.hpp"
 
 namespace hydro {
 
 template <typename DataType, size_t Dim, typename Fr>
-void transport_velocity(const gsl::not_null<tnsr::I<DataType, Dim, Fr>*> result,
-                        const tnsr::I<DataType, Dim, Fr>& spatial_velocity,
-                        const Scalar<DataType>& lapse,
-                        const tnsr::I<DataType, Dim, Fr>& shift) {
+KOKKOS_FUNCTION void transport_velocity(
+    const gsl::not_null<tnsr::I<DataType, Dim, Fr>*> result,
+    const tnsr::I<DataType, Dim, Fr>& spatial_velocity,
+    const Scalar<DataType>& lapse, const tnsr::I<DataType, Dim, Fr>& shift) {
   set_number_of_grid_points(result, lapse);
   for (size_t i = 0; i < Dim; i++) {
     result->get(i) = spatial_velocity.get(i) * get(lapse) - shift.get(i);
@@ -34,7 +35,9 @@ void transport_velocity(const gsl::not_null<tnsr::I<DataType, Dim, Fr>*> result,
       const Scalar<DTYPE(data)>& lapse,                                     \
       const tnsr::I<DTYPE(data), DIM(data), FRAME(data)>& shift);
 
-GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (DataVector),
+GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3),
+                        SPECTRE_DEVICE_AND_HOST_TYPES((double),
+                                                      (double, DataVector)),
                         (Frame::Grid, Frame::Inertial))
 
 #undef DIM
