@@ -56,6 +56,11 @@ if (CMAKE_VERSION VERSION_GREATER_EQUAL 3.25)
 else()
   set(SPECTRE_FETCHCONTENT_BASE_ARGS "")
 endif()
+# Build all targets with position independent code, including auto-fetched
+# dependencies, so static libraries can be linked into Python bindings. Our own
+# targets get -fPIC from SetupPic.cmake, which overrides this setting and keeps
+# the PCH consistent.
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 # Define standard installation directories
 include(GNUInstallDirs)
