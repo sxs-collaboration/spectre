@@ -52,11 +52,13 @@ following configuration options:
 ## Writing code for devices
 
 - Annotate functions that should be callable on the device with
-  `KOKKOS_FUNCTION` from `Utilities/Kokkos/KokkosCore.hpp`. The annotation does
-  nothing in builds without Kokkos, so no other changes are needed.
+  `KOKKOS_FUNCTION` from `Utilities/Kokkos/KokkosMacros.hpp`. The annotation
+  does nothing in builds without Kokkos, so no other changes are needed. This
+  header only includes the Kokkos macros, so it can be included anywhere.
 - Put code that uses Kokkos types, such as `Kokkos::View` or
   `Kokkos::parallel_for`, in a separate file named after its host counterpart
-  with a `Kokkos` suffix, e.g. `VariablesKokkos.hpp`. Wrap everything after the
+  with a `Kokkos` suffix, e.g. `VariablesKokkos.hpp`, and include
+  `Utilities/Kokkos/KokkosCore.hpp` there. Wrap everything after the
   includes in `#ifdef SPECTRE_KOKKOS`, which is defined when building with
   Kokkos. Add Kokkos-only tests to the build only `if(SPECTRE_KOKKOS)`. Avoid
   `#ifdef SPECTRE_KOKKOS` branches within files shared with host code.
