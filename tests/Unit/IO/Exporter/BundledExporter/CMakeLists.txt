@@ -19,6 +19,12 @@
 #
 #   The C interface is tested by the `TestSpectreExporterC` executable, which
 #   takes the same arguments.
+#
+# - The Mathematica interface can be tested with `Test_BundledExporter.wls`
+#   (requires a Wolfram Engine, so it doesn't run in CI):
+#
+#   wolframscript -file /path/to/this/project/Test_BundledExporter.wls \
+#     /path/to/spectre/build/directory ARGS...
 
 cmake_minimum_required(VERSION 3.18)
 project(TestSpectreExporter LANGUAGES C CXX)
