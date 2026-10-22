@@ -5,10 +5,50 @@
 
 #include <array>
 #include <cstddef>
+#include <random>
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/EagerMath/DotProduct.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "Framework/TestHelpers.hpp"
+#include "Helpers/DataStructures/MakeWithRandomValues.hpp"
+#include "Helpers/Utilities/Kokkos/CheckOnDevice.hpp"
+#include "Utilities/Gsl.hpp"
+#include "Utilities/Kokkos/KokkosCore.hpp"
+
+#ifdef SPECTRE_KOKKOS
+namespace {
+// All overloads give the same results in a Kokkos kernel as on the host
+void test_on_device() {
+  MAKE_GENERATOR(generator);
+  std::uniform_real_distribution<> distribution(0.1, 1.0);
+  const auto vector_a = make_with_random_values<tnsr::I<double, 3>>(
+      make_not_null(&generator), make_not_null(&distribution), 0.0);
+  const auto vector_b = make_with_random_values<tnsr::I<double, 3>>(
+      make_not_null(&generator), make_not_null(&distribution), 0.0);
+  const auto one_form = make_with_random_values<tnsr::i<double, 3>>(
+      make_not_null(&generator), make_not_null(&distribution), 0.0);
+  const auto metric = make_with_random_values<tnsr::ii<double, 3>>(
+      make_not_null(&generator), make_not_null(&distribution), 0.0);
+  TestHelpers::check_on_device(KOKKOS_LAMBDA() {
+    Scalar<double> euclidean{};
+    dot_product(make_not_null(&euclidean), vector_a, vector_b);
+    Scalar<double> vector_and_one_form{};
+    dot_product(make_not_null(&vector_and_one_form), vector_a, one_form);
+    Scalar<double> with_metric{};
+    dot_product(make_not_null(&with_metric), vector_a, vector_b, metric);
+    // Passing the same vector twice takes a different code path
+    Scalar<double> squared{};
+    dot_product(make_not_null(&squared), vector_a, vector_a, metric);
+    return std::array<double, 8>{
+        {get(euclidean), get(dot_product(vector_a, vector_b)),
+         get(vector_and_one_form), get(dot_product(vector_a, one_form)),
+         get(with_metric), get(dot_product(vector_a, vector_b, metric)),
+         get(squared), get(dot_product(vector_a, vector_a, metric))}};
+  });
+}
+}  // namespace
+#endif  // SPECTRE_KOKKOS
 
 SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.EagerMath.EuclideanDotProduct",
                   "[DataStructures][Unit]") {
@@ -82,9 +122,8 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.EagerMath.EuclideanDotProduct",
     CHECK_ITERABLE_APPROX(
         get(dot_product(five_d_covector_a, five_d_covector_b)),
         DataVector(npts, -32.0));
-    CHECK_ITERABLE_APPROX(
-        get(dot_product(five_d_covector_a, five_d_vector_b)),
-        DataVector(npts, -32.0));
+    CHECK_ITERABLE_APPROX(get(dot_product(five_d_covector_a, five_d_vector_b)),
+                          DataVector(npts, -32.0));
   }
   // Check case for doubles
   {
@@ -104,8 +143,8 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.EagerMath.EuclideanDotProduct",
         {{4.0, 2.0, -4.0, 3.0, 5.0}}};
     CHECK(get(dot_product(five_d_covector_double_a,
                           five_d_covector_double_b)) == 29.0);
-    CHECK(get(dot_product(five_d_covector_double_a,
-                          five_d_vector_double_b)) == 29.0);
+    CHECK(get(dot_product(five_d_covector_double_a, five_d_vector_double_b)) ==
+          29.0);
   }
 }
 
@@ -187,4 +226,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.EagerMath.DotProduct",
     CHECK(get(dot_product(three_d_covector_a, three_d_covector_a, inv_g)) ==
           778.0);
   }
+#ifdef SPECTRE_KOKKOS
+  test_on_device();
+#endif  // SPECTRE_KOKKOS
 }

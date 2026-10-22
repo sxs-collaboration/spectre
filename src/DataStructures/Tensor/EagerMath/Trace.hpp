@@ -5,6 +5,7 @@
 
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/Kokkos/KokkosMacros.hpp"
 #include "Utilities/MakeWithValue.hpp"
 
 /// @{
@@ -18,9 +19,11 @@
  * \f$ is the inverse metric.  Note that indices \f$a,b,c,...\f$ can represent
  * either spatial or spacetime indices, and can have either valence.  You may
  * have to add a new instantiation of this template if you need a new use case.
+ *
+ * These functions can be called in Kokkos kernels with `double`s.
  */
 template <typename DataType, typename Index0, typename Index1>
-void trace_last_indices(
+KOKKOS_FUNCTION void trace_last_indices(
     gsl::not_null<Tensor<DataType, Symmetry<1>, index_list<Index0>>*>
         trace_of_tensor,
     const Tensor<DataType, Symmetry<2, 1, 1>,
@@ -29,16 +32,16 @@ void trace_last_indices(
                  index_list<change_index_up_lo<Index1>,
                             change_index_up_lo<Index1>>>& metric);
 
+SPECTRE_KOKKOS_DISABLE_EXEC_CHECK
 template <typename DataType, typename Index0, typename Index1>
-Tensor<DataType, Symmetry<1>, index_list<Index0>> trace_last_indices(
+KOKKOS_FUNCTION Tensor<DataType, Symmetry<1>, index_list<Index0>>
+trace_last_indices(
     const Tensor<DataType, Symmetry<2, 1, 1>,
                  index_list<Index0, Index1, Index1>>& tensor,
     const Tensor<DataType, Symmetry<1, 1>,
                  index_list<change_index_up_lo<Index1>,
                             change_index_up_lo<Index1>>>& metric) {
-  auto trace_of_tensor =
-      make_with_value<Tensor<DataType, Symmetry<1>, index_list<Index0>>>(metric,
-                                                                         0.);
+  Tensor<DataType, Symmetry<1>, index_list<Index0>> trace_of_tensor{};
   trace_last_indices(make_not_null(&trace_of_tensor), tensor, metric);
   return trace_of_tensor;
 }
@@ -50,17 +53,20 @@ Tensor<DataType, Symmetry<1>, index_list<Index0>> trace_last_indices(
  * \brief Computes trace of a rank-2 symmetric tensor.
  * \details Computes \f$g^{ab}T_{ab}\f$ or \f$g_{ab}T^{ab}\f$ where \f$(a,b)\f$
  * can be spatial or spacetime indices.
+ *
+ * These functions can be called in Kokkos kernels with `double`s.
  */
 template <typename DataType, typename Index0>
-void trace(
+KOKKOS_FUNCTION void trace(
     gsl::not_null<Scalar<DataType>*> trace,
     const Tensor<DataType, Symmetry<1, 1>, index_list<Index0, Index0>>& tensor,
     const Tensor<DataType, Symmetry<1, 1>,
                  index_list<change_index_up_lo<Index0>,
                             change_index_up_lo<Index0>>>& metric);
 
+SPECTRE_KOKKOS_DISABLE_EXEC_CHECK
 template <typename DataType, typename Index0>
-Scalar<DataType> trace(
+KOKKOS_FUNCTION Scalar<DataType> trace(
     const Tensor<DataType, Symmetry<1, 1>, index_list<Index0, Index0>>& tensor,
     const Tensor<DataType, Symmetry<1, 1>,
                  index_list<change_index_up_lo<Index0>,
