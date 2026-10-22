@@ -71,6 +71,15 @@ class SimpleSparseMatrix {
                                    size_t a_stride, const T& b, size_t b_offset,
                                    size_t b_stride) const;
 
+  /// Does a += m*b for all offsets in [0, stride), with both arrays storing
+  /// `stride` contiguous values per matrix row/column. Source and destination
+  /// must not overlap. For small strides, accumulates the offsets together to
+  /// reuse matrix entries and expose independent sums to vectorization.
+  /// Does not allocate heap storage.
+  void increment_multiply_on_right_all_offsets(
+      gsl::not_null<gsl::span<double>*> a, const gsl::span<double>& b,
+      size_t stride) const;
+
   /// Number of nonzero elements.
   size_t size() const { return matrix_elements_.size(); }
 
