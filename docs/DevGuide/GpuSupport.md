@@ -51,9 +51,6 @@ following configuration options:
 
 ## Writing code for devices
 
-Most of SpECTRE is built without Kokkos, so code for devices must also compile,
-and be checked by tools like clang-tidy, in builds without Kokkos:
-
 - Annotate functions that should be callable on the device with
   `KOKKOS_FUNCTION` from `Utilities/Kokkos/KokkosCore.hpp`. The annotation does
   nothing in builds without Kokkos, so no other changes are needed.
@@ -67,5 +64,12 @@ and be checked by tools like clang-tidy, in builds without Kokkos:
   `Kokkos::View<double**, Kokkos::LayoutLeft>`. The default layout differs
   between backends, so code that relies on it can work on a GPU but fail on the
   host, or vice versa.
+- Don't call `Kokkos::fence()` after launching kernels. Kernels launched on the
+  same execution space instance run in order, and copies to the host such as
+  `copy_to_host` or `Kokkos::deep_copy` wait for earlier kernels to finish.
+  Fence only before host code reads memory written by a kernel without such a
+  copy (e.g. a host-accessible view), before measuring time, or to synchronize
+  several execution space instances. In the latter case fence only the instance
+  that needs it, e.g. `exec.fence()`.
 - Test device code by comparing against its host counterpart. The tests run on
   the host backend in CI, which has no GPUs.
