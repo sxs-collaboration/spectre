@@ -20,6 +20,7 @@
 #include "Domain/ElementMap.hpp"
 #include "Domain/Structure/InitialElementIds.hpp"
 #include "Evolution/Systems/ScalarWave/Tags.hpp"
+#include "IO/Exporter/Exporter.h"
 #include "IO/Exporter/Exporter.hpp"
 #include "IO/Exporter/PointwiseInterpolator.hpp"
 #include "IO/H5/File.hpp"
@@ -56,6 +57,50 @@ SPECTRE_TEST_CASE("Unit.IO.Exporter", "[Unit]") {
         "element_data", ObservationStep{0}, {"Psi", "Phi_x", "Phi_y", "Phi_z"},
         {{{0.0, 1.0, 0.0}, {0.0, 0.0, 1.0}, {0.0, 0.0, 0.0}}});
     check_scalar_data(interpolated_data);
+  }
+  {
+    INFO("C interface");
+    const auto volume_files = file_system::glob(
+        unit_test_src_path() + "/Visualization/Python/VolTestData*.h5");
+    std::vector<const char*> volume_files_c{};
+    volume_files_c.reserve(volume_files.size());
+    for (const auto& volume_file : volume_files) {
+      volume_files_c.push_back(volume_file.c_str());
+    }
+    const std::array<const char*, 4> tensor_components{"Psi", "Phi_x", "Phi_y",
+                                                       "Phi_z"};
+    // Target points in a single contiguous buffer
+    const std::array<double, 9> target_points{0.0, 1.0, 0.0, 0.0, 0.0,
+                                              1.0, 0.0, 0.0, 0.0};
+    const std::array<const double*, 3> target_points_c{
+        target_points.data(), &target_points[3], &target_points[6]};
+    // Result in separate buffers
+    std::vector<std::vector<double>> interpolated_data(4,
+                                                       std::vector<double>(3));
+    const std::array<double*, 4> interpolated_data_c{
+        interpolated_data[0].data(), interpolated_data[1].data(),
+        interpolated_data[2].data(), interpolated_data[3].data()};
+    const auto interpolate = [&](const char* subfile_name,
+                                 const size_t num_dimensions) {
+      return spectre_interpolate_to_points(
+          interpolated_data_c.data(), volume_files_c.data(),
+          volume_files_c.size(), subfile_name, 0, tensor_components.data(),
+          tensor_components.size(), target_points_c.data(), num_dimensions, 3,
+          false, false, 0);
+    };
+    CHECK(interpolate("element_data", 3) == 0);
+    CHECK(std::string{spectre_exporter_last_error()}.empty());
+    check_scalar_data(interpolated_data);
+    CHECK(interpolate("nonexistent_subfile", 3) != 0);
+    CHECK_THAT(std::string{spectre_exporter_last_error()},
+               Catch::Matchers::ContainsSubstring("nonexistent_subfile"));
+    CHECK(interpolate("element_data", 4) != 0);
+    CHECK_THAT(
+        std::string{spectre_exporter_last_error()},
+        Catch::Matchers::ContainsSubstring("Unsupported number of dimensions"));
+    // A successful call resets the error
+    CHECK(interpolate("element_data", 3) == 0);
+    CHECK(std::string{spectre_exporter_last_error()}.empty());
   }
   {
     INFO("Tensor interface");
@@ -159,6 +204,29 @@ SPECTRE_TEST_CASE("Unit.IO.Exporter", "[Unit]") {
       // This would raise an FPE if the NaN was signaling
       CHECK(std::isnan(interpolated_data_with_missing_point[0][1]));
     }
+    {
+      INFO("C interface with points outside the domain");
+      const std::array<double, 2> x{0., 2.};
+      const std::array<double, 2> y{0., 0.};
+      const std::array<const double*, 2> target_points_c{x.data(), y.data()};
+      std::array<double, 2> psi_c{};
+      const std::array<double*, 1> interpolated_data_c{psi_c.data()};
+      const char* volume_file = h5_file_name.c_str();
+      const char* tensor_component = "Psi";
+      const auto interpolate = [&](const bool error_on_missing_points) {
+        return spectre_interpolate_to_points(
+            interpolated_data_c.data(), &volume_file, 1, "/VolumeData", 0,
+            &tensor_component, 1, target_points_c.data(), 2, 2, false,
+            error_on_missing_points, 0);
+      };
+      CHECK(interpolate(false) == 0);
+      CHECK(psi_c[0] == custom_approx(1.));
+      CHECK(std::isnan(psi_c[1]));
+      CHECK(interpolate(true) != 0);
+      CHECK_THAT(std::string{spectre_exporter_last_error()},
+                 Catch::Matchers::ContainsSubstring(
+                     "target point(s) are outside the source domain"));
+    }
     // Delete the test file
     if (file_system::check_if_file_exists(h5_file_name)) {
       file_system::rm(h5_file_name, true);
@@ -249,6 +317,21 @@ SPECTRE_TEST_CASE("Unit.IO.Exporter", "[Unit]") {
     // This point is interpolated
     Approx approx_interpolated = Approx::custom().epsilon(1.e-6).scale(1.0);
     CHECK(psi_interpolated[5] == approx_interpolated(psi_expected[5]));
+    {
+      INFO("C interface writes extrapolated data directly into the output");
+      const std::array<const double*, 3> target_points_c{
+          get<0>(target_points).data(), get<1>(target_points).data(),
+          get<2>(target_points).data()};
+      DataVector psi_c(num_target_points);
+      const std::array<double*, 1> interpolated_data_c{psi_c.data()};
+      const char* volume_file = h5_file_name.c_str();
+      const char* tensor_component = "Psi";
+      CHECK(spectre_interpolate_to_points(
+                interpolated_data_c.data(), &volume_file, 1, "/VolumeData", 0,
+                &tensor_component, 1, target_points_c.data(), 3,
+                num_target_points, true, false, 0) == 0);
+      CHECK_ITERABLE_APPROX(psi_c, interpolated_data[0]);
+    }
 
     // Do some benchmarks
     // - Results ran on Apple M2 Pro chip (Nils Vu, May 2025)

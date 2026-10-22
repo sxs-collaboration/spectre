@@ -16,9 +16,12 @@
 #
 #   make
 #   ./TestSpectreExporter --help
+#
+#   The C interface is tested by the `TestSpectreExporterC` executable, which
+#   takes the same arguments.
 
 cmake_minimum_required(VERSION 3.18)
-project(TestSpectreExporter)
+project(TestSpectreExporter LANGUAGES C CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 
@@ -43,6 +46,8 @@ set_target_properties(
 find_package(HDF5 REQUIRED COMPONENTS C)
 find_package(BLAS REQUIRED)
 
-# Define test executable
+# Define test executables
 add_executable(TestSpectreExporter Test_BundledExporter.cpp)
 target_link_libraries(TestSpectreExporter PRIVATE spectre::Exporter)
+add_executable(TestSpectreExporterC Test_BundledExporter.c)
+target_link_libraries(TestSpectreExporterC PRIVATE spectre::Exporter)
