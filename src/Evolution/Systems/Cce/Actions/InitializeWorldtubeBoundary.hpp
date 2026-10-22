@@ -109,6 +109,16 @@ struct InitializeWorldtubeBoundaryBase {
                                              db::DataBox<DataBoxTagsList>>) {
         const auto& generator = db::get<Tags::InitializeJ<false>>(box);
         if (generator.needs_du_dr_j()) {
+          if (dynamic_cast<const Solutions::RobinsonTrautman*>(
+                  &(db::get<Tags::AnalyticBoundaryDataManager>(box)
+                        .get_generator())) != nullptr) {
+            ERROR(
+                "RobinsonTrautman does not support the centered time stencil "
+                "for Du<Dr<BondiJ>>: past-time samples restart its internal "
+                "evolution and can precede its initial time. Use an "
+                "initial-data generator that does not require "
+                "Du<Dr<BondiJ>>.");
+          }
           auto du_dr_j_interpolator = generator.du_dr_j_interpolator();
           if (du_dr_j_interpolator == nullptr) {
             ERROR(
@@ -126,9 +136,7 @@ struct InitializeWorldtubeBoundaryBase {
         }
       }
     } else {
-      // Any other manager: a generator that needs `Du<Dr<BondiJ>>` would
-      // silently read an unset buffer, so refuse rather than produce wrong
-      // initial data.
+      // No other manager produces `Du<Dr<BondiJ>>`.
       if constexpr (db::tag_is_retrievable_v<Tags::InitializeJ<false>,
                                              db::DataBox<DataBoxTagsList>>) {
         if (db::get<Tags::InitializeJ<false>>(box).needs_du_dr_j()) {

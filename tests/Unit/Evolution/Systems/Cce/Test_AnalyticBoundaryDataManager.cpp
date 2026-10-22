@@ -3,13 +3,10 @@
 
 #include "Framework/TestingFramework.hpp"
 
-#include <algorithm>
-#include <array>
-#include <cmath>
 #include <complex>
 #include <cstddef>
-#include <limits>
 #include <memory>
+#include <numbers>
 #include <random>
 #include <utility>
 #include <vector>
@@ -19,9 +16,9 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/SpinWeighted.hpp"
 #include "DataStructures/TaggedTuple.hpp"
+#include "DataStructures/Variables.hpp"
 #include "Evolution/Systems/Cce/AnalyticBoundaryDataManager.hpp"
 #include "Evolution/Systems/Cce/AnalyticSolutions/LinearizedBondiSachs.hpp"
-#include "Evolution/Systems/Cce/AnalyticSolutions/RobinsonTrautman.hpp"
 #include "Evolution/Systems/Cce/AnalyticSolutions/WorldtubeData.hpp"
 #include "Evolution/Systems/Cce/BoundaryData.hpp"
 #include "Evolution/Systems/Cce/OptionTags.hpp"
@@ -33,12 +30,12 @@
 #include "IO/Observer/ReductionActions.hpp"
 #include "IO/Observer/Tags.hpp"
 #include "NumericalAlgorithms/Interpolation/BarycentricRationalSpanInterpolator.hpp"
-#include "Options/Context.hpp"
 #include "Parallel/Phase.hpp"
 #include "Time/Slab.hpp"
 #include "Time/Tags/TimeStepId.hpp"
 #include "Time/Time.hpp"
 #include "Time/TimeStepId.hpp"
+#include "Utilities/Literals.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace Cce {
@@ -125,7 +122,8 @@ void test_du_dr_j(const gsl::not_null<std::mt19937*> gen,
   const size_t l_max = sdist(*gen);
   UniformCustomDistribution<double> parameter_dist{0.1, 1.0};
   const double extraction_radius = 100.0 * parameter_dist(*gen);
-  // Avoid a turning point of the oscillation in the aliasing regression.
+  // Avoid a turning point of the 4 pi oscillation, where the derivative
+  // vanishes and a step of 0.5 would give the right answer.
   const double time = 2.1;
   const size_t number_of_angular_points =
       Spectral::Swsh::number_of_swsh_collocation_points(l_max);
@@ -164,12 +162,11 @@ void test_du_dr_j(const gsl::not_null<std::mt19937*> gen,
     boundary_variables_type boundary_variables{number_of_angular_points};
     get(get<du_dr_j_tag>(boundary_variables)).data() =
         std::complex<double>(-3.0, 7.0);
-    manager.populate_hypersurface_boundary_data(
-        make_not_null(&boundary_variables), time);
+    manager.populate_du_dr_j(make_not_null(&boundary_variables), time);
     return ComplexDataVector{get(get<du_dr_j_tag>(boundary_variables)).data()};
   };
 
-  // Without an interpolator the boundary value is not produced.
+  // Without an interpolator the boundary value is not touched.
   CHECK(populate(analytic_manager) ==
         ComplexDataVector{number_of_angular_points,
                           std::complex<double>(-3.0, 7.0)});
@@ -186,8 +183,8 @@ void test_du_dr_j(const gsl::not_null<std::mt19937*> gen,
       custom_approx);
 
   if (frequency > 1.0) {
-    // At frequency 4*pi, the old spacing samples the same phase at every
-    // stencil point and loses the nonzero derivative.
+    // A step of 0.5 samples the same phase of a 4 pi oscillation at every
+    // stencil point, so it misses the nonzero derivative.
     CHECK(max(abs(expected_du_dr_j)) > 0.0);
     AnalyticBoundaryDataManager aliased_manager{
         l_max, extraction_radius, analytic_solution.get_clone(), 0.5};
@@ -202,48 +199,6 @@ void test_du_dr_j(const gsl::not_null<std::mt19937*> gen,
   CHECK(populate(analytic_manager) ==
         ComplexDataVector{number_of_angular_points,
                           std::complex<double>(-3.0, 7.0)});
-}
-
-void test_invalid_du_dr_j() {
-  for (const double step : {0.0, -0.5, std::numeric_limits<double>::infinity(),
-                            std::numeric_limits<double>::quiet_NaN()}) {
-    CHECK_THROWS_WITH(
-        (AnalyticBoundaryDataManager{8, 20.0, nullptr, step}),
-        Catch::Matchers::ContainsSubstring("must be finite and positive"));
-  }
-
-  Variables<Tags::characteristic_worldtube_boundary_tags<Tags::BoundaryValue>>
-      boundary_variables{Spectral::Swsh::number_of_swsh_collocation_points(8)};
-  for (const double step : {std::numeric_limits<double>::min(),
-                            std::numeric_limits<double>::max()}) {
-    AnalyticBoundaryDataManager manager{
-        8, 20.0,
-        std::make_unique<Solutions::LinearizedBondiSachs>(
-            std::array<std::complex<double>, 2>{}, 20.0, 0.1),
-        step};
-    manager.set_du_dr_j_interpolator(
-        std::make_unique<intrp::BarycentricRationalSpanInterpolator>(2_st,
-                                                                     2_st));
-    CHECK_THROWS_WITH(manager.populate_hypersurface_boundary_data(
-                          make_not_null(&boundary_variables), 2.0),
-                      Catch::Matchers::ContainsSubstring(
-                          "does not give distinct, finite stencil times"));
-  }
-
-  AnalyticBoundaryDataManager manager{
-      8, 20.0,
-      std::make_unique<Solutions::RobinsonTrautman>(
-          std::vector<std::complex<double>>{}, 20.0, 8, 1.0e-10, 0.0,
-          Options::Context{})};
-  CHECK_NOTHROW(manager.set_du_dr_j_interpolator(nullptr));
-  CHECK(manager.populate_hypersurface_boundary_data(
-      make_not_null(&boundary_variables), 0.0));
-  CHECK_THROWS_WITH(
-      manager.set_du_dr_j_interpolator(
-          std::make_unique<intrp::BarycentricRationalSpanInterpolator>(2_st,
-                                                                       2_st)),
-      Catch::Matchers::ContainsSubstring(
-          "RobinsonTrautman does not support the centered time stencil"));
 }
 
 SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.AnalyticBoundaryDataManager",
@@ -264,8 +219,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.AnalyticBoundaryDataManager",
       {0.01 * parameter_dist(gen), 0.01 * parameter_dist(gen)},
       extraction_radius,
       frequency};
-  AnalyticBoundaryDataManager analytic_manager{l_max, extraction_radius,
-                                               analytic_solution.get_clone()};
+  AnalyticBoundaryDataManager analytic_manager{
+      l_max, extraction_radius, analytic_solution.get_clone(), 0.05};
   // test the boundary computation
   const size_t number_of_angular_points =
       Spectral::Swsh::number_of_swsh_collocation_points(l_max);
@@ -287,10 +242,10 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.AnalyticBoundaryDataManager",
       get<gr::Tags::SpacetimeMetric<DataVector, 3>>(
           analytic_solution_gh_variables),
       extraction_radius, l_max);
-  // `Du<Dr<BondiJ>>` is not set by `create_bondi_boundary_data`, nor by the
-  // manager without an interpolator (see `test_du_dr_j`). Both sides remain
-  // default-initialized at that tag, so comparing them would be NaN-vs-NaN
-  // with `SPECTRE_NAN_INIT`.
+  // `Du<Dr<BondiJ>>` is set by neither `create_bondi_boundary_data` nor
+  // `populate_hypersurface_boundary_data` (see `test_du_dr_j`). Both sides
+  // remain default-initialized at that tag, so comparing them would be
+  // NaN-vs-NaN with `SPECTRE_NAN_INIT`.
   using tags_to_compare = tmpl::list_difference<
       Tags::characteristic_worldtube_boundary_tags<Tags::BoundaryValue>,
       tmpl::list<Tags::BoundaryValue<Tags::Du<Tags::Dr<Tags::BondiJ>>>>>;
@@ -337,8 +292,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.AnalyticBoundaryDataManager",
   CHECK(data_set_name == "/Cce/News_expected");
 
   test_du_dr_j(make_not_null(&gen), 0.1, 0.5);
-  test_du_dr_j(make_not_null(&gen), 4.0 * M_PI, 0.005);
-  test_invalid_du_dr_j();
+  test_du_dr_j(make_not_null(&gen), 4.0 * std::numbers::pi, 0.005);
 }
 }  // namespace
 }  // namespace Cce

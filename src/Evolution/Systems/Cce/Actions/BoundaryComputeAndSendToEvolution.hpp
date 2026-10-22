@@ -275,6 +275,12 @@ struct BoundaryComputeAndSendToEvolution<
               (*worldtube_data_manager)
                   .populate_hypersurface_boundary_data(boundary_variables,
                                                        time.substep_time());
+          // Only the initial-data generator reads `Du<Dr<BondiJ>>`, so build
+          // it only where `InitializeFirstHypersurface` runs the generator.
+          if (time.slab_number() <= 0 and time.is_at_slab_boundary()) {
+            worldtube_data_manager->populate_du_dr_j(boundary_variables,
+                                                     time.substep_time());
+          }
         },
         make_not_null(&box));
 

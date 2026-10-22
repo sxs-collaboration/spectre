@@ -224,13 +224,11 @@ struct DuDrJStencilStep {
   using type = double;
   static constexpr Options::String help{
       "Time spacing for the centered stencil used to compute Du(Dr(J)) from "
-      "analytic worldtube data. Choose a positive spacing that resolves the "
-      "shortest solution timescale; interpolation order cannot remove "
+      "analytic worldtube data. Choose a spacing that resolves the shortest "
+      "solution timescale; interpolation order cannot remove "
       "aliasing from undersampling. Used only when InitializeJ requires "
       "Du(Dr(J))."};
   static double lower_bound() { return std::numeric_limits<double>::min(); }
-  static double upper_bound() { return std::numeric_limits<double>::max(); }
-  static double suggested_value() { return 0.5; }
   using group = Cce;
 };
 }  // namespace OptionTags

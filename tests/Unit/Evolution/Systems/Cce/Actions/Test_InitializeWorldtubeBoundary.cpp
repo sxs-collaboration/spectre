@@ -17,8 +17,10 @@
 #include "DataStructures/TaggedTuple.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Evolution/Systems/Cce/AnalyticBoundaryDataManager.hpp"
+#include "Evolution/Systems/Cce/AnalyticSolutions/LinearizedBondiSachs.hpp"
 #include "Evolution/Systems/Cce/AnalyticSolutions/RobinsonTrautman.hpp"
 #include "Evolution/Systems/Cce/AnalyticSolutions/RotatingSchwarzschild.hpp"
+#include "Evolution/Systems/Cce/AnalyticSolutions/WorldtubeData.hpp"
 #include "Evolution/Systems/Cce/BoundaryData.hpp"
 #include "Evolution/Systems/Cce/Initialize/CauchySecondOrder.hpp"
 #include "Evolution/Systems/Cce/Initialize/ConformalFactor.hpp"
@@ -115,7 +117,22 @@ struct AnalyticMetavariables {
       Tags::CceEvolutionPrefix<::Tags::ConcreteTimeStepper<LtsTimeStepper>>>;
 };
 
-// As above, the shared mock does not carry the initial-data generator.
+// Adds the initial-data generator, which the production
+// `AnalyticWorldtubeBoundary` and `GhWorldtubeBoundary` carry.
+template <typename Metavariables>
+struct MockGhWorldtubeBoundaryWithInitializeJ
+    : mock_worldtube_boundary<Metavariables,
+                              GhWorldtubeBoundary<Metavariables>> {
+  using const_global_cache_tags = tmpl::list<Tags::InitializeJ<false>>;
+};
+
+struct GhInitializeJMetavariables {
+  using cce_boundary_communication_tags =
+      Tags::characteristic_worldtube_boundary_tags<Tags::BoundaryValue>;
+  using component_list = tmpl::list<
+      MockGhWorldtubeBoundaryWithInitializeJ<GhInitializeJMetavariables>>;
+};
+
 template <typename Metavariables>
 struct MockAnalyticWorldtubeBoundaryWithInitializeJ
     : mock_worldtube_boundary<Metavariables,
@@ -384,7 +401,7 @@ void test_analytic_initialization() {
   ActionTesting::emplace_component<component>(
       &runner, 0,
       AnalyticBoundaryDataManager{12_st, extraction_radius,
-                                  std::make_unique<SolutionType>()});
+                                  std::make_unique<SolutionType>(), 0.05});
   // this should run the initialization
   for (size_t i = 0; i < 3; ++i) {
     ActionTesting::next_action<component>(make_not_null(&runner), 0);
@@ -402,6 +419,12 @@ void test_analytic_initialization() {
         Spectral::Swsh::number_of_swsh_collocation_points(l_max));
 }
 
+std::unique_ptr<InitializeJ::InitializeJ<false>> make_cauchy_second_order(
+    std::unique_ptr<intrp::SpanInterpolator> interpolator) {
+  return std::make_unique<InitializeJ::CauchySecondOrder>(
+      1.0e-11, 1500, 1.0e-1, 1.0e-14, 10, 1.0e-12, std::move(interpolator));
+}
+
 // The analytic manager builds `Du<Dr<J>>` only for a generator that needs it,
 // and then with the generator's interpolator.
 void test_analytic_du_dr_j_interpolator_injection() {
@@ -410,14 +433,12 @@ void test_analytic_du_dr_j_interpolator_injection() {
   using du_dr_j_tag = Tags::BoundaryValue<Tags::Du<Tags::Dr<Tags::BondiJ>>>;
   const size_t l_max = 8;
   const double extraction_radius = 20.0;
-  const double time = 1.0;
+  const double time = 2.1;
   const size_t number_of_angular_points =
       Spectral::Swsh::number_of_swsh_collocation_points(l_max);
   const ComplexDataVector untouched_du_dr_j{number_of_angular_points,
                                             std::complex<double>(-3.0, 7.0)};
   register_classes_with_charm<TimeSteppers::AdamsBashforth>();
-  register_derived_classes_with_charm<intrp::SpanInterpolator>();
-  register_derived_classes_with_charm<InitializeJ::InitializeJ<false>>();
 
   const auto boundary_du_dr_j = [&time, &untouched_du_dr_j](
                                     const AnalyticBoundaryDataManager&
@@ -425,28 +446,23 @@ void test_analytic_du_dr_j_interpolator_injection() {
     Variables<Tags::characteristic_worldtube_boundary_tags<Tags::BoundaryValue>>
         boundary_variables{number_of_angular_points};
     get(get<du_dr_j_tag>(boundary_variables)).data() = untouched_du_dr_j;
-    manager.populate_hypersurface_boundary_data(
-        make_not_null(&boundary_variables), time);
+    manager.populate_du_dr_j(make_not_null(&boundary_variables), time);
     return ComplexDataVector{get(get<du_dr_j_tag>(boundary_variables)).data()};
   };
-  const auto make_manager = [&extraction_radius,
-                             &l_max](const bool use_robinson_trautman = false) {
-    if (use_robinson_trautman) {
-      return AnalyticBoundaryDataManager{
-          l_max, extraction_radius,
-          std::make_unique<Solutions::RobinsonTrautman>(
-              std::vector<std::complex<double>>{}, extraction_radius, l_max,
-              1.0e-10, 0.0, Options::Context{})};
-    }
-    return AnalyticBoundaryDataManager{
-        l_max, extraction_radius,
-        std::make_unique<Solutions::RotatingSchwarzschild>(extraction_radius,
-                                                           1.0, 0.1)};
+  const auto linearized_bondi_sachs = [&extraction_radius]() {
+    return std::make_unique<Solutions::LinearizedBondiSachs>(
+        std::array<std::complex<double>, 2>{{{0.01, 0.002}, {0.003, 0.004}}},
+        extraction_radius, 0.5);
+  };
+  const auto robinson_trautman = [&extraction_radius, &l_max]() {
+    return std::make_unique<Solutions::RobinsonTrautman>(
+        std::vector<std::complex<double>>{}, extraction_radius, l_max, 1.0e-10,
+        0.0, Options::Context{});
   };
   const auto initialized_du_dr_j =
-      [&boundary_du_dr_j, &extraction_radius, &make_manager](
+      [&boundary_du_dr_j, &extraction_radius](
           std::unique_ptr<InitializeJ::InitializeJ<false>> generator,
-          const bool use_robinson_trautman = false) {
+          std::unique_ptr<Solutions::WorldtubeData> solution) {
         tuples::tagged_tuple_from_typelist<
             Parallel::get_const_global_cache_tags<metavariables>>
             cache_items{};
@@ -463,7 +479,9 @@ void test_analytic_du_dr_j_interpolator_injection() {
         ActionTesting::set_phase(make_not_null(&runner),
                                  Parallel::Phase::Initialization);
         ActionTesting::emplace_component<component>(
-            &runner, 0, make_manager(use_robinson_trautman));
+            &runner, 0,
+            AnalyticBoundaryDataManager{l_max, extraction_radius,
+                                        std::move(solution), 0.05});
         for (size_t i = 0; i < 3; ++i) {
           ActionTesting::next_action<component>(make_not_null(&runner), 0);
         }
@@ -474,38 +492,68 @@ void test_analytic_du_dr_j_interpolator_injection() {
                                            Tags::AnalyticBoundaryDataManager>(
                 runner, 0));
       };
-  const auto make_cauchy_second_order =
-      [](std::unique_ptr<intrp::SpanInterpolator> interpolator) {
-        return std::make_unique<InitializeJ::CauchySecondOrder>(
-            1.0e-11, 1500, 1.0e-1, 1.0e-14, 10, 1.0e-12,
-            std::move(interpolator));
-      };
 
-  auto expected_manager = make_manager();
+  AnalyticBoundaryDataManager expected_manager{l_max, extraction_radius,
+                                               linearized_bondi_sachs(), 0.05};
   expected_manager.set_du_dr_j_interpolator(
       std::make_unique<intrp::BarycentricRationalSpanInterpolator>(4_st, 4_st));
   const ComplexDataVector expected_du_dr_j = boundary_du_dr_j(expected_manager);
-  CHECK(expected_du_dr_j != untouched_du_dr_j);
-  CHECK(initialized_du_dr_j(make_cauchy_second_order(
-            std::make_unique<intrp::BarycentricRationalSpanInterpolator>(
-                4_st, 4_st))) == expected_du_dr_j);
+  CHECK(max(abs(expected_du_dr_j)) > 1.0e-6);
+  CHECK(max(abs(expected_du_dr_j)) < 1.0);
+  CHECK_ITERABLE_APPROX(
+      initialized_du_dr_j(
+          make_cauchy_second_order(
+              std::make_unique<intrp::BarycentricRationalSpanInterpolator>(
+                  4_st, 4_st)),
+          linearized_bondi_sachs()),
+      expected_du_dr_j);
 
-  CHECK(initialized_du_dr_j(std::make_unique<InitializeJ::ConformalFactor>()) ==
-        untouched_du_dr_j);
+  CHECK(initialized_du_dr_j(std::make_unique<InitializeJ::ConformalFactor>(),
+                            linearized_bondi_sachs()) == untouched_du_dr_j);
 
   CHECK_THROWS_WITH(
-      initialized_du_dr_j(make_cauchy_second_order(nullptr)),
+      initialized_du_dr_j(make_cauchy_second_order(nullptr),
+                          linearized_bondi_sachs()),
       Catch::Matchers::ContainsSubstring("supplied no interpolator"));
   CHECK_THROWS_WITH(
       initialized_du_dr_j(
           make_cauchy_second_order(
               std::make_unique<intrp::BarycentricRationalSpanInterpolator>(
                   2_st, 2_st)),
-          true),
+          robinson_trautman()),
       Catch::Matchers::ContainsSubstring(
           "RobinsonTrautman does not support the centered time stencil"));
   CHECK(initialized_du_dr_j(std::make_unique<InitializeJ::ConformalFactor>(),
-                            true) == untouched_du_dr_j);
+                            robinson_trautman()) == untouched_du_dr_j);
+}
+
+// The GH interface managers do not produce `Du<Dr<J>>`, so a generator that
+// needs it is rejected.
+void test_gh_rejects_du_dr_j() {
+  using component =
+      MockGhWorldtubeBoundaryWithInitializeJ<GhInitializeJMetavariables>;
+  tuples::tagged_tuple_from_typelist<
+      Parallel::get_const_global_cache_tags<GhInitializeJMetavariables>>
+      cache_items{};
+  get<Tags::InitializeJ<false>>(cache_items) = make_cauchy_second_order(
+      std::make_unique<intrp::BarycentricRationalSpanInterpolator>(2_st, 2_st));
+  get<Tags::LMax>(cache_items) = 8;
+  get<Tags::ExtractionRadiusSimple>(cache_items) = 100.0;
+  get<Tags::NoEndTime>(cache_items) = std::numeric_limits<double>::infinity();
+  get<Tags::SpecifiedStartTime>(cache_items) = 0.0;
+  ActionTesting::MockRuntimeSystem<GhInitializeJMetavariables> runner{
+      std::move(cache_items)};
+  ActionTesting::set_phase(make_not_null(&runner),
+                           Parallel::Phase::Initialization);
+  ActionTesting::emplace_component<component>(
+      &runner, 0,
+      InterfaceManagers::GhLocalTimeStepping{
+          std::make_unique<intrp::BarycentricRationalSpanInterpolator>(3u, 4u)},
+      InterfaceManagers::GhLockstep{});
+  CHECK_THROWS_WITH(
+      ActionTesting::next_action<component>(make_not_null(&runner), 0),
+      Catch::Matchers::ContainsSubstring(
+          "this worldtube data manager does not produce it"));
 }
 }  // namespace
 
@@ -518,6 +566,7 @@ SPECTRE_TEST_CASE(
   test_gh_initialization();
   test_analytic_initialization<Solutions::RotatingSchwarzschild>();
   test_analytic_du_dr_j_interpolator_injection();
+  test_gh_rejects_du_dr_j();
   CHECK_THROWS_WITH(
       (test_analytic_initialization<Solutions::RobinsonTrautman>()),
       Catch::Matchers::ContainsSubstring(

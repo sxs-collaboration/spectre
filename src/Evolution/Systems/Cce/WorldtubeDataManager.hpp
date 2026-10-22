@@ -8,8 +8,10 @@
 #include <memory>
 #include <utility>
 
+#include "DataStructures/ComplexDataVector.hpp"
 #include "DataStructures/ComplexModalVector.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
+#include "DataStructures/DataVector.hpp"
 #include "Evolution/Systems/Cce/BoundaryData.hpp"
 #include "Evolution/Systems/Cce/Tags.hpp"
 #include "Evolution/Systems/Cce/WorldtubeBufferUpdater.hpp"
@@ -49,6 +51,14 @@ void populate_hypersurface_boundary_data(
     const std::unique_ptr<intrp::SpanInterpolator>& interpolator,
     const std::unique_ptr<WorldtubeBufferUpdater<InputTags>>& buffer_updater,
     size_t l_max, size_t buffer_depth);
+
+// Differentiates `dr_j_over_time`, which holds `Dr<BondiJ>` at each of `times`
+// as consecutive blocks of `du_dr_j->size()` angular points, at `time`.
+void differentiate_dr_j_in_time(gsl::not_null<ComplexDataVector*> du_dr_j,
+                                const DataVector& times,
+                                const ComplexDataVector& dr_j_over_time,
+                                const intrp::SpanInterpolator& interpolator,
+                                double time);
 }  // namespace detail
 
 /// \cond
