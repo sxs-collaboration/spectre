@@ -4,6 +4,7 @@
 #include "Framework/TestingFramework.hpp"
 
 #include <array>
+#include <cmath>
 #include <cstddef>
 #include <string>
 #include <vector>
@@ -148,6 +149,16 @@ SPECTRE_TEST_CASE("Unit.IO.Exporter", "[Unit]") {
             .scale(1.0);
     CHECK(interpolated_data[0][0] == custom_approx(1.));
     CHECK(interpolated_data2[0] == custom_approx(1.));
+    {
+      INFO("Points outside the domain are quiet NaNs");
+      const auto interpolated_data_with_missing_point =
+          interpolate_to_points<2>(h5_file_name, "/VolumeData",
+                                   ObservationId{123}, {"Psi"},
+                                   {{{0., 2.}, {0., 0.}}});
+      CHECK(interpolated_data_with_missing_point[0][0] == custom_approx(1.));
+      // This would raise an FPE if the NaN was signaling
+      CHECK(std::isnan(interpolated_data_with_missing_point[0][1]));
+    }
     // Delete the test file
     if (file_system::check_if_file_exists(h5_file_name)) {
       file_system::rm(h5_file_name, true);

@@ -91,7 +91,10 @@ std::vector<std::variant<DataVector, std::vector<float>>> load_tensor_data(
 // on the extrapolation anchor points, both filled with NaNs. The result holds
 // only the target points, so if it already has the correct size (e.g.
 // non-owning DataVectors that reference the caller's memory) it is written into
-// directly.
+// directly. Points that are never filled remain NaN, e.g. because they are
+// outside the domain. These are quiet NaNs because they are part of the output,
+// so callers can check for them with `std::isnan` even when FPEs are enabled
+// (comparing a signaling NaN raises an FPE).
 template <typename ResultDataType>
 std::vector<DataVector> allocate_result(
     const gsl::not_null<std::vector<ResultDataType>*> result,
@@ -105,11 +108,11 @@ std::vector<DataVector> allocate_result(
       component.resize(num_target_points);
     }
     std::fill(component.begin(), component.end(),
-              std::numeric_limits<double>::signaling_NaN());
+              std::numeric_limits<double>::quiet_NaN());
   }
   return std::vector<DataVector>(
-      num_components, DataVector(num_anchor_points,
-                                 std::numeric_limits<double>::signaling_NaN()));
+      num_components,
+      DataVector(num_anchor_points, std::numeric_limits<double>::quiet_NaN()));
 }
 
 template <typename ResultDataType, size_t Dim>
