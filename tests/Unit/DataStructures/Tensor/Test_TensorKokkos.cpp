@@ -20,7 +20,7 @@ KOKKOS_FUNCTION Scalar<double> tensor_func(const Scalar<double>& input) {
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.Kokkos",
-                  "[Unit][DataStructures]") {
+                  "[Unit][DataStructures][Device]") {
   {
     INFO("Testing Kokkos pointwise tensor operation");
     const size_t num_points = 3;

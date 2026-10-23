@@ -149,7 +149,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.EagerMath.EuclideanDotProduct",
 }
 
 SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.EagerMath.DotProduct",
-                  "[DataStructures][Unit]") {
+                  "[DataStructures][Unit][Device]") {
   // Check for DataVectors
   {
     const size_t npts = 5;

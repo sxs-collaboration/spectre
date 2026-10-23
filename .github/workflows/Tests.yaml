@@ -788,23 +788,14 @@ ${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
         working-directory: build
         run: |
           make -j${NUMBER_OF_CORES} \
+            device-tests \
             Test_DataStructures \
-            Test_EagerMath \
-            Test_Hydro \
-            Test_Tensor \
-            Test_Kokkos \
             Test_Spectral \
             Test_Utilities \
             EvolveScalarWave3D
           # Can't run these tests on GitHub-hosted runners because they don't
           # have GPU hardware.
-          # ./bin/Test_DataStructures
-          # ./bin/Test_EagerMath
-          # ./bin/Test_Hydro
-          # ./bin/Test_Tensor
-          # ./bin/Test_Kokkos
-          # ./bin/Test_Spectral
-          # ./bin/Test_Utilities
+          # ctest -L device --output-on-failure
           # ctest -R PlaneWave3D.yaml --output-on-failure
       # Avoid running out of disk space by cleaning up the build directory
       - name: Clean up unit tests

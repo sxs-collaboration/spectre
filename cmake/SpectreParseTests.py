@@ -15,6 +15,7 @@ allowed_tags = [
     "CompilationTest",
     "ControlSystem",
     "DataStructures",
+    "Device",
     "Domain",
     "Elasticity",
     "Elliptic",

@@ -73,5 +73,7 @@ following configuration options:
   copy (e.g. a host-accessible view), before measuring time, or to synchronize
   several execution space instances. In the latter case fence only the instance
   that needs it, e.g. `exec.fence()`.
-- Test device code by comparing against its host counterpart. The tests run on
-  the host backend in CI, which has no GPUs.
+- Test device code by comparing against its host counterpart, e.g. with
+  `TestHelpers::check_on_device`. Tag test cases that run code on the device
+  with `[Device]`. The `device-tests` target builds them and `ctest -L device`
+  runs them. They run on the host backend in CI, which has no GPUs.

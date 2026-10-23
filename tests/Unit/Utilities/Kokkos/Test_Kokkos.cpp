@@ -49,8 +49,7 @@ void test_kokkos_host_assert() {
 #endif  // SPECTRE_DEBUG
 }
 
-SPECTRE_TEST_CASE("Unit.Utilities.Kokkos",
-                   "[Utilities][Unit]") {
+SPECTRE_TEST_CASE("Unit.Utilities.Kokkos", "[Utilities][Unit][Device]") {
   test_kokkos();
   test_kokkos_host_assert();
 }

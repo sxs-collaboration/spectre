@@ -26,7 +26,8 @@ extern "C" [[noreturn]] void exit_on_abort(const int /*signal*/) {
 
 // Only built with SPECTRE_DEBUG and a device backend, see CMakeLists.txt.
 // [[OutputRegex, ASSERT failed on the device: x >= 0.0]]
-SPECTRE_TEST_CASE("Unit.Utilities.Kokkos.AssertOnDevice", "[Utilities][Unit]") {
+SPECTRE_TEST_CASE("Unit.Utilities.Kokkos.AssertOnDevice",
+                  "[Utilities][Unit][Device]") {
   OUTPUT_TEST();
   // `std::_Exit` doesn't flush output, so don't buffer it
   REQUIRE(std::setvbuf(stdout, nullptr, _IONBF, 0) == 0);
