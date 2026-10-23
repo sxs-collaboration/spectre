@@ -76,6 +76,9 @@ Cce:
   InitializeJ:
     InverseCubic:
 
+  # Used only by initial-data generators that require Du(Dr(J)).
+  DuDrJStencilStep: 0.05
+
   AnalyticSolution:
     GaugeWave:
       ExtractionRadius: 40.0

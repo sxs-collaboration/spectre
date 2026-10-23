@@ -568,6 +568,17 @@ The options of `CauchySecondOrder` are:
   simulations. `DuDrJInterpolator` must not use a wider stencil than
   `H5Interpolator`.
 
+For analytic-solution runs, set `Cce: DuDrJStencilStep` to the time spacing
+used to sample the analytic solution for this derivative. Choose a spacing that
+resolves the shortest timescale of the solution, and check convergence by
+varying it. Increasing `DuDrJInterpolator`'s order cannot recover oscillations
+aliased by a coarse spacing; very small spacings amplify roundoff. For example,
+a `LinearizedBondiSachs` frequency of \f$4\pi\f$ is completely aliased by
+spacing `0.5`, while spacing `0.005` resolves it. This option is required for
+analytic runs, but is used only when the initial-data generator requires
+\f$\partial_u\partial_r J\f$. `CauchySecondOrder` is not supported with
+`RobinsonTrautman`.
+
 After building the initial data, `CauchySecondOrder` prints a summary of steps
 1 and 2 and of \f$\max|\breve J^{(0)}|\f$ and \f$\max|\breve J^{(2)}|\f$ over
 the angular grid. In it, the Cauchy-gauge \f$J^{(2)}\f$ is \f$x\f$, and the

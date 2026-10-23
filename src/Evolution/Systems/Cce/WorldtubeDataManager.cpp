@@ -9,6 +9,7 @@
 #include <mutex>
 #include <utility>
 
+#include "DataStructures/ComplexDataVector.hpp"
 #include "DataStructures/ComplexModalVector.hpp"
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
@@ -159,6 +160,25 @@ void populate_hypersurface_boundary_data(
             get(get<Spectral::Swsh::Tags::SwshTransform<tag>>(
                 *interpolated_coefficients)));
       });
+}
+
+void differentiate_dr_j_in_time(const gsl::not_null<ComplexDataVector*> du_dr_j,
+                                const DataVector& times,
+                                const ComplexDataVector& dr_j_over_time,
+                                const intrp::SpanInterpolator& interpolator,
+                                const double time) {
+  const size_t number_of_angular_points = du_dr_j->size();
+  ComplexDataVector dr_j_at_point{times.size()};
+  for (size_t i = 0; i < number_of_angular_points; ++i) {
+    for (size_t ti = 0; ti < times.size(); ++ti) {
+      dr_j_at_point[ti] = dr_j_over_time[(ti * number_of_angular_points) + i];
+    }
+    (*du_dr_j)[i] = interpolator.derivative(
+        gsl::span<const double>(times.data(), times.size()),
+        gsl::span<const std::complex<double>>(dr_j_at_point.data(),
+                                              dr_j_at_point.size()),
+        time);
+  }
 }
 }  // namespace detail
 
@@ -516,21 +536,12 @@ void BondiWorldtubeDataManager::populate_boundary_du_dr_j(
   // Time derivative (at constant y, i.e. following the worldtube) of the
   // boundary Dr<J>, i.e. Du<Dr<J>>. The conversion to Du<Dy<J>> via the
   // worldtube Jacobian is performed by the consumer of this boundary value.
-  auto& du_dr_j =
-      get(get<Tags::BoundaryValue<Tags::Du<Tags::Dr<Tags::BondiJ>>>>(
-              *boundary_data_variables))
-          .data();
-  ComplexDataVector dr_j_at_point{interpolation_span_size};
-  for (size_t i = 0; i < number_of_angular_points; ++i) {
-    for (size_t ti = 0; ti < interpolation_span_size; ++ti) {
-      dr_j_at_point[ti] = dr_j_over_time[(ti * number_of_angular_points) + i];
-    }
-    du_dr_j[i] = du_dr_j_interpolator.derivative(
-        gsl::span<const double>(time_points.data(), time_points.size()),
-        gsl::span<const std::complex<double>>(dr_j_at_point.data(),
-                                              dr_j_at_point.size()),
-        time);
-  }
+  detail::differentiate_dr_j_in_time(
+      make_not_null(
+          &get(get<Tags::BoundaryValue<Tags::Du<Tags::Dr<Tags::BondiJ>>>>(
+                   *boundary_data_variables))
+               .data()),
+      time_points, dr_j_over_time, du_dr_j_interpolator, time);
 }
 
 std::unique_ptr<WorldtubeDataManager<

@@ -271,7 +271,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.Actions.ScriObserveInterpolated",
   Solutions::TeukolskyWave analytic_solution{extraction_radius, amplitude,
                                              duration};
   const AnalyticBoundaryDataManager analytic_manager{
-      l_max, extraction_radius, analytic_solution.get_clone()};
+      l_max, extraction_radius, analytic_solution.get_clone(), 0.05};
 
   ActionTesting::MockRuntimeSystem<test_metavariables> runner{
       {start_time, extraction_radius, false, filename, l_max, l_max,

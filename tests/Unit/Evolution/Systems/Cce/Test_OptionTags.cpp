@@ -189,6 +189,11 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.OptionTags", "[Unit][Cce]") {
   CHECK(TestHelpers::test_option_tag<Cce::OptionTags::AnalyticInitializeJ>(
             "InverseCubic")
             .has_value());
+  CHECK(TestHelpers::test_option_tag<Cce::OptionTags::DuDrJStencilStep>(
+            "0.005") == 0.005);
+  CHECK_THROWS_WITH(
+      TestHelpers::test_option_tag<Cce::OptionTags::DuDrJStencilStep>("0.0"),
+      Catch::Matchers::ContainsSubstring("below the lower bound"));
   TestHelpers::test_option_tag<Cce::OptionTags::AnalyticSolution>(
       "BouncingBlackHole:\n"
       "  Period: 40.0\n"
@@ -278,11 +283,14 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.OptionTags", "[Unit][Cce]") {
   CHECK(Cce::InitializationTags::ScriOutputDensity::create_from_options(4_st) ==
         4_st);
 
-  CHECK(Cce::Tags::AnalyticBoundaryDataManager::create_from_options(
-            10.0, 8,
-            std::make_unique<Cce::Solutions::RotatingSchwarzschild>(10.0, 1.0,
-                                                                    0.5))
-            .get_l_max() == 8);
+  const auto analytic_manager =
+      Cce::Tags::AnalyticBoundaryDataManager::create_from_options(
+          10.0, 8,
+          std::make_unique<Cce::Solutions::RotatingSchwarzschild>(10.0, 1.0,
+                                                                  0.5),
+          0.005);
+  CHECK(analytic_manager.get_l_max() == 8);
+  CHECK(analytic_manager.get_du_dr_j_stencil_step() == 0.005);
 
   if (file_system::check_if_file_exists(filename)) {
     file_system::rm(filename, true);

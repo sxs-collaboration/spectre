@@ -275,7 +275,7 @@ SPECTRE_TEST_CASE(
   const RotatingSchwarzschildWithNoninertialNews analytic_solution{
       extraction_radius, 1.0, 0.05};
   const AnalyticBoundaryDataManager analytic_manager{
-      l_max, extraction_radius, analytic_solution.get_clone()};
+      l_max, extraction_radius, analytic_solution.get_clone(), 0.05};
   ActionTesting::MockRuntimeSystem<test_metavariables> runner{
       {start_time, false, l_max, l_max, number_of_radial_points,
        static_cast<std::unique_ptr<LtsTimeStepper>>(
