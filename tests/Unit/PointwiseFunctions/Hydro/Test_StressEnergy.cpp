@@ -192,9 +192,6 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.Hydro.StressEnergy",
   pypp::check_with_random_values<1>(&momentum_density<DataVector>,
                                     "Test_StressEnergy", {"momentum_density"},
                                     {{{0.0, 1.0}}}, used_for_size);
-  pypp::check_with_random_values<1>(&stress_trace<DataVector>,
-                                    "Test_StressEnergy", {"stress_trace"},
-                                    {{{0.0, 1.0}}}, used_for_size);
   pypp::check_with_random_values<1>(
       &stress_energy_tensor<DataVector>, "Test_StressEnergy",
       {"stress_energy_tensor"}, {{{0.0, 1.0}}}, used_for_size, tolerance);

@@ -103,6 +103,10 @@ void momentum_density(
  *   S_\mathrm{fluid} = 3 p + \rho h (W^2 - 1)
  * \end{equation}
  *
+ * The kinetic term is evaluated as \f$\rho h W^2 v^2\f$ to avoid
+ * cancellation in \f$W^2 - 1\f$ at small velocities. The supplied Lorentz
+ * factor and squared velocity must describe the same physical state.
+ *
  * Magnetic field contribution (Eq. (5.155) in \cite BaumgarteShapiro):
  *
  * \begin{equation}
