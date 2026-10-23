@@ -23,8 +23,6 @@
  * corresponding tensor \f$ S_{abc} \f$ is calculated with respect to the metric
  * \f$g_{ab}\f$.  You may have to add a new instantiation of this template if
  * you need a new use case.
- *
- * These functions can be called in Kokkos kernels with `double`s.
  */
 template <typename DataType, typename Index0, typename Index1>
 KOKKOS_FUNCTION void raise_or_lower_first_index(
@@ -68,8 +66,6 @@ raise_or_lower_first_index(
  * metric. If a tensor \f$ S^a \f$ is passed as an argument than the
  * corresponding tensor \f$ S_{a} \f$ is calculated with respect to the metric
  * \f$g_{ab}\f$.
- *
- * These functions can be called in Kokkos kernels with `double`s.
  */
 template <typename DataTypeTensor, typename DataTypeMetric, typename Index0>
 KOKKOS_FUNCTION void raise_or_lower_index(

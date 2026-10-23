@@ -38,8 +38,6 @@ namespace hydro {
  * See also Eq. (5.173) in \cite BaumgarteShapiro, with the difference that we
  * work in Heaviside-Lorentz units where the magnetic field is rescaled by
  * $1/\sqrt{4\pi}$, following \cite Moesta2013dna .
- *
- * The functions can be called in Kokkos kernels with `DataType = double`.
  */
 template <typename DataType>
 KOKKOS_FUNCTION void comoving_magnetic_field(

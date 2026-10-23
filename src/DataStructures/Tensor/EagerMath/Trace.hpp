@@ -19,8 +19,6 @@
  * \f$ is the inverse metric.  Note that indices \f$a,b,c,...\f$ can represent
  * either spatial or spacetime indices, and can have either valence.  You may
  * have to add a new instantiation of this template if you need a new use case.
- *
- * These functions can be called in Kokkos kernels with `double`s.
  */
 template <typename DataType, typename Index0, typename Index1>
 KOKKOS_FUNCTION void trace_last_indices(
@@ -53,8 +51,6 @@ trace_last_indices(
  * \brief Computes trace of a rank-2 symmetric tensor.
  * \details Computes \f$g^{ab}T_{ab}\f$ or \f$g_{ab}T^{ab}\f$ where \f$(a,b)\f$
  * can be spatial or spacetime indices.
- *
- * These functions can be called in Kokkos kernels with `double`s.
  */
 template <typename DataType, typename Index0>
 KOKKOS_FUNCTION void trace(
