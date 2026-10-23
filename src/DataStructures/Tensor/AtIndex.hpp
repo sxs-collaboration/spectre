@@ -9,7 +9,7 @@
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/Tensor/Metafunctions.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
-#include "Utilities/Kokkos/KokkosCore.hpp"
+#include "Utilities/Kokkos/KokkosMacros.hpp"
 
 /*!
  * \brief Get the `Tensor` at a specific grid point index.

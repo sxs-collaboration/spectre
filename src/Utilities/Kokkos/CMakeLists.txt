@@ -10,9 +10,10 @@ spectre_target_headers(
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
   KokkosCore.hpp
+  KokkosMacros.hpp
 )
 
-if(TARGET Kokkos::kokkos)
+if(SPECTRE_KOKKOS)
   target_link_libraries(
     ${LIBRARY}
     INTERFACE

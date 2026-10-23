@@ -5,6 +5,7 @@
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/Kokkos/KokkosMacros.hpp"
 
 namespace hydro {
 
@@ -37,9 +38,11 @@ namespace hydro {
  * See also Eq. (5.173) in \cite BaumgarteShapiro, with the difference that we
  * work in Heaviside-Lorentz units where the magnetic field is rescaled by
  * $1/\sqrt{4\pi}$, following \cite Moesta2013dna .
+ *
+ * The functions can be called in Kokkos kernels with `DataType = double`.
  */
 template <typename DataType>
-void comoving_magnetic_field(
+KOKKOS_FUNCTION void comoving_magnetic_field(
     gsl::not_null<tnsr::A<DataType, 3>*> result,
     const tnsr::I<DataType, 3>& spatial_velocity,
     const tnsr::I<DataType, 3>& magnetic_field,
@@ -48,7 +51,7 @@ void comoving_magnetic_field(
     const Scalar<DataType>& lapse);
 
 template <typename DataType>
-tnsr::A<DataType, 3> comoving_magnetic_field(
+KOKKOS_FUNCTION tnsr::A<DataType, 3> comoving_magnetic_field(
     const tnsr::I<DataType, 3>& spatial_velocity,
     const tnsr::I<DataType, 3>& magnetic_field,
     const Scalar<DataType>& magnetic_field_dot_spatial_velocity,
@@ -56,7 +59,7 @@ tnsr::A<DataType, 3> comoving_magnetic_field(
     const Scalar<DataType>& lapse);
 
 template <typename DataType>
-void comoving_magnetic_field_one_form(
+KOKKOS_FUNCTION void comoving_magnetic_field_one_form(
     gsl::not_null<tnsr::a<DataType, 3>*> result,
     const tnsr::i<DataType, 3>& spatial_velocity_one_form,
     const tnsr::i<DataType, 3>& magnetic_field_one_form,
@@ -65,7 +68,7 @@ void comoving_magnetic_field_one_form(
     const Scalar<DataType>& lapse);
 
 template <typename DataType>
-tnsr::a<DataType, 3> comoving_magnetic_field_one_form(
+KOKKOS_FUNCTION tnsr::a<DataType, 3> comoving_magnetic_field_one_form(
     const tnsr::i<DataType, 3>& spatial_velocity_one_form,
     const tnsr::i<DataType, 3>& magnetic_field_one_form,
     const Scalar<DataType>& magnetic_field_dot_spatial_velocity,
@@ -73,14 +76,14 @@ tnsr::a<DataType, 3> comoving_magnetic_field_one_form(
     const Scalar<DataType>& lapse);
 
 template <typename DataType>
-void comoving_magnetic_field_squared(
+KOKKOS_FUNCTION void comoving_magnetic_field_squared(
     gsl::not_null<Scalar<DataType>*> result,
     const Scalar<DataType>& magnetic_field_squared,
     const Scalar<DataType>& magnetic_field_dot_spatial_velocity,
     const Scalar<DataType>& lorentz_factor);
 
 template <typename DataType>
-Scalar<DataType> comoving_magnetic_field_squared(
+KOKKOS_FUNCTION Scalar<DataType> comoving_magnetic_field_squared(
     const Scalar<DataType>& magnetic_field_squared,
     const Scalar<DataType>& magnetic_field_dot_spatial_velocity,
     const Scalar<DataType>& lorentz_factor);

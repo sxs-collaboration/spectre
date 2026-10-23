@@ -1,7 +1,7 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-if (NOT TARGET Kokkos::kokkos)
+if (NOT SPECTRE_KOKKOS)
   return()
 endif()
 
@@ -18,6 +18,12 @@ set(LIBRARY "Test_Kokkos")
 set(LIBRARY_SOURCES
   Test_Kokkos.cpp
   )
+
+# Only device builds can test that `ASSERT` aborts on the device
+# (Kokkos' SYCL abort doesn't terminate the program yet)
+if (SPECTRE_DEBUG AND (Kokkos_ENABLE_CUDA OR Kokkos_ENABLE_HIP))
+  list(APPEND LIBRARY_SOURCES Test_KokkosAssertOnDevice.cpp)
+endif()
 
 add_test_library(${LIBRARY} "${LIBRARY_SOURCES}")
 

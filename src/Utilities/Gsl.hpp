@@ -41,6 +41,7 @@
 #include "Utilities/Array.hpp"
 #include "Utilities/ErrorHandling/ExpectsAndEnsures.hpp"
 #include "Utilities/ForceInline.hpp"
+#include "Utilities/Kokkos/KokkosMacros.hpp"
 #include "Utilities/Literals.hpp"
 #include "Utilities/PrettyType.hpp"
 #include "Utilities/Requires.hpp"
@@ -85,11 +86,28 @@ namespace gsl {
  * \brief Cast `u` to a type `T` where the cast may result in narrowing
  */
 template <class T, class U>
-SPECTRE_ALWAYS_INLINE constexpr T narrow_cast(U&& u) {
+KOKKOS_FUNCTION SPECTRE_ALWAYS_INLINE constexpr T narrow_cast(U&& u) {
   return static_cast<T>(std::forward<U>(u));
 }
 
 namespace gsl_detail {
+// Checks that `index` is a valid index into a container of size `size`, like
+// `Expects`. Can be called in Kokkos kernels, where a failed check aborts.
+template <typename Size>
+KOKKOS_FUNCTION SPECTRE_ALWAYS_INLINE constexpr void kokkos_check_bounds(
+    const Size index, const std::size_t size) {
+#if defined(SPECTRE_DEBUG) || defined(EXPECTS_ENSURES)
+  KOKKOS_IF_ON_HOST((Expects(index >= 0 and index < narrow_cast<Size>(size));))
+  KOKKOS_IF_ON_DEVICE(
+      (if (not(index >= 0 and index < narrow_cast<Size>(size))) {
+        Kokkos::abort("gsl::at: index out of bounds");
+      }))
+#else
+  static_cast<void>(index);
+  static_cast<void>(size);
+#endif
+}
+
 template <class T, class U>
 struct is_same_signedness
     : public std::integral_constant<bool, std::is_signed<T>::value ==
@@ -121,10 +139,20 @@ SPECTRE_ALWAYS_INLINE T narrow(U u) {
  * \ingroup UtilitiesGroup
  * \brief Retrieve a entry from a container, with checks in Debug mode that
  * the index being retrieved is valid.
+ *
+ * The overloads for `std::array` can be called in Kokkos kernels.
  */
 template <class T, std::size_t N, typename Size>
-SPECTRE_ALWAYS_INLINE constexpr T& at(std::array<T, N>& arr, Size index) {
-  Expects(index >= 0 and index < narrow_cast<Size>(N));
+KOKKOS_FUNCTION SPECTRE_ALWAYS_INLINE constexpr T& at(std::array<T, N>& arr,
+                                                      Size index) {
+  gsl_detail::kokkos_check_bounds(index, N);
+  return arr[static_cast<std::size_t>(index)];
+}
+
+template <class T, std::size_t N, typename Size>
+KOKKOS_FUNCTION SPECTRE_ALWAYS_INLINE constexpr const T& at(
+    const std::array<T, N>& arr, Size index) {
+  gsl_detail::kokkos_check_bounds(index, N);
   return arr[static_cast<std::size_t>(index)];
 }
 

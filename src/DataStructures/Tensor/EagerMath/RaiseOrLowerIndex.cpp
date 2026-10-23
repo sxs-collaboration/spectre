@@ -8,12 +8,13 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
+#include "Utilities/Kokkos/KokkosMacros.hpp"
 
 template <typename X, typename Symm, typename IndexList>
 class Tensor;
 
 template <typename DataType, typename Index0, typename Index1>
-void raise_or_lower_first_index(
+KOKKOS_FUNCTION void raise_or_lower_first_index(
     const gsl::not_null<
         Tensor<DataType, Symmetry<2, 1, 1>,
                index_list<change_index_up_lo<Index0>, Index1, Index1>>*>
@@ -38,7 +39,7 @@ void raise_or_lower_first_index(
 }
 
 template <typename DataTypeTensor, typename DataTypeMetric, typename Index0>
-void raise_or_lower_index(
+KOKKOS_FUNCTION void raise_or_lower_index(
     const gsl::not_null<Tensor<DataTypeTensor, Symmetry<1>,
                                index_list<change_index_up_lo<Index0>>>*>
         result,
@@ -83,13 +84,13 @@ void raise_or_lower_index(
                    index_list<change_index_up_lo<INDEX0(data)>,               \
                               change_index_up_lo<INDEX0(data)>>>& metric);
 
-GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (double, DataVector),
-                        (Frame::Grid, Frame::Distorted, Frame::Inertial,
-                         Frame::Spherical<Frame::Inertial>,
-                         Frame::Spherical<Frame::Distorted>,
-                         Frame::Spherical<Frame::Grid>),
-                        (SpatialIndex, SpacetimeIndex), (UpLo::Lo, UpLo::Up),
-                        (UpLo::Lo, UpLo::Up))
+GENERATE_INSTANTIATIONS(
+    INSTANTIATE, (1, 2, 3),
+    SPECTRE_DEVICE_AND_HOST_TYPES((double), (double, DataVector)),
+    (Frame::Grid, Frame::Distorted, Frame::Inertial,
+     Frame::Spherical<Frame::Inertial>, Frame::Spherical<Frame::Distorted>,
+     Frame::Spherical<Frame::Grid>),
+    (SpatialIndex, SpacetimeIndex), (UpLo::Lo, UpLo::Up), (UpLo::Lo, UpLo::Up))
 
 #undef FRAME1
 #undef UPORLO1
@@ -116,11 +117,12 @@ using make_real_t = std::conditional_t<
                    index_list<change_index_up_lo<INDEX0(data)>,         \
                               change_index_up_lo<INDEX0(data)>>>& metric);
 
-GENERATE_INSTANTIATIONS(INSTANTIATE2, (1, 2, 3),
-                        (double, DataVector, std::complex<double>,
-                         ComplexDataVector),
-                        (Frame::Grid, Frame::Distorted, Frame::Inertial),
-                        (SpatialIndex, SpacetimeIndex), (UpLo::Lo, UpLo::Up))
+GENERATE_INSTANTIATIONS(
+    INSTANTIATE2, (1, 2, 3),
+    SPECTRE_DEVICE_AND_HOST_TYPES((double), (double, std::complex<double>,
+                                             DataVector, ComplexDataVector)),
+    (Frame::Grid, Frame::Distorted, Frame::Inertial),
+    (SpatialIndex, SpacetimeIndex), (UpLo::Lo, UpLo::Up))
 
 #undef DIM
 #undef DTYPE
