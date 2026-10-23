@@ -69,8 +69,9 @@ void momentum_density(
     const tnsr::I<DataType, 3>& magnetic_field,
     const Scalar<DataType>& magnetic_field_dot_spatial_velocity,
     const Scalar<DataType>& comoving_magnetic_field_squared) {
-  get<0>(*result) = (get(rest_mass_density) * get(specific_enthalpy) +
-                     get(comoving_magnetic_field_squared) -
+  // Complete the electromagnetic subtraction before adding the fluid
+  // contribution, which can be much smaller in magnetically dominated states.
+  get<0>(*result) = (get(comoving_magnetic_field_squared) -
                      square(get(magnetic_field_dot_spatial_velocity))) *
                     square(get(lorentz_factor));
   get<1>(*result) = get<0>(*result);
@@ -79,6 +80,8 @@ void momentum_density(
     result->get(d) *= spatial_velocity.get(d);
     result->get(d) -=
         get(magnetic_field_dot_spatial_velocity) * magnetic_field.get(d);
+    result->get(d) += get(rest_mass_density) * get(specific_enthalpy) *
+                      square(get(lorentz_factor)) * spatial_velocity.get(d);
   }
 }
 
