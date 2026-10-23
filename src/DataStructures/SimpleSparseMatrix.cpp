@@ -4,13 +4,49 @@
 #include "DataStructures/SimpleSparseMatrix.hpp"
 
 #include <algorithm>
+#include <array>
 #include <cstddef>
 #include <iterator>
 #include <numeric>
+#include <utility>
 #include <vector>
 
 #include "Utilities/Algorithm.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
+
+namespace {
+// Pass the pointers by value so the inner loop does not have to reload
+// span/vector metadata through the dispatch closure. With non-call exceptions,
+// GCC 11 otherwise vectorizes across sparse columns using expensive gathers.
+// NOLINTBEGIN(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+template <size_t Stride>
+void increment_multiply_all_offsets(double* const dest_data,
+                                    const double* const source_data,
+                                    const double* const matrix_data,
+                                    const size_t* const column_indices,
+                                    const size_t* const row_indices,
+                                    const size_t* const row_columns,
+                                    const size_t number_of_rows) {
+  size_t entry = 0;
+  for (size_t row = 0; row < number_of_rows; ++row) {
+    std::array<double, Stride> sum{};
+    for (size_t column = 0; column < row_columns[row]; ++column, ++entry) {
+      const double value = matrix_data[entry];
+      const double* const src = source_data + column_indices[entry] * Stride;
+      // Expose independent offsets even above GCC's loop-unrolling limit.
+      // Columns retain their original summation order for every offset.
+      [&]<size_t... Offsets>(std::index_sequence<Offsets...> /*meta*/) {
+        ((sum[Offsets] += value * src[Offsets]), ...);
+      }(std::make_index_sequence<Stride>{});
+    }
+    double* const dest = dest_data + row_indices[row] * Stride;
+    for (size_t k = 0; k < Stride; ++k) {
+      dest[k] += gsl::at(sum, k);
+    }
+  }
+}
+// NOLINTEND(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+}  // namespace
 
 double SimpleSparseMatrix::operator()(const size_t row_dest_index,
                                       const size_t column_src_index) const {
@@ -135,6 +171,35 @@ void SimpleSparseMatrix::increment_multiply_on_right(
     (*a)[a_offset + (*dest_ind) * a_stride] += sum;
     std::advance(dest_ind, 1);
   }
+}
+
+void SimpleSparseMatrix::increment_multiply_on_right_all_offsets(
+    const gsl::not_null<gsl::span<double>*> a, const gsl::span<double>& b,
+    const size_t stride) const {
+  if (matrix_elements_.empty() or stride == 0) {
+    return;
+  }
+
+  // Specialize small numbers of right-hand sides so the compiler can keep
+  // their independent sums in registers. The cutoff bounds code generation.
+  constexpr size_t max_specialized_stride = 24;
+  if (stride > max_specialized_stride) {
+    for (size_t offset = 0; offset < stride; ++offset) {
+      increment_multiply_on_right(a, offset, stride, b, offset, stride);
+    }
+    return;
+  }
+
+  // Keep each offset's summation order identical to the scalar multiply:
+  // accumulate a row separately, then add it to the destination once.
+  static constexpr auto dispatch =
+      []<size_t... Indices>(std::index_sequence<Indices...>) {
+        return std::array{&increment_multiply_all_offsets<Indices + 1>...};
+      }(std::make_index_sequence<max_specialized_stride>{});
+  gsl::at(dispatch, stride - 1)(
+      a->data(), b.data(), matrix_elements_.data(), column_src_indices_.data(),
+      row_dest_indices_.data(), num_columns_per_row_.data(),
+      row_dest_indices_.size());
 }
 
 // Explicit instantiations
