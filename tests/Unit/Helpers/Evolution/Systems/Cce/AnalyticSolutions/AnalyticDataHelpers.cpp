@@ -316,7 +316,7 @@ void test_initialize_j(const size_t l_max, const size_t number_of_radial_points,
       Spectral::Swsh::number_of_swsh_collocation_points(l_max);
   Variables<Tags::characteristic_worldtube_boundary_tags<Tags::BoundaryValue>>
       boundary_variables{number_of_angular_points};
-  AnalyticBoundaryDataManager analytic_manager{
+  const AnalyticBoundaryDataManager analytic_manager{
       l_max, extraction_radius, analytic_solution->get_clone(), 0.05};
   analytic_manager.populate_hypersurface_boundary_data(
       make_not_null(&boundary_variables), time);
