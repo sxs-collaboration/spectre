@@ -21,6 +21,7 @@ installation "installed SpECTRE" and built it successfully.
 |---------------|---------------------|
 | \subpage tutorial_parallel_concepts "Parallelism in SpECTRE " | SpECTRE and Charm++ |
 | \subpage tutorial_minimal_parallel_executable "Minimal executable " | Metavariables, Main component |
+| \subpage tutorial_pi_monte_carlo "Monte Carlo pi executable " | Options, DataBox tags, actions, reductions, array and singleton components |
 
 See also: \subpage ParallelInfoExecutablePage
 See also: \subpage RandomAmrExecutablePage

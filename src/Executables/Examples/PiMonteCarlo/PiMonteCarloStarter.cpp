@@ -1,30 +1,26 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-// Notes:
-// 1. This code is the starting point for a tutorial on how
-//    spectre executables work. Comments starting with "TUTORIAL" indicate
-//    steps to build a complete executable. This file already includes some
-//    necessary boilerplate and all necessary includes.
+// This is the starter source for the Pi Monte Carlo developer-guide tutorial.
+// Comments starting with "TUTORIAL" mark the code readers will add. The file
+// already includes the necessary scaffolding and headers.
 //
-// 2. Building this target as-is will generate unused-variable compiler
-//    warnings. These warnings should vanish once the tutorial is successfully
-//    completed.
+// The tutorial has readers save PiMonteCarlo.cpp as PiMonteCarloSolution.cpp,
+// then copy this file over PiMonteCarlo.cpp so every checkpoint uses the
+// regular PiMonteCarlo build target.
 //
-// 3. The file PiMonteCarlo.cpp contains a solution for each tutorial step.
-//    If you get stuck or run into trouble completing the tutorial, you can
-//    always compare with the solution in PiMonteCarlo.cpp.
+// If you get stuck, compare your work with PiMonteCarloSolution.cpp.
 
 // Includes from the C++ standard library needed for this executable
 #include <array>
 #include <cmath>
 #include <cstddef>
+#include <limits>
 #include <optional>
+#include <random>
 #include <unordered_set>
-#include <vector>
 
 // Includes from SpECTRE libraries needed for this executable
-#include "DataStructures/DataVector.hpp"
 #include "DataStructures/TaggedTuple.hpp"
 #include "Options/String.hpp"
 #include "Parallel/AlgorithmExecution.hpp"
@@ -38,7 +34,6 @@
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "Parallel/Printf/Printf.hpp"
 #include "Parallel/Reduction.hpp"
-#include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -81,7 +76,7 @@ namespace OptionTags {
 // TUTORIAL STEP 0.0: add structs for the two quantities the user will choose
 // when running the executable: DartsPerIteration and AccuracyGoal.
 
-};  // namespace OptionTags
+}  // namespace OptionTags
 
 // TUTORIAL PART 1: Set up quantities stored in DataBox
 namespace Tags {
@@ -94,9 +89,9 @@ namespace Tags {
 // Instead of initializing from a user-specified value, hard-code initializing
 // them to zero.
 
-}  // Namespace Tags
+}  // namespace Tags
 
-// TUTORIAL PART 2: Complete the Actions ThrowDarts and EstimatePi.
+// TUTORIAL PART 2: Complete the ThrowDarts and ProcessHitsAndThrows actions.
 namespace Actions {
 // In spectre, "iterable actions" (actions that can be done more than once) are
 // made by creating a struct with a function apply with the following
@@ -114,25 +109,25 @@ struct ThrowDarts {
       const ParallelComponent* const /*meta*/
   ) {
     // TUTORIAL STEP 2.0: get how many darts to throw from the DataBox
-    (void)box;  // remove this line
+    (void)box;  // Temporary: remove in step 2.0.
 
     // TUTORIAL STEP 2.1: throw N darts at the unit square, seeing how many
     // hit the quarter circle
-    (void)cache;        // remove this line
-    (void)array_index;  // remove this line
-
     // Get a proxy (an object that might live on another compute node)
     // for each ParallelComponent. The PiEstimator Singleton component
     // will run the ProcessHitsAndThrows action to estimate pi.
-    // The DartThrower parallel component calls ThrowDarts on a some processors.
+    // The DartThrower parallel component calls ThrowDarts on multiple
+    // processors.
     // TUTORIAL STEP 2.2: get the PiEstimator and DartThrower parallel
     // components.
+    (void)cache;        // Temporary: remove in step 2.2.
+    (void)array_index;  // Temporary: remove in step 2.2.
 
-    // Tutorial STEP 2.3: contribute hits to reduction data
+    // TUTORIAL STEP 2.3: contribute hits to reduction data
 
     // After this action completes, tell this element of the
     // DartThrower array parallel component to pause until further notice.
-    // (That notice might come frm the ProcessHitsAndThrows action, if it
+    // (That notice might come from the ProcessHitsAndThrows action, if it
     // decides that more darts should be thrown.)
     return {Parallel::AlgorithmExecution::Pause, std::nullopt};
   }
@@ -150,6 +145,7 @@ struct ProcessHitsAndThrows {
                     const Parallel::GlobalCache<Metavars>& cache,
                     const ArrayIndex& /*array_index*/, const size_t new_hits) {
     // TUTORIAL STEP 2.4: get number of processors from the cache
+    (void)cache;  // Temporary: remove in step 2.4.
 
     // TUTORIAL STEP 2.5: get number of darts thrown each iteration
     // from the DataBox
@@ -165,9 +161,10 @@ struct ProcessHitsAndThrows {
     //              and number_of_processors to the capture list
     //  STEP 2.6.4: make the body increment the values pointed to by the
     //              pointers (e.g. *hits_all_procs += new_hits)
+    (void)new_hits;  // Temporary: remove in step 2.6.
     db::mutate_apply<tmpl::list<>, tmpl::list<>>([]() {}, make_not_null(&box));
 
-    // TUTORIAL STEP 2.7: estiamte pi, compute the fractional accuracy, and
+    // TUTORIAL STEP 2.7: estimate pi, compute the fractional accuracy, and
     // print the result using Parallel::printf
 
     // TUTORIAL STEP 2.8: if fractional accuracy is bigger than the accuracy
@@ -182,66 +179,22 @@ struct ProcessHitsAndThrows {
 ////////////////////////////////////////////////////////////////////////
 
 // TUTORIAL STEP 3.0: Create the PiEstimator parallel component struct.
-// After defining the type aliases, insert the following boilerplate
-// declaration into the struct:
-/*
-  static void execute_next_phase(
-      const Parallel::Phase next_phase,
-      const Parallel::CProxy_GlobalCache<Metavars>& global_cache);
-*/
 template <typename Metavars>
 struct PiEstimator {};
 
-// TUTORIAL STEP 3.1: After creating PiEstimator, uncomment this defintion.
+// TUTORIAL STEP 3.1: Define PiEstimator::execute_next_phase.
 // This function is necessary boilerplate that tells
-// spectre when one phase ends, start the next one.
-/*
-template <typename Metavars>
-void PiEstimator<Metavars>::execute_next_phase(
-    const Parallel::Phase next_phase,
-    const Parallel::CProxy_GlobalCache<Metavars>& global_cache) {
-  auto& local_cache = *Parallel::local_branch(global_cache);
-  Parallel::get_parallel_component<PiEstimator<Metavars>>(local_cache)
-      .start_phase(next_phase);
-}
-*/
+// SpECTRE to start the next phase when one phase ends.
 
 // TUTORIAL STEP 3.2: Create the DartThrower parallel component struct.
-// After defining the type aliases, insert the following boilerplate
-// static function declarations into the struct.
-/*
-  static void execute_next_phase(
-      const Parallel::Phase next_phase,
-      const Parallel::CProxy_GlobalCache<Metavars>& global_cache);
-  static void allocate_array(
-      Parallel::CProxy_GlobalCache<Metavars>& global_cache,
-      const tuples::tagged_tuple_from_typelist<simple_tags_from_options>&
-          initialization_options,
-      const tuples::tagged_tuple_from_typelist<array_allocation_tags>&
-          array_allocation_options = {},
-      const std::unordered_set<size_t>& procs_to_ignore = {});
-*/
 template <typename Metavars>
 struct DartThrower {};
 
-// TUTORIAL STEP 3.3: After creating DartThrower, uncomment this function
-// definition.
-// Then add it to the parallel component struct as a static function.
+// TUTORIAL STEP 3.3: Define DartThrower::execute_next_phase.
 // This function is necessary boilerplate that tells
-// spectre when one phase ends, start the next one.
-/*
-template <typename Metavars>
-void DartThrower<Metavars>::execute_next_phase(
-    const Parallel::Phase next_phase,
-    const Parallel::CProxy_GlobalCache<Metavars>& global_cache) {
-  auto& local_cache = *Parallel::local_branch(global_cache);
-  Parallel::get_parallel_component<DartThrower<Metavars>>(local_cache)
-      .start_phase(next_phase);
-}
-*/
+// SpECTRE to start the next phase when one phase ends.
 
-// TUTORIAL STEP 3.4: After creating DartThrower, uncomment this function.
-// Then add it to the parallel component struct as a static function.
+// TUTORIAL STEP 3.4: Define DartThrower::allocate_array.
 //
 // This function assigns the array elements to
 // specific cores (processors). The strategy is "round robin:" assign
@@ -251,32 +204,6 @@ void DartThrower<Metavars>::execute_next_phase(
 // Note: since we choose here that there will be one DartThrower element
 // per core, each core will get one element, unless the user asks to skip
 // one or more cores.
-// template <typename Metavars>
-// void DartThrower<Metavars>::allocate_array(
-//     Parallel::CProxy_GlobalCache<Metavars>& global_cache,
-//     const tuples::tagged_tuple_from_typelist<simple_tags_from_options>&
-//         initialization_options,
-//     const tuples::tagged_tuple_from_typelist<array_allocation_tags>&
-//     /*array_allocation_options*/,
-//     const std::unordered_set<size_t>& procs_to_ignore) {
-//   auto& local_cache = *Parallel::local_branch(global_cache);
-//   auto& array_proxy =
-//       Parallel::get_parallel_component<DartThrower<Metavars>>(local_cache);
-
-//   size_t which_proc = 0;
-//   const size_t num_procs = Parallel::number_of_procs<size_t>(local_cache);
-//   const size_t number_of_elements = num_procs;
-
-//   for (size_t i = 0; i < number_of_elements; ++i) {
-//     while (procs_to_ignore.find(which_proc) != procs_to_ignore.end()) {
-//       which_proc = which_proc + 1 == num_procs ? 0 : which_proc + 1;
-//     }
-//     array_proxy[i].insert(global_cache, initialization_options, which_proc);
-//     which_proc = which_proc + 1 == num_procs ? 0 : which_proc + 1;
-//   }
-//   array_proxy.doneInserting();
-// }
-
 // TUTORIAL STEP 4: Complete the Metavariables struct
 struct Metavariables {
   // TUTORIAL STEP 4.1: Add the PiEstimator and DartThrower components
@@ -294,7 +221,7 @@ struct Metavariables {
       {Parallel::Phase::Initialization, Parallel::Phase::Execute,
        Parallel::Phase::Exit}};
 
-  // Boilerplate stating that this metavariables truct has no run-time content
+  // Boilerplate stating that this metavariables struct has no run-time content
   // that must be sent over the network when remote objects want the
   // metavariables. This is done by defining a pup (pack-unpack) function
   // that does nothing.
