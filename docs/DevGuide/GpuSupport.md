@@ -76,4 +76,5 @@ following configuration options:
 - Test device code by comparing against its host counterpart, e.g. with
   `TestHelpers::check_on_device`. Tag test cases that run code on the device
   with `[Device]`. The `device-tests` target builds them and `ctest -L device`
-  runs them. They run on the host backend in CI, which has no GPUs.
+  runs them. They run on the host backend in the GitHub Actions CI, and on a GPU
+  in the CSCS CI (see `.cscs-ci/DeviceTests.yml`).

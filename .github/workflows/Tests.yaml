@@ -794,8 +794,8 @@ ${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
             Test_Utilities \
             EvolveScalarWave3D
           # Can't run these tests on GitHub-hosted runners because they don't
-          # have GPU hardware.
-          # ctest -L device --output-on-failure
+          # have GPU hardware. The device tests run on a GPU in
+          # `.cscs-ci/DeviceTests.yml` instead.
           # ctest -R PlaneWave3D.yaml --output-on-failure
       # Avoid running out of disk space by cleaning up the build directory
       - name: Clean up unit tests
