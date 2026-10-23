@@ -13,6 +13,7 @@
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/Kokkos/KokkosMacros.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
@@ -47,16 +48,17 @@ namespace gh {
  * \f}
  */
 template <typename DataType, size_t SpatialDim, typename Frame>
-void phi(gsl::not_null<tnsr::iaa<DataType, SpatialDim, Frame>*> phi,
-         const Scalar<DataType>& lapse,
-         const tnsr::i<DataType, SpatialDim, Frame>& deriv_lapse,
-         const tnsr::I<DataType, SpatialDim, Frame>& shift,
-         const tnsr::iJ<DataType, SpatialDim, Frame>& deriv_shift,
-         const tnsr::ii<DataType, SpatialDim, Frame>& spatial_metric,
-         const tnsr::ijj<DataType, SpatialDim, Frame>& deriv_spatial_metric);
+KOKKOS_FUNCTION void phi(
+    gsl::not_null<tnsr::iaa<DataType, SpatialDim, Frame>*> phi,
+    const Scalar<DataType>& lapse,
+    const tnsr::i<DataType, SpatialDim, Frame>& deriv_lapse,
+    const tnsr::I<DataType, SpatialDim, Frame>& shift,
+    const tnsr::iJ<DataType, SpatialDim, Frame>& deriv_shift,
+    const tnsr::ii<DataType, SpatialDim, Frame>& spatial_metric,
+    const tnsr::ijj<DataType, SpatialDim, Frame>& deriv_spatial_metric);
 
 template <typename DataType, size_t SpatialDim, typename Frame>
-tnsr::iaa<DataType, SpatialDim, Frame> phi(
+KOKKOS_FUNCTION tnsr::iaa<DataType, SpatialDim, Frame> phi(
     const Scalar<DataType>& lapse,
     const tnsr::i<DataType, SpatialDim, Frame>& deriv_lapse,
     const tnsr::I<DataType, SpatialDim, Frame>& shift,

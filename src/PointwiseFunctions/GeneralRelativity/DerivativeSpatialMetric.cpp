@@ -11,11 +11,12 @@
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/Kokkos/KokkosMacros.hpp"
 #include "Utilities/SetNumberOfGridPoints.hpp"
 
 namespace gr {
 template <typename DataType, size_t Dim, typename Frame>
-void deriv_inverse_spatial_metric(
+KOKKOS_FUNCTION void deriv_inverse_spatial_metric(
     const gsl::not_null<tnsr::iJJ<DataType, Dim, Frame>*> result,
     const tnsr::II<DataType, Dim, Frame>& inverse_spatial_metric,
     const tnsr::ijj<DataType, Dim, Frame>& d_spatial_metric) {
@@ -40,7 +41,7 @@ void deriv_inverse_spatial_metric(
 }
 
 template <typename DataType, size_t Dim, typename Frame>
-tnsr::iJJ<DataType, Dim, Frame> deriv_inverse_spatial_metric(
+KOKKOS_FUNCTION tnsr::iJJ<DataType, Dim, Frame> deriv_inverse_spatial_metric(
     const tnsr::II<DataType, Dim, Frame>& inverse_spatial_metric,
     const tnsr::ijj<DataType, Dim, Frame>& d_spatial_metric) {
   tnsr::iJJ<DataType, Dim, Frame> result{};
@@ -68,7 +69,8 @@ tnsr::iJJ<DataType, Dim, Frame> deriv_inverse_spatial_metric(
       const tnsr::ijj<DTYPE(data), DIM(data), FRAME(data)>& d_spatial_metric);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (Frame::Grid, Frame::Inertial),
-                        (double, DataVector))
+                        SPECTRE_DEVICE_AND_HOST_TYPES((double),
+                                                      (double, DataVector)))
 
 #undef INSTANTIATE
 #undef DTYPE

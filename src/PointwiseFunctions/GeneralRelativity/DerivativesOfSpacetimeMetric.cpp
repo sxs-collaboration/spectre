@@ -7,10 +7,11 @@
 #include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/Kokkos/KokkosMacros.hpp"
 
 namespace gr {
 template <typename DataType, size_t Dim, typename Frame>
-tnsr::abb<DataType, Dim, Frame> derivatives_of_spacetime_metric(
+KOKKOS_FUNCTION tnsr::abb<DataType, Dim, Frame> derivatives_of_spacetime_metric(
     const Scalar<DataType>& lapse, const Scalar<DataType>& dt_lapse,
     const tnsr::i<DataType, Dim, Frame>& deriv_lapse,
     const tnsr::I<DataType, Dim, Frame>& shift,
@@ -28,7 +29,7 @@ tnsr::abb<DataType, Dim, Frame> derivatives_of_spacetime_metric(
 }
 
 template <typename DataType, size_t Dim, typename Frame>
-void derivatives_of_spacetime_metric(
+KOKKOS_FUNCTION void derivatives_of_spacetime_metric(
     const gsl::not_null<tnsr::abb<DataType, Dim, Frame>*>
         spacetime_deriv_spacetime_metric,
     const Scalar<DataType>& lapse, const Scalar<DataType>& dt_lapse,
@@ -125,7 +126,9 @@ void derivatives_of_spacetime_metric(
           deriv_spatial_metric);
 }  // namespace gr
 
-GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (double, DataVector),
+GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3),
+                        SPECTRE_DEVICE_AND_HOST_TYPES((double),
+                                                      (double, DataVector)),
                         (Frame::Grid, Frame::Distorted, Frame::Inertial))
 
 #undef DIM

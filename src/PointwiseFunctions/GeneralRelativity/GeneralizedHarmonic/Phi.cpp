@@ -9,16 +9,18 @@
 #include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/Kokkos/KokkosMacros.hpp"
 
 namespace gh {
 template <typename DataType, size_t SpatialDim, typename Frame>
-void phi(const gsl::not_null<tnsr::iaa<DataType, SpatialDim, Frame>*> phi,
-         const Scalar<DataType>& lapse,
-         const tnsr::i<DataType, SpatialDim, Frame>& deriv_lapse,
-         const tnsr::I<DataType, SpatialDim, Frame>& shift,
-         const tnsr::iJ<DataType, SpatialDim, Frame>& deriv_shift,
-         const tnsr::ii<DataType, SpatialDim, Frame>& spatial_metric,
-         const tnsr::ijj<DataType, SpatialDim, Frame>& deriv_spatial_metric) {
+KOKKOS_FUNCTION void phi(
+    const gsl::not_null<tnsr::iaa<DataType, SpatialDim, Frame>*> phi,
+    const Scalar<DataType>& lapse,
+    const tnsr::i<DataType, SpatialDim, Frame>& deriv_lapse,
+    const tnsr::I<DataType, SpatialDim, Frame>& shift,
+    const tnsr::iJ<DataType, SpatialDim, Frame>& deriv_shift,
+    const tnsr::ii<DataType, SpatialDim, Frame>& spatial_metric,
+    const tnsr::ijj<DataType, SpatialDim, Frame>& deriv_spatial_metric) {
   if (UNLIKELY(get_size(get<0, 0, 0>(*phi)) != get_size(get(lapse)))) {
     *phi = tnsr::iaa<DataType, SpatialDim, Frame>(get_size(get(lapse)));
   }
@@ -48,7 +50,7 @@ void phi(const gsl::not_null<tnsr::iaa<DataType, SpatialDim, Frame>*> phi,
 }
 
 template <typename DataType, size_t SpatialDim, typename Frame>
-tnsr::iaa<DataType, SpatialDim, Frame> phi(
+KOKKOS_FUNCTION tnsr::iaa<DataType, SpatialDim, Frame> phi(
     const Scalar<DataType>& lapse,
     const tnsr::i<DataType, SpatialDim, Frame>& deriv_lapse,
     const tnsr::I<DataType, SpatialDim, Frame>& shift,
@@ -87,7 +89,9 @@ tnsr::iaa<DataType, SpatialDim, Frame> phi(
       const tnsr::ijj<DTYPE(data), DIM(data), FRAME(data)>&                \
           deriv_spatial_metric);
 
-GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (double, DataVector),
+GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3),
+                        SPECTRE_DEVICE_AND_HOST_TYPES((double),
+                                                      (double, DataVector)),
                         (Frame::Grid, Frame::Distorted, Frame::Inertial))
 
 #undef DIM

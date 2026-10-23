@@ -9,10 +9,12 @@
 #include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/Kokkos/KokkosMacros.hpp"
 
 namespace gh {
 template <typename DataType, size_t SpatialDim, typename Frame>
-tnsr::ijj<DataType, SpatialDim, Frame> covariant_deriv_of_extrinsic_curvature(
+KOKKOS_FUNCTION tnsr::ijj<DataType, SpatialDim, Frame>
+covariant_deriv_of_extrinsic_curvature(
     const tnsr::ii<DataType, SpatialDim, Frame>& extrinsic_curvature,
     const tnsr::A<DataType, SpatialDim, Frame>& spacetime_unit_normal_vector,
     const tnsr::Ijj<DataType, SpatialDim, Frame>&
@@ -31,7 +33,7 @@ tnsr::ijj<DataType, SpatialDim, Frame> covariant_deriv_of_extrinsic_curvature(
 }
 
 template <typename DataType, size_t SpatialDim, typename Frame>
-void covariant_deriv_of_extrinsic_curvature(
+KOKKOS_FUNCTION void covariant_deriv_of_extrinsic_curvature(
     const gsl::not_null<tnsr::ijj<DataType, SpatialDim, Frame>*>
         d_extrinsic_curvature,
     const tnsr::ii<DataType, SpatialDim, Frame>& extrinsic_curvature,
@@ -123,7 +125,9 @@ void covariant_deriv_of_extrinsic_curvature(
       const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& d_pi,    \
       const tnsr::ijaa<DTYPE(data), DIM(data), FRAME(data)>& d_phi);
 
-GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (double, DataVector),
+GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3),
+                        SPECTRE_DEVICE_AND_HOST_TYPES((double),
+                                                      (double, DataVector)),
                         (Frame::Grid, Frame::Inertial))
 
 #undef DIM

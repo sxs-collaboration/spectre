@@ -9,12 +9,14 @@
 #include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/Kokkos/KokkosMacros.hpp"
 #include "Utilities/MakeWithValue.hpp"
 
 namespace {
 
 template <typename DataType, size_t SpatialDim, typename Frame>
-tnsr::Ij<DataType, SpatialDim, Frame> up_down_from_lower_rank_2_tensor(
+KOKKOS_FUNCTION tnsr::Ij<DataType, SpatialDim, Frame>
+up_down_from_lower_rank_2_tensor(
     const tnsr::ii<DataType, SpatialDim, Frame>& lower_rank_2_tensor,
     const tnsr::II<DataType, SpatialDim, Frame>& inverse_spatial_metric) {
   auto result = make_with_value<tnsr::Ij<DataType, SpatialDim, Frame>>(
@@ -34,7 +36,7 @@ tnsr::Ij<DataType, SpatialDim, Frame> up_down_from_lower_rank_2_tensor(
 
 namespace gr {
 template <typename DataType, size_t SpatialDim, typename Frame>
-void weyl_type_D1(
+KOKKOS_FUNCTION void weyl_type_D1(
     const gsl::not_null<tnsr::ii<DataType, SpatialDim, Frame>*> weyl_type_D1,
     const tnsr::ii<DataType, SpatialDim, Frame>& weyl_electric,
     const tnsr::ii<DataType, SpatialDim, Frame>& spatial_metric,
@@ -87,7 +89,7 @@ void weyl_type_D1(
 }
 
 template <typename DataType, size_t SpatialDim, typename Frame>
-tnsr::ii<DataType, SpatialDim, Frame> weyl_type_D1(
+KOKKOS_FUNCTION tnsr::ii<DataType, SpatialDim, Frame> weyl_type_D1(
     const tnsr::ii<DataType, SpatialDim, Frame>& weyl_electric,
     const tnsr::ii<DataType, SpatialDim, Frame>& spatial_metric,
     const tnsr::II<DataType, SpatialDim, Frame>& inverse_spatial_metric) {
@@ -99,7 +101,7 @@ tnsr::ii<DataType, SpatialDim, Frame> weyl_type_D1(
 }
 
 template <typename DataType, size_t SpatialDim, typename Frame>
-void weyl_type_D1_scalar(
+KOKKOS_FUNCTION void weyl_type_D1_scalar(
     const gsl::not_null<Scalar<DataType>*> weyl_type_D1_scalar_result,
     const tnsr::ii<DataType, SpatialDim, Frame>& weyl_type_D1,
     const tnsr::II<DataType, SpatialDim, Frame>& inverse_spatial_metric) {
@@ -123,7 +125,7 @@ void weyl_type_D1_scalar(
 }
 
 template <typename DataType, size_t SpatialDim, typename Frame>
-Scalar<DataType> weyl_type_D1_scalar(
+KOKKOS_FUNCTION Scalar<DataType> weyl_type_D1_scalar(
     const tnsr::ii<DataType, SpatialDim, Frame>& weyl_type_D1,
     const tnsr::II<DataType, SpatialDim, Frame>& inverse_spatial_metric) {
   Scalar<DataType> weyl_type_D1_scalar_result{};
@@ -162,7 +164,9 @@ Scalar<DataType> weyl_type_D1_scalar(
       const tnsr::II<DTYPE(data), DIM(data), FRAME(data)>&                  \
           inverse_spatial_metric);
 
-GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (double, DataVector),
+GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3),
+                        SPECTRE_DEVICE_AND_HOST_TYPES((double),
+                                                      (double, DataVector)),
                         (Frame::Grid, Frame::Inertial))
 #undef DIM
 #undef DTYPE

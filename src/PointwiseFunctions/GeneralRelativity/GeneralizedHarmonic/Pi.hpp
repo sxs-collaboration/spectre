@@ -13,6 +13,7 @@
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/Kokkos/KokkosMacros.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
@@ -50,16 +51,17 @@ namespace gh {
  * \f}
  */
 template <typename DataType, size_t SpatialDim, typename Frame>
-void pi(gsl::not_null<tnsr::aa<DataType, SpatialDim, Frame>*> pi,
-        const Scalar<DataType>& lapse, const Scalar<DataType>& dt_lapse,
-        const tnsr::I<DataType, SpatialDim, Frame>& shift,
-        const tnsr::I<DataType, SpatialDim, Frame>& dt_shift,
-        const tnsr::ii<DataType, SpatialDim, Frame>& spatial_metric,
-        const tnsr::ii<DataType, SpatialDim, Frame>& dt_spatial_metric,
-        const tnsr::iaa<DataType, SpatialDim, Frame>& phi);
+KOKKOS_FUNCTION void pi(
+    gsl::not_null<tnsr::aa<DataType, SpatialDim, Frame>*> pi,
+    const Scalar<DataType>& lapse, const Scalar<DataType>& dt_lapse,
+    const tnsr::I<DataType, SpatialDim, Frame>& shift,
+    const tnsr::I<DataType, SpatialDim, Frame>& dt_shift,
+    const tnsr::ii<DataType, SpatialDim, Frame>& spatial_metric,
+    const tnsr::ii<DataType, SpatialDim, Frame>& dt_spatial_metric,
+    const tnsr::iaa<DataType, SpatialDim, Frame>& phi);
 
 template <typename DataType, size_t SpatialDim, typename Frame>
-tnsr::aa<DataType, SpatialDim, Frame> pi(
+KOKKOS_FUNCTION tnsr::aa<DataType, SpatialDim, Frame> pi(
     const Scalar<DataType>& lapse, const Scalar<DataType>& dt_lapse,
     const tnsr::I<DataType, SpatialDim, Frame>& shift,
     const tnsr::I<DataType, SpatialDim, Frame>& dt_shift,
