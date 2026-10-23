@@ -12,6 +12,7 @@ set(SPECTRE_FORMALINE_LOCATIONS
   .claude
   .codecov.yaml
   .codex
+  .cscs-ci
   .devcontainer
   .dockerignore
   .github

@@ -1,0 +1,56 @@
+# Distributed under the MIT License.
+# See LICENSE.txt for details.
+
+# Runs the unit tests tagged [Device] on a Grace Hopper (GH200) node of the
+# Daint cluster at CSCS (see `README.md` for the CSCS CI setup). The CUDA build
+# in `.github/workflows/Tests.yaml` compiles these tests too, but cannot run
+# them because GitHub-hosted runners have no GPU.
+
+include:
+  - remote: 'https://gitlab.com/cscs-ci/recipes/-/raw/master/templates/v2/.ci-ext.yml'
+
+# See `README.md`
+workflow:
+  rules:
+    - if: $CSCS_CI_FORCE_RUN
+    - if: $CI_COMMIT_REF_NAME == "develop"
+    - when: never
+
+stages:
+  - build
+  - test
+
+variables:
+  SPECTRE_IMAGE: >-
+    $CSCS_REGISTRY_PATH/public/spectre-device-tests:$CI_COMMIT_SHORT_SHA
+
+build image:
+  stage: build
+  extends: .container-builder-cscs-gh200
+  timeout: '2h'
+  variables:
+    DOCKERFILE: .cscs-ci/Dockerfile.device-tests
+    PERSIST_IMAGE_NAME: $SPECTRE_IMAGE
+    CSCS_REBUILD_POLICY: always
+    CSCS_BUILD_IN_MEMORY: 'FALSE'
+    # The builder passes the CPU limit to the Dockerfile as NUM_PROCS. nvcc
+    # needs several GB per compile job, so stay well below the default memory
+    # limit of 64 GiB.
+    KUBERNETES_CPU_REQUEST: '8'
+    KUBERNETES_CPU_LIMIT: '8'
+
+device tests:
+  stage: test
+  extends: .container-runner-daint-gh200
+  needs: [build image]
+  image: $SPECTRE_IMAGE
+  timeout: '2h'
+  variables:
+    GIT_STRATEGY: none
+    SLURM_JOB_NUM_NODES: 1
+    SLURM_NTASKS: 1
+    SLURM_TIMELIMIT: "00:15:00"
+    USE_MPI: 'NO'
+  script:
+    - nvidia-smi
+    - ctest --test-dir /work/spectre/build -L device --output-on-failure

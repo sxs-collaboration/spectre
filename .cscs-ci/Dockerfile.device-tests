@@ -1,0 +1,47 @@
+# Distributed under the MIT License.
+# See LICENSE.txt for details.
+
+# Container image for `.cscs-ci/DeviceTests.yml`. It compiles the unit tests
+# tagged [Device], which run code on the GPU. It is not published: the CSCS
+# container builder pushes it to the CSCS-internal registry, where it expires.
+#
+# To build it locally on an arm64 machine (running the tests needs an NVIDIA
+# Hopper GPU):
+#
+#   docker build -f .cscs-ci/Dockerfile.device-tests --build-arg NUM_PROCS=8 \
+#     -t spectre:device-tests .
+
+# The `agents` image has the CUDA compiler and Kokkos' `nvcc_wrapper`
+FROM docker.io/sxscollaboration/spectre:agents
+
+# Set by the CSCS container builder to the CPU limit of the build pod
+ARG NUM_PROCS=4
+
+COPY . /work/spectre/
+
+# Configure and compile, with the same options as the CUDA build in
+# `.github/workflows/Tests.yaml`.
+# - Kokkos is fetched and compiled for the Hopper GPU.
+# - The host architecture is pinned to that of the Grace CPU because the build
+#   pod and the Daint compute nodes are different machines.
+# - Object files are deleted in the same layer to keep the image small.
+RUN cmake -S /work/spectre -B /work/spectre/build \
+      -D CMAKE_C_COMPILER=gcc \
+      -D CMAKE_CXX_COMPILER=nvcc_wrapper \
+      -D CMAKE_Fortran_COMPILER=gfortran \
+      -D CMAKE_BUILD_TYPE=Release \
+      -D OVERRIDE_ARCH=armv9-a \
+      -D BUILD_SHARED_LIBS=OFF \
+      -D BUILD_PYTHON_BINDINGS=OFF \
+      -D BUILD_DOCS=OFF \
+      -D ENABLE_WARNINGS=OFF \
+      -D USE_XSIMD=OFF \
+      -D SPECTRE_AUTODIFF=OFF \
+      -D MEMORY_ALLOCATOR=SYSTEM \
+      -D USE_GIT_HOOKS=OFF \
+      -D SPECTRE_KOKKOS=ON \
+      -D SPECTRE_FETCH_MISSING_DEPS=ON \
+      -D Kokkos_ENABLE_CUDA=ON \
+      -D Kokkos_ARCH_HOPPER90=ON \
+    && make -C /work/spectre/build -j${NUM_PROCS} device-tests \
+    && find /work/spectre/build -name '*.o' -delete

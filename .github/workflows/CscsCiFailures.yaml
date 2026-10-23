@@ -1,0 +1,45 @@
+# Distributed under the MIT License.
+# See LICENSE.txt for details.
+
+# Report failures of the CSCS CI pipelines on `develop` (see
+# `.cscs-ci/README.md`). They report to GitHub only as commit statuses, which
+# don't notify anyone. So comment on the pull request that was merged, unless
+# the pipeline already failed before it.
+name: CSCS CI failures
+
+on: status
+
+permissions:
+  pull-requests: write
+
+jobs:
+  report:
+    if: >-
+      startsWith(github.event.context, 'cscs/')
+      && (github.event.state == 'failure' || github.event.state == 'error')
+      && contains(github.event.branches.*.name, 'develop')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Comment on merged pull request
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          SHA: ${{ github.event.sha }}
+          CONTEXT: ${{ github.event.context }}
+          TARGET_URL: ${{ github.event.target_url }}
+        run: |
+          PARENT=$(gh api "repos/$GH_REPO/commits/$SHA" --jq '.parents[0].sha')
+          PARENT_STATE=$(gh api "repos/$GH_REPO/commits/$PARENT/statuses" \
+            --jq "map(select(.context == \"$CONTEXT\"))[0].state // empty")
+          if [[ "$PARENT_STATE" == failure || "$PARENT_STATE" == error ]]; then
+            echo "$CONTEXT already failed on $PARENT, not reporting again."
+            exit 0
+          fi
+          PR=$(gh api "repos/$GH_REPO/commits/$SHA/pulls" \
+            --jq '.[0].number // empty')
+          if [ -z "$PR" ]; then
+            echo "No pull request found for $SHA."
+            exit 0
+          fi
+          gh pr comment "$PR" --body "The CSCS CI pipeline \`$CONTEXT\` \
+          failed on $SHA after this pull request was merged: $TARGET_URL"
