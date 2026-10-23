@@ -15,6 +15,7 @@ spectre_target_headers(
   Structure.hpp
   Symmetry.hpp
   Tensor.hpp
+  TensorKokkos.hpp
   TypeAliases.hpp
   )
 
