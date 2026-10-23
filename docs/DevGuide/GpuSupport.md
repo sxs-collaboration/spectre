@@ -55,6 +55,11 @@ following configuration options:
   `KOKKOS_FUNCTION` from `Utilities/Kokkos/KokkosMacros.hpp`. The annotation
   does nothing in builds without Kokkos, so no other changes are needed. This
   header only includes the Kokkos macros, so it can be included anywhere.
+  Annotate all overloads of a function that can run on the device, e.g. both
+  the `gsl::not_null` and the return-by-value overload, so callers don't have
+  to check which ones work on the device. The annotation documents that the
+  function can be called in Kokkos kernels, so don't repeat this in its
+  documentation.
 - Put code that uses Kokkos types, such as `Kokkos::View` or
   `Kokkos::parallel_for`, in a separate file named after its host counterpart
   with a `Kokkos` suffix, e.g. `VariablesKokkos.hpp`, and include
