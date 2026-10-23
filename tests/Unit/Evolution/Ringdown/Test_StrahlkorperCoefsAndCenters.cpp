@@ -198,8 +198,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.Ringdown.StrahlkorperCoefsAndCenters",
 
   using Object = domain::creators::BinaryCompactObject::Object;
   const domain::creators::BinaryCompactObject domain_creator_bco{
-      Object{0.1, 6., 8., true, true},
-      Object{0.2, 6, -6., true, true},
+      Object{0.1, 6., 8., true, std::optional<double>{1.0}},
+      Object{0.2, 6, -6., true, std::optional<double>{1.0}},
       std::array<double, 2>{{0., 0.}},
       60.,
       300.,
