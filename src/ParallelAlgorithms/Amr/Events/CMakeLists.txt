@@ -8,7 +8,6 @@ add_spectre_library(${LIBRARY})
 spectre_target_sources(
   ${LIBRARY}
   PRIVATE
-  ObserveAmrStats.cpp
   RefineMesh.cpp
   )
 
@@ -18,7 +17,6 @@ spectre_target_headers(
   HEADERS
   Events.hpp
   ObserveAmrCriteria.hpp
-  ObserveAmrStats.hpp
   RefineMesh.hpp
   )
 

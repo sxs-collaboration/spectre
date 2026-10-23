@@ -74,7 +74,6 @@
 #include "ParallelAlgorithms/Amr/Criteria/Factory.hpp"
 #include "ParallelAlgorithms/Amr/Criteria/Tags/Criteria.hpp"
 #include "ParallelAlgorithms/Amr/Events/ObserveAmrCriteria.hpp"
-#include "ParallelAlgorithms/Amr/Events/ObserveAmrStats.hpp"
 #include "ParallelAlgorithms/Amr/Events/RefineMesh.hpp"
 #include "ParallelAlgorithms/Amr/Projectors/CopyFromCreatorOrLeaveAsIs.hpp"
 #include "ParallelAlgorithms/Amr/Projectors/DefaultInitialize.hpp"
@@ -84,6 +83,7 @@
 #include "ParallelAlgorithms/Events/ChangeFixedLtsRatio.hpp"
 #include "ParallelAlgorithms/Events/Completion.hpp"
 #include "ParallelAlgorithms/Events/Factory.hpp"
+#include "ParallelAlgorithms/Events/ObserveGridStats.hpp"
 #include "ParallelAlgorithms/Events/Tags.hpp"
 #include "ParallelAlgorithms/EventsAndDenseTriggers/DenseTrigger.hpp"
 #include "ParallelAlgorithms/EventsAndDenseTriggers/DenseTriggers/Factory.hpp"
@@ -188,15 +188,16 @@ struct EvolutionMetavars {
                        volume_dim, typename system::variables_tag::tags_list>>,
         tmpl::pair<DenseTrigger, DenseTriggers::standard_dense_triggers>,
         tmpl::pair<DomainCreator<volume_dim>, domain_creators<volume_dim>>,
-        tmpl::pair<Event,
-                   tmpl::flatten<tmpl::list<
-                       Events::Completion, amr::Events::RefineMesh,
-                       amr::Events::ObserveAmrStats<volume_dim>,
-                       amr::Events::ObserveAmrCriteria<EvolutionMetavars>,
-                       dg::Events::field_observations<
-                           volume_dim, observe_fields, non_tensor_compute_tags>,
-                       Events::time_events<system>,
-                       dg::Events::ChangeFixedLtsRatio<volume_dim>>>>,
+        tmpl::pair<
+            Event,
+            tmpl::flatten<tmpl::list<
+                Events::Completion, amr::Events::RefineMesh,
+                Events::ObserveGridStats<volume_dim, non_tensor_compute_tags>,
+                amr::Events::ObserveAmrCriteria<EvolutionMetavars>,
+                dg::Events::field_observations<volume_dim, observe_fields,
+                                               non_tensor_compute_tags>,
+                Events::time_events<system>,
+                dg::Events::ChangeFixedLtsRatio<volume_dim>>>>,
         tmpl::pair<evolution::BoundaryCorrection,
                    ScalarWave::BoundaryCorrections::
                        standard_boundary_corrections<volume_dim>>,
