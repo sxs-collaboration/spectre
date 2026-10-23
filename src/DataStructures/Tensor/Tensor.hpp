@@ -35,6 +35,7 @@
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/ForceInline.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/Kokkos/KokkosMacros.hpp"
 #include "Utilities/MakeArray.hpp"
 #include "Utilities/MakeWithValue.hpp"
 #include "Utilities/PrettyType.hpp"
@@ -593,8 +594,8 @@ struct MakeWithSize<Tensor<T, Structure...>> {
 
 template <typename... Structure, typename T>
 struct MakeWithValueImpl<Tensor<double, Structure...>, T> {
-  static SPECTRE_ALWAYS_INLINE Tensor<double, Structure...> apply(
-      const T& /*input*/, const double value) {
+  KOKKOS_FUNCTION static SPECTRE_ALWAYS_INLINE Tensor<double, Structure...>
+  apply(const T& /*input*/, const double value) {
     return Tensor<double, Structure...>(value);
   }
 };
