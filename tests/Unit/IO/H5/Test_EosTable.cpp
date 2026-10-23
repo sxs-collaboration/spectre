@@ -18,6 +18,7 @@
 #include "DataStructures/BoostMultiArray.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Matrix.hpp"
+#include "Helpers/IO/H5Identifiers.hpp"
 #include "IO/Connectivity.hpp"
 #include "IO/H5/AccessType.hpp"
 #include "IO/H5/CheckH5.hpp"
@@ -137,4 +138,8 @@ void test() {
 }
 }  // namespace
 
-SPECTRE_TEST_CASE("Unit.IO.H5.EosTable", "[Unit][IO][H5]") { test(); }
+SPECTRE_TEST_CASE("Unit.IO.H5.EosTable", "[Unit][IO][H5]") {
+  const auto h5_identifiers = TestHelpers::io::snapshot_h5_identifiers();
+  test();
+  TestHelpers::io::check_no_leaked_h5_identifiers(h5_identifiers);
+}

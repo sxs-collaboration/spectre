@@ -14,6 +14,7 @@
 #include <utility>
 #include <vector>
 
+#include "Helpers/IO/H5Identifiers.hpp"
 #include "IO/H5/AccessType.hpp"
 #include "IO/H5/CheckH5.hpp"
 #include "IO/H5/File.hpp"
@@ -249,7 +250,9 @@ void test_error_messages() {
 // [[TimeOut, 10]]
 SPECTRE_TEST_CASE("Unit.IO.H5.File", "[Unit][IO][H5]") {
   test_access_type();
+  const auto h5_identifiers = TestHelpers::io::snapshot_h5_identifiers();
   test_core_functionality();
-  test_error_messages();
   test_file_move();
+  TestHelpers::io::check_no_leaked_h5_identifiers(h5_identifiers);
+  test_error_messages();
 }

@@ -21,6 +21,7 @@
 #include "DataStructures/Matrix.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
+#include "Helpers/IO/H5Identifiers.hpp"
 #include "IO/Connectivity.hpp"
 #include "IO/H5/AccessType.hpp"
 #include "IO/H5/Cce.hpp"
@@ -572,5 +573,7 @@ void test_core_functionality(const gsl::not_null<Generator*> generator) {
 SPECTRE_TEST_CASE("Unit.IO.H5.Cce", "[Unit][IO][H5]") {
   MAKE_GENERATOR(generator);
   test_errors();
+  const auto h5_identifiers = TestHelpers::io::snapshot_h5_identifiers();
   test_core_functionality(make_not_null(&generator));
+  TestHelpers::io::check_no_leaked_h5_identifiers(h5_identifiers);
 }

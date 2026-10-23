@@ -39,6 +39,7 @@ target_link_libraries(
   Hydro
   HydroHelpers
   Informer
+  IoTestHelpers
   MonteCarlo
   MonteCarloSolutions
   Time

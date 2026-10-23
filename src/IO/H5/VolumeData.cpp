@@ -1010,7 +1010,18 @@ TensorComponent VolumeData::get_tensor_component(
   const auto rank =
       static_cast<size_t>(H5Sget_simple_extent_ndims(dataspace_id));
   h5::close_dataspace(dataspace_id);
-  const auto h5_data_type = H5Dget_type(dataset_id);
+  const hid_t h5_data_type = H5Dget_type(dataset_id);
+  CHECK_H5(h5_data_type,
+           "Failed to get datatype of dataset '" << tensor_component << "'");
+  const bool is_float = h5::types_equal(h5_data_type, h5::h5_type<float>());
+  const bool is_double = h5::types_equal(h5_data_type, h5::h5_type<double>());
+  const bool is_int = h5::types_equal(h5_data_type, h5::h5_type<int>());
+  const bool is_unsigned_int =
+      h5::types_equal(h5_data_type, h5::h5_type<unsigned int>());
+  const bool is_unsigned_long =
+      h5::types_equal(h5_data_type, h5::h5_type<unsigned long>());
+  CHECK_H5(H5Tclose(h5_data_type),
+           "Failed to close datatype of dataset '" << tensor_component << "'");
   h5::close_dataset(dataset_id);
 
   const auto get_data = [&observation_group, &rank,
@@ -1031,29 +1042,31 @@ TensorComponent VolumeData::get_tensor_component(
     }
   };
 
-  if (h5::types_equal(h5_data_type, h5::h5_type<float>())) {
+  if (is_float) {
     return {tensor_component, get_data(tmpl::type_<std::vector<float>>{})};
-  } else if (h5::types_equal(h5_data_type, h5::h5_type<double>())) {
+  } else if (is_double) {
     return {tensor_component, get_data(tmpl::type_<DataVector>{})};
-  } else if (h5::types_equal(h5_data_type, h5::h5_type<int>())) {
+  } else if (is_int) {
     const std::vector<int> stored = get_data(tmpl::type_<std::vector<int>>{});
     DataVector result{stored.size()};
     std::ranges::copy(stored.begin(), stored.end(), result.begin());
     return {tensor_component, result};
-  } else if (h5::types_equal(h5_data_type, h5::h5_type<unsigned int>())) {
+  } else if (is_unsigned_int) {
     const std::vector<unsigned int> stored =
         get_data(tmpl::type_<std::vector<unsigned int>>{});
     DataVector result{stored.size()};
     std::ranges::copy(stored.begin(), stored.end(), result.begin());
     return {tensor_component, result};
-  } else if (h5::types_equal(h5_data_type, h5::h5_type<unsigned long>())) {
+  } else if (is_unsigned_long) {
     const std::vector<unsigned long> stored =
         get_data(tmpl::type_<std::vector<unsigned long>>{});
     DataVector result{stored.size()};
     std::ranges::copy(stored.begin(), stored.end(), result.begin());
     return {tensor_component, result};
   } else {
-    ERROR("Unknown H5 type " << h5_data_type);
+    ERROR("Unsupported HDF5 datatype of dataset '"
+          << tensor_component
+          << "'. Expected float, double, int, unsigned int, or unsigned long.");
   }
 }
 
