@@ -1,0 +1,140 @@
+# Distributed under the MIT License.
+# See LICENSE.txt for details.
+
+# Runs a short binary black hole simulation on a node of the CPU-only Eiger
+# cluster at CSCS (see `README.md` for the CSCS CI setup). It catches crashes,
+# instabilities and failures of the horizon finders and control systems, which
+# the GitHub Actions tests cannot: there the executables only parse the binary
+# black hole input files. To reproduce a run, build
+# `Dockerfile.regression-tests` and run the `script:` of the `bbh regression`
+# job below in it.
+
+include:
+  - remote: 'https://gitlab.com/cscs-ci/recipes/-/raw/master/templates/v2/.ci-ext.yml'
+
+# See `README.md`
+workflow:
+  rules:
+    - if: $CSCS_CI_FORCE_RUN
+    - if: $CI_COMMIT_REF_NAME == "develop"
+    - when: never
+
+stages:
+  - seed
+  - build
+  - test
+  - cache
+
+variables:
+  SPECTRE_IMAGE: >-
+    $CSCS_REGISTRY_PATH/public/spectre-regression-tests:$CI_COMMIT_SHORT_SHA
+  # Moving tag pointing at the most recent image, used to carry the ccache
+  # forward from one pipeline run to the next.
+  SPECTRE_CCACHE_IMAGE: >-
+    $CSCS_REGISTRY_PATH/public/spectre-regression-tests:ccache
+
+# Create the ':ccache' tag if it does not exist yet (or the registry expired
+# it), so that the build below always has an image to take a ccache from.
+seed ccache image:
+  stage: seed
+  extends: .container-builder-cscs-zen2
+  variables:
+    DOCKERFILE: .cscs-ci/Dockerfile.retag
+    PERSIST_IMAGE_NAME: $SPECTRE_CCACHE_IMAGE
+    CSCS_REBUILD_POLICY: if-not-exists
+    DOCKER_BUILD_ARGS: '["FROM_IMAGE=docker.io/sxscollaboration/spectre:dev"]'
+
+build image:
+  stage: build
+  extends: .container-builder-cscs-zen2
+  needs: [seed ccache image]
+  # Compiling the executables from scratch takes a few hours. With a warm
+  # ccache it is much faster. The GitLab default job timeout is only 1 hour.
+  timeout: '5h'
+  variables:
+    DOCKERFILE: .cscs-ci/Dockerfile.regression-tests
+    PERSIST_IMAGE_NAME: $SPECTRE_IMAGE
+    CSCS_REBUILD_POLICY: always
+    # Build on disk rather than in a tmpfs. A SpECTRE build directory is tens
+    # of GB, which would otherwise count against the memory limit below.
+    CSCS_BUILD_IN_MEMORY: 'FALSE'
+    # The builder injects NUM_PROCS = the CPU limit as a build argument,
+    # which is what the Dockerfile passes to `make -j`.
+    KUBERNETES_CPU_REQUEST: '16'
+    KUBERNETES_CPU_LIMIT: '16'
+    KUBERNETES_MEMORY_REQUEST: '32Gi'
+    KUBERNETES_MEMORY_LIMIT: '96Gi'
+    # EXEC_PROCS bounds the memory-hungry phase that compiles the executables
+    # (see the budget in Dockerfile.regression-tests). Raise it only together
+    # with KUBERNETES_MEMORY_LIMIT.
+    DOCKER_BUILD_ARGS: '["EXEC_PROCS=2",
+      "CCACHE_IMAGE=$SPECTRE_CCACHE_IMAGE"]'
+
+bbh regression:
+  stage: test
+  extends: .container-runner-eiger-zen2
+  needs: [build image]
+  image: $SPECTRE_IMAGE
+  timeout: '4h'
+  variables:
+    GIT_STRATEGY: none
+    # Charm++ in the container is a 'multicore' build, i.e. a single process
+    # with worker threads that cannot span nodes. So we request a single Slurm
+    # task with all cores of one Eiger node and let Charm++ spawn the worker
+    # threads with '--num-procs' below.
+    SLURM_JOB_NUM_NODES: 1
+    SLURM_NTASKS: 1
+    SLURM_CPUS_PER_TASK: 128
+    SLURM_TIMELIMIT: "01:30:00"
+    USE_MPI: 'NO'
+  # The test runs two steps of the binary black hole pipeline in
+  # `support/Pipelines/Bbh/`. `--no-schedule` runs the executables directly in
+  # the allocation that the runner already made. We use 64 of the 128 cores
+  # because the domain is small, so more threads would mostly buy communication
+  # overhead.
+  script:
+    # Initial data for an equal-mass, non-spinning binary at low resolution.
+    # The `Next` entrypoint in the input file metadata finds the two apparent
+    # horizons afterwards. The initial-data control loop is disabled because it
+    # would repeat the elliptic solve many times.
+    - |
+      spectre bbh generate-id \
+        --mass-ratio 1 --chi-A 0 0 0 --chi-B 0 0 0 \
+        --separation 20 \
+        --orbital-angular-velocity 0.01 \
+        --radial-expansion-velocity=-1.0e-5 \
+        --refinement-level 0 --polynomial-order 8 \
+        --no-control \
+        --run-dir BbhRegression/Id \
+        --no-schedule --num-procs 64 --force
+    # Evolution to t = 10 M. `FinalTime` adds a `Completion` event to the input
+    # file (see `support/Pipelines/Bbh/Inspiral.yaml`), and it is the only way
+    # this run exits successfully: the wallclock exit is only enabled for a
+    # `--segments-dir`, and the merger exit needs a separation the run never
+    # gets close to. So a zero exit code means the evolution reached the final
+    # time. `FinalTime` must be written as a float, because the option parser
+    # rejects an integer for a `double`.
+    #
+    # The inspiral is started in a separate step rather than with `--evolve`
+    # above, because `--evolve` also enables the ringdown continuation (which
+    # needs a common horizon that a short inspiral never forms), and because the
+    # `--lev` option it uses cannot select an h-refinement below 1.
+    - |
+      spectre bbh start-inspiral BbhRegression/Id/InitialData.yaml \
+        --id-run-dir BbhRegression/Id --id-subfile-name VolumeData \
+        --refinement-level 0 --polynomial-order 8 \
+        --param FinalTime=10.0 \
+        --run-dir BbhRegression/Inspiral \
+        --no-schedule --num-procs 64 --force
+
+# Advance the ':ccache' tag to the image that was just built, so the next
+# pipeline run starts from its ccache.
+update ccache tag:
+  stage: cache
+  extends: .container-builder-cscs-zen2
+  needs: [build image]
+  variables:
+    DOCKERFILE: .cscs-ci/Dockerfile.retag
+    PERSIST_IMAGE_NAME: $SPECTRE_CCACHE_IMAGE
+    CSCS_REBUILD_POLICY: always
+    DOCKER_BUILD_ARGS: '["FROM_IMAGE=$SPECTRE_IMAGE"]'

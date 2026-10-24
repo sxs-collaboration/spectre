@@ -197,7 +197,7 @@ void test_on_device() {
 namespace hydro {
 
 SPECTRE_TEST_CASE("Unit.PointwiseFunctions.Hydro.ComovingMagneticField",
-                  "[Unit][Hydro]") {
+                  "[Unit][Hydro][Device]") {
   const pypp::SetupLocalPythonEnvironment local_python_env(
       "PointwiseFunctions/Hydro/");
   const DataVector used_for_size(5);

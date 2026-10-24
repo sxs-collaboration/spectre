@@ -75,7 +75,8 @@ void test_on_device() {
 #endif  // SPECTRE_KOKKOS
 }  // namespace
 
-SPECTRE_TEST_CASE("Unit.Tensor.EagerMath.Trace", "[DataStructures][Unit]") {
+SPECTRE_TEST_CASE("Unit.Tensor.EagerMath.Trace",
+                  "[DataStructures][Unit][Device]") {
   const pypp::SetupLocalPythonEnvironment local_python_env(
       "DataStructures/Tensor/EagerMath/");
 
