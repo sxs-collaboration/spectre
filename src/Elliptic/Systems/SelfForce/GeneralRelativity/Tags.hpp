@@ -72,16 +72,16 @@ struct MMode : db::SimpleTag {
 };
 
 /*!
- * \brief The factor multiplying the angular derivative in the principal part of
- * the equations.
+ * \brief The factors $\alpha^i$ multiplying the radial and angular
+ * derivatives in the principal part of the equations.
  *
- * This is the factor $\alpha$ that defines the principal part of the equations
- * and allows to write it in first-order flux form (see
- * `GrSelfForce::FirstOrderSystem`). This factor is set by the analytic data
- * class (see `ScalarSelfForce::AnalyticData::CircularOrbit`).
+ * These are the factors $\alpha^i$ that define the principal part of the
+ * equations and allow writing them in first-order flux form (see
+ * `GrSelfForce::FirstOrderSystem`). They are set by the analytic data class
+ * (see `GrSelfForce::AnalyticData::CircularOrbit`).
  */
 struct Alpha : db::SimpleTag {
-  using type = Scalar<ComplexDataVector>;
+  using type = tnsr::I<ComplexDataVector, 2>;
 };
 
 /*!
@@ -93,16 +93,22 @@ struct Beta : db::SimpleTag {
 };
 
 /*!
- * \brief The factors $\gamma_{{r_\star}ab}^{cd}$ multiplying the
- * $r_\star$-derivative terms in the equations.
+ * \brief The radial component ($i=0$) of the factors $\gamma_{iab}^{cd}$
+ * multiplying the derivative terms in the equations.
+ *
+ * The radial coordinate is $r_\star$ if `PenetratingHorizon` is false and $r$
+ * if it is true.
  */
 struct GammaRstar : db::SimpleTag {
   using type = tnsr::aaBB<ComplexDataVector, 3>;
 };
 
 /*!
- * \brief The factors $\gamma_{\theta ab}^{cd}$ multiplying the
- * $\theta$-derivative terms in the equations.
+ * \brief The angular component ($i=1$) of the factors $\gamma_{iab}^{cd}$
+ * multiplying the derivative terms in the equations.
+ *
+ * The angular coordinate is $\theta$ if `PenetratingHorizon` is false and
+ * $z=\cos\theta$ if it is true.
  */
 struct GammaTheta : db::SimpleTag {
   using type = tnsr::aaBB<ComplexDataVector, 3>;

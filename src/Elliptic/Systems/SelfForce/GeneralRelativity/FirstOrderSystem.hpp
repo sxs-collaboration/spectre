@@ -22,18 +22,20 @@ namespace GrSelfForce {
  * Extension of the `ScalarSelfForce::FirstOrderSystem` to the gravitational
  * case. We solve a 2D elliptic equation for the 10 independent components of
  * the symmetric m-mode field $(\Psi_m)_{ab}$. The two dimensions are a
- * radial and angular coordinate, specifically the tortoise radius $r_\star$ and
- * polar angle $\theta$. We parametrize the 2D elliptic equations as:
+ * radial and angular coordinate: the tortoise radius $r_\star$ and polar angle
+ * $\theta$ if `PenetratingHorizon` is false, or the Boyer-Lindquist radius $r$
+ * and $z=\cos\theta$ if it is true. We parametrize the 2D elliptic equations
+ * as:
  * \begin{equation}
  * -\Delta_m (\Psi_m)_{ab} = -\partial_i F^i_{ab} + \beta_{ab}^{cd}
- *   (\Psi_m)_{cd} + \gamma_{iab}^{cd} F^i_{cd} = 0
+ *   (\Psi_m)_{cd} + \gamma_{iab}^{cd} \partial_i (\Psi_m)_{cd} = 0
  * \end{equation}
  * with the flux
  * \begin{equation}
- * F^i_{ab} = \{\partial_{r_\star}, \alpha \partial_\theta\} (\Psi_m)_{ab}
- * \text{,}
+ * F^i_{ab} = \alpha^i \partial_i (\Psi_m)_{ab} \quad \text{(no sum over } i
+ * \text{),}
  * \end{equation}
- * where $\alpha$, $\beta_{ab}^{cd}$, and $\gamma_{iab}^{cd}$ are coefficients
+ * where $\alpha^i$, $\beta_{ab}^{cd}$, and $\gamma_{iab}^{cd}$ are coefficients
  * that define the elliptic equations. The particular coefficients for a
  * circular equatorial orbit in Kerr are implemented in
  * `GrSelfForce::AnalyticData::CircularOrbit`.

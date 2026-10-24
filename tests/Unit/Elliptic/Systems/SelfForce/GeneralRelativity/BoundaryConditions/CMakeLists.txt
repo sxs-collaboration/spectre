@@ -4,7 +4,6 @@
 set(LIBRARY "Test_GrSelfForceBoundaryConditions")
 
 set(LIBRARY_SOURCES
-  Test_Angular.cpp
   Test_None.cpp
   Test_Sommerfeld.cpp
   )

@@ -219,6 +219,354 @@ Cimag[9][8]=(3*a*a*a*a*a*a*a*a*m*sin(th)*sin(2*th))/(2.*pow(a*a+r*r,2)*pow(r*r+a
 Cimag[9][9]=(2*a*a*a*m)/(r*pow(a*a+r*r,2))-(2*a*m*r)/pow(a*a+r*r,2)-(8*a*a*a*a*a*a*a*a*a*m)/(pow(a*a+r*r,2)*pow(a*a+2*r*r+a*a*cos(2*th),4))-(24*a*a*a*a*a*a*a*m*r*r)/(pow(a*a+r*r,2)*pow(a*a+2*r*r+a*a*cos(2*th),4))+(16*a*a*a*a*a*m*r*r*r*r)/(pow(a*a+r*r,2)*pow(a*a+2*r*r+a*a*cos(2*th),4))+(96*a*a*a*m*r*r*r*r*r*r)/(pow(a*a+r*r,2)*pow(a*a+2*r*r+a*a*cos(2*th),4))+(64*a*m*r*r*r*r*r*r*r*r)/(pow(a*a+r*r,2)*pow(a*a+2*r*r+a*a*cos(2*th),4))-(24*a*a*a*a*a*a*a*a*a*m*cos(2*th))/(pow(a*a+r*r,2)*pow(a*a+2*r*r+a*a*cos(2*th),4))-(56*a*a*a*a*a*a*a*m*r*r*cos(2*th))/(pow(a*a+r*r,2)*pow(a*a+2*r*r+a*a*cos(2*th),4))+(32*a*a*a*m*r*r*r*r*r*r*cos(2*th))/(pow(a*a+r*r,2)*pow(a*a+2*r*r+a*a*cos(2*th),4))-(24*a*a*a*a*a*a*a*a*a*m*pow(cos(2*th),2))/(pow(a*a+r*r,2)*pow(a*a+2*r*r+a*a*cos(2*th),4))-(40*a*a*a*a*a*a*a*m*r*r*pow(cos(2*th),2))/(pow(a*a+r*r,2)*pow(a*a+2*r*r+a*a*cos(2*th),4))-(16*a*a*a*a*a*m*r*r*r*r*pow(cos(2*th),2))/(pow(a*a+r*r,2)*pow(a*a+2*r*r+a*a*cos(2*th),4))-(8*a*a*a*a*a*a*a*a*a*m*pow(cos(2*th),3))/(pow(a*a+r*r,2)*pow(a*a+2*r*r+a*a*cos(2*th),4))-(8*a*a*a*a*a*a*a*m*r*r*pow(cos(2*th),3))/(pow(a*a+r*r,2)*pow(a*a+2*r*r+a*a*cos(2*th),4));
 }
 
+void getAreal_vr(const int /*m*/, const double a, const double /*om*/, const double r, double z, double /*H*/, double /*dHdr*/,
+              std::array<std::array<double, 10>, 10>& Areal) {
+/* om = m*Omega */
+std::fill(Areal[0].data(), Areal[0].data() + 100, 0.0);
+/* v slicing is the default */
+Areal[0][0]=(2*a*a*(a*a+(-2+r)*r))/(r*pow(a*a+r*r,2))+(8*r*r)/pow(r*r+a*a*z*z,2)-4/(r*r+a*a*z*z);
+Areal[0][3]=(4*a*r*(r-a*z)*(r+a*z)*sqrt(1-z*z))/((a*a+r*r)*pow(r*r+a*a*z*z,2));
+Areal[1][0]=2*r*(-(1/(a*a+r*r))+1/(r*r+a*a*z*z));
+Areal[1][1]=(2*(a*a*a*a-a*a*r+r*r*r-r*r*r*r))/(r*pow(a*a+r*r,2))+(4*r*r)/pow(r*r+a*a*z*z,2)+(2*(a*a*(-1+r)+(-3+r)*r*r))/((a*a+r*r)*(r*r+a*a*z*z));
+Areal[1][2]=(2*a*a*r*z*sqrt(1-z*z))/((a*a+r*r)*(r*r+a*a*z*z));
+Areal[1][3]=(2*a*r*r*sqrt(1-z*z))/((a*a+r*r)*(r*r+a*a*z*z));
+Areal[1][6]=(2*a*r*(r-a*z)*(r+a*z)*sqrt(1-z*z))/((a*a+r*r)*pow(r*r+a*a*z*z,2));
+Areal[2][0]=(-2*a*a*z*sqrt(1-z*z))/(r*r*r+a*a*r*z*z);
+Areal[2][1]=(-2*a*a*(a*a+(-2+r)*r)*z*sqrt(1-z*z))/(r*(a*a+r*r)*(r*r+a*a*z*z));
+Areal[2][2]=(-2*r*(a*a+(-2+r)*r))/pow(a*a+r*r,2)+(4*r*r)/pow(r*r+a*a*z*z,2)+(2*(a*a*(-1+r)+(-3+r)*r*r))/((a*a+r*r)*(r*r+a*a*z*z));
+Areal[2][3]=2*a*z*(1/(a*a+r*r)-1/(r*r+a*a*z*z));
+Areal[2][8]=(2*a*r*(r-a*z)*(r+a*z)*sqrt(1-z*z))/((a*a+r*r)*pow(r*r+a*a*z*z,2));
+Areal[3][0]=(2*a*sqrt(1-z*z)*(-3*r*r*r*r+a*a*a*a*z*z-a*a*r*r*(1+z*z)))/(r*(a*a+r*r)*pow(r*r+a*a*z*z,2));
+Areal[3][3]=(-2*(a-r)*(a+r))/pow(a*a+r*r,2);
+Areal[3][9]=(2*a*r*(r-a*z)*(r+a*z)*sqrt(1-z*z))/((a*a+r*r)*pow(r*r+a*a*z*z,2));
+Areal[4][1]=4*r*(-(1/(a*a+r*r))+1/(r*r+a*a*z*z));
+Areal[4][4]=(-4*pow(r,5)+2*pow(a,6)*z*z-2*a*a*a*a*r*r*(-3+z*z)+2*a*a*r*r*r*(-4+3*r-2*(-1+r)*z*z))/(pow(a*a+r*r,2)*(r*r*r+a*a*r*z*z));
+Areal[4][5]=(4*a*a*r*z*sqrt(1-z*z))/((a*a+r*r)*(r*r+a*a*z*z));
+Areal[4][6]=(4*a*r*r*sqrt(1-z*z))/((a*a+r*r)*(r*r+a*a*z*z));
+Areal[5][1]=(-2*a*a*z*sqrt(1-z*z))/(r*r*r+a*a*r*z*z);
+Areal[5][2]=2*r*(-(1/(a*a+r*r))+1/(r*r+a*a*z*z));
+Areal[5][4]=(-2*a*a*(a*a+(-2+r)*r)*z*sqrt(1-z*z))/(r*(a*a+r*r)*(r*r+a*a*z*z));
+Areal[5][5]=(-2*r*r*r*r-2*a*a*r*r*(-3+2*r)*(-1+z*z)+2*a*a*a*a*(z*z-2*r*(-1+z*z)))/(pow(a*a+r*r,2)*(r*r+a*a*z*z));
+Areal[5][6]=2*a*z*(1/(a*a+r*r)-1/(r*r+a*a*z*z));
+Areal[5][7]=(2*a*a*r*z*sqrt(1-z*z))/((a*a+r*r)*(r*r+a*a*z*z));
+Areal[5][8]=(2*a*r*r*sqrt(1-z*z))/((a*a+r*r)*(r*r+a*a*z*z));
+Areal[6][1]=(2*a*sqrt(1-z*z)*(-3*r*r*r*r+a*a*a*a*z*z-a*a*r*r*(1+z*z)))/(r*(a*a+r*r)*pow(r*r+a*a*z*z,2));
+Areal[6][3]=2*r*(-(1/(a*a+r*r))+1/(r*r+a*a*z*z));
+Areal[6][6]=(-2*r*(a*a+(-2+r)*r))/pow(a*a+r*r,2)-(4*r*r)/pow(r*r+a*a*z*z,2)+(2*((-1+r)*r*r+a*a*(1+r)))/((a*a+r*r)*(r*r+a*a*z*z));
+Areal[6][8]=(2*a*a*r*z*sqrt(1-z*z))/((a*a+r*r)*(r*r+a*a*z*z));
+Areal[6][9]=(2*a*r*r*sqrt(1-z*z))/((a*a+r*r)*(r*r+a*a*z*z));
+Areal[7][2]=(-4*a*a*z*sqrt(1-z*z))/(r*r*r+a*a*r*z*z);
+Areal[7][5]=(-4*a*a*(a*a+(-2+r)*r)*z*sqrt(1-z*z))/(r*(a*a+r*r)*(r*r+a*a*z*z));
+Areal[7][7]=(-2*a*a*(a*a+(-2+r)*r)*(a*a*z*z+r*r*(-1+2*z*z)))/(pow(a*a+r*r,2)*(r*r*r+a*a*r*z*z));
+Areal[7][8]=4*a*z*(1/(a*a+r*r)-1/(r*r+a*a*z*z));
+Areal[8][2]=(2*a*sqrt(1-z*z)*(-3*r*r*r*r+a*a*a*a*z*z-a*a*r*r*(1+z*z)))/(r*(a*a+r*r)*pow(r*r+a*a*z*z,2));
+Areal[8][3]=(-2*a*a*z*sqrt(1-z*z))/(r*r*r+a*a*r*z*z);
+Areal[8][6]=(-2*a*a*(a*a+(-2+r)*r)*z*sqrt(1-z*z))/(r*(a*a+r*r)*(r*r+a*a*z*z));
+Areal[8][8]=(-2*(pow(a,8)*z*z*z*z+a*a*pow(r,5)*(3+(-5+r)*z*z)+pow(a,6)*r*z*z*(-1+r+(-1+2*r)*z*z)+a*a*a*a*r*r*r*(1+2*(-1+r)*z*z+(-3+r)*z*z*z*z)))/(r*pow(a*a+r*r,2)*pow(r*r+a*a*z*z,2));
+Areal[8][9]=2*a*z*(1/(a*a+r*r)-1/(r*r+a*a*z*z));
+Areal[9][3]=(4*a*sqrt(1-z*z)*(-3*r*r*r*r+a*a*a*a*z*z-a*a*r*r*(1+z*z)))/(r*(a*a+r*r)*pow(r*r+a*a*z*z,2));
+Areal[9][9]=(-2*(a*a*a*a+a*a*r*r-2*r*r*r))/(r*pow(a*a+r*r,2))-(8*r*r)/pow(r*r+a*a*z*z,2)+4/(r*r+a*a*z*z);
+/* only the imaginary part of A is slicing dependent */
+}
+
+void getAimag_vr(const int m, const double a, const double om, const double r, double /*z*/, double H, double /*dHdr*/,
+              std::array<std::array<double, 10>, 10>& Aimag) {
+/* om = m*Omega */
+std::fill(Aimag[0].data(), Aimag[0].data() + 100, 0.0);
+Aimag[0][0]=2*om-(2*a*m)/(a*a+r*r);
+Aimag[1][1]=2*om-(2*a*m)/(a*a+r*r);
+Aimag[2][2]=2*om-(2*a*m)/(a*a+r*r);
+Aimag[3][3]=2*om-(2*a*m)/(a*a+r*r);
+Aimag[4][4]=2*om-(2*a*m)/(a*a+r*r);
+Aimag[5][5]=2*om-(2*a*m)/(a*a+r*r);
+Aimag[6][6]=2*om-(2*a*m)/(a*a+r*r);
+Aimag[7][7]=2*om-(2*a*m)/(a*a+r*r);
+Aimag[8][8]=2*om-(2*a*m)/(a*a+r*r);
+Aimag[9][9]=2*om-(2*a*m)/(a*a+r*r);
+/* for when it is not v slicing*/
+if( fabs(1+H) > 3.0e-15 ){
+Aimag[0][0]+=-2*om*(1+H);
+Aimag[1][1]+=-2*om*(1+H);
+Aimag[2][2]+=-2*om*(1+H);
+Aimag[3][3]+=-2*om*(1+H);
+Aimag[4][4]+=-2*om*(1+H);
+Aimag[5][5]+=-2*om*(1+H);
+Aimag[6][6]+=-2*om*(1+H);
+Aimag[7][7]+=-2*om*(1+H);
+Aimag[8][8]+=-2*om*(1+H);
+Aimag[9][9]+=-2*om*(1+H);
+}
+}
+
+void getBreal_vr(const int /*m*/, const double a, const double /*om*/, const double r, double z, double /*H*/, double /*dHdr*/,
+              std::array<std::array<double, 10>, 10>& Breal) {
+/* om = m*Omega */
+std::fill(Breal[0].data(), Breal[0].data() + 100, 0.0);
+Breal[0][0]=(-8*a*a*r*z*(-1+z*z))/((a*a+r*r)*pow(r*r+a*a*z*z,2));
+Breal[0][3]=(8*a*r*r*z*sqrt(1-z*z))/((a*a+r*r)*pow(r*r+a*a*z*z,2));
+Breal[1][0]=2*z*(-(1/(a*a+r*r))+1/(r*r+a*a*z*z));
+Breal[1][1]=(-2*a*a*z*(-1+z*z)*(r*(2+r)+a*a*z*z))/((a*a+r*r)*pow(r*r+a*a*z*z,2));
+Breal[1][2]=(-2*r*r*sqrt(1-z*z))/((a*a+r*r)*(r*r+a*a*z*z));
+Breal[1][3]=(2*a*r*z*sqrt(1-z*z))/((a*a+r*r)*(r*r+a*a*z*z));
+Breal[1][6]=(4*a*r*r*z*sqrt(1-z*z))/((a*a+r*r)*pow(r*r+a*a*z*z,2));
+Breal[2][0]=(2*sqrt(1-z*z))/(r*r+a*a*z*z);
+Breal[2][1]=(2*(a*a+(-2+r)*r)*sqrt(1-z*z))/((a*a+r*r)*(r*r+a*a*z*z));
+Breal[2][2]=(-2*a*a*z*(-1+z*z)*(r*(2+r)+a*a*z*z))/((a*a+r*r)*pow(r*r+a*a*z*z,2));
+Breal[2][3]=(-2*a*r*(-1+z*z))/((a*a+r*r)*(r*r+a*a*z*z));
+Breal[2][8]=(4*a*r*r*z*sqrt(1-z*z))/((a*a+r*r)*pow(r*r+a*a*z*z,2));
+Breal[3][0]=(-4*a*a*a*z*pow(1-z*z,1.5))/((a*a+r*r)*pow(r*r+a*a*z*z,2));
+Breal[3][9]=(4*a*r*r*z*sqrt(1-z*z))/((a*a+r*r)*pow(r*r+a*a*z*z,2));
+Breal[4][1]=4*z*(-(1/(a*a+r*r))+1/(r*r+a*a*z*z));
+Breal[4][4]=4*z*(-(1/(a*a+r*r))+1/(r*r+a*a*z*z));
+Breal[4][5]=(-4*r*r*sqrt(1-z*z))/((a*a+r*r)*(r*r+a*a*z*z));
+Breal[4][6]=(4*a*r*z*sqrt(1-z*z))/((a*a+r*r)*(r*r+a*a*z*z));
+Breal[5][1]=(2*sqrt(1-z*z))/(r*r+a*a*z*z);
+Breal[5][2]=2*z*(-(1/(a*a+r*r))+1/(r*r+a*a*z*z));
+Breal[5][4]=(2*(a*a+(-2+r)*r)*sqrt(1-z*z))/((a*a+r*r)*(r*r+a*a*z*z));
+Breal[5][5]=4*z*(-(1/(a*a+r*r))+1/(r*r+a*a*z*z));
+Breal[5][6]=(-2*a*r*(-1+z*z))/((a*a+r*r)*(r*r+a*a*z*z));
+Breal[5][7]=(-2*r*r*sqrt(1-z*z))/((a*a+r*r)*(r*r+a*a*z*z));
+Breal[5][8]=(2*a*r*z*sqrt(1-z*z))/((a*a+r*r)*(r*r+a*a*z*z));
+Breal[6][1]=(-4*a*a*a*z*pow(1-z*z,1.5))/((a*a+r*r)*pow(r*r+a*a*z*z,2));
+Breal[6][3]=2*z*(-(1/(a*a+r*r))+1/(r*r+a*a*z*z));
+Breal[6][6]=(-2*a*a*z*(-1+z*z)*((-2+r)*r+a*a*z*z))/((a*a+r*r)*pow(r*r+a*a*z*z,2));
+Breal[6][8]=(-2*r*r*sqrt(1-z*z))/((a*a+r*r)*(r*r+a*a*z*z));
+Breal[6][9]=(2*a*r*z*sqrt(1-z*z))/((a*a+r*r)*(r*r+a*a*z*z));
+Breal[7][2]=(4*sqrt(1-z*z))/(r*r+a*a*z*z);
+Breal[7][5]=(4*(a*a+(-2+r)*r)*sqrt(1-z*z))/((a*a+r*r)*(r*r+a*a*z*z));
+Breal[7][7]=4*z*(-(1/(a*a+r*r))+1/(r*r+a*a*z*z));
+Breal[7][8]=(-4*a*r*(-1+z*z))/((a*a+r*r)*(r*r+a*a*z*z));
+Breal[8][2]=(-4*a*a*a*z*pow(1-z*z,1.5))/((a*a+r*r)*pow(r*r+a*a*z*z,2));
+Breal[8][3]=(2*sqrt(1-z*z))/(r*r+a*a*z*z);
+Breal[8][6]=(2*(a*a+(-2+r)*r)*sqrt(1-z*z))/((a*a+r*r)*(r*r+a*a*z*z));
+Breal[8][8]=(-2*a*a*z*(-1+z*z)*((-2+r)*r+a*a*z*z))/((a*a+r*r)*pow(r*r+a*a*z*z,2));
+Breal[8][9]=(-2*a*r*(-1+z*z))/((a*a+r*r)*(r*r+a*a*z*z));
+Breal[9][3]=(-8*a*a*a*z*pow(1-z*z,1.5))/((a*a+r*r)*pow(r*r+a*a*z*z,2));
+Breal[9][9]=(8*a*a*r*z*(-1+z*z))/((a*a+r*r)*pow(r*r+a*a*z*z,2));
+}
+
+void getBimag_vr(const int /*m*/, const double /*a*/, const double /*om*/, const double /*r*/, double /*z*/, double /*H*/, double /*dHdr*/,
+              std::array<std::array<double, 10>, 10>& Bimag) {
+/* om = m*Omega */
+std::fill(Bimag[0].data(), Bimag[0].data() + 100, 0.0);
+}
+
+void getCreal_vr(const int m, const double a, const double om, const double r, double z, double H, double /*dHdr*/,
+              std::array<std::array<double, 10>, 10>& Creal) {
+/* om = m*Omega */
+std::fill(Creal[0].data(), Creal[0].data() + 100, 0.0);
+/* v slicing is the default */
+Creal[0][0]=-((4*a*a*r*r*r*r*r*r-2*a*a*(-3+r)*pow(r,7)-18*a*a*a*a*a*a*r*r*r*z*z-8*a*a*r*r*r*r*r*r*z*z+2*a*a*pow(r,7)*(-8+r+2*pow(m,2)*r)*z*z+28*a*a*a*a*a*a*r*r*r*z*z*z*z-12*a*a*a*a*a*a*r*r*r*r*z*z*z*z+2*a*a*r*r*r*r*r*r*(2+5*r)*z*z*z*z+2*a*a*a*a*a*a*r*r*r*z*z*z*z*z*z+4*a*a*a*a*a*a*(3+pow(m,2))*r*r*r*r*z*z*z*z*z*z-12*a*a*a*a*a*a*r*r*r*pow(z,8)+pow(r,9)*(2+pow(m,2)*r-2*z*z)+2*pow(a,10)*pow(z,8)*(-1+z*z)-20*a*a*a*a*r*r*r*r*z*z*pow(-1+z*z,2)+2*a*m*om*r*r*(-1+z*z)*pow(r*r+a*a*z*z,4)+a*a*om*om*r*r*pow(-1+z*z,2)*pow(r*r+a*a*z*z,4)+pow(a,8)*r*r*z*z*z*z*z*z*(-8+(8+pow(m,2))*z*z)+2*a*a*a*a*r*r*r*r*r*r*z*z*(-4+(4+3*pow(m,2))*z*z)-2*pow(a,8)*r*z*z*z*z*z*z*(-2+z*z+z*z*z*z)+2*a*a*a*a*r*r*r*r*r*(3-21*z*z+29*z*z*z*z-11*z*z*z*z*z*z))/(r*r*(a*a+r*r)*(-1+z*z)*pow(r*r+a*a*z*z,4)));
+Creal[0][1]=(4*(r*r*r*r*(-3+2*r)+a*a*r*r*(10*z*z+r*(3-7*z*z))+a*a*a*a*(z*z*z*z+3*r*z*z*(-3+z*z))))/pow(r*r+a*a*z*z,4);
+Creal[0][2]=(12*a*a*r*z*sqrt(1-z*z)*(-3*r*r+a*a*z*z))/pow(r*r+a*a*z*z,4);
+Creal[0][3]=(4*a*r*r*(2*r*r*r*(1+r-(1+2*r)*z*z)+a*a*a*a*z*z*(-9+12*z*z-5*z*z*z*z)+a*a*r*(3*r-10*(1+r)*z*z+(10+3*r)*z*z*z*z)))/((a*a+r*r)*sqrt(1-z*z)*pow(r*r+a*a*z*z,4));
+Creal[0][4]=(2*(a*a+(-2+r)*r)*(r*r*r*r*(-3+2*r)+a*a*r*r*(10*z*z+r*(3-7*z*z))+a*a*a*a*(z*z*z*z+3*r*z*z*(-3+z*z))))/((a*a+r*r)*pow(r*r+a*a*z*z,4));
+Creal[0][5]=(12*a*a*r*(a*a+(-2+r)*r)*z*sqrt(1-z*z)*(-3*r*r+a*a*z*z))/((a*a+r*r)*pow(r*r+a*a*z*z,4));
+Creal[0][6]=(4*a*r*sqrt(1-z*z)*(r*r*r*r*(-3+2*r)+a*a*r*r*(10*z*z+r*(3-7*z*z))+a*a*a*a*(z*z*z*z+3*r*z*z*(-3+z*z))))/((a*a+r*r)*pow(r*r+a*a*z*z,4));
+Creal[0][7]=(2*r*r*r*(-((-2+r)*r*r*r)+a*a*r*(-3*r+5*(-2+r)*z*z)+a*a*a*a*(9*z*z-6*z*z*z*z)))/((a*a+r*r)*pow(r*r+a*a*z*z,4));
+Creal[0][8]=(-12*a*a*a*r*r*z*(-1+z*z)*(-3*r*r+a*a*z*z))/((a*a+r*r)*pow(r*r+a*a*z*z,4));
+Creal[0][9]=(-2*r*r*r*((-2+r)*r*r*r+3*a*a*a*a*z*z*(3-4*z*z)+a*a*r*(-3*r+(10+r)*z*z)))/((a*a+r*r)*pow(r*r+a*a*z*z,4));
+Creal[1][0]=(2*(r*r*r*r*r*r-a*a*a*a*a*a*z*z*z*z+a*a*a*a*r*z*z*(-5-2*r+(5+r)*z*z)+a*a*r*r*r*(1-r+(-1+2*r)*z*z)))/((a*a+r*r)*pow(r*r+a*a*z*z,3));
+Creal[1][1]=-((2*a*m*om*r*r*r*r*r*r*(-1+z*z)+4*a*a*a*m*om*r*r*r*r*z*z*(-1+z*z)+2*a*a*a*a*a*m*om*r*r*z*z*z*z*(-1+z*z)+r*r*r*r*r*(-6+2*r+pow(m,2)*r-2*(-3+r)*z*z)+a*a*a*a*a*a*z*z*z*z*(-1+z*z)*(2+om*om*r*r*(-1+z*z))+a*a*r*r*r*(-2-4*r+2*(8+(3+pow(m,2))*r)*z*z-2*(7+r)*z*z*z*z+om*om*r*r*r*pow(-1+z*z,2))+a*a*a*a*r*z*z*(2-2*z*z+2*om*om*r*r*r*pow(-1+z*z,2)+r*(-6+(6+pow(m,2))*z*z)))/((a*a+r*r)*(-1+z*z)*pow(r*r*r+a*a*r*z*z,2)));
+Creal[1][2]=(2*r*r*z)/((a*a+r*r)*sqrt(1-z*z)*(r*r+a*a*z*z));
+Creal[1][3]=(2*a*r*(2*r*r*r-r*(10*a*a+r*r*(2+r))*z*z-2*a*a*(-5+r)*r*z*z*z*z-a*a*a*a*z*z*z*z*z*z))/((a*a+r*r)*sqrt(1-z*z)*pow(r*r+a*a*z*z,3));
+Creal[1][4]=(-2*r*r*r*(a*a+r*(-3+2*r))+10*a*a*r*(a*a+(-2+r)*r)*z*z+2*a*a*a*a*(-1+r)*z*z*z*z)/((a*a+r*r)*pow(r*r+a*a*z*z,3));
+Creal[1][5]=(-8*a*a*r*z*sqrt(1-z*z)*(-2*r*r+a*a*z*z))/((a*a+r*r)*pow(r*r+a*a*z*z,3));
+Creal[1][6]=(-4*a*r*r*z*z)/((a*a+r*r)*sqrt(1-z*z)*pow(r*r+a*a*z*z,2));
+Creal[1][7]=(2*(r*r*r*r*r-5*a*a*r*r*r*z*z))/((a*a+r*r)*pow(r*r+a*a*z*z,3));
+Creal[1][9]=(2*(r*r*r*r*r-5*a*a*r*r*r*z*z))/((a*a+r*r)*pow(r*r+a*a*z*z,3));
+Creal[2][0]=(2*a*a*z*sqrt(1-z*z)*(-(r*r*r*r*r*(10+r))+a*a*a*a*a*a*z*z*z*z+a*a*r*r*r*(-10+r-2*(-1+r)*z*z)+a*a*a*a*r*z*z*(2-r*(-2+z*z))))/(r*r*(a*a+r*r)*pow(r*r+a*a*z*z,3));
+Creal[2][1]=(2*a*a*z*sqrt(1-z*z)*(-(r*r*r*r*(-20+r*(10+r)))+a*a*a*a*a*a*z*z*z*z+a*a*r*r*((-10+r)*r-2*(2+(-1+r)*r)*z*z)+a*a*a*a*r*z*z*(2-r*(-2+z*z))))/(r*r*(a*a+r*r)*pow(r*r+a*a*z*z,3));
+Creal[2][2]=-((-8*a*a*r*r*r-4*r*r*r*r*r+r*r*r*r*r*r+pow(m,2)*r*r*r*r*r*r+16*a*a*a*a*r*z*z+20*a*a*r*r*r*z*z+a*a*r*r*r*r*z*z+3*a*a*pow(m,2)*r*r*r*r*z*z+4*r*r*r*r*r*z*z-24*a*a*a*a*r*z*z*z*z-a*a*a*a*r*r*z*z*z*z+3*a*a*a*a*pow(m,2)*r*r*z*z*z*z-12*a*a*r*r*r*z*z*z*z+2*a*a*r*r*r*r*z*z*z*z-a*a*a*a*a*a*z*z*z*z*z*z+a*a*a*a*a*a*pow(m,2)*z*z*z*z*z*z+8*a*a*a*a*r*z*z*z*z*z*z+4*a*a*a*a*r*r*z*z*z*z*z*z+2*a*a*a*a*a*a*pow(z,8)+2*a*m*om*(-1+z*z)*pow(r*r+a*a*z*z,3)+a*a*om*om*pow(-1+z*z,2)*pow(r*r+a*a*z*z,3))/((a*a+r*r)*(-1+z*z)*pow(r*r+a*a*z*z,3)));
+Creal[2][3]=(-2*a*z*(r*r*r*r*(10+r)+2*a*a*r*r*(10+(-6+r)*z*z)+a*a*a*a*z*z*(-4+(2+r)*z*z)))/((a*a+r*r)*pow(r*r+a*a*z*z,3));
+Creal[2][6]=(4*a*(a*a+(-2+r)*r)*z*(-5*r*r+a*a*z*z))/((a*a+r*r)*pow(r*r+a*a*z*z,3));
+Creal[2][8]=(2*a*(4*a*a*r*r*z*z*(2-3*z*z)+a*a*a*a*z*z*z*z*(-1+z*z)-r*r*r*r*(3+z*z)))/((a*a+r*r)*sqrt(1-z*z)*pow(r*r+a*a*z*z,3));
+Creal[2][9]=(4*a*a*r*z*sqrt(1-z*z)*(-5*r*r+a*a*z*z))/((a*a+r*r)*pow(r*r+a*a*z*z,3));
+Creal[3][0]=(-2*a*sqrt(1-z*z)*(pow(r,8)+pow(a,8)*z*z*z*z*z*z-a*a*a*a*a*a*r*r*z*z*(9+z*z*z*z)+a*a*a*a*r*r*r*(3*r-(10+19*r)*z*z+2*(5-3*r)*z*z*z*z)-2*a*a*r*r*r*r*r*(-1+z*z+r*(-3+8*z*z))))/(r*r*(a*a+r*r)*pow(r*r+a*a*z*z,4));
+Creal[3][1]=(4*a*sqrt(1-z*z)*((3-4*r)*r*r*r*r+a*a*a*a*z*z*(9*r+(-1+r)*z*z)+a*a*r*r*(-3*r+(-10+9*r)*z*z)))/(r*pow(r*r+a*a*z*z,4));
+Creal[3][2]=(4*a*z*(5*r*r*r*r+a*a*r*r*(9-5*z*z)+a*a*a*a*z*z*(-3+2*z*z)))/pow(r*r+a*a*z*z,4);
+Creal[3][3]=-((-8*a*a*r*r*r*r-16*a*a*r*r*r*r*r+36*a*a*a*a*a*a*r*z*z+4*a*a*r*r*r*r*(4+r*(9+r+pow(m,2)*r))*z*z-68*a*a*a*a*a*a*r*z*z*z*z+6*a*a*a*a*(1+pow(m,2))*r*r*r*r*z*z*z*z-4*a*a*r*r*r*r*(2+5*r)*z*z*z*z+4*a*a*a*a*a*a*r*(10+r+pow(m,2)*r)*z*z*z*z*z*z+pow(a,8)*(1+pow(m,2))*pow(z,8)-8*a*a*a*a*a*a*r*pow(z,8)+40*a*a*a*a*r*r*z*z*pow(-1+z*z,2)+pow(r,7)*(-4+r+pow(m,2)*r+4*z*z)+2*a*m*om*(-1+z*z)*pow(r*r+a*a*z*z,4)+a*a*om*om*pow(-1+z*z,2)*pow(r*r+a*a*z*z,4)+4*a*a*a*a*r*r*r*(-3+15*z*z-16*z*z*z*z+4*z*z*z*z*z*z))/((a*a+r*r)*(-1+z*z)*pow(r*r+a*a*z*z,4)));
+Creal[3][4]=(2*a*(a*a+(-2+r)*r)*sqrt(1-z*z)*((3-4*r)*r*r*r*r+a*a*a*a*z*z*(9*r+(-1+r)*z*z)+a*a*r*r*(-3*r+(-10+9*r)*z*z)))/(r*(a*a+r*r)*pow(r*r+a*a*z*z,4));
+Creal[3][5]=(4*a*(a*a+(-2+r)*r)*z*(5*r*r*r*r+a*a*r*r*(9-5*z*z)+a*a*a*a*z*z*(-3+2*z*z)))/((a*a+r*r)*pow(r*r+a*a*z*z,4));
+Creal[3][6]=(-4*a*a*(-1+z*z)*((3-4*r)*r*r*r*r+a*a*a*a*z*z*(9*r+(-1+r)*z*z)+a*a*r*r*(-3*r+(-10+9*r)*z*z)))/((a*a+r*r)*pow(r*r+a*a*z*z,4));
+Creal[3][7]=(2*a*r*r*(a*a*a*a*z*z*(-9+11*z*z)+r*r*r*(-2+3*r-(-2+r)*z*z)+a*a*r*(3*r-10*(-1+r)*z*z+(-10+11*r)*z*z*z*z)))/((a*a+r*r)*sqrt(1-z*z)*pow(r*r+a*a*z*z,4));
+Creal[3][8]=(4*a*a*r*z*sqrt(1-z*z)*(5*r*r*r*r+a*a*r*r*(9-5*z*z)+a*a*a*a*z*z*(-3+2*z*z)))/((a*a+r*r)*pow(r*r+a*a*z*z,4));
+Creal[3][9]=(2*a*(a*a*a*a*a*a*z*z*z*z*z*z*(-1+z*z)+2*r*r*r*r*r*(-1-(-1+r)*z*z)+a*a*a*a*r*r*z*z*(9-18*z*z+7*z*z*z*z)+a*a*r*r*r*(-3*r+(10+7*r)*z*z-2*(5+4*r)*z*z*z*z)))/((a*a+r*r)*sqrt(1-z*z)*pow(r*r+a*a*z*z,4));
+Creal[4][0]=2/(a*a+r*r)-2/(r*r+a*a*z*z);
+Creal[4][1]=(4*(r*r+a*a*(-2+z*z)))/((a*a+r*r)*(r*r+a*a*z*z));
+Creal[4][3]=(-4*a*r*sqrt(1-z*z))/((a*a+r*r)*(r*r+a*a*z*z));
+Creal[4][4]=-((2*a*m*om*r*r*r*r*r*r*(-1+z*z)+4*a*a*a*m*om*r*r*r*r*z*z*(-1+z*z)+2*a*a*a*a*a*m*om*r*r*z*z*z*z*(-1+z*z)+r*r*r*r*r*(2-2*z*z+r*(4+pow(m,2)-4*z*z))+a*a*a*a*a*a*z*z*z*z*(-1+z*z)*(2+om*om*r*r*(-1+z*z))+a*a*r*r*r*(-8*r+2*(-8+(7+pow(m,2))*r)*z*z+2*(8-3*r)*z*z*z*z+om*om*r*r*r*pow(-1+z*z,2))+a*a*a*a*r*z*z*(2*z*z*(-1+z*z)+2*om*om*r*r*r*pow(-1+z*z,2)+r*(-10+(12+pow(m,2))*z*z-2*z*z*z*z)))/((a*a+r*r)*(-1+z*z)*pow(r*r*r+a*a*r*z*z,2)));
+Creal[4][5]=(4*r*r*z)/((a*a+r*r)*sqrt(1-z*z)*(r*r+a*a*z*z));
+Creal[4][6]=(-4*a*r)/((a*a+r*r)*sqrt(1-z*z)*(r*r+a*a*z*z));
+Creal[4][7]=(-2*r*r)/((a*a+r*r)*(r*r+a*a*z*z));
+Creal[4][9]=(-2*r*r)/((a*a+r*r)*(r*r+a*a*z*z));
+Creal[5][0]=(-2*a*a*z*sqrt(1-z*z))/((a*a+r*r)*(r*r+a*a*z*z));
+Creal[5][1]=(2*a*a*z*sqrt(1-z*z)*((10-3*r)*r*r*r+a*a*a*a*z*z+a*a*r*(r-(2+3*r)*z*z)))/((a*a+r*r)*pow(r*r*r+a*a*r*z*z,2));
+Creal[5][2]=(4*r*r-2*a*a*z*z)/((a*a+r*r)*(r*r+a*a*z*z));
+Creal[5][3]=(-4*a*r*z)/((a*a+r*r)*(r*r+a*a*z*z));
+Creal[5][4]=(2*a*a*(a*a+r-2*r*r)*z*sqrt(1-z*z))/(r*r*(a*a+r*r)*(r*r+a*a*z*z));
+Creal[5][5]=(-8*r*r*r*(-1+z*z)+a*a*a*a*z*z*z*z*(3-4*z*z-pow(m+a*om*(-1+z*z),2))+r*r*r*r*(-5+4*z*z-pow(m+a*om*(-1+z*z),2))-2*a*a*r*r*z*z*(1+pow(m+a*om*(-1+z*z),2)))/((a*a+r*r)*(-1+z*z)*pow(r*r+a*a*z*z,2));
+Creal[5][6]=(2*a*(10-3*r)*r*r*z-2*a*a*a*(2+3*r)*z*z*z)/((a*a+r*r)*pow(r*r+a*a*z*z,2));
+Creal[5][7]=(2*z*(r*r-a*a*(-1+z*z)))/((a*a+r*r)*sqrt(1-z*z)*(r*r+a*a*z*z));
+Creal[5][8]=(2*r*(a-3*a*z*z))/((a*a+r*r)*sqrt(1-z*z)*(r*r+a*a*z*z));
+Creal[5][9]=(-2*r*r*z)/((a*a+r*r)*sqrt(1-z*z)*(r*r+a*a*z*z));
+Creal[6][0]=(2*a*sqrt(1-z*z)*(r*r*r*r*r+a*a*a*a*z*z*(5+(-5+r)*z*z)+a*a*r*r*(-1+(1+2*r)*z*z)))/((a*a+r*r)*pow(r*r+a*a*z*z,3));
+Creal[6][1]=(2*a*sqrt(1-z*z)*(r*r*r*r*(3+2*r)-a*a*a*a*z*z+a*a*r*r*(1+(-3+2*r)*z*z)))/((a*a+r*r)*pow(r*r*r+a*a*r*z*z,2));
+Creal[6][2]=(4*a*r*z)/((a*a+r*r)*(r*r+a*a*z*z));
+Creal[6][3]=(4*r*r*r*r*r*r-2*a*a*a*a*a*a*z*z*z*z*z*z-20*a*a*a*a*r*z*z*(-1+z*z)+2*a*a*r*r*r*(-2+(2+3*r)*z*z))/((a*a+r*r)*pow(r*r+a*a*z*z,3));
+Creal[6][4]=(2*a*sqrt(1-z*z)*(r*r*r*r*(-3+r+r*r)+a*a*a*a*z*z*(-5*r+pow(-1+r,2)*z*z)+a*a*r*r*(r+(10+r*(-7+2*r))*z*z)))/(r*(a*a+r*r)*pow(r*r+a*a*z*z,3));
+Creal[6][5]=(4*a*z*((-5+r)*r*r*r*r+a*a*a*a*z*z*(2+(-1+r)*z*z)+2*a*a*r*r*(-2+r*z*z)))/((a*a+r*r)*pow(r*r+a*a*z*z,3));
+Creal[6][6]=(-8*r*r*r*(-1+z*z)+4*a*a*r*z*z*(-1+z*z)+a*a*a*a*z*z*z*z*(1-2*z*z-pow(m+a*om*(-1+z*z),2))+r*r*r*r*(-5+4*z*z-pow(m+a*om*(-1+z*z),2))-2*a*a*r*r*z*z*(2-z*z+pow(m+a*om*(-1+z*z),2)))/((a*a+r*r)*(-1+z*z)*pow(r*r+a*a*z*z,2));
+Creal[6][7]=(2*a*r*(-r*r*r+r*(5*a*a+r*r+r*r*r)*z*z+a*a*r*(-5+2*r)*z*z*z*z+a*a*a*a*z*z*z*z*z*z))/((a*a+r*r)*sqrt(1-z*z)*pow(r*r+a*a*z*z,3));
+Creal[6][8]=(4*r*r*z-2*a*a*z*(-1+z*z))/((a*a+r*r)*sqrt(1-z*z)*(r*r+a*a*z*z));
+Creal[6][9]=(2*a*r*((-1+r)*r*r*r+r*(r*r-2*r*r*r+a*a*(5+2*r))*z*z+a*a*(a*a-r*(5+4*r))*z*z*z*z-2*a*a*a*a*z*z*z*z*z*z))/((a*a+r*r)*sqrt(1-z*z)*pow(r*r+a*a*z*z,3));
+Creal[7][0]=(-2*(r*r*r*r*r*r+2*a*a*r*r*r*(1+r-z*z)+a*a*a*a*a*a*(z*z-z*z*z*z)+a*a*a*a*r*(r+(-4+r)*z*z-(-4+r)*z*z*z*z)))/((a*a+r*r)*pow(r*r*r+a*a*r*z*z,2));
+Creal[7][1]=(-4*((-3+r)*r*r*r+a*a*r*(r+3*z*z)+a*a*a*a*(z*z-z*z*z*z)))/pow(r*r*r+a*a*r*z*z,2);
+Creal[7][2]=(-8*a*a*z*sqrt(1-z*z))/((a*a+r*r)*(r*r+a*a*z*z));
+Creal[7][3]=(4*a*sqrt(1-z*z)*(-(r*r*r*(2+r))-a*a*r*(r-4*z*z)+a*a*a*a*z*z*(-1+z*z)))/(r*(a*a+r*r)*pow(r*r+a*a*z*z,2));
+Creal[7][4]=(2*(a*a+(-2+r)*r)*(-((-3+r)*r*r*r)+a*a*a*a*z*z*(-1+z*z)-a*a*r*(r+3*z*z)))/((a*a+r*r)*pow(r*r*r+a*a*r*z*z,2));
+Creal[7][5]=(-8*a*a*(-1+r)*z*sqrt(1-z*z))/(r*(a*a+r*r)*(r*r+a*a*z*z));
+Creal[7][6]=(4*a*sqrt(1-z*z)*(-((-3+r)*r*r*r)+a*a*a*a*z*z*(-1+z*z)-a*a*r*(r+3*z*z)))/(r*(a*a+r*r)*pow(r*r+a*a*z*z,2));
+Creal[7][7]=-((2*a*m*om*r*r*r*r*r*(-1+z*z)+4*a*a*a*m*om*r*r*r*z*z*(-1+z*z)+2*a*a*a*a*a*m*om*r*z*z*z*z*(-1+z*z)+a*a*a*a*a*a*om*om*r*z*z*z*z*pow(-1+z*z,2)+r*r*r*r*((2+pow(m,2))*r+2*(-1+z*z))+a*a*a*a*z*z*(2*z*z-2*z*z*z*z+2*om*om*r*r*r*pow(-1+z*z,2)+r*(2+(-4+pow(m,2))*z*z+4*z*z*z*z))+a*a*r*r*(om*om*r*r*r*pow(-1+z*z,2)+2*(r+(-2+(-1+pow(m,2))*r)*z*z+2*(1+r)*z*z*z*z)))/(r*(a*a+r*r)*(-1+z*z)*pow(r*r+a*a*z*z,2)));
+Creal[7][8]=(-4*a*z*(r*r-a*a*(-1+z*z)))/(r*(a*a+r*r)*(r*r+a*a*z*z));
+Creal[7][9]=(2*(r*r*r*(2+(-2+r)*z*z)+a*a*r*(r-(4+3*r)*z*z+4*(1+r)*z*z*z*z)+a*a*a*a*(z*z-3*z*z*z*z+3*z*z*z*z*z*z)))/((a*a+r*r)*(-1+z*z)*pow(r*r+a*a*z*z,2));
+Creal[8][0]=(4*a*a*a*z*(-1+z*z)*(-5*r*r+a*a*z*z))/(r*r*pow(r*r+a*a*z*z,3));
+Creal[8][1]=(4*a*a*a*(a*a+(-2+r)*r)*z*(-1+z*z)*(-5*r*r+a*a*z*z))/(r*r*(a*a+r*r)*pow(r*r+a*a*z*z,3));
+Creal[8][2]=(4*a*sqrt(1-z*z)*(3*r*r*r*r-4*a*a*a*a*z*z+a*a*r*r*(2-3*z*z)))/((a*a+r*r)*pow(r*r+a*a*z*z,3));
+Creal[8][3]=(2*z*(pow(r,7)+a*a*r*r*r*r*(10-r+2*(-5+2*r)*z*z)+a*a*a*a*a*a*z*z*(-4-(-6+r)*z*z+2*(-1+r)*z*z*z*z)+a*a*a*a*r*r*(20-2*(16+r)*z*z+(12+5*r)*z*z*z*z)))/(r*(a*a+r*r)*sqrt(1-z*z)*pow(r*r+a*a*z*z,3));
+Creal[8][6]=(2*(-2+r)*r*r*r*r*r*r*z+2*a*a*r*r*r*z*(-20+12*r-r*r+4*(5+(-4+r)*r)*z*z)+2*a*a*a*a*r*z*(10*r-2*(-2+r*(4+r))*z*z+(-4+r*(-4+5*r))*z*z*z*z)+a*a*a*a*a*a*(-4*z*z*z-2*(-4+r)*z*z*z*z*z+4*(-1+r)*pow(z,7)))/(r*(a*a+r*r)*sqrt(1-z*z)*pow(r*r+a*a*z*z,3));
+Creal[8][8]=-((2*a*m*om*pow(r,7)*(-1+z*z)+6*a*a*a*m*om*r*r*r*r*r*z*z*(-1+z*z)+6*a*a*a*a*a*m*om*r*r*r*z*z*z*z*(-1+z*z)+2*pow(a,7)*m*om*r*z*z*z*z*z*z*(-1+z*z)+pow(a,8)*om*om*r*z*z*z*z*z*z*pow(-1+z*z,2)+r*r*r*r*r*r*(2+2*r+pow(m,2)*r+2*(-1+r)*z*z)+a*a*a*a*a*a*z*z*z*z*(2-2*z*z+3*om*om*r*r*r*pow(-1+z*z,2)+r*(2+(-2+pow(m,2))*z*z+4*z*z*z*z))+a*a*r*r*r*r*(6-14*z*z+8*z*z*z*z+om*om*r*r*r*pow(-1+z*z,2)+r*(2+(2+3*pow(m,2))*z*z+8*z*z*z*z))+a*a*a*a*r*r*z*z*(-16+30*z*z-14*z*z*z*z+3*om*om*r*r*r*pow(-1+z*z,2)+r*(4+(-2+3*pow(m,2))*z*z+10*z*z*z*z)))/(r*(a*a+r*r)*(-1+z*z)*pow(r*r+a*a*z*z,3)));
+Creal[8][9]=(2*a*a*a*z*(-1+z*z)*((-10+r)*r*r*r+2*a*a*r*(1+r)*z*z+a*a*a*a*z*z*z*z))/(r*(a*a+r*r)*pow(r*r+a*a*z*z,3));
+Creal[9][0]=(-2*(pow(r,9)+a*a*r*r*r*r*r*r*(-8+r+(8+3*r)*z*z)+pow(a,8)*z*z*(9-4*z*z+(-5+r)*z*z*z*z)+a*a*a*a*r*r*r*(-2-9*r+(4+r*(16+3*r))*z*z+(-2+r*(-7+3*r))*z*z*z*z)+a*a*a*a*a*a*r*(-3*r+(10+23*r)*z*z+(1+r)*(-20+3*r)*z*z*z*z+(10+(-3+r)*r)*z*z*z*z*z*z)))/(r*(a*a+r*r)*pow(r*r+a*a*z*z,4));
+Creal[9][1]=(4*(-((-3+r)*pow(r,7))-3*a*a*r*r*r*r*(1-2*r+(-1+r+r*r)*z*z)+a*a*a*a*a*a*z*z*(-9*r+(1+4*r)*z*z-pow(-1+r,2)*z*z*z*z)+a*a*a*a*r*r*(3*r+2*(5-7*r)*z*z+(-10+(8-3*r)*r)*z*z*z*z)))/(r*r*pow(r*r+a*a*z*z,4));
+Creal[9][2]=(-4*z*(pow(r,7)+a*a*r*r*r*r*(10+(-10+3*r)*z*z)+a*a*a*a*a*a*z*z*(-3+4*z*z+(-1+r)*z*z*z*z)+a*a*a*a*r*r*(9-10*z*z+(1+3*r)*z*z*z*z)))/(r*sqrt(1-z*z)*pow(r*r+a*a*z*z,4));
+Creal[9][3]=(-4*a*sqrt(1-z*z)*((-4+r)*r*r*r*r*r*r+a*a*r*r*r*(-2-6*r+(2+r*(2+3*r))*z*z)+a*a*a*a*a*a*z*z*(9-4*z*z+(-1+r)*z*z*z*z)+a*a*a*a*r*(-3*r+2*(5+7*r)*z*z+(1+r)*(-10+3*r)*z*z*z*z)))/((a*a+r*r)*pow(r*r+a*a*z*z,4));
+Creal[9][4]=(-2*(a*a+(-2+r)*r)*((-3+r)*pow(r,7)+3*a*a*r*r*r*r*(1-2*r+(-1+r+r*r)*z*z)+a*a*a*a*a*a*z*z*(9*r-(1+4*r)*z*z+pow(-1+r,2)*z*z*z*z)+a*a*a*a*r*r*(-3*r+2*(-5+7*r)*z*z+(10+r*(-8+3*r))*z*z*z*z)))/(r*r*(a*a+r*r)*pow(r*r+a*a*z*z,4));
+Creal[9][5]=(-4*(a*a+(-2+r)*r)*z*(pow(r,7)+a*a*r*r*r*r*(10+(-10+3*r)*z*z)+a*a*a*a*a*a*z*z*(-3+4*z*z+(-1+r)*z*z*z*z)+a*a*a*a*r*r*(9-10*z*z+(1+3*r)*z*z*z*z)))/(r*(a*a+r*r)*sqrt(1-z*z)*pow(r*r+a*a*z*z,4));
+Creal[9][6]=(-4*a*sqrt(1-z*z)*((-3+r)*pow(r,7)+3*a*a*r*r*r*r*(1-2*r+(-1+r+r*r)*z*z)+a*a*a*a*a*a*z*z*(9*r-(1+4*r)*z*z+pow(-1+r,2)*z*z*z*z)+a*a*a*a*r*r*(-3*r+2*(-5+7*r)*z*z+(10+r*(-8+3*r))*z*z*z*z)))/(r*(a*a+r*r)*pow(r*r+a*a*z*z,4));
+Creal[9][7]=(2*(pow(a,8)*pow(z,8)+pow(r,7)*(2+(-2+r)*z*z)+a*a*r*r*r*r*(-2+5*r+(4+(-6+r)*r)*z*z+(-2+r+3*r*r)*z*z*z*z)+a*a*a*a*a*a*r*z*z*(-9+16*z*z+(-5+3*r)*z*z*z*z+(-2+r)*z*z*z*z*z*z)+a*a*a*a*r*r*(3*r+5*(2-3*r)*z*z+(-20+r*(23+3*r))*z*z*z*z+(-2+r)*(-5+3*r)*z*z*z*z*z*z)))/((a*a+r*r)*(-1+z*z)*pow(r*r+a*a*z*z,4));
+Creal[9][8]=(-4*a*z*(pow(r,7)+a*a*r*r*r*r*(10+(-10+3*r)*z*z)+a*a*a*a*a*a*z*z*(-3+4*z*z+(-1+r)*z*z*z*z)+a*a*a*a*r*r*(9-10*z*z+(1+3*r)*z*z*z*z)))/((a*a+r*r)*pow(r*r+a*a*z*z,4));
+Creal[9][9]=(-2*a*a*r*r*r*r*r*(2+r)+18*a*a*a*a*a*a*r*r*z*z+2*a*a*r*r*r*r*r*(4+r*(2-(5+2*pow(m,2))*r))*z*z-48*a*a*a*a*a*a*r*r*z*z*z*z+2*a*a*(-2+r)*r*r*r*r*r*(1+r)*z*z*z*z-4*pow(a,8)*z*z*z*z*z*z+20*a*a*a*a*r*r*r*z*z*pow(-1+z*z,2)+6*a*a*a*a*r*r*r*r*r*z*z*z*z*(-3-pow(m,2)+z*z)-2*a*m*om*r*(-1+z*z)*pow(r*r+a*a*z*z,4)-a*a*om*om*r*pow(-1+z*z,2)*pow(r*r+a*a*z*z,4)+pow(a,8)*pow(z,8)*(6-4*r-pow(m,2)*r+2*(-1+r)*z*z)+2*a*a*a*a*a*a*r*r*z*z*z*z*z*z*(17-7*r-2*pow(m,2)*r+(-2+3*r)*z*z)+2*a*a*a*a*r*r*r*r*(-1+z)*(1+z)*(3-10*z*z+11*z*z*z*z)-pow(r,8)*((2+pow(m,2))*r+2*(-1+z*z)))/(r*(a*a+r*r)*(-1+z*z)*pow(r*r+a*a*z*z,4));
+/* for when it is not v slicing*/
+if( fabs(1+H) > 3.0e-15 ){
+Creal[0][0]+=(om*(2*a*(1+H)*m+(H*H-1)*om*(a*a+r*r)))/(r*r-2*r+a*a);
+Creal[1][1]+=(om*(2*a*(1+H)*m+(H*H-1)*om*(a*a+r*r)))/(r*r-2*r+a*a);
+Creal[2][2]+=(om*(2*a*(1+H)*m+(H*H-1)*om*(a*a+r*r)))/(r*r-2*r+a*a);
+Creal[3][3]+=(om*(2*a*(1+H)*m+(H*H-1)*om*(a*a+r*r)))/(r*r-2*r+a*a);
+Creal[4][4]+=(om*(2*a*(1+H)*m+(H*H-1)*om*(a*a+r*r)))/(r*r-2*r+a*a);
+Creal[5][5]+=(om*(2*a*(1+H)*m+(H*H-1)*om*(a*a+r*r)))/(r*r-2*r+a*a);
+Creal[6][6]+=(om*(2*a*(1+H)*m+(H*H-1)*om*(a*a+r*r)))/(r*r-2*r+a*a);
+Creal[7][7]+=(om*(2*a*(1+H)*m+(H*H-1)*om*(a*a+r*r)))/(r*r-2*r+a*a);
+Creal[8][8]+=(om*(2*a*(1+H)*m+(H*H-1)*om*(a*a+r*r)))/(r*r-2*r+a*a);
+Creal[9][9]+=(om*(2*a*(1+H)*m+(H*H-1)*om*(a*a+r*r)))/(r*r-2*r+a*a);
+}
+}
+
+void getCimag_vr(const int m, const double a, const double om, const double r, double z, double H, double dHdr,
+              std::array<std::array<double, 10>, 10>& Cimag) {
+/* om = m*Omega */
+std::fill(Cimag[0].data(), Cimag[0].data() + 100, 0.0);
+/* v slicing is the default */
+Cimag[0][0]=(2*a*(m-a*om))/(r*(a*a+r*r));
+Cimag[0][1]=(4*(-(a*m)+om*(a*a+r*r))*(r-a*z)*(r+a*z))/((a*a+r*r)*pow(r*r+a*a*z*z,2));
+Cimag[0][2]=(8*a*r*r*z*(m+a*om*(-1+z*z)))/((a*a+r*r)*sqrt(1-z*z)*pow(r*r+a*a*z*z,2));
+Cimag[1][0]=(2*a*r*(m+a*om*(-1+z*z)))/((a*a+r*r)*(r*r+a*a*z*z));
+Cimag[1][1]=(2*a*(-(a*a*a*om*z*z)+a*om*r*r*(-2+z*z)+m*(2*r*r+a*a*z*z)))/(r*(a*a+r*r)*(r*r+a*a*z*z));
+Cimag[1][2]=(2*a*r*z*(m+a*om*(-1+z*z)))/((a*a+r*r)*sqrt(1-z*z)*(r*r+a*a*z*z));
+Cimag[1][3]=(2*r*r*(m+a*om*(-1+z*z)))/((a*a+r*r)*sqrt(1-z*z)*(r*r+a*a*z*z));
+Cimag[1][4]=(2*(-(a*m)+om*(a*a+r*r))*(r-a*z)*(r+a*z))/((a*a+r*r)*pow(r*r+a*a*z*z,2));
+Cimag[1][5]=(4*a*r*r*z*(m+a*om*(-1+z*z)))/((a*a+r*r)*sqrt(1-z*z)*pow(r*r+a*a*z*z,2));
+Cimag[2][0]=(2*a*a*(-(a*m)+om*(a*a+r*r))*z*sqrt(1-z*z))/(r*(a*a+r*r)*(r*r+a*a*z*z));
+Cimag[2][1]=(2*a*a*(-(a*m)+om*(a*a+r*r))*z*sqrt(1-z*z))/(r*(a*a+r*r)*(r*r+a*a*z*z));
+Cimag[2][2]=(2*a*r*(m+a*om*(-1+z*z)))/((a*a+r*r)*(r*r+a*a*z*z));
+Cimag[2][3]=(-2*z*(m*r*r+a*a*a*om*pow(-1+z*z,2)+a*a*m*(-1+2*z*z)))/((a*a+r*r)*(-1+z*z)*(r*r+a*a*z*z));
+Cimag[2][5]=(2*(-(a*m)+om*(a*a+r*r))*(r-a*z)*(r+a*z))/((a*a+r*r)*pow(r*r+a*a*z*z,2));
+Cimag[2][7]=(4*a*r*r*z*(m+a*om*(-1+z*z)))/((a*a+r*r)*sqrt(1-z*z)*pow(r*r+a*a*z*z,2));
+Cimag[3][0]=(-2*m)/((a*a+r*r)*sqrt(1-z*z));
+Cimag[3][1]=(-2*a*om*(-1+z*z)*(-3*r*r*r*r+a*a*a*a*z*z-a*a*r*r*(1+z*z))+2*m*(-((-2+r)*r*r*r*r)+a*a*r*r*(1+(1-2*r)*z*z)+a*a*a*a*z*z*(-1-(-1+r)*z*z)))/(r*(a*a+r*r)*sqrt(1-z*z)*pow(r*r+a*a*z*z,2));
+Cimag[3][2]=(2*z*(m*r*r*r*r+a*a*a*a*m*z*z*z*z-2*a*a*a*om*r*pow(-1+z*z,2)+2*a*a*m*r*(1+(-1+r)*z*z)))/((a*a+r*r)*(-1+z*z)*pow(r*r+a*a*z*z,2));
+Cimag[3][6]=(2*(-(a*m)+om*(a*a+r*r))*(r-a*z)*(r+a*z))/((a*a+r*r)*pow(r*r+a*a*z*z,2));
+Cimag[3][8]=(4*a*r*r*z*(m+a*om*(-1+z*z)))/((a*a+r*r)*sqrt(1-z*z)*pow(r*r+a*a*z*z,2));
+Cimag[4][1]=(4*a*r*(m+a*om*(-1+z*z)))/((a*a+r*r)*(r*r+a*a*z*z));
+Cimag[4][4]=(2*a*(m*(3*r*r+a*a*z*z)-a*om*(a*a*z*z+r*r*(3-2*z*z))))/(r*(a*a+r*r)*(r*r+a*a*z*z));
+Cimag[4][5]=(4*a*r*z*(m+a*om*(-1+z*z)))/((a*a+r*r)*sqrt(1-z*z)*(r*r+a*a*z*z));
+Cimag[4][6]=(4*r*r*(m+a*om*(-1+z*z)))/((a*a+r*r)*sqrt(1-z*z)*(r*r+a*a*z*z));
+Cimag[5][1]=(2*a*a*(-(a*m)+om*(a*a+r*r))*z*sqrt(1-z*z))/(r*(a*a+r*r)*(r*r+a*a*z*z));
+Cimag[5][2]=(2*a*r*(m+a*om*(-1+z*z)))/((a*a+r*r)*(r*r+a*a*z*z));
+Cimag[5][4]=(2*a*a*(-(a*m)+om*(a*a+r*r))*z*sqrt(1-z*z))/(r*(a*a+r*r)*(r*r+a*a*z*z));
+Cimag[5][5]=(4*a*r*(m+a*om*(-1+z*z)))/((a*a+r*r)*(r*r+a*a*z*z));
+Cimag[5][6]=(-2*z*(m*r*r+a*a*a*om*pow(-1+z*z,2)+a*a*m*(-1+2*z*z)))/((a*a+r*r)*(-1+z*z)*(r*r+a*a*z*z));
+Cimag[5][7]=(2*a*r*z*(m+a*om*(-1+z*z)))/((a*a+r*r)*sqrt(1-z*z)*(r*r+a*a*z*z));
+Cimag[5][8]=(2*r*r*(m+a*om*(-1+z*z)))/((a*a+r*r)*sqrt(1-z*z)*(r*r+a*a*z*z));
+Cimag[6][1]=(-2*m)/((a*a+r*r)*sqrt(1-z*z));
+Cimag[6][3]=(2*a*r*(m+a*om*(-1+z*z)))/((a*a+r*r)*(r*r+a*a*z*z));
+Cimag[6][4]=(-2*a*om*(-1+z*z)*(-3*r*r*r*r+a*a*a*a*z*z-a*a*r*r*(1+z*z))+2*m*(-((-2+r)*r*r*r*r)+a*a*r*r*(1+(1-2*r)*z*z)+a*a*a*a*z*z*(-1-(-1+r)*z*z)))/(r*(a*a+r*r)*sqrt(1-z*z)*pow(r*r+a*a*z*z,2));
+Cimag[6][5]=(2*z*(m*r*r*r*r+a*a*a*a*m*z*z*z*z-2*a*a*a*om*r*pow(-1+z*z,2)+2*a*a*m*r*(1+(-1+r)*z*z)))/((a*a+r*r)*(-1+z*z)*pow(r*r+a*a*z*z,2));
+Cimag[6][6]=(2*a*r*(m+a*om*(-1+z*z)))/((a*a+r*r)*(r*r+a*a*z*z));
+Cimag[6][8]=(2*a*r*z*(m+a*om*(-1+z*z)))/((a*a+r*r)*sqrt(1-z*z)*(r*r+a*a*z*z));
+Cimag[6][9]=(2*r*r*(m+a*om*(-1+z*z)))/((a*a+r*r)*sqrt(1-z*z)*(r*r+a*a*z*z));
+Cimag[7][2]=(4*a*a*(-(a*m)+om*(a*a+r*r))*z*sqrt(1-z*z))/(r*(a*a+r*r)*(r*r+a*a*z*z));
+Cimag[7][5]=(4*a*a*(-(a*m)+om*(a*a+r*r))*z*sqrt(1-z*z))/(r*(a*a+r*r)*(r*r+a*a*z*z));
+Cimag[7][7]=(2*a*(a*a*a*om*z*z+m*(r-a*z)*(r+a*z)+a*om*r*r*(-1+2*z*z)))/(r*(a*a+r*r)*(r*r+a*a*z*z));
+Cimag[7][8]=(-4*z*(m*r*r+a*a*a*om*pow(-1+z*z,2)+a*a*m*(-1+2*z*z)))/((a*a+r*r)*(-1+z*z)*(r*r+a*a*z*z));
+Cimag[8][2]=(-2*m)/((a*a+r*r)*sqrt(1-z*z));
+Cimag[8][3]=(2*a*a*(-(a*m)+om*(a*a+r*r))*z*sqrt(1-z*z))/(r*(a*a+r*r)*(r*r+a*a*z*z));
+Cimag[8][5]=(-2*a*om*(-1+z*z)*(-3*r*r*r*r+a*a*a*a*z*z-a*a*r*r*(1+z*z))+2*m*(-((-2+r)*r*r*r*r)+a*a*r*r*(1+(1-2*r)*z*z)+a*a*a*a*z*z*(-1-(-1+r)*z*z)))/(r*(a*a+r*r)*sqrt(1-z*z)*pow(r*r+a*a*z*z,2));
+Cimag[8][6]=(2*a*a*(-(a*m)+om*(a*a+r*r))*z*sqrt(1-z*z))/(r*(a*a+r*r)*(r*r+a*a*z*z));
+Cimag[8][7]=(2*z*(m*r*r*r*r+a*a*a*a*m*z*z*z*z-2*a*a*a*om*r*pow(-1+z*z,2)+2*a*a*m*r*(1+(-1+r)*z*z)))/((a*a+r*r)*(-1+z*z)*pow(r*r+a*a*z*z,2));
+Cimag[8][8]=(2*a*a*(-(a*m)+om*(a*a+r*r))*z*z)/(r*(a*a+r*r)*(r*r+a*a*z*z));
+Cimag[8][9]=(-2*z*(m*r*r+a*a*a*om*pow(-1+z*z,2)+a*a*m*(-1+2*z*z)))/((a*a+r*r)*(-1+z*z)*(r*r+a*a*z*z));
+Cimag[9][3]=(-4*m)/((a*a+r*r)*sqrt(1-z*z));
+Cimag[9][6]=(-4*a*om*(-1+z*z)*(-3*r*r*r*r+a*a*a*a*z*z-a*a*r*r*(1+z*z))+4*m*(-((-2+r)*r*r*r*r)+a*a*r*r*(1+(1-2*r)*z*z)+a*a*a*a*z*z*(-1-(-1+r)*z*z)))/(r*(a*a+r*r)*sqrt(1-z*z)*pow(r*r+a*a*z*z,2));
+Cimag[9][8]=(4*z*(m*r*r*r*r+a*a*a*a*m*z*z*z*z-2*a*a*a*om*r*pow(-1+z*z,2)+2*a*a*m*r*(1+(-1+r)*z*z)))/((a*a+r*r)*(-1+z*z)*pow(r*r+a*a*z*z,2));
+Cimag[9][9]=(2*a*(-m+a*om))/(r*(a*a+r*r));
+/* for when it is not v slicing*/
+if( fabs(1+H) > 3.0e-15 ){
+Cimag[0][0]+=(om*(pow(r,7)*(4+4*H-dHdr*(-2+r)*r)+a*a*a*a*r*r*r*(4+2*H*(2+r)+r*(2-dHdr*r))+2*a*a*r*r*r*r*r*(2+H*(2+r)+r*(1+dHdr-dHdr*r))-2*a*a*r*(r*r*r*r*(2+2*H+dHdr*(-2+r)*r)+2*a*a*r*r*(4*(1+H)-(1+dHdr+H)*r+dHdr*r*r)+a*a*a*a*(2-2*H*(-1+r)+r*(-2+dHdr*r)))*z*z-a*a*a*a*(a*a+(-2+r)*r)*(dHdr*r*r*r+a*a*(-2-2*H+dHdr*r))*z*z*z*z))/(r*(a*a+(-2+r)*r)*(a*a+r*r)*pow(r*r+a*a*z*z,2));
+Cimag[0][3]+=(4*a*(1+H)*om*r*(r-a*z)*(r+a*z)*sqrt(1-z*z))/((a*a+(-2+r)*r)*pow(r*r+a*a*z*z,2));
+Cimag[1][0]+=(-2*a*a*(1+H)*om*r*(-1+z*z))/((a*a+(-2+r)*r)*(r*r+a*a*z*z));
+Cimag[1][1]+=-((om*(dHdr*(-2+r)*pow(r,8)+pow(a,8)*(-2-2*H+dHdr*r)*z*z*z*z+2*a*a*a*a*a*a*r*z*z*(1+H-3*r-3*H*r+dHdr*r*r+(1+H+dHdr*(-1+r)*r)*z*z)+2*a*a*r*r*r*r*r*(1+H-2*r-dHdr*r-2*H*r+dHdr*r*r+(1+r+dHdr*(-2+r)*r+H*(1+r))*z*z)+a*a*a*a*r*r*r*(-2-2*H-4*r-4*H*r+dHdr*r*r-4*(-3+H*(-3+r)+r*(1+dHdr-dHdr*r))*z*z+(-2+2*H*(-1+r)+(2+dHdr*(-2+r))*r)*z*z*z*z)))/(r*(a*a+(-2+r)*r)*(a*a+r*r)*pow(r*r+a*a*z*z,2)));
+Cimag[1][2]+=(2*a*a*(1+H)*om*r*z*sqrt(1-z*z))/((a*a+(-2+r)*r)*(r*r+a*a*z*z));
+Cimag[1][3]+=(2*a*(1+H)*om*r*r*sqrt(1-z*z))/((a*a+(-2+r)*r)*(r*r+a*a*z*z));
+Cimag[1][6]+=(2*a*(1+H)*om*r*(r-a*z)*(r+a*z)*sqrt(1-z*z))/((a*a+(-2+r)*r)*pow(r*r+a*a*z*z,2));
+Cimag[2][0]+=(-2*a*a*(1+H)*om*(a*a+r*r)*z*sqrt(1-z*z))/(r*(a*a+(-2+r)*r)*(r*r+a*a*z*z));
+Cimag[2][1]+=(-2*a*a*(1+H)*om*z*sqrt(1-z*z))/(r*r*r+a*a*r*z*z);
+Cimag[2][2]+=-((om*(-2*a*a*r*r*r*r*r*(1+dHdr+H-dHdr*r)+r*r*r*r*r*r*(-2-2*H+dHdr*(-2+r)*r)+a*a*a*a*r*r*(-2-2*H*(1+r)+r*(-2+dHdr*r))+2*a*a*(r*r*r*r*(-1+H*(-1+r)+r+dHdr*(-2+r)*r)+2*a*a*r*r*(2+2*H+dHdr*(-1+r)*r)+a*a*a*a*(1+H-(1+H)*r+dHdr*r*r))*z*z+a*a*a*a*(a*a+(-2+r)*r)*(a*a*dHdr+r*(2+2*H+dHdr*r))*z*z*z*z))/((a*a+(-2+r)*r)*(a*a+r*r)*pow(r*r+a*a*z*z,2)));
+Cimag[2][3]+=(2*a*a*a*(1+H)*om*z*(-1+z*z))/((a*a+(-2+r)*r)*(r*r+a*a*z*z));
+Cimag[2][8]+=(2*a*(1+H)*om*r*(r-a*z)*(r+a*z)*sqrt(1-z*z))/((a*a+(-2+r)*r)*pow(r*r+a*a*z*z,2));
+Cimag[3][0]+=(2*a*(1+H)*om*sqrt(1-z*z)*(-3*r*r*r*r+a*a*a*a*z*z-a*a*r*r*(1+z*z)))/(r*(a*a+(-2+r)*r)*pow(r*r+a*a*z*z,2));
+Cimag[3][3]+=-((om*(a*a*a*a*dHdr+r*r*(-2-2*H+dHdr*(-2+r)*r)+2*a*a*(1+H+dHdr*(-1+r)*r)))/((a*a+(-2+r)*r)*(a*a+r*r)));
+Cimag[3][9]+=(2*a*(1+H)*om*r*(r-a*z)*(r+a*z)*sqrt(1-z*z))/((a*a+(-2+r)*r)*pow(r*r+a*a*z*z,2));
+Cimag[4][1]+=(-4*a*a*(1+H)*om*r*(-1+z*z))/((a*a+(-2+r)*r)*(r*r+a*a*z*z));
+Cimag[4][4]+=-((om*(r*r*r*r*r*(4+4*H+dHdr*(-2+r)*r)+a*a*a*a*a*a*(-2-2*H+dHdr*r)*z*z+a*a*a*a*r*r*(-6-6*H+dHdr*r+2*(1+H+dHdr*(-1+r))*z*z)+a*a*r*r*r*(8+H*(8-6*r)+2*(-3+dHdr*(-1+r))*r+(-4+4*H*(-1+r)+(4+dHdr*(-2+r))*r)*z*z)))/(r*(a*a+(-2+r)*r)*(a*a+r*r)*(r*r+a*a*z*z)));
+Cimag[4][5]+=(4*a*a*(1+H)*om*r*z*sqrt(1-z*z))/((a*a+(-2+r)*r)*(r*r+a*a*z*z));
+Cimag[4][6]+=(4*a*(1+H)*om*r*r*sqrt(1-z*z))/((a*a+(-2+r)*r)*(r*r+a*a*z*z));
+Cimag[5][1]+=(-2*a*a*(1+H)*om*(a*a+r*r)*z*sqrt(1-z*z))/(r*(a*a+(-2+r)*r)*(r*r+a*a*z*z));
+Cimag[5][2]+=(-2*a*a*(1+H)*om*r*(-1+z*z))/((a*a+(-2+r)*r)*(r*r+a*a*z*z));
+Cimag[5][4]+=(-2*a*a*(1+H)*om*z*sqrt(1-z*z))/(r*r*r+a*a*r*z*z);
+Cimag[5][5]+=-((om*(r*r*r*r*(2+2*H+dHdr*(-2+r)*r)+a*a*a*a*a*a*dHdr*z*z+a*a*a*a*(r*(-4-4*H+dHdr*r)+2*(-1+(2+dHdr*(-1+r))*r+H*(-1+2*r))*z*z)+a*a*r*r*(6+2*(-2+dHdr*(-1+r))*r+(-6+(4+dHdr*(-2+r))*r)*z*z+2*H*(-3+2*r)*(-1+z*z))))/((a*a+(-2+r)*r)*(a*a+r*r)*(r*r+a*a*z*z)));
+Cimag[5][6]+=(2*a*a*a*(1+H)*om*z*(-1+z*z))/((a*a+(-2+r)*r)*(r*r+a*a*z*z));
+Cimag[5][7]+=(2*a*a*(1+H)*om*r*z*sqrt(1-z*z))/((a*a+(-2+r)*r)*(r*r+a*a*z*z));
+Cimag[5][8]+=(2*a*(1+H)*om*r*r*sqrt(1-z*z))/((a*a+(-2+r)*r)*(r*r+a*a*z*z));
+Cimag[6][1]+=(2*a*(1+H)*om*sqrt(1-z*z)*(-3*r*r*r*r+a*a*a*a*z*z-a*a*r*r*(1+z*z)))/(r*(a*a+(-2+r)*r)*pow(r*r+a*a*z*z,2));
+Cimag[6][3]+=(-2*a*a*(1+H)*om*r*(-1+z*z))/((a*a+(-2+r)*r)*(r*r+a*a*z*z));
+Cimag[6][6]+=-((om*(r*r*r*r*r*r*(2+2*H+dHdr*(-2+r)*r)+2*a*a*r*r*r*r*(4*(1+H)-(1+dHdr+H)*r+dHdr*r*r)+a*a*a*a*r*r*(2-2*H*(-1+r)+r*(-2+dHdr*r))-2*a*a*(-2*a*a*dHdr*(-1+r)*r*r*r-r*r*r*r*(-3+H*(-3+r)+r+dHdr*(-2+r)*r)+a*a*a*a*(1+H+r+H*r-dHdr*r*r))*z*z+a*a*a*a*(a*a+(-2+r)*r)*(a*a*dHdr+r*(2+2*H+dHdr*r))*z*z*z*z))/((a*a+(-2+r)*r)*(a*a+r*r)*pow(r*r+a*a*z*z,2)));
+Cimag[6][8]+=(2*a*a*(1+H)*om*r*z*sqrt(1-z*z))/((a*a+(-2+r)*r)*(r*r+a*a*z*z));
+Cimag[6][9]+=(2*a*(1+H)*om*r*r*sqrt(1-z*z))/((a*a+(-2+r)*r)*(r*r+a*a*z*z));
+Cimag[7][2]+=(-4*a*a*(1+H)*om*(a*a+r*r)*z*sqrt(1-z*z))/(r*(a*a+(-2+r)*r)*(r*r+a*a*z*z));
+Cimag[7][5]+=(-4*a*a*(1+H)*om*z*sqrt(1-z*z))/(r*r*r+a*a*r*z*z);
+Cimag[7][7]+=-((om*(dHdr*r*r*r*r*r+a*a*a*a*(2+2*H+dHdr*r)*z*z+a*a*r*r*(-2-2*H+dHdr*r+(4+4*H+dHdr*r)*z*z)))/(r*(a*a+r*r)*(r*r+a*a*z*z)));
+Cimag[7][8]+=(4*a*a*a*(1+H)*om*z*(-1+z*z))/((a*a+(-2+r)*r)*(r*r+a*a*z*z));
+Cimag[8][2]+=(2*a*(1+H)*om*sqrt(1-z*z)*(-3*r*r*r*r+a*a*a*a*z*z-a*a*r*r*(1+z*z)))/(r*(a*a+(-2+r)*r)*pow(r*r+a*a*z*z,2));
+Cimag[8][3]+=(-2*a*a*(1+H)*om*(a*a+r*r)*z*sqrt(1-z*z))/(r*(a*a+(-2+r)*r)*(r*r+a*a*z*z));
+Cimag[8][6]+=(-2*a*a*(1+H)*om*z*sqrt(1-z*z))/(r*r*r+a*a*r*z*z);
+Cimag[8][8]+=-((om*(dHdr*(-2+r)*pow(r,8)+pow(a,8)*(2+2*H+dHdr*r)*z*z*z*z+2*a*a*r*r*r*r*r*(3+3*H-dHdr*r+dHdr*r*r+(-5+H*(-5+r)+r+dHdr*(-2+r)*r)*z*z)+2*a*a*a*a*a*a*r*z*z*(-1-H+r+H*r+dHdr*r*r+(-1+(2+dHdr*(-1+r))*r+H*(-1+2*r))*z*z)+a*a*a*a*r*r*r*(2+2*H+dHdr*r*r+4*(-1+r)*(1+H+dHdr*r)*z*z+(-6+2*H*(-3+r)+(2+dHdr*(-2+r))*r)*z*z*z*z)))/(r*(a*a+(-2+r)*r)*(a*a+r*r)*pow(r*r+a*a*z*z,2)));
+Cimag[8][9]+=(2*a*a*a*(1+H)*om*z*(-1+z*z))/((a*a+(-2+r)*r)*(r*r+a*a*z*z));
+Cimag[9][3]+=(4*a*(1+H)*om*sqrt(1-z*z)*(-3*r*r*r*r+a*a*a*a*z*z-a*a*r*r*(1+z*z)))/(r*(a*a+(-2+r)*r)*pow(r*r+a*a*z*z,2));
+Cimag[9][9]+=-((om*(dHdr*(-2+r)*pow(r,8)+pow(a,8)*(2+2*H+dHdr*r)*z*z*z*z+2*a*a*a*a*a*a*r*z*z*(-2-2*H+2*r+2*H*r+dHdr*r*r+(1+H+dHdr*(-1+r))*r*z*z)+a*a*a*a*r*r*r*(4+4*H+2*r+2*H*r+dHdr*r*r+4*(-2+H*(-2+r)+r+dHdr*(-1+r)*r)*z*z+(-4-4*H+dHdr*(-2+r)*r)*z*z*z*z)+2*a*a*r*r*r*r*r*(4+r-6*z*z+H*(4+r-6*z*z)+dHdr*r*(-1+r+(-2+r)*z*z))))/(r*(a*a+(-2+r)*r)*(a*a+r*r)*pow(r*r+a*a*z*z,2)));
+}
+}
+
 }  // namespace GrSelfForce::detail
 // clang-format on
 // NOLINTEND

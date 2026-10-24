@@ -36,32 +36,31 @@ using FluxTensorType =
 /// @}
 
 /*!
- * \brief The first-order flux $F^i=\{\partial_{r_\star}, \alpha
- * \partial_\theta\}\Psi_m$.
+ * \brief The first-order flux $F^i=\alpha^i \partial_i \Psi_m$.
  */
 void fluxes(gsl::not_null<FluxTensorType*> flux,
-            const Scalar<ComplexDataVector>& alpha,
+            const tnsr::I<ComplexDataVector, 2>& alpha,
             const GradTensorType& field_gradient);
 
 /*!
  * \brief The first-order flux on an element face
- * $F^i=\{n_{r_\star}, \alpha n_\theta\}\Psi_m$.
+ * $F^i=\alpha^i n_i \Psi_m$.
  */
 void fluxes_on_face(gsl::not_null<FluxTensorType*> flux,
-                    const Scalar<ComplexDataVector>& alpha,
+                    const tnsr::I<ComplexDataVector, 2>& alpha,
                     const tnsr::I<DataVector, 2>& face_normal_vector,
                     const tnsr::aa<ComplexDataVector, 3>& field);
 
 /*!
  * \brief The source term $\beta_{ab}^{cd} (\Psi_m)_{cd} + \gamma_{iab}^{cd}
- * F^i_{cd}$.
+ * \partial_i (\Psi_m)_{cd}$.
  */
 void add_sources(gsl::not_null<tnsr::aa<ComplexDataVector, 3>*> source,
                  const tnsr::aaBB<ComplexDataVector, 3>& beta,
                  const tnsr::aaBB<ComplexDataVector, 3>& gamma_rstar,
                  const tnsr::aaBB<ComplexDataVector, 3>& gamma_theta,
                  const tnsr::aa<ComplexDataVector, 3>& field,
-                 const FluxTensorType& flux);
+                 const GradTensorType& field_gradient);
 
 /// Fluxes $F^i$ for the gravitational self-force system.
 /// \see GrSelfForce::FirstOrderSystem
@@ -72,11 +71,11 @@ struct Fluxes {
   static constexpr bool is_trivial = false;
   static constexpr bool is_discontinuous = false;
   static void apply(gsl::not_null<FluxTensorType*> flux,
-                    const Scalar<ComplexDataVector>& alpha,
+                    const tnsr::I<ComplexDataVector, 2>& alpha,
                     const tnsr::aa<ComplexDataVector, 3>& /*field*/,
                     const GradTensorType& field_gradient);
   static void apply(gsl::not_null<FluxTensorType*> flux,
-                    const Scalar<ComplexDataVector>& alpha,
+                    const tnsr::I<ComplexDataVector, 2>& alpha,
                     const tnsr::i<DataVector, 2>& /*face_normal*/,
                     const tnsr::I<DataVector, 2>& face_normal_vector,
                     const tnsr::aa<ComplexDataVector, 3>& field);
@@ -94,7 +93,7 @@ struct Sources {
       const tnsr::aaBB<ComplexDataVector, 3>& gamma_rstar,
       const tnsr::aaBB<ComplexDataVector, 3>& gamma_theta,
       const tnsr::aa<ComplexDataVector, 3>& field,
-      const GradTensorType& /*field_gradient*/, const FluxTensorType& flux);
+      const GradTensorType& field_gradient, const FluxTensorType& /*flux*/);
 };
 
 /*!
