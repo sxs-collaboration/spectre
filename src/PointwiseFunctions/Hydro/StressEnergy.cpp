@@ -94,7 +94,7 @@ void stress_trace(gsl::not_null<Scalar<DataType>*> result,
   get(*result) =
       3. * get(pressure) +
       get(rest_mass_density) * get(specific_enthalpy) *
-          (square(get(lorentz_factor)) - 1.) +
+          (square(get(lorentz_factor)) * get(spatial_velocity_squared)) +
       get(comoving_magnetic_field_squared) *
           (square(get(lorentz_factor)) * get(spatial_velocity_squared) + 0.5) -
       square(get(magnetic_field_dot_spatial_velocity)) *
