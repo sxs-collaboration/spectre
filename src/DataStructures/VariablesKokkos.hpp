@@ -11,6 +11,7 @@
 #include "DataStructures/Tags/MirrorView.hpp"
 #include "DataStructures/Tensor/AtIndex.hpp"
 #include "DataStructures/Variables.hpp"
+#include "Utilities/ErrorHandling/FloatingPointExceptions.hpp"
 #include "Utilities/Kokkos/KokkosCore.hpp"
 #include "Utilities/MakeSignalingNan.hpp"
 #include "Utilities/TMPL.hpp"
@@ -90,7 +91,12 @@ class Variables<tmpl::list<Tags...>> {
         Kokkos::view_alloc(Kokkos::WithoutInitializing, "Variables", space),
         number_of_grid_points);
 #if defined(SPECTRE_NAN_INIT)
-    Kokkos::deep_copy(storage_, make_signaling_NaN<value_type>());
+    {
+      // Kokkos compares the fill value to zero to decide whether it can
+      // memset, which raises an FPE for a signaling NaN.
+      const ScopedFpeState disable_fpes(false);
+      Kokkos::deep_copy(storage_, make_signaling_NaN<value_type>());
+    }
 #endif  // SPECTRE_NAN_INIT
     set_reference_variable_data();
   }
