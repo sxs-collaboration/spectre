@@ -87,9 +87,38 @@ std::vector<std::variant<DataVector, std::vector<float>>> load_tensor_data(
   return tensor_data;
 }
 
+// Allocates the result for the target points and returns a buffer for the data
+// on the extrapolation anchor points, both filled with NaNs. The result holds
+// only the target points, so if it already has the correct size (e.g.
+// non-owning DataVectors that reference the caller's memory) it is written into
+// directly. Points that are never filled remain NaN, e.g. because they are
+// outside the domain. These are quiet NaNs because they are part of the output,
+// so callers can check for them with `std::isnan` even when FPEs are enabled
+// (comparing a signaling NaN raises an FPE).
+template <typename ResultDataType>
+std::vector<DataVector> allocate_result(
+    const gsl::not_null<std::vector<ResultDataType>*> result,
+    const size_t num_components, const size_t num_target_points,
+    const size_t num_anchor_points) {
+  result->resize(num_components);
+  for (ResultDataType& component : *result) {
+    if constexpr (std::is_same_v<ResultDataType, DataVector>) {
+      component.destructive_resize(num_target_points);
+    } else {
+      component.resize(num_target_points);
+    }
+    std::fill(component.begin(), component.end(),
+              std::numeric_limits<double>::quiet_NaN());
+  }
+  return std::vector<DataVector>(
+      num_components,
+      DataVector(num_anchor_points, std::numeric_limits<double>::quiet_NaN()));
+}
+
 template <typename ResultDataType, size_t Dim>
 void interpolate_to_points_impl(
     const gsl::not_null<std::vector<ResultDataType>*> result,
+    const gsl::not_null<std::vector<DataVector>*> anchor_data,
     const gsl::not_null<std::vector<bool>*> filled_data,
     const std::unordered_map<ElementId<Dim>, ElementLogicalCoordHolder<Dim>>&
         element_logical_coords,
@@ -98,7 +127,17 @@ void interpolate_to_points_impl(
                              std::tuple<Mesh<Dim>, size_t, size_t>>& meshes,
     const std::vector<std::variant<DataVector, std::vector<float>>>&
         tensor_data,
+    const size_t num_target_points,
     [[maybe_unused]] const size_t resolved_num_threads) {
+  // Interpolation points past the target points are extrapolation anchors,
+  // which are stored separately so the result holds only the target points
+  const auto value = [&result, &anchor_data, &num_target_points](
+                         const size_t component,
+                         const size_t point) -> double& {
+    return point < num_target_points
+               ? (*result)[component][point]
+               : (*anchor_data)[component][point - num_target_points];
+  };
 #pragma omp parallel num_threads(resolved_num_threads)
   {
     DataVector interpolated_data_double{};
@@ -133,7 +172,7 @@ void interpolate_to_points_impl(
               std::get<DataVector>(component).data() + offset, length);
           interpolant.interpolate(make_not_null(&output_data), input_data);
           for (size_t j = 0; j < num_element_target_points; ++j) {
-            (*result)[i][points.offsets[j]] = interpolated_data_double[j];
+            value(i, points.offsets[j]) = interpolated_data_double[j];
             (*filled_data)[points.offsets[j]] = true;
           }
         } else {
@@ -145,7 +184,7 @@ void interpolate_to_points_impl(
               std::get<std::vector<float>>(component).data() + offset, length);
           interpolant.interpolate(make_not_null(&output_data), input_data);
           for (size_t j = 0; j < num_element_target_points; ++j) {
-            (*result)[i][points.offsets[j]] = interpolated_data_float[j];
+            value(i, points.offsets[j]) = interpolated_data_float[j];
             (*filled_data)[points.offsets[j]] = true;
           }
         }
@@ -188,7 +227,7 @@ template <size_t NumExtrapolationAnchors>
 struct ExtrapolationInfo {
   // Index of the target point in the result array (y target)
   size_t target_index;
-  // Index of the first anchor point in the source array (y data)
+  // Index of the first anchor point in the anchor data (y data)
   size_t source_index;
   // Coordinate of the target point (x target)
   double target_point;
@@ -355,6 +394,7 @@ bool add_extrapolation_anchors(
 template <typename ResultDataType, size_t NumExtrapolationAnchors>
 void extrapolate_into_excisions_impl(
     const gsl::not_null<std::vector<ResultDataType>*> result,
+    const std::vector<DataVector>& anchor_data,
     const std::vector<ExtrapolationInfo<NumExtrapolationAnchors>>&
         extrapolation_info,
     [[maybe_unused]] const size_t resolved_num_threads) {
@@ -366,7 +406,7 @@ void extrapolate_into_excisions_impl(
           make_not_null(&(*result)[i][extrapolation.target_index]),
           make_not_null(&extrapolation_error), extrapolation.target_point,
           // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-          gsl::make_span((*result)[i].data() + extrapolation.source_index,
+          gsl::make_span(anchor_data[i].data() + extrapolation.source_index,
                          NumExtrapolationAnchors),
           gsl::make_span(extrapolation.anchors.data(),
                          NumExtrapolationAnchors));
@@ -512,10 +552,11 @@ auto block_logical_coordinates(
     {
       // Append the extra block logical coordinates and extrapolation info from
       // this thread to the global vectors. Also set the source index to the
-      // index in `block_logical_coords` where we're going to insert the new
-      // coordinates.
+      // index in the anchor data where we're going to insert the new
+      // coordinates. The anchor data holds the interpolation points past the
+      // target points.
       for (auto& info : extra_extrapolation_info) {
-        info.source_index += block_logical_coords.size();
+        info.source_index += block_logical_coords.size() - num_target_points;
       }
       block_logical_coords.insert(block_logical_coords.end(),
                                   extra_block_logical_coords.begin(),
@@ -573,18 +614,9 @@ void interpolate_to_points(
   const size_t num_interpolation_points = block_logical_coords.size();
 
   // Allocate memory for result
-  const size_t num_components = tensor_components.size();
-  result->resize(num_components);
-  for (size_t i = 0; i < num_components; ++i) {
-    ResultDataType& component = (*result)[i];
-    if constexpr (std::is_same_v<ResultDataType, DataVector>) {
-      component.destructive_resize(num_interpolation_points);
-    } else {
-      component.resize(num_interpolation_points);
-    }
-    std::fill(component.begin(), component.end(),
-              std::numeric_limits<double>::signaling_NaN());
-  }
+  auto anchor_data =
+      allocate_result(result, tensor_components.size(), num_target_points,
+                      num_interpolation_points - num_target_points);
   std::vector<bool> filled_data(num_interpolation_points, false);
 
   // Process all volume files in serial, because loading data with H5 must be
@@ -610,9 +642,10 @@ void interpolate_to_points(
     h5file.close();
 
     // Interpolate the tensor data to the target points
-    interpolate_to_points_impl(result, make_not_null(&filled_data),
-                               element_logical_coords, element_ids, meshes,
-                               tensor_data, resolved_num_threads);
+    interpolate_to_points_impl(
+        result, make_not_null(&anchor_data), make_not_null(&filled_data),
+        element_logical_coords, element_ids, meshes, tensor_data,
+        num_target_points, resolved_num_threads);
 
     // Terminate early if all data has been filled
     if (std::all_of(filled_data.begin(), filled_data.end(),
@@ -622,24 +655,8 @@ void interpolate_to_points(
   }
 
   if (extrapolate_into_excisions and not extrapolation_info.empty()) {
-    extrapolate_into_excisions_impl(result, extrapolation_info,
+    extrapolate_into_excisions_impl(result, anchor_data, extrapolation_info,
                                     resolved_num_threads);
-    // Clear the anchor points from the result
-    for (size_t i = 0; i < result->size(); ++i) {
-      ResultDataType& component = (*result)[i];
-      if constexpr (std::is_same_v<ResultDataType, DataVector>) {
-        // Can't use `destructive_resize` because we want to preserve the
-        // leading elements of the DataVector
-        DataVector new_component(num_target_points);
-        std::copy(
-            component.begin(),
-            component.begin() + static_cast<std::ptrdiff_t>(num_target_points),
-            new_component.begin());
-        component = std::move(new_component);
-      } else {
-        component.resize(num_target_points);
-      }
-    }
   }
 }
 
@@ -695,14 +712,9 @@ void PointwiseInterpolator<Dim, Frame>::interpolate_to_points(
   const size_t num_interpolation_points = block_logical_coords.size();
 
   // Allocate memory for result
-  const size_t num_components = tensor_data_.front().size();
-  result->resize(num_components);
-  for (size_t i = 0; i < num_components; ++i) {
-    DataVector& component = (*result)[i];
-    component.destructive_resize(num_interpolation_points);
-    std::fill(component.begin(), component.end(),
-              std::numeric_limits<double>::signaling_NaN());
-  }
+  auto anchor_data =
+      allocate_result(result, tensor_data_.front().size(), num_target_points,
+                      num_interpolation_points - num_target_points);
   std::vector<bool> filled_data(num_interpolation_points, false);
 
   // Process all volume files in serial
@@ -720,9 +732,10 @@ void PointwiseInterpolator<Dim, Frame>::interpolate_to_points(
     }
 
     // Interpolate the tensor data to the target points
-    interpolate_to_points_impl(result, make_not_null(&filled_data),
-                               element_logical_coords, element_ids, meshes,
-                               tensor_data, resolved_num_threads);
+    interpolate_to_points_impl(
+        result, make_not_null(&anchor_data), make_not_null(&filled_data),
+        element_logical_coords, element_ids, meshes, tensor_data,
+        num_target_points, resolved_num_threads);
 
     // Terminate early if all data has been filled
     if (std::all_of(filled_data.begin(), filled_data.end(),
@@ -732,20 +745,8 @@ void PointwiseInterpolator<Dim, Frame>::interpolate_to_points(
   }
 
   if (extrapolate_into_excisions) {
-    extrapolate_into_excisions_impl(result, extrapolation_info,
+    extrapolate_into_excisions_impl(result, anchor_data, extrapolation_info,
                                     resolved_num_threads);
-    // Clear the anchor points from the result
-    for (size_t i = 0; i < result->size(); ++i) {
-      DataVector& component = (*result)[i];
-      // Can't use `destructive_resize` because we want to preserve the
-      // leading elements of the DataVector
-      DataVector new_component(num_target_points);
-      std::copy(
-          component.begin(),
-          component.begin() + static_cast<std::ptrdiff_t>(num_target_points),
-          new_component.begin());
-      component = std::move(new_component);
-    }
   }
 }
 

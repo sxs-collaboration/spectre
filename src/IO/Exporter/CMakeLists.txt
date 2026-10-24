@@ -91,8 +91,11 @@ target_link_libraries(
   Charmxx::charmxx
   )
 add_dependencies(${BUNDLED_EXPORTER_LIB} ${LIBRARY})
-# Also export the public header so that external programs can include it
-configure_file(
-  Exporter.hpp
-  ${CMAKE_BINARY_DIR}/include/spectre/Exporter.hpp
-  COPYONLY)
+# Also export the public interface files so that external programs can use
+# them: the C++ and C headers, and the Mathematica package
+foreach(INTERFACE_FILE Exporter.h Exporter.hpp SpectreExporter.wl)
+  configure_file(
+    ${INTERFACE_FILE}
+    ${CMAKE_BINARY_DIR}/include/spectre/${INTERFACE_FILE}
+    COPYONLY)
+endforeach()

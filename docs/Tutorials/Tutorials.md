@@ -15,6 +15,8 @@ See LICENSE.txt for details.
   bindings and other Python modules provided by SpECTRE.
 - \subpage tutorial_vis_python - How to visualize volume data with Python
 - \subpage tutorial_cli - How to use the command-line interface
+- \subpage tutorial_importing_data - How to import volume data into other
+  programs, e.g. with Python, C++, C, or Mathematica
 - \subpage tutorial_cce - How to get started running stand-alone CCE with
   externally produced data
 - \subpage tutorial_checkpoint_restart - How to set up a SpECTRE executable for
