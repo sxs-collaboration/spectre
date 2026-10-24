@@ -50,6 +50,10 @@ set(LIBRARY_SOURCES
   Test_ZernikeGaussRadauUpper.cpp
   )
 
+if(SPECTRE_KOKKOS)
+  list(APPEND LIBRARY_SOURCES Test_MeshKokkos.cpp)
+endif()
+
 add_test_library(${LIBRARY} "${LIBRARY_SOURCES}")
 
 target_link_libraries(
