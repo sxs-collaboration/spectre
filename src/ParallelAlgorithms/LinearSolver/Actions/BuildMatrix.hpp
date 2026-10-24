@@ -3,12 +3,13 @@
 
 /// \file
 /// Functionality to build the explicit matrix representation of the linear
-/// operator column-by-column. This is useful for debugging and analysis only,
-/// not to actually solve the elliptic problem (that should happen iteratively).
+/// operator column-by-column, and to solve the linear problem directly with it.
 
 #pragma once
 
 #include <blaze/math/Submatrix.h>
+#include <blaze/math/lapack/getrf.h>
+#include <blaze/math/lapack/getrs.h>
 #include <cstddef>
 #include <map>
 #include <optional>
@@ -55,8 +56,8 @@ struct BuildMatrixOptionsGroup {
   static constexpr Options::String help = {
       "Options for building the explicit matrix representation of the linear "
       "operator. This is done by applying the linear operator to unit "
-      "vectors and is useful for debugging and analysis only, not to actually "
-      "solve the elliptic problem (that should happen iteratively)."};
+      "vectors. The matrix can be written to disk for analysis, or used to "
+      "solve small problems directly, e.g. on the coarsest multigrid level."};
 };
 
 /// Subfile name in the volume data H5 files where the matrix will be stored.
@@ -77,8 +78,11 @@ struct EnableDirectSolve {
   using type = bool;
   using group = BuildMatrixOptionsGroup;
   static constexpr Options::String help = {
-      "Directly invert the assembled matrix and solve the linear problem. "
-      "This can be unfeasible if the linear problem is too big."};
+      "Solve the linear problem directly with an LU factorization of the "
+      "assembled matrix. The factorization is reused for subsequent solves "
+      "until the matrix changes. The dense factorization needs memory "
+      "quadratic in the number of points, so this can be unfeasible if the "
+      "linear problem is too big."};
 };
 
 /// Option for skipping resets of the built matrix.
@@ -123,6 +127,25 @@ struct LocalFirstIndex : db::SimpleTag {
 template <typename ValueType>
 struct Matrix : db::SimpleTag {
   using type = blaze::CompressedMatrix<ValueType>;
+};
+
+/// Whether the matrix on this element was (re)built since it was last sent to
+/// the singleton that inverts the full matrix. The singleton only factorizes
+/// the full matrix again if this is `true` on any element.
+struct MatrixChanged : db::SimpleTag {
+  using type = bool;
+};
+
+/// LU factorization of the full matrix, held by the singleton that solves the
+/// linear problem directly. It is not serialized, but rebuilt from the matrix
+/// slices that the elements send with every solve.
+template <typename ValueType>
+struct LuFactorization : db::SimpleTag {
+  struct type {
+    blaze::DynamicMatrix<ValueType, blaze::columnMajor> lu{};
+    std::vector<blaze::blas_int_t> pivots{};
+    void pup(PUP::er& /*p*/) {}
+  };
 };
 
 /// Option for enabling direct solve of the linear problem.
@@ -298,7 +321,7 @@ struct CollectTotalNumPoints {
  public:
   using simple_tags =
       tmpl::list<Tags::TotalNumPoints, Tags::LocalFirstIndex, IterationIdTag,
-                 OperandTag, Tags::Matrix<value_type>>;
+                 OperandTag, Tags::Matrix<value_type>, Tags::MatrixChanged>;
   using compute_tags = tmpl::list<>;
   using const_global_cache_tags =
       tmpl::list<logging::Tags::Verbosity<OptionTags::BuildMatrixOptionsGroup>>;
@@ -388,18 +411,20 @@ struct PrepareBuildMatrix {
           total_num_points, total_num_points);
     }
     db::mutate<Tags::TotalNumPoints, Tags::LocalFirstIndex, IterationIdTag,
-               Tags::Matrix<value_type>>(
+               Tags::Matrix<value_type>, Tags::MatrixChanged>(
         [captured_total_num_points = total_num_points,
          captured_local_first_index = local_first_index,
          local_num_points = num_points_per_element.at(element_id)](
             const auto stored_total_num_points,
             const auto stored_local_first_index, const auto iteration_id,
-            const gsl::not_null<blaze::CompressedMatrix<value_type>*> matrix) {
+            const gsl::not_null<blaze::CompressedMatrix<value_type>*> matrix,
+            const gsl::not_null<bool*> matrix_changed) {
           *stored_total_num_points = captured_total_num_points;
           *stored_local_first_index = captured_local_first_index;
           *iteration_id = 0;
           matrix->clear();
           matrix->resize(local_num_points, captured_total_num_points);
+          *matrix_changed = true;
         },
         make_not_null(&box));
     // Proceed with algorithm
@@ -524,14 +549,34 @@ struct StoreMatrixColumn {
   }
 };
 
+/// Adds the LU factorization of the full matrix to the singleton's DataBox
+template <typename BuildMatrixMetavars>
+struct InitializeSingleton {
+  using value_type = typename BuildMatrixMetavars::value_type;
+  using simple_tags = tmpl::list<Tags::LuFactorization<value_type>>;
+
+  template <typename DbTags, typename... InboxTags, typename Metavariables,
+            typename ArrayIndex, typename ActionList,
+            typename ParallelComponent>
+  static Parallel::iterable_action_return_t apply(
+      db::DataBox<DbTags>& /*box*/,
+      const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
+      Parallel::GlobalCache<Metavariables>& /*cache*/,
+      const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
+      const ParallelComponent* const /*meta*/) {
+    return {Parallel::AlgorithmExecution::Pause, std::nullopt};
+  }
+};
+
 template <typename Metavariables, typename BuildMatrixMetavars>
 struct BuildMatrixSingleton {
   using chare_type = Parallel::Algorithms::Singleton;
   static constexpr bool checkpoint_data = true;
   using const_global_cache_tags = tmpl::list<>;
   using metavariables = Metavariables;
-  using phase_dependent_action_list = tmpl::list<
-      Parallel::PhaseActions<Parallel::Phase::Initialization, tmpl::list<>>>;
+  using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
+      Parallel::Phase::Initialization,
+      tmpl::list<InitializeSingleton<BuildMatrixMetavars>>>>;
   using simple_tags_from_options = Parallel::get_simple_tags_from_options<
       Parallel::get_initialization_actions_list<phase_dependent_action_list>>;
 
@@ -576,9 +621,10 @@ struct AssembleFullMatrix {
         InvertMatrix<ParallelComponent, BuildMatrixMetavars>>(
         Parallel::ReductionData<
             Parallel::ReductionDatum<size_t, funcl::AssertEqual<>>,
+            Parallel::ReductionDatum<bool, funcl::Or<>>,
             Parallel::ReductionDatum<std::map<ElementId<Dim>, ReductionType>,
                                      funcl::Merge<>>>{
-            element_id.grid_index(),
+            element_id.grid_index(), get<Tags::MatrixChanged>(box),
             std::map<ElementId<Dim>, ReductionType>{std::make_pair(
                 element_id, ReductionType{get<Tags::Matrix<value_type>>(box),
                                           get<FixedSourcesTag>(box)})}},
@@ -586,6 +632,11 @@ struct AssembleFullMatrix {
         Parallel::get_parallel_component<
             BuildMatrixSingleton<Metavariables, BuildMatrixMetavars>>(cache),
         make_not_null(&section));
+    db::mutate<Tags::MatrixChanged>(
+        [](const gsl::not_null<bool*> matrix_changed) {
+          *matrix_changed = false;
+        },
+        make_not_null(&box));
     // Pause the algorithm for now. The reduction will be received by the next
     // action which is responsible for restarting the algorithm.
     return {Parallel::AlgorithmExecution::Pause, std::nullopt};
@@ -609,38 +660,64 @@ struct InvertMatrix {
   static void apply(db::DataBox<DbTagsList>& box,
                     Parallel::GlobalCache<Metavariables>& cache,
                     const ArrayIndex& /*array_index*/, const size_t grid_index,
+                    const bool matrix_changed,
                     const std::map<ElementId<Dim>, ReductionType>&
                         matrix_and_sources_slices) {
+    // Assemble and factorize the full matrix if it changed since we last
+    // factorized it. The factorization is not serialized, so it is also rebuilt
+    // after a restart. Possible performance optimization: Don't send the matrix
+    // slices again if they haven't changed.
     const size_t total_num_points =
         matrix_and_sources_slices.begin()->second.first.columns();
-    blaze::DynamicMatrix<value_type> matrix(total_num_points, total_num_points);
-    blaze::DynamicVector<value_type> source(total_num_points);
-    // Assemble the full matrix and source
+    auto& [lu, pivots] =
+        db::get_mutable_reference<Tags::LuFactorization<value_type>>(
+            make_not_null(&box));
+    const bool factorize = matrix_changed or lu.rows() == 0;
+    if (factorize) {
+      lu.resize(total_num_points, total_num_points);
+      pivots.resize(total_num_points);
+    }
+    ASSERT(lu.rows() == total_num_points,
+           "The factorized matrix has size "
+               << lu.rows() << " but the source has size " << total_num_points
+               << ". The matrix changed but was not factorized again.");
+    blaze::DynamicVector<value_type> solution(total_num_points);
     size_t i = 0;
     for (const auto& [element_id, slice] : matrix_and_sources_slices) {
       const auto& [matrix_slice, source_slice] = slice;
       ASSERT(matrix_slice.rows() == source_slice.size(),
              "Matrix and source slice have different sizes.");
       const size_t slice_length = matrix_slice.rows();
-      blaze::submatrix(matrix, i, 0, slice_length, matrix_slice.columns()) =
-          matrix_slice;
-      std::copy_n(source_slice.data(), slice_length, source.data() + i);
+      if (factorize) {
+        blaze::submatrix(lu, i, 0, slice_length, total_num_points) =
+            matrix_slice;
+      }
+      std::copy_n(source_slice.data(), slice_length, solution.data() + i);
       i += slice_length;
     }
     ASSERT(i == total_num_points, "The matrix is not fully assembled. Expected "
                                       << total_num_points << " rows, got "
                                       << i);
-    // Solve the equations Ax = b. Could use a more efficient solver here if
-    // needed. But anything iterative could be done with the parallel linear
-    // solver, the point here is to assemble the full matrix and invert it
-    // directly.
-    if (get<logging::Tags::Verbosity<OptionTags::BuildMatrixOptionsGroup>>(
-            box) >= Verbosity::Quiet) {
-      Parallel::printf("Inverting matrix of size %zu x %zu\n", total_num_points,
-                       total_num_points);
+    if (factorize) {
+      if (get<logging::Tags::Verbosity<OptionTags::BuildMatrixOptionsGroup>>(
+              box) >= Verbosity::Quiet) {
+        Parallel::printf("Factorizing matrix of size %zu x %zu\n",
+                         total_num_points, total_num_points);
+      }
+      const auto size = static_cast<blaze::blas_int_t>(total_num_points);
+      blaze::blas_int_t info = 0;
+      blaze::getrf(size, size, lu.data(),
+                   static_cast<blaze::blas_int_t>(lu.spacing()), pivots.data(),
+                   &info);
+      if (info != 0) {
+        ERROR("LU factorization of the matrix of size "
+              << total_num_points << " x " << total_num_points
+              << " failed with info = " << info
+              << ". A positive value means the matrix is singular.");
+      }
     }
-    const blaze::DynamicVector<value_type> solution =
-        blaze::solve(matrix, source);
+    // Solve the equations Ax = b using the LU factorization
+    blaze::getrs(lu, solution, 'N', pivots.data());
     // Broadcast the solution to the elements
     Parallel::simple_action<StoreSolution<BuildMatrixMetavars>>(
         Parallel::get_parallel_component<ElementArrayComponent>(cache),
@@ -693,9 +770,9 @@ struct ProjectBuildMatrix : tt::ConformsTo<::amr::protocols::Projector> {
   using value_type = typename BuildMatrixMetavars::value_type;
 
  public:
-  using return_tags =
-      tmpl::list<Tags::TotalNumPoints, Tags::Matrix<value_type>,
-                 Tags::LocalFirstIndex, IterationIdTag, OperandTag>;
+  using return_tags = tmpl::list<Tags::TotalNumPoints, Tags::Matrix<value_type>,
+                                 Tags::LocalFirstIndex, IterationIdTag,
+                                 OperandTag, Tags::MatrixChanged>;
   using argument_tags = tmpl::list<>;
 
   template <typename... AmrData>
@@ -755,10 +832,21 @@ struct ResetBuiltMatrix {
 
 /*!
  * \brief Build the explicit matrix representation of the linear operator and
- * optionally invert it directly to solve the problem.
+ * optionally solve the problem directly with it.
  *
- * This is useful for debugging and analysis only, not to actually solve the
- * elliptic problem (that should happen iteratively).
+ * The matrix is built by applying the linear operator to unit vectors, so it
+ * takes as many operator applications as there are points. Each element stores
+ * the rows of the matrix that correspond to its points. The matrix is built
+ * once and kept until it is reset (see `reset_actions`) or AMR changes the
+ * grid.
+ *
+ * If direct solve is enabled, the elements send their rows of the matrix and
+ * the source to a singleton. The singleton assembles the full matrix, computes
+ * its LU factorization, and broadcasts the solution back to the elements. The
+ * LU factorization is reused for subsequent solves until the matrix changes,
+ * so these solves only cost two triangular solves on the singleton. This is
+ * useful as bottom solver in a multigrid setting, where the coarsest grid is
+ * small and the same linear operator is inverted in every V-cycle.
  *
  * Add the `actions` to the action list to build the matrix. The
  * `ApplyOperatorActions` template parameter are the actions that apply the

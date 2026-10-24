@@ -21,6 +21,10 @@ target_link_libraries(
 add_standalone_test(
   "Integration.LinearSolver.BuildMatrix"
   INPUT_FILE "Test_BuildMatrix.yaml")
+add_standalone_test(
+  "Integration.LinearSolver.BuildMatrixReuseFactorization"
+  EXECUTABLE "Test_BuildMatrix"
+  INPUT_FILE "Test_BuildMatrixReuseFactorization.yaml")
 target_link_libraries(
   Test_BuildMatrix
   PRIVATE
