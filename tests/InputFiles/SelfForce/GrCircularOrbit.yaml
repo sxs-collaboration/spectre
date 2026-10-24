@@ -134,8 +134,9 @@ DomainCreator:
 Amr:
   Verbosity: Quiet
   Criteria:
-    # - RefineAtPuncture
     - IncreaseResolution
+    - RefineAtPuncture
+    - RefineAtBoundaryY
   EnableInBlocks: All
   Policies:
     Isotropy: Anisotropic
