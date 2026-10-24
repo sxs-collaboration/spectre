@@ -9,16 +9,18 @@
 #include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/Kokkos/KokkosMacros.hpp"
 
 namespace gh {
 template <typename DataType, size_t SpatialDim, typename Frame>
-void pi(const gsl::not_null<tnsr::aa<DataType, SpatialDim, Frame>*> pi,
-        const Scalar<DataType>& lapse, const Scalar<DataType>& dt_lapse,
-        const tnsr::I<DataType, SpatialDim, Frame>& shift,
-        const tnsr::I<DataType, SpatialDim, Frame>& dt_shift,
-        const tnsr::ii<DataType, SpatialDim, Frame>& spatial_metric,
-        const tnsr::ii<DataType, SpatialDim, Frame>& dt_spatial_metric,
-        const tnsr::iaa<DataType, SpatialDim, Frame>& phi) {
+KOKKOS_FUNCTION void pi(
+    const gsl::not_null<tnsr::aa<DataType, SpatialDim, Frame>*> pi,
+    const Scalar<DataType>& lapse, const Scalar<DataType>& dt_lapse,
+    const tnsr::I<DataType, SpatialDim, Frame>& shift,
+    const tnsr::I<DataType, SpatialDim, Frame>& dt_shift,
+    const tnsr::ii<DataType, SpatialDim, Frame>& spatial_metric,
+    const tnsr::ii<DataType, SpatialDim, Frame>& dt_spatial_metric,
+    const tnsr::iaa<DataType, SpatialDim, Frame>& phi) {
   if (UNLIKELY(get_size(get<0, 0>(*pi)) != get_size(get(lapse)))) {
     *pi = tnsr::aa<DataType, SpatialDim, Frame>(get_size(get(lapse)));
   }
@@ -57,7 +59,7 @@ void pi(const gsl::not_null<tnsr::aa<DataType, SpatialDim, Frame>*> pi,
 }
 
 template <typename DataType, size_t SpatialDim, typename Frame>
-tnsr::aa<DataType, SpatialDim, Frame> pi(
+KOKKOS_FUNCTION tnsr::aa<DataType, SpatialDim, Frame> pi(
     const Scalar<DataType>& lapse, const Scalar<DataType>& dt_lapse,
     const tnsr::I<DataType, SpatialDim, Frame>& shift,
     const tnsr::I<DataType, SpatialDim, Frame>& dt_shift,
@@ -94,7 +96,9 @@ tnsr::aa<DataType, SpatialDim, Frame> pi(
       const tnsr::ii<DTYPE(data), DIM(data), FRAME(data)>& dt_spatial_metric, \
       const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& phi);
 
-GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (double, DataVector),
+GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3),
+                        SPECTRE_DEVICE_AND_HOST_TYPES((double),
+                                                      (double, DataVector)),
                         (Frame::Grid, Frame::Inertial))
 
 #undef DIM

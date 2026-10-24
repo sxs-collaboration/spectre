@@ -9,6 +9,7 @@
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/Kokkos/KokkosMacros.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \ingroup GeneralRelativityGroup
@@ -28,12 +29,12 @@ namespace gr {
  * is computed.
  */
 template <typename DataType, size_t SpatialDim, typename Frame>
-void spacetime_normal_one_form(
+KOKKOS_FUNCTION void spacetime_normal_one_form(
     gsl::not_null<tnsr::a<DataType, SpatialDim, Frame>*> normal_one_form,
     const Scalar<DataType>& lapse);
 
 template <typename DataType, size_t SpatialDim, typename Frame>
-tnsr::a<DataType, SpatialDim, Frame> spacetime_normal_one_form(
+KOKKOS_FUNCTION tnsr::a<DataType, SpatialDim, Frame> spacetime_normal_one_form(
     const Scalar<DataType>& lapse);
 /// @}
 

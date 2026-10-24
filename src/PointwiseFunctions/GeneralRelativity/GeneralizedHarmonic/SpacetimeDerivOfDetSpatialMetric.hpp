@@ -7,6 +7,7 @@
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/Kokkos/KokkosMacros.hpp"
 
 namespace gh {
 /// @{
@@ -20,7 +21,7 @@ namespace gh {
  * \f$ \partial_a \gamma = \gamma \gamma^{jk} \partial_a \gamma_{jk} \f$
  */
 template <typename DataType, size_t SpatialDim, typename Frame>
-void spacetime_deriv_of_det_spatial_metric(
+KOKKOS_FUNCTION void spacetime_deriv_of_det_spatial_metric(
     gsl::not_null<tnsr::a<DataType, SpatialDim, Frame>*> d4_det_spatial_metric,
     const Scalar<DataType>& sqrt_det_spatial_metric,
     const tnsr::II<DataType, SpatialDim, Frame>& inverse_spatial_metric,
@@ -28,7 +29,8 @@ void spacetime_deriv_of_det_spatial_metric(
     const tnsr::iaa<DataType, SpatialDim, Frame>& phi);
 
 template <typename DataType, size_t SpatialDim, typename Frame>
-tnsr::a<DataType, SpatialDim, Frame> spacetime_deriv_of_det_spatial_metric(
+KOKKOS_FUNCTION tnsr::a<DataType, SpatialDim, Frame>
+spacetime_deriv_of_det_spatial_metric(
     const Scalar<DataType>& sqrt_det_spatial_metric,
     const tnsr::II<DataType, SpatialDim, Frame>& inverse_spatial_metric,
     const tnsr::ii<DataType, SpatialDim, Frame>& dt_spatial_metric,

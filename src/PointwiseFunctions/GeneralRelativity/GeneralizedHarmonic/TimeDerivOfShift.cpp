@@ -10,10 +10,11 @@
 #include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/Kokkos/KokkosMacros.hpp"
 
 namespace gh {
 template <typename DataType, size_t SpatialDim, typename Frame>
-void time_deriv_of_shift(
+KOKKOS_FUNCTION void time_deriv_of_shift(
     const gsl::not_null<tnsr::I<DataType, SpatialDim, Frame>*> dt_shift,
     const Scalar<DataType>& lapse,
     const tnsr::I<DataType, SpatialDim, Frame>& shift,
@@ -47,7 +48,7 @@ void time_deriv_of_shift(
 }
 
 template <typename DataType, size_t SpatialDim, typename Frame>
-tnsr::I<DataType, SpatialDim, Frame> time_deriv_of_shift(
+KOKKOS_FUNCTION tnsr::I<DataType, SpatialDim, Frame> time_deriv_of_shift(
     const Scalar<DataType>& lapse,
     const tnsr::I<DataType, SpatialDim, Frame>& shift,
     const tnsr::II<DataType, SpatialDim, Frame>& inverse_spatial_metric,
@@ -89,7 +90,9 @@ tnsr::I<DataType, SpatialDim, Frame> time_deriv_of_shift(
       const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& phi,         \
       const tnsr::aa<DTYPE(data), DIM(data), FRAME(data)>& pi);
 
-GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (double, DataVector),
+GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3),
+                        SPECTRE_DEVICE_AND_HOST_TYPES((double),
+                                                      (double, DataVector)),
                         (Frame::Grid, Frame::Inertial))
 
 #undef DIM

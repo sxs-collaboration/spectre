@@ -10,6 +10,7 @@
 #include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/Kokkos/KokkosMacros.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
@@ -91,7 +92,8 @@ namespace gh {
  *                \right) - \Gamma^l{}_{ik} K_{lj} - \Gamma^l{}_{jk} K_{li} \f}.
  */
 template <typename DataType, size_t SpatialDim, typename Frame>
-tnsr::ijj<DataType, SpatialDim, Frame> covariant_deriv_of_extrinsic_curvature(
+KOKKOS_FUNCTION tnsr::ijj<DataType, SpatialDim, Frame>
+covariant_deriv_of_extrinsic_curvature(
     const tnsr::ii<DataType, SpatialDim, Frame>& extrinsic_curvature,
     const tnsr::A<DataType, SpatialDim, Frame>& spacetime_unit_normal_vector,
     const tnsr::Ijj<DataType, SpatialDim, Frame>&
@@ -102,7 +104,7 @@ tnsr::ijj<DataType, SpatialDim, Frame> covariant_deriv_of_extrinsic_curvature(
     const tnsr::ijaa<DataType, SpatialDim, Frame>& d_phi);
 
 template <typename DataType, size_t SpatialDim, typename Frame>
-void covariant_deriv_of_extrinsic_curvature(
+KOKKOS_FUNCTION void covariant_deriv_of_extrinsic_curvature(
     gsl::not_null<tnsr::ijj<DataType, SpatialDim, Frame>*>
         d_extrinsic_curvature,
     const tnsr::ii<DataType, SpatialDim, Frame>& extrinsic_curvature,

@@ -11,6 +11,7 @@
 #include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/Kokkos/KokkosMacros.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
@@ -38,7 +39,7 @@ namespace gh {
  * \f]
  */
 template <typename DataType, size_t SpatialDim, typename Frame>
-void time_deriv_of_spatial_metric(
+KOKKOS_FUNCTION void time_deriv_of_spatial_metric(
     gsl::not_null<tnsr::ii<DataType, SpatialDim, Frame>*> dt_spatial_metric,
     const Scalar<DataType>& lapse,
     const tnsr::I<DataType, SpatialDim, Frame>& shift,
@@ -46,11 +47,11 @@ void time_deriv_of_spatial_metric(
     const tnsr::aa<DataType, SpatialDim, Frame>& pi);
 
 template <typename DataType, size_t SpatialDim, typename Frame>
-tnsr::ii<DataType, SpatialDim, Frame> time_deriv_of_spatial_metric(
-    const Scalar<DataType>& lapse,
-    const tnsr::I<DataType, SpatialDim, Frame>& shift,
-    const tnsr::iaa<DataType, SpatialDim, Frame>& phi,
-    const tnsr::aa<DataType, SpatialDim, Frame>& pi);
+KOKKOS_FUNCTION tnsr::ii<DataType, SpatialDim, Frame>
+time_deriv_of_spatial_metric(const Scalar<DataType>& lapse,
+                             const tnsr::I<DataType, SpatialDim, Frame>& shift,
+                             const tnsr::iaa<DataType, SpatialDim, Frame>& phi,
+                             const tnsr::aa<DataType, SpatialDim, Frame>& pi);
 /// @}
 
 namespace Tags {

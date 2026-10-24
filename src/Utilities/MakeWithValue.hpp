@@ -14,6 +14,7 @@
 #include "Utilities/Algorithm.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/ForceInline.hpp"
+#include "Utilities/Kokkos/KokkosMacros.hpp"
 #include "Utilities/MakeArray.hpp"
 
 /// \ingroup DataStructuresGroup
@@ -84,8 +85,9 @@ struct MakeWithValueImpl {
 /// `double`.
 ///
 /// \see MakeWithValueImpls, set_number_of_grid_points
+SPECTRE_KOKKOS_DISABLE_EXEC_CHECK
 template <typename R, typename T, typename ValueType>
-SPECTRE_ALWAYS_INLINE std::remove_const_t<R> make_with_value(
+KOKKOS_FUNCTION SPECTRE_ALWAYS_INLINE std::remove_const_t<R> make_with_value(
     const T& input, const ValueType& value) {
   return MakeWithValueImpls::MakeWithValueImpl<std::remove_const_t<R>,
                                                T>::apply(input, value);
@@ -102,8 +104,8 @@ struct NumberOfPoints<size_t> {
 /// \brief Returns a double initialized to `value` (`input` is ignored)
 template <typename T>
 struct MakeWithValueImpl<double, T> {
-  static SPECTRE_ALWAYS_INLINE double apply(const T& /* input */,
-                                            const double value) {
+  KOKKOS_FUNCTION static SPECTRE_ALWAYS_INLINE double apply(
+      const T& /* input */, const double value) {
     return value;
   }
 };

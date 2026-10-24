@@ -10,6 +10,7 @@
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/Kokkos/KokkosMacros.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace gr {
@@ -28,13 +29,13 @@ namespace gr {
  * spatial metric and spatial derivative of the spatial metric, respectively.
  */
 template <typename DataType, size_t Dim, typename Frame>
-void deriv_inverse_spatial_metric(
+KOKKOS_FUNCTION void deriv_inverse_spatial_metric(
     gsl::not_null<tnsr::iJJ<DataType, Dim, Frame>*> result,
     const tnsr::II<DataType, Dim, Frame>& inverse_spatial_metric,
     const tnsr::ijj<DataType, Dim, Frame>& d_spatial_metric);
 
 template <typename DataType, size_t Dim, typename Frame>
-tnsr::iJJ<DataType, Dim, Frame> deriv_inverse_spatial_metric(
+KOKKOS_FUNCTION tnsr::iJJ<DataType, Dim, Frame> deriv_inverse_spatial_metric(
     const tnsr::II<DataType, Dim, Frame>& inverse_spatial_metric,
     const tnsr::ijj<DataType, Dim, Frame>& d_spatial_metric);
 /// @}

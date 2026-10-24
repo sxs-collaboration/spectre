@@ -13,11 +13,12 @@
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/Kokkos/KokkosMacros.hpp"
 #include "Utilities/SetNumberOfGridPoints.hpp"
 
 namespace gr {
 template <typename DataType, size_t SpatialDim, typename Frame>
-tnsr::ii<DataType, SpatialDim, Frame> weyl_propagating(
+KOKKOS_FUNCTION tnsr::ii<DataType, SpatialDim, Frame> weyl_propagating(
     const tnsr::ii<DataType, SpatialDim, Frame>& ricci,
     const tnsr::ii<DataType, SpatialDim, Frame>& extrinsic_curvature,
     const tnsr::II<DataType, SpatialDim, Frame>& inverse_spatial_metric,
@@ -38,7 +39,7 @@ tnsr::ii<DataType, SpatialDim, Frame> weyl_propagating(
 }
 
 template <typename DataType, size_t SpatialDim, typename Frame>
-void weyl_propagating(
+KOKKOS_FUNCTION void weyl_propagating(
     const gsl::not_null<tnsr::ii<DataType, SpatialDim, Frame>*> weyl_prop_u8,
     const tnsr::ii<DataType, SpatialDim, Frame>& ricci,
     const tnsr::ii<DataType, SpatialDim, Frame>& extrinsic_curvature,
@@ -131,7 +132,9 @@ void weyl_propagating(
       const tnsr::Ij<DTYPE(data), DIM(data), FRAME(data)>& projection_Ij,      \
       const double sign);
 
-GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (double, DataVector),
+GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3),
+                        SPECTRE_DEVICE_AND_HOST_TYPES((double),
+                                                      (double, DataVector)),
                         (Frame::Grid, Frame::Inertial))
 
 #undef DIM

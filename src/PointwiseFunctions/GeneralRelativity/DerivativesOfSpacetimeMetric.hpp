@@ -9,6 +9,7 @@
 #include "DataStructures/DataBox/Tag.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/Kokkos/KokkosMacros.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \ingroup GeneralRelativityGroup
@@ -33,7 +34,7 @@ namespace gr {
  * metric respectively.
  */
 template <typename DataType, size_t SpatialDim, typename Frame>
-void derivatives_of_spacetime_metric(
+KOKKOS_FUNCTION void derivatives_of_spacetime_metric(
     gsl::not_null<tnsr::abb<DataType, SpatialDim, Frame>*>
         spacetime_deriv_spacetime_metric,
     const Scalar<DataType>& lapse, const Scalar<DataType>& dt_lapse,
@@ -46,7 +47,8 @@ void derivatives_of_spacetime_metric(
     const tnsr::ijj<DataType, SpatialDim, Frame>& deriv_spatial_metric);
 
 template <typename DataType, size_t SpatialDim, typename Frame>
-tnsr::abb<DataType, SpatialDim, Frame> derivatives_of_spacetime_metric(
+KOKKOS_FUNCTION tnsr::abb<DataType, SpatialDim, Frame>
+derivatives_of_spacetime_metric(
     const Scalar<DataType>& lapse, const Scalar<DataType>& dt_lapse,
     const tnsr::i<DataType, SpatialDim, Frame>& deriv_lapse,
     const tnsr::I<DataType, SpatialDim, Frame>& shift,

@@ -15,6 +15,7 @@
 #include "DataStructures/Tensor/IndexType.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
+#include "Utilities/Kokkos/KokkosMacros.hpp"
 
 /// \cond
 namespace gsl {
@@ -36,12 +37,13 @@ namespace gr {
  * where \f$g_{bc}\f$ is either a spatial or spacetime metric
  */
 template <size_t SpatialDim, typename Frame, IndexType Index, typename DataType>
-void christoffel_first_kind(
+KOKKOS_FUNCTION void christoffel_first_kind(
     gsl::not_null<tnsr::abb<DataType, SpatialDim, Frame, Index>*> christoffel,
     const tnsr::abb<DataType, SpatialDim, Frame, Index>& d_metric);
 
 template <size_t SpatialDim, typename Frame, IndexType Index, typename DataType>
-tnsr::abb<DataType, SpatialDim, Frame, Index> christoffel_first_kind(
+KOKKOS_FUNCTION tnsr::abb<DataType, SpatialDim, Frame, Index>
+christoffel_first_kind(
     const tnsr::abb<DataType, SpatialDim, Frame, Index>& d_metric);
 /// @}
 
@@ -60,13 +62,13 @@ tnsr::abb<DataType, SpatialDim, Frame, Index> christoffel_first_kind(
  * Christoffel symbol of the first kind and then raising the index.
  */
 template <size_t SpatialDim, typename Frame, IndexType Index, typename DataType>
-void christoffel_second_kind(
+KOKKOS_FUNCTION void christoffel_second_kind(
     gsl::not_null<tnsr::Abb<DataType, SpatialDim, Frame, Index>*> christoffel,
     const tnsr::abb<DataType, SpatialDim, Frame, Index>& d_metric,
     const tnsr::AA<DataType, SpatialDim, Frame, Index>& inverse_metric);
 
 template <size_t SpatialDim, typename Frame, IndexType Index, typename DataType>
-auto christoffel_second_kind(
+KOKKOS_FUNCTION auto christoffel_second_kind(
     const tnsr::abb<DataType, SpatialDim, Frame, Index>& d_metric,
     const tnsr::AA<DataType, SpatialDim, Frame, Index>& inverse_metric)
     -> tnsr::Abb<DataType, SpatialDim, Frame, Index>;
