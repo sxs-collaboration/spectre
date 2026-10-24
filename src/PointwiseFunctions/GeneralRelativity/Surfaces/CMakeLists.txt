@@ -15,6 +15,7 @@ spectre_target_sources(
   InverseSurfaceMetric.cpp
   Mass.cpp
   RadialDistance.cpp
+  ReggeWheelerZerilli.cpp
   RicciScalar.cpp
   Spin.cpp
   SurfaceIntegralOfScalar.cpp
@@ -33,6 +34,7 @@ spectre_target_headers(
   InverseSurfaceMetric.hpp
   Mass.hpp
   RadialDistance.hpp
+  ReggeWheelerZerilli.hpp
   RicciScalar.hpp
   Spin.hpp
   SurfaceIntegralOfScalar.hpp
@@ -53,6 +55,8 @@ target_link_libraries(
   ErrorHandling
   GeneralRelativity
   LinearAlgebra
+  SpinWeightedSphericalHarmonics
+  TensorYlm
   Utilities
   )
 
