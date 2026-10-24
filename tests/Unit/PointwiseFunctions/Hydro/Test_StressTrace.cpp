@@ -71,6 +71,24 @@ void test_stress_trace(const DataType& velocity_squared) {
     }
   }
 }
+
+template <typename DataType>
+void test_large_density(const DataType& density) {
+  // W = 2 and v^2 = 3/4 give an exactly representable kinetic factor of 3.
+  // Multiplying rho by W^2 before v^2 would overflow for rho = 2^1022,
+  // even though the final stress trace is finite.
+  const Scalar<DataType> rest_mass_density{density};
+  const auto one = make_with_value<Scalar<DataType>>(density, 1.);
+  const auto zero = make_with_value<Scalar<DataType>>(density, 0.);
+  const auto velocity_squared =
+      make_with_value<Scalar<DataType>>(density, 0.75);
+  const auto lorentz_factor = make_with_value<Scalar<DataType>>(density, 2.);
+  Scalar<DataType> result{};
+  hydro::stress_trace(make_not_null(&result), rest_mass_density, one, zero,
+                      velocity_squared, lorentz_factor, zero, zero);
+  const DataType expected = 3. * density;
+  CHECK(get(result) == expected);
+}
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.PointwiseFunctions.Hydro.StressTrace",
@@ -83,4 +101,6 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.Hydro.StressTrace",
   // Heterogeneous lanes also exercise vector evaluation near W == 1.
   test_stress_trace(
       DataVector{0., 1.e-20, 1.e-16, 1.e-12, 1.e-8, 0.25, 0.75, 0.99});
+  test_large_density(0x1p+1022);
+  test_large_density(DataVector{0x1p+1022, 0x1p+1021, 0., 1.});
 }
