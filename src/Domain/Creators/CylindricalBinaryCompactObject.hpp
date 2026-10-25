@@ -273,19 +273,21 @@ class CylindricalBinaryCompactObject : public DomainCreator<3> {
   };
 
   struct InitialRefinement {
-    using type = std::variant<size_t, std::unordered_map<std::string, size_t>>;
+    using type = std::variant<
+        size_t, std::unordered_map<
+                    std::string, std::variant<std::array<size_t, 2>, size_t>>>;
     static constexpr Options::String help = {
-        "Initial refinement level. Specify one of: a single number or a list "
-        "of single numbers for every block group in the domain, every block "
-        "name in the domain, or a mix of block groups and blocks. Each single "
-        "number represents the radial refinement for spherical shell blocks "
-        "and z refinement for cylindrical blocks.\n\nNote that the z direction "
-        "in cylinder blocks will roughly correspond to refinement in a "
-        "direction parallel to the axis of separation between the two objects. "
-        "Because filled cylinder blocks lie along the axis of separation but "
-        "hollow cylinder blocks wrap around it, refinement in z leads to "
-        "refinement in different spherical coordinate directions in the "
-        "global spherical coordinates. More specifically, z refinement in "
+        "Initial refinement level. Specify one of: a single number for global "
+        "refinement or a list of entries for every block/group in the domain, "
+        "where spherical shell block/group entries are specified with one "
+        "number and cylindrical block/group entries are speicfied with an "
+        "array<2> representing [radial refinement, z refinement]. \n\nNote "
+        "that the z direction in cylinder blocks will roughly correspond to "
+        "refinement in a direction parallel to the axis of separation between "
+        "the two objects. Because filled cylinder blocks lie along the axis of "
+        "separation but hollow cylinder blocks wrap around it, refinement in z "
+        "leads to refinement in different spherical coordinate directions in "
+        "the global spherical coordinates. More specifically, z refinement in "
         "filled cylinders (e.g. EAFilledCylinder) will roughly correspond to "
         "radial refinement in global spherical coordinates, but in hollow "
         "cylinders, it will behave more like angular refinement in global "
@@ -303,10 +305,11 @@ class CylindricalBinaryCompactObject : public DomainCreator<3> {
         "\n\t- a single number"
         "\n\t- lists for blocks and/or block groups as follows:"
         "\n\t\t- [r, l_max] for spherical shell blocks and groups"
-        "\n\t\t- [r, z] for filled cylinder blocks and groups containing them, "
-        "\n\t\t  where r must be > 2"
         "\n\t\t- [r, theta, z] for hollow cylinder blocks, where theta must be "
-        "\n\t\t  odd\n\n"
+        "\n\t\t  odd"
+        "\n\t\t- [r, z] or [r, theta, z] for filled cylinder blocks and groups "
+        "\n\t\t  containing them, where r must be > 2, theta must be odd, and "
+        "\n\t\t  (4 * r - 3) >= theta\n\n"
         "While the most verbose, the best choice for a production run is "
         "likely to specify a list for each cylindrical block instead of each "
         "cylindrical block group. If you set a whole group (e.g. InnerA) using "
