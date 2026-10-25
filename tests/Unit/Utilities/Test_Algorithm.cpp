@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <array>
 #include <cctype>
+#include <chrono>
 #include <cstddef>
 #include <deque>
 #include <functional>
@@ -39,6 +40,18 @@ constexpr bool check_iter_swap() {
 
   cpp20::array<size_t, size> expected{{1, 5, 3, 4, 2, 6}};
   return a == expected;
+}
+
+// A type in namespace `std` without its own `std::swap` overload, so
+// argument-dependent lookup finds the generic `std::swap`
+constexpr bool check_iter_swap_std_type() {
+  using std::chrono::milliseconds;
+  std::array<milliseconds, 3> a{
+      {milliseconds{1}, milliseconds{2}, milliseconds{3}}};
+  cpp20::iter_swap(a.begin(), a.begin() + 2);
+  cpp20::reverse(a.begin(), a.end());
+  return a == std::array<milliseconds, 3>{
+                  {milliseconds{1}, milliseconds{2}, milliseconds{3}}};
 }
 
 constexpr bool check_reverse() {
@@ -76,6 +89,7 @@ void test_constexpr_swap_iter_swap_reverse_etc() {
   // Check the functions at runtime
   CHECK(check_swap());
   CHECK(check_iter_swap());
+  CHECK(check_iter_swap_std_type());
   CHECK(check_reverse());
   CHECK(check_reverse_random_access());
   CHECK(check_next_permutation());
@@ -83,6 +97,8 @@ void test_constexpr_swap_iter_swap_reverse_etc() {
   // Check the functions at compile time
   static_assert(check_swap(), "Failed test Unit.Utilities.Algorithm");
   static_assert(check_iter_swap(), "Failed test Unit.Utilities.Algorithm");
+  static_assert(check_iter_swap_std_type(),
+                "Failed test Unit.Utilities.Algorithm");
   static_assert(check_reverse(), "Failed test Unit.Utilities.Algorithm");
   static_assert(check_reverse_random_access(),
                 "Failed test Unit.Utilities.Algorithm");
@@ -386,6 +402,16 @@ void test_same_as_std_on_random_data() {
       std::ranges::stable_sort(stable_sorted, compare_first);
       alg::bubble_sort(pairs, compare_first);
       CHECK(pairs == stable_sorted);
+      // A type for which argument-dependent lookup finds the generic
+      // `std::swap`
+      std::vector<std::chrono::milliseconds> durations(size);
+      std::vector<std::chrono::milliseconds> expected_durations(size);
+      for (size_t i = 0; i < size; ++i) {
+        durations[i] = std::chrono::milliseconds{a[i]};
+        expected_durations[i] = std::chrono::milliseconds{sorted[size - 1 - i]};
+      }
+      alg::bubble_sort(durations);
+      CHECK(durations == expected_durations);
     }
   }
 }

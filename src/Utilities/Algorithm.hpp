@@ -37,7 +37,7 @@ KOKKOS_FUNCTION constexpr void swap(T& a, T& b) noexcept(
 SPECTRE_KOKKOS_DISABLE_EXEC_CHECK
 template <class ForwardIt1, class ForwardIt2>
 KOKKOS_FUNCTION constexpr void iter_swap(ForwardIt1 a, ForwardIt2 b) {
-  swap(*a, *b);
+  cpp20::swap(*a, *b);
 }
 
 namespace detail {

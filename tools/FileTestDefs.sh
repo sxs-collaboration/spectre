@@ -699,16 +699,28 @@ standard_checks+=(mutable)
 
 # Check for standard library algorithms in source files with Kokkos device
 # code. They can give wrong results in Kokkos kernels without any error, see
-# the "GPU support" page of the dev guide.
-device_std_algorithms_regex='std::(ranges::|views::|(sort|stable_sort|'\
-'partial_sort|nth_element|unique|equal|lexicographical_compare|mismatch|'\
-'copy|copy_n|copy_if|copy_backward|move_backward|fill|fill_n|rotate|reverse|'\
-'count|count_if|find|find_if|find_if_not|all_of|any_of|none_of|for_each|'\
-'for_each_n|transform|accumulate|reduce|inner_product|partial_sum|iota|'\
-'lcm|gcd|min_element|max_element|minmax_element|lower_bound|upper_bound|'\
-'binary_search|equal_range|partition|partition_point|remove|remove_if|'\
-'replace|replace_if|next_permutation|prev_permutation|is_sorted|search|'\
-'merge|adjacent_find|adjacent_difference|transform_reduce|sample|shuffle)\()'
+# the "GPU support" page of the dev guide. This lists all functions in
+# <algorithm> and <numeric> except std::min, std::max, std::clamp and std::swap,
+# which can be used in device code, and std::move, which can't be told apart
+# from the std::move in <utility>.
+device_std_algorithms_regex='std::(ranges::|views::|(all_of|any_of|none_of|'\
+'for_each|for_each_n|count|count_if|mismatch|find|find_if|find_if_not|'\
+'find_end|find_first_of|adjacent_find|search|search_n|'\
+'copy|copy_if|copy_n|copy_backward|move_backward|fill|fill_n|transform|'\
+'generate|generate_n|remove|remove_if|remove_copy|remove_copy_if|replace|'\
+'replace_if|replace_copy|replace_copy_if|swap_ranges|iter_swap|reverse|'\
+'reverse_copy|rotate|rotate_copy|shift_left|shift_right|shuffle|sample|'\
+'unique|unique_copy|is_partitioned|partition|partition_copy|'\
+'stable_partition|partition_point|is_sorted|is_sorted_until|sort|'\
+'partial_sort|partial_sort_copy|stable_sort|nth_element|lower_bound|'\
+'upper_bound|binary_search|equal_range|merge|inplace_merge|includes|'\
+'set_difference|set_intersection|set_symmetric_difference|set_union|'\
+'is_heap|is_heap_until|make_heap|push_heap|pop_heap|sort_heap|minmax|'\
+'min_element|max_element|minmax_element|equal|lexicographical_compare|'\
+'lexicographical_compare_three_way|is_permutation|next_permutation|'\
+'prev_permutation|iota|accumulate|reduce|transform_reduce|inner_product|'\
+'adjacent_difference|partial_sum|inclusive_scan|exclusive_scan|'\
+'transform_inclusive_scan|transform_exclusive_scan|gcd|lcm|midpoint)\()'
 device_std_algorithms() {
     [[ $1 =~ ^src/ ]] && is_c++ "$1" && \
         whitelist "$1" 'src/Utilities/Algorithm.hpp$' && \
@@ -731,8 +743,15 @@ device_std_algorithms_test() {
     local kernel='KOKKOS_FUNCTION void f();'$'\n'
     test_check pass src/foo.cpp "${kernel}"'alg::sort(a);'
     test_check pass src/foo.cpp "${kernel}"'std::move(a); std::max(a, b);'
+    test_check pass src/foo.cpp "${kernel}"'std::min(a, b); std::swap(a, b);'
+    test_check pass src/foo.cpp "${kernel}"'std::clamp(a, b, c);'
     test_check pass src/foo.cpp "${kernel}"'std::array<double, 3> a{};'
     test_check fail src/foo.cpp "${kernel}"'std::sort(a.begin(), a.end());'
+    test_check fail src/foo.cpp "${kernel}"'std::rotate_copy(a, b, c, d);'
+    test_check fail src/foo.cpp "${kernel}"'std::reverse_copy(a, b, c);'
+    test_check fail src/foo.cpp "${kernel}"'std::remove_copy(a, b, c, 1);'
+    test_check fail src/foo.cpp "${kernel}"'std::exclusive_scan(a, b, c, 0);'
+    test_check fail src/foo.cpp "${kernel}"'std::minmax(a, b);'
     test_check fail src/foo.hpp "${kernel}"'return std::equal(a, b, c);'
     test_check fail src/foo.tpp "${kernel}"'std::ranges::sort(a);'
     test_check fail src/foo.cpp "${kernel}"'for (int i : std::views::iota(0, 3))'
