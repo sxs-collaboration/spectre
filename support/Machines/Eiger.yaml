@@ -1,0 +1,22 @@
+# Distributed under the MIT License.
+# See LICENSE.txt for details.
+
+Machine:
+  Name: Eiger
+  Description: |
+    CPU partition of the CSCS Alps system. SpECTRE runs in the
+    sxscollaboration/spectre container with the CSCS Container Engine.
+    More information:
+    https://docs.cscs.ch/clusters/eiger/
+    https://docs.cscs.ch/software/container-engine/
+  # 2x AMD EPYC 7742 (64 cores each, 2 hardware threads per core). Multicore
+  # Charm++ in the container: one task with one thread per physical core.
+  DefaultTasksPerNode: 1
+  DefaultProcsPerTask: 128
+  DefaultQueue: "normal"
+  DefaultTimeLimit: "1-00:00:00"
+  LaunchCommandSingleNode: []
+  LaunchCommandLoginNode: []
+  # One thread per physical core instead of `+auto-provision` (one thread per
+  # hardware thread, 256 per node, ~20% slower)
+  AutoProvisionFlag: "+oneWthPerCore"
