@@ -20,9 +20,8 @@ namespace cpp20 {
  */
 SPECTRE_KOKKOS_DISABLE_EXEC_CHECK
 template <class T>
-KOKKOS_FUNCTION constexpr void swap(T& a, T& b) noexcept(
-    std::is_nothrow_move_constructible_v<T> and
-    std::is_nothrow_move_assignable_v<T>) {
+// NOLINTNEXTLINE(performance-noexcept-swap)
+KOKKOS_FUNCTION constexpr void swap(T& a, T& b) {
   T c(std::move(a));
   a = std::move(b);
   b = std::move(c);
@@ -667,7 +666,17 @@ template <class Container, class Compare>
 constexpr decltype(auto) max_element(const Container& c, Compare&& comp) {
   using std::begin;
   using std::end;
-  return std::max_element(begin(c), end(c), std::forward<Compare>(comp));
+  std::decay_t<Compare> compare(std::forward<Compare>(comp));
+  auto largest = begin(c);
+  if (largest != end(c)) {
+    auto it = largest;
+    for (++it; it != end(c); ++it) {
+      if (compare(*largest, *it)) {
+        largest = it;
+      }
+    }
+  }
+  return largest;
 }
 /// \endcond
 
@@ -683,9 +692,8 @@ KOKKOS_FUNCTION constexpr decltype(auto) max_element(const Container& c) {
 /// \cond
 template <class Container>
 constexpr decltype(auto) max_element(const Container& c) {
-  using std::begin;
-  using std::end;
-  return std::max_element(begin(c), end(c));
+  return alg::max_element(c,
+                          [](const auto& a, const auto& b) { return a < b; });
 }
 /// \endcond
 
@@ -715,7 +723,17 @@ template <class Container, class Compare>
 constexpr decltype(auto) min_element(const Container& c, Compare&& comp) {
   using std::begin;
   using std::end;
-  return std::min_element(begin(c), end(c), std::forward<Compare>(comp));
+  std::decay_t<Compare> compare(std::forward<Compare>(comp));
+  auto smallest = begin(c);
+  if (smallest != end(c)) {
+    auto it = smallest;
+    for (++it; it != end(c); ++it) {
+      if (compare(*it, *smallest)) {
+        smallest = it;
+      }
+    }
+  }
+  return smallest;
 }
 /// \endcond
 
@@ -731,9 +749,8 @@ KOKKOS_FUNCTION constexpr decltype(auto) min_element(const Container& c) {
 /// \cond
 template <class Container>
 constexpr decltype(auto) min_element(const Container& c) {
-  using std::begin;
-  using std::end;
-  return std::min_element(begin(c), end(c));
+  return alg::min_element(c,
+                          [](const auto& a, const auto& b) { return a < b; });
 }
 /// \endcond
 
@@ -768,7 +785,21 @@ template <class Container, class Compare>
 constexpr decltype(auto) minmax_element(const Container& c, Compare&& comp) {
   using std::begin;
   using std::end;
-  return std::minmax_element(begin(c), end(c), std::forward<Compare>(comp));
+  std::decay_t<Compare> compare(std::forward<Compare>(comp));
+  auto smallest = begin(c);
+  auto largest = begin(c);
+  if (smallest != end(c)) {
+    auto it = smallest;
+    for (++it; it != end(c); ++it) {
+      if (compare(*it, *smallest)) {
+        smallest = it;
+      }
+      if (not compare(*it, *largest)) {
+        largest = it;
+      }
+    }
+  }
+  return std::pair{smallest, largest};
 }
 /// \endcond
 
@@ -784,9 +815,8 @@ KOKKOS_FUNCTION constexpr decltype(auto) minmax_element(const Container& c) {
 /// \cond
 template <class Container>
 constexpr decltype(auto) minmax_element(const Container& c) {
-  using std::begin;
-  using std::end;
-  return std::minmax_element(begin(c), end(c));
+  return alg::minmax_element(
+      c, [](const auto& a, const auto& b) { return a < b; });
 }
 /// \endcond
 

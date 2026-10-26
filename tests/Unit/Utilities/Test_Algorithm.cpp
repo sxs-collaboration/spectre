@@ -357,6 +357,15 @@ void test_same_as_std_on_random_data() {
       CHECK(alg::max_element(a, greater) ==
             std::ranges::max_element(a, greater));
       check_minmax_element(a);
+      // The overloads for other containers are loops as well
+      const std::list<int> a_list(a.begin(), a.end());
+      CHECK(alg::min_element(a_list) == std::ranges::min_element(a_list));
+      CHECK(alg::max_element(a_list) == std::ranges::max_element(a_list));
+      CHECK(alg::min_element(a_list, greater) ==
+            std::ranges::min_element(a_list, greater));
+      CHECK(alg::max_element(a_list, greater) ==
+            std::ranges::max_element(a_list, greater));
+      check_minmax_element(a_list);
 
       std::vector<int> transformed(size);
       std::vector<int> expected_transformed(size);

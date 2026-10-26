@@ -130,6 +130,11 @@ the device; sort short lists with `alg::bubble_sort` instead, which takes
 reductions over all grid points, use Kokkos (e.g. `Kokkos::parallel_reduce`)
 instead.
 
+The `alg` functions use the elements' operators, so the rules above apply to
+them too: e.g. `alg::equal` or `alg::max_element` on a container of
+`std::array`s use `std::array`'s `==` or `<`. Pass a function object that
+compares element by element instead.
+
 A possible alternative is CUDA's own standard library,
 [libcu++](https://nvidia.github.io/cccl/unstable/libcudacxx/index.html)
 (`cuda::std`), which is written for device code. In the same tests on an NVIDIA
@@ -148,7 +153,8 @@ provide `cuda::std::sort`. SpECTRE does not currently use it.
   or uses of `std::array`'s comparison operators.
 - nvcc warns about calls to host functions from device code ("calling a
   `__host__` function from a `__host__ __device__` function"). Treat these
-  warnings as errors in the code you write.
+  warnings as errors in the code you write. Calls to `constexpr` functions,
+  including most of the standard library, don't give this warning.
 - Code that compiles for the device can still give wrong results on the
   device. Every function that can be called in device code needs a test that
   calls it in a Kokkos kernel, e.g. with `TestHelpers::check_on_device`, and
