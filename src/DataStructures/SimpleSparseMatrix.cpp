@@ -13,11 +13,26 @@
 
 #include "Utilities/Algorithm.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
+#include "Utilities/MakeArray.hpp"
 
 namespace {
-// Pass the pointers by value so the inner loop does not have to reload
-// span/vector metadata through the dispatch closure. With non-call exceptions,
-// GCC 11 otherwise vectorizes across sparse columns using expensive gathers.
+// Kernel for SimpleSparseMatrix::increment_multiply_on_right_all_offsets.
+// Three implementation details are needed for the compiler:
+//
+// - The number of offsets, Stride, is a template parameter, so the partial
+//   sums of a row are a fixed-size array that fits in registers. With a
+//   runtime stride the sums would live in memory and be updated one at a
+//   time.
+//
+// - The fold expression writes the Stride updates for a matrix entry out
+//   one by one. A loop would do the same, but GCC stops unrolling loops
+//   beyond a fixed trip count, and once the sums are no longer separate
+//   variables the vector instructions are lost.
+//
+// - The arrays are passed as plain pointers instead of the std::vectors and
+//   gsl::spans that own them. Through the containers, the compiler re-read
+//   their data pointers in every iteration of the inner loop; with plain
+//   pointers the base addresses stay in registers.
 // NOLINTBEGIN(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 template <size_t Stride>
 void increment_multiply_all_offsets(double* const dest_data,
@@ -29,12 +44,10 @@ void increment_multiply_all_offsets(double* const dest_data,
                                     const size_t number_of_rows) {
   size_t entry = 0;
   for (size_t row = 0; row < number_of_rows; ++row) {
-    std::array<double, Stride> sum{};
+    auto sum = make_array<Stride>(0.0);
     for (size_t column = 0; column < row_columns[row]; ++column, ++entry) {
       const double value = matrix_data[entry];
       const double* const src = source_data + column_indices[entry] * Stride;
-      // Expose independent offsets even above GCC's loop-unrolling limit.
-      // Columns retain their original summation order for every offset.
       [&]<size_t... Offsets>(std::index_sequence<Offsets...> /*meta*/) {
         ((sum[Offsets] += value * src[Offsets]), ...);
       }(std::make_index_sequence<Stride>{});
@@ -180,22 +193,22 @@ void SimpleSparseMatrix::increment_multiply_on_right_all_offsets(
     return;
   }
 
-  // Specialize small numbers of right-hand sides so the compiler can keep
-  // their independent sums in registers. The cutoff bounds code generation.
-  constexpr size_t max_specialized_stride = 24;
-  if (stride > max_specialized_stride) {
+  // A kernel is compiled for every stride up to max_fused_stride. Larger
+  // strides use the plain per-offset multiply. The spherical-harmonic filter
+  // checks at compile time that its radial extent never exceeds the cap, so
+  // it never takes this path.
+  if (stride > max_fused_stride) {
     for (size_t offset = 0; offset < stride; ++offset) {
       increment_multiply_on_right(a, offset, stride, b, offset, stride);
     }
     return;
   }
 
-  // Keep each offset's summation order identical to the scalar multiply:
-  // accumulate a row separately, then add it to the destination once.
+  // Table of compiled kernels, indexed by stride - 1.
   static constexpr auto dispatch =
       []<size_t... Indices>(std::index_sequence<Indices...>) {
         return std::array{&increment_multiply_all_offsets<Indices + 1>...};
-      }(std::make_index_sequence<max_specialized_stride>{});
+      }(std::make_index_sequence<max_fused_stride>{});
   gsl::at(dispatch, stride - 1)(
       a->data(), b.data(), matrix_elements_.data(), column_src_indices_.data(),
       row_dest_indices_.data(), num_columns_per_row_.data(),

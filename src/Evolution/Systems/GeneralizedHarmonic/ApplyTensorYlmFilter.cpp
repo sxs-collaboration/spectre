@@ -7,9 +7,13 @@
 #include <cstring>
 
 #include "DataStructures/DataVector.hpp"
+#include "DataStructures/SimpleSparseMatrix.hpp"
 #include "DataStructures/Tags/TempTensor.hpp"
 #include "DataStructures/Tensor/Structure.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "NumericalAlgorithms/Spectral/Basis.hpp"
+#include "NumericalAlgorithms/Spectral/MaximumNumberOfPoints.hpp"
+#include "NumericalAlgorithms/Spectral/Quadrature.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/Spherepack.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/SpherepackCache.hpp"
 #include "NumericalAlgorithms/TensorYlm/Filter.hpp"
@@ -340,7 +344,27 @@ void apply_tensor_ylm_filter(
         gsl::span<double> dest(
             get<Tag>(dest_tensor)[0].data(),
             num_independent_components * dest_tensor.number_of_grid_points());
-        // Apply the sparse matrix to all radial points together.
+        // Apply the sparse matrix to all radial points together. The radial
+        // extent of a DG mesh is bounded by Spectral::limits, so the fused
+        // kernel must cover every allowed extent of the radial bases of
+        // shells (Legendre or Chebyshev) and filled spheres (ZernikeB3). If
+        // this check fails, raise SimpleSparseMatrix::max_fused_stride.
+        static_assert(
+            Spectral::maximum_number_of_points<
+                    Spectral::Basis::Legendre,
+                    Spectral::Quadrature::GaussLobatto> <=
+                    SimpleSparseMatrix::max_fused_stride and
+                Spectral::maximum_number_of_points<
+                    Spectral::Basis::Chebyshev,
+                    Spectral::Quadrature::GaussLobatto> <=
+                    SimpleSparseMatrix::max_fused_stride and
+                Spectral::maximum_number_of_points<
+                    Spectral::Basis::ZernikeB3,
+                    Spectral::Quadrature::GaussRadauUpper> <=
+                    SimpleSparseMatrix::max_fused_stride,
+            "SimpleSparseMatrix::max_fused_stride must cover the largest "
+            "allowed radial extent, so that the sparse filter multiply never "
+            "falls back to the slower per-offset path.");
         const size_t stride = radial_extents;
         // Each type of tensor gets a different filter matrix.
         if constexpr (std::is_same_v<typename Tag::type::structure::symmetry,
