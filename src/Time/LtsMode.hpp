@@ -30,6 +30,8 @@ enum class LtsMode : uint8_t {
   /// A flux-conservative boundary integral will be performed to
   /// couple elements.
   Conservative,
+  /// Nonconservative local time-stepping extrapolating values from past steps
+  Extrapolated,
 };
 
 std::ostream& operator<<(std::ostream& os, LtsMode value);
