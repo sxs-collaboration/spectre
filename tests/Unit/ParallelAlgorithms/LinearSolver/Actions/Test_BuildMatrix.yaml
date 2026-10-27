@@ -54,6 +54,7 @@ BuildMatrix:
   Verbosity: Debug
   MatrixSubfileName: Matrix
   EnableDirectSolve: True
+  SkipResets: False
 
 Discretization:
   DiscontinuousGalerkin:
