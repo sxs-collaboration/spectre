@@ -128,6 +128,23 @@ ARG UBUNTU_VERSION=26.04
 # for how TARGETARCH is defined.
 ARG TARGETARCH
 
+# Update trust before downloading code. Ubuntu 18.04 still needs manual removal
+# of both affected roots: https://emudhra.we-have-a-problem.com/
+# Removing AAA also distrusts unaffected sites that only chain to that root.
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends ca-certificates \
+    && if [ "${UBUNTU_VERSION}" = 18.04 ]; then \
+        sed -i \
+            -e 's|^mozilla/emSign_ECC_Root_CA_-_G3.crt$|!&|' \
+            -e 's|^mozilla/Comodo_AAA_Services_root.crt$|!&|' \
+            /etc/ca-certificates.conf \
+        && update-ca-certificates --fresh; \
+    fi
+ENV SSL_CERT_FILE=/etc/ssl/certs/ca-certificates.crt \
+    PIP_CERT=/etc/ssl/certs/ca-certificates.crt \
+    REQUESTS_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt \
+    NODE_OPTIONS=--use-openssl-ca
+
 # Install add-apt-repository and basic tools
 #
 # libnss-sss is needed for getting usernames inside the container
@@ -249,6 +266,8 @@ RUN apt-get update -y \
 ENV DEBIAN_FRONTEND noninteractive
 ENV VIRTUAL_ENV=/opt/venv
 ENV PATH="${VIRTUAL_ENV}/bin:${PATH}"
+# Bootstrap pip using only system trust. Newer pip also trusts bundled roots
+# unless legacy-certs is selected; older pip does not recognize that option.
 RUN apt-get update -y \
     && if [ ${UBUNTU_VERSION} = 18.04 ]; then \
     apt-get install -y zlib1g-dev libncurses5-dev libgdbm-dev libnss3-dev \
@@ -264,7 +283,11 @@ RUN apt-get update -y \
     apt-get install -y python3-dev python3-venv pkg-config \
     && python3 -m venv "${VIRTUAL_ENV}"; \
     fi \
-    && python -m pip install --upgrade pip
+    && set -- \
+    && if python -m pip --use-deprecated=legacy-certs --version >/dev/null 2>&1; then \
+        set -- --use-deprecated=legacy-certs; \
+    fi \
+    && python -m pip install "$@" --upgrade 'pip>=26.2.2' 'certifi>=2026.10.19'
 
 # Install Python packages. We only install packages that are needed by the
 # build system (e.g. to compile Python bindings or build documentation) or used
@@ -302,7 +325,7 @@ ARG PARALLEL_MAKE_ARG=-j4
 
 # Install build dependencies for the host system
 RUN apt-get update -y \
-    && apt-get install -y cmake clang lld flex bison wget git
+    && apt-get install -y ca-certificates cmake clang lld flex bison wget git
 
 # Install build dependencies for the target architecture
 #
@@ -612,6 +635,19 @@ ARG TARGETARCH
 ARG UBUNTU_VERSION=26.04
 ARG PARALLEL_MAKE_ARG=-j2
 
+# Remote images can predate the CA fix. Update them before configuring SpECTRE.
+ENV SSL_CERT_FILE=/etc/ssl/certs/ca-certificates.crt \
+    PIP_CERT=/etc/ssl/certs/ca-certificates.crt \
+    REQUESTS_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt \
+    NODE_OPTIONS=--use-openssl-ca
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends ca-certificates \
+    && set -- \
+    && if python -m pip --use-deprecated=legacy-certs --version >/dev/null 2>&1; then \
+        set -- --use-deprecated=legacy-certs; \
+    fi \
+    && python -m pip install "$@" --upgrade 'pip>=26.2.2' 'certifi>=2026.10.19'
+
 COPY . spectre/
 
 RUN mkdir spectre/build && cd spectre/build \
@@ -688,6 +724,24 @@ ARG BUILDARCH
 ARG TARGETARCH
 ARG UBUNTU_VERSION=18.04
 ARG PARALLEL_MAKE_ARG=-j4
+
+# Keep the legacy deployment image's download clients protected as well.
+ENV SSL_CERT_FILE=/etc/ssl/certs/ca-certificates.crt \
+    PIP_CERT=/etc/ssl/certs/ca-certificates.crt \
+    REQUESTS_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt \
+    NODE_OPTIONS=--use-openssl-ca
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends ca-certificates \
+    && sed -i \
+        -e 's|^mozilla/emSign_ECC_Root_CA_-_G3.crt$|!&|' \
+        -e 's|^mozilla/Comodo_AAA_Services_root.crt$|!&|' \
+        /etc/ca-certificates.conf \
+    && update-ca-certificates --fresh \
+    && set -- \
+    && if python -m pip --use-deprecated=legacy-certs --version >/dev/null 2>&1; then \
+        set -- --use-deprecated=legacy-certs; \
+    fi \
+    && python -m pip install "$@" --upgrade 'pip>=26.2.2' 'certifi>=2026.10.19'
 
 WORKDIR /sxscollaboration
 
