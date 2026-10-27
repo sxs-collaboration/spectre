@@ -676,6 +676,10 @@ struct InitializeJ<false> : public PUP::able {
     return nullptr;
   }
 
+  /// Whether this generator reads the worldtube boundary value of
+  /// \f$\partial_u \partial_r J\f$.
+  virtual bool needs_du_dr_j() const { return false; }
+
   // Each derived class declares its own `return_tags` and `argument_tags` and
   // implements a non-virtual `operator()` whose signature matches those tags.
   // The dispatch below picks the correct dynamic type and forwards through
