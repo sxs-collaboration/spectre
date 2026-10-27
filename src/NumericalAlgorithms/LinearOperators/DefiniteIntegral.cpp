@@ -79,7 +79,10 @@ double definite_integral<2>(const DataVector& integrand, const Mesh<2>& mesh) {
         result += w_r[i] * integrand[i + offset];
       }
     }
-    result *= (2 * std::numbers::pi / static_cast<double>(y_size));
+    result *= (2.0 * std::numbers::pi / static_cast<double>(y_size));
+    // Zernike bases integrate over the radial coordinate r = (xi + 1) / 2 in
+    // [0, 1] instead of the logical coordinate xi, requiring dxi/dr = 2
+    result *= 2.0;
   } else {
     const double* const w_x =
         Spectral::quadrature_weights(sliced_meshes[0]).data();
@@ -171,6 +174,9 @@ double definite_integral<3>(const DataVector& integrand, const Mesh<3>& mesh) {
         result += w_ylm[j] * w_r[i] * integrand[i + offset];
       }
     }
+    // Zernike bases integrate over the radial coordinate r = (xi + 1) / 2 in
+    // [0, 1] instead of the logical coordinate xi, requiring dxi/dr = 2
+    result *= 2.0;
   } else if (mesh.basis(0) == Spectral::Basis::ZernikeB2) {
     const size_t y_size = sliced_meshes[1].number_of_grid_points();
     const size_t z_size = sliced_meshes[2].number_of_grid_points();
@@ -198,7 +204,10 @@ double definite_integral<3>(const DataVector& integrand, const Mesh<3>& mesh) {
         }
       }
     }
-    result *= 2 * std::numbers::pi / static_cast<double>(y_size);
+    result *= 2.0 * std::numbers::pi / static_cast<double>(y_size);
+    // Zernike bases integrate over the radial coordinate r = (xi + 1) / 2 in
+    // [0, 1] instead of the logical coordinate xi, requiring dxi/dr = 2
+    result *= 2.0;
   } else {
     const size_t y_size = sliced_meshes[1].number_of_grid_points();
     const size_t z_size = sliced_meshes[2].number_of_grid_points();

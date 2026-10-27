@@ -4,8 +4,10 @@
 #include "Framework/TestingFramework.hpp"
 
 #include <array>
+#include <cmath>
 #include <cstddef>
 #include <memory>
+#include <numbers>
 #include <optional>
 #include <string>
 #include <tuple>
@@ -50,7 +52,9 @@
 #include "Parallel/Reduction.hpp"
 #include "ParallelAlgorithms/Events/ObserveNorms.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
+#include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/MakeArray.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 #include "Utilities/Serialization/Serialize.hpp"
@@ -381,66 +385,82 @@ template <Spectral::Basis basis, typename ArraySectionIdTag,
           typename ObserveEvent>
 void test_b2_b3(const std::unique_ptr<ObserveEvent> observe,
                 const std::optional<std::string>& section) {
-  // We are testing that the correct cartesian to spherical/cylindrical jacobian
-  // is being mulitplied
+  // Compare against analytic integrals over a filled cylinder (ZernikeB2) or a
+  // ball (ZernikeB3) that is offset from the origin. The shapes don't cross
+  // any coordinate plane, so each x^i has one sign on them and the integral of
+  // |x^i| is the absolute value of the integral of x^i.
   CAPTURE(pretty_type::name<ArraySectionIdTag>());
   CAPTURE(section);
   CAPTURE(basis);
   using metavariables = Metavariables<3, ArraySectionIdTag>;
   using element_component = ElementComponent<metavariables>;
   using observer_component = MockObserverComponent<metavariables>;
+  using Affine = domain::CoordinateMaps::Affine;
+  using Shift = domain::CoordinateMaps::ProductOf3Maps<Affine, Affine, Affine>;
   const typename element_component::array_index array_index(0);
+  const auto shift = [](const std::array<double, 3>& center) {
+    return Shift{Affine{-1.0, 1.0, -1.0 + center[0], 1.0 + center[0]},
+                 Affine{-1.0, 1.0, -1.0 + center[1], 1.0 + center[1]},
+                 Affine{-1.0, 1.0, -1.0 + center[2], 1.0 + center[2]}};
+  };
   Mesh<3> mesh;
-  double expected_volume{};
   tnsr::I<DataVector, 3, Frame::Inertial> inertial_coords;
   Scalar<DataVector> det_inv_jacobian;
-  DataVector coord_jacobian{};
+  std::array<double, 3> center{};
+  double expected_volume{};
+  // Integral of (x^i - center^i)^2 over the shape
+  std::array<double, 3> second_moments{};
   if constexpr (basis == Spectral::Basis::ZernikeB2) {
-    mesh = Mesh<3>{{{3, 4, 3}},
+    const double radius = 2.5;
+    const double height = 1.0;
+    center = {3.5, -3.0, 1.0};
+    mesh = Mesh<3>{{{6, 9, 4}},
                    {{Spectral::Basis::ZernikeB2, Spectral::Basis::ZernikeB2,
                      Spectral::Basis::Legendre}},
                    {{Spectral::Quadrature::GaussRadauUpper,
                      Spectral::Quadrature::Equiangular,
                      Spectral::Quadrature::GaussLobatto}}};
-    auto map = domain::make_coordinate_map<Frame::ElementLogical,
-                                           Frame::Inertial>(
-        domain::CoordinateMaps::ProductOf3Maps<
-            domain::CoordinateMaps::Affine, domain::CoordinateMaps::Identity<1>,
-            domain::CoordinateMaps::Affine>{
-            domain::CoordinateMaps::Affine{-1.0, 1.0, 0.0, 2.5},
-            domain::CoordinateMaps::Identity<1>{},
-            domain::CoordinateMaps::Affine{-1.0, 1.0, -0.5, 0.5}},
-        domain::CoordinateMaps::ProductOf2Maps<
-            domain::CoordinateMaps::PolarToCartesian,
-            domain::CoordinateMaps::Identity<1>>(
-            domain::CoordinateMaps::PolarToCartesian{},
-            domain::CoordinateMaps::Identity<1>{}));
+    const auto map =
+        domain::make_coordinate_map<Frame::ElementLogical, Frame::Inertial>(
+            domain::CoordinateMaps::ProductOf3Maps<
+                Affine, domain::CoordinateMaps::Identity<1>, Affine>{
+                Affine{-1.0, 1.0, 0.0, radius},
+                domain::CoordinateMaps::Identity<1>{},
+                Affine{-1.0, 1.0, -0.5 * height, 0.5 * height}},
+            domain::CoordinateMaps::ProductOf2Maps<
+                domain::CoordinateMaps::PolarToCartesian,
+                domain::CoordinateMaps::Identity<1>>(
+                domain::CoordinateMaps::PolarToCartesian{},
+                domain::CoordinateMaps::Identity<1>{}),
+            shift(center));
     inertial_coords = map(logical_coordinates(mesh));
-    det_inv_jacobian =
-        determinant(map.inv_jacobian(logical_coordinates((mesh))));
-    coord_jacobian =
-        sqrt(square(get<0>(inertial_coords)) + square(get<1>(inertial_coords)));
+    det_inv_jacobian = determinant(map.inv_jacobian(logical_coordinates(mesh)));
+    expected_volume = std::numbers::pi * square(radius) * height;
+    second_moments = {0.25 * std::numbers::pi * pow(radius, 4) * height,
+                      0.25 * std::numbers::pi * pow(radius, 4) * height,
+                      std::numbers::pi * square(radius) * cube(height) / 12.0};
   } else {
+    const double radius = 2.6;
+    center = {4.0, -3.5, 3.0};
     mesh = Mesh<3>{
-        {{3, 4, 9}},
+        {{6, 7, 13}},
         {{Spectral::Basis::ZernikeB3, Spectral::Basis::ZernikeB3,
           Spectral::Basis::ZernikeB3}},
         {{Spectral::Quadrature::GaussRadauUpper, Spectral::Quadrature::Gauss,
           Spectral::Quadrature::Equiangular}}};
-    auto map =
+    const auto map =
         domain::make_coordinate_map<Frame::ElementLogical, Frame::Inertial>(
             domain::CoordinateMaps::ProductOf2Maps<
-                domain::CoordinateMaps::Affine,
-                domain::CoordinateMaps::Identity<2>>{
-                domain::CoordinateMaps::Affine{-1.0, 1.0, 0.0, 2.6},
+                Affine, domain::CoordinateMaps::Identity<2>>{
+                Affine{-1.0, 1.0, 0.0, radius},
                 domain::CoordinateMaps::Identity<2>{}},
-            domain::CoordinateMaps::SphericalToCartesianPfaffian{});
+            domain::CoordinateMaps::SphericalToCartesianPfaffian{},
+            shift(center));
     inertial_coords = map(logical_coordinates(mesh));
-    det_inv_jacobian =
-        determinant(map.inv_jacobian(logical_coordinates((mesh))));
-    coord_jacobian = square(get<0>(inertial_coords)) +
-                     square(get<1>(inertial_coords)) +
-                     square(get<2>(inertial_coords));
+    det_inv_jacobian = determinant(map.inv_jacobian(logical_coordinates(mesh)));
+    expected_volume = 4.0 / 3.0 * std::numbers::pi * cube(radius);
+    second_moments =
+        make_array<3>(4.0 / 15.0 * std::numbers::pi * pow(radius, 5));
   }
   const size_t num_points = mesh.number_of_grid_points();
 
@@ -486,60 +506,40 @@ void test_b2_b3(const std::unique_ptr<ObserveEvent> observe,
 
   const auto& results = MockContributeReductionData::results;
 
-  const auto integrate = [&mesh, &det_inv_jacobian,
-                          &coord_jacobian](const DataVector& a) -> double {
-    const DataVector integrand = a * coord_jacobian / get<>(det_inv_jacobian);
-    return definite_integral(integrand, mesh);
-  };
-  // expected_volume matches ObserveNorms' local_volume = integral of
-  // det_jacobian
-  expected_volume = integrate(DataVector(num_points, 1.0));
-  CHECK(results.volume == approx(expected_volume));
-  const auto normalize_l1 = [&expected_volume](const double a) -> double {
-    return a / expected_volume;
-  };
-  const auto normalize_l2 = [&expected_volume](const double a) -> double {
-    return sqrt(a / expected_volume);
+  // Analytic integrals of x^i, (x^i)^2, and |x^i| over the shape
+  std::array<double, 3> integral_of_x{};
+  std::array<double, 3> integral_of_x_squared{};
+  std::array<double, 3> integral_of_abs_x{};
+  for (size_t i = 0; i < 3; ++i) {
+    gsl::at(integral_of_x, i) = expected_volume * gsl::at(center, i);
+    gsl::at(integral_of_x_squared, i) =
+        expected_volume * square(gsl::at(center, i)) +
+        gsl::at(second_moments, i);
+    gsl::at(integral_of_abs_x, i) = std::abs(gsl::at(integral_of_x, i));
+  }
+  const auto sum = [](const std::array<double, 3>& a) {
+    return a[0] + a[1] + a[2];
   };
 
-  const auto& x = get<0>(get<Var1>(vars));
-  const auto& y = get<1>(get<Var1>(vars));
-  const auto& z = get<2>(get<Var1>(vars));
-  const DataVector abs_x{abs(x)};
-  const DataVector abs_y{abs(y)};
-  const DataVector abs_z{abs(z)};
-  const DataVector sq_x{square(x)};
-  const DataVector sq_y{square(y)};
-  const DataVector sq_z{square(z)};
+  CHECK(results.volume == approx(expected_volume));
 
   // Check L1 integral norms
   CHECK(results.l1_integral_norm_values[0] ==
-        approx(normalize_l1(integrate(abs_x) + integrate(abs_y) +
-                            integrate(abs_z))));
-  CHECK(results.l1_integral_norm_values[1] ==
-        approx(normalize_l1(integrate(abs_x))));
-  CHECK(results.l1_integral_norm_values[2] ==
-        approx(normalize_l1(integrate(abs_y))));
-  CHECK(results.l1_integral_norm_values[3] ==
-        approx(normalize_l1(integrate(abs_z))));
-
+        approx(sum(integral_of_abs_x) / expected_volume));
   // Check L2 integral norms
   CHECK(results.l2_integral_norm_values[0] ==
-        approx(
-            normalize_l2(integrate(sq_x) + integrate(sq_y) + integrate(sq_z))));
-  CHECK(results.l2_integral_norm_values[1] ==
-        approx(normalize_l2(integrate(sq_x))));
-  CHECK(results.l2_integral_norm_values[2] ==
-        approx(normalize_l2(integrate(sq_y))));
-  CHECK(results.l2_integral_norm_values[3] ==
-        approx(normalize_l2(integrate(sq_z))));
-
+        approx(sqrt(sum(integral_of_x_squared) / expected_volume)));
   // Check volume integral values (no abs, no normalization)
-  CHECK(results.volume_integral_values[0] ==
-        approx(integrate(x) + integrate(y) + integrate(z)));
-  CHECK(results.volume_integral_values[1] == approx(integrate(x)));
-  CHECK(results.volume_integral_values[2] == approx(integrate(y)));
-  CHECK(results.volume_integral_values[3] == approx(integrate(z)));
+  CHECK(results.volume_integral_values[0] == approx(sum(integral_of_x)));
+  for (size_t i = 0; i < 3; ++i) {
+    CAPTURE(i);
+    CHECK(results.l1_integral_norm_values[i + 1] ==
+          approx(gsl::at(integral_of_abs_x, i) / expected_volume));
+    CHECK(results.l2_integral_norm_values[i + 1] ==
+          approx(sqrt(gsl::at(integral_of_x_squared, i) / expected_volume)));
+    CHECK(results.volume_integral_values[i + 1] ==
+          approx(gsl::at(integral_of_x, i)));
+  }
 }
 
 template <bool Spherical, typename ArraySectionIdTag, typename ObserveEvent>
