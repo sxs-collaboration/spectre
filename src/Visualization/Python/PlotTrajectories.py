@@ -74,8 +74,8 @@ def _align_trajectories(A, B):
 
 def import_A_and_B(
     filenames,
-    subfile_name_aha="ApparentHorizons/ControlSystemAhA_Centers.dat",
-    subfile_name_ahb="ApparentHorizons/ControlSystemAhB_Centers.dat",
+    subfile_name_aha="ApparentHorizons/ObservationAhA_Centers.dat",
+    subfile_name_ahb="ApparentHorizons/ObservationAhB_Centers.dat",
 ):
     """Read and align horizon centers from reduction files in segment order.
 
@@ -90,16 +90,20 @@ def import_A_and_B(
 
     for filename in filenames:
         with h5py.File(filename, "r") as file:
-            A_data.append(
-                np.array(
-                    file[subfile_name_aha][:, [0, 4, 5, 6]]
-                )  # 0 ->time,  4 -> x, 5 -> y, 6 -> z
-            )
-            B_data.append(
-                np.array(
-                    file[subfile_name_ahb][:, [0, 4, 5, 6]]
-                )  # 0 ->time,  4 -> x, 5 -> y, 6 -> z
-            )
+            for ab, subfile_name, data in zip(
+                "ab", (subfile_name_aha, subfile_name_ahb), (A_data, B_data)
+            ):
+                subfile = file.get(subfile_name)
+                if subfile is None:
+                    raise click.UsageError(
+                        f"Trajectory subfile '{subfile_name}' was not found"
+                        f" in '{filename}'. Specify '--subfile-name-ah{ab}'"
+                        " for 'plot trajectories' or"
+                        f" '--subfile-name-ah{ab}-trajectories' for"
+                        " eccentricity control to select the center subfile."
+                    )
+                # Time and inertial x, y, z coordinates
+                data.append(subfile[:, [0, 4, 5, 6]])
 
     if not A_data:
         raise click.UsageError("No trajectory files were provided.")
@@ -190,7 +194,7 @@ def plot_trajectory(AhA: np.ndarray, AhB: np.ndarray, fig=None):
 @click.option(
     "--subfile-name-aha",
     "-A",
-    default="ApparentHorizons/ControlSystemAhA_Centers.dat",
+    default="ApparentHorizons/ObservationAhA_Centers.dat",
     help=(
         "Name of subfile containing the apparent horizon centers for object A."
     ),
@@ -198,7 +202,7 @@ def plot_trajectory(AhA: np.ndarray, AhB: np.ndarray, fig=None):
 @click.option(
     "--subfile-name-ahb",
     "-B",
-    default="ApparentHorizons/ControlSystemAhB_Centers.dat",
+    default="ApparentHorizons/ObservationAhB_Centers.dat",
     help=(
         "Name of subfile containing the apparent horizon centers for object B."
     ),

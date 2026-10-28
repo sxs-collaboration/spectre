@@ -762,7 +762,7 @@ InterpolationTargets:
   ControlSystemCharSpeedExcisionB: *ExBdryB
 
 ControlSystems:
-  WriteDataToDisk: true
+  WriteDataToDisk: false
   MeasurementsPerUpdate: 4
   DelayUpdate: true
   Verbosity: Silent

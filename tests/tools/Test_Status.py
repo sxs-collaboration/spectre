@@ -63,7 +63,7 @@ class TestExecutableStatus(unittest.TestCase):
             open_h5_file.close_current_object()
             # AH data
             aha_subfile = open_h5_file.insert_dat(
-                "/ApparentHorizons/ControlSystemAhA_Centers",
+                "/ApparentHorizons/ObservationAhA_Centers",
                 legend=[
                     "InertialCenter_x",
                     "InertialCenter_y",
@@ -74,7 +74,7 @@ class TestExecutableStatus(unittest.TestCase):
             aha_subfile.append([1.0, 0.0, 0.0])
             open_h5_file.close_current_object()
             ahb_subfile = open_h5_file.insert_dat(
-                "/ApparentHorizons/ControlSystemAhB_Centers",
+                "/ApparentHorizons/ObservationAhB_Centers",
                 legend=[
                     "InertialCenter_x",
                     "InertialCenter_y",

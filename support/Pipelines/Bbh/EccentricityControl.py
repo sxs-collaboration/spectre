@@ -15,6 +15,8 @@ from spectre.Pipelines.Bbh.Inspiral import (
     start_inspiral,
 )
 from spectre.Pipelines.EccentricityControl.EccentricityControlParams import (
+    DEFAULT_AHA_TRAJECTORIES,
+    DEFAULT_AHB_TRAJECTORIES,
     eccentricity_control_params,
     eccentricity_control_params_options,
 )
@@ -40,6 +42,11 @@ def eccentricity_control(
     inspiral_input_file_template: Union[
         str, Path
     ] = INSPIRAL_INPUT_FILE_TEMPLATE,
+    *,
+    subfile_name_aha_trajectories: str = DEFAULT_AHA_TRAJECTORIES,
+    subfile_name_ahb_trajectories: str = DEFAULT_AHB_TRAJECTORIES,
+    subfile_name_aha_quantities: str = "ObservationAhA.dat",
+    subfile_name_ahb_quantities: str = "ObservationAhB.dat",
     # Scheduler options
     **scheduler_kwargs,
 ):
@@ -107,6 +114,10 @@ def eccentricity_control(
     ecc_params = eccentricity_control_params(
         h5_files,
         id_input_file_path,
+        subfile_name_aha_trajectories=subfile_name_aha_trajectories,
+        subfile_name_ahb_trajectories=subfile_name_ahb_trajectories,
+        subfile_name_aha_quantities=subfile_name_aha_quantities,
+        subfile_name_ahb_quantities=subfile_name_ahb_quantities,
         tmin=tmin,
         tmax=tmax,
         plot_output_dir=plot_output_dir,

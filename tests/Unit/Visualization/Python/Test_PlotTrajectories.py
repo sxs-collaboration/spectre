@@ -45,7 +45,7 @@ class TestPlotTrajectories(unittest.TestCase):
         with spectre_h5.H5File(self.h5_filename, "w") as h5_file:
             for i, ab in enumerate("AB"):
                 dataset = h5_file.insert_dat(
-                    f"ApparentHorizons/ControlSystemAh{ab}_Centers.dat",
+                    f"ApparentHorizons/ObservationAh{ab}_Centers.dat",
                     legend=[
                         "Time",
                         "GridCenter_x",
@@ -73,7 +73,7 @@ class TestPlotTrajectories(unittest.TestCase):
                     )
                 )
                 h5_file.create_dataset(
-                    f"ApparentHorizons/ControlSystemAh{ab}_Centers.dat",
+                    f"ApparentHorizons/ObservationAh{ab}_Centers.dat",
                     data=np.column_stack((times, coords, coords)),
                 )
 
@@ -97,7 +97,7 @@ class TestPlotTrajectories(unittest.TestCase):
         self.write_trajectories([3.0, 2.0, 1.0], [1.0, 2.0, 3.0], next_segment)
         with h5py.File(next_segment, "r+") as h5_file:
             for ab in "AB":
-                h5_file[f"ApparentHorizons/ControlSystemAh{ab}_Centers.dat"][
+                h5_file[f"ApparentHorizons/ObservationAh{ab}_Centers.dat"][
                     :, 4
                 ] = 42.0
         a, b = import_A_and_B([self.h5_filename, next_segment])
@@ -136,6 +136,33 @@ class TestPlotTrajectories(unittest.TestCase):
         self.write_trajectories([], [0.0])
         with self.assertRaisesRegex(click.UsageError, "must contain samples"):
             import_A_and_B([self.h5_filename])
+
+    def test_missing_subfile(self):
+        for ab in "AB":
+            with self.subTest(horizon=ab):
+                default_name = f"ApparentHorizons/ObservationAh{ab}_Centers.dat"
+                legacy_name = (
+                    f"ApparentHorizons/ControlSystemAh{ab}_Centers.dat"
+                )
+                with h5py.File(self.h5_filename, "r+") as h5_file:
+                    h5_file.move(default_name, legacy_name)
+                result = CliRunner().invoke(
+                    plot_trajectories_command,
+                    [self.h5_filename],
+                    catch_exceptions=False,
+                )
+                self.assertEqual(result.exit_code, 2, result.output)
+                self.assertIn(default_name, result.output)
+                self.assertIn(self.h5_filename, result.output)
+                self.assertIn(f"--subfile-name-ah{ab.lower()}", result.output)
+                a, b = import_A_and_B(
+                    [self.h5_filename],
+                    **{f"subfile_name_ah{ab.lower()}": legacy_name},
+                )
+                self.assertEqual(len(a), 100)
+                npt.assert_array_equal(a[:, 0], b[:, 0])
+                with h5py.File(self.h5_filename, "r+") as h5_file:
+                    h5_file.move(legacy_name, default_name)
 
     def test_cli(self):
         output_filename = os.path.join(self.test_dir, "output.pdf")
