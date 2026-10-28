@@ -9,12 +9,67 @@ import h5py
 import matplotlib.pyplot as plt
 import numpy as np
 
-logger = logging.getLogger(__name__)
-
 from spectre.Visualization.Plot import (
     apply_stylesheet_command,
     show_or_save_plot_command,
 )
+
+logger = logging.getLogger(__name__)
+
+
+def _align_trajectories(A, B):
+    """Match samples at common times, allowing only roundoff differences."""
+
+    def sort_and_deduplicate(data):
+        if len(data) == 0 or not np.all(np.isfinite(data[:, 0])):
+            raise click.UsageError(
+                "Trajectories must contain samples with finite times."
+            )
+        data = data[np.argsort(data[:, 0], kind="stable")]
+        # Keep the last occurrence, so later segments replace restart samples.
+        return data[np.append(np.diff(data[:, 0]) != 0.0, True)]
+
+    A, B = map(sort_and_deduplicate, (A, B))
+    times_a, times_b = A[:, 0], B[:, 0]
+    tolerance = 8.0 * np.finfo(float).eps * np.maximum(1.0, np.abs(times_a))
+    lower = np.searchsorted(times_b, times_a - tolerance, side="left")
+    upper = np.searchsorted(times_b, times_a + tolerance, side="right")
+    indices_a = np.flatnonzero(upper > lower)
+    indices_b = lower[indices_a]
+    if np.any(upper - lower > 1) or len(np.unique(indices_b)) != len(indices_b):
+        raise click.UsageError(
+            "Ambiguous trajectory times: roundoff tolerance would match"
+            " multiple samples. Use consistently sampled horizon-center data."
+        )
+    if len(indices_a) == 0:
+        raise click.UsageError(
+            "The horizon trajectories have no common observation times."
+            " Select center subfiles with common samples or schedule both"
+            " horizon observations at the same times."
+        )
+
+    def local_spacing(times):
+        gaps = np.diff(times)
+        return np.minimum(np.append(np.inf, gaps), np.append(gaps, np.inf))
+
+    spacing = np.minimum(
+        local_spacing(times_a)[indices_a], local_spacing(times_b)[indices_b]
+    )
+    if np.any(np.abs(times_a[indices_a] - times_b[indices_b]) > 0.01 * spacing):
+        raise click.UsageError(
+            "Ambiguous trajectory times: timestamp differences are too large"
+            " relative to the local sampling interval to treat as roundoff."
+        )
+
+    logger.debug(
+        "Matched %s trajectory samples; discarded %s A and %s B samples.",
+        len(indices_a),
+        len(A) - len(indices_a),
+        len(B) - len(indices_b),
+    )
+    A, B = A[indices_a], B[indices_b]
+    B[:, 0] = A[:, 0]
+    return A, B
 
 
 def import_A_and_B(
@@ -22,6 +77,14 @@ def import_A_and_B(
     subfile_name_aha="ApparentHorizons/ControlSystemAhA_Centers.dat",
     subfile_name_ahb="ApparentHorizons/ControlSystemAhB_Centers.dat",
 ):
+    """Read and align horizon centers from reduction files in segment order.
+
+    Samples are sorted by time, keeping the last occurrence of duplicate
+    times. Only common times are returned, with roundoff differences of up
+    to eight machine epsilons times max(1, abs(time)) allowed. Matches must
+    be unique and differ by no more than one percent of the local sampling
+    interval. Both returned arrays use A's times; no interpolation is done.
+    """
     A_data = []
     B_data = []
 
@@ -38,13 +101,9 @@ def import_A_and_B(
                 )  # 0 ->time,  4 -> x, 5 -> y, 6 -> z
             )
 
-    if A_data and B_data:
-        A = np.concatenate(A_data)
-        B = np.concatenate(B_data)
-        min_length = min(len(A), len(B))
-        return A[:min_length], B[:min_length]
-    else:
-        return None, None
+    if not A_data:
+        raise click.UsageError("No trajectory files were provided.")
+    return _align_trajectories(np.concatenate(A_data), np.concatenate(B_data))
 
 
 def plot_trajectory(AhA: np.ndarray, AhB: np.ndarray, fig=None):
