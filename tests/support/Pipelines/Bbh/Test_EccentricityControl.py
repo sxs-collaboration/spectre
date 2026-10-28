@@ -6,7 +6,9 @@ import os
 import shutil
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
+import h5py
 import numpy as np
 import yaml
 from click.testing import CliRunner
@@ -53,7 +55,7 @@ class TestEccentricityControl(unittest.TestCase):
         with spectre_h5.H5File(self.h5_filename, "w") as h5_file:
             for i, ab in enumerate("AB"):
                 dataset = h5_file.insert_dat(
-                    f"ApparentHorizons/ControlSystemAh{ab}_Centers.dat",
+                    f"ApparentHorizons/ObservationAh{ab}_Centers.dat",
                     legend=[
                         "Time",
                         "GridCenter_x",
@@ -162,6 +164,59 @@ class TestEccentricityControl(unittest.TestCase):
         )
         self.assertEqual(result.exit_code, 0, result.output)
         self.assertTrue((Path(self.test_dir) / "FigureEccRemoval.pdf").exists())
+
+    def test_subfile_overrides(self):
+        with h5py.File(self.h5_filename, "r+") as h5_file:
+            for ab, mass in zip("AB", (0.6, 0.4)):
+                h5_file.move(
+                    f"ApparentHorizons/ObservationAh{ab}_Centers.dat",
+                    f"ApparentHorizons/ControlSystemAh{ab}_Centers.dat",
+                )
+                quantities = h5_file.create_dataset(
+                    f"CustomAh{ab}.dat", data=[[0.0, mass]]
+                )
+                quantities.attrs["Legend"] = ["Time", "ChristodoulouMass"]
+
+        args = [
+            self.h5_filename,
+            "-i",
+            self.id_input_file_path,
+            "-d",
+            self.test_dir,
+            "--no-schedule",
+            "--no-submit",
+        ]
+        runner = CliRunner()
+        result = runner.invoke(
+            eccentricity_control_command, args, catch_exceptions=False
+        )
+        self.assertEqual(result.exit_code, 2, result.output)
+        self.assertIn("ObservationAhA_Centers.dat", result.output)
+        self.assertIn(self.h5_filename, result.output)
+        self.assertIn("--subfile-name-aha-trajectories", result.output)
+
+        for ab in "AB":
+            args.extend(
+                [
+                    f"--subfile-name-ah{ab.lower()}-trajectories",
+                    f"ApparentHorizons/ControlSystemAh{ab}_Centers.dat",
+                    f"--subfile-name-ah{ab.lower()}-quantities",
+                    f"CustomAh{ab}.dat",
+                ]
+            )
+        with patch(
+            "spectre.Pipelines.EccentricityControl.EccentricityControlParams."
+            "compute_eccentricity_control_params",
+            return_value={"Eccentricity": 0.0},
+        ) as fit:
+            result = runner.invoke(
+                eccentricity_control_command, args, catch_exceptions=False
+            )
+            self.assertEqual(result.exit_code, 0, result.output)
+            fit.assert_called_once()
+            self.assertEqual(fit.call_args.kwargs["mass_a"], 0.6)
+            self.assertEqual(fit.call_args.kwargs["mass_b"], 0.4)
+            self.assertEqual(len(fit.call_args.kwargs["trajectory_a"]), 1500)
 
 
 if __name__ == "__main__":

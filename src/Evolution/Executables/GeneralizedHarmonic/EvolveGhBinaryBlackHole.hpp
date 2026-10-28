@@ -271,7 +271,10 @@ struct EvolutionMetavars {
         tmpl::list<ah::callbacks::ObserveFieldsOnHorizon<
                        ::ah::surface_tags_for_observing, Ah>,
                    ah::callbacks::ObserveTimeSeriesOnHorizon<
-                       ::ah::tags_for_observing<Frame>, Ah>>>;
+                       ::ah::tags_for_observing<Frame>, Ah>>,
+        // Centers are only written for the Distorted-frame finders
+        tmpl::conditional_t<Horizon == ::domain::ObjectLabel::C, tmpl::list<>,
+                            tmpl::list<ah::callbacks::ObserveCenters<Ah>>>>;
     using horizon_find_failure_callbacks = tmpl::append<
         // Only ignore errors for AhC
         tmpl::list<ah::callbacks::FailedHorizonFind<
