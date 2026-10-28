@@ -20,6 +20,7 @@
 #include "Domain/FaceNormal.hpp"
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/DirectionMap.hpp"
+#include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Tags.hpp"
 #include "Domain/Tags/FaceNormal.hpp"
@@ -290,7 +291,7 @@ struct SubdomainOperator
         db::apply<modify_boundary_data_args_tags>(get_items, box);
     using FluxesArgs = std::decay_t<decltype(fluxes_args)>;
     DirectionMap<Dim, FluxesArgs> fluxes_args_on_faces{};
-    for (const auto& direction : Direction<Dim>::all_directions()) {
+    for (const auto& direction : central_element.all_boundaries()) {
       fluxes_args_on_faces.emplace(
           direction, elliptic::util::apply_at<
                          domain::make_faces_tags<Dim, fluxes_args_tags,
@@ -648,9 +649,10 @@ struct SubdomainOperator
           continue;
         }
 
+        const auto& neighbor_element = all_neighbor_elements.at(overlap_id);
         DirectionMap<Dim, FluxesArgs> fluxes_args_on_overlap_faces{};
         for (const auto& neighbor_direction :
-             Direction<Dim>::all_directions()) {
+             neighbor_element.all_boundaries()) {
           fluxes_args_on_overlap_faces.emplace(
               neighbor_direction,
               elliptic::util::apply_at<fluxes_args_tags_overlap_faces,
