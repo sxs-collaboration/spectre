@@ -279,6 +279,28 @@ void test_reduction_observer(const bool observe_per_core) {
         0, "/element_data", legend,
         std::make_tuple(0., 1., single_row_of_data));
 
+    // Invoke the WriteMultipleReductionDataRows action to append a row to the
+    // existing subfile and write two rows to a new subfile in a single call
+    std::vector<double> batched_row(legend.size());
+    std::iota(batched_row.begin(), batched_row.end(), 10.);
+    const std::vector<std::string> batched_legend{"Time", "Value"};
+    runner.threaded_action<
+        obs_writer, observers::ThreadedActions::WriteMultipleReductionDataRows>(
+        0, std::vector<observers::DatRows>{
+               {"/element_data", legend, {batched_row}},
+               {"/batched_data", batched_legend, {{1., 2.}, {3., 4.}}}});
+    // Rows that don't match their legend are rejected before the file is
+    // opened
+    CHECK_THROWS_WITH(
+        (runner.threaded_action<
+            obs_writer,
+            observers::ThreadedActions::WriteMultipleReductionDataRows>(
+            0,
+            std::vector<observers::DatRows>{
+                {"/batched_data", batched_legend, {{1., 2., 3.}}}})),
+        Catch::Matchers::ContainsSubstring(
+            "There must be one name provided for each piece of data"));
+
     // Check that the H5 file was written correctly.
     {
       const auto file = h5::H5File<h5::AccessType::ReadOnly>(h5_file_name);
@@ -348,6 +370,15 @@ void test_reduction_observer(const bool observe_per_core) {
       for (size_t i = 0; i < legend.size(); ++i) {
         CHECK(written_data(1, i) == i);
       }
+      // Check rows of data written by WriteMultipleReductionDataRows
+      REQUIRE(written_data.rows() == 3);
+      for (size_t i = 0; i < legend.size(); ++i) {
+        CHECK(written_data(2, i) == 10. + static_cast<double>(i));
+      }
+      file.close_current_object();
+      const auto& batched_dat_file = file.get<h5::Dat>("/batched_data");
+      CHECK(batched_dat_file.get_legend() == batched_legend);
+      CHECK(batched_dat_file.get_data() == Matrix{{1., 2.}, {3., 4.}});
     }
     // Check the per-core H5 files were written correctly. Only check the
     // num-points reduction because we don't need to check here again that

@@ -23,7 +23,6 @@ struct TestMetavariables;
 using mock_observer_writer = MockObserverWriter<TestMetavariables>;
 struct TestMetavariables {
   using component_list = tmpl::list<mock_observer_writer>;
-
 };
 
 void run_test() {
@@ -62,6 +61,28 @@ void run_test() {
   CHECK(mock_dat_file.get_legend() == legend);
   CHECK(mock_dat_file.get_data() == Matrix{{1.0, 9.3}});
   // [check_mock_writer_data]
+
+  // Append to the existing subfile and write two rows to a new subfile in one
+  // call
+  const std::string other_subfile_path{"/path/to/something/else"};
+  const std::vector<std::string> other_legend{{"Time"s, "A"s, "B"s}};
+  Parallel::threaded_action<
+      ::observers::ThreadedActions::WriteMultipleReductionDataRows>(
+      proxy[0],
+      std::vector<::observers::DatRows>{{subfile_path, legend, {{2.0, 4.1}}},
+                                        {other_subfile_path,
+                                         other_legend,
+                                         {{1.0, 2.0, 3.0}, {4.0, 5.0, 6.0}}}});
+
+  ActionTesting::invoke_queued_threaded_action<mock_observer_writer>(
+      make_not_null(&runner), 0);
+
+  CHECK(mock_dat_file.get_legend() == legend);
+  CHECK(mock_dat_file.get_data() == Matrix{{1.0, 9.3}, {2.0, 4.1}});
+  const auto& other_mock_dat_file = mock_h5_file.get_dat(other_subfile_path);
+  CHECK(other_mock_dat_file.get_legend() == other_legend);
+  CHECK(other_mock_dat_file.get_data() ==
+        Matrix{{1.0, 2.0, 3.0}, {4.0, 5.0, 6.0}});
 }
 
 SPECTRE_TEST_CASE("Test.TestHelpers.IO.Observers.MockWriteReductionDataRow",
