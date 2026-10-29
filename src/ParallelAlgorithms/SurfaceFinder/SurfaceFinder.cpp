@@ -92,7 +92,8 @@ std::vector<std::optional<double>> find_radial_surface(
     if (std::signbit(lower_radial_bound) != std::signbit(upper_radial_bound)) {
       result[i] = RootFinder::toms748(data_interpolator, -1., 1.,
                                       lower_radial_bound, upper_radial_bound,
-                                      absolute_tolerance, relative_tolerance);
+                                      absolute_tolerance, relative_tolerance)
+                      .value();
     }
   }
   return result;

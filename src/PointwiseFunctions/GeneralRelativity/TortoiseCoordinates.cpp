@@ -46,7 +46,8 @@ DataType boyer_lindquist_radius_minus_r_plus_from_tortoise(
   const auto lower_bound = make_with_value<DataType>(r_star, 1e-14);
   DataType upper_bound = blaze::max(r_star / mass, 5.0);
   upper_bound =
-      RootFinder::toms748(residual, lower_bound, upper_bound, 0.0, 1e-14) *
+      RootFinder::toms748(residual, lower_bound, upper_bound, 0.0, 1e-14)
+          .value() *
       mass;
   return upper_bound;
 }

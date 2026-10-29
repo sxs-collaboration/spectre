@@ -100,27 +100,33 @@ DataType kerr_schild_isotropic_radius_from_areal_deriv(
 double kerr_schild_areal_radius_from_isotropic(const double isotropic_radius,
                                                const double mass) {
   return RootFinder::toms748(
-      [&isotropic_radius, &mass](const double areal_radius) {
-        return kerr_schild_isotropic_radius_from_areal(areal_radius, mass) -
-               isotropic_radius;
-      },
-      isotropic_radius, isotropic_radius + mass, 1.0e-12, 1.0e-15);
+             [&isotropic_radius, &mass](const double areal_radius) {
+               return kerr_schild_isotropic_radius_from_areal(areal_radius,
+                                                              mass) -
+                      isotropic_radius;
+             },
+             isotropic_radius, isotropic_radius + mass, 1.0e-12, 1.0e-15)
+      .value();
 }
 
 DataVector kerr_schild_areal_radius_from_isotropic(
     const DataVector& isotropic_radius, const double mass) {
   return RootFinder::toms748<true>(
-      [&isotropic_radius, &mass](const auto areal_radius, const size_t i) {
-        if constexpr (simd::is_batch<
-                          std::decay_t<decltype(areal_radius)>>::value) {
-          return kerr_schild_isotropic_radius_from_areal(areal_radius, mass) -
-                 simd::load_unaligned(&isotropic_radius[i]);
-        } else {
-          return kerr_schild_isotropic_radius_from_areal(areal_radius, mass) -
-                 isotropic_radius[i];
-        }
-      },
-      isotropic_radius, isotropic_radius + mass, 1.0e-12, 1.0e-15);
+             [&isotropic_radius, &mass](const auto areal_radius,
+                                        const size_t i) {
+               if constexpr (simd::is_batch<
+                                 std::decay_t<decltype(areal_radius)>>::value) {
+                 return kerr_schild_isotropic_radius_from_areal(areal_radius,
+                                                                mass) -
+                        simd::load_unaligned(&isotropic_radius[i]);
+               } else {
+                 return kerr_schild_isotropic_radius_from_areal(areal_radius,
+                                                                mass) -
+                        isotropic_radius[i];
+               }
+             },
+             isotropic_radius, isotropic_radius + mass, 1.0e-12, 1.0e-15)
+      .value();
 }
 
 template <typename DataType>
@@ -173,7 +179,8 @@ DataType areal_radius_from_maximal_isotropic(const DataType& isotropic_radius,
       make_with_value<DataType>(isotropic_radius, 1.5 * mass);
   const auto upper_bound = make_with_value<DataType>(isotropic_radius, 1e9);
   return RootFinder::toms748<false>(residual, lower_bound, upper_bound, 1.0e-12,
-                                    1.0e-15);
+                                    1.0e-15)
+      .value();
 }
 
 }  // namespace

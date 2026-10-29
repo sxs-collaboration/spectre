@@ -52,7 +52,8 @@ Scalar<DataType> Tabulated3D<IsRelativistic>::
 
     const auto root_from_lambda =
         RootFinder::toms748(f, electron_fraction_lower_bound(),
-                            electron_fraction_upper_bound(), 1.0e-14, 1.0e-15);
+                            electron_fraction_upper_bound(), 1.0e-14, 1.0e-15)
+            .value();
 
     get(converted_electron_fraction) = root_from_lambda;
 
@@ -69,9 +70,10 @@ Scalar<DataType> Tabulated3D<IsRelativistic>::
         return interpolated_values[0];
       };
 
-      const auto root_from_lambda = RootFinder::toms748(
-          f, electron_fraction_lower_bound(), electron_fraction_upper_bound(),
-          1.0e-14, 1.0e-15);
+      const auto root_from_lambda =
+          RootFinder::toms748(f, electron_fraction_lower_bound(),
+                              electron_fraction_upper_bound(), 1.0e-14, 1.0e-15)
+              .value();
 
       get(converted_electron_fraction)[s] = root_from_lambda;
     }
@@ -461,10 +463,11 @@ Tabulated3D<IsRelativistic>::temperature_from_density_and_energy_impl(
     }
 
     if (need_root_finding) {
-      root_from_lambda = RootFinder::toms748(
-          f, table_log_temperature_.front(),
-          upper_bound_tolerance_ * table_log_temperature_.back(), 1.0e-14,
-          1.0e-15);
+      root_from_lambda = RootFinder::toms748(f, table_log_temperature_.front(),
+                                             upper_bound_tolerance_ *
+                                                 table_log_temperature_.back(),
+                                             1.0e-14, 1.0e-15)
+                             .value();
     }
 
     get(temperature) = exp(root_from_lambda);
@@ -498,10 +501,12 @@ Tabulated3D<IsRelativistic>::temperature_from_density_and_energy_impl(
         need_root_finding = false;
       }
       if (need_root_finding) {
-        root_from_lambda = RootFinder::toms748(
-            f, table_log_temperature_.front(),
-            upper_bound_tolerance_ * table_log_temperature_.back(), 1.0e-14,
-            1.0e-15);
+        root_from_lambda =
+            RootFinder::toms748(
+                f, table_log_temperature_.front(),
+                upper_bound_tolerance_ * table_log_temperature_.back(), 1.0e-14,
+                1.0e-15)
+                .value();
       }
 
       get(temperature)[s] = exp(root_from_lambda);

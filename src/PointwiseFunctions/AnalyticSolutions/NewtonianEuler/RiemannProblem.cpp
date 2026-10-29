@@ -138,17 +138,16 @@ RiemannProblem<Dim>::RiemannProblem(
       // Function of pressure in Eqn. (4.5) of Toro.
       return f_of_p_left(pressure) + f_of_p_right(pressure) + delta_u;
     };
-    try {
-      pressure_star_ = RootFinder::toms748(
-          f_of_p, pressure_lower, pressure_upper, pressure_star_tol_, 1.0e-15);
-    } catch (std::exception& exception) {
+    const auto pressure_star = RootFinder::toms748(
+        f_of_p, pressure_lower, pressure_upper, pressure_star_tol_, 1.0e-15);
+    if (not pressure_star.has_value()) {
       ERROR(
-          "Failed to find p_* with Newton-Raphson root finder. Got "
-          "exception message:\n"
-          << exception.what()
+          "Failed to find p_* with the TOMS748 root finder. Got the error:\n"
+          << pressure_star.error()
           << "\nIf the residual is small you can change the tolerance for the "
              "root finder in the input file.");
     }
+    pressure_star_ = pressure_star.value();
   }
 
   // Calculated p_*, u_* is obtained from Eqn. (4.9) in Toro.

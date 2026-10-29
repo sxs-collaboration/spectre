@@ -28,15 +28,17 @@ namespace {
 double compute_alpha(const double density, const double radius) {
   const double alpha_source = sqrt(2. * M_PI * density / 3.) * radius;
   return RootFinder::toms748(
-      [alpha_source](const double a) {
-        const double a_square = pow<2>(a);
-        const double pow_2_one_plus_a_square = pow<2>(1. + a_square);
-        return alpha_source - a_square * pow<3>(a) /
-                                  (pow_2_one_plus_a_square * (1. + a_square));
-      },
-      sqrt(5.), 1.0 / alpha_source,
-      // Choose a precision of 14 base-10 digits for no particular reason
-      1.0e-14, 1.0e-15);
+             [alpha_source](const double a) {
+               const double a_square = pow<2>(a);
+               const double pow_2_one_plus_a_square = pow<2>(1. + a_square);
+               return alpha_source -
+                      a_square * pow<3>(a) /
+                          (pow_2_one_plus_a_square * (1. + a_square));
+             },
+             sqrt(5.), 1.0 / alpha_source,
+             // Choose a precision of 14 base-10 digits for no particular reason
+             1.0e-14, 1.0e-15)
+      .value();
 }
 
 template <typename DataType>

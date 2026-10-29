@@ -69,21 +69,19 @@ class RootFunction {
 
 std::optional<double> scaling_factor(RootFunction&& rootfunction) {
   const double physical_r_squared = rootfunction.get_r_sq();
-  try {
-    constexpr double tol = 10.0 * std::numeric_limits<double>::epsilon();
-    // Use a small nonzero number since the inverse map is singular at r==0 and
-    // that case is handled separately.
-    constexpr double lower_bound = std::numeric_limits<double>::min();
-    // upper_bound = sqrt(3) + tol
-    constexpr double upper_bound = 1.7320508075688772 + tol;
-    double rho =
-        // NOLINTNEXTLINE(clang-analyzer-core)
-        RootFinder::toms748(rootfunction, lower_bound, upper_bound, tol, tol);
-    rho /= sqrt(physical_r_squared);
-    return rho;
-  } catch (std::exception& exception) {
+  constexpr double tol = 10.0 * std::numeric_limits<double>::epsilon();
+  // Use a small nonzero number since the inverse map is singular at r==0 and
+  // that case is handled separately.
+  constexpr double lower_bound = std::numeric_limits<double>::min();
+  // upper_bound = sqrt(3) + tol
+  constexpr double upper_bound = 1.7320508075688772 + tol;
+  const auto rho =
+      // NOLINTNEXTLINE(clang-analyzer-core)
+      RootFinder::toms748(rootfunction, lower_bound, upper_bound, tol, tol);
+  if (not rho.has_value()) {
     return std::nullopt;
   }
+  return rho.value() / sqrt(physical_r_squared);
 }
 }  // namespace
 

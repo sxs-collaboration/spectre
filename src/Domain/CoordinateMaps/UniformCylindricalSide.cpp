@@ -773,22 +773,23 @@ std::optional<std::array<double, 3>> UniformCylindricalSide::inverse(
     constexpr double abs_tol = 1.e-15;
     constexpr double rel_tol = 1.e-15;
 
-    try {
-      lambda =
-          // NOLINTNEXTLINE(clang-analyzer-core)
-          RootFinder::toms748(function_to_zero, lambda_min, lambda_max,
-                              function_at_lambda_min, function_at_lambda_max,
-                              abs_tol, rel_tol);
-    } catch (std::exception&) { // LCOV_EXCL_LINE
+    const auto root =
+        // NOLINTNEXTLINE(clang-analyzer-core)
+        RootFinder::toms748(function_to_zero, lambda_min, lambda_max,
+                            function_at_lambda_min, function_at_lambda_max,
+                            abs_tol, rel_tol);
+    if (not root.has_value()) {
       // This should never happen unless something is really wrong with
       // the root finder, so excluding this from code coverage.
       // LCOV_EXCL_START
       ERROR("Cannot find root after bracketing: lambda_min="
             << lambda_min << " f(lambda_min)=" << function_at_lambda_min
             << " lambda_max=" << lambda_max
-            << " f(lambda_max)=" << function_at_lambda_max);
+            << " f(lambda_max)=" << function_at_lambda_max << "\n"
+            << root.error());
       // LCOV_EXCL_STOP
     }
+    lambda = root.value();
   }
 
   // Now that we have lambda, construct inverse.

@@ -153,7 +153,8 @@ std::optional<std::array<double, Dim>> CubicScale<Dim>::inverse(
              target_dimensionless_radius;
     };
 
-    scale_factor = RootFinder::toms748(cubic, 0.0, 1.0, 1.0e-14, 1.0e-15);
+    scale_factor =
+        RootFinder::toms748(cubic, 0.0, 1.0, 1.0e-14, 1.0e-15).value();
   }
 
   return {scale_factor / target_dimensionless_radius * target_coords};

@@ -117,12 +117,14 @@ double get_schwarzschild_r_from_lapse(const double n, const double lapse,
   const double min_schwarzschild_r = 0.;
 
   return RootFinder::toms748(
-      [n, lapse](double schwarzschild_r) -> double {
-        return function_of_lapse_and_schwarzschild_r(lapse, schwarzschild_r, n);
-      },
-      (lapse < crit_lapse) ? min_schwarzschild_r : crit_schwarzschild_r,
-      (lapse < crit_lapse) ? crit_schwarzschild_r : max_schwarzschild_r,
-      1.e-15, 1.e-15);
+             [n, lapse](double schwarzschild_r) -> double {
+               return function_of_lapse_and_schwarzschild_r(lapse,
+                                                            schwarzschild_r, n);
+             },
+             (lapse < crit_lapse) ? min_schwarzschild_r : crit_schwarzschild_r,
+             (lapse < crit_lapse) ? crit_schwarzschild_r : max_schwarzschild_r,
+             1.e-15, 1.e-15)
+      .value();
 }
 
 // Get the derivative of the lapse with respect to the Schwarzschild R
@@ -253,7 +255,8 @@ double get_lapse_from_isotropic_r(const double n,
               target_isotropic_r);
     };
     return RootFinder::toms748(isotropic_r_minus_target, 0., max_lapse, 1.e-15,
-                               1.e-15);
+                               1.e-15)
+        .value();
   }
 }
 

@@ -127,16 +127,18 @@ std::optional<std::array<double, 3>> CylindricalSphericalShell::inverse(
     }
   } else {
     constexpr double tol = 1.0e-15;
-    try {
-      beta = RootFinder::toms748(f_beta, 0.0, 1.0, f_lower, f_upper, tol, tol);
+    const auto root =
+        RootFinder::toms748(f_beta, 0.0, 1.0, f_lower, f_upper, tol, tol);
+    if (not root.has_value()) {
       // LCOV_EXCL_START
-    } catch (std::exception&) {
       ERROR(
           "CylindricalSphericalShell::inverse: toms748 failed after "
           "bracketing: F(0)="
-          << f_lower << " F(1)=" << f_upper);
+          << f_lower << " F(1)=" << f_upper << "\n"
+          << root.error());
       // LCOV_EXCL_STOP
     }
+    beta = root.value();
   }
 
   const double x_o = x_outer_lower_ + beta * delta_x_outer;
