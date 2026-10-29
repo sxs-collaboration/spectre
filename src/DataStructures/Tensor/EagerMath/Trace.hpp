@@ -30,7 +30,6 @@ KOKKOS_FUNCTION void trace_last_indices(
                  index_list<change_index_up_lo<Index1>,
                             change_index_up_lo<Index1>>>& metric);
 
-SPECTRE_KOKKOS_DISABLE_EXEC_CHECK
 template <typename DataType, typename Index0, typename Index1>
 KOKKOS_FUNCTION Tensor<DataType, Symmetry<1>, index_list<Index0>>
 trace_last_indices(
@@ -38,11 +37,7 @@ trace_last_indices(
                  index_list<Index0, Index1, Index1>>& tensor,
     const Tensor<DataType, Symmetry<1, 1>,
                  index_list<change_index_up_lo<Index1>,
-                            change_index_up_lo<Index1>>>& metric) {
-  Tensor<DataType, Symmetry<1>, index_list<Index0>> trace_of_tensor{};
-  trace_last_indices(make_not_null(&trace_of_tensor), tensor, metric);
-  return trace_of_tensor;
-}
+                            change_index_up_lo<Index1>>>& metric);
 /// @}
 
 /// @{
@@ -60,15 +55,10 @@ KOKKOS_FUNCTION void trace(
                  index_list<change_index_up_lo<Index0>,
                             change_index_up_lo<Index0>>>& metric);
 
-SPECTRE_KOKKOS_DISABLE_EXEC_CHECK
 template <typename DataType, typename Index0>
 KOKKOS_FUNCTION Scalar<DataType> trace(
     const Tensor<DataType, Symmetry<1, 1>, index_list<Index0, Index0>>& tensor,
     const Tensor<DataType, Symmetry<1, 1>,
                  index_list<change_index_up_lo<Index0>,
-                            change_index_up_lo<Index0>>>& metric) {
-  Scalar<DataType> trace{};
-  ::trace(make_not_null(&trace), tensor, metric);
-  return trace;
-}
+                            change_index_up_lo<Index0>>>& metric);
 /// @}
