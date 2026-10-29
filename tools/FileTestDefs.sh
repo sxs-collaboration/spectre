@@ -974,6 +974,51 @@ header_unnamed_namespace_test() {
 }
 standard_checks+=(header_unnamed_namespace)
 
+# Check that every function with a disabled exec check calls
+# ASSERT_DEVICE_CAPABLE, i.e. that each SPECTRE_KOKKOS_DISABLE_EXEC_CHECK is
+# followed by an ASSERT_DEVICE_CAPABLE before the next
+# SPECTRE_KOKKOS_DISABLE_EXEC_CHECK.
+device_exec_check_assert() {
+    is_c++ "$1" && \
+        whitelist "$1" \
+                  'src/Utilities/Kokkos/KokkosMacros.hpp$' && \
+        staged_grep -E -e '^\s*SPECTRE_KOKKOS_DISABLE_EXEC_CHECK\s*$' \
+                    -e '^\s*ASSERT_DEVICE_CAPABLE\(' "$1" | \
+            awk '/SPECTRE_KOKKOS_DISABLE_EXEC_CHECK/ { if (open) bad = 1;
+                                                       open = 1; next }
+                 { open = 0 }
+                 END { exit !(bad || open) }'
+}
+device_exec_check_assert_report() {
+    echo "Found SPECTRE_KOKKOS_DISABLE_EXEC_CHECK without ASSERT_DEVICE_CAPABLE"
+    echo "in the function that follows it:"
+    printf '%s\n' "$@"
+}
+device_exec_check_assert_test() {
+    test_check pass foo.hpp ''
+    test_check pass foo.hpp \
+        $'SPECTRE_KOKKOS_DISABLE_EXEC_CHECK\ntemplate <typename T>\n'\
+$'KOKKOS_FUNCTION void f(const T& x) {\n  ASSERT_DEVICE_CAPABLE(T);\n}\n'
+    test_check pass foo.cpp \
+        $'  SPECTRE_KOKKOS_DISABLE_EXEC_CHECK\n  void f() {\n'\
+$'    ASSERT_DEVICE_CAPABLE(T, U);\n  }\n'\
+$'  SPECTRE_KOKKOS_DISABLE_EXEC_CHECK\n  void g() {\n'\
+$'    ASSERT_DEVICE_CAPABLE(T);\n  }\n'
+    test_check fail foo.hpp \
+        $'SPECTRE_KOKKOS_DISABLE_EXEC_CHECK\ntemplate <typename T>\n'\
+$'KOKKOS_FUNCTION void f(const T& x) {}\n'
+    test_check fail foo.tpp \
+        $'SPECTRE_KOKKOS_DISABLE_EXEC_CHECK\nvoid f() {}\n'\
+$'SPECTRE_KOKKOS_DISABLE_EXEC_CHECK\nvoid g() {\n'\
+$'  ASSERT_DEVICE_CAPABLE(T);\n}\n'
+    test_check pass foo.hpp $' * SPECTRE_KOKKOS_DISABLE_EXEC_CHECK\n'
+    test_check pass foo.py $'SPECTRE_KOKKOS_DISABLE_EXEC_CHECK\n'
+    test_check pass src/Utilities/Kokkos/KokkosMacros.hpp \
+        $'#define SPECTRE_KOKKOS_DISABLE_EXEC_CHECK\n'\
+$'SPECTRE_KOKKOS_DISABLE_EXEC_CHECK\n'
+}
+standard_checks+=(device_exec_check_assert)
+
 # if test is enabled: redefines staged_grep to run tests on files that
 # are not in git
 [ "$1" = --test ] && staged_grep() { grep "$@"; } && \

@@ -155,4 +155,7 @@ Every function marked `SPECTRE_KOKKOS_DISABLE_EXEC_CHECK` must call
 `ASSERT_DEVICE_CAPABLE` with its data types (not the types of callables) at the
 start of its body. On the device it aborts with the function signature if any of
 the types isn't device-capable. This has to be at runtime because nvcc
-also compiles the host-only instantiations for the device.
+also compiles the host-only instantiations for the device. The
+`device_exec_check_assert` check in `tools/FileTestDefs.sh`, which runs in CI,
+rejects functions with a disabled exec check that don't call
+`ASSERT_DEVICE_CAPABLE`.
