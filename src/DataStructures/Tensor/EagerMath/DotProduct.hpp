@@ -12,100 +12,26 @@
 #include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/Kokkos/KokkosMacros.hpp"
 #include "Utilities/MakeWithValue.hpp"
+#include "Utilities/TypeTraits/IsDeviceCapable.hpp"
 
-/// @{
-/*!
- * \ingroup TensorGroup
- * \brief Compute the Euclidean dot product of two vectors or one forms
- *
- * \details
- * Returns \f$A^a B^b \delta_{ab}\f$ for input vectors \f$A^a\f$ and \f$B^b\f$
- * or \f$A_a B_b \delta^{ab}\f$ for input one forms \f$A_a\f$ and \f$B_b\f$.
- */
+namespace DotProduct_detail {
 SPECTRE_KOKKOS_DISABLE_EXEC_CHECK
-template <typename DataTypeLhs, typename DataTypeRhs, typename Index,
-          typename DataTypeResult = decltype(blaze::evaluate(DataTypeLhs() *
-                                                             DataTypeRhs()))>
+template <typename DataTypeResult, typename DataTypeLhs, typename DataTypeRhs,
+          typename IndexLhs, typename IndexRhs>
 KOKKOS_FUNCTION void dot_product(
     const gsl::not_null<Scalar<DataTypeResult>*> dot_product,
-    const Tensor<DataTypeLhs, Symmetry<1>, index_list<Index>>& vector_a,
-    const Tensor<DataTypeRhs, Symmetry<1>, index_list<Index>>& vector_b) {
+    const Tensor<DataTypeLhs, Symmetry<1>, index_list<IndexLhs>>& vector_a,
+    const Tensor<DataTypeRhs, Symmetry<1>, index_list<IndexRhs>>& vector_b) {
+  ASSERT_DEVICE_CAPABLE(DataTypeResult, DataTypeLhs, DataTypeRhs);
   get(*dot_product) = get<0>(vector_a) * get<0>(vector_b);
-  for (size_t d = 1; d < Index::dim; ++d) {
+  for (size_t d = 1; d < IndexLhs::dim; ++d) {
     get(*dot_product) += vector_a.get(d) * vector_b.get(d);
   }
 }
 
 SPECTRE_KOKKOS_DISABLE_EXEC_CHECK
-template <typename DataTypeLhs, typename DataTypeRhs, typename Index,
-          typename DataTypeResult = decltype(blaze::evaluate(DataTypeLhs() *
-                                                             DataTypeRhs()))>
-KOKKOS_FUNCTION Scalar<DataTypeResult> dot_product(
-    const Tensor<DataTypeLhs, Symmetry<1>, index_list<Index>>& vector_a,
-    const Tensor<DataTypeRhs, Symmetry<1>, index_list<Index>>& vector_b) {
-  Scalar<DataTypeResult> dot_product{};
-  ::dot_product(make_not_null(&dot_product), vector_a, vector_b);
-  return dot_product;
-}
-/// @}
-
-/// @{
-/*!
- * \ingroup TensorGroup
- * \brief Compute the dot product of a vector and a one form
- *
- * \details
- * Returns \f$A^a B_b \delta_{a}^b\f$ for input vector \f$A^a\f$ and
- * input one form \f$B_b\f$
- * or \f$A_a B^b \delta^a_b\f$ for input one form \f$A_a\f$ and
- * input vector \f$B^b\f$.
- */
-SPECTRE_KOKKOS_DISABLE_EXEC_CHECK
-template <typename DataTypeLhs, typename DataTypeRhs, typename Index,
-          typename DataTypeResult = decltype(blaze::evaluate(DataTypeLhs() *
-                                                             DataTypeRhs()))>
-KOKKOS_FUNCTION void dot_product(
-    // NOLINTNEXTLINE(readability-avoid-const-params-in-decls) false positive
-    const gsl::not_null<Scalar<DataTypeResult>*> dot_product,
-    const Tensor<DataTypeLhs, Symmetry<1>, index_list<Index>>& vector_a,
-    const Tensor<DataTypeRhs, Symmetry<1>,
-                 index_list<change_index_up_lo<Index>>>& vector_b) {
-  get(*dot_product) = get<0>(vector_a) * get<0>(vector_b);
-  for (size_t d = 1; d < Index::dim; ++d) {
-    get(*dot_product) += vector_a.get(d) * vector_b.get(d);
-  }
-}
-
-SPECTRE_KOKKOS_DISABLE_EXEC_CHECK
-template <typename DataTypeLhs, typename DataTypeRhs, typename Index,
-          typename DataTypeResult = decltype(blaze::evaluate(DataTypeLhs() *
-                                                             DataTypeRhs()))>
-KOKKOS_FUNCTION Scalar<DataTypeResult> dot_product(
-    const Tensor<DataTypeLhs, Symmetry<1>, index_list<Index>>& vector_a,
-    const Tensor<DataTypeRhs, Symmetry<1>,
-                 index_list<change_index_up_lo<Index>>>& vector_b) {
-  Scalar<DataTypeResult> dot_product{};
-  ::dot_product(make_not_null(&dot_product), vector_a, vector_b);
-  return dot_product;
-}
-/// @}
-
-/// @{
-/*!
- * \ingroup TensorGroup
- * \brief Compute the dot_product of two vectors or one forms
- *
- * \details
- * Returns \f$g_{ab} A^a B^b\f$, where \f$g_{ab}\f$ is the metric,
- * \f$A^a\f$ is vector_a, and \f$B^b\f$ is vector_b.
- * Or, returns \f$g^{ab} A_a B_b\f$ when given one forms \f$A_a\f$
- * and \f$B_b\f$ with an inverse metric \f$g^{ab}\f$.
- */
-SPECTRE_KOKKOS_DISABLE_EXEC_CHECK
-template <typename DataTypeLhs, typename DataTypeRhs, typename DataTypeMetric,
-          typename Index,
-          typename DataTypeResult = decltype(blaze::evaluate(
-              DataTypeLhs() * DataTypeRhs() * DataTypeMetric()))>
+template <typename DataTypeResult, typename DataTypeLhs, typename DataTypeRhs,
+          typename DataTypeMetric, typename Index>
 KOKKOS_FUNCTION void dot_product(
     const gsl::not_null<Scalar<DataTypeResult>*> dot_product,
     const Tensor<DataTypeLhs, Symmetry<1>, index_list<Index>>& vector_a,
@@ -113,6 +39,8 @@ KOKKOS_FUNCTION void dot_product(
     const Tensor<DataTypeMetric, Symmetry<1, 1>,
                  index_list<change_index_up_lo<Index>,
                             change_index_up_lo<Index>>>& metric) {
+  ASSERT_DEVICE_CAPABLE(DataTypeResult, DataTypeLhs, DataTypeRhs,
+                        DataTypeMetric);
   if constexpr (Index::dim == 1) {
     get(*dot_product) = get<0>(vector_a) * get<0>(vector_b) * get<0, 0>(metric);
   } else {
@@ -151,13 +79,193 @@ KOKKOS_FUNCTION void dot_product(
     }
   }
 }
+}  // namespace DotProduct_detail
 
-SPECTRE_KOKKOS_DISABLE_EXEC_CHECK
+/// @{
+/*!
+ * \ingroup TensorGroup
+ * \brief Compute the Euclidean dot product of two vectors or one forms
+ *
+ * \details
+ * Returns \f$A^a B^b \delta_{ab}\f$ for input vectors \f$A^a\f$ and \f$B^b\f$
+ * or \f$A_a B_b \delta^{ab}\f$ for input one forms \f$A_a\f$ and \f$B_b\f$.
+ */
+template <typename DataTypeLhs, typename DataTypeRhs, typename Index,
+          typename DataTypeResult = decltype(blaze::evaluate(DataTypeLhs() *
+                                                             DataTypeRhs()))>
+  requires tt::is_device_capable_v<DataTypeLhs, DataTypeRhs>
+KOKKOS_FUNCTION void dot_product(
+    const gsl::not_null<Scalar<DataTypeResult>*> dot_product,
+    const Tensor<DataTypeLhs, Symmetry<1>, index_list<Index>>& vector_a,
+    const Tensor<DataTypeRhs, Symmetry<1>, index_list<Index>>& vector_b) {
+  DotProduct_detail::dot_product(dot_product, vector_a, vector_b);
+}
+
+template <typename DataTypeLhs, typename DataTypeRhs, typename Index,
+          typename DataTypeResult = decltype(blaze::evaluate(DataTypeLhs() *
+                                                             DataTypeRhs()))>
+  requires(not tt::is_device_capable_v<DataTypeLhs, DataTypeRhs>)
+void dot_product(
+    const gsl::not_null<Scalar<DataTypeResult>*> dot_product,
+    const Tensor<DataTypeLhs, Symmetry<1>, index_list<Index>>& vector_a,
+    const Tensor<DataTypeRhs, Symmetry<1>, index_list<Index>>& vector_b) {
+  DotProduct_detail::dot_product(dot_product, vector_a, vector_b);
+}
+
+template <typename DataTypeLhs, typename DataTypeRhs, typename Index,
+          typename DataTypeResult = decltype(blaze::evaluate(DataTypeLhs() *
+                                                             DataTypeRhs()))>
+  requires tt::is_device_capable_v<DataTypeLhs, DataTypeRhs>
+KOKKOS_FUNCTION Scalar<DataTypeResult> dot_product(
+    const Tensor<DataTypeLhs, Symmetry<1>, index_list<Index>>& vector_a,
+    const Tensor<DataTypeRhs, Symmetry<1>, index_list<Index>>& vector_b) {
+  Scalar<DataTypeResult> dot_product{};
+  ::dot_product(make_not_null(&dot_product), vector_a, vector_b);
+  return dot_product;
+}
+
+template <typename DataTypeLhs, typename DataTypeRhs, typename Index,
+          typename DataTypeResult = decltype(blaze::evaluate(DataTypeLhs() *
+                                                             DataTypeRhs()))>
+  requires(not tt::is_device_capable_v<DataTypeLhs, DataTypeRhs>)
+Scalar<DataTypeResult> dot_product(
+    const Tensor<DataTypeLhs, Symmetry<1>, index_list<Index>>& vector_a,
+    const Tensor<DataTypeRhs, Symmetry<1>, index_list<Index>>& vector_b) {
+  Scalar<DataTypeResult> dot_product{};
+  ::dot_product(make_not_null(&dot_product), vector_a, vector_b);
+  return dot_product;
+}
+/// @}
+
+/// @{
+/*!
+ * \ingroup TensorGroup
+ * \brief Compute the dot product of a vector and a one form
+ *
+ * \details
+ * Returns \f$A^a B_b \delta_{a}^b\f$ for input vector \f$A^a\f$ and
+ * input one form \f$B_b\f$
+ * or \f$A_a B^b \delta^a_b\f$ for input one form \f$A_a\f$ and
+ * input vector \f$B^b\f$.
+ */
+template <typename DataTypeLhs, typename DataTypeRhs, typename Index,
+          typename DataTypeResult = decltype(blaze::evaluate(DataTypeLhs() *
+                                                             DataTypeRhs()))>
+  requires tt::is_device_capable_v<DataTypeLhs, DataTypeRhs>
+KOKKOS_FUNCTION void dot_product(
+    // NOLINTNEXTLINE(readability-avoid-const-params-in-decls) false positive
+    const gsl::not_null<Scalar<DataTypeResult>*> dot_product,
+    const Tensor<DataTypeLhs, Symmetry<1>, index_list<Index>>& vector_a,
+    const Tensor<DataTypeRhs, Symmetry<1>,
+                 index_list<change_index_up_lo<Index>>>& vector_b) {
+  DotProduct_detail::dot_product(dot_product, vector_a, vector_b);
+}
+
+template <typename DataTypeLhs, typename DataTypeRhs, typename Index,
+          typename DataTypeResult = decltype(blaze::evaluate(DataTypeLhs() *
+                                                             DataTypeRhs()))>
+  requires(not tt::is_device_capable_v<DataTypeLhs, DataTypeRhs>)
+void dot_product(
+    // NOLINTNEXTLINE(readability-avoid-const-params-in-decls) false positive
+    const gsl::not_null<Scalar<DataTypeResult>*> dot_product,
+    const Tensor<DataTypeLhs, Symmetry<1>, index_list<Index>>& vector_a,
+    const Tensor<DataTypeRhs, Symmetry<1>,
+                 index_list<change_index_up_lo<Index>>>& vector_b) {
+  DotProduct_detail::dot_product(dot_product, vector_a, vector_b);
+}
+
+template <typename DataTypeLhs, typename DataTypeRhs, typename Index,
+          typename DataTypeResult = decltype(blaze::evaluate(DataTypeLhs() *
+                                                             DataTypeRhs()))>
+  requires tt::is_device_capable_v<DataTypeLhs, DataTypeRhs>
+KOKKOS_FUNCTION Scalar<DataTypeResult> dot_product(
+    const Tensor<DataTypeLhs, Symmetry<1>, index_list<Index>>& vector_a,
+    const Tensor<DataTypeRhs, Symmetry<1>,
+                 index_list<change_index_up_lo<Index>>>& vector_b) {
+  Scalar<DataTypeResult> dot_product{};
+  ::dot_product(make_not_null(&dot_product), vector_a, vector_b);
+  return dot_product;
+}
+
+template <typename DataTypeLhs, typename DataTypeRhs, typename Index,
+          typename DataTypeResult = decltype(blaze::evaluate(DataTypeLhs() *
+                                                             DataTypeRhs()))>
+  requires(not tt::is_device_capable_v<DataTypeLhs, DataTypeRhs>)
+Scalar<DataTypeResult> dot_product(
+    const Tensor<DataTypeLhs, Symmetry<1>, index_list<Index>>& vector_a,
+    const Tensor<DataTypeRhs, Symmetry<1>,
+                 index_list<change_index_up_lo<Index>>>& vector_b) {
+  Scalar<DataTypeResult> dot_product{};
+  ::dot_product(make_not_null(&dot_product), vector_a, vector_b);
+  return dot_product;
+}
+/// @}
+
+/// @{
+/*!
+ * \ingroup TensorGroup
+ * \brief Compute the dot_product of two vectors or one forms
+ *
+ * \details
+ * Returns \f$g_{ab} A^a B^b\f$, where \f$g_{ab}\f$ is the metric,
+ * \f$A^a\f$ is vector_a, and \f$B^b\f$ is vector_b.
+ * Or, returns \f$g^{ab} A_a B_b\f$ when given one forms \f$A_a\f$
+ * and \f$B_b\f$ with an inverse metric \f$g^{ab}\f$.
+ */
 template <typename DataTypeLhs, typename DataTypeRhs, typename DataTypeMetric,
           typename Index,
           typename DataTypeResult = decltype(blaze::evaluate(
               DataTypeLhs() * DataTypeRhs() * DataTypeMetric()))>
+  requires tt::is_device_capable_v<DataTypeLhs, DataTypeRhs, DataTypeMetric>
+KOKKOS_FUNCTION void dot_product(
+    const gsl::not_null<Scalar<DataTypeResult>*> dot_product,
+    const Tensor<DataTypeLhs, Symmetry<1>, index_list<Index>>& vector_a,
+    const Tensor<DataTypeRhs, Symmetry<1>, index_list<Index>>& vector_b,
+    const Tensor<DataTypeMetric, Symmetry<1, 1>,
+                 index_list<change_index_up_lo<Index>,
+                            change_index_up_lo<Index>>>& metric) {
+  DotProduct_detail::dot_product(dot_product, vector_a, vector_b, metric);
+}
+
+template <typename DataTypeLhs, typename DataTypeRhs, typename DataTypeMetric,
+          typename Index,
+          typename DataTypeResult = decltype(blaze::evaluate(
+              DataTypeLhs() * DataTypeRhs() * DataTypeMetric()))>
+  requires(
+      not tt::is_device_capable_v<DataTypeLhs, DataTypeRhs, DataTypeMetric>)
+void dot_product(
+    const gsl::not_null<Scalar<DataTypeResult>*> dot_product,
+    const Tensor<DataTypeLhs, Symmetry<1>, index_list<Index>>& vector_a,
+    const Tensor<DataTypeRhs, Symmetry<1>, index_list<Index>>& vector_b,
+    const Tensor<DataTypeMetric, Symmetry<1, 1>,
+                 index_list<change_index_up_lo<Index>,
+                            change_index_up_lo<Index>>>& metric) {
+  DotProduct_detail::dot_product(dot_product, vector_a, vector_b, metric);
+}
+
+template <typename DataTypeLhs, typename DataTypeRhs, typename DataTypeMetric,
+          typename Index,
+          typename DataTypeResult = decltype(blaze::evaluate(
+              DataTypeLhs() * DataTypeRhs() * DataTypeMetric()))>
+  requires tt::is_device_capable_v<DataTypeLhs, DataTypeRhs, DataTypeMetric>
 KOKKOS_FUNCTION Scalar<DataTypeResult> dot_product(
+    const Tensor<DataTypeLhs, Symmetry<1>, index_list<Index>>& vector_a,
+    const Tensor<DataTypeRhs, Symmetry<1>, index_list<Index>>& vector_b,
+    const Tensor<DataTypeMetric, Symmetry<1, 1>,
+                 index_list<change_index_up_lo<Index>,
+                            change_index_up_lo<Index>>>& metric) {
+  Scalar<DataTypeResult> dot_product{};
+  ::dot_product(make_not_null(&dot_product), vector_a, vector_b, metric);
+  return dot_product;
+}
+
+template <typename DataTypeLhs, typename DataTypeRhs, typename DataTypeMetric,
+          typename Index,
+          typename DataTypeResult = decltype(blaze::evaluate(
+              DataTypeLhs() * DataTypeRhs() * DataTypeMetric()))>
+  requires(
+      not tt::is_device_capable_v<DataTypeLhs, DataTypeRhs, DataTypeMetric>)
+Scalar<DataTypeResult> dot_product(
     const Tensor<DataTypeLhs, Symmetry<1>, index_list<Index>>& vector_a,
     const Tensor<DataTypeRhs, Symmetry<1>, index_list<Index>>& vector_b,
     const Tensor<DataTypeMetric, Symmetry<1, 1>,
