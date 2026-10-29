@@ -53,11 +53,17 @@
  * function of a root finder), or header-defined templates that are also
  * instantiated for `DataVector`. nvcc warns about these host-only
  * instantiations, even if they are only used on the host. This disables that
- * check for the function that follows. The compiler then also doesn't
- * diagnose device code that uses a host-only instantiation, so callables used
- * on the device must be `KOKKOS_FUNCTION`s or lambdas defined inside a kernel.
+ * check for the function that follows, for all its instantiations.
+ *
+ * The compiler then also doesn't diagnose device code that uses a host-only
+ * instantiation. See \ref gpu_support.
+ *
+ * Define `SPECTRE_KOKKOS_ENABLE_ALL_EXEC_CHECKS` (e.g. in `CMAKE_CXX_FLAGS`) to
+ * make this macro do nothing. nvcc then warns about all host-only
+ * instantiations, which is useful to check the device-capable instantiations
+ * (e.g. by searching the warnings for `T=double`).
  */
-#ifdef __NVCC__
+#if defined(__NVCC__) and not defined(SPECTRE_KOKKOS_ENABLE_ALL_EXEC_CHECKS)
 #define SPECTRE_KOKKOS_DISABLE_EXEC_CHECK _Pragma("nv_exec_check_disable")
 #else
 #define SPECTRE_KOKKOS_DISABLE_EXEC_CHECK

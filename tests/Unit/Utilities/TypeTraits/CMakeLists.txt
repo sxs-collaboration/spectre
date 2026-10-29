@@ -18,6 +18,7 @@ set(LIBRARY_SOURCES
   Test_IsA.cpp
   Test_IsCallable.cpp
   Test_IsComplexOfFundamental.cpp
+  Test_IsDeviceCapable.cpp
   Test_IsInteger.cpp
   Test_IsIterable.cpp
   Test_IsMaplike.cpp
@@ -27,3 +28,10 @@ set(LIBRARY_SOURCES
 
 add_test_library(${LIBRARY} "${LIBRARY_SOURCES}")
 
+
+target_link_libraries(
+  ${LIBRARY}
+  PRIVATE
+  DataStructures
+  Spectral
+  )

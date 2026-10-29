@@ -86,3 +86,73 @@ following configuration options:
   strings, characters, integers, floating-point numbers, enums and
   `std::array`s of these, and prints values of other types as `<?>`.
 
+## Templates and host-only types
+
+nvcc compiles every instantiation of a `KOKKOS_FUNCTION` template for the
+device, also instantiations for types that only work on the host, such as
+`DataVector`, which are only ever called on the host. It warns when these call
+host functions ("calling a `__host__` function from a `__host__ __device__`
+function"). Silencing the warning with `SPECTRE_KOKKOS_DISABLE_EXEC_CHECK` also
+silences it for device code that calls a host-only instantiation by mistake.
+The type trait `tt::is_device_capable`
+(`Utilities/TypeTraits/IsDeviceCapable.hpp`) tells which types can be used on
+the device: by default the trivially copyable, non-polymorphic types such as
+`double` and `Tensor`s of `double`s, but not `DataVector` or
+`Tensor<DataVector>`.
+
+Make `KOKKOS_FUNCTION` templates that can be instantiated for host-only types
+device-callable in one of these ways, in order of preference:
+
+1. Define the template in a `.cpp` file and explicitly instantiate it, listing
+   the device types in `SPECTRE_DEVICE_AND_HOST_TYPES`. The device pass then
+   only compiles the device-capable instantiations, and nvcc checks them fully.
+   \code
+   // .hpp
+   template <typename DataType>
+   KOKKOS_FUNCTION void f(gsl::not_null<Scalar<DataType>*> result,
+                          const Scalar<DataType>& x);
+   // .cpp
+   GENERATE_INSTANTIATIONS(INSTANTIATE, SPECTRE_DEVICE_AND_HOST_TYPES(
+                                            (double), (double, DataVector)))
+   \endcode
+2. If the template must be defined in a header (e.g. because it takes a
+   callable or is used with many types), put the body in an implementation
+   function that disables the exec check, and call it from two overloads: a
+   `KOKKOS_FUNCTION` for device-capable types and a host-only one for all other
+   types. Device code that calls the function with a host-only type then
+   calls the host overload, which nvcc warns about—treat these warnings as
+   errors. Incorrectly calling the implementation function directly will give a
+   runtime error.
+   \code
+   namespace MyFile_detail {
+   SPECTRE_KOKKOS_DISABLE_EXEC_CHECK
+   template <typename T>
+   KOKKOS_FUNCTION T f_impl(const T& x) {
+     ASSERT_DEVICE_CAPABLE(T);
+     // shared body
+   }
+   }  // namespace MyFile_detail
+
+   template <typename T>
+     requires tt::is_device_capable_v<T>
+   KOKKOS_FUNCTION T f(const T& x) {
+     return MyFile_detail::f_impl(x);
+   }
+
+   template <typename T>
+     requires(not tt::is_device_capable_v<T>)
+   T f(const T& x) {
+     return MyFile_detail::f_impl(x);
+   }
+   \endcode
+   nvcc doesn't check the body of `f_impl` for any type, including the
+   device-capable ones. Define `SPECTRE_KOKKOS_ENABLE_ALL_EXEC_CHECKS` (e.g.
+   `-D CMAKE_CXX_FLAGS=-DSPECTRE_KOKKOS_ENABLE_ALL_EXEC_CHECKS`) in a CUDA build
+   to turn the disabled checks back on, and search the warnings for the
+   device-capable instantiations (e.g. `T=double`).
+
+Every function marked `SPECTRE_KOKKOS_DISABLE_EXEC_CHECK` must call
+`ASSERT_DEVICE_CAPABLE` with its data types (not the types of callables) at the
+start of its body. On the device it aborts with the function signature if any of
+the types isn't device-capable. This has to be at runtime because nvcc
+also compiles the host-only instantiations for the device.
