@@ -25,9 +25,13 @@ set(LIBRARY_SOURCES
 if (SPECTRE_DEBUG AND (Kokkos_ENABLE_CUDA OR Kokkos_ENABLE_HIP))
   list(APPEND LIBRARY_SOURCES Test_KokkosAssertOnDevice.cpp)
 endif()
-# Same for `ERROR`, which aborts on the device also in release builds
+# Same for `ERROR` and `ASSERT_DEVICE_CAPABLE`, which abort on the device also
+# in release builds
 if (Kokkos_ENABLE_CUDA OR Kokkos_ENABLE_HIP)
-  list(APPEND LIBRARY_SOURCES Test_KokkosErrorOnDevice.cpp)
+  list(APPEND LIBRARY_SOURCES
+    Test_AssertDeviceCapableOnDevice.cpp
+    Test_KokkosErrorOnDevice.cpp
+    )
 endif()
 
 add_test_library(${LIBRARY} "${LIBRARY_SOURCES}")
