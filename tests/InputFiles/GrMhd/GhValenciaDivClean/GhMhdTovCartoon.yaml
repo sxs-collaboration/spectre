@@ -68,7 +68,7 @@ DomainCreator:
     OuterRadius: 7.0
     InitialAngularRefinement: 2
     InitialRadialRefinement: 1
-    InitialGridPoints: [10, 10]
+    InitialGridPoints: [6, 6]
     RadialPartitioning: [5.0]
     RadialDistribution: Linear
     TimeDependence: None

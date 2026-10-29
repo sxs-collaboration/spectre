@@ -68,8 +68,8 @@ DomainCreator:
       FillWithSphericity: 0.
     InitialCubeRefinement: [1, 1]
     InitialSHRefinement: 0
-    InitialCubeGridPoints: [6, 6]
-    InitialSHGridPoints: [10, 5]
+    InitialCubeGridPoints: [4, 4]
+    InitialSHGridPoints: [8, 4]
     RadialPartitioning:
       - []
       - []
