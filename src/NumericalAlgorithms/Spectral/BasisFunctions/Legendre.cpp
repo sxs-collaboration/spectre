@@ -136,12 +136,16 @@ compute_collocation_points_and_weights<Basis::Legendre, Quadrature::Gauss>(
       break;
     default:
       for (size_t j = 0; j <= (poly_degree + 1) / 2 - 1; j++) {
-        double logical_coord = RootFinder::toms748(
-            [poly_degree](const double coord) {
-              return LegendrePolynomialAndDerivative(poly_degree + 1, coord).L;
-            },
-            -cos((2. * j) * M_PI / (2. * poly_degree + 2.)),
-            -cos((2. * j + 2.) * M_PI / (2. * poly_degree + 2.)), 0.0, 6.0e-16);
+        double logical_coord =
+            RootFinder::toms748(
+                [poly_degree](const double coord) {
+                  return LegendrePolynomialAndDerivative(poly_degree + 1, coord)
+                      .L;
+                },
+                -cos((2. * j) * M_PI / (2. * poly_degree + 2.)),
+                -cos((2. * j + 2.) * M_PI / (2. * poly_degree + 2.)), 0.0,
+                6.0e-16)
+                .value();
         const LegendrePolynomialAndDerivative L_and_dL(poly_degree + 1,
                                                        logical_coord);
         x[j] = logical_coord;
@@ -216,15 +220,17 @@ std::pair<DataVector, DataVector> compute_collocation_points_and_weights<
       x[poly_degree] = 1.;
       w[0] = w[poly_degree] = 2. / (poly_degree * (poly_degree + 1.));
       for (size_t j = 1; j < (poly_degree + 1) / 2; j++) {
-        double logical_coord = RootFinder::toms748(
-            [poly_degree](const double coord) {
-              return EvaluateQandL(poly_degree, coord).q;
-            },
-            -cos((j - 0.25) * M_PI / poly_degree -
-                 0.375 / (poly_degree * M_PI * (j - 0.25))),
-            -cos((j + 0.75) * M_PI / poly_degree -
-                 0.375 / (poly_degree * M_PI * (j + 0.75))),
-            0.0, 6.0e-16);
+        double logical_coord =
+            RootFinder::toms748(
+                [poly_degree](const double coord) {
+                  return EvaluateQandL(poly_degree, coord).q;
+                },
+                -cos((j - 0.25) * M_PI / poly_degree -
+                     0.375 / (poly_degree * M_PI * (j - 0.25))),
+                -cos((j + 0.75) * M_PI / poly_degree -
+                     0.375 / (poly_degree * M_PI * (j + 0.75))),
+                0.0, 6.0e-16)
+                .value();
         const EvaluateQandL q_and_L(poly_degree, logical_coord);
         x[j] = logical_coord;
         x[poly_degree - j] = -logical_coord;

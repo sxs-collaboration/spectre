@@ -208,7 +208,8 @@ FunctionOfMu<EnforcePhysicality, EosType>::root_bracket(
         // NOLINTNEXTLINE(clang-analyzer-core)
         RootFinder::toms748(auxiliary_function, lower_bound, upper_bound,
                             absolute_tolerance, relative_tolerance,
-                            max_iterations);
+                            max_iterations)
+            .value();
   }
 
   // Determine if the corner case discussed in Appendix A occurs where the
@@ -249,7 +250,8 @@ FunctionOfMu<EnforcePhysicality, EosType>::root_bracket(
     lower_bound = std::max(
         lower_bound, RootFinder::toms748(corner_case_function, lower_bound,
                                          upper_bound, absolute_tolerance,
-                                         relative_tolerance, max_iterations));
+                                         relative_tolerance, max_iterations)
+                         .value());
   }
 
   if (rho_max < rest_mass_density_times_lorentz_factor) {
@@ -260,7 +262,8 @@ FunctionOfMu<EnforcePhysicality, EosType>::root_bracket(
     upper_bound = std::min(
         upper_bound, RootFinder::toms748(corner_case_function, lower_bound,
                                          upper_bound, absolute_tolerance,
-                                         relative_tolerance, max_iterations));
+                                         relative_tolerance, max_iterations)
+                         .value());
   }
 
   return {lower_bound, upper_bound};
@@ -384,7 +387,8 @@ std::optional<PrimitiveRecoveryData> KastaunEtAl::apply(
         // NOLINTNEXTLINE(clang-analyzer-core)
         RootFinder::toms748(f_of_mu, lower_bound, upper_bound,
                             absolute_tolerance_, relative_tolerance_,
-                            max_iterations_);
+                            max_iterations_)
+            .value();
   } catch (std::exception& exception) {
     return std::nullopt;
   }

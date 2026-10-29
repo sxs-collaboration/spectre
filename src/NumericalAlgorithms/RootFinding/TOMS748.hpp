@@ -7,21 +7,74 @@
 #pragma once
 
 #include <functional>
-#include <iomanip>
-#include <ios>
 #include <limits>
-#include <string>
+#include <optional>
+#include <ostream>
 #include <type_traits>
+#include <utility>
 
 #include "DataStructures/DataVector.hpp"
+#include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/ErrorHandling/CaptureForError.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
-#include "Utilities/ErrorHandling/Exceptions.hpp"
-#include "Utilities/GetOutput.hpp"
-#include "Utilities/MakeString.hpp"
+#include "Utilities/Expected.hpp"
 #include "Utilities/Simd/Simd.hpp"
 
 namespace RootFinder {
+/// \ingroup NumericalAlgorithmsGroup
+/// Why a `RootFinder::toms748` root find failed
+enum class Toms748Failure {
+  /// `f(lower_bound) * f(upper_bound) > 0`
+  RootNotBracketed,
+  /// `lower_bound > upper_bound`
+  LowerBoundLargerThanUpperBound,
+  /// `f(lower_bound)` and `f(upper_bound)` have the same sign
+  BoundsDoNotBracketRoot,
+  /// The tolerance wasn't met after the maximum number of iterations
+  MaxIterations
+};
+
+/*!
+ * \ingroup NumericalAlgorithmsGroup
+ * \brief The error of a failed `RootFinder::toms748` root find.
+ *
+ * Holds the arguments of the root find. Stream it to get an error message.
+ */
+template <typename T>
+struct Toms748Error {
+  Toms748Failure failure{};
+  T lower_bound{};
+  T upper_bound{};
+  T f_at_lower_bound{};
+  T f_at_upper_bound{};
+  simd::scalar_type_t<T> absolute_tolerance{};
+  simd::scalar_type_t<T> relative_tolerance{};
+};
+
+template <typename T>
+std::ostream& operator<<(std::ostream& os, const Toms748Error<T>& error) {
+  switch (error.failure) {
+    case Toms748Failure::RootNotBracketed:
+      return os << "Root not bracketed: f(" << error.lower_bound
+                << ") = " << error.f_at_lower_bound << ", f("
+                << error.upper_bound << ") = " << error.f_at_upper_bound;
+    case Toms748Failure::LowerBoundLargerThanUpperBound:
+      return os << "Lower bound is larger than upper bound: "
+                << error.lower_bound << " > " << error.upper_bound;
+    case Toms748Failure::BoundsDoNotBracketRoot:
+      return os << "Parameters lower and upper bounds do not bracket a root: f("
+                << error.lower_bound << ") = " << error.f_at_lower_bound
+                << ", f(" << error.upper_bound
+                << ") = " << error.f_at_upper_bound;
+    case Toms748Failure::MaxIterations:
+      return os << "toms748 reached max iterations without converging.\n"
+                << "Absolute tolerance: " << error.absolute_tolerance
+                << "\nRelative tolerance: " << error.relative_tolerance;
+    default:
+      ERROR("Unknown Toms748Failure");
+  }
+}
+
 namespace toms748_detail {
 // Original implementation of TOMS748 is from Boost:
 //  (C) Copyright John Maddock 2006.
@@ -323,11 +376,13 @@ template <bool AssumeFinite, class F, class T, class Tol>
 std::pair<T, T> toms748_solve(F f, const T& ax, const T& bx, const T& fax,
                               const T& fbx, Tol tol,
                               const simd::mask_type_t<T>& ignore_filter,
-                              size_t& max_iter) {
+                              size_t& max_iter,
+                              std::optional<Toms748Failure>& failure) {
   // Main entry point and logic for Toms Algorithm 748
   // root finder.
   if (UNLIKELY(simd::any(ax > bx))) {
-    ERROR_AS("Lower bound is larger than upper bound", std::domain_error);
+    failure = Toms748Failure::LowerBoundLargerThanUpperBound;
+    return std::pair{ax, bx};
   }
 
   // Sanity check - are we allowed to iterate at all?
@@ -366,8 +421,8 @@ std::pair<T, T> toms748_solve(F f, const T& ax, const T& bx, const T& fax,
                                        : (simd::sign(fa) * simd::sign(fb) >
                                           static_cast<T>(0))) and
                          (not fa_is_zero_mask) and (not fb_is_zero_mask)))) {
-    ERROR_AS("Parameters lower and upper bounds do not bracket a root.",
-             std::domain_error);
+    failure = Toms748Failure::BoundsDoNotBracketRoot;
+    return std::pair{ax, bx};
   }
   // dummy value for fd, e and fe:
   T fe(static_cast<T>(1e5F));
@@ -534,6 +589,48 @@ std::pair<T, T> toms748_solve(F f, const T& ax, const T& bx, const T& fax,
       simd::select(completed_fb == static_cast<T>(0), completed_b, completed_a);
   return std::pair{completed_a, completed_b};
 }
+
+// The root find of `toms748`. Returns the final bracket of the root and sets
+// `failure` if the root find failed.
+template <bool AssumeFinite, typename Function, typename T>
+std::pair<T, T> toms748_bracket(std::optional<Toms748Failure>& failure,
+                                const Function& f, const T lower_bound,
+                                const T upper_bound, const T f_at_lower_bound,
+                                const T f_at_upper_bound,
+                                const simd::scalar_type_t<T> absolute_tolerance,
+                                const simd::scalar_type_t<T> relative_tolerance,
+                                const size_t max_iterations,
+                                const simd::mask_type_t<T> ignore_filter) {
+  ASSERT(relative_tolerance >
+             std::numeric_limits<simd::scalar_type_t<T>>::epsilon(),
+         "The relative tolerance is too small. Got "
+             << relative_tolerance << " but must be at least "
+             << std::numeric_limits<simd::scalar_type_t<T>>::epsilon());
+  if (simd::any(f_at_lower_bound * f_at_upper_bound > 0.0)) {
+    failure = Toms748Failure::RootNotBracketed;
+    return std::pair{lower_bound, upper_bound};
+  }
+
+  std::size_t max_iters = max_iterations;
+
+  // This solver requires tol to be passed as a termination condition. This
+  // termination condition is equivalent to the convergence criteria used by the
+  // GSL
+  const auto tol = [absolute_tolerance, relative_tolerance](const T& lhs,
+                                                            const T& rhs) {
+    return simd::abs(lhs - rhs) <=
+           simd::fma(T(relative_tolerance),
+                     simd::min(simd::abs(lhs), simd::abs(rhs)),
+                     T(absolute_tolerance));
+  };
+  const auto result = toms748_solve<AssumeFinite>(
+      f, lower_bound, upper_bound, f_at_lower_bound, f_at_upper_bound, tol,
+      ignore_filter, max_iters, failure);
+  if (not failure.has_value() and max_iters >= max_iterations) {
+    failure = Toms748Failure::MaxIterations;
+  }
+  return result;
+}
 }  // namespace toms748_detail
 
 /*!
@@ -546,7 +643,7 @@ std::pair<T, T> toms748_solve(F f, const T& ax, const T& bx, const T& fax,
  * \snippet Test_TOMS748.cpp double_root_find
  *
  * The TOMS_748 algorithm searches for a root in the interval [`lower_bound`,
- * `upper_bound`], and will throw if this interval does not bracket a root,
+ * `upper_bound`], and fails if this interval does not bracket a root,
  * i.e. if `f(lower_bound) * f(upper_bound) > 0`.
  *
  * The arguments `f_at_lower_bound` and `f_at_upper_bound` are optional, and
@@ -562,51 +659,28 @@ std::pair<T, T> toms748_solve(F f, const T& ax, const T& bx, const T& fax,
  *
  * \requires Function `f` is invokable with a `double`
  *
- * \throws `convergence_error` if the requested tolerance is not met after
- *                            `max_iterations` iterations.
+ * \returns the root, or a `Toms748Error` if the interval doesn't bracket a root
+ * or the requested tolerance is not met after `max_iterations` iterations.
+ * Call `value()` on the result to get the root and error if the root find
+ * failed.
  */
 template <bool AssumeFinite = false, typename Function, typename T>
-T toms748(const Function& f, const T lower_bound, const T upper_bound,
-          const T f_at_lower_bound, const T f_at_upper_bound,
-          const simd::scalar_type_t<T> absolute_tolerance,
-          const simd::scalar_type_t<T> relative_tolerance,
-          const size_t max_iterations = 100,
-          const simd::mask_type_t<T> ignore_filter =
-              static_cast<simd::mask_type_t<T>>(0)) {
-  ASSERT(relative_tolerance >
-             std::numeric_limits<simd::scalar_type_t<T>>::epsilon(),
-         "The relative tolerance is too small. Got "
-             << relative_tolerance << " but must be at least "
-             << std::numeric_limits<simd::scalar_type_t<T>>::epsilon());
-  if (simd::any(f_at_lower_bound * f_at_upper_bound > 0.0)) {
-    ERROR("Root not bracketed: f(" << lower_bound << ") = " << f_at_lower_bound
-                                   << ", f(" << upper_bound
-                                   << ") = " << f_at_upper_bound);
-  }
-
-  std::size_t max_iters = max_iterations;
-
-  // This solver requires tol to be passed as a termination condition. This
-  // termination condition is equivalent to the convergence criteria used by the
-  // GSL
-  const auto tol = [absolute_tolerance, relative_tolerance](const T& lhs,
-                                                            const T& rhs) {
-    return simd::abs(lhs - rhs) <=
-           simd::fma(T(relative_tolerance),
-                     simd::min(simd::abs(lhs), simd::abs(rhs)),
-                     T(absolute_tolerance));
-  };
-  auto result = toms748_detail::toms748_solve<AssumeFinite>(
-      f, lower_bound, upper_bound, f_at_lower_bound, f_at_upper_bound, tol,
-      ignore_filter, max_iters);
-  if (max_iters >= max_iterations) {
-    ERROR_AS(
-        "toms748 reached max iterations without converging.\nAbsolute "
-        "tolerance: "
-            << absolute_tolerance << "\nRelative tolerance: "
-            << relative_tolerance << "\nResult: " << get_output(result.first)
-            << " " << get_output(result.second),
-        convergence_error);
+Expected<T, Toms748Error<T>> toms748(
+    const Function& f, const T lower_bound, const T upper_bound,
+    const T f_at_lower_bound, const T f_at_upper_bound,
+    const simd::scalar_type_t<T> absolute_tolerance,
+    const simd::scalar_type_t<T> relative_tolerance,
+    const size_t max_iterations = 100,
+    const simd::mask_type_t<T> ignore_filter =
+        static_cast<simd::mask_type_t<T>>(0)) {
+  std::optional<Toms748Failure> failure{};
+  const auto result = toms748_detail::toms748_bracket<AssumeFinite>(
+      failure, f, lower_bound, upper_bound, f_at_lower_bound, f_at_upper_bound,
+      absolute_tolerance, relative_tolerance, max_iterations, ignore_filter);
+  if (UNLIKELY(failure.has_value())) {
+    return Unexpected{Toms748Error<T>{*failure, lower_bound, upper_bound,
+                                      f_at_lower_bound, f_at_upper_bound,
+                                      absolute_tolerance, relative_tolerance}};
   }
   return simd::fma(static_cast<T>(0.5), (result.second - result.first),
                    result.first);
@@ -623,12 +697,13 @@ T toms748(const Function& f, const T lower_bound, const T upper_bound,
  * that products like `fa * fb` are also finite.
  */
 template <bool AssumeFinite = false, typename Function, typename T>
-T toms748(const Function& f, const T lower_bound, const T upper_bound,
-          const simd::scalar_type_t<T> absolute_tolerance,
-          const simd::scalar_type_t<T> relative_tolerance,
-          const size_t max_iterations = 100,
-          const simd::mask_type_t<T> ignore_filter =
-              static_cast<simd::mask_type_t<T>>(0)) {
+Expected<T, Toms748Error<T>> toms748(
+    const Function& f, const T lower_bound, const T upper_bound,
+    const simd::scalar_type_t<T> absolute_tolerance,
+    const simd::scalar_type_t<T> relative_tolerance,
+    const size_t max_iterations = 100,
+    const simd::mask_type_t<T> ignore_filter =
+        static_cast<simd::mask_type_t<T>>(0)) {
   return toms748<AssumeFinite>(
       f, lower_bound, upper_bound, f(lower_bound), f(upper_bound),
       absolute_tolerance, relative_tolerance, max_iterations, ignore_filter);
@@ -648,7 +723,7 @@ T toms748(const Function& f, const T lower_bound, const T upper_bound,
  * \snippet Test_TOMS748.cpp datavector_root_find
  *
  * For each index `i` into the DataVector, the TOMS_748 algorithm searches for a
- * root in the interval [`lower_bound[i]`, `upper_bound[i]`], and will throw if
+ * root in the interval [`lower_bound[i]`, `upper_bound[i]`], and fails if
  * this interval does not bracket a root,
  * i.e. if `f(lower_bound[i], i) * f(upper_bound[i], i) > 0`.
  *
@@ -661,42 +736,45 @@ T toms748(const Function& f, const T lower_bound, const T upper_bound,
  * runtime but will cause bugs if the numbers aren't finite. It also assumes
  * that products like `fa * fb` are also finite.
  *
- * \throws `convergence_error` if, for any index, the requested tolerance is not
- * met after `max_iterations` iterations.
+ * \returns the roots, or the `Toms748Error` of the first index whose root find
+ * failed.
  */
 template <bool UseSimd = true, bool AssumeFinite = false, typename Function>
-DataVector toms748(const Function& f, const DataVector& lower_bound,
-                   const DataVector& upper_bound,
-                   const double absolute_tolerance,
-                   const double relative_tolerance,
-                   const size_t max_iterations = 100) {
+Expected<DataVector, Toms748Error<double>> toms748(
+    const Function& f, const DataVector& lower_bound,
+    const DataVector& upper_bound, const double absolute_tolerance,
+    const double relative_tolerance, const size_t max_iterations = 100) {
   DataVector result_vector{lower_bound.size()};
+  size_t first_scalar_index = 0;
   if constexpr (UseSimd) {
     constexpr size_t simd_width{simd::size<
         std::decay_t<decltype(simd::load_unaligned(lower_bound.data()))>>()};
     const size_t vectorized_size =
         lower_bound.size() - lower_bound.size() % simd_width;
-    for (size_t i = 0; i < vectorized_size; i += simd_width) {
-      simd::store_unaligned(
-          &result_vector[i],
-          toms748<AssumeFinite>([&f, i](const auto x) { return f(x, i); },
-                                simd::load_unaligned(&lower_bound[i]),
-                                simd::load_unaligned(&upper_bound[i]),
-                                absolute_tolerance, relative_tolerance,
-                                max_iterations));
+    for (; first_scalar_index < vectorized_size;
+         first_scalar_index += simd_width) {
+      const size_t i = first_scalar_index;
+      const auto root = toms748<AssumeFinite>(
+          [&f, i](const auto x) { return f(x, i); },
+          simd::load_unaligned(&lower_bound[i]),
+          simd::load_unaligned(&upper_bound[i]), absolute_tolerance,
+          relative_tolerance, max_iterations);
+      if (UNLIKELY(not root.has_value())) {
+        // Root find these points one by one below to get the error of the
+        // point that failed
+        break;
+      }
+      simd::store_unaligned(&result_vector[i], root.value());
     }
-    for (size_t i = vectorized_size; i < lower_bound.size(); ++i) {
-      result_vector[i] = toms748<AssumeFinite>(
-          [&f, i](const auto x) { return f(x, i); }, lower_bound[i],
-          upper_bound[i], absolute_tolerance, relative_tolerance,
-          max_iterations);
+  }
+  for (size_t i = first_scalar_index; i < lower_bound.size(); ++i) {
+    const auto root = toms748<AssumeFinite>(
+        [&f, i](const double x) { return f(x, i); }, lower_bound[i],
+        upper_bound[i], absolute_tolerance, relative_tolerance, max_iterations);
+    if (UNLIKELY(not root.has_value())) {
+      return Unexpected{root.error()};
     }
-  } else {
-    for (size_t i = 0; i < result_vector.size(); ++i) {
-      result_vector[i] = toms748<AssumeFinite>(
-          [&f, i](double x) { return f(x, i); }, lower_bound[i], upper_bound[i],
-          absolute_tolerance, relative_tolerance, max_iterations);
-    }
+    result_vector[i] = root.value();
   }
   return result_vector;
 }
@@ -717,43 +795,45 @@ DataVector toms748(const Function& f, const DataVector& lower_bound,
  * that products like `fa * fb` are also finite.
  */
 template <bool UseSimd = true, bool AssumeFinite = false, typename Function>
-DataVector toms748(const Function& f, const DataVector& lower_bound,
-                   const DataVector& upper_bound,
-                   const DataVector& f_at_lower_bound,
-                   const DataVector& f_at_upper_bound,
-                   const double absolute_tolerance,
-                   const double relative_tolerance,
-                   const size_t max_iterations = 100) {
+Expected<DataVector, Toms748Error<double>> toms748(
+    const Function& f, const DataVector& lower_bound,
+    const DataVector& upper_bound, const DataVector& f_at_lower_bound,
+    const DataVector& f_at_upper_bound, const double absolute_tolerance,
+    const double relative_tolerance, const size_t max_iterations = 100) {
   DataVector result_vector{lower_bound.size()};
+  size_t first_scalar_index = 0;
   if constexpr (UseSimd) {
     constexpr size_t simd_width{simd::size<
         std::decay_t<decltype(simd::load_unaligned(lower_bound.data()))>>()};
     const size_t vectorized_size =
         lower_bound.size() - lower_bound.size() % simd_width;
-    for (size_t i = 0; i < vectorized_size; i += simd_width) {
-      simd::store_unaligned(
-          &result_vector[i],
-          toms748<AssumeFinite>([&f, i](const auto x) { return f(x, i); },
-                                simd::load_unaligned(&lower_bound[i]),
-                                simd::load_unaligned(&upper_bound[i]),
-                                simd::load_unaligned(&f_at_lower_bound[i]),
-                                simd::load_unaligned(&f_at_upper_bound[i]),
-                                absolute_tolerance, relative_tolerance,
-                                max_iterations));
-    }
-    for (size_t i = vectorized_size; i < lower_bound.size(); ++i) {
-      result_vector[i] = toms748<AssumeFinite>(
-          [&f, i](double x) { return f(x, i); }, lower_bound[i], upper_bound[i],
-          f_at_lower_bound[i], f_at_upper_bound[i], absolute_tolerance,
+    for (; first_scalar_index < vectorized_size;
+         first_scalar_index += simd_width) {
+      const size_t i = first_scalar_index;
+      const auto root = toms748<AssumeFinite>(
+          [&f, i](const auto x) { return f(x, i); },
+          simd::load_unaligned(&lower_bound[i]),
+          simd::load_unaligned(&upper_bound[i]),
+          simd::load_unaligned(&f_at_lower_bound[i]),
+          simd::load_unaligned(&f_at_upper_bound[i]), absolute_tolerance,
           relative_tolerance, max_iterations);
+      if (UNLIKELY(not root.has_value())) {
+        // Root find these points one by one below to get the error of the
+        // point that failed
+        break;
+      }
+      simd::store_unaligned(&result_vector[i], root.value());
     }
-  } else {
-    for (size_t i = 0; i < lower_bound.size(); ++i) {
-      result_vector[i] = toms748<AssumeFinite>(
-          [&f, i](double x) { return f(x, i); }, lower_bound[i], upper_bound[i],
-          f_at_lower_bound[i], f_at_upper_bound[i], absolute_tolerance,
-          relative_tolerance, max_iterations);
+  }
+  for (size_t i = first_scalar_index; i < lower_bound.size(); ++i) {
+    const auto root = toms748<AssumeFinite>(
+        [&f, i](const double x) { return f(x, i); }, lower_bound[i],
+        upper_bound[i], f_at_lower_bound[i], f_at_upper_bound[i],
+        absolute_tolerance, relative_tolerance, max_iterations);
+    if (UNLIKELY(not root.has_value())) {
+      return Unexpected{root.error()};
     }
+    result_vector[i] = root.value();
   }
   return result_vector;
 }
