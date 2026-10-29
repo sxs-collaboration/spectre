@@ -135,8 +135,10 @@ std::optional<std::array<double, 3>> Skew::inverse(
           << ", upper_func = " << upper_func << ", tan_sum = " << tan_sum);
   }
 
-  temporary_source_coord[0] = RootFinder::toms748<true>(
-      root_func, lower_x, upper_x, lower_func, upper_func, eps, eps);
+  temporary_source_coord[0] =
+      RootFinder::toms748<true>(root_func, lower_x, upper_x, lower_func,
+                                upper_func, eps, eps)
+          .value();
 
   return temporary_source_coord;
 }
@@ -401,12 +403,16 @@ void Skew::check_for_singular_map(
     CAPTURE_FOR_ERROR(largest_x);
 
     // Positive and negative zeros of the second deriv
-    const double negative_candidate = RootFinder::toms748<true>(
-        second_deriv, -largest_x, -eps, second_deriv(-largest_x),
-        second_deriv(-eps), eps, eps);
-    const double positive_candidate = RootFinder::toms748<true>(
-        second_deriv, eps, largest_x, second_deriv(eps),
-        second_deriv(largest_x), eps, eps);
+    const double negative_candidate =
+        RootFinder::toms748<true>(second_deriv, -largest_x, -eps,
+                                  second_deriv(-largest_x), second_deriv(-eps),
+                                  eps, eps)
+            .value();
+    const double positive_candidate =
+        RootFinder::toms748<true>(second_deriv, eps, largest_x,
+                                  second_deriv(eps), second_deriv(largest_x),
+                                  eps, eps)
+            .value();
 
     CAPTURE_FOR_ERROR(negative_candidate);
     CAPTURE_FOR_ERROR(positive_candidate);

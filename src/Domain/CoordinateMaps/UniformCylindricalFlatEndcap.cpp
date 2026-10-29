@@ -592,22 +592,23 @@ std::optional<std::array<double, 3>> UniformCylindricalFlatEndcap::inverse(
   constexpr double abs_tol = 1.e-15;
   constexpr double rel_tol = 1.e-15;
 
-  try {
-    rhobar =
-        // NOLINTNEXTLINE(clang-analyzer-core)
-        RootFinder::toms748(function_to_zero, rhobar_min, rhobar_max,
-                            function_at_rhobar_min, function_at_rhobar_max,
-                            abs_tol, rel_tol);
+  const auto root =
+      // NOLINTNEXTLINE(clang-analyzer-core)
+      RootFinder::toms748(function_to_zero, rhobar_min, rhobar_max,
+                          function_at_rhobar_min, function_at_rhobar_max,
+                          abs_tol, rel_tol);
+  if (not root.has_value()) {
     // This error should never happen except for a bug, so it
     // is hard to make an error test for it.
     // LCOV_EXCL_START
-  } catch (std::exception&) {
     ERROR("Cannot find root after bracketing: rhobar_min="
           << rhobar_min << " f(rhobar_min)=" << function_at_rhobar_min
           << " rhobar_max=" << rhobar_max
-          << " f(rhobar_max)=" << function_at_rhobar_max);
+          << " f(rhobar_max)=" << function_at_rhobar_max << "\n"
+          << root.error());
     // LCOV_EXCL_STOP
   }
+  rhobar = root.value();
 
   // Now that we have rhobar, construct inverse.
   const double r_one_cos_theta_one = radius_one_ * cos(rhobar * theta_max_one_);
