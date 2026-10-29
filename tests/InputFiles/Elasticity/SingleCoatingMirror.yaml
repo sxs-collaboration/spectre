@@ -82,6 +82,10 @@ DomainCreator:
       LowerZ:
         LaserBeam:
           BeamWidth: *beam_width
+          Modes:
+            - N: 0
+              M: 0
+              Weight: 1.
       UpperZ: Fixed
       Mantle: Free
 
