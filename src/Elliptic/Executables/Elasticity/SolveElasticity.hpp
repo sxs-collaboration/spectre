@@ -69,12 +69,16 @@ struct Metavariables {
   using analytic_solution_fields = typename system::primal_fields;
   using error_compute = ::Tags::ErrorsCompute<analytic_solution_fields>;
   using error_tags = db::wrap_tags_in<Tags::Error, analytic_solution_fields>;
+  // Empty in 2D, see `Elasticity::Tags::bulk_shear_observables`
+  using bulk_shear_fields =
+      Elasticity::Tags::bulk_shear_observables<volume_dim>;
   using observe_fields = tmpl::append<
       analytic_solution_fields, error_tags, typename solver::observe_fields,
       tmpl::list<Elasticity::Tags::StrainCompute<volume_dim>,
                  Elasticity::Tags::StressCompute<volume_dim>,
-                 Elasticity::Tags::PotentialEnergyDensityCompute<volume_dim>,
-                 domain::Tags::Coordinates<volume_dim, Frame::Inertial>>>;
+                 Elasticity::Tags::PotentialEnergyDensityCompute<volume_dim>>,
+      bulk_shear_fields,
+      tmpl::list<domain::Tags::Coordinates<volume_dim, Frame::Inertial>>>;
   using observer_compute_tags =
       tmpl::list<::Events::Tags::ObserverMeshCompute<volume_dim>,
                  ::Events::Tags::ObserverDetInvJacobianCompute<
