@@ -18,14 +18,16 @@ KOKKOS_FUNCTION double checked_sqrt(const double x) {
 }
 
 // ctest fails a test that is killed by a signal even if its output matches the
-// OutputRegex, so exit normally when `Kokkos::abort` raises SIGABRT.
+// OutputRegex, so exit normally when `Kokkos::abort` raises SIGABRT. The name
+// must differ from the handlers in the other tests because C linkage ignores
+// the anonymous namespace.
 extern "C" [[noreturn]] void exit_on_abort(const int /*signal*/) {
   std::_Exit(EXIT_SUCCESS);
 }
 }  // namespace
 
 // Only built with SPECTRE_DEBUG and a device backend, see CMakeLists.txt.
-// [[OutputRegex, ASSERT failed on the device: x >= 0.0]]
+// [[OutputRegex, 'x >= 0.0' violated!.Can't take the square root of -1.0]]
 SPECTRE_TEST_CASE("Unit.Utilities.Kokkos.AssertOnDevice", "[Utilities][Unit]") {
   OUTPUT_TEST();
   // `std::_Exit` doesn't flush output, so don't buffer it
