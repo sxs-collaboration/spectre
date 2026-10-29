@@ -11,6 +11,7 @@
 #include <string>
 
 #include "Utilities/ErrorHandling/AbortWithErrorMessage.hpp"
+#include "Utilities/ErrorHandling/DeviceMessage.hpp"
 #include "Utilities/ErrorHandling/FloatingPointExceptions.hpp"
 #include "Utilities/Kokkos/KokkosMacros.hpp"
 
@@ -24,8 +25,8 @@
  * nothing in production code.
  *
  * ASSERT can also be used in functions that run on a GPU (`KOKKOS_FUNCTION`s).
- * On the GPU the error message can't be printed, so a failed assertion only
- * reports the expression, file and line.
+ * On the GPU the message is streamed into a `DeviceMessage`, which supports
+ * fewer types than `std::ostream`.
  *
  * \param a the expression that must be true
  * \param m the error message as an ostream
@@ -69,21 +70,14 @@
 #endif
 
 #ifdef SPECTRE_KOKKOS
-// In code that is compiled for a GPU, the message can't be streamed and
-// printed, so only the expression, file and line are reported there. Kokkos
-// compiles only one of the branches for the host and the GPU, respectively.
-#define SPECTRE_ASSERT_STRINGIFY_IMPL(x) #x
-#define SPECTRE_ASSERT_STRINGIFY(x) SPECTRE_ASSERT_STRINGIFY_IMPL(x)
-#define SPECTRE_ASSERT_DEVICE_MESSAGE(a) \
-  "ASSERT failed on the device: " a "\nat " __FILE__                  \
-  ":" SPECTRE_ASSERT_STRINGIFY(__LINE__) "\nRun on the host for the " \
-                                         "full error message.\n"
+// Kokkos compiles only one of the branches for the host and the GPU,
+// respectively.
 #ifdef SPECTRE_DEBUG
-#define ASSERT(a, m)                                                           \
-  do {                                                                         \
-    KOKKOS_IF_ON_HOST((SPECTRE_ASSERT_ON_HOST(a, m);))                         \
-    KOKKOS_IF_ON_DEVICE(                                                       \
-        (if (not(a)) { ::Kokkos::abort(SPECTRE_ASSERT_DEVICE_MESSAGE(#a)); })) \
+#define ASSERT(a, m)                                                        \
+  do {                                                                      \
+    KOKKOS_IF_ON_HOST((SPECTRE_ASSERT_ON_HOST(a, m);))                      \
+    KOKKOS_IF_ON_DEVICE(                                                    \
+        (if (not(a)) { SPECTRE_ABORT_ON_DEVICE("ASSERT FAILED", #a, m); })) \
   } while (false)
 #else
 #define ASSERT(a, m)                                   \
