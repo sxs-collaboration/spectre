@@ -537,7 +537,8 @@ double Enthalpy<LowDensityEoS>::rest_mass_density_from_enthalpy(
       return evaluate_coefficients(coefficients_, x) - specific_enthalpy;
     };
     return RootFinder::toms748(f, minimum_density_, maximum_density_, 1.0e-14,
-                               1.0e-15);
+                               1.0e-15)
+        .value();
   }
 }
 template <typename LowDensityEoS>

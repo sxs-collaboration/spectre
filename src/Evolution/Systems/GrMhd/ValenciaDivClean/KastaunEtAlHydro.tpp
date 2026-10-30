@@ -218,7 +218,8 @@ std::optional<PrimitiveRecoveryData> KastaunEtAlHydro::apply(
         // NOLINTNEXTLINE(clang-analyzer-core)
         RootFinder::toms748(f_of_z, lower_bound, upper_bound,
                             absolute_tolerance_, relative_tolerance_,
-                            max_iterations_);
+                            max_iterations_)
+            .value();
   } catch (std::exception& exception) {
     return std::nullopt;
   }

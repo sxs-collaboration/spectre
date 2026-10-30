@@ -140,7 +140,8 @@ BondiMichel::IntermediateVars<DataType>::IntermediateVars(
             current_radius < sonic_radius ? rest_mass_density_at_infinity
                                           : sonic_bound,
             current_radius < sonic_radius ? sonic_bound : sonic_density, 1.e-15,
-            1.e-15);
+            1.e-15)
+            .value();
     get_element(electron_fraction, i) = 0.4;
   }
   if (need_spacetime) {
