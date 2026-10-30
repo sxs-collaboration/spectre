@@ -5,13 +5,16 @@
 
 #include <cstddef>
 
+#include "PointwiseFunctions/Elasticity/ConstitutiveRelations/AnisotropicHomogeneous.hpp"
 #include "PointwiseFunctions/Elasticity/ConstitutiveRelations/CubicCrystal.hpp"
 #include "PointwiseFunctions/Elasticity/ConstitutiveRelations/IsotropicHomogeneous.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace Elasticity::ConstitutiveRelations {
 template <size_t Dim>
-using standard_constitutive_relations = tmpl::append<
-    tmpl::list<IsotropicHomogeneous<Dim>>,
-    tmpl::conditional_t<Dim == 3, tmpl::list<CubicCrystal>, tmpl::list<>>>;
+using standard_constitutive_relations =
+    tmpl::append<tmpl::list<IsotropicHomogeneous<Dim>>,
+                 tmpl::conditional_t<
+                     Dim == 3, tmpl::list<CubicCrystal, AnisotropicHomogeneous>,
+                     tmpl::list<>>>;
 }  // namespace Elasticity::ConstitutiveRelations
