@@ -39,6 +39,10 @@ namespace grmhd::GhValenciaDivClean::BoundaryConditions {
  * boundary condition correctly on FD.
  */
 class ConstraintPreservingFreeOutflow final : public BoundaryCondition {
+ private:
+  template <typename T>
+  using Flux = ::Tags::Flux<T, tmpl::size_t<3>, Frame::Inertial>;
+
  public:
   using options =
       typename gh::BoundaryConditions::ConstraintPreservingBjorhus<3>::options;
@@ -260,6 +264,9 @@ class ConstraintPreservingFreeOutflow final : public BoundaryCondition {
       const gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*>
       /*magnetic_field*/,
       const gsl::not_null<Scalar<DataVector>*> /*divergence_cleaning_field*/,
+      const gsl::not_null<std::optional<Variables<db::wrap_tags_in<
+          Flux, typename grmhd::ValenciaDivClean::System::flux_variables>>>*>
+      /*cell_centered_ghost_fluxes*/,
       const Direction<3>& /*direction*/) {
     ERROR(
         "Not implemented because it's not trivial to figure out what the right "
