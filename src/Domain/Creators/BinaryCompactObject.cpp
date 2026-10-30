@@ -568,14 +568,6 @@ BinaryCompactObject::BinaryCompactObject(
           "or neither.");
     }
   }
-  if ((spherical_harmonics_in_object_a_shell_ or
-       spherical_harmonics_in_object_b_shell_) and
-      not equal_within_roundoff(cube_scale, 1.0)) {
-    PARSE_ERROR(
-        context,
-        "Using spherical-harmonic object shells currently requires CubeScale "
-        "to be 1.0.");
-  }
   const bool filled_excision_a = not(use_single_block_a_ or is_excised_a_);
   const bool filled_excision_b = not(use_single_block_b_ or is_excised_b_);
   if ((filled_excision_a or filled_excision_b) and
@@ -902,6 +894,17 @@ Domain<3> BinaryCompactObject::create_domain() const {
              1.0 + center_of_mass_offset_[0]},
       Affine{-1.0, 1.0, -1.0 + center_of_mass_offset_[1],
              1.0 + center_of_mass_offset_[1]}};
+
+  // Spherical-harmonic shells are centered on the objects. For CubeScale > 1,
+  // the surrounding cubes have different centers, accounted for by the focal
+  // offsets in their wedge maps.
+  const auto object_translation = [this](const double x_coord) {
+    return Affine3D{Affine{-1.0, 1.0, -1.0 + x_coord, 1.0 + x_coord},
+                    Affine{-1.0, 1.0, -1.0 + center_of_mass_offset_[0],
+                           1.0 + center_of_mass_offset_[0]},
+                    Affine{-1.0, 1.0, -1.0 + center_of_mass_offset_[1],
+                           1.0 + center_of_mass_offset_[1]}};
+  };
 
   // Build the coordinate maps for one radial layer (shell or cube) around an
   // object. When `log_map_strength` is specified, a log radial redistribution
@@ -1288,7 +1291,8 @@ Domain<3> BinaryCompactObject::create_domain() const {
                         -1.0, 1.0, object_a.inner_radius, object_a.outer_radius,
                         CoordinateMaps::Distribution::Linear},
                     CoordinateMaps::Identity<2>{}},
-                CoordinateMaps::SphericalToCartesianPfaffian{}, translation_A);
+                CoordinateMaps::SphericalToCartesianPfaffian{},
+                object_translation(x_coord_a_));
         std::unordered_set<size_t> cube_ids{};
         std::unordered_map<size_t, OrientationMap<3>> cube_orientations{};
         for (size_t i = 0; i < 6; ++i) {
@@ -1327,7 +1331,8 @@ Domain<3> BinaryCompactObject::create_domain() const {
                         -1.0, 1.0, object_b.inner_radius, object_b.outer_radius,
                         CoordinateMaps::Distribution::Linear},
                     CoordinateMaps::Identity<2>{}},
-                CoordinateMaps::SphericalToCartesianPfaffian{}, translation_B);
+                CoordinateMaps::SphericalToCartesianPfaffian{},
+                object_translation(x_coord_b_));
         std::unordered_set<size_t> cube_ids{};
         std::unordered_map<size_t, OrientationMap<3>> cube_orientations{};
         for (size_t i = 0; i < 6; ++i) {

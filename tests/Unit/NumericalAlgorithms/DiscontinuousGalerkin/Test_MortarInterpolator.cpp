@@ -319,8 +319,9 @@ void check_bco_pairing(const Domain<3>& domain,
                      [](const size_t n) { return n == 0; }));
 }
 
-void test_bco_object_shells() {
+void test_bco_object_shells(const double cube_scale) {
   INFO("BCO with per-object SH shells and SH wavezone");
+  CAPTURE(cube_scale);
   using Object = domain::creators::BinaryCompactObject::Object;
   using GridPointsMap = std::unordered_map<
       std::string, std::variant<std::array<size_t, 3>, std::array<size_t, 2>>>;
@@ -333,7 +334,7 @@ void test_bco_object_shells() {
       std::array<double, 2>{{0.0, 0.0}},
       50.0,
       500.0,
-      1.0,
+      cube_scale,
       RefinementMap{{"ObjectAShell", size_t{1}},
                     {"ObjectACube", std::array<size_t, 3>{2, 2, 1}},
                     {"ObjectBShell", size_t{1}},
@@ -381,5 +382,7 @@ void test_bco_object_shells() {
 
 SPECTRE_TEST_CASE("Unit.Evolution.DG.MortarInterpolator", "[Unit][Evolution]") {
   test_non_conforming_spheres();
-  test_bco_object_shells();
+  for (const double cube_scale : {1.0, 1.5}) {
+    test_bco_object_shells(cube_scale);
+  }
 }

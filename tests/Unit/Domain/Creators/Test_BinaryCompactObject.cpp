@@ -439,9 +439,12 @@ std::string create_option_string(
     const size_t additional_refinement_A, const size_t additional_refinement_B,
     const double opening_angle, const bool add_boundary_condition,
     const bool use_spherical_harmonics_shell_a = false,
-    const bool use_spherical_harmonics_shell_b = false) {
+    const bool use_spherical_harmonics_shell_b = false,
+    const std::optional<double> cube_scale_override = std::nullopt) {
   const std::string cube_scale =
-      (excise_A and excise_B and opening_angle == 90) ? "1.5" : "1.0";
+      cube_scale_override.has_value()
+          ? std::to_string(cube_scale_override.value())
+          : ((excise_A and excise_B and opening_angle == 90) ? "1.5" : "1.0");
   const std::string time_dependence{
       add_time_dependence
           ? ("  TimeDependentMaps:\n"
@@ -1522,13 +1525,31 @@ void test_spherical_harmonics_wavezone() {
           "only valid for spherical-harmonic shell blocks"));
 }
 
-void test_spherical_harmonics_object_shells() {
+void test_spherical_harmonics_object_shells(const double cube_scale) {
   INFO("Test BinaryCompactObject with spherical-harmonic object shells");
+  CAPTURE(cube_scale);
   using GridPointsMap = std::unordered_map<
       std::string, std::variant<std::array<size_t, 3>, std::array<size_t, 2>>>;
   using RefinementMap =
       std::unordered_map<std::string,
                          std::variant<std::array<size_t, 3>, size_t>>;
+
+  const auto check_shell_geometry =
+      [](const Block<3>& block, const double x_coord, const double inner_radius,
+         const double outer_radius) {
+        const double theta = 0.8;
+        const double phi = 1.1;
+        for (const double xi : {-1.0, 1.0}) {
+          CAPTURE(xi);
+          const double radius = xi < 0.0 ? inner_radius : outer_radius;
+          const auto coords = block.stationary_map()(
+              tnsr::I<double, 3, Frame::BlockLogical>{{xi, theta, phi}});
+          const tnsr::I<double, 3, Frame::Inertial> expected_coords{
+              {x_coord + radius * sin(theta) * cos(phi),
+               radius * sin(theta) * sin(phi), radius * cos(theta)}};
+          CHECK_ITERABLE_APPROX(coords, expected_coords);
+        }
+      };
 
   const domain::creators::BinaryCompactObject bco_a_sh{
       Object{
@@ -1543,7 +1564,7 @@ void test_spherical_harmonics_object_shells() {
       std::array<double, 2>{{0.0, 0.0}},
       25.5,
       32.4,
-      1.0,
+      cube_scale,
       RefinementMap{{"ObjectAShell", size_t{2}},
                     {"ObjectACube", std::array<size_t, 3>{1, 1, 1}},
                     {"ObjectBShell", std::array<size_t, 3>{1, 1, 1}},
@@ -1579,6 +1600,7 @@ void test_spherical_harmonics_object_shells() {
   check_two_sided_neighbor_consistency(domain_a_sh);
   const auto& blocks_a_sh = domain_a_sh.blocks();
   REQUIRE(blocks_a_sh.size() == 39);
+  check_shell_geometry(blocks_a_sh[0], 3.0, 0.3, 1.0);
   const auto& shell_map = blocks_a_sh[0].stationary_map();
   const auto inner_jacobian = shell_map.jacobian(
       tnsr::I<double, 3, Frame::BlockLogical>{{-1.0, 1.0, 0.7}});
@@ -1635,7 +1657,7 @@ void test_spherical_harmonics_object_shells() {
       std::array<double, 2>{{0.0, 0.0}},
       25.5,
       32.4,
-      1.0,
+      cube_scale,
       RefinementMap{{"ObjectAShell", std::array<size_t, 3>{1, 1, 1}},
                     {"ObjectACube", std::array<size_t, 3>{1, 1, 1}},
                     {"ObjectBShell", size_t{2}},
@@ -1663,7 +1685,9 @@ void test_spherical_harmonics_object_shells() {
   CHECK(bco_b_sh.initial_extents()[12] == std::array<size_t, 3>{4, 8, 15});
   CHECK(bco_b_sh.initial_refinement_levels()[12] ==
         std::array<size_t, 3>{2, 0, 0});
-  check_two_sided_neighbor_consistency(bco_b_sh.create_domain());
+  const auto domain_b_sh = bco_b_sh.create_domain();
+  check_two_sided_neighbor_consistency(domain_b_sh);
+  check_shell_geometry(domain_b_sh.blocks()[12], -3.0, 0.5, 1.0);
   const auto bcs_b_sh = bco_b_sh.external_boundary_conditions();
   REQUIRE(bcs_b_sh.size() == 39);
   CHECK(bcs_b_sh[12].count(Direction<3>::lower_xi()) == 1);
@@ -1687,7 +1711,7 @@ void test_spherical_harmonics_object_shells() {
       std::array<double, 2>{{0.0, 0.0}},
       25.5,
       32.4,
-      1.0,
+      cube_scale,
       RefinementMap{{"ObjectAShell", size_t{1}},
                     {"ObjectACube", std::array<size_t, 3>{1, 1, 1}},
                     {"ObjectBShell", size_t{1}},
@@ -1715,7 +1739,10 @@ void test_spherical_harmonics_object_shells() {
   CHECK(bco_both_sh.block_names()[7] == "ObjectBShell0");
   CHECK(bco_both_sh.block_names()[24] == "OuterShell0");
   CHECK(not bco_both_sh.block_groups().contains("OuterShell0"));
-  check_two_sided_neighbor_consistency(bco_both_sh.create_domain());
+  const auto domain_both_sh = bco_both_sh.create_domain();
+  check_two_sided_neighbor_consistency(domain_both_sh);
+  check_shell_geometry(domain_both_sh.blocks()[0], 3.0, 0.3, 1.0);
+  check_shell_geometry(domain_both_sh.blocks()[7], -3.0, 0.5, 1.0);
 
   CHECK_THROWS_WITH(
       domain::creators::BinaryCompactObject(
@@ -1726,26 +1753,19 @@ void test_spherical_harmonics_object_shells() {
           120.0, false, false, std::nullopt, nullptr,
           Options::Context{false, {}, 1, 1}),
       Catch::Matchers::ContainsSubstring("requires excising Object A"));
-  CHECK_THROWS_WITH(
-      domain::creators::BinaryCompactObject(
-          Object{0.3, 1.0, 3.0, true, std::nullopt, std::nullopt, true},
-          Object{0.5, 1.0, -3.0, true, std::nullopt, std::nullopt, false},
-          std::array<double, 2>{{0.0, 0.0}}, 25.5, 32.4, 1.2, 0_st, 4_st, true,
-          Distribution::Projective, std::vector<double>{}, Distribution::Linear,
-          120.0, false, false, std::nullopt, nullptr,
-          Options::Context{false, {}, 1, 1}),
-      Catch::Matchers::ContainsSubstring("requires CubeScale to be 1.0"));
 
   const auto sh_time_dep_creator =
       TestHelpers::test_option_tag<domain::OptionTags::DomainCreator<3>,
-                                   Metavariables<3, true>>(create_option_string(
-          true, true, true, false, true, 0, 0, 0, 120.0, true, true, false));
+                                   Metavariables<3, true>>(
+          create_option_string(true, true, true, false, true, 0, 0, 0, 120.0,
+                               true, true, false, cube_scale));
   REQUIRE(sh_time_dep_creator != nullptr);
   CHECK_NOTHROW(sh_time_dep_creator->create_domain());
   CHECK(not sh_time_dep_creator->functions_of_time().empty());
 
-  auto invalid_transition_options = create_option_string(
-      true, true, true, false, true, 0, 0, 0, 120.0, true, true, false);
+  auto invalid_transition_options =
+      create_option_string(true, true, true, false, true, 0, 0, 0, 120.0, true,
+                           true, false, cube_scale);
   const std::string valid_transition = "TransitionEndsAtCube: false";
   invalid_transition_options.replace(
       invalid_transition_options.find(valid_transition),
@@ -1764,8 +1784,9 @@ void test_spherical_harmonics_object_shells() {
   // object, so both shape maps must transition to the sphere.
   const auto sh_both_time_dep_creator =
       TestHelpers::test_option_tag<domain::OptionTags::DomainCreator<3>,
-                                   Metavariables<3, true>>(create_option_string(
-          true, true, true, false, true, 0, 0, 0, 120.0, true, true, true));
+                                   Metavariables<3, true>>(
+          create_option_string(true, true, true, false, true, 0, 0, 0, 120.0,
+                               true, true, true, cube_scale));
   REQUIRE(sh_both_time_dep_creator != nullptr);
   const auto time_dependent_domain = sh_both_time_dep_creator->create_domain();
   check_two_sided_neighbor_consistency(time_dependent_domain);
@@ -1934,6 +1955,8 @@ SPECTRE_TEST_CASE("Unit.Domain.Creators.BinaryCompactObject",
   test_binary_factory();
   test_parse_errors();
   test_spherical_harmonics_wavezone();
-  test_spherical_harmonics_object_shells();
+  for (const double cube_scale : {1.0, 1.5}) {
+    test_spherical_harmonics_object_shells(cube_scale);
+  }
   test_kerr_horizon_conforming();
 }

@@ -89,8 +89,8 @@ namespace domain::creators {
  *   interior block exists, then the layer is a cube-to-sphere transition; if
  *   the interior block is excised, then the layer is a spherical shell.
  *   For an excised object, `UseSphericalHarmonics` replaces these six blocks
- *   with a single spherical-harmonic shell. This requires `CubeScale: 1.0`
- *   and, if a shape map is used, `TransitionEndsAtCube: false`. Specify the
+ *   with a single spherical-harmonic shell. If a shape map is used, this
+ *   requires `TransitionEndsAtCube: false`. Specify the
  *   shell's grid points as `[radial_points, L_max]` and its h-refinement as
  *   a single radial refinement level, using the `ObjectAShell` or
  *   `ObjectBShell` block group.
@@ -301,7 +301,7 @@ class BinaryCompactObject : public DomainCreator<3> {
       static constexpr Options::String help = {
           "Use a spherical-harmonic basis in this object's shell (a single "
           "block) instead of the default 6-wedge basis. Requires the interior "
-          "is excised, CubeScale is 1.0, and the shape-map transition ends "
+          "is excised and the shape-map transition ends "
           "at the sphere (TransitionEndsAtCube: false)."};
     };
     template <typename Metavariables>
