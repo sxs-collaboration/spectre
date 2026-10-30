@@ -19,6 +19,7 @@
 #include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/Block.hpp"
+#include "Domain/BlockLogicalCoordinates.hpp"
 #include "Domain/BoundaryConditions/BoundaryCondition.hpp"
 #include "Domain/CreateInitialElement.hpp"
 #include "Domain/Creators/RegisterDerivedWithCharm.hpp"
@@ -643,11 +644,11 @@ void test_physical_separation(
         CAPTURE(i);
         CAPTURE(j);
         if ((blocks[i].topologies() ==
-                domain::topologies::hypercube<VolumeDim> and
-            blocks[j].topologies() ==
-             domain::topologies::hypercube<VolumeDim>) or
+                 domain::topologies::hypercube<VolumeDim> and
+             blocks[j].topologies() ==
+                 domain::topologies::hypercube<VolumeDim>) or
             blocks[i].topologies()[VolumeDim - 1] ==
-            domain::Topology::CartoonCylinder) {
+                domain::Topology::CartoonCylinder) {
           CHECK(domain::physical_separation(blocks[i], blocks[j], time,
                                             functions_of_time) < tolerance);
           if constexpr (VolumeDim > 1) {
@@ -695,7 +696,7 @@ void test_det_jac_positive(
     gsl::at(corner_points, index) =
         tnsr::I<double, VolumeDim, Frame::BlockLogical>(vci.coords_of_corner());
   }
-  for(const auto& block: blocks) {
+  for (const auto& block : blocks) {
     if (block.topologies() != domain::topologies::hypercube<VolumeDim>) {
       continue;
     }
@@ -716,11 +717,136 @@ void test_det_jac_positive(
       const auto& map = block.stationary_map();
       for (size_t i = 0; i < two_to_the(VolumeDim); i++) {
         CAPTURE(i);
-        CHECK(get(determinant(map.jacobian(gsl::at(corner_points, i)))) >
-              0.0);
+        CHECK(get(determinant(map.jacobian(gsl::at(corner_points, i)))) > 0.0);
       }
     }
   }
+}
+
+void test_non_conforming_interface_logical_coords(
+    const std::vector<Block<3>>& blocks) {
+  INFO("Test non-conforming interface logical coords");
+  // Points are only sampled and inverted, so the face mesh need not match the
+  // blocks' bases.
+  const Mesh<2> face_mesh{5, Spectral::Basis::Legendre,
+                          Spectral::Quadrature::Gauss};
+  const size_t n_face_pts = face_mesh.number_of_grid_points();
+
+  // The logical coordinate of a block face (e.g. +/-1 for hypercubes),
+  // found by mapping a face corner forward and back. A corner avoids
+  // coordinate singularities at the face center.
+  const auto face_logical_value = [](const Block<3>& block,
+                                     const Direction<3>& dir) {
+    tnsr::I<DataVector, 3, Frame::BlockLogical> xi_corner{};
+    for (size_t d = 0; d < 3; ++d) {
+      xi_corner[d] = DataVector(1, d == dir.dimension() ? dir.sign() : 1.0);
+    }
+    const auto x_ref = block.stationary_map()(xi_corner);
+    tnsr::I<double, 3, Frame::Inertial> x_ref_pt{};
+    for (size_t d = 0; d < 3; ++d) {
+      x_ref_pt[d] = x_ref[d][0];
+    }
+    const auto xi_back = block.stationary_map().inverse(x_ref_pt);
+    REQUIRE(xi_back.has_value());
+    return (*xi_back)[dir.dimension()];
+  };
+
+  // The direction from `neighbor` to the block with id `block_id`
+  const auto direction_to_block = [](const Block<3>& neighbor,
+                                     const size_t block_id) {
+    for (const auto& [neighbor_direction, neighbor_neighbors] :
+         neighbor.neighbors()) {
+      if (neighbor_neighbors.ids().contains(block_id)) {
+        return neighbor_direction;
+      }
+    }
+    REQUIRE(false);
+    return Direction<3>{};
+  };
+
+  // Guards against passing vacuously
+  size_t n_tested = 0;
+
+  for (const auto& block : blocks) {
+    if (block.is_time_dependent()) {
+      continue;
+    }
+    for (const auto& [dir, nbrs] : block.neighbors()) {
+      // Includes both many-to-one and one-to-one non-conforming interfaces
+      if (nbrs.are_conforming()) {
+        continue;
+      }
+      ++n_tested;
+      CAPTURE(block.id());
+      CAPTURE(dir);
+
+      const double face_val = face_logical_value(block, dir);
+
+      // Neighbors -> block: points on each neighbor's face must lie on this
+      // block's face. Only done when this block has several neighbors, since
+      // otherwise its face may be the smaller one.
+      if (nbrs.ids().size() > 1) {
+        for (const size_t neighbor_id : nbrs.ids()) {
+          CAPTURE(neighbor_id);
+          const auto& nbr_block = blocks[neighbor_id];
+
+          const Direction<3> nbr_dir =
+              direction_to_block(nbr_block, block.id());
+
+          const auto xi_nbr = interface_logical_coordinates(face_mesh, nbr_dir);
+          tnsr::I<DataVector, 3, Frame::BlockLogical> xi_nbr_blk{};
+          for (size_t d = 0; d < 3; ++d) {
+            xi_nbr_blk[d] = xi_nbr[d];
+          }
+          const auto x_phys = nbr_block.stationary_map()(xi_nbr_blk);
+
+          for (size_t pt = 0; pt < n_face_pts; ++pt) {
+            tnsr::I<double, 3, Frame::Inertial> x_pt{};
+            for (size_t d = 0; d < 3; ++d) {
+              x_pt[d] = x_phys[d][pt];
+            }
+            const auto xi_inv =
+                block_logical_coordinates_single_point(x_pt, block);
+            REQUIRE(xi_inv.has_value());
+            CHECK((*xi_inv)[dir.dimension()] == approx(face_val));
+          }
+        }
+      }
+
+      // Block -> neighbors: each point on this block's face must lie on the
+      // abutting face of some neighbor, i.e. the neighbor faces cover this
+      // face. (Checking only that an inverse succeeds is not enough, since
+      // e.g. Affine inverses always succeed.)
+      const auto xi_one = interface_logical_coordinates(face_mesh, dir);
+      tnsr::I<DataVector, 3, Frame::BlockLogical> xi_one_blk{};
+      for (size_t d = 0; d < 3; ++d) {
+        xi_one_blk[d] = xi_one[d];
+      }
+      const auto x_one_phys = block.stationary_map()(xi_one_blk);
+
+      for (size_t pt = 0; pt < n_face_pts; ++pt) {
+        tnsr::I<double, 3, Frame::Inertial> x_pt{};
+        for (size_t d = 0; d < 3; ++d) {
+          x_pt[d] = x_one_phys[d][pt];
+        }
+        const bool covered =
+            alg::any_of(nbrs.ids(), [&](const size_t neighbor_id) {
+              const auto& nbr_block = blocks[neighbor_id];
+              const auto xi_nbr =
+                  block_logical_coordinates_single_point(x_pt, nbr_block);
+              if (not xi_nbr.has_value()) {
+                return false;
+              }
+              const Direction<3> nbr_dir =
+                  direction_to_block(nbr_block, block.id());
+              return (*xi_nbr)[nbr_dir.dimension()] ==
+                     approx(face_logical_value(nbr_block, nbr_dir));
+            });
+        CHECK(covered);
+      }
+    }
+  }
+  REQUIRE(n_tested > 0);
 }
 
 template <size_t VolumeDim>

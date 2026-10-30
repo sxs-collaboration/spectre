@@ -9,6 +9,7 @@ set(LIBRARY_SOURCES
   Test_AngularCylinder.cpp
   Test_AngularDisk.cpp
   Test_BinaryCompactObject.cpp
+  Test_BinaryNeutronStars.cpp
   Test_Brick.cpp
   Test_CartoonCylinder.cpp
   Test_CartoonSphere1D.cpp
@@ -45,6 +46,7 @@ target_link_libraries(
   GeneralRelativity
   H5
   Informer
+  LinearOperators
   SphericalHarmonics
   Strahlkorper
   StrahlkorperIO

@@ -602,10 +602,10 @@ void test_uniform_cylindrical_side_class_b() {
   }
 
   // Concrete case 3: Class C — completely separated z-bands
-  // (BLeftHollowCylinder-like from the Pill domain).
+  // (BLeftHollowCylinder-like from the BinaryNeutronStars domain).
   // z_plus_one < z_minus_two: the inner sphere's full band lies entirely below
   // the outer sphere's lower z-cut, so there is no z-overlap between the bands.
-  // Parameters match Pill with CenterA=0.5, CenterB=-0.70,
+  // Parameters match BinaryNeutronStars with CenterA=0.5, CenterB=-0.70,
   // WedgeInnerRadius=0.6, WedgeOuterRadius=1.1, CylinderOuterRadius=3.  Inner
   // sphere B after the minus-x rotation: center=(0,0,0.7), R_B=1.1. Inner band
   // [z_minus_one, z_plus_one] = [0.7, 1.3]. Outer band [z_minus_two,
