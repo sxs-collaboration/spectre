@@ -74,6 +74,8 @@ Affiliations:
   - &oberlin
     Department of Physics and Astronomy, Oberlin College, Oberlin, Ohio 44074,
     USA
+  - &pucsp
+    Biomaterials & Regenerative Medicine, PUCSP, São Paulo, São Paulo, Brazil
 
 Authors:
   Description: |
@@ -267,6 +269,10 @@ Authors:
 
       This author list is ordered by last name.
     List:
+      - Name: Agourakis, Demetrios Chiuratto
+        Orcid: 0009-0001-8671-8878
+        Affiliations: [*pucsp]
+        GitHub: agourakis82
       - Name: Anantpurkar, Isha
         Orcid: 0000-0002-5814-4109
         Affiliations: [*cornell]
