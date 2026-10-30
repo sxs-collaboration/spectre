@@ -111,8 +111,8 @@ struct CreateElementCollection {
     const auto& blocks = domain.blocks();
 
     const auto weighting_extents_override =
-        ::evolution::dg::weighting_extents_override_from_cache(local_cache,
-                                                               initial_extents);
+        ::evolution::dg::weighting_extents_override_from_cache(
+            local_cache, initial_refinement_levels, initial_extents);
 
     const size_t total_num_elements = [&blocks, &initial_refinement_levels]() {
       size_t result = 0;
