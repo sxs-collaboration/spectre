@@ -8,3 +8,30 @@
 # we create our own `build` directory in the container
 build*
 containers/Dockerfile.buildenv
+
+# COPY . is used by the deployment images. Never embed checkout authentication
+# (including credentials persisted by actions/checkout) or local credentials.
+**/.git
+**/.git-credentials
+**/.ssh
+**/.aws
+**/.azure
+**/.config/gcloud
+**/.docker
+**/.gnupg
+**/.kube
+**/.netrc
+**/.npmrc
+**/.pypirc
+**/.env
+**/.env.*
+.travis/deploy_key
+
+# Personal development configuration is not part of the distributed source.
+AGENTS.local.md*
+CLAUDE.local.md*
+CMakeUserPresets.json
+.aider*
+.claude/settings.local.json
+.codex/*
+!.codex/skills

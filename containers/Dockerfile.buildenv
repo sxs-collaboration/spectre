@@ -127,27 +127,55 @@ ARG UBUNTU_VERSION=26.04
 # https://docs.docker.com/engine/reference/builder/#automatic-platform-args-in-the-global-scope
 # for how TARGETARCH is defined.
 ARG TARGETARCH
+ARG PARALLEL_MAKE_ARG=-j4
+
+# Update trust before downloading code. Ubuntu 18.04 still needs manual removal
+# of both affected roots: https://emudhra.we-have-a-problem.com/
+# Removing AAA also distrusts unaffected sites that only chain to that root.
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends ca-certificates \
+    && if [ "${UBUNTU_VERSION}" = 18.04 ]; then \
+        sed -i \
+            -e 's|^mozilla/emSign_ECC_Root_CA_-_G3.crt$|!&|' \
+            -e 's|^mozilla/Comodo_AAA_Services_root.crt$|!&|' \
+            /etc/ca-certificates.conf \
+        && update-ca-certificates --fresh; \
+    fi
+ENV SSL_CERT_FILE=/etc/ssl/certs/ca-certificates.crt \
+    PIP_CERT=/etc/ssl/certs/ca-certificates.crt \
+    REQUESTS_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt \
+    NODE_OPTIONS=--use-openssl-ca
 
 # Install add-apt-repository and basic tools
+#
+# Modern add-apt-repository scopes the PPA key to its repository and allows CI
+# to add the same PPA again. Ubuntu 18.04 needs an explicit signed-by keyring.
 #
 # libnss-sss is needed for getting usernames inside the container
 # on HPC systems and is a small install (300kB).
 RUN apt-get update -y \
-    && apt-get install -y software-properties-common wget git file \
-    && add-apt-repository ppa:ubuntu-toolchain-r/test \
+    && apt-get install -y software-properties-common wget git file gnupg \
+    && if [ ${UBUNTU_VERSION} = 18.04 ]; then \
+    wget -O /usr/share/keyrings/ubuntu-toolchain.asc \
+        'https://keyserver.ubuntu.com/pks/lookup?op=get&search=0xC8EC952E2A0E1FBDC5090F6A2C277A0A352154E5' \
+    && echo "deb [signed-by=/usr/share/keyrings/ubuntu-toolchain.asc] https://ppa.launchpadcontent.net/ubuntu-toolchain-r/test/ubuntu/ $(lsb_release -cs) main" \
+        > /etc/apt/sources.list.d/ubuntu-toolchain.list; \
+    else \
+    add-apt-repository -y ppa:ubuntu-toolchain-r/test; \
+    fi \
     && apt-get install -y --no-install-recommends libnss-sss
 
 # Add LLVM apt repository for newer versions of clang.
 # Then lower the priority of apt.llvm.org so packages default to Ubuntu.
-RUN wget -qO- https://apt.llvm.org/llvm-snapshot.gpg.key | \
-    tee /etc/apt/trusted.gpg.d/apt.llvm.org.asc \
+RUN wget -O /usr/share/keyrings/llvm.asc \
+        https://apt.llvm.org/llvm-snapshot.gpg.key \
     && if [ ${UBUNTU_VERSION} = 18.04 ]; then \
-    add-apt-repository -y \
-    'deb http://apt.llvm.org/bionic/ llvm-toolchain-bionic-17 main'; \
+    LLVM_SUITE=llvm-toolchain-bionic-17; \
     else \
-    add-apt-repository -y \
-    "deb http://apt.llvm.org/$(lsb_release -cs)/ llvm-toolchain-$(lsb_release -cs) main"; \
+    LLVM_SUITE=llvm-toolchain-$(lsb_release -cs); \
     fi \
+    && echo "deb [signed-by=/usr/share/keyrings/llvm.asc] https://apt.llvm.org/$(lsb_release -cs)/ ${LLVM_SUITE} main" \
+        > /etc/apt/sources.list.d/llvm.list \
     && echo 'Package: *\n\
 Pin: origin apt.llvm.org\n\
 Pin-Priority: 100\n' > /etc/apt/preferences.d/llvm-apt-repo
@@ -249,22 +277,32 @@ RUN apt-get update -y \
 ENV DEBIAN_FRONTEND noninteractive
 ENV VIRTUAL_ENV=/opt/venv
 ENV PATH="${VIRTUAL_ENV}/bin:${PATH}"
+# Bootstrap pip using only system trust. Newer pip also trusts bundled roots
+# unless legacy-certs is selected; older pip does not recognize that option.
 RUN apt-get update -y \
     && if [ ${UBUNTU_VERSION} = 18.04 ]; then \
     apt-get install -y zlib1g-dev libncurses5-dev libgdbm-dev libnss3-dev \
     libssl-dev libreadline-dev libffi-dev libsqlite3-dev wget libbz2-dev \
     make \
-    && wget https://www.python.org/ftp/python/3.10.1/Python-3.10.1.tgz \
-    && tar -xf Python-3.10.1.tgz && cd ./Python-3.10.1 \
+    && wget https://www.python.org/ftp/python/3.11.18/Python-3.11.18.tgz \
+    && printf '%s  %s\n' \
+        '5f62711b12470fd435f83f1451c1b1ef4a179aebc715c716874b0967567d814e' \
+        Python-3.11.18.tgz \
+        | sha256sum -c - \
+    && tar -xf Python-3.11.18.tgz && cd ./Python-3.11.18 \
     && ./configure --enable-optimizations && make ${PARALLEL_MAKE_ARG} \
     && make altinstall && cd ../ \
-    && rm -rf ./Python-3.10.1.tgz ./Python-3.10.1 \
-    && python3.10 -m venv "${VIRTUAL_ENV}"; \
+    && rm -rf ./Python-3.11.18.tgz ./Python-3.11.18 \
+    && python3.11 -m venv "${VIRTUAL_ENV}"; \
     else \
     apt-get install -y python3-dev python3-venv pkg-config \
     && python3 -m venv "${VIRTUAL_ENV}"; \
     fi \
-    && python -m pip install --upgrade pip
+    && set -- \
+    && if python -m pip --use-deprecated=legacy-certs --version >/dev/null 2>&1; then \
+        set -- --use-deprecated=legacy-certs; \
+    fi \
+    && python -m pip install "$@" --upgrade 'pip>=26.2.2' 'certifi>=2026.10.19'
 
 # Install Python packages. We only install packages that are needed by the
 # build system (e.g. to compile Python bindings or build documentation) or used
@@ -302,7 +340,7 @@ ARG PARALLEL_MAKE_ARG=-j4
 
 # Install build dependencies for the host system
 RUN apt-get update -y \
-    && apt-get install -y cmake clang lld flex bison wget git
+    && apt-get install -y ca-certificates cmake clang lld flex bison wget git
 
 # Install build dependencies for the target architecture
 #
@@ -418,7 +456,7 @@ RUN git clone --single-branch --branch 2.1.0 --depth 1 \
     && cd .. \
     && rm -rf libxsmm
 # - xsimd https://github.com/xtensor-stack/xsimd
-RUN wget http://github.com/xtensor-stack/xsimd/archive/refs/tags/14.3.0.tar.gz -O xsimd.tar.gz \
+RUN wget https://github.com/xtensor-stack/xsimd/archive/refs/tags/14.3.0.tar.gz -O xsimd.tar.gz \
     && tar -xzf xsimd.tar.gz && rm xsimd.tar.gz \
     && cd ./xsimd-*  \
     && mkdir build \
@@ -482,17 +520,18 @@ RUN apt-get update -y \
 # If this mirror is ever unavailable, swap to another core mirror serving the
 # live `tlnet` (see https://ctan.org/mirrors), or fall back to a frozen historic
 # snapshot under https://texlive.info/historic/systems/texlive/<year>/tlnet-final .
+COPY support/TeXLive/texlive.profile /tmp/texlive.profile
 RUN if [ ${UBUNTU_VERSION} = 26.04 ]; then \
     mkdir /sxscollaboration/texlive && cd /sxscollaboration/texlive \
     && wget https://ctan.math.illinois.edu/systems/texlive/tlnet/install-tl-unx.tar.gz \
     && tar -xzf install-tl-unx.tar.gz \
     && rm install-tl-unx.tar.gz \
-    && wget https://raw.githubusercontent.com/sxs-collaboration/spectre/develop/support/TeXLive/texlive.profile \
-    && install-tl-*/install-tl -profile=texlive.profile \
+    && install-tl-*/install-tl -profile=/tmp/texlive.profile \
         -repository https://ctan.math.illinois.edu/systems/texlive/tlnet \
-    && rm -r install-tl-* texlive.profile install-tl.log \
+    && rm -r install-tl-* install-tl.log \
     && /sxscollaboration/texlive/bin/${TEX_ARCH}-linux/tlmgr install bibtex \
-    ; fi
+    ; fi \
+    && rm /tmp/texlive.profile
 ENV PATH="${PATH}:/sxscollaboration/texlive/bin/${TEX_ARCH}-linux"
 
 # Remove the apt-get cache in order to reduce image size
@@ -567,15 +606,23 @@ RUN apt-get update -y \
 # ParaView with Python, as in the `demo` image. Append it to the PATH so the
 # bundled Python doesn't shadow the container's Python.
 RUN if [ "$TARGETARCH" != "arm64" ] ; then \
-        wget -O paraview.tar.gz --no-check-certificate "https://www.paraview.org/paraview-downloads/download.php?submit=Download&version=v5.10&type=binary&os=Linux&downloadFile=ParaView-5.10.1-osmesa-MPI-Linux-Python3.9-x86_64.tar.gz" \
+        wget -O paraview.tar.gz "https://www.paraview.org/paraview-downloads/download.php?submit=Download&version=v5.10&type=binary&os=Linux&downloadFile=ParaView-5.10.1-osmesa-MPI-Linux-Python3.9-x86_64.tar.gz" \
         && tar -xzf paraview.tar.gz \
         && rm paraview.tar.gz \
         && mv ParaView-* /opt/paraview; \
     fi
 ENV PATH="${PATH}:/opt/paraview/bin"
 
-# Install coding agents
-RUN curl -fsSL https://deb.nodesource.com/setup_24.x | bash - \
+# Install coding agents through a scoped repository, without executing a
+# downloaded repository-setup script as root.
+RUN wget -O /usr/share/keyrings/nodesource.asc \
+        https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key \
+    && echo 'deb [signed-by=/usr/share/keyrings/nodesource.asc] https://deb.nodesource.com/node_24.x nodistro main' \
+        > /etc/apt/sources.list.d/nodesource.list \
+    && printf '%s\n' 'Package: nodejs' 'Pin: origin deb.nodesource.com' \
+        'Pin-Priority: 600' \
+        > /etc/apt/preferences.d/nodejs \
+    && apt-get update -y \
     && apt-get install -y --no-install-recommends nodejs \
     && apt-get -y clean \
     && npm install -g @anthropic-ai/claude-code @openai/codex @github/copilot
@@ -611,6 +658,19 @@ ARG BUILDARCH
 ARG TARGETARCH
 ARG UBUNTU_VERSION=26.04
 ARG PARALLEL_MAKE_ARG=-j2
+
+# Remote images can predate the CA fix. Update them before configuring SpECTRE.
+ENV SSL_CERT_FILE=/etc/ssl/certs/ca-certificates.crt \
+    PIP_CERT=/etc/ssl/certs/ca-certificates.crt \
+    REQUESTS_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt \
+    NODE_OPTIONS=--use-openssl-ca
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends ca-certificates \
+    && set -- \
+    && if python -m pip --use-deprecated=legacy-certs --version >/dev/null 2>&1; then \
+        set -- --use-deprecated=legacy-certs; \
+    fi \
+    && python -m pip install "$@" --upgrade 'pip>=26.2.2' 'certifi>=2026.10.19'
 
 COPY . spectre/
 
@@ -663,7 +723,7 @@ RUN apt-get update -y \
 # should install a binary of ParaView for Mac and move data to be
 # visualized outside of the container.
 RUN if [ "$TARGETARCH" != "arm64" ] ; then \
-        wget -O paraview.tar.gz --no-check-certificate "https://www.paraview.org/paraview-downloads/download.php?submit=Download&version=v5.10&type=binary&os=Linux&downloadFile=ParaView-5.10.1-osmesa-MPI-Linux-Python3.9-x86_64.tar.gz" \
+        wget -O paraview.tar.gz "https://www.paraview.org/paraview-downloads/download.php?submit=Download&version=v5.10&type=binary&os=Linux&downloadFile=ParaView-5.10.1-osmesa-MPI-Linux-Python3.9-x86_64.tar.gz" \
         && tar -xzf paraview.tar.gz \
         && rm paraview.tar.gz \
         && mv ParaView-* /opt/paraview; \
@@ -688,6 +748,24 @@ ARG BUILDARCH
 ARG TARGETARCH
 ARG UBUNTU_VERSION=18.04
 ARG PARALLEL_MAKE_ARG=-j4
+
+# Keep the legacy deployment image's download clients protected as well.
+ENV SSL_CERT_FILE=/etc/ssl/certs/ca-certificates.crt \
+    PIP_CERT=/etc/ssl/certs/ca-certificates.crt \
+    REQUESTS_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt \
+    NODE_OPTIONS=--use-openssl-ca
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends ca-certificates \
+    && sed -i \
+        -e 's|^mozilla/emSign_ECC_Root_CA_-_G3.crt$|!&|' \
+        -e 's|^mozilla/Comodo_AAA_Services_root.crt$|!&|' \
+        /etc/ca-certificates.conf \
+    && update-ca-certificates --fresh \
+    && set -- \
+    && if python -m pip --use-deprecated=legacy-certs --version >/dev/null 2>&1; then \
+        set -- --use-deprecated=legacy-certs; \
+    fi \
+    && python -m pip install "$@" --upgrade 'pip>=26.2.2' 'certifi>=2026.10.19'
 
 WORKDIR /sxscollaboration
 
