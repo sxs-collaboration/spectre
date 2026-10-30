@@ -10,12 +10,17 @@
 #include "ControlSystem/Protocols/Measurement.hpp"
 #include "ControlSystem/Protocols/Submeasurement.hpp"
 #include "ControlSystem/RunCallbacks.hpp"
+#include "ControlSystem/Tags/SystemTags.hpp"
+#include "DataStructures/DataBox/DataBox.hpp"
 #include "Domain/Structure/ObjectLabel.hpp"
+#include "Parallel/GlobalCache.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/Callbacks/FailedHorizonFind.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/Callbacks/ObserveCenters.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/Destination.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/Events/FindApparentHorizon.hpp"
+#include "ParallelAlgorithms/ApparentHorizonFinder/FastFlow.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/HorizonAliases.hpp"
+#include "ParallelAlgorithms/ApparentHorizonFinder/Protocols/Callback.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/Protocols/HorizonMetavars.hpp"
 #include "ParallelAlgorithms/Interpolation/Protocols/InterpolationTargetTag.hpp"
 #include "Time/Tags/TimeAndPrevious.hpp"
@@ -66,9 +71,25 @@ struct BothHorizons : tt::ConformsTo<protocols::Measurement> {
 
       using frame = ::Frame::Distorted;
 
+      /// Write centers when control-system diagnostic output is enabled.
+      struct ObserveCenters : tt::ConformsTo<ah::protocols::Callback> {
+        using const_global_cache_tags =
+            tmpl::list<control_system::Tags::WriteDataToDisk>;
+
+        template <typename DbTags, typename Metavariables>
+        static void apply(const db::DataBox<DbTags>& box,
+                          Parallel::GlobalCache<Metavariables>& cache,
+                          const FastFlow::Status status) {
+          if (Parallel::get<control_system::Tags::WriteDataToDisk>(cache)) {
+            ah::callbacks::ObserveCenters<HorizonMetavars>::apply(box, cache,
+                                                                  status);
+          }
+        }
+      };
+
       using horizon_find_callbacks =
           tmpl::list<control_system::RunCallbacks<FindHorizon, ControlSystems>,
-                     ::ah::callbacks::ObserveCenters<HorizonMetavars>>;
+                     ObserveCenters>;
       using horizon_find_failure_callbacks =
           tmpl::list<ah::callbacks::FailedHorizonFind<HorizonMetavars, false>>;
 

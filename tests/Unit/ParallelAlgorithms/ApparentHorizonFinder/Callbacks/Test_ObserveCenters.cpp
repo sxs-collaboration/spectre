@@ -1,7 +1,6 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "DataStructures/LinkedMessageId.hpp"
 #include "Framework/TestingFramework.hpp"
 
 #include <array>
@@ -10,6 +9,7 @@
 #include <string>
 
 #include "DataStructures/DataBox/DataBox.hpp"
+#include "DataStructures/LinkedMessageId.hpp"
 #include "DataStructures/Matrix.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
@@ -28,7 +28,6 @@
 #include "Utilities/TMPL.hpp"
 
 namespace {
-
 template <typename Fr>
 struct HorizonMetavars : tt::ConformsTo<ah::protocols::HorizonMetavars> {
   using temporal_id_tag = ::Tags::TimeAndPrevious<0>;
@@ -48,12 +47,9 @@ struct HorizonMetavars : tt::ConformsTo<ah::protocols::HorizonMetavars> {
 };
 
 struct TestMetavars {
-  using const_global_cache_tags = tmpl::list<ah::Tags::ObserveCenters>;
   using component_list =
       tmpl::list<TestHelpers::observers::MockObserverWriter<TestMetavars>>;
 };
-
-using FoTPtr = std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>;
 
 template <typename LocalHorizonMetavars>
 void test() {
@@ -64,7 +60,7 @@ void test() {
   std::uniform_real_distribution<double> center_dist{-10.0, 10.0};
 
   // set up runner and stuff
-  ActionTesting::MockRuntimeSystem<TestMetavars> runner{{true}};
+  ActionTesting::MockRuntimeSystem<TestMetavars> runner{{}};
   runner.set_phase(Parallel::Phase::Initialization);
   ActionTesting::emplace_nodegroup_component_and_initialize<observer_writer>(
       make_not_null(&runner), {});
@@ -86,51 +82,51 @@ void test() {
                          ylm::Tags::EuclideanAreaElement<frame>>>
       box{};
 
-  const auto update_stored_centers = [&make_center, &grid_centers,
-                                      &inertial_centers,
-                                      &box](const LinkedMessageId<double>&
-                                                current_time) {
-    const auto grid_center = make_center();
-    const auto inertial_center = make_center();
+  const auto update_stored_centers =
+      [&make_center, &grid_centers, &inertial_centers,
+       &box](const LinkedMessageId<double>& current_time) {
+        const auto grid_center = make_center();
+        const auto inertial_center = make_center();
 
-    grid_centers.push_back(grid_center);
-    inertial_centers.push_back(inertial_center);
+        grid_centers.push_back(grid_center);
+        inertial_centers.push_back(inertial_center);
 
-    db::mutate<ah::Tags::CurrentTime, ylm::Tags::Strahlkorper<frame>,
-               ylm::Tags::CartesianCoords<::Frame::Inertial>,
-               ylm::Tags::EuclideanAreaElement<frame>>(
-        [&](const gsl::not_null<std::optional<LinkedMessageId<double>>*>
-                box_current_time,
-            const gsl::not_null<ylm::Strahlkorper<frame>*> box_grid_horizon,
-            const gsl::not_null<tnsr::I<DataVector, 3, ::Frame::Inertial>*>
-                box_inertial_coords,
-            const gsl::not_null<Scalar<DataVector>*> box_area_element) {
-          *box_current_time = current_time;
-          *box_grid_horizon = ylm::Strahlkorper<frame>{10, 1.0, grid_center};
-          const auto theta_phi = ylm::theta_phi(*box_grid_horizon);
-          const auto radius = ylm::radius(*box_grid_horizon);
-          const auto rhat = ylm::rhat(theta_phi);
+        db::mutate<ah::Tags::CurrentTime, ylm::Tags::Strahlkorper<frame>,
+                   ylm::Tags::CartesianCoords<::Frame::Inertial>,
+                   ylm::Tags::EuclideanAreaElement<frame>>(
+            [&](const gsl::not_null<std::optional<LinkedMessageId<double>>*>
+                    box_current_time,
+                const gsl::not_null<ylm::Strahlkorper<frame>*> box_grid_horizon,
+                const gsl::not_null<tnsr::I<DataVector, 3, ::Frame::Inertial>*>
+                    box_inertial_coords,
+                const gsl::not_null<Scalar<DataVector>*> box_area_element) {
+              *box_current_time = current_time;
+              *box_grid_horizon =
+                  ylm::Strahlkorper<frame>{10, 1.0, grid_center};
+              const auto theta_phi = ylm::theta_phi(*box_grid_horizon);
+              const auto radius = ylm::radius(*box_grid_horizon);
+              const auto rhat = ylm::rhat(theta_phi);
 
-          // Set area element to the Euclidean area element for the test.
-          *box_area_element = gr::surfaces::euclidean_area_element(
-              ylm::jacobian(theta_phi),
-              ylm::normal_one_form(ylm::cartesian_derivs_of_scalar(
-                                       radius, *box_grid_horizon, radius,
-                                       ylm::inv_jacobian(theta_phi)),
-                                   rhat),
-              radius, rhat);
+              // Set area element to the Euclidean area element for the test.
+              *box_area_element = gr::surfaces::euclidean_area_element(
+                  ylm::jacobian(theta_phi),
+                  ylm::normal_one_form(ylm::cartesian_derivs_of_scalar(
+                                           radius, *box_grid_horizon, radius,
+                                           ylm::inv_jacobian(theta_phi)),
+                                       rhat),
+                  radius, rhat);
 
-          // Simply offset the inertial coords from the grid coords.
-          const auto grid_coords =
-              ylm::cartesian_coords(*box_grid_horizon, radius, rhat);
-          for (size_t i = 0; i < 3; ++i) {
-            box_inertial_coords->get(i) = grid_coords.get(i) +
-                                          gsl::at(inertial_center, i) -
-                                          gsl::at(grid_center, i);
-          }
-        },
-        make_not_null(&box));
-  };
+              // Simply offset the inertial coords from the grid coords.
+              const auto grid_coords =
+                  ylm::cartesian_coords(*box_grid_horizon, radius, rhat);
+              for (size_t i = 0; i < 3; ++i) {
+                box_inertial_coords->get(i) = grid_coords.get(i) +
+                                              gsl::at(inertial_center, i) -
+                                              gsl::at(grid_center, i);
+              }
+            },
+            make_not_null(&box));
+      };
 
   // times to write
   const std::vector<double> times{0.0, 0.1, 0.2, 0.3, 0.4, 0.5};

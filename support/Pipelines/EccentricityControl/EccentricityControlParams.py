@@ -27,8 +27,8 @@ from spectre.Visualization.PlotTrajectories import import_A_and_B
 
 logger = logging.getLogger(__name__)
 
-DEFAULT_AHA_TRAJECTORIES = "ApparentHorizons/ControlSystemAhA_Centers.dat"
-DEFAULT_AHB_TRAJECTORIES = "ApparentHorizons/ControlSystemAhB_Centers.dat"
+DEFAULT_AHA_TRAJECTORIES = "ApparentHorizons/ObservationAhA_Centers.dat"
+DEFAULT_AHB_TRAJECTORIES = "ApparentHorizons/ObservationAhB_Centers.dat"
 
 
 def eccentricity_control_params(
