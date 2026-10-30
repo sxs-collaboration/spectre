@@ -5,12 +5,16 @@
 
 #include <array>
 #include <cstddef>
+#include <optional>
 #include <unordered_map>
 #include <vector>
 
 #include "DataStructures/DataBox/Tag.hpp"
+#include "Domain/Block.hpp"
 #include "Domain/Creators/Tags/Domain.hpp"
+#include "Domain/Domain.hpp"
 #include "Domain/ElementDistribution.hpp"
+#include "Domain/Structure/ElementId.hpp"
 #include "Domain/Tags/ElementDistribution.hpp"
 #include "Evolution/DiscontinuousGalerkin/OnlyDgBlockIds.hpp"
 #include "Evolution/DiscontinuousGalerkin/OptionTags.hpp"
@@ -21,28 +25,40 @@
 
 namespace evolution::dg {
 /*!
- * \brief Returns the per-block extents to use in place of `initial_extents`
- * when weighting subcell-capable elements by their finite-difference grid
- * instead of their DG grid (see
+ * \brief Returns the per-element extents to use in place of `initial_extents`
+ * when weighting the elements that run the finite-difference subcell scheme by
+ * their finite-difference grid instead of their DG grid (see
  * `evolution::dg::Tags::UseSubcellGridPointsForDistribution`).
  *
- * For each block not in `only_dg_block_ids`, the returned extents are the
- * number of finite-difference grid points \f$2N-1\f$ corresponding to the
- * \f$N\f$ DG grid points in `initial_extents`, matching the subcell mesh built
- * by `evolution::dg::subcell::fd::mesh`. Blocks in `only_dg_block_ids` are
- * omitted from the returned map, since they always run on the DG grid.
+ * An element gets an entry if it starts on the subcell grid, i.e. if
+ * - its block is not in `only_dg_block_ids`,
+ * - it does not border a block in `only_dg_block_ids`, and
+ * - it is not on an external boundary, unless
+ *   `subcell_enabled_at_external_boundary` is `true`.
+ *
+ * These conditions must match those in
+ * `evolution::dg::subcell::Actions::Initialize`. The entry is the number of
+ * finite-difference grid points \f$2N-1\f$ corresponding to the \f$N\f$ DG
+ * grid points in `initial_extents`, matching the subcell mesh built by
+ * `evolution::dg::subcell::fd::mesh`. All other elements always run on the
+ * DG grid and so are omitted from the returned map.
  */
 template <size_t Dim>
-std::unordered_map<size_t, std::array<size_t, Dim>>
+std::unordered_map<ElementId<Dim>, std::array<size_t, Dim>>
 compute_weighting_extents_override(
     const std::vector<size_t>& only_dg_block_ids,
-    const std::vector<std::array<size_t, Dim>>& initial_extents);
+    const std::vector<Block<Dim>>& blocks,
+    const std::vector<std::array<size_t, Dim>>& initial_refinement_levels,
+    const std::vector<std::array<size_t, Dim>>& initial_extents,
+    bool subcell_enabled_at_external_boundary);
 
 namespace Tags {
 /// \ingroup DataBoxTagsGroup
 /// Tag that holds whether to use the number of finite-difference subcell
 /// grid points (instead of the number of DG grid points) when weighting
-/// subcell-capable elements for the `domain::Tags::ElementDistribution`.
+/// elements that start on the subcell grid for the
+/// `domain::Tags::ElementDistribution` (see
+/// `evolution::dg::compute_weighting_extents_override`).
 ///
 /// Errors unless the `ElementDistribution` is
 /// `domain::ElementWeight::NumGridPoints`, since that is the only weight
@@ -105,14 +121,18 @@ using element_distribution_cache_tags = tmpl::append<
  * `evolution::dg::Tags::UseSubcellGridPointsForDistribution` is `false`.
  */
 template <size_t Dim, typename Metavariables>
-std::optional<std::unordered_map<size_t, std::array<size_t, Dim>>>
+std::optional<std::unordered_map<ElementId<Dim>, std::array<size_t, Dim>>>
 weighting_extents_override_from_cache(
     const Parallel::GlobalCache<Metavariables>& cache,
+    const std::vector<std::array<size_t, Dim>>& initial_refinement_levels,
     const std::vector<std::array<size_t, Dim>>& initial_extents) {
   if constexpr (using_subcell_v<Metavariables>) {
     if (Parallel::get<Tags::UseSubcellGridPointsForDistribution>(cache)) {
       return {compute_weighting_extents_override(
-          Parallel::get<Tags::OnlyDgBlockIds<Dim>>(cache), initial_extents)};
+          Parallel::get<Tags::OnlyDgBlockIds<Dim>>(cache),
+          Parallel::get<domain::Tags::Domain<Dim>>(cache).blocks(),
+          initial_refinement_levels, initial_extents,
+          Metavariables::SubcellOptions::subcell_enabled_at_external_boundary)};
     }
   }
   return std::nullopt;

@@ -34,13 +34,8 @@ struct ZeroMhdTimeDerivatives {
   static void apply(const gsl::not_null<Variables<DtTagsList>*> dt_variables,
                     const Element<3>& element,
                     const std::vector<size_t>& only_dg_block_ids) {
-    const bool bordering_dg_block = alg::any_of(
-        element.neighbors(),
-        [&only_dg_block_ids](const auto& direction_and_neighbor) {
-          const size_t first_block_id =
-              direction_and_neighbor.second.ids().begin()->block_id();
-          return alg::found(only_dg_block_ids, first_block_id);
-        });
+    const bool bordering_dg_block =
+        evolution::dg::borders_only_dg_block(element, only_dg_block_ids);
     const bool in_dg_only_zone =
         alg::found(only_dg_block_ids, element.id().block_id());
     if (bordering_dg_block and not in_dg_only_zone) {

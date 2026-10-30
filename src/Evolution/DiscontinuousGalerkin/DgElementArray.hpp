@@ -116,8 +116,8 @@ void DgElementArray<Metavariables, PhaseDepActionList>::allocate_array(
   const auto& blocks = domain.blocks();
 
   const auto weighting_extents_override =
-      evolution::dg::weighting_extents_override_from_cache(local_cache,
-                                                           initial_extents);
+      evolution::dg::weighting_extents_override_from_cache(
+          local_cache, initial_refinement_levels, initial_extents);
 
   Parallel::create_elements_using_distribution(
       [&dg_element_array, &global_cache, &initialization_items](

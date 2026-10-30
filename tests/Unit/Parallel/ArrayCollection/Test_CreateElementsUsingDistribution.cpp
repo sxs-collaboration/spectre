@@ -14,6 +14,7 @@
 #include "Domain/Creators/AlignedLattice.hpp"
 #include "Domain/ElementDistribution.hpp"
 #include "Domain/Structure/ElementId.hpp"
+#include "Domain/Structure/InitialElementIds.hpp"
 #include "NumericalAlgorithms/Spectral/Basis.hpp"
 #include "NumericalAlgorithms/Spectral/Quadrature.hpp"
 #include "Parallel/ArrayCollection/CreateElementsUsingDistribution.hpp"
@@ -36,7 +37,8 @@ domain::creators::AlignedLattice<2> make_two_block_domain() {
 template <size_t Dim>
 std::unordered_map<ElementId<Dim>, size_t> get_distribution(
     const domain::creators::AlignedLattice<Dim>& domain_creator,
-    const std::optional<std::unordered_map<size_t, std::array<size_t, Dim>>>&
+    const std::optional<
+        std::unordered_map<ElementId<Dim>, std::array<size_t, Dim>>>&
         weighting_extents_override) {
   const auto domain = domain_creator.create_domain();
   // NOLINTNEXTLINE(clang-analyzer-cplusplus.NewDelete)
@@ -71,13 +73,18 @@ SPECTRE_TEST_CASE(
   const auto baseline_distribution =
       get_distribution<2>(domain_creator, std::nullopt);
 
-  // Override block 1's weighting extents to be much larger than its actual
-  // (3x3) DG extents, e.g. as if it were being weighted by a much finer
-  // subcell grid. This should change how elements are assigned to procs
-  // relative to the baseline, since block 1's elements now dominate the
-  // total cost.
-  const std::unordered_map<size_t, std::array<size_t, 2>>
-      weighting_extents_override{{1, {{9, 9}}}};
+  // Override the weighting extents of block 1's elements to be much larger
+  // than their actual (3x3) DG extents, e.g. as if they were being weighted by
+  // a much finer subcell grid. This should change how elements are assigned
+  // to procs relative to the baseline, since block 1's elements now dominate
+  // the total cost.
+  std::unordered_map<ElementId<2>, std::array<size_t, 2>>
+      weighting_extents_override{};
+  for (const auto& element_id :
+       initial_element_ids(1, domain_creator.initial_refinement_levels()[1])) {
+    weighting_extents_override.emplace(element_id,
+                                       std::array<size_t, 2>{{9, 9}});
+  }
   const auto overridden_distribution =
       get_distribution<2>(domain_creator, weighting_extents_override);
 
@@ -91,10 +98,15 @@ SPECTRE_TEST_CASE(
   // relative cost of block 1's elements compared to block 0's.
   CHECK(baseline_distribution != overridden_distribution);
 
-  // Directly verify the override is equivalent to substituting the
-  // overridden extents into `initial_extents` when computing the element
-  // costs, which is what `create_elements_using_distribution` does
-  // internally.
+  // An empty override is the same as no override
+  CHECK(get_distribution<2>(
+            domain_creator,
+            std::unordered_map<ElementId<2>, std::array<size_t, 2>>{}) ==
+        baseline_distribution);
+
+  // Overriding every element of block 1 is equivalent to substituting the
+  // overridden extents into `initial_extents` for block 1 when computing the
+  // element costs.
   const auto domain = domain_creator.create_domain();
   std::vector<std::array<size_t, 2>> manually_merged_extents =
       domain_creator.initial_extents();

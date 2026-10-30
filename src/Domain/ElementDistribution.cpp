@@ -101,7 +101,9 @@ std::unordered_map<ElementId<Dim>, double> get_element_costs(
     const std::vector<std::array<size_t, Dim>>& initial_extents,
     const ElementWeight element_weight,
     const std::optional<Spectral::Basis>& i1_basis,
-    const std::optional<Spectral::Quadrature>& i1_quadrature) {
+    const std::optional<Spectral::Quadrature>& i1_quadrature,
+    const std::unordered_map<ElementId<Dim>, std::array<size_t, Dim>>&
+        extents_override) {
   std::unordered_map<ElementId<Dim>, double> element_costs{};
 
   for (size_t block_number = 0; block_number < blocks.size(); block_number++) {
@@ -116,7 +118,12 @@ std::unordered_map<ElementId<Dim>, double> get_element_costs(
       if (element_weight == ElementWeight::Uniform) {
         element_costs.insert({element_id, 1.0});
       } else if (element_weight == ElementWeight::NumGridPoints) {
-        element_costs.insert({element_id, grid_points_per_element});
+        const auto override_it = extents_override.find(element_id);
+        element_costs.insert(
+            {element_id, override_it == extents_override.end()
+                             ? grid_points_per_element
+                             : alg::accumulate(override_it->second, 1_st,
+                                               std::multiplies<size_t>())});
       } else {
         ASSERT(element_weight == ElementWeight::NumGridPointsAndGridSpacing,
                "Unknown element_weight");
@@ -124,6 +131,11 @@ std::unordered_map<ElementId<Dim>, double> get_element_costs(
                "Since element_weight is "
                "ElementWeight::NumGridPointsAndGridSpacing, i1_basis and "
                "i1_quadrature must have values");
+        ASSERT(extents_override.empty(),
+               "Since element_weight is "
+               "ElementWeight::NumGridPointsAndGridSpacing, extents_override "
+               "must be empty, because the grid spacing is computed on the DG "
+               "mesh built from initial_extents.");
 
         element_costs.insert(
             {element_id,
@@ -360,7 +372,10 @@ size_t BlockZCurveProcDistribution<Dim>::get_proc_for_element(
       const std::vector<std::array<size_t, GET_DIM(data)>>& initial_extents, \
       ElementWeight element_weight,                                          \
       const std::optional<Spectral::Basis>& i1_basis,                        \
-      const std::optional<Spectral::Quadrature>& i1_quadrature);
+      const std::optional<Spectral::Quadrature>& i1_quadrature,              \
+      const std::unordered_map<ElementId<GET_DIM(data)>,                     \
+                               std::array<size_t, GET_DIM(data)>>&           \
+          extents_override);
 
 GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
 
