@@ -12,6 +12,7 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Index.hpp"
 #include "DataStructures/SliceVariables.hpp"
+#include "DataStructures/Tensor/EagerMath/DeterminantAndInverse.hpp"
 #include "DataStructures/Tensor/Slice.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
@@ -21,7 +22,11 @@
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/FiniteDifference/Reconstructor.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/NeutrinoSystems.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/BoundaryConditions/CartoonGhost.hpp"
+#include "Evolution/Systems/GrMhd/ValenciaDivClean/ComputeFluxesFromPrimitives.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
+#include "PointwiseFunctions/GeneralRelativity/Lapse.hpp"
+#include "PointwiseFunctions/GeneralRelativity/Shift.hpp"
+#include "PointwiseFunctions/GeneralRelativity/SpatialMetric.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
@@ -62,6 +67,9 @@ void CartoonGhost<System>::fd_ghost(
     const gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*>
         magnetic_field,
     const gsl::not_null<Scalar<DataVector>*> divergence_cleaning_field,
+    const gsl::not_null<std::optional<
+        Variables<db::wrap_tags_in<Flux, typename System::flux_variables>>>*>
+        cell_centered_ghost_fluxes,
     const Direction<3>& direction,
     // fd_interior_evolved_variables_tags
     const tnsr::aa<DataVector, 3, Frame::Inertial>& interior_spacetime_metric,
@@ -85,28 +93,48 @@ void CartoonGhost<System>::fd_ghost(
                    interior_spacetime_metric, interior_pi, interior_phi,
                    subcell_mesh, reconstructor.ghost_zone_size());
 
-  // Fluxes not computed for GrMhd: these are placeholders
-  const tnsr::I<DataVector, 3> interior_shift{};
-  const Scalar<DataVector> interior_lapse{};
-  const tnsr::ii<DataVector, 3> interior_spatial_metric{};
-  tnsr::ii<DataVector, 3> spatial_metric{};
-  tnsr::II<DataVector, 3> inv_spatial_metric{};
-  Scalar<DataVector> sqrt_det_spatial_metric{};
-  Scalar<DataVector> lapse{};
-  tnsr::I<DataVector, 3> shift{};
-  Scalar<DataVector> pressure{};
-  Scalar<DataVector> specific_internal_energy{};
-  tnsr::I<DataVector, 3> spatial_velocity{};
-  Scalar<DataVector> lorentz_factor{};
+  const bool need_fluxes = cell_centered_ghost_fluxes->has_value();
+
+  tnsr::ii<DataVector, 3, Frame::Inertial> interior_spatial_metric{};
+  tnsr::I<DataVector, 3, Frame::Inertial> interior_shift{};
+  Scalar<DataVector> interior_lapse{};
+  if (need_fluxes) {
+    interior_spatial_metric = gr::spatial_metric(interior_spacetime_metric);
+    tnsr::II<DataVector, 3, Frame::Inertial> interior_inv_spatial_metric{};
+    Scalar<DataVector> det{};
+    determinant_and_inverse(make_not_null(&det),
+                            make_not_null(&interior_inv_spatial_metric),
+                            interior_spatial_metric);
+    interior_shift =
+        gr::shift(interior_spacetime_metric, interior_inv_spatial_metric);
+    interior_lapse = gr::lapse(interior_shift, interior_spacetime_metric);
+  }
+
+  Variables<tmpl::push_back<
+      tmpl::append<
+          typename grmhd::ValenciaDivClean::System::variables_tag::tags_list,
+          typename System::primitive_variables_tag::tags_list>,
+      SqrtDetSpatialMetric, SpatialMetric, InvSpatialMetric, Lapse, Shift>>
+      temp_vars{
+          subcell_mesh.extents().slice_away(direction.dimension()).product() *
+          reconstructor.ghost_zone_size()};
 
   grmhd::ValenciaDivClean::BoundaryConditions::CartoonGhost::fd_ghost_impl(
-      rest_mass_density, electron_fraction, temperature,
-      make_not_null(&pressure), make_not_null(&specific_internal_energy),
-      lorentz_factor_times_spatial_velocity, make_not_null(&spatial_velocity),
-      make_not_null(&lorentz_factor), magnetic_field, divergence_cleaning_field,
-      make_not_null(&spatial_metric), make_not_null(&inv_spatial_metric),
-      make_not_null(&sqrt_det_spatial_metric), make_not_null(&lapse),
-      make_not_null(&shift),
+      make_not_null(&get<RestMassDensity>(temp_vars)),
+      make_not_null(&get<ElectronFraction>(temp_vars)),
+      make_not_null(&get<Temperature>(temp_vars)),
+      make_not_null(&get<Pressure>(temp_vars)),
+      make_not_null(&get<SpecificInternalEnergy>(temp_vars)),
+      lorentz_factor_times_spatial_velocity,
+      make_not_null(&get<SpatialVelocity>(temp_vars)),
+      make_not_null(&get<LorentzFactor>(temp_vars)),
+      make_not_null(&get<MagneticField>(temp_vars)),
+      make_not_null(&get<DivergenceCleaningField>(temp_vars)),
+      make_not_null(&get<SpatialMetric>(temp_vars)),
+      make_not_null(&get<InvSpatialMetric>(temp_vars)),
+      make_not_null(&get<SqrtDetSpatialMetric>(temp_vars)),
+      make_not_null(&get<Lapse>(temp_vars)),
+      make_not_null(&get<Shift>(temp_vars)),
 
       direction,
 
@@ -116,11 +144,21 @@ void CartoonGhost<System>::fd_ghost(
       interior_temperature, interior_pressure,
       interior_specific_internal_energy, interior_lorentz_factor,
       interior_divergence_cleaning_field, interior_spatial_velocity,
-      interior_magnetic_field,
-      // metric vars not used when not computing fluxes
-      interior_spatial_metric, interior_lapse, interior_shift,
+      interior_magnetic_field, interior_spatial_metric, interior_lapse,
+      interior_shift,
 
-      reconstructor.ghost_zone_size(), false);
+      reconstructor.ghost_zone_size(), need_fluxes);
+
+  if (need_fluxes) {
+    grmhd::ValenciaDivClean::compute_fluxes_from_primitives(
+        make_not_null(&cell_centered_ghost_fluxes->value()), temp_vars);
+  }
+
+  *rest_mass_density = get<RestMassDensity>(temp_vars);
+  *electron_fraction = get<ElectronFraction>(temp_vars);
+  *temperature = get<Temperature>(temp_vars);
+  *magnetic_field = get<MagneticField>(temp_vars);
+  *divergence_cleaning_field = get<DivergenceCleaningField>(temp_vars);
 }
 
 template <typename System>

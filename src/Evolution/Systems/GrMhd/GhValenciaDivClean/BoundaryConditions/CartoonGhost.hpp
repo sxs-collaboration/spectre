@@ -8,8 +8,10 @@
 #include <pup.h>
 #include <string>
 
+#include "DataStructures/DataBox/PrefixHelpers.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
+#include "DataStructures/Variables.hpp"
 #include "Domain/BoundaryConditions/BoundaryCondition.hpp"
 #include "Domain/BoundaryConditions/Cartoon.hpp"
 #include "Evolution/BoundaryConditions/Type.hpp"
@@ -58,6 +60,24 @@ class CartoonGhost final : public BoundaryCondition,
   using SpacetimeMetric = gr::Tags::SpacetimeMetric<DataVector, 3>;
   using Pi = gh::Tags::Pi<DataVector, 3>;
   using Phi = gh::Tags::Phi<DataVector, 3>;
+  using RestMassDensity = hydro::Tags::RestMassDensity<DataVector>;
+  using ElectronFraction = hydro::Tags::ElectronFraction<DataVector>;
+  using Temperature = hydro::Tags::Temperature<DataVector>;
+  using Pressure = hydro::Tags::Pressure<DataVector>;
+  using SpecificInternalEnergy =
+      hydro::Tags::SpecificInternalEnergy<DataVector>;
+  using SpatialVelocity = hydro::Tags::SpatialVelocity<DataVector, 3>;
+  using LorentzFactor = hydro::Tags::LorentzFactor<DataVector>;
+  using MagneticField = hydro::Tags::MagneticField<DataVector, 3>;
+  using DivergenceCleaningField =
+      hydro::Tags::DivergenceCleaningField<DataVector>;
+  using SqrtDetSpatialMetric = gr::Tags::SqrtDetSpatialMetric<DataVector>;
+  using SpatialMetric = gr::Tags::SpatialMetric<DataVector, 3>;
+  using InvSpatialMetric = gr::Tags::InverseSpatialMetric<DataVector, 3>;
+  using Lapse = gr::Tags::Lapse<DataVector>;
+  using Shift = gr::Tags::Shift<DataVector, 3>;
+  template <typename T>
+  using Flux = ::Tags::Flux<T, tmpl::size_t<3>, Frame::Inertial>;
 
  public:
   static constexpr bool factory_creatable = false;
@@ -165,6 +185,9 @@ class CartoonGhost final : public BoundaryCondition,
           lorentz_factor_times_spatial_velocity,
       gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*> magnetic_field,
       gsl::not_null<Scalar<DataVector>*> divergence_cleaning_field,
+      gsl::not_null<std::optional<
+          Variables<db::wrap_tags_in<Flux, typename System::flux_variables>>>*>
+          cell_centered_ghost_fluxes,
       const Direction<3>& direction,
 
       // fd_interior_evolved_variables_tags
