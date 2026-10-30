@@ -6,22 +6,35 @@
 #include <array>
 #include <cmath>
 #include <cstddef>
+#include <memory>
 #include <optional>
 
+#include "DataStructures/DataBox/PrefixHelpers.hpp"
+#include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/DataVector.hpp"
+#include "DataStructures/Tensor/EagerMath/DeterminantAndInverse.hpp"
+#include "DataStructures/Tensor/EagerMath/DotProduct.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "DataStructures/Variables.hpp"
 #include "Domain/Structure/Direction.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/BoundaryConditions/CartoonGhost.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/FiniteDifference/MonotonisedCentral.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/FiniteDifference/Wcns5z.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/System.hpp"
+#include "Evolution/Systems/GrMhd/ValenciaDivClean/ComputeFluxesFromPrimitives.hpp"
 #include "Evolution/Systems/RadiationTransport/NoNeutrinos/System.hpp"
 #include "NumericalAlgorithms/Spectral/Basis.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Parity.hpp"
 #include "NumericalAlgorithms/Spectral/ParityFromSymmetry.hpp"
 #include "NumericalAlgorithms/Spectral/Quadrature.hpp"
+#include "PointwiseFunctions/GeneralRelativity/SpacetimeMetric.hpp"
+#include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
+#include "PointwiseFunctions/Hydro/Tags.hpp"
+#include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/PrettyType.hpp"
+#include "Utilities/TMPL.hpp"
 
 namespace {
 // The test fills every tensor component with a function of known parity:
@@ -99,7 +112,8 @@ void check_fd_parity(const TensorType& interior, const TensorType& ghost,
 template <typename TensorType>
 void check_all_ghost_layers(const TensorType& interior, const TensorType& ghost,
                             const size_t ghost_zone_size,
-                            const std::string& name) {
+                            const std::string& name,
+                            Approx tolerance = approx) {
   CAPTURE(name);
   constexpr auto parities = Spectral::make_component_parity_array<TensorType>();
   for (size_t ig = 0; ig < ghost_zone_size; ++ig) {
@@ -111,16 +125,28 @@ void check_all_ghost_layers(const TensorType& interior, const TensorType& ghost,
         for (size_t comp = 0; comp < TensorType::size(); ++comp) {
           const double sign =
               (gsl::at(parities, comp) == Spectral::Parity::Even) ? 1.0 : -1.0;
-          CHECK(ghost[comp][gidx] == approx(sign * interior[comp][iidx]));
+          CHECK(ghost[comp][gidx] == tolerance(sign * interior[comp][iidx]));
         }
       }
     }
   }
 }
 
+// The reconstructor is only used for its ghost zone size.
+template <typename System>
+std::unique_ptr<grmhd::GhValenciaDivClean::fd::Reconstructor<System>>
+make_reconstructor(const size_t ghost_zone_size) {
+  if (ghost_zone_size == 2) {
+    return std::make_unique<
+        grmhd::GhValenciaDivClean::fd::MonotonisedCentralPrim<System>>();
+  }
+  if (ghost_zone_size != 3) {
+    ERROR("ghost_zone_size must be 2 or 3, got " << ghost_zone_size);
+  }
+  return std::make_unique<grmhd::GhValenciaDivClean::fd::Wcns5zPrim<System>>();
+}
+
 void test_gh_fd_derivative_consistency(const size_t ghost_zone_size) {
-  ASSERT(ghost_zone_size == 2 or ghost_zone_size == 3,
-         "ghost_zone_size must be 2 or 3, got " << ghost_zone_size);
   CAPTURE(ghost_zone_size);
   using System = grmhd::GhValenciaDivClean::System<
       RadiationTransport::NoNeutrinos::System>;
@@ -129,18 +155,7 @@ void test_gh_fd_derivative_consistency(const size_t ghost_zone_size) {
                              Spectral::Basis::FiniteDifference,
                              Spectral::Quadrature::CellCentered};
 
-  // Reconstructors are only used for their ghost zone size
-  const grmhd::GhValenciaDivClean::fd::MonotonisedCentralPrim<System>
-      reconstructor_2{};
-  const grmhd::GhValenciaDivClean::fd::Wcns5zPrim<System> reconstructor_3{};
-  const grmhd::GhValenciaDivClean::fd::Reconstructor<System>& reconstructor =
-      ghost_zone_size == 2
-          ? static_cast<
-                const grmhd::GhValenciaDivClean::fd::Reconstructor<System>&>(
-                reconstructor_2)
-          : static_cast<
-                const grmhd::GhValenciaDivClean::fd::Reconstructor<System>&>(
-                reconstructor_3);
+  const auto reconstructor = make_reconstructor<System>(ghost_zone_size);
 
   // GH evolved variables: all components filled according to their parity.
   const auto interior_spacetime_metric =
@@ -170,12 +185,17 @@ void test_gh_fd_derivative_consistency(const size_t ghost_zone_size) {
   tnsr::I<DataVector, 3> ghost_B{};
   Scalar<DataVector> ghost_div_phi{};
 
+  using FluxVars =
+      Variables<db::wrap_tags_in<::Tags::Flux, typename System::flux_variables,
+                                 tmpl::size_t<3>, Frame::Inertial>>;
+  std::optional<FluxVars> cell_centered_ghost_fluxes{};
+
   grmhd::GhValenciaDivClean::BoundaryConditions::CartoonGhost<System>::fd_ghost(
       make_not_null(&ghost_spacetime_metric), make_not_null(&ghost_pi),
       make_not_null(&ghost_phi), make_not_null(&ghost_rho),
       make_not_null(&ghost_ye), make_not_null(&ghost_temp),
       make_not_null(&ghost_lf_vel), make_not_null(&ghost_B),
-      make_not_null(&ghost_div_phi),
+      make_not_null(&ghost_div_phi), make_not_null(&cell_centered_ghost_fluxes),
 
       Direction<3>::lower_xi(), interior_spacetime_metric, interior_pi,
       interior_phi, subcell_mesh,
@@ -183,7 +203,7 @@ void test_gh_fd_derivative_consistency(const size_t ghost_zone_size) {
       interior_rho, interior_ye, interior_temp, interior_press, interior_eps,
       interior_lorentz, interior_div_phi, interior_vel, interior_B,
 
-      reconstructor);
+      *reconstructor);
 
   // Verify FD derivatives at the ghost-interior interface using the nearest
   // ghost layer.
@@ -218,6 +238,143 @@ void test_gh_fd_derivative_consistency(const size_t ghost_zone_size) {
   check_all_ghost_layers(interior_lf_vel, ghost_lf_vel, ghost_zone_size,
                          "lorentz_times_val");
   check_all_ghost_layers(interior_B, ghost_B, ghost_zone_size, "B");
+}
+
+void test_gh_fd_ghost_fluxes(const size_t ghost_zone_size) {
+  CAPTURE(ghost_zone_size);
+  using System = grmhd::GhValenciaDivClean::System<
+      RadiationTransport::NoNeutrinos::System>;
+
+  const Mesh<3> subcell_mesh{{{num_x, num_y, num_z}},
+                             Spectral::Basis::FiniteDifference,
+                             Spectral::Quadrature::CellCentered};
+
+  const auto reconstructor = make_reconstructor<System>(ghost_zone_size);
+
+  const size_t num_interior_pts = num_x * num_y * num_z;
+
+  tnsr::ii<DataVector, 3> interior_spatial_metric(num_interior_pts);
+  get<0, 0>(interior_spatial_metric) = DataVector(num_interior_pts, 3.13);
+  get<1, 1>(interior_spatial_metric) = DataVector(num_interior_pts, 2.22);
+  get<2, 2>(interior_spatial_metric) = DataVector(num_interior_pts, 1.31);
+  get<0, 1>(interior_spatial_metric) = 0.1 * fill(1.0);
+  get<0, 2>(interior_spatial_metric) = DataVector(num_interior_pts, 0.0);
+  get<1, 2>(interior_spatial_metric) = DataVector(num_interior_pts, 0.0);
+
+  const Scalar<DataVector> interior_lapse{DataVector(num_interior_pts, 1.5)};
+  tnsr::I<DataVector, 3> interior_shift(num_interior_pts);
+  get<0>(interior_shift) = 0.2 * fill(1.0);
+  get<1>(interior_shift) = DataVector(num_interior_pts, 0.0);
+  get<2>(interior_shift) = DataVector(num_interior_pts, 0.0);
+
+  tnsr::II<DataVector, 3> interior_inv_spatial_metric{};
+  Scalar<DataVector> interior_det_spatial_metric{};
+  determinant_and_inverse(make_not_null(&interior_det_spatial_metric),
+                          make_not_null(&interior_inv_spatial_metric),
+                          interior_spatial_metric);
+
+  const auto interior_spacetime_metric = gr::spacetime_metric(
+      interior_lapse, interior_shift, interior_spatial_metric);
+  const tnsr::aa<DataVector, 3> interior_pi{num_interior_pts, 0.0};
+  const tnsr::iaa<DataVector, 3> interior_phi{num_interior_pts, 0.0};
+
+  using interior_state_tags =
+      tmpl::push_back<typename System::primitive_variables_tag::tags_list,
+                      gr::Tags::SqrtDetSpatialMetric<DataVector>,
+                      gr::Tags::SpatialMetric<DataVector, 3>,
+                      gr::Tags::InverseSpatialMetric<DataVector, 3>,
+                      gr::Tags::Lapse<DataVector>,
+                      gr::Tags::Shift<DataVector, 3>>;
+  Variables<interior_state_tags> interior_state{num_interior_pts, 0.0};
+
+  get<hydro::Tags::RestMassDensity<DataVector>>(interior_state) =
+      fill_by_parity<Scalar<DataVector>>();
+  get<hydro::Tags::ElectronFraction<DataVector>>(interior_state) =
+      fill_by_parity<Scalar<DataVector>>();
+  get<hydro::Tags::Temperature<DataVector>>(interior_state) =
+      fill_by_parity<Scalar<DataVector>>();
+  get<hydro::Tags::Pressure<DataVector>>(interior_state) =
+      fill_by_parity<Scalar<DataVector>>();
+  get<hydro::Tags::SpecificInternalEnergy<DataVector>>(interior_state) =
+      fill_by_parity<Scalar<DataVector>>();
+  get<hydro::Tags::DivergenceCleaningField<DataVector>>(interior_state) =
+      fill_by_parity<Scalar<DataVector>>();
+  get<hydro::Tags::MagneticField<DataVector, 3>>(interior_state) =
+      fill_by_parity<tnsr::I<DataVector, 3>>();
+
+  auto& spatial_velocity =
+      get<hydro::Tags::SpatialVelocity<DataVector, 3>>(interior_state);
+  spatial_velocity = fill_by_parity<tnsr::I<DataVector, 3>>();
+  // Scaled down because an unscaled parity fill is superluminal.
+  for (size_t i = 0; i < 3; ++i) {
+    spatial_velocity.get(i) *= 0.02;
+  }
+  get(get<hydro::Tags::LorentzFactor<DataVector>>(interior_state)) =
+      1.0 / sqrt(1.0 - get(dot_product(spatial_velocity, spatial_velocity,
+                                       interior_spatial_metric)));
+  get<gr::Tags::Lapse<DataVector>>(interior_state) = interior_lapse;
+  get<gr::Tags::Shift<DataVector, 3>>(interior_state) = interior_shift;
+  get<gr::Tags::SpatialMetric<DataVector, 3>>(interior_state) =
+      interior_spatial_metric;
+  get<gr::Tags::InverseSpatialMetric<DataVector, 3>>(interior_state) =
+      interior_inv_spatial_metric;
+  get(get<gr::Tags::SqrtDetSpatialMetric<DataVector>>(interior_state)) =
+      sqrt(get(interior_det_spatial_metric));
+
+  using FluxVars =
+      Variables<db::wrap_tags_in<::Tags::Flux, typename System::flux_variables,
+                                 tmpl::size_t<3>, Frame::Inertial>>;
+  FluxVars interior_fluxes{num_interior_pts};
+  grmhd::ValenciaDivClean::compute_fluxes_from_primitives(
+      make_not_null(&interior_fluxes), interior_state);
+
+  tnsr::aa<DataVector, 3> ghost_spacetime_metric{};
+  tnsr::aa<DataVector, 3> ghost_pi{};
+  tnsr::iaa<DataVector, 3> ghost_phi{};
+  Scalar<DataVector> ghost_rho{};
+  Scalar<DataVector> ghost_ye{};
+  Scalar<DataVector> ghost_temp{};
+  tnsr::I<DataVector, 3> ghost_lf_vel{};
+  tnsr::I<DataVector, 3> ghost_B{};
+  Scalar<DataVector> ghost_div_phi{};
+  std::optional<FluxVars> cell_centered_ghost_fluxes{
+      FluxVars{ghost_zone_size * num_y * num_z}};
+
+  grmhd::GhValenciaDivClean::BoundaryConditions::CartoonGhost<System>::fd_ghost(
+      make_not_null(&ghost_spacetime_metric), make_not_null(&ghost_pi),
+      make_not_null(&ghost_phi), make_not_null(&ghost_rho),
+      make_not_null(&ghost_ye), make_not_null(&ghost_temp),
+      make_not_null(&ghost_lf_vel), make_not_null(&ghost_B),
+      make_not_null(&ghost_div_phi), make_not_null(&cell_centered_ghost_fluxes),
+
+      Direction<3>::lower_xi(), interior_spacetime_metric, interior_pi,
+      interior_phi, subcell_mesh,
+
+      get<hydro::Tags::RestMassDensity<DataVector>>(interior_state),
+      get<hydro::Tags::ElectronFraction<DataVector>>(interior_state),
+      get<hydro::Tags::Temperature<DataVector>>(interior_state),
+      get<hydro::Tags::Pressure<DataVector>>(interior_state),
+      get<hydro::Tags::SpecificInternalEnergy<DataVector>>(interior_state),
+      get<hydro::Tags::LorentzFactor<DataVector>>(interior_state),
+      get<hydro::Tags::DivergenceCleaningField<DataVector>>(interior_state),
+      spatial_velocity,
+      get<hydro::Tags::MagneticField<DataVector, 3>>(interior_state),
+
+      *reconstructor);
+
+  REQUIRE(cell_centered_ghost_fluxes.has_value());
+  // W is recovered by a different expression than the one that built it, so
+  // the two agree only to a few ulp.
+  const Approx flux_approx = Approx::custom().epsilon(1.0e-12).scale(1.0);
+  tmpl::for_each<typename FluxVars::tags_list>(
+      [&cell_centered_ghost_fluxes, &interior_fluxes, &ghost_zone_size,
+       &flux_approx](auto tag_v) {
+        using tag = tmpl::type_from<decltype(tag_v)>;
+        check_all_ghost_layers(get<tag>(interior_fluxes),
+                               get<tag>(cell_centered_ghost_fluxes.value()),
+                               ghost_zone_size, pretty_type::name<tag>(),
+                               flux_approx);
+      });
 }
 
 void test_gh_dg_ghost_error() {
@@ -290,17 +447,23 @@ void test_gh_fd_ghost_wrong_direction() {
                      Spectral::Quadrature::CellCentered};
   const grmhd::GhValenciaDivClean::fd::MonotonisedCentralPrim<System>
       reconstructor{};
+  using FluxVars =
+      Variables<db::wrap_tags_in<::Tags::Flux, typename System::flux_variables,
+                                 tmpl::size_t<3>, Frame::Inertial>>;
+  std::optional<FluxVars> cell_centered_ghost_fluxes{};
   CHECK_THROWS_WITH(
       (grmhd::GhValenciaDivClean::BoundaryConditions::CartoonGhost<
           System>::fd_ghost(make_not_null(&out_psi), make_not_null(&out_pi),
                             make_not_null(&out_phi), make_not_null(&out_rho),
                             make_not_null(&out_ye), make_not_null(&out_temp),
                             make_not_null(&out_lf_vel), make_not_null(&out_B),
-                            make_not_null(&out_dcf), Direction<3>::lower_eta(),
-                            empty_aa, empty_aa, empty_iaa, mesh, empty_scalar,
+                            make_not_null(&out_dcf),
+                            make_not_null(&cell_centered_ghost_fluxes),
+                            Direction<3>::lower_eta(), empty_aa, empty_aa,
+                            empty_iaa, mesh, empty_scalar, empty_scalar,
                             empty_scalar, empty_scalar, empty_scalar,
-                            empty_scalar, empty_scalar, empty_scalar, empty_vec,
-                            empty_vec, reconstructor)),
+                            empty_scalar, empty_scalar, empty_vec, empty_vec,
+                            reconstructor)),
       Catch::Matchers::ContainsSubstring(
           "Cartoon BC can only be applied in the x-direction"));
 }
@@ -313,6 +476,8 @@ SPECTRE_TEST_CASE(
     "[Unit][GrMhd]") {
   test_gh_fd_derivative_consistency(2);
   test_gh_fd_derivative_consistency(3);
+  test_gh_fd_ghost_fluxes(2);
+  test_gh_fd_ghost_fluxes(3);
   test_gh_dg_ghost_error();
 #ifdef SPECTRE_DEBUG
   test_gh_fd_ghost_wrong_direction();
