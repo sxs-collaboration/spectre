@@ -61,6 +61,25 @@ struct NoFormatter {
   void pup(PUP::er& /*p*/) {}
 };
 
+/*!
+ * \brief Rows of data to append to one `h5::Dat` subfile of the reductions
+ * file with `ThreadedActions::WriteMultipleReductionDataRows`.
+ */
+struct DatRows {
+  /// Name of the `h5::Dat` subfile, including a leading slash
+  std::string subfile_name{};
+  /// Column labels of the subfile
+  std::vector<std::string> legend{};
+  /// Rows to append. Each row must have as many entries as the `legend`.
+  std::vector<std::vector<double>> rows{};
+
+  // NOLINTNEXTLINE(google-runtime-references)
+  void pup(PUP::er& p);
+};
+
+bool operator==(const DatRows& lhs, const DatRows& rhs);
+bool operator!=(const DatRows& lhs, const DatRows& rhs);
+
 namespace Actions {
 /// \cond
 struct ContributeReductionDataToWriter;
@@ -261,6 +280,10 @@ void write_data(const std::string& subfile_name,
       subfile_name, std::move(legend), version_number);
   time_series_file.append(data_to_append);
 }
+
+void write_rows(const std::vector<DatRows>& data,
+                const std::string& input_source,
+                const std::string& file_prefix);
 }  // namespace ReductionActions_detail
 
 /*!
@@ -652,7 +675,9 @@ struct WriteReductionData {
  * specific chare.
  *
  * Use observers::Actions::ContributeReductionData instead if you need to
- * perform a reduction before writing to the file.
+ * perform a reduction before writing to the file. Use
+ * `WriteMultipleReductionDataRows` to write to several subfiles, or several
+ * rows, in a single call.
  *
  * Invoke this action on the observers::ObserverWriter component on node 0. Pass
  * the following arguments when invoking this action:
@@ -701,6 +726,53 @@ struct WriteReductionDataRow {
         std::move(legend), std::move(reduction_data),
         Parallel::get<Tags::ReductionFileName>(cache),
         std::make_index_sequence<sizeof...(Ts)>{});
+  }
+};
+
+/*!
+ * \brief Write rows of data to one or more `h5::Dat` subfiles of the
+ * reductions file, opening the file only once.
+ *
+ * Like `WriteReductionDataRow`, this action requires no registration or
+ * reduction. Each `WriteReductionDataRow` call opens and closes the reductions
+ * file, so prefer this action when writing to many subfiles at once (e.g. one
+ * subfile per component of a function of time) or several rows to one subfile
+ * at once.
+ *
+ * Invoke this action on the observers::ObserverWriter component on node 0 with
+ * a `std::vector<observers::DatRows>`, one entry per subfile to write to. The
+ * `legend` of each entry must have one name per column, and each of its `rows`
+ * must have one value per column.
+ */
+struct WriteMultipleReductionDataRows {
+  /// \brief The apply call for the threaded action
+  template <typename ParallelComponent, typename DbTagsList,
+            typename Metavariables, typename ArrayIndex>
+  static void apply(db::DataBox<DbTagsList>& box,
+                    Parallel::GlobalCache<Metavariables>& cache,
+                    const ArrayIndex& /*array_index*/,
+                    const gsl::not_null<Parallel::NodeLock*> node_lock,
+                    const std::vector<DatRows>& data) {
+    apply<ParallelComponent>(box, node_lock, cache, data);
+  }
+
+  // The local synchronous action
+  using return_type = void;
+
+  /// \brief The apply call for the local synchronous action
+  template <typename ParallelComponent, typename DbTagList,
+            typename Metavariables>
+  static return_type apply(
+      db::DataBox<DbTagList>& box,
+      const gsl::not_null<Parallel::NodeLock*> /*node_lock*/,
+      Parallel::GlobalCache<Metavariables>& cache,
+      const std::vector<DatRows>& data) {
+    auto& reduction_file_lock =
+        db::get_mutable_reference<Tags::H5FileLock>(make_not_null(&box));
+    const std::lock_guard hold_lock(reduction_file_lock);
+    ThreadedActions::ReductionActions_detail::write_rows(
+        data, observers::input_source_from_cache(cache),
+        Parallel::get<Tags::ReductionFileName>(cache));
   }
 };
 
