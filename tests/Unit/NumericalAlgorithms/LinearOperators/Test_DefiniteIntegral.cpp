@@ -157,7 +157,9 @@ void test_definite_integral_disk(const size_t n_r, const size_t n_ph) {
     for (size_t pow_ny = 0; pow_ny <= M - pow_nx; ++pow_ny) {
       CAPTURE(pow_ny);
       const DiskTestFunctions::ProductOfPolynomials f{pow_nx, pow_ny};
-      const DataVector integrand = r * f(r, phi);
+      // Manually cancel dxi/dr factor of two that definite_integral
+      // internally adds so ever other caller doesn't have to add it
+      const DataVector integrand = 0.5 * r * f(r, phi);
       CHECK(f.definite_integral() ==
             approx(definite_integral(integrand, mesh)));
     }
@@ -188,7 +190,9 @@ void test_definite_integral_cylinder(const size_t n_r, const size_t n_ph,
       const double disk_integral = f.definite_integral();
       for (size_t pow_nz = 0; pow_nz < n_z; ++pow_nz) {
         CAPTURE(pow_nz);
-        const DataVector integrand = r * f(r, phi) * pow(z, pow_nz);
+        // Manually cancel dxi/dr factor of two that definite_integral
+        // internally adds so ever other caller doesn't have to add it
+        const DataVector integrand = 0.5 * r * f(r, phi) * pow(z, pow_nz);
         const double z_integral =
             (0 == pow_nz % 2) ? 2.0 / (static_cast<double>(pow_nz) + 1.0) : 0.0;
         CHECK(disk_integral * z_integral ==
@@ -285,8 +289,10 @@ void test_definite_integral_ball(const size_t n_r, const size_t L) {
       for (size_t pow_nz = 0; pow_nz <= L - pow_nx - pow_ny; ++pow_nz) {
         CAPTURE(pow_nz);
         const BallTestFunctions::ProductOfPolynomials f{pow_nx, pow_ny, pow_nz};
+        // Manually cancel dxi/dr factor of two that definite_integral
+        // internally adds so ever other caller doesn't have to add it
         const DataVector integrand =
-            r * r * f(r, get<1>(xi_vector), get<2>(xi_vector));
+            0.5 * r * r * f(r, get<1>(xi_vector), get<2>(xi_vector));
         CHECK(f.definite_integral() ==
               approx(definite_integral(integrand, mesh)));
       }
