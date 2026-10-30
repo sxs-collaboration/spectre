@@ -7,6 +7,8 @@
 #include <cstddef>
 #include <memory>
 #include <optional>
+#include <string>
+#include <unordered_set>
 
 #include "ControlSystem/Component.hpp"
 #include "ControlSystem/ControlErrors/GridCenters.hpp"
@@ -123,7 +125,8 @@ void test_grid_centers_process_measurement() {
   using component = MockComponent<Metavars>;
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<Metavars>;
   MockRuntimeSystem runner{
-      {creator.create_domain(), ::Verbosity::Silent, 4, true, false,
+      {creator.create_domain(), ::Verbosity::Silent, 4, true,
+       std::unordered_set<std::string>{},
        std::unordered_map<std::string, bool>{},
        tnsr::I<double, 3, Frame::Grid>{std::array{-16.0, 0.0, 0.0}},
        tnsr::I<double, 3, Frame::Grid>{std::array{16.0, 0.0, 0.0}},

@@ -252,7 +252,8 @@ struct BothNSCenters : tt::ConformsTo<protocols::Measurement> {
  * calculates the center of mass in each region, and sends the result to the
  * control system.
  *
- * If the `control_system::Tags::WriteDataToDisk` tag is true, then this will
+ * If any control system writes data to disk, i.e. if the
+ * `control_system::Tags::WriteDataToDisk` tag is not empty, then this will
  * also write the centers of mass to the `/ControlSystems/BnsCenters` subfile of
  * the reductions h5 file. The columns of the file are
  *
@@ -353,7 +354,8 @@ struct PostReductionSendBNSStarCentersToControlSystem {
     RunCallbacks<BothNSCenters::FindTwoCenters, ControlSystems>::apply(
         center_databox, cache, measurement_id);
 
-    if (Parallel::get<control_system::Tags::WriteDataToDisk>(cache)) {
+    if (not Parallel::get<control_system::Tags::WriteDataToDisk>(cache)
+                .empty()) {
       std::vector<double> grid_data_to_write{
           measurement_id.id,   grid_center_a[0],     grid_center_a[1],
           grid_center_a[2],    grid_center_b[0],     grid_center_b[1],
