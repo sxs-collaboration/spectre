@@ -288,8 +288,8 @@ class DistributedObject<ParallelComponent,
   void threaded_action(std::tuple<Args...> args) {
     // Note: this method is defined inline because GCC fails to compile when the
     // definition is out of line.
-    (void)Parallel::charmxx::RegisterThreadedAction<ParallelComponent, Action,
-                                                    Args...>::registrar;
+    (void)&Parallel::charmxx::RegisterThreadedAction<ParallelComponent, Action,
+                                                     Args...>::registrar;
     forward_tuple_to_threaded_action<Action>(
         std::move(args), std::make_index_sequence<sizeof...(Args)>{});
   }
@@ -581,7 +581,7 @@ DistributedObject<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
   // We place the registrar in the destructor since every DistributedObject will
   // have a destructor, but we have different constructors so it's not clear
   // which will be instantiated.
-  (void)Parallel::charmxx::RegisterParallelComponent<
+  (void)&Parallel::charmxx::RegisterParallelComponent<
       ParallelComponent>::registrar;
 }
 
@@ -742,7 +742,7 @@ void DistributedObject<
     ParallelComponent,
     tmpl::list<PhaseDepActionListsPack...>>::reduction_action(Arg arg) {
   try {
-    (void)Parallel::charmxx::RegisterReductionAction<
+    (void)&Parallel::charmxx::RegisterReductionAction<
         ParallelComponent, Action, std::decay_t<Arg>>::registrar;
     {
       std::optional<std::lock_guard<Parallel::NodeLock>> hold_lock{};
@@ -774,8 +774,8 @@ void DistributedObject<ParallelComponent,
                        tmpl::list<PhaseDepActionListsPack...>>::
     simple_action(std::tuple<Args...> args) {
   try {
-    (void)Parallel::charmxx::RegisterSimpleAction<ParallelComponent, Action,
-                                                  Args...>::registrar;
+    (void)&Parallel::charmxx::RegisterSimpleAction<ParallelComponent, Action,
+                                                   Args...>::registrar;
     {
       std::optional<std::lock_guard<Parallel::NodeLock>> hold_lock{};
       if constexpr (std::is_same_v<Parallel::NodeLock, decltype(node_lock_)>) {
@@ -805,8 +805,8 @@ void DistributedObject<
     ParallelComponent,
     tmpl::list<PhaseDepActionListsPack...>>::simple_action() {
   try {
-    (void)Parallel::charmxx::RegisterSimpleAction<ParallelComponent,
-                                                  Action>::registrar;
+    (void)&Parallel::charmxx::RegisterSimpleAction<ParallelComponent,
+                                                   Action>::registrar;
     {
       std::optional<std::lock_guard<Parallel::NodeLock>> hold_lock{};
       if constexpr (std::is_same_v<Parallel::NodeLock, decltype(node_lock_)>) {
@@ -850,8 +850,8 @@ void DistributedObject<
     tmpl::list<PhaseDepActionListsPack...>>::threaded_action() {
   try {
     // NOLINTNEXTLINE(modernize-redundant-void-arg)
-    (void)Parallel::charmxx::RegisterThreadedAction<ParallelComponent,
-                                                    Action>::registrar;
+    (void)&Parallel::charmxx::RegisterThreadedAction<ParallelComponent,
+                                                     Action>::registrar;
     if constexpr (Parallel::is_dg_element_collection_v<parallel_component>) {
       Action::template apply<ParallelComponent>(
           box_, *Parallel::local_branch(global_cache_proxy_),
@@ -875,8 +875,8 @@ void DistributedObject<ParallelComponent,
     receive_data(typename ReceiveTag::temporal_id instance, ReceiveDataType&& t,
                  const bool enable_if_disabled) {
   try {
-    (void)Parallel::charmxx::RegisterReceiveData<ParallelComponent, ReceiveTag,
-                                                 false>::registrar;
+    (void)&Parallel::charmxx::RegisterReceiveData<ParallelComponent, ReceiveTag,
+                                                  false>::registrar;
     bool do_perform_algorithm = false;
     {
       std::optional<std::lock_guard<Parallel::NodeLock>> hold_lock{};
@@ -904,8 +904,8 @@ void DistributedObject<ParallelComponent,
                        tmpl::list<PhaseDepActionListsPack...>>::
     receive_data(MessageType* message) {
   try {
-    (void)Parallel::charmxx::RegisterReceiveData<ParallelComponent, ReceiveTag,
-                                                 true>::registrar;
+    (void)&Parallel::charmxx::RegisterReceiveData<ParallelComponent, ReceiveTag,
+                                                  true>::registrar;
     bool do_perform_algorithm = false;
     {
       std::optional<std::lock_guard<Parallel::NodeLock>> hold_lock{};
@@ -1164,7 +1164,7 @@ bool DistributedObject<
 
 #ifdef SPECTRE_CHARM_PROJECTIONS
   if constexpr (Parallel::is_array<parallel_component>::value) {
-    (void)Parallel::charmxx::RegisterInvokeIterableAction<
+    (void)&Parallel::charmxx::RegisterInvokeIterableAction<
         ParallelComponent, ThisAction, PhaseIndex, DataBoxIndex>::registrar;
   }
 #endif // SPECTRE_CHARM_PROJECTIONS

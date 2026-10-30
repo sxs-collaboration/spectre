@@ -267,7 +267,7 @@ class GlobalCache
   explicit GlobalCache(CkMigrateMessage* msg) : Base(msg) {}
 
   ~GlobalCache() override {
-    (void)Parallel::charmxx::RegisterChare<
+    (void)&Parallel::charmxx::RegisterChare<
         GlobalCache<Metavariables>,
         CkIndex_GlobalCache<Metavariables>>::registrar;
   }
@@ -604,7 +604,7 @@ bool GlobalCache<Metavariables>::mutable_cache_item_is_ready(
 template <typename Metavariables>
 template <typename GlobalCacheTag, typename Function, typename... Args>
 void GlobalCache<Metavariables>::mutate(const std::tuple<Args...>& args) {
-  (void)Parallel::charmxx::RegisterGlobalCacheMutate<
+  (void)&Parallel::charmxx::RegisterGlobalCacheMutate<
       Metavariables, GlobalCacheTag, Function, Args...>::registrar;
   using tag = MutableCacheTag<GlobalCache_detail::get_matching_mutable_tag<
       GlobalCacheTag, Metavariables>>;
