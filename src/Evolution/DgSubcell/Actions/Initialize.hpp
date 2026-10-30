@@ -169,15 +169,8 @@ struct SetSubcellGrid {
       }
     }
 
-    // Loop over block neighbors and if neighbor id is inside of
-    // only_dg_block_ids, then bordering DG-only block
-    const bool bordering_dg_block = alg::any_of(
-        element.neighbors(),
-        [&only_dg_block_ids](const auto& direction_and_neighbor) {
-          const size_t first_block_id =
-              direction_and_neighbor.second.ids().begin()->block_id();
-          return alg::found(only_dg_block_ids, first_block_id);
-        });
+    const bool bordering_dg_block =
+        evolution::dg::borders_only_dg_block(element, only_dg_block_ids);
 
     // Non-hypercube topologies (e.g. spherical shells) can never use subcell
     // and are automatically treated as DG-only.

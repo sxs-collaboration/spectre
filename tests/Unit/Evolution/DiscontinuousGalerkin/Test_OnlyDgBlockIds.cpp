@@ -12,11 +12,15 @@
 
 #include "Domain/Block.hpp"
 #include "Domain/BoundaryConditions/BoundaryCondition.hpp"
+#include "Domain/CreateInitialElement.hpp"
+#include "Domain/Creators/AlignedLattice.hpp"
 #include "Domain/Creators/Cylinder.hpp"
 #include "Domain/Creators/DomainCreator.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/Structure/BlockNeighbors.hpp"
 #include "Domain/Structure/DirectionMap.hpp"
+#include "Domain/Structure/ElementId.hpp"
+#include "Domain/Structure/SegmentId.hpp"
 #include "Domain/Structure/Topology.hpp"
 #include "Evolution/DiscontinuousGalerkin/OnlyDgBlockIds.hpp"
 #include "Framework/TestCreation.hpp"
@@ -133,11 +137,49 @@ void test_tag() {
   CHECK(alg::found(only_dg_block_ids, size_t{1}));
   CHECK(alg::found(only_dg_block_ids, size_t{2}));
 }
+
+void test_borders_only_dg_block() {
+  // Three blocks along x (block 0 is leftmost), each with 2x2 elements
+  const auto domain_creator = domain::creators::AlignedLattice<2>(
+      {{{{0.0, 1.0, 2.0, 3.0}}, {{0.0, 1.0}}}}, {{{}, {}}}, {{{}, {}}},
+      {{1, 1}}, {{3, 3}}, {}, {}, {});
+  const auto domain = domain_creator.create_domain();
+  const auto& refinement_levels = domain_creator.initial_refinement_levels();
+  const auto borders = [&domain, &refinement_levels](
+                           const size_t block_id, const size_t x_index,
+                           const std::vector<size_t>& only_dg_block_ids) {
+    const ElementId<2> element_id{block_id, {{{1, x_index}, {1, 0}}}};
+    return evolution::dg::borders_only_dg_block(
+        domain::create_initial_element(element_id, domain.blocks(),
+                                       refinement_levels),
+        only_dg_block_ids);
+  };
+
+  for (size_t block_id = 0; block_id < 3; ++block_id) {
+    for (size_t x_index = 0; x_index < 2; ++x_index) {
+      CHECK_FALSE(borders(block_id, x_index, {}));
+    }
+  }
+  // Block 2 is DG-only: only the element of block 1 next to it borders it.
+  // The elements of block 2 border each other.
+  CHECK_FALSE(borders(0, 0, {2}));
+  CHECK_FALSE(borders(0, 1, {2}));
+  CHECK_FALSE(borders(1, 0, {2}));
+  CHECK(borders(1, 1, {2}));
+  CHECK(borders(2, 0, {2}));
+  CHECK(borders(2, 1, {2}));
+  // Block 1 is DG-only: the elements on both sides of it border it
+  CHECK_FALSE(borders(0, 0, {1}));
+  CHECK(borders(0, 1, {1}));
+  CHECK(borders(2, 0, {1}));
+  CHECK_FALSE(borders(2, 1, {1}));
+}
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Evolution.DG.OnlyDgBlockIds", "[Unit][Evolution]") {
   test_compute_only_dg_block_ids();
   test_block_groups();
+  test_borders_only_dg_block();
   test_option_parsing();
   test_tag();
 }

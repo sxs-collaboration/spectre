@@ -20,6 +20,8 @@ template <size_t VolumeDim>
 class Block;
 template <size_t VolumeDim>
 class DomainCreator;
+template <size_t VolumeDim>
+class Element;
 /// \endcond
 
 namespace evolution::dg {
@@ -56,6 +58,17 @@ std::vector<size_t> compute_only_dg_block_ids(
     const std::optional<std::vector<std::string>>&
         only_dg_block_and_group_names,
     const DomainCreator<Dim>& domain_creator);
+
+/*!
+ * \brief Returns whether any neighbor of the \p element is in a block in
+ * \p only_dg_block_ids.
+ *
+ * Elements bordering a DG-only block are not allowed to use subcell, since
+ * their DG-only neighbors cannot send them subcell ghost data.
+ */
+template <size_t Dim>
+bool borders_only_dg_block(const Element<Dim>& element,
+                           const std::vector<size_t>& only_dg_block_ids);
 
 namespace Tags {
 /// \ingroup DataBoxTagsGroup
