@@ -443,6 +443,27 @@ void test(const BoundaryConditionType& boundary_condition,
                           expected_spacetime_metric);
     CHECK_ITERABLE_APPROX(get<Pi>(fd_ghost_vars), expected_pi);
     CHECK_ITERABLE_APPROX(get<Phi>(fd_ghost_vars), expected_phi);
+    if (set_fluxes) {
+      const auto ghost_state = solution.variables(
+          ghost_inertial_coords, time,
+          tmpl::list<SpecificInternalEnergy, Pressure,
+                     gr::Tags::SpatialMetric<DataVector, 3>,
+                     gr::Tags::InverseSpatialMetric<DataVector, 3>,
+                     gr::Tags::SqrtDetSpatialMetric<DataVector>,
+                     gr::Tags::Lapse<DataVector>,
+                     gr::Tags::Shift<DataVector, 3>>{});
+      check_fluxes(
+          expected_rest_mass_density, expected_electron_fraction,
+          get<SpecificInternalEnergy>(ghost_state), expected_Temperature,
+          expected_spatial_velocity, expected_lorentz_factor,
+          expected_magnetic_field, expected_div_cleaning_field,
+          get<Pressure>(ghost_state),
+          get<gr::Tags::SpatialMetric<DataVector, 3>>(ghost_state),
+          get<gr::Tags::InverseSpatialMetric<DataVector, 3>>(ghost_state),
+          get<gr::Tags::SqrtDetSpatialMetric<DataVector>>(ghost_state),
+          get<gr::Tags::Lapse<DataVector>>(ghost_state),
+          get<gr::Tags::Shift<DataVector, 3>>(ghost_state));
+    }
   }
 }
 
