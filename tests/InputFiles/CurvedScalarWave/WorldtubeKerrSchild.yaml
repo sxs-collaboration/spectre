@@ -54,6 +54,7 @@ DomainCreator:
         ExciseWithBoundaryCondition: DemandOutgoingCharSpeeds
       ShellLogMapStrength: None
       CubeLogMapStrength: None
+      UseSphericalHarmonics: false
     ObjectA:
       InnerRadius: 1.6
       OuterRadius: 2.
@@ -62,6 +63,7 @@ DomainCreator:
         ExciseWithBoundaryCondition: Worldtube
       ShellLogMapStrength: None
       CubeLogMapStrength: None
+      UseSphericalHarmonics: false
     CenterOfMassOffset: [0., 0.]
     CubeScale: 1.0
     Envelope:

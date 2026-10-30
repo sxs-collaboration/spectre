@@ -13,6 +13,7 @@ SourceDomainCreator:
       ExciseInterior: True
       ShellLogMapStrength: 1.0
       CubeLogMapStrength: None
+      UseSphericalHarmonics: false
     ObjectB:
       InnerRadius: 0.45
       OuterRadius: 4.
@@ -20,6 +21,7 @@ SourceDomainCreator:
       ExciseInterior: True
       ShellLogMapStrength: 1.0
       CubeLogMapStrength: None
+      UseSphericalHarmonics: false
     CenterOfMassOffset: [0., 0.]
     Envelope:
       Radius: 60.
@@ -46,6 +48,7 @@ TargetDomainCreator:
       ExciseInterior: True
       ShellLogMapStrength: 1.0
       CubeLogMapStrength: None
+      UseSphericalHarmonics: false
     ObjectB:
       InnerRadius: 0.46
       OuterRadius: 6.
@@ -53,6 +56,7 @@ TargetDomainCreator:
       ExciseInterior: True
       ShellLogMapStrength: 1.0
       CubeLogMapStrength: None
+      UseSphericalHarmonics: false
     CenterOfMassOffset: [0., 0.]
     Envelope:
       Radius: 100.

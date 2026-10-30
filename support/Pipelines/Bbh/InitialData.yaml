@@ -94,6 +94,7 @@ DomainCreator:
             {% endif %}
       ShellLogMapStrength: 1.0
       CubeLogMapStrength: 1.0
+      UseSphericalHarmonics: false
     ObjectB:
       InnerRadius: {{ ExcisionRadiusLeft }}
       OuterRadius: {{ ObjectBOuterRadius }}
@@ -114,6 +115,7 @@ DomainCreator:
             {% endif %}
       ShellLogMapStrength: 1.0
       CubeLogMapStrength: {{ ObjectBCubeLogMapStrength }}
+      UseSphericalHarmonics: false
     CenterOfMassOffset: [*y_offset, *z_offset]
     Envelope:
       Radius: &outer_shell_inner_radius {{ EnvelopeRadius }}

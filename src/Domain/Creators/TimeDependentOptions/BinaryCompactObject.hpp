@@ -190,8 +190,7 @@ struct TimeDependentMapOptions {
   ///
   /// This is only used in binary neutron star simulations right now.
   using GridCentersOptions = time_dependent_options::GridCentersOptions;
-  using GridCentersOptionType =
-      typename GridCentersOptions::type::value_type;
+  using GridCentersOptionType = typename GridCentersOptions::type::value_type;
 
   using options =
       tmpl::list<InitialTime, ExpansionMapOptions, RotationMapOptions,
@@ -211,8 +210,7 @@ struct TimeDependentMapOptions {
       SkewMapOptionType skew_map_options,
       ShapeMapOptionType<domain::ObjectLabel::A> shape_options_A,
       ShapeMapOptionType<domain::ObjectLabel::B> shape_options_B,
-      GridCentersOptionType grid_centers,
-      const Options::Context& context = {});
+      GridCentersOptionType grid_centers, const Options::Context& context = {});
 
   /*!
    * \brief Create the function of time map using the options that were
@@ -298,7 +296,9 @@ struct TimeDependentMapOptions {
    * a shape map or not. If it's false, pass a `std::optional<size_t>`. If this
    * has a value, then it includes a shape map. The `size_t` represents the
    * relative block number around each object in the BinaryCompactObject domain.
-   * It should go from 0 to 11 for the 12 blocks surrounding each object.
+   * Values 0 to 5 identify the six shell wedges and 6 to 11 the six cube
+   * wedges. Use 12 for a single spherical-harmonic shell, whose shape-map
+   * transition must end at the sphere.
    */
   using IncludeDistortedMapType =
       tmpl::conditional_t<IsCylindrical, bool, std::optional<size_t>>;
@@ -383,9 +383,13 @@ struct TimeDependentMapOptions {
   std::optional<Rotation> rotation_map_{};
   std::optional<std::pair<RotScaleTrans, RotScaleTrans>> rot_scale_trans_map_{};
   std::optional<Skew> skew_map_{};
+  // For the non-cylindrical case, per object the entries are: 0-5 the six
+  // wedge blocks of the object shell, 6-11 the six cube blocks, 12 a single
+  // spherical-harmonic shell block covering the full sphere, and the last
+  // entry the interior of the excision.
   using ShapeMapType =
       tmpl::conditional_t<IsCylindrical, std::array<std::optional<Shape>, 4>,
-                          std::array<std::array<std::optional<Shape>, 13>, 2>>;
+                          std::array<std::array<std::optional<Shape>, 14>, 2>>;
   ShapeMapType shape_maps_{};
 
   // helper function that creates the functions of time used by the worldtube

@@ -50,6 +50,7 @@ DomainCreator:
       Interior: Auto
       ShellLogMapStrength: None
       CubeLogMapStrength: None
+      UseSphericalHarmonics: false
     ObjectB:
       InnerRadius: 4.
       OuterRadius: *star_radius
@@ -57,6 +58,7 @@ DomainCreator:
       Interior: Auto
       ShellLogMapStrength: None
       CubeLogMapStrength: None
+      UseSphericalHarmonics: false
     CenterOfMassOffset: [*y_offset, *z_offset]
     Envelope:
       Radius: &outer_shell_inner_radius 120.
